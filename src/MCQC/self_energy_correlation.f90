@@ -1,4 +1,4 @@
-subroutine self_energy_correlation(COHSEX,SOSEX,nBas,nC,nO,nV,nR,nS,e,Omega,rho,rhox,SigC)
+subroutine self_energy_correlation(COHSEX,SOSEX,nBas,nC,nO,nV,nR,nS,e,Omega,rho,rhox,EcGM,SigC)
 
 ! Compute correlation part of the self-energy
 
@@ -19,6 +19,7 @@ subroutine self_energy_correlation(COHSEX,SOSEX,nBas,nC,nO,nV,nR,nS,e,Omega,rho,
 ! Output variables
 
   double precision,intent(out)  :: SigC(nBas,nBas)
+  double precision,intent(out)  :: EcGM
 
 ! Initialize 
 
@@ -41,7 +42,8 @@ subroutine self_energy_correlation(COHSEX,SOSEX,nBas,nC,nO,nV,nR,nS,e,Omega,rho,
           do j=nC+1,nO
             do b=nO+1,nBas-nR
               jb = jb + 1
-              SigC(x,y) = SigC(x,y) + 4d0*rho(x,i,jb)*rho(y,i,jb)/Omega(jb)
+!              SigC(x,y) = SigC(x,y) + 4d0*rho(x,i,jb)*rho(y,i,jb)/Omega(jb)
+              SigC(x,y) = SigC(x,y) + 2d0*rho(x,i,jb)*rho(y,i,jb)/Omega(jb)
             enddo
           enddo
         enddo
@@ -62,6 +64,11 @@ subroutine self_energy_correlation(COHSEX,SOSEX,nBas,nC,nO,nV,nR,nS,e,Omega,rho,
           enddo
         enddo
       enddo
+    enddo
+
+    EcGM=0d0
+    do i=nC+1,nO
+      EcGM = EcGM + SigC(i,i)
     enddo
 
   else

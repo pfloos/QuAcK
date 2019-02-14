@@ -1,4 +1,4 @@
-subroutine self_energy_correlation_diag(COHSEX,SOSEX,nBas,nC,nO,nV,nR,nS,e,Omega,rho,rhox,SigC)
+subroutine self_energy_correlation_diag(COHSEX,SOSEX,nBas,nC,nO,nV,nR,nS,e,Omega,rho,rhox,EcGM,SigC)
 
 ! Compute diagonal of the correlation part of the self-energy
 
@@ -20,6 +20,7 @@ subroutine self_energy_correlation_diag(COHSEX,SOSEX,nBas,nC,nO,nV,nR,nS,e,Omega
 ! Output variables
 
   double precision,intent(out)  :: SigC(nBas)
+  double precision,intent(out)  :: EcGM
 
 ! Initialize 
 
@@ -42,7 +43,8 @@ subroutine self_energy_correlation_diag(COHSEX,SOSEX,nBas,nC,nO,nV,nR,nS,e,Omega
         do j=nC+1,nO
           do b=nO+1,nBas-nR
             jb = jb + 1
-            SigC(x) = SigC(x) + 4d0*rho(x,i,jb)**2/Omega(jb)
+!            SigC(x) = SigC(x) + 4d0*rho(x,i,jb)**2/Omega(jb)
+            SigC(x) = SigC(x) + 2d0*rho(x,i,jb)**2/Omega(jb)
           enddo
         enddo
       enddo
@@ -60,6 +62,11 @@ subroutine self_energy_correlation_diag(COHSEX,SOSEX,nBas,nC,nO,nV,nR,nS,e,Omega
           enddo
         enddo
       enddo
+    enddo
+
+    EcGM=0d0
+    do i=nC+1,nO
+      EcGM = EcGM + SigC(i)
     enddo
  
   else
@@ -93,6 +100,22 @@ subroutine self_energy_correlation_diag(COHSEX,SOSEX,nBas,nC,nO,nV,nR,nS,e,Omega
 !           SigC(x) = SigC(x) + 4d0*rho(x,a,jb)**2/(eps + eps*sqrt(1d0 + 4d0*rho(x,a,jb)**2/eps**2))
             SigC(x) = SigC(x) + 2d0*rho(x,a,jb)**2*eps/(eps**2 + eta**2)
 !           SigC(x) = SigC(x) + 2d0*SigC_dcgw(eps,rho(x,a,jb))
+          enddo
+        enddo
+      enddo
+    enddo
+
+! GM correlation energy
+
+    EcGM=0d0
+    do i=nC+1,nO
+      do a=nO+1,nBas-nR
+        jb = 0
+        do j=nC+1,nO
+          do b=nO+1,nBas-nR
+            jb = jb + 1
+            eps = e(a) - e(i) + Omega(jb)
+            EcGM = EcGM - 4d0*rho(a,i,jb)*rho(a,i,jb)/eps
           enddo
         enddo
       enddo

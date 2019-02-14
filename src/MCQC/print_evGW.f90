@@ -1,4 +1,4 @@
-subroutine print_evGW(nBas,nO,nSCF,Conv,e,ENuc,EHF,SigmaC,Z,eGW,EcRPA)
+subroutine print_evGW(nBas,nO,nSCF,Conv,e,ENuc,EHF,SigmaC,Z,eGW,EcRPA,EcGM)
 
 ! Print one-electron energies and other stuff for evGW
 
@@ -6,7 +6,7 @@ subroutine print_evGW(nBas,nO,nSCF,Conv,e,ENuc,EHF,SigmaC,Z,eGW,EcRPA)
   include 'parameters.h'
 
   integer,intent(in)                 :: nBas,nO,nSCF
-  double precision,intent(in)        :: ENuc,EHF,EcRPA
+  double precision,intent(in)        :: ENuc,EHF,EcRPA,EcGM
   double precision,intent(in)        :: Conv,e(nBas),SigmaC(nBas),Z(nBas),eGW(nBas)
 
   integer                            :: x,HOMO,LUMO
@@ -44,8 +44,10 @@ subroutine print_evGW(nBas,nO,nSCF,Conv,e,ENuc,EHF,SigmaC,Z,eGW,EcRPA)
   write(*,'(2X,A27,F15.6)') 'evGW LUMO      energy (eV):',eGW(LUMO)*HaToeV
   write(*,'(2X,A27,F15.6)') 'evGW HOMO-LUMO gap    (eV):',Gap*HaToeV
   write(*,*)'-------------------------------------------------------------------------------'
-  write(*,'(2X,A27,F15.6)') 'evGW total energy         =',ENuc + EHF + EcRPA
+  write(*,'(2X,A27,F15.6)') 'evGW RPA total energy     =',ENuc + EHF + EcRPA
   write(*,'(2X,A27,F15.6)') 'RPA correlation energy    =',EcRPA
+  write(*,'(2X,A27,F15.6)') 'evGW GM total energy      =',ENuc + EHF + EcGM
+  write(*,'(2X,A27,F15.6)') 'GM correlation energy     =',EcGM
   write(*,*)'-------------------------------------------------------------------------------'
   write(*,*)
 

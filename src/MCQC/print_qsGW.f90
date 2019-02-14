@@ -1,4 +1,4 @@
-subroutine print_qsGW(nBas,nO,nSCF,Conv,thresh,eHF,eGW,c,ENuc,P,T,V,Hc,J,K,F,SigmaC,Z,EcRPA)
+subroutine print_qsGW(nBas,nO,nSCF,Conv,thresh,eHF,eGW,c,ENuc,P,T,V,Hc,J,K,F,SigmaC,Z,EcRPA,EcGM)
 
 
 ! Print one-electron energies and other stuff for qsGW
@@ -9,7 +9,7 @@ subroutine print_qsGW(nBas,nO,nSCF,Conv,thresh,eHF,eGW,c,ENuc,P,T,V,Hc,J,K,F,Sig
 ! Input variables
 
   integer,intent(in)                 :: nBas,nO,nSCF
-  double precision,intent(in)        :: ENuc,EcRPA,Conv,thresh
+  double precision,intent(in)        :: ENuc,EcRPA,EcGM,Conv,thresh
   double precision,intent(in)        :: eHF(nBas),eGW(nBas),c(nBas),P(nBas,nBas) 
   double precision,intent(in)        :: T(nBas,nBas),V(nBas,nBas),Hc(nBas,nBas)
   double precision,intent(in)        :: J(nBas,nBas),K(nBas,nBas),F(nBas,nBas)
@@ -63,9 +63,11 @@ subroutine print_qsGW(nBas,nO,nSCF,Conv,thresh,eHF,eGW,c,ENuc,P,T,V,Hc,J,K,F,Sig
   write(*,'(2X,A27,F15.6)') 'qsGW HOMO-LUMO gap    (eV):',Gap*HaToeV
   write(*,*)'-------------------------------------------'
   write(*,'(2X,A27,F15.6)') 'qsGW total       energy   =',EqsGW + ENuc
+  write(*,'(2X,A27,F15.6)') 'qsGW GM total    energy   =',EqsGW + ENuc + EcGM
   write(*,'(2X,A27,F15.6)') 'qsGW exchange    energy   =',Ex
   write(*,'(2X,A27,F15.6)') 'qsGW correlation energy   =',Ec
   write(*,'(2X,A27,F15.6)') 'RPA  correlation energy   =',EcRPA
+  write(*,'(2X,A27,F15.6)') 'GM  correlation energy    =',EcGM
   write(*,*)'-------------------------------------------'
   write(*,*)
 

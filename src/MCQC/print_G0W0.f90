@@ -1,4 +1,4 @@
-subroutine print_G0W0(nBas,nO,e,ENuc,EHF,SigmaC,Z,eGW,EcRPA)
+subroutine print_G0W0(nBas,nO,e,ENuc,EHF,SigmaC,Z,eGW,EcRPA,EcGM)
 
 ! Print one-electron energies and other stuff for G0W0
 
@@ -6,7 +6,7 @@ subroutine print_G0W0(nBas,nO,e,ENuc,EHF,SigmaC,Z,eGW,EcRPA)
   include 'parameters.h'
 
   integer,intent(in)                 :: nBas,nO
-  double precision,intent(in)        :: ENuc,EHF,EcRPA
+  double precision,intent(in)        :: ENuc,EHF,EcRPA,EcGM
   double precision,intent(in)        :: e(nBas),SigmaC(nBas),Z(nBas),eGW(nBas)
 
   integer                            :: x,HOMO,LUMO
@@ -37,8 +37,10 @@ subroutine print_G0W0(nBas,nO,e,ENuc,EHF,SigmaC,Z,eGW,EcRPA)
   write(*,'(2X,A27,F15.6)') 'G0W0 LUMO      energy (eV):',eGW(LUMO)*HaToeV
   write(*,'(2X,A27,F15.6)') 'G0W0 HOMO-LUMO gap    (eV):',Gap*HaToeV
   write(*,*)'-------------------------------------------------------------------------------'
-  write(*,'(2X,A27,F15.6)') 'G0W0 total energy         =',ENuc + EHF + EcRPA
+  write(*,'(2X,A27,F15.6)') 'G0W0 RPA total energy     =',ENuc + EHF + EcRPA
   write(*,'(2X,A27,F15.6)') 'RPA correlation energy    =',EcRPA
+  write(*,'(2X,A27,F15.6)') 'G0W0 GM total energy      =',ENuc + EHF + EcGM
+  write(*,'(2X,A27,F15.6)') 'GM correlation energy     =',EcGM
   write(*,*)'-------------------------------------------------------------------------------'
   write(*,*)
 

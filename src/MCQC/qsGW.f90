@@ -21,7 +21,7 @@ subroutine qsGW(maxSCF,thresh,max_diis,COHSEX,SOSEX,BSE,TDA,G0W,GW0,singlet_mani
 
   logical                       :: dRPA
   integer                       :: nSCF,nBasSq,ispin,n_diis
-  double precision              :: EcRPA,Conv
+  double precision              :: EcRPA,EcGM,Conv
   double precision,external     :: trace_matrix
   double precision,allocatable  :: error_diis(:,:),F_diis(:,:)
   double precision,allocatable  :: Omega(:,:),XpY(:,:,:),rho(:,:,:,:),rhox(:,:,:,:)
@@ -106,13 +106,13 @@ subroutine qsGW(maxSCF,thresh,max_diis,COHSEX,SOSEX,BSE,TDA,G0W,GW0,singlet_mani
     if(G0W) then
 
       call self_energy_correlation(COHSEX,SOSEX,nBas,nC,nO,nV,nR,nS,eHF, & 
-                                   Omega(:,ispin),rho(:,:,:,ispin),rhox(:,:,:,ispin),SigC)
+                                   Omega(:,ispin),rho(:,:,:,ispin),rhox(:,:,:,ispin),EcGM,SigC)
       call renormalization_factor(SOSEX,nBas,nC,nO,nV,nR,nS,eHF,Omega(:,ispin),rho(:,:,:,ispin),rhox(:,:,:,ispin),Z)
 
      else
 
       call self_energy_correlation(COHSEX,SOSEX,nBas,nC,nO,nV,nR,nS,e, & 
-                                   Omega(:,ispin),rho(:,:,:,ispin),rhox(:,:,:,ispin),SigC)
+                                   Omega(:,ispin),rho(:,:,:,ispin),rhox(:,:,:,ispin),EcGM,SigC)
       call renormalization_factor(SOSEX,nBas,nC,nO,nV,nR,nS,e,Omega(:,ispin),rho(:,:,:,ispin),rhox(:,:,:,ispin),Z)
 
      endif
@@ -152,7 +152,7 @@ subroutine qsGW(maxSCF,thresh,max_diis,COHSEX,SOSEX,BSE,TDA,G0W,GW0,singlet_mani
     ! Print results
 
     call print_excitation('RPA  ',ispin,nS,Omega(:,ispin))
-    call print_qsGW(nBas,nO,nSCF,Conv,thresh,eHF,e,c,ENuc,P,T,V,Hc,J,K,F,SigCp,Z,EcRPA)
+    call print_qsGW(nBas,nO,nSCF,Conv,thresh,eHF,e,c,ENuc,P,T,V,Hc,J,K,F,SigCp,Z,EcRPA,EcGM)
 
     ! Increment
 
