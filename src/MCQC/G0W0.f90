@@ -18,7 +18,7 @@ subroutine G0W0(COHSEX,SOSEX,BSE,TDA,singlet_manifold,triplet_manifold, &
 
   logical                       :: dRPA
   integer                       :: ispin
-  double precision              :: EcRPA
+  double precision              :: EcRPA,EcGM
   double precision,allocatable  :: H(:,:),SigmaC(:),Z(:)
   double precision,allocatable  :: Omega(:,:),XpY(:,:,:),rho(:,:,:,:),rhox(:,:,:,:)
 
@@ -64,12 +64,12 @@ subroutine G0W0(COHSEX,SOSEX,BSE,TDA,singlet_manifold,triplet_manifold, &
 
 ! Compute correlation part of the self-energy 
 
-  call excitation_density(nBas,nC,nO,nR,nS,cHF,ERI_AO_basis,XpY(:,:,ispin),rho(:,:,:,ispin))
+  call excitation_density_from_MO(nBas,nC,nO,nR,nS,ERI_MO_basis,XpY(:,:,ispin),rho(:,:,:,ispin))
 
-  if(SOSEX) call excitation_density_SOSEX(nBas,nC,nO,nR,nS,cHF,ERI_AO_basis,XpY(:,:,ispin),rhox(:,:,:,ispin))
+  if(SOSEX) call excitation_density_SOSEX_from_MO(nBas,nC,nO,nR,nS,ERI_MO_basis,XpY(:,:,ispin),rhox(:,:,:,ispin))
 
   call self_energy_correlation_diag(COHSEX,SOSEX,nBas,nC,nO,nV,nR,nS,eHF, & 
-                                    Omega(:,ispin),rho(:,:,:,ispin),rhox(:,:,:,ispin),SigmaC)
+                                    Omega(:,ispin),rho(:,:,:,ispin),rhox(:,:,:,ispin),EcGM,SigmaC)
 
 ! COHSEX static approximation
 
@@ -90,7 +90,7 @@ subroutine G0W0(COHSEX,SOSEX,BSE,TDA,singlet_manifold,triplet_manifold, &
 ! Dump results
 
   call print_excitation('RPA  ',ispin,nS,Omega(:,ispin))
-  call print_G0W0(nBas,nO,eHF,ENuc,ERHF,SigmaC,Z,eG0W0,EcRPA)
+  call print_G0W0(nBas,nO,eHF,ENuc,ERHF,SigmaC,Z,eG0W0,EcRPA,EcGM)
 
 ! Plot stuff
 

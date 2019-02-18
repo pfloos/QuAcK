@@ -64,6 +64,8 @@ subroutine self_energy_correlation_diag(COHSEX,SOSEX,nBas,nC,nO,nV,nR,nS,e,Omega
       enddo
     enddo
 
+    ! GM correlation energy
+
     EcGM=0d0
     do i=nC+1,nO
       EcGM = EcGM + SigC(i)
@@ -105,7 +107,7 @@ subroutine self_energy_correlation_diag(COHSEX,SOSEX,nBas,nC,nO,nV,nR,nS,e,Omega
       enddo
     enddo
 
-! GM correlation energy
+    ! GM correlation energy
 
     EcGM=0d0
     do i=nC+1,nO
@@ -148,6 +150,21 @@ subroutine self_energy_correlation_diag(COHSEX,SOSEX,nBas,nC,nO,nV,nR,nS,e,Omega
               jb = jb + 1
               eps = e(x) - e(a) - Omega(jb)
               SigC(x) = SigC(x) - rho(x,a,jb)*rhox(x,a,jb)/eps
+            enddo
+          enddo
+        enddo
+      enddo
+
+      ! GM correlation energy
+
+      do i=nC+1,nO
+        do a=nO+1,nBas-nR
+          jb = 0
+          do j=nC+1,nO
+            do b=nO+1,nBas-nR
+              jb = jb + 1
+              eps = e(a) - e(i) + Omega(jb)
+              EcGM = EcGM + 2d0*rho(a,i,jb)*rhox(a,i,jb)/eps
             enddo
           enddo
         enddo
