@@ -25,7 +25,7 @@ subroutine excitation_density_from_MO(nBas,nC,nO,nR,nS,G,XpY,rho)
         do j=nC+1,nO
           do b=nO+1,nBas-nR
             jb = jb + 1
-            rho(x,y,ia) = rho(x,y,ia) + G(x,y,j,b)*XpY(ia,jb)
+            rho(x,y,ia) = rho(x,y,ia) + G(x,j,y,b)*XpY(ia,jb)
           enddo
         enddo
       enddo
