@@ -1,7 +1,7 @@
 # RHF: maxSCF thresh   DIIS n_diis guess_type ortho_type
        32    0.0000001  T     5      1          1
-# MPn: 
-
+# MP: MP2-F12
+      T
 # CIS/TDHF: singlet triplet
             T       F
 # GF: maxSCF thresh  DIIS n_diis renormalization

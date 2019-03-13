@@ -1,5 +1,5 @@
 subroutine read_methods(doHF,doMOM,           & 
-                        doMP2,doMP3,          & 
+                        doMP2,doMP3,doMP2F12, & 
                         doCIS,doTDHF,doADC,   & 
                         doGF2,doGF3,          & 
                         doG0W0,doevGW,doqsGW, & 
@@ -12,7 +12,7 @@ subroutine read_methods(doHF,doMOM,           &
 ! Input variables
 
   logical,intent(out)           :: doHF,doMOM
-  logical,intent(out)           :: doMP2,doMP3
+  logical,intent(out)           :: doMP2,doMP3,doMP2F12
   logical,intent(out)           :: doCIS,doTDHF,doADC
   logical,intent(out)           :: doGF2,doGF3  
   logical,intent(out)           :: doG0W0,doevGW,doqsGW
@@ -31,8 +31,9 @@ subroutine read_methods(doHF,doMOM,           &
   doHF  = .false.
   doMOM = .false.
 
-  doMP2 = .false.
-  doMP3 = .false.
+  doMP2    = .false.
+  doMP3    = .false.
+  doMP2F12 = .false.
  
   doCIS  = .false.
   doTDHF = .false.
@@ -57,9 +58,10 @@ subroutine read_methods(doHF,doMOM,           &
 ! Read MPn methods
 
   read(1,*) 
-  read(1,*) answer1,answer2
-  if(answer1 == 'T') doMP2 = .true.
-  if(answer2 == 'T') doMP3 = .true.
+  read(1,*) answer1,answer2,answer3
+  if(answer1 == 'T') doMP2    = .true.
+  if(answer2 == 'T') doMP3    = .true.
+  if(answer3 == 'T') doMP2F12 = .true.
 
 ! Read excited state methods
 

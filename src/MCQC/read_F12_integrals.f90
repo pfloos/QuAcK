@@ -1,4 +1,4 @@
-subroutine read_F12_integrals(nBas,S,C,F,Y)
+subroutine read_F12_integrals(nBas,S,C,F,Y,FC)
 
 ! Read one- and two-electron integrals from files
 
@@ -12,12 +12,15 @@ subroutine read_F12_integrals(nBas,S,C,F,Y)
 ! Local variables
 
   logical                       :: debug
-  integer                       :: mu,nu,la,si
+  integer                       :: mu,nu,la,si,ka,ta
   double precision              :: ERI,F12,Yuk,ExpS
 
 ! Output variables
 
-  double precision,intent(out)  :: C(nBas,nBas,nBas,nBas),F(nBas,nBas,nBas,nBas),Y(nBas,nBas,nBas,nBas)
+  double precision,intent(out)  :: C(nBas,nBas,nBas,nBas)
+  double precision,intent(out)  :: F(nBas,nBas,nBas,nBas)
+  double precision,intent(out)  :: Y(nBas,nBas,nBas,nBas)
+  double precision,intent(out)  :: FC(nBas,nBas,nBas,nBas,nBas,nBas)
 
   debug = .false.
 
@@ -26,8 +29,9 @@ subroutine read_F12_integrals(nBas,S,C,F,Y)
   open(unit=21,file='int/ERI.dat')
   open(unit=22,file='int/F12.dat')
   open(unit=23,file='int/Yuk.dat')
+  open(unit=31,file='int/3eInt_Type1.dat')
 
-! Read electron repulsion integrals
+! Read 1/r12 integrals
 
   C = 0d0
   do 
@@ -51,7 +55,7 @@ subroutine read_F12_integrals(nBas,S,C,F,Y)
   enddo
   21 close(unit=21)
 
-! Read F12 integrals
+! Read f12 integrals
 
   F = 0d0
   do 
@@ -74,7 +78,8 @@ subroutine read_F12_integrals(nBas,S,C,F,Y)
     F(si,la,nu,mu) = F12
   enddo
   22 close(unit=22)
-! Read electron repulsion integrals
+
+! Read f12/r12 integrals
 
   Y = 0d0
   do 
@@ -97,6 +102,14 @@ subroutine read_F12_integrals(nBas,S,C,F,Y)
     Y(si,la,nu,mu) = Yuk
   enddo
   23 close(unit=23)
+
+! Read f13/r12 integrals
+
+  FC = 0d0
+  do 
+    read(31,*,end=31) mu,nu,la,si,ka,ta,FC
+  enddo
+  31 close(unit=31)
 
 
 ! Print results
@@ -137,15 +150,15 @@ subroutine read_F12_integrals(nBas,S,C,F,Y)
 
 ! Transform two-electron integrals
   
-  do mu=1,nBas
-    do nu=1,nBas
-      do la=1,nBas
-        do si=1,nBas
-          F(mu,nu,la,si) = (S(mu,la)*S(nu,si) - F(mu,nu,la,si))/ExpS
-          Y(mu,nu,la,si) = (C(mu,nu,la,si) - Y(mu,nu,la,si))/ExpS
-        enddo
-      enddo
-    enddo
-  enddo
+! do mu=1,nBas
+!   do nu=1,nBas
+!     do la=1,nBas
+!       do si=1,nBas
+!         F(mu,nu,la,si) = (S(mu,la)*S(nu,si) - F(mu,nu,la,si))/ExpS
+!         Y(mu,nu,la,si) = (C(mu,nu,la,si) - Y(mu,nu,la,si))/ExpS
+!       enddo
+!     enddo
+!   enddo
+! enddo
 
 end subroutine read_F12_integrals

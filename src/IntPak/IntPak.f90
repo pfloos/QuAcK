@@ -19,7 +19,7 @@ program IntPak
   logical                       :: do4eInt(n4eInt)
 
   integer                       :: nNuc,nBas,iType
-  integer                       :: nEl,nO,nV
+  integer                       :: nEl,nO,nV,nCore,nRyd
   double precision              :: ExpS
   double precision              :: ENuc
   integer                       :: KG
@@ -69,7 +69,7 @@ program IntPak
 ! nBas = number of basis functions (see below)
 !      = nO + nV
 
-  call read_molecule(nNuc,nEl,nO)
+  call read_molecule(nNuc,nEl,nO,nCore,nRyd)
 
   allocate(ZNuc(1:nNuc),rNuc(1:nNuc,1:3))
 
@@ -346,13 +346,13 @@ program IntPak
   if(do3eInt(1)) then
 
     iType = 1
-    KG   = 1
-!    KG   = 6
+!   KG   = 1
+     KG   = 6
     allocate(DG(1:KG),ExpG(1:KG))
-    DG   = (/ 1d0 /)
-    ExpG = (/ 1d0 /)
-!    DG   = (/ 0.3144d0, 0.3037d0, 0.1681d0, 0.09811d0, 0.06024d0, 0.03726d0 /)
-!    ExpG = (/ 0.2209d0, 1.004d0,  3.622d0, 12.16d0,   45.87d0,  254.4d0     /)
+!   DG   = (/ 1d0 /)
+!   ExpG = (/ 1d0 /)
+    DG   = (/ 0.3144d0, 0.3037d0, 0.1681d0, 0.09811d0, 0.06024d0, 0.03726d0 /)
+    ExpG = (/ 0.2209d0, 1.004d0,  3.622d0, 12.16d0,   45.87d0,  254.4d0     /)
 
     call cpu_time(start_3eInt(iType))
     call Compute3eInt(debug,iType,nShell,                            &

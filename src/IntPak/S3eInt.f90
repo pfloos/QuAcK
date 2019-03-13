@@ -34,17 +34,35 @@ subroutine S3eInt(debug,iType,np3eInt,nSigp3eInt, &
   double precision              :: p3eInt
 
   p3eInt = 0d0
-  do k=1,KG
-    do l=1,KG
+
+  if(iType == 1) then
+  
+    do k=1,KG
       ExpSG13 = ExpG(k)*ExpS**2
-      ExpSG23 = ExpG(l)*ExpS**2
-      p3eInt = p3eInt                                         &
-             + DG(k)*DG(l)*G3eInt(debug,iType,                &
-                                  ExpSG13,ExpSG23,            &
-                                  ExpBra,CenterBra,AngMomBra, &
-                                  ExpKet,CenterKet,AngMomKet)
-    enddo
-  enddo
+      p3eInt = p3eInt                                   &
+             + DG(k)*G3eInt(debug,iType,                &
+                            ExpSG13,ExpSG23,            &
+                            ExpBra,CenterBra,AngMomBra, &
+                            ExpKet,CenterKet,AngMomKet)
+    end do
+
+  end if
+
+  if(iType == 2 .or. iType == 3) then
+  
+    do k=1,KG
+      do l=1,KG
+        ExpSG13 = ExpG(k)*ExpS**2
+        ExpSG23 = ExpG(l)*ExpS**2
+        p3eInt = p3eInt                                         &
+               + DG(k)*DG(l)*G3eInt(debug,iType,                &
+                                    ExpSG13,ExpSG23,            &
+                                    ExpBra,CenterBra,AngMomBra, &
+                                    ExpKet,CenterKet,AngMomKet)
+      end do
+    end do
+
+  end if
 
 ! Print result
 

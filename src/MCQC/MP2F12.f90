@@ -1,24 +1,30 @@
-subroutine MP2F12(nBas,nC,nO,nV,nA,ERI,F12,Yuk,EHF,EcMP2,c,cA,EcMP2F12)
+subroutine MP2F12(nBas,nC,nO,nV,ERI,F12,Yuk,FC,EHF,EcMP2,c,EcMP2F12)
 
-! Perform restricted Hartree-Fock calculation
+! Perform MP2-F12 calculation
 
   implicit none
 
 ! Input variables
 
-  integer,intent(in)            :: nBas,nC,nO,nV,nA
+  integer,intent(in)            :: nBas,nC,nO,nV
   double precision,intent(in)   :: EHF,EcMP2
-  double precision,intent(in)   :: c(nBas,nBas),cA(nBas,nBas)
-  double precision,intent(in)   :: ERI(nBas,nBas,nBas,nBas),F12(nBas,nBas,nBas,nBas),Yuk(nBas,nBas,nBas,nBas)
+  double precision,intent(in)   :: c(nBas,nBas)
+  double precision,intent(in)   :: ERI(nBas,nBas,nBas,nBas)
+  double precision,intent(in)   :: F12(nBas,nBas,nBas,nBas)
+  double precision,intent(in)   :: Yuk(nBas,nBas,nBas,nBas)
+  double precision,intent(in)   :: FC(nBas,nBas,nBas,nBas,nBas,nBas)
 
 ! Local variables
 
-  double precision,allocatable  :: ooCoo(:,:,:,:),ooFoo(:,:,:,:),ooYoo(:,:,:,:)
-  double precision,allocatable  :: ooCoa(:,:,:,:),ooFoa(:,:,:,:)
-  double precision,allocatable  :: ooCvv(:,:,:,:),ooFvv(:,:,:,:)
+  double precision,allocatable  :: ooCoo(:,:,:,:)
+  double precision,allocatable  :: ooFoo(:,:,:,:)
+  double precision,allocatable  :: ooYoo(:,:,:,:)
+  double precision,allocatable  :: ooCvv(:,:,:,:)
+  double precision,allocatable  :: ooFvv(:,:,:,:)
+  double precision,allocatable  :: oooFCooo(:,:,:,:,:,:)
   double precision,allocatable  :: cO(:,:),cV(:,:)
   double precision              :: E2a,E2b,E3a,E3b,E4a,E4b,E4c,E4d
-  integer                       :: i,j,k,l,a,b,x
+  integer                       :: i,j,k,l,a,b
 
 ! Output variables
 
@@ -48,24 +54,20 @@ subroutine MP2F12(nBas,nC,nO,nV,nA,ERI,F12,Yuk,EHF,EcMP2,c,cA,EcMP2F12)
 
 ! Compute the three-electron part of the MP2-F12 energy
 
-  allocate(ooCoa(nO,nO,nO,nA),ooFoa(nO,nO,nO,nA))
-  call AOtoMO_oooa(nBas,nO,nA,cO,cA,ERI,ooCoa)
-  call AOtoMO_oooa(nBas,nO,nA,cO,cA,F12,ooFoa)
+  allocate(oooFCooo(nO,nO,nO,nO,nO,nO))
 
   E3a = 0d0
   E3b = 0d0
   do i=1,nO
     do j=1,nO
       do k=1,nO
-        do x=1,nA
-          E3a = E3a + ooCoa(i,j,k,x)*ooFoa(j,i,k,x)
-          E3b = E3b + ooCoa(i,j,k,x)*ooFoa(i,j,k,x)
-        enddo
+        E3a = E3a + oooFCooo(i,j,k,k,j,i)
+        E3b = E3b + oooFCooo(i,j,k,k,i,j)
       enddo
     enddo
   enddo
 
-  deallocate(ooCoa,ooFoa)
+  deallocate(oooFCooo)
 
 ! Compute the four-electron part of the MP2-F12 energy
 

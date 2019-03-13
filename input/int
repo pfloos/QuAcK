@@ -5,10 +5,10 @@
 # Exposant of the Slater geminal
   1.0
 # One-electron integrals: Ov Kin Nuc
-                          T  T   T
+                          F  F   F
 # Two-electron integrals: ERI F12 Yuk Erf
                           T   F   F   F
 # Three-electron integrals: Type1 Type2 Type3
-                            F     F     F
+                            T     F     F
 # Four-electron integrals: Type1 Type2 Type3
                            F     F     F

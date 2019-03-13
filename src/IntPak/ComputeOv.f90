@@ -1,4 +1,4 @@
-subroutine ComputeOv(debug,NBasis,nShell,                 &
+subroutine ComputeOv(debug,nBas,nShell,                 &
                      CenterShell,TotAngMomShell,KShell,DShell,ExpShell, &
                      npOv,nSigpOv,ncOv,nSigcOv,S)
 
@@ -11,7 +11,7 @@ subroutine ComputeOv(debug,NBasis,nShell,                 &
 ! Input variables
 
   logical,intent(in)            :: debug
-  integer,intent(in)            :: NBasis,nShell
+  integer,intent(in)            :: nBas,nShell
   double precision,intent(in)   :: CenterShell(maxShell,3)
   integer,intent(in)            :: TotAngMomShell(maxShell),KShell(maxShell)
   double precision,intent(in)   :: DShell(maxShell,maxK),ExpShell(maxShell,maxK)
@@ -39,7 +39,7 @@ subroutine ComputeOv(debug,NBasis,nShell,                 &
 ! Output variables
 
   integer,intent(out)           :: npOv,nSigpOv,ncOv,nSigcOv
-  double precision,intent(out)  :: S(NBasis,NBasis)
+  double precision,intent(out)  :: S(nBas,nBas)
 
 
 ! Compute one-electron integrals

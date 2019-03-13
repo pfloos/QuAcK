@@ -10,11 +10,11 @@ program MCQC
   logical                       :: doG0W0,doevGW,doqsGW
   logical                       :: doMCMP2,doMinMCMP2
   logical                       :: doeNcusp
-  integer                       :: nAt,nBas,nBasCABS,nEl,nC,nO,nV,nR,nS
+  integer                       :: nNuc,nBas,nBasCABS,nEl,nC,nO,nV,nR,nS
   double precision              :: ENuc,ERHF,Norm
   double precision              :: EcMP2(3),EcMP3,EcMP2F12(3),EcMCMP2(3),Err_EcMCMP2(3),Var_EcMCMP2(3)
 
-  double precision,allocatable  :: ZNuc(:),rAt(:,:),cHF(:,:),eHF(:),eG0W0(:),PHF(:,:)
+  double precision,allocatable  :: ZNuc(:),rNuc(:,:),cHF(:,:),eHF(:),eG0W0(:),PHF(:,:)
 
   integer                       :: nShell
   integer,allocatable           :: TotAngMomShell(:),KShell(:)
@@ -25,7 +25,7 @@ program MCQC
 
   double precision,allocatable  :: S(:,:),T(:,:),V(:,:),Hc(:,:),X(:,:)
   double precision,allocatable  :: ERI_AO_basis(:,:,:,:),ERI_MO_basis(:,:,:,:)
-  double precision,allocatable  :: F12(:,:,:,:),Yuk(:,:,:,:)
+  double precision,allocatable  :: F12(:,:,:,:),Yuk(:,:,:,:),FC(:,:,:,:,:,:)
 
   double precision              :: start_HF     ,end_HF       ,t_HF
   double precision              :: start_MOM    ,end_MOM      ,t_MOM
@@ -77,7 +77,7 @@ program MCQC
 ! Which calculations do you want to do?
 
   call read_methods(doHF,doMOM,                 &
-                    doMP2,doMP3,                &
+                    doMP2,doMP3,doMP2F12,       &
                     doCIS,doTDHF,doADC,         &
                     doGF2,doGF3,                &
                     doG0W0,doevGW,doqsGW,       &
@@ -95,7 +95,6 @@ program MCQC
 
   doeNCusp   = .false.
   doMinMCMP2 = .false.
-  doMP2F12   = .false.
 
 !------------------------------------------------------------------------
 ! Read input information
@@ -109,12 +108,12 @@ program MCQC
 ! nBas = number of basis functions (see below)
 !      = nO + nV
 
-  call read_molecule(nAt,nEl,nC,nO,nR)
-  allocate(ZNuc(nAt),rAt(nAt,3))
+  call read_molecule(nNuc,nEl,nC,nO,nR)
+  allocate(ZNuc(nNuc),rNuc(nNuc,3))
 
 ! Read geometry
 
-  call read_geometry(nAt,ZNuc,rAt,ENuc)
+  call read_geometry(nNuc,ZNuc,rNuc,ENuc)
 
   allocate(CenterShell(maxShell,3),TotAngMomShell(maxShell),KShell(maxShell), &
            DShell(maxShell,maxK),ExpShell(maxShell,maxK))
@@ -123,14 +122,14 @@ program MCQC
 ! Read basis set information
 !------------------------------------------------------------------------
 
-  call read_basis(nAt,rAt,nBas,nC,nO,nV,nR,nS, &
+  call read_basis(nNuc,rNuc,nBas,nC,nO,nV,nR,nS, &
                   nShell,TotAngMomShell,CenterShell,TotAngMomShell,KShell,DShell,ExpShell)
 
 !------------------------------------------------------------------------
 ! Read auxiliary basis set information
 !------------------------------------------------------------------------
 
-! call ReadAuxBasis(nAt,rAt,nShell,CenterShell,TotAngMomShell,KShell,DShell,ExpShell)
+! call ReadAuxBasis(nNuc,rNuc,nShell,CenterShell,TotAngMomShell,KShell,DShell,ExpShell)
 
 ! Compute the number of basis functions
 
@@ -241,10 +240,10 @@ program MCQC
 
     call cpu_time(start_MP2F12)
 !   Memory allocation for one- and two-electron integrals
-!   allocate(F12(nBas,nBas,nBas,nBas),Yuk(nBas,nBas,nBas,nBas))
+    allocate(F12(nBas,nBas,nBas,nBas),Yuk(nBas,nBas,nBas,nBas),FC(nBas,nBas,nBas,nBas,nBas,nBas))
 !   Read integrals
-!   call ReadF12Ints(nBas,S,G,F12,Yuk)
-!   call MP2F12(nBas,nC,nO,nV,nA,G,F12,Yuk,ERHF,EcMP2(1),c,c,EcMP2F12)
+    call read_F12_integrals(nBas,S,ERI_AO_basis,F12,Yuk,FC)
+    call MP2F12(nBas,nC,nO,nV,ERI_AO_basis,F12,Yuk,FC,ERHF,EcMP2(1),cHF,cHF,EcMP2F12)
     call cpu_time(end_MP2F12)
 
     t_MP2F12 = end_MP2F12 - start_MP2F12
