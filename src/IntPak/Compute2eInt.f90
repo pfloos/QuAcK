@@ -1,4 +1,4 @@
-subroutine Compute2eInt(debug,iType,nShell,            &
+subroutine Compute2eInt(debug,chemist_notation,iType,nShell,             &
                       ExpS,KG,DG,ExpG,                                   &
                       CenterShell,TotAngMomShell,KShell,DShell,ExpShell, &
                       np2eInt,nSigp2eInt,nc2eInt,nSigc2eInt)
@@ -12,6 +12,7 @@ subroutine Compute2eInt(debug,iType,nShell,            &
 ! Input variables
 
   logical,intent(in)            :: debug
+  logical,intent(in)            :: chemist_notation
   integer,intent(in)            :: iType,nShell
   double precision,intent(in)   :: ExpS
   integer,intent(in)            :: KG
@@ -22,7 +23,6 @@ subroutine Compute2eInt(debug,iType,nShell,            &
 
 ! Local variables
 
-  logical                       :: chemist_notation
   integer                       :: KBra(2),KKet(2)
   double precision              :: CenterBra(2,3),CenterKet(2,3)
   integer                       :: TotAngMomBra(2),TotAngMomKet(2)
@@ -46,8 +46,6 @@ subroutine Compute2eInt(debug,iType,nShell,            &
 ! Output variables
 
   integer,intent(out)           :: np2eInt,nSigp2eInt,nc2eInt,nSigc2eInt
-
-  chemist_notation = .true.
 
   np2eInt = 0
   nSigp2eInt = 0

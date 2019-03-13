@@ -4,8 +4,20 @@ program IntPak
   include 'parameters.h'
 
   logical                       :: debug
-  logical                       :: doOv,doKin,doNuc,doERI,doF12,doYuk,doErf
-  logical                       :: do3eInt(n3eInt),do4eInt(n4eInt)
+  logical                       :: chemist_notation
+
+  logical                       :: doOv 
+  logical                       :: doKin
+  logical                       :: doNuc
+
+  logical                       :: doERI
+  logical                       :: doF12
+  logical                       :: doYuk
+  logical                       :: doErf
+
+  logical                       :: do3eInt(n3eInt)
+  logical                       :: do4eInt(n4eInt)
+
   integer                       :: NAtoms,NBasis,iType
   double precision              :: ExpS
   integer                       :: KG
@@ -38,28 +50,12 @@ program IntPak
   write(*,*) '********************************'
   write(*,*)
 
-! Debugger on?
+! Read options for integral calculations
 
-  debug = .false.
-!  debug = .true.
+  call read_options(debug,chemist_notation,doOv,doKin,doNuc,doERI,doF12,doYuk,doErf,do3eInt,do4eInt)
 
 ! Which integrals do you want?
 
-  doOv  = .true.
-  doKin = .true.
-  doNuc = .true.
-  doERI = .true.
-  doF12 = .false.
-  doYuk = .false.
-  doErf = .false.
-
-  do3eInt(1) = .false.
-  do3eInt(2) = .false.
-  do3eInt(3) = .false.
-
-  do4eInt(1) = .false.
-  do4eInt(2) = .false.
-  do4eInt(3) = .false.
 
 !------------------------------------------------------------------------
 ! Read input information
@@ -183,7 +179,7 @@ program IntPak
     ExpG = (/ 0d0 /)
 
     call cpu_time(start_2eInt(iType))
-    call Compute2eInt(debug,iType,nShell,              &
+    call Compute2eInt(debug,chemist_notation,iType,nShell,               &
                       ExpS,KG,DG,ExpG,                                   &
                       CenterShell,TotAngMomShell,KShell,DShell,ExpShell, &
                       np2eInt(iType),nSigp2eInt(iType),nc2eInt(iType),nSigc2eInt(iType))
