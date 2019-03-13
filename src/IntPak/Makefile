@@ -24,12 +24,12 @@ $(ODIR)/%.o: %.f90
 $(ODIR)/%.o: %.f
 	$(FC) -c -o $@ $< $(FFLAGS) 
 
-$(BDIR)/xcDFT: $(OBJ)
+$(BDIR)/IntPak: $(OBJ)
 	$(FC) -o $@ $^ $(FFLAGS) $(LIBS)
 
 debug: 
-	DEBUG=1 make $(BDIR)/xcDFT
-#DEBUG=1 make clean $(BDIR)/xcDFT
+	DEBUG=1 make $(BDIR)/IntPak
+#DEBUG=1 make clean $(BDIR)/IntPak
 
 clean:
-	rm -f $(ODIR)/*.o $(BDIR)/xcDFT $(BDIR)/debug
+	rm -f $(ODIR)/*.o $(BDIR)/IntPak $(BDIR)/debug
