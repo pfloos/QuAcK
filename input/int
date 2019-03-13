@@ -2,6 +2,8 @@
   F
 # Chemist notation for two-electron integral?
   T
+# Exposant of the Slater geminal
+  1.0
 # One-electron integrals: Ov Kin Nuc
                           T  T   T
 # Two-electron integrals: ERI F12 Yuk Erf

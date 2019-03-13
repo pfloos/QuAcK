@@ -18,11 +18,13 @@ program IntPak
   logical                       :: do3eInt(n3eInt)
   logical                       :: do4eInt(n4eInt)
 
-  integer                       :: NAtoms,NBasis,iType
+  integer                       :: nNuc,nBas,iType
+  integer                       :: nEl,nO,nV
   double precision              :: ExpS
+  double precision              :: ENuc
   integer                       :: KG
   double precision,allocatable  :: DG(:),ExpG(:)
-  double precision,allocatable  :: ZNuc(:),XYZAtoms(:,:)
+  double precision,allocatable  :: ZNuc(:),rNuc(:,:)
 
   integer                       :: nShell
   integer,allocatable           :: TotAngMomShell(:),KShell(:)
@@ -52,7 +54,7 @@ program IntPak
 
 ! Read options for integral calculations
 
-  call read_options(debug,chemist_notation,doOv,doKin,doNuc,doERI,doF12,doYuk,doErf,do3eInt,do4eInt)
+  call read_options(debug,chemist_notation,ExpS,doOv,doKin,doNuc,doERI,doF12,doYuk,doErf,do3eInt,do4eInt)
 
 ! Which integrals do you want?
 
@@ -61,26 +63,29 @@ program IntPak
 ! Read input information
 !------------------------------------------------------------------------
 
-  call ReadNAtoms(NAtoms)
+! Read number of atoms, number of electrons of the system
+! nO   = number of occupied orbitals
+! nV   = number of virtual orbitals (see below)
+! nBas = number of basis functions (see below)
+!      = nO + nV
 
-  allocate(ZNuc(1:NAtoms),XYZAtoms(1:NAtoms,1:3))
+  call read_molecule(nNuc,nEl,nO)
 
-  call ReadGeometry(NAtoms,ZNuc,XYZAtoms)
+  allocate(ZNuc(1:nNuc),rNuc(1:nNuc,1:3))
+
+! Read geometry
+
+  call read_geometry(nNuc,ZNuc,rNuc,ENuc)
 
   allocate(CenterShell(1:maxShell,1:3),TotAngMomShell(1:maxShell),KShell(1:maxShell), &
            DShell(1:maxShell,1:maxK),ExpShell(1:maxShell,1:maxK))
 
-  call ReadBasis(NAtoms,XYZAtoms,nShell,CenterShell, &
-                     TotAngMomShell,KShell,DShell,ExpShell)
-
-  call CalcNBasis(nShell,TotAngMomShell,NBasis)
-
-  call ReadGeminal(ExpS)
+  call read_basis(nNuc,rNuc,nBas,nO,nV,nShell,TotAngMomShell,CenterShell,KShell,DShell,ExpShell)
 
 !------------------------------------------------------------------------
 ! Memory allocation
 !------------------------------------------------------------------------
-  allocate(S(1:NBasis,1:NBasis))
+  allocate(S(1:nBas,1:nBas))
 
 !------------------------------------------------------------------------
 ! Compute one-electron overlap integrals
@@ -90,7 +95,7 @@ program IntPak
     iType = 1
 
     call cpu_time(start_1eInt(iType))
-    call ComputeOv(debug,NBasis,nShell,                  &
+    call ComputeOv(debug,nBas,nShell,                  &
                     CenterShell,TotAngMomShell,KShell,DShell,ExpShell, &
                     np1eInt(iType),nSigp1eInt(iType),nc1eInt(iType),nSigc1eInt(iType),S)
     call cpu_time(end_1eInt(iType))
@@ -148,7 +153,7 @@ program IntPak
     call cpu_time(start_1eInt(iType))
     call ComputeNuc(debug,nShell,                        &
                     CenterShell,TotAngMomShell,KShell,DShell,ExpShell, &
-                    NAtoms,ZNuc,XYZAtoms,                              &
+                    nNuc,ZNuc,rNuc,                              &
                     np1eInt(iType),nSigp1eInt(iType),nc1eInt(iType),nSigc1eInt(iType))
     call cpu_time(end_1eInt(iType))
 

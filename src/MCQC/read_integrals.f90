@@ -13,7 +13,6 @@ subroutine read_integrals(nBas,S,T,V,Hc,G)
   logical                       :: debug
   integer                       :: mu,nu,la,si
   double precision              :: Ov,Kin,Nuc,ERI
-  double precision              :: scale
 
 ! Output variables
 
@@ -22,8 +21,6 @@ subroutine read_integrals(nBas,S,T,V,Hc,G)
 ! Open file with integrals
 
   debug = .false.
-
-  scale = 1d0
 
   open(unit=8 ,file='int/Ov.dat')
   open(unit=9 ,file='int/Kin.dat')
@@ -44,7 +41,7 @@ subroutine read_integrals(nBas,S,T,V,Hc,G)
   T = 0d0
   do 
     read(9,*,end=9) mu,nu,Kin
-    T(mu,nu) = Kin/scale**2
+    T(mu,nu) = Kin
   enddo
   9 close(unit=9)
 
@@ -65,25 +62,22 @@ subroutine read_integrals(nBas,S,T,V,Hc,G)
 
   G = 0d0
   do 
-    read(11,*,end=11) mu,la,nu,si,ERI
-!   read(11,*,end=11) ERI,mu,nu,la,si
-
-    ERI = ERI/scale
-!   <12|34>
+    read(11,*,end=11) mu,nu,la,si,ERI
+!   (12|34)
     G(mu,nu,la,si) = ERI
-!   <32|14>
-    G(la,nu,mu,si) = ERI
-!   <14|32>
-    G(mu,si,la,nu) = ERI
-!   <34|12>
-    G(la,si,mu,nu) = ERI
-!   <41|23>
-    G(si,mu,nu,la) = ERI
-!   <23|41>
-    G(nu,la,si,mu) = ERI
-!   <21|43>
+!   (21|34)
+    G(nu,mu,la,si) = ERI
+!   (12|43)
+    G(mu,nu,si,la) = ERI
+!   (21|43)
     G(nu,mu,si,la) = ERI
-!   <43|21>
+!   (34|12)
+    G(la,si,mu,nu) = ERI
+!   (43|12)
+    G(si,la,mu,nu) = ERI
+!   (34|21)
+    G(la,si,nu,mu) = ERI
+!   (43|21)
     G(si,la,nu,mu) = ERI
   enddo
   11 close(unit=11)

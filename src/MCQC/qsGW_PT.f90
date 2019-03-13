@@ -16,7 +16,6 @@ subroutine qsGW_PT(nBas,nC,nO,nV,nR,nS,e0,SigCm)
   integer                       :: x,y,z,t
   double precision              :: eps
   double precision,allocatable  :: e1(:),e2(:),e3(:),e4(:)
-  double precision,parameter    :: threshold = 1d-15
 
 ! Allocation
 

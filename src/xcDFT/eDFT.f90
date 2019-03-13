@@ -4,10 +4,10 @@ program eDFT
 
   include 'parameters.h'
 
-  integer                       :: nAt,nBas,nEl(nspin),nO(nspin),nV(nspin)
+  integer                       :: nNuc,nBas,nEl(nspin),nO(nspin),nV(nspin)
   double precision              :: ENuc,EKS
 
-  double precision,allocatable  :: ZNuc(:),rAt(:,:)
+  double precision,allocatable  :: ZNuc(:),rNuc(:,:)
 
   integer                       :: nShell
   integer,allocatable           :: TotAngMomShell(:)
@@ -55,12 +55,12 @@ program eDFT
 ! nBas = number of basis functions (see below)
 !      = nO + nV
 
-  call read_molecule(nAt,nEl,nO)
-  allocate(ZNuc(nAt),rAt(nAt,ncart))
+  call read_molecule(nNuc,nEl,nO)
+  allocate(ZNuc(nNuc),rNuc(nNuc,ncart))
 
 ! Read geometry
 
-  call read_geometry(nAt,ZNuc,rAt,ENuc)
+  call read_geometry(nNuc,ZNuc,rNuc,ENuc)
 
   allocate(CenterShell(maxShell,ncart),TotAngMomShell(maxShell),KShell(maxShell), &
            DShell(maxShell,maxK),ExpShell(maxShell,maxK))
@@ -69,7 +69,7 @@ program eDFT
 ! Read basis set information
 !------------------------------------------------------------------------
 
-  call read_basis(nAt,rAt,nBas,nO,nV,nShell,TotAngMomShell,CenterShell,KShell,DShell,ExpShell)
+  call read_basis(nNuc,rNuc,nBas,nO,nV,nShell,TotAngMomShell,CenterShell,KShell,DShell,ExpShell)
 
 !------------------------------------------------------------------------
 ! Read one- and two-electron integrals

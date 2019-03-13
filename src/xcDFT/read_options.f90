@@ -31,7 +31,7 @@ subroutine read_options(x_rung,x_DFA,c_rung,c_DFA,SGn,nEns,wEns,maxSCF,thresh,DI
 
 ! Open file with method specification
 
-  open(unit=1,file='input/options')
+  open(unit=1,file='input/dft')
 
 ! Default values
 
