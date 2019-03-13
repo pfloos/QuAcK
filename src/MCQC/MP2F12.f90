@@ -55,6 +55,7 @@ subroutine MP2F12(nBas,nC,nO,nV,ERI,F12,Yuk,FC,EHF,EcMP2,c,EcMP2F12)
 ! Compute the three-electron part of the MP2-F12 energy
 
   allocate(oooFCooo(nO,nO,nO,nO,nO,nO))
+  call AOtoMO_oooooo(nBas,nO,cO,FC,oooFCooo)
 
   E3a = 0d0
   E3b = 0d0
