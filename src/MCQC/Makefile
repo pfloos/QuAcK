@@ -1,6 +1,7 @@
 IDIR =../../include
 BDIR =../../bin
 ODIR = obj
+OODIR = ../IntPak/obj
 SDIR =.
 FC = gfortran -I$(IDIR) 
 ifeq ($(DEBUG),1)
@@ -16,7 +17,7 @@ SRCF90 = $(wildcard *.f90)
 
 SRC = $(wildcard *.f)
 
-OBJ = $(patsubst %.f90,$(ODIR)/%.o,$(SRCF90)) $(patsubst %.f,$(ODIR)/%.o,$(SRC))
+OBJ = $(patsubst %.f90,$(ODIR)/%.o,$(SRCF90)) $(patsubst %.f,$(ODIR)/%.o,$(SRC)) 
 
 $(ODIR)/%.o: %.f90
 	$(FC) -c -o $@ $< $(FFLAGS) 
