@@ -104,7 +104,7 @@ subroutine AOtoMO_oooooo(nBas,nO,cO,O,oooOooo)
           do l=1,nO
             do m=1,nO
               do n=1,nO
-                scr1(i,j,la,l,m,n) = scr1(i,j,la,l,m,n) + cO(si,l)*scr2(i,j,la,si,m,n)
+                scr1(i,j,la,l,m,n) = scr1(i,j,la,l,m,n) + scr2(i,j,la,si,m,n)*cO(si,l)
               enddo
             enddo
           enddo
