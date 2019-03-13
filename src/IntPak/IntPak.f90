@@ -19,7 +19,7 @@ program IntPak
   logical                       :: do4eInt(n4eInt)
 
   integer                       :: nNuc,nBas,iType
-  integer                       :: nEl,nO,nV,nCore,nRyd
+  integer                       :: nEl,nO,nV,nC,nR
   double precision              :: ExpS
   double precision              :: ENuc
   integer                       :: KG
@@ -56,9 +56,6 @@ program IntPak
 
   call read_options(debug,chemist_notation,ExpS,doOv,doKin,doNuc,doERI,doF12,doYuk,doErf,do3eInt,do4eInt)
 
-! Which integrals do you want?
-
-
 !------------------------------------------------------------------------
 ! Read input information
 !------------------------------------------------------------------------
@@ -69,7 +66,7 @@ program IntPak
 ! nBas = number of basis functions (see below)
 !      = nO + nV
 
-  call read_molecule(nNuc,nEl,nO,nCore,nRyd)
+  call read_molecule(nNuc,nEl,nO,nC,nR)
 
   allocate(ZNuc(1:nNuc),rNuc(1:nNuc,1:3))
 
@@ -246,7 +243,7 @@ program IntPak
 
 
     call cpu_time(start_2eInt(iType))
-    call Compute2eInt(debug,iType,nShell,              &
+    call Compute2eInt(debug,chemist_notation,iType,nShell,               & 
                       ExpS,KG,DG,ExpG,                                   &
                       CenterShell,TotAngMomShell,KShell,DShell,ExpShell, &
                       np2eInt(iType),nSigp2eInt(iType),nc2eInt(iType),nSigc2eInt(iType))
@@ -281,7 +278,7 @@ program IntPak
     ExpG = (/ 0.2209d0, 1.004d0,  3.622d0, 12.16d0,   45.87d0,  254.4d0     /)
 
     call cpu_time(start_2eInt(iType))
-    call Compute2eInt(debug,iType,nShell,              &
+    call Compute2eInt(debug,chemist_notation,iType,nShell,               &
                       ExpS,KG,DG,ExpG,                                   &
                       CenterShell,TotAngMomShell,KShell,DShell,ExpShell, &
                       np2eInt(iType),nSigp2eInt(iType),nc2eInt(iType),nSigc2eInt(iType))
@@ -317,7 +314,7 @@ program IntPak
     ExpS = ExpS*ExpS
 
     call cpu_time(start_2eInt(iType))
-    call Compute2eInt(debug,iType,nShell,                                &
+    call Compute2eInt(debug,chemist_notation,iType,nShell,               &
                       ExpS,KG,DG,ExpG,                                   &
                       CenterShell,TotAngMomShell,KShell,DShell,ExpShell, &
                       np2eInt(iType),nSigp2eInt(iType),nc2eInt(iType),nSigc2eInt(iType))

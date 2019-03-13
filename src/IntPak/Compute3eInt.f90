@@ -266,11 +266,11 @@ subroutine Compute3eInt(debug,iType,nShell,                                &
                           if(abs(c3eInt) > 1d-15) then
                             nSigc3eInt = nSigc3eInt + 1
                             t_c3eInt = end_c3eInt - start_c3eInt
-                            write(iFile,'(F20.15,I6,I6,I6,I6,I6,I6)') &
-                              c3eInt,iBasA1,iBasA2,iBasA3,iBasB1,iBasB2,iBasB3
+                            write(iFile,'(I9,I9,I9,I9,I9,I9,F25.15)') &
+                              iBasA1,iBasA2,iBasA3,iBasB1,iBasB2,iBasB3,c3eInt
                             if(.true.) then
-                              write(*,'(A15,1X,F16.10,1X,I6,1X,I6,1X,I6,1X,I6,1X,I6,1X,I6)') &
-                                '(a1a2a3|b1b2b3) = ',c3eInt,iBasA1,iBasA2,iBasA3,iBasB1,iBasB2,iBasB3
+                              write(*,'(A15,1X,I6,1X,I6,1X,I6,1X,I6,1X,I6,1X,I6,1X,F16.10)') &
+                                '(a1a2a3|b1b2b3) = ',iBasA1,iBasA2,iBasA3,iBasB1,iBasB2,iBasB3,c3eInt
                             endif
                           endif
 

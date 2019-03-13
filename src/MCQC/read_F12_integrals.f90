@@ -13,7 +13,7 @@ subroutine read_F12_integrals(nBas,S,C,F,Y,FC)
 
   logical                       :: debug
   integer                       :: mu,nu,la,si,ka,ta
-  double precision              :: ERI,F12,Yuk,ExpS
+  double precision              :: ERI,F12,Yuk,F13C12,ExpS
 
 ! Output variables
 
@@ -107,13 +107,15 @@ subroutine read_F12_integrals(nBas,S,C,F,Y,FC)
 
   FC = 0d0
   do 
-    read(31,*,end=31) mu,nu,la,si,ka,ta,FC
+    read(31,*,end=31) mu,nu,la,si,ka,ta,F13C12
+    FC(mu,nu,la,si,ka,ta) = F13C12
   enddo
   31 close(unit=31)
 
-
 ! Print results
+
   if(debug) then
+
     write(*,'(A28)') '----------------------'
     write(*,'(A28)') 'Electron repulsion integrals'
     write(*,'(A28)') '----------------------'
@@ -123,6 +125,7 @@ subroutine read_F12_integrals(nBas,S,C,F,Y,FC)
       enddo
     enddo
     write(*,*)
+
     write(*,'(A28)') '----------------------'
     write(*,'(A28)') 'F12 integrals'
     write(*,'(A28)') '----------------------'
@@ -132,6 +135,7 @@ subroutine read_F12_integrals(nBas,S,C,F,Y,FC)
       enddo
     enddo
     write(*,*)
+
     write(*,'(A28)') '----------------------'
     write(*,'(A28)') 'Yukawa integrals'
     write(*,'(A28)') '----------------------'
@@ -141,6 +145,7 @@ subroutine read_F12_integrals(nBas,S,C,F,Y,FC)
       enddo
     enddo
     write(*,*)
+
  endif
 
 ! Read exponent of Slater geminal

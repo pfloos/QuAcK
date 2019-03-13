@@ -1,13 +1,13 @@
 # HF MOM
   T  F
 # MP2 MP3 MP2-F12
-  F   F   T
+  T   F   T
 # CIS TDHF ADC
   F   F    F
 # GF2 GF3
   F   F
 # G0W0 evGW qsGW
-  T    F    F
+  F    F    F
 # MCMP2
   F
 

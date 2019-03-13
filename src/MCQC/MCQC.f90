@@ -108,7 +108,7 @@ program MCQC
 ! nBas = number of basis functions (see below)
 !      = nO + nV
 
-  call read_molecule(nNuc,nEl,nC,nO,nR)
+  call read_molecule(nNuc,nEl,nO,nC,nR)
   allocate(ZNuc(nNuc),rNuc(nNuc,3))
 
 ! Read geometry
@@ -122,8 +122,7 @@ program MCQC
 ! Read basis set information
 !------------------------------------------------------------------------
 
-  call read_basis(nNuc,rNuc,nBas,nC,nO,nV,nR,nS, &
-                  nShell,TotAngMomShell,CenterShell,TotAngMomShell,KShell,DShell,ExpShell)
+  call read_basis(nNuc,rNuc,nBas,nO,nV,nShell,TotAngMomShell,CenterShell,KShell,DShell,ExpShell)
 
 !------------------------------------------------------------------------
 ! Read auxiliary basis set information
@@ -243,7 +242,7 @@ program MCQC
     allocate(F12(nBas,nBas,nBas,nBas),Yuk(nBas,nBas,nBas,nBas),FC(nBas,nBas,nBas,nBas,nBas,nBas))
 !   Read integrals
     call read_F12_integrals(nBas,S,ERI_AO_basis,F12,Yuk,FC)
-    call MP2F12(nBas,nC,nO,nV,ERI_AO_basis,F12,Yuk,FC,ERHF,EcMP2(1),cHF,cHF,EcMP2F12)
+    call MP2F12(nBas,nC,nO,nV,ERI_AO_basis,F12,Yuk,FC,ERHF,EcMP2(1),cHF,EcMP2F12)
     call cpu_time(end_MP2F12)
 
     t_MP2F12 = end_MP2F12 - start_MP2F12
