@@ -5,6 +5,7 @@ program MCQC
 
   logical                       :: doHF,doMOM 
   logical                       :: doMP2,doMP3,doMP2F12
+  logical                       :: doCC
   logical                       :: doCIS,doTDHF,doADC
   logical                       :: doGF2,doGF3
   logical                       :: doG0W0,doevGW,doqsGW
@@ -29,6 +30,7 @@ program MCQC
 
   double precision              :: start_HF     ,end_HF       ,t_HF
   double precision              :: start_MOM    ,end_MOM      ,t_MOM
+  double precision              :: start_CC     ,end_CC       ,t_CC
   double precision              :: start_CIS    ,end_CIS      ,t_CIS
   double precision              :: start_TDHF   ,end_TDHF     ,t_TDHF
   double precision              :: start_ADC    ,end_ADC      ,t_ADC
@@ -78,6 +80,7 @@ program MCQC
 
   call read_methods(doHF,doMOM,                 &
                     doMP2,doMP3,doMP2F12,       &
+                    doCC,                       &
                     doCIS,doTDHF,doADC,         &
                     doGF2,doGF3,                &
                     doG0W0,doevGW,doqsGW,       &
@@ -247,6 +250,21 @@ program MCQC
 
     t_MP2F12 = end_MP2F12 - start_MP2F12
     write(*,'(A65,1X,F9.3,A8)') 'Total CPU time for MP2-F12 = ',t_MP2F12,' seconds'
+    write(*,*)
+
+  endif
+!------------------------------------------------------------------------
+! Perform CC calculation
+!------------------------------------------------------------------------
+
+  if(doCC) then
+
+    call cpu_time(start_CC)
+    call CC(nBas,nEl,ERI_MO_basis,ENuc,ERHF,eHF,cHF)
+    call cpu_time(end_CC)
+
+    t_CC = end_CC - start_CC
+    write(*,'(A65,1X,F9.3,A8)') 'Total CPU time for CC = ',t_CC,' seconds'
     write(*,*)
 
   endif

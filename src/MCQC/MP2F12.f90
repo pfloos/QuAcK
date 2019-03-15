@@ -121,11 +121,11 @@ subroutine MP2F12(nBas,nC,nO,nV,ERI,F12,Yuk,FC,EHF,EcMP2,c,EcMP2F12)
   write(*,'(A32)')           ' MP2-F12 calculation   '
   write(*,'(A32)')           '-----------------------'
   write(*,'(A32,1X,F16.10)') ' MP2                   ',EcMP2
-  write(*,'(A32,1X,F16.10)') ' MP2-F12 E(2)          ',EcMP2F12(1)
-  write(*,'(A32,1X,F16.10)') ' MP2-F12 E(3)          ',EcMP2F12(2)
-  write(*,'(A32,1X,F16.10)') ' MP2-F12 E(4)          ',EcMP2F12(3)
+  write(*,'(A32,1X,F16.10)') ' MP2-F12 E(2)          ',-EcMP2F12(1)
+  write(*,'(A32,1X,F16.10)') ' MP2-F12 E(3)          ',-EcMP2F12(2)
+  write(*,'(A32,1X,F16.10)') ' MP2-F12 E(4)          ',-EcMP2F12(3)
   write(*,'(A32)')           '-----------------------'
-  write(*,'(A32,1X,F16.10)') ' Total                 ',EcMP2+EcMP2F12(1)+EcMP2F12(2)+EcMP2F12(3)
+  write(*,'(A32,1X,F16.10)') ' Total                 ',EcMP2-EcMP2F12(1)-EcMP2F12(2)-EcMP2F12(3)
   write(*,'(A32)')           '-----------------------'
   write(*,*)
 

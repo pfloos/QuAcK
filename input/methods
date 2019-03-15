@@ -1,7 +1,9 @@
 # HF MOM
   T  F
 # MP2 MP3 MP2-F12
-  T   F   T
+  T   F   F
+# CCD CCSD CCSD(T)
+  T   F    F
 # CIS TDHF ADC
   F   F    F
 # GF2 GF3
@@ -10,4 +12,3 @@
   F    F    F
 # MCMP2
   F
-

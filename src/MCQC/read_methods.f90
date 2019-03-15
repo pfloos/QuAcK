@@ -1,5 +1,6 @@
 subroutine read_methods(doHF,doMOM,           & 
                         doMP2,doMP3,doMP2F12, & 
+                        doCC,                 & 
                         doCIS,doTDHF,doADC,   & 
                         doGF2,doGF3,          & 
                         doG0W0,doevGW,doqsGW, & 
@@ -13,6 +14,7 @@ subroutine read_methods(doHF,doMOM,           &
 
   logical,intent(out)           :: doHF,doMOM
   logical,intent(out)           :: doMP2,doMP3,doMP2F12
+  logical,intent(out)           :: doCC
   logical,intent(out)           :: doCIS,doTDHF,doADC
   logical,intent(out)           :: doGF2,doGF3  
   logical,intent(out)           :: doG0W0,doevGW,doqsGW
@@ -35,6 +37,8 @@ subroutine read_methods(doHF,doMOM,           &
   doMP3    = .false.
   doMP2F12 = .false.
  
+  doCC = .false.
+
   doCIS  = .false.
   doTDHF = .false.
   doADC  = .false.
@@ -62,6 +66,12 @@ subroutine read_methods(doHF,doMOM,           &
   if(answer1 == 'T') doMP2    = .true.
   if(answer2 == 'T') doMP3    = .true.
   if(answer3 == 'T') doMP2F12 = .true.
+
+! Read CC methods
+
+  read(1,*) 
+  read(1,*) answer1
+  if(answer1 == 'T') doCC    = .true.
 
 ! Read excited state methods
 
