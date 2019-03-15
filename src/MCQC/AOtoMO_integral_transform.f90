@@ -22,7 +22,8 @@ subroutine AOtoMO_integral_transform(nBas,c,ERI_AO_basis,ERI_MO_basis)
 ! Memory allocation
   allocate(scr(nBas,nBas,nBas,nBas))
 
-  scr = 0d0
+  scr(:,:,:,:) = 0d0
+
   do l=1,nBas
     do si=1,nBas
       do la=1,nBas
@@ -34,12 +35,13 @@ subroutine AOtoMO_integral_transform(nBas,c,ERI_AO_basis,ERI_MO_basis)
       enddo
     enddo
   enddo
- 
+
+  ERI_MO_basis(:,:,:,:) = 0d0
+
   do l=1,nBas
     do la=1,nBas
       do nu=1,nBas
         do i=1,nBas
-          ERI_MO_basis(i,nu,la,l) = 0d0
           do mu=1,nBas
             ERI_MO_basis(i,nu,la,l) = ERI_MO_basis(i,nu,la,l) + c(mu,i)*scr(mu,nu,la,l)
           enddo
@@ -48,7 +50,8 @@ subroutine AOtoMO_integral_transform(nBas,c,ERI_AO_basis,ERI_MO_basis)
     enddo
   enddo
 
-  scr = 0d0
+  scr(:,:,:,:) = 0d0
+
   do l=1,nBas 
     do k=1,nBas
       do la=1,nBas
@@ -61,11 +64,12 @@ subroutine AOtoMO_integral_transform(nBas,c,ERI_AO_basis,ERI_MO_basis)
     enddo
   enddo
 
+  ERI_MO_basis(:,:,:,:) = 0d0
+
   do l=1,nBas
     do k=1,nBas
       do j=1,nBas
         do i=1,nBas
-          ERI_MO_basis(i,j,k,l) = 0d0
           do nu=1,nBas
             ERI_MO_basis(i,j,k,l) = ERI_MO_basis(i,j,k,l) + c(nu,j)*scr(i,nu,k,l)
           enddo
