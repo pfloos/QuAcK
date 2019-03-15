@@ -260,7 +260,7 @@ program MCQC
   if(doCC) then
 
     call cpu_time(start_CC)
-    call CC(nBas,nEl,ERI_MO_basis,ENuc,ERHF,eHF,cHF)
+    call CCD(nBas,nEl,ERI_MO_basis,ENuc,ERHF,eHF,cHF)
     call cpu_time(end_CC)
 
     t_CC = end_CC - start_CC
