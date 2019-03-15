@@ -38,11 +38,11 @@ subroutine MP2(nBas,nC,nO,nV,nR,ERI,ENuc,EHF,e,EcMP2)
 
       eps = e(i) + e(j) - e(a) - e(b) 
 
-!     Secon-order ring diagram
+!     Second-order ring diagram
 
       E2a = E2a + ERI(i,j,a,b)*ERI(i,j,a,b)/eps
 
-!     Second-order exchange
+!     Second-order exchange diagram
 
       E2b = E2b + ERI(i,j,a,b)*ERI(i,j,b,a)/eps
 

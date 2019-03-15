@@ -5,7 +5,7 @@ program MCQC
 
   logical                       :: doHF,doMOM 
   logical                       :: doMP2,doMP3,doMP2F12
-  logical                       :: doCC
+  logical                       :: doCCD,doCCSD,doCCSDT
   logical                       :: doCIS,doTDHF,doADC
   logical                       :: doGF2,doGF3
   logical                       :: doG0W0,doevGW,doqsGW
@@ -14,6 +14,7 @@ program MCQC
   integer                       :: nNuc,nBas,nBasCABS,nEl,nC,nO,nV,nR,nS
   double precision              :: ENuc,ERHF,Norm
   double precision              :: EcMP2(3),EcMP3,EcMP2F12(3),EcMCMP2(3),Err_EcMCMP2(3),Var_EcMCMP2(3)
+  double precision              :: EcCCD,EcCCSD,EcCCSDT
 
   double precision,allocatable  :: ZNuc(:),rNuc(:,:),cHF(:,:),eHF(:),eG0W0(:),PHF(:,:)
 
@@ -30,7 +31,9 @@ program MCQC
 
   double precision              :: start_HF     ,end_HF       ,t_HF
   double precision              :: start_MOM    ,end_MOM      ,t_MOM
-  double precision              :: start_CC     ,end_CC       ,t_CC
+  double precision              :: start_CCD    ,end_CCD      ,t_CCD
+  double precision              :: start_CCSD   ,end_CCSD     ,t_CCSD
+  double precision              :: start_CCSDT  ,end_CCSDT    ,t_CCSDT
   double precision              :: start_CIS    ,end_CIS      ,t_CIS
   double precision              :: start_TDHF   ,end_TDHF     ,t_TDHF
   double precision              :: start_ADC    ,end_ADC      ,t_ADC
@@ -80,7 +83,7 @@ program MCQC
 
   call read_methods(doHF,doMOM,                 &
                     doMP2,doMP3,doMP2F12,       &
-                    doCC,                       &
+                    doCCD,doCCSD,doCCSDT,       &
                     doCIS,doTDHF,doADC,         &
                     doGF2,doGF3,                &
                     doG0W0,doevGW,doqsGW,       &
@@ -199,6 +202,7 @@ program MCQC
 ! AO to MO integral transform for post-HF methods
 !------------------------------------------------------------------------
 
+  call chem_to_phys_ERI(nBas,ERI_AO_basis)
   call AOtoMO_integral_transform(nBas,cHF,ERI_AO_basis,ERI_MO_basis)
 
 !------------------------------------------------------------------------
@@ -253,21 +257,49 @@ program MCQC
     write(*,*)
 
   endif
+
 !------------------------------------------------------------------------
-! Perform CC calculation
+! Perform CCD calculation
 !------------------------------------------------------------------------
 
-  if(doCC) then
+  if(doCCD) then
 
-    call cpu_time(start_CC)
-    call CCD(nBas,nEl,ERI_MO_basis,ENuc,ERHF,eHF,cHF)
-    call cpu_time(end_CC)
+    call cpu_time(start_CCD)
+    call CCD(nBas,nEl,ERI_MO_basis,ENuc,ERHF,eHF,cHF,EcCCD)
+    call cpu_time(end_CCD)
 
-    t_CC = end_CC - start_CC
-    write(*,'(A65,1X,F9.3,A8)') 'Total CPU time for CC = ',t_CC,' seconds'
+    t_CCD = end_CCD - start_CCD
+    write(*,'(A65,1X,F9.3,A8)') 'Total CPU time for CCD = ',t_CCD,' seconds'
     write(*,*)
 
   endif
+
+!------------------------------------------------------------------------
+! Perform CCSD or CCSD(T) calculation
+!------------------------------------------------------------------------
+
+  if(doCCSD) then
+
+    call cpu_time(start_CCSD)
+    call CCSD(nBas,nEl,ERI_MO_basis,ENuc,ERHF,eHF,cHF,EcCCSD)
+    call cpu_time(end_CCSD)
+
+    if(doCCSDT) then
+      call cpu_time(start_CCSDT)
+!     call CCSDT(nBas,nEl,ERI_MO_basis,ENuc,ERHF,EcCCSD,eHF,cHF,EcCCSDT)
+      call cpu_time(end_CCSDT)
+ 
+      t_CCSDT = end_CCSDT - start_CCSDT
+      write(*,'(A65,1X,F9.3,A8)') 'Total CPU time for (T) = ',t_CCSDT,' seconds'
+      write(*,*)
+
+    end if 
+
+    t_CCSD = end_CCSD - start_CCSD
+    write(*,'(A65,1X,F9.3,A8)') 'Total CPU time for CCSD or CCSD(T)= ',t_CCSD,' seconds'
+    write(*,*)
+
+  end if
 
 !------------------------------------------------------------------------
 ! Compute CIS excitations
