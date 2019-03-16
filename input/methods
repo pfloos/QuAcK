@@ -3,7 +3,7 @@
 # MP2 MP3 MP2-F12
   T   F   F
 # CCD CCSD CCSD(T)
-  T   T    F
+  F   T    T
 # CIS TDHF ADC
   F   F    F
 # GF2 GF3
