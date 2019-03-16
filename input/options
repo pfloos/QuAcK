@@ -2,6 +2,8 @@
        64    0.0000001  T     5      1          1
 # MP: 
       
+# CC: maxSCF thresh   DIIS n_diis
+      64     0.00001  F    1
 # CIS/TDHF: singlet triplet
             T       F
 # GF: maxSCF thresh  DIIS n_diis renormalization

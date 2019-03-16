@@ -1,4 +1,5 @@
 subroutine read_options(maxSCF_HF,thresh_HF,DIIS_HF,n_diis_HF,guess_type,ortho_type,            &
+                        maxSCF_CC,thresh_CC,DIIS_CC,n_diis_CC,                                  &
                         singlet_manifold,triplet_manifold,                                      &
                         maxSCF_GF,thresh_GF,DIIS_GF,n_diis_GF,renormalization,                  &
                         maxSCF_GW,thresh_GW,DIIS_GW,n_diis_GW,COHSEX,SOSEX,BSE,TDA,G0W,GW0,linearize, &
@@ -16,6 +17,11 @@ subroutine read_options(maxSCF_HF,thresh_HF,DIIS_HF,n_diis_HF,guess_type,ortho_t
   integer,intent(out)           :: n_diis_HF
   integer,intent(out)           :: guess_type
   integer,intent(out)           :: ortho_type
+
+  integer,intent(out)           :: maxSCF_CC
+  double precision,intent(out)  :: thresh_CC
+  logical,intent(out)           :: DIIS_CC
+  integer,intent(out)           :: n_diis_CC
 
   logical,intent(out)           :: singlet_manifold
   logical,intent(out)           :: triplet_manifold
@@ -74,6 +80,20 @@ subroutine read_options(maxSCF_HF,thresh_HF,DIIS_HF,n_diis_HF,guess_type,ortho_t
 
   read(1,*) 
   read(1,*)
+
+! Read CC options
+
+  maxSCF_CC    = 64
+  thresh_CC    = 1d-5
+  DIIS_CC      = .false.
+  n_diis_CC    = 5
+
+  read(1,*)
+  read(1,*) maxSCF_CC,thresh_CC,answer1,n_diis_CC
+
+  if(answer1 == 'T') DIIS_CC    = .true.
+
+  if(.not.DIIS_CC) n_diis_CC = 1
 
 ! Read excited state options
 

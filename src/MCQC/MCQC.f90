@@ -51,6 +51,10 @@ program MCQC
   double precision              :: thresh_HF
   logical                       :: DIIS_HF,guess_type,ortho_type
 
+  integer                       :: maxSCF_CC,n_diis_CC
+  double precision              :: thresh_CC
+  logical                       :: DIIS_CC
+
   logical                       :: singlet_manifold,triplet_manifold
 
   integer                       :: maxSCF_GF,n_diis_GF,renormalization
@@ -90,6 +94,7 @@ program MCQC
 ! Read options for methods
 
   call read_options(maxSCF_HF,thresh_HF,DIIS_HF,n_diis_HF,guess_type,ortho_type,            &
+                    maxSCF_CC,thresh_CC,DIIS_CC,n_diis_CC,                                  &
                     singlet_manifold,triplet_manifold,                                      &
                     maxSCF_GF,thresh_GF,DIIS_GF,n_diis_GF,renormalization,                  &
                     maxSCF_GW,thresh_GW,DIIS_GW,n_diis_GW,COHSEX,SOSEX,BSE,TDA,G0W,GW0,linearize, &
@@ -262,7 +267,7 @@ program MCQC
   if(doCCD) then
 
     call cpu_time(start_CCD)
-    call CCD(nBas,nEl,ERI_MO_basis,ENuc,ERHF,eHF)
+    call CCD(maxSCF_CC,thresh_CC,n_diis_CC,nBas,nEl,ERI_MO_basis,ENuc,ERHF,eHF)
     call cpu_time(end_CCD)
 
     t_CCD = end_CCD - start_CCD
@@ -278,7 +283,7 @@ program MCQC
   if(doCCSD) then
 
     call cpu_time(start_CCSD)
-    call CCSD(doCCSDT,nBas,nEl,ERI_MO_basis,ENuc,ERHF,eHF)
+    call CCSD(maxSCF_CC,thresh_CC,n_diis_CC,doCCSDT,nBas,nEl,ERI_MO_basis,ENuc,ERHF,eHF)
     call cpu_time(end_CCSD)
 
     t_CCSD = end_CCSD - start_CCSD
