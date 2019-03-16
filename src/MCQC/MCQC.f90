@@ -281,19 +281,19 @@ program MCQC
   if(doCCSD) then
 
     call cpu_time(start_CCSD)
-    call CCSD(nBas,nEl,ERI_MO_basis,ENuc,ERHF,eHF,cHF,EcCCSD)
+    call CCSD(doCCSDT,nBas,nEl,ERI_MO_basis,ENuc,ERHF,eHF,cHF,EcCCSD)
     call cpu_time(end_CCSD)
 
-    if(doCCSDT) then
+!   if(doCCSDT) then
       call cpu_time(start_CCSDT)
 !     call CCSDT(nBas,nEl,ERI_MO_basis,ENuc,ERHF,EcCCSD,eHF,cHF,EcCCSDT)
       call cpu_time(end_CCSDT)
  
-      t_CCSDT = end_CCSDT - start_CCSDT
-      write(*,'(A65,1X,F9.3,A8)') 'Total CPU time for (T) = ',t_CCSDT,' seconds'
-      write(*,*)
+!     t_CCSDT = end_CCSDT - start_CCSDT
+!     write(*,'(A65,1X,F9.3,A8)') 'Total CPU time for (T) = ',t_CCSDT,' seconds'
+!     write(*,*)
 
-    end if 
+!   end if 
 
     t_CCSD = end_CCSD - start_CCSD
     write(*,'(A65,1X,F9.3,A8)') 'Total CPU time for CCSD or CCSD(T)= ',t_CCSD,' seconds'
