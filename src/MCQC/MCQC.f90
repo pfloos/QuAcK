@@ -262,7 +262,7 @@ program MCQC
   if(doCCD) then
 
     call cpu_time(start_CCD)
-    call CCD(nBas,nEl,ERI_MO_basis,ENuc,ERHF,eHF,cHF)
+    call CCD(nBas,nEl,ERI_MO_basis,ENuc,ERHF,eHF)
     call cpu_time(end_CCD)
 
     t_CCD = end_CCD - start_CCD
@@ -278,7 +278,7 @@ program MCQC
   if(doCCSD) then
 
     call cpu_time(start_CCSD)
-    call CCSD(doCCSDT,nBas,nEl,ERI_MO_basis,ENuc,ERHF,eHF,cHF)
+    call CCSD(doCCSDT,nBas,nEl,ERI_MO_basis,ENuc,ERHF,eHF)
     call cpu_time(end_CCSD)
 
     t_CCSD = end_CCSD - start_CCSD
