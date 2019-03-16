@@ -14,7 +14,6 @@ program MCQC
   integer                       :: nNuc,nBas,nBasCABS,nEl,nC,nO,nV,nR,nS
   double precision              :: ENuc,ERHF,Norm
   double precision              :: EcMP2(3),EcMP3,EcMP2F12(3),EcMCMP2(3),Err_EcMCMP2(3),Var_EcMCMP2(3)
-  double precision              :: EcCCD,EcCCSD,EcCCSDT
 
   double precision,allocatable  :: ZNuc(:),rNuc(:,:),cHF(:,:),eHF(:),eG0W0(:),PHF(:,:)
 
@@ -33,7 +32,6 @@ program MCQC
   double precision              :: start_MOM    ,end_MOM      ,t_MOM
   double precision              :: start_CCD    ,end_CCD      ,t_CCD
   double precision              :: start_CCSD   ,end_CCSD     ,t_CCSD
-  double precision              :: start_CCSDT  ,end_CCSDT    ,t_CCSDT
   double precision              :: start_CIS    ,end_CIS      ,t_CIS
   double precision              :: start_TDHF   ,end_TDHF     ,t_TDHF
   double precision              :: start_ADC    ,end_ADC      ,t_ADC
@@ -202,7 +200,6 @@ program MCQC
 ! AO to MO integral transform for post-HF methods
 !------------------------------------------------------------------------
 
-  call chem_to_phys_ERI(nBas,ERI_AO_basis)
   call AOtoMO_integral_transform(nBas,cHF,ERI_AO_basis,ERI_MO_basis)
 
 !------------------------------------------------------------------------
@@ -265,7 +262,7 @@ program MCQC
   if(doCCD) then
 
     call cpu_time(start_CCD)
-    call CCD(nBas,nEl,ERI_MO_basis,ENuc,ERHF,eHF,cHF,EcCCD)
+    call CCD(nBas,nEl,ERI_MO_basis,ENuc,ERHF,eHF,cHF)
     call cpu_time(end_CCD)
 
     t_CCD = end_CCD - start_CCD
@@ -281,19 +278,8 @@ program MCQC
   if(doCCSD) then
 
     call cpu_time(start_CCSD)
-    call CCSD(doCCSDT,nBas,nEl,ERI_MO_basis,ENuc,ERHF,eHF,cHF,EcCCSD)
+    call CCSD(doCCSDT,nBas,nEl,ERI_MO_basis,ENuc,ERHF,eHF,cHF)
     call cpu_time(end_CCSD)
-
-!   if(doCCSDT) then
-      call cpu_time(start_CCSDT)
-!     call CCSDT(nBas,nEl,ERI_MO_basis,ENuc,ERHF,EcCCSD,eHF,cHF,EcCCSDT)
-      call cpu_time(end_CCSDT)
- 
-!     t_CCSDT = end_CCSDT - start_CCSDT
-!     write(*,'(A65,1X,F9.3,A8)') 'Total CPU time for (T) = ',t_CCSDT,' seconds'
-!     write(*,*)
-
-!   end if 
 
     t_CCSD = end_CCSD - start_CCSD
     write(*,'(A65,1X,F9.3,A8)') 'Total CPU time for CCSD or CCSD(T)= ',t_CCSD,' seconds'

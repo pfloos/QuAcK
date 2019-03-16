@@ -1,4 +1,4 @@
-subroutine read_geometry(nAt,ZNuc,rA,ENuc)
+subroutine read_geometry(nNuc,ZNuc,rNuc,ENuc)
 
 ! Read molecular geometry
 
@@ -8,7 +8,7 @@ subroutine read_geometry(nAt,ZNuc,rA,ENuc)
 
 ! Ouput variables
 
-  integer,intent(in)            :: nAt
+  integer,intent(in)            :: nNuc
 
 ! Local variables
 
@@ -19,7 +19,7 @@ subroutine read_geometry(nAt,ZNuc,rA,ENuc)
 
 ! Ouput variables
 
-  double precision,intent(out)  :: ZNuc(NAt),rA(nAt,ncart),ENuc
+  double precision,intent(out)  :: ZNuc(nNuc),rNuc(nNuc,ncart),ENuc
 
 ! Open file with geometry specification
 
@@ -31,8 +31,8 @@ subroutine read_geometry(nAt,ZNuc,rA,ENuc)
   read(1,*) 
   read(1,*) 
 
-  do i=1,nAt
-    read(1,*) El,rA(i,1),rA(i,2),rA(i,3)
+  do i=1,nNuc
+    read(1,*) El,rNuc(i,1),rNuc(i,2),rNuc(i,3)
     ZNuc(i) = element_number(El)
   enddo
 
@@ -40,9 +40,9 @@ subroutine read_geometry(nAt,ZNuc,rA,ENuc)
 
   ENuc = 0
 
-  do i=1,nAt-1
-    do j=i+1,nAt
-      RAB = (rA(i,1)-rA(j,1))**2 + (rA(i,2)-rA(j,2))**2 + (rA(i,3)-rA(j,3))**2
+  do i=1,nNuc-1
+    do j=i+1,nNuc
+      RAB = (rNuc(i,1)-rNuc(j,1))**2 + (rNuc(i,2)-rNuc(j,2))**2 + (rNuc(i,3)-rNuc(j,3))**2
       ENuc = ENuc + ZNuc(i)*ZNuc(j)/sqrt(RAB)
     enddo
   enddo
@@ -54,10 +54,10 @@ subroutine read_geometry(nAt,ZNuc,rA,ENuc)
   write(*,'(A28)') '------------------'
   write(*,'(A28)') 'Molecular geometry'
   write(*,'(A28)') '------------------'
-  do i=1,NAt
+  do i=1,nNuc
     write(*,'(A28,1X,I16)') 'Atom n. ',i
     write(*,'(A28,1X,F16.10)') 'Z = ',ZNuc(i)
-    write(*,'(A28,1X,F16.10,F16.10,F16.10)') 'Atom coordinates:',(rA(i,j),j=1,ncart)
+    write(*,'(A28,1X,F16.10,F16.10,F16.10)') 'Atom coordinates:',(rNuc(i,j),j=1,ncart)
   enddo
   write(*,*)
   write(*,'(A28)') '------------------'

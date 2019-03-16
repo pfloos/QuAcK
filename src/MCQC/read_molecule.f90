@@ -1,6 +1,6 @@
-subroutine read_molecule(nAt,nEl,nO,nCore,nRyd)
+subroutine read_molecule(nNuc,nEl,nO,nC,nR)
 
-! Read number of atoms nAt and number of electrons nEl
+! Read number of atoms and number of electrons 
 
   implicit none
 
@@ -8,7 +8,7 @@ subroutine read_molecule(nAt,nEl,nO,nCore,nRyd)
 
 ! Input variables
 
-  integer,intent(out)           :: nAt,nEl,nO,nCore,nRyd
+  integer,intent(out)           :: nNuc,nEl,nO,nC,nR
 
 ! Open file with geometry specification
 
@@ -17,14 +17,14 @@ subroutine read_molecule(nAt,nEl,nO,nCore,nRyd)
 ! Read number of atoms and number of electrons
 
   read(1,*) 
-  read(1,*) nAt,nEl,nCore,nRyd
+  read(1,*) nNuc,nEl,nC,nR
 
   nO = nEl/2
 
 ! Print results
 
   write(*,'(A28)') '----------------------'
-  write(*,'(A28,1X,I16)') 'Number of atoms',nAt
+  write(*,'(A28,1X,I16)') 'Number of atoms',nNuc
   write(*,'(A28)') '----------------------'
   write(*,*)
   write(*,'(A28)') '----------------------'
