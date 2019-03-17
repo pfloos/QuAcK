@@ -231,7 +231,7 @@ program MCQC
   if(doMP3) then
 
     call cpu_time(start_MP3)
-    call MP3(nBas,nC,nO,nV,nR,ERI_MO_basis,ERHF,EcMP2(1),eHF,EcMP3)
+    call MP3(nBas,nEl,ERI_MO_basis,eHF,ENuc,ERHF)
     call cpu_time(end_MP3)
 
     t_MP3 = end_MP3 - start_MP3
@@ -251,7 +251,7 @@ program MCQC
     allocate(F12(nBas,nBas,nBas,nBas),Yuk(nBas,nBas,nBas,nBas),FC(nBas,nBas,nBas,nBas,nBas,nBas))
 !   Read integrals
     call read_F12_integrals(nBas,S,ERI_AO_basis,F12,Yuk,FC)
-    call MP2F12(nBas,nC,nO,nV,ERI_AO_basis,F12,Yuk,FC,ERHF,EcMP2(1),cHF,EcMP2F12)
+    call MP2F12(nBas,nC,nO,nV,ERI_AO_basis,F12,Yuk,FC,ERHF,eHF,cHF)
     call cpu_time(end_MP2F12)
 
     t_MP2F12 = end_MP2F12 - start_MP2F12

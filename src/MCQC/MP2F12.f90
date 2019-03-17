@@ -1,4 +1,4 @@
-subroutine MP2F12(nBas,nC,nO,nV,ERI,F12,Yuk,FC,EHF,EcMP2,c,EcMP2F12)
+subroutine MP2F12(nBas,nC,nO,nV,ERI,F12,Yuk,FC,EHF,e,c)
 
 ! Perform MP2-F12 calculation
 
@@ -7,7 +7,8 @@ subroutine MP2F12(nBas,nC,nO,nV,ERI,F12,Yuk,FC,EHF,EcMP2,c,EcMP2F12)
 ! Input variables
 
   integer,intent(in)            :: nBas,nC,nO,nV
-  double precision,intent(in)   :: EHF,EcMP2
+  double precision,intent(in)   :: EHF
+  double precision,intent(in)   :: e(nBas)
   double precision,intent(in)   :: c(nBas,nBas)
   double precision,intent(in)   :: ERI(nBas,nBas,nBas,nBas)
   double precision,intent(in)   :: F12(nBas,nBas,nBas,nBas)
@@ -22,19 +23,51 @@ subroutine MP2F12(nBas,nC,nO,nV,ERI,F12,Yuk,FC,EHF,EcMP2,c,EcMP2F12)
   double precision,allocatable  :: ooCvv(:,:,:,:)
   double precision,allocatable  :: ooFvv(:,:,:,:)
   double precision,allocatable  :: oooFCooo(:,:,:,:,:,:)
+  double precision,allocatable  :: eO(:),eV(:)
   double precision,allocatable  :: cO(:,:),cV(:,:)
   double precision              :: E2a,E2b,E3a,E3b,E4a,E4b,E4c,E4d
   integer                       :: i,j,k,l,a,b
+  double precision              :: EcMP2F12(4)
 
-! Output variables
-
-  double precision,intent(out)  :: EcMP2F12(3)
+  double precision              :: EcMP2a
+  double precision              :: EcMP2b
+  double precision              :: EcMP2
+  double precision              :: eps
+  
 
 ! Split MOs into occupied and virtual sets
 
+  allocate(eO(nO),eV(nV))
+
+  eO(1:nO) = e(nC+1:nC+nO)
+  eV(1:nV) = e(nC+nO+1:nBas)
+
   allocate(cO(nBas,nO),cV(nBas,nV))
+
   cO(1:nBas,1:nO) = c(1:nBas,nC+1:nC+nO)
   cV(1:nBas,1:nV) = c(1:nBas,nC+nO+1:nBas)
+
+! Compute conventional MP2 energy
+
+  allocate(ooCvv(nO,nO,nV,nV))
+  call AOtoMO_oovv(nBas,nO,nV,cO,cV,ERI,ooCvv)
+
+  EcMP2a = 0d0
+  EcMP2b = 0d0
+
+  do i=1,nO
+    do j=1,nO
+      do a=1,nV
+        do b=1,nV
+          eps = eO(i) + eO(j) - eV(a) - eV(b)
+          EcMP2a = EcMP2a + ooCoo(i,j,a,b)/eps
+          EcMP2b = EcMP2b + ooCoo(i,j,b,a)/eps
+        enddo
+      enddo
+    enddo
+  enddo
+
+  EcMP2 = EcMP2a + EcMP2b
 
 ! Compute the two-electron part of the MP2-F12 energy
 
@@ -120,7 +153,7 @@ subroutine MP2F12(nBas,nC,nO,nV,ERI,F12,Yuk,FC,EHF,EcMP2,c,EcMP2F12)
   write(*,'(A32)')           '-----------------------'
   write(*,'(A32)')           ' MP2-F12 calculation   '
   write(*,'(A32)')           '-----------------------'
-  write(*,'(A32,1X,F16.10)') ' MP2                   ',EcMP2
+  write(*,'(A32,1X,F16.10)') ' MP2                   ',+EcMP2
   write(*,'(A32,1X,F16.10)') ' MP2-F12 E(2)          ',-EcMP2F12(1)
   write(*,'(A32,1X,F16.10)') ' MP2-F12 E(3)          ',-EcMP2F12(2)
   write(*,'(A32,1X,F16.10)') ' MP2-F12 E(4)          ',-EcMP2F12(3)
