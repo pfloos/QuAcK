@@ -116,6 +116,8 @@ program MCQC
 ! nR   = number of Rydberg orbitals 
 ! nBas = number of basis functions (see below)
 !      = nO + nV
+! nS   = number of single excitation 
+!      = nO*nV
 
   call read_molecule(nNuc,nEl,nO,nC,nR)
   allocate(ZNuc(nNuc),rNuc(nNuc,3))
@@ -132,6 +134,7 @@ program MCQC
 !------------------------------------------------------------------------
 
   call read_basis(nNuc,rNuc,nBas,nO,nV,nShell,TotAngMomShell,CenterShell,KShell,DShell,ExpShell)
+  nS = nO*nV
 
 !------------------------------------------------------------------------
 ! Read auxiliary basis set information
@@ -382,7 +385,7 @@ program MCQC
   eG0W0(:) = eHF(:)
 
   if(doG0W0) then
-
+    
     call cpu_time(start_G0W0)
     call G0W0(COHSEX,SOSEX,BSE,TDA,singlet_manifold,triplet_manifold, & 
               nBas,nC,nO,nV,nR,nS,ENuc,ERHF,Hc,PHF,ERI_AO_basis,ERI_MO_basis,cHF,eHF,eG0W0)
