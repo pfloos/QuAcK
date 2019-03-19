@@ -126,7 +126,7 @@ subroutine qsGW(maxSCF,thresh,max_diis,COHSEX,SOSEX,BSE,TDA,G0W,GW0,singlet_mani
  
     ! Solve the quasi-particle equation
 
-    F(:,:) = Hc(:,:) + J(:,:) + K(:,:) + SigCp(:,:)
+    F(:,:) = Hc(:,:) + J(:,:) + 0.5d0*K(:,:) + SigCp(:,:)
 
     ! Compute commutator and convergence criteria
 

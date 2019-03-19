@@ -122,7 +122,7 @@ program QuAcK
 ! nS   = number of single excitation 
 !      = nO*nV
 
-  call read_molecule(nNuc,nEl,nO,nC,nR)
+  call read_molecule(nNuc,nEl(:),nO(:),nC(:),nR(:))
   allocate(ZNuc(nNuc),rNuc(nNuc,3))
 
 ! Read geometry
@@ -178,10 +178,7 @@ program QuAcK
   if(doRHF) then
 
     call cpu_time(start_HF)
-!   call SPHF(maxSCF_HF,thresh_HF,n_diis_HF,guess_type, &
-!            nBas,nEl,S,T,V,Hc,ERI_AO_basis,X,ENuc,ERHF,cHF,eHF,PHF)
-    call RHF(maxSCF_HF,thresh_HF,n_diis_HF,guess_type, &
-             nBas,nO,S,T,V,Hc,ERI_AO_basis,X,ENuc,ERHF,cHF,eHF,PHF)
+    call RHF(maxSCF_HF,thresh_HF,n_diis_HF,guess_type,nBas,nO,S,T,V,Hc,ERI_AO_basis,X,ENuc,ERHF,eHF,cHF,PHF)
     call cpu_time(end_HF)
 
     t_HF = end_HF - start_HF
@@ -196,11 +193,8 @@ program QuAcK
 
   if(doUHF) then
 
-    nO(2) = nO(1)
-
     call cpu_time(start_HF)
-    call UHF(maxSCF_HF,thresh_HF,n_diis_HF,guess_type, &
-             nBas,nO,S,T,V,Hc,ERI_AO_basis,X,ENuc,EUHF)
+    call UHF(maxSCF_HF,thresh_HF,n_diis_HF,guess_type,nBas,nO,S,T,V,Hc,ERI_AO_basis,X,ENuc,EUHF,eHF,cHF,PHF)
     call cpu_time(end_HF)
 
     t_HF = end_HF - start_HF
@@ -239,7 +233,6 @@ program QuAcK
   if(doMP2) then
 
     call cpu_time(start_MP2)
-!   call SPMP2(nBas,nC,nEl,nBas-nEl,nR,ERI_MO_basis,ENuc,ERHF,eHF,EcMP2)
     call MP2(nBas,nC,nO,nV,nR,ERI_MO_basis,ENuc,ERHF,eHF,EcMP2)
     call cpu_time(end_MP2)
 
@@ -342,7 +335,6 @@ program QuAcK
 
     call cpu_time(start_TDHF)
     call TDHF(singlet_manifold,triplet_manifold,nBas,nC,nO,nV,nR,nS,ERI_MO_basis,eHF)
-!   call SPTDHF(singlet_manifold,triplet_manifold,nBas,nC,nEl,nBas-nEl,nR,nEl*(nBas-nEl),ERI_MO_basis,eHF)
     call cpu_time(end_TDHF)
 
     t_TDHF = end_TDHF - start_TDHF

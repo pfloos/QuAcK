@@ -1,4 +1,4 @@
-subroutine RHF(maxSCF,thresh,max_diis,guess_type,nBas,nO,S,T,V,Hc,ERI,X,ENuc,ERHF,c,e,P)
+subroutine RHF(maxSCF,thresh,max_diis,guess_type,nBas,nO,S,T,V,Hc,ERI,X,ENuc,ERHF,e,c,P)
 
 ! Perform restricted Hartree-Fock calculation
 
@@ -18,13 +18,17 @@ subroutine RHF(maxSCF,thresh,max_diis,guess_type,nBas,nO,S,T,V,Hc,ERI,X,ENuc,ERH
 
   integer                       :: nSCF,nBasSq,n_diis
   double precision              :: ET,EV,EJ,EK,Conv,Gap 
+  double precision              :: rcond
   double precision,external     :: trace_matrix
   double precision,allocatable  :: error(:,:),error_diis(:,:),F_diis(:,:)
   double precision,allocatable  :: J(:,:),K(:,:),cp(:,:),F(:,:),Fp(:,:)
 
 ! Output variables
 
-  double precision,intent(out)  :: ERHF,c(nBas,nBas),e(nBas),P(nBas,nBas)
+  double precision,intent(out)  :: ERHF
+  double precision,intent(out)  :: e(nBas)
+  double precision,intent(out)  :: c(nBas,nBas)
+  double precision,intent(out)  :: P(nBas,nBas)
 
 ! Hello world
 
@@ -92,7 +96,7 @@ subroutine RHF(maxSCF,thresh,max_diis,guess_type,nBas,nO,S,T,V,Hc,ERI,X,ENuc,ERH
     call Coulomb_matrix_AO_basis(nBas,P,ERI,J)
     call exchange_matrix_AO_basis(nBas,P,ERI,K)
     
-    F(:,:) = Hc(:,:) + J(:,:) + K(:,:)
+    F(:,:) = Hc(:,:) + J(:,:) + 0.5d0*K(:,:)
 
 !   Check convergence 
 
@@ -102,7 +106,11 @@ subroutine RHF(maxSCF,thresh,max_diis,guess_type,nBas,nO,S,T,V,Hc,ERI,X,ENuc,ERH
 !   DIIS extrapolation
 
     n_diis = min(n_diis+1,max_diis)
-    call DIIS_extrapolation(nBasSq,nBasSq,n_diis,error_diis,F_diis,error,F)
+    call DIIS_extrapolation(rcond,nBasSq,nBasSq,n_diis,error_diis,F_diis,error,F)
+
+!   Reset DIIS if required
+
+    if(abs(rcond) < 1d-15) n_diis = 0
 
 !  Diagonalize Fock matrix
 
@@ -119,7 +127,7 @@ subroutine RHF(maxSCF,thresh,max_diis,guess_type,nBas,nO,S,T,V,Hc,ERI,X,ENuc,ERH
 
     ERHF = trace_matrix(nBas,matmul(P,Hc)) &
         + 0.5d0*trace_matrix(nBas,matmul(P,J)) &
-        + 0.5d0*trace_matrix(nBas,matmul(P,K))
+        + 0.25d0*trace_matrix(nBas,matmul(P,K))
 
 !   Compute HOMO-LUMO gap
 
@@ -163,7 +171,7 @@ subroutine RHF(maxSCF,thresh,max_diis,guess_type,nBas,nO,S,T,V,Hc,ERI,X,ENuc,ERH
   ET = trace_matrix(nBas,matmul(P,T))
   EV = trace_matrix(nBas,matmul(P,V))
   EJ = 0.5d0*trace_matrix(nBas,matmul(P,J))
-  EK = 0.5d0*trace_matrix(nBas,matmul(P,K))
+  EK = 0.25d0*trace_matrix(nBas,matmul(P,K))
   ERHF = ET + EV + EJ + EK
 
   call print_RHF(nBas,nO,e,C,ENuc,ET,EV,EJ,EK,ERHF)

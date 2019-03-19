@@ -1,4 +1,4 @@
-subroutine DIIS_extrapolation(n_err,n_e,n_diis,error,e,error_in,e_inout)
+subroutine DIIS_extrapolation(rcond,n_err,n_e,n_diis,error,e,error_in,e_inout)
 
 ! Perform DIIS extrapolation
 
@@ -13,11 +13,11 @@ subroutine DIIS_extrapolation(n_err,n_e,n_diis,error,e,error_in,e_inout)
 
 ! Local variables
 
-  double precision              :: rcond
   double precision,allocatable  :: A(:,:),b(:),w(:)
 
 ! Output variables
 
+  double precision,intent(out)  :: rcond
   integer,intent(inout)         :: n_diis
   double precision,intent(inout):: e_inout(n_e)
 
@@ -49,13 +49,6 @@ subroutine DIIS_extrapolation(n_err,n_e,n_diis,error,e,error_in,e_inout)
 
 ! Extrapolate
 
-  if(rcond > 1d-14) then 
-
     e_inout(:) = matmul(w(1:n_diis),transpose(e(:,1:n_diis)))
 
-  else 
-
-    n_diis = 0
-
-  endif
 end subroutine DIIS_extrapolation

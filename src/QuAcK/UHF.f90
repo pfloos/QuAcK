@@ -1,4 +1,4 @@
-subroutine UHF(maxSCF,thresh,max_diis,guess_type,nBas,nO,S,T,V,Hc,ERI,X,ENuc,EUHF)
+subroutine UHF(maxSCF,thresh,max_diis,guess_type,nBas,nO,S,T,V,Hc,ERI,X,ENuc,EUHF,e,c,P)
 
 ! Perform unrestricted Hartree-Fock calculation
 
@@ -33,24 +33,25 @@ subroutine UHF(maxSCF,thresh,max_diis,guess_type,nBas,nO,S,T,V,Hc,ERI,X,ENuc,EUH
   double precision              :: EV(nspin)
   double precision              :: EJ(nsp)
   double precision              :: Ex(nspin)
-  double precision              :: Ec(nsp)
-  double precision              :: EUHF
 
-  double precision,allocatable  :: eps(:,:)
-  double precision,allocatable  :: c(:,:,:)
   double precision,allocatable  :: cp(:,:,:)
   double precision,allocatable  :: J(:,:,:)
   double precision,allocatable  :: F(:,:,:)
   double precision,allocatable  :: Fp(:,:,:)
-  double precision,allocatable  :: Fx(:,:,:)
+  double precision,allocatable  :: K(:,:,:)
   double precision,allocatable  :: err(:,:,:)
   double precision,allocatable  :: err_diis(:,:,:)
   double precision,allocatable  :: F_diis(:,:,:)
   double precision,external     :: trace_matrix
 
-  double precision,allocatable  :: P(:,:,:)
-
   integer                       :: ispin
+
+! Output variables
+
+  double precision,intent(out)  :: EUHF
+  double precision,intent(out)  :: e(nBas,nspin)
+  double precision,intent(out)  :: c(nBas,nBas,nspin)
+  double precision,intent(out)  :: P(nBas,nBas,nspin)
 
 ! Hello world
 
@@ -66,9 +67,8 @@ subroutine UHF(maxSCF,thresh,max_diis,guess_type,nBas,nO,S,T,V,Hc,ERI,X,ENuc,EUH
 
 ! Memory allocation
 
-  allocate(eps(nBas,nspin),c(nBas,nBas,nspin),cp(nBas,nBas,nspin),        &
-           J(nBas,nBas,nspin),F(nBas,nBas,nspin),Fp(nBas,nBas,nspin),     & 
-           Fx(nBas,nBas,nspin),err(nBas,nBas,nspin),P(nBas,nBas,nspin),   &
+  allocate(J(nBas,nBas,nspin),F(nBas,nBas,nspin),Fp(nBas,nBas,nspin),   & 
+           K(nBas,nBas,nspin),err(nBas,nBas,nspin),cp(nBas,nBas,nspin), &
            err_diis(nBasSq,max_diis,nspin),F_diis(nBasSq,max_diis,nspin))
 
 ! Guess coefficients and eigenvalues
@@ -101,10 +101,10 @@ subroutine UHF(maxSCF,thresh,max_diis,guess_type,nBas,nO,S,T,V,Hc,ERI,X,ENuc,EUH
 !------------------------------------------------------------------------
 
   write(*,*)
-  write(*,*)'------------------------------------------------------------------------------------------'
-  write(*,'(1X,A1,1X,A3,1X,A1,1X,A16,1X,A1,1X,A16,1X,A1,1X,A16,1X,A1,1X,A10,1X,A1,1X)') & 
-            '|','#','|','E(KS)','|','Ex(KS)','|','Ec(KS)','|','Conv','|'
-  write(*,*)'------------------------------------------------------------------------------------------'
+  write(*,*)'----------------------------------------------------------'
+  write(*,'(1X,A1,1X,A3,1X,A1,1X,A16,1X,A1,1X,A16,1X,A1,1X,A10,1X,A1,1X)') & 
+            '|','#','|','E(UHF)','|','Ex(UHF)','|','Conv','|'
+  write(*,*)'----------------------------------------------------------'
   
   do while(conv > thresh .and. nSCF < maxSCF)
 
@@ -122,7 +122,7 @@ subroutine UHF(maxSCF,thresh,max_diis,guess_type,nBas,nO,S,T,V,Hc,ERI,X,ENuc,EUH
 
     cp(:,:,:) = Fp(:,:,:)
     do ispin=1,nspin
-      call diagonalize_matrix(nBas,cp(:,:,ispin),eps(:,ispin))
+      call diagonalize_matrix(nBas,cp(:,:,ispin),e(:,ispin))
     end do
     
 !   Back-transform eigenvectors in non-orthogonal basis
@@ -146,12 +146,12 @@ subroutine UHF(maxSCF,thresh,max_diis,guess_type,nBas,nO,S,T,V,Hc,ERI,X,ENuc,EUH
 !   Compute exchange potential
 
     do ispin=1,nspin
-      call exchange_matrix_AO_basis(nBas,P(:,:,ispin),ERI(:,:,:,:),Fx(:,:,ispin))
+      call exchange_matrix_AO_basis(nBas,P(:,:,ispin),ERI(:,:,:,:),K(:,:,ispin))
     end do
 
 !   Build Fock operator
     do ispin=1,nspin
-      F(:,:,ispin) = Hc(:,:) + J(:,:,ispin) + J(:,:,mod(ispin,2)+1) + Fx(:,:,ispin)
+      F(:,:,ispin) = Hc(:,:) + J(:,:,ispin) + J(:,:,mod(ispin,2)+1) + K(:,:,ispin)
     end do
 
 !   Check convergence 
@@ -198,20 +198,20 @@ subroutine UHF(maxSCF,thresh,max_diis,guess_type,nBas,nO,S,T,V,Hc,ERI,X,ENuc,EUH
 !   Exchange energy
 
     do ispin=1,nspin
-      Ex(ispin) = trace_matrix(nBas,matmul(P(:,:,ispin),Fx(:,:,ispin)))
+      Ex(ispin) = 0.5d0*trace_matrix(nBas,matmul(P(:,:,ispin),K(:,:,ispin)))
     end do
 
 !   Total energy
 
-    EUHF = sum(ET(:)) + sum(EV(:)) + sum(EJ(:)) + sum(Ex(:)) + sum(Ec(:))
+    EUHF = sum(ET(:)) + sum(EV(:)) + sum(EJ(:)) + sum(Ex(:))
 
 !   Dump results
 
-    write(*,'(1X,A1,1X,I3,1X,A1,1X,F16.10,1X,A1,1X,F16.10,1X,A1,1X,F16.10,1X,A1,1X,F10.6,1X,A1,1X)') & 
-      '|',nSCF,'|',EUHF + ENuc,'|',sum(Ex(:)),'|',sum(Ec(:)),'|',conv,'|'
+    write(*,'(1X,A1,1X,I3,1X,A1,1X,F16.10,1X,A1,1X,F16.10,1X,A1,1X,F10.6,1X,A1,1X)') & 
+      '|',nSCF,'|',EUHF + ENuc,'|',sum(Ex(:)),'|',conv,'|'
  
   end do
-  write(*,*)'------------------------------------------------------------------------------------------'
+  write(*,*)'----------------------------------------------------------'
 !------------------------------------------------------------------------
 ! End of SCF loop
 !------------------------------------------------------------------------
@@ -232,6 +232,6 @@ subroutine UHF(maxSCF,thresh,max_diis,guess_type,nBas,nO,S,T,V,Hc,ERI,X,ENuc,EUH
 
 ! Compute final UHF energy
 
-  call print_UHF(nBas,nO(:),eps(:,:),c(:,:,:),ENuc,ET(:),EV(:),EJ(:),Ex(:),Ec(:),EUHF)
+  call print_UHF(nBas,nO(:),e(:,:),c(:,:,:),ENuc,ET(:),EV(:),EJ(:),Ex(:),EUHF)
 
 end subroutine UHF

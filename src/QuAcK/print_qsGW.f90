@@ -31,7 +31,7 @@ subroutine print_qsGW(nBas,nO,nSCF,Conv,thresh,eHF,eGW,c,ENuc,P,T,V,Hc,J,K,F,Sig
   ET = trace_matrix(nBas,matmul(P,T))
   EV = trace_matrix(nBas,matmul(P,V))
   EJ = 0.5d0*trace_matrix(nBas,matmul(P,J))
-  Ex = 0.5d0*trace_matrix(nBas,matmul(P,K))
+  Ex = 0.25d0*trace_matrix(nBas,matmul(P,K))
   EqsGW = ET + EV + EJ + Ex
   Ec = 0d0
 

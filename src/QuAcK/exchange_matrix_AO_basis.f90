@@ -24,12 +24,10 @@ subroutine exchange_matrix_AO_basis(nBas,P,G,K)
     do si=1,nBas
       do la=1,nBas
         do mu=1,nBas
-          K(mu,nu) = K(mu,nu) + P(la,si)*G(mu,la,si,nu)
+          K(mu,nu) = K(mu,nu) - P(la,si)*G(mu,la,si,nu)
         enddo
       enddo
     enddo
   enddo
-
-  K = -0.5d0*K
 
 end subroutine exchange_matrix_AO_basis
