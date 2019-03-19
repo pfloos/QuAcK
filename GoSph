@@ -13,5 +13,5 @@ cp int/Sph_ERI_"$1".dat int/ERI.dat
 cp int/Sph_Kin_"$1".dat int/Kin.dat
 cp int/Sph_Nuc_"$1".dat int/Nuc.dat
 cp int/Sph_Ov_"$1".dat  int/Ov.dat
-./bin/MCQC
+./bin/QuAcK
 fi
