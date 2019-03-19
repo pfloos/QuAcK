@@ -22,7 +22,7 @@ subroutine CCD(maxSCF,thresh,max_diis,nBas,nEl,ERI,ENuc,ERHF,eHF)
   integer                       :: nV
   integer                       :: nSCF
   double precision              :: Conv
-  double precision              :: EcMP2
+  double precision              :: EcMP2,EcMP3,EcMP4
   double precision              :: ECCD,EcCCD
   double precision,allocatable  :: seHF(:)
   double precision,allocatable  :: sERI(:,:,:,:)
@@ -108,7 +108,7 @@ subroutine CCD(maxSCF,thresh,max_diis,nBas,nEl,ERI,ENuc,ERHF,eHF)
   t2(:,:,:,:) = -OOVV(:,:,:,:)/delta_OOVV(:,:,:,:)
 
   EcMP2 = 0.25d0*dot_product(pack(OOVV,.true.),pack(t2,.true.))
-  write(*,'(1X,A10,1X,F10.6)') 'Ec(MP2) = ',EcMP2
+  EcMP4 = 0d0
 
 ! Initialization
 
@@ -163,6 +163,8 @@ subroutine CCD(maxSCF,thresh,max_diis,nBas,nEl,ERI,ENuc,ERHF,eHF)
 
     EcCCD = 0.25d0*dot_product(pack(OOVV,.true.),pack(t2,.true.))
 
+    if(nSCF == 1) EcMP3 = 0.25d0*dot_product(pack(OOVV,.true.),pack(t2 + v/delta_OOVV,.true.))
+
 !   Dump results
 
     ECCD = ERHF + EcCCD
@@ -189,5 +191,13 @@ subroutine CCD(maxSCF,thresh,max_diis,nBas,nEl,ERI,ENuc,ERHF,eHF)
     stop
 
   endif
+
+! Moller-Plesset energies
+
+  write(*,*)
+  write(*,'(1X,A15,1X,F10.6)') 'Ec(MP2)     = ',EcMP2
+  write(*,'(1X,A15,1X,F10.6)') 'Ec(MP3)     = ',EcMP3
+  write(*,'(1X,A15,1X,F10.6)') 'Ec(MP4-SDQ) = ',EcMP4
+  write(*,*)
 
 end subroutine CCD
