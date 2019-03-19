@@ -24,12 +24,12 @@ $(ODIR)/%.o: %.f90
 $(ODIR)/%.o: %.f
 	$(FC) -c -o $@ $< $(FFLAGS) 
 
-$(BDIR)/xcDFT: $(OBJ)
+$(BDIR)/eDFT: $(OBJ)
 	$(FC) -o $@ $^ $(FFLAGS) $(LIBS)
 
 debug: 
-	DEBUG=1 make $(BDIR)/xcDFT
-#DEBUG=1 make clean $(BDIR)/xcDFT
+	DEBUG=1 make $(BDIR)/eDFT
+#DEBUG=1 make clean $(BDIR)/eDFT
 
 clean:
-	rm -f $(ODIR)/*.o $(BDIR)/xcDFT $(BDIR)/debug
+	rm -f $(ODIR)/*.o $(BDIR)/eDFT $(BDIR)/debug

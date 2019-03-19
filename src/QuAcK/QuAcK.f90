@@ -182,7 +182,7 @@ program QuAcK
     call cpu_time(end_HF)
 
     t_HF = end_HF - start_HF
-    write(*,'(A65,1X,F9.3,A8)') 'Total CPU time for HF = ',t_HF,' seconds'
+    write(*,'(A65,1X,F9.3,A8)') 'Total CPU time for UHF = ',t_HF,' seconds'
     write(*,*)
 
   endif
@@ -198,7 +198,7 @@ program QuAcK
     call cpu_time(end_HF)
 
     t_HF = end_HF - start_HF
-    write(*,'(A65,1X,F9.3,A8)') 'Total CPU time for HF = ',t_HF,' seconds'
+    write(*,'(A65,1X,F9.3,A8)') 'Total CPU time for UHF = ',t_HF,' seconds'
     write(*,*)
 
   endif
