@@ -1,5 +1,5 @@
-# HF MOM
-  T  F
+# RHF UHF MOM
+  F   T   F
 # MP2 MP3 MP2-F12
   T   T   F
 # CCD CCSD CCSD(T)

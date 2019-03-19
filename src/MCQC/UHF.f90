@@ -1,4 +1,4 @@
-subroutine UHF(maxSCF,thresh,max_diis,guess_type,nBas,nO,nV,S,T,V,Hc,ERI,X,ENuc,EUHF)
+subroutine UHF(maxSCF,thresh,max_diis,guess_type,nBas,nO,S,T,V,Hc,ERI,X,ENuc,EUHF)
 
 ! Perform unrestricted Hartree-Fock calculation
 
@@ -13,7 +13,7 @@ subroutine UHF(maxSCF,thresh,max_diis,guess_type,nBas,nO,nV,S,T,V,Hc,ERI,X,ENuc,
   double precision,intent(in)   :: thresh
   integer,intent(in)            :: nBas
 
-  integer,intent(in)            :: nO(nspin),nV(nspin)
+  integer,intent(in)            :: nO(nspin)
   double precision,intent(in)   :: S(nBas,nBas)
   double precision,intent(in)   :: T(nBas,nBas)
   double precision,intent(in)   :: V(nBas,nBas)
@@ -102,8 +102,8 @@ subroutine UHF(maxSCF,thresh,max_diis,guess_type,nBas,nO,nV,S,T,V,Hc,ERI,X,ENuc,
 
   write(*,*)
   write(*,*)'------------------------------------------------------------------------------------------'
-  write(*,'(1X,A1,1X,A3,1X,A1,1X,A16,1X,A1,1X,A16,1X,A1,1X,A16,1X,A1,1X,A10,1X,A1,1X,A10,1X,A1,1X)') & 
-            '|','#','|','E(KS)','|','Ex(KS)','|','Ec(KS)','|','Conv','|','nEl','|'
+  write(*,'(1X,A1,1X,A3,1X,A1,1X,A16,1X,A1,1X,A16,1X,A1,1X,A16,1X,A1,1X,A10,1X,A1,1X)') & 
+            '|','#','|','E(KS)','|','Ex(KS)','|','Ec(KS)','|','Conv','|'
   write(*,*)'------------------------------------------------------------------------------------------'
   
   do while(conv > thresh .and. nSCF < maxSCF)

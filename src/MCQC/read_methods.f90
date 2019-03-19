@@ -1,4 +1,4 @@
-subroutine read_methods(doHF,doMOM,           & 
+subroutine read_methods(doRHF,doUHF,doMOM,    & 
                         doMP2,doMP3,doMP2F12, & 
                         doCCD,doCCSD,doCCSDT, & 
                         doCIS,doTDHF,doADC,   & 
@@ -12,7 +12,7 @@ subroutine read_methods(doHF,doMOM,           &
 
 ! Input variables
 
-  logical,intent(out)           :: doHF,doMOM
+  logical,intent(out)           :: doRHF,doUHF,doMOM
   logical,intent(out)           :: doMP2,doMP3,doMP2F12
   logical,intent(out)           :: doCCD,doCCSD,doCCSDT
   logical,intent(out)           :: doCIS,doTDHF,doADC
@@ -30,7 +30,8 @@ subroutine read_methods(doHF,doMOM,           &
 
 ! Set all the booleans to false
 
-  doHF  = .false.
+  doRHF = .false.
+  doUHF = .false.
   doMOM = .false.
 
   doMP2    = .false.
@@ -57,9 +58,10 @@ subroutine read_methods(doHF,doMOM,           &
 ! Read mean-field methods
 
   read(1,*) 
-  read(1,*) answer1,answer2
-  if(answer1 == 'T') doHF  = .true.
-  if(answer2 == 'T') doMOM = .true.
+  read(1,*) answer1,answer2,answer3
+  if(answer1 == 'T') doRHF = .true.
+  if(answer2 == 'T') doUHF = .true.
+  if(answer3 == 'T') doMOM = .true.
 
 ! Read MPn methods
 
