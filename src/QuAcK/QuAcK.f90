@@ -265,9 +265,13 @@ program QuAcK
   if(doMP2F12) then
 
     call cpu_time(start_MP2F12)
+
 !   Memory allocation for one- and two-electron integrals
+
     allocate(F12(nBas,nBas,nBas,nBas),Yuk(nBas,nBas,nBas,nBas),FC(nBas,nBas,nBas,nBas,nBas,nBas))
+
 !   Read integrals
+
     call read_F12_integrals(nBas,S,ERI_AO_basis,F12,Yuk,FC)
     call MP2F12(nBas,nC,nO,nV,ERI_AO_basis,F12,Yuk,FC,ERHF,eHF,cHF)
     call cpu_time(end_MP2F12)
@@ -366,7 +370,6 @@ program QuAcK
   if(doGF2) then
 
     call cpu_time(start_GF2)
-!   call GF2(maxSCF_GF,thresh_GF,n_diis_GF,nBas,nC,nO,nV,nR,ERI_MO_basis,eHF)
     call GF2_diag(maxSCF_GF,thresh_GF,n_diis_GF,nBas,nC,nO,nV,nR,ERI_MO_basis,eHF)
     call cpu_time(end_GF2)
 
@@ -506,11 +509,6 @@ program QuAcK
                nMC,nEq,nWalk,dt,nPrint,                                  &
                nShell,CenterShell,TotAngMomShell,KShell,DShell,ExpShell, &
                Norm,EcMCMP2,Err_EcMCMP2,Var_EcMCMP2)
-!   call MCMP2(.false.,doDrift,nBas,nEl,nC,nO,nV,cHF,eHF,EcMP2,        &
-!              nMC,nEq,nWalk,dt,nPrint,                                  &
-!              nShell,CenterShell,TotAngMomShell,KShell,DShell,ExpShell, &
-!              TrialType,Norm,cTrial,gradient,hessian,                   &
-!              EcMCMP2,Err_EcMCMP2,Var_EcMCMP2)
     call cpu_time(end_MCMP2)
 
     t_MCMP2 = end_MCMP2 - start_MCMP2
