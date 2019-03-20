@@ -109,7 +109,7 @@ program IntPak
     write(*,'(A65,1X,F9.3,A8)') 'Total CPU time = ',t_1eInt(iType),' seconds'
     write(*,*)
 
-  endif
+  end if
 
 !------------------------------------------------------------------------
 ! Compute one-electron kinetic integrals
@@ -137,7 +137,7 @@ program IntPak
     write(*,'(A65,1X,F9.3,A8)') 'Total CPU time = ',t_1eInt(iType),' seconds'
     write(*,*)
 
-  endif
+  end if
 
 !------------------------------------------------------------------------
 ! Compute one-electron nuclear attraction integrals
@@ -166,7 +166,7 @@ program IntPak
     write(*,'(A65,1X,F9.3,A8)') 'Total CPU time = ',t_1eInt(iType),' seconds'
     write(*,*)
 
-  endif
+  end if
 
 !------------------------------------------------------------------------
 ! Compute ERIs
@@ -201,7 +201,7 @@ program IntPak
 
     deallocate(DG,ExpG)
 
-  endif
+  end if
 
 !------------------------------------------------------------------------
 ! Compute F12 two-electron integrals 
@@ -263,7 +263,7 @@ program IntPak
 
     deallocate(DG,ExpG)
 
-  endif
+  end if
 
 !------------------------------------------------------------------------
 ! Compute Yukawa two-electron integrals 
@@ -298,7 +298,7 @@ program IntPak
 
     deallocate(DG,ExpG)
 
-  endif
+  end if
 
 !------------------------------------------------------------------------
 ! Compute long-range Coulomb two-electron integrals 
@@ -334,7 +334,7 @@ program IntPak
 
     deallocate(DG,ExpG)
 
-  endif
+  end if
 
 !------------------------------------------------------------------------
 ! Compute three-electron integrals: Type 1 => chain C12 S23
@@ -372,7 +372,7 @@ program IntPak
 
     deallocate(DG,ExpG)
 
-  endif
+  end if
 
 !------------------------------------------------------------------------
 ! Compute three-electron integrals: Type 2 => cyclic C12 S13 S23
@@ -407,7 +407,7 @@ program IntPak
 
     deallocate(DG,ExpG)
 
-  endif
+  end if
 
 !------------------------------------------------------------------------
 ! Compute three-electron integrals: Type 3 => chain S13 S23
@@ -442,7 +442,7 @@ program IntPak
 
     deallocate(DG,ExpG)
 
-  endif
+  end if
 
 !------------------------------------------------------------------------
 ! Compute four-electron integrals: Type 1 => chain C12 S14 S23
@@ -477,7 +477,7 @@ program IntPak
 
     deallocate(DG,ExpG)
 
-  endif
+  end if
 
 !------------------------------------------------------------------------
 ! Compute four-electron integrals: Type 2 => trident C12 S13 S14
@@ -511,7 +511,7 @@ program IntPak
 
     deallocate(DG,ExpG)
 
-  endif
+  end if
 
 !------------------------------------------------------------------------
 ! Compute four-electron integrals: Type 3 => chain C12 S13 S34
@@ -546,7 +546,7 @@ program IntPak
 
     deallocate(DG,ExpG)
 
-  endif
+  end if
 !------------------------------------------------------------------------
 ! End of IntPak
 !------------------------------------------------------------------------

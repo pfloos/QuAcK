@@ -32,7 +32,7 @@ subroutine Compute3eInt(debug,iType,nShell,                                &
   integer,allocatable           :: ShellFunctionB1(:,:),ShellFunctionB2(:,:),ShellFunctionB3(:,:)
   double precision              :: ExpBra(3),ExpKet(3)
   double precision              :: DBra(3),DKet(3)
-  double precision              :: NormCoeff
+  double precision              :: norm_coeff
 
   integer                       :: iBasA1,iBasA2,iBasA3,iBasB1,iBasB2,iBasB3
   integer                       :: iShA1,iShA2,iShA3,iShB1,iShB2,iShB3
@@ -80,7 +80,7 @@ subroutine Compute3eInt(debug,iType,nShell,                                &
   elseif(iType == 3) then
     iFile = 33
     open(unit=iFile,file='int/3eInt_Type3.dat')
-  endif
+  end if
 
 !------------------------------------------------------------------------
 ! Loops over shell A1
@@ -229,22 +229,22 @@ subroutine Compute3eInt(debug,iType,nShell,                                &
           
                           do iKA1=1,KBra(1)
                             ExpBra(1) = ExpShell(iShA1,iKA1)
-                            DBra(1) = DShell(iShA1,iKA1)*NormCoeff(ExpBra(1),AngMomBra(1,1:3))
+                            DBra(1) = DShell(iShA1,iKA1)*norm_coeff(ExpBra(1),AngMomBra(1,1:3))
                             do iKA2=1,KBra(2)
                               ExpBra(2) = ExpShell(iShA2,iKA2)
-                              DBra(2) = DShell(iShA2,iKA2)*NormCoeff(ExpBra(2),AngMomBra(2,1:3))
+                              DBra(2) = DShell(iShA2,iKA2)*norm_coeff(ExpBra(2),AngMomBra(2,1:3))
                               do iKA3=1,KBra(3)
                                 ExpBra(3) = ExpShell(iShA3,iKA3)
-                                DBra(3) = DShell(iShA3,iKA3)*NormCoeff(ExpBra(3),AngMomBra(3,1:3))
+                                DBra(3) = DShell(iShA3,iKA3)*norm_coeff(ExpBra(3),AngMomBra(3,1:3))
                                 do iKB1=1,KKet(1)
                                   ExpKet(1) = ExpShell(iShB1,iKB1)
-                                  DKet(1) = DShell(iShB1,iKB1)*NormCoeff(ExpKet(1),AngMomKet(1,1:3))
+                                  DKet(1) = DShell(iShB1,iKB1)*norm_coeff(ExpKet(1),AngMomKet(1,1:3))
                                   do iKB2=1,KKet(2)
                                     ExpKet(2) = ExpShell(iShB2,iKB2)
-                                    DKet(2) = DShell(iShB2,iKB2)*NormCoeff(ExpKet(2),AngMomKet(2,1:3))
+                                    DKet(2) = DShell(iShB2,iKB2)*norm_coeff(ExpKet(2),AngMomKet(2,1:3))
                                     do iKB3=1,KKet(3)
                                       ExpKet(3) = ExpShell(iShB3,iKB3)
-                                      DKet(3) = DShell(iShB3,iKB3)*NormCoeff(ExpKet(3),AngMomKet(3,1:3))
+                                      DKet(3) = DShell(iShB3,iKB3)*norm_coeff(ExpKet(3),AngMomKet(3,1:3))
 
                                       call S3eInt(debug,iType,np3eInt,nSigp3eInt, &
                                                   ExpS,KG,DG,ExpG,                &
@@ -254,12 +254,12 @@ subroutine Compute3eInt(debug,iType,nShell,                                &
       
                                       c3eInt = c3eInt + DBra(1)*DBra(2)*DBra(3)*DKet(1)*DKet(2)*DKet(3)*p3eInt
 
-                                    enddo
-                                  enddo
-                                enddo
-                              enddo
-                            enddo
-                          enddo
+                                    end do
+                                  end do
+                                end do
+                              end do
+                            end do
+                          end do
                           call cpu_time(end_c3eInt)
 
                           nc3eInt = nc3eInt + 1
@@ -271,50 +271,50 @@ subroutine Compute3eInt(debug,iType,nShell,                                &
                             if(.true.) then
                               write(*,'(A15,1X,I6,1X,I6,1X,I6,1X,I6,1X,I6,1X,I6,1X,F16.10)') &
                                 '(a1a2a3|b1b2b3) = ',iBasA1,iBasA2,iBasA3,iBasB1,iBasB2,iBasB3,c3eInt
-                            endif
-                          endif
+                            end if
+                          end if
 
 !------------------------------------------------------------------------
 !                 End loops over contraction degrees
 !------------------------------------------------------------------------
-                        enddo
+                        end do
                         deallocate(ShellFunctionB3)
-                      enddo
+                      end do
                       iBasB3 = 0
 !------------------------------------------------------------------------
 ! End loops over shell B3
 !------------------------------------------------------------------------
-                    enddo
+                    end do
                     deallocate(ShellFunctionB2)
-                  enddo
+                  end do
                   iBasB2 = 0
 !------------------------------------------------------------------------
 ! End loops over shell B2
 !------------------------------------------------------------------------
-                enddo
+                end do
                 deallocate(ShellFunctionB1)
-              enddo
+              end do
               iBasB1 = 0
 !------------------------------------------------------------------------
 ! End loops over shell B1
 !------------------------------------------------------------------------
-            enddo
+            end do
             deallocate(ShellFunctionA3)
-          enddo
+          end do
           iBasA3 = 0
 !------------------------------------------------------------------------
 ! End loops over shell A3
 !------------------------------------------------------------------------
-        enddo
+        end do
         deallocate(ShellFunctionA2)
-      enddo
+      end do
       iBasA2 = 0
 !------------------------------------------------------------------------
 ! End loops over shell A2
 !------------------------------------------------------------------------
-    enddo
+    end do
     deallocate(ShellFunctionA1)
-  enddo
+  end do
   iBasA1 = 0
 !------------------------------------------------------------------------
 ! End loops over shell A1

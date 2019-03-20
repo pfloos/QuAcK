@@ -71,6 +71,6 @@ subroutine KinInt(npKin,nSigpKin,ExpA,CenterA,AngMomA,ExpB,CenterB,AngMomB,pKin)
   npKin = npKin + 1
   if(abs(pKin) > 1d-15) then
     nSigpKin = nSigpKin + 1
-  endif
+  end if
 
 end subroutine KinInt

@@ -87,7 +87,7 @@ function GF12Int(ExpG,ExpA,CenterA,AngMomA,ExpB,CenterB,AngMomB,ExpC,CenterC,Ang
   do i=1,3
     CenterRA(i) = CenterP(i) - CenterA(i) + fP*(CenterQ(i) - CenterP(i))
     CenterRC(i) = CenterQ(i) - CenterC(i) + fQ*(CenterP(i) - CenterQ(i))
-  enddo
+  end do
 !------------------------------------------------------------------------
 ! Launch reccurence relations!
 !------------------------------------------------------------------------

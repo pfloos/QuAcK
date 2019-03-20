@@ -69,6 +69,6 @@ subroutine OvInt(npOv,nSigpOv,ExpA,CenterA,AngMomA,ExpB,CenterB,AngMomB,pOv)
   npOv = npOv + 1
   if(abs(pOv) > 1d-15) then
     nSigpOv = nSigpOv + 1
-  endif
+  end if
 
 end subroutine OvInt

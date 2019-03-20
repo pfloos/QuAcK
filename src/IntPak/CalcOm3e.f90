@@ -37,7 +37,7 @@ subroutine CalcOm3e(maxm,delta0,delta1,Y1,Y0,Om)
   do m=0,maxm
     Om(m) = (2d0/sqrt(pi))*OG*sqrt(delta0/(delta1-delta0))*(delta1/(delta1-delta0))**m
     Om(m) = Om(m)*Fm(m)
-  enddo
+  end do
 
   deallocate(Fm)
 

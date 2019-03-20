@@ -33,7 +33,7 @@ subroutine CalcOm(maxm,ExpPQi,NormPQSq,Om)
   do m=0,maxm
     dm =dble(m)
     Om(m) = (2d0/sqrt(pi))*(-1d0)**dm*(1d0/ExpPQi)**(dm+0.5d0)*Fm(m)
-  enddo
+  end do
 
   deallocate(Fm)
 

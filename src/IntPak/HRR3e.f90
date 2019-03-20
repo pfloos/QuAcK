@@ -30,7 +30,7 @@ recursive function HRR3e(AngMomBra,AngMomKet,maxm,Om,ExpZ,CenterAB,CenterZA,DY0,
     NegAngMomKet(i) = AngMomKet(i,1) < 0 .or. AngMomKet(i,2) < 0 .or. AngMomKet(i,3) < 0
     TotAngMomBra(i) = AngMomBra(i,1) + AngMomBra(i,2) + AngMomBra(i,3)
     TotAngMomKet(i) = AngMomKet(i,1) + AngMomKet(i,2) + AngMomKet(i,3)
-  enddo
+  end do
 
 !------------------------------------------------------------------------
 ! Termination condition
@@ -50,8 +50,8 @@ recursive function HRR3e(AngMomBra,AngMomKet,maxm,Om,ExpZ,CenterAB,CenterZA,DY0,
       do j=1,3
         a1p(i,j) = AngMomBra(i,j)
         b1m(i,j) = AngMomKet(i,j)
-      enddo
-    enddo
+      end do
+    end do
 ! Loop over cartesian directions
     xyz = 0
     if    (AngMomKet(1,1) > 0) then
@@ -62,7 +62,7 @@ recursive function HRR3e(AngMomBra,AngMomKet,maxm,Om,ExpZ,CenterAB,CenterZA,DY0,
       xyz = 3
     else
       write(*,*) 'xyz = 0 in HRR3e!'
-    endif
+    end if
 ! End loop over cartesian directions
     a1p(1,xyz) = a1p(1,xyz) + 1
     b1m(1,xyz) = b1m(1,xyz) - 1
@@ -77,8 +77,8 @@ recursive function HRR3e(AngMomBra,AngMomKet,maxm,Om,ExpZ,CenterAB,CenterZA,DY0,
       do j=1,3
         a2p(i,j) = AngMomBra(i,j)
         b2m(i,j) = AngMomKet(i,j)
-      enddo
-    enddo
+      end do
+    end do
 ! Loop over cartesian directions
     xyz = 0
     if    (AngMomKet(2,1) > 0) then
@@ -89,7 +89,7 @@ recursive function HRR3e(AngMomBra,AngMomKet,maxm,Om,ExpZ,CenterAB,CenterZA,DY0,
       xyz = 3
     else
       write(*,*) 'xyz = 0 in HRR3e!'
-    endif
+    end if
 ! End loop over cartesian directions
     a2p(2,xyz) = a2p(2,xyz) + 1
     b2m(2,xyz) = b2m(2,xyz) - 1
@@ -104,8 +104,8 @@ recursive function HRR3e(AngMomBra,AngMomKet,maxm,Om,ExpZ,CenterAB,CenterZA,DY0,
       do j=1,3
         a3p(i,j) = AngMomBra(i,j)
         b3m(i,j) = AngMomKet(i,j)
-      enddo
-    enddo
+      end do
+    end do
 ! Loop over cartesian directions
     xyz = 0
     if    (AngMomKet(3,1) > 0) then
@@ -116,13 +116,13 @@ recursive function HRR3e(AngMomBra,AngMomKet,maxm,Om,ExpZ,CenterAB,CenterZA,DY0,
       xyz = 3
     else
       write(*,*) 'xyz = 0 in HRR3e!'
-    endif
+    end if
 ! End loop over cartesian directions
     a3p(3,xyz) = a3p(3,xyz) + 1
     b3m(3,xyz) = b3m(3,xyz) - 1
     a1a2a3b1b2b3 = HRR3e(a3p,b3m,maxm,Om,ExpZ,CenterAB,CenterZA,DY0,DY1,D2Y0,D2Y1) &
                  + CenterAB(3,xyz)*                                                    &
                    HRR3e(AngMomBra,b3m,maxm,Om,ExpZ,CenterAB,CenterZA,DY0,DY1,D2Y0,D2Y1)
-  endif
+  end if
 
 end function HRR3e

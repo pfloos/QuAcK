@@ -31,7 +31,7 @@ recursive function VRR2e(m,AngMomBra,maxm,Om,ExpZi,ExpY,CenterZA,CenterY) &
   do i=1,2
     NegAngMomBra(i) = AngMomBra(i,1) < 0 .or. AngMomBra(i,2) < 0 .or. AngMomBra(i,3) < 0
     TotAngMomBra(i) = AngMomBra(i,1) + AngMomBra(i,2) + AngMomBra(i,3)
-  enddo
+  end do
 
   fZ(1) = ExpY(1,2)*ExpZi(1)
   fZ(2) = ExpY(1,2)*ExpZi(2)
@@ -55,8 +55,8 @@ recursive function VRR2e(m,AngMomBra,maxm,Om,ExpZi,ExpY,CenterZA,CenterY) &
       do j=1,3
         a1m(i,j)  = AngMomBra(i,j)
         a1mm(i,j) = AngMomBra(i,j)
-      enddo
-    enddo
+      end do
+    end do
 ! Loop over cartesian directions
     xyz = 0
     if    (AngMomBra(1,1) > 0) then
@@ -67,7 +67,7 @@ recursive function VRR2e(m,AngMomBra,maxm,Om,ExpZi,ExpY,CenterZA,CenterY) &
       xyz = 3
     else
       write(*,*) 'xyz = 0 in VRR2e!'
-    endif
+    end if
 ! End loop over cartesian directions
     a1m(1,xyz)  = a1m(1,xyz)  - 1
     a1mm(1,xyz) = a1mm(1,xyz) - 2
@@ -82,7 +82,7 @@ recursive function VRR2e(m,AngMomBra,maxm,Om,ExpZi,ExpY,CenterZA,CenterY) &
            + 0.5d0*dble(AngMomBra(1,xyz)-1)*ExpZi(1)*(                                 &
                VRR2e(m,a1mm,maxm,Om,ExpZi,ExpY,CenterZA,CenterY)                       &
                - fZ(1)*VRR2e(m+1,a1mm,maxm,Om,ExpZi,ExpY,CenterZA,CenterY))
-    endif
+    end if
 !------------------------------------------------------------------------
 ! 2nd vertical recurrence relation (5 terms): (a0|c+0)^m
 !------------------------------------------------------------------------
@@ -92,8 +92,8 @@ recursive function VRR2e(m,AngMomBra,maxm,Om,ExpZi,ExpY,CenterZA,CenterY) &
         a2m(i,j)   = AngMomBra(i,j)
         a2mm(i,j)  = AngMomBra(i,j)
         a1m2m(i,j) = AngMomBra(i,j)
-      enddo
-    enddo
+      end do
+    end do
 ! Loop over cartesian directions
     xyz = 0
     if    (AngMomBra(2,1) > 0) then
@@ -104,7 +104,7 @@ recursive function VRR2e(m,AngMomBra,maxm,Om,ExpZi,ExpY,CenterZA,CenterY) &
       xyz = 3
     else
       write(*,*) 'xyz = 0 in VRR2e!'
-    endif
+    end if
 ! End loop over cartesian directions
     a2m(2,xyz)   = a2m(2,xyz)   - 1
     a2mm(2,xyz)  = a2mm(2,xyz)  - 2
@@ -121,10 +121,10 @@ recursive function VRR2e(m,AngMomBra,maxm,Om,ExpZi,ExpY,CenterZA,CenterY) &
            + 0.5d0*dble(AngMomBra(2,xyz)-1)*ExpZi(2)*(                                 &
                VRR2e(m,a2mm,maxm,Om,ExpZi,ExpY,CenterZA,CenterY)                       &
              - fZ(2)*VRR2e(m+1,a2mm,maxm,Om,ExpZi,ExpY,CenterZA,CenterY))               
-    endif
+    end if
     if(AngMomBra(1,xyz) > 0) &
       a1a2 = a1a2 &
            + 0.5d0*dble(AngMomBra(1,xyz))*fZ(2)*ExpZi(1)*VRR2e(m+1,a1m2m,maxm,Om,ExpZi,ExpY,CenterZA,CenterY)
-  endif
+  end if
 
 end function VRR2e

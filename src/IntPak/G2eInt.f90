@@ -40,7 +40,7 @@ function G2eInt(debug,iType,                &
 
   do i=1,2
     ExpZi(i)  = 1d0/(ExpBra(i) + ExpKet(i))
-  enddo
+  end do
 
   NormABSq = 0d0
   do j=1,3
@@ -49,20 +49,20 @@ function G2eInt(debug,iType,                &
       CenterAB(i,j) = CenterBra(i,j) - CenterKet(i,j)
       CenterZA(i,j) = CenterZ(i,j) - CenterBra(i,j)
       NormABSq(i) = NormABSq(i) + CenterAB(i,j)**2
-    enddo
-  enddo
+    end do
+  end do
 
   do i=1,2
     GAB(i) = (pi*ExpZi(i))**(1.5d0)*exp(-ExpBra(i)*ExpKet(i)*NormABSq(i)*ExpZi(i))
-  enddo
+  end do
 
 ! Pre-computed shell-quartet quantities
 
   do i=1,2
     do j=1,2
       ExpY(i,j) = 1d0/(ExpZi(i) + ExpZi(j))
-    enddo
-  enddo
+    end do
+  end do
 
   do i=1,2
     do j=1,2
@@ -70,9 +70,9 @@ function G2eInt(debug,iType,                &
       do k=1,3   
         CenterY(i,j,k) = CenterZ(i,k) - CenterZ(j,k)
         NormYSq(i,j) = NormYSq(i,j) + CenterY(i,j,k)**2
-      enddo
-    enddo
-  enddo
+      end do
+    end do
+  end do
 
 !  fG = (ExpZ(1)*ExpZ(2)*ExpG)/(ExpZ(1)*ExpZ(2) + ExpZ(1)*ExpG + ExpZ(2)*ExpG)
   fG = 1d0/(ExpZi(1) + 1d0/ExpG + ExpZi(2))
@@ -84,7 +84,7 @@ function G2eInt(debug,iType,                &
     TotAngMomBra(i) = AngMomBra(i,1) + AngMomBra(i,2) + AngMomBra(i,3)
     TotAngMomKet(i) = AngMomKet(i,1) + AngMomKet(i,2) + AngMomKet(i,3)
     maxm = maxm + TotAngMomBra(i) + TotAngMomKet(i)
-  enddo
+  end do
 
 ! Pre-compute (00|00)^m
 
@@ -97,7 +97,7 @@ function G2eInt(debug,iType,                &
     call CalcOmYuk(maxm,ExpG,ExpY(1,2),fG,NormYSq(1,2),Om)
   elseif(iType == 4) then
     call CalcOmErf(maxm,ExpY(1,2),fG,NormYSq(1,2),Om)
-  endif
+  end if
 
   call cpu_time(finish_Om)
 
@@ -107,9 +107,9 @@ function G2eInt(debug,iType,                &
     write(*,*) '(00|00)^m'
     do i=0,maxm
       write(*,*) i,Om(i)
-    enddo
+    end do
     write(*,*)
-  endif
+  end if
 
 !------------------------------------------------------------------------
 ! Launch reccurence relations!
@@ -121,10 +121,10 @@ function G2eInt(debug,iType,                &
       a1a2b1b2 = Om(0)
     else
       a1a2b1b2 = VRR2e(0,AngMomBra,maxm,Om,ExpZi,ExpY,CenterZA,CenterY)
-    endif
+    end if
   else
     a1a2b1b2 = HRR2e(AngMomBra,AngMomKet,maxm,Om,ExpZi,ExpY,CenterAB,CenterZA,CenterY)
-  endif
+  end if
 
   call cpu_time(finish_RR)
 

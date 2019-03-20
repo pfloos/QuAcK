@@ -31,7 +31,7 @@ recursive function HRR2e(AngMomBra,AngMomKet,       &
     NegAngMomKet(i) = AngMomKet(i,1) < 0 .or. AngMomKet(i,2) < 0 .or. AngMomKet(i,3) < 0
     TotAngMomBra(i) = AngMomBra(i,1) + AngMomBra(i,2) + AngMomBra(i,3)
     TotAngMomKet(i) = AngMomKet(i,1) + AngMomKet(i,2) + AngMomKet(i,3)
-  enddo
+  end do
 
 !------------------------------------------------------------------------
 ! Termination condition
@@ -52,8 +52,8 @@ recursive function HRR2e(AngMomBra,AngMomKet,       &
       do j=1,3
         a1p(i,j) = AngMomBra(i,j)
         b1m(i,j) = AngMomKet(i,j)
-      enddo
-    enddo
+      end do
+    end do
 ! Loop over cartesian directions
     xyz = 0
     if    (AngMomKet(1,1) > 0) then
@@ -64,7 +64,7 @@ recursive function HRR2e(AngMomBra,AngMomKet,       &
       xyz = 3
     else
       write(*,*) 'xyz = 0 in HRR2e!'
-    endif
+    end if
 ! End loop over cartesian directions
     a1p(1,xyz) = a1p(1,xyz) + 1
     b1m(1,xyz) = b1m(1,xyz) - 1
@@ -78,8 +78,8 @@ recursive function HRR2e(AngMomBra,AngMomKet,       &
       do j=1,3
         a2p(i,j) = AngMomBra(i,j)
         b2m(i,j) = AngMomKet(i,j)
-      enddo
-    enddo
+      end do
+    end do
 ! Loop over cartesian directions
     xyz = 0
     if    (AngMomKet(2,1) > 0) then
@@ -90,12 +90,12 @@ recursive function HRR2e(AngMomBra,AngMomKet,       &
       xyz = 3
     else
       write(*,*) 'xyz = 0 in HRR2e!'
-    endif
+    end if
 ! End loop over cartesian directions
     a2p(2,xyz) = a2p(2,xyz) + 1
     b2m(2,xyz) = b2m(2,xyz) - 1
     a1a2b1b2 = HRR2e(a2p,b2m,maxm,Om,ExpZi,ExpY,CenterAB,CenterZA,CenterY) &
              + CenterAB(2,xyz)*HRR2e(AngMomBra,b2m,maxm,Om,ExpZi,ExpY,CenterAB,CenterZA,CenterY)
-  endif
+  end if
 
 end function HRR2e

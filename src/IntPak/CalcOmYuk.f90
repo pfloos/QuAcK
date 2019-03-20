@@ -34,9 +34,9 @@ subroutine CalcOmYuk(maxm,ExpG,ExpY,fG,NormYSq,Om)
     Om(m) = 0d0
     do k=0,m
       Om(m) = Om(m) + dbinom(m,k)*(ExpY/ExpG)**k*Fm(k)
-    enddo
+    end do
     Om(m) = (2d0/sqrt(pi))*sqrt(ExpY)*(fG/ExpG)*exp(-fG*NormYSq)*Om(m)
-  enddo
+  end do
 
   deallocate(Fm)
 

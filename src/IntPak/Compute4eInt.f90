@@ -29,7 +29,7 @@ subroutine Compute4eInt(debug,nEl,iType,nShell,ExpS,         &
                                    ShellFunctionC(:,:),ShellFunctionD(:,:)
   double precision              :: ExpA,ExpB,ExpC,ExpD
   double precision,allocatable  :: DA,DB,DC,DD
-  double precision              :: NormCoeff
+  double precision              :: norm_coeff
 
   integer                       :: iBasA,iBasB,iBasC,iBasD
   integer                       :: iShA,iShB,iShC,iShD
@@ -166,16 +166,16 @@ subroutine Compute4eInt(debug,nEl,iType,nShell,ExpS,         &
 
                   do iKA=1,KA
                     ExpA = ExpShell(iShA,iKA)
-                    DA = DShell(iShA,iKA)*NormCoeff(ExpA,AngMomA)
+                    DA = DShell(iShA,iKA)*norm_coeff(ExpA,AngMomA)
                     do iKB=1,KB
                       ExpB = ExpShell(iShB,iKB)
-                      DB = DShell(iShB,iKB)*NormCoeff(ExpB,AngMomB)
+                      DB = DShell(iShB,iKB)*norm_coeff(ExpB,AngMomB)
                       do iKC=1,KC
                         ExpC = ExpShell(iShC,iKC)
-                        DC = DShell(iShC,iKC)*NormCoeff(ExpC,AngMomC)
+                        DC = DShell(iShC,iKC)*norm_coeff(ExpC,AngMomC)
                         do iKD=1,KD
                           ExpD = ExpShell(iShD,iKD)
-                          DD = DShell(iShD,iKD)*NormCoeff(ExpD,AngMomD)
+                          DD = DShell(iShD,iKD)*norm_coeff(ExpD,AngMomD)
 
 ! Erf module
 !                          call ErfInt(debug,npErf,nSigpErf, &
@@ -188,10 +188,10 @@ subroutine Compute4eInt(debug,nEl,iType,nShell,ExpS,         &
 
 !                          cErf = cErf + DA*DB*DC*DD*pErf
 
-                        enddo
-                      enddo
-                    enddo
-                  enddo
+                        end do
+                      end do
+                    end do
+                  end do
                   call cpu_time(end_cErf)
 
                   ncErf = ncErf + 1
@@ -203,36 +203,36 @@ subroutine Compute4eInt(debug,nEl,iType,nShell,ExpS,         &
                     if(debug) then
                       write(*,'(A10,1X,F16.10,1X,I6,1X,I6,1X,I6,1X,I6)') &
                         '(ab|erf(r)/r|cd) = ',cErf,iBasA,iBasB,iBasC,iBasD
-                    endif
-                  endif
+                    end if
+                  end if
 
 !------------------------------------------------------------------------
 !                 End loops over contraction degrees
 !------------------------------------------------------------------------
-                enddo
+                end do
                 deallocate(ShellFunctionD)
-              enddo
+              end do
               iBasD = 0
 !------------------------------------------------------------------------
 ! End loops over shell D
 !------------------------------------------------------------------------
-            enddo
+            end do
             deallocate(ShellFunctionC)
-          enddo
+          end do
           iBasC = 0
 !------------------------------------------------------------------------
 ! End loops over shell C
 !------------------------------------------------------------------------
-        enddo
+        end do
         deallocate(ShellFunctionB)
-      enddo
+      end do
       iBasB = 0
 !------------------------------------------------------------------------
 ! End loops over shell B
 !------------------------------------------------------------------------
-    enddo
+    end do
     deallocate(ShellFunctionA)
-  enddo
+  end do
   iBasA = 0
 !------------------------------------------------------------------------
 ! End loops over shell A

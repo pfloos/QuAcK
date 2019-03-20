@@ -51,7 +51,7 @@ recursive function VRRNuc(m,AngMomA,maxm,Om,ExpPi,CenterAB,CenterPA,CenterPC) &
       do i=1,3
         am(i)  = AngMomA(i)
         amm(i) = AngMomA(i)
-      enddo
+      end do
 ! Loop over cartesian directions
       xyz = 0
       if    (AngMomA(1) > 0) then
@@ -62,7 +62,7 @@ recursive function VRRNuc(m,AngMomA,maxm,Om,ExpPi,CenterAB,CenterPA,CenterPC) &
         xyz = 3
       else
         write(*,*) 'xyz = 0 in VRRNuc!'
-      endif
+      end if
 ! End loop over cartesian directions
       am(xyz)  = am(xyz)  - 1
       amm(xyz) = amm(xyz) - 2
@@ -70,7 +70,7 @@ recursive function VRRNuc(m,AngMomA,maxm,Om,ExpPi,CenterAB,CenterPA,CenterPC) &
          + 0.5d0*dble(am(xyz))*ExpPi*VRRNuc(m,amm,maxm,Om,ExpPi,CenterAB,CenterPA,CenterPC)      &
          - CenterPC(xyz)*ExpPi*VRRNuc(m+1,am,maxm,Om,ExpPi,CenterAB,CenterPA,CenterPC)           &
          - 0.5d0*dble(am(xyz))*ExpPi**2*VRRNuc(m+1,amm,maxm,Om,ExpPi,CenterAB,CenterPA,CenterPC)
-    endif
-  endif
+    end if
+  end if
 
 end function VRRNuc

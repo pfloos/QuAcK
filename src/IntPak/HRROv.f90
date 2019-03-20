@@ -22,7 +22,7 @@ recursive function HRROv(AngMomA,AngMomB,ExpPi,CenterAB,CenterPA) &
     else
       Gab = HRROv(AngMomA+1,AngMomB-1,ExpPi,CenterAB,CenterPA)        &
           + CenterAB*HRROv(AngMomA,AngMomB-1,ExpPi,CenterAB,CenterPA)
-    endif
-  endif
+    end if
+  end if
 
 end function HRROv

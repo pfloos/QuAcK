@@ -22,7 +22,7 @@ recursive function VRROv(AngMomA,ExpPi,CenterPA) &
       Ga = 1d0
     else
       Ga = CenterPA*VRROv(AngMomA-1,ExpPi,CenterPA) + 0.5d0*dble(AngMomA-1)*ExpPi*VRROv(AngMomA-2,ExpPi,CenterPA)
-    endif
-  endif
+    end if
+  end if
 
 end function VRROv

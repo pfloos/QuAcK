@@ -29,7 +29,7 @@ subroutine ComputeNuc(debug,nShell,                        &
   integer,allocatable           :: ShellFunctionA(:,:),ShellFunctionB(:,:)
   double precision              :: ExpA,ExpB,ZC
   double precision,allocatable  :: DA,DB
-  double precision              :: NormCoeff
+  double precision              :: norm_coeff
 
   integer                       :: iBasA,iBasB
   integer                       :: iShA,iShB,iNucC
@@ -131,10 +131,10 @@ subroutine ComputeNuc(debug,nShell,                        &
 
             do iKA=1,KA
               ExpA = ExpShell(iShA,iKA)
-              DA = DShell(iShA,iKA)*NormCoeff(ExpA,AngMomA)
+              DA = DShell(iShA,iKA)*norm_coeff(ExpA,AngMomA)
               do iKB=1,KB
                 ExpB = ExpShell(iShB,iKB)
-                DB = DShell(iShB,iKB)*NormCoeff(ExpB,AngMomB)
+                DB = DShell(iShB,iKB)*norm_coeff(ExpB,AngMomB)
 
                 call NucInt(debug,npNuc,nSigpNuc, &
                             ExpA,CenterA,AngMomA, &
@@ -144,12 +144,12 @@ subroutine ComputeNuc(debug,nShell,                        &
 
                 cNuc = cNuc - DA*DB*ZC*pNuc
 
-              enddo
-            enddo
+              end do
+            end do
 !------------------------------------------------------------------------
 !           End loops over contraction degrees
 !------------------------------------------------------------------------
-          enddo
+          end do
           call cpu_time(end_cNuc)
 !------------------------------------------------------------------------
 ! End loops over nuclear centers C
@@ -163,19 +163,19 @@ subroutine ComputeNuc(debug,nShell,                        &
             if(debug) then
               write(*,'(A10,1X,F16.10,1X,I6,1X,I6)') '(a|V|b) = ',cNuc,iBasA,iBasB
               write(*,*)
-            endif
-          endif
+            end if
+          end if
 
-        enddo
+        end do
         deallocate(ShellFunctionB)
-      enddo
+      end do
       iBasB = 0
 !------------------------------------------------------------------------
 ! End loops over shell B
 !------------------------------------------------------------------------
-    enddo
+    end do
     deallocate(ShellFunctionA)
-  enddo
+  end do
   iBasA = 0
 !------------------------------------------------------------------------
 ! End loops over shell A

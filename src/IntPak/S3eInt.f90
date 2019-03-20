@@ -71,6 +71,6 @@ subroutine S3eInt(debug,iType,np3eInt,nSigp3eInt, &
   if(abs(p3eInt) > 1d-15) then
     nSigp3eInt = nSigp3eInt + 1
     if(.false.) write(*,'(A15,1X,F16.10)') '[a1a2a3|b1b2b3] = ',p3eInt
-  endif
+  end if
 
 end subroutine S3eInt

@@ -23,8 +23,8 @@ subroutine GenerateShell(atot,nShellFunction,ShellFunction)
         ShellFunction(ia,1) = ax
         ShellFunction(ia,2) = ay
         ShellFunction(ia,3) = az
-      endif
-    enddo
-  enddo
+      end if
+    end do
+  end do
 
 end subroutine GenerateShell

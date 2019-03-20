@@ -18,7 +18,7 @@ subroutine AO_values(doDrift,nBas,nShell,nWalk,CenterShell,TotAngMomShell,KShell
 
   integer                       :: atot,nShellFunction,a(3)
   integer,allocatable           :: ShellFunction(:,:)
-  double precision              :: rASq,xA,yA,zA,NormCoeff,prim
+  double precision              :: rASq,xA,yA,zA,norm_coeff,prim
 
   integer                       :: iSh,iShF,iK,iW,iEl,iBas,ixyz
 
@@ -66,7 +66,7 @@ subroutine AO_values(doDrift,nBas,nShell,nWalk,CenterShell,TotAngMomShell,KShell
           do iK=1,KShell(iSh)
             
 !           Calculate the exponential part
-            prim = DShell(iSh,iK)*NormCoeff(ExpShell(iSh,iK),a)*exp(-ExpShell(iSh,iK)*rASq)        
+            prim = DShell(iSh,iK)*norm_coeff(ExpShell(iSh,iK),a)*exp(-ExpShell(iSh,iK)*rASq)        
             AO(iW,iEl,iBas) = AO(iW,iEl,iBas) + prim
 
             if(doDrift) then 

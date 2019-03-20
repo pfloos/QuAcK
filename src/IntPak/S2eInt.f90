@@ -46,7 +46,7 @@ subroutine S2eInt(debug,iType,np2eInt,nSigp2eInt, &
                              ExpKet(1),CenterKet(1,1:3),AngMomKet(1,1:3), &
                              ExpBra(2),CenterBra(2,1:3),AngMomBra(2,1:3), &
                              ExpKet(2),CenterKet(2,1:3),AngMomKet(2,1:3))
-    enddo
+    end do
   else
     do k=1,KG
       ExpSG = ExpG(k)*ExpS**2
@@ -55,8 +55,8 @@ subroutine S2eInt(debug,iType,np2eInt,nSigp2eInt, &
                             ExpSG,                      &
                             ExpBra,CenterBra,AngMomBra, &
                             ExpKet,CenterKet,AngMomKet)
-    enddo
-  endif
+    end do
+  end if
 
 ! Print result
 
@@ -65,6 +65,6 @@ subroutine S2eInt(debug,iType,np2eInt,nSigp2eInt, &
   if(abs(p2eInt) > 1d-15) then
     nSigp2eInt = nSigp2eInt + 1
     if(.false.) write(*,'(A15,1X,F16.10)') '[a1a2|b1b2] = ',p2eInt
-  endif
+  end if
 
 end subroutine S2eInt

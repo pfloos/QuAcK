@@ -32,7 +32,7 @@ subroutine CalcOmErf(maxm,ExpY,fG,NormYSq,Om)
 
   do m=0,maxm
     Om(m) = (2d0/sqrt(pi))*sqrt(fG)*(fG/ExpY)**m*Fm(m)
-  enddo
+  end do
 
   deallocate(Fm)
 

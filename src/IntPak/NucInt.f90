@@ -57,7 +57,7 @@ subroutine NucInt(debug,npNuc,nSigpNuc, &
     CenterPC(i) = CenterP(i) - CenterC(i)
     NormABSq = NormABSq + CenterAB(i)**2
     NormPCSq = NormPCSq + CenterPC(i)**2
-  enddo
+  end do
 
   G = (pi*ExpPi)**(1.5d0)*exp(-NormABSq/(ExpAi+ExpBi))
 
@@ -81,9 +81,9 @@ subroutine NucInt(debug,npNuc,nSigpNuc, &
     write(*,*) '(0|V|0)^m'
     do i=0,maxm
       write(*,*) i,Om(i)
-    enddo
+    end do
     write(*,*)
-  endif
+  end if
 
 !------------------------------------------------------------------------
 ! Launch reccurence relations!
@@ -105,7 +105,7 @@ subroutine NucInt(debug,npNuc,nSigpNuc, &
   if(abs(pNuc) > 1d-15) then
     nSigpNuc = nSigpNuc + 1
 !    write(*,'(A10,1X,F16.10,1X,I6,1X,I6)') '[a|V|b] = ',pNuc
-  endif
+  end if
 
 ! Deallocate arrays
 

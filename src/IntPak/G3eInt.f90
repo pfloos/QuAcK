@@ -49,7 +49,7 @@ function G3eInt(debug,iType,                &
 
   do i=1,3
     ExpZ(i)  = ExpBra(i) + ExpKet(i)
-  enddo 
+  end do 
 
   NormABSq = 0d0
   do i=1,3
@@ -58,12 +58,12 @@ function G3eInt(debug,iType,                &
       CenterAB(i,j) = CenterBra(i,j) - CenterKet(i,j)
       CenterZA(i,j) = CenterZ(i,j) - CenterBra(i,j)
       NormABSq(i) = NormABSq(i) + CenterAB(i,j)**2
-    enddo
-  enddo
+    end do
+  end do
 
   do i=1,3
     GAB(i) = (pi/ExpZ(i))**(1.5d0)*exp(-ExpBra(i)*ExpKet(i)*NormABSq(i)/ExpZ(i))
-  enddo
+  end do
 
 ! Pre-computed shell-sextet quantities
 
@@ -76,7 +76,7 @@ function G3eInt(debug,iType,                &
     TotAngMomBra(i) = AngMomBra(i,1) + AngMomBra(i,2) + AngMomBra(i,3)
     TotAngMomKet(i) = AngMomKet(i,1) + AngMomKet(i,2) + AngMomKet(i,3)
     maxm = maxm + TotAngMomBra(i) + TotAngMomKet(i)
-  enddo
+  end do
 
 ! Pre-compute (000|000)^m
 
@@ -91,9 +91,9 @@ function G3eInt(debug,iType,                &
     write(*,*) '(000|000)^m'
     do i=0,maxm
       write(*,*) i,Om(i)
-    enddo
+    end do
     write(*,*)
-  endif
+  end if
 
 !------------------------------------------------------------------------
 ! Launch reccurence relations!
@@ -104,10 +104,10 @@ function G3eInt(debug,iType,                &
       a1a2a3b1b2b3 = Om(0)
     else
     a1a2a3b1b2b3 = VRR3e(0,AngMomBra,maxm,Om,ExpZ,CenterZA,DY0,DY1,D2Y0,D2Y1)
-    endif
+    end if
   else
     a1a2a3b1b2b3 = HRR3e(AngMomBra,AngMomKet,maxm,Om,ExpZ,CenterAB,CenterZA,DY0,DY1,D2Y0,D2Y1)
-  endif
+  end if
 
   
   call cpu_time(finish_RR)

@@ -35,13 +35,13 @@ subroutine CalcBoysF(maxm,t,Fm)
     do m=0,maxm
       dm = dble(m)
       Fm(m) = 1d0/(2d0*dm+1d0)
-     enddo
+     end do
    else
      do m=0,maxm
        dm = dble(m)
 !       Fm(m) = gamma(dm+0.5d0)*gsl_sf_gamma_inc_P(dm+0.5d0,t)/(2d0*t**(dm+0.5d0))
        Fm(m) = dgami(dm+0.5d0,t)/(2d0*t**(dm+0.5d0))
-     enddo
-   endif
+     end do
+   end if
 
 end subroutine CalcBoysF

@@ -21,7 +21,7 @@ subroutine AO_values_grid(nBas,nShell,CenterShell,TotAngMomShell,KShell,DShell,E
 
   integer                       :: atot,nShellFunction,a(3)
   integer,allocatable           :: ShellFunction(:,:)
-  double precision              :: rASq,xA,yA,zA,NormCoeff,prim
+  double precision              :: rASq,xA,yA,zA,norm_coeff,prim
 
   integer                       :: iSh,iShF,iK,iG,iBas
 
@@ -68,7 +68,7 @@ subroutine AO_values_grid(nBas,nShell,CenterShell,TotAngMomShell,KShell,DShell,E
           
 !         Calculate the exponential part
 
-          prim = DShell(iSh,iK)*NormCoeff(ExpShell(iSh,iK),a)*exp(-ExpShell(iSh,iK)*rASq)        
+          prim = DShell(iSh,iK)*norm_coeff(ExpShell(iSh,iK),a)*exp(-ExpShell(iSh,iK)*rASq)        
           AO(iBas,iG) = AO(iBas,iG) + prim
 
           prim = -2d0*ExpShell(iSh,iK)*prim

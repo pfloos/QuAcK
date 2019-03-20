@@ -48,7 +48,7 @@ recursive function HRRNuc(AngMomA,AngMomB,maxm,Om,ExpPi,CenterAB,CenterPA,Center
       do i=1,3
         ap(i) = AngMomA(i)
         bm(i) = AngMomB(i)
-      enddo
+      end do
 ! Loop over cartesian directions
       xyz = 0
       if    (AngMomB(1) > 0) then
@@ -59,13 +59,13 @@ recursive function HRRNuc(AngMomA,AngMomB,maxm,Om,ExpPi,CenterAB,CenterPA,Center
         xyz = 3
       else
         write(*,*) 'xyz = 0 in HRRNuc!'
-      endif
+      end if
 ! End loop over cartesian directions
       ap(xyz) = ap(xyz) + 1
       bm(xyz) = bm(xyz) - 1
       Gab = HRRNuc(ap,bm,maxm,Om,ExpPi,CenterAB,CenterPA,CenterPC)                    &
           + CenterAB(xyz)*HRRNuc(AngMomA,bm,maxm,Om,ExpPi,CenterAB,CenterPA,CenterPC)
-    endif
-  endif
+    end if
+  end if
 
 end function HRRNuc

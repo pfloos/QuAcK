@@ -72,19 +72,19 @@ subroutine form_EOM_two_body(nO,nV,foo,fov,fvv,t1,t2,cFoo,cFov,cFvv,            
 
   cWoooo(:,:,:,:) = OOOO(:,:,:,:)
 
-  do k=1,nO
-    do l=1,nO
-      do i=1,nO
-        do j=1,nO
+  do i=1,nO
+    do j=1,nO
+      do k=1,nO
+        do l=1,nO
 
           do e=1,nV
-            cWoooo(k,l,i,j) = cWoooo(k,l,i,j) + t1(j,e)*OOOV(k,l,i,e)
-            cWoooo(k,l,i,j) = cWoooo(k,l,i,j) - t1(i,e)*OOOV(k,l,j,e)
+            cWoooo(i,j,k,l) = cWoooo(i,j,k,l) + t1(j,e)*OOOV(i,j,k,e)
+            cWoooo(i,j,k,l) = cWoooo(i,j,k,l) - t1(i,e)*OOOV(i,j,l,e)
           end do
 
-          do e=1,nV
-            do f=1,nV
-              cWoooo(k,l,i,j) = cWoooo(k,l,i,j) + 0.5d0*tau(i,j,e,f)*OOVV(k,l,e,f)
+          do a=1,nV
+            do b=1,nV
+              cWoooo(i,j,k,l) = cWoooo(i,j,k,l) + 0.5d0*tau(k,l,a,b)*OOVV(i,j,a,b)
             end do
           end do
 
@@ -102,14 +102,14 @@ subroutine form_EOM_two_body(nO,nV,foo,fov,fvv,t1,t2,cFoo,cFov,cFvv,            
       do c=1,nV
         do d=1,nV
 
-          do m=1,nV
-            cWvvvv(a,b,c,d) = cWvvvv(a,b,c,d) - t1(m,b)*VOVV(a,m,c,d)
-            cWvvvv(a,b,c,d) = cWvvvv(a,b,c,d) + t1(m,a)*VOVV(b,m,c,d)
+          do i=1,nO
+            cWvvvv(a,b,c,d) = cWvvvv(a,b,c,d) - t1(i,b)*VOVV(a,i,c,d)
+            cWvvvv(a,b,c,d) = cWvvvv(a,b,c,d) + t1(i,a)*VOVV(b,i,c,d)
           end do
 
-          do m=1,nV
-            do n=1,nV
-              cWvvvv(a,b,c,d) = cWvvvv(a,b,c,d) + tau(m,n,a,b)*OOVV(m,n,c,d)
+          do i=1,nO
+            do j=1,nO
+              cWvvvv(a,b,c,d) = cWvvvv(a,b,c,d) + tau(i,j,a,b)*OOVV(i,j,c,d)
             end do
           end do
 
@@ -127,8 +127,8 @@ subroutine form_EOM_two_body(nO,nV,foo,fov,fvv,t1,t2,cFoo,cFov,cFvv,            
       do b=1,nV
         do c=1,nV
 
-          do m=1,nV
-            cWvovv(a,i,b,c) = cWvovv(a,i,b,c) + t1(m,a)*OOVV(m,i,b,c)
+          do j=1,nO
+            cWvovv(a,i,b,c) = cWvovv(a,i,b,c) + t1(j,a)*OOVV(j,i,b,c)
           end do
 
         end do
@@ -145,8 +145,8 @@ subroutine form_EOM_two_body(nO,nV,foo,fov,fvv,t1,t2,cFoo,cFov,cFvv,            
       do k=1,nO
         do a=1,nO
 
-          do e=1,nV
-            cWooov(i,j,k,a) = cWooov(i,j,k,a) + t1(i,e)*OOVV(j,k,e,a)
+          do b=1,nV
+            cWooov(i,j,k,a) = cWooov(i,j,k,a) + t1(i,b)*OOVV(j,k,b,a)
           end do
 
         end do
@@ -195,36 +195,38 @@ subroutine form_EOM_two_body(nO,nV,foo,fov,fvv,t1,t2,cFoo,cFov,cFvv,            
       do c=1,nV
         do i=1,nO
 
-          do m=1,nO
-            do e=1,nV
-              cWvvvo(a,b,c,i) = cWvvvo(a,b,c,i) + t2(i,m,b,e)*VOVV(a,m,c,e)
-              cWvvvo(a,b,c,i) = cWvvvo(a,b,c,i) - t2(i,m,a,e)*VOVV(b,m,c,e)
+          do j=1,nO
+            do d=1,nV
+              cWvvvo(a,b,c,i) = cWvvvo(a,b,c,i) + t2(i,j,b,d)*VOVV(a,j,c,d)
+              cWvvvo(a,b,c,i) = cWvvvo(a,b,c,i) - t2(i,j,a,d)*VOVV(b,j,c,d)
             end do
           end do
 
-          do m=1,nO
-            do n=1,nO
-              cWvvvo(a,b,c,i) = cWvvvo(a,b,c,i) + 0.5d0*tau(m,n,a,b)*VOOO(c,i,m,n)
+          do j=1,nO
+            do k=1,nO
+              cWvvvo(a,b,c,i) = cWvvvo(a,b,c,i) + 0.5d0*tau(j,k,a,b)*VOOO(c,i,j,k)
             end do
           end do
 
-          do m=1,nO
-            cWvvvo(a,b,c,i) = cWvvvo(a,b,c,i) + t2(i,m,a,b)*cFov(m,c)
+          do j=1,nO
+            cWvvvo(a,b,c,i) = cWvvvo(a,b,c,i) + t2(i,j,a,b)*cFov(j,c)
           end do
 
-          do e=1,nV
-            cWvvvo(a,b,c,i) = cWvvvo(a,b,c,i) + t1(i,e)*cWvvvv(a,b,c,e)
+          do d=1,nV
+            cWvvvo(a,b,c,i) = cWvvvo(a,b,c,i) + t1(i,d)*cWvvvv(a,b,c,d)
           end do
 
-          do m=1,nO
-            cWvvvo(a,b,c,i) = cWvvvo(a,b,c,i) - t1(m,a)*OVVO(m,b,c,i)
-            cWvvvo(a,b,c,i) = cWvvvo(a,b,c,i) + t1(m,b)*OVVO(m,a,c,i)
+          do j=1,nO
+            cWvvvo(a,b,c,i) = cWvvvo(a,b,c,i) - t1(j,a)*OVVO(j,b,c,i)
+            cWvvvo(a,b,c,i) = cWvvvo(a,b,c,i) + t1(j,b)*OVVO(j,a,c,i)
+
             do n=1,nO
-              do e=1,nV
-                cWvvvo(a,b,c,i) = cWvvvo(a,b,c,i) + t1(m,a)*t2(n,i,b,e)*OOVV(m,n,c,e)
-                cWvvvo(a,b,c,i) = cWvvvo(a,b,c,i) - t1(m,b)*t2(n,i,a,e)*OOVV(m,n,c,e)
+              do d=1,nV
+                cWvvvo(a,b,c,i) = cWvvvo(a,b,c,i) + t1(j,a)*t2(k,i,b,d)*OOVV(j,k,c,d)
+                cWvvvo(a,b,c,i) = cWvvvo(a,b,c,i) - t1(j,b)*t2(k,i,a,d)*OOVV(j,k,c,d)
               end do
             end do
+
           end do
 
         end do
@@ -241,36 +243,38 @@ subroutine form_EOM_two_body(nO,nV,foo,fov,fvv,t1,t2,cFoo,cFov,cFvv,            
       do j=1,nO
         do k=1,nO
 
-          do m=1,nO
-            do e=1,nV
-              cWovoo(i,a,j,k) = cWovoo(i,a,j,k) + t2(k,m,a,e)*OOOV(i,m,j,e)
-              cWovoo(i,a,j,k) = cWovoo(i,a,j,k) - t2(k,m,a,e)*OOOV(j,m,i,e)
+          do l=1,nO
+            do b=1,nV
+              cWovoo(i,a,j,k) = cWovoo(i,a,j,k) + t2(k,l,a,b)*OOOV(i,l,j,b)
+              cWovoo(i,a,j,k) = cWovoo(i,a,j,k) - t2(k,l,a,b)*OOOV(j,l,i,b)
             end do
           end do
 
-          do e=1,nV
-            do f=1,nV
-              cWovoo(i,a,j,k) = cWovoo(i,a,j,k) + 0.5d0*tau(j,k,e,f)*OVVV(i,a,e,f)
+          do b=1,nV
+            do c=1,nV
+              cWovoo(i,a,j,k) = cWovoo(i,a,j,k) + 0.5d0*tau(j,k,b,c)*OVVV(i,a,b,c)
             end do
           end do
 
-          do e=1,nV
-            cWovoo(i,a,j,k) = cWovoo(i,a,j,k) + t2(j,k,a,e)*cFov(i,e)
+          do b=1,nV
+            cWovoo(i,a,j,k) = cWovoo(i,a,j,k) + t2(j,k,a,b)*cFov(i,b)
           end do
 
-          do m=1,nO
-            cWovoo(i,a,j,k) = cWovoo(i,a,j,k) + t1(m,a)*cWoooo(i,m,j,k)
+          do l=1,nO
+            cWovoo(i,a,j,k) = cWovoo(i,a,j,k) + t1(l,a)*cWoooo(i,l,j,k)
           end do
 
-          do e=1,nV
-            cWovoo(i,a,j,k) = cWovoo(i,a,j,k) - t1(j,e)*OVVO(i,a,e,k)
-            cWovoo(i,a,j,k) = cWovoo(i,a,j,k) + t1(i,e)*OVVO(j,a,e,k) 
-            do m=1,nO
-              do f=1,nV
-                cWovoo(i,a,j,k) = cWovoo(i,a,j,k) + t1(j,e)*t2(m,k,a,f)*OOVV(i,m,e,f)
-                cWovoo(i,a,j,k) = cWovoo(i,a,j,k) - t1(i,e)*t2(m,k,a,f)*OOVV(j,m,e,f)
+          do b=1,nV
+            cWovoo(i,a,j,k) = cWovoo(i,a,j,k) - t1(j,b)*OVVO(i,a,b,k)
+            cWovoo(i,a,j,k) = cWovoo(i,a,j,k) + t1(i,b)*OVVO(j,a,b,k) 
+
+            do l=1,nO
+              do c=1,nV
+                cWovoo(i,a,j,k) = cWovoo(i,a,j,k) + t1(j,b)*t2(l,k,a,c)*OOVV(i,l,b,c)
+                cWovoo(i,a,j,k) = cWovoo(i,a,j,k) - t1(i,b)*t2(l,k,a,c)*OOVV(j,l,b,c)
               end do
             end do
+
           end do
 
         end do

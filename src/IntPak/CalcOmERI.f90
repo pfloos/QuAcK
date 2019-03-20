@@ -32,7 +32,7 @@ subroutine CalcOmERI(maxm,ExpY,NormYSq,Om)
 
   do m=0,maxm
     Om(m) = (2d0/sqrt(pi))*sqrt(ExpY)*Fm(m)
-  enddo
+  end do
 
   deallocate(Fm)
 

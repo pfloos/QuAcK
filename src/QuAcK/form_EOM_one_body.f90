@@ -21,8 +21,8 @@ subroutine form_EOM_one_body(nO,nV,foo,fov,fvv,t1,t2,OOOV,OOVV,OVVV,cFoo,cFov,cF
 
 ! Local variables
 
-  integer                       :: i,j,k,l,m,n
-  integer                       :: a,b,c,d,e,f
+  integer                       :: i,j,k,l
+  integer                       :: a,b,c,d
   double precision,allocatable  :: tau(:,:,:,:)
 
 ! Output variables
@@ -54,20 +54,20 @@ subroutine form_EOM_one_body(nO,nV,foo,fov,fvv,t1,t2,OOOV,OOVV,OVVV,cFoo,cFov,cF
   do a=1,nV
     do b=1,nV
 
-      do m=1,nO
-        cFvv(a,b) = cFvv(a,b) - fov(m,b)*t1(m,a)
+      do i=1,nO
+        cFvv(a,b) = cFvv(a,b) - fov(i,b)*t1(i,a)
       end do
 
-      do m=1,nO
-        do f=1,nV
-          cFvv(a,b) = cFvv(a,b) + t1(m,f)*OVVV(m,a,f,b)
+      do i=1,nO
+        do c=1,nV
+          cFvv(a,b) = cFvv(a,b) + t1(i,c)*OVVV(i,a,c,b)
         end do
       end do
 
-      do m=1,nO
-        do n=1,nO
-          do e=1,nV
-            cFvv(a,b) = cFvv(a,b) - 0.5d0*tau(m,n,a,e)*OOVV(m,n,b,e)
+      do i=1,nO
+        do j=1,nO
+          do c=1,nV
+            cFvv(a,b) = cFvv(a,b) - 0.5d0*tau(i,j,a,c)*OOVV(i,j,b,c)
           end do
         end do
       end do
@@ -79,23 +79,23 @@ subroutine form_EOM_one_body(nO,nV,foo,fov,fvv,t1,t2,OOOV,OOVV,OVVV,cFoo,cFov,cF
 
   cFoo(:,:) = foo(:,:)
 
-  do j=1,nO
-    do i=1,nO
+  do i=1,nO
+    do j=1,nO
 
-      do e=1,nV
-        cFoo(j,i) = cFoo(j,i) + t1(i,e)*fov(j,e)
+      do a=1,nV
+        cFoo(i,j) = cFoo(i,j) + t1(j,a)*fov(i,a)
       end do
 
-      do m=1,nO
-        do e=1,nV
-          cFoo(j,i) = cFoo(j,i) + t1(m,e)*OVVV(j,m,i,e)
+      do k=1,nO
+        do a=1,nV
+          cFoo(i,j) = cFoo(i,j) + t1(k,a)*OVVV(i,k,j,a)
         end do
       end do
 
-      do m=1,nO
-        do e=1,nV
-          do f=1,nV
-            cFoo(j,i) = cFoo(j,i) + 0.5d0*tau(i,m,e,f)*OOVV(j,m,e,f)
+      do k=1,nO
+        do a=1,nV
+          do b=1,nV
+            cFoo(i,j) = cFoo(i,j) + 0.5d0*tau(j,k,a,b)*OOVV(i,k,a,b)
           end do
         end do
       end do

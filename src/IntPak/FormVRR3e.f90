@@ -44,7 +44,7 @@ subroutine FormVRR3e(ExpZ,ExpG,CenterZ,DY0,DY1,D2Y0,D2Y1,delta0,delta1,Y0,Y1)
 
   do i=1,3
     ZetaMat(i,i) = ExpZ(i)
-  enddo
+  end do
 
 !  print*,'Zeta'
 !  call matout(3,3,ZetaMat)
@@ -64,20 +64,20 @@ subroutine FormVRR3e(ExpZ,ExpG,CenterZ,DY0,DY1,D2Y0,D2Y1,delta0,delta1,Y0,Y1)
   do i=1,3
     do j=1,i-1
       GMat(i,j) = - ExpG(j,i)
-    enddo
+    end do
     do j=i+1,3
       GMat(i,j) = - ExpG(i,j)
-    enddo
-  enddo
+    end do
+  end do
 
   do i=1,3
     do j=1,i-1
       GMat(i,i) = GMat(i,i) + ExpG(j,i)
-    enddo
+    end do
     do j=i+1,3
       GMat(i,i) = GMat(i,i) + ExpG(i,j)
-    enddo
-  enddo
+    end do
+  end do
 
 !  print*,'G'
 !  call matout(3,3,GMat)
@@ -89,10 +89,10 @@ subroutine FormVRR3e(ExpZ,ExpG,CenterZ,DY0,DY1,D2Y0,D2Y1,delta0,delta1,Y0,Y1)
       do k=1,3
         CenterY(i,j,k) = CenterZ(i,k) - CenterZ(j,k)
         Y2Mat(i,j) = Y2Mat(i,j) + CenterY(i,j,k)**2
-      enddo
+      end do
       YMat(i,j) = sqrt(Y2Mat(i,j))
-    enddo
-  enddo
+    end do
+  end do
 
 !  print*,'Y'
 !  call matout(3,3,YMat)
@@ -106,8 +106,8 @@ subroutine FormVRR3e(ExpZ,ExpG,CenterZ,DY0,DY1,D2Y0,D2Y1,delta0,delta1,Y0,Y1)
     do j=1,3
       Delta0Mat(i,j) = ZetaMat(i,j)   + GMat(i,j)
       Delta1Mat(i,j) = Delta0Mat(i,j) + CMat(i,j)
-    enddo
-  enddo
+    end do
+  end do
 
 ! Form the DY and D2Y matrices
 
@@ -117,10 +117,10 @@ subroutine FormVRR3e(ExpZ,ExpG,CenterZ,DY0,DY1,D2Y0,D2Y1,delta0,delta1,Y0,Y1)
         DYMat(i,j,k) = KappaCross(i,j,k)*YMat(j,k)/ExpZ(i)
         do l=1,3
           D2YMat(i,j,k,l) = 0.5d0*KappaCross(i,k,l)*KappaCross(j,k,l)/(ExpZ(i)*ExpZ(j))
-        enddo
-      enddo
-    enddo
-  enddo
+        end do
+      end do
+    end do
+  end do
 
 ! Compute the inverse of the Delta0 and Delta1 matrices
 
@@ -130,8 +130,8 @@ subroutine FormVRR3e(ExpZ,ExpG,CenterZ,DY0,DY1,D2Y0,D2Y1,delta0,delta1,Y0,Y1)
     do j=1,3
       InvDelta0Mat(i,j) = Delta0Mat(i,j)
       InvDelta1Mat(i,j) = Delta1Mat(i,j)
-    enddo
-  enddo
+    end do
+  end do
 !  call amove(3,3,Delta0Mat,InvDelta0Mat)
 !  call amove(3,3,Delta1Mat,InvDelta1Mat)
 
@@ -150,10 +150,10 @@ subroutine FormVRR3e(ExpZ,ExpG,CenterZ,DY0,DY1,D2Y0,D2Y1,delta0,delta1,Y0,Y1)
         do l=1,3
           D0Mat(i,j) = D0Mat(i,k) + ZetaMat(i,k)*InvDelta0Mat(k,l)*ZetaMat(l,j)
           D1Mat(i,j) = D1Mat(i,k) + ZetaMat(i,k)*InvDelta1Mat(k,l)*ZetaMat(l,j)
-        enddo
-      enddo
-    enddo
-  enddo
+        end do
+      end do
+    end do
+  end do
 
 ! Form the derivative matrices
 
@@ -163,8 +163,8 @@ subroutine FormVRR3e(ExpZ,ExpG,CenterZ,DY0,DY1,D2Y0,D2Y1,delta0,delta1,Y0,Y1)
     do j=1,3
       call CalcTrAB(3,D0Mat,D2YMat,D2Y0(i,j))
       call CalcTrAB(3,D1Mat,D2YMat,D2Y1(i,j))
-    enddo
-  enddo
+    end do
+  end do
 
 ! Compute Y0 and Y1
 

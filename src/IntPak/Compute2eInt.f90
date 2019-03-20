@@ -32,7 +32,7 @@ subroutine Compute2eInt(debug,chemist_notation,iType,nShell,             &
   integer,allocatable           :: ShellFunctionB1(:,:),ShellFunctionB2(:,:)
   double precision              :: ExpBra(2),ExpKet(2)
   double precision              :: DBra(2),DKet(2)
-  double precision              :: NormCoeff
+  double precision              :: norm_coeff
 
   integer                       :: iBasA1,iBasA2,iBasB1,iBasB2
   integer                       :: iShA1,iShA2,iShB1,iShB2
@@ -110,7 +110,7 @@ subroutine Compute2eInt(debug,chemist_notation,iType,nShell,             &
     iFile = 24
     open(unit=iFile,file='int/Erf.dat')
 
-  endif
+  end if
 
 !------------------------------------------------------------------------
 ! Loops over shell A1
@@ -213,16 +213,16 @@ subroutine Compute2eInt(debug,chemist_notation,iType,nShell,             &
           
                   do iKA1=1,KBra(1)
                     ExpBra(1) = ExpShell(iShA1,iKA1)
-                    DBra(1) = DShell(iShA1,iKA1)*NormCoeff(ExpBra(1),AngMomBra(1,1:3))
+                    DBra(1) = DShell(iShA1,iKA1)*norm_coeff(ExpBra(1),AngMomBra(1,1:3))
                     do iKA2=1,KBra(2)
                       ExpBra(2) = ExpShell(iShA2,iKA2)
-                      DBra(2) = DShell(iShA2,iKA2)*NormCoeff(ExpBra(2),AngMomBra(2,1:3))
+                      DBra(2) = DShell(iShA2,iKA2)*norm_coeff(ExpBra(2),AngMomBra(2,1:3))
                       do iKB1=1,KKet(1)
                         ExpKet(1) = ExpShell(iShB1,iKB1)
-                        DKet(1) = DShell(iShB1,iKB1)*NormCoeff(ExpKet(1),AngMomKet(1,1:3))
+                        DKet(1) = DShell(iShB1,iKB1)*norm_coeff(ExpKet(1),AngMomKet(1,1:3))
                         do iKB2=1,KKet(2)
                           ExpKet(2) = ExpShell(iShB2,iKB2)
-                          DKet(2) = DShell(iShB2,iKB2)*NormCoeff(ExpKet(2),AngMomKet(2,1:3))
+                          DKet(2) = DShell(iShB2,iKB2)*norm_coeff(ExpKet(2),AngMomKet(2,1:3))
 
                           call S2eInt(debug,iType,np2eInt,nSigp2eInt, &
                                       ExpS,KG,DG,ExpG,                &
@@ -232,10 +232,10 @@ subroutine Compute2eInt(debug,chemist_notation,iType,nShell,             &
 
                           c2eInt = c2eInt + DBra(1)*DBra(2)*DKet(1)*DKet(2)*p2eInt
 
-                        enddo
-                      enddo
-                    enddo
-                  enddo
+                        end do
+                      end do
+                    end do
+                  end do
                   call cpu_time(end_c2eInt)
 
                   nc2eInt = nc2eInt + 1
@@ -252,7 +252,7 @@ subroutine Compute2eInt(debug,chemist_notation,iType,nShell,             &
                       if(debug) then
                         write(*,'(A10,1X,F16.10,1X,I6,1X,I6,1X,I6,1X,I6)') &
                           '(a1b1|a2b2) = ',c2eInt,iBasA1,iBasB1,iBasA2,iBasB2
-                      endif
+                      end if
 
                     else
 
@@ -261,38 +261,38 @@ subroutine Compute2eInt(debug,chemist_notation,iType,nShell,             &
                       if(debug) then
                         write(*,'(A10,1X,F16.10,1X,I6,1X,I6,1X,I6,1X,I6)') &
                           '<a1a2|b1b2> = ',c2eInt,iBasA1,iBasA2,iBasB1,iBasB2
-                      endif
+                      end if
  
-                    endif
-                  endif
+                    end if
+                  end if
 
 !------------------------------------------------------------------------
 !                 End loops over contraction degrees
 !------------------------------------------------------------------------
-                enddo
+                end do
                 deallocate(ShellFunctionB2)
-              enddo
+              end do
               iBasB2 = 0
 !------------------------------------------------------------------------
 ! End loops over shell B2
 !------------------------------------------------------------------------
-            enddo
+            end do
             deallocate(ShellFunctionA2)
-          enddo
+          end do
           iBasA2 = 0
 !------------------------------------------------------------------------
 ! End loops over shell A2
 !------------------------------------------------------------------------
-        enddo
+        end do
         deallocate(ShellFunctionB1)
-      enddo
+      end do
       iBasB1 = 0
 !------------------------------------------------------------------------
 ! End loops over shell B1
 !------------------------------------------------------------------------
-    enddo
+    end do
     deallocate(ShellFunctionA1)
-  enddo
+  end do
   iBasA1 = 0
 !------------------------------------------------------------------------
 ! End loops over shell A1
