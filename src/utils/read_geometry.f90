@@ -33,7 +33,7 @@ subroutine read_geometry(nNuc,ZNuc,rNuc,ENuc)
 
   do i=1,nNuc
     read(1,*) El,rNuc(i,1),rNuc(i,2),rNuc(i,3)
-    ZNuc(i) = element_number(El)
+    ZNuc(i) = dble(element_number(El))
   enddo
 
 ! Compute nuclear repulsion energy

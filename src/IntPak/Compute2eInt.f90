@@ -248,6 +248,7 @@ subroutine Compute2eInt(debug,chemist_notation,iType,nShell,             &
                     if(chemist_notation) then
 
                       write(iFile,'(I6,I6,I6,I6,F20.15)') iBasA1,iBasB1,iBasA2,iBasB2,c2eInt
+!                     write(iFile,'(F20.15,I6,I6,I6,I6)') c2eInt,iBasA1,iBasB1,iBasA2,iBasB2
 
                       if(debug) then
                         write(*,'(A10,1X,F16.10,1X,I6,1X,I6,1X,I6,1X,I6)') &
@@ -257,6 +258,7 @@ subroutine Compute2eInt(debug,chemist_notation,iType,nShell,             &
                     else
 
                       write(iFile,'(I6,I6,I6,I6,F20.15)') iBasA1,iBasA2,iBasB1,iBasB2,c2eInt
+!                     write(iFile,'(F20.15,I6,I6,I6,I6)') c2eInt,iBasA1,iBasA2,iBasB1,iBasB2
 
                       if(debug) then
                         write(*,'(A10,1X,F16.10,1X,I6,1X,I6,1X,I6,1X,I6)') &

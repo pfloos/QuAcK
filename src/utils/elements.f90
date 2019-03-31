@@ -23,18 +23,27 @@ function element_number(element_name)
  integer :: ielement
 !=====
 
- ielement=1
- do while( ADJUSTL(element_name) /= ADJUSTL(element_list(ielement)) )
-   if( ielement == nelement_max ) then
-     write(*,'(a,a)')    ' Input symbol ',element_name
-     write(*,'(a,i3,a)') ' Element symbol is not one of first ',nelement_max,' elements'
-     write(*,*) '!!! element symbol not understood !!!'
-     stop
-   endif
-   ielement = ielement + 1
- enddo
+ ielement = 1
 
- element_number = ielement
+ if(ADJUSTL(element_name) == ADJUSTL('X'))  then
+
+   element_number = 0
+
+ else 
+
+   do while( ADJUSTL(element_name) /= ADJUSTL(element_list(ielement)) )
+     if( ielement == nelement_max ) then
+       write(*,'(a,a)')    ' Input symbol ',element_name
+       write(*,'(a,i3,a)') ' Element symbol is not one of first ',nelement_max,' elements'
+       write(*,*) '!!! element symbol not understood !!!'
+       stop
+     end if
+     ielement = ielement + 1
+   end do
+
+   element_number = ielement
+
+  end if
 
 end function element_number
 

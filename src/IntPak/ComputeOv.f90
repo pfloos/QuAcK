@@ -139,6 +139,7 @@ subroutine ComputeOv(debug,nBas,nShell,                 &
             nSigcOv = nSigcOv + 1
             t_cOv = end_cOv - start_cOv
             write(8,'(I6,I6,F20.15)') iBasA,iBasB,cOv
+!           write(8,'(F20.15,I6,I6)') cOv,iBasA,iBasB
             if(debug) then
               write(*,'(A10,1X,F16.10,1X,I6,1X,I6)') '(a|b) = ',cOv,iBasA,iBasB
             end if

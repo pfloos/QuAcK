@@ -19,7 +19,7 @@ program IntPak
   logical                       :: do4eInt(n4eInt)
 
   integer                       :: nNuc,nBas,iType
-  integer                       :: nEl,nO,nV,nC,nR
+  integer                       :: nEl(nspin),nC(nspin),nO(nspin),nV(nspin),nR(nspin),nS(nspin)
   double precision              :: ExpS
   double precision              :: ENuc
   integer                       :: KG

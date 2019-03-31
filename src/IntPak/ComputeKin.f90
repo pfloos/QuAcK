@@ -136,6 +136,7 @@ subroutine ComputeKin(debug,nShell,                        &
             nSigcKin = nSigcKin + 1
             t_cKin = end_cKin - start_cKin
             write(9,'(I6,I6,F20.15)') iBasA,iBasB,cKin
+!           write(9,'(F20.15,I6,I6)') cKin,iBasA,iBasB
             if(debug) then
               write(*,'(A10,1X,F16.10,1X,I6,1X,I6)') '(a|T|b) = ',cKin,iBasA,iBasB
             end if

@@ -160,6 +160,7 @@ subroutine ComputeNuc(debug,nShell,                        &
             nSigcNuc = nSigcNuc + 1
             t_cNuc = end_cNuc - start_cNuc
             write(10,'(I6,I6,F20.15)') iBasA,iBasB,cNuc
+!           write(10,'(F20.15,I6,I6)') cNuc,iBasA,iBasB
             if(debug) then
               write(*,'(A10,1X,F16.10,1X,I6,1X,I6)') '(a|V|b) = ',cNuc,iBasA,iBasB
               write(*,*)

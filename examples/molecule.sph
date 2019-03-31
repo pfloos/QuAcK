@@ -1,4 +1,4 @@
-# nAt nEl nCore nRyd
-  1   2   0     0
+# nAt nEla nElb nCore nRyd
+  1   1     1   0     0
 # Znuc   x            y           z
-  0.     0.0          0.0         0.0
+  X      0.0          0.0         0.0
