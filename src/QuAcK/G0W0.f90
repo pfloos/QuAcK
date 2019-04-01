@@ -1,5 +1,5 @@
 subroutine G0W0(COHSEX,SOSEX,BSE,TDA,singlet_manifold,triplet_manifold, & 
-                nBas,nC,nO,nV,nR,nS,ENuc,ERHF,Hc,P,ERI_AO_basis,ERI_MO_basis,cHF,eHF,eG0W0)
+                nBas,nC,nO,nV,nR,nS,ENuc,ERHF,Hc,ERI_AO_basis,ERI_MO_basis,P,cHF,eHF,eG0W0)
 
 ! Perform G0W0 calculation
 

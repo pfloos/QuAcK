@@ -22,6 +22,7 @@ subroutine qsGW(maxSCF,thresh,max_diis,COHSEX,SOSEX,BSE,TDA,G0W,GW0,singlet_mani
   logical                       :: dRPA
   integer                       :: nSCF,nBasSq,ispin,n_diis
   double precision              :: EcRPA,EcGM,Conv
+  double precision              :: rcond
   double precision,external     :: trace_matrix
   double precision,allocatable  :: error_diis(:,:),F_diis(:,:)
   double precision,allocatable  :: Omega(:,:),XpY(:,:,:),rho(:,:,:,:),rhox(:,:,:,:)
@@ -136,7 +137,11 @@ subroutine qsGW(maxSCF,thresh,max_diis,COHSEX,SOSEX,BSE,TDA,G0W,GW0,singlet_mani
     ! DIIS extrapolation 
 
     n_diis = min(n_diis+1,max_diis)
-    call DIIS_extrapolation(nBasSq,nBasSq,n_diis,error_diis,F_diis,error,F)
+    call DIIS_extrapolation(rcond,nBasSq,nBasSq,n_diis,error_diis,F_diis,error,F)
+
+!   Reset DIIS if required
+
+    if(abs(rcond) < 1d-15) n_diis = 0
 
     ! Diagonalize Hamiltonian in AO basis
 

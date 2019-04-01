@@ -20,7 +20,8 @@ subroutine evGW(maxSCF,thresh,max_diis,COHSEX,SOSEX,BSE,TDA,G0W,GW0,singlet_mani
 
   logical                       :: dRPA,linear_mixing
   integer                       :: ispin,nSCF,n_diis
-  double precision              :: Conv,EcRPA,lambda
+  double precision              :: rcond
+  double precision              :: Conv,EcRPA,EcGM,lambda
   double precision,allocatable  :: error_diis(:,:),e_diis(:,:)
   double precision,allocatable  :: eGW(:),eOld(:),Z(:)
   double precision,allocatable  :: H(:,:),SigmaC(:)
@@ -98,13 +99,13 @@ subroutine evGW(maxSCF,thresh,max_diis,COHSEX,SOSEX,BSE,TDA,G0W,GW0,singlet_mani
     if(G0W) then
 
       call self_energy_correlation_diag(COHSEX,SOSEX,nBas,nC,nO,nV,nR,nS,eHF, & 
-                                        Omega(:,ispin),rho(:,:,:,ispin),rhox(:,:,:,ispin),SigmaC)
+                                        Omega(:,ispin),rho(:,:,:,ispin),rhox(:,:,:,ispin),EcGM,SigmaC)
       call renormalization_factor(SOSEX,nBas,nC,nO,nV,nR,nS,eHF,Omega(:,ispin),rho(:,:,:,ispin),rhox(:,:,:,ispin),Z)
 
     else 
 
       call self_energy_correlation_diag(COHSEX,SOSEX,nBas,nC,nO,nV,nR,nS,eGW, & 
-                                        Omega(:,ispin),rho(:,:,:,ispin),rhox(:,:,:,ispin),SigmaC)
+                                        Omega(:,ispin),rho(:,:,:,ispin),rhox(:,:,:,ispin),EcGM,SigmaC)
       call renormalization_factor(SOSEX,nBas,nC,nO,nV,nR,nS,eGW,Omega(:,ispin),rho(:,:,:,ispin),rhox(:,:,:,ispin),Z)
 
     endif
@@ -139,7 +140,11 @@ subroutine evGW(maxSCF,thresh,max_diis,COHSEX,SOSEX,BSE,TDA,G0W,GW0,singlet_mani
     else
 
       n_diis = min(n_diis+1,max_diis)
-      call DIIS_extrapolation(nBas,nBas,n_diis,error_diis,e_diis,eGW-eOld,eGW)
+      call DIIS_extrapolation(rcond,nBas,nBas,n_diis,error_diis,e_diis,eGW-eOld,eGW)
+
+!    Reset DIIS if required
+
+      if(abs(rcond) < 1d-15) n_diis = 0
 
     endif
 

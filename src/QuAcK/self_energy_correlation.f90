@@ -66,7 +66,7 @@ subroutine self_energy_correlation(COHSEX,SOSEX,nBas,nC,nO,nV,nR,nS,e,Omega,rho,
       enddo
     enddo
 
-    EcGM=0d0
+    EcGM = 0d0
     do i=nC+1,nO
       EcGM = EcGM + SigC(i,i)
     enddo
