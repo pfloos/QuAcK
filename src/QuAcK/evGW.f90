@@ -90,9 +90,9 @@ subroutine evGW(maxSCF,thresh,max_diis,COHSEX,SOSEX,BSE,TDA,G0W,GW0,singlet_mani
 
 !   Compute correlation part of the self-energy 
 
-    call excitation_density(nBas,nC,nO,nR,nS,cHF,ERI_AO_basis,XpY(:,:,ispin),rho(:,:,:,ispin))
+    call excitation_density(nBas,nC,nO,nR,nS,cHF,ERI_MO_basis,XpY(:,:,ispin),rho(:,:,:,ispin))
 
-    if(SOSEX) call excitation_density_SOSEX(nBas,nC,nO,nR,nS,cHF,ERI_AO_basis,XpY(:,:,ispin),rhox(:,:,:,ispin))
+    if(SOSEX) call excitation_density_SOSEX(nBas,nC,nO,nR,nS,cHF,ERI_MO_basis,XpY(:,:,ispin),rhox(:,:,:,ispin))
 
     ! Correlation self-energy
 
@@ -199,7 +199,7 @@ subroutine evGW(maxSCF,thresh,max_diis,COHSEX,SOSEX,BSE,TDA,G0W,GW0,singlet_mani
       ispin = 2
       call linear_response(ispin,dRPA,TDA,.false.,nBas,nC,nO,nV,nR,nS,eGW,ERI_MO_basis, &
                            rho(:,:,:,ispin),EcRPA,Omega(:,ispin),XpY(:,:,ispin))
-      call excitation_density(nBas,nC,nO,nR,nS,cHF,ERI_AO_basis,XpY(:,:,ispin),rho(:,:,:,ispin))
+      call excitation_density(nBas,nC,nO,nR,nS,cHF,ERI_MO_basis,XpY(:,:,ispin),rho(:,:,:,ispin))
 
       call linear_response(ispin,dRPA,TDA,BSE,nBas,nC,nO,nV,nR,nS,eGW,ERI_MO_basis, &
                            rho(:,:,:,ispin),EcRPA,Omega(:,ispin),XpY(:,:,ispin))

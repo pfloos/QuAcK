@@ -118,7 +118,7 @@ subroutine G0W0(COHSEX,SOSEX,BSE,TDA,singlet_manifold,triplet_manifold, &
       ispin = 2
       call linear_response(ispin,dRPA,TDA,.false.,nBas,nC,nO,nV,nR,nS,eHF,ERI_MO_basis, &
                            rho(:,:,:,ispin),EcRPA,Omega(:,ispin),XpY(:,:,ispin))
-      call excitation_density(nBas,nC,nO,nR,nS,cHF,ERI_AO_basis,XpY(:,:,ispin),rho(:,:,:,ispin))
+      call excitation_density(nBas,nC,nO,nR,nS,cHF,ERI_MO_basis,XpY(:,:,ispin),rho(:,:,:,ispin))
 
       call linear_response(ispin,dRPA,TDA,BSE,nBas,nC,nO,nV,nR,nS,eG0W0,ERI_MO_basis, &
                            rho(:,:,:,1),EcRPA,Omega(:,ispin),XpY(:,:,ispin))
