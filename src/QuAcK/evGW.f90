@@ -8,24 +8,52 @@ subroutine evGW(maxSCF,thresh,max_diis,COHSEX,SOSEX,BSE,TDA,G0W,GW0,singlet_mani
 
 ! Input variables
 
-  integer,intent(in)            :: maxSCF,max_diis
-  double precision,intent(in)   :: thresh,ENuc,ERHF
-  logical,intent(in)            :: COHSEX,SOSEX,BSE,TDA,G0W,GW0
-  logical,intent(in)            :: singlet_manifold,triplet_manifold,linearize
+  integer,intent(in)            :: maxSCF
+  integer,intent(in)            :: max_diis
+  double precision,intent(in)   :: thresh
+  double precision,intent(in)   :: ENuc
+  double precision,intent(in)   :: ERHF
+  logical,intent(in)            :: COHSEX
+  logical,intent(in)            :: SOSEX
+  logical,intent(in)            :: BSE
+  logical,intent(in)            :: TDA
+  logical,intent(in)            :: G0W
+  logical,intent(in)            :: GW0
+  logical,intent(in)            :: singlet_manifold
+  logical,intent(in)            :: triplet_manifold
+  logical,intent(in)            :: linearize
   integer,intent(in)            :: nBas,nC,nO,nV,nR,nS
-  double precision,intent(in)   :: cHF(nBas,nBas),eHF(nBas),eG0W0(nBas),Hc(nBas,nBas),PHF(nBas,nBas) 
-  double precision,intent(in)   :: ERI_AO_basis(nBas,nBas,nBas,nBas),ERI_MO_basis(nBas,nBas,nBas,nBas)
+  double precision,intent(in)   :: eHF(nBas)
+  double precision,intent(in)   :: cHF(nBas,nBas)
+  double precision,intent(in)   :: PHF(nBas,nBas) 
+  double precision,intent(in)   :: eG0W0(nBas)
+  double precision,intent(in)   :: Hc(nBas,nBas)
+  double precision,intent(in)   :: ERI_AO_basis(nBas,nBas,nBas,nBas)
+  double precision,intent(in)   :: ERI_MO_basis(nBas,nBas,nBas,nBas)
 
 ! Local variables
 
-  logical                       :: dRPA,linear_mixing
-  integer                       :: ispin,nSCF,n_diis
+  logical                       :: dRPA
+  logical                       :: linear_mixing
+  integer                       :: ispin
+  integer                       :: nSCF
+  integer                       :: n_diis
   double precision              :: rcond
-  double precision              :: Conv,EcRPA,EcGM,lambda
-  double precision,allocatable  :: error_diis(:,:),e_diis(:,:)
-  double precision,allocatable  :: eGW(:),eOld(:),Z(:)
-  double precision,allocatable  :: H(:,:),SigmaC(:)
-  double precision,allocatable  :: Omega(:,:),XpY(:,:,:),rho(:,:,:,:),rhox(:,:,:,:)
+  double precision              :: Conv
+  double precision              :: EcRPA
+  double precision              :: EcGM
+  double precision              :: lambda
+  double precision,allocatable  :: error_diis(:,:)
+  double precision,allocatable  :: e_diis(:,:)
+  double precision,allocatable  :: eGW(:)
+  double precision,allocatable  :: eOld(:)
+  double precision,allocatable  :: Z(:)
+  double precision,allocatable  :: H(:,:)
+  double precision,allocatable  :: SigC(:)
+  double precision,allocatable  :: Omega(:,:)
+  double precision,allocatable  :: XpY(:,:,:)
+  double precision,allocatable  :: rho(:,:,:,:)
+  double precision,allocatable  :: rhox(:,:,:,:)
 
 ! Hello world
 
@@ -51,10 +79,8 @@ subroutine evGW(maxSCF,thresh,max_diis,COHSEX,SOSEX,BSE,TDA,G0W,GW0,singlet_mani
 
 ! Memory allocation
 
-  allocate(eGW(nBas),eOld(nBas),Z(nBas),                       &
-           H(nBas,nBas),SigmaC(nBas),                          &
-           Omega(nS,nspin),XpY(nS,nS,nspin),                   &
-           rho(nBas,nBas,nS,nspin),rhox(nBas,nBas,nS,nspin),   &
+  allocate(eGW(nBas),eOld(nBas),Z(nBas),H(nBas,nBas),SigC(nBas),Omega(nS,nspin), & 
+           XpY(nS,nS,nspin),rho(nBas,nBas,nS,nspin),rhox(nBas,nBas,nS,nspin),    &
            error_diis(nBas,max_diis),e_diis(nBas,max_diis))
 
 ! Initialization
@@ -90,22 +116,22 @@ subroutine evGW(maxSCF,thresh,max_diis,COHSEX,SOSEX,BSE,TDA,G0W,GW0,singlet_mani
 
 !   Compute correlation part of the self-energy 
 
-    call excitation_density(nBas,nC,nO,nR,nS,cHF,ERI_MO_basis,XpY(:,:,ispin),rho(:,:,:,ispin))
+    call excitation_density(nBas,nC,nO,nR,nS,ERI_MO_basis,XpY(:,:,ispin),rho(:,:,:,ispin))
 
-    if(SOSEX) call excitation_density_SOSEX(nBas,nC,nO,nR,nS,cHF,ERI_MO_basis,XpY(:,:,ispin),rhox(:,:,:,ispin))
+    if(SOSEX) call excitation_density_SOSEX(nBas,nC,nO,nR,nS,ERI_MO_basis,XpY(:,:,ispin),rhox(:,:,:,ispin))
 
     ! Correlation self-energy
 
     if(G0W) then
 
       call self_energy_correlation_diag(COHSEX,SOSEX,nBas,nC,nO,nV,nR,nS,eHF, & 
-                                        Omega(:,ispin),rho(:,:,:,ispin),rhox(:,:,:,ispin),EcGM,SigmaC)
+                                        Omega(:,ispin),rho(:,:,:,ispin),rhox(:,:,:,ispin),EcGM,SigC)
       call renormalization_factor(SOSEX,nBas,nC,nO,nV,nR,nS,eHF,Omega(:,ispin),rho(:,:,:,ispin),rhox(:,:,:,ispin),Z)
 
     else 
 
       call self_energy_correlation_diag(COHSEX,SOSEX,nBas,nC,nO,nV,nR,nS,eGW, & 
-                                        Omega(:,ispin),rho(:,:,:,ispin),rhox(:,:,:,ispin),EcGM,SigmaC)
+                                        Omega(:,ispin),rho(:,:,:,ispin),rhox(:,:,:,ispin),EcGM,SigC)
       call renormalization_factor(SOSEX,nBas,nC,nO,nV,nR,nS,eGW,Omega(:,ispin),rho(:,:,:,ispin),rhox(:,:,:,ispin),Z)
 
     endif
@@ -114,11 +140,11 @@ subroutine evGW(maxSCF,thresh,max_diis,COHSEX,SOSEX,BSE,TDA,G0W,GW0,singlet_mani
 
     if(linearize) then 
 
-      eGW(:) = eHF(:) + Z(:)*SigmaC(:)
+      eGW(:) = eHF(:) + Z(:)*SigC(:)
 
     else
 
-      eGW(:) = eHF(:) + SigmaC(:)
+      eGW(:) = eHF(:) + SigC(:)
 
     endif
 
@@ -129,7 +155,7 @@ subroutine evGW(maxSCF,thresh,max_diis,COHSEX,SOSEX,BSE,TDA,G0W,GW0,singlet_mani
     ! Print results
 
     call print_excitation('RPA  ',ispin,nS,Omega(:,ispin))
-    call print_evGW(nBas,nO,nSCF,Conv,eHF,ENuc,ERHF,SigmaC,Z,eGW,EcRPA)
+    call print_evGW(nBas,nO,nSCF,Conv,eHF,ENuc,ERHF,SigC,Z,eGW,EcRPA)
 
     ! Linear mixing or DIIS extrapolation
 
@@ -199,7 +225,7 @@ subroutine evGW(maxSCF,thresh,max_diis,COHSEX,SOSEX,BSE,TDA,G0W,GW0,singlet_mani
       ispin = 2
       call linear_response(ispin,dRPA,TDA,.false.,nBas,nC,nO,nV,nR,nS,eGW,ERI_MO_basis, &
                            rho(:,:,:,ispin),EcRPA,Omega(:,ispin),XpY(:,:,ispin))
-      call excitation_density(nBas,nC,nO,nR,nS,cHF,ERI_MO_basis,XpY(:,:,ispin),rho(:,:,:,ispin))
+      call excitation_density(nBas,nC,nO,nR,nS,ERI_MO_basis,XpY(:,:,ispin),rho(:,:,:,ispin))
 
       call linear_response(ispin,dRPA,TDA,BSE,nBas,nC,nO,nV,nR,nS,eGW,ERI_MO_basis, &
                            rho(:,:,:,ispin),EcRPA,Omega(:,ispin),XpY(:,:,ispin))

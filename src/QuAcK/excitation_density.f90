@@ -1,4 +1,4 @@
-subroutine excitation_density(nBas,nC,nO,nR,nS,c,ERI,XpY,rho)
+subroutine excitation_density(nBas,nC,nO,nR,nS,ERI,XpY,rho)
 
 ! Compute excitation densities
 
@@ -7,7 +7,6 @@ subroutine excitation_density(nBas,nC,nO,nR,nS,c,ERI,XpY,rho)
 ! Input variables
 
   integer,intent(in)            :: nBas,nC,nO,nR,nS
-  double precision,intent(in)   :: c(nBas,nBas)
   double precision,intent(in)   :: ERI(nBas,nBas,nBas,nBas)
   double precision,intent(in)   :: XpY(nS,nS)
 

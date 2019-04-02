@@ -1,5 +1,5 @@
 subroutine G0W0(COHSEX,SOSEX,BSE,TDA,singlet_manifold,triplet_manifold, & 
-                nBas,nC,nO,nV,nR,nS,ENuc,ERHF,Hc,ERI_AO_basis,ERI_MO_basis,P,cHF,eHF,eG0W0)
+                nBas,nC,nO,nV,nR,nS,ENuc,ERHF,Hc,ERI_AO_basis,ERI_MO_basis,PHF,cHF,eHF,eG0W0)
 
 ! Perform G0W0 calculation
 
@@ -8,19 +8,34 @@ subroutine G0W0(COHSEX,SOSEX,BSE,TDA,singlet_manifold,triplet_manifold, &
 
 ! Input variables
 
-  logical,intent(in)            :: COHSEX,SOSEX,BSE,TDA,singlet_manifold,triplet_manifold
+  logical,intent(in)            :: COHSEX
+  logical,intent(in)            :: SOSEX
+  logical,intent(in)            :: BSE
+  logical,intent(in)            :: TDA
+  logical,intent(in)            :: singlet_manifold
+  logical,intent(in)            :: triplet_manifold
   integer,intent(in)            :: nBas,nC,nO,nV,nR,nS
   double precision,intent(in)   :: ENuc,ERHF
-  double precision,intent(in)   :: cHF(nBas,nBas),eHF(nBas),Hc(nBas,nBas),P(nBas,nBas)
-  double precision,intent(in)   :: ERI_AO_basis(nBas,nBas,nBas,nBas),ERI_MO_basis(nBas,nBas,nBas,nBas)
+  double precision,intent(in)   :: eHF(nBas)
+  double precision,intent(in)   :: cHF(nBas,nBas)
+  double precision,intent(in)   :: PHF(nBas,nBas)
+  double precision,intent(in)   :: Hc(nBas,nBas)
+  double precision,intent(in)   :: ERI_AO_basis(nBas,nBas,nBas,nBas)
+  double precision,intent(in)   :: ERI_MO_basis(nBas,nBas,nBas,nBas)
 
 ! Local variables
 
   logical                       :: dRPA
   integer                       :: ispin
-  double precision              :: EcRPA,EcGM
-  double precision,allocatable  :: H(:,:),SigmaC(:),Z(:)
-  double precision,allocatable  :: Omega(:,:),XpY(:,:,:),rho(:,:,:,:),rhox(:,:,:,:)
+  double precision              :: EcRPA
+  double precision              :: EcGM
+  double precision,allocatable  :: H(:,:)
+  double precision,allocatable  :: SigC(:)
+  double precision,allocatable  :: Z(:)
+  double precision,allocatable  :: Omega(:,:)
+  double precision,allocatable  :: XpY(:,:,:)
+  double precision,allocatable  :: rho(:,:,:,:)
+  double precision,allocatable  :: rhox(:,:,:,:)
 
 ! Output variables
 
@@ -49,13 +64,12 @@ subroutine G0W0(COHSEX,SOSEX,BSE,TDA,singlet_manifold,triplet_manifold, &
 
 ! Memory allocation
 
-  allocate(H(nBas,nBas),SigmaC(nBas),Z(nBas), &
-           Omega(nS,nspin),XpY(nS,nS,nspin),  & 
+  allocate(H(nBas,nBas),SigC(nBas),Z(nBas),Omega(nS,nspin),XpY(nS,nS,nspin),  & 
            rho(nBas,nBas,nS,nspin),rhox(nBas,nBas,nS,nspin))
 
 ! Compute Hartree Hamiltonian in the MO basis
 
-  call Hartree_matrix_MO_basis(nBas,cHF,P,Hc,ERI_AO_basis,H)
+  call Hartree_matrix_MO_basis(nBas,cHF,PHF,Hc,ERI_AO_basis,H)
 
 ! Compute linear response
 
@@ -69,7 +83,7 @@ subroutine G0W0(COHSEX,SOSEX,BSE,TDA,singlet_manifold,triplet_manifold, &
   if(SOSEX) call excitation_density_SOSEX(nBas,nC,nO,nR,nS,ERI_MO_basis,XpY(:,:,ispin),rhox(:,:,:,ispin))
 
   call self_energy_correlation_diag(COHSEX,SOSEX,nBas,nC,nO,nV,nR,nS,eHF, & 
-                                    Omega(:,ispin),rho(:,:,:,ispin),rhox(:,:,:,ispin),EcGM,SigmaC)
+                                    Omega(:,ispin),rho(:,:,:,ispin),rhox(:,:,:,ispin),EcGM,SigC)
 
 ! COHSEX static approximation
 
@@ -85,12 +99,12 @@ subroutine G0W0(COHSEX,SOSEX,BSE,TDA,singlet_manifold,triplet_manifold, &
 
 ! Solve the quasi-particle equation
 
-  eG0W0(:) = eHF(:) + Z(:)*SigmaC(:)
+  eG0W0(:) = eHF(:) + Z(:)*SigC(:)
 
 ! Dump results
 
   call print_excitation('RPA  ',ispin,nS,Omega(:,ispin))
-  call print_G0W0(nBas,nO,eHF,ENuc,ERHF,SigmaC,Z,eG0W0,EcRPA,EcGM)
+  call print_G0W0(nBas,nO,eHF,ENuc,ERHF,SigC,Z,eG0W0,EcRPA,EcGM)
 
 ! Plot stuff
 
@@ -118,7 +132,7 @@ subroutine G0W0(COHSEX,SOSEX,BSE,TDA,singlet_manifold,triplet_manifold, &
       ispin = 2
       call linear_response(ispin,dRPA,TDA,.false.,nBas,nC,nO,nV,nR,nS,eHF,ERI_MO_basis, &
                            rho(:,:,:,ispin),EcRPA,Omega(:,ispin),XpY(:,:,ispin))
-      call excitation_density(nBas,nC,nO,nR,nS,cHF,ERI_MO_basis,XpY(:,:,ispin),rho(:,:,:,ispin))
+      call excitation_density(nBas,nC,nO,nR,nS,ERI_MO_basis,XpY(:,:,ispin),rho(:,:,:,ispin))
 
       call linear_response(ispin,dRPA,TDA,BSE,nBas,nC,nO,nV,nR,nS,eG0W0,ERI_MO_basis, &
                            rho(:,:,:,1),EcRPA,Omega(:,ispin),XpY(:,:,ispin))

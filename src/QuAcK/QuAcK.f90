@@ -405,7 +405,7 @@ program QuAcK
     
     call cpu_time(start_G0W0)
     call G0W0(COHSEX,SOSEX,BSE,TDA,singlet_manifold,triplet_manifold, & 
-              nBas,nC,nO,nV,nR,nS,ENuc,ERHF,Hc,ERI_AO_basis,ERI_MO_basis,PHF,cHF,eHF,eG0W0)
+              nBas,nC(1),nO(1),nV(1),nR(1),nS(1),ENuc,ERHF,Hc,ERI_AO_basis,ERI_MO_basis,PHF,cHF,eHF,eG0W0)
     call cpu_time(end_G0W0)
   
     t_G0W0 = end_G0W0 - start_G0W0
@@ -440,7 +440,7 @@ program QuAcK
     call cpu_time(start_qsGW)
     call qsGW(maxSCF_GW,thresh_GW,n_diis_GW, & 
               COHSEX,SOSEX,BSE,TDA,G0W,GW0,singlet_manifold,triplet_manifold, & 
-              nBas,nC,nO,nV,nR,nS,ENuc,S,X,T,V,Hc,ERI_AO_basis,PHF,cHF,eHF)
+              nBas,nC(1),nO(1),nV(1),nR(1),nS(1),ENuc,S,X,T,V,Hc,ERI_AO_basis,PHF,cHF,eHF)
     call cpu_time(end_qsGW)
 
     t_qsGW = end_qsGW - start_qsGW
