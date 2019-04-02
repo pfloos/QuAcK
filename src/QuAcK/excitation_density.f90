@@ -28,7 +28,7 @@ subroutine excitation_density(nBas,nC,nO,nR,nS,c,ERI,XpY,rho)
         do j=nC+1,nO
           do b=nO+1,nBas-nR
             jb = jb + 1
-              rho(x,y,ia) = rho(x,y,ia) + ERI(x,j,y,b)*XpY(ia,jb)
+            rho(x,y,ia) = rho(x,y,ia) + ERI(x,j,y,b)*XpY(ia,jb)
           enddo
         enddo
       enddo
