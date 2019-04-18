@@ -1,8 +1,9 @@
-subroutine read_integrals(nBas,S,T,V,Hc,G)
+subroutine read_integrals(nEl,nBas,S,T,V,Hc,G)
 
 ! Read one- and two-electron integrals from files
 
   implicit none
+  include 'parameters.h'
 
 ! Input variables
 
@@ -11,9 +12,10 @@ subroutine read_integrals(nBas,S,T,V,Hc,G)
 ! Local variables
 
   logical                       :: debug
+  integer                       :: nEl(nspin)
   integer                       :: mu,nu,la,si
   double precision              :: Ov,Kin,Nuc,ERI
-  double precision              :: scale
+  double precision              :: rs
 
 ! Output variables
 
@@ -23,7 +25,13 @@ subroutine read_integrals(nBas,S,T,V,Hc,G)
 
   debug = .false.
 
-  scale = 1d0
+  open(unit=1,file='input/sph')
+  read(1,*)
+  read(1,*) rs
+
+  rs = sqrt(dble(sum(nEl(:))))/2d0*rs
+
+  print*, 'Scaling integrals by ',rs
 
   open(unit=8 ,file='int/Ov.dat')
   open(unit=9 ,file='int/Kin.dat')
@@ -44,7 +52,7 @@ subroutine read_integrals(nBas,S,T,V,Hc,G)
   T = 0d0
   do 
     read(9,*,end=9) mu,nu,Kin
-    T(mu,nu) = Kin/scale**2
+    T(mu,nu) = Kin/rs**2
   enddo
   9 close(unit=9)
 
@@ -67,7 +75,7 @@ subroutine read_integrals(nBas,S,T,V,Hc,G)
   do 
     read(11,*,end=11) mu,nu,la,si,ERI
 
-    ERI = ERI/scale
+    ERI = ERI/rs
 !   <12|34>
     G(mu,nu,la,si) = ERI
 !   <32|14>

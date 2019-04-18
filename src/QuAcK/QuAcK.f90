@@ -165,7 +165,7 @@ program QuAcK
 
 ! Read integrals
 
-  call read_integrals(nBas,S,T,V,Hc,ERI_AO_basis)  
+  call read_integrals(nEl(:),nBas,S,T,V,Hc,ERI_AO_basis)  
 
 ! Compute orthogonalization matrix
 

@@ -16,12 +16,25 @@ subroutine RHF(maxSCF,thresh,max_diis,guess_type,nBas,nO,S,T,V,Hc,ERI,X,ENuc,ERH
 
 ! Local variables
 
-  integer                       :: nSCF,nBasSq,n_diis
-  double precision              :: ET,EV,EJ,EK,Conv,Gap 
+  integer                       :: nSCF
+  integer                       :: nBasSq
+  integer                       :: n_diis
+  double precision              :: ET,EV,EJ,EK
+  double precision              :: Conv
+  double precision              :: Gap 
   double precision              :: rcond
   double precision,external     :: trace_matrix
-  double precision,allocatable  :: error(:,:),error_diis(:,:),F_diis(:,:)
-  double precision,allocatable  :: J(:,:),K(:,:),cp(:,:),F(:,:),Fp(:,:)
+  double precision,allocatable  :: error(:,:)
+  double precision,allocatable  :: error_diis(:,:)
+  double precision,allocatable  :: F_diis(:,:)
+  double precision,allocatable  :: J(:,:)
+  double precision,allocatable  :: K(:,:)
+  double precision,allocatable  :: cp(:,:)
+  double precision,allocatable  :: F(:,:)
+  double precision,allocatable  :: Fp(:,:)
+  double precision,allocatable  :: ON(:)
+
+  integer                       :: i
 
 ! Output variables
 
@@ -44,8 +57,8 @@ subroutine RHF(maxSCF,thresh,max_diis,guess_type,nBas,nO,S,T,V,Hc,ERI,X,ENuc,ERH
 
 ! Memory allocation
 
-  allocate(J(nBas,nBas),K(nBas,nBas),error(nBas,nBas), &
-           cp(nBas,nBas),Fp(nBas,nBas),F(nBas,nBas), &
+  allocate(J(nBas,nBas),K(nBas,nBas),error(nBas,nBas),        &
+           cp(nBas,nBas),Fp(nBas,nBas),F(nBas,nBas),ON(nBas), &
            error_diis(nBasSq,max_diis),F_diis(nBasSq,max_diis))
 
 ! Guess coefficients and eigenvalues
@@ -65,6 +78,13 @@ subroutine RHF(maxSCF,thresh,max_diis,guess_type,nBas,nO,S,T,V,Hc,ERI,X,ENuc,ERH
 
   P(:,:) = 2d0*matmul(c(:,1:nO),transpose(c(:,1:nO)))
 
+! ON(:) = 0d0
+! do i=1,nO
+!    ON(i) = 1d0
+!    ON(i) = dble(2*i-1)
+! end do
+
+! call density_matrix(nBas,ON,c,P)
   
 ! Initialization
 
@@ -123,6 +143,8 @@ subroutine RHF(maxSCF,thresh,max_diis,guess_type,nBas,nO,S,T,V,Hc,ERI,X,ENuc,ERH
 
     P(:,:) = 2d0*matmul(c(:,1:nO),transpose(c(:,1:nO)))
 
+!   call density_matrix(nBas,ON,c,P)
+  
 !   Compute HF energy
 
     ERHF = trace_matrix(nBas,matmul(P,Hc)) &
