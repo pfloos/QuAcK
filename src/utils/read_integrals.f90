@@ -29,7 +29,8 @@ subroutine read_integrals(nEl,nBas,S,T,V,Hc,G)
   read(1,*)
   read(1,*) rs
 
-  rs = sqrt(dble(sum(nEl(:))))/2d0*rs
+! rs = sqrt(dble(sum(nEl(:))))/2d0*rs
+ rs = 1d0
 
   print*, 'Scaling integrals by ',rs
 

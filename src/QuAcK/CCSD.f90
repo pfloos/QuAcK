@@ -90,7 +90,7 @@ subroutine CCSD(maxSCF,thresh,max_diis,doCCSDT,nBas,nEl,ERI,ENuc,ERHF,eHF)
 
 ! Define occupied and virtual spaces
 
-  nO = nEl
+  nO = 2*nEl
   nV = nBas2 - nO
 
 ! Form energy denominator
