@@ -14,8 +14,10 @@
 
 ! Local variables
 
-  integer                       :: nSCF,n_diis
+  integer                       :: nSCF
+  integer                       :: n_diis
   double precision              :: eps,eps1,eps2,Conv
+  double precision              :: rcond
   double precision,allocatable  :: Sig2(:),SigInf(:),Sig3(:),eGF3(:),eOld(:)
   double precision,allocatable  :: App(:,:),Bpp(:,:),Cpp(:,:),Dpp(:,:)
   double precision,allocatable  :: Z(:),X2h1p(:),X1h2p(:),Sig2h1p(:),Sig1h2p(:)
@@ -454,7 +456,9 @@
     ! DIIS extrapolation
 
     n_diis = min(n_diis+1,max_diis)
-    call DIIS_extrapolation(nBas,nBas,n_diis,error_diis,e_diis,eGF3-eOld,eGF3)
+    call DIIS_extrapolation(rcond,nBas,nBas,n_diis,error_diis,e_diis,eGF3-eOld,eGF3)
+
+    if(abs(rcond) < 1d-15) n_diis = 0
 
     ! Store result for next iteration
 

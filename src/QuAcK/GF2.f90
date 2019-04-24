@@ -16,7 +16,9 @@ subroutine GF2(maxSCF,thresh,max_diis,nBas,nC,nO,nV,nR,V,e0)
 ! Local variables
 
   integer                       :: nSCF,n_diis
-  double precision              :: eps,Conv
+  double precision              :: eps
+  double precision              :: Conv
+  double precision              :: rcond
   double precision,allocatable  :: eGF2(:),eOld(:),Bpp(:,:,:),error_diis(:,:),e_diis(:,:)
 
   integer                       :: i,j,a,b,p,q
@@ -99,7 +101,11 @@ subroutine GF2(maxSCF,thresh,max_diis,nBas,nC,nO,nV,nR,V,e0)
     ! DIIS extrapolation
 
     n_diis = min(n_diis+1,max_diis)
-    call DIIS_extrapolation(nBas,nBas,n_diis,error_diis,e_diis,eGF2-eOld,eGF2)
+    call DIIS_extrapolation(rcond,nBas,nBas,n_diis,error_diis,e_diis,eGF2-eOld,eGF2)
+
+!    Reset DIIS if required
+
+    if(abs(rcond) < 1d-15) n_diis = 0
 
     eOld = eGF2
 

@@ -136,7 +136,7 @@ subroutine CCSD(maxSCF,thresh,max_diis,doCCSDT,nBas,nEl,ERI,ENuc,ERHF,eHF)
   call form_tau(nO,nV,t1,t2,tau)
 
   EcMP2 = 0.5d0*dot_product(pack(OOVV,.true.),pack(tau,.true.))
-  write(*,'(1X,A10,1X,F10.6)') 'Ec(MP2) = ',EcMP2
+  write(*,'(1X,A20,1X,F10.6)') 'Ec(MP2) = ',EcMP2
 
 ! Initialization
 
@@ -223,6 +223,15 @@ subroutine CCSD(maxSCF,thresh,max_diis,doCCSDT,nBas,nEl,ERI,ENuc,ERHF,eHF)
 
   end if
 
+    write(*,*)
+    write(*,*)'----------------------------------------------------'
+    write(*,*)'                 CCSD energy                        '
+    write(*,*)'----------------------------------------------------'
+    write(*,'(1X,A20,1X,F15.10)')' E(CCSD)  = ',ECCSD  
+    write(*,'(1X,A20,1X,F10.6)') ' Ec(CCSD) = ',EcCCSD 
+    write(*,*)'----------------------------------------------------'
+    write(*,*)
+
 ! Deallocate memory
 
   deallocate(hvv,hoo,hvo,         &
@@ -247,7 +256,7 @@ subroutine CCSD(maxSCF,thresh,max_diis,doCCSDT,nBas,nEl,ERI,ENuc,ERHF,eHF)
 
     write(*,*)
     write(*,*)'----------------------------------------------------'
-    write(*,*)'                 CCSDT(T) energy                    '
+    write(*,*)'                 CCSD(T) energy                     '
     write(*,*)'----------------------------------------------------'
     write(*,'(1X,A20,1X,F15.10)')' E(CCSD(T))  = ',ECCSD  + EcCCT
     write(*,'(1X,A20,1X,F10.6)') ' Ec(CCSD(T)) = ',EcCCSD + EcCCT

@@ -224,7 +224,9 @@ program QuAcK
 ! AO to MO integral transform for post-HF methods
 !------------------------------------------------------------------------
 
-  call AOtoMO_integral_transform(nBas,cHF,ERI_AO_basis,ERI_MO_basis)
+! call AOtoMO_integral_transform(nBas,cHF,ERI_AO_basis,ERI_MO_basis)
+  ERI_MO_basis = ERI_AO_basis
+  print*,'!!! MO = AO !!!'
 
 !------------------------------------------------------------------------
 ! Compute MP2 energy

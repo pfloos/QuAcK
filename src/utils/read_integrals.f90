@@ -15,7 +15,7 @@ subroutine read_integrals(nEl,nBas,S,T,V,Hc,G)
   integer                       :: nEl(nspin)
   integer                       :: mu,nu,la,si
   double precision              :: Ov,Kin,Nuc,ERI
-  double precision              :: rs
+  double precision              :: rs,R
 
 ! Output variables
 
@@ -29,10 +29,10 @@ subroutine read_integrals(nEl,nBas,S,T,V,Hc,G)
   read(1,*)
   read(1,*) rs
 
-! rs = sqrt(dble(sum(nEl(:))))/2d0*rs
- rs = 1d0
+  R = sqrt(dble(sum(nEl(:))))/2d0*rs
+! R = 1d0
 
-  print*, 'Scaling integrals by ',rs
+  print*, 'Scaling integrals by ',R
 
   open(unit=8 ,file='int/Ov.dat')
   open(unit=9 ,file='int/Kin.dat')
@@ -53,7 +53,7 @@ subroutine read_integrals(nEl,nBas,S,T,V,Hc,G)
   T = 0d0
   do 
     read(9,*,end=9) mu,nu,Kin
-    T(mu,nu) = Kin/rs**2
+    T(mu,nu) = Kin/R**2
   enddo
   9 close(unit=9)
 
@@ -76,7 +76,7 @@ subroutine read_integrals(nEl,nBas,S,T,V,Hc,G)
   do 
     read(11,*,end=11) mu,nu,la,si,ERI
 
-    ERI = ERI/rs
+    ERI = ERI/R
 !   <12|34>
     G(mu,nu,la,si) = ERI
 !   <32|14>
