@@ -1,7 +1,7 @@
 #! /bin/bash
 
-Lmax=2
-Mmax=4
+Lmax=6
+Mmax=6
 rs=$1
 
 if [ $# != 1 ]
@@ -30,6 +30,7 @@ else
       echo "Number of basis functions = " $nb
       echo -e "# rs \n" $rs > input/sph
       ./GoSph $ne $M > Sph_${ne}_${M}.out 
+      grep "Total CPU time for QuAcK =" Sph_${ne}_${M}.out 
 
     done
 

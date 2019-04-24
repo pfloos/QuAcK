@@ -31,6 +31,7 @@ program QuAcK
   double precision,allocatable  :: ERI_AO_basis(:,:,:,:),ERI_MO_basis(:,:,:,:)
   double precision,allocatable  :: F12(:,:,:,:),Yuk(:,:,:,:),FC(:,:,:,:,:,:)
 
+  double precision              :: start_QuAcK  ,end_QuAcK    ,t_QuAcK
   double precision              :: start_HF     ,end_HF       ,t_HF
   double precision              :: start_MOM    ,end_MOM      ,t_MOM
   double precision              :: start_CCD    ,end_CCD      ,t_CCD
@@ -83,6 +84,8 @@ program QuAcK
   write(*,*) '*|--------------------------------------------------------------------------------------|*'
   write(*,*) '******************************************************************************************'
   write(*,*)
+
+  call cpu_time(start_QuAcK)
 
 ! Which calculations do you want to do?
 
@@ -540,4 +543,11 @@ program QuAcK
 !------------------------------------------------------------------------
 ! End of QuAcK
 !------------------------------------------------------------------------
+
+  call cpu_time(end_QuAcK)
+
+  t_QuAcK = end_QuAcK - start_QuAcK
+  write(*,'(A65,1X,F9.3,A8)') 'Total CPU time for QuAcK = ',t_QuAcK,' seconds'
+  write(*,*)
+
 end program QuAcK
