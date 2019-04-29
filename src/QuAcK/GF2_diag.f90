@@ -10,8 +10,13 @@ subroutine GF2_diag(maxSCF,thresh,max_diis,nBas,nC,nO,nV,nR,V,e0)
   integer,intent(in)            :: maxSCF
   double precision,intent(in)   :: thresh
   integer,intent(in)            :: max_diis
-  integer,intent(in)            :: nBas,nC,nO,nV,nR
-  double precision,intent(in)   :: e0(nBas),V(nBas,nBas,nBas,nBas)
+  integer,intent(in)            :: nBas
+  integer,intent(in)            :: nO
+  integer,intent(in)            :: nC
+  integer,intent(in)            :: nV
+  integer,intent(in)            :: nR
+  double precision,intent(in)   :: e0(nBas)
+  double precision,intent(in)   :: V(nBas,nBas,nBas,nBas)
 
 ! Local variables
 
@@ -20,7 +25,11 @@ subroutine GF2_diag(maxSCF,thresh,max_diis,nBas,nC,nO,nV,nR,V,e0)
   double precision              :: eps
   double precision              :: Conv
   double precision              :: rcond
-  double precision,allocatable  :: eGF2(:),eOld(:),Bpp(:,:),error_diis(:,:),e_diis(:,:)
+  double precision,allocatable  :: eGF2(:)
+  double precision,allocatable  :: eOld(:)
+  double precision,allocatable  :: Bpp(:,:)
+  double precision,allocatable  :: error_diis(:,:)
+  double precision,allocatable  :: e_diis(:,:)
 
   integer                       :: i,j,a,b,p
 
@@ -34,8 +43,7 @@ subroutine GF2_diag(maxSCF,thresh,max_diis,nBas,nC,nO,nV,nR,V,e0)
 
 ! Memory allocation
 
-  allocate(Bpp(nBas,2),eGF2(nBas),eOld(nBas), &
-           error_diis(nBas,max_diis),e_diis(nBas,max_diis))
+  allocate(Bpp(nBas,2),eGF2(nBas),eOld(nBas),error_diis(nBas,max_diis),e_diis(nBas,max_diis))
 
 ! Initialization
 
@@ -59,38 +67,41 @@ subroutine GF2_diag(maxSCF,thresh,max_diis,nBas,nC,nO,nV,nR,V,e0)
 
     do p=nC+1,nBas-nR
       do i=nC+1,nO
-      do j=nC+1,nO
-        do a=nO+1,nBas-nR
+        do j=nC+1,nO
+          do a=nO+1,nBas-nR
 
-          eps = eGF2(p) + e0(a) - e0(i) - e0(j)
+            eps = eGF2(p) + e0(a) - e0(i) - e0(j)
 
-          Bpp(p,1) = Bpp(p,1) &
-                   + (2d0*V(p,a,i,j) - V(p,a,j,i))*V(p,a,i,j)/eps
+            Bpp(p,1) = Bpp(p,1) &
+                     + (2d0*V(p,a,i,j) - V(p,a,j,i))*V(p,a,i,j)/eps
 
-        enddo
-      enddo
-      enddo
-    enddo
+          end do
+        end do
+      end do
+    end do
 
     do p=nC+1,nBas-nR
       do i=nC+1,nO
         do a=nO+1,nBas-nR
-        do b=nO+1,nBas-nR
+          do b=nO+1,nBas-nR
 
-          eps = eGF2(p) + e0(i) - e0(a) - e0(b)
+            eps = eGF2(p) + e0(i) - e0(a) - e0(b)
 
-          Bpp(p,2) = Bpp(p,2) &
-                   + (2d0*V(p,i,a,b) - V(p,i,b,a))*V(p,i,a,b)/eps
+            Bpp(p,2) = Bpp(p,2) &
+                     + (2d0*V(p,i,a,b) - V(p,i,b,a))*V(p,i,a,b)/eps
 
-        enddo
-        enddo
-      enddo
-    enddo
+          end do
+        end do
+      end do
+    end do
 
-    eGF2(:) = e0(:) &
-            + Bpp(:,1) + Bpp(:,2)
+    eGF2(:) = e0(:) + Bpp(:,1) + Bpp(:,2)
 
     Conv = maxval(abs(eGF2 - eOld))
+
+    ! Print results
+
+    call print_GF2(nBas,nO,nSCF,Conv,e0,eGF2)
 
     ! DIIS extrapolation
 
@@ -99,17 +110,13 @@ subroutine GF2_diag(maxSCF,thresh,max_diis,nBas,nC,nO,nV,nR,V,e0)
 
     if(abs(rcond) < 1d-15) n_diis = 0
 
-    eOld = eGF2
-
-    ! Print results
-
-    call print_GF2(nBas,nO,nSCF,Conv,e0,eGF2)
+    eOld(:) = eGF2(:)
 
     ! Increment
 
     nSCF = nSCF + 1
 
-  enddo
+  end do
 !------------------------------------------------------------------------
 ! End main SCF loop
 !------------------------------------------------------------------------
@@ -124,6 +131,6 @@ subroutine GF2_diag(maxSCF,thresh,max_diis,nBas,nC,nO,nV,nR,V,e0)
     write(*,*)'!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!'
     write(*,*)
 
-  endif
+  end if
 
 end subroutine GF2_diag

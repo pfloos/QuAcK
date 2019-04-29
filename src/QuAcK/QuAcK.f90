@@ -359,7 +359,7 @@ program QuAcK
   if(doADC) then
 
     call cpu_time(start_ADC)
-    call ADC(singlet_manifold,triplet_manifold,maxSCF_GF,thresh_GF,n_diis_GF,nBas,nC,nO,nV,nR,eHF,ERI_MO_basis)
+    call ADC(singlet_manifold,triplet_manifold,maxSCF_GF,thresh_GF,n_diis_GF,nBas,nC(1),nO(1),nV(1),nR(1),eHF,ERI_MO_basis)
     call cpu_time(end_ADC)
 
     t_ADC = end_ADC - start_ADC
@@ -375,7 +375,7 @@ program QuAcK
   if(doGF2) then
 
     call cpu_time(start_GF2)
-    call GF2_diag(maxSCF_GF,thresh_GF,n_diis_GF,nBas,nC,nO,nV,nR,ERI_MO_basis,eHF)
+    call GF2_diag(maxSCF_GF,thresh_GF,n_diis_GF,nBas,nC(1),nO(1),nV(1),nR(1),ERI_MO_basis,eHF)
     call cpu_time(end_GF2)
 
     t_GF2 = end_GF2 - start_GF2
@@ -391,7 +391,7 @@ program QuAcK
   if(doGF3) then
 
     call cpu_time(start_GF3)
-    call GF3_diag(maxSCF_GF,thresh_GF,n_diis_GF,renormalization,nBas,nC,nO,nV,nR,ERI_MO_basis,eHF)
+    call GF3_diag(maxSCF_GF,thresh_GF,n_diis_GF,renormalization,nBas,nC(1),nO(1),nV(1),nR(1),ERI_MO_basis,eHF)
     call cpu_time(end_GF3)
 
     t_GF3 = end_GF3 - start_GF3
