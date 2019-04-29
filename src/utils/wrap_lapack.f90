@@ -29,6 +29,38 @@
 !
 !end subroutine eigenvalues_non_symmetric_matrix
 
+!subroutine diagonalize_matrix_lowest(N,M,A,e)
+!
+!! Diagonalize a square matrix but only provide the M lowest eigenvalues/eigenvectors
+!
+!  implicit none
+!
+!! Input variables
+!
+!  integer,intent(in)            :: N
+!  integer,intent(in)            :: M
+!  double precision,intent(inout):: A(N,N)
+!  double precision,intent(out)  :: e(N)
+!
+!! Local variables
+!
+!  integer                       :: lwork,info
+!  double precision,allocatable  :: work(:)
+!
+!! Memory allocation
+!
+!  allocate(work(3*N))
+!  lwork = size(work)
+!  abstol = 1d-15
+!
+!  call dsyevx('V','I','U',N,A,N,VL,VU,1,M,abstol,M,e,work,lwork,info)
+! 
+!  if(info /= 0) then 
+!    print*,'Problem in diagonalize_matrix (dsyev)!!'
+!  endif
+!
+!end subroutine diagonalize_matrix_lowest
+
 subroutine diagonalize_matrix(N,A,e)
 
 ! Diagonalize a square matrix

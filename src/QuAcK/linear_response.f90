@@ -43,8 +43,8 @@ subroutine linear_response(ispin,dRPA,TDA,BSE,nBas,nC,nO,nV,nR,nS,e,ERI,rho,EcRP
 
 ! Build A + B and A - B matrices 
 
-  AmB = A - B
   ApB = A + B
+  AmB = A - B
 
 ! print*,'A+B'
 ! call matout(nS,nS,ApB)
@@ -62,6 +62,9 @@ subroutine linear_response(ispin,dRPA,TDA,BSE,nBas,nC,nO,nV,nR,nS,e,ERI,rho,EcRP
   call ADAt(nS,AmB,sqrt(Omega),AmBSq)
   Z = matmul(AmBSq,matmul(ApB,AmBSq))
 
+! print*,'Z'
+! call matout(nS,nS,Z)
+
   call diagonalize_matrix(nS,Z,Omega)
 
   if(minval(Omega) < 0d0) & 
@@ -70,6 +73,9 @@ subroutine linear_response(ispin,dRPA,TDA,BSE,nBas,nC,nO,nV,nR,nS,e,ERI,rho,EcRP
   Omega = sqrt(Omega)
   XpY = matmul(transpose(Z),AmBSq)
   call DA(nS,1d0/sqrt(Omega),XpY)
+
+! print*,'X+Y'
+! call matout(nS,nS,XpY)
 
 ! print*,'RPA excitations'
 ! call matout(nS,1,Omega)

@@ -1,7 +1,8 @@
 #! /bin/bash
 
-Lmax=6
-Mmax=6
+Lmin=0
+Lmax=2
+Mmax=3
 rs=$1
 
 if [ $# != 1 ]
@@ -15,7 +16,7 @@ else
   echo "------------------------"
   echo
   
-  for (( L=0 ; L<=$Lmax ; L++ )) ; do
+  for (( L=$Lmin ; L<=$Lmax ; L++ )) ; do
 
     ne=$(bc -l <<< "(2*($L+1)*($L+1))")
     echo 
@@ -29,8 +30,8 @@ else
       nb=$(bc -l <<< "(($M+1)*($M+1))")
       echo "Number of basis functions = " $nb
       echo -e "# rs \n" $rs > input/sph
-      ./GoSph $ne $M > Sph_${ne}_${M}.out 
-      grep "Total CPU time for QuAcK =" Sph_${ne}_${M}.out 
+      ./GoSph $ne $M > Sph_${ne}_${nb}.out 
+      grep "Total CPU time for QuAcK =" Sph_${ne}_${nb}.out 
 
     done
 

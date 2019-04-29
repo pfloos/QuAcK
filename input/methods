@@ -1,14 +1,14 @@
 # RHF UHF MOM
   T   F   F
 # MP2 MP3 MP2-F12
-  F   F   F
+  T   F   F
 # CCD CCSD CCSD(T)
   F   F    F
 # CIS TDHF ADC
-  T   T    F
+  F   F    F
 # GF2 GF3
   T   F
 # G0W0 evGW qsGW
-  T    T    F
+  T    F    F
 # MCMP2
   F
