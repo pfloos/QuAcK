@@ -453,6 +453,10 @@
 
     Conv = maxval(abs(eGF3 - eOld))
 
+    ! Print results
+
+    call print_GF3(nBas,nO,nSCF,Conv,e0,Z,eGF3)
+
     ! DIIS extrapolation
 
     n_diis = min(n_diis+1,max_diis)
@@ -463,10 +467,6 @@
     ! Store result for next iteration
 
     eOld(:) = eGF3(:)
-
-    ! Print results
-
-    call print_GF3(nBas,nO,nSCF,Conv,e0,Z,eGF3)
 
     ! Increment
 
