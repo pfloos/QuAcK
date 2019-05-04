@@ -47,7 +47,7 @@ subroutine print_RHF(nBas,nO,eHF,cHF,ENuc,ET,EV,EJ,EK,ERHF)
   write(*,'(A50)')  '---------------------------------------'
   write(*,'(A32)') 'MO coefficients'
   write(*,'(A50)')  '---------------------------------------'
-  call matout(nBas,nBas,cHF)
+! call matout(nBas,nBas,cHF)
   write(*,*)
   write(*,'(A50)') '---------------------------------------'
   write(*,'(A32)') 'MO energies'

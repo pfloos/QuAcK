@@ -27,7 +27,8 @@ subroutine self_energy_correlation(COHSEX,SOSEX,nBas,nC,nO,nV,nR,nS,e,Omega,rho,
 
 ! Infinitesimal
 
-  eta = 0.001d0
+  eta = 0.0d0
+! eta = 0.001d0
 
 ! COHSEX static approximation
 
@@ -68,7 +69,7 @@ subroutine self_energy_correlation(COHSEX,SOSEX,nBas,nC,nO,nV,nR,nS,e,Omega,rho,
 
     EcGM = 0d0
     do i=nC+1,nO
-      EcGM = EcGM + SigC(i,i)
+      EcGM = EcGM + 0.5d0*SigC(i,i)
     enddo
 
   else

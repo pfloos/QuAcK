@@ -12,7 +12,8 @@ subroutine ADC2(ispin,maxSCF,thresh,max_diis,nBas,nC,nO,nV,nR,e,ERI)
   double precision,intent(in)   :: thresh
   integer,intent(in)            :: max_diis
   integer,intent(in)            :: nBas,nC,nO,nV,nR
-  double precision,intent(in)   :: e(nBas),ERI(nBas,nBas,nBas,nBas)
+  double precision,intent(in)   :: e(nBas)
+  double precision,intent(in)   :: ERI(nBas,nBas,nBas,nBas)
 
 ! Local variables
 
@@ -57,8 +58,8 @@ subroutine ADC2(ispin,maxSCF,thresh,max_diis,nBas,nC,nO,nV,nR,e,ERI)
 
 ! Memory allocation
 
-  allocate(db_ERI(nBas,nBas,nBas,nBas),error_diis(nBas,max_diis),e_diis(nBas,max_diis),eOld(nADC), &
-           B_ADC(nADC,nADC),X_ADC(nADC,nADC),e_ADC(nADC),G_ADC(nADC,nADC),SigInf(nADC,nADC))
+  allocate(db_ERI(nBas,nBas,nBas,nBas),error_diis(nADC,max_diis),e_diis(nADC,max_diis),eOld(nADC), &
+           B_ADC(nADC,nADC),X_ADC(nADC,nADC),e_ADC(nADC),G_ADC(nBas,nBas),SigInf(nBas,nBas))
 
 ! Create double-bar MO integrals
 
@@ -99,11 +100,11 @@ subroutine ADC2(ispin,maxSCF,thresh,max_diis,nBas,nC,nO,nV,nR,e,ERI)
     !
 
     B_ADC(:,:) = 0d0
-    B_ADC(nC+1:nV,nC+1:nV) = SigInf(nC+1:nV,nC+1:nV)
+    B_ADC(nC+1:nBas-nR,nC+1:nBas-nR) = SigInf(nC+1:nBas-nR,nC+1:nBas-nR)
 
     jADC = 0
 
-    do p=nC+1,nV
+    do p=nC+1,nBas-nR
 
       jADC = jADC + 1
       B_ADC(jADC,jADC) = e(p)
@@ -114,7 +115,7 @@ subroutine ADC2(ispin,maxSCF,thresh,max_diis,nBas,nC,nO,nV,nR,e,ERI)
     ! U matrices -- Eq. (40a) --
     !
 
-    do p=nC+1,nV
+    do p=nC+1,nBas-nR
 
       iADC = p - nC
       jADC = nH + nP
@@ -122,8 +123,8 @@ subroutine ADC2(ispin,maxSCF,thresh,max_diis,nBas,nC,nO,nV,nR,e,ERI)
       ! U^I: 2p-1h -- Eqs. (40a) and (41a) -- 
 
       do i=nC+1,nO
-        do a=nO+1,nV-nR
-          do b=a,nV-nR
+        do a=nO+1,nBas-nR
+          do b=a,nBas-nR
 
             jADC = jADC + 1
             B_ADC(iADC,jADC) = db_ERI(p,i,a,b)
@@ -136,7 +137,7 @@ subroutine ADC2(ispin,maxSCF,thresh,max_diis,nBas,nC,nO,nV,nR,e,ERI)
 
       do i=nC+1,nO
         do j=i,nO
-          do a=nO+1,nV-nR
+          do a=nO+1,nBas-nR
 
             jADC = jADC + 1
             B_ADC(iADC,jADC) = db_ERI(p,a,i,j)
@@ -156,8 +157,8 @@ subroutine ADC2(ispin,maxSCF,thresh,max_diis,nBas,nC,nO,nV,nR,e,ERI)
     jADC = nH + nP
 
     do i=nC+1,nO
-      do a=nO+1,nV-nR
-        do b=a,nV-nR
+      do a=nO+1,nBas-nR
+        do b=a,nBas-nR
 
           jADC = jADC + 1
           B_ADC(jADC,jADC) = e(a) + e(b) - e(i)
@@ -170,7 +171,7 @@ subroutine ADC2(ispin,maxSCF,thresh,max_diis,nBas,nC,nO,nV,nR,e,ERI)
 
     do i=nC+1,nO
       do j=i,nO
-        do a=nO+1,nV
+        do a=nO+1,nBas-nR
 
           jADC = jADC + 1
           B_ADC(jADC,jADC) = e(i) + e(j) - e(a)
@@ -188,15 +189,15 @@ subroutine ADC2(ispin,maxSCF,thresh,max_diis,nBas,nC,nO,nV,nR,e,ERI)
     iADC = nH + nP
 
     do i=nC+1,nO
-      do a=nO+1,nV-nR
-        do b=a,nV-nR
+      do a=nO+1,nBas-nR
+        do b=a,nBas-nR
 
           iADC = iADC + 1
           jADC = nH + nP
 
           do j=nC+1,nO
-            do c=nO+1,nV
-              do d=c,nV-nR
+            do c=nO+1,nBas-nR
+              do d=c,nBas-nR
 
                 jADC = jADC + 1
                 B_ADC(iADC,jADC) = B_ADC(iADC,jADC)                     &
@@ -221,14 +222,14 @@ subroutine ADC2(ispin,maxSCF,thresh,max_diis,nBas,nC,nO,nV,nR,e,ERI)
 
     do i=nC+1,nO
       do j=i,nO
-        do a=nO+1,nV-nR
+        do a=nO+1,nBas-nR
 
           iADC = iADC + 1
           jADC = nH + nP + nH*nPP
     
           do k=nC+1,nO
             do l=k,nO
-              do b=nO+1,nV-nR
+              do b=nO+1,nBas-nR
 
                 jADC = jADC + 1
                 B_ADC(iADC,jADC) = B_ADC(iADC,jADC)                     &
@@ -270,7 +271,7 @@ subroutine ADC2(ispin,maxSCF,thresh,max_diis,nBas,nC,nO,nV,nR,e,ERI)
 
     do iADC=1,nADC
 
-      if(NORM2(X_ADC(1:nH+nP,iADC)) > 0.1d0 ) & 
+!     if(NORM2(X_ADC(1:nH+nP,iADC)) > 0.1d0 ) & 
         write(*,'(2(2X,F12.6))') e_ADC(iADC)*HaToeV,NORM2(X_ADC(1:nH+nP,iADC))
 
     enddo
@@ -290,8 +291,8 @@ subroutine ADC2(ispin,maxSCF,thresh,max_diis,nBas,nC,nO,nV,nR,e,ERI)
     SigInf(:,:) = 0d0
 
     do i=nC+1,nO
-      do p=nC+1,nV-nR
-        do q=nC+1,nV-nR
+      do p=nC+1,nBas-nR
+        do q=nC+1,nBas-nR
 
           SigInf(p,q) = SigInf(p,q) - db_ERI(p,i,q,i)
 
@@ -307,8 +308,8 @@ subroutine ADC2(ispin,maxSCF,thresh,max_diis,nBas,nC,nO,nV,nR,e,ERI)
 
       if(e_ADC(iADC) > 0d0 ) cycle
 
-      do p=nC+1,nV-nR
-        do q=nC+1,nV-nR
+      do p=nC+1,nBas-nR
+        do q=nC+1,nBas-nR
 
           G_ADC(p,q) = G_ADC(p,q) + X_ADC(p,iADC)*X_ADC(q,iADC)
 
@@ -319,10 +320,10 @@ subroutine ADC2(ispin,maxSCF,thresh,max_diis,nBas,nC,nO,nV,nR,e,ERI)
 
     ! Compute static self-energy for next iteration -- Eq. (25) --
     
-    do p=nC+1,nV-nR
-      do q=nC+1,nV-nR
-        do r=nC+1,nV-nR
-          do s=nC+1,nV-nR
+    do r=nC+1,nBas-nR
+      do s=nC+1,nBas-nR
+        do p=nC+1,nBas-nR
+          do q=nC+1,nBas-nR
 
             SigInf(p,q) = SigInf(p,q) + db_ERI(p,r,q,s)*G_ADC(r,s)
 

@@ -26,8 +26,9 @@ subroutine G0W0(COHSEX,SOSEX,BSE,TDA,singlet_manifold,triplet_manifold, &
 ! Local variables
 
   logical                       :: dRPA
-  integer                       :: ispin
-  double precision              :: EcRPA
+  integer                       :: ispin,jspin
+  double precision              :: EcRPA(nspin)
+  double precision              :: EcBSE(nspin)
   double precision              :: EcGM
   double precision,allocatable  :: H(:,:)
   double precision,allocatable  :: SigC(:)
@@ -74,7 +75,7 @@ subroutine G0W0(COHSEX,SOSEX,BSE,TDA,singlet_manifold,triplet_manifold, &
 ! Compute linear response
 
   call linear_response(ispin,dRPA,TDA,.false.,nBas,nC,nO,nV,nR,nS,eHF,ERI_MO_basis, & 
-                       rho(:,:,:,ispin),EcRPA,Omega(:,ispin),XpY(:,:,ispin))
+                       rho(:,:,:,ispin),EcRPA(ispin),Omega(:,ispin),XpY(:,:,ispin))
 
 ! Compute correlation part of the self-energy 
 
@@ -104,7 +105,7 @@ subroutine G0W0(COHSEX,SOSEX,BSE,TDA,singlet_manifold,triplet_manifold, &
 ! Dump results
 
   call print_excitation('RPA  ',ispin,nS,Omega(:,ispin))
-  call print_G0W0(nBas,nO,eHF,ENuc,ERHF,SigC,Z,eG0W0,EcRPA,EcGM)
+  call print_G0W0(nBas,nO,eHF,ENuc,ERHF,SigC,Z,eG0W0,EcRPA(ispin),EcGM)
 
 ! Plot stuff
 
@@ -119,8 +120,10 @@ subroutine G0W0(COHSEX,SOSEX,BSE,TDA,singlet_manifold,triplet_manifold, &
    if(singlet_manifold) then
 
       ispin = 1
+      EcBSE(ispin) = 0d0
+
       call linear_response(ispin,dRPA,TDA,BSE,nBas,nC,nO,nV,nR,nS,eG0W0,ERI_MO_basis, &
-                           rho(:,:,:,ispin),EcRPA,Omega(:,ispin),XpY(:,:,ispin))
+                           rho(:,:,:,ispin),EcBSE(ispin),Omega(:,ispin),XpY(:,:,ispin))
       call print_excitation('BSE  ',ispin,nS,Omega(:,ispin))
 
     endif
@@ -130,15 +133,26 @@ subroutine G0W0(COHSEX,SOSEX,BSE,TDA,singlet_manifold,triplet_manifold, &
    if(triplet_manifold) then
 
       ispin = 2
+      EcBSE(ispin) = 0d0
+
       call linear_response(ispin,dRPA,TDA,.false.,nBas,nC,nO,nV,nR,nS,eHF,ERI_MO_basis, &
-                           rho(:,:,:,ispin),EcRPA,Omega(:,ispin),XpY(:,:,ispin))
+                           rho(:,:,:,ispin),EcRPA(ispin),Omega(:,ispin),XpY(:,:,ispin))
       call excitation_density(nBas,nC,nO,nR,nS,ERI_MO_basis,XpY(:,:,ispin),rho(:,:,:,ispin))
 
       call linear_response(ispin,dRPA,TDA,BSE,nBas,nC,nO,nV,nR,nS,eG0W0,ERI_MO_basis, &
-                           rho(:,:,:,1),EcRPA,Omega(:,ispin),XpY(:,:,ispin))
+                           rho(:,:,:,1),EcBSE(ispin),Omega(:,ispin),XpY(:,:,ispin))
       call print_excitation('BSE  ',ispin,nS,Omega(:,ispin))
 
     endif
+
+    write(*,*)
+    write(*,*)'-------------------------------------------------------------------------------'
+    write(*,'(2X,A40,F15.6)') 'BSE@G0W0 correlation energy (singlet) =',EcBSE(1)
+    write(*,'(2X,A40,F15.6)') 'BSE@G0W0 correlation energy (triplet) =',EcBSE(2)
+    write(*,'(2X,A40,F15.6)') 'BSE@G0W0 correlation energy           =',EcBSE(1) + EcBSE(2)
+    write(*,'(2X,A40,F15.6)') 'BSE@G0W0 total energy                 =',ENuc + ERHF + EcBSE(1) + EcBSE(2)
+    write(*,*)'-------------------------------------------------------------------------------'
+    write(*,*)
 
   endif
 

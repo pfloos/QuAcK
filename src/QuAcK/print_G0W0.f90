@@ -6,7 +6,10 @@ subroutine print_G0W0(nBas,nO,e,ENuc,EHF,SigmaC,Z,eGW,EcRPA,EcGM)
   include 'parameters.h'
 
   integer,intent(in)                 :: nBas,nO
-  double precision,intent(in)        :: ENuc,EHF,EcRPA,EcGM
+  double precision,intent(in)        :: ENuc
+  double precision,intent(in)        :: EHF
+  double precision,intent(in)        :: EcRPA
+  double precision,intent(in)        :: EcGM
   double precision,intent(in)        :: e(nBas),SigmaC(nBas),Z(nBas),eGW(nBas)
 
   integer                            :: x,HOMO,LUMO

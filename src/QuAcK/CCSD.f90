@@ -228,7 +228,7 @@ subroutine CCSD(maxSCF,thresh,max_diis,doCCSDT,nBas,nEl,ERI,ENuc,ERHF,eHF)
     write(*,*)'                 CCSD energy                        '
     write(*,*)'----------------------------------------------------'
     write(*,'(1X,A20,1X,F15.10)')' E(CCSD)  = ',ECCSD  
-    write(*,'(1X,A20,1X,F10.6)') ' Ec(CCSD) = ',EcCCSD 
+    write(*,'(1X,A20,1X,F10.6)')' Ec(CCSD) = ',EcCCSD 
     write(*,*)'----------------------------------------------------'
     write(*,*)
 
@@ -259,7 +259,7 @@ subroutine CCSD(maxSCF,thresh,max_diis,doCCSDT,nBas,nEl,ERI,ENuc,ERHF,eHF)
     write(*,*)'                 CCSD(T) energy                     '
     write(*,*)'----------------------------------------------------'
     write(*,'(1X,A20,1X,F15.10)')' E(CCSD(T))  = ',ECCSD  + EcCCT
-    write(*,'(1X,A20,1X,F10.6)') ' Ec(CCSD(T)) = ',EcCCSD + EcCCT
+    write(*,'(1X,A20,1X,F10.6)')' Ec(CCSD(T)) = ',EcCCSD + EcCCT
     write(*,*)'----------------------------------------------------'
     write(*,*)
 

@@ -1,8 +1,8 @@
 #! /bin/bash
 
 Lmin=0
-Lmax=2
-Mmax=3
+Lmax=0
+Mmax=9
 rs=$1
 
 if [ $# != 1 ]

@@ -32,7 +32,7 @@ subroutine linear_response_B_matrix(ispin,dRPA,nBas,nC,nO,nV,nR,nS,ERI,B_lr)
   delta_dRPA = 0d0
   if(dRPA) delta_dRPA = 1d0
 
-! Build A matrix
+! Build B matrix
 
   ia = 0
   do i=nC+1,nO
