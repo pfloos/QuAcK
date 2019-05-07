@@ -1,5 +1,5 @@
 subroutine qsGW(maxSCF,thresh,max_diis,COHSEX,SOSEX,BSE,TDA,G0W,GW0,singlet_manifold,triplet_manifold, &
-                nBas,nC,nO,nV,nR,nS,ENuc,S,X,T,V,Hc,ERI_AO_basis,PHF,cHF,eHF)
+                nBas,nC,nO,nV,nR,nS,ENuc,ERHF,S,X,T,V,Hc,ERI_AO_basis,PHF,cHF,eHF)
 
 ! Compute linear response
 
@@ -21,6 +21,7 @@ subroutine qsGW(maxSCF,thresh,max_diis,COHSEX,SOSEX,BSE,TDA,G0W,GW0,singlet_mani
   logical,intent(in)            :: triplet_manifold
   integer,intent(in)            :: nBas,nC,nO,nV,nR,nS
   double precision,intent(in)   :: ENuc
+  double precision,intent(in)   :: ERHF
   double precision,intent(in)   :: eHF(nBas)
   double precision,intent(in)   :: cHF(nBas,nBas)
   double precision,intent(in)   :: PHF(nBas,nBas)
@@ -38,7 +39,8 @@ subroutine qsGW(maxSCF,thresh,max_diis,COHSEX,SOSEX,BSE,TDA,G0W,GW0,singlet_mani
   integer                       :: nBasSq
   integer                       :: ispin
   integer                       :: n_diis
-  double precision              :: EcRPA
+  double precision              :: EcRPA(nspin)
+  double precision              :: EcBSE(nspin)
   double precision              :: EcGM
   double precision              :: Conv
   double precision              :: rcond
@@ -128,7 +130,7 @@ subroutine qsGW(maxSCF,thresh,max_diis,COHSEX,SOSEX,BSE,TDA,G0W,GW0,singlet_mani
     if(.not. GW0 .or. nSCF == 0) then
 
       call linear_response(ispin,dRPA,TDA,.false.,nBas,nC,nO,nV,nR,nS,e,ERI_MO_basis, &
-                           rho(:,:,:,ispin),EcRPA,Omega(:,ispin),XpY(:,:,ispin))
+                           rho(:,:,:,ispin),EcRPA(ispin),Omega(:,ispin),XpY(:,:,ispin))
 
     endif
 
@@ -190,7 +192,7 @@ subroutine qsGW(maxSCF,thresh,max_diis,COHSEX,SOSEX,BSE,TDA,G0W,GW0,singlet_mani
     ! Print results
 
     call print_excitation('RPA  ',ispin,nS,Omega(:,ispin))
-    call print_qsGW(nBas,nO,nSCF,Conv,thresh,eHF,e,c,ENuc,P,T,V,Hc,J,K,F,SigCp,Z,EcRPA,EcGM)
+    call print_qsGW(nBas,nO,nSCF,Conv,thresh,eHF,e,c,ENuc,P,T,V,Hc,J,K,F,SigCp,Z,EcRPA(ispin),EcGM)
 
     ! Increment
 
@@ -235,8 +237,10 @@ subroutine qsGW(maxSCF,thresh,max_diis,COHSEX,SOSEX,BSE,TDA,G0W,GW0,singlet_mani
     if(singlet_manifold) then
 
       ispin = 1
+      EcBSE(ispin) = 0d0
+
       call linear_response(ispin,dRPA,TDA,BSE,nBas,nC,nO,nV,nR,nS,e,ERI_MO_basis, & 
-                           rho(:,:,:,ispin),EcRPA,Omega(:,ispin),XpY(:,:,ispin))
+                           rho(:,:,:,ispin),EcRPA(ispin),Omega(:,ispin),XpY(:,:,ispin))
       call print_excitation('BSE  ',ispin,nS,Omega(:,ispin))
 
     endif
@@ -245,15 +249,26 @@ subroutine qsGW(maxSCF,thresh,max_diis,COHSEX,SOSEX,BSE,TDA,G0W,GW0,singlet_mani
     if(triplet_manifold) then
 
       ispin = 2
+      EcBSE(ispin) = 0d0
+
       call linear_response(ispin,dRPA,TDA,.false.,nBas,nC,nO,nV,nR,nS,e,ERI_MO_basis, &
-                             rho(:,:,:,ispin),EcRPA,Omega(:,ispin),XpY(:,:,ispin))
+                             rho(:,:,:,ispin),EcBSE(ispin),Omega(:,ispin),XpY(:,:,ispin))
       call excitation_density(nBas,nC,nO,nR,nS,ERI_MO_basis,XpY(:,:,ispin),rho(:,:,:,ispin))
      
       call linear_response(ispin,dRPA,TDA,BSE,nBas,nC,nO,nV,nR,nS,e,ERI_MO_basis, &
-                           rho(:,:,:,ispin),EcRPA,Omega(:,ispin),XpY(:,:,ispin))
+                           rho(:,:,:,ispin),EcBSE(ispin),Omega(:,ispin),XpY(:,:,ispin))
       call print_excitation('BSE  ',ispin,nS,Omega(:,ispin))
 
     endif
+
+    write(*,*)
+    write(*,*)'-------------------------------------------------------------------------------'
+    write(*,'(2X,A40,F15.6)') 'BSE@qsGW correlation energy (singlet) =',EcBSE(1)
+    write(*,'(2X,A40,F15.6)') 'BSE@qsGW correlation energy (triplet) =',EcBSE(2)
+    write(*,'(2X,A40,F15.6)') 'BSE@qsGW correlation energy           =',EcBSE(1) + EcBSE(2)
+    write(*,'(2X,A40,F15.6)') 'BSE@qsGW total energy                 =',ENuc + ERHF + EcBSE(1) + EcBSE(2)
+    write(*,*)'-------------------------------------------------------------------------------'
+    write(*,*)
 
   endif
 

@@ -3,6 +3,7 @@ program QuAcK
   implicit none
   include 'parameters.h'
 
+  logical                       :: doSph
   logical                       :: doRHF,doUHF,doMOM 
   logical                       :: doMP2,doMP3,doMP2F12
   logical                       :: doCCD,doCCSD,doCCSDT
@@ -27,13 +28,15 @@ program QuAcK
   integer                       :: TrialType
   double precision,allocatable  :: cTrial(:),gradient(:),hessian(:,:)
 
-  double precision,allocatable  :: S(:,:),T(:,:),V(:,:),Hc(:,:),X(:,:)
+  double precision,allocatable  :: S(:,:),T(:,:),V(:,:),Hc(:,:),H(:,:),X(:,:)
   double precision,allocatable  :: ERI_AO_basis(:,:,:,:),ERI_MO_basis(:,:,:,:)
   double precision,allocatable  :: F12(:,:,:,:),Yuk(:,:,:,:),FC(:,:,:,:,:,:)
 
   double precision              :: start_QuAcK  ,end_QuAcK    ,t_QuAcK
+  double precision              :: start_int    ,end_int      ,t_int  
   double precision              :: start_HF     ,end_HF       ,t_HF
   double precision              :: start_MOM    ,end_MOM      ,t_MOM
+  double precision              :: start_AOtoMO ,end_AOtoMO   ,t_AOtoMO
   double precision              :: start_CCD    ,end_CCD      ,t_CCD
   double precision              :: start_CCSD   ,end_CCSD     ,t_CCSD
   double precision              :: start_CIS    ,end_CIS      ,t_CIS
@@ -84,6 +87,10 @@ program QuAcK
   write(*,*) '*|--------------------------------------------------------------------------------------|*'
   write(*,*) '******************************************************************************************'
   write(*,*)
+
+! Spherium calculation?
+  
+  doSph = .true.
 
   call cpu_time(start_QuAcK)
 
@@ -162,13 +169,30 @@ program QuAcK
 
 ! Memory allocation for one- and two-electron integrals
 
-  allocate(cHF(nBas,nBas,nspin),eHF(nBas,nspin),eG0W0(nBas),PHF(nBas,nBas,nspin), &
-           S(nBas,nBas),T(nBas,nBas),V(nBas,nBas),Hc(nBas,nBas),X(nBas,nBas),     &
+  allocate(cHF(nBas,nBas,nspin),eHF(nBas,nspin),eG0W0(nBas),PHF(nBas,nBas,nspin),          &
+           S(nBas,nBas),T(nBas,nBas),V(nBas,nBas),Hc(nBas,nBas),H(nBas,nBas),X(nBas,nBas), &
            ERI_AO_basis(nBas,nBas,nBas,nBas),ERI_MO_basis(nBas,nBas,nBas,nBas))
 
 ! Read integrals
 
-  call read_integrals(nEl(:),nBas,S,T,V,Hc,ERI_AO_basis)  
+  call cpu_time(start_int)
+
+  if(doSph) then
+
+    call read_integrals_sph(nEl(:),nBas,S,T,V,Hc,ERI_AO_basis)  
+
+  else
+
+    call read_integrals(nEl(:),nBas,S,T,V,Hc,ERI_AO_basis)
+
+  end if
+
+  call cpu_time(end_int)
+
+    t_int = end_int - start_int
+    write(*,*)
+    write(*,'(A65,1X,F9.3,A8)') 'Total CPU time for reading integrals = ',t_int,' seconds'
+    write(*,*)
 
 ! Compute orthogonalization matrix
 
@@ -185,7 +209,7 @@ program QuAcK
     call cpu_time(end_HF)
 
     t_HF = end_HF - start_HF
-    write(*,'(A65,1X,F9.3,A8)') 'Total CPU time for UHF = ',t_HF,' seconds'
+    write(*,'(A65,1X,F9.3,A8)') 'Total CPU time for RHF = ',t_HF,' seconds'
     write(*,*)
 
   endif
@@ -227,9 +251,29 @@ program QuAcK
 ! AO to MO integral transform for post-HF methods
 !------------------------------------------------------------------------
 
-! call AOtoMO_integral_transform(nBas,cHF,ERI_AO_basis,ERI_MO_basis)
-  ERI_MO_basis = ERI_AO_basis
-  print*,'!!! MO = AO !!!'
+! Compute Hartree Hamiltonian in the MO basis
+
+  call Hartree_matrix_MO_basis(nBas,cHF,PHF,Hc,ERI_AO_basis,H)
+
+  call cpu_time(start_AOtoMO)
+
+  if(doSph) then
+
+    ERI_MO_basis = ERI_AO_basis
+    print*,'!!! MO = AO !!!'
+    deallocate(ERI_AO_basis)
+
+  else
+
+    call AOtoMO_integral_transform(nBas,cHF,ERI_AO_basis,ERI_MO_basis)
+
+  end if
+
+  call cpu_time(end_AOtoMO)
+
+  t_AOtoMO = end_AOtoMO - start_AOtoMO
+  write(*,'(A65,1X,F9.3,A8)') 'Total CPU time for AO to MO transformation = ',t_AOtoMO,' seconds'
+  write(*,*)
 
 !------------------------------------------------------------------------
 ! Compute MP2 energy
@@ -326,8 +370,7 @@ program QuAcK
   if(doCIS) then
 
     call cpu_time(start_CIS)
-    call CIS(singlet_manifold,triplet_manifold, & 
-             nBas,nC,nO,nV,nR,nS,ERI_MO_basis,eHF)
+    call CIS(singlet_manifold,triplet_manifold,nBas,nC,nO,nV,nR,nS,ERI_MO_basis,eHF)
     call cpu_time(end_CIS)
 
     t_CIS = end_CIS - start_CIS
@@ -410,7 +453,7 @@ program QuAcK
     
     call cpu_time(start_G0W0)
     call G0W0(COHSEX,SOSEX,BSE,TDA,singlet_manifold,triplet_manifold, & 
-              nBas,nC(1),nO(1),nV(1),nR(1),nS(1),ENuc,ERHF,Hc,ERI_AO_basis,ERI_MO_basis,PHF,cHF,eHF,eG0W0)
+              nBas,nC(1),nO(1),nV(1),nR(1),nS(1),ENuc,ERHF,Hc,H,ERI_MO_basis,PHF,cHF,eHF,eG0W0)
     call cpu_time(end_G0W0)
   
     t_G0W0 = end_G0W0 - start_G0W0
@@ -427,7 +470,7 @@ program QuAcK
 
     call cpu_time(start_evGW)
     call evGW(maxSCF_GW,thresh_GW,n_diis_GW,COHSEX,SOSEX,BSE,TDA,G0W,GW0,singlet_manifold,triplet_manifold,linearize, &
-              nBas,nC(1),nO(1),nV(1),nR(1),nS(1),ENuc,ERHF,Hc,ERI_AO_basis,ERI_MO_basis,PHF,cHF,eHF,eG0W0)
+              nBas,nC(1),nO(1),nV(1),nR(1),nS(1),ENuc,ERHF,Hc,H,ERI_MO_basis,PHF,cHF,eHF,eG0W0)
     call cpu_time(end_evGW)
 
     t_evGW = end_evGW - start_evGW
@@ -445,7 +488,7 @@ program QuAcK
     call cpu_time(start_qsGW)
     call qsGW(maxSCF_GW,thresh_GW,n_diis_GW, & 
               COHSEX,SOSEX,BSE,TDA,G0W,GW0,singlet_manifold,triplet_manifold, & 
-              nBas,nC(1),nO(1),nV(1),nR(1),nS(1),ENuc,S,X,T,V,Hc,ERI_AO_basis,PHF,cHF,eHF)
+              nBas,nC(1),nO(1),nV(1),nR(1),nS(1),ENuc,ERHF,S,X,T,V,Hc,ERI_AO_basis,PHF,cHF,eHF)
     call cpu_time(end_qsGW)
 
     t_qsGW = end_qsGW - start_qsGW

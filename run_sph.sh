@@ -1,8 +1,8 @@
 #! /bin/bash
 
-Lmin=0
-Lmax=0
-Mmax=9
+Lmin=1
+Lmax=1
+Mmax=10
 rs=$1
 
 if [ $# != 1 ]
@@ -30,8 +30,8 @@ else
       nb=$(bc -l <<< "(($M+1)*($M+1))")
       echo "Number of basis functions = " $nb
       echo -e "# rs \n" $rs > input/sph
-      ./GoSph $ne $M > Sph_${ne}_${nb}.out 
-      grep "Total CPU time for QuAcK =" Sph_${ne}_${nb}.out 
+      ./GoSph $ne $M > out/Sph_${ne}_${nb}.out 
+      grep "Total CPU time for QuAcK =" out/Sph_${ne}_${nb}.out 
 
     done
 

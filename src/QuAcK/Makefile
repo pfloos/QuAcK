@@ -3,11 +3,15 @@ BDIR =../../bin
 ODIR = obj
 OODIR = ../IntPak/obj
 SDIR =.
-FC = gfortran -I$(IDIR) 
+FC = gfortran -I$(IDIR) -Wall -g -Wno-unused -Wno-unused-dummy-argument 
 ifeq ($(DEBUG),1)
-FFLAGS = -Wall -g -msse4.2 -fcheck=all -Waliasing -Wampersand -Wconversion -Wsurprising -Wintrinsics-std -Wno-tabs -Wintrinsic-shadow -Wline-truncation -Wreal-q-constant
+  FFLAGS = -Wall -g -msse4.2 -fcheck=all -Waliasing -Wampersand -Wconversion -Wsurprising -Wintrinsics-std -Wno-tabs -Wintrinsic-shadow -Wline-truncation -Wreal-q-constant
 else
-FFLAGS = -Wall -Wno-unused -Wno-unused-dummy-argument -O2 
+  FFLAGS = -O3
+endif
+
+ifeq ($(PROFIL),1)
+  FC += -p -fno-inline
 endif
 
 LIBS = ~/Dropbox/quack/lib/*.a
@@ -31,6 +35,9 @@ $(BDIR)/QuAcK: $(OBJ)
 debug: 
 	DEBUG=1 make $(BDIR)/QuAcK
 #DEBUG=1 make clean $(BDIR)/QuAcK
+
+profil: 
+	PROFIL=1 make $(BDIR)/QuAcK
 
 clean:
 	rm -f $(ODIR)/*.o $(BDIR)/QuAcK $(BDIR)/debug

@@ -5,11 +5,16 @@ subroutine print_excitation(method,ispin,nS,Omega)
   implicit none
   include 'parameters.h'
 
+! Input variables
+
   character*5,intent(in)             :: method
   integer,intent(in)                 :: ispin,nS
   double precision,intent(in)        :: Omega(nS)
 
+! Local variables
+
   character*7                        :: spin_manifold
+  integer,parameter                  :: maxS = 32
   integer                            :: ia
 
   if(ispin == 1) spin_manifold = 'singlet'
@@ -23,7 +28,7 @@ subroutine print_excitation(method,ispin,nS,Omega)
             '|','State','|',' Excitation energy (au) ','|',' Excitation energy (eV) ','|'
   write(*,*)'-------------------------------------------------------------'
 
-  do ia=1,nS
+  do ia=1,min(nS,maxS)
     write(*,'(1X,A1,1X,I5,1X,A1,1X,F23.6,1X,A1,1X,F23.6,1X,A1,1X)') & 
       '|',ia,'|',Omega(ia),'|',Omega(ia)*HaToeV,'|'
   enddo

@@ -1,5 +1,5 @@
 subroutine evGW(maxSCF,thresh,max_diis,COHSEX,SOSEX,BSE,TDA,G0W,GW0,singlet_manifold,triplet_manifold,linearize, & 
-                nBas,nC,nO,nV,nR,nS,ENuc,ERHF,Hc,ERI_AO_basis,ERI_MO_basis,PHF,cHF,eHF,eG0W0)
+                nBas,nC,nO,nV,nR,nS,ENuc,ERHF,Hc,H,ERI_MO_basis,PHF,cHF,eHF,eG0W0)
 
 ! Perform self-consistent eigenvalue-only GW calculation
 
@@ -28,7 +28,7 @@ subroutine evGW(maxSCF,thresh,max_diis,COHSEX,SOSEX,BSE,TDA,G0W,GW0,singlet_mani
   double precision,intent(in)   :: PHF(nBas,nBas) 
   double precision,intent(in)   :: eG0W0(nBas)
   double precision,intent(in)   :: Hc(nBas,nBas)
-  double precision,intent(in)   :: ERI_AO_basis(nBas,nBas,nBas,nBas)
+  double precision,intent(in)   :: H(nBas,nBas)
   double precision,intent(in)   :: ERI_MO_basis(nBas,nBas,nBas,nBas)
 
 ! Local variables
@@ -49,7 +49,6 @@ subroutine evGW(maxSCF,thresh,max_diis,COHSEX,SOSEX,BSE,TDA,G0W,GW0,singlet_mani
   double precision,allocatable  :: eGW(:)
   double precision,allocatable  :: eOld(:)
   double precision,allocatable  :: Z(:)
-  double precision,allocatable  :: H(:,:)
   double precision,allocatable  :: SigC(:)
   double precision,allocatable  :: Omega(:,:)
   double precision,allocatable  :: XpY(:,:,:)
@@ -80,8 +79,8 @@ subroutine evGW(maxSCF,thresh,max_diis,COHSEX,SOSEX,BSE,TDA,G0W,GW0,singlet_mani
 
 ! Memory allocation
 
-  allocate(eGW(nBas),eOld(nBas),Z(nBas),H(nBas,nBas),SigC(nBas),Omega(nS,nspin), & 
-           XpY(nS,nS,nspin),rho(nBas,nBas,nS,nspin),rhox(nBas,nBas,nS,nspin),    &
+  allocate(eGW(nBas),eOld(nBas),Z(nBas),SigC(nBas),Omega(nS,nspin),           & 
+           XpY(nS,nS,nspin),rho(nBas,nBas,nS,nspin),rhox(nBas,nBas,nS,nspin), &
            error_diis(nBas,max_diis),e_diis(nBas,max_diis))
 
 ! Initialization
@@ -95,10 +94,6 @@ subroutine evGW(maxSCF,thresh,max_diis,COHSEX,SOSEX,BSE,TDA,G0W,GW0,singlet_mani
   eGW(:)          = eG0W0(:)
   eOld(:)         = eGW(:)
   Z(:)            = 1d0
-
-! Compute Hartree Hamiltonian in the MO basis
-
-  call Hartree_matrix_MO_basis(nBas,cHF,PHF,Hc,ERI_AO_basis,H)
 
 !------------------------------------------------------------------------
 ! Main loop
