@@ -19,6 +19,7 @@ subroutine MOM(maxSCF,thresh,max_diis,nBas,nO,S,T,V,Hc,ERI,X,ENuc,ERHF,c,e,P)
   integer                       :: iBas,jBas
   integer                       :: nSCF,nBasSq,n_diis
   double precision              :: ET,EV,EJ,EK,Conv,Gap 
+  double precision              :: rcond
   double precision,external     :: trace_matrix
   double precision,allocatable  :: error(:,:),error_diis(:,:),F_diis(:,:)
   double precision,allocatable  :: J(:,:),K(:,:),cp(:,:),F(:,:),Fp(:,:)
@@ -111,7 +112,11 @@ subroutine MOM(maxSCF,thresh,max_diis,nBas,nO,S,T,V,Hc,ERI,X,ENuc,ERHF,c,e,P)
 !   DIIS extrapolation
 
     n_diis = min(n_diis+1,max_diis)
-    call DIIS_extrapolation(nBasSq,nBasSq,n_diis,error_diis,F_diis,error,F)
+    call DIIS_extrapolation(rcond,nBasSq,nBasSq,n_diis,error_diis,F_diis,error,F)
+
+!   Reset DIIS if required
+
+    if(abs(rcond) < 1d-15) n_diis = 0
 
 !  Diagonalize Fock matrix
 

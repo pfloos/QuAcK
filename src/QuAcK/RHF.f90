@@ -34,8 +34,6 @@ subroutine RHF(maxSCF,thresh,max_diis,guess_type,nBas,nO,S,T,V,Hc,ERI,X,ENuc,ERH
   double precision,allocatable  :: Fp(:,:)
   double precision,allocatable  :: ON(:)
 
-  integer                       :: i
-
 ! Output variables
 
   double precision,intent(out)  :: ERHF
