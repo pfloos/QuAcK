@@ -6,7 +6,7 @@ FC = gfortran -I$(IDIR)
 ifeq ($(DEBUG),1)
 FFLAGS = -Wall -g -msse4.2 -fcheck=all -Waliasing -Wampersand -Wconversion -Wsurprising -Wintrinsics-std -Wno-tabs -Wintrinsic-shadow -Wline-truncation -Wreal-q-constant
 else
-FFLAGS = -Wall -Wno-unused -Wno-unused-dummy-argument -O2 
+FFLAGS = -Wall -Wno-unused -Wno-unused-dummy-argument -O3 
 endif
 
 LIBS = ~/Dropbox/quack/lib/*.a

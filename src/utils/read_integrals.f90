@@ -36,7 +36,7 @@ subroutine read_integrals(nEl,nBas,S,T,V,Hc,G)
 
 ! Read overlap integrals
 
-  S = 0d0
+  S(:,:) = 0d0
   do 
     read(8,*,end=8) mu,nu,Ov
     S(mu,nu) = Ov
@@ -45,15 +45,16 @@ subroutine read_integrals(nEl,nBas,S,T,V,Hc,G)
 
 ! Read kinetic integrals
 
-  T = 0d0
+  T(:,:) = 0d0
   do 
     read(9,*,end=9) mu,nu,Kin
+    T(mu,nu) = Kin
   enddo
   9 close(unit=9)
 
 ! Read nuclear integrals
 
-  V = 0d0
+  V(:,:) = 0d0
   do 
     read(10,*,end=10) mu,nu,Nuc
     V(mu,nu) = Nuc
@@ -62,11 +63,11 @@ subroutine read_integrals(nEl,nBas,S,T,V,Hc,G)
 
 ! Define core Hamiltonian
 
-  Hc = T + V
+  Hc(:,:) = T(:,:) + V(:,:)
 
 ! Read nuclear integrals
 
-  G = 0d0
+  G(:,:,:,:) = 0d0
   do 
     read(11,*,end=11) mu,nu,la,si,ERI
 

@@ -90,7 +90,7 @@ program QuAcK
 
 ! Spherium calculation?
   
-  doSph = .true.
+  doSph = .false.
 
   call cpu_time(start_QuAcK)
 
