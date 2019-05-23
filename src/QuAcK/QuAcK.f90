@@ -90,7 +90,7 @@ program QuAcK
 
 ! Spherium calculation?
   
-  doSph = .true.
+  doSph = .false.
 
   call cpu_time(start_QuAcK)
 
@@ -386,7 +386,7 @@ program QuAcK
   if(doTDHF) then
 
     call cpu_time(start_TDHF)
-    call TDHF(singlet_manifold,triplet_manifold,nBas,nC,nO,nV,nR,nS,ERI_MO_basis,eHF)
+    call TDHF(singlet_manifold,triplet_manifold,nBas,nC,nO,nV,nR,nS,ENuc,ERHF,ERI_MO_basis,eHF)
     call cpu_time(end_TDHF)
 
     t_TDHF = end_TDHF - start_TDHF

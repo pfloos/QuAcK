@@ -1,4 +1,4 @@
-subroutine TDHF(singlet_manifold,triplet_manifold,nBas,nC,nO,nV,nR,nS,ERI,e)
+subroutine TDHF(singlet_manifold,triplet_manifold,nBas,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,e)
 
 ! Perform random phase approximation calculation
 
@@ -7,18 +7,30 @@ subroutine TDHF(singlet_manifold,triplet_manifold,nBas,nC,nO,nV,nR,nS,ERI,e)
 
 ! Input variables
 
-  logical,intent(in)            :: singlet_manifold,triplet_manifold
-  integer,intent(in)            :: nBas,nC,nO,nV,nR,nS
-  double precision,intent(in)   :: ERI(nBas,nBas,nBas,nBas),e(nBas)
+  logical,intent(in)            :: singlet_manifold
+  logical,intent(in)            :: triplet_manifold
+  integer,intent(in)            :: nBas
+  integer,intent(in)            :: nC
+  integer,intent(in)            :: nO
+  integer,intent(in)            :: nV
+  integer,intent(in)            :: nR
+  integer,intent(in)            :: nS
+  double precision,intent(in)   :: ENuc
+  double precision,intent(in)   :: ERHF
+  double precision,intent(in)   :: e(nBas)
+  double precision,intent(in)   :: ERI(nBas,nBas,nBas,nBas)
 
 ! Local variables
 
-  logical                       :: dRPA,TDA,BSE
+  logical                       :: dRPA
+  logical                       :: TDA
+  logical                       :: BSE
   integer                       :: ispin
-  double precision,allocatable  :: Omega(:,:),XpY(:,:,:)
+  double precision,allocatable  :: Omega(:,:)
+  double precision,allocatable  :: XpY(:,:,:)
 
   double precision              :: rho
-  double precision              :: EcRPA
+  double precision              :: EcRPA(nspin)
 
 ! Hello world
 
@@ -27,6 +39,10 @@ subroutine TDHF(singlet_manifold,triplet_manifold,nBas,nC,nO,nV,nR,nS,ERI,e)
   write(*,*)'|  Time-dependent Hartree-Fock calculation     |'
   write(*,*)'************************************************'
   write(*,*)
+
+! Initialization
+
+  EcRPA(:) = 0d0
 
 ! Switch on exchange for TDHF
 
@@ -51,16 +67,10 @@ subroutine TDHF(singlet_manifold,triplet_manifold,nBas,nC,nO,nV,nR,nS,ERI,e)
     ispin = 1
 
     call linear_response(ispin,dRPA,TDA,BSE,nBas,nC,nO,nV,nR,nS,e,ERI, & 
-                         rho,EcRPA,Omega(:,ispin),XpY(:,:,ispin))
+                         rho,EcRPA(ispin),Omega(:,ispin),XpY(:,:,ispin))
     call print_excitation('TDHF ',ispin,nS,Omega(:,ispin))
 
   endif
-
-  write(*,*)'-------------------------------------------------------------------------------'
-  write(*,'(2X,A27,F15.6)') 'RPA correlation energy    =',EcRPA
-  write(*,*)'-------------------------------------------------------------------------------'
-  write(*,*)
-
 
 ! Triplet manifold 
 
@@ -69,9 +79,18 @@ subroutine TDHF(singlet_manifold,triplet_manifold,nBas,nC,nO,nV,nR,nS,ERI,e)
     ispin = 2
 
     call linear_response(ispin,dRPA,TDA,BSE,nBas,nC,nO,nV,nR,nS,e,ERI, &
-                         rho,EcRPA,Omega(:,ispin),XpY(:,:,ispin))
+                         rho,EcRPA(ispin),Omega(:,ispin),XpY(:,:,ispin))
     call print_excitation('TDHF ',ispin,nS,Omega(:,ispin))
 
   endif
+
+  write(*,*)
+  write(*,*)'-------------------------------------------------------------------------------'
+  write(*,'(2X,A40,F15.6)') 'RPA@TDHF correlation energy (singlet) =',EcRPA(1)
+  write(*,'(2X,A40,F15.6)') 'RPA@TDHF correlation energy (triplet) =',EcRPA(2)
+  write(*,'(2X,A40,F15.6)') 'RPA@TDHF correlation energy           =',EcRPA(1) + EcRPA(2)
+  write(*,'(2X,A40,F15.6)') 'RPA@TDHF total energy                 =',ENuc + ERHF + EcRPA(1) + EcRPA(2)
+  write(*,*)'-------------------------------------------------------------------------------'
+  write(*,*)
 
 end subroutine TDHF

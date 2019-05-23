@@ -15,7 +15,8 @@ subroutine G0W0(COHSEX,SOSEX,BSE,TDA,singlet_manifold,triplet_manifold, &
   logical,intent(in)            :: singlet_manifold
   logical,intent(in)            :: triplet_manifold
   integer,intent(in)            :: nBas,nC,nO,nV,nR,nS
-  double precision,intent(in)   :: ENuc,ERHF
+  double precision,intent(in)   :: ENuc
+  double precision,intent(in)   :: ERHF
   double precision,intent(in)   :: eHF(nBas)
   double precision,intent(in)   :: cHF(nBas,nBas)
   double precision,intent(in)   :: PHF(nBas,nBas)

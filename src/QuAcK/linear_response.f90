@@ -46,6 +46,12 @@ subroutine linear_response(ispin,dRPA,TDA,BSE,nBas,nC,nO,nV,nR,nS,e,ERI,rho,EcRP
   ApB = A + B
   AmB = A - B
 
+! print*,'A'
+! call matout(nS,nS,A)
+
+! print*,'B'
+! call matout(nS,nS,B)
+
 ! print*,'A+B'
 ! call matout(nS,nS,ApB)
 
@@ -83,5 +89,7 @@ subroutine linear_response(ispin,dRPA,TDA,BSE,nBas,nC,nO,nV,nR,nS,e,ERI,rho,EcRP
 ! Compute the RPA correlation energy
 
   EcRPA = 0.5d0*(sum(Omega) - trace_matrix(nS,A))
+
+! print*,'EcRPA = ',EcRPA
 
 end subroutine linear_response
