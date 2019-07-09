@@ -27,7 +27,7 @@ subroutine mu_grid(nGrid,rho,f,mu)
 
   do iG=1,ngrid
 
-    n2 = rho(iG)**2
+    n2 = 0.25d0*rho(iG)**2
 
     if(abs(n2) > thres) then
 

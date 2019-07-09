@@ -623,9 +623,10 @@ program QuAcK
   call AO_values_grid(nBas,nShell,CenterShell,TotAngMomShell,KShell,DShell,ExpShell,nGrid,root,AO,dAO)
   call density(nGrid,nBas,PHF(:,:,1),AO(:,:),rho(:))
   call MO_values_grid(nBas,nGrid,cHF(:,:,1),AO,dAO,MO,dMO)
-  call f_grid(nBas,nO(1),nGrid,MO,ERI_MO_basis,f)
+  call f_grid(nBas,nO(1),nGrid,weight,MO,ERI_MO_basis,f)
   call mu_grid(nGrid,rho,f,mu)
   call ec_srlda(nGrid,weight,rho,mu)
+  call fc_srlda(nEl(1),nBas,nGrid,weight,MO,rho,mu)
 
 !------------------------------------------------------------------------
 ! End of QuAcK

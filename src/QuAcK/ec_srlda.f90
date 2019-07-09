@@ -18,7 +18,7 @@ subroutine ec_srlda(nGrid,weight,rho,mu)
   double precision              :: r
   double precision              :: rs
   double precision              :: ecsr
-  double precision              :: ec
+  double precision              :: ec,vcup,vcdw
   double precision,parameter    :: thres = 1d-15
 
 ! Initialization
@@ -33,9 +33,10 @@ subroutine ec_srlda(nGrid,weight,rho,mu)
 
       rs = (4d0*pi*r/3d0)**(-1d0/3d0)
 
-      call srlda(rs,mu(iG),ecsr)
+!     call srlda(rs,mu(iG),ecsr)
+      call lsdsr(rs,0d0,mu(iG),ecsr,vcup,vcdw)
 
-      ec = ec + weight(iG)*ecsr*rho(iG)
+      ec = ec + weight(iG)*ecsr*r
 
     end if
 
