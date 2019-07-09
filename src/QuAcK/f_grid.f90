@@ -1,4 +1,4 @@
-subroutine f_grid(nBas,nO,nGrid,weight,MO,ERI,f)
+subroutine f_grid(nBas,nO,nGrid,MO,ERI,f)
 
 ! Compute f
 
@@ -10,7 +10,6 @@ subroutine f_grid(nBas,nO,nGrid,weight,MO,ERI,f)
   integer,intent(in)            :: nBas
   integer,intent(in)            :: nO
   integer,intent(in)            :: nGrid
-  double precision,intent(in)   :: weight(nGrid)
   double precision,intent(in)   :: MO(nBas,nGrid)
   double precision,intent(in)   :: ERI(nBas,nBas,nBas,nBas)
 
@@ -19,33 +18,12 @@ subroutine f_grid(nBas,nO,nGrid,weight,MO,ERI,f)
   integer                       :: p,q
   integer                       :: i,j
   integer                       :: iG
-  double precision :: toto
 
 ! Output variables
 
   double precision,intent(out)  :: f(nGrid)
 
 ! Initialization
-
-  f(:) = 0d0
-
-  do p=1,nBas
-      do i=1,nO
-        do j=1,nO
-          do iG=1,ngrid
-
-            f(iG) = f(iG) + MO(i,iG)*MO(p,iG)*ERI(i,j,p,j)
-
-        end do
-      end do
-    end do
-  end do
-
-  toto=0d0
-  do iG=1,nGrid
-    toto = toto + weight(iG)*f(iG)
-  end do
-  print*,'toto=',toto
 
   f(:) = 0d0
 

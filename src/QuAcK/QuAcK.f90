@@ -12,6 +12,8 @@ program QuAcK
   logical                       :: doG0W0,doevGW,doqsGW
   logical                       :: doMCMP2,doMinMCMP2
   logical                       :: doeNcusp
+  logical                       :: doBas
+
   integer                       :: nNuc,nBas,nBasCABS
   integer                       :: nEl(nspin),nC(nspin),nO(nspin),nV(nspin),nR(nspin),nS(nspin)
   double precision              :: ENuc,ERHF,EUHF,Norm
@@ -53,6 +55,7 @@ program QuAcK
   double precision              :: start_MP2F12 ,end_MP2F12   ,t_MP2F12
   double precision              :: start_MCMP2  ,end_MCMP2    ,t_MCMP2
   double precision              :: start_MinMCMP2,end_MinMCMP2,t_MinMCMP2
+  double precision              :: start_Bas    ,end_Bas      ,t_Bas
 
   integer                       :: maxSCF_HF,n_diis_HF
   double precision              :: thresh_HF
@@ -75,20 +78,6 @@ program QuAcK
   integer                       :: nMC,nEq,nWalk,nPrint,iSeed
   double precision              :: dt
   logical                       :: doDrift
-
-  integer                       :: SGn
-  integer                       :: nRad
-  integer                       :: nAng
-  integer                       :: nGrid
-  double precision,allocatable  :: root(:,:)
-  double precision,allocatable  :: weight(:)
-  double precision,allocatable  :: AO(:,:)
-  double precision,allocatable  :: dAO(:,:,:)
-  double precision,allocatable  :: MO(:,:)
-  double precision,allocatable  :: dMO(:,:,:)
-  double precision,allocatable  :: rho(:)
-  double precision,allocatable  :: f(:)
-  double precision,allocatable  :: mu(:)
 
 ! Hello World
 
@@ -226,7 +215,7 @@ program QuAcK
     write(*,'(A65,1X,F9.3,A8)') 'Total CPU time for RHF = ',t_HF,' seconds'
     write(*,*)
 
-  endif
+  end if
 
 !------------------------------------------------------------------------
 ! Compute RHF energy
@@ -242,7 +231,7 @@ program QuAcK
     write(*,'(A65,1X,F9.3,A8)') 'Total CPU time for UHF = ',t_HF,' seconds'
     write(*,*)
 
-  endif
+  end if
 
 !------------------------------------------------------------------------
 ! Maximum overlap method
@@ -259,7 +248,7 @@ program QuAcK
     write(*,'(A65,1X,F9.3,A8)') 'Total CPU time for MOM = ',t_MOM,' seconds'
     write(*,*)
 
-  endif
+  end if
 
 !------------------------------------------------------------------------
 ! AO to MO integral transform for post-HF methods
@@ -303,7 +292,7 @@ program QuAcK
     write(*,'(A65,1X,F9.3,A8)') 'Total CPU time for MP2 = ',t_MP2,' seconds'
     write(*,*)
 
-  endif
+  end if
 
 !------------------------------------------------------------------------
 ! Compute MP3 energy
@@ -319,7 +308,7 @@ program QuAcK
     write(*,'(A65,1X,F9.3,A8)') 'Total CPU time for MP3 = ',t_MP3,' seconds'
     write(*,*)
 
-  endif
+  end if
 
 !------------------------------------------------------------------------
 ! Compute MP2-F12 energy
@@ -343,7 +332,7 @@ program QuAcK
     write(*,'(A65,1X,F9.3,A8)') 'Total CPU time for MP2-F12 = ',t_MP2F12,' seconds'
     write(*,*)
 
-  endif
+  end if
 
 !------------------------------------------------------------------------
 ! Perform CCD calculation
@@ -359,7 +348,7 @@ program QuAcK
     write(*,'(A65,1X,F9.3,A8)') 'Total CPU time for CCD = ',t_CCD,' seconds'
     write(*,*)
 
-  endif
+  end if
 
 !------------------------------------------------------------------------
 ! Perform CCSD or CCSD(T) calculation
@@ -391,7 +380,7 @@ program QuAcK
     write(*,'(A65,1X,F9.3,A8)') 'Total CPU time for CIS = ',t_CIS,' seconds'
     write(*,*)
 
-  endif
+  end if
 
 !------------------------------------------------------------------------
 ! Compute TDHF excitations
@@ -407,7 +396,7 @@ program QuAcK
     write(*,'(A65,1X,F9.3,A8)') 'Total CPU time for TDHF = ',t_TDHF,' seconds'
     write(*,*)
 
-  endif
+  end if
 
 !------------------------------------------------------------------------
 ! Compute ADC excitations
@@ -423,7 +412,7 @@ program QuAcK
     write(*,'(A65,1X,F9.3,A8)') 'Total CPU time for ADC = ',t_ADC,' seconds'
     write(*,*)
 
-  endif
+  end if
 
 !------------------------------------------------------------------------
 ! Compute GF2 electronic binding energies
@@ -439,7 +428,7 @@ program QuAcK
     write(*,'(A65,1X,F9.3,A8)') 'Total CPU time for GF2 = ',t_GF2,' seconds'
     write(*,*)
 
-  endif
+  end if
 
 !------------------------------------------------------------------------
 ! Compute GF3 electronic binding energies
@@ -455,7 +444,7 @@ program QuAcK
     write(*,'(A65,1X,F9.3,A8)') 'Total CPU time for GF3 = ',t_GF3,' seconds'
     write(*,*)
 
-  endif
+  end if
 
 !------------------------------------------------------------------------
 ! Perform G0W0 calculatiom
@@ -474,7 +463,7 @@ program QuAcK
     write(*,'(A65,1X,F9.3,A8)') 'Total CPU time for G0W0 = ',t_G0W0,' seconds'
     write(*,*)
 
-  endif
+  end if
 
 !------------------------------------------------------------------------
 ! Perform evGW calculation
@@ -491,7 +480,7 @@ program QuAcK
     write(*,'(A65,1X,F9.3,A8)') 'Total CPU time for evGW = ',t_evGW,' seconds'
     write(*,*)
 
-  endif
+  end if
 
 !------------------------------------------------------------------------
 ! Perform qsGW calculation
@@ -509,7 +498,7 @@ program QuAcK
     write(*,'(A65,1X,F9.3,A8)') 'Total CPU time for qsGW = ',t_qsGW,' seconds'
     write(*,*)
 
-  endif
+  end if
 
 !------------------------------------------------------------------------
 ! Compute e-N cusp dressing
@@ -524,7 +513,7 @@ program QuAcK
     write(*,'(A65,1X,F9.3,A8)') 'Total CPU time for e-N cusp dressing  = ',t_eNcusp,' seconds'
     write(*,*)
 
-  endif
+  end if
 
 !------------------------------------------------------------------------
 ! Information for Monte Carlo calculations
@@ -558,7 +547,7 @@ program QuAcK
     TrialType = 0
     allocate(cTrial(nBas),gradient(nBas),hessian(nBas,nBas))
 
-  endif
+  end if
 !------------------------------------------------------------------------
 ! Compute MC-MP2 energy
 !------------------------------------------------------------------------
@@ -576,7 +565,7 @@ program QuAcK
     write(*,'(A65,1X,F9.3,A8)') 'Total CPU time for MC-MP2 = ',t_MCMP2,' seconds'
     write(*,*)
 
-  endif
+  end if
 
 !------------------------------------------------------------------------
 ! Minimize MC-MP2 variance
@@ -595,39 +584,26 @@ program QuAcK
     write(*,'(A65,1X,F9.3,A8)') 'Total CPU time for MC-MP2 variance minimization = ',t_MinMCMP2,' seconds'
     write(*,*)
 
-  endif
+  end if
 
 !------------------------------------------------------------------------
 ! Basis set correction
 !------------------------------------------------------------------------
 
-!------------------------------------------------------------------------
-! Construct quadrature grid
-!------------------------------------------------------------------------
+  doBas = .true.
 
-  SGn = 1
+  if(doBas) then
 
-  call read_grid(SGn,nRad,nAng,nGrid)
+    call cpu_time(start_Bas)
+    call basis_correction(nBas,nO,nShell,CenterShell,TotAngMomShell,KShell,DShell,ExpShell, &
+                          ERI_MO_basis,eHF,cHF,PHF,eG0W0)
+    call cpu_time(end_Bas)
 
-  allocate(root(ncart,nGrid),weight(nGrid))
+    t_Bas = end_Bas - start_Bas
+    write(*,'(A65,1X,F9.3,A8)') 'Total CPU time for basis set correction = ',t_Bas,' seconds'
+    write(*,*)
 
-  call quadrature_grid(nRad,nAng,nGrid,root,weight)
- 
-!------------------------------------------------------------------------
-! Calculate AO values at grid points
-!------------------------------------------------------------------------
-
-  allocate(AO(nBas,nGrid),dAO(ncart,nBas,nGrid),MO(nBas,nGrid),dMO(ncart,nBas,nGrid))
-  allocate(rho(nGrid),f(nGrid),mu(nGrid))
-
-  call AO_values_grid(nBas,nShell,CenterShell,TotAngMomShell,KShell,DShell,ExpShell,nGrid,root,AO,dAO)
-  call density(nGrid,nBas,PHF(:,:,1),AO(:,:),rho(:))
-  call MO_values_grid(nBas,nGrid,cHF(:,:,1),AO,dAO,MO,dMO)
-  call f_grid(nBas,nO(1),nGrid,weight,MO,ERI_MO_basis,f)
-  call mu_grid(nGrid,rho,f,mu)
-  call ec_srlda(nGrid,weight,rho,mu)
-  call fc_srlda(nEl(1),nBas,nGrid,weight,MO,rho,mu)
-
+  end if
 !------------------------------------------------------------------------
 ! End of QuAcK
 !------------------------------------------------------------------------

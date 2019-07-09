@@ -11,7 +11,7 @@ subroutine MO_values_grid(nBas,nGrid,c,AO,dAO,MO,dMO)
   integer,intent(in)            :: nGrid
   double precision,intent(in)   :: c(nBas,nBas)
   double precision,intent(in)   :: AO(nBas,nGrid)
-  double precision,intent(in)   :: dAO(3,nBas,nGrid)
+  double precision,intent(in)   :: dAO(ncart,nBas,nGrid)
 
 ! Local variables
 
@@ -20,7 +20,7 @@ subroutine MO_values_grid(nBas,nGrid,c,AO,dAO,MO,dMO)
 ! Output variables
 
   double precision,intent(out)  :: MO(nBas,nGrid)
-  double precision,intent(out)  :: dMO(3,nBas,nGrid)
+  double precision,intent(out)  :: dMO(ncart,nBas,nGrid)
 
 ! Initialization
 

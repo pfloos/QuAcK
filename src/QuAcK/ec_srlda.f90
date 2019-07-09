@@ -19,29 +19,27 @@ subroutine ec_srlda(nGrid,weight,rho,mu)
   double precision              :: rs
   double precision              :: ecsr
   double precision              :: ec,vcup,vcdw
-  double precision,parameter    :: thres = 1d-15
 
 ! Initialization
 
-  ec = 0d0
+  ecsr = 0d0
 
   do iG=1,ngrid
 
     r = max(0d0,rho(iG))
 
-    if(r > thres) then
+    if(r > threshold) then
 
       rs = (4d0*pi*r/3d0)**(-1d0/3d0)
 
-!     call srlda(rs,mu(iG),ecsr)
-      call lsdsr(rs,0d0,mu(iG),ecsr,vcup,vcdw)
+      call lsdsr(rs,0d0,mu(iG),ec,vcup,vcdw)
 
-      ec = ec + weight(iG)*ecsr*r
+      ecsr = ecsr + weight(iG)*ec*r
 
     end if
 
   end do
 
-  print*, 'ec = ',ec
+  write(*,'(A32,1X,F16.10)') 'ecsr = ',ecsr
 
 end subroutine ec_srlda
