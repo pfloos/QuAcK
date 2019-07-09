@@ -76,6 +76,20 @@ program QuAcK
   double precision              :: dt
   logical                       :: doDrift
 
+  integer                       :: SGn
+  integer                       :: nRad
+  integer                       :: nAng
+  integer                       :: nGrid
+  double precision,allocatable  :: root(:,:)
+  double precision,allocatable  :: weight(:)
+  double precision,allocatable  :: AO(:,:)
+  double precision,allocatable  :: dAO(:,:,:)
+  double precision,allocatable  :: MO(:,:)
+  double precision,allocatable  :: dMO(:,:,:)
+  double precision,allocatable  :: rho(:)
+  double precision,allocatable  :: f(:)
+  double precision,allocatable  :: mu(:)
+
 ! Hello World
 
   write(*,*)
@@ -582,6 +596,36 @@ program QuAcK
     write(*,*)
 
   endif
+
+!------------------------------------------------------------------------
+! Basis set correction
+!------------------------------------------------------------------------
+
+!------------------------------------------------------------------------
+! Construct quadrature grid
+!------------------------------------------------------------------------
+
+  SGn = 1
+
+  call read_grid(SGn,nRad,nAng,nGrid)
+
+  allocate(root(ncart,nGrid),weight(nGrid))
+
+  call quadrature_grid(nRad,nAng,nGrid,root,weight)
+ 
+!------------------------------------------------------------------------
+! Calculate AO values at grid points
+!------------------------------------------------------------------------
+
+  allocate(AO(nBas,nGrid),dAO(ncart,nBas,nGrid),MO(nBas,nGrid),dMO(ncart,nBas,nGrid))
+  allocate(rho(nGrid),f(nGrid),mu(nGrid))
+
+  call AO_values_grid(nBas,nShell,CenterShell,TotAngMomShell,KShell,DShell,ExpShell,nGrid,root,AO,dAO)
+  call density(nGrid,nBas,PHF(:,:,1),AO(:,:),rho(:))
+  call MO_values_grid(nBas,nGrid,cHF(:,:,1),AO,dAO,MO,dMO)
+  call f_grid(nBas,nO(1),nGrid,MO,ERI_MO_basis,f)
+  call mu_grid(nGrid,rho,f,mu)
+  call ec_srlda(nGrid,weight,rho,mu)
 
 !------------------------------------------------------------------------
 ! End of QuAcK

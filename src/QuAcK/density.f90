@@ -1,51 +1,38 @@
-subroutine density(doDrift,nBas,nWalk,P,gAO,dgAO,g,dg)
+subroutine density(nGrid,nBas,P,AO,rho)
 
-! Calculate the Green functions
+! Calculate one-electron density
 
   implicit none
+  include 'parameters.h'
 
 ! Input variables
 
-  logical,intent(in)            :: doDrift
-  integer,intent(in)            :: nBas,nWalk
-  double precision,intent(in)   :: P(nBas,nBas),gAO(nWalk,2,nBas),dgAO(nWalk,2,3,nBas)
+  double precision,parameter    :: thresh = 1d-15
+
+  integer,intent(in)            :: nGrid
+  integer,intent(in)            :: nBas
+  double precision,intent(in)   :: P(nBas,nBas)
+  double precision,intent(in)   :: AO(nBas,nGrid)
 
 ! Local variables
 
-  integer                       :: iW,iEl,ixyz,mu,nu
+  integer                       :: iG,mu,nu
 
 ! Output variables
 
-  double precision,intent(out)  :: g(nWalk,2),dg(nWalk,2,3)
+  double precision,intent(out)  :: rho(nGrid) 
 
-  g = 0d0
-  do iW=1,nWalk
-   do iEl=1,2
-     do mu=1,nBas
-       do nu=1,nBas
-         g(iW,iEl) = g(iW,iEl) + gAO(iW,iEl,mu)*P(mu,nu)*gAO(iW,iEl,nu)
-       enddo
-     enddo
-   enddo
-  enddo
-
-  if(doDrift) then
-
-    dg = 0d0
-    do iW=1,nWalk
-      do iEl=1,2
-        do ixyz=1,3
-          do mu=1,nBas
-            do nu=1,nBas
-              dg(iW,iEl,ixyz) = dg(iW,iEl,ixyz)                                & 
-                              + P(mu,nu)*(dgAO(iW,iEl,ixyz,mu)*gAO(iW,iEl,nu)  &
-                              +            gAO(iW,iEl,mu)*dgAO(iW,iEl,ixyz,nu))
-            enddo
-          enddo
-        enddo
+  rho(:) = 0d0
+  do iG=1,nGrid
+    do mu=1,nBas
+      do nu=1,nBas
+        rho(iG) = rho(iG) + AO(mu,iG)*P(mu,nu)*AO(nu,iG)
       enddo
     enddo
+  enddo
 
-  endif
+! do iG=1,nGrid
+!   rho(iG) = max(rho(iG),thresh)
+! enddo
 
 end subroutine density

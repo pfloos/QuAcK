@@ -5,7 +5,7 @@ ODIR = obj
 OODIR = ../IntPak/obj
 SDIR =.
 FC = gfortran -I$(IDIR) 
-AR = ar
+AR = libtool
 ifeq ($(DEBUG),1)
 FFLAGS = -Wall -g -msse4.2 -fcheck=all -Waliasing -Wampersand -Wconversion -Wsurprising -Wintrinsics-std -Wno-tabs -Wintrinsic-shadow -Wline-truncation -Wreal-q-constant
 else
@@ -28,7 +28,7 @@ $(ODIR)/%.o: %.f
 	$(FC) -c -o $@ $< $(FFLAGS) 
 
 $(LDIR)/utils.a: $(OBJ)
-	$(AR) -cru $@ $^ 
+	$(AR) -static -o $@ $^ 
 
 debug: 
 	DEBUG=1 make $(LDIR)/utils.a

@@ -2,9 +2,11 @@ program eDFT
 
 ! exchange-correlation density-functional theory calculations
 
+  implicit none
   include 'parameters.h'
 
-  integer                       :: nNuc,nBas,nEl(nspin),nO(nspin),nV(nspin)
+  integer                       :: nNuc,nBas
+  integer                       :: nEl(nspin),nC(nspin),nO(nspin),nV(nspin),nR(nspin)
   double precision              :: ENuc,EKS
 
   double precision,allocatable  :: ZNuc(:),rNuc(:,:)
@@ -35,7 +37,9 @@ program eDFT
 
   integer                       :: maxSCF,max_diis
   double precision              :: thresh
-  logical                       :: DIIS,guess_type,ortho_type
+  logical                       :: DIIS
+  integer                       :: guess_type
+  integer                       :: ortho_type
 
 ! Hello World
 
@@ -50,12 +54,14 @@ program eDFT
 !------------------------------------------------------------------------
 
 ! Read number of atoms, number of electrons of the system
+! nC   = number of core orbitals
 ! nO   = number of occupied orbitals
 ! nV   = number of virtual orbitals (see below)
+! nR   = number of Rydberg orbitals 
 ! nBas = number of basis functions (see below)
 !      = nO + nV
 
-  call read_molecule(nNuc,nEl,nO)
+  call read_molecule(nNuc,nEl(:),nO(:),nC(:),nR(:))
   allocate(ZNuc(nNuc),rNuc(nNuc,ncart))
 
 ! Read geometry
@@ -72,31 +78,29 @@ program eDFT
   call read_basis(nNuc,rNuc,nBas,nO,nV,nShell,TotAngMomShell,CenterShell,KShell,DShell,ExpShell)
 
 !------------------------------------------------------------------------
-! Read one- and two-electron integrals
-!------------------------------------------------------------------------
-
-! Memory allocation for one- and two-electron integrals
-
-  allocate(S(nBas,nBas),T(nBas,nBas),V(nBas,nBas),Hc(nBas,nBas),X(nBas,nBas), &
-           ERI(nBas,nBas,nBas,nBas))
-
-!   Read integrals
-
-  call read_integrals(nBas,S,T,V,Hc,ERI)  
-
-! Orthogonalization X = S^(-1/2)
-
-  call orthogonalization_matrix(nBas,S,X)
-
-!------------------------------------------------------------------------
 ! DFT options
 !------------------------------------------------------------------------
 
 ! Allocate ensemble weights
 
   allocate(wEns(maxEns))
-
   call read_options(x_rung,x_DFA,c_rung,c_DFA,SGn,nEns,wEns,maxSCF,thresh,DIIS,max_diis,guess_type,ortho_type)
+
+!------------------------------------------------------------------------
+! Read one- and two-electron integrals
+!------------------------------------------------------------------------
+
+! Memory allocation for one- and two-electron integrals
+
+  allocate(S(nBas,nBas),T(nBas,nBas),V(nBas,nBas),Hc(nBas,nBas),X(nBas,nBas),ERI(nBas,nBas,nBas,nBas))
+
+! Read integrals
+
+  call read_integrals(nEl(:),nBas,S,T,V,Hc,ERI)  
+
+! Orthogonalization X = S^(-1/2)
+
+  call orthogonalization_matrix(ortho_type,nBas,S,X)
 
 !------------------------------------------------------------------------
 ! Construct quadrature grid
@@ -111,8 +115,7 @@ program eDFT
 !------------------------------------------------------------------------
 
   allocate(AO(nBas,nGrid),dAO(ncart,nBas,nGrid))
-  call AO_values_grid(nBas,nShell,CenterShell,TotAngMomShell,KShell,DShell,ExpShell, &
-                      nGrid,root,AO,dAO)
+  call AO_values_grid(nBas,nShell,CenterShell,TotAngMomShell,KShell,DShell,ExpShell,nGrid,root,AO,dAO)
 
 !------------------------------------------------------------------------
 ! Compute KS energy

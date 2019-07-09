@@ -5,7 +5,7 @@
 # CCD CCSD CCSD(T)
   F   F    F
 # CIS TDHF ADC
-  F   T    F
+  F   F    F
 # GF2 GF3
   F   F
 # G0W0 evGW qsGW

@@ -13,6 +13,6 @@ then
   cp examples/basis."$1"."$2" input/basis
   cp examples/basis."$1"."$2" input/weight
   ./bin/IntPak
-  ./bin/xcDFT
+  ./bin/eDFT
 fi
 

@@ -1,12 +1,12 @@
-subroutine orthogonalization_matrix(nBas,S,X)
+subroutine orthogonalization_matrix(ortho_type,nBas,S,X)
 
-! Compute the orthogonalization matrix X = S^(-1/2)
+! Compute the orthogonalization matrix X
 
   implicit none
 
 ! Input variables
 
-  integer,intent(in)            :: nBas
+  integer,intent(in)            :: nBas,ortho_type
   double precision,intent(in)   :: S(nBas,nBas)
 
 ! Local variables
@@ -23,30 +23,87 @@ subroutine orthogonalization_matrix(nBas,S,X)
 
   debug = .false.
 
+! Type of orthogonalization ortho_type
+!
+!  1 = Lowdin
+!  2 = Canonical
+!  3 = SVD
+!
+
   allocate(Uvec(nBas,nBas),Uval(nBas))
 
-  write(*,*)
-  write(*,*) ' *** Lowdin orthogonalization X = S^(-1/2)  *** '
-  write(*,*)
+  if(ortho_type == 1) then
 
-  Uvec = S
-  call diagonalize_matrix(nBas,Uvec,Uval)
+    write(*,*)
+    write(*,*) ' Lowdin orthogonalization'
+    write(*,*)
 
-  do i=1,nBas
+    Uvec = S
+    call diagonalize_matrix(nBas,Uvec,Uval)
 
-    if(Uval(i) > thresh) then 
+    do i=1,nBas
 
-      Uval(i) = 1d0/sqrt(Uval(i))
+      if(Uval(i) > thresh) then 
 
-    else
+        Uval(i) = 1d0/sqrt(Uval(i))
 
-      write(*,*) 'Eigenvalue',i,'too small for Lowdin orthogonalization'
+      else
 
-    endif
+        write(*,*) 'Eigenvalue',i,'too small for Lowdin orthogonalization'
 
-  enddo
-  
-  call ADAt(nBas,Uvec,Uval,X)
+      endif
+
+    enddo
+    
+    call ADAt(nBas,Uvec,Uval,X)
+
+  elseif(ortho_type == 2) then
+
+    write(*,*)
+    write(*,*) 'Canonical orthogonalization'
+    write(*,*)
+
+    Uvec = S
+    call diagonalize_matrix(nBas,Uvec,Uval)
+
+    do i=1,nBas
+
+      if(Uval(i) > thresh) then 
+
+        Uval(i) = 1d0/sqrt(Uval(i))
+
+      else
+
+        write(*,*) ' Eigenvalue',i,'too small for canonical orthogonalization'
+
+      endif
+
+    enddo
+    
+    call AD(nBas,Uvec,Uval)
+    X = Uvec
+ 
+  elseif(ortho_type == 3) then
+
+    write(*,*)
+    write(*,*) ' SVD-based orthogonalization NYI'
+    write(*,*)
+   
+!   Uvec = S
+!   call diagonalize_matrix(nBas,Uvec,Uval)
+
+!   do i=1,nBas
+!     if(Uval(i) > thresh) then 
+!       Uval(i) = 1d0/sqrt(Uval(i))
+!     else
+!       write(*,*) 'Eigenvalue',i,'too small for canonical orthogonalization'
+!     endif
+!   enddo
+!   
+!   call AD(nBas,Uvec,Uval)
+!   X = Uvec
+ 
+  endif
 
 ! Print results
 
