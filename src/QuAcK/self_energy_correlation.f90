@@ -13,7 +13,7 @@ subroutine self_energy_correlation(COHSEX,SOSEX,nBas,nC,nO,nV,nR,nS,e,Omega,rho,
 
 ! Local variables
 
-  integer                       :: i,j,a,b,x,y,jb
+  integer                       :: i,j,a,b,p,x,y,jb
   double precision              :: eps,eta
 
 ! Output variables
@@ -34,7 +34,7 @@ subroutine self_energy_correlation(COHSEX,SOSEX,nBas,nC,nO,nV,nR,nS,e,Omega,rho,
 
   if(COHSEX) then
 
-   ! COHSEX: occupied part of the correlation self-energy
+   ! COHSEX: SEX of the COHSEX correlation self-energy
 
     do x=nC+1,nBas-nR
       do y=nC+1,nBas-nR
@@ -43,24 +43,23 @@ subroutine self_energy_correlation(COHSEX,SOSEX,nBas,nC,nO,nV,nR,nS,e,Omega,rho,
           do j=nC+1,nO
             do b=nO+1,nBas-nR
               jb = jb + 1
-!              SigC(x,y) = SigC(x,y) + 4d0*rho(x,i,jb)*rho(y,i,jb)/Omega(jb)
-              SigC(x,y) = SigC(x,y) + 2d0*rho(x,i,jb)*rho(y,i,jb)/Omega(jb)
+              SigC(x,y) = SigC(x,y) + 4d0*rho(x,i,jb)*rho(y,i,jb)/Omega(jb)
             enddo
           enddo
         enddo
       enddo
     enddo
  
-    ! COHSEX: virtual part of the correlation self-energy
+    ! COHSEX: COH part of the COHSEX correlation self-energy
  
     do x=nC+1,nBas-nR
       do y=nC+1,nBas-nR
-        do a=nO+1,nBas-nR
+        do p=nC+1,nBas-nR
           jb = 0
           do j=nC+1,nO
             do b=nO+1,nBas-nR
               jb = jb + 1
-              SigC(x,y) = SigC(x,y) - 2d0*rho(x,a,jb)*rho(y,a,jb)/Omega(jb)
+              SigC(x,y) = SigC(x,y) - 2d0*rho(x,p,jb)*rho(y,p,jb)/Omega(jb)
             enddo
           enddo
         enddo
