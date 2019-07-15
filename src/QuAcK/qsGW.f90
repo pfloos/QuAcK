@@ -83,6 +83,11 @@ subroutine qsGW(maxSCF,thresh,max_diis,COHSEX,SOSEX,BSE,TDA,G0W,GW0,singlet_mani
   if(SOSEX) write(*,*) 'SOSEX correction activated!'
   write(*,*)
 
+! COHSEX approximation
+
+  if(COHSEX) write(*,*) 'COHSEX approximation activated!'
+  write(*,*)
+
 ! Switch off exchange for G0W0
 
   dRPA = .true.

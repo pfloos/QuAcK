@@ -55,6 +55,11 @@ subroutine G0W0(COHSEX,SOSEX,BSE,TDA,singlet_manifold,triplet_manifold, &
   if(SOSEX) write(*,*) 'SOSEX correction activated!'
   write(*,*)
 
+! COHSEX approximation
+
+  if(COHSEX) write(*,*) 'COHSEX approximation activated!'
+  write(*,*)
+
 ! Switch off exchange for G0W0
 
   dRPA = .true.
