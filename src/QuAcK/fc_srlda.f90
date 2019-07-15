@@ -18,9 +18,10 @@ subroutine fc_srlda(nBas,nGrid,weight,MO,rho,mu,eG0W0)
 ! Local variables
 
   integer                       :: iG,p
-  double precision              :: r
-  double precision              :: rs
-  double precision              :: ec,vcup,vcdw
+  double precision              :: r,ra,rb,rap,ram
+  double precision              :: rs,rsp,rsm
+  double precision              :: ec,ecp,ecm,vcup,vcdw
+  double precision,parameter    :: delta = 1d-6
   double precision,allocatable  :: de(:)
 
 ! Memory allocation
@@ -33,13 +34,38 @@ subroutine fc_srlda(nBas,nGrid,weight,MO,rho,mu,eG0W0)
 
   do iG=1,ngrid
 
-    r = max(0d0,rho(iG))
+    r  = max(0d0,rho(iG))
+    ra = 0.5d0*r
+    rb = 0.5d0*r
 
     if(r > threshold) then
 
       rs = (4d0*pi*r/3d0)**(-1d0/3d0)
 
-      call lsdsr(rs,0d0,mu(iG),ec,vcup,vcdw)
+!     call lsdsr(rs,0d0,mu(iG),ec,vcup,vcdw)
+      if(abs(ra) > delta) then 
+
+        rap = ra + delta
+        ram = ra - delta
+
+        rsp = (4d0*pi*rap/3d0)**(-1d0/3d0)
+        rsm = (4d0*pi*ram/3d0)**(-1d0/3d0)
+
+!      call lsdsr(rsp,0d0,mu(iG),ecp,vcup,vcdw)
+!      call lsdsr(rsm,0d0,mu(iG),ecm,vcup,vcdw)
+       call lsdsr(rs,0d0,mu(iG),ec,vcup,vcdw)
+
+
+!      call ESRC_MD_LDAERF(mu(iG),rap,rb,.true.,ecp)
+!      call ESRC_MD_LDAERF(mu(iG),ram,rb,.true.,ecm)
+
+!       vcup = (ecp - ecm)/(2d0*delta)
+
+      else
+
+        vcup = 0d0  
+
+      end if
 
       do p=1,nBas
 

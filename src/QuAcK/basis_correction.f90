@@ -50,7 +50,7 @@ subroutine basis_correction(nBas,nO,nShell,CenterShell,TotAngMomShell,KShell,DSh
 
 ! Set quadrature grid
 
-  SGn = 0
+  SGn = 1
   
   call read_grid(SGn,nRad,nAng,nGrid)
 

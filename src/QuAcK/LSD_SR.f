@@ -1,25 +1,3 @@
-ccc example: use the subroutine lsdsr to compute the complementary
-ccc short-range exchange-correlation energy 'excsr' and
-ccc the corresponding up and down potentials 'vxcsrup','vxcsrdown'
-ccc at polarization z=0.7, cutoff mu=0.5, and for 0.2 < rs < 20,
-ccc and write them on a file
-c      program testex
-c      implicit none
-c      double precision z,rs,mu
-c      double precision excsr,vxcsrup,vxcsrdown
-c      integer i
-c      open(9,file='testex',status='unknown')
-c      z=0.7d0
-c      mu=0.5d0
-c      do i=1,100
-c         rs=0.2*i
-c         call lsdsr(rs,z,mu,excsr,vxcsrup,vxcsrdown)
-c         write(9,*) rs,excsr,vxcsrup,vxcsrdown
-c      enddo
-c      stop
-c      end
-
-
       subroutine lsdsr(rs,z,mu,excsr,vxcsrup,vxcsrdown)
 ccc Hartree atomic units used
 ccc for given density parameter 'rs', spin polarization 'z'
@@ -30,6 +8,7 @@ ccc interacting electron gas) => 'excsr'
 ccc and the corresponding exchange-correlation potentials for
 ccc spin-up and spin-down electrons => 'vxcsrup','vxcsrdown'
 ccc from Paziani, Moroni, Gori-Giorgi, and Bachelet, cond-mat/0601353
+
       implicit none
       double precision rs,z,mu,excsr,vxcsrup,vxcsrdown
       double precision eclr,exlr,ec,ecd,ecz,ex

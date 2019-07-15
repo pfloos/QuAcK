@@ -15,31 +15,38 @@ subroutine ec_srlda(nGrid,weight,rho,mu)
 ! Local variables
 
   integer                       :: iG
-  double precision              :: r
+  double precision              :: r,ra,rb
   double precision              :: rs
-  double precision              :: ecsr
-  double precision              :: ec,vcup,vcdw
+  double precision              :: ec_lda,ecmd_lda
+  double precision              :: ec,ecmd,vcup,vcdw
 
 ! Initialization
 
-  ecsr = 0d0
+  ec_lda   = 0d0
+  ecmd_lda = 0d0
 
   do iG=1,ngrid
 
     r = max(0d0,rho(iG))
+    ra = 0.5d0*r
+    rb = 0.5d0*r
 
     if(r > threshold) then
 
       rs = (4d0*pi*r/3d0)**(-1d0/3d0)
 
       call lsdsr(rs,0d0,mu(iG),ec,vcup,vcdw)
-
-      ecsr = ecsr + weight(iG)*ec*r
+      call ESRC_MD_LDAERF(mu(iG),ra,rb,.true.,ecmd)
+      ec_lda   = ec_lda   + weight(iG)*ec*r
+      ecmd_lda = ecmd_lda + weight(iG)*ecmd*r
 
     end if
 
   end do
 
-  write(*,'(A32,1X,F16.10)') 'ecsr = ',ecsr
+  write(*,*) 
+  write(*,'(A32,1X,F16.10)') 'Ec(sr-LDA)   = ',ec_lda
+  write(*,'(A32,1X,F16.10)') 'Ecmd(sr-LDA) = ',ec_lda + ecmd_lda
+  write(*,*) 
 
 end subroutine ec_srlda
