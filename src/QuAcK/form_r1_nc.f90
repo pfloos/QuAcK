@@ -37,7 +37,7 @@ subroutine form_r1_nc(nO,nV,t1,t2,delta_ov,Fov,cFoo,cFov,cFvv,OOVO,OVOV,OVVV,r1)
     do a=1,nV
 
       do e=1,nV
-        r1(i,a) = r1(i,a) + t1(i,e)*cFvv(e,a)
+        r1(i,a) = r1(i,a) + t1(i,e)*cFvv(a,e)
       end do
 
       do m=1,nO

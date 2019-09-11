@@ -30,7 +30,7 @@ subroutine CCSD_Ec_nc(nO,nV,t1,t2,Fov,OOVV,EcCCSD)
 ! Singles contribution
 
   do i=1,nO
-      do a=1,nO
+      do a=1,nV
      
       EcCCSD = EcCCSD + Fov(i,a)*t1(i,a)
 
@@ -41,8 +41,8 @@ subroutine CCSD_Ec_nc(nO,nV,t1,t2,Fov,OOVV,EcCCSD)
 
   do i=1,nO
     do j=1,nO
-      do a=1,nO
-        do b=1,nO
+      do a=1,nV
+        do b=1,nV
      
           EcCCSD = EcCCSD                              & 
                  + 0.5d0*OOVV(i,j,a,b)*t1(i,a)*t1(j,b) &

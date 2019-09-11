@@ -77,7 +77,7 @@ subroutine form_cW_nc(nO,nV,t1,t2,tau,OOOO,OOOV,OOVO,OOVV,OVVO,OVVV,VOVV,VVVV,cW
           do n=1,nO
             do f=1,nV
               cWovvo(m,b,e,j) = cWovvo(m,b,e,j) &
-                              - ( 0.5d0*t2(j,n,f,b) - t1(j,f)*t1(n,b) )*OOVV(m,n,e,f)
+                              - ( 0.5d0*t2(j,n,f,b) + t1(j,f)*t1(n,b) )*OOVV(m,n,e,f)
             end do
           end do
 
