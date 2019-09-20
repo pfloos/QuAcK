@@ -590,7 +590,7 @@ program QuAcK
 ! Basis set correction
 !------------------------------------------------------------------------
 
-  doBas = .true.
+  doBas = .false.
 
   if(doBas) then
 

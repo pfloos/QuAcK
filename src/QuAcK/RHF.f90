@@ -61,6 +61,8 @@ subroutine RHF(maxSCF,thresh,max_diis,guess_type,nBas,nO,S,T,V,Hc,ERI,X,ENuc,ERH
 
 ! Guess coefficients and eigenvalues
 
+  call mo_guess(nBas,Fp)
+
   if(guess_type == 1) then
 
     Fp = matmul(transpose(X),matmul(Hc,X))
