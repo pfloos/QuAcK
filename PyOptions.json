@@ -1,10 +1,10 @@
 { 
   "Scan": {
-    "Start":0.8,
-      "Stop":1.2,
-      "Step":0.01
+    "Start":1.8,
+      "Stop":1.9,
+      "Step":0.1
   },
-    "Basis":"6-31G",
+    "Basis":"VDZ",
     "Outputs": {
       "DataOutput": {
         "Enabled":true,

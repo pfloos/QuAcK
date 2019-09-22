@@ -1,4 +1,4 @@
-subroutine evGW(maxSCF,thresh,max_diis,COHSEX,SOSEX,BSE,TDA,G0W,GW0,singlet_manifold,triplet_manifold,linearize, & 
+subroutine evGW(maxSCF,thresh,max_diis,COHSEX,SOSEX,BSE,TDA,G0W,GW0,singlet_manifold,triplet_manifold,linearize,eta, & 
                 nBas,nC,nO,nV,nR,nS,ENuc,ERHF,Hc,H,ERI_MO_basis,PHF,cHF,eHF,eG0W0)
 
 ! Perform self-consistent eigenvalue-only GW calculation
@@ -22,6 +22,7 @@ subroutine evGW(maxSCF,thresh,max_diis,COHSEX,SOSEX,BSE,TDA,G0W,GW0,singlet_mani
   logical,intent(in)            :: singlet_manifold
   logical,intent(in)            :: triplet_manifold
   logical,intent(in)            :: linearize
+  double precision,intent(in)   :: eta
   integer,intent(in)            :: nBas,nC,nO,nV,nR,nS
   double precision,intent(in)   :: eHF(nBas)
   double precision,intent(in)   :: cHF(nBas,nBas)
@@ -125,15 +126,15 @@ subroutine evGW(maxSCF,thresh,max_diis,COHSEX,SOSEX,BSE,TDA,G0W,GW0,singlet_mani
 
     if(G0W) then
 
-      call self_energy_correlation_diag(COHSEX,SOSEX,nBas,nC,nO,nV,nR,nS,eHF, & 
+      call self_energy_correlation_diag(COHSEX,SOSEX,eta,nBas,nC,nO,nV,nR,nS,eHF, & 
                                         Omega(:,ispin),rho(:,:,:,ispin),rhox(:,:,:,ispin),EcGM,SigC)
-      call renormalization_factor(SOSEX,nBas,nC,nO,nV,nR,nS,eHF,Omega(:,ispin),rho(:,:,:,ispin),rhox(:,:,:,ispin),Z)
+      call renormalization_factor(SOSEX,eta,nBas,nC,nO,nV,nR,nS,eHF,Omega(:,ispin),rho(:,:,:,ispin),rhox(:,:,:,ispin),Z(:))
 
     else 
 
-      call self_energy_correlation_diag(COHSEX,SOSEX,nBas,nC,nO,nV,nR,nS,eGW, & 
+      call self_energy_correlation_diag(COHSEX,SOSEX,eta,nBas,nC,nO,nV,nR,nS,eGW, & 
                                         Omega(:,ispin),rho(:,:,:,ispin),rhox(:,:,:,ispin),EcGM,SigC)
-      call renormalization_factor(SOSEX,nBas,nC,nO,nV,nR,nS,eGW,Omega(:,ispin),rho(:,:,:,ispin),rhox(:,:,:,ispin),Z)
+      call renormalization_factor(SOSEX,eta,nBas,nC,nO,nV,nR,nS,eGW,Omega(:,ispin),rho(:,:,:,ispin),rhox(:,:,:,ispin),Z(:))
 
     endif
 

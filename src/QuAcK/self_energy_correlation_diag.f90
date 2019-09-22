@@ -1,4 +1,4 @@
-subroutine self_energy_correlation_diag(COHSEX,SOSEX,nBas,nC,nO,nV,nR,nS,e,Omega,rho,rhox,EcGM,SigC)
+subroutine self_energy_correlation_diag(COHSEX,SOSEX,eta,nBas,nC,nO,nV,nR,nS,e,Omega,rho,rhox,EcGM,SigC)
 
 ! Compute diagonal of the correlation part of the self-energy
 
@@ -7,14 +7,24 @@ subroutine self_energy_correlation_diag(COHSEX,SOSEX,nBas,nC,nO,nV,nR,nS,e,Omega
 
 ! Input variables
 
-  logical,intent(in)            :: COHSEX,SOSEX
-  integer,intent(in)            :: nBas,nC,nO,nV,nR,nS
-  double precision,intent(in)   :: e(nBas),Omega(nS),rho(nBas,nBas,nS),rhox(nBas,nBas,nS)
+  logical,intent(in)            :: COHSEX
+  logical,intent(in)            :: SOSEX
+  double precision,intent(in)   :: eta
+  integer,intent(in)            :: nBas
+  integer,intent(in)            :: nC
+  integer,intent(in)            :: nO
+  integer,intent(in)            :: nV
+  integer,intent(in)            :: nR
+  integer,intent(in)            :: nS
+  double precision,intent(in)   :: e(nBas)
+  double precision,intent(in)   :: Omega(nS)
+  double precision,intent(in)   :: rho(nBas,nBas,nS)
+  double precision,intent(in)   :: rhox(nBas,nBas,nS)
 
 ! Local variables
 
   integer                       :: i,j,a,b,p,x,jb
-  double precision              :: eps,eta
+  double precision              :: eps
   double precision,external     :: SigC_dcgw
 
 ! Output variables
@@ -25,11 +35,6 @@ subroutine self_energy_correlation_diag(COHSEX,SOSEX,nBas,nC,nO,nV,nR,nS,e,Omega
 ! Initialize 
 
   SigC = 0d0
-
-! Infinitesimal
-
-  eta = 0d0
-! eta = 0.001d0
 
 ! COHSEX static approximation
 
@@ -116,7 +121,7 @@ subroutine self_energy_correlation_diag(COHSEX,SOSEX,nBas,nC,nO,nV,nR,nS,e,Omega
           do b=nO+1,nBas-nR
             jb = jb + 1
             eps = e(a) - e(i) + Omega(jb)
-            EcGM = EcGM - 2d0*rho(a,i,jb)*rho(a,i,jb)/eps
+            EcGM = EcGM - 2d0*rho(a,i,jb)*rho(a,i,jb)*eps/(eps**2 + eta**2)
           enddo
         enddo
       enddo
@@ -133,7 +138,7 @@ subroutine self_energy_correlation_diag(COHSEX,SOSEX,nBas,nC,nO,nV,nR,nS,e,Omega
             do b=nO+1,nBas-nR
               jb = jb + 1
               eps = e(x) - e(i) + Omega(jb)
-              SigC(x) = SigC(x) - rho(x,i,jb)*rhox(x,i,jb)/eps
+              SigC(x) = SigC(x) - rho(x,i,jb)*rhox(x,i,jb)*eps/(eps**2 + eta**2)
             enddo
           enddo
         enddo
@@ -148,7 +153,7 @@ subroutine self_energy_correlation_diag(COHSEX,SOSEX,nBas,nC,nO,nV,nR,nS,e,Omega
             do b=nO+1,nBas-nR
               jb = jb + 1
               eps = e(x) - e(a) - Omega(jb)
-              SigC(x) = SigC(x) - rho(x,a,jb)*rhox(x,a,jb)/eps
+              SigC(x) = SigC(x) - rho(x,a,jb)*rhox(x,a,jb)*eps/(eps**2 + eta**2)
             enddo
           enddo
         enddo
@@ -163,7 +168,7 @@ subroutine self_energy_correlation_diag(COHSEX,SOSEX,nBas,nC,nO,nV,nR,nS,e,Omega
             do b=nO+1,nBas-nR
               jb = jb + 1
               eps = e(a) - e(i) + Omega(jb)
-              EcGM = EcGM + rho(a,i,jb)*rhox(a,i,jb)/eps
+              EcGM = EcGM + rho(a,i,jb)*rhox(a,i,jb)*eps/(eps**2 + eta**2)
             enddo
           enddo
         enddo

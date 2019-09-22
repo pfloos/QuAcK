@@ -1,4 +1,4 @@
-subroutine G0W0(COHSEX,SOSEX,BSE,TDA,singlet_manifold,triplet_manifold, & 
+subroutine G0W0(COHSEX,SOSEX,BSE,TDA,singlet_manifold,triplet_manifold,eta, & 
                 nBas,nC,nO,nV,nR,nS,ENuc,ERHF,Hc,H,ERI,PHF,cHF,eHF,eG0W0)
 
 ! Perform G0W0 calculation
@@ -14,6 +14,8 @@ subroutine G0W0(COHSEX,SOSEX,BSE,TDA,singlet_manifold,triplet_manifold, &
   logical,intent(in)            :: TDA
   logical,intent(in)            :: singlet_manifold
   logical,intent(in)            :: triplet_manifold
+  double precision,intent(in)   :: eta
+
   integer,intent(in)            :: nBas,nC,nO,nV,nR,nS
   double precision,intent(in)   :: ENuc
   double precision,intent(in)   :: ERHF
@@ -43,6 +45,8 @@ subroutine G0W0(COHSEX,SOSEX,BSE,TDA,singlet_manifold,triplet_manifold, &
   double precision              :: eG0W0(nBas)
 
 ! Hello world
+
+  print*,eta
 
   write(*,*)
   write(*,*)'************************************************'
@@ -84,7 +88,7 @@ subroutine G0W0(COHSEX,SOSEX,BSE,TDA,singlet_manifold,triplet_manifold, &
 
   if(SOSEX) call excitation_density_SOSEX(nBas,nC,nO,nR,nS,ERI,XpY(:,:,ispin),rhox(:,:,:,ispin))
 
-  call self_energy_correlation_diag(COHSEX,SOSEX,nBas,nC,nO,nV,nR,nS,eHF, & 
+  call self_energy_correlation_diag(COHSEX,SOSEX,eta,nBas,nC,nO,nV,nR,nS,eHF, & 
                                     Omega(:,ispin),rho(:,:,:,ispin),rhox(:,:,:,ispin),EcGM,SigC)
 
 ! COHSEX static approximation
@@ -95,7 +99,8 @@ subroutine G0W0(COHSEX,SOSEX,BSE,TDA,singlet_manifold,triplet_manifold, &
 
   else
 
-    call renormalization_factor(SOSEX,nBas,nC,nO,nV,nR,nS,eHF,Omega(:,ispin),rho(:,:,:,ispin),rhox(:,:,:,ispin),Z)
+    call renormalization_factor(SOSEX,eta,nBas,nC,nO,nV,nR,nS,eHF, & 
+                                Omega(:,ispin),rho(:,:,:,ispin),rhox(:,:,:,ispin),Z(:))
 
   endif
 

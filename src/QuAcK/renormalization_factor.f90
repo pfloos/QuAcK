@@ -1,4 +1,4 @@
-subroutine renormalization_factor(SOSEX,nBas,nC,nO,nV,nR,nS,e,Omega,rho,rhox,Z)
+subroutine renormalization_factor(SOSEX,eta,nBas,nC,nO,nV,nR,nS,e,Omega,rho,rhox,Z)
 
 ! Compute renormalization factor for GW
 
@@ -8,27 +8,25 @@ subroutine renormalization_factor(SOSEX,nBas,nC,nO,nV,nR,nS,e,Omega,rho,rhox,Z)
 ! Input variables
 
   logical,intent(in)            :: SOSEX
+  double precision,intent(in)   :: eta
   integer,intent(in)            :: nBas,nC,nO,nV,nR,nS
-  double precision,intent(in)   :: e(nBas),Omega(nS),rho(nBas,nBas,nS),rhox(nBas,nBas,nS)
+  double precision,intent(in)   :: e(nBas)
+  double precision,intent(in)   :: Omega(nS)
+  double precision,intent(in)   :: rho(nBas,nBas,nS)
+  double precision,intent(in)   :: rhox(nBas,nBas,nS)
 
 ! Local variables
 
   integer                       :: i,j,a,b,x,jb
   double precision              :: eps
-  double precision,allocatable  :: SigC(:),dSigC(:),d2SigC(:)
-  double precision,external     :: Z_dcgw
 
 ! Output variables
 
   double precision,intent(out)  :: Z(nBas)
 
-! Allocate
+! Initialize
 
-  allocate(SigC(nBas),dSigC(nBas),d2SigC(nBas))
-
-  SigC(:)   = 0d0
-  dSigC(:)  = 0d0
-  d2SigC(:) = 0d0
+  Z(:)  = 0d0
 
 ! Occupied part of the correlation self-energy
 
@@ -38,11 +36,8 @@ subroutine renormalization_factor(SOSEX,nBas,nC,nO,nV,nR,nS,e,Omega,rho,rhox,Z)
       do j=nC+1,nO
         do b=nO+1,nBas-nR
           jb = jb + 1
-          eps = e(x) - e(i) + Omega(jb)
-!         Z(x) = Z(x) + 2d0*Z_dcgw(eps,rho(x,i,jb))
-!         SigC(x)   = SigC(x)   + 2d0*rho(x,i,jb)**2/eps
-          dSigC(x)  = dSigC(x)  - 2d0*rho(x,i,jb)**2/eps**2
-!         d2SigC(x) = d2SigC(x) + 4d0*rho(x,i,jb)**2/eps**3
+          eps = e(x) - e(i) + Omega(jb) 
+          Z(x) = Z(x)  - 2d0*rho(x,i,jb)**2*(eps/(eps**2 + eta**2))**2
         enddo
       enddo
     enddo
@@ -56,11 +51,8 @@ subroutine renormalization_factor(SOSEX,nBas,nC,nO,nV,nR,nS,e,Omega,rho,rhox,Z)
       do j=nC+1,nO
         do b=nO+1,nBas-nR
           jb = jb + 1
-          eps = e(x) - e(a) - Omega(jb)
-!         Z(x) = Z(x) + 2d0*Z_dcgw(eps,rho(x,a,jb))
-!         SigC(x)   = SigC(x)   + 2d0*rho(x,a,jb)**2/eps
-          dSigC(x)  = dSigC(x)  - 2d0*rho(x,a,jb)**2/eps**2
-!         d2SigC(x) = d2SigC(x) + 4d0*rho(x,a,jb)**2/eps**3
+          eps = e(x) - e(a) - Omega(jb) 
+          Z(x) = Z(x)  - 2d0*rho(x,a,jb)**2*(eps/(eps**2 + eta**2))**2
         enddo
       enddo
     enddo
@@ -78,8 +70,8 @@ subroutine renormalization_factor(SOSEX,nBas,nC,nO,nV,nR,nS,e,Omega,rho,rhox,Z)
         do j=nC+1,nO
           do b=nO+1,nBas-nR
             jb = jb + 1
-            eps = e(x) - e(i) + Omega(jb)
-            dSigC(x) = dSigC(x) - (rho(x,i,jb)/eps)*(rhox(x,i,jb)/eps)
+            eps = e(x) - e(i) + Omega(jb) 
+            Z(x) = Z(x) - (rho(x,i,jb)/eps)*(rhox(x,i,jb)/eps)
           enddo
         enddo
       enddo
@@ -93,8 +85,8 @@ subroutine renormalization_factor(SOSEX,nBas,nC,nO,nV,nR,nS,e,Omega,rho,rhox,Z)
         do j=nC+1,nO
           do b=nO+1,nBas-nR
             jb = jb + 1
-            eps = e(x) - e(a) - Omega(jb)
-            dSigC(x) = dSigC(x) - (rho(x,a,jb)/eps)*(rhox(x,a,jb)/eps)
+            eps = e(x) - e(a) - Omega(jb) 
+            Z(x) = Z(x) - (rho(x,a,jb)/eps)*(rhox(x,a,jb)/eps)
           enddo
         enddo
       enddo
@@ -104,9 +96,6 @@ subroutine renormalization_factor(SOSEX,nBas,nC,nO,nV,nR,nS,e,Omega,rho,rhox,Z)
 
 ! Compute renormalization factor from derivative of SigC
  
-  Z(:) = 1d0/(1d0-dSigC(:))
-
-! Z(:) = 1d0 - dSigC(:) + sqrt( (1d0 - dSigC(:))**2 - 2d0*SigC(:)*d2SigC(:) )
-! Z(:) = Z(:)/(SigC(:)*d2SigC(:))
+  Z(:) = 1d0/(1d0 - Z(:))
 
 end subroutine renormalization_factor

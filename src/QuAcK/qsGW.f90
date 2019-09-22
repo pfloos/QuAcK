@@ -1,4 +1,4 @@
-subroutine qsGW(maxSCF,thresh,max_diis,COHSEX,SOSEX,BSE,TDA,G0W,GW0,singlet_manifold,triplet_manifold, &
+subroutine qsGW(maxSCF,thresh,max_diis,COHSEX,SOSEX,BSE,TDA,G0W,GW0,singlet_manifold,triplet_manifold,eta, &
                 nBas,nC,nO,nV,nR,nS,ENuc,ERHF,S,X,T,V,Hc,ERI_AO_basis,PHF,cHF,eHF)
 
 ! Compute linear response
@@ -19,6 +19,7 @@ subroutine qsGW(maxSCF,thresh,max_diis,COHSEX,SOSEX,BSE,TDA,G0W,GW0,singlet_mani
   logical,intent(in)            :: GW0
   logical,intent(in)            :: singlet_manifold
   logical,intent(in)            :: triplet_manifold
+  double precision,intent(in)   :: eta
   integer,intent(in)            :: nBas,nC,nO,nV,nR,nS
   double precision,intent(in)   :: ENuc
   double precision,intent(in)   :: ERHF
@@ -142,19 +143,20 @@ subroutine qsGW(maxSCF,thresh,max_diis,COHSEX,SOSEX,BSE,TDA,G0W,GW0,singlet_mani
     ! Compute correlation part of the self-energy 
 
     call excitation_density(nBas,nC,nO,nR,nS,ERI_MO_basis,XpY(:,:,ispin),rho(:,:,:,ispin))
+
     if(SOSEX) call excitation_density_SOSEX(nBas,nC,nO,nR,nS,ERI_MO_basis,XpY(:,:,ispin),rhox(:,:,:,ispin))
 
     if(G0W) then
 
-      call self_energy_correlation(COHSEX,SOSEX,nBas,nC,nO,nV,nR,nS,eHF, & 
+      call self_energy_correlation(COHSEX,SOSEX,eta,nBas,nC,nO,nV,nR,nS,eHF, & 
                                    Omega(:,ispin),rho(:,:,:,ispin),rhox(:,:,:,ispin),EcGM,SigC)
-      call renormalization_factor(SOSEX,nBas,nC,nO,nV,nR,nS,eHF,Omega(:,ispin),rho(:,:,:,ispin),rhox(:,:,:,ispin),Z)
+      call renormalization_factor(SOSEX,eta,nBas,nC,nO,nV,nR,nS,eHF,Omega(:,ispin),rho(:,:,:,ispin),rhox(:,:,:,ispin),Z)
 
      else
 
-      call self_energy_correlation(COHSEX,SOSEX,nBas,nC,nO,nV,nR,nS,e, & 
+      call self_energy_correlation(COHSEX,SOSEX,eta,nBas,nC,nO,nV,nR,nS,e, & 
                                    Omega(:,ispin),rho(:,:,:,ispin),rhox(:,:,:,ispin),EcGM,SigC)
-      call renormalization_factor(SOSEX,nBas,nC,nO,nV,nR,nS,e,Omega(:,ispin),rho(:,:,:,ispin),rhox(:,:,:,ispin),Z)
+      call renormalization_factor(SOSEX,eta,nBas,nC,nO,nV,nR,nS,e,Omega(:,ispin),rho(:,:,:,ispin),rhox(:,:,:,ispin),Z)
 
      endif
 

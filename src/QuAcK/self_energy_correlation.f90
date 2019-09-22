@@ -1,4 +1,4 @@
-subroutine self_energy_correlation(COHSEX,SOSEX,nBas,nC,nO,nV,nR,nS,e,Omega,rho,rhox,EcGM,SigC)
+subroutine self_energy_correlation(COHSEX,SOSEX,eta,nBas,nC,nO,nV,nR,nS,e,Omega,rho,rhox,EcGM,SigC)
 
 ! Compute correlation part of the self-energy
 
@@ -7,14 +7,19 @@ subroutine self_energy_correlation(COHSEX,SOSEX,nBas,nC,nO,nV,nR,nS,e,Omega,rho,
 
 ! Input variables
 
-  logical,intent(in)            :: COHSEX,SOSEX
+  logical,intent(in)            :: COHSEX
+  logical,intent(in)            :: SOSEX
+  double precision,intent(in)   :: eta
   integer,intent(in)            :: nBas,nC,nO,nV,nR,nS
-  double precision,intent(in)   :: e(nBas),Omega(nS),rho(nBas,nBas,nS),rhox(nBas,nBas,nS)
+  double precision,intent(in)   :: e(nBas)
+  double precision,intent(in)   :: Omega(nS)
+  double precision,intent(in)   :: rho(nBas,nBas,nS)
+  double precision,intent(in)   :: rhox(nBas,nBas,nS)
 
 ! Local variables
 
   integer                       :: i,j,a,b,p,x,y,jb
-  double precision              :: eps,eta
+  double precision              :: eps
 
 ! Output variables
 
@@ -24,11 +29,6 @@ subroutine self_energy_correlation(COHSEX,SOSEX,nBas,nC,nO,nV,nR,nS,e,Omega,rho,
 ! Initialize 
 
   SigC = 0d0
-
-! Infinitesimal
-
-  eta = 0.0d0
-! eta = 0.001d0
 
 ! COHSEX static approximation
 
@@ -118,8 +118,8 @@ subroutine self_energy_correlation(COHSEX,SOSEX,nBas,nC,nO,nV,nR,nS,e,Omega,rho,
             do j=nC+1,nO
               do b=nO+1,nBas-nR
                 jb = jb + 1
-                eps = e(x) - e(i) + Omega(jb)
-                SigC(x,y) = SigC(x,y) - rho(x,i,jb)*rhox(y,i,jb)/eps
+                eps = e(x) - e(i) + Omega(jb) 
+                SigC(x,y) = SigC(x,y) - rho(x,i,jb)*rhox(y,i,jb)*eps/(eps**2 + eta**2)
               enddo
             enddo
           enddo
@@ -135,8 +135,8 @@ subroutine self_energy_correlation(COHSEX,SOSEX,nBas,nC,nO,nV,nR,nS,e,Omega,rho,
             do j=nC+1,nO
               do b=nO+1,nBas-nR
                 jb = jb + 1
-                eps = e(x) - e(a) - Omega(jb)
-                SigC(x,y) = SigC(x,y) - rho(x,a,jb)*rhox(y,a,jb)/eps
+                eps = e(x) - e(a) - Omega(jb) 
+                SigC(x,y) = SigC(x,y) - rho(x,a,jb)*rhox(y,a,jb)*eps/(eps**2 + eta**2)
               enddo
             enddo
           enddo

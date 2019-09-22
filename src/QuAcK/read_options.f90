@@ -1,8 +1,8 @@
-subroutine read_options(maxSCF_HF,thresh_HF,DIIS_HF,n_diis_HF,guess_type,ortho_type,            &
-                        maxSCF_CC,thresh_CC,DIIS_CC,n_diis_CC,                                  &
-                        singlet_manifold,triplet_manifold,                                      &
-                        maxSCF_GF,thresh_GF,DIIS_GF,n_diis_GF,renormalization,                  &
-                        maxSCF_GW,thresh_GW,DIIS_GW,n_diis_GW,COHSEX,SOSEX,BSE,TDA,G0W,GW0,linearize, &
+subroutine read_options(maxSCF_HF,thresh_HF,DIIS_HF,n_diis_HF,guess_type,ortho_type,                      &
+                        maxSCF_CC,thresh_CC,DIIS_CC,n_diis_CC,                                            &
+                        singlet_manifold,triplet_manifold,                                                &
+                        maxSCF_GF,thresh_GF,DIIS_GF,n_diis_GF,renormalization,                            &
+                        maxSCF_GW,thresh_GW,DIIS_GW,n_diis_GW,COHSEX,SOSEX,BSE,TDA,G0W,GW0,linearize,eta, &
                         nMC,nEq,nWalk,dt,nPrint,iSeed,doDrift)
 
 ! Read desired methods 
@@ -43,6 +43,7 @@ subroutine read_options(maxSCF_HF,thresh_HF,DIIS_HF,n_diis_HF,guess_type,ortho_t
   logical,intent(out)           :: G0W
   logical,intent(out)           :: GW0
   logical,intent(out)           :: linearize
+  double precision,intent(out)  :: eta
 
   integer,intent(out)           :: nMC
   integer,intent(out)           :: nEq
@@ -133,10 +134,11 @@ subroutine read_options(maxSCF_HF,thresh_HF,DIIS_HF,n_diis_HF,guess_type,ortho_t
   G0W       = .false.
   GW0       = .false.
   linearize = .false.
+  eta       = 0d0
 
   read(1,*) 
   read(1,*) maxSCF_GW,thresh_GW,answer1,n_diis_GW,answer2, &
-            answer3,answer4,answer5,answer6,answer7,answer8
+            answer3,answer4,answer5,answer6,answer7,answer8,eta
 
   if(answer1 == 'T') DIIS_GW = .true.
   if(answer2 == 'T') COHSEX = .true.

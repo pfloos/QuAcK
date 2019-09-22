@@ -61,22 +61,7 @@ subroutine RHF(maxSCF,thresh,max_diis,guess_type,nBas,nO,S,T,V,Hc,ERI,X,ENuc,ERH
 
 ! Guess coefficients and eigenvalues
 
-  call mo_guess(nBas,Fp)
-
-  if(guess_type == 1) then
-
-    Fp = matmul(transpose(X),matmul(Hc,X))
-    cp(:,:) = Fp(:,:)
-    call diagonalize_matrix(nBas,cp,e)
-    c = matmul(X,cp)
-
-  elseif(guess_type == 2) then
-
-    call random_number(c)
-
-  endif
-
-  P(:,:) = 2d0*matmul(c(:,1:nO),transpose(c(:,1:nO)))
+  call mo_guess(nBas,nO,guess_type,S,Hc,ERI,J,K,X,cp,Fp,e,c,P)
 
 ! ON(:) = 0d0
 ! do i=1,nO
