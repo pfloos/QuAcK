@@ -1,4 +1,4 @@
-subroutine print_qsGW(nBas,nO,nSCF,Conv,thresh,eHF,eGW,c,ENuc,P,T,V,Hc,J,K,F,SigmaC,Z,EcRPA,EcGM)
+subroutine print_qsGW(nBas,nO,nSCF,Conv,thresh,eHF,eGW,c,ENuc,P,T,V,Hc,J,K,F,SigmaC,Z,EcRPA,EcGM,EqsGW)
 
 
 ! Print one-electron energies and other stuff for qsGW
@@ -18,9 +18,12 @@ subroutine print_qsGW(nBas,nO,nSCF,Conv,thresh,eHF,eGW,c,ENuc,P,T,V,Hc,J,K,F,Sig
 ! Local variables
 
   integer                            :: x,HOMO,LUMO
-  double precision                   :: Gap,ET,EV,EJ,Ex,Ec,EqsGW
+  double precision                   :: Gap,ET,EV,EJ,Ex,Ec
   double precision,external          :: trace_matrix
 
+! Output variables
+
+  double precision,intent(out)       :: EqsGW
 
 ! HOMO and LUMO
 

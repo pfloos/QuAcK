@@ -40,6 +40,7 @@ subroutine qsGW(maxSCF,thresh,max_diis,COHSEX,SOSEX,BSE,TDA,G0W,GW0,singlet_mani
   integer                       :: nBasSq
   integer                       :: ispin
   integer                       :: n_diis
+  double precision              :: EqsGW
   double precision              :: EcRPA(nspin)
   double precision              :: EcBSE(nspin)
   double precision              :: EcGM
@@ -199,7 +200,7 @@ subroutine qsGW(maxSCF,thresh,max_diis,COHSEX,SOSEX,BSE,TDA,G0W,GW0,singlet_mani
     ! Print results
 
     call print_excitation('RPA  ',ispin,nS,Omega(:,ispin))
-    call print_qsGW(nBas,nO,nSCF,Conv,thresh,eHF,e,c,ENuc,P,T,V,Hc,J,K,F,SigCp,Z,EcRPA(ispin),EcGM)
+    call print_qsGW(nBas,nO,nSCF,Conv,thresh,eHF,e,c,ENuc,P,T,V,Hc,J,K,F,SigCp,Z,EcRPA(ispin),EcGM,EqsGW)
 
     ! Increment
 
@@ -273,7 +274,7 @@ subroutine qsGW(maxSCF,thresh,max_diis,COHSEX,SOSEX,BSE,TDA,G0W,GW0,singlet_mani
     write(*,'(2X,A40,F15.6)') 'BSE@qsGW correlation energy (singlet) =',EcBSE(1)
     write(*,'(2X,A40,F15.6)') 'BSE@qsGW correlation energy (triplet) =',EcBSE(2)
     write(*,'(2X,A40,F15.6)') 'BSE@qsGW correlation energy           =',EcBSE(1) + EcBSE(2)
-    write(*,'(2X,A40,F15.6)') 'BSE@qsGW total energy                 =',ENuc + ERHF + EcBSE(1) + EcBSE(2)
+    write(*,'(2X,A40,F15.6)') 'BSE@qsGW total energy                 =',ENuc + EqsGW + EcBSE(1) + EcBSE(2)
     write(*,*)'-------------------------------------------------------------------------------'
     write(*,*)
 

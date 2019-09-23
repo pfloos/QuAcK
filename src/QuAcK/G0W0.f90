@@ -46,8 +46,6 @@ subroutine G0W0(COHSEX,SOSEX,BSE,TDA,singlet_manifold,triplet_manifold,eta, &
 
 ! Hello world
 
-  print*,eta
-
   write(*,*)
   write(*,*)'************************************************'
   write(*,*)'|          One-shot G0W0 calculation           |'

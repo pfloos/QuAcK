@@ -24,17 +24,17 @@ subroutine print_RHF(nBas,nO,eHF,cHF,ENuc,ET,EV,EJ,EK,ERHF)
   write(*,'(A50)')           '---------------------------------------'
   write(*,'(A32)')           ' Summary              '
   write(*,'(A50)')           '---------------------------------------'
-  write(*,'(A32,1X,F16.10)') ' One-electron energy  ',ET + EV
-  write(*,'(A32,1X,F16.10)') ' Kinetic      energy  ',ET
-  write(*,'(A32,1X,F16.10)') ' Potential    energy  ',EV
+  write(*,'(A32,1X,F16.10)') ' One-electron energy: ',ET + EV
+  write(*,'(A32,1X,F16.10)') ' Kinetic      energy: ',ET
+  write(*,'(A32,1X,F16.10)') ' Potential    energy: ',EV
   write(*,'(A50)')           '---------------------------------------'
-  write(*,'(A32,1X,F16.10)') ' Two-electron energy  ',EJ + EK
-  write(*,'(A32,1X,F16.10)') ' Coulomb      energy  ',EJ
-  write(*,'(A32,1X,F16.10)') ' Exchange     energy  ',EK
+  write(*,'(A32,1X,F16.10)') ' Two-electron energy: ',EJ + EK
+  write(*,'(A32,1X,F16.10)') ' Coulomb      energy: ',EJ
+  write(*,'(A32,1X,F16.10)') ' Exchange     energy: ',EK
   write(*,'(A50)')           '---------------------------------------'
-  write(*,'(A32,1X,F16.10)') ' Electronic   energy  ',ERHF
-  write(*,'(A32,1X,F16.10)') ' Nuclear   repulsion  ',ENuc
-  write(*,'(A32,1X,F16.10)') ' Hartree-Fock energy  ',ERHF + ENuc
+  write(*,'(A32,1X,F16.10)') ' Electronic   energy: ',ERHF
+  write(*,'(A32,1X,F16.10)') ' Nuclear   repulsion: ',ENuc
+  write(*,'(A32,1X,F16.10)') ' Hartree-Fock energy: ',ERHF + ENuc
   write(*,'(A50)')           '---------------------------------------'
   write(*,'(A36,F13.6)')  ' HF HOMO      energy (eV):',eHF(HOMO)*HaToeV
   write(*,'(A36,F13.6)')  ' HF LUMO      energy (eV):',eHF(LUMO)*HaToeV
