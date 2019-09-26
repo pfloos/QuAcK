@@ -3,7 +3,7 @@
 MOL="H2"
 BASIS="VDZ"
 R_START=0.5
-R_END=2.5
+R_END=3.0
 DR=0.1
 
 for R in $(seq $R_START $DR $R_END)
