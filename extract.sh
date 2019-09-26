@@ -54,6 +54,15 @@ INPUT=$1
   echo -e "\t" $RPA_evGW "\t" $GM_evGW "\t" $BSE1_evGW "\t" $BSE3_evGW
 
   echo 
+  echo '*** Ec@qsGW information: RPA, GM, BSE1 & BSE3 ***'
+  RPA_qsGW=`grep "RPA@qsGW correlation energy =" $INPUT | tail -1| cut -f2 -d"="`
+  GM_qsGW=`grep "GM@qsGW  correlation energy =" $INPUT | tail -1 | cut -f2 -d"="`
+  BSE1_qsGW=`grep "BSE@qsGW correlation energy (singlet)" $INPUT | cut -f2 -d"="`
+  BSE3_qsGW=`grep "BSE@qsGW correlation energy (triplet)" $INPUT | cut -f2 -d"="`
+
+  echo -e "\t" $RPA_qsGW "\t" $GM_qsGW "\t" $BSE1_qsGW "\t" $BSE3_qsGW
+
+  echo 
   echo '*** CIS and TDHF excitation energy (singlet & triplet) ***'
   CIS1_1=`grep "|     1 |" $INPUT | head -1 | cut -f3 -d"|"`
   CIS3_1=`grep "|     1 |" $INPUT | head -2 | cut -f3 -d"|" | tail -1`

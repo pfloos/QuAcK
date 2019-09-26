@@ -61,16 +61,16 @@ subroutine print_qsGW(nBas,nO,nSCF,Conv,thresh,eHF,eGW,c,ENuc,P,T,V,Hc,J,K,F,Sig
   write(*,'(2X,A10,I3)')   'Iteration ',nSCF
   write(*,'(2X,A19,F15.5)')'max(|FPS - SPF|) = ',Conv
   write(*,*)'-------------------------------------------'
-  write(*,'(2X,A27,F15.6)') 'qsGW HOMO      energy (eV):',eGW(HOMO)*HaToeV
-  write(*,'(2X,A27,F15.6)') 'qsGW LUMO      energy (eV):',eGW(LUMO)*HaToeV
-  write(*,'(2X,A27,F15.6)') 'qsGW HOMO-LUMO gap    (eV):',Gap*HaToeV
+  write(*,'(2X,A30,F15.6)') 'qsGW HOMO      energy (eV):',eGW(HOMO)*HaToeV
+  write(*,'(2X,A30,F15.6)') 'qsGW LUMO      energy (eV):',eGW(LUMO)*HaToeV
+  write(*,'(2X,A30,F15.6)') 'qsGW HOMO-LUMO gap    (eV):',Gap*HaToeV
   write(*,*)'-------------------------------------------'
-  write(*,'(2X,A27,F15.6)') 'qsGW total       energy   =',EqsGW + ENuc
-  write(*,'(2X,A27,F15.6)') 'qsGW GM total    energy   =',EqsGW + ENuc + EcGM
-  write(*,'(2X,A27,F15.6)') 'qsGW exchange    energy   =',Ex
-  write(*,'(2X,A27,F15.6)') 'qsGW correlation energy   =',Ec
-  write(*,'(2X,A27,F15.6)') 'RPA@qsGW correlation energy   =',EcRPA
-  write(*,'(2X,A27,F15.6)') 'GM@qsGW  correlation energy    =',EcGM
+  write(*,'(2X,A30,F15.6)') 'qsGW total       energy   =',EqsGW + ENuc
+  write(*,'(2X,A30,F15.6)') 'qsGW GM total    energy   =',EqsGW + ENuc + EcGM
+  write(*,'(2X,A30,F15.6)') 'qsGW exchange    energy   =',Ex
+  write(*,'(2X,A30,F15.6)') 'qsGW correlation energy   =',Ec
+  write(*,'(2X,A30,F15.6)') 'RPA@qsGW correlation energy =',EcRPA
+  write(*,'(2X,A30,F15.6)') 'GM@qsGW  correlation energy =',EcGM
   write(*,*)'-------------------------------------------'
   write(*,*)
 
