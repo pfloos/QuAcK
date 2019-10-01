@@ -2,7 +2,7 @@
 
 MOL="N2"
 BASIS="VDZ"
-R_START=3.1
+R_START=1.5
 R_END=3.5
 DR=0.1
 
