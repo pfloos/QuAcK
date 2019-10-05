@@ -1,9 +1,9 @@
-subroutine read_methods(doRHF,doUHF,doMOM,    & 
-                        doMP2,doMP3,doMP2F12, & 
-                        doCCD,doCCSD,doCCSDT, & 
-                        doCIS,doTDHF,doADC,   & 
-                        doGF2,doGF3,          & 
-                        doG0W0,doevGW,doqsGW, & 
+subroutine read_methods(doRHF,doUHF,doMOM,          & 
+                        doMP2,doMP3,doMP2F12,       & 
+                        doCCD,doCCSD,doCCSDT,       & 
+                        doCIS,doTDHF,doppRPA,doADC, & 
+                        doGF2,doGF3,                & 
+                        doG0W0,doevGW,doqsGW,       & 
                         doMCMP2)
 
 ! Read desired methods 
@@ -15,14 +15,14 @@ subroutine read_methods(doRHF,doUHF,doMOM,    &
   logical,intent(out)           :: doRHF,doUHF,doMOM
   logical,intent(out)           :: doMP2,doMP3,doMP2F12
   logical,intent(out)           :: doCCD,doCCSD,doCCSDT
-  logical,intent(out)           :: doCIS,doTDHF,doADC
+  logical,intent(out)           :: doCIS,doTDHF,doppRPA,doADC
   logical,intent(out)           :: doGF2,doGF3  
   logical,intent(out)           :: doG0W0,doevGW,doqsGW
   logical,intent(out)           :: doMCMP2
 
 ! Local variables
 
-  character(len=1)              :: answer1,answer2,answer3
+  character(len=1)              :: answer1,answer2,answer3,answer4
 
 ! Open file with method specification
 
@@ -42,9 +42,10 @@ subroutine read_methods(doRHF,doUHF,doMOM,    &
   doCCSD  = .false.
   doCCSDT = .false.
 
-  doCIS  = .false.
-  doTDHF = .false.
-  doADC  = .false.
+  doCIS   = .false.
+  doTDHF  = .false.
+  doppRPA = .false.
+  doADC   = .false.
 
   doGF2 = .false.
   doGF3 = .false.
@@ -82,10 +83,11 @@ subroutine read_methods(doRHF,doUHF,doMOM,    &
 ! Read excited state methods
 
   read(1,*) 
-  read(1,*) answer1,answer2,answer3
-  if(answer1 == 'T') doCIS  = .true.
-  if(answer2 == 'T') doTDHF = .true.
-  if(answer3 == 'T') doADC  = .true.
+  read(1,*) answer1,answer2,answer3,answer4
+  if(answer1 == 'T') doCIS   = .true.
+  if(answer2 == 'T') doTDHF  = .true.
+  if(answer3 == 'T') doppRPA = .true.
+  if(answer4 == 'T') doADC   = .true.
 
 ! Read Green function methods
 

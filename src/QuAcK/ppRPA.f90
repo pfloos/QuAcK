@@ -35,9 +35,9 @@ subroutine ppRPA(singlet_manifold,triplet_manifold,nBas,nC,nO,nV,nR,nS,ENuc,ERHF
 ! Hello world
 
   write(*,*)
-  write(*,*)'************************************************'
-  write(*,*)'|  Time-dependent Hartree-Fock calculation     |'
-  write(*,*)'************************************************'
+  write(*,*)'****************************************'
+  write(*,*)'|  particle-particle RPA calculation   |'
+  write(*,*)'****************************************'
   write(*,*)
 
 ! Initialization
