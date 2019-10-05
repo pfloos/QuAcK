@@ -4,8 +4,8 @@
       
 # CC: maxSCF thresh   DIIS n_diis
       64     0.00001  F    1
-# CIS/TDHF: singlet triplet
-            T       T
+# CIS/TDHF/BSE: singlet triplet
+            T       F
 # GF: maxSCF thresh  DIIS n_diis renormalization
       64     0.00001 T    10      3 
 # GW: maxSCF thresh  DIIS n_diis COHSEX SOSEX BSE TDA G0W GW0 linearize eta

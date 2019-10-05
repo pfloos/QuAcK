@@ -66,9 +66,15 @@ subroutine TDHF(singlet_manifold,triplet_manifold,nBas,nC,nO,nV,nR,nS,ENuc,ERHF,
 
     ispin = 1
 
-    call linear_response(ispin,dRPA,TDA,BSE,nBas,nC,nO,nV,nR,nS,e,ERI, & 
-                         rho,EcRPA(ispin),Omega(:,ispin),XpY(:,:,ispin))
+    call linear_response(ispin,dRPA,TDA,BSE,nBas,nC,nO,nV,nR,nS,e,ERI,rho, &
+                         EcRPA(ispin),Omega(:,ispin),XpY(:,:,ispin))
     call print_excitation('TDHF ',ispin,nS,Omega(:,ispin))
+
+    call linear_response_ph(ispin,dRPA,TDA,BSE,nBas,nC,nO,nV,nR,nS,e,ERI,rho, &
+                         EcRPA(ispin),Omega(:,ispin),XpY(:,:,ispin))
+    call print_excitation('p-h TDHF ',ispin,nS,Omega(:,ispin))
+
+    call linear_response_pp(ispin,dRPA,TDA,BSE,nBas,nC,nO,nV,nR,nS,e,ERI,rho)
 
   endif
 
@@ -78,8 +84,8 @@ subroutine TDHF(singlet_manifold,triplet_manifold,nBas,nC,nO,nV,nR,nS,ENuc,ERHF,
 
     ispin = 2
 
-    call linear_response(ispin,dRPA,TDA,BSE,nBas,nC,nO,nV,nR,nS,e,ERI, &
-                         rho,EcRPA(ispin),Omega(:,ispin),XpY(:,:,ispin))
+    call linear_response(ispin,dRPA,TDA,BSE,nBas,nC,nO,nV,nR,nS,e,ERI,rho, &
+                         EcRPA(ispin),Omega(:,ispin),XpY(:,:,ispin))
     call print_excitation('TDHF ',ispin,nS,Omega(:,ispin))
 
   endif
