@@ -1,6 +1,6 @@
-subroutine TDHF(singlet_manifold,triplet_manifold,nBas,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,e)
+subroutine ppRPA(singlet_manifold,triplet_manifold,nBas,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,e)
 
-! Perform random phase approximation calculation
+! Perform pp-RPA calculation
 
   implicit none
   include 'parameters.h'
@@ -30,7 +30,7 @@ subroutine TDHF(singlet_manifold,triplet_manifold,nBas,nC,nO,nV,nR,nS,ENuc,ERHF,
   double precision,allocatable  :: XpY(:,:,:)
 
   double precision              :: rho
-  double precision              :: EcRPA(nspin)
+  double precision              :: Ec_ppRPA(nspin)
 
 ! Hello world
 
@@ -42,7 +42,7 @@ subroutine TDHF(singlet_manifold,triplet_manifold,nBas,nC,nO,nV,nR,nS,ENuc,ERHF,
 
 ! Initialization
 
-  EcRPA(:) = 0d0
+  Ec_ppRPA(:) = 0d0
 
 ! Switch on exchange for TDHF
 
@@ -66,9 +66,9 @@ subroutine TDHF(singlet_manifold,triplet_manifold,nBas,nC,nO,nV,nR,nS,ENuc,ERHF,
 
     ispin = 1
 
-    call linear_response(ispin,dRPA,TDA,BSE,nBas,nC,nO,nV,nR,nS,e,ERI,rho, &
-                         EcRPA(ispin),Omega(:,ispin),XpY(:,:,ispin))
-    call print_excitation('TDHF ',ispin,nS,Omega(:,ispin))
+    call linear_response_pp(ispin,dRPA,TDA,BSE,nBas,nC,nO,nV,nR,nS,e,ERI,rho, & 
+                            Ec_ppRPA)
+!   call print_excitation('pp-RPA ',ispin,nS,Omega(:,ispin))
 
   endif
 
@@ -78,19 +78,19 @@ subroutine TDHF(singlet_manifold,triplet_manifold,nBas,nC,nO,nV,nR,nS,ENuc,ERHF,
 
     ispin = 2
 
-    call linear_response(ispin,dRPA,TDA,BSE,nBas,nC,nO,nV,nR,nS,e,ERI,rho, &
-                         EcRPA(ispin),Omega(:,ispin),XpY(:,:,ispin))
-    call print_excitation('TDHF ',ispin,nS,Omega(:,ispin))
+    call linear_response_pp(ispin,dRPA,TDA,BSE,nBas,nC,nO,nV,nR,nS,e,ERI,rho, &
+                            Ec_ppRPA)
+!   call print_excitation('pp-RPA ',ispin,nS,Omega(:,ispin))
 
   endif
 
   write(*,*)
   write(*,*)'-------------------------------------------------------------------------------'
-  write(*,'(2X,A40,F15.6)') 'RPA@TDHF correlation energy (singlet) =',EcRPA(1)
-  write(*,'(2X,A40,F15.6)') 'RPA@TDHF correlation energy (triplet) =',EcRPA(2)
-  write(*,'(2X,A40,F15.6)') 'RPA@TDHF correlation energy           =',EcRPA(1) + EcRPA(2)
-  write(*,'(2X,A40,F15.6)') 'RPA@TDHF total energy                 =',ENuc + ERHF + EcRPA(1) + EcRPA(2)
+  write(*,'(2X,A40,F15.6)') 'pp-RPA   correlation energy (singlet) =',Ec_ppRPA(1)
+  write(*,'(2X,A40,F15.6)') 'pp-RPA   correlation energy (triplet) =',Ec_ppRPA(2)
+  write(*,'(2X,A40,F15.6)') 'pp-RPA   correlation energy           =',Ec_ppRPA(1) + Ec_ppRPA(2)
+  write(*,'(2X,A40,F15.6)') 'pp-RPA   total energy                 =',ENuc + ERHF + Ec_ppRPA(1) + Ec_ppRPA(2)
   write(*,*)'-------------------------------------------------------------------------------'
   write(*,*)
 
-end subroutine TDHF
+end subroutine ppRPA

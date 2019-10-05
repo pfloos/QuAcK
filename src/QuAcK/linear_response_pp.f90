@@ -1,4 +1,4 @@
-subroutine linear_response_pp(ispin,dRPA,TDA,BSE,nBas,nC,nO,nV,nR,nS,e,ERI,rho)
+subroutine linear_response_pp(ispin,dRPA,TDA,BSE,nBas,nC,nO,nV,nR,nS,e,ERI,rho,Ec_ppRPA)
 
 ! Compute the p-p channel of the linear response
 
@@ -25,9 +25,10 @@ subroutine linear_response_pp(ispin,dRPA,TDA,BSE,nBas,nC,nO,nV,nR,nS,e,ERI,rho)
   double precision,allocatable  :: D(:,:)
   double precision,allocatable  :: M(:,:)
   double precision,allocatable  :: w(:)
-  double precision              :: Ec_ppRPA
 
 ! Output variables
+
+  double precision,intent(out)  :: Ec_ppRPA
 
 ! Useful quantities
 
@@ -60,11 +61,11 @@ subroutine linear_response_pp(ispin,dRPA,TDA,BSE,nBas,nC,nO,nV,nR,nS,e,ERI,rho)
 
 ! Off-diagonal blocks
 
-  M(1:nOO,nOO+1:nOO+nVV) = +transpose(B(1:nVV,1:nOO))
-  M(nOO+1:nOO+nVV,1:nOO) = -          B(1:nVV,1:nOO)
+  M(    1:nVV    ,nVV+1:nOO+nVV) = -           B(1:nVV,1:nOO)
+  M(nVV+1:nOO+nVV,    1:nVV)     = + transpose(B(1:nVV,1:nOO))
 
-  print*, 'pp-RPA matrix'
-  call matout(nOO+nVV,nOO+nVV,M(:,:))
+! print*, 'pp-RPA matrix'
+! call matout(nOO+nVV,nOO+nVV,M(:,:))
 
 ! Diagonalize the p-h matrix
 
@@ -78,11 +79,11 @@ subroutine linear_response_pp(ispin,dRPA,TDA,BSE,nBas,nC,nO,nV,nR,nS,e,ERI,rho)
 ! call matout(nS,nS,XpY)
 
   print*,'pp-RPA excitation energies'
-  call matout(2*nS,1,w)
+  call matout(nOO+nVV,1,w)
 
 ! Compute the RPA correlation energy
 
-  Ec_ppRPA = 0.5d0*(sum(abs(w)) - trace_matrix(nVV,C) - trace_matrix(nOO,D))
+  Ec_ppRPA = 0.5d0*(sum(abs(w(:))) - trace_matrix(nVV,C(:,:)) - trace_matrix(nOO,D(:,:)))
 
   print*,'Ec(pp-RPA) = ',Ec_ppRPA
 

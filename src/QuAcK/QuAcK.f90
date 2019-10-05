@@ -7,7 +7,7 @@ program QuAcK
   logical                       :: doRHF,doUHF,doMOM 
   logical                       :: doMP2,doMP3,doMP2F12
   logical                       :: doCCD,doCCSD,doCCSDT
-  logical                       :: doCIS,doTDHF,doADC
+  logical                       :: doCIS,doTDHF,doppRPA,doADC
   logical                       :: doGF2,doGF3
   logical                       :: doG0W0,doevGW,doqsGW
   logical                       :: doMCMP2,doMinMCMP2
@@ -43,6 +43,7 @@ program QuAcK
   double precision              :: start_CCSD   ,end_CCSD     ,t_CCSD
   double precision              :: start_CIS    ,end_CIS      ,t_CIS
   double precision              :: start_TDHF   ,end_TDHF     ,t_TDHF
+  double precision              :: start_ppRPA  ,end_ppRPA    ,t_ppRPA
   double precision              :: start_ADC    ,end_ADC      ,t_ADC
   double precision              :: start_GF2    ,end_GF2      ,t_GF2
   double precision              :: start_GF3    ,end_GF3      ,t_GF3
@@ -104,7 +105,7 @@ program QuAcK
   call read_methods(doRHF,doUHF,doMOM,          &
                     doMP2,doMP3,doMP2F12,       &
                     doCCD,doCCSD,doCCSDT,       &
-                    doCIS,doTDHF,doADC,         &
+                    doCIS,doTDHF,doppRPA,doADC, &
                     doGF2,doGF3,                &
                     doG0W0,doevGW,doqsGW,       &
                     doMCMP2)
@@ -396,6 +397,22 @@ program QuAcK
 
     t_TDHF = end_TDHF - start_TDHF
     write(*,'(A65,1X,F9.3,A8)') 'Total CPU time for TDHF = ',t_TDHF,' seconds'
+    write(*,*)
+
+  end if
+
+!------------------------------------------------------------------------
+! Compute pp-RPA excitations
+!------------------------------------------------------------------------
+
+  if(doppRPA) then
+
+    call cpu_time(start_ppRPA)
+    call ppRPA(singlet_manifold,triplet_manifold,nBas,nC,nO,nV,nR,nS,ENuc,ERHF,ERI_MO_basis,eHF)
+    call cpu_time(end_ppRPA)
+
+    t_ppRPA = end_ppRPA - start_ppRPA
+    write(*,'(A65,1X,F9.3,A8)') 'Total CPU time for pp-RPA = ',t_ppRPA,' seconds'
     write(*,*)
 
   end if
