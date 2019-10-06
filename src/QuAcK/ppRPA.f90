@@ -1,4 +1,4 @@
-subroutine ppRPA(singlet_manifold,triplet_manifold,nBas,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,e)
+subroutine ppRPA(singlet_manifold,triplet_manifold,nBas,nC,nO,nV,nR,ENuc,ERHF,ERI,e)
 
 ! Perform pp-RPA calculation
 
@@ -14,7 +14,6 @@ subroutine ppRPA(singlet_manifold,triplet_manifold,nBas,nC,nO,nV,nR,nS,ENuc,ERHF
   integer,intent(in)            :: nO
   integer,intent(in)            :: nV
   integer,intent(in)            :: nR
-  integer,intent(in)            :: nS
   double precision,intent(in)   :: ENuc
   double precision,intent(in)   :: ERHF
   double precision,intent(in)   :: e(nBas)
@@ -26,10 +25,15 @@ subroutine ppRPA(singlet_manifold,triplet_manifold,nBas,nC,nO,nV,nR,nS,ENuc,ERHF
   logical                       :: TDA
   logical                       :: BSE
   integer                       :: ispin
-  double precision,allocatable  :: Omega(:,:)
-  double precision,allocatable  :: XpY(:,:,:)
+  integer                       :: nOO
+  integer                       :: nVV
+  double precision,allocatable  :: Omega1(:,:)
+  double precision,allocatable  :: X1(:,:,:)
+  double precision,allocatable  :: Y1(:,:,:)
+  double precision,allocatable  :: Omega2(:,:)
+  double precision,allocatable  :: X2(:,:,:)
+  double precision,allocatable  :: Y2(:,:,:)
 
-  double precision              :: rho
   double precision              :: Ec_ppRPA(nspin)
 
 ! Hello world
@@ -39,6 +43,11 @@ subroutine ppRPA(singlet_manifold,triplet_manifold,nBas,nC,nO,nV,nR,nS,ENuc,ERHF
   write(*,*)'|  particle-particle RPA calculation   |'
   write(*,*)'****************************************'
   write(*,*)
+
+! Useful quantities
+
+ nOO = nO*(nO-1)/2
+ nVV = nV*(nV-1)/2
 
 ! Initialization
 
@@ -58,7 +67,8 @@ subroutine ppRPA(singlet_manifold,triplet_manifold,nBas,nC,nO,nV,nR,nS,ENuc,ERHF
 
 ! Memory allocation
 
-  allocate(Omega(nS,nspin),XpY(nS,nS,nspin))
+  allocate(Omega1(nVV,nspin),X1(nVV,nVV,nspin),Y1(nOO,nVV,nspin), & 
+           Omega2(nOO,nspin),X2(nVV,nOO,nspin),Y2(nOO,nOO,nspin))
 
 ! Singlet manifold
 
@@ -66,9 +76,12 @@ subroutine ppRPA(singlet_manifold,triplet_manifold,nBas,nC,nO,nV,nR,nS,ENuc,ERHF
 
     ispin = 1
 
-    call linear_response_pp(ispin,dRPA,TDA,BSE,nBas,nC,nO,nV,nR,nS,e,ERI,rho, & 
-                            Ec_ppRPA)
-!   call print_excitation('pp-RPA ',ispin,nS,Omega(:,ispin))
+    call linear_response_pp(ispin,dRPA,TDA,BSE,nBas,nC,nO,nV,nR,nOO,nVV,e,ERI, & 
+                            Omega1(:,ispin),X1(:,:,ispin),Y1(:,:,ispin),       & 
+                            Omega2(:,ispin),X2(:,:,ispin),Y2(:,:,ispin),       & 
+                            Ec_ppRPA(ispin))
+    call print_excitation('pp-RPA (N+2)',ispin,nVV,Omega1(:,ispin))
+    call print_excitation('pp-RPA (N-2)',ispin,nOO,Omega2(:,ispin))
 
   endif
 
@@ -78,9 +91,12 @@ subroutine ppRPA(singlet_manifold,triplet_manifold,nBas,nC,nO,nV,nR,nS,ENuc,ERHF
 
     ispin = 2
 
-    call linear_response_pp(ispin,dRPA,TDA,BSE,nBas,nC,nO,nV,nR,nS,e,ERI,rho, &
-                            Ec_ppRPA)
-!   call print_excitation('pp-RPA ',ispin,nS,Omega(:,ispin))
+    call linear_response_pp(ispin,dRPA,TDA,BSE,nBas,nC,nO,nV,nR,nOO,nVV,e,ERI, &
+                            Omega1(:,ispin),X1(:,:,ispin),Y1(:,:,ispin),       & 
+                            Omega2(:,ispin),X2(:,:,ispin),Y2(:,:,ispin),       & 
+                            Ec_ppRPA(ispin))
+    call print_excitation('pp-RPA (N+2)',ispin,nVV,Omega1(:,ispin))
+    call print_excitation('pp-RPA (N-2)',ispin,nOO,Omega2(:,ispin))
 
   endif
 

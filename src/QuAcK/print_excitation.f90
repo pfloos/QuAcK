@@ -7,7 +7,7 @@ subroutine print_excitation(method,ispin,nS,Omega)
 
 ! Input variables
 
-  character*5,intent(in)             :: method
+  character*12,intent(in)             :: method
   integer,intent(in)                 :: ispin,nS
   double precision,intent(in)        :: Omega(nS)
 
@@ -22,7 +22,7 @@ subroutine print_excitation(method,ispin,nS,Omega)
 
   write(*,*)
   write(*,*)'-------------------------------------------------------------'
-  write(*,'(1X,A1,1X,A4,A14,A7,A9,A25)')'|',method,' calculation: ',spin_manifold,' manifold','         |'
+  write(*,'(1X,A1,1X,A14,A14,A7,A9,A15)')'|',method,' calculation: ',spin_manifold,' manifold','         |'
   write(*,*)'-------------------------------------------------------------'
   write(*,'(1X,A1,1X,A5,1X,A1,1X,A23,1X,A1,1X,A23,1X,A1,1X)') &
             '|','State','|',' Excitation energy (au) ','|',' Excitation energy (eV) ','|'
