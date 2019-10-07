@@ -1,4 +1,4 @@
-subroutine linear_response_C_pp(ispin,dRPA,nBas,nC,nO,nV,nR,nOO,nVV,e,ERI,C_pp)
+subroutine linear_response_C_pp(ispin,nBas,nC,nO,nV,nR,nOO,nVV,e,ERI,C_pp)
 
 ! Compute the C matrix of the pp channel
 
@@ -8,14 +8,11 @@ subroutine linear_response_C_pp(ispin,dRPA,nBas,nC,nO,nV,nR,nOO,nVV,e,ERI,C_pp)
 ! Input variables
 
   integer,intent(in)            :: ispin
-  logical,intent(in)            :: dRPA
   integer,intent(in)            :: nBas,nC,nO,nV,nR,nOO,nVV
   double precision,intent(in)   :: e(nBas),ERI(nBas,nBas,nBas,nBas) 
   
 ! Local variables
 
-  double precision              :: delta_spin
-  double precision              :: delta_dRPA
   double precision              :: eF
   double precision,external     :: Kronecker_delta
 
@@ -25,36 +22,54 @@ subroutine linear_response_C_pp(ispin,dRPA,nBas,nC,nO,nV,nR,nOO,nVV,e,ERI,C_pp)
 
   double precision,intent(out)  :: C_pp(nVV,nVV)
 
-! Singlet or triplet manifold?
-
-  delta_spin = 0d0
-  if(ispin == 1) delta_spin = +1d0
-  if(ispin == 2) delta_spin = -1d0
-
-! Direct RPA
-
-  delta_dRPA = 0d0
-  if(dRPA) delta_dRPA = 1d0
-
-! Build C matrix
+! Define the chemical potential
  
   eF = e(nO) + e(nO+1)
 
-  ab = 0
-  do a=nO+1,nBas-nR
-   do b=a+1,nBas-nR
-      ab = ab + 1
-      cd = 0
-      do c=nO+1,nBas-nR
-       do d=c+1,nBas-nR
-          cd = cd + 1
+! Build C matrix for the singlet manifold
 
-          C_pp(ab,cd) = + (e(a) + e(b) - eF)*Kronecker_delta(a,c)*Kronecker_delta(b,d) & 
-                        + (1d0 + delta_spin)*ERI(a,b,c,d) - (1d0 - delta_dRPA)*ERI(a,b,d,c)
+  if(ispin == 1) then
 
-        enddo
-      enddo
-    enddo
-  enddo
+    ab = 0
+    do a=nO+1,nBas-nR
+     do b=nO+1,a
+        ab = ab + 1
+        cd = 0
+        do c=nO+1,nBas-nR
+         do d=nO+1,c
+            cd = cd + 1
+ 
+            C_pp(ab,cd) = + (e(a) + e(b) - eF)*Kronecker_delta(a,c)*Kronecker_delta(b,d) &
+                          + (ERI(a,b,c,d) + ERI(a,b,d,c))/sqrt((1d0 + Kronecker_delta(a,b))*(1d0 + Kronecker_delta(c,d)))
+ 
+          end do
+        end do
+      end do
+    end do
+
+  end if
+
+! Build C matrix for the triplet manifold
+
+  if(ispin == 2) then
+
+    ab = 0
+    do a=nO+1,nBas-nR
+     do b=nO+1,a-1
+        ab = ab + 1
+        cd = 0
+        do c=nO+1,nBas-nR
+         do d=nO+1,c-1
+            cd = cd + 1
+ 
+            C_pp(ab,cd) = + (e(a) + e(b) - eF)*Kronecker_delta(a,c)*Kronecker_delta(b,d) & 
+                          + ERI(a,b,c,d) - ERI(a,b,d,c)
+ 
+          end do
+        end do
+      end do
+    end do
+
+  end if
 
 end subroutine linear_response_C_pp

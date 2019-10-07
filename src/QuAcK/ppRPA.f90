@@ -21,8 +21,6 @@ subroutine ppRPA(singlet_manifold,triplet_manifold,nBas,nC,nO,nV,nR,ENuc,ERHF,ER
 
 ! Local variables
 
-  logical                       :: dRPA
-  logical                       :: TDA
   logical                       :: BSE
   integer                       :: ispin
   integer                       :: nOO
@@ -44,31 +42,13 @@ subroutine ppRPA(singlet_manifold,triplet_manifold,nBas,nC,nO,nV,nR,ENuc,ERHF,ER
   write(*,*)'****************************************'
   write(*,*)
 
-! Useful quantities
-
- nOO = nO*(nO-1)/2
- nVV = nV*(nV-1)/2
-
 ! Initialization
 
   Ec_ppRPA(:) = 0d0
 
-! Switch on exchange for TDHF
-
-  dRPA = .false.
- 
-! Switch off Tamm-Dancoff approximation for TDHF
-
-  TDA = .false.
- 
 ! Switch off Bethe-Salpeter equation for TDHF
 
   BSE = .false. 
-
-! Memory allocation
-
-  allocate(Omega1(nVV,nspin),X1(nVV,nVV,nspin),Y1(nOO,nVV,nspin), & 
-           Omega2(nOO,nspin),X2(nVV,nOO,nspin),Y2(nOO,nOO,nspin))
 
 ! Singlet manifold
 
@@ -76,12 +56,25 @@ subroutine ppRPA(singlet_manifold,triplet_manifold,nBas,nC,nO,nV,nR,ENuc,ERHF,ER
 
     ispin = 1
 
-    call linear_response_pp(ispin,dRPA,TDA,BSE,nBas,nC,nO,nV,nR,nOO,nVV,e,ERI, & 
-                            Omega1(:,ispin),X1(:,:,ispin),Y1(:,:,ispin),       & 
-                            Omega2(:,ispin),X2(:,:,ispin),Y2(:,:,ispin),       & 
+   ! Useful quantities
+
+    nOO = nO*(nO+1)/2
+    nVV = nV*(nV+1)/2
+
+   ! Memory allocation
+
+    allocate(Omega1(nVV,nspin),X1(nVV,nVV,nspin),Y1(nOO,nVV,nspin), & 
+             Omega2(nOO,nspin),X2(nVV,nOO,nspin),Y2(nOO,nOO,nspin))
+
+    call linear_response_pp(ispin,BSE,nBas,nC,nO,nV,nR,nOO,nVV,e,ERI,    & 
+                            Omega1(:,ispin),X1(:,:,ispin),Y1(:,:,ispin), & 
+                            Omega2(:,ispin),X2(:,:,ispin),Y2(:,:,ispin), & 
                             Ec_ppRPA(ispin))
+
     call print_excitation('pp-RPA (N+2)',ispin,nVV,Omega1(:,ispin))
     call print_excitation('pp-RPA (N-2)',ispin,nOO,Omega2(:,ispin))
+
+    deallocate(Omega1,X1,Y1,Omega2,X2,Y2)
 
   endif
 
@@ -91,12 +84,26 @@ subroutine ppRPA(singlet_manifold,triplet_manifold,nBas,nC,nO,nV,nR,ENuc,ERHF,ER
 
     ispin = 2
 
-    call linear_response_pp(ispin,dRPA,TDA,BSE,nBas,nC,nO,nV,nR,nOO,nVV,e,ERI, &
-                            Omega1(:,ispin),X1(:,:,ispin),Y1(:,:,ispin),       & 
-                            Omega2(:,ispin),X2(:,:,ispin),Y2(:,:,ispin),       & 
+    ! Useful quantities
+
+    nOO = nO*(nO-1)/2
+    nVV = nV*(nV-1)/2
+
+  ! Memory allocation
+
+    allocate(Omega1(nVV,nspin),X1(nVV,nVV,nspin),Y1(nOO,nVV,nspin), & 
+             Omega2(nOO,nspin),X2(nVV,nOO,nspin),Y2(nOO,nOO,nspin))
+
+
+    call linear_response_pp(ispin,BSE,nBas,nC,nO,nV,nR,nOO,nVV,e,ERI,    &
+                            Omega1(:,ispin),X1(:,:,ispin),Y1(:,:,ispin), & 
+                            Omega2(:,ispin),X2(:,:,ispin),Y2(:,:,ispin), & 
                             Ec_ppRPA(ispin))
+
     call print_excitation('pp-RPA (N+2)',ispin,nVV,Omega1(:,ispin))
     call print_excitation('pp-RPA (N-2)',ispin,nOO,Omega2(:,ispin))
+
+    deallocate(Omega1,X1,Y1,Omega2,X2,Y2)
 
   endif
 

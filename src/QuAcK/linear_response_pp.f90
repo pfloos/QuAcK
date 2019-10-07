@@ -1,5 +1,4 @@
-subroutine linear_response_pp(ispin,dRPA,TDA,BSE,nBas,nC,nO,nV,nR,nOO,nVV,e,ERI, & 
-                              Omega1,X1,Y1,Omega2,X2,Y2,Ec_ppRPA)
+subroutine linear_response_pp(ispin,BSE,nBas,nC,nO,nV,nR,nOO,nVV,e,ERI,Omega1,X1,Y1,Omega2,X2,Y2,Ec_ppRPA)
 
 ! Compute the p-p channel of the linear response: see Scueria et al. JCP 139, 104113 (2013)
 
@@ -8,8 +7,6 @@ subroutine linear_response_pp(ispin,dRPA,TDA,BSE,nBas,nC,nO,nV,nR,nOO,nVV,e,ERI,
 
 ! Input variables
 
-  logical,intent(in)            :: dRPA
-  logical,intent(in)            :: TDA
   logical,intent(in)            :: BSE
   integer,intent(in)            :: ispin,nBas,nC,nO,nV,nR
   integer,intent(in)            :: nOO
@@ -43,9 +40,9 @@ subroutine linear_response_pp(ispin,dRPA,TDA,BSE,nBas,nC,nO,nV,nR,nOO,nVV,e,ERI,
 
 ! Build B, C and D matrices for the pp channel
 
-  call linear_response_B_pp(ispin,dRPA,nBas,nC,nO,nV,nR,nOO,nVV,e,ERI,B)
-  call linear_response_C_pp(ispin,dRPA,nBas,nC,nO,nV,nR,nOO,nVV,e,ERI,C)
-  call linear_response_D_pp(ispin,dRPA,nBas,nC,nO,nV,nR,nOO,nVV,e,ERI,D)
+  call linear_response_B_pp(ispin,nBas,nC,nO,nV,nR,nOO,nVV,e,ERI,B)
+  call linear_response_C_pp(ispin,nBas,nC,nO,nV,nR,nOO,nVV,e,ERI,C)
+  call linear_response_D_pp(ispin,nBas,nC,nO,nV,nR,nOO,nVV,e,ERI,D)
 
 !------------------------------------------------------------------------
 ! Solve the p-p eigenproblem
