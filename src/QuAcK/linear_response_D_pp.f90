@@ -40,7 +40,7 @@ subroutine linear_response_D_pp(ispin,nBas,nC,nO,nV,nR,nOO,nVV,e,ERI,D_pp)
             kl = kl + 1
  
             D_pp(ij,kl) = - (e(i) + e(j) - eF)*Kronecker_delta(i,k)*Kronecker_delta(j,l) & 
-                          + ERI(k,l,i,j) - ERI(k,l,j,i)
+                          + (ERI(i,j,k,l) + ERI(i,j,l,k))/sqrt((1d0 + Kronecker_delta(i,j))*(1d0 + Kronecker_delta(k,l)))
  
           end do
         end do
@@ -63,7 +63,7 @@ subroutine linear_response_D_pp(ispin,nBas,nC,nO,nV,nR,nOO,nVV,e,ERI,D_pp)
             kl = kl + 1
  
             D_pp(ij,kl) = - (e(i) + e(j) - eF)*Kronecker_delta(i,k)*Kronecker_delta(j,l) & 
-                          + (ERI(k,l,i,j) + ERI(k,l,j,i))/sqrt((1d0 + Kronecker_delta(i,j))*(1d0 + Kronecker_delta(k,l)))
+                          + ERI(i,j,k,l) - ERI(i,j,l,k)
  
           end do
         end do

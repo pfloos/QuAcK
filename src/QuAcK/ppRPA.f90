@@ -56,7 +56,7 @@ subroutine ppRPA(singlet_manifold,triplet_manifold,nBas,nC,nO,nV,nR,ENuc,ERHF,ER
 
     ispin = 1
 
-   ! Useful quantities
+  ! Useful quantities
 
     nOO = nO*(nO+1)/2
     nVV = nV*(nV+1)/2
@@ -84,7 +84,7 @@ subroutine ppRPA(singlet_manifold,triplet_manifold,nBas,nC,nO,nV,nR,ENuc,ERHF,ER
 
     ispin = 2
 
-    ! Useful quantities
+  ! Useful quantities
 
     nOO = nO*(nO-1)/2
     nVV = nV*(nV-1)/2
