@@ -60,13 +60,13 @@ subroutine sort_ppRPA(nOO,nVV,Omega,Z,Omega1,X1,Y1,Omega2,X2,Y2)
   if(minval(Omega1(:)) < 0d0 .or. ab /= nVV) call print_warning('You may have instabilities in pp-RPA!!')
   if(maxval(Omega2(:)) > 0d0 .or. ij /= nOO) call print_warning('You may have instabilities in pp-RPA!!')
 
-  write(*,*) 'pp-RPA positive excitation energies'
-  call matout(nVV,1,Omega1(:))
-  write(*,*)
+! write(*,*) 'pp-RPA positive excitation energies'
+! call matout(nVV,1,Omega1(:))
+! write(*,*)
 
-  write(*,*) 'pp-RPA negative excitation energies'
-  call matout(nOO,1,Omega2(:))
-  write(*,*)
+! write(*,*) 'pp-RPA negative excitation energies'
+! call matout(nOO,1,Omega2(:))
+! write(*,*)
 
 ! Check eigenvector signatures
 

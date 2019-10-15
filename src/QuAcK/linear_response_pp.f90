@@ -92,10 +92,10 @@ subroutine linear_response_pp(ispin,BSE,nBas,nC,nO,nV,nR,nOO,nVV,e,ERI,Omega1,X1
 
 ! Compute the RPA correlation energy
 
-  Ec_ppRPA = 0.5d0*( sum(Omega1(:)) - sum(Omega2(:)) - trace_matrix(nVV,C(:,:)) - trace_matrix(nOO,D(:,:)) )
+! Ec_ppRPA = 0.5d0*( sum(Omega1(:)) - sum(Omega2(:)) - trace_matrix(nVV,C(:,:)) - trace_matrix(nOO,D(:,:)) )
+  Ec_ppRPA = +sum(Omega1(:)) - trace_matrix(nVV,C(:,:))
+! Ec_ppRPA = -sum(Omega2(:)) - trace_matrix(nOO,D(:,:))
 
   print*,'Ec(pp-RPA) = ',Ec_ppRPA
-  print*,'Ec(pp-RPA) = ',+sum(Omega1(:)) - trace_matrix(nVV,C(:,:))
-  print*,'Ec(pp-RPA) = ',-sum(Omega2(:)) - trace_matrix(nOO,D(:,:))
 
 end subroutine linear_response_pp
