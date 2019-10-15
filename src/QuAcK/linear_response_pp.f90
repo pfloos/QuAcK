@@ -70,23 +70,25 @@ subroutine linear_response_pp(ispin,BSE,nBas,nC,nO,nV,nR,nOO,nVV,e,ERI,Omega1,X1
 
   Z(:,:) = M(:,:)
   call diagonalize_general_matrix(nOO+nVV,M(:,:),Omega(:),Z(:,:))
+! call diagonalize_matrix(nOO+nVV,Z(:,:),Omega(:))
 
-  write(*,*) 'pp-RPA excitation energies'
-  call matout(nOO+nVV,1,Omega(:))
-  write(*,*) 
+! write(*,*) 'pp-RPA excitation energies'
+! call matout(nOO+nVV,1,Omega(:))
+! write(*,*) 
+
+! call matout(nOO+nVV,nOO+nVV,matmul(transpose(Z(:,:)),matmul(W(:,:),Z(:,:))))
+! write(*,*) 
 
 ! Split the various quantities in p-p and h-h parts
 
-  Omega1(:) = Omega(nOO+1:nOO+nVV)
-  Omega2(:) = Omega(1:nOO)
+  call sort_ppRPA(nOO,nVV,Omega(:),Z(:,:),Omega1(:),X1(:,:),Y1(:,:),Omega2(:),X2(:,:),Y2(:,:))
+! Omega1(:) = Omega(nOO+1:nOO+nVV)
+! Omega2(:) = Omega(1:nOO)
 
-  X1(:,:) = Z(nOO+1:nOO+nVV,nOO+1:nOO+nVV)
-  Y1(:,:) = Z(    1:nOO    ,nOO+1:nOO+nVV)
-  X2(:,:) = Z(nOO+1:nOO+nVV,    1:nOO    ) 
-  Y2(:,:) = Z(    1:nOO    ,nOO+1:nOO+nVV)
-
-  if(minval(Omega1(:)) < 0d0) call print_warning('You may have instabilities in pp-RPA!!')
-  if(maxval(Omega2(:)) > 0d0) call print_warning('You may have instabilities in pp-RPA!!')
+! X1(:,:) = Z(nOO+1:nOO+nVV,nOO+1:nOO+nVV)
+! Y1(:,:) = Z(    1:nOO    ,nOO+1:nOO+nVV)
+! X2(:,:) = Z(nOO+1:nOO+nVV,    1:nOO    ) 
+! Y2(:,:) = Z(    1:nOO    ,nOO+1:nOO+nVV)
 
 ! Compute the RPA correlation energy
 
