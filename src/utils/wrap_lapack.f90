@@ -1,34 +1,3 @@
-!subroutine eigenvalues_non_symmetric_matrix(N,A,e)
-!
-!! Diagonalize a square matrix
-!
-!  implicit none
-!
-!! Input variables
-!
-!  integer,intent(in)            :: N
-!  double precision,intent(inout):: A(N,N)
-!  double precision,intent(out)  :: e(N)
-!
-!! Local variables
-!
-!  integer                       :: lwork,info
-!  double precision,allocatable  :: work(:)
-!
-!! Memory allocation
-!
-!  allocate(eRe(N),eIm(N),work(3*N))
-!  lwork = size(work)
-!
-!  call DGEEV('N','N',N,A,N, eRe, eIm, 0d0,1, VR,LDVR, WORK, LWORK, INFO )
-!
-!  if(info /= 0) then 
-!    print*,'Problem in diagonalize_matrix (dseev)!!'
-!    stop
-!  endif
-!
-!end subroutine eigenvalues_non_symmetric_matrix
-
 !subroutine diagonalize_matrix_lowest(N,M,A,e)
 !
 !! Diagonalize a square matrix but only provide the M lowest eigenvalues/eigenvectors
@@ -61,6 +30,37 @@
 !
 !end subroutine diagonalize_matrix_lowest
 
+subroutine diagonalize_general_matrix(N,A,e,X)
+
+! Diagonalize a non-symmetric square matrix
+
+  implicit none
+
+! Input variables
+
+  integer,intent(in)            :: N
+  double precision,intent(inout):: A(N,N)
+  double precision,intent(out)  :: X(N,N)
+  double precision,intent(out)  :: e(N)
+
+! Local variables
+
+  integer                       :: lwork,info
+  double precision,allocatable  :: work(:),WI(:),VL(:,:)
+
+! Memory allocation
+
+  lwork = 4*N
+  allocate(WI(N),VL(N,N),work(lwork))
+
+  call dgeev('V','V',N,A,N,e,WI,VL,N,X,N,work,lwork,info)
+ 
+  if(info /= 0) then 
+    print*,'Problem in diagonalize_matrix (dgeev)!!'
+  endif
+
+end subroutine diagonalize_general_matrix
+
 subroutine diagonalize_matrix(N,A,e)
 
 ! Diagonalize a square matrix
@@ -88,7 +88,7 @@ subroutine diagonalize_matrix(N,A,e)
   if(info /= 0) then 
     print*,'Problem in diagonalize_matrix (dsyev)!!'
   endif
-
+  
 end subroutine diagonalize_matrix
 
 subroutine svd(N,A,U,D,Vt)

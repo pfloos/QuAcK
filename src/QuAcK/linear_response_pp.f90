@@ -69,11 +69,11 @@ subroutine linear_response_pp(ispin,BSE,nBas,nC,nO,nV,nR,nOO,nVV,e,ERI,Omega1,X1
 ! Diagonalize the p-h matrix
 
   Z(:,:) = M(:,:)
-  call diagonalize_matrix(nOO+nVV,Z(:,:),Omega(:))
+  call diagonalize_general_matrix(nOO+nVV,M(:,:),Omega(:),Z(:,:))
 
-! write(*,*) 'pp-RPA excitation energies'
-! call matout(nOO+nVV,1,Omega(:))
-! write(*,*) 
+  write(*,*) 'pp-RPA excitation energies'
+  call matout(nOO+nVV,1,Omega(:))
+  write(*,*) 
 
 ! Split the various quantities in p-p and h-h parts
 

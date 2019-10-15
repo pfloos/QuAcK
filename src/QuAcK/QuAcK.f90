@@ -344,7 +344,9 @@ program QuAcK
   if(doCCD) then
 
     call cpu_time(start_CCD)
-    call CCD(maxSCF_CC,thresh_CC,n_diis_CC,nBas,nEl,ERI_MO_basis,ENuc,ERHF,eHF)
+!   call ring_CCD(maxSCF_CC,thresh_CC,n_diis_CC,nBas,nEl,ERI_MO_basis,ENuc,ERHF,eHF)
+    call ladder_CCD(maxSCF_CC,thresh_CC,n_diis_CC,nBas,nEl,ERI_MO_basis,ENuc,ERHF,eHF)
+!   call CCD(maxSCF_CC,thresh_CC,n_diis_CC,nBas,nEl,ERI_MO_basis,ENuc,ERHF,eHF)
     call cpu_time(end_CCD)
 
     t_CCD = end_CCD - start_CCD
