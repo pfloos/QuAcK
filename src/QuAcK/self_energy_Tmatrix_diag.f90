@@ -1,4 +1,4 @@
-subroutine self_energy_Tmatrix_diag(eta,nBas,nC,nO,nV,nR,nOO,nVV,e,Omega1,Omega2,rho1,rho2,SigT)
+subroutine self_energy_Tmatrix_diag(eta,nBas,nC,nO,nV,nR,nOO,nVV,e,Omega1,rho1,Omega2,rho2,SigT)
 
 ! Compute diagonal of the correlation part of the T-matrix self-energy
 

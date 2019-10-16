@@ -1,4 +1,4 @@
-subroutine renormalization_factor_Tmatrix(eta,nBas,nC,nO,nV,nR,nOO,nVV,e,Omega1,Omega2,rho1,rho2,Z)
+subroutine renormalization_factor_Tmatrix(eta,nBas,nC,nO,nV,nR,nOO,nVV,e,Omega1,rho1,Omega2,rho2,Z)
 
 ! Compute renormalization factor of the T-matrix self-energy
 

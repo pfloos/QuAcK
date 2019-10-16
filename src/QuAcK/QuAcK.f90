@@ -10,18 +10,20 @@ program QuAcK
   logical                       :: doCIS,doTDHF,doppRPA,doADC
   logical                       :: doGF2,doGF3
   logical                       :: doG0W0,doevGW,doqsGW
+  logical                       :: doG0T0,doevGT,doqsGT
   logical                       :: doMCMP2,doMinMCMP2
-  logical                       :: doeNcusp
   logical                       :: doBas
 
   integer                       :: nNuc,nBas,nBasCABS
-  integer                       :: nEl(nspin),nC(nspin),nO(nspin),nV(nspin),nR(nspin),nS(nspin)
+  integer                       :: nEl(nspin),nC(nspin),nO(nspin),nV(nspin),nR(nspin)
+  integer                       :: nS(nspin),nOO(nspin),nVV(nspin)
   double precision              :: ENuc,ERHF,EUHF,Norm
   double precision              :: EcMP2(3),EcMP3,EcMP2F12(3),EcMCMP2(3),Err_EcMCMP2(3),Var_EcMCMP2(3)
 
   double precision,allocatable  :: ZNuc(:),rNuc(:,:)
   double precision,allocatable  :: cHF(:,:,:),eHF(:,:),PHF(:,:,:)
   double precision,allocatable  :: eG0W0(:)
+  double precision,allocatable  :: eG0T0(:)
 
   integer                       :: nShell
   integer,allocatable           :: TotAngMomShell(:),KShell(:)
@@ -50,7 +52,9 @@ program QuAcK
   double precision              :: start_G0W0   ,end_G0W0     ,t_G0W0
   double precision              :: start_evGW   ,end_evGW     ,t_evGW
   double precision              :: start_qsGW   ,end_qsGW     ,t_qsGW
-  double precision              :: start_eNcusp ,end_eNcusp   ,t_eNcusp
+  double precision              :: start_G0T0   ,end_G0T0     ,t_G0T0
+  double precision              :: start_evGT   ,end_evGT     ,t_evGT
+  double precision              :: start_qsGT   ,end_qsGT     ,t_qsGT
   double precision              :: start_MP2    ,end_MP2      ,t_MP2
   double precision              :: start_MP3    ,end_MP3      ,t_MP3
   double precision              :: start_MP2F12 ,end_MP2F12   ,t_MP2F12
@@ -108,6 +112,7 @@ program QuAcK
                     doCIS,doTDHF,doppRPA,doADC, &
                     doGF2,doGF3,                &
                     doG0W0,doevGW,doqsGW,       &
+                    doG0T0,doevGT,doqsGT,       &
                     doMCMP2)
 
 ! Read options for methods
@@ -121,7 +126,6 @@ program QuAcK
 
 ! Weird stuff
 
-  doeNCusp   = .false.
   doMinMCMP2 = .false.
 
 !------------------------------------------------------------------------
@@ -175,7 +179,7 @@ program QuAcK
 
 ! Memory allocation for one- and two-electron integrals
 
-  allocate(cHF(nBas,nBas,nspin),eHF(nBas,nspin),eG0W0(nBas),PHF(nBas,nBas,nspin),          &
+  allocate(cHF(nBas,nBas,nspin),eHF(nBas,nspin),eG0W0(nBas),eG0T0(nBas),PHF(nBas,nBas,nspin),          &
            S(nBas,nBas),T(nBas,nBas),V(nBas,nBas),Hc(nBas,nBas),H(nBas,nBas),X(nBas,nBas), &
            ERI_AO_basis(nBas,nBas,nBas,nBas),ERI_MO_basis(nBas,nBas,nBas,nBas))
 
@@ -522,16 +526,23 @@ program QuAcK
   end if
 
 !------------------------------------------------------------------------
-! Compute e-N cusp dressing
+! Perform G0T0 calculatiom
 !------------------------------------------------------------------------
-  if(doeNcusp) then
 
-    call cpu_time(start_eNcusp)
-!   call eNcusp()
-    call cpu_time(end_eNcusp)
+  eG0T0(:) = eHF(:,1)
 
-    t_eNcusp = end_eNcusp - start_eNcusp
-    write(*,'(A65,1X,F9.3,A8)') 'Total CPU time for e-N cusp dressing  = ',t_eNcusp,' seconds'
+  if(doG0T0) then
+    
+    nOO(:) = nO(:)*(nO(:)+1)/2
+    nVV(:) = nV(:)*(nV(:)+1)/2
+
+    call cpu_time(start_G0T0)
+    call G0T0(BSE,singlet_manifold,triplet_manifold,eta, & 
+              nBas,nC(1),nO(1),nV(1),nR(1),nOO(1),nVV(1),ENuc,ERHF,Hc,H,ERI_MO_basis,PHF,cHF,eHF,eG0T0)
+    call cpu_time(end_G0T0)
+  
+    t_G0T0 = end_G0T0 - start_G0T0
+    write(*,'(A65,1X,F9.3,A8)') 'Total CPU time for G0T0 = ',t_G0T0,' seconds'
     write(*,*)
 
   end if

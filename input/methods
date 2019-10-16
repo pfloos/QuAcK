@@ -5,10 +5,12 @@
 # CCD CCSD CCSD(T)
   F   F    F
 # CIS TDHF ppRPA ADC
-  F   F    T     F
+  F   F    F     F
 # GF2 GF3
   F   F
-# G0W0 evGW qsGW
+# G0W0 evGW qsGW 
   F    F    F
+# G0T0 evGT qsGT 
+  T    F    F
 # MCMP2
   F

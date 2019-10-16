@@ -4,6 +4,7 @@ subroutine read_methods(doRHF,doUHF,doMOM,          &
                         doCIS,doTDHF,doppRPA,doADC, & 
                         doGF2,doGF3,                & 
                         doG0W0,doevGW,doqsGW,       & 
+                        doG0T0,doevGT,doqsGT,       & 
                         doMCMP2)
 
 ! Read desired methods 
@@ -18,6 +19,7 @@ subroutine read_methods(doRHF,doUHF,doMOM,          &
   logical,intent(out)           :: doCIS,doTDHF,doppRPA,doADC
   logical,intent(out)           :: doGF2,doGF3  
   logical,intent(out)           :: doG0W0,doevGW,doqsGW
+  logical,intent(out)           :: doG0T0,doevGT,doqsGT
   logical,intent(out)           :: doMCMP2
 
 ! Local variables
@@ -51,6 +53,10 @@ subroutine read_methods(doRHF,doUHF,doMOM,          &
   doGF3 = .false.
 
   doG0W0 = .false.
+  doevGT = .false.
+  doqsGT = .false.
+
+  doG0T0 = .false.
   doevGW = .false.
   doqsGW = .false.
 
@@ -103,6 +109,14 @@ subroutine read_methods(doRHF,doUHF,doMOM,          &
   if(answer1 == 'T') doG0W0 = .true.
   if(answer2 == 'T') doevGW = .true.
   if(answer3 == 'T') doqsGW = .true.
+
+! Read GT methods
+
+  read(1,*) 
+  read(1,*) answer1,answer2,answer3
+  if(answer1 == 'T') doG0T0 = .true.
+  if(answer2 == 'T') doevGT = .true.
+  if(answer3 == 'T') doqsGT = .true.
 
 ! Read stochastic methods
 

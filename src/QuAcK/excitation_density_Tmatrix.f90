@@ -1,4 +1,4 @@
-subroutine excitation_density_Tmatrix(nBas,nC,nO,nR,nOO,nVV,ERI,X1,Y1,X2,Y2,rho1,rho2)
+subroutine excitation_density_Tmatrix(nBas,nC,nO,nR,nOO,nVV,ERI,X1,Y1,rho1,X2,Y2,rho2)
 
 ! Compute excitation densities for T-matrix self-energy
 
