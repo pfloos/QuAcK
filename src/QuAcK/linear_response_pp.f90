@@ -70,7 +70,6 @@ subroutine linear_response_pp(ispin,BSE,nBas,nC,nO,nV,nR,nOO,nVV,e,ERI,Omega1,X1
 
   Z(:,:) = M(:,:)
   call diagonalize_general_matrix(nOO+nVV,M(:,:),Omega(:),Z(:,:))
-! call diagonalize_matrix(nOO+nVV,Z(:,:),Omega(:))
 
 ! write(*,*) 'pp-RPA excitation energies'
 ! call matout(nOO+nVV,1,Omega(:))

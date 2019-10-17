@@ -32,7 +32,7 @@ subroutine self_energy_Tmatrix_diag(eta,nBas,nC,nO,nV,nR,nOO,nVV,e,Omega1,rho1,O
 
 ! Initialize 
 
-  SigT = 0d0
+  SigT(:) = 0d0
 
   ! Occupied part of the T-matrix self-energy 
 
@@ -40,10 +40,10 @@ subroutine self_energy_Tmatrix_diag(eta,nBas,nC,nO,nV,nR,nOO,nVV,e,Omega1,rho1,O
     do i=nC+1,nO
       cd = 0
       do c=nO+1,nBas-nR
-        do d=c+1,nBas-nR
+        do d=nO+1,c
           cd = cd + 1
           eps = e(p) + e(i) - Omega1(cd)
-          SigT(p) = SigT(p) + 2d0*rho1(p,i,cd)**2*eps/(eps**2 + eta**2)
+          SigT(p) = SigT(p) + 2d0*rho1(p,i,cd)**2/eps
         enddo
       enddo
     enddo
@@ -55,10 +55,10 @@ subroutine self_energy_Tmatrix_diag(eta,nBas,nC,nO,nV,nR,nOO,nVV,e,Omega1,rho1,O
     do a=nO+1,nBas-nR
       kl = 0
       do k=nC+1,nO
-        do l=k+1,nO
+        do l=nC+1,k
           kl = kl + 1
           eps = e(p) + e(a) - Omega2(kl)
-          SigT(p) = SigT(p) + 2d0*rho2(p,a,kl)**2*eps/(eps**2 + eta**2)
+          SigT(p) = SigT(p) + 2d0*rho2(p,a,kl)**2/eps
         enddo
       enddo
     enddo

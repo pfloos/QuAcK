@@ -14,7 +14,6 @@ subroutine linear_response_B_pp(ispin,nBas,nC,nO,nV,nR,nOO,nVV,e,ERI,B_pp)
 ! Local variables
 
   double precision,external     :: Kronecker_delta
-
   integer                       :: a,b,i,j,ab,ij
 
 ! Output variables
