@@ -16,7 +16,7 @@ program QuAcK
 
   integer                       :: nNuc,nBas,nBasCABS
   integer                       :: nEl(nspin),nC(nspin),nO(nspin),nV(nspin),nR(nspin)
-  integer                       :: nS(nspin),nOO(nspin),nVV(nspin)
+  integer                       :: nS(nspin)
   double precision              :: ENuc,ERHF,EUHF,Norm
   double precision              :: EcMP2(3),EcMP3,EcMP2F12(3),EcMCMP2(3),Err_EcMCMP2(3),Var_EcMCMP2(3)
 
@@ -446,7 +446,7 @@ program QuAcK
   if(doGF2) then
 
     call cpu_time(start_GF2)
-    call GF2_diag(maxSCF_GF,thresh_GF,n_diis_GF,nBas,nC(1),nO(1),nV(1),nR(1),ERI_MO_basis,eHF)
+    call GF2_diag(maxSCF_GF,thresh_GF,n_diis_GF,linearize,nBas,nC(1),nO(1),nV(1),nR(1),ERI_MO_basis,eHF)
     call cpu_time(end_GF2)
 
     t_GF2 = end_GF2 - start_GF2
@@ -533,12 +533,9 @@ program QuAcK
 
   if(doG0T0) then
     
-    nOO(:) = nO(:)*(nO(:)+1)/2
-    nVV(:) = nV(:)*(nV(:)+1)/2
-
     call cpu_time(start_G0T0)
     call G0T0(BSE,singlet_manifold,triplet_manifold,eta, & 
-              nBas,nC(1),nO(1),nV(1),nR(1),nOO(1),nVV(1),ENuc,ERHF,Hc,H,ERI_MO_basis,PHF,cHF,eHF,eG0T0)
+              nBas,nC(1),nO(1),nV(1),nR(1),ENuc,ERHF,ERI_MO_basis,eHF,eG0T0)
     call cpu_time(end_G0T0)
   
     t_G0T0 = end_G0T0 - start_G0T0

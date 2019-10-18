@@ -1,4 +1,4 @@
-subroutine GF2_diag(maxSCF,thresh,max_diis,nBas,nC,nO,nV,nR,V,e0)
+subroutine GF2_diag(maxSCF,thresh,max_diis,linearize,nBas,nC,nO,nV,nR,V,e0)
 
 ! Perform second-order Green function calculation in diagonal approximation
 
@@ -10,6 +10,7 @@ subroutine GF2_diag(maxSCF,thresh,max_diis,nBas,nC,nO,nV,nR,V,e0)
   integer,intent(in)            :: maxSCF
   double precision,intent(in)   :: thresh
   integer,intent(in)            :: max_diis
+  logical,intent(in)            :: linearize
   integer,intent(in)            :: nBas
   integer,intent(in)            :: nO
   integer,intent(in)            :: nC
@@ -28,6 +29,7 @@ subroutine GF2_diag(maxSCF,thresh,max_diis,nBas,nC,nO,nV,nR,V,e0)
   double precision,allocatable  :: eGF2(:)
   double precision,allocatable  :: eOld(:)
   double precision,allocatable  :: Bpp(:,:)
+  double precision,allocatable  :: Z(:)
   double precision,allocatable  :: error_diis(:,:)
   double precision,allocatable  :: e_diis(:,:)
 
@@ -43,7 +45,7 @@ subroutine GF2_diag(maxSCF,thresh,max_diis,nBas,nC,nO,nV,nR,V,e0)
 
 ! Memory allocation
 
-  allocate(Bpp(nBas,2),eGF2(nBas),eOld(nBas),error_diis(nBas,max_diis),e_diis(nBas,max_diis))
+  allocate(Bpp(nBas,2),Z(nBas),eGF2(nBas),eOld(nBas),error_diis(nBas,max_diis),e_diis(nBas,max_diis))
 
 ! Initialization
 
@@ -95,7 +97,49 @@ subroutine GF2_diag(maxSCF,thresh,max_diis,nBas,nC,nO,nV,nR,V,e0)
       end do
     end do
 
-    eGF2(:) = e0(:) + Bpp(:,1) + Bpp(:,2)
+    ! Compute the renormalization factor
+
+    Z(:) = 0d0
+
+    do p=nC+1,nBas-nR
+      do i=nC+1,nO
+        do j=nC+1,nO
+          do a=nO+1,nBas-nR
+
+            eps = eGF2(p) + e0(a) - e0(i) - e0(j)
+
+            Z(p) = Z(p) - (2d0*V(p,a,i,j) - V(p,a,j,i))*V(p,a,i,j)/eps**2
+
+          end do
+        end do
+      end do
+    end do
+
+    do p=nC+1,nBas-nR
+      do i=nC+1,nO
+        do a=nO+1,nBas-nR
+          do b=nO+1,nBas-nR
+
+            eps = eGF2(p) + e0(i) - e0(a) - e0(b)
+
+            Z(p) = Z(p) - (2d0*V(p,i,a,b) - V(p,i,b,a))*V(p,i,a,b)/eps**2
+
+          end do
+        end do
+      end do
+    end do
+
+    Z(:) = 1d0/(1d0 - Z(:))
+
+    if(linearize) then
+
+      eGF2(:) = e0(:) + Z(:)*(Bpp(:,1) + Bpp(:,2))
+
+    else
+
+      eGF2(:) = e0(:) + Bpp(:,1) + Bpp(:,2)
+
+    end if
 
     Conv = maxval(abs(eGF2 - eOld))
 

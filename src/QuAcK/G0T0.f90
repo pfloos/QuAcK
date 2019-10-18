@@ -1,4 +1,4 @@
-subroutine G0T0(BSE,singlet_manifold,triplet_manifold,eta,nBas,nC,nO,nV,nR,nOO,nVV,ENuc,ERHF,Hc,H,ERI,PHF,cHF,eHF,eG0T0)
+subroutine G0T0(BSE,singlet_manifold,triplet_manifold,eta,nBas,nC,nO,nV,nR,ENuc,ERHF,ERI,eHF,eG0T0)
 
 ! Perform G0W0 calculation with a T-matrix self-energy (G0T0)
 
@@ -12,25 +12,19 @@ subroutine G0T0(BSE,singlet_manifold,triplet_manifold,eta,nBas,nC,nO,nV,nR,nOO,n
   logical,intent(in)            :: triplet_manifold
   double precision,intent(in)   :: eta
 
-  integer,intent(in)            :: nBas,nC,nO,nV,nR,nOO,nVV
+  integer,intent(in)            :: nBas,nC,nO,nV,nR
   double precision,intent(in)   :: ENuc
   double precision,intent(in)   :: ERHF
   double precision,intent(in)   :: eHF(nBas)
-  double precision,intent(in)   :: cHF(nBas,nBas)
-  double precision,intent(in)   :: PHF(nBas,nBas)
-  double precision,intent(in)   :: Hc(nBas,nBas)
-  double precision,intent(in)   :: H(nBas,nBas)
   double precision,intent(in)   :: ERI(nBas,nBas,nBas,nBas)
 
 ! Local variables
 
-  logical                       :: dRPA
-  integer                       :: ispin,jspin
+  integer                       :: ispin
+  integer                       :: nOO
+  integer                       :: nVV
   double precision              :: EcRPA(nspin)
   double precision              :: EcBSE(nspin)
-  double precision              :: EcGM
-  double precision,allocatable  :: SigT(:)
-  double precision,allocatable  :: Z(:)
   double precision,allocatable  :: Omega1(:,:)
   double precision,allocatable  :: X1(:,:,:)
   double precision,allocatable  :: Y1(:,:,:)
@@ -39,6 +33,8 @@ subroutine G0T0(BSE,singlet_manifold,triplet_manifold,eta,nBas,nC,nO,nV,nR,nOO,n
   double precision,allocatable  :: X2(:,:,:)
   double precision,allocatable  :: Y2(:,:,:)
   double precision,allocatable  :: rho2(:,:,:,:)
+  double precision,allocatable  :: SigT(:)
+  double precision,allocatable  :: Z(:)
 
 ! Output variables
 
@@ -56,6 +52,9 @@ subroutine G0T0(BSE,singlet_manifold,triplet_manifold,eta,nBas,nC,nO,nV,nR,nOO,n
 
   ispin = 1
 
+  nOO = nO*(nO+1)/2
+  nVV = nV*(nV+1)/2
+
 ! Memory allocation
 
   allocate(Omega1(nVV,nspin),X1(nVV,nVV,nspin),Y1(nOO,nVV,nspin), & 
@@ -65,29 +64,29 @@ subroutine G0T0(BSE,singlet_manifold,triplet_manifold,eta,nBas,nC,nO,nV,nR,nOO,n
 
 ! Compute linear response
 
-  call linear_response_pp(ispin,.false.,nBas,nC,nO,nV,nR,nOO,nVV,eHF,ERI, & 
-                          Omega1(:,ispin),X1(:,:,ispin),Y1(:,:,ispin),    & 
-                          Omega2(:,ispin),X2(:,:,ispin),Y2(:,:,ispin),    & 
+  call linear_response_pp(ispin,.false.,nBas,nC,nO,nV,nR,nOO,nVV,eHF(:),ERI(:,:,:,:), & 
+                          Omega1(:,ispin),X1(:,:,ispin),Y1(:,:,ispin),                & 
+                          Omega2(:,ispin),X2(:,:,ispin),Y2(:,:,ispin),                & 
                           EcRPA(ispin))
 
 ! Compute excitation densities for the T-matrix
 
-  call excitation_density_Tmatrix(nBas,nC,nO,nR,nOO,nVV,ERI,                     & 
+  call excitation_density_Tmatrix(nBas,nC,nO,nR,nOO,nVV,ERI(:,:,:,:),            & 
                                   X1(:,:,ispin),Y1(:,:,ispin),rho1(:,:,:,ispin), & 
                                   X2(:,:,ispin),Y2(:,:,ispin),rho2(:,:,:,ispin))
 
 ! Compute T-matrix version of the self-energy 
 
-  call self_energy_Tmatrix_diag(eta,nBas,nC,nO,nV,nR,nOO,nVV,eHF,  & 
-                                Omega1(:,ispin),rho1(:,:,:,ispin), &  
-                                Omega2(:,ispin),rho2(:,:,:,ispin), & 
-                                SigT)
+  call self_energy_Tmatrix_diag(eta,nBas,nC,nO,nV,nR,nOO,nVV,eHF(:), & 
+                                Omega1(:,ispin),rho1(:,:,:,ispin),   &  
+                                Omega2(:,ispin),rho2(:,:,:,ispin),   & 
+                                SigT(:))
 
 ! Compute renormalization factor for T-matrix self-energy
 
-  call renormalization_factor_Tmatrix(eta,nBas,nC,nO,nV,nR,nOO,nVV,eHF,  & 
-                                      Omega1(:,ispin),rho1(:,:,:,ispin), & 
-                                      Omega2(:,ispin),rho2(:,:,:,ispin), & 
+  call renormalization_factor_Tmatrix(eta,nBas,nC,nO,nV,nR,nOO,nVV,eHF(:), & 
+                                      Omega1(:,ispin),rho1(:,:,:,ispin),   & 
+                                      Omega2(:,ispin),rho2(:,:,:,ispin),   & 
                                       Z(:))
 
 ! Solve the quasi-particle equation
@@ -99,7 +98,7 @@ subroutine G0T0(BSE,singlet_manifold,triplet_manifold,eta,nBas,nC,nO,nV,nR,nOO,n
   call print_excitation('pp-RPA (N+2)',ispin,nVV,Omega1(:,ispin))
   call print_excitation('pp-RPA (N-2)',ispin,nOO,Omega2(:,ispin))
 
-  call print_G0T0(nBas,nO,eHF,ENuc,ERHF,SigT,Z,eG0T0,EcRPA(ispin))
+  call print_G0T0(nBas,nO,eHF(:),ENuc,ERHF,SigT(:),Z(:),eG0T0(:),EcRPA(ispin))
 
 ! Perform BSE calculation
 

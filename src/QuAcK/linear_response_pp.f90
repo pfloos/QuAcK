@@ -60,8 +60,8 @@ subroutine linear_response_pp(ispin,BSE,nBas,nC,nO,nV,nR,nOO,nVV,e,ERI,Omega1,X1
 
 ! Off-diagonal blocks
 
-  M(    1:nVV    ,nVV+1:nOO+nVV) = -           B(1:nVV,1:nOO)
-  M(nVV+1:nOO+nVV,    1:nVV)     = + transpose(B(1:nVV,1:nOO))
+  M(    1:nVV    ,nVV+1:nOO+nVV) = +           B(1:nVV,1:nOO)
+  M(nVV+1:nOO+nVV,    1:nVV)     = - transpose(B(1:nVV,1:nOO))
 
 ! print*, 'pp-RPA matrix'
 ! call matout(nOO+nVV,nOO+nVV,M(:,:))
@@ -75,19 +75,9 @@ subroutine linear_response_pp(ispin,BSE,nBas,nC,nO,nV,nR,nOO,nVV,e,ERI,Omega1,X1
 ! call matout(nOO+nVV,1,Omega(:))
 ! write(*,*) 
 
-! call matout(nOO+nVV,nOO+nVV,matmul(transpose(Z(:,:)),matmul(W(:,:),Z(:,:))))
-! write(*,*) 
-
 ! Split the various quantities in p-p and h-h parts
 
   call sort_ppRPA(nOO,nVV,Omega(:),Z(:,:),Omega1(:),X1(:,:),Y1(:,:),Omega2(:),X2(:,:),Y2(:,:))
-! Omega1(:) = Omega(nOO+1:nOO+nVV)
-! Omega2(:) = Omega(1:nOO)
-
-! X1(:,:) = Z(nOO+1:nOO+nVV,nOO+1:nOO+nVV)
-! Y1(:,:) = Z(    1:nOO    ,nOO+1:nOO+nVV)
-! X2(:,:) = Z(nOO+1:nOO+nVV,    1:nOO    ) 
-! Y2(:,:) = Z(    1:nOO    ,nOO+1:nOO+nVV)
 
 ! Compute the RPA correlation energy
 
@@ -95,6 +85,15 @@ subroutine linear_response_pp(ispin,BSE,nBas,nC,nO,nV,nR,nOO,nVV,e,ERI,Omega1,X1
   Ec_ppRPA = +sum(Omega1(:)) - trace_matrix(nVV,C(:,:))
 ! Ec_ppRPA = -sum(Omega2(:)) - trace_matrix(nOO,D(:,:))
 
-  print*,'Ec(pp-RPA) = ',Ec_ppRPA
+! write(*,*)'X1'
+! call matout(nVV,nVV,X1)
+! write(*,*)'Y1'
+! call matout(nVV,nOO,Y1)
+! write(*,*)'X2'
+! call matout(nOO,nVV,X2)
+! write(*,*)'Y2'
+! call matout(nOO,nOO,Y2)
+
+! print*,'Ec(pp-RPA) = ',Ec_ppRPA
 
 end subroutine linear_response_pp
