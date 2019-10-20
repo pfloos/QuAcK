@@ -1,4 +1,4 @@
-subroutine print_G0T0(nBas,nO,e,ENuc,EHF,SigT,Z,eGW,EcRPA)
+subroutine print_G0T0(nBas,nO,e,ENuc,ERHF,SigT,Z,eGW,EcRPA)
 
 ! Print one-electron energies and other stuff for G0T0
 
@@ -7,8 +7,8 @@ subroutine print_G0T0(nBas,nO,e,ENuc,EHF,SigT,Z,eGW,EcRPA)
 
   integer,intent(in)                 :: nBas,nO
   double precision,intent(in)        :: ENuc
-  double precision,intent(in)        :: EHF
-  double precision,intent(in)        :: EcRPA
+  double precision,intent(in)        :: ERHF
+  double precision,intent(in)        :: EcRPA(nspin)
   double precision,intent(in)        :: e(nBas),SigT(nBas),Z(nBas),eGW(nBas)
 
   integer                            :: x,HOMO,LUMO
@@ -35,12 +35,14 @@ subroutine print_G0T0(nBas,nO,e,ENuc,EHF,SigT,Z,eGW,EcRPA)
   enddo
 
   write(*,*)'-------------------------------------------------------------------------------'
-  write(*,'(2X,A30,F15.6)') 'G0T0 HOMO      energy (eV):',eGW(HOMO)*HaToeV
-  write(*,'(2X,A30,F15.6)') 'G0T0 LUMO      energy (eV):',eGW(LUMO)*HaToeV
-  write(*,'(2X,A30,F15.6)') 'G0T0 HOMO-LUMO gap    (eV):',Gap*HaToeV
+  write(*,'(2X,A40,F15.6)') 'G0T0 HOMO      energy (eV)            :',eGW(HOMO)*HaToeV
+  write(*,'(2X,A40,F15.6)') 'G0T0 LUMO      energy (eV)            :',eGW(LUMO)*HaToeV
+  write(*,'(2X,A40,F15.6)') 'G0T0 HOMO-LUMO gap    (eV)            :',Gap*HaToeV
   write(*,*)'-------------------------------------------------------------------------------'
-  write(*,'(2X,A30,F15.6)') 'RPA@G0T0 total energy       =',ENuc + EHF + EcRPA
-  write(*,'(2X,A30,F15.6)') 'RPA@G0T0 correlation energy =',EcRPA
+  write(*,'(2X,A40,F15.6)') 'RPA@G0T0 correlation energy (singlet) =',EcRPA(1)
+  write(*,'(2X,A40,F15.6)') 'RPA@G0T0 correlation energy (triplet) =',EcRPA(2)
+  write(*,'(2X,A40,F15.6)') 'RPA@G0T0 correlation energy           =',EcRPA(1) + EcRPA(2)
+  write(*,'(2X,A40,F15.6)') 'RPA@G0T0 total energy                 =',ENuc + ERHF + EcRPA(1) + EcRPA(2)
   write(*,*)'-------------------------------------------------------------------------------'
   write(*,*)
 

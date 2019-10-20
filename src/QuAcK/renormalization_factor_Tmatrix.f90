@@ -1,4 +1,6 @@
-subroutine renormalization_factor_Tmatrix(eta,nBas,nC,nO,nV,nR,nOO,nVV,e,Omega1,rho1,Omega2,rho2,Z)
+subroutine renormalization_factor_Tmatrix(eta,nBas,nC,nO,nV,nR,nOOs,nVVs,nOOt,nVVt,e,              & 
+                                          Omega1s,rho1s,Omega2s,rho2s,Omega1t,rho1t,Omega2t,rho2t, & 
+                                          Z)
 
 ! Compute renormalization factor of the T-matrix self-energy
 
@@ -8,12 +10,14 @@ subroutine renormalization_factor_Tmatrix(eta,nBas,nC,nO,nV,nR,nOO,nVV,e,Omega1,
 ! Input variables
 
   double precision,intent(in)   :: eta
-  integer,intent(in)            :: nBas,nC,nO,nV,nR,nOO,nVV
+  integer,intent(in)            :: nBas,nC,nO,nV,nR
+  integer,intent(in)            :: nOOs,nVVs
+  integer,intent(in)            :: nOOt,nVVt
   double precision,intent(in)   :: e(nBas)
-  double precision,intent(in)   :: Omega1(nVV)
-  double precision,intent(in)   :: rho1(nBas,nBas,nVV)
-  double precision,intent(in)   :: Omega2(nOO)
-  double precision,intent(in)   :: rho2(nBas,nBas,nOO)
+  double precision,intent(in)   :: Omega1s(nVVs),Omega1t(nVVt)
+  double precision,intent(in)   :: rho1s(nBas,nBas,nVVs),rho1t(nBas,nBas,nVVt)
+  double precision,intent(in)   :: Omega2s(nOOs),Omega2t(nOOt)
+  double precision,intent(in)   :: rho2s(nBas,nBas,nOOs),rho2t(nBas,nBas,nOOt)
 
 ! Local variables
 
@@ -28,7 +32,11 @@ subroutine renormalization_factor_Tmatrix(eta,nBas,nC,nO,nV,nR,nOO,nVV,e,Omega1,
 
   Z(:)  = 0d0
 
-  ! Occupied part of the T-matrix self-energy 
+!----------------------------------------------
+! Singlet part of the T-matrix self-energy
+!----------------------------------------------
+
+! Occupied part of the T-matrix self-energy 
 
   do p=nC+1,nBas-nR
     do i=nC+1,nO
@@ -36,14 +44,14 @@ subroutine renormalization_factor_Tmatrix(eta,nBas,nC,nO,nV,nR,nOO,nVV,e,Omega1,
       do c=nO+1,nBas-nR
         do d=nO+1,c
           cd = cd + 1
-          eps = e(p) + e(i) - Omega1(cd)
-          Z(p) = Z(p) - 2d0*rho1(p,i,cd)**2/eps**2
+          eps = e(p) + e(i) - Omega1s(cd)
+          Z(p) = Z(p) - 2d0*rho1s(p,i,cd)**2/eps**2
         enddo
       enddo
     enddo
   enddo
 
-  ! Virtual part of the T-matrix self-energy
+! Virtual part of the T-matrix self-energy
 
   do p=nC+1,nBas-nR
     do a=nO+1,nBas-nR
@@ -51,8 +59,76 @@ subroutine renormalization_factor_Tmatrix(eta,nBas,nC,nO,nV,nR,nOO,nVV,e,Omega1,
       do k=nC+1,nO
         do l=nC+1,k
           kl = kl + 1
-          eps = e(p) + e(a) - Omega2(kl)
-          Z(p) = Z(p) - 2d0*rho2(p,a,kl)**2/eps**2
+          eps = e(p) + e(a) - Omega2s(kl)
+          Z(p) = Z(p) - 2d0*rho2s(p,a,kl)**2/eps**2
+        enddo
+      enddo
+    enddo
+  enddo
+
+!----------------------------------------------
+! Triplet part of the T-matrix self-energy
+!----------------------------------------------
+
+! Occupied part of the T-matrix self-energy 
+
+  do p=nC+1,nBas-nR
+    do i=nC+1,nO
+      cd = 0
+      do c=nO+1,nBas-nR
+        do d=nO+1,c-1
+          cd = cd + 1
+          eps = e(p) + e(i) - Omega1t(cd)
+          Z(p) = Z(p) - 2d0*rho1t(p,i,cd)**2/eps**2
+        enddo
+      enddo
+    enddo
+  enddo
+
+! Virtual part of the T-matrix self-energy
+
+  do p=nC+1,nBas-nR
+    do a=nO+1,nBas-nR
+      kl = 0
+      do k=nC+1,nO
+        do l=nC+1,k-1
+          kl = kl + 1
+          eps = e(p) + e(a) - Omega2t(kl)
+          Z(p) = Z(p) - 2d0*rho2t(p,a,kl)**2/eps**2
+        enddo
+      enddo
+    enddo
+  enddo
+
+!----------------------------------------------
+! Singlet part of the T-matrix self-energy
+!----------------------------------------------
+
+! Occupied part of the T-matrix self-energy 
+
+  do p=nC+1,nBas-nR
+    do i=nC+1,nO
+      cd = 0
+      do c=nO+1,nBas-nR
+        do d=nO+1,c
+          cd = cd + 1
+          eps = e(p) + e(i) - Omega1s(cd)
+          Z(p) = Z(p) - 2d0*rho1s(p,i,cd)**2/eps**2
+        enddo
+      enddo
+    enddo
+  enddo
+
+! Virtual part of the T-matrix self-energy
+
+  do p=nC+1,nBas-nR
+    do a=nO+1,nBas-nR
+      kl = 0
+      do k=nC+1,nO
+        do l=nC+1,k
+          kl = kl + 1
+          eps = e(p) + e(a) - Omega2s(kl)
+          Z(p) = Z(p) - 2d0*rho2s(p,a,kl)**2/eps**2
         enddo
       enddo
     enddo

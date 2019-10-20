@@ -21,18 +21,18 @@ subroutine G0T0(BSE,singlet_manifold,triplet_manifold,eta,nBas,nC,nO,nV,nR,ENuc,
 ! Local variables
 
   integer                       :: ispin
-  integer                       :: nOO
-  integer                       :: nVV
+  integer                       :: nOOs,nOOt
+  integer                       :: nVVs,nVVt
   double precision              :: EcRPA(nspin)
   double precision              :: EcBSE(nspin)
-  double precision,allocatable  :: Omega1(:,:)
-  double precision,allocatable  :: X1(:,:,:)
-  double precision,allocatable  :: Y1(:,:,:)
-  double precision,allocatable  :: rho1(:,:,:,:)
-  double precision,allocatable  :: Omega2(:,:)
-  double precision,allocatable  :: X2(:,:,:)
-  double precision,allocatable  :: Y2(:,:,:)
-  double precision,allocatable  :: rho2(:,:,:,:)
+  double precision,allocatable  :: Omega1s(:),Omega1t(:)
+  double precision,allocatable  :: X1s(:,:),X1t(:,:)
+  double precision,allocatable  :: Y1s(:,:),Y1t(:,:)
+  double precision,allocatable  :: rho1s(:,:,:),rho1t(:,:,:)
+  double precision,allocatable  :: Omega2s(:),Omega2t(:)
+  double precision,allocatable  :: X2s(:,:),X2t(:,:)
+  double precision,allocatable  :: Y2s(:,:),Y2t(:,:)
+  double precision,allocatable  :: rho2s(:,:,:),rho2t(:,:,:)
   double precision,allocatable  :: SigT(:)
   double precision,allocatable  :: Z(:)
 
@@ -48,57 +48,97 @@ subroutine G0T0(BSE,singlet_manifold,triplet_manifold,eta,nBas,nC,nO,nV,nR,ENuc,
   write(*,*)'************************************************'
   write(*,*)
 
-! Spin manifold 
+! Dimensions of the rr-RPA linear reponse matrices
 
-  ispin = 1
+  nOOs = nO*(nO+1)/2
+  nVVs = nV*(nV+1)/2
 
-  nOO = nO*(nO+1)/2
-  nVV = nV*(nV+1)/2
+  nOOt = nO*(nO-1)/2
+  nVVt = nV*(nV-1)/2
 
 ! Memory allocation
 
-  allocate(Omega1(nVV,nspin),X1(nVV,nVV,nspin),Y1(nOO,nVV,nspin), & 
-           Omega2(nOO,nspin),X2(nVV,nOO,nspin),Y2(nOO,nOO,nspin), & 
-           rho1(nBas,nBas,nVV,nspin),rho2(nBas,nBas,nOO,nspin),   & 
+  allocate(Omega1s(nVVs),X1s(nVVs,nVVs),Y1s(nOOs,nVVs), & 
+           Omega2s(nOOs),X2s(nVVs,nOOs),Y2s(nOOs,nOOs), & 
+           rho1s(nBas,nBas,nVVs),rho2s(nBas,nBas,nOOs), & 
+           Omega1t(nVVt),X1t(nVVt,nVVt),Y1t(nOOt,nVVt), & 
+           Omega2t(nOOs),X2t(nVVs,nOOs),Y2t(nOOs,nOOs), & 
+           rho1t(nBas,nBas,nVVt),rho2t(nBas,nBas,nOOt), & 
            SigT(nBas),Z(nBas))
+
+!----------------------------------------------
+! Singlet manifold
+!----------------------------------------------
+
+ ispin = 1
 
 ! Compute linear response
 
-  call linear_response_pp(ispin,.false.,nBas,nC,nO,nV,nR,nOO,nVV,eHF(:),ERI(:,:,:,:), & 
-                          Omega1(:,ispin),X1(:,:,ispin),Y1(:,:,ispin),                & 
-                          Omega2(:,ispin),X2(:,:,ispin),Y2(:,:,ispin),                & 
+  call linear_response_pp(ispin,.false.,nBas,nC,nO,nV,nR, & 
+                          nOOs,nVVs,eHF(:),ERI(:,:,:,:),  & 
+                          Omega1s(:),X1s(:,:),Y1s(:,:),   & 
+                          Omega2s(:),X2s(:,:),Y2s(:,:),   & 
                           EcRPA(ispin))
+
+  call print_excitation('pp-RPA (N+2)',ispin,nVVs,Omega1s(:))
+  call print_excitation('pp-RPA (N-2)',ispin,nOOs,Omega2s(:))
 
 ! Compute excitation densities for the T-matrix
 
-  call excitation_density_Tmatrix(nBas,nC,nO,nR,nOO,nVV,ERI(:,:,:,:),            & 
-                                  X1(:,:,ispin),Y1(:,:,ispin),rho1(:,:,:,ispin), & 
-                                  X2(:,:,ispin),Y2(:,:,ispin),rho2(:,:,:,ispin))
+  call excitation_density_Tmatrix(ispin,nBas,nC,nO,nR,nOOs,nVVs,ERI(:,:,:,:), & 
+                                  X1s(:,:),Y1s(:,:),rho1s(:,:,:),             & 
+                                  X2s(:,:),Y2s(:,:),rho2s(:,:,:))
 
+!----------------------------------------------
+! Triplet manifold
+!----------------------------------------------
+
+ ispin = 2
+
+  ! Compute linear response
+
+  call linear_response_pp(ispin,.false.,nBas,nC,nO,nV,nR, & 
+                          nOOt,nVVt,eHF(:),ERI(:,:,:,:),  & 
+                          Omega1t(:),X1t(:,:),Y1t(:,:),   & 
+                          Omega2t(:),X2t(:,:),Y2t(:,:),   & 
+                          EcRPA(ispin))
+
+  call print_excitation('pp-RPA (N+2)',ispin,nVVt,Omega1t(:))
+  call print_excitation('pp-RPA (N-2)',ispin,nOOt,Omega2t(:))
+
+  ! Compute excitation densities for the T-matrix
+
+  call excitation_density_Tmatrix(ispin,nBas,nC,nO,nR,nOOt,nVVt,ERI(:,:,:,:), & 
+                                  X1t(:,:),Y1t(:,:),rho1t(:,:,:),             & 
+                                  X2t(:,:),Y2t(:,:),rho2t(:,:,:))
+
+!----------------------------------------------
 ! Compute T-matrix version of the self-energy 
+!----------------------------------------------
 
-  call self_energy_Tmatrix_diag(eta,nBas,nC,nO,nV,nR,nOO,nVV,eHF(:), & 
-                                Omega1(:,ispin),rho1(:,:,:,ispin),   &  
-                                Omega2(:,ispin),rho2(:,:,:,ispin),   & 
+  call self_energy_Tmatrix_diag(eta,nBas,nC,nO,nV,nR,nOOs,nVVs,nOOt,nVVt,eHF(:), & 
+                                Omega1s(:),rho1s(:,:,:),Omega2s(:),rho2s(:,:,:), & 
+                                Omega1t(:),rho1t(:,:,:),Omega2t(:),rho2t(:,:,:), & 
                                 SigT(:))
 
 ! Compute renormalization factor for T-matrix self-energy
 
-  call renormalization_factor_Tmatrix(eta,nBas,nC,nO,nV,nR,nOO,nVV,eHF(:), & 
-                                      Omega1(:,ispin),rho1(:,:,:,ispin),   & 
-                                      Omega2(:,ispin),rho2(:,:,:,ispin),   & 
+  call renormalization_factor_Tmatrix(eta,nBas,nC,nO,nV,nR,nOOs,nVVs,nOOt,nVVt,eHF(:), & 
+                                      Omega1s(:),rho1s(:,:,:),Omega2s(:),rho2s(:,:,:), & 
+                                      Omega1t(:),rho1t(:,:,:),Omega2t(:),rho2t(:,:,:), & 
                                       Z(:))
 
+!----------------------------------------------
 ! Solve the quasi-particle equation
+!----------------------------------------------
 
   eG0T0(:) = eHF(:) + Z(:)*SigT(:)
 
+!----------------------------------------------
 ! Dump results
+!----------------------------------------------
 
-  call print_excitation('pp-RPA (N+2)',ispin,nVV,Omega1(:,ispin))
-  call print_excitation('pp-RPA (N-2)',ispin,nOO,Omega2(:,ispin))
-
-  call print_G0T0(nBas,nO,eHF(:),ENuc,ERHF,SigT(:),Z(:),eG0T0(:),EcRPA(ispin))
+  call print_G0T0(nBas,nO,eHF(:),ENuc,ERHF,SigT(:),Z(:),eG0T0(:),EcRPA(:))
 
 ! Perform BSE calculation
 
