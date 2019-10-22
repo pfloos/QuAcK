@@ -536,6 +536,7 @@ program QuAcK
     call cpu_time(start_G0T0)
     call G0T0(BSE,singlet_manifold,triplet_manifold,eta, & 
               nBas,nC(1),nO(1),nV(1),nR(1),ENuc,ERHF,ERI_MO_basis,eHF,eG0T0)
+    call soG0T0(eta,nBas,nC(1),nO(1),nV(1),nR(1),ENuc,ERHF,ERI_MO_basis,eHF)
     call cpu_time(end_G0T0)
   
     t_G0T0 = end_G0T0 - start_G0T0

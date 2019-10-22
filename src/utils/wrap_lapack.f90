@@ -53,7 +53,7 @@ subroutine diagonalize_general_matrix(N,A,e,X)
   lwork = 4*N
   allocate(WI(N),VL(N,N),work(lwork))
 
-  call dgeev('V','V',N,A,N,e,WI,VL,N,X,N,work,lwork,info)
+  call dgeev('N','V',N,A,N,e,WI,VL,N,X,N,work,lwork,info)
  
   if(info /= 0) then 
     print*,'Problem in diagonalize_matrix (dgeev)!!'

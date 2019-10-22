@@ -32,6 +32,7 @@ subroutine sort_ppRPA(nOO,nVV,Omega,Z,Omega1,X1,Y1,Omega2,X2,Y2)
 
   ab = 0
   ij = 0
+
   do pq=1,nOO+nVV
 
     if(Omega(pq) > 0d0) then 

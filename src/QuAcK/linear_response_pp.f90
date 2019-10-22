@@ -1,4 +1,4 @@
-subroutine linear_response_pp(ispin,BSE,nBas,nC,nO,nV,nR,nOO,nVV,e,ERI,Omega1,X1,Y1,Omega2,X2,Y2,Ec_ppRPA)
+subroutine linear_response_pp(ispin,BSE,nBas,nC,nO,nV,nR,nOO,nVV,e,ERI,Omega1,X1,Y1,Omega2,X2,Y2,EcppRPA)
 
 ! Compute the p-p channel of the linear response: see Scueria et al. JCP 139, 104113 (2013)
 
@@ -32,7 +32,7 @@ subroutine linear_response_pp(ispin,BSE,nBas,nC,nO,nV,nR,nOO,nVV,e,ERI,Omega1,X1
   double precision,intent(out)  :: Omega2(nOO)
   double precision,intent(out)  :: X2(nVV,nOO)
   double precision,intent(out)  :: Y2(nOO,nOO)
-  double precision,intent(out)  :: Ec_ppRPA
+  double precision,intent(out)  :: EcppRPA
 
 ! Memory allocation
 
@@ -81,9 +81,9 @@ subroutine linear_response_pp(ispin,BSE,nBas,nC,nO,nV,nR,nOO,nVV,e,ERI,Omega1,X1
 
 ! Compute the RPA correlation energy
 
-! Ec_ppRPA = 0.5d0*( sum(Omega1(:)) - sum(Omega2(:)) - trace_matrix(nVV,C(:,:)) - trace_matrix(nOO,D(:,:)) )
-  Ec_ppRPA = +sum(Omega1(:)) - trace_matrix(nVV,C(:,:))
-! Ec_ppRPA = -sum(Omega2(:)) - trace_matrix(nOO,D(:,:))
+! EcppRPA = 0.5d0*( sum(Omega1(:)) - sum(Omega2(:)) - trace_matrix(nVV,C(:,:)) - trace_matrix(nOO,D(:,:)) )
+  EcppRPA = +sum(Omega1(:)) - trace_matrix(nVV,C(:,:))
+! EcppRPA = -sum(Omega2(:)) - trace_matrix(nOO,D(:,:))
 
 ! write(*,*)'X1'
 ! call matout(nVV,nVV,X1)
@@ -94,6 +94,6 @@ subroutine linear_response_pp(ispin,BSE,nBas,nC,nO,nV,nR,nOO,nVV,e,ERI,Omega1,X1
 ! write(*,*)'Y2'
 ! call matout(nOO,nOO,Y2)
 
-! print*,'Ec(pp-RPA) = ',Ec_ppRPA
+! print*,'Ec(pp-RPA) = ',EcppRPA
 
 end subroutine linear_response_pp

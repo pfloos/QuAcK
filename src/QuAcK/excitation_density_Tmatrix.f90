@@ -46,9 +46,9 @@ subroutine excitation_density_Tmatrix(ispin,nBas,nC,nO,nR,nOO,nVV,ERI,X1,Y1,rho1
            do d=nO+1,c
               cd = cd + 1
               rho1(p,i,ab) = rho1(p,i,ab) & 
-                           + (ERI(p,i,c,d) - ERI(p,i,d,c))*X1(cd,ab) 
-!                          + (ERI(p,i,c,d) + ERI(p,i,d,c))*X1(cd,ab) &
-!                          /sqrt((1d0 + Kronecker_delta(p,i))*(1d0 + Kronecker_delta(c,d)))
+!                          + ERI(p,i,c,d)*X1(cd,ab) 
+                           + (ERI(p,i,c,d) + ERI(p,i,d,c))*X1(cd,ab) &
+                           /sqrt((1d0 + Kronecker_delta(p,i))*(1d0 + Kronecker_delta(c,d)))
             end do
           end do
 
@@ -57,9 +57,9 @@ subroutine excitation_density_Tmatrix(ispin,nBas,nC,nO,nR,nOO,nVV,ERI,X1,Y1,rho1
            do l=nC+1,k
               kl = kl + 1
               rho1(p,i,ab) = rho1(p,i,ab) & 
-                           + (ERI(p,i,k,l) - ERI(p,i,l,k))*Y1(kl,ab)
-!                          + (ERI(p,i,k,l) + ERI(p,i,l,k))*Y1(kl,ab) &
-!                          /sqrt((1d0 + Kronecker_delta(p,i))*(1d0 + Kronecker_delta(k,l)))
+!                          + ERI(p,i,k,l)*Y1(kl,ab)
+                           + (ERI(p,i,k,l) + ERI(p,i,l,k))*Y1(kl,ab) &
+                           /sqrt((1d0 + Kronecker_delta(p,i))*(1d0 + Kronecker_delta(k,l)))
             end do
           end do
 
@@ -74,9 +74,9 @@ subroutine excitation_density_Tmatrix(ispin,nBas,nC,nO,nR,nOO,nVV,ERI,X1,Y1,rho1
            do d=nO+1,c
               cd = cd + 1
               rho2(p,a,ij) = rho2(p,a,ij) & 
-                           + (ERI(p,a,c,d) - ERI(p,a,d,c))*X2(cd,ij)
-!                          + (ERI(p,a,c,d) + ERI(p,a,d,c))*X2(cd,ij) &
-!                          /sqrt((1d0 + Kronecker_delta(p,a))*(1d0 + Kronecker_delta(c,d)))
+!                          + ERI(p,a,c,d)*X2(cd,ij)
+                           + (ERI(p,a,c,d) + ERI(p,a,d,c))*X2(cd,ij) &
+                           /sqrt((1d0 + Kronecker_delta(p,a))*(1d0 + Kronecker_delta(c,d)))
 
             end do
           end do
@@ -86,9 +86,9 @@ subroutine excitation_density_Tmatrix(ispin,nBas,nC,nO,nR,nOO,nVV,ERI,X1,Y1,rho1
            do l=nC+1,k
               kl = kl + 1
               rho2(p,a,ij) = rho2(p,a,ij) & 
-                           + (ERI(p,a,k,l) - ERI(p,a,l,k))*Y2(kl,ij)  
-!                          + (ERI(p,a,k,l) + ERI(p,a,l,k))*Y2(kl,ij) &
-!                          /sqrt((1d0 + Kronecker_delta(p,a))*(1d0 + Kronecker_delta(k,l)))
+!                          + ERI(p,a,k,l)*Y2(kl,ij)  
+                           + (ERI(p,a,k,l) + ERI(p,a,l,k))*Y2(kl,ij) &
+                           /sqrt((1d0 + Kronecker_delta(p,a))*(1d0 + Kronecker_delta(k,l)))
 
             end do
           end do

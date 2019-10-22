@@ -7,7 +7,7 @@
 # CIS TDHF ppRPA ADC
   F   F    F     F
 # GF2 GF3
-  T   F
+  F   F
 # G0W0 evGW qsGW 
   F    F    F
 # G0T0 evGT qsGT 
