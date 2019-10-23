@@ -40,7 +40,7 @@ subroutine renormalization_factor_Tmatrix_so(eta,nBas,nC,nO,nV,nR,nOO,nVV,e,Omeg
     do i=nC+1,nO
       cd = 0
       do c=nO+1,nBas-nR
-        do d=nO+1,c-1
+        do d=c+1,nBas-nR
           cd = cd + 1
           eps = e(p) + e(i) - Omega1(cd)
           Z(p) = Z(p) - rho1(p,i,cd)**2/eps**2
@@ -55,7 +55,7 @@ subroutine renormalization_factor_Tmatrix_so(eta,nBas,nC,nO,nV,nR,nOO,nVV,e,Omeg
     do a=nO+1,nBas-nR
       kl = 0
       do k=nC+1,nO
-        do l=nC+1,k-1
+        do l=k+1,nO
           kl = kl + 1
           eps = e(p) + e(a) - Omega2(kl)
           Z(p) = Z(p) - rho2(p,a,kl)**2/eps**2

@@ -72,4 +72,27 @@ subroutine linear_response_C_pp(ispin,nBas,nC,nO,nV,nR,nOO,nVV,e,ERI,C_pp)
 
   end if
 
+! Build C matrix for the spinorbital basis
+
+  if(ispin == 3) then
+
+    ab = 0
+    do a=nO+1,nBas-nR
+     do b=a+1,nBas-nR
+        ab = ab + 1
+        cd = 0
+        do c=nO+1,nBas-nR
+         do d=c+1,nBas-nR
+            cd = cd + 1
+ 
+            C_pp(ab,cd) = + (e(a) + e(b) - eF)*Kronecker_delta(a,c)*Kronecker_delta(b,d) & 
+                          + ERI(a,b,c,d) - ERI(a,b,d,c)
+ 
+          end do
+        end do
+      end do
+    end do
+
+  end if
+
 end subroutine linear_response_C_pp

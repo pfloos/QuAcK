@@ -64,4 +64,26 @@ subroutine linear_response_B_pp(ispin,nBas,nC,nO,nV,nR,nOO,nVV,e,ERI,B_pp)
 
   end if
 
+! Build the B matrix for the spinorbital basis
+
+  if(ispin == 3) then
+
+    ab = 0
+    do a=nO+1,nBas-nR
+     do b=a+1,nBas-nR
+        ab = ab + 1
+        ij = 0
+        do i=nC+1,nO
+         do j=i+1,nO
+            ij = ij + 1
+ 
+            B_pp(ab,ij) = ERI(a,b,i,j) - ERI(a,b,j,i)
+ 
+          end do
+        end do
+      end do
+    end do
+
+  end if
+
 end subroutine linear_response_B_pp

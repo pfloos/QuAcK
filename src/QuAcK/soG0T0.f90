@@ -47,31 +47,30 @@ subroutine soG0T0(eta,nBas,nC,nO,nV,nR,ENuc,ERHF,ERI,eHF)
   write(*,*)'************************************************'
   write(*,*)
 
-! Spatial to spin orbitals
+! Define occupied and virtual spaces
 
   nBas2 = 2*nBas
+  nO2   = 2*nO
+  nV2   = 2*nV
+  nC2   = 2*nC 
+  nR2   = 2*nR
+
+! Spatial to spin orbitals
 
   allocate(seHF(nBas2),sERI(nBas2,nBas2,nBas2,nBas2))
 
   call spatial_to_spin_MO_energy(nBas,eHF,nBas2,seHF)
   call spatial_to_spin_ERI(nBas,ERI,nBas2,sERI)
 
-! Define occupied and virtual spaces
-
-  nO2 = 2*nO
-  nV2 = 2*nV
-  nC2 = 2*nC 
-  nR2 = 2*nR
-
 ! Dimensions of the rr-RPA linear reponse matrices
 
-  nOO = nO2*(nO2-1)/2
-  nVV = nV2*(nV2-1)/2
+  nOO = nO2*(nO2 - 1)/2
+  nVV = nV2*(nV2 - 1)/2
 
 ! Memory allocation
 
-  allocate(Omega1(nVV),X1(nVV,nVV),Y1(nOO,nVV), & 
-           Omega2(nOO),X2(nVV,nOO),Y2(nOO,nOO), & 
+  allocate(Omega1(nVV),X1(nVV,nVV),Y1(nOO,nVV),         & 
+           Omega2(nOO),X2(nVV,nOO),Y2(nOO,nOO),         & 
            rho1(nBas2,nBas2,nVV),rho2(nBas2,nBas2,nOO), & 
            eG0T0(nBas2),SigT(nBas2),Z(nBas2))
 
@@ -79,7 +78,7 @@ subroutine soG0T0(eta,nBas,nC,nO,nV,nR,ENuc,ERHF,ERI,eHF)
 ! Spinorbital basis
 !----------------------------------------------
 
- ispin = 2
+ ispin = 3
 
 ! Compute linear response
 
