@@ -89,18 +89,10 @@ subroutine G0W0(COHSEX,SOSEX,BSE,TDA,singlet_manifold,triplet_manifold,eta, &
   call self_energy_correlation_diag(COHSEX,SOSEX,eta,nBas,nC,nO,nV,nR,nS,eHF, & 
                                     Omega(:,ispin),rho(:,:,:,ispin),rhox(:,:,:,ispin),EcGM,SigC)
 
-! COHSEX static approximation
+! Compute renormalization factor
 
-  if(COHSEX) then
-
-    Z(:) = 1d0
-
-  else
-
-    call renormalization_factor(SOSEX,eta,nBas,nC,nO,nV,nR,nS,eHF, & 
-                                Omega(:,ispin),rho(:,:,:,ispin),rhox(:,:,:,ispin),Z(:))
-
-  endif
+  call renormalization_factor(COHSEX,SOSEX,eta,nBas,nC,nO,nV,nR,nS,eHF, & 
+                              Omega(:,ispin),rho(:,:,:,ispin),rhox(:,:,:,ispin),Z(:))
 
 ! Solve the quasi-particle equation
 

@@ -151,13 +151,15 @@ subroutine qsGW(maxSCF,thresh,max_diis,COHSEX,SOSEX,BSE,TDA,G0W,GW0,singlet_mani
 
       call self_energy_correlation(COHSEX,SOSEX,eta,nBas,nC,nO,nV,nR,nS,eHF, & 
                                    Omega(:,ispin),rho(:,:,:,ispin),rhox(:,:,:,ispin),EcGM,SigC)
-      call renormalization_factor(SOSEX,eta,nBas,nC,nO,nV,nR,nS,eHF,Omega(:,ispin),rho(:,:,:,ispin),rhox(:,:,:,ispin),Z)
+      call renormalization_factor(COHSEX,SOSEX,eta,nBas,nC,nO,nV,nR,nS,eHF, & 
+                                  Omega(:,ispin),rho(:,:,:,ispin),rhox(:,:,:,ispin),Z)
 
      else
 
       call self_energy_correlation(COHSEX,SOSEX,eta,nBas,nC,nO,nV,nR,nS,e, & 
                                    Omega(:,ispin),rho(:,:,:,ispin),rhox(:,:,:,ispin),EcGM,SigC)
-      call renormalization_factor(SOSEX,eta,nBas,nC,nO,nV,nR,nS,e,Omega(:,ispin),rho(:,:,:,ispin),rhox(:,:,:,ispin),Z)
+      call renormalization_factor(COHSEX,SOSEX,eta,nBas,nC,nO,nV,nR,nS,e, & 
+                                  Omega(:,ispin),rho(:,:,:,ispin),rhox(:,:,:,ispin),Z)
 
      endif
 

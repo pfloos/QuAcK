@@ -1,4 +1,4 @@
-subroutine renormalization_factor(SOSEX,eta,nBas,nC,nO,nV,nR,nS,e,Omega,rho,rhox,Z)
+subroutine renormalization_factor(COHSEX,SOSEX,eta,nBas,nC,nO,nV,nR,nS,e,Omega,rho,rhox,Z)
 
 ! Compute renormalization factor for GW
 
@@ -7,6 +7,7 @@ subroutine renormalization_factor(SOSEX,eta,nBas,nC,nO,nV,nR,nS,e,Omega,rho,rhox
 
 ! Input variables
 
+  logical,intent(in)            :: COHSEX
   logical,intent(in)            :: SOSEX
   double precision,intent(in)   :: eta
   integer,intent(in)            :: nBas,nC,nO,nV,nR,nS
@@ -28,6 +29,15 @@ subroutine renormalization_factor(SOSEX,eta,nBas,nC,nO,nV,nR,nS,e,Omega,rho,rhox
 
   Z(:)  = 0d0
 
+! static COHSEX approximation
+
+  if(COHSEX) then
+    
+    Z(:) = 1d0
+    return
+  
+  end if
+
 ! Occupied part of the correlation self-energy
 
   do x=nC+1,nBas-nR
@@ -38,10 +48,10 @@ subroutine renormalization_factor(SOSEX,eta,nBas,nC,nO,nV,nR,nS,e,Omega,rho,rhox
           jb = jb + 1
           eps = e(x) - e(i) + Omega(jb) 
           Z(x) = Z(x)  - 2d0*rho(x,i,jb)**2*(eps/(eps**2 + eta**2))**2
-        enddo
-      enddo
-    enddo
-  enddo
+        end do
+      end do
+    end do
+  end do
 
 ! Virtual part of the correlation self-energy
 
@@ -53,10 +63,10 @@ subroutine renormalization_factor(SOSEX,eta,nBas,nC,nO,nV,nR,nS,e,Omega,rho,rhox
           jb = jb + 1
           eps = e(x) - e(a) - Omega(jb) 
           Z(x) = Z(x)  - 2d0*rho(x,a,jb)**2*(eps/(eps**2 + eta**2))**2
-        enddo
-      enddo
-    enddo
-  enddo
+        end do
+      end do
+    end do
+  end do
 
   ! SOSEX correction
 
@@ -72,10 +82,10 @@ subroutine renormalization_factor(SOSEX,eta,nBas,nC,nO,nV,nR,nS,e,Omega,rho,rhox
             jb = jb + 1
             eps = e(x) - e(i) + Omega(jb) 
             Z(x) = Z(x) - (rho(x,i,jb)/eps)*(rhox(x,i,jb)/eps)
-          enddo
-        enddo
-      enddo
-    enddo
+          end do
+        end do
+      end do
+    end do
 
     ! Virtual part of the correlation self-energy
 
@@ -87,10 +97,10 @@ subroutine renormalization_factor(SOSEX,eta,nBas,nC,nO,nV,nR,nS,e,Omega,rho,rhox
             jb = jb + 1
             eps = e(x) - e(a) - Omega(jb) 
             Z(x) = Z(x) - (rho(x,a,jb)/eps)*(rhox(x,a,jb)/eps)
-          enddo
-        enddo
-      enddo
-    enddo
+          end do
+        end do
+      end do
+    end do
 
   endif
 

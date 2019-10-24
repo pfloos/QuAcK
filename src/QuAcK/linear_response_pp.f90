@@ -60,8 +60,8 @@ subroutine linear_response_pp(ispin,BSE,nBas,nC,nO,nV,nR,nOO,nVV,e,ERI,Omega1,X1
 
 ! Off-diagonal blocks
 
-  M(    1:nVV    ,nVV+1:nOO+nVV) = +           B(1:nVV,1:nOO)
-  M(nVV+1:nOO+nVV,    1:nVV)     = - transpose(B(1:nVV,1:nOO))
+  M(    1:nVV    ,nVV+1:nOO+nVV) = -           B(1:nVV,1:nOO)
+  M(nVV+1:nOO+nVV,    1:nVV)     = + transpose(B(1:nVV,1:nOO))
 
 ! print*, 'pp-RPA matrix'
 ! call matout(nOO+nVV,nOO+nVV,M(:,:))
