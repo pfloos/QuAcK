@@ -9,9 +9,12 @@ subroutine print_G0T0(nBas,nO,e,ENuc,ERHF,SigT,Z,eGW,EcRPA)
   double precision,intent(in)        :: ENuc
   double precision,intent(in)        :: ERHF
   double precision,intent(in)        :: EcRPA(nspin)
-  double precision,intent(in)        :: e(nBas),SigT(nBas),Z(nBas),eGW(nBas)
+  double precision,intent(in)        :: e(nBas)
+  double precision,intent(in)        :: SigT(nBas)
+  double precision,intent(in)        :: Z(nBas)
+  double precision,intent(in)        :: eGW(nBas)
 
-  integer                            :: x,HOMO,LUMO
+  integer                            :: p,HOMO,LUMO
   double precision                   :: Gap
 
 ! HOMO and LUMO
@@ -29,9 +32,9 @@ subroutine print_G0T0(nBas,nO,e,ENuc,ERHF,SigT,Z,eGW,EcRPA)
             '|','#','|','e_HF (eV)','|','Sigma_T (eV)','|','Z','|','e_QP (eV)','|'
   write(*,*)'-------------------------------------------------------------------------------'
 
-  do x=1,nBas
+  do p=1,nBas
     write(*,'(1X,A1,1X,I3,1X,A1,1X,F15.6,1X,A1,1X,F15.6,1X,A1,1X,F15.6,1X,A1,1X,F15.6,1X,A1,1X)') &
-    '|',x,'|',e(x)*HaToeV,'|',SigT(x)*HaToeV,'|',Z(x),'|',eGW(x)*HaToeV,'|'
+    '|',p,'|',e(p)*HaToeV,'|',SigT(p)*HaToeV,'|',Z(p),'|',eGW(p)*HaToeV,'|'
   enddo
 
   write(*,*)'-------------------------------------------------------------------------------'

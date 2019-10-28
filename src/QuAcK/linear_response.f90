@@ -78,7 +78,7 @@ subroutine linear_response(ispin,dRPA,TDA,BSE,nBas,nC,nO,nV,nR,nS,e,ERI,rho,EcRP
  
   Omega = sqrt(Omega)
   XpY = matmul(transpose(Z),AmBSq)
-  call DA(nS,1d0/sqrt(Omega),XpY)
+  call DA(nS,1d0/sqrt(abs(Omega)),XpY)
 
 ! print*,'X+Y'
 ! call matout(nS,nS,XpY)

@@ -100,7 +100,7 @@ subroutine G0W0(COHSEX,SOSEX,BSE,TDA,singlet_manifold,triplet_manifold,eta, &
 
 ! Dump results
 
-  call print_excitation('RPA  ',ispin,nS,Omega(:,ispin))
+  call print_excitation('RPA         ',ispin,nS,Omega(:,ispin))
   call print_G0W0(nBas,nO,eHF,ENuc,ERHF,SigC,Z,eG0W0,EcRPA(ispin),EcGM)
 
 ! Plot stuff

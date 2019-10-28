@@ -60,8 +60,8 @@ subroutine MP2F12(nBas,nC,nO,nV,ERI,F12,Yuk,FC,EHF,e,c)
       do a=1,nV
         do b=1,nV
           eps = eO(i) + eO(j) - eV(a) - eV(b)
-          EcMP2a = EcMP2a + ooCoo(i,j,a,b)/eps
-          EcMP2b = EcMP2b + ooCoo(i,j,b,a)/eps
+          EcMP2a = EcMP2a + ooCvv(i,j,a,b)/eps
+          EcMP2b = EcMP2b + ooCvv(i,j,b,a)/eps
         enddo
       enddo
     enddo

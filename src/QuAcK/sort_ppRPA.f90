@@ -28,7 +28,12 @@ subroutine sort_ppRPA(nOO,nVV,Omega,Z,Omega1,X1,Y1,Omega2,X2,Y2)
 ! Initializatiom
 
   Omega1(:) = 0d0
+  X1(:,:)   = 0d0
+  Y1(:,:)   = 0d0
+
   Omega2(:) = 0d0
+  X2(:,:)   = 0d0
+  Y2(:,:)   = 0d0
 
   ab = 0
   ij = 0
@@ -56,12 +61,20 @@ subroutine sort_ppRPA(nOO,nVV,Omega,Z,Omega1,X1,Y1,Omega2,X2,Y2)
   if(minval(Omega1(:)) < 0d0 .or. ab /= nVV) call print_warning('You may have instabilities in pp-RPA!!')
   if(maxval(Omega2(:)) > 0d0 .or. ij /= nOO) call print_warning('You may have instabilities in pp-RPA!!')
 
-! write(*,*) 'pp-RPA positive excitation energies'
-! call matout(nVV,1,Omega1(:))
-! write(*,*)
+  write(*,*) 'pp-RPA positive excitation energies'
+  call matout(nVV,1,Omega1(:))
+  write(*,*)
 
-! write(*,*) 'pp-RPA negative excitation energies'
-! call matout(nOO,1,Omega2(:))
-! write(*,*)
+  write(*,*) 'pp-RPA negative excitation energies'
+  call matout(nOO,1,Omega2(:))
+  write(*,*)
+
+! write(*,*) 'X1.X1 - Y1.Y1'
+! call matout(nVV,nVV,matmul(transpose(X1),X1) - matmul(transpose(Y1),Y1))
+! write(*,*) 'X2.X2 - Y2.Y2'
+! call matout(nOO,nOO,matmul(transpose(X2),X2) - matmul(transpose(Y2),Y2))
+! write(*,*) 'X1.X2 - Y1.Y2'
+! call matout(nVV,nOO,matmul(transpose(X1),X2) - matmul(transpose(Y1),Y2))
+
 
 end subroutine sort_ppRPA

@@ -30,7 +30,7 @@
 !
 !end subroutine diagonalize_matrix_lowest
 
-subroutine diagonalize_general_matrix(N,A,e,X)
+subroutine diagonalize_general_matrix(N,A,WR,VR)
 
 ! Diagonalize a non-symmetric square matrix
 
@@ -38,26 +38,54 @@ subroutine diagonalize_general_matrix(N,A,e,X)
 
 ! Input variables
 
+  integer :: i,j,k
   integer,intent(in)            :: N
   double precision,intent(inout):: A(N,N)
-  double precision,intent(out)  :: X(N,N)
-  double precision,intent(out)  :: e(N)
+  double precision,intent(out)  :: VR(N,N)
+  double precision,intent(out)  :: WR(N)
 
 ! Local variables
 
   integer                       :: lwork,info
-  double precision,allocatable  :: work(:),WI(:),VL(:,:)
+  double precision,allocatable  :: work(:),WI(:),VL(:,:),tmp1(:,:),tmp2(:,:)
 
 ! Memory allocation
 
   lwork = 4*N
-  allocate(WI(N),VL(N,N),work(lwork))
+  allocate(WI(N),VL(N,N),work(lwork),tmp1(N,N),tmp2(N,N))
+  tmp1 = A
+  call dgeev('V','V',N,A,N,WR,WI,VL,N,VR,N,work,lwork,info)
 
-  call dgeev('N','V',N,A,N,e,WI,VL,N,X,N,work,lwork,info)
- 
   if(info /= 0) then 
-    print*,'Problem in diagonalize_matrix (dgeev)!!'
+    print*,'Problem in diagonalize_general_matrix (dgeev)!!'
   endif
+
+  call matout(N,1,WI)
+
+  tmp2 = 0d0
+  do i=1,N
+    do j=1,N
+      do k=1,N
+        tmp2(i,j) = tmp2(i,j) + vl(k,i)*tmp1(k,j)
+      end do
+    end do
+  end do
+
+print*,'tmp2'
+call matout(N,N,tmp2)
+
+  tmp1 = 0d0
+  do i=1,N
+    do j=1,N
+      tmp1(i,j) = wr(i)*vl(i,j)
+    end do
+  end do
+
+print*,'tmp1'
+call matout(N,N,tmp1)
+
+  print*,'coucou'
+  print*,maxval(tmp1-tmp2),minval(tmp1-tmp2)
 
 end subroutine diagonalize_general_matrix
 

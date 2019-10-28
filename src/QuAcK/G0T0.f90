@@ -38,7 +38,7 @@ subroutine G0T0(BSE,singlet_manifold,triplet_manifold,eta,nBas,nC,nO,nV,nR,ENuc,
 
 ! Output variables
 
-  double precision              :: eG0T0(nBas)
+  double precision,intent(out)  :: eG0T0(nBas)
 
 ! Hello world
 
@@ -50,20 +50,20 @@ subroutine G0T0(BSE,singlet_manifold,triplet_manifold,eta,nBas,nC,nO,nV,nR,ENuc,
 
 ! Dimensions of the rr-RPA linear reponse matrices
 
-  nOOs = nO*(nO+1)/2
-  nVVs = nV*(nV+1)/2
+  nOOs = nO*(nO + 1)/2
+  nVVs = nV*(nV + 1)/2
 
-  nOOt = nO*(nO-1)/2
-  nVVt = nV*(nV-1)/2
+  nOOt = nO*(nO - 1)/2
+  nVVt = nV*(nV - 1)/2
 
 ! Memory allocation
 
   allocate(Omega1s(nVVs),X1s(nVVs,nVVs),Y1s(nOOs,nVVs), & 
            Omega2s(nOOs),X2s(nVVs,nOOs),Y2s(nOOs,nOOs), & 
-           rho1s(nBas,nBas,nVVs),rho2s(nBas,nBas,nOOs), & 
+           rho1s(nBas,nO-nC,nVVs),rho2s(nBas,nV-nR,nOOs), & 
            Omega1t(nVVt),X1t(nVVt,nVVt),Y1t(nOOt,nVVt), & 
-           Omega2t(nOOs),X2t(nVVs,nOOs),Y2t(nOOs,nOOs), & 
-           rho1t(nBas,nBas,nVVt),rho2t(nBas,nBas,nOOt), & 
+           Omega2t(nOOt),X2t(nVVt,nOOt),Y2t(nOOt,nOOt), & 
+           rho1t(nBas,nO-nC,nVVt),rho2t(nBas,nV-nR,nOOt), & 
            SigT(nBas),Z(nBas))
 
 !----------------------------------------------
@@ -85,8 +85,8 @@ subroutine G0T0(BSE,singlet_manifold,triplet_manifold,eta,nBas,nC,nO,nV,nR,ENuc,
 
 ! Compute excitation densities for the T-matrix
 
-  call excitation_density_Tmatrix(ispin,nBas,nC,nO,nR,nOOs,nVVs,ERI(:,:,:,:), & 
-                                  X1s(:,:),Y1s(:,:),rho1s(:,:,:),             & 
+  call excitation_density_Tmatrix(ispin,nBas,nC,nO,nV,nR,nOOs,nVVs,ERI(:,:,:,:), & 
+                                  X1s(:,:),Y1s(:,:),rho1s(:,:,:),                & 
                                   X2s(:,:),Y2s(:,:),rho2s(:,:,:))
 
 !----------------------------------------------
@@ -95,7 +95,7 @@ subroutine G0T0(BSE,singlet_manifold,triplet_manifold,eta,nBas,nC,nO,nV,nR,ENuc,
 
  ispin = 2
 
-  ! Compute linear response
+! Compute linear response
 
   call linear_response_pp(ispin,.false.,nBas,nC,nO,nV,nR, & 
                           nOOt,nVVt,eHF(:),ERI(:,:,:,:),  & 
@@ -106,10 +106,10 @@ subroutine G0T0(BSE,singlet_manifold,triplet_manifold,eta,nBas,nC,nO,nV,nR,ENuc,
   call print_excitation('pp-RPA (N+2)',ispin,nVVt,Omega1t(:))
   call print_excitation('pp-RPA (N-2)',ispin,nOOt,Omega2t(:))
 
-  ! Compute excitation densities for the T-matrix
+! Compute excitation densities for the T-matrix
 
-  call excitation_density_Tmatrix(ispin,nBas,nC,nO,nR,nOOt,nVVt,ERI(:,:,:,:), & 
-                                  X1t(:,:),Y1t(:,:),rho1t(:,:,:),             & 
+  call excitation_density_Tmatrix(ispin,nBas,nC,nO,nV,nR,nOOt,nVVt,ERI(:,:,:,:), & 
+                                  X1t(:,:),Y1t(:,:),rho1t(:,:,:),                & 
                                   X2t(:,:),Y2t(:,:),rho2t(:,:,:))
 
 !----------------------------------------------

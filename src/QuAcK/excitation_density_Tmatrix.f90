@@ -1,4 +1,4 @@
-subroutine excitation_density_Tmatrix(ispin,nBas,nC,nO,nR,nOO,nVV,ERI,X1,Y1,rho1,X2,Y2,rho2)
+subroutine excitation_density_Tmatrix(ispin,nBas,nC,nO,nV,nR,nOO,nVV,ERI,X1,Y1,rho1,X2,Y2,rho2)
 
 ! Compute excitation densities for T-matrix self-energy
 
@@ -7,12 +7,12 @@ subroutine excitation_density_Tmatrix(ispin,nBas,nC,nO,nR,nOO,nVV,ERI,X1,Y1,rho1
 ! Input variables
 
   integer,intent(in)            :: ispin
-  integer,intent(in)            :: nBas,nC,nO,nR,nOO,nVV
+  integer,intent(in)            :: nBas,nC,nO,nV,nR,nOO,nVV
   double precision,intent(in)   :: ERI(nBas,nBas,nBas,nBas)
-  double precision,intent(out)  :: X1(nVV,nVV)
-  double precision,intent(out)  :: Y1(nOO,nVV)
-  double precision,intent(out)  :: X2(nVV,nOO)
-  double precision,intent(out)  :: Y2(nOO,nOO)
+  double precision,intent(in)   :: X1(nVV,nVV)
+  double precision,intent(in)   :: Y1(nOO,nVV)
+  double precision,intent(in)   :: X2(nVV,nOO)
+  double precision,intent(in)   :: Y2(nOO,nOO)
 
 ! Local variables
 
@@ -195,7 +195,7 @@ subroutine excitation_density_Tmatrix(ispin,nBas,nC,nO,nR,nOO,nVV,ERI,X1,Y1,rho1
 
           cd = 0
           do c=nO+1,nBas-nR
-           do d=c+1,nBas-nR
+            do d=c+1,nBas-nR
               cd = cd + 1
               rho2(p,a,ij) = rho2(p,a,ij) & 
                            + (ERI(p,a,c,d) - ERI(p,a,d,c))*X2(cd,ij)
@@ -213,6 +213,7 @@ subroutine excitation_density_Tmatrix(ispin,nBas,nC,nO,nR,nOO,nVV,ERI,X1,Y1,rho1
 
         end do
       end do
+
     end do
 
   end if

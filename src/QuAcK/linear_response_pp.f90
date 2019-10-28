@@ -16,6 +16,7 @@ subroutine linear_response_pp(ispin,BSE,nBas,nC,nO,nV,nR,nOO,nVV,e,ERI,Omega1,X1
   
 ! Local variables
 
+  integer                       :: p,q
   double precision              :: trace_matrix
   double precision,allocatable  :: B(:,:)
   double precision,allocatable  :: C(:,:)
@@ -63,13 +64,18 @@ subroutine linear_response_pp(ispin,BSE,nBas,nC,nO,nV,nR,nOO,nVV,e,ERI,Omega1,X1
   M(    1:nVV    ,nVV+1:nOO+nVV) = -           B(1:nVV,1:nOO)
   M(nVV+1:nOO+nVV,    1:nVV)     = + transpose(B(1:nVV,1:nOO))
 
+! do p=1,nOO+nVV
+!   do q=1,nOO+nVV
+!     write(42,*) p,q,M(p,q)
+!   end do
+! end do
+
 ! print*, 'pp-RPA matrix'
 ! call matout(nOO+nVV,nOO+nVV,M(:,:))
 
 ! Diagonalize the p-h matrix
 
-  Z(:,:) = M(:,:)
-  call diagonalize_general_matrix(nOO+nVV,M(:,:),Omega(:),Z(:,:))
+  call diagonalize_general_matrix(nOO+nVV,M,Omega,Z)
 
 ! write(*,*) 'pp-RPA excitation energies'
 ! call matout(nOO+nVV,1,Omega(:))
@@ -95,5 +101,11 @@ subroutine linear_response_pp(ispin,BSE,nBas,nC,nO,nV,nR,nOO,nVV,e,ERI,Omega1,X1
 ! call matout(nOO,nOO,Y2)
 
 ! print*,'Ec(pp-RPA) = ',EcppRPA
+
+! print*,'Eigenvalues'
+! call matout(nOO+nVV,1,Omega)
+
+! print*,'Eigenvectors'
+! call matout(nOO+nVV,nOO+nVV,matmul(transpose(Z),Z))
 
 end subroutine linear_response_pp
