@@ -9,8 +9,8 @@ else
 FFLAGS = -Wall -Wno-unused -Wno-unused-dummy-argument -O3 
 endif
 
-LIBS = ~/Dropbox/quack/lib/*.a
-#LIBS = -lblas -llapack
+LIBS = ../../lib/*.a
+LIBS += -lblas -llapack
 
 SRCF90 = $(wildcard *.f90)
 

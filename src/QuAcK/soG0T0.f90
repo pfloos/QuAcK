@@ -83,39 +83,39 @@ subroutine soG0T0(eta,nBas,nC,nO,nV,nR,ENuc,ERHF,ERI,eHF)
                           seHF,sERI,Omega1,X1,Y1,Omega2,X2,Y2,         & 
                           EcRPA)
 
-! call print_excitation('pp-RPA (N+2)',ispin,nVV,Omega1(:))
-! call print_excitation('pp-RPA (N-2)',ispin,nOO,Omega2(:))
+  call print_excitation('pp-RPA (N+2)',ispin,nVV,Omega1(:))
+  call print_excitation('pp-RPA (N-2)',ispin,nOO,Omega2(:))
 
 ! Compute excitation densities for the T-matrix
 
-! call excitation_density_Tmatrix(ispin,nBas2,nC2,nO2,nV2,nR2,nOO,nVV,sERI(:,:,:,:), & 
-!                                 X1(:,:),Y1(:,:),rho1(:,:,:),             & 
-!                                 X2(:,:),Y2(:,:),rho2(:,:,:))
+  call excitation_density_Tmatrix(ispin,nBas2,nC2,nO2,nV2,nR2,nOO,nVV,sERI(:,:,:,:), & 
+                                  X1(:,:),Y1(:,:),rho1(:,:,:),             & 
+                                  X2(:,:),Y2(:,:),rho2(:,:,:))
 
 !----------------------------------------------
 ! Compute T-matrix version of the self-energy 
 !----------------------------------------------
 
-! call self_energy_Tmatrix_diag_so(eta,nBas2,nC2,nO2,nV2,nR2,nOO,nVV,seHF(:), & 
-!                               Omega1(:),rho1(:,:,:),Omega2(:),rho2(:,:,:), & 
-!                               SigT(:))
+  call self_energy_Tmatrix_diag_so(eta,nBas2,nC2,nO2,nV2,nR2,nOO,nVV,seHF(:), & 
+                                Omega1(:),rho1(:,:,:),Omega2(:),rho2(:,:,:), & 
+                                SigT(:))
 
 ! Compute renormalization factor for T-matrix self-energy
 
-! call renormalization_factor_Tmatrix_so(eta,nBas2,nC2,nO2,nV2,nR2,nOO,nVV,seHF(:), & 
-!                                     Omega1(:),rho1(:,:,:),Omega2(:),rho2(:,:,:), & 
-!                                     Z(:))
+  call renormalization_factor_Tmatrix_so(eta,nBas2,nC2,nO2,nV2,nR2,nOO,nVV,seHF(:), & 
+                                      Omega1(:),rho1(:,:,:),Omega2(:),rho2(:,:,:), & 
+                                      Z(:))
 
 !----------------------------------------------
 ! Solve the quasi-particle equation
 !----------------------------------------------
 
-! eG0T0(:) = seHF(:) + Z(:)*SigT(:)
+  eG0T0(:) = seHF(:) + Z(:)*SigT(:)
 
 !----------------------------------------------
 ! Dump results
 !----------------------------------------------
 
-! call print_G0T0(nBas2,nO2,seHF(:),ENuc,ERHF,SigT(:),Z(:),eG0T0(:),EcRPA)
+  call print_G0T0(nBas2,nO2,seHF(:),ENuc,ERHF,SigT(:),Z(:),eG0T0(:),EcRPA)
 
 end subroutine soG0T0

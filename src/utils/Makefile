@@ -13,7 +13,7 @@ FFLAGS = -Wall -Wno-unused -Wno-unused-dummy-argument -O3
 endif
 
 LIBS = ../../lib/*.a
-#LIBS = -lblas -llapack
+LIBS += -lblas -llapack
 
 SRCF90 = $(wildcard *.f90)
 

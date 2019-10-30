@@ -1,5 +1,5 @@
 subroutine qsGW(maxSCF,thresh,max_diis,COHSEX,SOSEX,BSE,TDA,G0W,GW0,singlet_manifold,triplet_manifold,eta, &
-                nBas,nC,nO,nV,nR,nS,ENuc,ERHF,S,X,T,V,Hc,ERI_AO_basis,PHF,cHF,eHF)
+                nBas,nC,nO,nV,nR,nS,ENuc,ERHF,S,X,T,V,Hc,ERI_AO_basis,ERI_MO_basis,PHF,cHF,eHF)
 
 ! Compute linear response
 
@@ -32,6 +32,7 @@ subroutine qsGW(maxSCF,thresh,max_diis,COHSEX,SOSEX,BSE,TDA,G0W,GW0,singlet_mani
   double precision,intent(in)   :: Hc(nBas,nBas)
   double precision,intent(in)   :: X(nBas,nBas)
   double precision,intent(in)   :: ERI_AO_basis(nBas,nBas,nBas,nBas)
+  double precision,intent(inout):: ERI_MO_basis(nBas,nBas,nBas,nBas)
 
 ! Local variables
 
@@ -65,7 +66,6 @@ subroutine qsGW(maxSCF,thresh,max_diis,COHSEX,SOSEX,BSE,TDA,G0W,GW0,singlet_mani
   double precision,allocatable  :: SigCp(:,:)
   double precision,allocatable  :: SigCm(:,:)
   double precision,allocatable  :: Z(:)
-  double precision,allocatable  :: ERI_MO_basis(:,:,:,:)
   double precision,allocatable  :: error(:,:)
 
 ! Hello world
@@ -74,6 +74,11 @@ subroutine qsGW(maxSCF,thresh,max_diis,COHSEX,SOSEX,BSE,TDA,G0W,GW0,singlet_mani
   write(*,*)'************************************************'
   write(*,*)'|       Self-consistent qsGW calculation       |'
   write(*,*)'************************************************'
+  write(*,*)
+
+! Warning 
+
+  write(*,*) '!! ERIs in MO basis will be overwritten in qsGW !!'
   write(*,*)
 
 ! Stuff 
@@ -90,7 +95,7 @@ subroutine qsGW(maxSCF,thresh,max_diis,COHSEX,SOSEX,BSE,TDA,G0W,GW0,singlet_mani
   if(COHSEX) write(*,*) 'COHSEX approximation activated!'
   write(*,*)
 
-! Switch off exchange for G0W0
+! Switch off exchange for qsGW
 
   dRPA = .true.
 
@@ -98,9 +103,8 @@ subroutine qsGW(maxSCF,thresh,max_diis,COHSEX,SOSEX,BSE,TDA,G0W,GW0,singlet_mani
 
   allocate(e(nBas),c(nBas,nBas),cp(nBas,nBas),P(nBas,nBas),F(nBas,nBas),Fp(nBas,nBas),          &
            J(nBas,nBas),K(nBas,nBas),SigC(nBas,nBas),SigCp(nBas,nBas),SigCm(nBas,nBas),Z(nBas), & 
-           ERI_MO_basis(nBas,nBas,nBas,nBas),error(nBas,nBas),                                  &
            Omega(nS,nspin),XpY(nS,nS,nspin),rho(nBas,nBas,nS,nspin),rhox(nBas,nBas,nS,nspin),   &
-           error_diis(nBasSq,max_diis),F_diis(nBasSq,max_diis))
+           error(nBas,nBas),error_diis(nBasSq,max_diis),F_diis(nBasSq,max_diis))
 
 ! Initialization
   

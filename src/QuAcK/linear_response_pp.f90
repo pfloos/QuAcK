@@ -16,7 +16,7 @@ subroutine linear_response_pp(ispin,BSE,nBas,nC,nO,nV,nR,nOO,nVV,e,ERI,Omega1,X1
   
 ! Local variables
 
-  integer                       :: p,q
+  integer                       :: ab,cd,ij,kl
   double precision              :: trace_matrix
   double precision,allocatable  :: B(:,:)
   double precision,allocatable  :: C(:,:)
@@ -64,11 +64,32 @@ subroutine linear_response_pp(ispin,BSE,nBas,nC,nO,nV,nR,nOO,nVV,e,ERI,Omega1,X1
   M(    1:nVV    ,nVV+1:nOO+nVV) = -           B(1:nVV,1:nOO)
   M(nVV+1:nOO+nVV,    1:nVV)     = + transpose(B(1:nVV,1:nOO))
 
-! do p=1,nOO+nVV
-!   do q=1,nOO+nVV
-!     write(42,*) p,q,M(p,q)
-!   end do
-! end do
+ open(unit=42,file='B.dat')
+ open(unit=43,file='C.dat')
+ open(unit=44,file='D.dat')
+
+ do ab=1,nVV
+   do ij=1,nOO
+     write(42,*) ab,ij,B(ab,ij)
+   end do
+ end do
+
+ do ab=1,nVV
+   do cd=1,nVV
+     write(43,*) ab,cd,C(ab,cd)
+   end do
+ end do
+
+ do ij=1,nOO
+   do kl=1,nOO
+     write(44,*) ij,kl,D(ij,kl)
+   end do
+ end do
+
+ close(42)
+ close(43)
+ close(44)
+
 
 ! print*, 'pp-RPA matrix'
 ! call matout(nOO+nVV,nOO+nVV,M(:,:))

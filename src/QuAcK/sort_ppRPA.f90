@@ -69,12 +69,12 @@ subroutine sort_ppRPA(nOO,nVV,Omega,Z,Omega1,X1,Y1,Omega2,X2,Y2)
   call matout(nOO,1,Omega2(:))
   write(*,*)
 
-! write(*,*) 'X1.X1 - Y1.Y1'
-! call matout(nVV,nVV,matmul(transpose(X1),X1) - matmul(transpose(Y1),Y1))
-! write(*,*) 'X2.X2 - Y2.Y2'
-! call matout(nOO,nOO,matmul(transpose(X2),X2) - matmul(transpose(Y2),Y2))
-! write(*,*) 'X1.X2 - Y1.Y2'
-! call matout(nVV,nOO,matmul(transpose(X1),X2) - matmul(transpose(Y1),Y2))
+ write(*,*) 'X1t.X1 - Y1t.Y1'
+ call matout(nVV,nVV,matmul(transpose(X1),X1) - matmul(transpose(Y1),Y1))
+ write(*,*) 'X2t.X2 - Y2t.Y2'
+ call matout(nOO,nOO,matmul(transpose(X2),X2) - matmul(transpose(Y2),Y2))
+ write(*,*) 'X1t.X2 - Y1t.Y2'
+ call matout(nVV,nOO,matmul(transpose(X1),X2) - matmul(transpose(Y1),Y2))
 
 
 end subroutine sort_ppRPA

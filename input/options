@@ -1,5 +1,5 @@
 # RHF: maxSCF thresh   DIIS n_diis guess_type ortho_type
-       64    0.0000001  T     5      2          1
+       64    0.000000001  T     5      1          1
 # MP: 
       
 # CC: maxSCF thresh   DIIS n_diis
