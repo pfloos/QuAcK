@@ -26,6 +26,7 @@ subroutine TDHF(singlet_manifold,triplet_manifold,nBas,nC,nO,nV,nR,nS,ENuc,ERHF,
   logical                       :: TDA
   logical                       :: BSE
   integer                       :: ispin
+  double precision              :: lambda
   double precision,allocatable  :: Omega(:,:)
   double precision,allocatable  :: XpY(:,:,:)
 
@@ -43,6 +44,10 @@ subroutine TDHF(singlet_manifold,triplet_manifold,nBas,nC,nO,nV,nR,nS,ENuc,ERHF,
 ! Initialization
 
   EcRPA(:) = 0d0
+
+! Adiabatic connection scaling
+
+  lambda = 1d0
 
 ! Switch on exchange for TDHF
 
@@ -66,7 +71,7 @@ subroutine TDHF(singlet_manifold,triplet_manifold,nBas,nC,nO,nV,nR,nS,ENuc,ERHF,
 
     ispin = 1
 
-    call linear_response(ispin,dRPA,TDA,BSE,nBas,nC,nO,nV,nR,nS,e,ERI,rho, &
+    call linear_response(ispin,dRPA,TDA,BSE,nBas,nC,nO,nV,nR,nS,lambda,e,ERI,rho, &
                          EcRPA(ispin),Omega(:,ispin),XpY(:,:,ispin))
     call print_excitation('TDHF ',ispin,nS,Omega(:,ispin))
 
@@ -78,7 +83,7 @@ subroutine TDHF(singlet_manifold,triplet_manifold,nBas,nC,nO,nV,nR,nS,ENuc,ERHF,
 
     ispin = 2
 
-    call linear_response(ispin,dRPA,TDA,BSE,nBas,nC,nO,nV,nR,nS,e,ERI,rho, &
+    call linear_response(ispin,dRPA,TDA,BSE,nBas,nC,nO,nV,nR,nS,lambda,e,ERI,rho, &
                          EcRPA(ispin),Omega(:,ispin),XpY(:,:,ispin))
     call print_excitation('TDHF ',ispin,nS,Omega(:,ispin))
 

@@ -1,7 +1,7 @@
 #! /bin/bash
 
 MOL="H2"
-BASIS="AVTZ"
+BASIS="VDZ"
 R_START=0.5
 R_END=3.0
 DR=0.01

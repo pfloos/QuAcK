@@ -18,6 +18,7 @@ subroutine CIS(singlet_manifold,triplet_manifold, &
   logical                       :: dump_matrix = .false.
   logical                       :: dump_trans = .false.
   integer                       :: ispin
+  double precision              :: lambda
   double precision,allocatable  :: A(:,:),Omega(:)
 
 ! Hello world
@@ -27,6 +28,10 @@ subroutine CIS(singlet_manifold,triplet_manifold, &
   write(*,*)'|      Configuration Interaction Singles       |'
   write(*,*)'************************************************'
   write(*,*)
+
+! Adiabatic connection scaling
+
+  lambda = 1d0
 
 ! Switch on exchange for CIS
 
@@ -41,7 +46,7 @@ subroutine CIS(singlet_manifold,triplet_manifold, &
   if(singlet_manifold) then
 
     ispin = 1
-    call linear_response_A_matrix(ispin,dRPA,nBas,nC,nO,nV,nR,nS,eHF,ERI,A)
+    call linear_response_A_matrix(ispin,dRPA,nBas,nC,nO,nV,nR,nS,lambda,eHF,ERI,A)
  
     if(dump_matrix) then
       print*,'CIS matrix (singlet state)'
@@ -63,7 +68,7 @@ subroutine CIS(singlet_manifold,triplet_manifold, &
   if(triplet_manifold) then
 
     ispin = 2
-    call linear_response_A_matrix(ispin,dRPA,nBas,nC,nO,nV,nR,nS,eHF,ERI,A)
+    call linear_response_A_matrix(ispin,dRPA,nBas,nC,nO,nV,nR,nS,lambda,eHF,ERI,A)
  
     if(dump_matrix) then
       print*,'CIS matrix (triplet state)'

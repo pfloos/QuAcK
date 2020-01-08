@@ -1,4 +1,4 @@
-subroutine Bethe_Salpeter_A_matrix(nBas,nC,nO,nV,nR,nS,ERI,Omega,rho,A_lr)
+subroutine Bethe_Salpeter_A_matrix(nBas,nC,nO,nV,nR,nS,lambda,ERI,Omega,rho,A_lr)
 
 ! Compute the extra term for Bethe-Salpeter equation for linear response 
 
@@ -8,8 +8,10 @@ subroutine Bethe_Salpeter_A_matrix(nBas,nC,nO,nV,nR,nS,ERI,Omega,rho,A_lr)
 ! Input variables
 
   integer,intent(in)            :: nBas,nC,nO,nV,nR,nS
+  double precision,intent(in)   :: lambda
   double precision,intent(in)   :: ERI(nBas,nBas,nBas,nBas) 
-  double precision,intent(in)   :: Omega(nS),rho(nBas,nBas,nS)
+  double precision,intent(in)   :: Omega(nS)
+  double precision,intent(in)   :: rho(nBas,nBas,nS)
   
 ! Local variables
 
@@ -34,8 +36,8 @@ subroutine Bethe_Salpeter_A_matrix(nBas,nC,nO,nV,nR,nS,ERI,Omega,rho,A_lr)
             chi = chi + rho(i,j,kc)*rho(a,b,kc)/Omega(kc)
           enddo
 
-          A_lr(ia,jb) = A_lr(ia,jb) - ERI(i,a,j,b) + 4d0*chi
- 
+          A_lr(ia,jb) = A_lr(ia,jb) - lambda*ERI(i,a,j,b) + 4d0*lambda*chi
+
         enddo
       enddo
     enddo

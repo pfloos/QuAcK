@@ -1,4 +1,4 @@
-subroutine linear_response_A_matrix(ispin,dRPA,nBas,nC,nO,nV,nR,nS,e,ERI,A_lr)
+subroutine linear_response_A_matrix(ispin,dRPA,nBas,nC,nO,nV,nR,nS,lambda,e,ERI,A_lr)
 
 ! Compute linear response
 
@@ -9,7 +9,9 @@ subroutine linear_response_A_matrix(ispin,dRPA,nBas,nC,nO,nV,nR,nS,e,ERI,A_lr)
 
   logical,intent(in)            :: dRPA
   integer,intent(in)            :: ispin,nBas,nC,nO,nV,nR,nS
-  double precision,intent(in)   :: e(nBas),ERI(nBas,nBas,nBas,nBas) 
+  double precision,intent(in)   :: lambda
+  double precision,intent(in)   :: e(nBas)
+  double precision,intent(in)   :: ERI(nBas,nBas,nBas,nBas) 
   
 ! Local variables
 
@@ -45,8 +47,8 @@ subroutine linear_response_A_matrix(ispin,dRPA,nBas,nC,nO,nV,nR,nS,e,ERI,A_lr)
           jb = jb + 1
 
           A_lr(ia,jb) = (e(a) - e(i))*Kronecker_delta(i,j)*Kronecker_delta(a,b) &
-                      + (1d0 + delta_spin)*ERI(i,b,a,j) &
-                      - (1d0 - delta_dRPA)*ERI(i,b,j,a)
+                      + (1d0 + delta_spin)*lambda*ERI(i,b,a,j) &
+                      - (1d0 - delta_dRPA)*lambda*ERI(i,b,j,a)
 
         enddo
       enddo

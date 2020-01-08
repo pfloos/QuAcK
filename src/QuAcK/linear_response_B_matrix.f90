@@ -1,4 +1,4 @@
-subroutine linear_response_B_matrix(ispin,dRPA,nBas,nC,nO,nV,nR,nS,ERI,B_lr)
+subroutine linear_response_B_matrix(ispin,dRPA,nBas,nC,nO,nV,nR,nS,lambda,ERI,B_lr)
 
 ! Compute linear response
 
@@ -9,6 +9,7 @@ subroutine linear_response_B_matrix(ispin,dRPA,nBas,nC,nO,nV,nR,nS,ERI,B_lr)
 
   logical,intent(in)            :: dRPA
   integer,intent(in)            :: ispin,nBas,nC,nO,nV,nR,nS
+  double precision,intent(in)   :: lambda
   double precision,intent(in)   :: ERI(nBas,nBas,nBas,nBas)
   
 ! Local variables
@@ -43,8 +44,8 @@ subroutine linear_response_B_matrix(ispin,dRPA,nBas,nC,nO,nV,nR,nS,ERI,B_lr)
         do b=nO+1,nBas-nR
           jb = jb + 1
 
-          B_lr(ia,jb) = (1d0 + delta_spin)*ERI(i,j,a,b) &
-                      - (1d0 - delta_dRPA)*ERI(i,j,b,a)
+          B_lr(ia,jb) = (1d0 + delta_spin)*lambda*ERI(i,j,a,b) &
+                      - (1d0 - delta_dRPA)*lambda*ERI(i,j,b,a)
 
         enddo
       enddo

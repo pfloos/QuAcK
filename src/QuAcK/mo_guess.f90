@@ -43,6 +43,11 @@ subroutine mo_guess(nBas,nO,guess_type,S,Hc,ERI,J,K,X,cp,Fp,e,c,P)
 
     call random_number(c)
 
+  else
+
+    print*,'Wrong guess option'
+    stop
+
   endif
 
   P(:,:) = 2d0*matmul(c(:,1:nO),transpose(c(:,1:nO)))
