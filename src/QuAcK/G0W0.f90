@@ -191,10 +191,14 @@ subroutine G0W0(COHSEX,SOSEX,BSE,TDA,singlet_manifold,triplet_manifold,eta, &
  
           lambda = rAC(iAC)
 
+          call linear_response(ispin,dRPA,TDA,.false.,nBas,nC,nO,nV,nR,nS,lambda,eHF,ERI, &
+                               rho(:,:,:,ispin),EcRPA(ispin),Omega(:,ispin),XpY(:,:,ispin))
+          call excitation_density(nBas,nC,nO,nR,nS,ERI,XpY(:,:,ispin),rho(:,:,:,ispin))
+  
           call linear_response(ispin,dRPA,TDA,BSE,nBas,nC,nO,nV,nR,nS,lambda,eG0W0,ERI, &
-            rho(:,:,:,ispin),EcACBSE(iAC,ispin),Omega(:,ispin),XpY(:,:,ispin))
+                           rho(:,:,:,ispin),EcACBSE(iAC,ispin),Omega(:,ispin),XpY(:,:,ispin))
 
-          call Ec_AC(ispin,nBas,nC,nO,nV,nR,nS,ERI,XpY(:,:,ispin),EcAC(iAC,ispin))
+          call Ec_AC(ispin,dRPA,nBas,nC,nO,nV,nR,nS,ERI,XpY(:,:,ispin),EcAC(iAC,ispin))
 
           write(*,'(2X,F15.6,1X,F30.15,1X,F30.15)') lambda,EcACBSE(iAC,ispin),EcAC(iAC,ispin)
 
@@ -225,10 +229,14 @@ subroutine G0W0(COHSEX,SOSEX,BSE,TDA,singlet_manifold,triplet_manifold,eta, &
  
           lambda = rAC(iAC)
 
+          call linear_response(ispin,dRPA,TDA,.false.,nBas,nC,nO,nV,nR,nS,lambda,eHF,ERI, &
+                               rho(:,:,:,ispin),EcRPA(ispin),Omega(:,ispin),XpY(:,:,ispin))
+          call excitation_density(nBas,nC,nO,nR,nS,ERI,XpY(:,:,ispin),rho(:,:,:,ispin))
+         
           call linear_response(ispin,dRPA,TDA,BSE,nBas,nC,nO,nV,nR,nS,lambda,eG0W0,ERI, &
-            rho(:,:,:,ispin),EcACBSE(iAC,ispin),Omega(:,ispin),XpY(:,:,ispin))
+                               rho(:,:,:,ispin),EcACBSE(iAC,ispin),Omega(:,ispin),XpY(:,:,ispin))
 
-          call Ec_AC(ispin,nBas,nC,nO,nV,nR,nS,ERI,XpY(:,:,ispin),EcAC(iAC,ispin))
+          call Ec_AC(ispin,dRPA,nBas,nC,nO,nV,nR,nS,ERI,XpY(:,:,ispin),EcAC(iAC,ispin))
 
           write(*,'(2X,F15.6,1X,F30.15,1X,F30.15)') lambda,EcACBSE(iAC,ispin),EcAC(iAC,ispin)
 

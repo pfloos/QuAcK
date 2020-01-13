@@ -7,7 +7,8 @@ program QuAcK
   logical                       :: doRHF,doUHF,doMOM 
   logical                       :: doMP2,doMP3,doMP2F12
   logical                       :: doCCD,doCCSD,doCCSDT
-  logical                       :: doCIS,doTDHF,doppRPA,doADC
+  logical                       :: doCIS,doRPA,doTDHF
+  logical                       :: doppRPA,doADC
   logical                       :: doGF2,doGF3
   logical                       :: doG0W0,doevGW,doqsGW
   logical                       :: doG0T0,doevGT,doqsGT
@@ -44,6 +45,7 @@ program QuAcK
   double precision              :: start_CCD    ,end_CCD      ,t_CCD
   double precision              :: start_CCSD   ,end_CCSD     ,t_CCSD
   double precision              :: start_CIS    ,end_CIS      ,t_CIS
+  double precision              :: start_RPA    ,end_RPA      ,t_RPA 
   double precision              :: start_TDHF   ,end_TDHF     ,t_TDHF
   double precision              :: start_ppRPA  ,end_ppRPA    ,t_ppRPA
   double precision              :: start_ADC    ,end_ADC      ,t_ADC
@@ -106,13 +108,14 @@ program QuAcK
 
 ! Which calculations do you want to do?
 
-  call read_methods(doRHF,doUHF,doMOM,          &
-                    doMP2,doMP3,doMP2F12,       &
-                    doCCD,doCCSD,doCCSDT,       &
-                    doCIS,doTDHF,doppRPA,doADC, &
-                    doGF2,doGF3,                &
-                    doG0W0,doevGW,doqsGW,       &
-                    doG0T0,doevGT,doqsGT,       &
+  call read_methods(doRHF,doUHF,doMOM,    &
+                    doMP2,doMP3,doMP2F12, &
+                    doCCD,doCCSD,doCCSDT, &
+                    doCIS,doRPA,doTDHF,   & 
+                    doppRPA,doADC,        &
+                    doGF2,doGF3,          &
+                    doG0W0,doevGW,doqsGW, &
+                    doG0T0,doevGT,doqsGT, &
                     doMCMP2)
 
 ! Read options for methods
@@ -363,6 +366,8 @@ program QuAcK
 ! Perform CCSD or CCSD(T) calculation
 !------------------------------------------------------------------------
 
+  if(doCCSDT) doCCSD = .true.
+
   if(doCCSD) then
 
     call cpu_time(start_CCSD)
@@ -387,6 +392,22 @@ program QuAcK
 
     t_CIS = end_CIS - start_CIS
     write(*,'(A65,1X,F9.3,A8)') 'Total CPU time for CIS = ',t_CIS,' seconds'
+    write(*,*)
+
+  end if
+
+!------------------------------------------------------------------------
+! Compute (direct) RPA excitations
+!------------------------------------------------------------------------
+
+  if(doRPA) then
+
+    call cpu_time(start_RPA)
+    call RPA(singlet_manifold,triplet_manifold,nBas,nC,nO,nV,nR,nS,ENuc,ERHF,ERI_MO_basis,eHF)
+    call cpu_time(end_RPA)
+
+    t_RPA = end_RPA - start_RPA
+    write(*,'(A65,1X,F9.3,A8)') 'Total CPU time for RPA = ',t_RPA,' seconds'
     write(*,*)
 
   end if

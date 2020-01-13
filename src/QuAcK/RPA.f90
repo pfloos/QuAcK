@@ -1,6 +1,6 @@
-subroutine TDHF(singlet_manifold,triplet_manifold,nBas,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,e)
+subroutine RPA(singlet_manifold,triplet_manifold,nBas,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,e)
 
-! Perform random phase approximation calculation
+! Perform a direct random phase approximation calculation
 
   implicit none
   include 'parameters.h'
@@ -42,24 +42,24 @@ subroutine TDHF(singlet_manifold,triplet_manifold,nBas,nC,nO,nV,nR,nS,ENuc,ERHF,
 ! Hello world
 
   write(*,*)
-  write(*,*)'************************************************'
-  write(*,*)'|  Time-dependent Hartree-Fock calculation     |'
-  write(*,*)'************************************************'
+  write(*,*)'***********************************************'
+  write(*,*)'|  random-phase approximation calculation     |'
+  write(*,*)'***********************************************'
   write(*,*)
 
 ! Initialization
 
   EcRPA(:) = 0d0
 
-! Switch on exchange for TDHF
+! Switch off exchange for RPA
 
-  dRPA = .false.
+  dRPA = .true.
  
-! Switch off Tamm-Dancoff approximation for TDHF
+! Switch off Tamm-Dancoff approximation for RPA
 
   TDA = .false.
  
-! Switch off Bethe-Salpeter equation for TDHF
+! Switch off Bethe-Salpeter equation for RPA
 
   BSE = .false. 
 
@@ -78,7 +78,7 @@ subroutine TDHF(singlet_manifold,triplet_manifold,nBas,nC,nO,nV,nR,nS,ENuc,ERHF,
 
     call linear_response(ispin,dRPA,TDA,BSE,nBas,nC,nO,nV,nR,nS,1d0,e,ERI,rho, &
                          EcRPA(ispin),Omega(:,ispin),XpY(:,:,ispin))
-    call print_excitation('TDHF ',ispin,nS,Omega(:,ispin))
+    call print_excitation('RPA  ',ispin,nS,Omega(:,ispin))
 
   endif
 
@@ -90,16 +90,16 @@ subroutine TDHF(singlet_manifold,triplet_manifold,nBas,nC,nO,nV,nR,nS,ENuc,ERHF,
 
     call linear_response(ispin,dRPA,TDA,BSE,nBas,nC,nO,nV,nR,nS,1d0,e,ERI,rho, &
                          EcRPA(ispin),Omega(:,ispin),XpY(:,:,ispin))
-    call print_excitation('TDHF ',ispin,nS,Omega(:,ispin))
+    call print_excitation('RPA  ',ispin,nS,Omega(:,ispin))
 
   endif
 
   write(*,*)
   write(*,*)'-------------------------------------------------------------------------------'
-  write(*,'(2X,A40,F15.6)') 'RPA@TDHF correlation energy (singlet) =',EcRPA(1)
-  write(*,'(2X,A40,F15.6)') 'RPA@TDHF correlation energy (triplet) =',EcRPA(2)
-  write(*,'(2X,A40,F15.6)') 'RPA@TDHF correlation energy           =',EcRPA(1) + EcRPA(2)
-  write(*,'(2X,A40,F15.6)') 'RPA@TDHF total energy                 =',ENuc + ERHF + EcRPA(1) + EcRPA(2)
+  write(*,'(2X,A40,F15.6)') 'RPA@RPA  correlation energy (singlet) =',EcRPA(1)
+  write(*,'(2X,A40,F15.6)') 'RPA@RPA  correlation energy (triplet) =',EcRPA(2)
+  write(*,'(2X,A40,F15.6)') 'RPA@RPA  correlation energy           =',EcRPA(1) + EcRPA(2)
+  write(*,'(2X,A40,F15.6)') 'RPA@RPA  total energy                 =',ENuc + ERHF + EcRPA(1) + EcRPA(2)
   write(*,*)'-------------------------------------------------------------------------------'
   write(*,*)
 
@@ -130,12 +130,8 @@ subroutine TDHF(singlet_manifold,triplet_manifold,nBas,nC,nO,nV,nR,nS,ENuc,ERHF,
  
           lambda = rAC(iAC)
 
-!         call linear_response(ispin,dRPA,TDA,.false.,nBas,nC,nO,nV,nR,nS,lambda,eHF,ERI, &
-!                              rho(:,:,:,ispin),EcRPA(ispin),Omega(:,ispin),XpY(:,:,ispin))
-!         call excitation_density(nBas,nC,nO,nR,nS,ERI,XpY(:,:,ispin),rho(:,:,:,ispin))
-  
-          call linear_response(ispin,dRPA,TDA,BSE,nBas,nC,nO,nV,nR,nS,lambda,e,ERI, &
-                           rho,EcACRPA(iAC,ispin),Omega(:,ispin),XpY(:,:,ispin))
+          call linear_response(ispin,dRPA,TDA,BSE,nBas,nC,nO,nV,nR,nS,lambda,e,ERI,rho, &
+                               EcACRPA(iAC,ispin),Omega(:,ispin),XpY(:,:,ispin))
 
           call Ec_AC(ispin,dRPA,nBas,nC,nO,nV,nR,nS,ERI,XpY(:,:,ispin),EcAC(iAC,ispin))
 
@@ -168,12 +164,8 @@ subroutine TDHF(singlet_manifold,triplet_manifold,nBas,nC,nO,nV,nR,nS,ENuc,ERHF,
  
           lambda = rAC(iAC)
 
-!         call linear_response(ispin,dRPA,TDA,.false.,nBas,nC,nO,nV,nR,nS,lambda,eHF,ERI, &
-!                              rho(:,:,:,ispin),EcRPA(ispin),Omega(:,ispin),XpY(:,:,ispin))
-!         call excitation_density(nBas,nC,nO,nR,nS,ERI,XpY(:,:,ispin),rho(:,:,:,ispin))
-         
-          call linear_response(ispin,dRPA,TDA,BSE,nBas,nC,nO,nV,nR,nS,lambda,e,ERI, &
-                               rho,EcACRPA(iAC,ispin),Omega(:,ispin),XpY(:,:,ispin))
+          call linear_response(ispin,dRPA,TDA,BSE,nBas,nC,nO,nV,nR,nS,lambda,e,ERI,rho, &
+                               EcACRPA(iAC,ispin),Omega(:,ispin),XpY(:,:,ispin))
 
           call Ec_AC(ispin,dRPA,nBas,nC,nO,nV,nR,nS,ERI,XpY(:,:,ispin),EcAC(iAC,ispin))
 
@@ -190,4 +182,4 @@ subroutine TDHF(singlet_manifold,triplet_manifold,nBas,nC,nO,nV,nR,nS,ENuc,ERHF,
  
     end if
 
-end subroutine TDHF
+end subroutine RPA

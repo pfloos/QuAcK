@@ -1,10 +1,11 @@
-subroutine read_methods(doRHF,doUHF,doMOM,          & 
-                        doMP2,doMP3,doMP2F12,       & 
-                        doCCD,doCCSD,doCCSDT,       & 
-                        doCIS,doTDHF,doppRPA,doADC, & 
-                        doGF2,doGF3,                & 
-                        doG0W0,doevGW,doqsGW,       & 
-                        doG0T0,doevGT,doqsGT,       & 
+subroutine read_methods(doRHF,doUHF,doMOM,    & 
+                        doMP2,doMP3,doMP2F12, & 
+                        doCCD,doCCSD,doCCSDT, & 
+                        doCIS,doRPA,doTDHF,   & 
+                        doppRPA,doADC,        & 
+                        doGF2,doGF3,          & 
+                        doG0W0,doevGW,doqsGW, & 
+                        doG0T0,doevGT,doqsGT, & 
                         doMCMP2)
 
 ! Read desired methods 
@@ -16,7 +17,7 @@ subroutine read_methods(doRHF,doUHF,doMOM,          &
   logical,intent(out)           :: doRHF,doUHF,doMOM
   logical,intent(out)           :: doMP2,doMP3,doMP2F12
   logical,intent(out)           :: doCCD,doCCSD,doCCSDT
-  logical,intent(out)           :: doCIS,doTDHF,doppRPA,doADC
+  logical,intent(out)           :: doCIS,doRPA,doTDHF,doppRPA,doADC
   logical,intent(out)           :: doGF2,doGF3  
   logical,intent(out)           :: doG0W0,doevGW,doqsGW
   logical,intent(out)           :: doG0T0,doevGT,doqsGT
@@ -24,7 +25,7 @@ subroutine read_methods(doRHF,doUHF,doMOM,          &
 
 ! Local variables
 
-  character(len=1)              :: answer1,answer2,answer3,answer4
+  character(len=1)              :: answer1,answer2,answer3,answer4,answer5
 
 ! Open file with method specification
 
@@ -45,6 +46,7 @@ subroutine read_methods(doRHF,doUHF,doMOM,          &
   doCCSDT = .false.
 
   doCIS   = .false.
+  doRPA   = .false.
   doTDHF  = .false.
   doppRPA = .false.
   doADC   = .false.
@@ -89,11 +91,12 @@ subroutine read_methods(doRHF,doUHF,doMOM,          &
 ! Read excited state methods
 
   read(1,*) 
-  read(1,*) answer1,answer2,answer3,answer4
+  read(1,*) answer1,answer2,answer3,answer4,answer5
   if(answer1 == 'T') doCIS   = .true.
-  if(answer2 == 'T') doTDHF  = .true.
-  if(answer3 == 'T') doppRPA = .true.
-  if(answer4 == 'T') doADC   = .true.
+  if(answer2 == 'T') doRPA   = .true.
+  if(answer3 == 'T') doTDHF  = .true.
+  if(answer4 == 'T') doppRPA = .true.
+  if(answer5 == 'T') doADC   = .true.
 
 ! Read Green function methods
 
