@@ -45,6 +45,7 @@ subroutine evGW(maxSCF,thresh,max_diis,doACFDT,doXBS,COHSEX,SOSEX,BSE,TDA,G0W,GW
   double precision              :: Conv
   double precision              :: EcRPA(nspin)
   double precision              :: EcBSE(nspin)
+  double precision              :: EcAC(nspin)
   double precision              :: EcGM
   double precision              :: alpha
   double precision,allocatable  :: error_diis(:,:)
@@ -220,6 +221,15 @@ subroutine evGW(maxSCF,thresh,max_diis,doACFDT,doXBS,COHSEX,SOSEX,BSE,TDA,G0W,GW
 
     write(*,*)
     write(*,*)'-------------------------------------------------------------------------------'
+    write(*,'(2X,A40,F15.6)') 'Tr@RPA@evGW correlation energy (singlet) =',EcRPA(1)
+    write(*,'(2X,A40,F15.6)') 'Tr@RPA@evGW correlation energy (triplet) =',EcRPA(2)
+    write(*,'(2X,A40,F15.6)') 'Tr@RPA@evGW correlation energy           =',EcRPA(1) + EcRPA(2)
+    write(*,'(2X,A40,F15.6)') 'Tr@RPA@evGW total energy                 =',ENuc + ERHF + EcRPA(1) + EcRPA(2)
+    write(*,*)'-------------------------------------------------------------------------------'
+    write(*,*)
+
+    write(*,*)
+    write(*,*)'-------------------------------------------------------------------------------'
     write(*,'(2X,A40,F15.6)') 'Tr@BSE@evGW correlation energy (singlet) =',EcBSE(1)
     write(*,'(2X,A40,F15.6)') 'Tr@BSE@evGW correlation energy (triplet) =',EcBSE(2)
     write(*,'(2X,A40,F15.6)') 'Tr@BSE@evGW correlation energy           =',EcBSE(1) + EcBSE(2)
@@ -244,7 +254,16 @@ subroutine evGW(maxSCF,thresh,max_diis,doACFDT,doXBS,COHSEX,SOSEX,BSE,TDA,G0W,GW
       end if
 
       call ACFDT(doXBS,.true.,TDA,BSE,singlet_manifold,triplet_manifold, &
-                 nBas,nC,nO,nV,nR,nS,ERI,eGW,Omega,XpY,XmY,rho)
+                 nBas,nC,nO,nV,nR,nS,ERI,eGW,Omega,XpY,XmY,rho,EcAC)
+
+      write(*,*)
+      write(*,*)'-------------------------------------------------------------------------------'
+      write(*,'(2X,A40,F15.6)') 'AC@BSE@evGW correlation energy (singlet) =',EcAC(1)
+      write(*,'(2X,A40,F15.6)') 'AC@BSE@evGW correlation energy (triplet) =',EcAC(2)
+      write(*,'(2X,A40,F15.6)') 'AC@BSE@evGW correlation energy           =',EcAC(1) + EcAC(2)
+      write(*,'(2X,A40,F15.6)') 'AC@BSE@evGW total energy                 =',ENuc + ERHF + EcAC(1) + EcAC(2)
+      write(*,*)'-------------------------------------------------------------------------------'
+      write(*,*)
 
     end if
 

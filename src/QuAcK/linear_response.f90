@@ -51,19 +51,7 @@ subroutine linear_response(ispin,dRPA,TDA,BSE,nBas,nC,nO,nV,nR,nS,lambda,e,ERI,r
   ApB = A + B
   AmB = A - B
 
-! print*,'A'
-! call matout(nS,nS,A)
-
-! print*,'B'
-! call matout(nS,nS,B)
-
-! print*,'A+B'
-! call matout(nS,nS,ApB)
-
-! print*,'A-B'
-! call matout(nS,nS,AmB)
-
-! Diagonalize TD-HF matrix
+! Diagonalize linear response matrix
 
   call diagonalize_matrix(nS,AmB,Omega)
 
@@ -71,10 +59,8 @@ subroutine linear_response(ispin,dRPA,TDA,BSE,nBas,nC,nO,nV,nR,nS,lambda,e,ERI,r
     call print_warning('You may have instabilities in linear response!!')
 
   call ADAt(nS,AmB,sqrt(Omega),AmBSq)
-  Z = matmul(AmBSq,matmul(ApB,AmBSq))
 
-! print*,'Z'
-! call matout(nS,nS,Z)
+  Z = matmul(AmBSq,matmul(ApB,AmBSq))
 
   call diagonalize_matrix(nS,Z,Omega)
 
@@ -85,14 +71,9 @@ subroutine linear_response(ispin,dRPA,TDA,BSE,nBas,nC,nO,nV,nR,nS,lambda,e,ERI,r
   XpY = matmul(transpose(Z),AmBSq)
   call DA(nS,1d0/sqrt(abs(Omega)),XpY)
 
+  call ADAt(nS,AmB,1d0/sqrt(Omega),AmBSq)
   XmY = matmul(transpose(Z),AmBSq)
   call DA(nS,sqrt(abs(Omega)),XmY)
-
-! print*,'X+Y'
-! call matout(nS,nS,XpY)
-
-! print*,'RPA excitations'
-! call matout(nS,1,Omega)
 
 ! Compute the RPA correlation energy
 

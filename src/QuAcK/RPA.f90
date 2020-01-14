@@ -31,6 +31,7 @@ subroutine RPA(doACFDT,singlet_manifold,triplet_manifold,nBas,nC,nO,nV,nR,nS,ENu
 
   double precision              :: rho
   double precision              :: EcRPA(nspin)
+  double precision              :: EcAC(nspin)
 
 ! Hello world
 
@@ -43,6 +44,7 @@ subroutine RPA(doACFDT,singlet_manifold,triplet_manifold,nBas,nC,nO,nV,nR,nS,ENu
 ! Initialization
 
   EcRPA(:) = 0d0
+  EcAC(:)  = 0d0
 
 ! Memory allocation
 
@@ -91,7 +93,18 @@ subroutine RPA(doACFDT,singlet_manifold,triplet_manifold,nBas,nC,nO,nV,nR,nS,ENu
     write(*,*) 
  
     call ACFDT(.false.,.true.,.false.,.false.,singlet_manifold,triplet_manifold, &
-               nBas,nC,nO,nV,nR,nS,ERI,e,Omega,XpY,XmY,rho)
+               nBas,nC,nO,nV,nR,nS,ERI,e,Omega,XpY,XmY,rho,EcAC)
+
+
+  write(*,*)
+  write(*,*)'-------------------------------------------------------------------------------'
+  write(*,'(2X,A40,F15.6)') 'AC@RPA  correlation energy (singlet) =',EcAC(1)
+  write(*,'(2X,A40,F15.6)') 'AC@RPA  correlation energy (triplet) =',EcAC(2)
+  write(*,'(2X,A40,F15.6)') 'AC@RPA  correlation energy           =',EcAC(1) + EcAC(2)
+  write(*,'(2X,A40,F15.6)') 'AC@RPA  total energy                 =',ENuc + ERHF + EcAC(1) + EcAC(2)
+  write(*,*)'-------------------------------------------------------------------------------'
+  write(*,*)
+
 
   end if
 
