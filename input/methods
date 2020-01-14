@@ -4,12 +4,12 @@
   F   F   F
 # CCD CCSD CCSD(T) ringCCD ladderCCD
   F   F    F       F       F
-# CIS RPA TDHF ppRPA ADC
+# CIS RPA RPAx ppRPA ADC
   F   T   T    F     F
 # GF2 GF3
   F   F
 # G0W0 evGW qsGW 
-  T    F    F
+  T    T    T
 # G0T0 evGT qsGT 
   F    F    F
 # MCMP2

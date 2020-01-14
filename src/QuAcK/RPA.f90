@@ -1,4 +1,4 @@
-subroutine RPA(singlet_manifold,triplet_manifold,nBas,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,e)
+subroutine RPA(doACFDT,singlet_manifold,triplet_manifold,nBas,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,e)
 
 ! Perform a direct random phase approximation calculation
 
@@ -8,6 +8,7 @@ subroutine RPA(singlet_manifold,triplet_manifold,nBas,nC,nO,nV,nR,nS,ENuc,ERHF,E
 
 ! Input variables
 
+  logical,intent(in)            :: doACFDT
   logical,intent(in)            :: singlet_manifold
   logical,intent(in)            :: triplet_manifold
   integer,intent(in)            :: nBas
@@ -30,8 +31,6 @@ subroutine RPA(singlet_manifold,triplet_manifold,nBas,nC,nO,nV,nR,nS,ENuc,ERHF,E
 
   double precision              :: rho
   double precision              :: EcRPA(nspin)
-
-  logical                       :: adiabatic_connection
 
 ! Hello world
 
@@ -57,7 +56,7 @@ subroutine RPA(singlet_manifold,triplet_manifold,nBas,nC,nO,nV,nR,nS,ENuc,ERHF,E
 
     call linear_response(ispin,.true.,.false.,.false.,nBas,nC,nO,nV,nR,nS,1d0,e,ERI,rho, &
                          EcRPA(ispin),Omega(:,ispin),XpY(:,:,ispin),XmY(:,:,ispin))
-    call print_excitation('RPA  ',ispin,nS,Omega(:,ispin))
+    call print_excitation('RPA   ',ispin,nS,Omega(:,ispin))
 
   endif
 
@@ -69,7 +68,7 @@ subroutine RPA(singlet_manifold,triplet_manifold,nBas,nC,nO,nV,nR,nS,ENuc,ERHF,E
 
     call linear_response(ispin,.true.,.false.,.false.,nBas,nC,nO,nV,nR,nS,1d0,e,ERI,rho, &
                          EcRPA(ispin),Omega(:,ispin),XpY(:,:,ispin),XmY(:,:,ispin))
-    call print_excitation('RPA  ',ispin,nS,Omega(:,ispin))
+    call print_excitation('RPA   ',ispin,nS,Omega(:,ispin))
 
   endif
 
@@ -84,9 +83,7 @@ subroutine RPA(singlet_manifold,triplet_manifold,nBas,nC,nO,nV,nR,nS,ENuc,ERHF,E
 
 ! Compute the correlation energy via the adiabatic connection 
 
-  adiabatic_connection = .true.
-
-  if(adiabatic_connection) then
+  if(doACFDT) then
 
     write(*,*) '------------------------------------------------------'
     write(*,*) 'Adiabatic connection version of RPA correlation energy'

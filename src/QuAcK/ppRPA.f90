@@ -1,4 +1,4 @@
-subroutine ppRPA(singlet_manifold,triplet_manifold,nBas,nC,nO,nV,nR,ENuc,ERHF,ERI,e)
+subroutine ppRPA(doACFDT,singlet_manifold,triplet_manifold,nBas,nC,nO,nV,nR,ENuc,ERHF,ERI,e)
 
 ! Perform pp-RPA calculation
 
@@ -7,6 +7,7 @@ subroutine ppRPA(singlet_manifold,triplet_manifold,nBas,nC,nO,nV,nR,ENuc,ERHF,ER
 
 ! Input variables
 
+  logical,intent(in)            :: doACFDT
   logical,intent(in)            :: singlet_manifold
   logical,intent(in)            :: triplet_manifold
   integer,intent(in)            :: nBas

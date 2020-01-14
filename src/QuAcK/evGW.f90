@@ -1,4 +1,5 @@
-subroutine evGW(maxSCF,thresh,max_diis,COHSEX,SOSEX,BSE,TDA,G0W,GW0,singlet_manifold,triplet_manifold,linearize,eta, & 
+subroutine evGW(maxSCF,thresh,max_diis,doACFDT,doXBS,COHSEX,SOSEX,BSE,TDA,G0W,GW0, & 
+                singlet_manifold,triplet_manifold,linearize,eta,                   & 
                 nBas,nC,nO,nV,nR,nS,ENuc,ERHF,Hc,H,ERI,PHF,cHF,eHF,eG0W0)
 
 ! Perform self-consistent eigenvalue-only GW calculation
@@ -13,6 +14,8 @@ subroutine evGW(maxSCF,thresh,max_diis,COHSEX,SOSEX,BSE,TDA,G0W,GW0,singlet_mani
   double precision,intent(in)   :: thresh
   double precision,intent(in)   :: ENuc
   double precision,intent(in)   :: ERHF
+  logical,intent(in)            :: doACFDT
+  logical,intent(in)            :: doXBS
   logical,intent(in)            :: COHSEX
   logical,intent(in)            :: SOSEX
   logical,intent(in)            :: BSE
@@ -34,7 +37,6 @@ subroutine evGW(maxSCF,thresh,max_diis,COHSEX,SOSEX,BSE,TDA,G0W,GW0,singlet_mani
 
 ! Local variables
 
-  logical                       :: dRPA
   logical                       :: linear_mixing
   integer                       :: ispin
   integer                       :: nSCF
@@ -57,9 +59,6 @@ subroutine evGW(maxSCF,thresh,max_diis,COHSEX,SOSEX,BSE,TDA,G0W,GW0,singlet_mani
   double precision,allocatable  :: rho(:,:,:,:)
   double precision,allocatable  :: rhox(:,:,:,:)
 
-  logical                       :: adiabatic_connection
-  logical                       :: scaled_screening
-
 ! Hello world
 
   write(*,*)
@@ -80,8 +79,6 @@ subroutine evGW(maxSCF,thresh,max_diis,COHSEX,SOSEX,BSE,TDA,G0W,GW0,singlet_mani
 
 ! Switch off exchange for G0W0
 
-  dRPA = .true.
-
 ! Linear mixing
 
   linear_mixing = .false.
@@ -89,8 +86,9 @@ subroutine evGW(maxSCF,thresh,max_diis,COHSEX,SOSEX,BSE,TDA,G0W,GW0,singlet_mani
 
 ! Memory allocation
 
-  allocate(eGW(nBas),eOld(nBas),Z(nBas),SigC(nBas),Omega(nS,nspin),           & 
-           XpY(nS,nS,nspin),XmY(nS,nS,nspin),rho(nBas,nBas,nS,nspin),rhox(nBas,nBas,nS,nspin), &
+  allocate(eGW(nBas),eOld(nBas),Z(nBas),SigC(nBas),Omega(nS,nspin), & 
+           XpY(nS,nS,nspin),XmY(nS,nS,nspin),                       & 
+           rho(nBas,nBas,nS,nspin),rhox(nBas,nBas,nS,nspin),        &
            error_diis(nBas,max_diis),e_diis(nBas,max_diis))
 
 ! Initialization
@@ -115,7 +113,7 @@ subroutine evGW(maxSCF,thresh,max_diis,COHSEX,SOSEX,BSE,TDA,G0W,GW0,singlet_mani
 
     if(.not. GW0 .or. nSCF == 0) then
 
-      call linear_response(ispin,dRPA,TDA,.false.,nBas,nC,nO,nV,nR,nS,eGW,ERI, & 
+      call linear_response(ispin,.true.,TDA,.false.,nBas,nC,nO,nV,nR,nS,1d0,eGW,ERI, & 
                            rho(:,:,:,ispin),EcRPA(ispin),Omega(:,ispin),XpY(:,:,ispin),XmY(:,:,ispin))
 
     endif
@@ -162,7 +160,7 @@ subroutine evGW(maxSCF,thresh,max_diis,COHSEX,SOSEX,BSE,TDA,G0W,GW0,singlet_mani
 
     ! Print results
 
-    call print_excitation('RPA  ',ispin,nS,Omega(:,ispin))
+    call print_excitation('RPA   ',ispin,nS,Omega(:,ispin))
     call print_evGW(nBas,nO,nSCF,Conv,eHF,ENuc,ERHF,SigC,Z,eGW,EcRPA(ispin),EcGM)
 
     ! Linear mixing or DIIS extrapolation
@@ -217,39 +215,8 @@ subroutine evGW(maxSCF,thresh,max_diis,COHSEX,SOSEX,BSE,TDA,G0W,GW0,singlet_mani
 
   if(BSE) then
 
-    ! Singlet manifold
-
-    if(singlet_manifold) then
-
-      ispin = 1
-      EcBSE(ispin) = 0d0
-
-      call linear_response(ispin,dRPA,TDA,.false.,nBas,nC,nO,nV,nR,nS,1d0,eGW,ERI, &
-                           rho(:,:,:,ispin),EcRPA(ispin),Omega(:,ispin),XpY(:,:,ispin),XmY(:,:,ispin))
-      call excitation_density(nBas,nC,nO,nR,nS,ERI,XpY(:,:,ispin),rho(:,:,:,ispin))
-
-      call linear_response(ispin,dRPA,TDA,BSE,nBas,nC,nO,nV,nR,nS,1d0,eGW,ERI, &
-                           rho(:,:,:,ispin),EcBSE(ispin),Omega(:,ispin),XpY(:,:,ispin),XmY(:,:,ispin))
-      call print_excitation('BSE  ',ispin,nS,Omega(:,ispin))
-
-    endif
-
-    ! Triplet manifold
-
-    if(triplet_manifold) then
-
-      ispin = 2
-      EcBSE(ispin) = 0d0
-
-      call linear_response(ispin,dRPA,TDA,.false.,nBas,nC,nO,nV,nR,nS,1d0,eGW,ERI, &
-                           rho(:,:,:,ispin),EcRPA(ispin),Omega(:,ispin),XpY(:,:,ispin),XmY(:,:,ispin))
-      call excitation_density(nBas,nC,nO,nR,nS,ERI,XpY(:,:,ispin),rho(:,:,:,ispin))
-
-      call linear_response(ispin,dRPA,TDA,BSE,nBas,nC,nO,nV,nR,nS,1d0,eGW,ERI, &
-                           rho(:,:,:,ispin),EcBSE(ispin),Omega(:,ispin),XpY(:,:,ispin),XmY(:,:,ispin))
-      call print_excitation('BSE  ',ispin,nS,Omega(:,ispin))
-
-    endif
+    call Bethe_Salpeter(TDA,singlet_manifold,triplet_manifold, &
+                        nBas,nC,nO,nV,nR,nS,ERI,eGW,eGW,Omega,XpY,XmY,rho,EcRPA,EcBSE)
 
     write(*,*)
     write(*,*)'-------------------------------------------------------------------------------'
@@ -262,24 +229,21 @@ subroutine evGW(maxSCF,thresh,max_diis,COHSEX,SOSEX,BSE,TDA,G0W,GW0,singlet_mani
 
 !   Compute the BSE correlation energy via the adiabatic connection 
 
-    adiabatic_connection = .true.
-    scaled_screening     = .true.
-
-    if(adiabatic_connection) then
+    if(doACFDT) then
 
       write(*,*) '------------------------------------------------------'
       write(*,*) 'Adiabatic connection version of BSE correlation energy'
       write(*,*) '------------------------------------------------------'
       write(*,*)
 
-      if(scaled_screening) then
+      if(doXBS) then
 
-        write(*,*) '*** scaled screening version (extended BSE) ***'
+        write(*,*) '*** scaled screening version (XBS) ***'
         write(*,*)
 
       end if
 
-      call ACFDT(scaled_screening,.true.,TDA,BSE,singlet_manifold,triplet_manifold, &
+      call ACFDT(doXBS,.true.,TDA,BSE,singlet_manifold,triplet_manifold, &
                  nBas,nC,nO,nV,nR,nS,ERI,eGW,Omega,XpY,XmY,rho)
 
     end if

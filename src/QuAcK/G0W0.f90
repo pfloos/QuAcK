@@ -1,5 +1,5 @@
-subroutine G0W0(COHSEX,SOSEX,BSE,TDA,singlet_manifold,triplet_manifold,eta, & 
-                nBas,nC,nO,nV,nR,nS,ENuc,ERHF,Hc,H,ERI,PHF,cHF,eHF,eG0W0)
+subroutine G0W0(doACFDT,doXBS,COHSEX,SOSEX,BSE,TDA,singlet_manifold,triplet_manifold,eta, & 
+                nBas,nC,nO,nV,nR,nS,ENuc,ERHF,Hc,H,ERI,PHF,cHF,eHF,eGW)
 
 ! Perform G0W0 calculation
 
@@ -9,6 +9,8 @@ subroutine G0W0(COHSEX,SOSEX,BSE,TDA,singlet_manifold,triplet_manifold,eta, &
 
 ! Input variables
 
+  logical,intent(in)            :: doACFDT
+  logical,intent(in)            :: doXBS
   logical,intent(in)            :: COHSEX
   logical,intent(in)            :: SOSEX
   logical,intent(in)            :: BSE
@@ -41,12 +43,9 @@ subroutine G0W0(COHSEX,SOSEX,BSE,TDA,singlet_manifold,triplet_manifold,eta, &
   double precision,allocatable  :: rho(:,:,:,:)
   double precision,allocatable  :: rhox(:,:,:,:)
 
-  logical                       :: adiabatic_connection
-  logical                       :: scaled_screening
-
 ! Output variables
 
-  double precision              :: eG0W0(nBas)
+  double precision              :: eGW(nBas)
 
 ! Hello world
 
@@ -96,54 +95,23 @@ subroutine G0W0(COHSEX,SOSEX,BSE,TDA,singlet_manifold,triplet_manifold,eta, &
 
 ! Solve the quasi-particle equation
 
-  eG0W0(:) = eHF(:) + Z(:)*SigC(:)
+  eGW(:) = eHF(:) + Z(:)*SigC(:)
 
 ! Dump results
 
-  call print_excitation('RPA         ',ispin,nS,Omega(:,ispin))
-  call print_G0W0(nBas,nO,eHF,ENuc,ERHF,SigC,Z,eG0W0,EcRPA(ispin),EcGM)
+  call print_excitation('RPA   ',ispin,nS,Omega(:,ispin))
+  call print_G0W0(nBas,nO,eHF,ENuc,ERHF,SigC,Z,eGW,EcRPA(ispin),EcGM)
 
 ! Plot stuff
 
-  call plot_GW(nBas,nC,nO,nV,nR,nS,eHF,eG0W0,Omega(:,ispin),rho(:,:,:,ispin),rhox(:,:,:,ispin))
+  call plot_GW(nBas,nC,nO,nV,nR,nS,eHF,eGW,Omega(:,ispin),rho(:,:,:,ispin),rhox(:,:,:,ispin))
  
 ! Perform BSE calculation
 
   if(BSE) then
 
-   ! Singlet manifold
-
-   if(singlet_manifold) then
-
-      ispin = 1
-      EcBSE(ispin) = 0d0
-
-      call linear_response(ispin,.true.,TDA,.false.,nBas,nC,nO,nV,nR,nS,1d0,eHF,ERI, &
-                           rho(:,:,:,ispin),EcRPA(ispin),Omega(:,ispin),XpY(:,:,ispin),XmY(:,:,ispin))
-      call excitation_density(nBas,nC,nO,nR,nS,ERI,XpY(:,:,ispin),rho(:,:,:,ispin))
-
-      call linear_response(ispin,.true.,TDA,BSE,nBas,nC,nO,nV,nR,nS,1d0,eG0W0,ERI, &
-                           rho(:,:,:,ispin),EcBSE(ispin),Omega(:,ispin),XpY(:,:,ispin),XmY(:,:,ispin))
-      call print_excitation('BSE  ',ispin,nS,Omega(:,ispin))
-
-    end if
-
-   ! Triplet manifold
-
-   if(triplet_manifold) then
-
-      ispin = 2
-      EcBSE(ispin) = 0d0
-
-      call linear_response(ispin,.true.,TDA,.false.,nBas,nC,nO,nV,nR,nS,1d0,eHF,ERI, &
-                           rho(:,:,:,ispin),EcRPA(ispin),Omega(:,ispin),XpY(:,:,ispin),XmY(:,:,ispin))
-      call excitation_density(nBas,nC,nO,nR,nS,ERI,XpY(:,:,ispin),rho(:,:,:,ispin))
-
-      call linear_response(ispin,.true.,TDA,BSE,nBas,nC,nO,nV,nR,nS,1d0,eG0W0,ERI, &
-                           rho(:,:,:,ispin),EcBSE(ispin),Omega(:,ispin),XpY(:,:,ispin),XmY(:,:,ispin))
-      call print_excitation('BSE  ',ispin,nS,Omega(:,ispin))
-
-    end if
+    call Bethe_Salpeter(TDA,singlet_manifold,triplet_manifold, &
+                        nBas,nC,nO,nV,nR,nS,ERI,eHF,eGW,Omega,XpY,XmY,rho,EcRPA,EcBSE)
 
     write(*,*)
     write(*,*)'-------------------------------------------------------------------------------'
@@ -156,25 +124,22 @@ subroutine G0W0(COHSEX,SOSEX,BSE,TDA,singlet_manifold,triplet_manifold,eta, &
 
 !   Compute the BSE correlation energy via the adiabatic connection 
 
-    adiabatic_connection = .true.
-    scaled_screening     = .true.
-
-    if(adiabatic_connection) then
+    if(doACFDT) then
 
       write(*,*) '------------------------------------------------------'
       write(*,*) 'Adiabatic connection version of BSE correlation energy'
       write(*,*) '------------------------------------------------------'
       write(*,*) 
 
-      if(scaled_screening) then 
+      if(doXBS) then 
 
-        write(*,*) '*** scaled screening version (extended BSE) ***'
+        write(*,*) '*** scaled screening version (XBS) ***'
         write(*,*)
 
       end if
 
-      call ACFDT(scaled_screening,.true.,TDA,BSE,singlet_manifold,triplet_manifold, & 
-                 nBas,nC,nO,nV,nR,nS,ERI,eG0W0,Omega,XpY,XmY,rho)
+      call ACFDT(doXBS,.true.,TDA,BSE,singlet_manifold,triplet_manifold, & 
+                 nBas,nC,nO,nV,nR,nS,ERI,eGW,Omega,XpY,XmY,rho)
 
     end if
 

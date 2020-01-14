@@ -1,7 +1,7 @@
-subroutine qsGW(maxSCF,thresh,max_diis,COHSEX,SOSEX,BSE,TDA,G0W,GW0,singlet_manifold,triplet_manifold,eta, &
+subroutine qsGW(maxSCF,thresh,max_diis,doACFDT,doXBS,COHSEX,SOSEX,BSE,TDA,G0W,GW0,singlet_manifold,triplet_manifold,eta, &
                 nBas,nC,nO,nV,nR,nS,ENuc,ERHF,S,X,T,V,Hc,ERI_AO_basis,ERI_MO_basis,PHF,cHF,eHF)
 
-! Compute linear response
+! Perform a quasiparticle self-consistent GW calculation
 
   implicit none
   include 'parameters.h'
@@ -11,6 +11,8 @@ subroutine qsGW(maxSCF,thresh,max_diis,COHSEX,SOSEX,BSE,TDA,G0W,GW0,singlet_mani
   integer,intent(in)            :: maxSCF
   integer,intent(in)            :: max_diis
   double precision,intent(in)   :: thresh
+  logical,intent(in)            :: doACFDT
+  logical,intent(in)            :: doXBS
   logical,intent(in)            :: COHSEX
   logical,intent(in)            :: SOSEX
   logical,intent(in)            :: BSE
@@ -36,7 +38,6 @@ subroutine qsGW(maxSCF,thresh,max_diis,COHSEX,SOSEX,BSE,TDA,G0W,GW0,singlet_mani
 
 ! Local variables
 
-  logical                       :: dRPA
   integer                       :: nSCF
   integer                       :: nBasSq
   integer                       :: ispin
@@ -69,9 +70,6 @@ subroutine qsGW(maxSCF,thresh,max_diis,COHSEX,SOSEX,BSE,TDA,G0W,GW0,singlet_mani
   double precision,allocatable  :: Z(:)
   double precision,allocatable  :: error(:,:)
 
-  logical                       :: adiabatic_connection
-  logical                       :: scaled_screening
-
 ! Hello world
 
   write(*,*)
@@ -98,10 +96,6 @@ subroutine qsGW(maxSCF,thresh,max_diis,COHSEX,SOSEX,BSE,TDA,G0W,GW0,singlet_mani
 
   if(COHSEX) write(*,*) 'COHSEX approximation activated!'
   write(*,*)
-
-! Switch off exchange for qsGW
-
-  dRPA = .true.
 
 ! Memory allocation
 
@@ -144,7 +138,7 @@ subroutine qsGW(maxSCF,thresh,max_diis,COHSEX,SOSEX,BSE,TDA,G0W,GW0,singlet_mani
 
     if(.not. GW0 .or. nSCF == 0) then
 
-      call linear_response(ispin,dRPA,TDA,.false.,nBas,nC,nO,nV,nR,nS,1d0,eGW,ERI_MO_basis, &
+      call linear_response(ispin,.true.,TDA,.false.,nBas,nC,nO,nV,nR,nS,1d0,eGW,ERI_MO_basis, &
                            rho(:,:,:,ispin),EcRPA(ispin),Omega(:,ispin),XpY(:,:,ispin),XmY(:,:,ispin))
 
     endif
@@ -209,7 +203,7 @@ subroutine qsGW(maxSCF,thresh,max_diis,COHSEX,SOSEX,BSE,TDA,G0W,GW0,singlet_mani
 
     ! Print results
 
-    call print_excitation('RPA  ',ispin,nS,Omega(:,ispin))
+    call print_excitation('RPA   ',ispin,nS,Omega(:,ispin))
     call print_qsGW(nBas,nO,nSCF,Conv,thresh,eHF,eGW,c,ENuc,P,T,V,Hc,J,K,F,SigCp,Z,EcRPA(ispin),EcGM,EqsGW)
 
     ! Increment
@@ -251,37 +245,8 @@ subroutine qsGW(maxSCF,thresh,max_diis,COHSEX,SOSEX,BSE,TDA,G0W,GW0,singlet_mani
 
   if(BSE) then
 
-    ! Singlet manifold
-    if(singlet_manifold) then
-
-      ispin = 1
-      EcBSE(ispin) = 0d0
-
-      call linear_response(ispin,dRPA,TDA,.false.,nBas,nC,nO,nV,nR,nS,1d0,eGW,ERI_MO_basis, &
-                             rho(:,:,:,ispin),EcRPA(ispin),Omega(:,ispin),XpY(:,:,ispin),XmY(:,:,ispin))
-      call excitation_density(nBas,nC,nO,nR,nS,ERI_MO_basis,XpY(:,:,ispin),rho(:,:,:,ispin))
-     
-      call linear_response(ispin,dRPA,TDA,BSE,nBas,nC,nO,nV,nR,nS,1d0,eGW,ERI_MO_basis, & 
-                           rho(:,:,:,ispin),EcBSE(ispin),Omega(:,ispin),XpY(:,:,ispin),XmY(:,:,ispin))
-      call print_excitation('BSE  ',ispin,nS,Omega(:,ispin))
-
-    endif
-
-    ! Triplet manifold
-    if(triplet_manifold) then
-
-      ispin = 2
-      EcBSE(ispin) = 0d0
-
-      call linear_response(ispin,dRPA,TDA,.false.,nBas,nC,nO,nV,nR,nS,1d0,eGW,ERI_MO_basis, &
-                             rho(:,:,:,ispin),EcRPA(ispin),Omega(:,ispin),XpY(:,:,ispin),XmY(:,:,ispin))
-      call excitation_density(nBas,nC,nO,nR,nS,ERI_MO_basis,XpY(:,:,ispin),rho(:,:,:,ispin))
-     
-      call linear_response(ispin,dRPA,TDA,BSE,nBas,nC,nO,nV,nR,nS,1d0,eGW,ERI_MO_basis, &
-                           rho(:,:,:,ispin),EcBSE(ispin),Omega(:,ispin),XpY(:,:,ispin),XmY(:,:,ispin))
-      call print_excitation('BSE  ',ispin,nS,Omega(:,ispin))
-
-    endif
+    call Bethe_Salpeter(TDA,singlet_manifold,triplet_manifold, &
+                        nBas,nC,nO,nV,nR,nS,ERI_MO_basis,eGW,eGW,Omega,XpY,XmY,rho,EcRPA,EcBSE)
 
     write(*,*)
     write(*,*)'-------------------------------------------------------------------------------'
@@ -294,24 +259,21 @@ subroutine qsGW(maxSCF,thresh,max_diis,COHSEX,SOSEX,BSE,TDA,G0W,GW0,singlet_mani
 
 !   Compute the BSE correlation energy via the adiabatic connection 
 
-    adiabatic_connection = .true.
-    scaled_screening     = .true.
-
-    if(adiabatic_connection) then
+    if(doACFDT) then
 
       write(*,*) '------------------------------------------------------'
       write(*,*) 'Adiabatic connection version of BSE correlation energy'
       write(*,*) '------------------------------------------------------'
       write(*,*)
 
-      if(scaled_screening) then
+      if(doXBS) then
 
-        write(*,*) '*** scaled screening version (extended BSE) ***'
+        write(*,*) '*** scaled screening version (XBS) ***'
         write(*,*)
 
       end if
 
-      call ACFDT(scaled_screening,.true.,TDA,BSE,singlet_manifold,triplet_manifold, &
+      call ACFDT(doXBS,.true.,TDA,BSE,singlet_manifold,triplet_manifold, &
                  nBas,nC,nO,nV,nR,nS,ERI_MO_basis,eGW,Omega,XpY,XmY,rho)
 
     end if

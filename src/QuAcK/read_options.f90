@@ -1,8 +1,10 @@
-subroutine read_options(maxSCF_HF,thresh_HF,DIIS_HF,n_diis_HF,guess_type,ortho_type,                      &
-                        maxSCF_CC,thresh_CC,DIIS_CC,n_diis_CC,                                            &
-                        singlet_manifold,triplet_manifold,                                                &
-                        maxSCF_GF,thresh_GF,DIIS_GF,n_diis_GF,renormalization,                            &
-                        maxSCF_GW,thresh_GW,DIIS_GW,n_diis_GW,COHSEX,SOSEX,BSE,TDA,G0W,GW0,linearize,eta, &
+subroutine read_options(maxSCF_HF,thresh_HF,DIIS_HF,n_diis_HF,guess_type,ortho_type,   &
+                        maxSCF_CC,thresh_CC,DIIS_CC,n_diis_CC,                         &
+                        singlet_manifold,triplet_manifold,                             &
+                        maxSCF_GF,thresh_GF,DIIS_GF,n_diis_GF,renormalization,         &
+                        maxSCF_GW,thresh_GW,DIIS_GW,n_diis_GW,                         &
+                        COHSEX,SOSEX,BSE,TDA,G0W,GW0,linearize,eta,                    &
+                        doACFDT,doXBS,                                                 &
                         nMC,nEq,nWalk,dt,nPrint,iSeed,doDrift)
 
 ! Read desired methods 
@@ -45,6 +47,9 @@ subroutine read_options(maxSCF_HF,thresh_HF,DIIS_HF,n_diis_HF,guess_type,ortho_t
   logical,intent(out)           :: linearize
   double precision,intent(out)  :: eta
 
+  logical,intent(out)           :: doACFDT
+  logical,intent(out)           :: doXBS
+
   integer,intent(out)           :: nMC
   integer,intent(out)           :: nEq
   integer,intent(out)           :: nWalk
@@ -55,7 +60,7 @@ subroutine read_options(maxSCF_HF,thresh_HF,DIIS_HF,n_diis_HF,guess_type,ortho_t
   
 ! Local variables
 
-  character(len=1)              :: answer1,answer2,answer3,answer4,answer5,answer6,answer7,answer8
+  character(len=1)              :: answer1,answer2,answer3,answer4,answer5,answer6,answer7,answer8,answer9
 
 ! Open file with method specification
 
@@ -149,6 +154,17 @@ subroutine read_options(maxSCF_HF,thresh_HF,DIIS_HF,n_diis_HF,guess_type,ortho_t
   if(answer7 == 'T') GW0 = .true.
   if(answer8 == 'T') linearize = .true.
   if(.not.DIIS_GW) n_diis_GW = 1
+
+! Options for adiabatic connection
+
+  doACFDT = .false.
+  doXBS   = .false.
+
+  read(1,*) 
+  read(1,*) answer1,answer2
+
+  if(answer1 == 'T') doACFDT = .true.
+  if(answer2 == 'T') doXBS   = .true.
 
 ! Read options for MC-MP2: Monte Carlo steps, number of equilibration steps, number of walkers,
 ! Monte Carlo time step, frequency of output results, and seed for random number generator

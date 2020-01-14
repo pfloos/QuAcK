@@ -8,7 +8,9 @@
                 T       T
 # GF: maxSCF thresh  DIIS n_diis renormalization
        1     0.00001 T    10      3 
-# GW: maxSCF thresh  DIIS n_diis COHSEX SOSEX BSE TDA G0W GW0 linearize eta
-      256    0.00001    T  5      F      F     T   F   F   F   F         0.000
+# GW: maxSCF thresh  DIIS n_diis COHSEX SOSEX BSE TDA G0W GW0 lin eta     
+      256    0.00001    T  5      F      F     T   F   F   F   F  0.000  
+# ACFDT: AC XBS
+         T  T
 # MCMP2: nMC    nEq    nWalk dt  nPrint iSeed doDrift
          1000000 100000 10    0.3 10000 1234  T

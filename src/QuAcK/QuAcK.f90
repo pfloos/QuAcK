@@ -24,8 +24,12 @@ program QuAcK
 
   double precision,allocatable  :: ZNuc(:),rNuc(:,:)
   double precision,allocatable  :: cHF(:,:,:),eHF(:,:),PHF(:,:,:)
+
   double precision,allocatable  :: eG0W0(:)
   double precision,allocatable  :: eG0T0(:)
+
+  logical                       :: doACFDT
+  logical                       :: doXBS
 
   integer                       :: nShell
   integer,allocatable           :: TotAngMomShell(:),KShell(:)
@@ -122,11 +126,13 @@ program QuAcK
 
 ! Read options for methods
 
-  call read_options(maxSCF_HF,thresh_HF,DIIS_HF,n_diis_HF,guess_type,ortho_type,                      &
-                    maxSCF_CC,thresh_CC,DIIS_CC,n_diis_CC,                                            &
-                    singlet_manifold,triplet_manifold,                                                &
-                    maxSCF_GF,thresh_GF,DIIS_GF,n_diis_GF,renormalization,                            &
-                    maxSCF_GW,thresh_GW,DIIS_GW,n_diis_GW,COHSEX,SOSEX,BSE,TDA,G0W,GW0,linearize,eta, &
+  call read_options(maxSCF_HF,thresh_HF,DIIS_HF,n_diis_HF,guess_type,ortho_type, &
+                    maxSCF_CC,thresh_CC,DIIS_CC,n_diis_CC,                       &
+                    singlet_manifold,triplet_manifold,                           &
+                    maxSCF_GF,thresh_GF,DIIS_GF,n_diis_GF,renormalization,       &
+                    maxSCF_GW,thresh_GW,DIIS_GW,n_diis_GW,                       & 
+                    COHSEX,SOSEX,BSE,TDA,G0W,GW0,linearize,eta,                  &  
+                    doACFDT,doXBS,                                               &
                     nMC,nEq,nWalk,dt,nPrint,iSeed,doDrift)
 
 ! Weird stuff
@@ -434,7 +440,7 @@ program QuAcK
   if(doRPA) then
 
     call cpu_time(start_RPA)
-    call RPA(singlet_manifold,triplet_manifold,nBas,nC,nO,nV,nR,nS,ENuc,ERHF,ERI_MO_basis,eHF)
+    call RPA(doACFDT,singlet_manifold,triplet_manifold,nBas,nC,nO,nV,nR,nS,ENuc,ERHF,ERI_MO_basis,eHF)
     call cpu_time(end_RPA)
 
     t_RPA = end_RPA - start_RPA
@@ -450,7 +456,7 @@ program QuAcK
   if(doRPAx) then
 
     call cpu_time(start_RPAx)
-    call RPAx(singlet_manifold,triplet_manifold,nBas,nC,nO,nV,nR,nS,ENuc,ERHF,ERI_MO_basis,eHF)
+    call RPAx(doACFDT,singlet_manifold,triplet_manifold,nBas,nC,nO,nV,nR,nS,ENuc,ERHF,ERI_MO_basis,eHF)
     call cpu_time(end_RPAx)
 
     t_RPAx = end_RPAx - start_RPAx
@@ -466,7 +472,7 @@ program QuAcK
   if(doppRPA) then
 
     call cpu_time(start_ppRPA)
-    call ppRPA(singlet_manifold,triplet_manifold,nBas,nC,nO,nV,nR,ENuc,ERHF,ERI_MO_basis,eHF)
+    call ppRPA(doACFDT,singlet_manifold,triplet_manifold,nBas,nC,nO,nV,nR,ENuc,ERHF,ERI_MO_basis,eHF)
     call cpu_time(end_ppRPA)
 
     t_ppRPA = end_ppRPA - start_ppRPA
@@ -532,7 +538,7 @@ program QuAcK
   if(doG0W0) then
     
     call cpu_time(start_G0W0)
-    call G0W0(COHSEX,SOSEX,BSE,TDA,singlet_manifold,triplet_manifold,eta, & 
+    call G0W0(doACFDT,doXBS,COHSEX,SOSEX,BSE,TDA,singlet_manifold,triplet_manifold,eta, & 
               nBas,nC(1),nO(1),nV(1),nR(1),nS(1),ENuc,ERHF,Hc,H,ERI_MO_basis,PHF,cHF,eHF,eG0W0)
     call cpu_time(end_G0W0)
   
@@ -549,7 +555,8 @@ program QuAcK
   if(doevGW) then
 
     call cpu_time(start_evGW)
-    call evGW(maxSCF_GW,thresh_GW,n_diis_GW,COHSEX,SOSEX,BSE,TDA,G0W,GW0,singlet_manifold,triplet_manifold,linearize,eta, &
+    call evGW(maxSCF_GW,thresh_GW,n_diis_GW,doACFDT,doXBS,COHSEX,SOSEX,BSE,TDA,G0W,GW0, &
+              singlet_manifold,triplet_manifold,linearize,eta,                    &
               nBas,nC(1),nO(1),nV(1),nR(1),nS(1),ENuc,ERHF,Hc,H,ERI_MO_basis,PHF,cHF,eHF,eG0W0)
     call cpu_time(end_evGW)
 
@@ -566,8 +573,8 @@ program QuAcK
   if(doqsGW) then 
 
     call cpu_time(start_qsGW)
-    call qsGW(maxSCF_GW,thresh_GW,n_diis_GW, & 
-              COHSEX,SOSEX,BSE,TDA,G0W,GW0,singlet_manifold,triplet_manifold,eta, & 
+    call qsGW(maxSCF_GW,thresh_GW,n_diis_GW,doACFDT,doXBS,COHSEX,SOSEX,BSE,TDA,G0W,GW0, & 
+              singlet_manifold,triplet_manifold,eta, & 
               nBas,nC(1),nO(1),nV(1),nR(1),nS(1),ENuc,ERHF,S,X,T,V,Hc,ERI_AO_basis,ERI_MO_basis,PHF,cHF,eHF)
     call cpu_time(end_qsGW)
 
