@@ -7,6 +7,7 @@ program QuAcK
   logical                       :: doRHF,doUHF,doMOM 
   logical                       :: doMP2,doMP3,doMP2F12
   logical                       :: doCCD,doCCSD,doCCSDT
+  logical                       :: do_ring_CCD,do_ladder_CCD
   logical                       :: doCIS,doRPA,doTDHF
   logical                       :: doppRPA,doADC
   logical                       :: doGF2,doGF3
@@ -108,14 +109,15 @@ program QuAcK
 
 ! Which calculations do you want to do?
 
-  call read_methods(doRHF,doUHF,doMOM,    &
-                    doMP2,doMP3,doMP2F12, &
-                    doCCD,doCCSD,doCCSDT, &
-                    doCIS,doRPA,doTDHF,   & 
-                    doppRPA,doADC,        &
-                    doGF2,doGF3,          &
-                    doG0W0,doevGW,doqsGW, &
-                    doG0T0,doevGT,doqsGT, &
+  call read_methods(doRHF,doUHF,doMOM,         &
+                    doMP2,doMP3,doMP2F12,      &
+                    doCCD,doCCSD,doCCSDT,      &
+                    do_ring_CCD,do_ladder_CCD, &
+                    doCIS,doRPA,doTDHF,        & 
+                    doppRPA,doADC,             &
+                    doGF2,doGF3,               &
+                    doG0W0,doevGW,doqsGW,      &
+                    doG0T0,doevGT,doqsGT,      &
                     doMCMP2)
 
 ! Read options for methods
@@ -351,10 +353,7 @@ program QuAcK
   if(doCCD) then
 
     call cpu_time(start_CCD)
-!   call ring_CCD(maxSCF_CC,thresh_CC,n_diis_CC,nBas,nEl,ERI_MO_basis,ENuc,ERHF,eHF)
-!   call ladder_CCD(maxSCF_CC,thresh_CC,n_diis_CC,nBas,nEl,ERI_MO_basis,ENuc,ERHF,eHF)
     call CCD(maxSCF_CC,thresh_CC,n_diis_CC,nBas,nEl,ERI_MO_basis,ENuc,ERHF,eHF)
-    call cpu_time(end_CCD)
 
     t_CCD = end_CCD - start_CCD
     write(*,'(A65,1X,F9.3,A8)') 'Total CPU time for CCD = ',t_CCD,' seconds'
@@ -376,6 +375,38 @@ program QuAcK
 
     t_CCSD = end_CCSD - start_CCSD
     write(*,'(A65,1X,F9.3,A8)') 'Total CPU time for CCSD or CCSD(T)= ',t_CCSD,' seconds'
+    write(*,*)
+
+  end if
+
+!------------------------------------------------------------------------
+! Perform ring CCD calculation
+!------------------------------------------------------------------------
+
+  if(do_ring_CCD) then
+
+    call cpu_time(start_CCD)
+    call ring_CCD(maxSCF_CC,thresh_CC,n_diis_CC,nBas,nEl,ERI_MO_basis,ENuc,ERHF,eHF)
+    call cpu_time(end_CCD)
+
+    t_CCD = end_CCD - start_CCD
+    write(*,'(A65,1X,F9.3,A8)') 'Total CPU time for ring CCD = ',t_CCD,' seconds'
+    write(*,*)
+
+  end if
+
+!------------------------------------------------------------------------
+! Perform ladder CCD calculation
+!------------------------------------------------------------------------
+
+  if(do_ladder_CCD) then
+
+    call cpu_time(start_CCD)
+    call ladder_CCD(maxSCF_CC,thresh_CC,n_diis_CC,nBas,nEl,ERI_MO_basis,ENuc,ERHF,eHF)
+    call cpu_time(end_CCD)
+
+    t_CCD = end_CCD - start_CCD
+    write(*,'(A65,1X,F9.3,A8)') 'Total CPU time for CCD = ',t_CCD,' seconds'
     write(*,*)
 
   end if

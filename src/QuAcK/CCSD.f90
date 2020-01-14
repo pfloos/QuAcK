@@ -223,14 +223,14 @@ subroutine CCSD(maxSCF,thresh,max_diis,doCCSDT,nBas,nEl,ERI,ENuc,ERHF,eHF)
 
   end if
 
-    write(*,*)
-    write(*,*)'----------------------------------------------------'
-    write(*,*)'                 CCSD energy                        '
-    write(*,*)'----------------------------------------------------'
-    write(*,'(1X,A20,1X,F15.10)')' E(CCSD)  = ',ECCSD  
-    write(*,'(1X,A20,1X,F10.6)')' Ec(CCSD) = ',EcCCSD 
-    write(*,*)'----------------------------------------------------'
-    write(*,*)
+  write(*,*)
+  write(*,*)'----------------------------------------------------'
+  write(*,*)'                 CCSD energy                        '
+  write(*,*)'----------------------------------------------------'
+  write(*,'(1X,A20,1X,F15.10)')' E(CCSD)  = ',ECCSD  
+  write(*,'(1X,A20,1X,F10.6)')' Ec(CCSD) = ',EcCCSD 
+  write(*,*)'----------------------------------------------------'
+  write(*,*)
 
 ! Deallocate memory
 

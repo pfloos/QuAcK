@@ -1,4 +1,4 @@
-subroutine Ec_AC(ispin,dRPA,nBas,nC,nO,nV,nR,nS,ERI,XpY,EcAC)
+subroutine Ec_AC(ispin,dRPA,nBas,nC,nO,nV,nR,nS,ERI,XpY,XmY,EcAC)
 
 ! Compute the correlation energy via the adiabatic connection formula
 
@@ -12,6 +12,7 @@ subroutine Ec_AC(ispin,dRPA,nBas,nC,nO,nV,nR,nS,ERI,XpY,EcAC)
   integer,intent(in)            :: nBas,nC,nO,nV,nR,nS
   double precision,intent(in)   :: ERI(nBas,nBas,nBas,nBas)
   double precision,intent(in)   :: XpY(nS,nS)
+  double precision,intent(in)   :: XmY(nS,nS)
 
 ! Local variables
 
@@ -20,7 +21,10 @@ subroutine Ec_AC(ispin,dRPA,nBas,nC,nO,nV,nR,nS,ERI,XpY,EcAC)
   double precision              :: delta_spin
   double precision              :: delta_dRPA
   double precision,allocatable  :: P(:,:)
-  double precision,allocatable  :: V(:,:)
+  double precision,allocatable  :: Ap(:,:)
+  double precision,allocatable  :: Bp(:,:)
+  double precision,allocatable  :: X(:,:)
+  double precision,allocatable  :: Y(:,:)
   double precision,external     :: trace_matrix
 
 ! Output variables
@@ -40,7 +44,7 @@ subroutine Ec_AC(ispin,dRPA,nBas,nC,nO,nV,nR,nS,ERI,XpY,EcAC)
 
 ! Memory allocation
 
-  allocate(P(nS,nS),V(nS,nS))
+  allocate(P(nS,nS),Ap(nS,nS),Bp(nS,nS),X(nS,nS),Y(nS,nS))
 
 ! Compute P = (X+Y)(X+Y) - 1
 
@@ -50,7 +54,7 @@ subroutine Ec_AC(ispin,dRPA,nBas,nC,nO,nV,nR,nS,ERI,XpY,EcAC)
     P(ia,ia) = P(ia,ia) - 1d0
   enddo
 
-! Compute Viajb = (ia|bj)
+! Compute Aiajb = (ia|bj) and Biajb = (ia|jb)
 
   ia = 0
   do i=nC+1,nO
@@ -61,16 +65,28 @@ subroutine Ec_AC(ispin,dRPA,nBas,nC,nO,nV,nR,nS,ERI,XpY,EcAC)
         do b=nO+1,nBas-nR
           jb = jb + 1
 
-            V(ia,jb) = (1d0 + delta_spin)*ERI(i,b,a,j) 
+            Ap(ia,jb) = (1d0 + delta_spin)*ERI(i,b,a,j) 
+            Bp(ia,jb) = (1d0 + delta_spin)*ERI(i,j,b,a) 
 
         enddo
       enddo
     enddo
   enddo
 
-! Compute Tr(VP)
+! Compute Tr(A x P)
 
-  EcAC = trace_matrix(nS,matmul(V,P))
+! EcAC = trace_matrix(nS,matmul(Ap,P))
+
+! print*,'EcAC =',EcAC
+
+  X(:,:) = 0.5d0*(XpY(:,:) + XmY(:,:))
+  Y(:,:) = 0.5d0*(XpY(:,:) - XmY(:,:))
+
+  EcAC = trace_matrix(nS,matmul(X,matmul(Bp,transpose(Y))) + matmul(Y,matmul(Bp,transpose(X)))) &
+       + trace_matrix(nS,matmul(X,matmul(Ap,transpose(X))) + matmul(Y,matmul(Ap,transpose(Y)))) &
+       - trace_matrix(nS,Ap)
+
+! print*,'EcAC =',EcAC
 
 end subroutine Ec_AC
 

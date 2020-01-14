@@ -29,6 +29,7 @@ subroutine TDHF(singlet_manifold,triplet_manifold,nBas,nC,nO,nV,nR,nS,ENuc,ERHF,
   integer                       :: ispin
   double precision,allocatable  :: Omega(:,:)
   double precision,allocatable  :: XpY(:,:,:)
+  double precision,allocatable  :: XmY(:,:,:)
 
   double precision              :: rho
   double precision              :: EcRPA(nspin)
@@ -65,7 +66,7 @@ subroutine TDHF(singlet_manifold,triplet_manifold,nBas,nC,nO,nV,nR,nS,ENuc,ERHF,
 
 ! Memory allocation
 
-  allocate(Omega(nS,nspin),XpY(nS,nS,nspin))
+  allocate(Omega(nS,nspin),XpY(nS,nS,nspin),XmY(nS,nS,nspin))
 
   AC = .true.
   allocate(EcACRPA(nAC,nspin),EcAC(nAC,nspin))
@@ -77,7 +78,7 @@ subroutine TDHF(singlet_manifold,triplet_manifold,nBas,nC,nO,nV,nR,nS,ENuc,ERHF,
     ispin = 1
 
     call linear_response(ispin,dRPA,TDA,BSE,nBas,nC,nO,nV,nR,nS,1d0,e,ERI,rho, &
-                         EcRPA(ispin),Omega(:,ispin),XpY(:,:,ispin))
+                         EcRPA(ispin),Omega(:,ispin),XpY(:,:,ispin),XmY(:,:,ispin))
     call print_excitation('TDHF ',ispin,nS,Omega(:,ispin))
 
   endif
@@ -89,7 +90,7 @@ subroutine TDHF(singlet_manifold,triplet_manifold,nBas,nC,nO,nV,nR,nS,ENuc,ERHF,
     ispin = 2
 
     call linear_response(ispin,dRPA,TDA,BSE,nBas,nC,nO,nV,nR,nS,1d0,e,ERI,rho, &
-                         EcRPA(ispin),Omega(:,ispin),XpY(:,:,ispin))
+                         EcRPA(ispin),Omega(:,ispin),XpY(:,:,ispin),XmY(:,:,ispin))
     call print_excitation('TDHF ',ispin,nS,Omega(:,ispin))
 
   endif
@@ -129,15 +130,11 @@ subroutine TDHF(singlet_manifold,triplet_manifold,nBas,nC,nO,nV,nR,nS,ENuc,ERHF,
         do iAC=1,nAC
  
           lambda = rAC(iAC)
-
-!         call linear_response(ispin,dRPA,TDA,.false.,nBas,nC,nO,nV,nR,nS,lambda,eHF,ERI, &
-!                              rho(:,:,:,ispin),EcRPA(ispin),Omega(:,ispin),XpY(:,:,ispin))
-!         call excitation_density(nBas,nC,nO,nR,nS,ERI,XpY(:,:,ispin),rho(:,:,:,ispin))
   
           call linear_response(ispin,dRPA,TDA,BSE,nBas,nC,nO,nV,nR,nS,lambda,e,ERI, &
-                           rho,EcACRPA(iAC,ispin),Omega(:,ispin),XpY(:,:,ispin))
+                           rho,EcACRPA(iAC,ispin),Omega(:,ispin),XpY(:,:,ispin),XmY(:,:,ispin))
 
-          call Ec_AC(ispin,dRPA,nBas,nC,nO,nV,nR,nS,ERI,XpY(:,:,ispin),EcAC(iAC,ispin))
+          call Ec_AC(ispin,dRPA,nBas,nC,nO,nV,nR,nS,ERI,XpY(:,:,ispin),XmY(:,:,ispin),EcAC(iAC,ispin))
 
           write(*,'(2X,F15.6,1X,F30.15,1X,F30.15)') lambda,EcACRPA(iAC,ispin),EcAC(iAC,ispin)
 
@@ -167,15 +164,11 @@ subroutine TDHF(singlet_manifold,triplet_manifold,nBas,nC,nO,nV,nR,nS,ENuc,ERHF,
         do iAC=1,nAC
  
           lambda = rAC(iAC)
-
-!         call linear_response(ispin,dRPA,TDA,.false.,nBas,nC,nO,nV,nR,nS,lambda,eHF,ERI, &
-!                              rho(:,:,:,ispin),EcRPA(ispin),Omega(:,ispin),XpY(:,:,ispin))
-!         call excitation_density(nBas,nC,nO,nR,nS,ERI,XpY(:,:,ispin),rho(:,:,:,ispin))
          
           call linear_response(ispin,dRPA,TDA,BSE,nBas,nC,nO,nV,nR,nS,lambda,e,ERI, &
-                               rho,EcACRPA(iAC,ispin),Omega(:,ispin),XpY(:,:,ispin))
+                               rho,EcACRPA(iAC,ispin),Omega(:,ispin),XpY(:,:,ispin),XmY(:,:,ispin))
 
-          call Ec_AC(ispin,dRPA,nBas,nC,nO,nV,nR,nS,ERI,XpY(:,:,ispin),EcAC(iAC,ispin))
+          call Ec_AC(ispin,dRPA,nBas,nC,nO,nV,nR,nS,ERI,XpY(:,:,ispin),XmY(:,:,ispin),EcAC(iAC,ispin))
 
           write(*,'(2X,F15.6,1X,F30.15,1X,F30.15)') lambda,EcACRPA(iAC,ispin),EcAC(iAC,ispin)
 

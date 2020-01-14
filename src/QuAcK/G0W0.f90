@@ -38,6 +38,7 @@ subroutine G0W0(COHSEX,SOSEX,BSE,TDA,singlet_manifold,triplet_manifold,eta, &
   double precision,allocatable  :: Z(:)
   double precision,allocatable  :: Omega(:,:)
   double precision,allocatable  :: XpY(:,:,:)
+  double precision,allocatable  :: XmY(:,:,:)
   double precision,allocatable  :: rho(:,:,:,:)
   double precision,allocatable  :: rhox(:,:,:,:)
 
@@ -79,7 +80,7 @@ subroutine G0W0(COHSEX,SOSEX,BSE,TDA,singlet_manifold,triplet_manifold,eta, &
 
 ! Memory allocation
 
-  allocate(SigC(nBas),Z(nBas),Omega(nS,nspin),XpY(nS,nS,nspin),  & 
+  allocate(SigC(nBas),Z(nBas),Omega(nS,nspin),XpY(nS,nS,nspin),XmY(nS,nS,nspin),  & 
            rho(nBas,nBas,nS,nspin),rhox(nBas,nBas,nS,nspin))
 
   AC = .true.
@@ -88,7 +89,7 @@ subroutine G0W0(COHSEX,SOSEX,BSE,TDA,singlet_manifold,triplet_manifold,eta, &
 ! Compute linear response
 
   call linear_response(ispin,dRPA,TDA,.false.,nBas,nC,nO,nV,nR,nS,1d0,eHF,ERI, & 
-                       rho(:,:,:,ispin),EcRPA(ispin),Omega(:,ispin),XpY(:,:,ispin))
+                       rho(:,:,:,ispin),EcRPA(ispin),Omega(:,ispin),XpY(:,:,ispin),XmY(:,:,ispin))
 
 ! Compute correlation part of the self-energy 
 
@@ -129,11 +130,11 @@ subroutine G0W0(COHSEX,SOSEX,BSE,TDA,singlet_manifold,triplet_manifold,eta, &
       EcBSE(ispin) = 0d0
 
       call linear_response(ispin,dRPA,TDA,.false.,nBas,nC,nO,nV,nR,nS,1d0,eHF,ERI, &
-                           rho(:,:,:,ispin),EcRPA(ispin),Omega(:,ispin),XpY(:,:,ispin))
+                           rho(:,:,:,ispin),EcRPA(ispin),Omega(:,ispin),XpY(:,:,ispin),XmY(:,:,ispin))
       call excitation_density(nBas,nC,nO,nR,nS,ERI,XpY(:,:,ispin),rho(:,:,:,ispin))
 
       call linear_response(ispin,dRPA,TDA,BSE,nBas,nC,nO,nV,nR,nS,1d0,eG0W0,ERI, &
-                           rho(:,:,:,ispin),EcBSE(ispin),Omega(:,ispin),XpY(:,:,ispin))
+                           rho(:,:,:,ispin),EcBSE(ispin),Omega(:,ispin),XpY(:,:,ispin),XmY(:,:,ispin))
       call print_excitation('BSE  ',ispin,nS,Omega(:,ispin))
 
     end if
@@ -146,11 +147,11 @@ subroutine G0W0(COHSEX,SOSEX,BSE,TDA,singlet_manifold,triplet_manifold,eta, &
       EcBSE(ispin) = 0d0
 
       call linear_response(ispin,dRPA,TDA,.false.,nBas,nC,nO,nV,nR,nS,1d0,eHF,ERI, &
-                           rho(:,:,:,ispin),EcRPA(ispin),Omega(:,ispin),XpY(:,:,ispin))
+                           rho(:,:,:,ispin),EcRPA(ispin),Omega(:,ispin),XpY(:,:,ispin),XmY(:,:,ispin))
       call excitation_density(nBas,nC,nO,nR,nS,ERI,XpY(:,:,ispin),rho(:,:,:,ispin))
 
       call linear_response(ispin,dRPA,TDA,BSE,nBas,nC,nO,nV,nR,nS,1d0,eG0W0,ERI, &
-                           rho(:,:,:,ispin),EcBSE(ispin),Omega(:,ispin),XpY(:,:,ispin))
+                           rho(:,:,:,ispin),EcBSE(ispin),Omega(:,ispin),XpY(:,:,ispin),XmY(:,:,ispin))
       call print_excitation('BSE  ',ispin,nS,Omega(:,ispin))
 
     end if
@@ -192,13 +193,13 @@ subroutine G0W0(COHSEX,SOSEX,BSE,TDA,singlet_manifold,triplet_manifold,eta, &
           lambda = rAC(iAC)
 
           call linear_response(ispin,dRPA,TDA,.false.,nBas,nC,nO,nV,nR,nS,lambda,eHF,ERI, &
-                               rho(:,:,:,ispin),EcRPA(ispin),Omega(:,ispin),XpY(:,:,ispin))
+                               rho(:,:,:,ispin),EcRPA(ispin),Omega(:,ispin),XpY(:,:,ispin),XmY(:,:,ispin))
           call excitation_density(nBas,nC,nO,nR,nS,ERI,XpY(:,:,ispin),rho(:,:,:,ispin))
   
           call linear_response(ispin,dRPA,TDA,BSE,nBas,nC,nO,nV,nR,nS,lambda,eG0W0,ERI, &
-                           rho(:,:,:,ispin),EcACBSE(iAC,ispin),Omega(:,ispin),XpY(:,:,ispin))
+                           rho(:,:,:,ispin),EcACBSE(iAC,ispin),Omega(:,ispin),XpY(:,:,ispin),XmY(:,:,ispin))
 
-          call Ec_AC(ispin,dRPA,nBas,nC,nO,nV,nR,nS,ERI,XpY(:,:,ispin),EcAC(iAC,ispin))
+          call Ec_AC(ispin,dRPA,nBas,nC,nO,nV,nR,nS,ERI,XpY(:,:,ispin),XmY(:,:,ispin),EcAC(iAC,ispin))
 
           write(*,'(2X,F15.6,1X,F30.15,1X,F30.15)') lambda,EcACBSE(iAC,ispin),EcAC(iAC,ispin)
 
@@ -230,13 +231,13 @@ subroutine G0W0(COHSEX,SOSEX,BSE,TDA,singlet_manifold,triplet_manifold,eta, &
           lambda = rAC(iAC)
 
           call linear_response(ispin,dRPA,TDA,.false.,nBas,nC,nO,nV,nR,nS,lambda,eHF,ERI, &
-                               rho(:,:,:,ispin),EcRPA(ispin),Omega(:,ispin),XpY(:,:,ispin))
+                               rho(:,:,:,ispin),EcRPA(ispin),Omega(:,ispin),XpY(:,:,ispin),XmY(:,:,ispin))
           call excitation_density(nBas,nC,nO,nR,nS,ERI,XpY(:,:,ispin),rho(:,:,:,ispin))
          
           call linear_response(ispin,dRPA,TDA,BSE,nBas,nC,nO,nV,nR,nS,lambda,eG0W0,ERI, &
-                               rho(:,:,:,ispin),EcACBSE(iAC,ispin),Omega(:,ispin),XpY(:,:,ispin))
+                               rho(:,:,:,ispin),EcACBSE(iAC,ispin),Omega(:,ispin),XpY(:,:,ispin),XmY(:,:,ispin))
 
-          call Ec_AC(ispin,dRPA,nBas,nC,nO,nV,nR,nS,ERI,XpY(:,:,ispin),EcAC(iAC,ispin))
+          call Ec_AC(ispin,dRPA,nBas,nC,nO,nV,nR,nS,ERI,XpY(:,:,ispin),XmY(:,:,ispin),EcAC(iAC,ispin))
 
           write(*,'(2X,F15.6,1X,F30.15,1X,F30.15)') lambda,EcACBSE(iAC,ispin),EcAC(iAC,ispin)
 

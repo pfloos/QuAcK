@@ -1,11 +1,12 @@
-subroutine read_methods(doRHF,doUHF,doMOM,    & 
-                        doMP2,doMP3,doMP2F12, & 
-                        doCCD,doCCSD,doCCSDT, & 
-                        doCIS,doRPA,doTDHF,   & 
-                        doppRPA,doADC,        & 
-                        doGF2,doGF3,          & 
-                        doG0W0,doevGW,doqsGW, & 
-                        doG0T0,doevGT,doqsGT, & 
+subroutine read_methods(doRHF,doUHF,doMOM,         & 
+                        doMP2,doMP3,doMP2F12,      & 
+                        doCCD,doCCSD,doCCSDT,      & 
+                        do_ring_CCD,do_ladder_CCD, &
+                        doCIS,doRPA,doTDHF,        & 
+                        doppRPA,doADC,             & 
+                        doGF2,doGF3,               & 
+                        doG0W0,doevGW,doqsGW,      & 
+                        doG0T0,doevGT,doqsGT,      & 
                         doMCMP2)
 
 ! Read desired methods 
@@ -17,6 +18,7 @@ subroutine read_methods(doRHF,doUHF,doMOM,    &
   logical,intent(out)           :: doRHF,doUHF,doMOM
   logical,intent(out)           :: doMP2,doMP3,doMP2F12
   logical,intent(out)           :: doCCD,doCCSD,doCCSDT
+  logical,intent(out)           :: do_ring_CCD,do_ladder_CCD
   logical,intent(out)           :: doCIS,doRPA,doTDHF,doppRPA,doADC
   logical,intent(out)           :: doGF2,doGF3  
   logical,intent(out)           :: doG0W0,doevGW,doqsGW
@@ -44,6 +46,9 @@ subroutine read_methods(doRHF,doUHF,doMOM,    &
   doCCD   = .false.
   doCCSD  = .false.
   doCCSDT = .false.
+
+  do_ring_CCD   = .false.
+  do_ladder_CCD = .false.
 
   doCIS   = .false.
   doRPA   = .false.
@@ -83,10 +88,12 @@ subroutine read_methods(doRHF,doUHF,doMOM,    &
 ! Read CC methods
 
   read(1,*) 
-  read(1,*) answer1,answer2,answer3
-  if(answer1 == 'T') doCCD   = .true.
-  if(answer2 == 'T') doCCSD  = .true.
-  if(answer3 == 'T') doCCSDT = .true.
+  read(1,*) answer1,answer2,answer3,answer4,answer5
+  if(answer1 == 'T') doCCD         = .true.
+  if(answer2 == 'T') doCCSD        = .true.
+  if(answer3 == 'T') doCCSDT       = .true.
+  if(answer4 == 'T') do_ring_CCD   = .true.
+  if(answer5 == 'T') do_ladder_CCD = .true.
 
 ! Read excited state methods
 

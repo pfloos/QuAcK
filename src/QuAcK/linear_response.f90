@@ -1,4 +1,4 @@
-subroutine linear_response(ispin,dRPA,TDA,BSE,nBas,nC,nO,nV,nR,nS,lambda,e,ERI,rho,EcRPA,Omega,XpY)
+subroutine linear_response(ispin,dRPA,TDA,BSE,nBas,nC,nO,nV,nR,nS,lambda,e,ERI,rho,EcRPA,Omega,XpY,XmY)
 
 ! Compute linear response
 
@@ -22,7 +22,9 @@ subroutine linear_response(ispin,dRPA,TDA,BSE,nBas,nC,nO,nV,nR,nS,lambda,e,ERI,r
 ! Output variables
 
   double precision,intent(out)  :: EcRPA
-  double precision,intent(out)  :: Omega(nS),XpY(nS,nS)
+  double precision,intent(out)  :: Omega(nS)
+  double precision,intent(out)  :: XpY(nS,nS)
+  double precision,intent(out)  :: XmY(nS,nS)
 
 
 ! Memory allocation
@@ -82,6 +84,9 @@ subroutine linear_response(ispin,dRPA,TDA,BSE,nBas,nC,nO,nV,nR,nS,lambda,e,ERI,r
   Omega = sqrt(Omega)
   XpY = matmul(transpose(Z),AmBSq)
   call DA(nS,1d0/sqrt(abs(Omega)),XpY)
+
+  XmY = matmul(transpose(Z),AmBSq)
+  call DA(nS,sqrt(abs(Omega)),XmY)
 
 ! print*,'X+Y'
 ! call matout(nS,nS,XpY)

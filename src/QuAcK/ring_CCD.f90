@@ -182,12 +182,13 @@ subroutine ring_CCD(maxSCF,thresh,max_diis,nBas,nEl,ERI,ENuc,ERHF,eHF)
 
   endif
 
-! Moller-Plesset energies
-
   write(*,*)
-  write(*,'(1X,A15,1X,F10.6)') 'Ec(MP2)     = ',EcMP2
-  write(*,'(1X,A15,1X,F10.6)') 'Ec(MP3)     = ',EcMP3
-  write(*,'(1X,A15,1X,F10.6)') 'Ec(MP4-SDQ) = ',EcMP4
+  write(*,*)'----------------------------------------------------'
+  write(*,*)'              ring-CCD energy                       '
+  write(*,*)'----------------------------------------------------'
+  write(*,'(1X,A30,1X,F15.10)')' E(ring-CCD) = ',ECCD  
+  write(*,'(1X,A30,1X,F15.10)')' Ec(ring-CCD) = ',EcCCD 
+  write(*,*)'----------------------------------------------------'
   write(*,*)
 
 end subroutine ring_CCD
