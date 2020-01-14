@@ -173,7 +173,7 @@ subroutine G0W0(COHSEX,SOSEX,BSE,TDA,singlet_manifold,triplet_manifold,eta, &
 
       end if
 
-      call ACDFT(scaled_screening,.true.,TDA,BSE,singlet_manifold,triplet_manifold, & 
+      call ACFDT(scaled_screening,.true.,TDA,BSE,singlet_manifold,triplet_manifold, & 
                  nBas,nC,nO,nV,nR,nS,ERI,eG0W0,Omega,XpY,XmY,rho)
 
     end if

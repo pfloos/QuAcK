@@ -93,7 +93,7 @@ subroutine RPA(singlet_manifold,triplet_manifold,nBas,nC,nO,nV,nR,nS,ENuc,ERHF,E
     write(*,*) '------------------------------------------------------'
     write(*,*) 
  
-    call ACDFT(.false.,.true.,.false.,.false.,singlet_manifold,triplet_manifold, &
+    call ACFDT(.false.,.true.,.false.,.false.,singlet_manifold,triplet_manifold, &
                nBas,nC,nO,nV,nR,nS,ERI,e,Omega,XpY,XmY,rho)
 
   end if

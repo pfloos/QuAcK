@@ -21,7 +21,6 @@ subroutine ppRPA(singlet_manifold,triplet_manifold,nBas,nC,nO,nV,nR,ENuc,ERHF,ER
 
 ! Local variables
 
-  logical                       :: BSE
   integer                       :: ispin
   integer                       :: nOO
   integer                       :: nVV
@@ -46,10 +45,6 @@ subroutine ppRPA(singlet_manifold,triplet_manifold,nBas,nC,nO,nV,nR,ENuc,ERHF,ER
 
   Ec_ppRPA(:) = 0d0
 
-! Switch off Bethe-Salpeter equation for TDHF
-
-  BSE = .false. 
-
 ! Singlet manifold
 
   if(singlet_manifold) then 
@@ -66,9 +61,9 @@ subroutine ppRPA(singlet_manifold,triplet_manifold,nBas,nC,nO,nV,nR,ENuc,ERHF,ER
     allocate(Omega1(nVV,nspin),X1(nVV,nVV,nspin),Y1(nOO,nVV,nspin), & 
              Omega2(nOO,nspin),X2(nVV,nOO,nspin),Y2(nOO,nOO,nspin))
 
-    call linear_response_pp(ispin,BSE,nBas,nC,nO,nV,nR,nOO,nVV,e,ERI,    & 
-                            Omega1(:,ispin),X1(:,:,ispin),Y1(:,:,ispin), & 
-                            Omega2(:,ispin),X2(:,:,ispin),Y2(:,:,ispin), & 
+    call linear_response_pp(ispin,.false.,nBas,nC,nO,nV,nR,nOO,nVV,e,ERI, & 
+                            Omega1(:,ispin),X1(:,:,ispin),Y1(:,:,ispin),  & 
+                            Omega2(:,ispin),X2(:,:,ispin),Y2(:,:,ispin),  & 
                             Ec_ppRPA(ispin))
 
     call print_excitation('pp-RPA (N+2)',ispin,nVV,Omega1(:,ispin))
@@ -95,9 +90,9 @@ subroutine ppRPA(singlet_manifold,triplet_manifold,nBas,nC,nO,nV,nR,ENuc,ERHF,ER
              Omega2(nOO,nspin),X2(nVV,nOO,nspin),Y2(nOO,nOO,nspin))
 
 
-    call linear_response_pp(ispin,BSE,nBas,nC,nO,nV,nR,nOO,nVV,e,ERI,    &
-                            Omega1(:,ispin),X1(:,:,ispin),Y1(:,:,ispin), & 
-                            Omega2(:,ispin),X2(:,:,ispin),Y2(:,:,ispin), & 
+    call linear_response_pp(ispin,.false.,nBas,nC,nO,nV,nR,nOO,nVV,e,ERI, &
+                            Omega1(:,ispin),X1(:,:,ispin),Y1(:,:,ispin),  & 
+                            Omega2(:,ispin),X2(:,:,ispin),Y2(:,:,ispin),  & 
                             Ec_ppRPA(ispin))
 
     call print_excitation('pp-RPA (N+2)',ispin,nVV,Omega1(:,ispin))
@@ -109,10 +104,10 @@ subroutine ppRPA(singlet_manifold,triplet_manifold,nBas,nC,nO,nV,nR,ENuc,ERHF,ER
 
   write(*,*)
   write(*,*)'-------------------------------------------------------------------------------'
-  write(*,'(2X,A40,F15.6)') 'pp-RPA   correlation energy (singlet) =',Ec_ppRPA(1)
-  write(*,'(2X,A40,F15.6)') 'pp-RPA   correlation energy (triplet) =',3d0*Ec_ppRPA(2)
-  write(*,'(2X,A40,F15.6)') 'pp-RPA   correlation energy           =',Ec_ppRPA(1) + 3d0*Ec_ppRPA(2)
-  write(*,'(2X,A40,F15.6)') 'pp-RPA   total energy                 =',ENuc + ERHF + Ec_ppRPA(1) + 3d0*Ec_ppRPA(2)
+  write(*,'(2X,A40,F15.6)') 'Tr@ppRPA correlation energy (singlet) =',Ec_ppRPA(1)
+  write(*,'(2X,A40,F15.6)') 'Tr@ppRPA correlation energy (triplet) =',3d0*Ec_ppRPA(2)
+  write(*,'(2X,A40,F15.6)') 'Tr@ppRPA correlation energy           =',Ec_ppRPA(1) + 3d0*Ec_ppRPA(2)
+  write(*,'(2X,A40,F15.6)') 'Tr@ppRPA total energy                 =',ENuc + ERHF + Ec_ppRPA(1) + 3d0*Ec_ppRPA(2)
   write(*,*)'-------------------------------------------------------------------------------'
   write(*,*)
 

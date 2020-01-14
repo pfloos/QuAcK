@@ -311,7 +311,7 @@ subroutine qsGW(maxSCF,thresh,max_diis,COHSEX,SOSEX,BSE,TDA,G0W,GW0,singlet_mani
 
       end if
 
-      call ACDFT(scaled_screening,.true.,TDA,BSE,singlet_manifold,triplet_manifold, &
+      call ACFDT(scaled_screening,.true.,TDA,BSE,singlet_manifold,triplet_manifold, &
                  nBas,nC,nO,nV,nR,nS,ERI_MO_basis,eGW,Omega,XpY,XmY,rho)
 
     end if

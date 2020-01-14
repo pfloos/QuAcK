@@ -8,7 +8,7 @@ program QuAcK
   logical                       :: doMP2,doMP3,doMP2F12
   logical                       :: doCCD,doCCSD,doCCSDT
   logical                       :: do_ring_CCD,do_ladder_CCD
-  logical                       :: doCIS,doRPA,doTDHF
+  logical                       :: doCIS,doRPA,doRPAx
   logical                       :: doppRPA,doADC
   logical                       :: doGF2,doGF3
   logical                       :: doG0W0,doevGW,doqsGW
@@ -47,7 +47,7 @@ program QuAcK
   double precision              :: start_CCSD   ,end_CCSD     ,t_CCSD
   double precision              :: start_CIS    ,end_CIS      ,t_CIS
   double precision              :: start_RPA    ,end_RPA      ,t_RPA 
-  double precision              :: start_TDHF   ,end_TDHF     ,t_TDHF
+  double precision              :: start_RPAx   ,end_RPAx     ,t_RPAx
   double precision              :: start_ppRPA  ,end_ppRPA    ,t_ppRPA
   double precision              :: start_ADC    ,end_ADC      ,t_ADC
   double precision              :: start_GF2    ,end_GF2      ,t_GF2
@@ -113,7 +113,7 @@ program QuAcK
                     doMP2,doMP3,doMP2F12,      &
                     doCCD,doCCSD,doCCSDT,      &
                     do_ring_CCD,do_ladder_CCD, &
-                    doCIS,doRPA,doTDHF,        & 
+                    doCIS,doRPA,doRPAx,        & 
                     doppRPA,doADC,             &
                     doGF2,doGF3,               &
                     doG0W0,doevGW,doqsGW,      &
@@ -444,17 +444,17 @@ program QuAcK
   end if
 
 !------------------------------------------------------------------------
-! Compute TDHF excitations
+! Compute RPAx excitations
 !------------------------------------------------------------------------
 
-  if(doTDHF) then
+  if(doRPAx) then
 
-    call cpu_time(start_TDHF)
-    call TDHF(singlet_manifold,triplet_manifold,nBas,nC,nO,nV,nR,nS,ENuc,ERHF,ERI_MO_basis,eHF)
-    call cpu_time(end_TDHF)
+    call cpu_time(start_RPAx)
+    call RPAx(singlet_manifold,triplet_manifold,nBas,nC,nO,nV,nR,nS,ENuc,ERHF,ERI_MO_basis,eHF)
+    call cpu_time(end_RPAx)
 
-    t_TDHF = end_TDHF - start_TDHF
-    write(*,'(A65,1X,F9.3,A8)') 'Total CPU time for TDHF = ',t_TDHF,' seconds'
+    t_RPAx = end_RPAx - start_RPAx
+    write(*,'(A65,1X,F9.3,A8)') 'Total CPU time for RPAx = ',t_RPAx,' seconds'
     write(*,*)
 
   end if

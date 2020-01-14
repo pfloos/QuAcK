@@ -2,7 +2,7 @@ subroutine read_methods(doRHF,doUHF,doMOM,         &
                         doMP2,doMP3,doMP2F12,      & 
                         doCCD,doCCSD,doCCSDT,      & 
                         do_ring_CCD,do_ladder_CCD, &
-                        doCIS,doRPA,doTDHF,        & 
+                        doCIS,doRPA,doRPAx,        & 
                         doppRPA,doADC,             & 
                         doGF2,doGF3,               & 
                         doG0W0,doevGW,doqsGW,      & 
@@ -19,7 +19,7 @@ subroutine read_methods(doRHF,doUHF,doMOM,         &
   logical,intent(out)           :: doMP2,doMP3,doMP2F12
   logical,intent(out)           :: doCCD,doCCSD,doCCSDT
   logical,intent(out)           :: do_ring_CCD,do_ladder_CCD
-  logical,intent(out)           :: doCIS,doRPA,doTDHF,doppRPA,doADC
+  logical,intent(out)           :: doCIS,doRPA,doRPAx,doppRPA,doADC
   logical,intent(out)           :: doGF2,doGF3  
   logical,intent(out)           :: doG0W0,doevGW,doqsGW
   logical,intent(out)           :: doG0T0,doevGT,doqsGT
@@ -52,7 +52,7 @@ subroutine read_methods(doRHF,doUHF,doMOM,         &
 
   doCIS   = .false.
   doRPA   = .false.
-  doTDHF  = .false.
+  doRPAx  = .false.
   doppRPA = .false.
   doADC   = .false.
 
@@ -101,7 +101,7 @@ subroutine read_methods(doRHF,doUHF,doMOM,         &
   read(1,*) answer1,answer2,answer3,answer4,answer5
   if(answer1 == 'T') doCIS   = .true.
   if(answer2 == 'T') doRPA   = .true.
-  if(answer3 == 'T') doTDHF  = .true.
+  if(answer3 == 'T') doRPAx  = .true.
   if(answer4 == 'T') doppRPA = .true.
   if(answer5 == 'T') doADC   = .true.
 
