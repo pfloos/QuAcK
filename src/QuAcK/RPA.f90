@@ -23,9 +23,6 @@ subroutine RPA(singlet_manifold,triplet_manifold,nBas,nC,nO,nV,nR,nS,ENuc,ERHF,E
 
 ! Local variables
 
-  logical                       :: dRPA
-  logical                       :: TDA
-  logical                       :: BSE
   integer                       :: ispin
   double precision,allocatable  :: Omega(:,:)
   double precision,allocatable  :: XpY(:,:,:)
@@ -34,11 +31,7 @@ subroutine RPA(singlet_manifold,triplet_manifold,nBas,nC,nO,nV,nR,nS,ENuc,ERHF,E
   double precision              :: rho
   double precision              :: EcRPA(nspin)
 
-  logical                       :: AC
-  integer                       :: iAC
-  double precision              :: lambda
-  double precision,allocatable  :: EcACRPA(:,:)
-  double precision,allocatable  :: EcAC(:,:)
+  logical                       :: adiabatic_connection
 
 ! Hello world
 
@@ -52,24 +45,9 @@ subroutine RPA(singlet_manifold,triplet_manifold,nBas,nC,nO,nV,nR,nS,ENuc,ERHF,E
 
   EcRPA(:) = 0d0
 
-! Switch off exchange for RPA
-
-  dRPA = .true.
- 
-! Switch off Tamm-Dancoff approximation for RPA
-
-  TDA = .false.
- 
-! Switch off Bethe-Salpeter equation for RPA
-
-  BSE = .false. 
-
 ! Memory allocation
 
   allocate(Omega(nS,nspin),XpY(nS,nS,nspin),XmY(nS,nS,nspin))
-
-  AC = .true.
-  allocate(EcACRPA(nAC,nspin),EcAC(nAC,nspin))
 
 ! Singlet manifold
 
@@ -77,7 +55,7 @@ subroutine RPA(singlet_manifold,triplet_manifold,nBas,nC,nO,nV,nR,nS,ENuc,ERHF,E
 
     ispin = 1
 
-    call linear_response(ispin,dRPA,TDA,BSE,nBas,nC,nO,nV,nR,nS,1d0,e,ERI,rho, &
+    call linear_response(ispin,.true.,.false.,.false.,nBas,nC,nO,nV,nR,nS,1d0,e,ERI,rho, &
                          EcRPA(ispin),Omega(:,ispin),XpY(:,:,ispin),XmY(:,:,ispin))
     call print_excitation('RPA  ',ispin,nS,Omega(:,ispin))
 
@@ -89,7 +67,7 @@ subroutine RPA(singlet_manifold,triplet_manifold,nBas,nC,nO,nV,nR,nS,ENuc,ERHF,E
 
     ispin = 2
 
-    call linear_response(ispin,dRPA,TDA,BSE,nBas,nC,nO,nV,nR,nS,1d0,e,ERI,rho, &
+    call linear_response(ispin,.true.,.false.,.false.,nBas,nC,nO,nV,nR,nS,1d0,e,ERI,rho, &
                          EcRPA(ispin),Omega(:,ispin),XpY(:,:,ispin),XmY(:,:,ispin))
     call print_excitation('RPA  ',ispin,nS,Omega(:,ispin))
 
@@ -97,90 +75,27 @@ subroutine RPA(singlet_manifold,triplet_manifold,nBas,nC,nO,nV,nR,nS,ENuc,ERHF,E
 
   write(*,*)
   write(*,*)'-------------------------------------------------------------------------------'
-  write(*,'(2X,A40,F15.6)') 'RPA@RPA  correlation energy (singlet) =',EcRPA(1)
-  write(*,'(2X,A40,F15.6)') 'RPA@RPA  correlation energy (triplet) =',EcRPA(2)
-  write(*,'(2X,A40,F15.6)') 'RPA@RPA  correlation energy           =',EcRPA(1) + EcRPA(2)
-  write(*,'(2X,A40,F15.6)') 'RPA@RPA  total energy                 =',ENuc + ERHF + EcRPA(1) + EcRPA(2)
+  write(*,'(2X,A40,F15.6)') 'Tr@RPA  correlation energy (singlet) =',EcRPA(1)
+  write(*,'(2X,A40,F15.6)') 'Tr@RPA  correlation energy (triplet) =',EcRPA(2)
+  write(*,'(2X,A40,F15.6)') 'Tr@RPA  correlation energy           =',EcRPA(1) + EcRPA(2)
+  write(*,'(2X,A40,F15.6)') 'Tr@RPA  total energy                 =',ENuc + ERHF + EcRPA(1) + EcRPA(2)
   write(*,*)'-------------------------------------------------------------------------------'
   write(*,*)
 
-!   Compute the correlation energy via the adiabatic connection 
+! Compute the correlation energy via the adiabatic connection 
 
-    if(AC) then
+  adiabatic_connection = .true.
 
-      write(*,*) '------------------------------------------------------'
-      write(*,*) 'Adiabatic connection version of RPA correlation energy'
-      write(*,*) '------------------------------------------------------'
-      write(*,*) 
+  if(adiabatic_connection) then
+
+    write(*,*) '------------------------------------------------------'
+    write(*,*) 'Adiabatic connection version of RPA correlation energy'
+    write(*,*) '------------------------------------------------------'
+    write(*,*) 
  
-      if(singlet_manifold) then
+    call ACDFT(.false.,.true.,.false.,.false.,singlet_manifold,triplet_manifold, &
+               nBas,nC,nO,nV,nR,nS,ERI,e,Omega,XpY,XmY,rho)
 
-        ispin = 1
-        EcACRPA(:,ispin) = 0d0
-
-        write(*,*) '--------------'
-        write(*,*) 'Singlet states'
-        write(*,*) '--------------'
-        write(*,*) 
-
-        write(*,*) '-----------------------------------------------------------------------------------'
-        write(*,'(2X,A15,1X,A30,1X,A30)') 'lambda','EcRPA(lambda)','Tr(V x P_lambda)'
-        write(*,*) '-----------------------------------------------------------------------------------'
-
-        do iAC=1,nAC
- 
-          lambda = rAC(iAC)
-
-          call linear_response(ispin,dRPA,TDA,BSE,nBas,nC,nO,nV,nR,nS,lambda,e,ERI,rho, &
-                               EcACRPA(iAC,ispin),Omega(:,ispin),XpY(:,:,ispin),XmY(:,:,ispin))
-
-          call Ec_AC(ispin,dRPA,nBas,nC,nO,nV,nR,nS,ERI,XpY(:,:,ispin),XmY(:,:,ispin),EcAC(iAC,ispin))
-
-          write(*,'(2X,F15.6,1X,F30.15,1X,F30.15)') lambda,EcACRPA(iAC,ispin),EcAC(iAC,ispin)
-
-        end do
-
-        write(*,*) '-----------------------------------------------------------------------------------'
-        write(*,'(2X,A50,1X,F15.6)') ' Ec(RPA) via Gauss-Legendre quadrature:',0.5d0*dot_product(wAC,EcAC(:,ispin))
-        write(*,*) '-----------------------------------------------------------------------------------'
-        write(*,*)
-
-      end if
- 
-      if(triplet_manifold) then
-
-        ispin = 2
-        EcACRPA(:,ispin) = 0d0
-
-        write(*,*) '--------------'
-        write(*,*) 'Triplet states'
-        write(*,*) '--------------'
-        write(*,*) 
-
-        write(*,*) '-----------------------------------------------------------------------------------'
-        write(*,'(2X,A15,1X,A30,1X,A30)') 'lambda','EcRPA(lambda)','Tr(V x P_lambda)'
-        write(*,*) '-----------------------------------------------------------------------------------'
-
-        do iAC=1,nAC
- 
-          lambda = rAC(iAC)
-
-          call linear_response(ispin,dRPA,TDA,BSE,nBas,nC,nO,nV,nR,nS,lambda,e,ERI,rho, &
-                               EcACRPA(iAC,ispin),Omega(:,ispin),XpY(:,:,ispin),XmY(:,:,ispin))
-
-          call Ec_AC(ispin,dRPA,nBas,nC,nO,nV,nR,nS,ERI,XpY(:,:,ispin),XmY(:,:,ispin),EcAC(iAC,ispin))
-
-          write(*,'(2X,F15.6,1X,F30.15,1X,F30.15)') lambda,EcACRPA(iAC,ispin),EcAC(iAC,ispin)
-
-        end do
-
-        write(*,*) '-----------------------------------------------------------------------------------'
-        write(*,'(2X,A50,1X,F15.6)') ' Ec(RPA) via Gauss-Legendre quadrature:',0.5d0*dot_product(wAC,EcAC(:,ispin))
-        write(*,*) '-----------------------------------------------------------------------------------'
-        write(*,*)
-
-      end if
- 
-    end if
+  end if
 
 end subroutine RPA

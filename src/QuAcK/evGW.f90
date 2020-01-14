@@ -53,8 +53,12 @@ subroutine evGW(maxSCF,thresh,max_diis,COHSEX,SOSEX,BSE,TDA,G0W,GW0,singlet_mani
   double precision,allocatable  :: SigC(:)
   double precision,allocatable  :: Omega(:,:)
   double precision,allocatable  :: XpY(:,:,:)
+  double precision,allocatable  :: XmY(:,:,:)
   double precision,allocatable  :: rho(:,:,:,:)
   double precision,allocatable  :: rhox(:,:,:,:)
+
+  logical                       :: adiabatic_connection
+  logical                       :: scaled_screening
 
 ! Hello world
 
@@ -86,7 +90,7 @@ subroutine evGW(maxSCF,thresh,max_diis,COHSEX,SOSEX,BSE,TDA,G0W,GW0,singlet_mani
 ! Memory allocation
 
   allocate(eGW(nBas),eOld(nBas),Z(nBas),SigC(nBas),Omega(nS,nspin),           & 
-           XpY(nS,nS,nspin),rho(nBas,nBas,nS,nspin),rhox(nBas,nBas,nS,nspin), &
+           XpY(nS,nS,nspin),XmY(nS,nS,nspin),rho(nBas,nBas,nS,nspin),rhox(nBas,nBas,nS,nspin), &
            error_diis(nBas,max_diis),e_diis(nBas,max_diis))
 
 ! Initialization
@@ -112,7 +116,7 @@ subroutine evGW(maxSCF,thresh,max_diis,COHSEX,SOSEX,BSE,TDA,G0W,GW0,singlet_mani
     if(.not. GW0 .or. nSCF == 0) then
 
       call linear_response(ispin,dRPA,TDA,.false.,nBas,nC,nO,nV,nR,nS,eGW,ERI, & 
-                           rho(:,:,:,ispin),EcRPA(ispin),Omega(:,ispin),XpY(:,:,ispin))
+                           rho(:,:,:,ispin),EcRPA(ispin),Omega(:,ispin),XpY(:,:,ispin),XmY(:,:,ispin))
 
     endif
 
@@ -221,11 +225,11 @@ subroutine evGW(maxSCF,thresh,max_diis,COHSEX,SOSEX,BSE,TDA,G0W,GW0,singlet_mani
       EcBSE(ispin) = 0d0
 
       call linear_response(ispin,dRPA,TDA,.false.,nBas,nC,nO,nV,nR,nS,1d0,eGW,ERI, &
-                           rho(:,:,:,ispin),EcRPA(ispin),Omega(:,ispin),XpY(:,:,ispin))
+                           rho(:,:,:,ispin),EcRPA(ispin),Omega(:,ispin),XpY(:,:,ispin),XmY(:,:,ispin))
       call excitation_density(nBas,nC,nO,nR,nS,ERI,XpY(:,:,ispin),rho(:,:,:,ispin))
 
       call linear_response(ispin,dRPA,TDA,BSE,nBas,nC,nO,nV,nR,nS,1d0,eGW,ERI, &
-                           rho(:,:,:,ispin),EcBSE(ispin),Omega(:,ispin),XpY(:,:,ispin))
+                           rho(:,:,:,ispin),EcBSE(ispin),Omega(:,ispin),XpY(:,:,ispin),XmY(:,:,ispin))
       call print_excitation('BSE  ',ispin,nS,Omega(:,ispin))
 
     endif
@@ -238,23 +242,47 @@ subroutine evGW(maxSCF,thresh,max_diis,COHSEX,SOSEX,BSE,TDA,G0W,GW0,singlet_mani
       EcBSE(ispin) = 0d0
 
       call linear_response(ispin,dRPA,TDA,.false.,nBas,nC,nO,nV,nR,nS,1d0,eGW,ERI, &
-                           rho(:,:,:,ispin),EcRPA(ispin),Omega(:,ispin),XpY(:,:,ispin))
+                           rho(:,:,:,ispin),EcRPA(ispin),Omega(:,ispin),XpY(:,:,ispin),XmY(:,:,ispin))
       call excitation_density(nBas,nC,nO,nR,nS,ERI,XpY(:,:,ispin),rho(:,:,:,ispin))
 
       call linear_response(ispin,dRPA,TDA,BSE,nBas,nC,nO,nV,nR,nS,1d0,eGW,ERI, &
-                           rho(:,:,:,ispin),EcBSE(ispin),Omega(:,ispin),XpY(:,:,ispin))
+                           rho(:,:,:,ispin),EcBSE(ispin),Omega(:,ispin),XpY(:,:,ispin),XmY(:,:,ispin))
       call print_excitation('BSE  ',ispin,nS,Omega(:,ispin))
 
     endif
 
     write(*,*)
     write(*,*)'-------------------------------------------------------------------------------'
-    write(*,'(2X,A40,F15.6)') 'BSE@evGW correlation energy (singlet) =',EcBSE(1)
-    write(*,'(2X,A40,F15.6)') 'BSE@evGW correlation energy (triplet) =',EcBSE(2)
-    write(*,'(2X,A40,F15.6)') 'BSE@evGW correlation energy           =',EcBSE(1) + EcBSE(2)
-    write(*,'(2X,A40,F15.6)') 'BSE@evGW total energy                 =',ENuc + ERHF + EcBSE(1) + EcBSE(2)
+    write(*,'(2X,A40,F15.6)') 'Tr@BSE@evGW correlation energy (singlet) =',EcBSE(1)
+    write(*,'(2X,A40,F15.6)') 'Tr@BSE@evGW correlation energy (triplet) =',EcBSE(2)
+    write(*,'(2X,A40,F15.6)') 'Tr@BSE@evGW correlation energy           =',EcBSE(1) + EcBSE(2)
+    write(*,'(2X,A40,F15.6)') 'Tr@BSE@evGW total energy                 =',ENuc + ERHF + EcBSE(1) + EcBSE(2)
     write(*,*)'-------------------------------------------------------------------------------'
     write(*,*)
+
+!   Compute the BSE correlation energy via the adiabatic connection 
+
+    adiabatic_connection = .true.
+    scaled_screening     = .true.
+
+    if(adiabatic_connection) then
+
+      write(*,*) '------------------------------------------------------'
+      write(*,*) 'Adiabatic connection version of BSE correlation energy'
+      write(*,*) '------------------------------------------------------'
+      write(*,*)
+
+      if(scaled_screening) then
+
+        write(*,*) '*** scaled screening version (extended BSE) ***'
+        write(*,*)
+
+      end if
+
+      call ACDFT(scaled_screening,.true.,TDA,BSE,singlet_manifold,triplet_manifold, &
+                 nBas,nC,nO,nV,nR,nS,ERI,eGW,Omega,XpY,XmY,rho)
+
+    end if
 
   endif
 

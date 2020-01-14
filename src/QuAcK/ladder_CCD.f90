@@ -187,7 +187,7 @@ subroutine ladder_CCD(maxSCF,thresh,max_diis,nBas,nEl,ERI,ENuc,ERHF,eHF)
   write(*,*)'              ladder-CCD energy                     '
   write(*,*)'----------------------------------------------------'
   write(*,'(1X,A30,1X,F15.10)')' E(ladder-CCD)  = ',ECCD
-  write(*,'(1X,A30,1X,F10.6)')' Ec(ladder-CCSD) = ',EcCCD
+  write(*,'(1X,A30,1X,F15.10)')' Ec(ladder-CCSD) = ',EcCCD
   write(*,*)'----------------------------------------------------'
   write(*,*)
 

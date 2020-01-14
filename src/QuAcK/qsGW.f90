@@ -52,11 +52,12 @@ subroutine qsGW(maxSCF,thresh,max_diis,COHSEX,SOSEX,BSE,TDA,G0W,GW0,singlet_mani
   double precision,allocatable  :: F_diis(:,:)
   double precision,allocatable  :: Omega(:,:)
   double precision,allocatable  :: XpY(:,:,:)
+  double precision,allocatable  :: XmY(:,:,:)
   double precision,allocatable  :: rho(:,:,:,:)
   double precision,allocatable  :: rhox(:,:,:,:)
   double precision,allocatable  :: c(:,:)
   double precision,allocatable  :: cp(:,:)
-  double precision,allocatable  :: e(:)
+  double precision,allocatable  :: eGW(:)
   double precision,allocatable  :: P(:,:)
   double precision,allocatable  :: F(:,:)
   double precision,allocatable  :: Fp(:,:)
@@ -67,6 +68,9 @@ subroutine qsGW(maxSCF,thresh,max_diis,COHSEX,SOSEX,BSE,TDA,G0W,GW0,singlet_mani
   double precision,allocatable  :: SigCm(:,:)
   double precision,allocatable  :: Z(:)
   double precision,allocatable  :: error(:,:)
+
+  logical                       :: adiabatic_connection
+  logical                       :: scaled_screening
 
 ! Hello world
 
@@ -101,9 +105,9 @@ subroutine qsGW(maxSCF,thresh,max_diis,COHSEX,SOSEX,BSE,TDA,G0W,GW0,singlet_mani
 
 ! Memory allocation
 
-  allocate(e(nBas),c(nBas,nBas),cp(nBas,nBas),P(nBas,nBas),F(nBas,nBas),Fp(nBas,nBas),          &
+  allocate(eGW(nBas),c(nBas,nBas),cp(nBas,nBas),P(nBas,nBas),F(nBas,nBas),Fp(nBas,nBas),        &
            J(nBas,nBas),K(nBas,nBas),SigC(nBas,nBas),SigCp(nBas,nBas),SigCm(nBas,nBas),Z(nBas), & 
-           Omega(nS,nspin),XpY(nS,nS,nspin),rho(nBas,nBas,nS,nspin),rhox(nBas,nBas,nS,nspin),   &
+           Omega(nS,nspin),XpY(nS,nS,nspin),XmY(nS,nS,nspin),rho(nBas,nBas,nS,nspin),rhox(nBas,nBas,nS,nspin),   &
            error(nBas,nBas),error_diis(nBasSq,max_diis),F_diis(nBasSq,max_diis))
 
 ! Initialization
@@ -113,7 +117,7 @@ subroutine qsGW(maxSCF,thresh,max_diis,COHSEX,SOSEX,BSE,TDA,G0W,GW0,singlet_mani
   ispin           = 1
   Conv            = 1d0
   P(:,:)          = PHF(:,:)
-  e(:)            = eHF(:)
+  eGW(:)          = eHF(:)
   c(:,:)          = cHF(:,:)
   F_diis(:,:)     = 0d0
   error_diis(:,:) = 0d0
@@ -140,8 +144,8 @@ subroutine qsGW(maxSCF,thresh,max_diis,COHSEX,SOSEX,BSE,TDA,G0W,GW0,singlet_mani
 
     if(.not. GW0 .or. nSCF == 0) then
 
-      call linear_response(ispin,dRPA,TDA,.false.,nBas,nC,nO,nV,nR,nS,1d0,e,ERI_MO_basis, &
-                           rho(:,:,:,ispin),EcRPA(ispin),Omega(:,ispin),XpY(:,:,ispin))
+      call linear_response(ispin,dRPA,TDA,.false.,nBas,nC,nO,nV,nR,nS,1d0,eGW,ERI_MO_basis, &
+                           rho(:,:,:,ispin),EcRPA(ispin),Omega(:,ispin),XpY(:,:,ispin),XmY(:,:,ispin))
 
     endif
 
@@ -160,9 +164,9 @@ subroutine qsGW(maxSCF,thresh,max_diis,COHSEX,SOSEX,BSE,TDA,G0W,GW0,singlet_mani
 
      else
 
-      call self_energy_correlation(COHSEX,SOSEX,eta,nBas,nC,nO,nV,nR,nS,e, & 
+      call self_energy_correlation(COHSEX,SOSEX,eta,nBas,nC,nO,nV,nR,nS,eGW, & 
                                    Omega(:,ispin),rho(:,:,:,ispin),rhox(:,:,:,ispin),EcGM,SigC)
-      call renormalization_factor(COHSEX,SOSEX,eta,nBas,nC,nO,nV,nR,nS,e, & 
+      call renormalization_factor(COHSEX,SOSEX,eta,nBas,nC,nO,nV,nR,nS,eGW, & 
                                   Omega(:,ispin),rho(:,:,:,ispin),rhox(:,:,:,ispin),Z)
 
      endif
@@ -196,7 +200,7 @@ subroutine qsGW(maxSCF,thresh,max_diis,COHSEX,SOSEX,BSE,TDA,G0W,GW0,singlet_mani
 
     Fp = matmul(transpose(X),matmul(F,X))
     cp(:,:) = Fp(:,:)
-    call diagonalize_matrix(nBas,cp,e)
+    call diagonalize_matrix(nBas,cp,eGW)
     c = matmul(X,cp)
 
     ! Compute new density matrix in the AO basis
@@ -206,7 +210,7 @@ subroutine qsGW(maxSCF,thresh,max_diis,COHSEX,SOSEX,BSE,TDA,G0W,GW0,singlet_mani
     ! Print results
 
     call print_excitation('RPA  ',ispin,nS,Omega(:,ispin))
-    call print_qsGW(nBas,nO,nSCF,Conv,thresh,eHF,e,c,ENuc,P,T,V,Hc,J,K,F,SigCp,Z,EcRPA(ispin),EcGM,EqsGW)
+    call print_qsGW(nBas,nO,nSCF,Conv,thresh,eHF,eGW,c,ENuc,P,T,V,Hc,J,K,F,SigCp,Z,EcRPA(ispin),EcGM,EqsGW)
 
     ! Increment
 
@@ -219,7 +223,7 @@ subroutine qsGW(maxSCF,thresh,max_diis,COHSEX,SOSEX,BSE,TDA,G0W,GW0,singlet_mani
 
 ! Compute second-order correction of the Hermitization error
 
-  call qsGW_PT(nBas,nC,nO,nV,nR,nS,e,SigCm)
+  call qsGW_PT(nBas,nC,nO,nV,nR,nS,eGW,SigCm)
 
 ! Compute the overlap between HF and GW orbitals
 
@@ -253,12 +257,12 @@ subroutine qsGW(maxSCF,thresh,max_diis,COHSEX,SOSEX,BSE,TDA,G0W,GW0,singlet_mani
       ispin = 1
       EcBSE(ispin) = 0d0
 
-      call linear_response(ispin,dRPA,TDA,.false.,nBas,nC,nO,nV,nR,nS,1d0,e,ERI_MO_basis, &
-                             rho(:,:,:,ispin),EcRPA(ispin),Omega(:,ispin),XpY(:,:,ispin))
+      call linear_response(ispin,dRPA,TDA,.false.,nBas,nC,nO,nV,nR,nS,1d0,eGW,ERI_MO_basis, &
+                             rho(:,:,:,ispin),EcRPA(ispin),Omega(:,ispin),XpY(:,:,ispin),XmY(:,:,ispin))
       call excitation_density(nBas,nC,nO,nR,nS,ERI_MO_basis,XpY(:,:,ispin),rho(:,:,:,ispin))
      
-      call linear_response(ispin,dRPA,TDA,BSE,nBas,nC,nO,nV,nR,nS,1d0,e,ERI_MO_basis, & 
-                           rho(:,:,:,ispin),EcBSE(ispin),Omega(:,ispin),XpY(:,:,ispin))
+      call linear_response(ispin,dRPA,TDA,BSE,nBas,nC,nO,nV,nR,nS,1d0,eGW,ERI_MO_basis, & 
+                           rho(:,:,:,ispin),EcBSE(ispin),Omega(:,ispin),XpY(:,:,ispin),XmY(:,:,ispin))
       call print_excitation('BSE  ',ispin,nS,Omega(:,ispin))
 
     endif
@@ -269,25 +273,49 @@ subroutine qsGW(maxSCF,thresh,max_diis,COHSEX,SOSEX,BSE,TDA,G0W,GW0,singlet_mani
       ispin = 2
       EcBSE(ispin) = 0d0
 
-      call linear_response(ispin,dRPA,TDA,.false.,nBas,nC,nO,nV,nR,nS,1d0,e,ERI_MO_basis, &
-                             rho(:,:,:,ispin),EcRPA(ispin),Omega(:,ispin),XpY(:,:,ispin))
+      call linear_response(ispin,dRPA,TDA,.false.,nBas,nC,nO,nV,nR,nS,1d0,eGW,ERI_MO_basis, &
+                             rho(:,:,:,ispin),EcRPA(ispin),Omega(:,ispin),XpY(:,:,ispin),XmY(:,:,ispin))
       call excitation_density(nBas,nC,nO,nR,nS,ERI_MO_basis,XpY(:,:,ispin),rho(:,:,:,ispin))
      
-      call linear_response(ispin,dRPA,TDA,BSE,nBas,nC,nO,nV,nR,nS,1d0,e,ERI_MO_basis, &
-                           rho(:,:,:,ispin),EcBSE(ispin),Omega(:,ispin),XpY(:,:,ispin))
+      call linear_response(ispin,dRPA,TDA,BSE,nBas,nC,nO,nV,nR,nS,1d0,eGW,ERI_MO_basis, &
+                           rho(:,:,:,ispin),EcBSE(ispin),Omega(:,ispin),XpY(:,:,ispin),XmY(:,:,ispin))
       call print_excitation('BSE  ',ispin,nS,Omega(:,ispin))
 
     endif
 
     write(*,*)
     write(*,*)'-------------------------------------------------------------------------------'
-    write(*,'(2X,A40,F15.6)') 'BSE@qsGW correlation energy (singlet) =',EcBSE(1)
-    write(*,'(2X,A40,F15.6)') 'BSE@qsGW correlation energy (triplet) =',EcBSE(2)
-    write(*,'(2X,A40,F15.6)') 'BSE@qsGW correlation energy           =',EcBSE(1) + EcBSE(2)
-    write(*,'(2X,A40,F15.6)') 'BSE@qsGW total energy                 =',ENuc + EqsGW + EcBSE(1) + EcBSE(2)
+    write(*,'(2X,A40,F15.6)') 'Tr@BSE@qsGW correlation energy (singlet) =',EcBSE(1)
+    write(*,'(2X,A40,F15.6)') 'Tr@BSE@qsGW correlation energy (triplet) =',EcBSE(2)
+    write(*,'(2X,A40,F15.6)') 'Tr@BSE@qsGW correlation energy           =',EcBSE(1) + EcBSE(2)
+    write(*,'(2X,A40,F15.6)') 'Tr@BSE@qsGW total energy                 =',ENuc + EqsGW + EcBSE(1) + EcBSE(2)
     write(*,*)'-------------------------------------------------------------------------------'
     write(*,*)
 
-  endif
+!   Compute the BSE correlation energy via the adiabatic connection 
+
+    adiabatic_connection = .true.
+    scaled_screening     = .true.
+
+    if(adiabatic_connection) then
+
+      write(*,*) '------------------------------------------------------'
+      write(*,*) 'Adiabatic connection version of BSE correlation energy'
+      write(*,*) '------------------------------------------------------'
+      write(*,*)
+
+      if(scaled_screening) then
+
+        write(*,*) '*** scaled screening version (extended BSE) ***'
+        write(*,*)
+
+      end if
+
+      call ACDFT(scaled_screening,.true.,TDA,BSE,singlet_manifold,triplet_manifold, &
+                 nBas,nC,nO,nV,nR,nS,ERI_MO_basis,eGW,Omega,XpY,XmY,rho)
+
+    end if
+
+  end if
 
 end subroutine qsGW
