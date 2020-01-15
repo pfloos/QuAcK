@@ -41,7 +41,6 @@ subroutine huckel_guess(nBas,nO,S,Hc,ERI,J,K,X,cp,Fp,e,c,P)
     enddo
   enddo
   
-
   Fp(:,:) = matmul(transpose(X(:,:)),matmul(Fp(:,:),X(:,:)))
   cp(:,:) = Fp(:,:)
   call diagonalize_matrix(nBas,cp,e)

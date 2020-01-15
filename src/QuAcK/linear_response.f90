@@ -16,6 +16,7 @@ subroutine linear_response(ispin,dRPA,TDA,BSE,nBas,nC,nO,nV,nR,nS,lambda,e,ERI,r
   
 ! Local variables
 
+  integer                       :: ia
   double precision              :: trace_matrix
   double precision,allocatable  :: A(:,:),B(:,:),ApB(:,:),AmB(:,:),AmBSq(:,:),Z(:,:)
 
@@ -67,6 +68,10 @@ subroutine linear_response(ispin,dRPA,TDA,BSE,nBas,nC,nO,nV,nR,nS,lambda,e,ERI,r
   if(minval(Omega) < 0d0) & 
     call print_warning('You may have instabilities in linear response!!')
  
+  do ia=1,nS
+    if(Omega(ia) < 0d0) Omega(ia) = 0d0
+  end do
+
   Omega = sqrt(Omega)
   XpY = matmul(transpose(Z),AmBSq)
   call DA(nS,1d0/sqrt(abs(Omega)),XpY)
