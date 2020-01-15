@@ -1,4 +1,4 @@
-subroutine print_qsGW(nBas,nO,nSCF,Conv,thresh,eHF,eGW,c,ENuc,P,T,V,Hc,J,K,F,SigmaC,Z,EcRPA,EcGM,EqsGW)
+subroutine print_qsGW(nBas,nO,nSCF,Conv,thresh,eHF,eGW,c,ENuc,P,T,V,Hc,J,K,F,SigC,Z,EcRPA,EcGM,EqsGW)
 
 
 ! Print one-electron energies and other stuff for qsGW
@@ -13,7 +13,7 @@ subroutine print_qsGW(nBas,nO,nSCF,Conv,thresh,eHF,eGW,c,ENuc,P,T,V,Hc,J,K,F,Sig
   double precision,intent(in)        :: eHF(nBas),eGW(nBas),c(nBas),P(nBas,nBas) 
   double precision,intent(in)        :: T(nBas,nBas),V(nBas,nBas),Hc(nBas,nBas)
   double precision,intent(in)        :: J(nBas,nBas),K(nBas,nBas),F(nBas,nBas)
-  double precision,intent(in)        :: Z(nBas),SigmaC(nBas,nBas)
+  double precision,intent(in)        :: Z(nBas),SigC(nBas,nBas)
 
 ! Local variables
 
@@ -35,8 +35,9 @@ subroutine print_qsGW(nBas,nO,nSCF,Conv,thresh,eHF,eGW,c,ENuc,P,T,V,Hc,J,K,F,Sig
   EV = trace_matrix(nBas,matmul(P,V))
   EJ = 0.5d0*trace_matrix(nBas,matmul(P,J))
   Ex = 0.25d0*trace_matrix(nBas,matmul(P,K))
-  EqsGW = ET + EV + EJ + Ex
+! Ec = 0.5d0*trace_matrix(nBas,matmul(P,SigC))
   Ec = 0d0
+  EqsGW = ET + EV + EJ + Ex + Ec
 
 ! Dump results
 
@@ -69,8 +70,8 @@ subroutine print_qsGW(nBas,nO,nSCF,Conv,thresh,eHF,eGW,c,ENuc,P,T,V,Hc,J,K,F,Sig
   write(*,'(2X,A30,F15.6)') 'qsGW GM total    energy   =',EqsGW + ENuc + EcGM
   write(*,'(2X,A30,F15.6)') 'qsGW exchange    energy   =',Ex
   write(*,'(2X,A30,F15.6)') 'qsGW correlation energy   =',Ec
-  write(*,'(2X,A30,F15.6)') 'RPA@qsGW correlation energy =',EcRPA
-  write(*,'(2X,A30,F15.6)') 'GM@qsGW  correlation energy =',EcGM
+! write(*,'(2X,A30,F15.6)') 'RPA@qsGW correlation energy =',EcRPA
+! write(*,'(2X,A30,F15.6)') 'GM@qsGW  correlation energy =',EcGM
   write(*,*)'-------------------------------------------'
   write(*,*)
 
@@ -94,7 +95,7 @@ subroutine print_qsGW(nBas,nO,nSCF,Conv,thresh,eHF,eGW,c,ENuc,P,T,V,Hc,J,K,F,Sig
     write(*,'(A32,1X,F16.10)') ' Electronic   energy  ',EqsGW
     write(*,'(A32,1X,F16.10)') ' Nuclear   repulsion  ',ENuc
     write(*,'(A32,1X,F16.10)') ' qsGW         energy  ',ENuc + EqsGW
-    write(*,'(A32,1X,F16.10)') ' RPA corr.    energy  ',EcRPA
+!   write(*,'(A32,1X,F16.10)') ' RPA corr.    energy  ',EcRPA
     write(*,'(A50)')           '---------------------------------------'
     write(*,*)
  

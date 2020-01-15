@@ -97,16 +97,30 @@ subroutine G0W0(doACFDT,doXBS,COHSEX,SOSEX,BSE,TDA,singlet_manifold,triplet_mani
 ! Solve the quasi-particle equation
 
   eGW(:) = eHF(:) + Z(:)*SigC(:)
-
+ 
 ! Dump results
 
-  call print_excitation('RPA   ',ispin,nS,Omega(:,ispin))
+! call print_excitation('RPA   ',ispin,nS,Omega(:,ispin))
   call print_G0W0(nBas,nO,eHF,ENuc,ERHF,SigC,Z,eGW,EcRPA(ispin),EcGM)
+
+! Compute the RPA correlation energy
+
+  call linear_response(ispin,.true.,TDA,.false.,nBas,nC,nO,nV,nR,nS,1d0,eGW,ERI, & 
+                       rho(:,:,:,ispin),EcRPA(ispin),Omega(:,ispin),XpY(:,:,ispin),XmY(:,:,ispin))
+
+  write(*,*)
+  write(*,*)'-------------------------------------------------------------------------------'
+  write(*,'(2X,A50,F15.6)') 'Tr@RPA@G0W0 correlation energy (singlet) =',EcRPA(1)
+  write(*,'(2X,A50,F15.6)') 'Tr@RPA@G0W0 correlation energy (triplet) =',EcRPA(2)
+  write(*,'(2X,A50,F15.6)') 'Tr@RPA@G0W0 correlation energy           =',EcRPA(1) + EcRPA(2)
+  write(*,'(2X,A50,F15.6)') 'Tr@RPA@G0W0 total energy                 =',ENuc + ERHF + EcRPA(1) + EcRPA(2)
+  write(*,*)'-------------------------------------------------------------------------------'
+  write(*,*)
 
 ! Plot stuff
 
-  call plot_GW(nBas,nC,nO,nV,nR,nS,eHF,eGW,Omega(:,ispin),rho(:,:,:,ispin),rhox(:,:,:,ispin))
- 
+! call plot_GW(nBas,nC,nO,nV,nR,nS,eHF,eGW,Omega(:,ispin),rho(:,:,:,ispin),rhox(:,:,:,ispin))
+
 ! Perform BSE calculation
 
   if(BSE) then
@@ -116,19 +130,10 @@ subroutine G0W0(doACFDT,doXBS,COHSEX,SOSEX,BSE,TDA,singlet_manifold,triplet_mani
 
     write(*,*)
     write(*,*)'-------------------------------------------------------------------------------'
-    write(*,'(2X,A40,F15.6)') 'Tr@RPA@G0W0 correlation energy (singlet) =',EcRPA(1)
-    write(*,'(2X,A40,F15.6)') 'Tr@RPA@G0W0 correlation energy (triplet) =',EcRPA(2)
-    write(*,'(2X,A40,F15.6)') 'Tr@RPA@G0W0 correlation energy           =',EcRPA(1) + EcRPA(2)
-    write(*,'(2X,A40,F15.6)') 'Tr@RPA@G0W0 total energy                 =',ENuc + ERHF + EcRPA(1) + EcRPA(2)
-    write(*,*)'-------------------------------------------------------------------------------'
-    write(*,*)
-
-    write(*,*)
-    write(*,*)'-------------------------------------------------------------------------------'
-    write(*,'(2X,A40,F15.6)') 'Tr@BSE@G0W0 correlation energy (singlet) =',EcBSE(1)
-    write(*,'(2X,A40,F15.6)') 'Tr@BSE@G0W0 correlation energy (triplet) =',EcBSE(2)
-    write(*,'(2X,A40,F15.6)') 'Tr@BSE@G0W0 correlation energy           =',EcBSE(1) + EcBSE(2)
-    write(*,'(2X,A40,F15.6)') 'Tr@BSE@G0W0 total energy                 =',ENuc + ERHF + EcBSE(1) + EcBSE(2)
+    write(*,'(2X,A50,F15.6)') 'Tr@BSE@G0W0 correlation energy (singlet) =',EcBSE(1)
+    write(*,'(2X,A50,F15.6)') 'Tr@BSE@G0W0 correlation energy (triplet) =',EcBSE(2)
+    write(*,'(2X,A50,F15.6)') 'Tr@BSE@G0W0 correlation energy           =',EcBSE(1) + EcBSE(2)
+    write(*,'(2X,A50,F15.6)') 'Tr@BSE@G0W0 total energy                 =',ENuc + ERHF + EcBSE(1) + EcBSE(2)
     write(*,*)'-------------------------------------------------------------------------------'
     write(*,*)
 
@@ -153,10 +158,10 @@ subroutine G0W0(doACFDT,doXBS,COHSEX,SOSEX,BSE,TDA,singlet_manifold,triplet_mani
 
       write(*,*)
       write(*,*)'-------------------------------------------------------------------------------'
-      write(*,'(2X,A40,F15.6)') 'AC@BSE@G0W0 correlation energy (singlet) =',EcAC(1)
-      write(*,'(2X,A40,F15.6)') 'AC@BSE@G0W0 correlation energy (triplet) =',EcAC(2)
-      write(*,'(2X,A40,F15.6)') 'AC@BSE@G0W0 correlation energy           =',EcAC(1) + EcAC(2)
-      write(*,'(2X,A40,F15.6)') 'AC@BSE@G0W0 total energy                 =',ENuc + ERHF + EcAC(1) + EcAC(2)
+      write(*,'(2X,A50,F15.6)') 'AC@BSE@G0W0 correlation energy (singlet) =',EcAC(1)
+      write(*,'(2X,A50,F15.6)') 'AC@BSE@G0W0 correlation energy (triplet) =',EcAC(2)
+      write(*,'(2X,A50,F15.6)') 'AC@BSE@G0W0 correlation energy           =',EcAC(1) + EcAC(2)
+      write(*,'(2X,A50,F15.6)') 'AC@BSE@G0W0 total energy                 =',ENuc + ERHF + EcAC(1) + EcAC(2)
       write(*,*)'-------------------------------------------------------------------------------'
       write(*,*)
 

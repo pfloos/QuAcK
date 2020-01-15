@@ -161,7 +161,7 @@ subroutine evGW(maxSCF,thresh,max_diis,doACFDT,doXBS,COHSEX,SOSEX,BSE,TDA,G0W,GW
 
     ! Print results
 
-    call print_excitation('RPA   ',ispin,nS,Omega(:,ispin))
+!   call print_excitation('RPA   ',ispin,nS,Omega(:,ispin))
     call print_evGW(nBas,nO,nSCF,Conv,eHF,ENuc,ERHF,SigC,Z,eGW,EcRPA(ispin),EcGM)
 
     ! Linear mixing or DIIS extrapolation
@@ -196,7 +196,7 @@ subroutine evGW(maxSCF,thresh,max_diis,doACFDT,doXBS,COHSEX,SOSEX,BSE,TDA,G0W,GW
 
 ! Plot stuff
 
-  call plot_GW(nBas,nC,nO,nV,nR,nS,eHF,eGW,Omega(:,ispin),rho(:,:,:,ispin),rhox(:,:,:,ispin))
+! call plot_GW(nBas,nC,nO,nV,nR,nS,eHF,eGW,Omega(:,ispin),rho(:,:,:,ispin),rhox(:,:,:,ispin))
 
 ! Did it actually converge?
 
@@ -212,6 +212,17 @@ subroutine evGW(maxSCF,thresh,max_diis,doACFDT,doXBS,COHSEX,SOSEX,BSE,TDA,G0W,GW
 
   endif
 
+! Dump the RPA correlation energy
+
+  write(*,*)
+  write(*,*)'-------------------------------------------------------------------------------'
+  write(*,'(2X,A50,F15.6)') 'Tr@RPA@evGW correlation energy (singlet) =',EcRPA(1)
+  write(*,'(2X,A50,F15.6)') 'Tr@RPA@evGW correlation energy (triplet) =',EcRPA(2)
+  write(*,'(2X,A50,F15.6)') 'Tr@RPA@evGW correlation energy           =',EcRPA(1) + EcRPA(2)
+  write(*,'(2X,A50,F15.6)') 'Tr@RPA@evGW total energy                 =',ENuc + ERHF + EcRPA(1) + EcRPA(2)
+  write(*,*)'-------------------------------------------------------------------------------'
+  write(*,*)
+
 ! Perform BSE calculation
 
   if(BSE) then
@@ -221,19 +232,10 @@ subroutine evGW(maxSCF,thresh,max_diis,doACFDT,doXBS,COHSEX,SOSEX,BSE,TDA,G0W,GW
 
     write(*,*)
     write(*,*)'-------------------------------------------------------------------------------'
-    write(*,'(2X,A40,F15.6)') 'Tr@RPA@evGW correlation energy (singlet) =',EcRPA(1)
-    write(*,'(2X,A40,F15.6)') 'Tr@RPA@evGW correlation energy (triplet) =',EcRPA(2)
-    write(*,'(2X,A40,F15.6)') 'Tr@RPA@evGW correlation energy           =',EcRPA(1) + EcRPA(2)
-    write(*,'(2X,A40,F15.6)') 'Tr@RPA@evGW total energy                 =',ENuc + ERHF + EcRPA(1) + EcRPA(2)
-    write(*,*)'-------------------------------------------------------------------------------'
-    write(*,*)
-
-    write(*,*)
-    write(*,*)'-------------------------------------------------------------------------------'
-    write(*,'(2X,A40,F15.6)') 'Tr@BSE@evGW correlation energy (singlet) =',EcBSE(1)
-    write(*,'(2X,A40,F15.6)') 'Tr@BSE@evGW correlation energy (triplet) =',EcBSE(2)
-    write(*,'(2X,A40,F15.6)') 'Tr@BSE@evGW correlation energy           =',EcBSE(1) + EcBSE(2)
-    write(*,'(2X,A40,F15.6)') 'Tr@BSE@evGW total energy                 =',ENuc + ERHF + EcBSE(1) + EcBSE(2)
+    write(*,'(2X,A50,F15.6)') 'Tr@BSE@evGW correlation energy (singlet) =',EcBSE(1)
+    write(*,'(2X,A50,F15.6)') 'Tr@BSE@evGW correlation energy (triplet) =',EcBSE(2)
+    write(*,'(2X,A50,F15.6)') 'Tr@BSE@evGW correlation energy           =',EcBSE(1) + EcBSE(2)
+    write(*,'(2X,A50,F15.6)') 'Tr@BSE@evGW total energy                 =',ENuc + ERHF + EcBSE(1) + EcBSE(2)
     write(*,*)'-------------------------------------------------------------------------------'
     write(*,*)
 
@@ -258,10 +260,10 @@ subroutine evGW(maxSCF,thresh,max_diis,doACFDT,doXBS,COHSEX,SOSEX,BSE,TDA,G0W,GW
 
       write(*,*)
       write(*,*)'-------------------------------------------------------------------------------'
-      write(*,'(2X,A40,F15.6)') 'AC@BSE@evGW correlation energy (singlet) =',EcAC(1)
-      write(*,'(2X,A40,F15.6)') 'AC@BSE@evGW correlation energy (triplet) =',EcAC(2)
-      write(*,'(2X,A40,F15.6)') 'AC@BSE@evGW correlation energy           =',EcAC(1) + EcAC(2)
-      write(*,'(2X,A40,F15.6)') 'AC@BSE@evGW total energy                 =',ENuc + ERHF + EcAC(1) + EcAC(2)
+      write(*,'(2X,A50,F15.6)') 'AC@BSE@evGW correlation energy (singlet) =',EcAC(1)
+      write(*,'(2X,A50,F15.6)') 'AC@BSE@evGW correlation energy (triplet) =',EcAC(2)
+      write(*,'(2X,A50,F15.6)') 'AC@BSE@evGW correlation energy           =',EcAC(1) + EcAC(2)
+      write(*,'(2X,A50,F15.6)') 'AC@BSE@evGW total energy                 =',ENuc + ERHF + EcAC(1) + EcAC(2)
       write(*,*)'-------------------------------------------------------------------------------'
       write(*,*)
 

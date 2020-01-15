@@ -61,7 +61,7 @@ subroutine RHF(maxSCF,thresh,max_diis,guess_type,nBas,nO,S,T,V,Hc,ERI,X,ENuc,ERH
 
 ! Guess coefficients and eigenvalues
 
-  call mo_guess(nBas,nO,guess_type,S,Hc,ERI,J,K,X,cp,Fp,e,c,P)
+  call mo_guess(nBas,nO,guess_type,S,Hc,ERI,X,cp,F,Fp,e,c,P)
 
 ! ON(:) = 0d0
 ! do i=1,nO

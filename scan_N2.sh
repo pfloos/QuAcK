@@ -3,8 +3,8 @@
 MOL="N2"
 BASIS="VDZ"
 R_START=1.5
-R_END=3.5
-DR=0.1
+R_END=3.0
+DR=0.05
 
 for R in $(seq $R_START $DR $R_END)
 do
@@ -14,6 +14,6 @@ do
   echo "  N     0.           0.         0."  >> examples/molecule.$MOL
   echo "  N     0.           0.         $R"  >> examples/molecule.$MOL
   ./GoDuck $MOL $BASIS > ${MOL}_${BASIS}_${R}.out
-  echo $R `./extract.sh ${MOL}_${BASIS}_${R}.out | tail -2 | head -1`
+  echo $R `./extract.sh ${MOL}_${BASIS}_${R}.out | tail -4 | head -1`
 done
 

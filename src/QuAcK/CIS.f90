@@ -8,13 +8,14 @@ subroutine CIS(singlet_manifold,triplet_manifold, &
 
 ! Input variables
 
-  logical,intent(in)            :: singlet_manifold,triplet_manifold
+  logical,intent(in)            :: singlet_manifold
+  logical,intent(in)            :: triplet_manifold
   integer,intent(in)            :: nBas,nC,nO,nV,nR,nS
-  double precision,intent(in)   :: ERI(nBas,nBas,nBas,nBas),eHF(nBas)
+  double precision,intent(in)   :: eHF(nBas)
+  double precision,intent(in)   :: ERI(nBas,nBas,nBas,nBas)
 
 ! Local variables
 
-  logical                       :: dRPA
   logical                       :: dump_matrix = .false.
   logical                       :: dump_trans = .false.
   integer                       :: ispin
@@ -33,10 +34,6 @@ subroutine CIS(singlet_manifold,triplet_manifold, &
 
   lambda = 1d0
 
-! Switch on exchange for CIS
-
-  dRPA = .false.
-
 ! Memory allocation
 
   allocate(A(nS,nS),Omega(nS))
@@ -46,7 +43,7 @@ subroutine CIS(singlet_manifold,triplet_manifold, &
   if(singlet_manifold) then
 
     ispin = 1
-    call linear_response_A_matrix(ispin,dRPA,nBas,nC,nO,nV,nR,nS,lambda,eHF,ERI,A)
+    call linear_response_A_matrix(ispin,.false.,nBas,nC,nO,nV,nR,nS,lambda,eHF,ERI,A)
  
     if(dump_matrix) then
       print*,'CIS matrix (singlet state)'
@@ -55,7 +52,7 @@ subroutine CIS(singlet_manifold,triplet_manifold, &
     endif
 
     call diagonalize_matrix(nS,A,Omega)
-    call print_excitation('CIS  ',ispin,nS,Omega)
+    call print_excitation('CIS   ',ispin,nS,Omega)
  
     if(dump_trans) then
       print*,'Singlet CIS transition vectors'
@@ -68,7 +65,7 @@ subroutine CIS(singlet_manifold,triplet_manifold, &
   if(triplet_manifold) then
 
     ispin = 2
-    call linear_response_A_matrix(ispin,dRPA,nBas,nC,nO,nV,nR,nS,lambda,eHF,ERI,A)
+    call linear_response_A_matrix(ispin,.false.,nBas,nC,nO,nV,nR,nS,lambda,eHF,ERI,A)
  
     if(dump_matrix) then
       print*,'CIS matrix (triplet state)'
@@ -77,7 +74,7 @@ subroutine CIS(singlet_manifold,triplet_manifold, &
     endif
  
     call diagonalize_matrix(nS,A,Omega)
-    call print_excitation('CIS  ',ispin,nS,Omega)
+    call print_excitation('CIS   ',ispin,nS,Omega)
 
     if(dump_trans) then
       print*,'Triplet CIS transition vectors'

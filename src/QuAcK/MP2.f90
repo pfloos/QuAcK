@@ -56,16 +56,16 @@ subroutine MP2(nBas,nC,nO,nV,nR,ERI,ENuc,EHF,e,EcMP2)
   EcMP2(1) = EcMP2(2) + EcMP2(3)
 
   write(*,*)
-  write(*,'(A32)')           '-----------------------'
-  write(*,'(A32)')           ' MP2 calculation       '
-  write(*,'(A32)')           '-----------------------'
-  write(*,'(A32,1X,F16.10)') ' MP2 correlation energy',EcMP2(1)
-  write(*,'(A32,1X,F16.10)') ' Direct part           ',EcMP2(2)
-  write(*,'(A32,1X,F16.10)') ' Exchange part         ',EcMP2(3)
-  write(*,'(A32)')           '-----------------------'
-  write(*,'(A32,1X,F16.10)') ' MP2 electronic  energy',EHF + EcMP2(1)
-  write(*,'(A32,1X,F16.10)') ' MP2 total       energy',ENuc + EHF + EcMP2(1)
-  write(*,'(A32)')           '-----------------------'
+  write(*,'(A32)')           '--------------------------'
+  write(*,'(A32)')           ' MP2 calculation          '
+  write(*,'(A32)')           '--------------------------'
+  write(*,'(A32,1X,F16.10)') ' MP2 correlation energy = ',EcMP2(1)
+  write(*,'(A32,1X,F16.10)') ' Direct part            = ',EcMP2(2)
+  write(*,'(A32,1X,F16.10)') ' Exchange part          = ',EcMP2(3)
+  write(*,'(A32)')           '--------------------------'
+  write(*,'(A32,1X,F16.10)') ' MP2 electronic  energy = ',EHF + EcMP2(1)
+  write(*,'(A32,1X,F16.10)') ' MP2 total       energy = ',ENuc + EHF + EcMP2(1)
+  write(*,'(A32)')           '--------------------------'
   write(*,*)
 
 end subroutine MP2

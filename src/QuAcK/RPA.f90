@@ -76,10 +76,10 @@ subroutine RPA(doACFDT,singlet_manifold,triplet_manifold,nBas,nC,nO,nV,nR,nS,ENu
 
   write(*,*)
   write(*,*)'-------------------------------------------------------------------------------'
-  write(*,'(2X,A40,F15.6)') 'Tr@RPA  correlation energy (singlet) =',EcRPA(1)
-  write(*,'(2X,A40,F15.6)') 'Tr@RPA  correlation energy (triplet) =',EcRPA(2)
-  write(*,'(2X,A40,F15.6)') 'Tr@RPA  correlation energy           =',EcRPA(1) + EcRPA(2)
-  write(*,'(2X,A40,F15.6)') 'Tr@RPA  total energy                 =',ENuc + ERHF + EcRPA(1) + EcRPA(2)
+  write(*,'(2X,A50,F15.6)') 'Tr@RPA  correlation energy (singlet) =',EcRPA(1)
+  write(*,'(2X,A50,F15.6)') 'Tr@RPA  correlation energy (triplet) =',EcRPA(2)
+  write(*,'(2X,A50,F15.6)') 'Tr@RPA  correlation energy           =',EcRPA(1) + EcRPA(2)
+  write(*,'(2X,A50,F15.6)') 'Tr@RPA  total energy                 =',ENuc + ERHF + EcRPA(1) + EcRPA(2)
   write(*,*)'-------------------------------------------------------------------------------'
   write(*,*)
 
@@ -98,10 +98,10 @@ subroutine RPA(doACFDT,singlet_manifold,triplet_manifold,nBas,nC,nO,nV,nR,nS,ENu
 
   write(*,*)
   write(*,*)'-------------------------------------------------------------------------------'
-  write(*,'(2X,A40,F15.6)') 'AC@RPA  correlation energy (singlet) =',EcAC(1)
-  write(*,'(2X,A40,F15.6)') 'AC@RPA  correlation energy (triplet) =',EcAC(2)
-  write(*,'(2X,A40,F15.6)') 'AC@RPA  correlation energy           =',EcAC(1) + EcAC(2)
-  write(*,'(2X,A40,F15.6)') 'AC@RPA  total energy                 =',ENuc + ERHF + EcAC(1) + EcAC(2)
+  write(*,'(2X,A50,F15.6)') 'AC@RPA  correlation energy (singlet) =',EcAC(1)
+  write(*,'(2X,A50,F15.6)') 'AC@RPA  correlation energy (triplet) =',EcAC(2)
+  write(*,'(2X,A50,F15.6)') 'AC@RPA  correlation energy           =',EcAC(1) + EcAC(2)
+  write(*,'(2X,A50,F15.6)') 'AC@RPA  total energy                 =',ENuc + ERHF + EcAC(1) + EcAC(2)
   write(*,*)'-------------------------------------------------------------------------------'
   write(*,*)
 

@@ -10,123 +10,164 @@ INPUT=$1
 
   echo 
   echo '*** WFT information ***'
+  echo 
   grep "Hartree-Fock energy" $INPUT
-  EHF=`grep "Hartree-Fock energy" $INPUT | cut -f2 -d":"`
+  EHF=`grep "Hartree-Fock energy" $INPUT | cut -f2 -d"="`
   grep "MP2 correlation energy" $INPUT
+  EcMP2=`grep "MP2 correlation energy" $INPUT | cut -f2 -d"="`
   grep "Ec(MP2) =" $INPUT
+  grep "Ec(CCD) =" $INPUT
   grep "Ec(CCSD) =" $INPUT
   grep "Ec(CCSD(T)) =" $INPUT
 
-  echo 
-  echo '*** Gap information: HF, G0F2, GF2, G0W0 & evGW ***'
-  HF=`grep "HF HOMO-LUMO gap    (eV):" $INPUT | cut -f2 -d":"`
-  G0F2=`grep "GF2  HOMO-LUMO gap    (eV):" $INPUT | head -1 | cut -f2 -d":"`
-  GF2=`grep "GF2  HOMO-LUMO gap    (eV):" $INPUT | tail -1 | cut -f2 -d":"`
-  G0W0=`grep "G0W0 HOMO-LUMO gap    (eV):" $INPUT | cut -f2 -d":"`
-  evGW=`grep "evGW HOMO-LUMO gap    (eV):" $INPUT | tail -1 | cut -f2 -d":"`
+#  echo 
+#  echo '*** Gap information: HF, G0F2, GF2, G0W0 & evGW ***'
+#  HF=`grep "HF HOMO-LUMO gap    (eV):" $INPUT | cut -f2 -d":"`
+#  G0F2=`grep "GF2  HOMO-LUMO gap    (eV):" $INPUT | head -1 | cut -f2 -d":"`
+#  GF2=`grep "GF2  HOMO-LUMO gap    (eV):" $INPUT | tail -1 | cut -f2 -d":"`
+#  G0W0=`grep "G0W0 HOMO-LUMO gap    (eV):" $INPUT | cut -f2 -d":"`
+#  evGW=`grep "evGW HOMO-LUMO gap    (eV):" $INPUT | tail -1 | cut -f2 -d":"`
 
-  echo -e "\t" $HF "\t" $G0F2 "\t" $GF2 "\t" $G0W0 "\t" $evGW
-
-  echo 
-  echo '*** RPA@TDHF information: RPA, RPA1 & RPA3  ***'
-  RPA_TDHF=`grep "RPA@TDHF correlation energy           =" $INPUT| cut -f2 -d"="`
-  RPA1_TDHF=`grep "RPA@TDHF correlation energy (singlet) =" $INPUT| cut -f2 -d"="`
-  RPA3_TDHF=`grep "RPA@TDHF correlation energy (triplet) =" $INPUT| cut -f2 -d"="`
-
-  echo -e "\t" $RPA_TDHF "\t" $RPA1_TDHF "\t" $RPA3_TDHF
+#  echo -e "\t" $HF "\t" $G0F2 "\t" $GF2 "\t" $G0W0 "\t" $evGW
 
   echo 
-  echo '*** Ec@G0W0 information: RPA, GM, BSE1 & BSE3 ***'
-  RPA_G0W0=`grep "RPA@G0W0 correlation energy =" $INPUT| cut -f2 -d"="`
-  GM_G0W0=`grep "GM@G0W0  correlation energy =" $INPUT| cut -f2 -d"="`
-  BSE1_G0W0=`grep "BSE@G0W0 correlation energy (singlet)" $INPUT| cut -f2 -d"="`
-  BSE3_G0W0=`grep "BSE@G0W0 correlation energy (triplet)" $INPUT| cut -f2 -d"="`
+  echo '*** RPA information: Tr@RPA (singlet), Tr@RPA (triplet), AC@RPA (singlet), AC@RPA (triplet) ***'
+  echo 
+  Tr_RPA_1=`grep "Tr@RPA  correlation energy (singlet) =" $INPUT| cut -f2 -d"="`
+  Tr_RPA_3=`grep "Tr@RPA  correlation energy (triplet) =" $INPUT| cut -f2 -d"="`
+  AC_RPA_1=`grep "AC@RPA  correlation energy (singlet) =" $INPUT| cut -f2 -d"="`
+  AC_RPA_3=`grep "AC@RPA  correlation energy (triplet) =" $INPUT| cut -f2 -d"="`
 
-  echo -e "\t" $RPA_G0W0 "\t" $GM_G0W0 "\t" $BSE1_G0W0 "\t" $BSE3_G0W0
+  echo -e "\t" $Tr_RPA_1 "\t" $Tr_RPA_3 "\t" $AC_RPA_1 "\t" $AC_RPA_3
 
   echo 
-  echo '*** Ec@evGW information: RPA, GM, BSE1 & BSE3 ***'
-  RPA_evGW=`grep "RPA@evGW correlation energy =" $INPUT | tail -1| cut -f2 -d"="`
-  GM_evGW=`grep "GM@evGW  correlation energy =" $INPUT | tail -1 | cut -f2 -d"="`
-  BSE1_evGW=`grep "BSE@evGW correlation energy (singlet)" $INPUT | cut -f2 -d"="`
-  BSE3_evGW=`grep "BSE@evGW correlation energy (triplet)" $INPUT | cut -f2 -d"="`
+  echo '*** RPAx information: Tr@RPAx (singlet), Tr@RPAx (triplet), AC@RPAx (singlet), AC@RPAx (triplet) ***'
+  echo 
+  Tr_RPAx_1=`grep "Tr@RPAx correlation energy (singlet) =" $INPUT| cut -f2 -d"="`
+  Tr_RPAx_3=`grep "Tr@RPAx correlation energy (triplet) =" $INPUT| cut -f2 -d"="`
+  AC_RPAx_1=`grep "AC@RPAx correlation energy (singlet) =" $INPUT| cut -f2 -d"="`
+  AC_RPAx_3=`grep "AC@RPAx correlation energy (triplet) =" $INPUT| cut -f2 -d"="`
 
-  echo -e "\t" $RPA_evGW "\t" $GM_evGW "\t" $BSE1_evGW "\t" $BSE3_evGW
+  echo -e "\t" $Tr_RPAx_1 "\t" $Tr_RPAx_3 "\t" $AC_RPAx_1 "\t" $AC_RPAx_3
 
   echo 
-  echo '*** Ec@qsGW information: RPA, GM, BSE1 & BSE3 ***'
-  RPA_qsGW=`grep "RPA@qsGW correlation energy =" $INPUT | tail -1| cut -f2 -d"="`
-  GM_qsGW=`grep "GM@qsGW  correlation energy =" $INPUT | tail -1 | cut -f2 -d"="`
-  BSE1_qsGW=`grep "BSE@qsGW correlation energy (singlet)" $INPUT | cut -f2 -d"="`
-  BSE3_qsGW=`grep "BSE@qsGW correlation energy (triplet)" $INPUT | cut -f2 -d"="`
+  echo '*** G0W0 information: Tr@RPA (singlet), Tr@RPA (triplet), Tr@BSE (singlet), Tr@BSE (triplet), AC@BSE (singlet), AC@BSE (triplet) ***'
+  echo 
+  Tr_RPA_G0W0_1=`grep "Tr@RPA@G0W0 correlation energy (singlet) =" $INPUT| cut -f2 -d"="`
+  Tr_RPA_G0W0_3=`grep "Tr@RPA@G0W0 correlation energy (triplet) =" $INPUT| cut -f2 -d"="`
+  Tr_BSE_G0W0_1=`grep "Tr@BSE@G0W0 correlation energy (singlet) =" $INPUT| cut -f2 -d"="`
+  Tr_BSE_G0W0_3=`grep "Tr@BSE@G0W0 correlation energy (triplet) =" $INPUT| cut -f2 -d"="`
+  AC_BSE_G0W0_1=`grep "AC@BSE@G0W0 correlation energy (singlet) =" $INPUT| cut -f2 -d"="`
+  AC_BSE_G0W0_3=`grep "AC@BSE@G0W0 correlation energy (triplet) =" $INPUT| cut -f2 -d"="`
 
-  echo -e "\t" $RPA_qsGW "\t" $GM_qsGW "\t" $BSE1_qsGW "\t" $BSE3_qsGW
+  echo -e "\t" $Tr_RPA_G0W0_1 "\t" $Tr_RPA_G0W0_3 "\t" $Tr_BSE_G0W0_1 "\t" $Tr_BSE_G0W0_3 "\t" $AC_BSE_G0W0_1 "\t" $AC_BSE_G0W0_3
 
   echo 
-  echo '*** CIS and TDHF excitation energy (singlet & triplet) ***'
-  CIS1_1=`grep "|     1 |" $INPUT | head -1 | cut -f3 -d"|"`
-  CIS3_1=`grep "|     1 |" $INPUT | head -2 | cut -f3 -d"|" | tail -1`
-  TDHF1_1=`grep "|     1 |" $INPUT | head -3 | cut -f3 -d"|" | tail -1`
-  TDHF3_1=`grep "|     1 |" $INPUT | head -4 | cut -f3 -d"|" | tail -1`
-  echo -e "\t" $CIS1_1 "\t" $CIS3_1 "\t" $TDHF1_1 "\t" $TDHF3_1
+  echo '*** evGW information: Tr@RPA (singlet), Tr@RPA (triplet), Tr@BSE (singlet), Tr@BSE (triplet), AC@BSE (singlet), AC@BSE (triplet) ***'
+  echo 
+  Tr_RPA_evGW_1=`grep "Tr@RPA@evGW correlation energy (singlet) =" $INPUT| cut -f2 -d"="`
+  Tr_RPA_evGW_3=`grep "Tr@RPA@evGW correlation energy (triplet) =" $INPUT| cut -f2 -d"="`
+  Tr_BSE_evGW_1=`grep "Tr@BSE@evGW correlation energy (singlet) =" $INPUT| cut -f2 -d"="`
+  Tr_BSE_evGW_3=`grep "Tr@BSE@evGW correlation energy (triplet) =" $INPUT| cut -f2 -d"="`
+  AC_BSE_evGW_1=`grep "AC@BSE@evGW correlation energy (singlet) =" $INPUT| cut -f2 -d"="`
+  AC_BSE_evGW_3=`grep "AC@BSE@evGW correlation energy (triplet) =" $INPUT| cut -f2 -d"="`
 
-  CIS1_2=`grep "|     2 |" $INPUT | head -1 | cut -f3 -d"|"`
-  CIS3_2=`grep "|     2 |" $INPUT | head -2 | cut -f3 -d"|" | tail -1`
-  TDHF1_2=`grep "|     2 |" $INPUT | head -3 | cut -f3 -d"|" | tail -1`
-  TDHF3_2=`grep "|     2 |" $INPUT | head -4 | cut -f3 -d"|" | tail -1`
-  echo -e "\t" $CIS1_2 "\t" $CIS3_2 "\t" $TDHF1_2 "\t" $TDHF3_2
-
-  CIS1_3=`grep "|     3 |" $INPUT | head -1 | cut -f3 -d"|"`
-  CIS3_3=`grep "|     3 |" $INPUT | head -2 | cut -f3 -d"|" | tail -1`
-  TDHF1_3=`grep "|     3 |" $INPUT | head -3 | cut -f3 -d"|" | tail -1`
-  TDHF3_3=`grep "|     3 |" $INPUT | head -4 | cut -f3 -d"|" | tail -1`
-  echo -e "\t" $CIS1_3 "\t" $CIS3_3 "\t" $TDHF1_3 "\t" $TDHF3_3
-
-  CIS1_4=`grep "|     4 |" $INPUT | head -1 | cut -f3 -d"|"`
-  CIS3_4=`grep "|     4 |" $INPUT | head -2 | cut -f3 -d"|" | tail -1`
-  TDHF1_4=`grep "|     4 |" $INPUT | head -3 | cut -f3 -d"|" | tail -1`
-  TDHF3_4=`grep "|     4 |" $INPUT | head -4 | cut -f3 -d"|" | tail -1`
-  echo -e "\t" $CIS1_4 "\t" $CIS3_4 "\t" $TDHF1_4 "\t" $TDHF3_4
-
-  CIS1_5=`grep "|     5 |" $INPUT | head -1 | cut -f3 -d"|"`
-  CIS3_5=`grep "|     5 |" $INPUT | head -2 | cut -f3 -d"|" | tail -1`
-  TDHF1_5=`grep "|     5 |" $INPUT | head -3 | cut -f3 -d"|" | tail -1`
-  TDHF3_5=`grep "|     5 |" $INPUT | head -4 | cut -f3 -d"|" | tail -1`
-  echo -e "\t" $CIS1_5 "\t" $CIS3_5 "\t" $TDHF1_5 "\t" $TDHF3_5
+  echo -e "\t" $Tr_RPA_evGW_1 "\t" $Tr_RPA_evGW_3 "\t" $Tr_BSE_evGW_1 "\t" $Tr_BSE_evGW_3 "\t" $AC_BSE_evGW_1 "\t" $AC_BSE_evGW_3
 
   echo 
-  echo '*** BSE@G0W0 and BSE@evGW excitation energy (singlet & triplet) ***'
-  G0W01_1=`grep "|     1 |" $INPUT | head -6 | cut -f3 -d"|" | tail -1`
-  G0W03_1=`grep "|     1 |" $INPUT | head -7 | cut -f3 -d"|" | tail -1`
-  evGW1_1=`grep "|     1 |" $INPUT | tail -2 | head -1 | cut -f3 -d"|"`
-  evGW3_1=`grep "|     1 |" $INPUT | tail -1 | cut -f3 -d"|"`
-  echo -e "\t" $G0W01_1 "\t" $G0W03_1 "\t" $evGW1_1 "\t" $evGW3_1
+  echo '*** CIS excitation energy (singlet & triplet) ***'
+  echo 
 
-  G0W01_2=`grep "|     2 |" $INPUT | head -6 | cut -f3 -d"|" | tail -1`
-  G0W03_2=`grep "|     2 |" $INPUT | head -7 | cut -f3 -d"|" | tail -1`
-  evGW1_2=`grep "|     2 |" $INPUT | tail -2 | head -1 | cut -f3 -d"|"`
-  evGW3_2=`grep "|     2 |" $INPUT | tail -1 | cut -f3 -d"|"`
-  echo -e "\t" $G0W01_2 "\t" $G0W03_2 "\t" $evGW1_2 "\t" $evGW3_2
+  CIS_1_1=`grep "|     1 |" $INPUT | head -1 | cut -f3 -d"|"`
+  CIS_1_2=`grep "|     2 |" $INPUT | head -1 | cut -f3 -d"|"`
+  CIS_1_3=`grep "|     3 |" $INPUT | head -1 | cut -f3 -d"|"`
+  CIS_1_4=`grep "|     4 |" $INPUT | head -1 | cut -f3 -d"|"`
+  CIS_1_5=`grep "|     5 |" $INPUT | head -1 | cut -f3 -d"|"`
 
-  G0W01_3=`grep "|     3 |" $INPUT | head -6 | cut -f3 -d"|" | tail -1`
-  G0W03_3=`grep "|     3 |" $INPUT | head -7 | cut -f3 -d"|" | tail -1`
-  evGW1_3=`grep "|     3 |" $INPUT | tail -2 | head -1 | cut -f3 -d"|"`
-  evGW3_3=`grep "|     3 |" $INPUT | tail -1 | cut -f3 -d"|"`
-  echo -e "\t" $G0W01_3 "\t" $G0W03_3 "\t" $evGW1_3 "\t" $evGW3_3
+  CIS_3_1=`grep "|     1 |" $INPUT | head -2 | tail -1 | cut -f3 -d"|"`
+  CIS_3_2=`grep "|     2 |" $INPUT | head -2 | tail -1 | cut -f3 -d"|"`
+  CIS_3_3=`grep "|     3 |" $INPUT | head -2 | tail -1 | cut -f3 -d"|"`
+  CIS_3_4=`grep "|     4 |" $INPUT | head -2 | tail -1 | cut -f3 -d"|"`
+  CIS_3_5=`grep "|     5 |" $INPUT | head -2 | tail -1 | cut -f3 -d"|"`
 
-  G0W01_4=`grep "|     4 |" $INPUT | head -6 | cut -f3 -d"|" | tail -1`
-  G0W03_4=`grep "|     4 |" $INPUT | head -7 | cut -f3 -d"|" | tail -1`
-  evGW1_4=`grep "|     4 |" $INPUT | tail -2 | head -1 | cut -f3 -d"|"`
-  evGW3_4=`grep "|     4 |" $INPUT | tail -1 | cut -f3 -d"|"`
-  echo -e "\t" $G0W01_4 "\t" $G0W03_4 "\t" $evGW1_4 "\t" $evGW3_4
+  echo -e "\t" $CIS_1_1 "\t" $CIS_3_1 
+  echo -e "\t" $CIS_1_2 "\t" $CIS_3_2
+  echo -e "\t" $CIS_1_3 "\t" $CIS_3_3
+  echo -e "\t" $CIS_1_4 "\t" $CIS_3_4
+  echo -e "\t" $CIS_1_5 "\t" $CIS_3_5
 
-  G0W01_5=`grep "|     5 |" $INPUT | head -6 | cut -f3 -d"|" | tail -1`
-  G0W03_5=`grep "|     5 |" $INPUT | head -7 | cut -f3 -d"|" | tail -1`
-  evGW1_5=`grep "|     5 |" $INPUT | tail -2 | head -1 | cut -f3 -d"|"`
-  evGW3_5=`grep "|     5 |" $INPUT | tail -1 | cut -f3 -d"|"`
-  echo -e "\t" $G0W01_5 "\t" $G0W03_5 "\t" $evGW1_5 "\t" $evGW3_5
+  echo 
+  echo '*** RPA excitation energy (singlet & triplet) ***'
+  echo 
 
+  RPA_1_1=`grep "|     1 |" $INPUT | head -3 | tail -1 | cut -f3 -d"|"`
+  RPA_1_2=`grep "|     2 |" $INPUT | head -3 | tail -1 | cut -f3 -d"|"`
+  RPA_1_3=`grep "|     3 |" $INPUT | head -3 | tail -1 | cut -f3 -d"|"`
+  RPA_1_4=`grep "|     4 |" $INPUT | head -3 | tail -1 | cut -f3 -d"|"`
+  RPA_1_5=`grep "|     5 |" $INPUT | head -3 | tail -1 | cut -f3 -d"|"`
+
+  RPA_3_1=`grep "|     1 |" $INPUT | head -4 | tail -1 | cut -f3 -d"|"`
+  RPA_3_2=`grep "|     2 |" $INPUT | head -4 | tail -1 | cut -f3 -d"|"`
+  RPA_3_3=`grep "|     3 |" $INPUT | head -4 | tail -1 | cut -f3 -d"|"`
+  RPA_3_4=`grep "|     4 |" $INPUT | head -4 | tail -1 | cut -f3 -d"|"`
+  RPA_3_5=`grep "|     5 |" $INPUT | head -4 | tail -1 | cut -f3 -d"|"`
+
+  echo -e "\t" $RPA_1_1 "\t" $RPA_3_1 
+  echo -e "\t" $RPA_1_2 "\t" $RPA_3_2
+  echo -e "\t" $RPA_1_3 "\t" $RPA_3_3
+  echo -e "\t" $RPA_1_4 "\t" $RPA_3_4
+  echo -e "\t" $RPA_1_5 "\t" $RPA_3_5
+
+  echo 
+  echo '*** RPAx excitation energy (singlet & triplet) ***'
+  echo 
+
+  RPAx_1_1=`grep "|     1 |" $INPUT | head -5 | tail -1 | cut -f3 -d"|"`
+  RPAx_1_2=`grep "|     2 |" $INPUT | head -5 | tail -1 | cut -f3 -d"|"`
+  RPAx_1_3=`grep "|     3 |" $INPUT | head -5 | tail -1 | cut -f3 -d"|"`
+  RPAx_1_4=`grep "|     4 |" $INPUT | head -5 | tail -1 | cut -f3 -d"|"`
+  RPAx_1_5=`grep "|     5 |" $INPUT | head -5 | tail -1 | cut -f3 -d"|"`
+
+  RPAx_3_1=`grep "|     1 |" $INPUT | head -6 | tail -1 | cut -f3 -d"|"`
+  RPAx_3_2=`grep "|     2 |" $INPUT | head -6 | tail -1 | cut -f3 -d"|"`
+  RPAx_3_3=`grep "|     3 |" $INPUT | head -6 | tail -1 | cut -f3 -d"|"`
+  RPAx_3_4=`grep "|     4 |" $INPUT | head -6 | tail -1 | cut -f3 -d"|"`
+  RPAx_3_5=`grep "|     5 |" $INPUT | head -6 | tail -1 | cut -f3 -d"|"`
+
+  echo -e "\t" $RPAx_1_1 "\t" $RPAx_3_1 
+  echo -e "\t" $RPAx_1_2 "\t" $RPAx_3_2
+  echo -e "\t" $RPAx_1_3 "\t" $RPAx_3_3
+  echo -e "\t" $RPAx_1_4 "\t" $RPAx_3_4
+  echo -e "\t" $RPAx_1_5 "\t" $RPAx_3_5
+
+  echo 
+  echo '*** BSE@G0W0 excitation energy (singlet & triplet) ***'
+  echo 
+
+  G0W0_1_1=`grep "|     1 |" $INPUT | head -7 | tail -1 | cut -f3 -d"|"`
+  G0W0_1_2=`grep "|     2 |" $INPUT | head -7 | tail -1 | cut -f3 -d"|"`
+  G0W0_1_3=`grep "|     3 |" $INPUT | head -7 | tail -1 | cut -f3 -d"|"`
+  G0W0_1_4=`grep "|     4 |" $INPUT | head -7 | tail -1 | cut -f3 -d"|"`
+  G0W0_1_5=`grep "|     5 |" $INPUT | head -7 | tail -1 | cut -f3 -d"|"`
+
+  G0W0_3_1=`grep "|     1 |" $INPUT | head -8 | tail -1 | cut -f3 -d"|"`
+  G0W0_3_2=`grep "|     2 |" $INPUT | head -8 | tail -1 | cut -f3 -d"|"`
+  G0W0_3_3=`grep "|     3 |" $INPUT | head -8 | tail -1 | cut -f3 -d"|"`
+  G0W0_3_4=`grep "|     4 |" $INPUT | head -8 | tail -1 | cut -f3 -d"|"`
+  G0W0_3_5=`grep "|     5 |" $INPUT | head -8 | tail -1 | cut -f3 -d"|"`
+
+  echo -e "\t" $G0W0_1_1 "\t" $G0W0_3_1 
+  echo -e "\t" $G0W0_1_2 "\t" $G0W0_3_2
+  echo -e "\t" $G0W0_1_3 "\t" $G0W0_3_3
+  echo -e "\t" $G0W0_1_4 "\t" $G0W0_3_4
+  echo -e "\t" $G0W0_1_5 "\t" $G0W0_3_5
+
+  echo 
   echo '*** MATHEMATICA OUTPUT ***'
-  echo -e "\t" $EHF "\t" $CIS1_1 "\t" $CIS1_2 "\t" $CIS1_3 "\t" $CIS1_4 "\t" $CIS1_5 "\t" $CIS3_1 "\t" $CIS3_2 "\t" $CIS3_3 "\t" $CIS3_4 "\t" $CIS3_5 "\t" $RPA_TDHF "\t" $RPA1_TDHF "\t" $RPA3_TDHF "\t" $TDHF1_1 "\t" $TDHF1_2 "\t" $TDHF1_3 "\t" $TDHF1_4 "\t" $TDHF1_5 "\t" $TDHF3_1 "\t" $TDHF3_2 "\t" $TDHF3_3 "\t" $TDHF3_4 "\t" $TDHF3_5 "\t" $RPA_G0W0 "\t" $GM_G0W0 "\t" $BSE1_G0W0 "\t" $BSE3_G0W0 "\t" $G0W01_1 "\t" $G0W01_2 "\t" $G0W01_3 "\t" $G0W01_4 "\t" $G0W01_5 "\t" $G0W03_1 "\t" $G0W03_2 "\t" $G0W03_3 "\t" $G0W03_4 "\t" $G0W03_5 "\t" $RPA_evGW "\t" $GM_evGW "\t" $BSE1_evGW "\t" $BSE3_evGW "\t" $evGW1_1 "\t" $evGW1_2 "\t" $evGW1_3 "\t" $evGW1_4 "\t" $evGW1_5 "\t" $evGW3_1 "\t" $evGW3_2 "\t" $evGW3_3 "\t" $evGW3_4 "\t" $evGW3_5 
+  echo 
+  echo -e "\t" $EHF "\t" $EcMP2 "\t" $Tr_RPA_1 "\t" $Tr_RPA_3 "\t" $AC_RPA_1 "\t" $AC_RPA_3 "\t" $Tr_RPAx_1 "\t" $Tr_RPAx_3 "\t" $AC_RPAx_1 "\t" $AC_RPAx_3 "\t" $Tr_RPA_G0W0_1 "\t" $Tr_RPA_G0W0_3 "\t" $Tr_BSE_G0W0_1 "\t" $Tr_BSE_G0W0_3 "\t" $AC_BSE_G0W0_1 "\t" $AC_BSE_G0W0_3 "\t" $CIS_1_1 "\t" $CIS_1_2 "\t" $CIS_1_3 "\t" $CIS_1_4 "\t" $CIS_1_5 "\t" $CIS_3_1 "\t" $CIS_3_2 "\t" $CIS_3_3 "\t" $CIS_3_4 "\t" $CIS_3_5 "\t" $RPA_1_1 "\t" $RPA_1_2 "\t" $RPA_1_3 "\t" $RPA_1_4 "\t" $RPA_1_5 "\t" $RPA_3_1 "\t" $RPA_3_2 "\t" $RPA_3_3 "\t" $RPA_3_4 "\t" $RPA_3_5 "\t" $RPAx_1_1 "\t" $RPAx_1_2 "\t" $RPAx_1_3 "\t" $RPAx_1_4 "\t" $RPAx_1_5 "\t" $RPAx_3_1 "\t" $RPAx_3_2 "\t" $RPAx_3_3 "\t" $RPAx_3_4 "\t" $RPAx_3_5 "\t" $G0W0_1_1 "\t" $G0W0_1_2 "\t" $G0W0_1_3 "\t" $G0W0_1_4 "\t" $G0W0_1_5 "\t" $G0W0_3_1 "\t" $G0W0_3_2 "\t" $G0W0_3_3 "\t" $G0W0_3_4 "\t" $G0W0_3_5
+
+  echo 
   echo '*** DONE ***'
+  echo 
 

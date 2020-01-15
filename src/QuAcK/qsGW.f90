@@ -204,7 +204,7 @@ subroutine qsGW(maxSCF,thresh,max_diis,doACFDT,doXBS,COHSEX,SOSEX,BSE,TDA,G0W,GW
 
     ! Print results
 
-    call print_excitation('RPA   ',ispin,nS,Omega(:,ispin))
+!   call print_excitation('RPA   ',ispin,nS,Omega(:,ispin))
     call print_qsGW(nBas,nO,nSCF,Conv,thresh,eHF,eGW,c,ENuc,P,T,V,Hc,J,K,F,SigCp,Z,EcRPA(ispin),EcGM,EqsGW)
 
     ! Increment
@@ -218,7 +218,7 @@ subroutine qsGW(maxSCF,thresh,max_diis,doACFDT,doXBS,COHSEX,SOSEX,BSE,TDA,G0W,GW
 
 ! Compute second-order correction of the Hermitization error
 
-  call qsGW_PT(nBas,nC,nO,nV,nR,nS,eGW,SigCm)
+! call qsGW_PT(nBas,nC,nO,nV,nR,nS,eGW,SigCm)
 
 ! Compute the overlap between HF and GW orbitals
 
@@ -242,6 +242,17 @@ subroutine qsGW(maxSCF,thresh,max_diis,doACFDT,doXBS,COHSEX,SOSEX,BSE,TDA,G0W,GW
 
   endif
 
+! Dump RPA correlation energy
+
+  write(*,*)
+  write(*,*)'-------------------------------------------------------------------------------'
+  write(*,'(2X,A50,F15.6)') 'Tr@RPA@qsGW correlation energy (singlet) =',EcRPA(1)
+  write(*,'(2X,A50,F15.6)') 'Tr@RPA@qsGW correlation energy (triplet) =',EcRPA(2)
+  write(*,'(2X,A50,F15.6)') 'Tr@RPA@qsGW correlation energy           =',EcRPA(1) + EcRPA(2)
+  write(*,'(2X,A50,F15.6)') 'Tr@RPA@qsGW total energy                 =',ENuc + EqsGW + EcRPA(1) + EcRPA(2)
+  write(*,*)'-------------------------------------------------------------------------------'
+  write(*,*)
+
 ! Perform BSE calculation
 
   if(BSE) then
@@ -251,19 +262,10 @@ subroutine qsGW(maxSCF,thresh,max_diis,doACFDT,doXBS,COHSEX,SOSEX,BSE,TDA,G0W,GW
 
     write(*,*)
     write(*,*)'-------------------------------------------------------------------------------'
-    write(*,'(2X,A40,F15.6)') 'Tr@RPA@qsGW correlation energy (singlet) =',EcRPA(1)
-    write(*,'(2X,A40,F15.6)') 'Tr@RPA@qsGW correlation energy (triplet) =',EcRPA(2)
-    write(*,'(2X,A40,F15.6)') 'Tr@RPA@qsGW correlation energy           =',EcRPA(1) + EcRPA(2)
-    write(*,'(2X,A40,F15.6)') 'Tr@RPA@qsGW total energy                 =',ENuc + EqsGW + EcRPA(1) + EcRPA(2)
-    write(*,*)'-------------------------------------------------------------------------------'
-    write(*,*)
-
-    write(*,*)
-    write(*,*)'-------------------------------------------------------------------------------'
-    write(*,'(2X,A40,F15.6)') 'Tr@BSE@qsGW correlation energy (singlet) =',EcBSE(1)
-    write(*,'(2X,A40,F15.6)') 'Tr@BSE@qsGW correlation energy (triplet) =',EcBSE(2)
-    write(*,'(2X,A40,F15.6)') 'Tr@BSE@qsGW correlation energy           =',EcBSE(1) + EcBSE(2)
-    write(*,'(2X,A40,F15.6)') 'Tr@BSE@qsGW total energy                 =',ENuc + EqsGW + EcBSE(1) + EcBSE(2)
+    write(*,'(2X,A50,F15.6)') 'Tr@BSE@qsGW correlation energy (singlet) =',EcBSE(1)
+    write(*,'(2X,A50,F15.6)') 'Tr@BSE@qsGW correlation energy (triplet) =',EcBSE(2)
+    write(*,'(2X,A50,F15.6)') 'Tr@BSE@qsGW correlation energy           =',EcBSE(1) + EcBSE(2)
+    write(*,'(2X,A50,F15.6)') 'Tr@BSE@qsGW total energy                 =',ENuc + EqsGW + EcBSE(1) + EcBSE(2)
     write(*,*)'-------------------------------------------------------------------------------'
     write(*,*)
 
@@ -288,10 +290,10 @@ subroutine qsGW(maxSCF,thresh,max_diis,doACFDT,doXBS,COHSEX,SOSEX,BSE,TDA,G0W,GW
 
       write(*,*)
       write(*,*)'-------------------------------------------------------------------------------'
-      write(*,'(2X,A40,F15.6)') 'AC@BSE@qsGW correlation energy (singlet) =',EcAC(1)
-      write(*,'(2X,A40,F15.6)') 'AC@BSE@qsGW correlation energy (triplet) =',EcAC(2)
-      write(*,'(2X,A40,F15.6)') 'AC@BSE@qsGW correlation energy           =',EcAC(1) + EcAC(2)
-      write(*,'(2X,A40,F15.6)') 'AC@BSE@qsGW total energy                 =',ENuc + EqsGW + EcAC(1) + EcAC(2)
+      write(*,'(2X,A50,F15.6)') 'AC@BSE@qsGW correlation energy (singlet) =',EcAC(1)
+      write(*,'(2X,A50,F15.6)') 'AC@BSE@qsGW correlation energy (triplet) =',EcAC(2)
+      write(*,'(2X,A50,F15.6)') 'AC@BSE@qsGW correlation energy           =',EcAC(1) + EcAC(2)
+      write(*,'(2X,A50,F15.6)') 'AC@BSE@qsGW total energy                 =',ENuc + EqsGW + EcAC(1) + EcAC(2)
       write(*,*)'-------------------------------------------------------------------------------'
       write(*,*)
 

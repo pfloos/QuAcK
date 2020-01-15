@@ -59,6 +59,10 @@ subroutine linear_response(ispin,dRPA,TDA,BSE,nBas,nC,nO,nV,nR,nS,lambda,e,ERI,r
   if(minval(Omega) < 0d0) &
     call print_warning('You may have instabilities in linear response!!')
 
+  do ia=1,nS
+    if(Omega(ia) < 0d0) Omega(ia) = 0d0
+  end do
+
   call ADAt(nS,AmB,sqrt(Omega),AmBSq)
 
   Z = matmul(AmBSq,matmul(ApB,AmBSq))
@@ -74,11 +78,11 @@ subroutine linear_response(ispin,dRPA,TDA,BSE,nBas,nC,nO,nV,nR,nS,lambda,e,ERI,r
 
   Omega = sqrt(Omega)
   XpY = matmul(transpose(Z),AmBSq)
-  call DA(nS,1d0/sqrt(abs(Omega)),XpY)
+  call DA(nS,1d0/sqrt(Omega),XpY)
 
   call ADAt(nS,AmB,1d0/sqrt(Omega),AmBSq)
   XmY = matmul(transpose(Z),AmBSq)
-  call DA(nS,sqrt(abs(Omega)),XmY)
+  call DA(nS,sqrt(Omega),XmY)
 
 ! Compute the RPA correlation energy
 
