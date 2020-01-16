@@ -1,4 +1,4 @@
-subroutine G0W0(doACFDT,doXBS,COHSEX,SOSEX,BSE,TDA,singlet_manifold,triplet_manifold,eta, & 
+subroutine G0W0(doACFDT,exchange_kernel,doXBS,COHSEX,SOSEX,BSE,TDA,singlet_manifold,triplet_manifold,eta, & 
                 nBas,nC,nO,nV,nR,nS,ENuc,ERHF,Hc,H,ERI,PHF,cHF,eHF,eGW)
 
 ! Perform G0W0 calculation
@@ -10,6 +10,7 @@ subroutine G0W0(doACFDT,doXBS,COHSEX,SOSEX,BSE,TDA,singlet_manifold,triplet_mani
 ! Input variables
 
   logical,intent(in)            :: doACFDT
+  logical,intent(in)            :: exchange_kernel
   logical,intent(in)            :: doXBS
   logical,intent(in)            :: COHSEX
   logical,intent(in)            :: SOSEX
@@ -153,7 +154,7 @@ subroutine G0W0(doACFDT,doXBS,COHSEX,SOSEX,BSE,TDA,singlet_manifold,triplet_mani
 
       end if
 
-      call ACFDT(doXBS,.true.,TDA,BSE,singlet_manifold,triplet_manifold, & 
+      call ACFDT(exchange_kernel,doXBS,.true.,TDA,BSE,singlet_manifold,triplet_manifold, & 
                  nBas,nC,nO,nV,nR,nS,ERI,eGW,Omega,XpY,XmY,rho,EcAC)
 
       write(*,*)

@@ -1,4 +1,4 @@
-subroutine evGW(maxSCF,thresh,max_diis,doACFDT,doXBS,COHSEX,SOSEX,BSE,TDA,G0W,GW0, & 
+subroutine evGW(maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,COHSEX,SOSEX,BSE,TDA,G0W,GW0, & 
                 singlet_manifold,triplet_manifold,linearize,eta,                   & 
                 nBas,nC,nO,nV,nR,nS,ENuc,ERHF,Hc,H,ERI,PHF,cHF,eHF,eG0W0)
 
@@ -15,6 +15,7 @@ subroutine evGW(maxSCF,thresh,max_diis,doACFDT,doXBS,COHSEX,SOSEX,BSE,TDA,G0W,GW
   double precision,intent(in)   :: ENuc
   double precision,intent(in)   :: ERHF
   logical,intent(in)            :: doACFDT
+  logical,intent(in)            :: exchange_kernel
   logical,intent(in)            :: doXBS
   logical,intent(in)            :: COHSEX
   logical,intent(in)            :: SOSEX
@@ -255,7 +256,7 @@ subroutine evGW(maxSCF,thresh,max_diis,doACFDT,doXBS,COHSEX,SOSEX,BSE,TDA,G0W,GW
 
       end if
 
-      call ACFDT(doXBS,.true.,TDA,BSE,singlet_manifold,triplet_manifold, &
+      call ACFDT(exchange_kernel,doXBS,.true.,TDA,BSE,singlet_manifold,triplet_manifold, &
                  nBas,nC,nO,nV,nR,nS,ERI,eGW,Omega,XpY,XmY,rho,EcAC)
 
       write(*,*)

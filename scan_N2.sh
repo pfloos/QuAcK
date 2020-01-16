@@ -4,7 +4,7 @@ MOL="N2"
 BASIS="VDZ"
 R_START=1.5
 R_END=3.0
-DR=0.05
+DR=0.1
 
 for R in $(seq $R_START $DR $R_END)
 do

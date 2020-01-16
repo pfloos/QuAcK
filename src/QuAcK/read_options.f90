@@ -4,7 +4,7 @@ subroutine read_options(maxSCF_HF,thresh_HF,DIIS_HF,n_diis_HF,guess_type,ortho_t
                         maxSCF_GF,thresh_GF,DIIS_GF,n_diis_GF,renormalization,         &
                         maxSCF_GW,thresh_GW,DIIS_GW,n_diis_GW,                         &
                         COHSEX,SOSEX,BSE,TDA,G0W,GW0,linearize,eta,                    &
-                        doACFDT,doXBS,                                                 &
+                        doACFDT,exchange_kernel,doXBS,                                 &
                         nMC,nEq,nWalk,dt,nPrint,iSeed,doDrift)
 
 ! Read desired methods 
@@ -48,6 +48,7 @@ subroutine read_options(maxSCF_HF,thresh_HF,DIIS_HF,n_diis_HF,guess_type,ortho_t
   double precision,intent(out)  :: eta
 
   logical,intent(out)           :: doACFDT
+  logical,intent(out)           :: exchange_kernel
   logical,intent(out)           :: doXBS
 
   integer,intent(out)           :: nMC
@@ -158,13 +159,15 @@ subroutine read_options(maxSCF_HF,thresh_HF,DIIS_HF,n_diis_HF,guess_type,ortho_t
 ! Options for adiabatic connection
 
   doACFDT = .false.
+  exchange_kernel = .false.
   doXBS   = .false.
 
   read(1,*) 
-  read(1,*) answer1,answer2
+  read(1,*) answer1,answer2,answer3
 
   if(answer1 == 'T') doACFDT = .true.
-  if(answer2 == 'T') doXBS   = .true.
+  if(answer2 == 'T') exchange_kernel = .true.
+  if(answer3 == 'T') doXBS   = .true.
 
 ! Read options for MC-MP2: Monte Carlo steps, number of equilibration steps, number of walkers,
 ! Monte Carlo time step, frequency of output results, and seed for random number generator

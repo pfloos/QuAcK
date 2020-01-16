@@ -1,4 +1,4 @@
-subroutine RPA(doACFDT,singlet_manifold,triplet_manifold,nBas,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,e)
+subroutine RPA(doACFDT,exchange_kernel,singlet_manifold,triplet_manifold,nBas,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,e)
 
 ! Perform a direct random phase approximation calculation
 
@@ -9,6 +9,7 @@ subroutine RPA(doACFDT,singlet_manifold,triplet_manifold,nBas,nC,nO,nV,nR,nS,ENu
 ! Input variables
 
   logical,intent(in)            :: doACFDT
+  logical,intent(in)            :: exchange_kernel
   logical,intent(in)            :: singlet_manifold
   logical,intent(in)            :: triplet_manifold
   integer,intent(in)            :: nBas
@@ -91,8 +92,8 @@ subroutine RPA(doACFDT,singlet_manifold,triplet_manifold,nBas,nC,nO,nV,nR,nS,ENu
     write(*,*) 'Adiabatic connection version of RPA correlation energy'
     write(*,*) '------------------------------------------------------'
     write(*,*) 
- 
-    call ACFDT(.false.,.true.,.false.,.false.,singlet_manifold,triplet_manifold, &
+
+    call ACFDT(exchange_kernel,.false.,.true.,.false.,.false.,singlet_manifold,triplet_manifold, &
                nBas,nC,nO,nV,nR,nS,ERI,e,Omega,XpY,XmY,rho,EcAC)
 
 
