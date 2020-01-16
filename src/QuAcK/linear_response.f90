@@ -18,7 +18,13 @@ subroutine linear_response(ispin,dRPA,TDA,BSE,nBas,nC,nO,nV,nR,nS,lambda,e,ERI,r
 
   integer                       :: ia
   double precision              :: trace_matrix
-  double precision,allocatable  :: A(:,:),B(:,:),ApB(:,:),AmB(:,:),AmBSq(:,:),Z(:,:)
+  double precision,allocatable  :: A(:,:)
+  double precision,allocatable  :: B(:,:)
+  double precision,allocatable  :: ApB(:,:)
+  double precision,allocatable  :: AmB(:,:)
+  double precision,allocatable  :: AmBSq(:,:)
+  double precision,allocatable  :: AmBIv(:,:)
+  double precision,allocatable  :: Z(:,:)
 
 ! Output variables
 
@@ -27,10 +33,9 @@ subroutine linear_response(ispin,dRPA,TDA,BSE,nBas,nC,nO,nV,nR,nS,lambda,e,ERI,r
   double precision,intent(out)  :: XpY(nS,nS)
   double precision,intent(out)  :: XmY(nS,nS)
 
-
 ! Memory allocation
 
-  allocate(A(nS,nS),B(nS,nS),ApB(nS,nS),AmB(nS,nS),AmBSq(nS,nS),Z(nS,nS))
+  allocate(A(nS,nS),B(nS,nS),ApB(nS,nS),AmB(nS,nS),AmBSq(nS,nS),AmBIv(nS,nS),Z(nS,nS))
 
 ! Build A and B matrices 
 
@@ -57,32 +62,33 @@ subroutine linear_response(ispin,dRPA,TDA,BSE,nBas,nC,nO,nV,nR,nS,lambda,e,ERI,r
   call diagonalize_matrix(nS,AmB,Omega)
 
   if(minval(Omega) < 0d0) &
-    call print_warning('You may have instabilities in linear response!!')
+    call print_warning('You may have instabilities in linear response: A-B is not positive definite!!')
 
   do ia=1,nS
     if(Omega(ia) < 0d0) Omega(ia) = 0d0
   end do
 
-  call ADAt(nS,AmB,sqrt(Omega),AmBSq)
+  call ADAt(nS,AmB,1d0*sqrt(Omega),AmBSq)
+  call ADAt(nS,AmB,1d0/sqrt(Omega),AmBIv)
 
   Z = matmul(AmBSq,matmul(ApB,AmBSq))
 
   call diagonalize_matrix(nS,Z,Omega)
 
   if(minval(Omega) < 0d0) & 
-    call print_warning('You may have instabilities in linear response!!')
+    call print_warning('You may have instabilities in linear response: negative excitations!!')
  
   do ia=1,nS
     if(Omega(ia) < 0d0) Omega(ia) = 0d0
   end do
 
   Omega = sqrt(Omega)
+
   XpY = matmul(transpose(Z),AmBSq)
   call DA(nS,1d0/sqrt(Omega),XpY)
 
-  call ADAt(nS,AmB,1d0/sqrt(Omega),AmBSq)
-  XmY = matmul(transpose(Z),AmBSq)
-  call DA(nS,sqrt(Omega),XmY)
+  XmY = matmul(transpose(Z),AmBIv)
+  call DA(nS,1d0*sqrt(Omega),XmY)
 
 ! Compute the RPA correlation energy
 
