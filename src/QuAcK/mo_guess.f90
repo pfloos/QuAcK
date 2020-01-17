@@ -1,4 +1,4 @@
-subroutine mo_guess(nBas,nO,guess_type,S,Hc,ERI,X,cp,F,Fp,e,c,P)
+subroutine mo_guess(nBas,nO,guess_type,S,Hc,ERI,J,K,X,cp,F,Fp,e,c,P)
 
 !  Guess of the molecular orbitals for HF calculation
 
@@ -12,6 +12,8 @@ subroutine mo_guess(nBas,nO,guess_type,S,Hc,ERI,X,cp,F,Fp,e,c,P)
   double precision,intent(in)   :: S(nBas,nBas)
   double precision,intent(in)   :: Hc(nBas,nBas)
   double precision,intent(in)   :: ERI(nBas,nBas,nBas,nBas)
+  double precision,intent(inout):: J(nBas,nBas)
+  double precision,intent(inout):: K(nBas,nBas)
   double precision,intent(in)   :: X(nBas,nBas)
   double precision,intent(inout):: cp(nBas,nBas)
   double precision,intent(inout):: F(nBas,nBas)
@@ -36,7 +38,7 @@ subroutine mo_guess(nBas,nO,guess_type,S,Hc,ERI,X,cp,F,Fp,e,c,P)
 
   elseif(guess_type == 2) then
 
-    call huckel_guess(nBas,nO,S,Hc,ERI,X,cp,F,Fp,e,c)
+    call huckel_guess(nBas,nO,S,Hc,ERI,J,K,X,cp,F,Fp,e,c,P)
 
   elseif(guess_type == 3) then
 

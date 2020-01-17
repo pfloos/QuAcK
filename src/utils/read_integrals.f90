@@ -40,6 +40,7 @@ subroutine read_integrals(nEl,nBas,S,T,V,Hc,G)
   do 
     read(8,*,end=8) mu,nu,Ov
     S(mu,nu) = Ov
+    S(nu,mu) = Ov
   enddo
   8 close(unit=8)
 
@@ -49,6 +50,7 @@ subroutine read_integrals(nEl,nBas,S,T,V,Hc,G)
   do 
     read(9,*,end=9) mu,nu,Kin
     T(mu,nu) = Kin
+    T(nu,mu) = Kin
   enddo
   9 close(unit=9)
 
@@ -58,6 +60,7 @@ subroutine read_integrals(nEl,nBas,S,T,V,Hc,G)
   do 
     read(10,*,end=10) mu,nu,Nuc
     V(mu,nu) = Nuc
+    V(nu,mu) = Nuc
   enddo
   10 close(unit=10)
 

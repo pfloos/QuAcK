@@ -1,7 +1,7 @@
 #! /bin/bash
 
 MOL="LiH"
-BASIS="VDZ"
+BASIS="cc-pvtz"
 R_START=1.5
 R_END=4.0
 DR=0.1
@@ -14,6 +14,6 @@ do
   echo "  Li    0.           0.         0."  >> examples/molecule.$MOL
   echo "  H     0.           0.         $R"  >> examples/molecule.$MOL
   ./GoDuck $MOL $BASIS > ${MOL}_${BASIS}_${R}.out
-  echo $R `./extract.sh ${MOL}_${BASIS}_${R}.out | tail -2 | head -1`
+  echo $R `./extract.sh ${MOL}_${BASIS}_${R}.out | tail -4 | head -1`
 done
 

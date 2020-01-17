@@ -1,4 +1,4 @@
-subroutine huckel_guess(nBas,nO,S,Hc,ERI,X,cp,F,Fp,e,c)
+subroutine huckel_guess(nBas,nO,S,Hc,ERI,J,K,X,cp,F,Fp,e,c,P)
 
 !  Hickel guess of the molecular orbitals for HF calculation
 
@@ -11,11 +11,14 @@ subroutine huckel_guess(nBas,nO,S,Hc,ERI,X,cp,F,Fp,e,c)
   double precision,intent(in)   :: S(nBas,nBas)
   double precision,intent(in)   :: Hc(nBas,nBas)
   double precision,intent(in)   :: ERI(nBas,nBas,nBas,nBas)
+  double precision,intent(inout):: J(nBas,nBas)
+  double precision,intent(inout):: K(nBas,nBas)
   double precision,intent(in)   :: X(nBas,nBas)
   double precision,intent(inout):: cp(nBas,nBas)
   double precision,intent(inout):: F(nBas,nBas)
   double precision,intent(inout):: Fp(nBas,nBas)
   double precision,intent(inout):: e(nBas)
+  double precision,intent(inout):: P(nBas,nBas)
 
 ! Local variables
 
@@ -28,7 +31,15 @@ subroutine huckel_guess(nBas,nO,S,Hc,ERI,X,cp,F,Fp,e,c)
 
   a = 1.75d0
 
-  F(:,:) = Hc(:,:)
+  Fp(:,:) = matmul(transpose(X(:,:)),matmul(Hc(:,:),X(:,:)))
+  cp(:,:) = Fp(:,:)
+  call diagonalize_matrix(nBas,cp,e)
+  c(:,:) = matmul(X(:,:),cp(:,:))
+
+  call Coulomb_matrix_AO_basis(nBas,P,ERI,J)
+  call exchange_matrix_AO_basis(nBas,P,ERI,K)
+
+  F(:,:) = Hc(:,:) + J(:,:) + 0.5d0*K(:,:)
 
   do mu=1,nBas
     do nu=mu+1,nBas

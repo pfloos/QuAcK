@@ -1,7 +1,7 @@
 #! /bin/bash
 
 MOL="N2"
-BASIS="VDZ"
+BASIS="cc-pvtz"
 R_START=1.5
 R_END=3.5
 DR=0.1
