@@ -13,4 +13,5 @@
   double precision,parameter    :: pi = acos(-1d0)
   double precision,parameter    :: HaToeV = 27.21138602d0
   double precision,parameter    :: pmtoau = 0.0188973d0
+  double precision,parameter    :: BoToAn = 0.529177249d0
 

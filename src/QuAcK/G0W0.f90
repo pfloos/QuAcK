@@ -129,6 +129,13 @@ subroutine G0W0(doACFDT,exchange_kernel,doXBS,COHSEX,SOSEX,BSE,TDA,singlet_manif
     call Bethe_Salpeter(TDA,singlet_manifold,triplet_manifold, &
                         nBas,nC,nO,nV,nR,nS,ERI,eHF,eGW,Omega,XpY,XmY,rho,EcRPA,EcBSE)
 
+    if(exchange_kernel) then
+ 
+      EcRPA(1) = 0.5d0*EcRPA(1)
+      EcRPA(2) = 1.5d0*EcRPA(1)
+ 
+    end if
+
     write(*,*)
     write(*,*)'-------------------------------------------------------------------------------'
     write(*,'(2X,A50,F15.6)') 'Tr@BSE@G0W0 correlation energy (singlet) =',EcBSE(1)
@@ -156,6 +163,13 @@ subroutine G0W0(doACFDT,exchange_kernel,doXBS,COHSEX,SOSEX,BSE,TDA,singlet_manif
 
       call ACFDT(exchange_kernel,doXBS,.true.,TDA,BSE,singlet_manifold,triplet_manifold, & 
                  nBas,nC,nO,nV,nR,nS,ERI,eGW,Omega,XpY,XmY,rho,EcAC)
+
+      if(exchange_kernel) then
+  
+        EcAC(1) = 0.5d0*EcAC(1)
+        EcAC(2) = 1.5d0*EcAC(1)
+  
+      end if
 
       write(*,*)
       write(*,*)'-------------------------------------------------------------------------------'

@@ -23,16 +23,21 @@ subroutine read_geometry(nNuc,ZNuc,rNuc,ENuc)
 
 ! Open file with geometry specification
 
-  open(unit=1,file='input/molecule')
+  open(unit=10,file='input/molecule')
+  open(unit=11,file='input/molecule.xyz')
 
-! Read geometry
+! Read geometry and create xyz file for integrals
 
-  read(1,*) 
-  read(1,*) 
-  read(1,*) 
+  read(10,*) 
+  read(10,*) 
+  read(10,*) 
+
+  write(11,'(I3)') nNuc
+  write(11,*) 
 
   do i=1,nNuc
-    read(1,*) El,rNuc(i,1),rNuc(i,2),rNuc(i,3)
+    read(10,*) El,rNuc(i,1),rNuc(i,2),rNuc(i,3)
+    write(11,'(A3,1X,3F16.10)') El,rNuc(i,1)*BoToAn,rNuc(i,2)*BoToAn,rNuc(i,3)*BoToAn
     ZNuc(i) = dble(element_number(El))
   enddo
 
@@ -48,7 +53,8 @@ subroutine read_geometry(nNuc,ZNuc,rNuc,ENuc)
   enddo
 
 ! Close file with geometry specification
-  close(unit=1)
+  close(unit=10)
+  close(unit=11)
 
 ! Print geometry
   write(*,'(A28)') '------------------'

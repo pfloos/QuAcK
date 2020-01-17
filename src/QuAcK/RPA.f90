@@ -75,6 +75,13 @@ subroutine RPA(doACFDT,exchange_kernel,singlet_manifold,triplet_manifold,nBas,nC
 
   endif
 
+  if(exchange_kernel) then
+
+    EcRPA(1) = 0.5d0*EcRPA(1)
+    EcRPA(2) = 1.5d0*EcRPA(1)
+
+  end if
+
   write(*,*)
   write(*,*)'-------------------------------------------------------------------------------'
   write(*,'(2X,A50,F15.6)') 'Tr@RPA  correlation energy (singlet) =',EcRPA(1)
@@ -96,6 +103,12 @@ subroutine RPA(doACFDT,exchange_kernel,singlet_manifold,triplet_manifold,nBas,nC
     call ACFDT(exchange_kernel,.false.,.true.,.false.,.false.,singlet_manifold,triplet_manifold, &
                nBas,nC,nO,nV,nR,nS,ERI,e,Omega,XpY,XmY,rho,EcAC)
 
+  if(exchange_kernel) then
+
+    EcAC(1) = 0.5d0*EcAC(1)
+    EcAC(2) = 1.5d0*EcAC(1)
+
+  end if
 
   write(*,*)
   write(*,*)'-------------------------------------------------------------------------------'

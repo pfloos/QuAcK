@@ -1,5 +1,5 @@
-# nAt nEl nCore nRyd
-  2   12   4     10
+# nAt nEla nElb nCore nRyd
+  2   6     6   0     0
 # Znuc   x            y           z
-  4.     0.           0.         0.
-  8.     0.           0.         2.5148473456
+  Be     0.           0.         0.
+  O     0.           0.         2.5148473456

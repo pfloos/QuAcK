@@ -13,7 +13,7 @@ subroutine read_basis(nNuc,rNuc,nBas,nO,nV,nShell,TotAngMomShell,CenterShell,KSh
 ! Local variables
 
   integer                       :: nShAt,iNuc,iShell
-  integer                       :: i,j,k
+  integer                       :: i,j,k,kk
   character                     :: shelltype
 
 ! Output variables
@@ -82,7 +82,7 @@ subroutine read_basis(nNuc,rNuc,nBas,nO,nV,nShell,TotAngMomShell,CenterShell,KSh
 
         write(*,'(A28,1X,A16,A16)') '','Exponents','Contraction'
         do k=1,Kshell(nShell)
-          read(2,*) ExpShell(nShell,k),DShell(nShell,k)
+          read(2,*) kk,ExpShell(nShell,k),DShell(nShell,k)
           write(*,'(A28,1X,F16.10,F16.10)') '',ExpShell(nShell,k),DShell(nShell,k)
         enddo
     enddo
