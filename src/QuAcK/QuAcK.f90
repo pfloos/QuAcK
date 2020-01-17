@@ -205,7 +205,9 @@ program QuAcK
 
   else
 
-    call read_integrals(nEl(:),nBas,S,T,V,Hc,ERI_AO_basis)
+!   call read_integrals(nEl(:),nBas,S,T,V,Hc,ERI_AO_basis)
+    call 
+!   call read_integrals(nEl(:),nBas,S,T,V,Hc,ERI_AO_basis)
 
   end if
 
