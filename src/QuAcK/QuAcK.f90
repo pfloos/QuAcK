@@ -169,7 +169,7 @@ program QuAcK
 !------------------------------------------------------------------------
 
   call read_basis(nNuc,rNuc,nBas,nO,nV,nShell,TotAngMomShell,CenterShell,KShell,DShell,ExpShell)
-  nS(:) = (nO(:) - nC(:))*nV(:)
+  nS(:) = (nO(:) - nC(:))*(nV(:) - nR(:))
 
 !------------------------------------------------------------------------
 ! Read auxiliary basis set information
