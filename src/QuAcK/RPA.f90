@@ -1,4 +1,5 @@
-subroutine RPA(doACFDT,exchange_kernel,singlet_manifold,triplet_manifold,nBas,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,e)
+subroutine RPA(doACFDT,exchange_kernel,singlet_manifold,triplet_manifold,eta, & 
+               nBas,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,e)
 
 ! Perform a direct random phase approximation calculation
 
@@ -12,6 +13,7 @@ subroutine RPA(doACFDT,exchange_kernel,singlet_manifold,triplet_manifold,nBas,nC
   logical,intent(in)            :: exchange_kernel
   logical,intent(in)            :: singlet_manifold
   logical,intent(in)            :: triplet_manifold
+  double precision,intent(in)   :: eta
   integer,intent(in)            :: nBas
   integer,intent(in)            :: nC
   integer,intent(in)            :: nO
@@ -57,7 +59,7 @@ subroutine RPA(doACFDT,exchange_kernel,singlet_manifold,triplet_manifold,nBas,nC
 
     ispin = 1
 
-    call linear_response(ispin,.true.,.false.,.false.,nBas,nC,nO,nV,nR,nS,1d0,e,ERI,rho, &
+    call linear_response(ispin,.true.,.false.,.false.,eta,nBas,nC,nO,nV,nR,nS,1d0,e,ERI,rho, &
                          EcRPA(ispin),Omega(:,ispin),XpY(:,:,ispin),XmY(:,:,ispin))
     call print_excitation('RPA   ',ispin,nS,Omega(:,ispin))
 
@@ -69,7 +71,7 @@ subroutine RPA(doACFDT,exchange_kernel,singlet_manifold,triplet_manifold,nBas,nC
 
     ispin = 2
 
-    call linear_response(ispin,.true.,.false.,.false.,nBas,nC,nO,nV,nR,nS,1d0,e,ERI,rho, &
+    call linear_response(ispin,.true.,.false.,.false.,eta,nBas,nC,nO,nV,nR,nS,1d0,e,ERI,rho, &
                          EcRPA(ispin),Omega(:,ispin),XpY(:,:,ispin),XmY(:,:,ispin))
     call print_excitation('RPA   ',ispin,nS,Omega(:,ispin))
 
@@ -84,10 +86,10 @@ subroutine RPA(doACFDT,exchange_kernel,singlet_manifold,triplet_manifold,nBas,nC
 
   write(*,*)
   write(*,*)'-------------------------------------------------------------------------------'
-  write(*,'(2X,A50,F15.6)') 'Tr@RPA  correlation energy (singlet) =',EcRPA(1)
-  write(*,'(2X,A50,F15.6)') 'Tr@RPA  correlation energy (triplet) =',EcRPA(2)
-  write(*,'(2X,A50,F15.6)') 'Tr@RPA  correlation energy           =',EcRPA(1) + EcRPA(2)
-  write(*,'(2X,A50,F15.6)') 'Tr@RPA  total energy                 =',ENuc + ERHF + EcRPA(1) + EcRPA(2)
+  write(*,'(2X,A50,F20.10)') 'Tr@RPA  correlation energy (singlet) =',EcRPA(1)
+  write(*,'(2X,A50,F20.10)') 'Tr@RPA  correlation energy (triplet) =',EcRPA(2)
+  write(*,'(2X,A50,F20.10)') 'Tr@RPA  correlation energy           =',EcRPA(1) + EcRPA(2)
+  write(*,'(2X,A50,F20.10)') 'Tr@RPA  total energy                 =',ENuc + ERHF + EcRPA(1) + EcRPA(2)
   write(*,*)'-------------------------------------------------------------------------------'
   write(*,*)
 
@@ -100,7 +102,7 @@ subroutine RPA(doACFDT,exchange_kernel,singlet_manifold,triplet_manifold,nBas,nC
     write(*,*) '------------------------------------------------------'
     write(*,*) 
 
-    call ACFDT(exchange_kernel,.false.,.true.,.false.,.false.,singlet_manifold,triplet_manifold, &
+    call ACFDT(exchange_kernel,.false.,.true.,.false.,.false.,singlet_manifold,triplet_manifold,eta, &
                nBas,nC,nO,nV,nR,nS,ERI,e,Omega,XpY,XmY,rho,EcAC)
 
   if(exchange_kernel) then
@@ -112,10 +114,10 @@ subroutine RPA(doACFDT,exchange_kernel,singlet_manifold,triplet_manifold,nBas,nC
 
   write(*,*)
   write(*,*)'-------------------------------------------------------------------------------'
-  write(*,'(2X,A50,F15.6)') 'AC@RPA  correlation energy (singlet) =',EcAC(1)
-  write(*,'(2X,A50,F15.6)') 'AC@RPA  correlation energy (triplet) =',EcAC(2)
-  write(*,'(2X,A50,F15.6)') 'AC@RPA  correlation energy           =',EcAC(1) + EcAC(2)
-  write(*,'(2X,A50,F15.6)') 'AC@RPA  total energy                 =',ENuc + ERHF + EcAC(1) + EcAC(2)
+  write(*,'(2X,A50,F20.10)') 'AC@RPA  correlation energy (singlet) =',EcAC(1)
+  write(*,'(2X,A50,F20.10)') 'AC@RPA  correlation energy (triplet) =',EcAC(2)
+  write(*,'(2X,A50,F20.10)') 'AC@RPA  correlation energy           =',EcAC(1) + EcAC(2)
+  write(*,'(2X,A50,F20.10)') 'AC@RPA  total energy                 =',ENuc + ERHF + EcAC(1) + EcAC(2)
   write(*,*)'-------------------------------------------------------------------------------'
   write(*,*)
 

@@ -115,7 +115,7 @@ subroutine evGW(maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,COHSEX,SOSE
 
     if(.not. GW0 .or. nSCF == 0) then
 
-      call linear_response(ispin,.true.,TDA,.false.,nBas,nC,nO,nV,nR,nS,1d0,eGW,ERI, & 
+      call linear_response(ispin,.true.,TDA,.false.,eta,nBas,nC,nO,nV,nR,nS,1d0,eGW,ERI, & 
                            rho(:,:,:,ispin),EcRPA(ispin),Omega(:,ispin),XpY(:,:,ispin),XmY(:,:,ispin))
 
     endif
@@ -217,10 +217,10 @@ subroutine evGW(maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,COHSEX,SOSE
 
   write(*,*)
   write(*,*)'-------------------------------------------------------------------------------'
-  write(*,'(2X,A50,F15.6)') 'Tr@RPA@evGW correlation energy (singlet) =',EcRPA(1)
-  write(*,'(2X,A50,F15.6)') 'Tr@RPA@evGW correlation energy (triplet) =',EcRPA(2)
-  write(*,'(2X,A50,F15.6)') 'Tr@RPA@evGW correlation energy           =',EcRPA(1) + EcRPA(2)
-  write(*,'(2X,A50,F15.6)') 'Tr@RPA@evGW total energy                 =',ENuc + ERHF + EcRPA(1) + EcRPA(2)
+  write(*,'(2X,A50,F20.10)') 'Tr@RPA@evGW correlation energy (singlet) =',EcRPA(1)
+  write(*,'(2X,A50,F20.10)') 'Tr@RPA@evGW correlation energy (triplet) =',EcRPA(2)
+  write(*,'(2X,A50,F20.10)') 'Tr@RPA@evGW correlation energy           =',EcRPA(1) + EcRPA(2)
+  write(*,'(2X,A50,F20.10)') 'Tr@RPA@evGW total energy                 =',ENuc + ERHF + EcRPA(1) + EcRPA(2)
   write(*,*)'-------------------------------------------------------------------------------'
   write(*,*)
 
@@ -228,15 +228,15 @@ subroutine evGW(maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,COHSEX,SOSE
 
   if(BSE) then
 
-    call Bethe_Salpeter(TDA,singlet_manifold,triplet_manifold, &
+    call Bethe_Salpeter(TDA,singlet_manifold,triplet_manifold,eta, &
                         nBas,nC,nO,nV,nR,nS,ERI,eGW,eGW,Omega,XpY,XmY,rho,EcRPA,EcBSE)
 
     write(*,*)
     write(*,*)'-------------------------------------------------------------------------------'
-    write(*,'(2X,A50,F15.6)') 'Tr@BSE@evGW correlation energy (singlet) =',EcBSE(1)
-    write(*,'(2X,A50,F15.6)') 'Tr@BSE@evGW correlation energy (triplet) =',EcBSE(2)
-    write(*,'(2X,A50,F15.6)') 'Tr@BSE@evGW correlation energy           =',EcBSE(1) + EcBSE(2)
-    write(*,'(2X,A50,F15.6)') 'Tr@BSE@evGW total energy                 =',ENuc + ERHF + EcBSE(1) + EcBSE(2)
+    write(*,'(2X,A50,F20.10)') 'Tr@BSE@evGW correlation energy (singlet) =',EcBSE(1)
+    write(*,'(2X,A50,F20.10)') 'Tr@BSE@evGW correlation energy (triplet) =',EcBSE(2)
+    write(*,'(2X,A50,F20.10)') 'Tr@BSE@evGW correlation energy           =',EcBSE(1) + EcBSE(2)
+    write(*,'(2X,A50,F20.10)') 'Tr@BSE@evGW total energy                 =',ENuc + ERHF + EcBSE(1) + EcBSE(2)
     write(*,*)'-------------------------------------------------------------------------------'
     write(*,*)
 
@@ -256,15 +256,15 @@ subroutine evGW(maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,COHSEX,SOSE
 
       end if
 
-      call ACFDT(exchange_kernel,doXBS,.true.,TDA,BSE,singlet_manifold,triplet_manifold, &
+      call ACFDT(exchange_kernel,doXBS,.true.,TDA,BSE,singlet_manifold,triplet_manifold,eta, &
                  nBas,nC,nO,nV,nR,nS,ERI,eGW,Omega,XpY,XmY,rho,EcAC)
 
       write(*,*)
       write(*,*)'-------------------------------------------------------------------------------'
-      write(*,'(2X,A50,F15.6)') 'AC@BSE@evGW correlation energy (singlet) =',EcAC(1)
-      write(*,'(2X,A50,F15.6)') 'AC@BSE@evGW correlation energy (triplet) =',EcAC(2)
-      write(*,'(2X,A50,F15.6)') 'AC@BSE@evGW correlation energy           =',EcAC(1) + EcAC(2)
-      write(*,'(2X,A50,F15.6)') 'AC@BSE@evGW total energy                 =',ENuc + ERHF + EcAC(1) + EcAC(2)
+      write(*,'(2X,A50,F20.10)') 'AC@BSE@evGW correlation energy (singlet) =',EcAC(1)
+      write(*,'(2X,A50,F20.10)') 'AC@BSE@evGW correlation energy (triplet) =',EcAC(2)
+      write(*,'(2X,A50,F20.10)') 'AC@BSE@evGW correlation energy           =',EcAC(1) + EcAC(2)
+      write(*,'(2X,A50,F20.10)') 'AC@BSE@evGW total energy                 =',ENuc + ERHF + EcAC(1) + EcAC(2)
       write(*,*)'-------------------------------------------------------------------------------'
       write(*,*)
 

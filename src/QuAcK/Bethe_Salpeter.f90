@@ -1,4 +1,4 @@
-subroutine Bethe_Salpeter(TDA,singlet_manifold,triplet_manifold, & 
+subroutine Bethe_Salpeter(TDA,singlet_manifold,triplet_manifold,eta, & 
                  nBas,nC,nO,nV,nR,nS,ERI,eW,eGW,Omega,XpY,XmY,rho,EcRPA,EcBSE)
 
 ! Compute the Bethe-Salpeter excitation energies
@@ -12,6 +12,7 @@ subroutine Bethe_Salpeter(TDA,singlet_manifold,triplet_manifold, &
   logical,intent(in)            :: singlet_manifold
   logical,intent(in)            :: triplet_manifold
 
+  double precision,intent(in)   :: eta
   integer,intent(in)            :: nBas,nC,nO,nV,nR,nS
   double precision,intent(in)   :: eW(nBas)
   double precision,intent(in)   :: eGW(nBas)
@@ -38,11 +39,11 @@ subroutine Bethe_Salpeter(TDA,singlet_manifold,triplet_manifold, &
     ispin = 1
     EcBSE(ispin) = 0d0
 
-    call linear_response(ispin,.true.,TDA,.false.,nBas,nC,nO,nV,nR,nS,1d0,eW,ERI, &
+    call linear_response(ispin,.true.,TDA,.false.,eta,nBas,nC,nO,nV,nR,nS,1d0,eW,ERI, &
                          rho(:,:,:,ispin),EcRPA(ispin),Omega(:,ispin),XpY(:,:,ispin),XmY(:,:,ispin))
     call excitation_density(nBas,nC,nO,nR,nS,ERI,XpY(:,:,ispin),rho(:,:,:,ispin))
 
-    call linear_response(ispin,.true.,TDA,.true.,nBas,nC,nO,nV,nR,nS,1d0,eGW,ERI, &
+    call linear_response(ispin,.true.,TDA,.true.,eta,nBas,nC,nO,nV,nR,nS,1d0,eGW,ERI, &
                          rho(:,:,:,ispin),EcBSE(ispin),Omega(:,ispin),XpY(:,:,ispin),XmY(:,:,ispin))
     call print_excitation('BSE   ',ispin,nS,Omega(:,ispin))
 
@@ -55,11 +56,11 @@ subroutine Bethe_Salpeter(TDA,singlet_manifold,triplet_manifold, &
     ispin = 2
     EcBSE(ispin) = 0d0
 
-    call linear_response(ispin,.true.,TDA,.false.,nBas,nC,nO,nV,nR,nS,1d0,eW,ERI, &
+    call linear_response(ispin,.true.,TDA,.false.,eta,nBas,nC,nO,nV,nR,nS,1d0,eW,ERI, &
                          rho(:,:,:,ispin),EcRPA(ispin),Omega(:,ispin),XpY(:,:,ispin),XmY(:,:,ispin))
     call excitation_density(nBas,nC,nO,nR,nS,ERI,XpY(:,:,ispin),rho(:,:,:,ispin))
 
-    call linear_response(ispin,.true.,TDA,.true.,nBas,nC,nO,nV,nR,nS,1d0,eGW,ERI, &
+    call linear_response(ispin,.true.,TDA,.true.,eta,nBas,nC,nO,nV,nR,nS,1d0,eGW,ERI, &
                          rho(:,:,:,ispin),EcBSE(ispin),Omega(:,ispin),XpY(:,:,ispin),XmY(:,:,ispin))
     call print_excitation('BSE   ',ispin,nS,Omega(:,ispin))
 

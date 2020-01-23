@@ -141,7 +141,7 @@ subroutine qsGW(maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,           
 
     if(.not. GW0 .or. nSCF == 0) then
 
-      call linear_response(ispin,.true.,TDA,.false.,nBas,nC,nO,nV,nR,nS,1d0,eGW,ERI_MO_basis, &
+      call linear_response(ispin,.true.,TDA,.false.,eta,nBas,nC,nO,nV,nR,nS,1d0,eGW,ERI_MO_basis, &
                            rho(:,:,:,ispin),EcRPA(ispin),Omega(:,ispin),XpY(:,:,ispin),XmY(:,:,ispin))
 
     endif
@@ -248,10 +248,10 @@ subroutine qsGW(maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,           
 
   write(*,*)
   write(*,*)'-------------------------------------------------------------------------------'
-  write(*,'(2X,A50,F15.6)') 'Tr@RPA@qsGW correlation energy (singlet) =',EcRPA(1)
-  write(*,'(2X,A50,F15.6)') 'Tr@RPA@qsGW correlation energy (triplet) =',EcRPA(2)
-  write(*,'(2X,A50,F15.6)') 'Tr@RPA@qsGW correlation energy           =',EcRPA(1) + EcRPA(2)
-  write(*,'(2X,A50,F15.6)') 'Tr@RPA@qsGW total energy                 =',ENuc + EqsGW + EcRPA(1) + EcRPA(2)
+  write(*,'(2X,A50,F20.10)') 'Tr@RPA@qsGW correlation energy (singlet) =',EcRPA(1)
+  write(*,'(2X,A50,F20.10)') 'Tr@RPA@qsGW correlation energy (triplet) =',EcRPA(2)
+  write(*,'(2X,A50,F20.10)') 'Tr@RPA@qsGW correlation energy           =',EcRPA(1) + EcRPA(2)
+  write(*,'(2X,A50,F20.10)') 'Tr@RPA@qsGW total energy                 =',ENuc + EqsGW + EcRPA(1) + EcRPA(2)
   write(*,*)'-------------------------------------------------------------------------------'
   write(*,*)
 
@@ -259,15 +259,15 @@ subroutine qsGW(maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,           
 
   if(BSE) then
 
-    call Bethe_Salpeter(TDA,singlet_manifold,triplet_manifold, &
+    call Bethe_Salpeter(TDA,singlet_manifold,triplet_manifold,eta, &
                         nBas,nC,nO,nV,nR,nS,ERI_MO_basis,eGW,eGW,Omega,XpY,XmY,rho,EcRPA,EcBSE)
 
     write(*,*)
     write(*,*)'-------------------------------------------------------------------------------'
-    write(*,'(2X,A50,F15.6)') 'Tr@BSE@qsGW correlation energy (singlet) =',EcBSE(1)
-    write(*,'(2X,A50,F15.6)') 'Tr@BSE@qsGW correlation energy (triplet) =',EcBSE(2)
-    write(*,'(2X,A50,F15.6)') 'Tr@BSE@qsGW correlation energy           =',EcBSE(1) + EcBSE(2)
-    write(*,'(2X,A50,F15.6)') 'Tr@BSE@qsGW total energy                 =',ENuc + EqsGW + EcBSE(1) + EcBSE(2)
+    write(*,'(2X,A50,F20.10)') 'Tr@BSE@qsGW correlation energy (singlet) =',EcBSE(1)
+    write(*,'(2X,A50,F20.10)') 'Tr@BSE@qsGW correlation energy (triplet) =',EcBSE(2)
+    write(*,'(2X,A50,F20.10)') 'Tr@BSE@qsGW correlation energy           =',EcBSE(1) + EcBSE(2)
+    write(*,'(2X,A50,F20.10)') 'Tr@BSE@qsGW total energy                 =',ENuc + EqsGW + EcBSE(1) + EcBSE(2)
     write(*,*)'-------------------------------------------------------------------------------'
     write(*,*)
 
@@ -287,15 +287,15 @@ subroutine qsGW(maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,           
 
       end if
 
-      call ACFDT(exchange_kernel,doXBS,.true.,TDA,BSE,singlet_manifold,triplet_manifold, &
+      call ACFDT(exchange_kernel,doXBS,.true.,TDA,BSE,singlet_manifold,triplet_manifold,eta, &
                  nBas,nC,nO,nV,nR,nS,ERI_MO_basis,eGW,Omega,XpY,XmY,rho,EcAC)
 
       write(*,*)
       write(*,*)'-------------------------------------------------------------------------------'
-      write(*,'(2X,A50,F15.6)') 'AC@BSE@qsGW correlation energy (singlet) =',EcAC(1)
-      write(*,'(2X,A50,F15.6)') 'AC@BSE@qsGW correlation energy (triplet) =',EcAC(2)
-      write(*,'(2X,A50,F15.6)') 'AC@BSE@qsGW correlation energy           =',EcAC(1) + EcAC(2)
-      write(*,'(2X,A50,F15.6)') 'AC@BSE@qsGW total energy                 =',ENuc + EqsGW + EcAC(1) + EcAC(2)
+      write(*,'(2X,A50,F20.10)') 'AC@BSE@qsGW correlation energy (singlet) =',EcAC(1)
+      write(*,'(2X,A50,F20.10)') 'AC@BSE@qsGW correlation energy (triplet) =',EcAC(2)
+      write(*,'(2X,A50,F20.10)') 'AC@BSE@qsGW correlation energy           =',EcAC(1) + EcAC(2)
+      write(*,'(2X,A50,F20.10)') 'AC@BSE@qsGW total energy                 =',ENuc + EqsGW + EcAC(1) + EcAC(2)
       write(*,*)'-------------------------------------------------------------------------------'
       write(*,*)
 

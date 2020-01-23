@@ -1,4 +1,4 @@
-subroutine linear_response(ispin,dRPA,TDA,BSE,nBas,nC,nO,nV,nR,nS,lambda,e,ERI,rho,EcRPA,Omega,XpY,XmY)
+subroutine linear_response(ispin,dRPA,TDA,BSE,eta,nBas,nC,nO,nV,nR,nS,lambda,e,ERI,rho,EcRPA,Omega,XpY,XmY)
 
 ! Compute linear response
 
@@ -8,6 +8,7 @@ subroutine linear_response(ispin,dRPA,TDA,BSE,nBas,nC,nO,nV,nR,nS,lambda,e,ERI,r
 ! Input variables
 
   logical,intent(in)            :: dRPA,TDA,BSE
+  double precision,intent(in)   :: eta
   integer,intent(in)            :: ispin,nBas,nC,nO,nV,nR,nS
   double precision,intent(in)   :: lambda
   double precision,intent(in)   :: e(nBas)
@@ -40,7 +41,7 @@ subroutine linear_response(ispin,dRPA,TDA,BSE,nBas,nC,nO,nV,nR,nS,lambda,e,ERI,r
 ! Build A and B matrices 
 
   call linear_response_A_matrix(ispin,dRPA,nBas,nC,nO,nV,nR,nS,lambda,e,ERI,A)
-  if(BSE) call Bethe_Salpeter_A_matrix(nBas,nC,nO,nV,nR,nS,lambda,ERI,Omega,rho,A)
+  if(BSE) call Bethe_Salpeter_A_matrix(eta,nBas,nC,nO,nV,nR,nS,lambda,ERI,Omega,rho,A)
 
 ! Tamm-Dancoff approximation
 
@@ -48,7 +49,7 @@ subroutine linear_response(ispin,dRPA,TDA,BSE,nBas,nC,nO,nV,nR,nS,lambda,e,ERI,r
   if(.not. TDA) then
 
     call linear_response_B_matrix(ispin,dRPA,nBas,nC,nO,nV,nR,nS,lambda,ERI,B)
-    if(BSE) call Bethe_Salpeter_B_matrix(nBas,nC,nO,nV,nR,nS,lambda,ERI,Omega,rho,B)
+    if(BSE) call Bethe_Salpeter_B_matrix(eta,nBas,nC,nO,nV,nR,nS,lambda,ERI,Omega,rho,B)
 
   endif
 

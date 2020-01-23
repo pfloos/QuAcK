@@ -78,7 +78,7 @@ subroutine G0W0(doACFDT,exchange_kernel,doXBS,COHSEX,SOSEX,BSE,TDA,singlet_manif
 
 ! Compute linear response
 
-  call linear_response(ispin,.true.,TDA,.false.,nBas,nC,nO,nV,nR,nS,1d0,eHF,ERI, & 
+  call linear_response(ispin,.true.,TDA,.false.,eta,nBas,nC,nO,nV,nR,nS,1d0,eHF,ERI, & 
                        rho(:,:,:,ispin),EcRPA(ispin),Omega(:,ispin),XpY(:,:,ispin),XmY(:,:,ispin))
 
 ! Compute correlation part of the self-energy 
@@ -106,15 +106,15 @@ subroutine G0W0(doACFDT,exchange_kernel,doXBS,COHSEX,SOSEX,BSE,TDA,singlet_manif
 
 ! Compute the RPA correlation energy
 
-  call linear_response(ispin,.true.,TDA,.false.,nBas,nC,nO,nV,nR,nS,1d0,eGW,ERI, & 
+  call linear_response(ispin,.true.,TDA,.false.,eta,nBas,nC,nO,nV,nR,nS,1d0,eGW,ERI, & 
                        rho(:,:,:,ispin),EcRPA(ispin),Omega(:,ispin),XpY(:,:,ispin),XmY(:,:,ispin))
 
   write(*,*)
   write(*,*)'-------------------------------------------------------------------------------'
-  write(*,'(2X,A50,F15.6)') 'Tr@RPA@G0W0 correlation energy (singlet) =',EcRPA(1)
-  write(*,'(2X,A50,F15.6)') 'Tr@RPA@G0W0 correlation energy (triplet) =',EcRPA(2)
-  write(*,'(2X,A50,F15.6)') 'Tr@RPA@G0W0 correlation energy           =',EcRPA(1) + EcRPA(2)
-  write(*,'(2X,A50,F15.6)') 'Tr@RPA@G0W0 total energy                 =',ENuc + ERHF + EcRPA(1) + EcRPA(2)
+  write(*,'(2X,A50,F20.10)') 'Tr@RPA@G0W0 correlation energy (singlet) =',EcRPA(1)
+  write(*,'(2X,A50,F20.10)') 'Tr@RPA@G0W0 correlation energy (triplet) =',EcRPA(2)
+  write(*,'(2X,A50,F20.10)') 'Tr@RPA@G0W0 correlation energy           =',EcRPA(1) + EcRPA(2)
+  write(*,'(2X,A50,F20.10)') 'Tr@RPA@G0W0 total energy                 =',ENuc + ERHF + EcRPA(1) + EcRPA(2)
   write(*,*)'-------------------------------------------------------------------------------'
   write(*,*)
 
@@ -126,7 +126,7 @@ subroutine G0W0(doACFDT,exchange_kernel,doXBS,COHSEX,SOSEX,BSE,TDA,singlet_manif
 
   if(BSE) then
 
-    call Bethe_Salpeter(TDA,singlet_manifold,triplet_manifold, &
+    call Bethe_Salpeter(TDA,singlet_manifold,triplet_manifold,eta, &
                         nBas,nC,nO,nV,nR,nS,ERI,eHF,eGW,Omega,XpY,XmY,rho,EcRPA,EcBSE)
 
     if(exchange_kernel) then
@@ -138,10 +138,10 @@ subroutine G0W0(doACFDT,exchange_kernel,doXBS,COHSEX,SOSEX,BSE,TDA,singlet_manif
 
     write(*,*)
     write(*,*)'-------------------------------------------------------------------------------'
-    write(*,'(2X,A50,F15.6)') 'Tr@BSE@G0W0 correlation energy (singlet) =',EcBSE(1)
-    write(*,'(2X,A50,F15.6)') 'Tr@BSE@G0W0 correlation energy (triplet) =',EcBSE(2)
-    write(*,'(2X,A50,F15.6)') 'Tr@BSE@G0W0 correlation energy           =',EcBSE(1) + EcBSE(2)
-    write(*,'(2X,A50,F15.6)') 'Tr@BSE@G0W0 total energy                 =',ENuc + ERHF + EcBSE(1) + EcBSE(2)
+    write(*,'(2X,A50,F20.10)') 'Tr@BSE@G0W0 correlation energy (singlet) =',EcBSE(1)
+    write(*,'(2X,A50,F20.10)') 'Tr@BSE@G0W0 correlation energy (triplet) =',EcBSE(2)
+    write(*,'(2X,A50,F20.10)') 'Tr@BSE@G0W0 correlation energy           =',EcBSE(1) + EcBSE(2)
+    write(*,'(2X,A50,F20.10)') 'Tr@BSE@G0W0 total energy                 =',ENuc + ERHF + EcBSE(1) + EcBSE(2)
     write(*,*)'-------------------------------------------------------------------------------'
     write(*,*)
 
@@ -161,7 +161,7 @@ subroutine G0W0(doACFDT,exchange_kernel,doXBS,COHSEX,SOSEX,BSE,TDA,singlet_manif
 
       end if
 
-      call ACFDT(exchange_kernel,doXBS,.true.,TDA,BSE,singlet_manifold,triplet_manifold, & 
+      call ACFDT(exchange_kernel,doXBS,.true.,TDA,BSE,singlet_manifold,triplet_manifold,eta, & 
                  nBas,nC,nO,nV,nR,nS,ERI,eGW,Omega,XpY,XmY,rho,EcAC)
 
       if(exchange_kernel) then
@@ -173,10 +173,10 @@ subroutine G0W0(doACFDT,exchange_kernel,doXBS,COHSEX,SOSEX,BSE,TDA,singlet_manif
 
       write(*,*)
       write(*,*)'-------------------------------------------------------------------------------'
-      write(*,'(2X,A50,F15.6)') 'AC@BSE@G0W0 correlation energy (singlet) =',EcAC(1)
-      write(*,'(2X,A50,F15.6)') 'AC@BSE@G0W0 correlation energy (triplet) =',EcAC(2)
-      write(*,'(2X,A50,F15.6)') 'AC@BSE@G0W0 correlation energy           =',EcAC(1) + EcAC(2)
-      write(*,'(2X,A50,F15.6)') 'AC@BSE@G0W0 total energy                 =',ENuc + ERHF + EcAC(1) + EcAC(2)
+      write(*,'(2X,A50,F20.10)') 'AC@BSE@G0W0 correlation energy (singlet) =',EcAC(1)
+      write(*,'(2X,A50,F20.10)') 'AC@BSE@G0W0 correlation energy (triplet) =',EcAC(2)
+      write(*,'(2X,A50,F20.10)') 'AC@BSE@G0W0 correlation energy           =',EcAC(1) + EcAC(2)
+      write(*,'(2X,A50,F20.10)') 'AC@BSE@G0W0 total energy                 =',ENuc + ERHF + EcAC(1) + EcAC(2)
       write(*,*)'-------------------------------------------------------------------------------'
       write(*,*)
 

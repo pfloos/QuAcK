@@ -1,4 +1,4 @@
-subroutine Bethe_Salpeter_B_matrix(nBas,nC,nO,nV,nR,nS,lambda,ERI,Omega,rho,B_lr)
+subroutine Bethe_Salpeter_B_matrix(eta,nBas,nC,nO,nV,nR,nS,lambda,ERI,Omega,rho,B_lr)
 
 ! Compute the extra term for Bethe-Salpeter equation for linear response 
 
@@ -8,6 +8,7 @@ subroutine Bethe_Salpeter_B_matrix(nBas,nC,nO,nV,nR,nS,lambda,ERI,Omega,rho,B_lr
 ! Input variables
 
   integer,intent(in)            :: nBas,nC,nO,nV,nR,nS
+  double precision,intent(in)   :: eta
   double precision,intent(in)   :: lambda
   double precision,intent(in)   :: ERI(nBas,nBas,nBas,nBas)
   double precision,intent(in)   :: Omega(nS)
@@ -16,6 +17,7 @@ subroutine Bethe_Salpeter_B_matrix(nBas,nC,nO,nV,nR,nS,lambda,ERI,Omega,rho,B_lr
 ! Local variables
 
   double precision              :: chi
+  double precision              :: eps
   integer                       :: i,j,a,b,ia,jb,kc
 
 ! Output variables
@@ -33,7 +35,8 @@ subroutine Bethe_Salpeter_B_matrix(nBas,nC,nO,nV,nR,nS,lambda,ERI,Omega,rho,B_lr
  
           chi = 0d0
           do kc=1,nS
-            chi = chi + rho(i,b,kc)*rho(a,j,kc)/Omega(kc)
+            eps = Omega(kc)**2 + eta**2
+            chi = chi + rho(i,b,kc)*rho(a,j,kc)*Omega(kc)/eps
           enddo
 
           B_lr(ia,jb) = B_lr(ia,jb) - lambda*ERI(i,a,b,j) + 4d0*lambda*chi

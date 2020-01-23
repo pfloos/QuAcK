@@ -442,7 +442,8 @@ program QuAcK
   if(doRPA) then
 
     call cpu_time(start_RPA)
-    call RPA(doACFDT,exchange_kernel,singlet_manifold,triplet_manifold,nBas,nC,nO,nV,nR,nS,ENuc,ERHF,ERI_MO_basis,eHF)
+    call RPA(doACFDT,exchange_kernel,singlet_manifold,triplet_manifold,eta, & 
+             nBas,nC,nO,nV,nR,nS,ENuc,ERHF,ERI_MO_basis,eHF)
     call cpu_time(end_RPA)
 
     t_RPA = end_RPA - start_RPA
@@ -458,7 +459,8 @@ program QuAcK
   if(doRPAx) then
 
     call cpu_time(start_RPAx)
-    call RPAx(doACFDT,exchange_kernel,singlet_manifold,triplet_manifold,nBas,nC,nO,nV,nR,nS,ENuc,ERHF,ERI_MO_basis,eHF)
+    call RPAx(doACFDT,exchange_kernel,singlet_manifold,triplet_manifold,eta, & 
+              nBas,nC,nO,nV,nR,nS,ENuc,ERHF,ERI_MO_basis,eHF)
     call cpu_time(end_RPAx)
 
     t_RPAx = end_RPAx - start_RPAx
