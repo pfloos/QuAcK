@@ -20,7 +20,6 @@ subroutine ACFDT_correlation_energy(ispin,exchange_kernel,nBas,nC,nO,nV,nR,nS,ER
   integer                       :: ia,jb,kc
   double precision              :: delta_spin
   double precision              :: delta_Kx
-  double precision,allocatable  :: P(:,:)
   double precision,allocatable  :: Ap(:,:)
   double precision,allocatable  :: Bp(:,:)
   double precision,allocatable  :: X(:,:)
@@ -44,15 +43,7 @@ subroutine ACFDT_correlation_energy(ispin,exchange_kernel,nBas,nC,nO,nV,nR,nS,ER
   
 ! Memory allocation
 
-  allocate(P(nS,nS),Ap(nS,nS),Bp(nS,nS),X(nS,nS),Y(nS,nS))
-
-! Compute P = (X+Y)^T.(X+Y) - 1
-
-  P(:,:) = matmul(transpose(XpY),XpY)
-
-  do ia=1,nS
-    P(ia,ia) = P(ia,ia) - 1d0
-  enddo
+  allocate(Ap(nS,nS),Bp(nS,nS),X(nS,nS),Y(nS,nS))
 
 ! Compute Aiajb = (ia|bj) and Biajb = (ia|jb)
 
@@ -77,8 +68,6 @@ subroutine ACFDT_correlation_energy(ispin,exchange_kernel,nBas,nC,nO,nV,nR,nS,ER
   enddo
 
 ! Compute Tr(K x P_lambda)
-
-! EcAC = trace_matrix(nS,matmul(Ap,P))
 
   X(:,:) = 0.5d0*(XpY(:,:) + XmY(:,:))
   Y(:,:) = 0.5d0*(XpY(:,:) - XmY(:,:))
