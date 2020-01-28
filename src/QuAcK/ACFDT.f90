@@ -52,13 +52,14 @@ subroutine ACFDT(exchange_kernel,doXBS,dRPA,TDA,BSE,singlet_manifold,triplet_man
 
   end if
 
+  EcAC(:) = 0d0
+  Ec(:,:) = 0d0
+
 ! Singlet manifold
 
   if(singlet_manifold) then
 
     ispin = 1
-    EcAC(ispin) = 0d0
-    Ec(:,ispin) = 0d0
 
     write(*,*) '--------------'
     write(*,*) 'Singlet states'
@@ -104,8 +105,6 @@ subroutine ACFDT(exchange_kernel,doXBS,dRPA,TDA,BSE,singlet_manifold,triplet_man
   if(triplet_manifold) then
 
     ispin = 2
-    EcAC(ispin) = 0d0
-    Ec(:,ispin) = 0d0
 
     write(*,*) '--------------'
     write(*,*) 'Triplet states'
@@ -120,20 +119,20 @@ subroutine ACFDT(exchange_kernel,doXBS,dRPA,TDA,BSE,singlet_manifold,triplet_man
  
       lambda = rAC(iAC)
 
-!     if(doXBS) then
+      if(doXBS) then
 
-!       call linear_response(ispin,dRPA,TDA,.false.,eta,nBas,nC,nO,nV,nR,nS,lambda,e,ERI, &
-!                            rho(:,:,:,ispin),EcAC(ispin),Omega(:,ispin),XpY(:,:,ispin),XmY(:,:,ispin))
-!       call excitation_density(nBas,nC,nO,nR,nS,ERI,XpY(:,:,ispin),rho(:,:,:,ispin))
+        call linear_response(ispin,dRPA,TDA,.false.,eta,nBas,nC,nO,nV,nR,nS,lambda,e,ERI, &
+                             rho(:,:,:,ispin),EcAC(ispin),Omega(:,ispin),XpY(:,:,ispin),XmY(:,:,ispin))
+        call excitation_density(nBas,nC,nO,nR,nS,ERI,XpY(:,:,ispin),rho(:,:,:,ispin))
 
-!     end if  
+      end if  
 
-!     call linear_response(ispin,dRPA,TDA,BSE,eta,nBas,nC,nO,nV,nR,nS,lambda,e,ERI, &
-!                          rho(:,:,:,ispin),EcAC(ispin),Omega(:,ispin),XpY(:,:,ispin),XmY(:,:,ispin))
+      call linear_response(ispin,dRPA,TDA,BSE,eta,nBas,nC,nO,nV,nR,nS,lambda,e,ERI, &
+                           rho(:,:,:,ispin),EcAC(ispin),Omega(:,ispin),XpY(:,:,ispin),XmY(:,:,ispin))
 
-!     call ACFDT_correlation_energy(ispin,exchange_kernel,nBas,nC,nO,nV,nR,nS,ERI,XpY(:,:,ispin),XmY(:,:,ispin),Ec(iAC,ispin))
+      call ACFDT_correlation_energy(ispin,exchange_kernel,nBas,nC,nO,nV,nR,nS,ERI,XpY(:,:,ispin),XmY(:,:,ispin),Ec(iAC,ispin))
 
-!     write(*,'(2X,F15.6,1X,F30.15,1X,F30.15)') lambda,EcAC(ispin),Ec(iAC,ispin)
+      write(*,'(2X,F15.6,1X,F30.15,1X,F30.15)') lambda,EcAC(ispin),Ec(iAC,ispin)
 
     end do
 

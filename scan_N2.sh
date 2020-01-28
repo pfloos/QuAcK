@@ -1,10 +1,10 @@
 #! /bin/bash
 
 MOL="N2"
-BASIS="cc-pvdz"
-R_START=1.5
-R_END=3.5
-DR=0.1
+BASIS="cc-pvtz"
+R_START=2.066
+R_END=2.080
+DR=0.001
 
 for R in $(seq $R_START $DR $R_END)
 do

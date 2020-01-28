@@ -2,8 +2,8 @@
 
 MOL="LiH"
 BASIS="cc-pvqz"
-R_START=3.010
-R_END=3.020
+R_START=2.990
+R_END=3.000
 DR=0.001
 
 for R in $(seq $R_START $DR $R_END)
