@@ -1,8 +1,8 @@
 #! /bin/bash
 
 MOL="N2"
-BASIS="cc-pvtz"
-R_START=2.066
+BASIS="cc-pvqz"
+R_START=2.071
 R_END=2.080
 DR=0.001
 

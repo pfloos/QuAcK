@@ -95,10 +95,14 @@ subroutine G0W0(doACFDT,exchange_kernel,doXBS,COHSEX,SOSEX,BSE,TDA,singlet_manif
   call renormalization_factor(COHSEX,SOSEX,eta,nBas,nC,nO,nV,nR,nS,eHF, & 
                               Omega(:,ispin),rho(:,:,:,ispin),rhox(:,:,:,ispin),Z(:))
 
+! Find all the roots of the QP equation if necessary
+
+  call QP_roots(nBas,nC,nO,nV,nR,nS,eta,eHF,Omega,rho)
+ 
 ! Solve the quasi-particle equation
 
   eGW(:) = eHF(:) + Z(:)*SigC(:)
- 
+
 ! Dump results
 
 ! call print_excitation('RPA   ',ispin,nS,Omega(:,ispin))

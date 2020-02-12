@@ -96,33 +96,33 @@ subroutine RPA(doACFDT,exchange_kernel,singlet_manifold,triplet_manifold,eta, &
 ! Compute the correlation energy via the adiabatic connection 
 ! Switch off ACFDT for RPA as the trace formula is equivalent 
 
-  if(doACFDT) then
+! if(doACFDT) then
 
-    write(*,*) '------------------------------------------------------'
-    write(*,*) 'Adiabatic connection version of RPA correlation energy'
-    write(*,*) '------------------------------------------------------'
-    write(*,*) 
+!   write(*,*) '------------------------------------------------------'
+!   write(*,*) 'Adiabatic connection version of RPA correlation energy'
+!   write(*,*) '------------------------------------------------------'
+!   write(*,*) 
 
-    call ACFDT(exchange_kernel,.false.,.true.,.false.,.false.,singlet_manifold,triplet_manifold,eta, &
-               nBas,nC,nO,nV,nR,nS,ERI,e,Omega,XpY,XmY,rho,EcAC)
+!   call ACFDT(exchange_kernel,.false.,.true.,.false.,.false.,singlet_manifold,triplet_manifold,eta, &
+!              nBas,nC,nO,nV,nR,nS,ERI,e,Omega,XpY,XmY,rho,EcAC)
 
-    if(exchange_kernel) then
-    
-      EcAC(1) = 0.5d0*EcAC(1)
-      EcAC(2) = 1.5d0*EcAC(1)
-    
-    end if
+!   if(exchange_kernel) then
+!   
+!     EcAC(1) = 0.5d0*EcAC(1)
+!     EcAC(2) = 1.5d0*EcAC(1)
+!   
+!   end if
 
-    write(*,*)
-    write(*,*)'-------------------------------------------------------------------------------'
-    write(*,'(2X,A50,F20.10)') 'AC@RPA  correlation energy (singlet) =',EcAC(1)
-    write(*,'(2X,A50,F20.10)') 'AC@RPA  correlation energy (triplet) =',EcAC(2)
-    write(*,'(2X,A50,F20.10)') 'AC@RPA  correlation energy           =',EcAC(1) + EcAC(2)
-    write(*,'(2X,A50,F20.10)') 'AC@RPA  total energy                 =',ENuc + ERHF + EcAC(1) + EcAC(2)
-    write(*,*)'-------------------------------------------------------------------------------'
-    write(*,*)
+!   write(*,*)
+!   write(*,*)'-------------------------------------------------------------------------------'
+!   write(*,'(2X,A50,F20.10)') 'AC@RPA  correlation energy (singlet) =',EcAC(1)
+!   write(*,'(2X,A50,F20.10)') 'AC@RPA  correlation energy (triplet) =',EcAC(2)
+!   write(*,'(2X,A50,F20.10)') 'AC@RPA  correlation energy           =',EcAC(1) + EcAC(2)
+!   write(*,'(2X,A50,F20.10)') 'AC@RPA  total energy                 =',ENuc + ERHF + EcAC(1) + EcAC(2)
+!   write(*,*)'-------------------------------------------------------------------------------'
+!   write(*,*)
 
 
-  end if
+! end if
 
 end subroutine RPA

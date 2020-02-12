@@ -1,9 +1,9 @@
 #! /bin/bash
 
 MOL="LiF"
-BASIS="cc-pvtz"
-R_START=3.980
-R_END=2.990
+BASIS="cc-pvqz"
+R_START=2.965
+R_END=2.965
 DR=0.001
 
 for R in $(seq $R_START $DR $R_END)
