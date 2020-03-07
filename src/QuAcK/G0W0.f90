@@ -101,11 +101,11 @@ subroutine G0W0(doACFDT,exchange_kernel,doXBS,COHSEX,SOSEX,BSE,TDA,singlet_manif
 
 ! Find all the roots of the QP equation if necessary
 
-  call QP_roots(nBas,nC,nO,nV,nR,nS,eta,eHF,Omega,rho,eGW)
+! call QP_roots(nBas,nC,nO,nV,nR,nS,eta,eHF,Omega,rho,eGW)
  
 ! Dump results
 
-! call print_excitation('RPA   ',ispin,nS,Omega(:,ispin))
+  call print_excitation('RPA   ',ispin,nS,Omega(:,ispin))
   call print_G0W0(nBas,nO,eHF,ENuc,ERHF,SigC,Z,eGW,EcRPA(ispin),EcGM)
 
 ! Compute the RPA correlation energy

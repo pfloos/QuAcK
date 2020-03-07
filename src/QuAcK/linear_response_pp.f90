@@ -70,19 +70,19 @@ subroutine linear_response_pp(ispin,BSE,nBas,nC,nO,nV,nR,nOO,nVV,e,ERI,Omega1,X1
 
  do ab=1,nVV
    do ij=1,nOO
-     write(42,*) ab,ij,B(ab,ij)
+     if(abs(B(ab,ij)) > 1d-15) write(42,*) ab,ij,B(ab,ij)
    end do
  end do
 
  do ab=1,nVV
    do cd=1,nVV
-     write(43,*) ab,cd,C(ab,cd)
+     if(abs(C(ab,cd)) > 1d-15) write(43,*) ab,cd,C(ab,cd)
    end do
  end do
 
  do ij=1,nOO
    do kl=1,nOO
-     write(44,*) ij,kl,D(ij,kl)
+     if(abs(D(ij,kl)) > 1d-15) write(44,*) ij,kl,D(ij,kl)
    end do
  end do
 
