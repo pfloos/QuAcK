@@ -5,7 +5,7 @@
 # CCD CCSD CCSD(T) ringCCD ladderCCD
   F   F    F       F       F
 # CIS RPA RPAx ppRPA ADC
-  F   F   F    F     F
+  F   T   T    F     F
 # GF2 GF3
   F   F
 # G0W0 evGW qsGW 
