@@ -39,6 +39,7 @@ subroutine Bethe_Salpeter_A_matrix(eta,nBas,nC,nO,nV,nR,nS,lambda,ERI,Omega,rho,
             chi = chi + rho(i,j,kc)*rho(a,b,kc)*Omega(kc)/eps
           enddo
 
+!         A_lr(ia,jb) = A_lr(ia,jb) - lambda*ERI(i,a,j,b) + 4d0*lambda*chi
           A_lr(ia,jb) = A_lr(ia,jb) - lambda*ERI(i,a,j,b) + 4d0*lambda*chi
 
         enddo
@@ -46,7 +47,7 @@ subroutine Bethe_Salpeter_A_matrix(eta,nBas,nC,nO,nV,nR,nS,lambda,ERI,Omega,rho,
     enddo
   enddo
 
-  print*,'BSE A'
-  call matout(nS,nS,A_lr)
+! print*,'BSE A'
+! call matout(nS,nS,A_lr)
 
 end subroutine Bethe_Salpeter_A_matrix

@@ -1,4 +1,4 @@
-subroutine G0T0(BSE,singlet_manifold,triplet_manifold,eta,nBas,nC,nO,nV,nR,ENuc,ERHF,ERI,eHF,eG0T0)
+subroutine G0T0(eta,nBas,nC,nO,nV,nR,ENuc,ERHF,ERI,eHF)
 
 ! Perform G0W0 calculation with a T-matrix self-energy (G0T0)
 
@@ -7,9 +7,6 @@ subroutine G0T0(BSE,singlet_manifold,triplet_manifold,eta,nBas,nC,nO,nV,nR,ENuc,
 
 ! Input variables
 
-  logical,intent(in)            :: BSE
-  logical,intent(in)            :: singlet_manifold
-  logical,intent(in)            :: triplet_manifold
   double precision,intent(in)   :: eta
 
   integer,intent(in)            :: nBas,nC,nO,nV,nR
@@ -36,9 +33,9 @@ subroutine G0T0(BSE,singlet_manifold,triplet_manifold,eta,nBas,nC,nO,nV,nR,ENuc,
   double precision,allocatable  :: SigT(:)
   double precision,allocatable  :: Z(:)
 
-! Output variables
+  double precision,allocatable  :: eG0T0(:)
 
-  double precision,intent(out)  :: eG0T0(nBas)
+! Output variables
 
 ! Hello world
 
@@ -64,7 +61,7 @@ subroutine G0T0(BSE,singlet_manifold,triplet_manifold,eta,nBas,nC,nO,nV,nR,ENuc,
            Omega1t(nVVt),X1t(nVVt,nVVt),Y1t(nOOt,nVVt), & 
            Omega2t(nOOt),X2t(nVVt,nOOt),Y2t(nOOt,nOOt), & 
            rho1t(nBas,nO-nC,nVVt),rho2t(nBas,nV-nR,nOOt), & 
-           SigT(nBas),Z(nBas))
+           SigT(nBas),Z(nBas),eG0T0(nBas))
 
 !----------------------------------------------
 ! Singlet manifold

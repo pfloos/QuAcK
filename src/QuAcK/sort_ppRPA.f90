@@ -101,7 +101,7 @@ subroutine sort_ppRPA(nOO,nVV,Omega,Z,Omega1,X1,Y1,Omega2,X2,Y2)
 
 ! Orthogonalize eigenvectors
 
-  S1 = matmul(transpose(Z1),matmul(M,Z1))
+  S1 = + matmul(transpose(Z1),matmul(M,Z1))
   S2 = - matmul(transpose(Z2),matmul(M,Z2))
 
   call orthogonalization_matrix(1,nVV,S1,O1)
@@ -116,12 +116,17 @@ subroutine sort_ppRPA(nOO,nVV,Omega,Z,Omega1,X1,Y1,Omega2,X2,Y2)
   X2(1:nVV,1:nOO) = Z2(    1:    nVV,1:nOO)
   Y2(1:nOO,1:nOO) = Z2(nVV+1:nOO+nVV,1:nOO)
 
-  write(*,*) 'X1t.X1 - Y1t.Y1'
-  call matout(nVV,nVV,matmul(transpose(X1),X1) - matmul(transpose(Y1),Y1))
-  write(*,*) 'X2t.X2 - Y2t.Y2'
-  call matout(nOO,nOO,matmul(transpose(X2),X2) - matmul(transpose(Y2),Y2))
-  write(*,*) 'X1t.X2 - Y1t.Y2'
-  call matout(nVV,nOO,matmul(transpose(X1),X2) - matmul(transpose(Y1),Y2))
+! write(*,*) 'Z1t.M.Z1'
+! call matout(nVV,nVV,matmul(matmul(transpose(Z1),M),Z1))
+! write(*,*) 'Z2t.M.Z2'
+! call matout(nOO,nOO,matmul(matmul(transpose(Z2),M),Z2))
+
+! write(*,*) 'X1t.X1 - Y1t.Y1'
+! call matout(nVV,nVV,matmul(transpose(X1),X1) - matmul(transpose(Y1),Y1))
+! write(*,*) 'X2t.X2 - Y2t.Y2'
+! call matout(nOO,nOO,matmul(transpose(X2),X2) - matmul(transpose(Y2),Y2))
+! write(*,*) 'X1t.X2 - Y1t.Y2'
+! call matout(nVV,nOO,matmul(transpose(X1),X2) - matmul(transpose(Y1),Y2))
 
 
 end subroutine sort_ppRPA
