@@ -45,6 +45,8 @@ subroutine G0W0(doACFDT,exchange_kernel,doXBS,COHSEX,SOSEX,BSE,TDA,singlet_manif
   double precision,allocatable  :: rho(:,:,:,:)
   double precision,allocatable  :: rhox(:,:,:,:)
 
+  double precision,allocatable  :: eGWlin(:)
+
 ! Output variables
 
   double precision              :: eGW(nBas)
@@ -74,7 +76,7 @@ subroutine G0W0(doACFDT,exchange_kernel,doXBS,COHSEX,SOSEX,BSE,TDA,singlet_manif
 ! Memory allocation
 
   allocate(SigC(nBas),Z(nBas),Omega(nS,nspin),XpY(nS,nS,nspin),XmY(nS,nS,nspin),  & 
-           rho(nBas,nBas,nS,nspin),rhox(nBas,nBas,nS,nspin))
+           rho(nBas,nBas,nS,nspin),rhox(nBas,nBas,nS,nspin),eGWlin(nBas))
 
 ! Compute linear response
 
@@ -97,11 +99,17 @@ subroutine G0W0(doACFDT,exchange_kernel,doXBS,COHSEX,SOSEX,BSE,TDA,singlet_manif
 
 ! Solve the quasi-particle equation
 
-  eGW(:) = eHF(:) + Z(:)*SigC(:)
+  eGWlin(:) = eHF(:) + Z(:)*SigC(:)
 
 ! Find all the roots of the QP equation if necessary
 
-! call QP_roots(nBas,nC,nO,nV,nR,nS,eta,eHF,Omega,rho,eGW)
+! call QP_roots(nBas,nC,nO,nV,nR,nS,eta,eHF,Omega,rho,eGWlin)
+
+! Find graphical solution of the QP equation
+
+! call QP_graph(nBas,nC,nO,nV,nR,nS,eta,eHF,Omega,rho,eGWlin,eGW)
+
+  eGW(:) = eGWlin(:)
  
 ! Dump results
 

@@ -280,6 +280,11 @@ program QuAcK
 
   call cpu_time(start_AOtoMO)
 
+  write(*,*)
+  write(*,*) 'AO to MO transformation... Please be patient'
+  write(*,*)
+
+
   if(doSph) then
 
     ERI_MO_basis = ERI_AO_basis
@@ -542,8 +547,8 @@ program QuAcK
   if(doG0W0) then
     
     call cpu_time(start_G0W0)
-    call G0W0(doACFDT,exchange_kernel,doXBS,COHSEX,SOSEX,BSE,TDA,singlet_manifold,triplet_manifold,eta, & 
-              nBas,nC(1),nO(1),nV(1),nR(1),nS(1),ENuc,ERHF,Hc,H,ERI_MO_basis,PHF,cHF,eHF,eG0W0)
+    call G0W0(doACFDT,exchange_kernel,doXBS,COHSEX,SOSEX,BSE,TDA,singlet_manifold,triplet_manifold, & 
+              eta,nBas,nC(1),nO(1),nV(1),nR(1),nS(1),ENuc,ERHF,Hc,H,ERI_MO_basis,PHF,cHF,eHF,eG0W0)
     call cpu_time(end_G0W0)
   
     t_G0W0 = end_G0W0 - start_G0W0
