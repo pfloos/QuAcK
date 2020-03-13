@@ -2,9 +2,9 @@
 
 MOL="H2"
 BASIS="cc-pvqz"
-R_START=1.397
-R_END=1.400
-DR=0.001
+R_START=1.0
+R_END=2.4
+DR=0.1
 
 for R in $(seq $R_START $DR $R_END)
 do
