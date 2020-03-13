@@ -1,5 +1,5 @@
 subroutine ACFDT(exchange_kernel,doXBS,dRPA,TDA,BSE,singlet_manifold,triplet_manifold,eta, & 
-                 nBas,nC,nO,nV,nR,nS,ERI,eHF,e,Omega,XpY,XmY,rho,EcAC)
+                 nBas,nC,nO,nV,nR,nS,ERI,eW,e,Omega,XpY,XmY,rho,EcAC)
 
 ! Compute the correlation energy via the adiabatic connection fluctuation dissipation theorem
 
@@ -19,7 +19,7 @@ subroutine ACFDT(exchange_kernel,doXBS,dRPA,TDA,BSE,singlet_manifold,triplet_man
 
   double precision,intent(in)   :: eta
   integer,intent(in)            :: nBas,nC,nO,nV,nR,nS
-  double precision,intent(in)   :: eHF(nBas)
+  double precision,intent(in)   :: eW(nBas)
   double precision,intent(in)   :: e(nBas)
   double precision,intent(in)   :: ERI(nBas,nBas,nBas,nBas)
 
@@ -77,7 +77,7 @@ subroutine ACFDT(exchange_kernel,doXBS,dRPA,TDA,BSE,singlet_manifold,triplet_man
 
       if(doXBS) then
 
-        call linear_response(ispin,dRPA,TDA,.false.,eta,nBas,nC,nO,nV,nR,nS,lambda,eHF,ERI, &
+        call linear_response(ispin,dRPA,TDA,.false.,eta,nBas,nC,nO,nV,nR,nS,lambda,eW,ERI, &
                              rho(:,:,:,ispin),EcAC(ispin),Omega(:,ispin),XpY(:,:,ispin),XmY(:,:,ispin))
         call excitation_density(nBas,nC,nO,nR,nS,ERI,XpY(:,:,ispin),rho(:,:,:,ispin))
 
@@ -123,7 +123,7 @@ subroutine ACFDT(exchange_kernel,doXBS,dRPA,TDA,BSE,singlet_manifold,triplet_man
 
       if(doXBS) then
 
-        call linear_response(ispin,dRPA,TDA,.false.,eta,nBas,nC,nO,nV,nR,nS,lambda,eHF,ERI, &
+        call linear_response(ispin,dRPA,TDA,.false.,eta,nBas,nC,nO,nV,nR,nS,lambda,eW,ERI, &
                              rho(:,:,:,ispin),EcAC(ispin),Omega(:,ispin),XpY(:,:,ispin),XmY(:,:,ispin))
         call excitation_density(nBas,nC,nO,nR,nS,ERI,XpY(:,:,ispin),rho(:,:,:,ispin))
 
