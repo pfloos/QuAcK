@@ -107,9 +107,9 @@ subroutine G0W0(doACFDT,exchange_kernel,doXBS,COHSEX,SOSEX,BSE,TDA,singlet_manif
 
 ! Find graphical solution of the QP equation
 
-! call QP_graph(nBas,nC,nO,nV,nR,nS,eta,eHF,Omega,rho,eGWlin,eGW)
+  call QP_graph(nBas,nC,nO,nV,nR,nS,eta,eHF,Omega,rho,eGWlin,eGW)
 
-  eGW(:) = eGWlin(:)
+! eGW(:) = eGWlin(:)
  
 ! Dump results
 

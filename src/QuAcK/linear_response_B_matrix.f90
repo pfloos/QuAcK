@@ -44,10 +44,10 @@ subroutine linear_response_B_matrix(ispin,dRPA,nBas,nC,nO,nV,nR,nS,lambda,ERI,B_
         do b=nO+1,nBas-nR
           jb = jb + 1
 
-!         B_lr(ia,jb) = (1d0 + delta_spin)*lambda*ERI(i,j,a,b) &
-!                     - (1d0 - delta_dRPA)*lambda*ERI(i,j,b,a)
-          B_lr(ia,jb) = (1d0 + delta_spin)*lambda*ERI(i,b,a,j) &
-                      - (1d0 - delta_dRPA)*lambda*ERI(i,a,b,j)
+          B_lr(ia,jb) = (1d0 + delta_spin)*lambda*ERI(i,j,a,b) &
+                      - (1d0 - delta_dRPA)*lambda*ERI(i,j,b,a)
+!         B_lr(ia,jb) = (1d0 + delta_spin)*lambda*ERI(i,b,a,j) &
+!                     - (1d0 - delta_dRPA)*lambda*ERI(i,a,b,j)
 
         enddo
       enddo

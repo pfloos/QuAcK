@@ -47,10 +47,10 @@ subroutine linear_response_A_matrix(ispin,dRPA,nBas,nC,nO,nV,nR,nS,lambda,e,ERI,
           jb = jb + 1
 
           A_lr(ia,jb) = (e(a) - e(i))*Kronecker_delta(i,j)*Kronecker_delta(a,b) &
-!                     + (1d0 + delta_spin)*lambda*ERI(i,b,a,j) &
-!                     - (1d0 - delta_dRPA)*lambda*ERI(i,b,j,a)
-                      + (1d0 + delta_spin)*lambda*ERI(i,j,a,b) &
-                      - (1d0 - delta_dRPA)*lambda*ERI(i,a,j,b)
+                      + (1d0 + delta_spin)*lambda*ERI(i,b,a,j) &
+                      - (1d0 - delta_dRPA)*lambda*ERI(i,b,j,a)
+!                     + (1d0 + delta_spin)*lambda*ERI(i,j,a,b) &
+!                     - (1d0 - delta_dRPA)*lambda*ERI(i,a,j,b)
 
         enddo
       enddo

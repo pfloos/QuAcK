@@ -95,6 +95,4 @@ subroutine linear_response(ispin,dRPA,TDA,BSE,eta,nBas,nC,nO,nV,nR,nS,lambda,e,E
 
   EcRPA = 0.5d0*(sum(Omega) - trace_matrix(nS,A))
 
-! print*,'EcRPA = ',EcRPA
-
 end subroutine linear_response
