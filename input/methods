@@ -1,16 +1,16 @@
 # RHF UHF MOM
   T   F   F
 # MP2 MP3 MP2-F12
-  T   F   F
+  F   F   F
 # CCD CCSD CCSD(T) ringCCD ladderCCD
   F   F    F       F       F
 # CIS RPA RPAx ppRPA ADC
-  T   T   T    F     F
+  F   F   F    F     F
 # GF2 GF3
-  F   F
+  T   F
 # G0W0 evGW qsGW 
-  T    F    F
-# G0T0 evGT qsGT 
   F    F    F
+# G0T0 evGT qsGT 
+  T    F    F
 # MCMP2
   F

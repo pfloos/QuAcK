@@ -25,7 +25,7 @@ subroutine fock_exchange_potential(nBas,P,ERI,Fx)
     do si=1,nBas
       do la=1,nBas
         do mu=1,nBas
-          Fx(mu,nu) = Fx(mu,nu) - P(la,si)*ERI(mu,si,la,nu)
+          Fx(mu,nu) = Fx(mu,nu) - P(la,si)*ERI(mu,la,si,nu)
         enddo
       enddo
     enddo

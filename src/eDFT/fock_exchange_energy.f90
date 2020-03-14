@@ -20,6 +20,6 @@ subroutine fock_exchange_energy(nBas,P,Fx,Ex)
 
 ! Compute HF exchange energy
 
-  Ex = trace_matrix(nBas,matmul(P,Fx))
+  Ex = 0.5d0*trace_matrix(nBas,matmul(P,Fx))
 
 end subroutine fock_exchange_energy

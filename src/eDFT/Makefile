@@ -14,19 +14,19 @@ ifeq ($(PROFIL),1)
   FC += -p -fno-inline
 endif
 
-LIBS = ~/Dropbox/quack/lib/*.a
-#LIBS = -lblas -llapack
+LIBS = ../../lib/*.a
+LIBS += -lblas -llapack
 
 SRCF90 = $(wildcard *.f90)
 
-SRC = $(wildcard *.f)
+SRC = $(wildcard *.F)
 
-OBJ = $(patsubst %.f90,$(ODIR)/%.o,$(SRCF90)) $(patsubst %.f,$(ODIR)/%.o,$(SRC))
+OBJ = $(patsubst %.f90,$(ODIR)/%.o,$(SRCF90)) $(patsubst %.F,$(ODIR)/%.o,$(SRC))
 
 $(ODIR)/%.o: %.f90 
 	$(FC) -c -o $@ $< $(FFLAGS) 
 
-$(ODIR)/%.o: %.f
+$(ODIR)/%.o: %.F
 	$(FC) -c -o $@ $< $(FFLAGS) 
 
 $(BDIR)/eDFT: $(OBJ)

@@ -23,7 +23,7 @@ subroutine hartree_coulomb(nBas,P,ERI,J)
     do nu=1,nBas
       do la=1,nBas
         do si=1,nBas
-          J(mu,nu) = J(mu,nu) + P(la,si)*ERI(mu,nu,la,si)
+          J(mu,nu) = J(mu,nu) + P(la,si)*ERI(mu,la,nu,si)
         enddo
       enddo
     enddo

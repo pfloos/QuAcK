@@ -17,9 +17,9 @@ subroutine self_energy_Tmatrix(eta,nBas,nC,nO,nV,nR,nOO,nVV,e,Omega1,Omega2,rho1
   integer,intent(in)            :: nVV
   double precision,intent(in)   :: e(nBas)
   double precision,intent(in)   :: Omega1(nVV)
-  double precision,intent(in)   :: rho1(nBas,nBas,nVV)
+  double precision,intent(in)   :: rho1(nBas,nO,nVV)
   double precision,intent(in)   :: Omega2(nOO)
-  double precision,intent(in)   :: rho2(nBas,nBas,nOO)
+  double precision,intent(in)   :: rho2(nBas,nV,nOO)
 
 ! Local variables
 

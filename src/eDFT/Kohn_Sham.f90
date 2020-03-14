@@ -1,5 +1,5 @@
-subroutine Kohn_Sham(x_rung,x_DFA,c_rung,c_DFA,nEns,wEns,nGrid,weight,maxSCF,thresh,max_diis, &
-                     guess_type,nBas,AO,dAO,nO,nV,S,T,V,Hc,ERI,X,ENuc,Ew)
+subroutine Kohn_Sham(x_rung,x_DFA,c_rung,c_DFA,nEns,wEns,nGrid,weight,maxSCF,thresh,max_diis,guess_type, &
+                     nBas,AO,dAO,nO,nV,S,T,V,Hc,ERI,X,ENuc,Ew)
 
 ! Perform unrestricted Kohn-Sham calculation for ensembles
 
@@ -224,7 +224,7 @@ subroutine Kohn_Sham(x_rung,x_DFA,c_rung,c_DFA,nEns,wEns,nGrid,weight,maxSCF,thr
 
       do ispin=1,nspin
         do iEns=1,nEns
-          call gradient_density(nGrid,nBas,P(:,:,ispin,iEns),AO(:,:),dAO(:,:,:),drho(:,:,ispin,iEns))
+!         call gradient_density(nGrid,nBas,P(:,:,ispin,iEns),AO(:,:),dAO(:,:,:),drho(:,:,ispin,iEns))
         end do
       end do
 
@@ -271,7 +271,8 @@ subroutine Kohn_Sham(x_rung,x_DFA,c_rung,c_DFA,nEns,wEns,nGrid,weight,maxSCF,thr
 
     n_diis = min(n_diis+1,max_diis)
     do ispin=1,nspin
-      call DIIS_extrapolation(rcond(ispin),nBasSq,nBasSq,n_diis,err_diis(:,:,ispin),F_diis(:,:,ispin),err(:,:,ispin),F(:,:,ispin))
+      call DIIS_extrapolation(rcond(ispin),nBasSq,nBasSq,n_diis, & 
+                              err_diis(:,:,ispin),F_diis(:,:,ispin),err(:,:,ispin),F(:,:,ispin))
     end do
 
 !   Reset DIIS if required

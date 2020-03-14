@@ -1,4 +1,5 @@
-subroutine G0W0(doACFDT,exchange_kernel,doXBS,COHSEX,SOSEX,BSE,TDA,singlet_manifold,triplet_manifold,eta, & 
+subroutine G0W0(doACFDT,exchange_kernel,doXBS,COHSEX,SOSEX,BSE,TDA, & 
+                singlet_manifold,triplet_manifold,linearize,eta,    & 
                 nBas,nC,nO,nV,nR,nS,ENuc,ERHF,Hc,H,ERI,PHF,cHF,eHF,eGW)
 
 ! Perform G0W0 calculation
@@ -18,6 +19,7 @@ subroutine G0W0(doACFDT,exchange_kernel,doXBS,COHSEX,SOSEX,BSE,TDA,singlet_manif
   logical,intent(in)            :: TDA
   logical,intent(in)            :: singlet_manifold
   logical,intent(in)            :: triplet_manifold
+  logical,intent(in)            :: linearize
   double precision,intent(in)   :: eta
 
   integer,intent(in)            :: nBas,nC,nO,nV,nR,nS
@@ -101,16 +103,22 @@ subroutine G0W0(doACFDT,exchange_kernel,doXBS,COHSEX,SOSEX,BSE,TDA,singlet_manif
 
   eGWlin(:) = eHF(:) + Z(:)*SigC(:)
 
+  if(linearize) then 
+  
+    eGW(:) = eGWlin(:)
+
 ! Find all the roots of the QP equation if necessary
 
 ! call QP_roots(nBas,nC,nO,nV,nR,nS,eta,eHF,Omega,rho,eGWlin)
 
-! Find graphical solution of the QP equation
+  else 
+  
+  ! Find graphical solution of the QP equation
 
-! call QP_graph(nBas,nC,nO,nV,nR,nS,eta,eHF,Omega,rho,eGWlin,eGW)
-
-  eGW(:) = eGWlin(:)
+  call QP_graph(nBas,nC,nO,nV,nR,nS,eta,eHF,Omega,rho,eGWlin,eGW)
  
+  end if
+
 ! Dump results
 
 ! call print_excitation('RPA   ',ispin,nS,Omega(:,ispin))

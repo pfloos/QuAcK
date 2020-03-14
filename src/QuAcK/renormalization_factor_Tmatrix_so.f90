@@ -13,9 +13,9 @@ subroutine renormalization_factor_Tmatrix_so(eta,nBas,nC,nO,nV,nR,nOO,nVV,e,Omeg
   integer,intent(in)            :: nVV
   double precision,intent(in)   :: e(nBas)
   double precision,intent(in)   :: Omega1(nVV)
-  double precision,intent(in)   :: rho1(nBas,nBas,nVV)
+  double precision,intent(in)   :: rho1(nBas,nO,nVV)
   double precision,intent(in)   :: Omega2(nOO)
-  double precision,intent(in)   :: rho2(nBas,nBas,nOO)
+  double precision,intent(in)   :: rho2(nBas,nV,nOO)
 
 ! Local variables
 
@@ -38,13 +38,13 @@ subroutine renormalization_factor_Tmatrix_so(eta,nBas,nC,nO,nV,nR,nOO,nVV,e,Omeg
 
   do p=nC+1,nBas-nR
     do i=nC+1,nO
-      cd = 0
-      do c=nO+1,nBas-nR
-        do d=c+1,nBas-nR
-          cd = cd + 1
+      do cd=1,nVV
+!     do c=nO+1,nBas-nR
+!       do d=c+1,nBas-nR
+!         cd = cd + 1
           eps = e(p) + e(i) - Omega1(cd)
           Z(p) = Z(p) - rho1(p,i,cd)**2/eps**2
-        enddo
+!       enddo
       enddo
     enddo
   enddo
@@ -52,14 +52,14 @@ subroutine renormalization_factor_Tmatrix_so(eta,nBas,nC,nO,nV,nR,nOO,nVV,e,Omeg
 ! Virtual part of the T-matrix self-energy
 
   do p=nC+1,nBas-nR
-    do a=nO+1,nBas-nR
-      kl = 0
-      do k=nC+1,nO
-        do l=k+1,nO
-          kl = kl + 1
-          eps = e(p) + e(a) - Omega2(kl)
+    do a=1,nV-nR
+      do kl=1,nOO
+!     do k=nC+1,nO
+!       do l=k+1,nO
+!         kl = kl + 1
+          eps = e(p) + e(nO+a) - Omega2(kl)
           Z(p) = Z(p) - rho2(p,a,kl)**2/eps**2
-        enddo
+!       enddo
       enddo
     enddo
   enddo

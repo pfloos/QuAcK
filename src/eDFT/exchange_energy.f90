@@ -17,7 +17,7 @@ subroutine exchange_energy(rung,DFA,nEns,wEns,nGrid,weight,nBas,P,FxHF,rho,drho,
   double precision,intent(in)   :: P(nBas,nBas)
   double precision,intent(in)   :: FxHF(nBas,nBas)
   double precision,intent(in)   :: rho(nGrid)
-  double precision,intent(in)   :: drho(3,nGrid)
+  double precision,intent(in)   :: drho(ncart,nGrid)
 
 ! Local variables
 

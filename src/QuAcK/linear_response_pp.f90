@@ -1,6 +1,7 @@
-subroutine linear_response_pp(ispin,BSE,nBas,nC,nO,nV,nR,nOO,nVV,e,ERI,Omega1,X1,Y1,Omega2,X2,Y2,EcppRPA)
+subroutine linear_response_pp(ispin,BSE,nBas,nC,nO,nV,nR,nOO,nVV, & 
+                              e,ERI,Omega1,X1,Y1,Omega2,X2,Y2,EcppRPA)
 
-! Compute the p-p channel of the linear response: see Scueria et al. JCP 139, 104113 (2013)
+! Compute the p-p channel of the linear response: see Scuseria et al. JCP 139, 104113 (2013)
 
   implicit none
   include 'parameters.h'
@@ -16,6 +17,7 @@ subroutine linear_response_pp(ispin,BSE,nBas,nC,nO,nV,nR,nOO,nVV,e,ERI,Omega1,X1
   
 ! Local variables
 
+  logical                       :: dump_matrices = .false.
   integer                       :: ab,cd,ij,kl
   integer                       :: p,q,r,s
   double precision              :: trace_matrix
@@ -65,47 +67,52 @@ subroutine linear_response_pp(ispin,BSE,nBas,nC,nO,nV,nR,nOO,nVV,e,ERI,Omega1,X1
   M(    1:nVV    ,nVV+1:nOO+nVV) = -           B(1:nVV,1:nOO)
   M(nVV+1:nOO+nVV,    1:nVV)     = + transpose(B(1:nVV,1:nOO))
 
-  open(unit=42,file='B.dat')
-  open(unit=43,file='C.dat')
-  open(unit=44,file='D.dat')
-  open(unit=45,file='ERI.dat')
-  open(unit=46,file='eps.dat')
- 
-  do ab=1,nVV
-    do ij=1,nOO
-      if(abs(B(ab,ij)) > 1d-15) write(42,*) ab,ij,B(ab,ij)
-    end do
-  end do
- 
-  do ab=1,nVV
-    do cd=1,nVV
-      if(abs(C(ab,cd)) > 1d-15) write(43,*) ab,cd,C(ab,cd)
-    end do
-  end do
- 
-  do ij=1,nOO
-    do kl=1,nOO
-      if(abs(D(ij,kl)) > 1d-15) write(44,*) ij,kl,D(ij,kl)
-    end do
-  end do
- 
-  do p=1,nBas
-    write(46,*) p,e(p)
-    do q=1,nBas
-      do r=1,nBas
-        do s=1,nBas
-      if(abs(ERI(p,q,r,s)) > 1d-15) write(45,*) p,q,r,s,ERI(p,q,r,s)
+! Dump ppRPA matrices 
+
+  if(dump_matrices) then 
+
+    open(unit=42,file='B.dat')
+    open(unit=43,file='C.dat')
+    open(unit=44,file='D.dat')
+    open(unit=45,file='ERI.dat')
+    open(unit=46,file='eps.dat')
+  
+    do ab=1,nVV
+      do ij=1,nOO
+        if(abs(B(ab,ij)) > 1d-15) write(42,*) ab,ij,B(ab,ij)
       end do
     end do
+  
+    do ab=1,nVV
+      do cd=1,nVV
+        if(abs(C(ab,cd)) > 1d-15) write(43,*) ab,cd,C(ab,cd)
+      end do
     end do
-  end do
+  
+    do ij=1,nOO
+      do kl=1,nOO
+        if(abs(D(ij,kl)) > 1d-15) write(44,*) ij,kl,D(ij,kl)
+      end do
+    end do
+  
+    do p=1,nBas
+      write(46,*) p,e(p)
+      do q=1,nBas
+        do r=1,nBas
+          do s=1,nBas
+        if(abs(ERI(p,q,r,s)) > 1d-15) write(45,*) p,q,r,s,ERI(p,q,r,s)
+        end do
+      end do
+      end do
+    end do
+ 
+    close(42)
+    close(43)
+    close(44)
+    close(45)
+    close(46)
 
-  close(42)
-  close(43)
-  close(44)
-  close(45)
-  close(46)
-
+  end if
 
 ! print*, 'pp-RPA matrix'
 ! call matout(nOO+nVV,nOO+nVV,M(:,:))

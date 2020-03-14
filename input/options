@@ -7,9 +7,9 @@
 # CIS/TDHF/BSE: singlet triplet
                 T       T
 # GF: maxSCF thresh  DIIS n_diis renormalization
-      256    0.00001 T    5      3 
+       256   0.00001 T    5      3 
 # GW: maxSCF thresh  DIIS n_diis COHSEX SOSEX BSE TDA G0W GW0 lin eta     
-      256    0.00001    T  5     F      F     T   F   F   F   F   0.000   
+       1    0.00001    T  5     F      F     T   F   F   F   T   0.000   
 # ACFDT: AC Kx  XBS
          T  F   T
 # MCMP2: nMC    nEq    nWalk dt  nPrint iSeed doDrift

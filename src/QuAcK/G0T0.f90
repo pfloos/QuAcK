@@ -1,6 +1,6 @@
 subroutine G0T0(eta,nBas,nC,nO,nV,nR,ENuc,ERHF,ERI,eHF)
 
-! Perform G0W0 calculation with a T-matrix self-energy (G0T0)
+! Perform one-shot calculation with a T-matrix self-energy (G0T0)
 
   implicit none
   include 'parameters.h'
@@ -57,10 +57,10 @@ subroutine G0T0(eta,nBas,nC,nO,nV,nR,ENuc,ERHF,ERI,eHF)
 
   allocate(Omega1s(nVVs),X1s(nVVs,nVVs),Y1s(nOOs,nVVs), & 
            Omega2s(nOOs),X2s(nVVs,nOOs),Y2s(nOOs,nOOs), & 
-           rho1s(nBas,nO-nC,nVVs),rho2s(nBas,nV-nR,nOOs), & 
+           rho1s(nBas,nO,nVVs),rho2s(nBas,nV,nOOs), & 
            Omega1t(nVVt),X1t(nVVt,nVVt),Y1t(nOOt,nVVt), & 
            Omega2t(nOOt),X2t(nVVt,nOOt),Y2t(nOOt,nOOt), & 
-           rho1t(nBas,nO-nC,nVVt),rho2t(nBas,nV-nR,nOOt), & 
+           rho1t(nBas,nO,nVVt),rho2t(nBas,nV,nOOt), & 
            SigT(nBas),Z(nBas),eG0T0(nBas))
 
 !----------------------------------------------
@@ -136,54 +136,5 @@ subroutine G0T0(eta,nBas,nC,nO,nV,nR,ENuc,ERHF,ERI,eHF)
 !----------------------------------------------
 
   call print_G0T0(nBas,nO,eHF(:),ENuc,ERHF,SigT(:),Z(:),eG0T0(:),EcRPA(:))
-
-! Perform BSE calculation
-
-! if(BSE) then
-
-!  ! Singlet manifold
-
-!  if(singlet_manifold) then
-
-!     ispin = 1
-!     EcBSE(ispin) = 0d0
-
-!     call linear_response(ispin,.false.,.false.,.false.,nBas,nC,nO,nV,nR,nS,eHF,ERI, &
-!                          rho(:,:,:,ispin),EcRPA(ispin),Omega(:,ispin),XpY(:,:,ispin))
-!     call excitation_density(nBas,nC,nO,nR,nS,ERI,XpY(:,:,ispin),rho(:,:,:,ispin))
-
-!     call linear_response(ispin,.false.,.false.,BSE,nBas,nC,nO,nV,nR,nS,eG0T0,ERI, &
-!                          rho(:,:,:,ispin),EcBSE(ispin),Omega(:,ispin),XpY(:,:,ispin))
-!     call print_excitation('BSE  ',ispin,nS,Omega(:,ispin))
-
-!   endif
-
-!  ! Triplet manifold
-
-!  if(triplet_manifold) then
-
-!     ispin = 2
-!     EcBSE(ispin) = 0d0
-
-!     call linear_response(ispin,dRPA,TDA,.false.,nBas,nC,nO,nV,nR,nS,eHF,ERI, &
-!                          rho(:,:,:,ispin),EcRPA(ispin),Omega(:,ispin),XpY(:,:,ispin))
-!     call excitation_density(nBas,nC,nO,nR,nS,ERI,XpY(:,:,ispin),rho(:,:,:,ispin))
-
-!     call linear_response(ispin,dRPA,TDA,BSE,nBas,nC,nO,nV,nR,nS,eG0T0,ERI, &
-!                          rho(:,:,:,ispin),EcBSE(ispin),Omega(:,ispin),XpY(:,:,ispin))
-!     call print_excitation('BSE  ',ispin,nS,Omega(:,ispin))
-
-!   endif
-
-!   write(*,*)
-!   write(*,*)'-------------------------------------------------------------------------------'
-!   write(*,'(2X,A40,F15.6)') 'BSE@G0T0 correlation energy (singlet) =',EcBSE(1)
-!   write(*,'(2X,A40,F15.6)') 'BSE@G0T0 correlation energy (triplet) =',EcBSE(2)
-!   write(*,'(2X,A40,F15.6)') 'BSE@G0T0 correlation energy           =',EcBSE(1) + EcBSE(2)
-!   write(*,'(2X,A40,F15.6)') 'BSE@G0T0 total energy                 =',ENuc + ERHF + EcBSE(1) + EcBSE(2)
-!   write(*,*)'-------------------------------------------------------------------------------'
-!   write(*,*)
-
-! endif
 
 end subroutine G0T0

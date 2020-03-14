@@ -31,6 +31,7 @@ program eDFT
   double precision,allocatable  :: dAO(:,:,:)
 
   double precision              :: start_KS,end_KS,t_KS
+  double precision              :: start_int,end_int,t_int
 
   integer                       :: nEns
   double precision,allocatable  :: wEns(:)
@@ -96,7 +97,17 @@ program eDFT
 
 ! Read integrals
 
-  call read_integrals(nEl(:),nBas,S,T,V,Hc,ERI)  
+  call cpu_time(start_int)
+
+  call system('./GoQCaml')
+  call read_integrals(nEl(:),nBas,S,T,V,Hc,ERI)
+
+  call cpu_time(end_int)
+
+  t_int = end_int - start_int
+  write(*,*)
+  write(*,'(A65,1X,F9.3,A8)') 'Total CPU time for reading integrals = ',t_int,' seconds'
+  write(*,*)
 
 ! Orthogonalization X = S^(-1/2)
 
@@ -122,7 +133,7 @@ program eDFT
 !------------------------------------------------------------------------
 
     call cpu_time(start_KS)
-    call Kohn_Sham(x_rung,x_DFA,c_rung,c_DFA,nEns,wEns(1:nEns),nGrid,weight(:),maxSCF,thresh,max_diis,guess_type, & 
+    call Kohn_Sham(x_rung,x_DFA,c_rung,c_DFA,nEns,wEns(:),nGrid,weight(:),maxSCF,thresh,max_diis,guess_type, & 
                    nBas,AO(:,:),dAO(:,:,:),nO(:),nV(:),S(:,:),T(:,:),V(:,:),Hc(:,:),ERI(:,:,:,:),X(:,:),ENuc,EKS)
     call cpu_time(end_KS)
 

@@ -66,9 +66,9 @@ subroutine soG0T0(eta,nBas,nC,nO,nV,nR,ENuc,ERHF,ERI,eHF)
 
 ! Memory allocation
 
-  allocate(Omega1(nVV),X1(nVV,nVV),Y1(nOO,nVV),         & 
-           Omega2(nOO),X2(nVV,nOO),Y2(nOO,nOO),         & 
-           rho1(nBas2,nBas2,nVV),rho2(nBas2,nBas2,nOO), & 
+  allocate(Omega1(nVV),X1(nVV,nVV),Y1(nOO,nVV),     & 
+           Omega2(nOO),X2(nVV,nOO),Y2(nOO,nOO),     & 
+           rho1(nBas2,nO2,nVV),rho2(nBas2,nV2,nOO), & 
            eG0T0(nBas2),SigT(nBas2),Z(nBas2))
 
 !----------------------------------------------

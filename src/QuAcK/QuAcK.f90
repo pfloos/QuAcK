@@ -155,13 +155,13 @@ program QuAcK
 !      = nO*nV
 
   call read_molecule(nNuc,nEl(:),nO(:),nC(:),nR(:))
-  allocate(ZNuc(nNuc),rNuc(nNuc,3))
+  allocate(ZNuc(nNuc),rNuc(nNuc,ncart))
 
 ! Read geometry
 
   call read_geometry(nNuc,ZNuc,rNuc,ENuc)
 
-  allocate(CenterShell(maxShell,3),TotAngMomShell(maxShell),KShell(maxShell), &
+  allocate(CenterShell(maxShell,ncart),TotAngMomShell(maxShell),KShell(maxShell), &
            DShell(maxShell,maxK),ExpShell(maxShell,maxK))
 
 !------------------------------------------------------------------------
@@ -547,8 +547,9 @@ program QuAcK
   if(doG0W0) then
     
     call cpu_time(start_G0W0)
-    call G0W0(doACFDT,exchange_kernel,doXBS,COHSEX,SOSEX,BSE,TDA,singlet_manifold,triplet_manifold, & 
-              eta,nBas,nC(1),nO(1),nV(1),nR(1),nS(1),ENuc,ERHF,Hc,H,ERI_MO_basis,PHF,cHF,eHF,eG0W0)
+    call G0W0(doACFDT,exchange_kernel,doXBS,COHSEX,SOSEX,BSE,TDA, & 
+              singlet_manifold,triplet_manifold,linearize,eta, & 
+              nBas,nC(1),nO(1),nV(1),nR(1),nS(1),ENuc,ERHF,Hc,H,ERI_MO_basis,PHF,cHF,eHF,eG0W0)
     call cpu_time(end_G0W0)
   
     t_G0W0 = end_G0W0 - start_G0W0
@@ -602,8 +603,8 @@ program QuAcK
   if(doG0T0) then
     
     call cpu_time(start_G0T0)
- !  call G0T0(eta,nBas,nC(1),nO(1),nV(1),nR(1),ENuc,ERHF,ERI_MO_basis,eHF)
-    call soG0T0(eta,nBas,nC(1),nO(1),nV(1),nR(1),ENuc,ERHF,ERI_MO_basis,eHF)
+    call G0T0(eta,nBas,nC(1),nO(1),nV(1),nR(1),ENuc,ERHF,ERI_MO_basis,eHF)
+!   call soG0T0(eta,nBas,nC(1),nO(1),nV(1),nR(1),ENuc,ERHF,ERI_MO_basis,eHF)
     call cpu_time(end_G0T0)
   
     t_G0T0 = end_G0T0 - start_G0T0

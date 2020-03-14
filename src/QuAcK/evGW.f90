@@ -1,5 +1,5 @@
 subroutine evGW(maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,COHSEX,SOSEX,BSE,TDA,G0W,GW0, & 
-                singlet_manifold,triplet_manifold,linearize,eta,                   & 
+                singlet_manifold,triplet_manifold,eta,                   & 
                 nBas,nC,nO,nV,nR,nS,ENuc,ERHF,Hc,H,ERI,PHF,cHF,eHF,eG0W0)
 
 ! Perform self-consistent eigenvalue-only GW calculation
@@ -25,7 +25,6 @@ subroutine evGW(maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,COHSEX,SOSE
   logical,intent(in)            :: GW0
   logical,intent(in)            :: singlet_manifold
   logical,intent(in)            :: triplet_manifold
-  logical,intent(in)            :: linearize
   double precision,intent(in)   :: eta
   integer,intent(in)            :: nBas,nC,nO,nV,nR,nS
   double precision,intent(in)   :: eHF(nBas)
@@ -144,17 +143,9 @@ subroutine evGW(maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,COHSEX,SOSE
 
     endif
 
-    ! Solve the quasi-particle equation (linearized or not)
+    ! Solve the quasi-particle equation
 
-    if(linearize) then 
-
-      eGW(:) = eHF(:) + Z(:)*SigC(:)
-
-    else
-
-      eGW(:) = eHF(:) + SigC(:)
-
-    endif
+    eGW(:) = eHF(:) + SigC(:)
 
     ! Convergence criteria
 
