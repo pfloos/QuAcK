@@ -67,7 +67,7 @@ subroutine RVWN5_lda_correlation_potential(nGrid,weight,nBas,AO,rho,Fc)
 
           decdra_p = drsdra*dxdrs*decdx_p
 
-          Fc(mu,nu,1) = Fc(mu,nu,1) + weight(iG)*AO(mu,iG)*AO(nu,iG)*(ec_p + decdra_p*r)
+          Fc(mu,nu) = Fc(mu,nu) + weight(iG)*AO(mu,iG)*AO(nu,iG)*(ec_p + decdra_p*r)
        
         end if
 
