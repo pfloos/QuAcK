@@ -22,13 +22,21 @@ subroutine lda_exchange_energy(DFA,nEns,wEns,nGrid,weight,rho,Ex)
 
   select case (DFA)
 
-!   Slater's LDA correlation functional: Slater, Phys. Rev. 81 (1951) 385
+!   Slater's LDA correlation functional
+
+    case ('RS51')
+
+      call RS51_lda_exchange_energy(nGrid,weight,rho,Ex)
+
+!   Restricted version of Slater's LDA correlation functional
 
     case ('S51')
 
       call S51_lda_exchange_energy(nGrid,weight,rho,Ex)
 
-    case ('MFL20')
+!   Restricted version of the weight-dependent Marut-Fromager-Loos 2020 exchange functional
+
+    case ('RMFL20')
 
       call RMFL20_lda_exchange_energy(nEns,wEns,nGrid,weight,rho,Ex)
 

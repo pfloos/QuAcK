@@ -192,7 +192,7 @@ subroutine GOK_UKS(x_rung,x_DFA,c_rung,c_DFA,nEns,wEns,nGrid,weight,maxSCF,thres
 !   Compute density matrix 
 !------------------------------------------------------------------------
 
-    call density_matrix(nBas,nEns,nO(:),c(:,:,:),P(:,:,:,:))
+    call unrestricted_density_matrix(nBas,nEns,nO(:),c(:,:,:),P(:,:,:,:))
  
 !   Weight-dependent density matrix
     
@@ -224,7 +224,7 @@ subroutine GOK_UKS(x_rung,x_DFA,c_rung,c_DFA,nEns,wEns,nGrid,weight,maxSCF,thres
 
       do ispin=1,nspin
         do iEns=1,nEns
-!         call gradient_density(nGrid,nBas,P(:,:,ispin,iEns),AO(:,:),dAO(:,:,:),drho(:,:,ispin,iEns))
+          call gradient_density(nGrid,nBas,P(:,:,ispin,iEns),AO(:,:),dAO(:,:,:),drho(:,:,ispin,iEns))
         end do
       end do
 

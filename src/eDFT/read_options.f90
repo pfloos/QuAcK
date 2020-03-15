@@ -14,7 +14,7 @@ subroutine read_options(method,x_rung,x_DFA,c_rung,c_DFA,SGn,nEns,wEns,maxSCF,th
 
   character(len=7),intent(out)  :: method
   integer,intent(out)           :: x_rung,c_rung
-  character(len=3),intent(out)  :: x_DFA, c_DFA
+  character(len=12),intent(out)  :: x_DFA, c_DFA
   integer,intent(out)           :: SGn
   integer,intent(out)           :: nEns
   double precision,intent(out)  :: wEns(maxEns)
@@ -32,7 +32,7 @@ subroutine read_options(method,x_rung,x_DFA,c_rung,c_DFA,SGn,nEns,wEns,maxSCF,th
 
 ! Open file with method specification
 
-  open(unit=40,file='input/dft')
+  open(unit=1,file='input/dft')
 
 ! Default values
 
@@ -108,6 +108,6 @@ subroutine read_options(method,x_rung,x_DFA,c_rung,c_DFA,SGn,nEns,wEns,maxSCF,th
 
 ! Close file with options
 
-  close(unit=40)
+  close(unit=1)
 
 end subroutine read_options

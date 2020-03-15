@@ -14,7 +14,7 @@ subroutine select_rung(rung,DFA)
 
 ! Hartree calculation
     case(0)
-      write(*,*) "* 0th rung of Jacob's ladder: Hartree calculation *"
+      write(*,*) "* 0th rung of Jacob's ladder: Hartree calculation                 *"
 
 ! LDA functionals
     case(1)
@@ -34,7 +34,7 @@ subroutine select_rung(rung,DFA)
 
 ! Hartree-Fock calculation
     case(666)
-      write(*,*) "* rung 666: Hartree-Fock calculation *"
+      write(*,*) "* rung 666: Hartree-Fock calculation        *"
 
 ! Default    
     case default

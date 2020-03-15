@@ -69,6 +69,7 @@ subroutine exchange_energy(rung,DFA,nEns,wEns,nGrid,weight,nBas,P,FxHF,rho,drho,
          + aX*(ExGGA - ExLDA) 
 
 !   Hartree-Fock calculation
+
     case(666) 
 
       call fock_exchange_energy(nBas,P,FxHF,ExHF)

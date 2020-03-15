@@ -182,7 +182,7 @@ subroutine GOK_RKS(x_rung,x_DFA,c_rung,c_DFA,nEns,wEns,nGrid,weight,maxSCF,thres
 !   Compute density matrix 
 !------------------------------------------------------------------------
 
-    call density_matrix(nBas,nEns,nO,c(:,:),P(:,:,:))
+    call restricted_density_matrix(nBas,nEns,nO,c(:,:),P(:,:,:))
  
 !   Weight-dependent density matrix
     
