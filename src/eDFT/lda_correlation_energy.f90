@@ -44,11 +44,11 @@ subroutine lda_correlation_energy(DFA,nEns,wEns,nGrid,weight,rho,Ec)
 
       call C16_lda_correlation_energy(nGrid,weight(:),rho(:,:),Ec(:))
 
-!   Loos-Fromager weight-dependent correlation functional: Loos and Fromager (in preparation)
+!   Restricted version of the Marut-Fromager-Loos weight-dependent correlation functional
 
-    case ('LF19')
+    case ('RMFL20')
 
-      call LF19_lda_correlation_energy(nEns,wEns(:),nGrid,weight(:),rho(:,:),Ec(:))
+      call RMFL20_lda_correlation_energy(nEns,wEns(:),nGrid,weight(:),rho(:,:),Ec(:))
 
     case default
 

@@ -1,6 +1,7 @@
-subroutine LF19_lda_correlation_energy(nEns,wEns,nGrid,weight,rho,Ec)
+subroutine RMFL20_lda_correlation_energy(nEns,wEns,nGrid,weight,rho,Ec)
 
-! Compute eLDA correlation energy 
+! Compute the restricted version of the Marut-Fromager-Loos weight-dependent correlation functional
+! The RMFL20 is a two-state, single-weight correlation functional for spin-unpolarized systems
 
   implicit none
   include 'parameters.h'
@@ -15,10 +16,10 @@ subroutine LF19_lda_correlation_energy(nEns,wEns,nGrid,weight,rho,Ec)
 
 ! Local variables
 
-  logical                       :: LDA_centered = .false.
+  logical                       :: LDA_centered = .true.
   integer                       :: iEns,isp
   double precision              :: EcLDA(nsp)
-  double precision,allocatable  :: aLF(:,:)
+  double precision,allocatable  :: aMFL(:,:)
   double precision,allocatable  :: EceLDA(:,:)
 
 ! Output variables
@@ -27,27 +28,23 @@ subroutine LF19_lda_correlation_energy(nEns,wEns,nGrid,weight,rho,Ec)
 
 ! Allocation
 
-  allocate(aLF(3,nEns),EceLDA(nsp,nEns))
+  allocate(aMFL(3,nEns),EceLDA(nsp,nEns))
 
 ! Parameters for weight-dependent LDA correlation functional
 
-  aLF(1,1) = -0.0238184d0
-  aLF(2,1) = +0.00575719d0
-  aLF(3,1) = +0.0830576d0
+  aMFL(1,1) = -0.0238184d0
+  aMFL(2,1) = +0.00540994d0
+  aMFL(3,1) = +0.0830766d0
 
-  aLF(1,2) = -0.0282814d0
-  aLF(2,2) = +0.00340758d0
-  aLF(3,2) = +0.0663967d0
-
-  aLF(1,3) = -0.0144633d0
-  aLF(2,3) = -0.0504501d0
-  aLF(3,3) = +0.0331287d0
+  aMFL(1,2) = -0.0144633d0
+  aMFL(2,2) = -0.0506019d0
+  aMFL(3,2) = +0.0331417d0
 
 ! Compute correlation energy for ground, singly-excited and doubly-excited states
 
   do iEns=1,nEns
 
-    call elda_correlation_energy(nEns,aLF(:,iEns),nGrid,weight(:),rho(:,:),EceLDA(:,iEns))
+    call elda_correlation_energy(nEns,aMFL(:,iEns),nGrid,weight(:),rho(:,:),EceLDA(:,iEns))
 
   end do
 
@@ -81,4 +78,4 @@ subroutine LF19_lda_correlation_energy(nEns,wEns,nGrid,weight,rho,Ec)
     end do
   end do
 
-end subroutine LF19_lda_correlation_energy
+end subroutine RMFL20_lda_correlation_energy

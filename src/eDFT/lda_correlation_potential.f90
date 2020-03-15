@@ -48,11 +48,11 @@ include 'parameters.h'
 
       call C16_lda_correlation_potential(nGrid,weight(:),nBas,AO(:,:),rho(:,:),Fc(:,:,:))
 
-!   Loos-Fromager weight-dependent correlation functional: Loos and Fromager (in preparation)
+!   Restricted version of the Marut-Fromager-Loos weight-dependent correlation functional
 
-    case ('LF19')
+    case ('RMFL20')
 
-      call LF19_lda_correlation_potential(nEns,wEns(:),nGrid,weight(:),nBas,AO(:,:),rho(:,:),Fc(:,:,:))
+      call RMFL20_lda_correlation_potential(nEns,wEns(:),nGrid,weight(:),nBas,AO(:,:),rho(:,:),Fc(:,:,:))
 
     case default
 

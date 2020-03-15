@@ -1,6 +1,7 @@
 subroutine RMFL20_lda_exchange_energy(nEns,wEns,nGrid,weight,rho,Ex)
 
-! Compute restricted version of Marut-Fromager-Loos weight-dependent LDA exchange energy
+! Compute the restricted version of the Marut-Fromager-Loos weight-dependent exchange functional
+! The RMFL20 is a two-state, single-weight exchange functional
 
   implicit none
   include 'parameters.h'
