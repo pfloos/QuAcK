@@ -1,4 +1,4 @@
-subroutine print_KS(nBas,nO,eps,c,ENuc,ET,EV,EJ,Ex,Ec,Ew)
+subroutine print_UKS(nBas,nO,eps,c,ENuc,ET,EV,EJ,Ex,Ec,Ew)
 
 ! Print one- and two-electron energies and other stuff for KS calculation
 
@@ -99,4 +99,4 @@ subroutine print_KS(nBas,nO,eps,c,ENuc,ET,EV,EJ,Ex,Ec,Ew)
   call matout(nBas,1,eps(:,2))
   write(*,*)
 
-end subroutine print_KS
+end subroutine print_UKS
