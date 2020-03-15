@@ -34,7 +34,7 @@ subroutine select_rung(rung,DFA)
 
 ! Hartree-Fock calculation
     case(666)
-      write(*,*) "* rung 666: Hartree-Fock calculation        *"
+      write(*,*) "* rung 666: Hartree-Fock calculation                              *"
 
 ! Default    
     case default

@@ -93,13 +93,15 @@ subroutine restricted_individual_energy(x_rung,x_DFA,c_rung,c_DFA,nEns,wEns,nGri
 
   end do
 
+  Ex(:) = 0.5d0*Ex(:)
+
 !------------------------------------------------------------------------
 ! Correlation energy
 !------------------------------------------------------------------------
 
   do iEns=1,nEns
 
-    call correlation_individual_energy(c_rung,c_DFA,nEns,wEns(:),nGrid,weight(:),rhow(:),drhow(:,:), & 
+    call restricted_correlation_individual_energy(c_rung,c_DFA,nEns,wEns(:),nGrid,weight(:),rhow(:),drhow(:,:), & 
                                        rho(:,iEns),drho(:,:,iEns),Ec(iEns))
 
   end do
@@ -108,14 +110,14 @@ subroutine restricted_individual_energy(x_rung,x_DFA,c_rung,c_DFA,nEns,wEns,nGri
 ! Compute Levy-Zahariev shift
 !------------------------------------------------------------------------
 
-  call correlation_Levy_Zahariev_shift(c_rung,c_DFA,nEns,wEns(:),nGrid,weight(:),rho(:,:),drho(:,:,:), & 
+  call restricted_correlation_Levy_Zahariev_shift(c_rung,c_DFA,nEns,wEns(:),nGrid,weight(:),rho(:,:),drho(:,:,:), & 
                                        ExLZ,EcLZ,ExcLZ)
 
 !------------------------------------------------------------------------
 ! Compute derivative discontinuities
 !------------------------------------------------------------------------
 
-  call correlation_derivative_discontinuity(c_rung,c_DFA,nEns,wEns(:),nGrid,weight(:),rhow(:),drhow(:,:), & 
+  call restricted_correlation_derivative_discontinuity(c_rung,c_DFA,nEns,wEns(:),nGrid,weight(:),rhow(:),drhow(:,:), & 
                                             ExDD(:),EcDD(:),ExcDD(:))
 
 !------------------------------------------------------------------------
