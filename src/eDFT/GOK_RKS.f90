@@ -1,5 +1,5 @@
-subroutine GOK_RKS(x_rung,x_DFA,c_rung,c_DFA,nEns,wEns,nGrid,weight,maxSCF,thresh,max_diis,guess_type, &
-               nBas,AO,dAO,nO,nV,S,T,V,Hc,ERI,X,ENuc,Ew)
+subroutine GOK_RKS(x_rung,x_DFA,c_rung,c_DFA,nEns,wEns,nGrid,weight,maxSCF,thresh, & 
+                   max_diis,guess_type,nBas,AO,dAO,nO,nV,S,T,V,Hc,ERI,X,ENuc,Ew)
 
 ! Perform restricted Kohn-Sham calculation for ensembles
 
@@ -206,15 +206,15 @@ subroutine GOK_RKS(x_rung,x_DFA,c_rung,c_DFA,nEns,wEns,nGrid,weight,maxSCF,thres
       rhow(:) = rhow(:) + wEns(iEns)*rho(:,iEns) 
     end do
 
-    if(xc_rung > 1 .and. xc_rung /= 666) then 
+    if(xc_rung > 1) then 
 
-!     Ground state density 
+!     Compute gradient of the one-electron density
 
       do iEns=1,nEns
         call gradient_density(nGrid,nBas,P(:,:,iEns),AO(:,:),dAO(:,:,:),drho(:,:,iEns))
       end do
 
-!     Weight-dependent one-electron density 
+!     Weight-dependent one-electron density gradient
 
       drhow(:,:) = 0d0
       do iEns=1,nEns
@@ -234,11 +234,12 @@ subroutine GOK_RKS(x_rung,x_DFA,c_rung,c_DFA,nEns,wEns,nGrid,weight,maxSCF,thres
 
 !   Compute correlation potential
 
-    call correlation_potential(c_rung,c_DFA,nEns,wEns(:),nGrid,weight(:),nBas,AO(:,:),dAO(:,:,:),rhow(:),drhow(:,:),Fc(:,:))
+    call restricted_correlation_potential(c_rung,c_DFA,nEns,wEns(:),nGrid,weight(:), & 
+                                          nBas,AO(:,:),dAO(:,:,:),rhow(:),drhow(:,:),Fc(:,:))
 
 !   Build Fock operator
 
-    F(:,:) = Hc(:,:) + J(:,:) + J(:,:) + Fx(:,:) + Fc(:,:)
+    F(:,:) = Hc(:,:) + J(:,:) + 0.5d0*Fx(:,:) + Fc(:,:)
 
 !   Check convergence 
 
@@ -275,10 +276,11 @@ subroutine GOK_RKS(x_rung,x_DFA,c_rung,c_DFA,nEns,wEns,nGrid,weight,maxSCF,thres
 
     call exchange_energy(x_rung,x_DFA,nEns,wEns(:),nGrid,weight(:),nBas, &
                          Pw(:,:),FxHF(:,:),rhow(:),drhow(:,:),Ex)
+    Ex = 0.5d0*Ex
 
 !   Correlation energy
 
-    call correlation_energy(c_rung,c_DFA,nEns,wEns(:),nGrid,weight(:),rhow(:),drhow(:,:),Ec)
+    call restricted_correlation_energy(c_rung,c_DFA,nEns,wEns(:),nGrid,weight(:),rhow(:),drhow(:,:),Ec)
 
 !   Total energy
 
@@ -321,9 +323,9 @@ subroutine GOK_RKS(x_rung,x_DFA,c_rung,c_DFA,nEns,wEns,nGrid,weight,maxSCF,thres
 ! Compute individual energies from ensemble energy
 !------------------------------------------------------------------------
 
-  call individual_energy(x_rung,x_DFA,c_rung,c_DFA,nEns,wEns(:),nGrid,weight(:),nBas,     &
-                         AO(:,:),dAO(:,:,:),nO,nV,T(:,:),V(:,:),ERI(:,:,:,:),ENuc,  & 
-                         Pw(:,:),rhow(:),drhow(:,:),J(:,:),Fx(:,:),FxHF(:,:), & 
-                         Fc(:,:),P(:,:,:),rho(:,:),drho(:,:,:),E(:),Om(:))
+  call restricted_individual_energy(x_rung,x_DFA,c_rung,c_DFA,nEns,wEns(:),nGrid,weight(:),nBas, &
+                                    AO(:,:),dAO(:,:,:),nO,nV,T(:,:),V(:,:),ERI(:,:,:,:),ENuc,    & 
+                                    Pw(:,:),rhow(:),drhow(:,:),J(:,:),Fx(:,:),FxHF(:,:),         & 
+                                    Fc(:,:),P(:,:,:),rho(:,:),drho(:,:,:),E(:),Om(:))
 
 end subroutine GOK_RKS

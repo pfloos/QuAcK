@@ -43,7 +43,6 @@ subroutine print_RKS(nBas,nO,eps,c,ENuc,ET,EV,EJ,Ex,Ec,Ew)
   write(*,'(A40,1X,F16.10,A3)') ' Two-electron    energy: ',EJ + Ex + Ec,' au'
   write(*,'(A40,1X,F16.10,A3)') ' Coulomb         energy: ',EJ,' au'
   write(*,'(A40,1X,F16.10,A3)') ' Exchange        energy: ',Ex,' au'
-  write(*,'(A40,1X,F16.10,A3)') ' Exchange        energy: ',Ex,' au'
   write(*,'(A40,1X,F16.10,A3)') ' Correlation     energy: ',Ec,' au'
   write(*,'(A60)')              '-------------------------------------------------'
   write(*,'(A40,1X,F16.10,A3)') ' Electronic      energy: ',Ew,' au'
