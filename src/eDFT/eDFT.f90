@@ -21,6 +21,7 @@ program eDFT
   double precision,allocatable  :: S(:,:),T(:,:),V(:,:),Hc(:,:),X(:,:)
   double precision,allocatable  :: ERI(:,:,:,:)
 
+  character(len=7)              :: method
   integer                       :: x_rung,c_rung
   character(len=12)             :: x_DFA ,c_DFA
   integer                       :: SGn
@@ -85,7 +86,8 @@ program eDFT
 ! Allocate ensemble weights
 
   allocate(wEns(maxEns))
-  call read_options(x_rung,x_DFA,c_rung,c_DFA,SGn,nEns,wEns,maxSCF,thresh,DIIS,max_diis,guess_type,ortho_type)
+  call read_options(method,x_rung,x_DFA,c_rung,c_DFA,SGn, & 
+                    nEns,wEns,maxSCF,thresh,DIIS,max_diis,guess_type,ortho_type)
 
 !------------------------------------------------------------------------
 ! Read one- and two-electron integrals
@@ -129,17 +131,38 @@ program eDFT
   call AO_values_grid(nBas,nShell,CenterShell,TotAngMomShell,KShell,DShell,ExpShell,nGrid,root,AO,dAO)
 
 !------------------------------------------------------------------------
-! Compute KS energy
+! Compute RKS energy
 !------------------------------------------------------------------------
 
+  if(method == 'GOK-RKS') then
+
     call cpu_time(start_KS)
-    call Kohn_Sham(x_rung,x_DFA,c_rung,c_DFA,nEns,wEns(:),nGrid,weight(:),maxSCF,thresh,max_diis,guess_type, & 
+    call GOK_RKS(x_rung,x_DFA,c_rung,c_DFA,nEns,wEns(:),nGrid,weight(:),maxSCF,thresh,max_diis,guess_type, & 
+                 nBas,AO(:,:),dAO(:,:,:),nO(:),nV(:),S(:,:),T(:,:),V(:,:),Hc(:,:),ERI(:,:,:,:),X(:,:),ENuc,EKS)
+    call cpu_time(end_KS)
+
+    t_KS = end_KS - start_KS
+    write(*,'(A65,1X,F9.3,A8)') 'Total CPU time for RKS = ',t_KS,' seconds'
+    write(*,*)
+
+  end if
+
+!------------------------------------------------------------------------
+! Compute UKS energy
+!------------------------------------------------------------------------
+
+  if(method == 'GOK-UKS') then
+
+    call cpu_time(start_KS)
+    call GOK_UKS(x_rung,x_DFA,c_rung,c_DFA,nEns,wEns(:),nGrid,weight(:),maxSCF,thresh,max_diis,guess_type, & 
                    nBas,AO(:,:),dAO(:,:,:),nO(:),nV(:),S(:,:),T(:,:),V(:,:),Hc(:,:),ERI(:,:,:,:),X(:,:),ENuc,EKS)
     call cpu_time(end_KS)
 
     t_KS = end_KS - start_KS
-    write(*,'(A65,1X,F9.3,A8)') 'Total CPU time for KS = ',t_KS,' seconds'
+    write(*,'(A65,1X,F9.3,A8)') 'Total CPU time for UKS = ',t_KS,' seconds'
     write(*,*)
+
+  end if
 
 !------------------------------------------------------------------------
 ! End of eDFT

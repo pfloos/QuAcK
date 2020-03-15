@@ -1,4 +1,4 @@
-subroutine read_options(x_rung,x_DFA,c_rung,c_DFA,SGn,nEns,wEns,maxSCF,thresh,DIIS,max_diis,guess_type,ortho_type)
+subroutine read_options(method,x_rung,x_DFA,c_rung,c_DFA,SGn,nEns,wEns,maxSCF,thresh,DIIS,max_diis,guess_type,ortho_type)
 
 ! Read DFT options
 
@@ -12,8 +12,9 @@ subroutine read_options(x_rung,x_DFA,c_rung,c_DFA,SGn,nEns,wEns,maxSCF,thresh,DI
 
 ! Output variables
 
+  character(len=7),intent(out)  :: method
   integer,intent(out)           :: x_rung,c_rung
-  character(len=12),intent(out) :: x_DFA, c_DFA
+  character(len=3),intent(out)  :: x_DFA, c_DFA
   integer,intent(out)           :: SGn
   integer,intent(out)           :: nEns
   double precision,intent(out)  :: wEns(maxEns)
@@ -31,16 +32,22 @@ subroutine read_options(x_rung,x_DFA,c_rung,c_DFA,SGn,nEns,wEns,maxSCF,thresh,DI
 
 ! Open file with method specification
 
-  open(unit=1,file='input/dft')
+  open(unit=40,file='input/dft')
 
 ! Default values
 
+  method  = 'GOK-RKS'
   x_rung  = 1
   c_rung  = 1
   x_DFA   = 'S51'
   c_DFA   = 'W38'
   SGn     = 0
   wEns(:) = 0d0
+
+! Restricted or unrestricted calculation
+
+  read(1,*)
+  read(1,*) method
 
 ! EXCHANGE: read rung of Jacob's ladder
 
@@ -101,6 +108,6 @@ subroutine read_options(x_rung,x_DFA,c_rung,c_DFA,SGn,nEns,wEns,maxSCF,thresh,DI
 
 ! Close file with options
 
-  close(unit=1)
+  close(unit=40)
 
 end subroutine read_options

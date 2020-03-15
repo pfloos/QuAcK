@@ -28,6 +28,10 @@ subroutine lda_exchange_energy(DFA,nEns,wEns,nGrid,weight,rho,Ex)
 
       call S51_lda_exchange_energy(nGrid,weight,rho,Ex)
 
+    case ('MFL20')
+
+      call RMFL20_lda_exchange_energy(nEns,wEns,nGrid,weight,rho,Ex)
+
     case default
 
       call print_warning('!!! LDA exchange functional not available !!!')
