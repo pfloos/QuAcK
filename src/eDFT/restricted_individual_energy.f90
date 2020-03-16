@@ -43,7 +43,6 @@ subroutine restricted_individual_energy(x_rung,x_DFA,c_rung,c_DFA,nEns,wEns,nGri
   double precision              :: EV(nEns)
   double precision              :: EJ(nEns)
   double precision              :: Ex(nEns),Ec(nEns),Exc(nEns)
-  double precision              :: ExLZ,EcLZ,ExcLZ
   double precision              :: ExDD(nEns),EcDD(nEns),ExcDD(nEns)
 
   double precision,external     :: trace_matrix
@@ -101,16 +100,6 @@ subroutine restricted_individual_energy(x_rung,x_DFA,c_rung,c_DFA,nEns,wEns,nGri
                                        rho(:,iEns),drho(:,:,iEns),Ec(iEns))
 
   end do
-
-!------------------------------------------------------------------------
-! Compute Levy-Zahariev shift
-!------------------------------------------------------------------------
-
-! call exchange_Levy_Zahariev_shift(x_rung,x_DFA,nEns,wEns(:),nGrid,weight(:),rho(:,:),drho(:,:,:),ExLZ)
-
-! call restricted_correlation_Levy_Zahariev_shift(c_rung,c_DFA,nEns,wEns(:),nGrid,weight(:),rho(:,:),drho(:,:,:),EcLZ)
-
-! ExcLZ = ExLZ + ExLZ
 
 !------------------------------------------------------------------------
 ! Compute derivative discontinuities

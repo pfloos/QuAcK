@@ -44,7 +44,6 @@ subroutine individual_energy(x_rung,x_DFA,c_rung,c_DFA,nEns,wEns,nGrid,weight,nB
   double precision              :: EJ(nsp,nEns)
   double precision              :: Ex(nspin,nEns)
   double precision              :: Ec(nsp,nEns)
-  double precision              :: EcLZ(nsp)
   double precision              :: EcDD(nsp,nEns) 
 
   double precision,external     :: trace_matrix
@@ -119,12 +118,6 @@ subroutine individual_energy(x_rung,x_DFA,c_rung,c_DFA,nEns,wEns,nGrid,weight,nB
   end do
 
 !------------------------------------------------------------------------
-! Compute Levy-Zahariev shift
-!------------------------------------------------------------------------
-
-  call correlation_Levy_Zahariev_shift(c_rung,c_DFA,nEns,wEns(:),nGrid,weight(:),rho(:,:,:),drho(:,:,:,:),EcLZ(:))
-
-!------------------------------------------------------------------------
 ! Compute derivative discontinuities
 !------------------------------------------------------------------------
 
@@ -136,7 +129,7 @@ subroutine individual_energy(x_rung,x_DFA,c_rung,c_DFA,nEns,wEns,nGrid,weight,nB
 
   do iEns=1,nEns
     E(iEns) = ENuc + sum(ET(:,iEns)) + sum(EV(:,iEns)) + sum(EJ(:,iEns)) &
-                   + sum(Ex(:,iEns)) + sum(Ec(:,iEns)) + sum(EcLZ(:)) + sum(EcDD(:,iEns))
+                   + sum(Ex(:,iEns)) + sum(Ec(:,iEns)) + sum(EcDD(:,iEns))
   end do
 
 !------------------------------------------------------------------------
@@ -151,6 +144,6 @@ subroutine individual_energy(x_rung,x_DFA,c_rung,c_DFA,nEns,wEns,nGrid,weight,nB
 ! Dump results
 !------------------------------------------------------------------------
 
-  call print_individual_energy(nEns,EJ,Ex,Ec,EcLZ,EcDD,E,Om)
+  call print_individual_energy(nEns,EJ,Ex,Ec,EcDD,E,Om)
 
 end subroutine individual_energy

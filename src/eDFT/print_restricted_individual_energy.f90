@@ -1,4 +1,4 @@
-subroutine print_restricted_individual_energy(nEns,ET,EV,EJ,Ex,Ec,Exc,ExLZ,EcLZ,ExcLZ,ExDD,EcDD,ExcDD,E,Om)
+subroutine print_restricted_individual_energy(nEns,ET,EV,EJ,Ex,Ec,Exc,ExDD,EcDD,ExcDD,E,Om)
 
 ! Print individual energies for eDFT calculation
 
@@ -12,7 +12,6 @@ subroutine print_restricted_individual_energy(nEns,ET,EV,EJ,Ex,Ec,Exc,ExLZ,EcLZ,
   double precision,intent(in)        :: EV(nEns)
   double precision,intent(in)        :: EJ(nEns)
   double precision,intent(in)        :: Ex(nEns),Ec(nEns),Exc(nEns)
-  double precision,intent(in)        :: ExLZ,EcLZ,ExcLZ
   double precision,intent(in)        :: ExDD(nEns),EcDD(nEns),ExcDD(nEns)
   double precision,intent(in)        :: E(nEns)
   double precision,intent(in)        :: Om(nEns)
@@ -84,17 +83,6 @@ subroutine print_restricted_individual_energy(nEns,ET,EV,EJ,Ex,Ec,Exc,ExLZ,EcLZ,
     write(*,'(A40,I2,A2,F16.10,A3)') ' Correlation energy state ',iEns,': ',Ec(iEns),' au'
   end do
   write(*,'(A60)')           '-------------------------------------------------'
-  write(*,*)
-
-!------------------------------------------------------------------------
-! Compute Levy-Zahariev shift
-!------------------------------------------------------------------------
-
-  write(*,'(A60)')              '-------------------------------------------------'
-  write(*,'(A40,2X,2X,F16.10,A3)') '  x Levy-Zahariev shifts: ',ExLZ, ' au'
-  write(*,'(A40,2X,2X,F16.10,A3)') '  c Levy-Zahariev shifts: ',EcLZ, ' au'
-  write(*,'(A40,2X,2X,F16.10,A3)') ' xc Levy-Zahariev shifts: ',ExcLZ,' au'
-  write(*,'(A60)')              '-------------------------------------------------'
   write(*,*)
 
 !------------------------------------------------------------------------
