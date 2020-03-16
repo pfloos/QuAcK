@@ -23,13 +23,13 @@ subroutine lda_exchange_individual_energy(DFA,nEns,wEns,nGrid,weight,rhow,rho,Ex
 
   select case (DFA)
 
-    case ('S51')
+    case ('RS51')
 
-!     call S51_lda_exchange_individual_energy(nGrid,weight(:),rhow(:),rho(:),Ex)
+      call RS51_lda_exchange_individual_energy(nGrid,weight(:),rhow(:),rho(:),Ex)
 
-    case ('MFL20')
+    case ('RMFL20')
 
-!     call MFL20_lda_exchange_individual_energy(nEns,wEns,nGrid,weight(:),rhow(:),rho(:),Ex)
+!     call RMFL20_lda_exchange_individual_energy(nEns,wEns,nGrid,weight(:),rhow(:),rho(:),Ex)
 
     case default
 

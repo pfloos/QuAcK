@@ -39,8 +39,8 @@ subroutine read_options(method,x_rung,x_DFA,c_rung,c_DFA,SGn,nEns,wEns,maxSCF,th
   method  = 'GOK-RKS'
   x_rung  = 1
   c_rung  = 1
-  x_DFA   = 'S51'
-  c_DFA   = 'W38'
+  x_DFA   = 'RS51'
+  c_DFA   = 'RVWN5'
   SGn     = 0
   wEns(:) = 0d0
 

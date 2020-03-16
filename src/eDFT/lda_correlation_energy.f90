@@ -44,12 +44,6 @@ subroutine lda_correlation_energy(DFA,nEns,wEns,nGrid,weight,rho,Ec)
 
       call C16_lda_correlation_energy(nGrid,weight(:),rho(:,:),Ec(:))
 
-!   Restricted version of the Marut-Fromager-Loos weight-dependent correlation functional
-
-    case ('RMFL20')
-
-      call RMFL20_lda_correlation_energy(nEns,wEns(:),nGrid,weight(:),rho(:,:),Ec(:))
-
     case default
 
       call print_warning('!!! LDA correlation functional not available !!!')

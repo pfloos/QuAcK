@@ -48,12 +48,6 @@ include 'parameters.h'
 
       call C16_lda_correlation_potential(nGrid,weight(:),nBas,AO(:,:),rho(:,:),Fc(:,:,:))
 
-!   Restricted version of the Marut-Fromager-Loos weight-dependent correlation functional
-
-    case ('RMFL20')
-
-      call RMFL20_lda_correlation_potential(nEns,wEns(:),nGrid,weight(:),nBas,AO(:,:),rho(:,:),Fc(:,:,:))
-
     case default
 
       call print_warning('!!! LDA correlation functional not available !!!')

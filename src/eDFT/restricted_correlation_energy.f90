@@ -38,24 +38,20 @@ subroutine restricted_correlation_energy(rung,DFA,nEns,wEns,nGrid,weight,rho,drh
 
     case(1) 
 
-      call lda_correlation_energy(DFA,nEns,wEns(:),nGrid,weight(:),rho(:),Ec)
+      call restricted_lda_correlation_energy(DFA,nEns,wEns(:),nGrid,weight(:),rho(:),Ec)
 
 !   GGA functionals
 
     case(2) 
 
-      call gga_correlation_energy(DFA,nEns,wEns(:),nGrid,weight(:),rho(:),drho(:,:),Ec)
+      call print_warning('!!! restricted correlation energies NYI for GGAs !!!')
+      stop
 
-!   Hybrid functionals
 
     case(4) 
 
-      aC = 0.81d0
-
-      call lda_correlation_energy(DFA,nEns,wEns(:),nGrid,weight(:),rho(:),EcLDA)
-      call gga_correlation_energy(DFA,nEns,wEns(:),nGrid,weight(:),rho(:),drho(:,:),EcGGA)
-
-      Ec = EcLDA + aC*(EcGGA - EcLDA) 
+      call print_warning('!!! restricted correlation energies NYI for Hybrids !!!')
+      stop
 
 !   Hartree-Fock calculation
 

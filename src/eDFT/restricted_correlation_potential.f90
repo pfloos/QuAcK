@@ -22,8 +22,6 @@ subroutine restricted_correlation_potential(rung,DFA,nEns,wEns,nGrid,weight,nBas
 ! Local variables
 
   double precision,allocatable  :: FcLDA(:,:)
-  double precision,allocatable  :: FcGGA(:,:)
-  double precision              :: aC
 
 ! Output variables
 
@@ -43,26 +41,21 @@ subroutine restricted_correlation_potential(rung,DFA,nEns,wEns,nGrid,weight,nBas
 
     case(1) 
 
-      call lda_correlation_potential(DFA,nEns,wEns(:),nGrid,weight(:),nBas,AO(:,:),rho(:),Fc(:,:))
+      call restricted_lda_correlation_potential(DFA,nEns,wEns(:),nGrid,weight(:),nBas,AO(:,:),rho(:),Fc(:,:))
 
 !   GGA functionals
 
     case(2) 
 
-      call gga_correlation_potential(DFA,nEns,wEns(:),nGrid,weight(:),nBas,AO(:,:),dAO(:,:,:),rho(:),drho(:,:),Fc(:,:))
+      call print_warning('!!! restricted correlation potentials NYI for GGAs !!!')
+      stop
 
 !   Hybrid functionals
 
     case(4) 
 
-      allocate(FcLDA(nBas,nBas),FcGGA(nBas,nBas))
-
-      aC = 0.81d0
-
-      call lda_correlation_potential(DFA,nEns,wEns(:),nGrid,weight(:),nBas,AO(:,:),rho(:),FcLDA(:,:))
-      call gga_correlation_potential(DFA,nEns,wEns(:),nGrid,weight(:),nBas,AO(:,:),dAO(:,:,:),rho(:),drho(:,:),FcGGA(:,:))
-
-      Fc(:,:) = FcLDA(:,:) + aC*(FcGGA(:,:) - FcLDA(:,:))  
+      call print_warning('!!! restricted correlation potentials NYI for Hybrids !!!')
+      stop
 
 !   Hartree-Fock calculation
 

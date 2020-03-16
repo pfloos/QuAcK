@@ -75,7 +75,7 @@ subroutine restricted_individual_energy(x_rung,x_DFA,c_rung,c_DFA,nEns,wEns,nGri
 !------------------------------------------------------------------------
 
   do iEns=1,nEns
-    call hartree_coulomb(nBas,P(:,:,iEns),ERI,J(:,:))
+    call hartree_coulomb(nBas,P(:,:,iEns),ERI(:,:,:,:),J(:,:))
     EJ(iEns) = 0.5d0*trace_matrix(nBas,matmul(P(:,:,iEns),J(:,:)))
   end do
 
@@ -85,8 +85,8 @@ subroutine restricted_individual_energy(x_rung,x_DFA,c_rung,c_DFA,nEns,wEns,nGri
 
   do iEns=1,nEns
 
-      call exchange_energy_individual_energy(x_rung,x_DFA,nEns,wEns(:),nGrid,weight(:),nBas,P(:,:,iEns),FxHF(:,:), &
-                           rho(:,iEns),drho(:,:,iEns),Ex(iEns))
+      call exchange_individual_energy(x_rung,x_DFA,nEns,wEns(:),nGrid,weight(:),nBas,ERI(:,:,:,:), &
+                                      P(:,:,iEns),FxHF(:,:),rhow(:),drhow(:,:),rho(:,iEns),drho(:,:,iEns),Ex(iEns))
 
   end do
 
@@ -97,7 +97,7 @@ subroutine restricted_individual_energy(x_rung,x_DFA,c_rung,c_DFA,nEns,wEns,nGri
   do iEns=1,nEns
 
     call restricted_correlation_individual_energy(c_rung,c_DFA,nEns,wEns(:),nGrid,weight(:),rhow(:),drhow(:,:), & 
-                                       rho(:,iEns),drho(:,:,iEns),Ec(iEns))
+                                                  rho(:,iEns),drho(:,:,iEns),Ec(iEns))
 
   end do
 
@@ -133,7 +133,7 @@ subroutine restricted_individual_energy(x_rung,x_DFA,c_rung,c_DFA,nEns,wEns,nGri
 ! Dump results
 !------------------------------------------------------------------------
 
-  call print_restricted_individual_energy(nEns,ET(:),EV(:),EJ(:),Ex(:),Ec(:),Exc(:),ExLZ,EcLZ,ExcLZ, & 
+  call print_restricted_individual_energy(nEns,ET(:),EV(:),EJ(:),Ex(:),Ec(:),Exc(:), &
                                           ExDD(:),EcDD(:),ExcDD(:),E(:),Om(:))
 
 end subroutine restricted_individual_energy

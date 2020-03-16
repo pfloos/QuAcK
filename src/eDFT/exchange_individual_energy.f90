@@ -1,6 +1,7 @@
-subroutine exchange_individual_energy(rung,DFA,nEns,wEns,nGrid,weight,rhow,drhow,rho,drho,Ex)
+subroutine exchange_individual_energy(rung,DFA,nEns,wEns,nGrid,weight,nBas, & 
+                                      ERI,P,FxHF,rhow,drhow,rho,drho,Ex)
 
-! Compute the exchange energy of individual states
+! Compute the exchange individual energy
 
   implicit none
   include 'parameters.h'
@@ -13,6 +14,10 @@ subroutine exchange_individual_energy(rung,DFA,nEns,wEns,nGrid,weight,rhow,drhow
   double precision,intent(in)   :: wEns(nEns)
   integer,intent(in)            :: nGrid
   double precision,intent(in)   :: weight(nGrid)
+  integer,intent(in)            :: nBas
+  double precision,intent(in)   :: ERI(nBas,nBas,nBas,nBas)
+  double precision,intent(in)   :: P(nBas,nBas)
+  double precision,intent(in)   :: FxHF(nBas,nBas)
   double precision,intent(in)   :: rhow(nGrid)
   double precision,intent(in)   :: drhow(ncart,nGrid)
   double precision,intent(in)   :: rho(nGrid)
@@ -21,7 +26,6 @@ subroutine exchange_individual_energy(rung,DFA,nEns,wEns,nGrid,weight,rhow,drhow
 ! Local variables
 
   double precision              :: ExLDA
-  double precision              :: ExGGA
   double precision              :: ExHF
 
 ! Output variables
@@ -40,7 +44,9 @@ subroutine exchange_individual_energy(rung,DFA,nEns,wEns,nGrid,weight,rhow,drhow
 
     case(1) 
 
-      call lda_exchange_individual_energy(DFA,nEns,wEns(:),nGrid,weight(:),rhow(:),rho(:),Ex)
+      call lda_exchange_individual_energy(DFA,nEns,wEns,nGrid,weight,rhow,rho,ExLDA)
+
+      Ex = ExLDA
 
 !   GGA functionals
 
@@ -53,14 +59,16 @@ subroutine exchange_individual_energy(rung,DFA,nEns,wEns,nGrid,weight,rhow,drhow
 
     case(4) 
 
-      call print_warning('!!! Individual energies NYI for hybrids !!!')
+      call print_warning('!!! Individual energies NYI for Hybrids !!!')
       stop
 
 !   Hartree-Fock calculation
 
     case(666) 
 
-!     call fock_exchange_individual_energy(nEns,wEns(:),nBas,P,FxHF,ExHF)
+      call fock_exchange_potential(nBas,P,ERI,FxHF)
+      call fock_exchange_energy(nBas,P,FxHF,ExHF)
+
       Ex = ExHF
 
   end select
