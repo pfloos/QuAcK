@@ -37,9 +37,9 @@ subroutine lda_correlation_individual_energy(DFA,nEns,wEns,nGrid,weight,rhow,rho
 
 !   Loos-Fromager weight-dependent correlation functional: Loos and Fromager (in preparation)
 
-    case ('LF19')
+    case ('MFL20')
 
-      call LF19_lda_correlation_individual_energy(nEns,wEns,nGrid,weight(:),rhow(:,:),rho(:,:),Ec(:))
+      call MFL20_lda_correlation_individual_energy(nEns,wEns,nGrid,weight(:),rhow(:,:),rho(:,:),Ec(:))
 
     case default
 

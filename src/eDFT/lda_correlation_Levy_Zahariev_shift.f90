@@ -37,9 +37,9 @@ subroutine lda_correlation_Levy_Zahariev_shift(DFA,nEns,wEns,nGrid,weight,rho,Ec
 
 !   Loos-Fromager weight-dependent correlation functional: Loos and Fromager (in preparation)
 
-    case ('LF19')
+    case ('MFL20')
 
-      call LF19_lda_correlation_Levy_Zahariev_shift(nEns,wEns,nGrid,weight(:),rho(:,:),EcLZ(:))
+      call MFL20_lda_correlation_Levy_Zahariev_shift(nEns,wEns,nGrid,weight(:),rho(:,:),EcLZ(:))
 
     case default
 

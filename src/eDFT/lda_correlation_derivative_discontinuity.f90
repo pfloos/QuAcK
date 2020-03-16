@@ -40,9 +40,9 @@ subroutine lda_correlation_derivative_discontinuity(DFA,nEns,wEns,nGrid,weight,r
 
 !   Loos-Fromager weight-dependent correlation functional: Loos and Fromager (in preparation)
 
-    case ('LF19')
+    case ('MFL20')
 
-      call LF19_lda_correlation_derivative_discontinuity(nEns,wEns,nGrid,weight(:),rhow(:,:),Ec(:,:))
+      call MFL20_lda_correlation_derivative_discontinuity(nEns,wEns,nGrid,weight(:),rhow(:,:),Ec(:,:))
 
     case default
 
