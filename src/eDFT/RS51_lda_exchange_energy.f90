@@ -14,7 +14,8 @@ subroutine RS51_lda_exchange_energy(nGrid,weight,rho,Ex)
 ! Local variables
 
   integer                       :: iG
-  double precision              :: alpha,r
+  double precision              :: r
+  double precision              :: Cx
 
 ! Output variables
 
@@ -22,7 +23,7 @@ subroutine RS51_lda_exchange_energy(nGrid,weight,rho,Ex)
 
 ! Cx coefficient for Slater LDA exchange
 
-  alpha = -(3d0/4d0)*(3d0/pi)**(1d0/3d0)
+  Cx = -(3d0/4d0)*(3d0/pi)**(1d0/3d0)
 
 ! Compute LDA exchange energy
 
@@ -33,7 +34,7 @@ subroutine RS51_lda_exchange_energy(nGrid,weight,rho,Ex)
 
     if(r > threshold) then
 
-      Ex = Ex  + weight(iG)*alpha*r**(4d0/3d0)
+      Ex = Ex  + weight(iG)*Cx*r**(4d0/3d0)
 
     endif
 

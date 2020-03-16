@@ -239,7 +239,7 @@ subroutine GOK_RKS(x_rung,x_DFA,c_rung,c_DFA,nEns,wEns,nGrid,weight,maxSCF,thres
 
 !   Build Fock operator
 
-    F(:,:) = Hc(:,:) + J(:,:) + 0.5d0*Fx(:,:) + Fc(:,:)
+    F(:,:) = Hc(:,:) + J(:,:) + Fx(:,:) + Fc(:,:)
 
 !   Check convergence 
 
@@ -276,7 +276,6 @@ subroutine GOK_RKS(x_rung,x_DFA,c_rung,c_DFA,nEns,wEns,nGrid,weight,maxSCF,thres
 
     call exchange_energy(x_rung,x_DFA,nEns,wEns(:),nGrid,weight(:),nBas, &
                          Pw(:,:),FxHF(:,:),rhow(:),drhow(:,:),Ex)
-    Ex = 0.5d0*Ex
 
 !   Correlation energy
 

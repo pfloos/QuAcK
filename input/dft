@@ -1,7 +1,7 @@
 # Restricted or unrestricted KS calculation
   GOK-RKS
-# exchange rung: Hartree = 0, LDA = 1 (S51), GGA = 2(G96,B88), hybrid = 4, Hartree-Fock = 666
-  666 HF
+# exchange rung: Hartree = 0, LDA = 1 (RS51,S51), GGA = 2(G96,B88), hybrid = 4, Hartree-Fock = 666
+  1 RS51
 # correlation rung: Hartree = 0, LDA = 1 (W38,VWN5,C16,LF19), GGA = 2(LYP), hybrid = 4(B3LYP), Hartree-Fock = 666
   0 HF
 # quadrature grid SG-n
@@ -11,4 +11,4 @@
 # Ensemble weights: wEns(1),...,wEns(nEns-1)
   0.00000 0.00000
 # eKS: maxSCF thresh   DIIS n_diis guess_type ortho_type
-       64    0.0000001  T     15      1          1
+       64    0.0000001  T     5      1          1

@@ -35,6 +35,7 @@ subroutine exchange_potential(rung,DFA,nEns,wEns,nGrid,weight,nBas,P,ERI,AO,dAO,
   select case (rung)
 
 !   Hartree calculation
+
     case(0) 
 
       Fx(:,:) = 0d0

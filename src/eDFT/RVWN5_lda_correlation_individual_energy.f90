@@ -66,7 +66,7 @@ subroutine RVWN5_lda_correlation_individual_energy(nGrid,weight,rhow,rho,Ec)
 
       decdra_p = drsdra*dxdrs*decdx_p
 
-      Ec = Ec + weight(iG)*(ec_p + decdra_p*r)*rI
+      Ec = Ec + weight(iG)*(ec_p*rI + decdra_p*r*rI -  decdra_p*r*r)
    
     end if
 

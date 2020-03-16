@@ -31,4 +31,6 @@ subroutine fock_exchange_potential(nBas,P,ERI,Fx)
     enddo
   enddo
 
+  Fx(:,:) = 0.5d0*Fx(:,:)
+
 end subroutine fock_exchange_potential
