@@ -1,6 +1,6 @@
 subroutine RMFL20_lda_correlation_potential(nEns,wEns,nGrid,weight,nBas,AO,rho,Fc)
 
-! Compute Loos-Fromager weight-dependent LDA correlation potential
+! Compute Marut-Fromager-Loos weight-dependent LDA correlation potential
 
   implicit none
 include 'parameters.h'
@@ -17,7 +17,6 @@ include 'parameters.h'
 
 ! Local variables
 
-  logical                       :: LDA_centered = .true.
   integer                       :: iEns
   double precision,allocatable  :: aMFL(:,:)
   double precision,allocatable  :: FcLDA(:,:)
@@ -45,7 +44,7 @@ include 'parameters.h'
 
   do iEns=1,nEns
 
-    call elda_correlation_potential(nEns,aMFL(:,iEns),nGrid,weight,nBas,AO,rho,FceLDA(:,:,iEns))
+    call restricted_elda_correlation_potential(nEns,aMFL(:,iEns),nGrid,weight,nBas,AO,rho,FceLDA(:,:,iEns))
 
   end do
 
@@ -53,17 +52,13 @@ include 'parameters.h'
 
   FcLDA(:,:) = 0d0
 
-  if(LDA_centered) then 
+  call RVWN5_lda_correlation_potential(nGrid,weight,nBas,AO,rho,FcLDA)
 
-    call RVWN5_lda_correlation_potential(nGrid,weight,nBas,AO,rho,FcLDA)
+  do iEns=1,nEns
 
-    do iEns=1,nEns
+    FceLDA(:,:,iEns) = FceLDA(:,:,iEns) + FcLDA(:,:) - FceLDA(:,:,1)
 
-      FceLDA(:,:,iEns) = FceLDA(:,:,iEns) + FcLDA(:,:) - FceLDA(:,:,1)
-
-    end do
-
-  end if
+  end do
 
 ! Weight-denpendent functional for ensembles
 

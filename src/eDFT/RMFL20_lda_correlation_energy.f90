@@ -12,23 +12,22 @@ subroutine RMFL20_lda_correlation_energy(nEns,wEns,nGrid,weight,rho,Ec)
   double precision,intent(in)   :: wEns(nEns)
   integer,intent(in)            :: nGrid
   double precision,intent(in)   :: weight(nGrid)
-  double precision,intent(in)   :: rho(nGrid,nspin)
+  double precision,intent(in)   :: rho(nGrid)
 
 ! Local variables
 
-  logical                       :: LDA_centered = .true.
-  integer                       :: iEns,isp
-  double precision              :: EcLDA(nsp)
+  integer                       :: iEns
+  double precision              :: EcLDA
   double precision,allocatable  :: aMFL(:,:)
-  double precision,allocatable  :: EceLDA(:,:)
+  double precision,allocatable  :: EceLDA(:)
 
 ! Output variables
 
-  double precision              :: Ec(nsp)
+  double precision              :: Ec
 
 ! Allocation
 
-  allocate(aMFL(3,nEns),EceLDA(nsp,nEns))
+  allocate(aMFL(3,nEns),EceLDA(nEns))
 
 ! Parameters for weight-dependent LDA correlation functional
 
@@ -40,42 +39,34 @@ subroutine RMFL20_lda_correlation_energy(nEns,wEns,nGrid,weight,rho,Ec)
   aMFL(2,2) = -0.0506019d0
   aMFL(3,2) = +0.0331417d0
 
-! Compute correlation energy for ground, singly-excited and doubly-excited states
+! Compute correlation energy for ground and doubly-excited states
 
   do iEns=1,nEns
 
-    call elda_correlation_energy(nEns,aMFL(:,iEns),nGrid,weight(:),rho(:,:),EceLDA(:,iEns))
+    call restricted_elda_correlation_energy(nEns,aMFL(:,iEns),nGrid,weight(:),rho(:),EceLDA(iEns))
 
   end do
 
 ! LDA-centered functional
 
-  EcLDA(:) = 0d0
+  EcLDA = 0d0
 
-  if(LDA_centered) then 
+  call RVWN5_lda_correlation_energy(nGrid,weight(:),rho(:),EcLDA)
 
-    call VWN5_lda_correlation_energy(nGrid,weight(:),rho(:,:),EcLDA(:))
+  do iEns=1,nEns
 
-    do iEns=1,nEns
-      do isp=1,nsp
+    EceLDA(iEns) = EceLDA(iEns) + EcLDA - EceLDA(1)
 
-        EceLDA(isp,iEns) = EceLDA(isp,iEns) + EcLDA(isp) - EceLDA(isp,1)
-
-      end do
-    end do
-
-  end if
+  end do
 
 ! Weight-denpendent functional for ensembles
 
-  Ec(:) = 0d0
+  Ec = 0d0
 
   do iEns=1,nEns
-    do isp=1,nsp
 
-      Ec(isp) = Ec(isp) + wEns(iEns)*EceLDA(isp,iEns)
+    Ec = Ec + wEns(iEns)*EceLDA(iEns)
 
-    end do
   end do
 
 end subroutine RMFL20_lda_correlation_energy
