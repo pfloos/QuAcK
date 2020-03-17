@@ -19,6 +19,6 @@
 # Number of states in ensemble (nEns)
   2
 # Ensemble weights: wEns(1),...,wEns(nEns-1)
-  0.50000 0.00000
+  0.00000 0.00000
 # GOK-DFT: maxSCF thresh   DIIS n_diis guess_type ortho_type
            64    0.0000001  T     5      1          1

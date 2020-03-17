@@ -1,4 +1,4 @@
-subroutine RMFL20_lda_correlation_derivative_discontinuity(nEns,wEns,nGrid,weight,rhow,Ec)
+subroutine RMFL20_lda_correlation_derivative_discontinuity(nEns,wEns,nGrid,weight,rhow,EcDD)
 
 ! Compute the restricted version of the eLDA correlation part of the derivative discontinuity
 
@@ -17,12 +17,12 @@ subroutine RMFL20_lda_correlation_derivative_discontinuity(nEns,wEns,nGrid,weigh
 
   integer                       :: iEns,jEns
   double precision,allocatable  :: aMFL(:,:)
-  double precision              :: dEc(nEns)
+  double precision              :: dEcdw(nEns)
   double precision,external     :: Kronecker_delta
 
 ! Output variables
 
-  double precision,intent(out)  :: Ec(nEns)
+  double precision,intent(out)  :: EcDD(nEns)
 
 ! Allocation
 
@@ -42,16 +42,16 @@ subroutine RMFL20_lda_correlation_derivative_discontinuity(nEns,wEns,nGrid,weigh
 
   do iEns=1,nEns
 
-    call restricted_elda_correlation_energy(nEns,aMFL(:,iEns),nGrid,weight(:),rhow(:),dEc(iEns))
+    call restricted_elda_correlation_energy(nEns,aMFL(:,iEns),nGrid,weight(:),rhow(:),dEcdw(iEns))
 
   end do
 
-  Ec(:) = 0d0
+  EcDD(:) = 0d0
 
   do iEns=1,nEns
     do jEns=1,nEns
 
-      Ec(iEns) = Ec(iEns) + (Kronecker_delta(iEns,jEns) - wEns(jEns))*(dEc(jEns) - dEc(1))
+      EcDD(iEns) = EcDD(iEns) + (Kronecker_delta(iEns,jEns) - wEns(jEns))*(dEcdw(jEns) - dEcdw(1))
 
     end do
   end do
