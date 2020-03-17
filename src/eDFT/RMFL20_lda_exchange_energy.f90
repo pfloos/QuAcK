@@ -29,11 +29,11 @@ subroutine RMFL20_lda_exchange_energy(nEns,wEns,nGrid,weight,rho,Ex)
 
 ! Cx coefficient for Slater LDA exchange
 
-  Cx0   = -(4d0/3d0)*(1d0/pi)**(1d0/3d0)
-  Cx1   = -(176d0/105d0)*(1d0/pi)**(1d0/3d0)
-  CxLDA = -(3d0/4d0)*(3d0/pi)**(1d0/3d0)
+  Cx0   = - (4d0/3d0)*(1d0/pi)**(1d0/3d0)
+  Cx1   = - (176d0/105d0)*(1d0/pi)**(1d0/3d0)
+  CxLDA = - (3d0/4d0)*(3d0/pi)**(1d0/3d0)
 
-  Cxw   = CxLDA + wEns(1)*(Cx1 - Cx0)
+  Cxw   = CxLDA + wEns(2)*(Cx1 - Cx0)
 
 ! Compute LDA exchange energy
 

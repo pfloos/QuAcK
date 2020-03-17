@@ -34,7 +34,7 @@ subroutine RS51_lda_exchange_energy(nGrid,weight,rho,Ex)
 
     if(r > threshold) then
 
-      Ex = Ex  + weight(iG)*Cx*r**(4d0/3d0)
+      Ex = Ex + weight(iG)*Cx*r**(4d0/3d0)
 
     endif
 

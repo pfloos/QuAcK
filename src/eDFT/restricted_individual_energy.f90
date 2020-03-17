@@ -42,8 +42,10 @@ subroutine restricted_individual_energy(x_rung,x_DFA,c_rung,c_DFA,nEns,wEns,nGri
   double precision              :: ET(nEns)
   double precision              :: EV(nEns)
   double precision              :: EJ(nEns)
-  double precision              :: Ex(nEns),Ec(nEns),Exc(nEns)
-  double precision              :: ExDD(nEns),EcDD(nEns),ExcDD(nEns)
+  double precision              :: Ex(nEns),   Ec(nEns),   Exc(nEns)
+  double precision              :: ExDD(nEns), EcDD(nEns), ExcDD(nEns)
+  double precision              :: Omx(nEns),  Omc(nEns),  Omxc(nEns)
+  double precision              :: OmxDD(nEns),OmcDD(nEns),OmxcDD(nEns)
 
   double precision,external     :: trace_matrix
 
@@ -126,7 +128,17 @@ subroutine restricted_individual_energy(x_rung,x_DFA,c_rung,c_DFA,nEns,wEns,nGri
 !------------------------------------------------------------------------
 
   do iEns=1,nEns
-    Om(iEns) = E(iEns) - E(1)
+
+    Om(iEns)     = E(iEns)     - E(1)
+
+    Omx(iEns)    = Ex(iEns)    - Ex(1)
+    Omc(iEns)    = Ec(iEns)    - Ec(1)
+    Omxc(iEns)   = Exc(iEns)   - Exc(1)
+
+    OmxDD(iEns)  = ExDD(iEns)  - ExDD(1)
+    OmcDD(iEns)  = EcDD(iEns)  - EcDD(1)
+    OmxcDD(iEns) = ExcDD(iEns) - ExcDD(1)
+
   end do
 
 !------------------------------------------------------------------------
@@ -134,6 +146,7 @@ subroutine restricted_individual_energy(x_rung,x_DFA,c_rung,c_DFA,nEns,wEns,nGri
 !------------------------------------------------------------------------
 
   call print_restricted_individual_energy(nEns,ET(:),EV(:),EJ(:),Ex(:),Ec(:),Exc(:), &
-                                          ExDD(:),EcDD(:),ExcDD(:),E(:),Om(:))
+                                          ExDD(:),EcDD(:),ExcDD(:),E(:), & 
+                                          Om(:),Omx(:),Omc(:),Omxc(:),OmxDD(:),OmcDD(:),OmxcDD(:))
 
 end subroutine restricted_individual_energy

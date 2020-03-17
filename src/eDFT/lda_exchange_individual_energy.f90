@@ -29,7 +29,7 @@ subroutine lda_exchange_individual_energy(DFA,nEns,wEns,nGrid,weight,rhow,rho,Ex
 
     case ('RMFL20')
 
-!     call RMFL20_lda_exchange_individual_energy(nEns,wEns,nGrid,weight(:),rhow(:),rho(:),Ex)
+      call RMFL20_lda_exchange_individual_energy(nEns,wEns,nGrid,weight(:),rhow(:),rho(:),Ex)
 
     case default
 

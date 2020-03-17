@@ -30,7 +30,7 @@ subroutine restricted_lda_correlation_derivative_discontinuity(DFA,nEns,wEns,nGr
 
       Ec(:) = 0d0
 
-    case ('VWN5')
+    case ('RVWN5')
 
       Ec(:) = 0d0
 

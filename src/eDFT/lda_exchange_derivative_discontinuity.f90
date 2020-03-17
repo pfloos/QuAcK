@@ -35,8 +35,7 @@ subroutine lda_exchange_derivative_discontinuity(DFA,nEns,wEns,nGrid,weight,rhow
 
     case ('RMFL20')
 
-!     call MFL20_lda_exchange_derivative_discontinuity(nEns,wEns,nGrid,weight(:),rhow(:),ExDD(:))
-      ExDD(:) = 0d0
+      call RMFL20_lda_exchange_derivative_discontinuity(nEns,wEns,nGrid,weight(:),rhow(:),ExDD(:))
 
     case default
 

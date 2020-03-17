@@ -52,10 +52,20 @@ subroutine read_options(method,x_rung,x_DFA,c_rung,c_DFA,SGn,nEns,wEns,maxSCF,th
 ! EXCHANGE: read rung of Jacob's ladder
 
   read(1,*)
+  read(1,*)
+  read(1,*)
+  read(1,*)
+  read(1,*)
+  read(1,*)
   read(1,*) x_rung,x_DFA
 
 ! CORRELATION: read rung of Jacob's ladder
 
+  read(1,*)
+  read(1,*)
+  read(1,*)
+  read(1,*)
+  read(1,*)
   read(1,*)
   read(1,*) c_rung,c_DFA
 
