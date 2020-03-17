@@ -49,8 +49,6 @@ subroutine RMFL20_lda_correlation_energy(nEns,wEns,nGrid,weight,rho,Ec)
 
 ! LDA-centered functional
 
-  EcLDA = 0d0
-
   call RVWN5_lda_correlation_energy(nGrid,weight(:),rho(:),EcLDA)
 
   do iEns=1,nEns

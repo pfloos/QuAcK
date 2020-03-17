@@ -16,7 +16,6 @@ subroutine RMFL20_lda_correlation_individual_energy(nEns,wEns,nGrid,weight,rhow,
 
 ! Local variables
 
-  logical                       :: LDA_centered = .true.
   integer                       :: iEns
   double precision              :: EcLDA
   double precision,allocatable  :: aMFL(:,:)
@@ -40,27 +39,21 @@ subroutine RMFL20_lda_correlation_individual_energy(nEns,wEns,nGrid,weight,rhow,
   aMFL(2,2) = -0.0506019d0
   aMFL(3,2) = +0.0331417d0
 
-! Compute correlation energy for ground, singly-excited and doubly-excited states
+! Compute correlation energy for ground- and doubly-excited states
 
   do iEns=1,nEns
-
     call restricted_elda_correlation_individual_energy(nEns,aMFL(:,iEns),nGrid,weight(:),rhow(:),rho(:),EceLDA(iEns))
-
   end do
 
 ! LDA-centered functional
 
   EcLDA = 0d0
 
-  if(LDA_centered) then
+  call RVWN5_lda_correlation_individual_energy(nGrid,weight(:),rhow(:),rho(:),EcLDA)
 
-    call RVWN5_lda_correlation_individual_energy(nGrid,weight(:),rhow(:),rho(:),EcLDA)
-
-    do iEns=1,nEns
-      EceLDA(iEns) = EceLDA(iEns) + EcLDA - EceLDA(1)
-    end do
-
-  end if
+  do iEns=1,nEns
+    EceLDA(iEns) = EceLDA(iEns) + EcLDA - EceLDA(1)
+  end do
 
 ! Weight-denpendent functional for ensembles
 

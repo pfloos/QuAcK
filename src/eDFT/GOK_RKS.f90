@@ -236,7 +236,7 @@ subroutine GOK_RKS(x_rung,x_DFA,c_rung,c_DFA,nEns,wEns,nGrid,weight,maxSCF,thres
 
     call restricted_correlation_potential(c_rung,c_DFA,nEns,wEns(:),nGrid,weight(:), & 
                                           nBas,AO(:,:),dAO(:,:,:),rhow(:),drhow(:,:),Fc(:,:))
-
+!   print*,'Done with restricted_correlation_potential'
 !   Build Fock operator
 
     F(:,:) = Hc(:,:) + J(:,:) + Fx(:,:) + Fc(:,:)
@@ -280,6 +280,7 @@ subroutine GOK_RKS(x_rung,x_DFA,c_rung,c_DFA,nEns,wEns,nGrid,weight,maxSCF,thres
 !   Correlation energy
 
     call restricted_correlation_energy(c_rung,c_DFA,nEns,wEns(:),nGrid,weight(:),rhow(:),drhow(:,:),Ec)
+!   print*,'Done with restricted_correlation_energy'
 
 !   Total energy
 

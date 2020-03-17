@@ -16,8 +16,6 @@ subroutine restricted_lda_correlation_derivative_discontinuity(DFA,nEns,wEns,nGr
 
 ! Local variables
 
-  double precision              :: aC
-
 ! Output variables
 
   double precision,intent(out)  :: Ec(nEns)

@@ -118,9 +118,9 @@ subroutine restricted_individual_energy(x_rung,x_DFA,c_rung,c_DFA,nEns,wEns,nGri
 !------------------------------------------------------------------------
 
   do iEns=1,nEns
-    Exc(iEns) = Ex(iEns) + Ec(iEns)
-    E(iEns) = ENuc + ET(iEns) + EV(iEns) + EJ(iEns) &
-                   + Ex(iEns) + Ec(iEns) + ExcDD(iEns)
+    Exc(iEns) =        Ex(iEns) + Ec(iEns)
+    E(iEns)   = ENuc + ET(iEns) + EV(iEns) + EJ(iEns) &
+                     + Ex(iEns) + Ec(iEns) + ExcDD(iEns)
   end do
 
 !------------------------------------------------------------------------

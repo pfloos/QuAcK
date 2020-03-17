@@ -96,12 +96,13 @@ subroutine print_restricted_individual_energy(nEns,ET,EV,EJ,Ex,Ec,Exc,ExDD,EcDD,
   write(*,'(A50)')           ' Derivative discontinuities (DD)    '
   write(*,'(A60)')           '-------------------------------------------------'
   do iEns=1,nEns
+    write(*,*)
     write(*,'(A40,I2,A2,F16.10,A3)') '  x ensemble derivative state ',iEns,': ',ExDD(iEns), ' au'
     write(*,'(A40,I2,A2,F16.10,A3)') '  c ensemble derivative state ',iEns,': ',EcDD(iEns), ' au'
     write(*,'(A40,I2,A2,F16.10,A3)') ' xc ensemble derivative state ',iEns,': ',ExcDD(iEns),' au'
-    write(*,*)
   end do
   write(*,'(A60)')           '-------------------------------------------------'
+  write(*,*)
 
 !------------------------------------------------------------------------
 ! Total and Excitation energies

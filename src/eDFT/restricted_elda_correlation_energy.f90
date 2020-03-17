@@ -16,7 +16,7 @@ subroutine restricted_elda_correlation_energy(nEns,aMFL,nGrid,weight,rho,Ec)
 ! Local variables
 
   integer                       :: iG
-  double precision              :: r,ec_p
+  double precision              :: r,e
 
 ! Output variables
 
@@ -33,9 +33,9 @@ subroutine restricted_elda_correlation_energy(nEns,aMFL,nGrid,weight,rho,Ec)
 
     if(r > threshold) then
 
-      ec_p = aMFL(1)/(1d0 + aMFL(2)*r**(-1d0/6d0) + aMFL(3)*r**(-1d0/3d0))
+      e = aMFL(1)/(1d0 + aMFL(2)*r**(-1d0/6d0) + aMFL(3)*r**(-1d0/3d0))
 
-      Ec = Ec + weight(iG)*ec_p*r
+      Ec = Ec + weight(iG)*e*r
 
     end if
 

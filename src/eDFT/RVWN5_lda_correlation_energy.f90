@@ -22,7 +22,7 @@ subroutine RVWN5_lda_correlation_energy(nGrid,weight,rho,Ec)
 
 ! Output variables
 
-  double precision              :: Ec(nsp)
+  double precision              :: Ec
 
 ! Parameters of the functional
 
