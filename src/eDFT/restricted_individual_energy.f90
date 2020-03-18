@@ -1,5 +1,5 @@
 subroutine restricted_individual_energy(x_rung,x_DFA,c_rung,c_DFA,nEns,wEns,nGrid,weight,nBas,AO,dAO, & 
-                                        nO,nV,T,V,ERI,ENuc,Pw,rhow,drhow,J,Fx,FxHF,Fc,P,rho,drho,Ew,E,Om)
+                                        nO,nV,T,V,ERI,ENuc,Pw,rhow,drhow,J,Fx,FxHF,Fc,P,rho,drho,Ew,EwGIC,E,Om)
 
 ! Compute individual energies as well as excitation energies
 
@@ -41,7 +41,6 @@ subroutine restricted_individual_energy(x_rung,x_DFA,c_rung,c_DFA,nEns,wEns,nGri
 
 ! Local variables
 
-  double precision              :: EwGOC
   double precision              :: ET(nEns)
   double precision              :: EV(nEns)
   double precision              :: EJ(nEns)
@@ -56,6 +55,7 @@ subroutine restricted_individual_energy(x_rung,x_DFA,c_rung,c_DFA,nEns,wEns,nGri
 
 ! Output variables
 
+  double precision,intent(out)  :: EwGIC
   double precision,intent(out)  :: E(nEns)
   double precision,intent(out)  :: Om(nEns)
 
@@ -130,9 +130,9 @@ subroutine restricted_individual_energy(x_rung,x_DFA,c_rung,c_DFA,nEns,wEns,nGri
 ! Total energy with ghost-interaction correction
 !------------------------------------------------------------------------
 
-  EwGOC = 0d0
+  EwGIC = 0d0
   do iEns=1,nEns
-    EwGOC = EwGOC + wEns(iEns)*E(iEns)
+    EwGIC = EwGIC + wEns(iEns)*E(iEns)
   end do
 
 !------------------------------------------------------------------------
@@ -157,7 +157,7 @@ subroutine restricted_individual_energy(x_rung,x_DFA,c_rung,c_DFA,nEns,wEns,nGri
 ! Dump results
 !------------------------------------------------------------------------
 
-  call print_restricted_individual_energy(nEns,Ew,EwGOC,ET(:),EV(:),EJ(:),Ex(:),Ec(:),Exc(:), &
+  call print_restricted_individual_energy(nEns,Ew,EwGIC,ET(:),EV(:),EJ(:),Ex(:),Ec(:),Exc(:), &
                                           ExDD(:),EcDD(:),ExcDD(:),E(:),                      & 
                                           Om(:),Omx(:),Omc(:),Omxc(:),OmxDD(:),OmcDD(:),OmxcDD(:))
 

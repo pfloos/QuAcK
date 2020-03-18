@@ -7,7 +7,7 @@ program eDFT
 
   integer                       :: nNuc,nBas
   integer                       :: nEl(nspin),nC(nspin),nO(nspin),nV(nspin),nR(nspin)
-  double precision              :: ENuc,EKS
+  double precision              :: ENuc,Ew,EwGIC
 
   double precision,allocatable  :: ZNuc(:),rNuc(:,:)
 
@@ -131,31 +131,48 @@ program eDFT
   call AO_values_grid(nBas,nShell,CenterShell,TotAngMomShell,KShell,DShell,ExpShell,nGrid,root,AO,dAO)
 
 !------------------------------------------------------------------------
-! Compute RKS energy
+! Compute GOK-RKS energy
 !------------------------------------------------------------------------
 
   if(method == 'GOK-RKS') then
 
     call cpu_time(start_KS)
     call GOK_RKS(x_rung,x_DFA,c_rung,c_DFA,nEns,wEns(:),nGrid,weight(:),maxSCF,thresh,max_diis,guess_type, & 
-                 nBas,AO(:,:),dAO(:,:,:),nO(1),nV(1),S(:,:),T(:,:),V(:,:),Hc(:,:),ERI(:,:,:,:),X(:,:),ENuc,EKS)
+                 nBas,AO(:,:),dAO(:,:,:),nO(1),nV(1),S(:,:),T(:,:),V(:,:),Hc(:,:),ERI(:,:,:,:),X(:,:),ENuc,Ew,EwGIC)
     call cpu_time(end_KS)
 
     t_KS = end_KS - start_KS
-    write(*,'(A65,1X,F9.3,A8)') 'Total CPU time for RKS = ',t_KS,' seconds'
+    write(*,'(A65,1X,F9.3,A8)') 'Total CPU time for GOC-RKS = ',t_KS,' seconds'
+    write(*,*)
+
+ end if
+
+!------------------------------------------------------------------------
+! Compute RKS energy
+!------------------------------------------------------------------------
+
+  if(method == 'LIM-RKS') then
+
+    call cpu_time(start_KS)
+    call LIM_RKS(x_rung,x_DFA,c_rung,c_DFA,nEns,wEns(:),nGrid,weight(:),maxSCF,thresh,max_diis,guess_type, & 
+                 nBas,AO(:,:),dAO(:,:,:),nO(1),nV(1),S(:,:),T(:,:),V(:,:),Hc(:,:),ERI(:,:,:,:),X(:,:),ENuc)
+    call cpu_time(end_KS)
+
+    t_KS = end_KS - start_KS
+    write(*,'(A65,1X,F9.3,A8)') 'Total CPU time for LIM-RKS = ',t_KS,' seconds'
     write(*,*)
 
   end if
 
 !------------------------------------------------------------------------
-! Compute UKS energy
+! Compute GOK-UKS energy (BROKEN)
 !------------------------------------------------------------------------
 
   if(method == 'GOK-UKS') then
 
     call cpu_time(start_KS)
     call GOK_UKS(x_rung,x_DFA,c_rung,c_DFA,nEns,wEns(:),nGrid,weight(:),maxSCF,thresh,max_diis,guess_type, & 
-                   nBas,AO(:,:),dAO(:,:,:),nO(:),nV(:),S(:,:),T(:,:),V(:,:),Hc(:,:),ERI(:,:,:,:),X(:,:),ENuc,EKS)
+                   nBas,AO(:,:),dAO(:,:,:),nO(:),nV(:),S(:,:),T(:,:),V(:,:),Hc(:,:),ERI(:,:,:,:),X(:,:),ENuc,Ew)
     call cpu_time(end_KS)
 
     t_KS = end_KS - start_KS

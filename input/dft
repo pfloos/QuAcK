@@ -1,19 +1,19 @@
 # Restricted or unrestricted KS calculation
-  GOK-RKS
+  LIM-RKS
 # exchange rung: 
 # Hartree      = 0
 # LDA          = 1: RS51,S51,RMFL20
 # GGA          = 2: G96,B88
 # Hybrid       = 4 
 # Hartree-Fock = 666
-  1 RMFL20
+  1 RS51
 # correlation rung: 
 # Hartree      = 0
 # LDA          = 1: W38,VWN5,C16,RMFL20
 # GGA          = 2: LYP
 # Hybrid       = 4: B3LYP
 # Hartree-Fock = 666
-  1 RMFL20
+  1 RVWN5
 # quadrature grid SG-n
   1
 # Number of states in ensemble (nEns)
