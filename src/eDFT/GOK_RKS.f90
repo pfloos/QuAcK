@@ -93,7 +93,7 @@ subroutine GOK_RKS(x_rung,x_DFA,c_rung,c_DFA,nEns,wEns,nGrid,weight,maxSCF,thres
 
   write(*,*)
   write(*,*) '*******************************************************************'
-  write(*,*) '*                        Exchange rung                            *'
+  write(*,*) '*                        EXCHANGE RUNG                            *'
   write(*,*) '*******************************************************************'
 
   call select_rung(x_rung,x_DFA)
@@ -102,7 +102,7 @@ subroutine GOK_RKS(x_rung,x_DFA,c_rung,c_DFA,nEns,wEns,nGrid,weight,maxSCF,thres
 
   write(*,*)
   write(*,*) '*******************************************************************'
-  write(*,*) '*                       Correlation rung                          *'
+  write(*,*) '*                       CORRELATION RUNG                          *'
   write(*,*) '*******************************************************************'
 
   call select_rung(c_rung,c_DFA)
@@ -326,6 +326,6 @@ subroutine GOK_RKS(x_rung,x_DFA,c_rung,c_DFA,nEns,wEns,nGrid,weight,maxSCF,thres
   call restricted_individual_energy(x_rung,x_DFA,c_rung,c_DFA,nEns,wEns(:),nGrid,weight(:),nBas, &
                                     AO(:,:),dAO(:,:,:),nO,nV,T(:,:),V(:,:),ERI(:,:,:,:),ENuc,    & 
                                     Pw(:,:),rhow(:),drhow(:,:),J(:,:),Fx(:,:),FxHF(:,:),         & 
-                                    Fc(:,:),P(:,:,:),rho(:,:),drho(:,:,:),E(:),Om(:))
+                                    Fc(:,:),P(:,:,:),rho(:,:),drho(:,:,:),Ew,E(:),Om(:))
 
 end subroutine GOK_RKS

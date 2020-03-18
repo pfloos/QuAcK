@@ -1,4 +1,4 @@
-subroutine print_restricted_individual_energy(nEns,ET,EV,EJ,Ex,Ec,Exc,ExDD,EcDD,ExcDD,E, & 
+subroutine print_restricted_individual_energy(nEns,Ew,EwGOC,ET,EV,EJ,Ex,Ec,Exc,ExDD,EcDD,ExcDD,E, & 
                                               Om,Omx,Omc,Omxc,OmxDD,OmcDD,OmxcDD)
 
 ! Print individual energies for eDFT calculation
@@ -9,6 +9,8 @@ subroutine print_restricted_individual_energy(nEns,ET,EV,EJ,Ex,Ec,Exc,ExDD,EcDD,
 ! Input variables
 
   integer,intent(in)                 :: nEns
+  double precision,intent(in)        :: Ew
+  double precision,intent(in)        :: EwGOC
   double precision,intent(in)        :: ET(nEns)
   double precision,intent(in)        :: EV(nEns)
   double precision,intent(in)        :: EJ(nEns)
@@ -24,11 +26,23 @@ subroutine print_restricted_individual_energy(nEns,ET,EV,EJ,Ex,Ec,Exc,ExDD,EcDD,
   integer                            :: iEns
 
 !------------------------------------------------------------------------
+! Ensemble energies
+!------------------------------------------------------------------------
+
+  write(*,'(A60)')           '-------------------------------------------------'
+  write(*,'(A60)')           ' ENSEMBLE ENERGIES'
+  write(*,'(A60)')           '-------------------------------------------------'
+  write(*,'(A44,F16.10,A3)') '     Ensemble energy:      ',Ew,   ' au'
+  write(*,'(A44,F16.10,A3)') ' GOC Ensemble energy:      ',EwGOC,' au'
+  write(*,'(A60)')           '-------------------------------------------------'
+  write(*,*)
+
+!------------------------------------------------------------------------
 ! Kinetic energy
 !------------------------------------------------------------------------
 
   write(*,'(A60)')           '-------------------------------------------------'
-  write(*,'(A50)')           ' Individual kinetic     energies'
+  write(*,'(A60)')           ' INDIVIDUAL KINETIC     ENERGIES'
   write(*,'(A60)')           '-------------------------------------------------'
   do iEns=1,nEns
     write(*,'(A40,I2,A2,F16.10,A3)') ' Kinetic     energy state ',iEns,': ',ET(iEns),' au'
@@ -41,7 +55,7 @@ subroutine print_restricted_individual_energy(nEns,ET,EV,EJ,Ex,Ec,Exc,ExDD,EcDD,
 !------------------------------------------------------------------------
 
   write(*,'(A60)')           '-------------------------------------------------'
-  write(*,'(A50)')           ' Individual potential   energies'
+  write(*,'(A60)')           ' INDIVIDUAL POTENTIAL   ENERGIES'
   write(*,'(A60)')           '-------------------------------------------------'
   do iEns=1,nEns
     write(*,'(A40,I2,A2,F16.10,A3)') ' Potential   energy state ',iEns,': ',EV(iEns),' au'
@@ -54,7 +68,7 @@ subroutine print_restricted_individual_energy(nEns,ET,EV,EJ,Ex,Ec,Exc,ExDD,EcDD,
 !------------------------------------------------------------------------
 
   write(*,'(A60)')           '-------------------------------------------------'
-  write(*,'(A50)')           ' Individual Hartree     energies'
+  write(*,'(A60)')           ' INDIVIDUAL HARTREE     ENERGIES'
   write(*,'(A60)')           '-------------------------------------------------'
   do iEns=1,nEns
     write(*,'(A40,I2,A2,F16.10,A3)') ' Hartree     energy state ',iEns,': ',EJ(iEns),' au'
@@ -67,7 +81,7 @@ subroutine print_restricted_individual_energy(nEns,ET,EV,EJ,Ex,Ec,Exc,ExDD,EcDD,
 !------------------------------------------------------------------------
 
   write(*,'(A60)')           '-------------------------------------------------'
-  write(*,'(A50)')           ' Individual exchange    energies'
+  write(*,'(A60)')           ' INDIVIDUAL EXCHANGE    ENERGIES'
   write(*,'(A60)')           '-------------------------------------------------'
   do iEns=1,nEns
     write(*,'(A40,I2,A2,F16.10,A3)') ' Exchange    energy state ',iEns,': ',Ex(iEns),' au'
@@ -80,7 +94,7 @@ subroutine print_restricted_individual_energy(nEns,ET,EV,EJ,Ex,Ec,Exc,ExDD,EcDD,
 !------------------------------------------------------------------------
 
   write(*,'(A60)')           '-------------------------------------------------'
-  write(*,'(A50)')           ' Individual correlation energies'
+  write(*,'(A60)')           ' INDIVIDUAL CORRELATION ENERGIES'
   write(*,'(A60)')           '-------------------------------------------------'
   do iEns=1,nEns
     write(*,'(A40,I2,A2,F16.10,A3)') ' Correlation energy state ',iEns,': ',Ec(iEns),' au'
@@ -93,7 +107,7 @@ subroutine print_restricted_individual_energy(nEns,ET,EV,EJ,Ex,Ec,Exc,ExDD,EcDD,
 !------------------------------------------------------------------------
 
   write(*,'(A60)')           '-------------------------------------------------'
-  write(*,'(A50)')           ' Derivative discontinuities (DD)    '
+  write(*,'(A60)')           ' ENSEMBLE DERIVATIVE CONTRIBUTIONS'
   write(*,'(A60)')           '-------------------------------------------------'
   do iEns=1,nEns
     write(*,*)
@@ -109,7 +123,7 @@ subroutine print_restricted_individual_energy(nEns,ET,EV,EJ,Ex,Ec,Exc,ExDD,EcDD,
 !------------------------------------------------------------------------
 
   write(*,'(A60)')           '-------------------------------------------------'
-  write(*,'(A50)')           ' Individual and excitation energies '
+  write(*,'(A60)')           ' INDIVIDUAL AND EXCITATION ENERGIES'
   write(*,'(A60)')           '-------------------------------------------------'
   do iEns=1,nEns
     write(*,'(A40,I2,A2,F16.10,A3)') ' Individual energy state ',iEns,': ',E(iEns),' au'

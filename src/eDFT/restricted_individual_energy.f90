@@ -1,5 +1,5 @@
 subroutine restricted_individual_energy(x_rung,x_DFA,c_rung,c_DFA,nEns,wEns,nGrid,weight,nBas,AO,dAO, & 
-                                        nO,nV,T,V,ERI,ENuc,Pw,rhow,drhow,J,Fx,FxHF,Fc,P,rho,drho,E,Om)
+                                        nO,nV,T,V,ERI,ENuc,Pw,rhow,drhow,J,Fx,FxHF,Fc,P,rho,drho,Ew,E,Om)
 
 ! Compute individual energies as well as excitation energies
 
@@ -37,8 +37,11 @@ subroutine restricted_individual_energy(x_rung,x_DFA,c_rung,c_DFA,nEns,wEns,nGri
   double precision,intent(in)   :: FxHF(nBas,nBas)
   double precision,intent(in)   :: Fc(nBas,nBas)
 
+  double precision              :: Ew
+
 ! Local variables
 
+  double precision              :: EwGOC
   double precision              :: ET(nEns)
   double precision              :: EV(nEns)
   double precision              :: EJ(nEns)
@@ -124,6 +127,15 @@ subroutine restricted_individual_energy(x_rung,x_DFA,c_rung,c_DFA,nEns,wEns,nGri
   end do
 
 !------------------------------------------------------------------------
+! Total energy with ghost-interaction correction
+!------------------------------------------------------------------------
+
+  EwGOC = 0d0
+  do iEns=1,nEns
+    EwGOC = EwGOC + wEns(iEns)*E(iEns)
+  end do
+
+!------------------------------------------------------------------------
 ! Excitation energies
 !------------------------------------------------------------------------
 
@@ -145,8 +157,8 @@ subroutine restricted_individual_energy(x_rung,x_DFA,c_rung,c_DFA,nEns,wEns,nGri
 ! Dump results
 !------------------------------------------------------------------------
 
-  call print_restricted_individual_energy(nEns,ET(:),EV(:),EJ(:),Ex(:),Ec(:),Exc(:), &
-                                          ExDD(:),EcDD(:),ExcDD(:),E(:), & 
+  call print_restricted_individual_energy(nEns,Ew,EwGOC,ET(:),EV(:),EJ(:),Ex(:),Ec(:),Exc(:), &
+                                          ExDD(:),EcDD(:),ExcDD(:),E(:),                      & 
                                           Om(:),Omx(:),Omc(:),Omxc(:),OmxDD(:),OmcDD(:),OmxcDD(:))
 
 end subroutine restricted_individual_energy
