@@ -15,17 +15,12 @@ subroutine RS51_lda_exchange_individual_energy(nGrid,weight,rhow,rho,Ex)
 ! Local variables
 
   integer                       :: iG
-  double precision              :: Cx
   double precision              :: r,rI
   double precision              :: e,dedr
 
 ! Output variables
 
   double precision,intent(out)  :: Ex
-
-! Cx coefficient for Slater LDA exchange
-
-  Cx = -(3d0/4d0)*(3d0/pi)**(1d0/3d0)
 
 ! Compute LDA exchange matrix in the AO basis
 
@@ -37,8 +32,8 @@ subroutine RS51_lda_exchange_individual_energy(nGrid,weight,rhow,rho,Ex)
 
     if(r > threshold .and. rI > threshold) then
 
-      e    =         Cx*r**(1d0/3d0)
-      dedr = 1d0/3d0*Cx*r**(-2d0/3d0)
+      e    =         CxLDA*r**(1d0/3d0)
+      dedr = 1d0/3d0*CxLDA*r**(-2d0/3d0)
       Ex = Ex + weight(iG)*(e*rI + dedr*r*rI - dedr*r*r)
 
     endif

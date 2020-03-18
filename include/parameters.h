@@ -15,3 +15,7 @@
   double precision,parameter    :: pmtoau = 0.0188973d0
   double precision,parameter    :: BoToAn = 0.529177249d0
 
+  double precision,parameter    :: CxLDA = - (3d0/4d0)*(3d0/pi)**(1d0/3d0)
+  double precision,parameter    :: Cx0   = - (4d0/3d0)*(1d0/pi)**(1d0/3d0)
+  double precision,parameter    :: Cx1   = - (176d0/105d0)*(1d0/pi)**(1d0/3d0)
+

@@ -21,9 +21,9 @@ subroutine fock_exchange_potential(nBas,P,ERI,Fx)
 ! Compute HF exchange matrix
 
   Fx(:,:) = 0d0
-  do nu=1,nBas
-    do si=1,nBas
-      do la=1,nBas
+  do si=1,nBas
+    do la=1,nBas
+      do nu=1,nBas
         do mu=1,nBas
           Fx(mu,nu) = Fx(mu,nu) - P(la,si)*ERI(mu,la,si,nu)
         enddo

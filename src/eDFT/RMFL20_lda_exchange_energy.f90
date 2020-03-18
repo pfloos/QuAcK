@@ -17,9 +17,6 @@ subroutine RMFL20_lda_exchange_energy(nEns,wEns,nGrid,weight,rho,Ex)
 ! Local variables
 
   integer                       :: iG
-  double precision              :: Cx0
-  double precision              :: Cx1
-  double precision              :: CxLDA
   double precision              :: Cxw
   double precision              :: r
 
@@ -27,11 +24,7 @@ subroutine RMFL20_lda_exchange_energy(nEns,wEns,nGrid,weight,rho,Ex)
 
   double precision              :: Ex
 
-! Cx coefficient for Slater LDA exchange
-
-  Cx0   = - (4d0/3d0)*(1d0/pi)**(1d0/3d0)
-  Cx1   = - (176d0/105d0)*(1d0/pi)**(1d0/3d0)
-  CxLDA = - (3d0/4d0)*(3d0/pi)**(1d0/3d0)
+! Weight-denepdent Cx coefficient
 
   Cxw   = CxLDA + wEns(2)*(Cx1 - Cx0)
 

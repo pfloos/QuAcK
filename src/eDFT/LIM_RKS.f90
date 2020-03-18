@@ -1,5 +1,5 @@
 subroutine LIM_RKS(x_rung,x_DFA,c_rung,c_DFA,nEns,wEns,nGrid,weight,maxSCF,thresh, & 
-                   max_diis,guess_type,nBas,AO,dAO,nO,nV,S,T,V,Hc,ERI,X,ENuc)
+                   max_diis,guess_type,nBas,AO,dAO,nO,nV,S,T,V,Hc,ERI,X,ENuc,F)
 
 ! Perform restricted Kohn-Sham calculation for ensembles
 
@@ -28,6 +28,8 @@ subroutine LIM_RKS(x_rung,x_DFA,c_rung,c_DFA,nEns,wEns,nGrid,weight,maxSCF,thres
   double precision,intent(in)   :: X(nBas,nBas) 
   double precision,intent(in)   :: ERI(nBas,nBas,nBas,nBas)
   double precision,intent(in)   :: ENuc
+
+  double precision,intent(out)  :: F(nBas,nBas) 
 
 ! Local variables
 
@@ -63,8 +65,8 @@ subroutine LIM_RKS(x_rung,x_DFA,c_rung,c_DFA,nEns,wEns,nGrid,weight,maxSCF,thres
   write(*,'(A40)')           '*************************************************'
   write(*,*)
 
-  call GOK_RKS(x_rung,x_DFA,c_rung,c_DFA,nEns,wLIM,nGrid,weight,maxSCF,thresh, &
-               max_diis,guess_type,nBas,AO,dAO,nO,nV,S,T,V,Hc,ERI,X,ENuc,EwZW,EwGICZW)
+  call GOK_RKS(.false.,x_rung,x_DFA,c_rung,c_DFA,nEns,wLIM,nGrid,weight,maxSCF,thresh, &
+               max_diis,guess_type,nBas,AO,dAO,nO,nV,S,T,V,Hc,ERI,X,ENuc,EwZW,EwGICZW,F)
 
 !------------------------------------------------------------------------
 ! Equiensemble calculation
@@ -82,8 +84,8 @@ subroutine LIM_RKS(x_rung,x_DFA,c_rung,c_DFA,nEns,wEns,nGrid,weight,maxSCF,thres
   write(*,'(A40)')           '*************************************************'
   write(*,*)
 
-  call GOK_RKS(x_rung,x_DFA,c_rung,c_DFA,nEns,wLIM,nGrid,weight,maxSCF,thresh, &
-               max_diis,guess_type,nBas,AO,dAO,nO,nV,S,T,V,Hc,ERI,X,ENuc,EwEW,EwGICEW)
+  call GOK_RKS(.true.,x_rung,x_DFA,c_rung,c_DFA,nEns,wLIM,nGrid,weight,maxSCF,thresh, &
+               max_diis,guess_type,nBas,AO,dAO,nO,nV,S,T,V,Hc,ERI,X,ENuc,EwEW,EwGICEW,F)
 
 !------------------------------------------------------------------------
 ! LIM excitation energies

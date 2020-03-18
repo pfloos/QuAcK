@@ -18,8 +18,13 @@ program eDFT
   double precision,allocatable  :: DShell(:,:)
   double precision,allocatable  :: ExpShell(:,:)
 
-  double precision,allocatable  :: S(:,:),T(:,:),V(:,:),Hc(:,:),X(:,:)
+  double precision,allocatable  :: S(:,:)
+  double precision,allocatable  :: T(:,:)
+  double precision,allocatable  :: V(:,:)
+  double precision,allocatable  :: Hc(:,:)
+  double precision,allocatable  :: X(:,:)
   double precision,allocatable  :: ERI(:,:,:,:)
+  double precision,allocatable  :: F(:,:)
 
   character(len=7)              :: method
   integer                       :: x_rung,c_rung
@@ -95,7 +100,8 @@ program eDFT
 
 ! Memory allocation for one- and two-electron integrals
 
-  allocate(S(nBas,nBas),T(nBas,nBas),V(nBas,nBas),Hc(nBas,nBas),X(nBas,nBas),ERI(nBas,nBas,nBas,nBas))
+  allocate(S(nBas,nBas),T(nBas,nBas),V(nBas,nBas),Hc(nBas,nBas), &
+           X(nBas,nBas),ERI(nBas,nBas,nBas,nBas),F(nBas,nBas))
 
 ! Read integrals
 
@@ -137,8 +143,9 @@ program eDFT
   if(method == 'GOK-RKS') then
 
     call cpu_time(start_KS)
-    call GOK_RKS(x_rung,x_DFA,c_rung,c_DFA,nEns,wEns(:),nGrid,weight(:),maxSCF,thresh,max_diis,guess_type, & 
-                 nBas,AO(:,:),dAO(:,:,:),nO(1),nV(1),S(:,:),T(:,:),V(:,:),Hc(:,:),ERI(:,:,:,:),X(:,:),ENuc,Ew,EwGIC)
+    call GOK_RKS(.false.,x_rung,x_DFA,c_rung,c_DFA,nEns,wEns(:),nGrid,weight(:),maxSCF,thresh,max_diis,guess_type,  & 
+                 nBas,AO(:,:),dAO(:,:,:),nO(1),nV(1),S(:,:),T(:,:),V(:,:),Hc(:,:),ERI(:,:,:,:),X(:,:),ENuc, &
+                 Ew,EwGIC,F(:,:))
     call cpu_time(end_KS)
 
     t_KS = end_KS - start_KS
@@ -154,8 +161,9 @@ program eDFT
   if(method == 'LIM-RKS') then
 
     call cpu_time(start_KS)
-    call LIM_RKS(x_rung,x_DFA,c_rung,c_DFA,nEns,wEns(:),nGrid,weight(:),maxSCF,thresh,max_diis,guess_type, & 
-                 nBas,AO(:,:),dAO(:,:,:),nO(1),nV(1),S(:,:),T(:,:),V(:,:),Hc(:,:),ERI(:,:,:,:),X(:,:),ENuc)
+    call LIM_RKS(x_rung,x_DFA,c_rung,c_DFA,nEns,wEns(:),nGrid,weight(:),maxSCF,thresh,max_diis,guess_type,  & 
+                 nBas,AO(:,:),dAO(:,:,:),nO(1),nV(1),S(:,:),T(:,:),V(:,:),Hc(:,:),ERI(:,:,:,:),X(:,:),ENuc, &
+                 F(:,:))
     call cpu_time(end_KS)
 
     t_KS = end_KS - start_KS

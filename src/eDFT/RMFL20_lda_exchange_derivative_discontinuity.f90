@@ -26,8 +26,8 @@ subroutine RMFL20_lda_exchange_derivative_discontinuity(nEns,wEns,nGrid,weight,r
 
 ! Weight-dependent Cx coefficient for RMFL20 exchange functional
 
-  Cx(1) = -(4d0/3d0)*(1d0/pi)**(1d0/3d0)
-  Cx(2) = -(176d0/105d0)*(1d0/pi)**(1d0/3d0)
+  Cx(1) = Cx0
+  Cx(2) = Cx1
 
 ! Compute correlation energy for ground, singly-excited and doubly-excited states
 

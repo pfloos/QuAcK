@@ -2,16 +2,16 @@
   LIM-RKS
 # exchange rung: 
 # Hartree      = 0
-# LDA          = 1: RS51,S51,RMFL20
-# GGA          = 2: G96,B88
+# LDA          = 1: RS51,RMFL20
+# GGA          = 2: 
 # Hybrid       = 4 
 # Hartree-Fock = 666
   1 RS51
 # correlation rung: 
 # Hartree      = 0
-# LDA          = 1: W38,VWN5,C16,RMFL20
-# GGA          = 2: LYP
-# Hybrid       = 4: B3LYP
+# LDA          = 1: RVWN5,RMFL20
+# GGA          = 2: 
+# Hybrid       = 4: 
 # Hartree-Fock = 666
   1 RVWN5
 # quadrature grid SG-n
@@ -21,4 +21,4 @@
 # Ensemble weights: wEns(1),...,wEns(nEns-1)
   0.50000 0.00000
 # GOK-DFT: maxSCF thresh   DIIS n_diis guess_type ortho_type
-           64    0.0000001  T     5      1          1
+           32    0.0000001  T    5      1          1

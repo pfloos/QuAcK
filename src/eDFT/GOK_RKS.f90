@@ -1,5 +1,5 @@
-subroutine GOK_RKS(x_rung,x_DFA,c_rung,c_DFA,nEns,wEns,nGrid,weight,maxSCF,thresh, & 
-                   max_diis,guess_type,nBas,AO,dAO,nO,nV,S,T,V,Hc,ERI,X,ENuc,Ew,EwGIC)
+subroutine GOK_RKS(restart,x_rung,x_DFA,c_rung,c_DFA,nEns,wEns,nGrid,weight,maxSCF,thresh, & 
+                   max_diis,guess_type,nBas,AO,dAO,nO,nV,S,T,V,Hc,ERI,X,ENuc,Ew,EwGIC,F)
 
 ! Perform restricted Kohn-Sham calculation for ensembles
 
@@ -8,6 +8,7 @@ subroutine GOK_RKS(x_rung,x_DFA,c_rung,c_DFA,nEns,wEns,nGrid,weight,maxSCF,thres
 
 ! Input variables
 
+  logical,intent(in)            :: restart
   integer,intent(in)            :: x_rung,c_rung
   character(len=12),intent(in)  :: x_DFA,c_DFA
   integer,intent(in)            :: nEns
@@ -29,6 +30,8 @@ subroutine GOK_RKS(x_rung,x_DFA,c_rung,c_DFA,nEns,wEns,nGrid,weight,maxSCF,thres
   double precision,intent(in)   :: ERI(nBas,nBas,nBas,nBas)
   double precision,intent(in)   :: ENuc
 
+  double precision,intent(inout):: F(nBas,nBas)
+
 ! Local variables
 
   integer                       :: xc_rung
@@ -46,7 +49,6 @@ subroutine GOK_RKS(x_rung,x_DFA,c_rung,c_DFA,nEns,wEns,nGrid,weight,maxSCF,thres
   double precision,allocatable  :: c(:,:)
   double precision,allocatable  :: cp(:,:)
   double precision,allocatable  :: J(:,:)
-  double precision,allocatable  :: F(:,:)
   double precision,allocatable  :: Fp(:,:)
   double precision,allocatable  :: Fx(:,:)
   double precision,allocatable  :: FxHF(:,:)
@@ -118,22 +120,24 @@ subroutine GOK_RKS(x_rung,x_DFA,c_rung,c_DFA,nEns,wEns,nGrid,weight,maxSCF,thres
 ! Memory allocation
 
   allocate(eps(nBas),c(nBas,nBas),cp(nBas,nBas),              &
-           J(nBas,nBas),F(nBas,nBas),Fp(nBas,nBas),           & 
-           Fx(nBas,nBas),FxHF(nBas,nBas),Fc(nBas,nBas),err(nBas,nBas), &
+           J(nBas,nBas),Fp(nBas,nBas),Fx(nBas,nBas),          & 
+           FxHF(nBas,nBas),Fc(nBas,nBas),err(nBas,nBas),      &
            Pw(nBas,nBas),rhow(nGrid),drhow(ncart,nGrid),      &
            err_diis(nBasSq,max_diis),F_diis(nBasSq,max_diis), &
            P(nBas,nBas,nEns),rho(nGrid,nEns),drho(ncart,nGrid,nEns))
 
 ! Guess coefficients and eigenvalues
 
-  if(guess_type == 1) then
-
-      F(:,:) = Hc(:,:)
-
-  else if(guess_type == 2) then
-
-    call random_number(F(:,:))
-
+  if(.not. restart) then 
+    if(guess_type == 1) then
+ 
+        F(:,:) = Hc(:,:)
+ 
+    else if(guess_type == 2) then
+ 
+      call random_number(F(:,:))
+ 
+    end if
   end if
 
 ! Initialization
