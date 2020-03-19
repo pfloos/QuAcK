@@ -19,6 +19,7 @@ subroutine G0F2(linearize,nBas,nC,nO,nV,nR,V,e0)
 ! Local variables
 
   double precision              :: eps
+  double precision              :: VV
   double precision,allocatable  :: eGF2(:)
   double precision,allocatable  :: Bpp(:,:)
   double precision,allocatable  :: Z(:)
@@ -41,16 +42,17 @@ subroutine G0F2(linearize,nBas,nC,nO,nV,nR,V,e0)
   ! Frequency-dependent second-order contribution
 
   Bpp(:,:) = 0d0
+  Z(:)     = 0d0
 
   do p=nC+1,nBas-nR
     do i=nC+1,nO
       do j=nC+1,nO
         do a=nO+1,nBas-nR
 
-          eps = eGF2(p) + e0(a) - e0(i) - e0(j)
-
-          Bpp(p,1) = Bpp(p,1) &
-                   + (2d0*V(p,a,i,j) - V(p,a,j,i))*V(p,a,i,j)/eps
+          eps = e0(p) + e0(a) - e0(i) - e0(j)
+          VV  = (2d0*V(p,a,i,j) - V(p,a,j,i))*V(p,a,i,j)
+          Bpp(p,1) = Bpp(p,1) + VV/eps
+          Z(p)     = Z(p)     + VV/eps**2
 
         end do
       end do
@@ -62,49 +64,17 @@ subroutine G0F2(linearize,nBas,nC,nO,nV,nR,V,e0)
       do a=nO+1,nBas-nR
         do b=nO+1,nBas-nR
 
-          eps = eGF2(p) + e0(i) - e0(a) - e0(b)
-
-          Bpp(p,2) = Bpp(p,2) &
-                   + (2d0*V(p,i,a,b) - V(p,i,b,a))*V(p,i,a,b)/eps
-
-        end do
-      end do
-    end do
-  end do
-
-  ! Compute the renormalization factor
-
-  Z(:) = 0d0
-
-  do p=nC+1,nBas-nR
-    do i=nC+1,nO
-      do j=nC+1,nO
-        do a=nO+1,nBas-nR
-
-          eps = eGF2(p) + e0(a) - e0(i) - e0(j)
-
-          Z(p) = Z(p) - (2d0*V(p,a,i,j) - V(p,a,j,i))*V(p,a,i,j)/eps**2
+          eps = e0(p) + e0(i) - e0(a) - e0(b)
+          VV  = (2d0*V(p,i,a,b) - V(p,i,b,a))*V(p,i,a,b)
+          Bpp(p,2) = Bpp(p,2) + VV/eps
+          Z(p)     = Z(p)     + VV/eps**2
 
         end do
       end do
     end do
   end do
 
-  do p=nC+1,nBas-nR
-    do i=nC+1,nO
-      do a=nO+1,nBas-nR
-        do b=nO+1,nBas-nR
-
-          eps = eGF2(p) + e0(i) - e0(a) - e0(b)
-
-          Z(p) = Z(p) - (2d0*V(p,i,a,b) - V(p,i,b,a))*V(p,i,a,b)/eps**2
-
-        end do
-      end do
-    end do
-  end do
-
-  Z(:) = 1d0/(1d0 - Z(:))
+  Z(:) = 1d0/(1d0 + Z(:))
 
   if(linearize) then
 
@@ -117,6 +87,6 @@ subroutine G0F2(linearize,nBas,nC,nO,nV,nR,V,e0)
   end if
   ! Print results
 
-  call print_G0F2(nBas,nO,e0,eGF2)
+  call print_G0F2(nBas,nO,e0,eGF2,Z)
 
 end subroutine G0F2
