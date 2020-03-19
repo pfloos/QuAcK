@@ -1,12 +1,12 @@
-subroutine read_methods(doRHF,doUHF,doMOM,         & 
-                        doMP2,doMP3,doMP2F12,      & 
-                        doCCD,doCCSD,doCCSDT,      & 
-                        do_ring_CCD,do_ladder_CCD, &
-                        doCIS,doRPA,doRPAx,        & 
-                        doppRPA,doADC,             & 
-                        doGF2,doGF3,               & 
-                        doG0W0,doevGW,doqsGW,      & 
-                        doG0T0,doevGT,doqsGT,      & 
+subroutine read_methods(doRHF,doUHF,doMOM,             & 
+                        doMP2,doMP3,doMP2F12,          & 
+                        doCCD,doCCSD,doCCSDT,          & 
+                        do_ring_CCD,do_ladder_CCD,     &
+                        doCIS,doRPA,doRPAx,            & 
+                        doppRPA,doADC,                 & 
+                        doG0F2,doevGF2,doG0F3,doevGF3, & 
+                        doG0W0,doevGW,doqsGW,          & 
+                        doG0T0,doevGT,doqsGT,          & 
                         doMCMP2)
 
 ! Read desired methods 
@@ -20,7 +20,7 @@ subroutine read_methods(doRHF,doUHF,doMOM,         &
   logical,intent(out)           :: doCCD,doCCSD,doCCSDT
   logical,intent(out)           :: do_ring_CCD,do_ladder_CCD
   logical,intent(out)           :: doCIS,doRPA,doRPAx,doppRPA,doADC
-  logical,intent(out)           :: doGF2,doGF3  
+  logical,intent(out)           :: doG0F2,doevGF2,doG0F3,doevGF3  
   logical,intent(out)           :: doG0W0,doevGW,doqsGW
   logical,intent(out)           :: doG0T0,doevGT,doqsGT
   logical,intent(out)           :: doMCMP2
@@ -56,8 +56,10 @@ subroutine read_methods(doRHF,doUHF,doMOM,         &
   doppRPA = .false.
   doADC   = .false.
 
-  doGF2 = .false.
-  doGF3 = .false.
+  doG0F2  = .false.
+  doevGF2 = .false.
+  doG0F3  = .false.
+  doevGF3 = .false.
 
   doG0W0 = .false.
   doevGT = .false.
@@ -108,9 +110,11 @@ subroutine read_methods(doRHF,doUHF,doMOM,         &
 ! Read Green function methods
 
   read(1,*) 
-  read(1,*) answer1,answer2
-  if(answer1 == 'T') doGF2 = .true.
-  if(answer2 == 'T') doGF3 = .true.
+  read(1,*) answer1,answer2,answer3,answer4
+  if(answer1 == 'T') doG0F2  = .true.
+  if(answer2 == 'T') doevGF2 = .true.
+  if(answer3 == 'T') doG0F3  = .true.
+  if(answer4 == 'T') doevGF3 = .true.
 
 ! Read GW methods
 

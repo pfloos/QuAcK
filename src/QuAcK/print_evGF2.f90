@@ -1,4 +1,4 @@
-subroutine print_GF2(nBas,nO,nSCF,Conv,eHF,eGF2)
+subroutine print_evGF2(nBas,nO,nSCF,Conv,eHF,eGF2)
 
 ! Print one-electron energies and other stuff for GF2
 
@@ -20,10 +20,10 @@ subroutine print_GF2(nBas,nO,nSCF,Conv,eHF,eGF2)
 ! Dump results
 
   write(*,*)'-------------------------------------------'
-  write(*,*)' Frequency-dependent diagonal GF2 calculation'
+  write(*,*)' Frequency-dependent evGF2 calculation'
   write(*,*)'-------------------------------------------'
   write(*,'(1X,A1,1X,A3,1X,A1,1X,A15,1X,A1,1X,A15,1X,A1,1X)') &
-            '|','#','|','e_HF (eV)','|','e_GF2 (eV)','|'
+            '|','#','|','e_HF (eV)','|','e_evGF2 (eV)','|'
   write(*,*)'-------------------------------------------'
 
   do x=1,nBas
@@ -35,10 +35,10 @@ subroutine print_GF2(nBas,nO,nSCF,Conv,eHF,eGF2)
   write(*,'(2X,A10,I3)')   'Iteration ',nSCF
   write(*,'(2X,A14,F15.5)')'Convergence = ',Conv
   write(*,*)'-------------------------------------------'
-  write(*,'(2X,A27,F15.6)') 'GF2  HOMO      energy (eV):',eGF2(HOMO)*HaToeV
-  write(*,'(2X,A27,F15.6)') 'GF2  LUMO      energy (eV):',eGF2(LUMO)*HaToeV
-  write(*,'(2X,A27,F15.6)') 'GF2  HOMO-LUMO gap    (eV):',Gap*HaToeV
+  write(*,'(2X,A27,F15.6)') 'evGF2  HOMO      energy (eV):',eGF2(HOMO)*HaToeV
+  write(*,'(2X,A27,F15.6)') 'evGF2  LUMO      energy (eV):',eGF2(LUMO)*HaToeV
+  write(*,'(2X,A27,F15.6)') 'evGF2  HOMO-LUMO gap    (eV):',Gap*HaToeV
   write(*,*)'-------------------------------------------'
   write(*,*)
 
-end subroutine print_GF2
+end subroutine print_evGF2

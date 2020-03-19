@@ -77,6 +77,8 @@ subroutine G0T0(eta,nBas,nC,nO,nV,nR,ENuc,ERHF,ERI,eHF)
                           Omega2s(:),X2s(:,:),Y2s(:,:),   & 
                           EcRPA(ispin))
 
+  EcRPA(ispin) = 1d0*EcRPA(ispin)
+
   call print_excitation('pp-RPA (N+2)',ispin,nVVs,Omega1s(:))
   call print_excitation('pp-RPA (N-2)',ispin,nOOs,Omega2s(:))
 
@@ -99,6 +101,8 @@ subroutine G0T0(eta,nBas,nC,nO,nV,nR,ENuc,ERHF,ERI,eHF)
                           Omega1t(:),X1t(:,:),Y1t(:,:),   & 
                           Omega2t(:),X2t(:,:),Y2t(:,:),   & 
                           EcRPA(ispin))
+
+  EcRPA(ispin) = 3d0*EcRPA(ispin)
 
   call print_excitation('pp-RPA (N+2)',ispin,nVVt,Omega1t(:))
   call print_excitation('pp-RPA (N-2)',ispin,nOOt,Omega2t(:))

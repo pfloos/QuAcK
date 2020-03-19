@@ -39,12 +39,8 @@ subroutine renormalization_factor_Tmatrix_so(eta,nBas,nC,nO,nV,nR,nOO,nVV,e,Omeg
   do p=nC+1,nBas-nR
     do i=nC+1,nO
       do cd=1,nVV
-!     do c=nO+1,nBas-nR
-!       do d=c+1,nBas-nR
-!         cd = cd + 1
-          eps = e(p) + e(i) - Omega1(cd)
-          Z(p) = Z(p) - rho1(p,i,cd)**2/eps**2
-!       enddo
+        eps  = e(p) + e(i) - Omega1(cd)
+        Z(p) = Z(p) + (rho1(p,i,cd)/eps)**2
       enddo
     enddo
   enddo
@@ -54,18 +50,14 @@ subroutine renormalization_factor_Tmatrix_so(eta,nBas,nC,nO,nV,nR,nOO,nVV,e,Omeg
   do p=nC+1,nBas-nR
     do a=1,nV-nR
       do kl=1,nOO
-!     do k=nC+1,nO
-!       do l=k+1,nO
-!         kl = kl + 1
-          eps = e(p) + e(nO+a) - Omega2(kl)
-          Z(p) = Z(p) - rho2(p,a,kl)**2/eps**2
-!       enddo
+        eps  = e(p) + e(nO+a) - Omega2(kl)
+        Z(p) = Z(p) + (rho2(p,a,kl)/eps)**2
       enddo
     enddo
   enddo
 
 ! Compute renormalization factor from derivative of SigT
  
-  Z(:) = 1d0/(1d0 - Z(:))
+  Z(:) = 1d0/(1d0 + Z(:))
 
 end subroutine renormalization_factor_Tmatrix_so

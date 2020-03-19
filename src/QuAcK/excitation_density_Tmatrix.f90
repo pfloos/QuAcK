@@ -43,7 +43,7 @@ subroutine excitation_density_Tmatrix(ispin,nBas,nC,nO,nV,nR,nOO,nVV,ERI,X1,Y1,r
 
           cd = 0
           do c=nO+1,nBas-nR
-           do d=nO+1,c
+           do d=c,nBas-nR
               cd = cd + 1
               rho1(p,i,ab) = rho1(p,i,ab) & 
 !                          + ERI(p,i,c,d)*X1(cd,ab) 
@@ -54,7 +54,7 @@ subroutine excitation_density_Tmatrix(ispin,nBas,nC,nO,nV,nR,nOO,nVV,ERI,X1,Y1,r
 
           kl = 0
           do k=nC+1,nO
-           do l=nC+1,k
+           do l=k,nO
               kl = kl + 1
               rho1(p,i,ab) = rho1(p,i,ab) & 
 !                          + ERI(p,i,k,l)*Y1(kl,ab)
@@ -71,7 +71,7 @@ subroutine excitation_density_Tmatrix(ispin,nBas,nC,nO,nV,nR,nOO,nVV,ERI,X1,Y1,r
 
           cd = 0
           do c=nO+1,nBas-nR
-           do d=nO+1,c
+           do d=c,nBas-nR
               cd = cd + 1
               rho2(p,a,ij) = rho2(p,a,ij) & 
 !                          + ERI(p,nO+a,c,d)*X2(cd,ij)
@@ -83,7 +83,7 @@ subroutine excitation_density_Tmatrix(ispin,nBas,nC,nO,nV,nR,nOO,nVV,ERI,X1,Y1,r
 
           kl = 0
           do k=nC+1,nO
-           do l=nC+1,k
+           do l=k,nO
               kl = kl + 1
               rho2(p,a,ij) = rho2(p,a,ij) & 
 !                          + ERI(p,nO+a,k,l)*Y2(kl,ij)  
@@ -104,65 +104,6 @@ subroutine excitation_density_Tmatrix(ispin,nBas,nC,nO,nV,nR,nOO,nVV,ERI,X1,Y1,r
 !----------------------------------------------
 
   if(ispin == 2) then
-
-    do p=nC+1,nBas-nR
-
-      do i=nC+1,nO
-        do ab=1,nVV
-
-          cd = 0
-          do c=nO+1,nBas-nR
-           do d=nO+1,c-1
-              cd = cd + 1
-              rho1(p,i,ab) = rho1(p,i,ab) & 
-                           + (ERI(p,i,c,d) - ERI(p,i,d,c))*X1(cd,ab)
-            end do
-          end do
-
-          kl = 0
-          do k=nC+1,nO
-           do l=nC+1,k-1
-              kl = kl + 1
-              rho1(p,i,ab) = rho1(p,i,ab) & 
-                           + (ERI(p,i,k,l) - ERI(p,i,l,k))*Y1(kl,ab)
-            end do
-          end do
-
-        end do
-      end do
-
-      do a=1,nV-nR
-        do ij=1,nOO
-
-          cd = 0
-          do c=nO+1,nBas-nR
-           do d=nO+1,c-1
-              cd = cd + 1
-              rho2(p,a,ij) = rho2(p,a,ij) & 
-                           + (ERI(p,nO+a,c,d) - ERI(p,nO+a,d,c))*X2(cd,ij)
-            end do
-          end do
-
-          kl = 0
-          do k=nC+1,nO
-           do l=nC+1,k-1
-              kl = kl + 1
-              rho2(p,a,ij) = rho2(p,a,ij) & 
-                           + (ERI(p,nO+a,k,l) - ERI(p,nO+a,l,k))*Y2(kl,ij)
-            end do
-          end do
-
-        end do
-      end do
-    end do
-
-  end if
-
-!----------------------------------------------
-! Spinorbital basis
-!----------------------------------------------
-
-  if(ispin == 3) then
 
     do p=nC+1,nBas-nR
 
@@ -195,7 +136,7 @@ subroutine excitation_density_Tmatrix(ispin,nBas,nC,nO,nV,nR,nOO,nVV,ERI,X1,Y1,r
 
           cd = 0
           do c=nO+1,nBas-nR
-            do d=c+1,nBas-nR
+           do d=c+1,nBas-nR
               cd = cd + 1
               rho2(p,a,ij) = rho2(p,a,ij) & 
                            + (ERI(p,nO+a,c,d) - ERI(p,nO+a,d,c))*X2(cd,ij)
@@ -208,6 +149,65 @@ subroutine excitation_density_Tmatrix(ispin,nBas,nC,nO,nV,nR,nOO,nVV,ERI,X1,Y1,r
               kl = kl + 1
               rho2(p,a,ij) = rho2(p,a,ij) & 
                            + (ERI(p,nO+a,k,l) - ERI(p,nO+a,l,k))*Y2(kl,ij)
+            end do
+          end do
+
+        end do
+      end do
+    end do
+
+  end if
+
+!----------------------------------------------
+! Spinorbital basis
+!----------------------------------------------
+
+  if(ispin == 3) then
+
+    do p=nC+1,nBas-nR
+
+      do i=nC+1,nO
+        do ab=1,nVV
+
+          cd = 0
+          do c=nO+1,nBas-nR
+           do d=c+1,nBas-nR
+              cd = cd + 1
+              rho1(p,i,ab)  = rho1(p,i,ab) & 
+                            + (ERI(p,i,c,d) - ERI(p,i,d,c))*X1(cd,ab)
+            end do
+          end do
+
+          kl = 0
+          do k=nC+1,nO
+           do l=k+1,nO
+              kl = kl + 1
+              rho1(p,i,ab)  = rho1(p,i,ab) & 
+                            + (ERI(p,i,k,l) - ERI(p,i,l,k))*Y1(kl,ab)
+            end do
+          end do
+
+        end do
+      end do
+
+      do a=1,nV-nR
+        do ij=1,nOO
+
+          cd = 0
+          do c=nO+1,nBas-nR
+            do d=c+1,nBas-nR
+              cd = cd + 1
+              rho2(p,a,ij)  = rho2(p,a,ij) & 
+                            + (ERI(p,nO+a,c,d) - ERI(p,nO+a,d,c))*X2(cd,ij)
+            end do
+          end do
+
+          kl = 0
+          do k=nC+1,nO
+           do l=k+1,nO
+              kl = kl + 1
+              rho2(p,a,ij)  = rho2(p,a,ij) & 
+                            + (ERI(p,nO+a,k,l) - ERI(p,nO+a,l,k))*Y2(kl,ij)
             end do
           end do
 

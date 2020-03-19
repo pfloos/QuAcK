@@ -1,6 +1,6 @@
-subroutine GF2_diag(maxSCF,thresh,max_diis,linearize,nBas,nC,nO,nV,nR,V,e0)
+subroutine evGF2(maxSCF,thresh,max_diis,linearize,nBas,nC,nO,nV,nR,V,e0)
 
-! Perform second-order Green function calculation in diagonal approximation
+! Perform eigenvalue self-consistent second-order Green function calculation
 
   implicit none
   include 'parameters.h'
@@ -145,7 +145,7 @@ subroutine GF2_diag(maxSCF,thresh,max_diis,linearize,nBas,nC,nO,nV,nR,V,e0)
 
     ! Print results
 
-    call print_GF2(nBas,nO,nSCF,Conv,e0,eGF2)
+    call print_evGF2(nBas,nO,nSCF,Conv,e0,eGF2)
 
     ! DIIS extrapolation
 
@@ -177,4 +177,4 @@ subroutine GF2_diag(maxSCF,thresh,max_diis,linearize,nBas,nC,nO,nV,nR,V,e0)
 
   end if
 
-end subroutine GF2_diag
+end subroutine evGF2

@@ -1,4 +1,4 @@
- subroutine GF3_diag(maxSCF,thresh,max_diis,renormalization,nBas,nC,nO,nV,nR,V,e0)
+ subroutine evGF3(maxSCF,thresh,max_diis,renormalization,nBas,nC,nO,nV,nR,V,e0)
 
 ! Perform third-order Green function calculation in diagonal approximation
 
@@ -455,7 +455,7 @@
 
     ! Print results
 
-    call print_GF3(nBas,nO,nSCF,Conv,e0,Z,eGF3)
+    call print_evGF3(nBas,nO,nSCF,Conv,e0,Z,eGF3)
 
     ! DIIS extrapolation
 
@@ -489,4 +489,4 @@
 
   endif
 
-end subroutine GF3_diag
+end subroutine evGF3

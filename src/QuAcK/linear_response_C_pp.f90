@@ -32,11 +32,11 @@ subroutine linear_response_C_pp(ispin,nBas,nC,nO,nV,nR,nOO,nVV,e,ERI,C_pp)
 
     ab = 0
     do a=nO+1,nBas-nR
-     do b=nO+1,a
+     do b=a,nBas-nR
         ab = ab + 1
         cd = 0
         do c=nO+1,nBas-nR
-         do d=nO+1,c
+         do d=c,nBas-nR
             cd = cd + 1
  
             C_pp(ab,cd) = + (e(a) + e(b) - eF)*Kronecker_delta(a,c)*Kronecker_delta(b,d) &
@@ -55,11 +55,11 @@ subroutine linear_response_C_pp(ispin,nBas,nC,nO,nV,nR,nOO,nVV,e,ERI,C_pp)
 
     ab = 0
     do a=nO+1,nBas-nR
-     do b=nO+1,a-1
+     do b=a+1,nBas-nR
         ab = ab + 1
         cd = 0
         do c=nO+1,nBas-nR
-         do d=nO+1,c-1
+         do d=c+1,nBas-nR
             cd = cd + 1
  
             C_pp(ab,cd) = + (e(a) + e(b) - eF)*Kronecker_delta(a,c)*Kronecker_delta(b,d) & 

@@ -26,11 +26,11 @@ subroutine linear_response_B_pp(ispin,nBas,nC,nO,nV,nR,nOO,nVV,e,ERI,B_pp)
 
     ab = 0
     do a=nO+1,nBas-nR
-     do b=nO+1,a
+     do b=a,nBas-nR
         ab = ab + 1
         ij = 0
         do i=nC+1,nO
-         do j=nC+1,i
+         do j=i,nO
             ij = ij + 1
  
             B_pp(ab,ij) = (ERI(a,b,i,j) + ERI(a,b,j,i))/sqrt((1d0 + Kronecker_delta(a,b))*(1d0 + Kronecker_delta(i,j)))
@@ -48,11 +48,11 @@ subroutine linear_response_B_pp(ispin,nBas,nC,nO,nV,nR,nOO,nVV,e,ERI,B_pp)
 
     ab = 0
     do a=nO+1,nBas-nR
-     do b=nO+1,a-1
+     do b=a+1,nBas-nR
         ab = ab + 1
         ij = 0
         do i=nC+1,nO
-         do j=nC+1,i-1
+         do j=i+1,nO
             ij = ij + 1
  
             B_pp(ab,ij) = ERI(a,b,i,j) - ERI(a,b,j,i)

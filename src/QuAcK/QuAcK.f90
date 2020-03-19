@@ -10,7 +10,7 @@ program QuAcK
   logical                       :: do_ring_CCD,do_ladder_CCD
   logical                       :: doCIS,doRPA,doRPAx
   logical                       :: doppRPA,doADC
-  logical                       :: doGF2,doGF3
+  logical                       :: doG0F2,doevGF2,doG0F3,doevGF3
   logical                       :: doG0W0,doevGW,doqsGW
   logical                       :: doG0T0,doevGT,doqsGT
   logical                       :: doMCMP2,doMinMCMP2
@@ -114,15 +114,15 @@ program QuAcK
 
 ! Which calculations do you want to do?
 
-  call read_methods(doRHF,doUHF,doMOM,         &
-                    doMP2,doMP3,doMP2F12,      &
-                    doCCD,doCCSD,doCCSDT,      &
-                    do_ring_CCD,do_ladder_CCD, &
-                    doCIS,doRPA,doRPAx,        & 
-                    doppRPA,doADC,             &
-                    doGF2,doGF3,               &
-                    doG0W0,doevGW,doqsGW,      &
-                    doG0T0,doevGT,doqsGT,      &
+  call read_methods(doRHF,doUHF,doMOM,             &
+                    doMP2,doMP3,doMP2F12,          &
+                    doCCD,doCCSD,doCCSDT,          &
+                    do_ring_CCD,do_ladder_CCD,     &
+                    doCIS,doRPA,doRPAx,            & 
+                    doppRPA,doADC,                 &
+                    doG0F2,doevGF2,doG0F3,doevGF3, &
+                    doG0W0,doevGW,doqsGW,          &
+                    doG0T0,doevGT,doqsGT,          &
                     doMCMP2)
 
 ! Read options for methods
@@ -507,13 +507,13 @@ program QuAcK
   end if
 
 !------------------------------------------------------------------------
-! Compute GF2 electronic binding energies
+! Compute G0F2 electronic binding energies
 !------------------------------------------------------------------------
 
-  if(doGF2) then
+  if(doG0F2) then
 
     call cpu_time(start_GF2)
-    call GF2_diag(maxSCF_GF,thresh_GF,n_diis_GF,linearize,nBas,nC(1),nO(1),nV(1),nR(1),ERI_MO_basis,eHF)
+    call G0F2(maxSCF_GF,thresh_GF,n_diis_GF,linearize,nBas,nC(1),nO(1),nV(1),nR(1),ERI_MO_basis,eHF)
     call cpu_time(end_GF2)
 
     t_GF2 = end_GF2 - start_GF2
@@ -523,13 +523,45 @@ program QuAcK
   end if
 
 !------------------------------------------------------------------------
-! Compute GF3 electronic binding energies
+! Compute evGF2 electronic binding energies
 !------------------------------------------------------------------------
 
-  if(doGF3) then
+  if(doevGF2) then
+
+    call cpu_time(start_GF2)
+    call evGF2(maxSCF_GF,thresh_GF,n_diis_GF,linearize,nBas,nC(1),nO(1),nV(1),nR(1),ERI_MO_basis,eHF)
+    call cpu_time(end_GF2)
+
+    t_GF2 = end_GF2 - start_GF2
+    write(*,'(A65,1X,F9.3,A8)') 'Total CPU time for GF2 = ',t_GF2,' seconds'
+    write(*,*)
+
+  end if
+
+!------------------------------------------------------------------------
+! Compute G0F3 electronic binding energies
+!------------------------------------------------------------------------
+
+  if(doG0F3) then
 
     call cpu_time(start_GF3)
-    call GF3_diag(maxSCF_GF,thresh_GF,n_diis_GF,renormalization,nBas,nC(1),nO(1),nV(1),nR(1),ERI_MO_basis,eHF)
+    call G0F3(renormalization,nBas,nC(1),nO(1),nV(1),nR(1),ERI_MO_basis,eHF)
+    call cpu_time(end_GF3)
+
+    t_GF3 = end_GF3 - start_GF3
+    write(*,'(A65,1X,F9.3,A8)') 'Total CPU time for GF3 = ',t_GF3,' seconds'
+    write(*,*)
+
+  end if
+
+!------------------------------------------------------------------------
+! Compute evGF3 electronic binding energies
+!------------------------------------------------------------------------
+
+  if(doevGF3) then
+
+    call cpu_time(start_GF3)
+    call evGF3(maxSCF_GF,thresh_GF,n_diis_GF,renormalization,nBas,nC(1),nO(1),nV(1),nR(1),ERI_MO_basis,eHF)
     call cpu_time(end_GF3)
 
     t_GF3 = end_GF3 - start_GF3
