@@ -1,9 +1,9 @@
 subroutine read_options(maxSCF_HF,thresh_HF,DIIS_HF,n_diis_HF,guess_type,ortho_type,   &
                         maxSCF_CC,thresh_CC,DIIS_CC,n_diis_CC,                         &
                         singlet_manifold,triplet_manifold,                             &
-                        maxSCF_GF,thresh_GF,DIIS_GF,n_diis_GF,renormalization,         &
+                        maxSCF_GF,thresh_GF,DIIS_GF,n_diis_GF,linGF,renormGF,          &
                         maxSCF_GW,thresh_GW,DIIS_GW,n_diis_GW,                         &
-                        COHSEX,SOSEX,BSE,TDA,G0W,GW0,linearize,eta,                    &
+                        COHSEX,SOSEX,BSE,TDA,G0W,GW0,linGW,eta,                        &
                         doACFDT,exchange_kernel,doXBS,                                 &
                         nMC,nEq,nWalk,dt,nPrint,iSeed,doDrift)
 
@@ -32,7 +32,8 @@ subroutine read_options(maxSCF_HF,thresh_HF,DIIS_HF,n_diis_HF,guess_type,ortho_t
   double precision,intent(out)  :: thresh_GF
   logical,intent(out)           :: DIIS_GF
   integer,intent(out)           :: n_diis_GF
-  integer,intent(out)           :: renormalization
+  logical,intent(out)           :: linGF
+  integer,intent(out)           :: renormGF
 
   integer,intent(out)           :: maxSCF_GW
   double precision,intent(out)  :: thresh_GW
@@ -44,7 +45,7 @@ subroutine read_options(maxSCF_HF,thresh_HF,DIIS_HF,n_diis_HF,guess_type,ortho_t
   logical,intent(out)           :: TDA
   logical,intent(out)           :: G0W
   logical,intent(out)           :: GW0
-  logical,intent(out)           :: linearize
+  logical,intent(out)           :: linGW
   double precision,intent(out)  :: eta
 
   logical,intent(out)           :: doACFDT
@@ -119,12 +120,14 @@ subroutine read_options(maxSCF_HF,thresh_HF,DIIS_HF,n_diis_HF,guess_type,ortho_t
   thresh_GF = 1d-5
   DIIS_GF   = .false.
   n_diis_GF = 5
-  renormalization = 0
+  linGF = .false.
+  renormGF = 0
 
   read(1,*) 
-  read(1,*) maxSCF_GF,thresh_GW,answer1,n_diis_GF,renormalization
+  read(1,*) maxSCF_GF,thresh_GW,answer1,n_diis_GF,answer2,renormGF
 
   if(answer1 == 'T') DIIS_GF = .true.
+  if(answer2 == 'T') linGF   = .true.
   if(.not.DIIS_GF) n_diis_GF = 1
 
 ! Read GW options
@@ -139,7 +142,7 @@ subroutine read_options(maxSCF_HF,thresh_HF,DIIS_HF,n_diis_HF,guess_type,ortho_t
   TDA       = .false.
   G0W       = .false.
   GW0       = .false.
-  linearize = .false.
+  linGW     = .false.
   eta       = 0d0
 
   read(1,*) 
@@ -153,7 +156,7 @@ subroutine read_options(maxSCF_HF,thresh_HF,DIIS_HF,n_diis_HF,guess_type,ortho_t
   if(answer5 == 'T') TDA = .true.
   if(answer6 == 'T') G0W = .true.
   if(answer7 == 'T') GW0 = .true.
-  if(answer8 == 'T') linearize = .true.
+  if(answer8 == 'T') linGW = .true.
   if(.not.DIIS_GW) n_diis_GW = 1
 
 ! Options for adiabatic connection

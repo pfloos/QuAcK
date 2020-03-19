@@ -81,13 +81,13 @@ program QuAcK
   logical                       :: singlet_manifold
   logical                       :: triplet_manifold
 
-  integer                       :: maxSCF_GF,n_diis_GF,renormalization
+  integer                       :: maxSCF_GF,n_diis_GF,renormGF
   double precision              :: thresh_GF
-  logical                       :: DIIS_GF
+  logical                       :: DIIS_GF,linGF
 
   integer                       :: maxSCF_GW,n_diis_GW
   double precision              :: thresh_GW
-  logical                       :: DIIS_GW,COHSEX,SOSEX,BSE,TDA,G0W,GW0,linearize
+  logical                       :: DIIS_GW,COHSEX,SOSEX,BSE,TDA,G0W,GW0,linGW
   double precision              :: eta
 
   integer                       :: nMC,nEq,nWalk,nPrint,iSeed
@@ -130,9 +130,9 @@ program QuAcK
   call read_options(maxSCF_HF,thresh_HF,DIIS_HF,n_diis_HF,guess_type,ortho_type, &
                     maxSCF_CC,thresh_CC,DIIS_CC,n_diis_CC,                       &
                     singlet_manifold,triplet_manifold,                           &
-                    maxSCF_GF,thresh_GF,DIIS_GF,n_diis_GF,renormalization,       &
+                    maxSCF_GF,thresh_GF,DIIS_GF,n_diis_GF,linGF,renormGF,        &
                     maxSCF_GW,thresh_GW,DIIS_GW,n_diis_GW,                       & 
-                    COHSEX,SOSEX,BSE,TDA,G0W,GW0,linearize,eta,                  &  
+                    COHSEX,SOSEX,BSE,TDA,G0W,GW0,linGW,eta,                      &  
                     doACFDT,exchange_kernel,doXBS,                               &
                     nMC,nEq,nWalk,dt,nPrint,iSeed,doDrift)
 
@@ -513,7 +513,7 @@ program QuAcK
   if(doG0F2) then
 
     call cpu_time(start_GF2)
-    call G0F2(maxSCF_GF,thresh_GF,n_diis_GF,linearize,nBas,nC(1),nO(1),nV(1),nR(1),ERI_MO_basis,eHF)
+    call G0F2(linGF,nBas,nC(1),nO(1),nV(1),nR(1),ERI_MO_basis,eHF)
     call cpu_time(end_GF2)
 
     t_GF2 = end_GF2 - start_GF2
@@ -529,7 +529,7 @@ program QuAcK
   if(doevGF2) then
 
     call cpu_time(start_GF2)
-    call evGF2(maxSCF_GF,thresh_GF,n_diis_GF,linearize,nBas,nC(1),nO(1),nV(1),nR(1),ERI_MO_basis,eHF)
+    call evGF2(maxSCF_GF,thresh_GF,n_diis_GF,linGF,nBas,nC(1),nO(1),nV(1),nR(1),ERI_MO_basis,eHF)
     call cpu_time(end_GF2)
 
     t_GF2 = end_GF2 - start_GF2
@@ -545,7 +545,7 @@ program QuAcK
   if(doG0F3) then
 
     call cpu_time(start_GF3)
-    call G0F3(renormalization,nBas,nC(1),nO(1),nV(1),nR(1),ERI_MO_basis,eHF)
+    call G0F3(renormGF,nBas,nC(1),nO(1),nV(1),nR(1),ERI_MO_basis,eHF)
     call cpu_time(end_GF3)
 
     t_GF3 = end_GF3 - start_GF3
@@ -561,7 +561,7 @@ program QuAcK
   if(doevGF3) then
 
     call cpu_time(start_GF3)
-    call evGF3(maxSCF_GF,thresh_GF,n_diis_GF,renormalization,nBas,nC(1),nO(1),nV(1),nR(1),ERI_MO_basis,eHF)
+    call evGF3(maxSCF_GF,thresh_GF,n_diis_GF,renormGF,nBas,nC(1),nO(1),nV(1),nR(1),ERI_MO_basis,eHF)
     call cpu_time(end_GF3)
 
     t_GF3 = end_GF3 - start_GF3
@@ -580,7 +580,7 @@ program QuAcK
     
     call cpu_time(start_G0W0)
     call G0W0(doACFDT,exchange_kernel,doXBS,COHSEX,SOSEX,BSE,TDA, & 
-              singlet_manifold,triplet_manifold,linearize,eta, & 
+              singlet_manifold,triplet_manifold,linGW,eta, & 
               nBas,nC(1),nO(1),nV(1),nR(1),nS(1),ENuc,ERHF,Hc,H,ERI_MO_basis,PHF,cHF,eHF,eG0W0)
     call cpu_time(end_G0W0)
   
@@ -598,7 +598,7 @@ program QuAcK
 
     call cpu_time(start_evGW)
     call evGW(maxSCF_GW,thresh_GW,n_diis_GW,doACFDT,exchange_kernel,doXBS,COHSEX,SOSEX,BSE,TDA,G0W,GW0, &
-              singlet_manifold,triplet_manifold,linearize,eta,                    &
+              singlet_manifold,triplet_manifold,linGW,eta,                    &
               nBas,nC(1),nO(1),nV(1),nR(1),nS(1),ENuc,ERHF,Hc,H,ERI_MO_basis,PHF,cHF,eHF,eG0W0)
     call cpu_time(end_evGW)
 
