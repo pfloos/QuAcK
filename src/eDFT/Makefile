@@ -14,8 +14,8 @@ ifeq ($(PROFIL),1)
   FC += -p -fno-inline
 endif
 
-LIBS = ../../lib/*.a
-LIBS += -lblas -llapack
+LIBS = -lstdc++ ../../lib/*.a
+LIBS += -lblas -llapack 
 
 SRCF90 = $(wildcard *.f90)
 
@@ -23,14 +23,17 @@ SRC = $(wildcard *.F)
 
 OBJ = $(patsubst %.f90,$(ODIR)/%.o,$(SRCF90)) $(patsubst %.F,$(ODIR)/%.o,$(SRC))
 
-$(ODIR)/%.o: %.f90 
-	$(FC) -c -o $@ $< $(FFLAGS) 
-
-$(ODIR)/%.o: %.F
-	$(FC) -c -o $@ $< $(FFLAGS) 
-
 $(BDIR)/eDFT: $(OBJ)
 	$(FC) -o $@ $^ $(FFLAGS) $(LIBS)
+
+numgrid.mod: numgrid.f90 
+	$(FC) -c -o $@ $< $(FFLAGS) 
+
+$(ODIR)/%.o: %.f90 numgrid.mod
+	$(FC) -c -o $@ $< $(FFLAGS) 
+
+$(ODIR)/%.o: %.F numgrid.mod
+	$(FC) -c -o $@ $< $(FFLAGS) 
 
 debug: 
 	DEBUG=1 make $(BDIR)/eDFT
@@ -39,4 +42,4 @@ profil:
 	PROFIL=1 make $(BDIR)/eDFT
 
 clean:
-	rm -f $(ODIR)/*.o $(BDIR)/eDFT $(BDIR)/debug
+	rm -f $(ODIR)/*.o $(BDIR)/eDFT $(BDIR)/debug numgrid.mod

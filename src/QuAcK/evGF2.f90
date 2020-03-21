@@ -28,7 +28,7 @@ subroutine evGF2(maxSCF,thresh,max_diis,linearize,nBas,nC,nO,nV,nR,V,e0)
   double precision              :: rcond
   double precision,allocatable  :: eGF2(:)
   double precision,allocatable  :: eOld(:)
-  double precision,allocatable  :: Bpp(:,:)
+  double precision,allocatable  :: Sig(:)
   double precision,allocatable  :: Z(:)
   double precision,allocatable  :: error_diis(:,:)
   double precision,allocatable  :: e_diis(:,:)
@@ -45,7 +45,7 @@ subroutine evGF2(maxSCF,thresh,max_diis,linearize,nBas,nC,nO,nV,nR,V,e0)
 
 ! Memory allocation
 
-  allocate(Bpp(nBas,2),Z(nBas),eGF2(nBas),eOld(nBas),error_diis(nBas,max_diis),e_diis(nBas,max_diis))
+  allocate(Sig(nBas),Z(nBas),eGF2(nBas),eOld(nBas),error_diis(nBas,max_diis),e_diis(nBas,max_diis))
 
 ! Initialization
 
@@ -65,7 +65,7 @@ subroutine evGF2(maxSCF,thresh,max_diis,linearize,nBas,nC,nO,nV,nR,V,e0)
 
     ! Frequency-dependent second-order contribution
 
-    Bpp(:,:) = 0d0
+    Sig(:) = 0d0
 
     do p=nC+1,nBas-nR
       do i=nC+1,nO
@@ -74,7 +74,7 @@ subroutine evGF2(maxSCF,thresh,max_diis,linearize,nBas,nC,nO,nV,nR,V,e0)
 
             eps = eGF2(p) + e0(a) - e0(i) - e0(j)
 
-            Bpp(p,1) = Bpp(p,1) &
+            Sig(p) = Sig(p) &
                      + (2d0*V(p,a,i,j) - V(p,a,j,i))*V(p,a,i,j)/eps
 
           end do
@@ -89,7 +89,7 @@ subroutine evGF2(maxSCF,thresh,max_diis,linearize,nBas,nC,nO,nV,nR,V,e0)
 
             eps = eGF2(p) + e0(i) - e0(a) - e0(b)
 
-            Bpp(p,2) = Bpp(p,2) &
+            Sig(p) = Sig(p) &
                      + (2d0*V(p,i,a,b) - V(p,i,b,a))*V(p,i,a,b)/eps
 
           end do
@@ -133,11 +133,11 @@ subroutine evGF2(maxSCF,thresh,max_diis,linearize,nBas,nC,nO,nV,nR,V,e0)
 
     if(linearize) then
 
-      eGF2(:) = e0(:) + Z(:)*(Bpp(:,1) + Bpp(:,2))
+      eGF2(:) = e0(:) + Z(:)*Sig(:)
 
     else
 
-      eGF2(:) = e0(:) + Bpp(:,1) + Bpp(:,2)
+      eGF2(:) = e0(:) + Sig(:)
 
     end if
 

@@ -1,7 +1,7 @@
 #! /bin/bash
 
 MOL="LiH"
-BASIS="cc-pvqz"
+BASIS="cc-pvdz"
 R_START=2.5
 R_END=3.6
 DR=0.1

@@ -1,4 +1,4 @@
-subroutine sort_ppRPA(nOO,nVV,Omega,Z,Omega1,X1,Y1,Omega2,X2,Y2)
+subroutine sort_ppRPA(ortho_eigvec,nOO,nVV,Omega,Z,Omega1,X1,Y1,Omega2,X2,Y2)
 
 ! Compute the metric matrix for pp-RPA
 
@@ -7,6 +7,7 @@ subroutine sort_ppRPA(nOO,nVV,Omega,Z,Omega1,X1,Y1,Omega2,X2,Y2)
 
 ! Input variables
 
+  logical,intent(in)            :: ortho_eigvec
   integer,intent(in)            :: nOO
   integer,intent(in)            :: nVV
   double precision,intent(in)   :: Omega(nOO+nVV)
@@ -91,24 +92,28 @@ subroutine sort_ppRPA(nOO,nVV,Omega,Z,Omega1,X1,Y1,Omega2,X2,Y2)
   if(minval(Omega1(:)) < 0d0 .or. ab /= nVV) call print_warning('You may have instabilities in pp-RPA!!')
   if(maxval(Omega2(:)) > 0d0 .or. ij /= nOO) call print_warning('You may have instabilities in pp-RPA!!')
 
-  write(*,*) 'pp-RPA positive excitation energies'
-  call matout(nVV,1,Omega1(:))
-  write(*,*)
+! write(*,*) 'pp-RPA positive excitation energies'
+! call matout(nVV,1,Omega1(:))
+! write(*,*)
 
-  write(*,*) 'pp-RPA negative excitation energies'
-  call matout(nOO,1,Omega2(:))
-  write(*,*)
+! write(*,*) 'pp-RPA negative excitation energies'
+! call matout(nOO,1,Omega2(:))
+! write(*,*)
 
 ! Orthogonalize eigenvectors
 
-  S1 = + matmul(transpose(Z1),matmul(M,Z1))
-  S2 = - matmul(transpose(Z2),matmul(M,Z2))
+  if(ortho_eigvec) then
 
-  call orthogonalization_matrix(1,nVV,S1,O1)
-  call orthogonalization_matrix(1,nOO,S2,O2)
+    S1 = + matmul(transpose(Z1),matmul(M,Z1))
+    S2 = - matmul(transpose(Z2),matmul(M,Z2))
 
-  Z1 = matmul(Z1,O1)
-  Z2 = matmul(Z2,O2)
+    if(nVV > 0) call orthogonalization_matrix(1,nVV,S1,O1)
+    if(nOO > 0) call orthogonalization_matrix(1,nOO,S2,O2)
+
+    Z1 = matmul(Z1,O1)
+    Z2 = matmul(Z2,O2)
+
+  end if
 
   X1(1:nVV,1:nVV) = Z1(    1:    nVV,1:nVV)
   Y1(1:nOO,1:nVV) = Z1(nVV+1:nOO+nVV,1:nVV)

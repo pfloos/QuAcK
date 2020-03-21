@@ -21,7 +21,7 @@ subroutine G0F2(linearize,nBas,nC,nO,nV,nR,V,e0)
   double precision              :: eps
   double precision              :: VV
   double precision,allocatable  :: eGF2(:)
-  double precision,allocatable  :: Bpp(:,:)
+  double precision,allocatable  :: Sig(:)
   double precision,allocatable  :: Z(:)
 
   integer                       :: i,j,a,b,p
@@ -36,13 +36,19 @@ subroutine G0F2(linearize,nBas,nC,nO,nV,nR,V,e0)
 
 ! Memory allocation
 
-  allocate(Bpp(nBas,2),Z(nBas),eGF2(nBas))
+  allocate(Sig(nBas),Z(nBas),eGF2(nBas))
 
+  if(linearize) then 
+  
+     write(*,*) '*** Quasiparticle equation will be linearized ***'
+     write(*,*)
 
-  ! Frequency-dependent second-order contribution
+  end  if
 
-  Bpp(:,:) = 0d0
-  Z(:)     = 0d0
+! Frequency-dependent second-order contribution
+
+  Sig(:) = 0d0
+  Z(:)   = 0d0
 
   do p=nC+1,nBas-nR
     do i=nC+1,nO
@@ -51,8 +57,8 @@ subroutine G0F2(linearize,nBas,nC,nO,nV,nR,V,e0)
 
           eps = e0(p) + e0(a) - e0(i) - e0(j)
           VV  = (2d0*V(p,a,i,j) - V(p,a,j,i))*V(p,a,i,j)
-          Bpp(p,1) = Bpp(p,1) + VV/eps
-          Z(p)     = Z(p)     + VV/eps**2
+          Sig(p) = Sig(p) + VV/eps
+          Z(p)   = Z(p)   + VV/eps**2
 
         end do
       end do
@@ -66,8 +72,8 @@ subroutine G0F2(linearize,nBas,nC,nO,nV,nR,V,e0)
 
           eps = e0(p) + e0(i) - e0(a) - e0(b)
           VV  = (2d0*V(p,i,a,b) - V(p,i,b,a))*V(p,i,a,b)
-          Bpp(p,2) = Bpp(p,2) + VV/eps
-          Z(p)     = Z(p)     + VV/eps**2
+          Sig(p) = Sig(p) + VV/eps
+          Z(p)   = Z(p)   + VV/eps**2
 
         end do
       end do
@@ -78,15 +84,16 @@ subroutine G0F2(linearize,nBas,nC,nO,nV,nR,V,e0)
 
   if(linearize) then
 
-    eGF2(:) = e0(:) + Z(:)*(Bpp(:,1) + Bpp(:,2))
+    eGF2(:) = e0(:) + Z(:)*Sig(:)
 
   else
 
-    eGF2(:) = e0(:) + Bpp(:,1) + Bpp(:,2)
+    eGF2(:) = e0(:) + Sig(:)
 
   end if
+
   ! Print results
 
-  call print_G0F2(nBas,nO,e0,eGF2,Z)
+  call print_G0F2(nBas,nO,e0,Sig,eGF2,Z)
 
 end subroutine G0F2

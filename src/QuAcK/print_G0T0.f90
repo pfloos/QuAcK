@@ -21,7 +21,16 @@ subroutine print_G0T0(nBas,nO,e,ENuc,ERHF,SigT,Z,eGW,EcRPA)
 
   HOMO = nO
   LUMO = HOMO + 1
-  Gap = eGW(LUMO)-eGW(HOMO)
+  if(nBas >= LUMO) then
+
+    Gap = eGW(LUMO) - eGW(HOMO)
+
+  else
+
+    Gap = 0d0
+
+  end if
+
 
 ! Dump results
 

@@ -481,7 +481,7 @@ program QuAcK
   if(doppRPA) then
 
     call cpu_time(start_ppRPA)
-    call ppRPA(doACFDT,exchange_kernel,singlet_manifold,triplet_manifold,nBas,nC,nO,nV,nR,ENuc,ERHF,ERI_MO_basis,eHF)
+    call ppRPA(singlet_manifold,triplet_manifold,nBas,nC,nO,nV,nR,ENuc,ERHF,ERI_MO_basis,eHF)
     call cpu_time(end_ppRPA)
 
     t_ppRPA = end_ppRPA - start_ppRPA
@@ -636,7 +636,8 @@ program QuAcK
     
     call cpu_time(start_G0T0)
     call G0T0(eta,nBas,nC(1),nO(1),nV(1),nR(1),ENuc,ERHF,ERI_MO_basis,eHF)
-!   call soG0T0(eta,nBas,nC(1),nO(1),nV(1),nR(1),ENuc,ERHF,ERI_MO_basis,eHF)
+    call soG0T0(eta,nBas,nC(1),nO(1),nV(1),nR(1),ENuc,ERHF,ERI_MO_basis,eHF)
+
     call cpu_time(end_G0T0)
   
     t_G0T0 = end_G0T0 - start_G0T0

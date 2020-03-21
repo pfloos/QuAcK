@@ -71,7 +71,7 @@ subroutine G0T0(eta,nBas,nC,nO,nV,nR,ENuc,ERHF,ERI,eHF)
 
 ! Compute linear response
 
-  call linear_response_pp(ispin,.false.,nBas,nC,nO,nV,nR, & 
+  call linear_response_pp(ispin,.true.,.false.,nBas,nC,nO,nV,nR, & 
                           nOOs,nVVs,eHF(:),ERI(:,:,:,:),  & 
                           Omega1s(:),X1s(:,:),Y1s(:,:),   & 
                           Omega2s(:),X2s(:,:),Y2s(:,:),   & 
@@ -96,7 +96,7 @@ subroutine G0T0(eta,nBas,nC,nO,nV,nR,ENuc,ERHF,ERI,eHF)
 
 ! Compute linear response
 
-  call linear_response_pp(ispin,.false.,nBas,nC,nO,nV,nR, & 
+  call linear_response_pp(ispin,.true.,.false.,nBas,nC,nO,nV,nR, & 
                           nOOt,nVVt,eHF(:),ERI(:,:,:,:),  & 
                           Omega1t(:),X1t(:,:),Y1t(:,:),   & 
                           Omega2t(:),X2t(:,:),Y2t(:,:),   & 
@@ -112,6 +112,9 @@ subroutine G0T0(eta,nBas,nC,nO,nV,nR,ENuc,ERHF,ERI,eHF)
   call excitation_density_Tmatrix(ispin,nBas,nC,nO,nV,nR,nOOt,nVVt,ERI(:,:,:,:), & 
                                   X1t(:,:),Y1t(:,:),rho1t(:,:,:),                & 
                                   X2t(:,:),Y2t(:,:),rho2t(:,:,:))
+
+  rho2s(:,:,:) = 0d0
+  rho2t(:,:,:) = 0d0
 
 !----------------------------------------------
 ! Compute T-matrix version of the self-energy 
@@ -133,7 +136,8 @@ subroutine G0T0(eta,nBas,nC,nO,nV,nR,ENuc,ERHF,ERI,eHF)
 ! Solve the quasi-particle equation
 !----------------------------------------------
 
-  eG0T0(:) = eHF(:) + Z(:)*SigT(:)
+  eG0T0(:) = eHF(:) + SigT(:)
+! eG0T0(:) = eHF(:) + Z(:)*SigT(:)
 
 !----------------------------------------------
 ! Dump results

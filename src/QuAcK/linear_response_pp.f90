@@ -1,4 +1,4 @@
-subroutine linear_response_pp(ispin,BSE,nBas,nC,nO,nV,nR,nOO,nVV, & 
+subroutine linear_response_pp(ispin,ortho_eigvec,BSE,nBas,nC,nO,nV,nR,nOO,nVV, & 
                               e,ERI,Omega1,X1,Y1,Omega2,X2,Y2,EcppRPA)
 
 ! Compute the p-p channel of the linear response: see Scuseria et al. JCP 139, 104113 (2013)
@@ -8,6 +8,7 @@ subroutine linear_response_pp(ispin,BSE,nBas,nC,nO,nV,nR,nOO,nVV, &
 
 ! Input variables
 
+  logical,intent(in)            :: ortho_eigvec
   logical,intent(in)            :: BSE
   integer,intent(in)            :: ispin,nBas,nC,nO,nV,nR
   integer,intent(in)            :: nOO
@@ -127,11 +128,13 @@ subroutine linear_response_pp(ispin,BSE,nBas,nC,nO,nV,nR,nOO,nVV, &
 
 ! Split the various quantities in p-p and h-h parts
 
-  call sort_ppRPA(nOO,nVV,Omega(:),Z(:,:),Omega1(:),X1(:,:),Y1(:,:),Omega2(:),X2(:,:),Y2(:,:))
+  call sort_ppRPA(ortho_eigvec,nOO,nVV,Omega(:),Z(:,:),Omega1(:),X1(:,:),Y1(:,:),Omega2(:),X2(:,:),Y2(:,:))
 
 ! Compute the RPA correlation energy
 
 ! EcppRPA = 0.5d0*( sum(Omega1(:)) - sum(Omega2(:)) - trace_matrix(nVV,C(:,:)) - trace_matrix(nOO,D(:,:)) )
+! print*,+sum(Omega1(:)),- trace_matrix(nVV,C(:,:))
+! print*,-sum(Omega2(:)),- trace_matrix(nOO,D(:,:))
   EcppRPA = +sum(Omega1(:)) - trace_matrix(nVV,C(:,:))
 ! EcppRPA = -sum(Omega2(:)) - trace_matrix(nOO,D(:,:))
 

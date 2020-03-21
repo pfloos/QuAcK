@@ -8,7 +8,7 @@ subroutine print_evGF3(nBas,nO,nSCF,Conv,eHF,Z,eGF3)
   integer,intent(in)                 :: nBas,nO,nSCF
   double precision,intent(in)        :: Conv,eHF(nBas),eGF3(nBas),Z(nBas)
 
-  integer                            :: x,HOMO,LUMO
+  integer                            :: p,HOMO,LUMO
   double precision                   :: Gap
 
 ! HOMO and LUMO
@@ -26,9 +26,9 @@ subroutine print_evGF3(nBas,nO,nSCF,Conv,eHF,Z,eGF3)
             '|','#','|','e_HF (eV)','|','Z','|','e_evGF3 (eV)','|'
   write(*,*)'-------------------------------------------------------------'
 
-  do x=1,nBas
+  do p=1,nBas
     write(*,'(1X,A1,1X,I3,1X,A1,1X,F15.6,1X,A1,1X,F15.6,1X,A1,1X,F15.6,1X,A1,1X)') &
-    '|',x,'|',eHF(x)*HaToeV,'|',Z(x),'|',eGF3(x)*HaToeV,'|'
+    '|',p,'|',eHF(p)*HaToeV,'|',Z(p),'|',eGF3(p)*HaToeV,'|'
   enddo
 
   write(*,*)'-------------------------------------------------------------'

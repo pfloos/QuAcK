@@ -1,4 +1,4 @@
-subroutine ppRPA(doACFDT,singlet_manifold,triplet_manifold,nBas,nC,nO,nV,nR,ENuc,ERHF,ERI,e)
+subroutine ppRPA(singlet_manifold,triplet_manifold,nBas,nC,nO,nV,nR,ENuc,ERHF,ERI,e)
 
 ! Perform pp-RPA calculation
 
@@ -7,7 +7,6 @@ subroutine ppRPA(doACFDT,singlet_manifold,triplet_manifold,nBas,nC,nO,nV,nR,ENuc
 
 ! Input variables
 
-  logical,intent(in)            :: doACFDT
   logical,intent(in)            :: singlet_manifold
   logical,intent(in)            :: triplet_manifold
   integer,intent(in)            :: nBas
@@ -62,7 +61,7 @@ subroutine ppRPA(doACFDT,singlet_manifold,triplet_manifold,nBas,nC,nO,nV,nR,ENuc
     allocate(Omega1(nVV,nspin),X1(nVV,nVV,nspin),Y1(nOO,nVV,nspin), & 
              Omega2(nOO,nspin),X2(nVV,nOO,nspin),Y2(nOO,nOO,nspin))
 
-    call linear_response_pp(ispin,.false.,nBas,nC,nO,nV,nR,nOO,nVV,e,ERI, & 
+    call linear_response_pp(ispin,.false.,.false.,nBas,nC,nO,nV,nR,nOO,nVV,e,ERI, & 
                             Omega1(:,ispin),X1(:,:,ispin),Y1(:,:,ispin),  & 
                             Omega2(:,ispin),X2(:,:,ispin),Y2(:,:,ispin),  & 
                             Ec_ppRPA(ispin))
@@ -91,9 +90,9 @@ subroutine ppRPA(doACFDT,singlet_manifold,triplet_manifold,nBas,nC,nO,nV,nR,ENuc
              Omega2(nOO,nspin),X2(nVV,nOO,nspin),Y2(nOO,nOO,nspin))
 
 
-    call linear_response_pp(ispin,.false.,nBas,nC,nO,nV,nR,nOO,nVV,e,ERI, &
-                            Omega1(:,ispin),X1(:,:,ispin),Y1(:,:,ispin),  & 
-                            Omega2(:,ispin),X2(:,:,ispin),Y2(:,:,ispin),  & 
+    call linear_response_pp(ispin,.false.,.false.,nBas,nC,nO,nV,nR,nOO,nVV,e,ERI, &
+                            Omega1(:,ispin),X1(:,:,ispin),Y1(:,:,ispin),          & 
+                            Omega2(:,ispin),X2(:,:,ispin),Y2(:,:,ispin),          & 
                             Ec_ppRPA(ispin))
 
     call print_excitation('pp-RPA (N+2)',ispin,nVV,Omega1(:,ispin))
