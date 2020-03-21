@@ -1,5 +1,5 @@
 # nAt nEla nElb nCore nRyd
- 2   6     6   0     0
+ 2   9     9   0     0
 # Znuc   x            y           z
-  Li    0.           0.         0.
-  F     0.           0.         2.965
+  F     0.           0.         0.
+  F     0.           0.         2

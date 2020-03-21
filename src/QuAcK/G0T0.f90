@@ -1,4 +1,5 @@
-subroutine G0T0(eta,nBas,nC,nO,nV,nR,ENuc,ERHF,ERI,eHF)
+subroutine G0T0(doACFDT,exchange_kernel,doXBS,BSE,TDA,singlet_manifold,triplet_manifold, & 
+                linearize,eta,nBas,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,eHF)
 
 ! Perform one-shot calculation with a T-matrix self-energy (G0T0)
 
@@ -7,9 +8,22 @@ subroutine G0T0(eta,nBas,nC,nO,nV,nR,ENuc,ERHF,ERI,eHF)
 
 ! Input variables
 
+  logical,intent(in)            :: doACFDT
+  logical,intent(in)            :: exchange_kernel
+  logical,intent(in)            :: doXBS
+  logical,intent(in)            :: BSE
+  logical,intent(in)            :: TDA
+  logical,intent(in)            :: singlet_manifold
+  logical,intent(in)            :: triplet_manifold
+  logical,intent(in)            :: linearize
   double precision,intent(in)   :: eta
 
-  integer,intent(in)            :: nBas,nC,nO,nV,nR
+  integer,intent(in)            :: nBas
+  integer,intent(in)            :: nC
+  integer,intent(in)            :: nO
+  integer,intent(in)            :: nV
+  integer,intent(in)            :: nR
+  integer,intent(in)            :: nS
   double precision,intent(in)   :: ENuc
   double precision,intent(in)   :: ERHF
   double precision,intent(in)   :: eHF(nBas)
@@ -22,6 +36,7 @@ subroutine G0T0(eta,nBas,nC,nO,nV,nR,ENuc,ERHF,ERI,eHF)
   integer                       :: nVVs,nVVt
   double precision              :: EcRPA(nspin)
   double precision              :: EcBSE(nspin)
+  double precision              :: EcAC(nspin)
   double precision,allocatable  :: Omega1s(:),Omega1t(:)
   double precision,allocatable  :: X1s(:,:),X1t(:,:)
   double precision,allocatable  :: Y1s(:,:),Y1t(:,:)
@@ -34,6 +49,11 @@ subroutine G0T0(eta,nBas,nC,nO,nV,nR,ENuc,ERHF,ERI,eHF)
   double precision,allocatable  :: Z(:)
 
   double precision,allocatable  :: eG0T0(:)
+
+  double precision,allocatable  :: Omega(:,:)
+  double precision,allocatable  :: XpY(:,:,:)
+  double precision,allocatable  :: XmY(:,:,:)
+  double precision,allocatable  :: rho(:,:,:,:)
 
 ! Output variables
 
@@ -113,9 +133,6 @@ subroutine G0T0(eta,nBas,nC,nO,nV,nR,ENuc,ERHF,ERI,eHF)
                                   X1t(:,:),Y1t(:,:),rho1t(:,:,:),                & 
                                   X2t(:,:),Y2t(:,:),rho2t(:,:,:))
 
-  rho2s(:,:,:) = 0d0
-  rho2t(:,:,:) = 0d0
-
 !----------------------------------------------
 ! Compute T-matrix version of the self-energy 
 !----------------------------------------------
@@ -136,13 +153,86 @@ subroutine G0T0(eta,nBas,nC,nO,nV,nR,ENuc,ERHF,ERI,eHF)
 ! Solve the quasi-particle equation
 !----------------------------------------------
 
-  eG0T0(:) = eHF(:) + SigT(:)
-! eG0T0(:) = eHF(:) + Z(:)*SigT(:)
+  if(linearize) then
+
+    eG0T0(:) = eHF(:) + Z(:)*SigT(:)
+
+  else
+  
+    eG0T0(:) = eHF(:) + SigT(:)
+
+  end if
 
 !----------------------------------------------
 ! Dump results
 !----------------------------------------------
 
   call print_G0T0(nBas,nO,eHF(:),ENuc,ERHF,SigT(:),Z(:),eG0T0(:),EcRPA(:))
+
+! Perform BSE calculation
+
+  if(BSE) then
+
+     allocate(Omega(nS,nspin),XpY(nS,nS,nspin),XmY(nS,nS,nspin),rho(nBas,nBas,nS,nspin))
+
+    call Bethe_Salpeter(TDA,singlet_manifold,triplet_manifold,eta, &
+                        nBas,nC,nO,nV,nR,nS,ERI,eHF,eG0T0,Omega,XpY,XmY,rho,EcRPA,EcBSE)
+
+    if(exchange_kernel) then
+
+      EcRPA(1) = 0.5d0*EcRPA(1)
+      EcRPA(2) = 1.5d0*EcRPA(1)
+
+    end if
+
+    write(*,*)
+    write(*,*)'-------------------------------------------------------------------------------'
+    write(*,'(2X,A50,F20.10)') 'Tr@BSE@G0T0 correlation energy (singlet) =',EcBSE(1)
+    write(*,'(2X,A50,F20.10)') 'Tr@BSE@G0T0 correlation energy (triplet) =',EcBSE(2)
+    write(*,'(2X,A50,F20.10)') 'Tr@BSE@G0T0 correlation energy           =',EcBSE(1) + EcBSE(2)
+    write(*,'(2X,A50,F20.10)') 'Tr@BSE@G0T0 total energy                 =',ENuc + ERHF + EcBSE(1) + EcBSE(2)
+    write(*,*)'-------------------------------------------------------------------------------'
+    write(*,*)
+
+!   Compute the BSE correlation energy via the adiabatic connection 
+
+!   Compute the BSE correlation energy via the adiabatic connection 
+
+    if(doACFDT) then
+
+      write(*,*) '------------------------------------------------------'
+      write(*,*) 'Adiabatic connection version of BSE correlation energy'
+      write(*,*) '------------------------------------------------------'
+      write(*,*)
+
+      if(doXBS) then
+
+        write(*,*) '*** scaled screening version (XBS) ***'
+        write(*,*)
+
+      end if
+
+      call ACFDT(exchange_kernel,doXBS,.true.,TDA,BSE,singlet_manifold,triplet_manifold,eta, &
+                 nBas,nC,nO,nV,nR,nS,ERI,eHF,eG0T0,Omega,XpY,XmY,rho,EcAC)
+
+      if(exchange_kernel) then
+
+        EcAC(1) = 0.5d0*EcAC(1)
+        EcAC(2) = 1.5d0*EcAC(1)
+
+      end if
+
+      write(*,*)
+      write(*,*)'-------------------------------------------------------------------------------'
+      write(*,'(2X,A50,F20.10)') 'AC@BSE@G0T0 correlation energy (singlet) =',EcAC(1)
+      write(*,'(2X,A50,F20.10)') 'AC@BSE@G0T0 correlation energy (triplet) =',EcAC(2)
+      write(*,'(2X,A50,F20.10)') 'AC@BSE@G0T0 correlation energy           =',EcAC(1) + EcAC(2)
+      write(*,'(2X,A50,F20.10)') 'AC@BSE@G0T0 total energy                 =',ENuc + ERHF + EcAC(1) + EcAC(2)
+      write(*,*)'-------------------------------------------------------------------------------'
+      write(*,*)
+
+    end if
+
+  end if
 
 end subroutine G0T0
