@@ -104,10 +104,10 @@ subroutine ppRPA(singlet_manifold,triplet_manifold,nBas,nC,nO,nV,nR,ENuc,ERHF,ER
 
   write(*,*)
   write(*,*)'-------------------------------------------------------------------------------'
-  write(*,'(2X,A40,F15.6)') 'Tr@ppRPA correlation energy (singlet) =',Ec_ppRPA(1)
-  write(*,'(2X,A40,F15.6)') 'Tr@ppRPA correlation energy (triplet) =',3d0*Ec_ppRPA(2)
-  write(*,'(2X,A40,F15.6)') 'Tr@ppRPA correlation energy           =',Ec_ppRPA(1) + 3d0*Ec_ppRPA(2)
-  write(*,'(2X,A40,F15.6)') 'Tr@ppRPA total energy                 =',ENuc + ERHF + Ec_ppRPA(1) + 3d0*Ec_ppRPA(2)
+  write(*,'(2X,A50,F20.10)') 'Tr@ppRPA correlation energy (singlet) =',Ec_ppRPA(1)
+  write(*,'(2X,A50,F20.10)') 'Tr@ppRPA correlation energy (triplet) =',3d0*Ec_ppRPA(2)
+  write(*,'(2X,A50,F20.10)') 'Tr@ppRPA correlation energy           =',Ec_ppRPA(1) + 3d0*Ec_ppRPA(2)
+  write(*,'(2X,A50,F20.10)') 'Tr@ppRPA total energy                 =',ENuc + ERHF + Ec_ppRPA(1) + 3d0*Ec_ppRPA(2)
   write(*,*)'-------------------------------------------------------------------------------'
   write(*,*)
 

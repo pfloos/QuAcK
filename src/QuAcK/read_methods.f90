@@ -1,12 +1,12 @@
-subroutine read_methods(doRHF,doUHF,doMOM,             & 
-                        doMP2,doMP3,doMP2F12,          & 
-                        doCCD,doCCSD,doCCSDT,          & 
-                        do_ring_CCD,do_ladder_CCD,     &
-                        doCIS,doRPA,doRPAx,            & 
-                        doppRPA,doADC,                 & 
-                        doG0F2,doevGF2,doG0F3,doevGF3, & 
-                        doG0W0,doevGW,doqsGW,          & 
-                        doG0T0,doevGT,doqsGT,          & 
+subroutine read_methods(doRHF,doUHF,doMOM,                & 
+                        doMP2,doMP3,doMP2F12,             & 
+                        doCCD,doCCSD,doCCSDT,             & 
+                        do_drCCD,do_rCCD,do_lCCD,do_pCCD, &
+                        doCIS,doRPA,doRPAx,               & 
+                        doppRPA,doADC,                    & 
+                        doG0F2,doevGF2,doG0F3,doevGF3,    & 
+                        doG0W0,doevGW,doqsGW,             & 
+                        doG0T0,doevGT,doqsGT,             & 
                         doMCMP2)
 
 ! Read desired methods 
@@ -18,7 +18,7 @@ subroutine read_methods(doRHF,doUHF,doMOM,             &
   logical,intent(out)           :: doRHF,doUHF,doMOM
   logical,intent(out)           :: doMP2,doMP3,doMP2F12
   logical,intent(out)           :: doCCD,doCCSD,doCCSDT
-  logical,intent(out)           :: do_ring_CCD,do_ladder_CCD
+  logical,intent(out)           :: do_drCCD,do_rCCD,do_lCCD,do_pCCD
   logical,intent(out)           :: doCIS,doRPA,doRPAx,doppRPA,doADC
   logical,intent(out)           :: doG0F2,doevGF2,doG0F3,doevGF3  
   logical,intent(out)           :: doG0W0,doevGW,doqsGW
@@ -27,7 +27,7 @@ subroutine read_methods(doRHF,doUHF,doMOM,             &
 
 ! Local variables
 
-  character(len=1)              :: answer1,answer2,answer3,answer4,answer5
+  character(len=1)              :: answer1,answer2,answer3,answer4,answer5,answer6,answer7
 
 ! Open file with method specification
 
@@ -47,8 +47,10 @@ subroutine read_methods(doRHF,doUHF,doMOM,             &
   doCCSD  = .false.
   doCCSDT = .false.
 
-  do_ring_CCD   = .false.
-  do_ladder_CCD = .false.
+  do_drCCD = .false.
+  do_rCCD  = .false.
+  do_lCCD  = .false.
+  do_pCCD  = .false.
 
   doCIS   = .false.
   doRPA   = .false.
@@ -90,12 +92,14 @@ subroutine read_methods(doRHF,doUHF,doMOM,             &
 ! Read CC methods
 
   read(1,*) 
-  read(1,*) answer1,answer2,answer3,answer4,answer5
-  if(answer1 == 'T') doCCD         = .true.
-  if(answer2 == 'T') doCCSD        = .true.
-  if(answer3 == 'T') doCCSDT       = .true.
-  if(answer4 == 'T') do_ring_CCD   = .true.
-  if(answer5 == 'T') do_ladder_CCD = .true.
+  read(1,*) answer1,answer2,answer3,answer4,answer5,answer6,answer7
+  if(answer1 == 'T') doCCD    = .true.
+  if(answer2 == 'T') doCCSD   = .true.
+  if(answer3 == 'T') doCCSDT  = .true.
+  if(answer4 == 'T') do_drCCD = .true.
+  if(answer5 == 'T') do_rCCD  = .true.
+  if(answer6 == 'T') do_lCCD  = .true.
+  if(answer7 == 'T') do_pCCD  = .true.
 
 ! Read excited state methods
 

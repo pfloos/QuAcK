@@ -1,4 +1,4 @@
-subroutine ladder_CCD(maxSCF,thresh,max_diis,nBas,nEl,ERI,ENuc,ERHF,eHF)
+subroutine lCCD(maxSCF,thresh,max_diis,nBas,nEl,ERI,ENuc,ERHF,eHF)
 
 ! Ladder CCD module
 
@@ -52,7 +52,7 @@ subroutine ladder_CCD(maxSCF,thresh,max_diis,nBas,nEl,ERI,ENuc,ERHF,eHF)
 
   write(*,*)
   write(*,*)'**************************************'
-  write(*,*)'|   ladder-CCD calculation           |'
+  write(*,*)'|   ladder CCD calculation           |'
   write(*,*)'**************************************'
   write(*,*)
 
@@ -123,7 +123,7 @@ subroutine ladder_CCD(maxSCF,thresh,max_diis,nBas,nEl,ERI,ENuc,ERHF,eHF)
 !------------------------------------------------------------------------
   write(*,*)
   write(*,*)'----------------------------------------------------'
-  write(*,*)'| ladder-CCD calculation                           |'
+  write(*,*)'| ladder CCD calculation                           |'
   write(*,*)'----------------------------------------------------'
   write(*,'(1X,A1,1X,A3,1X,A1,1X,A16,1X,A1,1X,A10,1X,A1,1X,A10,1X,A1,1X)') &
             '|','#','|','E(CCD)','|','Ec(CCD)','|','Conv','|'
@@ -184,11 +184,11 @@ subroutine ladder_CCD(maxSCF,thresh,max_diis,nBas,nEl,ERI,ENuc,ERHF,eHF)
 
   write(*,*)
   write(*,*)'----------------------------------------------------'
-  write(*,*)'              ladder-CCD energy                     '
+  write(*,*)'              ladder CCD energy                     '
   write(*,*)'----------------------------------------------------'
-  write(*,'(1X,A30,1X,F15.10)')' E(ladder-CCD)  = ',ECCD
-  write(*,'(1X,A30,1X,F15.10)')' Ec(ladder-CCSD) = ',EcCCD
+  write(*,'(1X,A30,1X,F15.10)')' E(lCCD)  = ',ECCD
+  write(*,'(1X,A30,1X,F15.10)')' Ec(lCCD) = ',EcCCD
   write(*,*)'----------------------------------------------------'
   write(*,*)
 
-end subroutine ladder_CCD
+end subroutine lCCD

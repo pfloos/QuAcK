@@ -1,6 +1,6 @@
-subroutine ring_CCD(maxSCF,thresh,max_diis,nBas,nEl,ERI,ENuc,ERHF,eHF)
+subroutine drCCD(maxSCF,thresh,max_diis,nBas,nEl,ERI,ENuc,ERHF,eHF)
 
-! Ring CCD module
+! Direct ring CCD module
 
   implicit none
 
@@ -26,7 +26,6 @@ subroutine ring_CCD(maxSCF,thresh,max_diis,nBas,nEl,ERI,ENuc,ERHF,eHF)
   double precision              :: ECCD,EcCCD
   double precision,allocatable  :: seHF(:)
   double precision,allocatable  :: sERI(:,:,:,:)
-  double precision,allocatable  :: dbERI(:,:,:,:)
 
   double precision,allocatable  :: eO(:)
   double precision,allocatable  :: eV(:)
@@ -52,7 +51,7 @@ subroutine ring_CCD(maxSCF,thresh,max_diis,nBas,nEl,ERI,ENuc,ERHF,eHF)
 
   write(*,*)
   write(*,*)'**************************************'
-  write(*,*)'|     ring-CCD calculation           |'
+  write(*,*)'|     direct ring CCD calculation    |'
   write(*,*)'**************************************'
   write(*,*)
 
@@ -66,12 +65,6 @@ subroutine ring_CCD(maxSCF,thresh,max_diis,nBas,nEl,ERI,ENuc,ERHF,eHF)
   call spatial_to_spin_ERI(nBas,ERI,nBas2,sERI)
 
 ! Antysymmetrize ERIs
-
-  allocate(dbERI(nBas2,nBas2,nBas2,nBas2))
-
-  call antisymmetrize_ERI(2,nBas2,sERI,dbERI)
-
-  deallocate(sERI)
 
 ! Define occupied and virtual spaces
 
@@ -94,13 +87,13 @@ subroutine ring_CCD(maxSCF,thresh,max_diis,nBas,nEl,ERI,ENuc,ERHF,eHF)
 
   allocate(OOOO(nO,nO,nO,nO),OOVV(nO,nO,nV,nV),OVVO(nO,nV,nV,nO),VVVV(nV,nV,nV,nV))
 
-  OOOO(:,:,:,:) = dbERI(   1:nO   ,   1:nO   ,   1:nO   ,   1:nO   )
-  OOVV(:,:,:,:) = dbERI(   1:nO   ,   1:nO   ,nO+1:nBas2,nO+1:nBas2)
-  OVVO(:,:,:,:) = dbERI(   1:nO   ,nO+1:nBas2,nO+1:nBas2,   1:nO   )
-  VVVV(:,:,:,:) = dbERI(nO+1:nBas2,nO+1:nBas2,nO+1:nBas2,nO+1:nBas2)
-
-  deallocate(dbERI)
+  OOOO(:,:,:,:) = sERI(   1:nO   ,   1:nO   ,   1:nO   ,   1:nO   )
+  OOVV(:,:,:,:) = sERI(   1:nO   ,   1:nO   ,nO+1:nBas2,nO+1:nBas2)
+  OVVO(:,:,:,:) = sERI(   1:nO   ,nO+1:nBas2,nO+1:nBas2,   1:nO   )
+  VVVV(:,:,:,:) = sERI(nO+1:nBas2,nO+1:nBas2,nO+1:nBas2,nO+1:nBas2)
  
+  deallocate(sERI)
+
 ! MP2 guess amplitudes
 
   allocate(t2(nO,nO,nV,nV))
@@ -123,7 +116,7 @@ subroutine ring_CCD(maxSCF,thresh,max_diis,nBas,nEl,ERI,ENuc,ERHF,eHF)
 !------------------------------------------------------------------------
   write(*,*)
   write(*,*)'----------------------------------------------------'
-  write(*,*)'| ring-CCD calculation                             |'
+  write(*,*)'| direct ring CCD calculation                      |'
   write(*,*)'----------------------------------------------------'
   write(*,'(1X,A1,1X,A3,1X,A1,1X,A16,1X,A1,1X,A10,1X,A1,1X,A10,1X,A1,1X)') &
             '|','#','|','E(CCD)','|','Ec(CCD)','|','Conv','|'
@@ -151,7 +144,7 @@ subroutine ring_CCD(maxSCF,thresh,max_diis,nBas,nEl,ERI,ENuc,ERHF,eHF)
 
 !   Compute correlation energy
 
-    EcCCD = 0.25d0*dot_product(pack(OOVV,.true.),pack(t2,.true.))
+    EcCCD = 0.5d0*dot_product(pack(OOVV,.true.),pack(t2,.true.))
 
     if(nSCF == 1) EcMP3 = 0.25d0*dot_product(pack(OOVV,.true.),pack(t2 + v/delta_OOVV,.true.))
 
@@ -184,11 +177,11 @@ subroutine ring_CCD(maxSCF,thresh,max_diis,nBas,nEl,ERI,ENuc,ERHF,eHF)
 
   write(*,*)
   write(*,*)'----------------------------------------------------'
-  write(*,*)'              ring-CCD energy                       '
+  write(*,*)'              direct ring CCD energy                '
   write(*,*)'----------------------------------------------------'
-  write(*,'(1X,A30,1X,F15.10)')' E(ring-CCD) = ',ECCD  
-  write(*,'(1X,A30,1X,F15.10)')' Ec(ring-CCD) = ',EcCCD 
+  write(*,'(1X,A30,1X,F15.10)')' E(drCCD) = ',ECCD  
+  write(*,'(1X,A30,1X,F15.10)')' Ec(drCCD) = ',EcCCD 
   write(*,*)'----------------------------------------------------'
   write(*,*)
 
-end subroutine ring_CCD
+end subroutine drCCD
