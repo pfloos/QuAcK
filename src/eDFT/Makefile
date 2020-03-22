@@ -14,8 +14,8 @@ ifeq ($(PROFIL),1)
   FC += -p -fno-inline
 endif
 
-LIBS = -lstdc++ ../../lib/*.a
-LIBS += -lblas -llapack 
+LIBS = -lc++ ../../lib/*.a
+LIBS += -lblas -llapack
 
 SRCF90 = $(wildcard *.f90)
 
