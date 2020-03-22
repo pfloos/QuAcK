@@ -36,8 +36,11 @@ subroutine pCCD(maxSCF,thresh,max_diis,nBas,nC,nO,nV,nR,ERI,ENuc,ERHF,eHF)
   double precision,allocatable  :: r(:,:)
   double precision,allocatable  :: t(:,:)
 
-  double precision,external     :: trace_matrix
-           
+  integer                       :: n_diis
+  double precision              :: rcond
+  double precision,allocatable  :: error_diis(:,:)
+  double precision,allocatable  :: t_diis(:,:)
+          
 ! Hello world
 
   write(*,*)
@@ -86,12 +89,20 @@ subroutine pCCD(maxSCF,thresh,max_diis,nBas,nC,nO,nV,nR,ERI,ENuc,ERHF,eHF)
 
   t(:,:) = - OOVV(:,:)/delta_OOVV(:,:)
 
+! Memory allocation for DIIS
+
+  allocate(error_diis(nO*nV,max_diis),t_diis(nO*nV,max_diis))
+
 ! Initialization
 
   allocate(r(nO,nV),y(nO,nO))
 
   Conv = 1d0
   nSCF = 0
+
+  n_diis          = 0
+  t_diis(:,:)     = 0d0
+  error_diis(:,:) = 0d0
 
 !------------------------------------------------------------------------
 ! Main SCF loop
@@ -121,7 +132,7 @@ subroutine pCCD(maxSCF,thresh,max_diis,nBas,nC,nO,nV,nR,ERI,ENuc,ERHF,eHF)
      end do
    end do
     
-  ! Compute residual
+   ! Compute residual
 
     do i=nC+1,nO
       do a=1,nV-nR
@@ -140,7 +151,6 @@ subroutine pCCD(maxSCF,thresh,max_diis,nBas,nC,nO,nV,nR,ERI,ENuc,ERHF,eHF)
       end do
     end do
 
-
    ! Check convergence 
 
     Conv = maxval(abs(r(:,:)))
@@ -158,9 +168,18 @@ subroutine pCCD(maxSCF,thresh,max_diis,nBas,nC,nO,nV,nR,ERI,ENuc,ERHF,eHF)
       end do
     end do
 
-!   Dump results
+   ! Dump results
 
     ECCD = ERHF + EcCCD
+
+    ! DIIS extrapolation
+
+    n_diis = min(n_diis+1,max_diis)
+    call DIIS_extrapolation(rcond,nO*nV,nO*nV,n_diis,error_diis,t_diis,-r/delta_OOVV,t)
+
+    !  Reset DIIS if required
+
+    if(abs(rcond) < 1d-15) n_diis = 0
 
     write(*,'(1X,A1,1X,I3,1X,A1,1X,F16.10,1X,A1,1X,F10.6,1X,A1,1X,F10.6,1X,A1,1X)') &
       '|',nSCF,'|',ECCD+ENuc,'|',EcCCD,'|',Conv,'|'

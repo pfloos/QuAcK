@@ -63,6 +63,14 @@ subroutine CCSD(maxSCF,thresh,max_diis,doCCSDT,nBas,nEl,ERI,ENuc,ERHF,eHF)
   double precision,allocatable  :: t2(:,:,:,:)
   double precision,allocatable  :: tau(:,:,:,:)
 
+  integer                       :: n_diis
+  double precision              :: rcond1
+  double precision              :: rcond2
+  double precision,allocatable  :: err1_diis(:,:)
+  double precision,allocatable  :: err2_diis(:,:)
+  double precision,allocatable  :: t1_diis(:,:)
+  double precision,allocatable  :: t2_diis(:,:)
+
 ! Hello world
 
   write(*,*)
@@ -145,8 +153,19 @@ subroutine CCSD(maxSCF,thresh,max_diis,doCCSDT,nBas,nEl,ERI,ENuc,ERHF,eHF)
            aoooo(nO,nO,nO,nO),bvvvv(nV,nV,nV,nV),hovvo(nO,nV,nV,nO), &
            r1(nO,nV),r2(nO,nO,nV,nV))
 
+! Memory allocation for DIIS
+
+  allocate(err1_diis(nO*nV      ,max_diis),t1_diis(nO*nV      ,max_diis), & 
+           err2_diis(nO*nO*nV*nV,max_diis),t2_diis(nO*nO*nV*nV,max_diis))
+
   Conv = 1d0
   nSCF = 0
+
+  n_diis         = 0
+  t1_diis(:,:)   = 0d0
+  t2_diis(:,:)   = 0d0
+  err1_diis(:,:) = 0d0
+  err2_diis(:,:) = 0d0
 
 !------------------------------------------------------------------------
 ! Main SCF loop
@@ -199,6 +218,16 @@ subroutine CCSD(maxSCF,thresh,max_diis,doCCSDT,nBas,nEl,ERI,ENuc,ERHF,eHF)
 !   Dump results
 
     ECCSD = ERHF + EcCCSD
+
+    ! DIIS extrapolation
+
+    n_diis = min(n_diis+1,max_diis)
+    call DIIS_extrapolation(rcond1,nO*nV      ,nO*nV      ,n_diis,err1_diis,t1_diis,-r1/delta_OV  ,t1)
+    call DIIS_extrapolation(rcond2,nO*nO*nV*nV,nO*nO*nV*nV,n_diis,err2_diis,t2_diis,-r2/delta_OOVV,t2)
+
+    !  Reset DIIS if required
+
+    if(min(abs(rcond1),abs(rcond2)) < 1d-15) n_diis = 0
 
     write(*,'(1X,A1,1X,I3,1X,A1,1X,F16.10,1X,A1,1X,F10.6,1X,A1,1X,F10.6,1X,A1,1X)') &
       '|',nSCF,'|',ECCSD+ENuc,'|',EcCCSD,'|',Conv,'|'

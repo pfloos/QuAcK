@@ -48,6 +48,11 @@ subroutine lCCD(maxSCF,thresh,max_diis,nBas,nEl,ERI,ENuc,ERHF,eHF)
   double precision,allocatable  :: r2(:,:,:,:)
   double precision,allocatable  :: t2(:,:,:,:)
 
+  integer                       :: n_diis
+  double precision              :: rcond
+  double precision,allocatable  :: error_diis(:,:)
+  double precision,allocatable  :: t_diis(:,:)
+
 ! Hello world
 
   write(*,*)
@@ -110,6 +115,10 @@ subroutine lCCD(maxSCF,thresh,max_diis,nBas,nEl,ERI,ENuc,ERHF,eHF)
   EcMP2 = 0.25d0*dot_product(pack(OOVV,.true.),pack(t2,.true.))
   EcMP4 = 0d0
 
+! Memory allocation for DIIS
+
+  allocate(error_diis(nO*nO*nV*nV,max_diis),t_diis(nO*nO*nV*nV,max_diis))
+
 ! Initialization
 
   allocate(r2(nO,nO,nV,nV),u(nO,nO,nV,nV),v(nO,nO,nV,nV))
@@ -117,6 +126,10 @@ subroutine lCCD(maxSCF,thresh,max_diis,nBas,nEl,ERI,ENuc,ERHF,eHF)
 
   Conv = 1d0
   nSCF = 0
+
+  n_diis          = 0
+  t_diis(:,:)     = 0d0
+  error_diis(:,:) = 0d0
 
 !------------------------------------------------------------------------
 ! Main SCF loop
@@ -158,6 +171,15 @@ subroutine lCCD(maxSCF,thresh,max_diis,nBas,nEl,ERI,ENuc,ERHF,eHF)
 !   Dump results
 
     ECCD = ERHF + EcCCD
+
+    ! DIIS extrapolation
+
+    n_diis = min(n_diis+1,max_diis)
+    call DIIS_extrapolation(rcond,nO*nO*nV*nV,nO*nO*nV*nV,n_diis,error_diis,t_diis,-r2/delta_OOVV,t2)
+
+    !  Reset DIIS if required
+
+    if(abs(rcond) < 1d-15) n_diis = 0
 
     write(*,'(1X,A1,1X,I3,1X,A1,1X,F16.10,1X,A1,1X,F10.6,1X,A1,1X,F10.6,1X,A1,1X)') &
       '|',nSCF,'|',ECCD+ENuc,'|',EcCCD,'|',Conv,'|'
