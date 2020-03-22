@@ -1,4 +1,4 @@
-subroutine pCCD(maxSCF,thresh,max_diis,nBas,nO,nV,ERI,ENuc,ERHF,eHF)
+subroutine pCCD(maxSCF,thresh,max_diis,nBas,nC,nO,nV,nR,ERI,ENuc,ERHF,eHF)
 
 ! pair CCD module
 
@@ -10,7 +10,7 @@ subroutine pCCD(maxSCF,thresh,max_diis,nBas,nO,nV,ERI,ENuc,ERHF,eHF)
   integer,intent(in)            :: max_diis
   double precision,intent(in)   :: thresh
 
-  integer,intent(in)            :: nBas,nO,nV
+  integer,intent(in)            :: nBas,nC,nO,nV,nR
   double precision,intent(in)   :: ENuc,ERHF
   double precision,intent(in)   :: eHF(nBas)
   double precision,intent(in)   :: ERI(nBas,nBas,nBas,nBas)
@@ -31,8 +31,7 @@ subroutine pCCD(maxSCF,thresh,max_diis,nBas,nO,nV,ERI,ENuc,ERHF,eHF)
   double precision,allocatable  :: OVVO(:,:)
   double precision,allocatable  :: VVVV(:,:)
 
-  double precision,allocatable  :: X(:,:)
-  double precision,allocatable  :: Y(:,:)
+  double precision,allocatable  :: y(:,:)
 
   double precision,allocatable  :: r(:,:)
   double precision,allocatable  :: t(:,:)
@@ -51,8 +50,8 @@ subroutine pCCD(maxSCF,thresh,max_diis,nBas,nO,nV,ERI,ENuc,ERHF,eHF)
 
   allocate(delta_OOVV(nO,nV))
 
-  do i=1,nO
-    do a=1,nV
+  do i=nC+1,nO
+    do a=1,nV-nR
       delta_OOVV(i,a) = 2d0*(eHF(nO+a) - eHF(i))
     enddo
   enddo
@@ -61,22 +60,22 @@ subroutine pCCD(maxSCF,thresh,max_diis,nBas,nO,nV,ERI,ENuc,ERHF,eHF)
 
   allocate(OOOO(nO,nO),OOVV(nO,nV),OVOV(nO,nV),OVVO(nO,nV),VVVV(nV,nV))
 
-  do i=1,nO
-    do j=1,nO
+  do i=nC+1,nO
+    do j=nC+1,nO
       OOOO(i,j) = ERI(i,i,j,j)
     end do
   end do
 
-  do i=1,nO
-    do a=1,nV
+  do i=nC+1,nO
+    do a=1,nV-nR
       OOVV(i,a) = ERI(i,i,nO+a,nO+a)
       OVOV(i,a) = ERI(i,nO+a,i,nO+a)
       OVVO(i,a) = ERI(i,nO+a,nO+a,i)
     end do
   end do
 
-  do a=1,nV
-    do b=1,nV
+  do a=1,nV-nR
+    do b=1,nV-nR
       VVVV(a,b) = ERI(nO+a,nO+a,nO+b,nO+b)
     end do
   end do
@@ -89,7 +88,7 @@ subroutine pCCD(maxSCF,thresh,max_diis,nBas,nO,nV,ERI,ENuc,ERHF,eHF)
 
 ! Initialization
 
-  allocate(r(nO,nV),X(nV,nV),Y(nO,nO))
+  allocate(r(nO,nV),y(nO,nO))
 
   Conv = 1d0
   nSCF = 0
@@ -113,22 +112,34 @@ subroutine pCCD(maxSCF,thresh,max_diis,nBas,nO,nV,ERI,ENuc,ERHF,eHF)
 
   ! Form intermediate array
     
-    X(:,:) = matmul(transpose(OOVV(:,:)),t(:,:))
-    Y(:,:) = matmul(t(:,:),transpose(OOVV(:,:)))
+   y(:,:) = 0d0
+   do i=nC+1,nO
+     do j=nC+1,nO
+       do b=1,nV-nR
+         y(i,j) = y(i,j) + OOVV(j,b)*t(i,b)
+       end do
+     end do
+   end do
     
   ! Compute residual
 
-    do i=1,nO
-      do a=1,nV
-        r(i,a) = - 2d0*(X(a,a) + Y(i,i))*t(i,a)
+    do i=nC+1,nO
+      do a=1,nV-nR
+
+        r(i,a) = OOVV(i,a) + delta_OOVV(i,a)*t(i,a) & 
+               - 2d0*(2d0*OVOV(i,a) - OVVO(i,a) - OOVV(i,a)*t(i,a))*t(i,a)
+
+        do j=nC+1,nO
+          r(i,a) = r(i,a) - 2d0*OOVV(j,a)*t(j,a)*t(i,a) + OOOO(j,i)*t(j,a) + y(i,j)*t(j,a)
+        end do 
+
+        do b=1,nV-nR
+          r(i,a) = r(i,a) - 2d0*OOVV(i,b)*t(i,b)*t(i,a) + VVVV(a,b)*t(i,b)
+        end do 
+
       end do
     end do
 
-    r(:,:) = r(:,:) + OOVV(:,:) + delta_OOVV(:,:)*t(:,:)               &
-           - 2d0*(2d0*OVOV(:,:) - OVVO(:,:) - OOVV(:,:)*t(:,:))*t(:,:) &
-           + matmul(t(:,:),transpose(VVVV(:,:)))                       &
-           + matmul(transpose(OOOO(:,:)),t(:,:))                       &
-           + matmul(Y(:,:),t)
 
    ! Check convergence 
 
@@ -140,7 +151,12 @@ subroutine pCCD(maxSCF,thresh,max_diis,nBas,nO,nV,ERI,ENuc,ERHF,eHF)
 
    ! Compute correlation energy
 
-    EcCCD = trace_matrix(nO,matmul(t(:,:),transpose(OOVV(:,:))))
+    EcCCD = 0d0
+    do i=nC+1,nO
+      do a=1,nV-nR
+        EcCCD = EcCCD + t(i,a)*OOVV(i,a)
+      end do
+    end do
 
 !   Dump results
 

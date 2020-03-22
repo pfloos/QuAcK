@@ -196,8 +196,6 @@ subroutine G0T0(doACFDT,exchange_kernel,doXBS,BSE,TDA,singlet_manifold,triplet_m
 
 !   Compute the BSE correlation energy via the adiabatic connection 
 
-!   Compute the BSE correlation energy via the adiabatic connection 
-
     if(doACFDT) then
 
       write(*,*) '------------------------------------------------------'

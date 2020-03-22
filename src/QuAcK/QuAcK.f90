@@ -447,7 +447,7 @@ program QuAcK
   if(do_pCCD) then
 
     call cpu_time(start_CCD)
-    call pCCD(maxSCF_CC,thresh_CC,n_diis_CC,nBas,nO(1),nV(1),ERI_MO_basis,ENuc,ERHF,eHF)
+    call pCCD(maxSCF_CC,thresh_CC,n_diis_CC,nBas,nC(1),nO(1),nV(1),nR(1),ERI_MO_basis,ENuc,ERHF,eHF)
     call cpu_time(end_CCD)
 
     t_CCD = end_CCD - start_CCD
@@ -513,7 +513,8 @@ program QuAcK
   if(doppRPA) then
 
     call cpu_time(start_ppRPA)
-    call ppRPA(singlet_manifold,triplet_manifold,nBas,nC,nO,nV,nR,ENuc,ERHF,ERI_MO_basis,eHF)
+    call ppRPA(singlet_manifold,triplet_manifold, & 
+               nBas,nC(1),nO(1),nV(1),nR(1),ENuc,ERHF,ERI_MO_basis,eHF)
     call cpu_time(end_ppRPA)
 
     t_ppRPA = end_ppRPA - start_ppRPA
@@ -529,7 +530,8 @@ program QuAcK
   if(doADC) then
 
     call cpu_time(start_ADC)
-    call ADC(singlet_manifold,triplet_manifold,maxSCF_GF,thresh_GF,n_diis_GF,nBas,nC(1),nO(1),nV(1),nR(1),eHF,ERI_MO_basis)
+    call ADC(singlet_manifold,triplet_manifold,maxSCF_GF,thresh_GF,n_diis_GF, & 
+             nBas,nC(1),nO(1),nV(1),nR(1),eHF,ERI_MO_basis)
     call cpu_time(end_ADC)
 
     t_ADC = end_ADC - start_ADC
