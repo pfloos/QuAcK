@@ -3,9 +3,9 @@
 # MP2 MP3 MP2-F12
   T   F   F
 # CCD CCSD CCSD(T) drCCD rCCD lCCD pCCD
-  F   F    F       T      T   T    T
+  F   F    F       F      F   F    T
 # CIS RPA RPAx ppRPA ADC
-  F   T   T    T     F
+  F   F   F    F     F
 # G0F2 evGF2 G0F3 evGF3
   F    F     F    F
 # G0W0 evGW qsGW 

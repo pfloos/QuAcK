@@ -1,4 +1,4 @@
-subroutine pCCD(maxSCF,thresh,max_diis,nBas,nEl,ERI,ENuc,ERHF,eHF)
+subroutine pCCD(maxSCF,thresh,max_diis,nBas,nO,nV,ERI,ENuc,ERHF,eHF)
 
 ! pair CCD module
 
@@ -10,110 +10,86 @@ subroutine pCCD(maxSCF,thresh,max_diis,nBas,nEl,ERI,ENuc,ERHF,eHF)
   integer,intent(in)            :: max_diis
   double precision,intent(in)   :: thresh
 
-  integer,intent(in)            :: nBas,nEl
+  integer,intent(in)            :: nBas,nO,nV
   double precision,intent(in)   :: ENuc,ERHF
   double precision,intent(in)   :: eHF(nBas)
   double precision,intent(in)   :: ERI(nBas,nBas,nBas,nBas)
 
 ! Local variables
 
-  integer                       :: nBas2
-  integer                       :: nO
-  integer                       :: nV
+  integer                       :: i,j,a,b
+
   integer                       :: nSCF
   double precision              :: Conv
-  double precision              :: EcMP2,EcMP3,EcMP4
   double precision              :: ECCD,EcCCD
-  double precision,allocatable  :: seHF(:)
-  double precision,allocatable  :: sERI(:,:,:,:)
-  double precision,allocatable  :: dbERI(:,:,:,:)
 
-  double precision,allocatable  :: eO(:)
-  double precision,allocatable  :: eV(:)
-  double precision,allocatable  :: delta_OOVV(:,:,:,:)
+  double precision,allocatable  :: delta_OOVV(:,:)
 
-  double precision,allocatable  :: OOOO(:,:,:,:)
-  double precision,allocatable  :: OOVV(:,:,:,:)
-  double precision,allocatable  :: OVOV(:,:,:,:)
-  double precision,allocatable  :: VVVV(:,:,:,:)
+  double precision,allocatable  :: OOOO(:,:)
+  double precision,allocatable  :: OOVV(:,:)
+  double precision,allocatable  :: OVOV(:,:)
+  double precision,allocatable  :: OVVO(:,:)
+  double precision,allocatable  :: VVVV(:,:)
 
-  double precision,allocatable  :: X1(:,:,:,:)
-  double precision,allocatable  :: X2(:,:)
-  double precision,allocatable  :: X3(:,:)
-  double precision,allocatable  :: X4(:,:,:,:)
+  double precision,allocatable  :: X(:,:)
+  double precision,allocatable  :: Y(:,:)
 
-  double precision,allocatable  :: u(:,:,:,:)
-  double precision,allocatable  :: v(:,:,:,:)
+  double precision,allocatable  :: r(:,:)
+  double precision,allocatable  :: t(:,:)
 
-  double precision,allocatable  :: r2(:,:,:,:)
-  double precision,allocatable  :: t2(:,:,:,:)
-
+  double precision,external     :: trace_matrix
+           
 ! Hello world
 
   write(*,*)
   write(*,*)'**************************************'
-  write(*,*)'|          CCD calculation           |'
+  write(*,*)'|     pair CCD calculation           |'
   write(*,*)'**************************************'
   write(*,*)
 
-! Spatial to spin orbitals
-
-  nBas2 = 2*nBas
-
-  allocate(seHF(nBas2),sERI(nBas2,nBas2,nBas2,nBas2))
-
-  call spatial_to_spin_MO_energy(nBas,eHF,nBas2,seHF)
-  call spatial_to_spin_ERI(nBas,ERI,nBas2,sERI)
-
-! Antysymmetrize ERIs
-
-  allocate(dbERI(nBas2,nBas2,nBas2,nBas2))
-
-  call antisymmetrize_ERI(2,nBas2,sERI,dbERI)
-
-  deallocate(sERI)
-
-! Define occupied and virtual spaces
-
-  nO = 2*nEl
-  nV = nBas2 - nO
-
 ! Form energy denominator
 
-  allocate(eO(nO),eV(nV))
-  allocate(delta_OOVV(nO,nO,nV,nV))
+  allocate(delta_OOVV(nO,nV))
 
-  eO(:) = seHF(1:nO)
-  eV(:) = seHF(nO+1:nBas2)
-
-  call form_delta_OOVV(nO,nV,eO,eV,delta_OOVV)
-
-  deallocate(seHF)
+  do i=1,nO
+    do a=1,nV
+      delta_OOVV(i,a) = 2d0*(eHF(nO+a) - eHF(i))
+    enddo
+  enddo
 
 ! Create integral batches
 
-  allocate(OOOO(nO,nO,nO,nO),OOVV(nO,nO,nV,nV),OVOV(nO,nV,nO,nV),VVVV(nV,nV,nV,nV))
+  allocate(OOOO(nO,nO),OOVV(nO,nV),OVOV(nO,nV),OVVO(nO,nV),VVVV(nV,nV))
 
-  OOOO(:,:,:,:) = dbERI(   1:nO   ,   1:nO   ,   1:nO   ,   1:nO   )
-  OOVV(:,:,:,:) = dbERI(   1:nO   ,   1:nO   ,nO+1:nBas2,nO+1:nBas2)
-  OVOV(:,:,:,:) = dbERI(   1:nO   ,nO+1:nBas2,   1:nO   ,nO+1:nBas2)
-  VVVV(:,:,:,:) = dbERI(nO+1:nBas2,nO+1:nBas2,nO+1:nBas2,nO+1:nBas2)
+  do i=1,nO
+    do j=1,nO
+      OOOO(i,j) = ERI(i,i,j,j)
+    end do
+  end do
 
-  deallocate(dbERI)
- 
+  do i=1,nO
+    do a=1,nV
+      OOVV(i,a) = ERI(i,i,nO+a,nO+a)
+      OVOV(i,a) = ERI(i,nO+a,i,nO+a)
+      OVVO(i,a) = ERI(i,nO+a,nO+a,i)
+    end do
+  end do
+
+  do a=1,nV
+    do b=1,nV
+      VVVV(a,b) = ERI(nO+a,nO+a,nO+b,nO+b)
+    end do
+  end do
+
 ! MP2 guess amplitudes
 
-  allocate(t2(nO,nO,nV,nV))
+  allocate(t(nO,nV))
 
-  t2(:,:,:,:) = -OOVV(:,:,:,:)/delta_OOVV(:,:,:,:)
-
-  EcMP2 = 0.25d0*dot_product(pack(OOVV,.true.),pack(t2,.true.))
-  EcMP4 = 0d0
+  t(:,:) = - OOVV(:,:)/delta_OOVV(:,:)
 
 ! Initialization
 
-  allocate(r2(nO,nO,nV,nV),u(nO,nO,nV,nV),v(nO,nO,nV,nV))
-  allocate(X1(nO,nO,nO,nO),X2(nV,nV),X3(nO,nO),X4(nO,nO,nV,nV))
+  allocate(r(nO,nV),X(nV,nV),Y(nO,nO))
 
   Conv = 1d0
   nSCF = 0
@@ -131,39 +107,40 @@ subroutine pCCD(maxSCF,thresh,max_diis,nBas,nEl,ERI,ENuc,ERHF,eHF)
 
   do while(Conv > thresh .and. nSCF < maxSCF)
 
-!   Increment 
+  ! Increment 
 
     nSCF = nSCF + 1
 
-!   Form linear array
+  ! Form intermediate array
+    
+    X(:,:) = matmul(transpose(OOVV(:,:)),t(:,:))
+    Y(:,:) = matmul(t(:,:),transpose(OOVV(:,:)))
+    
+  ! Compute residual
 
-    call form_u(nO,nV,OOOO,VVVV,OVOV,t2,u)
+    do i=1,nO
+      do a=1,nV
+        r(i,a) = - 2d0*(X(a,a) + Y(i,i))*t(i,a)
+      end do
+    end do
 
-!   Form interemediate arrays
+    r(:,:) = r(:,:) + OOVV(:,:) + delta_OOVV(:,:)*t(:,:)               &
+           - 2d0*(2d0*OVOV(:,:) - OVVO(:,:) - OOVV(:,:)*t(:,:))*t(:,:) &
+           + matmul(t(:,:),transpose(VVVV(:,:)))                       &
+           + matmul(transpose(OOOO(:,:)),t(:,:))                       &
+           + matmul(Y(:,:),t)
 
-    call form_X(nO,nV,OOVV,t2,X1,X2,X3,X4)
+   ! Check convergence 
 
-!   Form quadratic array
-
-    call form_v(nO,nV,X1,X2,X3,X4,t2,v)
-
-!   Compute residual
-
-    r2(:,:,:,:) = OOVV(:,:,:,:) + delta_OOVV(:,:,:,:)*t2(:,:,:,:) + u(:,:,:,:) + v(:,:,:,:)
-
-!   Check convergence 
-
-    Conv = maxval(abs(r2(:,:,:,:)))
+    Conv = maxval(abs(r(:,:)))
   
-!   Update amplitudes
+   ! Update amplitudes
 
-    t2(:,:,:,:) = t2(:,:,:,:) - r2(:,:,:,:)/delta_OOVV(:,:,:,:)
+    t(:,:) = t(:,:) - r(:,:)/delta_OOVV(:,:)
 
-!   Compute correlation energy
+   ! Compute correlation energy
 
-    EcCCD = 0.25d0*dot_product(pack(OOVV,.true.),pack(t2,.true.))
-
-    if(nSCF == 1) EcMP3 = 0.25d0*dot_product(pack(OOVV,.true.),pack(t2 + v/delta_OOVV,.true.))
+    EcCCD = trace_matrix(nO,matmul(t(:,:),transpose(OOVV(:,:))))
 
 !   Dump results
 
