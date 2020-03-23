@@ -288,7 +288,6 @@ subroutine GOK_RKS(restart,x_rung,x_DFA,c_rung,c_DFA,nEns,wEns,nGrid,weight,maxS
 !   Correlation energy
 
     call restricted_correlation_energy(c_rung,c_DFA,nEns,wEns(:),nGrid,weight(:),rhow(:),drhow(:,:),Ec)
-!   print*,'Done with restricted_correlation_energy'
 
 !   Total energy
 
