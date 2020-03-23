@@ -56,15 +56,11 @@ program eDFT
   write(*,*) '******************************************'
   write(*,*)
 
-! Test numgrid
-
-! call test_numgrid()
-
 !------------------------------------------------------------------------
 ! Read input information
 !------------------------------------------------------------------------
 
-! Read number of atoms, number of electrons of the system
+! Read number of atoms, number of electroes of the system
 ! nC   = number of core orbitals
 ! nO   = number of occupied orbitals
 ! nV   = number of virtual orbitals (see below)
@@ -107,7 +103,7 @@ program eDFT
   allocate(S(nBas,nBas),T(nBas,nBas),V(nBas,nBas),Hc(nBas,nBas), &
            X(nBas,nBas),ERI(nBas,nBas,nBas,nBas),F(nBas,nBas))
 
-! Read integrals
+ ! Read integrals
 
   call cpu_time(start_int)
 
@@ -132,6 +128,10 @@ program eDFT
 
   allocate(root(ncart,nGrid),weight(nGrid))
   call quadrature_grid(nRad,nAng,nGrid,root,weight)
+
+! Test numgrid
+
+! call test_numgrid(nNuc,ZNuc,rNuc,nShell,TotAngMomShell,ExpShell,nRad,nAng,nGrid,root,weight)
 
 !------------------------------------------------------------------------
 ! Calculate AO values at grid points

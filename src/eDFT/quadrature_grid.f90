@@ -7,7 +7,9 @@ subroutine quadrature_grid(nRad,nAng,nGrid,root,weight)
 
 ! Input variables
 
-  integer,intent(in)                 :: nRad,nAng,nGrid
+  integer,intent(in)                 :: nRad
+  integer,intent(in)                 :: nAng
+  integer,intent(in)                 :: nGrid
 
 ! Local variables
 
@@ -20,12 +22,12 @@ subroutine quadrature_grid(nRad,nAng,nGrid,root,weight)
 
 ! Output variables
 
-  double precision,intent(out)       :: root(3,nGrid)
+  double precision,intent(out)       :: root(ncart,nGrid)
   double precision,intent(out)       :: weight(nGrid)
 
 ! Memory allocation
 
-  allocate(Radius(nRad),RadWeight(nRad),XYZ(3,nAng),XYZWeight(nAng))
+  allocate(Radius(nRad),RadWeight(nRad),XYZ(ncart,nAng),XYZWeight(nAng))
 
 ! Findthe radial grid
 
@@ -49,7 +51,7 @@ subroutine quadrature_grid(nRad,nAng,nGrid,root,weight)
   write(*,50)
   write(*,20)
   do j = 1,nAng
-     write(*,60) j,(XYZ(k,j),k=1,3), XYZWeight(j)
+     write(*,60) j,(XYZ(k,j),k=1,ncart), XYZWeight(j)
   end do
   write(*,20)
 

@@ -92,10 +92,6 @@ subroutine soG0T0(eta,nBas,nC,nO,nV,nR,ENuc,ERHF,ERI,eHF)
                                   X1(:,:),Y1(:,:),rho1(:,:,:), &
                                   X2(:,:),Y2(:,:),rho2(:,:,:))
 
-  
-
-  rho2(:,:,:) = 0d0
-
 !----------------------------------------------
 ! Compute T-matrix version of the self-energy 
 !----------------------------------------------

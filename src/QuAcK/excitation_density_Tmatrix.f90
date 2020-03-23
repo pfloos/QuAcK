@@ -222,6 +222,16 @@ subroutine excitation_density_Tmatrix(ispin,nBas,nC,nO,nV,nR,nOO,nVV,ERI,X1,Y1,r
 
     end do
 
+!   do p=nC+1,nBas-nR
+!     do i=nC+1,nO
+!       do ab=1,nVV
+!         print*,p,i,ab,rho1(p,i,ab)
+!       end do
+!     end do
+!   end do
+
+! call matout(nVV,nOO,Y1)
+
   end if
 
 end subroutine excitation_density_Tmatrix

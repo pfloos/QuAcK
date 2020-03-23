@@ -9,17 +9,17 @@ subroutine AO_values_grid(nBas,nShell,CenterShell,TotAngMomShell,KShell,DShell,E
 ! Input variables
 
   integer,intent(in)            :: nBas,nShell
-  double precision,intent(in)   :: CenterShell(maxShell,3)
+  double precision,intent(in)   :: CenterShell(maxShell,ncart)
   integer,intent(in)            :: TotAngMomShell(maxShell)
   integer,intent(in)            :: KShell(maxShell)
   double precision,intent(in)   :: DShell(maxShell,maxK)
   double precision,intent(in)   :: ExpShell(maxShell,maxK)
-  double precision,intent(in)   :: root(3,nGrid)
+  double precision,intent(in)   :: root(ncart,nGrid)
   integer,intent(in)            :: nGrid
 
 ! Local variables
 
-  integer                       :: atot,nShellFunction,a(3)
+  integer                       :: atot,nShellFunction,a(ncart)
   integer,allocatable           :: ShellFunction(:,:)
   double precision              :: rASq,xA,yA,zA,norm_coeff,prim
 
@@ -28,7 +28,7 @@ subroutine AO_values_grid(nBas,nShell,CenterShell,TotAngMomShell,KShell,DShell,E
 ! Output variables
 
   double precision,intent(out)  :: AO(nBas,nGrid)
-  double precision,intent(out)  :: dAO(3,nBas,nGrid)
+  double precision,intent(out)  :: dAO(ncart,nBas,nGrid)
 
 ! Initialization
 

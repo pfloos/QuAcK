@@ -669,9 +669,9 @@ program QuAcK
   if(doG0T0) then
     
     call cpu_time(start_G0T0)
-    call G0T0(doACFDT,exchange_kernel,doXBS,BSE,TDA,       &
-              singlet_manifold,triplet_manifold,linGW,eta, &  
-              nBas,nC(1),nO(1),nV(1),nR(1),nS(1),ENuc,ERHF,ERI_MO_basis,eHF)
+!   call G0T0(doACFDT,exchange_kernel,doXBS,BSE,TDA,       &
+!             singlet_manifold,triplet_manifold,linGW,eta, &  
+!             nBas,nC(1),nO(1),nV(1),nR(1),nS(1),ENuc,ERHF,ERI_MO_basis,eHF)
     call soG0T0(eta,nBas,nC(1),nO(1),nV(1),nR(1),ENuc,ERHF,ERI_MO_basis,eHF)
 
     call cpu_time(end_G0T0)
