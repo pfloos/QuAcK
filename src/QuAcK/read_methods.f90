@@ -92,10 +92,14 @@ subroutine read_methods(doRHF,doUHF,doMOM,                &
 ! Read CC methods
 
   read(1,*) 
-  read(1,*) answer1,answer2,answer3,answer4,answer5,answer6,answer7
+  read(1,*) answer1,answer2,answer3
   if(answer1 == 'T') doCCD    = .true.
   if(answer2 == 'T') doCCSD   = .true.
   if(answer3 == 'T') doCCSDT  = .true.
+
+! Read weird CC methods
+  read(1,*) 
+  read(1,*) answer1,answer2,answer3,answer4
   if(answer4 == 'T') do_drCCD = .true.
   if(answer5 == 'T') do_rCCD  = .true.
   if(answer6 == 'T') do_lCCD  = .true.
