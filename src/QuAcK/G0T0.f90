@@ -137,6 +137,9 @@ subroutine G0T0(doACFDT,exchange_kernel,doXBS,BSE,TDA,singlet_manifold,triplet_m
 ! Compute T-matrix version of the self-energy 
 !----------------------------------------------
 
+  rho1s = 0d0
+  rho1t = 0d0
+
   call self_energy_Tmatrix_diag(eta,nBas,nC,nO,nV,nR,nOOs,nVVs,nOOt,nVVt,eHF(:), & 
                                 Omega1s(:),rho1s(:,:,:),Omega2s(:),rho2s(:,:,:), & 
                                 Omega1t(:),rho1t(:,:,:),Omega2t(:),rho2t(:,:,:), & 

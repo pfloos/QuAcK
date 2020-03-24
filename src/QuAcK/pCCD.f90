@@ -53,6 +53,8 @@ subroutine pCCD(maxSCF,thresh,max_diis,nBas,nC,nO,nV,nR,ERI,ENuc,ERHF,eHF)
 
   allocate(delta_OOVV(nO,nV))
 
+  delta_OOVV(:,:) = 0d0
+
   do i=nC+1,nO
     do a=1,nV-nR
       delta_OOVV(i,a) = 2d0*(eHF(nO+a) - eHF(i))
@@ -62,6 +64,11 @@ subroutine pCCD(maxSCF,thresh,max_diis,nBas,nC,nO,nV,nR,ERI,ENuc,ERHF,eHF)
 ! Create integral batches
 
   allocate(OOOO(nO,nO),OOVV(nO,nV),OVOV(nO,nV),OVVO(nO,nV),VVVV(nV,nV))
+
+  OOOO(:,:) = 0d0
+  OOVV(:,:) = 0d0
+  OVVO(:,:) = 0d0
+  VVVV(:,:) = 0d0
 
   do i=nC+1,nO
     do j=nC+1,nO
@@ -141,7 +148,7 @@ subroutine pCCD(maxSCF,thresh,max_diis,nBas,nC,nO,nV,nR,ERI,ENuc,ERHF,eHF)
                - 2d0*(2d0*OVOV(i,a) - OVVO(i,a) - OOVV(i,a)*t(i,a))*t(i,a)
 
         do j=nC+1,nO
-          r(i,a) = r(i,a) - 2d0*OOVV(j,a)*t(j,a)*t(i,a) + OOOO(j,i)*t(j,a) + y(i,j)*t(j,a)
+          r(i,a) = r(i,a) - 2d0*OOVV(j,a)*t(j,a)*t(i,a) + OOOO(j,i)*t(j,a) + y(i,j)*t(j,a) 
         end do 
 
         do b=1,nV-nR

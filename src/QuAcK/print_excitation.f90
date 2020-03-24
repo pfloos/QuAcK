@@ -7,7 +7,7 @@ subroutine print_excitation(method,ispin,nS,Omega)
 
 ! Input variables
 
-  character*6,intent(in)             :: method
+  character*12,intent(in)             :: method
   integer,intent(in)                 :: ispin,nS
   double precision,intent(in)        :: Omega(nS)
 

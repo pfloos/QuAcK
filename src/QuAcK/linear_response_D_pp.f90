@@ -25,7 +25,7 @@ subroutine linear_response_D_pp(ispin,nBas,nC,nO,nV,nR,nOO,nVV,e,ERI,D_pp)
 ! Define the chemical potential
 
   eF = e(nO) + e(nO+1)
-! eF = 0d0
+  eF = 0d0
  
 ! Build the D matrix for the singlet manifold
 

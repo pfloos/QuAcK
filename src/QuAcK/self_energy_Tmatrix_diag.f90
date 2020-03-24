@@ -72,7 +72,7 @@ subroutine self_energy_Tmatrix_diag(eta,nBas,nC,nO,nV,nR,nOOs,nVVs,nOOt,nVVt,e, 
     do i=nC+1,nO
       do cd=1,nVVt
         eps = e(p) + e(i) - Omega1t(cd)
-        SigT(p) = SigT(p) + rho1t(p,i,cd)*rho1t(p,i,cd)/eps
+ !      SigT(p) = SigT(p) + rho1t(p,i,cd)*rho1t(p,i,cd)/eps
       enddo
     enddo
   enddo
@@ -83,7 +83,7 @@ subroutine self_energy_Tmatrix_diag(eta,nBas,nC,nO,nV,nR,nOOs,nVVs,nOOt,nVVt,e, 
     do a=1,nV-nR
       do kl=1,nOOt
         eps = e(p) + e(nO+a) - Omega2t(kl)
-        SigT(p) = SigT(p) + rho2t(p,a,kl)*rho2t(p,a,kl)/eps
+ !      SigT(p) = SigT(p) + rho2t(p,a,kl)*rho2t(p,a,kl)/eps
       enddo
     enddo
   enddo

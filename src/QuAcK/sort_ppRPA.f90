@@ -74,16 +74,12 @@ subroutine sort_ppRPA(ortho_eigvec,nOO,nVV,Omega,Z,Omega1,X1,Y1,Omega2,X2,Y2)
       ab = ab + 1
       Omega1(ab) = Omega(pq)
       Z1(1:nOO+nVV,ab) = Z(1:nOO+nVV,pq)
-!     X1(1:nVV,ab) = Z(    1:    nVV,pq)
-!     Y1(1:nOO,ab) = Z(nVV+1:nOO+nVV,pq)
 
     else
 
       ij = ij + 1
       Omega2(ij) = Omega(pq)
       Z2(1:nOO+nVV,ij) = Z(1:nOO+nVV,pq)
-!     X2(1:nVV,ij) = Z(    1:    nVV,pq)
-!     Y2(1:nOO,ij) = Z(nVV+1:nOO+nVV,pq)
 
     end if
 
@@ -115,11 +111,13 @@ subroutine sort_ppRPA(ortho_eigvec,nOO,nVV,Omega,Z,Omega1,X1,Y1,Omega2,X2,Y2)
 
   end if
 
-  X1(1:nVV,1:nVV) = Z1(    1:    nVV,1:nVV)
-  Y1(1:nOO,1:nVV) = Z1(nVV+1:nOO+nVV,1:nVV)
+! Define submatrices X1, Y1, X2, & Y2
 
-  X2(1:nVV,1:nOO) = Z2(    1:    nVV,1:nOO)
-  Y2(1:nOO,1:nOO) = Z2(nVV+1:nOO+nVV,1:nOO)
+  X1(1:nVV,1:nVV) = + Z1(    1:    nVV,1:nVV)
+  Y1(1:nOO,1:nVV) = - Z1(nVV+1:nOO+nVV,1:nVV)
+
+  X2(1:nVV,1:nOO) = + Z2(    1:    nVV,1:nOO)
+  Y2(1:nOO,1:nOO) = - Z2(nVV+1:nOO+nVV,1:nOO)
 
 ! write(*,*) 'Z1t.M.Z1'
 ! call matout(nVV,nVV,matmul(matmul(transpose(Z1),M),Z1))

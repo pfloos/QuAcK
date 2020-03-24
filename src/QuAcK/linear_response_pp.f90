@@ -1,5 +1,5 @@
 subroutine linear_response_pp(ispin,ortho_eigvec,BSE,nBas,nC,nO,nV,nR,nOO,nVV, & 
-                              e,ERI,Omega1,X1,Y1,Omega2,X2,Y2,EcppRPA)
+                              e,ERI,Omega1,X1,Y1,Omega2,X2,Y2,EcRPA)
 
 ! Compute the p-p channel of the linear response: see Scuseria et al. JCP 139, 104113 (2013)
 
@@ -22,6 +22,8 @@ subroutine linear_response_pp(ispin,ortho_eigvec,BSE,nBas,nC,nO,nV,nR,nOO,nVV, &
   integer                       :: ab,cd,ij,kl
   integer                       :: p,q,r,s
   double precision              :: trace_matrix
+  double precision              :: EcRPA1
+  double precision              :: EcRPA2
   double precision,allocatable  :: B(:,:)
   double precision,allocatable  :: C(:,:)
   double precision,allocatable  :: D(:,:)
@@ -37,7 +39,7 @@ subroutine linear_response_pp(ispin,ortho_eigvec,BSE,nBas,nC,nO,nV,nR,nOO,nVV, &
   double precision,intent(out)  :: Omega2(nOO)
   double precision,intent(out)  :: X2(nVV,nOO)
   double precision,intent(out)  :: Y2(nOO,nOO)
-  double precision,intent(out)  :: EcppRPA
+  double precision,intent(out)  :: EcRPA
 
 ! Memory allocation
 
@@ -117,10 +119,11 @@ subroutine linear_response_pp(ispin,ortho_eigvec,BSE,nBas,nC,nO,nV,nR,nOO,nVV, &
 
 ! print*, 'pp-RPA matrix'
 ! call matout(nOO+nVV,nOO+nVV,M(:,:))
+! write(*,*) 
 
 ! Diagonalize the p-h matrix
 
-  call diagonalize_general_matrix(nOO+nVV,M,Omega,Z)
+  if(nOO+nVV > 0) call diagonalize_general_matrix(nOO+nVV,M,Omega,Z)
 
 ! write(*,*) 'pp-RPA excitation energies'
 ! call matout(nOO+nVV,1,Omega(:))
@@ -132,11 +135,11 @@ subroutine linear_response_pp(ispin,ortho_eigvec,BSE,nBas,nC,nO,nV,nR,nOO,nVV, &
 
 ! Compute the RPA correlation energy
 
-! EcppRPA = 0.5d0*( sum(Omega1(:)) - sum(Omega2(:)) - trace_matrix(nVV,C(:,:)) - trace_matrix(nOO,D(:,:)) )
-! print*,+sum(Omega1(:)),- trace_matrix(nVV,C(:,:))
-! print*,-sum(Omega2(:)),- trace_matrix(nOO,D(:,:))
-  EcppRPA = +sum(Omega1(:)) - trace_matrix(nVV,C(:,:))
-! EcppRPA = -sum(Omega2(:)) - trace_matrix(nOO,D(:,:))
+  EcRPA = 0.5d0*( sum(Omega1(:)) - sum(Omega2(:)) - trace_matrix(nVV,C(:,:)) - trace_matrix(nOO,D(:,:)) )
+  EcRPA1 = +sum(Omega1(:)) - trace_matrix(nVV,C(:,:))
+  EcRPA2 = -sum(Omega2(:)) - trace_matrix(nOO,D(:,:))
+  if(abs(EcRPA - EcRPA1) > 1d-10 .or. abs(EcRPA - EcRPA2) > 1d-10) & 
+    print*,'!!! Issue in pp-RPA linear reponse calculation RPA1 != RPA2 !!!'
 
 ! write(*,*)'X1'
 ! call matout(nVV,nVV,X1)
@@ -146,13 +149,5 @@ subroutine linear_response_pp(ispin,ortho_eigvec,BSE,nBas,nC,nO,nV,nR,nOO,nVV, &
 ! call matout(nOO,nVV,X2)
 ! write(*,*)'Y2'
 ! call matout(nOO,nOO,Y2)
-
-! print*,'Ec(pp-RPA) = ',EcppRPA
-
-! print*,'Eigenvalues'
-! call matout(nOO+nVV,1,Omega)
-
-! print*,'Eigenvectors'
-! call matout(nOO+nVV,nOO+nVV,matmul(transpose(Z),Z))
 
 end subroutine linear_response_pp

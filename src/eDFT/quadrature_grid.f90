@@ -66,7 +66,7 @@ subroutine quadrature_grid(nRad,nAng,nGrid,root,weight)
     enddo
   enddo
  
-! Compute values of the basis functions (and the its gradient if required) at each grid point
+! Print grids
 
 20 format(T2,58('-'))
 30 format(T20,'Radial Quadrature',/, &

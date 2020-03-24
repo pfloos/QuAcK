@@ -73,7 +73,7 @@ subroutine LIM_RKS(x_rung,x_DFA,c_rung,c_DFA,nEns,wEns,nGrid,weight,maxSCF,thres
 !------------------------------------------------------------------------
 
   write(*,'(A40)')           '*************************************************'
-  write(*,'(A40)')           '            ZERO-WEIGHT CALCULATION              '
+  write(*,'(A40)')           '            EQUI-WEIGHT CALCULATION              '
   write(*,'(A40)')           '*************************************************'
 
   wLIM(1:nEns) = 1d0/dble(nEns)
