@@ -1,4 +1,4 @@
-subroutine read_grid(SGn,nRad,nAng,nGrid)
+subroutine read_grid(SGn,radial_precision,nRad,nAng)
 
 ! Read grid type
 
@@ -10,9 +10,9 @@ subroutine read_grid(SGn,nRad,nAng,nGrid)
 
 ! Output variables
 
+  double precision,intent(out)  :: radial_precision
   integer,intent(out)           :: nRad
   integer,intent(out)           :: nAng
-  integer,intent(out)           :: nGrid
 
   write(*,*)'----------------------------------------------------------'
   write(*,'(A22,I1)')'  Quadrature grid: SG-',SGn
@@ -21,18 +21,22 @@ subroutine read_grid(SGn,nRad,nAng,nGrid)
   select case (SGn)
 
     case(0)
-     nRad = 23
-     nAng = 170
+      radial_precision = 1d-5
+      nRad = 23
+      nAng = 170
 
     case(1)
+      radial_precision = 1d-7
       nRad = 50
       nAng = 194
 
     case(2)
+      radial_precision = 1d-9
       nRad = 75
       nAng = 302
 
     case(3)
+      radial_precision = 1d-11
       nRad = 99
       nAng = 590
 
@@ -41,7 +45,5 @@ subroutine read_grid(SGn,nRad,nAng,nGrid)
       stop
 
   end select
-
-  nGrid = nRad*nAng
 
 end subroutine read_grid

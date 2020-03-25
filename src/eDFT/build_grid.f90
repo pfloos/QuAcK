@@ -58,28 +58,16 @@ subroutine build_grid(nNuc,ZNuc,rNuc,nShell,TotAngMomShell,ExpShell,max_ang_mom,
 
   do iNuc=1,nNuc
 
-    context = numgrid_new_atom_grid(radial_precision,       &
-                                    min_num_angular_points, &
-                                    max_num_angular_points, &
-                                    int(ZNuc(iNuc)),        &
-                                    max_exponent(iNuc),     &
-                                    max_ang_mom(iNuc),      &
-                                    min_exponent(iNuc,:)    )
+    context = numgrid_new_atom_grid(radial_precision,min_num_angular_points,max_num_angular_points, &
+                                    int(ZNuc(iNuc)),max_exponent(iNuc),max_ang_mom(iNuc),           &
+                                    min_exponent(iNuc,1:max_ang_mom(iNuc)+1))
 
     center_index = iNuc - 1
     num_points = numgrid_get_num_grid_points(context)
 
-    call numgrid_get_grid(context,                 &
-                          nNuc,                    &
-                          center_index,            &
-                          rNuc(:,1),               &
-                          rNuc(:,2),               &
-                          rNuc(:,3),               &
-                          int(ZNuc(:)),            &
-                          root(1,iG+1:num_points), &
-                          root(2,iG+1:num_points), &
-                          root(3,iG+1:num_points), &
-                          weight(iG+1:num_points)  )
+    call numgrid_get_grid(context,nNuc,center_index,rNuc(:,1),rNuc(:,2),rNuc(:,3),int(ZNuc(:)),    &
+                          root(1,iG+1:num_points),root(2,iG+1:num_points),root(3,iG+1:num_points), &
+                          weight(iG+1:num_points))
 
     iG = iG + num_points
 

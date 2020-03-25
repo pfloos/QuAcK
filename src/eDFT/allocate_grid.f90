@@ -53,13 +53,9 @@ subroutine allocate_grid(nNuc,ZNuc,rNuc,nShell,TotAngMomShell,ExpShell,max_ang_m
 
   do iNuc=1,nNuc
 
-    context = numgrid_new_atom_grid(radial_precision,       &
-                                    min_num_angular_points, &
-                                    max_num_angular_points, &
-                                    int(ZNuc(iNuc)),        &
-                                    max_exponent(iNuc),     &
-                                    max_ang_mom(iNuc),      &
-                                    min_exponent(iNuc,:)    )
+    context = numgrid_new_atom_grid(radial_precision,min_num_angular_points,max_num_angular_points, &
+                                    int(ZNuc(iNuc)),max_exponent(iNuc),max_ang_mom(iNuc),           &
+                                    min_exponent(iNuc,1:max_ang_mom(iNuc)+1))
 
     nGrid = nGrid + numgrid_get_num_grid_points(context)
 
