@@ -15,10 +15,10 @@
 # Hartree-Fock = 666
   1 RVWN5
 # quadrature grid SG-n
-  2
+  1
 # Number of states in ensemble (nEns)
   2
 # Ensemble weights: wEns(1),...,wEns(nEns-1)
-  0.50000 0.00000
+  0.00000 0.00000
 # GOK-DFT: maxSCF thresh   DIIS n_diis guess_type ortho_type
            32    0.00001  T    5      1          1
