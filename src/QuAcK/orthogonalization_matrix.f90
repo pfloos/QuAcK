@@ -34,9 +34,9 @@ subroutine orthogonalization_matrix(ortho_type,nBas,S,X)
 
   if(ortho_type == 1) then
 
-    write(*,*)
-    write(*,*) ' Lowdin orthogonalization'
-    write(*,*)
+!   write(*,*)
+!   write(*,*) ' Lowdin orthogonalization'
+!   write(*,*)
 
     Uvec = S
     call diagonalize_matrix(nBas,Uvec,Uval)

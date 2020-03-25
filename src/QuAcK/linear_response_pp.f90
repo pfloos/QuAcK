@@ -138,7 +138,7 @@ subroutine linear_response_pp(ispin,ortho_eigvec,BSE,nBas,nC,nO,nV,nR,nOO,nVV, &
   EcRPA = 0.5d0*( sum(Omega1(:)) - sum(Omega2(:)) - trace_matrix(nVV,C(:,:)) - trace_matrix(nOO,D(:,:)) )
   EcRPA1 = +sum(Omega1(:)) - trace_matrix(nVV,C(:,:))
   EcRPA2 = -sum(Omega2(:)) - trace_matrix(nOO,D(:,:))
-  if(abs(EcRPA - EcRPA1) > 1d-10 .or. abs(EcRPA - EcRPA2) > 1d-10) & 
+  if(abs(EcRPA - EcRPA1) > 1d-6 .or. abs(EcRPA - EcRPA2) > 1d-6) & 
     print*,'!!! Issue in pp-RPA linear reponse calculation RPA1 != RPA2 !!!'
 
 ! write(*,*)'X1'

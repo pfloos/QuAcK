@@ -16,6 +16,8 @@ subroutine sort_ppRPA(ortho_eigvec,nOO,nVV,Omega,Z,Omega1,X1,Y1,Omega2,X2,Y2)
 ! Local variables
 
   integer                       :: pq,ab,ij
+  integer                       :: deg1,ab_start,ab_end
+  integer                       :: deg2,ij_start,ij_end
   double precision,allocatable  :: M(:,:)
   double precision,allocatable  :: Z1(:,:)
   double precision,allocatable  :: Z2(:,:)
@@ -23,6 +25,9 @@ subroutine sort_ppRPA(ortho_eigvec,nOO,nVV,Omega,Z,Omega1,X1,Y1,Omega2,X2,Y2)
   double precision,allocatable  :: S2(:,:)
   double precision,allocatable  :: O1(:,:)
   double precision,allocatable  :: O2(:,:)
+
+  integer,allocatable           :: order1(:)
+  integer,allocatable           :: order2(:)
 
 ! Output variables
 
@@ -37,8 +42,7 @@ subroutine sort_ppRPA(ortho_eigvec,nOO,nVV,Omega,Z,Omega1,X1,Y1,Omega2,X2,Y2)
 
  allocate(M(nOO+nVV,nOO+nVV),              &
           Z1(nOO+nVV,nVV),Z2(nOO+nVV,nOO), &
-          S1(nVV,nVV),S2(nOO,nOO),         &
-          O1(nVV,nVV),O2(nOO,nOO))
+          order1(nVV),order2(nOO))
 
 ! Initializatiom
 
@@ -88,6 +92,20 @@ subroutine sort_ppRPA(ortho_eigvec,nOO,nVV,Omega,Z,Omega1,X1,Y1,Omega2,X2,Y2)
   if(minval(Omega1(:)) < 0d0 .or. ab /= nVV) call print_warning('You may have instabilities in pp-RPA!!')
   if(maxval(Omega2(:)) > 0d0 .or. ij /= nOO) call print_warning('You may have instabilities in pp-RPA!!')
 
+  do ab=1,nVV
+    order1(ab) = ab
+  end do
+
+  do ij=1,nOO
+    order2(ij) = ij
+  end do
+
+  call quick_sort(Omega1(:),order1(:),nVV)
+  call set_order(Z1(:,:),order1(:),nOO+nVV,nVV)
+
+  call quick_sort(Omega2(:),order2(:),nOO)
+  call set_order(Z2(:,:),order2(:),nOO+nVV,nOO)
+
 ! write(*,*) 'pp-RPA positive excitation energies'
 ! call matout(nVV,1,Omega1(:))
 ! write(*,*)
@@ -100,14 +118,75 @@ subroutine sort_ppRPA(ortho_eigvec,nOO,nVV,Omega,Z,Omega1,X1,Y1,Omega2,X2,Y2)
 
   if(ortho_eigvec) then
 
-    S1 = + matmul(transpose(Z1),matmul(M,Z1))
-    S2 = - matmul(transpose(Z2),matmul(M,Z2))
+    ! Find degenerate eigenvalues
 
-    if(nVV > 0) call orthogonalization_matrix(1,nVV,S1,O1)
-    if(nOO > 0) call orthogonalization_matrix(1,nOO,S2,O2)
+      deg1 = 1
+      ab_start = 1
 
-    Z1 = matmul(Z1,O1)
-    Z2 = matmul(Z2,O2)
+      do ab=1,nVV
+
+        if(ab < nVV .and. abs(Omega1(ab) - Omega1(ab+1)) < 1d-10) then 
+
+          if(deg1 == 1) ab_start = ab
+          deg1 = deg1 + 1
+
+        else
+
+          ab_end = ab 
+!         print*,'deg = ',deg1,ab_start,ab_end
+
+          allocate(S1(deg1,deg1),O1(deg1,deg1))
+
+          S1 = matmul(transpose(Z1(:,ab_start:ab_end)),matmul(M,Z1(:,ab_start:ab_end)))
+          call orthogonalization_matrix(1,deg1,S1,O1)
+          Z1(:,ab_start:ab_end) = matmul(Z1(:,ab_start:ab_end),O1)
+
+          deallocate(S1,O1)
+
+          deg1 = 1
+          ab_start = ab + 1
+
+        end if
+      end do
+
+      deg2 = 1
+      ij_start = 1
+
+      do ij=1,nOO
+
+        if(ij < nOO .and. abs(Omega2(ij) - Omega2(ij+1)) < 1d-10) then 
+
+          if(deg2 == 1) ij_start = ij 
+          deg2 = deg2 + 1
+
+        else
+
+          ij_end = ij 
+!         print*,'deg = ',deg2,ij_start,ij_end
+
+          allocate(S2(deg2,deg2),O2(deg2,deg2))
+
+          S2 = - matmul(transpose(Z2(:,ij_start:ij_end)),matmul(M,Z2(:,ij_start:ij_end)))
+          call orthogonalization_matrix(1,deg2,S2,O2)
+          Z2(:,ij_start:ij_end) = matmul(Z2(:,ij_start:ij_end),O2)
+
+          deallocate(S2,O2)
+
+          deg2 = 1
+          ij_start = ij + 1
+
+        end if
+      end do
+
+!   allocate(S1(nVV,nVV),S2(nOO,nOO),O1(nVV,nVV),O2(nOO,nOO))
+!   S1 = + matmul(transpose(Z1),matmul(M,Z1))
+!   S2 = - matmul(transpose(Z2),matmul(M,Z2))
+
+!   if(nVV > 0) call orthogonalization_matrix(1,nVV,S1,O1)
+!   if(nOO > 0) call orthogonalization_matrix(1,nOO,S2,O2)
+
+!   Z1 = matmul(Z1,O1)
+!   Z2 = matmul(Z2,O2)
 
   end if
 

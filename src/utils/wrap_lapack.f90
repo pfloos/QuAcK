@@ -1,35 +1,3 @@
-!subroutine diagonalize_matrix_lowest(N,M,A,e)
-!
-!! Diagonalize a square matrix but only provide the M lowest eigenvalues/eigenvectors
-!
-!  implicit none
-!
-!! Input variables
-!
-!  integer,intent(in)            :: N
-!  integer,intent(in)            :: M
-!  double precision,intent(inout):: A(N,N)
-!  double precision,intent(out)  :: e(N)
-!
-!! Local variables
-!
-!  integer                       :: lwork,info
-!  double precision,allocatable  :: work(:)
-!
-!! Memory allocation
-!
-!  allocate(work(3*N))
-!  lwork = size(work)
-!  abstol = 1d-15
-!
-!  call dsyevx('V','I','U',N,A,N,VL,VU,1,M,abstol,M,e,work,lwork,info)
-! 
-!  if(info /= 0) then 
-!    print*,'Problem in diagonalize_matrix (dsyev)!!'
-!  endif
-!
-!end subroutine diagonalize_matrix_lowest
-
 subroutine diagonalize_general_matrix(N,A,WR,VR)
 
 ! Diagonalize a non-symmetric square matrix
@@ -53,34 +21,12 @@ subroutine diagonalize_general_matrix(N,A,WR,VR)
 
   lwork = 4*N
   allocate(WI(N),VL(N,N),work(lwork))
-! tmp1 = A
+
   call dgeev('V','V',N,A,N,WR,WI,VL,N,VR,N,work,lwork,info)
 
   if(info /= 0) then 
     print*,'Problem in diagonalize_general_matrix (dgeev)!!'
   endif
-
-! tmp2 = 0d0
-! do i=1,N
-!   do j=1,N
-!     do k=1,N
-!       tmp2(i,j) = tmp2(i,j) + tmp1(i,k)*vr(k,j)
-!     end do
-!   end do
-! end do
-
-! print*,'tmp2'
-! call matout(N,N,tmp2)
-
-! tmp1 = 0d0
-! do i=1,N
-!   do j=1,N
-!     tmp1(i,j) = wr(j)*vr(i,j)
-!   end do
-! end do
-
-! print*,'tmp1'
-! call matout(N,N,tmp1)
 
 end subroutine diagonalize_general_matrix
 
