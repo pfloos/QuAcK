@@ -32,10 +32,15 @@ program eDFT
   character(len=7)              :: method
   integer                       :: x_rung,c_rung
   character(len=12)             :: x_DFA ,c_DFA
+
   integer                       :: SGn
-  integer                       :: nRad,nAng,nGrid
+  double precision              :: radial_precision
+  integer                       :: nRad
+  integer                       :: nAng
+  integer                       :: nGrid
   double precision,allocatable  :: root(:,:)
   double precision,allocatable  :: weight(:)
+
   double precision,allocatable  :: AO(:,:)
   double precision,allocatable  :: dAO(:,:,:)
 
@@ -128,14 +133,16 @@ program eDFT
 !------------------------------------------------------------------------
 ! Construct quadrature grid
 !------------------------------------------------------------------------
-! call read_grid(SGn,nRad,nAng,nGrid)
+  call read_grid(SGn,nRad,nAng,nGrid)
+  radial_precision = 1d-7
 
-  call allocate_grid(nNuc,ZNuc,rNuc,nShell,TotAngMomShell,ExpShell,max_ang_mom,min_exponent,max_exponent,nGrid)
+  call allocate_grid(nNuc,ZNuc,rNuc,nShell,TotAngMomShell,ExpShell,max_ang_mom,min_exponent,max_exponent, & 
+                     radial_precision,nRad,nAng,nGrid)
 
   allocate(root(ncart,nGrid),weight(nGrid))
 
   call build_grid(nNuc,ZNuc,rNuc,nShell,TotAngMomShell,ExpShell,max_ang_mom,min_exponent,max_exponent, & 
-                  nGrid,weight,root)
+                  radial_precision,nRad,nAng,nGrid,weight,root)
 
 ! call quadrature_grid(nRad,nAng,nGrid,root,weight)
 

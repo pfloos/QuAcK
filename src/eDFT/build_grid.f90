@@ -1,5 +1,5 @@
 subroutine build_grid(nNuc,ZNuc,rNuc,nShell,TotAngMomShell,ExpShell,max_ang_mom,min_exponent,max_exponent, & 
-                      nGrid,weight,root)
+                      radial_precision,nRad,nAng,nGrid,weight,root)
 
 ! Compute quadrature grid with numgrid (Radovan Bast)
 
@@ -23,6 +23,9 @@ subroutine build_grid(nNuc,ZNuc,rNuc,nShell,TotAngMomShell,ExpShell,max_ang_mom,
   double precision,intent(in)   :: min_exponent(nNuc,maxL+1)
   double precision,intent(in)   :: max_exponent(nNuc)
 
+  double precision,intent(in)   :: radial_precision
+  integer,intent(in)            :: nRad
+  integer,intent(in)            :: nAng
   integer,intent(in)            :: nGrid
 
 ! Local variables
@@ -30,7 +33,6 @@ subroutine build_grid(nNuc,ZNuc,rNuc,nShell,TotAngMomShell,ExpShell,max_ang_mom,
   integer                       :: iNuc
   integer                       :: iG
 
-  double precision              :: radial_precision
   integer                       :: min_num_angular_points
   integer                       :: max_num_angular_points
   integer                       :: num_points
@@ -45,9 +47,8 @@ subroutine build_grid(nNuc,ZNuc,rNuc,nShell,TotAngMomShell,ExpShell,max_ang_mom,
 
 ! Set useful variables
 
-  radial_precision = 1d-12
-  min_num_angular_points = 6 ! SG-0
-  max_num_angular_points = 170 ! SG-3
+  min_num_angular_points = nAng
+  max_num_angular_points = nAng
 
 !------------------------------------------------------------------------
 ! Main loop over atoms
@@ -76,7 +77,7 @@ subroutine build_grid(nNuc,ZNuc,rNuc,nShell,TotAngMomShell,ExpShell,max_ang_mom,
                           rNuc(:,3),               &
                           int(ZNuc(:)),            &
                           root(1,iG+1:num_points), &
-                          root(3,iG+1:num_points), &
+                          root(2,iG+1:num_points), &
                           root(3,iG+1:num_points), &
                           weight(iG+1:num_points)  )
 
