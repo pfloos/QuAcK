@@ -134,17 +134,17 @@ program eDFT
 ! Construct quadrature grid
 !------------------------------------------------------------------------
   call read_grid(SGn,radial_precision,nRad,nAng,nGrid)
-  nGrid = nRad*nAng
+! nGrid = nRad*nAng
 
-! call allocate_grid(nNuc,ZNuc,rNuc,nShell,TotAngMomShell,ExpShell,max_ang_mom,min_exponent,max_exponent, & 
-!                    radial_precision,nRad,nAng,nGrid)
+  call allocate_grid(nNuc,ZNuc,rNuc,nShell,TotAngMomShell,ExpShell,max_ang_mom,min_exponent,max_exponent, & 
+                     radial_precision,nRad,nAng,nGrid)
 
   allocate(root(ncart,nGrid),weight(nGrid))
 
-  call quadrature_grid(nRad,nAng,nGrid,root,weight)
+! call quadrature_grid(nRad,nAng,nGrid,root,weight)
 
-! call build_grid(nNuc,ZNuc,rNuc,nShell,TotAngMomShell,ExpShell,max_ang_mom,min_exponent,max_exponent, & 
-!                 radial_precision,nRad,nAng,nGrid,weight,root)
+  call build_grid(nNuc,ZNuc,rNuc,nShell,TotAngMomShell,ExpShell,max_ang_mom,min_exponent,max_exponent, & 
+                  radial_precision,nRad,nAng,nGrid,weight,root)
 
 !------------------------------------------------------------------------
 ! Calculate AO values at grid points

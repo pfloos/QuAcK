@@ -30,6 +30,7 @@ subroutine build_grid(nNuc,ZNuc,rNuc,nShell,TotAngMomShell,ExpShell,max_ang_mom,
 
 ! Local variables
  
+  logical                       :: dump_grid = .false.
   integer                       :: iNuc
   integer                       :: iG
 
@@ -66,8 +67,8 @@ subroutine build_grid(nNuc,ZNuc,rNuc,nShell,TotAngMomShell,ExpShell,max_ang_mom,
     num_points = numgrid_get_num_grid_points(context)
 
     call numgrid_get_grid(context,nNuc,center_index,rNuc(:,1),rNuc(:,2),rNuc(:,3),int(ZNuc(:)),    &
-                          root(1,iG+1:num_points),root(2,iG+1:num_points),root(3,iG+1:num_points), &
-                          weight(iG+1:num_points))
+                          root(1,iG+1:iG+num_points),root(2,iG+1:iG+num_points),root(3,iG+1:iG+num_points), &
+                          weight(iG+1:iG+num_points))
 
     iG = iG + num_points
 
@@ -81,13 +82,17 @@ subroutine build_grid(nNuc,ZNuc,rNuc,nShell,TotAngMomShell,ExpShell,max_ang_mom,
 
 ! Print grid
 
-  write(*,*) ' ***********************'
-  write(*,*) ' *** QUADRATURE GRID ***'
-  write(*,*) ' ***********************'
-  write(*,'(A10,3X,3A15)') 'Grid point','X','Y','Z'
-  do iG=1,nGrid
-     write(*,'(I10,3X,4F15.10)') iG,weight(iG),root(:,iG)
-  end do
-  write(*,*)
+  if(dump_grid) then 
+
+    write(*,*) ' ***********************'
+    write(*,*) ' *** QUADRATURE GRID ***'
+    write(*,*) ' ***********************'
+    write(*,'(A10,3X,3A15)') 'Grid point','X','Y','Z'
+    do iG=1,nGrid
+       write(*,'(I10,3X,4F15.10)') iG,weight(iG),root(:,iG)
+    end do
+    write(*,*)
+
+  end if
 
 end subroutine build_grid

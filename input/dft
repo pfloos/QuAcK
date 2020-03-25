@@ -15,7 +15,7 @@
 # Hartree-Fock = 666
   1 RVWN5
 # quadrature grid SG-n
-  1
+  2
 # Number of states in ensemble (nEns)
   2
 # Ensemble weights: wEns(1),...,wEns(nEns-1)
