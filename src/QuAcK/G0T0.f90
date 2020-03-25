@@ -91,10 +91,8 @@ subroutine G0T0(doACFDT,exchange_kernel,doXBS,BSE,TDA,singlet_manifold,triplet_m
 
 ! Compute linear response
 
-  call linear_response_pp(ispin,.true.,.false.,nBas,nC,nO,nV,nR, & 
-                          nOOs,nVVs,eHF(:),ERI(:,:,:,:),  & 
-                          Omega1s(:),X1s(:,:),Y1s(:,:),   & 
-                          Omega2s(:),X2s(:,:),Y2s(:,:),   & 
+  call linear_response_pp(ispin,.true.,.false.,nBas,nC,nO,nV,nR,nOOs,nVVs,eHF(:),ERI(:,:,:,:),  & 
+                          Omega1s(:),X1s(:,:),Y1s(:,:),Omega2s(:),X2s(:,:),Y2s(:,:),   & 
                           EcRPA(ispin))
 
   EcRPA(ispin) = 1d0*EcRPA(ispin)
@@ -105,8 +103,7 @@ subroutine G0T0(doACFDT,exchange_kernel,doXBS,BSE,TDA,singlet_manifold,triplet_m
 ! Compute excitation densities for the T-matrix
 
   call excitation_density_Tmatrix(ispin,nBas,nC,nO,nV,nR,nOOs,nVVs,ERI(:,:,:,:), & 
-                                  X1s(:,:),Y1s(:,:),rho1s(:,:,:),                & 
-                                  X2s(:,:),Y2s(:,:),rho2s(:,:,:))
+                                  X1s(:,:),Y1s(:,:),rho1s(:,:,:),X2s(:,:),Y2s(:,:),rho2s(:,:,:))
 
 !----------------------------------------------
 ! Triplet manifold
@@ -116,10 +113,8 @@ subroutine G0T0(doACFDT,exchange_kernel,doXBS,BSE,TDA,singlet_manifold,triplet_m
 
 ! Compute linear response
 
-  call linear_response_pp(ispin,.true.,.false.,nBas,nC,nO,nV,nR, & 
-                          nOOt,nVVt,eHF(:),ERI(:,:,:,:),  & 
-                          Omega1t(:),X1t(:,:),Y1t(:,:),   & 
-                          Omega2t(:),X2t(:,:),Y2t(:,:),   & 
+  call linear_response_pp(ispin,.true.,.false.,nBas,nC,nO,nV,nR,nOOt,nVVt,eHF(:),ERI(:,:,:,:),  & 
+                          Omega1t(:),X1t(:,:),Y1t(:,:),Omega2t(:),X2t(:,:),Y2t(:,:),   & 
                           EcRPA(ispin))
 
   EcRPA(ispin) = 3d0*EcRPA(ispin)
@@ -130,15 +125,11 @@ subroutine G0T0(doACFDT,exchange_kernel,doXBS,BSE,TDA,singlet_manifold,triplet_m
 ! Compute excitation densities for the T-matrix
 
   call excitation_density_Tmatrix(ispin,nBas,nC,nO,nV,nR,nOOt,nVVt,ERI(:,:,:,:), & 
-                                  X1t(:,:),Y1t(:,:),rho1t(:,:,:),                & 
-                                  X2t(:,:),Y2t(:,:),rho2t(:,:,:))
+                                  X1t(:,:),Y1t(:,:),rho1t(:,:,:),X2t(:,:),Y2t(:,:),rho2t(:,:,:))
 
 !----------------------------------------------
 ! Compute T-matrix version of the self-energy 
 !----------------------------------------------
-
-  rho1s = 0d0
-  rho1t = 0d0
 
   call self_energy_Tmatrix_diag(eta,nBas,nC,nO,nV,nR,nOOs,nVVs,nOOt,nVVt,eHF(:), & 
                                 Omega1s(:),rho1s(:,:,:),Omega2s(:),rho2s(:,:,:), & 

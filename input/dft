@@ -1,5 +1,5 @@
 # Restricted or unrestricted KS calculation
-  LIM-RKS
+  GOK-RKS
 # exchange rung: 
 # Hartree      = 0
 # LDA          = 1: RS51,RMFL20

@@ -17,6 +17,9 @@ program eDFT
   double precision,allocatable  :: CenterShell(:,:)
   double precision,allocatable  :: DShell(:,:)
   double precision,allocatable  :: ExpShell(:,:)
+  integer,allocatable           :: max_ang_mom(:)
+  double precision,allocatable  :: min_exponent(:,:)
+  double precision,allocatable  :: max_exponent(:)
 
   double precision,allocatable  :: S(:,:)
   double precision,allocatable  :: T(:,:)
@@ -75,14 +78,15 @@ program eDFT
 
   call read_geometry(nNuc,ZNuc,rNuc,ENuc)
 
-  allocate(CenterShell(maxShell,ncart),TotAngMomShell(maxShell),KShell(maxShell), &
-           DShell(maxShell,maxK),ExpShell(maxShell,maxK))
+  allocate(CenterShell(maxShell,ncart),TotAngMomShell(maxShell),KShell(maxShell),DShell(maxShell,maxK), & 
+           ExpShell(maxShell,maxK),max_ang_mom(nNuc),min_exponent(nNuc,maxL+1),max_exponent(nNuc))
 
 !------------------------------------------------------------------------
 ! Read basis set information
 !------------------------------------------------------------------------
 
-  call read_basis(nNuc,rNuc,nBas,nO,nV,nShell,TotAngMomShell,CenterShell,KShell,DShell,ExpShell)
+  call read_basis(nNuc,rNuc,nBas,nO,nV,nShell,TotAngMomShell,CenterShell,KShell,DShell,ExpShell, & 
+                  max_ang_mom,min_exponent,max_exponent)
 
 !------------------------------------------------------------------------
 ! DFT options
@@ -131,7 +135,7 @@ program eDFT
 
 ! Test numgrid
 
-! call test_numgrid(nNuc,ZNuc,rNuc,nShell,TotAngMomShell,ExpShell,nRad,nAng,nGrid,root,weight)
+  call test_numgrid(nNuc,ZNuc,rNuc,nShell,TotAngMomShell,ExpShell,max_ang_mom,min_exponent,max_exponent)
 
 !------------------------------------------------------------------------
 ! Calculate AO values at grid points

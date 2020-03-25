@@ -27,7 +27,7 @@ subroutine quadrature_grid(nRad,nAng,nGrid,root,weight)
 
   allocate(Radius(nRad),RadWeight(nRad),XYZ(3,nAng),XYZWeight(nAng))
 
-! Findthe radial grid
+! Find the radial grid
 
   scale = 1d0
   call EulMac(Radius,RadWeight,nRad,scale)

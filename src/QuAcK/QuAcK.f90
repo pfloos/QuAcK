@@ -33,14 +33,21 @@ program QuAcK
   logical                       :: doXBS
 
   integer                       :: nShell
-  integer,allocatable           :: TotAngMomShell(:),KShell(:)
-  double precision,allocatable  :: CenterShell(:,:),DShell(:,:),ExpShell(:,:)
+  integer,allocatable           :: TotAngMomShell(:)
+  integer,allocatable           :: KShell(:)
+  double precision,allocatable  :: CenterShell(:,:)
+  double precision,allocatable  :: DShell(:,:)
+  double precision,allocatable  :: ExpShell(:,:)
+  integer,allocatable           :: max_ang_mom(:)
+  double precision,allocatable  :: min_exponent(:,:)
+  double precision,allocatable  :: max_exponent(:)
 
   integer                       :: TrialType
   double precision,allocatable  :: cTrial(:),gradient(:),hessian(:,:)
 
   double precision,allocatable  :: S(:,:),T(:,:),V(:,:),Hc(:,:),H(:,:),X(:,:)
-  double precision,allocatable  :: ERI_AO_basis(:,:,:,:),ERI_MO_basis(:,:,:,:)
+  double precision,allocatable  :: ERI_AO_basis(:,:,:,:)
+  double precision,allocatable  :: ERI_MO_basis(:,:,:,:)
   double precision,allocatable  :: F12(:,:,:,:),Yuk(:,:,:,:),FC(:,:,:,:,:,:)
 
   double precision              :: start_QuAcK  ,end_QuAcK    ,t_QuAcK
@@ -161,14 +168,16 @@ program QuAcK
 
   call read_geometry(nNuc,ZNuc,rNuc,ENuc)
 
-  allocate(CenterShell(maxShell,ncart),TotAngMomShell(maxShell),KShell(maxShell), &
-           DShell(maxShell,maxK),ExpShell(maxShell,maxK))
+  allocate(CenterShell(maxShell,ncart),TotAngMomShell(maxShell),KShell(maxShell),DShell(maxShell,maxK), & 
+           ExpShell(maxShell,maxK),max_ang_mom(nNuc),min_exponent(nNuc,maxL+1),max_exponent(nNuc))
+
 
 !------------------------------------------------------------------------
 ! Read basis set information
 !------------------------------------------------------------------------
 
-  call read_basis(nNuc,rNuc,nBas,nO,nV,nShell,TotAngMomShell,CenterShell,KShell,DShell,ExpShell)
+  call read_basis(nNuc,rNuc,nBas,nO,nV,nShell,TotAngMomShell,CenterShell,KShell,DShell,ExpShell, & 
+                  max_ang_mom,min_exponent,max_exponent)
   nS(:) = (nO(:) - nC(:))*(nV(:) - nR(:))
 
 !------------------------------------------------------------------------
@@ -671,9 +680,9 @@ program QuAcK
     
     call cpu_time(start_G0T0)
     call soG0T0(eta,nBas,nC(1),nO(1),nV(1),nR(1),ENuc,ERHF,ERI_MO_basis,eHF)
- !  call G0T0(doACFDT,exchange_kernel,doXBS,BSE,TDA,       &
- !            singlet_manifold,triplet_manifold,linGW,eta, &  
- !            nBas,nC(1),nO(1),nV(1),nR(1),nS(1),ENuc,ERHF,ERI_MO_basis,eHF)
+    call G0T0(doACFDT,exchange_kernel,doXBS,BSE,TDA,       &
+              singlet_manifold,triplet_manifold,linGW,eta, &  
+              nBas,nC(1),nO(1),nV(1),nR(1),nS(1),ENuc,ERHF,ERI_MO_basis,eHF)
 
     call cpu_time(end_G0T0)
   
