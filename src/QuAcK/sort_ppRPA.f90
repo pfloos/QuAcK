@@ -92,19 +92,28 @@ subroutine sort_ppRPA(ortho_eigvec,nOO,nVV,Omega,Z,Omega1,X1,Y1,Omega2,X2,Y2)
   if(minval(Omega1(:)) < 0d0 .or. ab /= nVV) call print_warning('You may have instabilities in pp-RPA!!')
   if(maxval(Omega2(:)) > 0d0 .or. ij /= nOO) call print_warning('You may have instabilities in pp-RPA!!')
 
-  do ab=1,nVV
-    order1(ab) = ab
-  end do
 
-  do ij=1,nOO
-    order2(ij) = ij
-  end do
+  if(nVV > 0) then 
 
-  call quick_sort(Omega1(:),order1(:),nVV)
-  call set_order(Z1(:,:),order1(:),nOO+nVV,nVV)
+    do ab=1,nVV
+      order1(ab) = ab
+    end do
 
-  call quick_sort(Omega2(:),order2(:),nOO)
-  call set_order(Z2(:,:),order2(:),nOO+nVV,nOO)
+    call quick_sort(Omega1(:),order1(:),nVV)
+    call set_order(Z1(:,:),order1(:),nOO+nVV,nVV)
+
+  end if
+
+  if(nOO > 0) then
+
+    do ij=1,nOO
+      order2(ij) = ij
+    end do
+
+    call quick_sort(Omega2(:),order2(:),nOO)
+    call set_order(Z2(:,:),order2(:),nOO+nVV,nOO)
+
+  end if
 
 ! write(*,*) 'pp-RPA positive excitation energies'
 ! call matout(nVV,1,Omega1(:))
@@ -125,7 +134,7 @@ subroutine sort_ppRPA(ortho_eigvec,nOO,nVV,Omega,Z,Omega1,X1,Y1,Omega2,X2,Y2)
 
       do ab=1,nVV
 
-        if(ab < nVV .and. abs(Omega1(ab) - Omega1(ab+1)) < 1d-10) then 
+        if(ab < nVV .and. abs(Omega1(ab) - Omega1(ab+1)) < 1d-6) then 
 
           if(deg1 == 1) ab_start = ab
           deg1 = deg1 + 1
@@ -154,7 +163,7 @@ subroutine sort_ppRPA(ortho_eigvec,nOO,nVV,Omega,Z,Omega1,X1,Y1,Omega2,X2,Y2)
 
       do ij=1,nOO
 
-        if(ij < nOO .and. abs(Omega2(ij) - Omega2(ij+1)) < 1d-10) then 
+        if(ij < nOO .and. abs(Omega2(ij) - Omega2(ij+1)) < 1d-6) then 
 
           if(deg2 == 1) ij_start = ij 
           deg2 = deg2 + 1
