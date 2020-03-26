@@ -95,6 +95,8 @@ subroutine soG0T0(eta,nBas,nC,nO,nV,nR,ENuc,ERHF,ERI,eHF)
 ! Compute T-matrix version of the self-energy 
 !----------------------------------------------
 
+  rho2(:,:,:) = 0d0
+
   call self_energy_Tmatrix_diag_so(eta,nBas2,nC2,nO2,nV2,nR2,nOO,nVV,seHF(:), & 
                                 Omega1(:),rho1(:,:,:),Omega2(:),rho2(:,:,:),  &
                                 SigT(:))

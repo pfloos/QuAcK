@@ -1,4 +1,4 @@
-subroutine form_T(nO,nV,delta_OOOVVV,ub,ubb,EcCCT)
+subroutine form_T(nC,nO,nV,nR,delta_OOOVVV,ub,ubb,EcCCT)
 
 ! Compute (T) correction
 
@@ -6,7 +6,7 @@ subroutine form_T(nO,nV,delta_OOOVVV,ub,ubb,EcCCT)
 
 ! Input variables
 
-  integer,intent(in)            :: nO,nV
+  integer,intent(in)            :: nC,nO,nV,nR
 
   double precision,intent(in)   :: delta_OOOVVV(nO,nO,nO,nV,nV,nV)
   double precision,intent(in)   :: ub(nO,nO,nO,nV,nV,nV)
@@ -23,12 +23,12 @@ subroutine form_T(nO,nV,delta_OOOVVV,ub,ubb,EcCCT)
 
   EcCCT = 0d0
 
-  do i=1,nO
-    do j=1,nO
-      do k=1,nO
-        do a=1,nV
-          do b=1,nV
-            do c=1,nV
+  do i=nC+1,nO
+    do j=nC+1,nO
+      do k=nC+1,nO
+        do a=1,nV-nR
+          do b=1,nV-nR
+            do c=1,nV-nR
 
               EcCCT = EcCCT                                &
                     + (ub(i,j,k,a,b,c) + ubb(i,j,k,a,b,c)) &

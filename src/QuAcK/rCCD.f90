@@ -1,4 +1,4 @@
-subroutine rCCD(maxSCF,thresh,max_diis,nBas,nEl,ERI,ENuc,ERHF,eHF)
+subroutine rCCD(maxSCF,thresh,max_diis,nBasin,nCin,nOin,nVin,nRin,ERI,ENuc,ERHF,eHF)
 
 ! Ring CCD module
 
@@ -10,19 +10,25 @@ subroutine rCCD(maxSCF,thresh,max_diis,nBas,nEl,ERI,ENuc,ERHF,eHF)
   integer,intent(in)            :: max_diis
   double precision,intent(in)   :: thresh
 
-  integer,intent(in)            :: nBas,nEl
+  integer,intent(in)            :: nBasin
+  integer,intent(in)            :: nCin
+  integer,intent(in)            :: nOin
+  integer,intent(in)            :: nVin
+  integer,intent(in)            :: nRin
   double precision,intent(in)   :: ENuc,ERHF
-  double precision,intent(in)   :: eHF(nBas)
-  double precision,intent(in)   :: ERI(nBas,nBas,nBas,nBas)
+  double precision,intent(in)   :: eHF(nBasin)
+  double precision,intent(in)   :: ERI(nBasin,nBasin,nBasin,nBasin)
 
 ! Local variables
 
-  integer                       :: nBas2
+  integer                       :: nBas
+  integer                       :: nC
   integer                       :: nO
   integer                       :: nV
+  integer                       :: nR
   integer                       :: nSCF
   double precision              :: Conv
-  double precision              :: EcMP2,EcMP3,EcMP4
+  double precision              :: EcMP2
   double precision              :: ECCD,EcCCD
   double precision,allocatable  :: seHF(:)
   double precision,allocatable  :: sERI(:,:,:,:)
@@ -32,18 +38,8 @@ subroutine rCCD(maxSCF,thresh,max_diis,nBas,nEl,ERI,ENuc,ERHF,eHF)
   double precision,allocatable  :: eV(:)
   double precision,allocatable  :: delta_OOVV(:,:,:,:)
 
-  double precision,allocatable  :: OOOO(:,:,:,:)
   double precision,allocatable  :: OOVV(:,:,:,:)
   double precision,allocatable  :: OVVO(:,:,:,:)
-  double precision,allocatable  :: VVVV(:,:,:,:)
-
-  double precision,allocatable  :: X1(:,:,:,:)
-  double precision,allocatable  :: X2(:,:)
-  double precision,allocatable  :: X3(:,:)
-  double precision,allocatable  :: X4(:,:,:,:)
-
-  double precision,allocatable  :: u(:,:,:,:)
-  double precision,allocatable  :: v(:,:,:,:)
 
   double precision,allocatable  :: r2(:,:,:,:)
   double precision,allocatable  :: t2(:,:,:,:)
@@ -63,25 +59,24 @@ subroutine rCCD(maxSCF,thresh,max_diis,nBas,nEl,ERI,ENuc,ERHF,eHF)
 
 ! Spatial to spin orbitals
 
-  nBas2 = 2*nBas
+  nBas = 2*nBasin
+  nC   = 2*nCin
+  nO   = 2*nOin
+  nV   = 2*nVin
+  nR   = 2*nRin
 
-  allocate(seHF(nBas2),sERI(nBas2,nBas2,nBas2,nBas2))
+  allocate(seHF(nBas),sERI(nBas,nBas,nBas,nBas))
 
-  call spatial_to_spin_MO_energy(nBas,eHF,nBas2,seHF)
-  call spatial_to_spin_ERI(nBas,ERI,nBas2,sERI)
+  call spatial_to_spin_MO_energy(nBasin,eHF,nBas,seHF)
+  call spatial_to_spin_ERI(nBasin,ERI,nBas,sERI)
 
 ! Antysymmetrize ERIs
 
-  allocate(dbERI(nBas2,nBas2,nBas2,nBas2))
+  allocate(dbERI(nBas,nBas,nBas,nBas))
 
-  call antisymmetrize_ERI(2,nBas2,sERI,dbERI)
+  call antisymmetrize_ERI(2,nBas,sERI,dbERI)
 
   deallocate(sERI)
-
-! Define occupied and virtual spaces
-
-  nO = 2*nEl
-  nV = nBas2 - nO
 
 ! Form energy denominator
 
@@ -89,20 +84,18 @@ subroutine rCCD(maxSCF,thresh,max_diis,nBas,nEl,ERI,ENuc,ERHF,eHF)
   allocate(delta_OOVV(nO,nO,nV,nV))
 
   eO(:) = seHF(1:nO)
-  eV(:) = seHF(nO+1:nBas2)
+  eV(:) = seHF(nO+1:nBas)
 
-  call form_delta_OOVV(nO,nV,eO,eV,delta_OOVV)
+  call form_delta_OOVV(nC,nO,nV,nR,eO,eV,delta_OOVV)
 
   deallocate(seHF)
 
 ! Create integral batches
 
-  allocate(OOOO(nO,nO,nO,nO),OOVV(nO,nO,nV,nV),OVVO(nO,nV,nV,nO),VVVV(nV,nV,nV,nV))
+  allocate(OOVV(nO,nO,nV,nV),OVVO(nO,nV,nV,nO))
 
-  OOOO(:,:,:,:) = dbERI(   1:nO   ,   1:nO   ,   1:nO   ,   1:nO   )
-  OOVV(:,:,:,:) = dbERI(   1:nO   ,   1:nO   ,nO+1:nBas2,nO+1:nBas2)
-  OVVO(:,:,:,:) = dbERI(   1:nO   ,nO+1:nBas2,nO+1:nBas2,   1:nO   )
-  VVVV(:,:,:,:) = dbERI(nO+1:nBas2,nO+1:nBas2,nO+1:nBas2,nO+1:nBas2)
+  OOVV(:,:,:,:) = dbERI(   1:nO   ,   1:nO   ,nO+1:nBas,nO+1:nBas)
+  OVVO(:,:,:,:) = dbERI(   1:nO   ,nO+1:nBas,nO+1:nBas,   1:nO   )
 
   deallocate(dbERI)
  
@@ -112,9 +105,7 @@ subroutine rCCD(maxSCF,thresh,max_diis,nBas,nEl,ERI,ENuc,ERHF,eHF)
 
   t2(:,:,:,:) = -OOVV(:,:,:,:)/delta_OOVV(:,:,:,:)
 
-  EcMP2 = 0.25d0*dot_product(pack(OOVV,.true.),pack(t2,.true.))
-  EcMP4 = 0d0
-
+  call CCD_correlation_energy(nC,nO,nV,nR,OOVV,t2,EcMP2)
 
 ! Memory allocation for DIIS
 
@@ -122,8 +113,7 @@ subroutine rCCD(maxSCF,thresh,max_diis,nBas,nEl,ERI,ENuc,ERHF,eHF)
 
 ! Initialization
 
-  allocate(r2(nO,nO,nV,nV),u(nO,nO,nV,nV),v(nO,nO,nV,nV))
-  allocate(X1(nO,nO,nO,nO),X2(nV,nV),X3(nO,nO),X4(nO,nO,nV,nV))
+  allocate(r2(nO,nO,nV,nV))
 
   Conv = 1d0
   nSCF = 0
@@ -151,13 +141,13 @@ subroutine rCCD(maxSCF,thresh,max_diis,nBas,nEl,ERI,ENuc,ERHF,eHF)
 
 !   Compute residual
 
-    call form_ring_r(nO,nV,OVVO,OOVV,t2,r2)
+    call form_ring_r(nC,nO,nV,nR,OVVO,OOVV,t2,r2)
 
     r2(:,:,:,:) = OOVV(:,:,:,:) + delta_OOVV(:,:,:,:)*t2(:,:,:,:) + r2(:,:,:,:) 
 
 !   Check convergence 
 
-    Conv = maxval(abs(r2(:,:,:,:)))
+    Conv = maxval(abs(r2(nC+1:nO,nC+1:nO,1:nV-nR,1:nV-nR)))
   
 !   Update amplitudes
 
@@ -165,9 +155,7 @@ subroutine rCCD(maxSCF,thresh,max_diis,nBas,nEl,ERI,ENuc,ERHF,eHF)
 
 !   Compute correlation energy
 
-    EcCCD = 0.25d0*dot_product(pack(OOVV,.true.),pack(t2,.true.))
-
-    if(nSCF == 1) EcMP3 = 0.25d0*dot_product(pack(OOVV,.true.),pack(t2 + v/delta_OOVV,.true.))
+    call CCD_correlation_energy(nC,nO,nV,nR,OOVV,t2,EcCCD)
 
 !   Dump results
 

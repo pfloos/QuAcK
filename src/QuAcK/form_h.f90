@@ -1,4 +1,4 @@
-subroutine form_h(nO,nV,eO,eV,OOVV,t1,tau,hvv,hoo,hvo)
+subroutine form_h(nC,nO,nV,nR,eO,eV,OOVV,t1,tau,hvv,hoo,hvo)
 
 ! Scuseria Eqs. (5), (6) and (7)
 
@@ -6,7 +6,7 @@ subroutine form_h(nO,nV,eO,eV,OOVV,t1,tau,hvv,hoo,hvo)
 
 ! Input variables
 
-  integer,intent(in)            :: nO,nV
+  integer,intent(in)            :: nC,nO,nV,nR
 
   double precision,intent(in)   :: eO(nO)
   double precision,intent(in)   :: eV(nV)
@@ -28,12 +28,12 @@ subroutine form_h(nO,nV,eO,eV,OOVV,t1,tau,hvv,hoo,hvo)
 
   hvv(:,:) = 0d0
 
-  do b=1,nV 
+  do b=1,nV-nR
     hvv(b,b) = eV(b)
-    do a=1,nV
-      do j=1,nO
-        do k=1,nO
-          do c=1,nV
+    do a=1,nV-nR
+      do j=nC+1,nO
+        do k=nC+1,nO
+          do c=1,nV-nR
 
             hvv(b,a) = hvv(b,a) - OOVV(j,k,b,c)*tau(j,k,a,c)
 
@@ -45,12 +45,12 @@ subroutine form_h(nO,nV,eO,eV,OOVV,t1,tau,hvv,hoo,hvo)
 
   hoo(:,:) = 0d0
 
-  do i=1,nO
+  do i=nC+1,nO
     hoo(i,i) = eO(i)
-    do j=1,nO
-      do k=1,nO
-        do b=1,nV
-          do c=1,nV
+    do j=nC+1,nO
+      do k=nC+1,nO
+        do b=1,nV-nR
+          do c=1,nV-nR
 
             hoo(i,j) = hoo(i,j) + OOVV(j,k,b,c)*tau(i,k,b,c)
 
@@ -62,10 +62,10 @@ subroutine form_h(nO,nV,eO,eV,OOVV,t1,tau,hvv,hoo,hvo)
 
   hvo(:,:) = 0d0
 
-  do b=1,nV 
-    do j=1,nO
-      do k=1,nO
-        do c=1,nV
+  do b=1,nV-nR
+    do j=nC+1,nO
+      do k=nC+1,nO
+        do c=1,nV-nR
 
           hvo(b,j) = hvo(b,j) + OOVV(j,k,b,c)*t1(k,c)
 

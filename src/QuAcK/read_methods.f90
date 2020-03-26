@@ -100,10 +100,10 @@ subroutine read_methods(doRHF,doUHF,doMOM,                &
 ! Read weird CC methods
   read(1,*) 
   read(1,*) answer1,answer2,answer3,answer4
-  if(answer4 == 'T') do_drCCD = .true.
-  if(answer5 == 'T') do_rCCD  = .true.
-  if(answer6 == 'T') do_lCCD  = .true.
-  if(answer7 == 'T') do_pCCD  = .true.
+  if(answer1 == 'T') do_drCCD = .true.
+  if(answer2 == 'T') do_rCCD  = .true.
+  if(answer3 == 'T') do_lCCD  = .true.
+  if(answer4 == 'T') do_pCCD  = .true.
 
 ! Read excited state methods
 

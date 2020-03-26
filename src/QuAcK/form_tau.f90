@@ -1,4 +1,4 @@
-subroutine form_tau(nO,nV,t1,t2,tau)
+subroutine form_tau(nC,nO,nV,nR,t1,t2,tau)
 
 ! Form tau in CCSD
 
@@ -6,7 +6,7 @@ subroutine form_tau(nO,nV,t1,t2,tau)
 
 ! Input variables
 
-  integer,intent(in)            :: nO,nV
+  integer,intent(in)            :: nC,nO,nV,nR
   double precision,intent(in)   :: t1(nO,nV)
   double precision,intent(in)   :: t2(nO,nO,nV,nV)
 
@@ -19,10 +19,10 @@ subroutine form_tau(nO,nV,t1,t2,tau)
 
   double precision,intent(out)  :: tau(nO,nO,nV,nV)
 
-  do i=1,nO
-    do j=1,nO
-      do a=1,nV
-        do b=1,nV
+  do i=nC+1,nO
+    do j=nC+1,nO
+      do a=1,nV-nR
+        do b=1,nV-nR
 
           tau(i,j,a,b) = 0.5d0*t2(i,j,a,b) + t1(i,a)*t1(j,b)
 

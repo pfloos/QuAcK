@@ -61,7 +61,7 @@ subroutine RPA(doACFDT,exchange_kernel,singlet_manifold,triplet_manifold,eta, &
 
     call linear_response(ispin,.true.,.false.,.false.,eta,nBas,nC,nO,nV,nR,nS,1d0,e,ERI,rho, &
                          EcRPA(ispin),Omega(:,ispin),XpY(:,:,ispin),XmY(:,:,ispin))
-    call print_excitation('RPA   ',ispin,nS,Omega(:,ispin))
+    call print_excitation('RPA          ',ispin,nS,Omega(:,ispin))
 
   endif
 
@@ -73,7 +73,7 @@ subroutine RPA(doACFDT,exchange_kernel,singlet_manifold,triplet_manifold,eta, &
 
     call linear_response(ispin,.true.,.false.,.false.,eta,nBas,nC,nO,nV,nR,nS,1d0,e,ERI,rho, &
                          EcRPA(ispin),Omega(:,ispin),XpY(:,:,ispin),XmY(:,:,ispin))
-    call print_excitation('RPA   ',ispin,nS,Omega(:,ispin))
+    call print_excitation('RPA         ',ispin,nS,Omega(:,ispin))
 
   endif
 

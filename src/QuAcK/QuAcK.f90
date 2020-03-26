@@ -375,7 +375,8 @@ program QuAcK
   if(doCCD) then
 
     call cpu_time(start_CCD)
-    call CCD(maxSCF_CC,thresh_CC,n_diis_CC,nBas,nEl,ERI_MO_basis,ENuc,ERHF,eHF)
+    call CCD(maxSCF_CC,thresh_CC,n_diis_CC,nBas,nC(1),nO(1),nV(1),nR(1), & 
+             ERI_MO_basis,ENuc,ERHF,eHF)
     call cpu_time(end_CCD)
 
     t_CCD = end_CCD - start_CCD
@@ -393,7 +394,8 @@ program QuAcK
   if(doCCSD) then
 
     call cpu_time(start_CCSD)
-    call CCSD(maxSCF_CC,thresh_CC,n_diis_CC,doCCSDT,nBas,nEl,ERI_MO_basis,ENuc,ERHF,eHF)
+    call CCSD(maxSCF_CC,thresh_CC,n_diis_CC,doCCSDT,nBas,nC(1),nO(1),nV(1),nR(1), & 
+              ERI_MO_basis,ENuc,ERHF,eHF)
     call cpu_time(end_CCSD)
 
     t_CCSD = end_CCSD - start_CCSD
@@ -409,7 +411,8 @@ program QuAcK
   if(do_drCCD) then
 
     call cpu_time(start_CCD)
-    call drCCD(maxSCF_CC,thresh_CC,n_diis_CC,nBas,nEl,ERI_MO_basis,ENuc,ERHF,eHF)
+    call drCCD(maxSCF_CC,thresh_CC,n_diis_CC,nBas,nC(1),nO(1),nV(1),nR(1), &
+               ERI_MO_basis,ENuc,ERHF,eHF)
     call cpu_time(end_CCD)
 
     t_CCD = end_CCD - start_CCD
@@ -425,7 +428,8 @@ program QuAcK
   if(do_rCCD) then
 
     call cpu_time(start_CCD)
-    call rCCD(maxSCF_CC,thresh_CC,n_diis_CC,nBas,nEl,ERI_MO_basis,ENuc,ERHF,eHF)
+    call rCCD(maxSCF_CC,thresh_CC,n_diis_CC,nBas,nC(1),nO(1),nV(1),nR(1), &
+              ERI_MO_basis,ENuc,ERHF,eHF)
     call cpu_time(end_CCD)
 
     t_CCD = end_CCD - start_CCD
@@ -441,7 +445,8 @@ program QuAcK
   if(do_lCCD) then
 
     call cpu_time(start_CCD)
-    call lCCD(maxSCF_CC,thresh_CC,n_diis_CC,nBas,nEl,ERI_MO_basis,ENuc,ERHF,eHF)
+    call lCCD(maxSCF_CC,thresh_CC,n_diis_CC,nBas,nC(1),nO(1),nV(1),nR(1), &
+              ERI_MO_basis,ENuc,ERHF,eHF)
     call cpu_time(end_CCD)
 
     t_CCD = end_CCD - start_CCD
@@ -457,7 +462,8 @@ program QuAcK
   if(do_pCCD) then
 
     call cpu_time(start_CCD)
-    call pCCD(maxSCF_CC,thresh_CC,n_diis_CC,nBas,nC(1),nO(1),nV(1),nR(1),ERI_MO_basis,ENuc,ERHF,eHF)
+    call pCCD(maxSCF_CC,thresh_CC,n_diis_CC,nBas,nC(1),nO(1),nV(1),nR(1), & 
+              ERI_MO_basis,ENuc,ERHF,eHF)
     call cpu_time(end_CCD)
 
     t_CCD = end_CCD - start_CCD

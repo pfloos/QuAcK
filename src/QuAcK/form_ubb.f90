@@ -1,4 +1,4 @@
-subroutine form_ubb(nO,nV,VVVO,VOOO,t2,ubb)
+subroutine form_ubb(nC,nO,nV,nR,VVVO,VOOO,t2,ubb)
 
 ! Form 2nd term in (T) correction
 
@@ -6,7 +6,7 @@ subroutine form_ubb(nO,nV,VVVO,VOOO,t2,ubb)
 
 ! Input variables
 
-  integer,intent(in)            :: nO,nV
+  integer,intent(in)            :: nC,nO,nV,nR
 
   double precision,intent(in)   :: VVVO(nV,nV,nV,nO)
   double precision,intent(in)   :: VOOO(nV,nO,nO,nO)
@@ -24,14 +24,14 @@ subroutine form_ubb(nO,nV,VVVO,VOOO,t2,ubb)
 
   ubb(:,:,:,:,:,:) = 0d0
 
-  do i=1,nO
-    do j=1,nO
-      do k=1,nO
-        do a=1,nV
-          do b=1,nV
-            do c=1,nV
+  do i=nC+1,nO
+    do j=nC+1,nO
+      do k=nC+1,nO
+        do a=1,nV-nR
+          do b=1,nV-nR
+            do c=1,nV-nR
 
-              do e=1,nV
+              do e=1,nV-nR
                 ubb(i,j,k,a,b,c) = ubb(i,j,k,a,b,c)          &
                                  + t2(i,j,a,e)*VVVO(b,c,e,k) & 
                                  + t2(i,j,b,e)*VVVO(c,a,e,k) & 
@@ -44,7 +44,7 @@ subroutine form_ubb(nO,nV,VVVO,VOOO,t2,ubb)
                                  + t2(j,k,c,e)*VVVO(a,b,e,i)
               end do
  
-              do m=1,nO
+              do m=nC+1,nO
                 ubb(i,j,k,a,b,c) = ubb(i,j,k,a,b,c)          &
                                  + t2(i,m,a,b)*VOOO(c,m,j,k) & 
                                  + t2(i,m,b,c)*VOOO(a,m,j,k) & 

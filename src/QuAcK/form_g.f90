@@ -1,4 +1,4 @@
-subroutine form_g(nO,nV,hvv,hoo,VOVV,OOOV,t1,gvv,goo)
+subroutine form_g(nC,nO,nV,nR,hvv,hoo,VOVV,OOOV,t1,gvv,goo)
 
 ! Scuseria Eqs. (9), (10)
 
@@ -6,7 +6,7 @@ subroutine form_g(nO,nV,hvv,hoo,VOVV,OOOV,t1,gvv,goo)
 
 ! Input variables
 
-  integer,intent(in)            :: nO,nV
+  integer,intent(in)            :: nC,nO,nV,nR
 
   double precision,intent(in)   :: hvv(nV,nV)
   double precision,intent(in)   :: hoo(nO,nO)
@@ -28,10 +28,10 @@ subroutine form_g(nO,nV,hvv,hoo,VOVV,OOOV,t1,gvv,goo)
 
   gvv(:,:) = hvv(:,:)
 
-  do c=1,nV 
-    do a=1,nV
-      do k=1,nO
-        do d=1,nV
+  do c=1,nV-nR
+    do a=1,nV-nR
+      do k=nC+1,nO
+        do d=1,nV-nR
           gvv(c,a) = gvv(c,a) + VOVV(a,k,c,d)*t1(k,d)
         end do
       end do
@@ -40,10 +40,10 @@ subroutine form_g(nO,nV,hvv,hoo,VOVV,OOOV,t1,gvv,goo)
 
   goo(:,:) = hoo(:,:)
 
-  do i=1,nO
-    do k=1,nO
-      do l=1,nO
-        do c=1,nV
+  do i=nC+1,nO
+    do k=nC+1,nO
+      do l=nC+1,nO
+        do c=1,nV-nR
           goo(i,k) = goo(i,k) + OOOV(k,l,i,c)*t1(l,c)
         end do
       end do

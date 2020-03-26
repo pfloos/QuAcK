@@ -1,6 +1,6 @@
 subroutine CalcOmErf(maxm,ExpY,fG,NormYSq,Om)
 
-! Compute the 0^m for the long-range Coulomb operator: (00|erf(r)/r|00)^m
+! Compute the 0^m for the long-range Coulomb operator: (00|erf(mu r)/r|00)^m
 
   implicit none
 

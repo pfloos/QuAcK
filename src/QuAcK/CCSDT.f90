@@ -1,4 +1,4 @@
-subroutine CCSDT(nO,nV,eO,eV,OOVV,VVVO,VOOO,t1,t2,EcCCT)
+subroutine CCSDT(nC,nO,nV,nR,eO,eV,OOVV,VVVO,VOOO,t1,t2,EcCCT)
 
 ! Compute the (T) correction of the CCSD(T) energy
 
@@ -6,7 +6,7 @@ subroutine CCSDT(nO,nV,eO,eV,OOVV,VVVO,VOOO,t1,t2,EcCCT)
 
 ! Input variables
 
-  integer,intent(in)            :: nO,nV
+  integer,intent(in)            :: nC,nO,nV,nR
 
   double precision,intent(in)   :: eO(nO)
   double precision,intent(in)   :: eV(nV)
@@ -34,12 +34,12 @@ subroutine CCSDT(nO,nV,eO,eV,OOVV,VVVO,VOOO,t1,t2,EcCCT)
 
 ! Form CCSD(T) quantities
 
-  call form_delta_OOOVVV(nO,nV,eO,eV,delta_OOOVVV) 
+  call form_delta_OOOVVV(nC,nO,nV,nR,eO,eV,delta_OOOVVV) 
 
-  call form_ub(nO,nV,OOVV,t1,ub)
+  call form_ub(nC,nO,nV,nR,OOVV,t1,ub)
 
-  call form_ubb(nO,nV,VVVO,VOOO,t2,ubb)
+  call form_ubb(nC,nO,nV,nR,VVVO,VOOO,t2,ubb)
 
-  call form_T(nO,nV,delta_OOOVVV,ub,ubb,EcCCT)
+  call form_T(nC,nO,nV,nR,delta_OOOVVV,ub,ubb,EcCCT)
 
 end subroutine CCSDT

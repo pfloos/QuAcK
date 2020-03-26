@@ -1,4 +1,4 @@
-subroutine form_ring_r(nO,nV,OVVO,OOVV,t2,r2)
+subroutine form_ring_r(nC,nO,nV,nR,OVVO,OOVV,t2,r2)
 
 ! Form residuals for ring CCD
 
@@ -6,7 +6,7 @@ subroutine form_ring_r(nO,nV,OVVO,OOVV,t2,r2)
 
 ! Input variables
 
-  integer,intent(in)            :: nO,nV
+  integer,intent(in)            :: nC,nO,nV,nR
   double precision,intent(in)   :: t2(nO,nO,nV,nV)
   double precision,intent(in)   :: OVVO(nO,nV,nV,nO)
   double precision,intent(in)   :: OOVV(nO,nO,nV,nV)
@@ -15,6 +15,7 @@ subroutine form_ring_r(nO,nV,OVVO,OOVV,t2,r2)
 
   integer                       :: i,j,k,l
   integer                       :: a,b,c,d
+  double precision,allocatable  :: y(:,:,:,:)
 
 ! Output variables
 
@@ -22,28 +23,42 @@ subroutine form_ring_r(nO,nV,OVVO,OOVV,t2,r2)
 
   r2(:,:,:,:) = 0d0
 
-  do i=1,nO
-    do j=1,nO
-      do a=1,nV
-        do b=1,nV
+  allocate(y(nO,nV,nO,nV))
 
-          do k=1,nO
-            do c=1,nV
+  y(:,:,:,:) = 0d0
+
+  do i=nC+1,nO
+    do a=1,nV-nR
+      do l=nC+1,nO
+        do d=1,nV-nR
+          do k=nC+1,nO
+            do c=1,nV-nR
+              y(i,a,l,d) = y(i,a,l,d) + t2(i,k,a,c)*OOVV(k,l,c,d)
+            end do
+          end do
+        end do
+      end do
+    end do
+  end do
+
+  do i=nC+1,nO
+    do j=nC+1,nO
+      do a=1,nV-nR
+        do b=1,nV-nR
+
+          do k=nC+1,nO
+            do c=1,nV-nR
 
               r2(i,j,a,b) = r2(i,j,a,b) + OVVO(i,c,a,k)*t2(k,j,c,b) + OVVO(j,c,b,k)*t2(i,k,a,c)
 
             end do
           end do
 
-          do k=1,nO
-            do l=1,nO
-              do c=1,nV
-                do d=1,nV
+          do l=nC+1,nO
+            do d=1,nV-nR
 
-                  r2(i,j,a,b) = r2(i,j,a,b) + t2(i,k,a,c)*OOVV(k,l,c,d)*t2(l,j,d,b)
+              r2(i,j,a,b) = r2(i,j,a,b) + y(i,a,l,d)*t2(l,j,d,b)
 
-                end do
-              end do
             end do
           end do
 

@@ -1,4 +1,4 @@
-subroutine CCSD(maxSCF,thresh,max_diis,doCCSDT,nBas,nEl,ERI,ENuc,ERHF,eHF)
+subroutine CCSD(maxSCF,thresh,max_diis,doCCSDT,nBasin,nCin,nOin,nVin,nRin,ERI,ENuc,ERHF,eHF)
 
 ! CCSD module
 
@@ -11,17 +11,24 @@ subroutine CCSD(maxSCF,thresh,max_diis,doCCSDT,nBas,nEl,ERI,ENuc,ERHF,eHF)
   double precision,intent(in)   :: thresh
 
   logical,intent(in)            :: doCCSDT
-  integer,intent(in)            :: nBas,nEl
-  double precision,intent(in)   :: ENuc,ERHF
-  double precision,intent(in)   :: eHF(nBas)
-  double precision,intent(in)   :: ERI(nBas,nBas,nBas,nBas)
+  integer,intent(in)            :: nBasin
+  integer,intent(in)            :: nCin
+  integer,intent(in)            :: nOin
+  integer,intent(in)            :: nVin
+  integer,intent(in)            :: nRin
+  double precision,intent(in)   :: ENuc
+  double precision,intent(in)   :: ERHF
+  double precision,intent(in)   :: eHF(nBasin)
+  double precision,intent(in)   :: ERI(nBasin,nBasin,nBasin,nBasin)
 
 ! Local variables
 
   double precision              :: start_CCSDT,end_CCSDT,t_CCSDT
-  integer                       :: nBas2
+  integer                       :: nBas
+  integer                       :: nC
   integer                       :: nO
   integer                       :: nV
+  integer                       :: nR
   integer                       :: nSCF
   double precision              :: Conv
   double precision              :: EcMP2
@@ -81,25 +88,24 @@ subroutine CCSD(maxSCF,thresh,max_diis,doCCSDT,nBas,nEl,ERI,ENuc,ERHF,eHF)
 
 ! Spatial to spin orbitals
 
-  nBas2 = 2*nBas
+  nBas = 2*nBasin
+  nC   = 2*nCin
+  nO   = 2*nOin
+  nV   = 2*nVin
+  nR   = 2*nRin
 
-  allocate(seHF(nBas2),sERI(nBas2,nBas2,nBas2,nBas2))
+  allocate(seHF(nBas),sERI(nBas,nBas,nBas,nBas))
 
-  call spatial_to_spin_MO_energy(nBas,eHF,nBas2,seHF)
-  call spatial_to_spin_ERI(nBas,ERI,nBas2,sERI)
+  call spatial_to_spin_MO_energy(nBasin,eHF,nBas,seHF)
+  call spatial_to_spin_ERI(nBasin,ERI,nBas,sERI)
 
 ! Antysymmetrize ERIs
 
-  allocate(dbERI(nBas2,nBas2,nBas2,nBas2))
+  allocate(dbERI(nBas,nBas,nBas,nBas))
 
-  call antisymmetrize_ERI(2,nBas2,sERI,dbERI)
+  call antisymmetrize_ERI(2,nBas,sERI,dbERI)
 
   deallocate(sERI)
-
-! Define occupied and virtual spaces
-
-  nO = 2*nEl
-  nV = nBas2 - nO
 
 ! Form energy denominator
 
@@ -107,10 +113,10 @@ subroutine CCSD(maxSCF,thresh,max_diis,doCCSDT,nBas,nEl,ERI,ENuc,ERHF,eHF)
   allocate(delta_OV(nO,nV),delta_OOVV(nO,nO,nV,nV))
 
   eO(:) = seHF(1:nO)
-  eV(:) = seHF(nO+1:nBas2)
+  eV(:) = seHF(nO+1:nBas)
 
-  call form_delta_OV(nO,nV,eO,eV,delta_OV)
-  call form_delta_OOVV(nO,nV,eO,eV,delta_OOVV)
+  call form_delta_OV(nC,nO,nV,nR,eO,eV,delta_OV)
+  call form_delta_OOVV(nC,nO,nV,nR,eO,eV,delta_OOVV)
 
   deallocate(seHF)
 
@@ -122,16 +128,16 @@ subroutine CCSD(maxSCF,thresh,max_diis,doCCSDT,nBas,nEl,ERI,ENuc,ERHF,eHF)
            OVVV(nO,nV,nV,nV),VOVV(nV,nO,nV,nV),VVVO(nV,nV,nV,nO), & 
            VVVV(nV,nV,nV,nV))
 
-  OOOO(:,:,:,:) = dbERI(   1:nO   ,   1:nO   ,   1:nO   ,   1:nO   )
-  OOOV(:,:,:,:) = dbERI(   1:nO   ,   1:nO   ,   1:nO   ,nO+1:nBas2)
-  OVOO(:,:,:,:) = dbERI(   1:nO   ,nO+1:nBas2,   1:nO   ,   1:nO   )
-  VOOO(:,:,:,:) = dbERI(nO+1:nBas2,   1:nO   ,   1:nO   ,   1:nO   )
-  OOVV(:,:,:,:) = dbERI(   1:nO   ,   1:nO   ,nO+1:nBas2,nO+1:nBas2)
-  OVVO(:,:,:,:) = dbERI(   1:nO   ,nO+1:nBas2,nO+1:nBas2,   1:nO   )
-  OVVV(:,:,:,:) = dbERI(   1:nO   ,nO+1:nBas2,nO+1:nBas2,nO+1:nBas2)
-  VOVV(:,:,:,:) = dbERI(nO+1:nBas2,   1:nO   ,nO+1:nBas2,nO+1:nBas2)
-  VVVO(:,:,:,:) = dbERI(nO+1:nBas2,nO+1:nBas2,nO+1:nBas2,   1:nO   )
-  VVVV(:,:,:,:) = dbERI(nO+1:nBas2,nO+1:nBas2,nO+1:nBas2,nO+1:nBas2)
+  OOOO(:,:,:,:) = dbERI(   1:nO  ,   1:nO  ,   1:nO  ,   1:nO  )
+  OOOV(:,:,:,:) = dbERI(   1:nO  ,   1:nO  ,   1:nO  ,nO+1:nBas)
+  OVOO(:,:,:,:) = dbERI(   1:nO  ,nO+1:nBas,   1:nO  ,   1:nO  )
+  VOOO(:,:,:,:) = dbERI(nO+1:nBas,   1:nO  ,   1:nO  ,   1:nO  )
+  OOVV(:,:,:,:) = dbERI(   1:nO  ,   1:nO  ,nO+1:nBas,nO+1:nBas)
+  OVVO(:,:,:,:) = dbERI(   1:nO  ,nO+1:nBas,nO+1:nBas,   1:nO  )
+  OVVV(:,:,:,:) = dbERI(   1:nO  ,nO+1:nBas,nO+1:nBas,nO+1:nBas)
+  VOVV(:,:,:,:) = dbERI(nO+1:nBas,   1:nO  ,nO+1:nBas,nO+1:nBas)
+  VVVO(:,:,:,:) = dbERI(nO+1:nBas,nO+1:nBas,nO+1:nBas,   1:nO  )
+  VVVV(:,:,:,:) = dbERI(nO+1:nBas,nO+1:nBas,nO+1:nBas,nO+1:nBas)
 
   deallocate(dbERI)
  
@@ -141,7 +147,7 @@ subroutine CCSD(maxSCF,thresh,max_diis,doCCSDT,nBas,nEl,ERI,ENuc,ERHF,eHF)
 
   t1(:,:)     = 0d0
   t2(:,:,:,:) = -OOVV(:,:,:,:)/delta_OOVV(:,:,:,:)
-  call form_tau(nO,nV,t1,t2,tau)
+  call form_tau(nC,nO,nV,nR,t1,t2,tau)
 
   EcMP2 = 0.5d0*dot_product(pack(OOVV,.true.),pack(tau,.true.))
   write(*,'(1X,A20,1X,F10.6)') 'Ec(MP2) = ',EcMP2
@@ -186,34 +192,34 @@ subroutine CCSD(maxSCF,thresh,max_diis,doCCSDT,nBas,nEl,ERI,ENuc,ERHF,eHF)
 
 !   Scuseria Eqs. (5), (6) and (7)
 
-    call form_h(nO,nV,eO,eV,OOVV,t1,tau,hvv,hoo,hvo)
+    call form_h(nC,nO,nV,nR,eO,eV,OOVV,t1,tau,hvv,hoo,hvo)
 
 !   Scuseria Eqs. (9), (10), (11), (12) and (13)
 
-    call form_g(nO,nV,hvv,hoo,VOVV,OOOV,t1,gvv,goo)
+    call form_g(nC,nO,nV,nR,hvv,hoo,VOVV,OOOV,t1,gvv,goo)
 
-    call form_abh(nO,nV,OOOO,OVOO,OOVV,VVVV,VOVV,OVVO,OVVV,t1,tau,aoooo,bvvvv,hovvo)
+    call form_abh(nC,nO,nV,nR,OOOO,OVOO,OOVV,VVVV,VOVV,OVVO,OVVV,t1,tau,aoooo,bvvvv,hovvo)
 
 !   Compute residuals
 
-    call form_r1(nO,nV,OVVO,OVVV,OOOV,hvv,hoo,hvo,t1,t2,tau,r1)
+    call form_r1(nC,nO,nV,nR,OVVO,OVVV,OOOV,hvv,hoo,hvo,t1,t2,tau,r1)
 
-    call form_r2(nO,nV,OOVV,OVOO,OVVV,OVVO,gvv,goo,aoooo,bvvvv,hovvo,t1,t2,tau,r2)
+    call form_r2(nC,nO,nV,nR,OOVV,OVOO,OVVV,OVVO,gvv,goo,aoooo,bvvvv,hovvo,t1,t2,tau,r2)
 
 !   Check convergence 
 
-    Conv = max(maxval(abs(r1(:,:))),maxval(abs(r2(:,:,:,:))))
+    Conv = max(maxval(abs(r1(nC+1:nO,1:nV-nR))),maxval(abs(r2(nC+1:nO,nC+1:nO,1:nV-nR,1:nV-nR))))
 
 !   Update 
 
     t1(:,:)      = t1(:,:)     - r1(:,:)    /delta_OV  (:,:)
     t2(:,:,:,:)  = t2(:,:,:,:) - r2(:,:,:,:)/delta_OOVV(:,:,:,:)
 
-    call form_tau(nO,nV,t1,t2,tau)
+    call form_tau(nC,nO,nV,nR,t1,t2,tau)
  
 !   Compute correlation energy
 
-    EcCCSD = 0.5d0*dot_product(pack(OOVV,.true.),pack(tau,.true.))
+    call CCSD_correlation_energy(nC,nO,nV,nR,OOVV,tau,EcCCSD) 
 
 !   Dump results
 
@@ -222,12 +228,12 @@ subroutine CCSD(maxSCF,thresh,max_diis,doCCSDT,nBas,nEl,ERI,ENuc,ERHF,eHF)
     ! DIIS extrapolation
 
     n_diis = min(n_diis+1,max_diis)
-    call DIIS_extrapolation(rcond1,nO*nV      ,nO*nV      ,n_diis,err1_diis,t1_diis,-r1/delta_OV  ,t1)
-    call DIIS_extrapolation(rcond2,nO*nO*nV*nV,nO*nO*nV*nV,n_diis,err2_diis,t2_diis,-r2/delta_OOVV,t2)
+!   call DIIS_extrapolation(rcond1,nO*nV      ,nO*nV      ,n_diis,err1_diis,t1_diis,-r1/delta_OV  ,t1)
+!   call DIIS_extrapolation(rcond2,nO*nO*nV*nV,nO*nO*nV*nV,n_diis,err2_diis,t2_diis,-r2/delta_OOVV,t2)
 
     !  Reset DIIS if required
 
-    if(min(abs(rcond1),abs(rcond2)) < 1d-15) n_diis = 0
+!   if(min(abs(rcond1),abs(rcond2)) < 1d-15) n_diis = 0
 
     write(*,'(1X,A1,1X,I3,1X,A1,1X,F16.10,1X,A1,1X,F10.6,1X,A1,1X,F10.6,1X,A1,1X)') &
       '|',nSCF,'|',ECCSD+ENuc,'|',EcCCSD,'|',Conv,'|'
@@ -276,7 +282,7 @@ subroutine CCSD(maxSCF,thresh,max_diis,doCCSDT,nBas,nEl,ERI,ENuc,ERHF,eHF)
   if(doCCSDT) then
 
     call cpu_time(start_CCSDT)
-    call CCSDT(nO,nV,eO,eV,OOVV,VVVO,VOOO,t1,t2,EcCCT)
+    call CCSDT(nC,nO,nV,nR,eO,eV,OOVV,VVVO,VOOO,t1,t2,EcCCT)
     call cpu_time(end_CCSDT)
 
      t_CCSDT = end_CCSDT - start_CCSDT

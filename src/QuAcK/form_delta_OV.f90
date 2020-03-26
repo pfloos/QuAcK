@@ -1,4 +1,4 @@
-subroutine form_delta_OV(nO,nV,eO,eV,delta)
+subroutine form_delta_OV(nC,nO,nV,nR,eO,eV,delta)
 
 ! Form energy denominator for CC
 
@@ -6,7 +6,7 @@ subroutine form_delta_OV(nO,nV,eO,eV,delta)
 
 ! Input variables
 
-  integer,intent(in)            :: nO,nV
+  integer,intent(in)            :: nC,nO,nV,nR
   double precision,intent(in)   :: eO(nO)
   double precision,intent(in)   :: eV(nV)
 
@@ -18,8 +18,8 @@ subroutine form_delta_OV(nO,nV,eO,eV,delta)
 
   double precision,intent(out)  :: delta(nO,nV)
 
-    do i=1,nO
-      do a=1,nV
+    do i=nC+1,nO
+      do a=1,nV-nR
         delta(i,a) = eV(a) - eO(i)
       enddo
     enddo

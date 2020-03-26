@@ -127,75 +127,75 @@ subroutine sort_ppRPA(ortho_eigvec,nOO,nVV,Omega,Z,Omega1,X1,Y1,Omega2,X2,Y2)
 
   if(ortho_eigvec) then
 
-    ! Find degenerate eigenvalues
+!   ! Find degenerate eigenvalues
 
-      deg1 = 1
-      ab_start = 1
+!     deg1 = 1
+!     ab_start = 1
 
-      do ab=1,nVV
+!     do ab=1,nVV
 
-        if(ab < nVV .and. abs(Omega1(ab) - Omega1(ab+1)) < 1d-6) then 
+!       if(ab < nVV .and. abs(Omega1(ab) - Omega1(ab+1)) < 1d-6) then 
 
-          if(deg1 == 1) ab_start = ab
-          deg1 = deg1 + 1
+!         if(deg1 == 1) ab_start = ab
+!         deg1 = deg1 + 1
 
-        else
+!       else
 
-          ab_end = ab 
+!         ab_end = ab 
 !         print*,'deg = ',deg1,ab_start,ab_end
 
-          allocate(S1(deg1,deg1),O1(deg1,deg1))
+!         allocate(S1(deg1,deg1),O1(deg1,deg1))
 
-          S1 = matmul(transpose(Z1(:,ab_start:ab_end)),matmul(M,Z1(:,ab_start:ab_end)))
-          call orthogonalization_matrix(1,deg1,S1,O1)
-          Z1(:,ab_start:ab_end) = matmul(Z1(:,ab_start:ab_end),O1)
+!         S1 = matmul(transpose(Z1(:,ab_start:ab_end)),matmul(M,Z1(:,ab_start:ab_end)))
+!         call orthogonalization_matrix(1,deg1,S1,O1)
+!         Z1(:,ab_start:ab_end) = matmul(Z1(:,ab_start:ab_end),O1)
 
-          deallocate(S1,O1)
+!         deallocate(S1,O1)
 
-          deg1 = 1
-          ab_start = ab + 1
+!         deg1 = 1
+!         ab_start = ab + 1
 
-        end if
-      end do
+!       end if
+!     end do
 
-      deg2 = 1
-      ij_start = 1
+!     deg2 = 1
+!     ij_start = 1
 
-      do ij=1,nOO
+!     do ij=1,nOO
 
-        if(ij < nOO .and. abs(Omega2(ij) - Omega2(ij+1)) < 1d-6) then 
+!       if(ij < nOO .and. abs(Omega2(ij) - Omega2(ij+1)) < 1d-6) then 
 
-          if(deg2 == 1) ij_start = ij 
-          deg2 = deg2 + 1
+!         if(deg2 == 1) ij_start = ij 
+!         deg2 = deg2 + 1
 
-        else
+!       else
 
-          ij_end = ij 
+!         ij_end = ij 
 !         print*,'deg = ',deg2,ij_start,ij_end
 
-          allocate(S2(deg2,deg2),O2(deg2,deg2))
+!         allocate(S2(deg2,deg2),O2(deg2,deg2))
 
-          S2 = - matmul(transpose(Z2(:,ij_start:ij_end)),matmul(M,Z2(:,ij_start:ij_end)))
-          call orthogonalization_matrix(1,deg2,S2,O2)
-          Z2(:,ij_start:ij_end) = matmul(Z2(:,ij_start:ij_end),O2)
+!         S2 = - matmul(transpose(Z2(:,ij_start:ij_end)),matmul(M,Z2(:,ij_start:ij_end)))
+!         call orthogonalization_matrix(1,deg2,S2,O2)
+!         Z2(:,ij_start:ij_end) = matmul(Z2(:,ij_start:ij_end),O2)
 
-          deallocate(S2,O2)
+!         deallocate(S2,O2)
 
-          deg2 = 1
-          ij_start = ij + 1
+!         deg2 = 1
+!         ij_start = ij + 1
 
-        end if
-      end do
+!       end if
+!     end do
 
-!   allocate(S1(nVV,nVV),S2(nOO,nOO),O1(nVV,nVV),O2(nOO,nOO))
-!   S1 = + matmul(transpose(Z1),matmul(M,Z1))
-!   S2 = - matmul(transpose(Z2),matmul(M,Z2))
+    allocate(S1(nVV,nVV),S2(nOO,nOO),O1(nVV,nVV),O2(nOO,nOO))
+    S1 = + matmul(transpose(Z1),matmul(M,Z1))
+    S2 = - matmul(transpose(Z2),matmul(M,Z2))
 
-!   if(nVV > 0) call orthogonalization_matrix(1,nVV,S1,O1)
-!   if(nOO > 0) call orthogonalization_matrix(1,nOO,S2,O2)
+    if(nVV > 0) call orthogonalization_matrix(1,nVV,S1,O1)
+    if(nOO > 0) call orthogonalization_matrix(1,nOO,S2,O2)
 
-!   Z1 = matmul(Z1,O1)
-!   Z2 = matmul(Z2,O2)
+    Z1 = matmul(Z1,O1)
+    Z2 = matmul(Z2,O2)
 
   end if
 
