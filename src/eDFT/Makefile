@@ -26,8 +26,8 @@ OBJ = $(patsubst %.f90,$(ODIR)/%.o,$(SRCF90)) $(patsubst %.F,$(ODIR)/%.o,$(SRC))
 $(BDIR)/eDFT: $(OBJ)
 	$(FC) -o $@ $^ $(FFLAGS) $(LIBS)
 
-numgrid.mod: numgrid.f90 
-	$(FC) -c -o $@ $< $(FFLAGS) 
+numgrid.mod $(ODIR)/numgrid.o: numgrid.f90 
+	$(FC) -c -o $(ODIR)/numgrid.o $< $(FFLAGS) 
 
 $(ODIR)/%.o: %.f90 numgrid.mod
 	$(FC) -c -o $@ $< $(FFLAGS) 
