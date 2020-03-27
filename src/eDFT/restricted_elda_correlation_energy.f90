@@ -1,4 +1,4 @@
-subroutine restricted_elda_correlation_energy(nEns,aMFL,nGrid,weight,rho,Ec)
+subroutine restricted_elda_correlation_energy(aMFL,nGrid,weight,rho,Ec)
 
 ! Compute the restricted LDA correlation energy of 2-glomium for various states
 
@@ -7,7 +7,6 @@ subroutine restricted_elda_correlation_energy(nEns,aMFL,nGrid,weight,rho,Ec)
 
 ! Input variables
 
-  integer,intent(in)            :: nEns
   double precision,intent(in)   :: aMFL(3)
   integer,intent(in)            :: nGrid
   double precision,intent(in)   :: weight(nGrid)

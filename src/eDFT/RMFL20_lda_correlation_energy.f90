@@ -43,7 +43,7 @@ subroutine RMFL20_lda_correlation_energy(nEns,wEns,nGrid,weight,rho,Ec)
 
   do iEns=1,nEns
 
-    call restricted_elda_correlation_energy(nEns,aMFL(:,iEns),nGrid,weight(:),rho(:),EceLDA(iEns))
+    call restricted_elda_correlation_energy(aMFL(:,iEns),nGrid,weight(:),rho(:),EceLDA(iEns))
 
   end do
 

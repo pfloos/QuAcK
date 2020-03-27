@@ -1,4 +1,4 @@
-subroutine print_restricted_individual_energy(nEns,Ew,EwGIC,ET,EV,EJ,Ex,Ec,Exc,ExDD,EcDD,ExcDD,E, & 
+subroutine print_restricted_individual_energy(nEns,ENuc,Ew,EwGIC,ET,EV,EJ,Ex,Ec,Exc,ExDD,EcDD,ExcDD,E, & 
                                               Om,Omx,Omc,Omxc,OmxDD,OmcDD,OmxcDD)
 
 ! Print individual energies for eDFT calculation
@@ -9,6 +9,7 @@ subroutine print_restricted_individual_energy(nEns,Ew,EwGIC,ET,EV,EJ,Ex,Ec,Exc,E
 ! Input variables
 
   integer,intent(in)                 :: nEns
+  double precision,intent(in)        :: ENuc
   double precision,intent(in)        :: Ew
   double precision,intent(in)        :: EwGIC
   double precision,intent(in)        :: ET(nEns)
@@ -32,8 +33,8 @@ subroutine print_restricted_individual_energy(nEns,Ew,EwGIC,ET,EV,EJ,Ex,Ec,Exc,E
   write(*,'(A60)')           '-------------------------------------------------'
   write(*,'(A60)')           ' ENSEMBLE ENERGIES'
   write(*,'(A60)')           '-------------------------------------------------'
-  write(*,'(A44,F16.10,A3)') '     Ensemble energy:      ',Ew,   ' au'
-  write(*,'(A44,F16.10,A3)') ' GIC Ensemble energy:      ',EwGIC,' au'
+  write(*,'(A44,F16.10,A3)') '     Ensemble energy:      ',Ew    + ENuc,' au'
+  write(*,'(A44,F16.10,A3)') ' GIC Ensemble energy:      ',EwGIC + ENuc,' au'
   write(*,'(A60)')           '-------------------------------------------------'
   write(*,*)
 
@@ -126,7 +127,7 @@ subroutine print_restricted_individual_energy(nEns,Ew,EwGIC,ET,EV,EJ,Ex,Ec,Exc,E
   write(*,'(A60)')           ' INDIVIDUAL AND EXCITATION ENERGIES'
   write(*,'(A60)')           '-------------------------------------------------'
   do iEns=1,nEns
-    write(*,'(A40,I2,A2,F16.10,A3)') ' Individual energy state ',iEns,': ',E(iEns),' au'
+    write(*,'(A40,I2,A2,F16.10,A3)') ' Individual energy state ',iEns,': ',E(iEns) + ENuc,' au'
   end do
   write(*,'(A60)')           '-------------------------------------------------'
 

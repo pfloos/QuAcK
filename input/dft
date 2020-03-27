@@ -6,14 +6,14 @@
 # GGA          = 2: 
 # Hybrid       = 4 
 # Hartree-Fock = 666
-  1 RMFL20
+  666 HF
 # correlation rung: 
 # Hartree      = 0
 # LDA          = 1: RVWN5,RMFL20
 # GGA          = 2: 
 # Hybrid       = 4: 
 # Hartree-Fock = 666
-  1 RMFL20
+  666 HF
 # quadrature grid SG-n
   1
 # Number of states in ensemble (nEns)

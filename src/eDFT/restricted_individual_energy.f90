@@ -121,9 +121,9 @@ subroutine restricted_individual_energy(x_rung,x_DFA,c_rung,c_DFA,nEns,wEns,nGri
 !------------------------------------------------------------------------
 
   do iEns=1,nEns
-    Exc(iEns) =        Ex(iEns) + Ec(iEns)
-    E(iEns)   = ENuc + ET(iEns) + EV(iEns) + EJ(iEns) &
-                     + Ex(iEns) + Ec(iEns) + ExcDD(iEns)
+    Exc(iEns) = Ex(iEns) + Ec(iEns)
+    E(iEns)   = ET(iEns) + EV(iEns) + EJ(iEns) &
+              + Ex(iEns) + Ec(iEns) + ExcDD(iEns)
   end do
 
 !------------------------------------------------------------------------
@@ -157,8 +157,8 @@ subroutine restricted_individual_energy(x_rung,x_DFA,c_rung,c_DFA,nEns,wEns,nGri
 ! Dump results
 !------------------------------------------------------------------------
 
-  call print_restricted_individual_energy(nEns,Ew,EwGIC,ET(:),EV(:),EJ(:),Ex(:),Ec(:),Exc(:), &
-                                          ExDD(:),EcDD(:),ExcDD(:),E(:),                      & 
+  call print_restricted_individual_energy(nEns,ENuc,Ew,EwGIC,ET(:),EV(:),EJ(:),Ex(:),Ec(:),Exc(:), &
+                                          ExDD(:),EcDD(:),ExcDD(:),E(:),                           & 
                                           Om(:),Omx(:),Omc(:),Omxc(:),OmxDD(:),OmcDD(:),OmxcDD(:))
 
 end subroutine restricted_individual_energy
