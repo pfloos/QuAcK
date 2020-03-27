@@ -3,19 +3,19 @@ BDIR =../../bin
 ODIR = obj
 OODIR = ../IntPak/obj
 SDIR =.
-FC = gfortran -I$(IDIR) -Wall -g -Wno-unused -Wno-unused-dummy-argument
+FC = gfortran -I$(IDIR) -Wall
 ifeq ($(DEBUG),1)
 FFLAGS = -Wall -g -msse4.2 -fcheck=all -Waliasing -Wampersand -Wconversion -Wsurprising -Wintrinsics-std -Wno-tabs -Wintrinsic-shadow -Wline-truncation -Wreal-q-constant
 else
 FFLAGS = -O3
 endif
 
-ifeq ($(PROFIL),1)
-  FC += -p -fno-inline
-endif
+##ifeq ($(PROFIL),1)
+##  FC += -p -fno-inline
+##endif
 
-LIBS = -lc++ ../../lib/*.a
-LIBS += -lblas -llapack
+LIBS = ../../lib/*.a
+LIBS += -lblas -llapack -lc++
 
 SRCF90 = $(wildcard *.f90)
 
