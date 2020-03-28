@@ -1,6 +1,6 @@
-subroutine B88_gga_exchange_energy(nGrid,weight,rho,drho,Ex)
+subroutine RB88_gga_exchange_energy(nGrid,weight,rho,drho,Ex)
 
-! Compute Becke's 88 GGA exchange energy
+! Compute restricted version of Becke's 88 GGA exchange energy
 
   implicit none
 
@@ -11,12 +11,13 @@ subroutine B88_gga_exchange_energy(nGrid,weight,rho,drho,Ex)
   integer,intent(in)            :: nGrid
   double precision,intent(in)   :: weight(nGrid)
   double precision,intent(in)   :: rho(nGrid)
-  double precision,intent(in)   :: drho(3,nGrid)
+  double precision,intent(in)   :: drho(ncart,nGrid)
 
 ! Local variables
 
   integer                       :: iG
-  double precision              :: alpha,beta
+  double precision              :: alpha
+  double precision              :: beta
   double precision              :: r,g,x
 
 ! Output variables
@@ -34,7 +35,7 @@ subroutine B88_gga_exchange_energy(nGrid,weight,rho,drho,Ex)
 
   do iG=1,nGrid
 
-    r = max(0d0,rho(iG))
+    r = max(0d0,0.5d0*rho(iG))
 
     if(r > threshold) then 
       g = drho(1,iG)**2 + drho(2,iG)**2 + drho(3,iG)**2
@@ -47,4 +48,6 @@ subroutine B88_gga_exchange_energy(nGrid,weight,rho,drho,Ex)
 
   end do
 
-end subroutine B88_gga_exchange_energy
+  Ex = 2d0*Ex
+
+end subroutine RB88_gga_exchange_energy

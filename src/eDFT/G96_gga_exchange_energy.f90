@@ -1,4 +1,4 @@
-subroutine G96_gga_exchange_energy(DFA,nEns,wEns,nGrid,weight,rho,drho,Ex)
+subroutine G96_gga_exchange_energy(nGrid,weight,rho,drho,Ex)
 
 ! Compute Gill's 96 GGA exchange energy
 
@@ -8,9 +8,6 @@ subroutine G96_gga_exchange_energy(DFA,nEns,wEns,nGrid,weight,rho,drho,Ex)
 
 ! Input variables
 
-  character(len=12),intent(in)  :: DFA
-  integer,intent(in)            :: nEns
-  double precision,intent(in)   :: wEns(nEns)
   integer,intent(in)            :: nGrid
   double precision,intent(in)   :: weight(nGrid)
   double precision,intent(in)   :: rho(nGrid)

@@ -32,10 +32,6 @@ subroutine self_energy_Tmatrix_diag(eta,nBas,nC,nO,nV,nR,nOOs,nVVs,nOOt,nVVt,e, 
 
   double precision,intent(out)  :: SigT(nBas)
 
-! Initialize 
-
-  SigT(:) = 0d0
-
 !----------------------------------------------
 ! Singlet part of the T-matrix self-energy
 !----------------------------------------------

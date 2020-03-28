@@ -88,7 +88,10 @@ subroutine soG0T0(eta,nBas,nC,nO,nV,nR,ENuc,ERHF,ERI,eHF)
 
 ! Compute excitation densities for the T-matrix
 
-  call excitation_density_Tmatrix(ispin,nBas2,nC2,nO2,nV2,nR2,nOO,nVV,sERI(:,:,:,:), & 
+  rho1(:,:,:) = 0d0
+  rho2(:,:,:) = 0d0
+ 
+  call excitation_density_Tmatrix(ispin,1d0,nBas2,nC2,nO2,nV2,nR2,nOO,nVV,sERI(:,:,:,:), & 
                                   X1(:,:),Y1(:,:),rho1(:,:,:),X2(:,:),Y2(:,:),rho2(:,:,:))
 
 !----------------------------------------------

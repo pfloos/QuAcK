@@ -1,6 +1,6 @@
-subroutine G96_gga_exchange_potential(nGrid,weight,nBas,AO,dAO,rho,drho,Fx)
+subroutine RB88_gga_exchange_potential(nGrid,weight,nBas,AO,dAO,rho,drho,Fx)
 
-! Compute Gill's GGA exchange poential
+! Compute restricted Becke's GGA exchange potential
 
   implicit none
   include 'parameters.h'
@@ -11,25 +11,25 @@ subroutine G96_gga_exchange_potential(nGrid,weight,nBas,AO,dAO,rho,drho,Fx)
   double precision,intent(in)   :: weight(nGrid)
   integer,intent(in)            :: nBas
   double precision,intent(in)   :: AO(nBas,nGrid)
-  double precision,intent(in)   :: dAO(3,nBas,nGrid)
+  double precision,intent(in)   :: dAO(ncart,nBas,nGrid)
   double precision,intent(in)   :: rho(nGrid)
-  double precision,intent(in)   :: drho(3,nGrid)
+  double precision,intent(in)   :: drho(ncart,nGrid)
 
 ! Local variables
 
   integer                       :: mu,nu,iG
-  double precision              :: alpha,beta
+  double precision              :: alpha
+  double precision              :: beta
   double precision              :: r,g,vAO,gAO
 
 ! Output variables
 
   double precision,intent(out)  :: Fx(nBas,nBas)
 
-! Coefficients for G96 GGA exchange functional
+! Coefficients for B88 GGA exchange functional
 
   alpha = -(3d0/2d0)*(3d0/(4d0*pi))**(1d0/3d0)
-  beta  = +1d0/137d0
-  beta  = 0d0
+  beta  = 0.0042d0
 
 ! Compute GGA exchange matrix in the AO basis
 
@@ -39,11 +39,11 @@ subroutine G96_gga_exchange_potential(nGrid,weight,nBas,AO,dAO,rho,drho,Fx)
     do nu=1,nBas
       do iG=1,nGrid
 
-        r = max(0d0,rho(iG))
-        g = drho(1,iG)**2 + drho(2,iG)**2 + drho(3,iG)**2
+        r = max(0d0,0.5d0*rho(iG))
  
         if(r > threshold) then
 
+          g = drho(1,iG)**2 + drho(2,iG)**2 + drho(3,iG)**2
           vAO = weight(iG)*AO(mu,iG)*AO(nu,iG)
           Fx(mu,nu) = Fx(mu,nu) &
                     + vAO*(4d0/3d0*r**(1d0/3d0)*(alpha - beta*g**(3d0/4d0)/r**2) &
@@ -57,10 +57,10 @@ subroutine G96_gga_exchange_potential(nGrid,weight,nBas,AO,dAO,rho,drho,Fx)
           
           Fx(mu,nu) = Fx(mu,nu) - 2d0*gAO*3d0/4d0*beta*g**(-1d0/4d0)/r**(2d0/3d0)
 
-        endif
+        end if
 
-      enddo
-    enddo
-  enddo
+      end do
+    end do
+  end do
 
-end subroutine G96_gga_exchange_potential
+end subroutine RB88_gga_exchange_potential

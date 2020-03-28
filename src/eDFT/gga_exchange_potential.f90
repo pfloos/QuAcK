@@ -30,13 +30,19 @@ subroutine gga_exchange_potential(DFA,nEns,wEns,nGrid,weight,nBas,AO,dAO,rho,drh
 
     case ('G96')
 
-      call G96_gga_exchange_potential(DFA,nEns,wEns,nGrid,weight,nBas,AO,dAO,rho,drho,Fx)
+      call G96_gga_exchange_potential(nGrid,weight,nBas,AO,dAO,rho,drho,Fx)
       
+!   Becke's 88 exchange functional 
+
+    case ('RB88')
+    
+      call RB88_gga_exchange_potential(nGrid,weight,nBas,AO,dAO,rho,drho,Fx)
+
 !   Becke's 88 exchange functional 
 
     case ('B88')
     
-      call B88_gga_exchange_potential(DFA,nEns,wEns,nGrid,weight,nBas,AO,dAO,rho,drho,Fx)
+      call B88_gga_exchange_potential(nGrid,weight,nBas,AO,dAO,rho,drho,Fx)
 
     case default
 

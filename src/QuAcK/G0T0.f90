@@ -102,7 +102,10 @@ subroutine G0T0(doACFDT,exchange_kernel,doXBS,BSE,TDA,singlet_manifold,triplet_m
 
 ! Compute excitation densities for the T-matrix
 
-  call excitation_density_Tmatrix(ispin,nBas,nC,nO,nV,nR,nOOs,nVVs,ERI(:,:,:,:), & 
+  rho1s(:,:,:) = 0d0
+  rho2s(:,:,:) = 0d0
+
+  call excitation_density_Tmatrix(ispin,1d0,nBas,nC,nO,nV,nR,nOOs,nVVs,ERI(:,:,:,:), & 
                                   X1s(:,:),Y1s(:,:),rho1s(:,:,:),X2s(:,:),Y2s(:,:),rho2s(:,:,:))
 
 !----------------------------------------------
@@ -124,7 +127,50 @@ subroutine G0T0(doACFDT,exchange_kernel,doXBS,BSE,TDA,singlet_manifold,triplet_m
 
 ! Compute excitation densities for the T-matrix
 
-  call excitation_density_Tmatrix(ispin,nBas,nC,nO,nV,nR,nOOt,nVVt,ERI(:,:,:,:), & 
+  rho1t(:,:,:) = 0d0
+  rho2t(:,:,:) = 0d0
+
+  call excitation_density_Tmatrix(ispin,1d0,nBas,nC,nO,nV,nR,nOOt,nVVt,ERI(:,:,:,:), & 
+                                  X1t(:,:),Y1t(:,:),rho1t(:,:,:),X2t(:,:),Y2t(:,:),rho2t(:,:,:))
+
+!----------------------------------------------
+! Compute T-matrix version of the self-energy 
+!----------------------------------------------
+
+  SigT(:) = 0d0
+  rho2s(:,:,:) = 0d0
+  rho2t(:,:,:) = 0d0
+
+  call self_energy_Tmatrix_diag(eta,nBas,nC,nO,nV,nR,nOOs,nVVs,nOOt,nVVt,eHF(:), & 
+                                Omega1s(:),rho1s(:,:,:),Omega2s(:),rho2s(:,:,:), & 
+                                Omega1t(:),rho1t(:,:,:),Omega2t(:),rho2t(:,:,:), & 
+                                SigT(:))
+!----------------------------------------------
+! Singlet manifold
+!----------------------------------------------
+
+ ispin = 1
+
+! Compute excitation densities for the T-matrix
+
+  rho1s(:,:,:) = 0d0
+  rho2s(:,:,:) = 0d0
+
+  call excitation_density_Tmatrix(ispin,0d0,nBas,nC,nO,nV,nR,nOOs,nVVs,ERI(:,:,:,:), & 
+                                  X1s(:,:),Y1s(:,:),rho1s(:,:,:),X2s(:,:),Y2s(:,:),rho2s(:,:,:))
+
+!----------------------------------------------
+! Triplet manifold
+!----------------------------------------------
+
+ ispin = 2
+
+! Compute excitation densities for the T-matrix
+
+  rho1t(:,:,:) = 0d0
+  rho2t(:,:,:) = 0d0
+
+  call excitation_density_Tmatrix(ispin,0d0,nBas,nC,nO,nV,nR,nOOt,nVVt,ERI(:,:,:,:), & 
                                   X1t(:,:),Y1t(:,:),rho1t(:,:,:),X2t(:,:),Y2t(:,:),rho2t(:,:,:))
 
 !----------------------------------------------

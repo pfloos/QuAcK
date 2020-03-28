@@ -73,18 +73,16 @@ subroutine LIM_RKS(x_rung,x_DFA,c_rung,c_DFA,nEns,wEns,nGrid,weight,maxSCF,thres
 !------------------------------------------------------------------------
 
   write(*,'(A40)')           '*************************************************'
-  write(*,'(A40)')           '            EQUI-WEIGHT CALCULATION              '
+  write(*,'(A40)')           '        NON-ZERO-WEIGHT CALCULATION              '
   write(*,'(A40)')           '*************************************************'
 
-  wLIM(1:nEns) = 1d0/dble(nEns)
-
   do iEns=1,nEns
-    write(*,'(A20,I2,A2,F16.10)') ' Weight of state  ',iEns,': ',wLIM(iEns)
+    write(*,'(A20,I2,A2,F16.10)') ' Weight of state  ',iEns,': ',wEns(iEns)
   end do
   write(*,'(A40)')           '*************************************************'
   write(*,*)
 
-  call GOK_RKS(.true.,x_rung,x_DFA,c_rung,c_DFA,nEns,wLIM,nGrid,weight,maxSCF,thresh, &
+  call GOK_RKS(.true.,x_rung,x_DFA,c_rung,c_DFA,nEns,wEns,nGrid,weight,maxSCF,thresh, &
                max_diis,guess_type,nBas,AO,dAO,nO,nV,S,T,V,Hc,ERI,X,ENuc,EwEW,EwGICEW,F)
 
 !------------------------------------------------------------------------
@@ -92,10 +90,14 @@ subroutine LIM_RKS(x_rung,x_DFA,c_rung,c_DFA,nEns,wEns,nGrid,weight,maxSCF,thres
 !------------------------------------------------------------------------
 
   Om(1)    = 0d0
-  Om(2)    = 2d0*(EwEW    - EwZW)
-
   OmGIC(1) = 0d0
-  OmGIC(2) = 2d0*(EwGICEW - EwGICZW)
+
+  Om(2)    = 0d0
+  OmGIC(2) = 0d0
+  if(wEns(2) > 10d-3) then
+    Om(2)    = (EwEW    - EwZW)/wEns(2)
+    OmGIC(2) = (EwGICEW - EwGICZW)/wEns(2)
+  end if
 
   write(*,'(A60)')           '-------------------------------------------------'
   write(*,'(A60)')           ' LINEAR INTERPOLATION METHOD EXCITATION ENERGIES '

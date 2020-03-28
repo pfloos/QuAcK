@@ -311,7 +311,7 @@ program IntPak
     allocate(DG(1:KG),ExpG(1:KG))
     DG   = (/ 1d0 /)
     ExpG = (/ 1d0 /)
-    ExpS = ExpS*ExpS
+!   ExpS = ExpS*ExpS
 
     call cpu_time(start_2eInt(iType))
     call Compute2eInt(debug,chemist_notation,iType,nShell,               &

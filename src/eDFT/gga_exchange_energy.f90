@@ -26,13 +26,19 @@ subroutine gga_exchange_energy(DFA,nEns,wEns,nGrid,weight,rho,drho,Ex)
 
     case ('G96')
 
-      call G96_gga_exchange_energy(DFA,nEns,wEns,nGrid,weight,rho,drho,Ex)
+      call G96_gga_exchange_energy(nGrid,weight,rho,drho,Ex)
+
+!   Becke's 88 exchange functional 
+
+    case ('RB88')
+
+      call RB88_gga_exchange_energy(nGrid,weight,rho,drho,Ex)
 
 !   Becke's 88 exchange functional 
 
     case ('B88')
 
-      call B88_gga_exchange_energy(DFA,nEns,wEns,nGrid,weight,rho,drho,Ex)
+      call B88_gga_exchange_energy(nGrid,weight,rho,drho,Ex)
 
     case default
 
