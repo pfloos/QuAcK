@@ -16,6 +16,7 @@ subroutine RMFL20_lda_correlation_individual_energy(nEns,wEns,nGrid,weight,rhow,
 
 ! Local variables
 
+  logical                       :: LDA_centered = .true.
   integer                       :: iEns
   double precision              :: EcLDA
   double precision,allocatable  :: aMFL(:,:)
@@ -51,9 +52,11 @@ subroutine RMFL20_lda_correlation_individual_energy(nEns,wEns,nGrid,weight,rhow,
 
   call RVWN5_lda_correlation_individual_energy(nGrid,weight(:),rhow(:),rho(:),EcLDA)
 
-  do iEns=1,nEns
-    EceLDA(iEns) = EceLDA(iEns) + EcLDA - EceLDA(1)
-  end do
+  if(LDA_centered) then
+    do iEns=1,nEns
+      EceLDA(iEns) = EceLDA(iEns) + EcLDA - EceLDA(1)
+    end do
+  end if
 
 ! Weight-denpendent functional for ensembles
 

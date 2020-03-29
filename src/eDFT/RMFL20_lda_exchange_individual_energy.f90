@@ -16,6 +16,7 @@ subroutine RMFL20_lda_exchange_individual_energy(nEns,wEns,nGrid,weight,rhow,rho
 
 ! Local variables
 
+  logical                       :: LDA_centered = .true.
   integer                       :: iG
   double precision              :: Cxw
   double precision              :: r,rI
@@ -27,7 +28,13 @@ subroutine RMFL20_lda_exchange_individual_energy(nEns,wEns,nGrid,weight,rhow,rho
 
 ! Weight-dependent Cx coefficient for RMFL20 exchange functional
 
-  Cxw = CxLDA + wEns(2)*(Cx1 - Cx0)
+  if(LDA_centered) then
+    Cxw = CxLDA + (Cx1 - Cx0)*wEns(2)
+  else
+    Cxw = wEns(1)*Cx0 + wEns(2)*Cx1
+  end if
+
+! Cxw = CxLDA + (Cx1 - Cx0)*wEns(2)*(cos(2d0*pi*wEns(2)) + 1d0)
 
 ! Compute LDA exchange matrix in the AO basis
 

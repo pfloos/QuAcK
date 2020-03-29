@@ -17,6 +17,7 @@ subroutine RMFL20_lda_exchange_potential(nEns,wEns,nGrid,weight,nBas,AO,rho,Fx)
 
 ! Local variables
 
+  logical                       :: LDA_centered = .true.
   integer                       :: mu,nu,iG
   double precision              :: Cxw
   double precision              :: r,vAO
@@ -27,7 +28,13 @@ subroutine RMFL20_lda_exchange_potential(nEns,wEns,nGrid,weight,nBas,AO,rho,Fx)
 
 ! Weight-dependent Cx coefficient for RMFL20 exchange functional
 
-  Cxw = CxLDA + wEns(2)*(Cx1 - Cx0)
+  if(LDA_centered) then
+    Cxw = CxLDA + (Cx1 - Cx0)*wEns(2)
+  else
+    Cxw = wEns(1)*Cx0 + wEns(2)*Cx1
+  end if
+
+! Cxw = CxLDA + (Cx1 - Cx0)*wEns(2)*(cos(2d0*pi*wEns(2)) + 1d0)
 
 ! Compute LDA exchange matrix in the AO basis
 

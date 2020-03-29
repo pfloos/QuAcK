@@ -17,6 +17,7 @@ include 'parameters.h'
 
 ! Local variables
 
+  logical                       :: LDA_centered = .true.
   integer                       :: iEns
   double precision,allocatable  :: aMFL(:,:)
   double precision,allocatable  :: FcLDA(:,:)
@@ -54,11 +55,11 @@ include 'parameters.h'
 
   call RVWN5_lda_correlation_potential(nGrid,weight,nBas,AO,rho,FcLDA)
 
-  do iEns=1,nEns
-
-    FceLDA(:,:,iEns) = FceLDA(:,:,iEns) + FcLDA(:,:) - FceLDA(:,:,1)
-
-  end do
+  if(LDA_centered) then
+    do iEns=1,nEns
+      FceLDA(:,:,iEns) = FceLDA(:,:,iEns) + FcLDA(:,:) - FceLDA(:,:,1)
+    end do
+    end if
 
 ! Weight-denpendent functional for ensembles
 

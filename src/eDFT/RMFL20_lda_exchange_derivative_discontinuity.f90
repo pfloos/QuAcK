@@ -29,7 +29,7 @@ subroutine RMFL20_lda_exchange_derivative_discontinuity(nEns,wEns,nGrid,weight,r
   Cx(1) = Cx0
   Cx(2) = Cx1
 
-! Compute correlation energy for ground, singly-excited and doubly-excited states
+! Compute correlation energy for ground- and doubly-excited states
 
   do iEns=1,nEns
 
@@ -42,7 +42,9 @@ subroutine RMFL20_lda_exchange_derivative_discontinuity(nEns,wEns,nGrid,weight,r
   do iEns=1,nEns
     do jEns=1,nEns
 
-      ExDD(iEns) = ExDD(iEns) + (Kronecker_delta(iEns,jEns) - wEns(jEns))*(dExdw(jEns) - dExdw(1))
+      ExDD(iEns) = ExDD(iEns) + (Kronecker_delta(iEns,jEns) - wEns(jEns))* & 
+                                (dExdw(jEns) - dExdw(1))    
+!                               (cos(2d0*pi*wEns(jEns)) + 1d0)
 
     end do
   end do
