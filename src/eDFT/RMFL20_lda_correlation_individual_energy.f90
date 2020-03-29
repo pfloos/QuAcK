@@ -48,8 +48,6 @@ subroutine RMFL20_lda_correlation_individual_energy(nEns,wEns,nGrid,weight,rhow,
 
 ! LDA-centered functional
 
-  EcLDA = 0d0
-
   call RVWN5_lda_correlation_individual_energy(nGrid,weight(:),rhow(:),rho(:),EcLDA)
 
   if(LDA_centered) then
@@ -61,7 +59,6 @@ subroutine RMFL20_lda_correlation_individual_energy(nEns,wEns,nGrid,weight,rhow,
 ! Weight-denpendent functional for ensembles
 
   Ec = 0d0
-
   do iEns=1,nEns
     Ec = Ec + wEns(iEns)*EceLDA(iEns)
   enddo

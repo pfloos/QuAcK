@@ -13,12 +13,12 @@
 # GGA          = 2: 
 # Hybrid       = 4: 
 # Hartree-Fock = 666
-  1 RVWN5 
+  1 RMFL20
 # quadrature grid SG-n
   1
 # Number of states in ensemble (nEns)
   2
 # Ensemble weights: wEns(1),...,wEns(nEns-1)
-  0.5 0.0
+  1.0 0.0
 # GOK-DFT: maxSCF thresh   DIIS n_diis guess_type ortho_type
-           32    0.00001   T     5      1          1
+           32    0.00001   T     5      2          1

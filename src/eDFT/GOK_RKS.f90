@@ -128,17 +128,7 @@ subroutine GOK_RKS(restart,x_rung,x_DFA,c_rung,c_DFA,nEns,wEns,nGrid,weight,maxS
 
 ! Guess coefficients and eigenvalues
 
-  if(.not. restart) then 
-    if(guess_type == 1) then
- 
-        F(:,:) = Hc(:,:)
- 
-    else if(guess_type == 2) then
- 
-      call random_number(F(:,:))
- 
-    end if
-  end if
+  if(.not. restart) call mo_guess(nBas,nO,guess_type,S,Hc,ERI,J,Fx,X,cp,F,Fp,eps,c,Pw)
 
 ! Initialization
 

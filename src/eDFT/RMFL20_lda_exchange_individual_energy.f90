@@ -45,11 +45,9 @@ subroutine RMFL20_lda_exchange_individual_energy(nEns,wEns,nGrid,weight,rhow,rho
     rI = max(0d0,rho(iG))
 
     if(r > threshold .and. rI > threshold) then
-
       e    =         Cxw*r**(1d0/3d0)
       dedr = 1d0/3d0*Cxw*r**(-2d0/3d0)
       Ex = Ex + weight(iG)*(e*rI + dedr*r*rI - dedr*r*r)
-
     endif
 
   enddo

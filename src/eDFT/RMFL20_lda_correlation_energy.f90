@@ -43,9 +43,7 @@ subroutine RMFL20_lda_correlation_energy(nEns,wEns,nGrid,weight,rho,Ec)
 ! Compute correlation energy for ground and doubly-excited states
 
   do iEns=1,nEns
-
     call restricted_elda_correlation_energy(aMFL(:,iEns),nGrid,weight(:),rho(:),EceLDA(iEns))
-
   end do
 
 ! LDA-centered functional
@@ -61,11 +59,8 @@ subroutine RMFL20_lda_correlation_energy(nEns,wEns,nGrid,weight,rho,Ec)
 ! Weight-denpendent functional for ensembles
 
   Ec = 0d0
-
   do iEns=1,nEns
-
     Ec = Ec + wEns(iEns)*EceLDA(iEns)
-
   end do
 
 end subroutine RMFL20_lda_correlation_energy

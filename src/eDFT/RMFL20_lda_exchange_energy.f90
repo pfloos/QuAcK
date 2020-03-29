@@ -39,15 +39,10 @@ subroutine RMFL20_lda_exchange_energy(nEns,wEns,nGrid,weight,rho,Ex)
 
   Ex = 0d0
   do iG=1,nGrid
-
     r = max(0d0,rho(iG))
-
     if(r > threshold) then
-
       Ex = Ex + weight(iG)*Cxw*r**(4d0/3d0)
-
     endif
-
   enddo
 
 end subroutine RMFL20_lda_exchange_energy

@@ -16,7 +16,7 @@ subroutine MFL20_lda_correlation_individual_energy(nEns,wEns,nGrid,weight,rhow,r
 
 ! Local variables
 
-  logical                       :: LDA_centered = .false.
+  logical                       :: LDA_centered = .true.
   integer                       :: iEns,isp
   double precision              :: EcLDA(nsp)
   double precision,allocatable  :: aMFL(:,:)

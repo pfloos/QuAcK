@@ -44,14 +44,10 @@ include 'parameters.h'
 ! Compute correlation energy for ground, singly-excited and doubly-excited states
 
   do iEns=1,nEns
-
     call restricted_elda_correlation_potential(nEns,aMFL(:,iEns),nGrid,weight,nBas,AO,rho,FceLDA(:,:,iEns))
-
   end do
 
 ! LDA-centered functional
-
-  FcLDA(:,:) = 0d0
 
   call RVWN5_lda_correlation_potential(nGrid,weight,nBas,AO,rho,FcLDA)
 
@@ -64,11 +60,8 @@ include 'parameters.h'
 ! Weight-denpendent functional for ensembles
 
   Fc(:,:) = 0d0
-
   do iEns=1,nEns
-
     Fc(:,:) = Fc(:,:) + wEns(iEns)*FceLDA(:,:,iEns)
-
   enddo
 
 end subroutine RMFL20_lda_correlation_potential
