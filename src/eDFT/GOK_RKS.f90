@@ -337,7 +337,7 @@ subroutine GOK_RKS(restart,x_rung,x_DFA,c_rung,c_DFA,nEns,wEns,nGrid,weight,maxS
 
   call restricted_individual_energy(x_rung,x_DFA,c_rung,c_DFA,nEns,wEns(:),nGrid,weight(:),nBas, &
                                     AO(:,:),dAO(:,:,:),nO,nV,T(:,:),V(:,:),ERI(:,:,:,:),ENuc,    & 
-                                    Pw(:,:),rhow(:),drhow(:,:),J(:,:),Fx(:,:),FxHF(:,:),         & 
+                                    eps(:),Pw(:,:),rhow(:),drhow(:,:),J(:,:),Fx(:,:),FxHF(:,:),  & 
                                     Fc(:,:),P(:,:,:),rho(:,:),drho(:,:,:),Ew,EwGIC,E(:),Om(:))
 
 end subroutine GOK_RKS

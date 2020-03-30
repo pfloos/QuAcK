@@ -1,5 +1,5 @@
 subroutine restricted_individual_energy(x_rung,x_DFA,c_rung,c_DFA,nEns,wEns,nGrid,weight,nBas,AO,dAO, & 
-                                        nO,nV,T,V,ERI,ENuc,Pw,rhow,drhow,J,Fx,FxHF,Fc,P,rho,drho,Ew,EwGIC,E,Om)
+                                        nO,nV,T,V,ERI,ENuc,eps,Pw,rhow,drhow,J,Fx,FxHF,Fc,P,rho,drho,Ew,EwGIC,E,Om)
 
 ! Compute individual energies as well as excitation energies
 
@@ -18,12 +18,14 @@ subroutine restricted_individual_energy(x_rung,x_DFA,c_rung,c_DFA,nEns,wEns,nGri
   double precision,intent(in)   :: AO(nBas,nGrid)
   double precision,intent(in)   :: dAO(ncart,nBas,nGrid)
 
-  integer,intent(in)            :: nO,nV
+  integer,intent(in)            :: nO
+  integer,intent(in)            :: nV
   double precision,intent(in)   :: T(nBas,nBas)
   double precision,intent(in)   :: V(nBas,nBas)
   double precision,intent(in)   :: ERI(nBas,nBas,nBas,nBas)
   double precision,intent(in)   :: ENuc
 
+  double precision,intent(in)   :: eps(nBas)
   double precision,intent(in)   :: Pw(nBas,nBas)
   double precision,intent(in)   :: rhow(nGrid)
   double precision,intent(in)   :: drhow(ncart,nGrid)
@@ -45,8 +47,10 @@ subroutine restricted_individual_energy(x_rung,x_DFA,c_rung,c_DFA,nEns,wEns,nGri
   double precision              :: EV(nEns)
   double precision              :: EJ(nEns)
   double precision              :: Ex(nEns),   Ec(nEns),   Exc(nEns)
+  double precision              :: Eaux(nEns)
   double precision              :: ExDD(nEns), EcDD(nEns), ExcDD(nEns)
   double precision              :: Omx(nEns),  Omc(nEns),  Omxc(nEns)
+  double precision              :: Omaux(nEns)
   double precision              :: OmxDD(nEns),OmcDD(nEns),OmxcDD(nEns)
 
   double precision,external     :: trace_matrix
@@ -106,6 +110,15 @@ subroutine restricted_individual_energy(x_rung,x_DFA,c_rung,c_DFA,nEns,wEns,nGri
 
   end do
 
+
+
+
+!------------------------------------------------------------------------
+! Compute auxiliary energies
+!------------------------------------------------------------------------
+
+  call restricted_auxiliary_energy(nBas,nEns,nO,eps,Eaux)
+
 !------------------------------------------------------------------------
 ! Compute derivative discontinuities
 !------------------------------------------------------------------------
@@ -147,6 +160,8 @@ subroutine restricted_individual_energy(x_rung,x_DFA,c_rung,c_DFA,nEns,wEns,nGri
     Omc(iEns)    = Ec(iEns)    - Ec(1)
     Omxc(iEns)   = Exc(iEns)   - Exc(1)
 
+    Omaux(iEns)  = Eaux(iENs)  - Eaux(1)
+
     OmxDD(iEns)  = ExDD(iEns)  - ExDD(1)
     OmcDD(iEns)  = EcDD(iEns)  - EcDD(1)
     OmxcDD(iEns) = ExcDD(iEns) - ExcDD(1)
@@ -158,7 +173,7 @@ subroutine restricted_individual_energy(x_rung,x_DFA,c_rung,c_DFA,nEns,wEns,nGri
 !------------------------------------------------------------------------
 
   call print_restricted_individual_energy(nEns,ENuc,Ew,EwGIC,ET(:),EV(:),EJ(:),Ex(:),Ec(:),Exc(:), &
-                                          ExDD(:),EcDD(:),ExcDD(:),E(:),                           & 
-                                          Om(:),Omx(:),Omc(:),Omxc(:),OmxDD(:),OmcDD(:),OmxcDD(:))
+                                          Eaux(:),ExDD(:),EcDD(:),ExcDD(:),E(:),                   & 
+                                          Om(:),Omx(:),Omc(:),Omxc(:),Omaux,OmxDD(:),OmcDD(:),OmxcDD(:))
 
 end subroutine restricted_individual_energy

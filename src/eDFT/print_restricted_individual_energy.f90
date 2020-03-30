@@ -1,5 +1,5 @@
-subroutine print_restricted_individual_energy(nEns,ENuc,Ew,EwGIC,ET,EV,EJ,Ex,Ec,Exc,ExDD,EcDD,ExcDD,E, & 
-                                              Om,Omx,Omc,Omxc,OmxDD,OmcDD,OmxcDD)
+subroutine print_restricted_individual_energy(nEns,ENuc,Ew,EwGIC,ET,EV,EJ,Ex,Ec,Exc,Eaux,ExDD,EcDD,ExcDD,E, & 
+                                              Om,Omx,Omc,Omxc,Omaux,OmxDD,OmcDD,OmxcDD)
 
 ! Print individual energies for eDFT calculation
 
@@ -16,8 +16,10 @@ subroutine print_restricted_individual_energy(nEns,ENuc,Ew,EwGIC,ET,EV,EJ,Ex,Ec,
   double precision,intent(in)        :: EV(nEns)
   double precision,intent(in)        :: EJ(nEns)
   double precision,intent(in)        :: Ex(nEns),   Ec(nEns),   Exc(nEns)
+  double precision,intent(in)        :: Eaux(nEns)
   double precision,intent(in)        :: ExDD(nEns), EcDD(nEns), ExcDD(nEns)
   double precision,intent(in)        :: Omx(nEns),  Omc(nEns),  Omxc(nEns)
+  double precision,intent(in)        :: Omaux(nEns)
   double precision,intent(in)        :: OmxDD(nEns),OmcDD(nEns),OmxcDD(nEns)
   double precision,intent(in)        :: E(nEns)
   double precision,intent(in)        :: Om(nEns)
@@ -104,6 +106,19 @@ subroutine print_restricted_individual_energy(nEns,ENuc,Ew,EwGIC,ET,EV,EJ,Ex,Ec,
   write(*,*)
 
 !------------------------------------------------------------------------
+! Auxiliary energies
+!------------------------------------------------------------------------
+
+  write(*,'(A60)')           '-------------------------------------------------'
+  write(*,'(A60)')           ' AUXILIARY KS ENERGIES'
+  write(*,'(A60)')           '-------------------------------------------------'
+  do iEns=1,nEns
+    write(*,'(A40,I2,A2,F16.10,A3)') 'Auxiliary KS energy state ',iEns,': ',Eaux(iEns),' au'
+  end do
+  write(*,'(A60)')           '-------------------------------------------------'
+  write(*,*)
+
+!------------------------------------------------------------------------
 ! Compute derivative discontinuities
 !------------------------------------------------------------------------
 
@@ -124,7 +139,32 @@ subroutine print_restricted_individual_energy(nEns,ENuc,Ew,EwGIC,ET,EV,EJ,Ex,Ec,
 !------------------------------------------------------------------------
 
   write(*,'(A60)')           '-------------------------------------------------'
-  write(*,'(A60)')           ' INDIVIDUAL AND EXCITATION ENERGIES'
+  write(*,'(A60)')           ' EXCITATION ENERGIES FROM AUXILIARY ENERGIES '
+  write(*,'(A60)')           '-------------------------------------------------'
+
+  do iEns=2,nEns
+    write(*,'(A40,I2,A2,F16.10,A3)') ' Auxiliary excitation energy 1 ->',iEns,': ',Omaux(iEns)+OmxcDD(iEns),' au'
+    write(*,*)
+    write(*,'(A44,      F16.10,A3)') ' auxiliary energy contribution  : ',Omaux(iEns), ' au'
+    write(*,'(A44,      F16.10,A3)') '        x  ensemble derivative  : ',OmxDD(iEns), ' au'
+    write(*,'(A44,      F16.10,A3)') '        c  ensemble derivative  : ',OmcDD(iEns), ' au'
+    write(*,'(A44,      F16.10,A3)') '       xc  ensemble derivative  : ',OmxcDD(iEns),' au'
+  end do
+  write(*,'(A60)')           '-------------------------------------------------'
+
+  do iEns=2,nEns
+    write(*,'(A40,I2,A2,F16.10,A3)') ' Auxiliary excitation energy 1 ->',iEns,': ',(Om(iEns)+OmxcDD(iEns))*HaToeV,' eV'
+    write(*,*)
+    write(*,'(A44,      F16.10,A3)') ' auxiliary energy contribution  : ',Omaux(iEns)*HaToeV, ' eV'
+    write(*,'(A44,      F16.10,A3)') '        x  ensemble derivative  : ',OmxDD(iEns)*HaToeV, ' eV'
+    write(*,'(A44,      F16.10,A3)') '        c  ensemble derivative  : ',OmcDD(iEns)*HaToeV, ' eV'
+    write(*,'(A44,      F16.10,A3)') '       xc  ensemble derivative  : ',OmxcDD(iEns)*HaToeV,' eV'
+  end do
+  write(*,'(A60)')           '-------------------------------------------------'
+  write(*,*)
+
+  write(*,'(A60)')           '-------------------------------------------------'
+  write(*,'(A60)')           ' EXCITATION ENERGIES FROM INDIVIDUAL ENERGIES '
   write(*,'(A60)')           '-------------------------------------------------'
   do iEns=1,nEns
     write(*,'(A40,I2,A2,F16.10,A3)') ' Individual energy state ',iEns,': ',E(iEns) + ENuc,' au'
