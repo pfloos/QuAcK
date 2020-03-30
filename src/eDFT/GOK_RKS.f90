@@ -21,7 +21,8 @@ subroutine GOK_RKS(restart,x_rung,x_DFA,c_rung,c_DFA,nEns,wEns,nGrid,weight,maxS
   double precision,intent(in)   :: AO(nBas,nGrid)
   double precision,intent(in)   :: dAO(ncart,nBas,nGrid)
 
-  integer,intent(in)            :: nO,nV
+  integer,intent(in)            :: nO
+  integer,intent(in)            :: nV
   double precision,intent(in)   :: S(nBas,nBas)
   double precision,intent(in)   :: T(nBas,nBas)
   double precision,intent(in)   :: V(nBas,nBas)
@@ -128,8 +129,22 @@ subroutine GOK_RKS(restart,x_rung,x_DFA,c_rung,c_DFA,nEns,wEns,nGrid,weight,maxS
 
 ! Guess coefficients and eigenvalues
 
-  if(.not. restart) call mo_guess(nBas,nO,guess_type,S,Hc,ERI,J,Fx,X,cp,F,Fp,eps,c,Pw)
+  if(.not. restart) then
+    if(guess_type == 1) then  
 
+    cp(:,:) = matmul(transpose(X(:,:)),matmul(Hc(:,:),X(:,:)))
+    call diagonalize_matrix(nBas,cp(:,:),eps(:))
+    c(:,:) = matmul(X(:,:),cp(:,:))
+
+    else
+ 
+      print*,'Wrong guess option'
+      stop
+ 
+    end if
+
+  end if
+    
 ! Initialization
 
   nSCF = 0
@@ -162,19 +177,6 @@ subroutine GOK_RKS(restart,x_rung,x_DFA,c_rung,c_DFA,nEns,wEns,nGrid,weight,maxS
 !   Increment 
 
     nSCF = nSCF + 1
-
-!  Transform Fock matrix in orthogonal basis
-
-    Fp(:,:) = matmul(transpose(X(:,:)),matmul(F(:,:),X(:,:)))
-
-!  Diagonalize Fock matrix to get eigenvectors and eigenvalues
-
-    cp(:,:) = Fp(:,:)
-    call diagonalize_matrix(nBas,cp(:,:),eps(:))
-    
-!   Back-transform eigenvectors in non-orthogonal basis
-
-    c(:,:) = matmul(X(:,:),cp(:,:))
 
 !------------------------------------------------------------------------
 !   Compute density matrix 
@@ -253,6 +255,19 @@ subroutine GOK_RKS(restart,x_rung,x_DFA,c_rung,c_DFA,nEns,wEns,nGrid,weight,maxS
 !   Reset DIIS if required
 
     if(abs(rcond) < 1d-15) n_diis = 0
+
+!  Transform Fock matrix in orthogonal basis
+
+    Fp(:,:) = matmul(transpose(X(:,:)),matmul(F(:,:),X(:,:)))
+
+!  Diagonalize Fock matrix to get eigenvectors and eigenvalues
+
+    cp(:,:) = Fp(:,:)
+    call diagonalize_matrix(nBas,cp(:,:),eps(:))
+    
+!   Back-transform eigenvectors in non-orthogonal basis
+
+    c(:,:) = matmul(X(:,:),cp(:,:))
 
 !------------------------------------------------------------------------
 !   Compute KS energy

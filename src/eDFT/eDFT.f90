@@ -166,7 +166,7 @@ program eDFT
     call cpu_time(end_KS)
 
     t_KS = end_KS - start_KS
-    write(*,'(A65,1X,F9.3,A8)') 'Total CPU time for GOC-RKS = ',t_KS,' seconds'
+    write(*,'(A65,1X,F9.3,A8)') 'Total CPU time for GOK-RKS = ',t_KS,' seconds'
     write(*,*)
 
  end if
