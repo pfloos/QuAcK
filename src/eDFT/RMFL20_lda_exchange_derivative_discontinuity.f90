@@ -32,9 +32,7 @@ subroutine RMFL20_lda_exchange_derivative_discontinuity(nEns,wEns,nGrid,weight,r
 ! Compute correlation energy for ground- and doubly-excited states
 
   do iEns=1,nEns
-
     call restricted_elda_exchange_energy(nEns,Cx(iEns),nGrid,weight(:),rhow(:),dExdw(iEns))
-
   end do
 
   ExDD(:) = 0d0
@@ -42,9 +40,7 @@ subroutine RMFL20_lda_exchange_derivative_discontinuity(nEns,wEns,nGrid,weight,r
   do iEns=1,nEns
     do jEns=1,nEns
 
-      ExDD(iEns) = ExDD(iEns) + (Kronecker_delta(iEns,jEns) - wEns(jEns))* & 
-                                (dExdw(jEns) - dExdw(1))    
-!                               (cos(2d0*pi*wEns(jEns)) + 1d0)
+      ExDD(iEns) = ExDD(iEns) + (Kronecker_delta(iEns,jEns) - wEns(jEns))*(dExdw(jEns) - dExdw(1))    
 
     end do
   end do
