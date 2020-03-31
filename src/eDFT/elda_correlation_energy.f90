@@ -1,4 +1,4 @@
-subroutine elda_correlation_energy(nEns,aLF,nGrid,weight,rho,Ec)
+subroutine elda_correlation_energy(aLF,nGrid,weight,rho,Ec)
 
 ! Compute LDA correlation energy of 2-glomium for various states
 
@@ -7,8 +7,7 @@ subroutine elda_correlation_energy(nEns,aLF,nGrid,weight,rho,Ec)
 
 ! Input variables
 
-  integer,intent(in)            :: nEns
-  double precision,intent(in)   :: aLF(nEns)
+  double precision,intent(in)   :: aLF(3)
   integer,intent(in)            :: nGrid
   double precision,intent(in)   :: weight(nGrid)
   double precision,intent(in)   :: rho(nGrid,nspin)

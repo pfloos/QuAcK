@@ -29,7 +29,7 @@ subroutine restricted_lda_correlation_individual_energy(DFA,nEns,wEns,nGrid,weig
 
       call RVWN5_lda_correlation_individual_energy(nGrid,weight(:),rhow(:),rho(:),Ec)
 
-!   marut-Fromager-Loos weight-dependent correlation functional
+!   Marut-Fromager-Loos weight-dependent correlation functional
 
     case ('RMFL20')
 

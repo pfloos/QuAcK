@@ -46,7 +46,7 @@ subroutine MFL20_lda_correlation_derivative_discontinuity(nEns,wEns,nGrid,weight
 
   do iEns=1,nEns
 
-    call elda_correlation_energy(nEns,aMFL(:,iEns),nGrid,weight(:),rhow(:,:),dEc(:,iEns))
+    call elda_correlation_energy(aMFL(:,iEns),nGrid,weight(:),rhow(:,:),dEc(:,iEns))
 
   end do
 

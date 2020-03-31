@@ -3,7 +3,7 @@ subroutine restricted_lda_correlation_potential(DFA,nEns,wEns,nGrid,weight,nBas,
 ! Select LDA correlation potential
 
   implicit none
-include 'parameters.h'
+  include 'parameters.h'
 
 ! Input variables
 

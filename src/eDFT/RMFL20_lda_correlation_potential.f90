@@ -3,7 +3,7 @@ subroutine RMFL20_lda_correlation_potential(nEns,wEns,nGrid,weight,nBas,AO,rho,F
 ! Compute Marut-Fromager-Loos weight-dependent LDA correlation potential
 
   implicit none
-include 'parameters.h'
+  include 'parameters.h'
 
 ! Input variables
 
@@ -41,20 +41,21 @@ include 'parameters.h'
   aMFL(2,2) = -0.0506019d0
   aMFL(3,2) = +0.0331417d0
 
-! Compute correlation energy for ground, singly-excited and doubly-excited states
+! Compute correlation energy for ground- and doubly-excited states
 
   do iEns=1,nEns
-    call restricted_elda_correlation_potential(aMFL(:,iEns),nGrid,weight,nBas,AO,rho,FceLDA(:,:,iEns))
+    call restricted_elda_correlation_potential(aMFL(1:3,iEns),nGrid,weight(:),nBas,AO(:,:),rho(:),FceLDA(:,:,iEns))
   end do
 
 ! LDA-centered functional
 
-  call RVWN5_lda_correlation_potential(nGrid,weight,nBas,AO,rho,FcLDA)
-
   if(LDA_centered) then
-    do iEns=1,nEns
-      FceLDA(:,:,iEns) = FceLDA(:,:,iEns) + FcLDA(:,:) - FceLDA(:,:,1)
-    end do
+
+    call RVWN5_lda_correlation_potential(nGrid,weight(:),nBas,AO(:,:),rho(:),FcLDA(:,:))
+
+    FceLDA(:,:,2) = FcLDA(:,:) + wEns(2)*(FceLDA(:,:,2) - FceLDA(:,:,1))
+    FceLDA(:,:,1) = FcLDA(:,:)
+
   end if
 
 ! Weight-denpendent functional for ensembles

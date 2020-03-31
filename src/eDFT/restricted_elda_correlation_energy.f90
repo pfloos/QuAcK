@@ -25,7 +25,6 @@ subroutine restricted_elda_correlation_energy(aMFL,nGrid,weight,rho,Ec)
 ! Compute eLDA correlation energy
 
   Ec = 0d0
-
   do iG=1,nGrid
 
     r = max(0d0,rho(iG))

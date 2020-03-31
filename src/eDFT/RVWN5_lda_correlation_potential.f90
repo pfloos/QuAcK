@@ -30,7 +30,7 @@ subroutine RVWN5_lda_correlation_potential(nGrid,weight,nBas,AO,rho,Fc)
 
 ! Parameters of the functional
 
-  a_p  = +0.0621814D0/2D0
+  a_p  = +0.0621814d0/2d0
   x0_p = -0.10498d0
   b_p  = +3.72744d0
   c_p  = +12.9352d0

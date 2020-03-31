@@ -1,5 +1,5 @@
 subroutine exchange_individual_energy(rung,DFA,nEns,wEns,nGrid,weight,nBas, & 
-                                      ERI,P,FxHF,rhow,drhow,rho,drho,Ex)
+                                      ERI,P,rhow,drhow,rho,drho,Ex)
 
 ! Compute the exchange individual energy
 
@@ -17,7 +17,6 @@ subroutine exchange_individual_energy(rung,DFA,nEns,wEns,nGrid,weight,nBas, &
   integer,intent(in)            :: nBas
   double precision,intent(in)   :: ERI(nBas,nBas,nBas,nBas)
   double precision,intent(in)   :: P(nBas,nBas)
-  double precision,intent(in)   :: FxHF(nBas,nBas)
   double precision,intent(in)   :: rhow(nGrid)
   double precision,intent(in)   :: drhow(ncart,nGrid)
   double precision,intent(in)   :: rho(nGrid)
@@ -66,8 +65,7 @@ subroutine exchange_individual_energy(rung,DFA,nEns,wEns,nGrid,weight,nBas, &
 
     case(666) 
 
-      call fock_exchange_potential(nBas,P,ERI,FxHF)
-      call fock_exchange_energy(nBas,P,FxHF,ExHF)
+      call fock_exchange_individual_energy(nBas,P,ERI,ExHF)
 
       Ex = ExHF
 

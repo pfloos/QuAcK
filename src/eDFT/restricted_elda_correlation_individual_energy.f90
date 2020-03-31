@@ -1,4 +1,4 @@
-subroutine restricted_elda_correlation_individual_energy(nEns,aLF,nGrid,weight,rhow,rho,Ec)
+subroutine restricted_elda_correlation_individual_energy(aMFL,nGrid,weight,rhow,rho,Ec)
 
 ! Compute LDA correlation individual energy of 2-glomium for various states
 
@@ -7,8 +7,7 @@ subroutine restricted_elda_correlation_individual_energy(nEns,aLF,nGrid,weight,r
 
 ! Input variables
 
-  integer,intent(in)            :: nEns
-  double precision,intent(in)   :: aLF(nEns)
+  double precision,intent(in)   :: aMFL(3)
   integer,intent(in)            :: nGrid
   double precision,intent(in)   :: weight(nGrid)
   double precision,intent(in)   :: rhow(nGrid)
@@ -36,10 +35,10 @@ subroutine restricted_elda_correlation_individual_energy(nEns,aLF,nGrid,weight,r
 
     if(r > threshold .and. rI > threshold) then
 
-      ec_p  = aLF(1)/(1d0 + aLF(2)*r**(-1d0/6d0) + aLF(3)*r**(-1d0/3d0))
+      ec_p  = aMFL(1)/(1d0 + aMFL(2)*r**(-1d0/6d0) + aMFL(3)*r**(-1d0/3d0))
 
-      dFcdr = aLF(2)*r**(-1d0/6d0) + 2d0*aLF(3)*r**(-1d0/3d0)
-      dFcdr = dFcdr/(1d0 + aLF(2)*r**(-1d0/6d0) + aLF(3)*r**(-1d0/3d0))
+      dFcdr = aMFL(2)*r**(-1d0/6d0) + 2d0*aMFL(3)*r**(-1d0/3d0)
+      dFcdr = dFcdr/(1d0 + aMFL(2)*r**(-1d0/6d0) + aMFL(3)*r**(-1d0/3d0))
       dFcdr = ec_p*dFcdr/(6d0*r)
 
       Ec = Ec + weight(iG)*(ec_p*rI + dFcdr*r*rI - dFcdr*r*r)

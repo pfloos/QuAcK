@@ -37,6 +37,7 @@ subroutine restricted_elda_correlation_potential(aMFL,nGrid,weight,nBas,AO,rho,F
         if(r > threshold) then
 
           ec_p  = aMFL(1)/(1d0 + aMFL(2)*r**(-1d0/6d0) + aMFL(3)*r**(-1d0/3d0))
+
           dFcdr = aMFL(2)*r**(-1d0/6d0) + 2d0*aMFL(3)*r**(-1d0/3d0)
           dFcdr = dFcdr/(1d0 + aMFL(2)*r**(-1d0/6d0) + aMFL(3)*r**(-1d0/3d0))
           dFcdr = ec_p*dFcdr/(6d0*r)

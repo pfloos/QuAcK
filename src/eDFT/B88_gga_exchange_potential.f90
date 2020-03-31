@@ -1,4 +1,4 @@
-subroutine B88_gga_exchange_potential(DFA,nEns,wEns,nGrid,weight,nBas,AO,dAO,rho,drho,Fx)
+subroutine B88_gga_exchange_potential(nGrid,weight,nBas,AO,dAO,rho,drho,Fx)
 
 ! Compute Becke's GGA exchange potential
 
@@ -7,9 +7,6 @@ subroutine B88_gga_exchange_potential(DFA,nEns,wEns,nGrid,weight,nBas,AO,dAO,rho
 
 ! Input variables
 
-  character(len=12),intent(in)  :: DFA
-  integer,intent(in)            :: nEns
-  double precision,intent(in)   :: wEns(nEns)
   integer,intent(in)            :: nGrid
   double precision,intent(in)   :: weight(nGrid)
   integer,intent(in)            :: nBas

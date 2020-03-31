@@ -48,7 +48,7 @@ subroutine MFL20_lda_correlation_individual_energy(nEns,wEns,nGrid,weight,rhow,r
 
   do iEns=1,nEns
 
-    call elda_correlation_individual_energy(nEns,aMFL(:,iEns),nGrid,weight(:),rhow(:,:),rho(:,:),EceLDA(:,iEns))
+    call elda_correlation_individual_energy(aMFL(:,iEns),nGrid,weight(:),rhow(:,:),rho(:,:),EceLDA(:,iEns))
 
   end do
 

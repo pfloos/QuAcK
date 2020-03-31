@@ -236,7 +236,7 @@ subroutine GOK_RKS(restart,x_rung,x_DFA,c_rung,c_DFA,nEns,wEns,nGrid,weight,maxS
 
     call restricted_correlation_potential(c_rung,c_DFA,nEns,wEns(:),nGrid,weight(:), & 
                                           nBas,AO(:,:),dAO(:,:,:),rhow(:),drhow(:,:),Fc(:,:))
-!   print*,'Done with restricted_correlation_potential'
+
 !   Build Fock operator
 
     F(:,:) = Hc(:,:) + J(:,:) + Fx(:,:) + Fc(:,:)
@@ -256,11 +256,11 @@ subroutine GOK_RKS(restart,x_rung,x_DFA,c_rung,c_DFA,nEns,wEns,nGrid,weight,maxS
 
     if(abs(rcond) < 1d-15) n_diis = 0
 
-!  Transform Fock matrix in orthogonal basis
+!   Transform Fock matrix in orthogonal basis
 
     Fp(:,:) = matmul(transpose(X(:,:)),matmul(F(:,:),X(:,:)))
 
-!  Diagonalize Fock matrix to get eigenvectors and eigenvalues
+!   Diagonalize Fock matrix to get eigenvectors and eigenvalues
 
     cp(:,:) = Fp(:,:)
     call diagonalize_matrix(nBas,cp(:,:),eps(:))
@@ -335,9 +335,9 @@ subroutine GOK_RKS(restart,x_rung,x_DFA,c_rung,c_DFA,nEns,wEns,nGrid,weight,maxS
 ! Compute individual energies from ensemble energy
 !------------------------------------------------------------------------
 
-  call restricted_individual_energy(x_rung,x_DFA,c_rung,c_DFA,nEns,wEns(:),nGrid,weight(:),nBas, &
-                                    AO(:,:),dAO(:,:,:),nO,nV,T(:,:),V(:,:),ERI(:,:,:,:),ENuc,    & 
-                                    eps(:),Pw(:,:),rhow(:),drhow(:,:),J(:,:),Fx(:,:),FxHF(:,:),  & 
-                                    Fc(:,:),P(:,:,:),rho(:,:),drho(:,:,:),Ew,EwGIC,E(:),Om(:))
+  call restricted_individual_energy(x_rung,x_DFA,c_rung,c_DFA,nEns,wEns(:),nGrid,weight(:), &
+                                    nBas,nO,nV,T(:,:),V(:,:),ERI(:,:,:,:),ENuc,             & 
+                                    eps(:),Pw(:,:),rhow(:),drhow(:,:),J(:,:),P(:,:,:),      & 
+                                    rho(:,:),drho(:,:,:),Ew,EwGIC,E(:),Om(:))
 
 end subroutine GOK_RKS

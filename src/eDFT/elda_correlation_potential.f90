@@ -1,4 +1,4 @@
-subroutine elda_correlation_potential(nEns,aLF,nGrid,weight,nBas,AO,rho,Fc)
+subroutine elda_correlation_potential(aLF,nGrid,weight,nBas,AO,rho,Fc)
 
 ! Compute LDA correlation energy of 2-glomium for various states
 
@@ -7,8 +7,7 @@ subroutine elda_correlation_potential(nEns,aLF,nGrid,weight,nBas,AO,rho,Fc)
 
 ! Input variables
 
-  integer,intent(in)            :: nEns
-  double precision,intent(in)   :: aLF(nEns)
+  double precision,intent(in)   :: aLF(3)
   integer,intent(in)            :: nGrid
   double precision,intent(in)   :: weight(nGrid)
   integer,intent(in)            :: nBas
