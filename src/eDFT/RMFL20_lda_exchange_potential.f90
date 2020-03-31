@@ -34,11 +34,10 @@ subroutine RMFL20_lda_exchange_potential(nEns,wEns,nGrid,weight,nBas,AO,rho,Fx)
     Cxw = wEns(1)*Cx0 + wEns(2)*Cx1
   end if
 
-! Cxw = CxLDA + (Cx1 - Cx0)*wEns(2)*(cos(2d0*pi*wEns(2)) + 1d0)
-
 ! Compute LDA exchange matrix in the AO basis
 
   Fx(:,:) = 0d0
+
   do mu=1,nBas
     do nu=1,nBas
       do iG=1,nGrid

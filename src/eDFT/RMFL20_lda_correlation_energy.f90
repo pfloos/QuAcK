@@ -50,17 +50,10 @@ subroutine RMFL20_lda_correlation_energy(nEns,wEns,nGrid,weight,rho,Ec)
 
   call RVWN5_lda_correlation_energy(nGrid,weight(:),rho(:),EcLDA)
 
-  if(LDA_centered) then
-    do iEns=1,nEns
-        EceLDA(iEns) = EceLDA(iEns) + EcLDA - EceLDA(1)
-    end do
-  end if
+  if(LDA_centered) EceLDA(:) = EceLDA(:) + EcLDA - EceLDA(1)
 
 ! Weight-denpendent functional for ensembles
 
-  Ec = 0d0
-  do iEns=1,nEns
-    Ec = Ec + wEns(iEns)*EceLDA(iEns)
-  end do
+  Ec = dot_product(wEns(:),EceLDA(:))
 
 end subroutine RMFL20_lda_correlation_energy

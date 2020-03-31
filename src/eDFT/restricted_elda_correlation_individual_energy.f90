@@ -31,7 +31,7 @@ subroutine restricted_elda_correlation_individual_energy(nEns,aLF,nGrid,weight,r
 
   do iG=1,nGrid
 
-    r  = max(0d0,rho(iG))
+    r  = max(0d0,rhow(iG))
     rI = max(0d0,rho(iG))
 
     if(r > threshold .and. rI > threshold) then

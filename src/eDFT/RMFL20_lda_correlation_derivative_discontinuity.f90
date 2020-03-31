@@ -41,9 +41,7 @@ subroutine RMFL20_lda_correlation_derivative_discontinuity(nEns,wEns,nGrid,weigh
 ! Compute correlation energy for ground, singly-excited and doubly-excited states
 
   do iEns=1,nEns
-
     call restricted_elda_correlation_energy(aMFL(:,iEns),nGrid,weight(:),rhow(:),dEcdw(iEns))
-
   end do
 
   EcDD(:) = 0d0

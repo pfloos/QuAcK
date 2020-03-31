@@ -31,11 +31,8 @@ subroutine restricted_elda_correlation_energy(aMFL,nGrid,weight,rho,Ec)
     r = max(0d0,rho(iG))
 
     if(r > threshold) then
-
       e = aMFL(1)/(1d0 + aMFL(2)*r**(-1d0/6d0) + aMFL(3)*r**(-1d0/3d0))
-
       Ec = Ec + weight(iG)*e*r
-
     end if
 
   end do

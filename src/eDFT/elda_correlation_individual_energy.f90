@@ -31,8 +31,8 @@ subroutine elda_correlation_individual_energy(nEns,aLF,nGrid,weight,rhow,rho,Ec)
 
   do iG=1,nGrid
 
-    ra = max(0d0,rho(iG,1))
-    rb = max(0d0,rho(iG,2))
+    ra = max(0d0,rhow(iG,1))
+    rb = max(0d0,rhow(iG,2))
 
     raI = max(0d0,rho(iG,1))
     rbI = max(0d0,rho(iG,2))

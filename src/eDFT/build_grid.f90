@@ -1,4 +1,4 @@
-subroutine build_grid(nNuc,ZNuc,rNuc,nShell,TotAngMomShell,ExpShell,max_ang_mom,min_exponent,max_exponent, & 
+subroutine build_grid(nNuc,ZNuc,rNuc,max_ang_mom,min_exponent,max_exponent, & 
                       radial_precision,nRad,nAng,nGrid,weight,root)
 
 ! Compute quadrature grid with numgrid (Radovan Bast)
@@ -14,10 +14,6 @@ subroutine build_grid(nNuc,ZNuc,rNuc,nShell,TotAngMomShell,ExpShell,max_ang_mom,
   integer,intent(in)            :: nNuc
   double precision,intent(in)   :: ZNuc(nNuc)
   double precision,intent(in)   :: rNuc(nNuc,ncart)
-
-  integer,intent(in)            :: nShell
-  integer,intent(in)            :: TotAngMomShell(maxShell)
-  double precision,intent(in)   :: ExpShell(maxShell,maxK)
 
   integer,intent(in)            :: max_ang_mom(nNuc)
   double precision,intent(in)   :: min_exponent(nNuc,maxL+1)

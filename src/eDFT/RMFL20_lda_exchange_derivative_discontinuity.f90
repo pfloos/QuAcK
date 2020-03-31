@@ -16,7 +16,8 @@ subroutine RMFL20_lda_exchange_derivative_discontinuity(nEns,wEns,nGrid,weight,r
 ! Local variables
 
   integer                       :: iEns,jEns
-  double precision              :: Cx(nEns)
+  integer                       :: iG
+  double precision              :: r
   double precision              :: dExdw(nEns)
   double precision,external     :: Kronecker_delta
 
@@ -24,16 +25,20 @@ subroutine RMFL20_lda_exchange_derivative_discontinuity(nEns,wEns,nGrid,weight,r
 
   double precision,intent(out)  :: ExDD(nEns)
 
-! Weight-dependent Cx coefficient for RMFL20 exchange functional
-
-  Cx(1) = Cx0
-  Cx(2) = Cx1
-
 ! Compute correlation energy for ground- and doubly-excited states
 
-  do iEns=1,nEns
-    call restricted_elda_exchange_energy(nEns,Cx(iEns),nGrid,weight(:),rhow(:),dExdw(iEns))
-  end do
+  dExdw(:) = 0d0
+
+  do iG=1,nGrid
+    
+    r = max(0d0,rhow(iG))
+    
+    if(r > threshold) then
+      dExdw(1) = dExdw(1) + weight(iG)*Cx0*r**(4d0/3d0)
+      dExdw(2) = dExdw(2) + weight(iG)*Cx1*r**(4d0/3d0)
+    end if
+     
+  end do 
 
   ExDD(:) = 0d0
 

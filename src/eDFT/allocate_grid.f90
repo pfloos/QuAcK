@@ -1,5 +1,5 @@
-subroutine allocate_grid(nNuc,ZNuc,rNuc,nShell,TotAngMomShell,ExpShell,max_ang_mom,min_exponent,max_exponent, & 
-                         radial_precision,nRad,nAng,nGrid)
+subroutine allocate_grid(nNuc,ZNuc,max_ang_mom,min_exponent,max_exponent, & 
+                         radial_precision,nAng,nGrid)
 
 ! Allocate quadrature grid with numgrid (Radovan Bast)
 
@@ -13,18 +13,12 @@ subroutine allocate_grid(nNuc,ZNuc,rNuc,nShell,TotAngMomShell,ExpShell,max_ang_m
 
   integer,intent(in)            :: nNuc
   double precision,intent(in)   :: ZNuc(nNuc)
-  double precision,intent(in)   :: rNuc(nNuc,ncart)
-
-  integer,intent(in)            :: nShell
-  integer,intent(in)            :: TotAngMomShell(maxShell)
-  double precision,intent(in)   :: ExpShell(maxShell,maxK)
 
   integer,intent(in)            :: max_ang_mom(nNuc)
   double precision,intent(in)   :: min_exponent(nNuc,maxL+1)
   double precision,intent(in)   :: max_exponent(nNuc)
 
   double precision              :: radial_precision
-  integer,intent(in)            :: nRad
   integer,intent(in)            :: nAng
 
 ! Local variables
@@ -33,9 +27,7 @@ subroutine allocate_grid(nNuc,ZNuc,rNuc,nShell,TotAngMomShell,ExpShell,max_ang_m
 
   integer                       :: min_num_angular_points
   integer                       :: max_num_angular_points
-  integer                       :: num_points
 
-  integer                       :: center_index
   type(c_ptr)                   :: context
 
 ! Output variables

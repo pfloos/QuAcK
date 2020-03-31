@@ -33,16 +33,18 @@ subroutine RMFL20_lda_exchange_energy(nEns,wEns,nGrid,weight,rho,Ex)
     Cxw = wEns(1)*Cx0 + wEns(2)*Cx1
   end if
 
-! Cxw = CxLDA + (Cx1 - Cx0)*wEns(2)*(cos(2d0*pi*wEns(2)) + 1d0)
-
 ! Compute LDA exchange energy
 
   Ex = 0d0
+
   do iG=1,nGrid
+
     r = max(0d0,rho(iG))
+
     if(r > threshold) then
       Ex = Ex + weight(iG)*Cxw*r**(4d0/3d0)
     endif
+
   enddo
 
 end subroutine RMFL20_lda_exchange_energy
