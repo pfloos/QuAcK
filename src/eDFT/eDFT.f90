@@ -27,7 +27,7 @@ program eDFT
   double precision,allocatable  :: Hc(:,:)
   double precision,allocatable  :: X(:,:)
   double precision,allocatable  :: ERI(:,:,:,:)
-  double precision,allocatable  :: F(:,:)
+  double precision,allocatable  :: c(:,:)
 
   character(len=7)              :: method
   integer                       :: x_rung,c_rung
@@ -110,7 +110,7 @@ program eDFT
 ! Memory allocation for one- and two-electron integrals
 
   allocate(S(nBas,nBas),T(nBas,nBas),V(nBas,nBas),Hc(nBas,nBas), &
-           X(nBas,nBas),ERI(nBas,nBas,nBas,nBas),F(nBas,nBas))
+           X(nBas,nBas),ERI(nBas,nBas,nBas,nBas),c(nBas,nBas))
 
  ! Read integrals
 
@@ -161,7 +161,7 @@ program eDFT
     call cpu_time(start_KS)
     call GOK_RKS(.false.,x_rung,x_DFA,c_rung,c_DFA,nEns,wEns(:),nGrid,weight(:),maxSCF,thresh,max_diis,guess_type,  & 
                  nBas,AO(:,:),dAO(:,:,:),nO(1),nV(1),S(:,:),T(:,:),V(:,:),Hc(:,:),ERI(:,:,:,:),X(:,:),ENuc, &
-                 Ew,EwGIC,F(:,:))
+                 Ew,EwGIC,c(:,:))
     call cpu_time(end_KS)
 
     t_KS = end_KS - start_KS
@@ -179,7 +179,7 @@ program eDFT
     call cpu_time(start_KS)
     call LIM_RKS(x_rung,x_DFA,c_rung,c_DFA,nEns,wEns(:),nGrid,weight(:),maxSCF,thresh,max_diis,guess_type,  & 
                  nBas,AO(:,:),dAO(:,:,:),nO(1),nV(1),S(:,:),T(:,:),V(:,:),Hc(:,:),ERI(:,:,:,:),X(:,:),ENuc, &
-                 F(:,:))
+                 c(:,:))
     call cpu_time(end_KS)
 
     t_KS = end_KS - start_KS

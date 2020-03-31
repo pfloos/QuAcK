@@ -1,5 +1,5 @@
 subroutine GOK_RKS(restart,x_rung,x_DFA,c_rung,c_DFA,nEns,wEns,nGrid,weight,maxSCF,thresh, & 
-                   max_diis,guess_type,nBas,AO,dAO,nO,nV,S,T,V,Hc,ERI,X,ENuc,Ew,EwGIC,F)
+                   max_diis,guess_type,nBas,AO,dAO,nO,nV,S,T,V,Hc,ERI,X,ENuc,Ew,EwGIC,c)
 
 ! Perform restricted Kohn-Sham calculation for ensembles
 
@@ -31,7 +31,7 @@ subroutine GOK_RKS(restart,x_rung,x_DFA,c_rung,c_DFA,nEns,wEns,nGrid,weight,maxS
   double precision,intent(in)   :: ERI(nBas,nBas,nBas,nBas)
   double precision,intent(in)   :: ENuc
 
-  double precision,intent(inout):: F(nBas,nBas)
+  double precision,intent(inout):: c(nBas,nBas)
 
 ! Local variables
 
@@ -47,9 +47,9 @@ subroutine GOK_RKS(restart,x_rung,x_DFA,c_rung,c_DFA,nEns,wEns,nGrid,weight,maxS
   double precision              :: Ec
 
   double precision,allocatable  :: eps(:)
-  double precision,allocatable  :: c(:,:)
   double precision,allocatable  :: cp(:,:)
   double precision,allocatable  :: J(:,:)
+  double precision,allocatable  :: F(:,:)
   double precision,allocatable  :: Fp(:,:)
   double precision,allocatable  :: Fx(:,:)
   double precision,allocatable  :: FxHF(:,:)
@@ -120,8 +120,8 @@ subroutine GOK_RKS(restart,x_rung,x_DFA,c_rung,c_DFA,nEns,wEns,nGrid,weight,maxS
 
 ! Memory allocation
 
-  allocate(eps(nBas),c(nBas,nBas),cp(nBas,nBas),              &
-           J(nBas,nBas),Fp(nBas,nBas),Fx(nBas,nBas),          & 
+  allocate(eps(nBas),cp(nBas,nBas),J(nBas,nBas),              &
+           F(nBas,nBas),Fp(nBas,nBas),Fx(nBas,nBas),          & 
            FxHF(nBas,nBas),Fc(nBas,nBas),err(nBas,nBas),      &
            Pw(nBas,nBas),rhow(nGrid),drhow(ncart,nGrid),      &
            err_diis(nBasSq,max_diis),F_diis(nBasSq,max_diis), &
@@ -130,6 +130,9 @@ subroutine GOK_RKS(restart,x_rung,x_DFA,c_rung,c_DFA,nEns,wEns,nGrid,weight,maxS
 ! Guess coefficients and eigenvalues
 
   if(.not. restart) then
+
+!   call mo_guess(nBas,nO,guess_type,S,Hc,ERI,J,Fx,X,cp,F,Fp,eps,c,P)
+    
     if(guess_type == 1) then  
 
     cp(:,:) = matmul(transpose(X(:,:)),matmul(Hc(:,:),X(:,:)))
