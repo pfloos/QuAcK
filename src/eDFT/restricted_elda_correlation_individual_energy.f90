@@ -41,7 +41,6 @@ subroutine restricted_elda_correlation_individual_energy(nEns,aLF,nGrid,weight,r
       dFcdr = aLF(2)*r**(-1d0/6d0) + 2d0*aLF(3)*r**(-1d0/3d0)
       dFcdr = dFcdr/(1d0 + aLF(2)*r**(-1d0/6d0) + aLF(3)*r**(-1d0/3d0))
       dFcdr = ec_p*dFcdr/(6d0*r)
-      dFcdr = ec_p + dFcdr*r
 
       Ec = Ec + weight(iG)*(ec_p*rI + dFcdr*r*rI - dFcdr*r*r)
 
