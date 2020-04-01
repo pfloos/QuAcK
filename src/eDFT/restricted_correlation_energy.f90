@@ -1,4 +1,4 @@
-subroutine restricted_correlation_energy(rung,DFA,nEns,wEns,nGrid,weight,rho,drho,Ec)
+subroutine restricted_correlation_energy(rung,DFA,LDA_centered,nEns,wEns,nGrid,weight,rho,drho,Ec)
 
 ! Compute the correlation energy
 
@@ -9,6 +9,7 @@ subroutine restricted_correlation_energy(rung,DFA,nEns,wEns,nGrid,weight,rho,drh
 
   integer,intent(in)            :: rung
   character(len=12),intent(in)  :: DFA
+  logical,intent(in)            :: LDA_centered
   integer,intent(in)            :: nEns
   double precision,intent(in)   :: wEns(nEns)
   integer,intent(in)            :: nGrid
@@ -38,7 +39,7 @@ subroutine restricted_correlation_energy(rung,DFA,nEns,wEns,nGrid,weight,rho,drh
 
     case(1) 
 
-      call restricted_lda_correlation_energy(DFA,nEns,wEns(:),nGrid,weight(:),rho(:),Ec)
+      call restricted_lda_correlation_energy(DFA,LDA_centered,nEns,wEns(:),nGrid,weight(:),rho(:),Ec)
 
 !   GGA functionals
 

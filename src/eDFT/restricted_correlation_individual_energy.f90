@@ -1,4 +1,4 @@
-subroutine restricted_correlation_individual_energy(rung,DFA,nEns,wEns,nGrid,weight,rhow,drhow,rho,drho,Ec)
+subroutine restricted_correlation_individual_energy(rung,DFA,LDA_centered,nEns,wEns,nGrid,weight,rhow,drhow,rho,drho,Ec)
 
 ! Compute the correlation energy of individual states
 
@@ -9,6 +9,7 @@ subroutine restricted_correlation_individual_energy(rung,DFA,nEns,wEns,nGrid,wei
 
   integer,intent(in)            :: rung
   character(len=12),intent(in)  :: DFA
+  logical,intent(in)            :: LDA_centered
   integer,intent(in)            :: nEns
   double precision,intent(in)   :: wEns(nEns)
   integer,intent(in)            :: nGrid
@@ -40,7 +41,7 @@ subroutine restricted_correlation_individual_energy(rung,DFA,nEns,wEns,nGrid,wei
 
     case(1) 
 
-      call restricted_lda_correlation_individual_energy(DFA,nEns,wEns(:),nGrid,weight(:),rhow(:),rho(:),Ec)
+      call restricted_lda_correlation_individual_energy(DFA,LDA_centered,nEns,wEns(:),nGrid,weight(:),rhow(:),rho(:),Ec)
 
 !   GGA functionals
 

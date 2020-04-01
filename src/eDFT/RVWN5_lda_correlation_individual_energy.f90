@@ -19,7 +19,7 @@ subroutine RVWN5_lda_correlation_individual_energy(nGrid,weight,rhow,rho,Ec)
   double precision              :: r,rI,rs,x
   double precision              :: a_p,x0_p,xx0_p,b_p,c_p,x_p,q_p
   double precision              :: dxdrs,dxdx_p,decdx_p
-  double precision              :: drsdra,decdra_p
+  double precision              :: drsdr,decdr_p
   double precision              :: ec_p
 
 ! Output variables
@@ -42,8 +42,6 @@ subroutine RVWN5_lda_correlation_individual_energy(nGrid,weight,rhow,rho,Ec)
     r = max(0d0,rhow(iG))
     rI = max(0d0,rho(iG))
    
-!   spin-up contribution
-   
     if(r > threshold .and. rI > threshold) then
    
       rs = (4d0*pi*r/3d0)**(-1d0/3d0)
@@ -56,17 +54,17 @@ subroutine RVWN5_lda_correlation_individual_energy(nGrid,weight,rhow,rho,Ec)
       ec_p = a_p*( log(x**2/x_p) + 2d0*b_p/q_p*atan(q_p/(2d0*x + b_p)) & 
                  - b_p*x0_p/xx0_p*( log((x - x0_p)**2/x_p) + 2d0*(b_p + 2d0*x0_p)/q_p*atan(q_p/(2d0*x + b_p)) ) )
    
-      drsdra = - (36d0*pi)**(-1d0/3d0)*r**(-4d0/3d0)
-      dxdrs  = 0.5d0/sqrt(rs)
+      drsdr = - (36d0*pi)**(-1d0/3d0)*r**(-4d0/3d0)
+      dxdrs = 0.5d0/sqrt(rs)
 
       dxdx_p = 2d0*x + b_p
 
       decdx_p = a_p*( 2d0/x - 4d0*b_p/( (b_p+2d0*x)**2 + q_p**2) - dxdx_p/x_p &
                       - b_p*x0_p/xx0_p*( 2/(x-x0_p) - 4d0*(b_p+2d0*x0_p)/( (b_p+2d0*x)**2 + q_p**2) - dxdx_p/x_p ) )
 
-      decdra_p = drsdra*dxdrs*decdx_p
+      decdr_p = drsdr*dxdrs*decdx_p
 
-      Ec = Ec + weight(iG)*(ec_p*rI + decdra_p*r*rI - decdra_p*r*r)
+      Ec = Ec + weight(iG)*(ec_p*rI + decdr_p*r*rI - decdr_p*r*r)
    
     end if
 

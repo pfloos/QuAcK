@@ -1,4 +1,4 @@
-subroutine exchange_potential(rung,DFA,nEns,wEns,nGrid,weight,nBas,P,ERI,AO,dAO,rho,drho,Fx,FxHF)
+subroutine exchange_potential(rung,DFA,LDA_centered,nEns,wEns,nGrid,weight,nBas,P,ERI,AO,dAO,rho,drho,Fx,FxHF)
 
 ! Compute the exchange potential 
 
@@ -9,6 +9,7 @@ subroutine exchange_potential(rung,DFA,nEns,wEns,nGrid,weight,nBas,P,ERI,AO,dAO,
 
   integer,intent(in)            :: rung
   character(len=12),intent(in)  :: DFA
+  logical,intent(in)            :: LDA_centered
   integer,intent(in)            :: nEns
   double precision,intent(in)   :: wEns(nEns)
   integer,intent(in)            :: nGrid
@@ -44,7 +45,7 @@ subroutine exchange_potential(rung,DFA,nEns,wEns,nGrid,weight,nBas,P,ERI,AO,dAO,
 
     case(1) 
 
-      call lda_exchange_potential(DFA,nEns,wEns,nGrid,weight,nBas,AO,rho,Fx)
+      call lda_exchange_potential(DFA,LDA_centered,nEns,wEns,nGrid,weight,nBas,AO,rho,Fx)
 
 !   GGA functionals
 

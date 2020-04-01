@@ -1,5 +1,5 @@
-subroutine exchange_individual_energy(rung,DFA,nEns,wEns,nGrid,weight,nBas, & 
-                                      ERI,P,rhow,drhow,rho,drho,Ex)
+subroutine exchange_individual_energy(rung,DFA,LDA_centered,nEns,wEns,nGrid,weight,nBas, & 
+                                      ERI,Pw,P,rhow,drhow,rho,drho,Ex)
 
 ! Compute the exchange individual energy
 
@@ -10,12 +10,14 @@ subroutine exchange_individual_energy(rung,DFA,nEns,wEns,nGrid,weight,nBas, &
 
   integer,intent(in)            :: rung
   character(len=12),intent(in)  :: DFA
+  logical,intent(in)            :: LDA_centered
   integer,intent(in)            :: nEns
   double precision,intent(in)   :: wEns(nEns)
   integer,intent(in)            :: nGrid
   double precision,intent(in)   :: weight(nGrid)
   integer,intent(in)            :: nBas
   double precision,intent(in)   :: ERI(nBas,nBas,nBas,nBas)
+  double precision,intent(in)   :: Pw(nBas,nBas)
   double precision,intent(in)   :: P(nBas,nBas)
   double precision,intent(in)   :: rhow(nGrid)
   double precision,intent(in)   :: drhow(ncart,nGrid)
@@ -43,7 +45,7 @@ subroutine exchange_individual_energy(rung,DFA,nEns,wEns,nGrid,weight,nBas, &
 
     case(1) 
 
-      call lda_exchange_individual_energy(DFA,nEns,wEns,nGrid,weight,rhow,rho,ExLDA)
+      call lda_exchange_individual_energy(DFA,LDA_centered,nEns,wEns,nGrid,weight,rhow,rho,ExLDA)
 
       Ex = ExLDA
 
@@ -65,7 +67,7 @@ subroutine exchange_individual_energy(rung,DFA,nEns,wEns,nGrid,weight,nBas, &
 
     case(666) 
 
-      call fock_exchange_individual_energy(nBas,P,ERI,ExHF)
+      call fock_exchange_individual_energy(nBas,Pw,P,ERI,ExHF)
 
       Ex = ExHF
 

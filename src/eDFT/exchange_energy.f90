@@ -1,4 +1,4 @@
-subroutine exchange_energy(rung,DFA,nEns,wEns,nGrid,weight,nBas,P,FxHF,rho,drho,Ex)
+subroutine exchange_energy(rung,DFA,LDA_centered,nEns,wEns,nGrid,weight,nBas,P,FxHF,rho,drho,Ex)
 
 ! Compute the exchange energy
 
@@ -9,6 +9,7 @@ subroutine exchange_energy(rung,DFA,nEns,wEns,nGrid,weight,nBas,P,FxHF,rho,drho,
 
   integer,intent(in)            :: rung
   character(len=12),intent(in)  :: DFA
+  logical,intent(in)            :: LDA_centered
   integer,intent(in)            :: nEns
   double precision,intent(in)   :: wEns(nEns)
   integer,intent(in)            :: nGrid
@@ -40,7 +41,7 @@ subroutine exchange_energy(rung,DFA,nEns,wEns,nGrid,weight,nBas,P,FxHF,rho,drho,
 
     case(1) 
 
-      call lda_exchange_energy(DFA,nEns,wEns,nGrid,weight,rho,ExLDA)
+      call lda_exchange_energy(DFA,LDA_centered,nEns,wEns,nGrid,weight,rho,ExLDA)
 
       Ex = ExLDA
 

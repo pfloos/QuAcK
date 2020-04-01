@@ -1,4 +1,4 @@
-subroutine lda_exchange_energy(DFA,nEns,wEns,nGrid,weight,rho,Ex)
+subroutine lda_exchange_energy(DFA,LDA_centered,nEns,wEns,nGrid,weight,rho,Ex)
 
 ! Select LDA exchange functional
 
@@ -8,6 +8,7 @@ subroutine lda_exchange_energy(DFA,nEns,wEns,nGrid,weight,rho,Ex)
 ! Input variables
 
   character(len=12),intent(in)  :: DFA
+  logical,intent(in)            :: LDA_centered
   integer,intent(in)            :: nEns
   double precision,intent(in)   :: wEns(nEns)
   integer,intent(in)            :: nGrid
@@ -38,7 +39,7 @@ subroutine lda_exchange_energy(DFA,nEns,wEns,nGrid,weight,rho,Ex)
 
     case ('RMFL20')
 
-      call RMFL20_lda_exchange_energy(nEns,wEns,nGrid,weight,rho,Ex)
+      call RMFL20_lda_exchange_energy(LDA_centered,nEns,wEns,nGrid,weight,rho,Ex)
 
     case default
 

@@ -1,4 +1,4 @@
-subroutine RMFL20_lda_correlation_individual_energy(nEns,wEns,nGrid,weight,rhow,rho,Ec)
+subroutine RMFL20_lda_correlation_individual_energy(LDA_centered,nEns,wEns,nGrid,weight,rhow,rho,Ec)
 
 ! Compute eLDA correlation energy 
 
@@ -7,6 +7,7 @@ subroutine RMFL20_lda_correlation_individual_energy(nEns,wEns,nGrid,weight,rhow,
 
 ! Input variables
 
+  logical,intent(in)            :: LDA_centered
   integer,intent(in)            :: nEns
   double precision,intent(in)   :: wEns(nEns)
   integer,intent(in)            :: nGrid
@@ -16,7 +17,6 @@ subroutine RMFL20_lda_correlation_individual_energy(nEns,wEns,nGrid,weight,rhow,
 
 ! Local variables
 
-  logical                       :: LDA_centered = .true.
   integer                       :: iEns
   double precision              :: EcLDA
   double precision,allocatable  :: aMFL(:,:)
@@ -47,7 +47,6 @@ subroutine RMFL20_lda_correlation_individual_energy(nEns,wEns,nGrid,weight,rhow,
   end do
 
 ! LDA-centered functional
-
 
   if(LDA_centered) then 
   

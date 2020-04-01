@@ -1,4 +1,4 @@
-subroutine RMFL20_lda_exchange_energy(nEns,wEns,nGrid,weight,rho,Ex)
+subroutine RMFL20_lda_exchange_energy(LDA_centered,nEns,wEns,nGrid,weight,rho,Ex)
 
 ! Compute the restricted version of the Marut-Fromager-Loos weight-dependent exchange functional
 ! The RMFL20 is a two-state, single-weight exchange functional
@@ -8,6 +8,7 @@ subroutine RMFL20_lda_exchange_energy(nEns,wEns,nGrid,weight,rho,Ex)
 
 ! Input variables
 
+  logical,intent(in)            :: LDA_centered
   integer,intent(in)            :: nEns
   double precision,intent(in)   :: wEns(nEns)
   integer,intent(in)            :: nGrid
@@ -16,7 +17,6 @@ subroutine RMFL20_lda_exchange_energy(nEns,wEns,nGrid,weight,rho,Ex)
 
 ! Local variables
 
-  logical                       :: LDA_centered = .true.
   integer                       :: iG
   double precision              :: Cxw
   double precision              :: r

@@ -1,4 +1,4 @@
-subroutine restricted_correlation_potential(rung,DFA,nEns,wEns,nGrid,weight,nBas,AO,dAO,rho,drho,Fc)
+subroutine restricted_correlation_potential(rung,DFA,LDA_centered,nEns,wEns,nGrid,weight,nBas,AO,dAO,rho,drho,Fc)
 
 ! Compute the correlation potential 
 
@@ -9,6 +9,7 @@ subroutine restricted_correlation_potential(rung,DFA,nEns,wEns,nGrid,weight,nBas
 
   integer,intent(in)            :: rung
   character(len=12),intent(in)  :: DFA
+  logical,intent(in)            :: LDA_centered
   integer,intent(in)            :: nEns
   double precision,intent(in)   :: wEns(nEns)
   integer,intent(in)            :: nGrid
@@ -41,7 +42,7 @@ subroutine restricted_correlation_potential(rung,DFA,nEns,wEns,nGrid,weight,nBas
 
     case(1) 
 
-      call restricted_lda_correlation_potential(DFA,nEns,wEns(:),nGrid,weight(:),nBas,AO(:,:),rho(:),Fc(:,:))
+      call restricted_lda_correlation_potential(DFA,LDA_centered,nEns,wEns(:),nGrid,weight(:),nBas,AO(:,:),rho(:),Fc(:,:))
 
 !   GGA functionals
 

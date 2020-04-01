@@ -1,4 +1,4 @@
-subroutine restricted_lda_correlation_potential(DFA,nEns,wEns,nGrid,weight,nBas,AO,rho,Fc)
+subroutine restricted_lda_correlation_potential(DFA,LDA_centered,nEns,wEns,nGrid,weight,nBas,AO,rho,Fc)
 
 ! Select LDA correlation potential
 
@@ -7,6 +7,7 @@ subroutine restricted_lda_correlation_potential(DFA,nEns,wEns,nGrid,weight,nBas,
 
 ! Input variables
 
+  logical,intent(in)            :: LDA_centered
   character(len=12),intent(in)  :: DFA
   integer,intent(in)            :: nEns
   double precision,intent(in)   :: wEns(nEns)
@@ -36,7 +37,7 @@ subroutine restricted_lda_correlation_potential(DFA,nEns,wEns,nGrid,weight,nBas,
 
     case ('RMFL20')
 
-      call RMFL20_lda_correlation_potential(nEns,wEns(:),nGrid,weight(:),nBas,AO(:,:),rho(:),Fc(:,:))
+      call RMFL20_lda_correlation_potential(LDA_centered,nEns,wEns(:),nGrid,weight(:),nBas,AO(:,:),rho(:),Fc(:,:))
 
     case default
 

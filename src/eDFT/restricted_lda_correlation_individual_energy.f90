@@ -1,4 +1,4 @@
-subroutine restricted_lda_correlation_individual_energy(DFA,nEns,wEns,nGrid,weight,rhow,rho,Ec)
+subroutine restricted_lda_correlation_individual_energy(DFA,LDA_centered,nEns,wEns,nGrid,weight,rhow,rho,Ec)
 
 ! Compute LDA correlation energy for individual states
 
@@ -7,6 +7,7 @@ subroutine restricted_lda_correlation_individual_energy(DFA,nEns,wEns,nGrid,weig
 
 ! Input variables
 
+  logical,intent(in)            :: LDA_centered
   character(len=12),intent(in)  :: DFA
   integer,intent(in)            :: nEns
   double precision,intent(in)   :: wEns(nEns)
@@ -33,7 +34,7 @@ subroutine restricted_lda_correlation_individual_energy(DFA,nEns,wEns,nGrid,weig
 
     case ('RMFL20')
 
-      call RMFL20_lda_correlation_individual_energy(nEns,wEns,nGrid,weight(:),rhow(:),rho(:),Ec)
+      call RMFL20_lda_correlation_individual_energy(LDA_centered,nEns,wEns,nGrid,weight(:),rhow(:),rho(:),Ec)
 
     case default
 

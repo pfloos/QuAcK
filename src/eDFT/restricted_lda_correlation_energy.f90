@@ -1,4 +1,4 @@
-subroutine restricted_lda_correlation_energy(DFA,nEns,wEns,nGrid,weight,rho,Ec)
+subroutine restricted_lda_correlation_energy(DFA,LDA_centered,nEns,wEns,nGrid,weight,rho,Ec)
 
 ! Select LDA correlation functional
 
@@ -7,6 +7,7 @@ subroutine restricted_lda_correlation_energy(DFA,nEns,wEns,nGrid,weight,rho,Ec)
 
 ! Input variables
 
+  logical,intent(in)            :: LDA_centered
   character(len=12),intent(in)  :: DFA
   integer,intent(in)            :: nEns
   double precision,intent(in)   :: wEns(nEns)
@@ -34,7 +35,7 @@ subroutine restricted_lda_correlation_energy(DFA,nEns,wEns,nGrid,weight,rho,Ec)
 
     case ('RMFL20')
 
-      call RMFL20_lda_correlation_energy(nEns,wEns(:),nGrid,weight(:),rho(:),Ec)
+      call RMFL20_lda_correlation_energy(LDA_centered,nEns,wEns(:),nGrid,weight(:),rho(:),Ec)
 
     case default
 

@@ -1,4 +1,4 @@
-subroutine RMFL20_lda_correlation_energy(nEns,wEns,nGrid,weight,rho,Ec)
+subroutine RMFL20_lda_correlation_energy(LDA_centered,nEns,wEns,nGrid,weight,rho,Ec)
 
 ! Compute the restricted version of the Marut-Fromager-Loos weight-dependent correlation functional
 ! The RMFL20 is a two-state, single-weight correlation functional for spin-unpolarized systems
@@ -8,6 +8,7 @@ subroutine RMFL20_lda_correlation_energy(nEns,wEns,nGrid,weight,rho,Ec)
 
 ! Input variables
 
+  logical,intent(in)            :: LDA_centered
   integer,intent(in)            :: nEns
   double precision,intent(in)   :: wEns(nEns)
   integer,intent(in)            :: nGrid
@@ -16,7 +17,6 @@ subroutine RMFL20_lda_correlation_energy(nEns,wEns,nGrid,weight,rho,Ec)
 
 ! Local variables
 
-  logical                       :: LDA_centered = .true.
   integer                       :: iEns
   double precision              :: EcLDA
   double precision,allocatable  :: aMFL(:,:)
@@ -55,7 +55,7 @@ subroutine RMFL20_lda_correlation_energy(nEns,wEns,nGrid,weight,rho,Ec)
     EceLDA(2) = EcLDA + wEns(2)*(EceLDA(2) - EceLDA(1))
     EceLDA(1) = EcLDA
 
-  end  if
+  end if
 
 ! Weight-denpendent functional for ensembles
 

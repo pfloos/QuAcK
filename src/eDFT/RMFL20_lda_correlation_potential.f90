@@ -1,4 +1,4 @@
-subroutine RMFL20_lda_correlation_potential(nEns,wEns,nGrid,weight,nBas,AO,rho,Fc)
+subroutine RMFL20_lda_correlation_potential(LDA_centered,nEns,wEns,nGrid,weight,nBas,AO,rho,Fc)
 
 ! Compute Marut-Fromager-Loos weight-dependent LDA correlation potential
 
@@ -7,6 +7,7 @@ subroutine RMFL20_lda_correlation_potential(nEns,wEns,nGrid,weight,nBas,AO,rho,F
 
 ! Input variables
 
+  logical,intent(in)            :: LDA_centered
   integer,intent(in)            :: nEns
   double precision,intent(in)   :: wEns(nEns)
   integer,intent(in)            :: nGrid
@@ -17,7 +18,6 @@ subroutine RMFL20_lda_correlation_potential(nEns,wEns,nGrid,weight,nBas,AO,rho,F
 
 ! Local variables
 
-  logical                       :: LDA_centered = .true.
   integer                       :: iEns
   double precision,allocatable  :: aMFL(:,:)
   double precision,allocatable  :: FcLDA(:,:)

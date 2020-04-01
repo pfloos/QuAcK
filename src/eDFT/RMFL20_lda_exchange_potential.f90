@@ -1,4 +1,4 @@
-subroutine RMFL20_lda_exchange_potential(nEns,wEns,nGrid,weight,nBas,AO,rho,Fx)
+subroutine RMFL20_lda_exchange_potential(LDA_centered,nEns,wEns,nGrid,weight,nBas,AO,rho,Fx)
 
 ! Compute the restricted version of the weight-dependent MFL20 exchange potential
 
@@ -7,6 +7,7 @@ subroutine RMFL20_lda_exchange_potential(nEns,wEns,nGrid,weight,nBas,AO,rho,Fx)
 
 ! Input variables
 
+  logical,intent(in)            :: LDA_centered
   integer,intent(in)            :: nEns
   double precision,intent(in)   :: wEns(nEns)
   integer,intent(in)            :: nGrid
@@ -17,7 +18,6 @@ subroutine RMFL20_lda_exchange_potential(nEns,wEns,nGrid,weight,nBas,AO,rho,Fx)
 
 ! Local variables
 
-  logical                       :: LDA_centered = .true.
   integer                       :: mu,nu,iG
   double precision              :: Cxw
   double precision              :: r,vAO

@@ -1,4 +1,4 @@
-subroutine restricted_individual_energy(x_rung,x_DFA,c_rung,c_DFA,nEns,wEns,nGrid,weight,nBas,        & 
+subroutine restricted_individual_energy(x_rung,x_DFA,c_rung,c_DFA,LDA_centered,nEns,wEns,nGrid,weight,nBas, & 
                                         nO,nV,T,V,ERI,ENuc,eps,Pw,rhow,drhow,J,P,rho,drho,Ew,EwGIC,E,Om)
 
 ! Compute individual energies as well as excitation energies
@@ -10,6 +10,7 @@ subroutine restricted_individual_energy(x_rung,x_DFA,c_rung,c_DFA,nEns,wEns,nGri
 
   integer,intent(in)            :: x_rung,c_rung
   character(len=12),intent(in)  :: x_DFA,c_DFA
+  logical,intent(in)            :: LDA_centered
   integer,intent(in)            :: nEns
   double precision,intent(in)   :: wEns(nEns)
   integer,intent(in)            :: nGrid
@@ -75,12 +76,11 @@ subroutine restricted_individual_energy(x_rung,x_DFA,c_rung,c_DFA,nEns,wEns,nGri
   end do
 
 !------------------------------------------------------------------------
-! Hartree energy
+! Individua Hartree energy
 !------------------------------------------------------------------------
 
   do iEns=1,nEns
-    call hartree_coulomb(nBas,P(:,:,iEns),ERI(:,:,:,:),J(:,:))
-    EJ(iEns) = 0.5d0*trace_matrix(nBas,matmul(P(:,:,iEns),J(:,:)))
+    call hartree_individual_energy(x_rung,nBas,ERI,J(:,:),Pw(:,:),P(:,:,iEns),EJ(iEns))
   end do
 
 !------------------------------------------------------------------------
@@ -88,10 +88,8 @@ subroutine restricted_individual_energy(x_rung,x_DFA,c_rung,c_DFA,nEns,wEns,nGri
 !------------------------------------------------------------------------
 
   do iEns=1,nEns
-
-      call exchange_individual_energy(x_rung,x_DFA,nEns,wEns(:),nGrid,weight(:),nBas,ERI(:,:,:,:), &
-                                      P(:,:,iEns),rhow(:),drhow(:,:),rho(:,iEns),drho(:,:,iEns),Ex(iEns))
-
+      call exchange_individual_energy(x_rung,x_DFA,LDA_centered,nEns,wEns(:),nGrid,weight(:),nBas,ERI(:,:,:,:), &
+                                      Pw(:,:),P(:,:,iEns),rhow(:),drhow(:,:),rho(:,iEns),drho(:,:,iEns),Ex(iEns))
   end do
 
 !------------------------------------------------------------------------
@@ -99,14 +97,9 @@ subroutine restricted_individual_energy(x_rung,x_DFA,c_rung,c_DFA,nEns,wEns,nGri
 !------------------------------------------------------------------------
 
   do iEns=1,nEns
-
-    call restricted_correlation_individual_energy(c_rung,c_DFA,nEns,wEns(:),nGrid,weight(:),rhow(:),drhow(:,:), & 
+    call restricted_correlation_individual_energy(c_rung,c_DFA,LDA_centered,nEns,wEns(:),nGrid,weight(:),rhow(:),drhow(:,:), & 
                                                   rho(:,iEns),drho(:,:,iEns),Ec(iEns))
-
   end do
-
-
-
 
 !------------------------------------------------------------------------
 ! Compute auxiliary energies

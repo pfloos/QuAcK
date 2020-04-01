@@ -1,4 +1,4 @@
-subroutine lda_exchange_individual_energy(DFA,nEns,wEns,nGrid,weight,rhow,rho,Ex)
+subroutine lda_exchange_individual_energy(DFA,LDA_centered,nEns,wEns,nGrid,weight,rhow,rho,Ex)
 
 ! Compute LDA exchange energy for individual states
 
@@ -7,6 +7,7 @@ subroutine lda_exchange_individual_energy(DFA,nEns,wEns,nGrid,weight,rhow,rho,Ex
 
 ! Input variables
 
+  logical,intent(in)            :: LDA_centered
   character(len=12),intent(in)  :: DFA
   integer,intent(in)            :: nEns
   double precision,intent(in)   :: wEns(nEns)
@@ -29,7 +30,7 @@ subroutine lda_exchange_individual_energy(DFA,nEns,wEns,nGrid,weight,rhow,rho,Ex
 
     case ('RMFL20')
 
-      call RMFL20_lda_exchange_individual_energy(nEns,wEns,nGrid,weight(:),rhow(:),rho(:),Ex)
+      call RMFL20_lda_exchange_individual_energy(LDA_centered,nEns,wEns,nGrid,weight(:),rhow(:),rho(:),Ex)
 
     case default
 

@@ -32,6 +32,7 @@ program eDFT
   character(len=7)              :: method
   integer                       :: x_rung,c_rung
   character(len=12)             :: x_DFA ,c_DFA
+  logical                       :: LDA_centered = .true.
 
   integer                       :: SGn
   double precision              :: radial_precision
@@ -152,6 +153,8 @@ program eDFT
   allocate(AO(nBas,nGrid),dAO(ncart,nBas,nGrid))
   call AO_values_grid(nBas,nShell,CenterShell,TotAngMomShell,KShell,DShell,ExpShell,nGrid,root,AO,dAO)
 
+  LDA_centered = .true.
+
 !------------------------------------------------------------------------
 ! Compute GOK-RKS energy
 !------------------------------------------------------------------------
@@ -159,9 +162,9 @@ program eDFT
   if(method == 'GOK-RKS') then
 
     call cpu_time(start_KS)
-    call GOK_RKS(.false.,x_rung,x_DFA,c_rung,c_DFA,nEns,wEns(:),nGrid,weight(:),maxSCF,thresh,max_diis,guess_type,  & 
-                 nBas,AO(:,:),dAO(:,:,:),nO(1),nV(1),S(:,:),T(:,:),V(:,:),Hc(:,:),ERI(:,:,:,:),X(:,:),ENuc, &
-                 Ew,EwGIC,c(:,:))
+    call GOK_RKS(.false.,x_rung,x_DFA,c_rung,c_DFA,LDA_centered,nEns,wEns(:),nGrid,weight(:), &
+                 maxSCF,thresh,max_diis,guess_type,nBas,AO(:,:),dAO(:,:,:),nO(1),nV(1),       &
+                 S(:,:),T(:,:),V(:,:),Hc(:,:),ERI(:,:,:,:),X(:,:),ENuc,Ew,EwGIC,c(:,:))
     call cpu_time(end_KS)
 
     t_KS = end_KS - start_KS
@@ -177,9 +180,9 @@ program eDFT
   if(method == 'LIM-RKS') then
 
     call cpu_time(start_KS)
-    call LIM_RKS(x_rung,x_DFA,c_rung,c_DFA,nEns,wEns(:),nGrid,weight(:),maxSCF,thresh,max_diis,guess_type,  & 
-                 nBas,AO(:,:),dAO(:,:,:),nO(1),nV(1),S(:,:),T(:,:),V(:,:),Hc(:,:),ERI(:,:,:,:),X(:,:),ENuc, &
-                 c(:,:))
+    call LIM_RKS(x_rung,x_DFA,c_rung,c_DFA,LDA_centered,nEns,wEns(:),nGrid,weight(:),   &
+                 maxSCF,thresh,max_diis,guess_type,nBas,AO(:,:),dAO(:,:,:),nO(1),nV(1), & 
+                 S(:,:),T(:,:),V(:,:),Hc(:,:),ERI(:,:,:,:),X(:,:),ENuc,c(:,:))
     call cpu_time(end_KS)
 
     t_KS = end_KS - start_KS

@@ -1,4 +1,4 @@
-subroutine GOK_RKS(restart,x_rung,x_DFA,c_rung,c_DFA,nEns,wEns,nGrid,weight,maxSCF,thresh, & 
+subroutine GOK_RKS(restart,x_rung,x_DFA,c_rung,c_DFA,LDA_centered,nEns,wEns,nGrid,weight,maxSCF,thresh, & 
                    max_diis,guess_type,nBas,AO,dAO,nO,nV,S,T,V,Hc,ERI,X,ENuc,Ew,EwGIC,c)
 
 ! Perform restricted Kohn-Sham calculation for ensembles
@@ -11,11 +11,14 @@ subroutine GOK_RKS(restart,x_rung,x_DFA,c_rung,c_DFA,nEns,wEns,nGrid,weight,maxS
   logical,intent(in)            :: restart
   integer,intent(in)            :: x_rung,c_rung
   character(len=12),intent(in)  :: x_DFA,c_DFA
+  logical,intent(in)            :: LDA_centered
   integer,intent(in)            :: nEns
   double precision,intent(in)   :: wEns(nEns)
   integer,intent(in)            :: nGrid
   double precision,intent(in)   :: weight(nGrid)
-  integer,intent(in)            :: maxSCF,max_diis,guess_type
+  integer,intent(in)            :: maxSCF
+  integer,intent(in)            :: max_diis
+  integer,intent(in)            :: guess_type
   double precision,intent(in)   :: thresh
   integer,intent(in)            :: nBas
   double precision,intent(in)   :: AO(nBas,nGrid)
@@ -232,12 +235,12 @@ subroutine GOK_RKS(restart,x_rung,x_DFA,c_rung,c_DFA,nEns,wEns,nGrid,weight,maxS
 
 !   Compute exchange potential
 
-    call exchange_potential(x_rung,x_DFA,nEns,wEns(:),nGrid,weight(:),nBas,Pw(:,:),ERI(:,:,:,:), &
+    call exchange_potential(x_rung,x_DFA,LDA_centered,nEns,wEns(:),nGrid,weight(:),nBas,Pw(:,:),ERI(:,:,:,:), &
                             AO(:,:),dAO(:,:,:),rhow(:),drhow(:,:),Fx(:,:),FxHF(:,:))
 
 !   Compute correlation potential
 
-    call restricted_correlation_potential(c_rung,c_DFA,nEns,wEns(:),nGrid,weight(:), & 
+    call restricted_correlation_potential(c_rung,c_DFA,LDA_centered,nEns,wEns(:),nGrid,weight(:), & 
                                           nBas,AO(:,:),dAO(:,:,:),rhow(:),drhow(:,:),Fc(:,:))
 
 !   Build Fock operator
@@ -290,12 +293,12 @@ subroutine GOK_RKS(restart,x_rung,x_DFA,c_rung,c_DFA,nEns,wEns,nGrid,weight,maxS
 
 !   Exchange energy
 
-    call exchange_energy(x_rung,x_DFA,nEns,wEns(:),nGrid,weight(:),nBas, &
+    call exchange_energy(x_rung,x_DFA,LDA_centered,nEns,wEns(:),nGrid,weight(:),nBas, &
                          Pw(:,:),FxHF(:,:),rhow(:),drhow(:,:),Ex)
 
 !   Correlation energy
 
-    call restricted_correlation_energy(c_rung,c_DFA,nEns,wEns(:),nGrid,weight(:),rhow(:),drhow(:,:),Ec)
+    call restricted_correlation_energy(c_rung,c_DFA,LDA_centered,nEns,wEns(:),nGrid,weight(:),rhow(:),drhow(:,:),Ec)
 
 !   Total energy
 
@@ -338,9 +341,8 @@ subroutine GOK_RKS(restart,x_rung,x_DFA,c_rung,c_DFA,nEns,wEns,nGrid,weight,maxS
 ! Compute individual energies from ensemble energy
 !------------------------------------------------------------------------
 
-  call restricted_individual_energy(x_rung,x_DFA,c_rung,c_DFA,nEns,wEns(:),nGrid,weight(:), &
-                                    nBas,nO,nV,T(:,:),V(:,:),ERI(:,:,:,:),ENuc,             & 
-                                    eps(:),Pw(:,:),rhow(:),drhow(:,:),J(:,:),P(:,:,:),      & 
-                                    rho(:,:),drho(:,:,:),Ew,EwGIC,E(:),Om(:))
+  call restricted_individual_energy(x_rung,x_DFA,c_rung,c_DFA,LDA_centered,nEns,wEns(:),nGrid,weight(:), &
+                                    nBas,nO,nV,T(:,:),V(:,:),ERI(:,:,:,:),ENuc,eps(:),Pw(:,:),rhow(:),drhow(:,:), &
+                                    J(:,:),P(:,:,:),rho(:,:),drho(:,:,:),Ew,EwGIC,E(:),Om(:))
 
 end subroutine GOK_RKS

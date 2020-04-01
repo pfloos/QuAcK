@@ -1,4 +1,4 @@
-subroutine fock_exchange_individual_energy(nBas,P,ERI,Ex)
+subroutine fock_exchange_individual_energy(nBas,Pw,P,ERI,Ex)
 
 ! Compute the Fock exchange potential
 
@@ -7,6 +7,7 @@ subroutine fock_exchange_individual_energy(nBas,P,ERI,Ex)
 ! Input variables
 
   integer,intent(in)            :: nBas
+  double precision,intent(in)   :: Pw(nBas,nBas)
   double precision,intent(in)   :: P(nBas,nBas)
   double precision,intent(in)   :: ERI(nBas,nBas,nBas,nBas)
 

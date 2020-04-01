@@ -1,4 +1,4 @@
-subroutine lda_exchange_potential(DFA,nEns,wEns,nGrid,weight,nBas,AO,rho,Fx)
+subroutine lda_exchange_potential(DFA,LDA_centered,nEns,wEns,nGrid,weight,nBas,AO,rho,Fx)
 
 ! Select LDA correlation potential
 
@@ -8,6 +8,7 @@ subroutine lda_exchange_potential(DFA,nEns,wEns,nGrid,weight,nBas,AO,rho,Fx)
 
 ! Input variables
 
+  logical,intent(in)            :: LDA_centered
   character(len=12),intent(in)  :: DFA
   integer,intent(in)            :: nEns
   double precision,intent(in)   :: wEns(nEns)
@@ -41,7 +42,7 @@ subroutine lda_exchange_potential(DFA,nEns,wEns,nGrid,weight,nBas,AO,rho,Fx)
 
     case ('RMFL20')
 
-      call RMFL20_lda_exchange_potential(nEns,wEns,nGrid,weight,nBas,AO,rho,Fx)
+      call RMFL20_lda_exchange_potential(LDA_centered,nEns,wEns,nGrid,weight,nBas,AO,rho,Fx)
 
     case default
 
