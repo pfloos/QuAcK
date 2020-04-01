@@ -37,6 +37,6 @@ subroutine fock_exchange_individual_energy(nBas,Pw,P,ERI,Ex)
     enddo
   enddo
 
-  Ex = -0.25d0*trace_matrix(nBas,matmul(P,Fx))
+  Ex = -0.25d0*trace_matrix(nBas,matmul(P(:,:),Fx(:,:))) 
 
 end subroutine fock_exchange_individual_energy
