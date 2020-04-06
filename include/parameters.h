@@ -18,6 +18,5 @@
 
   double precision,parameter    :: CxLDA = - (3d0/4d0)*(3d0/pi)**(1d0/3d0)
   double precision,parameter    :: Cx0   = - (4d0/3d0)*(1d0/pi)**(1d0/3d0)
-! double precision,parameter    :: Cx1   = - 0.913d0*(4d0/3d0)*(1d0/pi)**(1d0/3d0)
   double precision,parameter    :: Cx1   = - (176d0/105d0)*(1d0/pi)**(1d0/3d0)
 

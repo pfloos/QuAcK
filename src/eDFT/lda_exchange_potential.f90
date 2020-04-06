@@ -26,23 +26,21 @@ subroutine lda_exchange_potential(DFA,LDA_centered,nEns,wEns,nGrid,weight,nBas,A
 
   select case (DFA)
 
-!   Restricted version of Slater's LDA correlation functional
-
     case ('RS51')
 
       call RS51_lda_exchange_potential(nGrid,weight,nBas,AO,rho,Fx)
-
-!   Slater's LDA correlation functional
 
     case ('S51')
 
       call S51_lda_exchange_potential(nGrid,weight,nBas,AO,rho,Fx)
 
-!   Restricted version of the weight-dependent Marut-Fromager-Loos 2020 functional
-
     case ('RMFL20')
 
       call RMFL20_lda_exchange_potential(LDA_centered,nEns,wEns,nGrid,weight,nBas,AO,rho,Fx)
+
+    case ('RGIC')
+
+      call RGIC_lda_exchange_potential(nEns,wEns,nGrid,weight,nBas,AO,rho,Fx)
 
     case default
 

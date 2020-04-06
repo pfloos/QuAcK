@@ -28,8 +28,9 @@ subroutine hartree_individual_energy(rung,nBas,ERI,J,Pw,P,EJ)
 
     case(0) 
 
-      call hartree_coulomb(nBas,P(:,:),ERI(:,:,:,:),J(:,:))
-      EJ = 0.5d0*trace_matrix(nBas,matmul(P(:,:),J(:,:)))
+      call hartree_coulomb(nBas,Pw(:,:),ERI(:,:,:,:),J(:,:))
+      EJ =       trace_matrix(nBas,matmul(P(:,:),J(:,:))) &
+         - 0.5d0*trace_matrix(nBas,matmul(Pw(:,:),J(:,:)))
 
 !   LDA functionals
 
@@ -57,8 +58,9 @@ subroutine hartree_individual_energy(rung,nBas,ERI,J,Pw,P,EJ)
 
     case(666) 
 
-      call hartree_coulomb(nBas,P(:,:),ERI(:,:,:,:),J(:,:))
-      EJ = 0.5d0*trace_matrix(nBas,matmul(P(:,:),J(:,:))) 
+      call hartree_coulomb(nBas,Pw(:,:),ERI(:,:,:,:),J(:,:))
+      EJ =       trace_matrix(nBas,matmul(P(:,:),J(:,:))) &
+         - 0.5d0*trace_matrix(nBas,matmul(Pw(:,:),J(:,:)))
 
   end select
  

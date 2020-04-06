@@ -32,6 +32,10 @@ subroutine lda_exchange_individual_energy(DFA,LDA_centered,nEns,wEns,nGrid,weigh
 
       call RMFL20_lda_exchange_individual_energy(LDA_centered,nEns,wEns,nGrid,weight(:),rhow(:),rho(:),Ex)
 
+    case ('RGIC')
+
+      call RGIC_lda_exchange_individual_energy(nEns,wEns,nGrid,weight(:),rhow(:),rho(:),Ex)
+
     case default
 
       call print_warning('!!! LDA correlation functional not available !!!')

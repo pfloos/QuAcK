@@ -3,7 +3,7 @@ BDIR =../../bin
 ODIR = obj
 OODIR = ../IntPak/obj
 SDIR =.
-FC = gfortran -I$(IDIR) -Wall
+FC = gfortran -I$(IDIR) 
 ifeq ($(DEBUG),1)
 FFLAGS = -Wall -g -msse4.2 -fcheck=all -Waliasing -Wampersand -Wconversion -Wsurprising -Wintrinsics-std -Wno-tabs -Wintrinsic-shadow -Wline-truncation -Wreal-q-constant
 else

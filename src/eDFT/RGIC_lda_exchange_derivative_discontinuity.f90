@@ -1,6 +1,6 @@
-subroutine RMFL20_lda_exchange_derivative_discontinuity(nEns,wEns,nGrid,weight,rhow,ExDD)
+subroutine RGIC_lda_exchange_derivative_discontinuity(nEns,wEns,nGrid,weight,rhow,ExDD)
 
-! Compute the restricted version of the eLDA exchange part of the derivative discontinuity
+! Compute the restricted version of the GIC exchange individual energy
 
   implicit none
   include 'parameters.h'
@@ -21,11 +21,21 @@ subroutine RMFL20_lda_exchange_derivative_discontinuity(nEns,wEns,nGrid,weight,r
   double precision              :: dExdw(nEns)
   double precision,external     :: Kronecker_delta
 
+  double precision              :: a,b,c,w
+  double precision              :: dCxGICdw
+
 ! Output variables
 
   double precision,intent(out)  :: ExDD(nEns)
 
 ! Compute correlation energy for ground- and doubly-excited states
+
+  a = + 0.5751782560799208d0
+  b = - 0.021108186591137282d0
+  c = - 0.36718902716347124d0
+
+  w = wEns(2)
+  dCxGICdw = CxLDA*(0.5d0*b + (2d0*a + 0.5d0*c)*(w - 0.5d0) - (1d0 - w)*w*(3d0*b + 4d0*c*(w - 0.5d0)))
 
   dExdw(:) = 0d0
 
@@ -36,7 +46,7 @@ subroutine RMFL20_lda_exchange_derivative_discontinuity(nEns,wEns,nGrid,weight,r
     if(r > threshold) then
  
       dExdw(1) = 0d0
-      dExdw(2) = dExdw(2) + weight(iG)*(Cx1 - Cx0)*r**(4d0/3d0)
+      dExdw(2) = dExdw(2) + weight(iG)*dCxGICdw*r**(4d0/3d0)
 
     end if
      
@@ -52,4 +62,4 @@ subroutine RMFL20_lda_exchange_derivative_discontinuity(nEns,wEns,nGrid,weight,r
     end do
   end do
 
-end subroutine RMFL20_lda_exchange_derivative_discontinuity
+end subroutine RGIC_lda_exchange_derivative_discontinuity

@@ -37,6 +37,10 @@ subroutine lda_exchange_derivative_discontinuity(DFA,nEns,wEns,nGrid,weight,rhow
 
       call RMFL20_lda_exchange_derivative_discontinuity(nEns,wEns,nGrid,weight(:),rhow(:),ExDD(:))
 
+    case ('RGIC')
+
+      call RGIC_lda_exchange_derivative_discontinuity(nEns,wEns,nGrid,weight(:),rhow(:),ExDD(:))
+
     case default
 
       call print_warning('!!! LDA exchange functional not available !!!')

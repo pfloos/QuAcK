@@ -1,6 +1,6 @@
 subroutine self_energy_Tmatrix_diag(eta,nBas,nC,nO,nV,nR,nOOs,nVVs,nOOt,nVVt,e,              & 
                                     Omega1s,rho1s,Omega2s,rho2s,Omega1t,rho1t,Omega2t,rho2t, & 
-                                    SigT)
+                                    rho1st,rho2st,SigT)
 
 ! Compute diagonal of the correlation part of the T-matrix self-energy
 
@@ -19,9 +19,9 @@ subroutine self_energy_Tmatrix_diag(eta,nBas,nC,nO,nV,nR,nOOs,nVVs,nOOt,nVVt,e, 
   integer,intent(in)            :: nVVs,nVVt
   double precision,intent(in)   :: e(nBas)
   double precision,intent(in)   :: Omega1s(nVVs),Omega1t(nVVt)
-  double precision,intent(in)   :: rho1s(nBas,nO,nVVs),rho1t(nBas,nO,nVVt)
+  double precision,intent(in)   :: rho1s(nBas,nO,nVVs),rho1t(nBas,nO,nVVt),rho1st(nBas,nO,nVVt)
   double precision,intent(in)   :: Omega2s(nOOs),Omega2t(nOOt)
-  double precision,intent(in)   :: rho2s(nBas,nV,nOOs),rho2t(nBas,nV,nOOt)
+  double precision,intent(in)   :: rho2s(nBas,nV,nOOs),rho2t(nBas,nV,nOOt),rho2st(nBas,nV,nOOt)
 
 ! Local variables
 
@@ -31,6 +31,10 @@ subroutine self_energy_Tmatrix_diag(eta,nBas,nC,nO,nV,nR,nOOs,nVVs,nOOt,nVVt,e, 
 ! Output variables
 
   double precision,intent(out)  :: SigT(nBas)
+
+! Initialization
+
+  SigT(:) = 0d0
 
 !----------------------------------------------
 ! Singlet part of the T-matrix self-energy
@@ -69,6 +73,7 @@ subroutine self_energy_Tmatrix_diag(eta,nBas,nC,nO,nV,nR,nOOs,nVVs,nOOt,nVVt,e, 
       do cd=1,nVVt
         eps     = e(p)    + e(i) - Omega1t(cd)
         SigT(p) = SigT(p) + rho1t(p,i,cd)**2/eps
+        SigT(p) = SigT(p) + rho1st(p,i,cd)**2/eps
       enddo
     enddo
   enddo
@@ -80,6 +85,7 @@ subroutine self_energy_Tmatrix_diag(eta,nBas,nC,nO,nV,nR,nOOs,nVVs,nOOt,nVVt,e, 
       do kl=1,nOOt
         eps     = e(p)    + e(nO+a) - Omega2t(kl)
         SigT(p) = SigT(p) + rho2t(p,a,kl)**2/eps
+        SigT(p) = SigT(p) + rho2st(p,a,kl)**2/eps
       enddo
     enddo
   enddo
