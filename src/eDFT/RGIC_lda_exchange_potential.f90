@@ -34,7 +34,8 @@ subroutine RGIC_lda_exchange_potential(nEns,wEns,nGrid,weight,nBas,AO,rho,Fx)
   c = - 0.36718902716347124d0
 
   w = wEns(2)
-  CxGIC = CxLDA*w*(1d0 - w)*(a + b*(w - 0.5d0) + c*(w - 0.5d0)**2)
+  CxGIC = 1d0 - w*(1d0 - w)*(a + b*(w - 0.5d0) + c*(w - 0.5d0)**2)
+  CxGIC = CxLDA*CxGIC
   
 ! Compute LDA exchange matrix in the AO basis
 
@@ -49,7 +50,6 @@ subroutine RGIC_lda_exchange_potential(nEns,wEns,nGrid,weight,nBas,AO,rho,Fx)
         if(r > threshold) then
 
           vAO = weight(iG)*AO(mu,iG)*AO(nu,iG)
-          Fx(mu,nu) = Fx(mu,nu) + vAO*4d0/3d0*CxLDA*r**(1d0/3d0)
           Fx(mu,nu) = Fx(mu,nu) + vAO*4d0/3d0*CxGIC*r**(1d0/3d0)
 
         endif

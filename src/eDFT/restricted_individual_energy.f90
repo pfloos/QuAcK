@@ -80,7 +80,9 @@ subroutine restricted_individual_energy(x_rung,x_DFA,c_rung,c_DFA,LDA_centered,n
 !------------------------------------------------------------------------
 
   do iEns=1,nEns
-    call hartree_individual_energy(x_rung,nBas,ERI,J(:,:),Pw(:,:),P(:,:,iEns),EJ(iEns))
+    call hartree_coulomb(nBas,Pw(:,:),ERI(:,:,:,:),J(:,:))
+    EJ(iEns) =       trace_matrix(nBas,matmul(P(:,:,iEns),J(:,:))) &
+             - 0.5d0*trace_matrix(nBas,matmul(Pw(:,:),J(:,:)))
   end do
 
 !------------------------------------------------------------------------

@@ -34,7 +34,8 @@ subroutine RGIC_lda_exchange_individual_energy(nEns,wEns,nGrid,weight,rhow,rho,E
   c = - 0.36718902716347124d0
 
   w = wEns(2)
-  CxGIC = CxLDA*w*(1d0 - w)*(a + b*(w - 0.5d0) + c*(w - 0.5d0)**2)
+  CxGIC = 1d0 - w*(1d0 - w)*(a + b*(w - 0.5d0) + c*(w - 0.5d0)**2)
+  CxGIC = CxLDA*CxGIC
  
 ! Compute LDA exchange matrix in the AO basis
 
@@ -45,10 +46,6 @@ subroutine RGIC_lda_exchange_individual_energy(nEns,wEns,nGrid,weight,rhow,rho,E
     rI = max(0d0,rho(iG))
 
     if(r > threshold .and. rI > threshold) then
-
-      e_p  =         CxLDA*r**(1d0/3d0)
-      dedr = 1d0/3d0*CxLDA*r**(-2d0/3d0)
-      Ex = Ex + weight(iG)*(e_p*rI + dedr*r*rI - dedr*r*r)
 
       e_p  =         CxGIC*r**(1d0/3d0)
       dedr = 1d0/3d0*CxGIC*r**(-2d0/3d0)

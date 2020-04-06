@@ -41,8 +41,7 @@ subroutine exchange_derivative_discontinuity(rung,DFA,nEns,wEns,nGrid,weight,rho
 
     case(2) 
 
-      call print_warning('!!! exchange part of the derivative discontinuity NYI for GGAs !!!')
-      stop
+      call gga_exchange_derivative_discontinuity(DFA,nEns,wEns(:),nGrid,weight(:),rhow(:),drhow(:,:),ExDD(:))
 
 !   Hybrid functionals
 

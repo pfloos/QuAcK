@@ -22,19 +22,13 @@ subroutine gga_exchange_energy(DFA,nEns,wEns,nGrid,weight,rho,drho,Ex)
 
   select case (DFA)
 
-!   Gill's 96 exchange functional 
-
     case ('G96')
 
       call G96_gga_exchange_energy(nGrid,weight,rho,drho,Ex)
 
-!   Becke's 88 exchange functional 
-
     case ('RB88')
 
       call RB88_gga_exchange_energy(nGrid,weight,rho,drho,Ex)
-
-!   Becke's 88 exchange functional 
 
     case ('B88')
 
@@ -42,7 +36,7 @@ subroutine gga_exchange_energy(DFA,nEns,wEns,nGrid,weight,rho,drho,Ex)
 
     case default
 
-      call print_warning('!!! GGA exchange functional not available !!!')
+      call print_warning('!!! GGA exchange energy not available !!!')
       stop
 
   end select

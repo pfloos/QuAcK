@@ -38,7 +38,7 @@ subroutine RB88_gga_exchange_energy(nGrid,weight,rho,drho,Ex)
     r = max(0d0,0.5d0*rho(iG))
 
     if(r > threshold) then 
-      g = drho(1,iG)**2 + drho(2,iG)**2 + drho(3,iG)**2
+      g = 0.25d0*(drho(1,iG)**2 + drho(2,iG)**2 + drho(3,iG)**2)
       x = sqrt(g)/r**(4d0/3d0)
 
       Ex = Ex + weight(iG)*alpha*r**(4d0/3d0) & 

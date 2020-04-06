@@ -38,7 +38,7 @@ subroutine lda_exchange_individual_energy(DFA,LDA_centered,nEns,wEns,nGrid,weigh
 
     case default
 
-      call print_warning('!!! LDA correlation functional not available !!!')
+      call print_warning('!!! LDA exchange individual energy not available !!!')
       stop
 
   end select

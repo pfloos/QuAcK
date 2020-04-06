@@ -32,7 +32,8 @@ subroutine RGIC_lda_exchange_energy(nEns,wEns,nGrid,weight,rho,Ex)
   c = - 0.36718902716347124d0
 
   w = wEns(2)
-  CxGIC = CxLDA*w*(1d0 - w)*(a + b*(w - 0.5d0) + c*(w - 0.5d0)**2)
+  CxGIC = 1d0 - w*(1d0 - w)*(a + b*(w - 0.5d0) + c*(w - 0.5d0)**2)
+  CxGIC = CxLDA*CxGIC
 
 ! Compute GIC-LDA exchange energy
 
@@ -43,7 +44,6 @@ subroutine RGIC_lda_exchange_energy(nEns,wEns,nGrid,weight,rho,Ex)
     r = max(0d0,rho(iG))
 
     if(r > threshold) then
-      Ex = Ex + weight(iG)*CxLDA*r**(4d0/3d0) 
       Ex = Ex + weight(iG)*CxGIC*r**(4d0/3d0) 
     endif
 

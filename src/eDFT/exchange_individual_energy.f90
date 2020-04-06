@@ -27,6 +27,7 @@ subroutine exchange_individual_energy(rung,DFA,LDA_centered,nEns,wEns,nGrid,weig
 ! Local variables
 
   double precision              :: ExLDA
+  double precision              :: ExGGA
   double precision              :: ExHF
 
 ! Output variables
@@ -53,8 +54,9 @@ subroutine exchange_individual_energy(rung,DFA,LDA_centered,nEns,wEns,nGrid,weig
 
     case(2) 
 
-      call print_warning('!!! Individual energies NYI for GGAs !!!')
-      stop
+      call gga_exchange_individual_energy(DFA,nEns,wEns,nGrid,weight,rhow,drhow,rho,drho,ExGGA)
+
+      Ex = ExGGA
 
 !   Hybrid functionals
 

@@ -35,7 +35,8 @@ subroutine RGIC_lda_exchange_derivative_discontinuity(nEns,wEns,nGrid,weight,rho
   c = - 0.36718902716347124d0
 
   w = wEns(2)
-  dCxGICdw = CxLDA*(0.5d0*b + (2d0*a + 0.5d0*c)*(w - 0.5d0) - (1d0 - w)*w*(3d0*b + 4d0*c*(w - 0.5d0)))
+  dCxGICdw = (0.5d0*b + (2d0*a + 0.5d0*c)*(w - 0.5d0) - (1d0 - w)*w*(3d0*b + 4d0*c*(w - 0.5d0)))
+  dCxGICdw = CxLDA*dCxGICdw
 
   dExdw(:) = 0d0
 
@@ -51,8 +52,6 @@ subroutine RGIC_lda_exchange_derivative_discontinuity(nEns,wEns,nGrid,weight,rho
     end if
      
   end do 
-
-  ExDD(:) = 0d0
 
   do iEns=1,nEns
     do jEns=2,nEns

@@ -26,19 +26,13 @@ subroutine gga_exchange_potential(DFA,nEns,wEns,nGrid,weight,nBas,AO,dAO,rho,drh
 
   select case (DFA)
 
-!   Gill's 96 exchange functional 
-
     case ('G96')
 
       call G96_gga_exchange_potential(nGrid,weight,nBas,AO,dAO,rho,drho,Fx)
       
-!   Becke's 88 exchange functional 
-
     case ('RB88')
     
       call RB88_gga_exchange_potential(nGrid,weight,nBas,AO,dAO,rho,drho,Fx)
-
-!   Becke's 88 exchange functional 
 
     case ('B88')
     
@@ -46,7 +40,7 @@ subroutine gga_exchange_potential(DFA,nEns,wEns,nGrid,weight,nBas,AO,dAO,rho,drh
 
     case default
 
-      call print_warning('!!! GGA exchange functional not available !!!')
+      call print_warning('!!! GGA exchange potential not available !!!')
       stop
 
   end select

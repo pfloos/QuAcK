@@ -43,7 +43,7 @@ subroutine lda_exchange_derivative_discontinuity(DFA,nEns,wEns,nGrid,weight,rhow
 
     case default
 
-      call print_warning('!!! LDA exchange functional not available !!!')
+      call print_warning('!!! LDA exchange derivative discontinuity not available !!!')
       stop
 
   end select

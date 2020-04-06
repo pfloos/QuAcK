@@ -43,7 +43,7 @@ subroutine RB88_gga_exchange_potential(nGrid,weight,nBas,AO,dAO,rho,drho,Fx)
  
         if(r > threshold) then
 
-          g = drho(1,iG)**2 + drho(2,iG)**2 + drho(3,iG)**2
+          g = 0.25d0*(drho(1,iG)**2 + drho(2,iG)**2 + drho(3,iG)**2)
           vAO = weight(iG)*AO(mu,iG)*AO(nu,iG)
           Fx(mu,nu) = Fx(mu,nu) &
                     + vAO*(4d0/3d0*r**(1d0/3d0)*(alpha - beta*g**(3d0/4d0)/r**2) &
