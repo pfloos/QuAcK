@@ -34,6 +34,8 @@ subroutine G0T0(doACFDT,exchange_kernel,doXBS,BSE,TDA,singlet_manifold,triplet_m
   integer                       :: ispin
   integer                       :: nOOs,nOOt
   integer                       :: nVVs,nVVt
+  double precision              :: dERI
+  double precision              :: xERI
   double precision              :: EcRPA(nspin)
   double precision              :: EcBSE(nspin)
   double precision              :: EcAC(nspin)
@@ -45,7 +47,6 @@ subroutine G0T0(doACFDT,exchange_kernel,doXBS,BSE,TDA,singlet_manifold,triplet_m
   double precision,allocatable  :: X2s(:,:),X2t(:,:)
   double precision,allocatable  :: Y2s(:,:),Y2t(:,:)
   double precision,allocatable  :: rho2s(:,:,:),rho2t(:,:,:)
-  double precision,allocatable  :: rho1st(:,:,:),rho2st(:,:,:)
   double precision,allocatable  :: SigT(:)
   double precision,allocatable  :: Z(:)
 
@@ -66,7 +67,7 @@ subroutine G0T0(doACFDT,exchange_kernel,doXBS,BSE,TDA,singlet_manifold,triplet_m
   write(*,*)'************************************************'
   write(*,*)
 
-! Dimensions of the rr-RPA linear reponse matrices
+! Dimensions of the pp-RPA linear reponse matrices
 
   nOOs = nO*(nO + 1)/2
   nVVs = nV*(nV + 1)/2
@@ -82,7 +83,6 @@ subroutine G0T0(doACFDT,exchange_kernel,doXBS,BSE,TDA,singlet_manifold,triplet_m
            Omega1t(nVVt),X1t(nVVt,nVVt),Y1t(nOOt,nVVt), & 
            Omega2t(nOOt),X2t(nVVt,nOOt),Y2t(nOOt,nOOt), & 
            rho1t(nBas,nO,nVVt),rho2t(nBas,nV,nOOt), & 
-           rho1st(nBas,nO,nVVt),rho2st(nBas,nV,nOOt), & 
            SigT(nBas),Z(nBas),eG0T0(nBas))
 
 !----------------------------------------------
@@ -119,33 +119,67 @@ subroutine G0T0(doACFDT,exchange_kernel,doXBS,BSE,TDA,singlet_manifold,triplet_m
   call print_excitation('pp-RPA (N+2)',ispin,nVVt,Omega1t(:))
   call print_excitation('pp-RPA (N-2)',ispin,nOOt,Omega2t(:))
 
-!-----------------------------------------------------------
-! Compute excitation densities for the T-matrix self-energy
-!-----------------------------------------------------------
-
-  call excitation_density_Tmatrix(nBas,nC,nO,nV,nR,nOOs,nVVs,nOOt,nVVt,ERI(:,:,:,:),rho1st(:,:,:),rho2st(:,:,:), &
-                                  X1s(:,:),Y1s(:,:),rho1s(:,:,:),X2s(:,:),Y2s(:,:),rho2s(:,:,:), &
-                                  X1t(:,:),Y1t(:,:),rho1t(:,:,:),X2t(:,:),Y2t(:,:),rho2t(:,:,:))
-
 !----------------------------------------------
 ! Compute T-matrix version of the self-energy 
 !----------------------------------------------
 
-! rho2s(:,:,:) = 0d0
-! rho2t(:,:,:) = 0d0
-! rho2st(:,:,:) = 0d0
+  SigT(:) = 0d0
 
-  call self_energy_Tmatrix_diag(eta,nBas,nC,nO,nV,nR,nOOs,nVVs,nOOt,nVVt,eHF(:), & 
-                                Omega1s(:),rho1s(:,:,:),Omega2s(:),rho2s(:,:,:), & 
-                                Omega1t(:),rho1t(:,:,:),Omega2t(:),rho2t(:,:,:), & 
-                                rho1st(:,:,:),rho2st(:,:,:),SigT(:))
+  ispin =  2
+  dERI  = +1d0
+  xERI  = -1d0
+
+  call excitation_density_Tmatrix(ispin,xERI,dERI,nBas,nC,nO,nV,nR,nOOt,nVVt,ERI(:,:,:,:), &
+                                  X1t(:,:),Y1t(:,:),rho1t(:,:,:),X2t(:,:),Y2t(:,:),rho2t(:,:,:))
+
+  call self_energy_Tmatrix_diag(1d0,eta,nBas,nC,nO,nV,nR,nOOt,nVVt,eHF(:),         & 
+                                Omega1t(:),rho1t(:,:,:),Omega2t(:),rho2t(:,:,:),SigT(:))
+
+  ispin =  2
+  dERI  = +1d0
+  xERI  = +0d0
+
+  call excitation_density_Tmatrix(ispin,xERI,dERI,nBas,nC,nO,nV,nR,nOOt,nVVt,ERI(:,:,:,:), &
+                                  X1t(:,:),Y1t(:,:),rho1t(:,:,:),X2t(:,:),Y2t(:,:),rho2t(:,:,:))
+
+  call self_energy_Tmatrix_diag(0.5d0,eta,nBas,nC,nO,nV,nR,nOOt,nVVt,eHF(:),         & 
+                                Omega1t(:),rho1t(:,:,:),Omega2t(:),rho2t(:,:,:),SigT(:))
+
+  ispin =  2
+  dERI  = +0d0
+  xERI  = +1d0
+
+  call excitation_density_Tmatrix(ispin,xERI,dERI,nBas,nC,nO,nV,nR,nOOt,nVVt,ERI(:,:,:,:), &
+                                  X1t(:,:),Y1t(:,:),rho1t(:,:,:),X2t(:,:),Y2t(:,:),rho2t(:,:,:))
+
+  call self_energy_Tmatrix_diag(0.5d0,eta,nBas,nC,nO,nV,nR,nOOt,nVVt,eHF(:),         & 
+                                Omega1t(:),rho1t(:,:,:),Omega2t(:),rho2t(:,:,:),SigT(:))
+
+  ispin =  1
+  dERI  = +1d0
+  xERI  = +0d0
+  call excitation_density_Tmatrix(ispin,xERI,dERI,nBas,nC,nO,nV,nR,nOOs,nVVs,ERI(:,:,:,:), &
+                                  X1s(:,:),Y1s(:,:),rho1s(:,:,:),X2s(:,:),Y2s(:,:),rho2s(:,:,:))
+
+  call self_energy_Tmatrix_diag(0.5d0,eta,nBas,nC,nO,nV,nR,nOOs,nVVs,eHF(:),         & 
+                                Omega1s(:),rho1s(:,:,:),Omega2s(:),rho2s(:,:,:),SigT(:))
+
+  ispin =  1
+  dERI  = +0d0
+  xERI  = +1d0
+  call excitation_density_Tmatrix(ispin,xERI,dERI,nBas,nC,nO,nV,nR,nOOs,nVVs,ERI(:,:,:,:), &
+                                  X1s(:,:),Y1s(:,:),rho1s(:,:,:),X2s(:,:),Y2s(:,:),rho2s(:,:,:))
+
+  call self_energy_Tmatrix_diag(0.5d0,eta,nBas,nC,nO,nV,nR,nOOs,nVVs,eHF(:),         & 
+                                Omega1s(:),rho1s(:,:,:),Omega2s(:),rho2s(:,:,:),SigT(:))
 
 ! Compute renormalization factor for T-matrix self-energy
 
-  call renormalization_factor_Tmatrix(eta,nBas,nC,nO,nV,nR,nOOs,nVVs,nOOt,nVVt,eHF(:), & 
-                                      Omega1s(:),rho1s(:,:,:),Omega2s(:),rho2s(:,:,:), & 
-                                      Omega1t(:),rho1t(:,:,:),Omega2t(:),rho2t(:,:,:), & 
-                                      rho1st(:,:,:),rho2st(:,:,:),Z(:))
+! call renormalization_factor_Tmatrix(eta,nBas,nC,nO,nV,nR,nOOs,nVVs,nOOt,nVVt,eHF(:), & 
+!                                     Omega1s(:),rho1s(:,:,:),Omega2s(:),rho2s(:,:,:), & 
+!                                     Omega1t(:),rho1t(:,:,:),Omega2t(:),rho2t(:,:,:), & 
+!                                     Z(:))
+  Z(:) = 1d0
 
 !----------------------------------------------
 ! Solve the quasi-particle equation

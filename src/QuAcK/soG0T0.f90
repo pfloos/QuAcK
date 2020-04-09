@@ -88,17 +88,12 @@ subroutine soG0T0(eta,nBas,nC,nO,nV,nR,ENuc,ERHF,ERI,eHF)
 
 ! Compute excitation densities for the T-matrix
 
-  rho1(:,:,:) = 0d0
-  rho2(:,:,:) = 0d0
- 
   call excitation_density_Tmatrix_so(nBas2,nC2,nO2,nV2,nR2,nOO,nVV,sERI(:,:,:,:), & 
                                   X1(:,:),Y1(:,:),rho1(:,:,:),X2(:,:),Y2(:,:),rho2(:,:,:))
 
 !----------------------------------------------
 ! Compute T-matrix version of the self-energy 
 !----------------------------------------------
-
-! rho2(:,:,:) = 0d0
 
   call self_energy_Tmatrix_diag_so(eta,nBas2,nC2,nO2,nV2,nR2,nOO,nVV,seHF(:), & 
                                 Omega1(:),rho1(:,:,:),Omega2(:),rho2(:,:,:),  &
