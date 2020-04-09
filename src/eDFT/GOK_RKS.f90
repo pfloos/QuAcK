@@ -1,5 +1,5 @@
 subroutine GOK_RKS(restart,x_rung,x_DFA,c_rung,c_DFA,LDA_centered,nEns,wEns,nGrid,weight,maxSCF,thresh, & 
-                   max_diis,guess_type,nBas,AO,dAO,nO,nV,S,T,V,Hc,ERI,X,ENuc,Ew,EwGIC,c)
+                   max_diis,guess_type,nBas,AO,dAO,nO,nV,S,T,V,Hc,ERI,X,ENuc,Ew,c)
 
 ! Perform restricted Kohn-Sham calculation for ensembles
 
@@ -80,7 +80,6 @@ subroutine GOK_RKS(restart,x_rung,x_DFA,c_rung,c_DFA,LDA_centered,nEns,wEns,nGri
 ! Output variables
 
   double precision,intent(out)  :: Ew
-  double precision,intent(out)  :: EwGIC
 
 ! Hello world
 
@@ -343,6 +342,6 @@ subroutine GOK_RKS(restart,x_rung,x_DFA,c_rung,c_DFA,LDA_centered,nEns,wEns,nGri
 
   call restricted_individual_energy(x_rung,x_DFA,c_rung,c_DFA,LDA_centered,nEns,wEns(:),nGrid,weight(:), &
                                     nBas,nO,nV,T(:,:),V(:,:),ERI(:,:,:,:),ENuc,eps(:),Pw(:,:),rhow(:),drhow(:,:), &
-                                    J(:,:),P(:,:,:),rho(:,:),drho(:,:,:),Ew,EwGIC,E(:),Om(:))
+                                    J(:,:),P(:,:,:),rho(:,:),drho(:,:,:),Ew,E(:),Om(:))
 
 end subroutine GOK_RKS

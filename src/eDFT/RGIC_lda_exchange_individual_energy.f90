@@ -38,15 +38,15 @@ subroutine RGIC_lda_exchange_individual_energy(nEns,wEns,nGrid,weight,rhow,rho,E
 
 ! Parameters for stretch H2
 
-  a = + 0.01922622507087411d0
-  b = - 0.01799647558018601d0
-  c = - 0.022945430666782573d0
+! a = + 0.01922622507087411d0
+! b = - 0.01799647558018601d0
+! c = - 0.022945430666782573d0
 
 ! Parameters for He
 
-! a = 1.9125735895875828d0
-! b = 2.715266992840757d0
-! c = 2.1634223380633086d0
+  a = 1.9125735895875828d0
+  b = 2.715266992840757d0
+  c = 2.1634223380633086d0
 
   w = wEns(2)
   CxGIC = 1d0 - w*(1d0 - w)*(a + b*(w - 0.5d0) + c*(w - 0.5d0)**2)

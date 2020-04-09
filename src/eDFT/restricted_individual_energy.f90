@@ -1,5 +1,5 @@
 subroutine restricted_individual_energy(x_rung,x_DFA,c_rung,c_DFA,LDA_centered,nEns,wEns,nGrid,weight,nBas, & 
-                                        nO,nV,T,V,ERI,ENuc,eps,Pw,rhow,drhow,J,P,rho,drho,Ew,EwGIC,E,Om)
+                                        nO,nV,T,V,ERI,ENuc,eps,Pw,rhow,drhow,J,P,rho,drho,Ew,E,Om)
 
 ! Compute individual energies as well as excitation energies
 
@@ -55,7 +55,6 @@ subroutine restricted_individual_energy(x_rung,x_DFA,c_rung,c_DFA,LDA_centered,n
 
 ! Output variables
 
-  double precision,intent(out)  :: EwGIC
   double precision,intent(out)  :: E(nEns)
   double precision,intent(out)  :: Om(nEns)
 
@@ -130,15 +129,6 @@ subroutine restricted_individual_energy(x_rung,x_DFA,c_rung,c_DFA,LDA_centered,n
   end do
 
 !------------------------------------------------------------------------
-! Total energy with ghost-interaction correction
-!------------------------------------------------------------------------
-
-  EwGIC = 0d0
-  do iEns=1,nEns
-    EwGIC = EwGIC + wEns(iEns)*E(iEns)
-  end do
-
-!------------------------------------------------------------------------
 ! Excitation energies
 !------------------------------------------------------------------------
 
@@ -162,7 +152,7 @@ subroutine restricted_individual_energy(x_rung,x_DFA,c_rung,c_DFA,LDA_centered,n
 ! Dump results
 !------------------------------------------------------------------------
 
-  call print_restricted_individual_energy(nEns,ENuc,Ew,EwGIC,ET(:),EV(:),EJ(:),Ex(:),Ec(:),Exc(:), &
+  call print_restricted_individual_energy(nEns,ENuc,Ew,ET(:),EV(:),EJ(:),Ex(:),Ec(:),Exc(:), &
                                           Eaux(:),ExDD(:),EcDD(:),ExcDD(:),E(:),                   & 
                                           Om(:),Omx(:),Omc(:),Omxc(:),Omaux,OmxDD(:),OmcDD(:),OmxcDD(:))
 

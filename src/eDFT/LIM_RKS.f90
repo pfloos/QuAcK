@@ -35,10 +35,10 @@ subroutine LIM_RKS(x_rung,x_DFA,c_rung,c_DFA,LDA_centered,nEns,wEns,nGrid,weight
 ! Local variables
 
   integer                       :: iEns
-  double precision              :: EwZW,EwGICZW
-  double precision              :: EwEW,EwGICEW
+  double precision              :: EwZW
+  double precision              :: EwEW
   double precision              :: wLIM(nEns)
-  double precision              :: Om(nEns),OmGIC(nEns)
+  double precision              :: Om(nEns)
 
 ! Hello world
 
@@ -67,7 +67,7 @@ subroutine LIM_RKS(x_rung,x_DFA,c_rung,c_DFA,LDA_centered,nEns,wEns,nGrid,weight
   write(*,*)
 
   call GOK_RKS(.false.,x_rung,x_DFA,c_rung,c_DFA,LDA_centered,nEns,wLIM,nGrid,weight,maxSCF,thresh, &
-               max_diis,guess_type,nBas,AO,dAO,nO,nV,S,T,V,Hc,ERI,X,ENuc,EwZW,EwGICZW,c)
+               max_diis,guess_type,nBas,AO,dAO,nO,nV,S,T,V,Hc,ERI,X,ENuc,EwZW,c)
 
 !------------------------------------------------------------------------
 ! Equiensemble calculation
@@ -84,20 +84,15 @@ subroutine LIM_RKS(x_rung,x_DFA,c_rung,c_DFA,LDA_centered,nEns,wEns,nGrid,weight
   write(*,*)
 
   call GOK_RKS(.true.,x_rung,x_DFA,c_rung,c_DFA,LDA_centered,nEns,wEns,nGrid,weight,maxSCF,thresh, &
-               max_diis,guess_type,nBas,AO,dAO,nO,nV,S,T,V,Hc,ERI,X,ENuc,EwEW,EwGICEW,c)
+               max_diis,guess_type,nBas,AO,dAO,nO,nV,S,T,V,Hc,ERI,X,ENuc,EwEW,c)
 
 !------------------------------------------------------------------------
 ! LIM excitation energies
 !------------------------------------------------------------------------
 
-  Om(1)    = 0d0
-  OmGIC(1) = 0d0
-
-  Om(2)    = 0d0
-  OmGIC(2) = 0d0
+  Om(:)    = 0d0
   if(wEns(2) > 10d-3) then
-    Om(2)    = (EwEW    - EwZW)/wEns(2)
-    OmGIC(2) = (EwGICEW - EwGICZW)/wEns(2)
+    Om(2)    = (EwEW - EwZW)/wEns(2)
   end if
 
   write(*,'(A60)')           '-------------------------------------------------'
@@ -105,19 +100,11 @@ subroutine LIM_RKS(x_rung,x_DFA,c_rung,c_DFA,LDA_centered,nEns,wEns,nGrid,weight
   write(*,'(A60)')           '-------------------------------------------------'
 
   write(*,'(A44,F16.10,A3)') ' Zero-weight     ensemble energy',EwZW,   ' au'
-  write(*,'(A44,F16.10,A3)') ' Zero-weight GIC ensemble energy',EwGICZW,' au'
-  write(*,*)
   write(*,'(A44,F16.10,A3)') ' Equi-weight     ensemble energy',EwEW,    ' au'
-  write(*,'(A44,F16.10,A3)') ' Equi-weight GIC ensemble energy',EwGICEW, ' au'
   write(*,'(A60)')           '-------------------------------------------------'
   do iEns=2,nEns
     write(*,'(A40,I2,A2,F16.10,A3)') '    Excitation energy  1 ->',iEns,': ',Om(iEns),       ' au'
     write(*,'(A40,I2,A2,F16.10,A3)') '    Excitation energy  1 ->',iEns,': ',Om(iEns)*HaToeV,' eV'
-  end do
-  write(*,*)
-  do iEns=2,nEns
-    write(*,'(A40,I2,A2,F16.10,A3)') ' GIC Excitation energy  1 ->',iEns,': ',OmGIC(iEns),       ' au'
-    write(*,'(A40,I2,A2,F16.10,A3)') ' GIC Excitation energy  1 ->',iEns,': ',OmGIC(iEns)*HaToeV,' eV'
   end do
   write(*,'(A60)')           '-------------------------------------------------'
 

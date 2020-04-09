@@ -7,7 +7,7 @@ program eDFT
 
   integer                       :: nNuc,nBas
   integer                       :: nEl(nspin),nC(nspin),nO(nspin),nV(nspin),nR(nspin)
-  double precision              :: ENuc,Ew,EwGIC
+  double precision              :: ENuc,Ew
 
   double precision,allocatable  :: ZNuc(:),rNuc(:,:)
 
@@ -164,7 +164,7 @@ program eDFT
     call cpu_time(start_KS)
     call GOK_RKS(.false.,x_rung,x_DFA,c_rung,c_DFA,LDA_centered,nEns,wEns(:),nGrid,weight(:), &
                  maxSCF,thresh,max_diis,guess_type,nBas,AO(:,:),dAO(:,:,:),nO(1),nV(1),       &
-                 S(:,:),T(:,:),V(:,:),Hc(:,:),ERI(:,:,:,:),X(:,:),ENuc,Ew,EwGIC,c(:,:))
+                 S(:,:),T(:,:),V(:,:),Hc(:,:),ERI(:,:,:,:),X(:,:),ENuc,Ew,c(:,:))
     call cpu_time(end_KS)
 
     t_KS = end_KS - start_KS
