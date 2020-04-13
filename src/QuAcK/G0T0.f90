@@ -184,16 +184,16 @@ subroutine G0T0(doACFDT,exchange_kernel,doXBS,BSE,TDA,singlet_manifold,triplet_m
 
 ! Compute the ppRPA correlation energy
 
-  ispin  = 1
-  iblock = 3
-  call linear_response_pp(iblock,.false.,.false.,nBas,nC,nO,nV,nR,nOOs,nVVs,eG0T0(:),ERI(:,:,:,:),  & 
-                          Omega1s(:),X1s(:,:),Y1s(:,:),Omega2s(:),X2s(:,:),Y2s(:,:),EcRPA(ispin))
-  ispin  = 2
-  iblock = 4
-  call linear_response_pp(iblock,.false.,.false.,nBas,nC,nO,nV,nR,nOOt,nVVt,eG0T0(:),ERI(:,:,:,:),  & 
-                          Omega1t(:),X1t(:,:),Y1t(:,:),Omega2t(:),X2t(:,:),Y2t(:,:),EcRPA(ispin))
-  EcRPA(1) = EcRPA(1) - EcRPA(2)
-  EcRPA(2) = 3d0*EcRPA(2)
+! ispin  = 1
+! iblock = 3
+! call linear_response_pp(iblock,.false.,.false.,nBas,nC,nO,nV,nR,nOOs,nVVs,eG0T0(:),ERI(:,:,:,:),  & 
+!                         Omega1s(:),X1s(:,:),Y1s(:,:),Omega2s(:),X2s(:,:),Y2s(:,:),EcRPA(ispin))
+! ispin  = 2
+! iblock = 4
+! call linear_response_pp(iblock,.false.,.false.,nBas,nC,nO,nV,nR,nOOt,nVVt,eG0T0(:),ERI(:,:,:,:),  & 
+!                         Omega1t(:),X1t(:,:),Y1t(:,:),Omega2t(:),X2t(:,:),Y2t(:,:),EcRPA(ispin))
+! EcRPA(1) = EcRPA(1) - EcRPA(2)
+! EcRPA(2) = 3d0*EcRPA(2)
 
   write(*,*)
   write(*,*)'-------------------------------------------------------------------------------'
