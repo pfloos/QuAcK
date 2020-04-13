@@ -102,10 +102,10 @@ subroutine G0T0(doACFDT,exchange_kernel,doXBS,BSE,TDA,singlet_manifold,triplet_m
   call linear_response_pp(iblock,.true.,.false.,nBas,nC,nO,nV,nR,nOOs,nVVs,eHF(:),ERI(:,:,:,:),  & 
                           Omega1s(:),X1s(:,:),Y1s(:,:),Omega2s(:),X2s(:,:),Y2s(:,:),EcRPA(ispin))
 
-  EcRPA(ispin) = 1d0*EcRPA(ispin)
+! EcRPA(ispin) = 1d0*EcRPA(ispin)
 
-  call print_excitation('pp-RPA (N+2)',iblock,nVVs,Omega1s(:))
-  call print_excitation('pp-RPA (N-2)',iblock,nOOs,Omega2s(:))
+! call print_excitation('pp-RPA (N+2)',iblock,nVVs,Omega1s(:))
+! call print_excitation('pp-RPA (N-2)',iblock,nOOs,Omega2s(:))
 
 !----------------------------------------------
 ! alpha-alpha block
@@ -119,11 +119,11 @@ subroutine G0T0(doACFDT,exchange_kernel,doXBS,BSE,TDA,singlet_manifold,triplet_m
   call linear_response_pp(iblock,.true.,.false.,nBas,nC,nO,nV,nR,nOOt,nVVt,eHF(:),ERI(:,:,:,:),  & 
                           Omega1t(:),X1t(:,:),Y1t(:,:),Omega2t(:),X2t(:,:),Y2t(:,:),EcRPA(ispin))
 
-  EcRPA(ispin) = 2d0*EcRPA(ispin)
+! EcRPA(ispin) = 2d0*EcRPA(ispin)
 ! EcRPA(ispin) = 3d0*EcRPA(ispin)
 
-  call print_excitation('pp-RPA (N+2)',iblock,nVVt,Omega1t(:))
-  call print_excitation('pp-RPA (N-2)',iblock,nOOt,Omega2t(:))
+! call print_excitation('pp-RPA (N+2)',iblock,nVVt,Omega1t(:))
+! call print_excitation('pp-RPA (N-2)',iblock,nOOt,Omega2t(:))
 
 !----------------------------------------------
 ! Compute T-matrix version of the self-energy 
@@ -184,16 +184,16 @@ subroutine G0T0(doACFDT,exchange_kernel,doXBS,BSE,TDA,singlet_manifold,triplet_m
 
 ! Compute the ppRPA correlation energy
 
-! ispin  = 1
-! iblock = 3
-! call linear_response_pp(iblock,.false.,.false.,nBas,nC,nO,nV,nR,nOOs,nVVs,eG0T0(:),ERI(:,:,:,:),  & 
-!                         Omega1s(:),X1s(:,:),Y1s(:,:),Omega2s(:),X2s(:,:),Y2s(:,:),EcRPA(ispin))
-! ispin  = 2
-! iblock = 4
-! call linear_response_pp(iblock,.false.,.false.,nBas,nC,nO,nV,nR,nOOt,nVVt,eG0T0(:),ERI(:,:,:,:),  & 
-!                         Omega1t(:),X1t(:,:),Y1t(:,:),Omega2t(:),X2t(:,:),Y2t(:,:),EcRPA(ispin))
-! EcRPA(1) = EcRPA(1) - EcRPA(2)
-! EcRPA(2) = 3d0*EcRPA(2)
+  ispin  = 1
+  iblock = 3
+  call linear_response_pp(iblock,.false.,.false.,nBas,nC,nO,nV,nR,nOOs,nVVs,eG0T0(:),ERI(:,:,:,:),  & 
+                          Omega1s(:),X1s(:,:),Y1s(:,:),Omega2s(:),X2s(:,:),Y2s(:,:),EcRPA(ispin))
+  ispin  = 2
+  iblock = 4
+  call linear_response_pp(iblock,.false.,.false.,nBas,nC,nO,nV,nR,nOOt,nVVt,eG0T0(:),ERI(:,:,:,:),  & 
+                          Omega1t(:),X1t(:,:),Y1t(:,:),Omega2t(:),X2t(:,:),Y2t(:,:),EcRPA(ispin))
+  EcRPA(1) = EcRPA(1) - EcRPA(2)
+  EcRPA(2) = 3d0*EcRPA(2)
 
   write(*,*)
   write(*,*)'-------------------------------------------------------------------------------'
