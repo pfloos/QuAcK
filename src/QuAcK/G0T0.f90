@@ -197,10 +197,10 @@ subroutine G0T0(doACFDT,exchange_kernel,doXBS,BSE,TDA,singlet_manifold,triplet_m
 
   write(*,*)
   write(*,*)'-------------------------------------------------------------------------------'
-  write(*,'(2X,A50,F20.10)') 'Tr@RPA@G0W0 correlation energy (singlet) =',EcRPA(1)
-  write(*,'(2X,A50,F20.10)') 'Tr@RPA@G0W0 correlation energy (triplet) =',EcRPA(2)
-  write(*,'(2X,A50,F20.10)') 'Tr@RPA@G0W0 correlation energy           =',EcRPA(1) + EcRPA(2)
-  write(*,'(2X,A50,F20.10)') 'Tr@RPA@G0W0 total energy                 =',ENuc + ERHF + EcRPA(1) + EcRPA(2)
+  write(*,'(2X,A50,F20.10)') 'Tr@RPA@G0T0 correlation energy (singlet) =',EcRPA(1)
+  write(*,'(2X,A50,F20.10)') 'Tr@RPA@G0T0 correlation energy (triplet) =',EcRPA(2)
+  write(*,'(2X,A50,F20.10)') 'Tr@RPA@G0T0 correlation energy           =',EcRPA(1) + EcRPA(2)
+  write(*,'(2X,A50,F20.10)') 'Tr@RPA@G0T0 total energy                 =',ENuc + ERHF + EcRPA(1) + EcRPA(2)
   write(*,*)'-------------------------------------------------------------------------------'
   write(*,*)
 
