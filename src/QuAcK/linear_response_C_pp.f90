@@ -50,9 +50,9 @@ subroutine linear_response_C_pp(ispin,nBas,nC,nO,nV,nR,nOO,nVV,e,ERI,C_pp)
 
   end if
 
-! Build C matrix for the triplet manifold
+! Build C matrix for the triplet manifold, or alpha-alpha block, or in the spin-orbital basis
 
-  if(ispin == 2) then
+  if(ispin == 2 .or. ispin == 4) then
 
     ab = 0
     do a=nO+1,nBas-nR
@@ -73,21 +73,21 @@ subroutine linear_response_C_pp(ispin,nBas,nC,nO,nV,nR,nOO,nVV,e,ERI,C_pp)
 
   end if
 
-! Build C matrix for the spinorbital basis
+! Build the alpha-beta block of the C matrix
 
   if(ispin == 3) then
 
     ab = 0
     do a=nO+1,nBas-nR
-     do b=a+1,nBas-nR
+     do b=nO+1,nBas-nR
         ab = ab + 1
         cd = 0
         do c=nO+1,nBas-nR
-         do d=c+1,nBas-nR
+         do d=nO+1,nBas-nR
             cd = cd + 1
  
             C_pp(ab,cd) = + (e(a) + e(b) - eF)*Kronecker_delta(a,c)*Kronecker_delta(b,d) & 
-                          + ERI(a,b,c,d) - ERI(a,b,d,c)
+                          + ERI(a,b,c,d)
  
           end do
         end do

@@ -75,7 +75,7 @@ subroutine soG0T0(eta,nBas,nC,nO,nV,nR,ENuc,ERHF,ERI,eHF)
 ! Spinorbital basis
 !----------------------------------------------
 
- ispin = 3
+ ispin = 4
 
 ! Compute linear response
 

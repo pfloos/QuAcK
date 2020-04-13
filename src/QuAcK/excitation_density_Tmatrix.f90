@@ -104,7 +104,7 @@ subroutine excitation_density_Tmatrix(ispin,dERI,xERI,nBas,nC,nO,nV,nR,nOO,nVV,E
 ! Triplet manifold
 !----------------------------------------------
 
-  if(ispin == 2) then
+  if(ispin == 2 .or. ispin == 4) then
 
     do p=nC+1,nBas-nR
  
@@ -147,6 +147,66 @@ subroutine excitation_density_Tmatrix(ispin,dERI,xERI,nBas,nC,nO,nV,nR,nOO,nVV,E
           kl = 0
           do k=nC+1,nO
             do l=k+1,nO
+              kl = kl + 1
+              rho2(p,a,ij) = rho2(p,a,ij) & 
+                           + (dERI*ERI(p,nO+a,k,l) + xERI*ERI(p,nO+a,l,k))*Y2(kl,ij) 
+            end do
+          end do
+ 
+        end do
+      end do
+ 
+    end do
+
+  end if
+
+!----------------------------------------------
+! alpha-beta block
+!----------------------------------------------
+
+  if(ispin == 3) then
+
+    do p=nC+1,nBas-nR
+ 
+      do i=nC+1,nO
+        do ab=1,nVV
+ 
+          cd = 0
+          do c=nO+1,nBas-nR
+            do d=nO+1,nBas-nR
+              cd = cd + 1
+              rho1(p,i,ab) = rho1(p,i,ab) & 
+                           + (dERI*ERI(p,i,c,d) + xERI*ERI(p,i,d,c))*X1(cd,ab) 
+            end do
+          end do
+ 
+          kl = 0
+          do k=nC+1,nO
+            do l=nC+1,nO
+              kl = kl + 1
+              rho1(p,i,ab) = rho1(p,i,ab) & 
+                           + (dERI*ERI(p,i,k,l) + xERI*ERI(p,i,l,k))*Y1(kl,ab) 
+            end do
+          end do
+ 
+        end do
+      end do
+ 
+      do a=1,nV-nR
+        do ij=1,nOO
+ 
+          cd = 0
+          do c=nO+1,nBas-nR
+            do d=nO+1,nBas-nR
+              cd = cd + 1
+              rho2(p,a,ij) = rho2(p,a,ij) & 
+                           + (dERI*ERI(p,nO+a,c,d) + xERI*ERI(p,nO+a,d,c))*X2(cd,ij) 
+            end do
+          end do
+ 
+          kl = 0
+          do k=nC+1,nO
+            do l=nC+1,nO
               kl = kl + 1
               rho2(p,a,ij) = rho2(p,a,ij) & 
                            + (dERI*ERI(p,nO+a,k,l) + xERI*ERI(p,nO+a,l,k))*Y2(kl,ij) 

@@ -41,9 +41,15 @@ subroutine RGIC_lda_exchange_energy(nEns,wEns,nGrid,weight,rho,Ex)
 
 ! Parameters for He
 
-  a = 1.9125735895875828d0
-  b = 2.715266992840757d0
-  c = 2.1634223380633086d0
+! a = 1.9125735895875828d0
+! b = 2.715266992840757d0
+! c = 2.1634223380633086d0
+
+! Parameters for HNO
+
+  a = 0.0061158387543040335d0
+  b = -0.00005968703047293955d0
+  c = -0.00001692245714408755d0
 
   w = wEns(2)
   CxGIC = 1d0 - w*(1d0 - w)*(a + b*(w - 0.5d0) + c*(w - 0.5d0)**2)

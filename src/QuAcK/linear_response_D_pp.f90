@@ -50,9 +50,9 @@ subroutine linear_response_D_pp(ispin,nBas,nC,nO,nV,nR,nOO,nVV,e,ERI,D_pp)
 
   end if
 
-! Build the D matrix for the triplet manifold
+! Build the D matrix for the triplet manifold, the alpha-alpha block, or in the spin-orbital basis 
 
-  if(ispin == 2) then
+  if(ispin == 2 .or. ispin == 4) then
 
     ij = 0
     do i=nC+1,nO
@@ -73,21 +73,21 @@ subroutine linear_response_D_pp(ispin,nBas,nC,nO,nV,nR,nOO,nVV,e,ERI,D_pp)
 
   end if
 
-! Build the D matrix for the spinorbital basis
+! Build the alpha-beta block of the D matrix
 
   if(ispin == 3) then
 
     ij = 0
     do i=nC+1,nO
-     do j=i+1,nO
+     do j=nC+1,nO
         ij = ij + 1
         kl = 0
         do k=nC+1,nO
-         do l=k+1,nO
+         do l=nC+1,nO
             kl = kl + 1
  
             D_pp(ij,kl) = - (e(i) + e(j) - eF)*Kronecker_delta(i,k)*Kronecker_delta(j,l) & 
-                          + ERI(i,j,k,l) - ERI(i,j,l,k)
+                          + ERI(i,j,k,l)
  
           end do
         end do
