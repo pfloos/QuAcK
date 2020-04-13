@@ -51,11 +51,11 @@ subroutine print_G0T0(nBas,nO,e,ENuc,ERHF,SigT,Z,eGW,EcRPA)
   write(*,'(2X,A40,F15.6)') 'G0T0 LUMO      energy (eV)            :',eGW(LUMO)*HaToeV
   write(*,'(2X,A40,F15.6)') 'G0T0 HOMO-LUMO gap    (eV)            :',Gap*HaToeV
   write(*,*)'-------------------------------------------------------------------------------'
-  write(*,'(2X,A40,F15.6)') 'RPA@G0T0 correlation energy (singlet) =',EcRPA(1)
-  write(*,'(2X,A40,F15.6)') 'RPA@G0T0 correlation energy (triplet) =',EcRPA(2)
-  write(*,'(2X,A40,F15.6)') 'RPA@G0T0 correlation energy           =',EcRPA(1) + EcRPA(2)
-  write(*,'(2X,A40,F15.6)') 'RPA@G0T0 total energy                 =',ENuc + ERHF + EcRPA(1) + EcRPA(2)
-  write(*,*)'-------------------------------------------------------------------------------'
+! write(*,'(2X,A40,F15.6)') 'RPA@G0T0 correlation energy (singlet) =',EcRPA(1)
+! write(*,'(2X,A40,F15.6)') 'RPA@G0T0 correlation energy (triplet) =',EcRPA(2)
+! write(*,'(2X,A40,F15.6)') 'RPA@G0T0 correlation energy           =',EcRPA(1) + EcRPA(2)
+! write(*,'(2X,A40,F15.6)') 'RPA@G0T0 total energy                 =',ENuc + ERHF + EcRPA(1) + EcRPA(2)
+! write(*,*)'-------------------------------------------------------------------------------'
   write(*,*)
 
 end subroutine print_G0T0

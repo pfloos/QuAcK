@@ -685,7 +685,6 @@ program QuAcK
   if(doG0T0) then
     
     call cpu_time(start_G0T0)
-!   call soG0T0(eta,nBas,nC(1),nO(1),nV(1),nR(1),ENuc,ERHF,ERI_MO_basis,eHF)
     call G0T0(doACFDT,exchange_kernel,doXBS,BSE,TDA,       &
               singlet_manifold,triplet_manifold,linGW,eta, &  
               nBas,nC(1),nO(1),nV(1),nR(1),nS(1),ENuc,ERHF,ERI_MO_basis,eHF)
@@ -697,6 +696,24 @@ program QuAcK
     write(*,*)
 
   end if
+
+!------------------------------------------------------------------------
+! Perform evGT calculatiom
+!------------------------------------------------------------------------
+
+  if(doevGT) then
+    
+    call cpu_time(start_evGT)
+    call evGT(maxSCF_GW,thresh_GW,n_diis_GW,doACFDT,exchange_kernel,doXBS,BSE,TDA,singlet_manifold,triplet_manifold, &
+                eta,nBas,nC(1),nO(1),nV(1),nR(1),nS(1),ENuc,ERHF,ERI_MO_basis,eHF,eG0T0)
+    call cpu_time(end_evGT)
+  
+    t_evGT = end_evGT - start_evGT
+    write(*,'(A65,1X,F9.3,A8)') 'Total CPU time for evGT = ',t_evGT,' seconds'
+    write(*,*)
+
+  end if
+
 
 !------------------------------------------------------------------------
 ! Information for Monte Carlo calculations

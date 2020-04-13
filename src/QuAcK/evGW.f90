@@ -78,8 +78,6 @@ subroutine evGW(maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,COHSEX,SOSE
   if(COHSEX) write(*,*) 'COHSEX approximation activated!'
   write(*,*)
 
-! Switch off exchange for G0W0
-
 ! Linear mixing
 
   linear_mixing = .false.
@@ -154,7 +152,7 @@ subroutine evGW(maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,COHSEX,SOSE
     ! Print results
 
 !   call print_excitation('RPA   ',ispin,nS,Omega(:,ispin))
-    call print_evGW(nBas,nO,nSCF,Conv,eHF,ENuc,ERHF,SigC,Z,eGW,EcRPA(ispin),EcGM)
+    call print_evGW(nBas,nO,nSCF,Conv,eHF,ENuc,ERHF,SigC,Z,eGW)
 
     ! Linear mixing or DIIS extrapolation
 
