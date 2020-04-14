@@ -45,7 +45,7 @@ subroutine Bethe_Salpeter(TDA,singlet_manifold,triplet_manifold,eta, &
 
     call linear_response(ispin,.true.,TDA,.true.,eta,nBas,nC,nO,nV,nR,nS,1d0,eGW,ERI, &
                          rho(:,:,:,ispin),EcBSE(ispin),Omega(:,ispin),XpY(:,:,ispin),XmY(:,:,ispin))
-    call print_excitation('BSE   ',ispin,nS,Omega(:,ispin))
+    call print_excitation('BSE         ',ispin,nS,Omega(:,ispin))
 
   end if
 
@@ -62,7 +62,7 @@ subroutine Bethe_Salpeter(TDA,singlet_manifold,triplet_manifold,eta, &
 
     call linear_response(ispin,.true.,TDA,.true.,eta,nBas,nC,nO,nV,nR,nS,1d0,eGW,ERI, &
                          rho(:,:,:,ispin),EcBSE(ispin),Omega(:,ispin),XpY(:,:,ispin),XmY(:,:,ispin))
-    call print_excitation('BSE   ',ispin,nS,Omega(:,ispin))
+    call print_excitation('BSE         ',ispin,nS,Omega(:,ispin))
 
   end if
 
