@@ -648,7 +648,7 @@ program QuAcK
 
     call cpu_time(start_evGW)
     call evGW(maxSCF_GW,thresh_GW,n_diis_GW,doACFDT,exchange_kernel,doXBS,COHSEX,SOSEX,BSE,TDA,G0W,GW0, &
-              singlet_manifold,triplet_manifold,linGW,eta,                    &
+              singlet_manifold,triplet_manifold,eta,                                              &
               nBas,nC(1),nO(1),nV(1),nR(1),nS(1),ENuc,ERHF,Hc,H,ERI_MO_basis,PHF,cHF,eHF,eG0W0)
     call cpu_time(end_evGW)
 
@@ -713,6 +713,10 @@ program QuAcK
     write(*,*)
 
   end if
+
+!------------------------------------------------------------------------
+! Perform evGT calculatiom
+!------------------------------------------------------------------------
 
 !------------------------------------------------------------------------
 ! Information for Monte Carlo calculations
