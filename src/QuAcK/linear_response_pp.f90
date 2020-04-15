@@ -117,17 +117,9 @@ subroutine linear_response_pp(ispin,ortho_eigvec,BSE,nBas,nC,nO,nV,nR,nOO,nVV, &
 
   end if
 
-! print*, 'pp-RPA matrix'
-! call matout(nOO+nVV,nOO+nVV,M(:,:))
-! write(*,*) 
-
 ! Diagonalize the p-h matrix
 
   if(nOO+nVV > 0) call diagonalize_general_matrix(nOO+nVV,M,Omega,Z)
-
-! write(*,*) 'pp-RPA excitation energies'
-! call matout(nOO+nVV,1,Omega(:))
-! write(*,*) 
 
 ! Split the various quantities in p-p and h-h parts
 
@@ -140,14 +132,5 @@ subroutine linear_response_pp(ispin,ortho_eigvec,BSE,nBas,nC,nO,nV,nR,nOO,nVV, &
   EcRPA2 = -sum(Omega2(:)) - trace_matrix(nOO,D(:,:))
   if(abs(EcRPA - EcRPA1) > 1d-6 .or. abs(EcRPA - EcRPA2) > 1d-6) & 
     print*,'!!! Issue in pp-RPA linear reponse calculation RPA1 != RPA2 !!!'
-
-! write(*,*)'X1'
-! call matout(nVV,nVV,X1)
-! write(*,*)'Y1'
-! call matout(nVV,nOO,Y1)
-! write(*,*)'X2'
-! call matout(nOO,nVV,X2)
-! write(*,*)'Y2'
-! call matout(nOO,nOO,Y2)
 
 end subroutine linear_response_pp

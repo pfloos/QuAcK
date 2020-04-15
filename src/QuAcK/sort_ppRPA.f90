@@ -115,14 +115,6 @@ subroutine sort_ppRPA(ortho_eigvec,nOO,nVV,Omega,Z,Omega1,X1,Y1,Omega2,X2,Y2)
 
   end if
 
-! write(*,*) 'pp-RPA positive excitation energies'
-! call matout(nVV,1,Omega1(:))
-! write(*,*)
-
-! write(*,*) 'pp-RPA negative excitation energies'
-! call matout(nOO,1,Omega2(:))
-! write(*,*)
-
 ! Orthogonalize eigenvectors
 
   if(ortho_eigvec) then
@@ -142,8 +134,6 @@ subroutine sort_ppRPA(ortho_eigvec,nOO,nVV,Omega,Z,Omega1,X1,Y1,Omega2,X2,Y2)
 
             ab_end = ab 
 
-!           print*,'deg = ',deg1,ab_start,ab_end
-
             allocate(S1(deg1,deg1),O1(deg1,deg1))
 
             S1 = matmul(transpose(Z1(:,ab_start:ab_end)),matmul(M,Z1(:,ab_start:ab_end)))
@@ -157,8 +147,6 @@ subroutine sort_ppRPA(ortho_eigvec,nOO,nVV,Omega,Z,Omega1,X1,Y1,Omega2,X2,Y2)
         else
 
           ab_end = ab - 1
-
-!         print*,'deg = ',deg1,ab_start,ab_end
 
           allocate(S1(deg1,deg1),O1(deg1,deg1))
 
@@ -187,8 +175,6 @@ subroutine sort_ppRPA(ortho_eigvec,nOO,nVV,Omega,Z,Omega1,X1,Y1,Omega2,X2,Y2)
 
             ij_end = ij 
  
-!           print*,'deg = ',deg2,ij_start,ij_end
- 
             allocate(S2(deg2,deg2),O2(deg2,deg2))
  
             S2 = - matmul(transpose(Z2(:,ij_start:ij_end)),matmul(M,Z2(:,ij_start:ij_end)))
@@ -202,8 +188,6 @@ subroutine sort_ppRPA(ortho_eigvec,nOO,nVV,Omega,Z,Omega1,X1,Y1,Omega2,X2,Y2)
         else
 
           ij_end = ij - 1
-
-!         print*,'deg = ',deg2,ij_start,ij_end
 
           allocate(S2(deg2,deg2),O2(deg2,deg2))
 
@@ -238,18 +222,5 @@ subroutine sort_ppRPA(ortho_eigvec,nOO,nVV,Omega,Z,Omega1,X1,Y1,Omega2,X2,Y2)
 
   X2(1:nVV,1:nOO) = + Z2(    1:    nVV,1:nOO)
   Y2(1:nOO,1:nOO) = - Z2(nVV+1:nOO+nVV,1:nOO)
-
-! write(*,*) 'Z1t.M.Z1'
-! call matout(nVV,nVV,matmul(matmul(transpose(Z1),M),Z1))
-! write(*,*) 'Z2t.M.Z2'
-! call matout(nOO,nOO,matmul(matmul(transpose(Z2),M),Z2))
-
-! write(*,*) 'X1t.X1 - Y1t.Y1'
-! call matout(nVV,nVV,matmul(transpose(X1),X1) - matmul(transpose(Y1),Y1))
-! write(*,*) 'X2t.X2 - Y2t.Y2'
-! call matout(nOO,nOO,matmul(transpose(X2),X2) - matmul(transpose(Y2),Y2))
-! write(*,*) 'X1t.X2 - Y1t.Y2'
-! call matout(nVV,nOO,matmul(transpose(X1),X2) - matmul(transpose(Y1),Y2))
-
 
 end subroutine sort_ppRPA
