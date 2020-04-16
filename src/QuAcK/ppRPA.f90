@@ -56,6 +56,9 @@ subroutine ppRPA(singlet_manifold,triplet_manifold,nBas,nC,nO,nV,nR,ENuc,ERHF,ER
     nOO = nO*(nO+1)/2
     nVV = nV*(nV+1)/2
 
+!   print*,'nOO = ',nOO
+!   print*,'nVV = ',nVV
+
    ! Memory allocation
 
     allocate(Omega1(nVV,nspin),X1(nVV,nVV,nspin),Y1(nOO,nVV,nspin), & 

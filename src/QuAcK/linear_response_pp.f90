@@ -121,9 +121,15 @@ subroutine linear_response_pp(ispin,ortho_eigvec,BSE,nBas,nC,nO,nV,nR,nOO,nVV, &
 
   if(nOO+nVV > 0) call diagonalize_general_matrix(nOO+nVV,M,Omega,Z)
 
+! allocate(order(nOO+nVV))
+! call quick_sort(Omega(:),order(:),nOO+nVV)
+! call matout(nOO+nVV,1,Omega(:)*HaToeV)
+
 ! Split the various quantities in p-p and h-h parts
 
   call sort_ppRPA(ortho_eigvec,nOO,nVV,Omega(:),Z(:,:),Omega1(:),X1(:,:),Y1(:,:),Omega2(:),X2(:,:),Y2(:,:))
+
+! call matout(32,1,(Omega1(:) - Omega1(1))*HaToeV)
 
 ! Compute the RPA correlation energy
 

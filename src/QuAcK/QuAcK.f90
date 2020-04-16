@@ -14,6 +14,7 @@ program QuAcK
   logical                       :: doG0W0,doevGW,doqsGW
   logical                       :: doG0T0,doevGT,doqsGT
   logical                       :: doMCMP2,doMinMCMP2
+  logical                       :: doGTGW = .false.
   logical                       :: doBas
 
   integer                       :: nNuc,nBas,nBasCABS
@@ -46,8 +47,10 @@ program QuAcK
   double precision,allocatable  :: cTrial(:),gradient(:),hessian(:,:)
 
   double precision,allocatable  :: S(:,:),T(:,:),V(:,:),Hc(:,:),H(:,:),X(:,:)
-  double precision,allocatable  :: ERI_AO_basis(:,:,:,:)
-  double precision,allocatable  :: ERI_MO_basis(:,:,:,:)
+  double precision,allocatable  :: ERI_AO(:,:,:,:)
+  double precision,allocatable  :: ERI_MO(:,:,:,:)
+  double precision,allocatable  :: ERI_ERF_AO(:,:,:,:)
+  double precision,allocatable  :: ERI_ERF_MO(:,:,:,:)
   double precision,allocatable  :: F12(:,:,:,:),Yuk(:,:,:,:),FC(:,:,:,:,:,:)
 
   double precision              :: start_QuAcK  ,end_QuAcK    ,t_QuAcK
@@ -202,7 +205,7 @@ program QuAcK
 
   allocate(cHF(nBas,nBas,nspin),eHF(nBas,nspin),eG0W0(nBas),eG0T0(nBas),PHF(nBas,nBas,nspin),          &
            S(nBas,nBas),T(nBas,nBas),V(nBas,nBas),Hc(nBas,nBas),H(nBas,nBas),X(nBas,nBas), &
-           ERI_AO_basis(nBas,nBas,nBas,nBas),ERI_MO_basis(nBas,nBas,nBas,nBas))
+           ERI_AO(nBas,nBas,nBas,nBas),ERI_MO(nBas,nBas,nBas,nBas))
 
 ! Read integrals
 
@@ -210,12 +213,12 @@ program QuAcK
 
   if(doSph) then
 
-    call read_integrals_sph(nEl(:),nBas,S,T,V,Hc,ERI_AO_basis)  
+    call read_integrals_sph(nEl(:),nBas,S,T,V,Hc,ERI_AO)  
 
   else
 
     call system('./GoQCaml')
-    call read_integrals(nEl(:),nBas,S,T,V,Hc,ERI_AO_basis)
+    call read_integrals(nEl(:),nBas,S,T,V,Hc,ERI_AO)
 
   end if
 
@@ -237,7 +240,7 @@ program QuAcK
   if(doRHF) then
 
     call cpu_time(start_HF)
-    call RHF(maxSCF_HF,thresh_HF,n_diis_HF,guess_type,nBas,nO,S,T,V,Hc,ERI_AO_basis,X,ENuc,ERHF,eHF,cHF,PHF)
+    call RHF(maxSCF_HF,thresh_HF,n_diis_HF,guess_type,nBas,nO,S,T,V,Hc,ERI_AO,X,ENuc,ERHF,eHF,cHF,PHF)
     call cpu_time(end_HF)
 
     t_HF = end_HF - start_HF
@@ -253,7 +256,7 @@ program QuAcK
   if(doUHF) then
 
     call cpu_time(start_HF)
-    call UHF(maxSCF_HF,thresh_HF,n_diis_HF,guess_type,nBas,nO,S,T,V,Hc,ERI_AO_basis,X,ENuc,EUHF,eHF,cHF,PHF)
+    call UHF(maxSCF_HF,thresh_HF,n_diis_HF,guess_type,nBas,nO,S,T,V,Hc,ERI_AO,X,ENuc,EUHF,eHF,cHF,PHF)
     call cpu_time(end_HF)
 
     t_HF = end_HF - start_HF
@@ -270,7 +273,7 @@ program QuAcK
 
     call cpu_time(start_MOM)
     call MOM(maxSCF_HF,thresh_HF,n_diis_HF, &
-             nBas,nO,S,T,V,Hc,ERI_AO_basis,X,ENuc,ERHF,cHF,eHF,PHF)
+             nBas,nO,S,T,V,Hc,ERI_AO,X,ENuc,ERHF,cHF,eHF,PHF)
     call cpu_time(end_MOM)
 
     t_MOM = end_MOM - start_MOM
@@ -285,7 +288,7 @@ program QuAcK
 
 ! Compute Hartree Hamiltonian in the MO basis
 
-  call Hartree_matrix_MO_basis(nBas,cHF,PHF,Hc,ERI_AO_basis,H)
+  call Hartree_matrix_MO_basis(nBas,cHF,PHF,Hc,ERI_AO,H)
 
   call cpu_time(start_AOtoMO)
 
@@ -296,13 +299,13 @@ program QuAcK
 
   if(doSph) then
 
-    ERI_MO_basis = ERI_AO_basis
+    ERI_MO(:,:,:,:) = ERI_AO(:,:,:,:)
     print*,'!!! MO = AO !!!'
-    deallocate(ERI_AO_basis)
+    deallocate(ERI_AO)
 
   else
 
-    call AOtoMO_integral_transform(nBas,cHF,ERI_AO_basis,ERI_MO_basis)
+    call AOtoMO_integral_transform(nBas,cHF,ERI_AO,ERI_MO)
 
   end if
 
@@ -319,7 +322,7 @@ program QuAcK
   if(doMP2) then
 
     call cpu_time(start_MP2)
-    call MP2(nBas,nC,nO,nV,nR,ERI_MO_basis,ENuc,ERHF,eHF,EcMP2)
+    call MP2(nBas,nC,nO,nV,nR,ERI_MO,ENuc,ERHF,eHF,EcMP2)
     call cpu_time(end_MP2)
 
     t_MP2 = end_MP2 - start_MP2
@@ -335,7 +338,7 @@ program QuAcK
   if(doMP3) then
 
     call cpu_time(start_MP3)
-    call MP3(nBas,nEl,ERI_MO_basis,eHF,ENuc,ERHF)
+    call MP3(nBas,nEl,ERI_MO,eHF,ENuc,ERHF)
     call cpu_time(end_MP3)
 
     t_MP3 = end_MP3 - start_MP3
@@ -358,8 +361,8 @@ program QuAcK
 
 !   Read integrals
 
-    call read_F12_integrals(nBas,S,ERI_AO_basis,F12,Yuk,FC)
-    call MP2F12(nBas,nC,nO,nV,ERI_AO_basis,F12,Yuk,FC,ERHF,eHF,cHF)
+    call read_F12_integrals(nBas,S,ERI_AO,F12,Yuk,FC)
+    call MP2F12(nBas,nC,nO,nV,ERI_AO,F12,Yuk,FC,ERHF,eHF,cHF)
     call cpu_time(end_MP2F12)
 
     t_MP2F12 = end_MP2F12 - start_MP2F12
@@ -376,7 +379,7 @@ program QuAcK
 
     call cpu_time(start_CCD)
     call CCD(maxSCF_CC,thresh_CC,n_diis_CC,nBas,nC(1),nO(1),nV(1),nR(1), & 
-             ERI_MO_basis,ENuc,ERHF,eHF)
+             ERI_MO,ENuc,ERHF,eHF)
     call cpu_time(end_CCD)
 
     t_CCD = end_CCD - start_CCD
@@ -395,7 +398,7 @@ program QuAcK
 
     call cpu_time(start_CCSD)
     call CCSD(maxSCF_CC,thresh_CC,n_diis_CC,doCCSDT,nBas,nC(1),nO(1),nV(1),nR(1), & 
-              ERI_MO_basis,ENuc,ERHF,eHF)
+              ERI_MO,ENuc,ERHF,eHF)
     call cpu_time(end_CCSD)
 
     t_CCSD = end_CCSD - start_CCSD
@@ -412,7 +415,7 @@ program QuAcK
 
     call cpu_time(start_CCD)
     call drCCD(maxSCF_CC,thresh_CC,n_diis_CC,nBas,nC(1),nO(1),nV(1),nR(1), &
-               ERI_MO_basis,ENuc,ERHF,eHF)
+               ERI_MO,ENuc,ERHF,eHF)
     call cpu_time(end_CCD)
 
     t_CCD = end_CCD - start_CCD
@@ -429,7 +432,7 @@ program QuAcK
 
     call cpu_time(start_CCD)
     call rCCD(maxSCF_CC,thresh_CC,n_diis_CC,nBas,nC(1),nO(1),nV(1),nR(1), &
-              ERI_MO_basis,ENuc,ERHF,eHF)
+              ERI_MO,ENuc,ERHF,eHF)
     call cpu_time(end_CCD)
 
     t_CCD = end_CCD - start_CCD
@@ -446,7 +449,7 @@ program QuAcK
 
     call cpu_time(start_CCD)
     call lCCD(maxSCF_CC,thresh_CC,n_diis_CC,nBas,nC(1),nO(1),nV(1),nR(1), &
-              ERI_MO_basis,ENuc,ERHF,eHF)
+              ERI_MO,ENuc,ERHF,eHF)
     call cpu_time(end_CCD)
 
     t_CCD = end_CCD - start_CCD
@@ -463,7 +466,7 @@ program QuAcK
 
     call cpu_time(start_CCD)
     call pCCD(maxSCF_CC,thresh_CC,n_diis_CC,nBas,nC(1),nO(1),nV(1),nR(1), & 
-              ERI_MO_basis,ENuc,ERHF,eHF)
+              ERI_MO,ENuc,ERHF,eHF)
     call cpu_time(end_CCD)
 
     t_CCD = end_CCD - start_CCD
@@ -479,7 +482,7 @@ program QuAcK
   if(doCIS) then
 
     call cpu_time(start_CIS)
-    call CIS(singlet_manifold,triplet_manifold,nBas,nC,nO,nV,nR,nS,ERI_MO_basis,eHF)
+    call CIS(singlet_manifold,triplet_manifold,nBas,nC,nO,nV,nR,nS,ERI_MO,eHF)
     call cpu_time(end_CIS)
 
     t_CIS = end_CIS - start_CIS
@@ -496,7 +499,7 @@ program QuAcK
 
     call cpu_time(start_RPA)
     call RPA(doACFDT,exchange_kernel,singlet_manifold,triplet_manifold,eta, & 
-             nBas,nC,nO,nV,nR,nS,ENuc,ERHF,ERI_MO_basis,eHF)
+             nBas,nC,nO,nV,nR,nS,ENuc,ERHF,ERI_MO,eHF)
     call cpu_time(end_RPA)
 
     t_RPA = end_RPA - start_RPA
@@ -513,7 +516,7 @@ program QuAcK
 
     call cpu_time(start_RPAx)
     call RPAx(doACFDT,exchange_kernel,singlet_manifold,triplet_manifold,eta, & 
-              nBas,nC,nO,nV,nR,nS,ENuc,ERHF,ERI_MO_basis,eHF)
+              nBas,nC,nO,nV,nR,nS,ENuc,ERHF,ERI_MO,eHF)
     call cpu_time(end_RPAx)
 
     t_RPAx = end_RPAx - start_RPAx
@@ -530,7 +533,7 @@ program QuAcK
 
     call cpu_time(start_ppRPA)
     call ppRPA(singlet_manifold,triplet_manifold, & 
-               nBas,nC(1),nO(1),nV(1),nR(1),ENuc,ERHF,ERI_MO_basis,eHF)
+               nBas,nC(1),nO(1),nV(1),nR(1),ENuc,ERHF,ERI_MO,eHF)
     call cpu_time(end_ppRPA)
 
     t_ppRPA = end_ppRPA - start_ppRPA
@@ -547,7 +550,7 @@ program QuAcK
 
     call cpu_time(start_ADC)
     call ADC(singlet_manifold,triplet_manifold,maxSCF_GF,thresh_GF,n_diis_GF, & 
-             nBas,nC(1),nO(1),nV(1),nR(1),eHF,ERI_MO_basis)
+             nBas,nC(1),nO(1),nV(1),nR(1),eHF,ERI_MO)
     call cpu_time(end_ADC)
 
     t_ADC = end_ADC - start_ADC
@@ -563,7 +566,7 @@ program QuAcK
   if(doG0F2) then
 
     call cpu_time(start_GF2)
-    call G0F2(linGF,nBas,nC(1),nO(1),nV(1),nR(1),ERI_MO_basis,eHF)
+    call G0F2(linGF,nBas,nC(1),nO(1),nV(1),nR(1),ERI_MO,eHF)
     call cpu_time(end_GF2)
 
     t_GF2 = end_GF2 - start_GF2
@@ -579,7 +582,7 @@ program QuAcK
   if(doevGF2) then
 
     call cpu_time(start_GF2)
-    call evGF2(maxSCF_GF,thresh_GF,n_diis_GF,linGF,nBas,nC(1),nO(1),nV(1),nR(1),ERI_MO_basis,eHF)
+    call evGF2(maxSCF_GF,thresh_GF,n_diis_GF,linGF,nBas,nC(1),nO(1),nV(1),nR(1),ERI_MO,eHF)
     call cpu_time(end_GF2)
 
     t_GF2 = end_GF2 - start_GF2
@@ -595,7 +598,7 @@ program QuAcK
   if(doG0F3) then
 
     call cpu_time(start_GF3)
-    call G0F3(renormGF,nBas,nC(1),nO(1),nV(1),nR(1),ERI_MO_basis,eHF)
+    call G0F3(renormGF,nBas,nC(1),nO(1),nV(1),nR(1),ERI_MO,eHF)
     call cpu_time(end_GF3)
 
     t_GF3 = end_GF3 - start_GF3
@@ -611,7 +614,7 @@ program QuAcK
   if(doevGF3) then
 
     call cpu_time(start_GF3)
-    call evGF3(maxSCF_GF,thresh_GF,n_diis_GF,renormGF,nBas,nC(1),nO(1),nV(1),nR(1),ERI_MO_basis,eHF)
+    call evGF3(maxSCF_GF,thresh_GF,n_diis_GF,renormGF,nBas,nC(1),nO(1),nV(1),nR(1),ERI_MO,eHF)
     call cpu_time(end_GF3)
 
     t_GF3 = end_GF3 - start_GF3
@@ -631,7 +634,7 @@ program QuAcK
     call cpu_time(start_G0W0)
     call G0W0(doACFDT,exchange_kernel,doXBS,COHSEX,SOSEX,BSE,TDA, & 
               singlet_manifold,triplet_manifold,linGW,eta, & 
-              nBas,nC(1),nO(1),nV(1),nR(1),nS(1),ENuc,ERHF,Hc,H,ERI_MO_basis,PHF,cHF,eHF,eG0W0)
+              nBas,nC(1),nO(1),nV(1),nR(1),nS(1),ENuc,ERHF,Hc,H,ERI_MO,PHF,cHF,eHF,eG0W0)
     call cpu_time(end_G0W0)
   
     t_G0W0 = end_G0W0 - start_G0W0
@@ -649,7 +652,7 @@ program QuAcK
     call cpu_time(start_evGW)
     call evGW(maxSCF_GW,thresh_GW,n_diis_GW,doACFDT,exchange_kernel,doXBS,COHSEX,SOSEX,BSE,TDA,G0W,GW0, &
               singlet_manifold,triplet_manifold,eta,                                              &
-              nBas,nC(1),nO(1),nV(1),nR(1),nS(1),ENuc,ERHF,Hc,H,ERI_MO_basis,PHF,cHF,eHF,eG0W0)
+              nBas,nC(1),nO(1),nV(1),nR(1),nS(1),ENuc,ERHF,Hc,H,ERI_MO,PHF,cHF,eHF,eG0W0)
     call cpu_time(end_evGW)
 
     t_evGW = end_evGW - start_evGW
@@ -667,7 +670,7 @@ program QuAcK
     call cpu_time(start_qsGW)
     call qsGW(maxSCF_GW,thresh_GW,n_diis_GW,doACFDT,exchange_kernel,doXBS,COHSEX,SOSEX,BSE,TDA,G0W,GW0, & 
               singlet_manifold,triplet_manifold,eta, & 
-              nBas,nC(1),nO(1),nV(1),nR(1),nS(1),ENuc,ERHF,S,X,T,V,Hc,ERI_AO_basis,ERI_MO_basis,PHF,cHF,eHF)
+              nBas,nC(1),nO(1),nV(1),nR(1),nS(1),ENuc,ERHF,S,X,T,V,Hc,ERI_AO,ERI_MO,PHF,cHF,eHF)
     call cpu_time(end_qsGW)
 
     t_qsGW = end_qsGW - start_qsGW
@@ -687,8 +690,7 @@ program QuAcK
     call cpu_time(start_G0T0)
     call G0T0(doACFDT,exchange_kernel,doXBS,BSE,TDA,       &
               singlet_manifold,triplet_manifold,linGW,eta, &  
-              nBas,nC(1),nO(1),nV(1),nR(1),nS(1),ENuc,ERHF,ERI_MO_basis,eHF)
-
+              nBas,nC(1),nO(1),nV(1),nR(1),nS(1),ENuc,ERHF,ERI_MO,eHF,eG0T0)
     call cpu_time(end_G0T0)
   
     t_G0T0 = end_G0T0 - start_G0T0
@@ -705,7 +707,7 @@ program QuAcK
     
     call cpu_time(start_evGT)
     call evGT(maxSCF_GW,thresh_GW,n_diis_GW,doACFDT,exchange_kernel,doXBS,BSE,TDA,singlet_manifold,triplet_manifold, &
-                eta,nBas,nC(1),nO(1),nV(1),nR(1),nS(1),ENuc,ERHF,ERI_MO_basis,eHF,eG0T0)
+                eta,nBas,nC(1),nO(1),nV(1),nR(1),nS(1),ENuc,ERHF,ERI_MO,eHF,eG0T0)
     call cpu_time(end_evGT)
   
     t_evGT = end_evGT - start_evGT
@@ -790,6 +792,64 @@ program QuAcK
   end if
 
 !------------------------------------------------------------------------
+! Range-separeted GT/GW
+!------------------------------------------------------------------------
+
+  if(doGTGW) then
+
+    ! Read and transform long-range two-electron integrals
+
+    allocate(ERI_ERF_AO(nBas,nBas,nBas,nBas),ERI_ERF_MO(nBas,nBas,nBas,nBas))
+    call read_LR(nBas,ERI_ERF_AO)
+
+    call cpu_time(start_AOtoMO)
+
+    write(*,*)
+    write(*,*) 'AO to MO transformation for long-range ERIs... Please be patient'
+    write(*,*)
+
+    call AOtoMO_integral_transform(nBas,cHF,ERI_ERF_AO,ERI_ERF_MO)
+
+    call cpu_time(end_AOtoMO)
+
+    deallocate(ERI_ERF_AO)
+
+    t_AOtoMO = end_AOtoMO - start_AOtoMO
+
+    write(*,'(A65,1X,F9.3,A8)') 'Total CPU time for AO to MO transformation = ',t_AOtoMO,' seconds'
+    write(*,*)
+
+    ! Long-range G0W0 calculation
+
+    call cpu_time(start_G0W0)
+    call G0W0(doACFDT,exchange_kernel,doXBS,COHSEX,SOSEX,BSE,TDA, & 
+              singlet_manifold,triplet_manifold,linGW,eta, & 
+              nBas,nC(1),nO(1),nV(1),nR(1),nS(1),ENuc,ERHF,Hc,H,ERI_ERF_MO,PHF,cHF,eHF,eG0W0)
+    call cpu_time(end_G0W0)
+  
+    t_G0W0 = end_G0W0 - start_G0W0
+    write(*,'(A65,1X,F9.3,A8)') 'Total CPU time for G0W0 = ',t_G0W0,' seconds'
+    write(*,*)
+
+    ! Short-range G0T0 calculation
+
+    ERI_ERF_MO(:,:,:,:) = ERI_MO(:,:,:,:) - ERI_ERF_MO(:,:,:,:)
+
+    call cpu_time(start_G0T0)
+    call G0T0(doACFDT,exchange_kernel,doXBS,BSE,TDA,       &
+              singlet_manifold,triplet_manifold,linGW,eta, &  
+              nBas,nC(1),nO(1),nV(1),nR(1),nS(1),ENuc,ERHF,ERI_ERF_MO,eHF,eG0T0)
+    call cpu_time(end_G0T0)
+  
+    t_G0T0 = end_G0T0 - start_G0T0
+    write(*,'(A65,1X,F9.3,A8)') 'Total CPU time for G0T0 = ',t_G0T0,' seconds'
+    write(*,*)
+
+    call matout(nBas,1,(eG0W0+eG0T0-eHF(:,1))*HaToeV)
+
+  end if
+
+!------------------------------------------------------------------------
 ! Basis set correction
 !------------------------------------------------------------------------
 
@@ -799,7 +859,7 @@ program QuAcK
 
     call cpu_time(start_Bas)
     call basis_correction(nBas,nO,nShell,CenterShell,TotAngMomShell,KShell,DShell,ExpShell, &
-                          ERI_MO_basis,eHF,cHF,PHF,eG0W0)
+                          ERI_MO,eHF,cHF,PHF,eG0W0)
     call cpu_time(end_Bas)
 
     t_Bas = end_Bas - start_Bas

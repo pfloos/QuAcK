@@ -34,6 +34,7 @@ subroutine G0W0(doACFDT,exchange_kernel,doXBS,COHSEX,SOSEX,BSE,TDA, &
 
 ! Local variables
 
+  logical                       :: print_W = .false.
   integer                       :: ispin
   double precision              :: EcRPA(nspin)
   double precision              :: EcBSE(nspin)
@@ -104,7 +105,10 @@ subroutine G0W0(doACFDT,exchange_kernel,doXBS,COHSEX,SOSEX,BSE,TDA, &
   eGWlin(:) = eHF(:) + Z(:)*SigC(:)
 
   if(linearize) then 
-  
+ 
+    write(*,*) ' *** Quasiparticle energies obtained by linearization *** '
+    write(*,*)
+
     eGW(:) = eGWlin(:)
 
 ! Find all the roots of the QP equation if necessary
@@ -121,7 +125,8 @@ subroutine G0W0(doACFDT,exchange_kernel,doXBS,COHSEX,SOSEX,BSE,TDA, &
 
 ! Dump results
 
-! call print_excitation('RPA   ',ispin,nS,Omega(:,ispin))
+  if(print_W) call print_excitation('RPA   ',ispin,nS,Omega(:,ispin))
+
   call print_G0W0(nBas,nO,eHF,ENuc,ERHF,SigC,Z,eGW,EcRPA(ispin),EcGM)
 
 ! Compute the RPA correlation energy

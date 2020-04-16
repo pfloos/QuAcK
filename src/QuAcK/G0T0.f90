@@ -1,5 +1,5 @@
 subroutine G0T0(doACFDT,exchange_kernel,doXBS,BSE,TDA,singlet_manifold,triplet_manifold, & 
-                linearize,eta,nBas,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,eHF)
+                linearize,eta,nBas,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,eHF,eG0T0)
 
 ! Perform one-shot calculation with a T-matrix self-energy (G0T0)
 
@@ -52,14 +52,14 @@ subroutine G0T0(doACFDT,exchange_kernel,doXBS,BSE,TDA,singlet_manifold,triplet_m
   double precision,allocatable  :: SigT(:)
   double precision,allocatable  :: Z(:)
 
-  double precision,allocatable  :: eG0T0(:)
-
   double precision,allocatable  :: Omega(:,:)
   double precision,allocatable  :: XpY(:,:,:)
   double precision,allocatable  :: XmY(:,:,:)
   double precision,allocatable  :: rho(:,:,:,:)
 
 ! Output variables
+
+  double precision,intent(out)  :: eG0T0(nBas)
 
 ! Hello world
 
@@ -88,7 +88,7 @@ subroutine G0T0(doACFDT,exchange_kernel,doXBS,BSE,TDA,singlet_manifold,triplet_m
            Omega1t(nVVt),X1t(nVVt,nVVt),Y1t(nOOt,nVVt), & 
            Omega2t(nOOt),X2t(nVVt,nOOt),Y2t(nOOt,nOOt), & 
            rho1t(nBas,nO,nVVt),rho2t(nBas,nV,nOOt), & 
-           SigT(nBas),Z(nBas),eG0T0(nBas))
+           SigT(nBas),Z(nBas))
 
 !----------------------------------------------
 ! alpha-beta block

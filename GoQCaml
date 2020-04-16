@@ -1,5 +1,5 @@
 #! /bin/bash
 
 cd int
-../utils/QCaml/run_integrals -b ../input/basis.qcaml -x ../input/molecule.xyz 
-###../utils/QCaml/run_integrals -b ../input/basis.qcaml -x ../input/molecule.xyz -m 0.5
+###../utils/QCaml/run_integrals -b ../input/basis.qcaml -x ../input/molecule.xyz 
+../utils/QCaml/run_integrals -b ../input/basis.qcaml -x ../input/molecule.xyz -m 0.5

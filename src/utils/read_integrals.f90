@@ -19,7 +19,11 @@ subroutine read_integrals(nEl,nBas,S,T,V,Hc,G)
 
 ! Output variables
 
-  double precision,intent(out)  :: S(nBas,nBas),T(nBas,nBas),V(nBas,nBas),Hc(nBas,nBas),G(nBas,nBas,nBas,nBas)
+  double precision,intent(out)  :: S(nBas,nBas)
+  double precision,intent(out)  :: T(nBas,nBas)
+  double precision,intent(out)  :: V(nBas,nBas)
+  double precision,intent(out)  :: Hc(nBas,nBas)
+  double precision,intent(out)  :: G(nBas,nBas,nBas,nBas)
 
 ! Open file with integrals
 
