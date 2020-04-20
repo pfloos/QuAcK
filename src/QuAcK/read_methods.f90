@@ -2,8 +2,8 @@ subroutine read_methods(doRHF,doUHF,doMOM,                &
                         doMP2,doMP3,doMP2F12,             & 
                         doCCD,doCCSD,doCCSDT,             & 
                         do_drCCD,do_rCCD,do_lCCD,do_pCCD, &
-                        doCIS,doRPA,doRPAx,               & 
-                        doppRPA,doADC,                    & 
+                        doCIS,doCID,doCISD,               & 
+                        doRPA,doRPAx,doppRPA,             & 
                         doG0F2,doevGF2,doG0F3,doevGF3,    & 
                         doG0W0,doevGW,doqsGW,             & 
                         doG0T0,doevGT,doqsGT,             & 
@@ -19,7 +19,8 @@ subroutine read_methods(doRHF,doUHF,doMOM,                &
   logical,intent(out)           :: doMP2,doMP3,doMP2F12
   logical,intent(out)           :: doCCD,doCCSD,doCCSDT
   logical,intent(out)           :: do_drCCD,do_rCCD,do_lCCD,do_pCCD
-  logical,intent(out)           :: doCIS,doRPA,doRPAx,doppRPA,doADC
+  logical,intent(out)           :: doCIS,doCID,doCISD
+  logical,intent(out)           :: doRPA,doRPAx,doppRPA
   logical,intent(out)           :: doG0F2,doevGF2,doG0F3,doevGF3  
   logical,intent(out)           :: doG0W0,doevGW,doqsGW
   logical,intent(out)           :: doG0T0,doevGT,doqsGT
@@ -53,10 +54,12 @@ subroutine read_methods(doRHF,doUHF,doMOM,                &
   do_pCCD  = .false.
 
   doCIS   = .false.
+  doCID   = .false.
+  doCISD  = .false.
+
   doRPA   = .false.
   doRPAx  = .false.
   doppRPA = .false.
-  doADC   = .false.
 
   doG0F2  = .false.
   doevGF2 = .false.
@@ -108,12 +111,16 @@ subroutine read_methods(doRHF,doUHF,doMOM,                &
 ! Read excited state methods
 
   read(1,*) 
-  read(1,*) answer1,answer2,answer3,answer4,answer5
+  read(1,*) answer1,answer2,answer3
   if(answer1 == 'T') doCIS   = .true.
-  if(answer2 == 'T') doRPA   = .true.
-  if(answer3 == 'T') doRPAx  = .true.
-  if(answer4 == 'T') doppRPA = .true.
-  if(answer5 == 'T') doADC   = .true.
+  if(answer2 == 'T') doCID   = .true.
+  if(answer3 == 'T') doCISD  = .true.
+
+  read(1,*) 
+  read(1,*) answer1,answer2,answer3
+  if(answer1 == 'T') doRPA   = .true.
+  if(answer2 == 'T') doRPAx  = .true.
+  if(answer3 == 'T') doppRPA = .true.
 
 ! Read Green function methods
 

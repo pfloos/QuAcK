@@ -8,8 +8,9 @@ program QuAcK
   logical                       :: doMP2,doMP3,doMP2F12
   logical                       :: doCCD,doCCSD,doCCSDT
   logical                       :: do_drCCD,do_rCCD,do_lCCD,do_pCCD
-  logical                       :: doCIS,doRPA,doRPAx
-  logical                       :: doppRPA,doADC
+  logical                       :: doCIS,doCID,doCISD
+  logical                       :: doRPA,doRPAx,doppRPA
+  logical                       :: doADC
   logical                       :: doG0F2,doevGF2,doG0F3,doevGF3
   logical                       :: doG0W0,doevGW,doqsGW
   logical                       :: doG0T0,doevGT,doqsGT
@@ -61,6 +62,8 @@ program QuAcK
   double precision              :: start_CCD    ,end_CCD      ,t_CCD
   double precision              :: start_CCSD   ,end_CCSD     ,t_CCSD
   double precision              :: start_CIS    ,end_CIS      ,t_CIS
+  double precision              :: start_CID    ,end_CID      ,t_CID
+  double precision              :: start_CISD   ,end_CISD     ,t_CISD
   double precision              :: start_RPA    ,end_RPA      ,t_RPA 
   double precision              :: start_RPAx   ,end_RPAx     ,t_RPAx
   double precision              :: start_ppRPA  ,end_ppRPA    ,t_ppRPA
@@ -128,8 +131,8 @@ program QuAcK
                     doMP2,doMP3,doMP2F12,             &
                     doCCD,doCCSD,doCCSDT,             &
                     do_drCCD,do_rCCD,do_lCCD,do_pCCD, &
-                    doCIS,doRPA,doRPAx,               &    
-                    doppRPA,doADC,                    &
+                    doCIS,doCID,doCISD,               & 
+                    doRPA,doRPAx,doppRPA,             &
                     doG0F2,doevGF2,doG0F3,doevGF3,    &
                     doG0W0,doevGW,doqsGW,             &
                     doG0T0,doevGT,doqsGT,             &
@@ -492,6 +495,38 @@ program QuAcK
   end if
 
 !------------------------------------------------------------------------
+! Compute CID excitations
+!------------------------------------------------------------------------
+
+  if(doCID) then
+
+    call cpu_time(start_CID)
+!   call CID(singlet_manifold,triplet_manifold,nBas,nC,nO,nV,nR,ERI_MO,eHF)
+    call cpu_time(end_CID)
+
+    t_CID = end_CID - start_CID
+    write(*,'(A65,1X,F9.3,A8)') 'Total CPU time for CID = ',t_CID,' seconds'
+    write(*,*)
+
+  end if
+
+!------------------------------------------------------------------------
+! Compute CISD excitations
+!------------------------------------------------------------------------
+
+  if(doCISD) then
+
+    call cpu_time(start_CISD)
+    call CISD(singlet_manifold,triplet_manifold,nBas,nC,nO,nV,nR,ERI_MO,eHF)
+    call cpu_time(end_CISD)
+
+    t_CISD = end_CISD - start_CISD
+    write(*,'(A65,1X,F9.3,A8)') 'Total CPU time for CISD = ',t_CISD,' seconds'
+    write(*,*)
+
+  end if
+
+!------------------------------------------------------------------------
 ! Compute (direct) RPA excitations
 !------------------------------------------------------------------------
 
@@ -546,18 +581,18 @@ program QuAcK
 ! Compute ADC excitations
 !------------------------------------------------------------------------
 
-  if(doADC) then
+! if(doADC) then
 
-    call cpu_time(start_ADC)
-    call ADC(singlet_manifold,triplet_manifold,maxSCF_GF,thresh_GF,n_diis_GF, & 
-             nBas,nC(1),nO(1),nV(1),nR(1),eHF,ERI_MO)
-    call cpu_time(end_ADC)
+!   call cpu_time(start_ADC)
+!   call ADC(singlet_manifold,triplet_manifold,maxSCF_GF,thresh_GF,n_diis_GF, & 
+!            nBas,nC(1),nO(1),nV(1),nR(1),eHF,ERI_MO)
+!   call cpu_time(end_ADC)
 
-    t_ADC = end_ADC - start_ADC
-    write(*,'(A65,1X,F9.3,A8)') 'Total CPU time for ADC = ',t_ADC,' seconds'
-    write(*,*)
+!   t_ADC = end_ADC - start_ADC
+!   write(*,'(A65,1X,F9.3,A8)') 'Total CPU time for ADC = ',t_ADC,' seconds'
+!   write(*,*)
 
-  end if
+! end if
 
 !------------------------------------------------------------------------
 ! Compute G0F2 electronic binding energies

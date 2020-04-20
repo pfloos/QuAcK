@@ -16,7 +16,7 @@ subroutine linear_response_A_matrix(ispin,dRPA,nBas,nC,nO,nV,nR,nS,lambda,e,ERI,
 ! Local variables
 
   double precision              :: delta_spin,delta_dRPA
-  double precision              :: Kronecker_delta
+  double precision,external     :: Kronecker_delta
 
   integer                       :: i,j,a,b,ia,jb
 
