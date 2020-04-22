@@ -1,4 +1,4 @@
-subroutine BSE_dynamic_perturbation(TDA,eta,nBas,nC,nO,nV,nR,nS,OmRPA,OmBSE,XpY,XmY,rho)
+subroutine Bethe_Salpeter_dynamic_perturbation(TDA,eta,nBas,nC,nO,nV,nR,nS,OmRPA,OmBSE,XpY,XmY,rho)
 
 ! Compute dynamical effects via perturbation theory for BSE
 
@@ -35,22 +35,27 @@ subroutine BSE_dynamic_perturbation(TDA,eta,nBas,nC,nO,nV,nR,nS,OmRPA,OmBSE,XpY,
   write(*,*) '-----------------------------------------------------------------------------------------------------------'
   write(*,'(2X,A5,1X,A30,1X,A30,1X,A30)') '#','Static excitation (eV)','Dynamic correction (eV)','Dynamic excitation (eV)'
   write(*,*) '-----------------------------------------------------------------------------------------------------------'
+  do ia=1,min(nS,maxS)
 
-  do ia=1,maxS
+    X(:) = 0.5d0*(XpY(ia,:) + XmY(ia,:))
+    Y(:) = 0.5d0*(XpY(ia,:) - XmY(ia,:))
 
-    X(:) = 0.5d0*(XpY(:,ia) + XmY(:,ia))
-    Y(:) = 0.5d0*(XpY(:,ia) - XmY(:,ia))
+    call Bethe_Salpeter_A_matrix_dynamic(eta,nBas,nC,nO,nV,nR,nS,1d0,OmRPA(:),OmBSE(ia),rho(:,:,:),A_dyn(:,:))
 
-    call Bethe_Salpeter_A_matrix_dynamic(eta,nBas,nC,nO,nV,nR,nS,1d0,OmRPA(:),OmBSE(:),rho(:,:,:),A_dyn(:,:))
+  if(TDA) then 
 
-    if(TDA) then 
-      B_dyn(:,:) = 0d0
-    else
-      call Bethe_Salpeter_B_matrix_dynamic(eta,nBas,nC,nO,nV,nR,nS,1d0,OmRPA(:),OmBSE(:),rho(:,:,:),B_dyn(:,:))
-    end if
+    OmDyn(ia) = dot_product(X(:),matmul(A_dyn(:,:),X(:)))
 
-    OmDyn(ia) = dot_product(X(:),matmul(A_dyn(:,:),X(:))) - dot_product(Y(:),matmul(A_dyn(:,:),Y(:))) &
-              + dot_product(X(:),matmul(B_dyn(:,:),Y(:))) - dot_product(Y(:),matmul(B_dyn(:,:),X(:)))  
+  else
+
+    call Bethe_Salpeter_B_matrix_dynamic(eta,nBas,nC,nO,nV,nR,nS,1d0,OmRPA(:),OmBSE(ia),rho(:,:,:),B_dyn(:,:))
+
+    OmDyn(ia) = dot_product(X(:),matmul(A_dyn(:,:),X(:))) &
+              - dot_product(Y(:),matmul(A_dyn(:,:),Y(:))) &
+              + dot_product(X(:),matmul(B_dyn(:,:),Y(:))) & 
+              - dot_product(Y(:),matmul(B_dyn(:,:),X(:)))  
+
+  end if
 
     write(*,'(2X,I5,15X,F15.6,15X,F15.6,15X,F15.6)') ia,OmBSE(ia)*HaToeV,OmDyn(ia)*HaToeV,(OmBSE(ia)+OmDyn(ia))*HaToeV
 
@@ -58,4 +63,4 @@ subroutine BSE_dynamic_perturbation(TDA,eta,nBas,nC,nO,nV,nR,nS,OmRPA,OmBSE,XpY,
   write(*,*) '-----------------------------------------------------------------------------------------------------------'
   write(*,*) 
 
-end subroutine BSE_dynamic_perturbation
+end subroutine Bethe_Salpeter_dynamic_perturbation

@@ -11,7 +11,7 @@ subroutine Bethe_Salpeter_A_matrix_dynamic(eta,nBas,nC,nO,nV,nR,nS,lambda,OmRPA,
   double precision,intent(in)   :: eta
   double precision,intent(in)   :: lambda
   double precision,intent(in)   :: OmRPA(nS)
-  double precision,intent(in)   :: OmBSE(nS)
+  double precision,intent(in)   :: OmBSE
   double precision,intent(in)   :: rho(nBas,nBas,nS)
   
 ! Local variables
@@ -48,11 +48,11 @@ subroutine Bethe_Salpeter_A_matrix_dynamic(eta,nBas,nC,nO,nV,nR,nS,lambda,OmRPA,
           chi = 0d0
           do kc=1,nS
 
-            eps = (OmBSE(kc) - OmRPA(kc))**2 + eta**2
-            chi = chi + rho(i,j,kc)*rho(a,b,kc)*(OmBSE(kc) - OmRPA(kc))/eps
+            eps = (OmBSE - OmRPA(kc))**2 + eta**2
+            chi = chi + rho(i,j,kc)*rho(a,b,kc)*(OmBSE - OmRPA(kc))/eps
 
-            eps = (OmBSE(kc) + OmRPA(kc))**2 + eta**2
-            chi = chi - rho(i,j,kc)*rho(a,b,kc)*(OmBSE(kc) + OmRPA(kc))/eps
+            eps = (OmBSE + OmRPA(kc))**2 + eta**2
+            chi = chi - rho(i,j,kc)*rho(a,b,kc)*(OmBSE + OmRPA(kc))/eps
 
           enddo
 

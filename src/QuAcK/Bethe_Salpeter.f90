@@ -57,8 +57,8 @@ subroutine Bethe_Salpeter(TDA,singlet_manifold,triplet_manifold,eta, &
 
     ! Compute dynamic correction for BSE via perturbation theory
 
-    call BSE_dynamic_perturbation(TDA,eta,nBas,nC,nO,nV,nR,nS,OmRPA(:,ispin),OmBSE(:,ispin), & 
-                                  XpY(:,:,ispin),XmY(:,:,ispin),rho(:,:,:,ispin))
+    call Bethe_Salpeter_dynamic_perturbation(TDA,eta,nBas,nC,nO,nV,nR,nS,OmRPA(:,ispin),OmBSE(:,ispin), & 
+                                             XpY(:,:,ispin),XmY(:,:,ispin),rho(:,:,:,ispin))
 
   end if
 
@@ -82,8 +82,8 @@ subroutine Bethe_Salpeter(TDA,singlet_manifold,triplet_manifold,eta, &
 
     ! Compute dynamic correction for BSE via perturbation theory
 
-    call BSE_dynamic_perturbation(TDA,eta,nBas,nC,nO,nV,nR,nS,OmRPA(:,ispin),OmBSE(:,ispin), & 
-                                  XpY(:,:,ispin),XmY(:,:,ispin),rho(:,:,:,ispin))
+    call Bethe_Salpeter_dynamic_perturbation(TDA,eta,nBas,nC,nO,nV,nR,nS,OmRPA(:,ispin),OmBSE(:,ispin), & 
+                                             XpY(:,:,ispin),XmY(:,:,ispin),rho(:,:,:,ispin))
 
 
   end if
