@@ -1,4 +1,4 @@
-subroutine Bethe_Salpeter_A_matrix_dynamic(eta,nBas,nC,nO,nV,nR,nS,lambda,OmRPA,OmBSE,rho,A_lr)
+subroutine Bethe_Salpeter_A_matrix_dynamic(eta,nBas,nC,nO,nV,nR,nS,lambda,eGW,OmRPA,OmBSE,rho,A_dyn)
 
 ! Compute the dynamic part of the Bethe-Salpeter equation matrices
 
@@ -10,21 +10,31 @@ subroutine Bethe_Salpeter_A_matrix_dynamic(eta,nBas,nC,nO,nV,nR,nS,lambda,OmRPA,
   integer,intent(in)            :: nBas,nC,nO,nV,nR,nS
   double precision,intent(in)   :: eta
   double precision,intent(in)   :: lambda
+  double precision,intent(in)   :: eGW(nBas)
   double precision,intent(in)   :: OmRPA(nS)
   double precision,intent(in)   :: OmBSE
   double precision,intent(in)   :: rho(nBas,nBas,nS)
   
 ! Local variables
 
+  integer                       :: maxS
   double precision              :: chi
   double precision              :: eps
   integer                       :: i,j,a,b,ia,jb,kc
 
 ! Output variables
 
-  double precision,intent(out)  :: A_lr(nS,nS)
+  double precision,intent(out)  :: A_dyn(nS,nS)
 
-  A_lr(:,:) = 0d0
+! Initialization
+
+  A_dyn(:,:) = 0d0
+
+! Number of poles taken into account 
+
+  maxS = nS
+
+! Build dynamic A matrix
 
   ia = 0
   do i=nC+1,nO
@@ -36,27 +46,27 @@ subroutine Bethe_Salpeter_A_matrix_dynamic(eta,nBas,nC,nO,nV,nR,nS,lambda,OmRPA,
           jb = jb + 1
  
           chi = 0d0
-          do kc=1,nS
+          do kc=1,maxS
 
             eps = OmRPA(kc)**2 + eta**2
             chi = chi + rho(i,j,kc)*rho(a,b,kc)*OmRPA(kc)/eps
 
           enddo
 
-          A_lr(ia,jb) = A_lr(ia,jb) - 4d0*lambda*chi
+          A_dyn(ia,jb) = A_dyn(ia,jb) - 4d0*lambda*chi
 
           chi = 0d0
-          do kc=1,nS
+          do kc=1,maxS
 
-            eps = (OmBSE - OmRPA(kc))**2 + eta**2
-            chi = chi + rho(i,j,kc)*rho(a,b,kc)*(OmBSE - OmRPA(kc))/eps
+            eps = (OmBSE - OmRPA(kc) - (eGW(a) - eGW(i)))**2 + eta**2
+            chi = chi + rho(i,j,kc)*rho(a,b,kc)*(OmBSE - OmRPA(kc) - (eGW(a) - eGW(i)))/eps
 
-            eps = (OmBSE + OmRPA(kc))**2 + eta**2
-            chi = chi - rho(i,j,kc)*rho(a,b,kc)*(OmBSE + OmRPA(kc))/eps
+            eps = (OmBSE - OmRPA(kc) - (eGW(b) - eGW(j)))**2 + eta**2
+            chi = chi + rho(i,j,kc)*rho(a,b,kc)*(OmBSE - OmRPA(kc) - (eGW(b) - eGW(j)))/eps
 
           enddo
 
-          A_lr(ia,jb) = A_lr(ia,jb) - 2d0*lambda*chi
+          A_dyn(ia,jb) = A_dyn(ia,jb) - 2d0*lambda*chi
 
         enddo
       enddo

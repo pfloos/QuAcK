@@ -46,7 +46,4 @@ subroutine Bethe_Salpeter_A_matrix(eta,nBas,nC,nO,nV,nR,nS,lambda,ERI,Omega,rho,
     enddo
   enddo
 
-! print*,'BSE A'
-! call matout(nS,nS,A_lr)
-
 end subroutine Bethe_Salpeter_A_matrix
