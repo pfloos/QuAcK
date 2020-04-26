@@ -37,9 +37,9 @@ subroutine RGIC_lda_exchange_derivative_discontinuity(nEns,wEns,nGrid,weight,rho
 
 ! Parameters for H2 at equilibrium
 
-! a = + 0.5751782560799208d0
-! b = - 0.021108186591137282d0
-! c = - 0.36718902716347124d0
+  a = + 0.5751782560799208d0
+  b = - 0.021108186591137282d0
+  c = - 0.36718902716347124d0
 
 ! Parameters for stretch H2
 
@@ -55,11 +55,11 @@ subroutine RGIC_lda_exchange_derivative_discontinuity(nEns,wEns,nGrid,weight,rho
 
 ! Parameters for HNO
 
-  a = 0.0061158387543040335d0
-  b = -0.00005968703047293955d0
-  c = -0.00001692245714408755d0
+! a = 0.0061158387543040335d0
+! b = -0.00005968703047293955d0
+! c = -0.00001692245714408755d0
 
-  w = wEns(2)
+  w = 0.5d0*wEns(2) + wEns(3)
   dCxGICdw = (0.5d0*b + (2d0*a + 0.5d0*c)*(w - 0.5d0) - (1d0 - w)*w*(3d0*b + 4d0*c*(w - 0.5d0)))
   dCxGICdw = CxLDA*dCxGICdw
 
@@ -72,7 +72,8 @@ subroutine RGIC_lda_exchange_derivative_discontinuity(nEns,wEns,nGrid,weight,rho
     if(r > threshold) then
  
       dExdw(1) = 0d0
-      dExdw(2) = dExdw(2) + weight(iG)*dCxGICdw*r**(4d0/3d0)
+      dExdw(2) = dExdw(2) + 0.5d0*weight(iG)*dCxGICdw*r**(4d0/3d0)
+      dExdw(3) = dExdw(3) + 1.0d0*weight(iG)*dCxGICdw*r**(4d0/3d0)
 
     end if
      

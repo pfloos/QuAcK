@@ -174,19 +174,37 @@ program eDFT
  end if
 
 !------------------------------------------------------------------------
-! Compute RKS energy
+! Compute LIM excitation energies
 !------------------------------------------------------------------------
 
   if(method == 'LIM-RKS') then
 
     call cpu_time(start_KS)
-    call LIM_RKS(x_rung,x_DFA,c_rung,c_DFA,LDA_centered,nEns,wEns(:),nGrid,weight(:),   &
+    call LIM_RKS(x_rung,x_DFA,c_rung,c_DFA,LDA_centered,nEns,nGrid,weight(:),           &
                  maxSCF,thresh,max_diis,guess_type,nBas,AO(:,:),dAO(:,:,:),nO(1),nV(1), & 
                  S(:,:),T(:,:),V(:,:),Hc(:,:),ERI(:,:,:,:),X(:,:),ENuc,c(:,:))
     call cpu_time(end_KS)
 
     t_KS = end_KS - start_KS
     write(*,'(A65,1X,F9.3,A8)') 'Total CPU time for LIM-RKS = ',t_KS,' seconds'
+    write(*,*)
+
+  end if
+
+!------------------------------------------------------------------------
+! Compute MOM excitation energies
+!------------------------------------------------------------------------
+
+  if(method == 'MOM-RKS') then
+
+    call cpu_time(start_KS)
+    call MOM_RKS(x_rung,x_DFA,c_rung,c_DFA,LDA_centered,nEns,nGrid,weight(:),           &
+                 maxSCF,thresh,max_diis,guess_type,nBas,AO(:,:),dAO(:,:,:),nO(1),nV(1), & 
+                 S(:,:),T(:,:),V(:,:),Hc(:,:),ERI(:,:,:,:),X(:,:),ENuc,c(:,:))
+    call cpu_time(end_KS)
+
+    t_KS = end_KS - start_KS
+    write(*,'(A65,1X,F9.3,A8)') 'Total CPU time for MOM-RKS = ',t_KS,' seconds'
     write(*,*)
 
   end if

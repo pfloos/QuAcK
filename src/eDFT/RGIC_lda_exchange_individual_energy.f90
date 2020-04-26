@@ -32,9 +32,9 @@ subroutine RGIC_lda_exchange_individual_energy(nEns,wEns,nGrid,weight,rhow,rho,E
 
 ! Parameters for H2 at equilibrium
 
-! a = + 0.5751782560799208d0
-! b = - 0.021108186591137282d0
-! c = - 0.36718902716347124d0
+  a = + 0.5751782560799208d0
+  b = - 0.021108186591137282d0
+  c = - 0.36718902716347124d0
 
 ! Parameters for stretch H2
 
@@ -51,11 +51,11 @@ subroutine RGIC_lda_exchange_individual_energy(nEns,wEns,nGrid,weight,rhow,rho,E
 
 ! Parameters for HNO
 
-  a = 0.0061158387543040335d0
-  b = -0.00005968703047293955d0
-  c = -0.00001692245714408755d0
+! a = 0.0061158387543040335d0
+! b = -0.00005968703047293955d0
+! c = -0.00001692245714408755d0
 
-  w = wEns(2)
+  w = 0.5d0*wEns(2) + wEns(3)
   CxGIC = 1d0 - w*(1d0 - w)*(a + b*(w - 0.5d0) + c*(w - 0.5d0)**2)
   CxGIC = CxLDA*CxGIC
  

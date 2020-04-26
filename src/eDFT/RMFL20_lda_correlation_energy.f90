@@ -36,9 +36,13 @@ subroutine RMFL20_lda_correlation_energy(LDA_centered,nEns,wEns,nGrid,weight,rho
   aMFL(2,1) = +0.00540994d0
   aMFL(3,1) = +0.0830766d0
 
-  aMFL(1,2) = -0.0144633d0
-  aMFL(2,2) = -0.0506019d0
-  aMFL(3,2) = +0.0331417d0
+  aMFL(1,2) = -0.0282814d0
+  aMFL(2,2) = +0.00273925d0
+  aMFL(3,2) = +0.0664914d0
+
+  aMFL(1,3) = -0.0144633d0
+  aMFL(2,3) = -0.0506019d0
+  aMFL(3,3) = +0.0331417d0
 
 ! Compute correlation energy for ground and doubly-excited states
 
@@ -52,6 +56,7 @@ subroutine RMFL20_lda_correlation_energy(LDA_centered,nEns,wEns,nGrid,weight,rho
 
     call RVWN5_lda_correlation_energy(nGrid,weight(:),rho(:),EcLDA)
 
+    EceLDA(3) = EcLDA + wEns(3)*(EceLDA(3) - EceLDA(1))
     EceLDA(2) = EcLDA + wEns(2)*(EceLDA(2) - EceLDA(1))
     EceLDA(1) = EcLDA
 

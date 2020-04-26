@@ -147,8 +147,10 @@ subroutine print_restricted_individual_energy(nEns,ENuc,Ew,ET,EV,EJ,Ex,Ec,Exc,Ea
     write(*,'(A44,      F16.10,A3)') '        x  ensemble derivative  : ',OmxDD(iEns), ' au'
     write(*,'(A44,      F16.10,A3)') '        c  ensemble derivative  : ',OmcDD(iEns), ' au'
     write(*,'(A44,      F16.10,A3)') '       xc  ensemble derivative  : ',OmxcDD(iEns),' au'
+    write(*,*)
   end do
   write(*,'(A60)')           '-------------------------------------------------'
+  write(*,*)
 
   do iEns=2,nEns
     write(*,'(A40,I2,A2,F16.10,A3)') ' Excitation energy  1 ->',iEns,': ',(Omaux(iEns)+OmxcDD(iEns))*HaToeV,' eV'
@@ -157,6 +159,7 @@ subroutine print_restricted_individual_energy(nEns,ENuc,Ew,ET,EV,EJ,Ex,Ec,Exc,Ea
     write(*,'(A44,      F16.10,A3)') '        x  ensemble derivative  : ',OmxDD(iEns)*HaToeV, ' eV'
     write(*,'(A44,      F16.10,A3)') '        c  ensemble derivative  : ',OmcDD(iEns)*HaToeV, ' eV'
     write(*,'(A44,      F16.10,A3)') '       xc  ensemble derivative  : ',OmxcDD(iEns)*HaToeV,' eV'
+    write(*,*)
   end do
   write(*,'(A60)')           '-------------------------------------------------'
   write(*,*)
@@ -179,6 +182,7 @@ subroutine print_restricted_individual_energy(nEns,ENuc,Ew,ET,EV,EJ,Ex,Ec,Exc,Ea
     write(*,'(A44,      F16.10,A3)') '     x  ensemble derivative     : ',OmxDD(iEns), ' au'
     write(*,'(A44,      F16.10,A3)') '     c  ensemble derivative     : ',OmcDD(iEns), ' au'
     write(*,'(A44,      F16.10,A3)') '    xc  ensemble derivative     : ',OmxcDD(iEns),' au'
+    write(*,*)
   end do
   write(*,'(A60)')           '-------------------------------------------------'
 
@@ -192,6 +196,7 @@ subroutine print_restricted_individual_energy(nEns,ENuc,Ew,ET,EV,EJ,Ex,Ec,Exc,Ea
     write(*,'(A44,      F16.10,A3)') '     x  ensemble derivative     : ',OmxDD(iEns)*HaToeV, ' eV'
     write(*,'(A44,      F16.10,A3)') '     c  ensemble derivative     : ',OmcDD(iEns)*HaToeV, ' eV'
     write(*,'(A44,      F16.10,A3)') '    xc  ensemble derivative     : ',OmxcDD(iEns)*HaToeV,' eV'
+    write(*,*)
   end do
   write(*,'(A60)')           '-------------------------------------------------'
   write(*,*)

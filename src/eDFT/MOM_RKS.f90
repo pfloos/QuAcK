@@ -1,4 +1,4 @@
-subroutine LIM_RKS(x_rung,x_DFA,c_rung,c_DFA,LDA_centered,nEns,nGrid,weight, &
+subroutine MOM_RKS(x_rung,x_DFA,c_rung,c_DFA,LDA_centered,nEns,nGrid,weight, &
                    maxSCF,thresh,max_diis,guess_type,nBas,AO,dAO,nO,nV,S,T,V,Hc,ERI,X,ENuc,c)
 
 ! Perform restricted Kohn-Sham calculation for ensembles
@@ -34,20 +34,20 @@ subroutine LIM_RKS(x_rung,x_DFA,c_rung,c_DFA,LDA_centered,nEns,nGrid,weight, &
 ! Local variables
 
   integer                       :: iEns
-  double precision              :: Ew(nEnS)
-  double precision              :: wLIM(nEns)
+  double precision              :: Ew(nEns)
+  double precision              :: wMOM(nEns)
   double precision              :: Om(nEns)
 
 ! Hello world
 
   write(*,*)
   write(*,*)'************************************************'
-  write(*,*)'*        Linear-interpolation method           *'
+  write(*,*)'*          Maximum Overlao method              *'
   write(*,*)'*          for excitation energies             *'
   write(*,*)'************************************************'
   write(*,*)
 
-! Initializatio
+! Initialization
 
   Ew(:) = 0d0
   Om(:) = 0d0
@@ -57,20 +57,20 @@ subroutine LIM_RKS(x_rung,x_DFA,c_rung,c_DFA,LDA_centered,nEns,nGrid,weight, &
 !------------------------------------------------------------------------
 
   write(*,'(A40)')           '*************************************************'
-  write(*,'(A40)')           '            ZERO-WEIGHT CALCULATION              '
+  write(*,'(A40)')           '           STATE-SPECIFIC CALCULATION #1         '
   write(*,'(A40)')           '*************************************************'
 
-  wLIM(1) = 1d0
-  wLIM(2) = 0d0
-  wLIM(3) = 0d0
+  wMOM(1) = 1d0
+  wMOM(2) = 0d0
+  wMOM(3) = 0d0
 
   do iEns=1,nEns
-    write(*,'(A20,I2,A2,F16.10)') ' Weight of state  ',iEns,': ',wLIM(iEns)
+    write(*,'(A20,I2,A2,F16.10)') ' Weight of state  ',iEns,': ',wMOM(iEns)
   end do
   write(*,'(A40)')           '*************************************************'
   write(*,*)
 
-  call GOK_RKS(.false.,x_rung,x_DFA,c_rung,c_DFA,LDA_centered,nEns,wLIM,nGrid,weight,maxSCF,thresh, &
+  call GOK_RKS(.false.,x_rung,x_DFA,c_rung,c_DFA,LDA_centered,nEns,wMOM,nGrid,weight,maxSCF,thresh, &
                max_diis,guess_type,nBas,AO,dAO,nO,nV,S,T,V,Hc,ERI,X,ENuc,Ew(1),c)
 
 !------------------------------------------------------------------------
@@ -78,20 +78,20 @@ subroutine LIM_RKS(x_rung,x_DFA,c_rung,c_DFA,LDA_centered,nEns,nGrid,weight, &
 !------------------------------------------------------------------------
 
   write(*,'(A40)')           '*************************************************'
-  write(*,'(A40)')           '  TWO-STATE   EQUI-WEIGHT CALCULATION            '
+  write(*,'(A40)')           '           STATE-SPECIFIC CALCULATION #2         '
   write(*,'(A40)')           '*************************************************'
 
-  wLIM(1) = 0.5d0
-  wLIM(2) = 0.5d0
-  wLIM(3) = 0.0d0
+  wMOM(1) = 0d0
+  wMOM(2) = 1d0
+  wMOM(3) = 0d0
 
   do iEns=1,nEns
-    write(*,'(A20,I2,A2,F16.10)') ' Weight of state  ',iEns,': ',wLIM(iEns)
+    write(*,'(A20,I2,A2,F16.10)') ' Weight of state  ',iEns,': ',wMOM(iEns)
   end do
   write(*,'(A40)')           '*************************************************'
   write(*,*)
 
-  call GOK_RKS(.true.,x_rung,x_DFA,c_rung,c_DFA,LDA_centered,nEns,wLIM,nGrid,weight,maxSCF,thresh, &
+  call GOK_RKS(.true.,x_rung,x_DFA,c_rung,c_DFA,LDA_centered,nEns,wMOM,nGrid,weight,maxSCF,thresh, &
                max_diis,guess_type,nBas,AO,dAO,nO,nV,S,T,V,Hc,ERI,X,ENuc,Ew(2),c)
 
 !------------------------------------------------------------------------
@@ -99,29 +99,27 @@ subroutine LIM_RKS(x_rung,x_DFA,c_rung,c_DFA,LDA_centered,nEns,nGrid,weight, &
 !------------------------------------------------------------------------
 
   write(*,'(A40)')           '*************************************************'
-  write(*,'(A40)')           '  THREE-STATE EQUI-WEIGHT CALCULATION            '
+  write(*,'(A40)')           '           STATE-SPECIFIC CALCULATION #3         '
   write(*,'(A40)')           '*************************************************'
 
-  wLIM(1) = 1d0/3d0
-  wLIM(2) = 1d0/3d0
-  wLIM(3) = 1d0/3d0
+  wMOM(1) = 0d0
+  wMOM(2) = 0d0
+  wMOM(3) = 1.0d0
 
   do iEns=1,nEns
-    write(*,'(A20,I2,A2,F16.10)') ' Weight of state  ',iEns,': ',wLIM(iEns)
+    write(*,'(A20,I2,A2,F16.10)') ' Weight of state  ',iEns,': ',wMOM(iEns)
   end do
   write(*,'(A40)')           '*************************************************'
   write(*,*)
 
-  call GOK_RKS(.true.,x_rung,x_DFA,c_rung,c_DFA,LDA_centered,nEns,wLIM,nGrid,weight,maxSCF,thresh, &
+  call GOK_RKS(.true.,x_rung,x_DFA,c_rung,c_DFA,LDA_centered,nEns,wMOM,nGrid,weight,maxSCF,thresh, &
                max_diis,guess_type,nBas,AO,dAO,nO,nV,S,T,V,Hc,ERI,X,ENuc,Ew(3),c)
 
-
 !------------------------------------------------------------------------
-! LIM excitation energies
+! MOM excitation energies
 !------------------------------------------------------------------------
 
-  Om(2) = (Ew(2) - Ew(1))/2d0
-  Om(3) = (Ew(3) - Ew(1))/3d0 + 0.5d0*Om(2)
+  Om(:) = Ew(:) - Ew(1)
 
   write(*,'(A60)')           '-------------------------------------------------'
   write(*,'(A60)')           ' LINEAR INTERPOLATION METHOD EXCITATION ENERGIES '
@@ -141,4 +139,4 @@ subroutine LIM_RKS(x_rung,x_DFA,c_rung,c_DFA,LDA_centered,nEns,nGrid,weight, &
   write(*,'(A60)')           '-------------------------------------------------'
 
 
-end subroutine LIM_RKS
+end subroutine MOM_RKS

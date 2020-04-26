@@ -34,9 +34,13 @@ subroutine RMFL20_lda_correlation_derivative_discontinuity(nEns,wEns,nGrid,weigh
   aMFL(2,1) = +0.00540994d0
   aMFL(3,1) = +0.0830766d0
 
-  aMFL(1,2) = -0.0144633d0
-  aMFL(2,2) = -0.0506019d0
-  aMFL(3,2) = +0.0331417d0
+  aMFL(1,2) = -0.0282814d0
+  aMFL(2,2) = +0.00273925d0
+  aMFL(3,2) = +0.0664914d0
+
+  aMFL(1,3) = -0.0144633d0
+  aMFL(2,3) = -0.0506019d0
+  aMFL(3,3) = +0.0331417d0
 
 ! Compute correlation energy for ground, singly-excited and doubly-excited states
 

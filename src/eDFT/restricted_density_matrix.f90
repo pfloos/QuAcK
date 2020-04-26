@@ -37,6 +37,19 @@ subroutine restricted_density_matrix(nBas,nEns,nO,c,P)
     P(:,:,iEns) = 0d0
   end if
 
+  P(:,:,iEns) = P(:,:,iEns) + 1d0*matmul(c(:,nO  :nO  ),transpose(c(:,nO  :nO  ))) &
+                            + 1d0*matmul(c(:,nO+1:nO+1),transpose(c(:,nO+1:nO+1)))
+
+! Doubly-excited state density matrix
+
+  iEns = 3 
+  
+  if(nO > 1) then 
+    P(:,:,iEns) = 2d0*matmul(c(:,1:nO-1),transpose(c(:,1:nO-1))) 
+  else
+    P(:,:,iEns) = 0d0
+  end if
+
   P(:,:,iEns) = P(:,:,iEns) + 2d0*matmul(c(:,nO+1:nO+1),transpose(c(:,nO+1:nO+1)))
 
 end subroutine restricted_density_matrix

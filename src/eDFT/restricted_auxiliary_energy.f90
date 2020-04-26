@@ -27,9 +27,21 @@ subroutine restricted_auxiliary_energy(nBas,nEns,nO,eps,Eaux)
 
   Eaux(iEns) = 2d0*sum(eps(1:nO))
 
-! Doubly-excited state density matrix
+! Singly-excited state density matrix
 
   iEns = 2 
+  
+  if(nO > 1) then 
+    Eaux(iEns) = 2d0*sum(eps(1:nO-1))
+  else
+    Eaux(iEns) = 0d0
+  end if
+
+  Eaux(iEns) = Eaux(iEns) + eps(nO) + eps(nO+1)
+
+! Doubly-excited state density matrix
+
+  iEns = 3 
   
   if(nO > 1) then 
     Eaux(iEns) = 2d0*sum(eps(1:nO-1))
