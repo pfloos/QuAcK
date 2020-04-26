@@ -12,7 +12,7 @@ subroutine excitation_density(nBas,nC,nO,nR,nS,ERI,XpY,rho)
 
 ! Local variables
 
-  integer                       :: ia,jb,x,y,j,b
+  integer                       :: ia,jb,p,q,j,b
 
 ! Output variables
 
@@ -20,18 +20,19 @@ subroutine excitation_density(nBas,nC,nO,nR,nS,ERI,XpY,rho)
 
   rho(:,:,:) = 0d0   
 
-  do x=nC+1,nBas-nR
-    do y=nC+1,nBas-nR
+  do p=nC+1,nBas-nR
+    do q=nC+1,nBas-nR
       do ia=1,nS
         jb = 0
         do j=nC+1,nO
           do b=nO+1,nBas-nR
             jb = jb + 1
-            rho(x,y,ia) = rho(x,y,ia) + ERI(x,j,y,b)*XpY(ia,jb)
+            rho(p,q,ia) = rho(p,q,ia) + ERI(p,j,q,b)*XpY(ia,jb)
           enddo
         enddo
       enddo
     enddo
   enddo
+
 
 end subroutine excitation_density

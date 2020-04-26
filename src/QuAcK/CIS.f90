@@ -52,7 +52,7 @@ subroutine CIS(singlet_manifold,triplet_manifold, &
     endif
 
     call diagonalize_matrix(nS,A,Omega)
-    call print_excitation('CIS   ',ispin,nS,Omega)
+    call print_excitation('CIS         ',ispin,nS,Omega)
  
     if(dump_trans) then
       print*,'Singlet CIS transition vectors'
@@ -74,7 +74,7 @@ subroutine CIS(singlet_manifold,triplet_manifold, &
     endif
  
     call diagonalize_matrix(nS,A,Omega)
-    call print_excitation('CIS   ',ispin,nS,Omega)
+    call print_excitation('CIS          ',ispin,nS,Omega)
 
     if(dump_trans) then
       print*,'Triplet CIS transition vectors'

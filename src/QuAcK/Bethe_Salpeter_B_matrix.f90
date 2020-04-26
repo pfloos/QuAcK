@@ -39,7 +39,7 @@ subroutine Bethe_Salpeter_B_matrix(eta,nBas,nC,nO,nV,nR,nS,lambda,ERI,Omega,rho,
             chi = chi + rho(i,b,kc)*rho(a,j,kc)*Omega(kc)/eps
           enddo
 
-          B_lr(ia,jb) = B_lr(ia,jb) - lambda*ERI(i,a,b,j) + 4d0*lambda*chi
+          B_lr(ia,jb) = B_lr(ia,jb) - lambda*ERI(i,j,b,a) + 4d0*lambda*chi
 
         enddo
       enddo

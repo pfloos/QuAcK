@@ -7,7 +7,7 @@
 # drCCD rCCD lCCD pCCD
   F      F   F    F
 # CIS CID CISD
-  F   F   F    
+  T   F   F    
 # RPA RPAx ppRPA 
   F   F    F    
 # G0F2 evGF2 G0F3 evGF3
