@@ -32,32 +32,25 @@ subroutine RGIC_lda_exchange_derivative_discontinuity(nEns,wEns,nGrid,weight,rho
 
   allocate(dExdw(nEns))
 
-! Compute correlation energy for ground- and doubly-excited states
-
+! Weight-dependent Cx coefficient for RMFL20 exchange functional
 
 ! Parameters for H2 at equilibrium
 
-  a = + 0.5751782560799208d0
-  b = - 0.021108186591137282d0
-  c = - 0.36718902716347124d0
+  a = + 0.5739189000851961d0
+  b = - 0.0003469882157336496d0
+  c = - 0.2676338054343272d0
 
 ! Parameters for stretch H2
 
-! a = + 0.01922622507087411d0
-! b = - 0.01799647558018601d0
-! c = - 0.022945430666782573d0
+! a = + 0.01918229168254928d0
+! b = - 0.01545313842512261d0
+! c = - 0.012720073519142448d0
 
 ! Parameters for He
 
-! a = 1.9125735895875828d0
-! b = 2.715266992840757d0
-! c = 2.1634223380633086d0
-
-! Parameters for HNO
-
-! a = 0.0061158387543040335d0
-! b = -0.00005968703047293955d0
-! c = -0.00001692245714408755d0
+! a = 1.9015719148496788d0
+! b = 2.5236598782764412d0
+! c = 1.6652282199359842d0
 
   w = 0.5d0*wEns(2) + wEns(3)
   dCxGICdw = (0.5d0*b + (2d0*a + 0.5d0*c)*(w - 0.5d0) - (1d0 - w)*w*(3d0*b + 4d0*c*(w - 0.5d0)))

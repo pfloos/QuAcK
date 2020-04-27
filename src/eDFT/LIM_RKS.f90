@@ -120,8 +120,8 @@ subroutine LIM_RKS(x_rung,x_DFA,c_rung,c_DFA,LDA_centered,nEns,nGrid,weight, &
 ! LIM excitation energies
 !------------------------------------------------------------------------
 
-  Om(2) = (Ew(2) - Ew(1))/2d0
-  Om(3) = (Ew(3) - Ew(1))/3d0 + 0.5d0*Om(2)
+  Om(2) = 2d0*(Ew(2) - Ew(1))
+  Om(3) = 3d0*(Ew(3) - Ew(2)) + 0.5d0*Om(2)
 
   write(*,'(A60)')           '-------------------------------------------------'
   write(*,'(A60)')           ' LINEAR INTERPOLATION METHOD EXCITATION ENERGIES '

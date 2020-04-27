@@ -6,19 +6,19 @@
 # GGA          = 2: RB88
 # Hybrid       = 4
 # Hartree-Fock = 666
-  1 RS51
+  1 RGIC
 # correlation rung: 
 # Hartree      = 0
 # LDA          = 1: RVWN5,RMFL20
 # GGA          = 2: 
 # Hybrid       = 4: 
 # Hartree-Fock = 666
-  1 RVWN5
+  1 RMFL20
 # quadrature grid SG-n
   1
 # Number of states in ensemble (nEns)
   3
 # Ensemble weights: wEns(1),...,wEns(nEns-1)
-  0.0000000 0.0000000
+  0.33333 0.33333
 # GOK-DFT: maxSCF thresh   DIIS n_diis guess_type ortho_type
            32    0.00001   T     5      1          1
