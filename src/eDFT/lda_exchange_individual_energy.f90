@@ -32,9 +32,9 @@ subroutine lda_exchange_individual_energy(DFA,LDA_centered,nEns,wEns,nGrid,weigh
 
       call RMFL20_lda_exchange_individual_energy(LDA_centered,nEns,wEns,nGrid,weight(:),rhow(:),rho(:),Ex)
 
-    case ('RGIC')
+    case ('RCC')
 
-      call RGIC_lda_exchange_individual_energy(nEns,wEns,nGrid,weight(:),rhow(:),rho(:),Ex)
+      call RCC_lda_exchange_individual_energy(nEns,wEns,nGrid,weight(:),rhow(:),rho(:),Ex)
 
     case default
 

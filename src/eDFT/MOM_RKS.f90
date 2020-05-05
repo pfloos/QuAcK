@@ -91,8 +91,8 @@ subroutine MOM_RKS(x_rung,x_DFA,c_rung,c_DFA,LDA_centered,nEns,nGrid,weight, &
   write(*,'(A40)')           '*************************************************'
   write(*,*)
 
-  call GOK_RKS(.true.,x_rung,x_DFA,c_rung,c_DFA,LDA_centered,nEns,wMOM,nGrid,weight,maxSCF,thresh, &
-               max_diis,guess_type,nBas,AO,dAO,nO,nV,S,T,V,Hc,ERI,X,ENuc,Ew(2),c)
+! call GOK_RKS(.true.,x_rung,x_DFA,c_rung,c_DFA,LDA_centered,nEns,wMOM,nGrid,weight,maxSCF,thresh, &
+!              max_diis,guess_type,nBas,AO,dAO,nO,nV,S,T,V,Hc,ERI,X,ENuc,Ew(2),c)
 
 !------------------------------------------------------------------------
 ! Equiensemble calculation
@@ -122,7 +122,7 @@ subroutine MOM_RKS(x_rung,x_DFA,c_rung,c_DFA,LDA_centered,nEns,nGrid,weight, &
   Om(:) = Ew(:) - Ew(1)
 
   write(*,'(A60)')           '-------------------------------------------------'
-  write(*,'(A60)')           ' LINEAR INTERPOLATION METHOD EXCITATION ENERGIES '
+  write(*,'(A60)')           '    MAXIMUM OVERLAP METHOD EXCITATION ENERGIES   '
   write(*,'(A60)')           '-------------------------------------------------'
 
   write(*,'(A44,F16.10,A3)') '     Ensemble   energy  #1      ',Ew(1),' au'

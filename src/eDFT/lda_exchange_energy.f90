@@ -35,9 +35,9 @@ subroutine lda_exchange_energy(DFA,LDA_centered,nEns,wEns,nGrid,weight,rho,Ex)
 
       call RMFL20_lda_exchange_energy(LDA_centered,nEns,wEns,nGrid,weight,rho,Ex)
 
-    case ('RGIC')
+    case ('RCC')
 
-      call RGIC_lda_exchange_energy(nEns,wEns,nGrid,weight,rho,Ex)
+      call RCC_lda_exchange_energy(nEns,wEns,nGrid,weight,rho,Ex)
 
     case default
 

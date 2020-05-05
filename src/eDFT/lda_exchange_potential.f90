@@ -38,9 +38,9 @@ subroutine lda_exchange_potential(DFA,LDA_centered,nEns,wEns,nGrid,weight,nBas,A
 
       call RMFL20_lda_exchange_potential(LDA_centered,nEns,wEns,nGrid,weight,nBas,AO,rho,Fx)
 
-    case ('RGIC')
+    case ('RCC')
 
-      call RGIC_lda_exchange_potential(nEns,wEns,nGrid,weight,nBas,AO,rho,Fx)
+      call RCC_lda_exchange_potential(nEns,wEns,nGrid,weight,nBas,AO,rho,Fx)
 
     case default
 
