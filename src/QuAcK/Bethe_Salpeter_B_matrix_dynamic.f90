@@ -58,11 +58,11 @@ subroutine Bethe_Salpeter_B_matrix_dynamic(eta,nBas,nC,nO,nV,nR,nS,lambda,eGW,Om
           chi = 0d0
           do kc=1,maxS
 
-            eps = (OmBSE - OmRPA(kc) - (eGW(a) - eGW(i)))**2 + eta**2
-            chi = chi + rho(i,b,kc)*rho(a,j,kc)*(OmBSE - OmRPA(kc) - (eGW(a) - eGW(i)))/eps
+            eps = (OmBSE - OmRPA(kc) - (eGW(j) - eGW(i)))**2 + eta**2
+            chi = chi + rho(i,b,kc)*rho(a,j,kc)*(OmBSE - OmRPA(kc) - (eGW(j) - eGW(i)))/eps
 
-            eps = (OmBSE - OmRPA(kc) + (eGW(b) - eGW(j)))**2 + eta**2
-            chi = chi + rho(i,b,kc)*rho(a,j,kc)*(OmBSE - OmRPA(kc) + (eGW(b) - eGW(j)))/eps
+            eps = (OmBSE - OmRPA(kc) - (eGW(a) - eGW(b)))**2 + eta**2
+            chi = chi + rho(i,b,kc)*rho(a,j,kc)*(OmBSE - OmRPA(kc) - (eGW(a) - eGW(b)))/eps
 
           enddo
 

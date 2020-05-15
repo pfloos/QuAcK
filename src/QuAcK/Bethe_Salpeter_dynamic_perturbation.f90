@@ -27,6 +27,7 @@ subroutine Bethe_Salpeter_dynamic_perturbation(TDA,eta,nBas,nC,nO,nV,nR,nS,eGW,O
 
   integer                       :: ia
   integer,parameter             :: maxS = 10
+  double precision              :: gapGW
 
   double precision,allocatable  :: OmDyn(:)
   double precision,allocatable  :: ZDyn(:)
@@ -38,30 +39,37 @@ subroutine Bethe_Salpeter_dynamic_perturbation(TDA,eta,nBas,nC,nO,nV,nR,nS,eGW,O
 
 ! Memory allocation
 
-  allocate(OmDyn(nS),ZDyn(nS),X(nS),Y(nS),A_dyn(nS,nS),Z_dyn(nS,nS))
+  allocate(OmDyn(nS),ZDyn(nS),X(nS),Y(nS),A_dyn(nS,nS),B_dyn(nS,nS),Z_dyn(nS,nS))
+
+  gapGW = eGW(nO+1) - eGW(nO) 
 
   write(*,*) '---------------------------------------------------------------------------------------------------'
   write(*,*) ' First-order dynamical correction to static Bethe-Salpeter excitation energies                                 '
   write(*,*) '---------------------------------------------------------------------------------------------------'
   write(*,'(2X,A5,1X,A20,1X,A20,1X,A20,1X,A20)') '#','Static (eV)','Dynamic (eV)','Correction (eV)','Renorm. (eV)'
   write(*,*) '---------------------------------------------------------------------------------------------------'
+
   do ia=1,min(nS,maxS)
 
     X(:) = 0.5d0*(XpY(ia,:) + XmY(ia,:))
     Y(:) = 0.5d0*(XpY(ia,:) - XmY(ia,:))
 
     call Bethe_Salpeter_A_matrix_dynamic(eta,nBas,nC,nO,nV,nR,nS,1d0,eGW(:),OmRPA(:),OmBSE(ia),rho(:,:,:),A_dyn(:,:))
+
+    ! Renormalization factor
+
     call Bethe_Salpeter_Z_matrix_dynamic(eta,nBas,nC,nO,nV,nR,nS,1d0,eGW(:),OmRPA(:),OmBSE(ia),rho(:,:,:),Z_dyn(:,:))
+    ZDyn(ia)  = dot_product(X(:),matmul(Z_dyn(:,:),X(:)))
+    ZDyn(ia) = 1d0/(1d0 - ZDyn(ia))
 
     ! First-order correction 
 
     if(.true.) then 
 
-      ZDyn(ia) = dot_product(X(:),matmul(Z_dyn(:,:),X(:)))
+      OmDyn(ia) = dot_product(X(:),matmul(A_dyn(:,:),X(:)))
 
     else
 
-      allocate(B_dyn(nS,nS))
       call Bethe_Salpeter_B_matrix_dynamic(eta,nBas,nC,nO,nV,nR,nS,1d0,eGW(:),OmRPA(:),OmBSE(ia),rho(:,:,:),B_dyn(:,:))
 
       OmDyn(ia) = dot_product(X(:),matmul(A_dyn(:,:),X(:))) &
@@ -71,13 +79,12 @@ subroutine Bethe_Salpeter_dynamic_perturbation(TDA,eta,nBas,nC,nO,nV,nR,nS,eGW,O
 
     end if
 
-    ! Renormalization factor
-
-    ZDyn(ia) = 1d0/(1d0 - ZDyn(ia))
-    OmDyn(ia) = ZDyn(ia)*dot_product(X(:),matmul(A_dyn(:,:),X(:)))
+    OmDyn(ia) = ZDyn(ia)*OmDyn(ia)
 
     write(*,'(2X,I5,5X,F15.6,5X,F15.6,5X,F15.6,5X,F15.6)') & 
       ia,OmBSE(ia)*HaToeV,(OmBSE(ia)+OmDyn(ia))*HaToeV,OmDyn(ia)*HaToeV,ZDyn(ia)
+
+    if(OmBSE(ia) > gapGW) write(*,*) ' !!! BSE neutral excitation larger than the GW gap !!! '
 
   end do
   write(*,*) '---------------------------------------------------------------------------------------------------'

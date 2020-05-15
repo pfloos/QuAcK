@@ -82,8 +82,8 @@ subroutine LIM_RKS(x_rung,x_DFA,c_rung,c_DFA,LDA_centered,nEns,nGrid,weight, &
   write(*,'(A40)')           '*************************************************'
 
   wLIM(1) = 0.5d0
-  wLIM(2) = 0.5d0
-  wLIM(3) = 0.0d0
+  wLIM(2) = 0.0d0
+  wLIM(3) = 0.5d0
 
   do iEns=1,nEns
     write(*,'(A20,I2,A2,F16.10)') ' Weight of state  ',iEns,': ',wLIM(iEns)
@@ -112,8 +112,8 @@ subroutine LIM_RKS(x_rung,x_DFA,c_rung,c_DFA,LDA_centered,nEns,nGrid,weight, &
   write(*,'(A40)')           '*************************************************'
   write(*,*)
 
-  call GOK_RKS(.true.,x_rung,x_DFA,c_rung,c_DFA,LDA_centered,nEns,wLIM,nGrid,weight,maxSCF,thresh, &
-               max_diis,guess_type,nBas,AO,dAO,nO,nV,S,T,V,Hc,ERI,X,ENuc,Ew(3),c)
+! call GOK_RKS(.true.,x_rung,x_DFA,c_rung,c_DFA,LDA_centered,nEns,wLIM,nGrid,weight,maxSCF,thresh, &
+!              max_diis,guess_type,nBas,AO,dAO,nO,nV,S,T,V,Hc,ERI,X,ENuc,Ew(3),c)
 
 
 !------------------------------------------------------------------------
@@ -121,7 +121,7 @@ subroutine LIM_RKS(x_rung,x_DFA,c_rung,c_DFA,LDA_centered,nEns,nGrid,weight, &
 !------------------------------------------------------------------------
 
   Om(2) = 2d0*(Ew(2) - Ew(1))
-  Om(3) = 3d0*(Ew(3) - Ew(2)) + 0.5d0*Om(2)
+! Om(3) = 3d0*(Ew(3) - Ew(2)) + 0.5d0*Om(2)
 
   write(*,'(A60)')           '-------------------------------------------------'
   write(*,'(A60)')           ' LINEAR INTERPOLATION METHOD EXCITATION ENERGIES '
