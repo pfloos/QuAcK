@@ -42,7 +42,8 @@ subroutine Bethe_Salpeter_dynamic_perturbation(TDA,eta,nBas,nC,nO,nV,nR,nS,eGW,O
 ! Memory allocation
 
   allocate(OmDyn(nS),ZDyn(nS),X(nS),Y(nS),A_dyn(nS,nS),ZA_dyn(nS,nS))
-  if(TDA_dyn) allocate(B_dyn(nS,nS),ZB_dyn(nS,nS))
+
+  if(.not.TDA_dyn) allocate(B_dyn(nS,nS),ZB_dyn(nS,nS))
 
   gapGW = eGW(nO+1) - eGW(nO) 
 
