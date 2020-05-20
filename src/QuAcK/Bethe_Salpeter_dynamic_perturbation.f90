@@ -25,6 +25,7 @@ subroutine Bethe_Salpeter_dynamic_perturbation(TDA,eta,nBas,nC,nO,nV,nR,nS,eGW,O
 
 ! Local variables
 
+  logical                       :: TDA_dyn = .false.
   integer                       :: ia
   integer,parameter             :: maxS = 10
   double precision              :: gapGW
@@ -35,11 +36,13 @@ subroutine Bethe_Salpeter_dynamic_perturbation(TDA,eta,nBas,nC,nO,nV,nR,nS,eGW,O
   double precision,allocatable  :: Y(:)
   double precision,allocatable  :: A_dyn(:,:)
   double precision,allocatable  :: B_dyn(:,:)
-  double precision,allocatable  :: Z_dyn(:,:)
+  double precision,allocatable  :: ZA_dyn(:,:)
+  double precision,allocatable  :: ZB_dyn(:,:)
 
 ! Memory allocation
 
-  allocate(OmDyn(nS),ZDyn(nS),X(nS),Y(nS),A_dyn(nS,nS),B_dyn(nS,nS),Z_dyn(nS,nS))
+  allocate(OmDyn(nS),ZDyn(nS),X(nS),Y(nS),A_dyn(nS,nS),ZA_dyn(nS,nS))
+  if(TDA_dyn) allocate(B_dyn(nS,nS),ZB_dyn(nS,nS))
 
   gapGW = eGW(nO+1) - eGW(nO) 
 
@@ -54,23 +57,35 @@ subroutine Bethe_Salpeter_dynamic_perturbation(TDA,eta,nBas,nC,nO,nV,nR,nS,eGW,O
     X(:) = 0.5d0*(XpY(ia,:) + XmY(ia,:))
     Y(:) = 0.5d0*(XpY(ia,:) - XmY(ia,:))
 
+    ! Resonant part of the BSE correction
+
     call Bethe_Salpeter_A_matrix_dynamic(eta,nBas,nC,nO,nV,nR,nS,1d0,eGW(:),OmRPA(:),OmBSE(ia),rho(:,:,:),A_dyn(:,:))
 
-    ! Renormalization factor
+    ! Renormalization factor of the resonant part
 
-    call Bethe_Salpeter_Z_matrix_dynamic(eta,nBas,nC,nO,nV,nR,nS,1d0,eGW(:),OmRPA(:),OmBSE(ia),rho(:,:,:),Z_dyn(:,:))
-    ZDyn(ia)  = dot_product(X(:),matmul(Z_dyn(:,:),X(:)))
-    ZDyn(ia) = 1d0/(1d0 - ZDyn(ia))
+    call Bethe_Salpeter_ZA_matrix_dynamic(eta,nBas,nC,nO,nV,nR,nS,1d0,eGW(:),OmRPA(:),OmBSE(ia),rho(:,:,:),ZA_dyn(:,:))
 
     ! First-order correction 
 
-    if(.true.) then 
+    if(TDA_dyn) then 
 
+      ZDyn(ia)  = dot_product(X(:),matmul(ZA_dyn(:,:),X(:)))
       OmDyn(ia) = dot_product(X(:),matmul(A_dyn(:,:),X(:)))
 
     else
 
+      ! Anti-resonant part of the BSE correction
+
       call Bethe_Salpeter_B_matrix_dynamic(eta,nBas,nC,nO,nV,nR,nS,1d0,eGW(:),OmRPA(:),OmBSE(ia),rho(:,:,:),B_dyn(:,:))
+
+      ! Renormalization factor of the anti-resonant part
+
+      call Bethe_Salpeter_ZB_matrix_dynamic(eta,nBas,nC,nO,nV,nR,nS,1d0,eGW(:),OmRPA(:),OmBSE(ia),rho(:,:,:),ZB_dyn(:,:))
+
+      ZDyn(ia)  = dot_product(X(:),matmul(ZA_dyn(:,:),X(:))) &
+                - dot_product(Y(:),matmul(ZA_dyn(:,:),Y(:))) &
+                + dot_product(X(:),matmul(ZB_dyn(:,:),Y(:))) & 
+                - dot_product(Y(:),matmul(ZB_dyn(:,:),X(:)))  
 
       OmDyn(ia) = dot_product(X(:),matmul(A_dyn(:,:),X(:))) &
                 - dot_product(Y(:),matmul(A_dyn(:,:),Y(:))) &
@@ -79,6 +94,7 @@ subroutine Bethe_Salpeter_dynamic_perturbation(TDA,eta,nBas,nC,nO,nV,nR,nS,eGW,O
 
     end if
 
+    ZDyn(ia) = 1d0/(1d0 - ZDyn(ia))
     OmDyn(ia) = ZDyn(ia)*OmDyn(ia)
 
     write(*,'(2X,I5,5X,F15.6,5X,F15.6,5X,F15.6,5X,F15.6)') & 

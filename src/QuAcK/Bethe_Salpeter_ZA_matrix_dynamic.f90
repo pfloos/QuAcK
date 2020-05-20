@@ -1,4 +1,4 @@
-subroutine Bethe_Salpeter_Z_matrix_dynamic(eta,nBas,nC,nO,nV,nR,nS,lambda,eGW,OmRPA,OmBSE,rho,Z_dyn)
+subroutine Bethe_Salpeter_ZA_matrix_dynamic(eta,nBas,nC,nO,nV,nR,nS,lambda,eGW,OmRPA,OmBSE,rho,ZA_dyn)
 
 ! Compute the dynamic part of the Bethe-Salpeter equation matrices
 
@@ -24,11 +24,11 @@ subroutine Bethe_Salpeter_Z_matrix_dynamic(eta,nBas,nC,nO,nV,nR,nS,lambda,eGW,Om
 
 ! Output variables
 
-  double precision,intent(out)  :: Z_dyn(nS,nS)
+  double precision,intent(out)  :: ZA_dyn(nS,nS)
 
 ! Initialization
 
-  Z_dyn(:,:) = 0d0
+  ZA_dyn(:,:) = 0d0
 
 ! Number of poles taken into account 
 
@@ -56,11 +56,11 @@ subroutine Bethe_Salpeter_Z_matrix_dynamic(eta,nBas,nC,nO,nV,nR,nS,lambda,eGW,Om
 
           enddo
 
-          Z_dyn(ia,jb) = Z_dyn(ia,jb) + 2d0*lambda*chi
+          ZA_dyn(ia,jb) = ZA_dyn(ia,jb) + 2d0*lambda*chi
 
         enddo
       enddo
     enddo
   enddo
 
-end subroutine Bethe_Salpeter_Z_matrix_dynamic
+end subroutine Bethe_Salpeter_ZA_matrix_dynamic
