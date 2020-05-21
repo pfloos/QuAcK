@@ -25,7 +25,7 @@ subroutine Bethe_Salpeter_dynamic_perturbation(TDA,eta,nBas,nC,nO,nV,nR,nS,eGW,O
 
 ! Local variables
 
-  logical                       :: TDA_dyn = .false.
+  logical                       :: TDA_dyn = .true.
   integer                       :: ia
   integer,parameter             :: maxS = 10
   double precision              :: gapGW

@@ -25,6 +25,7 @@ subroutine Bethe_Salpeter(TDA,singlet_manifold,triplet_manifold,eta, &
 
 ! Local variables
 
+  logical                       :: evDyn = .false.
   integer                       :: ispin
   double precision,allocatable  :: OmBSE(:,:)
   double precision,allocatable  :: XpY_BSE(:,:,:)
@@ -66,9 +67,16 @@ subroutine Bethe_Salpeter(TDA,singlet_manifold,triplet_manifold,eta, &
 
     ! Compute dynamic correction for BSE via perturbation theory
 
-    call Bethe_Salpeter_dynamic_perturbation(TDA,eta,nBas,nC,nO,nV,nR,nS,eGW(:),OmRPA(:,ispin),OmBSE(:,ispin), & 
-                                             XpY_BSE(:,:,ispin),XmY_BSE(:,:,ispin),rho_RPA(:,:,:,ispin))
+    if(evDyn) then
 
+      call Bethe_Salpeter_dynamic_perturbation_iterative(TDA,eta,nBas,nC,nO,nV,nR,nS,eGW(:),OmRPA(:,ispin),OmBSE(:,ispin), & 
+                                                         XpY_BSE(:,:,ispin),XmY_BSE(:,:,ispin),rho_RPA(:,:,:,ispin))
+    else
+
+      call Bethe_Salpeter_dynamic_perturbation(TDA,eta,nBas,nC,nO,nV,nR,nS,eGW(:),OmRPA(:,ispin),OmBSE(:,ispin), & 
+                                               XpY_BSE(:,:,ispin),XmY_BSE(:,:,ispin),rho_RPA(:,:,:,ispin))
+    end if
+ 
   end if
 
 !-------------------
@@ -97,9 +105,15 @@ subroutine Bethe_Salpeter(TDA,singlet_manifold,triplet_manifold,eta, &
 
     ! Compute dynamic correction for BSE via perturbation theory
 
-    call Bethe_Salpeter_dynamic_perturbation(TDA,eta,nBas,nC,nO,nV,nR,nS,eGW(:),OmRPA(:,ispin),OmBSE(:,ispin), & 
-                                             XpY_BSE(:,:,ispin),XmY_BSE(:,:,ispin),rho_RPA(:,:,:,ispin))
+    if(evDyn) then
 
+      call Bethe_Salpeter_dynamic_perturbation_iterative(TDA,eta,nBas,nC,nO,nV,nR,nS,eGW(:),OmRPA(:,ispin),OmBSE(:,ispin), & 
+                                                         XpY_BSE(:,:,ispin),XmY_BSE(:,:,ispin),rho_RPA(:,:,:,ispin))
+    else
+
+      call Bethe_Salpeter_dynamic_perturbation(TDA,eta,nBas,nC,nO,nV,nR,nS,eGW(:),OmRPA(:,ispin),OmBSE(:,ispin), & 
+                                               XpY_BSE(:,:,ispin),XmY_BSE(:,:,ispin),rho_RPA(:,:,:,ispin))
+    end if
 
   end if
 

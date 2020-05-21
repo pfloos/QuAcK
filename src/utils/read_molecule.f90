@@ -37,7 +37,7 @@ subroutine read_molecule(nNuc,nEl,nO,nC,nR)
 
   nO(:) = nEl(:)
   nC(:) = nCore/2
-  nR(:) = nRyd/2
+  nR(:) = nRyd
 
 ! Print results
 
