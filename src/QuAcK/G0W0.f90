@@ -83,7 +83,7 @@ subroutine G0W0(doACFDT,exchange_kernel,doXBS,COHSEX,SOSEX,BSE,TDA, &
 
 ! Compute linear response
 
-  call linear_response(ispin,.true.,TDA,.false.,eta,nBas,nC,nO,nV,nR,nS,1d0,eHF,ERI, & 
+  call linear_response(ispin,.true.,.false.,.false.,eta,nBas,nC,nO,nV,nR,nS,1d0,eHF,ERI, & 
                        rho(:,:,:,ispin),EcRPA(ispin),Omega(:,ispin),XpY(:,:,ispin),XmY(:,:,ispin))
 
 ! Compute correlation part of the self-energy 

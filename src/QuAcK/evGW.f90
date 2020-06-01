@@ -112,7 +112,7 @@ subroutine evGW(maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,COHSEX,SOSE
 
     if(.not. GW0 .or. nSCF == 0) then
 
-      call linear_response(ispin,.true.,TDA,.false.,eta,nBas,nC,nO,nV,nR,nS,1d0,eGW,ERI, & 
+      call linear_response(ispin,.true.,.false.,.false.,eta,nBas,nC,nO,nV,nR,nS,1d0,eGW,ERI, & 
                            rho(:,:,:,ispin),EcRPA(ispin),Omega(:,ispin),XpY(:,:,ispin),XmY(:,:,ispin))
 
     endif
