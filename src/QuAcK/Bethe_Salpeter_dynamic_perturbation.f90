@@ -35,21 +35,17 @@ subroutine Bethe_Salpeter_dynamic_perturbation(TDA,eta,nBas,nC,nO,nV,nR,nS,eGW,O
   double precision,allocatable  :: X(:)
   double precision,allocatable  :: Y(:)
 
-  double precision,allocatable  ::  Ap_dyn(:,:)
-  double precision,allocatable  ::  Am_dyn(:,:)
-  double precision,allocatable  :: ZAp_dyn(:,:)
-  double precision,allocatable  :: ZAm_dyn(:,:)
+  double precision,allocatable  ::  A_dyn(:,:)
+  double precision,allocatable  :: ZA_dyn(:,:)
 
-  double precision,allocatable  ::  Bp_dyn(:,:)
-  double precision,allocatable  ::  Bm_dyn(:,:)
-  double precision,allocatable  :: ZBp_dyn(:,:)
-  double precision,allocatable  :: ZBm_dyn(:,:)
+  double precision,allocatable  ::  B_dyn(:,:)
+  double precision,allocatable  :: ZB_dyn(:,:)
 
 ! Memory allocation
 
-  allocate(OmDyn(nS),ZDyn(nS),X(nS),Y(nS),Ap_dyn(nS,nS),ZAp_dyn(nS,nS))
+  allocate(OmDyn(nS),ZDyn(nS),X(nS),Y(nS),A_dyn(nS,nS),ZA_dyn(nS,nS))
 
-  if(.not.dTDA) allocate(Am_dyn(nS,nS),ZAm_dyn(nS,nS),Bp_dyn(nS,nS),Bm_dyn(nS,nS),ZBp_dyn(nS,nS),ZBm_dyn(nS,nS))
+  if(.not.dTDA) allocate(B_dyn(nS,nS),ZB_dyn(nS,nS))
 
   gapGW = eGW(nO+1) - eGW(nO) 
 
@@ -70,36 +66,38 @@ subroutine Bethe_Salpeter_dynamic_perturbation(TDA,eta,nBas,nC,nO,nV,nR,nS,eGW,O
 
       ! Resonant part of the BSE correction for dynamical TDA
 
-      call Bethe_Salpeter_A_matrix_dynamic(eta,nBas,nC,nO,nV,nR,nS,1d0,eGW(:),OmRPA(:),OmBSE(ia),rho(:,:,:),Ap_dyn(:,:))
+      call Bethe_Salpeter_A_matrix_dynamic(eta,nBas,nC,nO,nV,nR,nS,1d0,eGW(:),OmRPA(:),OmBSE(ia),rho(:,:,:), &
+                                           A_dyn(:,:))
 
       ! Renormalization factor of the resonant parts for dynamical TDA
 
-      call Bethe_Salpeter_ZA_matrix_dynamic(eta,nBas,nC,nO,nV,nR,nS,1d0,eGW(:),OmRPA(:),OmBSE(ia),rho(:,:,:),ZAp_dyn(:,:))
+      call Bethe_Salpeter_ZA_matrix_dynamic(eta,nBas,nC,nO,nV,nR,nS,1d0,eGW(:),OmRPA(:),OmBSE(ia),rho(:,:,:), & 
+                                            ZA_dyn(:,:))
 
-      ZDyn(ia)  = dot_product(X(:),matmul(ZAp_dyn(:,:),X(:)))
-      OmDyn(ia) = dot_product(X(:),matmul(Ap_dyn(:,:),X(:)))
+      ZDyn(ia)  = dot_product(X(:),matmul(ZA_dyn(:,:),X(:)))
+      OmDyn(ia) = dot_product(X(:),matmul(A_dyn(:,:),X(:)))
 
     else
 
       ! Resonant and anti-resonant part of the BSE correction
 
       call Bethe_Salpeter_AB_matrix_dynamic(eta,nBas,nC,nO,nV,nR,nS,1d0,eGW(:),OmRPA(:),OmBSE(ia),rho(:,:,:), & 
-                                            Ap_dyn(:,:),Am_dyn(:,:),Bp_dyn(:,:),Bm_dyn(:,:))
+                                            A_dyn(:,:),B_dyn(:,:))
 
       ! Renormalization factor of the resonant and anti-resonant parts
 
       call Bethe_Salpeter_ZAB_matrix_dynamic(eta,nBas,nC,nO,nV,nR,nS,1d0,eGW(:),OmRPA(:),OmBSE(ia),rho(:,:,:), & 
-                                             ZAp_dyn(:,:),ZAm_dyn(:,:),ZBp_dyn(:,:),ZBm_dyn(:,:))
+                                             ZA_dyn(:,:),ZB_dyn(:,:))
 
-      ZDyn(ia)  = dot_product(X(:),matmul(ZAp_dyn(:,:),X(:))) &
-                - dot_product(Y(:),matmul(ZAm_dyn(:,:),Y(:))) &
-                + dot_product(X(:),matmul(ZBp_dyn(:,:),Y(:))) & 
-                - dot_product(Y(:),matmul(ZBm_dyn(:,:),X(:)))  
+      ZDyn(ia)  = dot_product(X(:),matmul(ZA_dyn(:,:),X(:))) &
+                - dot_product(Y(:),matmul(ZA_dyn(:,:),Y(:))) &
+                + dot_product(X(:),matmul(ZB_dyn(:,:),Y(:))) & 
+                - dot_product(Y(:),matmul(ZB_dyn(:,:),X(:)))  
 
-      OmDyn(ia) = dot_product(X(:),matmul(Ap_dyn(:,:),X(:))) &
-                - dot_product(Y(:),matmul(Am_dyn(:,:),Y(:))) &
-                + dot_product(X(:),matmul(Bp_dyn(:,:),Y(:))) & 
-                - dot_product(Y(:),matmul(Bm_dyn(:,:),X(:)))  
+      OmDyn(ia) = dot_product(X(:),matmul(A_dyn(:,:),X(:))) &
+                - dot_product(Y(:),matmul(A_dyn(:,:),Y(:))) &
+                + dot_product(X(:),matmul(B_dyn(:,:),Y(:))) & 
+                - dot_product(Y(:),matmul(B_dyn(:,:),X(:)))  
 
     end if
 
