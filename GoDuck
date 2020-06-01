@@ -12,7 +12,6 @@ then
   cp examples/molecule."$1"   input/molecule
   cp examples/basis."$1"."$2" input/basis
   cp basis/"$2"               input/basis.qcaml
-  cp examples/basis."$1"."$2" input/weight
 #  ./bin/IntPak
   ./bin/QuAcK
 fi

@@ -25,7 +25,7 @@ subroutine Bethe_Salpeter_dynamic_perturbation_iterative(TDA,eta,nBas,nC,nO,nV,n
 
 ! Local variables
 
-  logical                       :: TDA_dyn = .true.
+  logical                       :: dTDA = .true.
   integer                       :: ia
   integer,parameter             :: maxS = 10
   double precision              :: gapGW
@@ -40,16 +40,16 @@ subroutine Bethe_Salpeter_dynamic_perturbation_iterative(TDA,eta,nBas,nC,nO,nV,n
   double precision,allocatable  :: OmOld(:)
   double precision,allocatable  :: X(:)
   double precision,allocatable  :: Y(:)
-  double precision,allocatable  :: A_dyn(:,:)
-  double precision,allocatable  :: B_dyn(:,:)
-  double precision,allocatable  :: ZA_dyn(:,:)
-  double precision,allocatable  :: ZB_dyn(:,:)
+  double precision,allocatable  :: Ap_dyn(:,:)
+  double precision,allocatable  :: Am_dyn(:,:)
+  double precision,allocatable  :: Bp_dyn(:,:)
+  double precision,allocatable  :: Bm_dyn(:,:)
 
 ! Memory allocation
 
-  allocate(OmDyn(nS),OmOld(nS),X(nS),Y(nS),A_dyn(nS,nS))
+  allocate(OmDyn(nS),OmOld(nS),X(nS),Y(nS),Ap_dyn(nS,nS))
 
-  if(.not.TDA_dyn) allocate(B_dyn(nS,nS))
+  if(.not.dTDA) allocate(Am_dyn(nS,nS),Bp_dyn(nS,nS),Bm_dyn(nS,nS))
 
   gapGW = eGW(nO+1) - eGW(nO) 
 
@@ -78,27 +78,28 @@ subroutine Bethe_Salpeter_dynamic_perturbation_iterative(TDA,eta,nBas,nC,nO,nV,n
       X(:) = 0.5d0*(XpY(ia,:) + XmY(ia,:))
       Y(:) = 0.5d0*(XpY(ia,:) - XmY(ia,:))
  
-      ! Resonant part of the BSE correction
- 
-      call Bethe_Salpeter_A_matrix_dynamic(eta,nBas,nC,nO,nV,nR,nS,1d0,eGW(:),OmRPA(:),OmOld(ia),rho(:,:,:),A_dyn(:,:))
- 
       ! First-order correction 
  
-      if(TDA_dyn) then 
+      if(dTDA) then 
+
+       ! Resonant part of the BSE correction
  
-        OmDyn(ia) = dot_product(X(:),matmul(A_dyn(:,:),X(:)))
+        call Bethe_Salpeter_A_matrix_dynamic(eta,nBas,nC,nO,nV,nR,nS,1d0,eGW(:),OmRPA(:),OmOld(ia),rho(:,:,:),Ap_dyn(:,:))
+ 
+        OmDyn(ia) = dot_product(X(:),matmul(Ap_dyn(:,:),X(:)))
  
       else
  
         ! Anti-resonant part of the BSE correction
  
-        call Bethe_Salpeter_B_matrix_dynamic(eta,nBas,nC,nO,nV,nR,nS,1d0,eGW(:),OmRPA(:),OmOld(ia),rho(:,:,:),B_dyn(:,:))
+        call Bethe_Salpeter_AB_matrix_dynamic(eta,nBas,nC,nO,nV,nR,nS,1d0,eGW(:),OmRPA(:),OmOld(ia),rho(:,:,:), &
+                                              Ap_dyn(:,:),Am_dyn(:,:),Bp_dyn(:,:),Bm_dyn(:,:))
  
-        OmDyn(ia) = dot_product(X(:),matmul(A_dyn(:,:),X(:))) &
-                  - dot_product(Y(:),matmul(A_dyn(:,:),Y(:))) &
-                  + dot_product(X(:),matmul(B_dyn(:,:),Y(:))) & 
-                  - dot_product(Y(:),matmul(B_dyn(:,:),X(:)))  
- 
+        OmDyn(ia) = dot_product(X(:),matmul(Ap_dyn(:,:),X(:))) &
+                  - dot_product(Y(:),matmul(Am_dyn(:,:),Y(:))) &
+                  + dot_product(X(:),matmul(Bp_dyn(:,:),Y(:))) &
+                  - dot_product(Y(:),matmul(Bm_dyn(:,:),X(:)))
+
       end if
  
       write(*,'(2X,I5,5X,F15.6,5X,F15.6,5X,F15.6)') & 

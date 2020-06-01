@@ -13,7 +13,7 @@ subroutine orthogonalization_matrix(ortho_type,nBas,S,X)
 
   logical                       :: debug
   double precision,allocatable  :: UVec(:,:),Uval(:)
-  double precision,parameter    :: thresh = 1d-8
+  double precision,parameter    :: thresh = 1d-6
 
   integer                       :: i
 
@@ -45,7 +45,7 @@ subroutine orthogonalization_matrix(ortho_type,nBas,S,X)
 
       if(Uval(i) < thresh) then 
 
-        write(*,*) 'Eigenvalue',i,'is very small in Lowdin orthogonalization = ',Uval(i)
+        write(*,*) 'Eigenvalue',i,' is very small in Lowdin orthogonalization = ',Uval(i)
 
       endif
 

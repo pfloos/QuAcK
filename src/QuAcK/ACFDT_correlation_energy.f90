@@ -69,8 +69,18 @@ subroutine ACFDT_correlation_energy(ispin,exchange_kernel,nBas,nC,nO,nV,nR,nS,ER
 
 ! Compute Tr(K x P_lambda)
 
-  X(:,:) = 0.5d0*(XpY(:,:) + XmY(:,:))
-  Y(:,:) = 0.5d0*(XpY(:,:) - XmY(:,:))
+! X(:,:) = 0.5d0*(XpY(:,:) + XmY(:,:))
+! Y(:,:) = 0.5d0*(XpY(:,:) - XmY(:,:))
+
+! print*,'X'
+! call matout(nS,nS,X)
+! print*,'Y'
+! call matout(nS,nS,Y)
+
+! print*,'Ap'
+! call matout(nS,nS,Ap)
+! print*,'Bp'
+! call matout(nS,nS,Bp)
 
   EcAC = trace_matrix(nS,matmul(X,matmul(Bp,transpose(Y))) + matmul(Y,matmul(Bp,transpose(X)))) &
        + trace_matrix(nS,matmul(X,matmul(Ap,transpose(X))) + matmul(Y,matmul(Ap,transpose(Y)))) &
