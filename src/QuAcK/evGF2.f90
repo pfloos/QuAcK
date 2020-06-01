@@ -1,4 +1,5 @@
-subroutine evGF2(maxSCF,thresh,max_diis,linearize,nBas,nC,nO,nV,nR,V,e0)
+subroutine evGF2(BSE,TDA,maxSCF,thresh,max_diis,singlet_manifold,triplet_manifold,linearize, & 
+                 eta,nBas,nC,nO,nV,nR,nS,ENuc,ERHF,V,e0)
 
 ! Perform eigenvalue self-consistent second-order Green function calculation
 
@@ -7,15 +8,23 @@ subroutine evGF2(maxSCF,thresh,max_diis,linearize,nBas,nC,nO,nV,nR,V,e0)
 
 ! Input variables
 
+  logical,intent(in)            :: BSE
+  logical,intent(in)            :: TDA
   integer,intent(in)            :: maxSCF
   double precision,intent(in)   :: thresh
   integer,intent(in)            :: max_diis
+  logical,intent(in)            :: singlet_manifold
+  logical,intent(in)            :: triplet_manifold
   logical,intent(in)            :: linearize
+  double precision,intent(in)   :: eta
   integer,intent(in)            :: nBas
   integer,intent(in)            :: nO
   integer,intent(in)            :: nC
   integer,intent(in)            :: nV
   integer,intent(in)            :: nR
+  integer,intent(in)            :: nS
+  double precision,intent(in)   :: ENuc
+  double precision,intent(in)   :: ERHF
   double precision,intent(in)   :: e0(nBas)
   double precision,intent(in)   :: V(nBas,nBas,nBas,nBas)
 

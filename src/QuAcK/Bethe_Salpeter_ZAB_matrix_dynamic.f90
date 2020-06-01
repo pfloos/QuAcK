@@ -59,32 +59,32 @@ subroutine Bethe_Salpeter_ZAB_matrix_dynamic(eta,nBas,nC,nO,nV,nR,nS,lambda,eGW,
           do kc=1,maxS
 
             eps_Ap = (+ OmBSE - OmRPA(kc) - (eGW(a) - eGW(j)))**2 + eta**2
-            eps_Am = (+ OmBSE - OmRPA(kc) - (eGW(a) - eGW(j)))**2 + eta**2
+            eps_Am = (- OmBSE - OmRPA(kc) - (eGW(a) - eGW(j)))**2 + eta**2
             chi_Ap = chi_Ap + rho(i,j,kc)*rho(a,b,kc)*((+ OmBSE - OmRPA(kc) - (eGW(a) - eGW(j)))/eps_Ap)**2
-            chi_Am = chi_Am + rho(i,j,kc)*rho(a,b,kc)*((+ OmBSE - OmRPA(kc) - (eGW(a) - eGW(j)))/eps_Am)**2
+            chi_Am = chi_Am + rho(i,j,kc)*rho(a,b,kc)*((- OmBSE - OmRPA(kc) - (eGW(a) - eGW(j)))/eps_Am)**2
 
             eps_Ap = (+ OmBSE - OmRPA(kc) - (eGW(b) - eGW(i)))**2 + eta**2
-            eps_Am = (+ OmBSE - OmRPA(kc) - (eGW(b) - eGW(i)))**2 + eta**2
+            eps_Am = (- OmBSE - OmRPA(kc) - (eGW(b) - eGW(i)))**2 + eta**2
             chi_Ap = chi_Ap + rho(i,j,kc)*rho(a,b,kc)*((+ OmBSE - OmRPA(kc) - (eGW(b) - eGW(i)))/eps_Ap)**2
-            chi_Am = chi_Am + rho(i,j,kc)*rho(a,b,kc)*((+ OmBSE - OmRPA(kc) - (eGW(b) - eGW(i)))/eps_Am)**2
+            chi_Am = chi_Am + rho(i,j,kc)*rho(a,b,kc)*((- OmBSE - OmRPA(kc) - (eGW(b) - eGW(i)))/eps_Am)**2
 
             eps_Bp = (+ OmBSE - OmRPA(kc) - (eGW(a) - eGW(b)))**2 + eta**2
-            eps_Bm = (+ OmBSE - OmRPA(kc) - (eGW(a) - eGW(b)))**2 + eta**2
+            eps_Bm = (- OmBSE - OmRPA(kc) - (eGW(a) - eGW(b)))**2 + eta**2
             chi_Bp = chi_Bp + rho(i,b,kc)*rho(a,j,kc)*((+ OmBSE - OmRPA(kc) - (eGW(a) - eGW(b)))/eps_Bp)**2
-            chi_Bm = chi_Bm + rho(i,b,kc)*rho(a,j,kc)*((+ OmBSE - OmRPA(kc) - (eGW(a) - eGW(b)))/eps_Bm)**2
+            chi_Bm = chi_Bm + rho(i,b,kc)*rho(a,j,kc)*((- OmBSE - OmRPA(kc) - (eGW(a) - eGW(b)))/eps_Bm)**2
 
             eps_Bp = (+ OmBSE - OmRPA(kc) - (eGW(j) - eGW(i)))**2 + eta**2
-            eps_Bm = (+ OmBSE - OmRPA(kc) - (eGW(j) - eGW(i)))**2 + eta**2
+            eps_Bm = (- OmBSE - OmRPA(kc) - (eGW(j) - eGW(i)))**2 + eta**2
             chi_Bp = chi_Bp + rho(i,b,kc)*rho(a,j,kc)*((+ OmBSE - OmRPA(kc) - (eGW(j) - eGW(i)))/eps_Bp)**2
-            chi_Bm = chi_Bm + rho(i,b,kc)*rho(a,j,kc)*((+ OmBSE - OmRPA(kc) - (eGW(j) - eGW(i)))/eps_Bm)**2
+            chi_Bm = chi_Bm + rho(i,b,kc)*rho(a,j,kc)*((- OmBSE - OmRPA(kc) - (eGW(j) - eGW(i)))/eps_Bm)**2
 
           enddo
 
           ZAp(ia,jb) = ZAp(ia,jb) + 2d0*lambda*chi_Ap
-          ZAm(ia,jb) = ZAm(ia,jb) + 2d0*lambda*chi_Am
+          ZAm(ia,jb) = ZAm(ia,jb) - 2d0*lambda*chi_Am
 
           ZBp(ia,jb) = ZBp(ia,jb) + 2d0*lambda*chi_Bp
-          ZBm(ia,jb) = ZBm(ia,jb) + 2d0*lambda*chi_Bm
+          ZBm(ia,jb) = ZBm(ia,jb) - 2d0*lambda*chi_Bm
 
         enddo
       enddo

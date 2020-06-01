@@ -601,7 +601,8 @@ program QuAcK
   if(doG0F2) then
 
     call cpu_time(start_GF2)
-    call G0F2(linGF,nBas,nC(1),nO(1),nV(1),nR(1),ERI_MO,eHF)
+    call G0F2(BSE,TDA,singlet_manifold,triplet_manifold,linGF, & 
+              eta,nBas,nC(1),nO(1),nV(1),nR(1),nS(1),ENuc,ERHF,ERI_MO,eHF)
     call cpu_time(end_GF2)
 
     t_GF2 = end_GF2 - start_GF2
@@ -617,7 +618,8 @@ program QuAcK
   if(doevGF2) then
 
     call cpu_time(start_GF2)
-    call evGF2(maxSCF_GF,thresh_GF,n_diis_GF,linGF,nBas,nC(1),nO(1),nV(1),nR(1),ERI_MO,eHF)
+    call evGF2(BSE,TDA,maxSCF_GF,thresh_GF,n_diis_GF,singlet_manifold,triplet_manifold,linGF, & 
+               eta,nBas,nC(1),nO(1),nV(1),nR(1),nS(1),ENuc,ERHF,ERI_MO,eHF)
     call cpu_time(end_GF2)
 
     t_GF2 = end_GF2 - start_GF2

@@ -1,5 +1,5 @@
 subroutine Bethe_Salpeter(TDA,singlet_manifold,triplet_manifold,eta, & 
-                 nBas,nC,nO,nV,nR,nS,ERI,eW,eGW,OmRPA,XpY_RPA,XmY_RPA,rho_RPA,EcRPA,EcBSE)
+                          nBas,nC,nO,nV,nR,nS,ERI,eW,eGW,OmRPA,XpY_RPA,XmY_RPA,rho_RPA,EcRPA,EcBSE)
 
 ! Compute the Bethe-Salpeter excitation energies
 

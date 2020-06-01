@@ -1,4 +1,4 @@
-subroutine G0F2(linearize,nBas,nC,nO,nV,nR,V,e0)
+subroutine G0F2(BSE,TDA,singlet_manifold,triplet_manifold,linearize,eta,nBas,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,eHF)
 
 ! Perform a one-shot second-order Green function calculation
 
@@ -7,19 +7,28 @@ subroutine G0F2(linearize,nBas,nC,nO,nV,nR,V,e0)
 
 ! Input variables
 
+  logical,intent(in)            :: BSE
+  logical,intent(in)            :: TDA
+  logical,intent(in)            :: singlet_manifold
+  logical,intent(in)            :: triplet_manifold
   logical,intent(in)            :: linearize
+  double precision,intent(in)   :: eta
   integer,intent(in)            :: nBas
   integer,intent(in)            :: nO
   integer,intent(in)            :: nC
   integer,intent(in)            :: nV
   integer,intent(in)            :: nR
-  double precision,intent(in)   :: e0(nBas)
-  double precision,intent(in)   :: V(nBas,nBas,nBas,nBas)
+  integer,intent(in)            :: nS
+  double precision,intent(in)   :: ENuc
+  double precision,intent(in)   :: ERHF
+  double precision,intent(in)   :: eHF(nBas)
+  double precision,intent(in)   :: ERI(nBas,nBas,nBas,nBas)
 
 ! Local variables
 
   double precision              :: eps
-  double precision              :: VV
+  double precision              :: V
+  double precision              :: EcBSE(nspin)
   double precision,allocatable  :: eGF2(:)
   double precision,allocatable  :: Sig(:)
   double precision,allocatable  :: Z(:)
@@ -55,10 +64,10 @@ subroutine G0F2(linearize,nBas,nC,nO,nV,nR,V,e0)
       do j=nC+1,nO
         do a=nO+1,nBas-nR
 
-          eps = e0(p) + e0(a) - e0(i) - e0(j)
-          VV  = (2d0*V(p,a,i,j) - V(p,a,j,i))*V(p,a,i,j)
-          Sig(p) = Sig(p) + VV/eps
-          Z(p)   = Z(p)   + VV/eps**2
+          eps = eHF(p) + eHF(a) - eHF(i) - eHF(j)
+          V  = (2d0*ERI(p,a,i,j) - ERI(p,a,j,i))*ERI(p,a,i,j)
+          Sig(p) = Sig(p) + V/eps
+          Z(p)   = Z(p)   + V/eps**2
 
         end do
       end do
@@ -70,10 +79,10 @@ subroutine G0F2(linearize,nBas,nC,nO,nV,nR,V,e0)
       do a=nO+1,nBas-nR
         do b=nO+1,nBas-nR
 
-          eps = e0(p) + e0(i) - e0(a) - e0(b)
-          VV  = (2d0*V(p,i,a,b) - V(p,i,b,a))*V(p,i,a,b)
-          Sig(p) = Sig(p) + VV/eps
-          Z(p)   = Z(p)   + VV/eps**2
+          eps = eHF(p) + eHF(i) - eHF(a) - eHF(b)
+          V  = (2d0*ERI(p,i,a,b) - ERI(p,i,b,a))*ERI(p,i,a,b)
+          Sig(p) = Sig(p) + V/eps
+          Z(p)   = Z(p)   + V/eps**2
 
         end do
       end do
@@ -84,16 +93,69 @@ subroutine G0F2(linearize,nBas,nC,nO,nV,nR,V,e0)
 
   if(linearize) then
 
-    eGF2(:) = e0(:) + Z(:)*Sig(:)
+    eGF2(:) = eHF(:) + Z(:)*Sig(:)
 
   else
 
-    eGF2(:) = e0(:) + Sig(:)
+    eGF2(:) = eHF(:) + Sig(:)
 
   end if
 
   ! Print results
 
-  call print_G0F2(nBas,nO,e0,Sig,eGF2,Z)
+  call print_G0F2(nBas,nO,eHF,Sig,eGF2,Z)
 
+! Perform BSE2 calculation
+
+  if(BSE) then
+
+    call BSE2(TDA,singlet_manifold,triplet_manifold,eta,nBas,nC,nO,nV,nR,nS,ERI,eHF,eGF2,EcBSE)
+
+    write(*,*)
+    write(*,*)'-------------------------------------------------------------------------------'
+    write(*,'(2X,A50,F20.10)') 'Tr@BSE2@G0F correlation energy (singlet) =',EcBSE(1)
+    write(*,'(2X,A50,F20.10)') 'Tr@BSE2@G0F correlation energy (triplet) =',EcBSE(2)
+    write(*,'(2X,A50,F20.10)') 'Tr@BSE2@G0F correlation energy           =',EcBSE(1) + EcBSE(2)
+    write(*,'(2X,A50,F20.10)') 'Tr@BSE2@G0F total energy                 =',ENuc + ERHF + EcBSE(1) + EcBSE(2)
+    write(*,*)'-------------------------------------------------------------------------------'
+    write(*,*)
+
+!   Compute the BSE correlation energy via the adiabatic connection 
+
+!   if(doACFDT) then
+
+!     write(*,*) '------------------------------------------------------'
+!     write(*,*) 'Adiabatic connection version of BSE correlation energy'
+!     write(*,*) '------------------------------------------------------'
+!     write(*,*) 
+
+!     if(doXBS) then 
+
+!       write(*,*) '*** scaled screening version (XBS) ***'
+!       write(*,*)
+
+!     end if
+
+!     call ACFDT(exchange_kernel,doXBS,.true.,TDA,BSE,singlet_manifold,triplet_manifold,eta, & 
+!                nBas,nC,nO,nV,nR,nS,ERI,eHF,eGW,Omega,XpY,XmY,rho,EcAC)
+
+!     if(exchange_kernel) then
+! 
+!       EcAC(1) = 0.5d0*EcAC(1)
+!       EcAC(2) = 1.5d0*EcAC(1)
+! 
+!     end if
+
+!     write(*,*)
+!     write(*,*)'-------------------------------------------------------------------------------'
+!     write(*,'(2X,A50,F20.10)') 'AC@BSE@G0W0 correlation energy (singlet) =',EcAC(1)
+!     write(*,'(2X,A50,F20.10)') 'AC@BSE@G0W0 correlation energy (triplet) =',EcAC(2)
+!     write(*,'(2X,A50,F20.10)') 'AC@BSE@G0W0 correlation energy           =',EcAC(1) + EcAC(2)
+!     write(*,'(2X,A50,F20.10)') 'AC@BSE@G0W0 total energy                 =',ENuc + ERHF + EcAC(1) + EcAC(2)
+!     write(*,*)'-------------------------------------------------------------------------------'
+!     write(*,*)
+
+!   end if
+
+  end if
 end subroutine G0F2
