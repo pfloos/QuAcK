@@ -1,4 +1,4 @@
-subroutine BSE2_dynamic_perturbation(singlet_manifold,triplet_manifold,eta,nBas,nC,nO,nV,nR,nS,ERI,eHF,eGF,OmBSE,XpY,XmY)
+subroutine BSE2_dynamic_perturbation(ispin,eta,nBas,nC,nO,nV,nR,nS,ERI,eHF,eGF,OmBSE,XpY,XmY)
 
 ! Compute dynamical effects via perturbation theory for BSE
 
@@ -7,8 +7,7 @@ subroutine BSE2_dynamic_perturbation(singlet_manifold,triplet_manifold,eta,nBas,
 
 ! Input variables
 
-  logical,intent(in)            :: singlet_manifold
-  logical,intent(in)            :: triplet_manifold
+  integer,intent(in)            :: ispin
   double precision,intent(in)   :: eta
   integer,intent(in)            :: nBas
   integer,intent(in)            :: nC
@@ -63,7 +62,7 @@ subroutine BSE2_dynamic_perturbation(singlet_manifold,triplet_manifold,eta,nBas,
 
     ! Resonant part of the BSE correction for dynamical TDA
 
-    call BSE2_A_matrix_dynamic(singlet_manifold,triplet_manifold,eta,nBas,nC,nO,nV,nR,nS,1d0, & 
+    call BSE2_A_matrix_dynamic(ispin,eta,nBas,nC,nO,nV,nR,nS,1d0, & 
                                ERI(:,:,:,:),eHF(:),eGF(:),OmBSE(ia),A_dyn(:,:),ZA_dyn(:,:))
 
     if(dTDA) then 
@@ -75,7 +74,7 @@ subroutine BSE2_dynamic_perturbation(singlet_manifold,triplet_manifold,eta,nBas,
 
       ! Anti-resonant part of the BSE correction
 
-      call BSE2_B_matrix_dynamic(singlet_manifold,triplet_manifold,eta,nBas,nC,nO,nV,nR,nS,1d0, & 
+      call BSE2_B_matrix_dynamic(ispin,eta,nBas,nC,nO,nV,nR,nS,1d0, & 
                                  ERI(:,:,:,:),eHF(:),eGF(:),OmBSE(ia),B_dyn(:,:),ZB_dyn(:,:))
 
       ZDyn(ia)  = dot_product(X(:),matmul(ZA_dyn(:,:),X(:))) &

@@ -1,5 +1,4 @@
-subroutine BSE2_A_matrix_dynamic(singlet_manifold,triplet_manifold,eta,nBas,nC,nO,nV,nR,nS,lambda, & 
-                                 ERI,eHF,eGF,OmBSE,A_dyn,ZA_dyn)
+subroutine BSE2_A_matrix_dynamic(ispin,eta,nBas,nC,nO,nV,nR,nS,lambda,ERI,eHF,eGF,OmBSE,A_dyn,ZA_dyn)
 
 ! Compute the resonant part of the dynamic BSE2 matrix
 
@@ -8,8 +7,7 @@ subroutine BSE2_A_matrix_dynamic(singlet_manifold,triplet_manifold,eta,nBas,nC,n
 
 ! Input variables
 
-  logical,intent(in)            :: singlet_manifold
-  logical,intent(in)            :: triplet_manifold
+  integer,intent(in)            :: ispin
   integer,intent(in)            :: nBas,nC,nO,nV,nR,nS
   double precision,intent(in)   :: eta
   double precision,intent(in)   :: lambda
@@ -37,7 +35,7 @@ subroutine BSE2_A_matrix_dynamic(singlet_manifold,triplet_manifold,eta,nBas,nC,n
 
 ! Second-order correlation kernel for the block A of the singlet manifold
 
-  if(singlet_manifold) then
+  if(ispin == 1) then
 
     ia = 0
     do i=nC+1,nO
@@ -105,7 +103,7 @@ subroutine BSE2_A_matrix_dynamic(singlet_manifold,triplet_manifold,eta,nBas,nC,n
 
 ! Second-order correlation kernel for the block A of the triplet manifold
 
-  if(triplet_manifold) then
+  if(ispin == 2) then
 
     ia = 0
     do i=nC+1,nO

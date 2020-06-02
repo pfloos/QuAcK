@@ -1,5 +1,4 @@
-subroutine BSE2_B_matrix_dynamic(singlet_manifold,triplet_manifold,eta,nBas,nC,nO,nV,nR,nS,lambda, & 
-                                 ERI,eHF,eGF,OmBSE,B_dyn,ZB_dyn)
+subroutine BSE2_B_matrix_dynamic(ispin,eta,nBas,nC,nO,nV,nR,nS,lambda,ERI,eHF,eGF,OmBSE,B_dyn,ZB_dyn)
 
 ! Compute the anti-resonant part of the dynamic BSE2 matrix
 
@@ -8,8 +7,7 @@ subroutine BSE2_B_matrix_dynamic(singlet_manifold,triplet_manifold,eta,nBas,nC,n
 
 ! Input variables
 
-  logical,intent(in)            :: singlet_manifold
-  logical,intent(in)            :: triplet_manifold
+  integer,intent(in)            :: ispin
   integer,intent(in)            :: nBas,nC,nO,nV,nR,nS
   double precision,intent(in)   :: eta
   double precision,intent(in)   :: lambda
@@ -37,7 +35,7 @@ subroutine BSE2_B_matrix_dynamic(singlet_manifold,triplet_manifold,eta,nBas,nC,n
 
 ! Second-order correlation kernel for the block A of the singlet manifold
 
-  if(singlet_manifold) then
+  if(ispin == 1) then
 
     ia = 0
     do i=nC+1,nO
@@ -52,14 +50,14 @@ subroutine BSE2_B_matrix_dynamic(singlet_manifold,triplet_manifold,eta,nBas,nC,n
             do k=nC+1,nO
               do c=nO+1,nBas-nR
      
-                dem = OmBSE - eGF(a) + eGF(k) - eGF(c) + eGF(j)
+                dem = - eGF(a) + eGF(k) - eGF(c) + eGF(j)
                 num = 2d0*ERI(b,k,i,c)*ERI(a,c,j,k) -     ERI(b,k,i,c)*ERI(a,c,k,j) & 
                     -     ERI(b,k,c,i)*ERI(a,c,j,k) + 2d0*ERI(b,k,c,i)*ERI(a,c,k,j)
 
                  B_dyn(ia,jb) =  B_dyn(ia,jb) - num*dem/(dem**2 + eta**2)
                 ZB_dyn(ia,jb) = ZB_dyn(ia,jb) + num*(dem**2 - eta**2)/(dem**2 + eta**2)**2
             
-                dem = OmBSE + eGF(i) - eGF(c) + eGF(k) - eGF(b)
+                dem = + eGF(i) - eGF(c) + eGF(k) - eGF(b)
                 num = 2d0*ERI(b,c,i,k)*ERI(a,k,j,c) -     ERI(b,c,i,k)*ERI(a,k,c,j) & 
                     -     ERI(b,c,k,i)*ERI(a,k,j,c) + 2d0*ERI(b,c,k,i)*ERI(a,k,c,j)
 
@@ -72,7 +70,7 @@ subroutine BSE2_B_matrix_dynamic(singlet_manifold,triplet_manifold,eta,nBas,nC,n
             do c=nO+1,nBas-nR
               do d=nO+1,nBas-nR
      
-                dem = OmBSE + eGF(i) + eGF(j) - eGF(c) - eGF(d)
+                dem = + eGF(i) + eGF(j) - eGF(c) - eGF(d)
                 num = 2d0*ERI(a,b,c,d)*ERI(c,d,i,j) -     ERI(a,b,c,d)*ERI(c,d,j,i) & 
                     -     ERI(a,b,d,c)*ERI(c,d,i,j) + 2d0*ERI(a,b,d,c)*ERI(c,d,j,i)
 
@@ -105,7 +103,7 @@ subroutine BSE2_B_matrix_dynamic(singlet_manifold,triplet_manifold,eta,nBas,nC,n
 
 ! Second-order correlation kernel for the block A of the triplet manifold
 
-  if(triplet_manifold) then
+  if(ispin == 2) then
 
     ia = 0
     do i=nC+1,nO
@@ -120,13 +118,13 @@ subroutine BSE2_B_matrix_dynamic(singlet_manifold,triplet_manifold,eta,nBas,nC,n
             do k=nC+1,nO
               do c=nO+1,nBas-nR
      
-                dem = OmBSE - eGF(a) + eGF(k) - eGF(c) + eGF(j)
+                dem = - eGF(a) + eGF(k) - eGF(c) + eGF(j)
                 num = 2d0*ERI(b,k,i,c)*ERI(a,c,j,k) - ERI(b,k,i,c)*ERI(a,c,k,j) - ERI(b,k,c,i)*ERI(a,c,j,k) 
 
                  B_dyn(ia,jb) =  B_dyn(ia,jb) - num*dem/(dem**2 + eta**2)
                 ZB_dyn(ia,jb) = ZB_dyn(ia,jb) + num*(dem**2 - eta**2)/(dem**2 + eta**2)**2
             
-                dem = OmBSE + eGF(i) - eGF(c) + eGF(k) - eGF(b)
+                dem = + eGF(i) - eGF(c) + eGF(k) - eGF(b)
                 num = 2d0*ERI(b,c,i,k)*ERI(a,k,j,c) - ERI(b,c,i,k)*ERI(a,k,c,j) - ERI(b,c,k,i)*ERI(a,k,j,c)
 
                  B_dyn(ia,jb) =  B_dyn(ia,jb) - num*dem/(dem**2 + eta**2)
@@ -138,7 +136,7 @@ subroutine BSE2_B_matrix_dynamic(singlet_manifold,triplet_manifold,eta,nBas,nC,n
             do c=nO+1,nBas-nR
               do d=nO+1,nBas-nR
      
-                dem = OmBSE + eGF(i) + eGF(j) - eGF(c) - eGF(d)
+                dem = + eGF(i) + eGF(j) - eGF(c) - eGF(d)
                 num = ERI(a,b,c,d)*ERI(c,d,j,i) + ERI(a,b,d,c)*ERI(c,d,i,j)
 
                  B_dyn(ia,jb) =  B_dyn(ia,jb) - 0.5d0*num*dem/(dem**2 + eta**2)
@@ -150,7 +148,7 @@ subroutine BSE2_B_matrix_dynamic(singlet_manifold,triplet_manifold,eta,nBas,nC,n
             do k=nC+1,nO
               do l=nC+1,nO
 
-                dem = OmBSE - eGF(a) - eGF(b) + eGF(k) + eGF(l)
+                dem = - eGF(a) - eGF(b) + eGF(k) + eGF(l)
                 num = ERI(a,b,k,l)*ERI(k,l,j,i) + ERI(a,b,l,k)*ERI(k,l,i,j)
 
                  B_dyn(ia,jb) =  B_dyn(ia,jb) - 0.5d0*num*dem/(dem**2 + eta**2)

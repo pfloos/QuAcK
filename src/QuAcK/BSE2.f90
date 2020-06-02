@@ -61,7 +61,7 @@ subroutine BSE2(TDA,singlet_manifold,triplet_manifold,eta,nBas,nC,nO,nV,nR,nS,ER
 !     call Bethe_Salpeter_2_dynamic_perturbation_iterative(TDA,eta,nBas,nC,nO,nV,nR,nS,eHF(:),eGF(:), &
 !                                                          OmBSE(:,ispin),XpY(:,:,ispin),XmY(:,:,ispin))
     else
-      call BSE2_dynamic_perturbation(singlet_manifold,triplet_manifold,eta,nBas,nC,nO,nV,nR,nS, & 
+      call BSE2_dynamic_perturbation(ispin,eta,nBas,nC,nO,nV,nR,nS, & 
                                      ERI(:,:,:,:),eHF(:),eGF(:),OmBSE(:,ispin),XpY(:,:,ispin),XmY(:,:,ispin))
     end if
  
@@ -89,7 +89,7 @@ subroutine BSE2(TDA,singlet_manifold,triplet_manifold,eta,nBas,nC,nO,nV,nR,nS,ER
 !     call Bethe_Salpeter_2_dynamic_perturbation_iterative(TDA,eta,nBas,nC,nO,nV,nR,nS,eHF(:),eGF(:), &
 !                                                          OmBSE(:,ispin),XpY(:,:,ispin),XmY(:,:,ispin))
     else
-      call BSE2_dynamic_perturbation(singlet_manifold,triplet_manifold,eta,nBas,nC,nO,nV,nR,nS, &
+      call BSE2_dynamic_perturbation(ispin,eta,nBas,nC,nO,nV,nR,nS, &
                                      ERI(:,:,:,:),eHF(:),eGF(:),OmBSE(:,ispin),XpY(:,:,ispin),XmY(:,:,ispin))
     end if
 
