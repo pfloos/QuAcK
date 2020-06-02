@@ -77,7 +77,7 @@ subroutine ACFDT(exchange_kernel,doXBS,dRPA,TDA,BSE,singlet_manifold,triplet_man
 
       if(doXBS) then
 
-        call linear_response(ispin,dRPA,TDA,.false.,eta,nBas,nC,nO,nV,nR,nS,lambda,eW,ERI, &
+        call linear_response(ispin,dRPA,.false.,.false.,eta,nBas,nC,nO,nV,nR,nS,lambda,eW,ERI, &
                              rho(:,:,:,ispin),EcAC(ispin),Omega(:,ispin),XpY(:,:,ispin),XmY(:,:,ispin))
         call excitation_density(nBas,nC,nO,nR,nS,ERI,XpY(:,:,ispin),rho(:,:,:,ispin))
 
@@ -123,7 +123,7 @@ subroutine ACFDT(exchange_kernel,doXBS,dRPA,TDA,BSE,singlet_manifold,triplet_man
 
       if(doXBS) then
 
-        call linear_response(ispin,dRPA,TDA,.false.,eta,nBas,nC,nO,nV,nR,nS,lambda,eW,ERI, &
+        call linear_response(ispin,dRPA,.false.,.false.,eta,nBas,nC,nO,nV,nR,nS,lambda,eW,ERI, &
                              rho(:,:,:,ispin),EcAC(ispin),Omega(:,ispin),XpY(:,:,ispin),XmY(:,:,ispin))
         call excitation_density(nBas,nC,nO,nR,nS,ERI,XpY(:,:,ispin),rho(:,:,:,ispin))
 
