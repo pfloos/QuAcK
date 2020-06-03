@@ -1,5 +1,5 @@
 subroutine evGF2(BSE,TDA,maxSCF,thresh,max_diis,singlet_manifold,triplet_manifold,linearize, & 
-                 eta,nBas,nC,nO,nV,nR,nS,ENuc,ERHF,V,eHF)
+                 eta,nBas,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,eHF)
 
 ! Perform eigenvalue self-consistent second-order Green function calculation
 
@@ -26,12 +26,14 @@ subroutine evGF2(BSE,TDA,maxSCF,thresh,max_diis,singlet_manifold,triplet_manifol
   double precision,intent(in)   :: ENuc
   double precision,intent(in)   :: ERHF
   double precision,intent(in)   :: eHF(nBas)
-  double precision,intent(in)   :: V(nBas,nBas,nBas,nBas)
+  double precision,intent(in)   :: ERI(nBas,nBas,nBas,nBas)
 
 ! Local variables
 
   integer                       :: nSCF
   integer                       :: n_diis
+  double precision              :: EcBSE(nspin)
+  double precision              :: num
   double precision              :: eps
   double precision              :: Conv
   double precision              :: rcond
@@ -75,6 +77,7 @@ subroutine evGF2(BSE,TDA,maxSCF,thresh,max_diis,singlet_manifold,triplet_manifol
     ! Frequency-dependent second-order contribution
 
     Sig(:) = 0d0
+    Z(:)   = 0d0
 
     do p=nC+1,nBas-nR
       do i=nC+1,nO
@@ -82,9 +85,10 @@ subroutine evGF2(BSE,TDA,maxSCF,thresh,max_diis,singlet_manifold,triplet_manifol
           do a=nO+1,nBas-nR
 
             eps = eGF2(p) + eHF(a) - eHF(i) - eHF(j)
+            num = (2d0*ERI(p,a,i,j) - ERI(p,a,j,i))*ERI(p,a,i,j)
 
-            Sig(p) = Sig(p) &
-                     + (2d0*V(p,a,i,j) - V(p,a,j,i))*V(p,a,i,j)*eps/(eps**2 + eta**2)
+            Sig(p) = Sig(p) + num*eps/(eps**2 + eta**2)
+            Z(p)   = Z(p)   - num*(eps**2 - eta**2)/(eps**2 + eta**2)**2
 
           end do
         end do
@@ -97,43 +101,10 @@ subroutine evGF2(BSE,TDA,maxSCF,thresh,max_diis,singlet_manifold,triplet_manifol
           do b=nO+1,nBas-nR
 
             eps = eGF2(p) + eHF(i) - eHF(a) - eHF(b)
+            num = (2d0*ERI(p,i,a,b) - ERI(p,i,b,a))*ERI(p,i,a,b)
 
-            Sig(p) = Sig(p) &
-                     + (2d0*V(p,i,a,b) - V(p,i,b,a))*V(p,i,a,b)*eps/(eps**2 + eta**2)
-
-          end do
-        end do
-      end do
-    end do
-
-    ! Compute the renormalization factor
-
-    Z(:) = 0d0
-
-    do p=nC+1,nBas-nR
-      do i=nC+1,nO
-        do j=nC+1,nO
-          do a=nO+1,nBas-nR
-
-            eps = eGF2(p) + eHF(a) - eHF(i) - eHF(j)
-
-            Z(p) = Z(p) & 
-                 - (2d0*V(p,a,i,j) - V(p,a,j,i))*V(p,a,i,j)*(eps**2 - eta**2)/(eps**2 + eta**2)**2
-
-          end do
-        end do
-      end do
-    end do
-
-    do p=nC+1,nBas-nR
-      do i=nC+1,nO
-        do a=nO+1,nBas-nR
-          do b=nO+1,nBas-nR
-
-            eps = eGF2(p) + eHF(i) - eHF(a) - eHF(b)
-
-            Z(p) = Z(p) & 
-                 - (2d0*V(p,i,a,b) - V(p,i,b,a))*V(p,i,a,b)*(eps**2 - eta**2)/(eps**2 + eta**2)**2
+            Sig(p) = Sig(p) + num*eps/(eps**2 + eta**2)
+            Z(p)   = Z(p)   - num*(eps**2 - eta**2)/(eps**2 + eta**2)**2
 
           end do
         end do
@@ -156,7 +127,7 @@ subroutine evGF2(BSE,TDA,maxSCF,thresh,max_diis,singlet_manifold,triplet_manifol
 
     ! Print results
 
-    call print_evGF2(nBas,nO,nSCF,Conv,eHF,eGF2)
+    call print_evGF2(nBas,nO,nSCF,Conv,eHF,Sig,Z,eGF2)
 
     ! DIIS extrapolation
 
@@ -185,6 +156,14 @@ subroutine evGF2(BSE,TDA,maxSCF,thresh,max_diis,singlet_manifold,triplet_manifol
     write(*,*)'                 Convergence failed                 '
     write(*,*)'!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!'
     write(*,*)
+
+  end if
+
+! Perform BSE2 calculation
+
+  if(BSE) then
+
+    call BSE2(TDA,singlet_manifold,triplet_manifold,eta,nBas,nC,nO,nV,nR,nS,ERI,eHF,eGF2,EcBSE)
 
   end if
 
