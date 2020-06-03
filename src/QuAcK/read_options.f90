@@ -2,8 +2,9 @@ subroutine read_options(maxSCF_HF,thresh_HF,DIIS_HF,n_diis_HF,guess_type,ortho_t
                         maxSCF_CC,thresh_CC,DIIS_CC,n_diis_CC,                         &
                         singlet_manifold,triplet_manifold,                             &
                         maxSCF_GF,thresh_GF,DIIS_GF,n_diis_GF,linGF,renormGF,          &
+                        BSE_GF,TDA_GF,eta_GF,                                          &
                         maxSCF_GW,thresh_GW,DIIS_GW,n_diis_GW,                         &
-                        COHSEX,SOSEX,BSE,TDA,G0W,GW0,linGW,eta,                        &
+                        COHSEX,SOSEX,BSE_GW,TDA_GW,G0W,GW0,linGW,eta_GW,               &
                         doACFDT,exchange_kernel,doXBS,                                 &
                         nMC,nEq,nWalk,dt,nPrint,iSeed,doDrift)
 
@@ -34,6 +35,9 @@ subroutine read_options(maxSCF_HF,thresh_HF,DIIS_HF,n_diis_HF,guess_type,ortho_t
   integer,intent(out)           :: n_diis_GF
   logical,intent(out)           :: linGF
   integer,intent(out)           :: renormGF
+  logical,intent(out)           :: BSE_GF
+  logical,intent(out)           :: TDA_GF
+  double precision,intent(out)  :: eta_GF
 
   integer,intent(out)           :: maxSCF_GW
   double precision,intent(out)  :: thresh_GW
@@ -41,12 +45,12 @@ subroutine read_options(maxSCF_HF,thresh_HF,DIIS_HF,n_diis_HF,guess_type,ortho_t
   integer,intent(out)           :: n_diis_GW
   logical,intent(out)           :: COHSEX
   logical,intent(out)           :: SOSEX
-  logical,intent(out)           :: BSE
-  logical,intent(out)           :: TDA
+  logical,intent(out)           :: BSE_GW
+  logical,intent(out)           :: TDA_GW
   logical,intent(out)           :: G0W
   logical,intent(out)           :: GW0
   logical,intent(out)           :: linGW
-  double precision,intent(out)  :: eta
+  double precision,intent(out)  :: eta_GW
 
   logical,intent(out)           :: doACFDT
   logical,intent(out)           :: exchange_kernel
@@ -120,14 +124,19 @@ subroutine read_options(maxSCF_HF,thresh_HF,DIIS_HF,n_diis_HF,guess_type,ortho_t
   thresh_GF = 1d-5
   DIIS_GF   = .false.
   n_diis_GF = 5
-  linGF = .false.
-  renormGF = 0
+  linGF     = .false.
+  renormGF  = 0
+  BSE_GF    = .false.
+  TDA_GF    = .false.
+  eta_GF    = 0d0
 
   read(1,*) 
-  read(1,*) maxSCF_GF,thresh_GW,answer1,n_diis_GF,answer2,renormGF
+  read(1,*) maxSCF_GF,thresh_GW,answer1,n_diis_GF,answer2,renormGF,answer3,answer4,eta_GF
 
   if(answer1 == 'T') DIIS_GF = .true.
   if(answer2 == 'T') linGF   = .true.
+  if(answer3 == 'T') BSE_GF  = .true.
+  if(answer4 == 'T') TDA_GF  = .true.
   if(.not.DIIS_GF) n_diis_GF = 1
 
 ! Read GW options
@@ -138,25 +147,25 @@ subroutine read_options(maxSCF_HF,thresh_HF,DIIS_HF,n_diis_HF,guess_type,ortho_t
   n_diis_GW = 5
   COHSEX    = .false.
   SOSEX     = .false.
-  BSE       = .false.
-  TDA       = .false.
+  BSE_GW    = .false.
+  TDA_GW    = .false.
   G0W       = .false.
   GW0       = .false.
   linGW     = .false.
-  eta       = 0d0
+  eta_GW    = 0d0
 
   read(1,*) 
   read(1,*) maxSCF_GW,thresh_GW,answer1,n_diis_GW,answer2, &
-            answer3,answer4,answer5,answer6,answer7,answer8,eta
+            answer3,answer4,answer5,answer6,answer7,answer8,eta_GW
 
   if(answer1 == 'T') DIIS_GW = .true.
-  if(answer2 == 'T') COHSEX = .true.
-  if(answer3 == 'T') SOSEX  = .true.
-  if(answer4 == 'T') BSE = .true.
-  if(answer5 == 'T') TDA = .true.
-  if(answer6 == 'T') G0W = .true.
-  if(answer7 == 'T') GW0 = .true.
-  if(answer8 == 'T') linGW = .true.
+  if(answer2 == 'T') COHSEX  = .true.
+  if(answer3 == 'T') SOSEX   = .true.
+  if(answer4 == 'T') BSE_GW  = .true.
+  if(answer5 == 'T') TDA_GW  = .true.
+  if(answer6 == 'T') G0W     = .true.
+  if(answer7 == 'T') GW0     = .true.
+  if(answer8 == 'T') linGW   = .true.
   if(.not.DIIS_GW) n_diis_GW = 1
 
 ! Options for adiabatic connection

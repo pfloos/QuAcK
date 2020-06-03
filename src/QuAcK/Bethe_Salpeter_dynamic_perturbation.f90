@@ -25,8 +25,9 @@ subroutine Bethe_Salpeter_dynamic_perturbation(TDA,eta,nBas,nC,nO,nV,nR,nS,eGW,O
 
 ! Local variables
 
-  logical                       :: dTDA = .true.
   integer                       :: ia
+
+  logical                       :: dTDA = .true.
   integer,parameter             :: maxS = 10
   double precision              :: gapGW
 
@@ -47,10 +48,16 @@ subroutine Bethe_Salpeter_dynamic_perturbation(TDA,eta,nBas,nC,nO,nV,nR,nS,eGW,O
 
   if(.not.dTDA) allocate(B_dyn(nS,nS),ZB_dyn(nS,nS))
 
+  ! Print main components of transition vectors
+
+  call print_transition_vectors(nBas,nC,nO,nV,nR,nS,OmBSE,XpY,XmY)
+
   gapGW = eGW(nO+1) - eGW(nO) 
 
   write(*,*) '---------------------------------------------------------------------------------------------------'
   write(*,*) ' First-order dynamical correction to static Bethe-Salpeter excitation energies                                 '
+  write(*,*) '---------------------------------------------------------------------------------------------------'
+  write(*,'(A57,F10.6,A3)') ' BSE neutral excitation must be lower than the GW gap = ',gapGW*HaToeV,' eV'
   write(*,*) '---------------------------------------------------------------------------------------------------'
   write(*,'(2X,A5,1X,A20,1X,A20,1X,A20,1X,A20)') '#','Static (eV)','Dynamic (eV)','Correction (eV)','Renorm. (eV)'
   write(*,*) '---------------------------------------------------------------------------------------------------'
@@ -106,8 +113,6 @@ subroutine Bethe_Salpeter_dynamic_perturbation(TDA,eta,nBas,nC,nO,nV,nR,nS,eGW,O
 
     write(*,'(2X,I5,5X,F15.6,5X,F15.6,5X,F15.6,5X,F15.6)') & 
       ia,OmBSE(ia)*HaToeV,(OmBSE(ia)+OmDyn(ia))*HaToeV,OmDyn(ia)*HaToeV,ZDyn(ia)
-
-    if(OmBSE(ia) > gapGW) write(*,*) ' !!! BSE neutral excitation larger than the GW gap !!! '
 
   end do
   write(*,*) '---------------------------------------------------------------------------------------------------'

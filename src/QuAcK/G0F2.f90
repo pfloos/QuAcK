@@ -66,8 +66,8 @@ subroutine G0F2(BSE,TDA,singlet_manifold,triplet_manifold,linearize,eta,nBas,nC,
 
           eps = eHF(p) + eHF(a) - eHF(i) - eHF(j)
           V  = (2d0*ERI(p,a,i,j) - ERI(p,a,j,i))*ERI(p,a,i,j)
-          Sig(p) = Sig(p) + V/eps
-          Z(p)   = Z(p)   + V/eps**2
+          Sig(p) = Sig(p) + V*eps/(eps**2 + eta**2)
+          Z(p)   = Z(p)   - V*(eps**2 - eta**2)/(eps**2 + eta**2)**2
 
         end do
       end do
@@ -81,15 +81,15 @@ subroutine G0F2(BSE,TDA,singlet_manifold,triplet_manifold,linearize,eta,nBas,nC,
 
           eps = eHF(p) + eHF(i) - eHF(a) - eHF(b)
           V  = (2d0*ERI(p,i,a,b) - ERI(p,i,b,a))*ERI(p,i,a,b)
-          Sig(p) = Sig(p) + V/eps
-          Z(p)   = Z(p)   + V/eps**2
+          Sig(p) = Sig(p) + V*eps/(eps**2 + eta**2)
+          Z(p)   = Z(p)   - V*(eps**2 - eta**2)/(eps**2 + eta**2)**2
 
         end do
       end do
     end do
   end do
 
-  Z(:) = 1d0/(1d0 + Z(:))
+  Z(:) = 1d0/(1d0 - Z(:))
 
   if(linearize) then
 

@@ -47,10 +47,16 @@ subroutine BSE2_dynamic_perturbation(ispin,eta,nBas,nC,nO,nV,nR,nS,ERI,eHF,eGF,O
 
   if(.not.dTDA) allocate(B_dyn(nS,nS),ZB_dyn(nS,nS))
 
+  ! Print main components of transition vectors
+
+  call print_transition_vectors(nBas,nC,nO,nV,nR,nS,OmBSE,XpY,XmY)
+
   gapGF = eGF(nO+1) - eGF(nO) 
 
   write(*,*) '---------------------------------------------------------------------------------------------------'
   write(*,*) ' First-order dynamical correction to static 2nd-order Bethe-Salpeter excitation energies '
+  write(*,*) '---------------------------------------------------------------------------------------------------'
+  write(*,'(A58,F10.6,A3)') ' BSE neutral excitation must be lower than the GF2 gap = ',gapGF*HaToeV,' eV'
   write(*,*) '---------------------------------------------------------------------------------------------------'
   write(*,'(2X,A5,1X,A20,1X,A20,1X,A20,1X,A20)') '#','Static (eV)','Dynamic (eV)','Correction (eV)','Renorm. (eV)'
   write(*,*) '---------------------------------------------------------------------------------------------------'
@@ -94,8 +100,6 @@ subroutine BSE2_dynamic_perturbation(ispin,eta,nBas,nC,nO,nV,nR,nS,ERI,eHF,eGF,O
 
     write(*,'(2X,I5,5X,F15.6,5X,F15.6,5X,F15.6,5X,F15.6)') & 
       ia,OmBSE(ia)*HaToeV,(OmBSE(ia)+OmDyn(ia))*HaToeV,OmDyn(ia)*HaToeV,ZDyn(ia)
-
-    if(OmBSE(ia) > gapGF) write(*,*) ' !!! BSE2 neutral excitation larger than the GF2 gap !!! '
 
   end do
   write(*,*) '---------------------------------------------------------------------------------------------------'

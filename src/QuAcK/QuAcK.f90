@@ -96,12 +96,13 @@ program QuAcK
 
   integer                       :: maxSCF_GF,n_diis_GF,renormGF
   double precision              :: thresh_GF
-  logical                       :: DIIS_GF,linGF
+  logical                       :: DIIS_GF,linGF,BSE_GF,TDA_GF
+  double precision              :: eta_GF
 
   integer                       :: maxSCF_GW,n_diis_GW
   double precision              :: thresh_GW
-  logical                       :: DIIS_GW,COHSEX,SOSEX,BSE,TDA,G0W,GW0,linGW
-  double precision              :: eta
+  logical                       :: DIIS_GW,COHSEX,SOSEX,BSE_GW,TDA_GW,G0W,GW0,linGW
+  double precision              :: eta_GW
 
   integer                       :: nMC,nEq,nWalk,nPrint,iSeed
   double precision              :: dt
@@ -144,8 +145,9 @@ program QuAcK
                     maxSCF_CC,thresh_CC,DIIS_CC,n_diis_CC,                       &
                     singlet_manifold,triplet_manifold,                           &
                     maxSCF_GF,thresh_GF,DIIS_GF,n_diis_GF,linGF,renormGF,        &
+                    BSE_GF,TDA_GF,eta_GF,                                        &
                     maxSCF_GW,thresh_GW,DIIS_GW,n_diis_GW,                       & 
-                    COHSEX,SOSEX,BSE,TDA,G0W,GW0,linGW,eta,                      &  
+                    COHSEX,SOSEX,BSE_GW,TDA_GW,G0W,GW0,linGW,eta_GW,             &  
                     doACFDT,exchange_kernel,doXBS,                               &
                     nMC,nEq,nWalk,dt,nPrint,iSeed,doDrift)
 
@@ -533,7 +535,7 @@ program QuAcK
   if(doRPA) then
 
     call cpu_time(start_RPA)
-    call RPA(doACFDT,exchange_kernel,singlet_manifold,triplet_manifold,eta, & 
+    call RPA(doACFDT,exchange_kernel,singlet_manifold,triplet_manifold,0d0, & 
              nBas,nC,nO,nV,nR,nS,ENuc,ERHF,ERI_MO,eHF)
     call cpu_time(end_RPA)
 
@@ -550,7 +552,7 @@ program QuAcK
   if(doRPAx) then
 
     call cpu_time(start_RPAx)
-    call RPAx(doACFDT,exchange_kernel,singlet_manifold,triplet_manifold,eta, & 
+    call RPAx(doACFDT,exchange_kernel,singlet_manifold,triplet_manifold,0d0, & 
               nBas,nC,nO,nV,nR,nS,ENuc,ERHF,ERI_MO,eHF)
     call cpu_time(end_RPAx)
 
@@ -601,8 +603,8 @@ program QuAcK
   if(doG0F2) then
 
     call cpu_time(start_GF2)
-    call G0F2(BSE,TDA,singlet_manifold,triplet_manifold,linGF, & 
-              eta,nBas,nC(1),nO(1),nV(1),nR(1),nS(1),ENuc,ERHF,ERI_MO,eHF)
+    call G0F2(BSE_GF,TDA_GF,singlet_manifold,triplet_manifold,linGF, & 
+              eta_GF,nBas,nC(1),nO(1),nV(1),nR(1),nS(1),ENuc,ERHF,ERI_MO,eHF)
     call cpu_time(end_GF2)
 
     t_GF2 = end_GF2 - start_GF2
@@ -618,8 +620,8 @@ program QuAcK
   if(doevGF2) then
 
     call cpu_time(start_GF2)
-    call evGF2(BSE,TDA,maxSCF_GF,thresh_GF,n_diis_GF,singlet_manifold,triplet_manifold,linGF, & 
-               eta,nBas,nC(1),nO(1),nV(1),nR(1),nS(1),ENuc,ERHF,ERI_MO,eHF)
+    call evGF2(BSE_GF,TDA_GF,maxSCF_GF,thresh_GF,n_diis_GF,singlet_manifold,triplet_manifold,linGF, & 
+               eta_GF,nBas,nC(1),nO(1),nV(1),nR(1),nS(1),ENuc,ERHF,ERI_MO,eHF)
     call cpu_time(end_GF2)
 
     t_GF2 = end_GF2 - start_GF2
@@ -669,8 +671,8 @@ program QuAcK
   if(doG0W0) then
     
     call cpu_time(start_G0W0)
-    call G0W0(doACFDT,exchange_kernel,doXBS,COHSEX,SOSEX,BSE,TDA, & 
-              singlet_manifold,triplet_manifold,linGW,eta, & 
+    call G0W0(doACFDT,exchange_kernel,doXBS,COHSEX,SOSEX,BSE_GW,TDA_GW, & 
+              singlet_manifold,triplet_manifold,linGW,eta_GW, & 
               nBas,nC(1),nO(1),nV(1),nR(1),nS(1),ENuc,ERHF,Hc,H,ERI_MO,PHF,cHF,eHF,eG0W0)
     call cpu_time(end_G0W0)
   
@@ -687,8 +689,8 @@ program QuAcK
   if(doevGW) then
 
     call cpu_time(start_evGW)
-    call evGW(maxSCF_GW,thresh_GW,n_diis_GW,doACFDT,exchange_kernel,doXBS,COHSEX,SOSEX,BSE,TDA,G0W,GW0, &
-              singlet_manifold,triplet_manifold,eta,                                              &
+    call evGW(maxSCF_GW,thresh_GW,n_diis_GW,doACFDT,exchange_kernel,doXBS,COHSEX,SOSEX, &
+              BSE_GW,TDA_GW,G0W,GW0,singlet_manifold,triplet_manifold,eta_GW,           &
               nBas,nC(1),nO(1),nV(1),nR(1),nS(1),ENuc,ERHF,Hc,H,ERI_MO,PHF,cHF,eHF,eG0W0)
     call cpu_time(end_evGW)
 
@@ -705,8 +707,8 @@ program QuAcK
   if(doqsGW) then 
 
     call cpu_time(start_qsGW)
-    call qsGW(maxSCF_GW,thresh_GW,n_diis_GW,doACFDT,exchange_kernel,doXBS,COHSEX,SOSEX,BSE,TDA,G0W,GW0, & 
-              singlet_manifold,triplet_manifold,eta, & 
+    call qsGW(maxSCF_GW,thresh_GW,n_diis_GW,doACFDT,exchange_kernel,doXBS,COHSEX,SOSEX, &
+              BSE_GW,TDA_GW,G0W,GW0,singlet_manifold,triplet_manifold,eta_GW,           & 
               nBas,nC(1),nO(1),nV(1),nR(1),nS(1),ENuc,ERHF,S,X,T,V,Hc,ERI_AO,ERI_MO,PHF,cHF,eHF)
     call cpu_time(end_qsGW)
 
@@ -725,8 +727,8 @@ program QuAcK
   if(doG0T0) then
     
     call cpu_time(start_G0T0)
-    call G0T0(doACFDT,exchange_kernel,doXBS,BSE,TDA,       &
-              singlet_manifold,triplet_manifold,linGW,eta, &  
+    call G0T0(doACFDT,exchange_kernel,doXBS,BSE_GW,TDA_GW,       &
+              singlet_manifold,triplet_manifold,linGW,eta_GW, &  
               nBas,nC(1),nO(1),nV(1),nR(1),nS(1),ENuc,ERHF,ERI_MO,eHF,eG0T0)
     call cpu_time(end_G0T0)
   
@@ -743,8 +745,9 @@ program QuAcK
   if(doevGT) then
     
     call cpu_time(start_evGT)
-    call evGT(maxSCF_GW,thresh_GW,n_diis_GW,doACFDT,exchange_kernel,doXBS,BSE,TDA,singlet_manifold,triplet_manifold, &
-                eta,nBas,nC(1),nO(1),nV(1),nR(1),nS(1),ENuc,ERHF,ERI_MO,eHF,eG0T0)
+    call evGT(maxSCF_GW,thresh_GW,n_diis_GW,doACFDT,exchange_kernel,doXBS, &
+              BSE_GW,TDA_GW,singlet_manifold,triplet_manifold,eta_GW,      & 
+              nBas,nC(1),nO(1),nV(1),nR(1),nS(1),ENuc,ERHF,ERI_MO,eHF,eG0T0)
     call cpu_time(end_evGT)
   
     t_evGT = end_evGT - start_evGT
@@ -859,8 +862,8 @@ program QuAcK
     ! Long-range G0W0 calculation
 
     call cpu_time(start_G0W0)
-    call G0W0(doACFDT,exchange_kernel,doXBS,COHSEX,SOSEX,BSE,TDA, & 
-              singlet_manifold,triplet_manifold,linGW,eta, & 
+    call G0W0(doACFDT,exchange_kernel,doXBS,COHSEX,SOSEX,BSE_GW,TDA_GW, & 
+              singlet_manifold,triplet_manifold,linGW,eta_GW, & 
               nBas,nC(1),nO(1),nV(1),nR(1),nS(1),ENuc,ERHF,Hc,H,ERI_ERF_MO,PHF,cHF,eHF,eG0W0)
     call cpu_time(end_G0W0)
   
@@ -873,8 +876,8 @@ program QuAcK
     ERI_ERF_MO(:,:,:,:) = ERI_MO(:,:,:,:) - ERI_ERF_MO(:,:,:,:)
 
     call cpu_time(start_G0T0)
-    call G0T0(doACFDT,exchange_kernel,doXBS,BSE,TDA,       &
-              singlet_manifold,triplet_manifold,linGW,eta, &  
+    call G0T0(doACFDT,exchange_kernel,doXBS,BSE_GW,TDA_GW,       &
+              singlet_manifold,triplet_manifold,linGW,eta_GW, &  
               nBas,nC(1),nO(1),nV(1),nR(1),nS(1),ENuc,ERHF,ERI_ERF_MO,eHF,eG0T0)
     call cpu_time(end_G0T0)
   
