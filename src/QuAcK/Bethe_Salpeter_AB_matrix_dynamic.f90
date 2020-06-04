@@ -51,9 +51,8 @@ subroutine Bethe_Salpeter_AB_matrix_dynamic(eta,nBas,nC,nO,nV,nR,nS,lambda,eGW,O
 
           do kc=1,maxS
 
-            eps = OmRPA(kc)**2 + eta**2
-            chi_A = chi_A + rho(i,j,kc)*rho(a,b,kc)*OmRPA(kc)/eps
-            chi_B = chi_B + rho(i,b,kc)*rho(a,j,kc)*OmRPA(kc)/eps
+            chi_A = chi_A + rho(i,j,kc)*rho(a,b,kc)*OmRPA(kc)/OmRPA(kc)**2 + eta**2
+            chi_B = chi_B + rho(i,b,kc)*rho(a,j,kc)*OmRPA(kc)/OmRPA(kc)**2 + eta**2
 
           enddo
 
@@ -65,17 +64,17 @@ subroutine Bethe_Salpeter_AB_matrix_dynamic(eta,nBas,nC,nO,nV,nR,nS,lambda,eGW,O
 
           do kc=1,maxS
 
-            eps_A = (+ OmBSE - OmRPA(kc) - (eGW(a) - eGW(j)))**2 + eta**2
-            chi_A = chi_A + rho(i,j,kc)*rho(a,b,kc)*(+ OmBSE - OmRPA(kc) - (eGW(a) - eGW(j)))/eps_A
+            eps_A = + OmBSE - OmRPA(kc) - (eGW(a) - eGW(j))
+            chi_A = chi_A + rho(i,j,kc)*rho(a,b,kc)*eps_A/(eps_A**2 + eta**2)
 
-            eps_A = (+ OmBSE - OmRPA(kc) - (eGW(b) - eGW(i)))**2 + eta**2
-            chi_A = chi_A + rho(i,j,kc)*rho(a,b,kc)*(+ OmBSE - OmRPA(kc) - (eGW(b) - eGW(i)))/eps_A
+            eps_A = + OmBSE - OmRPA(kc) - (eGW(b) - eGW(i))
+            chi_A = chi_A + rho(i,j,kc)*rho(a,b,kc)*eps_A/(eps_A**2 + eta**2)
 
-            eps_B = (+ OmBSE - OmRPA(kc) - (eGW(a) - eGW(b)))**2 + eta**2
-            chi_B = chi_B + rho(i,b,kc)*rho(a,j,kc)*(+ OmBSE - OmRPA(kc) - (eGW(a) - eGW(b)))/eps_B
+            eps_B = + OmBSE - OmRPA(kc) - (eGW(a) - eGW(b))
+            chi_B = chi_B + rho(i,b,kc)*rho(a,j,kc)*eps_B/(eps_B**2 + eta**2)
 
-            eps_B = (+ OmBSE - OmRPA(kc) - (eGW(j) - eGW(i)))**2 + eta**2
-            chi_B = chi_B + rho(i,b,kc)*rho(a,j,kc)*(+ OmBSE - OmRPA(kc) - (eGW(j) - eGW(i)))/eps_B
+            eps_B = + OmBSE - OmRPA(kc) - (eGW(j) - eGW(i))
+            chi_B = chi_B + rho(i,b,kc)*rho(a,j,kc)*eps_B/(eps_B**2 + eta**2)
 
           enddo
 
