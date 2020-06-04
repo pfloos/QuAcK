@@ -68,8 +68,7 @@ subroutine BSE2_dynamic_perturbation(ispin,eta,nBas,nC,nO,nV,nR,nS,ERI,eHF,eGF,O
 
     ! Resonant part of the BSE correction for dynamical TDA
 
-    call BSE2_A_matrix_dynamic(ispin,eta,nBas,nC,nO,nV,nR,nS,1d0, & 
-                               ERI(:,:,:,:),eHF(:),eGF(:),OmBSE(ia),A_dyn(:,:),ZA_dyn(:,:))
+    call BSE2_A_matrix_dynamic(ispin,eta,nBas,nC,nO,nV,nR,nS,1d0,ERI(:,:,:,:),eGF(:),OmBSE(ia),A_dyn(:,:),ZA_dyn(:,:))
 
     if(dTDA) then 
 
@@ -78,10 +77,9 @@ subroutine BSE2_dynamic_perturbation(ispin,eta,nBas,nC,nO,nV,nR,nS,ERI,eHF,eGF,O
 
     else
 
-      ! Anti-resonant part of the BSE correction
+      ! Anti-resonant part of the BSE correction (frequency independent)
 
-      call BSE2_B_matrix_dynamic(ispin,eta,nBas,nC,nO,nV,nR,nS,1d0, & 
-                                 ERI(:,:,:,:),eHF(:),eGF(:),OmBSE(ia),B_dyn(:,:),ZB_dyn(:,:))
+      call BSE2_B_matrix_dynamic(ispin,eta,nBas,nC,nO,nV,nR,nS,1d0,ERI(:,:,:,:),eGF(:),B_dyn(:,:),ZB_dyn(:,:))
 
       ZDyn(ia)  = dot_product(X(:),matmul(ZA_dyn(:,:),X(:))) &
                 - dot_product(Y(:),matmul(ZA_dyn(:,:),Y(:))) &

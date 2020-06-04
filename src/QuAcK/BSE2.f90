@@ -24,7 +24,6 @@ subroutine BSE2(TDA,singlet_manifold,triplet_manifold,eta,nBas,nC,nO,nV,nR,nS,ER
 
 ! Local variables
 
-  logical                       :: evDyn = .false.
   integer                       :: ispin
   double precision,allocatable  :: OmBSE(:,:)
   double precision,allocatable  :: XpY(:,:,:)
@@ -50,20 +49,14 @@ subroutine BSE2(TDA,singlet_manifold,triplet_manifold,eta,nBas,nC,nO,nV,nR,nS,ER
 
     ! Compute BSE2 excitation energies
 
-    call linear_response(ispin,.false.,TDA,.false.,eta,nBas,nC,nO,nV,nR,nS,1d0,eGF,ERI, &
+    call linear_response(ispin,.false.,TDA,.false.,eta,nBas,nC,nO,nV,nR,nS,1d0,eGF(:),ERI(:,:,:,:), &
                          rho,EcBSE(ispin),OmBSE(:,ispin),XpY(:,:,ispin),XmY(:,:,ispin))
     call print_excitation('BSE2        ',ispin,nS,OmBSE(:,ispin))
 
     ! Compute dynamic correction for BSE via perturbation theory
 
-    if(evDyn) then
-
-!     call Bethe_Salpeter_2_dynamic_perturbation_iterative(TDA,eta,nBas,nC,nO,nV,nR,nS,eHF(:),eGF(:), &
-!                                                          OmBSE(:,ispin),XpY(:,:,ispin),XmY(:,:,ispin))
-    else
-      call BSE2_dynamic_perturbation(ispin,eta,nBas,nC,nO,nV,nR,nS, & 
-                                     ERI(:,:,:,:),eHF(:),eGF(:),OmBSE(:,ispin),XpY(:,:,ispin),XmY(:,:,ispin))
-    end if
+    call BSE2_dynamic_perturbation(ispin,eta,nBas,nC,nO,nV,nR,nS, & 
+                                   ERI(:,:,:,:),eHF(:),eGF(:),OmBSE(:,ispin),XpY(:,:,ispin),XmY(:,:,ispin))
  
   end if
 
@@ -78,20 +71,14 @@ subroutine BSE2(TDA,singlet_manifold,triplet_manifold,eta,nBas,nC,nO,nV,nR,nS,ER
 
     ! Compute BSE2 excitation energies
 
-    call linear_response(ispin,.false.,TDA,.false.,eta,nBas,nC,nO,nV,nR,nS,1d0,eGF,ERI, &
+    call linear_response(ispin,.false.,TDA,.false.,eta,nBas,nC,nO,nV,nR,nS,1d0,eGF(:),ERI(:,:,:,:), &
                          rho,EcBSE(ispin),OmBSE(:,ispin),XpY(:,:,ispin),XmY(:,:,ispin))
     call print_excitation('BSE2        ',ispin,nS,OmBSE(:,ispin))
 
     ! Compute dynamic correction for BSE via perturbation theory
 
-    if(evDyn) then
-
-!     call Bethe_Salpeter_2_dynamic_perturbation_iterative(TDA,eta,nBas,nC,nO,nV,nR,nS,eHF(:),eGF(:), &
-!                                                          OmBSE(:,ispin),XpY(:,:,ispin),XmY(:,:,ispin))
-    else
-      call BSE2_dynamic_perturbation(ispin,eta,nBas,nC,nO,nV,nR,nS, &
-                                     ERI(:,:,:,:),eHF(:),eGF(:),OmBSE(:,ispin),XpY(:,:,ispin),XmY(:,:,ispin))
-    end if
+    call BSE2_dynamic_perturbation(ispin,eta,nBas,nC,nO,nV,nR,nS, &
+                                   ERI(:,:,:,:),eHF(:),eGF(:),OmBSE(:,ispin),XpY(:,:,ispin),XmY(:,:,ispin))
 
   end if
 

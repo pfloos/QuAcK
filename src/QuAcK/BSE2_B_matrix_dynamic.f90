@@ -1,4 +1,4 @@
-subroutine BSE2_B_matrix_dynamic(ispin,eta,nBas,nC,nO,nV,nR,nS,lambda,ERI,eHF,eGF,OmBSE,B_dyn,ZB_dyn)
+subroutine BSE2_B_matrix_dynamic(ispin,eta,nBas,nC,nO,nV,nR,nS,lambda,ERI,eGF,B_dyn,ZB_dyn)
 
 ! Compute the anti-resonant part of the dynamic BSE2 matrix
 
@@ -12,9 +12,7 @@ subroutine BSE2_B_matrix_dynamic(ispin,eta,nBas,nC,nO,nV,nR,nS,lambda,ERI,eHF,eG
   double precision,intent(in)   :: eta
   double precision,intent(in)   :: lambda
   double precision,intent(in)   :: ERI(nBas,nBas,nBas,nBas)
-  double precision,intent(in)   :: eHF(nBas)
   double precision,intent(in)   :: eGF(nBas)
-  double precision,intent(in)   :: OmBSE
   
 ! Local variables
 
@@ -83,7 +81,7 @@ subroutine BSE2_B_matrix_dynamic(ispin,eta,nBas,nC,nO,nV,nR,nS,lambda,ERI,eHF,eG
             do k=nC+1,nO
               do l=nC+1,nO
 
-                dem = OmBSE - eGF(a) - eGF(b) + eGF(k) + eGF(l)
+                dem = - eGF(a) - eGF(b) + eGF(k) + eGF(l)
                 num = 2d0*ERI(a,b,k,l)*ERI(k,l,i,j) -     ERI(a,b,k,l)*ERI(k,l,j,i) & 
                     -     ERI(a,b,l,k)*ERI(k,l,i,j) + 2d0*ERI(a,b,l,k)*ERI(k,l,j,i)
 
