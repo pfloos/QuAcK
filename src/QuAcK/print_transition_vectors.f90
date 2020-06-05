@@ -22,6 +22,7 @@ subroutine print_transition_vectors(nBas,nC,nO,nV,nR,nS,Omega,XpY,XmY)
   integer                       :: ia,jb,i,j,a,b
   integer,parameter             :: maxS = 10
   double precision,parameter    :: thres_vec = 0.1d0
+  double precision              :: norm
   double precision,allocatable  :: X(:)
   double precision,allocatable  :: Y(:)
 
@@ -32,31 +33,38 @@ subroutine print_transition_vectors(nBas,nC,nO,nV,nR,nS,Omega,XpY,XmY)
   write(*,*)
   do ia=1,min(nS,maxS)
 
-  X(:) = 0.5d0*(XpY(ia,:) + XmY(ia,:))
-  Y(:) = 0.5d0*(XpY(ia,:) - XmY(ia,:))
+    X(:) = 0.5d0*(XpY(ia,:) + XmY(ia,:))
+    Y(:) = 0.5d0*(XpY(ia,:) - XmY(ia,:))
+   
+    norm = 0d0
+    do jb=1,nS
+      norm = norm + X(jb)*X(jb)
+    end do
+    norm = sqrt(norm)
 
-  print*,'--------------------------------'
-  write(*,'(A15,I3,A2,F10.6,A3)') ' Excitation n. ',ia,': ',Omega(ia)*HaToeV,' eV'
-  print*,'--------------------------------'
-  print*,'Resonant vectors'
-  print*,'--------------------------------'
+    print*,'--------------------------------'
+    write(*,'(A15,I3,A2,F10.6,A3)') ' Excitation n. ',ia,': ',Omega(ia)*HaToeV,' eV'
+    print*,'--------------------------------'
 
     jb = 0
     do j=nC+1,nO
       do b=nO+1,nBas-nR
         jb = jb + 1
-        if(abs(X(jb)) > thres_vec) write(*,'(I3,A5,I3,A3,F10.6)') j,' --> ',b,' = ',X(jb)
+        if(abs(X(jb)) > thres_vec) write(*,'(I3,A4,I3,A3,F10.6)') j,' -> ',b,' = ',X(jb)/sqrt(2d0)
       end do
     end do
  
-    print*,'--------------------------------'
-    print*,'Anti-resonant vectors'
-    print*,'--------------------------------'
+    norm = 0d0
+    do jb=1,nS
+      norm = norm + Y(jb)*Y(jb)
+    end do
+    norm = sqrt(norm)
+
     jb = 0
     do j=nC+1,nO
       do b=nO+1,nBas-nR
         jb = jb + 1
-        if(abs(Y(jb)) > thres_vec) write(*,'(I3,A5,I3,A3,F10.6)') j,' --> ',b,' = ',Y(jb)
+        if(abs(Y(jb)) > thres_vec) write(*,'(I3,A4,I3,A3,F10.6)') j,' <- ',b,' = ',Y(jb)/sqrt(2d0)
       end do
     end do
    write(*,*)

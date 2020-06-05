@@ -62,6 +62,8 @@ subroutine RPAx(doACFDT,exchange_kernel,singlet_manifold,triplet_manifold,eta, &
     call linear_response(ispin,.false.,.false.,.false.,eta,nBas,nC,nO,nV,nR,nS,1d0,e,ERI,rho, &
                          EcRPAx(ispin),Omega(:,ispin),XpY(:,:,ispin),XmY(:,:,ispin))
     call print_excitation('RPAx        ',ispin,nS,Omega(:,ispin))
+    call print_transition_vectors(nBas,nC,nO,nV,nR,nS,Omega(:,ispin),XpY(:,:,ispin),XmY(:,:,ispin))
+
 
   endif
 
@@ -74,6 +76,7 @@ subroutine RPAx(doACFDT,exchange_kernel,singlet_manifold,triplet_manifold,eta, &
     call linear_response(ispin,.false.,.false.,.false.,eta,nBas,nC,nO,nV,nR,nS,1d0,e,ERI,rho, &
                          EcRPAx(ispin),Omega(:,ispin),XpY(:,:,ispin),XmY(:,:,ispin))
     call print_excitation('RPAx        ',ispin,nS,Omega(:,ispin))
+    call print_transition_vectors(nBas,nC,nO,nV,nR,nS,Omega(:,ispin),XpY(:,:,ispin),XmY(:,:,ispin))
 
   endif
 
