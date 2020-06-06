@@ -51,8 +51,8 @@ subroutine Bethe_Salpeter_AB_matrix_dynamic(eta,nBas,nC,nO,nV,nR,nS,lambda,eGW,O
 
           do kc=1,maxS
 
-            chi_A = chi_A + rho(i,j,kc)*rho(a,b,kc)*OmRPA(kc)/OmRPA(kc)**2 + eta**2
-            chi_B = chi_B + rho(i,b,kc)*rho(a,j,kc)*OmRPA(kc)/OmRPA(kc)**2 + eta**2
+            chi_A = chi_A + rho(i,j,kc)*rho(a,b,kc)*OmRPA(kc)/(OmRPA(kc)**2 + eta**2)
+            chi_B = chi_B + rho(i,b,kc)*rho(a,j,kc)*OmRPA(kc)/(OmRPA(kc)**2 + eta**2)
 
           enddo
 
