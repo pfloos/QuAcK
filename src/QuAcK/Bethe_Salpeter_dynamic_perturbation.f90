@@ -27,7 +27,7 @@ subroutine Bethe_Salpeter_dynamic_perturbation(TDA,eta,nBas,nC,nO,nV,nR,nS,eGW,O
 
   integer                       :: ia
 
-  logical                       :: dTDA = .false.
+  logical                       :: dTDA = .true.
   integer,parameter             :: maxS = 10
   double precision              :: gapGW
 
