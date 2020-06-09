@@ -1,6 +1,5 @@
-subroutine evGW(maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,COHSEX,SOSEX,BSE,TDA,G0W,GW0, & 
-                singlet_manifold,triplet_manifold,eta,                   & 
-                nBas,nC,nO,nV,nR,nS,ENuc,ERHF,Hc,H,ERI,PHF,cHF,eHF,eG0W0)
+subroutine evGW(maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,COHSEX,SOSEX,BSE,TDA_W,TDA,G0W,GW0, & 
+                singlet_manifold,triplet_manifold,eta,nBas,nC,nO,nV,nR,nS,ENuc,ERHF,Hc,H,ERI,PHF,cHF,eHF,eG0W0)
 
 ! Perform self-consistent eigenvalue-only GW calculation
 
@@ -20,6 +19,7 @@ subroutine evGW(maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,COHSEX,SOSE
   logical,intent(in)            :: COHSEX
   logical,intent(in)            :: SOSEX
   logical,intent(in)            :: BSE
+  logical,intent(in)            :: TDA_W
   logical,intent(in)            :: TDA
   logical,intent(in)            :: G0W
   logical,intent(in)            :: GW0
@@ -78,6 +78,16 @@ subroutine evGW(maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,COHSEX,SOSE
   if(COHSEX) write(*,*) 'COHSEX approximation activated!'
   write(*,*)
 
+! TDA for W
+
+  if(TDA_W) write(*,*) 'Tamm-Dancoff approximation for dynamic screening!'
+  write(*,*)
+
+! TDA 
+
+  if(TDA) write(*,*) 'Tamm-Dancoff approximation activated!'
+  write(*,*)
+
 ! Linear mixing
 
   linear_mixing = .false.
@@ -112,7 +122,7 @@ subroutine evGW(maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,COHSEX,SOSE
 
     if(.not. GW0 .or. nSCF == 0) then
 
-      call linear_response(ispin,.true.,.false.,.false.,eta,nBas,nC,nO,nV,nR,nS,1d0,eGW,ERI, & 
+      call linear_response(ispin,.true.,TDA_W,.false.,eta,nBas,nC,nO,nV,nR,nS,1d0,eGW,ERI, & 
                            rho(:,:,:,ispin),EcRPA(ispin),Omega(:,ispin),XpY(:,:,ispin),XmY(:,:,ispin))
 
     endif
@@ -217,7 +227,7 @@ subroutine evGW(maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,COHSEX,SOSE
 
   if(BSE) then
 
-    call Bethe_Salpeter(TDA,singlet_manifold,triplet_manifold,eta, &
+    call Bethe_Salpeter(TDA_W,TDA,singlet_manifold,triplet_manifold,eta, &
                         nBas,nC,nO,nV,nR,nS,ERI,eGW,eGW,Omega,XpY,XmY,rho,EcRPA,EcBSE)
 
     write(*,*)
@@ -245,7 +255,7 @@ subroutine evGW(maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,COHSEX,SOSE
 
       end if
 
-      call ACFDT(exchange_kernel,doXBS,.true.,TDA,BSE,singlet_manifold,triplet_manifold,eta, &
+      call ACFDT(exchange_kernel,doXBS,.true.,TDA_W,TDA,BSE,singlet_manifold,triplet_manifold,eta, &
                  nBas,nC,nO,nV,nR,nS,ERI,eGW,eGW,Omega,XpY,XmY,rho,EcAC)
 
       write(*,*)

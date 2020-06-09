@@ -1,4 +1,4 @@
-subroutine Bethe_Salpeter(TDA,singlet_manifold,triplet_manifold,eta, & 
+subroutine Bethe_Salpeter(TDA_W,TDA,singlet_manifold,triplet_manifold,eta, & 
                           nBas,nC,nO,nV,nR,nS,ERI,eW,eGW,OmRPA,XpY_RPA,XmY_RPA,rho_RPA,EcRPA,EcBSE)
 
 ! Compute the Bethe-Salpeter excitation energies
@@ -8,6 +8,7 @@ subroutine Bethe_Salpeter(TDA,singlet_manifold,triplet_manifold,eta, &
 
 ! Input variables
 
+  logical,intent(in)            :: TDA_W
   logical,intent(in)            :: TDA
   logical,intent(in)            :: singlet_manifold
   logical,intent(in)            :: triplet_manifold
@@ -52,9 +53,9 @@ subroutine Bethe_Salpeter(TDA,singlet_manifold,triplet_manifold,eta, &
     ispin = 1
     EcBSE(ispin) = 0d0
 
-    ! Compute RPA screening 
+   ! Compute (singlet) RPA screening 
 
-    call linear_response(ispin,.true.,.false.,.false.,eta,nBas,nC,nO,nV,nR,nS,1d0,eW,ERI, &
+    call linear_response(ispin,.true.,TDA_W,.false.,eta,nBas,nC,nO,nV,nR,nS,1d0,eW,ERI, &
                          rho_RPA(:,:,:,ispin),EcRPA(ispin),OmRPA(:,ispin),XpY_RPA(:,:,ispin),XmY_RPA(:,:,ispin))
     call excitation_density(nBas,nC,nO,nR,nS,ERI,XpY_RPA(:,:,ispin),rho_RPA(:,:,:,ispin))
 
@@ -99,9 +100,9 @@ subroutine Bethe_Salpeter(TDA,singlet_manifold,triplet_manifold,eta, &
     ispin = 2
     EcBSE(ispin) = 0d0
 
-    ! Compute RPA screening
+   ! Compute (singlet) RPA screening 
 
-    call linear_response(ispin,.true.,.false.,.false.,eta,nBas,nC,nO,nV,nR,nS,1d0,eW,ERI, &
+    call linear_response(1,.true.,TDA_W,.false.,eta,nBas,nC,nO,nV,nR,nS,1d0,eW,ERI, &
                          rho_RPA(:,:,:,ispin),EcRPA(ispin),OmRPA(:,ispin),XpY_RPA(:,:,ispin),XmY_RPA(:,:,ispin))
     call excitation_density(nBas,nC,nO,nR,nS,ERI,XpY_RPA(:,:,ispin),rho_RPA(:,:,:,ispin))
 

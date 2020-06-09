@@ -103,7 +103,7 @@ subroutine RPA(doACFDT,exchange_kernel,singlet_manifold,triplet_manifold,eta, &
     write(*,*) '------------------------------------------------------'
     write(*,*) 
 
-    call ACFDT(exchange_kernel,.false.,.true.,.false.,.false.,singlet_manifold,triplet_manifold,eta, &
+    call ACFDT(exchange_kernel,.false.,.true.,.false.,.false.,.false.,singlet_manifold,triplet_manifold,eta, &
                nBas,nC,nO,nV,nR,nS,ERI,e,e,Omega,XpY,XmY,rho,EcAC)
 
     if(exchange_kernel) then

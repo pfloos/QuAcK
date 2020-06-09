@@ -1,4 +1,5 @@
-subroutine evGT(maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,BSE,TDA,singlet_manifold,triplet_manifold, & 
+subroutine evGT(maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS, & 
+                BSE,TDA_W,TDA,singlet_manifold,triplet_manifold,      & 
                 eta,nBas,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,eHF,eG0T0)
 
 ! Perform eigenvalue self-consistent calculation with a T-matrix self-energy (evGT)
@@ -15,6 +16,7 @@ subroutine evGT(maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,BSE,TDA,sin
   logical,intent(in)            :: exchange_kernel
   logical,intent(in)            :: doXBS
   logical,intent(in)            :: BSE
+  logical,intent(in)            :: TDA_W
   logical,intent(in)            :: TDA
   logical,intent(in)            :: singlet_manifold
   logical,intent(in)            :: triplet_manifold
@@ -257,7 +259,7 @@ subroutine evGT(maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,BSE,TDA,sin
 
     allocate(Omega(nS,nspin),XpY(nS,nS,nspin),XmY(nS,nS,nspin),rho(nBas,nBas,nS,nspin))
 
-    call Bethe_Salpeter(TDA,singlet_manifold,triplet_manifold,eta, &
+    call Bethe_Salpeter(TDA_W,TDA,singlet_manifold,triplet_manifold,eta, &
                         nBas,nC,nO,nV,nR,nS,ERI,eGT,eGT,Omega,XpY,XmY,rho,EcRPA,EcBSE)
 
     if(exchange_kernel) then
@@ -292,7 +294,7 @@ subroutine evGT(maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,BSE,TDA,sin
 
       end if
 
-      call ACFDT(exchange_kernel,doXBS,.true.,TDA,BSE,singlet_manifold,triplet_manifold,eta, &
+      call ACFDT(exchange_kernel,doXBS,.true.,TDA_W,TDA,BSE,singlet_manifold,triplet_manifold,eta, &
                  nBas,nC,nO,nV,nR,nS,ERI,eGT,eGT,Omega,XpY,XmY,rho,EcAC)
 
       if(exchange_kernel) then

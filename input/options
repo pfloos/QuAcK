@@ -8,8 +8,8 @@
         T       T
 # GF: maxSCF thresh  DIIS n_diis lin renorm BSE TDA eta
       256    0.00001 T    5      T   3      T   T   0.00367493
-# GW/GT: maxSCF thresh  DIIS n_diis COHSEX SOSEX BSE TDA G0W GW0 lin eta     
-         256    0.00001   T    5     F      F     T   F   F   F   T    0.00367493
+# GW/GT: maxSCF thresh  DIIS n_diis COHSEX SOSEX BSE TDA_W TDA G0W GW0 lin eta     
+         256    0.00001   T    5     F      F    T    F    F   F   F   T    0.00367493
 # ACFDT: AC Kx  XBS
          F  F   T
 # MCMP2: nMC    nEq    nWalk dt  nPrint iSeed doDrift

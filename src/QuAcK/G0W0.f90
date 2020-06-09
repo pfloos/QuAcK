@@ -1,5 +1,5 @@
-subroutine G0W0(doACFDT,exchange_kernel,doXBS,COHSEX,SOSEX,BSE,TDA, & 
-                singlet_manifold,triplet_manifold,linearize,eta,    & 
+subroutine G0W0(doACFDT,exchange_kernel,doXBS,COHSEX,SOSEX,BSE,TDA_W,TDA, & 
+                singlet_manifold,triplet_manifold,linearize,eta,          & 
                 nBas,nC,nO,nV,nR,nS,ENuc,ERHF,Hc,H,ERI,PHF,cHF,eHF,eGW)
 
 ! Perform G0W0 calculation
@@ -16,6 +16,7 @@ subroutine G0W0(doACFDT,exchange_kernel,doXBS,COHSEX,SOSEX,BSE,TDA, &
   logical,intent(in)            :: COHSEX
   logical,intent(in)            :: SOSEX
   logical,intent(in)            :: BSE
+  logical,intent(in)            :: TDA_W
   logical,intent(in)            :: TDA
   logical,intent(in)            :: singlet_manifold
   logical,intent(in)            :: triplet_manifold
@@ -34,7 +35,7 @@ subroutine G0W0(doACFDT,exchange_kernel,doXBS,COHSEX,SOSEX,BSE,TDA, &
 
 ! Local variables
 
-  logical                       :: print_W = .false.
+  logical                       :: print_W = .true.
   integer                       :: ispin
   double precision              :: EcRPA(nspin)
   double precision              :: EcBSE(nspin)
@@ -72,6 +73,16 @@ subroutine G0W0(doACFDT,exchange_kernel,doXBS,COHSEX,SOSEX,BSE,TDA, &
   if(COHSEX) write(*,*) 'COHSEX approximation activated!'
   write(*,*)
 
+! TDA for W
+
+  if(TDA_W) write(*,*) 'Tamm-Dancoff approximation for dynamic screening!'
+  write(*,*)
+
+! TDA 
+
+  if(TDA) write(*,*) 'Tamm-Dancoff approximation activated!'
+  write(*,*)
+
 ! Spin manifold 
 
   ispin = 1
@@ -83,7 +94,7 @@ subroutine G0W0(doACFDT,exchange_kernel,doXBS,COHSEX,SOSEX,BSE,TDA, &
 
 ! Compute linear response
 
-  call linear_response(ispin,.true.,.false.,.false.,eta,nBas,nC,nO,nV,nR,nS,1d0,eHF,ERI, & 
+  call linear_response(ispin,.true.,TDA_W,.false.,eta,nBas,nC,nO,nV,nR,nS,1d0,eHF,ERI, & 
                        rho(:,:,:,ispin),EcRPA(ispin),Omega(:,ispin),XpY(:,:,ispin),XmY(:,:,ispin))
 
 ! Compute correlation part of the self-energy 
@@ -125,14 +136,15 @@ subroutine G0W0(doACFDT,exchange_kernel,doXBS,COHSEX,SOSEX,BSE,TDA, &
 
 ! Dump results
 
-  if(print_W) call print_excitation('RPA   ',ispin,nS,Omega(:,ispin))
+  if(print_W) call print_excitation('RPA@G0W0    ',ispin,nS,Omega(:,ispin))
 
   call print_G0W0(nBas,nO,eHF,ENuc,ERHF,SigC,Z,eGW,EcRPA(ispin),EcGM)
 
 ! Compute the RPA correlation energy
 
-  call linear_response(ispin,.true.,TDA,.false.,eta,nBas,nC,nO,nV,nR,nS,1d0,eGW,ERI, & 
+  call linear_response(ispin,.true.,TDA_W,.false.,eta,nBas,nC,nO,nV,nR,nS,1d0,eGW,ERI, & 
                        rho(:,:,:,ispin),EcRPA(ispin),Omega(:,ispin),XpY(:,:,ispin),XmY(:,:,ispin))
+
 
   write(*,*)
   write(*,*)'-------------------------------------------------------------------------------'
@@ -151,7 +163,7 @@ subroutine G0W0(doACFDT,exchange_kernel,doXBS,COHSEX,SOSEX,BSE,TDA, &
 
   if(BSE) then
 
-    call Bethe_Salpeter(TDA,singlet_manifold,triplet_manifold,eta, &
+    call Bethe_Salpeter(TDA_W,TDA,singlet_manifold,triplet_manifold,eta, &
                         nBas,nC,nO,nV,nR,nS,ERI,eHF,eGW,Omega,XpY,XmY,rho,EcRPA,EcBSE)
 
     if(exchange_kernel) then
@@ -186,7 +198,7 @@ subroutine G0W0(doACFDT,exchange_kernel,doXBS,COHSEX,SOSEX,BSE,TDA, &
 
       end if
 
-      call ACFDT(exchange_kernel,doXBS,.true.,TDA,BSE,singlet_manifold,triplet_manifold,eta, & 
+      call ACFDT(exchange_kernel,doXBS,.true.,TDA_W,TDA,BSE,singlet_manifold,triplet_manifold,eta, & 
                  nBas,nC,nO,nV,nR,nS,ERI,eHF,eGW,Omega,XpY,XmY,rho,EcAC)
 
       if(exchange_kernel) then

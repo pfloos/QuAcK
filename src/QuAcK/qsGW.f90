@@ -1,5 +1,5 @@
-subroutine qsGW(maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,               & 
-                COHSEX,SOSEX,BSE,TDA,G0W,GW0,singlet_manifold,triplet_manifold,eta, &
+subroutine qsGW(maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,                     & 
+                COHSEX,SOSEX,BSE,TDA_W,TDA,G0W,GW0,singlet_manifold,triplet_manifold,eta, &
                 nBas,nC,nO,nV,nR,nS,ENuc,ERHF,S,X,T,V,Hc,ERI_AO_basis,ERI_MO_basis,PHF,cHF,eHF)
 
 ! Perform a quasiparticle self-consistent GW calculation
@@ -18,6 +18,7 @@ subroutine qsGW(maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,           
   logical,intent(in)            :: COHSEX
   logical,intent(in)            :: SOSEX
   logical,intent(in)            :: BSE
+  logical,intent(in)            :: TDA_W
   logical,intent(in)            :: TDA
   logical,intent(in)            :: G0W
   logical,intent(in)            :: GW0
@@ -100,6 +101,16 @@ subroutine qsGW(maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,           
   if(COHSEX) write(*,*) 'COHSEX approximation activated!'
   write(*,*)
 
+! TDA for W
+
+  if(TDA_W) write(*,*) 'Tamm-Dancoff approximation for dynamic screening!'
+  write(*,*)
+
+! TDA 
+
+  if(TDA) write(*,*) 'Tamm-Dancoff approximation activated!'
+  write(*,*)
+
 ! Memory allocation
 
   allocate(eGW(nBas),c(nBas,nBas),cp(nBas,nBas),P(nBas,nBas),F(nBas,nBas),Fp(nBas,nBas),        &
@@ -141,7 +152,7 @@ subroutine qsGW(maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,           
 
     if(.not. GW0 .or. nSCF == 0) then
 
-      call linear_response(ispin,.true.,.false.,.false.,eta,nBas,nC,nO,nV,nR,nS,1d0,eGW,ERI_MO_basis, &
+      call linear_response(ispin,.true.,TDA_W,.false.,eta,nBas,nC,nO,nV,nR,nS,1d0,eGW,ERI_MO_basis, &
                            rho(:,:,:,ispin),EcRPA(ispin),Omega(:,ispin),XpY(:,:,ispin),XmY(:,:,ispin))
 
     endif
@@ -259,7 +270,7 @@ subroutine qsGW(maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,           
 
   if(BSE) then
 
-    call Bethe_Salpeter(TDA,singlet_manifold,triplet_manifold,eta, &
+    call Bethe_Salpeter(TDA_W,TDA,singlet_manifold,triplet_manifold,eta, &
                         nBas,nC,nO,nV,nR,nS,ERI_MO_basis,eGW,eGW,Omega,XpY,XmY,rho,EcRPA,EcBSE)
 
     write(*,*)
@@ -287,7 +298,7 @@ subroutine qsGW(maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,           
 
       end if
 
-      call ACFDT(exchange_kernel,doXBS,.true.,TDA,BSE,singlet_manifold,triplet_manifold,eta, &
+      call ACFDT(exchange_kernel,doXBS,.true.,TDA_W,TDA,BSE,singlet_manifold,triplet_manifold,eta, &
                  nBas,nC,nO,nV,nR,nS,ERI_MO_basis,eGW,eGW,Omega,XpY,XmY,rho,EcAC)
 
       write(*,*)

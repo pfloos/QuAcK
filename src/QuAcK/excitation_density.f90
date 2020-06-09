@@ -34,5 +34,4 @@ subroutine excitation_density(nBas,nC,nO,nR,nS,ERI,XpY,rho)
     enddo
   enddo
 
-
 end subroutine excitation_density
