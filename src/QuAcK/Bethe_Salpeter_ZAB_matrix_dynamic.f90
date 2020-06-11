@@ -1,6 +1,7 @@
-subroutine Bethe_Salpeter_ZAB_matrix_dynamic(eta,nBas,nC,nO,nV,nR,nS,lambda,eGW,OmRPA,OmBSE,rho,ZA,ZB)
+subroutine Bethe_Salpeter_ZAB_matrix_dynamic(eta,nBas,nC,nO,nV,nR,nS,lambda,eGW,OmRPA,OmBSE,rho, & 
+                                             ZAp,ZAm,ZBp,ZBm)
 
-! Compute the dynamic part of the Bethe-Salpeter equation matrices
+! Compute the dynamic part of the renormalization for the Bethe-Salpeter equation matrices
 
   implicit none
   include 'parameters.h'
@@ -18,19 +19,25 @@ subroutine Bethe_Salpeter_ZAB_matrix_dynamic(eta,nBas,nC,nO,nV,nR,nS,lambda,eGW,
 ! Local variables
 
   integer                       :: maxS
-  double precision              :: chi_A,chi_B
-  double precision              :: eps_A,eps_B
+  double precision              :: chi_Ap,chi_Bp,eps_Ap,eps_Bp
+  double precision              :: chi_Am,chi_Bm,eps_Am,eps_Bm
   integer                       :: i,j,a,b,ia,jb,kc
 
 ! Output variables
 
-  double precision,intent(out)  :: ZA(nS,nS)
-  double precision,intent(out)  :: ZB(nS,nS)
+  double precision,intent(out)  :: ZAp(nS,nS)
+  double precision,intent(out)  :: ZAm(nS,nS)
+
+  double precision,intent(out)  :: ZBp(nS,nS)
+  double precision,intent(out)  :: ZBm(nS,nS)
 
 ! Initialization
 
-  ZA(:,:) = 0d0
-  ZB(:,:) = 0d0
+  ZAp(:,:) = 0d0
+  ZAm(:,:) = 0d0
+
+  ZBp(:,:) = 0d0
+  ZBm(:,:) = 0d0
 
 ! Number of poles taken into account 
 
@@ -47,28 +54,45 @@ subroutine Bethe_Salpeter_ZAB_matrix_dynamic(eta,nBas,nC,nO,nV,nR,nS,lambda,eGW,
         do b=nO+1,nBas-nR
           jb = jb + 1
  
-          chi_A = 0d0
-          chi_B = 0d0
+          chi_Ap = 0d0
+          chi_Am = 0d0
+
+          chi_Bp = 0d0
+          chi_Bm = 0d0
 
           do kc=1,maxS
 
-            eps_A = + OmBSE - OmRPA(kc) - (eGW(a) - eGW(j))
-            chi_A = chi_A + rho(i,j,kc)*rho(a,b,kc)*(eps_A**2 - eta**2)/(eps_A**2 + eta**2)**2
+            eps_Ap = + OmBSE - OmRPA(kc) - (eGW(a) - eGW(j))
+            chi_Ap = chi_Ap + rho(i,j,kc)*rho(a,b,kc)*(eps_Ap**2 - eta**2)/(eps_Ap**2 + eta**2)**2
 
-            eps_A = + OmBSE - OmRPA(kc) - (eGW(b) - eGW(i))
-            chi_A = chi_A + rho(i,j,kc)*rho(a,b,kc)*(eps_A**2 - eta**2)/(eps_A**2 + eta**2)**2
+            eps_Ap = + OmBSE - OmRPA(kc) - (eGW(b) - eGW(i))
+            chi_Ap = chi_Ap + rho(i,j,kc)*rho(a,b,kc)*(eps_Ap**2 - eta**2)/(eps_Ap**2 + eta**2)**2
 
-            eps_B = + OmBSE - OmRPA(kc) - (eGW(a) - eGW(b))
-            chi_B = chi_B + rho(i,b,kc)*rho(a,j,kc)*(eps_B**2 - eta**2)/(eps_B**2 + eta**2)**2
+            eps_Am = + OmBSE - OmRPA(kc) - (eGW(a) - eGW(j))
+            chi_Am = chi_Am + rho(i,j,kc)*rho(a,b,kc)*(eps_Am**2 - eta**2)/(eps_Am**2 + eta**2)**2
 
-            eps_B = + OmBSE - OmRPA(kc) - (eGW(j) - eGW(i))
-            chi_B = chi_B + rho(i,b,kc)*rho(a,j,kc)*(eps_B**2 - eta**2)/(eps_B**2 + eta**2)**2
+            eps_Am = + OmBSE - OmRPA(kc) - (eGW(b) - eGW(i))
+            chi_Am = chi_Am + rho(i,j,kc)*rho(a,b,kc)*(eps_Am**2 - eta**2)/(eps_Am**2 + eta**2)**2
+
+            eps_Bp = + OmBSE - OmRPA(kc) - (eGW(a) - eGW(b))
+            chi_Bp = chi_Bp + rho(i,b,kc)*rho(a,j,kc)*(eps_Bp**2 - eta**2)/(eps_Bp**2 + eta**2)**2
+
+            eps_Bp = + OmBSE - OmRPA(kc) - (eGW(j) - eGW(i))
+            chi_Bp = chi_Bp + rho(i,b,kc)*rho(a,j,kc)*(eps_Bp**2 - eta**2)/(eps_Bp**2 + eta**2)**2
+
+            eps_Bm = + OmBSE - OmRPA(kc) - (eGW(a) - eGW(b))
+            chi_Bm = chi_Bm + rho(i,b,kc)*rho(a,j,kc)*(eps_Bm**2 - eta**2)/(eps_Bm**2 + eta**2)**2
+
+            eps_Bm = + OmBSE - OmRPA(kc) - (eGW(j) - eGW(i))
+            chi_Bm = chi_Bm + rho(i,b,kc)*rho(a,j,kc)*(eps_Bm**2 - eta**2)/(eps_Bm**2 + eta**2)**2
 
           enddo
 
-          ZA(ia,jb) = ZA(ia,jb) + 2d0*lambda*chi_A
+          ZAp(ia,jb) = ZAp(ia,jb) + 2d0*lambda*chi_Ap
+          ZAm(ia,jb) = ZAm(ia,jb) + 2d0*lambda*chi_Am
 
-          ZB(ia,jb) = ZB(ia,jb) + 2d0*lambda*chi_B
+          ZBp(ia,jb) = ZBp(ia,jb) + 2d0*lambda*chi_Bp
+          ZBm(ia,jb) = ZBm(ia,jb) + 2d0*lambda*chi_Bm
 
         enddo
       enddo

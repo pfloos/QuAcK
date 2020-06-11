@@ -73,6 +73,7 @@ subroutine AOtoMO_integral_transform(nBas,c,ERI_AO_basis,ERI_MO_basis)
           do nu=1,nBas
             ERI_MO_basis(i,j,k,l) = ERI_MO_basis(i,j,k,l) + c(nu,j)*scr(i,nu,k,l)
           enddo
+          print*,i,k,j,l,ERI_MO_basis(i,j,k,l)
         enddo
       enddo
     enddo
