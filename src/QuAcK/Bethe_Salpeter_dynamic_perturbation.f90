@@ -79,9 +79,6 @@ subroutine Bethe_Salpeter_dynamic_perturbation(TDA,dTDA,eta,nBas,nC,nO,nV,nR,nS,
     X(:) = 0.5d0*(XpY(ia,:) + XmY(ia,:))
     Y(:) = 0.5d0*(XpY(ia,:) - XmY(ia,:))
 
-!   call matout(nS,1,X)
-!   call matout(nS,1,Y)
-
     ! First-order correction 
 
     if(dTDA) then 

@@ -73,6 +73,7 @@ subroutine Bethe_Salpeter_dynamic_perturbation_iterative(TDA,dTDA,eta,nBas,nC,nO
   write(*,*) ' First-order dynamical correction to static Bethe-Salpeter excitation energies                     '
   write(*,*) '---------------------------------------------------------------------------------------------------'
   write(*,'(A57,F10.6,A3)') ' BSE neutral excitation must be lower than the GW gap = ',gapGW*HaToeV,' eV'
+  write(*,*) '---------------------------------------------------------------------------------------------------'
   write(*,*)
 
   do while(Conv > thresh .and. nSCF < maxSCF)
@@ -82,7 +83,7 @@ subroutine Bethe_Salpeter_dynamic_perturbation_iterative(TDA,dTDA,eta,nBas,nC,nO
     write(*,*) '---------------------------------------------------------------------------------------------------'
     write(*,'(2X,A15,I3)') 'Iteration n.',nSCF
     write(*,*) '---------------------------------------------------------------------------------------------------'
-    write(*,'(2X,A5,1X,A20,1X,A20,1X,A20)') '#','Static (eV)','Dynamic (eV)','Correction (eV)'
+    write(*,'(2X,A5,1X,A20,1X,A20,1X,A20,A20)') '#','Static (eV)','Dynamic (eV)','Correction (eV)','Convergence (eV)'
     write(*,*) '---------------------------------------------------------------------------------------------------'
 
     do ia=1,min(nS,maxS)
@@ -116,10 +117,8 @@ subroutine Bethe_Salpeter_dynamic_perturbation_iterative(TDA,dTDA,eta,nBas,nC,nO
 
       end if
  
-      write(*,'(2X,I5,5X,F15.6,5X,F15.6,5X,F15.6)') & 
-        ia,OmBSE(ia)*HaToeV,(OmBSE(ia)+OmDyn(ia))*HaToeV,OmDyn(ia)*HaToeV
- 
-      if(OmBSE(ia) > gapGW) write(*,*) ' !!! BSE neutral excitation larger than the GW gap !!! '
+      write(*,'(2X,I5,5X,F15.6,5X,F15.6,5X,F15.6,5X,F15.6)') & 
+        ia,OmBSE(ia)*HaToeV,(OmBSE(ia)+OmDyn(ia))*HaToeV,OmDyn(ia)*HaToeV,(OmBSE(ia) + OmDyn(ia) - OmOld(ia))*HaToeV
  
     end do
 

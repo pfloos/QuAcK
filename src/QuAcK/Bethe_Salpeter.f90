@@ -27,7 +27,7 @@ subroutine Bethe_Salpeter(TDA_W,TDA,dTDA,singlet_manifold,triplet_manifold,eta, 
 
 ! Local variables
 
-  logical                       :: evDyn = .false.
+  logical                       :: evDyn = .true.
   logical                       :: W_BSE = .false.
   integer                       :: ispin
   integer                       :: isp_W
