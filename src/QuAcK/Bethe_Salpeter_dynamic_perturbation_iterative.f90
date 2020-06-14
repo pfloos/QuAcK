@@ -1,4 +1,4 @@
-subroutine Bethe_Salpeter_dynamic_perturbation_iterative(TDA,eta,nBas,nC,nO,nV,nR,nS,eGW,OmRPA,OmBSE,XpY,XmY,rho)
+subroutine Bethe_Salpeter_dynamic_perturbation_iterative(TDA,dTDA,eta,nBas,nC,nO,nV,nR,nS,eGW,OmRPA,OmBSE,XpY,XmY,rho)
 
 ! Compute self-consistently the dynamical effects via perturbation theory for BSE
 
@@ -8,6 +8,7 @@ subroutine Bethe_Salpeter_dynamic_perturbation_iterative(TDA,eta,nBas,nC,nO,nV,n
 ! Input variables
 
   logical,intent(in)            :: TDA
+  logical,intent(in)            :: dTDA
   double precision,intent(in)   :: eta
   integer,intent(in)            :: nBas
   integer,intent(in)            :: nC
@@ -25,8 +26,8 @@ subroutine Bethe_Salpeter_dynamic_perturbation_iterative(TDA,eta,nBas,nC,nO,nV,n
 
 ! Local variables
 
-  logical                       :: dTDA = .true.
   integer                       :: ia
+
   integer,parameter             :: maxS = 10
   double precision              :: gapGW
 
@@ -40,14 +41,27 @@ subroutine Bethe_Salpeter_dynamic_perturbation_iterative(TDA,eta,nBas,nC,nO,nV,n
   double precision,allocatable  :: OmOld(:)
   double precision,allocatable  :: X(:)
   double precision,allocatable  :: Y(:)
-  double precision,allocatable  :: A_dyn(:,:)
-  double precision,allocatable  :: B_dyn(:,:)
+
+  double precision,allocatable  :: Ap_dyn(:,:)
+  double precision,allocatable  :: Am_dyn(:,:)
+  double precision,allocatable  :: Bp_dyn(:,:)
+  double precision,allocatable  :: Bm_dyn(:,:)
 
 ! Memory allocation
 
-  allocate(OmDyn(nS),OmOld(nS),X(nS),Y(nS),A_dyn(nS,nS))
+  allocate(OmDyn(nS),OmOld(nS),X(nS),Y(nS),Ap_dyn(nS,nS))
 
-  if(.not.dTDA) allocate(B_dyn(nS,nS))
+  if(.not.dTDA) allocate(Am_dyn(nS,nS),Bp_dyn(nS,nS),Bm_dyn(nS,nS))
+
+! Print main components of transition vectors
+
+  call print_transition_vectors(nBas,nC,nO,nV,nR,nS,OmBSE,XpY,XmY)
+
+  if(dTDA) then
+    write(*,*)
+    write(*,*) '*** dynamical TDA activated ***'
+    write(*,*)
+  end if
 
   gapGW = eGW(nO+1) - eGW(nO) 
 
@@ -56,8 +70,9 @@ subroutine Bethe_Salpeter_dynamic_perturbation_iterative(TDA,eta,nBas,nC,nO,nV,n
   OmOld(:) = OmBSE(:)
 
   write(*,*) '---------------------------------------------------------------------------------------------------'
-  write(*,*) ' First-order dynamical correction to static Bethe-Salpeter excitation energies                                 '
+  write(*,*) ' First-order dynamical correction to static Bethe-Salpeter excitation energies                     '
   write(*,*) '---------------------------------------------------------------------------------------------------'
+  write(*,'(A57,F10.6,A3)') ' BSE neutral excitation must be lower than the GW gap = ',gapGW*HaToeV,' eV'
   write(*,*)
 
   do while(Conv > thresh .and. nSCF < maxSCF)
@@ -83,21 +98,21 @@ subroutine Bethe_Salpeter_dynamic_perturbation_iterative(TDA,eta,nBas,nC,nO,nV,n
        ! Resonant part of the BSE correction
  
         call Bethe_Salpeter_A_matrix_dynamic(eta,nBas,nC,nO,nV,nR,nS,1d0,eGW(:),OmRPA(:),OmOld(ia),rho(:,:,:), & 
-                                             A_dyn(:,:))
+                                             Ap_dyn(:,:))
  
-        OmDyn(ia) = dot_product(X(:),matmul(A_dyn(:,:),X(:)))
+        OmDyn(ia) = dot_product(X(:),matmul(Ap_dyn(:,:),X(:)))
  
       else
  
         ! Anti-resonant part of the BSE correction
  
         call Bethe_Salpeter_AB_matrix_dynamic(eta,nBas,nC,nO,nV,nR,nS,1d0,eGW(:),OmRPA(:),OmOld(ia),rho(:,:,:), &
-                                              A_dyn(:,:),B_dyn(:,:))
+                                              Ap_dyn(:,:),Am_dyn(:,:),Bp_dyn(:,:),Bm_dyn(:,:))
  
-        OmDyn(ia) = dot_product(X(:),matmul(A_dyn(:,:),X(:))) &
-                  - dot_product(Y(:),matmul(A_dyn(:,:),Y(:))) &
-                  + dot_product(X(:),matmul(B_dyn(:,:),Y(:))) &
-                  - dot_product(Y(:),matmul(B_dyn(:,:),X(:)))
+        OmDyn(ia) = dot_product(X(:),matmul(Ap_dyn(:,:),X(:))) &
+                  - dot_product(Y(:),matmul(Am_dyn(:,:),Y(:))) &
+                  + dot_product(X(:),matmul(Bp_dyn(:,:),Y(:))) &
+                  - dot_product(Y(:),matmul(Bm_dyn(:,:),X(:)))
 
       end if
  

@@ -67,7 +67,7 @@ subroutine Bethe_Salpeter_dynamic_perturbation(TDA,dTDA,eta,nBas,nC,nO,nV,nR,nS,
   gapGW = eGW(nO+1) - eGW(nO) 
 
   write(*,*) '---------------------------------------------------------------------------------------------------'
-  write(*,*) ' First-order dynamical correction to static Bethe-Salpeter excitation energies                                 '
+  write(*,*) ' First-order dynamical correction to static Bethe-Salpeter excitation energies                     '
   write(*,*) '---------------------------------------------------------------------------------------------------'
   write(*,'(A57,F10.6,A3)') ' BSE neutral excitation must be lower than the GW gap = ',gapGW*HaToeV,' eV'
   write(*,*) '---------------------------------------------------------------------------------------------------'
