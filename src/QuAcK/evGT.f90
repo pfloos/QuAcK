@@ -1,5 +1,5 @@
 subroutine evGT(maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS, & 
-                BSE,TDA_W,TDA,singlet_manifold,triplet_manifold,      & 
+                BSE,TDA_W,TDA,dTDA,singlet_manifold,triplet_manifold,      & 
                 eta,nBas,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,eHF,eG0T0)
 
 ! Perform eigenvalue self-consistent calculation with a T-matrix self-energy (evGT)
@@ -18,6 +18,7 @@ subroutine evGT(maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS, &
   logical,intent(in)            :: BSE
   logical,intent(in)            :: TDA_W
   logical,intent(in)            :: TDA
+  logical,intent(in)            :: dTDA
   logical,intent(in)            :: singlet_manifold
   logical,intent(in)            :: triplet_manifold
   double precision,intent(in)   :: eta
@@ -259,7 +260,7 @@ subroutine evGT(maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS, &
 
     allocate(Omega(nS,nspin),XpY(nS,nS,nspin),XmY(nS,nS,nspin),rho(nBas,nBas,nS,nspin))
 
-    call Bethe_Salpeter(TDA_W,TDA,singlet_manifold,triplet_manifold,eta, &
+    call Bethe_Salpeter(TDA_W,TDA,dTDA,singlet_manifold,triplet_manifold,eta, &
                         nBas,nC,nO,nV,nR,nS,ERI,eGT,eGT,Omega,XpY,XmY,rho,EcRPA,EcBSE)
 
     if(exchange_kernel) then

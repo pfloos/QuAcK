@@ -32,6 +32,7 @@ subroutine ACFDT(exchange_kernel,doXBS,dRPA,TDA_W,TDA,BSE,singlet_manifold,tripl
 ! Local variables
 
   integer                       :: ispin
+  integer                       :: isp_W
   integer                       :: iAC
   double precision              :: lambda
   double precision,allocatable  :: Ec(:,:)
@@ -62,6 +63,7 @@ subroutine ACFDT(exchange_kernel,doXBS,dRPA,TDA_W,TDA,BSE,singlet_manifold,tripl
   if(singlet_manifold) then
 
     ispin = 1
+    isp_W = 1
 
     write(*,*) '--------------'
     write(*,*) 'Singlet states'
@@ -78,7 +80,7 @@ subroutine ACFDT(exchange_kernel,doXBS,dRPA,TDA_W,TDA,BSE,singlet_manifold,tripl
 
       if(doXBS) then
 
-        call linear_response(ispin,dRPA,TDA_W,.false.,eta,nBas,nC,nO,nV,nR,nS,lambda,eW,ERI, &
+        call linear_response(isp_W,dRPA,TDA_W,.false.,eta,nBas,nC,nO,nV,nR,nS,lambda,eW,ERI, &
                              rho(:,:,:,ispin),EcAC(ispin),Omega(:,ispin),XpY(:,:,ispin),XmY(:,:,ispin))
         call excitation_density(nBas,nC,nO,nR,nS,ERI,XpY(:,:,ispin),rho(:,:,:,ispin))
 
@@ -108,6 +110,7 @@ subroutine ACFDT(exchange_kernel,doXBS,dRPA,TDA_W,TDA,BSE,singlet_manifold,tripl
   if(triplet_manifold) then
 
     ispin = 2
+    isp_W = 1
 
     write(*,*) '--------------'
     write(*,*) 'Triplet states'
@@ -124,7 +127,7 @@ subroutine ACFDT(exchange_kernel,doXBS,dRPA,TDA_W,TDA,BSE,singlet_manifold,tripl
 
       if(doXBS) then
 
-        call linear_response(1,dRPA,TDA_W,.false.,eta,nBas,nC,nO,nV,nR,nS,lambda,eW,ERI, &
+        call linear_response(isp_W,dRPA,TDA_W,.false.,eta,nBas,nC,nO,nV,nR,nS,lambda,eW,ERI, &
                              rho(:,:,:,ispin),EcAC(ispin),Omega(:,ispin),XpY(:,:,ispin),XmY(:,:,ispin))
         call excitation_density(nBas,nC,nO,nR,nS,ERI,XpY(:,:,ispin),rho(:,:,:,ispin))
 

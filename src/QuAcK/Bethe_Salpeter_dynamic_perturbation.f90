@@ -1,4 +1,4 @@
-subroutine Bethe_Salpeter_dynamic_perturbation(TDA,eta,nBas,nC,nO,nV,nR,nS,eGW,OmRPA,OmBSE,XpY,XmY,rho)
+subroutine Bethe_Salpeter_dynamic_perturbation(TDA,dTDA,eta,nBas,nC,nO,nV,nR,nS,eGW,OmRPA,OmBSE,XpY,XmY,rho)
 
 ! Compute dynamical effects via perturbation theory for BSE
 
@@ -8,6 +8,7 @@ subroutine Bethe_Salpeter_dynamic_perturbation(TDA,eta,nBas,nC,nO,nV,nR,nS,eGW,O
 ! Input variables
 
   logical,intent(in)            :: TDA
+  logical,intent(in)            :: dTDA 
   double precision,intent(in)   :: eta
   integer,intent(in)            :: nBas
   integer,intent(in)            :: nC
@@ -27,7 +28,6 @@ subroutine Bethe_Salpeter_dynamic_perturbation(TDA,eta,nBas,nC,nO,nV,nR,nS,eGW,O
 
   integer                       :: ia
 
-  logical                       :: dTDA = .true.
   integer,parameter             :: maxS = 10
   double precision              :: gapGW
 
@@ -54,9 +54,15 @@ subroutine Bethe_Salpeter_dynamic_perturbation(TDA,eta,nBas,nC,nO,nV,nR,nS,eGW,O
 
   if(.not.dTDA) allocate(Am_dyn(nS,nS),ZAm_dyn(nS,nS),Bp_dyn(nS,nS),ZBp_dyn(nS,nS),Bm_dyn(nS,nS),ZBm_dyn(nS,nS))
 
-  ! Print main components of transition vectors
+! Print main components of transition vectors
 
   call print_transition_vectors(nBas,nC,nO,nV,nR,nS,OmBSE,XpY,XmY)
+
+  if(dTDA) then 
+    write(*,*)
+    write(*,*) '*** dynamical TDA activated ***'
+    write(*,*)
+  end if
 
   gapGW = eGW(nO+1) - eGW(nO) 
 
@@ -72,6 +78,9 @@ subroutine Bethe_Salpeter_dynamic_perturbation(TDA,eta,nBas,nC,nO,nV,nR,nS,eGW,O
 
     X(:) = 0.5d0*(XpY(ia,:) + XmY(ia,:))
     Y(:) = 0.5d0*(XpY(ia,:) - XmY(ia,:))
+
+!   call matout(nS,1,X)
+!   call matout(nS,1,Y)
 
     ! First-order correction 
 

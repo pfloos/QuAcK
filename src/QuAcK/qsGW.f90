@@ -1,5 +1,5 @@
 subroutine qsGW(maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,                     & 
-                COHSEX,SOSEX,BSE,TDA_W,TDA,G0W,GW0,singlet_manifold,triplet_manifold,eta, &
+                COHSEX,SOSEX,BSE,TDA_W,TDA,dTDA,G0W,GW0,singlet_manifold,triplet_manifold,eta, &
                 nBas,nC,nO,nV,nR,nS,ENuc,ERHF,S,X,T,V,Hc,ERI_AO_basis,ERI_MO_basis,PHF,cHF,eHF)
 
 ! Perform a quasiparticle self-consistent GW calculation
@@ -20,6 +20,7 @@ subroutine qsGW(maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,           
   logical,intent(in)            :: BSE
   logical,intent(in)            :: TDA_W
   logical,intent(in)            :: TDA
+  logical,intent(in)            :: dTDA
   logical,intent(in)            :: G0W
   logical,intent(in)            :: GW0
   logical,intent(in)            :: singlet_manifold
@@ -270,7 +271,7 @@ subroutine qsGW(maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,           
 
   if(BSE) then
 
-    call Bethe_Salpeter(TDA_W,TDA,singlet_manifold,triplet_manifold,eta, &
+    call Bethe_Salpeter(TDA_W,TDA,dTDA,singlet_manifold,triplet_manifold,eta, &
                         nBas,nC,nO,nV,nR,nS,ERI_MO_basis,eGW,eGW,Omega,XpY,XmY,rho,EcRPA,EcBSE)
 
     write(*,*)

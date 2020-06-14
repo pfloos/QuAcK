@@ -1,4 +1,4 @@
-subroutine G0T0(doACFDT,exchange_kernel,doXBS,BSE,TDA_W,TDA,singlet_manifold,triplet_manifold, & 
+subroutine G0T0(doACFDT,exchange_kernel,doXBS,BSE,TDA_W,TDA,dTDA,singlet_manifold,triplet_manifold, & 
                 linearize,eta,nBas,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,eHF,eG0T0)
 
 ! Perform one-shot calculation with a T-matrix self-energy (G0T0)
@@ -14,6 +14,7 @@ subroutine G0T0(doACFDT,exchange_kernel,doXBS,BSE,TDA_W,TDA,singlet_manifold,tri
   logical,intent(in)            :: BSE
   logical,intent(in)            :: TDA_W
   logical,intent(in)            :: TDA
+  logical,intent(in)            :: dTDA
   logical,intent(in)            :: singlet_manifold
   logical,intent(in)            :: triplet_manifold
   logical,intent(in)            :: linearize
@@ -211,7 +212,7 @@ subroutine G0T0(doACFDT,exchange_kernel,doXBS,BSE,TDA_W,TDA,singlet_manifold,tri
 
      allocate(Omega(nS,nspin),XpY(nS,nS,nspin),XmY(nS,nS,nspin),rho(nBas,nBas,nS,nspin))
 
-    call Bethe_Salpeter(TDA_W,TDA,singlet_manifold,triplet_manifold,eta, &
+    call Bethe_Salpeter(TDA_W,TDA,dTDA,singlet_manifold,triplet_manifold,eta, &
                         nBas,nC,nO,nV,nR,nS,ERI,eHF,eG0T0,Omega,XpY,XmY,rho,EcRPA,EcBSE)
 
     if(exchange_kernel) then
