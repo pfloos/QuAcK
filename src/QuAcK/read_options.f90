@@ -4,8 +4,9 @@ subroutine read_options(maxSCF_HF,thresh_HF,DIIS_HF,n_diis_HF,guess_type,ortho_t
                         maxSCF_GF,thresh_GF,DIIS_GF,n_diis_GF,linGF,renormGF,          &
                         BSE_GF,TDA_GF,eta_GF,                                          &
                         maxSCF_GW,thresh_GW,DIIS_GW,n_diis_GW,                         &
-                        COHSEX,SOSEX,BSE_GW,TDA_W,TDA_GW,dTDA,G0W,GW0,linGW,eta_GW,    &
+                        COHSEX,SOSEX,BSE_GW,TDA_W,TDA_GW,G0W,GW0,linGW,eta_GW,         &
                         doACFDT,exchange_kernel,doXBS,                                 &
+                        dBSE,dTDA,evDyn,                                               &
                         nMC,nEq,nWalk,dt,nPrint,iSeed,doDrift)
 
 ! Read desired methods 
@@ -48,7 +49,6 @@ subroutine read_options(maxSCF_HF,thresh_HF,DIIS_HF,n_diis_HF,guess_type,ortho_t
   logical,intent(out)           :: BSE_GW
   logical,intent(out)           :: TDA_W
   logical,intent(out)           :: TDA_GW
-  logical,intent(out)           :: dTDA
   logical,intent(out)           :: G0W
   logical,intent(out)           :: GW0
   logical,intent(out)           :: linGW
@@ -57,6 +57,10 @@ subroutine read_options(maxSCF_HF,thresh_HF,DIIS_HF,n_diis_HF,guess_type,ortho_t
   logical,intent(out)           :: doACFDT
   logical,intent(out)           :: exchange_kernel
   logical,intent(out)           :: doXBS
+
+  logical,intent(out)           :: dBSE
+  logical,intent(out)           :: dTDA
+  logical,intent(out)           :: evDyn
 
   integer,intent(out)           :: nMC
   integer,intent(out)           :: nEq
@@ -153,7 +157,6 @@ subroutine read_options(maxSCF_HF,thresh_HF,DIIS_HF,n_diis_HF,guess_type,ortho_t
   BSE_GW    = .false.
   TDA_W     = .false.
   TDA_GW    = .false.
-  dTDA      = .false.
   G0W       = .false.
   GW0       = .false.
   linGW     = .false.
@@ -162,18 +165,17 @@ subroutine read_options(maxSCF_HF,thresh_HF,DIIS_HF,n_diis_HF,guess_type,ortho_t
   read(1,*) 
   read(1,*) maxSCF_GW,thresh_GW,answer1,n_diis_GW,answer2,   &
             answer3,answer4,answer5,answer6,answer7,answer8, & 
-            answer9,answer10,eta_GW
+            answer9,eta_GW
 
-  if(answer1 == 'T')  DIIS_GW = .true.
-  if(answer2 == 'T')  COHSEX  = .true.
-  if(answer3 == 'T')  SOSEX   = .true.
-  if(answer4 == 'T')  BSE_GW  = .true.
-  if(answer5 == 'T')  TDA_W   = .true.
-  if(answer6 == 'T')  TDA_GW  = .true.
-  if(answer7 == 'T')  dTDA    = .true.
-  if(answer8 == 'T')  G0W     = .true.
-  if(answer9 == 'T')  GW0     = .true.
-  if(answer10 == 'T') linGW   = .true.
+  if(answer1 == 'T') DIIS_GW = .true.
+  if(answer2 == 'T') COHSEX  = .true.
+  if(answer3 == 'T') SOSEX   = .true.
+  if(answer4 == 'T') BSE_GW  = .true.
+  if(answer5 == 'T') TDA_W   = .true.
+  if(answer6 == 'T') TDA_GW  = .true.
+  if(answer7 == 'T') G0W     = .true.
+  if(answer8 == 'T') GW0     = .true.
+  if(answer9 == 'T') linGW   = .true.
   if(.not.DIIS_GW) n_diis_GW = 1
 
 ! Options for adiabatic connection
@@ -188,6 +190,19 @@ subroutine read_options(maxSCF_HF,thresh_HF,DIIS_HF,n_diis_HF,guess_type,ortho_t
   if(answer1 == 'T') doACFDT = .true.
   if(answer2 == 'T') exchange_kernel = .true.
   if(answer3 == 'T') doXBS   = .true.
+
+! Options for dynamical BSE calculations
+
+  dBSE  = .false.
+  dTDA  = .true.
+  evDyn = .false.
+
+  read(1,*) 
+  read(1,*) answer1,answer2,answer3
+
+  if(answer1 == 'T') dBSE = .true.
+  if(answer2 == 'F') dTDA = .false.
+  if(answer3 == 'T') evDyn = .true.
 
 ! Read options for MC-MP2: Monte Carlo steps, number of equilibration steps, number of walkers,
 ! Monte Carlo time step, frequency of output results, and seed for random number generator

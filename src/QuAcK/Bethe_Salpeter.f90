@@ -1,4 +1,4 @@
-subroutine Bethe_Salpeter(TDA_W,TDA,dTDA,singlet_manifold,triplet_manifold,eta, & 
+subroutine Bethe_Salpeter(TDA_W,TDA,dBSE,dTDA,evDyn,singlet_manifold,triplet_manifold,eta, & 
                           nBas,nC,nO,nV,nR,nS,ERI,eW,eGW,OmRPA,XpY_RPA,XmY_RPA,rho_RPA,EcRPA,EcBSE)
 
 ! Compute the Bethe-Salpeter excitation energies
@@ -10,7 +10,9 @@ subroutine Bethe_Salpeter(TDA_W,TDA,dTDA,singlet_manifold,triplet_manifold,eta, 
 
   logical,intent(in)            :: TDA_W
   logical,intent(in)            :: TDA
+  logical,intent(in)            :: dBSE
   logical,intent(in)            :: dTDA
+  logical,intent(in)            :: evDyn
   logical,intent(in)            :: singlet_manifold
   logical,intent(in)            :: triplet_manifold
 
@@ -27,7 +29,6 @@ subroutine Bethe_Salpeter(TDA_W,TDA,dTDA,singlet_manifold,triplet_manifold,eta, 
 
 ! Local variables
 
-  logical                       :: evDyn = .true.
   logical                       :: W_BSE = .false.
   integer                       :: ispin
   integer                       :: isp_W
@@ -70,24 +71,30 @@ subroutine Bethe_Salpeter(TDA_W,TDA,dTDA,singlet_manifold,triplet_manifold,eta, 
                          rho_RPA(:,:,:,ispin),EcBSE(ispin),OmBSE(:,ispin),XpY_BSE(:,:,ispin),XmY_BSE(:,:,ispin))
     call print_excitation('BSE         ',ispin,nS,OmBSE(:,ispin))
 
+    !-------------------------------------------------
     ! Compute the dynamical screening at the BSE level
+    !-------------------------------------------------
 
-    if(W_BSE) call excitation_density(nBas,nC,nO,nR,nS,ERI,XpY_BSE(:,:,ispin),rho_BSE(:,:,:,ispin))
+    if(dBSE) then
 
-    ! Compute dynamic correction for BSE via perturbation theory
-
-    if(evDyn) then
-
-      call Bethe_Salpeter_dynamic_perturbation_iterative(TDA,dTDA,eta,nBas,nC,nO,nV,nR,nS,eGW(:),OmRPA(:,ispin),OmBSE(:,ispin), & 
-                                                         XpY_BSE(:,:,ispin),XmY_BSE(:,:,ispin),rho_RPA(:,:,:,ispin))
-    else
-
-      if(W_BSE) then
-        call Bethe_Salpeter_dynamic_perturbation(TDA,dTDA,eta,nBas,nC,nO,nV,nR,nS,eGW(:),OmRPA(:,ispin),OmBSE(:,ispin), & 
-                                                 XpY_BSE(:,:,ispin),XmY_BSE(:,:,ispin),rho_BSE(:,:,:,ispin))
+      if(W_BSE) call excitation_density(nBas,nC,nO,nR,nS,ERI,XpY_BSE(:,:,ispin),rho_BSE(:,:,:,ispin))
+ 
+      ! Compute dynamic correction for BSE via perturbation theory (iterative or renormalized)
+ 
+      if(evDyn) then
+ 
+        call Bethe_Salpeter_dynamic_perturbation_iterative(TDA,dTDA,eta,nBas,nC,nO,nV,nR,nS,eGW(:),OmRPA(:,ispin),OmBSE(:,ispin), & 
+                                                           XpY_BSE(:,:,ispin),XmY_BSE(:,:,ispin),rho_RPA(:,:,:,ispin))
       else
-        call Bethe_Salpeter_dynamic_perturbation(TDA,dTDA,eta,nBas,nC,nO,nV,nR,nS,eGW(:),OmRPA(:,ispin),OmBSE(:,ispin), & 
-                                                 XpY_BSE(:,:,ispin),XmY_BSE(:,:,ispin),rho_RPA(:,:,:,ispin))
+ 
+        if(W_BSE) then
+          call Bethe_Salpeter_dynamic_perturbation(TDA,dTDA,eta,nBas,nC,nO,nV,nR,nS,eGW(:),OmRPA(:,ispin),OmBSE(:,ispin), & 
+                                                   XpY_BSE(:,:,ispin),XmY_BSE(:,:,ispin),rho_BSE(:,:,:,ispin))
+        else
+          call Bethe_Salpeter_dynamic_perturbation(TDA,dTDA,eta,nBas,nC,nO,nV,nR,nS,eGW(:),OmRPA(:,ispin),OmBSE(:,ispin), & 
+                                                   XpY_BSE(:,:,ispin),XmY_BSE(:,:,ispin),rho_RPA(:,:,:,ispin))
+        end if
+ 
       end if
 
     end if
@@ -118,24 +125,30 @@ subroutine Bethe_Salpeter(TDA_W,TDA,dTDA,singlet_manifold,triplet_manifold,eta, 
                          rho_RPA(:,:,:,ispin),EcBSE(ispin),OmBSE(:,ispin),XpY_BSE(:,:,ispin),XmY_BSE(:,:,ispin))
     call print_excitation('BSE         ',ispin,nS,OmBSE(:,ispin))
 
+    !-------------------------------------------------
     ! Compute the dynamical screening at the BSE level
+    !-------------------------------------------------
 
-    if(W_BSE) call excitation_density(nBas,nC,nO,nR,nS,ERI,XpY_BSE(:,:,ispin),rho_BSE(:,:,:,ispin))
+    if(dBSE) then
 
-    ! Compute dynamic correction for BSE via perturbation theory
+      if(W_BSE) call excitation_density(nBas,nC,nO,nR,nS,ERI,XpY_BSE(:,:,ispin),rho_BSE(:,:,:,ispin))
 
-    if(evDyn) then
+      ! Compute dynamic correction for BSE via perturbation theory (iterative or renormalized)
 
-      call Bethe_Salpeter_dynamic_perturbation_iterative(TDA,dTDA,eta,nBas,nC,nO,nV,nR,nS,eGW(:),OmRPA(:,ispin),OmBSE(:,ispin), & 
-                                                         XpY_BSE(:,:,ispin),XmY_BSE(:,:,ispin),rho_RPA(:,:,:,ispin))
-    else
-
-      if(W_BSE) then
-        call Bethe_Salpeter_dynamic_perturbation(TDA,dTDA,eta,nBas,nC,nO,nV,nR,nS,eGW(:),OmRPA(:,ispin),OmBSE(:,ispin), & 
-                                                 XpY_BSE(:,:,ispin),XmY_BSE(:,:,ispin),rho_BSE(:,:,:,ispin))
+      if(evDyn) then
+     
+        call Bethe_Salpeter_dynamic_perturbation_iterative(TDA,dTDA,eta,nBas,nC,nO,nV,nR,nS,eGW(:),OmRPA(:,ispin),OmBSE(:,ispin), & 
+                                                           XpY_BSE(:,:,ispin),XmY_BSE(:,:,ispin),rho_RPA(:,:,:,ispin))
       else
-        call Bethe_Salpeter_dynamic_perturbation(TDA,dTDA,eta,nBas,nC,nO,nV,nR,nS,eGW(:),OmRPA(:,ispin),OmBSE(:,ispin), & 
-                                                 XpY_BSE(:,:,ispin),XmY_BSE(:,:,ispin),rho_RPA(:,:,:,ispin))
+     
+        if(W_BSE) then
+          call Bethe_Salpeter_dynamic_perturbation(TDA,dTDA,eta,nBas,nC,nO,nV,nR,nS,eGW(:),OmRPA(:,ispin),OmBSE(:,ispin), & 
+                                                   XpY_BSE(:,:,ispin),XmY_BSE(:,:,ispin),rho_BSE(:,:,:,ispin))
+        else
+          call Bethe_Salpeter_dynamic_perturbation(TDA,dTDA,eta,nBas,nC,nO,nV,nR,nS,eGW(:),OmRPA(:,ispin),OmBSE(:,ispin), & 
+                                                   XpY_BSE(:,:,ispin),XmY_BSE(:,:,ispin),rho_RPA(:,:,:,ispin))
+        end if
+     
       end if
 
     end if

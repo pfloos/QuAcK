@@ -1,5 +1,5 @@
-subroutine G0W0(doACFDT,exchange_kernel,doXBS,COHSEX,SOSEX,BSE,TDA_W,TDA,dTDA, & 
-                singlet_manifold,triplet_manifold,linearize,eta,               & 
+subroutine G0W0(doACFDT,exchange_kernel,doXBS,COHSEX,SOSEX,BSE,TDA_W,TDA,        & 
+                dBSE,dTDA,evDyn,singlet_manifold,triplet_manifold,linearize,eta, & 
                 nBas,nC,nO,nV,nR,nS,ENuc,ERHF,Hc,H,ERI,PHF,cHF,eHF,eGW)
 
 ! Perform G0W0 calculation
@@ -18,7 +18,9 @@ subroutine G0W0(doACFDT,exchange_kernel,doXBS,COHSEX,SOSEX,BSE,TDA_W,TDA,dTDA, &
   logical,intent(in)            :: BSE
   logical,intent(in)            :: TDA_W
   logical,intent(in)            :: TDA
+  logical,intent(in)            :: dBSE
   logical,intent(in)            :: dTDA
+  logical,intent(in)            :: evDyn
   logical,intent(in)            :: singlet_manifold
   logical,intent(in)            :: triplet_manifold
   logical,intent(in)            :: linearize
@@ -164,7 +166,7 @@ subroutine G0W0(doACFDT,exchange_kernel,doXBS,COHSEX,SOSEX,BSE,TDA_W,TDA,dTDA, &
 
   if(BSE) then
 
-    call Bethe_Salpeter(TDA_W,TDA,dTDA,singlet_manifold,triplet_manifold,eta, &
+    call Bethe_Salpeter(TDA_W,TDA,dBSE,dTDA,evDyn,singlet_manifold,triplet_manifold,eta, &
                         nBas,nC,nO,nV,nR,nS,ERI,eHF,eGW,Omega,XpY,XmY,rho,EcRPA,EcBSE)
 
     if(exchange_kernel) then
