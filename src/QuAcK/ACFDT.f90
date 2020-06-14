@@ -90,7 +90,7 @@ subroutine ACFDT(exchange_kernel,doXBS,dRPA,TDA_W,TDA,BSE,singlet_manifold,tripl
                            rho(:,:,:,ispin),EcAC(ispin),Omega(:,ispin),XpY(:,:,ispin),XmY(:,:,ispin))
 
       call ACFDT_correlation_energy(ispin,exchange_kernel,nBas,nC,nO,nV,nR,nS, &
-                                    ERI,XpY(:,:,ispin),XmY(:,:,ispin),Ec(iAC,ispin))
+                                    ERI(:,:,:,:),XpY(:,:,ispin),XmY(:,:,ispin),Ec(iAC,ispin))
 
       write(*,'(2X,F15.6,1X,F30.15,1X,F30.15)') lambda,EcAC(ispin),Ec(iAC,ispin)
 
@@ -137,7 +137,7 @@ subroutine ACFDT(exchange_kernel,doXBS,dRPA,TDA_W,TDA,BSE,singlet_manifold,tripl
                            rho(:,:,:,ispin),EcAC(ispin),Omega(:,ispin),XpY(:,:,ispin),XmY(:,:,ispin))
 
       call ACFDT_correlation_energy(ispin,exchange_kernel,nBas,nC,nO,nV,nR,nS, &
-                                    ERI,XpY(:,:,ispin),XmY(:,:,ispin),Ec(iAC,ispin))
+                                    ERI(:,:,:,:),XpY(:,:,ispin),XmY(:,:,ispin),Ec(iAC,ispin))
 
       write(*,'(2X,F15.6,1X,F30.15,1X,F30.15)') lambda,EcAC(ispin),Ec(iAC,ispin)
 

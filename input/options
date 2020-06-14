@@ -11,6 +11,6 @@
 # GW/GT: maxSCF thresh  DIIS n_diis COHSEX SOSEX BSE TDA_W TDA dTDA G0W GW0 lin eta     
          256    0.00001   T    5     F      F    T    F    F    F    F   F   T  0.00367493
 # ACFDT: AC Kx  XBS
-         F  F   T
+         T  F   T
 # MCMP2: nMC    nEq    nWalk dt  nPrint iSeed doDrift
          1000000 100000 10    0.3 10000 1234  T

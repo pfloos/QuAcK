@@ -34,7 +34,7 @@ subroutine Bethe_Salpeter_dynamic_perturbation_iterative(TDA,dTDA,eta,nBas,nC,nO
   integer                       :: nSCF
   integer                       :: maxSCF = 10
   double precision              :: Conv
-  double precision              :: thresh = 1d-5
+  double precision              :: thresh = 1d-3
 
 
   double precision,allocatable  :: OmDyn(:)
@@ -122,7 +122,7 @@ subroutine Bethe_Salpeter_dynamic_perturbation_iterative(TDA,dTDA,eta,nBas,nC,nO
  
     end do
 
-    Conv = maxval(abs(OmBSE(:) + OmDyn(:) - OmOld(:)))
+    Conv = maxval(abs(OmBSE(:) + OmDyn(:) - OmOld(:)))*HaToeV
     OmOld(:) = OmBSE(:) + OmDyn(:)
 
     write(*,*) '---------------------------------------------------------------------------------------------------'
