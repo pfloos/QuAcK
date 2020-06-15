@@ -1,12 +1,11 @@
 subroutine read_options(maxSCF_HF,thresh_HF,DIIS_HF,n_diis_HF,guess_type,ortho_type,   &
                         maxSCF_CC,thresh_CC,DIIS_CC,n_diis_CC,                         &
-                        singlet_manifold,triplet_manifold,                             &
-                        maxSCF_GF,thresh_GF,DIIS_GF,n_diis_GF,linGF,renormGF,          &
-                        BSE_GF,TDA_GF,eta_GF,                                          &
-                        maxSCF_GW,thresh_GW,DIIS_GW,n_diis_GW,                         &
-                        COHSEX,SOSEX,BSE_GW,TDA_W,TDA_GW,G0W,GW0,linGW,eta_GW,         &
+                        singlet_manifold,triplet_manifold,TDA,                         &
+                        maxSCF_GF,thresh_GF,DIIS_GF,n_diis_GF,linGF,eta_GF,renormGF,   &
+                        maxSCF_GW,thresh_GW,DIIS_GW,n_diis_GW,linGW,eta_GW,            &
+                        COHSEX,SOSEX,TDA_W,G0W,GW0,                                    &
                         doACFDT,exchange_kernel,doXBS,                                 &
-                        dBSE,dTDA,evDyn,                                               &
+                        BSE,dBSE,dTDA,evDyn,                                           &
                         nMC,nEq,nWalk,dt,nPrint,iSeed,doDrift)
 
 ! Read desired methods 
@@ -29,6 +28,7 @@ subroutine read_options(maxSCF_HF,thresh_HF,DIIS_HF,n_diis_HF,guess_type,ortho_t
 
   logical,intent(out)           :: singlet_manifold
   logical,intent(out)           :: triplet_manifold
+  logical,intent(out)           :: TDA
 
   integer,intent(out)           :: maxSCF_GF
   double precision,intent(out)  :: thresh_GF
@@ -36,8 +36,6 @@ subroutine read_options(maxSCF_HF,thresh_HF,DIIS_HF,n_diis_HF,guess_type,ortho_t
   integer,intent(out)           :: n_diis_GF
   logical,intent(out)           :: linGF
   integer,intent(out)           :: renormGF
-  logical,intent(out)           :: BSE_GF
-  logical,intent(out)           :: TDA_GF
   double precision,intent(out)  :: eta_GF
 
   integer,intent(out)           :: maxSCF_GW
@@ -46,9 +44,7 @@ subroutine read_options(maxSCF_HF,thresh_HF,DIIS_HF,n_diis_HF,guess_type,ortho_t
   integer,intent(out)           :: n_diis_GW
   logical,intent(out)           :: COHSEX
   logical,intent(out)           :: SOSEX
-  logical,intent(out)           :: BSE_GW
   logical,intent(out)           :: TDA_W
-  logical,intent(out)           :: TDA_GW
   logical,intent(out)           :: G0W
   logical,intent(out)           :: GW0
   logical,intent(out)           :: linGW
@@ -58,6 +54,7 @@ subroutine read_options(maxSCF_HF,thresh_HF,DIIS_HF,n_diis_HF,guess_type,ortho_t
   logical,intent(out)           :: exchange_kernel
   logical,intent(out)           :: doXBS
 
+  logical,intent(out)           :: BSE
   logical,intent(out)           :: dBSE
   logical,intent(out)           :: dTDA
   logical,intent(out)           :: evDyn
@@ -118,12 +115,14 @@ subroutine read_options(maxSCF_HF,thresh_HF,DIIS_HF,n_diis_HF,guess_type,ortho_t
 
   singlet_manifold = .false.
   triplet_manifold = .false.
+  TDA              = .false.
 
   read(1,*) 
-  read(1,*) answer1,answer2
+  read(1,*) answer1,answer2,answer3
 
   if(answer1 == 'T') singlet_manifold = .true.
   if(answer2 == 'T') triplet_manifold = .true.
+  if(answer3 == 'T') TDA              = .true.
 
 ! Read Green function options
 
@@ -132,18 +131,14 @@ subroutine read_options(maxSCF_HF,thresh_HF,DIIS_HF,n_diis_HF,guess_type,ortho_t
   DIIS_GF   = .false.
   n_diis_GF = 5
   linGF     = .false.
-  renormGF  = 0
-  BSE_GF    = .false.
-  TDA_GF    = .false.
   eta_GF    = 0d0
+  renormGF  = 0
 
   read(1,*) 
-  read(1,*) maxSCF_GF,thresh_GW,answer1,n_diis_GF,answer2,renormGF,answer3,answer4,eta_GF
+  read(1,*) maxSCF_GF,thresh_GF,answer1,n_diis_GF,answer2,eta_GF,renormGF
 
   if(answer1 == 'T') DIIS_GF = .true.
   if(answer2 == 'T') linGF   = .true.
-  if(answer3 == 'T') BSE_GF  = .true.
-  if(answer4 == 'T') TDA_GF  = .true.
   if(.not.DIIS_GF) n_diis_GF = 1
 
 ! Read GW options
@@ -154,35 +149,30 @@ subroutine read_options(maxSCF_HF,thresh_HF,DIIS_HF,n_diis_HF,guess_type,ortho_t
   n_diis_GW = 5
   COHSEX    = .false.
   SOSEX     = .false.
-  BSE_GW    = .false.
   TDA_W     = .false.
-  TDA_GW    = .false.
   G0W       = .false.
   GW0       = .false.
   linGW     = .false.
   eta_GW    = 0d0
 
   read(1,*) 
-  read(1,*) maxSCF_GW,thresh_GW,answer1,n_diis_GW,answer2,   &
-            answer3,answer4,answer5,answer6,answer7,answer8, & 
-            answer9,eta_GW
+  read(1,*) maxSCF_GW,thresh_GW,answer1,n_diis_GW,answer2,eta_GW, &
+            answer3,answer4,answer5,answer6,answer7
 
   if(answer1 == 'T') DIIS_GW = .true.
-  if(answer2 == 'T') COHSEX  = .true.
-  if(answer3 == 'T') SOSEX   = .true.
-  if(answer4 == 'T') BSE_GW  = .true.
+  if(answer2 == 'T') linGW   = .true.
+  if(answer3 == 'T') COHSEX  = .true.
+  if(answer4 == 'T') SOSEX   = .true.
   if(answer5 == 'T') TDA_W   = .true.
-  if(answer6 == 'T') TDA_GW  = .true.
-  if(answer7 == 'T') G0W     = .true.
-  if(answer8 == 'T') GW0     = .true.
-  if(answer9 == 'T') linGW   = .true.
+  if(answer6 == 'T') G0W     = .true.
+  if(answer7 == 'T') GW0     = .true.
   if(.not.DIIS_GW) n_diis_GW = 1
 
 ! Options for adiabatic connection
 
-  doACFDT = .false.
+  doACFDT         = .false.
   exchange_kernel = .false.
-  doXBS   = .false.
+  doXBS           = .false.
 
   read(1,*) 
   read(1,*) answer1,answer2,answer3
@@ -193,16 +183,18 @@ subroutine read_options(maxSCF_HF,thresh_HF,DIIS_HF,n_diis_HF,guess_type,ortho_t
 
 ! Options for dynamical BSE calculations
 
+  BSE   = .false.
   dBSE  = .false.
   dTDA  = .true.
   evDyn = .false.
 
   read(1,*) 
-  read(1,*) answer1,answer2,answer3
+  read(1,*) answer1,answer2,answer3,answer4
 
-  if(answer1 == 'T') dBSE = .true.
-  if(answer2 == 'F') dTDA = .false.
-  if(answer3 == 'T') evDyn = .true.
+  if(answer1 == 'T') BSE   = .true.
+  if(answer2 == 'T') dBSE  = .true.
+  if(answer3 == 'F') dTDA  = .false.
+  if(answer4 == 'T') evDyn = .true.
 
 ! Read options for MC-MP2: Monte Carlo steps, number of equilibration steps, number of walkers,
 ! Monte Carlo time step, frequency of output results, and seed for random number generator

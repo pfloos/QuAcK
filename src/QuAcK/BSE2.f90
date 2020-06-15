@@ -1,4 +1,5 @@
-subroutine BSE2(TDA,singlet_manifold,triplet_manifold,eta,nBas,nC,nO,nV,nR,nS,ERI,eHF,eGF,EcBSE)
+subroutine BSE2(TDA,dBSE,dTDA,singlet_manifold,triplet_manifold, & 
+                eta,nBas,nC,nO,nV,nR,nS,ERI,eHF,eGF,EcBSE)
 
 ! Compute the Bethe-Salpeter excitation energies
 
@@ -8,6 +9,8 @@ subroutine BSE2(TDA,singlet_manifold,triplet_manifold,eta,nBas,nC,nO,nV,nR,nS,ER
 ! Input variables
 
   logical,intent(in)            :: TDA
+  logical,intent(in)            :: dBSE
+  logical,intent(in)            :: dTDA
   logical,intent(in)            :: singlet_manifold
   logical,intent(in)            :: triplet_manifold
 
@@ -54,9 +57,9 @@ subroutine BSE2(TDA,singlet_manifold,triplet_manifold,eta,nBas,nC,nO,nV,nR,nS,ER
     call print_excitation('BSE2        ',ispin,nS,OmBSE(:,ispin))
 
     ! Compute dynamic correction for BSE via perturbation theory
-
-    call BSE2_dynamic_perturbation(ispin,eta,nBas,nC,nO,nV,nR,nS, & 
-                                   ERI(:,:,:,:),eHF(:),eGF(:),OmBSE(:,ispin),XpY(:,:,ispin),XmY(:,:,ispin))
+    if(dBSE) &
+      call BSE2_dynamic_perturbation(dTDA,ispin,eta,nBas,nC,nO,nV,nR,nS, & 
+                                     ERI(:,:,:,:),eHF(:),eGF(:),OmBSE(:,ispin),XpY(:,:,ispin),XmY(:,:,ispin))
  
   end if
 
@@ -77,8 +80,9 @@ subroutine BSE2(TDA,singlet_manifold,triplet_manifold,eta,nBas,nC,nO,nV,nR,nS,ER
 
     ! Compute dynamic correction for BSE via perturbation theory
 
-    call BSE2_dynamic_perturbation(ispin,eta,nBas,nC,nO,nV,nR,nS, &
-                                   ERI(:,:,:,:),eHF(:),eGF(:),OmBSE(:,ispin),XpY(:,:,ispin),XmY(:,:,ispin))
+    if(dBSE) & 
+      call BSE2_dynamic_perturbation(dTDA,ispin,eta,nBas,nC,nO,nV,nR,nS, &
+                                     ERI(:,:,:,:),eHF(:),eGF(:),OmBSE(:,ispin),XpY(:,:,ispin),XmY(:,:,ispin))
 
   end if
 

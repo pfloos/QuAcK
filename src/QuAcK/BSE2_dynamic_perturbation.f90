@@ -1,4 +1,4 @@
-subroutine BSE2_dynamic_perturbation(ispin,eta,nBas,nC,nO,nV,nR,nS,ERI,eHF,eGF,OmBSE,XpY,XmY)
+subroutine BSE2_dynamic_perturbation(dTDA,ispin,eta,nBas,nC,nO,nV,nR,nS,ERI,eHF,eGF,OmBSE,XpY,XmY)
 
 ! Compute dynamical effects via perturbation theory for BSE
 
@@ -7,6 +7,7 @@ subroutine BSE2_dynamic_perturbation(ispin,eta,nBas,nC,nO,nV,nR,nS,ERI,eHF,eGF,O
 
 ! Input variables
 
+  logical,intent(in)            :: dTDA
   integer,intent(in)            :: ispin
   double precision,intent(in)   :: eta
   integer,intent(in)            :: nBas
@@ -25,7 +26,6 @@ subroutine BSE2_dynamic_perturbation(ispin,eta,nBas,nC,nO,nV,nR,nS,ERI,eHF,eGF,O
 
 ! Local variables
 
-  logical                       :: dTDA = .true.
   integer                       :: ia
   integer,parameter             :: maxS = 10
   double precision              :: gapGF
