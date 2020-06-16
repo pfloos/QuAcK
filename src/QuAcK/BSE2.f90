@@ -1,4 +1,4 @@
-subroutine BSE2(TDA,dBSE,dTDA,singlet_manifold,triplet_manifold, & 
+subroutine BSE2(TDA,dBSE,dTDA,evDyn,singlet_manifold,triplet_manifold, & 
                 eta,nBas,nC,nO,nV,nR,nS,ERI,eHF,eGF,EcBSE)
 
 ! Compute the Bethe-Salpeter excitation energies
@@ -11,6 +11,7 @@ subroutine BSE2(TDA,dBSE,dTDA,singlet_manifold,triplet_manifold, &
   logical,intent(in)            :: TDA
   logical,intent(in)            :: dBSE
   logical,intent(in)            :: dTDA
+  logical,intent(in)            :: evDyn
   logical,intent(in)            :: singlet_manifold
   logical,intent(in)            :: triplet_manifold
 
