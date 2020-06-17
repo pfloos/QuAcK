@@ -58,10 +58,22 @@ subroutine BSE2(TDA,dBSE,dTDA,evDyn,singlet_manifold,triplet_manifold, &
     call print_excitation('BSE2        ',ispin,nS,OmBSE(:,ispin))
 
     ! Compute dynamic correction for BSE via perturbation theory
-    if(dBSE) &
+
+    if(dBSE) then
+
+     if(evDyn) then
+
+      call BSE2_dynamic_perturbation_iterative(dTDA,ispin,eta,nBas,nC,nO,nV,nR,nS, & 
+                                               ERI(:,:,:,:),eHF(:),eGF(:),OmBSE(:,ispin),XpY(:,:,ispin),XmY(:,:,ispin))
+     else
+ 
       call BSE2_dynamic_perturbation(dTDA,ispin,eta,nBas,nC,nO,nV,nR,nS, & 
                                      ERI(:,:,:,:),eHF(:),eGF(:),OmBSE(:,ispin),XpY(:,:,ispin),XmY(:,:,ispin))
  
+      end if
+
+    end if
+
   end if
 
 !-------------------
@@ -81,9 +93,20 @@ subroutine BSE2(TDA,dBSE,dTDA,evDyn,singlet_manifold,triplet_manifold, &
 
     ! Compute dynamic correction for BSE via perturbation theory
 
-    if(dBSE) & 
-      call BSE2_dynamic_perturbation(dTDA,ispin,eta,nBas,nC,nO,nV,nR,nS, &
+    if(dBSE) then
+
+     if(evDyn) then
+
+      call BSE2_dynamic_perturbation_iterative(dTDA,ispin,eta,nBas,nC,nO,nV,nR,nS, & 
+                                               ERI(:,:,:,:),eHF(:),eGF(:),OmBSE(:,ispin),XpY(:,:,ispin),XmY(:,:,ispin))
+     else
+ 
+      call BSE2_dynamic_perturbation(dTDA,ispin,eta,nBas,nC,nO,nV,nR,nS, & 
                                      ERI(:,:,:,:),eHF(:),eGF(:),OmBSE(:,ispin),XpY(:,:,ispin),XmY(:,:,ispin))
+ 
+      end if
+
+    end if
 
   end if
 
