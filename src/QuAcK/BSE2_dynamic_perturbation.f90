@@ -41,13 +41,12 @@ subroutine BSE2_dynamic_perturbation(dTDA,ispin,eta,nBas,nC,nO,nV,nR,nS,ERI,eHF,
   double precision,allocatable  :: ZAm_dyn(:,:)
 
   double precision,allocatable  ::  B_dyn(:,:)
-  double precision,allocatable  :: ZB_dyn(:,:)
 
 ! Memory allocation
 
   allocate(OmDyn(nS),ZDyn(nS),X(nS),Y(nS),Ap_dyn(nS,nS),ZAp_dyn(nS,nS))
 
-  if(.not.dTDA) allocate(Am_dyn(nS,nS),ZAm_dyn(nS,nS),B_dyn(nS,nS),ZB_dyn(nS,nS))
+  if(.not.dTDA) allocate(Am_dyn(nS,nS),ZAm_dyn(nS,nS),B_dyn(nS,nS))
 
   ! Print main components of transition vectors
 
@@ -82,14 +81,11 @@ subroutine BSE2_dynamic_perturbation(dTDA,ispin,eta,nBas,nC,nO,nV,nR,nS,ERI,eHF,
       ! Second part of the resonant and anti-resonant part of the BSE correction (frequency independent)
 
       call BSE2_A_matrix_dynamic(ispin,eta,nBas,nC,nO,nV,nR,nS,1d0,ERI,eGF,-OmBSE(ia),Am_dyn,ZAm_dyn)
-      ZAm_dyn(:,:) = - ZAm_dyn(:,:)
 
-      call BSE2_B_matrix_dynamic(ispin,eta,nBas,nC,nO,nV,nR,nS,1d0,ERI,eGF,B_dyn,ZB_dyn)
+      call BSE2_B_matrix_dynamic(ispin,eta,nBas,nC,nO,nV,nR,nS,1d0,ERI,eGF,B_dyn)
 
       ZDyn(ia)  = dot_product(X,matmul(ZAp_dyn,X)) &
-                - dot_product(Y,matmul(ZAm_dyn,Y)) &
-                + dot_product(X,matmul(ZB_dyn,Y)) & 
-                - dot_product(Y,matmul(ZB_dyn,X))  
+                + dot_product(Y,matmul(ZAm_dyn,Y))  
 
       OmDyn(ia) = dot_product(X,matmul(Ap_dyn,X)) &
                 - dot_product(Y,matmul(Am_dyn,Y)) &

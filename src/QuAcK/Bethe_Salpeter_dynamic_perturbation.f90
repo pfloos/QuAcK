@@ -84,42 +84,40 @@ subroutine Bethe_Salpeter_dynamic_perturbation(dTDA,eta,nBas,nC,nO,nV,nR,nS,eGW,
 
       ! Resonant part of the BSE correction for dynamical TDA
 
-      call Bethe_Salpeter_A_matrix_dynamic(eta,nBas,nC,nO,nV,nR,nS,1d0,eGW(:),OmRPA(:),OmBSE(ia),rho(:,:,:), &
-                                           Ap_dyn(:,:))
+      call Bethe_Salpeter_A_matrix_dynamic(eta,nBas,nC,nO,nV,nR,nS,1d0,eGW,OmRPA,OmBSE(ia),rho,Ap_dyn)
 
       ! Renormalization factor of the resonant parts for dynamical TDA
 
-      call Bethe_Salpeter_ZA_matrix_dynamic(eta,nBas,nC,nO,nV,nR,nS,1d0,eGW(:),OmRPA(:),OmBSE(ia),rho(:,:,:), & 
-                                            ZAp_dyn(:,:))
+      call Bethe_Salpeter_ZA_matrix_dynamic(eta,nBas,nC,nO,nV,nR,nS,1d0,eGW,OmRPA,OmBSE(ia),rho,ZAp_dyn)
 
-      ZDyn(ia)  = dot_product(X(:),matmul(ZAp_dyn(:,:),X(:)))
-      OmDyn(ia) = dot_product(X(:),matmul(Ap_dyn(:,:),X(:)))
+      ZDyn(ia)  = dot_product(X,matmul(ZAp_dyn,X))
+      OmDyn(ia) = dot_product(X,matmul( Ap_dyn,X))
 
     else
 
       ! Resonant and anti-resonant part of the BSE correction
 
-      call Bethe_Salpeter_AB_matrix_dynamic(eta,nBas,nC,nO,nV,nR,nS,1d0,eGW(:),OmRPA(:),OmBSE(ia),rho(:,:,:), & 
-                                            Ap_dyn(:,:),Am_dyn(:,:),Bp_dyn(:,:),Bm_dyn(:,:))
+      call Bethe_Salpeter_AB_matrix_dynamic(eta,nBas,nC,nO,nV,nR,nS,1d0,eGW,OmRPA,OmBSE(ia),rho, & 
+                                            Ap_dyn,Am_dyn,Bp_dyn,Bm_dyn)
 
       ! Renormalization factor of the resonant and anti-resonant parts
 
-      call Bethe_Salpeter_ZAB_matrix_dynamic(eta,nBas,nC,nO,nV,nR,nS,1d0,eGW(:),OmRPA(:),OmBSE(ia),rho(:,:,:), & 
-                                             ZAp_dyn(:,:),ZAm_dyn(:,:),ZBp_dyn(:,:),ZBm_dyn(:,:))
+      call Bethe_Salpeter_ZAB_matrix_dynamic(eta,nBas,nC,nO,nV,nR,nS,1d0,eGW,OmRPA,OmBSE(ia),rho, & 
+                                             ZAp_dyn,ZAm_dyn,ZBp_dyn,ZBm_dyn)
 
-      ZDyn(ia)  = dot_product(X(:),matmul(ZAp_dyn(:,:),X(:))) &
-                - dot_product(Y(:),matmul(ZAm_dyn(:,:),Y(:))) &
-                + dot_product(X(:),matmul(ZBp_dyn(:,:),Y(:))) & 
-                - dot_product(Y(:),matmul(ZBm_dyn(:,:),X(:)))  
+      ZDyn(ia)  = dot_product(X,matmul(ZAp_dyn,X)) &
+                - dot_product(Y,matmul(ZAm_dyn,Y)) &
+                + dot_product(X,matmul(ZBp_dyn,Y)) & 
+                - dot_product(Y,matmul(ZBm_dyn,X))  
 
-      OmDyn(ia) = dot_product(X(:),matmul(Ap_dyn(:,:),X(:))) &
-                - dot_product(Y(:),matmul(Am_dyn(:,:),Y(:))) &
-                + dot_product(X(:),matmul(Bp_dyn(:,:),Y(:))) & 
-                - dot_product(Y(:),matmul(Bm_dyn(:,:),X(:)))  
+      OmDyn(ia) = dot_product(X,matmul(Ap_dyn,X)) &
+                - dot_product(Y,matmul(Am_dyn,Y)) &
+                + dot_product(X,matmul(Bp_dyn,Y)) & 
+                - dot_product(Y,matmul(Bm_dyn,X))  
 
     end if
 
-    ZDyn(ia) = 1d0/(1d0 - ZDyn(ia))
+    ZDyn(ia)  = 1d0/(1d0 - ZDyn(ia))
     OmDyn(ia) = ZDyn(ia)*OmDyn(ia)
 
     write(*,'(2X,I5,5X,F15.6,5X,F15.6,5X,F15.6,5X,F15.6)') & 

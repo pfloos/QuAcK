@@ -66,6 +66,10 @@ subroutine G0W0(doACFDT,exchange_kernel,doXBS,COHSEX,SOSEX,BSE,TDA_W,TDA,       
   write(*,*)'************************************************'
   write(*,*)
 
+! Initialization
+
+  EcRPA(:) = 0d0
+
 ! SOSEX correction
 
   if(SOSEX) write(*,*) 'SOSEX correction activated!'
@@ -147,7 +151,6 @@ subroutine G0W0(doACFDT,exchange_kernel,doXBS,COHSEX,SOSEX,BSE,TDA_W,TDA,       
 
   call linear_response(ispin,.true.,TDA_W,.false.,eta,nBas,nC,nO,nV,nR,nS,1d0,eGW,ERI, & 
                        rho(:,:,:,ispin),EcRPA(ispin),Omega(:,ispin),XpY(:,:,ispin),XmY(:,:,ispin))
-
 
   write(*,*)
   write(*,*)'-------------------------------------------------------------------------------'

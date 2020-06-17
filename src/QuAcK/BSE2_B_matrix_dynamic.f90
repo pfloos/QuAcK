@@ -1,4 +1,4 @@
-subroutine BSE2_B_matrix_dynamic(ispin,eta,nBas,nC,nO,nV,nR,nS,lambda,ERI,eGF,B_dyn,ZB_dyn)
+subroutine BSE2_B_matrix_dynamic(ispin,eta,nBas,nC,nO,nV,nR,nS,lambda,ERI,eGF,B_dyn)
 
 ! Compute the anti-resonant part of the dynamic BSE2 matrix
 
@@ -24,12 +24,10 @@ subroutine BSE2_B_matrix_dynamic(ispin,eta,nBas,nC,nO,nV,nR,nS,lambda,ERI,eGF,B_
 ! Output variables
 
   double precision,intent(out)  :: B_dyn(nS,nS)
-  double precision,intent(out)  :: ZB_dyn(nS,nS)
 
 ! Initialization
 
    B_dyn(:,:) = 0d0
-  ZB_dyn(:,:) = 0d0
 
 ! Second-order correlation kernel for the block A of the singlet manifold
 
@@ -53,14 +51,12 @@ subroutine BSE2_B_matrix_dynamic(ispin,eta,nBas,nC,nO,nV,nR,nS,lambda,ERI,eGF,B_
                     -     ERI(b,k,c,i)*ERI(a,c,j,k) + 2d0*ERI(b,k,c,i)*ERI(a,c,k,j)
 
                  B_dyn(ia,jb) =  B_dyn(ia,jb) - num*dem/(dem**2 + eta**2)
-                ZB_dyn(ia,jb) = ZB_dyn(ia,jb) + num*(dem**2 - eta**2)/(dem**2 + eta**2)**2
             
                 dem = + eGF(i) - eGF(c) + eGF(k) - eGF(b)
                 num = 2d0*ERI(b,c,i,k)*ERI(a,k,j,c) -     ERI(b,c,i,k)*ERI(a,k,c,j) & 
                     -     ERI(b,c,k,i)*ERI(a,k,j,c) + 2d0*ERI(b,c,k,i)*ERI(a,k,c,j)
 
                  B_dyn(ia,jb) =  B_dyn(ia,jb) - num*dem/(dem**2 + eta**2)
-                ZB_dyn(ia,jb) = ZB_dyn(ia,jb) + num*(dem**2 - eta**2)/(dem**2 + eta**2)**2
             
               end do
             end do
@@ -73,7 +69,6 @@ subroutine BSE2_B_matrix_dynamic(ispin,eta,nBas,nC,nO,nV,nR,nS,lambda,ERI,eGF,B_
                     -     ERI(a,b,d,c)*ERI(c,d,i,j) + 2d0*ERI(a,b,d,c)*ERI(c,d,j,i)
 
                  B_dyn(ia,jb) =  B_dyn(ia,jb) + 0.5d0*num*dem/(dem**2 + eta**2)
-                ZB_dyn(ia,jb) = ZB_dyn(ia,jb) - 0.5d0*num*(dem**2 - eta**2)/(dem**2 + eta**2)**2
             
               end do
             end do
@@ -86,7 +81,6 @@ subroutine BSE2_B_matrix_dynamic(ispin,eta,nBas,nC,nO,nV,nR,nS,lambda,ERI,eGF,B_
                     -     ERI(a,b,l,k)*ERI(k,l,i,j) + 2d0*ERI(a,b,l,k)*ERI(k,l,j,i)
 
                  B_dyn(ia,jb) =  B_dyn(ia,jb) + 0.5d0*num*dem/(dem**2 + eta**2)
-                ZB_dyn(ia,jb) = ZB_dyn(ia,jb) - 0.5d0*num*(dem**2 - eta**2)/(dem**2 + eta**2)**2
             
               end do
             end do
@@ -120,13 +114,11 @@ subroutine BSE2_B_matrix_dynamic(ispin,eta,nBas,nC,nO,nV,nR,nS,lambda,ERI,eGF,B_
                 num = 2d0*ERI(b,k,i,c)*ERI(a,c,j,k) - ERI(b,k,i,c)*ERI(a,c,k,j) - ERI(b,k,c,i)*ERI(a,c,j,k) 
 
                  B_dyn(ia,jb) =  B_dyn(ia,jb) - num*dem/(dem**2 + eta**2)
-                ZB_dyn(ia,jb) = ZB_dyn(ia,jb) + num*(dem**2 - eta**2)/(dem**2 + eta**2)**2
             
                 dem = + eGF(i) - eGF(c) + eGF(k) - eGF(b)
                 num = 2d0*ERI(b,c,i,k)*ERI(a,k,j,c) - ERI(b,c,i,k)*ERI(a,k,c,j) - ERI(b,c,k,i)*ERI(a,k,j,c)
 
                  B_dyn(ia,jb) =  B_dyn(ia,jb) - num*dem/(dem**2 + eta**2)
-                ZB_dyn(ia,jb) = ZB_dyn(ia,jb) + num*(dem**2 - eta**2)/(dem**2 + eta**2)**2
             
               end do
             end do
@@ -138,7 +130,6 @@ subroutine BSE2_B_matrix_dynamic(ispin,eta,nBas,nC,nO,nV,nR,nS,lambda,ERI,eGF,B_
                 num = ERI(a,b,c,d)*ERI(c,d,j,i) + ERI(a,b,d,c)*ERI(c,d,i,j)
 
                  B_dyn(ia,jb) =  B_dyn(ia,jb) - 0.5d0*num*dem/(dem**2 + eta**2)
-                ZB_dyn(ia,jb) = ZB_dyn(ia,jb) + 0.5d0*num*(dem**2 - eta**2)/(dem**2 + eta**2)**2
             
               end do
             end do
@@ -150,7 +141,6 @@ subroutine BSE2_B_matrix_dynamic(ispin,eta,nBas,nC,nO,nV,nR,nS,lambda,ERI,eGF,B_
                 num = ERI(a,b,k,l)*ERI(k,l,j,i) + ERI(a,b,l,k)*ERI(k,l,i,j)
 
                  B_dyn(ia,jb) =  B_dyn(ia,jb) - 0.5d0*num*dem/(dem**2 + eta**2)
-                ZB_dyn(ia,jb) = ZB_dyn(ia,jb) + 0.5d0*num*(dem**2 - eta**2)/(dem**2 + eta**2)**2
             
               end do
             end do
