@@ -48,6 +48,12 @@ subroutine BSE2_dynamic_perturbation(dTDA,ispin,eta,nBas,nC,nO,nV,nR,nS,ERI,eHF,
 
   if(.not.dTDA) allocate(Am_dyn(nS,nS),ZAm_dyn(nS,nS),B_dyn(nS,nS))
 
+  if(dTDA) then
+    write(*,*)
+    write(*,*) '*** dynamical TDA activated ***'
+    write(*,*)
+  end if
+
   ! Print main components of transition vectors
 
   call print_transition_vectors(nBas,nC,nO,nV,nR,nS,OmBSE,XpY,XmY)

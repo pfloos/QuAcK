@@ -163,9 +163,9 @@ subroutine read_options(maxSCF_HF,thresh_HF,DIIS_HF,n_diis_HF,guess_type,ortho_t
   if(answer2 == 'T') linGW   = .true.
   if(answer3 == 'T') COHSEX  = .true.
   if(answer4 == 'T') SOSEX   = .true.
-  if(answer5 == 'T') G0W     = .true.
+  if(answer5 == 'T') TDA_W   = .true.
+  if(answer6 == 'T') G0W     = .true.
   if(answer7 == 'T') GW0     = .true.
-  if(answer7 == 'T') TDA_W   = .true.
   if(.not.DIIS_GW) n_diis_GW = 1
 
 ! Options for adiabatic connection
