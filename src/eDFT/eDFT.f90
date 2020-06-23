@@ -29,7 +29,7 @@ program eDFT
   double precision,allocatable  :: ERI(:,:,:,:)
   double precision,allocatable  :: c(:,:)
 
-  character(len=7)              :: method
+  character(len=8)              :: method
   integer                       :: x_rung,c_rung
   character(len=12)             :: x_DFA ,c_DFA
   logical                       :: LDA_centered = .true.
@@ -218,6 +218,23 @@ program eDFT
     call cpu_time(start_KS)
     call GOK_UKS(x_rung,x_DFA,c_rung,c_DFA,nEns,wEns(:),nGrid,weight(:),maxSCF,thresh,max_diis,guess_type, & 
                    nBas,AO(:,:),dAO(:,:,:),nO(:),nV(:),S(:,:),T(:,:),V(:,:),Hc(:,:),ERI(:,:,:,:),X(:,:),ENuc,Ew)
+    call cpu_time(end_KS)
+
+    t_KS = end_KS - start_KS
+    write(*,'(A65,1X,F9.3,A8)') 'Total CPU time for UKS = ',t_KS,' seconds'
+    write(*,*)
+
+  end if
+
+!------------------------------------------------------------------------
+! Compute N-centered UKS energy (UNBROKEN)
+!------------------------------------------------------------------------
+
+  if(method == 'eDFT-UKS') then
+
+    call cpu_time(start_KS)
+    call eDFT_UKS(x_rung,x_DFA,c_rung,c_DFA,nEns,wEns(:),nGrid,weight(:),maxSCF,thresh,max_diis,guess_type, & 
+                  nBas,AO(:,:),dAO(:,:,:),nO(:),nV(:),S(:,:),T(:,:),V(:,:),Hc(:,:),ERI(:,:,:,:),X(:,:),ENuc,Ew)
     call cpu_time(end_KS)
 
     t_KS = end_KS - start_KS

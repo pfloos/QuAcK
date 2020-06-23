@@ -1,24 +1,24 @@
 # Restricted or unrestricted KS calculation
-  LIM-RKS
+  eDFT-UKS
 # exchange rung:
 # Hartree      = 0
 # LDA          = 1: RS51,RMFL20
 # GGA          = 2: RB88
 # Hybrid       = 4
 # Hartree-Fock = 666
-  1 RCC
+  1 S51
 # correlation rung: 
 # Hartree      = 0
 # LDA          = 1: RVWN5,RMFL20
 # GGA          = 2: 
 # Hybrid       = 4: 
 # Hartree-Fock = 666
-  1 RVWN5
+  0 H
 # quadrature grid SG-n
   1
 # Number of states in ensemble (nEns)
   3
 # Ensemble weights: wEns(1),...,wEns(nEns-1)
-  0.33333 0.33333
+  1.0 0.0
 # GOK-DFT: maxSCF thresh   DIIS n_diis guess_type ortho_type
            32    0.00001   T     5      1          1

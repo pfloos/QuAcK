@@ -22,26 +22,23 @@ subroutine unrestricted_density_matrix(nBas,nEns,nO,c,P)
 
   double precision,intent(out)  :: P(nBas,nBas,nspin,nEns)
 
-! Ground state density matrix
+! N-electron ground state
 
   iEns = 1
   do ispin=1,nspin
     P(:,:,ispin,iEns) = matmul(c(:,1:nO(ispin),ispin),transpose(c(:,1:nO(ispin),ispin)))
   end do
 
-! Singly-excited state density matrix
+! (N-1)-electron state: remove spin-down electrons
 
   iEns = 2
-  P(:,:,1,iEns) = matmul(c(:,1:nO(1)-1,1),transpose(c(:,1:nO(1)-1,1))) &
-                + matmul(c(:,nO(1)+1:nO(1)+1,1),transpose(c(:,nO(1)+1:nO(1)+1,1)))
-  P(:,:,2,iEns) = matmul(c(:,1:nO(2),2),transpose(c(:,1:nO(2),2)))
+  P(:,:,1,iEns) = matmul(c(:,1:nO(1)  ,1),transpose(c(:,1:nO(1)  ,1)))  
+  P(:,:,2,iEns) = matmul(c(:,1:nO(2)-1,2),transpose(c(:,1:nO(2)-1,2)))
 
-! Doubly-excited state density matrix
+! (N+1)-electron state: remove spin-up electrons
 
   iEns = 3 
-  do ispin=1,nspin
-    P(:,:,ispin,iEns) = matmul(c(:,1:nO(ispin)-1,ispin),transpose(c(:,1:nO(ispin)-1,ispin))) &
-                      + matmul(c(:,nO(ispin)+1:nO(ispin)+1,ispin),transpose(c(:,nO(ispin)+1:nO(ispin)+1,ispin)))
-  end do
+  P(:,:,1,iEns) = matmul(c(:,1:nO(1)+1,1),transpose(c(:,1:nO(1)+1,1)))  
+  P(:,:,2,iEns) = matmul(c(:,1:nO(2)  ,2),transpose(c(:,1:nO(2)  ,2)))
 
 end subroutine unrestricted_density_matrix

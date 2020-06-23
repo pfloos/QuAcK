@@ -12,7 +12,7 @@ subroutine read_options(method,x_rung,x_DFA,c_rung,c_DFA,SGn,nEns,wEns,maxSCF,th
 
 ! Output variables
 
-  character(len=7),intent(out)  :: method
+  character(len=8),intent(out)  :: method
   integer,intent(out)           :: x_rung,c_rung
   character(len=12),intent(out)  :: x_DFA, c_DFA
   integer,intent(out)           :: SGn
