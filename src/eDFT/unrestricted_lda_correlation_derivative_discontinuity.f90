@@ -1,4 +1,4 @@
-subroutine lda_correlation_derivative_discontinuity(DFA,nEns,wEns,nGrid,weight,rhow,Ec)
+subroutine unrestricted_lda_correlation_derivative_discontinuity(DFA,nEns,wEns,nGrid,weight,rhow,Ec)
 
 ! Compute the correlation LDA part of the derivative discontinuity
 
@@ -28,21 +28,15 @@ subroutine lda_correlation_derivative_discontinuity(DFA,nEns,wEns,nGrid,weight,r
 
 !   Wigner's LDA correlation functional: Wigner, Trans. Faraday Soc. 34 (1938) 678
 
-    case ('W38')
+    case ('RW38')
 
       Ec(:,:) = 0d0
 
 !   Vosko, Wilk and Nusair's functional V: Can. J. Phys. 58 (1980) 1200
 
-    case ('VWN5')
+    case ('RVWN5')
 
       Ec(:,:) = 0d0
-
-!   Loos-Fromager weight-dependent correlation functional: Loos and Fromager (in preparation)
-
-    case ('MFL20')
-
-      call MFL20_lda_correlation_derivative_discontinuity(nEns,wEns,nGrid,weight(:),rhow(:,:),Ec(:,:))
 
     case default
 
@@ -51,4 +45,4 @@ subroutine lda_correlation_derivative_discontinuity(DFA,nEns,wEns,nGrid,weight,r
 
   end select
  
-end subroutine lda_correlation_derivative_discontinuity
+end subroutine unrestricted_lda_correlation_derivative_discontinuity

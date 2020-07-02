@@ -1,6 +1,6 @@
-subroutine C16_lda_correlation_energy(nGrid,weight,rho,Ec)
+subroutine UC16_lda_correlation_energy(nGrid,weight,rho,Ec)
 
-! Compute Chachiyo's LDA correlation energy
+! Compute unrestricted Chachiyo's LDA correlation energy
 
   implicit none
   include 'parameters.h'
@@ -90,4 +90,4 @@ subroutine C16_lda_correlation_energy(nGrid,weight,rho,Ec)
 
   Ec(2) = Ec(2) - Ec(1) - Ec(3)
 
-end subroutine C16_lda_correlation_energy
+end subroutine UC16_lda_correlation_energy

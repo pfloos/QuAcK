@@ -1,6 +1,6 @@
-subroutine gga_correlation_potential(DFA,nEns,wEns,nGrid,weight,nBas,AO,dAO,rho,drho,Fc)
+subroutine unrestricted_gga_correlation_potential(DFA,nEns,wEns,nGrid,weight,nBas,AO,dAO,rho,drho,Fc)
 
-! Compute GGA correlation potential
+! Compute unrestricted GGA correlation potential
 
   implicit none
   include 'parameters.h'
@@ -28,4 +28,4 @@ subroutine gga_correlation_potential(DFA,nEns,wEns,nGrid,weight,nBas,AO,dAO,rho,
 
 ! Compute GGA correlation matrix in the AO basis
 
-end subroutine gga_correlation_potential
+end subroutine unrestricted_gga_correlation_potential

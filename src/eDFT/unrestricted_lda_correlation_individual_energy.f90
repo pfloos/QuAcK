@@ -1,48 +1,34 @@
-subroutine lda_correlation_energy(DFA,nEns,wEns,nGrid,weight,rho,Ec)
+subroutine unrestricted_lda_correlation_individual_energy(DFA,LDA_centered,nEns,wEns,nGrid,weight,rhow,rho,Ec)
 
-! Select LDA correlation functional
+! Compute LDA correlation energy for individual states
 
   implicit none
   include 'parameters.h'
 
 ! Input variables
 
+  logical,intent(in)            :: LDA_centered
   character(len=12),intent(in)  :: DFA
   integer,intent(in)            :: nEns
   double precision,intent(in)   :: wEns(nEns)
   integer,intent(in)            :: nGrid
   double precision,intent(in)   :: weight(nGrid)
+  double precision,intent(in)   :: rhow(nGrid,nspin)
   double precision,intent(in)   :: rho(nGrid,nspin)
 
 ! Output variables
 
-  double precision,intent(out)  :: Ec(nsp)
+  double precision              :: Ec(nsp)
 
 ! Select correlation functional
 
   select case (DFA)
 
-!   Hartree-Fock
-
-    case ('HF')
-
-      Ec(:) = 0d0
-
-    case ('W38')
-
-      call W38_lda_correlation_energy(nGrid,weight(:),rho(:,:),Ec(:))
-
 !   Vosko, Wilk and Nusair's functional V: Can. J. Phys. 58 (1980) 1200
 
-    case ('VWN5')
+    case ('UVWN5')
 
-      call VWN5_lda_correlation_energy(nGrid,weight(:),rho(:,:),Ec(:))
-
-!   Chachiyo's LDA correlation functional: Chachiyo, JCP 145 (2016) 021101
-
-    case ('C16')
-
-      call C16_lda_correlation_energy(nGrid,weight(:),rho(:,:),Ec(:))
+      call UVWN5_lda_correlation_individual_energy(nGrid,weight,rhow,rho,Ec)
 
     case default
 
@@ -51,4 +37,4 @@ subroutine lda_correlation_energy(DFA,nEns,wEns,nGrid,weight,rho,Ec)
 
   end select
 
-end subroutine lda_correlation_energy
+end subroutine unrestricted_lda_correlation_individual_energy

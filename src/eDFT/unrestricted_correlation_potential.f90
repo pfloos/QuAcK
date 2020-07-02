@@ -1,4 +1,4 @@
-subroutine correlation_potential(rung,DFA,nEns,wEns,nGrid,weight,nBas,AO,dAO,rho,drho,Fc)
+subroutine unrestricted_correlation_potential(rung,DFA,nEns,wEns,nGrid,weight,nBas,AO,dAO,rho,drho,Fc)
 
 ! Compute the correlation potential 
 
@@ -35,41 +35,41 @@ subroutine correlation_potential(rung,DFA,nEns,wEns,nGrid,weight,nBas,AO,dAO,rho
 
 !   Hartree calculation
 
-    case(0) 
+    case(0)
 
       Fc(:,:,:) = 0d0
 
 !   LDA functionals
 
-    case(1) 
+    case(1)
 
-      call lda_correlation_potential(DFA,nEns,wEns(:),nGrid,weight(:),nBas,AO(:,:),rho(:,:),Fc(:,:,:))
+      call unrestricted_lda_correlation_potential(DFA,nEns,wEns,nGrid,weight,nBas,AO,rho,Fc)
 
 !   GGA functionals
 
-    case(2) 
+    case(2)
 
-      call gga_correlation_potential(DFA,nEns,wEns(:),nGrid,weight(:),nBas,AO(:,:),dAO(:,:,:),rho(:,:),drho(:,:,:),Fc(:,:,:))
+      call unrestricted_gga_correlation_potential(DFA,nEns,wEns,nGrid,weight,nBas,AO,dAO,rho,drho,Fc)
 
 !   Hybrid functionals
 
-    case(4) 
+    case(4)
 
       allocate(FcLDA(nBas,nBas,nspin),FcGGA(nBas,nBas,nspin))
 
       aC = 0.81d0
 
-      call lda_correlation_potential(DFA,nEns,wEns(:),nGrid,weight(:),nBas,AO(:,:),rho(:,:),FcLDA(:,:,:))
-      call gga_correlation_potential(DFA,nEns,wEns(:),nGrid,weight(:),nBas,AO(:,:),dAO(:,:,:),rho(:,:),drho(:,:,:),FcGGA(:,:,:))
+      call unrestricted_lda_correlation_potential(DFA,nEns,wEns,nGrid,weight,nBas,AO,rho,FcLDA)
+      call unrestricted_gga_correlation_potential(DFA,nEns,wEns,nGrid,weight,nBas,AO,dAO,rho,drho,FcGGA)
 
-      Fc(:,:,:) = FcLDA(:,:,:) + aC*(FcGGA(:,:,:) - FcLDA(:,:,:))  
+      Fc(:,:,:) = FcLDA(:,:,:) + aC*(FcGGA(:,:,:) - FcLDA(:,:,:))
 
 !   Hartree-Fock calculation
 
-    case(666) 
+    case(666)
 
       Fc(:,:,:) = 0d0
 
   end select
 
-end subroutine correlation_potential
+end subroutine unrestricted_correlation_potential

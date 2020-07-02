@@ -1,4 +1,4 @@
-subroutine correlation_derivative_discontinuity(rung,DFA,nEns,wEns,nGrid,weight,rhow,drhow,Ec)
+subroutine unrestricted_correlation_derivative_discontinuity(rung,DFA,nEns,wEns,nGrid,weight,rhow,drhow,Ec)
 
 ! Compute the correlation part of the derivative discontinuity
 
@@ -36,7 +36,7 @@ subroutine correlation_derivative_discontinuity(rung,DFA,nEns,wEns,nGrid,weight,
 
     case(1) 
 
-      call lda_correlation_derivative_discontinuity(DFA,nEns,wEns(:),nGrid,weight(:),rhow(:,:),Ec(:,:))
+      call unrestricted_lda_correlation_derivative_discontinuity(DFA,nEns,wEns,nGrid,weight,rhow,Ec)
 
 !   GGA functionals
 
@@ -62,4 +62,4 @@ subroutine correlation_derivative_discontinuity(rung,DFA,nEns,wEns,nGrid,weight,
 
   end select
  
-end subroutine correlation_derivative_discontinuity
+end subroutine unrestricted_correlation_derivative_discontinuity

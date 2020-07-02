@@ -1,6 +1,6 @@
-subroutine W38_lda_correlation_individual_energy(nGrid,weight,rhow,rho,Ec)
+subroutine UW38_lda_correlation_individual_energy(nGrid,weight,rhow,rho,Ec)
 
-! Compute Wigner's LDA individual energy
+! Compute the unrestricted version of the Wigner's LDA individual energy
 
   implicit none
 
@@ -59,4 +59,4 @@ subroutine W38_lda_correlation_individual_energy(nGrid,weight,rhow,rho,Ec)
 
   Ec(2) = -4d0*a*Ec(2)
 
-end subroutine W38_lda_correlation_individual_energy
+end subroutine UW38_lda_correlation_individual_energy

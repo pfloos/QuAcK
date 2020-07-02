@@ -1,4 +1,4 @@
-subroutine S51_lda_exchange_potential(nGrid,weight,nBas,AO,rho,Fx)
+subroutine US51_lda_exchange_potential(nGrid,weight,nBas,AO,rho,Fx)
 
 ! Compute Slater's LDA exchange potential
 
@@ -47,4 +47,4 @@ subroutine S51_lda_exchange_potential(nGrid,weight,nBas,AO,rho,Fx)
     enddo
   enddo
 
-end subroutine S51_lda_exchange_potential
+end subroutine US51_lda_exchange_potential

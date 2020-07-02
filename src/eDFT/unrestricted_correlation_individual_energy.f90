@@ -1,6 +1,6 @@
-subroutine correlation_energy(rung,DFA,nEns,wEns,nGrid,weight,rho,drho,Ec)
+subroutine unrestricted_correlation_individual_energy(rung,DFA,LDA_centered,nEns,wEns,nGrid,weight,rhow,drhow,rho,drho,Ec)
 
-! Compute the correlation energy
+! Compute the correlation energy of individual states
 
   implicit none
   include 'parameters.h'
@@ -9,12 +9,15 @@ subroutine correlation_energy(rung,DFA,nEns,wEns,nGrid,weight,rho,drho,Ec)
 
   integer,intent(in)            :: rung
   character(len=12),intent(in)  :: DFA
+  logical,intent(in)            :: LDA_centered
   integer,intent(in)            :: nEns
   double precision,intent(in)   :: wEns(nEns)
   integer,intent(in)            :: nGrid
   double precision,intent(in)   :: weight(nGrid)
+  double precision,intent(in)   :: rhow(nGrid,nspin)
+  double precision,intent(in)   :: drhow(ncart,nGrid,nspin)
   double precision,intent(in)   :: rho(nGrid,nspin)
-  double precision,intent(in)   :: drho(3,nGrid,nspin)
+  double precision,intent(in)   :: drho(ncart,nGrid,nspin)
 
 ! Local variables
 
@@ -38,24 +41,23 @@ subroutine correlation_energy(rung,DFA,nEns,wEns,nGrid,weight,rho,drho,Ec)
 
     case(1) 
 
-      call lda_correlation_energy(DFA,nEns,wEns(:),nGrid,weight(:),rho(:,:),Ec(:))
+      call unrestricted_lda_correlation_individual_energy(DFA,LDA_centered,nEns,wEns,nGrid,weight,rhow,rho,Ec)
 
 !   GGA functionals
 
     case(2) 
 
-      call gga_correlation_energy(DFA,nEns,wEns(:),nGrid,weight(:),rho(:,:),drho(:,:,:),Ec(:))
+      call print_warning('!!! Individual energies NYI for GGAs !!!')
+      stop
 
 !   Hybrid functionals
 
     case(4) 
 
+      call print_warning('!!! Individual energies NYI for hybrids !!!')
+      stop
+
       aC = 0.81d0
-
-      call lda_correlation_energy(DFA,nEns,wEns(:),nGrid,weight(:),rho(:,:),EcLDA(:))
-      call gga_correlation_energy(DFA,nEns,wEns(:),nGrid,weight(:),rho(:,:),drho(:,:,:),EcGGA(:))
-
-      Ec(:) = EcLDA(:) + aC*(EcGGA(:) - EcLDA(:)) 
 
 !   Hartree-Fock calculation
 
@@ -65,4 +67,4 @@ subroutine correlation_energy(rung,DFA,nEns,wEns,nGrid,weight,rho,drho,Ec)
 
   end select
  
-end subroutine correlation_energy
+end subroutine unrestricted_correlation_individual_energy

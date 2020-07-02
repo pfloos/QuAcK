@@ -1,4 +1,4 @@
-subroutine lda_correlation_potential(DFA,nEns,wEns,nGrid,weight,nBas,AO,rho,Fc)
+subroutine unrestricted_lda_correlation_potential(DFA,nEns,wEns,nGrid,weight,nBas,AO,rho,Fc)
 
 ! Select LDA correlation potential
 
@@ -32,21 +32,21 @@ include 'parameters.h'
 
 !   Wigner's LDA correlation functional: Wigner, Trans. Faraday Soc. 34 (1938) 678
 
-    case ('W38')
+    case ('UW38')
 
-      call W38_lda_correlation_potential(nGrid,weight(:),nBas,AO(:,:),rho(:,:),Fc(:,:,:))
+      call UW38_lda_correlation_potential(nGrid,weight(:),nBas,AO(:,:),rho(:,:),Fc(:,:,:))
 
 !   Vosko, Wilk and Nusair's functional V: Can. J. Phys. 58 (1980) 1200
 
-    case ('VWN5')
+    case ('UVWN5')
 
-      call VWN5_lda_correlation_potential(nGrid,weight(:),nBas,AO(:,:),rho(:,:),Fc(:,:,:))
+      call UVWN5_lda_correlation_potential(nGrid,weight(:),nBas,AO(:,:),rho(:,:),Fc(:,:,:))
 
 !   Chachiyo's LDA correlation functional: Chachiyo, JCP 145 (2016) 021101
 
-    case ('C16')
+    case ('UC16')
 
-      call C16_lda_correlation_potential(nGrid,weight(:),nBas,AO(:,:),rho(:,:),Fc(:,:,:))
+      call UC16_lda_correlation_potential(nGrid,weight(:),nBas,AO(:,:),rho(:,:),Fc(:,:,:))
 
     case default
 
@@ -55,4 +55,4 @@ include 'parameters.h'
 
   end select
 
-end subroutine lda_correlation_potential
+end subroutine unrestricted_lda_correlation_potential

@@ -1,6 +1,6 @@
-subroutine VWN5_lda_correlation_potential(nGrid,weight,nBas,AO,rho,Fc)
+subroutine UVWN5_lda_correlation_potential(nGrid,weight,nBas,AO,rho,Fc)
 
-! Compute VWN5 LDA correlation potential
+! Compute unrestricted VWN5 LDA correlation potential
 
   implicit none
 
@@ -199,4 +199,4 @@ subroutine VWN5_lda_correlation_potential(nGrid,weight,nBas,AO,rho,Fc)
     end do
   end do
 
-end subroutine VWN5_lda_correlation_potential
+end subroutine UVWN5_lda_correlation_potential

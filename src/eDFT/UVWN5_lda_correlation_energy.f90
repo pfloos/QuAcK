@@ -1,6 +1,6 @@
-subroutine VWN5_lda_correlation_energy(nGrid,weight,rho,Ec)
+subroutine UVWN5_lda_correlation_energy(nGrid,weight,rho,Ec)
 
-! Compute VWN5 LDA correlation energy
+! Compute unrestricted VWN5 LDA correlation energy
 
   implicit none
 
@@ -134,4 +134,4 @@ subroutine VWN5_lda_correlation_energy(nGrid,weight,rho,Ec)
 
   Ec(2) = Ec(2) - Ec(1) - Ec(3)
 
-end subroutine VWN5_lda_correlation_energy
+end subroutine UVWN5_lda_correlation_energy

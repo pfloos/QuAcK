@@ -23,9 +23,9 @@ subroutine lda_exchange_energy(DFA,LDA_centered,nEns,wEns,nGrid,weight,rho,Ex)
 
   select case (DFA)
 
-    case ('S51')
+    case ('US51')
 
-      call S51_lda_exchange_energy(nGrid,weight,rho,Ex)
+      call US51_lda_exchange_energy(nGrid,weight,rho,Ex,wEns,nEns)
 
     case ('RS51')
 
@@ -38,6 +38,10 @@ subroutine lda_exchange_energy(DFA,LDA_centered,nEns,wEns,nGrid,weight,rho,Ex)
     case ('RCC')
 
       call RCC_lda_exchange_energy(nEns,wEns,nGrid,weight,rho,Ex)
+
+    case ('UCC')
+
+      call UCC_lda_exchange_energy(nEns,wEns,nGrid,weight,rho,Ex)
 
     case default
 

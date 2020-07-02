@@ -75,7 +75,7 @@ subroutine restricted_individual_energy(x_rung,x_DFA,c_rung,c_DFA,LDA_centered,n
   end do
 
 !------------------------------------------------------------------------
-! Individua Hartree energy
+! Individual Hartree energy
 !------------------------------------------------------------------------
 
   do iEns=1,nEns
@@ -89,8 +89,8 @@ subroutine restricted_individual_energy(x_rung,x_DFA,c_rung,c_DFA,LDA_centered,n
 !------------------------------------------------------------------------
 
   do iEns=1,nEns
-      call exchange_individual_energy(x_rung,x_DFA,LDA_centered,nEns,wEns(:),nGrid,weight(:),nBas,ERI(:,:,:,:), &
-                                      Pw(:,:),P(:,:,iEns),rhow(:),drhow(:,:),rho(:,iEns),drho(:,:,iEns),Ex(iEns))
+    call exchange_individual_energy(x_rung,x_DFA,LDA_centered,nEns,wEns(:),nGrid,weight(:),nBas,ERI(:,:,:,:), &
+                                    Pw(:,:),P(:,:,iEns),rhow(:),drhow(:,:),rho(:,iEns),drho(:,:,iEns),Ex(iEns))
   end do
 
 !------------------------------------------------------------------------

@@ -1,6 +1,6 @@
-subroutine correlation_individual_energy(rung,DFA,nEns,wEns,nGrid,weight,rhow,drhow,rho,drho,Ec)
+subroutine unrestricted_correlation_energy(rung,DFA,nEns,wEns,nGrid,weight,rho,drho,Ec)
 
-! Compute the correlation energy of individual states
+! Compute the unrestricted version of the correlation energy
 
   implicit none
   include 'parameters.h'
@@ -13,8 +13,6 @@ subroutine correlation_individual_energy(rung,DFA,nEns,wEns,nGrid,weight,rhow,dr
   double precision,intent(in)   :: wEns(nEns)
   integer,intent(in)            :: nGrid
   double precision,intent(in)   :: weight(nGrid)
-  double precision,intent(in)   :: rhow(nGrid,nspin)
-  double precision,intent(in)   :: drhow(ncart,nGrid,nspin)
   double precision,intent(in)   :: rho(nGrid,nspin)
   double precision,intent(in)   :: drho(ncart,nGrid,nspin)
 
@@ -40,23 +38,24 @@ subroutine correlation_individual_energy(rung,DFA,nEns,wEns,nGrid,weight,rhow,dr
 
     case(1) 
 
-      call lda_correlation_individual_energy(DFA,nEns,wEns(:),nGrid,weight(:),rhow(:,:),rho(:,:),Ec(:))
+      call unrestricted_lda_correlation_energy(DFA,nEns,wEns(:),nGrid,weight(:),rho(:,:),Ec(:))
 
 !   GGA functionals
 
     case(2) 
 
-      call print_warning('!!! Individual energies NYI for GGAs !!!')
-      stop
+      call unrestricted_gga_correlation_energy(DFA,nEns,wEns(:),nGrid,weight(:),rho(:,:),drho(:,:,:),Ec(:))
 
 !   Hybrid functionals
 
     case(4) 
 
-      call print_warning('!!! Individual energies NYI for hybrids !!!')
-      stop
-
       aC = 0.81d0
+
+      call unrestricted_lda_correlation_energy(DFA,nEns,wEns(:),nGrid,weight(:),rho(:,:),EcLDA(:))
+      call unrestricted_gga_correlation_energy(DFA,nEns,wEns(:),nGrid,weight(:),rho(:,:),drho(:,:,:),EcGGA(:))
+
+      Ec(:) = EcLDA(:) + aC*(EcGGA(:) - EcLDA(:)) 
 
 !   Hartree-Fock calculation
 
@@ -66,4 +65,4 @@ subroutine correlation_individual_energy(rung,DFA,nEns,wEns,nGrid,weight,rhow,dr
 
   end select
  
-end subroutine correlation_individual_energy
+end subroutine unrestricted_correlation_energy

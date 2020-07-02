@@ -30,9 +30,9 @@ subroutine lda_exchange_potential(DFA,LDA_centered,nEns,wEns,nGrid,weight,nBas,A
 
       call RS51_lda_exchange_potential(nGrid,weight,nBas,AO,rho,Fx)
 
-    case ('S51')
+    case ('US51')
 
-      call S51_lda_exchange_potential(nGrid,weight,nBas,AO,rho,Fx)
+      call US51_lda_exchange_potential(nGrid,weight,nBas,AO,rho,Fx)
 
     case ('RMFL20')
 
@@ -41,6 +41,10 @@ subroutine lda_exchange_potential(DFA,LDA_centered,nEns,wEns,nGrid,weight,nBas,A
     case ('RCC')
 
       call RCC_lda_exchange_potential(nEns,wEns,nGrid,weight,nBas,AO,rho,Fx)
+
+    case ('UCC')
+
+      call UCC_lda_exchange_potential(nEns,wEns,nGrid,weight,nBas,AO,rho,Fx)
 
     case default
 

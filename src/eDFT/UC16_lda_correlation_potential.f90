@@ -1,6 +1,6 @@
-subroutine C16_lda_correlation_potential(nGrid,weight,nBas,AO,rho,Fc)
+subroutine UC16_lda_correlation_potential(nGrid,weight,nBas,AO,rho,Fc)
 
-! Compute LDA correlation potential
+! Compute unrestricted LDA correlation potential
 
   implicit none
 include 'parameters.h'
@@ -128,4 +128,4 @@ include 'parameters.h'
     enddo
   enddo
 
-end subroutine C16_lda_correlation_potential
+end subroutine UC16_lda_correlation_potential

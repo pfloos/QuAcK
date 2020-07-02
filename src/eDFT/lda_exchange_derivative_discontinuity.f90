@@ -25,7 +25,7 @@ subroutine lda_exchange_derivative_discontinuity(DFA,nEns,wEns,nGrid,weight,rhow
 
   select case (DFA)
 
-    case ('S51')
+    case ('US51')
 
       ExDD(:) = 0d0
 
@@ -40,6 +40,10 @@ subroutine lda_exchange_derivative_discontinuity(DFA,nEns,wEns,nGrid,weight,rhow
     case ('RCC')
 
       call RCC_lda_exchange_derivative_discontinuity(nEns,wEns,nGrid,weight(:),rhow(:),ExDD(:))
+
+    case ('UCC')
+
+      call UCC_lda_exchange_derivative_discontinuity(nEns,wEns,nGrid,weight(:),rhow(:),ExDD(:))
 
     case default
 

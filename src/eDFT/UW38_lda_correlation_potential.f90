@@ -1,6 +1,6 @@
-subroutine W38_lda_correlation_potential(nGrid,weight,nBas,AO,rho,Fc)
+subroutine UW38_lda_correlation_potential(nGrid,weight,nBas,AO,rho,Fc)
 
-! Compute Wigner's LDA correlation potential
+! Compute the unrestricted version of the Wigner's LDA correlation potential
 
   implicit none
 include 'parameters.h'
@@ -73,4 +73,4 @@ include 'parameters.h'
 
   Fc(:,:,:) = -4d0*a*Fc(:,:,:)
 
-end subroutine W38_lda_correlation_potential
+end subroutine UW38_lda_correlation_potential

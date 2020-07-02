@@ -24,6 +24,10 @@ subroutine lda_exchange_individual_energy(DFA,LDA_centered,nEns,wEns,nGrid,weigh
 
   select case (DFA)
 
+    case ('US51')
+
+      call US51_lda_exchange_individual_energy(nGrid,weight(:),rhow(:),rho(:),Ex)
+
     case ('RS51')
 
       call RS51_lda_exchange_individual_energy(nGrid,weight(:),rhow(:),rho(:),Ex)
@@ -35,6 +39,10 @@ subroutine lda_exchange_individual_energy(DFA,LDA_centered,nEns,wEns,nGrid,weigh
     case ('RCC')
 
       call RCC_lda_exchange_individual_energy(nEns,wEns,nGrid,weight(:),rhow(:),rho(:),Ex)
+
+    case ('UCC')
+
+      call UCC_lda_exchange_individual_energy(nEns,wEns,nGrid,weight(:),rhow(:),rho(:),Ex)
 
     case default
 

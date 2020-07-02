@@ -1,4 +1,4 @@
-subroutine VWN5_lda_correlation_individual_energy(nGrid,weight,rhow,rho,Ec)
+subroutine UVWN5_lda_correlation_individual_energy(nGrid,weight,rhow,rho,Ec)
 
 ! Compute VWN5 LDA correlation potential
 
@@ -201,4 +201,4 @@ subroutine VWN5_lda_correlation_individual_energy(nGrid,weight,rhow,rho,Ec)
 
   end do
 
-end subroutine VWN5_lda_correlation_individual_energy
+end subroutine UVWN5_lda_correlation_individual_energy

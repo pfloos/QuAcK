@@ -1,6 +1,6 @@
-subroutine gga_correlation_energy(DFA,nEns,wEns,nGrid,weight,rho,drho,Ec)
+subroutine unrestricted_gga_correlation_energy(DFA,nEns,wEns,nGrid,weight,rho,drho,Ec)
 
-! Compute GGA correlation energy
+! Compute unrstricted GGA correlation energy
 
   implicit none
   include 'parameters.h'
@@ -39,4 +39,4 @@ subroutine gga_correlation_energy(DFA,nEns,wEns,nGrid,weight,rho,drho,Ec)
 
   enddo
 
-end subroutine gga_correlation_energy
+end subroutine unrestricted_gga_correlation_energy

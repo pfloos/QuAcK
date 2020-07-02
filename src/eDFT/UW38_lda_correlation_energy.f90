@@ -1,6 +1,6 @@
-subroutine W38_lda_correlation_energy(nGrid,weight,rho,Ec)
+subroutine UW38_lda_correlation_energy(nGrid,weight,rho,Ec)
 
-! Compute Wigner's LDA correlation energy
+! Compute the unrestricted version of the Wigner's LDA correlation energy
 
   implicit none
   include 'parameters.h'
@@ -49,4 +49,4 @@ subroutine W38_lda_correlation_energy(nGrid,weight,rho,Ec)
 
   Ec(2) = -4d0*a*Ec(2)
 
-end subroutine W38_lda_correlation_energy
+end subroutine UW38_lda_correlation_energy

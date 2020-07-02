@@ -242,7 +242,7 @@ subroutine eDFT_UKS(x_rung,x_DFA,c_rung,c_DFA,nEns,wEns,nGrid,weight,maxSCF,thre
 
 !   Compute correlation potential
 
-    call correlation_potential(c_rung,c_DFA,nEns,wEns(:),nGrid,weight(:),nBas,AO(:,:),dAO(:,:,:),rhow(:,:),drhow(:,:,:),Fc(:,:,:))
+    call unrestricted_correlation_potential(c_rung,c_DFA,nEns,wEns,nGrid,weight,nBas,AO,dAO,rhow,drhow,Fc)
 
 !   Build Fock operator
     do ispin=1,nspin
@@ -319,7 +319,7 @@ subroutine eDFT_UKS(x_rung,x_DFA,c_rung,c_DFA,nEns,wEns,nGrid,weight,maxSCF,thre
 
 !   Correlation energy
 
-    call correlation_energy(c_rung,c_DFA,nEns,wEns(:),nGrid,weight(:),rhow(:,:),drhow(:,:,:),Ec)
+    call unrestricted_correlation_energy(c_rung,c_DFA,nEns,wEns,nGrid,weight,rhow,drhow,Ec)
 
 !   Total energy
 
@@ -364,9 +364,7 @@ subroutine eDFT_UKS(x_rung,x_DFA,c_rung,c_DFA,nEns,wEns,nGrid,weight,maxSCF,thre
 ! Compute individual energies from ensemble energy
 !------------------------------------------------------------------------
 
-! call individual_energy(x_rung,x_DFA,c_rung,c_DFA,nEns,wEns(:),nGrid,weight(:),nBas,     &
-!                        AO(:,:),dAO(:,:,:),nO(:),nV(:),T(:,:),V(:,:),ERI(:,:,:,:),ENuc,  & 
-!                        Pw(:,:,:),rhow(:,:),drhow(:,:,:),J(:,:,:),Fx(:,:,:),FxHF(:,:,:), & 
-!                        Fc(:,:,:),P(:,:,:,:),rho(:,:,:),drho(:,:,:,:),E(:),Om(:))
+  call unrestricted_individual_energy(x_rung,x_DFA,c_rung,c_DFA,LDA_centered,nEns,wEns,nGrid,weight,nBas, &
+                                      AO,dAO,nO,nV,T,V,ERI,ENuc,eps,Pw,rhow,drhow,J,Fx,FxHF,Fc,P,rho,drho,Ew,E,Om)
 
 end subroutine eDFT_UKS

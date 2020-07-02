@@ -252,7 +252,7 @@ subroutine GOK_UKS(x_rung,x_DFA,c_rung,c_DFA,nEns,wEns,nGrid,weight,maxSCF,thres
 
 !   Compute correlation potential
 
-    call correlation_potential(c_rung,c_DFA,nEns,wEns(:),nGrid,weight(:),nBas,AO(:,:),dAO(:,:,:),rhow(:,:),drhow(:,:,:),Fc(:,:,:))
+    call unrestricted_correlation_potential(c_rung,c_DFA,nEns,wEns,nGrid,weight,nBas,AO,dAO,rhow,drhow,Fc)
 
 !   Build Fock operator
     do ispin=1,nspin
@@ -310,7 +310,7 @@ subroutine GOK_UKS(x_rung,x_DFA,c_rung,c_DFA,nEns,wEns,nGrid,weight,maxSCF,thres
 
 !   Correlation energy
 
-    call correlation_energy(c_rung,c_DFA,nEns,wEns(:),nGrid,weight(:),rhow(:,:),drhow(:,:,:),Ec)
+    call unrestricted_correlation_energy(c_rung,c_DFA,nEns,wEns(:),nGrid,weight(:),rhow(:,:),drhow(:,:,:),Ec)
 
 !   Total energy
 
@@ -355,9 +355,9 @@ subroutine GOK_UKS(x_rung,x_DFA,c_rung,c_DFA,nEns,wEns,nGrid,weight,maxSCF,thres
 ! Compute individual energies from ensemble energy
 !------------------------------------------------------------------------
 
-  call individual_energy(x_rung,x_DFA,c_rung,c_DFA,nEns,wEns(:),nGrid,weight(:),nBas,     &
-                         AO(:,:),dAO(:,:,:),nO(:),nV(:),T(:,:),V(:,:),ERI(:,:,:,:),ENuc,  & 
-                         Pw(:,:,:),rhow(:,:),drhow(:,:,:),J(:,:,:),Fx(:,:,:),FxHF(:,:,:), & 
-                         Fc(:,:,:),P(:,:,:,:),rho(:,:,:),drho(:,:,:,:),E(:),Om(:))
+  call unrestricted_individual_energy(x_rung,x_DFA,c_rung,c_DFA,nEns,wEns(:),nGrid,weight(:),nBas,     &
+                                      AO(:,:),dAO(:,:,:),nO(:),nV(:),T(:,:),V(:,:),ERI(:,:,:,:),ENuc,  & 
+                                      Pw(:,:,:),rhow(:,:),drhow(:,:,:),J(:,:,:),Fx(:,:,:),FxHF(:,:,:), & 
+                                      Fc(:,:,:),P(:,:,:,:),rho(:,:,:),drho(:,:,:,:),E(:),Om(:))
 
 end subroutine GOK_UKS
