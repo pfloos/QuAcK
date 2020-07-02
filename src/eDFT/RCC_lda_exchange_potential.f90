@@ -1,4 +1,4 @@
-subroutine RCC_lda_exchange_potential(nEns,wEns,nGrid,weight,nBas,AO,rho,Fx)
+subroutine RCC_lda_exchange_potential(nEns,wEns,aCC_w1,aCC_w2,nGrid,weight,nBas,AO,rho,Fx)
 
 ! Compute the restricted version of the curvature-corrected exchange potential
 
@@ -9,6 +9,8 @@ subroutine RCC_lda_exchange_potential(nEns,wEns,nGrid,weight,nBas,AO,rho,Fx)
 
   integer,intent(in)            :: nEns
   double precision,intent(in)   :: wEns(nEns)
+  double precision,intent(in)   :: aCC_w1(3)
+  double precision,intent(in)   :: aCC_w2(3)
   integer,intent(in)            :: nGrid
   double precision,intent(in)   :: weight(nGrid)
   integer,intent(in)            :: nBas
@@ -30,9 +32,9 @@ subroutine RCC_lda_exchange_potential(nEns,wEns,nGrid,weight,nBas,AO,rho,Fx)
 
 ! Single excitation parameter
 
-  a1 = 0.0d0
-  b1 = 0.0d0
-  c1 = 0.0d0
+!  a1 = 0.0d0
+!  b1 = 0.0d0
+!  c1 = 0.0d0
 
 ! Parameters for H2 at equilibrium
 
@@ -42,15 +44,27 @@ subroutine RCC_lda_exchange_potential(nEns,wEns,nGrid,weight,nBas,AO,rho,Fx)
 
 ! Parameters for stretch H2
 
-  a2 = + 0.01922622507087411d0
-  b2 = - 0.01799647558018601d0
-  c2 = - 0.022945430666782573d0
+!  a2 = + 0.01922622507087411d0
+!  b2 = - 0.01799647558018601d0
+!  c2 = - 0.022945430666782573d0
 
 ! Parameters for He
 
 ! a2 = 1.9125735895875828d0
 ! b2 = 2.715266992840757d0
 ! c2 = 2.1634223380633086d0
+
+! Parameters for He N -> N-1
+
+  a1 = aCC_w1(1)
+  b1 = aCC_w1(2)
+  c1 = aCC_w1(3)
+ 
+! Parameters for He N -> N+1
+
+  a2 = aCC_w2(1)
+  b2 = aCC_w2(2)
+  c2 = aCC_w2(3)
 
   w1 = wEns(2)
   Fx1 = 1d0 - w1*(1d0 - w1)*(a1 + b1*(w1 - 0.5d0) + c1*(w1 - 0.5d0)**2)

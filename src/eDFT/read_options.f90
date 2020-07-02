@@ -109,6 +109,18 @@ subroutine read_options(method,x_rung,x_DFA,c_rung,c_DFA,SGn,nEns,wEns,aCC_w1,aC
   read(1,*) (aCC_w2(I),I=1,3)
 
   write(*,*)'----------------------------------------------------------'
+  write(*,*)' parameters for w1-dependant exchange functional coefficient '
+  write(*,*)'----------------------------------------------------------'
+  call matout(3,1,aCC_w1)
+  write(*,*)
+
+  write(*,*)'----------------------------------------------------------'
+  write(*,*)' parameters for w2-dependant exchange functional coefficient '
+  write(*,*)'----------------------------------------------------------'
+  call matout(3,1,aCC_w2)
+  write(*,*)
+
+  write(*,*)'----------------------------------------------------------'
   write(*,*)' Ensemble weights '
   write(*,*)'----------------------------------------------------------'
   call matout(nEns,1,wEns)

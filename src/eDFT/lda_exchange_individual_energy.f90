@@ -40,7 +40,7 @@ subroutine lda_exchange_individual_energy(DFA,LDA_centered,nEns,wEns,aCC_w1,aCC_
 
     case ('RCC')
 
-      call RCC_lda_exchange_individual_energy(nEns,wEns,nGrid,weight(:),rhow(:),rho(:),Ex)
+      call RCC_lda_exchange_individual_energy(nEns,wEns,aCC_w1,aCC_w2,nGrid,weight(:),rhow(:),rho(:),Ex)
 
     case ('UCC')
 
