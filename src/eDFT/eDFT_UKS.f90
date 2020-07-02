@@ -1,4 +1,4 @@
-subroutine eDFT_UKS(x_rung,x_DFA,c_rung,c_DFA,nEns,wEns,nGrid,weight,maxSCF,thresh,max_diis,guess_type, &
+subroutine eDFT_UKS(x_rung,x_DFA,c_rung,c_DFA,nEns,wEns,aCC_w1,aCC_w2,nGrid,weight,maxSCF,thresh,max_diis,guess_type, &
                    nBas,AO,dAO,nO,nV,S,T,V,Hc,ERI,X,ENuc,Ew)
 
 ! Perform unrestricted Kohn-Sham calculation for ensembles
@@ -12,6 +12,8 @@ subroutine eDFT_UKS(x_rung,x_DFA,c_rung,c_DFA,nEns,wEns,nGrid,weight,maxSCF,thre
   character(len=12),intent(in)  :: x_DFA,c_DFA
   integer,intent(in)            :: nEns
   double precision,intent(in)   :: wEns(nEns)
+  double precision,intent(in)   :: aCC_w1(3)
+  double precision,intent(in)   :: aCC_w2(3)
   integer,intent(in)            :: nGrid
   double precision,intent(in)   :: weight(nGrid)
   integer,intent(in)            :: maxSCF,max_diis,guess_type
@@ -313,7 +315,7 @@ subroutine eDFT_UKS(x_rung,x_DFA,c_rung,c_DFA,nEns,wEns,nGrid,weight,maxSCF,thre
 !   Exchange energy
 
     do ispin=1,nspin
-      call exchange_energy(x_rung,x_DFA,LDA_centered,nEns,wEns(:),nGrid,weight(:),nBas, &
+      call exchange_energy(x_rung,x_DFA,LDA_centered,nEns,wEns,aCC_w1,aCC_w2,nGrid,weight,nBas, &
                            Pw(:,:,ispin),FxHF(:,:,ispin),rhow(:,ispin),drhow(:,:,ispin),Ex(ispin))
     end do
 

@@ -25,10 +25,10 @@ subroutine unrestricted_auxiliary_energy(nBas,nEns,nO,eps,Eaux)
 
   iEns = 1
   do ispin=1,nspin
-  Eaux(ispin,iEns) = sum(eps(1:nO(ispin),ispin))
+    Eaux(ispin,iEns) = sum(eps(1:nO(ispin),ispin))
   end do
 
-! N-1-electron ground state
+! (N-1)-electron ground state
 
   iEns = 2 
  
@@ -40,13 +40,11 @@ subroutine unrestricted_auxiliary_energy(nBas,nEns,nO,eps,Eaux)
     Eaux(2,iEns) = 0d0
   end if
 
-
-! N+1 ground state
+! (N+1)-electron ground state
 
   iEns = 3 
  
   Eaux(1,iEns) = sum(eps(1:nO(1)+1,1))
-  Eaux(2,iEns) = sum(eps(1:nO(2),2)) 
-
+  Eaux(2,iEns) = sum(eps(1:nO(2)  ,2)) 
 
 end subroutine unrestricted_auxiliary_energy

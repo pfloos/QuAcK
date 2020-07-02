@@ -1,5 +1,5 @@
 subroutine print_unrestricted_individual_energy(nEns,ENuc,Ew,ET,EV,EJ,Ex,Ec,Exc,Eaux,ExDD,EcDD,ExcDD,E, & 
-                                              Om,Omx,Omc,Omxc,Omaux,OmxDD,OmcDD,OmxcDD)
+                                                Om,Omx,Omc,Omxc,Omaux,OmxDD,OmcDD,OmxcDD)
 
 ! Print individual energies for eDFT calculation
 

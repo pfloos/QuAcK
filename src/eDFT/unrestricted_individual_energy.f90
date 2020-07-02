@@ -1,5 +1,5 @@
-subroutine unrestricted_individual_energy(x_rung,x_DFA,c_rung,c_DFA,LDA_centered,nEns,wEns,nGrid,weight,nBas,AO,dAO, & 
-                                         nO,nV,T,V,ERI,ENuc,eps,Pw,rhow,drhow,J,Fx,FxHF,Fc,P,rho,drho,Ew,E,Om)
+subroutine unrestricted_individual_energy(x_rung,x_DFA,c_rung,c_DFA,LDA_centered,nEns,wEns,nGrid,weight,nBas,AO,dAO, &
+                                          nO,nV,T,V,ERI,ENuc,eps,Pw,rhow,drhow,J,Fx,FxHF,Fc,P,rho,drho,Ew,E,Om)
 
 ! Compute unrestricted individual energies as well as excitation energies
 
@@ -48,16 +48,16 @@ subroutine unrestricted_individual_energy(x_rung,x_DFA,c_rung,c_DFA,LDA_centered
   double precision              :: EJ(nsp,nEns)
   double precision              :: Ex(nspin,nEns)
   double precision              :: Ec(nsp,nEns)
-  double precision              :: Exc(nEns)   !!!!!
-  double precision              :: Eaux(nspin,nEns)  !!!!!
+  double precision              :: Exc(nEns)  
+  double precision              :: Eaux(nspin,nEns) 
 
-  double precision              :: ExDD(nspin,nEns)  !!!!!
+  double precision              :: ExDD(nspin,nEns) 
   double precision              :: EcDD(nsp,nEns) 
-  double precision              :: ExcDD(nspin,nEns) !!!!!
+  double precision              :: ExcDD(nsp,nEns)
 
-  double precision              :: Omx(nEns),  Omc(nEns), Omxc(nEns) !!!!!
-  double precision              :: Omaux(nEns)                                  !!!!!
-  double precision              :: OmxDD(nEns),OmcDD(nEns),OmxcDD(nEns) !!!!!
+  double precision              :: Omx(nEns),Omc(nEns),Omxc(nEns) 
+  double precision              :: Omaux(nEns)                   
+  double precision              :: OmxDD(nEns),OmcDD(nEns),OmxcDD(nEns) 
 
   double precision,external     :: trace_matrix
 
@@ -129,7 +129,7 @@ subroutine unrestricted_individual_energy(x_rung,x_DFA,c_rung,c_DFA,LDA_centered
   do iEns=1,nEns
     call unrestricted_correlation_individual_energy(c_rung,c_DFA,LDA_centered,nEns,wEns,nGrid,weight, &
                                                     rhow,drhow,rho(:,:,iEns),drho(:,:,:,iEns),Ec(:,iEns))
- end do
+  end do
 
 !------------------------------------------------------------------------
 ! Compute auxiliary energies
@@ -140,74 +140,28 @@ subroutine unrestricted_individual_energy(x_rung,x_DFA,c_rung,c_DFA,LDA_centered
 !------------------------------------------------------------------------
 ! Compute derivative discontinuities
 !------------------------------------------------------------------------
- do iEns=1,nEns
-   do ispin=1,nspin 
 
-     call exchange_derivative_discontinuity(x_rung,x_DFA,nEns,wEns(:),nGrid,weight(:), &
-  rhow(:,ispin),drhow(:,:,ispin),ExDD(ispin,iEns))
+  do ispin=1,nspin 
 
-     call restricted_correlation_derivative_discontinuity(c_rung,c_DFA,nEns,wEns(:),nGrid,weight(:), &
-    rhow(:,ispin),drhow(:,:,ispin),EcDD(:,iEns))
-!    EcDD(ispin,:) = 0.d0 !!!!!!!!!
-      ExcDD(ispin,iEns) = ExDD(ispin,iEns) +sum(EcDD(:,iEns))
- end do
-   end do
+    call exchange_derivative_discontinuity(x_rung,x_DFA,nEns,wEns,nGrid,weight, &
+                                           rhow(:,ispin),drhow(:,:,ispin),ExDD(ispin,:))
+  end do
 
+  call unrestricted_correlation_derivative_discontinuity(c_rung,c_DFA,nEns,wEns,nGrid,weight,rhow,drhow,EcDD)
 
-!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-
-
-
-!------------------------------------------------------------------------
-! Exchange energy
-!------------------------------------------------------------------------
-
-!  do iEns=1,nEns
-!    do ispin=1,nspin
-
-!      call exchange_potential(x_rung,x_DFA,nEns,wEns(:),nGrid,weight(:),nBas,P(:,:,ispin,iEns),ERI(:,:,:,:), & 
-!                              AO(:,:),dAO(:,:,:),rho(:,ispin,iEns),drho(:,:,ispin,iEns),Fx(:,:,ispin),FxHF(:,:,ispin))
-!      call exchange_energy(x_rung,x_DFA,nEns,wEns(:),nGrid,weight(:),nBas,P(:,:,ispin,iEns),FxHF(:,:,ispin), &
-!                           rho(:,ispin,iEns),drho(:,:,ispin,iEns),Ex(ispin,iEns))
-
-!    end do
-!  end do
-
-!------------------------------------------------------------------------
-! Correlation energy
-!------------------------------------------------------------------------
-
-!  do iEns=1,nEns
-
-!    call correlation_individual_energy(c_rung,c_DFA,nEns,wEns(:),nGrid,weight(:),rhow(:,:),drhow(:,:,:), & 
-!                                       rho(:,:,iEns),drho(:,:,:,iEns),Ec(:,iEns))
-
-!  end do
-
-!------------------------------------------------------------------------
-! Compute derivative discontinuities
-!------------------------------------------------------------------------
-
-!  call correlation_derivative_discontinuity(c_rung,c_DFA,nEns,wEns(:),nGrid,weight(:),rhow(:,:),drhow(:,:,:),EcDD(:,:))
+  ExcDD(1,:) = ExDD(1,:) + EcDD(1,:)
+  ExcDD(2,:) =             EcDD(2,:)
+  ExcDD(3,:) = ExDD(2,:) + EcDD(3,:)
 
 !------------------------------------------------------------------------
 ! Total energy
 !------------------------------------------------------------------------
 
-!  do iEns=1,nEns
-!    E(iEns) = ENuc + sum(ET(:,iEns)) + sum(EV(:,iEns)) + sum(EJ(:,iEns)) &
-!                   + sum(Ex(:,iEns)) + sum(Ec(:,iEns)) + sum(EcDD(:,iEns))
-!  end do
-
   do iEns=1,nEns
     Exc(iEns) = sum(Ex(:,iEns)) + sum(Ec(:,iEns))
-    E(iEns)   =sum( ET(:,iEns)) + sum( EV(:,iEns)) + sum(EJ(:,iEns)) &
+    E(iEns)   = sum(ET(:,iEns)) + sum(EV(:,iEns)) + sum(EJ(:,iEns)) &
               + sum(Ex(:,iEns)) + sum(Ec(:,iEns)) + sum(ExcDD(:,iEns))
   end do
-
-
-
-
 
 !------------------------------------------------------------------------
 ! Excitation energies
@@ -216,11 +170,11 @@ subroutine unrestricted_individual_energy(x_rung,x_DFA,c_rung,c_DFA,LDA_centered
   do iEns=1,nEns
     Om(iEns) = E(iEns) - E(1)
 
-    Omx(iEns)    = sum(Ex(:,iEns))    -sum(Ex(:,1))
-    Omc(iEns)    = sum(Ec(:,iEns))    -sum(Ec(:,1))
-    Omxc(iEns)   = Exc(iEns)   - Exc(1)
+    Omx(iEns)    = sum(Ex(:,iEns)) - sum(Ex(:,1))
+    Omc(iEns)    = sum(Ec(:,iEns)) - sum(Ec(:,1))
+    Omxc(iEns)   =     Exc(iEns)   -     Exc(1)
 
-    Omaux(iEns)  = sum(Eaux(:,iEns))  -sum(Eaux(:,1))
+    Omaux(iEns)  = sum(Eaux(:,iEns))  - sum(Eaux(:,1))
 
     OmxDD(iEns)  = sum(ExDD(:,iEns))  - sum(ExDD(:,1))
     OmcDD(iEns)  = sum(EcDD(:,iEns))  - sum(EcDD(:,1))
@@ -233,8 +187,7 @@ subroutine unrestricted_individual_energy(x_rung,x_DFA,c_rung,c_DFA,LDA_centered
 ! Dump results
 !------------------------------------------------------------------------
 
-  call print_unrestricted_individual_energy(nEns,ENuc,Ew,ET(:,:),EV(:,:),EJ(:,:),Ex(:,:),Ec(:,:),Exc(:), &
-                                          Eaux(:,:),ExDD(:,:),EcDD(:,:),ExcDD(:,:),E(:),                   & 
-                                          Om(:),Omx(:),Omc(:),Omxc(:),Omaux(:),OmxDD(:),OmcDD(:),OmxcDD(:))
+  call print_unrestricted_individual_energy(nEns,ENuc,Ew,ET,EV,EJ,Ex,Ec,Exc,Eaux,ExDD,EcDD,ExcDD,E, & 
+                                          Om,Omx,Omc,Omxc,Omaux,OmxDD,OmcDD,OmxcDD)
 
 end subroutine unrestricted_individual_energy

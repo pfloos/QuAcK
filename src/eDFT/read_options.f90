@@ -1,4 +1,5 @@
-subroutine read_options(method,x_rung,x_DFA,c_rung,c_DFA,SGn,nEns,wEns,maxSCF,thresh,DIIS,max_diis,guess_type,ortho_type)
+subroutine read_options(method,x_rung,x_DFA,c_rung,c_DFA,SGn,nEns,wEns,aCC_w1,aCC_w2, & 
+                        maxSCF,thresh,DIIS,max_diis,guess_type,ortho_type)
 
 ! Read DFT options
 
@@ -14,10 +15,12 @@ subroutine read_options(method,x_rung,x_DFA,c_rung,c_DFA,SGn,nEns,wEns,maxSCF,th
 
   character(len=8),intent(out)  :: method
   integer,intent(out)           :: x_rung,c_rung
-  character(len=12),intent(out)  :: x_DFA, c_DFA
+  character(len=12),intent(out) :: x_DFA, c_DFA
   integer,intent(out)           :: SGn
   integer,intent(out)           :: nEns
   double precision,intent(out)  :: wEns(maxEns)
+  double precision,intent(out)  :: aCC_w1(3)
+  double precision,intent(out)  :: aCC_w2(3)
 
   integer,intent(out)           :: maxSCF
   double precision,intent(out)  :: thresh
@@ -93,6 +96,17 @@ subroutine read_options(method,x_rung,x_DFA,c_rung,c_DFA,SGn,nEns,wEns,maxSCF,th
   read(1,*)
   read(1,*) (wEns(I),I=2,nEns)
   wEns(1) = 1d0 - sum(wEns)
+
+  write(*,*)'----------------------------------------------------------'
+  write(*,*)' Ensemble weights '
+  write(*,*)'----------------------------------------------------------'
+  call matout(nEns,1,wEns)
+  write(*,*) 
+  
+! Read parameters for weight-dependent functional
+  read(1,*)
+  read(1,*) (aCC_w1(I),I=1,3)
+  read(1,*) (aCC_w2(I),I=1,3)
 
   write(*,*)'----------------------------------------------------------'
   write(*,*)' Ensemble weights '

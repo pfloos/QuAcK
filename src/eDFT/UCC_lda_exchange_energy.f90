@@ -1,4 +1,4 @@
-subroutine UCC_lda_exchange_energy(nEns,wEns,nGrid,weight,rho,Ex)
+subroutine UCC_lda_exchange_energy(nEns,wEns,aCC_w1,aCC_w2,nGrid,weight,rho,Ex)
 
 ! Compute the unrestricted version of the curvature-corrected exchange functional
 
@@ -9,6 +9,8 @@ subroutine UCC_lda_exchange_energy(nEns,wEns,nGrid,weight,rho,Ex)
 
   integer,intent(in)            :: nEns
   double precision,intent(in)   :: wEns(nEns)
+  double precision,intent(in)   :: aCC_w1(3)
+  double precision,intent(in)   :: aCC_w2(3)
   integer,intent(in)            :: nGrid
   double precision,intent(in)   :: weight(nGrid)
   double precision,intent(in)   :: rho(nGrid)
@@ -52,15 +54,15 @@ subroutine UCC_lda_exchange_energy(nEns,wEns,nGrid,weight,rho,Ex)
 
 ! Parameters for He N -> N-1
 
-  a1 = 0.420243d0 
-  b1 = 0.0700561d0
-  c1 = -0.288301d0
+  a1 = aCC_w1(1)
+  b1 = aCC_w1(2)
+  c1 = aCC_w1(3)
 
 ! Parameters for He N -> N+1
 
-  a2 = 0.135068d0
-  b2 = -0.00774769d0
-  c2 = -0.0278205d0
+  a2 = aCC_w2(1)
+  b2 = aCC_w2(2)
+  c2 = aCC_w2(3)
 
 ! Cx coefficient for unrestricted Slater LDA exchange
 
@@ -70,7 +72,7 @@ subroutine UCC_lda_exchange_energy(nEns,wEns,nGrid,weight,rho,Ex)
 ! Fx2 for states N and N+1
 
   w1 = wEns(2)
- Fx1 = 1d0 - w1*(1d0 - w1)*(a1 + b1*(w1 - 0.5d0) + c1*(w1 - 0.5d0)**2)
+  Fx1 = 1d0 - w1*(1d0 - w1)*(a1 + b1*(w1 - 0.5d0) + c1*(w1 - 0.5d0)**2)
 
   w2 = wEns(3)
   Fx2 = 1d0 - w2*(1d0 - w2)*(a2 + b2*(w2 - 0.5d0) + c2*(w2 - 0.5d0)**2)

@@ -41,6 +41,8 @@ program eDFT
   integer                       :: nGrid
   double precision,allocatable  :: root(:,:)
   double precision,allocatable  :: weight(:)
+  double precision              :: aCC_w1(3)
+  double precision              :: aCC_w2(3)
 
   double precision,allocatable  :: AO(:,:)
   double precision,allocatable  :: dAO(:,:,:)
@@ -101,8 +103,8 @@ program eDFT
 ! Allocate ensemble weights
 
   allocate(wEns(maxEns))
-  call read_options(method,x_rung,x_DFA,c_rung,c_DFA,SGn, & 
-                    nEns,wEns,maxSCF,thresh,DIIS,max_diis,guess_type,ortho_type)
+  call read_options(method,x_rung,x_DFA,c_rung,c_DFA,SGn,nEns,wEns,aCC_w1,aCC_w2, & 
+                    maxSCF,thresh,DIIS,max_diis,guess_type,ortho_type)
 
 !------------------------------------------------------------------------
 ! Read one- and two-electron integrals
@@ -233,8 +235,8 @@ program eDFT
   if(method == 'eDFT-UKS') then
 
     call cpu_time(start_KS)
-    call eDFT_UKS(x_rung,x_DFA,c_rung,c_DFA,nEns,wEns(:),nGrid,weight(:),maxSCF,thresh,max_diis,guess_type, & 
-                  nBas,AO(:,:),dAO(:,:,:),nO(:),nV(:),S(:,:),T(:,:),V(:,:),Hc(:,:),ERI(:,:,:,:),X(:,:),ENuc,Ew)
+    call eDFT_UKS(x_rung,x_DFA,c_rung,c_DFA,nEns,wEns,aCC_w1,aCC_w2,nGrid,weight(:),maxSCF,thresh,max_diis,guess_type, & 
+                  nBas,AO,dAO,nO,nV,S,T,V,Hc,ERI,X,ENuc,Ew)
     call cpu_time(end_KS)
 
     t_KS = end_KS - start_KS

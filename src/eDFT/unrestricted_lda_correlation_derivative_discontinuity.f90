@@ -28,13 +28,13 @@ subroutine unrestricted_lda_correlation_derivative_discontinuity(DFA,nEns,wEns,n
 
 !   Wigner's LDA correlation functional: Wigner, Trans. Faraday Soc. 34 (1938) 678
 
-    case ('RW38')
+    case ('UW38')
 
       Ec(:,:) = 0d0
 
 !   Vosko, Wilk and Nusair's functional V: Can. J. Phys. 58 (1980) 1200
 
-    case ('RVWN5')
+    case ('UVWN5')
 
       Ec(:,:) = 0d0
 
