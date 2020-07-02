@@ -1,4 +1,4 @@
-subroutine UCC_lda_exchange_potential(nEns,wEns,nGrid,weight,nBas,AO,rho,Fx)
+subroutine UCC_lda_exchange_potential(nEns,wEns,aCC_w1,aCC_w2,nGrid,weight,nBas,AO,rho,Fx)
 
 ! Compute the unrestricted version of the curvature-corrected exchange potential
 
@@ -9,6 +9,8 @@ subroutine UCC_lda_exchange_potential(nEns,wEns,nGrid,weight,nBas,AO,rho,Fx)
 
   integer,intent(in)            :: nEns
   double precision,intent(in)   :: wEns(nEns)
+  double precision,intent(in)   :: aCC_w1(3)
+  double precision,intent(in)   :: aCC_w2(3)
   integer,intent(in)            :: nGrid
   double precision,intent(in)   :: weight(nGrid)
   integer,intent(in)            :: nBas
@@ -54,15 +56,15 @@ subroutine UCC_lda_exchange_potential(nEns,wEns,nGrid,weight,nBas,AO,rho,Fx)
 
 ! Parameters for He N -> N-1
 
-  a1 = 0.420243d0
-  b1 = 0.0700561d0
-  c1 = -0.288301d0
-
+  a1 = aCC_w1(1)
+  b1 = aCC_w1(2)
+  c1 = aCC_w1(3)
+ 
 ! Parameters for He N -> N+1
 
-  a2 = 0.135068d0
-  b2 = -0.00774769d0
-  c2 = -0.0278205d0
+  a2 = aCC_w2(1)
+  b2 = aCC_w2(2)
+  c2 = aCC_w2(3)
 
 ! Cx coefficient for unrestricted Slater LDA exchange
 

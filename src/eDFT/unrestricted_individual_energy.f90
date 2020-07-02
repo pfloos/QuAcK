@@ -1,4 +1,4 @@
-subroutine unrestricted_individual_energy(x_rung,x_DFA,c_rung,c_DFA,LDA_centered,nEns,wEns,nGrid,weight,nBas,AO,dAO, &
+subroutine unrestricted_individual_energy(x_rung,x_DFA,c_rung,c_DFA,LDA_centered,nEns,wEns,aCC_w1,aCC_w2,nGrid,weight,nBas,AO,dAO, &
                                           nO,nV,T,V,ERI,ENuc,eps,Pw,rhow,drhow,J,Fx,FxHF,Fc,P,rho,drho,Ew,E,Om)
 
 ! Compute unrestricted individual energies as well as excitation energies
@@ -13,6 +13,8 @@ subroutine unrestricted_individual_energy(x_rung,x_DFA,c_rung,c_DFA,LDA_centered
   logical,intent(in)            :: LDA_centered
   integer,intent(in)            :: nEns
   double precision,intent(in)   :: wEns(nEns)
+  double precision,intent(in)   :: aCC_w1(3)
+  double precision,intent(in)   :: aCC_w2(3)
   integer,intent(in)            :: nGrid
   double precision,intent(in)   :: weight(nGrid)
   integer,intent(in)            :: nBas
@@ -116,7 +118,7 @@ subroutine unrestricted_individual_energy(x_rung,x_DFA,c_rung,c_DFA,LDA_centered
 
   do iEns=1,nEns
     do ispin=1,nspin
-      call exchange_individual_energy(x_rung,x_DFA,LDA_centered,nEns,wEns,nGrid,weight,nBas,ERI,      &
+      call exchange_individual_energy(x_rung,x_DFA,LDA_centered,nEns,wEns,aCC_w1,aCC_w2,nGrid,weight,nBas,ERI,      &
                                       Pw(:,:,ispin),P(:,:,ispin,iEns),rhow(:,ispin),drhow(:,:,ispin), & 
                                       rho(:,ispin,iEns),drho(:,:,ispin,iEns),Ex(ispin,iEns))
     end do
@@ -143,7 +145,7 @@ subroutine unrestricted_individual_energy(x_rung,x_DFA,c_rung,c_DFA,LDA_centered
 
   do ispin=1,nspin 
 
-    call exchange_derivative_discontinuity(x_rung,x_DFA,nEns,wEns,nGrid,weight, &
+    call exchange_derivative_discontinuity(x_rung,x_DFA,nEns,wEns,aCC_w1,aCC_w2,nGrid,weight, &
                                            rhow(:,ispin),drhow(:,:,ispin),ExDD(ispin,:))
   end do
 

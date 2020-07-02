@@ -1,4 +1,4 @@
-subroutine lda_exchange_individual_energy(DFA,LDA_centered,nEns,wEns,nGrid,weight,rhow,rho,Ex)
+subroutine lda_exchange_individual_energy(DFA,LDA_centered,nEns,wEns,aCC_w1,aCC_w2,nGrid,weight,rhow,rho,Ex)
 
 ! Compute LDA exchange energy for individual states
 
@@ -11,6 +11,8 @@ subroutine lda_exchange_individual_energy(DFA,LDA_centered,nEns,wEns,nGrid,weigh
   character(len=12),intent(in)  :: DFA
   integer,intent(in)            :: nEns
   double precision,intent(in)   :: wEns(nEns)
+  double precision,intent(in)   :: aCC_w1(3)
+  double precision,intent(in)   :: aCC_w2(3)
   integer,intent(in)            :: nGrid
   double precision,intent(in)   :: weight(nGrid)
   double precision,intent(in)   :: rhow(nGrid)
@@ -42,7 +44,7 @@ subroutine lda_exchange_individual_energy(DFA,LDA_centered,nEns,wEns,nGrid,weigh
 
     case ('UCC')
 
-      call UCC_lda_exchange_individual_energy(nEns,wEns,nGrid,weight(:),rhow(:),rho(:),Ex)
+      call UCC_lda_exchange_individual_energy(nEns,wEns,aCC_w1,aCC_w2,nGrid,weight(:),rhow(:),rho(:),Ex)
 
     case default
 

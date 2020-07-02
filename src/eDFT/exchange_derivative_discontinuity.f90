@@ -1,4 +1,4 @@
-subroutine exchange_derivative_discontinuity(rung,DFA,nEns,wEns,nGrid,weight,rhow,drhow,ExDD)
+subroutine exchange_derivative_discontinuity(rung,DFA,nEns,wEns,aCC_w1,aCC_w2,nGrid,weight,rhow,drhow,ExDD)
 
 ! Compute the exchange part of the derivative discontinuity
 
@@ -11,6 +11,8 @@ subroutine exchange_derivative_discontinuity(rung,DFA,nEns,wEns,nGrid,weight,rho
   character(len=12),intent(in)  :: DFA
   integer,intent(in)            :: nEns
   double precision,intent(in)   :: wEns(nEns)
+  double precision,intent(in)   :: aCC_w1(3)
+  double precision,intent(in)   :: aCC_w2(3)
   integer,intent(in)            :: nGrid
   double precision,intent(in)   :: weight(nGrid)
   double precision,intent(in)   :: rhow(nGrid)
@@ -35,7 +37,7 @@ subroutine exchange_derivative_discontinuity(rung,DFA,nEns,wEns,nGrid,weight,rho
 
     case(1) 
 
-      call lda_exchange_derivative_discontinuity(DFA,nEns,wEns(:),nGrid,weight(:),rhow(:),ExDD(:))
+      call lda_exchange_derivative_discontinuity(DFA,nEns,wEns(:),aCC_w1,aCC_w2,nGrid,weight(:),rhow(:),ExDD(:))
 
 !   GGA functionals
 

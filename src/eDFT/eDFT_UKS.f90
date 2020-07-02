@@ -238,7 +238,7 @@ subroutine eDFT_UKS(x_rung,x_DFA,c_rung,c_DFA,nEns,wEns,aCC_w1,aCC_w2,nGrid,weig
 !   Compute exchange potential
 
     do ispin=1,nspin
-      call exchange_potential(x_rung,x_DFA,LDA_centered,nEns,wEns(:),nGrid,weight(:),nBas,Pw(:,:,ispin),ERI(:,:,:,:), &
+      call exchange_potential(x_rung,x_DFA,LDA_centered,nEns,wEns(:),aCC_w1,aCC_w2,nGrid,weight(:),nBas,Pw(:,:,ispin),ERI(:,:,:,:), &
                               AO(:,:),dAO(:,:,:),rhow(:,ispin),drhow(:,:,ispin),Fx(:,:,ispin),FxHF(:,:,ispin))
     end do
 
@@ -366,7 +366,7 @@ subroutine eDFT_UKS(x_rung,x_DFA,c_rung,c_DFA,nEns,wEns,aCC_w1,aCC_w2,nGrid,weig
 ! Compute individual energies from ensemble energy
 !------------------------------------------------------------------------
 
-  call unrestricted_individual_energy(x_rung,x_DFA,c_rung,c_DFA,LDA_centered,nEns,wEns,nGrid,weight,nBas, &
+  call unrestricted_individual_energy(x_rung,x_DFA,c_rung,c_DFA,LDA_centered,nEns,wEns,aCC_w1,aCC_w2,nGrid,weight,nBas, &
                                       AO,dAO,nO,nV,T,V,ERI,ENuc,eps,Pw,rhow,drhow,J,Fx,FxHF,Fc,P,rho,drho,Ew,E,Om)
 
 end subroutine eDFT_UKS
