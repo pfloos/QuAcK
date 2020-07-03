@@ -1,12 +1,12 @@
 # Restricted or unrestricted KS calculation
-  eDFT-UKS
+  GOK-RKS
 # exchange rung:
 # Hartree      = 0
 # LDA          = 1: RS51,RMFL20
 # GGA          = 2: RB88
 # Hybrid       = 4
 # Hartree-Fock = 666
-  1 UCC
+  1 RCC
 # correlation rung: 
 # Hartree      = 0
 # LDA          = 1: RVWN5,RMFL20

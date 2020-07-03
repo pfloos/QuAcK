@@ -1,5 +1,5 @@
 subroutine MOM_RKS(x_rung,x_DFA,c_rung,c_DFA,LDA_centered,nEns,nGrid,weight, &
-                   maxSCF,thresh,max_diis,guess_type,nBas,AO,dAO,nO,nV,S,T,V,Hc,ERI,X,ENuc,c)
+                   aCC_w1,aCC_w2,maxSCF,thresh,max_diis,guess_type,nBas,AO,dAO,nO,nV,S,T,V,Hc,ERI,X,ENuc,c)
 
 ! Perform restricted Kohn-Sham calculation for ensembles
 
@@ -14,6 +14,8 @@ subroutine MOM_RKS(x_rung,x_DFA,c_rung,c_DFA,LDA_centered,nEns,nGrid,weight, &
   integer,intent(in)            :: nEns
   integer,intent(in)            :: nGrid
   double precision,intent(in)   :: weight(nGrid)
+  double precision,intent(in)   :: aCC_w1(3)
+  double precision,intent(in)   :: aCC_w2(3)
   integer,intent(in)            :: maxSCF,max_diis,guess_type
   double precision,intent(in)   :: thresh
   integer,intent(in)            :: nBas
@@ -70,7 +72,7 @@ subroutine MOM_RKS(x_rung,x_DFA,c_rung,c_DFA,LDA_centered,nEns,nGrid,weight, &
   write(*,'(A40)')           '*************************************************'
   write(*,*)
 
-  call GOK_RKS(.false.,x_rung,x_DFA,c_rung,c_DFA,LDA_centered,nEns,wMOM,nGrid,weight,maxSCF,thresh, &
+  call GOK_RKS(.false.,x_rung,x_DFA,c_rung,c_DFA,LDA_centered,nEns,wMOM,aCC_w1,aCC_w2,nGrid,weight,maxSCF,thresh, &
                max_diis,guess_type,nBas,AO,dAO,nO,nV,S,T,V,Hc,ERI,X,ENuc,Ew(1),c)
 
 !------------------------------------------------------------------------
@@ -91,7 +93,7 @@ subroutine MOM_RKS(x_rung,x_DFA,c_rung,c_DFA,LDA_centered,nEns,nGrid,weight, &
   write(*,'(A40)')           '*************************************************'
   write(*,*)
 
-! call GOK_RKS(.true.,x_rung,x_DFA,c_rung,c_DFA,LDA_centered,nEns,wMOM,nGrid,weight,maxSCF,thresh, &
+! call GOK_RKS(.true.,x_rung,x_DFA,c_rung,c_DFA,LDA_centered,nEns,wMOM,aCC_w1,aCC_w2,nGrid,weight,maxSCF,thresh, &
 !              max_diis,guess_type,nBas,AO,dAO,nO,nV,S,T,V,Hc,ERI,X,ENuc,Ew(2),c)
 
 !------------------------------------------------------------------------
@@ -112,7 +114,7 @@ subroutine MOM_RKS(x_rung,x_DFA,c_rung,c_DFA,LDA_centered,nEns,nGrid,weight, &
   write(*,'(A40)')           '*************************************************'
   write(*,*)
 
-  call GOK_RKS(.true.,x_rung,x_DFA,c_rung,c_DFA,LDA_centered,nEns,wMOM,nGrid,weight,maxSCF,thresh, &
+  call GOK_RKS(.true.,x_rung,x_DFA,c_rung,c_DFA,LDA_centered,nEns,wMOM,aCC_w1,aCC_w2,nGrid,weight,maxSCF,thresh, &
                max_diis,guess_type,nBas,AO,dAO,nO,nV,S,T,V,Hc,ERI,X,ENuc,Ew(3),c)
 
 !------------------------------------------------------------------------

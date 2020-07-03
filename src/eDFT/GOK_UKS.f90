@@ -1,4 +1,4 @@
-subroutine GOK_UKS(x_rung,x_DFA,c_rung,c_DFA,nEns,wEns,nGrid,weight,maxSCF,thresh,max_diis,guess_type, &
+subroutine GOK_UKS(x_rung,x_DFA,c_rung,c_DFA,nEns,wEns,nGrid,weight,aCC_w1,aCC_w2,maxSCF,thresh,max_diis,guess_type, &
                    nBas,AO,dAO,nO,nV,S,T,V,Hc,ERI,X,ENuc,Ew)
 
 ! Perform unrestricted Kohn-Sham calculation for ensembles
@@ -14,6 +14,8 @@ subroutine GOK_UKS(x_rung,x_DFA,c_rung,c_DFA,nEns,wEns,nGrid,weight,maxSCF,thres
   double precision,intent(in)   :: wEns(nEns)
   integer,intent(in)            :: nGrid
   double precision,intent(in)   :: weight(nGrid)
+  double precision,intent(in)   :: aCC_w1(3)
+  double precision,intent(in)   :: aCC_w2(3)
   integer,intent(in)            :: maxSCF,max_diis,guess_type
   double precision,intent(in)   :: thresh
   integer,intent(in)            :: nBas
@@ -246,7 +248,7 @@ subroutine GOK_UKS(x_rung,x_DFA,c_rung,c_DFA,nEns,wEns,nGrid,weight,maxSCF,thres
 !   Compute exchange potential
 
     do ispin=1,nspin
-      call exchange_potential(x_rung,x_DFA,nEns,wEns(:),nGrid,weight(:),nBas,Pw(:,:,ispin),ERI(:,:,:,:), &
+      call exchange_potential(x_rung,x_DFA,nEns,wEns(:),nGrid,weight(:),aCC_w1,aCC_w2,nBas,Pw(:,:,ispin),ERI(:,:,:,:), &
                               AO(:,:),dAO(:,:,:),rhow(:,ispin),drhow(:,:,ispin),Fx(:,:,ispin),FxHF(:,:,ispin))
     end do
 
@@ -304,7 +306,7 @@ subroutine GOK_UKS(x_rung,x_DFA,c_rung,c_DFA,nEns,wEns,nGrid,weight,maxSCF,thres
 !   Exchange energy
 
     do ispin=1,nspin
-      call exchange_energy(x_rung,x_DFA,nEns,wEns(:),nGrid,weight(:),nBas, &
+      call exchange_energy(x_rung,x_DFA,nEns,wEns(:),aCC_w1,aCC_w2,nGrid,weight(:),nBas, &
                            Pw(:,:,ispin),FxHF(:,:,ispin),rhow(:,ispin),drhow(:,:,ispin),Ex(ispin))
     end do
 
@@ -355,7 +357,7 @@ subroutine GOK_UKS(x_rung,x_DFA,c_rung,c_DFA,nEns,wEns,nGrid,weight,maxSCF,thres
 ! Compute individual energies from ensemble energy
 !------------------------------------------------------------------------
 
-  call unrestricted_individual_energy(x_rung,x_DFA,c_rung,c_DFA,nEns,wEns(:),nGrid,weight(:),nBas,     &
+  call unrestricted_individual_energy(x_rung,x_DFA,c_rung,c_DFA,nEns,wEns(:),aCC_w1,aCC_w2,nGrid,weight(:),nBas,     &
                                       AO(:,:),dAO(:,:,:),nO(:),nV(:),T(:,:),V(:,:),ERI(:,:,:,:),ENuc,  & 
                                       Pw(:,:,:),rhow(:,:),drhow(:,:,:),J(:,:,:),Fx(:,:,:),FxHF(:,:,:), & 
                                       Fc(:,:,:),P(:,:,:,:),rho(:,:,:),drho(:,:,:,:),E(:),Om(:))
