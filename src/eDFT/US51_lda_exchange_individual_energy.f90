@@ -26,7 +26,6 @@ subroutine US51_lda_exchange_individual_energy(nGrid,weight,rhow,rho,Ex)
 
   alpha = -(3d0/2d0)*(3d0/(4d0*pi))**(1d0/3d0)
 
-
   Ex = 0d0
   do iG=1,nGrid
 

@@ -190,7 +190,7 @@ subroutine GOK_RKS(restart,x_rung,x_DFA,c_rung,c_DFA,LDA_centered,nEns,wEns,aCC_
 !------------------------------------------------------------------------
 
     call restricted_density_matrix(nBas,nEns,nO,c(:,:),P(:,:,:))
- 
+
 !   Weight-dependent density matrix
     
     Pw(:,:) = 0d0

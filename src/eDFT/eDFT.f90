@@ -164,9 +164,9 @@ program eDFT
   if(method == 'GOK-RKS') then
 
     call cpu_time(start_KS)
-    call GOK_RKS(.false.,x_rung,x_DFA,c_rung,c_DFA,LDA_centered,nEns,wEns(:),aCC_w1,aCC_w2,nGrid,weight(:), &
-                 maxSCF,thresh,max_diis,guess_type,nBas,AO(:,:),dAO(:,:,:),nO(1),nV(1),       &
-                 S(:,:),T(:,:),V(:,:),Hc(:,:),ERI(:,:,:,:),X(:,:),ENuc,Ew,c(:,:))
+    call GOK_RKS(.false.,x_rung,x_DFA,c_rung,c_DFA,LDA_centered,nEns,wEns,aCC_w1,aCC_w2,nGrid,weight, &
+                 maxSCF,thresh,max_diis,guess_type,nBas,AO,dAO,nO(1),nV(1), &
+                 S,T,V,Hc,ERI,X,ENuc,Ew,c)
     call cpu_time(end_KS)
 
     t_KS = end_KS - start_KS

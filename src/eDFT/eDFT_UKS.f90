@@ -331,7 +331,7 @@ subroutine eDFT_UKS(x_rung,x_DFA,c_rung,c_DFA,nEns,wEns,aCC_w1,aCC_w2,nGrid,weig
 !   Check the grid accuracy by computing the number of electrons 
 
     do ispin=1,nspin
-      nEl(ispin) = electron_number(nGrid,weight(:),rhow(:,ispin))
+      nEl(ispin) = electron_number(nGrid,weight,rhow(:,ispin))
     end do
 
 !   Dump results
@@ -361,7 +361,7 @@ subroutine eDFT_UKS(x_rung,x_DFA,c_rung,c_DFA,nEns,wEns,aCC_w1,aCC_w2,nGrid,weig
 
 ! Compute final KS energy
 
-  call print_UKS(nBas,nO(:),eps(:,:),c(:,:,:),ENuc,ET(:),EV(:),EJ(:),Ex(:),Ec(:),Ew)
+  call print_UKS(nBas,nO,eps,c,ENuc,ET,EV,EJ,Ex,Ec,Ew)
 
 !------------------------------------------------------------------------
 ! Compute individual energies from ensemble energy

@@ -27,8 +27,8 @@ subroutine unrestricted_individual_energy(x_rung,x_DFA,c_rung,c_DFA,LDA_centered
   double precision,intent(in)   :: ERI(nBas,nBas,nBas,nBas)
   double precision,intent(in)   :: ENuc
 
-  double precision,intent(in)   :: eps(nBas,nspin)     !!!!!
-  double precision,intent(in)   :: Pw(nBas,nBas,nspin) !!!!!
+  double precision,intent(in)   :: eps(nBas,nspin)     
+  double precision,intent(in)   :: Pw(nBas,nBas,nspin) 
   double precision,intent(in)   :: rhow(nGrid,nspin)
   double precision,intent(in)   :: drhow(ncart,nGrid,nspin)
 
@@ -118,9 +118,10 @@ subroutine unrestricted_individual_energy(x_rung,x_DFA,c_rung,c_DFA,LDA_centered
 
   do iEns=1,nEns
     do ispin=1,nspin
-      call exchange_individual_energy(x_rung,x_DFA,LDA_centered,nEns,wEns,aCC_w1,aCC_w2,nGrid,weight,nBas,ERI,      &
-                                      Pw(:,:,ispin),P(:,:,ispin,iEns),rhow(:,ispin),drhow(:,:,ispin), & 
+      call exchange_individual_energy(x_rung,x_DFA,LDA_centered,nEns,wEns,aCC_w1,aCC_w2,nGrid,weight,nBas,ERI, &
+                                      Pw(:,:,ispin),P(:,:,ispin,iEns),rhow(:,ispin),drhow(:,:,ispin),          &  
                                       rho(:,ispin,iEns),drho(:,:,ispin,iEns),Ex(ispin,iEns))
+      print*,'Ex = ',Ex(ispin,iEns)
     end do
   end do
 
@@ -137,7 +138,7 @@ subroutine unrestricted_individual_energy(x_rung,x_DFA,c_rung,c_DFA,LDA_centered
 ! Compute auxiliary energies
 !------------------------------------------------------------------------
  
-  call unrestricted_auxiliary_energy(nBas,nEns,nO(:),eps(:,:),Eaux(:,:))
+  call unrestricted_auxiliary_energy(nBas,nEns,nO,eps,Eaux)
 
 !------------------------------------------------------------------------
 ! Compute derivative discontinuities

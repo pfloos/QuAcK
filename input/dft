@@ -5,7 +5,7 @@
 # LDA          = 1: RS51,RMFL20
 # GGA          = 2: RB88
 # Hybrid       = 4
-# Hartree-Fock = 666
+# Hartree-Fock = 666: RHF,UHF
   1 US51
 # correlation rung: 
 # Hartree      = 0
