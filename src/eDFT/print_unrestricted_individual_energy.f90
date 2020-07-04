@@ -16,7 +16,7 @@ subroutine print_unrestricted_individual_energy(nEns,ENuc,Ew,ET,EV,EJ,Ex,Ec,Exc,
   double precision,intent(in)        :: EJ(nsp,nEns)
   double precision,intent(in)        :: Ex(nspin,nEns),   Ec(nsp,nEns),   Exc(nEns)
   double precision,intent(in)        :: Eaux(nspin,nEns)
-  double precision,intent(in)        :: ExDD(nspin,nEns), EcDD(nsp,nEns), ExcDD(nspin,nEns)
+  double precision,intent(in)        :: ExDD(nspin,nEns), EcDD(nsp,nEns), ExcDD(nsp,nEns)
   double precision,intent(in)        :: Omx(nEns),  Omc(nEns),  Omxc(nEns)
   double precision,intent(in)        :: Omaux(nEns)
   double precision,intent(in)        :: OmxDD(nEns),OmcDD(nEns),OmxcDD(nEns)

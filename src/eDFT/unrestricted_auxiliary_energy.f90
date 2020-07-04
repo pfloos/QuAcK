@@ -45,6 +45,6 @@ subroutine unrestricted_auxiliary_energy(nBas,nEns,nO,eps,Eaux)
   iEns = 3 
  
   Eaux(1,iEns) = sum(eps(1:nO(1)+1,1))
-  Eaux(2,iEns) = sum(eps(1:nO(2)  ,2)) 
+  Eaux(2,iEns) = sum(eps(1:nO(2),2)) 
 
 end subroutine unrestricted_auxiliary_energy
