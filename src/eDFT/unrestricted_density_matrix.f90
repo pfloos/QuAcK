@@ -33,8 +33,11 @@ subroutine unrestricted_density_matrix(nBas,nEns,nO,c,P)
 
   iEns = 2
   P(:,:,1,iEns) = matmul(c(:,1:nO(1)  ,1),transpose(c(:,1:nO(1)  ,1)))  
-  P(:,:,2,iEns) = matmul(c(:,1:nO(2)-1,2),transpose(c(:,1:nO(2)-1,2)))
-
+  if (nO(2) > 1) then
+    P(:,:,2,iEns) = matmul(c(:,1:nO(2)-1,2),transpose(c(:,1:nO(2)-1,2)))
+  else
+    P(:,:,2,iEns) = 0.d0
+  end if
 ! (N+1)-electron state: remove spin-up electrons
 
   iEns = 3 
