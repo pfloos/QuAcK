@@ -1,4 +1,4 @@
-subroutine gga_exchange_potential(DFA,nEns,wEns,nGrid,weight,nBas,AO,dAO,rho,drho,Fx)
+subroutine unrestricted_gga_exchange_potential(DFA,nEns,wEns,nGrid,weight,nBas,AO,dAO,rho,drho,Fx)
 
 ! Select GGA exchange functional for potential calculation
 
@@ -28,15 +28,11 @@ subroutine gga_exchange_potential(DFA,nEns,wEns,nGrid,weight,nBas,AO,dAO,rho,drh
 
     case ('G96')
 
-      call G96_gga_exchange_potential(nGrid,weight,nBas,AO,dAO,rho,drho,Fx)
+      call UG96_gga_exchange_potential(nGrid,weight,nBas,AO,dAO,rho,drho,Fx)
       
-    case ('RB88')
-    
-      call RB88_gga_exchange_potential(nGrid,weight,nBas,AO,dAO,rho,drho,Fx)
-
     case ('B88')
     
-      call B88_gga_exchange_potential(nGrid,weight,nBas,AO,dAO,rho,drho,Fx)
+      call UB88_gga_exchange_potential(nGrid,weight,nBas,AO,dAO,rho,drho,Fx)
 
     case default
 
@@ -45,4 +41,4 @@ subroutine gga_exchange_potential(DFA,nEns,wEns,nGrid,weight,nBas,AO,dAO,rho,drh
 
   end select
 
-end subroutine gga_exchange_potential
+end subroutine unrestricted_gga_exchange_potential

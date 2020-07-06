@@ -248,8 +248,9 @@ subroutine GOK_UKS(x_rung,x_DFA,c_rung,c_DFA,nEns,wEns,nGrid,weight,aCC_w1,aCC_w
 !   Compute exchange potential
 
     do ispin=1,nspin
-      call exchange_potential(x_rung,x_DFA,nEns,wEns(:),nGrid,weight(:),aCC_w1,aCC_w2,nBas,Pw(:,:,ispin),ERI(:,:,:,:), &
-                              AO(:,:),dAO(:,:,:),rhow(:,ispin),drhow(:,:,ispin),Fx(:,:,ispin),FxHF(:,:,ispin))
+      call unrestricted_exchange_potential(x_rung,x_DFA,nEns,wEns(:),nGrid,weight(:),aCC_w1,aCC_w2,nBas,Pw(:,:,ispin),   &
+                                           ERI(:,:,:,:),AO(:,:),dAO(:,:,:),rhow(:,ispin),drhow(:,:,ispin),Fx(:,:,ispin), & 
+                                           FxHF(:,:,ispin))
     end do
 
 !   Compute correlation potential
@@ -306,8 +307,8 @@ subroutine GOK_UKS(x_rung,x_DFA,c_rung,c_DFA,nEns,wEns,nGrid,weight,aCC_w1,aCC_w
 !   Exchange energy
 
     do ispin=1,nspin
-      call exchange_energy(x_rung,x_DFA,nEns,wEns(:),aCC_w1,aCC_w2,nGrid,weight(:),nBas, &
-                           Pw(:,:,ispin),FxHF(:,:,ispin),rhow(:,ispin),drhow(:,:,ispin),Ex(ispin))
+      call unrestricted_exchange_energy(x_rung,x_DFA,nEns,wEns(:),aCC_w1,aCC_w2,nGrid,weight(:),nBas, &
+                                        Pw(:,:,ispin),FxHF(:,:,ispin),rhow(:,ispin),drhow(:,:,ispin),Ex(ispin))
     end do
 
 !   Correlation energy

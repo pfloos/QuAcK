@@ -1,4 +1,4 @@
-subroutine gga_exchange_energy(DFA,nEns,wEns,nGrid,weight,rho,drho,Ex)
+subroutine restricted_gga_exchange_energy(DFA,nEns,wEns,nGrid,weight,rho,drho,Ex)
 
 ! Select GGA exchange functional for energy calculation
 
@@ -22,17 +22,9 @@ subroutine gga_exchange_energy(DFA,nEns,wEns,nGrid,weight,rho,drho,Ex)
 
   select case (DFA)
 
-    case ('G96')
-
-      call G96_gga_exchange_energy(nGrid,weight,rho,drho,Ex)
-
-    case ('RB88')
-
-      call RB88_gga_exchange_energy(nGrid,weight,rho,drho,Ex)
-
     case ('B88')
 
-      call B88_gga_exchange_energy(nGrid,weight,rho,drho,Ex)
+      call RB88_gga_exchange_energy(nGrid,weight,rho,drho,Ex)
 
     case default
 
@@ -41,4 +33,4 @@ subroutine gga_exchange_energy(DFA,nEns,wEns,nGrid,weight,rho,drho,Ex)
 
   end select
 
-end subroutine gga_exchange_energy
+end subroutine restricted_gga_exchange_energy

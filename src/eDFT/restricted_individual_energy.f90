@@ -91,8 +91,8 @@ subroutine restricted_individual_energy(x_rung,x_DFA,c_rung,c_DFA,LDA_centered,n
 !------------------------------------------------------------------------
 
   do iEns=1,nEns
-    call exchange_individual_energy(x_rung,x_DFA,LDA_centered,nEns,wEns(:),aCC_w1,aCC_w2,nGrid,weight(:),nBas,ERI(:,:,:,:), &
-                                    Pw(:,:),P(:,:,iEns),rhow(:),drhow(:,:),rho(:,iEns),drho(:,:,iEns),Ex(iEns))
+    call restricted_exchange_individual_energy(x_rung,x_DFA,LDA_centered,nEns,wEns(:),aCC_w1,aCC_w2,nGrid,weight(:),nBas, &
+                                    ERI(:,:,:,:),Pw(:,:),P(:,:,iEns),rhow(:),drhow(:,:),rho(:,iEns),drho(:,:,iEns),Ex(iEns))
   end do
 
 !------------------------------------------------------------------------
@@ -114,7 +114,8 @@ subroutine restricted_individual_energy(x_rung,x_DFA,c_rung,c_DFA,LDA_centered,n
 ! Compute derivative discontinuities
 !------------------------------------------------------------------------
 
-  call exchange_derivative_discontinuity(x_rung,x_DFA,nEns,wEns(:),aCC_w1,aCC_w2,nGrid,weight(:),rhow(:),drhow(:,:),ExDD(:))
+  call restricted_exchange_derivative_discontinuity(x_rung,x_DFA,nEns,wEns(:),aCC_w1,aCC_w2,nGrid,weight(:), & 
+                                                    rhow(:),drhow(:,:),ExDD(:))
 
   call restricted_correlation_derivative_discontinuity(c_rung,c_DFA,nEns,wEns(:),nGrid,weight(:),rhow(:),drhow(:,:),EcDD(:))
 

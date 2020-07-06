@@ -1,6 +1,6 @@
-subroutine B88_gga_exchange_energy(nGrid,weight,rho,drho,Ex)
+subroutine UG96_gga_exchange_energy(nGrid,weight,rho,drho,Ex)
 
-! Compute Becke's 88 GGA exchange energy
+! Compute Gill's 96 GGA exchange energy
 
   implicit none
 
@@ -17,16 +17,16 @@ subroutine B88_gga_exchange_energy(nGrid,weight,rho,drho,Ex)
 
   integer                       :: iG
   double precision              :: alpha,beta
-  double precision              :: r,g,x
+  double precision              :: r,g
 
 ! Output variables
 
   double precision              :: Ex
 
-! Coefficients for B88 GGA exchange functional
+! Coefficients for G96 GGA exchange functional
 
   alpha = -(3d0/2d0)*(3d0/(4d0*pi))**(1d0/3d0)
-  beta  = 0.0042d0
+  beta  = 1d0/137d0
 
 ! Compute GGA exchange energy
 
@@ -37,14 +37,13 @@ subroutine B88_gga_exchange_energy(nGrid,weight,rho,drho,Ex)
     r = max(0d0,rho(iG))
 
     if(r > threshold) then 
+ 
       g = drho(1,iG)**2 + drho(2,iG)**2 + drho(3,iG)**2
-      x = sqrt(g)/r**(4d0/3d0)
 
-      Ex = Ex + weight(iG)*alpha*r**(4d0/3d0) & 
-              - weight(iG)*beta*x**2*r**(4d0/3d0)/(1d0 + 6d0*beta*x*asinh(x))
+      Ex = Ex + weight(iG)*r**(4d0/3d0)*(alpha - beta*g**(3d0/4d0)/r**2)
 
     end if
 
   end do
 
-end subroutine B88_gga_exchange_energy
+end subroutine UG96_gga_exchange_energy

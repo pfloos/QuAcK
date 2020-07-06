@@ -1,4 +1,4 @@
-subroutine lda_exchange_derivative_discontinuity(DFA,nEns,wEns,aCC_w1,aCC_w2,nGrid,weight,rhow,ExDD)
+subroutine restricted_lda_exchange_derivative_discontinuity(DFA,nEns,wEns,aCC_w1,aCC_w2,nGrid,weight,rhow,ExDD)
 
 ! Compute the exchange LDA part of the derivative discontinuity
 
@@ -28,25 +28,17 @@ subroutine lda_exchange_derivative_discontinuity(DFA,nEns,wEns,aCC_w1,aCC_w2,nGr
 
   select case (DFA)
 
-    case ('US51')
+    case ('S51')
 
       ExDD(:) = 0d0
 
-    case ('RS51')
-
-      ExDD(:) = 0d0
-
-    case ('RMFL20')
+    case ('MFL20')
 
       call RMFL20_lda_exchange_derivative_discontinuity(nEns,wEns,nGrid,weight(:),rhow(:),ExDD(:))
 
-    case ('RCC')
+    case ('CC')
 
       call RCC_lda_exchange_derivative_discontinuity(nEns,wEns,aCC_w1,aCC_w2,nGrid,weight(:),rhow(:),ExDD(:))
-
-    case ('UCC')
-
-      call UCC_lda_exchange_derivative_discontinuity(nEns,wEns,aCC_w1,aCC_w2,nGrid,weight(:),rhow(:),ExDD(:))
 
     case default
 
@@ -55,4 +47,4 @@ subroutine lda_exchange_derivative_discontinuity(DFA,nEns,wEns,aCC_w1,aCC_w2,nGr
 
   end select
  
-end subroutine lda_exchange_derivative_discontinuity
+end subroutine restricted_lda_exchange_derivative_discontinuity

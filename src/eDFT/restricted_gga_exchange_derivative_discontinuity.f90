@@ -1,4 +1,4 @@
-subroutine gga_exchange_derivative_discontinuity(DFA,nEns,wEns,nGrid,weight,rhow,drhow,ExDD)
+subroutine restricted_gga_exchange_derivative_discontinuity(DFA,nEns,wEns,nGrid,weight,rhow,drhow,ExDD)
 
 ! Compute the exchange GGA part of the derivative discontinuity
 
@@ -26,7 +26,7 @@ subroutine gga_exchange_derivative_discontinuity(DFA,nEns,wEns,nGrid,weight,rhow
 
   select case (DFA)
 
-    case ('RB88')
+    case ('B88')
 
       ExDD(:) = 0d0
 
@@ -37,4 +37,4 @@ subroutine gga_exchange_derivative_discontinuity(DFA,nEns,wEns,nGrid,weight,rhow
 
   end select
  
-end subroutine gga_exchange_derivative_discontinuity
+end subroutine restricted_gga_exchange_derivative_discontinuity

@@ -1,4 +1,5 @@
-subroutine exchange_potential(rung,DFA,LDA_centered,nEns,wEns,aCC_w1,aCC_w2,nGrid,weight,nBas,P,ERI,AO,dAO,rho,drho,Fx,FxHF)
+subroutine unrestricted_exchange_potential(rung,DFA,LDA_centered,nEns,wEns,aCC_w1,aCC_w2,nGrid,weight,nBas,P, & 
+                                           ERI,AO,dAO,rho,drho,Fx,FxHF)
 
 ! Compute the exchange potential 
 
@@ -47,13 +48,13 @@ subroutine exchange_potential(rung,DFA,LDA_centered,nEns,wEns,aCC_w1,aCC_w2,nGri
 
     case(1) 
 
-      call lda_exchange_potential(DFA,LDA_centered,nEns,wEns,aCC_w1,aCC_w2,nGrid,weight,nBas,AO,rho,Fx)
+      call unrestricted_lda_exchange_potential(DFA,LDA_centered,nEns,wEns,aCC_w1,aCC_w2,nGrid,weight,nBas,AO,rho,Fx)
 
 !   GGA functionals
 
     case(2) 
 
-      call gga_exchange_potential(DFA,nEns,wEns,nGrid,weight,nBas,AO,dAO,rho,drho,Fx)
+      call unrestricted_gga_exchange_potential(DFA,nEns,wEns,nGrid,weight,nBas,AO,dAO,rho,drho,Fx)
 
 !   Hybrid functionals
 
@@ -64,9 +65,9 @@ subroutine exchange_potential(rung,DFA,LDA_centered,nEns,wEns,aCC_w1,aCC_w2,nGri
       cX = 0.20d0
       aX = 0.72d0
 
-      call lda_exchange_potential(DFA,nGrid,weight,nBas,AO,rho,FxLDA)
-      call gga_exchange_potential(DFA,nGrid,weight,nBas,AO,dAO,rho,drho,FxGGA)
-      call fock_exchange_potential(nBas,P,ERI,FxHF)
+      call unrestricted_lda_exchange_potential(DFA,nGrid,weight,nBas,AO,rho,FxLDA)
+      call unrestricted_gga_exchange_potential(DFA,nGrid,weight,nBas,AO,dAO,rho,drho,FxGGA)
+      call unrestricted_fock_exchange_potential(nBas,P,ERI,FxHF)
 
       Fx(:,:) = FxLDA(:,:)                   &
               + cX*(FxHF(:,:)  - FxLDA(:,:)) &
@@ -76,10 +77,10 @@ subroutine exchange_potential(rung,DFA,LDA_centered,nEns,wEns,aCC_w1,aCC_w2,nGri
 
     case(666) 
 
-      call fock_exchange_potential(nBas,P,ERI,FxHF)
+      call unrestricted_fock_exchange_potential(nBas,P,ERI,FxHF)
 
       Fx(:,:) = FxHF(:,:)
 
   end select
 
-end subroutine exchange_potential
+end subroutine unrestricted_exchange_potential

@@ -236,8 +236,8 @@ subroutine GOK_RKS(restart,x_rung,x_DFA,c_rung,c_DFA,LDA_centered,nEns,wEns,aCC_
 
 !   Compute exchange potential
 
-    call exchange_potential(x_rung,x_DFA,LDA_centered,nEns,wEns(:),aCC_w1,aCC_w2,nGrid,weight(:),nBas,Pw(:,:),ERI(:,:,:,:), &
-                            AO(:,:),dAO(:,:,:),rhow(:),drhow(:,:),Fx(:,:),FxHF(:,:))
+    call restricted_exchange_potential(x_rung,x_DFA,LDA_centered,nEns,wEns(:),aCC_w1,aCC_w2,nGrid,weight(:),nBas,Pw(:,:), &
+                                       ERI(:,:,:,:),AO(:,:),dAO(:,:,:),rhow(:),drhow(:,:),Fx(:,:),FxHF(:,:))
 
 !   Compute correlation potential
 
@@ -294,8 +294,8 @@ subroutine GOK_RKS(restart,x_rung,x_DFA,c_rung,c_DFA,LDA_centered,nEns,wEns,aCC_
 
 !   Exchange energy
 
-    call exchange_energy(x_rung,x_DFA,LDA_centered,nEns,wEns(:),aCC_w1,aCC_w2,nGrid,weight(:),nBas, &
-                         Pw(:,:),FxHF(:,:),rhow(:),drhow(:,:),Ex)
+    call restricted_exchange_energy(x_rung,x_DFA,LDA_centered,nEns,wEns(:),aCC_w1,aCC_w2,nGrid,weight(:),nBas, &
+                                    Pw(:,:),FxHF(:,:),rhow(:),drhow(:,:),Ex)
 
 !   Correlation energy
 

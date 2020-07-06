@@ -135,9 +135,9 @@ subroutine unrestricted_individual_energy(x_rung,x_DFA,c_rung,c_DFA,LDA_centered
 
   do iEns=1,nEns
     do ispin=1,nspin
-      call exchange_individual_energy(x_rung,x_DFA,LDA_centered,nEns,wEns,aCC_w1,aCC_w2,nGrid,weight,nBas,ERI, &
-                                      Pw(:,:,ispin),P(:,:,ispin,iEns),rhow(:,ispin),drhow(:,:,ispin),          &  
-                                      rho(:,ispin,iEns),drho(:,:,ispin,iEns),Ex(ispin,iEns))
+      call unrestricted_exchange_individual_energy(x_rung,x_DFA,LDA_centered,nEns,wEns,aCC_w1,aCC_w2,nGrid,weight,nBas,ERI, &
+                                                   Pw(:,:,ispin),P(:,:,ispin,iEns),rhow(:,ispin),drhow(:,:,ispin),          &  
+                                                   rho(:,ispin,iEns),drho(:,:,ispin,iEns),Ex(ispin,iEns))
     end do
   end do
 
@@ -192,8 +192,8 @@ subroutine unrestricted_individual_energy(x_rung,x_DFA,c_rung,c_DFA,LDA_centered
 
   do ispin=1,nspin 
 
-    call exchange_derivative_discontinuity(x_rung,x_DFA,nEns,wEns,aCC_w1,aCC_w2,nGrid,weight, &
-                                           rhow(:,ispin),drhow(:,:,ispin),ExDD(ispin,:))
+    call unrestricted_exchange_derivative_discontinuity(x_rung,x_DFA,nEns,wEns,aCC_w1,aCC_w2,nGrid,weight, &
+                                                        rhow(:,ispin),drhow(:,:,ispin),ExDD(ispin,:))
   end do
 
   call unrestricted_correlation_derivative_discontinuity(c_rung,c_DFA,nEns,wEns,nGrid,weight,rhow,drhow,EcDD)

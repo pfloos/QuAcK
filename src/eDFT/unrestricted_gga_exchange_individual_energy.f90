@@ -1,4 +1,4 @@
-subroutine gga_exchange_individual_energy(DFA,nEns,wEns,nGrid,weight,rhow,drhow,rho,drho,Ex)
+subroutine unrestricted_gga_exchange_individual_energy(DFA,nEns,wEns,nGrid,weight,rhow,drhow,rho,drho,Ex)
 
 ! Compute GGA exchange energy for individual states
 
@@ -25,10 +25,6 @@ subroutine gga_exchange_individual_energy(DFA,nEns,wEns,nGrid,weight,rhow,drhow,
 
   select case (DFA)
 
-    case ('RB88')
-
-      call RB88_gga_exchange_individual_energy(nGrid,weight(:),rhow(:),drhow(:,:),rho(:),drho(:,:),Ex)
-
     case default
 
       call print_warning('!!! GGA exchange individual energy not available !!!')
@@ -36,4 +32,4 @@ subroutine gga_exchange_individual_energy(DFA,nEns,wEns,nGrid,weight,rhow,drhow,
 
   end select
 
-end subroutine gga_exchange_individual_energy
+end subroutine unrestricted_gga_exchange_individual_energy

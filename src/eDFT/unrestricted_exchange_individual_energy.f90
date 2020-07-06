@@ -1,6 +1,7 @@
-subroutine exchange_energy(rung,DFA,LDA_centered,nEns,wEns,aCC_w1,aCC_w2,nGrid,weight,nBas,P,FxHF,rho,drho,Ex)
+subroutine unrestricted_exchange_individual_energy(rung,DFA,LDA_centered,nEns,wEns,aCC_w1,aCC_w2,nGrid,weight,nBas, & 
+                                                   ERI,Pw,P,rhow,drhow,rho,drho,Ex)
 
-! Compute the exchange energy
+! Compute the exchange individual energy
 
   implicit none
   include 'parameters.h'
@@ -17,15 +18,19 @@ subroutine exchange_energy(rung,DFA,LDA_centered,nEns,wEns,aCC_w1,aCC_w2,nGrid,w
   integer,intent(in)            :: nGrid
   double precision,intent(in)   :: weight(nGrid)
   integer,intent(in)            :: nBas
+  double precision,intent(in)   :: ERI(nBas,nBas,nBas,nBas)
+  double precision,intent(in)   :: Pw(nBas,nBas)
   double precision,intent(in)   :: P(nBas,nBas)
-  double precision,intent(in)   :: FxHF(nBas,nBas)
+  double precision,intent(in)   :: rhow(nGrid)
+  double precision,intent(in)   :: drhow(ncart,nGrid)
   double precision,intent(in)   :: rho(nGrid)
   double precision,intent(in)   :: drho(ncart,nGrid)
 
 ! Local variables
 
-  double precision              :: ExLDA,ExGGA,ExHF
-  double precision              :: cX,aX,aC
+  double precision              :: ExLDA
+  double precision              :: ExGGA
+  double precision              :: ExHF
 
 ! Output variables
 
@@ -43,7 +48,7 @@ subroutine exchange_energy(rung,DFA,LDA_centered,nEns,wEns,aCC_w1,aCC_w2,nGrid,w
 
     case(1) 
 
-      call lda_exchange_energy(DFA,LDA_centered,nEns,wEns,aCC_w1,aCC_w2,nGrid,weight,rho,ExLDA)
+      call unrestricted_lda_exchange_individual_energy(DFA,LDA_centered,nEns,wEns,aCC_w1,aCC_w2,nGrid,weight,rhow,rho,ExLDA)
 
       Ex = ExLDA
 
@@ -51,7 +56,7 @@ subroutine exchange_energy(rung,DFA,LDA_centered,nEns,wEns,aCC_w1,aCC_w2,nGrid,w
 
     case(2) 
 
-      call gga_exchange_energy(DFA,nEns,wEns,nGrid,weight,rho,drho,ExGGA)
+      call unrestricted_gga_exchange_individual_energy(DFA,nEns,wEns,nGrid,weight,rhow,drhow,rho,drho,ExGGA)
 
       Ex = ExGGA
 
@@ -59,26 +64,17 @@ subroutine exchange_energy(rung,DFA,LDA_centered,nEns,wEns,aCC_w1,aCC_w2,nGrid,w
 
     case(4) 
 
-      cX = 0.20d0
-      aX = 0.72d0
-      aC = 0.81d0
-
-      call lda_exchange_energy(DFA,nEns,wEns,nGrid,weight,rho,ExLDA)
-      call gga_exchange_energy(DFA,nEns,wEns,nGrid,weight,rho,drho,ExGGA)
-      call fock_exchange_energy(nBas,P,FxHF,ExHF)
-
-      Ex = ExLDA              & 
-         + cX*(ExHF  - ExLDA) &
-         + aX*(ExGGA - ExLDA) 
+      call print_warning('!!! Individual energies NYI for Hybrids !!!')
+      stop
 
 !   Hartree-Fock calculation
 
     case(666) 
 
-      call fock_exchange_energy(nBas,P,FxHF,ExHF)
+      call unrestricted_fock_exchange_individual_energy(nBas,Pw,P,ERI,ExHF)
 
       Ex = ExHF
 
   end select
  
-end subroutine exchange_energy
+end subroutine unrestricted_exchange_individual_energy

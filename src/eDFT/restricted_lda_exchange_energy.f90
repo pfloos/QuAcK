@@ -1,4 +1,4 @@
-subroutine lda_exchange_energy(DFA,LDA_centered,nEns,wEns,aCC_w1,aCC_w2,nGrid,weight,rho,Ex)
+subroutine restricted_lda_exchange_energy(DFA,LDA_centered,nEns,wEns,aCC_w1,aCC_w2,nGrid,weight,rho,Ex)
 
 ! Select LDA exchange functional
 
@@ -25,31 +25,23 @@ subroutine lda_exchange_energy(DFA,LDA_centered,nEns,wEns,aCC_w1,aCC_w2,nGrid,we
 
   select case (DFA)
 
-    case ('US51')
-
-      call US51_lda_exchange_energy(nGrid,weight,rho,Ex)
-
-    case ('RS51')
+    case ('S51')
 
       call RS51_lda_exchange_energy(nGrid,weight,rho,Ex)
 
-    case ('RMFL20')
+    case ('MFL20')
 
       call RMFL20_lda_exchange_energy(LDA_centered,nEns,wEns,nGrid,weight,rho,Ex)
 
-    case ('RCC')
+    case ('CC')
 
       call RCC_lda_exchange_energy(nEns,wEns,aCC_w1,aCC_w2,nGrid,weight,rho,Ex)
 
-    case ('UCC')
-
-      call UCC_lda_exchange_energy(nEns,wEns,aCC_w1,aCC_w2,nGrid,weight,rho,Ex)
-
     case default
 
-      call print_warning('!!! LDA exchange functional not available !!!')
+      call print_warning('!!! LDA restricted exchange functional not available !!!')
       stop
 
   end select
 
-end subroutine lda_exchange_energy
+end subroutine restricted_lda_exchange_energy

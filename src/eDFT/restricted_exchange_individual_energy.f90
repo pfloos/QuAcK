@@ -1,5 +1,5 @@
-subroutine exchange_individual_energy(rung,DFA,LDA_centered,nEns,wEns,aCC_w1,aCC_w2,nGrid,weight,nBas, & 
-                                      ERI,Pw,P,rhow,drhow,rho,drho,Ex)
+subroutine restricted_exchange_individual_energy(rung,DFA,LDA_centered,nEns,wEns,aCC_w1,aCC_w2,nGrid,weight,nBas, & 
+                                                   ERI,Pw,P,rhow,drhow,rho,drho,Ex)
 
 ! Compute the exchange individual energy
 
@@ -48,7 +48,7 @@ subroutine exchange_individual_energy(rung,DFA,LDA_centered,nEns,wEns,aCC_w1,aCC
 
     case(1) 
 
-      call lda_exchange_individual_energy(DFA,LDA_centered,nEns,wEns,aCC_w1,aCC_w2,nGrid,weight,rhow,rho,ExLDA)
+      call restricted_lda_exchange_individual_energy(DFA,LDA_centered,nEns,wEns,aCC_w1,aCC_w2,nGrid,weight,rhow,rho,ExLDA)
 
       Ex = ExLDA
 
@@ -56,7 +56,7 @@ subroutine exchange_individual_energy(rung,DFA,LDA_centered,nEns,wEns,aCC_w1,aCC
 
     case(2) 
 
-      call gga_exchange_individual_energy(DFA,nEns,wEns,nGrid,weight,rhow,drhow,rho,drho,ExGGA)
+      call restricted_gga_exchange_individual_energy(DFA,nEns,wEns,nGrid,weight,rhow,drhow,rho,drho,ExGGA)
 
       Ex = ExGGA
 
@@ -71,10 +71,10 @@ subroutine exchange_individual_energy(rung,DFA,LDA_centered,nEns,wEns,aCC_w1,aCC
 
     case(666) 
 
-      call fock_exchange_individual_energy(nBas,Pw,P,ERI,ExHF)
+      call restricted_fock_exchange_individual_energy(nBas,Pw,P,ERI,ExHF)
 
       Ex = ExHF
 
   end select
  
-end subroutine exchange_individual_energy
+end subroutine restricted_exchange_individual_energy

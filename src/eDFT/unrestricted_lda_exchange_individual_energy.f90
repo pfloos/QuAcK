@@ -1,4 +1,4 @@
-subroutine lda_exchange_individual_energy(DFA,LDA_centered,nEns,wEns,aCC_w1,aCC_w2,nGrid,weight,rhow,rho,Ex)
+subroutine unrestricted_lda_exchange_individual_energy(DFA,LDA_centered,nEns,wEns,aCC_w1,aCC_w2,nGrid,weight,rhow,rho,Ex)
 
 ! Compute LDA exchange energy for individual states
 
@@ -26,23 +26,11 @@ subroutine lda_exchange_individual_energy(DFA,LDA_centered,nEns,wEns,aCC_w1,aCC_
 
   select case (DFA)
 
-    case ('US51')
+    case ('S51')
 
       call US51_lda_exchange_individual_energy(nGrid,weight,rhow,rho,Ex)
 
-    case ('RS51')
-
-      call RS51_lda_exchange_individual_energy(nGrid,weight,rhow,rho,Ex)
-
-    case ('RMFL20')
-
-      call RMFL20_lda_exchange_individual_energy(LDA_centered,nEns,wEns,nGrid,weight,rhow,rho,Ex)
-
-    case ('RCC')
-
-      call RCC_lda_exchange_individual_energy(nEns,wEns,aCC_w1,aCC_w2,nGrid,weight,rhow,rho,Ex)
-
-    case ('UCC')
+    case ('CC')
 
       call UCC_lda_exchange_individual_energy(nEns,wEns,aCC_w1,aCC_w2,nGrid,weight,rhow,rho,Ex)
 
@@ -53,4 +41,4 @@ subroutine lda_exchange_individual_energy(DFA,LDA_centered,nEns,wEns,aCC_w1,aCC_
 
   end select
 
-end subroutine lda_exchange_individual_energy
+end subroutine unrestricted_lda_exchange_individual_energy

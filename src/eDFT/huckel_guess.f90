@@ -36,7 +36,7 @@ subroutine huckel_guess(nBas,S,Hc,ERI,J,K,X,cp,F,Fp,e,c,P)
   c(:,:) = matmul(X(:,:),cp(:,:))
 
   call hartree_coulomb(nBas,P,ERI,J)
-  call fock_exchange_potential(nBas,P,ERI,K) 
+  call restricted_fock_exchange_potential(nBas,P,ERI,K) 
 
   F(:,:) = Hc(:,:) + J(:,:) + 0.5d0*K(:,:)
 

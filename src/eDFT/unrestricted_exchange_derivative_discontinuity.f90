@@ -1,4 +1,4 @@
-subroutine exchange_derivative_discontinuity(rung,DFA,nEns,wEns,aCC_w1,aCC_w2,nGrid,weight,rhow,drhow,ExDD)
+subroutine unrestricted_exchange_derivative_discontinuity(rung,DFA,nEns,wEns,aCC_w1,aCC_w2,nGrid,weight,rhow,drhow,ExDD)
 
 ! Compute the exchange part of the derivative discontinuity
 
@@ -37,13 +37,13 @@ subroutine exchange_derivative_discontinuity(rung,DFA,nEns,wEns,aCC_w1,aCC_w2,nG
 
     case(1) 
 
-      call lda_exchange_derivative_discontinuity(DFA,nEns,wEns(:),aCC_w1,aCC_w2,nGrid,weight(:),rhow(:),ExDD(:))
+      call unrestricted_lda_exchange_derivative_discontinuity(DFA,nEns,wEns(:),aCC_w1,aCC_w2,nGrid,weight(:),rhow(:),ExDD(:))
 
 !   GGA functionals
 
     case(2) 
 
-      call gga_exchange_derivative_discontinuity(DFA,nEns,wEns(:),nGrid,weight(:),rhow(:),drhow(:,:),ExDD(:))
+      call unrestricted_gga_exchange_derivative_discontinuity(DFA,nEns,wEns(:),nGrid,weight(:),rhow(:),drhow(:,:),ExDD(:))
 
 !   Hybrid functionals
 
@@ -60,4 +60,4 @@ subroutine exchange_derivative_discontinuity(rung,DFA,nEns,wEns,aCC_w1,aCC_w2,nG
 
   end select
  
-end subroutine exchange_derivative_discontinuity
+end subroutine unrestricted_exchange_derivative_discontinuity

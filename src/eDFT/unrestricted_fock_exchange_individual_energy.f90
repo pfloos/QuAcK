@@ -1,4 +1,4 @@
-subroutine fock_exchange_individual_energy(nBas,Pw,P,ERI,Ex)
+subroutine unrestricted_fock_exchange_individual_energy(nBas,Pw,P,ERI,Ex)
 
 ! Compute the Fock exchange potential
 
@@ -24,8 +24,8 @@ subroutine fock_exchange_individual_energy(nBas,Pw,P,ERI,Ex)
 
   allocate(Fx(nBas,nBas))
 
-  call fock_exchange_potential(nBas,Pw(:,:),ERI(:,:,:,:),Fx(:,:))
+  call unrestricted_fock_exchange_potential(nBas,Pw(:,:),ERI(:,:,:,:),Fx(:,:))
   Ex =       trace_matrix(nBas,matmul(P(:,:),Fx(:,:))) &
      - 0.5d0*trace_matrix(nBas,matmul(Pw(:,:),Fx(:,:)))
 
-end subroutine fock_exchange_individual_energy
+end subroutine unrestricted_fock_exchange_individual_energy

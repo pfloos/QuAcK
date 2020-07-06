@@ -1,4 +1,4 @@
-subroutine fock_exchange_potential(nBas,P,ERI,Fx)
+subroutine unrestricted_fock_exchange_potential(nBas,P,ERI,Fx)
 
 ! Compute the Fock exchange potential
 
@@ -31,6 +31,4 @@ subroutine fock_exchange_potential(nBas,P,ERI,Fx)
     enddo
   enddo
 
-  Fx(:,:) = 0.5d0*Fx(:,:)
-
-end subroutine fock_exchange_potential
+end subroutine unrestricted_fock_exchange_potential

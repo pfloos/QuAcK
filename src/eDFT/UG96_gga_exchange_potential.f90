@@ -1,6 +1,6 @@
-subroutine B88_gga_exchange_potential(nGrid,weight,nBas,AO,dAO,rho,drho,Fx)
+subroutine UG96_gga_exchange_potential(nGrid,weight,nBas,AO,dAO,rho,drho,Fx)
 
-! Compute Becke's GGA exchange potential
+! Compute Gill's GGA exchange poential
 
   implicit none
   include 'parameters.h'
@@ -25,10 +25,11 @@ subroutine B88_gga_exchange_potential(nGrid,weight,nBas,AO,dAO,rho,drho,Fx)
 
   double precision,intent(out)  :: Fx(nBas,nBas)
 
-! Coefficients for B88 GGA exchange functional
+! Coefficients for G96 GGA exchange functional
 
   alpha = -(3d0/2d0)*(3d0/(4d0*pi))**(1d0/3d0)
-  beta  = 0.0042d0
+  beta  = +1d0/137d0
+  beta  = 0d0
 
 ! Compute GGA exchange matrix in the AO basis
 
@@ -39,10 +40,10 @@ subroutine B88_gga_exchange_potential(nGrid,weight,nBas,AO,dAO,rho,drho,Fx)
       do iG=1,nGrid
 
         r = max(0d0,rho(iG))
+        g = drho(1,iG)**2 + drho(2,iG)**2 + drho(3,iG)**2
  
         if(r > threshold) then
 
-          g = drho(1,iG)**2 + drho(2,iG)**2 + drho(3,iG)**2
           vAO = weight(iG)*AO(mu,iG)*AO(nu,iG)
           Fx(mu,nu) = Fx(mu,nu) &
                     + vAO*(4d0/3d0*r**(1d0/3d0)*(alpha - beta*g**(3d0/4d0)/r**2) &
@@ -56,10 +57,10 @@ subroutine B88_gga_exchange_potential(nGrid,weight,nBas,AO,dAO,rho,drho,Fx)
           
           Fx(mu,nu) = Fx(mu,nu) - 2d0*gAO*3d0/4d0*beta*g**(-1d0/4d0)/r**(2d0/3d0)
 
-        end if
+        endif
 
-      end do
-    end do
-  end do
+      enddo
+    enddo
+  enddo
 
-end subroutine B88_gga_exchange_potential
+end subroutine UG96_gga_exchange_potential
