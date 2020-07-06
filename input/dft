@@ -6,7 +6,7 @@
 # GGA          = 2: RB88
 # Hybrid       = 4
 # Hartree-Fock = 666
-  1 US51  
+  666 HF
 # correlation rung: 
 # Hartree      = 0
 # LDA          = 1: RVWN5,RMFL20
@@ -19,7 +19,7 @@
 # Number of states in ensemble (nEns)
   3
 # Ensemble weights: wEns(1),...,wEns(nEns-1)
-  1 0.0 
+  0.0 0.0
 # Parameters for CC weight-dependent exchange functional
 0.000000 0.0000000 0.000000
 0.000000 0.0000000 0.0000000
