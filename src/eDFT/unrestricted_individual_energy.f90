@@ -111,10 +111,19 @@ subroutine unrestricted_individual_energy(x_rung,x_DFA,c_rung,c_DFA,LDA_centered
                - 0.5d0*trace_matrix(nBas,matmul(Pw(:,:,1),J(:,:,2)))     &
                - 0.5d0*trace_matrix(nBas,matmul(Pw(:,:,2),J(:,:,1)))
 
+   ! if (iEns.ne.2) then
     EJ(3,iEns) =       trace_matrix(nBas,matmul(P(:,:,2,iEns),J(:,:,2))) &
                - 0.5d0*trace_matrix(nBas,matmul(Pw(:,:,2),J(:,:,2)))
-
+   ! end if
   end do
+     
+ ! if (nO(2) > 1) then
+   ! EJ(3,2) = trace_matrix(nBas,matmul(P(:,:,2,iEns),J(:,:,2))) &
+    !           - 0.5d0*trace_matrix(nBas,matmul(Pw(:,:,2),J(:,:,2)))
+ ! else
+ ! EJ(3,2) = trace_matrix(nBas,matmul(P(:,:,2,iEns),J(:,:,2)))
+ ! end if
+  
 
 !------------------------------------------------------------------------
 ! Checking Hartree contributions for each individual states
@@ -134,7 +143,7 @@ subroutine unrestricted_individual_energy(x_rung,x_DFA,c_rung,c_DFA,LDA_centered
 !------------------------------------------------------------------------
 ! Individual exchange energy
 !------------------------------------------------------------------------
-
+  print*,'old Ex(2,2)=',Ex(2,2)
   do iEns=1,nEns
     do ispin=1,nspin
       call exchange_individual_energy(x_rung,x_DFA,LDA_centered,nEns,wEns,aCC_w1,aCC_w2,nGrid,weight,nBas,ERI, &
@@ -142,7 +151,8 @@ subroutine unrestricted_individual_energy(x_rung,x_DFA,c_rung,c_DFA,LDA_centered
                                       rho(:,ispin,iEns),drho(:,:,ispin,iEns),Ex(ispin,iEns))
     end do
   end do
- 
+  print*,'new Ex(2,2)=',Ex(2,2)
+
 !------------------------------------------------------------------------
 ! Checking exchange contributions for each individual states
 !------------------------------------------------------------------------
