@@ -35,7 +35,7 @@ subroutine UW38_lda_correlation_energy(nGrid,weight,rho,Ec)
     ra = max(0d0,rho(iG,1))
     rb = max(0d0,rho(iG,2))
 
-    if(ra > threshold .and. rb > threshold) then
+    if(ra > threshold .or. rb > threshold) then
 
       r = ra + rb
 

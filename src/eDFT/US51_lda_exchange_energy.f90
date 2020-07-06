@@ -1,4 +1,4 @@
-subroutine US51_lda_exchange_energy(nGrid,weight,rho,Ex,wEns,nEns)
+subroutine US51_lda_exchange_energy(nGrid,weight,rho,Ex)
 
 ! Compute Slater's LDA exchange energy
 
@@ -10,9 +10,6 @@ subroutine US51_lda_exchange_energy(nGrid,weight,rho,Ex,wEns,nEns)
   integer,intent(in)            :: nGrid
   double precision,intent(in)   :: weight(nGrid)
   double precision,intent(in)   :: rho(nGrid)
-
-  integer,intent(in)            :: nEns
-  double precision,intent(in)   :: wEns(nEns)
 
 ! Local variables
 

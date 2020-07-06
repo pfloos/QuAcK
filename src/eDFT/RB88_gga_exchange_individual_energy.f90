@@ -40,7 +40,7 @@ subroutine RB88_gga_exchange_individual_energy(nGrid,weight,rhow,drhow,rho,drho,
     r  = max(0d0,0.5d0*rhow(iG))
     rI = max(0d0,0.5d0*rho(iG))
 
-    if(r > threshold .and. rI > threshold) then
+    if(r > threshold .or. rI > threshold) then
 
       g = 0.25d0*(drho(1,iG)**2 + drho(2,iG)**2 + drho(3,iG)**2)
       x = sqrt(g)/r**(4d0/3d0)

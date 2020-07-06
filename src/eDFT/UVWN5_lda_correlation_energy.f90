@@ -73,7 +73,7 @@ subroutine UVWN5_lda_correlation_energy(nGrid,weight,rho,Ec)
 
 !   alpha-beta contribution
 
-    if(ra > threshold .and. rb > threshold) then
+    if(ra > threshold .or. rb > threshold) then
 
       r = ra + rb
       rs = (4d0*pi*r/3d0)**(-1d0/3d0)

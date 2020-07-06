@@ -42,7 +42,7 @@ subroutine RMFL20_lda_exchange_individual_energy(LDA_centered,nEns,wEns,nGrid,we
     r  = max(0d0,rhow(iG))
     rI = max(0d0,rho(iG))
 
-    if(r > threshold .and. rI > threshold) then
+    if(r > threshold .or. rI > threshold) then
 
       e_p  =         Cxw*r**(1d0/3d0)
       dedr = 1d0/3d0*Cxw*r**(-2d0/3d0)

@@ -27,7 +27,7 @@ subroutine lda_exchange_energy(DFA,LDA_centered,nEns,wEns,aCC_w1,aCC_w2,nGrid,we
 
     case ('US51')
 
-      call US51_lda_exchange_energy(nGrid,weight,rho,Ex,wEns,nEns)
+      call US51_lda_exchange_energy(nGrid,weight,rho,Ex)
 
     case ('RS51')
 

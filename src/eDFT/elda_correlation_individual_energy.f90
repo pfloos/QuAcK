@@ -39,7 +39,7 @@ subroutine elda_correlation_individual_energy(aLF,nGrid,weight,rhow,rho,Ec)
     r  = ra  + rb
     rI = raI + rbI
 
-    if(r > threshold .and. rI > threshold) then
+    if(r > threshold .or. rI > threshold) then
 
       ec_p  = aLF(1)/(1d0 + aLF(2)*r**(-1d0/6d0) + aLF(3)*r**(-1d0/3d0))
 

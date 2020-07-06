@@ -311,7 +311,7 @@ subroutine eDFT_UKS(x_rung,x_DFA,c_rung,c_DFA,nEns,wEns,aCC_w1,aCC_w2,nGrid,weig
 
     EJ(1) = 0.5d0*trace_matrix(nBas,matmul(Pw(:,:,1),J(:,:,1)))
     EJ(2) = 0.5d0*trace_matrix(nBas,matmul(Pw(:,:,1),J(:,:,2))) &
-            + 0.5d0*trace_matrix(nBas,matmul(Pw(:,:,2),J(:,:,1))) !!!!!!
+          + 0.5d0*trace_matrix(nBas,matmul(Pw(:,:,2),J(:,:,1))) 
     EJ(3) = 0.5d0*trace_matrix(nBas,matmul(Pw(:,:,2),J(:,:,2)))
 
 !   Exchange energy

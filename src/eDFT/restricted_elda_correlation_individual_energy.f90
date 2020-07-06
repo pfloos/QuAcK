@@ -33,7 +33,7 @@ subroutine restricted_elda_correlation_individual_energy(aMFL,nGrid,weight,rhow,
     r  = max(0d0,rhow(iG))
     rI = max(0d0,rho(iG))
 
-    if(r > threshold .and. rI > threshold) then
+    if(r > threshold .or. rI > threshold) then
 
       ec_p  = aMFL(1)/(1d0 + aMFL(2)*r**(-1d0/6d0) + aMFL(3)*r**(-1d0/3d0))
 

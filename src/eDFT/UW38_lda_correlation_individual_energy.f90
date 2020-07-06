@@ -45,7 +45,7 @@ subroutine UW38_lda_correlation_individual_energy(nGrid,weight,rhow,rho,Ec)
     r  = ra + rb
     rI = raI + rbI
 
-    if(r > threshold .and. rI > threshold) then
+    if(r > threshold .or. rI > threshold) then
 
       epsc  = ra*rb/(r + d*r**(2d0/3d0))
       dFcdra = epsc*(d/(3d0*r**(4d0/3d0)*(1d0 + d*r**(-1d0/3d0))) - 1d0/r + 1d0/ra)

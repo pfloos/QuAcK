@@ -42,7 +42,7 @@ subroutine RVWN5_lda_correlation_individual_energy(nGrid,weight,rhow,rho,Ec)
     r = max(0d0,rhow(iG))
     rI = max(0d0,rho(iG))
    
-    if(r > threshold .and. rI > threshold) then
+    if(r > threshold .or. rI > threshold) then
    
       rs = (4d0*pi*r/3d0)**(-1d0/3d0)
       x = sqrt(rs)
