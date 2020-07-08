@@ -4,8 +4,8 @@ MOL=$1
 BASIS=$2
 
 w_start=0.0
-w_end=1.05
-dw=0.05
+w_end=1.0
+dw=0.1
 
 w2=0.0
 
@@ -15,10 +15,13 @@ CF=$4
 aw1="0.000000 0.0000000 0.000000"
 aw2="0.000000 0.0000000 0.0000000"
 
+DATA=${MOL}_${BASIS}_${XF}_${CF}.dat
+rm $DATA
+touch $DATA
+
 for w1 in $(seq $w_start $dw $w_end)
 do
 ###  w2=${w1}
-  echo "Weights = " $w1 $w2
   echo "# Restricted or unrestricted KS calculation" > input/dft
   echo "  eDFT-UKS" >> input/dft
   echo "# exchange rung:" >> input/dft
@@ -46,6 +49,15 @@ do
   echo ${aw2} >> input/dft
   echo "# GOK-DFT: maxSCF thresh   DIIS n_diis guess_type ortho_type" >> input/dft
   echo "           32    0.00001   T     5      1          1" >> input/dft
-  ./GoXC $MOL $BASIS > ${MOL}_${BASIS}_${XF}_${CF}_${w1}.out
+  OUTPUT=${MOL}_${BASIS}_${XF}_${CF}_${w1}.out
+  ./GoXC $MOL $BASIS > ${OUTPUT}
+  Ew=`grep "Ensemble energy:" ${OUTPUT} | cut -d":" -f 2 | sed 's/au//'`
+  E0=`grep "Individual energy state  1:" ${OUTPUT} | cut -d":" -f 2 | sed 's/au//'`
+  E1=`grep "Individual energy state  2:" ${OUTPUT} | cut -d":" -f 2 | sed 's/au//'`
+  E2=`grep "Individual energy state  3:" ${OUTPUT} | cut -d":" -f 2 | sed 's/au//'`
+  IP=`grep "Ionization Potential"  ${OUTPUT} | grep " au" | tail -1 | cut -d":" -f 2 | sed 's/au//'`
+  EA=`grep "Electronic Affinity"  ${OUTPUT} | grep " au" | tail -1 | cut -d":" -f 2 | sed 's/au//'`
+  echo $w1 $w2 $Ew $E0 $E1 $E2 $IP $EA
+  echo $w1 $w2 $Ew $E0 $E1 $E2 $IP $EA >> ${DATA}
 done
 
