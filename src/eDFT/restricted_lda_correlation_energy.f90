@@ -29,11 +29,11 @@ subroutine restricted_lda_correlation_energy(DFA,LDA_centered,nEns,wEns,nGrid,we
 
       Ec = 0d0
 
-    case ('RVWN5')
+    case ('VWN5')
 
       call RVWN5_lda_correlation_energy(nGrid,weight(:),rho(:),Ec)
 
-    case ('RMFL20')
+    case ('MFL20')
 
       call RMFL20_lda_correlation_energy(LDA_centered,nEns,wEns(:),nGrid,weight(:),rho(:),Ec)
 

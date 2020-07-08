@@ -26,13 +26,13 @@ subroutine restricted_lda_correlation_individual_energy(DFA,LDA_centered,nEns,wE
 
 !   Vosko, Wilk and Nusair's functional V: Can. J. Phys. 58 (1980) 1200
 
-    case ('RVWN5')
+    case ('VWN5')
 
       call RVWN5_lda_correlation_individual_energy(nGrid,weight(:),rhow(:),rho(:),Ec)
 
 !   Marut-Fromager-Loos weight-dependent correlation functional
 
-    case ('RMFL20')
+    case ('MFL20')
 
       call RMFL20_lda_correlation_individual_energy(LDA_centered,nEns,wEns,nGrid,weight(:),rhow(:),rho(:),Ec)
 

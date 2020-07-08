@@ -26,7 +26,7 @@ subroutine unrestricted_lda_correlation_individual_energy(DFA,LDA_centered,nEns,
 
 !   Vosko, Wilk and Nusair's functional V: Can. J. Phys. 58 (1980) 1200
 
-    case ('UVWN5')
+    case ('VWN5')
 
       call UVWN5_lda_correlation_individual_energy(nGrid,weight,rhow,rho,Ec)
 

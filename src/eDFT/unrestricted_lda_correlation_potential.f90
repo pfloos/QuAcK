@@ -32,19 +32,19 @@ include 'parameters.h'
 
 !   Wigner's LDA correlation functional: Wigner, Trans. Faraday Soc. 34 (1938) 678
 
-    case ('UW38')
+    case ('W38')
 
       call UW38_lda_correlation_potential(nGrid,weight(:),nBas,AO(:,:),rho(:,:),Fc(:,:,:))
 
 !   Vosko, Wilk and Nusair's functional V: Can. J. Phys. 58 (1980) 1200
 
-    case ('UVWN5')
+    case ('VWN5')
 
       call UVWN5_lda_correlation_potential(nGrid,weight(:),nBas,AO(:,:),rho(:,:),Fc(:,:,:))
 
 !   Chachiyo's LDA correlation functional: Chachiyo, JCP 145 (2016) 021101
 
-    case ('UC16')
+    case ('C16')
 
       call UC16_lda_correlation_potential(nGrid,weight(:),nBas,AO(:,:),rho(:,:),Fc(:,:,:))
 

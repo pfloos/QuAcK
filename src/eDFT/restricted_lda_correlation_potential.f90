@@ -31,11 +31,11 @@ subroutine restricted_lda_correlation_potential(DFA,LDA_centered,nEns,wEns,nGrid
 
       Fc(:,:) = 0d0
 
-    case ('RVWN5')
+    case ('VWN5')
 
       call RVWN5_lda_correlation_potential(nGrid,weight(:),nBas,AO(:,:),rho(:),Fc(:,:))
 
-    case ('RMFL20')
+    case ('MFL20')
 
       call RMFL20_lda_correlation_potential(LDA_centered,nEns,wEns(:),nGrid,weight(:),nBas,AO(:,:),rho(:),Fc(:,:))
 

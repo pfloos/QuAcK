@@ -13,7 +13,7 @@
 # GGA          = 2: 
 # Hybrid       = 4: 
 # Hartree-Fock = 666: HF
-  0 H 
+  1 VWN5
 # quadrature grid SG-n
   1
 # Number of states in ensemble (nEns)

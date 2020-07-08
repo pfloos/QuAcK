@@ -28,11 +28,11 @@ subroutine restricted_lda_correlation_derivative_discontinuity(DFA,nEns,wEns,nGr
 
       Ec(:) = 0d0
 
-    case ('RVWN5')
+    case ('VWN5')
 
       Ec(:) = 0d0
 
-    case ('RMFL20')
+    case ('MFL20')
 
       call RMFL20_lda_correlation_derivative_discontinuity(nEns,wEns,nGrid,weight(:),rhow(:),Ec(:))
 
