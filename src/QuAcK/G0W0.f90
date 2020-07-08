@@ -104,6 +104,8 @@ subroutine G0W0(doACFDT,exchange_kernel,doXBS,COHSEX,SOSEX,BSE,TDA_W,TDA,       
   call linear_response(ispin,.true.,TDA_W,.false.,eta,nBas,nC,nO,nV,nR,nS,1d0,eHF,ERI, & 
                        rho(:,:,:,ispin),EcRPA(ispin),Omega(:,ispin),XpY(:,:,ispin),XmY(:,:,ispin))
 
+  if(print_W) call print_excitation('RPA@HF      ',ispin,nS,Omega(:,ispin))
+
 ! Compute correlation part of the self-energy 
 
   call excitation_density(nBas,nC,nO,nR,nS,ERI,XpY(:,:,ispin),rho(:,:,:,ispin))
@@ -142,8 +144,6 @@ subroutine G0W0(doACFDT,exchange_kernel,doXBS,COHSEX,SOSEX,BSE,TDA_W,TDA,       
   end if
 
 ! Dump results
-
-  if(print_W) call print_excitation('RPA@G0W0    ',ispin,nS,Omega(:,ispin))
 
   call print_G0W0(nBas,nO,eHF,ENuc,ERHF,SigC,Z,eGW,EcRPA(ispin),EcGM)
 

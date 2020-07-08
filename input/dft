@@ -1,25 +1,25 @@
 # Restricted or unrestricted KS calculation
   eDFT-UKS
 # exchange rung:
-# Hartree      = 0
-# LDA          = 1: RS51,RMFL20
-# GGA          = 2: RB88
-# Hybrid       = 4
-# Hartree-Fock = 666
-  666 HF
+# Hartree      = 0: H
+# LDA          = 1: S51,CC
+# GGA          = 2: B88
+# Hybrid       = 4:
+# Hartree-Fock = 666: HF
+  1 S51
 # correlation rung: 
-# Hartree      = 0
-# LDA          = 1: RVWN5,RMFL20
+# Hartree      = 0: H
+# LDA          = 1: VWN5,MFL20
 # GGA          = 2: 
 # Hybrid       = 4: 
-# Hartree-Fock = 666
+# Hartree-Fock = 666: HF
   0 H 
 # quadrature grid SG-n
   1
 # Number of states in ensemble (nEns)
   3
 # Ensemble weights: wEns(1),...,wEns(nEns-1)
-  0.0 0.0
+  0.000000 0.0
 # Parameters for CC weight-dependent exchange functional
 0.000000 0.0000000 0.000000
 0.000000 0.0000000 0.0000000

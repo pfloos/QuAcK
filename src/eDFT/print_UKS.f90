@@ -17,18 +17,31 @@ subroutine print_UKS(nBas,nO,eps,c,ENuc,ET,EV,EJ,Ex,Ec,Ew)
   double precision,intent(in)        :: Ec(nsp)
   double precision,intent(in)        :: Ew
 
+  integer                            :: ispin
   integer                            :: HOMO(nspin)
   integer                            :: LUMO(nspin)
   double precision                   :: Gap(nspin)
 
 ! HOMO and LUMO
 
-  HOMO(:) = nO(:)
 
-  LUMO(:) = HOMO(:) + 1
+  do ispin=1,nspin
 
-  Gap(1) = eps(LUMO(1),1) - eps(HOMO(1),1)
-  Gap(2) = eps(LUMO(2),2) - eps(HOMO(2),2)
+    if(nO(ispin) > 0) then 
+
+      HOMO(ispin) = nO(ispin)
+      LUMO(ispin) = HOMO(ispin) + 1
+      Gap(ispin)  = eps(LUMO(ispin),ispin) - eps(HOMO(ispin),ispin)
+
+    else
+
+      HOMO(ispin) = 0
+      LUMO(ispin) = 0
+      Gap(ispin)  = 0d0
+
+    end if
+
+  end do
 
 ! Dump results
 

@@ -137,7 +137,7 @@ subroutine print_unrestricted_individual_energy(nEns,ENuc,Ew,ET,EV,EJ,Ex,Ec,Exc,
 !------------------------------------------------------------------------
 
   write(*,'(A60)') '-------------------------------------------------'
-  write(*,'(A60)') ' IP and EA FROM AUXILIARY ENERGIES '
+  write(*,'(A60)') ' IP AND EA FROM AUXILIARY ENERGIES '
   write(*,'(A60)') '-------------------------------------------------'
 
     write(*,'(A43,F16.10,A4)') ' Ionization Potential  1 -> 2:',Omaux(2)+OmxcDD(2),' au'

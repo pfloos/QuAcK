@@ -61,7 +61,7 @@ subroutine UVWN5_lda_correlation_individual_energy(nGrid,weight,rhow,rho,Ec)
    
 !   spin-up contribution
    
-    if(ra > threshold .and. raI > threshold) then
+    if(ra > threshold .or. raI > threshold) then
    
       r = ra + rb
       rI = raI + rbI
@@ -131,7 +131,7 @@ subroutine UVWN5_lda_correlation_individual_energy(nGrid,weight,rhow,rho,Ec)
 
 !   spin-down contribution
    
-    if(rb > threshold .and. rbI > threshold) then
+    if(rb > threshold .or. rbI > threshold) then
    
       r = ra + rb
       rI = raI + rbI

@@ -86,11 +86,18 @@ subroutine UCC_lda_exchange_individual_energy(nEns,wEns,aCC_w1,aCC_w2,nGrid,weig
     r  = max(0d0,rhow(iG))
     rI = max(0d0,rho(iG))
 
-    if(r > threshold .and. rI > threshold) then
+    if(r > threshold) then
 
       e_p  =         Cx*r**(1d0/3d0)
       dedr = 1d0/3d0*Cx*r**(-2d0/3d0)
-      Ex = Ex + weight(iG)*(e_p*rI + dedr*r*rI - dedr*r*r)
+
+      Ex = Ex - weight(iG)*dedr*r*r
+
+      if(rI > threshold) then
+
+      Ex = Ex + weight(iG)*(e_p*rI + dedr*r*rI)
+
+      endif
 
     endif
 
