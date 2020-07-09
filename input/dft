@@ -19,9 +19,9 @@
 # Number of states in ensemble (nEns)
   3
 # Ensemble weights: wEns(1),...,wEns(nEns-1)
-  1 0.0 
+  0.00 0.00 
 # Parameters for CC weight-dependent exchange functional
-0.000000 0.0000000 0.000000
-0.000000 0.0000000 0.0000000
+0.420243 0.0700561 -0.288301
+0.135068 -0.00774769 -0.0278205
 # GOK-DFT: maxSCF thresh   DIIS n_diis guess_type ortho_type
            32    0.00001   T     5      1          1
