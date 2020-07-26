@@ -29,19 +29,19 @@ subroutine unrestricted_density_matrix(nBas,nEns,nO,c,P)
     P(:,:,ispin,iEns) = matmul(c(:,1:nO(ispin),ispin),transpose(c(:,1:nO(ispin),ispin)))
   end do
 
-! (N-1)-electron state: remove spin-down electrons
+! (N-1)-electron state: remove spin-up electrons
 
   iEns = 2
-  P(:,:,1,iEns) = matmul(c(:,1:nO(1)  ,1),transpose(c(:,1:nO(1)  ,1)))  
-  if (nO(2) > 1) then
-    P(:,:,2,iEns) = matmul(c(:,1:nO(2)-1,2),transpose(c(:,1:nO(2)-1,2)))
+  P(:,:,2,iEns) = matmul(c(:,1:nO(2),2),transpose(c(:,1:nO(2),2)))  
+  if (nO(1) > 1) then
+    P(:,:,1,iEns) = matmul(c(:,1:nO(1)-1,1),transpose(c(:,1:nO(1)-1,1)))
   else
-    P(:,:,2,iEns) = 0.d0
+    P(:,:,1,iEns) = 0.d0
   end if
-! (N+1)-electron state: remove spin-up electrons
+! (N+1)-electron state: remove spin-down electrons
 
   iEns = 3 
-  P(:,:,1,iEns) = matmul(c(:,1:nO(1)+1,1),transpose(c(:,1:nO(1)+1,1)))  
-  P(:,:,2,iEns) = matmul(c(:,1:nO(2)  ,2),transpose(c(:,1:nO(2)  ,2)))
+  P(:,:,2,iEns) = matmul(c(:,1:nO(2)+1,2),transpose(c(:,1:nO(2)+1,2)))  
+  P(:,:,1,iEns) = matmul(c(:,1:nO(1),1),transpose(c(:,1:nO(1),1)))
 
 end subroutine unrestricted_density_matrix

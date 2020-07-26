@@ -32,19 +32,19 @@ subroutine unrestricted_auxiliary_energy(nBas,nEns,nO,eps,Eaux)
 
   iEns = 2 
  
-  Eaux(1,iEns) = sum(eps(1:nO(1),1))
+  Eaux(2,iEns) = sum(eps(1:nO(2),2))
 
-  if(nO(2) > 1) then 
-    Eaux(2,iEns) = sum(eps(1:nO(2)-1,2))
+  if(nO(1) > 1) then 
+    Eaux(1,iEns) = sum(eps(1:nO(1)-1,1))
   else
-    Eaux(2,iEns) = 0d0
+    Eaux(1,iEns) = 0d0
   end if
 
 ! (N+1)-electron ground state
 
   iEns = 3 
  
-  Eaux(1,iEns) = sum(eps(1:nO(1)+1,1))
-  Eaux(2,iEns) = sum(eps(1:nO(2),2)) 
+  Eaux(2,iEns) = sum(eps(1:nO(2)+1,2))
+  Eaux(1,iEns) = sum(eps(1:nO(1),1)) 
 
 end subroutine unrestricted_auxiliary_energy
