@@ -1,5 +1,5 @@
 subroutine read_options(method,x_rung,x_DFA,c_rung,c_DFA,SGn,nEns,wEns,aCC_w1,aCC_w2, & 
-                        maxSCF,thresh,DIIS,max_diis,guess_type,ortho_type)
+                        maxSCF,thresh,DIIS,max_diis,guess_type,ortho_type,ncent,occnum)
 
 ! Read DFT options
 
@@ -9,7 +9,7 @@ subroutine read_options(method,x_rung,x_DFA,c_rung,c_DFA,SGn,nEns,wEns,aCC_w1,aC
 
 ! Local variables
 
-  integer                       :: I
+  integer                       :: I,J
 
 ! Output variables
 
@@ -21,6 +21,7 @@ subroutine read_options(method,x_rung,x_DFA,c_rung,c_DFA,SGn,nEns,wEns,aCC_w1,aC
   double precision,intent(out)  :: wEns(maxEns)
   double precision,intent(out)  :: aCC_w1(3)
   double precision,intent(out)  :: aCC_w2(3)
+  double precision,intent(out),dimension(2,2,3)  :: occnum
 
   integer,intent(out)           :: maxSCF
   double precision,intent(out)  :: thresh
@@ -28,6 +29,7 @@ subroutine read_options(method,x_rung,x_DFA,c_rung,c_DFA,SGn,nEns,wEns,aCC_w1,aC
   integer,intent(out)           :: max_diis
   integer,intent(out)           :: guess_type
   integer,intent(out)           :: ortho_type
+  double precision,intent(in)   :: ncent
 
 ! Local variables
 
@@ -92,10 +94,18 @@ subroutine read_options(method,x_rung,x_DFA,c_rung,c_DFA,SGn,nEns,wEns,aCC_w1,aC
   write(*,*)'----------------------------------------------------------'
   write(*,*) 
   
-! Read ensemble weights
+! Read ensemble weights for unphysical (integer number of electrons) left or right N-centered ensembles:
+! (alpha,0) or (0,alpha) in input
+!  read(1,*)
+!  read(1,*) (wEns(I),I=2,nEns)
+!  wEns(2) = (ncent/(ncent-1.d0))*wEns(2)
+!  wEns(3) = (ncent/(ncent+1.d0))*wEns(3)
+!  wEns(1) = 1d0 - ((ncent-1.d0)/ncent)*wEns(2) - ((ncent+1.d0)/ncent)*wEns(3) ! for N-centered
+
+! Read ensemble weights for real physical (fractional number of electrons) ensemble (w1,w2)
   read(1,*)
   read(1,*) (wEns(I),I=2,nEns)
-  wEns(1) = 1d0 - sum(wEns)
+  wEns(1) = 1d0 - wEns(2) - wEns(3) 
 
   write(*,*)'----------------------------------------------------------'
   write(*,*)' Ensemble weights '
@@ -119,6 +129,14 @@ subroutine read_options(method,x_rung,x_DFA,c_rung,c_DFA,SGn,nEns,wEns,aCC_w1,aC
   write(*,*)'----------------------------------------------------------'
   call matout(3,1,aCC_w2)
   write(*,*) 
+ 
+!  allocate(occnum(2,2,nEns))
+! Read occupation numbers for orbitals nO and nO+1
+  read(1,*)
+  do J=1,3
+    read(1,*) (occnum(1,I,J),I=1,2)
+    read(1,*) (occnum(2,I,J),I=1,2)
+  end do
 
 ! Read KS options
 

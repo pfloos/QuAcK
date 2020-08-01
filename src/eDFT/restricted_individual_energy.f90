@@ -1,5 +1,5 @@
 subroutine restricted_individual_energy(x_rung,x_DFA,c_rung,c_DFA,LDA_centered,nEns,wEns,aCC_w1,aCC_w2,nGrid,weight,nBas, & 
-                                        nO,nV,T,V,ERI,ENuc,eps,Pw,rhow,drhow,J,P,rho,drho,Ew,E,Om)
+                                        nO,nV,T,V,ERI,ENuc,eps,Pw,rhow,drhow,J,P,rho,drho,Ew,E,Om,occnum)
 
 ! Compute individual energies as well as excitation energies
 
@@ -38,6 +38,8 @@ subroutine restricted_individual_energy(x_rung,x_DFA,c_rung,c_DFA,LDA_centered,n
   double precision,intent(in)   :: J(nBas,nBas)
 
   double precision              :: Ew
+  double precision,intent(in),dimension(2,2,3)   :: occnum
+
 
 ! Local variables
 
@@ -108,7 +110,7 @@ subroutine restricted_individual_energy(x_rung,x_DFA,c_rung,c_DFA,LDA_centered,n
 ! Compute auxiliary energies
 !------------------------------------------------------------------------
 
-  call restricted_auxiliary_energy(nBas,nEns,nO,eps(:),Eaux(:))
+  call restricted_auxiliary_energy(nBas,nEns,nO,eps(:),Eaux(:),occnum)
 
 !------------------------------------------------------------------------
 ! Compute derivative discontinuities

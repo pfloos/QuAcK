@@ -1,5 +1,5 @@
 subroutine eDFT_UKS(x_rung,x_DFA,c_rung,c_DFA,nEns,wEns,aCC_w1,aCC_w2,nGrid,weight,maxSCF,thresh,max_diis,guess_type, &
-                   nBas,AO,dAO,nO,nV,S,T,V,Hc,ERI,X,ENuc,Ew)
+                   nBas,AO,dAO,nO,nV,S,T,V,Hc,ERI,X,ENuc,Ew,occnum)
 
 ! Perform unrestricted Kohn-Sham calculation for ensembles
 
@@ -30,6 +30,8 @@ subroutine eDFT_UKS(x_rung,x_DFA,c_rung,c_DFA,nEns,wEns,aCC_w1,aCC_w2,nGrid,weig
   double precision,intent(in)   :: X(nBas,nBas) 
   double precision,intent(in)   :: ERI(nBas,nBas,nBas,nBas)
   double precision,intent(in)   :: ENuc
+  double precision,intent(in),dimension(2,2,3)   :: occnum
+
 
 ! Local variables
 
@@ -184,7 +186,7 @@ subroutine eDFT_UKS(x_rung,x_DFA,c_rung,c_DFA,nEns,wEns,aCC_w1,aCC_w2,nGrid,weig
 !   Compute density matrix 
 !------------------------------------------------------------------------
 
-    call unrestricted_density_matrix(nBas,nEns,nO(:),c(:,:,:),P(:,:,:,:))
+    call unrestricted_density_matrix(nBas,nEns,nO(:),c(:,:,:),P(:,:,:,:),occnum)
  
 !   Weight-dependent density matrix
     
@@ -369,6 +371,6 @@ subroutine eDFT_UKS(x_rung,x_DFA,c_rung,c_DFA,nEns,wEns,aCC_w1,aCC_w2,nGrid,weig
 !------------------------------------------------------------------------
 
   call unrestricted_individual_energy(x_rung,x_DFA,c_rung,c_DFA,LDA_centered,nEns,wEns,aCC_w1,aCC_w2,nGrid,weight,nBas, &
-                                      AO,dAO,nO,nV,T,V,ERI,ENuc,eps,Pw,rhow,drhow,J,Fx,FxHF,Fc,P,rho,drho,Ew,E,Om)
+                                      AO,dAO,nO,nV,T,V,ERI,ENuc,eps,Pw,rhow,drhow,J,Fx,FxHF,Fc,P,rho,drho,Ew,E,Om,occnum)
 
 end subroutine eDFT_UKS

@@ -19,9 +19,16 @@
 # Number of states in ensemble (nEns)
   3
 # Ensemble weights: wEns(1),...,wEns(nEns-1)
-  0.00 0.00 
+  0.00 1.00 
 # Parameters for CC weight-dependent exchange functional
-0.420431 0.069097 -0.295049
-0.135075 -0.00770826 -0.028057
+-0.00201219 -0.00371002 -0.00212719
+-0.00117715 0.00188738 -0.000414761
+# occupation numbers of orbitals nO and nO+1
+ 1.00 0.00 
+ 1.00 0.00
+ 0.00 0.00
+ 1.00 0.00
+ 1.00 0.00
+ 1.00 1.00
 # GOK-DFT: maxSCF thresh   DIIS n_diis guess_type ortho_type
-           500    0.00001   T     5      1          1
+           1000    0.00001   T     5      1          1

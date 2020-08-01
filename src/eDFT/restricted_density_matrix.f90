@@ -1,4 +1,4 @@
-subroutine restricted_density_matrix(nBas,nEns,nO,c,P)
+subroutine restricted_density_matrix(nBas,nEns,nO,c,P,occnum)
 
 ! Calculate density matrices
 
@@ -12,6 +12,8 @@ subroutine restricted_density_matrix(nBas,nEns,nO,c,P)
   integer,intent(in)            :: nEns
   integer,intent(in)            :: nO
   double precision,intent(in)   :: c(nBas,nBas)
+  double precision,intent(in),dimension(2,2,3)   :: occnum
+
 
 ! Local variables
 
@@ -25,7 +27,7 @@ subroutine restricted_density_matrix(nBas,nEns,nO,c,P)
 
   iEns = 1
 
-  P(:,:,iEns) = 2d0*matmul(c(:,1:nO),transpose(c(:,1:nO)))
+  P(:,:,iEns) = 2.d0*matmul(c(:,1:nO),transpose(c(:,1:nO)))
 
 ! Doubly-excited state density matrix
 
@@ -36,9 +38,8 @@ subroutine restricted_density_matrix(nBas,nEns,nO,c,P)
   else
     P(:,:,iEns) = 0d0
   end if
-
-  P(:,:,iEns) = P(:,:,iEns) + 1d0*matmul(c(:,nO  :nO  ),transpose(c(:,nO  :nO  ))) &
-                            + 1d0*matmul(c(:,nO+2:nO+2),transpose(c(:,nO+2:nO+2)))
+  P(:,:,iEns) = P(:,:,iEns) + sum(occnum(:,1,iEns))*matmul(c(:,nO:nO),transpose(c(:,nO:nO))) &
+                            + sum(occnum(:,2,iEns))*matmul(c(:,nO+1:nO+1),transpose(c(:,nO+1:nO+1)))
 
 ! Doubly-excited state density matrix
 
@@ -49,7 +50,7 @@ subroutine restricted_density_matrix(nBas,nEns,nO,c,P)
   else
     P(:,:,iEns) = 0d0
   end if
-
-  P(:,:,iEns) = P(:,:,iEns) + 2d0*matmul(c(:,nO+1:nO+1),transpose(c(:,nO+1:nO+1)))
+  P(:,:,iEns) = P(:,:,iEns) + sum(occnum(:,1,iEns))*matmul(c(:,nO:nO),transpose(c(:,nO:nO))) &
+              + sum(occnum(:,2,iEns))*matmul(c(:,nO+1:nO+1),transpose(c(:,nO+1:nO+1)))
 
 end subroutine restricted_density_matrix

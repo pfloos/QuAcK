@@ -1,5 +1,5 @@
 subroutine GOK_UKS(x_rung,x_DFA,c_rung,c_DFA,nEns,wEns,nGrid,weight,aCC_w1,aCC_w2,maxSCF,thresh,max_diis,guess_type, &
-                   nBas,AO,dAO,nO,nV,S,T,V,Hc,ERI,X,ENuc,Ew)
+                   nBas,AO,dAO,nO,nV,S,T,V,Hc,ERI,X,ENuc,Ew,occnum)
 
 ! Perform unrestricted Kohn-Sham calculation for ensembles
 
@@ -30,10 +30,12 @@ subroutine GOK_UKS(x_rung,x_DFA,c_rung,c_DFA,nEns,wEns,nGrid,weight,aCC_w1,aCC_w
   double precision,intent(in)   :: X(nBas,nBas) 
   double precision,intent(in)   :: ERI(nBas,nBas,nBas,nBas)
   double precision,intent(in)   :: ENuc
+  double precision,intent(in),dimension(2,2,3)   :: occnum
 
 ! Local variables
 
   integer                       :: xc_rung
+  logical                       :: LDA_centered = .false.  
   integer                       :: nSCF,nBasSq
   integer                       :: n_diis
   double precision              :: conv
@@ -127,7 +129,9 @@ subroutine GOK_UKS(x_rung,x_DFA,c_rung,c_DFA,nEns,wEns,nGrid,weight,aCC_w1,aCC_w
   if(guess_type == 1) then
 
     do ispin=1,nspin
-      F(:,:,ispin) = Hc(:,:)
+      cp(:,:,ispin) = matmul(transpose(X(:,:)),matmul(Hc(:,:),X(:,:)))
+      call diagonalize_matrix(nBas,cp(:,:,ispin),eps(:,ispin))
+      c(:,:,ispin) = matmul(X(:,:),cp(:,:,ispin))
     end do
 
   else if(guess_type == 2) then
@@ -135,6 +139,10 @@ subroutine GOK_UKS(x_rung,x_DFA,c_rung,c_DFA,nEns,wEns,nGrid,weight,aCC_w1,aCC_w
     do ispin=1,nspin
       call random_number(F(:,:,ispin))
     end do
+  else
+
+    print*,'Wrong guess option'
+  stop
 
   end if
 
@@ -171,41 +179,22 @@ subroutine GOK_UKS(x_rung,x_DFA,c_rung,c_DFA,nEns,wEns,nGrid,weight,aCC_w1,aCC_w
 
     nSCF = nSCF + 1
 
-!  Transform Fock matrix in orthogonal basis
-
-    do ispin=1,nspin
-      Fp(:,:,ispin) = matmul(transpose(X(:,:)),matmul(F(:,:,ispin),X(:,:)))
-    end do
-
-!  Diagonalize Fock matrix to get eigenvectors and eigenvalues
-
-    cp(:,:,:) = Fp(:,:,:)
-    do ispin=1,nspin
-      call diagonalize_matrix(nBas,cp(:,:,ispin),eps(:,ispin))
-    end do
-    
-!   Back-transform eigenvectors in non-orthogonal basis
-
-    do ispin=1,nspin
-      c(:,:,ispin) = matmul(X(:,:),cp(:,:,ispin))
-    end do
-
-!------------------------------------------------------------------------
-!   Compute density matrix 
+!------------------------------------------------------------------------ 
+!   Compute density matrix                                               
 !------------------------------------------------------------------------
 
-    call unrestricted_density_matrix(nBas,nEns,nO(:),c(:,:,:),P(:,:,:,:))
- 
-!   Weight-dependent density matrix
-    
-    Pw(:,:,:) = 0d0
-    do iEns=1,nEns
+    call unrestricted_density_matrix(nBas,nEns,nO(:),c(:,:,:),P(:,:,:,:),occnum)  
+
+!   Weight-dependent density matrix 
+
+    Pw(:,:,:) = 0d0 
+    do iEns=1,nEns  
       Pw(:,:,:) = Pw(:,:,:) + wEns(iEns)*P(:,:,:,iEns)
-    end do
+    end do 
 
-!------------------------------------------------------------------------
-!   Compute one-electron density and its gradient if necessary
-!------------------------------------------------------------------------
+!------------------------------------------------------------------------ 
+!   Compute one-electron density and its gradient if necessary 
+!------------------------------------------------------------------------  
 
     do ispin=1,nspin
       do iEns=1,nEns
@@ -248,9 +237,9 @@ subroutine GOK_UKS(x_rung,x_DFA,c_rung,c_DFA,nEns,wEns,nGrid,weight,aCC_w1,aCC_w
 !   Compute exchange potential
 
     do ispin=1,nspin
-      call unrestricted_exchange_potential(x_rung,x_DFA,nEns,wEns(:),nGrid,weight(:),aCC_w1,aCC_w2,nBas,Pw(:,:,ispin),   &
-                                           ERI(:,:,:,:),AO(:,:),dAO(:,:,:),rhow(:,ispin),drhow(:,:,ispin),Fx(:,:,ispin), & 
-                                           FxHF(:,:,ispin))
+      call unrestricted_exchange_potential(x_rung,x_DFA,LDA_centered,nEns,wEns(:),aCC_w1,aCC_w2,nGrid,weight(:),nBas,&
+                                           Pw(:,:,ispin),ERI(:,:,:,:),AO(:,:),dAO(:,:,:),rhow(:,ispin),drhow(:,:,ispin), &
+                                           Fx(:,:,ispin),FxHF(:,:,ispin))
     end do
 
 !   Compute correlation potential
@@ -282,6 +271,25 @@ subroutine GOK_UKS(x_rung,x_DFA,c_rung,c_DFA,nEns,wEns,nGrid,weight,aCC_w1,aCC_w
 
     if(minval(rcond(:)) < 1d-15) n_diis = 0
 
+!  Transform Fock matrix in orthogonal basis 
+
+    do ispin=1,nspin  
+      Fp(:,:,ispin) = matmul(transpose(X(:,:)),matmul(F(:,:,ispin),X(:,:)))
+    end do   
+
+!  Diagonalize Fock matrix to get eigenvectors and eigenvalues  
+
+    cp(:,:,:) = Fp(:,:,:)   
+    do ispin=1,nspin  
+      call diagonalize_matrix(nBas,cp(:,:,ispin),eps(:,ispin)) 
+    end do 
+
+!   Back-transform eigenvectors in non-orthogonal basis 
+
+    do ispin=1,nspin
+      c(:,:,ispin) = matmul(X(:,:),cp(:,:,ispin))
+    end do  
+
 !------------------------------------------------------------------------
 !   Compute KS energy
 !------------------------------------------------------------------------
@@ -301,19 +309,20 @@ subroutine GOK_UKS(x_rung,x_DFA,c_rung,c_DFA,nEns,wEns,nGrid,weight,aCC_w1,aCC_w
 !  Coulomb energy
 
     EJ(1) = 0.5d0*trace_matrix(nBas,matmul(Pw(:,:,1),J(:,:,1)))
-    EJ(2) = trace_matrix(nBas,matmul(Pw(:,:,1),J(:,:,2)))
+    EJ(2) = 0.5d0*trace_matrix(nBas,matmul(Pw(:,:,1),J(:,:,2))) &
+          + 0.5d0*trace_matrix(nBas,matmul(Pw(:,:,2),J(:,:,1))) 
     EJ(3) = 0.5d0*trace_matrix(nBas,matmul(Pw(:,:,2),J(:,:,2)))
 
 !   Exchange energy
 
     do ispin=1,nspin
-      call unrestricted_exchange_energy(x_rung,x_DFA,nEns,wEns(:),aCC_w1,aCC_w2,nGrid,weight(:),nBas, &
-                                        Pw(:,:,ispin),FxHF(:,:,ispin),rhow(:,ispin),drhow(:,:,ispin),Ex(ispin))
+      call unrestricted_exchange_energy(x_rung,x_DFA,LDA_centered,nEns,wEns,aCC_w1,aCC_w2,nGrid,weight,nBas, &  
+                                       Pw(:,:,ispin),FxHF(:,:,ispin),rhow(:,ispin),drhow(:,:,ispin),Ex(ispin))     
     end do
 
 !   Correlation energy
 
-    call unrestricted_correlation_energy(c_rung,c_DFA,nEns,wEns(:),nGrid,weight(:),rhow(:,:),drhow(:,:,:),Ec)
+    call unrestricted_correlation_energy(c_rung,c_DFA,nEns,wEns,nGrid,weight,rhow,drhow,Ec)
 
 !   Total energy
 
@@ -322,7 +331,7 @@ subroutine GOK_UKS(x_rung,x_DFA,c_rung,c_DFA,nEns,wEns,nGrid,weight,aCC_w1,aCC_w
 !   Check the grid accuracy by computing the number of electrons 
 
     do ispin=1,nspin
-      nEl(ispin) = electron_number(nGrid,weight(:),rhow(:,ispin))
+      nEl(ispin) = electron_number(nGrid,weight,rhow(:,ispin))
     end do
 
 !   Dump results
@@ -352,15 +361,14 @@ subroutine GOK_UKS(x_rung,x_DFA,c_rung,c_DFA,nEns,wEns,nGrid,weight,aCC_w1,aCC_w
 
 ! Compute final KS energy
 
-  call print_UKS(nBas,nO(:),eps(:,:),c(:,:,:),ENuc,ET(:),EV(:),EJ(:),Ex(:),Ec(:),Ew)
+  call print_UKS(nBas,nO,eps,c,ENuc,ET,EV,EJ,Ex,Ec,Ew)
 
 !------------------------------------------------------------------------
 ! Compute individual energies from ensemble energy
 !------------------------------------------------------------------------
 
-  call unrestricted_individual_energy(x_rung,x_DFA,c_rung,c_DFA,nEns,wEns(:),aCC_w1,aCC_w2,nGrid,weight(:),nBas,     &
-                                      AO(:,:),dAO(:,:,:),nO(:),nV(:),T(:,:),V(:,:),ERI(:,:,:,:),ENuc,  & 
-                                      Pw(:,:,:),rhow(:,:),drhow(:,:,:),J(:,:,:),Fx(:,:,:),FxHF(:,:,:), & 
-                                      Fc(:,:,:),P(:,:,:,:),rho(:,:,:),drho(:,:,:,:),E(:),Om(:))
+
+ call unrestricted_individual_energy(x_rung,x_DFA,c_rung,c_DFA,LDA_centered,nEns,wEns,aCC_w1,aCC_w2,nGrid,weight,nBas, &
+                                   AO,dAO,nO,nV,T,V,ERI,ENuc,eps,Pw,rhow,drhow,J,Fx,FxHF,Fc,P,rho,drho,Ew,E,Om,occnum) 
 
 end subroutine GOK_UKS

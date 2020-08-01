@@ -1,5 +1,5 @@
 subroutine GOK_RKS(restart,x_rung,x_DFA,c_rung,c_DFA,LDA_centered,nEns,wEns,aCC_w1,aCC_w2,nGrid,weight,maxSCF,thresh, & 
-                   max_diis,guess_type,nBas,AO,dAO,nO,nV,S,T,V,Hc,ERI,X,ENuc,Ew,c)
+                   max_diis,guess_type,nBas,AO,dAO,nO,nV,S,T,V,Hc,ERI,X,ENuc,Ew,c,occnum)
 
 ! Perform restricted Kohn-Sham calculation for ensembles
 
@@ -37,6 +37,7 @@ subroutine GOK_RKS(restart,x_rung,x_DFA,c_rung,c_DFA,LDA_centered,nEns,wEns,aCC_
   double precision,intent(in)   :: ENuc
 
   double precision,intent(inout):: c(nBas,nBas)
+  double precision,intent(inout),dimension(2,2,3):: occnum  
 
 ! Local variables
 
@@ -189,7 +190,7 @@ subroutine GOK_RKS(restart,x_rung,x_DFA,c_rung,c_DFA,LDA_centered,nEns,wEns,aCC_
 !   Compute density matrix 
 !------------------------------------------------------------------------
 
-    call restricted_density_matrix(nBas,nEns,nO,c(:,:),P(:,:,:))
+    call restricted_density_matrix(nBas,nEns,nO,c(:,:),P(:,:,:),occnum)
 
 !   Weight-dependent density matrix
     
@@ -344,6 +345,6 @@ subroutine GOK_RKS(restart,x_rung,x_DFA,c_rung,c_DFA,LDA_centered,nEns,wEns,aCC_
 
   call restricted_individual_energy(x_rung,x_DFA,c_rung,c_DFA,LDA_centered,nEns,wEns(:),aCC_w1,aCC_w2,nGrid,weight(:), &
                                     nBas,nO,nV,T(:,:),V(:,:),ERI(:,:,:,:),ENuc,eps(:),Pw(:,:),rhow(:),drhow(:,:), &
-                                    J(:,:),P(:,:,:),rho(:,:),drho(:,:,:),Ew,E(:),Om(:))
+                                    J(:,:),P(:,:,:),rho(:,:),drho(:,:,:),Ew,E(:),Om(:),occnum)
 
 end subroutine GOK_RKS

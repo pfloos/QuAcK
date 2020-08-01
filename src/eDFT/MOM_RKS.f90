@@ -1,5 +1,5 @@
 subroutine MOM_RKS(x_rung,x_DFA,c_rung,c_DFA,LDA_centered,nEns,nGrid,weight, &
-                   aCC_w1,aCC_w2,maxSCF,thresh,max_diis,guess_type,nBas,AO,dAO,nO,nV,S,T,V,Hc,ERI,X,ENuc,c)
+                   aCC_w1,aCC_w2,maxSCF,thresh,max_diis,guess_type,nBas,AO,dAO,nO,nV,S,T,V,Hc,ERI,X,ENuc,c,occnum)
 
 ! Perform restricted Kohn-Sham calculation for ensembles
 
@@ -30,6 +30,8 @@ subroutine MOM_RKS(x_rung,x_DFA,c_rung,c_DFA,LDA_centered,nEns,nGrid,weight, &
   double precision,intent(in)   :: X(nBas,nBas) 
   double precision,intent(in)   :: ERI(nBas,nBas,nBas,nBas)
   double precision,intent(in)   :: ENuc
+  double precision,intent(in),dimension(2,2,3)   :: occnum
+
 
   double precision,intent(out)  :: c(nBas,nBas) 
 
@@ -73,7 +75,7 @@ subroutine MOM_RKS(x_rung,x_DFA,c_rung,c_DFA,LDA_centered,nEns,nGrid,weight, &
   write(*,*)
 
   call GOK_RKS(.false.,x_rung,x_DFA,c_rung,c_DFA,LDA_centered,nEns,wMOM,aCC_w1,aCC_w2,nGrid,weight,maxSCF,thresh, &
-               max_diis,guess_type,nBas,AO,dAO,nO,nV,S,T,V,Hc,ERI,X,ENuc,Ew(1),c)
+               max_diis,guess_type,nBas,AO,dAO,nO,nV,S,T,V,Hc,ERI,X,ENuc,Ew(1),c,occnum)
 
 !------------------------------------------------------------------------
 ! Equiensemble calculation
@@ -94,7 +96,7 @@ subroutine MOM_RKS(x_rung,x_DFA,c_rung,c_DFA,LDA_centered,nEns,nGrid,weight, &
   write(*,*)
 
 ! call GOK_RKS(.true.,x_rung,x_DFA,c_rung,c_DFA,LDA_centered,nEns,wMOM,aCC_w1,aCC_w2,nGrid,weight,maxSCF,thresh, &
-!              max_diis,guess_type,nBas,AO,dAO,nO,nV,S,T,V,Hc,ERI,X,ENuc,Ew(2),c)
+!              max_diis,guess_type,nBas,AO,dAO,nO,nV,S,T,V,Hc,ERI,X,ENuc,Ew(2),c,occnum)
 
 !------------------------------------------------------------------------
 ! Equiensemble calculation
@@ -115,7 +117,7 @@ subroutine MOM_RKS(x_rung,x_DFA,c_rung,c_DFA,LDA_centered,nEns,nGrid,weight, &
   write(*,*)
 
   call GOK_RKS(.true.,x_rung,x_DFA,c_rung,c_DFA,LDA_centered,nEns,wMOM,aCC_w1,aCC_w2,nGrid,weight,maxSCF,thresh, &
-               max_diis,guess_type,nBas,AO,dAO,nO,nV,S,T,V,Hc,ERI,X,ENuc,Ew(3),c)
+               max_diis,guess_type,nBas,AO,dAO,nO,nV,S,T,V,Hc,ERI,X,ENuc,Ew(3),c,occnum)
 
 !------------------------------------------------------------------------
 ! MOM excitation energies

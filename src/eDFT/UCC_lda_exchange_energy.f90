@@ -77,7 +77,14 @@ subroutine UCC_lda_exchange_energy(nEns,wEns,aCC_w1,aCC_w2,nGrid,weight,rho,Ex)
   w2 = wEns(3)
   Fx2 = 1d0 - w2*(1d0 - w2)*(a2 + b2*(w2 - 0.5d0) + c2*(w2 - 0.5d0)**2)
 
-  Cx = alpha*Fx2*Fx1
+! for two-weights ensemble
+!  Cx = alpha*Fx2*Fx1
+
+! for left ensemble
+!   Cx = alpha*Fx1
+
+! for right ensemble
+   Cx = alpha*Fx2
 
 ! Compute GIC-LDA exchange energy
 

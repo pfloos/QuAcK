@@ -76,7 +76,14 @@ subroutine UCC_lda_exchange_individual_energy(nEns,wEns,aCC_w1,aCC_w2,nGrid,weig
   w2 = wEns(3)
   Fx2 = 1d0 - w2*(1d0 - w2)*(a2 + b2*(w2 - 0.5d0) + c2*(w2 - 0.5d0)**2)
 
-  Cx = alpha*Fx1*Fx2
+! for two-weight ensembles
+!  Cx = alpha*Fx1*Fx2
+
+! for left ensembles
+!  Cx = alpha*Fx1
+
+! for right ensembles
+  Cx = alpha*Fx2  
 
 ! Compute LDA exchange matrix in the AO basis
 
