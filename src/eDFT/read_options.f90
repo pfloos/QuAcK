@@ -1,5 +1,5 @@
 subroutine read_options(method,x_rung,x_DFA,c_rung,c_DFA,SGn,nEns,wEns,aCC_w1,aCC_w2, & 
-                        maxSCF,thresh,DIIS,max_diis,guess_type,ortho_type,ncent,occnum)
+                        maxSCF,thresh,DIIS,max_diis,guess_type,ortho_type,doNcentered,ncent,occnum,Cx_choice)
 
 ! Read DFT options
 
@@ -17,11 +17,11 @@ subroutine read_options(method,x_rung,x_DFA,c_rung,c_DFA,SGn,nEns,wEns,aCC_w1,aC
   integer,intent(out)           :: x_rung,c_rung
   character(len=12),intent(out) :: x_DFA, c_DFA
   integer,intent(out)           :: SGn
-  integer,intent(out)           :: nEns
+  integer,intent(out)           :: nEns, doNcentered
   double precision,intent(out)  :: wEns(maxEns)
   double precision,intent(out)  :: aCC_w1(3)
   double precision,intent(out)  :: aCC_w2(3)
-  double precision,intent(out),dimension(2,2,3)  :: occnum
+  double precision,intent(inout) :: occnum(2,2,3)
 
   integer,intent(out)           :: maxSCF
   double precision,intent(out)  :: thresh
@@ -30,6 +30,7 @@ subroutine read_options(method,x_rung,x_DFA,c_rung,c_DFA,SGn,nEns,wEns,aCC_w1,aC
   integer,intent(out)           :: guess_type
   integer,intent(out)           :: ortho_type
   double precision,intent(in)   :: ncent
+  integer,intent(out)           :: Cx_choice
 
 ! Local variables
 
@@ -105,8 +106,15 @@ subroutine read_options(method,x_rung,x_DFA,c_rung,c_DFA,SGn,nEns,wEns,aCC_w1,aC
 ! Read ensemble weights for real physical (fractional number of electrons) ensemble (w1,w2)
   read(1,*)
   read(1,*) (wEns(I),I=2,nEns)
-  wEns(1) = 1d0 - wEns(2) - wEns(3) 
-
+  read(1,*)
+  read(1,*) doNcentered
+  if (doNcentered==0) then
+    wEns(1) = 1d0 - wEns(2) - wEns(3) 
+  else
+  wEns(2) = (ncent/(ncent-1.d0))*wEns(2)
+  wEns(3) = (ncent/(ncent+1.d0))*wEns(3)
+  wEns(1) = 1d0 - ((ncent-1.d0)/ncent)*wEns(2) - ((ncent+1.d0)/ncent)*wEns(3) ! for N-centered
+  end if
   write(*,*)'----------------------------------------------------------'
   write(*,*)' Ensemble weights '
   write(*,*)'----------------------------------------------------------'
@@ -117,6 +125,9 @@ subroutine read_options(method,x_rung,x_DFA,c_rung,c_DFA,SGn,nEns,wEns,aCC_w1,aC
   read(1,*)
   read(1,*) (aCC_w1(I),I=1,3)
   read(1,*) (aCC_w2(I),I=1,3)
+! Read choice of exchange coefficient
+  read(1,*)
+  read(1,*) Cx_choice
 
   write(*,*)'----------------------------------------------------------'
   write(*,*)' parameters for w1-dependant exchange functional coefficient '
@@ -130,7 +141,7 @@ subroutine read_options(method,x_rung,x_DFA,c_rung,c_DFA,SGn,nEns,wEns,aCC_w1,aC
   call matout(3,1,aCC_w2)
   write(*,*) 
  
-!  allocate(occnum(2,2,nEns))
+  !allocate(occnum(nspin,2,nEns))
 ! Read occupation numbers for orbitals nO and nO+1
   read(1,*)
   do J=1,3

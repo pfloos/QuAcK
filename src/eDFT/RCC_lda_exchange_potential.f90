@@ -1,4 +1,4 @@
-subroutine RCC_lda_exchange_potential(nEns,wEns,aCC_w1,aCC_w2,nGrid,weight,nBas,AO,rho,Fx)
+subroutine RCC_lda_exchange_potential(nEns,wEns,aCC_w1,aCC_w2,nGrid,weight,nBas,AO,rho,Fx,Cx_choice)
 
 ! Compute the restricted version of the curvature-corrected exchange potential
 
@@ -16,6 +16,7 @@ subroutine RCC_lda_exchange_potential(nEns,wEns,aCC_w1,aCC_w2,nGrid,weight,nBas,
   integer,intent(in)            :: nBas
   double precision,intent(in)   :: AO(nBas,nGrid)
   double precision,intent(in)   :: rho(nGrid)
+  integer,intent(in)            :: Cx_choice
 
 ! Local variables
 
@@ -72,7 +73,15 @@ subroutine RCC_lda_exchange_potential(nEns,wEns,aCC_w1,aCC_w2,nGrid,weight,nBas,
   w2 = wEns(3)
   Fx2 = 1d0 - w2*(1d0 - w2)*(a2 + b2*(w2 - 0.5d0) + c2*(w2 - 0.5d0)**2)
 
-  Cx = CxLDA*Fx1*Fx2
+  select case (Cx_choice)
+  case(1)
+  Cx = CxLDA*Fx1
+  case(2)
+  Cx = CxLDA*Fx2
+  case(3)
+  Cx = CxLDA*Fx2*Fx1
+  end select
+  
 
 ! Compute LDA exchange matrix in the AO basis
 

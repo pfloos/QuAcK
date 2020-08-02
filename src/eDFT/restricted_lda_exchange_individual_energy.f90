@@ -1,4 +1,4 @@
-subroutine restricted_lda_exchange_individual_energy(DFA,LDA_centered,nEns,wEns,aCC_w1,aCC_w2,nGrid,weight,rhow,rho,Ex)
+subroutine restricted_lda_exchange_individual_energy(DFA,LDA_centered,nEns,wEns,aCC_w1,aCC_w2,nGrid,weight,rhow,rho,Ex,Cx_choice)
 
 ! Compute LDA exchange energy for individual states
 
@@ -17,6 +17,7 @@ subroutine restricted_lda_exchange_individual_energy(DFA,LDA_centered,nEns,wEns,
   double precision,intent(in)   :: weight(nGrid)
   double precision,intent(in)   :: rhow(nGrid)
   double precision,intent(in)   :: rho(nGrid)
+  integer,intent(in)            :: Cx_choice
 
 ! Output variables
 
@@ -36,7 +37,7 @@ subroutine restricted_lda_exchange_individual_energy(DFA,LDA_centered,nEns,wEns,
 
     case ('CC')
 
-      call RCC_lda_exchange_individual_energy(nEns,wEns,aCC_w1,aCC_w2,nGrid,weight,rhow,rho,Ex)
+      call RCC_lda_exchange_individual_energy(nEns,wEns,aCC_w1,aCC_w2,nGrid,weight,rhow,rho,Ex,Cx_choice)
 
     case default
 

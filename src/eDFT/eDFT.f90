@@ -50,7 +50,7 @@ program eDFT
   double precision              :: start_KS,end_KS,t_KS
   double precision              :: start_int,end_int,t_int
 
-  integer                       :: nEns
+  integer                       :: nEns,doNcentered
   double precision,allocatable  :: wEns(:)
 
   integer                       :: maxSCF,max_diis
@@ -59,7 +59,9 @@ program eDFT
   integer                       :: guess_type
   integer                       :: ortho_type
 
-  double precision,dimension(2,2,3) :: occnum  
+ ! double precision,allocatable,dimension(:,:,:)  :: occnum 
+  double precision,dimension(2,2,3) :: occnum
+  integer                       :: Cx_choice
 
 ! Hello World
 
@@ -113,7 +115,7 @@ program eDFT
 
   allocate(wEns(maxEns))
   call read_options(method,x_rung,x_DFA,c_rung,c_DFA,SGn,nEns,wEns,aCC_w1,aCC_w2, & 
-                    maxSCF,thresh,DIIS,max_diis,guess_type,ortho_type,ncent,occnum)
+                    maxSCF,thresh,DIIS,max_diis,guess_type,ortho_type,doNcentered,ncent,occnum,Cx_choice)
 
 !------------------------------------------------------------------------
 ! Read one- and two-electron integrals
@@ -175,7 +177,7 @@ program eDFT
     call cpu_time(start_KS)
     call GOK_RKS(.false.,x_rung,x_DFA,c_rung,c_DFA,LDA_centered,nEns,wEns,aCC_w1,aCC_w2,nGrid,weight, &
                  maxSCF,thresh,max_diis,guess_type,nBas,AO,dAO,nO(1),nV(1), &
-                 S,T,V,Hc,ERI,X,ENuc,Ew,c,occnum)
+                 S,T,V,Hc,ERI,X,ENuc,Ew,c,occnum,Cx_choice)
     call cpu_time(end_KS)
 
     t_KS = end_KS - start_KS
@@ -193,7 +195,7 @@ program eDFT
     call cpu_time(start_KS)
     call LIM_RKS(x_rung,x_DFA,c_rung,c_DFA,LDA_centered,nEns,nGrid,weight(:),           &
                  aCC_w1,aCC_w2,maxSCF,thresh,max_diis,guess_type,nBas,AO(:,:),dAO(:,:,:),nO(1),nV(1), & 
-                 S(:,:),T(:,:),V(:,:),Hc(:,:),ERI(:,:,:,:),X(:,:),ENuc,c(:,:),occnum)
+                 S(:,:),T(:,:),V(:,:),Hc(:,:),ERI(:,:,:,:),X(:,:),ENuc,c(:,:),occnum,Cx_choice)
     call cpu_time(end_KS)
 
     t_KS = end_KS - start_KS
@@ -211,7 +213,7 @@ program eDFT
     call cpu_time(start_KS)
     call MOM_RKS(x_rung,x_DFA,c_rung,c_DFA,LDA_centered,nEns,nGrid,weight(:),           &
                  aCC_w1,aCC_w2,maxSCF,thresh,max_diis,guess_type,nBas,AO(:,:),dAO(:,:,:),nO(1),nV(1), & 
-                 S(:,:),T(:,:),V(:,:),Hc(:,:),ERI(:,:,:,:),X(:,:),ENuc,c(:,:),occnum)
+                 S(:,:),T(:,:),V(:,:),Hc(:,:),ERI(:,:,:,:),X(:,:),ENuc,c(:,:),occnum,Cx_choice)
     call cpu_time(end_KS)
 
     t_KS = end_KS - start_KS
@@ -228,7 +230,7 @@ program eDFT
 
     call cpu_time(start_KS)
     call GOK_UKS(x_rung,x_DFA,c_rung,c_DFA,nEns,wEns(:),nGrid,weight(:),aCC_w1,aCC_w2,maxSCF,thresh,max_diis,guess_type, & 
-                   nBas,AO(:,:),dAO(:,:,:),nO(:),nV(:),S(:,:),T(:,:),V(:,:),Hc(:,:),ERI(:,:,:,:),X(:,:),ENuc,Ew,occnum)
+                   nBas,AO(:,:),dAO(:,:,:),nO(:),nV(:),S(:,:),T(:,:),V(:,:),Hc(:,:),ERI(:,:,:,:),X(:,:),ENuc,Ew,occnum,Cx_choice)
     call cpu_time(end_KS)
 
     t_KS = end_KS - start_KS
@@ -245,7 +247,7 @@ program eDFT
 
     call cpu_time(start_KS)
     call eDFT_UKS(x_rung,x_DFA,c_rung,c_DFA,nEns,wEns,aCC_w1,aCC_w2,nGrid,weight(:),maxSCF,thresh,max_diis,guess_type, & 
-                  nBas,AO,dAO,nO,nV,S,T,V,Hc,ERI,X,ENuc,Ew,occnum)
+                  nBas,AO,dAO,nO,nV,S,T,V,Hc,ERI,X,ENuc,Ew,occnum,Cx_choice)
     call cpu_time(end_KS)
 
     t_KS = end_KS - start_KS

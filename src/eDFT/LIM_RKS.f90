@@ -1,5 +1,6 @@
 subroutine LIM_RKS(x_rung,x_DFA,c_rung,c_DFA,LDA_centered,nEns,aCC_w1,aCC_w2,nGrid,weight, &
-                   maxSCF,thresh,max_diis,guess_type,nBas,AO,dAO,nO,nV,S,T,V,Hc,ERI,X,ENuc,c,occnum)
+                   maxSCF,thresh,max_diis,guess_type,nBas,AO,dAO,nO,nV,S,T,V,Hc,ERI,X,ENuc,&
+                   c,occnum,Cx_choice)
 
 ! Perform restricted Kohn-Sham calculation for ensembles
 
@@ -30,7 +31,8 @@ subroutine LIM_RKS(x_rung,x_DFA,c_rung,c_DFA,LDA_centered,nEns,aCC_w1,aCC_w2,nGr
   double precision,intent(in)   :: X(nBas,nBas) 
   double precision,intent(in)   :: ERI(nBas,nBas,nBas,nBas)
   double precision,intent(in)   :: ENuc
-  double precision,intent(in),dimension(2,2,3)   :: occnum
+  double precision,intent(in)   :: occnum(2,2,3)
+  integer,intent(in)            :: Cx_choice
 
 
   double precision,intent(out)  :: c(nBas,nBas) 
@@ -75,7 +77,7 @@ subroutine LIM_RKS(x_rung,x_DFA,c_rung,c_DFA,LDA_centered,nEns,aCC_w1,aCC_w2,nGr
   write(*,*)
 
   call GOK_RKS(.false.,x_rung,x_DFA,c_rung,c_DFA,LDA_centered,nEns,wLIM,aCC_w1,aCC_w2,nGrid,weight,maxSCF,thresh, &
-               max_diis,guess_type,nBas,AO,dAO,nO,nV,S,T,V,Hc,ERI,X,ENuc,Ew(1),c,occnum)
+               max_diis,guess_type,nBas,AO,dAO,nO,nV,S,T,V,Hc,ERI,X,ENuc,Ew(1),c,occnum,Cx_choice)
 
 !------------------------------------------------------------------------
 ! Equiensemble calculation
@@ -96,7 +98,7 @@ subroutine LIM_RKS(x_rung,x_DFA,c_rung,c_DFA,LDA_centered,nEns,aCC_w1,aCC_w2,nGr
   write(*,*)
 
   call GOK_RKS(.true.,x_rung,x_DFA,c_rung,c_DFA,LDA_centered,nEns,wLIM,aCC_w1,aCC_w2,nGrid,weight,maxSCF,thresh, &
-               max_diis,guess_type,nBas,AO,dAO,nO,nV,S,T,V,Hc,ERI,X,ENuc,Ew(2),c,occnum)
+               max_diis,guess_type,nBas,AO,dAO,nO,nV,S,T,V,Hc,ERI,X,ENuc,Ew(2),c,occnum,Cx_choice)
 
 !------------------------------------------------------------------------
 ! Equiensemble calculation
@@ -117,7 +119,7 @@ subroutine LIM_RKS(x_rung,x_DFA,c_rung,c_DFA,LDA_centered,nEns,aCC_w1,aCC_w2,nGr
   write(*,*)
 
 ! call GOK_RKS(.true.,x_rung,x_DFA,c_rung,c_DFA,LDA_centered,nEns,wLIM,aCC_w1,aCC_w2,nGrid,weight,maxSCF,thresh, &
-!              max_diis,guess_type,nBas,AO,dAO,nO,nV,S,T,V,Hc,ERI,X,ENuc,Ew(3),c,occnum)
+!              max_diis,guess_type,nBas,AO,dAO,nO,nV,S,T,V,Hc,ERI,X,ENuc,Ew(3),c,occnum,Cx_choice)
 
 
 !------------------------------------------------------------------------

@@ -1,5 +1,5 @@
 subroutine GOK_RKS(restart,x_rung,x_DFA,c_rung,c_DFA,LDA_centered,nEns,wEns,aCC_w1,aCC_w2,nGrid,weight,maxSCF,thresh, & 
-                   max_diis,guess_type,nBas,AO,dAO,nO,nV,S,T,V,Hc,ERI,X,ENuc,Ew,c,occnum)
+                   max_diis,guess_type,nBas,AO,dAO,nO,nV,S,T,V,Hc,ERI,X,ENuc,Ew,c,occnum,Cx_choice)
 
 ! Perform restricted Kohn-Sham calculation for ensembles
 
@@ -37,7 +37,8 @@ subroutine GOK_RKS(restart,x_rung,x_DFA,c_rung,c_DFA,LDA_centered,nEns,wEns,aCC_
   double precision,intent(in)   :: ENuc
 
   double precision,intent(inout):: c(nBas,nBas)
-  double precision,intent(inout),dimension(2,2,3):: occnum  
+  double precision,intent(in):: occnum(2,2,32,2,32,2,3)  
+  integer,intent(in)            :: Cx_choice
 
 ! Local variables
 
@@ -238,7 +239,7 @@ subroutine GOK_RKS(restart,x_rung,x_DFA,c_rung,c_DFA,LDA_centered,nEns,wEns,aCC_
 !   Compute exchange potential
 
     call restricted_exchange_potential(x_rung,x_DFA,LDA_centered,nEns,wEns(:),aCC_w1,aCC_w2,nGrid,weight(:),nBas,Pw(:,:), &
-                                       ERI(:,:,:,:),AO(:,:),dAO(:,:,:),rhow(:),drhow(:,:),Fx(:,:),FxHF(:,:))
+                                       ERI(:,:,:,:),AO(:,:),dAO(:,:,:),rhow(:),drhow(:,:),Fx(:,:),FxHF(:,:),Cx_choice)
 
 !   Compute correlation potential
 
@@ -296,7 +297,7 @@ subroutine GOK_RKS(restart,x_rung,x_DFA,c_rung,c_DFA,LDA_centered,nEns,wEns,aCC_
 !   Exchange energy
 
     call restricted_exchange_energy(x_rung,x_DFA,LDA_centered,nEns,wEns(:),aCC_w1,aCC_w2,nGrid,weight(:),nBas, &
-                                    Pw(:,:),FxHF(:,:),rhow(:),drhow(:,:),Ex)
+                                    Pw(:,:),FxHF(:,:),rhow(:),drhow(:,:),Ex,Cx_choice)
 
 !   Correlation energy
 
@@ -345,6 +346,6 @@ subroutine GOK_RKS(restart,x_rung,x_DFA,c_rung,c_DFA,LDA_centered,nEns,wEns,aCC_
 
   call restricted_individual_energy(x_rung,x_DFA,c_rung,c_DFA,LDA_centered,nEns,wEns(:),aCC_w1,aCC_w2,nGrid,weight(:), &
                                     nBas,nO,nV,T(:,:),V(:,:),ERI(:,:,:,:),ENuc,eps(:),Pw(:,:),rhow(:),drhow(:,:), &
-                                    J(:,:),P(:,:,:),rho(:,:),drho(:,:,:),Ew,E(:),Om(:),occnum)
+                                    J(:,:),P(:,:,:),rho(:,:),drho(:,:,:),Ew,E(:),Om(:),occnum,Cx_choice)
 
 end subroutine GOK_RKS

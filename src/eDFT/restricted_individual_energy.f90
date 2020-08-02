@@ -1,5 +1,5 @@
 subroutine restricted_individual_energy(x_rung,x_DFA,c_rung,c_DFA,LDA_centered,nEns,wEns,aCC_w1,aCC_w2,nGrid,weight,nBas, & 
-                                        nO,nV,T,V,ERI,ENuc,eps,Pw,rhow,drhow,J,P,rho,drho,Ew,E,Om,occnum)
+                                        nO,nV,T,V,ERI,ENuc,eps,Pw,rhow,drhow,J,P,rho,drho,Ew,E,Om,occnum,Cx_choice)
 
 ! Compute individual energies as well as excitation energies
 
@@ -38,7 +38,8 @@ subroutine restricted_individual_energy(x_rung,x_DFA,c_rung,c_DFA,LDA_centered,n
   double precision,intent(in)   :: J(nBas,nBas)
 
   double precision              :: Ew
-  double precision,intent(in),dimension(2,2,3)   :: occnum
+  double precision,intent(in)   :: occnum(2,2,3)
+  integer,intent(in)            :: Cx_choice
 
 
 ! Local variables
@@ -94,7 +95,8 @@ subroutine restricted_individual_energy(x_rung,x_DFA,c_rung,c_DFA,LDA_centered,n
 
   do iEns=1,nEns
     call restricted_exchange_individual_energy(x_rung,x_DFA,LDA_centered,nEns,wEns(:),aCC_w1,aCC_w2,nGrid,weight(:),nBas, &
-                                    ERI(:,:,:,:),Pw(:,:),P(:,:,iEns),rhow(:),drhow(:,:),rho(:,iEns),drho(:,:,iEns),Ex(iEns))
+                                               ERI(:,:,:,:),Pw(:,:),P(:,:,iEns),rhow(:),drhow(:,:),rho(:,iEns),drho(:,:,iEns)&
+                                               ,Ex(iEns),Cx_choice)
   end do
 
 !------------------------------------------------------------------------
@@ -117,7 +119,7 @@ subroutine restricted_individual_energy(x_rung,x_DFA,c_rung,c_DFA,LDA_centered,n
 !------------------------------------------------------------------------
 
   call restricted_exchange_derivative_discontinuity(x_rung,x_DFA,nEns,wEns(:),aCC_w1,aCC_w2,nGrid,weight(:), & 
-                                                    rhow(:),drhow(:,:),ExDD(:))
+                                                    rhow(:),drhow(:,:),ExDD(:),Cx_choice)
 
   call restricted_correlation_derivative_discontinuity(c_rung,c_DFA,nEns,wEns(:),nGrid,weight(:),rhow(:),drhow(:,:),EcDD(:))
 

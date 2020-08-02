@@ -1,4 +1,4 @@
-subroutine unrestricted_lda_exchange_potential(DFA,LDA_centered,nEns,wEns,aCC_w1,aCC_w2,nGrid,weight,nBas,AO,rho,Fx)
+subroutine unrestricted_lda_exchange_potential(DFA,LDA_centered,nEns,wEns,aCC_w1,aCC_w2,nGrid,weight,nBas,AO,rho,Fx,Cx_choice)
 
 ! Select LDA correlation potential
 
@@ -19,6 +19,7 @@ subroutine unrestricted_lda_exchange_potential(DFA,LDA_centered,nEns,wEns,aCC_w1
   integer,intent(in)            :: nBas
   double precision,intent(in)   :: AO(nBas,nGrid)
   double precision,intent(in)   :: rho(nGrid)
+  integer,intent(in)            :: Cx_choice
 
 ! Output variables
 
@@ -34,7 +35,7 @@ subroutine unrestricted_lda_exchange_potential(DFA,LDA_centered,nEns,wEns,aCC_w1
 
     case ('CC')
 
-      call UCC_lda_exchange_potential(nEns,wEns,aCC_w1,aCC_w2,nGrid,weight,nBas,AO,rho,Fx)
+      call UCC_lda_exchange_potential(nEns,wEns,aCC_w1,aCC_w2,nGrid,weight,nBas,AO,rho,Fx,Cx_choice)
 
     case default
 

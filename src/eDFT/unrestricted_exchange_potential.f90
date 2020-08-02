@@ -1,5 +1,5 @@
 subroutine unrestricted_exchange_potential(rung,DFA,LDA_centered,nEns,wEns,aCC_w1,aCC_w2,nGrid,weight,nBas,P, & 
-                                           ERI,AO,dAO,rho,drho,Fx,FxHF)
+                                           ERI,AO,dAO,rho,drho,Fx,FxHF,Cx_choice)
 
 ! Compute the exchange potential 
 
@@ -24,6 +24,7 @@ subroutine unrestricted_exchange_potential(rung,DFA,LDA_centered,nEns,wEns,aCC_w
   double precision,intent(in)   :: dAO(ncart,nBas,nGrid)
   double precision,intent(in)   :: rho(nGrid)
   double precision,intent(in)   :: drho(ncart,nGrid)
+  integer,intent(in)            :: Cx_choice
 
 ! Local variables
 
@@ -48,7 +49,7 @@ subroutine unrestricted_exchange_potential(rung,DFA,LDA_centered,nEns,wEns,aCC_w
 
     case(1) 
 
-      call unrestricted_lda_exchange_potential(DFA,LDA_centered,nEns,wEns,aCC_w1,aCC_w2,nGrid,weight,nBas,AO,rho,Fx)
+      call unrestricted_lda_exchange_potential(DFA,LDA_centered,nEns,wEns,aCC_w1,aCC_w2,nGrid,weight,nBas,AO,rho,Fx,Cx_choice)
 
 !   GGA functionals
 
@@ -65,7 +66,7 @@ subroutine unrestricted_exchange_potential(rung,DFA,LDA_centered,nEns,wEns,aCC_w
       cX = 0.20d0
       aX = 0.72d0
 
-      call unrestricted_lda_exchange_potential(DFA,nGrid,weight,nBas,AO,rho,FxLDA)
+      call unrestricted_lda_exchange_potential(DFA,nGrid,weight,nBas,AO,rho,FxLDA,Cx_choice)
       call unrestricted_gga_exchange_potential(DFA,nGrid,weight,nBas,AO,dAO,rho,drho,FxGGA)
       call unrestricted_fock_exchange_potential(nBas,P,ERI,FxHF)
 

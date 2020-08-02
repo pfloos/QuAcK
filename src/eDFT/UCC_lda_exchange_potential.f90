@@ -1,4 +1,4 @@
-subroutine UCC_lda_exchange_potential(nEns,wEns,aCC_w1,aCC_w2,nGrid,weight,nBas,AO,rho,Fx)
+subroutine UCC_lda_exchange_potential(nEns,wEns,aCC_w1,aCC_w2,nGrid,weight,nBas,AO,rho,Fx,Cx_choice)
 
 ! Compute the unrestricted version of the curvature-corrected exchange potential
 
@@ -16,6 +16,7 @@ subroutine UCC_lda_exchange_potential(nEns,wEns,aCC_w1,aCC_w2,nGrid,weight,nBas,
   integer,intent(in)            :: nBas
   double precision,intent(in)   :: AO(nBas,nGrid)
   double precision,intent(in)   :: rho(nGrid)
+  integer,intent(in)            :: Cx_choice
 
 ! Local variables
 
@@ -79,6 +80,15 @@ subroutine UCC_lda_exchange_potential(nEns,wEns,aCC_w1,aCC_w2,nGrid,weight,nBas,
   w2 = wEns(3)
   Fx2 = 1d0 - w2*(1d0 - w2)*(a2 + b2*(w2 - 0.5d0) + c2*(w2 - 0.5d0)**2)
 
+  select case (Cx_choice)
+  case(1)
+  Cx = alpha*Fx1
+  case(2)
+  Cx = alpha*Fx2
+  case(3)
+  Cx = alpha*Fx2*Fx1
+  end select
+
 ! for two-weight ensembles
 !  Cx = alpha*Fx2*Fx1
 
@@ -86,7 +96,7 @@ subroutine UCC_lda_exchange_potential(nEns,wEns,aCC_w1,aCC_w2,nGrid,weight,nBas,
 !   Cx = alpha*Fx1
 
 ! for right ensemble
-  Cx = alpha*Fx2
+!  Cx = alpha*Fx2
 
 ! Compute LDA exchange matrix in the AO basis
 

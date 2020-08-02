@@ -1,5 +1,5 @@
 subroutine unrestricted_exchange_individual_energy(rung,DFA,LDA_centered,nEns,wEns,aCC_w1,aCC_w2,nGrid,weight,nBas, & 
-                                                   ERI,Pw,P,rhow,drhow,rho,drho,Ex)
+                                                   ERI,Pw,P,rhow,drhow,rho,drho,Ex,Cx_choice)
 
 ! Compute the exchange individual energy
 
@@ -25,6 +25,7 @@ subroutine unrestricted_exchange_individual_energy(rung,DFA,LDA_centered,nEns,wE
   double precision,intent(in)   :: drhow(ncart,nGrid)
   double precision,intent(in)   :: rho(nGrid)
   double precision,intent(in)   :: drho(ncart,nGrid)
+  integer,intent(in)            :: Cx_choice
 
 ! Local variables
 
@@ -48,7 +49,8 @@ subroutine unrestricted_exchange_individual_energy(rung,DFA,LDA_centered,nEns,wE
 
     case(1) 
 
-      call unrestricted_lda_exchange_individual_energy(DFA,LDA_centered,nEns,wEns,aCC_w1,aCC_w2,nGrid,weight,rhow,rho,ExLDA)
+      call unrestricted_lda_exchange_individual_energy(DFA,LDA_centered,nEns,wEns,aCC_w1,aCC_w2,nGrid,weight,&
+                                                       rhow,rho,ExLDA,Cx_choice)
 
       Ex = ExLDA
 

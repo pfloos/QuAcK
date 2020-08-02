@@ -1,4 +1,4 @@
-subroutine unrestricted_lda_exchange_derivative_discontinuity(DFA,nEns,wEns,aCC_w1,aCC_w2,nGrid,weight,rhow,ExDD)
+subroutine unrestricted_lda_exchange_derivative_discontinuity(DFA,nEns,wEns,aCC_w1,aCC_w2,nGrid,weight,rhow,ExDD,Cx_choice)
 
 ! Compute the exchange LDA part of the derivative discontinuity
 
@@ -16,6 +16,7 @@ subroutine unrestricted_lda_exchange_derivative_discontinuity(DFA,nEns,wEns,aCC_
   integer,intent(in)            :: nGrid
   double precision,intent(in)   :: weight(nGrid)
   double precision,intent(in)   :: rhow(nGrid)
+  integer,intent(in)            :: Cx_choice
 
 ! Local variables
 
@@ -34,7 +35,7 @@ subroutine unrestricted_lda_exchange_derivative_discontinuity(DFA,nEns,wEns,aCC_
 
     case ('CC')
 
-      call UCC_lda_exchange_derivative_discontinuity(nEns,wEns,aCC_w1,aCC_w2,nGrid,weight(:),rhow(:),ExDD(:))
+      call UCC_lda_exchange_derivative_discontinuity(nEns,wEns,aCC_w1,aCC_w2,nGrid,weight(:),rhow(:),ExDD(:),Cx_choice)
 
     case default
 

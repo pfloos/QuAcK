@@ -1,5 +1,5 @@
 subroutine unrestricted_individual_energy(x_rung,x_DFA,c_rung,c_DFA,LDA_centered,nEns,wEns,aCC_w1,aCC_w2,nGrid,weight,nBas,AO,dAO, &
-                                          nO,nV,T,V,ERI,ENuc,eps,Pw,rhow,drhow,J,Fx,FxHF,Fc,P,rho,drho,Ew,E,Om,occnum)
+                                          nO,nV,T,V,ERI,ENuc,eps,Pw,rhow,drhow,J,Fx,FxHF,Fc,P,rho,drho,Ew,E,Om,occnum,Cx_choice)
 
 ! Compute unrestricted individual energies as well as excitation energies
 
@@ -41,7 +41,8 @@ subroutine unrestricted_individual_energy(x_rung,x_DFA,c_rung,c_DFA,LDA_centered
   double precision,intent(in)   :: FxHF(nBas,nBas,nspin)
   double precision,intent(in)   :: Fc(nBas,nBas,nspin)
   double precision              :: Ew
-  double precision,intent(in),dimension(2,2,3)   :: occnum
+  double precision,intent(in)   :: occnum(2,2,3)
+  integer,intent(in)            :: Cx_choice
 
 
 ! Local variables
@@ -139,7 +140,7 @@ subroutine unrestricted_individual_energy(x_rung,x_DFA,c_rung,c_DFA,LDA_centered
     do ispin=1,nspin
       call unrestricted_exchange_individual_energy(x_rung,x_DFA,LDA_centered,nEns,wEns,aCC_w1,aCC_w2,nGrid,weight,nBas,ERI, &
                                                    Pw(:,:,ispin),P(:,:,ispin,iEns),rhow(:,ispin),drhow(:,:,ispin),          &  
-                                                   rho(:,ispin,iEns),drho(:,:,ispin,iEns),Ex(ispin,iEns))
+                                                   rho(:,ispin,iEns),drho(:,:,ispin,iEns),Ex(ispin,iEns),Cx_choice)
     end do
   end do
 
@@ -193,7 +194,7 @@ subroutine unrestricted_individual_energy(x_rung,x_DFA,c_rung,c_DFA,LDA_centered
   do ispin=1,nspin 
 
     call unrestricted_exchange_derivative_discontinuity(x_rung,x_DFA,nEns,wEns,aCC_w1,aCC_w2,nGrid,weight, &
-                                                        rhow(:,ispin),drhow(:,:,ispin),ExDD(ispin,:))
+                                                        rhow(:,ispin),drhow(:,:,ispin),ExDD(ispin,:),Cx_choice)
   end do
 
   call unrestricted_correlation_derivative_discontinuity(c_rung,c_DFA,nEns,wEns,nGrid,weight,rhow,drhow,EcDD)

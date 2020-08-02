@@ -1,4 +1,4 @@
-subroutine RCC_lda_exchange_energy(nEns,wEns,aCC_w1,aCC_w2,nGrid,weight,rho,Ex)
+subroutine RCC_lda_exchange_energy(nEns,wEns,aCC_w1,aCC_w2,nGrid,weight,rho,Ex,Cx_choice)
 
 ! Compute the restricted version of the curvature-corrected exchange functional
 
@@ -14,6 +14,7 @@ subroutine RCC_lda_exchange_energy(nEns,wEns,aCC_w1,aCC_w2,nGrid,weight,rho,Ex)
   integer,intent(in)            :: nGrid
   double precision,intent(in)   :: weight(nGrid)
   double precision,intent(in)   :: rho(nGrid)
+  integer,intent(in)            :: Cx_choice
 
 ! Local variables
 
@@ -67,7 +68,14 @@ subroutine RCC_lda_exchange_energy(nEns,wEns,aCC_w1,aCC_w2,nGrid,weight,rho,Ex)
   w2 = wEns(3)
   Fx2 = 1d0 - w2*(1d0 - w2)*(a2 + b2*(w2 - 0.5d0) + c2*(w2 - 0.5d0)**2)
 
-  Cx = CxLDA*Fx1*Fx2
+  select case (Cx_choice)
+  case(1)
+  Cx = CxLDA*Fx1
+  case(2)
+  Cx = CxLDA*Fx2
+  case(3)
+  Cx = CxLDA*Fx2*Fx1
+  end select
 
 ! Compute GIC-LDA exchange energy
 

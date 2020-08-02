@@ -1,4 +1,4 @@
-subroutine restricted_exchange_derivative_discontinuity(rung,DFA,nEns,wEns,aCC_w1,aCC_w2,nGrid,weight,rhow,drhow,ExDD)
+subroutine restricted_exchange_derivative_discontinuity(rung,DFA,nEns,wEns,aCC_w1,aCC_w2,nGrid,weight,rhow,drhow,ExDD,Cx_choice)
 
 ! Compute the exchange part of the derivative discontinuity
 
@@ -17,6 +17,7 @@ subroutine restricted_exchange_derivative_discontinuity(rung,DFA,nEns,wEns,aCC_w
   double precision,intent(in)   :: weight(nGrid)
   double precision,intent(in)   :: rhow(nGrid)
   double precision,intent(in)   :: drhow(ncart,nGrid)
+  integer,intent(in)            :: Cx_choice
 
 ! Local variables
 
@@ -37,7 +38,8 @@ subroutine restricted_exchange_derivative_discontinuity(rung,DFA,nEns,wEns,aCC_w
 
     case(1) 
 
-      call restricted_lda_exchange_derivative_discontinuity(DFA,nEns,wEns(:),aCC_w1,aCC_w2,nGrid,weight(:),rhow(:),ExDD(:))
+      call restricted_lda_exchange_derivative_discontinuity(DFA,nEns,wEns(:),aCC_w1,aCC_w2,nGrid,weight(:),&
+                                                            rhow(:),ExDD(:),Cx_choice)
 
 !   GGA functionals
 

@@ -1,4 +1,5 @@
-subroutine unrestricted_exchange_energy(rung,DFA,LDA_centered,nEns,wEns,aCC_w1,aCC_w2,nGrid,weight,nBas,P,FxHF,rho,drho,Ex)
+subroutine unrestricted_exchange_energy(rung,DFA,LDA_centered,nEns,wEns,aCC_w1,aCC_w2,nGrid,weight,nBas,P,FxHF, &
+                                        rho,drho,Ex,Cx_choice)
 
 ! Compute the exchange energy
 
@@ -21,6 +22,7 @@ subroutine unrestricted_exchange_energy(rung,DFA,LDA_centered,nEns,wEns,aCC_w1,a
   double precision,intent(in)   :: FxHF(nBas,nBas)
   double precision,intent(in)   :: rho(nGrid)
   double precision,intent(in)   :: drho(ncart,nGrid)
+  integer,intent(in)            :: Cx_choice
 
 ! Local variables
 
@@ -43,7 +45,8 @@ subroutine unrestricted_exchange_energy(rung,DFA,LDA_centered,nEns,wEns,aCC_w1,a
 
     case(1) 
 
-      call unrestricted_lda_exchange_energy(DFA,LDA_centered,nEns,wEns,aCC_w1,aCC_w2,nGrid,weight,rho,ExLDA)
+      call unrestricted_lda_exchange_energy(DFA,LDA_centered,nEns,wEns,aCC_w1,aCC_w2,nGrid,weight,&
+                                            rho,ExLDA,Cx_choice)
 
       Ex = ExLDA
 
@@ -63,7 +66,7 @@ subroutine unrestricted_exchange_energy(rung,DFA,LDA_centered,nEns,wEns,aCC_w1,a
       aX = 0.72d0
       aC = 0.81d0
 
-      call unrestricted_lda_exchange_energy(DFA,nEns,wEns,nGrid,weight,rho,ExLDA)
+      call unrestricted_lda_exchange_energy(DFA,nEns,wEns,nGrid,weight,rho,ExLDA,Cx_choice)
       call unrestricted_gga_exchange_energy(DFA,nEns,wEns,nGrid,weight,rho,drho,ExGGA)
       call unrestricted_fock_exchange_energy(nBas,P,FxHF,ExHF)
 

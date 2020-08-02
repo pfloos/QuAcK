@@ -1,4 +1,4 @@
-subroutine UCC_lda_exchange_individual_energy(nEns,wEns,aCC_w1,aCC_w2,nGrid,weight,rhow,rho,Ex)
+subroutine UCC_lda_exchange_individual_energy(nEns,wEns,aCC_w1,aCC_w2,nGrid,weight,rhow,rho,Ex,Cx_choice)
 
 ! Compute the unrestricted version of the curvature-corrected exchange functional
 
@@ -15,7 +15,8 @@ subroutine UCC_lda_exchange_individual_energy(nEns,wEns,aCC_w1,aCC_w2,nGrid,weig
   double precision,intent(in)   :: weight(nGrid)
   double precision,intent(in)   :: rhow(nGrid)
   double precision,intent(in)   :: rho(nGrid)
-
+  integer,intent(in)            :: Cx_choice
+ 
 ! Local variables
 
   integer                       :: iG
@@ -76,6 +77,15 @@ subroutine UCC_lda_exchange_individual_energy(nEns,wEns,aCC_w1,aCC_w2,nGrid,weig
   w2 = wEns(3)
   Fx2 = 1d0 - w2*(1d0 - w2)*(a2 + b2*(w2 - 0.5d0) + c2*(w2 - 0.5d0)**2)
 
+  select case (Cx_choice)
+  case(1)
+  Cx = alpha*Fx1
+  case(2)
+  Cx = alpha*Fx2
+  case(3)
+  Cx = alpha*Fx2*Fx1
+  end select
+
 ! for two-weight ensembles
 !  Cx = alpha*Fx1*Fx2
 
@@ -83,7 +93,7 @@ subroutine UCC_lda_exchange_individual_energy(nEns,wEns,aCC_w1,aCC_w2,nGrid,weig
 !  Cx = alpha*Fx1
 
 ! for right ensembles
-  Cx = alpha*Fx2  
+!  Cx = alpha*Fx2  
 
 ! Compute LDA exchange matrix in the AO basis
 
