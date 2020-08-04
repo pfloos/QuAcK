@@ -31,7 +31,7 @@ subroutine MOM_RKS(x_rung,x_DFA,c_rung,c_DFA,LDA_centered,nEns,nGrid,weight, &
   double precision,intent(in)   :: X(nBas,nBas) 
   double precision,intent(in)   :: ERI(nBas,nBas,nBas,nBas)
   double precision,intent(in)   :: ENuc
-  double precision,intent(in)   :: occnum(2,2,3)
+  double precision,intent(in)   :: occnum(nspin,2,nEns)
   integer,intent(in)            :: Cx_choice
 
 

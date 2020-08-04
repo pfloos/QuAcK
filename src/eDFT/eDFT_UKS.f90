@@ -30,7 +30,7 @@ subroutine eDFT_UKS(x_rung,x_DFA,c_rung,c_DFA,nEns,wEns,aCC_w1,aCC_w2,nGrid,weig
   double precision,intent(in)   :: X(nBas,nBas) 
   double precision,intent(in)   :: ERI(nBas,nBas,nBas,nBas)
   double precision,intent(in)   :: ENuc
-  double precision,intent(in)   :: occnum(2,2,3)
+  double precision,intent(in)   :: occnum(nspin,2,nEns)
   integer,intent(in)            :: Cx_choice
 
 ! Local variables

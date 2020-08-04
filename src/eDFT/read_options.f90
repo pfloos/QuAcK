@@ -21,7 +21,7 @@ subroutine read_options(method,x_rung,x_DFA,c_rung,c_DFA,SGn,nEns,wEns,aCC_w1,aC
   double precision,intent(out)  :: wEns(maxEns)
   double precision,intent(out)  :: aCC_w1(3)
   double precision,intent(out)  :: aCC_w2(3)
-  double precision,intent(inout) :: occnum(2,2,3)
+  double precision,intent(inout):: occnum(nspin,2,maxEns)
 
   integer,intent(out)           :: maxSCF
   double precision,intent(out)  :: thresh
@@ -141,10 +141,9 @@ subroutine read_options(method,x_rung,x_DFA,c_rung,c_DFA,SGn,nEns,wEns,aCC_w1,aC
   call matout(3,1,aCC_w2)
   write(*,*) 
  
-  !allocate(occnum(nspin,2,nEns))
 ! Read occupation numbers for orbitals nO and nO+1
   read(1,*)
-  do J=1,3
+  do J=1,nEns
     read(1,*) (occnum(1,I,J),I=1,2)
     read(1,*) (occnum(2,I,J),I=1,2)
   end do

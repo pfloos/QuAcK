@@ -59,8 +59,7 @@ program eDFT
   integer                       :: guess_type
   integer                       :: ortho_type
 
- ! double precision,allocatable,dimension(:,:,:)  :: occnum 
-  double precision,dimension(2,2,3) :: occnum
+  double precision,allocatable  :: occnum(:,:,:) 
   integer                       :: Cx_choice
 
 ! Hello World
@@ -112,7 +111,7 @@ program eDFT
 
 
 ! Allocate ensemble weights
-
+  allocate(occnum(nspin,2,maxEns))
   allocate(wEns(maxEns))
   call read_options(method,x_rung,x_DFA,c_rung,c_DFA,SGn,nEns,wEns,aCC_w1,aCC_w2, & 
                     maxSCF,thresh,DIIS,max_diis,guess_type,ortho_type,doNcentered,ncent,occnum,Cx_choice)

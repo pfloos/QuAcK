@@ -12,7 +12,7 @@ subroutine restricted_auxiliary_energy(nBas,nEns,nO,eps,Eaux,occnum)
   integer,intent(in)            :: nEns
   integer,intent(in)            :: nO
   double precision,intent(in)   :: eps(nBas)
-  double precision,intent(in)   :: occnum(2,2,3)
+  double precision,intent(in)   :: occnum(nspin,2,nEns)
 
 
 ! Local variables

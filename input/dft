@@ -19,7 +19,7 @@
 # Number of states in ensemble (nEns)
   3
 # Ensemble weights: wEns(1),...,wEns(nEns-1)
-  0.00 1.00 
+  1.00 0.00 
 # Ncentered ? 0 for NO 
  0 
 # Parameters for CC weight-dependent exchange functional

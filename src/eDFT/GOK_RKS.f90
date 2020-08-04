@@ -37,7 +37,7 @@ subroutine GOK_RKS(restart,x_rung,x_DFA,c_rung,c_DFA,LDA_centered,nEns,wEns,aCC_
   double precision,intent(in)   :: ENuc
 
   double precision,intent(inout):: c(nBas,nBas)
-  double precision,intent(in):: occnum(2,2,32,2,32,2,3)  
+  double precision,intent(in):: occnum(nspin,2,nEns)  
   integer,intent(in)            :: Cx_choice
 
 ! Local variables
