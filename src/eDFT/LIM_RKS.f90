@@ -31,7 +31,7 @@ subroutine LIM_RKS(x_rung,x_DFA,c_rung,c_DFA,LDA_centered,nEns,aCC_w1,aCC_w2,nGr
   double precision,intent(in)   :: X(nBas,nBas) 
   double precision,intent(in)   :: ERI(nBas,nBas,nBas,nBas)
   double precision,intent(in)   :: ENuc
-  double precision,intent(in)   :: occnum(nspin,2,nEns)
+  double precision,intent(in)   :: occnum(nBas,nspin,nEns)
   integer,intent(in)            :: Cx_choice
 
 

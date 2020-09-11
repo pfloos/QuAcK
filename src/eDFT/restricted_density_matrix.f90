@@ -12,7 +12,7 @@ subroutine restricted_density_matrix(nBas,nEns,nO,c,P,occnum)
   integer,intent(in)            :: nEns
   integer,intent(in)            :: nO
   double precision,intent(in)   :: c(nBas,nBas)
-  double precision,intent(in)   :: occnum(nspin,2,nEns)
+  double precision,intent(in)   :: occnum(nBas,nspin,nEns)
 
 
 ! Local variables

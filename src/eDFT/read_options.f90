@@ -1,5 +1,5 @@
-subroutine read_options(method,x_rung,x_DFA,c_rung,c_DFA,SGn,nEns,wEns,aCC_w1,aCC_w2, & 
-                        maxSCF,thresh,DIIS,max_diis,guess_type,ortho_type,doNcentered,ncent,occnum,Cx_choice)
+subroutine read_options(nBas,method,x_rung,x_DFA,c_rung,c_DFA,SGn,nEns,wEns,aCC_w1,aCC_w2, & 
+                        maxSCF,thresh,DIIS,max_diis,guess_type,ortho_type,doNcentered,occnum,Cx_choice)
 
 ! Read DFT options
 
@@ -7,9 +7,16 @@ subroutine read_options(method,x_rung,x_DFA,c_rung,c_DFA,SGn,nEns,wEns,aCC_w1,aC
 
   include 'parameters.h'
 
+! Input variables
+  integer,intent(in)           :: nBas
+
 ! Local variables
 
-  integer                       :: I,J
+  integer                       :: iBas
+  integer                       :: iEns
+  integer                       :: iParam
+  character(len=1)              :: answer
+  double precision,allocatable  :: nEl(:)
 
 ! Output variables
 
@@ -17,11 +24,12 @@ subroutine read_options(method,x_rung,x_DFA,c_rung,c_DFA,SGn,nEns,wEns,aCC_w1,aC
   integer,intent(out)           :: x_rung,c_rung
   character(len=12),intent(out) :: x_DFA, c_DFA
   integer,intent(out)           :: SGn
-  integer,intent(out)           :: nEns, doNcentered
+  integer,intent(out)           :: nEns
+  integer,intent(out)           :: doNcentered
   double precision,intent(out)  :: wEns(maxEns)
   double precision,intent(out)  :: aCC_w1(3)
   double precision,intent(out)  :: aCC_w2(3)
-  double precision,intent(inout):: occnum(nspin,2,maxEns)
+  double precision,intent(out)  :: occnum(nBas,nspin,maxEns)
 
   integer,intent(out)           :: maxSCF
   double precision,intent(out)  :: thresh
@@ -29,12 +37,7 @@ subroutine read_options(method,x_rung,x_DFA,c_rung,c_DFA,SGn,nEns,wEns,aCC_w1,aC
   integer,intent(out)           :: max_diis
   integer,intent(out)           :: guess_type
   integer,intent(out)           :: ortho_type
-  double precision,intent(in)   :: ncent
   integer,intent(out)           :: Cx_choice
-
-! Local variables
-
-  character(len=1)              :: answer
 
 ! Open file with method specification
 
@@ -95,26 +98,60 @@ subroutine read_options(method,x_rung,x_DFA,c_rung,c_DFA,SGn,nEns,wEns,aCC_w1,aC
   write(*,*)'----------------------------------------------------------'
   write(*,*) 
   
-! Read ensemble weights for unphysical (integer number of electrons) left or right N-centered ensembles:
-! (alpha,0) or (0,alpha) in input
-!  read(1,*)
-!  read(1,*) (wEns(I),I=2,nEns)
-!  wEns(2) = (ncent/(ncent-1.d0))*wEns(2)
-!  wEns(3) = (ncent/(ncent+1.d0))*wEns(3)
-!  wEns(1) = 1d0 - ((ncent-1.d0)/ncent)*wEns(2) - ((ncent+1.d0)/ncent)*wEns(3) ! for N-centered
+! Read occupation numbers for orbitals nO and nO+1
 
+  occnum(:,:,:) = 0d0
+
+  do iEns=1,nEns
+    read(1,*)
+    read(1,*) (occnum(iBas,1,iEns),iBas=1,nBas)
+    read(1,*) (occnum(iBas,2,iEns),iBas=1,nBas)
+  end do
+
+  do iEns=1,nEns
+    write(*,*) 
+    write(*,*) '==============='
+    write(*,*) 'State n.',iEns
+    write(*,*) '==============='
+    write(*,*)
+    write(*,*) 'Spin-up   occupation numbers'
+    write(*,*) (int(occnum(iBas,1,iEns)),iBas=1,nBas)
+    write(*,*) 'Spin-down occupation numbers'
+    write(*,*) (int(occnum(iBas,2,iEns)),iBas=1,nBas)
+    write(*,*)
+  end do
 ! Read ensemble weights for real physical (fractional number of electrons) ensemble (w1,w2)
+
+  allocate(nEl(nEns))
+  nEl(:) = 0d0
+  do iEns=1,nEns
+    do iBas=1,nBas
+      nEl(iEns) = nEl(iEns) + occnum(iBas,1,iEns) + occnum(iBas,2,iEns)
+    end do
+  end do
+  print*,'nEl'
+  print*,nEl
+  
+
   read(1,*)
-  read(1,*) (wEns(I),I=2,nEns)
+  read(1,*) (wEns(iEns),iEns=2,nEns)
   read(1,*)
   read(1,*) doNcentered
+
   if (doNcentered==0) then
+
     wEns(1) = 1d0 - wEns(2) - wEns(3) 
+
   else
-  wEns(2) = (ncent/(ncent-1.d0))*wEns(2)
-  wEns(3) = (ncent/(ncent+1.d0))*wEns(3)
-  wEns(1) = 1d0 - ((ncent-1.d0)/ncent)*wEns(2) - ((ncent+1.d0)/ncent)*wEns(3) ! for N-centered
+
+!   wEns(1) = 1d0 -  nEl(2)/nEl(1)*wEns(2) - nEl(3)/nEl(1)*wEns(3) 
+
+    wEns(1) = 1d0 - wEns(2) - wEns(3)
+    wEns(2) = nEl(1)/nEl(2)*wEns(2)
+    wEns(3) = nEl(1)/nEl(3)*wEns(3)
+
   end if
+
   write(*,*)'----------------------------------------------------------'
   write(*,*)' Ensemble weights '
   write(*,*)'----------------------------------------------------------'
@@ -123,8 +160,8 @@ subroutine read_options(method,x_rung,x_DFA,c_rung,c_DFA,SGn,nEns,wEns,aCC_w1,aC
   
 ! Read parameters for weight-dependent functional
   read(1,*)
-  read(1,*) (aCC_w1(I),I=1,3)
-  read(1,*) (aCC_w2(I),I=1,3)
+  read(1,*) (aCC_w1(iParam),iParam=1,3)
+  read(1,*) (aCC_w2(iParam),iParam=1,3)
 ! Read choice of exchange coefficient
   read(1,*)
   read(1,*) Cx_choice
@@ -140,13 +177,6 @@ subroutine read_options(method,x_rung,x_DFA,c_rung,c_DFA,SGn,nEns,wEns,aCC_w1,aC
   write(*,*)'----------------------------------------------------------'
   call matout(3,1,aCC_w2)
   write(*,*) 
- 
-! Read occupation numbers for orbitals nO and nO+1
-  read(1,*)
-  do J=1,nEns
-    read(1,*) (occnum(1,I,J),I=1,2)
-    read(1,*) (occnum(2,I,J),I=1,2)
-  end do
 
 ! Read KS options
 

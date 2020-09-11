@@ -41,7 +41,7 @@ subroutine unrestricted_individual_energy(x_rung,x_DFA,c_rung,c_DFA,LDA_centered
   double precision,intent(in)   :: FxHF(nBas,nBas,nspin)
   double precision,intent(in)   :: Fc(nBas,nBas,nspin)
   double precision              :: Ew
-  double precision,intent(in)   :: occnum(nspin,2,nEns)
+  double precision,intent(in)   :: occnum(nBas,nspin,nEns)
   integer,intent(in)            :: Cx_choice
 
 

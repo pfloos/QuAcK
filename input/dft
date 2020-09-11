@@ -18,21 +18,23 @@
   1
 # Number of states in ensemble (nEns)
   3
+# occupation numbers of orbitals
+1 1 0 0 0 0 0 0 0 0 0 0 0 0 0  
+1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 
+
+1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 
+1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 
+
+1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 
+0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 
 # Ensemble weights: wEns(1),...,wEns(nEns-1)
-  1.00 0.00 
+  0.20 0.30 
 # Ncentered ? 0 for NO 
- 0 
+ 1 
 # Parameters for CC weight-dependent exchange functional
 0.420431 0.069097 -0.295049
 0.135075 -0.00770826 -0.028057
 # choice of UCC exchange coefficient : 1 for Cx1, 2 for Cx2, 3 for Cx1*Cx2
 2
-# occupation numbers of orbitals nO and nO+1
- 1.00 0.00 
- 1.00 0.00 
- 0.00 0.00 
- 1.00 0.00 
- 1.00 0.00 
- 1.00 1.00 
 # GOK-DFT: maxSCF thresh   DIIS n_diis guess_type ortho_type
            1000    0.00001   T     5      1          1

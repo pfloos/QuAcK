@@ -38,7 +38,7 @@ subroutine restricted_individual_energy(x_rung,x_DFA,c_rung,c_DFA,LDA_centered,n
   double precision,intent(in)   :: J(nBas,nBas)
 
   double precision              :: Ew
-  double precision,intent(in)   :: occnum(nspin,2,nEns)
+  double precision,intent(in)   :: occnum(nBas,nspin,nEns)
   integer,intent(in)            :: Cx_choice
 
 

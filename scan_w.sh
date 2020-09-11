@@ -76,11 +76,11 @@ do
   echo "2"  >> input/dft
   echo "# occupation numbers of orbitals nO and nO+1"  >> input/dft
   echo " 1.00 0.00 " >> input/dft
-  echo " 1.00 0.00 " >> input/dft
+  echo " 0.00 0.00 " >> input/dft
+  echo " 0.00 0.00 " >> input/dft
   echo " 0.00 0.00 " >> input/dft
   echo " 1.00 0.00 " >> input/dft
-  echo " 1.00 0.00 " >> input/dft
-  echo " 1.00 1.00 " >> input/dft
+  echo " 0.00 1.00 " >> input/dft
   echo "# GOK-DFT: maxSCF thresh   DIIS n_diis guess_type ortho_type" >> input/dft
   echo "           1000    0.00001   T     5      1          1" >> input/dft
   OUTPUT=${MOL}_${BASIS}_${XF}_${CF}_${w2}.out

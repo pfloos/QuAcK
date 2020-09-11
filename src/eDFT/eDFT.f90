@@ -85,12 +85,6 @@ program eDFT
   call read_molecule(nNuc,nEl(:),nO(:),nC(:),nR(:))
   allocate(ZNuc(nNuc),rNuc(nNuc,ncart))
 
-  ncent = dble(nEl(1) + nEl(2))
-  print*, 'ncent=',ncent
-  print*, 'N-1/N=',(ncent-1.d0)/ncent
-  print*, 'N+1/N=',(ncent+1.d0)/ncent
-
-
 ! Read geometry
 
   call read_geometry(nNuc,ZNuc,rNuc,ENuc)
@@ -109,12 +103,11 @@ program eDFT
 ! DFT options
 !------------------------------------------------------------------------
 
-
 ! Allocate ensemble weights
-  allocate(occnum(nspin,2,maxEns))
-  allocate(wEns(maxEns))
-  call read_options(method,x_rung,x_DFA,c_rung,c_DFA,SGn,nEns,wEns,aCC_w1,aCC_w2, & 
-                    maxSCF,thresh,DIIS,max_diis,guess_type,ortho_type,doNcentered,ncent,occnum,Cx_choice)
+
+  allocate(wEns(maxEns),occnum(nBas,nspin,maxEns))
+  call read_options(nBas,method,x_rung,x_DFA,c_rung,c_DFA,SGn,nEns,wEns,aCC_w1,aCC_w2, & 
+                    maxSCF,thresh,DIIS,max_diis,guess_type,ortho_type,doNcentered,occnum,Cx_choice)
 
 !------------------------------------------------------------------------
 ! Read one- and two-electron integrals
