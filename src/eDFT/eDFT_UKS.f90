@@ -1,5 +1,5 @@
 subroutine eDFT_UKS(x_rung,x_DFA,c_rung,c_DFA,nEns,wEns,aCC_w1,aCC_w2,nGrid,weight,maxSCF,thresh,max_diis,guess_type, &
-                   nBas,AO,dAO,nO,nV,S,T,V,Hc,ERI,X,ENuc,Ew,occnum,Cx_choice)
+                   nBas,AO,dAO,S,T,V,Hc,ERI,X,ENuc,Ew,occnum,Cx_choice)
 
 ! Perform unrestricted Kohn-Sham calculation for ensembles
 
@@ -22,7 +22,6 @@ subroutine eDFT_UKS(x_rung,x_DFA,c_rung,c_DFA,nEns,wEns,aCC_w1,aCC_w2,nGrid,weig
   double precision,intent(in)   :: AO(nBas,nGrid)
   double precision,intent(in)   :: dAO(ncart,nBas,nGrid)
 
-  integer,intent(in)            :: nO(nspin),nV(nspin)
   double precision,intent(in)   :: S(nBas,nBas)
   double precision,intent(in)   :: T(nBas,nBas)
   double precision,intent(in)   :: V(nBas,nBas)
@@ -372,17 +371,15 @@ subroutine eDFT_UKS(x_rung,x_DFA,c_rung,c_DFA,nEns,wEns,aCC_w1,aCC_w2,nGrid,weig
     end do
 !!!!!
 
-
-
 ! Compute final KS energy
 
-  call print_UKS(nBas,nO,eps,c,ENuc,ET,EV,EJ,Ex,Ec,Ew)
+  call print_UKS(nBas,nEns,occnum,wEns,eps,c,ENuc,ET,EV,EJ,Ex,Ec,Ew)
 
 !------------------------------------------------------------------------
 ! Compute individual energies from ensemble energy
 !------------------------------------------------------------------------
 
   call unrestricted_individual_energy(x_rung,x_DFA,c_rung,c_DFA,LDA_centered,nEns,wEns,aCC_w1,aCC_w2,nGrid,weight,nBas, &
-                                      AO,dAO,nO,nV,T,V,ERI,ENuc,eps,Pw,rhow,drhow,J,Fx,FxHF,Fc,P,rho,drho,Ew,E,Om,occnum,Cx_choice)
+                                      AO,dAO,T,V,ERI,ENuc,eps,Pw,rhow,drhow,J,Fx,FxHF,Fc,P,rho,drho,Ew,E,Om,occnum,Cx_choice)
 
 end subroutine eDFT_UKS

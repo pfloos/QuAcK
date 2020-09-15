@@ -239,7 +239,7 @@ program eDFT
 
     call cpu_time(start_KS)
     call eDFT_UKS(x_rung,x_DFA,c_rung,c_DFA,nEns,wEns,aCC_w1,aCC_w2,nGrid,weight(:),maxSCF,thresh,max_diis,guess_type, & 
-                  nBas,AO,dAO,nO,nV,S,T,V,Hc,ERI,X,ENuc,Ew,occnum,Cx_choice)
+                  nBas,AO,dAO,S,T,V,Hc,ERI,X,ENuc,Ew,occnum,Cx_choice)
     call cpu_time(end_KS)
 
     t_KS = end_KS - start_KS

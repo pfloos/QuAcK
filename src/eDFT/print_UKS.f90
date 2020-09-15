@@ -1,12 +1,16 @@
-subroutine print_UKS(nBas,nO,eps,c,ENuc,ET,EV,EJ,Ex,Ec,Ew)
+subroutine print_UKS(nBas,nEns,occnum,wEns,eps,c,ENuc,ET,EV,EJ,Ex,Ec,Ew)
 
 ! Print one- and two-electron energies and other stuff for KS calculation
 
   implicit none
   include 'parameters.h'
 
+! Input variables
+
   integer,intent(in)                 :: nBas
-  integer,intent(in)                 :: nO(nspin)
+  integer,intent(in)                 :: nEns
+  double precision,intent(in)        :: occnum(nBas,nspin,nEns)
+  double precision,intent(in)        :: wEns(nEns)
   double precision,intent(in)        :: eps(nBas,nspin)
   double precision,intent(in)        :: c(nBas,nBas,nspin)
   double precision,intent(in)        :: ENuc
@@ -17,29 +21,34 @@ subroutine print_UKS(nBas,nO,eps,c,ENuc,ET,EV,EJ,Ex,Ec,Ew)
   double precision,intent(in)        :: Ec(nsp)
   double precision,intent(in)        :: Ew
 
+! Local variables
+
   integer                            :: ispin
+  integer                            :: iEns
+  integer                            :: iBas
   integer                            :: HOMO(nspin)
   integer                            :: LUMO(nspin)
   double precision                   :: Gap(nspin)
+  double precision                   :: nEl(nspin)
+
+! Number of electrons in the ensemble
+
+  nEl(:) = 0d0
+  do ispin=1,nspin
+    do iEns=1,nEns
+      do iBas=1,nBas
+        nEl(ispin) = nEl(ispin) + wEns(iEns)*occnum(iBas,ispin,iEns)
+      end do
+    end do
+  end do
 
 ! HOMO and LUMO
 
-
   do ispin=1,nspin
 
-    if(nO(ispin) > 0) then 
-
-      HOMO(ispin) = nO(ispin)
+      HOMO(ispin) = ceiling(nEl(ispin))
       LUMO(ispin) = HOMO(ispin) + 1
       Gap(ispin)  = eps(LUMO(ispin),ispin) - eps(HOMO(ispin),ispin)
-
-    else
-
-      HOMO(ispin) = 0
-      LUMO(ispin) = 0
-      Gap(ispin)  = 0d0
-
-    end if
 
   end do
 

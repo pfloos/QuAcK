@@ -1,4 +1,4 @@
-subroutine unrestricted_auxiliary_energy(nBas,nEns,nO,eps,Eaux,occnum)
+subroutine unrestricted_auxiliary_energy(nBas,nEns,eps,Eaux,occnum)
 
 ! Compute the auxiliary KS energies 
 
@@ -10,7 +10,6 @@ subroutine unrestricted_auxiliary_energy(nBas,nEns,nO,eps,Eaux,occnum)
 
   integer,intent(in)            :: nBas
   integer,intent(in)            :: nEns
-  integer,intent(in)            :: nO(nspin)
   double precision,intent(in)   :: eps(nBas,nspin)
   double precision,intent(in)   :: occnum(nBas,nspin,nEns)
 
