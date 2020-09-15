@@ -1,4 +1,4 @@
-subroutine read_integrals(nEl,nBas,S,T,V,Hc,G)
+subroutine read_integrals(nBas,S,T,V,Hc,G)
 
 ! Read one- and two-electron integrals from files
 
@@ -12,7 +12,6 @@ subroutine read_integrals(nEl,nBas,S,T,V,Hc,G)
 ! Local variables
 
   logical                       :: debug
-  integer                       :: nEl(nspin)
   integer                       :: mu,nu,la,si
   double precision              :: Ov,Kin,Nuc,ERI
   double precision              :: lambda

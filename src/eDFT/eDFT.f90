@@ -123,7 +123,7 @@ program eDFT
   call cpu_time(start_int)
 
   call system('./GoQCaml')
-  call read_integrals(nEl(:),nBas,S,T,V,Hc,ERI)
+  call read_integrals(nBas,S,T,V,Hc,ERI)
 
   call cpu_time(end_int)
 

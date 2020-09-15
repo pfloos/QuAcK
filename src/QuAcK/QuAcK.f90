@@ -221,12 +221,12 @@ program QuAcK
 
   if(doSph) then
 
-    call read_integrals_sph(nEl(:),nBas,S,T,V,Hc,ERI_AO)  
+    call read_integrals_sph(nBas,S,T,V,Hc,ERI_AO)  
 
   else
 
     call system('./GoQCaml')
-    call read_integrals(nEl(:),nBas,S,T,V,Hc,ERI_AO)
+    call read_integrals(nBas,S,T,V,Hc,ERI_AO)
 
   end if
 
