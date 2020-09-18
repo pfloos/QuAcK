@@ -4,6 +4,7 @@ program QuAcK
   include 'parameters.h'
 
   logical                       :: doSph
+  logical                       :: unrestricted
   logical                       :: doRHF,doUHF,doMOM 
   logical                       :: doMP2,doMP3,doMP2F12
   logical                       :: doCCD,doCCSD,doCCSDT
@@ -27,8 +28,8 @@ program QuAcK
   double precision,allocatable  :: ZNuc(:),rNuc(:,:)
   double precision,allocatable  :: cHF(:,:,:),eHF(:,:),PHF(:,:,:)
 
-  double precision,allocatable  :: eG0W0(:)
-  double precision,allocatable  :: eG0T0(:)
+  double precision,allocatable  :: eG0W0(:,:)
+  double precision,allocatable  :: eG0T0(:,:)
 
   logical                       :: doACFDT
   logical                       :: exchange_kernel
@@ -50,6 +51,11 @@ program QuAcK
   double precision,allocatable  :: S(:,:),T(:,:),V(:,:),Hc(:,:),H(:,:),X(:,:)
   double precision,allocatable  :: ERI_AO(:,:,:,:)
   double precision,allocatable  :: ERI_MO(:,:,:,:)
+  integer                       :: bra
+  integer                       :: ket
+  double precision,allocatable  :: ERI_MO_aa(:,:,:,:)
+  double precision,allocatable  :: ERI_MO_ab(:,:,:,:)
+  double precision,allocatable  :: ERI_MO_bb(:,:,:,:)
   double precision,allocatable  :: ERI_ERF_AO(:,:,:,:)
   double precision,allocatable  :: ERI_ERF_MO(:,:,:,:)
   double precision,allocatable  :: F12(:,:,:,:),Yuk(:,:,:,:),FC(:,:,:,:,:,:)
@@ -211,9 +217,8 @@ program QuAcK
 
 ! Memory allocation for one- and two-electron integrals
 
-  allocate(cHF(nBas,nBas,nspin),eHF(nBas,nspin),eG0W0(nBas),eG0T0(nBas),PHF(nBas,nBas,nspin),          &
-           S(nBas,nBas),T(nBas,nBas),V(nBas,nBas),Hc(nBas,nBas),H(nBas,nBas),X(nBas,nBas), &
-           ERI_AO(nBas,nBas,nBas,nBas),ERI_MO(nBas,nBas,nBas,nBas))
+  allocate(cHF(nBas,nBas,nspin),eHF(nBas,nspin),eG0W0(nBas,nspin),eG0T0(nBas,nspin),PHF(nBas,nBas,nspin), &
+           S(nBas,nBas),T(nBas,nBas),V(nBas,nBas),Hc(nBas,nBas),H(nBas,nBas),X(nBas,nBas),ERI_AO(nBas,nBas,nBas,nBas))
 
 ! Read integrals
 
@@ -263,6 +268,9 @@ program QuAcK
 
   if(doUHF) then
 
+    ! Switch on the unrestricted flag
+    unrestricted = .true.
+
     call cpu_time(start_HF)
     call UHF(maxSCF_HF,thresh_HF,n_diis_HF,guess_type,nBas,nO,S,T,V,Hc,ERI_AO,X,ENuc,EUHF,eHF,cHF,PHF)
     call cpu_time(end_HF)
@@ -307,13 +315,50 @@ program QuAcK
 
   if(doSph) then
 
+    allocate(ERI_MO(nBas,nBas,nBas,nBas))
     ERI_MO(:,:,:,:) = ERI_AO(:,:,:,:)
     print*,'!!! MO = AO !!!'
     deallocate(ERI_AO)
 
   else
 
-    call AOtoMO_integral_transform(nBas,cHF,ERI_AO,ERI_MO)
+    if(unrestricted) then
+
+      ! Memory allocation
+     
+      allocate(ERI_MO_aa(nBas,nBas,nBas,nBas),ERI_MO_ab(nBas,nBas,nBas,nBas),ERI_MO_bb(nBas,nBas,nBas,nBas))
+     
+      ! 4-index transform for (aa|aa) block
+     
+      bra = 1
+      ket = 1
+      call AOtoMO_integral_transform(bra,ket,nBas,cHF,ERI_AO,ERI_MO_aa)
+      
+      ! 4-index transform for (bb|bb) block
+     
+      bra = 1
+      ket = 2
+      call AOtoMO_integral_transform(bra,ket,nBas,cHF,ERI_AO,ERI_MO_ab)
+     
+      ! 4-index transform for (aa|bb) block
+     
+      bra = 2
+      ket = 2
+      call AOtoMO_integral_transform(bra,ket,nBas,cHF,ERI_AO,ERI_MO_bb)
+     
+    else
+
+      ! Memory allocation
+     
+      allocate(ERI_MO(nBas,nBas,nBas,nBas))
+     
+      ! 4-index transform 
+     
+      bra = 1
+      ket = 1
+      call AOtoMO_integral_transform(bra,ket,nBas,cHF,ERI_AO,ERI_MO)
+
+    end if
 
   end if
 
@@ -330,7 +375,17 @@ program QuAcK
   if(doMP2) then
 
     call cpu_time(start_MP2)
-    call MP2(nBas,nC,nO,nV,nR,ERI_MO,ENuc,ERHF,eHF,EcMP2)
+
+    if(unrestricted) then
+
+      call UMP2(nBas,nC,nO,nV,nR,ERI_MO_aa,ERI_MO_ab,ERI_MO_bb,ENuc,EUHF,eHF,EcMP2)
+
+    else
+
+      call MP2(nBas,nC,nO,nV,nR,ERI_MO,ENuc,ERHF,eHF,EcMP2)
+
+    end if
+
     call cpu_time(end_MP2)
 
     t_MP2 = end_MP2 - start_MP2
@@ -670,14 +725,24 @@ program QuAcK
 ! Perform G0W0 calculatiom
 !------------------------------------------------------------------------
 
-  eG0W0(:) = eHF(:,1)
+  eG0W0(:,:) = eHF(:,:)
 
   if(doG0W0) then
     
     call cpu_time(start_G0W0)
-    call G0W0(doACFDT,exchange_kernel,doXBS,COHSEX,SOSEX,BSE,TDA_W,TDA,       & 
-              dBSE,dTDA,evDyn,singlet_manifold,triplet_manifold,linGW,eta_GW, & 
-              nBas,nC,nO,nV,nR,nS,ENuc,ERHF,Hc,H,ERI_MO,PHF,cHF,eHF,eG0W0)
+    if(unrestricted) then 
+
+      call UG0W0(doACFDT,exchange_kernel,doXBS,COHSEX,BSE,TDA_W,TDA,       & 
+                 dBSE,dTDA,evDyn,singlet_manifold,triplet_manifold,linGW,eta_GW, & 
+                 nBas,nC,nO,nV,nR,nS,ENuc,ERHF,Hc,ERI_MO,PHF,cHF,eHF,eG0W0)
+    else
+
+      call G0W0(doACFDT,exchange_kernel,doXBS,COHSEX,SOSEX,BSE,TDA_W,TDA,       & 
+                dBSE,dTDA,evDyn,singlet_manifold,triplet_manifold,linGW,eta_GW, & 
+                nBas,nC,nO,nV,nR,nS,ENuc,ERHF,Hc,ERI_MO,PHF,cHF,eHF,eG0W0)
+
+    end if
+
     call cpu_time(end_G0W0)
   
     t_G0W0 = end_G0W0 - start_G0W0
@@ -726,7 +791,7 @@ program QuAcK
 ! Perform G0T0 calculatiom
 !------------------------------------------------------------------------
 
-  eG0T0(:) = eHF(:,1)
+  eG0T0(:,:) = eHF(:,:)
 
   if(doG0T0) then
     
@@ -868,7 +933,7 @@ program QuAcK
     call cpu_time(start_G0W0)
     call G0W0(doACFDT,exchange_kernel,doXBS,COHSEX,SOSEX,BSE,TDA_W,TDA,       & 
               dBSE,dTDA,evDyn,singlet_manifold,triplet_manifold,linGW,eta_GW, & 
-              nBas,nC,nO,nV,nR,nS,ENuc,ERHF,Hc,H,ERI_ERF_MO,PHF,cHF,eHF,eG0W0)
+              nBas,nC,nO,nV,nR,nS,ENuc,ERHF,Hc,ERI_ERF_MO,PHF,cHF,eHF,eG0W0)
     call cpu_time(end_G0W0)
   
     t_G0W0 = end_G0W0 - start_G0W0
@@ -889,7 +954,7 @@ program QuAcK
     write(*,'(A65,1X,F9.3,A8)') 'Total CPU time for G0T0 = ',t_G0T0,' seconds'
     write(*,*)
 
-    call matout(nBas,1,(eG0W0+eG0T0-eHF(:,1))*HaToeV)
+!   call matout(nBas,1,(eG0W0+eG0T0-eHF(:,1))*HaToeV)
 
   end if
 

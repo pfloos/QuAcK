@@ -1,6 +1,6 @@
 subroutine MP2(nBas,nC,nO,nV,nR,ERI,ENuc,EHF,e,EcMP2)
 
-! Perform third-order Moller-Plesset calculation
+! Perform second-order Moller-Plesset calculation
 
   implicit none
 
