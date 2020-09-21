@@ -138,7 +138,7 @@ subroutine read_options(nBas,method,x_rung,x_DFA,c_rung,c_DFA,SGn,nEns,wEns,aCC_
   read(1,*)
   read(1,*) doNcentered
 
-  if (doNcentered==0) then
+  if (doNcentered == 0) then
 
     wEns(1) = 1d0 - wEns(2) - wEns(3) 
 

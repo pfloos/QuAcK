@@ -140,14 +140,14 @@ subroutine evGW(maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,COHSEX,SOSE
 
     if(G0W) then
 
-      call self_energy_correlation_diag(COHSEX,SOSEX,eta,nBas,nC,nO,nV,nR,nS,eHF, & 
+      call self_energy_correlation_diag(.false.,COHSEX,SOSEX,eta,nBas,nC,nO,nV,nR,nS,eHF, & 
                                         Omega(:,ispin),rho(:,:,:,ispin),rhox(:,:,:,ispin),EcGM,SigC)
       call renormalization_factor(COHSEX,SOSEX,eta,nBas,nC,nO,nV,nR,nS,eHF, & 
                                   Omega(:,ispin),rho(:,:,:,ispin),rhox(:,:,:,ispin),Z(:))
 
     else 
 
-      call self_energy_correlation_diag(COHSEX,SOSEX,eta,nBas,nC,nO,nV,nR,nS,eGW, & 
+      call self_energy_correlation_diag(.false.,COHSEX,SOSEX,eta,nBas,nC,nO,nV,nR,nS,eGW, & 
                                         Omega(:,ispin),rho(:,:,:,ispin),rhox(:,:,:,ispin),EcGM,SigC)
       call renormalization_factor(COHSEX,SOSEX,eta,nBas,nC,nO,nV,nR,nS,eGW, & 
                                   Omega(:,ispin),rho(:,:,:,ispin),rhox(:,:,:,ispin),Z(:))

@@ -8,7 +8,7 @@ subroutine read_basis(nNuc,rNuc,nBas,nO,nV,nShell,TotAngMomShell,CenterShell,KSh
 
 ! Input variables
 
-  integer,intent(in)            :: nNuc,nO
+  integer,intent(in)            :: nNuc,nO(nspin)
   double precision,intent(in)   :: rNuc(nNuc,ncart)
 
 ! Local variables
@@ -23,7 +23,7 @@ subroutine read_basis(nNuc,rNuc,nBas,nO,nV,nShell,TotAngMomShell,CenterShell,KSh
   double precision,intent(out)  :: CenterShell(maxShell,ncart)
   integer,intent(out)           :: TotAngMomShell(maxShell),KShell(maxShell)
   double precision,intent(out)  :: DShell(maxShell,maxK),ExpShell(maxShell,maxK)
-  integer,intent(out)           :: nV
+  integer,intent(out)           :: nV(nspin)
 
   integer,intent(out)           :: max_ang_mom(nNuc)
   double precision,intent(out)  :: min_exponent(nNuc,maxL+1)
@@ -180,6 +180,6 @@ subroutine read_basis(nNuc,rNuc,nBas,nO,nV,nShell,TotAngMomShell,CenterShell,KSh
 
 ! Number of virtual orbitals
 
-  nV = nBas - nO
+  nV(:) = nBas - nO(:)
 
 end subroutine read_basis

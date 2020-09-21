@@ -20,7 +20,11 @@ program QuAcK
   logical                       :: doBas
 
   integer                       :: nNuc,nBas,nBasCABS
-  integer                       :: nEl(nspin),nC(nspin),nO(nspin),nV(nspin),nR(nspin)
+  integer                       :: nEl(nspin)
+  integer                       :: nC(nspin)
+  integer                       :: nO(nspin)
+  integer                       :: nV(nspin)
+  integer                       :: nR(nspin)
   integer                       :: nS(nspin)
   double precision              :: ENuc,ERHF,EUHF,Norm
   double precision              :: EcMP2(3),EcMP3,EcMP2F12(3),EcMCMP2(3),Err_EcMCMP2(3),Var_EcMCMP2(3)
@@ -401,7 +405,18 @@ program QuAcK
   if(doMP3) then
 
     call cpu_time(start_MP3)
-    call MP3(nBas,nEl,ERI_MO,eHF,ENuc,ERHF)
+    
+    if(unrestricted) then
+
+      write(*,*) 'MP3 NYI for UHF reference'
+      stop
+
+    else
+
+      call MP3(nBas,nEl,ERI_MO,eHF,ENuc,ERHF)
+
+    end if
+
     call cpu_time(end_MP3)
 
     t_MP3 = end_MP3 - start_MP3
@@ -732,9 +747,9 @@ program QuAcK
     call cpu_time(start_G0W0)
     if(unrestricted) then 
 
-      call UG0W0(doACFDT,exchange_kernel,doXBS,COHSEX,BSE,TDA_W,TDA,       & 
-                 dBSE,dTDA,evDyn,singlet_manifold,triplet_manifold,linGW,eta_GW, & 
-                 nBas,nC,nO,nV,nR,nS,ENuc,ERHF,Hc,ERI_MO,PHF,cHF,eHF,eG0W0)
+      call UG0W0(doACFDT,exchange_kernel,doXBS,COHSEX,BSE,TDA_W,TDA,dBSE,dTDA,evDyn, &
+                 singlet_manifold,triplet_manifold,linGW,eta_GW,nBas,nC,nO,nV,nR,nS, & 
+                 ENuc,EUHF,Hc,ERI_MO_aa,ERI_MO_ab,ERI_MO_bb,PHF,cHF,eHF,eG0W0)
     else
 
       call G0W0(doACFDT,exchange_kernel,doXBS,COHSEX,SOSEX,BSE,TDA_W,TDA,       & 
