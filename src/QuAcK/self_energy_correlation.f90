@@ -39,12 +39,8 @@ subroutine self_energy_correlation(COHSEX,SOSEX,eta,nBas,nC,nO,nV,nR,nS,e,Omega,
     do x=nC+1,nBas-nR
       do y=nC+1,nBas-nR
         do i=nC+1,nO
-          jb = 0
-          do j=nC+1,nO
-            do b=nO+1,nBas-nR
-              jb = jb + 1
-              SigC(x,y) = SigC(x,y) + 4d0*rho(x,i,jb)*rho(y,i,jb)/Omega(jb)
-            enddo
+          do jb=1,nS
+            SigC(x,y) = SigC(x,y) + 4d0*rho(x,i,jb)*rho(y,i,jb)/Omega(jb)
           enddo
         enddo
       enddo
@@ -55,12 +51,8 @@ subroutine self_energy_correlation(COHSEX,SOSEX,eta,nBas,nC,nO,nV,nR,nS,e,Omega,
     do x=nC+1,nBas-nR
       do y=nC+1,nBas-nR
         do p=nC+1,nBas-nR
-          jb = 0
-          do j=nC+1,nO
-            do b=nO+1,nBas-nR
-              jb = jb + 1
-              SigC(x,y) = SigC(x,y) - 2d0*rho(x,p,jb)*rho(y,p,jb)/Omega(jb)
-            enddo
+          do jb=1,nS
+            SigC(x,y) = SigC(x,y) - 2d0*rho(x,p,jb)*rho(y,p,jb)/Omega(jb)
           enddo
         enddo
       enddo
@@ -78,13 +70,9 @@ subroutine self_energy_correlation(COHSEX,SOSEX,eta,nBas,nC,nO,nV,nR,nS,e,Omega,
     do x=nC+1,nBas-nR
       do y=nC+1,nBas-nR
         do i=nC+1,nO
-          jb = 0
-          do j=nC+1,nO
-            do b=nO+1,nBas-nR
-              jb = jb + 1
-              eps = e(x) - e(i) + Omega(jb)
-              SigC(x,y) = SigC(x,y) + 2d0*rho(x,i,jb)*rho(y,i,jb)*eps/(eps**2 + eta**2)
-            enddo
+          do jb=1,nS
+            eps = e(x) - e(i) + Omega(jb)
+            SigC(x,y) = SigC(x,y) + 2d0*rho(x,i,jb)*rho(y,i,jb)*eps/(eps**2 + eta**2)
           enddo
         enddo
       enddo
@@ -95,13 +83,9 @@ subroutine self_energy_correlation(COHSEX,SOSEX,eta,nBas,nC,nO,nV,nR,nS,e,Omega,
     do x=nC+1,nBas-nR
       do y=nC+1,nBas-nR
         do a=nO+1,nBas-nR
-          jb = 0
-          do j=nC+1,nO
-            do b=nO+1,nBas-nR
-              jb = jb + 1
-              eps = e(x) - e(a) - Omega(jb)
-              SigC(x,y) = SigC(x,y) + 2d0*rho(x,a,jb)*rho(y,a,jb)*eps/(eps**2 + eta**2)
-            enddo
+          do jb=1,nS
+            eps = e(x) - e(a) - Omega(jb)
+            SigC(x,y) = SigC(x,y) + 2d0*rho(x,a,jb)*rho(y,a,jb)*eps/(eps**2 + eta**2)
           enddo
         enddo
       enddo
@@ -114,13 +98,9 @@ subroutine self_energy_correlation(COHSEX,SOSEX,eta,nBas,nC,nO,nV,nR,nS,e,Omega,
        do x=nC+1,nBas-nR
         do y=nC+1,nBas-nR
           do i=nC+1,nO
-            jb = 0
-            do j=nC+1,nO
-              do b=nO+1,nBas-nR
-                jb = jb + 1
-                eps = e(x) - e(i) + Omega(jb) 
-                SigC(x,y) = SigC(x,y) - rho(x,i,jb)*rhox(y,i,jb)*eps/(eps**2 + eta**2)
-              enddo
+            do jb=1,nS
+              eps = e(x) - e(i) + Omega(jb) 
+              SigC(x,y) = SigC(x,y) - rho(x,i,jb)*rhox(y,i,jb)*eps/(eps**2 + eta**2)
             enddo
           enddo
         enddo
@@ -131,13 +111,9 @@ subroutine self_energy_correlation(COHSEX,SOSEX,eta,nBas,nC,nO,nV,nR,nS,e,Omega,
       do x=nC+1,nBas-nR
         do y=nC+1,nBas-nR
           do a=nO+1,nBas-nR
-            jb = 0
-            do j=nC+1,nO
-              do b=nO+1,nBas-nR
-                jb = jb + 1
-                eps = e(x) - e(a) - Omega(jb) 
-                SigC(x,y) = SigC(x,y) - rho(x,a,jb)*rhox(y,a,jb)*eps/(eps**2 + eta**2)
-              enddo
+            do jb=1,nS
+              eps = e(x) - e(a) - Omega(jb) 
+              SigC(x,y) = SigC(x,y) - rho(x,a,jb)*rhox(y,a,jb)*eps/(eps**2 + eta**2)
             enddo
           enddo
         enddo
