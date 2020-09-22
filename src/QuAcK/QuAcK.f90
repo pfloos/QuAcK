@@ -57,9 +57,9 @@ program QuAcK
   double precision,allocatable  :: ERI_MO(:,:,:,:)
   integer                       :: bra
   integer                       :: ket
-  double precision,allocatable  :: ERI_MO_aa(:,:,:,:)
-  double precision,allocatable  :: ERI_MO_ab(:,:,:,:)
-  double precision,allocatable  :: ERI_MO_bb(:,:,:,:)
+  double precision,allocatable  :: ERI_MO_aaaa(:,:,:,:)
+  double precision,allocatable  :: ERI_MO_aabb(:,:,:,:)
+  double precision,allocatable  :: ERI_MO_bbbb(:,:,:,:)
   double precision,allocatable  :: ERI_ERF_AO(:,:,:,:)
   double precision,allocatable  :: ERI_ERF_MO(:,:,:,:)
   double precision,allocatable  :: F12(:,:,:,:),Yuk(:,:,:,:),FC(:,:,:,:,:,:)
@@ -330,25 +330,25 @@ program QuAcK
 
       ! Memory allocation
      
-      allocate(ERI_MO_aa(nBas,nBas,nBas,nBas),ERI_MO_ab(nBas,nBas,nBas,nBas),ERI_MO_bb(nBas,nBas,nBas,nBas))
+      allocate(ERI_MO_aaaa(nBas,nBas,nBas,nBas),ERI_MO_aabb(nBas,nBas,nBas,nBas),ERI_MO_bbbb(nBas,nBas,nBas,nBas))
      
       ! 4-index transform for (aa|aa) block
      
       bra = 1
       ket = 1
-      call AOtoMO_integral_transform(bra,ket,nBas,cHF,ERI_AO,ERI_MO_aa)
+      call AOtoMO_integral_transform(bra,ket,nBas,cHF,ERI_AO,ERI_MO_aaaa)
       
-      ! 4-index transform for (bb|bb) block
+      ! 4-index transform for (aa|bb) block
      
       bra = 1
       ket = 2
-      call AOtoMO_integral_transform(bra,ket,nBas,cHF,ERI_AO,ERI_MO_ab)
+      call AOtoMO_integral_transform(bra,ket,nBas,cHF,ERI_AO,ERI_MO_aabb)
      
-      ! 4-index transform for (aa|bb) block
+      ! 4-index transform for (bb|bb) block
      
       bra = 2
       ket = 2
-      call AOtoMO_integral_transform(bra,ket,nBas,cHF,ERI_AO,ERI_MO_bb)
+      call AOtoMO_integral_transform(bra,ket,nBas,cHF,ERI_AO,ERI_MO_bbbb)
      
     else
 
@@ -382,7 +382,7 @@ program QuAcK
 
     if(unrestricted) then
 
-      call UMP2(nBas,nC,nO,nV,nR,ERI_MO_aa,ERI_MO_ab,ERI_MO_bb,ENuc,EUHF,eHF,EcMP2)
+      call UMP2(nBas,nC,nO,nV,nR,ERI_MO_aaaa,ERI_MO_aabb,ERI_MO_bbbb,ENuc,EUHF,eHF,EcMP2)
 
     else
 
@@ -749,7 +749,7 @@ program QuAcK
 
       call UG0W0(doACFDT,exchange_kernel,doXBS,COHSEX,BSE,TDA_W,TDA,dBSE,dTDA,evDyn, &
                  singlet_manifold,triplet_manifold,linGW,eta_GW,nBas,nC,nO,nV,nR,nS, & 
-                 ENuc,EUHF,Hc,ERI_MO_aa,ERI_MO_ab,ERI_MO_bb,PHF,cHF,eHF,eG0W0)
+                 ENuc,EUHF,Hc,ERI_MO_aaaa,ERI_MO_aabb,ERI_MO_bbbb,PHF,cHF,eHF,eG0W0)
     else
 
       call G0W0(doACFDT,exchange_kernel,doXBS,COHSEX,SOSEX,BSE,TDA_W,TDA,       & 

@@ -1,5 +1,5 @@
 subroutine unrestricted_linear_response_B_matrix(ispin,dRPA,nBas,nC,nO,nV,nR,nSa,nSb,nSt,lambda, & 
-                                                 ERI_aa,ERI_ab,ERI_bb,B_lr)
+                                                 ERI_aaaa,ERI_aabb,ERI_bbbb,B_lr)
 
 ! Compute linear response
 
@@ -19,9 +19,9 @@ subroutine unrestricted_linear_response_B_matrix(ispin,dRPA,nBas,nC,nO,nV,nR,nSa
   integer,intent(in)            :: nSb
   integer,intent(in)            :: nSt
   double precision,intent(in)   :: lambda
-  double precision,intent(in)   :: ERI_aa(nBas,nBas,nBas,nBas) 
-  double precision,intent(in)   :: ERI_ab(nBas,nBas,nBas,nBas) 
-  double precision,intent(in)   :: ERI_bb(nBas,nBas,nBas,nBas) 
+  double precision,intent(in)   :: ERI_aaaa(nBas,nBas,nBas,nBas) 
+  double precision,intent(in)   :: ERI_aabb(nBas,nBas,nBas,nBas) 
+  double precision,intent(in)   :: ERI_bbbb(nBas,nBas,nBas,nBas) 
   
 ! Local variables
 
@@ -56,7 +56,7 @@ subroutine unrestricted_linear_response_B_matrix(ispin,dRPA,nBas,nC,nO,nV,nR,nSa
           do b=nO(1)+1,nBas-nR(1)
             jb = jb + 1
  
-            B_lr(ia,jb) = lambda*ERI_aa(i,j,a,b) - (1d0 - delta_dRPA)*lambda*ERI_aa(i,j,b,a)
+            B_lr(ia,jb) = lambda*ERI_aaaa(i,j,a,b) - (1d0 - delta_dRPA)*lambda*ERI_aaaa(i,j,b,a)
 
           end  do
         end  do
@@ -74,7 +74,7 @@ subroutine unrestricted_linear_response_B_matrix(ispin,dRPA,nBas,nC,nO,nV,nR,nSa
           do b=nO(2)+1,nBas-nR(2)
             jb = jb + 1
  
-            B_lr(ia,nSa+jb) = lambda*ERI_ab(i,j,a,b) 
+            B_lr(ia,nSa+jb) = lambda*ERI_aabb(i,j,a,b) 
 
           end  do
         end  do
@@ -92,7 +92,7 @@ subroutine unrestricted_linear_response_B_matrix(ispin,dRPA,nBas,nC,nO,nV,nR,nSa
           do b=nO(1)+1,nBas-nR(1)
             jb = jb + 1
  
-            B_lr(nSa+ia,jb) = lambda*ERI_ab(j,i,b,a)
+            B_lr(nSa+ia,jb) = lambda*ERI_aabb(j,i,b,a)
 
           end  do
         end  do
@@ -110,13 +110,23 @@ subroutine unrestricted_linear_response_B_matrix(ispin,dRPA,nBas,nC,nO,nV,nR,nSa
           do b=nO(2)+1,nBas-nR(2)
             jb = jb + 1
  
-            B_lr(nSa+ia,nSa+jb) = lambda*ERI_bb(i,j,a,b) - (1d0 - delta_dRPA)*lambda*ERI_bb(i,j,b,a)
+            B_lr(nSa+ia,nSa+jb) = lambda*ERI_bbbb(i,j,a,b) - (1d0 - delta_dRPA)*lambda*ERI_bbbb(i,j,b,a)
 
           end  do
         end  do
       end  do
     end  do
 
+  end if
+
+!-----------------------------------------------
+! Build A matrix for spin-flip transitions
+!-----------------------------------------------
+
+  if(ispin == 2) then
+
+    print*,'spin-flip transition NYI'
+  
   end if
 
 

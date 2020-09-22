@@ -35,42 +35,10 @@ subroutine renormalization_factor(COHSEX,SOSEX,eta,nBas,nC,nO,nV,nR,nS,e,Omega,r
     
     Z(:) = 1d0
     return
-  
-  end if
-
-! Occupied part of the correlation self-energy
-
-  do x=nC+1,nBas-nR
-    do i=nC+1,nO
-      jb = 0
-      do j=nC+1,nO
-        do b=nO+1,nBas-nR
-          jb = jb + 1
-          eps = e(x) - e(i) + Omega(jb) 
-          Z(x) = Z(x)  - 2d0*rho(x,i,jb)**2*(eps/(eps**2 + eta**2))**2
-        end do
-      end do
-    end do
-  end do
-
-! Virtual part of the correlation self-energy
-
-  do x=nC+1,nBas-nR
-    do a=nO+1,nBas-nR
-      jb = 0
-      do j=nC+1,nO
-        do b=nO+1,nBas-nR
-          jb = jb + 1
-          eps = e(x) - e(a) - Omega(jb) 
-          Z(x) = Z(x)  - 2d0*rho(x,a,jb)**2*(eps/(eps**2 + eta**2))**2
-        end do
-      end do
-    end do
-  end do
-
-  ! SOSEX correction
-
-  if(SOSEX) then
+ 
+! SOSEX correction
+ 
+  elseif(SOSEX) then
 
     ! Occupied part of the correlation self-energy
 
@@ -102,7 +70,39 @@ subroutine renormalization_factor(COHSEX,SOSEX,eta,nBas,nC,nO,nV,nR,nS,e,Omega,r
       end do
     end do
 
-  endif
+  else
+
+    ! Occupied part of the correlation self-energy
+
+    do x=nC+1,nBas-nR
+      do i=nC+1,nO
+        jb = 0
+        do j=nC+1,nO
+          do b=nO+1,nBas-nR
+            jb = jb + 1
+            eps = e(x) - e(i) + Omega(jb) 
+            Z(x) = Z(x)  - 2d0*rho(x,i,jb)**2*(eps/(eps**2 + eta**2))**2
+          end do
+        end do
+      end do
+    end do
+
+    ! Virtual part of the correlation self-energy
+
+    do x=nC+1,nBas-nR
+      do a=nO+1,nBas-nR
+        jb = 0
+        do j=nC+1,nO
+          do b=nO+1,nBas-nR
+            jb = jb + 1
+            eps = e(x) - e(a) - Omega(jb) 
+            Z(x) = Z(x)  - 2d0*rho(x,a,jb)**2*(eps/(eps**2 + eta**2))**2
+          end do
+        end do
+      end do
+    end do
+
+  end if
 
 ! Compute renormalization factor from derivative of SigC
  

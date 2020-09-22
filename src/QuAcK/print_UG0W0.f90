@@ -1,44 +1,61 @@
-subroutine print_UG0W0(nBas,nO,e,ENuc,EHF,SigmaC,Z,eGW,EcRPA)
+subroutine print_UG0W0(nBas,nO,e,ENuc,EHF,SigC,Z,eGW,EcRPA)
 
 ! Print one-electron energies and other stuff for G0W0
 
   implicit none
   include 'parameters.h'
 
-  integer,intent(in)                 :: nBas,nO
+  integer,intent(in)                 :: nBas
+  integer,intent(in)                 :: nO(nspin)
   double precision,intent(in)        :: ENuc
   double precision,intent(in)        :: EHF
   double precision,intent(in)        :: EcRPA
-  double precision,intent(in)        :: e(nBas),SigmaC(nBas),Z(nBas),eGW(nBas)
+  double precision,intent(in)        :: e(nBas,nspin)
+  double precision,intent(in)        :: SigC(nBas,nspin)
+  double precision,intent(in)        :: Z(nBas,nspin)
+  double precision,intent(in)        :: eGW(nBas,nspin)
 
-  integer                            :: x,HOMO,LUMO
+  integer                            :: p
+  double precision                   :: HOMO
+  double precision                   :: LUMO
   double precision                   :: Gap
 
 ! HOMO and LUMO
 
-  HOMO = nO
-  LUMO = HOMO + 1
-  Gap = eGW(LUMO)-eGW(HOMO)
+  HOMO = max(eGW(nO(1),1),eGW(nO(2),2))
+  LUMO = min(eGW(nO(1)+1,1),eGW(nO(2)+1,2))
+  Gap = LUMO - HOMO
 
 ! Dump results
 
-  write(*,*)'-------------------------------------------------------------------------------'
-  write(*,*)'  One-shot G0W0 calculation'
-  write(*,*)'-------------------------------------------------------------------------------'
-  write(*,'(1X,A1,1X,A3,1X,A1,1X,A15,1X,A1,1X,A15,1X,A1,1X,A15,1X,A1,1X,A15,1X,A1,1X)') &
-            '|','#','|','e_HF (eV)','|','Sigma_c (eV)','|','Z','|','e_QP (eV)','|'
-  write(*,*)'-------------------------------------------------------------------------------'
+  write(*,*)'-------------------------------------------------------------------------------&
+              -------------------------------------------------'
+  write(*,*)'  Unrestricted one-shot G0W0 calculation (eV)'
+  write(*,*)'-------------------------------------------------------------------------------& 
+              -------------------------------------------------'
+  write(*,'(A1,A3,A1,2A15,A1,2A15,A1,2A15,A1,2A15,A1)') &
+            '|','#','|','e_HF up','e_HF dw','|','Sig_c up','Sig_c dw','|', & 
+                        'Z up','Z dw','|','e_QP up','e_QP dw','|'
+  write(*,*)'-------------------------------------------------------------------------------& 
+              -------------------------------------------------'
 
-  do x=1,nBas
-    write(*,'(1X,A1,1X,I3,1X,A1,1X,F15.6,1X,A1,1X,F15.6,1X,A1,1X,F15.6,1X,A1,1X,F15.6,1X,A1,1X)') &
-    '|',x,'|',e(x)*HaToeV,'|',SigmaC(x)*HaToeV,'|',Z(x),'|',eGW(x)*HaToeV,'|'
+  do p=1,nBas
+    write(*,'(A1,I3,A1,2F15.6,A1,2F15.6,A1,2F15.6,A1,2F15.6,A1)') &
+    '|',p,'|',e(p,1)*HaToeV,e(p,2)*HaToeV,'|',SigC(p,1)*HaToeV,SigC(p,2)*HaToeV,'|', & 
+              Z(p,1),Z(p,2),'|',eGW(p,1)*HaToeV,eGW(p,2)*HaToeV,'|'
   enddo
 
-  write(*,*)'-------------------------------------------------------------------------------'
-  write(*,'(2X,A30,F15.6)') 'G0W0 HOMO      energy (eV):',eGW(HOMO)*HaToeV
-  write(*,'(2X,A30,F15.6)') 'G0W0 LUMO      energy (eV):',eGW(LUMO)*HaToeV
+  write(*,*)'-------------------------------------------------------------------------------& 
+              -------------------------------------------------'
+  write(*,'(2X,A30,F15.6)') 'G0W0 HOMO      energy (eV):',HOMO*HaToeV
+  write(*,'(2X,A30,F15.6)') 'G0W0 LUMO      energy (eV):',LUMO*HaToeV
   write(*,'(2X,A30,F15.6)') 'G0W0 HOMO-LUMO gap    (eV):',Gap*HaToeV
-  write(*,*)'-------------------------------------------------------------------------------'
+  write(*,*)'-------------------------------------------------------------------------------& 
+              -------------------------------------------------'
+  write(*,'(2X,A30,F15.6)') 'RPA@HF   total energy       =',ENuc + EHF + EcRPA
+  write(*,'(2X,A30,F15.6)') 'RPA@HF   correlation energy =',EcRPA
+  write(*,*)'-------------------------------------------------------------------------------& 
+              -------------------------------------------------'
   write(*,*)
 
 end subroutine print_UG0W0

@@ -13,18 +13,20 @@ subroutine print_excitation(method,ispin,nS,Omega)
 
 ! Local variables
 
-  character*7                        :: spin_manifold
+  character*14                       :: spin_manifold
   integer,parameter                  :: maxS = 32
   integer                            :: ia
 
   if(ispin == 1) spin_manifold = 'singlet'
   if(ispin == 2) spin_manifold = 'triplet'
-  if(ispin == 3) spin_manifold = 'alp-bet'
-  if(ispin == 4) spin_manifold = 'alp-alp'
+  if(ispin == 3) spin_manifold = 'alpha-beta'
+  if(ispin == 4) spin_manifold = 'alpha-alpha'
+  if(ispin == 5) spin_manifold = 'spin-conserved'
+  if(ispin == 6) spin_manifold = 'spin-flip'
 
   write(*,*)
   write(*,*)'-------------------------------------------------------------'
-  write(*,'(1X,A1,1X,A14,A14,A7,A9,A15)')'|',method,' calculation: ',spin_manifold,' manifold','         |'
+  write(*,'(1X,A1,1X,A14,A14,A14,A9,A13)')'|',method,' calculation: ',spin_manifold,' manifold','     |'
   write(*,*)'-------------------------------------------------------------'
   write(*,'(1X,A1,1X,A5,1X,A1,1X,A23,1X,A1,1X,A23,1X,A1,1X)') &
             '|','State','|',' Excitation energy (au) ','|',' Excitation energy (eV) ','|'

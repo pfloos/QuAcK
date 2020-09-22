@@ -1,6 +1,6 @@
 subroutine UG0W0(doACFDT,exchange_kernel,doXBS,COHSEX,BSE,TDA_W,TDA,dBSE,dTDA,evDyn,  &
-                 singlet_manifold,triplet_manifold,linearize,eta,nBas,nC,nO,nV,nR,nS, &
-                 ENuc,EUHF,Hc,ERI_aa,ERI_ab,ERI_bb,PHF,cHF,eHF,eGW)
+                 spin_conserved,spin_flip,linearize,eta,nBas,nC,nO,nV,nR,nS, &
+                 ENuc,EUHF,Hc,ERI_aaaa,ERI_aabb,ERI_bbbb,PHF,cHF,eHF,eGW)
 
 ! Perform unrestricted G0W0 calculation
 
@@ -20,8 +20,8 @@ subroutine UG0W0(doACFDT,exchange_kernel,doXBS,COHSEX,BSE,TDA_W,TDA,dBSE,dTDA,ev
   logical,intent(in)            :: dBSE
   logical,intent(in)            :: dTDA
   logical,intent(in)            :: evDyn
-  logical,intent(in)            :: singlet_manifold
-  logical,intent(in)            :: triplet_manifold
+  logical,intent(in)            :: spin_conserved
+  logical,intent(in)            :: spin_flip
   logical,intent(in)            :: linearize
   double precision,intent(in)   :: eta
 
@@ -37,9 +37,9 @@ subroutine UG0W0(doACFDT,exchange_kernel,doXBS,COHSEX,BSE,TDA_W,TDA,dBSE,dTDA,ev
   double precision,intent(in)   :: cHF(nBas,nBas,nspin)
   double precision,intent(in)   :: PHF(nBas,nBas,nspin)
   double precision,intent(in)   :: Hc(nBas,nBas,nspin)
-  double precision,intent(in)   :: ERI_aa(nBas,nBas,nBas,nBas)
-  double precision,intent(in)   :: ERI_ab(nBas,nBas,nBas,nBas)
-  double precision,intent(in)   :: ERI_bb(nBas,nBas,nBas,nBas)
+  double precision,intent(in)   :: ERI_aaaa(nBas,nBas,nBas,nBas)
+  double precision,intent(in)   :: ERI_aabb(nBas,nBas,nBas,nBas)
+  double precision,intent(in)   :: ERI_bbbb(nBas,nBas,nBas,nBas)
 
 ! Local variables
 
@@ -82,18 +82,24 @@ subroutine UG0W0(doACFDT,exchange_kernel,doXBS,COHSEX,BSE,TDA_W,TDA,dBSE,dTDA,ev
 
 ! COHSEX approximation
 
-  if(COHSEX) write(*,*) 'COHSEX approximation activated!'
-  write(*,*)
+  if(COHSEX) then 
+    write(*,*) 'COHSEX approximation activated!'
+    write(*,*)
+  end if
 
 ! TDA for W
 
-  if(TDA_W) write(*,*) 'Tamm-Dancoff approximation for dynamic screening!'
-  write(*,*)
+  if(TDA_W) then 
+    write(*,*) 'Tamm-Dancoff approximation for dynamic screening!'
+    write(*,*)
+  end if
 
 ! TDA 
 
-  if(TDA) write(*,*) 'Tamm-Dancoff approximation activated!'
-  write(*,*)
+  if(TDA) then 
+    write(*,*) 'Tamm-Dancoff approximation activated!'
+    write(*,*)
+  end if
 
 ! Memory allocation
 
@@ -113,15 +119,15 @@ subroutine UG0W0(doACFDT,exchange_kernel,doXBS,COHSEX,BSE,TDA_W,TDA,dBSE,dTDA,ev
   ispin = 1
 
   call unrestricted_linear_response(ispin,.true.,TDA_W,.false.,eta,nBas,nC,nO,nV,nR,nSa,nSb,nSt,1d0, &
-                                    eHF,ERI_aa,ERI_ab,ERI_bb,rho(:,:,:,ispin),EcRPA,Omega,XpY,XmY)
+                                    eHF,ERI_aaaa,ERI_aabb,ERI_bbbb,rho,EcRPA,Omega,XpY,XmY)
 
-  if(print_W) call print_excitation('RPA@UHF',3,nSt,Omega)
+  if(print_W) call print_excitation('RPA@UHF',5,nSt,Omega)
 
 !----------------------!
 ! Excitation densities !
 !----------------------!
  
-  call unrestricted_excitation_density(nBas,nC,nO,nR,nSa,nSb,nSt,ERI_aa,ERI_ab,ERI_bb,XpY,rho)
+  call unrestricted_excitation_density(nBas,nC,nO,nR,nSa,nSb,nSt,ERI_aaaa,ERI_aabb,ERI_bbbb,XpY,rho)
 
 !---------------------!
 ! Compute self-energy !
@@ -133,14 +139,12 @@ subroutine UG0W0(doACFDT,exchange_kernel,doXBS,COHSEX,BSE,TDA_W,TDA,dBSE,dTDA,ev
 ! Compute renormalization factor !
 !--------------------------------!
 
-! call renormalization_factor(COHSEX,SOSEX,eta,nBas,nC,nO,nV,nR,nS,eHF, & 
-!                             Omega(:,ispin),rho(:,:,:,ispin),rhox(:,:,:,ispin),Z(:))
+  call unrestricted_renormalization_factor(eta,nBas,nC,nO,nV,nR,nSa,nSb,nSt,eHF,Omega,rho,Z)
 
 !-----------------------------------!
 ! Solve the quasi-particle equation !
 !-----------------------------------!
 
-  Z(:,:) = 1d0
   eGWlin(:,:) = eHF(:,:) + Z(:,:)*SigC(:,:)
 
   if(linearize) then 
@@ -163,14 +167,12 @@ subroutine UG0W0(doACFDT,exchange_kernel,doXBS,COHSEX,BSE,TDA_W,TDA,dBSE,dTDA,ev
 
 ! Dump results
 
-  do ispin=1,nspin
-    call print_G0W0(nBas,nO(ispin),eHF(:,ispin),ENuc,EUHF,SigC(:,ispin),Z(:,ispin),eGW(:,ispin),EcRPA)
-  end do
+  call print_UG0W0(nBas,nO,eHF,ENuc,EUHF,SigC,Z,eGW,EcRPA)
 
 ! Compute the RPA correlation energy
 
-! call linear_response(ispin,.true.,TDA_W,.false.,eta,nBas,nC,nO,nV,nR,nS,1d0,eGW,ERI, & 
-!                      rho(:,:,:,ispin),EcRPA(ispin),Omega(:,ispin),XpY(:,:,ispin),XmY(:,:,ispin))
+  call unrestricted_linear_response(ispin,.true.,TDA_W,.false.,eta,nBas,nC,nO,nV,nR,nSa,nSb,nSt,1d0, &
+                                    eGW,ERI_aaaa,ERI_aabb,ERI_bbbb,rho,EcRPA,Omega,XpY,XmY)
 
   write(*,*)
   write(*,*)'-------------------------------------------------------------------------------'
@@ -181,10 +183,11 @@ subroutine UG0W0(doACFDT,exchange_kernel,doXBS,COHSEX,BSE,TDA_W,TDA,dBSE,dTDA,ev
 
 ! Perform BSE calculation
 
-! if(BSE) then
+  if(BSE) then
 
-!   call Bethe_Salpeter(TDA_W,TDA,dBSE,dTDA,evDyn,singlet_manifold,triplet_manifold,eta, &
-!                       nBas,nC,nO,nV,nR,nS,ERI,eHF,eGW,Omega,XpY,XmY,rho,EcRPA,EcBSE)
+    call unrestricted_Bethe_Salpeter(TDA_W,TDA,dBSE,dTDA,evDyn,spin_conserved,spin_flip,eta,  &
+                                     nBas,nC,nO,nV,nR,nSa,nSb,nSt,ERI_aaaa,ERI_aabb,ERI_bbbb, & 
+                                     eHF,eGW,Omega,XpY,XmY,rho,EcRPA,EcBSE)
 
 !   if(exchange_kernel) then
 !
@@ -239,6 +242,6 @@ subroutine UG0W0(doACFDT,exchange_kernel,doXBS,COHSEX,BSE,TDA_W,TDA,dBSE,dTDA,ev
 
 !   end if
 
-! end if
+  end if
 
 end subroutine UG0W0

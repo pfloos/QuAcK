@@ -1,5 +1,5 @@
 subroutine unrestricted_linear_response_A_matrix(ispin,dRPA,nBas,nC,nO,nV,nR,nSa,nSb,nSt,lambda, & 
-                                                 e,ERI_aa,ERI_ab,ERI_bb,A_lr)
+                                                 e,ERI_aaaa,ERI_aabb,ERI_bbbb,A_lr)
 
 ! Compute linear response
 
@@ -20,9 +20,9 @@ subroutine unrestricted_linear_response_A_matrix(ispin,dRPA,nBas,nC,nO,nV,nR,nSa
   integer,intent(in)            :: nSt
   double precision,intent(in)   :: lambda
   double precision,intent(in)   :: e(nBas,nspin)
-  double precision,intent(in)   :: ERI_aa(nBas,nBas,nBas,nBas) 
-  double precision,intent(in)   :: ERI_ab(nBas,nBas,nBas,nBas) 
-  double precision,intent(in)   :: ERI_bb(nBas,nBas,nBas,nBas) 
+  double precision,intent(in)   :: ERI_aaaa(nBas,nBas,nBas,nBas) 
+  double precision,intent(in)   :: ERI_aabb(nBas,nBas,nBas,nBas) 
+  double precision,intent(in)   :: ERI_bbbb(nBas,nBas,nBas,nBas) 
   
 ! Local variables
 
@@ -58,7 +58,7 @@ subroutine unrestricted_linear_response_A_matrix(ispin,dRPA,nBas,nC,nO,nV,nR,nSa
             jb = jb + 1
  
             A_lr(ia,jb) = (e(a,1) - e(i,1))*Kronecker_delta(i,j)*Kronecker_delta(a,b) &
-                        + lambda*ERI_aa(i,b,a,j) - (1d0 - delta_dRPA)*lambda*ERI_aa(i,b,j,a)
+                        + lambda*ERI_aaaa(i,b,a,j) - (1d0 - delta_dRPA)*lambda*ERI_aaaa(i,b,j,a)
 
           end  do
         end  do
@@ -76,7 +76,7 @@ subroutine unrestricted_linear_response_A_matrix(ispin,dRPA,nBas,nC,nO,nV,nR,nSa
           do b=nO(2)+1,nBas-nR(2)
             jb = jb + 1
  
-            A_lr(ia,nSa+jb) = lambda*ERI_ab(i,b,a,j) 
+            A_lr(ia,nSa+jb) = lambda*ERI_aabb(i,b,a,j) 
 
           end  do
         end  do
@@ -94,7 +94,7 @@ subroutine unrestricted_linear_response_A_matrix(ispin,dRPA,nBas,nC,nO,nV,nR,nSa
           do b=nO(1)+1,nBas-nR(1)
             jb = jb + 1
  
-            A_lr(nSa+ia,jb) = lambda*ERI_ab(b,i,j,a)
+            A_lr(nSa+ia,jb) = lambda*ERI_aabb(b,i,j,a)
 
           end  do
         end  do
@@ -113,12 +113,22 @@ subroutine unrestricted_linear_response_A_matrix(ispin,dRPA,nBas,nC,nO,nV,nR,nSa
             jb = jb + 1
  
             A_lr(nSa+ia,nSa+jb) = (e(a,2) - e(i,2))*Kronecker_delta(i,j)*Kronecker_delta(a,b) &
-                                + lambda*ERI_bb(i,b,a,j) - (1d0 - delta_dRPA)*lambda*ERI_bb(i,b,j,a)
+                                + lambda*ERI_bbbb(i,b,a,j) - (1d0 - delta_dRPA)*lambda*ERI_bbbb(i,b,j,a)
 
           end  do
         end  do
       end  do
     end  do
+
+  end if
+
+!-----------------------------------------------
+! Build A matrix for spin-flip transitions
+!-----------------------------------------------
+
+  if(ispin == 2) then 
+
+    print*,'spin-flip transition NYI'
 
   end if
 
