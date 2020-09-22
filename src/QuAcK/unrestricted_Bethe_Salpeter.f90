@@ -1,6 +1,5 @@
 subroutine unrestricted_Bethe_Salpeter(TDA_W,TDA,dBSE,dTDA,evDyn,spin_conserved,spin_flip,eta,  & 
-                                       nBas,nC,nO,nV,nR,nSa,nSb,nSt,ERI_aaaa,ERI_aabb,ERI_bbbb, & 
-                                       eW,eGW,OmRPA,XpY_RPA,XmY_RPA,rho_RPA,EcRPA,EcBSE)
+                                       nBas,nC,nO,nV,nR,nS,ERI_aaaa,ERI_aabb,ERI_bbbb,eW,eGW,EcRPA,EcBSE)
 
 ! Compute the Bethe-Salpeter excitation energies
 
@@ -23,36 +22,32 @@ subroutine unrestricted_Bethe_Salpeter(TDA_W,TDA,dBSE,dTDA,evDyn,spin_conserved,
   integer,intent(in)            :: nO(nspin)
   integer,intent(in)            :: nV(nspin)
   integer,intent(in)            :: nR(nspin)
-  integer,intent(in)            :: nSa
-  integer,intent(in)            :: nSb
-  integer,intent(in)            :: nSt
+  integer,intent(in)            :: nS(nspin)
   double precision,intent(in)   :: eW(nBas,nspin)
   double precision,intent(in)   :: eGW(nBas,nspin)
   double precision,intent(in)   :: ERI_aaaa(nBas,nBas,nBas,nBas)
   double precision,intent(in)   :: ERI_aabb(nBas,nBas,nBas,nBas)
   double precision,intent(in)   :: ERI_bbbb(nBas,nBas,nBas,nBas)
 
-  double precision              :: OmRPA(nSt)
-  double precision              :: XpY_RPA(nSt,nSt)
-  double precision              :: XmY_RPA(nSt,nSt)
-  double precision              :: rho_RPA(nBas,nBas,nSt,nspin)
 
 ! Local variables
 
   integer                       :: ispin
   integer                       :: isp_W
-  double precision,allocatable  :: OmBSE(:)
-  double precision,allocatable  :: XpY_BSE(:,:)
-  double precision,allocatable  :: XmY_BSE(:,:)
+  integer                       :: nS_aa,nS_bb,nS_sc
+  integer                       :: nS_ab,nS_ba,nS_sf
+  double precision,allocatable  :: OmRPA_sc(:)
+  double precision,allocatable  :: XpY_RPA_sc(:,:)
+  double precision,allocatable  :: XmY_RPA_sc(:,:)
+  double precision,allocatable  :: rho_RPA_sc(:,:,:,:)
+  double precision,allocatable  :: OmBSE_sc(:)
+  double precision,allocatable  :: XpY_BSE_sc(:,:)
+  double precision,allocatable  :: XmY_BSE_sc(:,:)
 
 ! Output variables
 
-  double precision,intent(out)  :: EcRPA
-  double precision,intent(out)  :: EcBSE
-
-! Memory allocation
-
-  allocate(OmBSE(nSt),XpY_BSE(nSt,nSt),XmY_BSE(nSt,nSt))
+  double precision,intent(out)  :: EcRPA(nspin)
+  double precision,intent(out)  :: EcBSE(nspin)
 
 !----------------------------!
 ! Spin-conserved excitations !
@@ -62,23 +57,32 @@ subroutine unrestricted_Bethe_Salpeter(TDA_W,TDA,dBSE,dTDA,evDyn,spin_conserved,
 
     ispin = 1
     isp_W = 1
-    EcBSE = 0d0
+    EcBSE(ispin) = 0d0
 
-   ! Compute spin-conserved RPA screening 
+    ! Memory allocation
 
-    call unrestricted_linear_response(isp_W,.true.,TDA_W,.false.,eta,nBas,nC,nO,nV,nR,nSa,nSb,nSt,1d0, &
-                                      eW,ERI_aaaa,ERI_aabb,ERI_bbbb,rho_RPA,EcRPA,OmRPA,XpY_RPA,XmY_RPA)
+    nS_aa = nS(1)
+    nS_bb = nS(2)
+    nS_sc = nS_aa + nS_bb
+  
+    allocate(OmRPA_sc(nS_sc),XpY_RPA_sc(nS_sc,nS_sc),XmY_RPA_sc(nS_sc,nS_sc),rho_RPA_sc(nBas,nBas,nS_sc,nspin))
+    allocate(OmBSE_sc(nS_sc),XpY_BSE_sc(nS_sc,nS_sc),XmY_BSE_sc(nS_sc,nS_sc))
 
-    call unrestricted_excitation_density(nBas,nC,nO,nR,nSa,nSb,nSt,ERI_aaaa,ERI_aabb,ERI_bbbb,XpY_RPA,rho_RPA)
+    ! Compute spin-conserved RPA screening 
 
-    ! Compute BSE excitation energies
+    call unrestricted_linear_response(isp_W,.true.,TDA_W,.false.,eta,nBas,nC,nO,nV,nR,nS_aa,nS_bb,nS_sc,1d0, &
+                                      eW,ERI_aaaa,ERI_aabb,ERI_bbbb,rho_RPA_sc,EcRPA(ispin),OmRPA_sc,XpY_RPA_sc,XmY_RPA_sc)
 
-    OmBSE(:) = OmRPA(:)
+    call unrestricted_excitation_density(nBas,nC,nO,nR,nS_aa,nS_bb,nS_sc,ERI_aaaa,ERI_aabb,ERI_bbbb,XpY_RPA_sc,rho_RPA_sc)
 
-    call unrestricted_linear_response(ispin,.true.,TDA,.true.,eta,nBas,nC,nO,nV,nR,nSa,nSb,nSt,1d0, &
-                                      eGW,ERI_aaaa,ERI_aabb,ERI_bbbb,rho_RPA,EcBSE,OmBSE,XpY_BSE,XmY_BSE)
+    ! Compute spin-conserved BSE excitation energies
 
-    call print_excitation('BSE@UG0W0',5,nSt,OmBSE)
+    OmBSE_sc(:) = OmRPA_sc(:)
+
+    call unrestricted_linear_response(ispin,.true.,TDA,.true.,eta,nBas,nC,nO,nV,nR,nS_aa,nS_bb,nS_sc,1d0, &
+                                      eGW,ERI_aaaa,ERI_aabb,ERI_bbbb,rho_RPA_sc,EcBSE(ispin),OmBSE_sc,XpY_BSE_sc,XmY_BSE_sc)
+
+    call print_excitation('BSE@UG0W0',5,nS_sc,OmBSE_sc)
 
     !-------------------------------------------------
     ! Compute the dynamical screening at the BSE level

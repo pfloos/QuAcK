@@ -149,7 +149,7 @@ subroutine qsGW(maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,           
 
     ! AO to MO transformation of two-electron integrals
 
-    call AOtoMO_integral_transform(nBas,c,ERI_AO_basis,ERI_MO_basis)
+    call AOtoMO_integral_transform(1,1,1,1,nBas,c,ERI_AO_basis,ERI_MO_basis)
 
     ! Compute linear response
 
