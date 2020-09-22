@@ -1,6 +1,6 @@
 subroutine G0W0(doACFDT,exchange_kernel,doXBS,COHSEX,SOSEX,BSE,TDA_W,TDA,        & 
                 dBSE,dTDA,evDyn,singlet_manifold,triplet_manifold,linearize,eta, & 
-                nBas,nC,nO,nV,nR,nS,ENuc,ERHF,Hc,H,ERI,PHF,cHF,eHF,eGW)
+                nBas,nC,nO,nV,nR,nS,ENuc,ERHF,Hc,ERI,PHF,cHF,eHF,eGW)
 
 ! Perform G0W0 calculation
 
@@ -33,7 +33,6 @@ subroutine G0W0(doACFDT,exchange_kernel,doXBS,COHSEX,SOSEX,BSE,TDA_W,TDA,       
   double precision,intent(in)   :: cHF(nBas,nBas)
   double precision,intent(in)   :: PHF(nBas,nBas)
   double precision,intent(in)   :: Hc(nBas,nBas)
-  double precision,intent(in)   :: H(nBas,nBas)
   double precision,intent(in)   :: ERI(nBas,nBas,nBas,nBas)
 
 ! Local variables

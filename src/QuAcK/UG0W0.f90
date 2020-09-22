@@ -51,16 +51,14 @@ subroutine UG0W0(doACFDT,exchange_kernel,doXBS,COHSEX,BSE,TDA_W,TDA,dBSE,dTDA,ev
   integer                       :: nSa
   integer                       :: nSb
   integer                       :: nSt
-  double precision              :: EcRPA(nspin)
-  double precision              :: EcBSE(nspin)
+  double precision              :: EcRPA
+  double precision              :: EcBSE
   double precision              :: EcAC(nspin)
   double precision,allocatable  :: SigC(:,:)
   double precision,allocatable  :: Z(:,:)
   double precision,allocatable  :: Omega(:)
-  double precision,allocatable  :: XpY_a(:,:)
-  double precision,allocatable  :: XpY_b(:,:)
-  double precision,allocatable  :: XmY_a(:,:)
-  double precision,allocatable  :: XmY_b(:,:)
+  double precision,allocatable  :: XpY(:,:)
+  double precision,allocatable  :: XmY(:,:)
   double precision,allocatable  :: rho(:,:,:,:)
 
   double precision,allocatable  :: eGWlin(:,:)
@@ -80,7 +78,7 @@ subroutine UG0W0(doACFDT,exchange_kernel,doXBS,COHSEX,BSE,TDA_W,TDA,dBSE,dTDA,ev
 
 ! Initialization
 
-  EcRPA(:) = 0d0
+  EcRPA = 0d0
 
 ! COHSEX approximation
 
@@ -103,53 +101,45 @@ subroutine UG0W0(doACFDT,exchange_kernel,doXBS,COHSEX,BSE,TDA_W,TDA,dBSE,dTDA,ev
   nSb = nS(2)
   nSt = nSa + nSb
 
-  allocate(SigC(nBas,nspin),Z(nBas,nspin),Omega(nSt),XpY_a(nSa,nSa),XpY_b(nSb,nSb),XmY_a(nSa,nSa),XmY_b(nSb,nSb), & 
+  allocate(SigC(nBas,nspin),Z(nBas,nspin),Omega(nSt),XpY(nSt,nSt),XmY(nSt,nSt), &
            rho(nBas,nBas,nSt,nspin),eGWlin(nBas,nspin))
 
-! Compute linear response
+!-------------------!
+! Compute screening !
+!-------------------!
 
-!----------------------------------------------
-! alpha-alpha block
-!----------------------------------------------
+! Spin-conserving transition
 
-  ispin  = 1
-  iblock = 3
+  ispin = 1
 
-  call linear_response(iblock,.true.,TDA_W,.false.,eta,nBas,nC(ispin),nO(ispin),nV(ispin),nR(ispin),nSa,1d0, &
-                       eHF(:,ispin),ERI_aa,rho(:,:,1:nSa,ispin),EcRPA(ispin),Omega(1:nSa),XpY_a,XmY_a)
+  call unrestricted_linear_response(ispin,.true.,TDA_W,.false.,eta,nBas,nC,nO,nV,nR,nSa,nSb,nSt,1d0, &
+                                    eHF,ERI_aa,ERI_ab,ERI_bb,rho(:,:,:,ispin),EcRPA,Omega,XpY,XmY)
 
-  if(print_W) call print_excitation('RPA@HF alpha',iblock,nSa,Omega(1:nSa))
+  if(print_W) call print_excitation('RPA@UHF',3,nSt,Omega)
 
-!----------------------------------------------
-! alpha-beta block
-!----------------------------------------------
-
-  ispin  = 2
-  iblock = 3
-
-  call linear_response(iblock,.true.,TDA_W,.false.,eta,nBas,nC(ispin),nO(ispin),nV(ispin),nR(ispin),nSb,1d0, &
-                       eHF(:,ispin),ERI_bb,rho(:,:,nSa+1:nSt,ispin),EcRPA(ispin),Omega(nSa+1:nSt),XpY_b,XmY_b)
-
-  if(print_W) call print_excitation('RPA@HF beta ',iblock,nSb,Omega(nSa+1:nSt))
-
-!----------------------------------------------
-! Excitation densities for alpha self-energy 
-!----------------------------------------------
+!----------------------!
+! Excitation densities !
+!----------------------!
  
-  call unrestricted_excitation_density(nBas,nC,nO,nR,nSa,nSb,nSt,ERI_aa,ERI_ab,ERI_bb,XpY_a,XpY_b,rho)
+  call unrestricted_excitation_density(nBas,nC,nO,nR,nSa,nSb,nSt,ERI_aa,ERI_ab,ERI_bb,XpY,rho)
 
-!----------------------
-! Compute self-energy
-!----------------------
+!---------------------!
+! Compute self-energy !
+!---------------------!
 
   call unrestricted_self_energy_correlation_diag(eta,nBas,nC,nO,nV,nR,nSa,nSb,nSt,eHF,Omega,rho,SigC)
 
-! Compute renormalization factor
+!--------------------------------!
+! Compute renormalization factor !
+!--------------------------------!
 
 ! call renormalization_factor(COHSEX,SOSEX,eta,nBas,nC,nO,nV,nR,nS,eHF, & 
 !                             Omega(:,ispin),rho(:,:,:,ispin),rhox(:,:,:,ispin),Z(:))
 
-! Solve the quasi-particle equation
+!-----------------------------------!
+! Solve the quasi-particle equation !
+!-----------------------------------!
+
   Z(:,:) = 1d0
   eGWlin(:,:) = eHF(:,:) + Z(:,:)*SigC(:,:)
 
@@ -174,7 +164,7 @@ subroutine UG0W0(doACFDT,exchange_kernel,doXBS,COHSEX,BSE,TDA_W,TDA,dBSE,dTDA,ev
 ! Dump results
 
   do ispin=1,nspin
-    call print_G0W0(nBas,nO(ispin),eHF(:,ispin),ENuc,EUHF,SigC(:,ispin),Z(:,ispin),eGW(:,ispin),EcRPA(ispin))
+    call print_G0W0(nBas,nO(ispin),eHF(:,ispin),ENuc,EUHF,SigC(:,ispin),Z(:,ispin),eGW(:,ispin),EcRPA)
   end do
 
 ! Compute the RPA correlation energy
@@ -184,10 +174,8 @@ subroutine UG0W0(doACFDT,exchange_kernel,doXBS,COHSEX,BSE,TDA_W,TDA,dBSE,dTDA,ev
 
   write(*,*)
   write(*,*)'-------------------------------------------------------------------------------'
-  write(*,'(2X,A50,F20.10)') 'Tr@RPA@G0W0 correlation energy (singlet) =',EcRPA(1)
-  write(*,'(2X,A50,F20.10)') 'Tr@RPA@G0W0 correlation energy (triplet) =',EcRPA(2)
-  write(*,'(2X,A50,F20.10)') 'Tr@RPA@G0W0 correlation energy           =',EcRPA(1) + EcRPA(2)
-  write(*,'(2X,A50,F20.10)') 'Tr@RPA@G0W0 total energy                 =',ENuc + EUHF + EcRPA(1) + EcRPA(2)
+  write(*,'(2X,A50,F20.10)') 'Tr@RPA@G0W0 correlation energy           =',EcRPA
+  write(*,'(2X,A50,F20.10)') 'Tr@RPA@G0W0 total energy                 =',ENuc + EUHF + EcRPA
   write(*,*)'-------------------------------------------------------------------------------'
   write(*,*)
 

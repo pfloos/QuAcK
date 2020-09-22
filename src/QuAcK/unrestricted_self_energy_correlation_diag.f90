@@ -33,9 +33,9 @@ subroutine unrestricted_self_energy_correlation_diag(eta,nBas,nC,nO,nV,nR,nSa,nS
 
   SigC(:,:) = 0d0
 
-!--------------
-! Spin-up part
-!--------------
+!--------------!
+! Spin-up part !
+!--------------!
 
   ! Occupied part of the correlation self-energy
 
@@ -59,9 +59,9 @@ subroutine unrestricted_self_energy_correlation_diag(eta,nBas,nC,nO,nV,nR,nSa,nS
     end do
   end do
 
-!----------------
-! Spin-down part
-!----------------
+!----------------!
+! Spin-down part !
+!----------------!
 
   ! Occupied part of the correlation self-energy
 

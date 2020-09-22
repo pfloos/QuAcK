@@ -4,7 +4,7 @@ program QuAcK
   include 'parameters.h'
 
   logical                       :: doSph
-  logical                       :: unrestricted
+  logical                       :: unrestricted = .false.
   logical                       :: doRHF,doUHF,doMOM 
   logical                       :: doMP2,doMP3,doMP2F12
   logical                       :: doCCD,doCCSD,doCCSDT
