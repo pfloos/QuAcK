@@ -1,5 +1,6 @@
 subroutine unrestricted_Bethe_Salpeter(TDA_W,TDA,dBSE,dTDA,evDyn,spin_conserved,spin_flip,eta,  & 
-                                       nBas,nC,nO,nV,nR,nS,ERI_aaaa,ERI_aabb,ERI_bbbb,eW,eGW,EcRPA,EcBSE)
+                                       nBas,nC,nO,nV,nR,nS,ERI_aaaa,ERI_aabb,ERI_bbbb,ERI_abab, & 
+                                       eW,eGW,EcRPA,EcBSE)
 
 ! Compute the Bethe-Salpeter excitation energies
 
@@ -28,6 +29,7 @@ subroutine unrestricted_Bethe_Salpeter(TDA_W,TDA,dBSE,dTDA,evDyn,spin_conserved,
   double precision,intent(in)   :: ERI_aaaa(nBas,nBas,nBas,nBas)
   double precision,intent(in)   :: ERI_aabb(nBas,nBas,nBas,nBas)
   double precision,intent(in)   :: ERI_bbbb(nBas,nBas,nBas,nBas)
+  double precision,intent(in)   :: ERI_abab(nBas,nBas,nBas,nBas)
 
 
 ! Local variables
@@ -71,16 +73,19 @@ subroutine unrestricted_Bethe_Salpeter(TDA_W,TDA,dBSE,dTDA,evDyn,spin_conserved,
     ! Compute spin-conserved RPA screening 
 
     call unrestricted_linear_response(isp_W,.true.,TDA_W,.false.,eta,nBas,nC,nO,nV,nR,nS_aa,nS_bb,nS_sc,1d0, &
-                                      eW,ERI_aaaa,ERI_aabb,ERI_bbbb,rho_RPA_sc,EcRPA(ispin),OmRPA_sc,XpY_RPA_sc,XmY_RPA_sc)
+                                      eW,ERI_aaaa,ERI_aabb,ERI_bbbb,ERI_abab,rho_RPA_sc,EcRPA(ispin),        & 
+                                      OmRPA_sc,XpY_RPA_sc,XmY_RPA_sc)
 
-    call unrestricted_excitation_density(nBas,nC,nO,nR,nS_aa,nS_bb,nS_sc,ERI_aaaa,ERI_aabb,ERI_bbbb,XpY_RPA_sc,rho_RPA_sc)
+    call unrestricted_excitation_density(nBas,nC,nO,nR,nS_aa,nS_bb,nS_sc,ERI_aaaa,ERI_aabb,ERI_bbbb, & 
+                                         XpY_RPA_sc,rho_RPA_sc)
 
     ! Compute spin-conserved BSE excitation energies
 
     OmBSE_sc(:) = OmRPA_sc(:)
 
     call unrestricted_linear_response(ispin,.true.,TDA,.true.,eta,nBas,nC,nO,nV,nR,nS_aa,nS_bb,nS_sc,1d0, &
-                                      eGW,ERI_aaaa,ERI_aabb,ERI_bbbb,rho_RPA_sc,EcBSE(ispin),OmBSE_sc,XpY_BSE_sc,XmY_BSE_sc)
+                                      eGW,ERI_aaaa,ERI_aabb,ERI_bbbb,ERI_abab,rho_RPA_sc,EcBSE(ispin),    & 
+                                      OmBSE_sc,XpY_BSE_sc,XmY_BSE_sc)
 
     call print_excitation('BSE@UG0W0',5,nS_sc,OmBSE_sc)
 

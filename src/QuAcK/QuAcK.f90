@@ -775,7 +775,7 @@ program QuAcK
 
       call UG0W0(doACFDT,exchange_kernel,doXBS,COHSEX,BSE,TDA_W,TDA,dBSE,dTDA,evDyn, &
                  spin_conserved,spin_flip,linGW,eta_GW,nBas,nC,nO,nV,nR,nS, & 
-                 ENuc,EUHF,Hc,ERI_MO_aaaa,ERI_MO_aabb,ERI_MO_bbbb,PHF,cHF,eHF,eG0W0)
+                 ENuc,EUHF,Hc,ERI_MO_aaaa,ERI_MO_aabb,ERI_MO_bbbb,ERI_MO_abab,PHF,cHF,eHF,eG0W0)
     else
 
       call G0W0(doACFDT,exchange_kernel,doXBS,COHSEX,SOSEX,BSE,TDA_W,TDA,       & 

@@ -1,5 +1,5 @@
 subroutine unrestricted_linear_response_A_matrix(ispin,dRPA,nBas,nC,nO,nV,nR,nSa,nSb,nSt,lambda, & 
-                                                 e,ERI_aaaa,ERI_aabb,ERI_bbbb,A_lr)
+                                                 e,ERI_aaaa,ERI_aabb,ERI_bbbb,ERI_abab,A_lr)
 
 ! Compute linear response
 
@@ -23,6 +23,7 @@ subroutine unrestricted_linear_response_A_matrix(ispin,dRPA,nBas,nC,nO,nV,nR,nSa
   double precision,intent(in)   :: ERI_aaaa(nBas,nBas,nBas,nBas) 
   double precision,intent(in)   :: ERI_aabb(nBas,nBas,nBas,nBas) 
   double precision,intent(in)   :: ERI_bbbb(nBas,nBas,nBas,nBas) 
+  double precision,intent(in)   :: ERI_abab(nBas,nBas,nBas,nBas) 
   
 ! Local variables
 
@@ -46,7 +47,7 @@ subroutine unrestricted_linear_response_A_matrix(ispin,dRPA,nBas,nC,nO,nV,nR,nSa
 
   if(ispin == 1) then 
 
-    ! alpha-alpha block
+    ! aaaa block
 
     ia = 0
     do i=nC(1)+1,nO(1)
@@ -65,7 +66,7 @@ subroutine unrestricted_linear_response_A_matrix(ispin,dRPA,nBas,nC,nO,nV,nR,nSa
       end  do
     end  do
 
-    ! alpha-beta block
+    ! aabb block
 
     ia = 0
     do i=nC(1)+1,nO(1)
@@ -83,7 +84,7 @@ subroutine unrestricted_linear_response_A_matrix(ispin,dRPA,nBas,nC,nO,nV,nR,nSa
       end  do
     end  do
 
-    ! beta-alpha block
+    ! bbaa block
 
     ia = 0
     do i=nC(2)+1,nO(2)
@@ -101,7 +102,7 @@ subroutine unrestricted_linear_response_A_matrix(ispin,dRPA,nBas,nC,nO,nV,nR,nSa
       end  do
     end  do
 
-    ! beta-beta block
+    ! bbbb block
 
     ia = 0
     do i=nC(2)+1,nO(2)
@@ -128,7 +129,45 @@ subroutine unrestricted_linear_response_A_matrix(ispin,dRPA,nBas,nC,nO,nV,nR,nSa
 
   if(ispin == 2) then 
 
-    print*,'spin-flip transition NYI'
+    A_lr(:,:) = 0d0
+
+    ! abab block
+
+    ia = 0
+    do i=nC(1)+1,nO(1)
+      do a=nO(2)+1,nBas-nR(2)
+        ia = ia + 1
+        jb = 0
+        do j=nC(1)+1,nO(1)
+          do b=nO(2)+1,nBas-nR(2)
+            jb = jb + 1
+ 
+            A_lr(ia,jb) = (e(a,2) - e(i,1))*Kronecker_delta(i,j)*Kronecker_delta(a,b) &
+                        + lambda*ERI_abab(i,b,a,j) - (1d0 - delta_dRPA)*lambda*ERI_abab(i,b,j,a)
+
+          end  do
+        end  do
+      end  do
+    end  do
+
+    ! baba block
+
+    ia = 0
+    do i=nC(2)+1,nO(2)
+      do a=nO(1)+1,nBas-nR(1)
+        ia = ia + 1
+        jb = 0
+        do j=nC(2)+1,nO(2)
+          do b=nO(1)+1,nBas-nR(1)
+            jb = jb + 1
+ 
+            A_lr(nSa+ia,nSa+jb) = (e(a,1) - e(i,2))*Kronecker_delta(i,j)*Kronecker_delta(a,b) &
+                                + lambda*ERI_abab(b,i,j,a) - (1d0 - delta_dRPA)*lambda*ERI_abab(b,i,a,j)
+
+          end  do
+        end  do
+      end  do
+    end  do
 
   end if
 

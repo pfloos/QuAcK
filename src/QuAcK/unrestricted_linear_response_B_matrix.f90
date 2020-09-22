@@ -1,5 +1,5 @@
 subroutine unrestricted_linear_response_B_matrix(ispin,dRPA,nBas,nC,nO,nV,nR,nSa,nSb,nSt,lambda, & 
-                                                 ERI_aaaa,ERI_aabb,ERI_bbbb,B_lr)
+                                                 ERI_aaaa,ERI_aabb,ERI_bbbb,ERI_abab,B_lr)
 
 ! Compute linear response
 
@@ -22,6 +22,7 @@ subroutine unrestricted_linear_response_B_matrix(ispin,dRPA,nBas,nC,nO,nV,nR,nSa
   double precision,intent(in)   :: ERI_aaaa(nBas,nBas,nBas,nBas) 
   double precision,intent(in)   :: ERI_aabb(nBas,nBas,nBas,nBas) 
   double precision,intent(in)   :: ERI_bbbb(nBas,nBas,nBas,nBas) 
+  double precision,intent(in)   :: ERI_abab(nBas,nBas,nBas,nBas) 
   
 ! Local variables
 
@@ -40,12 +41,12 @@ subroutine unrestricted_linear_response_B_matrix(ispin,dRPA,nBas,nC,nO,nV,nR,nSa
   if(dRPA) delta_dRPA = 1d0
 
 !-----------------------------------------------
-! Build A matrix for spin-conserving transitions
+! Build B matrix for spin-conserving transitions
 !-----------------------------------------------
 
   if(ispin == 1) then 
 
-    ! alpha-alpha block
+    ! aaaa block
 
     ia = 0
     do i=nC(1)+1,nO(1)
@@ -63,7 +64,7 @@ subroutine unrestricted_linear_response_B_matrix(ispin,dRPA,nBas,nC,nO,nV,nR,nSa
       end  do
     end  do
 
-    ! alpha-beta block
+    ! aabb block
 
     ia = 0
     do i=nC(1)+1,nO(1)
@@ -81,7 +82,7 @@ subroutine unrestricted_linear_response_B_matrix(ispin,dRPA,nBas,nC,nO,nV,nR,nSa
       end  do
     end  do
 
-    ! beta-alpha block
+    ! bbaa block
 
     ia = 0
     do i=nC(2)+1,nO(2)
@@ -99,7 +100,7 @@ subroutine unrestricted_linear_response_B_matrix(ispin,dRPA,nBas,nC,nO,nV,nR,nSa
       end  do
     end  do
 
-    ! beta-beta block
+    ! bbbb block
 
     ia = 0
     do i=nC(2)+1,nO(2)
@@ -120,12 +121,48 @@ subroutine unrestricted_linear_response_B_matrix(ispin,dRPA,nBas,nC,nO,nV,nR,nSa
   end if
 
 !-----------------------------------------------
-! Build A matrix for spin-flip transitions
+! Build B matrix for spin-flip transitions
 !-----------------------------------------------
 
   if(ispin == 2) then
 
-    print*,'spin-flip transition NYI'
+    B_lr(:,:) = 0d0
+
+    ! abab block
+
+    ia = 0
+    do i=nC(1)+1,nO(1)
+      do a=nO(2)+1,nBas-nR(2)
+        ia = ia + 1
+        jb = 0
+        do j=nC(2)+1,nO(2)
+          do b=nO(2)+1,nBas-nR(2)
+            jb = jb + 1
+ 
+            B_lr(ia,jb) = lambda*ERI_abab(i,j,a,b) - (1d0 - delta_dRPA)*lambda*ERI_abab(i,j,b,a)
+
+          end  do
+        end  do
+      end  do
+    end  do
+
+    ! bbbb block
+
+    ia = 0
+    do i=nC(2)+1,nO(2)
+      do a=nO(1)+1,nBas-nR(1)
+        ia = ia + 1
+        jb = 0
+        do j=nC(2)+1,nO(2)
+          do b=nO(1)+1,nBas-nR(1)
+            jb = jb + 1
+ 
+            B_lr(nSa+ia,nSa+jb) = lambda*ERI_abab(j,i,b,a) - (1d0 - delta_dRPA)*lambda*ERI_abab(j,i,a,b)
+
+          end  do
+        end  do
+      end  do
+    end  do
   
   end if
 

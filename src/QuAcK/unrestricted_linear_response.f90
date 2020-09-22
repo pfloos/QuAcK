@@ -1,5 +1,5 @@
 subroutine unrestricted_linear_response(ispin,dRPA,TDA,BSE,eta,nBas,nC,nO,nV,nR,nSa,nSb,nSt,lambda, & 
-                                        e,ERI_aaaa,ERI_aabb,ERI_bbbb,rho,EcRPA,Omega,XpY,XmY)
+                                        e,ERI_aaaa,ERI_aabb,ERI_bbbb,ERI_abab,rho,EcRPA,Omega,XpY,XmY)
 
 ! Compute linear response for unrestricted formalism
 
@@ -27,6 +27,7 @@ subroutine unrestricted_linear_response(ispin,dRPA,TDA,BSE,eta,nBas,nC,nO,nV,nR,
   double precision,intent(in)   :: ERI_aaaa(nBas,nBas,nBas,nBas)
   double precision,intent(in)   :: ERI_aabb(nBas,nBas,nBas,nBas)
   double precision,intent(in)   :: ERI_bbbb(nBas,nBas,nBas,nBas)
+  double precision,intent(in)   :: ERI_abab(nBas,nBas,nBas,nBas)
   
 ! Local variables
 
@@ -53,20 +54,24 @@ subroutine unrestricted_linear_response(ispin,dRPA,TDA,BSE,eta,nBas,nC,nO,nV,nR,
 
 ! Build A and B matrices 
 
-  call unrestricted_linear_response_A_matrix(ispin,dRPA,nBas,nC,nO,nV,nR,nSa,nSb,nSt,lambda,e,ERI_aaaa,ERI_aabb,ERI_bbbb,A)
+  call unrestricted_linear_response_A_matrix(ispin,dRPA,nBas,nC,nO,nV,nR,nSa,nSb,nSt,lambda,e, & 
+                                             ERI_aaaa,ERI_aabb,ERI_bbbb,ERI_abab,A)
 
   if(BSE) & 
-    call unrestricted_Bethe_Salpeter_A_matrix(eta,nBas,nC,nO,nV,nR,nSa,nSb,nSt,lambda,ERI_aaaa,ERI_aabb,ERI_bbbb,Omega,rho,A)
+    call unrestricted_Bethe_Salpeter_A_matrix(eta,nBas,nC,nO,nV,nR,nSa,nSb,nSt,lambda, & 
+                                              ERI_aaaa,ERI_aabb,ERI_bbbb,ERI_abab,Omega,rho,A)
 
 ! Tamm-Dancoff approximation
 
   B = 0d0
   if(.not. TDA) then
 
-    call unrestricted_linear_response_B_matrix(ispin,dRPA,nBas,nC,nO,nV,nR,nSa,nSb,nSt,lambda,ERI_aaaa,ERI_aabb,ERI_bbbb,B)
+    call unrestricted_linear_response_B_matrix(ispin,dRPA,nBas,nC,nO,nV,nR,nSa,nSb,nSt,lambda, & 
+                                               ERI_aaaa,ERI_aabb,ERI_bbbb,ERI_abab,B)
 
     if(BSE) &
-      call unrestricted_Bethe_Salpeter_B_matrix(eta,nBas,nC,nO,nV,nR,nSa,nSb,nSt,lambda,ERI_aaaa,ERI_aabb,ERI_bbbb,Omega,rho,B)
+      call unrestricted_Bethe_Salpeter_B_matrix(eta,nBas,nC,nO,nV,nR,nSa,nSb,nSt,lambda, & 
+                                                ERI_aaaa,ERI_aabb,ERI_bbbb,ERI_abab,Omega,rho,B)
 
   end if
 

@@ -1,6 +1,6 @@
 subroutine UG0W0(doACFDT,exchange_kernel,doXBS,COHSEX,BSE,TDA_W,TDA,dBSE,dTDA,evDyn,  &
                  spin_conserved,spin_flip,linearize,eta,nBas,nC,nO,nV,nR,nS, &
-                 ENuc,EUHF,Hc,ERI_aaaa,ERI_aabb,ERI_bbbb,PHF,cHF,eHF,eGW)
+                 ENuc,EUHF,Hc,ERI_aaaa,ERI_aabb,ERI_bbbb,ERI_abab,PHF,cHF,eHF,eGW)
 
 ! Perform unrestricted G0W0 calculation
 
@@ -40,6 +40,7 @@ subroutine UG0W0(doACFDT,exchange_kernel,doXBS,COHSEX,BSE,TDA_W,TDA,dBSE,dTDA,ev
   double precision,intent(in)   :: ERI_aaaa(nBas,nBas,nBas,nBas)
   double precision,intent(in)   :: ERI_aabb(nBas,nBas,nBas,nBas)
   double precision,intent(in)   :: ERI_bbbb(nBas,nBas,nBas,nBas)
+  double precision,intent(in)   :: ERI_abab(nBas,nBas,nBas,nBas)
 
 ! Local variables
 
@@ -111,7 +112,7 @@ subroutine UG0W0(doACFDT,exchange_kernel,doXBS,COHSEX,BSE,TDA_W,TDA,dBSE,dTDA,ev
   ispin = 1
 
   call unrestricted_linear_response(ispin,.true.,TDA_W,.false.,eta,nBas,nC,nO,nV,nR,nS_aa,nS_bb,nS_sc,1d0, &
-                                    eHF,ERI_aaaa,ERI_aabb,ERI_bbbb,rho_sc,EcRPA(ispin),Omega_sc,XpY_sc,XmY_sc)
+                                    eHF,ERI_aaaa,ERI_aabb,ERI_bbbb,ERI_abab,rho_sc,EcRPA(ispin),Omega_sc,XpY_sc,XmY_sc)
 
   if(print_W) call print_excitation('RPA@UHF',5,nS_sc,Omega_sc)
 
@@ -164,7 +165,7 @@ subroutine UG0W0(doACFDT,exchange_kernel,doXBS,COHSEX,BSE,TDA_W,TDA,dBSE,dTDA,ev
 ! Compute the RPA correlation energy
 
   call unrestricted_linear_response(ispin,.true.,TDA_W,.false.,eta,nBas,nC,nO,nV,nR,nS_aa,nS_bb,nS_sc,1d0, &
-                                    eGW,ERI_aaaa,ERI_aabb,ERI_bbbb,rho_sc,EcRPA(ispin),Omega_sc,XpY_sc,XmY_sc)
+                                    eGW,ERI_aaaa,ERI_aabb,ERI_bbbb,ERI_abab,rho_sc,EcRPA(ispin),Omega_sc,XpY_sc,XmY_sc)
 
   write(*,*)
   write(*,*)'-------------------------------------------------------------------------------'
@@ -182,7 +183,8 @@ subroutine UG0W0(doACFDT,exchange_kernel,doXBS,COHSEX,BSE,TDA_W,TDA,dBSE,dTDA,ev
   if(BSE) then
 
     call unrestricted_Bethe_Salpeter(TDA_W,TDA,dBSE,dTDA,evDyn,spin_conserved,spin_flip,eta,  &
-                                     nBas,nC,nO,nV,nR,nS,ERI_aaaa,ERI_aabb,ERI_bbbb,eHF,eGW,EcRPA,EcBSE)
+                                     nBas,nC,nO,nV,nR,nS,ERI_aaaa,ERI_aabb,ERI_bbbb,ERI_abab, & 
+                                     eHF,eGW,EcRPA,EcBSE)
 
 !   if(exchange_kernel) then
 !

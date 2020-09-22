@@ -1,4 +1,6 @@
-subroutine unrestricted_Bethe_Salpeter_B_matrix(eta,nBas,nC,nO,nV,nR,nSa,nSb,nSt,lambda,ERI_aaaa,ERI_aabb,ERI_bbbb,Omega,rho,B_lr)
+subroutine unrestricted_Bethe_Salpeter_B_matrix(eta,nBas,nC,nO,nV,nR,nSa,nSb,nSt,lambda, & 
+                                                ERI_aaaa,ERI_aabb,ERI_bbbb,ERI_abab,     & 
+                                                Omega,rho,B_lr)
 
 ! Compute the extra term for Bethe-Salpeter equation for linear response 
 
@@ -20,6 +22,7 @@ subroutine unrestricted_Bethe_Salpeter_B_matrix(eta,nBas,nC,nO,nV,nR,nSa,nSb,nSt
   double precision,intent(in)   :: ERI_aaaa(nBas,nBas,nBas,nBas)
   double precision,intent(in)   :: ERI_aabb(nBas,nBas,nBas,nBas)
   double precision,intent(in)   :: ERI_bbbb(nBas,nBas,nBas,nBas)
+  double precision,intent(in)   :: ERI_abab(nBas,nBas,nBas,nBas)
   double precision,intent(in)   :: Omega(nSt)
   double precision,intent(in)   :: rho(nBas,nBas,nSt,nspin)
   
