@@ -634,8 +634,16 @@ program QuAcK
   if(doRPA) then
 
     call cpu_time(start_RPA)
-    call RPA(doACFDT,exchange_kernel,singlet,triplet,0d0, & 
-             nBas,nC,nO,nV,nR,nS,ENuc,ERHF,ERI_MO,eHF)
+    if(unrestricted) then
+
+       call UdRPA(doACFDT,exchange_kernel,spin_conserved,spin_flip,0d0,nBas,nC,nO,nV,nR,nS,ENuc,EUHF, &
+                  ERI_MO_aaaa,ERI_MO_aabb,ERI_MO_bbbb,ERI_MO_abab,eHF)
+
+    else
+
+      call dRPA(doACFDT,exchange_kernel,singlet,triplet,0d0,nBas,nC,nO,nV,nR,nS,ENuc,ERHF,ERI_MO,eHF)
+
+    end if
     call cpu_time(end_RPA)
 
     t_RPA = end_RPA - start_RPA
@@ -651,8 +659,16 @@ program QuAcK
   if(doRPAx) then
 
     call cpu_time(start_RPAx)
-    call RPAx(doACFDT,exchange_kernel,singlet,triplet,0d0, & 
-              nBas,nC,nO,nV,nR,nS,ENuc,ERHF,ERI_MO,eHF)
+    if(unrestricted) then
+
+       call URPAx(doACFDT,exchange_kernel,spin_conserved,spin_flip,0d0,nBas,nC,nO,nV,nR,nS,ENuc,EUHF, &
+                  ERI_MO_aaaa,ERI_MO_aabb,ERI_MO_bbbb,ERI_MO_abab,eHF)
+
+    else 
+
+      call RPAx(doACFDT,exchange_kernel,singlet,triplet,0d0,nBas,nC,nO,nV,nR,nS,ENuc,ERHF,ERI_MO,eHF)
+
+    end if
     call cpu_time(end_RPAx)
 
     t_RPAx = end_RPAx - start_RPAx

@@ -1,5 +1,4 @@
-subroutine RPAx(doACFDT,exchange_kernel,singlet_manifold,triplet_manifold,eta, & 
-                nBas,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,e)
+subroutine RPAx(doACFDT,exchange_kernel,singlet,triplet,eta,nBas,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,e)
 
 ! Perform random phase approximation calculation with exchange (aka TDHF)
 
@@ -11,9 +10,9 @@ subroutine RPAx(doACFDT,exchange_kernel,singlet_manifold,triplet_manifold,eta, &
 
   logical,intent(in)            :: doACFDT
   logical,intent(in)            :: exchange_kernel
-  logical,intent(in)            :: singlet_manifold
+  logical,intent(in)            :: singlet
   double precision,intent(in)   :: eta
-  logical,intent(in)            :: triplet_manifold
+  logical,intent(in)            :: triplet
   integer,intent(in)            :: nBas
   integer,intent(in)            :: nC
   integer,intent(in)            :: nO
@@ -55,7 +54,7 @@ subroutine RPAx(doACFDT,exchange_kernel,singlet_manifold,triplet_manifold,eta, &
 
 ! Singlet manifold
 
-  if(singlet_manifold) then 
+  if(singlet) then 
 
     ispin = 1
 
@@ -69,7 +68,7 @@ subroutine RPAx(doACFDT,exchange_kernel,singlet_manifold,triplet_manifold,eta, &
 
 ! Triplet manifold 
 
-  if(triplet_manifold) then 
+  if(triplet) then 
 
     ispin = 2
 
@@ -105,7 +104,7 @@ subroutine RPAx(doACFDT,exchange_kernel,singlet_manifold,triplet_manifold,eta, &
     write(*,*) '-------------------------------------------------------'
     write(*,*)
 
-    call ACFDT(exchange_kernel,.false.,.false.,.false.,.false.,.false.,singlet_manifold,triplet_manifold,eta, &
+    call ACFDT(exchange_kernel,.false.,.false.,.false.,.false.,.false.,singlet,triplet,eta, &
                nBas,nC,nO,nV,nR,nS,ERI,e,e,Omega,XpY,XmY,rho,EcAC)
 
     if(exchange_kernel) then

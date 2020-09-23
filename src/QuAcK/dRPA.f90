@@ -1,4 +1,4 @@
-subroutine RPA(doACFDT,exchange_kernel,singlet_manifold,triplet_manifold,eta, & 
+subroutine dRPA(doACFDT,exchange_kernel,singlet_manifold,triplet_manifold,eta, & 
                nBas,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,e)
 
 ! Perform a direct random phase approximation calculation
@@ -125,4 +125,4 @@ subroutine RPA(doACFDT,exchange_kernel,singlet_manifold,triplet_manifold,eta, &
 
   end if
 
-end subroutine RPA
+end subroutine dRPA
