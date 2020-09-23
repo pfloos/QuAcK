@@ -143,7 +143,7 @@ subroutine unrestricted_linear_response_A_matrix(ispin,dRPA,nBas,nC,nO,nV,nR,nSa
             jb = jb + 1
  
             A_lr(ia,jb) = (e(a,2) - e(i,1))*Kronecker_delta(i,j)*Kronecker_delta(a,b) &
-                        + lambda*ERI_abab(i,b,a,j) - (1d0 - delta_dRPA)*lambda*ERI_abab(i,b,j,a)
+                        - (1d0 - delta_dRPA)*lambda*ERI_abab(i,b,j,a)
 
           end  do
         end  do
@@ -162,7 +162,7 @@ subroutine unrestricted_linear_response_A_matrix(ispin,dRPA,nBas,nC,nO,nV,nR,nSa
             jb = jb + 1
  
             A_lr(nSa+ia,nSa+jb) = (e(a,1) - e(i,2))*Kronecker_delta(i,j)*Kronecker_delta(a,b) &
-                                + lambda*ERI_abab(b,i,j,a) - (1d0 - delta_dRPA)*lambda*ERI_abab(b,i,a,j)
+                                - (1d0 - delta_dRPA)*lambda*ERI_abab(b,i,a,j)
 
           end  do
         end  do

@@ -1,6 +1,5 @@
-subroutine unrestricted_Bethe_Salpeter_B_matrix(eta,nBas,nC,nO,nV,nR,nSa,nSb,nSt,lambda, & 
-                                                ERI_aaaa,ERI_aabb,ERI_bbbb,ERI_abab,     & 
-                                                Omega,rho,B_lr)
+subroutine unrestricted_Bethe_Salpeter_B_matrix(ispin,eta,nBas,nC,nO,nV,nR,nSa,nSb,nSt,nSsc,lambda, & 
+                                                ERI_aaaa,ERI_aabb,ERI_bbbb,ERI_abab,Omega,rho,B_lr)
 
 ! Compute the extra term for Bethe-Salpeter equation for linear response 
 
@@ -9,6 +8,7 @@ subroutine unrestricted_Bethe_Salpeter_B_matrix(eta,nBas,nC,nO,nV,nR,nSa,nSb,nSt
 
 ! Input variables
 
+  integer,intent(in)            :: ispin
   integer,intent(in)            :: nBas
   integer,intent(in)            :: nC(nspin)
   integer,intent(in)            :: nO(nspin)
@@ -17,14 +17,15 @@ subroutine unrestricted_Bethe_Salpeter_B_matrix(eta,nBas,nC,nO,nV,nR,nSa,nSb,nSt
   integer,intent(in)            :: nSa
   integer,intent(in)            :: nSb
   integer,intent(in)            :: nSt
+  integer,intent(in)            :: nSsc
   double precision,intent(in)   :: eta
   double precision,intent(in)   :: lambda
   double precision,intent(in)   :: ERI_aaaa(nBas,nBas,nBas,nBas)
   double precision,intent(in)   :: ERI_aabb(nBas,nBas,nBas,nBas)
   double precision,intent(in)   :: ERI_bbbb(nBas,nBas,nBas,nBas)
   double precision,intent(in)   :: ERI_abab(nBas,nBas,nBas,nBas)
-  double precision,intent(in)   :: Omega(nSt)
-  double precision,intent(in)   :: rho(nBas,nBas,nSt,nspin)
+  double precision,intent(in)   :: Omega(nSsc)
+  double precision,intent(in)   :: rho(nBas,nBas,nSsc,nspin)
   
 ! Local variables
 
@@ -36,104 +37,118 @@ subroutine unrestricted_Bethe_Salpeter_B_matrix(eta,nBas,nC,nO,nV,nR,nSa,nSb,nSt
 
   double precision,intent(out)  :: B_lr(nSt,nSt)
 
-  ! alpha-alpha block
+!--------------------------------------------------!
+! Build BSE matrix for spin-conserving transitions !
+!--------------------------------------------------!
 
-  ia = 0
-  do i=nC(1)+1,nO(1)
-    do a=nO(1)+1,nBas-nR(1)
-      ia = ia + 1
-      jb = 0
-      do j=nC(1)+1,nO(1)
-        do b=nO(1)+1,nBas-nR(1)
-          jb = jb + 1
+  if(ispin == 1) then
+
+    ! aaaa block
  
-          chi = 0d0
-          do kc=1,nSt
-            eps = Omega(kc)**2 + eta**2
-            chi = chi + rho(i,b,kc,1)*rho(a,j,kc,1)*Omega(kc)/eps & 
-                      + rho(i,b,kc,1)*rho(a,j,kc,1)*Omega(kc)/eps
+    ia = 0
+    do i=nC(1)+1,nO(1)
+      do a=nO(1)+1,nBas-nR(1)
+        ia = ia + 1
+        jb = 0
+        do j=nC(1)+1,nO(1)
+          do b=nO(1)+1,nBas-nR(1)
+            jb = jb + 1
+  
+            chi = 0d0
+            do kc=1,nSsc
+              eps = Omega(kc)**2 + eta**2
+              chi = chi + rho(i,b,kc,1)*rho(a,j,kc,1)*Omega(kc)/eps   
+            enddo
+ 
+            B_lr(ia,jb) = B_lr(ia,jb) - lambda*ERI_aaaa(i,j,b,a) + 4d0*lambda*chi
+ 
           enddo
-
-          B_lr(ia,jb) = B_lr(ia,jb) - lambda*ERI_aaaa(i,j,b,a) + 2d0*lambda*chi
-
         enddo
       enddo
     enddo
-  enddo
-
-  ! alpha-beta block
-
-  ia = 0
-  do i=nC(1)+1,nO(1)
-    do a=nO(1)+1,nBas-nR(1)
-      ia = ia + 1
-      jb = 0
-      do j=nC(2)+1,nO(2)
-        do b=nO(2)+1,nBas-nR(2)
-          jb = jb + 1
  
-          chi = 0d0
-          do kc=1,nSt
-            eps = Omega(kc)**2 + eta**2
-            chi = chi + rho(i,b,kc,1)*rho(a,j,kc,1)*Omega(kc)/eps & 
-                      + rho(i,b,kc,2)*rho(a,j,kc,2)*Omega(kc)/eps
+ 
+    ! bbbb block
+ 
+    ia = 0
+    do i=nC(2)+1,nO(2)
+      do a=nO(2)+1,nBas-nR(2)
+        ia = ia + 1
+        jb = 0
+        do j=nC(2)+1,nO(2)
+          do b=nO(2)+1,nBas-nR(2)
+            jb = jb + 1
+  
+            chi = 0d0
+            do kc=1,nSsc
+              eps = Omega(kc)**2 + eta**2
+              chi = chi + rho(i,b,kc,2)*rho(a,j,kc,2)*Omega(kc)/eps
+            enddo
+ 
+            B_lr(nSa+ia,nSa+jb) = B_lr(nSa+ia,nSa+jb) - lambda*ERI_bbbb(i,j,b,a) + 4d0*lambda*chi
+ 
           enddo
-
-          B_lr(ia,nSa+jb) = B_lr(ia,nSa+jb) - lambda*ERI_aabb(i,j,b,a) + 2d0*lambda*chi
-
         enddo
       enddo
     enddo
-  enddo
 
-  ! beta-alpha block
+  end if
 
-  ia = 0
-  do i=nC(2)+1,nO(2)
-    do a=nO(2)+1,nBas-nR(2)
-      ia = ia + 1
-      jb = 0
-      do j=nC(1)+1,nO(1)
-        do b=nO(1)+1,nBas-nR(1)
-          jb = jb + 1
- 
-          chi = 0d0
-          do kc=1,nSt
-            eps = Omega(kc)**2 + eta**2
-            chi = chi + rho(i,b,kc,2)*rho(a,j,kc,2)*Omega(kc)/eps & 
-                      + rho(i,b,kc,1)*rho(a,j,kc,1)*Omega(kc)/eps
-          enddo
 
-          B_lr(nSa+ia,jb) = B_lr(nSa+ia,jb) - lambda*ERI_aabb(j,i,a,b) + 2d0*lambda*chi
+!--------------------------------------------!
+! Build BSE matrix for spin-flip transitions !
+!--------------------------------------------!
 
-        enddo
-      enddo
-    enddo
-  enddo
+  if(ispin == 2) then
 
-  ! beta-beta block
+    ! abba block
 
-  ia = 0
-  do i=nC(2)+1,nO(2)
-    do a=nO(2)+1,nBas-nR(2)
-      ia = ia + 1
-      jb = 0
-      do j=nC(2)+1,nO(2)
-        do b=nO(2)+1,nBas-nR(2)
-          jb = jb + 1
- 
-          chi = 0d0
-          do kc=1,nSt
-            eps = Omega(kc)**2 + eta**2
-            chi = chi + rho(i,b,kc,2)*rho(a,j,kc,2)*Omega(kc)/eps & 
-                      + rho(i,b,kc,2)*rho(a,j,kc,2)*Omega(kc)/eps
-          enddo
+    ia = 0
+    do i=nC(1)+1,nO(1)
+      do a=nO(2)+1,nBas-nR(2)
+        ia = ia + 1
+        jb = 0
+        do j=nC(2)+1,nO(2)
+          do b=nO(1)+1,nBas-nR(1)
+            jb = jb + 1
 
-          B_lr(nSa+ia,nSa+jb) = B_lr(nSa+ia,nSa+jb) - lambda*ERI_bbbb(i,j,b,a) + 2d0*lambda*chi
+            chi = 0d0
+            do kc=1,nSsc
+              eps = Omega(kc)**2 + eta**2
+              chi = chi + rho(i,b,kc,1)*rho(a,j,kc,2)*Omega(kc)/eps
+            enddo
 
-        enddo
-      enddo
-    enddo
-  enddo
+            B_lr(ia,nSa+jb) = B_lr(ia,nSa+jb) - lambda*ERI_abab(i,a,b,j) + 4d0*lambda*chi
+
+          end  do
+        end  do
+      end  do
+    end  do
+
+    ! baab block
+
+    ia = 0
+    do i=nC(2)+1,nO(2)
+      do a=nO(1)+1,nBas-nR(1)
+        ia = ia + 1
+        jb = 0
+        do j=nC(1)+1,nO(1)
+          do b=nO(2)+1,nBas-nR(2)
+            jb = jb + 1
+
+            chi = 0d0
+            do kc=1,nSsc
+              eps = Omega(kc)**2 + eta**2
+              chi = chi + rho(i,b,kc,2)*rho(a,j,kc,1)*Omega(kc)/eps
+            enddo
+
+            B_lr(nSa+ia,jb) =  B_lr(nSa+ia,jb) - lambda*ERI_abab(b,j,i,a) + 4d0*lambda*chi
+
+          end  do
+        end  do
+      end  do
+    end  do
+
+  end if
 
 end subroutine unrestricted_Bethe_Salpeter_B_matrix

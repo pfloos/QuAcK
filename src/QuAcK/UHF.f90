@@ -232,6 +232,7 @@ subroutine UHF(maxSCF,thresh,max_diis,guess_type,nBas,nO,S,T,V,Hc,ERI,X,ENuc,EUH
 
 ! Compute final UHF energy
 
-  call print_UHF(nBas,nO(:),e(:,:),c(:,:,:),ENuc,ET(:),EV(:),EJ(:),Ex(:),EUHF)
+  call matout(nBas,2,e)
+  call print_UHF(nBas,nO,e,c,ENuc,ET,EV,EJ,Ex,EUHF)
 
 end subroutine UHF

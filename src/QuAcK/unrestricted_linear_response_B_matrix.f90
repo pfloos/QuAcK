@@ -128,7 +128,7 @@ subroutine unrestricted_linear_response_B_matrix(ispin,dRPA,nBas,nC,nO,nV,nR,nSa
 
     B_lr(:,:) = 0d0
 
-    ! abab block
+    ! abba block
 
     ia = 0
     do i=nC(1)+1,nO(1)
@@ -136,28 +136,28 @@ subroutine unrestricted_linear_response_B_matrix(ispin,dRPA,nBas,nC,nO,nV,nR,nSa
         ia = ia + 1
         jb = 0
         do j=nC(2)+1,nO(2)
-          do b=nO(2)+1,nBas-nR(2)
+          do b=nO(1)+1,nBas-nR(1)
             jb = jb + 1
  
-            B_lr(ia,jb) = lambda*ERI_abab(i,j,a,b) - (1d0 - delta_dRPA)*lambda*ERI_abab(i,j,b,a)
+            B_lr(ia,nSa+jb) = - (1d0 - delta_dRPA)*lambda*ERI_abab(i,a,b,j)
 
           end  do
         end  do
       end  do
     end  do
 
-    ! bbbb block
+    ! baab block
 
     ia = 0
     do i=nC(2)+1,nO(2)
       do a=nO(1)+1,nBas-nR(1)
         ia = ia + 1
         jb = 0
-        do j=nC(2)+1,nO(2)
-          do b=nO(1)+1,nBas-nR(1)
+        do j=nC(1)+1,nO(1)
+          do b=nO(2)+1,nBas-nR(2)
             jb = jb + 1
  
-            B_lr(nSa+ia,nSa+jb) = lambda*ERI_abab(j,i,b,a) - (1d0 - delta_dRPA)*lambda*ERI_abab(j,i,a,b)
+            B_lr(nSa+ia,jb) = - (1d0 - delta_dRPA)*lambda*ERI_abab(b,j,i,a)
 
           end  do
         end  do

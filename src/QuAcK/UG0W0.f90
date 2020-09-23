@@ -112,8 +112,8 @@ subroutine UG0W0(doACFDT,exchange_kernel,doXBS,COHSEX,BSE,TDA_W,TDA,dBSE,dTDA,ev
 
   ispin = 1
 
-  call unrestricted_linear_response(ispin,.true.,TDA_W,.false.,eta,nBas,nC,nO,nV,nR,nS_aa,nS_bb,nS_sc,1d0, &
-                                    eHF,ERI_aaaa,ERI_aabb,ERI_bbbb,ERI_abab,rho_sc,EcRPA(ispin),Omega_sc,XpY_sc,XmY_sc)
+  call unrestricted_linear_response(ispin,.true.,TDA_W,.false.,eta,nBas,nC,nO,nV,nR,nS_aa,nS_bb,nS_sc,nS_sc,1d0, &
+                                    eHF,ERI_aaaa,ERI_aabb,ERI_bbbb,ERI_abab,Omega_sc,rho_sc,EcRPA(ispin),Omega_sc,XpY_sc,XmY_sc)
 
   if(print_W) call print_excitation('RPA@UHF',5,nS_sc,Omega_sc)
 
@@ -165,8 +165,8 @@ subroutine UG0W0(doACFDT,exchange_kernel,doXBS,COHSEX,BSE,TDA_W,TDA,dBSE,dTDA,ev
 
 ! Compute the RPA correlation energy
 
-  call unrestricted_linear_response(ispin,.true.,TDA_W,.false.,eta,nBas,nC,nO,nV,nR,nS_aa,nS_bb,nS_sc,1d0, &
-                                    eGW,ERI_aaaa,ERI_aabb,ERI_bbbb,ERI_abab,rho_sc,EcRPA(ispin),Omega_sc,XpY_sc,XmY_sc)
+  call unrestricted_linear_response(ispin,.true.,TDA_W,.false.,eta,nBas,nC,nO,nV,nR,nS_aa,nS_bb,nS_sc,nS_sc,1d0, &
+                                    eGW,ERI_aaaa,ERI_aabb,ERI_bbbb,ERI_abab,Omega_sc,rho_sc,EcRPA(ispin),Omega_sc,XpY_sc,XmY_sc)
 
   write(*,*)
   write(*,*)'-------------------------------------------------------------------------------'
