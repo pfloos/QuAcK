@@ -76,6 +76,8 @@ subroutine unrestricted_Bethe_Salpeter(TDA_W,TDA,dBSE,dTDA,evDyn,spin_conserved,
                                       eW,ERI_aaaa,ERI_aabb,ERI_bbbb,ERI_abab,rho_RPA_sc,EcRPA(ispin),        & 
                                       OmRPA_sc,XpY_RPA_sc,XmY_RPA_sc)
 
+!   call print_excitation('RPA@UG0W0',5,nS_sc,OmRPA_sc)
+
     call unrestricted_excitation_density(nBas,nC,nO,nR,nS_aa,nS_bb,nS_sc,ERI_aaaa,ERI_aabb,ERI_bbbb, & 
                                          XpY_RPA_sc,rho_RPA_sc)
 

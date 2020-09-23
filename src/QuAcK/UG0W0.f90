@@ -45,6 +45,7 @@ subroutine UG0W0(doACFDT,exchange_kernel,doXBS,COHSEX,BSE,TDA_W,TDA,dBSE,dTDA,ev
 ! Local variables
 
   logical                       :: print_W = .true.
+  integer                       :: is
   integer                       :: ispin
   double precision              :: EcRPA(nspin)
   double precision              :: EcBSE(nspin)
@@ -126,13 +127,13 @@ subroutine UG0W0(doACFDT,exchange_kernel,doXBS,COHSEX,BSE,TDA_W,TDA,dBSE,dTDA,ev
 ! Compute self-energy !
 !---------------------!
 
-  call unrestricted_self_energy_correlation_diag(eta,nBas,nC,nO,nV,nR,nS_aa,nS_bb,nS_sc,eHF,Omega_sc,rho_sc,SigC)
+  call unrestricted_self_energy_correlation_diag(eta,nBas,nC,nO,nV,nR,nS_sc,eHF,Omega_sc,rho_sc,SigC)
 
 !--------------------------------!
 ! Compute renormalization factor !
 !--------------------------------!
 
-  call unrestricted_renormalization_factor(eta,nBas,nC,nO,nV,nR,nS_aa,nS_bb,nS_sc,eHF,Omega_sc,rho_sc,Z)
+  call unrestricted_renormalization_factor(eta,nBas,nC,nO,nV,nR,nS_sc,eHF,Omega_sc,rho_sc,Z)
 
 !-----------------------------------!
 ! Solve the quasi-particle equation !
@@ -151,10 +152,10 @@ subroutine UG0W0(doACFDT,exchange_kernel,doXBS,COHSEX,BSE,TDA_W,TDA,dBSE,dTDA,ev
   
   ! Find graphical solution of the QP equation
 
-! do is=1,nspin
-!   call QP_graph(nBas,nC(:,is),nO(:,is),nV(:,is),nR(:,is),nS(:,is),eta,eHF(:,is),Omega(:,is), & 
-!                 rho(:,:,:,ispin),eGWlin(:,is),eGW(:,is))
-! end do
+  do is=1,nspin
+    call unrestricted_QP_graph(nBas,nC(is),nO(is),nV(is),nR(is),nS_sc,eta,eHF(:,is),Omega_sc, & 
+                               rho_sc,eGWlin(:,is),eGW(:,is))
+  end do
  
   end if
 

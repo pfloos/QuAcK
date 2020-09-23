@@ -1,6 +1,6 @@
-double precision function SigmaC(p,w,eta,nBas,nC,nO,nV,nR,nS,e,Omega,rho)
+double precision function dUSigmaC(p,w,eta,nBas,nC,nO,nV,nR,nS,e,Omega,rho)
 
-! Compute diagonal of the correlation part of the self-energy
+! Compute the derivative of the correlation part of the self-energy
 
   implicit none
   include 'parameters.h'
@@ -18,7 +18,7 @@ double precision function SigmaC(p,w,eta,nBas,nC,nO,nV,nR,nS,e,Omega,rho)
   integer,intent(in)            :: nS
   double precision,intent(in)   :: e(nBas)
   double precision,intent(in)   :: Omega(nS)
-  double precision,intent(in)   :: rho(nBas,nBas,nS)
+  double precision,intent(in)   :: rho(nBas,nBas,nS,nspin)
 
 ! Local variables
 
@@ -27,24 +27,24 @@ double precision function SigmaC(p,w,eta,nBas,nC,nO,nV,nR,nS,e,Omega,rho)
 
 ! Initialize 
 
-  SigmaC = 0d0
+  dUSigmaC = 0d0
 
 ! Occupied part of the correlation self-energy
 
   do i=nC+1,nO
     do jb=1,nS
       eps = w - e(i) + Omega(jb)
-      SigmaC = SigmaC + 2d0*rho(p,i,jb)**2*eps/(eps**2 + eta**2)
-    enddo
-  enddo
+      dUSigmaC = dUSigmaC + rho(p,i,jb,1)**2*(eps/(eps**2 + eta**2))**2
+    end do
+  end do
 
 ! Virtual part of the correlation self-energy
 
   do a=nO+1,nBas-nR
     do jb=1,nS
       eps = w - e(a) - Omega(jb)
-      SigmaC = SigmaC + 2d0*rho(p,a,jb)**2*eps/(eps**2 + eta**2)
-    enddo
-  enddo
+      dUSigmaC = dUSigmaC + rho(p,a,jb,1)**2*(eps/(eps**2 + eta**2))**2
+    end do
+  end do
 
-end function SigmaC
+end function dUSigmaC

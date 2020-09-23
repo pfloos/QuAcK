@@ -1,6 +1,5 @@
 subroutine unrestricted_Bethe_Salpeter_A_matrix(eta,nBas,nC,nO,nV,nR,nSa,nSb,nSt,lambda, & 
-                                                ERI_aaaa,ERI_aabb,ERI_bbbb,ERI_abab,     & 
-                                                Omega,rho,A_lr)
+                                                ERI_aaaa,ERI_aabb,ERI_bbbb,ERI_abab,Omega,rho,A_lr)
 
 ! Compute the extra term for Bethe-Salpeter equation for linear response in the unrestricted formalism
 
@@ -40,7 +39,7 @@ subroutine unrestricted_Bethe_Salpeter_A_matrix(eta,nBas,nC,nO,nV,nR,nSa,nSb,nSt
 ! Build part A of the BSE matrix !
 !--------------------------------!
 
-  ! alpha-alpha block
+  ! aaaa block
 
   ia = 0
   do i=nC(1)+1,nO(1)
@@ -55,7 +54,7 @@ subroutine unrestricted_Bethe_Salpeter_A_matrix(eta,nBas,nC,nO,nV,nR,nSa,nSb,nSt
           do kc=1,nSt
             eps = Omega(kc)**2 + eta**2
             chi = chi + rho(i,j,kc,1)*rho(a,b,kc,1)*Omega(kc)/eps &
-                      + rho(i,j,kc,2)*rho(a,b,kc,2)*Omega(kc)/eps
+                      + rho(i,j,kc,1)*rho(a,b,kc,1)*Omega(kc)/eps
           enddo
 
           A_lr(ia,jb) = A_lr(ia,jb) - lambda*ERI_aaaa(i,b,j,a) + 2d0*lambda*chi
@@ -65,7 +64,7 @@ subroutine unrestricted_Bethe_Salpeter_A_matrix(eta,nBas,nC,nO,nV,nR,nSa,nSb,nSt
     enddo
   enddo
 
-  ! alpha-beta block
+  ! aabb block
 
   ia = 0
   do i=nC(1)+1,nO(1)
@@ -90,7 +89,7 @@ subroutine unrestricted_Bethe_Salpeter_A_matrix(eta,nBas,nC,nO,nV,nR,nSa,nSb,nSt
     enddo
   enddo
 
-  ! beta-alpha block
+  ! bbaa block
 
   ia = 0
   do i=nC(2)+1,nO(2)
@@ -104,8 +103,8 @@ subroutine unrestricted_Bethe_Salpeter_A_matrix(eta,nBas,nC,nO,nV,nR,nSa,nSb,nSt
           chi = 0d0
           do kc=1,nSt
             eps = Omega(kc)**2 + eta**2
-            chi = chi + rho(i,j,kc,1)*rho(a,b,kc,1)*Omega(kc)/eps &
-                      + rho(i,j,kc,2)*rho(a,b,kc,2)*Omega(kc)/eps
+            chi = chi + rho(i,j,kc,2)*rho(a,b,kc,2)*Omega(kc)/eps &
+                      + rho(i,j,kc,1)*rho(a,b,kc,1)*Omega(kc)/eps
           enddo
 
           A_lr(nSa+ia,jb) = A_lr(nSa+ia,jb) - lambda*ERI_aabb(b,i,a,j) + 2d0*lambda*chi
@@ -115,7 +114,7 @@ subroutine unrestricted_Bethe_Salpeter_A_matrix(eta,nBas,nC,nO,nV,nR,nSa,nSb,nSt
     enddo
   enddo
 
-  ! beta-beta block
+  ! bbbb block
 
   ia = 0
   do i=nC(2)+1,nO(2)
@@ -129,7 +128,7 @@ subroutine unrestricted_Bethe_Salpeter_A_matrix(eta,nBas,nC,nO,nV,nR,nSa,nSb,nSt
           chi = 0d0
           do kc=1,nSt
             eps = Omega(kc)**2 + eta**2
-            chi = chi + rho(i,j,kc,1)*rho(a,b,kc,1)*Omega(kc)/eps &
+            chi = chi + rho(i,j,kc,2)*rho(a,b,kc,2)*Omega(kc)/eps &
                       + rho(i,j,kc,2)*rho(a,b,kc,2)*Omega(kc)/eps
           enddo
 

@@ -1,4 +1,4 @@
-subroutine unrestricted_self_energy_correlation_diag(eta,nBas,nC,nO,nV,nR,nSa,nSb,nSt,e,Omega,rho,SigC)
+subroutine unrestricted_self_energy_correlation_diag(eta,nBas,nC,nO,nV,nR,nSt,e,Omega,rho,SigC)
 
 ! Compute diagonal of the correlation part of the self-energy
 
@@ -13,8 +13,6 @@ subroutine unrestricted_self_energy_correlation_diag(eta,nBas,nC,nO,nV,nR,nSa,nS
   integer,intent(in)            :: nO(nspin)
   integer,intent(in)            :: nV(nspin)
   integer,intent(in)            :: nR(nspin)
-  integer,intent(in)            :: nSa
-  integer,intent(in)            :: nSb
   integer,intent(in)            :: nSt
   double precision,intent(in)   :: e(nBas,nspin)
   double precision,intent(in)   :: Omega(nSt)

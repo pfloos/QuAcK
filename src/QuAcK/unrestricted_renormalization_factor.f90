@@ -1,4 +1,4 @@
-subroutine unrestricted_renormalization_factor(eta,nBas,nC,nO,nV,nR,nSa,nSb,nSt,e,Omega,rho,Z)
+subroutine unrestricted_renormalization_factor(eta,nBas,nC,nO,nV,nR,nSt,e,Omega,rho,Z)
 
 ! Compute the renormalization factor in the unrestricted formalism
 
@@ -13,8 +13,6 @@ subroutine unrestricted_renormalization_factor(eta,nBas,nC,nO,nV,nR,nSa,nSb,nSt,
   integer,intent(in)            :: nO(nspin)
   integer,intent(in)            :: nV(nspin)
   integer,intent(in)            :: nR(nspin)
-  integer,intent(in)            :: nSa
-  integer,intent(in)            :: nSb
   integer,intent(in)            :: nSt
   double precision,intent(in)   :: e(nBas,nspin)
   double precision,intent(in)   :: Omega(nSt)
@@ -88,6 +86,5 @@ subroutine unrestricted_renormalization_factor(eta,nBas,nC,nO,nV,nR,nSa,nSb,nSt,
 ! Final rescaling
 
   Z(:,:) = 1d0/(1d0 + Z(:,:))
-
 
 end subroutine unrestricted_renormalization_factor

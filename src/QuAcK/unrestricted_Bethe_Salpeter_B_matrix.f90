@@ -51,7 +51,7 @@ subroutine unrestricted_Bethe_Salpeter_B_matrix(eta,nBas,nC,nO,nV,nR,nSa,nSb,nSt
           do kc=1,nSt
             eps = Omega(kc)**2 + eta**2
             chi = chi + rho(i,b,kc,1)*rho(a,j,kc,1)*Omega(kc)/eps & 
-                      + rho(i,b,kc,2)*rho(a,j,kc,2)*Omega(kc)/eps
+                      + rho(i,b,kc,1)*rho(a,j,kc,1)*Omega(kc)/eps
           enddo
 
           B_lr(ia,jb) = B_lr(ia,jb) - lambda*ERI_aaaa(i,j,b,a) + 2d0*lambda*chi
@@ -100,8 +100,8 @@ subroutine unrestricted_Bethe_Salpeter_B_matrix(eta,nBas,nC,nO,nV,nR,nSa,nSb,nSt
           chi = 0d0
           do kc=1,nSt
             eps = Omega(kc)**2 + eta**2
-            chi = chi + rho(i,b,kc,1)*rho(a,j,kc,1)*Omega(kc)/eps & 
-                      + rho(i,b,kc,2)*rho(a,j,kc,2)*Omega(kc)/eps
+            chi = chi + rho(i,b,kc,2)*rho(a,j,kc,2)*Omega(kc)/eps & 
+                      + rho(i,b,kc,1)*rho(a,j,kc,1)*Omega(kc)/eps
           enddo
 
           B_lr(nSa+ia,jb) = B_lr(nSa+ia,jb) - lambda*ERI_aabb(j,i,a,b) + 2d0*lambda*chi
@@ -125,7 +125,7 @@ subroutine unrestricted_Bethe_Salpeter_B_matrix(eta,nBas,nC,nO,nV,nR,nSa,nSb,nSt
           chi = 0d0
           do kc=1,nSt
             eps = Omega(kc)**2 + eta**2
-            chi = chi + rho(i,b,kc,1)*rho(a,j,kc,1)*Omega(kc)/eps & 
+            chi = chi + rho(i,b,kc,2)*rho(a,j,kc,2)*Omega(kc)/eps & 
                       + rho(i,b,kc,2)*rho(a,j,kc,2)*Omega(kc)/eps
           enddo
 
