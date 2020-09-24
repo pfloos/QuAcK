@@ -823,9 +823,18 @@ program QuAcK
   if(doevGW) then
 
     call cpu_time(start_evGW)
-    call evGW(maxSCF_GW,thresh_GW,n_diis_GW,doACFDT,exchange_kernel,doXBS,COHSEX,SOSEX,       &
-              BSE,TDA_W,TDA,G0W,GW0,dBSE,dTDA,evDyn,singlet,triplet,eta_GW, &
-              nBas,nC,nO,nV,nR,nS,ENuc,ERHF,Hc,H,ERI_MO,PHF,cHF,eHF,eG0W0)
+    if(unrestricted) then 
+
+      call evUGW(maxSCF_GW,thresh_GW,n_diis_GW,doACFDT,exchange_kernel,doXBS,COHSEX,BSE,TDA_W,TDA, &
+                G0W,GW0,dBSE,dTDA,evDyn,spin_conserved,spin_flip,eta_GW,nBas,nC,nO,nV,nR,nS,ENuc,  &
+                ERHF,Hc,ERI_MO_aaaa,ERI_MO_aabb,ERI_MO_bbbb,ERI_MO_abab,PHF,cHF,eHF,eG0W0)
+
+    else
+
+      call evGW(maxSCF_GW,thresh_GW,n_diis_GW,doACFDT,exchange_kernel,doXBS,COHSEX,SOSEX,       &
+                BSE,TDA_W,TDA,G0W,GW0,dBSE,dTDA,evDyn,singlet,triplet,eta_GW, &
+                nBas,nC,nO,nV,nR,nS,ENuc,ERHF,Hc,ERI_MO,PHF,cHF,eHF,eG0W0)
+    end if
     call cpu_time(end_evGW)
 
     t_evGW = end_evGW - start_evGW

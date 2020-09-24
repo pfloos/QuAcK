@@ -179,9 +179,8 @@ subroutine UG0W0(doACFDT,exchange_kernel,doXBS,COHSEX,BSE,TDA_W,TDA,dBSE,dTDA,ev
 
   if(BSE) then
 
-    call unrestricted_Bethe_Salpeter(TDA_W,TDA,dBSE,dTDA,evDyn,spin_conserved,spin_flip,eta,  &
-                                     nBas,nC,nO,nV,nR,nS,ERI_aaaa,ERI_aabb,ERI_bbbb,ERI_abab, & 
-                                     eHF,eGW,EcBSE)
+    call unrestricted_Bethe_Salpeter(TDA_W,TDA,dBSE,dTDA,evDyn,spin_conserved,spin_flip,eta,nBas,nC,nO,nV,nR,nS, &
+                                     ERI_aaaa,ERI_aabb,ERI_bbbb,ERI_abab,eHF,eGW,EcBSE)
 
 !   if(exchange_kernel) then
 !

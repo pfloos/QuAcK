@@ -1,5 +1,5 @@
 # RHF: maxSCF thresh   DIIS n_diis guess_type ortho_type
-       64    0.0000001  T     5      1          1
+       64    0.00001  T     5      1          1
 # MP: 
       
 # CC: maxSCF thresh   DIIS n_diis
@@ -9,10 +9,10 @@
 # GF: maxSCF thresh  DIIS n_diis lin eta renorm 
       256    0.00001 T    5      T   0.0  3      
 # GW/GT: maxSCF thresh  DIIS n_diis lin eta        COHSEX SOSEX TDA_W G0W GW0 
-         256    0.00001   T    5     F  0.0         F      F     F     F   F  
+         256    0.00001   T    5     T  0.0         F      F     F     F   F  
 # ACFDT: AC Kx  XBS
-         T  F   T
+         F  F   T
 # BSE: BSE dBSE dTDA evDyn
-        T    T    T    T
+        F    F    T    T
 # MCMP2: nMC    nEq    nWalk dt  nPrint iSeed doDrift
          1000000 100000 10    0.3 10000 1234  T
