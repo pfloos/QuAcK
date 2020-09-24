@@ -7,13 +7,13 @@
 # drCCD rCCD lCCD pCCD
   F      F   F    F
 # CIS CID CISD
-  F   F   F    
+  T   F   F    
 # RPA RPAx ppRPA 
   F   F    F    
 # G0F2 evGF2 G0F3 evGF3
   F    F     F    F
 # G0W0 evGW qsGW 
-  T    F    F
+  F    F    F
 # G0T0 evGT qsGT 
   F    F    F
 # MCMP2

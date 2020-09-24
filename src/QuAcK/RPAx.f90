@@ -1,4 +1,4 @@
-subroutine RPAx(doACFDT,exchange_kernel,singlet,triplet,eta,nBas,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,eHF)
+subroutine RPAx(TDA,doACFDT,exchange_kernel,singlet,triplet,eta,nBas,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,eHF)
 
 ! Perform random phase approximation calculation with exchange (aka TDHF)
 
@@ -8,6 +8,7 @@ subroutine RPAx(doACFDT,exchange_kernel,singlet,triplet,eta,nBas,nC,nO,nV,nR,nS,
 
 ! Input variables
 
+  logical,intent(in)            :: TDA
   logical,intent(in)            :: doACFDT
   logical,intent(in)            :: exchange_kernel
   logical,intent(in)            :: singlet
@@ -58,7 +59,7 @@ subroutine RPAx(doACFDT,exchange_kernel,singlet,triplet,eta,nBas,nC,nO,nV,nR,nS,
 
     ispin = 1
 
-    call linear_response(ispin,.false.,.false.,.false.,eta,nBas,nC,nO,nV,nR,nS,1d0,eHF,ERI,Omega(:,ispin),rho, &
+    call linear_response(ispin,.false.,TDA,.false.,eta,nBas,nC,nO,nV,nR,nS,1d0,eHF,ERI,Omega(:,ispin),rho, &
                          EcRPAx(ispin),Omega(:,ispin),XpY(:,:,ispin),XmY(:,:,ispin))
     call print_excitation('RPAx@HF     ',ispin,nS,Omega(:,ispin))
     call print_transition_vectors(nBas,nC,nO,nV,nR,nS,Omega(:,ispin),XpY(:,:,ispin),XmY(:,:,ispin))
@@ -71,7 +72,7 @@ subroutine RPAx(doACFDT,exchange_kernel,singlet,triplet,eta,nBas,nC,nO,nV,nR,nS,
 
     ispin = 2
 
-    call linear_response(ispin,.false.,.false.,.false.,eta,nBas,nC,nO,nV,nR,nS,1d0,eHF,ERI,rho,Omega(:,ispin), &
+    call linear_response(ispin,.false.,TDA,.false.,eta,nBas,nC,nO,nV,nR,nS,1d0,eHF,ERI,rho,Omega(:,ispin), &
                          EcRPAx(ispin),Omega(:,ispin),XpY(:,:,ispin),XmY(:,:,ispin))
     call print_excitation('RPAx@HF     ',ispin,nS,Omega(:,ispin))
     call print_transition_vectors(nBas,nC,nO,nV,nR,nS,Omega(:,ispin),XpY(:,:,ispin),XmY(:,:,ispin))
@@ -103,7 +104,7 @@ subroutine RPAx(doACFDT,exchange_kernel,singlet,triplet,eta,nBas,nC,nO,nV,nR,nS,
     write(*,*) '-------------------------------------------------------'
     write(*,*)
 
-    call ACFDT(exchange_kernel,.false.,.false.,.false.,.false.,.false.,singlet,triplet,eta, &
+    call ACFDT(exchange_kernel,.false.,.false.,.false.,TDA,.false.,singlet,triplet,eta, &
                nBas,nC,nO,nV,nR,nS,ERI,eHF,eHF,EcAC)
 
     write(*,*)

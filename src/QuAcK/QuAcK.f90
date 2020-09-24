@@ -586,7 +586,15 @@ program QuAcK
   if(doCIS) then
 
     call cpu_time(start_CIS)
-    call CIS(singlet,triplet,nBas,nC,nO,nV,nR,nS,ERI_MO,eHF)
+    if(unrestricted) then
+
+      call UCIS(spin_conserved,spin_flip,nBas,nC,nO,nV,nR,nS,ERI_MO_aaaa,ERI_MO_aabb,ERI_MO_bbbb,ERI_MO_abab,eHF)
+
+   else 
+
+      call CIS(singlet,triplet,nBas,nC,nO,nV,nR,nS,ERI_MO,eHF)
+
+    end if
     call cpu_time(end_CIS)
 
     t_CIS = end_CIS - start_CIS
@@ -636,12 +644,12 @@ program QuAcK
     call cpu_time(start_RPA)
     if(unrestricted) then
 
-       call UdRPA(doACFDT,exchange_kernel,spin_conserved,spin_flip,0d0,nBas,nC,nO,nV,nR,nS,ENuc,EUHF, &
+       call UdRPA(TDA,doACFDT,exchange_kernel,spin_conserved,spin_flip,0d0,nBas,nC,nO,nV,nR,nS,ENuc,EUHF, &
                   ERI_MO_aaaa,ERI_MO_aabb,ERI_MO_bbbb,ERI_MO_abab,eHF)
 
     else
 
-      call dRPA(doACFDT,exchange_kernel,singlet,triplet,0d0,nBas,nC,nO,nV,nR,nS,ENuc,ERHF,ERI_MO,eHF)
+      call dRPA(TDA,doACFDT,exchange_kernel,singlet,triplet,0d0,nBas,nC,nO,nV,nR,nS,ENuc,ERHF,ERI_MO,eHF)
 
     end if
     call cpu_time(end_RPA)
@@ -661,12 +669,12 @@ program QuAcK
     call cpu_time(start_RPAx)
     if(unrestricted) then
 
-       call URPAx(doACFDT,exchange_kernel,spin_conserved,spin_flip,0d0,nBas,nC,nO,nV,nR,nS,ENuc,EUHF, &
+       call URPAx(TDA,doACFDT,exchange_kernel,spin_conserved,spin_flip,0d0,nBas,nC,nO,nV,nR,nS,ENuc,EUHF, &
                   ERI_MO_aaaa,ERI_MO_aabb,ERI_MO_bbbb,ERI_MO_abab,eHF)
 
     else 
 
-      call RPAx(doACFDT,exchange_kernel,singlet,triplet,0d0,nBas,nC,nO,nV,nR,nS,ENuc,ERHF,ERI_MO,eHF)
+      call RPAx(TDA,doACFDT,exchange_kernel,singlet,triplet,0d0,nBas,nC,nO,nV,nR,nS,ENuc,ERHF,ERI_MO,eHF)
 
     end if
     call cpu_time(end_RPAx)

@@ -1,5 +1,4 @@
-subroutine dRPA(doACFDT,exchange_kernel,singlet,triplet,eta, & 
-               nBas,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,eHF)
+subroutine dRPA(TDA,doACFDT,exchange_kernel,singlet,triplet,eta,nBas,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,eHF)
 
 ! Perform a direct random phase approximation calculation
 
@@ -9,6 +8,7 @@ subroutine dRPA(doACFDT,exchange_kernel,singlet,triplet,eta, &
 
 ! Input variables
 
+  logical,intent(in)            :: TDA
   logical,intent(in)            :: doACFDT
   logical,intent(in)            :: exchange_kernel
   logical,intent(in)            :: singlet
@@ -59,7 +59,7 @@ subroutine dRPA(doACFDT,exchange_kernel,singlet,triplet,eta, &
 
     ispin = 1
 
-    call linear_response(ispin,.true.,.false.,.false.,eta,nBas,nC,nO,nV,nR,nS,1d0,eHF,ERI,rho,Omega(:,ispin), &
+    call linear_response(ispin,.true.,TDA,.false.,eta,nBas,nC,nO,nV,nR,nS,1d0,eHF,ERI,rho,Omega(:,ispin), &
                          EcRPA(ispin),Omega(:,ispin),XpY(:,:,ispin),XmY(:,:,ispin))
     call print_excitation('RPA@HF       ',ispin,nS,Omega(:,ispin))
     call print_transition_vectors(nBas,nC,nO,nV,nR,nS,Omega(:,ispin),XpY(:,:,ispin),XmY(:,:,ispin))
@@ -72,7 +72,7 @@ subroutine dRPA(doACFDT,exchange_kernel,singlet,triplet,eta, &
 
     ispin = 2
 
-    call linear_response(ispin,.true.,.false.,.false.,eta,nBas,nC,nO,nV,nR,nS,1d0,eHF,ERI,rho,Omega(:,ispin), &
+    call linear_response(ispin,.true.,TDA,.false.,eta,nBas,nC,nO,nV,nR,nS,1d0,eHF,ERI,rho,Omega(:,ispin), &
                          EcRPA(ispin),Omega(:,ispin),XpY(:,:,ispin),XmY(:,:,ispin))
     call print_excitation('RPA@HF      ',ispin,nS,Omega(:,ispin))
     call print_transition_vectors(nBas,nC,nO,nV,nR,nS,Omega(:,ispin),XpY(:,:,ispin),XmY(:,:,ispin))
@@ -105,7 +105,7 @@ subroutine dRPA(doACFDT,exchange_kernel,singlet,triplet,eta, &
     write(*,*) '------------------------------------------------------'
     write(*,*) 
 
-    call ACFDT(exchange_kernel,.false.,.true.,.false.,.false.,.false.,singlet,triplet,eta, &
+    call ACFDT(exchange_kernel,.false.,.true.,.false.,TDA,.false.,singlet,triplet,eta, &
                nBas,nC,nO,nV,nR,nS,ERI,eHF,eHF,EcAC)
 
     if(exchange_kernel) then

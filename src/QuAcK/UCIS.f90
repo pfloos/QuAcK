@@ -64,7 +64,7 @@ subroutine UCIS(spin_conserved,spin_flip,nBas,nC,nO,nV,nR,nS,ERI_aaaa,ERI_aabb,E
 
     allocate(A_sc(nS_sc,nS_sc),Omega_sc(nS_sc))
 
-    call unrestricted_linear_response_A_matrix(ispin,.false.,nBas,nC,nO,nV,nR,nS_aa,nS_bb,nS_sc,nS_sc,lambda,eHF, & 
+    call unrestricted_linear_response_A_matrix(ispin,.false.,nBas,nC,nO,nV,nR,nS_aa,nS_bb,nS_sc,lambda,eHF, & 
                                                ERI_aaaa,ERI_aabb,ERI_bbbb,ERI_abab,A_sc)
  
     if(dump_matrix) then
@@ -102,7 +102,7 @@ subroutine UCIS(spin_conserved,spin_flip,nBas,nC,nO,nV,nR,nS,ERI_aaaa,ERI_aabb,E
 
     allocate(A_sf(nS_sf,nS_sf),Omega_sf(nS_sf))
 
-    call unrestricted_linear_response_A_matrix(ispin,.false.,nBas,nC,nO,nV,nR,nS_aa,nS_bb,nS_sf,nS_sf,lambda,eHF, & 
+    call unrestricted_linear_response_A_matrix(ispin,.false.,nBas,nC,nO,nV,nR,nS_aa,nS_bb,nS_sf,lambda,eHF, & 
                                                ERI_aaaa,ERI_aabb,ERI_bbbb,ERI_abab,A_sf)
  
     if(dump_matrix) then
