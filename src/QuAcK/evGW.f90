@@ -1,5 +1,6 @@
-subroutine evGW(maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,COHSEX,SOSEX,BSE,TDA_W,TDA,dBSE,dTDA,evDyn,G0W,GW0, & 
-                singlet_manifold,triplet_manifold,eta,nBas,nC,nO,nV,nR,nS,ENuc,ERHF,Hc,H,ERI,PHF,cHF,eHF,eG0W0)
+subroutine evGW(maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,COHSEX,SOSEX,BSE,TDA_W,TDA, & 
+                G0W,GW0,dBSE,dTDA,evDyn,singlet,triplet,eta,nBas,nC,nO,nV,nR,nS,ENuc,ERHF,Hc,H,  & 
+                ERI,PHF,cHF,eHF,eG0W0)
 
 ! Perform self-consistent eigenvalue-only GW calculation
 
@@ -26,8 +27,8 @@ subroutine evGW(maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,COHSEX,SOSE
   logical,intent(in)            :: evDyn
   logical,intent(in)            :: G0W
   logical,intent(in)            :: GW0
-  logical,intent(in)            :: singlet_manifold
-  logical,intent(in)            :: triplet_manifold
+  logical,intent(in)            :: singlet
+  logical,intent(in)            :: triplet
   double precision,intent(in)   :: eta
   integer,intent(in)            :: nBas,nC,nO,nV,nR,nS
   double precision,intent(in)   :: eHF(nBas)
@@ -46,7 +47,7 @@ subroutine evGW(maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,COHSEX,SOSE
   integer                       :: n_diis
   double precision              :: rcond
   double precision              :: Conv
-  double precision              :: EcRPA(nspin)
+  double precision              :: EcRPA
   double precision              :: EcBSE(nspin)
   double precision              :: EcAC(nspin)
   double precision              :: EcGM
@@ -57,11 +58,10 @@ subroutine evGW(maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,COHSEX,SOSE
   double precision,allocatable  :: eOld(:)
   double precision,allocatable  :: Z(:)
   double precision,allocatable  :: SigC(:)
-  double precision,allocatable  :: Omega(:,:)
-  double precision,allocatable  :: XpY(:,:,:)
-  double precision,allocatable  :: XmY(:,:,:)
-  double precision,allocatable  :: rho(:,:,:,:)
-  double precision,allocatable  :: rhox(:,:,:,:)
+  double precision,allocatable  :: OmRPA(:)
+  double precision,allocatable  :: XpY_RPA(:,:)
+  double precision,allocatable  :: XmY_RPA(:,:)
+  double precision,allocatable  :: rho_RPA(:,:,:)
 
 ! Hello world
 
@@ -73,23 +73,45 @@ subroutine evGW(maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,COHSEX,SOSE
 
 ! SOSEX correction
 
-  if(SOSEX) write(*,*) 'SOSEX correction activated!'
-  write(*,*)
+  if(SOSEX) then 
+    write(*,*) 'SOSEX correction activated but BUG!'
+    stop
+  end if
 
 ! COHSEX approximation
 
-  if(COHSEX) write(*,*) 'COHSEX approximation activated!'
-  write(*,*)
+  if(COHSEX) then 
+    write(*,*) 'COHSEX approximation activated!'
+    write(*,*)
+  end if
 
 ! TDA for W
 
-  if(TDA_W) write(*,*) 'Tamm-Dancoff approximation for dynamic screening!'
-  write(*,*)
+  if(TDA_W) then 
+    write(*,*) 'Tamm-Dancoff approximation for dynamic screening!'
+    write(*,*)
+  end if
 
 ! TDA 
 
-  if(TDA) write(*,*) 'Tamm-Dancoff approximation activated!'
-  write(*,*)
+  if(TDA) then 
+    write(*,*) 'Tamm-Dancoff approximation activated!'
+    write(*,*)
+  end if
+
+! GW0
+
+  if(GW0) then 
+    write(*,*) 'GW0 scheme activated!'
+    write(*,*)
+  end if
+
+! G0W
+
+  if(G0W) then 
+    write(*,*) 'G0W scheme activated!'
+    write(*,*)
+  end if
 
 ! Linear mixing
 
@@ -98,10 +120,8 @@ subroutine evGW(maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,COHSEX,SOSE
 
 ! Memory allocation
 
-  allocate(eGW(nBas),eOld(nBas),Z(nBas),SigC(nBas),Omega(nS,nspin), & 
-           XpY(nS,nS,nspin),XmY(nS,nS,nspin),                       & 
-           rho(nBas,nBas,nS,nspin),rhox(nBas,nBas,nS,nspin),        &
-           error_diis(nBas,max_diis),e_diis(nBas,max_diis))
+  allocate(eGW(nBas),eOld(nBas),Z(nBas),SigC(nBas),OmRPA(nS),XpY_RPA(nS,nS),XmY_RPA(nS,nS), & 
+           rho_RPA(nBas,nBas,nS),error_diis(nBas,max_diis),e_diis(nBas,max_diis))
 
 ! Initialization
 
@@ -121,36 +141,30 @@ subroutine evGW(maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,COHSEX,SOSE
 
   do while(Conv > thresh .and. nSCF <= maxSCF)
 
-   ! Compute linear response
+   ! Compute screening
 
     if(.not. GW0 .or. nSCF == 0) then
 
-      call linear_response(ispin,.true.,TDA_W,.false.,eta,nBas,nC,nO,nV,nR,nS,1d0,eGW,ERI, & 
-                           rho(:,:,:,ispin),EcRPA(ispin),Omega(:,ispin),XpY(:,:,ispin),XmY(:,:,ispin))
+      call linear_response(ispin,.true.,TDA_W,.false.,eta,nBas,nC,nO,nV,nR,nS,1d0,eGW,ERI,OmRPA, & 
+                           rho_RPA,EcRPA,OmRPA,XpY_RPA,XmY_RPA)
 
     endif
 
+!   Compute spectral weights
+
+    call excitation_density(nBas,nC,nO,nR,nS,ERI,XpY_RPA,rho_RPA)
+
 !   Compute correlation part of the self-energy 
-
-    call excitation_density(nBas,nC,nO,nR,nS,ERI,XpY(:,:,ispin),rho(:,:,:,ispin))
-
-    if(SOSEX) call excitation_density_SOSEX(nBas,nC,nO,nR,nS,ERI,XpY(:,:,ispin),rhox(:,:,:,ispin))
-
-    ! Correlation self-energy
 
     if(G0W) then
 
-      call self_energy_correlation_diag(COHSEX,SOSEX,eta,nBas,nC,nO,nV,nR,nS,eHF, & 
-                                        Omega(:,ispin),rho(:,:,:,ispin),rhox(:,:,:,ispin),EcGM,SigC)
-      call renormalization_factor(COHSEX,SOSEX,eta,nBas,nC,nO,nV,nR,nS,eHF, & 
-                                  Omega(:,ispin),rho(:,:,:,ispin),rhox(:,:,:,ispin),Z(:))
+      call self_energy_correlation_diag(COHSEX,eta,nBas,nC,nO,nV,nR,nS,eHF,OmRPA,rho_RPA,EcGM,SigC)
+      call renormalization_factor(COHSEX,eta,nBas,nC,nO,nV,nR,nS,eHF,OmRPA,rho_RPA,Z)
 
     else 
 
-      call self_energy_correlation_diag(COHSEX,SOSEX,eta,nBas,nC,nO,nV,nR,nS,eGW, & 
-                                        Omega(:,ispin),rho(:,:,:,ispin),rhox(:,:,:,ispin),EcGM,SigC)
-      call renormalization_factor(COHSEX,SOSEX,eta,nBas,nC,nO,nV,nR,nS,eGW, & 
-                                  Omega(:,ispin),rho(:,:,:,ispin),rhox(:,:,:,ispin),Z(:))
+      call self_energy_correlation_diag(COHSEX,eta,nBas,nC,nO,nV,nR,nS,eGW,OmRPA,rho_RPA,EcGM,SigC)
+      call renormalization_factor(COHSEX,eta,nBas,nC,nO,nV,nR,nS,eGW,OmRPA,rho_RPA,Z)
 
     endif
 
@@ -164,8 +178,7 @@ subroutine evGW(maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,COHSEX,SOSE
 
     ! Print results
 
-!   call print_excitation('RPA   ',ispin,nS,Omega(:,ispin))
-    call print_evGW(nBas,nO,nSCF,Conv,eHF,ENuc,ERHF,SigC,Z,eGW)
+    call print_evGW(nBas,nO,nSCF,Conv,eHF,ENuc,ERHF,SigC,Z,eGW,EcRPA,EcGM)
 
     ! Linear mixing or DIIS extrapolation
 
@@ -215,23 +228,22 @@ subroutine evGW(maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,COHSEX,SOSE
 
   endif
 
-! Dump the RPA correlation energy
+! Deallocate memory
 
-  write(*,*)
-  write(*,*)'-------------------------------------------------------------------------------'
-  write(*,'(2X,A50,F20.10)') 'Tr@RPA@evGW correlation energy (singlet) =',EcRPA(1)
-  write(*,'(2X,A50,F20.10)') 'Tr@RPA@evGW correlation energy (triplet) =',EcRPA(2)
-  write(*,'(2X,A50,F20.10)') 'Tr@RPA@evGW correlation energy           =',EcRPA(1) + EcRPA(2)
-  write(*,'(2X,A50,F20.10)') 'Tr@RPA@evGW total energy                 =',ENuc + ERHF + EcRPA(1) + EcRPA(2)
-  write(*,*)'-------------------------------------------------------------------------------'
-  write(*,*)
+  deallocate(eOld,Z,SigC,OmRPA,XpY_RPA,XmY_RPA,rho_RPA,error_diis,e_diis)
 
 ! Perform BSE calculation
 
   if(BSE) then
 
-    call Bethe_Salpeter(TDA_W,TDA,dBSE,dTDA,evDyn,singlet_manifold,triplet_manifold,eta, &
-                        nBas,nC,nO,nV,nR,nS,ERI,eGW,eGW,Omega,XpY,XmY,rho,EcRPA,EcBSE)
+    call Bethe_Salpeter(TDA_W,TDA,dBSE,dTDA,evDyn,singlet,triplet,eta,nBas,nC,nO,nV,nR,nS,ERI,eGW,eGW,EcBSE)
+
+    if(exchange_kernel) then
+
+      EcBSE(1) = 0.5d0*EcBSE(1)
+      EcBSE(2) = 1.5d0*EcBSE(2)
+
+    end if
 
     write(*,*)
     write(*,*)'-------------------------------------------------------------------------------'
@@ -258,8 +270,7 @@ subroutine evGW(maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,COHSEX,SOSE
 
       end if
 
-      call ACFDT(exchange_kernel,doXBS,.true.,TDA_W,TDA,BSE,singlet_manifold,triplet_manifold,eta, &
-                 nBas,nC,nO,nV,nR,nS,ERI,eGW,eGW,Omega,XpY,XmY,rho,EcAC)
+      call ACFDT(exchange_kernel,doXBS,.true.,TDA_W,TDA,BSE,singlet,triplet,eta,nBas,nC,nO,nV,nR,nS,ERI,eGW,eGW,EcAC)
 
       write(*,*)
       write(*,*)'-------------------------------------------------------------------------------'

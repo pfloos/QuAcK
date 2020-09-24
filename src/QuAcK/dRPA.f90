@@ -1,5 +1,5 @@
-subroutine dRPA(doACFDT,exchange_kernel,singlet_manifold,triplet_manifold,eta, & 
-               nBas,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,e)
+subroutine dRPA(doACFDT,exchange_kernel,singlet,triplet,eta, & 
+               nBas,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,eHF)
 
 ! Perform a direct random phase approximation calculation
 
@@ -11,8 +11,8 @@ subroutine dRPA(doACFDT,exchange_kernel,singlet_manifold,triplet_manifold,eta, &
 
   logical,intent(in)            :: doACFDT
   logical,intent(in)            :: exchange_kernel
-  logical,intent(in)            :: singlet_manifold
-  logical,intent(in)            :: triplet_manifold
+  logical,intent(in)            :: singlet
+  logical,intent(in)            :: triplet
   double precision,intent(in)   :: eta
   integer,intent(in)            :: nBas
   integer,intent(in)            :: nC
@@ -22,7 +22,7 @@ subroutine dRPA(doACFDT,exchange_kernel,singlet_manifold,triplet_manifold,eta, &
   integer,intent(in)            :: nS
   double precision,intent(in)   :: ENuc
   double precision,intent(in)   :: ERHF
-  double precision,intent(in)   :: e(nBas)
+  double precision,intent(in)   :: eHF(nBas)
   double precision,intent(in)   :: ERI(nBas,nBas,nBas,nBas)
 
 ! Local variables
@@ -40,7 +40,7 @@ subroutine dRPA(doACFDT,exchange_kernel,singlet_manifold,triplet_manifold,eta, &
 
   write(*,*)
   write(*,*)'***********************************************'
-  write(*,*)'|  random-phase approximation calculation     |'
+  write(*,*)'|  Random-phase approximation calculation     |'
   write(*,*)'***********************************************'
   write(*,*)
 
@@ -55,32 +55,34 @@ subroutine dRPA(doACFDT,exchange_kernel,singlet_manifold,triplet_manifold,eta, &
 
 ! Singlet manifold
 
-  if(singlet_manifold) then 
+  if(singlet) then 
 
     ispin = 1
 
-    call linear_response(ispin,.true.,.false.,.false.,eta,nBas,nC,nO,nV,nR,nS,1d0,e,ERI,rho, &
+    call linear_response(ispin,.true.,.false.,.false.,eta,nBas,nC,nO,nV,nR,nS,1d0,eHF,ERI,rho,Omega(:,ispin), &
                          EcRPA(ispin),Omega(:,ispin),XpY(:,:,ispin),XmY(:,:,ispin))
-    call print_excitation('RPA          ',ispin,nS,Omega(:,ispin))
+    call print_excitation('RPA@HF       ',ispin,nS,Omega(:,ispin))
+    call print_transition_vectors(nBas,nC,nO,nV,nR,nS,Omega(:,ispin),XpY(:,:,ispin),XmY(:,:,ispin))
 
   endif
 
 ! Triplet manifold 
 
-  if(triplet_manifold) then 
+  if(triplet) then 
 
     ispin = 2
 
-    call linear_response(ispin,.true.,.false.,.false.,eta,nBas,nC,nO,nV,nR,nS,1d0,e,ERI,rho, &
+    call linear_response(ispin,.true.,.false.,.false.,eta,nBas,nC,nO,nV,nR,nS,1d0,eHF,ERI,rho,Omega(:,ispin), &
                          EcRPA(ispin),Omega(:,ispin),XpY(:,:,ispin),XmY(:,:,ispin))
-    call print_excitation('RPA         ',ispin,nS,Omega(:,ispin))
+    call print_excitation('RPA@HF      ',ispin,nS,Omega(:,ispin))
+    call print_transition_vectors(nBas,nC,nO,nV,nR,nS,Omega(:,ispin),XpY(:,:,ispin),XmY(:,:,ispin))
 
   endif
 
   if(exchange_kernel) then
 
     EcRPA(1) = 0.5d0*EcRPA(1)
-    EcRPA(2) = 1.5d0*EcRPA(1)
+    EcRPA(2) = 1.5d0*EcRPA(2)
 
   end if
 
@@ -103,13 +105,13 @@ subroutine dRPA(doACFDT,exchange_kernel,singlet_manifold,triplet_manifold,eta, &
     write(*,*) '------------------------------------------------------'
     write(*,*) 
 
-    call ACFDT(exchange_kernel,.false.,.true.,.false.,.false.,.false.,singlet_manifold,triplet_manifold,eta, &
-               nBas,nC,nO,nV,nR,nS,ERI,e,e,Omega,XpY,XmY,rho,EcAC)
+    call ACFDT(exchange_kernel,.false.,.true.,.false.,.false.,.false.,singlet,triplet,eta, &
+               nBas,nC,nO,nV,nR,nS,ERI,eHF,eHF,EcAC)
 
     if(exchange_kernel) then
     
       EcAC(1) = 0.5d0*EcAC(1)
-      EcAC(2) = 1.5d0*EcAC(1)
+      EcAC(2) = 1.5d0*EcAC(2)
     
     end if
 

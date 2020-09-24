@@ -1,5 +1,4 @@
-subroutine ACFDT(exchange_kernel,doXBS,dRPA,TDA_W,TDA,BSE,singlet_manifold,triplet_manifold,eta, & 
-                 nBas,nC,nO,nV,nR,nS,ERI,eW,e,Omega,XpY,XmY,rho,EcAC)
+subroutine ACFDT(exchange_kernel,doXBS,dRPA,TDA_W,TDA,BSE,singlet,triplet,eta,nBas,nC,nO,nV,nR,nS,ERI,eW,e,EcAC)
 
 ! Compute the correlation energy via the adiabatic connection fluctuation dissipation theorem
 
@@ -15,19 +14,14 @@ subroutine ACFDT(exchange_kernel,doXBS,dRPA,TDA_W,TDA,BSE,singlet_manifold,tripl
   logical,intent(in)            :: TDA_W
   logical,intent(in)            :: TDA
   logical,intent(in)            :: BSE
-  logical,intent(in)            :: singlet_manifold
-  logical,intent(in)            :: triplet_manifold
+  logical,intent(in)            :: singlet
+  logical,intent(in)            :: triplet
 
   double precision,intent(in)   :: eta
   integer,intent(in)            :: nBas,nC,nO,nV,nR,nS
   double precision,intent(in)   :: eW(nBas)
   double precision,intent(in)   :: e(nBas)
   double precision,intent(in)   :: ERI(nBas,nBas,nBas,nBas)
-
-  double precision              :: Omega(nS,nspin)
-  double precision              :: XpY(nS,nS,nspin)
-  double precision              :: XmY(nS,nS,nspin)
-  double precision              :: rho(nBas,nBas,nS,nspin)
 
 ! Local variables
 
@@ -37,6 +31,16 @@ subroutine ACFDT(exchange_kernel,doXBS,dRPA,TDA_W,TDA,BSE,singlet_manifold,tripl
   double precision              :: lambda
   double precision,allocatable  :: Ec(:,:)
 
+  double precision              :: EcRPA
+  double precision,allocatable  :: OmRPA(:)
+  double precision,allocatable  :: XpY_RPA(:,:)
+  double precision,allocatable  :: XmY_RPA(:,:)
+  double precision,allocatable  :: rho_RPA(:,:,:)
+
+  double precision,allocatable  :: Omega(:,:)
+  double precision,allocatable  :: XpY(:,:,:)
+  double precision,allocatable  :: XmY(:,:,:)
+
 ! Output variables
 
   double precision,intent(out)  :: EcAC(nspin)
@@ -44,6 +48,8 @@ subroutine ACFDT(exchange_kernel,doXBS,dRPA,TDA_W,TDA,BSE,singlet_manifold,tripl
 ! Memory allocation
 
   allocate(Ec(nAC,nspin))
+  allocate(OmRPA(nS),XpY_RPA(nS,nS),XmY_RPA(nS,nS),rho_RPA(nBas,nBas,nS))
+  allocate(Omega(nS,nspin),XpY(nS,nS,nspin),XmY(nS,nS,nspin))
 
 ! Antisymmetrized kernel version
 
@@ -58,12 +64,20 @@ subroutine ACFDT(exchange_kernel,doXBS,dRPA,TDA_W,TDA,BSE,singlet_manifold,tripl
   EcAC(:) = 0d0
   Ec(:,:) = 0d0
 
+! Compute (singlet) RPA screening 
+
+  isp_W = 1
+  EcRPA = 0d0
+
+  call linear_response(isp_W,.true.,TDA_W,.false.,eta,nBas,nC,nO,nV,nR,nS,1d0,eW,ERI,OmRPA, &
+                       rho_RPA,EcRPA,OmRPA,XpY_RPA,XmY_RPA)
+  call excitation_density(nBas,nC,nO,nR,nS,ERI,XpY_RPA,rho_RPA)
+
 ! Singlet manifold
 
-  if(singlet_manifold) then
+  if(singlet) then
 
     ispin = 1
-    isp_W = 1
 
     write(*,*) '--------------'
     write(*,*) 'Singlet states'
@@ -80,23 +94,25 @@ subroutine ACFDT(exchange_kernel,doXBS,dRPA,TDA_W,TDA,BSE,singlet_manifold,tripl
 
       if(doXBS) then
 
-        call linear_response(isp_W,dRPA,TDA_W,.false.,eta,nBas,nC,nO,nV,nR,nS,lambda,eW,ERI, &
-                             rho(:,:,:,ispin),EcAC(ispin),Omega(:,ispin),XpY(:,:,ispin),XmY(:,:,ispin))
-        call excitation_density(nBas,nC,nO,nR,nS,ERI,XpY(:,:,ispin),rho(:,:,:,ispin))
+        call linear_response(isp_W,dRPA,TDA_W,.false.,eta,nBas,nC,nO,nV,nR,nS,lambda,eW,ERI,OmRPA, &
+                             rho_RPA,EcRPA,OmRPA,XpY_RPA,XmY_RPA)
+        call excitation_density(nBas,nC,nO,nR,nS,ERI,XpY_RPA,rho_RPA)
 
       end if
 
-      call linear_response(ispin,dRPA,TDA,BSE,eta,nBas,nC,nO,nV,nR,nS,lambda,e,ERI, &
-                           rho(:,:,:,ispin),EcAC(ispin),Omega(:,ispin),XpY(:,:,ispin),XmY(:,:,ispin))
+      call linear_response(ispin,dRPA,TDA,BSE,eta,nBas,nC,nO,nV,nR,nS,lambda,e,ERI,OmRPA, &
+                           rho_RPA,EcAC(ispin),Omega(:,ispin),XpY(:,:,ispin),XmY(:,:,ispin))
 
       call ACFDT_correlation_energy(ispin,exchange_kernel,nBas,nC,nO,nV,nR,nS, &
-                                    ERI(:,:,:,:),XpY(:,:,ispin),XmY(:,:,ispin),Ec(iAC,ispin))
+                                    ERI,XpY(:,:,ispin),XmY(:,:,ispin),Ec(iAC,ispin))
 
       write(*,'(2X,F15.6,1X,F30.15,1X,F30.15)') lambda,EcAC(ispin),Ec(iAC,ispin)
 
     end do
 
     EcAC(ispin) = 0.5d0*dot_product(wAC,Ec(:,ispin))
+
+    if(exchange_kernel) EcAC(ispin) = 0.5d0*EcAC(ispin)
 
     write(*,*) '-----------------------------------------------------------------------------------'
     write(*,'(2X,A50,1X,F15.6)') ' Ec(AC) via Gauss-Legendre quadrature:',EcAC(ispin)
@@ -107,7 +123,7 @@ subroutine ACFDT(exchange_kernel,doXBS,dRPA,TDA_W,TDA,BSE,singlet_manifold,tripl
  
 ! Triplet manifold
 
-  if(triplet_manifold) then
+  if(triplet) then
 
     ispin = 2
     isp_W = 1
@@ -127,23 +143,24 @@ subroutine ACFDT(exchange_kernel,doXBS,dRPA,TDA_W,TDA,BSE,singlet_manifold,tripl
 
       if(doXBS) then
 
-        call linear_response(isp_W,dRPA,TDA_W,.false.,eta,nBas,nC,nO,nV,nR,nS,lambda,eW,ERI, &
-                             rho(:,:,:,ispin),EcAC(ispin),Omega(:,ispin),XpY(:,:,ispin),XmY(:,:,ispin))
-        call excitation_density(nBas,nC,nO,nR,nS,ERI,XpY(:,:,ispin),rho(:,:,:,ispin))
+        call linear_response(isp_W,dRPA,TDA_W,.false.,eta,nBas,nC,nO,nV,nR,nS,lambda,eW,ERI,OmRPA, &
+                             rho_RPA,EcRPA,OmRPA,XpY_RPA,XmY_RPA)
+        call excitation_density(nBas,nC,nO,nR,nS,ERI,XpY_RPA,rho_RPA)
 
       end if  
 
-      call linear_response(ispin,dRPA,TDA,BSE,eta,nBas,nC,nO,nV,nR,nS,lambda,e,ERI, &
-                           rho(:,:,:,ispin),EcAC(ispin),Omega(:,ispin),XpY(:,:,ispin),XmY(:,:,ispin))
+      call linear_response(ispin,dRPA,TDA,BSE,eta,nBas,nC,nO,nV,nR,nS,lambda,e,ERI,OmRPA, &
+                           rho_RPA,EcAC(ispin),Omega(:,ispin),XpY(:,:,ispin),XmY(:,:,ispin))
 
-      call ACFDT_correlation_energy(ispin,exchange_kernel,nBas,nC,nO,nV,nR,nS, &
-                                    ERI(:,:,:,:),XpY(:,:,ispin),XmY(:,:,ispin),Ec(iAC,ispin))
+      call ACFDT_correlation_energy(ispin,exchange_kernel,nBas,nC,nO,nV,nR,nS,ERI,XpY(:,:,ispin),XmY(:,:,ispin),Ec(iAC,ispin))
 
       write(*,'(2X,F15.6,1X,F30.15,1X,F30.15)') lambda,EcAC(ispin),Ec(iAC,ispin)
 
     end do
 
     EcAC(ispin) = 0.5d0*dot_product(wAC,Ec(:,ispin))
+
+    if(exchange_kernel) EcAC(ispin) = 1.5d0*EcAC(ispin)
 
     write(*,*) '-----------------------------------------------------------------------------------'
     write(*,'(2X,A50,1X,F15.6)') ' Ec(AC) via Gauss-Legendre quadrature:',EcAC(ispin)

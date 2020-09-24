@@ -54,7 +54,7 @@ subroutine BSE2(TDA,dBSE,dTDA,evDyn,singlet_manifold,triplet_manifold, &
     ! Compute BSE2 excitation energies
 
     call linear_response(ispin,.false.,TDA,.false.,eta,nBas,nC,nO,nV,nR,nS,1d0,eGF(:),ERI(:,:,:,:), &
-                         rho,EcBSE(ispin),OmBSE(:,ispin),XpY(:,:,ispin),XmY(:,:,ispin))
+                         OmBSE(:,ispin),rho,EcBSE(ispin),OmBSE(:,ispin),XpY(:,:,ispin),XmY(:,:,ispin))
     call print_excitation('BSE2        ',ispin,nS,OmBSE(:,ispin))
 
     ! Compute dynamic correction for BSE via perturbation theory
@@ -88,7 +88,7 @@ subroutine BSE2(TDA,dBSE,dTDA,evDyn,singlet_manifold,triplet_manifold, &
     ! Compute BSE2 excitation energies
 
     call linear_response(ispin,.false.,TDA,.false.,eta,nBas,nC,nO,nV,nR,nS,1d0,eGF(:),ERI(:,:,:,:), &
-                         rho,EcBSE(ispin),OmBSE(:,ispin),XpY(:,:,ispin),XmY(:,:,ispin))
+                         OmBSE(:,ispin),rho,EcBSE(ispin),OmBSE(:,ispin),XpY(:,:,ispin),XmY(:,:,ispin))
     call print_excitation('BSE2        ',ispin,nS,OmBSE(:,ispin))
 
     ! Compute dynamic correction for BSE via perturbation theory

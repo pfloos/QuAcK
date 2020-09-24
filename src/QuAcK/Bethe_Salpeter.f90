@@ -1,5 +1,4 @@
-subroutine Bethe_Salpeter(TDA_W,TDA,dBSE,dTDA,evDyn,singlet_manifold,triplet_manifold,eta, & 
-                          nBas,nC,nO,nV,nR,nS,ERI,eW,eGW,OmRPA,XpY_RPA,XmY_RPA,rho_RPA,EcRPA,EcBSE)
+subroutine Bethe_Salpeter(TDA_W,TDA,dBSE,dTDA,evDyn,singlet,triplet,eta,nBas,nC,nO,nV,nR,nS,ERI,eW,eGW,EcBSE)
 
 ! Compute the Bethe-Salpeter excitation energies
 
@@ -13,8 +12,8 @@ subroutine Bethe_Salpeter(TDA_W,TDA,dBSE,dTDA,evDyn,singlet_manifold,triplet_man
   logical,intent(in)            :: dBSE
   logical,intent(in)            :: dTDA
   logical,intent(in)            :: evDyn
-  logical,intent(in)            :: singlet_manifold
-  logical,intent(in)            :: triplet_manifold
+  logical,intent(in)            :: singlet
+  logical,intent(in)            :: triplet
 
   double precision,intent(in)   :: eta
   integer,intent(in)            :: nBas,nC,nO,nV,nR,nS
@@ -22,51 +21,55 @@ subroutine Bethe_Salpeter(TDA_W,TDA,dBSE,dTDA,evDyn,singlet_manifold,triplet_man
   double precision,intent(in)   :: eGW(nBas)
   double precision,intent(in)   :: ERI(nBas,nBas,nBas,nBas)
 
-  double precision              :: OmRPA(nS,nspin)
-  double precision              :: XpY_RPA(nS,nS,nspin)
-  double precision              :: XmY_RPA(nS,nS,nspin)
-  double precision              :: rho_RPA(nBas,nBas,nS,nspin)
-
 ! Local variables
 
   integer                       :: ispin
   integer                       :: isp_W
+
+  double precision              :: EcRPA
+  double precision,allocatable  :: OmRPA(:)
+  double precision,allocatable  :: XpY_RPA(:,:)
+  double precision,allocatable  :: XmY_RPA(:,:)
+  double precision,allocatable  :: rho_RPA(:,:,:)
+
   double precision,allocatable  :: OmBSE(:,:)
   double precision,allocatable  :: XpY_BSE(:,:,:)
   double precision,allocatable  :: XmY_BSE(:,:,:)
 
 ! Output variables
 
-  double precision,intent(out)  :: EcRPA(nspin)
   double precision,intent(out)  :: EcBSE(nspin)
 
 ! Memory allocation
 
+  allocate(OmRPA(nS),XpY_RPA(nS,nS),XmY_RPA(nS,nS),rho_RPA(nBas,nBas,nS))
   allocate(OmBSE(nS,nspin),XpY_BSE(nS,nS,nspin),XmY_BSE(nS,nS,nspin))
+
+!---------------------------------
+! Compute (singlet) RPA screening 
+!---------------------------------
+
+  isp_W = 1
+  EcRPA = 0d0
+
+  call linear_response(isp_W,.true.,TDA_W,.false.,eta,nBas,nC,nO,nV,nR,nS,1d0,eW,ERI,OmRPA, &
+                       rho_RPA,EcRPA,OmRPA,XpY_RPA,XmY_RPA)
+  call excitation_density(nBas,nC,nO,nR,nS,ERI,XpY_RPA,rho_RPA)
 
 !-------------------
 ! Singlet manifold
 !-------------------
 
- if(singlet_manifold) then
+ if(singlet) then
 
     ispin = 1
-    isp_W = 1
     EcBSE(ispin) = 0d0
-
-   ! Compute (singlet) RPA screening 
-
-    call linear_response(isp_W,.true.,TDA_W,.false.,eta,nBas,nC,nO,nV,nR,nS,1d0,eW,ERI, &
-                         rho_RPA(:,:,:,ispin),EcRPA(ispin),OmRPA(:,ispin),XpY_RPA(:,:,ispin),XmY_RPA(:,:,ispin))
-    call excitation_density(nBas,nC,nO,nR,nS,ERI,XpY_RPA(:,:,ispin),rho_RPA(:,:,:,ispin))
 
     ! Compute BSE excitation energies
 
-    OmBSE(:,ispin) = OmRPA(:,ispin)
-
-    call linear_response(ispin,.true.,TDA,.true.,eta,nBas,nC,nO,nV,nR,nS,1d0,eGW,ERI, &
-                         rho_RPA(:,:,:,ispin),EcBSE(ispin),OmBSE(:,ispin),XpY_BSE(:,:,ispin),XmY_BSE(:,:,ispin))
-    call print_excitation('BSE         ',ispin,nS,OmBSE(:,ispin))
+    call linear_response(ispin,.true.,TDA,.true.,eta,nBas,nC,nO,nV,nR,nS,1d0,eGW,ERI,OmRPA, &
+                         rho_RPA,EcBSE(ispin),OmBSE(:,ispin),XpY_BSE(:,:,ispin),XmY_BSE(:,:,ispin))
+    call print_excitation('BSE@GW      ',ispin,nS,OmBSE(:,ispin))
 
     !-------------------------------------------------
     ! Compute the dynamical screening at the BSE level
@@ -78,12 +81,12 @@ subroutine Bethe_Salpeter(TDA_W,TDA,dBSE,dTDA,evDyn,singlet_manifold,triplet_man
  
       if(evDyn) then
  
-        call Bethe_Salpeter_dynamic_perturbation_iterative(dTDA,eta,nBas,nC,nO,nV,nR,nS,eGW(:),OmRPA(:,ispin),OmBSE(:,ispin), & 
-                                                           XpY_BSE(:,:,ispin),XmY_BSE(:,:,ispin),rho_RPA(:,:,:,ispin))
+        call Bethe_Salpeter_dynamic_perturbation_iterative(dTDA,eta,nBas,nC,nO,nV,nR,nS,eGW,OmRPA,rho_RPA, &
+                                                           OmBSE(:,ispin),XpY_BSE(:,:,ispin),XmY_BSE(:,:,ispin))
       else
  
-        call Bethe_Salpeter_dynamic_perturbation(dTDA,eta,nBas,nC,nO,nV,nR,nS,eGW(:),OmRPA(:,ispin),OmBSE(:,ispin), & 
-                                                 XpY_BSE(:,:,ispin),XmY_BSE(:,:,ispin),rho_RPA(:,:,:,ispin))
+        call Bethe_Salpeter_dynamic_perturbation(dTDA,eta,nBas,nC,nO,nV,nR,nS,eGW,OmRPA,rho_RPA, &
+                                                 OmBSE(:,ispin),XpY_BSE(:,:,ispin),XmY_BSE(:,:,ispin))
       end if
 
     end if
@@ -94,25 +97,16 @@ subroutine Bethe_Salpeter(TDA_W,TDA,dBSE,dTDA,evDyn,singlet_manifold,triplet_man
 ! Triplet manifold
 !-------------------
 
- if(triplet_manifold) then
+ if(triplet) then
 
     ispin = 2
-    isp_W = 1
     EcBSE(ispin) = 0d0
-
-   ! Compute (singlet) RPA screening 
-
-    call linear_response(isp_W,.true.,TDA_W,.false.,eta,nBas,nC,nO,nV,nR,nS,1d0,eW,ERI, &
-                         rho_RPA(:,:,:,ispin),EcRPA(ispin),OmRPA(:,ispin),XpY_RPA(:,:,ispin),XmY_RPA(:,:,ispin))
-    call excitation_density(nBas,nC,nO,nR,nS,ERI,XpY_RPA(:,:,ispin),rho_RPA(:,:,:,ispin))
 
     ! Compute BSE excitation energies
 
-    OmBSE(:,ispin) = OmRPA(:,ispin)
-
-    call linear_response(ispin,.true.,TDA,.true.,eta,nBas,nC,nO,nV,nR,nS,1d0,eGW,ERI, &
-                         rho_RPA(:,:,:,ispin),EcBSE(ispin),OmBSE(:,ispin),XpY_BSE(:,:,ispin),XmY_BSE(:,:,ispin))
-    call print_excitation('BSE         ',ispin,nS,OmBSE(:,ispin))
+    call linear_response(ispin,.true.,TDA,.true.,eta,nBas,nC,nO,nV,nR,nS,1d0,eGW,ERI,OmRPA, &
+                         rho_RPA,EcBSE(ispin),OmBSE(:,ispin),XpY_BSE(:,:,ispin),XmY_BSE(:,:,ispin))
+    call print_excitation('BSE@GW      ',ispin,nS,OmBSE(:,ispin))
 
     !-------------------------------------------------
     ! Compute the dynamical screening at the BSE level
@@ -124,12 +118,12 @@ subroutine Bethe_Salpeter(TDA_W,TDA,dBSE,dTDA,evDyn,singlet_manifold,triplet_man
 
       if(evDyn) then
      
-        call Bethe_Salpeter_dynamic_perturbation_iterative(dTDA,eta,nBas,nC,nO,nV,nR,nS,eGW,OmRPA(:,ispin),OmBSE(:,ispin), & 
-                                                           XpY_BSE(:,:,ispin),XmY_BSE(:,:,ispin),rho_RPA(:,:,:,ispin))
+        call Bethe_Salpeter_dynamic_perturbation_iterative(dTDA,eta,nBas,nC,nO,nV,nR,nS,eGW,OmRPA,rho_RPA, &
+                                                           OmBSE(:,ispin),XpY_BSE(:,:,ispin),XmY_BSE(:,:,ispin))
       else
      
-        call Bethe_Salpeter_dynamic_perturbation(dTDA,eta,nBas,nC,nO,nV,nR,nS,eGW,OmRPA(:,ispin),OmBSE(:,ispin), & 
-                                                 XpY_BSE(:,:,ispin),XmY_BSE(:,:,ispin),rho_RPA(:,:,:,ispin))
+        call Bethe_Salpeter_dynamic_perturbation(dTDA,eta,nBas,nC,nO,nV,nR,nS,eGW,OmRPA,rho_RPA, &
+                                                 OmBSE(:,ispin),XpY_BSE(:,:,ispin),XmY_BSE(:,:,ispin))
       end if
 
     end if

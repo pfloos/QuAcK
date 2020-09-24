@@ -1,4 +1,4 @@
-subroutine self_energy_correlation_diag(COHSEX,SOSEX,eta,nBas,nC,nO,nV,nR,nS,e,Omega,rho,rhox,EcGM,SigC)
+subroutine self_energy_correlation_diag(COHSEX,eta,nBas,nC,nO,nV,nR,nS,e,Omega,rho,EcGM,SigC)
 
 ! Compute diagonal of the correlation part of the self-energy
 
@@ -8,7 +8,6 @@ subroutine self_energy_correlation_diag(COHSEX,SOSEX,eta,nBas,nC,nO,nV,nR,nS,e,O
 ! Input variables
 
   logical,intent(in)            :: COHSEX
-  logical,intent(in)            :: SOSEX
   double precision,intent(in)   :: eta
   integer,intent(in)            :: nBas
   integer,intent(in)            :: nC
@@ -19,7 +18,6 @@ subroutine self_energy_correlation_diag(COHSEX,SOSEX,eta,nBas,nC,nO,nV,nR,nS,e,O
   double precision,intent(in)   :: e(nBas)
   double precision,intent(in)   :: Omega(nS)
   double precision,intent(in)   :: rho(nBas,nBas,nS)
-  double precision,intent(in)   :: rhox(nBas,nBas,nS)
 
 ! Local variables
 
@@ -67,45 +65,6 @@ subroutine self_energy_correlation_diag(COHSEX,SOSEX,eta,nBas,nC,nO,nV,nR,nS,e,O
     EcGM = 0d0
     do i=nC+1,nO
       EcGM = EcGM - SigC(i)
-    end do
-
-!-----------------------------
-! SOSEX self-energy *BUG*
-!-----------------------------
-
-  elseif(SOSEX) then
-
-    ! SOSEX: occupied part of the correlation self-energy
-
-    do p=nC+1,nBas-nR
-      do i=nC+1,nO
-        do jb=1,nS
-          eps = e(p) - e(i) + Omega(jb)
-          SigC(p) = SigC(p) - rho(p,i,jb)*rhox(p,i,jb)*eps/(eps**2 + eta**2)
-        end do
-      end do
-    end do
-
-    ! SOSEX: virtual part of the correlation self-energy
-
-    do p=nC+1,nBas-nR
-      do a=nO+1,nBas-nR
-        do jb=1,nS
-          eps = e(p) - e(a) - Omega(jb)
-          SigC(p) = SigC(p) - rho(p,a,jb)*rhox(p,a,jb)*eps/(eps**2 + eta**2)
-        end do
-      end do
-    end do
-
-    ! GM correlation energy
-
-    do i=nC+1,nO
-      do a=nO+1,nBas-nR
-        do jb=1,nS
-          eps = e(a) - e(i) + Omega(jb)
-          EcGM = EcGM + rho(a,i,jb)*rhox(a,i,jb)*eps/(eps**2 + eta**2)
-        end do
-      end do
     end do
 
 !-----------------------------

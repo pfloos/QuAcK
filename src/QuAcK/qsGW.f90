@@ -1,6 +1,6 @@
-subroutine qsGW(maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,                     & 
-                COHSEX,SOSEX,BSE,TDA_W,TDA,dBSE,dTDA,evDyn,G0W,GW0,singlet_manifold,triplet_manifold,eta, &
-                nBas,nC,nO,nV,nR,nS,ENuc,ERHF,S,X,T,V,Hc,ERI_AO_basis,ERI_MO_basis,PHF,cHF,eHF)
+subroutine qsGW(maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,COHSEX,SOSEX,BSE,TDA_W,TDA,   & 
+                G0W,GW0,dBSE,dTDA,evDyn,singlet,triplet,eta,nBas,nC,nO,nV,nR,nS,ENuc,ERHF,S,X,T,V, & 
+                Hc,ERI_AO_basis,ERI_MO_basis,PHF,cHF,eHF)
 
 ! Perform a quasiparticle self-consistent GW calculation
 
@@ -25,8 +25,8 @@ subroutine qsGW(maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,           
   logical,intent(in)            :: evDyn
   logical,intent(in)            :: G0W
   logical,intent(in)            :: GW0
-  logical,intent(in)            :: singlet_manifold
-  logical,intent(in)            :: triplet_manifold
+  logical,intent(in)            :: singlet
+  logical,intent(in)            :: triplet
   double precision,intent(in)   :: eta
   integer,intent(in)            :: nBas,nC,nO,nV,nR,nS
   double precision,intent(in)   :: ENuc
@@ -49,7 +49,7 @@ subroutine qsGW(maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,           
   integer                       :: ispin
   integer                       :: n_diis
   double precision              :: EqsGW
-  double precision              :: EcRPA(nspin)
+  double precision              :: EcRPA
   double precision              :: EcBSE(nspin)
   double precision              :: EcAC(nspin)
   double precision              :: EcGM
@@ -58,11 +58,10 @@ subroutine qsGW(maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,           
   double precision,external     :: trace_matrix
   double precision,allocatable  :: error_diis(:,:)
   double precision,allocatable  :: F_diis(:,:)
-  double precision,allocatable  :: Omega(:,:)
-  double precision,allocatable  :: XpY(:,:,:)
-  double precision,allocatable  :: XmY(:,:,:)
-  double precision,allocatable  :: rho(:,:,:,:)
-  double precision,allocatable  :: rhox(:,:,:,:)
+  double precision,allocatable  :: OmRPA(:)
+  double precision,allocatable  :: XpY_RPA(:,:)
+  double precision,allocatable  :: XmY_RPA(:,:)
+  double precision,allocatable  :: rho_RPA(:,:,:)
   double precision,allocatable  :: c(:,:)
   double precision,allocatable  :: cp(:,:)
   double precision,allocatable  :: eGW(:)
@@ -96,29 +95,37 @@ subroutine qsGW(maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,           
 
 ! SOSEX correction
 
-  if(SOSEX) write(*,*) 'SOSEX correction activated!'
-  write(*,*)
+  if(SOSEX) then 
+    write(*,*) 'SOSEX correction activated but BUG!'
+    stop
+  end if
 
 ! COHSEX approximation
 
-  if(COHSEX) write(*,*) 'COHSEX approximation activated!'
-  write(*,*)
+  if(COHSEX) then 
+    write(*,*) 'COHSEX approximation activated!'
+    write(*,*)
+  end if
 
 ! TDA for W
 
-  if(TDA_W) write(*,*) 'Tamm-Dancoff approximation for dynamic screening!'
-  write(*,*)
+  if(TDA_W) then 
+    write(*,*) 'Tamm-Dancoff approximation for dynamic screening!'
+    write(*,*)
+  end if
 
 ! TDA 
 
-  if(TDA) write(*,*) 'Tamm-Dancoff approximation activated!'
-  write(*,*)
+  if(TDA) then 
+    write(*,*) 'Tamm-Dancoff approximation activated!'
+    write(*,*)
+  end if
 
 ! Memory allocation
 
   allocate(eGW(nBas),c(nBas,nBas),cp(nBas,nBas),P(nBas,nBas),F(nBas,nBas),Fp(nBas,nBas),        &
            J(nBas,nBas),K(nBas,nBas),SigC(nBas,nBas),SigCp(nBas,nBas),SigCm(nBas,nBas),Z(nBas), & 
-           Omega(nS,nspin),XpY(nS,nS,nspin),XmY(nS,nS,nspin),rho(nBas,nBas,nS,nspin),rhox(nBas,nBas,nS,nspin),   &
+           OmRPA(nS),XpY_RPA(nS,nS),XmY_RPA(nS,nS),rho_RPA(nBas,nBas,nS),                       &
            error(nBas,nBas),error_diis(nBasSq,max_diis),F_diis(nBasSq,max_diis))
 
 ! Initialization
@@ -156,29 +163,23 @@ subroutine qsGW(maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,           
     if(.not. GW0 .or. nSCF == 0) then
 
       call linear_response(ispin,.true.,TDA_W,.false.,eta,nBas,nC,nO,nV,nR,nS,1d0,eGW,ERI_MO_basis, &
-                           rho(:,:,:,ispin),EcRPA(ispin),Omega(:,ispin),XpY(:,:,ispin),XmY(:,:,ispin))
+                           OmRPA,rho_RPA,EcRPA,OmRPA,XpY_RPA,XmY_RPA)
 
     endif
 
     ! Compute correlation part of the self-energy 
 
-    call excitation_density(nBas,nC,nO,nR,nS,ERI_MO_basis,XpY(:,:,ispin),rho(:,:,:,ispin))
-
-    if(SOSEX) call excitation_density_SOSEX(nBas,nC,nO,nR,nS,ERI_MO_basis,XpY(:,:,ispin),rhox(:,:,:,ispin))
+    call excitation_density(nBas,nC,nO,nR,nS,ERI_MO_basis,XpY_RPA,rho_RPA)
 
     if(G0W) then
 
-      call self_energy_correlation(COHSEX,SOSEX,eta,nBas,nC,nO,nV,nR,nS,eHF, & 
-                                   Omega(:,ispin),rho(:,:,:,ispin),rhox(:,:,:,ispin),EcGM,SigC)
-      call renormalization_factor(COHSEX,SOSEX,eta,nBas,nC,nO,nV,nR,nS,eHF, & 
-                                  Omega(:,ispin),rho(:,:,:,ispin),rhox(:,:,:,ispin),Z)
+      call self_energy_correlation(COHSEX,eta,nBas,nC,nO,nV,nR,nS,eHF,OmRPA,rho_RPA,EcGM,SigC)
+      call renormalization_factor(COHSEX,eta,nBas,nC,nO,nV,nR,nS,eHF,OmRPA,rho_RPA,Z)
 
      else
 
-      call self_energy_correlation(COHSEX,SOSEX,eta,nBas,nC,nO,nV,nR,nS,eGW, & 
-                                   Omega(:,ispin),rho(:,:,:,ispin),rhox(:,:,:,ispin),EcGM,SigC)
-      call renormalization_factor(COHSEX,SOSEX,eta,nBas,nC,nO,nV,nR,nS,eGW, & 
-                                  Omega(:,ispin),rho(:,:,:,ispin),rhox(:,:,:,ispin),Z)
+      call self_energy_correlation(COHSEX,eta,nBas,nC,nO,nV,nR,nS,eGW,OmRPA,rho_RPA,EcGM,SigC)
+      call renormalization_factor(COHSEX,eta,nBas,nC,nO,nV,nR,nS,eGW,OmRPA,rho_RPA,Z)
 
      endif
 
@@ -221,7 +222,7 @@ subroutine qsGW(maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,           
     ! Print results
 
 !   call print_excitation('RPA   ',ispin,nS,Omega(:,ispin))
-    call print_qsGW(nBas,nO,nSCF,Conv,thresh,eHF,eGW,c,ENuc,P,T,V,Hc,J,K,F,SigCp,Z,EcRPA(ispin),EcGM,EqsGW)
+    call print_qsGW(nBas,nO,nSCF,Conv,thresh,eHF,eGW,c,ENuc,P,T,V,Hc,J,K,F,SigCp,Z,EcRPA,EcGM,EqsGW)
 
     ! Increment
 
@@ -258,23 +259,22 @@ subroutine qsGW(maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,           
 
   endif
 
-! Dump RPA correlation energy
+! Deallocate memory
 
-  write(*,*)
-  write(*,*)'-------------------------------------------------------------------------------'
-  write(*,'(2X,A50,F20.10)') 'Tr@RPA@qsGW correlation energy (singlet) =',EcRPA(1)
-  write(*,'(2X,A50,F20.10)') 'Tr@RPA@qsGW correlation energy (triplet) =',EcRPA(2)
-  write(*,'(2X,A50,F20.10)') 'Tr@RPA@qsGW correlation energy           =',EcRPA(1) + EcRPA(2)
-  write(*,'(2X,A50,F20.10)') 'Tr@RPA@qsGW total energy                 =',ENuc + EqsGW + EcRPA(1) + EcRPA(2)
-  write(*,*)'-------------------------------------------------------------------------------'
-  write(*,*)
+  deallocate(c,cp,P,F,Fp,J,K,SigC,SigCp,SigCm,Z,OmRPA,XpY_RPA,XmY_RPA,rho_RPA,error,error_diis,F_diis)
 
 ! Perform BSE calculation
 
   if(BSE) then
 
-    call Bethe_Salpeter(TDA_W,TDA,dBSE,dTDA,evDyn,singlet_manifold,triplet_manifold,eta, &
-                        nBas,nC,nO,nV,nR,nS,ERI_MO_basis,eGW,eGW,Omega,XpY,XmY,rho,EcRPA,EcBSE)
+    call Bethe_Salpeter(TDA_W,TDA,dBSE,dTDA,evDyn,singlet,triplet,eta,nBas,nC,nO,nV,nR,nS,ERI_MO_basis,eGW,eGW,EcBSE)
+
+    if(exchange_kernel) then
+
+      EcBSE(1) = 0.5d0*EcBSE(1)
+      EcBSE(2) = 1.5d0*EcBSE(2)
+
+    end if
 
     write(*,*)
     write(*,*)'-------------------------------------------------------------------------------'
@@ -301,8 +301,7 @@ subroutine qsGW(maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,           
 
       end if
 
-      call ACFDT(exchange_kernel,doXBS,.true.,TDA_W,TDA,BSE,singlet_manifold,triplet_manifold,eta, &
-                 nBas,nC,nO,nV,nR,nS,ERI_MO_basis,eGW,eGW,Omega,XpY,XmY,rho,EcAC)
+      call ACFDT(exchange_kernel,doXBS,.true.,TDA_W,TDA,BSE,singlet,triplet,eta,nBas,nC,nO,nV,nR,nS,ERI_MO_basis,eGW,eGW,EcAC)
 
       write(*,*)
       write(*,*)'-------------------------------------------------------------------------------'

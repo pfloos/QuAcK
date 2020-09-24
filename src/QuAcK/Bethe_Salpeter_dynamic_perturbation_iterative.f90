@@ -1,4 +1,4 @@
-subroutine Bethe_Salpeter_dynamic_perturbation_iterative(dTDA,eta,nBas,nC,nO,nV,nR,nS,eGW,OmRPA,OmBSE,XpY,XmY,rho)
+subroutine Bethe_Salpeter_dynamic_perturbation_iterative(dTDA,eta,nBas,nC,nO,nV,nR,nS,eGW,OmRPA,rho_RPA,OmBSE,XpY,XmY)
 
 ! Compute self-consistently the dynamical effects via perturbation theory for BSE
 
@@ -18,10 +18,10 @@ subroutine Bethe_Salpeter_dynamic_perturbation_iterative(dTDA,eta,nBas,nC,nO,nV,
 
   double precision,intent(in)   :: eGW(nBas)
   double precision,intent(in)   :: OmRPA(nS)
+  double precision,intent(in)   :: rho_RPA(nBas,nBas,nS)
   double precision,intent(in)   :: OmBSE(nS)
   double precision,intent(in)   :: XpY(nS,nS)
   double precision,intent(in)   :: XmY(nS,nS)
-  double precision,intent(in)   :: rho(nBas,nBas,nS)
 
 ! Local variables
 
@@ -97,8 +97,7 @@ subroutine Bethe_Salpeter_dynamic_perturbation_iterative(dTDA,eta,nBas,nC,nO,nV,
 
        ! Resonant part of the BSE correction
  
-        call Bethe_Salpeter_A_matrix_dynamic(eta,nBas,nC,nO,nV,nR,nS,1d0,eGW(:),OmRPA(:),OmOld(ia),rho(:,:,:), & 
-                                             Ap_dyn(:,:))
+        call Bethe_Salpeter_A_matrix_dynamic(eta,nBas,nC,nO,nV,nR,nS,1d0,eGW,OmRPA,rho_RPA,OmOld(ia),Ap_dyn)
  
         OmDyn(ia) = dot_product(X(:),matmul(Ap_dyn(:,:),X(:)))
  
@@ -106,8 +105,8 @@ subroutine Bethe_Salpeter_dynamic_perturbation_iterative(dTDA,eta,nBas,nC,nO,nV,
  
         ! Anti-resonant part of the BSE correction
  
-        call Bethe_Salpeter_AB_matrix_dynamic(eta,nBas,nC,nO,nV,nR,nS,1d0,eGW(:),OmRPA(:),OmOld(ia),rho(:,:,:), &
-                                              Ap_dyn(:,:),Am_dyn(:,:),Bp_dyn(:,:),Bm_dyn(:,:))
+        call Bethe_Salpeter_AB_matrix_dynamic(eta,nBas,nC,nO,nV,nR,nS,1d0,eGW,OmRPA,rho_RPA,OmOld(ia), &
+                                              Ap_dyn,Am_dyn,Bp_dyn,Bm_dyn)
  
         OmDyn(ia) = dot_product(X(:),matmul(Ap_dyn(:,:),X(:))) &
                   - dot_product(Y(:),matmul(Am_dyn(:,:),Y(:))) &

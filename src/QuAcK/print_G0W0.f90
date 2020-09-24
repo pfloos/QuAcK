@@ -40,8 +40,8 @@ subroutine print_G0W0(nBas,nO,e,ENuc,EHF,SigmaC,Z,eGW,EcRPA,EcGM)
   write(*,'(2X,A30,F15.6)') 'G0W0 LUMO      energy (eV):',eGW(LUMO)*HaToeV
   write(*,'(2X,A30,F15.6)') 'G0W0 HOMO-LUMO gap    (eV):',Gap*HaToeV
   write(*,*)'-------------------------------------------------------------------------------'
-  write(*,'(2X,A30,F15.6)') 'RPA@HF   total energy       =',ENuc + EHF + EcRPA
-  write(*,'(2X,A30,F15.6)') 'RPA@HF   correlation energy =',EcRPA
+  write(*,'(2X,A30,F15.6)') 'RPA@G0W0 total energy       =',ENuc + EHF + EcRPA
+  write(*,'(2X,A30,F15.6)') 'RPA@G0W0 correlation energy =',EcRPA
   write(*,'(2X,A30,F15.6)') 'GM@G0W0  total energy       =',ENuc + EHF + EcGM
   write(*,'(2X,A30,F15.6)') 'GM@G0W0  correlation energy =',EcGM
   write(*,*)'-------------------------------------------------------------------------------'

@@ -26,7 +26,7 @@ subroutine print_excitation(method,ispin,nS,Omega)
 
   write(*,*)
   write(*,*)'-------------------------------------------------------------'
-  write(*,'(1X,A1,1X,A14,A14,A14,A9,A13)')'|',method,' calculation: ',spin_manifold,' manifold','     |'
+  write(*,'(1X,A14,A14,A14,A9)') method,' calculation: ',spin_manifold,' manifold'
   write(*,*)'-------------------------------------------------------------'
   write(*,'(1X,A1,1X,A5,1X,A1,1X,A23,1X,A1,1X,A23,1X,A1,1X)') &
             '|','State','|',' Excitation energy (au) ','|',' Excitation energy (eV) ','|'

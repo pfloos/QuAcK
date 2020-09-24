@@ -1,4 +1,4 @@
-subroutine RPAx(doACFDT,exchange_kernel,singlet,triplet,eta,nBas,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,e)
+subroutine RPAx(doACFDT,exchange_kernel,singlet,triplet,eta,nBas,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,eHF)
 
 ! Perform random phase approximation calculation with exchange (aka TDHF)
 
@@ -21,7 +21,7 @@ subroutine RPAx(doACFDT,exchange_kernel,singlet,triplet,eta,nBas,nC,nO,nV,nR,nS,
   integer,intent(in)            :: nS
   double precision,intent(in)   :: ENuc
   double precision,intent(in)   :: ERHF
-  double precision,intent(in)   :: e(nBas)
+  double precision,intent(in)   :: eHF(nBas)
   double precision,intent(in)   :: ERI(nBas,nBas,nBas,nBas)
 
 ! Local variables
@@ -58,11 +58,10 @@ subroutine RPAx(doACFDT,exchange_kernel,singlet,triplet,eta,nBas,nC,nO,nV,nR,nS,
 
     ispin = 1
 
-    call linear_response(ispin,.false.,.false.,.false.,eta,nBas,nC,nO,nV,nR,nS,1d0,e,ERI,rho, &
+    call linear_response(ispin,.false.,.false.,.false.,eta,nBas,nC,nO,nV,nR,nS,1d0,eHF,ERI,Omega(:,ispin),rho, &
                          EcRPAx(ispin),Omega(:,ispin),XpY(:,:,ispin),XmY(:,:,ispin))
-    call print_excitation('RPAx        ',ispin,nS,Omega(:,ispin))
+    call print_excitation('RPAx@HF     ',ispin,nS,Omega(:,ispin))
     call print_transition_vectors(nBas,nC,nO,nV,nR,nS,Omega(:,ispin),XpY(:,:,ispin),XmY(:,:,ispin))
-
 
   endif
 
@@ -72,9 +71,9 @@ subroutine RPAx(doACFDT,exchange_kernel,singlet,triplet,eta,nBas,nC,nO,nV,nR,nS,
 
     ispin = 2
 
-    call linear_response(ispin,.false.,.false.,.false.,eta,nBas,nC,nO,nV,nR,nS,1d0,e,ERI,rho, &
+    call linear_response(ispin,.false.,.false.,.false.,eta,nBas,nC,nO,nV,nR,nS,1d0,eHF,ERI,rho,Omega(:,ispin), &
                          EcRPAx(ispin),Omega(:,ispin),XpY(:,:,ispin),XmY(:,:,ispin))
-    call print_excitation('RPAx        ',ispin,nS,Omega(:,ispin))
+    call print_excitation('RPAx@HF     ',ispin,nS,Omega(:,ispin))
     call print_transition_vectors(nBas,nC,nO,nV,nR,nS,Omega(:,ispin),XpY(:,:,ispin),XmY(:,:,ispin))
 
   endif
@@ -105,14 +104,7 @@ subroutine RPAx(doACFDT,exchange_kernel,singlet,triplet,eta,nBas,nC,nO,nV,nR,nS,
     write(*,*)
 
     call ACFDT(exchange_kernel,.false.,.false.,.false.,.false.,.false.,singlet,triplet,eta, &
-               nBas,nC,nO,nV,nR,nS,ERI,e,e,Omega,XpY,XmY,rho,EcAC)
-
-    if(exchange_kernel) then
-
-      EcAC(1) = 0.5d0*EcAC(1)
-      EcAC(2) = 1.5d0*EcAC(2)
-
-    end if
+               nBas,nC,nO,nV,nR,nS,ERI,eHF,eHF,EcAC)
 
     write(*,*)
     write(*,*)'-------------------------------------------------------------------------------'
