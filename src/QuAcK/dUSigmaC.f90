@@ -18,7 +18,7 @@ double precision function dUSigmaC(p,w,eta,nBas,nC,nO,nV,nR,nS,e,Omega,rho)
   integer,intent(in)            :: nS
   double precision,intent(in)   :: e(nBas)
   double precision,intent(in)   :: Omega(nS)
-  double precision,intent(in)   :: rho(nBas,nBas,nS,nspin)
+  double precision,intent(in)   :: rho(nBas,nBas,nS)
 
 ! Local variables
 
@@ -34,7 +34,7 @@ double precision function dUSigmaC(p,w,eta,nBas,nC,nO,nV,nR,nS,e,Omega,rho)
   do i=nC+1,nO
     do jb=1,nS
       eps = w - e(i) + Omega(jb)
-      dUSigmaC = dUSigmaC + rho(p,i,jb,1)**2*(eps/(eps**2 + eta**2))**2
+      dUSigmaC = dUSigmaC + rho(p,i,jb)**2*(eps/(eps**2 + eta**2))**2  
     end do
   end do
 
@@ -43,7 +43,7 @@ double precision function dUSigmaC(p,w,eta,nBas,nC,nO,nV,nR,nS,e,Omega,rho)
   do a=nO+1,nBas-nR
     do jb=1,nS
       eps = w - e(a) - Omega(jb)
-      dUSigmaC = dUSigmaC + rho(p,a,jb,1)**2*(eps/(eps**2 + eta**2))**2
+      dUSigmaC = dUSigmaC + rho(p,a,jb)**2*(eps/(eps**2 + eta**2))**2 
     end do
   end do
 

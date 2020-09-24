@@ -78,6 +78,7 @@ subroutine URPAx(doACFDT,exchange_kernel,spin_conserved,spin_flip,eta,nBas,nC,nO
     call print_excitation('URPAx  ',5,nS_sc,Omega_sc)
 !   call print_transition_vectors(nBas,nC,nO,nV,nR,nS,Omega(:,ispin),XpY(:,:,ispin),XmY(:,:,ispin))
 
+    deallocate(Omega_sc,XpY_sc,XmY_sc)
 
   endif
 
@@ -100,6 +101,7 @@ subroutine URPAx(doACFDT,exchange_kernel,spin_conserved,spin_flip,eta,nBas,nC,nO
     call print_excitation('URPAx  ',6,nS_sf,Omega_sf)
 !   call print_transition_vectors(nBas,nC,nO,nV,nR,nS,Omega(:,ispin),XpY(:,:,ispin),XmY(:,:,ispin))
 
+    deallocate(Omega_sf,XpY_sf,XmY_sf)
 
   endif
 

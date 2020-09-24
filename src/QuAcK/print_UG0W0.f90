@@ -33,9 +33,10 @@ subroutine print_UG0W0(nBas,nO,e,ENuc,EHF,SigC,Z,eGW,EcRPA)
   write(*,*)'  Unrestricted one-shot G0W0 calculation (eV)'
   write(*,*)'-------------------------------------------------------------------------------& 
               -------------------------------------------------'
+  write(*,'(A1,A3,A1,A30,A1,A30,A1,A30,A1,A30,A1)') &
+            '|',' ','|','e_HF          ','|','Sig_c          ','|','Z          ','|','e_QP          ','|'
   write(*,'(A1,A3,A1,2A15,A1,2A15,A1,2A15,A1,2A15,A1)') &
-            '|','#','|','e_HF up','e_HF dw','|','Sig_c up','Sig_c dw','|', & 
-                        'Z up','Z dw','|','e_QP up','e_QP dw','|'
+            '|','#','|','up     ','dw     ','|','up     ','dw     ','|','up     ','dw     ','|','up     ','dw     ','|'
   write(*,*)'-------------------------------------------------------------------------------& 
               -------------------------------------------------'
 
@@ -52,8 +53,8 @@ subroutine print_UG0W0(nBas,nO,e,ENuc,EHF,SigC,Z,eGW,EcRPA)
   write(*,'(2X,A30,F15.6)') 'G0W0 HOMO-LUMO gap    (eV):',Gap*HaToeV
   write(*,*)'-------------------------------------------------------------------------------& 
               -------------------------------------------------'
-  write(*,'(2X,A30,F15.6)') 'RPA@HF   total energy       =',ENuc + EHF + EcRPA
-  write(*,'(2X,A30,F15.6)') 'RPA@HF   correlation energy =',EcRPA
+  write(*,'(2X,A30,F15.6)') 'RPA@G0W0 total energy       =',ENuc + EHF + EcRPA
+  write(*,'(2X,A30,F15.6)') 'RPA@G0W0 correlation energy =',EcRPA
   write(*,*)'-------------------------------------------------------------------------------& 
               -------------------------------------------------'
   write(*,*)

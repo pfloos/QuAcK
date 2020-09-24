@@ -47,13 +47,16 @@ subroutine UG0W0(doACFDT,exchange_kernel,doXBS,COHSEX,BSE,TDA_W,TDA,dBSE,dTDA,ev
   logical                       :: print_W = .true.
   integer                       :: is
   integer                       :: ispin
-  double precision              :: EcRPA(nspin)
+  double precision              :: EcRPA
   double precision              :: EcBSE(nspin)
   double precision              :: EcAC(nspin)
   double precision,allocatable  :: SigC(:,:)
   double precision,allocatable  :: Z(:,:)
   integer                       :: nS_aa,nS_bb,nS_sc
-  double precision,allocatable  :: Omega_sc(:),XpY_sc(:,:),XmY_sc(:,:),rho_sc(:,:,:,:)
+  double precision,allocatable  :: OmRPA(:)
+  double precision,allocatable  :: XpY_RPA(:,:)
+  double precision,allocatable  :: XmY_RPA(:,:)
+  double precision,allocatable  :: rho_RPA(:,:,:,:)
 
   double precision,allocatable  :: eGWlin(:,:)
 
@@ -101,8 +104,8 @@ subroutine UG0W0(doACFDT,exchange_kernel,doXBS,COHSEX,BSE,TDA_W,TDA,dBSE,dTDA,ev
   nS_bb = nS(2)
   nS_sc = nS_aa + nS_bb
 
-  allocate(SigC(nBas,nspin),Z(nBas,nspin),Omega_sc(nS_sc),XpY_sc(nS_sc,nS_sc),XmY_sc(nS_sc,nS_sc), &
-           rho_sc(nBas,nBas,nS_sc,nspin),eGWlin(nBas,nspin))
+  allocate(SigC(nBas,nspin),Z(nBas,nspin),OmRPA(nS_sc),XpY_RPA(nS_sc,nS_sc),XmY_RPA(nS_sc,nS_sc), &
+           rho_RPA(nBas,nBas,nS_sc,nspin),eGWlin(nBas,nspin))
 
 !-------------------!
 ! Compute screening !
@@ -113,27 +116,27 @@ subroutine UG0W0(doACFDT,exchange_kernel,doXBS,COHSEX,BSE,TDA_W,TDA,dBSE,dTDA,ev
   ispin = 1
 
   call unrestricted_linear_response(ispin,.true.,TDA_W,.false.,eta,nBas,nC,nO,nV,nR,nS_aa,nS_bb,nS_sc,nS_sc,1d0, &
-                                    eHF,ERI_aaaa,ERI_aabb,ERI_bbbb,ERI_abab,Omega_sc,rho_sc,EcRPA(ispin),Omega_sc,XpY_sc,XmY_sc)
+                                    eHF,ERI_aaaa,ERI_aabb,ERI_bbbb,ERI_abab,OmRPA,rho_RPA,EcRPA,OmRPA,XpY_RPA,XmY_RPA)
 
-  if(print_W) call print_excitation('RPA@UHF',5,nS_sc,Omega_sc)
+  if(print_W) call print_excitation('RPA@UHF',5,nS_sc,OmRPA)
 
 !----------------------!
 ! Excitation densities !
 !----------------------!
  
-  call unrestricted_excitation_density(nBas,nC,nO,nR,nS_aa,nS_bb,nS_sc,ERI_aaaa,ERI_aabb,ERI_bbbb,XpY_sc,rho_sc)
+  call unrestricted_excitation_density(nBas,nC,nO,nR,nS_aa,nS_bb,nS_sc,ERI_aaaa,ERI_aabb,ERI_bbbb,XpY_RPA,rho_RPA)
 
 !---------------------!
 ! Compute self-energy !
 !---------------------!
 
-  call unrestricted_self_energy_correlation_diag(eta,nBas,nC,nO,nV,nR,nS_sc,eHF,Omega_sc,rho_sc,SigC)
+  call unrestricted_self_energy_correlation_diag(eta,nBas,nC,nO,nV,nR,nS_sc,eHF,OmRPA,rho_RPA,SigC)
 
 !--------------------------------!
 ! Compute renormalization factor !
 !--------------------------------!
 
-  call unrestricted_renormalization_factor(eta,nBas,nC,nO,nV,nR,nS_sc,eHF,Omega_sc,rho_sc,Z)
+  call unrestricted_renormalization_factor(eta,nBas,nC,nO,nV,nR,nS_sc,eHF,OmRPA,rho_RPA,Z)
 
 !-----------------------------------!
 ! Solve the quasi-particle equation !
@@ -153,31 +156,24 @@ subroutine UG0W0(doACFDT,exchange_kernel,doXBS,COHSEX,BSE,TDA_W,TDA,dBSE,dTDA,ev
   ! Find graphical solution of the QP equation
 
   do is=1,nspin
-    call unrestricted_QP_graph(nBas,nC(is),nO(is),nV(is),nR(is),nS_sc,eta,eHF(:,is),Omega_sc, & 
-                               rho_sc,eGWlin(:,is),eGW(:,is))
+    call unrestricted_QP_graph(nBas,nC(is),nO(is),nV(is),nR(is),nS_sc,eta,eHF(:,is),OmRPA, & 
+                               rho_RPA(:,:,:,is),eGWlin(:,is),eGW(:,is))
   end do
  
   end if
+
+! Compute RPA correlation energy
+
+  call unrestricted_linear_response(ispin,.true.,TDA_W,.false.,eta,nBas,nC,nO,nV,nR,nS_aa,nS_bb,nS_sc,nS_sc,1d0, &
+                                    eGW,ERI_aaaa,ERI_aabb,ERI_bbbb,ERI_abab,OmRPA,rho_RPA,EcRPA,OmRPA,XpY_RPA,XmY_RPA)
 
 ! Dump results
 
   call print_UG0W0(nBas,nO,eHF,ENuc,EUHF,SigC,Z,eGW,EcRPA)
 
-! Compute the RPA correlation energy
-
-  call unrestricted_linear_response(ispin,.true.,TDA_W,.false.,eta,nBas,nC,nO,nV,nR,nS_aa,nS_bb,nS_sc,nS_sc,1d0, &
-                                    eGW,ERI_aaaa,ERI_aabb,ERI_bbbb,ERI_abab,Omega_sc,rho_sc,EcRPA(ispin),Omega_sc,XpY_sc,XmY_sc)
-
-  write(*,*)
-  write(*,*)'-------------------------------------------------------------------------------'
-  write(*,'(2X,A50,F20.10)') 'Tr@RPA@G0W0 correlation energy           =',EcRPA(ispin)
-  write(*,'(2X,A50,F20.10)') 'Tr@RPA@G0W0 total energy                 =',ENuc + EUHF + EcRPA(ispin)
-  write(*,*)'-------------------------------------------------------------------------------'
-  write(*,*)
-
 ! Free memory
 
-  deallocate(Omega_sc,XpY_sc,XmY_sc,rho_sc)
+  deallocate(OmRPA,XpY_RPA,XmY_RPA,rho_RPA)
 
 ! Perform BSE calculation
 
@@ -185,7 +181,7 @@ subroutine UG0W0(doACFDT,exchange_kernel,doXBS,COHSEX,BSE,TDA_W,TDA,dBSE,dTDA,ev
 
     call unrestricted_Bethe_Salpeter(TDA_W,TDA,dBSE,dTDA,evDyn,spin_conserved,spin_flip,eta,  &
                                      nBas,nC,nO,nV,nR,nS,ERI_aaaa,ERI_aabb,ERI_bbbb,ERI_abab, & 
-                                     eHF,eGW,EcRPA,EcBSE)
+                                     eHF,eGW,EcBSE)
 
 !   if(exchange_kernel) then
 !

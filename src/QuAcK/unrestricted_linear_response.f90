@@ -1,5 +1,5 @@
-subroutine unrestricted_linear_response(ispin,dRPA,TDA,BSE,eta,nBas,nC,nO,nV,nR,nSa,nSb,nSt,nSsc,lambda, & 
-                                        e,ERI_aaaa,ERI_aabb,ERI_bbbb,ERI_abab,Omega_RPA,rho_RPA,EcRPA,Omega,XpY,XmY)
+subroutine unrestricted_linear_response(ispin,dRPA,TDA,BSE,eta,nBas,nC,nO,nV,nR,nSa,nSb,nSt,nS_sc,lambda, & 
+                                        e,ERI_aaaa,ERI_aabb,ERI_bbbb,ERI_abab,OmRPA,rho_RPA,EcRPA,Omega,XpY,XmY)
 
 ! Compute linear response for unrestricted formalism
 
@@ -21,7 +21,7 @@ subroutine unrestricted_linear_response(ispin,dRPA,TDA,BSE,eta,nBas,nC,nO,nV,nR,
   integer,intent(in)            :: nSa
   integer,intent(in)            :: nSb
   integer,intent(in)            :: nSt
-  integer,intent(in)            :: nSsc
+  integer,intent(in)            :: nS_sc
   double precision,intent(in)   :: lambda
   double precision,intent(in)   :: e(nBas,nspin)
   double precision,intent(in)   :: ERI_aaaa(nBas,nBas,nBas,nBas)
@@ -29,8 +29,8 @@ subroutine unrestricted_linear_response(ispin,dRPA,TDA,BSE,eta,nBas,nC,nO,nV,nR,
   double precision,intent(in)   :: ERI_bbbb(nBas,nBas,nBas,nBas)
   double precision,intent(in)   :: ERI_abab(nBas,nBas,nBas,nBas)
 
-  double precision,intent(in)   :: Omega_RPA(nSsc)
-  double precision,intent(in)   :: rho_RPA(nBas,nBas,nSsc,nspin)
+  double precision,intent(in)   :: OmRPA(nS_sc)
+  double precision,intent(in)   :: rho_RPA(nBas,nBas,nS_sc,nspin)
   
 ! Local variables
 
@@ -61,8 +61,8 @@ subroutine unrestricted_linear_response(ispin,dRPA,TDA,BSE,eta,nBas,nC,nO,nV,nR,
                                              ERI_aaaa,ERI_aabb,ERI_bbbb,ERI_abab,A)
 
   if(BSE) & 
-    call unrestricted_Bethe_Salpeter_A_matrix(ispin,eta,nBas,nC,nO,nV,nR,nSa,nSb,nSt,nSsc,lambda, & 
-                                              ERI_aaaa,ERI_aabb,ERI_bbbb,ERI_abab,Omega_RPA,rho_RPA,A)
+    call unrestricted_Bethe_Salpeter_A_matrix(ispin,eta,nBas,nC,nO,nV,nR,nSa,nSb,nSt,nS_sc,lambda, & 
+                                              ERI_aaaa,ERI_aabb,ERI_bbbb,ERI_abab,OmRPA,rho_RPA,A)
 
 ! Tamm-Dancoff approximation
 
@@ -73,8 +73,8 @@ subroutine unrestricted_linear_response(ispin,dRPA,TDA,BSE,eta,nBas,nC,nO,nV,nR,
                                                ERI_aaaa,ERI_aabb,ERI_bbbb,ERI_abab,B)
 
     if(BSE) &
-      call unrestricted_Bethe_Salpeter_B_matrix(ispin,eta,nBas,nC,nO,nV,nR,nSa,nSb,nSt,nSsc,lambda, & 
-                                                ERI_aaaa,ERI_aabb,ERI_bbbb,ERI_abab,Omega_RPA,rho_RPA,B)
+      call unrestricted_Bethe_Salpeter_B_matrix(ispin,eta,nBas,nC,nO,nV,nR,nSa,nSb,nSt,nS_sc,lambda, & 
+                                                ERI_aaaa,ERI_aabb,ERI_bbbb,ERI_abab,OmRPA,rho_RPA,B)
 
   end if
 
