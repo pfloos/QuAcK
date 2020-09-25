@@ -18,15 +18,24 @@ subroutine print_evUGW(nBas,nO,nSCF,Conv,e,ENuc,EHF,SigC,Z,eGW,EcRPA)
   double precision,intent(in)        :: eGW(nBas,nspin)
 
   integer                            :: p
-  double precision                   :: HOMO
-  double precision                   :: LUMO
-  double precision                   :: Gap
+  integer                            :: ispin
+  double precision                   :: HOMO(nspin)
+  double precision                   :: LUMO(nspin)
+  double precision                   :: Gap(nspin)
 
 ! HOMO and LUMO
 
-  HOMO = max(eGW(nO(1),1),eGW(nO(2),2))
-  LUMO = min(eGW(nO(1)+1,1),eGW(nO(2)+1,2))
-  Gap = LUMO - HOMO
+  do ispin=1,nspin
+    if(nO(ispin) > 0) then
+      HOMO(ispin) = eGW(nO(ispin),ispin)
+      LUMO(ispin) = eGW(nO(ispin)+1,ispin)
+      Gap(ispin)  = LUMO(ispin) - HOMO(ispin)
+    else
+      HOMO(ispin) = 0d0
+      LUMO(ispin) = e(1,ispin)
+      Gap(ispin)  = 0d0
+    end if
+  end do
 
 ! Dump results
 
@@ -40,7 +49,7 @@ subroutine print_evUGW(nBas,nO,nSCF,Conv,e,ENuc,EHF,SigC,Z,eGW,EcRPA)
   write(*,*)'-------------------------------------------------------------------------------& 
               -------------------------------------------------'
   write(*,'(A1,A3,A1,A30,A1,A30,A1,A30,A1,A30,A1)') &
-            '|',' ','|','e_HF          ','|','Sig_c          ','|','Z          ','|','e_QP          ','|'
+            '|',' ','|','e_HF            ','|','Sig_c            ','|','Z            ','|','e_QP            ','|'
   write(*,'(A1,A3,A1,2A15,A1,2A15,A1,2A15,A1,2A15,A1)') &
             '|','#','|','up     ','dw     ','|','up     ','dw     ','|','up     ','dw     ','|','up     ','dw     ','|'
   write(*,*)'-------------------------------------------------------------------------------& 
@@ -58,9 +67,9 @@ subroutine print_evUGW(nBas,nO,nSCF,Conv,e,ENuc,EHF,SigC,Z,eGW,EcRPA)
   write(*,'(2X,A14,F15.5)')'Convergence = ',Conv
   write(*,*)'-------------------------------------------------------------------------------& 
               -------------------------------------------------'
-  write(*,'(2X,A30,F15.6)') 'evGW HOMO      energy (eV):',HOMO*HaToeV
-  write(*,'(2X,A30,F15.6)') 'evGW LUMO      energy (eV):',LUMO*HaToeV
-  write(*,'(2X,A30,F15.6)') 'evGW HOMO-LUMO gap    (eV):',Gap*HaToeV
+  write(*,'(2X,A30,F15.6)') 'evGW HOMO      energy (eV):',maxval(HOMO(:))*HaToeV
+  write(*,'(2X,A30,F15.6)') 'evGW LUMO      energy (eV):',minval(LUMO(:))*HaToeV
+  write(*,'(2X,A30,F15.6)') 'evGW HOMO-LUMO gap    (eV):',(minval(LUMO(:))-maxval(HOMO(:)))*HaToeV
   write(*,*)'-------------------------------------------------------------------------------& 
               -------------------------------------------------'
   write(*,'(2X,A30,F15.6)') 'RPA@evGW total energy       =',ENuc + EHF + EcRPA

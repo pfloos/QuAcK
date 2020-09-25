@@ -802,9 +802,8 @@ program QuAcK
                  ENuc,EUHF,Hc,ERI_MO_aaaa,ERI_MO_aabb,ERI_MO_bbbb,ERI_MO_abab,PHF,cHF,eHF,eG0W0)
     else
 
-      call G0W0(doACFDT,exchange_kernel,doXBS,COHSEX,SOSEX,BSE,TDA_W,TDA,       & 
-                dBSE,dTDA,evDyn,singlet,triplet,linGW,eta_GW, & 
-                nBas,nC,nO,nV,nR,nS,ENuc,ERHF,Hc,ERI_MO,PHF,cHF,eHF,eG0W0)
+      call G0W0(doACFDT,exchange_kernel,doXBS,COHSEX,SOSEX,BSE,TDA_W,TDA,dBSE,dTDA,evDyn,singlet,triplet, &
+                linGW,eta_GW,nBas,nC,nO,nV,nR,nS,ENuc,ERHF,Hc,ERI_MO,PHF,cHF,eHF,eG0W0)
 
     end if
 

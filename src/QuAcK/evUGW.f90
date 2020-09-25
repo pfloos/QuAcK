@@ -127,9 +127,8 @@ subroutine evUGW(maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,COHSEX,BSE
   nS_bb = nS(2)
   nS_sc = nS_aa + nS_bb
 
-  allocate(eGW(nBas,nspin),eOld(nBas,nspin),Z(nBas,nspin),SigC(nBas,nspin),OmRPA(nS_sc), &
-           XpY_RPA(nS_sc,nS_sc),XmY_RPA(nS_sc,nS_sc),rho_RPA(nBas,nBas,nS_sc,nspin),     & 
-           error_diis(nBas,max_diis,nspin),e_diis(nBas,max_diis,nspin))
+  allocate(eGW(nBas,nspin),eOld(nBas,nspin),Z(nBas,nspin),SigC(nBas,nspin),OmRPA(nS_sc),XpY_RPA(nS_sc,nS_sc), &
+           XmY_RPA(nS_sc,nS_sc),rho_RPA(nBas,nBas,nS_sc,nspin),error_diis(nBas,max_diis,nspin),e_diis(nBas,max_diis,nspin))
 
 ! Initialization
 
