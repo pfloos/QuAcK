@@ -1,6 +1,6 @@
 subroutine evGT(maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS, & 
-                BSE,TDA_W,TDA,dBSE,dTDA,evDyn,singlet_manifold,triplet_manifold,      & 
-                eta,nBas,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,eHF,eG0T0)
+                BSE,TDA_W,TDA,dBSE,dTDA,evDyn,singlet,triplet,      & 
+                eta,nBas,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,dipole_int,eHF,eG0T0)
 
 ! Perform eigenvalue self-consistent calculation with a T-matrix self-energy (evGT)
 
@@ -21,8 +21,8 @@ subroutine evGT(maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS, &
   logical,intent(in)            :: dBSE
   logical,intent(in)            :: dTDA
   logical,intent(in)            :: evDyn
-  logical,intent(in)            :: singlet_manifold
-  logical,intent(in)            :: triplet_manifold
+  logical,intent(in)            :: singlet
+  logical,intent(in)            :: triplet
   double precision,intent(in)   :: eta
 
   integer,intent(in)            :: nBas
@@ -35,6 +35,7 @@ subroutine evGT(maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS, &
   double precision,intent(in)   :: ERHF
   double precision,intent(in)   :: eHF(nBas)
   double precision,intent(in)   :: ERI(nBas,nBas,nBas,nBas)
+  double precision,intent(in)   :: dipole_int(nBas,nBas,ncart)
   double precision,intent(in)   :: eG0T0(nBas)
 
 
@@ -260,10 +261,8 @@ subroutine evGT(maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS, &
 
   if(BSE) then
 
-    allocate(Omega(nS,nspin),XpY(nS,nS,nspin),XmY(nS,nS,nspin),rho(nBas,nBas,nS,nspin))
-
-    call Bethe_Salpeter(TDA_W,TDA,dBSE,dTDA,evDyn,singlet_manifold,triplet_manifold,eta, &
-                        nBas,nC,nO,nV,nR,nS,ERI,eGT,eGT,Omega,XpY,XmY,rho,EcRPA,EcBSE)
+    call Bethe_Salpeter(TDA_W,TDA,dBSE,dTDA,evDyn,singlet,triplet,eta, &
+                        nBas,nC,nO,nV,nR,nS,ERI,dipole_int,eGT,eGT,EcRPA,EcBSE)
 
     if(exchange_kernel) then
 
@@ -297,8 +296,8 @@ subroutine evGT(maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS, &
 
       end if
 
-      call ACFDT(exchange_kernel,doXBS,.true.,TDA_W,TDA,BSE,singlet_manifold,triplet_manifold,eta, &
-                 nBas,nC,nO,nV,nR,nS,ERI,eGT,eGT,Omega,XpY,XmY,rho,EcAC)
+      call ACFDT(exchange_kernel,doXBS,.true.,TDA_W,TDA,BSE,singlet,triplet,eta, &
+                 nBas,nC,nO,nV,nR,nS,ERI,eGT,eGT,EcAC)
 
       if(exchange_kernel) then
 

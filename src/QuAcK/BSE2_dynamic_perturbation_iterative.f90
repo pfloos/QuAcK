@@ -1,4 +1,5 @@
-subroutine BSE2_dynamic_perturbation_iterative(dTDA,ispin,eta,nBas,nC,nO,nV,nR,nS,ERI,eHF,eGF,OmBSE,XpY,XmY)
+subroutine BSE2_dynamic_perturbation_iterative(dTDA,ispin,eta,nBas,nC,nO,nV,nR,nS,ERI,dipole_int, & 
+                                               eHF,eGF,OmBSE,XpY,XmY)
 
 ! Compute self-consistently the dynamical effects via perturbation theory for BSE2
 
@@ -18,6 +19,7 @@ subroutine BSE2_dynamic_perturbation_iterative(dTDA,ispin,eta,nBas,nC,nO,nV,nR,n
   integer,intent(in)            :: nS
 
   double precision,intent(in)   :: ERI(nBas,nBas,nBas,nBas)
+  double precision,intent(in)   :: dipole_int(nBas,nBas,ncart)
   double precision,intent(in)   :: eHF(nBas)
   double precision,intent(in)   :: eGF(nBas)
   double precision,intent(in)   :: OmBSE(nS)
@@ -58,7 +60,7 @@ subroutine BSE2_dynamic_perturbation_iterative(dTDA,ispin,eta,nBas,nC,nO,nV,nR,n
 
 ! Print main components of transition vectors
 
-  call print_transition_vectors(nBas,nC,nO,nV,nR,nS,OmBSE,XpY,XmY)
+  call print_transition_vectors(.false.,nBas,nC,nO,nV,nR,nS,OmBSE,XpY,XmY)
 
   if(dTDA) then
     write(*,*)

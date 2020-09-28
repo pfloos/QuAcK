@@ -1,6 +1,6 @@
 subroutine evUGW(maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,COHSEX,BSE,TDA_W,TDA,    & 
                 G0W,GW0,dBSE,dTDA,evDyn,spin_conserved,spin_flip,eta,nBas,nC,nO,nV,nR,nS,ENuc, &
-                ERHF,Hc,ERI_aaaa,ERI_aabb,ERI_bbbb,ERI_abab,PHF,cHF,eHF,eG0W0)
+                ERHF,Hc,ERI_aaaa,ERI_aabb,ERI_bbbb,ERI_abab,dipole_int,PHF,cHF,eHF,eG0W0)
 
 ! Perform self-consistent eigenvalue-only GW calculation
 
@@ -46,6 +46,7 @@ subroutine evUGW(maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,COHSEX,BSE
   double precision,intent(in)   :: ERI_aabb(nBas,nBas,nBas,nBas)
   double precision,intent(in)   :: ERI_bbbb(nBas,nBas,nBas,nBas)
   double precision,intent(in)   :: ERI_abab(nBas,nBas,nBas,nBas)
+  double precision,intent(in)   :: dipole_int(nBas,nBas,ncart,nspin)
 
 ! Local variables
 

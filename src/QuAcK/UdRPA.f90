@@ -1,5 +1,5 @@
 subroutine UdRPA(TDA,doACFDT,exchange_kernel,spin_conserved,spin_flip,eta,nBas,nC,nO,nV,nR,nS,ENuc,EUHF, & 
-                 ERI_aaaa,ERI_aabb,ERI_bbbb,ERI_abab,e)
+                 ERI_aaaa,ERI_aabb,ERI_bbbb,ERI_abab,dipole_int,e)
 
 ! Perform random phase approximation calculation with exchange (aka TDHF) in the unrestricted formalism
 
@@ -28,6 +28,7 @@ subroutine UdRPA(TDA,doACFDT,exchange_kernel,spin_conserved,spin_flip,eta,nBas,n
   double precision,intent(in)   :: ERI_aabb(nBas,nBas,nBas,nBas)
   double precision,intent(in)   :: ERI_bbbb(nBas,nBas,nBas,nBas)
   double precision,intent(in)   :: ERI_abab(nBas,nBas,nBas,nBas)
+  double precision,intent(in)   :: dipole_int(nBas,nBas,ncart,nspin)
 
 ! Local variables
 

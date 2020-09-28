@@ -1,6 +1,6 @@
 subroutine qsGW(maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,COHSEX,SOSEX,BSE,TDA_W,TDA,   & 
                 G0W,GW0,dBSE,dTDA,evDyn,singlet,triplet,eta,nBas,nC,nO,nV,nR,nS,ENuc,ERHF,S,X,T,V, & 
-                Hc,ERI_AO_basis,ERI_MO_basis,PHF,cHF,eHF)
+                Hc,ERI_AO_basis,ERI_MO_basis,dipole_int,PHF,cHF,eHF)
 
 ! Perform a quasiparticle self-consistent GW calculation
 
@@ -41,6 +41,7 @@ subroutine qsGW(maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,COHSEX,SOSE
   double precision,intent(in)   :: X(nBas,nBas)
   double precision,intent(in)   :: ERI_AO_basis(nBas,nBas,nBas,nBas)
   double precision,intent(inout):: ERI_MO_basis(nBas,nBas,nBas,nBas)
+  double precision,intent(in)   :: dipole_int(nBas,nBas,ncart)
 
 ! Local variables
 
@@ -267,7 +268,8 @@ subroutine qsGW(maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,COHSEX,SOSE
 
   if(BSE) then
 
-    call Bethe_Salpeter(TDA_W,TDA,dBSE,dTDA,evDyn,singlet,triplet,eta,nBas,nC,nO,nV,nR,nS,ERI_MO_basis,eGW,eGW,EcBSE)
+    call Bethe_Salpeter(TDA_W,TDA,dBSE,dTDA,evDyn,singlet,triplet,eta,nBas,nC,nO,nV,nR,nS,ERI_MO_basis,dipole_int, & 
+                        eGW,eGW,EcBSE)
 
     if(exchange_kernel) then
 

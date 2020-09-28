@@ -1,6 +1,6 @@
 subroutine G0W0(doACFDT,exchange_kernel,doXBS,COHSEX,SOSEX,BSE,TDA_W,TDA, & 
                 dBSE,dTDA,evDyn,singlet,triplet,linearize,eta,            & 
-                nBas,nC,nO,nV,nR,nS,ENuc,ERHF,Hc,ERI,PHF,cHF,eHF,eGW)
+                nBas,nC,nO,nV,nR,nS,ENuc,ERHF,Hc,ERI,dipole_int,PHF,cHF,eHF,eGW)
 
 ! Perform G0W0 calculation
 
@@ -34,6 +34,7 @@ subroutine G0W0(doACFDT,exchange_kernel,doXBS,COHSEX,SOSEX,BSE,TDA_W,TDA, &
   double precision,intent(in)   :: PHF(nBas,nBas)
   double precision,intent(in)   :: Hc(nBas,nBas)
   double precision,intent(in)   :: ERI(nBas,nBas,nBas,nBas)
+  double precision,intent(in)   :: dipole_int(nBas,nBas,ncart)
 
 ! Local variables
 
@@ -182,7 +183,7 @@ subroutine G0W0(doACFDT,exchange_kernel,doXBS,COHSEX,SOSEX,BSE,TDA_W,TDA, &
 
   if(BSE) then
 
-    call Bethe_Salpeter(TDA_W,TDA,dBSE,dTDA,evDyn,singlet,triplet,eta,nBas,nC,nO,nV,nR,nS,ERI,eHF,eGW,EcBSE)
+    call Bethe_Salpeter(TDA_W,TDA,dBSE,dTDA,evDyn,singlet,triplet,eta,nBas,nC,nO,nV,nR,nS,ERI,dipole_int,eHF,eGW,EcBSE)
 
     if(exchange_kernel) then
  

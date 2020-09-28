@@ -1,4 +1,4 @@
-# RHF: maxSCF thresh   DIIS n_diis guess_type ortho_type
+# HF: maxSCF thresh   DIIS n_diis guess_type ortho_type
        64    0.00001  T     5      1          1
 # MP: 
       
@@ -13,6 +13,6 @@
 # ACFDT: AC Kx  XBS
          F  F   T
 # BSE: BSE dBSE dTDA evDyn
-        F    F    T    T
+        F    T    T    F
 # MCMP2: nMC    nEq    nWalk dt  nPrint iSeed doDrift
          1000000 100000 10    0.3 10000 1234  T

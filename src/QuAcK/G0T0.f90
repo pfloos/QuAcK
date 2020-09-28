@@ -1,5 +1,5 @@
-subroutine G0T0(doACFDT,exchange_kernel,doXBS,BSE,TDA_W,TDA,dBSE,dTDA,evDyn,singlet_manifold,triplet_manifold, & 
-                linearize,eta,nBas,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,eHF,eG0T0)
+subroutine G0T0(doACFDT,exchange_kernel,doXBS,BSE,TDA_W,TDA,dBSE,dTDA,evDyn,singlet,triplet, & 
+                linearize,eta,nBas,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,dipole_int,eHF,eG0T0)
 
 ! Perform one-shot calculation with a T-matrix self-energy (G0T0)
 
@@ -17,8 +17,8 @@ subroutine G0T0(doACFDT,exchange_kernel,doXBS,BSE,TDA_W,TDA,dBSE,dTDA,evDyn,sing
   logical,intent(in)            :: dBSE
   logical,intent(in)            :: dTDA
   logical,intent(in)            :: evDyn
-  logical,intent(in)            :: singlet_manifold
-  logical,intent(in)            :: triplet_manifold
+  logical,intent(in)            :: singlet
+  logical,intent(in)            :: triplet
   logical,intent(in)            :: linearize
   double precision,intent(in)   :: eta
 
@@ -32,6 +32,7 @@ subroutine G0T0(doACFDT,exchange_kernel,doXBS,BSE,TDA_W,TDA,dBSE,dTDA,evDyn,sing
   double precision,intent(in)   :: ERHF
   double precision,intent(in)   :: eHF(nBas)
   double precision,intent(in)   :: ERI(nBas,nBas,nBas,nBas)
+  double precision,intent(in)   :: dipole_int(nBas,nBas,ncart)
 
 ! Local variables
 
@@ -212,10 +213,8 @@ subroutine G0T0(doACFDT,exchange_kernel,doXBS,BSE,TDA_W,TDA,dBSE,dTDA,evDyn,sing
 
   if(BSE) then
 
-     allocate(Omega(nS,nspin),XpY(nS,nS,nspin),XmY(nS,nS,nspin),rho(nBas,nBas,nS,nspin))
-
-    call Bethe_Salpeter(TDA_W,TDA,dBSE,dTDA,evDyn,singlet_manifold,triplet_manifold,eta, &
-                        nBas,nC,nO,nV,nR,nS,ERI,eHF,eG0T0,Omega,XpY,XmY,rho,EcRPA,EcBSE)
+    call Bethe_Salpeter(TDA_W,TDA,dBSE,dTDA,evDyn,singlet,triplet,eta, &
+                        nBas,nC,nO,nV,nR,nS,ERI,dipole_int,eHF,eG0T0,EcBSE)
 
     if(exchange_kernel) then
 
@@ -249,8 +248,8 @@ subroutine G0T0(doACFDT,exchange_kernel,doXBS,BSE,TDA_W,TDA,dBSE,dTDA,evDyn,sing
 
       end if
 
-      call ACFDT(exchange_kernel,doXBS,.true.,TDA_W,TDA,BSE,singlet_manifold,triplet_manifold,eta, &
-                 nBas,nC,nO,nV,nR,nS,ERI,eHF,eG0T0,Omega,XpY,XmY,rho,EcAC)
+      call ACFDT(exchange_kernel,doXBS,.true.,TDA_W,TDA,BSE,singlet,triplet,eta, &
+                 nBas,nC,nO,nV,nR,nS,ERI,eHF,eG0T0,EcAC)
 
       if(exchange_kernel) then
 
@@ -270,6 +269,8 @@ subroutine G0T0(doACFDT,exchange_kernel,doXBS,BSE,TDA_W,TDA,dBSE,dTDA,evDyn,sing
 
     end if
 
+
+     allocate(Omega(nS,nspin),XpY(nS,nS,nspin),XmY(nS,nS,nspin),rho(nBas,nBas,nS,nspin))
   end if
 
 end subroutine G0T0
