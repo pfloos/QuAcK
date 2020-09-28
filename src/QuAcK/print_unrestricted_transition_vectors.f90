@@ -70,6 +70,10 @@ subroutine print_unrestricted_transition_vectors(spin_allowed,nBas,nC,nO,nV,nR,n
       end do
     end do
  
+    do ia=1,nSt
+      os(ia) = 2d0/3d0*Omega(ia)*sum(f(ia,:)**2)
+    end do
+      
     if(debug) then
 
       write(*,*) '----------------'
@@ -78,10 +82,6 @@ subroutine print_unrestricted_transition_vectors(spin_allowed,nBas,nC,nO,nV,nR,n
       call matout(nSt,ncart,f(:,:))
       write(*,*)
   
-      do ia=1,nSt
-        os(ia) = 2d0/3d0*Omega(ia)*sum(f(ia,:)**2)
-      end do
-      
       write(*,*) '----------------------'
       write(*,*) ' Oscillator strengths '
       write(*,*) '----------------------'

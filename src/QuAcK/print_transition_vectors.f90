@@ -55,6 +55,10 @@ subroutine print_transition_vectors(spin_allowed,nBas,nC,nO,nV,nR,nS,dipole_int,
     end do
     f(:,:) = sqrt(2d0)*f(:,:)
  
+    do ia=1,nS
+      os(ia) = 2d0/3d0*Omega(ia)*sum(f(ia,:)**2)
+    end do
+      
     if(debug) then
 
       write(*,*) '------------------------'
@@ -63,10 +67,6 @@ subroutine print_transition_vectors(spin_allowed,nBas,nC,nO,nV,nR,nS,dipole_int,
       call matout(nS,ncart,f)
       write(*,*)
   
-      do ia=1,nS
-        os(ia) = 2d0/3d0*Omega(ia)*sum(f(ia,:)**2)
-      end do
-      
       write(*,*) '----------------------'
       write(*,*) ' Oscillator strengths '
       write(*,*) '----------------------'
