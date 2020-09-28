@@ -1,5 +1,5 @@
 subroutine UdRPA(TDA,doACFDT,exchange_kernel,spin_conserved,spin_flip,eta,nBas,nC,nO,nV,nR,nS,ENuc,EUHF, & 
-                 ERI_aaaa,ERI_aabb,ERI_bbbb,ERI_abab,dipole_int,e)
+                 ERI_aaaa,ERI_aabb,ERI_bbbb,ERI_abab,dipole_int_aa,dipole_int_bb,e)
 
 ! Perform random phase approximation calculation with exchange (aka TDHF) in the unrestricted formalism
 
@@ -28,7 +28,8 @@ subroutine UdRPA(TDA,doACFDT,exchange_kernel,spin_conserved,spin_flip,eta,nBas,n
   double precision,intent(in)   :: ERI_aabb(nBas,nBas,nBas,nBas)
   double precision,intent(in)   :: ERI_bbbb(nBas,nBas,nBas,nBas)
   double precision,intent(in)   :: ERI_abab(nBas,nBas,nBas,nBas)
-  double precision,intent(in)   :: dipole_int(nBas,nBas,ncart,nspin)
+  double precision,intent(in)   :: dipole_int_aa(nBas,nBas,ncart)
+  double precision,intent(in)   :: dipole_int_bb(nBas,nBas,ncart)
 
 ! Local variables
 
@@ -78,7 +79,8 @@ subroutine UdRPA(TDA,doACFDT,exchange_kernel,spin_conserved,spin_flip,eta,nBas,n
     call unrestricted_linear_response(ispin,.true.,TDA,.false.,eta,nBas,nC,nO,nV,nR,nS_aa,nS_bb,nS_sc,nS_sc,1d0,e, & 
                                       ERI_aaaa,ERI_aabb,ERI_bbbb,ERI_abab,Omega_sc,rho_sc,EcRPA(ispin),Omega_sc,XpY_sc,XmY_sc)
     call print_excitation('URPA   ',5,nS_sc,Omega_sc)
-!   call print_transition_vectors(nBas,nC,nO,nV,nR,nS,Omega(:,ispin),XpY(:,:,ispin),XmY(:,:,ispin))
+    call print_unrestricted_transition_vectors(.true.,nBas,nC,nO,nV,nR,nS,nS_aa,nS_bb,nS_sc,dipole_int_aa,dipole_int_bb, &
+                                               Omega_sc,XpY_sc,XmY_sc)
 
 
   endif

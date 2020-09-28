@@ -1,6 +1,6 @@
-subroutine UG0W0(doACFDT,exchange_kernel,doXBS,COHSEX,BSE,TDA_W,TDA,dBSE,dTDA,evDyn,  &
-                 spin_conserved,spin_flip,linearize,eta,nBas,nC,nO,nV,nR,nS, &
-                 ENuc,EUHF,Hc,ERI_aaaa,ERI_aabb,ERI_bbbb,ERI_abab,dipole_int,PHF,cHF,eHF,eGW)
+subroutine UG0W0(doACFDT,exchange_kernel,doXBS,COHSEX,BSE,TDA_W,TDA,dBSE,dTDA,evDyn,spin_conserved,spin_flip, &
+                 linearize,eta,nBas,nC,nO,nV,nR,nS,ENuc,EUHF,Hc,ERI_aaaa,ERI_aabb,ERI_bbbb,ERI_abab,          & 
+                 dipole_int_aa,dipole_int_bb,PHF,cHF,eHF,eGW)
 
 ! Perform unrestricted G0W0 calculation
 
@@ -41,7 +41,8 @@ subroutine UG0W0(doACFDT,exchange_kernel,doXBS,COHSEX,BSE,TDA_W,TDA,dBSE,dTDA,ev
   double precision,intent(in)   :: ERI_aabb(nBas,nBas,nBas,nBas)
   double precision,intent(in)   :: ERI_bbbb(nBas,nBas,nBas,nBas)
   double precision,intent(in)   :: ERI_abab(nBas,nBas,nBas,nBas)
-  double precision,intent(in)   :: dipole_int(nBas,nBas,ncart,nspin)
+  double precision,intent(in)   :: dipole_int_aa(nBas,nBas,ncart)
+  double precision,intent(in)   :: dipole_int_bb(nBas,nBas,ncart)
 
 ! Local variables
 
@@ -181,7 +182,7 @@ subroutine UG0W0(doACFDT,exchange_kernel,doXBS,COHSEX,BSE,TDA_W,TDA,dBSE,dTDA,ev
   if(BSE) then
 
     call unrestricted_Bethe_Salpeter(TDA_W,TDA,dBSE,dTDA,evDyn,spin_conserved,spin_flip,eta,nBas,nC,nO,nV,nR,nS, &
-                                     ERI_aaaa,ERI_aabb,ERI_bbbb,ERI_abab,eHF,eGW,EcBSE)
+                                     ERI_aaaa,ERI_aabb,ERI_bbbb,ERI_abab,dipole_int_aa,dipole_int_bb,eHF,eGW,EcBSE)
 
 !   if(exchange_kernel) then
 !

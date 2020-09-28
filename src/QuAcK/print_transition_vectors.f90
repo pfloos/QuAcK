@@ -21,6 +21,7 @@ subroutine print_transition_vectors(spin_allowed,nBas,nC,nO,nV,nR,nS,dipole_int,
 
 ! Local variables
 
+  logical                       :: debug = .false.
   integer                       :: ia,jb,i,j,a,b
   integer                       :: ixyz
   integer,parameter             :: maxS = 10
@@ -54,21 +55,25 @@ subroutine print_transition_vectors(spin_allowed,nBas,nC,nO,nV,nR,nS,dipole_int,
     end do
     f(:,:) = sqrt(2d0)*f(:,:)
  
-    write(*,*) '------------------------'
-    write(*,*) ' Dipole moments (X Y Z) '
-    write(*,*) '------------------------'
-    call matout(nS,ncart,f)
-    write(*,*)
- 
-    do ia=1,nS
-      os(ia) = 2d0/3d0*Omega(ia)*sum(f(ia,:)**2)
-    end do
-    
-    write(*,*) '----------------------'
-    write(*,*) ' Oscillator strengths '
-    write(*,*) '----------------------'
-    call matout(nS,1,os)
-    write(*,*)
+    if(debug) then
+
+      write(*,*) '------------------------'
+      write(*,*) ' Dipole moments (X Y Z) '
+      write(*,*) '------------------------'
+      call matout(nS,ncart,f)
+      write(*,*)
+  
+      do ia=1,nS
+        os(ia) = 2d0/3d0*Omega(ia)*sum(f(ia,:)**2)
+      end do
+      
+      write(*,*) '----------------------'
+      write(*,*) ' Oscillator strengths '
+      write(*,*) '----------------------'
+      call matout(nS,1,os)
+      write(*,*)
+
+    end if
 
   end if
   

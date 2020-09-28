@@ -1,6 +1,6 @@
 subroutine unrestricted_Bethe_Salpeter(TDA_W,TDA,dBSE,dTDA,evDyn,spin_conserved,spin_flip,eta,  & 
                                        nBas,nC,nO,nV,nR,nS,ERI_aaaa,ERI_aabb,ERI_bbbb,ERI_abab, & 
-                                       eW,eGW,EcBSE)
+                                       dipole_int_aa,dipole_int_bb,eW,eGW,EcBSE)
 
 ! Compute the Bethe-Salpeter excitation energies
 
@@ -30,7 +30,8 @@ subroutine unrestricted_Bethe_Salpeter(TDA_W,TDA,dBSE,dTDA,evDyn,spin_conserved,
   double precision,intent(in)   :: ERI_aabb(nBas,nBas,nBas,nBas)
   double precision,intent(in)   :: ERI_bbbb(nBas,nBas,nBas,nBas)
   double precision,intent(in)   :: ERI_abab(nBas,nBas,nBas,nBas)
-
+  double precision,intent(in)   :: dipole_int_aa(nBas,nBas,ncart)
+  double precision,intent(in)   :: dipole_int_bb(nBas,nBas,ncart)
 
 ! Local variables
 
@@ -96,8 +97,9 @@ subroutine unrestricted_Bethe_Salpeter(TDA_W,TDA,dBSE,dTDA,evDyn,spin_conserved,
     call unrestricted_linear_response(ispin,.true.,TDA,.true.,eta,nBas,nC,nO,nV,nR,nS_aa,nS_bb,nS_sc,nS_sc,1d0, &
                                       eGW,ERI_aaaa,ERI_aabb,ERI_bbbb,ERI_abab,OmRPA,rho_RPA,EcBSE(ispin),       & 
                                       OmBSE_sc,XpY_BSE_sc,XmY_BSE_sc)
-
     call print_excitation('BSE@UG0W0',5,nS_sc,OmBSE_sc)
+    call print_unrestricted_transition_vectors(.true.,nBas,nC,nO,nV,nR,nS,nS_aa,nS_bb,nS_sc,dipole_int_aa,dipole_int_bb, &
+                                               OmBSE_sc,XpY_BSE_sc,XmY_BSE_sc)
 
     !-------------------------------------------------
     ! Compute the dynamical screening at the BSE level

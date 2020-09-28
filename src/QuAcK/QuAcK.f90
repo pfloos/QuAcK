@@ -58,7 +58,9 @@ program QuAcK
   double precision,allocatable  :: Hc(:,:)
   double precision,allocatable  :: H(:,:)
   double precision,allocatable  :: X(:,:)
-  double precision,allocatable  :: dipole_int(:,:,:,:)
+  double precision,allocatable  :: dipole_int(:,:,:)
+  double precision,allocatable  :: dipole_int_aa(:,:,:)
+  double precision,allocatable  :: dipole_int_bb(:,:,:)
   double precision,allocatable  :: ERI_AO(:,:,:,:)
   double precision,allocatable  :: ERI_MO(:,:,:,:)
   integer                       :: ixyz
@@ -233,8 +235,7 @@ program QuAcK
 ! Memory allocation for one- and two-electron integrals
 
   allocate(cHF(nBas,nBas,nspin),eHF(nBas,nspin),eG0W0(nBas,nspin),eG0T0(nBas,nspin),PHF(nBas,nBas,nspin), &
-           S(nBas,nBas),T(nBas,nBas),V(nBas,nBas),Hc(nBas,nBas),H(nBas,nBas),X(nBas,nBas), &
-           dipole_int(nBas,nBas,ncart,nspin),ERI_AO(nBas,nBas,nBas,nBas))
+           S(nBas,nBas),T(nBas,nBas),V(nBas,nBas),Hc(nBas,nBas),H(nBas,nBas),X(nBas,nBas),ERI_AO(nBas,nBas,nBas,nBas))
 
 ! Read integrals
 
@@ -341,11 +342,13 @@ program QuAcK
 
       ! Read and transform dipole-related integrals
     
-      call read_dipole_integrals(nBas,dipole_int)
+      allocate(dipole_int_aa(nBas,nBas,ncart),dipole_int_bb(nBas,nBas,ncart))
+
+      call read_dipole_integrals(nBas,dipole_int_aa)
+      call read_dipole_integrals(nBas,dipole_int_bb)
       do ixyz=1,ncart
-        do ispin=1,nspin
-          call AOtoMO_transform(nBas,cHF(:,:,ispin),dipole_int(:,:,ixyz,ispin))
-        end do 
+          call AOtoMO_transform(nBas,cHF(:,:,1),dipole_int_aa(:,:,ixyz))
+          call AOtoMO_transform(nBas,cHF(:,:,2),dipole_int_bb(:,:,ixyz))
       end do 
 
       ! Memory allocation
@@ -399,10 +402,10 @@ program QuAcK
  
       ! Read and transform dipole-related integrals
     
-      ispin = 1
+      allocate(dipole_int(nBas,nBas,ncart))
       call read_dipole_integrals(nBas,dipole_int)
       do ixyz=1,ncart
-        call AOtoMO_transform(nBas,cHF,dipole_int(:,:,ixyz,ispin))
+        call AOtoMO_transform(nBas,cHF,dipole_int(:,:,ixyz))
       end do 
 
       ! 4-index transform 
@@ -696,7 +699,7 @@ program QuAcK
     if(unrestricted) then
 
        call URPAx(TDA,doACFDT,exchange_kernel,spin_conserved,spin_flip,0d0,nBas,nC,nO,nV,nR,nS,ENuc,EUHF, &
-                  ERI_MO_aaaa,ERI_MO_aabb,ERI_MO_bbbb,ERI_MO_abab,dipole_int,eHF)
+                  ERI_MO_aaaa,ERI_MO_aabb,ERI_MO_bbbb,ERI_MO_abab,dipole_int_aa,dipole_int_bb,eHF)
 
     else 
 
@@ -822,9 +825,9 @@ program QuAcK
     call cpu_time(start_G0W0)
     if(unrestricted) then 
 
-      call UG0W0(doACFDT,exchange_kernel,doXBS,COHSEX,BSE,TDA_W,TDA,dBSE,dTDA,evDyn, &
-                 spin_conserved,spin_flip,linGW,eta_GW,nBas,nC,nO,nV,nR,nS, & 
-                 ENuc,EUHF,Hc,ERI_MO_aaaa,ERI_MO_aabb,ERI_MO_bbbb,ERI_MO_abab,dipole_int,PHF,cHF,eHF,eG0W0)
+      call UG0W0(doACFDT,exchange_kernel,doXBS,COHSEX,BSE,TDA_W,TDA,dBSE,dTDA,evDyn,spin_conserved,spin_flip,   & 
+                 linGW,eta_GW,nBas,nC,nO,nV,nR,nS,ENuc,EUHF,Hc,ERI_MO_aaaa,ERI_MO_aabb,ERI_MO_bbbb,ERI_MO_abab, & 
+                 dipole_int_aa,dipole_int_bb,PHF,cHF,eHF,eG0W0)
     else
 
       call G0W0(doACFDT,exchange_kernel,doXBS,COHSEX,SOSEX,BSE,TDA_W,TDA,dBSE,dTDA,evDyn,singlet,triplet, &
@@ -849,9 +852,10 @@ program QuAcK
     call cpu_time(start_evGW)
     if(unrestricted) then 
 
-      call evUGW(maxSCF_GW,thresh_GW,n_diis_GW,doACFDT,exchange_kernel,doXBS,COHSEX,BSE,TDA_W,TDA, &
-                G0W,GW0,dBSE,dTDA,evDyn,spin_conserved,spin_flip,eta_GW,nBas,nC,nO,nV,nR,nS,ENuc,  &
-                ERHF,Hc,ERI_MO_aaaa,ERI_MO_aabb,ERI_MO_bbbb,ERI_MO_abab,dipole_int,PHF,cHF,eHF,eG0W0)
+      call evUGW(maxSCF_GW,thresh_GW,n_diis_GW,doACFDT,exchange_kernel,doXBS,COHSEX,BSE,TDA_W,TDA,   &
+                G0W,GW0,dBSE,dTDA,evDyn,spin_conserved,spin_flip,eta_GW,nBas,nC,nO,nV,nR,nS,ENuc,    &
+                EUHF,Hc,ERI_MO_aaaa,ERI_MO_aabb,ERI_MO_bbbb,ERI_MO_abab,dipole_int_aa,dipole_int_bb, & 
+                PHF,cHF,eHF,eG0W0)
 
     else
 
