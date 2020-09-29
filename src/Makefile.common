@@ -1,0 +1,12 @@
+IDIR =../../include
+MODDIR=../modules
+
+FC = gfortran -I$(IDIR) -J$(MODDIR) -I$(MODDIR)
+#FC = ifort -I$(IDIR)  -module $(MODDIR)
+AR = libtool
+ifeq ($(DEBUG),1)
+FFLAGS = -Wall -g -msse4.2 -fcheck=all -Waliasing -Wampersand -Wconversion -Wsurprising -Wintrinsics-std -Wno-tabs -Wintrinsic-shadow -Wline-truncation -Wreal-q-constant
+else
+FFLAGS = -Wall -Wno-unused -Wno-unused-dummy-argument -O3
+endif
+
