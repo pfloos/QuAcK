@@ -1,5 +1,5 @@
 subroutine CIS(singlet_manifold,triplet_manifold, & 
-               nBas,nC,nO,nV,nR,nS,ERI,eHF)
+               nBas,nC,nO,nV,nR,nS,ERI,dipole_int,eHF)
 
 ! Perform configuration interaction single calculation`
 
@@ -13,6 +13,7 @@ subroutine CIS(singlet_manifold,triplet_manifold, &
   integer,intent(in)            :: nBas,nC,nO,nV,nR,nS
   double precision,intent(in)   :: eHF(nBas)
   double precision,intent(in)   :: ERI(nBas,nBas,nBas,nBas)
+  double precision,intent(in)   :: dipole_int(nBas,nBas,ncart)
 
 ! Local variables
 

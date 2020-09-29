@@ -37,6 +37,10 @@ subroutine read_integrals(nBas,S,T,V,Hc,G)
   open(unit=10,file='int/Nuc.dat')
   open(unit=11,file='int/ERI.dat')
 
+  open(unit=21,file='int/x.dat')
+  open(unit=22,file='int/y.dat')
+  open(unit=23,file='int/z.dat')
+
 ! Read overlap integrals
 
   S(:,:) = 0d0

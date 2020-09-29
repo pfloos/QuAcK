@@ -16,18 +16,24 @@ subroutine print_UHF(nBas,nO,e,c,ENuc,ET,EV,EJ,Ex,EUHF)
   double precision,intent(in)        :: Ex(nspin)
   double precision,intent(in)        :: EUHF
 
-  integer                            :: HOMO(nspin)
-  integer                            :: LUMO(nspin)
+  integer                            :: ispin
+  double precision                   :: HOMO(nspin)
+  double precision                   :: LUMO(nspin)
   double precision                   :: Gap(nspin)
 
 ! HOMO and LUMO
 
-  HOMO(:) = nO(:)
-
-  LUMO(:) = HOMO(:) + 1
-
-  Gap(1) = e(LUMO(1),1) - e(HOMO(1),1)
-  Gap(2) = e(LUMO(2),2) - e(HOMO(2),2)
+  do ispin=1,nspin
+    if(nO(ispin) > 0) then 
+      HOMO(ispin) = e(nO(ispin),ispin)
+      LUMO(ispin) = e(nO(ispin)+1,ispin)
+      Gap(ispin)  = LUMO(ispin) - HOMO(ispin)
+    else
+      HOMO(ispin) = 0d0
+      LUMO(ispin) = e(1,ispin)
+      Gap(ispin)  = 0d0
+    end if
+  end do
 
 ! Dump results
 
@@ -62,12 +68,12 @@ subroutine print_UHF(nBas,nO,e,c,ENuc,ET,EV,EJ,Ex,EUHF)
   write(*,'(A40,1X,F16.10,A3)') ' Nuclear      repulsion: ',ENuc,' au'
   write(*,'(A40,1X,F16.10,A3)') ' UHF             energy: ',EUHF + ENuc,' au'
   write(*,'(A60)')              '-------------------------------------------------'
-  write(*,'(A40,F13.6,A3)')     ' UHF HOMO a    energy:',e(HOMO(1),1)*HatoeV,' eV'
-  write(*,'(A40,F13.6,A3)')     ' UHF LUMO a    energy:',e(LUMO(1),1)*HatoeV,' eV'
+  write(*,'(A40,F13.6,A3)')     ' UHF HOMO a    energy:',HOMO(1)*HatoeV,' eV'
+  write(*,'(A40,F13.6,A3)')     ' UHF LUMO a    energy:',LUMO(1)*HatoeV,' eV'
   write(*,'(A40,F13.6,A3)')     ' UHF HOMOa-LUMOa  gap:',Gap(1)*HatoeV,' eV'
   write(*,'(A60)')              '-------------------------------------------------'
-  write(*,'(A40,F13.6,A3)')     ' UHF HOMO b    energy:',e(HOMO(2),2)*HatoeV,' eV'
-  write(*,'(A40,F13.6,A3)')     ' UHF LUMO b    energy:',e(LUMO(2),2)*HatoeV,' eV'
+  write(*,'(A40,F13.6,A3)')     ' UHF HOMO b    energy:',HOMO(2)*HatoeV,' eV'
+  write(*,'(A40,F13.6,A3)')     ' UHF LUMO b    energy:',LUMO(2)*HatoeV,' eV'
   write(*,'(A40,F13.6,A3)')     ' UHF HOMOb-LUMOb gap :',Gap(2)*HatoeV,' eV'
   write(*,'(A60)')              '-------------------------------------------------'
   write(*,*)
@@ -78,6 +84,7 @@ subroutine print_UHF(nBas,nO,e,c,ENuc,ET,EV,EJ,Ex,EUHF)
   write(*,'(A50)') 'UHF spin-up   orbital coefficients '
   write(*,'(A50)') '-----------------------------------------'
   call matout(nBas,nBas,c(:,:,1))
+  write(*,*)
   write(*,'(A50)') '-----------------------------------------'
   write(*,'(A50)') 'UHF spin-down orbital coefficients '
   write(*,'(A50)') '-----------------------------------------'

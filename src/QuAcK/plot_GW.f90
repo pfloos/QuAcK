@@ -1,4 +1,4 @@
-subroutine plot_GW(nBas,nC,nO,nV,nR,nS,eHF,eGW,Omega,rho,rhox)
+subroutine plot_GW(nBas,nC,nO,nV,nR,nS,eHF,eGW,Omega,rho)
 
 ! Dump several GW quantities for external plotting
 
@@ -8,7 +8,7 @@ subroutine plot_GW(nBas,nC,nO,nV,nR,nS,eHF,eGW,Omega,rho,rhox)
 ! Input variables
 
   integer,intent(in)            :: nBas,nC,nO,nV,nR,nS
-  double precision,intent(in)   :: eHF(nBas),eGW(nBas),Omega(nS),rho(nBas,nBas,nS),rhox(nBas,nBas,nS)
+  double precision,intent(in)   :: eHF(nBas),eGW(nBas),Omega(nS),rho(nBas,nBas,nS)
 
 ! Local variables
 

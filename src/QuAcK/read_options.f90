@@ -1,6 +1,6 @@
 subroutine read_options(maxSCF_HF,thresh_HF,DIIS_HF,n_diis_HF,guess_type,ortho_type,   &
                         maxSCF_CC,thresh_CC,DIIS_CC,n_diis_CC,                         &
-                        singlet_manifold,triplet_manifold,TDA,                         &
+                        singlet,triplet,spin_conserved,spin_flip,TDA,                  &
                         maxSCF_GF,thresh_GF,DIIS_GF,n_diis_GF,linGF,eta_GF,renormGF,   &
                         maxSCF_GW,thresh_GW,DIIS_GW,n_diis_GW,linGW,eta_GW,            &
                         COHSEX,SOSEX,TDA_W,G0W,GW0,                                    &
@@ -26,8 +26,10 @@ subroutine read_options(maxSCF_HF,thresh_HF,DIIS_HF,n_diis_HF,guess_type,ortho_t
   logical,intent(out)           :: DIIS_CC
   integer,intent(out)           :: n_diis_CC
 
-  logical,intent(out)           :: singlet_manifold
-  logical,intent(out)           :: triplet_manifold
+  logical,intent(out)           :: singlet
+  logical,intent(out)           :: triplet
+  logical,intent(out)           :: spin_conserved
+  logical,intent(out)           :: spin_flip
   logical,intent(out)           :: TDA
 
   integer,intent(out)           :: maxSCF_GF
@@ -113,16 +115,20 @@ subroutine read_options(maxSCF_HF,thresh_HF,DIIS_HF,n_diis_HF,guess_type,ortho_t
 
 ! Read excited state options
 
-  singlet_manifold = .false.
-  triplet_manifold = .false.
-  TDA              = .false.
+  singlet        = .false.
+  triplet        = .false.
+  spin_conserved = .false.
+  spin_flip      = .false.
+  TDA            = .false.
 
   read(1,*) 
-  read(1,*) answer1,answer2,answer3
+  read(1,*) answer1,answer2,answer3,answer4,answer5
 
-  if(answer1 == 'T') singlet_manifold = .true.
-  if(answer2 == 'T') triplet_manifold = .true.
-  if(answer3 == 'T') TDA              = .true.
+  if(answer1 == 'T') singlet        = .true.
+  if(answer2 == 'T') triplet        = .true.
+  if(answer3 == 'T') spin_conserved = .true.
+  if(answer4 == 'T') spin_flip      = .true.
+  if(answer5 == 'T') TDA            = .true.
 
 ! Read Green function options
 

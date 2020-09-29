@@ -1,6 +1,6 @@
-subroutine G0W0(doACFDT,exchange_kernel,doXBS,COHSEX,SOSEX,BSE,TDA_W,TDA,        & 
-                dBSE,dTDA,evDyn,singlet_manifold,triplet_manifold,linearize,eta, & 
-                nBas,nC,nO,nV,nR,nS,ENuc,ERHF,Hc,H,ERI,PHF,cHF,eHF,eGW)
+subroutine G0W0(doACFDT,exchange_kernel,doXBS,COHSEX,SOSEX,BSE,TDA_W,TDA, & 
+                dBSE,dTDA,evDyn,singlet,triplet,linearize,eta,            & 
+                nBas,nC,nO,nV,nR,nS,ENuc,ERHF,Hc,ERI,dipole_int,PHF,cHF,eHF,eGW)
 
 ! Perform G0W0 calculation
 
@@ -21,8 +21,8 @@ subroutine G0W0(doACFDT,exchange_kernel,doXBS,COHSEX,SOSEX,BSE,TDA_W,TDA,       
   logical,intent(in)            :: dBSE
   logical,intent(in)            :: dTDA
   logical,intent(in)            :: evDyn
-  logical,intent(in)            :: singlet_manifold
-  logical,intent(in)            :: triplet_manifold
+  logical,intent(in)            :: singlet
+  logical,intent(in)            :: triplet
   logical,intent(in)            :: linearize
   double precision,intent(in)   :: eta
 
@@ -33,24 +33,23 @@ subroutine G0W0(doACFDT,exchange_kernel,doXBS,COHSEX,SOSEX,BSE,TDA_W,TDA,       
   double precision,intent(in)   :: cHF(nBas,nBas)
   double precision,intent(in)   :: PHF(nBas,nBas)
   double precision,intent(in)   :: Hc(nBas,nBas)
-  double precision,intent(in)   :: H(nBas,nBas)
   double precision,intent(in)   :: ERI(nBas,nBas,nBas,nBas)
+  double precision,intent(in)   :: dipole_int(nBas,nBas,ncart)
 
 ! Local variables
 
   logical                       :: print_W = .true.
   integer                       :: ispin
-  double precision              :: EcRPA(nspin)
+  double precision              :: EcRPA
   double precision              :: EcBSE(nspin)
   double precision              :: EcAC(nspin)
   double precision              :: EcGM
   double precision,allocatable  :: SigC(:)
   double precision,allocatable  :: Z(:)
-  double precision,allocatable  :: Omega(:,:)
-  double precision,allocatable  :: XpY(:,:,:)
-  double precision,allocatable  :: XmY(:,:,:)
-  double precision,allocatable  :: rho(:,:,:,:)
-  double precision,allocatable  :: rhox(:,:,:,:)
+  double precision,allocatable  :: OmRPA(:)
+  double precision,allocatable  :: XpY_RPA(:,:)
+  double precision,allocatable  :: XmY_RPA(:,:)
+  double precision,allocatable  :: rho_RPA(:,:,:)
 
   double precision,allocatable  :: eGWlin(:)
 
@@ -68,27 +67,35 @@ subroutine G0W0(doACFDT,exchange_kernel,doXBS,COHSEX,SOSEX,BSE,TDA_W,TDA,       
 
 ! Initialization
 
-  EcRPA(:) = 0d0
+  EcRPA = 0d0
 
 ! SOSEX correction
 
-  if(SOSEX) write(*,*) 'SOSEX correction activated!'
-  write(*,*)
+  if(SOSEX) then 
+    write(*,*) 'SOSEX correction activated but BUG!'
+    stop
+  end if
 
 ! COHSEX approximation
 
-  if(COHSEX) write(*,*) 'COHSEX approximation activated!'
-  write(*,*)
+  if(COHSEX) then 
+    write(*,*) 'COHSEX approximation activated!'
+    write(*,*)
+  end if
 
 ! TDA for W
 
-  if(TDA_W) write(*,*) 'Tamm-Dancoff approximation for dynamic screening!'
-  write(*,*)
+  if(TDA_W) then 
+    write(*,*) 'Tamm-Dancoff approximation for dynamic screening!'
+    write(*,*)
+  end if
 
 ! TDA 
 
-  if(TDA) write(*,*) 'Tamm-Dancoff approximation activated!'
-  write(*,*)
+  if(TDA) then 
+    write(*,*) 'Tamm-Dancoff approximation activated!'
+    write(*,*)
+  end if
 
 ! Spin manifold 
 
@@ -96,33 +103,42 @@ subroutine G0W0(doACFDT,exchange_kernel,doXBS,COHSEX,SOSEX,BSE,TDA_W,TDA,       
 
 ! Memory allocation
 
-  allocate(SigC(nBas),Z(nBas),Omega(nS,nspin),XpY(nS,nS,nspin),XmY(nS,nS,nspin),  & 
-           rho(nBas,nBas,nS,nspin),rhox(nBas,nBas,nS,nspin),eGWlin(nBas))
+  allocate(SigC(nBas),Z(nBas),OmRPA(nS),XpY_RPA(nS,nS),XmY_RPA(nS,nS),rho_RPA(nBas,nBas,nS),eGWlin(nBas))
 
-! Compute linear response
+!-------------------!
+! Compute screening !
+!-------------------!
 
-  call linear_response(ispin,.true.,TDA_W,.false.,eta,nBas,nC,nO,nV,nR,nS,1d0,eHF,ERI, & 
-                       rho(:,:,:,ispin),EcRPA(ispin),Omega(:,ispin),XpY(:,:,ispin),XmY(:,:,ispin))
+  call linear_response(ispin,.true.,TDA_W,.false.,eta,nBas,nC,nO,nV,nR,nS,1d0, & 
+                       eHF,ERI,OmRPA,rho_RPA,EcRPA,OmRPA,XpY_RPA,XmY_RPA)
 
-  if(print_W) call print_excitation('RPA@HF      ',ispin,nS,Omega(:,ispin))
+  if(print_W) call print_excitation('RPA@HF      ',ispin,nS,OmRPA)
 
-! Compute correlation part of the self-energy 
+!--------------------------!
+! Compute spectral weights !
+!--------------------------!
 
-  call excitation_density(nBas,nC,nO,nR,nS,ERI,XpY(:,:,ispin),rho(:,:,:,ispin))
+  call excitation_density(nBas,nC,nO,nR,nS,ERI,XpY_RPA,rho_RPA)
 
-  if(SOSEX) call excitation_density_SOSEX(nBas,nC,nO,nR,nS,ERI,XpY(:,:,ispin),rhox(:,:,:,ispin))
+!------------------------!
+! Compute GW self-energy !
+!------------------------!
 
-  call self_energy_correlation_diag(COHSEX,SOSEX,eta,nBas,nC,nO,nV,nR,nS,eHF, & 
-                                    Omega(:,ispin),rho(:,:,:,ispin),rhox(:,:,:,ispin),EcGM,SigC)
+  call self_energy_correlation_diag(COHSEX,eta,nBas,nC,nO,nV,nR,nS,eHF,OmRPA,rho_RPA,EcGM,SigC)
 
-! Compute renormalization factor
+!--------------------------------!
+! Compute renormalization factor !
+!--------------------------------!
 
-  call renormalization_factor(COHSEX,SOSEX,eta,nBas,nC,nO,nV,nR,nS,eHF, & 
-                              Omega(:,ispin),rho(:,:,:,ispin),rhox(:,:,:,ispin),Z(:))
+  call renormalization_factor(COHSEX,eta,nBas,nC,nO,nV,nR,nS,eHF,OmRPA,rho_RPA,Z)
 
-! Solve the quasi-particle equation
+!-----------------------------------!
+! Solve the quasi-particle equation !
+!-----------------------------------!
 
   eGWlin(:) = eHF(:) + Z(:)*SigC(:)
+
+  ! Linearized or graphical solution?
 
   if(linearize) then 
  
@@ -131,51 +147,48 @@ subroutine G0W0(doACFDT,exchange_kernel,doXBS,COHSEX,SOSEX,BSE,TDA_W,TDA,       
 
     eGW(:) = eGWlin(:)
 
-! Find all the roots of the QP equation if necessary
-
-! call QP_roots(nBas,nC,nO,nV,nR,nS,eta,eHF,Omega,rho,eGWlin)
-
   else 
-  
-  ! Find graphical solution of the QP equation
 
-  call QP_graph(nBas,nC,nO,nV,nR,nS,eta,eHF,Omega,rho,eGWlin,eGW)
+    write(*,*) ' *** Quasiparticle energies obtained by root search (experimental) *** '
+    write(*,*)
+  
+    call QP_graph(nBas,nC,nO,nV,nR,nS,eta,eHF,OmRPA,rho_RPA,eGWlin,eGW)
+
+    ! Find all the roots of the QP equation if necessary
+
+    ! call QP_roots(nBas,nC,nO,nV,nR,nS,eta,eHF,Omega,rho,eGWlin)
  
   end if
 
-! Dump results
-
-  call print_G0W0(nBas,nO,eHF,ENuc,ERHF,SigC,Z,eGW,EcRPA(ispin),EcGM)
-
 ! Compute the RPA correlation energy
 
-  call linear_response(ispin,.true.,TDA_W,.false.,eta,nBas,nC,nO,nV,nR,nS,1d0,eGW,ERI, & 
-                       rho(:,:,:,ispin),EcRPA(ispin),Omega(:,ispin),XpY(:,:,ispin),XmY(:,:,ispin))
+  call linear_response(ispin,.true.,TDA_W,.false.,eta,nBas,nC,nO,nV,nR,nS,1d0,eGW,ERI,OmRPA, & 
+                       rho_RPA,EcRPA,OmRPA,XpY_RPA,XmY_RPA)
 
-  write(*,*)
-  write(*,*)'-------------------------------------------------------------------------------'
-  write(*,'(2X,A50,F20.10)') 'Tr@RPA@G0W0 correlation energy (singlet) =',EcRPA(1)
-  write(*,'(2X,A50,F20.10)') 'Tr@RPA@G0W0 correlation energy (triplet) =',EcRPA(2)
-  write(*,'(2X,A50,F20.10)') 'Tr@RPA@G0W0 correlation energy           =',EcRPA(1) + EcRPA(2)
-  write(*,'(2X,A50,F20.10)') 'Tr@RPA@G0W0 total energy                 =',ENuc + ERHF + EcRPA(1) + EcRPA(2)
-  write(*,*)'-------------------------------------------------------------------------------'
-  write(*,*)
+!--------------!
+! Dump results !
+!--------------!
+
+  call print_G0W0(nBas,nO,eHF,ENuc,ERHF,SigC,Z,eGW,EcRPA,EcGM)
+
+! Deallocate memory
+
+  deallocate(SigC,Z,OmRPA,XpY_RPA,XmY_RPA,rho_RPA,eGWlin)
 
 ! Plot stuff
 
-! call plot_GW(nBas,nC,nO,nV,nR,nS,eHF,eGW,Omega(:,ispin),rho(:,:,:,ispin),rhox(:,:,:,ispin))
+! call plot_GW(nBas,nC,nO,nV,nR,nS,eHF,eGW,OmRPA,rho_RPA)
 
 ! Perform BSE calculation
 
   if(BSE) then
 
-    call Bethe_Salpeter(TDA_W,TDA,dBSE,dTDA,evDyn,singlet_manifold,triplet_manifold,eta, &
-                        nBas,nC,nO,nV,nR,nS,ERI,eHF,eGW,Omega,XpY,XmY,rho,EcRPA,EcBSE)
+    call Bethe_Salpeter(TDA_W,TDA,dBSE,dTDA,evDyn,singlet,triplet,eta,nBas,nC,nO,nV,nR,nS,ERI,dipole_int,eHF,eGW,EcBSE)
 
     if(exchange_kernel) then
  
-      EcRPA(1) = 0.5d0*EcRPA(1)
-      EcRPA(2) = 1.5d0*EcRPA(1)
+      EcBSE(1) = 0.5d0*EcBSE(1)
+      EcBSE(2) = 1.5d0*EcBSE(2)
  
     end if
 
@@ -204,15 +217,7 @@ subroutine G0W0(doACFDT,exchange_kernel,doXBS,COHSEX,SOSEX,BSE,TDA_W,TDA,       
 
       end if
 
-      call ACFDT(exchange_kernel,doXBS,.true.,TDA_W,TDA,BSE,singlet_manifold,triplet_manifold,eta, & 
-                 nBas,nC,nO,nV,nR,nS,ERI,eHF,eGW,Omega,XpY,XmY,rho,EcAC)
-
-      if(exchange_kernel) then
-  
-        EcAC(1) = 0.5d0*EcAC(1)
-        EcAC(2) = 1.5d0*EcAC(1)
-  
-      end if
+      call ACFDT(exchange_kernel,doXBS,.true.,TDA_W,TDA,BSE,singlet,triplet,eta,nBas,nC,nO,nV,nR,nS,ERI,eHF,eGW,EcAC)
 
       write(*,*)
       write(*,*)'-------------------------------------------------------------------------------'

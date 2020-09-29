@@ -1,5 +1,5 @@
 subroutine G0F2(BSE,TDA,dBSE,dTDA,evDyn,singlet_manifold,triplet_manifold, & 
-                linearize,eta,nBas,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,eHF)
+                linearize,eta,nBas,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,dipole_int,eHF)
 
 ! Perform a one-shot second-order Green function calculation
 
@@ -27,6 +27,7 @@ subroutine G0F2(BSE,TDA,dBSE,dTDA,evDyn,singlet_manifold,triplet_manifold, &
   double precision,intent(in)   :: ERHF
   double precision,intent(in)   :: eHF(nBas)
   double precision,intent(in)   :: ERI(nBas,nBas,nBas,nBas)
+  double precision,intent(in)   :: dipole_int(nBas,nBas,ncart)
 
 ! Local variables
 
@@ -115,7 +116,7 @@ subroutine G0F2(BSE,TDA,dBSE,dTDA,evDyn,singlet_manifold,triplet_manifold, &
 
   if(BSE) then
 
-    call BSE2(TDA,dBSE,dTDA,evDyn,singlet_manifold,triplet_manifold,eta,nBas,nC,nO,nV,nR,nS,ERI,eHF,eGF2,EcBSE)
+    call BSE2(TDA,dBSE,dTDA,evDyn,singlet_manifold,triplet_manifold,eta,nBas,nC,nO,nV,nR,nS,ERI,dipole_int,eHF,eGF2,EcBSE)
 
   end if
 

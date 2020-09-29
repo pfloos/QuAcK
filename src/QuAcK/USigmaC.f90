@@ -1,4 +1,4 @@
-double precision function SigmaC(p,w,eta,nBas,nC,nO,nV,nR,nS,e,Omega,rho)
+double precision function USigmaC(p,w,eta,nBas,nC,nO,nV,nR,nS,e,Omega,rho)
 
 ! Compute diagonal of the correlation part of the self-energy
 
@@ -27,24 +27,22 @@ double precision function SigmaC(p,w,eta,nBas,nC,nO,nV,nR,nS,e,Omega,rho)
 
 ! Initialize 
 
-  SigmaC = 0d0
+  USigmaC = 0d0
 
 ! Occupied part of the correlation self-energy
 
   do i=nC+1,nO
     do jb=1,nS
       eps = w - e(i) + Omega(jb)
-      SigmaC = SigmaC + 2d0*rho(p,i,jb)**2*eps/(eps**2 + eta**2)
-    enddo
-  enddo
-
-! Virtual part of the correlation self-energy
+      USigmaC = uSigmaC + rho(p,i,jb)**2*eps/(eps**2 + eta**2)  
+    end do
+  end do
 
   do a=nO+1,nBas-nR
     do jb=1,nS
       eps = w - e(a) - Omega(jb)
-      SigmaC = SigmaC + 2d0*rho(p,a,jb)**2*eps/(eps**2 + eta**2)
-    enddo
-  enddo
+      USigmaC = USigmaC + rho(p,a,jb)**2*eps/(eps**2 + eta**2)
+    end do
+  end do
 
-end function SigmaC
+end function USigmaC

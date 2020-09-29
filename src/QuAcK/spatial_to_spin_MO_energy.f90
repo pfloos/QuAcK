@@ -1,6 +1,6 @@
 subroutine spatial_to_spin_MO_energy(nBas,e,nBas2,se)
 
-! Convert ERIs from spatial to spin orbitals
+! Convert MO energies from spatial to spin orbitals
 
   implicit none
 

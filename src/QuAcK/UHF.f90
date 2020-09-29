@@ -166,7 +166,8 @@ subroutine UHF(maxSCF,thresh,max_diis,guess_type,nBas,nO,S,T,V,Hc,ERI,X,ENuc,EUH
 
     n_diis = min(n_diis+1,max_diis)
     do ispin=1,nspin
-      call DIIS_extrapolation(rcond(ispin),nBasSq,nBasSq,n_diis,err_diis(:,:,ispin),F_diis(:,:,ispin),err(:,:,ispin),F(:,:,ispin))
+      if(nO(ispin) > 1) call DIIS_extrapolation(rcond(ispin),nBasSq,nBasSq,n_diis,err_diis(:,:,ispin),F_diis(:,:,ispin), & 
+                                                err(:,:,ispin),F(:,:,ispin))
     end do
 
 !   Reset DIIS if required
@@ -232,6 +233,6 @@ subroutine UHF(maxSCF,thresh,max_diis,guess_type,nBas,nO,S,T,V,Hc,ERI,X,ENuc,EUH
 
 ! Compute final UHF energy
 
-  call print_UHF(nBas,nO(:),e(:,:),c(:,:,:),ENuc,ET(:),EV(:),EJ(:),Ex(:),EUHF)
+  call print_UHF(nBas,nO,e,c,ENuc,ET,EV,EJ,Ex,EUHF)
 
 end subroutine UHF

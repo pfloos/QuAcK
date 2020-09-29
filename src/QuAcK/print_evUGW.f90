@@ -1,15 +1,17 @@
-subroutine print_UG0W0(nBas,nO,e,ENuc,EHF,SigC,Z,eGW,EcRPA)
+subroutine print_evUGW(nBas,nO,nSCF,Conv,e,ENuc,EHF,SigC,Z,eGW,EcRPA)
 
-! Print one-electron energies and other stuff for G0W0
+! Print one-electron energies and other stuff for evGW
 
   implicit none
   include 'parameters.h'
 
   integer,intent(in)                 :: nBas
   integer,intent(in)                 :: nO(nspin)
+  integer,intent(in)                 :: nSCF
   double precision,intent(in)        :: ENuc
   double precision,intent(in)        :: EHF
   double precision,intent(in)        :: EcRPA
+  double precision,intent(in)        :: Conv
   double precision,intent(in)        :: e(nBas,nspin)
   double precision,intent(in)        :: SigC(nBas,nspin)
   double precision,intent(in)        :: Z(nBas,nspin)
@@ -37,9 +39,13 @@ subroutine print_UG0W0(nBas,nO,e,ENuc,EHF,SigC,Z,eGW,EcRPA)
 
 ! Dump results
 
-  write(*,*)'-------------------------------------------------------------------------------&
+  write(*,*)'-------------------------------------------------------------------------------& 
               -------------------------------------------------'
-  write(*,*)'  Unrestricted one-shot G0W0 calculation (eV)'
+  if(nSCF < 10) then
+    write(*,'(1X,A21,I1,A1,I1,A12)')'  Self-consistent evG',nSCF,'W',nSCF,' calculation'
+  else
+    write(*,'(1X,A21,I2,A1,I2,A12)')'  Self-consistent evG',nSCF,'W',nSCF,' calculation'
+  endif
   write(*,*)'-------------------------------------------------------------------------------& 
               -------------------------------------------------'
   write(*,'(A1,A3,A1,A30,A1,A30,A1,A30,A1,A30,A1)') &
@@ -51,23 +57,25 @@ subroutine print_UG0W0(nBas,nO,e,ENuc,EHF,SigC,Z,eGW,EcRPA)
 
   do p=1,nBas
     write(*,'(A1,I3,A1,2F15.6,A1,2F15.6,A1,2F15.6,A1,2F15.6,A1)') &
-    '|',p,'|',e(p,1)*HaToeV,e(p,2)*HaToeV,'|',SigC(p,1)*HaToeV,SigC(p,2)*HaToeV,'|', & 
+    '|',p,'|',e(p,1)*HaToeV,e(p,2)*HaToeV,'|',SigC(p,1)*HaToeV,SigC(p,2)*HaToeV,'|', &
               Z(p,1),Z(p,2),'|',eGW(p,1)*HaToeV,eGW(p,2)*HaToeV,'|'
   enddo
 
   write(*,*)'-------------------------------------------------------------------------------& 
               -------------------------------------------------'
-  write(*,'(2X,A30,F15.6)') 'G0W0 HOMO      energy (eV):',maxval(HOMO(:))*HaToeV
-  write(*,'(2X,A30,F15.6)') 'G0W0 LUMO      energy (eV):',minval(LUMO(:))*HaToeV
-  write(*,'(2X,A30,F15.6)') 'G0W0 HOMO-LUMO gap    (eV):',(minval(LUMO(:))-maxval(HOMO(:)))*HaToeV
+  write(*,'(2X,A10,I3)')   'Iteration ',nSCF
+  write(*,'(2X,A14,F15.5)')'Convergence = ',Conv
   write(*,*)'-------------------------------------------------------------------------------& 
               -------------------------------------------------'
-  write(*,'(2X,A30,F15.6)') 'RPA@G0W0 total energy       =',ENuc + EHF + EcRPA
-  write(*,'(2X,A30,F15.6)') 'RPA@G0W0 correlation energy =',EcRPA
+  write(*,'(2X,A30,F15.6)') 'evGW HOMO      energy (eV):',maxval(HOMO(:))*HaToeV
+  write(*,'(2X,A30,F15.6)') 'evGW LUMO      energy (eV):',minval(LUMO(:))*HaToeV
+  write(*,'(2X,A30,F15.6)') 'evGW HOMO-LUMO gap    (eV):',(minval(LUMO(:))-maxval(HOMO(:)))*HaToeV
+  write(*,*)'-------------------------------------------------------------------------------& 
+              -------------------------------------------------'
+  write(*,'(2X,A30,F15.6)') 'RPA@evGW total energy       =',ENuc + EHF + EcRPA
+  write(*,'(2X,A30,F15.6)') 'RPA@evGW correlation energy =',EcRPA
   write(*,*)'-------------------------------------------------------------------------------& 
               -------------------------------------------------'
   write(*,*)
 
-end subroutine print_UG0W0
-
-
+end subroutine print_evUGW

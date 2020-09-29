@@ -1,4 +1,4 @@
-subroutine unrestricted_excitation_density(nBas,nC,nO,nR,nSa,nSb,nSt,ERI_aa,ERI_ab,ERI_bb,XpY_a,XpY_b,rho)
+subroutine unrestricted_excitation_density(nBas,nC,nO,nR,nSa,nSb,nSt,ERI_aaaa,ERI_aabb,ERI_bbbb,XpY,rho)
 
 ! Compute excitation densities for unrestricted reference
 
@@ -14,11 +14,10 @@ subroutine unrestricted_excitation_density(nBas,nC,nO,nR,nSa,nSb,nSt,ERI_aa,ERI_
   integer,intent(in)            :: nSa
   integer,intent(in)            :: nSb
   integer,intent(in)            :: nSt
-  double precision,intent(in)   :: ERI_aa(nBas,nBas,nBas,nBas)
-  double precision,intent(in)   :: ERI_ab(nBas,nBas,nBas,nBas)
-  double precision,intent(in)   :: ERI_bb(nBas,nBas,nBas,nBas)
-  double precision,intent(in)   :: XpY_a(nSa,nSa)
-  double precision,intent(in)   :: XpY_b(nSb,nSb)
+  double precision,intent(in)   :: ERI_aaaa(nBas,nBas,nBas,nBas)
+  double precision,intent(in)   :: ERI_aabb(nBas,nBas,nBas,nBas)
+  double precision,intent(in)   :: ERI_bbbb(nBas,nBas,nBas,nBas)
+  double precision,intent(in)   :: XpY(nSt,nSt)
 
 ! Local variables
 
@@ -32,34 +31,34 @@ subroutine unrestricted_excitation_density(nBas,nC,nO,nR,nSa,nSb,nSt,ERI_aa,ERI_
 
   rho(:,:,:,:) = 0d0   
 
-!-------------
-! alpha block
-!-------------
+!-------------!
+! alpha block !
+!-------------!
 
   do p=nC(1)+1,nBas-nR(1)
     do q=nC(1)+1,nBas-nR(1)
 
       ! Same-spin contribution
-      do ia=1,nSa
+      do ia=1,nSt
         jb = 0
         do j=nC(1)+1,nO(1)
           do b=nO(1)+1,nBas-nR(1)
             jb = jb + 1
 
-            rho(p,q,ia,1) = rho(p,q,ia,1) + ERI_aa(p,j,q,b)*XpY_a(ia,jb)
+            rho(p,q,ia,1) = rho(p,q,ia,1) + ERI_aaaa(p,j,q,b)*XpY(ia,jb)
 
           enddo
         enddo
       enddo
 
       ! Opposite-spin contribution
-      do ia=1,nSb
-        jb = 0
+      do ia=1,nSt
+        jb = nSa
         do j=nC(2)+1,nO(2)
           do b=nO(2)+1,nBas-nR(2)
             jb = jb + 1
 
-            rho(p,q,nSa+ia,1) = rho(p,q,nSa+ia,1) + ERI_ab(p,j,q,b)*XpY_b(ia,jb)
+            rho(p,q,ia,1) = rho(p,q,ia,1) + ERI_aabb(p,j,q,b)*XpY(ia,jb)
 
           enddo
         enddo
@@ -68,34 +67,34 @@ subroutine unrestricted_excitation_density(nBas,nC,nO,nR,nSa,nSb,nSt,ERI_aa,ERI_
     enddo
   enddo
 
-!------------
-! Beta block
-!------------
+!------------!
+! Beta block !
+!------------!
 
   do p=nC(2)+1,nBas-nR(2)
     do q=nC(2)+1,nBas-nR(2)
 
-      ! Same-spin contribution
-      do ia=1,nSb
-        jb = 0
-        do j=nC(2)+1,nO(2)
-          do b=nO(2)+1,nBas-nR(2)
-            jb = jb + 1
-
-            rho(p,q,ia,2) = rho(p,q,ia,2) + ERI_bb(p,j,q,b)*XpY_b(ia,jb)
-
-          enddo
-        enddo
-      enddo
-
       ! Opposite-spin contribution
-      do ia=1,nSa
+      do ia=1,nSt
         jb = 0
         do j=nC(1)+1,nO(1)
           do b=nO(1)+1,nBas-nR(1)
             jb = jb + 1
 
-            rho(p,q,nSb+ia,2) = rho(p,q,nSb+ia,2) + ERI_ab(j,p,b,q)*XpY_a(ia,jb)
+            rho(p,q,ia,2) = rho(p,q,ia,2) + ERI_aabb(j,p,b,q)*XpY(ia,jb)
+
+          enddo
+        enddo
+      enddo
+
+      ! Same-spin contribution
+      do ia=1,nSt
+        jb = nSa
+        do j=nC(2)+1,nO(2)
+          do b=nO(2)+1,nBas-nR(2)
+            jb = jb + 1
+
+            rho(p,q,ia,2) = rho(p,q,ia,2) + ERI_bbbb(p,j,q,b)*XpY(ia,jb)
 
           enddo
         enddo

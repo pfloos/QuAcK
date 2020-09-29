@@ -1,6 +1,6 @@
-subroutine unrestricted_self_energy_correlation_diag(eta,nBas,nC,nO,nV,nR,nSt,e,Omega,rho,SigC)
+subroutine unrestricted_renormalization_factor(eta,nBas,nC,nO,nV,nR,nSt,e,Omega,rho,Z)
 
-! Compute diagonal of the correlation part of the self-energy
+! Compute the renormalization factor in the unrestricted formalism
 
   implicit none
   include 'parameters.h'
@@ -25,23 +25,23 @@ subroutine unrestricted_self_energy_correlation_diag(eta,nBas,nC,nO,nV,nR,nSt,e,
 
 ! Output variables
 
-  double precision,intent(out)  :: SigC(nBas,nspin)
+  double precision,intent(out)  :: Z(nBas,nspin)
 
 ! Initialize 
 
-  SigC(:,:) = 0d0
+  Z(:,:) = 0d0
 
 !--------------!
 ! Spin-up part !
 !--------------!
 
-  ! Occupied part of the correlation self-energy
+  ! Occupied part of the renormalization factor
 
   do p=nC(1)+1,nBas-nR(1)
     do i=nC(1)+1,nO(1)
       do jb=1,nSt
         eps = e(p,1) - e(i,1) + Omega(jb)
-        SigC(p,1) = SigC(p,1) + rho(p,i,jb,1)**2*eps/(eps**2 + eta**2)
+        Z(p,1) = Z(p,1) + rho(p,i,jb,1)**2*(eps/(eps**2 + eta**2))**2
       end do
     end do
   end do
@@ -52,7 +52,7 @@ subroutine unrestricted_self_energy_correlation_diag(eta,nBas,nC,nO,nV,nR,nSt,e,
     do a=nO(1)+1,nBas-nR(1)
       do jb=1,nSt
         eps = e(p,1) - e(a,1) - Omega(jb)
-        SigC(p,1) = SigC(p,1) + rho(p,a,jb,1)**2*eps/(eps**2 + eta**2)
+        Z(p,1) = Z(p,1) + rho(p,a,jb,1)**2*(eps/(eps**2 + eta**2))**2
       end do
     end do
   end do
@@ -67,7 +67,7 @@ subroutine unrestricted_self_energy_correlation_diag(eta,nBas,nC,nO,nV,nR,nSt,e,
     do i=nC(2)+1,nO(2)
       do jb=1,nSt
         eps = e(p,2) - e(i,2) + Omega(jb)
-        SigC(p,2) = SigC(p,2) + rho(p,i,jb,2)**2*eps/(eps**2 + eta**2)
+        Z(p,2) = Z(p,2) + rho(p,i,jb,2)**2*(eps/(eps**2 + eta**2))**2
       end do
     end do
   end do
@@ -78,9 +78,13 @@ subroutine unrestricted_self_energy_correlation_diag(eta,nBas,nC,nO,nV,nR,nSt,e,
     do a=nO(2)+1,nBas-nR(2)
       do jb=1,nSt
         eps = e(p,2) - e(a,2) - Omega(jb)
-        SigC(p,2) = SigC(p,2) + rho(p,a,jb,2)**2*eps/(eps**2 + eta**2)
+        Z(p,2) = Z(p,2) + rho(p,a,jb,2)**2*(eps/(eps**2 + eta**2))**2
       end do
     end do
   end do
 
-end subroutine unrestricted_self_energy_correlation_diag
+! Final rescaling
+
+  Z(:,:) = 1d0/(1d0 + Z(:,:))
+
+end subroutine unrestricted_renormalization_factor

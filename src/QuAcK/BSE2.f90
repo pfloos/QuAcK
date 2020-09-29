@@ -1,5 +1,4 @@
-subroutine BSE2(TDA,dBSE,dTDA,evDyn,singlet_manifold,triplet_manifold, & 
-                eta,nBas,nC,nO,nV,nR,nS,ERI,eHF,eGF,EcBSE)
+subroutine BSE2(TDA,dBSE,dTDA,evDyn,singlet,triplet,eta,nBas,nC,nO,nV,nR,nS,ERI,dipole_int,eHF,eGF,EcBSE)
 
 ! Compute the Bethe-Salpeter excitation energies
 
@@ -12,8 +11,8 @@ subroutine BSE2(TDA,dBSE,dTDA,evDyn,singlet_manifold,triplet_manifold, &
   logical,intent(in)            :: dBSE
   logical,intent(in)            :: dTDA
   logical,intent(in)            :: evDyn
-  logical,intent(in)            :: singlet_manifold
-  logical,intent(in)            :: triplet_manifold
+  logical,intent(in)            :: singlet
+  logical,intent(in)            :: triplet
 
   double precision,intent(in)   :: eta
   integer,intent(in)            :: nBas
@@ -25,6 +24,7 @@ subroutine BSE2(TDA,dBSE,dTDA,evDyn,singlet_manifold,triplet_manifold, &
   double precision,intent(in)   :: eHF(nBas)
   double precision,intent(in)   :: eGF(nBas)
   double precision,intent(in)   :: ERI(nBas,nBas,nBas,nBas)
+  double precision,intent(in)   :: dipole_int(nBas,nBas,ncart)
 
 ! Local variables
 
@@ -46,15 +46,15 @@ subroutine BSE2(TDA,dBSE,dTDA,evDyn,singlet_manifold,triplet_manifold, &
 ! Singlet manifold
 !-------------------
 
- if(singlet_manifold) then
+ if(singlet) then
 
     ispin = 1
     EcBSE(ispin) = 0d0
 
     ! Compute BSE2 excitation energies
 
-    call linear_response(ispin,.false.,TDA,.false.,eta,nBas,nC,nO,nV,nR,nS,1d0,eGF(:),ERI(:,:,:,:), &
-                         rho,EcBSE(ispin),OmBSE(:,ispin),XpY(:,:,ispin),XmY(:,:,ispin))
+    call linear_response(ispin,.false.,TDA,.false.,eta,nBas,nC,nO,nV,nR,nS,1d0,eGF,ERI, &
+                         OmBSE(:,ispin),rho,EcBSE(ispin),OmBSE(:,ispin),XpY(:,:,ispin),XmY(:,:,ispin))
     call print_excitation('BSE2        ',ispin,nS,OmBSE(:,ispin))
 
     ! Compute dynamic correction for BSE via perturbation theory
@@ -63,12 +63,12 @@ subroutine BSE2(TDA,dBSE,dTDA,evDyn,singlet_manifold,triplet_manifold, &
 
      if(evDyn) then
 
-      call BSE2_dynamic_perturbation_iterative(dTDA,ispin,eta,nBas,nC,nO,nV,nR,nS, & 
-                                               ERI(:,:,:,:),eHF(:),eGF(:),OmBSE(:,ispin),XpY(:,:,ispin),XmY(:,:,ispin))
+      call BSE2_dynamic_perturbation_iterative(dTDA,ispin,eta,nBas,nC,nO,nV,nR,nS,ERI,dipole_int,eHF,eGF, & 
+                                               OmBSE(:,ispin),XpY(:,:,ispin),XmY(:,:,ispin))
      else
  
-      call BSE2_dynamic_perturbation(dTDA,ispin,eta,nBas,nC,nO,nV,nR,nS, & 
-                                     ERI(:,:,:,:),eHF(:),eGF(:),OmBSE(:,ispin),XpY(:,:,ispin),XmY(:,:,ispin))
+      call BSE2_dynamic_perturbation(dTDA,ispin,eta,nBas,nC,nO,nV,nR,nS,ERI,dipole_int,eHF,eGF, & 
+                                     OmBSE(:,ispin),XpY(:,:,ispin),XmY(:,:,ispin))
  
       end if
 
@@ -80,7 +80,7 @@ subroutine BSE2(TDA,dBSE,dTDA,evDyn,singlet_manifold,triplet_manifold, &
 ! Triplet manifold
 !-------------------
 
- if(triplet_manifold) then
+ if(triplet) then
 
     ispin = 2
     EcBSE(ispin) = 0d0
@@ -88,7 +88,7 @@ subroutine BSE2(TDA,dBSE,dTDA,evDyn,singlet_manifold,triplet_manifold, &
     ! Compute BSE2 excitation energies
 
     call linear_response(ispin,.false.,TDA,.false.,eta,nBas,nC,nO,nV,nR,nS,1d0,eGF(:),ERI(:,:,:,:), &
-                         rho,EcBSE(ispin),OmBSE(:,ispin),XpY(:,:,ispin),XmY(:,:,ispin))
+                         OmBSE(:,ispin),rho,EcBSE(ispin),OmBSE(:,ispin),XpY(:,:,ispin),XmY(:,:,ispin))
     call print_excitation('BSE2        ',ispin,nS,OmBSE(:,ispin))
 
     ! Compute dynamic correction for BSE via perturbation theory
@@ -97,12 +97,12 @@ subroutine BSE2(TDA,dBSE,dTDA,evDyn,singlet_manifold,triplet_manifold, &
 
      if(evDyn) then
 
-      call BSE2_dynamic_perturbation_iterative(dTDA,ispin,eta,nBas,nC,nO,nV,nR,nS, & 
-                                               ERI(:,:,:,:),eHF(:),eGF(:),OmBSE(:,ispin),XpY(:,:,ispin),XmY(:,:,ispin))
+      call BSE2_dynamic_perturbation_iterative(dTDA,ispin,eta,nBas,nC,nO,nV,nR,nS,ERI,dipole_int,eHF,eGF, & 
+                                               OmBSE(:,ispin),XpY(:,:,ispin),XmY(:,:,ispin))
      else
  
-      call BSE2_dynamic_perturbation(dTDA,ispin,eta,nBas,nC,nO,nV,nR,nS, & 
-                                     ERI(:,:,:,:),eHF(:),eGF(:),OmBSE(:,ispin),XpY(:,:,ispin),XmY(:,:,ispin))
+      call BSE2_dynamic_perturbation(dTDA,ispin,eta,nBas,nC,nO,nV,nR,nS,ERI,dipole_int,eHF,eGF, &
+                                     OmBSE(:,ispin),XpY(:,:,ispin),XmY(:,:,ispin))
  
       end if
 

@@ -1,4 +1,4 @@
-subroutine Bethe_Salpeter_A_matrix_dynamic(eta,nBas,nC,nO,nV,nR,nS,lambda,eGW,OmRPA,OmBSE,rho,A_dyn)
+subroutine Bethe_Salpeter_A_matrix_dynamic(eta,nBas,nC,nO,nV,nR,nS,lambda,eGW,OmRPA,rho_RPA,OmBSE,A_dyn)
 
 ! Compute the dynamic part of the Bethe-Salpeter equation matrices
 
@@ -12,8 +12,8 @@ subroutine Bethe_Salpeter_A_matrix_dynamic(eta,nBas,nC,nO,nV,nR,nS,lambda,eGW,Om
   double precision,intent(in)   :: lambda
   double precision,intent(in)   :: eGW(nBas)
   double precision,intent(in)   :: OmRPA(nS)
+  double precision,intent(in)   :: rho_RPA(nBas,nBas,nS)
   double precision,intent(in)   :: OmBSE
-  double precision,intent(in)   :: rho(nBas,nBas,nS)
   
 ! Local variables
 
@@ -48,7 +48,7 @@ subroutine Bethe_Salpeter_A_matrix_dynamic(eta,nBas,nC,nO,nV,nR,nS,lambda,eGW,Om
           chi = 0d0
           do kc=1,maxS
 
-            chi = chi + rho(i,j,kc)*rho(a,b,kc)*OmRPA(kc)/(OmRPA(kc)**2 + eta**2)
+            chi = chi + rho_RPA(i,j,kc)*rho_RPA(a,b,kc)*OmRPA(kc)/(OmRPA(kc)**2 + eta**2)
 
           enddo
 
@@ -58,10 +58,10 @@ subroutine Bethe_Salpeter_A_matrix_dynamic(eta,nBas,nC,nO,nV,nR,nS,lambda,eGW,Om
           do kc=1,maxS
 
             eps = + OmBSE - OmRPA(kc) - (eGW(a) - eGW(j))
-            chi = chi + rho(i,j,kc)*rho(a,b,kc)*eps/(eps**2 + eta**2)
+            chi = chi + rho_RPA(i,j,kc)*rho_RPA(a,b,kc)*eps/(eps**2 + eta**2)
 
             eps = + OmBSE - OmRPA(kc) - (eGW(b) - eGW(i))
-            chi = chi + rho(i,j,kc)*rho(a,b,kc)*eps/(eps**2 + eta**2)
+            chi = chi + rho_RPA(i,j,kc)*rho_RPA(a,b,kc)*eps/(eps**2 + eta**2)
 
           enddo
 

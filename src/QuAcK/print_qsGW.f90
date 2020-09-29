@@ -70,8 +70,8 @@ subroutine print_qsGW(nBas,nO,nSCF,Conv,thresh,eHF,eGW,c,ENuc,P,T,V,Hc,J,K,F,Sig
   write(*,'(2X,A30,F15.6)') 'qsGW GM total    energy   =',EqsGW + ENuc + EcGM
   write(*,'(2X,A30,F15.6)') 'qsGW exchange    energy   =',Ex
   write(*,'(2X,A30,F15.6)') 'qsGW correlation energy   =',Ec
-! write(*,'(2X,A30,F15.6)') 'RPA@qsGW correlation energy =',EcRPA
-! write(*,'(2X,A30,F15.6)') 'GM@qsGW  correlation energy =',EcGM
+  write(*,'(2X,A30,F15.6)') 'RPA@qsGW correlation energy =',EcRPA
+  write(*,'(2X,A30,F15.6)') 'GM@qsGW  correlation energy =',EcGM
   write(*,*)'-------------------------------------------'
   write(*,*)
 
@@ -95,7 +95,6 @@ subroutine print_qsGW(nBas,nO,nSCF,Conv,thresh,eHF,eGW,c,ENuc,P,T,V,Hc,J,K,F,Sig
     write(*,'(A32,1X,F16.10)') ' Electronic   energy  ',EqsGW
     write(*,'(A32,1X,F16.10)') ' Nuclear   repulsion  ',ENuc
     write(*,'(A32,1X,F16.10)') ' qsGW         energy  ',ENuc + EqsGW
-!   write(*,'(A32,1X,F16.10)') ' RPA corr.    energy  ',EcRPA
     write(*,'(A50)')           '---------------------------------------'
     write(*,*)
  
