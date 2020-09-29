@@ -50,7 +50,8 @@ program eDFT
   double precision              :: start_KS,end_KS,t_KS
   double precision              :: start_int,end_int,t_int
 
-  integer                       :: nEns,doNcentered
+  integer                       :: nEns
+  logical                       :: doNcentered
   double precision,allocatable  :: wEns(:)
 
   integer                       :: maxSCF,max_diis

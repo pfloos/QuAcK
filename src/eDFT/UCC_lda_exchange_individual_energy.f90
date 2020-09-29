@@ -1,4 +1,4 @@
-subroutine UCC_lda_exchange_individual_energy(nEns,wEns,aCC_w1,aCC_w2,nGrid,weight,rhow,rho,Cx_choice,doNcentered,Ex)
+subroutine UCC_lda_exchange_individual_energy(nEns,wEns,aCC_w1,aCC_w2,nGrid,weight,rhow,rho,Cx_choice,doNcentered,kappa,Ex)
 
 ! Compute the unrestricted version of the curvature-corrected exchange functional
 
@@ -16,7 +16,8 @@ subroutine UCC_lda_exchange_individual_energy(nEns,wEns,aCC_w1,aCC_w2,nGrid,weig
   double precision,intent(in)   :: rhow(nGrid)
   double precision,intent(in)   :: rho(nGrid)
   integer,intent(in)            :: Cx_choice
-  integer,intent(in)            :: doNcentered
+  logical,intent(in)            :: doNcentered
+  double precision,intent(in)   :: kappa(nEns)
  
 ! Local variables
 
@@ -61,12 +62,16 @@ subroutine UCC_lda_exchange_individual_energy(nEns,wEns,aCC_w1,aCC_w2,nGrid,weig
   Fx2 = 1d0 - w2*(1d0 - w2)*(a2 + b2*(w2 - 0.5d0) + c2*(w2 - 0.5d0)**2)
 
   select case (Cx_choice)
-  case(1)
-  Cx = alpha*Fx1
-  case(2)
-  Cx = alpha*Fx2
-  case(3)
-  Cx = alpha*Fx2*Fx1
+
+    case(1)
+    Cx = alpha*Fx1
+
+    case(2)
+    Cx = alpha*Fx2
+
+    case(3)
+    Cx = alpha*Fx2*Fx1
+
   end select
 
   nEli = electron_number(nGrid,weight,rho)
@@ -87,15 +92,15 @@ subroutine UCC_lda_exchange_individual_energy(nEns,wEns,aCC_w1,aCC_w2,nGrid,weig
       e_p  =         Cx*r**(1d0/3d0)
       dedr = 1d0/3d0*Cx*r**(-2d0/3d0)
      
-      if (doNcentered == 0) then
-        Ex = Ex - weight(iG)*dedr*r*r
-      else
+      if (doNcentered) then
         Ex = Ex - weight(iG)*dedr*r*r*(nEli/nElw)
+      else
+        Ex = Ex - weight(iG)*dedr*r*r
       end if
 
       if(rI > threshold) then
 
-        if (doNcentered == 0) then
+        if (doNcentered) then
           Ex = Ex + weight(iG)*(e_p*rI + dedr*r*rI)
         else
           Ex = Ex + weight(iG)*((nEli/nElw)*e_p*rI + dedr*r*rI)

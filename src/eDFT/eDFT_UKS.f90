@@ -31,7 +31,7 @@ subroutine eDFT_UKS(x_rung,x_DFA,c_rung,c_DFA,nEns,wEns,aCC_w1,aCC_w2,nGrid,weig
   double precision,intent(in)   :: ENuc
   double precision,intent(in)   :: occnum(nBas,nspin,nEns)
   integer,intent(in)            :: Cx_choice
-  integer,intent(in)            :: doNcentered
+  logical,intent(in)            :: doNcentered
 
 ! Local variables
 

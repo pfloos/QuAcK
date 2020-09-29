@@ -12,7 +12,7 @@ subroutine unrestricted_auxiliary_energy(nBas,nEns,eps,occnum,doNcentered,Eaux)
   integer,intent(in)            :: nEns
   double precision,intent(in)   :: eps(nBas,nspin)
   double precision,intent(in)   :: occnum(nBas,nspin,nEns)
-  integer,intent(in)            :: doNcentered
+  logical,intent(in)            :: doNcentered
 
 ! Local variables
 

@@ -25,7 +25,7 @@ subroutine read_options(nBas,method,x_rung,x_DFA,c_rung,c_DFA,SGn,nEns,wEns,aCC_
   character(len=12),intent(out) :: x_DFA, c_DFA
   integer,intent(out)           :: SGn
   integer,intent(out)           :: nEns
-  integer,intent(out)           :: doNcentered
+  logical,intent(out)           :: doNcentered
   double precision,intent(out)  :: wEns(maxEns)
   double precision,intent(out)  :: aCC_w1(3)
   double precision,intent(out)  :: aCC_w2(3)
@@ -131,14 +131,17 @@ subroutine read_options(nBas,method,x_rung,x_DFA,c_rung,c_DFA,SGn,nEns,wEns,aCC_
   end do
   print*,'nEl'
   print*,nEl
-  
+
+  doNcentered = .false.
 
   read(1,*)
   read(1,*) (wEns(iEns),iEns=2,nEns)
   read(1,*)
-  read(1,*) doNcentered
+  read(1,*) answer
 
-  if (doNcentered == 0) then
+  if(answer == 'T') doNcentered = .true.
+
+  if (doNcentered) then
 
     wEns(1) = 1d0 - wEns(2) - wEns(3) 
 

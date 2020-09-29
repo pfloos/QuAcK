@@ -29,8 +29,8 @@
  1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 
 # Ensemble weights: wEns(1),...,wEns(nEns-1)
   0.00 1.00 
-# Ncentered ? 0 for NO 
- 0 
+# N-centered?
+ T 
 # Parameters for CC weight-dependent exchange functional
 0.445525 0.0901503 -0.286898
 0.191734 -0.0364788 -0.017035

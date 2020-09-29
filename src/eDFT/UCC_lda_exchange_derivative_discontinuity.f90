@@ -1,4 +1,4 @@
-subroutine UCC_lda_exchange_derivative_discontinuity(nEns,wEns,aCC_w1,aCC_w2,nGrid,weight,rhow,Cx_choice,doNcentered,ExDD)
+subroutine UCC_lda_exchange_derivative_discontinuity(nEns,wEns,aCC_w1,aCC_w2,nGrid,weight,rhow,Cx_choice,doNcentered,kappa,ExDD)
 
 ! Compute the unrestricted version of the curvature-corrected exchange ensemble derivative
 
@@ -15,8 +15,8 @@ subroutine UCC_lda_exchange_derivative_discontinuity(nEns,wEns,aCC_w1,aCC_w2,nGr
   double precision,intent(in)   :: weight(nGrid)
   double precision,intent(in)   :: rhow(nGrid)
   integer,intent(in)            :: Cx_choice
-  integer,intent(in)            :: doNcentered
-
+  logical,intent(in)            :: doNcentered
+  double precision,intent(in)   :: kappa(nEns)
 
 ! Local variables
 
@@ -60,7 +60,6 @@ subroutine UCC_lda_exchange_derivative_discontinuity(nEns,wEns,aCC_w1,aCC_w2,nGr
   b2 = aCC_w2(2)
   c2 = aCC_w2(3)
  
-  
   nElw = electron_number(nGrid,weight,rhow)
 
 
@@ -72,18 +71,21 @@ subroutine UCC_lda_exchange_derivative_discontinuity(nEns,wEns,aCC_w1,aCC_w2,nGr
   w2 = wEns(3)
 
   select case (Cx_choice)
-  case(1)
-    dCxdw1 = (0.5d0*b1 + (2d0*a1 + 0.5d0*c1)*(w1 - 0.5d0) - (1d0 - w1)*w1*(3d0*b1 + 4d0*c1*(w1 - 0.5d0)))
-    dCxdw2 = 0.d0
-  case(2)
-    dCxdw1 = 0.d0
-    dCxdw2 =(0.5d0*b2 + (2d0*a2 + 0.5d0*c2)*(w2 - 0.5d0) - (1d0 - w2)*w2*(3d0*b2 + 4d0*c2*(w2 - 0.5d0)))
-  case(3)
-    dCxdw1 = (0.5d0*b1 + (2d0*a1 + 0.5d0*c1)*(w1 - 0.5d0) - (1d0 - w1)*w1*(3d0*b1 + 4d0*c1*(w1 - 0.5d0))) &
-           * (1d0 - w2*(1d0 - w2)*(a2 + b2*(w2 - 0.5d0) + c2*(w2 - 0.5d0)**2))
 
-    dCxdw2 = (1d0 - w1*(1d0 - w1)*(a1 + b1*(w1 - 0.5d0) + c1*(w1 - 0.5d0)**2))                            &
-           * (0.5d0*b2 + (2d0*a2 + 0.5d0*c2)*(w2 - 0.5d0) - (1d0 - w2)*w2*(3d0*b2 + 4d0*c2*(w2 - 0.5d0)))  
+    case(1)
+      dCxdw1 = (0.5d0*b1 + (2d0*a1 + 0.5d0*c1)*(w1 - 0.5d0) - (1d0 - w1)*w1*(3d0*b1 + 4d0*c1*(w1 - 0.5d0)))
+      dCxdw2 = 0.d0
+
+    case(2)
+      dCxdw1 = 0.d0
+      dCxdw2 =(0.5d0*b2 + (2d0*a2 + 0.5d0*c2)*(w2 - 0.5d0) - (1d0 - w2)*w2*(3d0*b2 + 4d0*c2*(w2 - 0.5d0)))
+
+    case(3)
+      dCxdw1 = (0.5d0*b1 + (2d0*a1 + 0.5d0*c1)*(w1 - 0.5d0) - (1d0 - w1)*w1*(3d0*b1 + 4d0*c1*(w1 - 0.5d0))) &
+             * (1d0 - w2*(1d0 - w2)*(a2 + b2*(w2 - 0.5d0) + c2*(w2 - 0.5d0)**2))
+
+      dCxdw2 = (1d0 - w1*(1d0 - w1)*(a1 + b1*(w1 - 0.5d0) + c1*(w1 - 0.5d0)**2))                            &
+             * (0.5d0*b2 + (2d0*a2 + 0.5d0*c2)*(w2 - 0.5d0) - (1d0 - w2)*w2*(3d0*b2 + 4d0*c2*(w2 - 0.5d0)))  
   end select
 
 
@@ -116,9 +118,6 @@ subroutine UCC_lda_exchange_derivative_discontinuity(nEns,wEns,aCC_w1,aCC_w2,nGr
     end do
   end do
 
-  if (doNcentered .NE. 0) then
-    ExDD(2) = ((nElw-1)/nElw)*ExDD(2)
-    ExDD(3) = ((nElw+1)/nElw)*ExDD(3)
-  end if
+  if(doNcentered) ExDD(:) = kappa(:)*ExDD(:)
 
 end subroutine UCC_lda_exchange_derivative_discontinuity
