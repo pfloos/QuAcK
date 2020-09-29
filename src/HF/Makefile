@@ -1,2 +1,2 @@
-TARGET=QuAcK.a
+TARGET=HF.a
 include ../Makefile.include

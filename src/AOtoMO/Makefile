@@ -1,2 +1,2 @@
-TARGET=QuAcK.a
+TARGET=AOtoMO.a
 include ../Makefile.include

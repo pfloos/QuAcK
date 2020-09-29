@@ -1,2 +1,2 @@
-TARGET=QuAcK.a
+TARGET=BasCor.a
 include ../Makefile.include

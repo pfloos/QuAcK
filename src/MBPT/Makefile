@@ -1,2 +1,2 @@
-TARGET=QuAcK.a
+TARGET=MBPT.a
 include ../Makefile.include
