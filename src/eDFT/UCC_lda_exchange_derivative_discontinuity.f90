@@ -1,4 +1,4 @@
-subroutine UCC_lda_exchange_derivative_discontinuity(nEns,wEns,aCC_w1,aCC_w2,nGrid,weight,rhow,ExDD,Cx_choice)
+subroutine UCC_lda_exchange_derivative_discontinuity(nEns,wEns,aCC_w1,aCC_w2,nGrid,weight,rhow,Cx_choice,doNcentered,ExDD)
 
 ! Compute the unrestricted version of the curvature-corrected exchange ensemble derivative
 
@@ -15,6 +15,8 @@ subroutine UCC_lda_exchange_derivative_discontinuity(nEns,wEns,aCC_w1,aCC_w2,nGr
   double precision,intent(in)   :: weight(nGrid)
   double precision,intent(in)   :: rhow(nGrid)
   integer,intent(in)            :: Cx_choice
+  integer,intent(in)            :: doNcentered
+
 
 ! Local variables
 
@@ -28,51 +30,39 @@ subroutine UCC_lda_exchange_derivative_discontinuity(nEns,wEns,aCC_w1,aCC_w2,nGr
   double precision              :: a2,b2,c2,w2
   double precision              :: dCxdw1,dCxdw2
 
+  double precision              :: nEli,nElw
+
+
 ! Output variables
 
   double precision,intent(out)  :: ExDD(nEns)
+
+! External variable
+
+  double precision,external     :: electron_number
+
 
 ! Memory allocation
 
   allocate(dExdw(nEns))
 
-! Single excitation parameters
 
-!  a1 = 0.0d0
-!  b1 = 0.0d0
-!  c1 = 0.0d0
-
-! Parameters for H2 at equilibrium
-
-! a2 = +0.5751782560799208d0
-! b2 = -0.021108186591137282d0
-! c2 = -0.36718902716347124d0
-
-! Parameters for stretch H2
-
-!  a2 = + 0.01922622507087411d0
-!  b2 = - 0.01799647558018601d0
-!  c2 = - 0.022945430666782573d0
-
-! Parameters for He
-
-! a2 = 1.9125735895875828d0
-! b2 = 2.715266992840757d0
-! c2 = 2.1634223380633086d0
-
-! Parameters for He N -> N-1
+! Parameters for N -> N-1
 
   a1 = aCC_w1(1)
   b1 = aCC_w1(2)
   c1 = aCC_w1(3)
 
 
-! Parameters for He N -> N+1
+! Parameters for N -> N+1
 
   a2 = aCC_w2(1)
   b2 = aCC_w2(2)
   c2 = aCC_w2(3)
  
+  
+  nElw = electron_number(nGrid,weight,rhow)
+
 
 ! Cx coefficient for unrestricted Slater LDA exchange
 
@@ -95,23 +85,6 @@ subroutine UCC_lda_exchange_derivative_discontinuity(nEns,wEns,aCC_w1,aCC_w2,nGr
     dCxdw2 = (1d0 - w1*(1d0 - w1)*(a1 + b1*(w1 - 0.5d0) + c1*(w1 - 0.5d0)**2))                            &
            * (0.5d0*b2 + (2d0*a2 + 0.5d0*c2)*(w2 - 0.5d0) - (1d0 - w2)*w2*(3d0*b2 + 4d0*c2*(w2 - 0.5d0)))  
   end select
-
-! Double weight-dependency
-
-!  dCxdw1 = (0.5d0*b1 + (2d0*a1 + 0.5d0*c1)*(w1 - 0.5d0) - (1d0 - w1)*w1*(3d0*b1 + 4d0*c1*(w1 - 0.5d0))) &
-!         * (1d0 - w2*(1d0 - w2)*(a2 + b2*(w2 - 0.5d0) + c2*(w2 - 0.5d0)**2))
-
-!  dCxdw2 = (1d0 - w1*(1d0 - w1)*(a1 + b1*(w1 - 0.5d0) + c1*(w1 - 0.5d0)**2))                            &
-!         * (0.5d0*b2 + (2d0*a2 + 0.5d0*c2)*(w2 - 0.5d0) - (1d0 - w2)*w2*(3d0*b2 + 4d0*c2*(w2 - 0.5d0)))  
-
-! left single-weight-dependency
-!  dCxdw1 = (0.5d0*b1 + (2d0*a1 + 0.5d0*c1)*(w1 - 0.5d0) - (1d0 - w1)*w1*(3d0*b1 + 4d0*c1*(w1 - 0.5d0)))
-!  dCxdw2 = 0.d0
-
-! right single-weight-dependency
-!  dCxdw1 = 0.d0
-!  dCxdw2 =(0.5d0*b2 + (2d0*a2 + 0.5d0*c2)*(w2 - 0.5d0) - (1d0 - w2)*w2*(3d0*b2 + 4d0*c2*(w2 - 0.5d0)))
-
 
 
   dCxdw1 = alpha*dCxdw1
@@ -142,5 +115,10 @@ subroutine UCC_lda_exchange_derivative_discontinuity(nEns,wEns,aCC_w1,aCC_w2,nGr
 
     end do
   end do
+
+  if (doNcentered .NE. 0) then
+    ExDD(2) = ((nElw-1)/nElw)*ExDD(2)
+    ExDD(3) = ((nElw+1)/nElw)*ExDD(3)
+  end if
 
 end subroutine UCC_lda_exchange_derivative_discontinuity

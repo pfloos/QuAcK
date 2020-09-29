@@ -187,7 +187,7 @@ program eDFT
     call cpu_time(start_KS)
     call LIM_RKS(x_rung,x_DFA,c_rung,c_DFA,LDA_centered,nEns,nGrid,weight(:),           &
                  aCC_w1,aCC_w2,maxSCF,thresh,max_diis,guess_type,nBas,AO(:,:),dAO(:,:,:),nO(1),nV(1), & 
-                 S(:,:),T(:,:),V(:,:),Hc(:,:),ERI(:,:,:,:),X(:,:),ENuc,c(:,:),occnum,Cx_choice)
+                 S(:,:),T(:,:),V(:,:),Hc(:,:),ERI(:,:,:,:),X(:,:),ENuc,c(:,:),occnum,Cx_choice,doNcentered)
     call cpu_time(end_KS)
 
     t_KS = end_KS - start_KS
@@ -205,7 +205,7 @@ program eDFT
     call cpu_time(start_KS)
     call MOM_RKS(x_rung,x_DFA,c_rung,c_DFA,LDA_centered,nEns,nGrid,weight(:),           &
                  aCC_w1,aCC_w2,maxSCF,thresh,max_diis,guess_type,nBas,AO(:,:),dAO(:,:,:),nO(1),nV(1), & 
-                 S(:,:),T(:,:),V(:,:),Hc(:,:),ERI(:,:,:,:),X(:,:),ENuc,c(:,:),occnum,Cx_choice)
+                 S(:,:),T(:,:),V(:,:),Hc(:,:),ERI(:,:,:,:),X(:,:),ENuc,c(:,:),occnum,Cx_choice,doNcentered)
     call cpu_time(end_KS)
 
     t_KS = end_KS - start_KS
@@ -222,7 +222,8 @@ program eDFT
 
     call cpu_time(start_KS)
     call GOK_UKS(x_rung,x_DFA,c_rung,c_DFA,nEns,wEns(:),nGrid,weight(:),aCC_w1,aCC_w2,maxSCF,thresh,max_diis,guess_type, & 
-                   nBas,AO(:,:),dAO(:,:,:),nO(:),nV(:),S(:,:),T(:,:),V(:,:),Hc(:,:),ERI(:,:,:,:),X(:,:),ENuc,Ew,occnum,Cx_choice)
+                   nBas,AO(:,:),dAO(:,:,:),nO(:),nV(:),S(:,:),T(:,:),V(:,:),Hc(:,:),ERI(:,:,:,:),X(:,:),ENuc,Ew,occnum, &
+                   Cx_choice,doNcentered)
     call cpu_time(end_KS)
 
     t_KS = end_KS - start_KS
@@ -239,7 +240,7 @@ program eDFT
 
     call cpu_time(start_KS)
     call eDFT_UKS(x_rung,x_DFA,c_rung,c_DFA,nEns,wEns,aCC_w1,aCC_w2,nGrid,weight(:),maxSCF,thresh,max_diis,guess_type, & 
-                  nBas,AO,dAO,S,T,V,Hc,ERI,X,ENuc,Ew,occnum,Cx_choice)
+                  nBas,AO,dAO,S,T,V,Hc,ERI,X,ENuc,Ew,occnum,Cx_choice,doNcentered)
     call cpu_time(end_KS)
 
     t_KS = end_KS - start_KS

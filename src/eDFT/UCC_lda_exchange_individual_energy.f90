@@ -1,4 +1,4 @@
-subroutine UCC_lda_exchange_individual_energy(nEns,wEns,aCC_w1,aCC_w2,nGrid,weight,rhow,rho,Ex,Cx_choice)
+subroutine UCC_lda_exchange_individual_energy(nEns,wEns,aCC_w1,aCC_w2,nGrid,weight,rhow,rho,Cx_choice,doNcentered,Ex)
 
 ! Compute the unrestricted version of the curvature-corrected exchange functional
 
@@ -16,12 +16,14 @@ subroutine UCC_lda_exchange_individual_energy(nEns,wEns,aCC_w1,aCC_w2,nGrid,weig
   double precision,intent(in)   :: rhow(nGrid)
   double precision,intent(in)   :: rho(nGrid)
   integer,intent(in)            :: Cx_choice
+  integer,intent(in)            :: doNcentered
  
 ! Local variables
 
   integer                       :: iG
   double precision              :: r,rI,alpha
   double precision              :: e_p,dedr
+  double precision              :: nEli,nElw
 
   double precision              :: a1,b1,c1,w1
   double precision              :: a2,b2,c2,w2
@@ -31,37 +33,18 @@ subroutine UCC_lda_exchange_individual_energy(nEns,wEns,aCC_w1,aCC_w2,nGrid,weig
 
   double precision,intent(out)  :: Ex
 
-! Single excitation parameter
+! External variable
 
-!  a1 = 0.0d0
-!  b1 = 0.0d0
-!  c1 = 0.0d0
+  double precision,external     :: electron_number
 
-! Parameters for H2 at equilibrium
 
-! a2 = +0.5751782560799208d0
-! b2 = -0.021108186591137282d0
-! c2 = -0.36718902716347124d0
-
-! Parameters for stretch H2
-
-!  a2 = + 0.01922622507087411d0
-!  b2 = - 0.01799647558018601d0
-!  c2 = - 0.022945430666782573d0
-
-! Parameters for He
-
-! a2 = 1.9125735895875828d0
-! b2 = 2.715266992840757d0
-! c2 = 2.1634223380633086d0
-
-! Parameters for He N -> N-1
+! Parameters for N -> N-1
 
   a1 = aCC_w1(1)
   b1 = aCC_w1(2)
   c1 = aCC_w1(3)
 
-! Parameters for He N -> N+1
+! Parameters for N -> N+1
 
   a2 = aCC_w2(1)
   b2 = aCC_w2(2)
@@ -86,14 +69,10 @@ subroutine UCC_lda_exchange_individual_energy(nEns,wEns,aCC_w1,aCC_w2,nGrid,weig
   Cx = alpha*Fx2*Fx1
   end select
 
-! for two-weight ensembles
-!  Cx = alpha*Fx1*Fx2
+  nEli = electron_number(nGrid,weight,rho)
 
-! for left ensembles
-!  Cx = alpha*Fx1
-
-! for right ensembles
-!  Cx = alpha*Fx2  
+  nElw = electron_number(nGrid,weight,rhow)
+ 
 
 ! Compute LDA exchange matrix in the AO basis
 
@@ -107,13 +86,20 @@ subroutine UCC_lda_exchange_individual_energy(nEns,wEns,aCC_w1,aCC_w2,nGrid,weig
 
       e_p  =         Cx*r**(1d0/3d0)
       dedr = 1d0/3d0*Cx*r**(-2d0/3d0)
-
-      Ex = Ex - weight(iG)*dedr*r*r
+     
+      if (doNcentered == 0) then
+        Ex = Ex - weight(iG)*dedr*r*r
+      else
+        Ex = Ex - weight(iG)*dedr*r*r*(nEli/nElw)
+      end if
 
       if(rI > threshold) then
 
-      Ex = Ex + weight(iG)*(e_p*rI + dedr*r*rI)
-
+        if (doNcentered == 0) then
+          Ex = Ex + weight(iG)*(e_p*rI + dedr*r*rI)
+        else
+          Ex = Ex + weight(iG)*((nEli/nElw)*e_p*rI + dedr*r*rI)
+        end if
       endif
 
     endif

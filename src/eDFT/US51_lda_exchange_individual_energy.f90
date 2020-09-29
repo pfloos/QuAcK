@@ -1,4 +1,4 @@
-subroutine US51_lda_exchange_individual_energy(nGrid,weight,rhow,rho,Ex)
+subroutine US51_lda_exchange_individual_energy(nGrid,weight,rhow,rho,doNcentered,Ex)
 
 ! Compute the restricted version of Slater's LDA exchange individual energy
 
@@ -11,16 +11,28 @@ subroutine US51_lda_exchange_individual_energy(nGrid,weight,rhow,rho,Ex)
   double precision,intent(in)   :: weight(nGrid)
   double precision,intent(in)   :: rhow(nGrid)
   double precision,intent(in)   :: rho(nGrid)
+  integer,intent(in)            :: doNcentered
+
 
 ! Local variables
 
   integer                       :: iG
   double precision              :: r,rI,alpha
   double precision              :: e,dedr
+  double precision              :: nEli,nElw
 
 ! Output variables
 
   double precision,intent(out)  :: Ex
+
+! External variable
+
+  double precision,external     :: electron_number
+
+  nEli = electron_number(nGrid,weight,rho)
+
+  nElw = electron_number(nGrid,weight,rhow)
+
 
 ! Compute LDA exchange matrix in the AO basis
 
@@ -37,11 +49,19 @@ subroutine US51_lda_exchange_individual_energy(nGrid,weight,rhow,rho,Ex)
       e    =         alpha*r**(1d0/3d0)
       dedr = 1d0/3d0*alpha*r**(-2d0/3d0)
 
-      Ex = Ex - weight(iG)*dedr*r*r
+      if (doNcentered == 0) then
+        Ex = Ex - weight(iG)*dedr*r*r      
+      else
+        Ex = Ex - weight(iG)*dedr*r*r*(nEli/nElw)
+      end if
 
       if(rI > threshold) then
 
-      Ex = Ex + weight(iG)*(e*rI + dedr*r*rI)
+        if (doNcentered == 0) then
+          Ex = Ex + weight(iG)*(e*rI + dedr*r*rI)
+        else
+          Ex = Ex + weight(iG)*((nEli/nElw)*e*rI + dedr*r*rI)
+        end if
 
       endif
 

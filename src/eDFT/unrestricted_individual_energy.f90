@@ -1,5 +1,6 @@
 subroutine unrestricted_individual_energy(x_rung,x_DFA,c_rung,c_DFA,LDA_centered,nEns,wEns,aCC_w1,aCC_w2,nGrid,weight,nBas,AO,dAO, &
-                                          T,V,ERI,ENuc,eps,Pw,rhow,drhow,J,Fx,FxHF,Fc,P,rho,drho,Ew,E,Om,occnum,Cx_choice)
+                                          T,V,ERI,ENuc,eps,Pw,rhow,drhow,J,Fx,FxHF,Fc,P,rho,drho,Ew,E,Om,occnum,&
+                                          Cx_choice,doNcentered)
 
 ! Compute unrestricted individual energies as well as excitation energies
 
@@ -42,6 +43,7 @@ subroutine unrestricted_individual_energy(x_rung,x_DFA,c_rung,c_DFA,LDA_centered
   double precision              :: Ew
   double precision,intent(in)   :: occnum(nBas,nspin,nEns)
   integer,intent(in)            :: Cx_choice
+  integer,intent(in)            :: doNcentered
 
 
 ! Local variables
@@ -64,7 +66,9 @@ subroutine unrestricted_individual_energy(x_rung,x_DFA,c_rung,c_DFA,LDA_centered
 
   double precision,external     :: trace_matrix
 
-  integer                       :: ispin,iEns
+  integer                       :: ispin,iEns,iBas
+  double precision,allocatable  :: nEl(:)
+
   
   double precision,external     :: electron_number
 
@@ -73,15 +77,31 @@ subroutine unrestricted_individual_energy(x_rung,x_DFA,c_rung,c_DFA,LDA_centered
   double precision,intent(out)  :: E(nEns)
   double precision,intent(out)  :: Om(nEns)
 
+ 
+  allocate(nEl(nEns))
+  nEl(:) = 0d0
+  do iEns=1,nEns
+    do iBas=1,nBas
+      nEl(iEns) = nEl(iEns) + occnum(iBas,1,iEns) + occnum(iBas,2,iEns)
+    end do
+  end do
+
+  print*,'test1'
+
 !------------------------------------------------------------------------
 ! Kinetic energy
 !------------------------------------------------------------------------
 
   do ispin=1,nspin
     do iEns=1,nEns
-      ET(ispin,iEns) = trace_matrix(nBas,matmul(P(:,:,ispin,iEns),T(:,:)))
+      if (doNcentered == 0) then
+        ET(ispin,iEns) = trace_matrix(nBas,matmul(P(:,:,ispin,iEns),T(:,:))) 
+      else 
+        ET(ispin,iEns) = (nEl(iEns)/nEl(1))*trace_matrix(nBas,matmul(P(:,:,ispin,iEns),T(:,:)))
+      end if
     end do
   end do
+  print*,'test2'
 
 !------------------------------------------------------------------------
 ! Potential energy
@@ -89,10 +109,15 @@ subroutine unrestricted_individual_energy(x_rung,x_DFA,c_rung,c_DFA,LDA_centered
 
   do iEns=1,nEns
     do ispin=1,nspin
-      EV(ispin,iEns) = trace_matrix(nBas,matmul(P(:,:,ispin,iEns),V(:,:)))
-    end do
+      if (doNcentered == 0) then
+        EV(ispin,iEns) = trace_matrix(nBas,matmul(P(:,:,ispin,iEns),V(:,:)))
+      else 
+        EV(ispin,iEns) = (nEl(iEns)/nEl(1))*trace_matrix(nBas,matmul(P(:,:,ispin,iEns),V(:,:)))
+      end if  
+  end do
   end do
 
+  print*,'test3'
 !------------------------------------------------------------------------
 ! Individual Hartree energy
 !------------------------------------------------------------------------
@@ -113,9 +138,11 @@ subroutine unrestricted_individual_energy(x_rung,x_DFA,c_rung,c_DFA,LDA_centered
 
     EJ(3,iEns) =       trace_matrix(nBas,matmul(P(:,:,2,iEns),J(:,:,2))) &
                - 0.5d0*trace_matrix(nBas,matmul(Pw(:,:,2),J(:,:,2)))
-
+    if (doNcentered .NE. 0) then
+      EJ(:,iEns) = (nEl(iEns)/nEl(1))*EJ(:,iEns)
+    end if
   end do
-     
+       print*,'test4'
 !------------------------------------------------------------------------
 ! Checking Hartree contributions for each individual states
 !------------------------------------------------------------------------
@@ -139,9 +166,11 @@ subroutine unrestricted_individual_energy(x_rung,x_DFA,c_rung,c_DFA,LDA_centered
     do ispin=1,nspin
       call unrestricted_exchange_individual_energy(x_rung,x_DFA,LDA_centered,nEns,wEns,aCC_w1,aCC_w2,nGrid,weight,nBas,ERI, &
                                                    Pw(:,:,ispin),P(:,:,ispin,iEns),rhow(:,ispin),drhow(:,:,ispin),          &  
-                                                   rho(:,ispin,iEns),drho(:,:,ispin,iEns),Ex(ispin,iEns),Cx_choice)
+                                                   rho(:,ispin,iEns),drho(:,:,ispin,iEns),Cx_choice,doNcentered,Ex(ispin,iEns))
     end do
   end do
+
+  print*,'test5'
 
 !------------------------------------------------------------------------
 ! Checking exchange contributions for each individual states
@@ -184,7 +213,7 @@ subroutine unrestricted_individual_energy(x_rung,x_DFA,c_rung,c_DFA,LDA_centered
 ! Compute auxiliary energies
 !------------------------------------------------------------------------
  
-  call unrestricted_auxiliary_energy(nBas,nEns,eps,Eaux,occnum)
+  call unrestricted_auxiliary_energy(nBas,nEns,eps,occnum,doNcentered,Eaux)
 
 !------------------------------------------------------------------------
 ! Compute derivative discontinuities
@@ -193,7 +222,7 @@ subroutine unrestricted_individual_energy(x_rung,x_DFA,c_rung,c_DFA,LDA_centered
   do ispin=1,nspin 
 
     call unrestricted_exchange_derivative_discontinuity(x_rung,x_DFA,nEns,wEns,aCC_w1,aCC_w2,nGrid,weight, &
-                                                        rhow(:,ispin),drhow(:,:,ispin),ExDD(ispin,:),Cx_choice)
+                                                        rhow(:,ispin),drhow(:,:,ispin),Cx_choice,doNcentered,ExDD(ispin,:))
   end do
 
   call unrestricted_correlation_derivative_discontinuity(c_rung,c_DFA,nEns,wEns,nGrid,weight,rhow,drhow,EcDD)
