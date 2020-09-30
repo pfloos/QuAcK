@@ -617,7 +617,7 @@ program QuAcK
     if(unrestricted) then
 
       call UCIS(spin_conserved,spin_flip,nBas,nC,nO,nV,nR,nS,ERI_MO_aaaa,ERI_MO_aabb, & 
-                ERI_MO_bbbb,ERI_MO_abab,dipole_int,eHF)
+                ERI_MO_bbbb,ERI_MO_abab,dipole_int_aa,dipole_int_bb,eHF)
 
    else 
 
@@ -674,7 +674,7 @@ program QuAcK
     if(unrestricted) then
 
        call UdRPA(TDA,doACFDT,exchange_kernel,spin_conserved,spin_flip,0d0,nBas,nC,nO,nV,nR,nS,ENuc,EUHF, &
-                  ERI_MO_aaaa,ERI_MO_aabb,ERI_MO_bbbb,ERI_MO_abab,dipole_int,eHF)
+                  ERI_MO_aaaa,ERI_MO_aabb,ERI_MO_bbbb,ERI_MO_abab,dipole_int_aa,dipole_int_bb,eHF)
 
     else
 

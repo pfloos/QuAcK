@@ -108,7 +108,7 @@ subroutine URPAx(TDA,doACFDT,exchange_kernel,spin_conserved,spin_flip,eta,nBas,n
 
     allocate(Omega_sf(nS_sf),XpY_sf(nS_sf,nS_sf),XmY_sf(nS_sf,nS_sf))
 
-    call unrestricted_linear_response(ispin,.false.,TDA,.false.,eta,nBas,nC,nO,nV,nR,nS_aa,nS_bb,nS_sf,nS_sf,1d0,e, &
+    call unrestricted_linear_response(ispin,.false.,TDA,.false.,eta,nBas,nC,nO,nV,nR,nS_ab,nS_ba,nS_sf,nS_sf,1d0,e, &
                                       ERI_aaaa,ERI_aabb,ERI_bbbb,ERI_abab,Omega_sf,rho_sf,EcRPAx(ispin),Omega_sf,XpY_sf,XmY_sf)
     call print_excitation('URPAx  ',6,nS_sf,Omega_sf)
     call print_unrestricted_transition_vectors(.false.,nBas,nC,nO,nV,nR,nS,nS_ab,nS_ba,nS_sf,dipole_int_aa,dipole_int_bb, &

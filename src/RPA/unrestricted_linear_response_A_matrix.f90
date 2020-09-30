@@ -162,7 +162,8 @@ subroutine unrestricted_linear_response_A_matrix(ispin,dRPA,nBas,nC,nO,nV,nR,nSa
             jb = jb + 1
  
             A_lr(nSa+ia,nSa+jb) = (e(a,1) - e(i,2))*Kronecker_delta(i,j)*Kronecker_delta(a,b) &
-                                - (1d0 - delta_dRPA)*lambda*ERI_abab(b,j,i,a)
+                                - (1d0 - delta_dRPA)*lambda*ERI_abab(j,a,i,b)
+!           print*,'ia,jb,A(ia,jb) = ',i,a,j,b,ia,jb,A_lr(ia,jb)
 
           end  do
         end  do
