@@ -42,10 +42,14 @@ subroutine print_unrestricted_transition_vectors(spin_allowed,nBas,nC,nO,nV,nR,n
 
   allocate(X(nSt),Y(nSt),f(nSt,ncart),os(nSt))
 
-! Compute dipole moments and oscillator strengths
-
+! Initialization
    
   f(:,:) = 0d0
+  os(:)  = 0d0
+
+! Compute dipole moments and oscillator strengths
+
+
   if(spin_allowed) then
 
     do ia=1,nSt

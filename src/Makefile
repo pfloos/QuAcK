@@ -1,3 +1,7 @@
+QUACK_ROOT=$(shell dirname $(realpath $(firstword $(MAKEFILE_LIST))/..))
+export QUACK_ROOT
+
+SDIR=$(QUACK_ROOT)/src
 ALL_DIRS=$(filter-out modules,$(patsubst %/,%,$(wildcard */)))
 
 # Rules for Modules
@@ -9,17 +13,16 @@ MOD_DIRS=numgrid
 # Rules for Libraries
 #####################
 
-LDIR =../lib
+LDIR =$(QUACK_ROOT)/lib
 LIB_DIRS=$(filter-out $(MAIN_DIRS), $(ALL_DIRS))
-MAKEFILES=$(patsubst %,%/Makefile, $(ALL_DIRS))
 
 FORCE:
 
-%/Makefile:
-	@(echo TARGET=$*.a > $*/Makefile && echo include ../Makefile.include >> $@)
+$(SDIR)/%/Makefile: FORCE
+	@(echo TARGET=$*.a > $*/Makefile && echo include $$QUACK_ROOT/src/Makefile.include >> $@)
 
-$(LDIR)/%.a: FORCE %/Makefile $(MOD_DIRS)
-	$(MAKE) -C $* lib
+$(LDIR)/%.a: FORCE $(SDIR)/%/Makefile $(MOD_DIRS)
+	$(MAKE) -C $(SDIR)/$* lib
 
 
 
@@ -28,11 +31,11 @@ $(LDIR)/%.a: FORCE %/Makefile $(MOD_DIRS)
 
 MAIN_DIRS=QuAcK eDFT
 
-BDIR=../bin
+BDIR=$(QUACK_ROOT)/bin
 ALL_EXEC=$(patsubst %, $(BDIR)/%, $(MAIN_DIRS) )
 
-$(BDIR)/%: $(patsubst %,$(LDIR)/%.a,$(LIB_DIRS)) %/Makefile
-	$(MAKE) -C $* ../$@
+$(BDIR)/%: $(patsubst %,$(LDIR)/%.a,$(LIB_DIRS)) $(SDIR)/%/Makefile
+	$(MAKE) -C $* $@
 
 
 
@@ -40,10 +43,13 @@ $(BDIR)/%: $(patsubst %,$(LDIR)/%.a,$(LIB_DIRS)) %/Makefile
 # Rules for both
 ################
 
-default: $(ALL_EXEC) 
+default: $(ALL_EXEC) $(wildcard $(SDIR)/*/Makefile) 
+
+debug: 
+	DEBUG=1 $(MAKE) default
 
 .DEFAULT_GOAL := default
-.PHONY: default
+.PHONY: default debug
 .PRECIOUS: $(LDIR)/%.a %/Makefile 
 
 clean: 

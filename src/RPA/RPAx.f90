@@ -46,6 +46,14 @@ subroutine RPAx(TDA,doACFDT,exchange_kernel,singlet,triplet,eta,nBas,nC,nO,nV,nR
   write(*,*)'***********************************************************'
   write(*,*)
 
+! TDA 
+
+  if(TDA) then
+    write(*,*) 'Tamm-Dancoff approximation activated!'
+    write(*,*) ' => RPAx + TDA = CIS '
+    write(*,*)
+  end if
+
 ! Initialization
 
   EcRPAx(:) = 0d0

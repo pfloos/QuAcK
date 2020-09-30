@@ -45,6 +45,13 @@ subroutine dRPA(TDA,doACFDT,exchange_kernel,singlet,triplet,eta,nBas,nC,nO,nV,nR
   write(*,*)'***********************************************'
   write(*,*)
 
+! TDA 
+
+  if(TDA) then
+    write(*,*) 'Tamm-Dancoff approximation activated!'
+    write(*,*)
+  end if
+
 ! Initialization
 
   EcRPA(:) = 0d0

@@ -1,2 +1,2 @@
 TARGET=utils.a
-include ../Makefile.include
+include /Users/loos/Dropbox/quack/src/Makefile.include

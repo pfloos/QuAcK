@@ -57,6 +57,14 @@ subroutine URPAx(TDA,doACFDT,exchange_kernel,spin_conserved,spin_flip,eta,nBas,n
   write(*,*)'*********************************************************************'
   write(*,*)
 
+! TDA 
+
+  if(TDA) then
+    write(*,*) 'Tamm-Dancoff approximation activated!'
+    write(*,*) ' => RPAx + TDA = CIS '
+    write(*,*)
+  end if
+
 ! Initialization
 
   EcRPAx(:) = 0d0
@@ -103,7 +111,8 @@ subroutine URPAx(TDA,doACFDT,exchange_kernel,spin_conserved,spin_flip,eta,nBas,n
     call unrestricted_linear_response(ispin,.false.,TDA,.false.,eta,nBas,nC,nO,nV,nR,nS_aa,nS_bb,nS_sf,nS_sf,1d0,e, &
                                       ERI_aaaa,ERI_aabb,ERI_bbbb,ERI_abab,Omega_sf,rho_sf,EcRPAx(ispin),Omega_sf,XpY_sf,XmY_sf)
     call print_excitation('URPAx  ',6,nS_sf,Omega_sf)
-!   call print_transition_vectors(.false.,nBas,nC,nO,nV,nR,nS,dipole_int,Omega(:,ispin),XpY(:,:,ispin),XmY(:,:,ispin))
+    call print_unrestricted_transition_vectors(.false.,nBas,nC,nO,nV,nR,nS,nS_ab,nS_ba,nS_sf,dipole_int_aa,dipole_int_bb, &
+                                               Omega_sf,XpY_sf,XmY_sf)
 
     deallocate(Omega_sf,XpY_sf,XmY_sf)
 

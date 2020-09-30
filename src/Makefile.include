@@ -1,8 +1,8 @@
-BDIR =../../bin
-LDIR =../../lib
+BDIR =$(QUACK_ROOT)/bin
+LDIR =$(QUACK_ROOT)/lib
 ODIR = obj
 SDIR =.
-include ../Makefile.common
+include $(QUACK_ROOT)/src/Makefile.common
 
 LIBS = $(filter-out $(LDIR)/$(TARGET), $(wildcard $(LDIR)/*.a))
 LIBS += -lblas -llapack -lc++
@@ -25,7 +25,7 @@ $(LDIR)/$(TARGET): $(patsubst %,$(LDIR)/%,$(DEPEND)) $(OBJ)
 	$(AR) -static -o $@ $^ 
 
 debug: 
-	DEBUG=1 make $(LDIR)/$(TARGET)
+	DEBUG=1 $(MAKE) $(LDIR)/$(TARGET)
 
 clean:
 	rm -f $(ODIR)/*.o $(LDIR)/$(TARGET)
@@ -34,7 +34,7 @@ $(BDIR)/%: $(OBJ) FORCE
 	$(FC) -o $@ $(FFLAGS) $(LIBS) $(OBJ)
 
 default:
-	$(MAKE) -C ..
+	$(MAKE) -C $(QUACK_ROOT)/src
 
 lib: $(LDIR)/$(TARGET)
 

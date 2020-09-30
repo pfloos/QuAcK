@@ -57,6 +57,13 @@ subroutine UdRPA(TDA,doACFDT,exchange_kernel,spin_conserved,spin_flip,eta,nBas,n
   write(*,*)'**************************************************************'
   write(*,*)
 
+! TDA 
+
+  if(TDA) then
+    write(*,*) 'Tamm-Dancoff approximation activated!'
+    write(*,*)
+  end if
+
 ! Initialization
 
   EcRPA(:) = 0d0
