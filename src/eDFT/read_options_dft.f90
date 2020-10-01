@@ -1,5 +1,5 @@
-subroutine read_options(nBas,method,x_rung,x_DFA,c_rung,c_DFA,SGn,nEns,wEns,aCC_w1,aCC_w2, & 
-                        maxSCF,thresh,DIIS,max_diis,guess_type,ortho_type,doNcentered,occnum,Cx_choice)
+subroutine read_options_dft(nBas,method,x_rung,x_DFA,c_rung,c_DFA,SGn,nEns,wEns,aCC_w1,aCC_w2, & 
+                            maxSCF,thresh,DIIS,max_diis,guess_type,ortho_type,doNcentered,occnum,Cx_choice)
 
 ! Read DFT options
 
@@ -201,4 +201,4 @@ subroutine read_options(nBas,method,x_rung,x_DFA,c_rung,c_DFA,SGn,nEns,wEns,aCC_
 
   close(unit=1)
 
-end subroutine read_options
+end subroutine read_options_dft

@@ -26,7 +26,11 @@ subroutine print_UHF(nBas,nO,e,c,ENuc,ET,EV,EJ,Ex,EUHF)
   do ispin=1,nspin
     if(nO(ispin) > 0) then 
       HOMO(ispin) = e(nO(ispin),ispin)
-      LUMO(ispin) = e(nO(ispin)+1,ispin)
+      if(nO(ispin) < nBas) then
+        LUMO(ispin) = e(nO(ispin)+1,ispin)
+      else
+        LUMO(ispin) = 0d0
+      end if
       Gap(ispin)  = LUMO(ispin) - HOMO(ispin)
     else
       HOMO(ispin) = 0d0
@@ -36,7 +40,6 @@ subroutine print_UHF(nBas,nO,e,c,ENuc,ET,EV,EJ,Ex,EUHF)
   end do
 
 ! Dump results
-
 
   write(*,*)
   write(*,'(A60)')              '-------------------------------------------------'

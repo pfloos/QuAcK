@@ -9,7 +9,7 @@ program QuAcK
   logical                       :: doMP2,doMP3,doMP2F12
   logical                       :: doCCD,doCCSD,doCCSDT
   logical                       :: do_drCCD,do_rCCD,do_lCCD,do_pCCD
-  logical                       :: doCIS,doCID,doCISD
+  logical                       :: doCIS,doCIS_D,doCID,doCISD
   logical                       :: doRPA,doRPAx,doppRPA
   logical                       :: doADC
   logical                       :: doG0F2,doevGF2,doG0F3,doevGF3
@@ -158,7 +158,7 @@ program QuAcK
                     doMP2,doMP3,doMP2F12,             &
                     doCCD,doCCSD,doCCSDT,             &
                     do_drCCD,do_rCCD,do_lCCD,do_pCCD, &
-                    doCIS,doCID,doCISD,               & 
+                    doCIS,doCIS_D,doCID,doCISD,       & 
                     doRPA,doRPAx,doppRPA,             &
                     doG0F2,doevGF2,doG0F3,doevGF3,    &
                     doG0W0,doevGW,doqsGW,             &
@@ -621,7 +621,7 @@ program QuAcK
 
    else 
 
-      call CIS(singlet,triplet,nBas,nC,nO,nV,nR,nS,ERI_MO,dipole_int,eHF)
+      call CIS(singlet,triplet,doCIS_D,nBas,nC,nO,nV,nR,nS,ERI_MO,dipole_int,eHF)
 
     end if
     call cpu_time(end_CIS)

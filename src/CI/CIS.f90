@@ -1,5 +1,4 @@
-subroutine CIS(singlet_manifold,triplet_manifold, & 
-               nBas,nC,nO,nV,nR,nS,ERI,dipole_int,eHF)
+subroutine CIS(singlet,triplet,doCIS_D,nBas,nC,nO,nV,nR,nS,ERI,dipole_int,eHF)
 
 ! Perform configuration interaction single calculation`
 
@@ -8,8 +7,9 @@ subroutine CIS(singlet_manifold,triplet_manifold, &
 
 ! Input variables
 
-  logical,intent(in)            :: singlet_manifold
-  logical,intent(in)            :: triplet_manifold
+  logical,intent(in)            :: singlet
+  logical,intent(in)            :: triplet
+  logical,intent(in)            :: doCIS_D
   integer,intent(in)            :: nBas,nC,nO,nV,nR,nS
   double precision,intent(in)   :: eHF(nBas)
   double precision,intent(in)   :: ERI(nBas,nBas,nBas,nBas)
@@ -20,6 +20,7 @@ subroutine CIS(singlet_manifold,triplet_manifold, &
   logical                       :: dump_matrix = .false.
   logical                       :: dump_trans = .false.
   integer                       :: ispin
+  integer                       :: maxS = 10
   double precision              :: lambda
   double precision,allocatable  :: A(:,:),Omega(:)
 
@@ -41,7 +42,7 @@ subroutine CIS(singlet_manifold,triplet_manifold, &
 
 ! Compute CIS matrix
 
-  if(singlet_manifold) then
+  if(singlet) then
 
     ispin = 1
     call linear_response_A_matrix(ispin,.false.,nBas,nC,nO,nV,nR,nS,lambda,eHF,ERI,A)
@@ -61,9 +62,14 @@ subroutine CIS(singlet_manifold,triplet_manifold, &
       write(*,*)
     endif
 
+    ! Compute CIS(D) correction 
+
+    maxS = min(maxS,nS)
+    if(doCIS_D) call D_correction(ispin,nBas,nC,nO,nV,nR,nS,maxS,eHF,ERI,Omega(1:maxS),A(:,1:maxS))
+
   endif
 
-  if(triplet_manifold) then
+  if(triplet) then
 
     ispin = 2
     call linear_response_A_matrix(ispin,.false.,nBas,nC,nO,nV,nR,nS,lambda,eHF,ERI,A)
@@ -82,6 +88,11 @@ subroutine CIS(singlet_manifold,triplet_manifold, &
       call matout(nS,nS,A)
       write(*,*)
     endif
+
+    ! Compute CIS(D) correction 
+
+    maxS = min(maxS,nS)
+    if(doCIS_D) call D_correction(ispin,nBas,nC,nO,nV,nR,nS,maxS,eHF,ERI,Omega(1:maxS),A(:,1:maxS))
 
   endif
 

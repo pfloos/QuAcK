@@ -37,7 +37,9 @@ subroutine UCIS(spin_conserved,spin_flip,nBas,nC,nO,nV,nR,nS,ERI_aaaa,ERI_aabb,E
 
   integer                       :: nS_ab,nS_ba,nS_sf
   double precision,allocatable  :: A_sf(:,:)
+  double precision,allocatable  :: Z_sf(:,:)
   double precision,allocatable  :: Omega_sf(:)
+  integer         ,allocatable  :: order(:)
 
 ! Hello world
 
@@ -103,7 +105,7 @@ subroutine UCIS(spin_conserved,spin_flip,nBas,nC,nO,nV,nR,nS,ERI_aaaa,ERI_aabb,E
     nS_ba = (nO(2) - nC(2))*(nV(1) - nR(1))
     nS_sf = nS_ab + nS_ba
 
-    allocate(A_sf(nS_sf,nS_sf),Omega_sf(nS_sf))
+    allocate(A_sf(nS_sf,nS_sf),Omega_sf(nS_sf),Z_sf(nS_sf,nS_sf))
     
     call unrestricted_linear_response_A_matrix(ispin,.false.,nBas,nC,nO,nV,nR,nS_ab,nS_ba,nS_sf,lambda,eHF, & 
                                                ERI_aaaa,ERI_aabb,ERI_bbbb,ERI_abab,A_sf)
@@ -114,7 +116,11 @@ subroutine UCIS(spin_conserved,spin_flip,nBas,nC,nO,nV,nR,nS,ERI_aaaa,ERI_aabb,E
       write(*,*)
     endif
 
-    call diagonalize_matrix(nS_sf,A_sf,Omega_sf)
+!   call diagonalize_matrix(nS_sf,A_sf,Omega_sf)
+    allocate(order(nS_sf))
+    call diagonalize_general_matrix(nS_sf,A_sf,Omega_sf,Z_sf)
+    call quick_sort(Omega_sf,order(:),nS_sf)
+
     call print_excitation('UCIS        ',6,nS_sf,Omega_sf)
  
     if(dump_trans) then

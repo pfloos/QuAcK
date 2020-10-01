@@ -2,7 +2,7 @@ subroutine read_methods(doRHF,doUHF,doMOM,                &
                         doMP2,doMP3,doMP2F12,             & 
                         doCCD,doCCSD,doCCSDT,             & 
                         do_drCCD,do_rCCD,do_lCCD,do_pCCD, &
-                        doCIS,doCID,doCISD,               & 
+                        doCIS,doCIS_D,doCID,doCISD,       & 
                         doRPA,doRPAx,doppRPA,             & 
                         doG0F2,doevGF2,doG0F3,doevGF3,    & 
                         doG0W0,doevGW,doqsGW,             & 
@@ -19,7 +19,7 @@ subroutine read_methods(doRHF,doUHF,doMOM,                &
   logical,intent(out)           :: doMP2,doMP3,doMP2F12
   logical,intent(out)           :: doCCD,doCCSD,doCCSDT
   logical,intent(out)           :: do_drCCD,do_rCCD,do_lCCD,do_pCCD
-  logical,intent(out)           :: doCIS,doCID,doCISD
+  logical,intent(out)           :: doCIS,doCIS_D,doCID,doCISD
   logical,intent(out)           :: doRPA,doRPAx,doppRPA
   logical,intent(out)           :: doG0F2,doevGF2,doG0F3,doevGF3  
   logical,intent(out)           :: doG0W0,doevGW,doqsGW
@@ -54,6 +54,7 @@ subroutine read_methods(doRHF,doUHF,doMOM,                &
   do_pCCD  = .false.
 
   doCIS   = .false.
+  doCIS_D = .false.
   doCID   = .false.
   doCISD  = .false.
 
@@ -111,10 +112,12 @@ subroutine read_methods(doRHF,doUHF,doMOM,                &
 ! Read excited state methods
 
   read(1,*) 
-  read(1,*) answer1,answer2,answer3
+  read(1,*) answer1,answer2,answer3,answer4
   if(answer1 == 'T') doCIS   = .true.
-  if(answer2 == 'T') doCID   = .true.
-  if(answer3 == 'T') doCISD  = .true.
+  if(answer2 == 'T') doCIS_D = .true.
+  if(answer3 == 'T') doCID   = .true.
+  if(answer4 == 'T') doCISD  = .true.
+  if(doCIS_D)        doCIS   = .true.
 
   read(1,*) 
   read(1,*) answer1,answer2,answer3
