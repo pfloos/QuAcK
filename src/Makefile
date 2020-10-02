@@ -19,7 +19,9 @@ LIB_DIRS=$(filter-out $(MAIN_DIRS), $(ALL_DIRS))
 FORCE:
 
 $(SDIR)/%/Makefile: FORCE
-	@(echo TARGET=$*.a > $*/Makefile && echo include $$QUACK_ROOT/src/Makefile.include >> $@)
+	@(echo QUACK_ROOT=$(QUACK_ROOT) > $@)
+	@(echo TARGET=$*.a >> $@)
+	@(echo 'include $$(QUACK_ROOT)/src/Makefile.include' >> $@)
 
 $(LDIR)/%.a: FORCE $(SDIR)/%/Makefile $(MOD_DIRS)
 	$(MAKE) -C $(SDIR)/$* lib

@@ -42,6 +42,9 @@ subroutine D_correction(ispin,nBasin,nCin,nOin,nVin,nRin,nSin,maxS,eHF,ERI,w,X)
   double precision,allocatable  :: OOOV(:,:,:,:)
   double precision,allocatable  :: OOVV(:,:,:,:)
   double precision,allocatable  :: OVVV(:,:,:,:)
+  double precision,allocatable  :: X1(:,:)
+  double precision,allocatable  :: X2(:,:)
+  double precision,allocatable  :: X3(:,:)
 
   double precision,allocatable  :: u(:,:,:,:)
   double precision,allocatable  :: v(:,:)
@@ -97,6 +100,8 @@ subroutine D_correction(ispin,nBasin,nCin,nOin,nVin,nRin,nSin,maxS,eHF,ERI,w,X)
 ! Memory allocation
 
   allocate(t(nO,nO,nV,nV),r(nO,nV),u(nO,nO,nV,nV),v(nO,nV))
+
+  allocate(X1(nV,nV),X2(nO,nO),X3(nO,nV))
 
 ! MP2 guess amplitudes
 
@@ -173,21 +178,69 @@ subroutine D_correction(ispin,nBasin,nCin,nOin,nVin,nRin,nSin,maxS,eHF,ERI,w,X)
       end do
     end do
   
+   ! Compute intermediate arrays
+
+   X1(:,:) = 0d0
+
+  do j=nC+1,nO
+    do k=nC+1,nO
+      do a=1,nV-nR
+        do b=1,nV-nR
+          do c=1,nV-nR
+            X1(a,b) = X1(a,b) + OOVV(j,k,b,c)*t(j,k,c,a)
+          end do
+        end do
+      end do
+    end do
+  end do
+
+   X2(:,:) = 0d0
+
+    do i=nC+1,nO
+      do j=nC+1,nO
+        do k=nC+1,nO
+          do b=1,nV-nR
+            do c=1,nV-nR
+              X2(i,j) = X2(i,j) + OOVV(j,k,b,c)*t(i,k,c,b)
+            end do
+          end do
+        end do
+      end do
+    end do
+
+   X3(:,:) = 0d0
+
+    do j=nC+1,nO
+      do k=nC+1,nO
+        do b=1,nV-nR
+          do c=1,nV-nR
+            X3(k,c) = X3(k,c) + 2d0*OOVV(j,k,b,c)*r(j,b)
+          end do
+        end do
+      end do
+    end do
+
    ! Compute v array
 
     v(:,:) = 0d0
     
     do i=nC+1,nO
-      do j=nC+1,nO
+      do a=1,nV-nR
+
+        do b=1,nV-nR
+          v(i,a) = v(i,a) + r(i,b)*X1(a,b) 
+        end do
+
+        do j=nC+1,nO
+          v(i,a) = v(i,a) + r(j,a)*X2(i,j)
+        end do
+
         do k=nC+1,nO
-          do a=1,nV-nR
-            do b=1,nV-nR
-              do c=1,nV-nR
-                v(i,a) = v(i,a) + OOVV(j,k,b,c)*(r(i,b)*t(j,k,c,a) + r(j,a)*t(i,k,c,b) + 2d0*r(j,b)*t(i,k,a,c))
-              end do
-            end do
+          do c=1,nV-nR
+            v(i,a) = v(i,a) + X3(k,c)*t(i,k,a,c)
           end do
         end do
+
       end do
     end do
 
