@@ -108,7 +108,11 @@ subroutine print_transition_vectors(spin_allowed,nBas,nC,nO,nV,nR,nS,dipole_int,
     end do
    write(*,*)
 
+   print*,2d0*sum(X(:)**2 + Y(:)**2)
+
   end do
+
+! Thomas-Reiche-Kuhn sum rule
 
   write(*,'(A30,F10.6)') 'Thomas-Reiche-Kuhn sum rule = ',sum(os(:))
   write(*,*)

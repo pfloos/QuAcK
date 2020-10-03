@@ -31,7 +31,7 @@ subroutine print_unrestricted_transition_vectors(spin_allowed,nBas,nC,nO,nV,nR,n
   integer                       :: ixyz
   integer                       :: ispin
   integer,parameter             :: maxS = 10
-  double precision              :: norm
+  double precision              :: S2
   double precision,parameter    :: thres_vec = 0.1d0
   double precision,allocatable  :: X(:)
   double precision,allocatable  :: Y(:)
@@ -103,9 +103,20 @@ subroutine print_unrestricted_transition_vectors(spin_allowed,nBas,nC,nO,nV,nR,n
     X(:) = 0.5d0*(XpY(ia,:) + XmY(ia,:))
     Y(:) = 0.5d0*(XpY(ia,:) - XmY(ia,:))
 
-    print*,'---------------------------------------------'
-    write(*,'(A15,I3,A2,F10.6,A3,A6,F6.4,A1)') ' Excitation n. ',ia,': ',Omega(ia)*HaToeV,' eV',' (f = ',os(ia),')'
-    print*,'---------------------------------------------'
+    S2 = (nO(1) - nO(2))/2d0
+    S2 = 2d0*S2+1d0 
+    S2 = 0.0d0
+    do jb=1,nSa
+      S2 = S2 + 4d0*(X(jb)**2 + Y(jb)**2)
+    end do
+    do jb=1,nSb
+      S2 = S2 - 4d0*(X(nSa+jb)**2 + Y(nSa+jb)**2)
+    end do
+
+    print*,'-------------------------------------------------------------'
+    write(*,'(A15,I3,A2,F10.6,A3,A6,F6.4,A11,F6.4)') & 
+            ' Excitation n. ',ia,': ',Omega(ia)*HaToeV,' eV','  f = ',os(ia),'  <S**2> = ',S2
+    print*,'-------------------------------------------------------------'
 
     ! Spin-up transitions
 
@@ -113,7 +124,7 @@ subroutine print_unrestricted_transition_vectors(spin_allowed,nBas,nC,nO,nV,nR,n
     do j=nC(1)+1,nO(1)
       do b=nO(1)+1,nBas-nR(1)
         jb = jb + 1
-        if(abs(X(jb)) > thres_vec) write(*,'(I3,A5,I3,A4,F10.6)') j,'A -> ',b,'A = ',X(jb)/sqrt(2d0)
+        if(abs(X(jb)) > thres_vec) write(*,'(I3,A5,I3,A4,F10.6)') j,'A -> ',b,'A = ',X(jb)
       end do
     end do
  
@@ -121,7 +132,7 @@ subroutine print_unrestricted_transition_vectors(spin_allowed,nBas,nC,nO,nV,nR,n
     do j=nC(1)+1,nO(1)
       do b=nO(1)+1,nBas-nR(1)
         jb = jb + 1
-        if(abs(Y(jb)) > thres_vec) write(*,'(I3,A5,I3,A4,F10.6)') j,'A <- ',b,'A = ',Y(jb)/sqrt(2d0)
+        if(abs(Y(jb)) > thres_vec) write(*,'(I3,A5,I3,A4,F10.6)') j,'A <- ',b,'A = ',Y(jb)
       end do
     end do
 
@@ -131,7 +142,7 @@ subroutine print_unrestricted_transition_vectors(spin_allowed,nBas,nC,nO,nV,nR,n
     do j=nC(2)+1,nO(2)
       do b=nO(2)+1,nBas-nR(2)
         jb = jb + 1
-        if(abs(X(jb)) > thres_vec) write(*,'(I3,A5,I3,A4,F10.6)') j,'B -> ',b,'B = ',X(jb)/sqrt(2d0)
+        if(abs(X(nSa+jb)) > thres_vec) write(*,'(I3,A5,I3,A4,F10.6)') j,'B -> ',b,'B = ',X(nSa+jb)
       end do
     end do
  
@@ -139,12 +150,14 @@ subroutine print_unrestricted_transition_vectors(spin_allowed,nBas,nC,nO,nV,nR,n
     do j=nC(2)+1,nO(2)
       do b=nO(2)+1,nBas-nR(2)
         jb = jb + 1
-        if(abs(Y(jb)) > thres_vec) write(*,'(I3,A5,I3,A4,F10.6)') j,'B <- ',b,'B = ',Y(jb)/sqrt(2d0)
+        if(abs(Y(nSa+jb)) > thres_vec) write(*,'(I3,A5,I3,A4,F10.6)') j,'B <- ',b,'B = ',Y(nSa+jb)
       end do
     end do
    write(*,*)
 
   end do
+
+! Thomas-Reiche-Kuhn sum rule
 
   write(*,'(A30,F10.6)') 'Thomas-Reiche-Kuhn sum rule = ',sum(os(:))
   write(*,*)

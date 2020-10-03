@@ -55,6 +55,7 @@ subroutine CIS(singlet,triplet,doCIS_D,nBas,nC,nO,nV,nR,nS,ERI,dipole_int,eHF)
 
     call diagonalize_matrix(nS,A,Omega)
     call print_excitation('CIS         ',ispin,nS,Omega)
+    call print_transition_vectors(.true.,nBas,nC,nO,nV,nR,nS,dipole_int,Omega,transpose(A),transpose(A))
  
     if(dump_trans) then
       print*,'Singlet CIS transition vectors'
@@ -82,6 +83,7 @@ subroutine CIS(singlet,triplet,doCIS_D,nBas,nC,nO,nV,nR,nS,ERI,dipole_int,eHF)
  
     call diagonalize_matrix(nS,A,Omega)
     call print_excitation('CIS          ',ispin,nS,Omega)
+    call print_transition_vectors(.false.,nBas,nC,nO,nV,nR,nS,dipole_int,Omega,transpose(A),transpose(A))
 
     if(dump_trans) then
       print*,'Triplet CIS transition vectors'

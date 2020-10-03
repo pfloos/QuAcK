@@ -1,4 +1,4 @@
-subroutine print_UHF(nBas,nO,e,c,ENuc,ET,EV,EJ,Ex,EUHF)
+subroutine print_UHF(nBas,nO,S,e,c,ENuc,ET,EV,EJ,Ex,EUHF)
 
 ! Print one- and two-electron energies and other stuff for UHF calculation
 
@@ -7,6 +7,7 @@ subroutine print_UHF(nBas,nO,e,c,ENuc,ET,EV,EJ,Ex,EUHF)
 
   integer,intent(in)                 :: nBas
   integer,intent(in)                 :: nO(nspin)
+  double precision,intent(in)        :: S(nBas,nBas)
   double precision,intent(in)        :: e(nBas,nspin)
   double precision,intent(in)        :: c(nBas,nBas,nspin)
   double precision,intent(in)        :: ENuc
@@ -16,10 +17,14 @@ subroutine print_UHF(nBas,nO,e,c,ENuc,ET,EV,EJ,Ex,EUHF)
   double precision,intent(in)        :: Ex(nspin)
   double precision,intent(in)        :: EUHF
 
+  integer                            :: i,j
   integer                            :: ispin
   double precision                   :: HOMO(nspin)
   double precision                   :: LUMO(nspin)
   double precision                   :: Gap(nspin)
+  double precision                   :: S2_exact
+  double precision                   :: S2
+  integer                            :: spin_state
 
 ! HOMO and LUMO
 
@@ -38,6 +43,11 @@ subroutine print_UHF(nBas,nO,e,c,ENuc,ET,EV,EJ,Ex,EUHF)
       Gap(ispin)  = 0d0
     end if
   end do
+
+  S2_exact = dble(nO(1) - nO(2))/2d0*(dble(nO(1) - nO(2))/2d0 + 1d0) 
+  S2 = S2_exact + nO(2) - sum(matmul(transpose(c(:,1:nO(1),1)),matmul(S,c(:,1:nO(2),2)))**2)
+
+  spin_state = nO(1) - nO(2) + 1
 
 ! Dump results
 
@@ -78,6 +88,10 @@ subroutine print_UHF(nBas,nO,e,c,ENuc,ET,EV,EJ,Ex,EUHF)
   write(*,'(A40,F13.6,A3)')     ' UHF HOMO b    energy:',HOMO(2)*HatoeV,' eV'
   write(*,'(A40,F13.6,A3)')     ' UHF LUMO b    energy:',LUMO(2)*HatoeV,' eV'
   write(*,'(A40,F13.6,A3)')     ' UHF HOMOb-LUMOb gap :',Gap(2)*HatoeV,' eV'
+  write(*,'(A60)')              '-------------------------------------------------'
+  write(*,'(A40,I6)')           '  2S+1               :',spin_state
+  write(*,'(A40,F13.6)')        ' <S**2> (exact)      :',S2_exact
+  write(*,'(A40,F13.6)')        ' <S**2>              :',S2
   write(*,'(A60)')              '-------------------------------------------------'
   write(*,*)
 

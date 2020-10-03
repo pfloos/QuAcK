@@ -80,6 +80,8 @@ subroutine UCIS(spin_conserved,spin_flip,nBas,nC,nO,nV,nR,nS,ERI_aaaa,ERI_aabb,E
 
     call diagonalize_matrix(nS_sc,A_sc,Omega_sc)
     call print_excitation('UCIS        ',5,nS_sc,Omega_sc)
+    call print_unrestricted_transition_vectors(.true.,nBas,nC,nO,nV,nR,nS,nS_aa,nS_bb,nS_sc,dipole_int_aa,dipole_int_bb, &
+                                               Omega_sc,transpose(A_sc),transpose(A_sc))
  
     if(dump_trans) then
       print*,'Spin-conserved CIS transition vectors'
@@ -122,6 +124,8 @@ subroutine UCIS(spin_conserved,spin_flip,nBas,nC,nO,nV,nR,nS,ERI_aaaa,ERI_aabb,E
     call quick_sort(Omega_sf,order(:),nS_sf)
 
     call print_excitation('UCIS        ',6,nS_sf,Omega_sf)
+    call print_unrestricted_transition_vectors(.false.,nBas,nC,nO,nV,nR,nS,nS_ab,nS_ba,nS_sf,dipole_int_aa,dipole_int_bb, &
+                                               Omega_sf,transpose(A_sf),transpose(A_sf))
  
     if(dump_trans) then
       print*,'Spin-flip CIS transition vectors'

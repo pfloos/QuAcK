@@ -94,7 +94,7 @@ subroutine ACFDT(exchange_kernel,doXBS,dRPA,TDA_W,TDA,BSE,singlet,triplet,eta,nB
 
       if(doXBS) then
 
-        call linear_response(isp_W,dRPA,TDA_W,.false.,eta,nBas,nC,nO,nV,nR,nS,lambda,eW,ERI,OmRPA, &
+        call linear_response(isp_W,.true.,TDA_W,.false.,eta,nBas,nC,nO,nV,nR,nS,lambda,eW,ERI,OmRPA, &
                              rho_RPA,EcRPA,OmRPA,XpY_RPA,XmY_RPA)
         call excitation_density(nBas,nC,nO,nR,nS,ERI,XpY_RPA,rho_RPA)
 
@@ -143,7 +143,7 @@ subroutine ACFDT(exchange_kernel,doXBS,dRPA,TDA_W,TDA,BSE,singlet,triplet,eta,nB
 
       if(doXBS) then
 
-        call linear_response(isp_W,dRPA,TDA_W,.false.,eta,nBas,nC,nO,nV,nR,nS,lambda,eW,ERI,OmRPA, &
+        call linear_response(isp_W,.true.,TDA_W,.false.,eta,nBas,nC,nO,nV,nR,nS,lambda,eW,ERI,OmRPA, &
                              rho_RPA,EcRPA,OmRPA,XpY_RPA,XmY_RPA)
         call excitation_density(nBas,nC,nO,nR,nS,ERI,XpY_RPA,rho_RPA)
 
