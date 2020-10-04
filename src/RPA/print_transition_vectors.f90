@@ -108,7 +108,7 @@ subroutine print_transition_vectors(spin_allowed,nBas,nC,nO,nV,nR,nS,dipole_int,
     end do
    write(*,*)
 
-   print*,2d0*sum(X(:)**2 + Y(:)**2)
+   print*,'<S**2> = ',2d0*sum(X(:)**2 + Y(:)**2)
 
   end do
 

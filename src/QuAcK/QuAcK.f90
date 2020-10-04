@@ -235,7 +235,8 @@ program QuAcK
 ! Memory allocation for one- and two-electron integrals
 
   allocate(cHF(nBas,nBas,nspin),eHF(nBas,nspin),eG0W0(nBas,nspin),eG0T0(nBas,nspin),PHF(nBas,nBas,nspin), &
-           S(nBas,nBas),T(nBas,nBas),V(nBas,nBas),Hc(nBas,nBas),H(nBas,nBas),X(nBas,nBas),ERI_AO(nBas,nBas,nBas,nBas))
+           S(nBas,nBas),T(nBas,nBas),V(nBas,nBas),Hc(nBas,nBas),H(nBas,nBas),X(nBas,nBas),ERI_AO(nBas,nBas,nBas,nBas), &
+           dipole_int(nBas,nBas,ncart))
 
 ! Read integrals
 
@@ -249,6 +250,7 @@ program QuAcK
 
     call system('./GoQCaml')
     call read_integrals(nBas,S,T,V,Hc,ERI_AO)
+    call read_dipole_integrals(nBas,dipole_int)
 
   end if
 
@@ -270,7 +272,8 @@ program QuAcK
   if(doRHF) then
 
     call cpu_time(start_HF)
-    call RHF(maxSCF_HF,thresh_HF,n_diis_HF,guess_type,nBas,nO,S,T,V,Hc,ERI_AO,X,ENuc,ERHF,eHF,cHF,PHF)
+    call RHF(maxSCF_HF,thresh_HF,n_diis_HF,guess_type,nNuc,ZNuc,rNuc,ENuc, &
+             nBas,nO,S,T,V,Hc,ERI_AO,dipole_int,X,ERHF,eHF,cHF,PHF)
     call cpu_time(end_HF)
 
     t_HF = end_HF - start_HF
@@ -343,9 +346,8 @@ program QuAcK
       ! Read and transform dipole-related integrals
     
       allocate(dipole_int_aa(nBas,nBas,ncart),dipole_int_bb(nBas,nBas,ncart))
-
-      call read_dipole_integrals(nBas,dipole_int_aa)
-      call read_dipole_integrals(nBas,dipole_int_bb)
+      dipole_int_aa(:,:,:) = dipole_int(:,:,:)
+      dipole_int_bb(:,:,:) = dipole_int(:,:,:)
       do ixyz=1,ncart
           call AOtoMO_transform(nBas,cHF(:,:,1),dipole_int_aa(:,:,ixyz))
           call AOtoMO_transform(nBas,cHF(:,:,2),dipole_int_bb(:,:,ixyz))
@@ -402,8 +404,6 @@ program QuAcK
  
       ! Read and transform dipole-related integrals
     
-      allocate(dipole_int(nBas,nBas,ncart))
-      call read_dipole_integrals(nBas,dipole_int)
       do ixyz=1,ncart
         call AOtoMO_transform(nBas,cHF,dipole_int(:,:,ixyz))
       end do 

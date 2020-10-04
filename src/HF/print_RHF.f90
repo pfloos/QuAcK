@@ -1,14 +1,29 @@
-subroutine print_RHF(nBas,nO,eHF,cHF,ENuc,ET,EV,EJ,EK,ERHF)
+subroutine print_RHF(nBas,nO,eHF,cHF,ENuc,ET,EV,EJ,EK,ERHF,dipole)
 
 ! Print one-electron energies and other stuff for G0W0
 
   implicit none
   include 'parameters.h'
 
-  integer,intent(in)                 :: nBas,nO
-  double precision,intent(in)        :: eHF(nBas),cHF(nBas,nBas),ENuc,ET,EV,EJ,EK,ERHF
+! Input variables
 
-  integer                            :: HOMO,LUMO
+  integer,intent(in)                 :: nBas
+  integer,intent(in)                 :: nO
+  double precision,intent(in)        :: eHF(nBas)
+  double precision,intent(in)        :: cHF(nBas,nBas)
+  double precision,intent(in)        :: ENuc
+  double precision,intent(in)        :: ET
+  double precision,intent(in)        :: EV
+  double precision,intent(in)        :: EJ
+  double precision,intent(in)        :: EK
+  double precision,intent(in)        :: ERHF
+  double precision,intent(in)        :: dipole(ncart)
+
+! Local variables
+
+  integer                            :: ixyz
+  integer                            :: HOMO
+  integer                            :: LUMO
   double precision                   :: Gap
 
 ! HOMO and LUMO
@@ -36,9 +51,13 @@ subroutine print_RHF(nBas,nO,eHF,cHF,ENuc,ET,EV,EJ,EK,ERHF)
   write(*,'(A32,1X,F16.10)') ' Nuclear   repulsion = ',ENuc
   write(*,'(A32,1X,F16.10)') ' Hartree-Fock energy = ',ERHF + ENuc
   write(*,'(A50)')           '-----------------------------------------'
-  write(*,'(A36,F13.6)')  ' HF HOMO      energy (eV) = ',eHF(HOMO)*HaToeV
-  write(*,'(A36,F13.6)')  ' HF LUMO      energy (eV) = ',eHF(LUMO)*HaToeV
-  write(*,'(A36,F13.6)')  ' HF HOMO-LUMO gap    (eV) = ',Gap*HaToeV
+  write(*,'(A36,F13.6)')     ' HF HOMO      energy (eV) = ',eHF(HOMO)*HaToeV
+  write(*,'(A36,F13.6)')     ' HF LUMO      energy (eV) = ',eHF(LUMO)*HaToeV
+  write(*,'(A36,F13.6)')     ' HF HOMO-LUMO gap    (eV) = ',Gap*HaToeV
+  write(*,'(A50)')           '-----------------------------------------'
+  write(*,'(A36)')           ' Dipole moment (Debye)    '
+  write(*,'(4A10)')          'X','Y','Z','Tot.'
+  write(*,'(4F10.6)')        (dipole(ixyz)*auToD,ixyz=1,ncart),norm2(dipole)*auToD
   write(*,'(A50)')           '-----------------------------------------'
   write(*,*)
 

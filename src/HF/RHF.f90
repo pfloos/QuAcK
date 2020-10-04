@@ -1,18 +1,28 @@
-subroutine RHF(maxSCF,thresh,max_diis,guess_type,nBas,nO,S,T,V,Hc,ERI,X,ENuc,ERHF,e,c,P)
+subroutine RHF(maxSCF,thresh,max_diis,guess_type,nNuc,ZNuc,rNuc,Enuc,nBas,nO,S,T,V,Hc,ERI,dipole_int,X,ERHF,e,c,P)
 
 ! Perform restricted Hartree-Fock calculation
 
   implicit none
+  include 'parameters.h'
 
 ! Input variables
 
   integer,intent(in)            :: maxSCF,max_diis,guess_type
   double precision,intent(in)   :: thresh
 
-  integer,intent(in)            :: nBas,nO
+  integer,intent(in)            :: nBas
+  integer,intent(in)            :: nO
+  integer,intent(in)            :: nNuc
+  double precision,intent(in)   :: ZNuc(nNuc)
+  double precision,intent(in)   :: rNuc(nNuc,ncart)
   double precision,intent(in)   :: ENuc
-  double precision,intent(in)   :: S(nBas,nBas),T(nBas,nBas),V(nBas,nBas),Hc(nBas,nBas) 
-  double precision,intent(in)   :: ERI(nBas,nBas,nBas,nBas),X(nBas,nBas)
+  double precision,intent(in)   :: S(nBas,nBas)
+  double precision,intent(in)   :: T(nBas,nBas)
+  double precision,intent(in)   :: V(nBas,nBas)
+  double precision,intent(in)   :: Hc(nBas,nBas) 
+  double precision,intent(in)   :: X(nBas,nBas)
+  double precision,intent(in)   :: ERI(nBas,nBas,nBas,nBas)
+  double precision,intent(in)   :: dipole_int(nBas,nBas,ncart)
 
 ! Local variables
 
@@ -33,6 +43,7 @@ subroutine RHF(maxSCF,thresh,max_diis,guess_type,nBas,nO,S,T,V,Hc,ERI,X,ENuc,ERH
   double precision,allocatable  :: F(:,:)
   double precision,allocatable  :: Fp(:,:)
   double precision,allocatable  :: ON(:)
+  double precision              :: dipole(ncart)
 
 ! Output variables
 
@@ -181,6 +192,7 @@ subroutine RHF(maxSCF,thresh,max_diis,guess_type,nBas,nO,S,T,V,Hc,ERI,X,ENuc,ERH
   EK = 0.25d0*trace_matrix(nBas,matmul(P,K))
   ERHF = ET + EV + EJ + EK
 
-  call print_RHF(nBas,nO,e,C,ENuc,ET,EV,EJ,EK,ERHF)
+  call dipole_moment(nBas,P,nNuc,ZNuc,rNuc,dipole_int,dipole)
+  call print_RHF(nBas,nO,e,C,ENuc,ET,EV,EJ,EK,ERHF,dipole)
 
 end subroutine RHF
