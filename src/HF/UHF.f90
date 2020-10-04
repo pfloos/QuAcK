@@ -1,4 +1,4 @@
-subroutine UHF(maxSCF,thresh,max_diis,guess_type,nBas,nO,S,T,V,Hc,ERI,X,ENuc,EUHF,e,c,P)
+subroutine UHF(maxSCF,thresh,max_diis,guess_type,nNuc,ZNuc,rNuc,ENuc,nBas,nO,S,T,V,Hc,ERI,dipole_int,X,EUHF,e,c,P)
 
 ! Perform unrestricted Hartree-Fock calculation
 
@@ -13,6 +13,11 @@ subroutine UHF(maxSCF,thresh,max_diis,guess_type,nBas,nO,S,T,V,Hc,ERI,X,ENuc,EUH
   double precision,intent(in)   :: thresh
   integer,intent(in)            :: nBas
 
+  integer,intent(in)            :: nNuc
+  double precision,intent(in)   :: ZNuc(nNuc)
+  double precision,intent(in)   :: rNuc(nNuc,ncart)
+  double precision,intent(in)   :: ENuc
+
   integer,intent(in)            :: nO(nspin)
   double precision,intent(in)   :: S(nBas,nBas)
   double precision,intent(in)   :: T(nBas,nBas)
@@ -20,7 +25,7 @@ subroutine UHF(maxSCF,thresh,max_diis,guess_type,nBas,nO,S,T,V,Hc,ERI,X,ENuc,EUH
   double precision,intent(in)   :: Hc(nBas,nBas) 
   double precision,intent(in)   :: X(nBas,nBas) 
   double precision,intent(in)   :: ERI(nBas,nBas,nBas,nBas)
-  double precision,intent(in)   :: ENuc
+  double precision,intent(in)   :: dipole_int(nBas,nBas,ncart)
 
 ! Local variables
 
@@ -33,6 +38,7 @@ subroutine UHF(maxSCF,thresh,max_diis,guess_type,nBas,nO,S,T,V,Hc,ERI,X,ENuc,EUH
   double precision              :: EV(nspin)
   double precision              :: EJ(nsp)
   double precision              :: Ex(nspin)
+  double precision              :: dipole(ncart)
 
   double precision,allocatable  :: cp(:,:,:)
   double precision,allocatable  :: J(:,:,:)
@@ -233,6 +239,7 @@ subroutine UHF(maxSCF,thresh,max_diis,guess_type,nBas,nO,S,T,V,Hc,ERI,X,ENuc,EUH
 
 ! Compute final UHF energy
 
-  call print_UHF(nBas,nO,S,e,c,ENuc,ET,EV,EJ,Ex,EUHF)
+  call dipole_moment(nBas,P(:,:,1)+P(:,:,2),nNuc,ZNuc,rNuc,dipole_int,dipole)
+  call print_UHF(nBas,nO,S,e,c,ENuc,ET,EV,EJ,Ex,EUHF,dipole)
 
 end subroutine UHF

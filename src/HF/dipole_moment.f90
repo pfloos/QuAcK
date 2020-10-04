@@ -44,7 +44,7 @@ subroutine dipole_moment(nBas,P,nNuc,ZNuc,rNuc,dipole_int,dipole)
 
     do mu=1,nBas
       do nu=1,nBas
-          dipole(ixyz) = dipole(ixyz) - P(mu,nu)*dipole_int(mu,nu,ixyz)
+        dipole(ixyz) = dipole(ixyz) - P(mu,nu)*dipole_int(mu,nu,ixyz)
       enddo
     enddo
 

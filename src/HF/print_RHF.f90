@@ -55,9 +55,9 @@ subroutine print_RHF(nBas,nO,eHF,cHF,ENuc,ET,EV,EJ,EK,ERHF,dipole)
   write(*,'(A36,F13.6)')     ' HF LUMO      energy (eV) = ',eHF(LUMO)*HaToeV
   write(*,'(A36,F13.6)')     ' HF HOMO-LUMO gap    (eV) = ',Gap*HaToeV
   write(*,'(A50)')           '-----------------------------------------'
-  write(*,'(A36)')           ' Dipole moment (Debye)    '
-  write(*,'(4A10)')          'X','Y','Z','Tot.'
-  write(*,'(4F10.6)')        (dipole(ixyz)*auToD,ixyz=1,ncart),norm2(dipole)*auToD
+  write(*,'(A35)')           ' Dipole moment (Debye)    '
+  write(*,'(10X,4A10)')      'X','Y','Z','Tot.'
+  write(*,'(10X,4F10.6)')    (dipole(ixyz)*auToD,ixyz=1,ncart),norm2(dipole)*auToD
   write(*,'(A50)')           '-----------------------------------------'
   write(*,*)
 

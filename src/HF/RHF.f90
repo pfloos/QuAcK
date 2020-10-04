@@ -1,4 +1,4 @@
-subroutine RHF(maxSCF,thresh,max_diis,guess_type,nNuc,ZNuc,rNuc,Enuc,nBas,nO,S,T,V,Hc,ERI,dipole_int,X,ERHF,e,c,P)
+subroutine RHF(maxSCF,thresh,max_diis,guess_type,nNuc,ZNuc,rNuc,ENuc,nBas,nO,S,T,V,Hc,ERI,dipole_int,X,ERHF,e,c,P)
 
 ! Perform restricted Hartree-Fock calculation
 
@@ -29,7 +29,12 @@ subroutine RHF(maxSCF,thresh,max_diis,guess_type,nNuc,ZNuc,rNuc,Enuc,nBas,nO,S,T
   integer                       :: nSCF
   integer                       :: nBasSq
   integer                       :: n_diis
-  double precision              :: ET,EV,EJ,EK
+  double precision              :: ET
+  double precision              :: EV
+  double precision              :: EJ
+  double precision              :: EK
+  double precision              :: dipole(ncart)
+
   double precision              :: Conv
   double precision              :: Gap 
   double precision              :: rcond
@@ -43,7 +48,6 @@ subroutine RHF(maxSCF,thresh,max_diis,guess_type,nNuc,ZNuc,rNuc,Enuc,nBas,nO,S,T
   double precision,allocatable  :: F(:,:)
   double precision,allocatable  :: Fp(:,:)
   double precision,allocatable  :: ON(:)
-  double precision              :: dipole(ncart)
 
 ! Output variables
 

@@ -1,4 +1,4 @@
-subroutine print_UHF(nBas,nO,S,e,c,ENuc,ET,EV,EJ,Ex,EUHF)
+subroutine print_UHF(nBas,nO,S,e,c,ENuc,ET,EV,EJ,Ex,EUHF,dipole)
 
 ! Print one- and two-electron energies and other stuff for UHF calculation
 
@@ -16,7 +16,9 @@ subroutine print_UHF(nBas,nO,S,e,c,ENuc,ET,EV,EJ,Ex,EUHF)
   double precision,intent(in)        :: EJ(nsp)
   double precision,intent(in)        :: Ex(nspin)
   double precision,intent(in)        :: EUHF
+  double precision,intent(in)        :: dipole(ncart)
 
+  integer                            :: ixyz
   integer                            :: i,j
   integer                            :: ispin
   double precision                   :: HOMO(nspin)
@@ -92,6 +94,10 @@ subroutine print_UHF(nBas,nO,S,e,c,ENuc,ET,EV,EJ,Ex,EUHF)
   write(*,'(A40,I6)')           '  2S+1               :',spin_state
   write(*,'(A40,F13.6)')        ' <S**2> (exact)      :',S2_exact
   write(*,'(A40,F13.6)')        ' <S**2>              :',S2
+  write(*,'(A60)')              '-------------------------------------------------'
+  write(*,'(A45)')              ' Dipole moment (Debye)    '
+  write(*,'(19X,4A10)')         'X','Y','Z','Tot.'
+  write(*,'(19X,4F10.6)')       (dipole(ixyz)*auToD,ixyz=1,ncart),norm2(dipole)*auToD
   write(*,'(A60)')              '-------------------------------------------------'
   write(*,*)
 

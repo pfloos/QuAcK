@@ -292,7 +292,8 @@ program QuAcK
     unrestricted = .true.
 
     call cpu_time(start_HF)
-    call UHF(maxSCF_HF,thresh_HF,n_diis_HF,guess_type,nBas,nO,S,T,V,Hc,ERI_AO,X,ENuc,EUHF,eHF,cHF,PHF)
+    call UHF(maxSCF_HF,thresh_HF,n_diis_HF,guess_type,nNuc,ZNuc,rNuc,ENuc, & 
+             nBas,nO,S,T,V,Hc,ERI_AO,dipole_int,X,EUHF,eHF,cHF,PHF)
     call cpu_time(end_HF)
 
     t_HF = end_HF - start_HF
