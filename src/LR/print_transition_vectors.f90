@@ -25,61 +25,21 @@ subroutine print_transition_vectors(spin_allowed,nBas,nC,nO,nV,nR,nS,dipole_int,
   integer                       :: ia,jb,i,j,a,b
   integer                       :: ixyz
   integer,parameter             :: maxS = 10
-  double precision              :: norm
+  double precision              :: S2
   double precision,parameter    :: thres_vec = 0.1d0
   double precision,allocatable  :: X(:)
   double precision,allocatable  :: Y(:)
-  double precision,allocatable  :: f(:,:)
   double precision,allocatable  :: os(:)
 
 ! Memory allocation
 
-  allocate(X(nS),Y(nS),f(nS,ncart),os(nS))
+  allocate(X(nS),Y(nS),os(nS))
 
-! Initialization
-   
-  f(:,:) = 0d0
-  os(:)  = 0d0
+! Compute oscillator strengths
 
-! Compute dipole moments and oscillator strengths
+  os(:) = 0d0
+  if(spin_allowed) call oscillator_strength(nBas,nC,nO,nV,nR,nS,dipole_int,Omega,XpY,XmY,os)
 
-  if(spin_allowed) then
-
-    do ia=1,nS
-      do ixyz=1,ncart
-        jb = 0
-        do j=nC+1,nO
-          do b=nO+1,nBas-nR
-            jb = jb + 1
-            f(ia,ixyz) = f(ia,ixyz) + dipole_int(j,b,ixyz)*XpY(ia,jb)
-          end do
-        end do
-      end do
-    end do
-    f(:,:) = sqrt(2d0)*f(:,:)
- 
-    do ia=1,nS
-      os(ia) = 2d0/3d0*Omega(ia)*sum(f(ia,:)**2)
-    end do
-      
-    if(debug) then
-
-      write(*,*) '------------------------'
-      write(*,*) ' Dipole moments (X Y Z) '
-      write(*,*) '------------------------'
-      call matout(nS,ncart,f)
-      write(*,*)
-  
-      write(*,*) '----------------------'
-      write(*,*) ' Oscillator strengths '
-      write(*,*) '----------------------'
-      call matout(nS,1,os)
-      write(*,*)
-
-    end if
-
-  end if
-  
 ! Print details about excitations
 
   do ia=1,min(nS,maxS)
@@ -87,9 +47,10 @@ subroutine print_transition_vectors(spin_allowed,nBas,nC,nO,nV,nR,nS,dipole_int,
     X(:) = 0.5d0*(XpY(ia,:) + XmY(ia,:))
     Y(:) = 0.5d0*(XpY(ia,:) - XmY(ia,:))
 
-    print*,'---------------------------------------------'
-    write(*,'(A15,I3,A2,F10.6,A3,A6,F6.4,A1)') ' Excitation n. ',ia,': ',Omega(ia)*HaToeV,' eV',' (f = ',os(ia),')'
-    print*,'---------------------------------------------'
+    print*,'-------------------------------------------------------------'
+    write(*,'(A15,I3,A2,F10.6,A3,A6,F6.4,A11,F6.4)') &
+            ' Excitation n. ',ia,': ',Omega(ia)*HaToeV,' eV','  f = ',os(ia),'  <S**2> = ',S2
+    print*,'-------------------------------------------------------------'
 
     jb = 0
     do j=nC+1,nO
@@ -107,8 +68,6 @@ subroutine print_transition_vectors(spin_allowed,nBas,nC,nO,nV,nR,nS,dipole_int,
       end do
     end do
    write(*,*)
-
-   print*,'<S**2> = ',2d0*sum(X(:)**2 + Y(:)**2)
 
   end do
 

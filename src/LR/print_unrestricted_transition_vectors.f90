@@ -40,62 +40,14 @@ subroutine print_unrestricted_transition_vectors(spin_allowed,nBas,nC,nO,nV,nR,n
 
 ! Memory allocation
 
-  allocate(X(nSt),Y(nSt),f(nSt,ncart),os(nSt))
+  allocate(X(nSt),Y(nSt),os(nSt))
 
-! Initialization
-   
-  f(:,:) = 0d0
-  os(:)  = 0d0
+! Compute oscillator strengths
 
-! Compute dipole moments and oscillator strengths
+  os(:) = 0d0
+  if(spin_allowed) call unrestricted_oscillator_strength(nBas,nC,nO,nV,nR,nS,nSa,nSb,nSt, & 
+                                                         dipole_int_aa,dipole_int_bb,Omega,XpY,XmY,os)
 
-
-  if(spin_allowed) then
-
-    do ia=1,nSt
-      do ixyz=1,ncart
-
-        jb = 0
-        do j=nC(1)+1,nO(1)
-          do b=nO(1)+1,nBas-nR(1)
-            jb = jb + 1
-            f(ia,ixyz) = f(ia,ixyz) + dipole_int_aa(j,b,ixyz)*XpY(ia,jb)
-          end do
-        end do
-
-        jb = 0
-        do j=nC(2)+1,nO(2)
-          do b=nO(2)+1,nBas-nR(2)
-            jb = jb + 1
-            f(ia,ixyz) = f(ia,ixyz) + dipole_int_bb(j,b,ixyz)*XpY(ia,nSa+jb)
-          end do
-        end do
-
-      end do
-    end do
- 
-    do ia=1,nSt
-      os(ia) = 2d0/3d0*Omega(ia)*sum(f(ia,:)**2)
-    end do
-      
-    if(debug) then
-
-      write(*,*) '----------------'
-      write(*,*) ' Dipole moments '
-      write(*,*) '----------------'
-      call matout(nSt,ncart,f(:,:))
-      write(*,*)
-  
-      write(*,*) '----------------------'
-      write(*,*) ' Oscillator strengths '
-      write(*,*) '----------------------'
-      call matout(nSt,1,os(:))
-      write(*,*)
-
-    end if
-
-  end if
-  
 ! Print details about excitations
 
   do ia=1,min(nSt,maxS)
