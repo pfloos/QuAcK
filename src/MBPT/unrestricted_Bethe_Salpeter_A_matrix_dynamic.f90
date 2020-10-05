@@ -1,5 +1,5 @@
 subroutine unrestricted_Bethe_Salpeter_A_matrix_dynamic(ispin,eta,nBas,nC,nO,nV,nR,nSa,nSb,nSt,nS_sc,lambda,eGW, & 
-                                                        ERI_aaaa,ERI_aabb,ERI_bbbb,ERI_abab,OmRPA,rho_RPA,OmBSE,A_dyn)
+                                                        ERI_aaaa,ERI_aabb,ERI_bbbb,OmRPA,rho_RPA,OmBSE,A_dyn)
 
 ! Compute the extra term for dynamical Bethe-Salpeter equation for linear response in the unrestricted formalism
 
@@ -24,7 +24,6 @@ subroutine unrestricted_Bethe_Salpeter_A_matrix_dynamic(ispin,eta,nBas,nC,nO,nV,
   double precision,intent(in)   :: ERI_aaaa(nBas,nBas,nBas,nBas)
   double precision,intent(in)   :: ERI_aabb(nBas,nBas,nBas,nBas)
   double precision,intent(in)   :: ERI_bbbb(nBas,nBas,nBas,nBas)
-  double precision,intent(in)   :: ERI_abab(nBas,nBas,nBas,nBas)
   double precision,intent(in)   :: OmRPA(nS_sc)
   double precision,intent(in)   :: rho_RPA(nBas,nBas,nS_sc,nspin)
   double precision,intent(in)   :: OmBSE

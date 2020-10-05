@@ -70,7 +70,6 @@ program QuAcK
   double precision,allocatable  :: ERI_MO_aaaa(:,:,:,:)
   double precision,allocatable  :: ERI_MO_aabb(:,:,:,:)
   double precision,allocatable  :: ERI_MO_bbbb(:,:,:,:)
-  double precision,allocatable  :: ERI_MO_abab(:,:,:,:)
   double precision,allocatable  :: ERI_ERF_AO(:,:,:,:)
   double precision,allocatable  :: ERI_ERF_MO(:,:,:,:)
   double precision,allocatable  :: F12(:,:,:,:),Yuk(:,:,:,:),FC(:,:,:,:,:,:)
@@ -169,7 +168,7 @@ program QuAcK
 
   call read_options(maxSCF_HF,thresh_HF,DIIS_HF,n_diis_HF,guess_type,ortho_type, &
                     maxSCF_CC,thresh_CC,DIIS_CC,n_diis_CC,                       &
-                    singlet,triplet,spin_conserved,spin_flip,TDA,                &
+                    TDA,singlet,triplet,spin_conserved,spin_flip,                &
                     maxSCF_GF,thresh_GF,DIIS_GF,n_diis_GF,linGF,eta_GF,renormGF, &
                     maxSCF_GW,thresh_GW,DIIS_GW,n_diis_GW,linGW,eta_GW,          & 
                     COHSEX,SOSEX,TDA_W,G0W,GW0,                                  &  
@@ -356,8 +355,7 @@ program QuAcK
 
       ! Memory allocation
      
-      allocate(ERI_MO_aaaa(nBas,nBas,nBas,nBas),ERI_MO_aabb(nBas,nBas,nBas,nBas), & 
-               ERI_MO_bbbb(nBas,nBas,nBas,nBas),ERI_MO_abab(nBas,nBas,nBas,nBas))
+      allocate(ERI_MO_aaaa(nBas,nBas,nBas,nBas),ERI_MO_aabb(nBas,nBas,nBas,nBas),ERI_MO_bbbb(nBas,nBas,nBas,nBas))
      
       ! 4-index transform for (aa|aa) block
      
@@ -382,14 +380,6 @@ program QuAcK
       ket1 = 2
       ket2 = 2
       call AOtoMO_integral_transform(bra1,bra2,ket1,ket2,nBas,cHF,ERI_AO,ERI_MO_bbbb)
-
-      ! 4-index transform for (ab|ab) block
-
-      bra1 = 1
-      bra2 = 2
-      ket1 = 1
-      ket2 = 2
-      call AOtoMO_integral_transform(bra1,bra2,ket1,ket2,nBas,cHF,ERI_AO,ERI_MO_abab)
 
     else
 
@@ -612,7 +602,7 @@ program QuAcK
     if(unrestricted) then
 
       call UCIS(spin_conserved,spin_flip,nBas,nC,nO,nV,nR,nS,ERI_MO_aaaa,ERI_MO_aabb, & 
-                ERI_MO_bbbb,ERI_MO_abab,dipole_int_aa,dipole_int_bb,eHF,cHF,S)
+                ERI_MO_bbbb,dipole_int_aa,dipole_int_bb,eHF,cHF,S)
 
    else 
 
@@ -669,7 +659,7 @@ program QuAcK
     if(unrestricted) then
 
        call UdRPA(TDA,doACFDT,exchange_kernel,spin_conserved,spin_flip,0d0,nBas,nC,nO,nV,nR,nS,ENuc,EUHF, &
-                  ERI_MO_aaaa,ERI_MO_aabb,ERI_MO_bbbb,ERI_MO_abab,dipole_int_aa,dipole_int_bb,eHF,cHF,S)
+                  ERI_MO_aaaa,ERI_MO_aabb,ERI_MO_bbbb,dipole_int_aa,dipole_int_bb,eHF,cHF,S)
 
     else
 
@@ -694,7 +684,7 @@ program QuAcK
     if(unrestricted) then
 
        call URPAx(TDA,doACFDT,exchange_kernel,spin_conserved,spin_flip,0d0,nBas,nC,nO,nV,nR,nS,ENuc,EUHF, &
-                  ERI_MO_aaaa,ERI_MO_aabb,ERI_MO_bbbb,ERI_MO_abab,dipole_int_aa,dipole_int_bb,eHF,cHF,S)
+                  ERI_MO_aaaa,ERI_MO_aabb,ERI_MO_bbbb,dipole_int_aa,dipole_int_bb,eHF,cHF,S)
 
     else 
 
@@ -821,7 +811,7 @@ program QuAcK
     if(unrestricted) then 
 
       call UG0W0(doACFDT,exchange_kernel,doXBS,COHSEX,BSE,TDA_W,TDA,dBSE,dTDA,evDyn,spin_conserved,spin_flip,   & 
-                 linGW,eta_GW,nBas,nC,nO,nV,nR,nS,ENuc,EUHF,Hc,ERI_MO_aaaa,ERI_MO_aabb,ERI_MO_bbbb,ERI_MO_abab, & 
+                 linGW,eta_GW,nBas,nC,nO,nV,nR,nS,ENuc,EUHF,Hc,ERI_MO_aaaa,ERI_MO_aabb,ERI_MO_bbbb, & 
                  dipole_int_aa,dipole_int_bb,PHF,cHF,eHF,eG0W0)
     else
 
@@ -849,7 +839,7 @@ program QuAcK
 
       call evUGW(maxSCF_GW,thresh_GW,n_diis_GW,doACFDT,exchange_kernel,doXBS,COHSEX,BSE,TDA_W,TDA,   &
                 G0W,GW0,dBSE,dTDA,evDyn,spin_conserved,spin_flip,eta_GW,nBas,nC,nO,nV,nR,nS,ENuc,    &
-                EUHF,Hc,ERI_MO_aaaa,ERI_MO_aabb,ERI_MO_bbbb,ERI_MO_abab,dipole_int_aa,dipole_int_bb, & 
+                EUHF,Hc,ERI_MO_aaaa,ERI_MO_aabb,ERI_MO_bbbb,dipole_int_aa,dipole_int_bb, & 
                 PHF,cHF,eHF,eG0W0)
 
     else

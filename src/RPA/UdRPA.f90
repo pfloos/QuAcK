@@ -1,5 +1,5 @@
 subroutine UdRPA(TDA,doACFDT,exchange_kernel,spin_conserved,spin_flip,eta,nBas,nC,nO,nV,nR,nS,ENuc,EUHF, & 
-                 ERI_aaaa,ERI_aabb,ERI_bbbb,ERI_abab,dipole_int_aa,dipole_int_bb,e,c,S)
+                 ERI_aaaa,ERI_aabb,ERI_bbbb,dipole_int_aa,dipole_int_bb,e,c,S)
 
 ! Perform random phase approximation calculation with exchange (aka TDHF) in the unrestricted formalism
 
@@ -29,7 +29,6 @@ subroutine UdRPA(TDA,doACFDT,exchange_kernel,spin_conserved,spin_flip,eta,nBas,n
   double precision,intent(in)   :: ERI_aaaa(nBas,nBas,nBas,nBas)
   double precision,intent(in)   :: ERI_aabb(nBas,nBas,nBas,nBas)
   double precision,intent(in)   :: ERI_bbbb(nBas,nBas,nBas,nBas)
-  double precision,intent(in)   :: ERI_abab(nBas,nBas,nBas,nBas)
   double precision,intent(in)   :: dipole_int_aa(nBas,nBas,ncart)
   double precision,intent(in)   :: dipole_int_bb(nBas,nBas,ncart)
 
@@ -86,7 +85,7 @@ subroutine UdRPA(TDA,doACFDT,exchange_kernel,spin_conserved,spin_flip,eta,nBas,n
     allocate(Omega_sc(nS_sc),XpY_sc(nS_sc,nS_sc),XmY_sc(nS_sc,nS_sc))
 
     call unrestricted_linear_response(ispin,.true.,TDA,.false.,eta,nBas,nC,nO,nV,nR,nS_aa,nS_bb,nS_sc,nS_sc,1d0,e, & 
-                                      ERI_aaaa,ERI_aabb,ERI_bbbb,ERI_abab,Omega_sc,rho_sc,EcRPA(ispin),Omega_sc,XpY_sc,XmY_sc)
+                                      ERI_aaaa,ERI_aabb,ERI_bbbb,Omega_sc,rho_sc,EcRPA(ispin),Omega_sc,XpY_sc,XmY_sc)
     call print_excitation('URPA   ',5,nS_sc,Omega_sc)
     call print_unrestricted_transition_vectors(ispin,nBas,nC,nO,nV,nR,nS,nS_aa,nS_bb,nS_sc,dipole_int_aa,dipole_int_bb, &
                                                c,S,Omega_sc,XpY_sc,XmY_sc)
@@ -109,7 +108,7 @@ subroutine UdRPA(TDA,doACFDT,exchange_kernel,spin_conserved,spin_flip,eta,nBas,n
     allocate(Omega_sf(nS_sf),XpY_sf(nS_sf,nS_sf),XmY_sf(nS_sf,nS_sf))
 
     call unrestricted_linear_response(ispin,.true.,TDA,.false.,eta,nBas,nC,nO,nV,nR,nS_ab,nS_ba,nS_sf,nS_sf,1d0,e, &
-                                      ERI_aaaa,ERI_aabb,ERI_bbbb,ERI_abab,Omega_sf,rho_sf,EcRPA(ispin),Omega_sf,XpY_sf,XmY_sf)
+                                      ERI_aaaa,ERI_aabb,ERI_bbbb,Omega_sf,rho_sf,EcRPA(ispin),Omega_sf,XpY_sf,XmY_sf)
     call print_excitation('URPA   ',6,nS_sf,Omega_sf)
     call print_unrestricted_transition_vectors(ispin,nBas,nC,nO,nV,nR,nS,nS_ab,nS_ba,nS_sf,dipole_int_aa,dipole_int_bb, &
                                                c,S,Omega_sf,XpY_sf,XmY_sf)

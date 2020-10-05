@@ -1,5 +1,5 @@
 subroutine unrestricted_Bethe_Salpeter_dynamic_perturbation(ispin,dTDA,eta,nBas,nC,nO,nV,nR,nS,nSa,nSb,nSt,nS_sc,eGW, &
-                                               ERI_aaaa,ERI_aabb,ERI_bbbb,ERI_abab,dipole_int_aa,dipole_int_bb,       & 
+                                               ERI_aaaa,ERI_aabb,ERI_bbbb,dipole_int_aa,dipole_int_bb,       & 
                                                OmRPA,rho_RPA,OmBSE,XpY_BSE,XmY_BSE)
 
 ! Compute dynamical effects via perturbation theory for BSE
@@ -27,7 +27,6 @@ subroutine unrestricted_Bethe_Salpeter_dynamic_perturbation(ispin,dTDA,eta,nBas,
   double precision,intent(in)   :: ERI_aaaa(nBas,nBas,nBas,nBas)
   double precision,intent(in)   :: ERI_aabb(nBas,nBas,nBas,nBas)
   double precision,intent(in)   :: ERI_bbbb(nBas,nBas,nBas,nBas)
-  double precision,intent(in)   :: ERI_abab(nBas,nBas,nBas,nBas)
   double precision,intent(in)   :: dipole_int_aa(nBas,nBas,ncart)
   double precision,intent(in)   :: dipole_int_bb(nBas,nBas,ncart)
   double precision,intent(in)   :: OmRPA(nS_sc)
@@ -85,12 +84,12 @@ subroutine unrestricted_Bethe_Salpeter_dynamic_perturbation(ispin,dTDA,eta,nBas,
       ! Resonant part of the BSE correction for dynamical TDA
 
       call unrestricted_Bethe_Salpeter_A_matrix_dynamic(ispin,eta,nBas,nC,nO,nV,nR,nSa,nSb,nSt,nS_sc,1d0,eGW, & 
-                                                        ERI_aaaa,ERI_aabb,ERI_bbbb,ERI_abab,OmRPA,rho_RPA,OmBSE(ia),A_dyn)
+                                                        ERI_aaaa,ERI_aabb,ERI_bbbb,OmRPA,rho_RPA,OmBSE(ia),A_dyn)
 
       ! Renormalization factor of the resonant parts for dynamical TDA
 
       call unrestricted_Bethe_Salpeter_ZA_matrix_dynamic(ispin,eta,nBas,nC,nO,nV,nR,nSa,nSb,nSt,nS_sc,1d0,eGW, & 
-                                                         ERI_aaaa,ERI_aabb,ERI_bbbb,ERI_abab,OmRPA,rho_RPA,OmBSE(ia),ZA_dyn)
+                                                         ERI_aaaa,ERI_aabb,ERI_bbbb,OmRPA,rho_RPA,OmBSE(ia),ZA_dyn)
 
       ZDyn(ia)  = dot_product(X,matmul(ZA_dyn,X))
       OmDyn(ia) = dot_product(X,matmul( A_dyn,X))

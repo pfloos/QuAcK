@@ -1,4 +1,4 @@
-subroutine UCIS(spin_conserved,spin_flip,nBas,nC,nO,nV,nR,nS,ERI_aaaa,ERI_aabb,ERI_bbbb,ERI_abab, &
+subroutine UCIS(spin_conserved,spin_flip,nBas,nC,nO,nV,nR,nS,ERI_aaaa,ERI_aabb,ERI_bbbb, &
                 dipole_int_aa,dipole_int_bb,eHF,cHF,S)
 
 ! Perform configuration interaction single calculation`
@@ -22,7 +22,6 @@ subroutine UCIS(spin_conserved,spin_flip,nBas,nC,nO,nV,nR,nS,ERI_aaaa,ERI_aabb,E
   double precision,intent(in)   :: ERI_aaaa(nBas,nBas,nBas,nBas)
   double precision,intent(in)   :: ERI_aabb(nBas,nBas,nBas,nBas)
   double precision,intent(in)   :: ERI_bbbb(nBas,nBas,nBas,nBas)
-  double precision,intent(in)   :: ERI_abab(nBas,nBas,nBas,nBas)
   double precision,intent(in)   :: dipole_int_aa(nBas,nBas,ncart,nspin)
   double precision,intent(in)   :: dipole_int_bb(nBas,nBas,ncart,nspin)
 
@@ -72,7 +71,7 @@ subroutine UCIS(spin_conserved,spin_flip,nBas,nC,nO,nV,nR,nS,ERI_aaaa,ERI_aabb,E
     allocate(A_sc(nS_sc,nS_sc),Omega_sc(nS_sc))
 
     call unrestricted_linear_response_A_matrix(ispin,.false.,nBas,nC,nO,nV,nR,nS_aa,nS_bb,nS_sc,lambda,eHF, & 
-                                               ERI_aaaa,ERI_aabb,ERI_bbbb,ERI_abab,A_sc)
+                                               ERI_aaaa,ERI_aabb,ERI_bbbb,A_sc)
  
     if(dump_matrix) then
       print*,'CIS matrix (spin-conserved transitions)'
@@ -112,7 +111,7 @@ subroutine UCIS(spin_conserved,spin_flip,nBas,nC,nO,nV,nR,nS,ERI_aaaa,ERI_aabb,E
     allocate(A_sf(nS_sf,nS_sf),Omega_sf(nS_sf),Z_sf(nS_sf,nS_sf))
     
     call unrestricted_linear_response_A_matrix(ispin,.false.,nBas,nC,nO,nV,nR,nS_ab,nS_ba,nS_sf,lambda,eHF, & 
-                                               ERI_aaaa,ERI_aabb,ERI_bbbb,ERI_abab,A_sf)
+                                               ERI_aaaa,ERI_aabb,ERI_bbbb,A_sf)
 
     if(dump_matrix) then
       print*,'CIS matrix (spin-conserved transitions)'

@@ -1,5 +1,5 @@
 subroutine unrestricted_linear_response(ispin,dRPA,TDA,BSE,eta,nBas,nC,nO,nV,nR,nSa,nSb,nSt,nS_sc,lambda, & 
-                                        e,ERI_aaaa,ERI_aabb,ERI_bbbb,ERI_abab,OmRPA,rho_RPA,EcRPA,Omega,XpY,XmY)
+                                        e,ERI_aaaa,ERI_aabb,ERI_bbbb,OmRPA,rho_RPA,EcRPA,Omega,XpY,XmY)
 
 ! Compute linear response for unrestricted formalism
 
@@ -27,7 +27,6 @@ subroutine unrestricted_linear_response(ispin,dRPA,TDA,BSE,eta,nBas,nC,nO,nV,nR,
   double precision,intent(in)   :: ERI_aaaa(nBas,nBas,nBas,nBas)
   double precision,intent(in)   :: ERI_aabb(nBas,nBas,nBas,nBas)
   double precision,intent(in)   :: ERI_bbbb(nBas,nBas,nBas,nBas)
-  double precision,intent(in)   :: ERI_abab(nBas,nBas,nBas,nBas)
 
   double precision,intent(in)   :: OmRPA(nS_sc)
   double precision,intent(in)   :: rho_RPA(nBas,nBas,nS_sc,nspin)
@@ -58,11 +57,11 @@ subroutine unrestricted_linear_response(ispin,dRPA,TDA,BSE,eta,nBas,nC,nO,nV,nR,
 ! Build A and B matrices 
 
   call unrestricted_linear_response_A_matrix(ispin,dRPA,nBas,nC,nO,nV,nR,nSa,nSb,nSt,lambda,e, & 
-                                             ERI_aaaa,ERI_aabb,ERI_bbbb,ERI_abab,A)
+                                             ERI_aaaa,ERI_aabb,ERI_bbbb,A)
 
   if(BSE) & 
     call unrestricted_Bethe_Salpeter_A_matrix(ispin,eta,nBas,nC,nO,nV,nR,nSa,nSb,nSt,nS_sc,lambda,e, & 
-                                              ERI_aaaa,ERI_aabb,ERI_bbbb,ERI_abab,OmRPA,rho_RPA,A)
+                                              ERI_aaaa,ERI_aabb,ERI_bbbb,OmRPA,rho_RPA,A)
 
 ! Tamm-Dancoff approximation
 
@@ -70,11 +69,11 @@ subroutine unrestricted_linear_response(ispin,dRPA,TDA,BSE,eta,nBas,nC,nO,nV,nR,
   if(.not. TDA) then
 
     call unrestricted_linear_response_B_matrix(ispin,dRPA,nBas,nC,nO,nV,nR,nSa,nSb,nSt,lambda, & 
-                                               ERI_aaaa,ERI_aabb,ERI_bbbb,ERI_abab,B)
+                                               ERI_aaaa,ERI_aabb,ERI_bbbb,B)
 
     if(BSE) &
       call unrestricted_Bethe_Salpeter_B_matrix(ispin,eta,nBas,nC,nO,nV,nR,nSa,nSb,nSt,nS_sc,lambda, & 
-                                                ERI_aaaa,ERI_aabb,ERI_bbbb,ERI_abab,OmRPA,rho_RPA,B)
+                                                ERI_aaaa,ERI_aabb,ERI_bbbb,OmRPA,rho_RPA,B)
 
   end if
 

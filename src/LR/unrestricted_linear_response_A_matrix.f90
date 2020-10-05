@@ -1,5 +1,5 @@
 subroutine unrestricted_linear_response_A_matrix(ispin,dRPA,nBas,nC,nO,nV,nR,nSa,nSb,nSt,lambda, & 
-                                                 e,ERI_aaaa,ERI_aabb,ERI_bbbb,ERI_abab,A_lr)
+                                                 e,ERI_aaaa,ERI_aabb,ERI_bbbb,A_lr)
 
 ! Compute linear response
 
@@ -23,7 +23,6 @@ subroutine unrestricted_linear_response_A_matrix(ispin,dRPA,nBas,nC,nO,nV,nR,nSa
   double precision,intent(in)   :: ERI_aaaa(nBas,nBas,nBas,nBas) 
   double precision,intent(in)   :: ERI_aabb(nBas,nBas,nBas,nBas) 
   double precision,intent(in)   :: ERI_bbbb(nBas,nBas,nBas,nBas) 
-  double precision,intent(in)   :: ERI_abab(nBas,nBas,nBas,nBas) 
   
 ! Local variables
 

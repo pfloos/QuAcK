@@ -1,5 +1,5 @@
 subroutine unrestricted_Bethe_Salpeter(TDA_W,TDA,dBSE,dTDA,evDyn,spin_conserved,spin_flip,eta,  & 
-                                       nBas,nC,nO,nV,nR,nS,ERI_aaaa,ERI_aabb,ERI_bbbb,ERI_abab, & 
+                                       nBas,nC,nO,nV,nR,nS,ERI_aaaa,ERI_aabb,ERI_bbbb, & 
                                        dipole_int_aa,dipole_int_bb,eW,eGW,EcBSE)
 
 ! Compute the Bethe-Salpeter excitation energies
@@ -29,7 +29,6 @@ subroutine unrestricted_Bethe_Salpeter(TDA_W,TDA,dBSE,dTDA,evDyn,spin_conserved,
   double precision,intent(in)   :: ERI_aaaa(nBas,nBas,nBas,nBas)
   double precision,intent(in)   :: ERI_aabb(nBas,nBas,nBas,nBas)
   double precision,intent(in)   :: ERI_bbbb(nBas,nBas,nBas,nBas)
-  double precision,intent(in)   :: ERI_abab(nBas,nBas,nBas,nBas)
   double precision,intent(in)   :: dipole_int_aa(nBas,nBas,ncart)
   double precision,intent(in)   :: dipole_int_bb(nBas,nBas,ncart)
 
@@ -76,7 +75,7 @@ subroutine unrestricted_Bethe_Salpeter(TDA_W,TDA,dBSE,dTDA,evDyn,spin_conserved,
   ! Compute spin-conserved RPA screening 
 
   call unrestricted_linear_response(isp_W,.true.,TDA_W,.false.,eta,nBas,nC,nO,nV,nR,nS_aa,nS_bb,nS_sc,nS_sc,1d0, &
-                                    eW,ERI_aaaa,ERI_aabb,ERI_bbbb,ERI_abab,OmRPA,rho_RPA,EcRPA,OmRPA,XpY_RPA,XmY_RPA)
+                                    eW,ERI_aaaa,ERI_aabb,ERI_bbbb,OmRPA,rho_RPA,EcRPA,OmRPA,XpY_RPA,XmY_RPA)
 
   call unrestricted_excitation_density(nBas,nC,nO,nR,nS_aa,nS_bb,nS_sc,ERI_aaaa,ERI_aabb,ERI_bbbb,XpY_RPA,rho_RPA)
 
@@ -95,7 +94,7 @@ subroutine unrestricted_Bethe_Salpeter(TDA_W,TDA,dBSE,dTDA,evDyn,spin_conserved,
     ! Compute spin-conserved BSE excitation energies
 
     call unrestricted_linear_response(ispin,.true.,TDA,.true.,eta,nBas,nC,nO,nV,nR,nS_aa,nS_bb,nS_sc,nS_sc,1d0, &
-                                      eGW,ERI_aaaa,ERI_aabb,ERI_bbbb,ERI_abab,OmRPA,rho_RPA,EcBSE(ispin),       & 
+                                      eGW,ERI_aaaa,ERI_aabb,ERI_bbbb,OmRPA,rho_RPA,EcBSE(ispin),       & 
                                       OmBSE_sc,XpY_BSE_sc,XmY_BSE_sc)
     call print_excitation('BSE@UG0W0',5,nS_sc,OmBSE_sc)
 !   call print_unrestricted_transition_vectors(ispin,nBas,nC,nO,nV,nR,nS,nS_aa,nS_bb,nS_sc,dipole_int_aa,dipole_int_bb, &
@@ -107,7 +106,7 @@ subroutine unrestricted_Bethe_Salpeter(TDA_W,TDA,dBSE,dTDA,evDyn,spin_conserved,
 
     if(dBSE) &
       call unrestricted_Bethe_Salpeter_dynamic_perturbation(ispin,dTDA,eta,nBas,nC,nO,nV,nR,nS,nS_aa,nS_bb,nS_sc,nS_sc, &
-                                                            eGW,ERI_aaaa,ERI_aabb,ERI_bbbb,ERI_abab,dipole_int_aa,dipole_int_bb, &
+                                                            eGW,ERI_aaaa,ERI_aabb,ERI_bbbb,dipole_int_aa,dipole_int_bb, &
                                                             OmRPA,rho_RPA,OmBSE_sc,XpY_BSE_sc,XmY_BSE_sc)
 
     deallocate(OmBSE_sc,XpY_BSE_sc,XmY_BSE_sc)
@@ -134,7 +133,7 @@ subroutine unrestricted_Bethe_Salpeter(TDA_W,TDA,dBSE,dTDA,evDyn,spin_conserved,
     ! Compute spin-flip BSE excitation energies
 
     call unrestricted_linear_response(ispin,.true.,TDA,.true.,eta,nBas,nC,nO,nV,nR,nS_ab,nS_ba,nS_sf,nS_sc,1d0, &
-                                      eGW,ERI_aaaa,ERI_aabb,ERI_bbbb,ERI_abab,OmRPA,rho_RPA,EcBSE(ispin),       & 
+                                      eGW,ERI_aaaa,ERI_aabb,ERI_bbbb,OmRPA,rho_RPA,EcBSE(ispin),       & 
                                       OmBSE_sf,XpY_BSE_sf,XmY_BSE_sf)
 
     call print_excitation('BSE@UG0W0',6,nS_sf,OmBSE_sf)
@@ -145,7 +144,7 @@ subroutine unrestricted_Bethe_Salpeter(TDA_W,TDA,dBSE,dTDA,evDyn,spin_conserved,
 
     if(dBSE) &
       call unrestricted_Bethe_Salpeter_dynamic_perturbation(ispin,dTDA,eta,nBas,nC,nO,nV,nR,nS,nS_ab,nS_ba,nS_sf,nS_sc, &
-                                                            eGW,ERI_aaaa,ERI_aabb,ERI_bbbb,ERI_abab,dipole_int_aa,dipole_int_bb, &
+                                                            eGW,ERI_aaaa,ERI_aabb,ERI_bbbb,dipole_int_aa,dipole_int_bb, &
                                                             OmRPA,rho_RPA,OmBSE_sf,XpY_BSE_sf,XmY_BSE_sf)
 
     deallocate(OmBSE_sf,XpY_BSE_sf,XmY_BSE_sf)

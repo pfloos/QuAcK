@@ -1,6 +1,6 @@
 subroutine evUGW(maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,COHSEX,BSE,TDA_W,TDA,    & 
                 G0W,GW0,dBSE,dTDA,evDyn,spin_conserved,spin_flip,eta,nBas,nC,nO,nV,nR,nS,ENuc, &
-                ERHF,Hc,ERI_aaaa,ERI_aabb,ERI_bbbb,ERI_abab,dipole_int_aa,dipole_int_bb,PHF,cHF,eHF,eG0W0)
+                ERHF,Hc,ERI_aaaa,ERI_aabb,ERI_bbbb,dipole_int_aa,dipole_int_bb,PHF,cHF,eHF,eG0W0)
 
 ! Perform self-consistent eigenvalue-only GW calculation
 
@@ -45,7 +45,6 @@ subroutine evUGW(maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,COHSEX,BSE
   double precision,intent(in)   :: ERI_aaaa(nBas,nBas,nBas,nBas)
   double precision,intent(in)   :: ERI_aabb(nBas,nBas,nBas,nBas)
   double precision,intent(in)   :: ERI_bbbb(nBas,nBas,nBas,nBas)
-  double precision,intent(in)   :: ERI_abab(nBas,nBas,nBas,nBas)
   double precision,intent(in)   :: dipole_int_aa(nBas,nBas,ncart)
   double precision,intent(in)   :: dipole_int_bb(nBas,nBas,ncart)
 
@@ -155,7 +154,7 @@ subroutine evUGW(maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,COHSEX,BSE
     if(.not. GW0 .or. nSCF == 0) then
 
       call unrestricted_linear_response(ispin,.true.,TDA_W,.false.,eta,nBas,nC,nO,nV,nR,nS_aa,nS_bb,nS_sc,nS_sc,1d0, &
-                                        eGW,ERI_aaaa,ERI_aabb,ERI_bbbb,ERI_abab,OmRPA,rho_RPA,EcRPA,OmRPA,XpY_RPA,XmY_RPA)
+                                        eGW,ERI_aaaa,ERI_aabb,ERI_bbbb,OmRPA,rho_RPA,EcRPA,OmRPA,XpY_RPA,XmY_RPA)
 
 
     endif
@@ -256,7 +255,7 @@ subroutine evUGW(maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,COHSEX,BSE
   if(BSE) then
 
     call unrestricted_Bethe_Salpeter(TDA_W,TDA,dBSE,dTDA,evDyn,spin_conserved,spin_flip,eta,nBas,nC,nO,nV,nR,nS, &
-                                     ERI_aaaa,ERI_aabb,ERI_bbbb,ERI_abab,dipole_int_aa,dipole_int_bb,eGW,eGW,EcBSE)
+                                     ERI_aaaa,ERI_aabb,ERI_bbbb,dipole_int_aa,dipole_int_bb,eGW,eGW,EcBSE)
 
 !   if(exchange_kernel) then
 

@@ -14,7 +14,7 @@ subroutine print_excitation(method,ispin,nS,Omega)
 ! Local variables
 
   character*14                       :: spin_manifold
-  integer,parameter                  :: maxS = 32
+  integer,parameter                  :: maxS = 10
   integer                            :: ia
 
   if(ispin == 1) spin_manifold = 'singlet'
