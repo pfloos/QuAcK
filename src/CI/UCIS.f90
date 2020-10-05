@@ -1,5 +1,5 @@
 subroutine UCIS(spin_conserved,spin_flip,nBas,nC,nO,nV,nR,nS,ERI_aaaa,ERI_aabb,ERI_bbbb,ERI_abab, &
-                dipole_int_aa,dipole_int_bb,eHF)
+                dipole_int_aa,dipole_int_bb,eHF,cHF,S)
 
 ! Perform configuration interaction single calculation`
 
@@ -17,6 +17,8 @@ subroutine UCIS(spin_conserved,spin_flip,nBas,nC,nO,nV,nR,nS,ERI_aaaa,ERI_aabb,E
   integer,intent(in)            :: nR(nspin)
   integer,intent(in)            :: nS(nspin)
   double precision,intent(in)   :: eHF(nBas,nspin)
+  double precision,intent(in)   :: cHF(nBas,nBas,nspin)
+  double precision,intent(in)   :: S(nBas,nBas)
   double precision,intent(in)   :: ERI_aaaa(nBas,nBas,nBas,nBas)
   double precision,intent(in)   :: ERI_aabb(nBas,nBas,nBas,nBas)
   double precision,intent(in)   :: ERI_bbbb(nBas,nBas,nBas,nBas)
@@ -27,7 +29,7 @@ subroutine UCIS(spin_conserved,spin_flip,nBas,nC,nO,nV,nR,nS,ERI_aaaa,ERI_aabb,E
 ! Local variables
 
   logical                       :: dump_matrix = .false.
-  logical                       :: dump_trans = .false.
+  logical                       :: dump_trans  = .false.
   integer                       :: ispin
   double precision              :: lambda
 
@@ -80,8 +82,8 @@ subroutine UCIS(spin_conserved,spin_flip,nBas,nC,nO,nV,nR,nS,ERI_aaaa,ERI_aabb,E
 
     call diagonalize_matrix(nS_sc,A_sc,Omega_sc)
     call print_excitation('UCIS        ',5,nS_sc,Omega_sc)
-    call print_unrestricted_transition_vectors(.true.,nBas,nC,nO,nV,nR,nS,nS_aa,nS_bb,nS_sc,dipole_int_aa,dipole_int_bb, &
-                                               Omega_sc,transpose(A_sc),transpose(A_sc))
+    call print_unrestricted_transition_vectors(ispin,nBas,nC,nO,nV,nR,nS,nS_aa,nS_bb,nS_sc,dipole_int_aa,dipole_int_bb, &
+                                               cHF,S,Omega_sc,transpose(A_sc),transpose(A_sc))
  
     if(dump_trans) then
       print*,'Spin-conserved CIS transition vectors'
@@ -118,14 +120,14 @@ subroutine UCIS(spin_conserved,spin_flip,nBas,nC,nO,nV,nR,nS,ERI_aaaa,ERI_aabb,E
       write(*,*)
     endif
 
-!   call diagonalize_matrix(nS_sf,A_sf,Omega_sf)
-    allocate(order(nS_sf))
-    call diagonalize_general_matrix(nS_sf,A_sf,Omega_sf,Z_sf)
-    call quick_sort(Omega_sf,order(:),nS_sf)
+    call diagonalize_matrix(nS_sf,A_sf,Omega_sf)
+!   allocate(order(nS_sf))
+!   call diagonalize_general_matrix(nS_sf,A_sf,Omega_sf,Z_sf)
+!   call quick_sort(Omega_sf,order(:),nS_sf)
 
     call print_excitation('UCIS        ',6,nS_sf,Omega_sf)
-    call print_unrestricted_transition_vectors(.false.,nBas,nC,nO,nV,nR,nS,nS_ab,nS_ba,nS_sf,dipole_int_aa,dipole_int_bb, &
-                                               Omega_sf,transpose(A_sf),transpose(A_sf))
+    call print_unrestricted_transition_vectors(ispin,nBas,nC,nO,nV,nR,nS,nS_ab,nS_ba,nS_sf,dipole_int_aa,dipole_int_bb, &
+                                               cHF,S,Omega_sf,transpose(A_sf),transpose(A_sf))
  
     if(dump_trans) then
       print*,'Spin-flip CIS transition vectors'

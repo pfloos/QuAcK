@@ -52,7 +52,7 @@ debug:
 
 .DEFAULT_GOAL := default
 .PHONY: default debug
-.PRECIOUS: $(LDIR)/%.a %/Makefile 
+.PRECIOUS: $(wildcard $(LDIR)/*.a) $(wildcard $(SDIR)/*/Makefile)
 
 clean: 
 	rm -f -- $(patsubst %/,$(LDIR)/%.a,$(wildcard */)) ; \

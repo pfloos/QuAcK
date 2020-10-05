@@ -1,4 +1,4 @@
-subroutine unrestricted_oscillator_strength(nBas,nC,nO,nV,nR,nS,nSa,nSb,nSt,dipole_int_aa,dipole_int_bb,Omega,XpY,XmY,os)
+subroutine unrestricted_oscillator_strength(nBas,nC,nO,nV,nR,nS,nSa,nSb,nSt,maxS,dipole_int_aa,dipole_int_bb,Omega,XpY,XmY,os)
 
 ! Compute linear response
 
@@ -17,6 +17,7 @@ subroutine unrestricted_oscillator_strength(nBas,nC,nO,nV,nR,nS,nSa,nSb,nSt,dipo
   integer,intent(in)            :: nSa
   integer,intent(in)            :: nSb
   integer,intent(in)            :: nSt
+  integer,intent(in)            :: maxS
   double precision              :: dipole_int_aa(nBas,nBas,ncart)
   double precision              :: dipole_int_bb(nBas,nBas,ncart)
   double precision,intent(in)   :: Omega(nSt)
@@ -25,7 +26,6 @@ subroutine unrestricted_oscillator_strength(nBas,nC,nO,nV,nR,nS,nSa,nSb,nSt,dipo
 
 ! Local variables
 
-  logical                       :: debug = .false.
   integer                       :: ia,jb,i,j,a,b
   integer                       :: ixyz
 
@@ -33,11 +33,11 @@ subroutine unrestricted_oscillator_strength(nBas,nC,nO,nV,nR,nS,nSa,nSb,nSt,dipo
 
 ! Output variables
 
-  double precision              :: os(nSt)
+  double precision              :: os(maxS)
 
 ! Memory allocation
 
-  allocate(f(nSt,ncart))
+  allocate(f(maxS,ncart))
 
 ! Initialization
    
@@ -45,7 +45,7 @@ subroutine unrestricted_oscillator_strength(nBas,nC,nO,nV,nR,nS,nSa,nSb,nSt,dipo
 
 ! Compute dipole moments and oscillator strengths
 
-  do ia=1,nSt
+  do ia=1,maxS
     do ixyz=1,ncart
 
       jb = 0
@@ -67,24 +67,19 @@ subroutine unrestricted_oscillator_strength(nBas,nC,nO,nV,nR,nS,nSa,nSb,nSt,dipo
     end do
   end do
 
-  do ia=1,nSt
+  do ia=1,maxS
     os(ia) = 2d0/3d0*Omega(ia)*sum(f(ia,:)**2)
   end do
     
-  if(debug) then
-
-    write(*,*) '------------------------'
-    write(*,*) ' Dipole moments (X Y Z) '
-    write(*,*) '------------------------'
-    call matout(nS,ncart,f)
-    write(*,*)
-
-    write(*,*) '----------------------'
-    write(*,*) ' Oscillator strengths '
-    write(*,*) '----------------------'
-    call matout(nS,1,os)
-    write(*,*)
-
-  end if
+  write(*,*) '---------------------------------------------------------------'
+  write(*,*) '                Transition dipole moment (au)                  '
+  write(*,*) '---------------------------------------------------------------'
+  write(*,'(A3,5A12)') '#','X','Y','Z','dip. str.','osc. str.'
+  write(*,*) '---------------------------------------------------------------'
+  do ia=1,maxS
+    write(*,'(I3,5F12.6)') ia,(f(ia,ixyz),ixyz=1,ncart),sum(f(ia,:)**2),os(ia)
+  end do
+  write(*,*) '---------------------------------------------------------------'
+  write(*,*)
 
 end subroutine unrestricted_oscillator_strength

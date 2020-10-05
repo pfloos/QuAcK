@@ -1,5 +1,5 @@
-subroutine print_unrestricted_transition_vectors(spin_allowed,nBas,nC,nO,nV,nR,nS,nSa,nSb,nSt,dipole_int_aa,dipole_int_bb, & 
-                                                 Omega,XpY,XmY)
+subroutine print_unrestricted_transition_vectors(ispin,nBas,nC,nO,nV,nR,nS,nSa,nSb,nSt,dipole_int_aa,dipole_int_bb, & 
+                                                 c,S,Omega,XpY,XmY)
 
 ! Print transition vectors for linear response calculation
 
@@ -8,7 +8,7 @@ subroutine print_unrestricted_transition_vectors(spin_allowed,nBas,nC,nO,nV,nR,n
 
 ! Input variables
 
-  logical,intent(in)            :: spin_allowed
+  integer,intent(in)            :: ispin
   integer,intent(in)            :: nBas
   integer,intent(in)            :: nC(nspin)
   integer,intent(in)            :: nO(nspin)
@@ -20,94 +20,148 @@ subroutine print_unrestricted_transition_vectors(spin_allowed,nBas,nC,nO,nV,nR,n
   integer,intent(in)            :: nSt
   double precision              :: dipole_int_aa(nBas,nBas,ncart)
   double precision              :: dipole_int_bb(nBas,nBas,ncart)
+  double precision,intent(in)   :: c(nBas,nBas,nspin)
+  double precision,intent(in)   :: S(nBas,nBas)
   double precision,intent(in)   :: Omega(nSt)
   double precision,intent(in)   :: XpY(nSt,nSt)
   double precision,intent(in)   :: XmY(nSt,nSt)
 
 ! Local variables
 
-  logical                       :: debug = .false.
-  integer                       :: ia,jb,i,j,a,b
-  integer                       :: ixyz
-  integer                       :: ispin
-  integer,parameter             :: maxS = 10
-  double precision              :: S2
+  integer                       :: ia,jb,j,b
+  integer                       :: maxS = 10
   double precision,parameter    :: thres_vec = 0.1d0
   double precision,allocatable  :: X(:)
   double precision,allocatable  :: Y(:)
-  double precision,allocatable  :: f(:,:)
   double precision,allocatable  :: os(:)
+  double precision,allocatable  :: S2(:)
 
 ! Memory allocation
 
-  allocate(X(nSt),Y(nSt),os(nSt))
+  maxS = min(nSt,maxS)
+  allocate(X(nSt),Y(nSt),os(maxS),S2(maxS))
 
 ! Compute oscillator strengths
 
   os(:) = 0d0
-  if(spin_allowed) call unrestricted_oscillator_strength(nBas,nC,nO,nV,nR,nS,nSa,nSb,nSt, & 
+  if(ispin == 1) call unrestricted_oscillator_strength(nBas,nC,nO,nV,nR,nS,nSa,nSb,nSt,maxS, & 
                                                          dipole_int_aa,dipole_int_bb,Omega,XpY,XmY,os)
 
-! Print details about excitations
+! Compute <S**2>
 
-  do ia=1,min(nSt,maxS)
+  call unrestricted_S2_expval(ispin,nBas,nC,nO,nV,nR,nS,nSa,nSb,nSt,maxS,c,S,XpY,XmY,S2)
 
-    X(:) = 0.5d0*(XpY(ia,:) + XmY(ia,:))
-    Y(:) = 0.5d0*(XpY(ia,:) - XmY(ia,:))
+! Print details about spin-conserved excitations
 
-    S2 = (nO(1) - nO(2))/2d0
-    S2 = 2d0*S2+1d0 
-    S2 = 0.0d0
-    do jb=1,nSa
-      S2 = S2 + 4d0*(X(jb)**2 + Y(jb)**2)
-    end do
-    do jb=1,nSb
-      S2 = S2 - 4d0*(X(nSa+jb)**2 + Y(nSa+jb)**2)
-    end do
+  if(ispin == 1) then
 
-    print*,'-------------------------------------------------------------'
-    write(*,'(A15,I3,A2,F10.6,A3,A6,F6.4,A11,F6.4)') & 
-            ' Excitation n. ',ia,': ',Omega(ia)*HaToeV,' eV','  f = ',os(ia),'  <S**2> = ',S2
-    print*,'-------------------------------------------------------------'
+    do ia=1,maxS
 
-    ! Spin-up transitions
+      X(:) = 0.5d0*(XpY(ia,:) + XmY(ia,:))
+      Y(:) = 0.5d0*(XpY(ia,:) - XmY(ia,:))
 
-    jb = 0
-    do j=nC(1)+1,nO(1)
-      do b=nO(1)+1,nBas-nR(1)
-        jb = jb + 1
-        if(abs(X(jb)) > thres_vec) write(*,'(I3,A5,I3,A4,F10.6)') j,'A -> ',b,'A = ',X(jb)
+
+      print*,'-------------------------------------------------------------'
+      write(*,'(A15,I3,A2,F10.6,A3,A6,F6.4,A11,F6.4)') & 
+              ' Excitation n. ',ia,': ',Omega(ia)*HaToeV,' eV','  f = ',os(ia),'  <S**2> = ',S2(ia)
+      print*,'-------------------------------------------------------------'
+
+      ! Spin-up transitions
+
+      jb = 0
+      do j=nC(1)+1,nO(1)
+        do b=nO(1)+1,nBas-nR(1)
+          jb = jb + 1
+          if(abs(X(jb)) > thres_vec) write(*,'(I3,A5,I3,A4,F10.6)') j,'A -> ',b,'A = ',X(jb)
+        end do
       end do
-    end do
- 
-    jb = 0
-    do j=nC(1)+1,nO(1)
-      do b=nO(1)+1,nBas-nR(1)
-        jb = jb + 1
-        if(abs(Y(jb)) > thres_vec) write(*,'(I3,A5,I3,A4,F10.6)') j,'A <- ',b,'A = ',Y(jb)
+   
+      jb = 0
+      do j=nC(1)+1,nO(1)
+        do b=nO(1)+1,nBas-nR(1)
+          jb = jb + 1
+          if(abs(Y(jb)) > thres_vec) write(*,'(I3,A5,I3,A4,F10.6)') j,'A <- ',b,'A = ',Y(jb)
+        end do
       end do
+
+      ! Spin-down transitions
+
+      jb = 0
+      do j=nC(2)+1,nO(2)
+        do b=nO(2)+1,nBas-nR(2)
+          jb = jb + 1
+          if(abs(X(nSa+jb)) > thres_vec) write(*,'(I3,A5,I3,A4,F10.6)') j,'B -> ',b,'B = ',X(nSa+jb)
+        end do
+      end do
+   
+      jb = 0
+      do j=nC(2)+1,nO(2)
+        do b=nO(2)+1,nBas-nR(2)
+          jb = jb + 1
+          if(abs(Y(nSa+jb)) > thres_vec) write(*,'(I3,A5,I3,A4,F10.6)') j,'B <- ',b,'B = ',Y(nSa+jb)
+        end do
+      end do
+     write(*,*)
+
     end do
 
-    ! Spin-down transitions
+  end if
 
-    jb = 0
-    do j=nC(2)+1,nO(2)
-      do b=nO(2)+1,nBas-nR(2)
-        jb = jb + 1
-        if(abs(X(nSa+jb)) > thres_vec) write(*,'(I3,A5,I3,A4,F10.6)') j,'B -> ',b,'B = ',X(nSa+jb)
-      end do
-    end do
- 
-    jb = 0
-    do j=nC(2)+1,nO(2)
-      do b=nO(2)+1,nBas-nR(2)
-        jb = jb + 1
-        if(abs(Y(nSa+jb)) > thres_vec) write(*,'(I3,A5,I3,A4,F10.6)') j,'B <- ',b,'B = ',Y(nSa+jb)
-      end do
-    end do
-   write(*,*)
+! Print details about spin-flip excitations
 
-  end do
+  if(ispin == 2) then
+
+    do ia=1,maxS
+
+      X(:) = 0.5d0*(XpY(ia,:) + XmY(ia,:))
+      Y(:) = 0.5d0*(XpY(ia,:) - XmY(ia,:))
+
+
+      print*,'-------------------------------------------------------------'
+      write(*,'(A15,I3,A2,F10.6,A3,A6,F6.4,A11,F6.4)') & 
+              ' Excitation n. ',ia,': ',Omega(ia)*HaToeV,' eV','  f = ',os(ia),'  <S**2> = ',S2(ia)
+      print*,'-------------------------------------------------------------'
+
+      ! Spin-up transitions
+
+      jb = 0
+      do j=nC(1)+1,nO(1)
+        do b=nO(2)+1,nBas-nR(2)
+          jb = jb + 1
+          if(abs(X(jb)) > thres_vec) write(*,'(I3,A5,I3,A4,F10.6)') j,'A -> ',b,'B = ',X(jb)
+        end do
+      end do
+   
+      jb = 0
+      do j=nC(1)+1,nO(1)
+        do b=nO(2)+1,nBas-nR(2)
+          jb = jb + 1
+          if(abs(Y(jb)) > thres_vec) write(*,'(I3,A5,I3,A4,F10.6)') j,'A <- ',b,'B = ',Y(jb)
+        end do
+      end do
+
+      ! Spin-down transitions
+
+      jb = 0
+      do j=nC(2)+1,nO(2)
+        do b=nO(1)+1,nBas-nR(1)
+          jb = jb + 1
+          if(abs(X(nSa+jb)) > thres_vec) write(*,'(I3,A5,I3,A4,F10.6)') j,'A -> ',b,'B = ',X(nSa+jb)
+        end do
+      end do
+   
+      jb = 0
+      do j=nC(2)+1,nO(2)
+        do b=nO(1)+1,nBas-nR(1)
+          jb = jb + 1
+          if(abs(Y(nSa+jb)) > thres_vec) write(*,'(I3,A5,I3,A4,F10.6)') j,'A <- ',b,'B = ',Y(nSa+jb)
+        end do
+      end do
+     write(*,*)
+
+    end do
+
+  end if
 
 ! Thomas-Reiche-Kuhn sum rule
 

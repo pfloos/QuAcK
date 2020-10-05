@@ -69,9 +69,9 @@ subroutine linear_response(ispin,dRPA,TDA,BSE,eta,nBas,nC,nO,nV,nR,nS,lambda,e,E
   if(minval(Omega) < 0d0) &
     call print_warning('You may have instabilities in linear response: A-B is not positive definite!!')
 
-  do ia=1,nS
-    if(Omega(ia) < 0d0) Omega(ia) = 0d0
-  end do
+! do ia=1,nS
+!   if(Omega(ia) < 0d0) Omega(ia) = 0d0
+! end do
 
   call ADAt(nS,AmB,1d0*sqrt(Omega),AmBSq)
   call ADAt(nS,AmB,1d0/sqrt(Omega),AmBIv)
@@ -83,9 +83,9 @@ subroutine linear_response(ispin,dRPA,TDA,BSE,eta,nBas,nC,nO,nV,nR,nS,lambda,e,E
   if(minval(Omega) < 0d0) & 
     call print_warning('You may have instabilities in linear response: negative excitations!!')
  
-  do ia=1,nS
-    if(Omega(ia) < 0d0) Omega(ia) = 0d0
-  end do
+! do ia=1,nS
+!   if(Omega(ia) < 0d0) Omega(ia) = 0d0
+! end do
 
   Omega = sqrt(Omega)
 

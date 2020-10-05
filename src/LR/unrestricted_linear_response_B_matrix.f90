@@ -139,7 +139,7 @@ subroutine unrestricted_linear_response_B_matrix(ispin,dRPA,nBas,nC,nO,nV,nR,nSa
           do b=nO(1)+1,nBas-nR(1)
             jb = jb + 1
  
-            B_lr(ia,nSa+jb) = - (1d0 - delta_dRPA)*lambda*ERI_abab(i,a,b,j)
+            B_lr(ia,nSa+jb) = - (1d0 - delta_dRPA)*lambda*ERI_aabb(i,j,b,a)
 
           end  do
         end  do
@@ -157,7 +157,7 @@ subroutine unrestricted_linear_response_B_matrix(ispin,dRPA,nBas,nC,nO,nV,nR,nSa
           do b=nO(2)+1,nBas-nR(2)
             jb = jb + 1
  
-            B_lr(nSa+ia,jb) = - (1d0 - delta_dRPA)*lambda*ERI_abab(b,j,i,a)
+            B_lr(nSa+ia,jb) = - (1d0 - delta_dRPA)*lambda*ERI_aabb(j,i,a,b)
 
           end  do
         end  do

@@ -21,10 +21,8 @@ subroutine print_transition_vectors(spin_allowed,nBas,nC,nO,nV,nR,nS,dipole_int,
 
 ! Local variables
 
-  logical                       :: debug = .false.
-  integer                       :: ia,jb,i,j,a,b
-  integer                       :: ixyz
-  integer,parameter             :: maxS = 10
+  integer                       :: ia,jb,j,b
+  integer                       :: maxS = 10
   double precision              :: S2
   double precision,parameter    :: thres_vec = 0.1d0
   double precision,allocatable  :: X(:)
@@ -33,19 +31,28 @@ subroutine print_transition_vectors(spin_allowed,nBas,nC,nO,nV,nR,nS,dipole_int,
 
 ! Memory allocation
 
-  allocate(X(nS),Y(nS),os(nS))
+  maxS = min(nS,maxS)
+  allocate(X(nS),Y(nS),os(maxS))
 
 ! Compute oscillator strengths
 
   os(:) = 0d0
-  if(spin_allowed) call oscillator_strength(nBas,nC,nO,nV,nR,nS,dipole_int,Omega,XpY,XmY,os)
+  if(spin_allowed) call oscillator_strength(nBas,nC,nO,nV,nR,nS,maxS,dipole_int,Omega,XpY,XmY,os)
 
 ! Print details about excitations
 
-  do ia=1,min(nS,maxS)
+  do ia=1,maxS
 
     X(:) = 0.5d0*(XpY(ia,:) + XmY(ia,:))
     Y(:) = 0.5d0*(XpY(ia,:) - XmY(ia,:))
+
+    ! <S**2> values
+
+    if(spin_allowed) then 
+      S2 = 0d0
+    else
+      S2 = 2d0
+    end if
 
     print*,'-------------------------------------------------------------'
     write(*,'(A15,I3,A2,F10.6,A3,A6,F6.4,A11,F6.4)') &

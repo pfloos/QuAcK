@@ -356,7 +356,8 @@ program QuAcK
 
       ! Memory allocation
      
-      allocate(ERI_MO_aaaa(nBas,nBas,nBas,nBas),ERI_MO_aabb(nBas,nBas,nBas,nBas),ERI_MO_bbbb(nBas,nBas,nBas,nBas))
+      allocate(ERI_MO_aaaa(nBas,nBas,nBas,nBas),ERI_MO_aabb(nBas,nBas,nBas,nBas), & 
+               ERI_MO_bbbb(nBas,nBas,nBas,nBas),ERI_MO_abab(nBas,nBas,nBas,nBas))
      
       ! 4-index transform for (aa|aa) block
      
@@ -382,21 +383,14 @@ program QuAcK
       ket2 = 2
       call AOtoMO_integral_transform(bra1,bra2,ket1,ket2,nBas,cHF,ERI_AO,ERI_MO_bbbb)
 
-      if(spin_flip) then 
+      ! 4-index transform for (ab|ab) block
 
-        allocate(ERI_MO_abab(nBas,nBas,nBas,nBas))
+      bra1 = 1
+      bra2 = 2
+      ket1 = 1
+      ket2 = 2
+      call AOtoMO_integral_transform(bra1,bra2,ket1,ket2,nBas,cHF,ERI_AO,ERI_MO_abab)
 
-        ! 4-index transform for (ab|ab) block
-
-        bra1 = 1
-        bra2 = 2
-        ket1 = 1
-        ket2 = 2
-        call AOtoMO_integral_transform(bra1,bra2,ket1,ket2,nBas,cHF,ERI_AO,ERI_MO_abab)
-
-      end if
-      
-     
     else
 
       ! Memory allocation
@@ -618,7 +612,7 @@ program QuAcK
     if(unrestricted) then
 
       call UCIS(spin_conserved,spin_flip,nBas,nC,nO,nV,nR,nS,ERI_MO_aaaa,ERI_MO_aabb, & 
-                ERI_MO_bbbb,ERI_MO_abab,dipole_int_aa,dipole_int_bb,eHF)
+                ERI_MO_bbbb,ERI_MO_abab,dipole_int_aa,dipole_int_bb,eHF,cHF,S)
 
    else 
 
@@ -675,7 +669,7 @@ program QuAcK
     if(unrestricted) then
 
        call UdRPA(TDA,doACFDT,exchange_kernel,spin_conserved,spin_flip,0d0,nBas,nC,nO,nV,nR,nS,ENuc,EUHF, &
-                  ERI_MO_aaaa,ERI_MO_aabb,ERI_MO_bbbb,ERI_MO_abab,dipole_int_aa,dipole_int_bb,eHF)
+                  ERI_MO_aaaa,ERI_MO_aabb,ERI_MO_bbbb,ERI_MO_abab,dipole_int_aa,dipole_int_bb,eHF,cHF,S)
 
     else
 
@@ -700,7 +694,7 @@ program QuAcK
     if(unrestricted) then
 
        call URPAx(TDA,doACFDT,exchange_kernel,spin_conserved,spin_flip,0d0,nBas,nC,nO,nV,nR,nS,ENuc,EUHF, &
-                  ERI_MO_aaaa,ERI_MO_aabb,ERI_MO_bbbb,ERI_MO_abab,dipole_int_aa,dipole_int_bb,eHF)
+                  ERI_MO_aaaa,ERI_MO_aabb,ERI_MO_bbbb,ERI_MO_abab,dipole_int_aa,dipole_int_bb,eHF,cHF,S)
 
     else 
 

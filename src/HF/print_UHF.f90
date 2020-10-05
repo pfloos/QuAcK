@@ -1,4 +1,4 @@
-subroutine print_UHF(nBas,nO,S,e,c,ENuc,ET,EV,EJ,Ex,EUHF,dipole)
+subroutine print_UHF(nBas,nO,Ov,e,c,ENuc,ET,EV,EJ,Ex,EUHF,dipole)
 
 ! Print one- and two-electron energies and other stuff for UHF calculation
 
@@ -7,7 +7,7 @@ subroutine print_UHF(nBas,nO,S,e,c,ENuc,ET,EV,EJ,Ex,EUHF,dipole)
 
   integer,intent(in)                 :: nBas
   integer,intent(in)                 :: nO(nspin)
-  double precision,intent(in)        :: S(nBas,nBas)
+  double precision,intent(in)        :: Ov(nBas,nBas)
   double precision,intent(in)        :: e(nBas,nspin)
   double precision,intent(in)        :: c(nBas,nBas,nspin)
   double precision,intent(in)        :: ENuc
@@ -19,14 +19,12 @@ subroutine print_UHF(nBas,nO,S,e,c,ENuc,ET,EV,EJ,Ex,EUHF,dipole)
   double precision,intent(in)        :: dipole(ncart)
 
   integer                            :: ixyz
-  integer                            :: i,j
   integer                            :: ispin
   double precision                   :: HOMO(nspin)
   double precision                   :: LUMO(nspin)
   double precision                   :: Gap(nspin)
-  double precision                   :: S2_exact
-  double precision                   :: S2
-  integer                            :: spin_state
+  double precision                   :: S_exact,S2_exact
+  double precision                   :: S,S2
 
 ! HOMO and LUMO
 
@@ -47,9 +45,10 @@ subroutine print_UHF(nBas,nO,S,e,c,ENuc,ET,EV,EJ,Ex,EUHF,dipole)
   end do
 
   S2_exact = dble(nO(1) - nO(2))/2d0*(dble(nO(1) - nO(2))/2d0 + 1d0) 
-  S2 = S2_exact + nO(2) - sum(matmul(transpose(c(:,1:nO(1),1)),matmul(S,c(:,1:nO(2),2)))**2)
+  S2 = S2_exact + nO(2) - sum(matmul(transpose(c(:,1:nO(1),1)),matmul(Ov,c(:,1:nO(2),2)))**2)
 
-  spin_state = nO(1) - nO(2) + 1
+  S_exact = 0.5d0*dble(nO(1) - nO(2))
+  S = -0.5d0 + 0.5d0*sqrt(1d0 + 4d0*S2)
 
 ! Dump results
 
@@ -91,7 +90,8 @@ subroutine print_UHF(nBas,nO,S,e,c,ENuc,ET,EV,EJ,Ex,EUHF,dipole)
   write(*,'(A40,F13.6,A3)')     ' UHF LUMO b    energy:',LUMO(2)*HatoeV,' eV'
   write(*,'(A40,F13.6,A3)')     ' UHF HOMOb-LUMOb gap :',Gap(2)*HatoeV,' eV'
   write(*,'(A60)')              '-------------------------------------------------'
-  write(*,'(A40,I6)')           '  2S+1               :',spin_state
+  write(*,'(A40,F13.6)')        '  S (exact)          :',2d0*S_exact + 1d0
+  write(*,'(A40,F13.6)')        '  S                  :',2d0*S       + 1d0
   write(*,'(A40,F13.6)')        ' <S**2> (exact)      :',S2_exact
   write(*,'(A40,F13.6)')        ' <S**2>              :',S2
   write(*,'(A60)')              '-------------------------------------------------'

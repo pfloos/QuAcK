@@ -1,4 +1,4 @@
-subroutine oscillator_strength(nBas,nC,nO,nV,nR,nS,dipole_int,Omega,XpY,XmY,os)
+subroutine oscillator_strength(nBas,nC,nO,nV,nR,nS,maxS,dipole_int,Omega,XpY,XmY,os)
 
 ! Compute linear response
 
@@ -13,6 +13,7 @@ subroutine oscillator_strength(nBas,nC,nO,nV,nR,nS,dipole_int,Omega,XpY,XmY,os)
   integer,intent(in)            :: nV
   integer,intent(in)            :: nR
   integer,intent(in)            :: nS
+  integer,intent(in)            :: maxS
   double precision              :: dipole_int(nBas,nBas,ncart)
   double precision,intent(in)   :: Omega(nS)
   double precision,intent(in)   :: XpY(nS,nS)
@@ -20,7 +21,6 @@ subroutine oscillator_strength(nBas,nC,nO,nV,nR,nS,dipole_int,Omega,XpY,XmY,os)
   
 ! Local variables
 
-  logical                       :: debug = .false.
   integer                       :: ia,jb,i,j,a,b
   integer                       :: ixyz
 
@@ -32,7 +32,7 @@ subroutine oscillator_strength(nBas,nC,nO,nV,nR,nS,dipole_int,Omega,XpY,XmY,os)
 
 ! Memory allocation
 
-  allocate(f(nS,ncart))
+  allocate(f(maxS,ncart))
 
 ! Initialization
    
@@ -40,7 +40,7 @@ subroutine oscillator_strength(nBas,nC,nO,nV,nR,nS,dipole_int,Omega,XpY,XmY,os)
 
 ! Compute dipole moments and oscillator strengths
 
-  do ia=1,nS
+  do ia=1,maxS
     do ixyz=1,ncart
       jb = 0
       do j=nC+1,nO
@@ -53,24 +53,19 @@ subroutine oscillator_strength(nBas,nC,nO,nV,nR,nS,dipole_int,Omega,XpY,XmY,os)
   end do
   f(:,:) = sqrt(2d0)*f(:,:)
 
-  do ia=1,nS
+  do ia=1,maxS
     os(ia) = 2d0/3d0*Omega(ia)*sum(f(ia,:)**2)
   end do
-    
-  if(debug) then
-
-    write(*,*) '------------------------'
-    write(*,*) ' Dipole moments (X Y Z) '
-    write(*,*) '------------------------'
-    call matout(nS,ncart,f)
-    write(*,*)
-
-    write(*,*) '----------------------'
-    write(*,*) ' Oscillator strengths '
-    write(*,*) '----------------------'
-    call matout(nS,1,os)
-    write(*,*)
-
-  end if
+ 
+  write(*,*) '---------------------------------------------------------------'
+  write(*,*) '                Transition dipole moment (au)                  '
+  write(*,*) '---------------------------------------------------------------'
+  write(*,'(A3,5A12)') '#','X','Y','Z','dip. str.','osc. str.'
+  write(*,*) '---------------------------------------------------------------'
+  do ia=1,maxS
+    write(*,'(I3,5F12.6)') ia,(f(ia,ixyz),ixyz=1,ncart),sum(f(ia,:)**2),os(ia)
+  end do
+  write(*,*) '---------------------------------------------------------------'
+  write(*,*)
 
 end subroutine oscillator_strength
