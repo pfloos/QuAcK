@@ -56,7 +56,6 @@ program QuAcK
   double precision,allocatable  :: T(:,:)
   double precision,allocatable  :: V(:,:)
   double precision,allocatable  :: Hc(:,:)
-  double precision,allocatable  :: H(:,:)
   double precision,allocatable  :: X(:,:)
   double precision,allocatable  :: dipole_int(:,:,:)
   double precision,allocatable  :: dipole_int_aa(:,:,:)
@@ -64,7 +63,6 @@ program QuAcK
   double precision,allocatable  :: ERI_AO(:,:,:,:)
   double precision,allocatable  :: ERI_MO(:,:,:,:)
   integer                       :: ixyz
-  integer                       :: ispin
   integer                       :: bra1,bra2
   integer                       :: ket1,ket2
   double precision,allocatable  :: ERI_MO_aaaa(:,:,:,:)
@@ -234,7 +232,7 @@ program QuAcK
 ! Memory allocation for one- and two-electron integrals
 
   allocate(cHF(nBas,nBas,nspin),eHF(nBas,nspin),eG0W0(nBas,nspin),eG0T0(nBas,nspin),PHF(nBas,nBas,nspin), &
-           S(nBas,nBas),T(nBas,nBas),V(nBas,nBas),Hc(nBas,nBas),H(nBas,nBas),X(nBas,nBas),ERI_AO(nBas,nBas,nBas,nBas), &
+           S(nBas,nBas),T(nBas,nBas),V(nBas,nBas),Hc(nBas,nBas),X(nBas,nBas),ERI_AO(nBas,nBas,nBas,nBas), &
            dipole_int(nBas,nBas,ncart))
 
 ! Read integrals
@@ -321,10 +319,6 @@ program QuAcK
 !------------------------------------------------------------------------
 ! AO to MO integral transform for post-HF methods
 !------------------------------------------------------------------------
-
-! Compute Hartree Hamiltonian in the MO basis
-
-  call Hartree_matrix_MO_basis(nBas,cHF,PHF,Hc,ERI_AO,H)
 
   call cpu_time(start_AOtoMO)
 
@@ -811,12 +805,12 @@ program QuAcK
     if(unrestricted) then 
 
       call UG0W0(doACFDT,exchange_kernel,doXBS,COHSEX,BSE,TDA_W,TDA,dBSE,dTDA,evDyn,spin_conserved,spin_flip,   & 
-                 linGW,eta_GW,nBas,nC,nO,nV,nR,nS,ENuc,EUHF,Hc,ERI_MO_aaaa,ERI_MO_aabb,ERI_MO_bbbb, & 
+                 linGW,eta_GW,nBas,nC,nO,nV,nR,nS,ENuc,EUHF,S,ERI_MO_aaaa,ERI_MO_aabb,ERI_MO_bbbb, & 
                  dipole_int_aa,dipole_int_bb,PHF,cHF,eHF,eG0W0)
     else
 
       call G0W0(doACFDT,exchange_kernel,doXBS,COHSEX,SOSEX,BSE,TDA_W,TDA,dBSE,dTDA,evDyn,singlet,triplet, &
-                linGW,eta_GW,nBas,nC,nO,nV,nR,nS,ENuc,ERHF,Hc,ERI_MO,dipole_int,PHF,cHF,eHF,eG0W0)
+                linGW,eta_GW,nBas,nC,nO,nV,nR,nS,ENuc,ERHF,ERI_MO,dipole_int,eHF,eG0W0)
 
     end if
 
@@ -839,14 +833,14 @@ program QuAcK
 
       call evUGW(maxSCF_GW,thresh_GW,n_diis_GW,doACFDT,exchange_kernel,doXBS,COHSEX,BSE,TDA_W,TDA,   &
                 G0W,GW0,dBSE,dTDA,evDyn,spin_conserved,spin_flip,eta_GW,nBas,nC,nO,nV,nR,nS,ENuc,    &
-                EUHF,Hc,ERI_MO_aaaa,ERI_MO_aabb,ERI_MO_bbbb,dipole_int_aa,dipole_int_bb, & 
-                PHF,cHF,eHF,eG0W0)
+                EUHF,S,ERI_MO_aaaa,ERI_MO_aabb,ERI_MO_bbbb,dipole_int_aa,dipole_int_bb, & 
+                cHF,eHF,eG0W0)
 
     else
 
       call evGW(maxSCF_GW,thresh_GW,n_diis_GW,doACFDT,exchange_kernel,doXBS,COHSEX,SOSEX,       &
                 BSE,TDA_W,TDA,G0W,GW0,dBSE,dTDA,evDyn,singlet,triplet,eta_GW, &
-                nBas,nC,nO,nV,nR,nS,ENuc,ERHF,Hc,ERI_MO,dipole_int,PHF,cHF,eHF,eG0W0)
+                nBas,nC,nO,nV,nR,nS,ENuc,ERHF,ERI_MO,dipole_int,eHF,eG0W0)
     end if
     call cpu_time(end_evGW)
 
@@ -1016,7 +1010,7 @@ program QuAcK
     call cpu_time(start_G0W0)
     call G0W0(doACFDT,exchange_kernel,doXBS,COHSEX,SOSEX,BSE,TDA_W,TDA,       & 
               dBSE,dTDA,evDyn,singlet,triplet,linGW,eta_GW, & 
-              nBas,nC,nO,nV,nR,nS,ENuc,ERHF,Hc,ERI_ERF_MO,dipole_int,PHF,cHF,eHF,eG0W0)
+              nBas,nC,nO,nV,nR,nS,ENuc,ERHF,ERI_ERF_MO,dipole_int,eHF,eG0W0)
     call cpu_time(end_G0W0)
   
     t_G0W0 = end_G0W0 - start_G0W0

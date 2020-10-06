@@ -33,7 +33,6 @@ subroutine unrestricted_linear_response(ispin,dRPA,TDA,BSE,eta,nBas,nC,nO,nV,nR,
   
 ! Local variables
 
-  integer                       :: ia
   double precision,external     :: trace_matrix
   double precision,allocatable  :: A(:,:)
   double precision,allocatable  :: B(:,:)
@@ -65,8 +64,15 @@ subroutine unrestricted_linear_response(ispin,dRPA,TDA,BSE,eta,nBas,nC,nO,nV,nR,
 
 ! Tamm-Dancoff approximation
 
-  B = 0d0
-  if(.not. TDA) then
+  if(TDA) then
+
+    B(:,:)   = 0d0
+    XpY(:,:) = A(:,:)
+    XmY(:,:) = 0d0
+    call diagonalize_matrix(nSt,XpY,Omega)
+    XpY(:,:) = transpose(XpY(:,:))
+
+  else
 
     call unrestricted_linear_response_B_matrix(ispin,dRPA,nBas,nC,nO,nV,nR,nSa,nSb,nSt,lambda, & 
                                                ERI_aaaa,ERI_aabb,ERI_bbbb,B)
@@ -75,45 +81,45 @@ subroutine unrestricted_linear_response(ispin,dRPA,TDA,BSE,eta,nBas,nC,nO,nV,nR,
       call unrestricted_Bethe_Salpeter_B_matrix(ispin,eta,nBas,nC,nO,nV,nR,nSa,nSb,nSt,nS_sc,lambda, & 
                                                 ERI_aaaa,ERI_aabb,ERI_bbbb,OmRPA,rho_RPA,B)
 
-  end if
+  ! Build A + B and A - B matrices 
 
-! Build A + B and A - B matrices 
+    ApB = A + B
+    AmB = A - B
 
-  ApB = A + B
-  AmB = A - B
+  ! Diagonalize linear response matrix
 
-! Diagonalize linear response matrix
+   call diagonalize_matrix(nSt,AmB,Omega)
 
-  call diagonalize_matrix(nSt,AmB,Omega)
+    if(minval(Omega) < 0d0) &
+      call print_warning('You may have instabilities in linear response: A-B is not positive definite!!')
 
-  if(minval(Omega) < 0d0) &
-    call print_warning('You may have instabilities in linear response: A-B is not positive definite!!')
+  ! do ia=1,nSt
+  !   if(Omega(ia) < 0d0) Omega(ia) = 0d0
+  ! end do
 
-! do ia=1,nSt
-!   if(Omega(ia) < 0d0) Omega(ia) = 0d0
-! end do
-
-  call ADAt(nSt,AmB,1d0*sqrt(Omega),AmBSq)
-  call ADAt(nSt,AmB,1d0/sqrt(Omega),AmBIv)
-
-  Z = matmul(AmBSq,matmul(ApB,AmBSq))
-
-  call diagonalize_matrix(nSt,Z,Omega)
-
-  if(minval(Omega) < 0d0) & 
-    call print_warning('You may have instabilities in linear response: negative excitations!!')
+    call ADAt(nSt,AmB,1d0*sqrt(Omega),AmBSq)
+    call ADAt(nSt,AmB,1d0/sqrt(Omega),AmBIv)
  
-! do ia=1,nSt
-!   if(Omega(ia) < 0d0) Omega(ia) = 0d0
-! end do
+    Z = matmul(AmBSq,matmul(ApB,AmBSq))
+ 
+    call diagonalize_matrix(nSt,Z,Omega)
 
-  Omega = sqrt(Omega)
+    if(minval(Omega) < 0d0) & 
+      call print_warning('You may have instabilities in linear response: negative excitations!!')
+ 
+  ! do ia=1,nSt
+  !   if(Omega(ia) < 0d0) Omega(ia) = 0d0
+  ! end do
 
-  XpY = matmul(transpose(Z),AmBSq)
-  call DA(nSt,1d0/sqrt(Omega),XpY)
+    Omega = sqrt(Omega)
+ 
+    XpY = matmul(transpose(Z),AmBSq)
+    call DA(nSt,1d0/sqrt(Omega),XpY)
+ 
+    XmY = matmul(transpose(Z),AmBIv)
+    call DA(nSt,1d0*sqrt(Omega),XmY)
 
-  XmY = matmul(transpose(Z),AmBIv)
-  call DA(nSt,1d0*sqrt(Omega),XmY)
+  end if
 
 ! Compute the RPA correlation energy
 

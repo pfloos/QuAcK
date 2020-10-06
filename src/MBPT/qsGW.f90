@@ -223,7 +223,7 @@ subroutine qsGW(maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,COHSEX,SOSE
     ! Print results
 
 !   call print_excitation('RPA   ',ispin,nS,Omega(:,ispin))
-    call print_qsGW(nBas,nO,nSCF,Conv,thresh,eHF,eGW,c,ENuc,P,T,V,Hc,J,K,F,SigCp,Z,EcRPA,EcGM,EqsGW)
+    call print_qsGW(nBas,nO,nSCF,Conv,thresh,eHF,eGW,c,ENuc,P,T,V,J,K,F,SigCp,Z,EcRPA,EcGM,EqsGW)
 
     ! Increment
 

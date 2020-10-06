@@ -1,4 +1,4 @@
-subroutine print_qsGW(nBas,nO,nSCF,Conv,thresh,eHF,eGW,c,ENuc,P,T,V,Hc,J,K,F,SigC,Z,EcRPA,EcGM,EqsGW)
+subroutine print_qsGW(nBas,nO,nSCF,Conv,thresh,eHF,eGW,c,ENuc,P,T,V,J,K,F,SigC,Z,EcRPA,EcGM,EqsGW)
 
 
 ! Print one-electron energies and other stuff for qsGW
@@ -11,7 +11,7 @@ subroutine print_qsGW(nBas,nO,nSCF,Conv,thresh,eHF,eGW,c,ENuc,P,T,V,Hc,J,K,F,Sig
   integer,intent(in)                 :: nBas,nO,nSCF
   double precision,intent(in)        :: ENuc,EcRPA,EcGM,Conv,thresh
   double precision,intent(in)        :: eHF(nBas),eGW(nBas),c(nBas),P(nBas,nBas) 
-  double precision,intent(in)        :: T(nBas,nBas),V(nBas,nBas),Hc(nBas,nBas)
+  double precision,intent(in)        :: T(nBas,nBas),V(nBas,nBas)
   double precision,intent(in)        :: J(nBas,nBas),K(nBas,nBas),F(nBas,nBas)
   double precision,intent(in)        :: Z(nBas),SigC(nBas,nBas)
 

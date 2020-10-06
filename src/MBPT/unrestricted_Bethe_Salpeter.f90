@@ -1,6 +1,6 @@
 subroutine unrestricted_Bethe_Salpeter(TDA_W,TDA,dBSE,dTDA,evDyn,spin_conserved,spin_flip,eta,  & 
-                                       nBas,nC,nO,nV,nR,nS,ERI_aaaa,ERI_aabb,ERI_bbbb, & 
-                                       dipole_int_aa,dipole_int_bb,eW,eGW,EcBSE)
+                                       nBas,nC,nO,nV,nR,nS,S,ERI_aaaa,ERI_aabb,ERI_bbbb, & 
+                                       dipole_int_aa,dipole_int_bb,cW,eW,eGW,EcBSE)
 
 ! Compute the Bethe-Salpeter excitation energies
 
@@ -24,6 +24,8 @@ subroutine unrestricted_Bethe_Salpeter(TDA_W,TDA,dBSE,dTDA,evDyn,spin_conserved,
   integer,intent(in)            :: nV(nspin)
   integer,intent(in)            :: nR(nspin)
   integer,intent(in)            :: nS(nspin)
+  double precision,intent(in)   :: S(nBas,nBas)
+  double precision,intent(in)   :: cW(nBas,nBas,nspin)
   double precision,intent(in)   :: eW(nBas,nspin)
   double precision,intent(in)   :: eGW(nBas,nspin)
   double precision,intent(in)   :: ERI_aaaa(nBas,nBas,nBas,nBas)
@@ -96,9 +98,9 @@ subroutine unrestricted_Bethe_Salpeter(TDA_W,TDA,dBSE,dTDA,evDyn,spin_conserved,
     call unrestricted_linear_response(ispin,.true.,TDA,.true.,eta,nBas,nC,nO,nV,nR,nS_aa,nS_bb,nS_sc,nS_sc,1d0, &
                                       eGW,ERI_aaaa,ERI_aabb,ERI_bbbb,OmRPA,rho_RPA,EcBSE(ispin),       & 
                                       OmBSE_sc,XpY_BSE_sc,XmY_BSE_sc)
-    call print_excitation('BSE@UG0W0',5,nS_sc,OmBSE_sc)
-!   call print_unrestricted_transition_vectors(ispin,nBas,nC,nO,nV,nR,nS,nS_aa,nS_bb,nS_sc,dipole_int_aa,dipole_int_bb, &
-!                                              OmBSE_sc,XpY_BSE_sc,XmY_BSE_sc)
+    call print_excitation('BSE@UGW  ',5,nS_sc,OmBSE_sc)
+    call print_unrestricted_transition_vectors(ispin,nBas,nC,nO,nV,nR,nS,nS_aa,nS_bb,nS_sc,dipole_int_aa,dipole_int_bb, &
+                                               cW,S,OmBSE_sc,XpY_BSE_sc,XmY_BSE_sc)
 
     !-------------------------------------------------
     ! Compute the dynamical screening at the BSE level
@@ -136,7 +138,9 @@ subroutine unrestricted_Bethe_Salpeter(TDA_W,TDA,dBSE,dTDA,evDyn,spin_conserved,
                                       eGW,ERI_aaaa,ERI_aabb,ERI_bbbb,OmRPA,rho_RPA,EcBSE(ispin),       & 
                                       OmBSE_sf,XpY_BSE_sf,XmY_BSE_sf)
 
-    call print_excitation('BSE@UG0W0',6,nS_sf,OmBSE_sf)
+    call print_excitation('BSE@UGW  ',6,nS_sf,OmBSE_sf)
+    call print_unrestricted_transition_vectors(ispin,nBas,nC,nO,nV,nR,nS,nS_ab,nS_ba,nS_sf,dipole_int_aa,dipole_int_bb, &
+                                               cW,S,OmBSE_sf,XpY_BSE_sf,XmY_BSE_sf)
 
     !-------------------------------------------------
     ! Compute the dynamical screening at the BSE level

@@ -1,5 +1,5 @@
 subroutine UG0W0(doACFDT,exchange_kernel,doXBS,COHSEX,BSE,TDA_W,TDA,dBSE,dTDA,evDyn,spin_conserved,spin_flip, &
-                 linearize,eta,nBas,nC,nO,nV,nR,nS,ENuc,EUHF,Hc,ERI_aaaa,ERI_aabb,ERI_bbbb,          & 
+                 linearize,eta,nBas,nC,nO,nV,nR,nS,ENuc,EUHF,S,ERI_aaaa,ERI_aabb,ERI_bbbb,          & 
                  dipole_int_aa,dipole_int_bb,PHF,cHF,eHF,eGW)
 
 ! Perform unrestricted G0W0 calculation
@@ -33,15 +33,15 @@ subroutine UG0W0(doACFDT,exchange_kernel,doXBS,COHSEX,BSE,TDA_W,TDA,dBSE,dTDA,ev
   integer,intent(in)            :: nS(nspin)
   double precision,intent(in)   :: ENuc
   double precision,intent(in)   :: EUHF
-  double precision,intent(in)   :: eHF(nBas,nspin)
-  double precision,intent(in)   :: cHF(nBas,nBas,nspin)
-  double precision,intent(in)   :: PHF(nBas,nBas,nspin)
-  double precision,intent(in)   :: Hc(nBas,nBas,nspin)
+  double precision,intent(in)   :: S(nBas,nBas)
   double precision,intent(in)   :: ERI_aaaa(nBas,nBas,nBas,nBas)
   double precision,intent(in)   :: ERI_aabb(nBas,nBas,nBas,nBas)
   double precision,intent(in)   :: ERI_bbbb(nBas,nBas,nBas,nBas)
   double precision,intent(in)   :: dipole_int_aa(nBas,nBas,ncart)
   double precision,intent(in)   :: dipole_int_bb(nBas,nBas,ncart)
+  double precision,intent(in)   :: eHF(nBas,nspin)
+  double precision,intent(in)   :: cHF(nBas,nBas,nspin)
+  double precision,intent(in)   :: PHF(nBas,nBas,nspin)
 
 ! Local variables
 
@@ -180,8 +180,8 @@ subroutine UG0W0(doACFDT,exchange_kernel,doXBS,COHSEX,BSE,TDA_W,TDA,dBSE,dTDA,ev
 
   if(BSE) then
 
-    call unrestricted_Bethe_Salpeter(TDA_W,TDA,dBSE,dTDA,evDyn,spin_conserved,spin_flip,eta,nBas,nC,nO,nV,nR,nS, &
-                                     ERI_aaaa,ERI_aabb,ERI_bbbb,dipole_int_aa,dipole_int_bb,eHF,eGW,EcBSE)
+    call unrestricted_Bethe_Salpeter(TDA_W,TDA,dBSE,dTDA,evDyn,spin_conserved,spin_flip,eta,nBas,nC,nO,nV,nR,nS,S, &
+                                     ERI_aaaa,ERI_aabb,ERI_bbbb,dipole_int_aa,dipole_int_bb,cHF,eHF,eGW,EcBSE)
 
 !   if(exchange_kernel) then
 !

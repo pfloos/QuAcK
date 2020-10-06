@@ -29,7 +29,7 @@ subroutine print_unrestricted_transition_vectors(ispin,nBas,nC,nO,nV,nR,nS,nSa,n
 ! Local variables
 
   integer                       :: ia,jb,j,b
-  integer                       :: maxS = 10
+  integer                       :: maxS = 20
   double precision,parameter    :: thres_vec = 0.1d0
   double precision,allocatable  :: X(:)
   double precision,allocatable  :: Y(:)

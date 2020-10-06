@@ -62,7 +62,7 @@ subroutine unrestricted_S2_expval(ispin,nBas,nC,nO,nV,nR,nS,nSa,nSb,nSt,maxS,c,S
 !-------------------------!
 
   S2_exact = dble(nO(1) - nO(2))/2d0*(dble(nO(1) - nO(2))/2d0 + 1d0)
-  S2_gs    = S2_exact + nO(2) - sum(OO(:,:)**2)
+  S2_gs    = S2_exact + dble(nO(2)) - sum(OO(:,:)**2)
 
 !------------------------------------------!
 ! <S**2> for spin-conserved-excited states !
@@ -152,7 +152,7 @@ subroutine unrestricted_S2_expval(ispin,nBas,nC,nO,nV,nR,nS,nSa,nSb,nSt,maxS,c,S
       Yat(:,:) = transpose(Ya(:,:))
       Ybt(:,:) = transpose(Yb(:,:))
 
-      S2(m) = S2_gs & 
+      S2(m) = S2_gs + dble(nO(2) - nO(1)) + 1d0 &
 
             + trace_matrix(nV(1),matmul(Xbt,matmul(OOt,matmul(OO,Xb)))) &
             - trace_matrix(nO(2),matmul(Xb,matmul(VO,matmul(VOt,Xbt)))) &
