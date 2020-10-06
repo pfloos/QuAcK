@@ -51,9 +51,9 @@ subroutine linear_response(ispin,dRPA,TDA,BSE,eta,nBas,nC,nO,nV,nR,nS,lambda,e,E
  
     B(:,:)   = 0d0
     XpY(:,:) = A(:,:)
-    XmY(:,:) = 0d0
     call diagonalize_matrix(nS,XpY,Omega)
     XpY(:,:) = transpose(XpY(:,:))
+    XmY(:,:) = XpY(:,:)
 
   else
 

@@ -147,10 +147,10 @@ subroutine unrestricted_Bethe_Salpeter_A_matrix_dynamic(ispin,eta,nBas,nC,nO,nV,
             chi = 0d0
             do kc=1,nS_sc
 
-              eps = + OmBSE - OmRPA(kc) - (eGW(a,1) - eGW(j,2))
+              eps = + OmBSE - OmRPA(kc) - (eGW(a,2) - eGW(j,1))
               chi = chi + rho_RPA(i,j,kc,1)*rho_RPA(a,b,kc,2)*eps/(eps**2 + eta**2)
 
-              eps = + OmBSE - OmRPA(kc) - (eGW(b,1) - eGW(i,2))
+              eps = + OmBSE - OmRPA(kc) - (eGW(b,2) - eGW(i,1))
               chi = chi + rho_RPA(i,j,kc,1)*rho_RPA(a,b,kc,2)*eps/(eps**2 + eta**2)
 
             enddo
@@ -183,10 +183,10 @@ subroutine unrestricted_Bethe_Salpeter_A_matrix_dynamic(ispin,eta,nBas,nC,nO,nV,
             chi = 0d0
             do kc=1,nS_sc
 
-              eps = + OmBSE - OmRPA(kc) - (eGW(a,2) - eGW(j,1))
+              eps = + OmBSE - OmRPA(kc) - (eGW(a,1) - eGW(j,2))
               chi = chi + rho_RPA(i,j,kc,2)*rho_RPA(a,b,kc,1)*eps/(eps**2 + eta**2)
 
-              eps = + OmBSE - OmRPA(kc) - (eGW(b,2) - eGW(i,1))
+              eps = + OmBSE - OmRPA(kc) - (eGW(b,1) - eGW(i,2))
               chi = chi + rho_RPA(i,j,kc,2)*rho_RPA(a,b,kc,1)*eps/(eps**2 + eta**2)
 
             enddo

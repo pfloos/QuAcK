@@ -99,20 +99,20 @@ subroutine unrestricted_S2_expval(ispin,nBas,nC,nO,nV,nR,nS,nSa,nSb,nSt,maxS,c,S
       Yat(:,:) = transpose(Ya(:,:))
       Ybt(:,:) = transpose(Yb(:,:))
 
-      S2(m) = S2_gs &
-            + trace_matrix(nV(1),matmul(Xat,matmul(OO,matmul(OOt,Xa)))) &
-            + trace_matrix(nV(2),matmul(Xbt,matmul(OOt,matmul(OO,Xb)))) &
-            - trace_matrix(nO(1),matmul(Xa,matmul(VO,matmul(VOt,Xat)))) &
-            - trace_matrix(nO(2),matmul(Xb,matmul(OVt,matmul(OV,Xbt)))) &
+      S2(m) = S2_gs                                                         &
+            + trace_matrix(nV(1),matmul(Xat,matmul(OO,matmul(OOt,Xa))))     &
+            + trace_matrix(nV(2),matmul(Xbt,matmul(OOt,matmul(OO,Xb))))     &
+            - trace_matrix(nO(1),matmul(Xa,matmul(VO,matmul(VOt,Xat))))     &
+            - trace_matrix(nO(2),matmul(Xb,matmul(OVt,matmul(OV,Xbt))))     &
             - 2d0*trace_matrix(nO(1),matmul(OO,matmul(Xb,matmul(VVt,Xat)))) &
             
-            - 2d0*trace_matrix(nV(2),matmul(OVt,matmul(Xa,matmul(VO,Yb)))) &
-            - 2d0*trace_matrix(nV(1),matmul(VO,matmul(Xb,matmul(OVt,Ya)))) &
+            - 2d0*trace_matrix(nV(2),matmul(OVt,matmul(Xa,matmul(VO,Yb))))  &
+            - 2d0*trace_matrix(nV(1),matmul(VO,matmul(Xb,matmul(OVt,Ya))))  &
             
-            - trace_matrix(nV(1),matmul(Yat,matmul(OO,matmul(OOt,Ya)))) &
-            - trace_matrix(nV(2),matmul(Ybt,matmul(OOt,matmul(OO,Yb)))) &
-            + trace_matrix(nO(1),matmul(Ya,matmul(VO,matmul(VOt,Yat)))) &
-            + trace_matrix(nO(2),matmul(Yb,matmul(OVt,matmul(OV,Ybt)))) &
+            - trace_matrix(nV(1),matmul(Yat,matmul(OO,matmul(OOt,Ya))))     &
+            - trace_matrix(nV(2),matmul(Ybt,matmul(OOt,matmul(OO,Yb))))     &
+            + trace_matrix(nO(1),matmul(Ya,matmul(VO,matmul(VOt,Yat))))     &
+            + trace_matrix(nO(2),matmul(Yb,matmul(OVt,matmul(OV,Ybt))))     &
             + 2d0*trace_matrix(nO(1),matmul(Ya,matmul(VV,matmul(Ybt,OOt))))
 
     end do
@@ -155,22 +155,22 @@ subroutine unrestricted_S2_expval(ispin,nBas,nC,nO,nV,nR,nS,nSa,nSb,nSt,maxS,c,S
 
       S2(m) = S2_gs + dble(nO(2) - nO(1)) + 1d0  
         
-      S2(m) = S2(m) &
+      S2(m) = S2(m)                                                                    &
 
-            + trace_matrix(nV(1),matmul(Xbt,matmul(OOt,matmul(OO,Xb)))) &
-            - trace_matrix(nO(2),matmul(Xb,matmul(VO,matmul(VOt,Xbt)))) &
-            + trace_matrix(nO(2),matmul(Xb,VO))**2 &
-            + trace_matrix(nV(2),matmul(Yat,matmul(OO,matmul(OOt,Ya)))) &
-            + trace_matrix(nO(1),matmul(Ya,matmul(OVt,matmul(OV,Yat)))) &
-            + trace_matrix(nO(1),matmul(Ya,OVt))**2 &
+            + trace_matrix(nV(1),matmul(Xbt,matmul(OOt,matmul(OO,Xb))))                &
+            - trace_matrix(nO(2),matmul(Xb,matmul(VO,matmul(VOt,Xbt))))                &
+            + trace_matrix(nO(2),matmul(Xb,VO))**2                                     &
+            + trace_matrix(nV(2),matmul(Yat,matmul(OO,matmul(OOt,Ya))))                &
+            + trace_matrix(nO(1),matmul(Ya,matmul(OVt,matmul(OV,Yat))))                &
+            + trace_matrix(nO(1),matmul(Ya,OVt))**2                                    &
             - 2d0*trace_matrix(nO(2),matmul(Xb,VO))*trace_matrix(nO(1),matmul(Ya,OVt)) &
 
-            + trace_matrix(nV(2),matmul(Xat,matmul(OO,matmul(OOt,Xa)))) &
-            - trace_matrix(nO(1),matmul(Xa,matmul(OVt,matmul(OV,Xat)))) &
-            + trace_matrix(nO(1),matmul(Xa,OVt))**2 &
-            + trace_matrix(nV(1),matmul(Ybt,matmul(OOt,matmul(OO,Yb)))) &
-            - trace_matrix(nO(2),matmul(Yb,matmul(VO,matmul(VOt,Ybt)))) &
-            + trace_matrix(nV(1),matmul(Ybt,VOt))**2 &
+            + trace_matrix(nV(2),matmul(Xat,matmul(OO,matmul(OOt,Xa))))                &
+            - trace_matrix(nO(1),matmul(Xa,matmul(OVt,matmul(OV,Xat))))                &
+            + trace_matrix(nO(1),matmul(Xa,OVt))**2                                    &
+            + trace_matrix(nV(1),matmul(Ybt,matmul(OOt,matmul(OO,Yb))))                &
+            - trace_matrix(nO(2),matmul(Yb,matmul(VO,matmul(VOt,Ybt))))                &
+            + trace_matrix(nV(1),matmul(Ybt,VOt))**2                                   &
             - 2d0*trace_matrix(nO(1),matmul(Xa,OVt))*trace_matrix(nO(2),matmul(Yb,VO))
 
     end do

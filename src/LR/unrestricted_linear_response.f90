@@ -68,9 +68,9 @@ subroutine unrestricted_linear_response(ispin,dRPA,TDA,BSE,eta,nBas,nC,nO,nV,nR,
 
     B(:,:)   = 0d0
     XpY(:,:) = A(:,:)
-    XmY(:,:) = 0d0
     call diagonalize_matrix(nSt,XpY,Omega)
     XpY(:,:) = transpose(XpY(:,:))
+    XmY(:,:) = XpY(:,:)
 
   else
 
