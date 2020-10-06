@@ -49,7 +49,7 @@ subroutine print_unrestricted_transition_vectors(ispin,nBas,nC,nO,nV,nR,nS,nSa,n
 
 ! Compute <S**2>
 
-  call unrestricted_S2_expval(ispin,nBas,nC,nO,nV,nR,nS,nSa,nSb,nSt,maxS,c,S,XpY,XmY,S2)
+  call unrestricted_S2_expval(ispin,nBas,nC,nO,nV,nR,nS,nSa,nSb,nSt,maxS,c,S,Omega,XpY,XmY,S2)
 
 ! Print details about spin-conserved excitations
 
@@ -59,7 +59,6 @@ subroutine print_unrestricted_transition_vectors(ispin,nBas,nC,nO,nV,nR,nS,nSa,n
 
       X(:) = 0.5d0*(XpY(ia,:) + XmY(ia,:))
       Y(:) = 0.5d0*(XpY(ia,:) - XmY(ia,:))
-
 
       print*,'-------------------------------------------------------------'
       write(*,'(A15,I3,A2,F10.6,A3,A6,F6.4,A11,F6.4)') & 

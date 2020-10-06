@@ -80,7 +80,8 @@ subroutine UHF(maxSCF,thresh,max_diis,guess_type,nNuc,ZNuc,rNuc,ENuc,nBas,nO,S,T
 ! Guess coefficients and eigenvalues
 
   if(guess_type == 1) then
-
+    
+    F(:,:,:) = 0d0
     do ispin=1,nspin
       F(:,:,ispin) = Hc(:,:)
     end do
@@ -154,8 +155,9 @@ subroutine UHF(maxSCF,thresh,max_diis,guess_type,nNuc,ZNuc,rNuc,ENuc,nBas,nO,S,T
     do ispin=1,nspin
       call exchange_matrix_AO_basis(nBas,P(:,:,ispin),ERI(:,:,:,:),K(:,:,ispin))
     end do
-
+ 
 !   Build Fock operator
+
     do ispin=1,nspin
       F(:,:,ispin) = Hc(:,:) + J(:,:,ispin) + J(:,:,mod(ispin,2)+1) + K(:,:,ispin)
     end do
@@ -166,7 +168,7 @@ subroutine UHF(maxSCF,thresh,max_diis,guess_type,nNuc,ZNuc,rNuc,ENuc,nBas,nO,S,T
       err(:,:,ispin) = matmul(F(:,:,ispin),matmul(P(:,:,ispin),S(:,:))) - matmul(matmul(S(:,:),P(:,:,ispin)),F(:,:,ispin))
     end do
 
-    conv = maxval(abs(err(:,:,:)))
+    if(nSCF > 1) conv = maxval(abs(err(:,:,:)))
     
 !   DIIS extrapolation
 

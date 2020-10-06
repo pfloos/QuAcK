@@ -1,4 +1,4 @@
-subroutine unrestricted_S2_expval(ispin,nBas,nC,nO,nV,nR,nS,nSa,nSb,nSt,maxS,c,S,XpY,XmY,S2)
+subroutine unrestricted_S2_expval(ispin,nBas,nC,nO,nV,nR,nS,nSa,nSb,nSt,maxS,c,S,Omega,XpY,XmY,S2)
 
 ! Compute <S**2> for linear response excited states
 
@@ -21,6 +21,7 @@ subroutine unrestricted_S2_expval(ispin,nBas,nC,nO,nV,nR,nS,nSa,nSb,nSt,maxS,c,S
   integer,intent(in)            :: maxS
   double precision,intent(in)   :: c(nBas,nBas,nspin)
   double precision,intent(in)   :: S(nBas,nBas)
+  double precision,intent(in)   :: Omega(nSt)
   double precision,intent(in)   :: XpY(nSt,nSt)
   double precision,intent(in)   :: XmY(nSt,nSt)
 
@@ -152,7 +153,9 @@ subroutine unrestricted_S2_expval(ispin,nBas,nC,nO,nV,nR,nS,nSa,nSb,nSt,maxS,c,S
       Yat(:,:) = transpose(Ya(:,:))
       Ybt(:,:) = transpose(Yb(:,:))
 
-      S2(m) = S2_gs + dble(nO(2) - nO(1)) + 1d0 &
+      S2(m) = S2_gs + dble(nO(2) - nO(1)) + 1d0  
+        
+      S2(m) = S2(m) &
 
             + trace_matrix(nV(1),matmul(Xbt,matmul(OOt,matmul(OO,Xb)))) &
             - trace_matrix(nO(2),matmul(Xb,matmul(VO,matmul(VOt,Xbt)))) &
