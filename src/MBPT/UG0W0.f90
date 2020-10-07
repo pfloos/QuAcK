@@ -183,58 +183,58 @@ subroutine UG0W0(doACFDT,exchange_kernel,doXBS,COHSEX,BSE,TDA_W,TDA,dBSE,dTDA,ev
     call unrestricted_Bethe_Salpeter(TDA_W,TDA,dBSE,dTDA,evDyn,spin_conserved,spin_flip,eta,nBas,nC,nO,nV,nR,nS,S, &
                                      ERI_aaaa,ERI_aabb,ERI_bbbb,dipole_int_aa,dipole_int_bb,cHF,eHF,eGW,EcBSE)
 
-!   if(exchange_kernel) then
-!
-!     EcRPA(1) = 0.5d0*EcRPA(1)
-!     EcRPA(2) = 1.5d0*EcRPA(1)
-!
-!   end if
+    if(exchange_kernel) then
+ 
+      EcBSE(1) = 0.5d0*EcBSE(1)
+      EcBSE(2) = 1.5d0*EcBSE(1)
+ 
+    end if
 
-!   write(*,*)
-!   write(*,*)'-------------------------------------------------------------------------------'
-!   write(*,'(2X,A50,F20.10)') 'Tr@BSE@G0W0 correlation energy (singlet) =',EcBSE(1)
-!   write(*,'(2X,A50,F20.10)') 'Tr@BSE@G0W0 correlation energy (triplet) =',EcBSE(2)
-!   write(*,'(2X,A50,F20.10)') 'Tr@BSE@G0W0 correlation energy           =',EcBSE(1) + EcBSE(2)
-!   write(*,'(2X,A50,F20.10)') 'Tr@BSE@G0W0 total energy                 =',ENuc + EUHF + EcBSE(1) + EcBSE(2)
-!   write(*,*)'-------------------------------------------------------------------------------'
-!   write(*,*)
+    write(*,*)
+    write(*,*)'-------------------------------------------------------------------------------'
+    write(*,'(2X,A50,F20.10)') 'Tr@BSE@G0W0 correlation energy (spin-conserved) =',EcBSE(1)
+    write(*,'(2X,A50,F20.10)') 'Tr@BSE@G0W0 correlation energy (spin-flip)      =',EcBSE(2)
+    write(*,'(2X,A50,F20.10)') 'Tr@BSE@G0W0 correlation energy                  =',EcBSE(1) + EcBSE(2)
+    write(*,'(2X,A50,F20.10)') 'Tr@BSE@G0W0 total energy                        =',ENuc + EUHF + EcBSE(1) + EcBSE(2)
+    write(*,*)'-------------------------------------------------------------------------------'
+    write(*,*)
 
 !   Compute the BSE correlation energy via the adiabatic connection 
 
-!   if(doACFDT) then
+    if(doACFDT) then
 
-!     write(*,*) '------------------------------------------------------'
-!     write(*,*) 'Adiabatic connection version of BSE correlation energy'
-!     write(*,*) '------------------------------------------------------'
-!     write(*,*) 
+      write(*,*) '------------------------------------------------------'
+      write(*,*) 'Adiabatic connection version of BSE correlation energy'
+      write(*,*) '------------------------------------------------------'
+      write(*,*) 
 
-!     if(doXBS) then 
+      if(doXBS) then 
 
-!       write(*,*) '*** scaled screening version (XBS) ***'
-!       write(*,*)
+        write(*,*) '*** scaled screening version (XBS) ***'
+        write(*,*)
 
-!     end if
+      end if
 
-!     call ACFDT(exchange_kernel,doXBS,.true.,TDA_W,TDA,BSE,singlet_manifold,triplet_manifold,eta, & 
-!                nBas,nC,nO,nV,nR,nS,ERI,eHF,eGW,Omega,XpY,XmY,rho,EcAC)
+      call ACFDT(exchange_kernel,doXBS,.true.,TDA_W,TDA,BSE,spin_conserved,spin_flip,eta, & 
+                 nBas,nC,nO,nV,nR,nS,ERI_aaaa,ERI_aabb,ERI_bbbb,eHF,eGW,EcAC)
 
-!     if(exchange_kernel) then
-! 
-!       EcAC(1) = 0.5d0*EcAC(1)
-!       EcAC(2) = 1.5d0*EcAC(1)
-! 
-!     end if
+      if(exchange_kernel) then
+  
+        EcAC(1) = 0.5d0*EcAC(1)
+        EcAC(2) = 1.5d0*EcAC(1)
+  
+      end if
 
-!     write(*,*)
-!     write(*,*)'-------------------------------------------------------------------------------'
-!     write(*,'(2X,A50,F20.10)') 'AC@BSE@G0W0 correlation energy (singlet) =',EcAC(1)
-!     write(*,'(2X,A50,F20.10)') 'AC@BSE@G0W0 correlation energy (triplet) =',EcAC(2)
-!     write(*,'(2X,A50,F20.10)') 'AC@BSE@G0W0 correlation energy           =',EcAC(1) + EcAC(2)
-!     write(*,'(2X,A50,F20.10)') 'AC@BSE@G0W0 total energy                 =',ENuc + EUHF + EcAC(1) + EcAC(2)
-!     write(*,*)'-------------------------------------------------------------------------------'
-!     write(*,*)
+      write(*,*)
+      write(*,*)'-------------------------------------------------------------------------------'
+      write(*,'(2X,A50,F20.10)') 'AC@BSE@G0W0 correlation energy (spin-conserved) =',EcAC(1)
+      write(*,'(2X,A50,F20.10)') 'AC@BSE@G0W0 correlation energy (spin-flip)      =',EcAC(2)
+      write(*,'(2X,A50,F20.10)') 'AC@BSE@G0W0 correlation energy                  =',EcAC(1) + EcAC(2)
+      write(*,'(2X,A50,F20.10)') 'AC@BSE@G0W0 total energy                        =',ENuc + EUHF + EcAC(1) + EcAC(2)
+      write(*,*)'-------------------------------------------------------------------------------'
+      write(*,*)
 
-!   end if
+    end if
 
   end if
 

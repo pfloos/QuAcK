@@ -115,12 +115,12 @@ subroutine UdRPA(TDA,doACFDT,exchange_kernel,spin_conserved,spin_flip,eta,nBas,n
 
   endif
 
-! if(exchange_kernel) then
+  if(exchange_kernel) then
 
-!   EcRPA(1) = 0.5d0*EcRPA(1)
-!   EcRPA(2) = 1.5d0*EcRPA(2)
+    EcRPA(1) = 0.5d0*EcRPA(1)
+    EcRPA(2) = 1.5d0*EcRPA(2)
 
-! end if
+  end if
 
   write(*,*)
   write(*,*)'-------------------------------------------------------------------------------'
@@ -133,32 +133,32 @@ subroutine UdRPA(TDA,doACFDT,exchange_kernel,spin_conserved,spin_flip,eta,nBas,n
 
 ! Compute the correlation energy via the adiabatic connection 
 
-! if(doACFDT) then
+  if(doACFDT) then
 
-!   write(*,*) '-------------------------------------------------------'
-!   write(*,*) 'Adiabatic connection version of RPA correlation energy'
-!   write(*,*) '-------------------------------------------------------'
-!   write(*,*)
+    write(*,*) '-------------------------------------------------------'
+    write(*,*) 'Adiabatic connection version of RPA correlation energy'
+    write(*,*) '-------------------------------------------------------'
+    write(*,*)
 
-!   call ACFDT(exchange_kernel,.false.,.false.,.false.,.false.,.false.,singlet,triplet,eta, &
-!              nBas,nC,nO,nV,nR,nS,ERI,e,e,Omega,XpY,XmY,rho,EcAC)
+    call unrestricted_ACFDT(exchange_kernel,.false.,.false.,.false.,.false.,.false.,spin_conserved,spin_flip,eta, &
+                            nBas,nC,nO,nV,nR,nS,ERI_aaaa,ERI_aabb,ERI_bbbb,e,e,EcAC)
 
-!   if(exchange_kernel) then
+    if(exchange_kernel) then
 
-!     EcAC(1) = 0.5d0*EcAC(1)
-!     EcAC(2) = 1.5d0*EcAC(2)
+      EcAC(1) = 0.5d0*EcAC(1)
+      EcAC(2) = 1.5d0*EcAC(2)
 
-!   end if
+    end if
 
-!   write(*,*)
-!   write(*,*)'-------------------------------------------------------------------------------'
-!   write(*,'(2X,A50,F20.10)') 'AC@RPA correlation energy (singlet) =',EcAC(1)
-!   write(*,'(2X,A50,F20.10)') 'AC@RPA correlation energy (triplet) =',EcAC(2)
-!   write(*,'(2X,A50,F20.10)') 'AC@RPA correlation energy           =',EcAC(1) + EcAC(2)
-!   write(*,'(2X,A50,F20.10)') 'AC@RPA total energy                 =',ENuc + EUHF + EcAC(1) + EcAC(2)
-!   write(*,*)'-------------------------------------------------------------------------------'
-!   write(*,*)
+    write(*,*)
+    write(*,*)'-------------------------------------------------------------------------------'
+    write(*,'(2X,A50,F20.10)') 'AC@RPA correlation energy (spin-conserved) =',EcAC(1)
+    write(*,'(2X,A50,F20.10)') 'AC@RPA correlation energy (spin-flip)      =',EcAC(2)
+    write(*,'(2X,A50,F20.10)') 'AC@RPA correlation energy                  =',EcAC(1) + EcAC(2)
+    write(*,'(2X,A50,F20.10)') 'AC@RPA total energy                        =',ENuc + EUHF + EcAC(1) + EcAC(2)
+    write(*,*)'-------------------------------------------------------------------------------'
+    write(*,*)
 
-! end if
+  end if
 
 end subroutine UdRPA
