@@ -1,4 +1,4 @@
-subroutine dRPA(TDA,doACFDT,exchange_kernel,singlet,triplet,eta,nBas,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,dipole_int,eHF)
+subroutine RPA(TDA,doACFDT,exchange_kernel,singlet,triplet,eta,nBas,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,dipole_int,eHF)
 
 ! Perform a direct random phase approximation calculation
 
@@ -135,4 +135,4 @@ subroutine dRPA(TDA,doACFDT,exchange_kernel,singlet,triplet,eta,nBas,nC,nO,nV,nR
 
   end if
 
-end subroutine dRPA
+end subroutine RPA

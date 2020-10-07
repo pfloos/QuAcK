@@ -126,7 +126,6 @@ subroutine ACFDT(exchange_kernel,doXBS,dRPA,TDA_W,TDA,BSE,singlet,triplet,eta,nB
   if(triplet) then
 
     ispin = 2
-    isp_W = 1
 
     write(*,*) '--------------'
     write(*,*) 'Triplet states'

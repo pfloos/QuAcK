@@ -1,6 +1,6 @@
 subroutine evUGW(maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,COHSEX,BSE,TDA_W,TDA,    & 
                 G0W,GW0,dBSE,dTDA,evDyn,spin_conserved,spin_flip,eta,nBas,nC,nO,nV,nR,nS,ENuc, &
-                ERHF,S,ERI_aaaa,ERI_aabb,ERI_bbbb,dipole_int_aa,dipole_int_bb,cHF,eHF,eG0W0)
+                EUHF,S,ERI_aaaa,ERI_aabb,ERI_bbbb,dipole_int_aa,dipole_int_bb,cHF,eHF,eG0W0)
 
 ! Perform self-consistent eigenvalue-only GW calculation
 
@@ -13,7 +13,7 @@ subroutine evUGW(maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,COHSEX,BSE
   integer,intent(in)            :: max_diis
   double precision,intent(in)   :: thresh
   double precision,intent(in)   :: ENuc
-  double precision,intent(in)   :: ERHF
+  double precision,intent(in)   :: EUHF
   logical,intent(in)            :: doACFDT
   logical,intent(in)            :: exchange_kernel
   logical,intent(in)            :: doXBS
@@ -59,7 +59,6 @@ subroutine evUGW(maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,COHSEX,BSE
   double precision              :: EcRPA
   double precision              :: EcBSE(nspin)
   double precision              :: EcAC(nspin)
-  double precision              :: EcGM
   double precision              :: alpha
   double precision,allocatable  :: error_diis(:,:,:)
   double precision,allocatable  :: e_diis(:,:,:)
@@ -192,7 +191,7 @@ subroutine evUGW(maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,COHSEX,BSE
 
     ! Print results
 
-    call print_evUGW(nBas,nO,nSCF,Conv,eHF,ENuc,ERHF,SigC,Z,eGW,EcRPA)
+    call print_evUGW(nBas,nO,nSCF,Conv,eHF,ENuc,EUHF,SigC,Z,eGW,EcRPA)
 
     ! Linear mixing or DIIS extrapolation
 
@@ -256,50 +255,51 @@ subroutine evUGW(maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,COHSEX,BSE
     call unrestricted_Bethe_Salpeter(TDA_W,TDA,dBSE,dTDA,evDyn,spin_conserved,spin_flip,eta,nBas,nC,nO,nV,nR,nS, &
                                      S,ERI_aaaa,ERI_aabb,ERI_bbbb,dipole_int_aa,dipole_int_bb,cHF,eGW,eGW,EcBSE)
 
-!   if(exchange_kernel) then
+    if(exchange_kernel) then
 
-!     EcBSE(1) = 0.5d0*EcBSE(1)
-!     EcBSE(2) = 1.5d0*EcBSE(2)
+      EcBSE(1) = 0.5d0*EcBSE(1)
+      EcBSE(2) = 1.5d0*EcBSE(2)
 
-!   end if
+    end if
 
-!   write(*,*)
-!   write(*,*)'-------------------------------------------------------------------------------'
-!   write(*,'(2X,A50,F20.10)') 'Tr@BSE@evGW correlation energy (singlet) =',EcBSE(1)
-!   write(*,'(2X,A50,F20.10)') 'Tr@BSE@evGW correlation energy (triplet) =',EcBSE(2)
-!   write(*,'(2X,A50,F20.10)') 'Tr@BSE@evGW correlation energy           =',EcBSE(1) + EcBSE(2)
-!   write(*,'(2X,A50,F20.10)') 'Tr@BSE@evGW total energy                 =',ENuc + ERHF + EcBSE(1) + EcBSE(2)
-!   write(*,*)'-------------------------------------------------------------------------------'
-!   write(*,*)
+    write(*,*)
+    write(*,*)'-------------------------------------------------------------------------------'
+    write(*,'(2X,A50,F20.10)') 'Tr@BSE@evUGW correlation energy (spin-conserved) =',EcBSE(1)
+    write(*,'(2X,A50,F20.10)') 'Tr@BSE@evUGW correlation energy (spin-flip)      =',EcBSE(2)
+    write(*,'(2X,A50,F20.10)') 'Tr@BSE@evUGW correlation energy                  =',EcBSE(1) + EcBSE(2)
+    write(*,'(2X,A50,F20.10)') 'Tr@BSE@evUGW total energy                        =',ENuc + EUHF + EcBSE(1) + EcBSE(2)
+    write(*,*)'-------------------------------------------------------------------------------'
+    write(*,*)
 
 !   Compute the BSE correlation energy via the adiabatic connection 
 
-!   if(doACFDT) then
+    if(doACFDT) then
 
-!     write(*,*) '------------------------------------------------------'
-!     write(*,*) 'Adiabatic connection version of BSE correlation energy'
-!     write(*,*) '------------------------------------------------------'
-!     write(*,*)
+      write(*,*) '--------------------------------------------------------------'
+      write(*,*) ' Adiabatic connection version of BSE@evUGW correlation energy '
+      write(*,*) '--------------------------------------------------------------'
+      write(*,*)
 
-!     if(doXBS) then
+      if(doXBS) then
 
-!       write(*,*) '*** scaled screening version (XBS) ***'
-!       write(*,*)
+        write(*,*) '*** scaled screening version (XBS) ***'
+        write(*,*)
 
-!     end if
+      end if
 
-!     call ACFDT(exchange_kernel,doXBS,.true.,TDA_W,TDA,BSE,singlet,triplet,eta,nBas,nC,nO,nV,nR,nS,ERI,eGW,eGW,EcAC)
+      call unrestricted_ACFDT(exchange_kernel,doXBS,.true.,TDA_W,TDA,BSE,spin_conserved,spin_flip, &
+                              eta,nBas,nC,nO,nV,nR,nS,ERI_aaaa,ERI_aabb,ERI_bbbb,eGW,eGW,EcAC)
 
-!     write(*,*)
-!     write(*,*)'-------------------------------------------------------------------------------'
-!     write(*,'(2X,A50,F20.10)') 'AC@BSE@evGW correlation energy (singlet) =',EcAC(1)
-!     write(*,'(2X,A50,F20.10)') 'AC@BSE@evGW correlation energy (triplet) =',EcAC(2)
-!     write(*,'(2X,A50,F20.10)') 'AC@BSE@evGW correlation energy           =',EcAC(1) + EcAC(2)
-!     write(*,'(2X,A50,F20.10)') 'AC@BSE@evGW total energy                 =',ENuc + ERHF + EcAC(1) + EcAC(2)
-!     write(*,*)'-------------------------------------------------------------------------------'
-!     write(*,*)
+      write(*,*)
+      write(*,*)'-------------------------------------------------------------------------------'
+      write(*,'(2X,A50,F20.10)') 'AC@BSE@evUGW correlation energy (spin-conserved) =',EcAC(1)
+      write(*,'(2X,A50,F20.10)') 'AC@BSE@evUGW correlation energy (spin-flip)      =',EcAC(2)
+      write(*,'(2X,A50,F20.10)') 'AC@BSE@evUGW correlation energy                  =',EcAC(1) + EcAC(2)
+      write(*,'(2X,A50,F20.10)') 'AC@BSE@evUGW total energy                        =',ENuc + EUHF + EcAC(1) + EcAC(2)
+      write(*,*)'-------------------------------------------------------------------------------'
+      write(*,*)
 
-!   end if
+    end if
 
   endif
 

@@ -43,7 +43,7 @@ subroutine unrestricted_ACFDT(exchange_kernel,doXBS,dRPA,TDA_W,TDA,BSE,spin_cons
   double precision,allocatable  :: OmRPA(:)
   double precision,allocatable  :: XpY_RPA(:,:)
   double precision,allocatable  :: XmY_RPA(:,:)
-  double precision,allocatable  :: rho_RPA(:,:,:)
+  double precision,allocatable  :: rho_RPA(:,:,:,:)
 
   integer                       :: nS_aa,nS_bb,nS_sc
   double precision,allocatable  :: Omega_sc(:)
@@ -62,7 +62,6 @@ subroutine unrestricted_ACFDT(exchange_kernel,doXBS,dRPA,TDA_W,TDA,BSE,spin_cons
 ! Memory allocation
 
   allocate(Ec(nAC,nspin))
-  allocate(OmRPA(nS_sc),XpY_RPA(nS_sc,nS_sc),XmY_RPA(nS_sc,nS_sc),rho_RPA(nBas,nBas,nS_sc))
 
 ! Antisymmetrized kernel version
 
@@ -87,6 +86,12 @@ subroutine unrestricted_ACFDT(exchange_kernel,doXBS,dRPA,TDA_W,TDA,BSE,spin_cons
   nS_aa = nS(1)
   nS_bb = nS(2)
   nS_sc = nS_aa + nS_bb
+
+  nS_ab = (nO(1) - nC(1))*(nV(2) - nR(2))
+  nS_ba = (nO(2) - nC(2))*(nV(1) - nR(1))
+  nS_sf = nS_ab + nS_ba
+
+  allocate(OmRPA(nS_sc),XpY_RPA(nS_sc,nS_sc),XmY_RPA(nS_sc,nS_sc),rho_RPA(nBas,nBas,nS_sc,nspin))
 
   call unrestricted_linear_response(isp_W,.true.,TDA_W,.false.,eta,nBas,nC,nO,nV,nR,nS_aa,nS_bb,nS_sc,nS_sc,1d0,eW, &
                                     ERI_aaaa,ERI_aabb,ERI_bbbb,OmRPA,rho_RPA,EcRPA,OmRPA,XpY_RPA,XmY_RPA)
@@ -122,10 +127,10 @@ subroutine unrestricted_ACFDT(exchange_kernel,doXBS,dRPA,TDA_W,TDA,BSE,spin_cons
       end if
 
       call unrestricted_linear_response(ispin,dRPA,TDA,BSE,eta,nBas,nC,nO,nV,nR,nS_aa,nS_bb,nS_sc,nS_sc,lambda,e, &
-                                        ERI_aaaa,ERI_aabb,ERI_bbbb,OmRPA,rho_RPA,EcRPA,Omega_sc,XpY_sc,XmY_sc)
+                                        ERI_aaaa,ERI_aabb,ERI_bbbb,OmRPA,rho_RPA,EcAC(ispin),Omega_sc,XpY_sc,XmY_sc)
 
-      call unrestricted_ACFDT_correlation_energy(ispin,exchange_kernel,nBas,nC,nO,nV,nR,nS,nS_ab,nS_ba,nS_sf, &
-                                    ERI_aaaa,ERI_aabb,ERI_bbbb,XpY_sc,XmY_sc,Ec(iAC,ispin))
+      call unrestricted_ACFDT_correlation_energy(ispin,exchange_kernel,nBas,nC,nO,nV,nR,nS,nS_aa,nS_bb,nS_sc, &
+                                                 ERI_aaaa,ERI_aabb,ERI_bbbb,XpY_sc,XmY_sc,Ec(iAC,ispin))
 
       write(*,'(2X,F15.6,1X,F30.15,1X,F30.15)') lambda,EcAC(ispin),Ec(iAC,ispin)
 
@@ -149,13 +154,8 @@ subroutine unrestricted_ACFDT(exchange_kernel,doXBS,dRPA,TDA_W,TDA,BSE,spin_cons
   if(spin_flip) then
 
     ispin = 2
-    isp_W = 1
 
     ! Memory allocation
-
-    nS_ab = (nO(1) - nC(1))*(nV(2) - nR(2))
-    nS_ba = (nO(2) - nC(2))*(nV(1) - nR(1))
-    nS_sf = nS_ab + nS_ba
 
     allocate(Omega_sf(nS_sf),XpY_sf(nS_sf,nS_sf),XmY_sf(nS_sf,nS_sf))
 
@@ -180,10 +180,10 @@ subroutine unrestricted_ACFDT(exchange_kernel,doXBS,dRPA,TDA_W,TDA,BSE,spin_cons
 
       end if
 
-      call unrestricted_linear_response(ispin,dRPA,TDA,BSE,eta,nBas,nC,nO,nV,nR,nS_aa,nS_bb,nS_sf,nS_sc,lambda,e, &
-                                        ERI_aaaa,ERI_aabb,ERI_bbbb,OmRPA,rho_RPA,EcRPA,Omega_sf,XpY_sf,XmY_sf)
+      call unrestricted_linear_response(ispin,dRPA,TDA,BSE,eta,nBas,nC,nO,nV,nR,nS_ab,nS_ba,nS_sf,nS_sc,lambda,e, &
+                                        ERI_aaaa,ERI_aabb,ERI_bbbb,OmRPA,rho_RPA,EcAC(ispin),Omega_sf,XpY_sf,XmY_sf)
 
-      call unrestricted_ACFDT_correlation_energy(ispin,exchange_kernel,nBas,nC,nO,nV,nR,nS,nS_aa,nS_bb,nS_sc, &
+      call unrestricted_ACFDT_correlation_energy(ispin,exchange_kernel,nBas,nC,nO,nV,nR,nS,nS_ab,nS_ba,nS_sf, &
                                                  ERI_aaaa,ERI_aabb,ERI_bbbb,XpY_sf,XmY_sf,Ec(iAC,ispin))
 
       write(*,'(2X,F15.6,1X,F30.15,1X,F30.15)') lambda,EcAC(ispin),Ec(iAC,ispin)

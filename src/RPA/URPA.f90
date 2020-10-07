@@ -1,4 +1,4 @@
-subroutine UdRPA(TDA,doACFDT,exchange_kernel,spin_conserved,spin_flip,eta,nBas,nC,nO,nV,nR,nS,ENuc,EUHF, & 
+subroutine URPA(TDA,doACFDT,exchange_kernel,spin_conserved,spin_flip,eta,nBas,nC,nO,nV,nR,nS,ENuc,EUHF, & 
                  ERI_aaaa,ERI_aabb,ERI_bbbb,dipole_int_aa,dipole_int_bb,e,c,S)
 
 ! Perform random phase approximation calculation with exchange (aka TDHF) in the unrestricted formalism
@@ -68,7 +68,7 @@ subroutine UdRPA(TDA,doACFDT,exchange_kernel,spin_conserved,spin_flip,eta,nBas,n
 ! Initialization
 
   EcRPA(:) = 0d0
-  EcAC(:)   = 0d0
+  EcAC(:)  = 0d0
 
 ! Spin-conserved transitions
 
@@ -90,6 +90,7 @@ subroutine UdRPA(TDA,doACFDT,exchange_kernel,spin_conserved,spin_flip,eta,nBas,n
     call print_unrestricted_transition_vectors(ispin,nBas,nC,nO,nV,nR,nS,nS_aa,nS_bb,nS_sc,dipole_int_aa,dipole_int_bb, &
                                                c,S,Omega_sc,XpY_sc,XmY_sc)
 
+    deallocate(Omega_sc,XpY_sc,XmY_sc)
 
   endif
 
@@ -113,6 +114,8 @@ subroutine UdRPA(TDA,doACFDT,exchange_kernel,spin_conserved,spin_flip,eta,nBas,n
     call print_unrestricted_transition_vectors(ispin,nBas,nC,nO,nV,nR,nS,nS_ab,nS_ba,nS_sf,dipole_int_aa,dipole_int_bb, &
                                                c,S,Omega_sf,XpY_sf,XmY_sf)
 
+    deallocate(Omega_sf,XpY_sf,XmY_sf)
+
   endif
 
   if(exchange_kernel) then
@@ -135,30 +138,23 @@ subroutine UdRPA(TDA,doACFDT,exchange_kernel,spin_conserved,spin_flip,eta,nBas,n
 
   if(doACFDT) then
 
-    write(*,*) '-------------------------------------------------------'
-    write(*,*) 'Adiabatic connection version of RPA correlation energy'
-    write(*,*) '-------------------------------------------------------'
+    write(*,*) '---------------------------------------------------------'
+    write(*,*) ' Adiabatic connection version of URPA correlation energy '
+    write(*,*) '---------------------------------------------------------'
     write(*,*)
 
-    call unrestricted_ACFDT(exchange_kernel,.false.,.false.,.false.,.false.,.false.,spin_conserved,spin_flip,eta, &
+    call unrestricted_ACFDT(exchange_kernel,.false.,.true.,.false.,TDA,.false.,spin_conserved,spin_flip,eta, &
                             nBas,nC,nO,nV,nR,nS,ERI_aaaa,ERI_aabb,ERI_bbbb,e,e,EcAC)
-
-    if(exchange_kernel) then
-
-      EcAC(1) = 0.5d0*EcAC(1)
-      EcAC(2) = 1.5d0*EcAC(2)
-
-    end if
 
     write(*,*)
     write(*,*)'-------------------------------------------------------------------------------'
-    write(*,'(2X,A50,F20.10)') 'AC@RPA correlation energy (spin-conserved) =',EcAC(1)
-    write(*,'(2X,A50,F20.10)') 'AC@RPA correlation energy (spin-flip)      =',EcAC(2)
-    write(*,'(2X,A50,F20.10)') 'AC@RPA correlation energy                  =',EcAC(1) + EcAC(2)
-    write(*,'(2X,A50,F20.10)') 'AC@RPA total energy                        =',ENuc + EUHF + EcAC(1) + EcAC(2)
+    write(*,'(2X,A50,F20.10)') 'AC@URPA correlation energy (spin-conserved) =',EcAC(1)
+    write(*,'(2X,A50,F20.10)') 'AC@URPA correlation energy (spin-flip)      =',EcAC(2)
+    write(*,'(2X,A50,F20.10)') 'AC@URPA correlation energy                  =',EcAC(1) + EcAC(2)
+    write(*,'(2X,A50,F20.10)') 'AC@URPA total energy                        =',ENuc + EUHF + EcAC(1) + EcAC(2)
     write(*,*)'-------------------------------------------------------------------------------'
     write(*,*)
 
   end if
 
-end subroutine UdRPA
+end subroutine URPA

@@ -28,7 +28,7 @@ subroutine unrestricted_ACFDT_correlation_energy(ispin,exchange_kernel,nBas,nC,n
 ! Local variables
 
   integer                       :: i,j,a,b
-  integer                       :: ia,jb,kc
+  integer                       :: ia,jb
   double precision              :: delta_Kx
   double precision,allocatable  :: Ap(:,:)
   double precision,allocatable  :: Bp(:,:)
@@ -183,7 +183,9 @@ subroutine unrestricted_ACFDT_correlation_energy(ispin,exchange_kernel,nBas,nC,n
       end  do
     end  do
 
-   ia = 0
+    ! abba block
+
+    ia = 0
     do i=nC(1)+1,nO(1)
       do a=nO(2)+1,nBas-nR(2)
         ia = ia + 1
@@ -224,8 +226,8 @@ subroutine unrestricted_ACFDT_correlation_energy(ispin,exchange_kernel,nBas,nC,n
   X(:,:) = 0.5d0*(XpY(:,:) + XmY(:,:))
   Y(:,:) = 0.5d0*(XpY(:,:) - XmY(:,:))
 
-  EcAC = trace_matrix(nS,matmul(X,matmul(Bp,transpose(Y))) + matmul(Y,matmul(Bp,transpose(X)))) &
-       + trace_matrix(nS,matmul(X,matmul(Ap,transpose(X))) + matmul(Y,matmul(Ap,transpose(Y)))) &
-       - trace_matrix(nS,Ap)
+  EcAC = trace_matrix(nSt,matmul(X,matmul(Bp,transpose(Y))) + matmul(Y,matmul(Bp,transpose(X)))) &
+       + trace_matrix(nSt,matmul(X,matmul(Ap,transpose(X))) + matmul(Y,matmul(Ap,transpose(Y)))) &
+       - trace_matrix(nSt,Ap)
 
 end subroutine unrestricted_ACFDT_correlation_energy

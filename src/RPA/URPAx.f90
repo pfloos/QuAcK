@@ -139,27 +139,20 @@ subroutine URPAx(TDA,doACFDT,exchange_kernel,spin_conserved,spin_flip,eta,nBas,n
 
   if(doACFDT) then
 
-    write(*,*) '--------------------------------------------------------'
-    write(*,*) 'Adiabatic connection version of URPAx correlation energy'
-    write(*,*) '--------------------------------------------------------'
+    write(*,*) '----------------------------------------------------------'
+    write(*,*) ' Adiabatic connection version of URPAx correlation energy '
+    write(*,*) '----------------------------------------------------------'
     write(*,*)
 
-    call unrestricted_ACFDT(exchange_kernel,.false.,.false.,.false.,.false.,.false.,spin_conserved,spin_flip,eta, &
+    call unrestricted_ACFDT(exchange_kernel,.false.,.false.,.false.,TDA,.false.,spin_conserved,spin_flip,eta, &
                             nBas,nC,nO,nV,nR,nS,ERI_aaaa,ERI_aabb,ERI_bbbb,e,e,EcAC)
-
-    if(exchange_kernel) then
-
-      EcAC(1) = 0.5d0*EcAC(1)
-      EcAC(2) = 1.5d0*EcAC(2)
-
-    end if
 
     write(*,*)
     write(*,*)'-------------------------------------------------------------------------------'
-    write(*,'(2X,A50,F20.10)') 'AC@RPAx correlation energy (spin-conserved) =',EcAC(1)
-    write(*,'(2X,A50,F20.10)') 'AC@RPAx correlation energy (spin-flip)      =',EcAC(2)
-    write(*,'(2X,A50,F20.10)') 'AC@RPAx correlation energy                  =',EcAC(1) + EcAC(2)
-    write(*,'(2X,A50,F20.10)') 'AC@RPAx total energy                        =',ENuc + EUHF + EcAC(1) + EcAC(2)
+    write(*,'(2X,A50,F20.10)') 'AC@URPAx correlation energy (spin-conserved) =',EcAC(1)
+    write(*,'(2X,A50,F20.10)') 'AC@URPAx correlation energy (spin-flip)      =',EcAC(2)
+    write(*,'(2X,A50,F20.10)') 'AC@URPAx correlation energy                  =',EcAC(1) + EcAC(2)
+    write(*,'(2X,A50,F20.10)') 'AC@URPAx total energy                        =',ENuc + EUHF + EcAC(1) + EcAC(2)
     write(*,*)'-------------------------------------------------------------------------------'
     write(*,*)
 

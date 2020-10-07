@@ -64,6 +64,10 @@ subroutine unrestricted_Bethe_Salpeter(TDA_W,TDA,dBSE,dTDA,evDyn,spin_conserved,
   nS_aa = nS(1)
   nS_bb = nS(2)
   nS_sc = nS_aa + nS_bb
+
+  nS_ab = (nO(1) - nC(1))*(nV(2) - nR(2))
+  nS_ba = (nO(2) - nC(2))*(nV(1) - nR(1))
+  nS_sf = nS_ab + nS_ba
   
   allocate(OmRPA(nS_sc),XpY_RPA(nS_sc,nS_sc),XmY_RPA(nS_sc,nS_sc),rho_RPA(nBas,nBas,nS_sc,nspin))
 
@@ -125,10 +129,6 @@ subroutine unrestricted_Bethe_Salpeter(TDA_W,TDA,dBSE,dTDA,evDyn,spin_conserved,
     EcBSE(ispin) = 0d0
 
     ! Memory allocation
-
-    nS_ab = (nO(1) - nC(1))*(nV(2) - nR(2))
-    nS_ba = (nO(2) - nC(2))*(nV(1) - nR(1))
-    nS_sf = nS_ab + nS_ba
   
     allocate(OmBSE_sf(nS_sf),XpY_BSE_sf(nS_sf,nS_sf),XmY_BSE_sf(nS_sf,nS_sf))
 
