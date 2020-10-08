@@ -1,0 +1,22 @@
+(lang dune 1.10)
+(name quack-qcaml)
+(maintainers
+  "Anthony Scemama <scemama@irsamc.ups-tlse.fr>"
+)
+(authors
+  "Anthony Scemama <scemama@irsamc.ups-tlse.fr>"
+)
+(package
+  (name quack-qcaml)
+  (synopsis "Quack toold using QCaml")
+  (depends
+    (ocaml (>= 4.10))
+    (dune  (>= 1.10))
+    qcaml
+  )
+)
+
+
+
+
+

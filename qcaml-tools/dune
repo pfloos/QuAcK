@@ -1,0 +1,10 @@
+(executables
+ (names
+    quack_input
+    quack_integrals
+ )
+ (libraries
+     qcaml
+ )
+)
+
