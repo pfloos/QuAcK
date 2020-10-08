@@ -23,7 +23,9 @@ subroutine pCCD(maxSCF,thresh,max_diis,nBas,nC,nO,nV,nR,ERI,ENuc,ERHF,eHF)
   double precision              :: Conv
   double precision              :: ECCD,EcCCD
 
-  double precision,allocatable  :: delta_OOVV(:,:)
+  double precision,allocatable  :: eO(:)
+  double precision,allocatable  :: eV(:)
+  double precision,allocatable  :: delta_OV(:,:)
 
   double precision,allocatable  :: OOOO(:,:)
   double precision,allocatable  :: OOVV(:,:)
@@ -40,6 +42,7 @@ subroutine pCCD(maxSCF,thresh,max_diis,nBas,nC,nO,nV,nR,ERI,ENuc,ERHF,eHF)
   double precision              :: rcond
   double precision,allocatable  :: error_diis(:,:)
   double precision,allocatable  :: t_diis(:,:)
+  double precision,external     :: trace_matrix
           
 ! Hello world
 
@@ -51,36 +54,28 @@ subroutine pCCD(maxSCF,thresh,max_diis,nBas,nC,nO,nV,nR,ERI,ENuc,ERHF,eHF)
 
 ! Form energy denominator
 
-  allocate(delta_OOVV(nO,nV))
+  allocate(eO(nO-nC),eV(nV-nR),delta_OV(nO-nC,nV-nR))
 
-  delta_OOVV(:,:) = 0d0
+  eO(:) = eHF(nC+1:nO)
+  eV(:) = eHF(nO+1:nBas-nR)
 
-  do i=nC+1,nO
-    do a=1,nV-nR
-      delta_OOVV(i,a) = 2d0*(eHF(nO+a) - eHF(i))
-    enddo
-  enddo
+  call form_delta_OV(nC,nO,nV,nR,eO,eV,delta_OV)
 
 ! Create integral batches
 
-  allocate(OOOO(nO,nO),OOVV(nO,nV),OVOV(nO,nV),OVVO(nO,nV),VVVV(nV,nV))
+  allocate(OOOO(nO-nC,nO-nC),OOVV(nO-nC,nV-nR),OVOV(nO-nC,nV-nR),OVVO(nO-nC,nV-nR),VVVV(nV-nR,nV-nR))
 
-  OOOO(:,:) = 0d0
-  OOVV(:,:) = 0d0
-  OVVO(:,:) = 0d0
-  VVVV(:,:) = 0d0
-
-  do i=nC+1,nO
-    do j=nC+1,nO
-      OOOO(i,j) = ERI(i,i,j,j)
+  do i=1,nO-nC
+    do j=1,nO-nC
+      OOOO(i,j) = ERI(nC+i,nC+i,nC+j,nC+j)
     end do
   end do
 
-  do i=nC+1,nO
+  do i=1,nO-nC
     do a=1,nV-nR
-      OOVV(i,a) = ERI(i,i,nO+a,nO+a)
-      OVOV(i,a) = ERI(i,nO+a,i,nO+a)
-      OVVO(i,a) = ERI(i,nO+a,nO+a,i)
+      OOVV(i,a) = ERI(nC+i,nC+i,nO+a,nO+a)
+      OVOV(i,a) = ERI(nC+i,nO+a,nC+i,nO+a)
+      OVVO(i,a) = ERI(nC+i,nO+a,nO+a,nC+i)
     end do
   end do
 
@@ -92,17 +87,17 @@ subroutine pCCD(maxSCF,thresh,max_diis,nBas,nC,nO,nV,nR,ERI,ENuc,ERHF,eHF)
 
 ! MP2 guess amplitudes
 
-  allocate(t(nO,nV))
+  allocate(t(nO-nC,nV-nR))
 
-  t(:,:) = - OOVV(:,:)/delta_OOVV(:,:)
+  t(:,:) = -0.5d0*OOVV(:,:)/delta_OV(:,:)
 
 ! Memory allocation for DIIS
 
-  allocate(error_diis(nO*nV,max_diis),t_diis(nO*nV,max_diis))
+  allocate(error_diis((nO-nC)*(nV-nR),max_diis),t_diis((nO-nC)*(nV-nR),max_diis))
 
 ! Initialization
 
-  allocate(r(nO,nV),y(nO,nO))
+  allocate(r(nO-nC,nV-nR),y(nO-nC,nO-nC))
 
   Conv = 1d0
   nSCF = 0
@@ -130,24 +125,17 @@ subroutine pCCD(maxSCF,thresh,max_diis,nBas,nC,nO,nV,nR,ERI,ENuc,ERHF,eHF)
 
   ! Form intermediate array
     
-   y(:,:) = 0d0
-   do i=nC+1,nO
-     do j=nC+1,nO
-       do b=1,nV-nR
-         y(i,j) = y(i,j) + OOVV(j,b)*t(i,b)
-       end do
-     end do
-   end do
+   y(:,:) = matmul(t,transpose(OOVV))
     
    ! Compute residual
 
-    do i=nC+1,nO
+    do i=1,nO-nC
       do a=1,nV-nR
 
-        r(i,a) = OOVV(i,a) + delta_OOVV(i,a)*t(i,a) & 
+        r(i,a) = OOVV(i,a) + 2d0*delta_OV(i,a)*t(i,a) & 
                - 2d0*(2d0*OVOV(i,a) - OVVO(i,a) - OOVV(i,a)*t(i,a))*t(i,a)
 
-        do j=nC+1,nO
+        do j=1,nO-nC
           r(i,a) = r(i,a) - 2d0*OOVV(j,a)*t(j,a)*t(i,a) + OOOO(j,i)*t(j,a) + y(i,j)*t(j,a) 
         end do 
 
@@ -164,16 +152,11 @@ subroutine pCCD(maxSCF,thresh,max_diis,nBas,nC,nO,nV,nR,ERI,ENuc,ERHF,eHF)
   
    ! Update amplitudes
 
-    t(:,:) = t(:,:) - r(:,:)/delta_OOVV(:,:)
+   t(:,:) = t(:,:) - 0.5d0*r(:,:)/delta_OV(:,:)
 
    ! Compute correlation energy
 
-    EcCCD = 0d0
-    do i=nC+1,nO
-      do a=1,nV-nR
-        EcCCD = EcCCD + t(i,a)*OOVV(i,a)
-      end do
-    end do
+    EcCCD = trace_matrix(nO,matmul(t,transpose(OOVV)))
 
    ! Dump results
 
@@ -182,7 +165,7 @@ subroutine pCCD(maxSCF,thresh,max_diis,nBas,nC,nO,nV,nR,ERI,ENuc,ERHF,eHF)
     ! DIIS extrapolation
 
     n_diis = min(n_diis+1,max_diis)
-    call DIIS_extrapolation(rcond,nO*nV,nO*nV,n_diis,error_diis,t_diis,-r/delta_OOVV,t)
+    call DIIS_extrapolation(rcond,nO*nV,nO*nV,n_diis,error_diis,t_diis,-0.5d0*r/delta_OV,t)
 
     !  Reset DIIS if required
 

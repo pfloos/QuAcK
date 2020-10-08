@@ -268,6 +268,14 @@ program QuAcK
 
   if(doRHF) then
 
+   ! Check that RHF calculation is worth doing...
+
+   if(nO(1) /= nO(2)) then
+     write(*,*) ' !!! The system does not appear to be closed shell !!!'
+     write(*,*) 
+     stop
+   end if
+
     call cpu_time(start_HF)
     call RHF(maxSCF_HF,thresh_HF,n_diis_HF,guess_type,nNuc,ZNuc,rNuc,ENuc, &
              nBas,nO,S,T,V,Hc,ERI_AO,dipole_int,X,ERHF,eHF,cHF,PHF)
