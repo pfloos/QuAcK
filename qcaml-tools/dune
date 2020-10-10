@@ -4,6 +4,7 @@
     quack_integrals
  )
  (libraries
+        qcaml.common
      qcaml
  )
 )

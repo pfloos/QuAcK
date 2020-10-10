@@ -10,7 +10,7 @@ TARGETS=quack_input \
 	dune build $@
 
 $(TARGETS): $(patsubst %, %.exe, $(TARGETS))
-	for i in $* ; do ln _build/default/$$i $${i%.exe} ; done
+	for i in $(TARGETS) ; do cp _build/default/$${i}.exe $$i ; done
 
 default: $(TARGETS)
 
