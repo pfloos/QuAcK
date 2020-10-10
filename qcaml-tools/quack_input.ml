@@ -15,6 +15,33 @@ let speclist = [
     "File containing the nuclear coordinates") ;
 ]
 
+
+let print_basis nuclei basis =
+  (*
+  let open Printf in
+  *)
+  let g_basis = Qcaml.Gaussian.Basis.general_basis basis in
+  let dict = 
+    Array.to_list nuclei
+    |> List.mapi (fun i (e, _) ->
+          (i+1), List.assoc e g_basis
+        ) 
+  in
+  List.iter (fun (i,b) ->
+     Format.printf "%d  %d\n" i (Array.length b);
+     Array.iter (fun x ->
+        Format.printf "%a" Qcaml.Gaussian.General_basis.pp_gcs x) b
+     ) dict
+(*
+  List.iteri (fun atom_number (_element, _basis) ->
+    printf "%3d %3d\n" (atom_number+1) 0;
+    ) basis
+    *)
+    
+
+
+
+
 let run () =
   let basis_file =
     match !basis_file with
@@ -27,42 +54,16 @@ let run () =
   in
 
   let nuclei = 
-    Qcaml.Nuclei.of_xyz_file nuclei_file
+    Qcaml.Particles.Nuclei.of_xyz_file nuclei_file
   in
 
   let basis = 
-    QCaml.Gaussian_basis.of_nuclei_and_basis_filename  nuclei  basis_file
-    |> QCaml.Gaussian_basis.general_basis
+    Qcaml.Gaussian.Basis.of_nuclei_and_basis_filename ~nuclei basis_file
   in
 
   (* Print basis *)
-  Format.printf "%a" QCaml.Gaussian_basis.pp basis;
+  print_basis nuclei basis;
   ()
-(*
-  List.map (fun (element, shell) ->
-    Simulation.of_filenames ?range_separation ?charge ?multiplicity
-      ~nuclei:nuclei_file basis_file
-  in
-
-  print_endline @@ Nuclei.to_string @@ Simulation.nuclei s;
-  print_endline "Nuclear repulsion : ";
-  print_float @@ Simulation.nuclear_repulsion s; print_newline ();
-  print_endline @@ Basis.to_string  @@ Simulation.basis s;
-
-  let ao_basis = Simulation.ao_basis s in
-  let overlap  = AOBasis.overlap  ao_basis in
-  let eN_ints  = AOBasis.eN_ints  ao_basis in
-  let kin_ints = AOBasis.kin_ints ao_basis in
-  let ee_ints  = AOBasis.ee_ints  ao_basis in
-  Overlap.to_file ~filename:("Ov.dat") overlap;
-  NucInt.to_file ~filename:("Nuc.dat") eN_ints;
-  KinInt.to_file ~filename:("Kin.dat") kin_ints;
-  ERI.to_file    ~filename:("ERI.dat") ee_ints;
-  match range_separation with
-  | Some _mu ->
-      ERI_lr.to_file ~filename:("ERI_lr.dat") (AOBasis.ee_lr_ints ao_basis)
-  | None -> ()
-*)
 
 let () =
   let usage_msg = "Available options:" in
