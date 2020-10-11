@@ -1,30 +1,32 @@
-let out_file         : string option ref = ref None
-let basis_file       : string option ref = ref None
-let nuclei_file      : string option ref = ref None
-let charge           : int    option ref = ref None
-let multiplicity     : int    option ref = ref None
-let range_separation : float  option ref = ref None
+module Command_line = Qcaml.Common.Command_line
+module Util = Qcaml.Common.Util
 
+let () =
+  let open Command_line in
+  begin
+    set_header_doc (Sys.argv.(0) ^ " - QuAcK command");
+    set_description_doc "Computes the one- and two-electron integrals on the Gaussian atomic basis set.";
+    set_specs
+      [ { short='b' ; long="basis" ; opt=Mandatory;
+          arg=With_arg "<string>";
+          doc="Name of the file containing the basis set"; } ;
 
-let speclist = [
-  ( "-b" , Arg.String (fun x -> basis_file := Some x),
-    "File containing the atomic basis set") ;
-  ( "-x" , Arg.String (fun x -> nuclei_file := Some x),
-    "File containing the nuclear coordinates") ;
-  ( "-u" , Arg.Float  (fun x -> range_separation := Some x),
-    "Value of mu, the range separation factor") ;
-]
+        { short='x' ; long="xyz" ; opt=Mandatory;
+          arg=With_arg "<string>";
+          doc="Name of the file containing the nuclear coordinates in xyz format"; } ;
 
-let run () =
-  let basis_file =
-    match !basis_file with
-    | None -> raise (Invalid_argument "Basis set file should be specified with -b")
-    | Some x -> x
-  and nuclei_file =
-    match !nuclei_file with
-    | None -> raise (Invalid_argument "Coordinate file should be specified with -x")
-    | Some x -> x
-  and range_separation = !range_separation
+        { short='u' ; long="range-separation" ; opt=Optional;
+          arg=With_arg "<float>";
+          doc="Range-separation parameter."; } ;
+      ]
+  end;
+
+  let basis_file  = Util.of_some @@ Command_line.get "basis" in
+  let nuclei_file = Util.of_some @@ Command_line.get "xyz" in
+  let range_separation = 
+    match Command_line.get "range-separation" with
+    | None -> None
+    | Some mu -> Some (float_of_string mu) 
   in
 
   let nuclei =
@@ -56,8 +58,4 @@ let run () =
   | None -> ()
 
 
-let () =
-  let usage_msg = "Available options:" in
-  Arg.parse speclist (fun _ -> ()) usage_msg;
-  run ()
 
