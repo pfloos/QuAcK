@@ -1,3 +1,11 @@
+let quack_dir = 
+  try Sys.getenv "QUACK_DIR" with
+  Not_found -> "."
+
+let quack_basis_filename = quack_dir ^ "/input/basis"
+let quack_molecule_filename = quack_dir ^ "/input/molecule"
+
+
 let basis_file       : string option ref = ref None
 let nuclei_file      : string option ref = ref None
 let charge           : int    option ref = ref None
@@ -17,9 +25,8 @@ let speclist = [
 
 
 let print_basis nuclei basis =
-  (*
-  let open Printf in
-  *)
+  let oc = open_out quack_basis_filename in
+  let ocf = Format.formatter_of_out_channel oc in
   let g_basis = Qcaml.Gaussian.Basis.general_basis basis in
   let dict = 
     Array.to_list nuclei
@@ -28,17 +35,32 @@ let print_basis nuclei basis =
         ) 
   in
   List.iter (fun (i,b) ->
-     Format.printf "%d  %d\n" i (Array.length b);
+     Format.fprintf ocf "%d  %d\n" i (Array.length b);
      Array.iter (fun x ->
-        Format.printf "%a" Qcaml.Gaussian.General_basis.pp_gcs x) b
-     ) dict
-(*
-  List.iteri (fun atom_number (_element, _basis) ->
-    printf "%3d %3d\n" (atom_number+1) 0;
-    ) basis
-    *)
+        Format.fprintf ocf "%a" Qcaml.Gaussian.General_basis.pp_gcs x) b
+     ) dict;
+  close_out oc
     
 
+
+let print_molecule nuclei electrons =
+  let oc = open_out quack_molecule_filename in
+  let nat  = Array.length nuclei in
+  let nela = Qcaml.Particles.Electrons.n_alfa electrons in
+  let nelb = Qcaml.Particles.Electrons.n_beta electrons in
+  let ncore = Qcaml.Particles.Nuclei.small_core nuclei in
+  let nryd  = 0 in
+  Printf.fprintf oc "# nAt nEla nElb nCore nRyd\n";
+  Printf.fprintf oc " %4d %4d %4d %5d %4d\n" nat nela nelb ncore nryd;
+  Printf.fprintf oc "# Znuc   x            y           z\n";
+  let open Qcaml.Common.Coordinate in
+  Array.iter (fun (element, coord) ->
+    Printf.fprintf oc "%3s    %16.10f     %16.10f     %16.10f\n"
+        (Qcaml.Particles.Element.to_string element)
+        coord.x coord.y coord.z
+      ) nuclei;
+  close_out oc
+    
 
 
 
@@ -51,10 +73,22 @@ let run () =
     match !nuclei_file with
     | None -> raise (Invalid_argument "Coordinate file should be specified with -x")
     | Some x -> x
+  and charge = 
+    match !charge with
+    | None -> 0
+    | Some c -> c
+  and multiplicity = 
+    match !multiplicity with
+    | None -> 1
+    | Some m -> m
   in
 
   let nuclei = 
     Qcaml.Particles.Nuclei.of_xyz_file nuclei_file
+  in
+
+  let electrons =
+    Qcaml.Particles.Electrons.of_atoms ~multiplicity ~charge nuclei
   in
 
   let basis = 
@@ -62,6 +96,7 @@ let run () =
   in
 
   (* Print basis *)
+  print_molecule nuclei electrons;
   print_basis nuclei basis;
   ()
 
