@@ -1,3 +1,7 @@
+let quack_dir =
+  try Sys.getenv "QUACK_DIR" with
+  Not_found -> "."
+
 module Command_line = Qcaml.Common.Command_line
 module Util = Qcaml.Common.Util
 
@@ -44,17 +48,26 @@ let () =
       ~operators ~cartesian:true ~nuclei basis_file
   in
 
-  let overlap  = Qcaml.Ao.Basis.overlap  ao_basis in
-  let eN_ints  = Qcaml.Ao.Basis.eN_ints  ao_basis in
-  let kin_ints = Qcaml.Ao.Basis.kin_ints ao_basis in
-  let ee_ints  = Qcaml.Ao.Basis.ee_ints  ao_basis in
-  Qcaml.Gaussian_integrals.Overlap.to_file ~filename:("Ov.dat") overlap;
-  Qcaml.Gaussian_integrals.Electron_nucleus.to_file ~filename:("Nuc.dat") eN_ints;
-  Qcaml.Gaussian_integrals.Kinetic.to_file ~filename:("Kin.dat") kin_ints;
-  Qcaml.Gaussian_integrals.Eri.to_file    ~filename:("ERI.dat") ee_ints;
+  let overlap   = Qcaml.Ao.Basis.overlap   ao_basis in
+  let eN_ints   = Qcaml.Ao.Basis.eN_ints   ao_basis in
+  let kin_ints  = Qcaml.Ao.Basis.kin_ints  ao_basis in
+  let ee_ints   = Qcaml.Ao.Basis.ee_ints   ao_basis in
+  let multipole = Qcaml.Ao.Basis.multipole ao_basis in
+  let x_mat = Qcaml.Gaussian_integrals.Multipole.matrix_x multipole in
+  let y_mat = Qcaml.Gaussian_integrals.Multipole.matrix_y multipole in
+  let z_mat = Qcaml.Gaussian_integrals.Multipole.matrix_z multipole in
+
+  Qcaml.Gaussian_integrals.Overlap.to_file ~filename:(quack_dir ^ "/int/Ov.dat") overlap;
+  Qcaml.Gaussian_integrals.Electron_nucleus.to_file ~filename:(quack_dir ^ "/int/Nuc.dat") eN_ints;
+  Qcaml.Gaussian_integrals.Kinetic.to_file ~filename:(quack_dir ^ "/int/Kin.dat") kin_ints;
+  Qcaml.Gaussian_integrals.Eri.to_file    ~filename:(quack_dir ^ "/int/ERI.dat") ee_ints;
+  Qcaml.Gaussian_integrals.Multipole.to_file ~filename:(quack_dir ^ "/int/x.dat") x_mat;
+  Qcaml.Gaussian_integrals.Multipole.to_file ~filename:(quack_dir ^ "/int/y.dat") y_mat;
+  Qcaml.Gaussian_integrals.Multipole.to_file ~filename:(quack_dir ^ "/int/z.dat") z_mat;
+
   match range_separation with
   | Some _mu ->
-      Qcaml.Gaussian_integrals.Eri_long_range.to_file ~filename:("ERI_lr.dat") (Qcaml.Ao.Basis.ee_lr_ints ao_basis)
+      Qcaml.Gaussian_integrals.Eri_long_range.to_file ~filename:(quack_dir ^ "/int/ERI_lr.dat") (Qcaml.Ao.Basis.ee_lr_ints ao_basis)
   | None -> ()
 
 
