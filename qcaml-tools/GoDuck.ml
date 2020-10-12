@@ -178,7 +178,10 @@ directory.";
   | Some _mu ->
       Qcaml.Gaussian_integrals.Eri_long_range.to_file ~filename:(quack_int ^ "ERI_lr.dat") (Qcaml.Ao.Basis.ee_lr_ints ao_basis)
   | None -> ()
+  ;
 
+  
+  Unix.execv (quack_dir ^ "/bin/QuAcK") [| "QuAcK" |]
 
 
 

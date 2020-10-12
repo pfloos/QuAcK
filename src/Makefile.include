@@ -1,5 +1,6 @@
 BDIR =$(QUACK_ROOT)/bin
 LDIR =$(QUACK_ROOT)/lib
+IDIR =$(QUACK_ROOT)/include
 ODIR = obj
 SDIR =.
 include $(QUACK_ROOT)/src/Makefile.common
@@ -23,6 +24,7 @@ $(ODIR)/%.o: %.f
 
 $(LDIR)/$(TARGET): $(patsubst %,$(LDIR)/%,$(DEPEND)) $(OBJ)
 	$(AR) -static -o $@ $^ 
+	if [[ $(echo *.mod).x != ".x" ]] ; then mv -f *.mod $(IDIR) ; fi
 
 debug: 
 	DEBUG=1 $(MAKE) $(LDIR)/$(TARGET)

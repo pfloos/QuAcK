@@ -2,12 +2,12 @@ QUACK_ROOT=$(shell dirname $(realpath $(firstword $(MAKEFILE_LIST))/..))
 export QUACK_ROOT
 
 SDIR=$(QUACK_ROOT)/src
-ALL_DIRS=$(filter-out modules,$(patsubst %/,%,$(wildcard */)))
+ALL_DIRS=$(patsubst %/,%,$(wildcard */))
 
 # Rules for Modules
 ###################
 
-MOD_DIRS=numgrid
+MOD_DIRS=libnumgrid
 
 
 # Rules for Libraries
@@ -53,6 +53,7 @@ debug:
 .DEFAULT_GOAL := default
 .PHONY: default debug
 .PRECIOUS: $(wildcard $(LDIR)/*.a) $(wildcard $(SDIR)/*/Makefile)
+.PRECIOUS: /Users/loos/Dropbox/quack/lib/CI.a /Users/loos/Dropbox/quack/lib/CC.a /Users/loos/Dropbox/quack/lib/ADC.a /Users/loos/Dropbox/quack/lib/MP.a /Users/loos/Dropbox/quack/lib/libnumgrid.a /Users/loos/Dropbox/quack/lib/utils.a /Users/loos/Dropbox/quack/lib/HF.a /Users/loos/Dropbox/quack/lib/LR.a /Users/loos/Dropbox/quack/lib/AOtoMO.a /Users/loos/Dropbox/quack/lib/BasCor.a /Users/loos/Dropbox/quack/lib/RPA.a /Users/loos/Dropbox/quack/lib/MC.a /Users/loos/Dropbox/quack/lib/MBPT.a
 
 clean: 
 	rm -f -- $(patsubst %/,$(LDIR)/%.a,$(wildcard */)) ; \
