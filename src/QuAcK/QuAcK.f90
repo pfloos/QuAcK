@@ -245,7 +245,7 @@ program QuAcK
 
   else
 
-    call system('./GoQCaml')
+!   call system('./GoQCaml')
     call read_integrals(nBas,S,T,V,Hc,ERI_AO)
     call read_dipole_integrals(nBas,dipole_int)
 

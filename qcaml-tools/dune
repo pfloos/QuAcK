@@ -2,6 +2,7 @@
  (names
     quack_input
     quack_integrals
+    GoDuck
  )
  (libraries
      qcaml

@@ -2,7 +2,8 @@
 .NOTPARALLEL:
 
 TARGETS=quack_input \
-        quack_integrals
+        quack_integrals \
+        GoDuck
 
 .PHONY: default build install uninstall test clean                                            
 

@@ -1,5 +1,5 @@
 let quack_dir =
-  try Sys.getenv "QUACK_DIR" with
+  try Sys.getenv "QUACK_ROOT" with
   Not_found -> "."
 
 module Command_line = Qcaml.Common.Command_line

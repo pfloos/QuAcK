@@ -1,18 +1,68 @@
 #! /bin/bash
+
+function help() {
+  cat << EOF
+Usage:
   
+  ./qcaml-tools/quack_input -b <string> [-c <int>] [-f] [-h] [-m <int>]
+      [-r <int>] -x <string> [--]
+  
+Arguments:
+  
+  
+Options:
+  
+  -b  --basis=<string>      Name of the file containing the basis set 
+  -c  --charge=<int>        Total charge of the molecule. Specify negative
+                            charges with 'm' instead of the minus sign, 
+                            for example m1 instead of -1. Default is 
+                            0 
+  -f  --frozen-core         Freeze core MOs. Default is false 
+  -h  --help                Prints the help message. 
+  -m  --multiplicity=<int>  Spin multiplicity (2S+1). Default is singlet 
+  -r  --rydberg=<int>       Number of Rydberg electrons. Default is 0 
+  -x  --xyz=<string>        Name of the file containing the nuclear
+                            coordinates in xyz format 
+  
+Description:
+  
+  Prepares the input data for QuAcK. 
+  Writes \$QUACK_DIR/input/basis and \$QUACK_DIR/input/molecule. 
+  If \$QUACK_DIR is not set, \$QUACK_DIR is replaces by the current 
+  directory. 
+
+
+Usage:
+
+    $(basename $0) [-h|--help]
+
+Options:
+
+    -h    --help    Prints the help message
+
+EOF
+  exit 0
+}
+
 set -e
 
-if [ $# -ne 2 ]
+if [ $# -ne 2 ] || [ $# -ne 4 ]
 then
-  echo "You need two arguments [Molecule] [Basis] !!" 
+  echo "You need at least two arguments [Molecule] [Basis] [Charge] [Multiplicity]" 
 fi
 
 if [ $# = 2 ]
 then
-  cp examples/molecule."$1"   input/molecule
-  cp examples/basis."$1"."$2" input/basis
-  cp basis/"$2"               input/basis.qcaml
-#  ./bin/IntPak
+  ./qcaml-tools/quack_integrals -x mol/${1}.xyz -b basis/${2}
+  ./qcaml-tools/quack_input     -x mol/${1}.xyz -b basis/${2} 
   ./bin/QuAcK
 fi
+
+if [ $# = 4 ]
+then
+  ./qcaml-tools/quack_integrals -x mol/${1}.xyz -b basis/${2}
+  ./qcaml-tools/quack_input     -x mol/${1}.xyz -b basis/${2} -c ${3} -m ${4}
+  ./bin/QuAcK
+fi
+
 
