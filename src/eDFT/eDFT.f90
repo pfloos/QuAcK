@@ -2,6 +2,8 @@ program eDFT
 
 ! exchange-correlation density-functional theory calculations
 
+  use xc_f90_lib_m
+
   implicit none
   include 'parameters.h'
 
@@ -63,6 +65,8 @@ program eDFT
   double precision,allocatable  :: occnum(:,:,:) 
   integer                       :: Cx_choice
 
+  integer                       :: i, vmajor, vminor, vmicro
+
 ! Hello World
 
   write(*,*)
@@ -70,6 +74,13 @@ program eDFT
   write(*,*) '* eDFT: density-functional for ensembles *'
   write(*,*) '******************************************'
   write(*,*)
+
+! Libxc version
+
+  call xc_f90_version(vmajor, vminor, vmicro)
+  write(*,'("Libxc version: ",I1,".",I1,".",I1)') vmajor, vminor, vmicro
+
+  call xcinfo()
 
 !------------------------------------------------------------------------
 ! Read input information

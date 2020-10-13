@@ -6,6 +6,7 @@ program QuAcK
   logical                       :: doSph
   logical                       :: unrestricted = .false.
   logical                       :: doRHF,doUHF,doMOM 
+  logical                       :: doKS
   logical                       :: doMP2,doMP3,doMP2F12
   logical                       :: doCCD,doCCSD,doCCSDT
   logical                       :: do_drCCD,do_rCCD,do_lCCD,do_pCCD
@@ -75,6 +76,7 @@ program QuAcK
   double precision              :: start_QuAcK  ,end_QuAcK    ,t_QuAcK
   double precision              :: start_int    ,end_int      ,t_int  
   double precision              :: start_HF     ,end_HF       ,t_HF
+  double precision              :: start_KS     ,end_KS       ,t_KS
   double precision              :: start_MOM    ,end_MOM      ,t_MOM
   double precision              :: start_AOtoMO ,end_AOtoMO   ,t_AOtoMO
   double precision              :: start_CCD    ,end_CCD      ,t_CCD
@@ -151,7 +153,7 @@ program QuAcK
 
 ! Which calculations do you want to do?
 
-  call read_methods(doRHF,doUHF,doMOM,                &
+  call read_methods(doRHF,doUHF,doKS,doMOM,           &
                     doMP2,doMP3,doMP2F12,             &
                     doCCD,doCCSD,doCCSDT,             &
                     do_drCCD,do_rCCD,do_lCCD,do_pCCD, &
@@ -245,7 +247,6 @@ program QuAcK
 
   else
 
-!   call system('./GoQCaml')
     call read_integrals(nBas,S,T,V,Hc,ERI_AO)
     call read_dipole_integrals(nBas,dipole_int)
 
@@ -288,7 +289,7 @@ program QuAcK
   end if
 
 !------------------------------------------------------------------------
-! Compute RHF energy
+! Compute UHF energy
 !------------------------------------------------------------------------
 
   if(doUHF) then
@@ -303,6 +304,23 @@ program QuAcK
 
     t_HF = end_HF - start_HF
     write(*,'(A65,1X,F9.3,A8)') 'Total CPU time for UHF = ',t_HF,' seconds'
+    write(*,*)
+
+  end if
+
+!------------------------------------------------------------------------
+! Compute KS energy
+!------------------------------------------------------------------------
+
+  if(doKS) then
+
+    call cpu_time(start_KS)
+!   call KS(maxSCF_HF,thresh_HF,n_diis_HF,guess_type,nNuc,ZNuc,rNuc,ENuc, & 
+!            nBas,nO,S,T,V,Hc,ERI_AO,dipole_int,X,EUHF,eHF,cHF,PHF)
+    call cpu_time(end_KS)
+
+    t_KS = end_KS - start_KS
+    write(*,'(A65,1X,F9.3,A8)') 'Total CPU time for KS = ',t_KS,' seconds'
     write(*,*)
 
   end if

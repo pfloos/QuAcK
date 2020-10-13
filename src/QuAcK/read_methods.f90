@@ -1,4 +1,4 @@
-subroutine read_methods(doRHF,doUHF,doMOM,                & 
+subroutine read_methods(doRHF,doUHF,doKS,doMOM,           & 
                         doMP2,doMP3,doMP2F12,             & 
                         doCCD,doCCSD,doCCSDT,             & 
                         do_drCCD,do_rCCD,do_lCCD,do_pCCD, &
@@ -15,7 +15,7 @@ subroutine read_methods(doRHF,doUHF,doMOM,                &
 
 ! Input variables
 
-  logical,intent(out)           :: doRHF,doUHF,doMOM
+  logical,intent(out)           :: doRHF,doUHF,doKS,doMOM
   logical,intent(out)           :: doMP2,doMP3,doMP2F12
   logical,intent(out)           :: doCCD,doCCSD,doCCSDT
   logical,intent(out)           :: do_drCCD,do_rCCD,do_lCCD,do_pCCD
@@ -38,6 +38,7 @@ subroutine read_methods(doRHF,doUHF,doMOM,                &
 
   doRHF = .false.
   doUHF = .false.
+  doKS  = .false.
   doMOM = .false.
 
   doMP2    = .false.
@@ -80,10 +81,11 @@ subroutine read_methods(doRHF,doUHF,doMOM,                &
 ! Read mean-field methods
 
   read(1,*) 
-  read(1,*) answer1,answer2,answer3
+  read(1,*) answer1,answer2,answer3,answer4
   if(answer1 == 'T') doRHF = .true.
   if(answer2 == 'T') doUHF = .true.
-  if(answer3 == 'T') doMOM = .true.
+  if(answer3 == 'T') doKS  = .true.
+  if(answer4 == 'T') doMOM = .true.
 
 ! Read MPn methods
 
