@@ -2,7 +2,7 @@ program eDFT
 
 ! exchange-correlation density-functional theory calculations
 
-  use xc_f90_lib_m
+! use xc_f90_lib_m
 
   implicit none
   include 'parameters.h'
@@ -77,10 +77,10 @@ program eDFT
 
 ! Libxc version
 
-  call xc_f90_version(vmajor, vminor, vmicro)
-  write(*,'("Libxc version: ",I1,".",I1,".",I1)') vmajor, vminor, vmicro
+! call xc_f90_version(vmajor, vminor, vmicro)
+! write(*,'("Libxc version: ",I1,".",I1,".",I1)') vmajor, vminor, vmicro
 
-  call xcinfo()
+! call xcinfo()
 
 !------------------------------------------------------------------------
 ! Read input information
