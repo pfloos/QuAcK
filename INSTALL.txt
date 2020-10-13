@@ -1,0 +1,9 @@
+* define $QUACK_ROOT  
+* ninja
+* gfortran
+* python3
+* libtool
+* opam
+* cmake
+* wget
+
