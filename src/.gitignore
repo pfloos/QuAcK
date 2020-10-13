@@ -1,2 +1,4 @@
 *.
+.ninja_log
+build.ninja
 */Makefile

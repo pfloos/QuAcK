@@ -66,10 +66,9 @@ rule build_lib
   description = Linking $out
 
 """
-
+LIBS="$LDIR/libxcf90.a $LDIR/libxc.a $LDIR/libnumgrid.a "
 rule_build_exe = """
-
-LIBS = $LDIR/libxcf90.a $LDIR/libxc.a $LDIR/libnumgrid.a $LAPACK $STDCXX
+LIBS = {0} $LAPACK $STDCXX
 
 rule build_exe
   command = $FC $in $LIBS -o $out
@@ -81,7 +80,7 @@ rule build_lib
   pool = console
   description = Compiling $out
 
-"""
+""".format(LIBS)
 
 rule_git_clone = """
 rule git_clone
@@ -100,6 +99,15 @@ rule make_numgrid
 build $LDIR/libnumgrid.a: make_numgrid 
 """
   
+build_libxc = """
+rule make_libxc
+  command = cd $QUACK_ROOT/libxc-tools ; QUACK_ROOT="$QUACK_ROOT" CC="$CC" CXX="$CXX" FC="$FC" ./install_libxc.sh
+  description = Building libxc
+  pool = console
+
+build $LDIR/libxc.a $LDIR/libxcf90.a $IDIR/xc.h $IDIR/xc_funcs_removed.h $IDIR/xc_f90_lib_m.mod $IDIR/xc_funcs_worker.h $IDIR/xc_funcs.h $IDIR/xc_version.h: make_libxc
+
+"""
 
 build_in_lib_dir = "\n".join([
 	header,
@@ -114,6 +122,7 @@ build_in_exe_dir = "\n".join([
 	compiler,
 	rule_fortran,
 	rule_build_exe,
+	build_libxc,
 ])
 
 build_main = "\n".join([
@@ -121,6 +130,7 @@ build_main = "\n".join([
         compiler,
         rule_git_clone,
         build_numgrid,
+	build_libxc,
 ])
 
 exe_dirs = [ "QuAcK", "eDFT" ]
@@ -163,14 +173,14 @@ def create_ninja_in_exedir(directory):
         objects = " ".join(objects)
         for libname in lib_dirs:
            f.write("build $LDIR/{0}.a: build_lib\n  dir = $SDIR/{0}\n".format(libname))
-        libs = " ".join([ "$LDIR/{0}.a".format(x) for x in lib_dirs])
+        libs = " ".join([ "$LDIR/{0}.a".format(x) for x in lib_dirs]) + " "+LIBS
         f.write("build $BDIR/{0}: build_exe {1} {2}\n".format(directory,libs,objects))
         f.write("default $BDIR/{0}\n".format(directory))
 
 
 def create_main_ninja():
 
-    libs = " ".join([ "$LDIR/{0}.a".format(x) for x in lib_dirs])
+    libs = " ".join([ "$LDIR/{0}.a".format(x) for x in lib_dirs]) + " "+LIBS
     with open("build.ninja","w") as f:
         f.write(build_main)
         f.write("""

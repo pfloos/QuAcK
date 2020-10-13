@@ -6,5 +6,5 @@ cd numgrid
 cd build
 make
 cp lib/libnumgrid.a $LDIR/
-cp ..//numgrid/numgrid.f90 $SDIR/numgrid/
+cp ../numgrid/numgrid.f90 $SDIR/numgrid/
 

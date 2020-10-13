@@ -9,6 +9,5 @@ default:
 
 clean: 
 	python3 make_ninja.py
-	ninja -t clean
 	for i in */ ; do ninja -t clean ; done
 
