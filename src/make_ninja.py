@@ -69,7 +69,7 @@ rule build_lib
 
 rule_build_exe = """
 
-LIBS = $LDIR/libxcf90.a $LDIR/libxc.a $LDIR/libslatec.a $LDIR/libnumgrid.a $LAPACK $STDCXX
+LIBS = $LDIR/libxcf90.a $LDIR/libxc.a $LDIR/libnumgrid.a $LAPACK $STDCXX
 
 rule build_exe
   command = $FC $in $LIBS -o $out
@@ -81,15 +81,6 @@ rule build_lib
   pool = console
   description = Compiling $out
 
-"""
-
-rule_slatec = """
-rule make_slatec
-  command = cd $QUACK_ROOT/slatec/src ; make static ; cp static/libslatec.a $LDIR
-  pool = console
-  description = Building Slatec
-
-build $LDIR/libslatec.a: make_slatec
 """
 
 rule_git_clone = """
@@ -130,7 +121,6 @@ build_main = "\n".join([
         compiler,
         rule_git_clone,
         build_numgrid,
-        rule_slatec,
 ])
 
 exe_dirs = [ "QuAcK", "eDFT" ]
@@ -195,7 +185,7 @@ rule build_lib
 
 """)
         for exe_dir in exe_dirs:
-            f.write("build $BDIR/{0}: build_exe {1} $LDIR/libnumgrid.a $LDIR/libslatec.a\n".format(exe_dir,libs))
+            f.write("build $BDIR/{0}: build_exe {1} $LDIR/libnumgrid.a\n".format(exe_dir,libs))
             f.write("  dir = {0} \n".format(exe_dir) )
         for libname in lib_dirs:
            f.write("build $LDIR/{0}.a: build_lib\n  dir = $SDIR/{0}\n".format(libname))
