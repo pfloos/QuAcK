@@ -1,4 +1,6 @@
 * define $QUACK_ROOT  
+* blas 
+* lapack
 * ninja
 * gfortran
 * python3
@@ -6,4 +8,5 @@
 * opam
 * cmake
 * wget
+* automake
 
