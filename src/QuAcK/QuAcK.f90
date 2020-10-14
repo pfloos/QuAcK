@@ -204,7 +204,6 @@ program QuAcK
   allocate(CenterShell(maxShell,ncart),TotAngMomShell(maxShell),KShell(maxShell),DShell(maxShell,maxK), & 
            ExpShell(maxShell,maxK),max_ang_mom(nNuc),min_exponent(nNuc,maxL+1),max_exponent(nNuc))
 
-
 !------------------------------------------------------------------------
 ! Read basis set information
 !------------------------------------------------------------------------
@@ -315,8 +314,9 @@ program QuAcK
   if(doKS) then
 
     call cpu_time(start_KS)
-!   call KS(maxSCF_HF,thresh_HF,n_diis_HF,guess_type,nNuc,ZNuc,rNuc,ENuc, & 
-!            nBas,nO,S,T,V,Hc,ERI_AO,dipole_int,X,EUHF,eHF,cHF,PHF)
+    call eDFT(nNuc,ZNuc,rNuc,nBas,nEl,nC,nO,nV,nR,nShell,TotAngMomShell,CenterShell,KShell,DShell,ExpShell, &
+              max_ang_mom,min_exponent,max_exponent,S,T,V,Hc,X,ERI_AO,dipole_int)
+             
     call cpu_time(end_KS)
 
     t_KS = end_KS - start_KS

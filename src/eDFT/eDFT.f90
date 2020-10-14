@@ -1,4 +1,5 @@
-program eDFT
+subroutine eDFT(nNuc,ZNuc,rNuc,nBas,nEl,nC,nO,nV,nR,nShell,TotAngMomShell,CenterShell,KShell,DShell,ExpShell, &
+              max_ang_mom,min_exponent,max_exponent,S,T,V,Hc,X,ERI_AO,dipole_int)
 
 ! exchange-correlation density-functional theory calculations
 
@@ -7,28 +8,43 @@ program eDFT
   implicit none
   include 'parameters.h'
 
-  integer                       :: nNuc,nBas
-  integer                       :: nEl(nspin),nC(nspin),nO(nspin),nV(nspin),nR(nspin)
-  double precision              :: ENuc,Ew,ncent
+! Input variables
 
-  double precision,allocatable  :: ZNuc(:),rNuc(:,:)
+  integer,intent(in)            :: nNuc
+  integer,intent(in)            :: nBas
+  integer,intent(in)            :: nEl(nspin)
+  integer,intent(in)            :: nC(nspin)
+  integer,intent(in)            :: nO(nspin)
+  integer,intent(in)            :: nV(nspin)
+  integer,intent(in)            :: nR(nspin)
+  double precision,intent(in)   :: ENuc,Ew
 
-  integer                       :: nShell
-  integer,allocatable           :: TotAngMomShell(:)
-  integer,allocatable           :: KShell(:)
-  double precision,allocatable  :: CenterShell(:,:)
-  double precision,allocatable  :: DShell(:,:)
-  double precision,allocatable  :: ExpShell(:,:)
-  integer,allocatable           :: max_ang_mom(:)
+  double precision,intent(in)   :: ZNuc(nNuc)
+  double precision,intent(in)   :: rNuc(nNuc,ncart)
+
+  integer,intent(in)            :: nBas,nShell
+  double precision,intent(in)   :: CenterShell(maxShell,ncart)
+  integer,intent(in)            :: TotAngMomShell(maxShell)
+  integer,intent(in)            :: KShell(maxShell)
+  double precision,intent(in)   :: DShell(maxShell,maxK)
+  double precision,intent(in)   :: ExpShell(maxShell,maxK)
+  integer,intent(in)            :: max_ang_mom(nNuc)
+  double precision,intent(in)   :: min_exponent(nNuc,maxL+1)
+  double precision,intent(in)   :: max_exponent(nNuc)
+
+
+  double precision,intent(in)   :: S(nBas,nBas)
+  double precision,intent(in)   :: T(nBas,nBas)
+  double precision,intent(in)   :: V(nBas,nBas)
+  double precision,intent(in)   :: Hc(nBas,nBas)
+  double precision,intent(in)   :: X(nBas,nBas)
+  double precision,intent(in)   :: ERI(nBas,nBas,nBas,nBas)
+  double precision,intent(in)   :: dipole_int(nBas,nBas,ncart)
+
+! Local variables
+
   double precision,allocatable  :: min_exponent(:,:)
   double precision,allocatable  :: max_exponent(:)
-
-  double precision,allocatable  :: S(:,:)
-  double precision,allocatable  :: T(:,:)
-  double precision,allocatable  :: V(:,:)
-  double precision,allocatable  :: Hc(:,:)
-  double precision,allocatable  :: X(:,:)
-  double precision,allocatable  :: ERI(:,:,:,:)
   double precision,allocatable  :: c(:,:)
 
   character(len=8)              :: method
@@ -65,7 +81,7 @@ program eDFT
   double precision,allocatable  :: occnum(:,:,:) 
   integer                       :: Cx_choice
 
-  integer                       :: i, vmajor, vminor, vmicro
+  integer                       :: i,vmajor,vminor,vmicro
 
 ! Hello World
 
@@ -77,39 +93,10 @@ program eDFT
 
 ! Libxc version
 
-! call xc_f90_version(vmajor, vminor, vmicro)
-! write(*,'("Libxc version: ",I1,".",I1,".",I1)') vmajor, vminor, vmicro
+  call xc_f90_version(vmajor, vminor, vmicro)
+  write(*,'("Libxc version: ",I1,".",I1,".",I1)') vmajor, vminor, vmicro
 
 ! call xcinfo()
-
-!------------------------------------------------------------------------
-! Read input information
-!------------------------------------------------------------------------
-
-! Read number of atoms, number of electrons of the system
-! nC   = number of core orbitals
-! nO   = number of occupied orbitals
-! nV   = number of virtual orbitals (see below)
-! nR   = number of Rydberg orbitals 
-! nBas = number of basis functions (see below)
-!      = nO + nV
-
-  call read_molecule(nNuc,nEl(:),nO(:),nC(:),nR(:))
-  allocate(ZNuc(nNuc),rNuc(nNuc,ncart))
-
-! Read geometry
-
-  call read_geometry(nNuc,ZNuc,rNuc,ENuc)
-
-  allocate(CenterShell(maxShell,ncart),TotAngMomShell(maxShell),KShell(maxShell),DShell(maxShell,maxK), & 
-           ExpShell(maxShell,maxK),max_ang_mom(nNuc),min_exponent(nNuc,maxL+1),max_exponent(nNuc))
-
-!------------------------------------------------------------------------
-! Read basis set information
-!------------------------------------------------------------------------
-
-  call read_basis(nNuc,rNuc,nBas,nO,nV,nShell,TotAngMomShell,CenterShell,KShell,DShell,ExpShell, & 
-                  max_ang_mom,min_exponent,max_exponent)
 
 !------------------------------------------------------------------------
 ! DFT options
@@ -122,43 +109,13 @@ program eDFT
                         maxSCF,thresh,DIIS,max_diis,guess_type,ortho_type,doNcentered,occnum,Cx_choice)
 
 !------------------------------------------------------------------------
-! Read one- and two-electron integrals
-!------------------------------------------------------------------------
-
-! Memory allocation for one- and two-electron integrals
-
-  allocate(S(nBas,nBas),T(nBas,nBas),V(nBas,nBas),Hc(nBas,nBas), &
-           X(nBas,nBas),ERI(nBas,nBas,nBas,nBas),c(nBas,nBas))
-
- ! Read integrals
-
-  call cpu_time(start_int)
-
-  call system('./GoQCaml')
-  call read_integrals(nBas,S,T,V,Hc,ERI)
-
-  call cpu_time(end_int)
-
-  t_int = end_int - start_int
-  write(*,*)
-  write(*,'(A65,1X,F9.3,A8)') 'Total CPU time for reading integrals = ',t_int,' seconds'
-  write(*,*)
-
-! Orthogonalization X = S^(-1/2)
-
-  call orthogonalization_matrix(ortho_type,nBas,S,X)
-
-!------------------------------------------------------------------------
 ! Construct quadrature grid
 !------------------------------------------------------------------------
   call read_grid(SGn,radial_precision,nRad,nAng,nGrid)
-! nGrid = nRad*nAng
 
   call allocate_grid(nNuc,ZNuc,max_ang_mom,min_exponent,max_exponent,radial_precision,nAng,nGrid)
 
   allocate(root(ncart,nGrid),weight(nGrid))
-
-! call quadrature_grid(nRad,nAng,nGrid,root,weight)
 
   call build_grid(nNuc,ZNuc,rNuc,max_ang_mom,min_exponent,max_exponent, & 
                   radial_precision,nRad,nAng,nGrid,weight,root)
