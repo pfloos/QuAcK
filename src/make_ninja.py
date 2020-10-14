@@ -122,7 +122,7 @@ build $LDIR/libxc.a $LDIR/libxcf90.a $IDIR/xc.h $IDIR/xc_funcs_removed.h $IDIR/x
 
 build_qcaml = """
 rule install_qcaml
-  command = cd $QUACK_ROOT/qcaml-tools ; ./install-qcaml.sh
+  command = cd $QUACK_ROOT/qcaml-tools ; ./install_qcaml.sh
   pool = console
   description = Installing QCaml
 
