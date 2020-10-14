@@ -24,7 +24,7 @@ if not DEBUG:
     compile_gfortran_mac = """
 FC = gfortran
 AR = libtool
-FFLAGS = -I$IDIR -J$IDIR -Wall -Wno-unused -Wno-unused-dummy-argument -O3
+FFLAGS = -I$IDIR -J$IDIR -fbacktrace -g -Wall -Wno-unused -Wno-unused-dummy-argument -O3
 CC = gcc
 CXX = g++
 LAPACK=-lblas -llapack
@@ -34,7 +34,7 @@ else:
     compile_gfortran_mac = """
 FC = gfortran
 AR = libtool
-FFLAGS = -I$IDIR -J$IDIR -Wall -g -msse4.2 -fcheck=all -Waliasing -Wampersand -Wconversion -Wsurprising -Wintrinsics-std -Wno-tabs -Wintrinsic-shadow -Wline-truncation -Wreal-q-constant
+FFLAGS = -I$IDIR -J$IDIR -fbacktrace -Wall -g -msse4.2 -fcheck=all -Waliasing -Wampersand -Wconversion -Wsurprising -Wintrinsics-std -Wno-tabs -Wintrinsic-shadow -Wline-truncation -Wreal-q-constant
 CC = gcc
 CXX = g++
 LAPACK=-lblas -llapack
@@ -133,6 +133,7 @@ rule install_qcaml
   command = cd $QUACK_ROOT/qcaml-tools ; ./install_qcaml.sh
   pool = console
   description = Installing QCaml
+  generator = true
 
 build $QUACK_ROOT/qcaml-tools/qcaml/README.md: install_qcaml
   generator = true
@@ -256,8 +257,11 @@ def create_makefile(directory):
 	ninja
 	make -C ..
 
+clean:
+	ninja -t clean
+
 debug:
-	ninja
+	ninja -t clean
 	make -C .. debug
 """)
 
