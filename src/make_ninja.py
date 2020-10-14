@@ -23,17 +23,27 @@ QUACK_ROOT=os.environ["QUACK_ROOT"]
 if not DEBUG:
     compile_gfortran_mac = """
 FC = gfortran
-AR = libtool
+AR = libtool -static -o
 FFLAGS = -I$IDIR -J$IDIR -fbacktrace -g -Wall -Wno-unused -Wno-unused-dummy-argument -O3
 CC = gcc
 CXX = g++
 LAPACK=-lblas -llapack
 STDCXX=-lc++
 """
+
+    compile_gfortran_linux = """
+FC = gfortran
+AR = ar crs
+FFLAGS = -I$IDIR -J$IDIR -fbacktrace -g -Wall -Wno-unused -Wno-unused-dummy-argument -O3
+CC = gcc
+CXX = g++
+LAPACK=-lblas -llapack
+STDCXX=-lstdc++
+"""
 else:
     compile_gfortran_mac = """
 FC = gfortran
-AR = libtool
+AR = libtool -static -o
 FFLAGS = -I$IDIR -J$IDIR -fbacktrace -Wall -g -msse4.2 -fcheck=all -Waliasing -Wampersand -Wconversion -Wsurprising -Wintrinsics-std -Wno-tabs -Wintrinsic-shadow -Wline-truncation -Wreal-q-constant
 CC = gcc
 CXX = g++
@@ -41,12 +51,22 @@ LAPACK=-lblas -llapack
 STDCXX=-lc++
 """
 
+    compile_gfortran_linux = """
+FC = gfortran
+AR = ar crs
+FFLAGS = -I$IDIR -J$IDIR -fbacktrace -Wall -g -msse4.2 -fcheck=all -Waliasing -Wampersand -Wconversion -Wsurprising -Wintrinsics-std -Wno-tabs -Wintrinsic-shadow -Wline-truncation -Wreal-q-constant
+CC = gcc
+CXX = g++
+LAPACK=-lblas -llapack
+STDCXX=-lstdc++
+"""
+
 
 # TODO Change compiler here
 # --------------------------
 
-compiler = compile_gfortran_mac
-#compiler = compile_gfortran_mac_debug
+#compiler = compile_gfortran_mac
+compiler = compile_gfortran_linux
 
 header = """#
 # This file was automatically generated. Do not modify this file.
@@ -65,13 +85,13 @@ LIBXC_VERSION=5.0.0
 
 rule_fortran = """
 rule fc
-  command = $FC $FFLAGS -c $in -o $out && (mv -f *.mod $IDIR &> /dev/null || :) 
+  command = $FC $FFLAGS -c $in -o $out && (mv -f *.mod $IDIR || : &> /dev/null ) 
 
 """
 
 rule_build_lib = """
 rule build_lib
-  command = $AR -static $in -o $out 
+  command = $AR $out $in 
   description = Linking $out
 
 """
@@ -80,7 +100,7 @@ rule_build_exe = """
 LIBS = {0} $LAPACK $STDCXX
 
 rule build_exe
-  command = $FC $in $LIBS -o $out
+  command = $FC -Wl,--start-group $in $LIBS -o $out
   pool = console
   description = Linking $out
 
@@ -247,7 +267,10 @@ rule build_lib
             sources = [ "$SDIR/{0}/{1}".format(libname,x) for x in  os.listdir(libname) ]
             sources = filter(lambda x: x.endswith(".f") or x.endswith(".f90"), sources)
             sources = " ".join(sources)
-            f.write("build $LDIR/{0}.a: build_lib {1}\n  dir = $SDIR/{0}\n".format(libname, sources))
+            if libname == "numgrid":
+              f.write("build $LDIR/{0}.a: build_lib {1}\n  dir = $SDIR/{0}\n".format(libname, sources))
+            else:
+              f.write("build $LDIR/{0}.a: build_lib {1} $LDIR/numgrid.a\n  dir = $SDIR/{0}\n".format(libname, sources))
         f.write("build all: phony $QUACK_ROOT/GoDuck $BDIR/QuAcK\n")
         f.write("default all\n")
 
