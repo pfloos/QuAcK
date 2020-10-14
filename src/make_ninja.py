@@ -85,7 +85,7 @@ LIBXC_VERSION=5.0.0
 
 rule_fortran = """
 rule fc
-  command = $FC $FFLAGS -c $in -o $out && (mv -f *.mod $IDIR || : &> /dev/null ) 
+  command = $FC $FFLAGS -c $in -o $out
 
 """
 
