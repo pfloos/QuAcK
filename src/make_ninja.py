@@ -66,11 +66,13 @@ FIX_ORDER_OF_LIBS=-Wl,--start-group
 """
 
 
-# TODO Change compiler here
-# --------------------------
-
-#compiler = compile_gfortran_mac
-compiler = compile_gfortran_linux
+if sys.platform in ["linux", "linux2"]:
+  compiler = compile_gfortran_linux
+elif sys.platform == "darwin":
+  compiler = compile_gfortran_mac
+else:
+  print("Unknown platform. Only Linux and Darwin are supported.")
+  sys.exit(-1)
 
 header = """#
 # This file was automatically generated. Do not modify this file.
