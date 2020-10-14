@@ -52,6 +52,7 @@ LDIR=$QUACK_ROOT/lib
 BDIR=$QUACK_ROOT/bin
 SDIR=$QUACK_ROOT/src
 
+LIBXC_VERSION=5.0.0
 """.format(QUACK_ROOT)
 
 rule_fortran = """
@@ -97,17 +98,47 @@ rule make_numgrid
   pool = console
 
 build $LDIR/libnumgrid.a: make_numgrid 
+  generator = true
 """
   
 build_libxc = """
 rule make_libxc
-  command = cd $QUACK_ROOT/libxc-tools ; QUACK_ROOT="$QUACK_ROOT" CC="$CC" CXX="$CXX" FC="$FC" ./install_libxc.sh
+  command = cd $QUACK_ROOT/libxc-tools ; LIBXC_VERSION="$LIBXC_VERSION" QUACK_ROOT="$QUACK_ROOT" CC="$CC" CXX="$CXX" FC="$FC" ./install_libxc.sh
   description = Building libxc
   pool = console
 
-build $LDIR/libxc.a $LDIR/libxcf90.a $IDIR/xc.h $IDIR/xc_funcs_removed.h $IDIR/xc_f90_lib_m.mod $IDIR/xc_funcs_worker.h $IDIR/xc_funcs.h $IDIR/xc_version.h: make_libxc
+rule install_libxc
+  command = cd $QUACK_ROOT/libxc-tools ; LIBXC_VERSION="$LIBXC_VERSION" QUACK_ROOT="$QUACK_ROOT" CC="$CC" CXX="$CXX" FC="$FC" ./install_libxc.sh install
+  description = Installing libxc
+  pool = console
+
+build $QUACK_ROOT/libxc-tools/libxc-$LIBXC_VERSION/src/.libs/libxcf90.a: make_libxc
+  generator = true
+
+build $LDIR/libxc.a $LDIR/libxcf90.a $IDIR/xc.h $IDIR/xc_funcs_removed.h $IDIR/xc_f90_lib_m.mod $IDIR/xc_funcs_worker.h $IDIR/xc_funcs.h $IDIR/xc_version.h: install_libxc $QUACK_ROOT/libxc-tools/libxc-$LIBXC_VERSION/src/.libs/libxcf90.a
+  generator = true
 
 """
+
+build_qcaml = """
+rule install_qcaml
+  command = cd $QUACK_ROOT/qcaml-tools ; ./install-qcaml.sh
+  pool = console
+  description = Installing QCaml
+
+build $QUACK_ROOT/qcaml-tools/qcaml/README.md: install_qcaml
+  generator = true
+"""
+
+build_GoDuck = """
+rule make_goduck
+  command = cd $QUACK_ROOT/qcaml-tools ; make
+  pool = console
+  description = Compiling GoDuck 
+
+build $QUACK_ROOT/GoDuck: make_goduck $QUACK_ROOT/qcaml-tools/qcaml/README.md
+"""
+
 
 build_in_lib_dir = "\n".join([
 	header,
@@ -131,6 +162,8 @@ build_main = "\n".join([
         rule_git_clone,
         build_numgrid,
 	build_libxc,
+	build_qcaml,
+	build_GoDuck,
 ])
 
 exe_dirs = [ "QuAcK", "eDFT" ]
@@ -195,11 +228,18 @@ rule build_lib
 
 """)
         for exe_dir in exe_dirs:
-            f.write("build $BDIR/{0}: build_exe {1} $LDIR/libnumgrid.a\n".format(exe_dir,libs))
+            sources = [ "$SDIR/{0}/{1}".format(exe_dir,x) for x in  os.listdir(exe_dir) ]
+            sources = filter(lambda x: x.endswith(".f") or x.endswith(".f90"), sources)
+            sources = " ".join(sources)
+            f.write("build $BDIR/{0}: build_exe {1} $LDIR/libnumgrid.a {2}\n".format(exe_dir,libs,sources))
             f.write("  dir = {0} \n".format(exe_dir) )
+
         for libname in lib_dirs:
-           f.write("build $LDIR/{0}.a: build_lib\n  dir = $SDIR/{0}\n".format(libname))
-        f.write("build all: phony $BDIR/QuAcK $BDIR/eDFT\n")
+            sources = [ "$SDIR/{0}/{1}".format(libname,x) for x in  os.listdir(libname) ]
+            sources = filter(lambda x: x.endswith(".f") or x.endswith(".f90"), sources)
+            sources = " ".join(sources)
+            f.write("build $LDIR/{0}.a: build_lib {1}\n  dir = $SDIR/{0}\n".format(libname, sources))
+        f.write("build all: phony $QUACK_ROOT/GoDuck $BDIR/QuAcK $BDIR/eDFT\n")
         f.write("default all\n")
 
 def create_makefile(directory):
