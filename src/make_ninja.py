@@ -29,6 +29,7 @@ CC = gcc
 CXX = g++
 LAPACK=-lblas -llapack
 STDCXX=-lc++
+FIX_ORDER_OF_LIBS=
 """
 
     compile_gfortran_linux = """
@@ -39,6 +40,7 @@ CC = gcc
 CXX = g++
 LAPACK=-lblas -llapack
 STDCXX=-lstdc++
+FIX_ORDER_OF_LIBS=-Wl,--start-group 
 """
 else:
     compile_gfortran_mac = """
@@ -49,6 +51,7 @@ CC = gcc
 CXX = g++
 LAPACK=-lblas -llapack
 STDCXX=-lc++
+FIX_ORDER_OF_LIBS=
 """
 
     compile_gfortran_linux = """
@@ -59,6 +62,7 @@ CC = gcc
 CXX = g++
 LAPACK=-lblas -llapack
 STDCXX=-lstdc++
+FIX_ORDER_OF_LIBS=-Wl,--start-group 
 """
 
 
@@ -81,6 +85,7 @@ BDIR=$QUACK_ROOT/bin
 SDIR=$QUACK_ROOT/src
 
 LIBXC_VERSION=5.0.0
+
 """.format(QUACK_ROOT)
 
 rule_fortran = """
@@ -100,7 +105,7 @@ rule_build_exe = """
 LIBS = {0} $LAPACK $STDCXX
 
 rule build_exe
-  command = $FC -Wl,--start-group $in $LIBS -o $out
+  command = $FC $FIX_ORDER_OF_LIBS $in $LIBS -o $out
   pool = console
   description = Linking $out
 
