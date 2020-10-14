@@ -7,6 +7,10 @@ default:
 	python3 make_ninja.py
 	ninja
 
+debug:
+	python3 make_ninja.py debug
+	ninja
+
 clean: 
 	python3 make_ninja.py
 	for i in */ ; do ninja -t clean ; done

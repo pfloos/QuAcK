@@ -1,5 +1,7 @@
 subroutine US51_lda_exchange_energy(nGrid,weight,rho,Ex)
 
+  use xc_f90_lib_m
+
 ! Compute Slater's LDA exchange energy
 
   implicit none

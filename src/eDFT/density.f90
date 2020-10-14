@@ -31,8 +31,8 @@ subroutine density(nGrid,nBas,P,AO,rho)
     enddo
   enddo
 
-! do iG=1,nGrid
-!   rho(iG) = max(rho(iG),thresh)
-! enddo
+  do iG=1,nGrid
+    rho(iG) = max(0d0,rho(iG))
+  enddo
 
 end subroutine density

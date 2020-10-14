@@ -2,6 +2,13 @@
 import os
 import sys
 
+DEBUG=False
+try:
+  DEBUG = sys.argv[1] == "debug"
+except:
+  pass
+ 	
+
 if "QUACK_ROOT" not in os.environ:
    os.chdir("..")
    print("")
@@ -13,7 +20,8 @@ if "QUACK_ROOT" not in os.environ:
 
 QUACK_ROOT=os.environ["QUACK_ROOT"]
 
-compile_gfortran_mac = """
+if not DEBUG:
+    compile_gfortran_mac = """
 FC = gfortran
 AR = libtool
 FFLAGS = -I$IDIR -J$IDIR -Wall -Wno-unused -Wno-unused-dummy-argument -O3
@@ -22,9 +30,9 @@ CXX = g++
 LAPACK=-lblas -llapack
 STDCXX=-lc++
 """
-
-compile_gfortran_mac_debug = """
-FC = gfortran -I$IDIR -J$IDIR
+else:
+    compile_gfortran_mac = """
+FC = gfortran
 AR = libtool
 FFLAGS = -I$IDIR -J$IDIR -Wall -g -msse4.2 -fcheck=all -Waliasing -Wampersand -Wconversion -Wsurprising -Wintrinsics-std -Wno-tabs -Wintrinsic-shadow -Wline-truncation -Wreal-q-constant
 CC = gcc
@@ -93,7 +101,7 @@ rule git_clone
 
 build_numgrid = """
 rule make_numgrid
-  command = cd $QUACK_ROOT/utils ; LDIR="$LDIR" SDIR="$SDIR" CC="$CC" CXX="$CXX" FC="$FC" ./install_numgrid.sh
+  command = cd $QUACK_ROOT/numgrid-tools ; LDIR="$LDIR" SDIR="$SDIR" CC="$CC" CXX="$CXX" FC="$FC" ./install_numgrid.sh
   description = Building numgrid
   pool = console
 
@@ -247,6 +255,10 @@ def create_makefile(directory):
      f.write("""default:
 	ninja
 	make -C ..
+
+debug:
+	ninja
+	make -C .. debug
 """)
 
 def main():
@@ -256,7 +268,7 @@ def main():
 
     for exe_dir in exe_dirs:
        create_ninja_in_exedir(exe_dir)
-       create_makefile(lib_dir)
+       create_makefile(exe_dir)
 
     create_main_ninja()
 
