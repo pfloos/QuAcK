@@ -166,7 +166,7 @@ build_main = "\n".join([
 	build_GoDuck,
 ])
 
-exe_dirs = [ "QuAcK", "eDFT" ]
+exe_dirs = [ "QuAcK"]
 lib_dirs = list(filter(lambda x: os.path.isdir(x) and \
                                  x not in exe_dirs, os.listdir(".")))
 
@@ -239,7 +239,7 @@ rule build_lib
             sources = filter(lambda x: x.endswith(".f") or x.endswith(".f90"), sources)
             sources = " ".join(sources)
             f.write("build $LDIR/{0}.a: build_lib {1}\n  dir = $SDIR/{0}\n".format(libname, sources))
-        f.write("build all: phony $QUACK_ROOT/GoDuck $BDIR/QuAcK $BDIR/eDFT\n")
+        f.write("build all: phony $QUACK_ROOT/GoDuck $BDIR/QuAcK\n")
         f.write("default all\n")
 
 def create_makefile(directory):

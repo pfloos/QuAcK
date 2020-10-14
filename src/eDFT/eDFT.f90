@@ -1,14 +1,20 @@
-subroutine eDFT(nNuc,ZNuc,rNuc,nBas,nEl,nC,nO,nV,nR,nShell,TotAngMomShell,CenterShell,KShell,DShell,ExpShell, &
-              max_ang_mom,min_exponent,max_exponent,S,T,V,Hc,X,ERI_AO,dipole_int)
+subroutine eDFT(maxSCF,thresh,max_diis,guess_type,nNuc,ZNuc,rNuc,ENuc,nBas,nEl,nC,nO,nV,nR, & 
+                nShell,TotAngMomShell,CenterShell,KShell,DShell,ExpShell, &
+                max_ang_mom,min_exponent,max_exponent,S,T,V,Hc,X,ERI,dipole_int)
 
 ! exchange-correlation density-functional theory calculations
 
-! use xc_f90_lib_m
+  use xc_f90_lib_m
 
   implicit none
   include 'parameters.h'
 
 ! Input variables
+
+  integer,intent(in)            :: maxSCF
+  integer,intent(in)            :: max_diis
+  integer,intent(in)            :: guess_type
+  double precision,intent(in)   :: thresh
 
   integer,intent(in)            :: nNuc
   integer,intent(in)            :: nBas
@@ -17,12 +23,12 @@ subroutine eDFT(nNuc,ZNuc,rNuc,nBas,nEl,nC,nO,nV,nR,nShell,TotAngMomShell,Center
   integer,intent(in)            :: nO(nspin)
   integer,intent(in)            :: nV(nspin)
   integer,intent(in)            :: nR(nspin)
-  double precision,intent(in)   :: ENuc,Ew
+  double precision,intent(in)   :: ENuc
 
   double precision,intent(in)   :: ZNuc(nNuc)
   double precision,intent(in)   :: rNuc(nNuc,ncart)
 
-  integer,intent(in)            :: nBas,nShell
+  integer,intent(in)            :: nShell
   double precision,intent(in)   :: CenterShell(maxShell,ncart)
   integer,intent(in)            :: TotAngMomShell(maxShell)
   integer,intent(in)            :: KShell(maxShell)
@@ -43,8 +49,7 @@ subroutine eDFT(nNuc,ZNuc,rNuc,nBas,nEl,nC,nO,nV,nR,nShell,TotAngMomShell,Center
 
 ! Local variables
 
-  double precision,allocatable  :: min_exponent(:,:)
-  double precision,allocatable  :: max_exponent(:)
+  double precision              :: Ew
   double precision,allocatable  :: c(:,:)
 
   character(len=8)              :: method
@@ -72,12 +77,6 @@ subroutine eDFT(nNuc,ZNuc,rNuc,nBas,nEl,nC,nO,nV,nR,nShell,TotAngMomShell,Center
   logical                       :: doNcentered
   double precision,allocatable  :: wEns(:)
 
-  integer                       :: maxSCF,max_diis
-  double precision              :: thresh
-  logical                       :: DIIS
-  integer                       :: guess_type
-  integer                       :: ortho_type
-
   double precision,allocatable  :: occnum(:,:,:) 
   integer                       :: Cx_choice
 
@@ -102,11 +101,11 @@ subroutine eDFT(nNuc,ZNuc,rNuc,nBas,nEl,nC,nO,nV,nR,nShell,TotAngMomShell,Center
 ! DFT options
 !------------------------------------------------------------------------
 
-! Allocate ensemble weights
+! Allocate ensemble weights and MO coefficients
 
-  allocate(wEns(maxEns),occnum(nBas,nspin,maxEns))
+  allocate(c(nBas,nspin),wEns(maxEns),occnum(nBas,nspin,maxEns))
   call read_options_dft(nBas,method,x_rung,x_DFA,c_rung,c_DFA,SGn,nEns,wEns,aCC_w1,aCC_w2, & 
-                        maxSCF,thresh,DIIS,max_diis,guess_type,ortho_type,doNcentered,occnum,Cx_choice)
+                        doNcentered,occnum,Cx_choice)
 
 !------------------------------------------------------------------------
 ! Construct quadrature grid
@@ -221,4 +220,4 @@ subroutine eDFT(nNuc,ZNuc,rNuc,nBas,nEl,nC,nO,nV,nR,nShell,TotAngMomShell,Center
 !------------------------------------------------------------------------
 ! End of eDFT
 !------------------------------------------------------------------------
-end program eDFT
+end subroutine eDFT

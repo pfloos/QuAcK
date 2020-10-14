@@ -1,5 +1,5 @@
 subroutine read_options_dft(nBas,method,x_rung,x_DFA,c_rung,c_DFA,SGn,nEns,wEns,aCC_w1,aCC_w2, & 
-                            maxSCF,thresh,DIIS,max_diis,guess_type,ortho_type,doNcentered,occnum,Cx_choice)
+                            doNcentered,occnum,Cx_choice)
 
 ! Read DFT options
 
@@ -31,12 +31,6 @@ subroutine read_options_dft(nBas,method,x_rung,x_DFA,c_rung,c_DFA,SGn,nEns,wEns,
   double precision,intent(out)  :: aCC_w2(3)
   double precision,intent(out)  :: occnum(nBas,nspin,maxEns)
 
-  integer,intent(out)           :: maxSCF
-  double precision,intent(out)  :: thresh
-  logical,intent(out)           :: DIIS
-  integer,intent(out)           :: max_diis
-  integer,intent(out)           :: guess_type
-  integer,intent(out)           :: ortho_type
   integer,intent(out)           :: Cx_choice
 
 ! Open file with method specification
@@ -180,22 +174,6 @@ subroutine read_options_dft(nBas,method,x_rung,x_DFA,c_rung,c_DFA,SGn,nEns,wEns,
   write(*,*)'----------------------------------------------------------'
   call matout(3,1,aCC_w2)
   write(*,*) 
-
-! Read KS options
-
-  maxSCF     = 64
-  thresh     = 1d-6
-  DIIS       = .false.
-  max_diis   = 5
-  guess_type = 1
-  ortho_type = 1
-
-  read(1,*)
-  read(1,*) maxSCF,thresh,answer,max_diis,guess_type,ortho_type
-
-  if(answer == 'T') DIIS = .true.
-
-  if(.not.DIIS) max_diis = 1
 
 ! Close file with options
 
