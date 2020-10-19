@@ -7,10 +7,10 @@ subroutine form_u(nC,nO,nV,nR,OOOO,VVVV,OVOV,t2,u)
 ! Input variables
 
   integer,intent(in)            :: nC,nO,nV,nR
-  double precision,intent(in)   :: t2(nO,nO,nV,nV)
-  double precision,intent(in)   :: OOOO(nO,nO,nO,nO)
-  double precision,intent(in)   :: VVVV(nV,nV,nV,nV)
-  double precision,intent(in)   :: OVOV(nO,nV,nO,nV)
+  double precision,intent(in)   :: t2(nO-nC,nO-nC,nV-nR,nV-nR)
+  double precision,intent(in)   :: OOOO(nO-nC,nO-nC,nO-nC,nO-nC)
+  double precision,intent(in)   :: VVVV(nV-nR,nV-nR,nV-nR,nV-nR)
+  double precision,intent(in)   :: OVOV(nO-nC,nV-nR,nO-nC,nV-nR)
 
 ! Local variables
 
@@ -19,12 +19,12 @@ subroutine form_u(nC,nO,nV,nR,OOOO,VVVV,OVOV,t2,u)
 
 ! Output variables
 
-  double precision,intent(out)  :: u(nO,nO,nV,nV)
+  double precision,intent(out)  :: u(nO-nC,nO-nC,nV-nR,nV-nR)
 
   u(:,:,:,:) = 0d0
  
-  do i=nC+1,nO
-    do j=nC+1,nO
+  do i=1,nO-nC
+    do j=1,nO-nC
       do a=1,nV-nR
         do b=1,nV-nR
           do c=1,nV-nR
@@ -37,10 +37,10 @@ subroutine form_u(nC,nO,nV,nR,OOOO,VVVV,OVOV,t2,u)
     enddo
   enddo
 
-  do i=nC+1,nO
-    do j=nC+1,nO
-      do k=nC+1,nO
-        do l=nC+1,nO
+  do i=1,nO-nC
+    do j=1,nO-nC
+      do k=1,nO-nC
+        do l=1,nO-nC
           do a=1,nV-nR
             do b=1,nV-nR
               u(i,j,a,b) = u(i,j,a,b) + 0.5d0*OOOO(k,l,i,j)*t2(k,l,a,b)
@@ -51,9 +51,9 @@ subroutine form_u(nC,nO,nV,nR,OOOO,VVVV,OVOV,t2,u)
     enddo
   enddo
 
-  do i=nC+1,nO
-    do j=nC+1,nO
-      do k=nC+1,nO
+  do i=1,nO-nC
+    do j=1,nO-nC
+      do k=1,nO-nC
         do a=1,nV-nR
           do b=1,nV-nR
             do c=1,nV-nR

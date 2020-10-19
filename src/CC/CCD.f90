@@ -90,11 +90,11 @@ subroutine CCD(maxSCF,thresh,max_diis,nBasin,nCin,nOin,nVin,nRin,ERI,ENuc,ERHF,e
 
 ! Form energy denominator
 
-  allocate(eO(nO),eV(nV))
-  allocate(delta_OOVV(nO,nO,nV,nV))
+  allocate(eO(nO-nC),eV(nV-nR))
+  allocate(delta_OOVV(nO-nC,nO-nC,nV-nR,nV-nR))
 
-  eO(:) = seHF(1:nO)
-  eV(:) = seHF(nO+1:nBas)
+  eO(:) = seHF(nC+1:nO)
+  eV(:) = seHF(nO+1:nBas-nR)
 
   call form_delta_OOVV(nC,nO,nV,nR,eO,eV,delta_OOVV)
 
@@ -102,18 +102,19 @@ subroutine CCD(maxSCF,thresh,max_diis,nBasin,nCin,nOin,nVin,nRin,ERI,ENuc,ERHF,e
 
 ! Create integral batches
 
-  allocate(OOOO(nO,nO,nO,nO),OOVV(nO,nO,nV,nV),OVOV(nO,nV,nO,nV),VVVV(nV,nV,nV,nV))
+  allocate(OOOO(nO-nC,nO-nC,nO-nC,nO-nC),OOVV(nO-nC,nO-nC,nV-nR,nV-nR), & 
+           OVOV(nO-nC,nV-nR,nO-nC,nV-nR),VVVV(nV-nR,nV-nR,nV-nR,nV-nR))
 
-  OOOO(:,:,:,:) = dbERI(   1:nO  ,   1:nO  ,   1:nO  ,   1:nO  )
-  OOVV(:,:,:,:) = dbERI(   1:nO  ,   1:nO  ,nO+1:nBas,nO+1:nBas)
-  OVOV(:,:,:,:) = dbERI(   1:nO  ,nO+1:nBas,   1:nO  ,nO+1:nBas)
-  VVVV(:,:,:,:) = dbERI(nO+1:nBas,nO+1:nBas,nO+1:nBas,nO+1:nBas)
+  OOOO(:,:,:,:) = dbERI(nC+1:nO     ,nC+1:nO     ,nC+1:nO     ,nC+1:nO     )
+  OOVV(:,:,:,:) = dbERI(nC+1:nO     ,nC+1:nO     ,nO+1:nBas-nR,nO+1:nBas-nR)
+  OVOV(:,:,:,:) = dbERI(nC+1:nO     ,nO+1:nBas-nR,nC+1:nO     ,nO+1:nBas-nR)
+  VVVV(:,:,:,:) = dbERI(nO+1:nBas-nR,nO+1:nBas-nR,nO+1:nBas-nR,nO+1:nBas-nR)
 
   deallocate(dbERI)
  
 ! MP2 guess amplitudes
 
-  allocate(t2(nO,nO,nV,nV))
+  allocate(t2(nO-nC,nO-nC,nV-nR,nV-nR))
 
   t2(:,:,:,:) = -OOVV(:,:,:,:)/delta_OOVV(:,:,:,:)
 
@@ -122,12 +123,12 @@ subroutine CCD(maxSCF,thresh,max_diis,nBasin,nCin,nOin,nVin,nRin,ERI,ENuc,ERHF,e
 
 ! Memory allocation for DIIS
 
-  allocate(error_diis(nO*nO*nV*nV,max_diis),t_diis(nO*nO*nV*nV,max_diis))
+  allocate(error_diis((nO-nR)**2*(nV-nR)**2,max_diis),t_diis((nO-nR)**2*(nV-nR)**2,max_diis))
 
 ! Initialization
 
-  allocate(r2(nO,nO,nV,nV),u(nO,nO,nV,nV),v(nO,nO,nV,nV))
-  allocate(X1(nO,nO,nO,nO),X2(nV,nV),X3(nO,nO),X4(nO,nO,nV,nV))
+  allocate(r2(nO-nC,nO-nC,nV-nR,nV-nR),u(nO-nC,nO-nC,nV-nR,nV-nR),v(nO-nC,nO-nC,nV-nR,nV-nR))
+  allocate(X1(nO-nC,nO-nC,nO-nC,nO-nC),X2(nV-nR,nV-nR),X3(nO-nC,nO-nC),X4(nO-nC,nO-nC,nV-nR,nV-nR))
 
   Conv = 1d0
   nSCF = 0
@@ -171,7 +172,7 @@ subroutine CCD(maxSCF,thresh,max_diis,nBasin,nCin,nOin,nVin,nRin,ERI,ENuc,ERHF,e
 
 !   Check convergence 
 
-    Conv = maxval(abs(r2(nC+1:nO,nC+1:nO,1:nV-nR,1:nV-nR)))
+    Conv = maxval(abs(r2(:,:,:,:)))
   
 !   Update amplitudes
 
@@ -190,7 +191,7 @@ subroutine CCD(maxSCF,thresh,max_diis,nBasin,nCin,nOin,nVin,nRin,ERI,ENuc,ERHF,e
     ! DIIS extrapolation
 
     n_diis = min(n_diis+1,max_diis)
-    call DIIS_extrapolation(rcond,nO*nO*nV*nV,nO*nO*nV*nV,n_diis,error_diis,t_diis,-r2/delta_OOVV,t2)
+    call DIIS_extrapolation(rcond,(nO-nC)**2*(nV-nR)**2,(nO-nC)**2*(nV-nR)**2,n_diis,error_diis,t_diis,-r2/delta_OOVV,t2)
 
     !  Reset DIIS if required
 

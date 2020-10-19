@@ -7,8 +7,8 @@ subroutine form_X(nC,nO,nV,nR,OOVV,t2,X1,X2,X3,X4)
 ! Input variables
 
   integer,intent(in)            :: nC,nO,nV,nR
-  double precision,intent(in)   :: t2(nO,nO,nV,nV)
-  double precision,intent(in)   :: OOVV(nO,nO,nV,nV)
+  double precision,intent(in)   :: t2(nO-nC,nO-nC,nV-nR,nV-nR)
+  double precision,intent(in)   :: OOVV(nO-nC,nO-nC,nV-nR,nV-nR)
 
 ! Local variables
 
@@ -17,10 +17,10 @@ subroutine form_X(nC,nO,nV,nR,OOVV,t2,X1,X2,X3,X4)
 
 ! Output variables
 
-  double precision,intent(out)  :: X1(nO,nO,nO,nO) 
-  double precision,intent(out)  :: X2(nV,nV) 
-  double precision,intent(out)  :: X3(nO,nO) 
-  double precision,intent(out)  :: X4(nO,nO,nV,nV)
+  double precision,intent(out)  :: X1(nO-nC,nO-nC,nO-nC,nO-nC) 
+  double precision,intent(out)  :: X2(nV-nR,nV-nR) 
+  double precision,intent(out)  :: X3(nO-nC,nO-nC) 
+  double precision,intent(out)  :: X4(nO-nC,nO-nC,nV-nR,nV-nR)
 
 ! Initialization
 
@@ -31,10 +31,10 @@ subroutine form_X(nC,nO,nV,nR,OOVV,t2,X1,X2,X3,X4)
 
 ! Build X1
 
-  do k=nC+1,nO
-    do l=nC+1,nO
-      do i=nC+1,nO
-        do j=nC+1,nO
+  do k=1,nO-nC
+    do l=1,nO-nC
+      do i=1,nO-nC
+        do j=1,nO-nC
           do c=1,nV-nR
             do d=1,nV-nR
               X1(k,l,i,j) = X1(k,l,i,j) + OOVV(k,l,c,d)*t2(i,j,c,d)
@@ -49,8 +49,8 @@ subroutine form_X(nC,nO,nV,nR,OOVV,t2,X1,X2,X3,X4)
 
   do b=1,nV-nR
     do c=1,nV-nR
-      do k=nC+1,nO
-        do l=nC+1,nO
+      do k=1,nO-nC
+        do l=1,nO-nC
           do d=1,nV-nR
             X2(b,c) = X2(b,c) + OOVV(k,l,c,d)*t2(k,l,b,d)
           enddo
@@ -61,9 +61,9 @@ subroutine form_X(nC,nO,nV,nR,OOVV,t2,X1,X2,X3,X4)
 
 ! Build X3
 
-  do k=nC+1,nO
-    do j=nC+1,nO
-      do l=nC+1,nO
+  do k=1,nO-nC
+    do j=1,nO-nC
+      do l=1,nO-nC
         do c=1,nV-nR
           do d=1,nV-nR
             X3(k,j) = X3(k,j) + OOVV(k,l,c,d)*t2(j,l,c,d)
@@ -75,11 +75,11 @@ subroutine form_X(nC,nO,nV,nR,OOVV,t2,X1,X2,X3,X4)
 
 ! Build X4
 
-  do i=nC+1,nO
-    do l=nC+1,nO
+  do i=1,nO-nC
+    do l=1,nO-nC
       do a=1,nV-nR
         do d=1,nV-nR
-          do k=nC+1,nO
+          do k=1,nO-nC
             do c=1,nV-nR
               X4(i,l,a,d) = X4(i,l,a,d) + OOVV(k,l,c,d)*t2(i,k,a,c) 
             enddo
