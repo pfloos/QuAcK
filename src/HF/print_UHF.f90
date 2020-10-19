@@ -66,7 +66,7 @@ subroutine print_UHF(nBas,nO,Ov,e,c,ENuc,ET,EV,EJ,Ex,EUHF,dipole)
   write(*,'(A40,1X,F16.10,A3)') ' Potential    a  energy: ',EV(1),' au'
   write(*,'(A40,1X,F16.10,A3)') ' Potential    b  energy: ',EV(2),' au'
   write(*,'(A60)')              '-------------------------------------------------'
-  write(*,'(A40,1X,F16.10,A3)') ' Two-electron a  energy: ',sum(EJ(:)) + sum(Ex(:)),' au'
+  write(*,'(A40,1X,F16.10,A3)') ' Two-electron    energy: ',sum(EJ(:)) + sum(Ex(:)),' au'
   write(*,'(A40,1X,F16.10,A3)') ' Two-electron aa energy: ',EJ(1) + Ex(1),' au'
   write(*,'(A40,1X,F16.10,A3)') ' Two-electron ab energy: ',EJ(2),' au'
   write(*,'(A40,1X,F16.10,A3)') ' Two-electron bb energy: ',EJ(3) + Ex(2),' au'

@@ -473,7 +473,7 @@ program QuAcK
 
     else
 
-      call MP3(nBas,nEl,ERI_MO,eHF,ENuc,ERHF)
+      call MP3(nBas,nC,nO,nV,nR,ERI_MO,eHF,ENuc,ERHF)
 
     end if
 

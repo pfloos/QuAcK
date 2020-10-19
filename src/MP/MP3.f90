@@ -1,4 +1,4 @@
-subroutine MP3(nBas,nEl,ERI,e,ENuc,EHF)
+subroutine MP3(nBasin,nCin,nOin,nVin,nRin,ERI,e,ENuc,EHF)
 
 ! Perform third-order Moller-Plesset calculation
 
@@ -6,10 +6,14 @@ subroutine MP3(nBas,nEl,ERI,e,ENuc,EHF)
 
 ! Input variables
 
-  integer,intent(in)            :: nBas,nEl
+  integer,intent(in)            :: nBasin
+  integer,intent(in)            :: nCin
+  integer,intent(in)            :: nOin
+  integer,intent(in)            :: nVin
+  integer,intent(in)            :: nRin
   double precision,intent(in)   :: ENuc,EHF
-  double precision,intent(in)   :: e(nBas)
-  double precision,intent(in)   :: ERI(nBas,nBas,nBas,nBas)
+  double precision,intent(in)   :: e(nBasin)
+  double precision,intent(in)   :: ERI(nBasin,nBasin,nBasin,nBasin)
 
 ! Local variables
 
@@ -17,7 +21,11 @@ subroutine MP3(nBas,nEl,ERI,e,ENuc,EHF)
   double precision              :: eps1,eps2,E3a,E3b,E3c
   double precision              :: EcMP3
 
-  integer                       :: nBas2,nO,nV
+  integer                       :: nBas
+  integer                       :: nC
+  integer                       :: nO
+  integer                       :: nV
+  integer                       :: nR
   integer                       :: i,j,k,l,a,b,c,d
 
   double precision,allocatable  :: se(:)
@@ -44,32 +52,31 @@ subroutine MP3(nBas,nEl,ERI,e,ENuc,EHF)
 
 ! Spatial to spin orbitals
 
-  nBas2 = 2*nBas
+  nBas = 2*nBasin
+  nC   = 2*nCin
+  nO   = 2*nOin
+  nV   = 2*nVin
+  nR   = 2*nRin
 
-  allocate(se(nBas2),sERI(nBas2,nBas2,nBas2,nBas2))
+  allocate(se(nBas),sERI(nBas,nBas,nBas,nBas))
 
-  call spatial_to_spin_MO_energy(nBas,e,nBas2,se)
-  call spatial_to_spin_ERI(nBas,ERI,nBas2,sERI)
+  call spatial_to_spin_MO_energy(nBasin,e,nBas,se)
+  call spatial_to_spin_ERI(nBasin,ERI,nBas,sERI)
 
 ! Antysymmetrize ERIs
 
-  allocate(dbERI(nBas2,nBas2,nBas2,nBas2))
+  allocate(dbERI(nBas,nBas,nBas,nBas))
 
-  call antisymmetrize_ERI(2,nBas2,sERI,dbERI)
+  call antisymmetrize_ERI(2,nBas,sERI,dbERI)
 
   deallocate(sERI)
-
-! Define occupied and virtual spaces
-
-  nO = nEl
-  nV = nBas2 - nO
 
 ! Form energy denominator
 
   allocate(eO(nO),eV(nV))
 
   eO(:) = se(1:nO)
-  eV(:) = se(nO+1:nBas2)
+  eV(:) = se(nO+1:nBas)
 
   deallocate(se)
 
@@ -77,11 +84,11 @@ subroutine MP3(nBas,nEl,ERI,e,ENuc,EHF)
 
   allocate(OOOO(nO,nO,nO,nO),OOVV(nO,nO,nV,nV),OVVO(nO,nV,nV,nO),VVOO(nV,nV,nO,nO),VVVV(nV,nV,nV,nV))
 
-  OOOO(:,:,:,:) = dbERI(   1:nO   ,   1:nO   ,   1:nO   ,   1:nO   )
-  OOVV(:,:,:,:) = dbERI(   1:nO   ,   1:nO   ,nO+1:nBas2,nO+1:nBas2)
-  OVVO(:,:,:,:) = dbERI(   1:nO   ,nO+1:nBas2,nO+1:nBas2,   1:nO   )
-  VVOO(:,:,:,:) = dbERI(nO+1:nBas2,nO+1:nBas2,   1:nO   ,   1:nO   )
-  VVVV(:,:,:,:) = dbERI(nO+1:nBas2,nO+1:nBas2,nO+1:nBas2,nO+1:nBas2)
+  OOOO(:,:,:,:) = dbERI(   1:nO  ,   1:nO  ,   1:nO  ,   1:nO  )
+  OOVV(:,:,:,:) = dbERI(   1:nO  ,   1:nO  ,nO+1:nBas,nO+1:nBas)
+  OVVO(:,:,:,:) = dbERI(   1:nO  ,nO+1:nBas,nO+1:nBas,   1:nO  )
+  VVOO(:,:,:,:) = dbERI(nO+1:nBas,nO+1:nBas,   1:nO  ,   1:nO  )
+  VVVV(:,:,:,:) = dbERI(nO+1:nBas,nO+1:nBas,nO+1:nBas,nO+1:nBas)
 
   deallocate(dbERI)
 
@@ -89,10 +96,10 @@ subroutine MP3(nBas,nEl,ERI,e,ENuc,EHF)
 
   E2 = 0d0
 
-  do i=1,nO
-    do j=1,nO
-      do a=1,nV
-        do b=1,nV
+  do i=nC+1,nO
+    do j=nC+1,nO
+      do a=1,nV-nR
+        do b=1,nV-nR
 
           eps = eO(i) + eO(j) - eV(a) - eV(b)
          
@@ -109,12 +116,12 @@ subroutine MP3(nBas,nEl,ERI,e,ENuc,EHF)
 
   E3a = 0d0
 
-  do i=1,nO
-    do j=1,nO
-      do k=1,nO
-        do l=1,nO
-          do a=1,nV
-            do b=1,nV
+  do i=nC+1,nO
+    do j=nC+1,nO
+      do k=nC+1,nO
+        do l=nC+1,nO
+          do a=1,nV-nR
+            do b=1,nV-nR
 
               eps1 = eO(i) + eO(j) - eV(a) - eV(b) 
               eps2 = eO(k) + eO(l) - eV(a) - eV(b) 
@@ -130,12 +137,12 @@ subroutine MP3(nBas,nEl,ERI,e,ENuc,EHF)
 
   E3b = 0d0
 
-  do i=1,nO
-    do j=1,nO
-      do a=1,nV
-        do b=1,nV
-          do c=1,nV
-            do d=1,nV
+  do i=nC+1,nO
+    do j=nC+1,nO
+      do a=1,nV-nR
+        do b=1,nV-nR
+          do c=1,nV-nR
+            do d=1,nV-nR
 
               eps1 = eO(i) + eO(j) - eV(a) - eV(b) 
               eps2 = eO(i) + eO(j) - eV(c) - eV(d) 
@@ -151,12 +158,12 @@ subroutine MP3(nBas,nEl,ERI,e,ENuc,EHF)
 
   E3c = 0d0
 
-  do i=1,nO
-    do j=1,nO
-      do k=1,nO
-        do a=1,nV
-          do b=1,nV
-            do c=1,nV
+  do i=nC+1,nO
+    do j=nC+1,nO
+      do k=nC+1,nO
+        do a=1,nV-nR
+          do b=1,nV-nR
+            do c=1,nV-nR
 
               eps1 = eO(i) + eO(j) - eV(a) - eV(b) 
               eps2 = eO(i) + eO(k) - eV(a) - eV(c) 
