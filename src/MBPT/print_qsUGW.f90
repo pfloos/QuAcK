@@ -1,4 +1,5 @@
-subroutine print_qsUGW(nBas,nO,Ov,nSCF,Conv,thresh,eGW,cGW,PGW,T,V,J,K,ENuc,EHF,SigC,Z,EcRPA,dipole)
+subroutine print_qsUGW(nBas,nO,nSCF,Conv,thresh,eGW,cGW,PGW,Ov,T,V,J,K, & 
+                       ENuc,ET,EV,EJ,Ex,Ec,EcRPA,EqsGW,SigC,Z,dipole)
 
 ! Print one-electron energies and other stuff for qsUGW
 
@@ -9,16 +10,21 @@ subroutine print_qsUGW(nBas,nO,Ov,nSCF,Conv,thresh,eGW,cGW,PGW,T,V,J,K,ENuc,EHF,
 
   integer,intent(in)                 :: nBas
   integer,intent(in)                 :: nO(nspin)
-  double precision,intent(in)        :: Ov(nBas,nBas)
   integer,intent(in)                 :: nSCF
   double precision,intent(in)        :: ENuc
-  double precision,intent(in)        :: EHF
+  double precision,intent(in)        :: ET(nspin)
+  double precision,intent(in)        :: EV(nspin)
+  double precision,intent(in)        :: EJ(nsp)
+  double precision,intent(in)        :: Ex(nspin)
+  double precision,intent(in)        :: Ec(nsp)
   double precision,intent(in)        :: EcRPA
+  double precision,intent(in)        :: EqsGW
   double precision,intent(in)        :: Conv
   double precision,intent(in)        :: thresh
   double precision,intent(in)        :: eGW(nBas,nspin)
   double precision,intent(in)        :: cGW(nBas,nBas,nspin)
   double precision,intent(in)        :: PGW(nBas,nBas,nspin)
+  double precision,intent(in)        :: Ov(nBas,nBas)
   double precision,intent(in)        :: T(nBas,nBas)
   double precision,intent(in)        :: V(nBas,nBas)
   double precision,intent(in)        :: J(nBas,nBas,nspin)
@@ -34,12 +40,6 @@ subroutine print_qsUGW(nBas,nO,Ov,nSCF,Conv,thresh,eGW,cGW,PGW,T,V,J,K,ENuc,EHF,
   double precision                   :: HOMO(nspin)
   double precision                   :: LUMO(nspin)
   double precision                   :: Gap(nspin)
-  double precision                   :: ET(nspin)
-  double precision                   :: EV(nspin)
-  double precision                   :: EJ(nsp)
-  double precision                   :: Ex(nspin)
-  double precision                   :: Ec(nsp)
-  double precision                   :: EqsGW
   double precision                   :: S_exact,S2_exact
   double precision                   :: S,S2
   double precision,external          :: trace_matrix
@@ -63,44 +63,6 @@ subroutine print_qsUGW(nBas,nO,Ov,nSCF,Conv,thresh,eGW,cGW,PGW,T,V,J,K,ENuc,EHF,
 
   S_exact = 0.5d0*dble(nO(1) - nO(2))
   S = -0.5d0 + 0.5d0*sqrt(1d0 + 4d0*S2)
-
-!------------------------------------------------------------------------
-!   Compute total energy
-!------------------------------------------------------------------------
-
-!  Kinetic energy
-
-    do ispin=1,nspin
-      ET(ispin) = trace_matrix(nBas,matmul(PGW(:,:,ispin),T(:,:)))
-    end do
-
-!  Potential energy
-
-    do ispin=1,nspin
-      EV(ispin) = trace_matrix(nBas,matmul(PGW(:,:,ispin),V(:,:)))
-    end do
-
-!  Coulomb energy
-
-    EJ(1) = 0.5d0*trace_matrix(nBas,matmul(PGW(:,:,1),J(:,:,1)))
-    EJ(2) = trace_matrix(nBas,matmul(PGW(:,:,1),J(:,:,2)))
-    EJ(3) = 0.5d0*trace_matrix(nBas,matmul(PGW(:,:,2),J(:,:,2)))
-
-!   Exchange energy
-
-    do ispin=1,nspin
-      Ex(ispin) = 0.5d0*trace_matrix(nBas,matmul(PGW(:,:,ispin),K(:,:,ispin)))
-    end do
-
-!  Correlation energy
-
-    Ec(1) = 0.5d0*trace_matrix(nBas,matmul(PGW(:,:,1),SigC(:,:,1)))
-    Ec(2) = trace_matrix(nBas,matmul(PGW(:,:,1),SigC(:,:,2)))
-    Ec(3) = 0.5d0*trace_matrix(nBas,matmul(PGW(:,:,2),SigC(:,:,2)))
-
-!   Total energy
-
-    EqsGW = sum(ET(:)) + sum(EV(:)) + sum(EJ(:)) + sum(Ex(:)) + sum(Ec(:))
 
 ! Dump results
 

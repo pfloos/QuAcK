@@ -71,7 +71,13 @@ subroutine qsUGW(maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,COHSEX,SOS
   integer                       :: nS_aa,nS_bb,nS_sc
   double precision              :: dipole(ncart)
 
+  double precision              :: ET(nspin)
+  double precision              :: EV(nspin)
+  double precision              :: EJ(nsp)
+  double precision              :: Ex(nspin)
+  double precision              :: Ec(nsp)
   double precision              :: EcRPA
+  double precision              :: EqsGW
   double precision              :: EcBSE(nspin)
   double precision              :: EcAC(nspin)
   double precision              :: Conv
@@ -296,10 +302,50 @@ subroutine qsUGW(maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,COHSEX,SOS
       P(:,:,is) = matmul(c(:,1:nO(is),is),transpose(c(:,1:nO(is),is)))
     end do
 
+    !------------------------------------------------------------------------
+    !   Compute total energy
+    !------------------------------------------------------------------------
+
+    ! Kinetic energy
+
+    do ispin=1,nspin
+      ET(ispin) = trace_matrix(nBas,matmul(P(:,:,ispin),T(:,:)))
+    end do
+
+    ! Potential energy
+
+    do ispin=1,nspin
+      EV(ispin) = trace_matrix(nBas,matmul(P(:,:,ispin),V(:,:)))
+    end do
+
+    ! Coulomb energy
+
+    EJ(1) = 0.5d0*trace_matrix(nBas,matmul(P(:,:,1),J(:,:,1)))
+    EJ(2) = trace_matrix(nBas,matmul(P(:,:,1),J(:,:,2)))
+    EJ(3) = 0.5d0*trace_matrix(nBas,matmul(P(:,:,2),J(:,:,2)))
+
+    ! Exchange energy
+
+    do ispin=1,nspin
+      Ex(ispin) = 0.5d0*trace_matrix(nBas,matmul(P(:,:,ispin),K(:,:,ispin)))
+    end do
+
+    ! Correlation energy
+
+    Ec(1) = 0.5d0*trace_matrix(nBas,matmul(P(:,:,1),SigC(:,:,1)))
+    Ec(2) = trace_matrix(nBas,matmul(P(:,:,1),SigC(:,:,2)))
+    Ec(3) = 0.5d0*trace_matrix(nBas,matmul(P(:,:,2),SigC(:,:,2)))
+
+    ! Total energy
+
+    EqsGW = sum(ET(:)) + sum(EV(:)) + sum(EJ(:)) + sum(Ex(:)) + sum(Ec(:))
+
+    !------------------------------------------------------------------------
     ! Print results
+    !------------------------------------------------------------------------
 
     call dipole_moment(nBas,P(:,:,1)+P(:,:,2),nNuc,ZNuc,rNuc,dipole_int_AO,dipole)
-    call print_qsUGW(nBas,nO,S,nSCF,Conv,thresh,eGW,c,P,T,V,J,K,ENuc,EHF,SigC,Z,EcRPA,dipole)
+    call print_qsUGW(nBas,nO,nSCF,Conv,thresh,eGW,c,P,S,T,V,J,K,ENuc,ET,EV,EJ,Ex,Ec,EcRPA,EqsGW,SigC,Z,dipole)
 
   enddo
 !------------------------------------------------------------------------
