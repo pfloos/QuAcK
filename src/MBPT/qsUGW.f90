@@ -1,6 +1,6 @@
 subroutine qsUGW(maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,COHSEX,SOSEX,BSE,TDA_W,TDA,    & 
                 G0W,GW0,dBSE,dTDA,evDyn,spin_conserved,spin_flip,eta,nNuc,ZNuc,rNuc,ENuc,nBas,nC,nO, & 
-                nV,nR,nS,EUHF,S,X,T,V,Hc,ERI_AO,ERI_aaaa,ERI_aabb,ERI_bbbb,dipole_int,dipole_int_aa, &
+                nV,nR,nS,EUHF,S,X,T,V,Hc,ERI_AO,ERI_aaaa,ERI_aabb,ERI_bbbb,dipole_int_AO,dipole_int_aa, &
                 dipole_int_bb,PHF,cHF,eHF)
 
 ! Perform a quasiparticle self-consistent GW calculation
@@ -55,7 +55,7 @@ subroutine qsUGW(maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,COHSEX,SOS
   double precision,intent(inout):: ERI_aaaa(nBas,nBas,nBas,nBas)
   double precision,intent(inout):: ERI_aabb(nBas,nBas,nBas,nBas)
   double precision,intent(inout):: ERI_bbbb(nBas,nBas,nBas,nBas)
-  double precision,intent(in)   :: dipole_int(nBas,nBas,ncart)
+  double precision,intent(in)   :: dipole_int_AO(nBas,nBas,ncart)
   double precision,intent(in)   :: dipole_int_aa(nBas,nBas,ncart)
   double precision,intent(in)   :: dipole_int_bb(nBas,nBas,ncart)
 
@@ -224,12 +224,12 @@ subroutine qsUGW(maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,COHSEX,SOS
 
     if(G0W) then
 
-      call unrestricted_self_energy_correlation_diag(eta,nBas,nC,nO,nV,nR,nS_sc,eHF,OmRPA,rho_RPA,SigC)
+      call unrestricted_self_energy_correlation(eta,nBas,nC,nO,nV,nR,nS_sc,eHF,OmRPA,rho_RPA,SigC)
       call unrestricted_renormalization_factor(eta,nBas,nC,nO,nV,nR,nS_sc,eHF,OmRPA,rho_RPA,Z)
 
      else
 
-      call unrestricted_self_energy_correlation_diag(eta,nBas,nC,nO,nV,nR,nS_sc,eGW,OmRPA,rho_RPA,SigC)
+      call unrestricted_self_energy_correlation(eta,nBas,nC,nO,nV,nR,nS_sc,eGW,OmRPA,rho_RPA,SigC)
       call unrestricted_renormalization_factor(eta,nBas,nC,nO,nV,nR,nS_sc,eGW,OmRPA,rho_RPA,Z)
 
      endif
@@ -298,7 +298,7 @@ subroutine qsUGW(maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,COHSEX,SOS
 
     ! Print results
 
-    call dipole_moment(nBas,P(:,:,1)+P(:,:,2),nNuc,ZNuc,rNuc,dipole_int,dipole)
+    call dipole_moment(nBas,P(:,:,1)+P(:,:,2),nNuc,ZNuc,rNuc,dipole_int_AO,dipole)
     call print_qsUGW(nBas,nO,S,nSCF,Conv,thresh,eGW,c,P,T,V,J,K,ENuc,EHF,SigC,Z,EcRPA,dipole)
 
   enddo

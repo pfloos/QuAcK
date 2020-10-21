@@ -1,4 +1,4 @@
-subroutine print_qsGW(nBas,nO,nSCF,Conv,thresh,eHF,eGW,c,ENuc,P,T,V,J,K,F,SigC,Z,EcRPA,EqsGW)
+subroutine print_qsGW(nBas,nO,nSCF,Conv,thresh,eHF,eGW,c,ENuc,P,T,V,J,K,F,SigC,Z,EcRPA,EqsGW,dipole)
 
 
 ! Print one-electron energies and other stuff for qsGW
@@ -14,10 +14,11 @@ subroutine print_qsGW(nBas,nO,nSCF,Conv,thresh,eHF,eGW,c,ENuc,P,T,V,J,K,F,SigC,Z
   double precision,intent(in)        :: T(nBas,nBas),V(nBas,nBas)
   double precision,intent(in)        :: J(nBas,nBas),K(nBas,nBas),F(nBas,nBas)
   double precision,intent(in)        :: Z(nBas),SigC(nBas,nBas)
+  double precision,intent(in)        :: dipole(ncart)
 
 ! Local variables
 
-  integer                            :: x,HOMO,LUMO
+  integer                            :: x,ixyz,HOMO,LUMO
   double precision                   :: Gap,ET,EV,EJ,Ex,Ec
   double precision,external          :: trace_matrix
 
@@ -92,6 +93,10 @@ subroutine print_qsGW(nBas,nO,nSCF,Conv,thresh,eHF,eGW,c,ENuc,P,T,V,J,K,F,SigC,Z
     write(*,'(A32,1X,F16.10)') ' Nuclear   repulsion  ',ENuc
     write(*,'(A32,1X,F16.10)') ' qsGW         energy  ',ENuc + EqsGW
     write(*,'(A50)')           '---------------------------------------'
+    write(*,'(A35)')           ' Dipole moment (Debye)    '
+    write(*,'(10X,4A10)')      'X','Y','Z','Tot.'
+    write(*,'(10X,4F10.6)')    (dipole(ixyz)*auToD,ixyz=1,ncart),norm2(dipole)*auToD
+    write(*,'(A50)')           '-----------------------------------------'
     write(*,*)
  
     write(*,'(A50)') '---------------------------------------'

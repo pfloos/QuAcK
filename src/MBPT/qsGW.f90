@@ -1,6 +1,6 @@
-subroutine qsGW(maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,COHSEX,SOSEX,BSE,TDA_W,TDA,   & 
-                G0W,GW0,dBSE,dTDA,evDyn,singlet,triplet,eta,nBas,nC,nO,nV,nR,nS,ENuc,ERHF,S,X,T,V, & 
-                Hc,ERI_AO_basis,ERI_MO_basis,dipole_int,PHF,cHF,eHF)
+subroutine qsGW(maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,COHSEX,SOSEX,BSE,TDA_W,TDA,          & 
+                G0W,GW0,dBSE,dTDA,evDyn,singlet,triplet,eta,nNuc,ZNuc,rNuc,ENuc,nBas,nC,nO,nV,nR,nS,ERHF, &
+                S,X,T,V,Hc,ERI_AO,ERI_MO,dipole_int_AO,dipole_int_MO,PHF,cHF,eHF)
 
 ! Perform a quasiparticle self-consistent GW calculation
 
@@ -28,8 +28,13 @@ subroutine qsGW(maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,COHSEX,SOSE
   logical,intent(in)            :: singlet
   logical,intent(in)            :: triplet
   double precision,intent(in)   :: eta
-  integer,intent(in)            :: nBas,nC,nO,nV,nR,nS
+
+  integer,intent(in)            :: nNuc
+  double precision,intent(in)   :: ZNuc(nNuc)
+  double precision,intent(in)   :: rNuc(nNuc,ncart)
   double precision,intent(in)   :: ENuc
+
+  integer,intent(in)            :: nBas,nC,nO,nV,nR,nS
   double precision,intent(in)   :: ERHF
   double precision,intent(in)   :: eHF(nBas)
   double precision,intent(in)   :: cHF(nBas,nBas)
@@ -39,9 +44,10 @@ subroutine qsGW(maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,COHSEX,SOSE
   double precision,intent(in)   :: V(nBas,nBas)
   double precision,intent(in)   :: Hc(nBas,nBas)
   double precision,intent(in)   :: X(nBas,nBas)
-  double precision,intent(in)   :: ERI_AO_basis(nBas,nBas,nBas,nBas)
-  double precision,intent(inout):: ERI_MO_basis(nBas,nBas,nBas,nBas)
-  double precision,intent(in)   :: dipole_int(nBas,nBas,ncart)
+  double precision,intent(in)   :: ERI_AO(nBas,nBas,nBas,nBas)
+  double precision,intent(inout):: ERI_MO(nBas,nBas,nBas,nBas)
+  double precision,intent(in)   :: dipole_int_AO(nBas,nBas,ncart)
+  double precision,intent(in)   :: dipole_int_MO(nBas,nBas,ncart)
 
 ! Local variables
 
@@ -57,6 +63,8 @@ subroutine qsGW(maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,COHSEX,SOSE
   double precision              :: Conv
   double precision              :: rcond
   double precision,external     :: trace_matrix
+  double precision              :: dipole(ncart)
+
   double precision,allocatable  :: error_diis(:,:)
   double precision,allocatable  :: F_diis(:,:)
   double precision,allocatable  :: OmRPA(:)
@@ -153,28 +161,28 @@ subroutine qsGW(maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,COHSEX,SOSE
 
     ! Buid Coulomb matrix
 
-    call Coulomb_matrix_AO_basis(nBas,P,ERI_AO_basis,J)
+    call Coulomb_matrix_AO_basis(nBas,P,ERI_AO,J)
 
     ! Compute exchange part of the self-energy 
 
-    call exchange_matrix_AO_basis(nBas,P,ERI_AO_basis,K)
+    call exchange_matrix_AO_basis(nBas,P,ERI_AO,K)
 
     ! AO to MO transformation of two-electron integrals
 
-    call AOtoMO_integral_transform(1,1,1,1,nBas,c,ERI_AO_basis,ERI_MO_basis)
+    call AOtoMO_integral_transform(1,1,1,1,nBas,c,ERI_AO,ERI_MO)
 
     ! Compute linear response
 
     if(.not. GW0 .or. nSCF == 0) then
 
-      call linear_response(ispin,.true.,TDA_W,.false.,eta,nBas,nC,nO,nV,nR,nS,1d0,eGW,ERI_MO_basis, &
+      call linear_response(ispin,.true.,TDA_W,.false.,eta,nBas,nC,nO,nV,nR,nS,1d0,eGW,ERI_MO, &
                            OmRPA,rho_RPA,EcRPA,OmRPA,XpY_RPA,XmY_RPA)
 
     endif
 
     ! Compute correlation part of the self-energy 
 
-    call excitation_density(nBas,nC,nO,nR,nS,ERI_MO_basis,XpY_RPA,rho_RPA)
+    call excitation_density(nBas,nC,nO,nR,nS,ERI_MO,XpY_RPA,rho_RPA)
 
     if(G0W) then
 
@@ -226,8 +234,8 @@ subroutine qsGW(maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,COHSEX,SOSE
 
     ! Print results
 
-!   call print_excitation('RPA   ',ispin,nS,Omega(:,ispin))
-    call print_qsGW(nBas,nO,nSCF,Conv,thresh,eHF,eGW,c,ENuc,P,T,V,J,K,F,SigCp,Z,EcRPA,EqsGW)
+    call dipole_moment(nBas,P,nNuc,ZNuc,rNuc,dipole_int_AO,dipole)
+    call print_qsGW(nBas,nO,nSCF,Conv,thresh,eHF,eGW,c,ENuc,P,T,V,J,K,F,SigCp,Z,EcRPA,EqsGW,dipole)
 
   enddo
 !------------------------------------------------------------------------
@@ -268,7 +276,7 @@ subroutine qsGW(maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,COHSEX,SOSE
 
   if(BSE) then
 
-    call Bethe_Salpeter(TDA_W,TDA,dBSE,dTDA,evDyn,singlet,triplet,eta,nBas,nC,nO,nV,nR,nS,ERI_MO_basis,dipole_int, & 
+    call Bethe_Salpeter(TDA_W,TDA,dBSE,dTDA,evDyn,singlet,triplet,eta,nBas,nC,nO,nV,nR,nS,ERI_MO,dipole_int_MO, & 
                         eGW,eGW,EcBSE)
 
     if(exchange_kernel) then
@@ -303,7 +311,7 @@ subroutine qsGW(maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,COHSEX,SOSE
 
       end if
 
-      call ACFDT(exchange_kernel,doXBS,.true.,TDA_W,TDA,BSE,singlet,triplet,eta,nBas,nC,nO,nV,nR,nS,ERI_MO_basis,eGW,eGW,EcAC)
+      call ACFDT(exchange_kernel,doXBS,.true.,TDA_W,TDA,BSE,singlet,triplet,eta,nBas,nC,nO,nV,nR,nS,ERI_MO,eGW,eGW,EcAC)
 
       write(*,*)
       write(*,*)'-------------------------------------------------------------------------------'
