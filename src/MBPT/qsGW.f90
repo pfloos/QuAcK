@@ -35,7 +35,7 @@ subroutine qsGW(maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,COHSEX,SOSE
   double precision,intent(in)   :: cHF(nBas,nBas)
   double precision,intent(in)   :: PHF(nBas,nBas)
   double precision,intent(in)   :: S(nBas,nBas)
-  double precision,intent(in)   :: T(nBas,nBAs)
+  double precision,intent(in)   :: T(nBas,nBas)
   double precision,intent(in)   :: V(nBas,nBas)
   double precision,intent(in)   :: Hc(nBas,nBas)
   double precision,intent(in)   :: X(nBas,nBas)
@@ -131,7 +131,7 @@ subroutine qsGW(maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,COHSEX,SOSE
 
 ! Initialization
   
-  nSCF            = 0
+  nSCF            = -1
   n_diis          = 0
   ispin           = 1
   Conv            = 1d0
@@ -146,6 +146,10 @@ subroutine qsGW(maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,COHSEX,SOSE
 !------------------------------------------------------------------------
 
   do while(Conv > thresh .and. nSCF <= maxSCF)
+
+    ! Increment
+
+    nSCF = nSCF + 1
 
     ! Buid Coulomb matrix
 
@@ -223,11 +227,7 @@ subroutine qsGW(maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,COHSEX,SOSE
     ! Print results
 
 !   call print_excitation('RPA   ',ispin,nS,Omega(:,ispin))
-    call print_qsGW(nBas,nO,nSCF,Conv,thresh,eHF,eGW,c,ENuc,P,T,V,J,K,F,SigCp,Z,EcRPA,EcGM,EqsGW)
-
-    ! Increment
-
-    nSCF = nSCF + 1
+    call print_qsGW(nBas,nO,nSCF,Conv,thresh,eHF,eGW,c,ENuc,P,T,V,J,K,F,SigCp,Z,EcRPA,EqsGW)
 
   enddo
 !------------------------------------------------------------------------

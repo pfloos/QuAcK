@@ -174,8 +174,8 @@ subroutine UHF(maxSCF,thresh,max_diis,guess_type,nNuc,ZNuc,rNuc,ENuc,nBas,nO,S,T
 
     n_diis = min(n_diis+1,max_diis)
     do ispin=1,nspin
-      if(nO(ispin) > 1) call DIIS_extrapolation(rcond(ispin),nBasSq,nBasSq,n_diis,err_diis(:,:,ispin),F_diis(:,:,ispin), & 
-                                                err(:,:,ispin),F(:,:,ispin))
+      if(nO(ispin) > 1) call DIIS_extrapolation(rcond(ispin),nBasSq,nBasSq,n_diis,err_diis(:,1:n_diis,ispin), &
+                                                F_diis(:,1:n_diis,ispin),err(:,:,ispin),F(:,:,ispin))
     end do
 
 !   Reset DIIS if required

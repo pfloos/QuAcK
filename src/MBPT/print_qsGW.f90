@@ -1,4 +1,4 @@
-subroutine print_qsGW(nBas,nO,nSCF,Conv,thresh,eHF,eGW,c,ENuc,P,T,V,J,K,F,SigC,Z,EcRPA,EcGM,EqsGW)
+subroutine print_qsGW(nBas,nO,nSCF,Conv,thresh,eHF,eGW,c,ENuc,P,T,V,J,K,F,SigC,Z,EcRPA,EqsGW)
 
 
 ! Print one-electron energies and other stuff for qsGW
@@ -9,7 +9,7 @@ subroutine print_qsGW(nBas,nO,nSCF,Conv,thresh,eHF,eGW,c,ENuc,P,T,V,J,K,F,SigC,Z
 ! Input variables
 
   integer,intent(in)                 :: nBas,nO,nSCF
-  double precision,intent(in)        :: ENuc,EcRPA,EcGM,Conv,thresh
+  double precision,intent(in)        :: ENuc,EcRPA,Conv,thresh
   double precision,intent(in)        :: eHF(nBas),eGW(nBas),c(nBas),P(nBas,nBas) 
   double precision,intent(in)        :: T(nBas,nBas),V(nBas,nBas)
   double precision,intent(in)        :: J(nBas,nBas),K(nBas,nBas),F(nBas,nBas)
@@ -35,8 +35,7 @@ subroutine print_qsGW(nBas,nO,nSCF,Conv,thresh,eHF,eGW,c,ENuc,P,T,V,J,K,F,SigC,Z
   EV = trace_matrix(nBas,matmul(P,V))
   EJ = 0.5d0*trace_matrix(nBas,matmul(P,J))
   Ex = 0.25d0*trace_matrix(nBas,matmul(P,K))
-! Ec = 0.5d0*trace_matrix(nBas,matmul(P,SigC))
-  Ec = 0d0
+  Ec = 0.5d0*trace_matrix(nBas,matmul(P,SigC))
   EqsGW = ET + EV + EJ + Ex + Ec
 
 ! Dump results
@@ -57,7 +56,6 @@ subroutine print_qsGW(nBas,nO,nSCF,Conv,thresh,eHF,eGW,c,ENuc,P,T,V,J,K,F,SigC,Z
     '|',x,'|',eHF(x)*HaToeV,'|',(eGW(x)-eHF(x))*HaToeV,'|',Z(x),'|',eGW(x)*HaToeV,'|'
   enddo
 
-
   write(*,*)'-------------------------------------------------------------------------------'
   write(*,'(2X,A10,I3)')   'Iteration ',nSCF
   write(*,'(2X,A19,F15.5)')'max(|FPS - SPF|) = ',Conv
@@ -67,11 +65,9 @@ subroutine print_qsGW(nBas,nO,nSCF,Conv,thresh,eHF,eGW,c,ENuc,P,T,V,J,K,F,SigC,Z
   write(*,'(2X,A30,F15.6)') 'qsGW HOMO-LUMO gap    (eV):',Gap*HaToeV
   write(*,*)'-------------------------------------------'
   write(*,'(2X,A30,F15.6)') 'qsGW total       energy   =',EqsGW + ENuc
-  write(*,'(2X,A30,F15.6)') 'qsGW GM total    energy   =',EqsGW + ENuc + EcGM
   write(*,'(2X,A30,F15.6)') 'qsGW exchange    energy   =',Ex
   write(*,'(2X,A30,F15.6)') 'qsGW correlation energy   =',Ec
   write(*,'(2X,A30,F15.6)') 'RPA@qsGW correlation energy =',EcRPA
-  write(*,'(2X,A30,F15.6)') 'GM@qsGW  correlation energy =',EcGM
   write(*,*)'-------------------------------------------'
   write(*,*)
 

@@ -884,9 +884,22 @@ program QuAcK
   if(doqsGW) then 
 
     call cpu_time(start_qsGW)
-    call qsGW(maxSCF_GW,thresh_GW,n_diis_GW,doACFDT,exchange_kernel,doXBS,COHSEX,SOSEX,       &
-              BSE,TDA_W,TDA,G0W,GW0,dBSE,dTDA,evDyn,singlet,triplet,eta_GW, & 
-              nBas,nC,nO,nV,nR,nS,ENuc,ERHF,S,X,T,V,Hc,ERI_AO,ERI_MO,dipole_int,PHF,cHF,eHF)
+
+    if(unrestricted) then 
+    
+      call qsUGW(maxSCF_GW,thresh_GW,n_diis_GW,doACFDT,exchange_kernel,doXBS,COHSEX,SOSEX,BSE,TDA_W,TDA,       &
+                 G0W,GW0,dBSE,dTDA,evDyn,spin_conserved,spin_flip,eta_GW,nNuc,ZNuc,rNuc,ENuc,nBas,nC,nO,       &
+                 nV,nR,nS,EUHF,S,X,T,V,Hc,ERI_AO,ERI_MO_aaaa,ERI_MO_aabb,ERI_MO_bbbb,dipole_int,dipole_int_aa, &
+                 dipole_int_bb,PHF,cHF,eHF)
+
+    else
+ 
+      call qsGW(maxSCF_GW,thresh_GW,n_diis_GW,doACFDT,exchange_kernel,doXBS,COHSEX,SOSEX,       &
+                BSE,TDA_W,TDA,G0W,GW0,dBSE,dTDA,evDyn,singlet,triplet,eta_GW, & 
+                nBas,nC,nO,nV,nR,nS,ENuc,ERHF,S,X,T,V,Hc,ERI_AO,ERI_MO,dipole_int,PHF,cHF,eHF)
+
+    end if
+
     call cpu_time(end_qsGW)
 
     t_qsGW = end_qsGW - start_qsGW
