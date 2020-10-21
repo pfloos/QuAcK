@@ -12,6 +12,7 @@ let quack_molecule_filename = quack_input ^ "molecule"
 
 module Command_line = Qcaml.Common.Command_line
 module Util = Qcaml.Common.Util
+open Qcaml.Linear_algebra
 
 let () =
   let open Command_line in
@@ -146,7 +147,7 @@ directory.";
   in    
   print_molecule nuclei electrons;
 
-  let operators = 
+  let operators =
     match range_separation with
     | None -> []
     | Some mu -> [ Qcaml.Operators.Operator.of_range_separation mu ]
@@ -160,26 +161,31 @@ directory.";
   let overlap   = Qcaml.Ao.Basis.overlap   ao_basis in
   let eN_ints   = Qcaml.Ao.Basis.eN_ints   ao_basis in
   let kin_ints  = Qcaml.Ao.Basis.kin_ints  ao_basis in
-  let ee_ints   = Qcaml.Ao.Basis.ee_ints   ao_basis in
   let multipole = Qcaml.Ao.Basis.multipole ao_basis in
-  let x_mat = Qcaml.Gaussian_integrals.Multipole.matrix_x multipole in
-  let y_mat = Qcaml.Gaussian_integrals.Multipole.matrix_y multipole in
-  let z_mat = Qcaml.Gaussian_integrals.Multipole.matrix_z multipole in
+  let x_mat     = multipole "x" in
+  let y_mat     = multipole "y" in
+  let z_mat     = multipole "z" in
 
-  Qcaml.Gaussian_integrals.Overlap.to_file ~filename:(quack_int ^ "Ov.dat") overlap;
-  Qcaml.Gaussian_integrals.Electron_nucleus.to_file ~filename:(quack_int ^ "Nuc.dat") eN_ints;
-  Qcaml.Gaussian_integrals.Kinetic.to_file ~filename:(quack_int ^ "Kin.dat") kin_ints;
-  Qcaml.Gaussian_integrals.Eri.to_file    ~filename:(quack_int ^ "ERI.dat") ee_ints;
-  Qcaml.Gaussian_integrals.Multipole.to_file ~filename:(quack_int ^ "x.dat") x_mat;
-  Qcaml.Gaussian_integrals.Multipole.to_file ~filename:(quack_int ^ "y.dat") y_mat;
-  Qcaml.Gaussian_integrals.Multipole.to_file ~filename:(quack_int ^ "z.dat") z_mat;
+  let ee_ints   = Qcaml.Ao.Basis.ee_ints   ao_basis in
+  let lr_ints   =
+    match range_separation with                                                               
+    | Some _mu -> Some (Qcaml.Ao.Basis.ee_lr_ints ao_basis)
+    | None -> None
+  in
 
-  match range_separation with
-  | Some _mu ->
-      Qcaml.Gaussian_integrals.Eri_long_range.to_file ~filename:(quack_int ^ "ERI_lr.dat") (Qcaml.Ao.Basis.ee_lr_ints ao_basis)
+  Matrix.to_file ~sym:true ~filename:(quack_dir ^ "/int/Ov.dat") overlap;
+  Matrix.to_file ~sym:true ~filename:(quack_dir ^ "/int/Nuc.dat") eN_ints;
+  Matrix.to_file ~sym:true ~filename:(quack_dir ^ "/int/Kin.dat") kin_ints;
+  Matrix.to_file ~sym:true ~filename:(quack_dir ^ "/int/x.dat") x_mat;
+  Matrix.to_file ~sym:true ~filename:(quack_dir ^ "/int/y.dat") y_mat;
+  Matrix.to_file ~sym:true ~filename:(quack_dir ^ "/int/z.dat") z_mat;
+
+  Four_idx_storage.to_file ~filename:(quack_dir ^ "/int/ERI.dat") ee_ints;
+
+  match lr_ints with
+  | Some integrals -> Four_idx_storage.to_file ~filename:"/int/ERI_lr.dat" integrals;
   | None -> ()
   ;
-
   
   Unix.execv (quack_dir ^ "/bin/QuAcK") [| "QuAcK" |]
 
