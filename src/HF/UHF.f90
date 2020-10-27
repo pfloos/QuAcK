@@ -1,4 +1,4 @@
-subroutine UHF(maxSCF,thresh,max_diis,guess_type,nNuc,ZNuc,rNuc,ENuc,nBas,nO,S,T,V,Hc,ERI,dipole_int,X,EUHF,e,c,P)
+subroutine UHF(maxSCF,thresh,max_diis,guess_type,mix,nNuc,ZNuc,rNuc,ENuc,nBas,nO,S,T,V,Hc,ERI,dipole_int,X,EUHF,e,c,P)
 
 ! Perform unrestricted Hartree-Fock calculation
 
@@ -10,6 +10,7 @@ subroutine UHF(maxSCF,thresh,max_diis,guess_type,nNuc,ZNuc,rNuc,ENuc,nBas,nO,S,T
   integer,intent(in)            :: maxSCF
   integer,intent(in)            :: max_diis
   integer,intent(in)            :: guess_type
+  logical,intent(in)            :: mix 
   double precision,intent(in)   :: thresh
   integer,intent(in)            :: nBas
 
@@ -137,6 +138,10 @@ subroutine UHF(maxSCF,thresh,max_diis,guess_type,nNuc,ZNuc,rNuc,ENuc,nBas,nO,S,T
     do ispin=1,nspin
       c(:,:,ispin) = matmul(X(:,:),cp(:,:,ispin))
     end do
+
+!   Mix guess for UHF solution in singlet states
+
+    if(mix .and. nSCF == 1) call mix_guess(nBas,nO,c)
 
 !   Compute density matrix 
 

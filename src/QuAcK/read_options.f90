@@ -1,11 +1,11 @@
-subroutine read_options(maxSCF_HF,thresh_HF,DIIS_HF,n_diis_HF,guess_type,ortho_type, &
-                        maxSCF_CC,thresh_CC,DIIS_CC,n_diis_CC,                       &
-                        TDA,singlet,triplet,spin_conserved,spin_flip,                &
-                        maxSCF_GF,thresh_GF,DIIS_GF,n_diis_GF,linGF,eta_GF,renormGF, &
-                        maxSCF_GW,thresh_GW,DIIS_GW,n_diis_GW,linGW,eta_GW,          &
-                        COHSEX,SOSEX,TDA_W,G0W,GW0,                                  &
-                        doACFDT,exchange_kernel,doXBS,                               &
-                        BSE,dBSE,dTDA,evDyn,                                         &
+subroutine read_options(maxSCF_HF,thresh_HF,DIIS_HF,n_diis_HF,guess_type,ortho_type,mix, &
+                        maxSCF_CC,thresh_CC,DIIS_CC,n_diis_CC,                           &
+                        TDA,singlet,triplet,spin_conserved,spin_flip,                    &
+                        maxSCF_GF,thresh_GF,DIIS_GF,n_diis_GF,linGF,eta_GF,renormGF,     &
+                        maxSCF_GW,thresh_GW,DIIS_GW,n_diis_GW,linGW,eta_GW,              &
+                        COHSEX,SOSEX,TDA_W,G0W,GW0,                                      &
+                        doACFDT,exchange_kernel,doXBS,                                   &
+                        BSE,dBSE,dTDA,evDyn,                                             &
                         nMC,nEq,nWalk,dt,nPrint,iSeed,doDrift)
 
 ! Read desired methods 
@@ -20,6 +20,7 @@ subroutine read_options(maxSCF_HF,thresh_HF,DIIS_HF,n_diis_HF,guess_type,ortho_t
   integer,intent(out)           :: n_diis_HF
   integer,intent(out)           :: guess_type
   integer,intent(out)           :: ortho_type
+  logical,intent(out)           :: mix
 
   integer,intent(out)           :: maxSCF_CC
   double precision,intent(out)  :: thresh_CC
@@ -85,11 +86,13 @@ subroutine read_options(maxSCF_HF,thresh_HF,DIIS_HF,n_diis_HF,guess_type,ortho_t
   n_diis_HF    = 5
   guess_type   = 1
   ortho_type   = 1
+  mix          = .false.
 
   read(1,*) 
-  read(1,*) maxSCF_HF,thresh_HF,answer1,n_diis_HF,guess_type,ortho_type
+  read(1,*) maxSCF_HF,thresh_HF,answer1,n_diis_HF,guess_type,ortho_type,answer2
 
-  if(answer1 == 'T') DIIS_HF    = .true.
+  if(answer1 == 'T') DIIS_HF = .true.
+  if(answer2 == 'T') mix     = .true.
 
   if(.not.DIIS_HF) n_diis_HF = 1
 
