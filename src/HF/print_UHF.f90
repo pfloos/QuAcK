@@ -82,18 +82,18 @@ subroutine print_UHF(nBas,nO,Ov,e,c,ENuc,ET,EV,EJ,Ex,EUHF,dipole)
   write(*,'(A40,1X,F16.10,A3)') ' Nuclear      repulsion: ',ENuc,' au'
   write(*,'(A40,1X,F16.10,A3)') ' UHF             energy: ',EUHF + ENuc,' au'
   write(*,'(A60)')              '-------------------------------------------------'
-  write(*,'(A40,F13.6,A3)')     ' UHF HOMO a    energy:',HOMO(1)*HatoeV,' eV'
-  write(*,'(A40,F13.6,A3)')     ' UHF LUMO a    energy:',LUMO(1)*HatoeV,' eV'
-  write(*,'(A40,F13.6,A3)')     ' UHF HOMOa-LUMOa  gap:',Gap(1)*HatoeV,' eV'
+  write(*,'(A40,1X,F16.6,A3)')  ' UHF HOMO a    energy:',HOMO(1)*HatoeV,' eV'
+  write(*,'(A40,1X,F16.6,A3)')  ' UHF LUMO a    energy:',LUMO(1)*HatoeV,' eV'
+  write(*,'(A40,1X,F16.6,A3)')  ' UHF HOMOa-LUMOa  gap:',Gap(1)*HatoeV,' eV'
   write(*,'(A60)')              '-------------------------------------------------'
-  write(*,'(A40,F13.6,A3)')     ' UHF HOMO b    energy:',HOMO(2)*HatoeV,' eV'
-  write(*,'(A40,F13.6,A3)')     ' UHF LUMO b    energy:',LUMO(2)*HatoeV,' eV'
-  write(*,'(A40,F13.6,A3)')     ' UHF HOMOb-LUMOb gap :',Gap(2)*HatoeV,' eV'
+  write(*,'(A40,1X,F16.6,A3)')  ' UHF HOMO b    energy:',HOMO(2)*HatoeV,' eV'
+  write(*,'(A40,1X,F16.6,A3)')  ' UHF LUMO b    energy:',LUMO(2)*HatoeV,' eV'
+  write(*,'(A40,1X,F16.6,A3)')  ' UHF HOMOb-LUMOb gap :',Gap(2)*HatoeV,' eV'
   write(*,'(A60)')              '-------------------------------------------------'
-  write(*,'(A40,F13.6)')        '  S (exact)          :',2d0*S_exact + 1d0
-  write(*,'(A40,F13.6)')        '  S                  :',2d0*S       + 1d0
-  write(*,'(A40,F13.6)')        ' <S**2> (exact)      :',S2_exact
-  write(*,'(A40,F13.6)')        ' <S**2>              :',S2
+  write(*,'(A40,1X,F16.6)')     '  S (exact)          :',2d0*S_exact + 1d0
+  write(*,'(A40,1X,F16.6)')     '  S                  :',2d0*S       + 1d0
+  write(*,'(A40,1X,F16.6)')     ' <S**2> (exact)      :',S2_exact
+  write(*,'(A40,1X,F16.6)')     ' <S**2>              :',S2
   write(*,'(A60)')              '-------------------------------------------------'
   write(*,'(A45)')              ' Dipole moment (Debye)    '
   write(*,'(19X,4A10)')         'X','Y','Z','Tot.'

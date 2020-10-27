@@ -39,21 +39,21 @@ subroutine print_RHF(nBas,nO,eHF,cHF,ENuc,ET,EV,EJ,EK,ERHF,dipole)
   write(*,'(A50)')           '-----------------------------------------'
   write(*,'(A32)')           ' Summary              '
   write(*,'(A50)')           '-----------------------------------------'
-  write(*,'(A32,1X,F16.10)') ' One-electron energy = ',ET + EV
-  write(*,'(A32,1X,F16.10)') ' Kinetic      energy = ',ET
-  write(*,'(A32,1X,F16.10)') ' Potential    energy = ',EV
+  write(*,'(A32,1X,F16.10,A3)') ' One-electron energy: ',ET + EV,' au'
+  write(*,'(A32,1X,F16.10,A3)') ' Kinetic      energy: ',ET,' au'
+  write(*,'(A32,1X,F16.10,A3)') ' Potential    energy: ',EV,' au'
   write(*,'(A50)')           '-----------------------------------------'
-  write(*,'(A32,1X,F16.10)') ' Two-electron energy = ',EJ + EK
-  write(*,'(A32,1X,F16.10)') ' Coulomb      energy = ',EJ
-  write(*,'(A32,1X,F16.10)') ' Exchange     energy = ',EK
+  write(*,'(A32,1X,F16.10,A3)') ' Two-electron energy: ',EJ + EK,' au'
+  write(*,'(A32,1X,F16.10,A3)') ' Coulomb      energy: ',EJ,' au'
+  write(*,'(A32,1X,F16.10,A3)') ' Exchange     energy: ',EK,' au'
   write(*,'(A50)')           '-----------------------------------------'
-  write(*,'(A32,1X,F16.10)') ' Electronic   energy = ',ERHF
-  write(*,'(A32,1X,F16.10)') ' Nuclear   repulsion = ',ENuc
-  write(*,'(A32,1X,F16.10)') ' Hartree-Fock energy = ',ERHF + ENuc
+  write(*,'(A32,1X,F16.10,A3)') ' Electronic   energy: ',ERHF,' au'
+  write(*,'(A32,1X,F16.10,A3)') ' Nuclear   repulsion: ',ENuc,' au'
+  write(*,'(A32,1X,F16.10,A3)') ' RHF          energy: ',ERHF + ENuc,' au'
   write(*,'(A50)')           '-----------------------------------------'
-  write(*,'(A36,F13.6)')     ' HF HOMO      energy (eV) = ',eHF(HOMO)*HaToeV
-  write(*,'(A36,F13.6)')     ' HF LUMO      energy (eV) = ',eHF(LUMO)*HaToeV
-  write(*,'(A36,F13.6)')     ' HF HOMO-LUMO gap    (eV) = ',Gap*HaToeV
+  write(*,'(A32,1X,F16.6,A3)')  ' HF HOMO      energy: ',eHF(HOMO)*HaToeV,' eV'
+  write(*,'(A32,1X,F16.6,A3)')  ' HF LUMO      energy: ',eHF(LUMO)*HaToeV,' eV'
+  write(*,'(A32,1X,F16.6,A3)')  ' HF HOMO-LUMO gap   : ',Gap*HaToeV,' eV'
   write(*,'(A50)')           '-----------------------------------------'
   write(*,'(A35)')           ' Dipole moment (Debye)    '
   write(*,'(10X,4A10)')      'X','Y','Z','Tot.'
