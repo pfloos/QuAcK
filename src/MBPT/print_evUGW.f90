@@ -1,4 +1,4 @@
-subroutine print_evUGW(nBas,nO,nSCF,Conv,eHF,ENuc,ERHF,SigC,Z,eGW,EcRPA)
+subroutine print_evUGW(nBas,nO,nSCF,Conv,eHF,ENuc,EUHF,SigC,Z,eGW,EcRPA)
 
 ! Print one-electron energies and other stuff for evGW
 
@@ -9,7 +9,7 @@ subroutine print_evUGW(nBas,nO,nSCF,Conv,eHF,ENuc,ERHF,SigC,Z,eGW,EcRPA)
   integer,intent(in)                 :: nO(nspin)
   integer,intent(in)                 :: nSCF
   double precision,intent(in)        :: ENuc
-  double precision,intent(in)        :: ERHF
+  double precision,intent(in)        :: EUHF
   double precision,intent(in)        :: EcRPA
   double precision,intent(in)        :: Conv
   double precision,intent(in)        :: eHF(nBas,nspin)
@@ -67,13 +67,13 @@ subroutine print_evUGW(nBas,nO,nSCF,Conv,eHF,ENuc,ERHF,SigC,Z,eGW,EcRPA)
   write(*,'(2X,A14,F15.5)')'Convergence = ',Conv
   write(*,*)'-------------------------------------------------------------------------------& 
               -------------------------------------------------'
-  write(*,'(2X,A30,F15.6)') 'evGW HOMO      energy (eV):',maxval(HOMO(:))*HaToeV
-  write(*,'(2X,A30,F15.6)') 'evGW LUMO      energy (eV):',minval(LUMO(:))*HaToeV
-  write(*,'(2X,A30,F15.6)') 'evGW HOMO-LUMO gap    (eV):',(minval(LUMO(:))-maxval(HOMO(:)))*HaToeV
+  write(*,'(2X,A30,F15.6,A3)') 'evGW HOMO      energy:',maxval(HOMO(:))*HaToeV,' eV'
+  write(*,'(2X,A30,F15.6,A3)') 'evGW LUMO      energy:',minval(LUMO(:))*HaToeV,' eV'
+  write(*,'(2X,A30,F15.6,A3)') 'evGW HOMO-LUMO gap   :',(minval(LUMO(:))-maxval(HOMO(:)))*HaToeV,' eV'
   write(*,*)'-------------------------------------------------------------------------------& 
               -------------------------------------------------'
-  write(*,'(2X,A30,F15.6)') 'RPA@evGW total energy       =',ENuc + ERHF + EcRPA
-  write(*,'(2X,A30,F15.6)') 'RPA@evGW correlation energy =',EcRPA
+  write(*,'(2X,A30,F15.6,A3)') 'RPA@evGW total energy      :',ENuc + EUHF + EcRPA,' au'
+  write(*,'(2X,A30,F15.6,A3)') 'RPA@evGW correlation energy:',EcRPA,' au'
   write(*,*)'-------------------------------------------------------------------------------& 
               -------------------------------------------------'
   write(*,*)
