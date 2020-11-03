@@ -1,4 +1,4 @@
-subroutine print_evUGW(nBas,nO,nSCF,Conv,e,ENuc,EHF,SigC,Z,eGW,EcRPA)
+subroutine print_evUGW(nBas,nO,nSCF,Conv,eHF,ENuc,ERHF,SigC,Z,eGW,EcRPA)
 
 ! Print one-electron energies and other stuff for evGW
 
@@ -9,10 +9,10 @@ subroutine print_evUGW(nBas,nO,nSCF,Conv,e,ENuc,EHF,SigC,Z,eGW,EcRPA)
   integer,intent(in)                 :: nO(nspin)
   integer,intent(in)                 :: nSCF
   double precision,intent(in)        :: ENuc
-  double precision,intent(in)        :: EHF
+  double precision,intent(in)        :: ERHF
   double precision,intent(in)        :: EcRPA
   double precision,intent(in)        :: Conv
-  double precision,intent(in)        :: e(nBas,nspin)
+  double precision,intent(in)        :: eHF(nBas,nspin)
   double precision,intent(in)        :: SigC(nBas,nspin)
   double precision,intent(in)        :: Z(nBas,nspin)
   double precision,intent(in)        :: eGW(nBas,nspin)
@@ -32,7 +32,7 @@ subroutine print_evUGW(nBas,nO,nSCF,Conv,e,ENuc,EHF,SigC,Z,eGW,EcRPA)
       Gap(ispin)  = LUMO(ispin) - HOMO(ispin)
     else
       HOMO(ispin) = 0d0
-      LUMO(ispin) = e(1,ispin)
+      LUMO(ispin) = eGW(1,ispin)
       Gap(ispin)  = 0d0
     end if
   end do
@@ -57,7 +57,7 @@ subroutine print_evUGW(nBas,nO,nSCF,Conv,e,ENuc,EHF,SigC,Z,eGW,EcRPA)
 
   do p=1,nBas
     write(*,'(A1,I3,A1,2F15.6,A1,2F15.6,A1,2F15.6,A1,2F15.6,A1)') &
-    '|',p,'|',e(p,1)*HaToeV,e(p,2)*HaToeV,'|',SigC(p,1)*HaToeV,SigC(p,2)*HaToeV,'|', &
+    '|',p,'|',eHF(p,1)*HaToeV,eHF(p,2)*HaToeV,'|',SigC(p,1)*HaToeV,SigC(p,2)*HaToeV,'|', &
               Z(p,1),Z(p,2),'|',eGW(p,1)*HaToeV,eGW(p,2)*HaToeV,'|'
   enddo
 
@@ -72,7 +72,7 @@ subroutine print_evUGW(nBas,nO,nSCF,Conv,e,ENuc,EHF,SigC,Z,eGW,EcRPA)
   write(*,'(2X,A30,F15.6)') 'evGW HOMO-LUMO gap    (eV):',(minval(LUMO(:))-maxval(HOMO(:)))*HaToeV
   write(*,*)'-------------------------------------------------------------------------------& 
               -------------------------------------------------'
-  write(*,'(2X,A30,F15.6)') 'RPA@evGW total energy       =',ENuc + EHF + EcRPA
+  write(*,'(2X,A30,F15.6)') 'RPA@evGW total energy       =',ENuc + ERHF + EcRPA
   write(*,'(2X,A30,F15.6)') 'RPA@evGW correlation energy =',EcRPA
   write(*,*)'-------------------------------------------------------------------------------& 
               -------------------------------------------------'

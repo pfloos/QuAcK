@@ -308,33 +308,34 @@ subroutine qsUGW(maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,COHSEX,SOS
 
     ! Kinetic energy
 
-    do ispin=1,nspin
-      ET(ispin) = trace_matrix(nBas,matmul(P(:,:,ispin),T(:,:)))
+    do is=1,nspin
+      ET(is) = trace_matrix(nBas,matmul(P(:,:,is),T(:,:)))
     end do
 
     ! Potential energy
 
-    do ispin=1,nspin
-      EV(ispin) = trace_matrix(nBas,matmul(P(:,:,ispin),V(:,:)))
+    do is=1,nspin
+      EV(is) = trace_matrix(nBas,matmul(P(:,:,is),V(:,:)))
     end do
 
     ! Coulomb energy
 
     EJ(1) = 0.5d0*trace_matrix(nBas,matmul(P(:,:,1),J(:,:,1)))
-    EJ(2) = trace_matrix(nBas,matmul(P(:,:,1),J(:,:,2)))
+    EJ(2) = 1.0d0*trace_matrix(nBas,matmul(P(:,:,1),J(:,:,2)))
     EJ(3) = 0.5d0*trace_matrix(nBas,matmul(P(:,:,2),J(:,:,2)))
 
     ! Exchange energy
 
-    do ispin=1,nspin
-      Ex(ispin) = 0.5d0*trace_matrix(nBas,matmul(P(:,:,ispin),K(:,:,ispin)))
+    do is=1,nspin
+      Ex(is) = 0.5d0*trace_matrix(nBas,matmul(P(:,:,is),K(:,:,is)))
     end do
 
     ! Correlation energy
 
-    Ec(1) = 0.5d0*trace_matrix(nBas,matmul(P(:,:,1),SigC(:,:,1)))
-    Ec(2) = trace_matrix(nBas,matmul(P(:,:,1),SigC(:,:,2)))
-    Ec(3) = 0.5d0*trace_matrix(nBas,matmul(P(:,:,2),SigC(:,:,2)))
+    Ec(1) = 0.25d0*trace_matrix(nBas,matmul(P(:,:,1),SigCp(:,:,1)))
+    Ec(2) = 0.25d0*trace_matrix(nBas,matmul(P(:,:,1),SigCp(:,:,2))) &
+          + 0.25d0*trace_matrix(nBas,matmul(P(:,:,2),SigCp(:,:,1)))
+    Ec(3) = 0.25d0*trace_matrix(nBas,matmul(P(:,:,2),SigCp(:,:,2)))
 
     ! Total energy
 
@@ -345,7 +346,7 @@ subroutine qsUGW(maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,COHSEX,SOS
     !------------------------------------------------------------------------
 
     call dipole_moment(nBas,P(:,:,1)+P(:,:,2),nNuc,ZNuc,rNuc,dipole_int_AO,dipole)
-    call print_qsUGW(nBas,nO,nSCF,Conv,thresh,eGW,c,P,S,T,V,J,K,ENuc,ET,EV,EJ,Ex,Ec,EcRPA,EqsGW,SigC,Z,dipole)
+    call print_qsUGW(nBas,nO,nSCF,Conv,thresh,eHF,eGW,c,P,S,T,V,J,K,ENuc,ET,EV,EJ,Ex,Ec,EcRPA,EqsGW,SigCp,Z,dipole)
 
   enddo
 !------------------------------------------------------------------------

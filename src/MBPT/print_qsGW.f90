@@ -1,6 +1,5 @@
 subroutine print_qsGW(nBas,nO,nSCF,Conv,thresh,eHF,eGW,c,ENuc,P,T,V,J,K,F,SigC,Z,EcRPA,EqsGW,dipole)
 
-
 ! Print one-electron energies and other stuff for qsGW
 
   implicit none
@@ -32,11 +31,13 @@ subroutine print_qsGW(nBas,nO,nSCF,Conv,thresh,eHF,eGW,c,ENuc,P,T,V,J,K,F,SigC,Z
   LUMO = HOMO + 1
   Gap = eGW(LUMO)-eGW(HOMO)
 
+! Compute energies
+
   ET = trace_matrix(nBas,matmul(P,T))
   EV = trace_matrix(nBas,matmul(P,V))
   EJ = 0.5d0*trace_matrix(nBas,matmul(P,J))
   Ex = 0.25d0*trace_matrix(nBas,matmul(P,K))
-  Ec = 0.5d0*trace_matrix(nBas,matmul(P,SigC))
+  Ec = 0.50d0*trace_matrix(nBas,matmul(P,SigC))
   EqsGW = ET + EV + EJ + Ex + Ec
 
 ! Dump results
@@ -49,12 +50,12 @@ subroutine print_qsGW(nBas,nO,nSCF,Conv,thresh,eHF,eGW,c,ENuc,P,T,V,J,K,F,SigC,Z
   endif
   write(*,*)'-------------------------------------------------------------------------------'
   write(*,'(1X,A1,1X,A3,1X,A1,1X,A15,1X,A1,1X,A15,1X,A1,1X,A15,1X,A1,1X,A15,1X,A1,1X)') &
-            '|','#','|','e_HF (eV)','|','e_QP-e_HF (eV)','|','Z','|','e_QP (eV)','|'
+            '|','#','|','e_HF (eV)','|','Sig_c (eV)','|','Z','|','e_QP (eV)','|'
   write(*,*)'-------------------------------------------------------------------------------'
 
   do x=1,nBas
     write(*,'(1X,A1,1X,I3,1X,A1,1X,F15.6,1X,A1,1X,F15.6,1X,A1,1X,F15.6,1X,A1,1X,F15.6,1X,A1,1X)') &
-    '|',x,'|',eHF(x)*HaToeV,'|',(eGW(x)-eHF(x))*HaToeV,'|',Z(x),'|',eGW(x)*HaToeV,'|'
+    '|',x,'|',eHF(x)*HaToeV,'|',SigC(x,x)*HaToeV,'|',Z(x),'|',eGW(x)*HaToeV,'|'
   enddo
 
   write(*,*)'-------------------------------------------------------------------------------'

@@ -1,4 +1,4 @@
-subroutine print_qsUGW(nBas,nO,nSCF,Conv,thresh,eGW,cGW,PGW,Ov,T,V,J,K, & 
+subroutine print_qsUGW(nBas,nO,nSCF,Conv,thresh,eHF,eGW,cGW,PGW,Ov,T,V,J,K, & 
                        ENuc,ET,EV,EJ,Ex,Ec,EcRPA,EqsGW,SigC,Z,dipole)
 
 ! Print one-electron energies and other stuff for qsUGW
@@ -21,6 +21,7 @@ subroutine print_qsUGW(nBas,nO,nSCF,Conv,thresh,eGW,cGW,PGW,Ov,T,V,J,K, &
   double precision,intent(in)        :: EqsGW
   double precision,intent(in)        :: Conv
   double precision,intent(in)        :: thresh
+  double precision,intent(in)        :: eHF(nBas,nspin)
   double precision,intent(in)        :: eGW(nBas,nspin)
   double precision,intent(in)        :: cGW(nBas,nBas,nspin)
   double precision,intent(in)        :: PGW(nBas,nBas,nspin)
@@ -84,7 +85,7 @@ subroutine print_qsUGW(nBas,nO,nSCF,Conv,thresh,eGW,cGW,PGW,Ov,T,V,J,K, &
 
   do p=1,nBas
     write(*,'(A1,I3,A1,2F15.6,A1,2F15.6,A1,2F15.6,A1,2F15.6,A1)') &
-    '|',p,'|',eGW(p,1)*HaToeV,eGW(p,2)*HaToeV,'|',SigC(p,p,1)*HaToeV,SigC(p,p,2)*HaToeV,'|', &
+    '|',p,'|',eHF(p,1)*HaToeV,eHF(p,2)*HaToeV,'|',SigC(p,p,1)*HaToeV,SigC(p,p,2)*HaToeV,'|', &
               Z(p,1),Z(p,2),'|',eGW(p,1)*HaToeV,eGW(p,2)*HaToeV,'|'
   enddo
 
@@ -94,15 +95,15 @@ subroutine print_qsUGW(nBas,nO,nSCF,Conv,thresh,eGW,cGW,PGW,Ov,T,V,J,K, &
   write(*,'(2X,A19,F15.5)')'max(|FPS - SPF|) = ',Conv
   write(*,*)'-------------------------------------------------------------------------------& 
               -------------------------------------------------'
-  write(*,'(2X,A30,F15.6)') 'qsGW HOMO      energy (eV):',maxval(HOMO(:))*HaToeV
-  write(*,'(2X,A30,F15.6)') 'qsGW LUMO      energy (eV):',minval(LUMO(:))*HaToeV
-  write(*,'(2X,A30,F15.6)') 'qsGW HOMO-LUMO gap    (eV):',(minval(LUMO(:))-maxval(HOMO(:)))*HaToeV
+  write(*,'(2X,A30,F15.6)') 'qsUGW HOMO      energy (eV):',maxval(HOMO(:))*HaToeV
+  write(*,'(2X,A30,F15.6)') 'qsUGW LUMO      energy (eV):',minval(LUMO(:))*HaToeV
+  write(*,'(2X,A30,F15.6)') 'qsUGW HOMO-LUMO gap    (eV):',(minval(LUMO(:))-maxval(HOMO(:)))*HaToeV
   write(*,*)'-------------------------------------------------------------------------------& 
               -------------------------------------------------'
-  write(*,'(2X,A30,F15.6)') 'qsGW total       energy   =',EqsGW + ENuc
-  write(*,'(2X,A30,F15.6)') 'qsGW exchange    energy   =',sum(Ex(:))
-  write(*,'(2X,A30,F15.6)') 'qsGW correlation energy   =',sum(Ec(:))
-  write(*,'(2X,A30,F15.6)') 'RPA@qsGW correlation energy =',EcRPA
+  write(*,'(2X,A30,F15.6)') '    qsUGW total       energy =',EqsGW + ENuc
+  write(*,'(2X,A30,F15.6)') '    qsUGW exchange    energy =',sum(Ex(:))
+  write(*,'(2X,A30,F15.6)') '    qsUGW correlation energy =',sum(Ec(:))
+  write(*,'(2X,A30,F15.6)') 'RPA@qsUGW correlation energy =',EcRPA
   write(*,*)'-------------------------------------------------------------------------------& 
               -------------------------------------------------'
   write(*,*)
