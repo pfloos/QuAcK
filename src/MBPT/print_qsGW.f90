@@ -37,7 +37,8 @@ subroutine print_qsGW(nBas,nO,nSCF,Conv,thresh,eHF,eGW,c,ENuc,P,T,V,J,K,F,SigC,Z
   EV = trace_matrix(nBas,matmul(P,V))
   EJ = 0.5d0*trace_matrix(nBas,matmul(P,J))
   Ex = 0.25d0*trace_matrix(nBas,matmul(P,K))
-  Ec = -0.50d0*trace_matrix(nBas,matmul(P,SigC))
+  Ec = 0d0
+! Ec = -0.50d0*trace_matrix(nBas,matmul(P,SigC))
   EqsGW = ET + EV + EJ + Ex + Ec
 
 ! Dump results
@@ -68,7 +69,7 @@ subroutine print_qsGW(nBas,nO,nSCF,Conv,thresh,eHF,eGW,c,ENuc,P,T,V,J,K,F,SigC,Z
   write(*,*)'-------------------------------------------'
   write(*,'(2X,A30,F15.6,A3)') '    qsGW total       energy:',EqsGW + ENuc,' au'
   write(*,'(2X,A30,F15.6,A3)') '    qsGW exchange    energy:',Ex,' au'
-  write(*,'(2X,A30,F15.6,A3)') '    qsGW correlation energy:',Ec,' au'
+! write(*,'(2X,A30,F15.6,A3)') '    qsGW correlation energy:',Ec,' au'
   write(*,'(2X,A30,F15.6,A3)') 'RPA@qsGW correlation energy:',EcRPA,' au'
   write(*,*)'-------------------------------------------'
   write(*,*)
@@ -88,7 +89,7 @@ subroutine print_qsGW(nBas,nO,nSCF,Conv,thresh,eHF,eGW,c,ENuc,P,T,V,J,K,F,SigC,Z
     write(*,'(A32,1X,F16.10,A3)') ' Two-electron energy: ',EJ + Ex,' au'
     write(*,'(A32,1X,F16.10,A3)') ' Hartree      energy: ',EJ,' au'
     write(*,'(A32,1X,F16.10,A3)') ' Exchange     energy: ',Ex,' au'
-    write(*,'(A32,1X,F16.10,A3)') ' Correlation  energy: ',Ec,' au'
+!   write(*,'(A32,1X,F16.10,A3)') ' Correlation  energy: ',Ec,' au'
     write(*,'(A50)')           '---------------------------------------'
     write(*,'(A32,1X,F16.10,A3)') ' Electronic   energy: ',EqsGW,' au'
     write(*,'(A32,1X,F16.10,A3)') ' Nuclear   repulsion: ',ENuc,' au'

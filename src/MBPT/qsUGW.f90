@@ -332,10 +332,12 @@ subroutine qsUGW(maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,COHSEX,SOS
 
     ! Correlation energy
 
-    Ec(1) = - 0.25d0*trace_matrix(nBas,matmul(P(:,:,1),SigCp(:,:,1)))
-    Ec(2) = - 0.25d0*trace_matrix(nBas,matmul(P(:,:,1),SigCp(:,:,2))) &
-            - 0.25d0*trace_matrix(nBas,matmul(P(:,:,2),SigCp(:,:,1)))
-    Ec(3) = - 0.25d0*trace_matrix(nBas,matmul(P(:,:,2),SigCp(:,:,2)))
+    Ec(:) = 0d0
+
+!   Ec(1) = - 0.25d0*trace_matrix(nBas,matmul(P(:,:,1),SigCp(:,:,1)))
+!   Ec(2) = - 0.25d0*trace_matrix(nBas,matmul(P(:,:,1),SigCp(:,:,2))) &
+!           - 0.25d0*trace_matrix(nBas,matmul(P(:,:,2),SigCp(:,:,1)))
+!   Ec(3) = - 0.25d0*trace_matrix(nBas,matmul(P(:,:,2),SigCp(:,:,2)))
 
     ! Total energy
 
