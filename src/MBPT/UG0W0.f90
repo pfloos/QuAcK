@@ -49,6 +49,7 @@ subroutine UG0W0(doACFDT,exchange_kernel,doXBS,COHSEX,BSE,TDA_W,TDA,dBSE,dTDA,ev
   integer                       :: is
   integer                       :: ispin
   double precision              :: EcRPA
+  double precision              :: EcGM(nspin)
   double precision              :: EcBSE(nspin)
   double precision              :: EcAC(nspin)
   double precision,allocatable  :: SigC(:,:)
@@ -131,7 +132,7 @@ subroutine UG0W0(doACFDT,exchange_kernel,doXBS,COHSEX,BSE,TDA_W,TDA,dBSE,dTDA,ev
 ! Compute self-energy !
 !---------------------!
 
-  call unrestricted_self_energy_correlation_diag(eta,nBas,nC,nO,nV,nR,nS_sc,eHF,OmRPA,rho_RPA,SigC)
+  call unrestricted_self_energy_correlation_diag(eta,nBas,nC,nO,nV,nR,nS_sc,eHF,OmRPA,rho_RPA,SigC,EcGM)
 
 !--------------------------------!
 ! Compute renormalization factor !
@@ -170,7 +171,7 @@ subroutine UG0W0(doACFDT,exchange_kernel,doXBS,COHSEX,BSE,TDA_W,TDA,dBSE,dTDA,ev
 
 ! Dump results
 
-  call print_UG0W0(nBas,nO,eHF,ENuc,EUHF,SigC,Z,eGW,EcRPA)
+  call print_UG0W0(nBas,nO,eHF,ENuc,EUHF,SigC,Z,eGW,EcRPA,EcGM)
 
 ! Free memory
 

@@ -1,4 +1,4 @@
-subroutine print_evUGW(nBas,nO,nSCF,Conv,eHF,ENuc,EUHF,SigC,Z,eGW,EcRPA)
+subroutine print_evUGW(nBas,nO,nSCF,Conv,eHF,ENuc,EUHF,SigC,Z,eGW,EcRPA,EcGM)
 
 ! Print one-electron energies and other stuff for evGW
 
@@ -11,6 +11,7 @@ subroutine print_evUGW(nBas,nO,nSCF,Conv,eHF,ENuc,EUHF,SigC,Z,eGW,EcRPA)
   double precision,intent(in)        :: ENuc
   double precision,intent(in)        :: EUHF
   double precision,intent(in)        :: EcRPA
+  double precision,intent(in)        :: EcGM(nspin)
   double precision,intent(in)        :: Conv
   double precision,intent(in)        :: eHF(nBas,nspin)
   double precision,intent(in)        :: SigC(nBas,nspin)
@@ -74,6 +75,8 @@ subroutine print_evUGW(nBas,nO,nSCF,Conv,eHF,ENuc,EUHF,SigC,Z,eGW,EcRPA)
               -------------------------------------------------'
   write(*,'(2X,A30,F15.6,A3)') 'RPA@evGW total energy      :',ENuc + EUHF + EcRPA,' au'
   write(*,'(2X,A30,F15.6,A3)') 'RPA@evGW correlation energy:',EcRPA,' au'
+  write(*,'(2X,A30,F15.6,A3)') ' GM@evGW total energy      :',ENuc + EUHF + sum(EcGM(:)),' au'
+  write(*,'(2X,A30,F15.6,A3)') ' GM@evGW correlation energy:',sum(EcGM(:)),' au'
   write(*,*)'-------------------------------------------------------------------------------& 
               -------------------------------------------------'
   write(*,*)

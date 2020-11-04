@@ -44,7 +44,7 @@ subroutine print_RHF(nBas,nO,eHF,cHF,ENuc,ET,EV,EJ,EK,ERHF,dipole)
   write(*,'(A32,1X,F16.10,A3)') ' Potential    energy: ',EV,' au'
   write(*,'(A50)')           '-----------------------------------------'
   write(*,'(A32,1X,F16.10,A3)') ' Two-electron energy: ',EJ + EK,' au'
-  write(*,'(A32,1X,F16.10,A3)') ' Coulomb      energy: ',EJ,' au'
+  write(*,'(A32,1X,F16.10,A3)') ' Hartree      energy: ',EJ,' au'
   write(*,'(A32,1X,F16.10,A3)') ' Exchange     energy: ',EK,' au'
   write(*,'(A50)')           '-----------------------------------------'
   write(*,'(A32,1X,F16.10,A3)') ' Electronic   energy: ',ERHF,' au'

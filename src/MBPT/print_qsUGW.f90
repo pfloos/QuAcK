@@ -133,10 +133,10 @@ subroutine print_qsUGW(nBas,nO,nSCF,Conv,thresh,eHF,eGW,cGW,PGW,Ov,T,V,J,K, &
     write(*,'(A40,1X,F16.10,A3)') ' Two-electron ab energy: ',EJ(2),' au'
     write(*,'(A40,1X,F16.10,A3)') ' Two-electron bb energy: ',EJ(3) + Ex(2),' au'
     write(*,*)
-    write(*,'(A40,1X,F16.10,A3)') ' Coulomb         energy: ',sum(EJ(:)),' au'
-    write(*,'(A40,1X,F16.10,A3)') ' Coulomb      aa energy: ',EJ(1),' au'
-    write(*,'(A40,1X,F16.10,A3)') ' Coulomb      ab energy: ',EJ(2),' au'
-    write(*,'(A40,1X,F16.10,A3)') ' Coulomb      bb energy: ',EJ(3),' au'
+    write(*,'(A40,1X,F16.10,A3)') ' Hartree         energy: ',sum(EJ(:)),' au'
+    write(*,'(A40,1X,F16.10,A3)') ' Hartree      aa energy: ',EJ(1),' au'
+    write(*,'(A40,1X,F16.10,A3)') ' Hartree      ab energy: ',EJ(2),' au'
+    write(*,'(A40,1X,F16.10,A3)') ' Hartree      bb energy: ',EJ(3),' au'
     write(*,*)
     write(*,'(A40,1X,F16.10,A3)') ' Exchange        energy: ',sum(Ex(:)),' au'
     write(*,'(A40,1X,F16.10,A3)') ' Exchange     a  energy: ',Ex(1),' au'

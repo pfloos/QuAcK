@@ -1,4 +1,4 @@
-subroutine print_UG0W0(nBas,nO,eHF,ENuc,EUHF,SigC,Z,eGW,EcRPA)
+subroutine print_UG0W0(nBas,nO,eHF,ENuc,EUHF,SigC,Z,eGW,EcRPA,EcGM)
 
 ! Print one-electron energies and other stuff for G0W0
 
@@ -10,6 +10,7 @@ subroutine print_UG0W0(nBas,nO,eHF,ENuc,EUHF,SigC,Z,eGW,EcRPA)
   double precision,intent(in)        :: ENuc
   double precision,intent(in)        :: EUHF
   double precision,intent(in)        :: EcRPA
+  double precision,intent(in)        :: EcGM(nspin)
   double precision,intent(in)        :: eHF(nBas,nspin)
   double precision,intent(in)        :: SigC(nBas,nspin)
   double precision,intent(in)        :: Z(nBas,nspin)
@@ -64,6 +65,8 @@ subroutine print_UG0W0(nBas,nO,eHF,ENuc,EUHF,SigC,Z,eGW,EcRPA)
               -------------------------------------------------'
   write(*,'(2X,A30,F15.6,A3)') 'RPA@UG0W0 total energy      :',ENuc + EUHF + EcRPA,' au'
   write(*,'(2X,A30,F15.6,A3)') 'RPA@UG0W0 correlation energy:',EcRPA,' au'
+  write(*,'(2X,A30,F15.6,A3)') ' GM@UG0W0 total energy      :',ENuc + EUHF + sum(EcGM(:)),' au'
+  write(*,'(2X,A30,F15.6,A3)') ' GM@UG0W0 correlation energy:',sum(EcGM(:)),' au'
   write(*,*)'-------------------------------------------------------------------------------& 
               -------------------------------------------------'
   write(*,*)
