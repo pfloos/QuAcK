@@ -66,9 +66,9 @@ subroutine print_qsGW(nBas,nO,nSCF,Conv,thresh,eHF,eGW,c,ENuc,P,T,V,J,K,F,SigC,Z
   write(*,'(2X,A30,F15.6,A3)') 'qsGW LUMO      energy:',eGW(LUMO)*HaToeV,' eV'
   write(*,'(2X,A30,F15.6,A3)') 'qsGW HOMO-LUMO gap   :',Gap*HaToeV,' eV'
   write(*,*)'-------------------------------------------'
-  write(*,'(2X,A30,F15.6,A3)') 'qsGW total       energy    :',EqsGW + ENuc,' au'
-  write(*,'(2X,A30,F15.6,A3)') 'qsGW exchange    energy    :',Ex,' au'
-  write(*,'(2X,A30,F15.6,A3)') 'qsGW correlation energy    :',Ec,' au'
+  write(*,'(2X,A30,F15.6,A3)') '    qsGW total       energy:',EqsGW + ENuc,' au'
+  write(*,'(2X,A30,F15.6,A3)') '    qsGW exchange    energy:',Ex,' au'
+  write(*,'(2X,A30,F15.6,A3)') '    qsGW correlation energy:',Ec,' au'
   write(*,'(2X,A30,F15.6,A3)') 'RPA@qsGW correlation energy:',EcRPA,' au'
   write(*,*)'-------------------------------------------'
   write(*,*)
