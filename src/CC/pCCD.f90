@@ -91,6 +91,14 @@ subroutine pCCD(maxSCF,thresh,max_diis,nBas,nC,nO,nV,nR,ERI,ENuc,ERHF,eHF)
 
   t(:,:) = -0.5d0*OOVV(:,:)/delta_OV(:,:)
 
+  EcCCD = 0d0
+  do i=1,nO-nC
+    do a=1,nV-nR
+      EcCCD = EcCCD + OOVV(i,a)*t(i,a)
+    end do
+  end do
+  print*,'Ec = ',EcCCD
+
 ! Memory allocation for DIIS
 
   allocate(error_diis((nO-nC)*(nV-nR),max_diis),t_diis((nO-nC)*(nV-nR),max_diis))
@@ -125,7 +133,14 @@ subroutine pCCD(maxSCF,thresh,max_diis,nBas,nC,nO,nV,nR,ERI,ENuc,ERHF,eHF)
 
   ! Form intermediate array
     
-   y(:,:) = matmul(t,transpose(OOVV))
+   y(:,:) = 0d0
+   do i=1,nO-nC
+     do j=1,nO-nC
+       do b=1,nV-nR
+         y(i,j) = y(i,j) + OOVV(j,b)*t(i,b)
+       end do
+     end do
+   end do
     
    ! Compute residual
 
@@ -156,7 +171,12 @@ subroutine pCCD(maxSCF,thresh,max_diis,nBas,nC,nO,nV,nR,ERI,ENuc,ERHF,eHF)
 
    ! Compute correlation energy
 
-    EcCCD = trace_matrix(nO,matmul(t,transpose(OOVV)))
+    EcCCD = 0d0
+    do i=1,nO-nC    
+      do a=1,nV-nR
+        EcCCD = EcCCD + OOVV(i,a)*t(i,a)
+     end do
+   end do
 
    ! Dump results
 
@@ -164,12 +184,12 @@ subroutine pCCD(maxSCF,thresh,max_diis,nBas,nC,nO,nV,nR,ERI,ENuc,ERHF,eHF)
 
     ! DIIS extrapolation
 
-    n_diis = min(n_diis+1,max_diis)
-    call DIIS_extrapolation(rcond,nO*nV,nO*nV,n_diis,error_diis,t_diis,-0.5d0*r/delta_OV,t)
+!   n_diis = min(n_diis+1,max_diis)
+!   call DIIS_extrapolation(rcond,nO*nV,nO*nV,n_diis,error_diis,t_diis,-0.5d0*r/delta_OV,t)
 
     !  Reset DIIS if required
 
-    if(abs(rcond) < 1d-15) n_diis = 0
+!   if(abs(rcond) < 1d-15) n_diis = 0
 
     write(*,'(1X,A1,1X,I3,1X,A1,1X,F16.10,1X,A1,1X,F10.6,1X,A1,1X,F10.6,1X,A1,1X)') &
       '|',nSCF,'|',ECCD+ENuc,'|',EcCCD,'|',Conv,'|'
@@ -188,7 +208,6 @@ subroutine pCCD(maxSCF,thresh,max_diis,nBas,nC,nO,nV,nR,ERI,ENuc,ERHF,eHF)
     write(*,*)'!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!'
     write(*,*)'                 Convergence failed                 '
     write(*,*)'!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!'
-    write(*,*)
 
     stop
 

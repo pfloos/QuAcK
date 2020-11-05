@@ -6,7 +6,10 @@ subroutine form_delta_OV(nC,nO,nV,nR,eO,eV,delta)
 
 ! Input variables
 
-  integer,intent(in)            :: nC,nO,nV,nR
+  integer,intent(in)            :: nC
+  integer,intent(in)            :: nO
+  integer,intent(in)            :: nV
+  integer,intent(in)            :: nR
   double precision,intent(in)   :: eO(nO-nC)
   double precision,intent(in)   :: eV(nV-nR)
 
@@ -16,7 +19,7 @@ subroutine form_delta_OV(nC,nO,nV,nR,eO,eV,delta)
 
 ! Output variables
 
-  double precision,intent(out)  :: delta(nO,nV)
+  double precision,intent(out)  :: delta(nO-nC,nV-nR)
 
     do i=1,nO-nC
       do a=1,nV-nR
