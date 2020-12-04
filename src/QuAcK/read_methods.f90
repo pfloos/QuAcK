@@ -1,6 +1,6 @@
 subroutine read_methods(doRHF,doUHF,doKS,doMOM,           & 
                         doMP2,doMP3,doMP2F12,             & 
-                        doCCD,doCCSD,doCCSDT,             & 
+                        doCCD,doDCD,doCCSD,doCCSDT,       & 
                         do_drCCD,do_rCCD,do_lCCD,do_pCCD, &
                         doCIS,doCIS_D,doCID,doCISD,       & 
                         doRPA,doRPAx,doppRPA,             & 
@@ -17,7 +17,7 @@ subroutine read_methods(doRHF,doUHF,doKS,doMOM,           &
 
   logical,intent(out)           :: doRHF,doUHF,doKS,doMOM
   logical,intent(out)           :: doMP2,doMP3,doMP2F12
-  logical,intent(out)           :: doCCD,doCCSD,doCCSDT
+  logical,intent(out)           :: doCCD,doDCD,doCCSD,doCCSDT
   logical,intent(out)           :: do_drCCD,do_rCCD,do_lCCD,do_pCCD
   logical,intent(out)           :: doCIS,doCIS_D,doCID,doCISD
   logical,intent(out)           :: doRPA,doRPAx,doppRPA
@@ -46,6 +46,7 @@ subroutine read_methods(doRHF,doUHF,doKS,doMOM,           &
   doMP2F12 = .false.
  
   doCCD   = .false.
+  doDCD   = .false.
   doCCSD  = .false.
   doCCSDT = .false.
 
@@ -98,10 +99,11 @@ subroutine read_methods(doRHF,doUHF,doKS,doMOM,           &
 ! Read CC methods
 
   read(1,*) 
-  read(1,*) answer1,answer2,answer3
+  read(1,*) answer1,answer2,answer3,answer4
   if(answer1 == 'T') doCCD    = .true.
-  if(answer2 == 'T') doCCSD   = .true.
-  if(answer3 == 'T') doCCSDT  = .true.
+  if(answer2 == 'T') doDCD    = .true.
+  if(answer3 == 'T') doCCSD   = .true.
+  if(answer4 == 'T') doCCSDT  = .true.
 
 ! Read weird CC methods
   read(1,*) 

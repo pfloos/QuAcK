@@ -8,7 +8,7 @@ program QuAcK
   logical                       :: doRHF,doUHF,doMOM 
   logical                       :: doKS
   logical                       :: doMP2,doMP3,doMP2F12
-  logical                       :: doCCD,doCCSD,doCCSDT
+  logical                       :: doCCD,doDCD,doCCSD,doCCSDT
   logical                       :: do_drCCD,do_rCCD,do_lCCD,do_pCCD
   logical                       :: doCIS,doCIS_D,doCID,doCISD
   logical                       :: doRPA,doRPAx,doppRPA
@@ -81,6 +81,7 @@ program QuAcK
   double precision              :: start_MOM    ,end_MOM      ,t_MOM
   double precision              :: start_AOtoMO ,end_AOtoMO   ,t_AOtoMO
   double precision              :: start_CCD    ,end_CCD      ,t_CCD
+  double precision              :: start_DCD    ,end_DCD      ,t_DCD
   double precision              :: start_CCSD   ,end_CCSD     ,t_CCSD
   double precision              :: start_CIS    ,end_CIS      ,t_CIS
   double precision              :: start_CID    ,end_CID      ,t_CID
@@ -156,7 +157,7 @@ program QuAcK
 
   call read_methods(doRHF,doUHF,doKS,doMOM,           &
                     doMP2,doMP3,doMP2F12,             &
-                    doCCD,doCCSD,doCCSDT,             &
+                    doCCD,doDCD,doCCSD,doCCSDT,       &
                     do_drCCD,do_rCCD,do_lCCD,do_pCCD, &
                     doCIS,doCIS_D,doCID,doCISD,       & 
                     doRPA,doRPAx,doppRPA,             &
@@ -524,6 +525,23 @@ program QuAcK
 
     t_CCD = end_CCD - start_CCD
     write(*,'(A65,1X,F9.3,A8)') 'Total CPU time for CCD = ',t_CCD,' seconds'
+    write(*,*)
+
+  end if
+
+!------------------------------------------------------------------------
+! Perform DCD calculation
+!------------------------------------------------------------------------
+
+  if(doDCD) then
+
+    call cpu_time(start_DCD)
+    call DCD(maxSCF_CC,thresh_CC,n_diis_CC,nBas,nC,nO,nV,nR, & 
+             ERI_MO,ENuc,ERHF,eHF)
+    call cpu_time(end_DCD)
+
+    t_DCD = end_DCD - start_DCD
+    write(*,'(A65,1X,F9.3,A8)') 'Total CPU time for DCD = ',t_DCD,' seconds'
     write(*,*)
 
   end if
