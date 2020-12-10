@@ -162,6 +162,19 @@ subroutine print_qsUGW(nBas,nO,nSCF,Conv,thresh,eHF,eGW,cGW,PGW,Ov,T,V,J,K, &
     write(*,'(A60)')              '-------------------------------------------------'
     write(*,*)
 
+    ! Print orbitals
+
+    write(*,'(A50)') '-----------------------------------------'
+    write(*,'(A50)') 'qsUGW spin-up   orbital coefficients '
+    write(*,'(A50)') '-----------------------------------------'
+    call matout(nBas,nBas,cGW(:,:,1))
+    write(*,*)
+    write(*,'(A50)') '-----------------------------------------'
+    write(*,'(A50)') 'qsUGW spin-down orbital coefficients '
+    write(*,'(A50)') '-----------------------------------------'
+    call matout(nBas,nBas,cGW(:,:,2))
+    write(*,*)
+
   endif
 
 end subroutine print_qsUGW
