@@ -39,8 +39,10 @@ subroutine BCCD(maxSCF,thresh,max_diis,nBasin,nCin,nOin,nVin,nRin,ERI,ENuc,ERHF,
   double precision,allocatable  :: delta_OOVV(:,:,:,:)
 
   double precision,allocatable  :: OOOO(:,:,:,:)
+  double precision,allocatable  :: OOOV(:,:,:,:)
   double precision,allocatable  :: OOVV(:,:,:,:)
   double precision,allocatable  :: OVOV(:,:,:,:)
+  double precision,allocatable  :: OVVV(:,:,:,:)
   double precision,allocatable  :: VVVV(:,:,:,:)
 
   double precision,allocatable  :: X1(:,:,:,:)
@@ -102,12 +104,15 @@ subroutine BCCD(maxSCF,thresh,max_diis,nBasin,nCin,nOin,nVin,nRin,ERI,ENuc,ERHF,
 
 ! Create integral batches
 
-  allocate(OOOO(nO-nC,nO-nC,nO-nC,nO-nC),OOVV(nO-nC,nO-nC,nV-nR,nV-nR), & 
-           OVOV(nO-nC,nV-nR,nO-nC,nV-nR),VVVV(nV-nR,nV-nR,nV-nR,nV-nR))
+  allocate(OOOO(nO-nC,nO-nC,nO-nC,nO-nC),OOOV(nO-nC,nO-nC,nO-nC,nV-nR), &
+           OOVV(nO-nC,nO-nC,nV-nR,nV-nR),OVOV(nO-nC,nV-nR,nO-nC,nV-nR), &
+           OVVV(nO-nC,nV-nR,nV-nR,nV-nR),VVVV(nV-nR,nV-nR,nV-nR,nV-nR))
 
   OOOO(:,:,:,:) = dbERI(nC+1:nO     ,nC+1:nO     ,nC+1:nO     ,nC+1:nO     )
+  OOOV(:,:,:,:) = dbERI(nC+1:nO     ,nC+1:nO     ,nC+1:nO     ,nO+1:nBas-nR)
   OOVV(:,:,:,:) = dbERI(nC+1:nO     ,nC+1:nO     ,nO+1:nBas-nR,nO+1:nBas-nR)
   OVOV(:,:,:,:) = dbERI(nC+1:nO     ,nO+1:nBas-nR,nC+1:nO     ,nO+1:nBas-nR)
+  OVVV(:,:,:,:) = dbERI(nC+1:nO     ,nO+1:nBas-nR,nO+1:nBas-nR,nO+1:nBas-nR)
   VVVV(:,:,:,:) = dbERI(nO+1:nBas-nR,nO+1:nBas-nR,nO+1:nBas-nR,nO+1:nBas-nR)
 
   deallocate(dbERI)
