@@ -97,7 +97,6 @@ subroutine pCCD(maxSCF,thresh,max_diis,nBas,nC,nO,nV,nR,ERI,ENuc,ERHF,eHF)
       EcCCD = EcCCD + OOVV(i,a)*t(i,a)
     end do
   end do
-  print*,'Ec = ',EcCCD
 
 ! Memory allocation for DIIS
 

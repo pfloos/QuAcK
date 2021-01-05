@@ -79,9 +79,6 @@ subroutine G0T0(doACFDT,exchange_kernel,doXBS,BSE,TDA_W,TDA,dBSE,dTDA,evDyn,sing
   nOOs = nO*nO
   nVVs = nV*nV
 
-! nOOs = nO*(nO + 1)/2
-! nVVs = nV*(nV + 1)/2
-
   nOOt = nO*(nO - 1)/2
   nVVt = nV*(nV - 1)/2
 
