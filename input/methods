@@ -1,11 +1,11 @@
 # RHF UHF KS  MOM
-  T   F   F   F
+  F   F   T   F
 # MP2* MP3 MP2-F12
   F   F   F
 # CCD DCD CCSD CCSD(T) 
   F   F   F    F
 # drCCD rCCD lCCD pCCD
-  F      F   F    T
+  F      F   F    F
 # CIS* CIS(D) CID CISD
   F    F      F   F    
 # RPA* RPAx* ppRPA 

@@ -114,6 +114,7 @@ subroutine read_options_dft(nBas,method,x_rung,x_DFA,c_rung,c_DFA,SGn,nEns,wEns,
     write(*,*) (int(occnum(iBas,2,iEns)),iBas=1,nBas)
     write(*,*)
   end do
+
 ! Read ensemble weights for real physical (fractional number of electrons) ensemble (w1,w2)
 
   allocate(nEl(nEns))
@@ -123,8 +124,6 @@ subroutine read_options_dft(nBas,method,x_rung,x_DFA,c_rung,c_DFA,SGn,nEns,wEns,
       nEl(iEns) = nEl(iEns) + occnum(iBas,1,iEns) + occnum(iBas,2,iEns)
     end do
   end do
-  print*,'nEl'
-  print*,nEl
 
   doNcentered = .false.
 
@@ -164,13 +163,13 @@ subroutine read_options_dft(nBas,method,x_rung,x_DFA,c_rung,c_DFA,SGn,nEns,wEns,
   read(1,*) Cx_choice
 
   write(*,*)'----------------------------------------------------------'
-  write(*,*)' parameters for w1-dependant exchange functional coefficient '
+  write(*,*)' parameters for w1-dependent exchange functional coefficient '
   write(*,*)'----------------------------------------------------------'
   call matout(3,1,aCC_w1)
   write(*,*)
 
   write(*,*)'----------------------------------------------------------'
-  write(*,*)' parameters for w2-dependant exchange functional coefficient '
+  write(*,*)' parameters for w2-dependent exchange functional coefficient '
   write(*,*)'----------------------------------------------------------'
   call matout(3,1,aCC_w2)
   write(*,*) 

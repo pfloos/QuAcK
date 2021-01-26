@@ -6,7 +6,7 @@
 # GGA          = 2: RB88
 # Hybrid       = 4
 # Hartree-Fock = 666
-  1 S51  
+  666 HF
 # correlation rung: 
 # Hartree      = 0
 # LDA          = 1: RVWN5,RMFL20
@@ -20,19 +20,19 @@
   3
 # occupation numbers of orbitals nO and nO+1
  1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 
- 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 
- 
- 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 
  0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 
  
- 1 1 0 0 0 0 0 0 0 0 0 0 0 0 0 
+ 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 
+ 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 
+ 
+ 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 
  1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 
 # Ensemble weights: wEns(1),...,wEns(nEns-1)
-  0.00 1.00 
+  0.25 0.0
 # N-centered?
- T 
+ F 
 # Parameters for CC weight-dependent exchange functional
-0.445525 0.0901503 -0.286898
-0.191734 -0.0364788 -0.017035
+0.0 0.0 0.0
+0.0 0.0 0.0
 # choice of UCC exchange coefficient : 1 for Cx1, 2 for Cx2, 3 for Cx1*Cx2
 2

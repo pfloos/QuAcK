@@ -4,7 +4,7 @@ subroutine eDFT(maxSCF,thresh,max_diis,guess_type,nNuc,ZNuc,rNuc,ENuc,nBas,nEl,n
 
 ! exchange-correlation density-functional theory calculations
 
-  use xc_f90_lib_m
+! use xc_f90_lib_m
 
   implicit none
   include 'parameters.h'
@@ -92,8 +92,8 @@ subroutine eDFT(maxSCF,thresh,max_diis,guess_type,nNuc,ZNuc,rNuc,ENuc,nBas,nEl,n
 
 ! Libxc version
 
-  call xc_f90_version(vmajor, vminor, vmicro)
-  write(*,'("Libxc version: ",I1,".",I1,".",I1)') vmajor, vminor, vmicro
+! call xc_f90_version(vmajor, vminor, vmicro)
+! write(*,'("Libxc version: ",I1,".",I1,".",I1)') vmajor, vminor, vmicro
 
 ! call xcinfo()
 

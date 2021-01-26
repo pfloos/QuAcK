@@ -89,8 +89,6 @@ subroutine unrestricted_individual_energy(x_rung,x_DFA,c_rung,c_DFA,LDA_centered
     kappa(iEns) = nEl(iEns)/nEl(1)
   end do
 
-  print*,'test1'
-
 !------------------------------------------------------------------------
 ! Kinetic energy
 !------------------------------------------------------------------------
@@ -104,7 +102,6 @@ subroutine unrestricted_individual_energy(x_rung,x_DFA,c_rung,c_DFA,LDA_centered
       end if
     end do
   end do
-  print*,'test2'
 
 !------------------------------------------------------------------------
 ! Potential energy
@@ -120,7 +117,6 @@ subroutine unrestricted_individual_energy(x_rung,x_DFA,c_rung,c_DFA,LDA_centered
   end do
   end do
 
-  print*,'test3'
 !------------------------------------------------------------------------
 ! Individual Hartree energy
 !------------------------------------------------------------------------
@@ -145,7 +141,7 @@ subroutine unrestricted_individual_energy(x_rung,x_DFA,c_rung,c_DFA,LDA_centered
     if(doNcentered) EJ(:,iEns) = kappa(iEns)*EJ(:,iEns)
 
   end do
-       print*,'test4'
+
 !------------------------------------------------------------------------
 ! Checking Hartree contributions for each individual states
 !------------------------------------------------------------------------
@@ -173,8 +169,6 @@ subroutine unrestricted_individual_energy(x_rung,x_DFA,c_rung,c_DFA,LDA_centered
                                                    Ex(ispin,iEns))
     end do
   end do
-
-  print*,'test5'
 
 !------------------------------------------------------------------------
 ! Checking exchange contributions for each individual states
