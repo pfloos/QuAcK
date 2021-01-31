@@ -86,4 +86,7 @@ subroutine linear_response_B_pp(ispin,nBas,nC,nO,nV,nR,nOO,nVV,e,ERI,B_pp)
 
   end if
 
+  print*,'B pp-matrix'
+  call matout(nVV,nOO,B_pp)
+
 end subroutine linear_response_B_pp

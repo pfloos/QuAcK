@@ -96,4 +96,7 @@ subroutine linear_response_D_pp(ispin,nBas,nC,nO,nV,nR,nOO,nVV,e,ERI,D_pp)
 
   end if
 
+  print*,'D pp-matrix'
+  call matout(nOO,nOO,D_pp)
+
 end subroutine linear_response_D_pp

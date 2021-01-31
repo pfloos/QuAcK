@@ -1,4 +1,4 @@
-subroutine eDFT(maxSCF,thresh,max_diis,guess_type,nNuc,ZNuc,rNuc,ENuc,nBas,nEl,nC,nO,nV,nR, & 
+subroutine eDFT(maxSCF,thresh,max_diis,guess_type,mix,nNuc,ZNuc,rNuc,ENuc,nBas,nEl,nC,nO,nV,nR, & 
                 nShell,TotAngMomShell,CenterShell,KShell,DShell,ExpShell, &
                 max_ang_mom,min_exponent,max_exponent,S,T,V,Hc,X,ERI,dipole_int)
 
@@ -14,6 +14,7 @@ subroutine eDFT(maxSCF,thresh,max_diis,guess_type,nNuc,ZNuc,rNuc,ENuc,nBas,nEl,n
   integer,intent(in)            :: maxSCF
   integer,intent(in)            :: max_diis
   integer,intent(in)            :: guess_type
+  logical,intent(in)            :: mix
   double precision,intent(in)   :: thresh
 
   integer,intent(in)            :: nNuc
@@ -201,13 +202,13 @@ subroutine eDFT(maxSCF,thresh,max_diis,guess_type,nNuc,ZNuc,rNuc,ENuc,nBas,nEl,n
   end if
 
 !------------------------------------------------------------------------
-! Compute N-centered UKS energy (UNBROKEN)
+! Compute N-centered UKS energy 
 !------------------------------------------------------------------------
 
   if(method == 'eDFT-UKS') then
 
     call cpu_time(start_KS)
-    call eDFT_UKS(x_rung,x_DFA,c_rung,c_DFA,nEns,wEns,aCC_w1,aCC_w2,nGrid,weight(:),maxSCF,thresh,max_diis,guess_type, & 
+    call eDFT_UKS(x_rung,x_DFA,c_rung,c_DFA,nEns,wEns,aCC_w1,aCC_w2,nGrid,weight(:),maxSCF,thresh,max_diis,guess_type,mix, & 
                   nBas,AO,dAO,S,T,V,Hc,ERI,X,ENuc,Ew,occnum,Cx_choice,doNcentered)
     call cpu_time(end_KS)
 

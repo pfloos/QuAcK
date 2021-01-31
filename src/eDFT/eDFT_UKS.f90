@@ -1,4 +1,4 @@
-subroutine eDFT_UKS(x_rung,x_DFA,c_rung,c_DFA,nEns,wEns,aCC_w1,aCC_w2,nGrid,weight,maxSCF,thresh,max_diis,guess_type, &
+subroutine eDFT_UKS(x_rung,x_DFA,c_rung,c_DFA,nEns,wEns,aCC_w1,aCC_w2,nGrid,weight,maxSCF,thresh,max_diis,guess_type,mix, &
                    nBas,AO,dAO,S,T,V,Hc,ERI,X,ENuc,Ew,occnum,Cx_choice,doNcentered)
 
 ! Perform unrestricted Kohn-Sham calculation for ensembles
@@ -17,6 +17,7 @@ subroutine eDFT_UKS(x_rung,x_DFA,c_rung,c_DFA,nEns,wEns,aCC_w1,aCC_w2,nGrid,weig
   integer,intent(in)            :: nGrid
   double precision,intent(in)   :: weight(nGrid)
   integer,intent(in)            :: maxSCF,max_diis,guess_type
+  logical,intent(in)            :: mix
   double precision,intent(in)   :: thresh
   integer,intent(in)            :: nBas
   double precision,intent(in)   :: AO(nBas,nGrid)
@@ -39,6 +40,7 @@ subroutine eDFT_UKS(x_rung,x_DFA,c_rung,c_DFA,nEns,wEns,aCC_w1,aCC_w2,nGrid,weig
   logical                       :: LDA_centered = .false.
   integer                       :: nSCF,nBasSq
   integer                       :: n_diis
+  integer                       :: nO(nspin)
   double precision              :: conv
   double precision              :: rcond(nspin)
   double precision              :: ET(nspin)
@@ -75,7 +77,7 @@ subroutine eDFT_UKS(x_rung,x_DFA,c_rung,c_DFA,nEns,wEns,aCC_w1,aCC_w2,nGrid,weig
   double precision              :: E(nEns)
   double precision              :: Om(nEns)
 
-  integer                       :: ispin,iEns
+  integer                       :: ispin,iEns,iBas
 
 ! Hello world
 
@@ -135,6 +137,15 @@ subroutine eDFT_UKS(x_rung,x_DFA,c_rung,c_DFA,nEns,wEns,aCC_w1,aCC_w2,nGrid,weig
       call diagonalize_matrix(nBas,cp(:,:,ispin),eps(:,ispin))
       c(:,:,ispin) = matmul(X(:,:),cp(:,:,ispin))
     end do
+
+    ! Mix guess to enforce symmetry breaking
+
+    nO(:) = 0
+    do ispin=1,nspin
+      nO(ispin) = int(sum(occnum(:,ispin,1)))
+    end do
+  
+    if(mix) call mix_guess(nBas,nO,c)
 
   else if(guess_type == 2) then
 
@@ -260,7 +271,7 @@ subroutine eDFT_UKS(x_rung,x_DFA,c_rung,c_DFA,nEns,wEns,aCC_w1,aCC_w2,nGrid,weig
       err(:,:,ispin) = matmul(F(:,:,ispin),matmul(Pw(:,:,ispin),S(:,:))) - matmul(matmul(S(:,:),Pw(:,:,ispin)),F(:,:,ispin))
     end do
 
-    conv = maxval(abs(err(:,:,:)))
+    if(nSCF > 1) conv = maxval(abs(err(:,:,:)))
     
 !   DIIS extrapolation
 
