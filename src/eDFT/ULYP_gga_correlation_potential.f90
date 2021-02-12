@@ -21,13 +21,16 @@ subroutine ULYP_gga_correlation_potential(nGrid,weight,nBas,AO,dAO,rho,drho,Fc)
   double precision              :: vAO,gaAO,gbAO
   double precision              :: ra,rb,r
   double precision              :: ga,gab,gb,g
+  double precision              :: dfdra,dfdrb
+  double precision              :: fdga,dfdgb
+  double precision              :: doda,dodb,ddda,dddb
 
   double precision              :: a,b,c,d
   double precision              :: Cf,omega,delta
 
 ! Output variables
 
-  double precision,intent(out)  :: Fc(nBas,nBas)
+  double precision,intent(out)  :: Fc(nBas,nBas,nspin)
 
 ! Prameter of the functional
 
@@ -40,7 +43,7 @@ subroutine ULYP_gga_correlation_potential(nGrid,weight,nBas,AO,dAO,rho,drho,Fc)
 
 ! Compute matrix elements in the AO basis
 
-  Fc(:,:) = 0d0
+  Fc(:,:,:) = 0d0
 
   do mu=1,nBas
     do nu=1,nBas
@@ -62,7 +65,16 @@ subroutine ULYP_gga_correlation_potential(nGrid,weight,nBas,AO,dAO,rho,drho,Fc)
 
           vAO = weight(iG)*AO(mu,iG)*AO(nu,iG)
 
-          Fc(mu,nu) = Fc(mu,nu) + vAO               
+          doda = (d/(3d0*r**(4d0/3d0)*(1d0 + d*r**(-1d0/3d0)) + c/(3d0*r**(4d0/3d0)) - 11d0/(3d0*r))*omega
+          dodb = doda
+         
+          ddda = - c/3d0*r**(-4d0/3d0) + d**2/(3d0*(1d0 + d*r**(-1d0/3d0))**2)*r**(-5d0/3d0) *
+               - d/(3d0*(1d0 + d*r**(-1d0/3d0))*r**(-4d0/3d0)
+          dddb = ddda
+
+          Fc(mu,nu,1) = Fc(mu,nu,1) + vAO*dfdra
+
+          Fc(mu,nu,2) = Fc(mu,nu,2) + vAO*dfdrb
           
           gaAO = drho(1,iG,1)*(dAO(1,mu,iG)*AO(nu,iG) + AO(mu,iG)*dAO(1,nu,iG)) & 
                + drho(2,iG,1)*(dAO(2,mu,iG)*AO(nu,iG) + AO(mu,iG)*dAO(2,nu,iG)) & 
@@ -73,8 +85,13 @@ subroutine ULYP_gga_correlation_potential(nGrid,weight,nBas,AO,dAO,rho,drho,Fc)
                + drho(2,iG,2)*(dAO(2,mu,iG)*AO(nu,iG) + AO(mu,iG)*dAO(2,nu,iG)) & 
                + drho(3,iG,2)*(dAO(3,mu,iG)*AO(nu,iG) + AO(mu,iG)*dAO(3,nu,iG))
           gbAO = weight(iG)*gbAO
+
+
+          dfdga = -a*b*omega*(-rb**2 + 2d0/3d0*r**2 + ra*rb*( - 5d0/2d0 - (delta-11d0)/9d0*ra/r + delta/18d0))
+          dfdgb = -a*b*omega*(-ra**2 + 2d0/3d0*r**2 + ra*rb*( - 5d0/2d0 - (delta-11d0)/9d0*rb/r + delta/18d0))
           
-          Fc(mu,nu) = Fc(mu,nu) + 2d0*gaAO + gbAO
+          Fc(mu,nu,1) = Fc(mu,nu,1) + 2d0*gaAO*dfdga
+          Fc(mu,nu,2) = Fc(mu,nu,2) + 2d0*gbAO*dfdgb
 
         end if
 
