@@ -30,6 +30,10 @@ subroutine unrestricted_gga_exchange_energy(DFA,nEns,wEns,nGrid,weight,rho,drho,
 
       call UB88_gga_exchange_energy(nGrid,weight,rho,drho,Ex)
 
+    case ('PBE')
+
+      call UPBE_gga_exchange_energy(nGrid,weight,rho,drho,Ex)
+
     case default
 
       call print_warning('!!! GGA exchange energy not available !!!')

@@ -34,6 +34,10 @@ subroutine unrestricted_gga_exchange_potential(DFA,nEns,wEns,nGrid,weight,nBas,A
     
       call UB88_gga_exchange_potential(nGrid,weight,nBas,AO,dAO,rho,drho,Fx)
 
+    case ('PBE')
+    
+      call UPBE_gga_exchange_potential(nGrid,weight,nBas,AO,dAO,rho,drho,Fx)
+
     case default
 
       call print_warning('!!! GGA exchange potential not available !!!')

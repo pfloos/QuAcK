@@ -26,7 +26,7 @@ subroutine unrestricted_exchange_energy(rung,DFA,LDA_centered,nEns,wEns,aCC_w1,a
 
 ! Local variables
 
-  double precision              :: ExLDA,ExGGA,ExHF
+  double precision              :: ExLDA,ExGGA,ExMGGA,ExHF
   double precision              :: cX,aX,aC
 
 ! Output variables
@@ -57,6 +57,14 @@ subroutine unrestricted_exchange_energy(rung,DFA,LDA_centered,nEns,wEns,aCC_w1,a
       call unrestricted_gga_exchange_energy(DFA,nEns,wEns,nGrid,weight,rho,drho,ExGGA)
 
       Ex = ExGGA
+
+!   MGGA functionals
+
+    case(3) 
+
+      call unrestricted_mgga_exchange_energy(DFA,nEns,wEns,nGrid,weight,rho,drho,ExMGGA)
+
+      Ex = ExMGGA
 
 !   Hybrid functionals
 

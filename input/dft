@@ -2,14 +2,14 @@
   eDFT-UKS
 # exchange rung:
 # Hartree      = 0
-# LDA          = 1: S51,MFL20
-# GGA          = 2: B88
+# LDA          = 1: S51,CC-S51
+# GGA          = 2: B88,G96,PBE
 # Hybrid       = 4
 # Hartree-Fock = 666
-  666 HF
+  2 PBE
 # correlation rung: 
 # Hartree      = 0
-# LDA          = 1: VWN5,MFL20
+# LDA          = 1: VWN5,eVWN5
 # GGA          = 2: 
 # Hybrid       = 4: 
 # Hartree-Fock = 666
@@ -20,7 +20,7 @@
   3
 # occupation numbers 
  1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 
- 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 
+ 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 
  
  0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 
  1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 
@@ -28,7 +28,7 @@
  1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 
  1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 
 # Ensemble weights: wEns(1),...,wEns(nEns-1)
-  0.5 0.0
+  0.0 0.0
 # N-centered?
  F 
 # Parameters for CC weight-dependent exchange functional

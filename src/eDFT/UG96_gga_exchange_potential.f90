@@ -29,7 +29,6 @@ subroutine UG96_gga_exchange_potential(nGrid,weight,nBas,AO,dAO,rho,drho,Fx)
 
   alpha = -(3d0/2d0)*(3d0/(4d0*pi))**(1d0/3d0)
   beta  = +1d0/137d0
-  beta  = 0d0
 
 ! Compute GGA exchange matrix in the AO basis
 

@@ -19,7 +19,7 @@ subroutine UPBE_gga_exchange_potential(nGrid,weight,nBas,AO,dAO,rho,drho,Fx)
 
   integer                       :: mu,nu,iG
   double precision              :: alpha,mupbe,kappa
-  double precision              :: r,g,x,vAO,gAO
+  double precision              :: r,g,s2,vAO,gAO
 
 ! Output variables
 
@@ -44,12 +44,13 @@ subroutine UPBE_gga_exchange_potential(nGrid,weight,nBas,AO,dAO,rho,drho,Fx)
         if(r > threshold) then
 
           g = drho(1,iG)**2 + drho(2,iG)**2 + drho(3,iG)**2
-          x = sqrt(g)/r**(4d0/3d0)
+          s2 = g/r**(8d0/3d0)
 
           vAO = weight(iG)*AO(mu,iG)*AO(nu,iG)
 
           Fx(mu,nu) = Fx(mu,nu) &
-                    + vAO*4d0/3d0*alpha*r**(1d0/3d0)*(1d0 + kappa - kappa/(1d0 + mupbe*x**2/kappa))
+                    + vAO*4d0/3d0*alpha*r**(1d0/3d0)*(1d0 + kappa - kappa/(1d0 + mupbe*s2/kappa)) &
+                    - vAO*8d0/3d0*alpha*r**(1d0/3d0)*mupbe*s2/(1d0 + mupbe*s2/kappa)**2
           
           gAO = drho(1,iG)*(dAO(1,mu,iG)*AO(nu,iG) + AO(mu,iG)*dAO(1,nu,iG)) & 
               + drho(2,iG)*(dAO(2,mu,iG)*AO(nu,iG) + AO(mu,iG)*dAO(2,nu,iG)) & 
@@ -57,7 +58,7 @@ subroutine UPBE_gga_exchange_potential(nGrid,weight,nBas,AO,dAO,rho,drho,Fx)
 
           gAO = weight(iG)*gAO
           
-          Fx(mu,nu) = Fx(mu,nu) + 2d0*gAO*alpha*r**(4d0/3d0)*mupbe/(1d0 + mupbe*x**2/kappa)**2
+          Fx(mu,nu) = Fx(mu,nu) + 2d0*gAO*alpha*r**(-4d0/3d0)*mupbe/(1d0 + mupbe*s2/kappa)**2
 
         end if
 
