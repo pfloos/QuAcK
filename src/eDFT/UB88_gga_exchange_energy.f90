@@ -16,7 +16,7 @@ subroutine UB88_gga_exchange_energy(nGrid,weight,rho,drho,Ex)
 ! Local variables
 
   integer                       :: iG
-  double precision              :: alpha,beta
+  double precision              :: alpha,b
   double precision              :: r,g,x
 
 ! Output variables
@@ -26,7 +26,7 @@ subroutine UB88_gga_exchange_energy(nGrid,weight,rho,drho,Ex)
 ! Coefficients for B88 GGA exchange functional
 
   alpha = -(3d0/2d0)*(3d0/(4d0*pi))**(1d0/3d0)
-  beta  = 0.0042d0
+  b = 0.0042d0
 
 ! Compute GGA exchange energy
 
@@ -40,8 +40,7 @@ subroutine UB88_gga_exchange_energy(nGrid,weight,rho,drho,Ex)
       g = drho(1,iG)**2 + drho(2,iG)**2 + drho(3,iG)**2
       x = sqrt(g)/r**(4d0/3d0)
 
-      Ex = Ex + weight(iG)*alpha*r**(4d0/3d0) & 
-              - weight(iG)*beta*x**2*r**(4d0/3d0)/(1d0 + 6d0*beta*x*asinh(x))
+      Ex = Ex + weight(iG)*r**(4d0/3d0)*(alpha - b*x**2/(1d0 + 6d0*b*x*asinh(x)))
 
     end if
 

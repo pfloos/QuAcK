@@ -55,7 +55,6 @@ subroutine UPBE_gga_exchange_potential(nGrid,weight,nBas,AO,dAO,rho,drho,Fx)
           gAO = drho(1,iG)*(dAO(1,mu,iG)*AO(nu,iG) + AO(mu,iG)*dAO(1,nu,iG)) & 
               + drho(2,iG)*(dAO(2,mu,iG)*AO(nu,iG) + AO(mu,iG)*dAO(2,nu,iG)) & 
               + drho(3,iG)*(dAO(3,mu,iG)*AO(nu,iG) + AO(mu,iG)*dAO(3,nu,iG))
-
           gAO = weight(iG)*gAO
           
           Fx(mu,nu) = Fx(mu,nu) + 2d0*gAO*alpha*r**(-4d0/3d0)*mupbe/(1d0 + mupbe*s2/kappa)**2
