@@ -6,7 +6,7 @@
 # GGA          = 2: B88,G96,PBE
 # Hybrid       = 4: B3LYP,PBE0
 # Hartree-Fock = 666
-  1 S51
+  2 B88
 # correlation rung: 
 # Hartree      = 0: H
 # LDA          = 1: VWN5,eVWN5
@@ -19,8 +19,8 @@
 # Number of states in ensemble (nEns)
   3
 # occupation numbers 
- 1 1 0 0 0 0 0 0 0 0 0 0 0 0 0 
- 1 1 0 0 0 0 0 0 0 0 0 0 0 0 0 
+ 1 1 1 1 1 0 0 0 0 0 0 0 0 0 0 
+ 1 1 1 1 1 0 0 0 0 0 0 0 0 0 0 
  
  0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 
  1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 
