@@ -13,7 +13,7 @@
 # GGA          = 2: LYP,PBE
 # Hybrid       = 4: 
 # Hartree-Fock = 666
-  0 H
+  2 LYP
 # quadrature grid SG-n
   1
 # Number of states in ensemble (nEns)

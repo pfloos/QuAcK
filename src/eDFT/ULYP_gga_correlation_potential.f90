@@ -22,8 +22,8 @@ subroutine ULYP_gga_correlation_potential(nGrid,weight,nBas,AO,dAO,rho,drho,Fc)
   double precision              :: ra,rb,r
   double precision              :: ga,gab,gb,g
   double precision              :: dfdra,dfdrb
-  double precision              :: fdga,dfdgb
-  double precision              :: doda,dodb,ddda,dddb
+  double precision              :: dfdga,dfdgab,dfdgb
+  double precision              :: dodra,dodrb,dddra,dddrb
 
   double precision              :: a,b,c,d
   double precision              :: Cf,omega,delta
@@ -65,12 +65,67 @@ subroutine ULYP_gga_correlation_potential(nGrid,weight,nBas,AO,dAO,rho,drho,Fc)
 
           vAO = weight(iG)*AO(mu,iG)*AO(nu,iG)
 
-          doda = (d/(3d0*r**(4d0/3d0)*(1d0 + d*r**(-1d0/3d0)) + c/(3d0*r**(4d0/3d0)) - 11d0/(3d0*r))*omega
-          dodb = doda
+          dodra = (d/(3d0*r**(4d0/3d0)*(1d0 + d*r**(-1d0/3d0)) + c/(3d0*r**(4d0/3d0)) - 11d0/(3d0*r)))*omega
+          dodrb = dodra
          
-          ddda = - c/3d0*r**(-4d0/3d0) + d**2/(3d0*(1d0 + d*r**(-1d0/3d0))**2)*r**(-5d0/3d0) *
-               - d/(3d0*(1d0 + d*r**(-1d0/3d0))*r**(-4d0/3d0)
-          dddb = ddda
+          dddra = - c/3d0*r**(-4d0/3d0)                                 & 
+                  + d**2/(3d0*(1d0 + d*r**(-1d0/3d0))**2)*r**(-5d0/3d0) &
+                  - d/(3d0*(1d0 + d*r**(-1d0/3d0))*r**(-4d0/3d0))
+          dddrb = dddra
+
+          dfdra = - 4d0*a/(1d0 + d*r**(-1d0/3d0))*rb/r                        & 
+                  - 4d0/3d0*a*d/(1d0 + d*r**(-1d0/3d0))**2*ra*rb/r**(7d0/3d0) &
+                  + 4d0*a/(1d0 + d*r**(-1d0/3d0))*ra*rb/r                     &
+                  - a*b*omega*rb*(                                            &
+                    + 2d0**(11d0/3d0)*Cf*(ra**(8d0/3d0) + rb**(8d0/3d0))      &
+                    + (47d0/18d0 - 7d0*delta/18d0)*g                          &
+                    - (5d0/2d0 - delta/18d0)*(ga + gb)                        &
+                    - (delta - 11d0)/9d0*(ra/r*ga + rb/r*gb)                  &
+                    - 4d0/3d0*r/rb*g                                          &
+                    + (4d0/3d0*r/rb - 2d0*ra/rb)*gb                           &
+                    + 4d0/3d0*r/rb*ga )                                       &
+                  - a*b*omega*ra*rb*(                                         &
+                    + 8d0/3d0*2d0**(11d0/3d0)*Cf*ra**(5d0/3d0)                &
+                    - 7d0*dddra/18d0*g                                        &
+                    + dddra/18d0*(ga + gb)                                    &
+                    - dddra/9d0*(ra/r*ga + rb/r*gb)                           &
+                    - (delta - 11d0)/(9d0*r)*(-ra/r*ga - rb/r*gb + ga) )      &
+                  - a*b*dodra*ra*rb*(                                         &
+                    + 2d0**(11d0/3d0)*Cf*(ra**(8d0/3d0) + rb**(8d0/3d0))      &
+                    + (47d0/18d0 - 7d0*delta/18d0)*g                          &
+                    - (5d0/2d0 - delta/18d0)*(ga + gb)                        &
+                    - (delta - 11d0)/9d0*(ra/r*ga + rb/r*gb) )                &
+                  - a*b*dodra*(                                               &
+                    - 2d0*r**2/3d0*g                                          &
+                    + (2d0*r**2/3d0 - ra**2)*gb                               &
+                    + (2d0*r**2/3d0 - rb**2)*ga )
+
+          dfdrb = - 4d0*a/(1d0 + d*r**(-1d0/3d0))*ra/r                        & 
+                  - 4d0/3d0*a*d/(1d0 + d*r**(-1d0/3d0))**2*ra*rb/r**(7d0/3d0) &
+                  + 4d0*a/(1d0 + d*r**(-1d0/3d0))*ra*rb/r                     &
+                  - a*b*omega*ra*(                                            &
+                    + 2d0**(11d0/3d0)*Cf*(ra**(8d0/3d0) + rb**(8d0/3d0))      &
+                    + (47d0/18d0 - 7d0*delta/18d0)*g                          &
+                    - (5d0/2d0 - delta/18d0)*(ga + gb)                        &
+                    - (delta - 11d0)/9d0*(ra/r*ga + rb/r*gb)                  &
+                    - 4d0/3d0*r/ra*g                                          &
+                    + (4d0/3d0*r/ra - 2d0*ra/rb)*ga                           &
+                    + 4d0/3d0*r/ra*gb )                                       &
+                  - a*b*omega*ra*rb*(                                         &
+                    + 8d0/3d0*2d0**(11d0/3d0)*Cf*rb**(5d0/3d0)                &
+                    - 7d0*dddrb/18d0*g                                        &
+                    + dddrb/18d0*(ga + gb)                                    &
+                    - dddrb/9d0*(ra/r*ga + rb/r*gb)                           &
+                    - (delta - 11d0)/(9d0*r)*(-ra/r*ga - rb/r*gb + gb) )      &
+                  - a*b*dodrb*ra*rb*(                                         &
+                    + 2d0**(11d0/3d0)*Cf*(ra**(8d0/3d0) + rb**(8d0/3d0))      &
+                    + (47d0/18d0 - 7d0*delta/18d0)*g                          &
+                    - (5d0/2d0 - delta/18d0)*(ga + gb)                        &
+                    - (delta - 11d0)/9d0*(ra/r*ga + rb/r*gb) )                &
+                  - a*b*dodrb*(                                               &
+                    - 2d0*r**2/3d0*g                                          &
+                    + (2d0*r**2/3d0 - ra**2)*gb                               &
+                    + (2d0*r**2/3d0 - rb**2)*ga )
 
           Fc(mu,nu,1) = Fc(mu,nu,1) + vAO*dfdra
 
@@ -86,12 +141,12 @@ subroutine ULYP_gga_correlation_potential(nGrid,weight,nBas,AO,dAO,rho,drho,Fc)
                + drho(3,iG,2)*(dAO(3,mu,iG)*AO(nu,iG) + AO(mu,iG)*dAO(3,nu,iG))
           gbAO = weight(iG)*gbAO
 
-
-          dfdga = -a*b*omega*(-rb**2 + 2d0/3d0*r**2 + ra*rb*( - 5d0/2d0 - (delta-11d0)/9d0*ra/r + delta/18d0))
-          dfdgb = -a*b*omega*(-ra**2 + 2d0/3d0*r**2 + ra*rb*( - 5d0/2d0 - (delta-11d0)/9d0*rb/r + delta/18d0))
+          dfdga  = -a*b*omega*(-rb**2 + ra*rb*(1d0/9d0 - (delta-11d0)/9d0*ra/r - delta/3d0))
+          dfdgab = -a*b*omega*(-2d0/3d0*r**2 + ra*rb*(47d0/18d0 - 7d0*delta/18d0))
+          dfdgb  = -a*b*omega*(-ra**2 + ra*rb*(1d0/9d0 - (delta-11d0)/9d0*rb/r - delta/3d0))
           
-          Fc(mu,nu,1) = Fc(mu,nu,1) + 2d0*gaAO*dfdga
-          Fc(mu,nu,2) = Fc(mu,nu,2) + 2d0*gbAO*dfdgb
+          Fc(mu,nu,1) = Fc(mu,nu,1) + 2d0*gaAO*dfdga + gbAO*dfdgab
+          Fc(mu,nu,2) = Fc(mu,nu,2) + 2d0*gbAO*dfdgb + gaAO*dfdgab
 
         end if
 
