@@ -57,6 +57,12 @@ subroutine unrestricted_exchange_potential(rung,DFA,LDA_centered,nEns,wEns,aCC_w
 
       call unrestricted_gga_exchange_potential(DFA,nEns,wEns,nGrid,weight,nBas,AO,dAO,rho,drho,Fx)
 
+!   MGGA functionals
+
+    case(3) 
+
+      call unrestricted_mgga_exchange_potential(DFA,nEns,wEns,nGrid,weight,nBas,AO,dAO,rho,drho,Fx)
+
 !   Hybrid functionals
 
     case(4) 
@@ -73,14 +79,6 @@ subroutine unrestricted_exchange_potential(rung,DFA,LDA_centered,nEns,wEns,aCC_w
       Fx(:,:) = FxLDA(:,:)                   &
               + cX*(FxHF(:,:)  - FxLDA(:,:)) &
               + aX*(FxGGA(:,:) - FxLDA(:,:))  
-
-!   Hartree-Fock calculation
-
-    case(666) 
-
-      call unrestricted_fock_exchange_potential(nBas,P,ERI,FxHF)
-
-      Fx(:,:) = FxHF(:,:)
 
   end select
 

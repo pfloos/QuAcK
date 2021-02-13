@@ -82,14 +82,6 @@ subroutine unrestricted_exchange_energy(rung,DFA,LDA_centered,nEns,wEns,aCC_w1,a
          + cX*(ExHF  - ExLDA) &
          + aX*(ExGGA - ExLDA) 
 
-!   Hartree-Fock calculation
-
-    case(666) 
-
-      call unrestricted_fock_exchange_energy(nBas,P,FxHF,ExHF)
-
-      Ex = ExHF
-
   end select
  
 end subroutine unrestricted_exchange_energy

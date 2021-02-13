@@ -50,6 +50,13 @@ subroutine unrestricted_correlation_individual_energy(rung,DFA,LDA_centered,nEns
       call print_warning('!!! Individual energies NYI for GGAs !!!')
       stop
 
+!   MGGA functionals
+
+    case(3) 
+
+      call print_warning('!!! Individual energies NYI for MGGAs !!!')
+      stop
+
 !   Hybrid functionals
 
     case(4) 
@@ -58,12 +65,6 @@ subroutine unrestricted_correlation_individual_energy(rung,DFA,LDA_centered,nEns
       stop
 
       aC = 0.81d0
-
-!   Hartree-Fock calculation
-
-    case(666) 
-
-      Ec(:) = 0d0
 
   end select
  

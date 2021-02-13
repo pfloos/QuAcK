@@ -43,12 +43,17 @@ subroutine unrestricted_exchange_derivative_discontinuity(rung,DFA,nEns,wEns,aCC
 
       call unrestricted_lda_exchange_derivative_discontinuity(DFA,nEns,wEns(:),aCC_w1,aCC_w2,nGrid,weight(:),&
                                                               rhow(:),Cx_choice,doNcentered,kappa,ExDD(:))
-
 !   GGA functionals
 
     case(2) 
 
       call unrestricted_gga_exchange_derivative_discontinuity(DFA,nEns,wEns(:),nGrid,weight(:),rhow(:),drhow(:,:),ExDD(:))
+
+!   MGGA functionals
+
+    case(3) 
+
+      call unrestricted_mgga_exchange_derivative_discontinuity(DFA,nEns,wEns(:),nGrid,weight(:),rhow(:),drhow(:,:),ExDD(:))
 
 !   Hybrid functionals
 
@@ -56,12 +61,6 @@ subroutine unrestricted_exchange_derivative_discontinuity(rung,DFA,nEns,wEns,aCC
 
       call print_warning('!!! exchange part of derivative discontinuity NYI for hybrids !!!')
       stop
-
-!   Hartree-Fock calculation
-
-    case(666) 
-
-      ExDD(:) = 0d0
 
   end select
  

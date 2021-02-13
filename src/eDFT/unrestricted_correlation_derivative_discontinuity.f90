@@ -45,6 +45,13 @@ subroutine unrestricted_correlation_derivative_discontinuity(rung,DFA,nEns,wEns,
       call print_warning('!!! derivative discontinuity NYI for GGAs !!!')
       stop
 
+!   MGGA functionals
+
+    case(3) 
+
+      call print_warning('!!! derivative discontinuity NYI for MGGAs !!!')
+      stop
+
 !   Hybrid functionals
 
     case(4) 
@@ -53,12 +60,6 @@ subroutine unrestricted_correlation_derivative_discontinuity(rung,DFA,nEns,wEns,
       stop
 
       aC = 0.81d0
-
-!   Hartree-Fock calculation
-
-    case(666) 
-
-      Ec(:,:) = 0d0
 
   end select
  

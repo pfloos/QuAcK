@@ -46,6 +46,12 @@ subroutine unrestricted_correlation_energy(rung,DFA,nEns,wEns,nGrid,weight,rho,d
 
       call unrestricted_gga_correlation_energy(DFA,nEns,wEns,nGrid,weight,rho,drho,Ec)
 
+!   MGGA functionals
+
+    case(3) 
+
+      call unrestricted_mgga_correlation_energy(DFA,nEns,wEns,nGrid,weight,rho,drho,Ec)
+
 !   Hybrid functionals
 
     case(4) 
@@ -56,12 +62,6 @@ subroutine unrestricted_correlation_energy(rung,DFA,nEns,wEns,nGrid,weight,rho,d
       call unrestricted_gga_correlation_energy(DFA,nEns,wEns,nGrid,weight,rho,drho,EcGGA)
 
       Ec(:) = EcLDA(:) + aC*(EcGGA(:) - EcLDA(:)) 
-
-!   Hartree-Fock calculation
-
-    case(666) 
-
-      Ec(:) = 0d0
 
   end select
  

@@ -33,6 +33,7 @@ subroutine unrestricted_exchange_individual_energy(rung,DFA,LDA_centered,nEns,wE
 
   double precision              :: ExLDA
   double precision              :: ExGGA
+  double precision              :: ExMGGA
   double precision              :: ExHF
 
 ! Output variables
@@ -64,20 +65,20 @@ subroutine unrestricted_exchange_individual_energy(rung,DFA,LDA_centered,nEns,wE
 
       Ex = ExGGA
 
+!   MGGA functionals
+
+    case(3) 
+
+      call unrestricted_mgga_exchange_individual_energy(DFA,nEns,wEns,nGrid,weight,rhow,drhow,rho,drho,ExMGGA)
+
+      Ex = ExMGGA
+
 !   Hybrid functionals
 
     case(4) 
 
       call print_warning('!!! Individual energies NYI for Hybrids !!!')
       stop
-
-!   Hartree-Fock calculation
-
-    case(666) 
-
-      call unrestricted_fock_exchange_individual_energy(nBas,Pw,P,ERI,ExHF)
-
-      Ex = ExHF
 
   end select
  
