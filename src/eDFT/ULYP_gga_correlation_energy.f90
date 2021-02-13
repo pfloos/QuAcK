@@ -47,10 +47,10 @@ subroutine ULYP_gga_correlation_energy(nGrid,weight,rho,drho,Ec)
 
     if(r > threshold) then
 
-      ga  = drho(1,iG,1)**2 + drho(2,iG,1)**2 + drho(3,iG,1)**2
-      gb  = drho(1,iG,2)**2 + drho(2,iG,2)**2 + drho(3,iG,2)**2
+      ga  = drho(1,iG,1)*drho(1,iG,1) + drho(2,iG,1)*drho(2,iG,1) + drho(3,iG,1)*drho(3,iG,1)
+      gb  = drho(1,iG,2)*drho(1,iG,2) + drho(2,iG,2)*drho(2,iG,2) + drho(3,iG,2)*drho(3,iG,2)
       gab = drho(1,iG,1)*drho(1,iG,2) + drho(2,iG,1)*drho(2,iG,2) + drho(3,iG,1)*drho(3,iG,2)
-      g   = ga + gab + gb
+      g   = ga + 2d0*gab + gb
 
       omega = exp(-c*r**(-1d0/3d0))/(1d0 + d*r**(-1d0/3d0))*r**(-11d0/3d0)
       delta = c*r**(-1d0/3d0) + d*r**(-1d0/3d0)/(1d0 + d*r**(-1d0/3d0))
