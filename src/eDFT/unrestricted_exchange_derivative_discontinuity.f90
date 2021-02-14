@@ -59,7 +59,8 @@ subroutine unrestricted_exchange_derivative_discontinuity(rung,DFA,nEns,wEns,aCC
 
     case(4) 
 
-      call print_warning('!!! exchange part of derivative discontinuity NYI for hybrids !!!')
+      call unrestricted_hybrid_exchange_derivative_discontinuity(DFA,nEns,wEns(:),aCC_w1,aCC_w2,nGrid,weight(:),&
+                                                                 rhow(:),Cx_choice,doNcentered,kappa,ExDD(:))
 
   end select
  
