@@ -61,14 +61,7 @@ subroutine unrestricted_correlation_potential(rung,DFA,nEns,wEns,nGrid,weight,nB
 
     case(4)
 
-      allocate(FcLDA(nBas,nBas,nspin),FcGGA(nBas,nBas,nspin))
-
-      aC = 0.81d0
-
-      call unrestricted_lda_correlation_potential(DFA,nEns,wEns,nGrid,weight,nBas,AO,rho,FcLDA)
-      call unrestricted_gga_correlation_potential(DFA,nEns,wEns,nGrid,weight,nBas,AO,dAO,rho,drho,FcGGA)
-
-      Fc(:,:,:) = FcLDA(:,:,:) + aC*(FcGGA(:,:,:) - FcLDA(:,:,:))
+      call unrestricted_hybrid_correlation_potential(DFA,nEns,wEns,nGrid,weight,nBas,AO,dAO,rho,drho,Fc)
 
   end select
 

@@ -39,7 +39,7 @@ subroutine unrestricted_lda_exchange_potential(DFA,LDA_centered,nEns,wEns,aCC_w1
 
     case default
 
-      call print_warning('!!! LDA exchange functional not available !!!')
+      call print_warning('!!! LDA exchange potential not available !!!')
       stop
 
   end select

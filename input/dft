@@ -1,26 +1,26 @@
 # Restricted or unrestricted KS calculation
   eDFT-UKS
 # exchange rung:
-# Hartree      = 0
+# Hartree      = 0: H
 # LDA          = 1: S51,CC-S51
 # GGA          = 2: B88,G96,PBE
-# Hybrid       = 4: B3LYP,PBE0
-# Hartree-Fock = 666
-  2 B88
+# MGGA         = 3: 
+# Hybrid       = 4: HF,B3,PBE
+  4 B3
 # correlation rung: 
 # Hartree      = 0: H
 # LDA          = 1: VWN5,eVWN5
 # GGA          = 2: LYP,PBE
-# Hybrid       = 4: 
-# Hartree-Fock = 666
-  2 LYP
+# MGGA         = 3:
+# Hybrid       = 4: HF,B88,PBE
+  4 LYP
 # quadrature grid SG-n
   1
 # Number of states in ensemble (nEns)
   3
 # occupation numbers 
- 1 1 1 1 1 0 0 0 0 0 0 0 0 0 0 
- 1 1 1 1 1 0 0 0 0 0 0 0 0 0 0 
+ 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 
+ 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 
  
  0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 
  1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 

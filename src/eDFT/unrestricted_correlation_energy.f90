@@ -18,10 +18,6 @@ subroutine unrestricted_correlation_energy(rung,DFA,nEns,wEns,nGrid,weight,rho,d
 
 ! Local variables
 
-  double precision              :: EcLDA(nsp)
-  double precision              :: EcGGA(nsp)
-  double precision              :: aC
-
 ! Output variables
 
   double precision,intent(out)  :: Ec(nsp)
@@ -56,12 +52,7 @@ subroutine unrestricted_correlation_energy(rung,DFA,nEns,wEns,nGrid,weight,rho,d
 
     case(4) 
 
-      aC = 0.81d0
-
-      call unrestricted_lda_correlation_energy(DFA,nEns,wEns,nGrid,weight,rho,EcLDA)
-      call unrestricted_gga_correlation_energy(DFA,nEns,wEns,nGrid,weight,rho,drho,EcGGA)
-
-      Ec(:) = EcLDA(:) + aC*(EcGGA(:) - EcLDA(:)) 
+      call unrestricted_hybrid_correlation_energy(DFA,nEns,wEns,nGrid,weight,rho,drho,Ec)
 
   end select
  
