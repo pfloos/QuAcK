@@ -1,5 +1,5 @@
 subroutine eDFT_UKS(x_rung,x_DFA,c_rung,c_DFA,nEns,wEns,aCC_w1,aCC_w2,nGrid,weight,maxSCF,thresh,max_diis,guess_type,mix, &
-                   nBas,AO,dAO,S,T,V,Hc,ERI,X,ENuc,Ew,occnum,Cx_choice,doNcentered)
+                   nBas,AO,dAO,S,T,V,Hc,ERI,X,ENuc,occnum,Cx_choice,doNcentered,Ew,eps,c,Pw)
 
 ! Perform unrestricted Kohn-Sham calculation for ensembles
 
@@ -48,10 +48,7 @@ subroutine eDFT_UKS(x_rung,x_DFA,c_rung,c_DFA,nEns,wEns,aCC_w1,aCC_w2,nGrid,weig
   double precision              :: EJ(nsp)
   double precision              :: Ex(nspin)
   double precision              :: Ec(nsp)
-  double precision              :: Ew
 
-  double precision,allocatable  :: eps(:,:)
-  double precision,allocatable  :: c(:,:,:)
   double precision,allocatable  :: cp(:,:,:)
   double precision,allocatable  :: J(:,:,:)
   double precision,allocatable  :: F(:,:,:)
@@ -65,7 +62,6 @@ subroutine eDFT_UKS(x_rung,x_DFA,c_rung,c_DFA,nEns,wEns,aCC_w1,aCC_w2,nGrid,weig
   double precision,external     :: trace_matrix
   double precision,external     :: electron_number
 
-  double precision,allocatable  :: Pw(:,:,:)
   double precision,allocatable  :: rhow(:,:)
   double precision,allocatable  :: drhow(:,:,:)
   double precision              :: nEl(nspin)
@@ -78,6 +74,13 @@ subroutine eDFT_UKS(x_rung,x_DFA,c_rung,c_DFA,nEns,wEns,aCC_w1,aCC_w2,nGrid,weig
   double precision              :: Om(nEns)
 
   integer                       :: ispin,iEns,iBas
+
+! Output variables
+
+  double precision,intent(out)  :: Ew
+  double precision,intent(out)  :: eps(nBas,nspin)
+  double precision,intent(out)  :: Pw(nBas,nBas,nspin)
+  double precision,intent(out)  :: c(nBAs,nBas,nspin)
 
 ! Hello world
 
@@ -120,15 +123,13 @@ subroutine eDFT_UKS(x_rung,x_DFA,c_rung,c_DFA,nEns,wEns,aCC_w1,aCC_w2,nGrid,weig
 
 ! Memory allocation
 
-  allocate(eps(nBas,nspin),c(nBas,nBas,nspin),cp(nBas,nBas,nspin),        &
-           J(nBas,nBas,nspin),F(nBas,nBas,nspin),Fp(nBas,nBas,nspin),     & 
+  allocate(cp(nBas,nBas,nspin),J(nBas,nBas,nspin),F(nBas,nBas,nspin),Fp(nBas,nBas,nspin),      & 
            Fx(nBas,nBas,nspin),FxHF(nBas,nBas,nspin),Fc(nBas,nBas,nspin),err(nBas,nBas,nspin), &
-           Pw(nBas,nBas,nspin),rhow(nGrid,nspin),drhow(ncart,nGrid,nspin), &
-           err_diis(nBasSq,max_diis,nspin),F_diis(nBasSq,max_diis,nspin),  &
+           rhow(nGrid,nspin),drhow(ncart,nGrid,nspin),                                         &
+           err_diis(nBasSq,max_diis,nspin),F_diis(nBasSq,max_diis,nspin),                      &
            P(nBas,nBas,nspin,nEns),rho(nGrid,nspin,nEns),drho(ncart,nGrid,nspin,nEns))
 
 ! Guess coefficients and eigenvalues
-
 
   if(guess_type == 1) then
 

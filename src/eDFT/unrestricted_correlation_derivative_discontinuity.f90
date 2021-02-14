@@ -43,23 +43,18 @@ subroutine unrestricted_correlation_derivative_discontinuity(rung,DFA,nEns,wEns,
     case(2) 
 
       call print_warning('!!! derivative discontinuity NYI for GGAs !!!')
-      stop
 
 !   MGGA functionals
 
     case(3) 
 
       call print_warning('!!! derivative discontinuity NYI for MGGAs !!!')
-      stop
 
 !   Hybrid functionals
 
     case(4) 
 
       call print_warning('!!! derivative discontinuity NYI for hybrids !!!')
-      stop
-
-      aC = 0.81d0
 
   end select
  

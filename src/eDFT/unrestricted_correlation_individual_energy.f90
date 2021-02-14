@@ -48,23 +48,18 @@ subroutine unrestricted_correlation_individual_energy(rung,DFA,LDA_centered,nEns
     case(2) 
 
       call print_warning('!!! Individual energies NYI for GGAs !!!')
-      stop
 
 !   MGGA functionals
 
     case(3) 
 
       call print_warning('!!! Individual energies NYI for MGGAs !!!')
-      stop
 
 !   Hybrid functionals
 
     case(4) 
 
       call print_warning('!!! Individual energies NYI for hybrids !!!')
-      stop
-
-      aC = 0.81d0
 
   end select
  

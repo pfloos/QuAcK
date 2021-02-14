@@ -60,7 +60,6 @@ subroutine unrestricted_exchange_derivative_discontinuity(rung,DFA,nEns,wEns,aCC
     case(4) 
 
       call print_warning('!!! exchange part of derivative discontinuity NYI for hybrids !!!')
-      stop
 
   end select
  

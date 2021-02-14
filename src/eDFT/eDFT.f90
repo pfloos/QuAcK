@@ -1,6 +1,6 @@
 subroutine eDFT(maxSCF,thresh,max_diis,guess_type,mix,nNuc,ZNuc,rNuc,ENuc,nBas,nEl,nC,nO,nV,nR, & 
                 nShell,TotAngMomShell,CenterShell,KShell,DShell,ExpShell, &
-                max_ang_mom,min_exponent,max_exponent,S,T,V,Hc,X,ERI,dipole_int)
+                max_ang_mom,min_exponent,max_exponent,S,T,V,Hc,X,ERI,dipole_int,Ew,eKS,cKS,PKS)
 
 ! exchange-correlation density-functional theory calculations
 
@@ -50,7 +50,6 @@ subroutine eDFT(maxSCF,thresh,max_diis,guess_type,mix,nNuc,ZNuc,rNuc,ENuc,nBas,n
 
 ! Local variables
 
-  double precision              :: Ew
   double precision,allocatable  :: c(:,:)
 
   character(len=8)              :: method
@@ -82,6 +81,14 @@ subroutine eDFT(maxSCF,thresh,max_diis,guess_type,mix,nNuc,ZNuc,rNuc,ENuc,nBas,n
   integer                       :: Cx_choice
 
   integer                       :: i,vmajor,vminor,vmicro
+
+! Output variables
+
+  double precision,intent(out)  :: Ew
+  double precision,intent(out)  :: eKS(nBas,nspin)
+  double precision,intent(out)  :: cKS(nBas,nBas,nspin)
+  double precision,intent(out)  :: PKS(nBas,nBas,nspin)
+  
 
 ! Hello World
 
@@ -209,7 +216,7 @@ subroutine eDFT(maxSCF,thresh,max_diis,guess_type,mix,nNuc,ZNuc,rNuc,ENuc,nBas,n
 
     call cpu_time(start_KS)
     call eDFT_UKS(x_rung,x_DFA,c_rung,c_DFA,nEns,wEns,aCC_w1,aCC_w2,nGrid,weight(:),maxSCF,thresh,max_diis,guess_type,mix, & 
-                  nBas,AO,dAO,S,T,V,Hc,ERI,X,ENuc,Ew,occnum,Cx_choice,doNcentered)
+                  nBas,AO,dAO,S,T,V,Hc,ERI,X,ENuc,occnum,Cx_choice,doNcentered,Ew,eKS,cKS,PKS)
     call cpu_time(end_KS)
 
     t_KS = end_KS - start_KS
