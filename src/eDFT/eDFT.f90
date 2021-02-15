@@ -79,6 +79,7 @@ subroutine eDFT(maxSCF,thresh,max_diis,guess_type,mix,nNuc,ZNuc,rNuc,ENuc,nBas,n
   integer                       :: Cx_choice
 
   integer                       :: i,vmajor,vminor,vmicro
+  integer                       :: iBas,iEns,ispin
 
 ! Output variables
 
@@ -208,7 +209,35 @@ subroutine eDFT(maxSCF,thresh,max_diis,guess_type,mix,nNuc,ZNuc,rNuc,ENuc,nBas,n
 ! end if
 
 !------------------------------------------------------------------------
-! Compute N-centered UKS energy 
+! Compute UKS energy 
+!------------------------------------------------------------------------
+
+  if(method == 'UKS') then
+
+   ! Reset occupation numbers for conventional UKS calculation
+ 
+    occnum(:,:,:) = 0d0
+    do ispin=1,nspin
+      do iBas=1,nO(ispin)
+        do iEns=1,nEns
+          occnum(iBas,ispin,iEns) = 1d0
+        end do
+      end do
+    end do
+
+    call cpu_time(start_KS)
+    call eDFT_UKS(x_rung,x_DFA,c_rung,c_DFA,nEns,wEns,aCC_w1,aCC_w2,nGrid,weight(:),maxSCF,thresh,max_diis,guess_type,mix, & 
+                  nBas,AO,dAO,S,T,V,Hc,ERI,X,ENuc,occnum,Cx_choice,doNcentered,Ew,eKS,cKS,PKS,Vxc)
+    call cpu_time(end_KS)
+
+    t_KS = end_KS - start_KS
+    write(*,'(A65,1X,F9.3,A8)') 'Total CPU time for UKS = ',t_KS,' seconds'
+    write(*,*)
+
+  end if
+
+!------------------------------------------------------------------------
+! Compute UKS energy for ensembles
 !------------------------------------------------------------------------
 
   if(method == 'eDFT-UKS') then

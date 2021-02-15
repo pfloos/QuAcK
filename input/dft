@@ -1,5 +1,5 @@
 # Restricted or unrestricted KS calculation
-  eDFT-UKS
+  UKS
 # exchange rung:
 # Hartree      = 0: H
 # LDA          = 1: S51,CC-S51
