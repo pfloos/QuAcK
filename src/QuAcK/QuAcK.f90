@@ -32,7 +32,7 @@ program QuAcK
 
   double precision,allocatable  :: ZNuc(:),rNuc(:,:)
   double precision,allocatable  :: cHF(:,:,:),eHF(:,:),PHF(:,:,:)
-  double precision,allocatable  :: Vxc(:,:,:)
+  double precision,allocatable  :: Vxc(:,:)
 
   double precision,allocatable  :: eG0W0(:,:)
   double precision,allocatable  :: eG0T0(:,:)
@@ -237,7 +237,7 @@ program QuAcK
 
   allocate(cHF(nBas,nBas,nspin),eHF(nBas,nspin),eG0W0(nBas,nspin),eG0T0(nBas,nspin),PHF(nBas,nBas,nspin), &
            S(nBas,nBas),T(nBas,nBas),V(nBas,nBas),Hc(nBas,nBas),X(nBas,nBas),ERI_AO(nBas,nBas,nBas,nBas), &
-           dipole_int_AO(nBas,nBas,ncart),dipole_int_MO(nBas,nBas,ncart),Vxc(nBas,nBas,nspin))
+           dipole_int_AO(nBas,nBas,ncart),dipole_int_MO(nBas,nBas,ncart),Vxc(nBas,nspin))
 
 ! Read integrals
 
