@@ -155,7 +155,7 @@ subroutine G0W0(doACFDT,exchange_kernel,doXBS,COHSEX,SOSEX,BSE,TDA_W,TDA, &
     write(*,*) ' *** Quasiparticle energies obtained by root search (experimental) *** '
     write(*,*)
   
-    call QP_graph(nBas,nC,nO,nV,nR,nS,eta,eHF,OmRPA,rho_RPA,eG0W0lin,eG0W0)
+    call QP_graph(nBas,nC,nO,nV,nR,nS,eta,eHF,SigX,Vxc,OmRPA,rho_RPA,eG0W0lin,eG0W0)
 
     ! Find all the roots of the QP equation if necessary
 

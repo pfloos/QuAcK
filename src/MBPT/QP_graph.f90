@@ -1,4 +1,4 @@
-subroutine QP_graph(nBas,nC,nO,nV,nR,nS,eta,eHF,Omega,rho,eGWlin,eGW)
+subroutine QP_graph(nBas,nC,nO,nV,nR,nS,eta,eHF,SigX,Vxc,Omega,rho,eGWlin,eGW)
 
 ! Compute the graphical solution of the QP equation
 
@@ -15,6 +15,8 @@ subroutine QP_graph(nBas,nC,nO,nV,nR,nS,eta,eHF,Omega,rho,eGWlin,eGW)
   integer,intent(in)            :: nS
   double precision,intent(in)   :: eta
   double precision,intent(in)   :: eHF(nBas)
+  double precision,intent(in)   :: SigX(nBas)
+  double precision,intent(in)   :: Vxc(nBas)
   double precision,intent(in)   :: Omega(nS)
   double precision,intent(in)   :: rho(nBas,nBas,nS)
 
@@ -27,7 +29,7 @@ subroutine QP_graph(nBas,nC,nO,nV,nR,nS,eta,eHF,Omega,rho,eGWlin,eGW)
   integer,parameter             :: maxIt = 64
   double precision,parameter    :: thresh = 1d-6
   double precision,external     :: SigmaC,dSigmaC
-  double precision              :: sig,dsig
+  double precision              :: sigC,dsigC
   double precision              :: f,df
   double precision              :: w
 
@@ -52,14 +54,14 @@ subroutine QP_graph(nBas,nC,nO,nV,nR,nS,eta,eHF,Omega,rho,eGWlin,eGW)
     
       nIt = nIt + 1
 
-      sig  =  SigmaC(p,w,eta,nBas,nC,nO,nV,nR,nS,eHF,Omega,rho)
-      dsig = dSigmaC(p,w,eta,nBas,nC,nO,nV,nR,nS,eHF,Omega,rho)
-      f  = w - eHF(p) - sig
-      df = 1d0 - dsig
+      sigC  =  SigmaC(p,w,eta,nBas,nC,nO,nV,nR,nS,eHF,Omega,rho)
+      dsigC = dSigmaC(p,w,eta,nBas,nC,nO,nV,nR,nS,eHF,Omega,rho)
+      f  = w - eHF(p) - SigX(p) - sigC + Vxc(p)
+      df = 1d0 - dsigC
     
       w = w - f/df
 
-      write(*,'(A3,I3,A1,1X,3F15.9)') 'It.',nIt,':',w*HaToeV,f,sig
+      write(*,'(A3,I3,A1,1X,3F15.9)') 'It.',nIt,':',w*HaToeV,f,sigC
     
     
     end do

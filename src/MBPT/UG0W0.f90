@@ -165,8 +165,8 @@ subroutine UG0W0(doACFDT,exchange_kernel,doXBS,COHSEX,BSE,TDA_W,TDA,dBSE,dTDA,ev
   ! Find graphical solution of the QP equation
 
     do is=1,nspin
-      call unrestricted_QP_graph(nBas,nC(is),nO(is),nV(is),nR(is),nS_sc,eta,eHF(:,is),OmRPA, & 
-                                 rho_RPA(:,:,:,is),eGWlin(:,is),eGW(:,is))
+      call unrestricted_QP_graph(nBas,nC(is),nO(is),nV(is),nR(is),nS_sc,eta,eHF(:,is),SigX(:,is),Vxc(:,is), & 
+                                 OmRPA,rho_RPA(:,:,:,is),eGWlin(:,is),eGW(:,is))
     end do
  
   end if
