@@ -18,7 +18,7 @@ subroutine UG96_gga_exchange_potential(nGrid,weight,nBas,AO,dAO,rho,drho,Fx)
 ! Local variables
 
   integer                       :: mu,nu,iG
-  double precision              :: alpha,beta
+  double precision              :: beta
   double precision              :: r,g,vAO,gAO
 
 ! Output variables
@@ -27,7 +27,6 @@ subroutine UG96_gga_exchange_potential(nGrid,weight,nBas,AO,dAO,rho,drho,Fx)
 
 ! Coefficients for G96 GGA exchange functional
 
-  alpha = -(3d0/2d0)*(3d0/(4d0*pi))**(1d0/3d0)
   beta  = +1d0/137d0
 
 ! Compute GGA exchange matrix in the AO basis
@@ -45,7 +44,7 @@ subroutine UG96_gga_exchange_potential(nGrid,weight,nBas,AO,dAO,rho,drho,Fx)
 
           vAO = weight(iG)*AO(mu,iG)*AO(nu,iG)
           Fx(mu,nu) = Fx(mu,nu) &
-                    + vAO*(4d0/3d0*r**(1d0/3d0)*(alpha - beta*g**(3d0/4d0)/r**2) &
+                    + vAO*(4d0/3d0*r**(1d0/3d0)*(CxLSDA - beta*g**(3d0/4d0)/r**2) &
                          + 2d0*beta*g**(3d0/4d0)/r**(5d0/3d0))
           
           gAO = drho(1,iG)*(dAO(1,mu,iG)*AO(nu,iG) + AO(mu,iG)*dAO(1,nu,iG)) & 

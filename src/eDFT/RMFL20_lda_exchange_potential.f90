@@ -22,6 +22,9 @@ subroutine RMFL20_lda_exchange_potential(LDA_centered,nEns,wEns,nGrid,weight,nBa
   double precision              :: Cxw
   double precision              :: r,vAO
 
+  double precision,parameter    :: Cx0   = - (4d0/3d0)*(1d0/pi)**(1d0/3d0)
+  double precision,parameter    :: Cx1   = - (176d0/105d0)*(1d0/pi)**(1d0/3d0)
+
 ! Output variables
 
   double precision,intent(out)  :: Fx(nBas,nBas)

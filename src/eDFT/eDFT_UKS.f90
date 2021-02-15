@@ -1,5 +1,5 @@
 subroutine eDFT_UKS(x_rung,x_DFA,c_rung,c_DFA,nEns,wEns,aCC_w1,aCC_w2,nGrid,weight,maxSCF,thresh,max_diis,guess_type,mix, &
-                   nBas,AO,dAO,S,T,V,Hc,ERI,X,ENuc,occnum,Cx_choice,doNcentered,Ew,eps,c,Pw)
+                   nBas,AO,dAO,S,T,V,Hc,ERI,X,ENuc,occnum,Cx_choice,doNcentered,Ew,eps,c,Pw,Vxc)
 
 ! Perform unrestricted Kohn-Sham calculation for ensembles
 
@@ -80,7 +80,8 @@ subroutine eDFT_UKS(x_rung,x_DFA,c_rung,c_DFA,nEns,wEns,aCC_w1,aCC_w2,nGrid,weig
   double precision,intent(out)  :: Ew
   double precision,intent(out)  :: eps(nBas,nspin)
   double precision,intent(out)  :: Pw(nBas,nBas,nspin)
-  double precision,intent(out)  :: c(nBAs,nBas,nspin)
+  double precision,intent(out)  :: c(nBas,nBas,nspin)
+  double precision,intent(out)  :: Vxc(nBas,nspin)
 
 ! Hello world
 
@@ -386,12 +387,17 @@ subroutine eDFT_UKS(x_rung,x_DFA,c_rung,c_DFA,nEns,wEns,aCC_w1,aCC_w2,nGrid,weig
 
   call print_UKS(nBas,nEns,occnum,wEns,eps,c,ENuc,ET,EV,EJ,Ex,Ec,Ew)
 
+! Compute Vxc for post-HF calculations
+
+  call xc_potential(nBas,c,Fx,Fc,Vxc)
+
 !------------------------------------------------------------------------
 ! Compute individual energies from ensemble energy
 !------------------------------------------------------------------------
 
-  call unrestricted_individual_energy(x_rung,x_DFA,c_rung,c_DFA,LDA_centered,nEns,wEns,aCC_w1,aCC_w2,nGrid,weight,nBas, &
-                                      AO,dAO,T,V,ERI,ENuc,eps,Pw,rhow,drhow,J,Fx,FxHF,Fc,P,rho,drho,Ew,E,Om,occnum, &
-                                      Cx_choice,doNcentered)
+  if(nEns > 1) &
+    call unrestricted_individual_energy(x_rung,x_DFA,c_rung,c_DFA,LDA_centered,nEns,wEns,aCC_w1,aCC_w2,nGrid,weight,nBas, &
+                                        AO,dAO,T,V,ERI,ENuc,eps,Pw,rhow,drhow,J,Fx,FxHF,Fc,P,rho,drho,Ew,E,Om,occnum,     &
+                                        Cx_choice,doNcentered)
 
 end subroutine eDFT_UKS

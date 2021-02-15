@@ -32,6 +32,7 @@ program QuAcK
 
   double precision,allocatable  :: ZNuc(:),rNuc(:,:)
   double precision,allocatable  :: cHF(:,:,:),eHF(:,:),PHF(:,:,:)
+  double precision,allocatable  :: Vxc(:,:,:)
 
   double precision,allocatable  :: eG0W0(:,:)
   double precision,allocatable  :: eG0T0(:,:)
@@ -236,7 +237,7 @@ program QuAcK
 
   allocate(cHF(nBas,nBas,nspin),eHF(nBas,nspin),eG0W0(nBas,nspin),eG0T0(nBas,nspin),PHF(nBas,nBas,nspin), &
            S(nBas,nBas),T(nBas,nBas),V(nBas,nBas),Hc(nBas,nBas),X(nBas,nBas),ERI_AO(nBas,nBas,nBas,nBas), &
-           dipole_int_AO(nBas,nBas,ncart),dipole_int_MO(nBas,nBas,ncart))
+           dipole_int_AO(nBas,nBas,ncart),dipole_int_MO(nBas,nBas,ncart),Vxc(nBas,nBas,nspin))
 
 ! Read integrals
 
@@ -280,7 +281,7 @@ program QuAcK
 
     call cpu_time(start_HF)
     call RHF(maxSCF_HF,thresh_HF,n_diis_HF,guess_type,nNuc,ZNuc,rNuc,ENuc, &
-             nBas,nO,S,T,V,Hc,ERI_AO,dipole_int_AO,X,ERHF,eHF,cHF,PHF)
+             nBas,nO,S,T,V,Hc,ERI_AO,dipole_int_AO,X,ERHF,eHF,cHF,PHF,Vxc)
     call cpu_time(end_HF)
 
     t_HF = end_HF - start_HF
@@ -300,7 +301,7 @@ program QuAcK
 
     call cpu_time(start_HF)
     call UHF(maxSCF_HF,thresh_HF,n_diis_HF,guess_type,mix,nNuc,ZNuc,rNuc,ENuc, & 
-             nBas,nO,S,T,V,Hc,ERI_AO,dipole_int_AO,X,EUHF,eHF,cHF,PHF)
+             nBas,nO,S,T,V,Hc,ERI_AO,dipole_int_AO,X,EUHF,eHF,cHF,PHF,Vxc)
     call cpu_time(end_HF)
 
     t_HF = end_HF - start_HF
@@ -315,10 +316,13 @@ program QuAcK
 
   if(doKS) then
 
+    ! Switch on the unrestricted flag
+    unrestricted = .true.
+
     call cpu_time(start_KS)
     call eDFT(maxSCF_HF,thresh_HF,n_diis_HF,guess_type,mix,nNuc,ZNuc,rNuc,ENuc,nBas,nEl,nC, & 
               nO,nV,nR,nShell,TotAngMomShell,CenterShell,KShell,DShell,ExpShell,            &
-              max_ang_mom,min_exponent,max_exponent,S,T,V,Hc,X,ERI_AO,dipole_int_AO,EUHF,eHF,cHF,PHF)
+              max_ang_mom,min_exponent,max_exponent,S,T,V,Hc,X,ERI_AO,dipole_int_AO,EUHF,eHF,cHF,PHF,Vxc)
              
     call cpu_time(end_KS)
 
@@ -851,12 +855,12 @@ program QuAcK
     if(unrestricted) then 
 
       call UG0W0(doACFDT,exchange_kernel,doXBS,COHSEX,BSE,TDA_W,TDA,dBSE,dTDA,evDyn,spin_conserved,spin_flip,   & 
-                 linGW,eta_GW,nBas,nC,nO,nV,nR,nS,ENuc,EUHF,S,ERI_MO_aaaa,ERI_MO_aabb,ERI_MO_bbbb, & 
-                 dipole_int_aa,dipole_int_bb,PHF,cHF,eHF,eG0W0)
+                 linGW,eta_GW,nBas,nC,nO,nV,nR,nS,ENuc,EUHF,S,ERI_AO,ERI_MO_aaaa,ERI_MO_aabb,ERI_MO_bbbb, & 
+                 dipole_int_aa,dipole_int_bb,PHF,cHF,eHF,Vxc,eG0W0)
     else
 
       call G0W0(doACFDT,exchange_kernel,doXBS,COHSEX,SOSEX,BSE,TDA_W,TDA,dBSE,dTDA,evDyn,singlet,triplet, &
-                linGW,eta_GW,nBas,nC,nO,nV,nR,nS,ENuc,ERHF,ERI_MO,dipole_int_MO,eHF,eG0W0)
+                linGW,eta_GW,nBas,nC,nO,nV,nR,nS,ENuc,ERHF,ERI_AO,ERI_MO,dipole_int_MO,PHF,cHF,eHF,Vxc,eG0W0)
 
     end if
 
@@ -879,14 +883,14 @@ program QuAcK
 
       call evUGW(maxSCF_GW,thresh_GW,n_diis_GW,doACFDT,exchange_kernel,doXBS,COHSEX,BSE,TDA_W,TDA,   &
                 G0W,GW0,dBSE,dTDA,evDyn,spin_conserved,spin_flip,eta_GW,nBas,nC,nO,nV,nR,nS,ENuc,    &
-                EUHF,S,ERI_MO_aaaa,ERI_MO_aabb,ERI_MO_bbbb,dipole_int_aa,dipole_int_bb, & 
-                cHF,eHF,eG0W0)
+                EUHF,S,ERI_AO,ERI_MO_aaaa,ERI_MO_aabb,ERI_MO_bbbb,dipole_int_aa,dipole_int_bb, & 
+                PHF,cHF,eHF,Vxc,eG0W0)
 
     else
 
       call evGW(maxSCF_GW,thresh_GW,n_diis_GW,doACFDT,exchange_kernel,doXBS,COHSEX,SOSEX,       &
                 BSE,TDA_W,TDA,G0W,GW0,dBSE,dTDA,evDyn,singlet,triplet,eta_GW, &
-                nBas,nC,nO,nV,nR,nS,ENuc,ERHF,ERI_MO,dipole_int_MO,eHF,eG0W0)
+                nBas,nC,nO,nV,nR,nS,ENuc,ERHF,ERI_AO,ERI_MO,dipole_int_MO,PHF,cHF,eHF,Vxc,eG0W0)
     end if
     call cpu_time(end_evGW)
 
@@ -1005,10 +1009,10 @@ program QuAcK
   if(doMCMP2) then
 
     call cpu_time(start_MCMP2)
-    call MCMP2(doDrift,nBas,nC,nO,nV,cHF,eHF,EcMP2,        &
-               nMC,nEq,nWalk,dt,nPrint,                                  &
-               nShell,CenterShell,TotAngMomShell,KShell,DShell,ExpShell, &
-               Norm,EcMCMP2,Err_EcMCMP2,Var_EcMCMP2)
+!   call MCMP2(doDrift,nBas,nC,nO,nV,cHF,eHF,EcMP2,        &
+!              nMC,nEq,nWalk,dt,nPrint,                                  &
+!              nShell,CenterShell,TotAngMomShell,KShell,DShell,ExpShell, &
+!              Norm,EcMCMP2,Err_EcMCMP2,Var_EcMCMP2)
     call cpu_time(end_MCMP2)
 
     t_MCMP2 = end_MCMP2 - start_MCMP2
@@ -1040,59 +1044,59 @@ program QuAcK
 ! Range-separeted GT/GW
 !------------------------------------------------------------------------
 
-  if(doGTGW) then
+! if(doGTGW) then
 
-    ! Read and transform long-range two-electron integrals
+!   ! Read and transform long-range two-electron integrals
 
-    allocate(ERI_ERF_AO(nBas,nBas,nBas,nBas),ERI_ERF_MO(nBas,nBas,nBas,nBas))
-    call read_LR(nBas,ERI_ERF_AO)
+!   allocate(ERI_ERF_AO(nBas,nBas,nBas,nBas),ERI_ERF_MO(nBas,nBas,nBas,nBas))
+!   call read_LR(nBas,ERI_ERF_AO)
 
-    call cpu_time(start_AOtoMO)
+!   call cpu_time(start_AOtoMO)
 
-    write(*,*)
-    write(*,*) 'AO to MO transformation for long-range ERIs... Please be patient'
-    write(*,*)
+!   write(*,*)
+!   write(*,*) 'AO to MO transformation for long-range ERIs... Please be patient'
+!   write(*,*)
 
-    call AOtoMO_integral_transform(nBas,cHF,ERI_ERF_AO,ERI_ERF_MO)
+!   call AOtoMO_integral_transform(nBas,cHF,ERI_ERF_AO,ERI_ERF_MO)
 
-    call cpu_time(end_AOtoMO)
+!   call cpu_time(end_AOtoMO)
 
-    deallocate(ERI_ERF_AO)
+!   deallocate(ERI_ERF_AO)
 
-    t_AOtoMO = end_AOtoMO - start_AOtoMO
+!   t_AOtoMO = end_AOtoMO - start_AOtoMO
 
-    write(*,'(A65,1X,F9.3,A8)') 'Total CPU time for AO to MO transformation = ',t_AOtoMO,' seconds'
-    write(*,*)
+!   write(*,'(A65,1X,F9.3,A8)') 'Total CPU time for AO to MO transformation = ',t_AOtoMO,' seconds'
+!   write(*,*)
 
-    ! Long-range G0W0 calculation
+!   ! Long-range G0W0 calculation
 
-    call cpu_time(start_G0W0)
-    call G0W0(doACFDT,exchange_kernel,doXBS,COHSEX,SOSEX,BSE,TDA_W,TDA,       & 
-              dBSE,dTDA,evDyn,singlet,triplet,linGW,eta_GW, & 
-              nBas,nC,nO,nV,nR,nS,ENuc,ERHF,ERI_ERF_MO,dipole_int_MO,eHF,eG0W0)
-    call cpu_time(end_G0W0)
-  
-    t_G0W0 = end_G0W0 - start_G0W0
-    write(*,'(A65,1X,F9.3,A8)') 'Total CPU time for G0W0 = ',t_G0W0,' seconds'
-    write(*,*)
+!   call cpu_time(start_G0W0)
+!   call G0W0(doACFDT,exchange_kernel,doXBS,COHSEX,SOSEX,BSE,TDA_W,TDA,       & 
+!             dBSE,dTDA,evDyn,singlet,triplet,linGW,eta_GW, & 
+!             nBas,nC,nO,nV,nR,nS,ENuc,ERHF,ERI_ERF_MO,dipole_int_MO,eHF,eG0W0)
+!   call cpu_time(end_G0W0)
+! 
+!   t_G0W0 = end_G0W0 - start_G0W0
+!   write(*,'(A65,1X,F9.3,A8)') 'Total CPU time for G0W0 = ',t_G0W0,' seconds'
+!   write(*,*)
 
-    ! Short-range G0T0 calculation
+!   ! Short-range G0T0 calculation
 
-    ERI_ERF_MO(:,:,:,:) = ERI_MO(:,:,:,:) - ERI_ERF_MO(:,:,:,:)
+!   ERI_ERF_MO(:,:,:,:) = ERI_MO(:,:,:,:) - ERI_ERF_MO(:,:,:,:)
 
-    call cpu_time(start_G0T0)
-    call G0T0(doACFDT,exchange_kernel,doXBS,BSE,TDA_W,TDA,dBSE,dTDA,evDyn, &
-              singlet,triplet,linGW,eta_GW,              &  
-              nBas,nC,nO,nV,nR,nS,ENuc,ERHF,ERI_ERF_MO,dipole_int_MO,eHF,eG0T0)
-    call cpu_time(end_G0T0)
-  
-    t_G0T0 = end_G0T0 - start_G0T0
-    write(*,'(A65,1X,F9.3,A8)') 'Total CPU time for G0T0 = ',t_G0T0,' seconds'
-    write(*,*)
+!   call cpu_time(start_G0T0)
+!   call G0T0(doACFDT,exchange_kernel,doXBS,BSE,TDA_W,TDA,dBSE,dTDA,evDyn, &
+!             singlet,triplet,linGW,eta_GW,              &  
+!             nBas,nC,nO,nV,nR,nS,ENuc,ERHF,ERI_ERF_MO,dipole_int_MO,eHF,eG0T0)
+!   call cpu_time(end_G0T0)
+! 
+!   t_G0T0 = end_G0T0 - start_G0T0
+!   write(*,'(A65,1X,F9.3,A8)') 'Total CPU time for G0T0 = ',t_G0T0,' seconds'
+!   write(*,*)
 
 !   call matout(nBas,1,(eG0W0+eG0T0-eHF(:,1))*HaToeV)
 
-  end if
+! end if
 
 !------------------------------------------------------------------------
 ! Basis set correction

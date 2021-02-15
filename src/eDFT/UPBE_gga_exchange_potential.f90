@@ -18,7 +18,7 @@ subroutine UPBE_gga_exchange_potential(nGrid,weight,nBas,AO,dAO,rho,drho,Fx)
 ! Local variables
 
   integer                       :: mu,nu,iG
-  double precision              :: alpha,mupbe,kappa
+  double precision              :: mupbe,kappa
   double precision              :: r,g,s2,vAO,gAO
 
 ! Output variables
@@ -27,7 +27,6 @@ subroutine UPBE_gga_exchange_potential(nGrid,weight,nBas,AO,dAO,rho,drho,Fx)
 
 ! Coefficients for PBE exchange functional
 
-  alpha = -(3d0/2d0)*(3d0/(4d0*pi))**(1d0/3d0)
   mupbe = ((1d0/2d0**(1d0/3d0))/(2d0*(3d0*pi**2)**(1d0/3d0)))**2*0.21951d0
   kappa = 0.804d0
 
@@ -49,15 +48,15 @@ subroutine UPBE_gga_exchange_potential(nGrid,weight,nBas,AO,dAO,rho,drho,Fx)
           vAO = weight(iG)*AO(mu,iG)*AO(nu,iG)
 
           Fx(mu,nu) = Fx(mu,nu) &
-                    + vAO*4d0/3d0*alpha*r**(1d0/3d0)*(1d0 + kappa - kappa/(1d0 + mupbe*s2/kappa)) &
-                    - vAO*8d0/3d0*alpha*r**(1d0/3d0)*mupbe*s2/(1d0 + mupbe*s2/kappa)**2
+                    + vAO*4d0/3d0*CxLSDA*r**(1d0/3d0)*(1d0 + kappa - kappa/(1d0 + mupbe*s2/kappa)) &
+                    - vAO*8d0/3d0*CxLSDA*r**(1d0/3d0)*mupbe*s2/(1d0 + mupbe*s2/kappa)**2
           
           gAO = drho(1,iG)*(dAO(1,mu,iG)*AO(nu,iG) + AO(mu,iG)*dAO(1,nu,iG)) & 
               + drho(2,iG)*(dAO(2,mu,iG)*AO(nu,iG) + AO(mu,iG)*dAO(2,nu,iG)) & 
               + drho(3,iG)*(dAO(3,mu,iG)*AO(nu,iG) + AO(mu,iG)*dAO(3,nu,iG))
           gAO = weight(iG)*gAO
           
-          Fx(mu,nu) = Fx(mu,nu) + 2d0*gAO*alpha*r**(-4d0/3d0)*mupbe/(1d0 + mupbe*s2/kappa)**2
+          Fx(mu,nu) = Fx(mu,nu) + 2d0*gAO*CxLSDA*r**(-4d0/3d0)*mupbe/(1d0 + mupbe*s2/kappa)**2
 
         end if
 

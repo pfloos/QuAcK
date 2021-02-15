@@ -1,4 +1,4 @@
-subroutine RHF(maxSCF,thresh,max_diis,guess_type,nNuc,ZNuc,rNuc,ENuc,nBas,nO,S,T,V,Hc,ERI,dipole_int,X,ERHF,e,c,P)
+subroutine RHF(maxSCF,thresh,max_diis,guess_type,nNuc,ZNuc,rNuc,ENuc,nBas,nO,S,T,V,Hc,ERI,dipole_int,X,ERHF,e,c,P,Vx)
 
 ! Perform restricted Hartree-Fock calculation
 
@@ -55,6 +55,7 @@ subroutine RHF(maxSCF,thresh,max_diis,guess_type,nNuc,ZNuc,rNuc,ENuc,nBas,nO,S,T
   double precision,intent(out)  :: e(nBas)
   double precision,intent(out)  :: c(nBas,nBas)
   double precision,intent(out)  :: P(nBas,nBas)
+  double precision,intent(out)  :: Vx(nBas)
 
 ! Hello world
 
@@ -196,7 +197,13 @@ subroutine RHF(maxSCF,thresh,max_diis,guess_type,nNuc,ZNuc,rNuc,ENuc,nBas,nO,S,T
   EK = 0.25d0*trace_matrix(nBas,matmul(P,K))
   ERHF = ET + EV + EJ + EK
 
+! Compute dipole moments
+
   call dipole_moment(nBas,P,nNuc,ZNuc,rNuc,dipole_int,dipole)
   call print_RHF(nBas,nO,e,C,ENuc,ET,EV,EJ,EK,ERHF,dipole)
+
+! Compute Vx for post-HF calculations
+
+  call exchange_potential(nBas,c,K,Vx)
 
 end subroutine RHF

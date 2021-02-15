@@ -1,6 +1,6 @@
 subroutine G0W0(doACFDT,exchange_kernel,doXBS,COHSEX,SOSEX,BSE,TDA_W,TDA, & 
                 dBSE,dTDA,evDyn,singlet,triplet,linearize,eta,            & 
-                nBas,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,dipole_int,eHF,eGW)
+                nBas,nC,nO,nV,nR,nS,ENuc,ERHF,ERI_AO,ERI_MO,dipole_int,PHF,cHF,eHF,Vxc,eGW)
 
 ! Perform G0W0 calculation
 
@@ -29,9 +29,13 @@ subroutine G0W0(doACFDT,exchange_kernel,doXBS,COHSEX,SOSEX,BSE,TDA_W,TDA, &
   integer,intent(in)            :: nBas,nC,nO,nV,nR,nS
   double precision,intent(in)   :: ENuc
   double precision,intent(in)   :: ERHF
-  double precision,intent(in)   :: ERI(nBas,nBas,nBas,nBas)
+  double precision,intent(in)   :: ERI_AO(nBas,nBas,nBas,nBas)
+  double precision,intent(in)   :: ERI_MO(nBas,nBas,nBas,nBas)
   double precision,intent(in)   :: dipole_int(nBas,nBas,ncart)
+  double precision,intent(in)   :: Vxc(nBas)
   double precision,intent(in)   :: eHF(nBas)
+  double precision,intent(in)   :: cHF(nBas,nBas)
+  double precision,intent(in)   :: PHF(nBas,nBas)
 
 ! Local variables
 
@@ -41,6 +45,7 @@ subroutine G0W0(doACFDT,exchange_kernel,doXBS,COHSEX,SOSEX,BSE,TDA_W,TDA, &
   double precision              :: EcBSE(nspin)
   double precision              :: EcAC(nspin)
   double precision              :: EcGM
+  double precision,allocatable  :: SigX(:)
   double precision,allocatable  :: SigC(:)
   double precision,allocatable  :: Z(:)
   double precision,allocatable  :: OmRPA(:)
@@ -100,14 +105,14 @@ subroutine G0W0(doACFDT,exchange_kernel,doXBS,COHSEX,SOSEX,BSE,TDA_W,TDA, &
 
 ! Memory allocation
 
-  allocate(SigC(nBas),Z(nBas),OmRPA(nS),XpY_RPA(nS,nS),XmY_RPA(nS,nS),rho_RPA(nBas,nBas,nS),eGWlin(nBas))
+  allocate(SigC(nBas),SigX(nBas),Z(nBas),OmRPA(nS),XpY_RPA(nS,nS),XmY_RPA(nS,nS),rho_RPA(nBas,nBas,nS),eGWlin(nBas))
 
 !-------------------!
 ! Compute screening !
 !-------------------!
 
   call linear_response(ispin,.true.,TDA_W,.false.,eta,nBas,nC,nO,nV,nR,nS,1d0, & 
-                       eHF,ERI,OmRPA,rho_RPA,EcRPA,OmRPA,XpY_RPA,XmY_RPA)
+                       eHF,ERI_MO,OmRPA,rho_RPA,EcRPA,OmRPA,XpY_RPA,XmY_RPA)
 
   if(print_W) call print_excitation('RPA@HF      ',ispin,nS,OmRPA)
 
@@ -115,12 +120,13 @@ subroutine G0W0(doACFDT,exchange_kernel,doXBS,COHSEX,SOSEX,BSE,TDA_W,TDA, &
 ! Compute spectral weights !
 !--------------------------!
 
-  call excitation_density(nBas,nC,nO,nR,nS,ERI,XpY_RPA,rho_RPA)
+  call excitation_density(nBas,nC,nO,nR,nS,ERI_MO,XpY_RPA,rho_RPA)
 
 !------------------------!
 ! Compute GW self-energy !
 !------------------------!
 
+  call self_energy_exchange_diag(nBas,cHF,PHF,ERI_AO,SigX)
   call self_energy_correlation_diag(COHSEX,eta,nBas,nC,nO,nV,nR,nS,eHF,OmRPA,rho_RPA,EcGM,SigC)
 
 !--------------------------------!
@@ -133,7 +139,7 @@ subroutine G0W0(doACFDT,exchange_kernel,doXBS,COHSEX,SOSEX,BSE,TDA_W,TDA, &
 ! Solve the quasi-particle equation !
 !-----------------------------------!
 
-  eGWlin(:) = eHF(:) + Z(:)*SigC(:)
+  eGWlin(:) = eHF(:) + Z(:)*(SigX(:) + SigC(:) - Vxc(:))
 
   ! Linearized or graphical solution?
 
@@ -159,7 +165,7 @@ subroutine G0W0(doACFDT,exchange_kernel,doXBS,COHSEX,SOSEX,BSE,TDA_W,TDA, &
 
 ! Compute the RPA correlation energy
 
-  call linear_response(ispin,.true.,TDA_W,.false.,eta,nBas,nC,nO,nV,nR,nS,1d0,eGW,ERI,OmRPA, & 
+  call linear_response(ispin,.true.,TDA_W,.false.,eta,nBas,nC,nO,nV,nR,nS,1d0,eGW,ERI_MO,OmRPA, & 
                        rho_RPA,EcRPA,OmRPA,XpY_RPA,XmY_RPA)
 
 !--------------!
@@ -180,7 +186,7 @@ subroutine G0W0(doACFDT,exchange_kernel,doXBS,COHSEX,SOSEX,BSE,TDA_W,TDA, &
 
   if(BSE) then
 
-    call Bethe_Salpeter(TDA_W,TDA,dBSE,dTDA,evDyn,singlet,triplet,eta,nBas,nC,nO,nV,nR,nS,ERI,dipole_int,eHF,eGW,EcBSE)
+    call Bethe_Salpeter(TDA_W,TDA,dBSE,dTDA,evDyn,singlet,triplet,eta,nBas,nC,nO,nV,nR,nS,ERI_MO,dipole_int,eHF,eGW,EcBSE)
 
     if(exchange_kernel) then
  
@@ -214,7 +220,7 @@ subroutine G0W0(doACFDT,exchange_kernel,doXBS,COHSEX,SOSEX,BSE,TDA_W,TDA, &
 
       end if
 
-      call ACFDT(exchange_kernel,doXBS,.true.,TDA_W,TDA,BSE,singlet,triplet,eta,nBas,nC,nO,nV,nR,nS,ERI,eHF,eGW,EcAC)
+      call ACFDT(exchange_kernel,doXBS,.true.,TDA_W,TDA,BSE,singlet,triplet,eta,nBas,nC,nO,nV,nR,nS,ERI_MO,eHF,eGW,EcAC)
 
       write(*,*)
       write(*,*)'-------------------------------------------------------------------------------'

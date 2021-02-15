@@ -15,6 +15,9 @@ subroutine RMFL20_lda_exchange_energy(LDA_centered,nEns,wEns,nGrid,weight,rho,Ex
   double precision,intent(in)   :: weight(nGrid)
   double precision,intent(in)   :: rho(nGrid)
 
+  double precision,parameter    :: Cx0   = - (4d0/3d0)*(1d0/pi)**(1d0/3d0)
+  double precision,parameter    :: Cx1   = - (176d0/105d0)*(1d0/pi)**(1d0/3d0)
+
 ! Local variables
 
   integer                       :: iG

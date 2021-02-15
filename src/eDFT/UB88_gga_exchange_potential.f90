@@ -18,7 +18,7 @@ subroutine UB88_gga_exchange_potential(nGrid,weight,nBas,AO,dAO,rho,drho,Fx)
 ! Local variables
 
   integer                       :: mu,nu,iG
-  double precision              :: alpha,b
+  double precision              :: b
   double precision              :: vAO,gAO
   double precision              :: r,g,x,dxdr,dxdg,f
 
@@ -28,7 +28,6 @@ subroutine UB88_gga_exchange_potential(nGrid,weight,nBas,AO,dAO,rho,drho,Fx)
 
 ! Coefficients for B88 GGA exchange functional
 
-  alpha = -(3d0/2d0)*(3d0/(4d0*pi))**(1d0/3d0)
   b = 0.0042d0
 
 ! Compute GGA exchange matrix in the AO basis
@@ -52,9 +51,9 @@ subroutine UB88_gga_exchange_potential(nGrid,weight,nBas,AO,dAO,rho,drho,Fx)
 
           f = b*x**2/(1d0 + 6d0*b*x*asinh(x))
 
-          Fx(mu,nu) = Fx(mu,nu) + vAO*(                &
-                      4d0/3d0*r**(1d0/3d0)*(alpha - f) &
-                    - 2d0*r**(4d0/3d0)*dxdr*f          &
+          Fx(mu,nu) = Fx(mu,nu) + vAO*(                 &
+                      4d0/3d0*r**(1d0/3d0)*(CxLSDA - f) &
+                    - 2d0*r**(4d0/3d0)*dxdr*f           &
                     + r**(4d0/3d0)*dxdr*(6d0*b*x*asinh(x) + 6d0*b*x**2/sqrt(1d0+x**2))*f/(1d0 + 6d0*b*x*asinh(x)) )
           
           gAO = drho(1,iG)*(dAO(1,mu,iG)*AO(nu,iG) + AO(mu,iG)*dAO(1,nu,iG)) & 

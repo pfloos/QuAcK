@@ -22,16 +22,13 @@ subroutine UCC_lda_exchange_derivative_discontinuity(nEns,wEns,aCC_w1,aCC_w2,nGr
 
   integer                       :: iEns,jEns
   integer                       :: iG
-  double precision              :: r,alpha
+  double precision              :: r
   double precision,allocatable  :: dExdw(:)
   double precision,external     :: Kronecker_delta
 
   double precision              :: a1,b1,c1,w1
   double precision              :: a2,b2,c2,w2
   double precision              :: dCxdw1,dCxdw2
-
-  double precision              :: nEli,nElw
-
 
 ! Output variables
 
@@ -60,13 +57,6 @@ subroutine UCC_lda_exchange_derivative_discontinuity(nEns,wEns,aCC_w1,aCC_w2,nGr
   b2 = aCC_w2(2)
   c2 = aCC_w2(3)
  
-  nElw = electron_number(nGrid,weight,rhow)
-
-
-! Cx coefficient for unrestricted Slater LDA exchange
-
-  alpha = -(3d0/2d0)*(3d0/(4d0*pi))**(1d0/3d0)
-
   w1 = wEns(2)
   w2 = wEns(3)
 
@@ -86,11 +76,15 @@ subroutine UCC_lda_exchange_derivative_discontinuity(nEns,wEns,aCC_w1,aCC_w2,nGr
 
       dCxdw2 = (1d0 - w1*(1d0 - w1)*(a1 + b1*(w1 - 0.5d0) + c1*(w1 - 0.5d0)**2))                            &
              * (0.5d0*b2 + (2d0*a2 + 0.5d0*c2)*(w2 - 0.5d0) - (1d0 - w2)*w2*(3d0*b2 + 4d0*c2*(w2 - 0.5d0)))  
+
+    case default
+      dCxdw1 = 0d0
+      dCxdw2 = 0d0
+
   end select
 
-
-  dCxdw1 = alpha*dCxdw1
-  dCxdw2 = alpha*dCxdw2
+  dCxdw1 = CxLSDA*dCxdw1
+  dCxdw2 = CxLSDA*dCxdw2
 
   dExdw(:) = 0d0
 

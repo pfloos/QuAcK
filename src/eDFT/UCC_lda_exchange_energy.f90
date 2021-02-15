@@ -19,7 +19,7 @@ subroutine UCC_lda_exchange_energy(nEns,wEns,aCC_w1,aCC_w2,nGrid,weight,rho,Ex,C
 ! Local variables
 
   integer                       :: iG
-  double precision              :: r,alpha
+  double precision              :: r
 
   double precision              :: a1,b1,c1,w1
   double precision              :: a2,b2,c2,w2
@@ -65,10 +65,6 @@ subroutine UCC_lda_exchange_energy(nEns,wEns,aCC_w1,aCC_w2,nGrid,weight,rho,Ex,C
   b2 = aCC_w2(2)
   c2 = aCC_w2(3)
 
-! Cx coefficient for unrestricted Slater LDA exchange
-
-  alpha = -(3d0/2d0)*(3d0/(4d0*pi))**(1d0/3d0)
-
 ! Fx1 for states N and N-1
 ! Fx2 for states N and N+1
 
@@ -79,21 +75,20 @@ subroutine UCC_lda_exchange_energy(nEns,wEns,aCC_w1,aCC_w2,nGrid,weight,rho,Ex,C
   Fx2 = 1d0 - w2*(1d0 - w2)*(a2 + b2*(w2 - 0.5d0) + c2*(w2 - 0.5d0)**2)
 
   select case (Cx_choice)
-  case(1)
-  Cx = alpha*Fx1
-  case(2)
-  Cx = alpha*Fx2
-  case(3)
-  Cx = alpha*Fx2*Fx1
+
+    case(1)
+      Cx = CxLSDA*Fx1
+
+    case(2)
+      Cx = CxLSDA*Fx2
+
+    case(3)
+      Cx = CxLSDA*Fx2*Fx1
+
+    case default
+      Cx = CxLSDA
+
   end select
-! for two-weights ensemble
-!  Cx = alpha*Fx2*Fx1
-
-! for left ensemble
-!   Cx = alpha*Fx1
-
-! for right ensemble
-!   Cx = alpha*Fx2
 
 ! Compute GIC-LDA exchange energy
 

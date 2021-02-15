@@ -31,7 +31,7 @@ subroutine unrestricted_hybrid_correlation_energy(DFA,nEns,wEns,nGrid,weight,rho
 
       Ec(:) = 0d0
 
-    case('LYP') 
+    case('B3LYP') 
 
       aC = 0.81d0
 
@@ -40,11 +40,13 @@ subroutine unrestricted_hybrid_correlation_energy(DFA,nEns,wEns,nGrid,weight,rho
 
       Ec(:) = EcLDA(:) + aC*(EcGGA(:) - EcLDA(:)) 
 
+    case('BHHLYP') 
+
+      call unrestricted_gga_correlation_energy('LYP         ',nEns,wEns,nGrid,weight,rho,drho,Ec)
+
     case('PBE') 
 
-      call unrestricted_gga_correlation_energy('PBE         ',nEns,wEns,nGrid,weight,rho,drho,EcGGA)
-
-      Ec(:) = EcGGA(:)
+      call unrestricted_gga_correlation_energy('PBE         ',nEns,wEns,nGrid,weight,rho,drho,Ec)
 
     case default
   

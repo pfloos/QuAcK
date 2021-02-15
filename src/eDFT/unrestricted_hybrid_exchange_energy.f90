@@ -38,7 +38,7 @@ subroutine unrestricted_hybrid_exchange_energy(DFA,LDA_centered,nEns,wEns,aCC_w1
 
       call unrestricted_fock_exchange_energy(nBas,P,FxHF,Ex)
 
-    case ('B3')
+    case ('B3LYP')
 
       a0 = 0.20d0
       aX = 0.72d0
@@ -51,6 +51,13 @@ subroutine unrestricted_hybrid_exchange_energy(DFA,LDA_centered,nEns,wEns,aCC_w1
       Ex = ExLDA              & 
          + a0*(ExHF  - ExLDA) &
          + aX*(ExGGA - ExLDA) 
+
+    case ('BHHLYP')
+
+      call unrestricted_gga_exchange_energy('B88         ',nEns,wEns,nGrid,weight,rho,drho,ExGGA)
+      call unrestricted_fock_exchange_energy(nBas,P,FxHF,ExHF)
+  
+      Ex = 0.5d0*ExHF + 0.5d0*ExGGA
 
     case ('PBE')
 

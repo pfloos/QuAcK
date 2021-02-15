@@ -17,7 +17,7 @@ subroutine US51_lda_exchange_individual_energy(nGrid,weight,rhow,rho,doNcentered
 ! Local variables
 
   integer                       :: iG
-  double precision              :: r,rI,alpha
+  double precision              :: r,rI
   double precision              :: e,dedr
   double precision              :: Exrr,ExrI,ExrrI
 
@@ -26,8 +26,6 @@ subroutine US51_lda_exchange_individual_energy(nGrid,weight,rhow,rho,doNcentered
   double precision,intent(out)  :: Ex
 
 ! Compute LDA exchange matrix in the AO basis
-
-  alpha = - (3d0/2d0)*(3d0/(4d0*pi))**(1d0/3d0)
 
   Exrr  = 0d0
   ExrI  = 0d0
@@ -40,8 +38,8 @@ subroutine US51_lda_exchange_individual_energy(nGrid,weight,rhow,rho,doNcentered
 
     if(r > threshold) then
 
-      e    =         alpha*r**(1d0/3d0)
-      dedr = 1d0/3d0*alpha*r**(-2d0/3d0)
+      e    =         CxLSDA*r**(1d0/3d0)
+      dedr = 1d0/3d0*CxLSDA*r**(-2d0/3d0)
 
       Exrr = Exrr - weight(iG)*dedr*r*r      
 

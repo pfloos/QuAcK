@@ -43,7 +43,7 @@ subroutine unrestricted_hybrid_exchange_potential(DFA,LDA_centered,nEns,wEns,aCC
       call unrestricted_fock_exchange_potential(nBas,P,ERI,FxHF)
       Fx(:,:) = FxHF(:,:)
 
-    case('B3') 
+    case('B3LYP') 
 
       allocate(FxLDA(nBas,nBas),FxGGA(nBas,nBas))
 
@@ -58,6 +58,15 @@ subroutine unrestricted_hybrid_exchange_potential(DFA,LDA_centered,nEns,wEns,aCC
       Fx(:,:) = FxLDA(:,:)                   &
               + a0*(FxHF(:,:)  - FxLDA(:,:)) &
               + aX*(FxGGA(:,:) - FxLDA(:,:))  
+
+    case('BHHLYP') 
+
+      allocate(FxGGA(nBas,nBas))
+
+      call unrestricted_gga_exchange_potential('B88         ',nEns,wEns,nGrid,weight,nBas,AO,dAO,rho,drho,FxGGA)
+      call unrestricted_fock_exchange_potential(nBas,P,ERI,FxHF)
+
+      Fx(:,:) = 0.5d0*FxHF(:,:) + 0.5d0*FxGGA(:,:)
 
     case('PBE') 
 

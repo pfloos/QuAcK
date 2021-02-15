@@ -36,7 +36,7 @@ subroutine unrestricted_hybrid_correlation_potential(DFA,nEns,wEns,nGrid,weight,
 
       Fc(:,:,:) = 0d0
 
-    case('LYP')
+    case('B3LYP')
 
       allocate(FcLDA(nBas,nBas,nspin),FcGGA(nBas,nBas,nspin))
 
@@ -47,13 +47,17 @@ subroutine unrestricted_hybrid_correlation_potential(DFA,nEns,wEns,nGrid,weight,
 
       Fc(:,:,:) = FcLDA(:,:,:) + aC*(FcGGA(:,:,:) - FcLDA(:,:,:))
 
+    case('BHHLYP')
+
+      allocate(FcGGA(nBas,nBas,nspin))
+
+      call unrestricted_gga_correlation_potential('LYP         ',nEns,wEns,nGrid,weight,nBas,AO,dAO,rho,drho,Fc)
+
     case('PBE')
 
       allocate(FcGGA(nBas,nBas,nspin))
 
-      call unrestricted_gga_correlation_potential('PBE         ',nEns,wEns,nGrid,weight,nBas,AO,dAO,rho,drho,FcGGA)
-
-      Fc(:,:,:) = FcGGA(:,:,:)
+      call unrestricted_gga_correlation_potential('PBE         ',nEns,wEns,nGrid,weight,nBas,AO,dAO,rho,drho,Fc)
 
     case default
 

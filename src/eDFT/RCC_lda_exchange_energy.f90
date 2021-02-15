@@ -69,12 +69,19 @@ subroutine RCC_lda_exchange_energy(nEns,wEns,aCC_w1,aCC_w2,nGrid,weight,rho,Ex,C
   Fx2 = 1d0 - w2*(1d0 - w2)*(a2 + b2*(w2 - 0.5d0) + c2*(w2 - 0.5d0)**2)
 
   select case (Cx_choice)
-  case(1)
-  Cx = CxLDA*Fx1
-  case(2)
-  Cx = CxLDA*Fx2
-  case(3)
-  Cx = CxLDA*Fx2*Fx1
+
+    case(1)
+      Cx = CxLDA*Fx1
+
+    case(2)
+      Cx = CxLDA*Fx2
+
+    case(3)
+      Cx = CxLDA*Fx2*Fx1
+
+    case default
+      Cx = CxLDA
+
   end select
 
 ! Compute GIC-LDA exchange energy
