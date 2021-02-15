@@ -1,6 +1,6 @@
 subroutine G0W0(doACFDT,exchange_kernel,doXBS,COHSEX,SOSEX,BSE,TDA_W,TDA, & 
                 dBSE,dTDA,evDyn,singlet,triplet,linearize,eta,            & 
-                nBas,nC,nO,nV,nR,nS,ENuc,ERHF,ERI_AO,ERI_MO,dipole_int,PHF,cHF,eHF,Vxc,eGW)
+                nBas,nC,nO,nV,nR,nS,ENuc,ERHF,ERI_AO,ERI_MO,dipole_int,PHF,cHF,eHF,Vxc,eG0W0)
 
 ! Perform G0W0 calculation
 
@@ -53,11 +53,11 @@ subroutine G0W0(doACFDT,exchange_kernel,doXBS,COHSEX,SOSEX,BSE,TDA_W,TDA, &
   double precision,allocatable  :: XmY_RPA(:,:)
   double precision,allocatable  :: rho_RPA(:,:,:)
 
-  double precision,allocatable  :: eGWlin(:)
+  double precision,allocatable  :: eG0W0lin(:)
 
 ! Output variables
 
-  double precision              :: eGW(nBas)
+  double precision              :: eG0W0(nBas)
 
 ! Hello world
 
@@ -105,7 +105,7 @@ subroutine G0W0(doACFDT,exchange_kernel,doXBS,COHSEX,SOSEX,BSE,TDA_W,TDA, &
 
 ! Memory allocation
 
-  allocate(SigC(nBas),SigX(nBas),Z(nBas),OmRPA(nS),XpY_RPA(nS,nS),XmY_RPA(nS,nS),rho_RPA(nBas,nBas,nS),eGWlin(nBas))
+  allocate(SigC(nBas),SigX(nBas),Z(nBas),OmRPA(nS),XpY_RPA(nS,nS),XmY_RPA(nS,nS),rho_RPA(nBas,nBas,nS),eG0W0lin(nBas))
 
 !-------------------!
 ! Compute screening !
@@ -139,7 +139,7 @@ subroutine G0W0(doACFDT,exchange_kernel,doXBS,COHSEX,SOSEX,BSE,TDA_W,TDA, &
 ! Solve the quasi-particle equation !
 !-----------------------------------!
 
-  eGWlin(:) = eHF(:) + Z(:)*(SigX(:) + SigC(:) - Vxc(:))
+  eG0W0lin(:) = eHF(:) + Z(:)*(SigX(:) + SigC(:) - Vxc(:))
 
   ! Linearized or graphical solution?
 
@@ -148,14 +148,14 @@ subroutine G0W0(doACFDT,exchange_kernel,doXBS,COHSEX,SOSEX,BSE,TDA_W,TDA, &
     write(*,*) ' *** Quasiparticle energies obtained by linearization *** '
     write(*,*)
 
-    eGW(:) = eGWlin(:)
+    eG0W0(:) = eG0W0lin(:)
 
   else 
 
     write(*,*) ' *** Quasiparticle energies obtained by root search (experimental) *** '
     write(*,*)
   
-    call QP_graph(nBas,nC,nO,nV,nR,nS,eta,eHF,OmRPA,rho_RPA,eGWlin,eGW)
+    call QP_graph(nBas,nC,nO,nV,nR,nS,eta,eHF,OmRPA,rho_RPA,eG0W0lin,eG0W0)
 
     ! Find all the roots of the QP equation if necessary
 
@@ -165,18 +165,18 @@ subroutine G0W0(doACFDT,exchange_kernel,doXBS,COHSEX,SOSEX,BSE,TDA_W,TDA, &
 
 ! Compute the RPA correlation energy
 
-  call linear_response(ispin,.true.,TDA_W,.false.,eta,nBas,nC,nO,nV,nR,nS,1d0,eGW,ERI_MO,OmRPA, & 
+  call linear_response(ispin,.true.,TDA_W,.false.,eta,nBas,nC,nO,nV,nR,nS,1d0,eG0W0,ERI_MO,OmRPA, & 
                        rho_RPA,EcRPA,OmRPA,XpY_RPA,XmY_RPA)
 
 !--------------!
 ! Dump results !
 !--------------!
 
-  call print_G0W0(nBas,nO,eHF,ENuc,ERHF,SigC,Z,eGW,EcRPA,EcGM)
+  call print_G0W0(nBas,nO,eHF,ENuc,ERHF,SigC,Z,eG0W0,EcRPA,EcGM)
 
 ! Deallocate memory
 
-  deallocate(SigC,Z,OmRPA,XpY_RPA,XmY_RPA,rho_RPA,eGWlin)
+  deallocate(SigC,Z,OmRPA,XpY_RPA,XmY_RPA,rho_RPA,eG0W0lin)
 
 ! Plot stuff
 
@@ -186,7 +186,7 @@ subroutine G0W0(doACFDT,exchange_kernel,doXBS,COHSEX,SOSEX,BSE,TDA_W,TDA, &
 
   if(BSE) then
 
-    call Bethe_Salpeter(TDA_W,TDA,dBSE,dTDA,evDyn,singlet,triplet,eta,nBas,nC,nO,nV,nR,nS,ERI_MO,dipole_int,eHF,eGW,EcBSE)
+    call Bethe_Salpeter(TDA_W,TDA,dBSE,dTDA,evDyn,singlet,triplet,eta,nBas,nC,nO,nV,nR,nS,ERI_MO,dipole_int,eHF,eG0W0,EcBSE)
 
     if(exchange_kernel) then
  
@@ -220,7 +220,7 @@ subroutine G0W0(doACFDT,exchange_kernel,doXBS,COHSEX,SOSEX,BSE,TDA_W,TDA, &
 
       end if
 
-      call ACFDT(exchange_kernel,doXBS,.true.,TDA_W,TDA,BSE,singlet,triplet,eta,nBas,nC,nO,nV,nR,nS,ERI_MO,eHF,eGW,EcAC)
+      call ACFDT(exchange_kernel,doXBS,.true.,TDA_W,TDA,BSE,singlet,triplet,eta,nBas,nC,nO,nV,nR,nS,ERI_MO,eHF,eG0W0,EcAC)
 
       write(*,*)
       write(*,*)'-------------------------------------------------------------------------------'

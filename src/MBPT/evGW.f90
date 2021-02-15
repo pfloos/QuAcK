@@ -34,7 +34,7 @@ subroutine evGW(maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,COHSEX,SOSE
   double precision,intent(in)   :: PHF(nBas,nBas)
   double precision,intent(in)   :: eHF(nBas)
   double precision,intent(in)   :: cHF(nBas,nBas)
-  double precision,intent(in)   :: Vxc(nBas,nspin)
+  double precision,intent(in)   :: Vxc(nBas)
   double precision,intent(in)   :: eG0W0(nBas)
   double precision,intent(in)   :: ERI_AO(nBas,nBas,nBas,nBas)
   double precision,intent(in)   :: ERI_MO(nBas,nBas,nBas,nBas)
@@ -176,7 +176,7 @@ subroutine evGW(maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,COHSEX,SOSE
 
     ! Solve the quasi-particle equation
 
-    eGW(:) = eHF(:) + SigC(:)
+    eGW(:) = eHF(:) + SigX(:) + SigC(:) - Vxc(:)
 
     ! Convergence criteria
 
