@@ -940,9 +940,9 @@ program QuAcK
   if(doG0T0) then
     
     call cpu_time(start_G0T0)
-    call G0T0(doACFDT,exchange_kernel,doXBS,BSE,TDA_W,TDA,  &
-              dBSE,dTDA,evDyn,singlet,triplet,linGW,eta_GW, &  
-              nBas,nC,nO,nV,nR,nS,ENuc,ERHF,ERI_MO,dipole_int_MO,eHF,eG0T0)
+    call G0T0(doACFDT,exchange_kernel,doXBS,BSE,TDA_W,TDA,dBSE,dTDA,evDyn,singlet,triplet, &
+              linGW,eta_GW,nBas,nC,nO,nV,nR,nS,ENuc,ERHF,ERI_AO,ERI_MO,dipole_int_MO,      &  
+              PHF,cHF,eHF,Vxc,eG0T0)
     call cpu_time(end_G0T0)
   
     t_G0T0 = end_G0T0 - start_G0T0
@@ -960,7 +960,8 @@ program QuAcK
     call cpu_time(start_evGT)
     call evGT(maxSCF_GW,thresh_GW,n_diis_GW,doACFDT,exchange_kernel,doXBS, &
               BSE,TDA_W,TDA,dBSE,dTDA,evDyn,singlet,triplet,eta_GW,        & 
-              nBas,nC,nO,nV,nR,nS,ENuc,ERHF,ERI_MO,dipole_int_MO,eHF,eG0T0)
+              nBas,nC,nO,nV,nR,nS,ENuc,ERHF,ERI_AO,ERI_MO,dipole_int_MO,   &
+              PHF,cHF,eHF,Vxc,eG0T0)
     call cpu_time(end_evGT)
   
     t_evGT = end_evGT - start_evGT
