@@ -9,7 +9,7 @@
   4 BHHLYP
 # correlation rung: 
 # Hartree      = 0: H
-# LDA          = 1: VWN5,eVWN5
+# LDA          = 1: VWN3,VWN5,eVWN5
 # GGA          = 2: LYP,PBE
 # MGGA         = 3:
 # Hybrid       = 4: HF,LYP,PBE

@@ -1,5 +1,5 @@
-subroutine unrestricted_Bethe_Salpeter_dynamic_perturbation(ispin,dTDA,eta,nBas,nC,nO,nV,nR,nS,nSa,nSb,nSt,nS_sc,eGW, &
-                                                            ERI_aaaa,ERI_aabb,ERI_bbbb,dipole_int_aa,dipole_int_bb,   & 
+subroutine unrestricted_Bethe_Salpeter_dynamic_perturbation(ispin,dTDA,eta,nBas,nC,nO,nV,nR,nS,nSa,nSb,nSt,nS_sc,eW,eGW, &
+                                                            ERI_aaaa,ERI_aabb,ERI_bbbb,dipole_int_aa,dipole_int_bb,      & 
                                                             OmRPA,rho_RPA,OmBSE,XpY_BSE,XmY_BSE)
 
 ! Compute dynamical effects via perturbation theory for BSE
@@ -23,6 +23,7 @@ subroutine unrestricted_Bethe_Salpeter_dynamic_perturbation(ispin,dTDA,eta,nBas,
   integer,intent(in)            :: nSt
   integer,intent(in)            :: nS_sc
 
+  double precision,intent(in)   :: eW(nBas,nspin)
   double precision,intent(in)   :: eGW(nBas,nspin)
   double precision,intent(in)   :: ERI_aaaa(nBas,nBas,nBas,nBas)
   double precision,intent(in)   :: ERI_aabb(nBas,nBas,nBas,nBas)

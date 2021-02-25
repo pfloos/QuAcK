@@ -42,7 +42,7 @@ subroutine unrestricted_hybrid_correlation_potential(DFA,nEns,wEns,nGrid,weight,
 
       aC = 0.81d0
 
-      call unrestricted_lda_correlation_potential('VWN5        ',nEns,wEns,nGrid,weight,nBas,AO,rho,FcLDA)
+      call unrestricted_lda_correlation_potential('VWN3        ',nEns,wEns,nGrid,weight,nBas,AO,rho,FcLDA)
       call unrestricted_gga_correlation_potential('LYP         ',nEns,wEns,nGrid,weight,nBas,AO,dAO,rho,drho,FcGGA)
 
       Fc(:,:,:) = FcLDA(:,:,:) + aC*(FcGGA(:,:,:) - FcLDA(:,:,:))

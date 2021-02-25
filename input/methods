@@ -1,5 +1,5 @@
 # RHF UHF KS  MOM
-  T   F   F   F
+  F   F   T   F
 # MP2* MP3 MP2-F12
   F   F   F
 # CCD DCD CCSD CCSD(T) 
@@ -15,7 +15,7 @@
 # G0W0* evGW* qsGW*
   F    F    F
 # G0T0 evGT qsGT 
-  T    F    F
+  F    F    F
 # MCMP2
   F
 # * unrestricted version available

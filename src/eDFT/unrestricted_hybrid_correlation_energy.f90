@@ -35,7 +35,7 @@ subroutine unrestricted_hybrid_correlation_energy(DFA,nEns,wEns,nGrid,weight,rho
 
       aC = 0.81d0
 
-      call unrestricted_lda_correlation_energy('VWN5        ',nEns,wEns,nGrid,weight,rho,EcLDA)
+      call unrestricted_lda_correlation_energy('VWN3        ',nEns,wEns,nGrid,weight,rho,EcLDA)
       call unrestricted_gga_correlation_energy('LYP         ',nEns,wEns,nGrid,weight,rho,drho,EcGGA)
 
       Ec(:) = EcLDA(:) + aC*(EcGGA(:) - EcLDA(:)) 
