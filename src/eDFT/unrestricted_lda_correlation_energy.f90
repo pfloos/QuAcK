@@ -32,7 +32,9 @@ subroutine unrestricted_lda_correlation_energy(DFA,nEns,wEns,nGrid,weight,rho,Ec
 
       call UW38_lda_correlation_energy(nGrid,weight,rho,Ec)
 
-!   Vosko, Wilk and Nusair's functional V: Can. J. Phys. 58 (1980) 1200
+    case ('PW92')
+
+      call UPW92_lda_correlation_energy(nGrid,weight,rho,Ec)
 
     case ('VWN3')
 
@@ -41,8 +43,6 @@ subroutine unrestricted_lda_correlation_energy(DFA,nEns,wEns,nGrid,weight,rho,Ec
     case ('VWN5')
 
       call UVWN5_lda_correlation_energy(nGrid,weight,rho,Ec)
-
-!   Chachiyo's LDA correlation functional: Chachiyo, JCP 145 (2016) 021101
 
     case ('C16')
 

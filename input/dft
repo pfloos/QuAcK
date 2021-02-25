@@ -6,14 +6,14 @@
 # GGA          = 2: B88,G96,PBE
 # MGGA         = 3: 
 # Hybrid       = 4: HF,B3,PBE
-  4 BHHLYP
+  2 B88
 # correlation rung: 
 # Hartree      = 0: H
-# LDA          = 1: VWN3,VWN5,eVWN5
+# LDA          = 1: PW92,VWN3,VWN5,eVWN5
 # GGA          = 2: LYP,PBE
 # MGGA         = 3:
 # Hybrid       = 4: HF,LYP,PBE
-  4 BHHLYP
+  1 PW92
 # quadrature grid SG-n
   1
 # Number of states in ensemble (nEns)
