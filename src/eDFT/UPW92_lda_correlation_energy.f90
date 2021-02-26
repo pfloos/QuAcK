@@ -15,7 +15,7 @@ subroutine UPW92_lda_correlation_energy(nGrid,weight,rho,Ec)
 ! Local variables
 
   integer                       :: iG
-  double precision              :: ra,rb,r,rs,x,z
+  double precision              :: ra,rb,r,rs,z
   double precision              :: A_p,a1_p,b1_p,b2_p,b3_p,b4_p
   double precision              :: A_f,a1_f,b1_f,b2_f,b3_f,b4_f
   double precision              :: A_a,a1_a,b1_a,b2_a,b3_a,b4_a
@@ -79,7 +79,6 @@ subroutine UPW92_lda_correlation_energy(nGrid,weight,rho,Ec)
       r = ra + rb
       rs = (4d0*pi*r/3d0)**(-1d0/3d0)
       z = (ra - rb)/r
-      x = sqrt(rs)
 
       fz = (1d0 + z)**(4d0/3d0) + (1d0 - z)**(4d0/3d0) - 2d0
       fz = fz/(2d0*(2d0**(1d0/3d0) - 1d0))
@@ -106,7 +105,6 @@ subroutine UPW92_lda_correlation_energy(nGrid,weight,rho,Ec)
     if(rb > threshold) then
 
       rs = (4d0*pi*rb/3d0)**(-1d0/3d0)
-      x = sqrt(rs)
 
       ec_f = b1_f*sqrt(rs) + b2_f*rs + b3_f*rs**(3d0/2d0) + b4_f*rs**2
       ec_f = -2d0*A_f*(1d0 + a1_f*rs)*log(1d0 + 1d0/(2d0*A_f*ec_f))
