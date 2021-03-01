@@ -30,6 +30,10 @@ subroutine unrestricted_gga_correlation_energy(DFA,nEns,wEns,nGrid,weight,rho,dr
 
       call ULYP_gga_correlation_energy(nGrid,weight,rho,drho,Ec)
 
+    case ('PBE')
+
+      call UPBE_gga_correlation_energy(nGrid,weight,rho,drho,Ec)
+
     case default
 
       call print_warning('!!! GGA correlation energy not available !!!')

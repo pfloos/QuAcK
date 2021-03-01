@@ -34,7 +34,7 @@ subroutine unrestricted_gga_correlation_potential(DFA,nEns,wEns,nGrid,weight,nBa
 
     case ('PBE')
 
-!     call UPBE_gga_correlation_potential(nGrid,weight,nBas,AO,dAO,rho,drho,Fc)
+      call UPBE_gga_correlation_potential(nGrid,weight,nBas,AO,dAO,rho,drho,Fc)
 
     case default
 

@@ -16,7 +16,9 @@ subroutine self_energy_correlation(COHSEX,eta,nBas,nC,nO,nV,nR,nS,e,Omega,rho,Ec
 
 ! Local variables
 
-  integer                       :: i,j,a,b,p,x,y,jb
+  integer                       :: i,j,a,b
+  integer                       :: p,q,r
+  integer                       :: jb
   double precision              :: eps
 
 ! Output variables
@@ -26,7 +28,7 @@ subroutine self_energy_correlation(COHSEX,eta,nBas,nC,nO,nV,nR,nS,e,Omega,rho,Ec
 
 ! Initialize 
 
-  SigC = 0d0
+  SigC(:,:) = 0d0
 
 !-----------------------------!
 ! COHSEX static approximation !
@@ -36,32 +38,32 @@ subroutine self_energy_correlation(COHSEX,eta,nBas,nC,nO,nV,nR,nS,e,Omega,rho,Ec
 
    ! COHSEX: SEX of the COHSEX correlation self-energy
 
-    do x=nC+1,nBas-nR
-      do y=nC+1,nBas-nR
+    do p=nC+1,nBas-nR
+      do q=nC+1,nBas-nR
         do i=nC+1,nO
           do jb=1,nS
-            SigC(x,y) = SigC(x,y) + 4d0*rho(x,i,jb)*rho(y,i,jb)/Omega(jb)
-          enddo
-        enddo
-      enddo
-    enddo
+            SigC(p,q) = SigC(p,q) + 4d0*rho(p,i,jb)*rho(q,i,jb)/Omega(jb)
+          end do
+        end do
+      end do
+    end do
  
     ! COHSEX: COH part of the COHSEX correlation self-energy
  
-    do x=nC+1,nBas-nR
-      do y=nC+1,nBas-nR
-        do p=nC+1,nBas-nR
+    do p=nC+1,nBas-nR
+      do q=nC+1,nBas-nR
+        do r=nC+1,nBas-nR
           do jb=1,nS
-            SigC(x,y) = SigC(x,y) - 2d0*rho(x,p,jb)*rho(y,p,jb)/Omega(jb)
-          enddo
-        enddo
-      enddo
-    enddo
+            SigC(p,q) = SigC(p,q) - 2d0*rho(p,r,jb)*rho(q,r,jb)/Omega(jb)
+          end do
+        end do
+      end do
+    end do
 
     EcGM = 0d0
     do i=nC+1,nO
       EcGM = EcGM + 0.5d0*SigC(i,i)
-    enddo
+    end do
 
   else
 
@@ -71,30 +73,42 @@ subroutine self_energy_correlation(COHSEX,eta,nBas,nC,nO,nV,nR,nS,e,Omega,rho,Ec
 
   ! Occupied part of the correlation self-energy
 
-    do x=nC+1,nBas-nR
-      do y=nC+1,nBas-nR
+    do p=nC+1,nBas-nR
+      do q=nC+1,nBas-nR
         do i=nC+1,nO
           do jb=1,nS
-            eps = e(x) - e(i) + Omega(jb)
-            SigC(x,y) = SigC(x,y) + 2d0*rho(x,i,jb)*rho(y,i,jb)*eps/(eps**2 + eta**2)
-          enddo
-        enddo
-      enddo
-    enddo
+            eps = e(p) - e(i) + Omega(jb)
+            SigC(p,q) = SigC(p,q) + 2d0*rho(p,i,jb)*rho(q,i,jb)*eps/(eps**2 + eta**2)
+          end do
+        end do
+      end do
+    end do
  
     ! Virtual part of the correlation self-energy
  
-    do x=nC+1,nBas-nR
-      do y=nC+1,nBas-nR
+    do p=nC+1,nBas-nR
+      do q=nC+1,nBas-nR
         do a=nO+1,nBas-nR
           do jb=1,nS
-            eps = e(x) - e(a) - Omega(jb)
-            SigC(x,y) = SigC(x,y) + 2d0*rho(x,a,jb)*rho(y,a,jb)*eps/(eps**2 + eta**2)
-          enddo
-        enddo
-      enddo
-    enddo
+            eps = e(p) - e(a) - Omega(jb)
+            SigC(p,q) = SigC(p,q) + 2d0*rho(p,a,jb)*rho(q,a,jb)*eps/(eps**2 + eta**2)
+          end do
+        end do
+      end do
+    end do
 
-  endif
+    ! GM correlation energy
+
+    EcGM = 0d0
+    do i=nC+1,nO
+      do a=nO+1,nBas-nR
+        do jb=1,nS
+          eps = e(a) - e(i) + Omega(jb)
+          EcGM = EcGM - 4d0*rho(a,i,jb)*rho(a,i,jb)*eps/(eps**2 + eta**2)
+        end do
+      end do
+    end do
+
+  end if
 
 end subroutine self_energy_correlation

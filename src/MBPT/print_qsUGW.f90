@@ -1,5 +1,5 @@
 subroutine print_qsUGW(nBas,nO,nSCF,Conv,thresh,eHF,eGW,cGW,PGW,Ov,T,V,J,K, & 
-                       ENuc,ET,EV,EJ,Ex,Ec,EcRPA,EqsGW,SigC,Z,dipole)
+                       ENuc,ET,EV,EJ,Ex,Ec,EcGM,EcRPA,EqsGW,SigC,Z,dipole)
 
 ! Print one-electron energies and other stuff for qsUGW
 
@@ -17,6 +17,7 @@ subroutine print_qsUGW(nBas,nO,nSCF,Conv,thresh,eHF,eGW,cGW,PGW,Ov,T,V,J,K, &
   double precision,intent(in)        :: EJ(nsp)
   double precision,intent(in)        :: Ex(nspin)
   double precision,intent(in)        :: Ec(nsp)
+  double precision,intent(in)        :: EcGM(nspin)
   double precision,intent(in)        :: EcRPA
   double precision,intent(in)        :: EqsGW
   double precision,intent(in)        :: Conv
@@ -103,6 +104,7 @@ subroutine print_qsUGW(nBas,nO,nSCF,Conv,thresh,eHF,eGW,cGW,PGW,Ov,T,V,J,K, &
   write(*,'(2X,A30,F15.6,A3)') '    qsUGW total       energy:',EqsGW + ENuc,' au'
   write(*,'(2X,A30,F15.6,A3)') '    qsUGW exchange    energy:',sum(Ex(:)),' au'
 ! write(*,'(2X,A30,F15.6,A3)') '    qsUGW correlation energy:',sum(Ec(:)),' au'
+  write(*,'(2X,A30,F15.6,A3)') ' GM@qsUGW correlation energy:',sum(EcGM(:)),' au'
   write(*,'(2X,A30,F15.6,A3)') 'RPA@qsUGW correlation energy:',EcRPA,' au'
   write(*,*)'-------------------------------------------------------------------------------& 
               -------------------------------------------------'
@@ -141,7 +143,7 @@ subroutine print_qsUGW(nBas,nO,nSCF,Conv,thresh,eHF,eGW,cGW,PGW,Ov,T,V,J,K, &
     write(*,'(A40,1X,F16.10,A3)') ' Exchange        energy: ',sum(Ex(:)),' au'
     write(*,'(A40,1X,F16.10,A3)') ' Exchange     a  energy: ',Ex(1),' au'
     write(*,'(A40,1X,F16.10,A3)') ' Exchange     b  energy: ',Ex(2),' au'
-!   write(*,*)
+    write(*,*)
 !   write(*,'(A40,1X,F16.10,A3)') ' Correlation     energy: ',sum(Ec(:)),' au'
 !   write(*,'(A40,1X,F16.10,A3)') ' Correlation  aa energy: ',Ec(1),' au'
 !   write(*,'(A40,1X,F16.10,A3)') ' Correlation  ab energy: ',Ec(2),' au'

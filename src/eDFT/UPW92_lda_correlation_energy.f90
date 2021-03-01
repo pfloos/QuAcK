@@ -58,6 +58,8 @@ subroutine UPW92_lda_correlation_energy(nGrid,weight,rho,Ec)
 
     ra = max(0d0,rho(iG,1))
     rb = max(0d0,rho(iG,2))
+    r = ra + rb
+    z = (ra - rb)/r
 
 !   alpha-alpha contribution
 
@@ -74,11 +76,9 @@ subroutine UPW92_lda_correlation_energy(nGrid,weight,rho,Ec)
 
 !   alpha-beta contribution
 
-    if(ra > threshold .or. rb > threshold) then
+    if(r > threshold) then
 
-      r = ra + rb
       rs = (4d0*pi*r/3d0)**(-1d0/3d0)
-      z = (ra - rb)/r
 
       fz = (1d0 + z)**(4d0/3d0) + (1d0 - z)**(4d0/3d0) - 2d0
       fz = fz/(2d0*(2d0**(1d0/3d0) - 1d0))

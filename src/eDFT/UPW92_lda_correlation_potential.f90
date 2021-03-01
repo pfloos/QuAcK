@@ -173,6 +173,7 @@ subroutine UPW92_lda_correlation_potential(nGrid,weight,nBas,AO,rho,Fc)
 
           decdrb = decdrb_p + decdrb_a*fz/d2fz*(1d0-z**4) + ec_a*dfzdrb/d2fz*(1d0-z**4) - 4d0*ec_a*fz/d2fz*dzdrb*z**3 &
                  + (decdrb_f - decdrb_p)*fz*z**4 + (ec_f - ec_p)*dfzdrb*z**4 + 4d0*(ec_f - ec_p)*fz*dzdrb*z**3
+
           Fc(mu,nu,2) = Fc(mu,nu,2) + weight(iG)*AO(mu,iG)*AO(nu,iG)*(ec_z + decdrb*r)
        
         end if

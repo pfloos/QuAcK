@@ -77,6 +77,7 @@ subroutine qsUGW(maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,COHSEX,SOS
   double precision              :: Ex(nspin)
   double precision              :: Ec(nsp)
   double precision              :: EcRPA
+  double precision              :: EcGM(nspin)
   double precision              :: EqsGW
   double precision              :: EcBSE(nspin)
   double precision              :: EcAC(nspin)
@@ -230,12 +231,12 @@ subroutine qsUGW(maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,COHSEX,SOS
 
     if(G0W) then
 
-      call unrestricted_self_energy_correlation(eta,nBas,nC,nO,nV,nR,nS_sc,eHF,OmRPA,rho_RPA,SigC)
+      call unrestricted_self_energy_correlation(eta,nBas,nC,nO,nV,nR,nS_sc,eHF,OmRPA,rho_RPA,SigC,EcGM)
       call unrestricted_renormalization_factor(eta,nBas,nC,nO,nV,nR,nS_sc,eHF,OmRPA,rho_RPA,Z)
 
      else
 
-      call unrestricted_self_energy_correlation(eta,nBas,nC,nO,nV,nR,nS_sc,eGW,OmRPA,rho_RPA,SigC)
+      call unrestricted_self_energy_correlation(eta,nBas,nC,nO,nV,nR,nS_sc,eGW,OmRPA,rho_RPA,SigC,EcGM)
       call unrestricted_renormalization_factor(eta,nBas,nC,nO,nV,nR,nS_sc,eGW,OmRPA,rho_RPA,Z)
 
      endif
@@ -321,7 +322,8 @@ subroutine qsUGW(maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,COHSEX,SOS
     ! Coulomb energy
 
     EJ(1) = 0.5d0*trace_matrix(nBas,matmul(P(:,:,1),J(:,:,1)))
-    EJ(2) = 1.0d0*trace_matrix(nBas,matmul(P(:,:,1),J(:,:,2)))
+    EJ(2) = 0.5d0*trace_matrix(nBas,matmul(P(:,:,1),J(:,:,2))) &
+          + 0.5d0*trace_matrix(nBas,matmul(P(:,:,2),J(:,:,1)))
     EJ(3) = 0.5d0*trace_matrix(nBas,matmul(P(:,:,2),J(:,:,2)))
 
     ! Exchange energy
@@ -348,7 +350,7 @@ subroutine qsUGW(maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,COHSEX,SOS
     !------------------------------------------------------------------------
 
     call dipole_moment(nBas,P(:,:,1)+P(:,:,2),nNuc,ZNuc,rNuc,dipole_int_AO,dipole)
-    call print_qsUGW(nBas,nO,nSCF,Conv,thresh,eHF,eGW,c,P,S,T,V,J,K,ENuc,ET,EV,EJ,Ex,Ec,EcRPA,EqsGW,SigCp,Z,dipole)
+    call print_qsUGW(nBas,nO,nSCF,Conv,thresh,eHF,eGW,c,P,S,T,V,J,K,ENuc,ET,EV,EJ,Ex,Ec,EcGM,EcRPA,EqsGW,SigCp,Z,dipole)
 
   enddo
 !------------------------------------------------------------------------

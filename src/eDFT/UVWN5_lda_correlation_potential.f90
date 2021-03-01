@@ -59,20 +59,20 @@ subroutine UVWN5_lda_correlation_potential(nGrid,weight,nBas,AO,rho,Fc)
 
         ra = max(0d0,rho(iG,1))
         rb = max(0d0,rho(iG,2))
+        r  = ra + rb
+        z  = (ra - rb)/r
+
+        rs = (4d0*pi*r/3d0)**(-1d0/3d0)
+        x  = sqrt(rs)
+       
+        fz = (1d0 + z)**(4d0/3d0) + (1d0 - z)**(4d0/3d0) - 2d0
+        fz = fz/(2d0*(2d0**(1d0/3d0) - 1d0))
+       
+        d2fz = 4d0/(9d0*(2**(1d0/3d0) - 1d0))
        
 !       spin-up contribution
        
         if(ra > threshold) then
-       
-          r = ra + rb
-          rs = (4d0*pi*r/3d0)**(-1d0/3d0)
-          z = (ra - rb)/r
-          x = sqrt(rs)
-       
-          fz = (1d0 + z)**(4d0/3d0) + (1d0 - z)**(4d0/3d0) - 2d0
-          fz = fz/(2d0*(2d0**(1d0/3d0) - 1d0))
-       
-          d2fz = 4d0/(9d0*(2**(1d0/3d0) - 1d0))
        
           x_p = x*x + b_p*x + c_p
           x_f = x*x + b_f*x + c_f
@@ -131,16 +131,6 @@ subroutine UVWN5_lda_correlation_potential(nGrid,weight,nBas,AO,rho,Fc)
 !       spin-down contribution
        
         if(rb > threshold) then
-       
-          r = ra + rb
-          rs = (4d0*pi*r/3d0)**(-1d0/3d0)
-          z = (ra - rb)/r
-          x = sqrt(rs)
-       
-          fz = (1d0 + z)**(4d0/3d0) + (1d0 - z)**(4d0/3d0) - 2d0
-          fz = fz/(2d0*(2d0**(1d0/3d0) - 1d0))
-       
-          d2fz = 4d0/(9d0*(2**(1d0/3d0) - 1d0))
        
           x_p = x*x + b_p*x + c_p
           x_f = x*x + b_f*x + c_f
