@@ -6,6 +6,7 @@ program QuAcK
   logical                       :: doSph
   logical                       :: unrestricted = .false.
   logical                       :: doRHF,doUHF,doMOM 
+  logical                       :: dostab
   logical                       :: doKS
   logical                       :: doMP2,doMP3,doMP2F12
   logical                       :: doCCD,doDCD,doCCSD,doCCSDT
@@ -78,6 +79,7 @@ program QuAcK
   double precision              :: start_QuAcK  ,end_QuAcK    ,t_QuAcK
   double precision              :: start_int    ,end_int      ,t_int  
   double precision              :: start_HF     ,end_HF       ,t_HF
+  double precision              :: start_stab   ,end_stab     ,t_stab
   double precision              :: start_KS     ,end_KS       ,t_KS
   double precision              :: start_MOM    ,end_MOM      ,t_MOM
   double precision              :: start_AOtoMO ,end_AOtoMO   ,t_AOtoMO
@@ -169,14 +171,14 @@ program QuAcK
 
 ! Read options for methods
 
-  call read_options(maxSCF_HF,thresh_HF,DIIS_HF,n_diis_HF,guess_type,ortho_type,mix, &
-                    maxSCF_CC,thresh_CC,DIIS_CC,n_diis_CC,                           &
-                    TDA,singlet,triplet,spin_conserved,spin_flip,                    &
-                    maxSCF_GF,thresh_GF,DIIS_GF,n_diis_GF,linGF,eta_GF,renormGF,     &
-                    maxSCF_GW,thresh_GW,DIIS_GW,n_diis_GW,linGW,eta_GW,              & 
-                    COHSEX,SOSEX,TDA_W,G0W,GW0,                                      &  
-                    doACFDT,exchange_kernel,doXBS,                                   &
-                    BSE,dBSE,dTDA,evDyn,                                             &
+  call read_options(maxSCF_HF,thresh_HF,DIIS_HF,n_diis_HF,guess_type,ortho_type,mix,dostab, &
+                    maxSCF_CC,thresh_CC,DIIS_CC,n_diis_CC,                                  &
+                    TDA,singlet,triplet,spin_conserved,spin_flip,                           &
+                    maxSCF_GF,thresh_GF,DIIS_GF,n_diis_GF,linGF,eta_GF,renormGF,            &
+                    maxSCF_GW,thresh_GW,DIIS_GW,n_diis_GW,linGW,eta_GW,                     & 
+                    COHSEX,SOSEX,TDA_W,G0W,GW0,                                             &  
+                    doACFDT,exchange_kernel,doXBS,                                          &
+                    BSE,dBSE,dTDA,evDyn,                                                    &
                     nMC,nEq,nWalk,dt,nPrint,iSeed,doDrift)
 
 ! Weird stuff
@@ -438,6 +440,32 @@ program QuAcK
   t_AOtoMO = end_AOtoMO - start_AOtoMO
   write(*,'(A65,1X,F9.3,A8)') 'Total CPU time for AO to MO transformation = ',t_AOtoMO,' seconds'
   write(*,*)
+
+!------------------------------------------------------------------------
+! Stability analysis of HF solution
+!------------------------------------------------------------------------
+
+  if(dostab) then
+
+    call cpu_time(start_stab)
+
+    if(unrestricted) then
+
+      call UHF_stability(nBas,nC,nO,nV,nR,nS,eHF,ERI_MO_aaaa,ERI_MO_aabb,ERI_MO_bbbb)
+
+    else
+
+      call RHF_stability(nBas,nC,nO,nV,nR,nS,eHF,ERI_MO)
+
+    end if
+
+    call cpu_time(end_stab)
+
+    t_stab = end_stab - start_stab
+    write(*,'(A65,1X,F9.3,A8)') 'Total CPU time for stability analysis = ',t_stab,' seconds'
+    write(*,*)
+
+  end if
 
 !------------------------------------------------------------------------
 ! Compute MP2 energy

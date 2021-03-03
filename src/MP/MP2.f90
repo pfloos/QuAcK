@@ -6,9 +6,15 @@ subroutine MP2(nBas,nC,nO,nV,nR,ERI,ENuc,EHF,e,EcMP2)
 
 ! Input variables
 
-  integer,intent(in)            :: nBas,nC,nO,nV,nR
-  double precision,intent(in)   :: ENuc,EHF
-  double precision,intent(in)   :: ERI(nBas,nBas,nBas,nBas),e(nBas)
+  integer,intent(in)            :: nBas
+  integer,intent(in)            :: nC
+  integer,intent(in)            :: nO
+  integer,intent(in)            :: nV
+  integer,intent(in)            :: nR
+  double precision,intent(in)   :: ENuc
+  double precision,intent(in)   :: EHF
+  double precision,intent(in)   :: e(nBas)
+  double precision,intent(in)   :: ERI(nBas,nBas,nBas,nBas)
 
 ! Local variables
 

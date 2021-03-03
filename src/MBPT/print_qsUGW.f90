@@ -113,6 +113,7 @@ subroutine print_qsUGW(nBas,nO,nSCF,Conv,thresh,eHF,eGW,cGW,PGW,Ov,T,V,J,K, &
 ! Dump results for final iteration
 
   if(Conv < thresh) then
+! if(.true.) then
 
     write(*,*)
     write(*,'(A60)')              '-------------------------------------------------'
