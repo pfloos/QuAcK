@@ -66,7 +66,7 @@ subroutine restricted_exchange_potential(rung,DFA,LDA_centered,nEns,wEns,aCC_w1,
       cX = 0.20d0
       aX = 0.72d0
 
-      call restricted_lda_exchange_potential(DFA,nGrid,weight,nBas,AO,rho,FxLDA,Cx_choice)
+      call restricted_lda_exchange_potential(DFA,LDA_centered,nEns,wEns,aCC_w1,aCC_w2,nGrid,weight,nBas,AO,rho,Fx,Cx_choice)
       call restricted_gga_exchange_potential(DFA,nGrid,weight,nBas,AO,dAO,rho,drho,FxGGA)
       call restricted_fock_exchange_potential(nBas,P,ERI,FxHF)
 
