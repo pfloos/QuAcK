@@ -4,7 +4,8 @@ subroutine read_methods(doRHF,doUHF,doKS,doMOM,           &
                         do_drCCD,do_rCCD,do_lCCD,do_pCCD, &
                         doCIS,doCIS_D,doCID,doCISD,       & 
                         doRPA,doRPAx,doppRPA,             & 
-                        doG0F2,doevGF2,doG0F3,doevGF3,    & 
+                        doG0F2,doevGF2,doqsGF2,           &
+                        doG0F3,doevGF3,                   & 
                         doG0W0,doevGW,doqsGW,             & 
                         doG0T0,doevGT,doqsGT,             & 
                         doMCMP2)
@@ -21,7 +22,7 @@ subroutine read_methods(doRHF,doUHF,doKS,doMOM,           &
   logical,intent(out)           :: do_drCCD,do_rCCD,do_lCCD,do_pCCD
   logical,intent(out)           :: doCIS,doCIS_D,doCID,doCISD
   logical,intent(out)           :: doRPA,doRPAx,doppRPA
-  logical,intent(out)           :: doG0F2,doevGF2,doG0F3,doevGF3  
+  logical,intent(out)           :: doG0F2,doevGF2,doqsGF2,doG0F3,doevGF3  
   logical,intent(out)           :: doG0W0,doevGW,doqsGW
   logical,intent(out)           :: doG0T0,doevGT,doqsGT
   logical,intent(out)           :: doMCMP2
@@ -66,6 +67,7 @@ subroutine read_methods(doRHF,doUHF,doKS,doMOM,           &
 
   doG0F2  = .false.
   doevGF2 = .false.
+  doqsGF2 = .false.
   doG0F3  = .false.
   doevGF3 = .false.
 
@@ -132,11 +134,12 @@ subroutine read_methods(doRHF,doUHF,doKS,doMOM,           &
 ! Read Green function methods
 
   read(1,*) 
-  read(1,*) answer1,answer2,answer3,answer4
+  read(1,*) answer1,answer2,answer3,answer4,answer5
   if(answer1 == 'T') doG0F2  = .true.
   if(answer2 == 'T') doevGF2 = .true.
-  if(answer3 == 'T') doG0F3  = .true.
-  if(answer4 == 'T') doevGF3 = .true.
+  if(answer3 == 'T') doqsGF2 = .true.
+  if(answer4 == 'T') doG0F3  = .true.
+  if(answer5 == 'T') doevGF3 = .true.
 
 ! Read GW methods
 

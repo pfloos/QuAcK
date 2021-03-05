@@ -14,7 +14,7 @@ program QuAcK
   logical                       :: doCIS,doCIS_D,doCID,doCISD
   logical                       :: doRPA,doRPAx,doppRPA
   logical                       :: doADC
-  logical                       :: doG0F2,doevGF2,doG0F3,doevGF3
+  logical                       :: doG0F2,doevGF2,doqsGF2,doG0F3,doevGF3
   logical                       :: doG0W0,doevGW,doqsGW
   logical                       :: doG0T0,doevGT,doqsGT
   logical                       :: doMCMP2,doMinMCMP2
@@ -164,7 +164,8 @@ program QuAcK
                     do_drCCD,do_rCCD,do_lCCD,do_pCCD, &
                     doCIS,doCIS_D,doCID,doCISD,       & 
                     doRPA,doRPAx,doppRPA,             &
-                    doG0F2,doevGF2,doG0F3,doevGF3,    &
+                    doG0F2,doevGF2,doqsGF2,           & 
+                    doG0F3,doevGF3,                   &
                     doG0W0,doevGW,doqsGW,             &
                     doG0T0,doevGT,doqsGT,             &
                     doMCMP2)
@@ -835,6 +836,25 @@ program QuAcK
 
     t_GF2 = end_GF2 - start_GF2
     write(*,'(A65,1X,F9.3,A8)') 'Total CPU time for GF2 = ',t_GF2,' seconds'
+    write(*,*)
+
+  end if
+
+!------------------------------------------------------------------------
+! Perform qsGF2 calculation
+!------------------------------------------------------------------------
+
+  if(doqsGF2) then 
+
+    call cpu_time(start_GF2)
+
+    call qsGF2(maxSCF_GF,thresh_GF,n_diis_GF,BSE,TDA,dBSE,dTDA,evDyn,singlet,triplet,eta_GF,nNuc,ZNuc,rNuc,ENuc, & 
+               nBas,nC,nO,nV,nR,nS,ERHF,S,X,T,V,Hc,ERI_AO,ERI_MO,dipole_int_AO,dipole_int_MO,PHF,cHF,eHF)
+
+    call cpu_time(end_GF2)
+
+    t_GF2 = end_GF2 - start_GF2
+    write(*,'(A65,1X,F9.3,A8)') 'Total CPU time for qsGF2 = ',t_GF2,' seconds'
     write(*,*)
 
   end if
