@@ -30,14 +30,10 @@ subroutine G0F2(BSE,TDA,dBSE,dTDA,evDyn,singlet,triplet,linearize,eta,nBas,nC,nO
 
 ! Local variables
 
-  double precision              :: eps
-  double precision              :: V
   double precision              :: EcBSE(nspin)
   double precision,allocatable  :: eGF2(:)
-  double precision,allocatable  :: Sig(:)
+  double precision,allocatable  :: SigC(:)
   double precision,allocatable  :: Z(:)
-
-  integer                       :: i,j,a,b,p
 
 ! Hello world
 
@@ -49,7 +45,7 @@ subroutine G0F2(BSE,TDA,dBSE,dTDA,evDyn,singlet,triplet,linearize,eta,nBas,nC,nO
 
 ! Memory allocation
 
-  allocate(Sig(nBas),Z(nBas),eGF2(nBas))
+  allocate(SigC(nBas),Z(nBas),eGF2(nBas))
 
   if(linearize) then 
   
@@ -60,56 +56,21 @@ subroutine G0F2(BSE,TDA,dBSE,dTDA,evDyn,singlet,triplet,linearize,eta,nBas,nC,nO
 
 ! Frequency-dependent second-order contribution
 
-  Sig(:) = 0d0
-  Z(:)   = 0d0
-
-  do p=nC+1,nBas-nR
-    do i=nC+1,nO
-      do j=nC+1,nO
-        do a=nO+1,nBas-nR
-
-          eps = eHF(p) + eHF(a) - eHF(i) - eHF(j)
-          V  = (2d0*ERI(p,a,i,j) - ERI(p,a,j,i))*ERI(p,a,i,j)
-
-          Sig(p) = Sig(p) + V*eps/(eps**2 + eta**2)
-          Z(p)   = Z(p)   - V*(eps**2 - eta**2)/(eps**2 + eta**2)**2
-
-        end do
-      end do
-    end do
-  end do
-
-  do p=nC+1,nBas-nR
-    do i=nC+1,nO
-      do a=nO+1,nBas-nR
-        do b=nO+1,nBas-nR
-
-          eps = eHF(p) + eHF(i) - eHF(a) - eHF(b)
-          V  = (2d0*ERI(p,i,a,b) - ERI(p,i,b,a))*ERI(p,i,a,b)
-
-          Sig(p) = Sig(p) + V*eps/(eps**2 + eta**2)
-          Z(p)   = Z(p)   - V*(eps**2 - eta**2)/(eps**2 + eta**2)**2
-
-        end do
-      end do
-    end do
-  end do
-
-  Z(:) = 1d0/(1d0 - Z(:))
+  call self_energy_GF2(eta,nBas,nC,nO,nV,nR,nS,eHF,eHF,ERI,SigC,Z)
 
   if(linearize) then
 
-    eGF2(:) = eHF(:) + Z(:)*Sig(:)
+    eGF2(:) = eHF(:) + Z(:)*SigC(:)
 
   else
 
-    eGF2(:) = eHF(:) + Sig(:)
+    eGF2(:) = eHF(:) + SigC(:)
 
   end if
 
   ! Print results
 
-  call print_G0F2(nBas,nO,eHF,Sig,eGF2,Z)
+  call print_G0F2(nBas,nO,eHF,SigC,eGF2,Z)
 
 ! Perform BSE2 calculation
 

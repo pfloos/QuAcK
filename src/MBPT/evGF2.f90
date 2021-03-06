@@ -37,18 +37,14 @@ subroutine evGF2(BSE,TDA,dBSE,dTDA,evDyn,maxSCF,thresh,max_diis,singlet,triplet,
   integer                       :: nSCF
   integer                       :: n_diis
   double precision              :: EcBSE(nspin)
-  double precision              :: num
-  double precision              :: eps
   double precision              :: Conv
   double precision              :: rcond
   double precision,allocatable  :: eGF2(:)
   double precision,allocatable  :: eOld(:)
-  double precision,allocatable  :: Sig(:)
+  double precision,allocatable  :: SigC(:)
   double precision,allocatable  :: Z(:)
   double precision,allocatable  :: error_diis(:,:)
   double precision,allocatable  :: e_diis(:,:)
-
-  integer                       :: i,j,a,b,p
 
 ! Hello world
 
@@ -60,7 +56,7 @@ subroutine evGF2(BSE,TDA,dBSE,dTDA,evDyn,maxSCF,thresh,max_diis,singlet,triplet,
 
 ! Memory allocation
 
-  allocate(Sig(nBas),Z(nBas),eGF2(nBas),eOld(nBas),error_diis(nBas,max_diis),e_diis(nBas,max_diis))
+  allocate(SigC(nBas),Z(nBas),eGF2(nBas),eOld(nBas),error_diis(nBas,max_diis),e_diis(nBas,max_diis))
 
 ! Initialization
 
@@ -80,50 +76,15 @@ subroutine evGF2(BSE,TDA,dBSE,dTDA,evDyn,maxSCF,thresh,max_diis,singlet,triplet,
 
     ! Frequency-dependent second-order contribution
 
-    Sig(:) = 0d0
-    Z(:)   = 0d0
-
-    do p=nC+1,nBas-nR
-      do i=nC+1,nO
-        do j=nC+1,nO
-          do a=nO+1,nBas-nR
-
-            eps = eGF2(p) + eHF(a) - eHF(i) - eHF(j)
-            num = (2d0*ERI(p,a,i,j) - ERI(p,a,j,i))*ERI(p,a,i,j)
-
-            Sig(p) = Sig(p) + num*eps/(eps**2 + eta**2)
-            Z(p)   = Z(p)   - num*(eps**2 - eta**2)/(eps**2 + eta**2)**2
-
-          end do
-        end do
-      end do
-    end do
-
-    do p=nC+1,nBas-nR
-      do i=nC+1,nO
-        do a=nO+1,nBas-nR
-          do b=nO+1,nBas-nR
-
-            eps = eGF2(p) + eHF(i) - eHF(a) - eHF(b)
-            num = (2d0*ERI(p,i,a,b) - ERI(p,i,b,a))*ERI(p,i,a,b)
-
-            Sig(p) = Sig(p) + num*eps/(eps**2 + eta**2)
-            Z(p)   = Z(p)   - num*(eps**2 - eta**2)/(eps**2 + eta**2)**2
-
-          end do
-        end do
-      end do
-    end do
-
-    Z(:) = 1d0/(1d0 - Z(:))
+    call self_energy_GF2(eta,nBas,nC,nO,nV,nR,nS,eHF,eGF2,ERI,SigC,Z)
 
     if(linearize) then
 
-      eGF2(:) = eHF(:) + Z(:)*Sig(:)
+      eGF2(:) = eHF(:) + Z(:)*SigC(:)
 
     else
 
-      eGF2(:) = eHF(:) + Sig(:)
+      eGF2(:) = eHF(:) + SigC(:)
 
     end if
 
@@ -131,7 +92,7 @@ subroutine evGF2(BSE,TDA,dBSE,dTDA,evDyn,maxSCF,thresh,max_diis,singlet,triplet,
 
     ! Print results
 
-    call print_evGF2(nBas,nO,nSCF,Conv,eHF,Sig,Z,eGF2)
+    call print_evGF2(nBas,nO,nSCF,Conv,eHF,SigC,Z,eGF2)
 
     ! DIIS extrapolation
 
