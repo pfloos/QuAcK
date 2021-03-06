@@ -27,7 +27,7 @@ subroutine print_qsGW(nBas,nO,nSCF,Conv,thresh,eHF,eGW,c,ENuc,P,T,V,J,K,F,SigC,Z
 ! Local variables
 
   integer                            :: x,ixyz,HOMO,LUMO
-  double precision                   :: Gap,ET,EV,EJ,Ex,Ec
+  double precision                   :: Gap,ET,EV,EJ,Ex
   double precision,external          :: trace_matrix
 
 ! Output variables
@@ -46,8 +46,7 @@ subroutine print_qsGW(nBas,nO,nSCF,Conv,thresh,eHF,eGW,c,ENuc,P,T,V,J,K,F,SigC,Z
   EV = trace_matrix(nBas,matmul(P,V))
   EJ = 0.5d0*trace_matrix(nBas,matmul(P,J))
   Ex = 0.25d0*trace_matrix(nBas,matmul(P,K))
-! Ec = -0.50d0*trace_matrix(nBas,matmul(P,SigC))
-  EqsGW = ET + EV + EJ + Ex + EcGM
+  EqsGW = ET + EV + EJ + Ex 
 
 ! Dump results
 
@@ -75,9 +74,9 @@ subroutine print_qsGW(nBas,nO,nSCF,Conv,thresh,eHF,eGW,c,ENuc,P,T,V,J,K,F,SigC,Z
   write(*,'(2X,A30,F15.6,A3)') 'qsGW LUMO      energy:',eGW(LUMO)*HaToeV,' eV'
   write(*,'(2X,A30,F15.6,A3)') 'qsGW HOMO-LUMO gap   :',Gap*HaToeV,' eV'
   write(*,*)'-------------------------------------------'
-  write(*,'(2X,A30,F15.6,A3)') '    qsGW total       energy:',EqsGW + ENuc,' au'
+  write(*,'(2X,A30,F15.6,A3)') '    qsGW total       energy:',ENuc + EqsGW + EcGM,' au'
   write(*,'(2X,A30,F15.6,A3)') '    qsGW exchange    energy:',Ex,' au'
-  write(*,'(2X,A30,F15.6,A3)') '    qsGW correlation energy:',EcGM,' au'
+  write(*,'(2X,A30,F15.6,A3)') ' GM@qsGW correlation energy:',EcGM,' au'
   write(*,'(2X,A30,F15.6,A3)') 'RPA@qsGW correlation energy:',EcRPA,' au'
   write(*,*)'-------------------------------------------'
   write(*,*)
@@ -101,7 +100,7 @@ subroutine print_qsGW(nBas,nO,nSCF,Conv,thresh,eHF,eGW,c,ENuc,P,T,V,J,K,F,SigC,Z
     write(*,'(A50)')           '---------------------------------------'
     write(*,'(A32,1X,F16.10,A3)') ' Electronic   energy: ',EqsGW,' au'
     write(*,'(A32,1X,F16.10,A3)') ' Nuclear   repulsion: ',ENuc,' au'
-    write(*,'(A32,1X,F16.10,A3)') ' qsGW         energy: ',ENuc + EqsGW,' au'
+    write(*,'(A32,1X,F16.10,A3)') ' qsGW         energy: ',ENuc + EqsGW + EcGM,' au'
     write(*,'(A50)')           '---------------------------------------'
     write(*,'(A35)')           ' Dipole moment (Debye)    '
     write(*,'(10X,4A10)')      'X','Y','Z','Tot.'

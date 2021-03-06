@@ -1,4 +1,4 @@
-subroutine print_qsGF2(nBas,nO,nSCF,Conv,thresh,eHF,eGF2,c,ENuc,P,T,V,J,K,F,SigC,Z,EqsGF2,dipole)
+subroutine print_qsGF2(nBas,nO,nSCF,Conv,thresh,eHF,eGF2,c,ENuc,P,T,V,J,K,F,SigC,Z,EqsGF2,Ec,dipole)
 
 ! Print one-electron energies and other stuff for qsGF2
 
@@ -44,8 +44,7 @@ subroutine print_qsGF2(nBas,nO,nSCF,Conv,thresh,eHF,eGF2,c,ENuc,P,T,V,J,K,F,SigC
   EV = trace_matrix(nBas,matmul(P,V))
   EJ = 0.5d0*trace_matrix(nBas,matmul(P,J))
   Ex = 0.25d0*trace_matrix(nBas,matmul(P,K))
-  Ec = 0.50d0*trace_matrix(nBas,matmul(P,SigC))
-  EqsGF2 = ET + EV + EJ + Ex + Ec
+  EqsGF2 = ET + EV + EJ + Ex
 
 ! Dump results
 
@@ -73,8 +72,9 @@ subroutine print_qsGF2(nBas,nO,nSCF,Conv,thresh,eHF,eGF2,c,ENuc,P,T,V,J,K,F,SigC
   write(*,'(2X,A30,F15.6,A3)') 'qsGF2 LUMO      energy:',eGF2(LUMO)*HaToeV,' eV'
   write(*,'(2X,A30,F15.6,A3)') 'qsGF2 HOMO-LUMO gap   :',Gap*HaToeV,' eV'
   write(*,*)'-------------------------------------------'
-  write(*,'(2X,A30,F15.6,A3)') '    qsGF2 total       energy:',EqsGF2 + ENuc,' au'
+  write(*,'(2X,A30,F15.6,A3)') '    qsGF2 total       energy:',ENuc + EqsGF2 + Ec,' au'
   write(*,'(2X,A30,F15.6,A3)') '    qsGF2 exchange    energy:',Ex,' au'
+  write(*,'(2X,A30,F15.6,A3)') '    qsGF2 correlation energy:',Ec,' au'
   write(*,*)'-------------------------------------------'
   write(*,*)
 
@@ -95,9 +95,9 @@ subroutine print_qsGF2(nBas,nO,nSCF,Conv,thresh,eHF,eGF2,c,ENuc,P,T,V,J,K,F,SigC
     write(*,'(A32,1X,F16.10,A3)') ' Exchange     energy: ',Ex,' au'
     write(*,'(A32,1X,F16.10,A3)') ' Correlation  energy: ',Ec,' au'
     write(*,'(A50)')           '---------------------------------------'
-    write(*,'(A32,1X,F16.10,A3)') ' Electronic   energy: ',EqsGF2,' au'
+    write(*,'(A32,1X,F16.10,A3)') ' Electronic   energy: ',EqsGF2 + Ec,' au'
     write(*,'(A32,1X,F16.10,A3)') ' Nuclear   repulsion: ',ENuc,' au'
-    write(*,'(A32,1X,F16.10,A3)') ' qsGF2        energy: ',ENuc + EqsGF2,' au'
+    write(*,'(A32,1X,F16.10,A3)') ' qsGF2        energy: ',ENuc + EqsGF2 + Ec,' au'
     write(*,'(A50)')           '---------------------------------------'
     write(*,'(A35)')           ' Dipole moment (Debye)    '
     write(*,'(10X,4A10)')      'X','Y','Z','Tot.'

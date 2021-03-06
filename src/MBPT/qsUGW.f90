@@ -75,7 +75,6 @@ subroutine qsUGW(maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,COHSEX,SOS
   double precision              :: EV(nspin)
   double precision              :: EJ(nsp)
   double precision              :: Ex(nspin)
-  double precision              :: Ec(nsp)
   double precision              :: EcRPA
   double precision              :: EcGM(nspin)
   double precision              :: EqsGW
@@ -332,25 +331,16 @@ subroutine qsUGW(maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,COHSEX,SOS
       Ex(is) = 0.5d0*trace_matrix(nBas,matmul(P(:,:,is),K(:,:,is)))
     end do
 
-    ! Correlation energy
-
-    Ec(:) = 0d0
-
-!   Ec(1) = - 0.25d0*trace_matrix(nBas,matmul(P(:,:,1),SigCp(:,:,1)))
-!   Ec(2) = - 0.25d0*trace_matrix(nBas,matmul(P(:,:,1),SigCp(:,:,2))) &
-!           - 0.25d0*trace_matrix(nBas,matmul(P(:,:,2),SigCp(:,:,1)))
-!   Ec(3) = - 0.25d0*trace_matrix(nBas,matmul(P(:,:,2),SigCp(:,:,2)))
-
     ! Total energy
 
-    EqsGW = sum(ET(:)) + sum(EV(:)) + sum(EJ(:)) + sum(Ex(:)) + sum(Ec(:))
+    EqsGW = sum(ET(:)) + sum(EV(:)) + sum(EJ(:)) + sum(Ex(:))
 
     !------------------------------------------------------------------------
     ! Print results
     !------------------------------------------------------------------------
 
     call dipole_moment(nBas,P(:,:,1)+P(:,:,2),nNuc,ZNuc,rNuc,dipole_int_AO,dipole)
-    call print_qsUGW(nBas,nO,nSCF,Conv,thresh,eHF,eGW,c,P,S,T,V,J,K,ENuc,ET,EV,EJ,Ex,Ec,EcGM,EcRPA,EqsGW,SigCp,Z,dipole)
+    call print_qsUGW(nBas,nO,nSCF,Conv,thresh,eHF,eGW,c,P,S,T,V,J,K,ENuc,ET,EV,EJ,Ex,EcGM,EcRPA,EqsGW,SigCp,Z,dipole)
 
   enddo
 !------------------------------------------------------------------------
@@ -398,7 +388,7 @@ subroutine qsUGW(maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,COHSEX,SOS
     write(*,'(2X,A50,F20.10)') 'Tr@BSE@qsUGW correlation energy (spin-conserved) =',EcBSE(1)
     write(*,'(2X,A50,F20.10)') 'Tr@BSE@qsUGW correlation energy (spin-flip)      =',EcBSE(2)
     write(*,'(2X,A50,F20.10)') 'Tr@BSE@qsUGW correlation energy                  =',EcBSE(1) + EcBSE(2)
-    write(*,'(2X,A50,F20.10)') 'Tr@BSE@qsUGW total energy                        =',ENuc + EUHF + EcBSE(1) + EcBSE(2)
+    write(*,'(2X,A50,F20.10)') 'Tr@BSE@qsUGW total energy                        =',ENuc + EqsGW + EcBSE(1) + EcBSE(2)
     write(*,*)'-------------------------------------------------------------------------------'
     write(*,*)
 
@@ -426,7 +416,7 @@ subroutine qsUGW(maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,COHSEX,SOS
       write(*,'(2X,A50,F20.10)') 'AC@BSE@qsUGW correlation energy (spin-conserved) =',EcAC(1)
       write(*,'(2X,A50,F20.10)') 'AC@BSE@qsUGW correlation energy (spin-flip)      =',EcAC(2)
       write(*,'(2X,A50,F20.10)') 'AC@BSE@qsUGW correlation energy                  =',EcAC(1) + EcAC(2)
-      write(*,'(2X,A50,F20.10)') 'AC@BSE@qsUGW total energy                        =',ENuc + EUHF + EcAC(1) + EcAC(2)
+      write(*,'(2X,A50,F20.10)') 'AC@BSE@qsUGW total energy                        =',ENuc + EqsGW + EcAC(1) + EcAC(2)
       write(*,*)'-------------------------------------------------------------------------------'
       write(*,*)
 

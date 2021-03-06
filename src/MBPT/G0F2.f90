@@ -30,6 +30,7 @@ subroutine G0F2(BSE,TDA,dBSE,dTDA,evDyn,singlet,triplet,linearize,eta,nBas,nC,nO
 
 ! Local variables
 
+  double precision              :: Ec
   double precision              :: EcBSE(nspin)
   double precision,allocatable  :: eGF2(:)
   double precision,allocatable  :: SigC(:)
@@ -56,7 +57,7 @@ subroutine G0F2(BSE,TDA,dBSE,dTDA,evDyn,singlet,triplet,linearize,eta,nBas,nC,nO
 
 ! Frequency-dependent second-order contribution
 
-  call self_energy_GF2(eta,nBas,nC,nO,nV,nR,nS,eHF,eHF,ERI,SigC,Z)
+  call self_energy_GF2_diag(eta,nBas,nC,nO,nV,nR,nS,eHF,eHF,ERI,SigC,Z,Ec)
 
   if(linearize) then
 
@@ -70,7 +71,7 @@ subroutine G0F2(BSE,TDA,dBSE,dTDA,evDyn,singlet,triplet,linearize,eta,nBas,nC,nO
 
   ! Print results
 
-  call print_G0F2(nBas,nO,eHF,SigC,eGF2,Z)
+  call print_G0F2(nBas,nO,eHF,SigC,eGF2,Z,ENuc,ERHF,Ec)
 
 ! Perform BSE2 calculation
 

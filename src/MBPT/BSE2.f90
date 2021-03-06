@@ -56,6 +56,9 @@ subroutine BSE2(TDA,dBSE,dTDA,evDyn,singlet,triplet,eta,nBas,nC,nO,nV,nR,nS,ERI,
     call linear_response(ispin,.false.,TDA,.false.,eta,nBas,nC,nO,nV,nR,nS,1d0,eGF,ERI, &
                          OmBSE(:,ispin),rho,EcBSE(ispin),OmBSE(:,ispin),XpY(:,:,ispin),XmY(:,:,ispin))
     call print_excitation('BSE2        ',ispin,nS,OmBSE(:,ispin))
+    call print_transition_vectors(.true.,nBas,nC,nO,nV,nR,nS,dipole_int, &
+                                  OmBSE(:,ispin),XpY(:,:,ispin),XmY(:,:,ispin))
+
 
     ! Compute dynamic correction for BSE via perturbation theory
 
@@ -90,6 +93,8 @@ subroutine BSE2(TDA,dBSE,dTDA,evDyn,singlet,triplet,eta,nBas,nC,nO,nV,nR,nS,ERI,
     call linear_response(ispin,.false.,TDA,.false.,eta,nBas,nC,nO,nV,nR,nS,1d0,eGF(:),ERI(:,:,:,:), &
                          OmBSE(:,ispin),rho,EcBSE(ispin),OmBSE(:,ispin),XpY(:,:,ispin),XmY(:,:,ispin))
     call print_excitation('BSE2        ',ispin,nS,OmBSE(:,ispin))
+    call print_transition_vectors(.false.,nBas,nC,nO,nV,nR,nS,dipole_int, &
+                                  OmBSE(:,ispin),XpY(:,:,ispin),XmY(:,:,ispin))
 
     ! Compute dynamic correction for BSE via perturbation theory
 
