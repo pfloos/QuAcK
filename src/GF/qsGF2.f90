@@ -137,7 +137,7 @@ subroutine qsGF2(maxSCF,thresh,max_diis,BSE,TDA,dBSE,dTDA,evDyn,singlet,triplet,
 
     ! Compute self-energy and renormalization factor
 
-    call self_energy_GF2(eta,nBas,nC,nO,nV,nR,nS,eHF,eGF2,ERI_MO,SigC,Z,Ec)
+    call self_energy_GF2(eta,nBas,nC,nO,nV,nR,nS,eHF,eGF2,ERI_MO,SigC,Z)
 
     ! Make correlation self-energy Hermitian and transform it back to AO basis
    
@@ -177,6 +177,7 @@ subroutine qsGF2(maxSCF,thresh,max_diis,BSE,TDA,dBSE,dTDA,evDyn,singlet,triplet,
 
     ! Print results
 
+    call MP2(nBas,nC,nO,nV,nR,ERI_MO,ENuc,EHF,eGF2,Ec)
     call dipole_moment(nBas,P,nNuc,ZNuc,rNuc,dipole_int_AO,dipole)
     call print_qsGF2(nBas,nO,nSCF,Conv,thresh,eHF,eGF2,c,ENuc,P,T,V,J,K,F,SigCp,Z,EqsGF2,Ec,dipole)
 

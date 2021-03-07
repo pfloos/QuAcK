@@ -1,4 +1,4 @@
-subroutine self_energy_GF2(eta,nBas,nC,nO,nV,nR,nS,eHF,eGF2,ERI,SigC,Z,Ec)
+subroutine self_energy_GF2(eta,nBas,nC,nO,nV,nR,nS,eHF,eGF2,ERI,SigC,Z)
 
 ! Compute GF2 self-energy and its renormalization factor
 
@@ -24,7 +24,6 @@ subroutine self_energy_GF2(eta,nBas,nC,nO,nV,nR,nS,eHF,eGF2,ERI,SigC,Z,Ec)
 
   double precision,intent(out)  :: SigC(nBas,nBas)
   double precision,intent(out)  :: Z(nBas)
-  double precision,intent(out)  :: Ec
 
 ! Initialize 
 
@@ -70,24 +69,5 @@ subroutine self_energy_GF2(eta,nBas,nC,nO,nV,nR,nS,eHF,eGF2,ERI,SigC,Z,Ec)
   end do
 
   Z(:) = 1d0/(1d0 - Z(:))
-
-! Compute correlaiton energy
-
-  Ec = 0d0
-
-  do j=nC+1,nO
-    do i=nC+1,nO
-      do a=nO+1,nBas-nR
-        do b=nO+1,nBas-nR
-
-          eps = eGF2(j) + eHF(i) - eHF(a) - eHF(b)
-          num = (2d0*ERI(j,i,a,b) - ERI(j,i,b,a))*ERI(j,i,a,b)
-
-          Ec = Ec + num*eps/(eps**2 + eta**2)
-
-        end do
-      end do
-    end do
-  end do
 
 end subroutine self_energy_GF2

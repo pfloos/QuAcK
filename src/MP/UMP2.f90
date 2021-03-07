@@ -32,7 +32,7 @@ subroutine UMP2(nBas,nC,nO,nV,nR,ERI_aa,ERI_ab,ERI_bb,ENuc,EHF,e,Ec)
 
 ! Output variables
 
-  double precision,intent(out)  :: Ec
+  double precision,intent(out)  :: Ec(nsp)
 
 ! Hello world
 
@@ -72,6 +72,7 @@ subroutine UMP2(nBas,nC,nO,nV,nR,ERI_aa,ERI_ab,ERI_bb,ENuc,EHF,e,Ec)
   enddo
 
   Ecaa = Edaa + Exaa
+  Ec(1) = Ecaa
 
 ! aabb block
 
@@ -97,6 +98,7 @@ subroutine UMP2(nBas,nC,nO,nV,nR,ERI_aa,ERI_ab,ERI_bb,ENuc,EHF,e,Ec)
   enddo
 
   Ecab = Edab + Exab
+  Ec(2) = Ecab
 
 ! bbbb block
 
@@ -124,18 +126,18 @@ subroutine UMP2(nBas,nC,nO,nV,nR,ERI_aa,ERI_ab,ERI_bb,ENuc,EHF,e,Ec)
   enddo
 
   Ecbb = Edbb + Exbb
+  Ec(3) = Ecbb
 
 ! Final flush
 
   Ed = Edaa + Edab + Edbb
   Ex = Exaa + Exab + Exbb
-  Ec = Ed + Ex
 
   write(*,*)
   write(*,'(A32)')           '--------------------------'
   write(*,'(A32)')           ' MP2 calculation          '
   write(*,'(A32)')           '--------------------------'
-  write(*,'(A32,1X,F16.10)') ' MP2 correlation energy = ',Ec
+  write(*,'(A32,1X,F16.10)') ' MP2 correlation energy = ',sum(Ec(:))
   write(*,'(A32,1X,F16.10)') '   alpha-alpha          = ',Ecaa
   write(*,'(A32,1X,F16.10)') '   alpha-beta           = ',Ecab
   write(*,'(A32,1X,F16.10)') '    beta-beta           = ',Ecbb
@@ -150,8 +152,8 @@ subroutine UMP2(nBas,nC,nO,nV,nR,ERI_aa,ERI_ab,ERI_bb,ENuc,EHF,e,Ec)
   write(*,'(A32,1X,F16.10)') '   alpha-beta           = ',Exab
   write(*,'(A32,1X,F16.10)') '    beta-beta           = ',Exbb
   write(*,'(A32)')           '--------------------------'
-  write(*,'(A32,1X,F16.10)') ' MP2 electronic  energy = ',       EHF + Ec
-  write(*,'(A32,1X,F16.10)') ' MP2 total       energy = ',ENuc + EHF + Ec
+  write(*,'(A32,1X,F16.10)') ' MP2 electronic  energy = ',       EHF + sum(Ec(:))
+  write(*,'(A32,1X,F16.10)') ' MP2 total       energy = ',ENuc + EHF + sum(Ec(:))
   write(*,'(A32)')           '--------------------------'
   write(*,*)
 

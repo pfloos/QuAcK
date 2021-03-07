@@ -57,7 +57,7 @@ subroutine G0F2(BSE,TDA,dBSE,dTDA,evDyn,singlet,triplet,linearize,eta,nBas,nC,nO
 
 ! Frequency-dependent second-order contribution
 
-  call self_energy_GF2_diag(eta,nBas,nC,nO,nV,nR,nS,eHF,eHF,ERI,SigC,Z,Ec)
+  call self_energy_GF2_diag(eta,nBas,nC,nO,nV,nR,nS,eHF,eHF,ERI,SigC,Z)
 
   if(linearize) then
 
@@ -71,6 +71,7 @@ subroutine G0F2(BSE,TDA,dBSE,dTDA,evDyn,singlet,triplet,linearize,eta,nBas,nC,nO
 
   ! Print results
 
+  call MP2(nBas,nC,nO,nV,nR,ERI,ENuc,EHF,eGF2,Ec)
   call print_G0F2(nBas,nO,eHF,SigC,eGF2,Z,ENuc,ERHF,Ec)
 
 ! Perform BSE2 calculation

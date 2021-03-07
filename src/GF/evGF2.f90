@@ -77,7 +77,7 @@ subroutine evGF2(BSE,TDA,dBSE,dTDA,evDyn,maxSCF,thresh,max_diis,singlet,triplet,
 
     ! Frequency-dependent second-order contribution
 
-    call self_energy_GF2_diag(eta,nBas,nC,nO,nV,nR,nS,eHF,eGF2,ERI,SigC,Z,Ec)
+    call self_energy_GF2_diag(eta,nBas,nC,nO,nV,nR,nS,eHF,eGF2,ERI,SigC,Z)
 
     if(linearize) then
 
@@ -93,6 +93,7 @@ subroutine evGF2(BSE,TDA,dBSE,dTDA,evDyn,maxSCF,thresh,max_diis,singlet,triplet,
 
     ! Print results
 
+    call MP2(nBas,nC,nO,nV,nR,ERI,ENuc,EHF,eGF2,Ec)
     call print_evGF2(nBas,nO,nSCF,Conv,eHF,SigC,Z,eGF2,ENuc,ERHF,Ec)
 
     ! DIIS extrapolation

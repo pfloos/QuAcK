@@ -20,12 +20,13 @@ subroutine print_qsGF2(nBas,nO,nSCF,Conv,thresh,eHF,eGF2,c,ENuc,P,T,V,J,K,F,SigC
   double precision,intent(in)        :: T(nBas,nBas),V(nBas,nBas)
   double precision,intent(in)        :: J(nBas,nBas),K(nBas,nBas),F(nBas,nBas)
   double precision,intent(in)        :: Z(nBas),SigC(nBas,nBas)
+  double precision,intent(in)        :: Ec
   double precision,intent(in)        :: dipole(ncart)
 
 ! Local variables
 
   integer                            :: q,ixyz,HOMO,LUMO
-  double precision                   :: Gap,ET,EV,EJ,Ex,Ec
+  double precision                   :: Gap,ET,EV,EJ,Ex
   double precision,external          :: trace_matrix
 
 ! Output variables
