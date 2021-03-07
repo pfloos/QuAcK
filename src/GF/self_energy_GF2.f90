@@ -43,7 +43,7 @@ subroutine self_energy_GF2(eta,nBas,nC,nO,nV,nR,nS,eHF,eGF2,ERI,SigC,Z,Ec)
             num = (2d0*ERI(p,a,i,j) - ERI(p,a,j,i))*ERI(q,a,i,j)
 
             SigC(p,q) = SigC(p,q) + num*eps/(eps**2 + eta**2)
-            if(p == q) Z(p)   = Z(p)   - num*(eps**2 - eta**2)/(eps**2 + eta**2)**2
+            if(p == q) Z(p) = Z(p) - num*(eps**2 - eta**2)/(eps**2 + eta**2)**2
 
           end do
         end do
@@ -61,7 +61,7 @@ subroutine self_energy_GF2(eta,nBas,nC,nO,nV,nR,nS,eHF,eGF2,ERI,SigC,Z,Ec)
             num = (2d0*ERI(p,i,a,b) - ERI(p,i,b,a))*ERI(q,i,a,b)
 
             SigC(p,q) = SigC(p,q) + num*eps/(eps**2 + eta**2)
-            if(p == q) Z(p)   = Z(p)   - num*(eps**2 - eta**2)/(eps**2 + eta**2)**2
+            if(p == q) Z(p) = Z(p) - num*(eps**2 - eta**2)/(eps**2 + eta**2)**2
 
           end do
         end do

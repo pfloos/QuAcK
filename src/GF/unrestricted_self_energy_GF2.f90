@@ -1,6 +1,6 @@
-subroutine UMP2(nBas,nC,nO,nV,nR,ERI_aa,ERI_ab,ERI_bb,ENuc,EHF,e,Ec)
+subroutine unrestricted_self_energy_GF2(nBas,nC,nO,nV,nR,eta,ERI_aa,ERI_ab,ERI_bb,eHF,eGF2,SigC,Z)
 
-! Perform unrestricted second-order Moller-Plesset calculation
+! Perform unrestricted GF2 self-energy and its renormalization factor
 
   implicit none
   include 'parameters.h'
@@ -13,146 +13,180 @@ subroutine UMP2(nBas,nC,nO,nV,nR,ERI_aa,ERI_ab,ERI_bb,ENuc,EHF,e,Ec)
   integer,intent(in)            :: nO(nspin)
   integer,intent(in)            :: nV(nspin)
   integer,intent(in)            :: nR(nspin)
-  double precision,intent(in)   :: ENuc
-  double precision,intent(in)   :: EHF
+  double precision,intent(in)   :: eta
   double precision,intent(in)   :: ERI_aa(nBas,nBas,nBas,nBas)
   double precision,intent(in)   :: ERI_ab(nBas,nBas,nBas,nBas)
   double precision,intent(in)   :: ERI_bb(nBas,nBas,nBas,nBas)
-  double precision,intent(in)   :: e(nBas,nspin)
+  double precision,intent(in)   :: eHF(nBas,nspin)
+  double precision,intent(in)   :: eGF2(nBas,nspin)
 
 ! Local variables
 
-  integer                       :: bra,ket
+  integer                       :: p,q
   integer                       :: i,j,a,b
-  double precision              :: eps
-  double precision              :: Edaa,Exaa,Ecaa
-  double precision              :: Edab,Exab,Ecab
-  double precision              :: Edbb,Exbb,Ecbb
-  double precision              :: Ed,Ex
+  double precision              :: eps,num
 
 ! Output variables
 
-  double precision,intent(out)  :: Ec
-
-! Hello world
-
-  write(*,*)
-  write(*,*)'********************************************************'
-  write(*,*)'| Unrestricted second-order Moller-Plesset calculation |'
-  write(*,*)'********************************************************'
-  write(*,*)
+  double precision,intent(out)  :: SigC(nBas,nBas,nspin)
+  double precision,intent(out)  :: Z(nBas,nspin)
 
 !---------------------!
-! Compute UMP2 energy |
+! Compute self-energy |
 !---------------------!
 
-! aaaa block
+  !----------------!
+  ! Spin-up sector
+  !----------------!
 
-  bra = 1
-  ket = 1
+  do p=nC(1)+1,nBas-nR(1)
+    do q=nC(1)+1,nBas-nR(1)
 
-  Edaa = 0d0
-  Exaa = 0d0
+      ! Addition part: aa
 
-  do i=nC(bra)+1,nO(bra)
-    do a=nO(bra)+1,nBas-nR(bra)
+      do i=nC(1)+1,nO(1)
+        do a=nO(1)+1,nBas-nR(1)
+          do b=nO(1)+1,nBas-nR(1)
 
-      do j=nC(ket)+1,nO(ket)
-        do b=nO(ket)+1,nBas-nR(ket)
-
-          eps = e(i,bra) + e(j,ket) - e(a,bra) - e(b,ket) 
+            eps = eGF2(p,1) + eHF(i,1) - eHF(a,1) - eHF(b,1) 
+            num = ERI_aa(i,q,a,b)*ERI_aa(a,b,i,p) &
+                - ERI_aa(i,q,a,b)*ERI_aa(a,b,p,i)
          
-          Edaa = Edaa + 0.5d0*ERI_aa(i,j,a,b)*ERI_aa(i,j,a,b)/eps
-          Exaa = Exaa - 0.5d0*ERI_aa(i,j,a,b)*ERI_aa(i,j,b,a)/eps
+            SigC(p,q,1) = SigC(p,q,1) + num*eps/(eps**2 + eta**2)  
+            if(p == q) Z(p,1) = Z(p,1) - num*(eps**2 - eta**2)/(eps**2 + eta**2)**2
 
-
+          enddo
         enddo
       enddo
+
+      ! Addition part: ab
+
+      do i=nC(2)+1,nO(2)
+        do a=nO(2)+1,nBas-nR(2)
+          do b=nO(1)+1,nBas-nR(1)
+
+            eps = eGF2(p,1) + eHF(i,2) - eHF(a,2) - eHF(b,1) 
+            num = ERI_ab(q,i,b,a)*ERI_ab(b,a,p,i)
+         
+            SigC(p,q,1) = SigC(p,q,1) + num*eps/(eps**2 + eta**2)
+            if(p == q) Z(p,1) = Z(p,1) - num*(eps**2 - eta**2)/(eps**2 + eta**2)**2
+
+          enddo
+        enddo
+      enddo
+
+     ! Removal part: aa
+
+      do i=nC(1)+1,nO(1)
+        do a=nO(1)+1,nBas-nR(1)
+          do j=nC(1)+1,nO(1)
+
+            eps = eGF2(p,1) + eHF(a,1) - eHF(i,1) - eHF(j,1) 
+            num = ERI_aa(a,q,i,j)*ERI_aa(i,j,a,p) &
+                - ERI_aa(a,q,i,j)*ERI_aa(i,j,p,a)
+         
+            SigC(p,q,1) = SigC(p,q,1) + num*eps/(eps**2 + eta**2)
+            if(p == q) Z(p,1) = Z(p,1) - num*(eps**2 - eta**2)/(eps**2 + eta**2)**2
+
+          enddo
+        enddo
+      enddo
+
+     ! Removal part: ab
+
+      do i=nC(2)+1,nO(2)
+        do a=nO(2)+1,nBas-nR(2)
+          do j=nC(1)+1,nO(1)
+
+            eps = eGF2(p,1) + eHF(a,2) - eHF(i,2) - eHF(j,1) 
+            num = ERI_ab(q,a,j,i)*ERI_ab(j,i,p,a)
+         
+            SigC(p,q,1) = SigC(p,q,1) + num*eps/(eps**2 + eta**2)
+            if(p == q) Z(p,1) = Z(p,1) - num*(eps**2 - eta**2)/(eps**2 + eta**2)**2
+
+          enddo
+        enddo
+      enddo
+
     enddo
   enddo
 
-  Ecaa = Edaa + Exaa
+  !------------------!
+  ! Spin-down sector !
+  !------------------!
 
-! aabb block
+  do p=nC(2)+1,nBas-nR(2)
+    do q=nC(2)+1,nBas-nR(2)
 
-  bra = 1
-  ket = 2
+      ! Addition part: bb
 
-  Edab = 0d0
-  Exab = 0d0
+      do i=nC(2)+1,nO(2)
+        do a=nO(2)+1,nBas-nR(2)
+          do b=nO(2)+1,nBas-nR(2)
 
-  do i=nC(bra)+1,nO(bra)
-    do a=nO(bra)+1,nBas-nR(bra)
-
-      do j=nC(ket)+1,nO(ket)
-        do b=nO(ket)+1,nBas-nR(ket)
-
-          eps = e(i,bra) + e(j,ket) - e(a,bra) - e(b,ket) 
+            eps = eGF2(p,2) + eHF(i,2) - eHF(a,2) - eHF(b,2) 
+            num = ERI_bb(i,q,a,b)*ERI_bb(a,b,i,p) &
+                - ERI_bb(i,q,a,b)*ERI_bb(a,b,p,i)
          
-          Edab = Edab + ERI_ab(i,j,a,b)*ERI_ab(i,j,a,b)/eps
+            SigC(p,q,2) = SigC(p,q,2) + num*eps/(eps**2 + eta**2)
+            if(p == q) Z(p,2) = Z(p,2) - num*(eps**2 - eta**2)/(eps**2 + eta**2)**2
 
+          enddo
         enddo
       enddo
+
+      ! Addition part: ab
+
+      do i=nC(1)+1,nO(1)
+        do a=nO(1)+1,nBas-nR(1)
+          do b=nO(2)+1,nBas-nR(2)
+
+            eps = eGF2(p,2) + eHF(i,1) - eHF(a,1) - eHF(b,2) 
+            num = ERI_ab(i,q,a,b)*ERI_ab(a,b,i,p)
+         
+            SigC(p,q,2) = SigC(p,q,2) + num*eps/(eps**2 + eta**2)
+            if(p == q) Z(p,2) = Z(p,2) - num*(eps**2 - eta**2)/(eps**2 + eta**2)**2
+
+          enddo
+        enddo
+      enddo
+
+     ! Removal part: bb
+
+      do i=nC(2)+1,nO(2)
+        do a=nO(2)+1,nBas-nR(2)
+          do j=nC(2)+1,nO(2)
+
+            eps = eGF2(p,2) + eHF(a,2) - eHF(i,2) - eHF(j,2) 
+            num = ERI_bb(a,q,i,j)*ERI_bb(i,j,a,p) &
+                - ERI_bb(a,q,i,j)*ERI_bb(i,j,p,a)
+
+            SigC(p,q,2) = SigC(p,q,2) + num*eps/(eps**2 + eta**2)
+            if(p == q) Z(p,2) = Z(p,2) - num*(eps**2 - eta**2)/(eps**2 + eta**2)**2
+
+          enddo
+        enddo
+      enddo
+
+     ! Removal part: ab
+
+      do i=nC(1)+1,nO(1)
+        do a=nO(1)+1,nBas-nR(1)
+          do j=nC(2)+1,nO(2)
+
+            eps = eGF2(p,2) + eHF(a,1) - eHF(i,1) - eHF(j,2) 
+            num = ERI_ab(a,q,i,j)*ERI_ab(i,j,a,p)
+         
+            SigC(p,q,2) = SigC(p,q,2) + num*eps/(eps**2 + eta**2)
+            if(p == q) Z(p,2) = Z(p,2) - num*(eps**2 - eta**2)/(eps**2 + eta**2)**2
+
+          enddo
+        enddo
+      enddo
+
     enddo
   enddo
 
-  Ecab = Edab + Exab
+  Z(:,:) = 1d0/(1d0 - Z(:,:))
 
-! bbbb block
-
-  bra = 2
-  ket = 2
-
-  Edbb = 0d0
-  Exbb = 0d0
-
-  do i=nC(bra)+1,nO(bra)
-    do a=nO(bra)+1,nBas-nR(bra)
-
-      do j=nC(ket)+1,nO(ket)
-        do b=nO(ket)+1,nBas-nR(ket)
-
-          eps = e(i,bra) + e(j,ket) - e(a,bra) - e(b,ket) 
-         
-          Edbb = Edbb + 0.5d0*ERI_bb(i,j,a,b)*ERI_bb(i,j,a,b)/eps
-          Exbb = Exbb - 0.5d0*ERI_bb(i,j,a,b)*ERI_bb(i,j,b,a)/eps
-
-
-        enddo
-      enddo
-    enddo
-  enddo
-
-  Ecbb = Edbb + Exbb
-
-! Final flush
-
-  Ed = Edaa + Edab + Edbb
-  Ex = Exaa + Exab + Exbb
-  Ec = Ed + Ex
-
-  write(*,*)
-  write(*,'(A32)')           '--------------------------'
-  write(*,'(A32)')           ' MP2 calculation          '
-  write(*,'(A32)')           '--------------------------'
-  write(*,'(A32,1X,F16.10)') ' MP2 correlation energy = ',Ec
-  write(*,'(A32,1X,F16.10)') '   alpha-alpha          = ',Ecaa
-  write(*,'(A32,1X,F16.10)') '   alpha-beta           = ',Ecab
-  write(*,'(A32,1X,F16.10)') '    beta-beta           = ',Ecbb
-  write(*,*)
-  write(*,'(A32,1X,F16.10)') ' Direct part            = ',Ed
-  write(*,'(A32,1X,F16.10)') '   alpha-alpha          = ',Edaa
-  write(*,'(A32,1X,F16.10)') '   alpha-beta           = ',Edab
-  write(*,'(A32,1X,F16.10)') '    beta-beta           = ',Edbb
-  write(*,*)
-  write(*,'(A32,1X,F16.10)') ' Exchange part          = ',Ex
-  write(*,'(A32,1X,F16.10)') '   alpha-alpha          = ',Exaa
-  write(*,'(A32,1X,F16.10)') '   alpha-beta           = ',Exab
-  write(*,'(A32,1X,F16.10)') '    beta-beta           = ',Exbb
-  write(*,'(A32)')           '--------------------------'
-  write(*,'(A32,1X,F16.10)') ' MP2 electronic  energy = ',       EHF + Ec
-  write(*,'(A32,1X,F16.10)') ' MP2 total       energy = ',ENuc + EHF + Ec
-  write(*,'(A32)')           '--------------------------'
-  write(*,*)
-
-end subroutine UMP2
+end subroutine unrestricted_self_energy_GF2
