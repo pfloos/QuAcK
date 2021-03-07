@@ -1,7 +1,7 @@
 # RHF UHF KS  MOM
-  T   F   F   F
+  F   T   F   F
 # MP2* MP3 MP2-F12
-  T   F   F
+  F   F   F
 # CCD DCD CCSD CCSD(T) 
   F   F   F    F
 # drCCD rCCD lCCD pCCD
@@ -10,10 +10,10 @@
   F    F      F   F    
 # RPA* RPAx* ppRPA 
   F   F    F    
-# G0F2 evGF2 qsGF2 G0F3 evGF3
-  F    F     F     F    F
+# G0F2 evGF2 qsGF2* G0F3 evGF3
+  F    F     T      F    F
 # G0W0* evGW* qsGW*
-  F    F    T
+  F    F    F
 # G0T0 evGT qsGT 
   F    F    F
 # MCMP2

@@ -268,13 +268,13 @@ subroutine qsUGF2(maxSCF,thresh,max_diis,BSE,TDA,dBSE,dTDA,evDyn,spin_conserved,
       Ex(is) = 0.5d0*trace_matrix(nBas,matmul(P(:,:,is),K(:,:,is)))
     end do
 
-    ! Correlation energy
-
-    call UMP2(nBas,nC,nO,nV,nR,ERI_aaaa,ERI_aabb,ERI_bbbb,ENuc,EHF,eGF2,Ec)
-
     ! Total energy
 
     EqsGF2 = sum(ET(:)) + sum(EV(:)) + sum(EJ(:)) + sum(Ex(:))
+
+    ! Correlation energy
+
+    call UMP2(nBas,nC,nO,nV,nR,ERI_aaaa,ERI_aabb,ERI_bbbb,ENuc,EqsGF2,eGF2,Ec)
 
     !------------------------------------------------------------------------
     ! Print results

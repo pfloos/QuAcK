@@ -848,8 +848,18 @@ program QuAcK
 
     call cpu_time(start_GF2)
 
-    call qsGF2(maxSCF_GF,thresh_GF,n_diis_GF,BSE,TDA,dBSE,dTDA,evDyn,singlet,triplet,eta_GF,nNuc,ZNuc,rNuc,ENuc, & 
-               nBas,nC,nO,nV,nR,nS,ERHF,S,X,T,V,Hc,ERI_AO,ERI_MO,dipole_int_AO,dipole_int_MO,PHF,cHF,eHF)
+    if(unrestricted) then
+
+      call qsUGF2(maxSCF_GF,thresh_GF,n_diis_GF,BSE,TDA,dBSE,dTDA,evDyn,spin_conserved,spin_flip,eta_GF, &
+                  nNuc,ZNuc,rNuc,ENuc,nBas,nC,nO,nV,nR,nS,EUHF,S,X,T,V,Hc,ERI_AO,                        & 
+                  ERI_MO_aaaa,ERI_MO_aabb,ERI_MO_bbbb,dipole_int_AO,dipole_int_aa,dipole_int_bb,PHF,cHF,eHF)
+
+    else
+
+      call qsGF2(maxSCF_GF,thresh_GF,n_diis_GF,BSE,TDA,dBSE,dTDA,evDyn,singlet,triplet,eta_GF,nNuc,ZNuc,rNuc,ENuc, & 
+                 nBas,nC,nO,nV,nR,nS,ERHF,S,X,T,V,Hc,ERI_AO,ERI_MO,dipole_int_AO,dipole_int_MO,PHF,cHF,eHF)
+
+    end if
 
     call cpu_time(end_GF2)
 

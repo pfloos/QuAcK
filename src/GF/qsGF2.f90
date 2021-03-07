@@ -52,6 +52,10 @@ subroutine qsGF2(maxSCF,thresh,max_diis,BSE,TDA,dBSE,dTDA,evDyn,singlet,triplet,
   double precision              :: rcond
   double precision,external     :: trace_matrix
   double precision              :: dipole(ncart)
+  double precision              :: ET
+  double precision              :: EV
+  double precision              :: EJ
+  double precision              :: Ex
   double precision              :: Ec
   double precision              :: EcBSE(nspin)
 
@@ -175,11 +179,41 @@ subroutine qsGF2(maxSCF,thresh,max_diis,BSE,TDA,dBSE,dTDA,evDyn,singlet,triplet,
 
     P(:,:) = 2d0*matmul(c(:,1:nO),transpose(c(:,1:nO)))
 
-    ! Print results
+    !------------------------------------------------------------------------
+    !   Compute total energy
+    !------------------------------------------------------------------------
 
-    call MP2(nBas,nC,nO,nV,nR,ERI_MO,ENuc,EHF,eGF2,Ec)
+    ! Kinetic energy
+
+    ET = trace_matrix(nBas,matmul(P,T))
+
+    ! Potential energy
+
+    EV = trace_matrix(nBas,matmul(P,V))
+
+    ! Coulomb energy
+
+    EJ = 0.5d0*trace_matrix(nBas,matmul(P,J))
+
+    ! Exchange energy
+
+    Ex = -0.25d0*trace_matrix(nBas,matmul(P,K))
+
+    ! Total energy
+
+    EqsGF2 = ET + EV + EJ + Ex
+
+    ! Correlation energy
+
+    call MP2(nBas,nC,nO,nV,nR,ERI_MO,ENuc,EqsGF2,eGF2,Ec)
+
+    !------------------------------------------------------------------------
+    ! Print results
+    !------------------------------------------------------------------------
+
     call dipole_moment(nBas,P,nNuc,ZNuc,rNuc,dipole_int_AO,dipole)
-    call print_qsGF2(nBas,nO,nSCF,Conv,thresh,eHF,eGF2,c,ENuc,P,T,V,J,K,F,SigCp,Z,EqsGF2,Ec,dipole)
+    call print_qsGF2(nBas,nO,nSCF,Conv,thresh,eHF,eGF2,c,P,T,V,J,K,F,SigCp,Z, & 
+                     ENuc,ET,EV,EJ,Ex,Ec,EqsGF2,dipole)
 
   enddo
 !------------------------------------------------------------------------

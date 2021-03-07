@@ -1,4 +1,5 @@
-subroutine print_qsGF2(nBas,nO,nSCF,Conv,thresh,eHF,eGF2,c,ENuc,P,T,V,J,K,F,SigC,Z,EqsGF2,Ec,dipole)
+subroutine print_qsGF2(nBas,nO,nSCF,Conv,thresh,eHF,eGF2,c,P,T,V,J,K,F,SigC,Z, & 
+                       ENuc,ET,EV,EJ,Ex,Ec,EqsGF2,dipole)
 
 ! Print one-electron energies and other stuff for qsGF2
 
@@ -20,18 +21,21 @@ subroutine print_qsGF2(nBas,nO,nSCF,Conv,thresh,eHF,eGF2,c,ENuc,P,T,V,J,K,F,SigC
   double precision,intent(in)        :: T(nBas,nBas),V(nBas,nBas)
   double precision,intent(in)        :: J(nBas,nBas),K(nBas,nBas),F(nBas,nBas)
   double precision,intent(in)        :: Z(nBas),SigC(nBas,nBas)
+  double precision,intent(in)        :: ET
+  double precision,intent(in)        :: EV
+  double precision,intent(in)        :: EJ
+  double precision,intent(in)        :: Ex
   double precision,intent(in)        :: Ec
+  double precision,intent(in)        :: EqsGF2
   double precision,intent(in)        :: dipole(ncart)
 
 ! Local variables
 
   integer                            :: q,ixyz,HOMO,LUMO
-  double precision                   :: Gap,ET,EV,EJ,Ex
+  double precision                   :: Gap
   double precision,external          :: trace_matrix
 
 ! Output variables
-
-  double precision,intent(out)       :: EqsGF2
 
 ! HOMO and LUMO
 
@@ -39,21 +43,13 @@ subroutine print_qsGF2(nBas,nO,nSCF,Conv,thresh,eHF,eGF2,c,ENuc,P,T,V,J,K,F,SigC
   LUMO = HOMO + 1
   Gap = eGF2(LUMO)-eGF2(HOMO)
 
-! Compute energies
-
-  ET = trace_matrix(nBas,matmul(P,T))
-  EV = trace_matrix(nBas,matmul(P,V))
-  EJ = 0.5d0*trace_matrix(nBas,matmul(P,J))
-  Ex = 0.25d0*trace_matrix(nBas,matmul(P,K))
-  EqsGF2 = ET + EV + EJ + Ex
-
 ! Dump results
 
   write(*,*)'-------------------------------------------------------------------------------'
   if(nSCF < 10) then
-    write(*,'(1X,A21,I1,A1,I1,A12)')'  Self-consistent qsG',nSCF,'W',nSCF,' calculation'
+    write(*,'(1X,A21,I1,A2,A12)')'  Self-consistent qsG',nSCF,'F2',' calculation'
   else
-    write(*,'(1X,A21,I2,A1,I2,A12)')'  Self-consistent qsG',nSCF,'W',nSCF,' calculation'
+    write(*,'(1X,A21,I2,A2,A12)')'  Self-consistent qsG',nSCF,'F2',' calculation'
   endif
   write(*,*)'-------------------------------------------------------------------------------'
   write(*,'(1X,A1,1X,A3,1X,A1,1X,A15,1X,A1,1X,A15,1X,A1,1X,A15,1X,A1,1X,A15,1X,A1,1X)') &

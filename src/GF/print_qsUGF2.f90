@@ -69,9 +69,9 @@ subroutine print_qsUGF2(nBas,nO,nSCF,Conv,thresh,eHF,eGF2,cGF2,PGF2,Ov,T,V,J,K, 
   write(*,*)'-------------------------------------------------------------------------------& 
               -------------------------------------------------'
   if(nSCF < 10) then
-    write(*,'(1X,A21,I1,A1,I1,A12)')'  Self-consistent qsG',nSCF,'W',nSCF,' calculation'
+    write(*,'(1X,A21,I1,A2,A12)')'  Self-consistent qsG',nSCF,'F2',' calculation'
   else
-    write(*,'(1X,A21,I2,A1,I2,A12)')'  Self-consistent qsG',nSCF,'W',nSCF,' calculation'
+    write(*,'(1X,A21,I2,A2,A12)')'  Self-consistent qsG',nSCF,'F2',' calculation'
   endif
   write(*,*)'-------------------------------------------------------------------------------& 
               -------------------------------------------------'
