@@ -207,6 +207,8 @@ subroutine qsGW(maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,COHSEX,SOSE
 
     F(:,:) = Hc(:,:) + J(:,:) + 0.5d0*K(:,:) + SigCp(:,:)
 
+    call matout(nBas,nBAs,SigCp)
+
     ! Compute commutator and convergence criteria
 
     error = matmul(F,matmul(P,S)) - matmul(matmul(S,P),F)

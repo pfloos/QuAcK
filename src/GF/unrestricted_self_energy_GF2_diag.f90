@@ -35,6 +35,8 @@ subroutine unrestricted_self_energy_GF2_diag(nBas,nC,nO,nV,nR,eta,ERI_aa,ERI_ab,
 ! Compute self-energy |
 !---------------------!
 
+  SigC(:,:) = 0d0
+
   !----------------!
   ! Spin-up sector
   !----------------!

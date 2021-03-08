@@ -11,7 +11,7 @@ program QuAcK
   logical                       :: doMP2,doMP3,doMP2F12
   logical                       :: doCCD,doDCD,doCCSD,doCCSDT
   logical                       :: do_drCCD,do_rCCD,do_lCCD,do_pCCD
-  logical                       :: doCIS,doCIS_D,doCID,doCISD
+  logical                       :: doCIS,doCIS_D,doCID,doCISD,doFCI
   logical                       :: doRPA,doRPAx,doppRPA
   logical                       :: doADC
   logical                       :: doG0F2,doevGF2,doqsGF2,doG0F3,doevGF3
@@ -89,6 +89,7 @@ program QuAcK
   double precision              :: start_CIS    ,end_CIS      ,t_CIS
   double precision              :: start_CID    ,end_CID      ,t_CID
   double precision              :: start_CISD   ,end_CISD     ,t_CISD
+  double precision              :: start_FCI    ,end_FCI      ,t_FCI
   double precision              :: start_RPA    ,end_RPA      ,t_RPA 
   double precision              :: start_RPAx   ,end_RPAx     ,t_RPAx
   double precision              :: start_ppRPA  ,end_ppRPA    ,t_ppRPA
@@ -162,7 +163,7 @@ program QuAcK
                     doMP2,doMP3,doMP2F12,             &
                     doCCD,doDCD,doCCSD,doCCSDT,       &
                     do_drCCD,do_rCCD,do_lCCD,do_pCCD, &
-                    doCIS,doCIS_D,doCID,doCISD,       & 
+                    doCIS,doCIS_D,doCID,doCISD,doFCI, & 
                     doRPA,doRPAx,doppRPA,             &
                     doG0F2,doevGF2,doqsGF2,           & 
                     doG0F3,doevGF3,                   &
@@ -812,8 +813,19 @@ program QuAcK
   if(doG0F2) then
 
     call cpu_time(start_GF2)
-    call G0F2(BSE,TDA,dBSE,dTDA,evDyn,singlet,triplet,linGF, & 
-              eta_GF,nBas,nC,nO,nV,nR,nS,ENuc,ERHF,ERI_MO,dipole_int_MO,eHF)
+
+    if(unrestricted) then
+
+      call UG0F2(BSE,TDA,dBSE,dTDA,evDyn,spin_conserved,spin_flip,linGF,eta_GF,nBas,nC,nO,nV,nR,nS,ENuc,EUHF, &
+                 S,ERI_AO,ERI_MO_aaaa,ERI_MO_aabb,ERI_MO_bbbb,dipole_int_aa,dipole_int_bb,eHF)
+
+    else
+
+      call G0F2(BSE,TDA,dBSE,dTDA,evDyn,singlet,triplet,linGF, & 
+                eta_GF,nBas,nC,nO,nV,nR,nS,ENuc,ERHF,ERI_MO,dipole_int_MO,eHF)
+
+    end if
+
     call cpu_time(end_GF2)
 
     t_GF2 = end_GF2 - start_GF2
@@ -1172,6 +1184,22 @@ program QuAcK
 
     t_Bas = end_Bas - start_Bas
     write(*,'(A65,1X,F9.3,A8)') 'Total CPU time for basis set correction = ',t_Bas,' seconds'
+    write(*,*)
+
+  end if
+
+!------------------------------------------------------------------------
+! Compute FCI 
+!------------------------------------------------------------------------
+
+  if(doFCI) then
+
+    call cpu_time(start_FCI)
+    call FCI(nBas,nC,nO,nV,nR,ERI_MO,eHF)
+    call cpu_time(end_FCI)
+
+    t_FCI = end_FCI - start_FCI
+    write(*,'(A65,1X,F9.3,A8)') 'Total CPU time for FCI = ',t_FCI,' seconds'
     write(*,*)
 
   end if

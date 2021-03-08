@@ -306,4 +306,12 @@ subroutine qsUGF2(maxSCF,thresh,max_diis,BSE,TDA,dBSE,dTDA,evDyn,spin_conserved,
 
   deallocate(cp,P,F,Fp,J,K,SigC,SigCp,SigCm,Z,error,error_diis,F_diis)
 
+! Perform BSE calculation
+
+  if(BSE) then
+
+    print*,'!!! BSE2 NYI for qsUGF2 !!!'
+
+  end if
+
 end subroutine qsUGF2
