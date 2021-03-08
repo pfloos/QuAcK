@@ -841,9 +841,21 @@ program QuAcK
   if(doevGF2) then
 
     call cpu_time(start_GF2)
-    call evGF2(BSE,TDA,dBSE,dTDA,evDyn,maxSCF_GF,thresh_GF,n_diis_GF, & 
-               singlet,triplet,linGF,eta_GF,nBas,nC,nO,nV,nR,nS,ENuc,ERHF, & 
-               ERI_MO,dipole_int_MO,eHF)
+
+    if(unrestricted) then
+
+      call evUGF2(maxSCF_GF,thresh_GF,n_diis_GF,BSE,TDA,dBSE,dTDA,evDyn,spin_conserved,spin_flip,    &
+                  eta_GF,nBas,nC,nO,nV,nR,nS,ENuc,EUHF,S,ERI_AO,ERI_MO_aaaa,ERI_MO_aabb,ERI_MO_bbbb, & 
+                  dipole_int_aa,dipole_int_bb,cHF,eHF)
+
+    else
+
+      call evGF2(BSE,TDA,dBSE,dTDA,evDyn,maxSCF_GF,thresh_GF,n_diis_GF, & 
+                 singlet,triplet,linGF,eta_GF,nBas,nC,nO,nV,nR,nS,ENuc,ERHF, & 
+                 ERI_MO,dipole_int_MO,eHF)
+
+    end if
+
     call cpu_time(end_GF2)
 
     t_GF2 = end_GF2 - start_GF2
