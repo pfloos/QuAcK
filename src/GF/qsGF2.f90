@@ -197,15 +197,16 @@ subroutine qsGF2(maxSCF,thresh,max_diis,BSE,TDA,dBSE,dTDA,evDyn,singlet,triplet,
 
     ! Exchange energy
 
-    Ex = -0.25d0*trace_matrix(nBas,matmul(P,K))
-
-    ! Total energy
-
-    EqsGF2 = ET + EV + EJ + Ex
+    Ex = 0.25d0*trace_matrix(nBas,matmul(P,K))
 
     ! Correlation energy
 
     call MP2(nBas,nC,nO,nV,nR,ERI_MO,ENuc,EqsGF2,eGF2,Ec)
+
+    ! Total energy
+
+    EqsGF2 = ET + EV + EJ + Ex + Ec
+
 
     !------------------------------------------------------------------------
     ! Print results
@@ -248,8 +249,8 @@ subroutine qsGF2(maxSCF,thresh,max_diis,BSE,TDA,dBSE,dTDA,evDyn,singlet,triplet,
     write(*,*)'-------------------------------------------------------------------------------'
     write(*,'(2X,A50,F20.10)') 'Tr@BSE@qsGF2 correlation energy (singlet) =',EcBSE(1)
     write(*,'(2X,A50,F20.10)') 'Tr@BSE@qsGF2 correlation energy (triplet) =',EcBSE(2)
-    write(*,'(2X,A50,F20.10)') 'Tr@BSE@qsGF2 correlation energy           =',EcBSE(1) + EcBSE(2)
-    write(*,'(2X,A50,F20.10)') 'Tr@BSE@qsGF2 total energy                 =',ENuc + EqsGF2 + EcBSE(1) + EcBSE(2)
+    write(*,'(2X,A50,F20.10)') 'Tr@BSE@qsGF2 correlation energy           =',sum(EcBSE(:))
+    write(*,'(2X,A50,F20.10)') 'Tr@BSE@qsGF2 total energy                 =',ENuc + EqsGF2 + sum(EcBSE(:))
     write(*,*)'-------------------------------------------------------------------------------'
     write(*,*)
 

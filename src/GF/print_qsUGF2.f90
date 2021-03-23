@@ -99,7 +99,7 @@ subroutine print_qsUGF2(nBas,nO,nSCF,Conv,thresh,eHF,eGF2,cGF2,PGF2,Ov,T,V,J,K, 
   write(*,'(2X,A30,F15.6,A3)') 'qsUGF2 HOMO-LUMO gap   :',(minval(LUMO(:))-maxval(HOMO(:)))*HaToeV,' eV'
   write(*,*)'-------------------------------------------------------------------------------& 
               -------------------------------------------------'
-  write(*,'(2X,A30,F15.6,A3)') '    qsUGF2 total       energy:',ENuc + EqsGF2 + sum(Ec(:)),' au'
+  write(*,'(2X,A30,F15.6,A3)') '    qsUGF2 total       energy:',ENuc + EqsGF2,' au'
   write(*,'(2X,A30,F15.6,A3)') '    qsUGF2 exchange    energy:',sum(Ex(:)),' au'
   write(*,'(2X,A30,F15.6,A3)') '    qsUGF2 correlation energy:',sum(Ec(:)),' au'
   write(*,*)'-------------------------------------------------------------------------------& 
@@ -126,10 +126,10 @@ subroutine print_qsUGF2(nBas,nO,nSCF,Conv,thresh,eHF,eGF2,cGF2,PGF2,Ov,T,V,J,K, 
     write(*,'(A40,1X,F16.10,A3)') ' Potential    a  energy: ',EV(1),' au'
     write(*,'(A40,1X,F16.10,A3)') ' Potential    b  energy: ',EV(2),' au'
     write(*,'(A60)')              '-------------------------------------------------'
-    write(*,'(A40,1X,F16.10,A3)') ' Two-electron    energy: ',sum(EJ(:)) + sum(Ex(:)),' au'
-    write(*,'(A40,1X,F16.10,A3)') ' Two-electron aa energy: ',EJ(1) + Ex(1),' au'
-    write(*,'(A40,1X,F16.10,A3)') ' Two-electron ab energy: ',EJ(2),' au'
-    write(*,'(A40,1X,F16.10,A3)') ' Two-electron bb energy: ',EJ(3) + Ex(2),' au'
+    write(*,'(A40,1X,F16.10,A3)') ' Two-electron    energy: ',sum(EJ(:)) + sum(Ex(:)) + sum(Ec(:)),' au'
+    write(*,'(A40,1X,F16.10,A3)') ' Two-electron aa energy: ',EJ(1) + Ex(1) + Ec(1),' au'
+    write(*,'(A40,1X,F16.10,A3)') ' Two-electron ab energy: ',EJ(2) + Ec(2),' au'
+    write(*,'(A40,1X,F16.10,A3)') ' Two-electron bb energy: ',EJ(3) + Ex(2) + Ec(3),' au'
     write(*,*)
     write(*,'(A40,1X,F16.10,A3)') ' Hartree         energy: ',sum(EJ(:)),' au'
     write(*,'(A40,1X,F16.10,A3)') ' Hartree      aa energy: ',EJ(1),' au'

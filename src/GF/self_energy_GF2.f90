@@ -28,7 +28,7 @@ subroutine self_energy_GF2(eta,nBas,nC,nO,nV,nR,nS,eHF,eGF2,ERI,SigC,Z)
 ! Initialize 
 
   SigC(:,:) = 0d0
-  Z(:)     = 0d0
+  Z(:)      = 0d0
 
 ! Compute GF2 self-energy and renormalization factor
 

@@ -36,6 +36,7 @@ subroutine unrestricted_self_energy_GF2(nBas,nC,nO,nV,nR,eta,ERI_aa,ERI_ab,ERI_b
 !---------------------!
 
   SigC(:,:,:) = 0d0
+  Z(:,:)      = 0d0
 
   !----------------!
   ! Spin-up sector
