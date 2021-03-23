@@ -1,4 +1,5 @@
-subroutine print_qsGW(nBas,nO,nSCF,Conv,thresh,eHF,eGW,c,ENuc,P,T,V,J,K,F,SigC,Z,EcGM,EcRPA,EqsGW,dipole)
+subroutine print_qsGW(nBas,nO,nSCF,Conv,thresh,eHF,eGW,c,P,T,V,J,K,F,SigC,Z, & 
+                      ENuc,ET,EV,EJ,Ex,EcGM,EcRPA,EqsGW,dipole)
 
 ! Print one-electron energies and other stuff for qsGW
 
@@ -11,6 +12,10 @@ subroutine print_qsGW(nBas,nO,nSCF,Conv,thresh,eHF,eGW,c,ENuc,P,T,V,J,K,F,SigC,Z
   integer,intent(in)                 :: nO
   integer,intent(in)                 :: nSCF
   double precision,intent(in)        :: ENuc
+  double precision,intent(in)        :: ET
+  double precision,intent(in)        :: EV
+  double precision,intent(in)        :: EJ
+  double precision,intent(in)        :: Ex
   double precision,intent(in)        :: EcGM
   double precision,intent(in)        :: EcRPA
   double precision,intent(in)        :: Conv
@@ -27,7 +32,7 @@ subroutine print_qsGW(nBas,nO,nSCF,Conv,thresh,eHF,eGW,c,ENuc,P,T,V,J,K,F,SigC,Z
 ! Local variables
 
   integer                            :: x,ixyz,HOMO,LUMO
-  double precision                   :: Gap,ET,EV,EJ,Ex
+  double precision                   :: Gap
   double precision,external          :: trace_matrix
 
 ! Output variables
@@ -41,12 +46,6 @@ subroutine print_qsGW(nBas,nO,nSCF,Conv,thresh,eHF,eGW,c,ENuc,P,T,V,J,K,F,SigC,Z
   Gap = eGW(LUMO)-eGW(HOMO)
 
 ! Compute energies
-
-  ET = trace_matrix(nBas,matmul(P,T))
-  EV = trace_matrix(nBas,matmul(P,V))
-  EJ = 0.5d0*trace_matrix(nBas,matmul(P,J))
-  Ex = 0.25d0*trace_matrix(nBas,matmul(P,K))
-  EqsGW = ET + EV + EJ + Ex 
 
 ! Dump results
 

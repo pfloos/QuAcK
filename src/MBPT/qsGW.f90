@@ -55,6 +55,10 @@ subroutine qsGW(maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,COHSEX,SOSE
   integer                       :: nBasSq
   integer                       :: ispin
   integer                       :: n_diis
+  double precision              :: ET
+  double precision              :: EV
+  double precision              :: EJ
+  double precision              :: Ex
   double precision              :: EqsGW
   double precision              :: EcRPA
   double precision              :: EcBSE(nspin)
@@ -234,10 +238,34 @@ subroutine qsGW(maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,COHSEX,SOSE
 
     P(:,:) = 2d0*matmul(c(:,1:nO),transpose(c(:,1:nO)))
 
+    !------------------------------------------------------------------------
+    !   Compute total energy
+    !------------------------------------------------------------------------
+
+    ! Kinetic energy
+
+    ET = trace_matrix(nBas,matmul(P,T))
+
+    ! Potential energy
+
+    EV = trace_matrix(nBas,matmul(P,V))
+
+    ! Coulomb energy
+
+    EJ = 0.5d0*trace_matrix(nBas,matmul(P,J))
+
+    ! Exchange energy
+
+    Ex = 0.25d0*trace_matrix(nBas,matmul(P,K))
+
+    ! Total energy
+
+    EqsGW = ET + EV + EJ + Ex 
+
     ! Print results
 
     call dipole_moment(nBas,P,nNuc,ZNuc,rNuc,dipole_int_AO,dipole)
-    call print_qsGW(nBas,nO,nSCF,Conv,thresh,eHF,eGW,c,ENuc,P,T,V,J,K,F,SigCp,Z,EcGM,EcRPA,EqsGW,dipole)
+    call print_qsGW(nBas,nO,nSCF,Conv,thresh,eHF,eGW,c,P,T,V,J,K,F,SigCp,Z,ENuc,ET,EV,EJ,Ex,EcGM,EcRPA,EqsGW,dipole)
 
   enddo
 !------------------------------------------------------------------------
