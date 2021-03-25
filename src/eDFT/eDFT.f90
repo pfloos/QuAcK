@@ -226,8 +226,8 @@ subroutine eDFT(maxSCF,thresh,max_diis,guess_type,mix,nNuc,ZNuc,rNuc,ENuc,nBas,n
     end do
 
     call cpu_time(start_KS)
-    call eDFT_UKS(x_rung,x_DFA,c_rung,c_DFA,nEns,wEns,aCC_w1,aCC_w2,nGrid,weight(:),maxSCF,thresh,max_diis,guess_type,mix, & 
-                  nBas,AO,dAO,S,T,V,Hc,ERI,X,ENuc,occnum,Cx_choice,doNcentered,Ew,eKS,cKS,PKS,Vxc)
+    call eDFT_UKS(x_rung,x_DFA,c_rung,c_DFA,nEns,wEns,aCC_w1,aCC_w2,nGrid,weight,maxSCF,thresh,max_diis,guess_type,mix, & 
+                  nNuc,ZNuc,rNuc,ENuc,nBas,AO,dAO,S,T,V,Hc,ERI,dipole_int,X,occnum,Cx_choice,doNcentered,Ew,eKS,cKS,PKS,Vxc)
     call cpu_time(end_KS)
 
     t_KS = end_KS - start_KS
@@ -243,8 +243,8 @@ subroutine eDFT(maxSCF,thresh,max_diis,guess_type,mix,nNuc,ZNuc,rNuc,ENuc,nBas,n
   if(method == 'eDFT-UKS') then
 
     call cpu_time(start_KS)
-    call eDFT_UKS(x_rung,x_DFA,c_rung,c_DFA,nEns,wEns,aCC_w1,aCC_w2,nGrid,weight(:),maxSCF,thresh,max_diis,guess_type,mix, & 
-                  nBas,AO,dAO,S,T,V,Hc,ERI,X,ENuc,occnum,Cx_choice,doNcentered,Ew,eKS,cKS,PKS,Vxc)
+    call eDFT_UKS(x_rung,x_DFA,c_rung,c_DFA,nEns,wEns,aCC_w1,aCC_w2,nGrid,weight,maxSCF,thresh,max_diis,guess_type,mix, & 
+                  nNuc,ZNuc,rNuc,ENuc,nBas,AO,dAO,S,T,V,Hc,ERI,dipole_int,X,occnum,Cx_choice,doNcentered,Ew,eKS,cKS,PKS,Vxc)
     call cpu_time(end_KS)
 
     t_KS = end_KS - start_KS

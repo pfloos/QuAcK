@@ -1,5 +1,5 @@
 subroutine eDFT_UKS(x_rung,x_DFA,c_rung,c_DFA,nEns,wEns,aCC_w1,aCC_w2,nGrid,weight,maxSCF,thresh,max_diis,guess_type,mix, &
-                   nBas,AO,dAO,S,T,V,Hc,ERI,X,ENuc,occnum,Cx_choice,doNcentered,Ew,eps,c,Pw,Vxc)
+                   nNuc,ZNuc,rNuc,ENuc,nBas,AO,dAO,S,T,V,Hc,ERI,dipole_int,X,occnum,Cx_choice,doNcentered,Ew,eps,c,Pw,Vxc)
 
 ! Perform unrestricted Kohn-Sham calculation for ensembles
 
@@ -23,13 +23,18 @@ subroutine eDFT_UKS(x_rung,x_DFA,c_rung,c_DFA,nEns,wEns,aCC_w1,aCC_w2,nGrid,weig
   double precision,intent(in)   :: AO(nBas,nGrid)
   double precision,intent(in)   :: dAO(ncart,nBas,nGrid)
 
+  integer,intent(in)            :: nNuc
+  double precision,intent(in)   :: ZNuc(nNuc)
+  double precision,intent(in)   :: rNuc(nNuc,ncart)
+  double precision,intent(in)   :: ENuc
+
   double precision,intent(in)   :: S(nBas,nBas)
   double precision,intent(in)   :: T(nBas,nBas)
   double precision,intent(in)   :: V(nBas,nBas)
   double precision,intent(in)   :: Hc(nBas,nBas) 
   double precision,intent(in)   :: X(nBas,nBas) 
   double precision,intent(in)   :: ERI(nBas,nBas,nBas,nBas)
-  double precision,intent(in)   :: ENuc
+  double precision,intent(in)   :: dipole_int(nBas,nBas,ncart)
   double precision,intent(in)   :: occnum(nBas,nspin,nEns)
   integer,intent(in)            :: Cx_choice
   logical,intent(in)            :: doNcentered
@@ -48,6 +53,7 @@ subroutine eDFT_UKS(x_rung,x_DFA,c_rung,c_DFA,nEns,wEns,aCC_w1,aCC_w2,nGrid,weig
   double precision              :: EJ(nsp)
   double precision              :: Ex(nspin)
   double precision              :: Ec(nsp)
+  double precision              :: dipole(ncart)
 
   double precision,allocatable  :: cp(:,:,:)
   double precision,allocatable  :: J(:,:,:)
@@ -132,6 +138,11 @@ subroutine eDFT_UKS(x_rung,x_DFA,c_rung,c_DFA,nEns,wEns,aCC_w1,aCC_w2,nGrid,weig
 
 ! Guess coefficients and eigenvalues
 
+  nO(:) = 0
+  do ispin=1,nspin
+    nO(ispin) = int(sum(occnum(:,ispin,1)))
+  end do
+  
   if(guess_type == 1) then
 
     do ispin=1,nspin
@@ -142,11 +153,6 @@ subroutine eDFT_UKS(x_rung,x_DFA,c_rung,c_DFA,nEns,wEns,aCC_w1,aCC_w2,nGrid,weig
 
     ! Mix guess to enforce symmetry breaking
 
-    nO(:) = 0
-    do ispin=1,nspin
-      nO(ispin) = int(sum(occnum(:,ispin,1)))
-    end do
-  
     if(mix) call mix_guess(nBas,nO,c)
 
   else if(guess_type == 2) then
@@ -385,7 +391,8 @@ subroutine eDFT_UKS(x_rung,x_DFA,c_rung,c_DFA,nEns,wEns,aCC_w1,aCC_w2,nGrid,weig
 
 ! Compute final KS energy
 
-  call print_UKS(nBas,nEns,occnum,wEns,eps,c,ENuc,ET,EV,EJ,Ex,Ec,Ew)
+  call dipole_moment(nBas,Pw(:,:,1)+Pw(:,:,2),nNuc,ZNuc,rNuc,dipole_int,dipole)
+  call print_UKS(nBas,nEns,nO,S,wEns,eps,c,ENuc,ET,EV,EJ,Ex,Ec,Ew,dipole)
 
 ! Compute Vxc for post-HF calculations
 

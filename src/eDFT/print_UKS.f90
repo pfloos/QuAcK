@@ -1,4 +1,4 @@
-subroutine print_UKS(nBas,nEns,occnum,wEns,eps,c,ENuc,ET,EV,EJ,Ex,Ec,Ew)
+subroutine print_UKS(nBas,nEns,nO,Ov,wEns,eps,c,ENuc,ET,EV,EJ,Ex,Ec,Ew,dipole)
 
 ! Print one- and two-electron energies and other stuff for KS calculation
 
@@ -9,7 +9,8 @@ subroutine print_UKS(nBas,nEns,occnum,wEns,eps,c,ENuc,ET,EV,EJ,Ex,Ec,Ew)
 
   integer,intent(in)                 :: nBas
   integer,intent(in)                 :: nEns
-  double precision,intent(in)        :: occnum(nBas,nspin,nEns)
+  integer,intent(in)                 :: nO(nspin)
+  double precision,intent(in)        :: Ov(nBas,nBas)
   double precision,intent(in)        :: wEns(nEns)
   double precision,intent(in)        :: eps(nBas,nspin)
   double precision,intent(in)        :: c(nBas,nBas,nspin)
@@ -20,40 +21,39 @@ subroutine print_UKS(nBas,nEns,occnum,wEns,eps,c,ENuc,ET,EV,EJ,Ex,Ec,Ew)
   double precision,intent(in)        :: Ex(nspin)
   double precision,intent(in)        :: Ec(nsp)
   double precision,intent(in)        :: Ew
+  double precision,intent(in)        :: dipole(ncart)
 
 ! Local variables
 
+  integer                            :: ixyz
   integer                            :: ispin
   integer                            :: iEns
   integer                            :: iBas
   integer                            :: HOMO(nspin)
   integer                            :: LUMO(nspin)
   double precision                   :: Gap(nspin)
-  double precision                   :: nEl(nspin)
-
-! Number of electrons in the ensemble
-
-  nEl(:) = 0d0
-  do ispin=1,nspin
-    do iEns=1,nEns
-      do iBas=1,nBas
-        nEl(ispin) = nEl(ispin) + wEns(iEns)*occnum(iBas,ispin,iEns)
-      end do
-    end do
-  end do
+  double precision                   :: S_exact,S2_exact
+  double precision                   :: S,S2
 
 ! HOMO and LUMO
 
   do ispin=1,nspin
 
-      HOMO(ispin) = ceiling(nEl(ispin))
+      HOMO(ispin) = nO(ispin)
       LUMO(ispin) = HOMO(ispin) + 1
       Gap(ispin)  = eps(LUMO(ispin),ispin) - eps(HOMO(ispin),ispin)
 
   end do
 
-! Dump results
+! Spin comtamination
 
+  S2_exact = dble(nO(1) - nO(2))/2d0*(dble(nO(1) - nO(2))/2d0 + 1d0)
+  S2 = S2_exact + nO(2) - sum(matmul(transpose(c(:,1:nO(1),1)),matmul(Ov,c(:,1:nO(2),2)))**2)
+
+  S_exact = 0.5d0*dble(nO(1) - nO(2))
+  S = -0.5d0 + 0.5d0*sqrt(1d0 + 4d0*S2)
+
+! Dump results
 
   write(*,*)
   write(*,'(A60)')              '-------------------------------------------------'
@@ -96,6 +96,15 @@ subroutine print_UKS(nBas,nEns,occnum,wEns,eps,c,ENuc,ET,EV,EJ,Ex,Ec,Ew)
   write(*,'(A40,F13.6,A3)')     ' KS HOMO b    energy:',eps(HOMO(2),2)*HatoeV,' eV'
   write(*,'(A40,F13.6,A3)')     ' KS LUMO b    energy:',eps(LUMO(2),2)*HatoeV,' eV'
   write(*,'(A40,F13.6,A3)')     ' KS HOMOb-LUMOb gap :',Gap(2)*HatoeV,' eV'
+  write(*,'(A60)')              '-------------------------------------------------'
+  write(*,'(A40,1X,F16.6)')     '  S (exact)          :',2d0*S_exact + 1d0
+  write(*,'(A40,1X,F16.6)')     '  S                  :',2d0*S       + 1d0
+  write(*,'(A40,1X,F16.6)')     ' <S**2> (exact)      :',S2_exact
+  write(*,'(A40,1X,F16.6)')     ' <S**2>              :',S2
+  write(*,'(A60)')              '-------------------------------------------------'
+  write(*,'(A45)')              ' Dipole moment (Debye)    '
+  write(*,'(19X,4A10)')         'X','Y','Z','Tot.'
+  write(*,'(19X,4F10.6)')       (dipole(ixyz)*auToD,ixyz=1,ncart),norm2(dipole)*auToD
   write(*,'(A60)')              '-------------------------------------------------'
   write(*,*)
 
