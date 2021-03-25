@@ -145,9 +145,9 @@ subroutine print_qsUGF2(nBas,nO,nSCF,Conv,thresh,eHF,eGF2,cGF2,PGF2,Ov,T,V,J,K, 
     write(*,'(A40,1X,F16.10,A3)') ' Correlation  ab energy: ',Ec(2),' au'
     write(*,'(A40,1X,F16.10,A3)') ' Correlation  bb energy: ',Ec(3),' au'
     write(*,'(A60)')              '-------------------------------------------------'
-    write(*,'(A40,1X,F16.10,A3)') ' Electronic      energy: ',EqsGF2 + sum(Ec(:)),' au'
+    write(*,'(A40,1X,F16.10,A3)') ' Electronic      energy: ',EqsGF2,' au'
     write(*,'(A40,1X,F16.10,A3)') ' Nuclear      repulsion: ',ENuc,' au'
-    write(*,'(A40,1X,F16.10,A3)') ' qsUGF2          energy: ',ENuc + EqsGF2 + sum(Ec(:)),' au'
+    write(*,'(A40,1X,F16.10,A3)') ' qsUGF2          energy: ',ENuc + EqsGF2,' au'
     write(*,'(A60)')              '-------------------------------------------------'
     write(*,'(A40,F13.6)')        '  S (exact)          :',2d0*S_exact + 1d0
     write(*,'(A40,F13.6)')        '  S                  :',2d0*S       + 1d0
