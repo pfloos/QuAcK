@@ -91,7 +91,7 @@ subroutine print_qsUGF2(nBas,nO,nSCF,Conv,thresh,eHF,eGF2,cGF2,PGF2,Ov,T,V,J,K, 
   write(*,*)'-------------------------------------------------------------------------------& 
               -------------------------------------------------'
   write(*,'(2X,A10,I3)')   'Iteration ',nSCF
-  write(*,'(2X,A19,F15.5)')'max(|FPS - SPF|) = ',Conv
+  write(*,'(2X,A14,F15.5)')'Convergence = ',Conv
   write(*,*)'-------------------------------------------------------------------------------& 
               -------------------------------------------------'
   write(*,'(2X,A30,F15.6,A3)') 'qsUGF2 HOMO      energy:',maxval(HOMO(:))*HaToeV,' eV'

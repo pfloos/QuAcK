@@ -63,7 +63,7 @@ subroutine print_qsGF2(nBas,nO,nSCF,Conv,thresh,eHF,eGF2,c,P,T,V,J,K,F,SigC,Z, &
 
   write(*,*)'-------------------------------------------------------------------------------'
   write(*,'(2X,A10,I3)')   'Iteration ',nSCF
-  write(*,'(2X,A19,F15.5)')'max(|FPS - SPF|) = ',Conv
+  write(*,'(2X,A14,F15.5)')'Convergence = ',Conv
   write(*,*)'-------------------------------------------'
   write(*,'(2X,A30,F15.6,A3)') 'qsGF2 HOMO      energy:',eGF2(HOMO)*HaToeV,' eV'
   write(*,'(2X,A30,F15.6,A3)') 'qsGF2 LUMO      energy:',eGF2(LUMO)*HaToeV,' eV'
