@@ -69,6 +69,7 @@ subroutine qsGW(maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,COHSEX,SOSE
   double precision,external     :: trace_matrix
   double precision              :: dipole(ncart)
 
+  logical                       :: print_W = .true.
   double precision,allocatable  :: error_diis(:,:)
   double precision,allocatable  :: F_diis(:,:)
   double precision,allocatable  :: OmRPA(:)
@@ -78,6 +79,7 @@ subroutine qsGW(maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,COHSEX,SOSE
   double precision,allocatable  :: c(:,:)
   double precision,allocatable  :: cp(:,:)
   double precision,allocatable  :: eGW(:)
+  double precision,allocatable  :: eOld(:)
   double precision,allocatable  :: P(:,:)
   double precision,allocatable  :: F(:,:)
   double precision,allocatable  :: Fp(:,:)
@@ -136,9 +138,9 @@ subroutine qsGW(maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,COHSEX,SOSE
 
 ! Memory allocation
 
-  allocate(eGW(nBas),c(nBas,nBas),cp(nBas,nBas),P(nBas,nBas),F(nBas,nBas),Fp(nBas,nBas),        &
-           J(nBas,nBas),K(nBas,nBas),SigC(nBas,nBas),SigCp(nBas,nBas),SigCm(nBas,nBas),Z(nBas), & 
-           OmRPA(nS),XpY_RPA(nS,nS),XmY_RPA(nS,nS),rho_RPA(nBas,nBas,nS),                       &
+  allocate(eGW(nBas),eOld(nBas),c(nBas,nBas),cp(nBas,nBas),P(nBas,nBas),F(nBas,nBas),Fp(nBas,nBas), &
+           J(nBas,nBas),K(nBas,nBas),SigC(nBas,nBas),SigCp(nBas,nBas),SigCm(nBas,nBas),Z(nBas),     & 
+           OmRPA(nS),XpY_RPA(nS,nS),XmY_RPA(nS,nS),rho_RPA(nBas,nBas,nS),                           &
            error(nBas,nBas),error_diis(nBasSq,max_diis),F_diis(nBasSq,max_diis))
 
 ! Initialization
@@ -149,6 +151,7 @@ subroutine qsGW(maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,COHSEX,SOSE
   Conv            = 1d0
   P(:,:)          = PHF(:,:)
   eGW(:)          = eHF(:)
+  eOld(:)         = eHF(:)
   c(:,:)          = cHF(:,:)
   F_diis(:,:)     = 0d0
   error_diis(:,:) = 0d0
@@ -181,6 +184,7 @@ subroutine qsGW(maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,COHSEX,SOSE
 
       call linear_response(ispin,.true.,TDA_W,.false.,eta,nBas,nC,nO,nV,nR,nS,1d0,eGW,ERI_MO, &
                            OmRPA,rho_RPA,EcRPA,OmRPA,XpY_RPA,XmY_RPA)
+      if(print_W) call print_excitation('RPA@qsGW    ',ispin,nS,OmRPA)
 
     endif
 
@@ -211,21 +215,18 @@ subroutine qsGW(maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,COHSEX,SOSE
 
     F(:,:) = Hc(:,:) + J(:,:) + 0.5d0*K(:,:) + SigCp(:,:)
 
-    call matout(nBas,nBAs,SigCp)
-
     ! Compute commutator and convergence criteria
 
     error = matmul(F,matmul(P,S)) - matmul(matmul(S,P),F)
-    Conv = maxval(abs(error))
 
     ! DIIS extrapolation 
 
     n_diis = min(n_diis+1,max_diis)
-    call DIIS_extrapolation(rcond,nBasSq,nBasSq,n_diis,error_diis,F_diis,error,F)
-
-!   Reset DIIS if required
-
-    if(abs(rcond) < 1d-15) n_diis = 0
+    if(abs(rcond) > 1d-7) then 
+      call DIIS_extrapolation(rcond,nBasSq,nBasSq,n_diis,error_diis,F_diis,error,F)
+    else
+      n_diis = 0
+    end if
 
     ! Diagonalize Hamiltonian in AO basis
 
@@ -233,6 +234,12 @@ subroutine qsGW(maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,COHSEX,SOSE
     cp(:,:) = Fp(:,:)
     call diagonalize_matrix(nBas,cp,eGW)
     c = matmul(X,cp)
+    SigCp = matmul(transpose(c),matmul(SigCp,c))
+
+    ! Save quasiparticles energy for next cycle
+
+    Conv = maxval(abs(eGW - eOld))
+    eOld(:) = eGW(:)
 
     ! Compute new density matrix in the AO basis
 
@@ -265,7 +272,7 @@ subroutine qsGW(maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,COHSEX,SOSE
     ! Print results
 
     call dipole_moment(nBas,P,nNuc,ZNuc,rNuc,dipole_int_AO,dipole)
-    call print_qsGW(nBas,nO,nSCF,Conv,thresh,eHF,eGW,c,P,T,V,J,K,F,SigCp,Z,ENuc,ET,EV,EJ,Ex,EcGM,EcRPA,EqsGW,dipole)
+    call print_qsGW(nBas,nO,nSCF,Conv,thresh,eHF,eGW,c,SigCp,Z,ENuc,ET,EV,EJ,Ex,EcGM,EcRPA,EqsGW,dipole)
 
   enddo
 !------------------------------------------------------------------------

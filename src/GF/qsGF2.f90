@@ -64,6 +64,7 @@ subroutine qsGF2(maxSCF,thresh,max_diis,BSE,TDA,dBSE,dTDA,evDyn,singlet,triplet,
   double precision,allocatable  :: c(:,:)
   double precision,allocatable  :: cp(:,:)
   double precision,allocatable  :: eGF2(:)
+  double precision,allocatable  :: eOld(:)
   double precision,allocatable  :: P(:,:)
   double precision,allocatable  :: F(:,:)
   double precision,allocatable  :: Fp(:,:)
@@ -101,8 +102,8 @@ subroutine qsGF2(maxSCF,thresh,max_diis,BSE,TDA,dBSE,dTDA,evDyn,singlet,triplet,
 
 ! Memory allocation
 
-  allocate(eGF2(nBas),c(nBas,nBas),cp(nBas,nBas),P(nBas,nBas),F(nBas,nBas),Fp(nBas,nBas),        &
-           J(nBas,nBas),K(nBas,nBas),SigC(nBas,nBas),SigCp(nBas,nBas),SigCm(nBas,nBas),Z(nBas), & 
+  allocate(eGF2(nBas),eOld(nbas),c(nBas,nBas),cp(nBas,nBas),P(nBas,nBas),F(nBas,nBas),Fp(nBas,nBas), &
+           J(nBas,nBas),K(nBas,nBas),SigC(nBas,nBas),SigCp(nBas,nBas),SigCm(nBas,nBas),Z(nBas),      & 
            error(nBas,nBas),error_diis(nBasSq,max_diis),F_diis(nBasSq,max_diis))
 
 ! Initialization
@@ -112,6 +113,7 @@ subroutine qsGF2(maxSCF,thresh,max_diis,BSE,TDA,dBSE,dTDA,evDyn,singlet,triplet,
   ispin           = 1
   Conv            = 1d0
   P(:,:)          = PHF(:,:)
+  eOld(:)         = eHF(:)
   eGF2(:)         = eHF(:)
   c(:,:)          = cHF(:,:)
   F_diis(:,:)     = 0d0
@@ -157,16 +159,15 @@ subroutine qsGF2(maxSCF,thresh,max_diis,BSE,TDA,dBSE,dTDA,evDyn,singlet,triplet,
     ! Compute commutator and convergence criteria
 
     error = matmul(F,matmul(P,S)) - matmul(matmul(S,P),F)
-    Conv = maxval(abs(error))
 
     ! DIIS extrapolation 
 
     n_diis = min(n_diis+1,max_diis)
-    call DIIS_extrapolation(rcond,nBasSq,nBasSq,n_diis,error_diis,F_diis,error,F)
-
-!   Reset DIIS if required
-
-    if(abs(rcond) < 1d-15) n_diis = 0
+    if(abs(rcond) > 1d-7) then
+      call DIIS_extrapolation(rcond,nBasSq,nBasSq,n_diis,error_diis,F_diis,error,F)
+    else
+      n_diis = 0
+    end if
 
     ! Diagonalize Hamiltonian in AO basis
 
@@ -174,6 +175,12 @@ subroutine qsGF2(maxSCF,thresh,max_diis,BSE,TDA,dBSE,dTDA,evDyn,singlet,triplet,
     cp(:,:) = Fp(:,:)
     call diagonalize_matrix(nBas,cp,eGF2)
     c = matmul(X,cp)
+    SigCp = matmul(transpose(c),matmul(SigCp,c))
+
+    ! Save quasiparticles energy for next cycle
+
+    Conv = maxval(abs(eGF2 - eOld))
+    eOld(:) = eGF2(:)
 
     ! Compute new density matrix in the AO basis
 

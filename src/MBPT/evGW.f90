@@ -195,11 +195,11 @@ subroutine evGW(maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,COHSEX,SOSE
     else
 
       n_diis = min(n_diis+1,max_diis)
-      call DIIS_extrapolation(rcond,nBas,nBas,n_diis,error_diis,e_diis,eGW-eOld,eGW)
-
-!    Reset DIIS if required
-
-      if(abs(rcond) < 1d-15) n_diis = 0
+      if(abs(rcond) > 1d-7) then
+        call DIIS_extrapolation(rcond,nBas,nBas,n_diis,error_diis,e_diis,eGW-eOld,eGW)
+      else
+        n_diis = 0
+      endif
 
     endif
 

@@ -127,11 +127,11 @@ subroutine RHF(maxSCF,thresh,max_diis,guess_type,nNuc,ZNuc,rNuc,ENuc,nBas,nO,S,T
 !   DIIS extrapolation
 
     n_diis = min(n_diis+1,max_diis)
-    call DIIS_extrapolation(rcond,nBasSq,nBasSq,n_diis,error_diis,F_diis,error,F)
-
-!   Reset DIIS if required
-
-    if(abs(rcond) < 1d-15) n_diis = 0
+    if(abs(rcond) > 1d-7) then
+      call DIIS_extrapolation(rcond,nBasSq,nBasSq,n_diis,error_diis,F_diis,error,F)
+    else
+      n_diis = 0
+    end if
 
 !  Diagonalize Fock matrix
 

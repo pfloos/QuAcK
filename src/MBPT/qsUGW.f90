@@ -92,6 +92,7 @@ subroutine qsUGW(maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,COHSEX,SOS
   double precision,allocatable  :: c(:,:,:)
   double precision,allocatable  :: cp(:,:,:)
   double precision,allocatable  :: eGW(:,:)
+  double precision,allocatable  :: eOld(:,:)
   double precision,allocatable  :: P(:,:,:)
   double precision,allocatable  :: F(:,:,:)
   double precision,allocatable  :: Fp(:,:,:)
@@ -154,10 +155,11 @@ subroutine qsUGW(maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,COHSEX,SOS
   nS_bb = nS(2)
   nS_sc = nS_aa + nS_bb
 
-  allocate(eGW(nBas,nspin),c(nBas,nBas,nspin),cp(nBas,nBas,nspin),P(nBas,nBas,nspin),F(nBas,nBas,nspin),Fp(nBas,nBas,nspin), &
-           J(nBas,nBas,nspin),K(nBas,nBas,nspin),SigC(nBas,nBas,nspin),SigCp(nBas,nBas,nspin),SigCm(nBas,nBas,nspin),        &
-           Z(nBas,nspin),OmRPA(nS_sc),XpY_RPA(nS_sc,nS_sc),XmY_RPA(nS_sc,nS_sc),rho_RPA(nBas,nBas,nS_sc,nspin),              &
-           error(nBas,nBas,nspin),error_diis(nBasSq,max_diis,nspin),F_diis(nBasSq,max_diis,nspin))
+  allocate(eGW(nBas,nspin),eOld(nBas,nspin),c(nBas,nBas,nspin),cp(nBas,nBas,nspin),P(nBas,nBas,nspin),F(nBas,nBas,nspin), &
+           Fp(nBas,nBas,nspin),J(nBas,nBas,nspin),K(nBas,nBas,nspin),SigC(nBas,nBas,nspin),SigCp(nBas,nBas,nspin),        &
+           SigCm(nBas,nBas,nspin),Z(nBas,nspin),OmRPA(nS_sc),XpY_RPA(nS_sc,nS_sc),XmY_RPA(nS_sc,nS_sc),                   &
+           rho_RPA(nBas,nBas,nS_sc,nspin),error(nBas,nBas,nspin),error_diis(nBasSq,max_diis,nspin),                       & 
+           F_diis(nBasSq,max_diis,nspin))
 
 ! Initialization
   
@@ -167,6 +169,7 @@ subroutine qsUGW(maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,COHSEX,SOS
   Conv              = 1d0
   P(:,:,:)          = PHF(:,:,:)
   eGW(:,:)          = eHF(:,:)
+  eOld(:,:)         = eHF(:,:)
   c(:,:,:)          = cHF(:,:,:)
   F_diis(:,:,:)     = 0d0
   error_diis(:,:,:) = 0d0
@@ -268,14 +271,14 @@ subroutine qsUGW(maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,COHSEX,SOS
     ! DIIS extrapolation
 
     n_diis = min(n_diis+1,max_diis)
-    do is=1,nspin
-      if(nO(is) > 1) call DIIS_extrapolation(rcond(is),nBasSq,nBasSq,n_diis,error_diis(:,1:n_diis,is), &
-                                                F_diis(:,1:n_diis,is),error(:,:,is),F(:,:,is))
-    end do
-
-    ! Reset DIIS if required
-
-    if(minval(rcond(:)) < 1d-15) n_diis = 0
+    if(minval(rcond(:)) > 1d-7) then
+      do is=1,nspin
+        if(nO(is) > 1) call DIIS_extrapolation(rcond(is),nBasSq,nBasSq,n_diis,error_diis(:,1:n_diis,is), &
+                                                  F_diis(:,1:n_diis,is),error(:,:,is),F(:,:,is))
+      end do
+    else 
+      n_diis = 0
+    end if
 
     ! Transform Fock matrix in orthogonal basis
 
@@ -296,11 +299,22 @@ subroutine qsUGW(maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,COHSEX,SOS
       c(:,:,is) = matmul(X(:,:),cp(:,:,is))
     end do
 
+    ! Back-transform self-energy
+
+    do is=1,nspin
+      SigCp(:,:,is) = matmul(transpose(c(:,:,is)),matmul(SigCp(:,:,is),c(:,:,is)))
+    end do
+
     ! Compute density matrix 
 
     do is=1,nspin
       P(:,:,is) = matmul(c(:,1:nO(is),is),transpose(c(:,1:nO(is),is)))
     end do
+
+    ! Save quasiparticles energy for next cycle
+
+    Conv = maxval(abs(eGW(:,:) - eOld(:,:)))
+    eOld(:,:) = eGW(:,:)
 
     !------------------------------------------------------------------------
     !   Compute total energy

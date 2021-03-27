@@ -1,5 +1,4 @@
-subroutine print_qsGW(nBas,nO,nSCF,Conv,thresh,eHF,eGW,c,P,T,V,J,K,F,SigC,Z, & 
-                      ENuc,ET,EV,EJ,Ex,EcGM,EcRPA,EqsGW,dipole)
+subroutine print_qsGW(nBas,nO,nSCF,Conv,thresh,eHF,eGW,c,SigC,Z,ENuc,ET,EV,EJ,Ex,EcGM,EcRPA,EqsGW,dipole)
 
 ! Print one-electron energies and other stuff for qsGW
 
@@ -23,10 +22,8 @@ subroutine print_qsGW(nBas,nO,nSCF,Conv,thresh,eHF,eGW,c,P,T,V,J,K,F,SigC,Z, &
   double precision,intent(in)        :: eHF(nBas)
   double precision,intent(in)        :: eGW(nBas)
   double precision,intent(in)        :: c(nBas)
-  double precision,intent(in)        :: P(nBas,nBas) 
-  double precision,intent(in)        :: T(nBas,nBas),V(nBas,nBas)
-  double precision,intent(in)        :: J(nBas,nBas),K(nBas,nBas),F(nBas,nBas)
-  double precision,intent(in)        :: Z(nBas),SigC(nBas,nBas)
+  double precision,intent(in)        :: SigC(nBas,nBas)
+  double precision,intent(in)        :: Z(nBas)
   double precision,intent(in)        :: dipole(ncart)
 
 ! Local variables
@@ -67,7 +64,7 @@ subroutine print_qsGW(nBas,nO,nSCF,Conv,thresh,eHF,eGW,c,P,T,V,J,K,F,SigC,Z, &
 
   write(*,*)'-------------------------------------------------------------------------------'
   write(*,'(2X,A10,I3)')   'Iteration ',nSCF
-  write(*,'(2X,A19,F15.5)')'max(|FPS - SPF|) = ',Conv
+  write(*,'(2X,A14,F15.5)')'Convergence = ',Conv
   write(*,*)'-------------------------------------------'
   write(*,'(2X,A30,F15.6,A3)') 'qsGW HOMO      energy:',eGW(HOMO)*HaToeV,' eV'
   write(*,'(2X,A30,F15.6,A3)') 'qsGW LUMO      energy:',eGW(LUMO)*HaToeV,' eV'

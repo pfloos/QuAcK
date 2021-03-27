@@ -75,6 +75,7 @@ subroutine qsUGF2(maxSCF,thresh,max_diis,BSE,TDA,dBSE,dTDA,evDyn,spin_conserved,
   double precision,allocatable  :: F_diis(:,:,:)
   double precision,allocatable  :: c(:,:,:)
   double precision,allocatable  :: cp(:,:,:)
+  double precision,allocatable  :: eOld(:,:)
   double precision,allocatable  :: eGF2(:,:)
   double precision,allocatable  :: P(:,:,:)
   double precision,allocatable  :: F(:,:,:)
@@ -117,9 +118,10 @@ subroutine qsUGF2(maxSCF,thresh,max_diis,BSE,TDA,dBSE,dTDA,evDyn,spin_conserved,
   nS_bb = nS(2)
   nS_sc = nS_aa + nS_bb
 
-  allocate(eGF2(nBas,nspin),c(nBas,nBas,nspin),cp(nBas,nBas,nspin),P(nBas,nBas,nspin),F(nBas,nBas,nspin),Fp(nBas,nBas,nspin), &
-           J(nBas,nBas,nspin),K(nBas,nBas,nspin),SigC(nBas,nBas,nspin),SigCp(nBas,nBas,nspin),SigCm(nBas,nBas,nspin),         &
-           Z(nBas,nspin),error(nBas,nBas,nspin),error_diis(nBasSq,max_diis,nspin),F_diis(nBasSq,max_diis,nspin))
+  allocate(eGF2(nBas,nspin),eOld(nBas,nspin),c(nBas,nBas,nspin),cp(nBas,nBas,nspin),P(nBas,nBas,nspin),F(nBas,nBas,nspin), &
+           Fp(nBas,nBas,nspin),J(nBas,nBas,nspin),K(nBas,nBas,nspin),SigC(nBas,nBas,nspin),SigCp(nBas,nBas,nspin),         &
+           SigCm(nBas,nBas,nspin),Z(nBas,nspin),error(nBas,nBas,nspin),error_diis(nBasSq,max_diis,nspin),                  &
+           F_diis(nBasSq,max_diis,nspin))
 
 ! Initialization
   
@@ -205,14 +207,14 @@ subroutine qsUGF2(maxSCF,thresh,max_diis,BSE,TDA,dBSE,dTDA,evDyn,spin_conserved,
     ! DIIS extrapolation
 
     n_diis = min(n_diis+1,max_diis)
-    do is=1,nspin
-      if(nO(is) > 1) call DIIS_extrapolation(rcond(is),nBasSq,nBasSq,n_diis,error_diis(:,1:n_diis,is), &
-                                                F_diis(:,1:n_diis,is),error(:,:,is),F(:,:,is))
-    end do
-
-    ! Reset DIIS if required
-
-    if(minval(rcond(:)) < 1d-15) n_diis = 0
+    if(minval(rcond(:)) > 1d-7) then
+      do is=1,nspin
+        if(nO(is) > 1) call DIIS_extrapolation(rcond(is),nBasSq,nBasSq,n_diis,error_diis(:,1:n_diis,is), &
+                                               F_diis(:,1:n_diis,is),error(:,:,is),F(:,:,is))
+      end do
+    else 
+      n_diis = 0
+    end if
 
     ! Transform Fock matrix in orthogonal basis
 
@@ -233,11 +235,22 @@ subroutine qsUGF2(maxSCF,thresh,max_diis,BSE,TDA,dBSE,dTDA,evDyn,spin_conserved,
       c(:,:,is) = matmul(X(:,:),cp(:,:,is))
     end do
 
+    ! Back-transform self-energy
+
+    do is=1,nspin
+      SigCp(:,:,is) = matmul(transpose(c(:,:,is)),matmul(SigCp(:,:,is),c(:,:,is)))
+    end do
+
     ! Compute density matrix 
 
     do is=1,nspin
       P(:,:,is) = matmul(c(:,1:nO(is),is),transpose(c(:,1:nO(is),is)))
     end do
+
+    ! Save quasiparticles energy for next cycle
+
+    Conv = maxval(abs(eGF2(:,:) - eOld(:,:)))
+    eOld(:,:) = eGF2(:,:)
 
     !------------------------------------------------------------------------
     !   Compute total energy

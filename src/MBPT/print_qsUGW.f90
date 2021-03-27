@@ -92,7 +92,7 @@ subroutine print_qsUGW(nBas,nO,nSCF,Conv,thresh,eHF,eGW,cGW,PGW,Ov,T,V,J,K, &
   write(*,*)'-------------------------------------------------------------------------------& 
               -------------------------------------------------'
   write(*,'(2X,A10,I3)')   'Iteration ',nSCF
-  write(*,'(2X,A19,F15.5)')'max(|FPS - SPF|) = ',Conv
+  write(*,'(2X,A14,F15.5)')'Convergence = ',Conv
   write(*,*)'-------------------------------------------------------------------------------& 
               -------------------------------------------------'
   write(*,'(2X,A30,F15.6,A3)') 'qsUGW HOMO      energy:',maxval(HOMO(:))*HaToeV,' eV'
