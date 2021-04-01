@@ -122,7 +122,7 @@ subroutine URPAx(TDA,doACFDT,exchange_kernel,spin_conserved,spin_flip,eta,nBas,n
   if(exchange_kernel) then
 
     EcRPAx(1) = 0.5d0*EcRPAx(1)
-    EcRPAx(2) = 1.5d0*EcRPAx(2)
+    EcRPAx(2) = 0.5d0*EcRPAx(2)
 
   end if
 

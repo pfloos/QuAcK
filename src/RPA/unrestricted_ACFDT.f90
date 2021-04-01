@@ -192,7 +192,7 @@ subroutine unrestricted_ACFDT(exchange_kernel,doXBS,dRPA,TDA_W,TDA,BSE,spin_cons
 
     EcAC(ispin) = 0.5d0*dot_product(wAC,Ec(:,ispin))
 
-    if(exchange_kernel) EcAC(ispin) = 1.5d0*EcAC(ispin)
+    if(exchange_kernel) EcAC(ispin) = 0.5d0*EcAC(ispin)
 
     write(*,*) '-----------------------------------------------------------------------------------'
     write(*,'(2X,A50,1X,F15.6)') ' Ec(AC) via Gauss-Legendre quadrature:',EcAC(ispin)
