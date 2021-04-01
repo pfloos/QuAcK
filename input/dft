@@ -1,5 +1,5 @@
 # Restricted or unrestricted KS calculation
-  UKS
+  eDFT-UKS
 # exchange rung:
 # Hartree      = 0: H
 # LDA          = 1: S51,CC-S51
@@ -28,7 +28,7 @@
  1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
  1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
 # Ensemble weights: wEns(1),...,wEns(nEns-1)
-  0.25 0.0
+  0.1 0.0
 # N-centered?
  F 
 # Parameters for CC weight-dependent exchange functional

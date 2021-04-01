@@ -284,14 +284,14 @@ subroutine eDFT_UKS(x_rung,x_DFA,c_rung,c_DFA,nEns,wEns,aCC_w1,aCC_w2,nGrid,weig
 !   DIIS extrapolation
 
     n_diis = min(n_diis+1,max_diis)
-    do ispin=1,nspin
-      call DIIS_extrapolation(rcond(ispin),nBasSq,nBasSq,n_diis, & 
-                              err_diis(:,:,ispin),F_diis(:,:,ispin),err(:,:,ispin),F(:,:,ispin))
-    end do
-
-!   Reset DIIS if required
-
-    if(minval(rcond(:)) < 1d-15) n_diis = 0
+    if(minval(rcond(:)) > 1d-7) then
+      do ispin=1,nspin
+        call DIIS_extrapolation(rcond(ispin),nBasSq,nBasSq,n_diis, & 
+                                err_diis(:,:,ispin),F_diis(:,:,ispin),err(:,:,ispin),F(:,:,ispin))
+      end do
+    else 
+      n_diis = 0
+   end if
 
 !  Transform Fock matrix in orthogonal basis
 

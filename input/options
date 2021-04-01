@@ -1,5 +1,5 @@
 # HF: maxSCF thresh   DIIS n_diis guess_type ortho_type mix_guess stability
-       1024    0.0000001  T    5      2          1         T         F
+       1024    0.00001  F    5      1          1         F         F
 # MP: 
       
 # CC: maxSCF thresh   DIIS n_diis
@@ -11,7 +11,7 @@
 # GW/GT: maxSCF thresh  DIIS n_diis lin eta COHSEX SOSEX TDA_W G0W GW0 
          256   0.0000001   T    5     T  0.0  F      F     F     F   F  
 # ACFDT: AC Kx  XBS
-         F  F   T
+         F  T   T
 # BSE: BSE dBSE dTDA evDyn
         F    T    T    F
 # MCMP2: nMC    nEq    nWalk dt  nPrint iSeed doDrift
