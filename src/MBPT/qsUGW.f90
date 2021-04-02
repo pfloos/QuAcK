@@ -393,7 +393,11 @@ subroutine qsUGW(maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,COHSEX,SOS
     if(exchange_kernel) then
 
       EcBSE(1) = 0.5d0*EcBSE(1)
-      EcBSE(2) = 1.5d0*EcBSE(2)
+      EcBSE(2) = 0.5d0*EcBSE(2)
+
+    else
+
+      EcBSE(2) = 0.0d0
 
     end if
 

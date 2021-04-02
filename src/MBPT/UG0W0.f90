@@ -194,8 +194,12 @@ subroutine UG0W0(doACFDT,exchange_kernel,doXBS,COHSEX,BSE,TDA_W,TDA,dBSE,dTDA,ev
     if(exchange_kernel) then
  
       EcBSE(1) = 0.5d0*EcBSE(1)
-      EcBSE(2) = 1.5d0*EcBSE(1)
+      EcBSE(2) = 0.5d0*EcBSE(2)
  
+    else
+ 
+      EcBSE(2) = 0.0d0
+
     end if
 
     write(*,*)
