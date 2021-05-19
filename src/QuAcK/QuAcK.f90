@@ -343,8 +343,18 @@ program QuAcK
   if(doMOM) then
 
     call cpu_time(start_MOM)
-    call MOM(maxSCF_HF,thresh_HF,n_diis_HF, &
-             nBas,nO,S,T,V,Hc,ERI_AO,X,ENuc,ERHF,cHF,eHF,PHF)
+
+    if(unrestricted) then
+
+!     call UMOM()
+
+    else
+
+      call RMOM(maxSCF_HF,thresh_HF,n_diis_HF,guess_type,nNuc,ZNuc,rNuc,ENuc, &
+             nBas,nO,S,T,V,Hc,ERI_AO,dipole_int_AO,X,ERHF,eHF,cHF,PHF,Vxc)
+
+    end if
+
     call cpu_time(end_MOM)
 
     t_MOM = end_MOM - start_MOM
