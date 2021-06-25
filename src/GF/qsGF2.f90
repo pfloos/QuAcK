@@ -118,6 +118,7 @@ subroutine qsGF2(maxSCF,thresh,max_diis,BSE,TDA,dBSE,dTDA,evDyn,singlet,triplet,
   c(:,:)          = cHF(:,:)
   F_diis(:,:)     = 0d0
   error_diis(:,:) = 0d0
+  rcond           = 1d0
 
 !------------------------------------------------------------------------
 ! Main loop
@@ -177,14 +178,14 @@ subroutine qsGF2(maxSCF,thresh,max_diis,BSE,TDA,dBSE,dTDA,evDyn,singlet,triplet,
     c = matmul(X,cp)
     SigCp = matmul(transpose(c),matmul(SigCp,c))
 
+    ! Compute new density matrix in the AO basis
+
+    P(:,:) = 2d0*matmul(c(:,1:nO),transpose(c(:,1:nO)))
+
     ! Save quasiparticles energy for next cycle
 
     Conv = maxval(abs(eGF2 - eOld))
     eOld(:) = eGF2(:)
-
-    ! Compute new density matrix in the AO basis
-
-    P(:,:) = 2d0*matmul(c(:,1:nO),transpose(c(:,1:nO)))
 
     !------------------------------------------------------------------------
     !   Compute total energy

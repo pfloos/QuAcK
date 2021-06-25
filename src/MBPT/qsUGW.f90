@@ -173,6 +173,7 @@ subroutine qsUGW(maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,COHSEX,SOS
   c(:,:,:)          = cHF(:,:,:)
   F_diis(:,:,:)     = 0d0
   error_diis(:,:,:) = 0d0
+  rcond             = 1d0
 
 !------------------------------------------------------------------------
 ! Main loop

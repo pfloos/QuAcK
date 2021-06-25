@@ -134,6 +134,7 @@ subroutine qsUGF2(maxSCF,thresh,max_diis,BSE,TDA,dBSE,dTDA,evDyn,spin_conserved,
   c(:,:,:)          = cHF(:,:,:)
   F_diis(:,:,:)     = 0d0
   error_diis(:,:,:) = 0d0
+  rcond             = 1d0
 
 !------------------------------------------------------------------------
 ! Main loop

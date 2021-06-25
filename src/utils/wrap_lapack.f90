@@ -153,7 +153,7 @@ subroutine linear_solve(N,A,b,x,rcond)
   implicit none
 
   integer,intent(in)             :: N
-  double precision,intent(in)    :: A(N,N),b(N),rcond
+  double precision,intent(out)    :: A(N,N),b(N),rcond
   double precision,intent(out)   :: x(N)
 
   integer                        :: info,lwork

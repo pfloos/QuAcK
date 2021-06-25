@@ -155,6 +155,7 @@ subroutine qsGW(maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,COHSEX,SOSE
   c(:,:)          = cHF(:,:)
   F_diis(:,:)     = 0d0
   error_diis(:,:) = 0d0
+  rcond           = 1d0
 
 !------------------------------------------------------------------------
 ! Main loop
@@ -236,14 +237,14 @@ subroutine qsGW(maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,COHSEX,SOSE
     c = matmul(X,cp)
     SigCp = matmul(transpose(c),matmul(SigCp,c))
 
+    ! Compute new density matrix in the AO basis
+
+    P(:,:) = 2d0*matmul(c(:,1:nO),transpose(c(:,1:nO)))
+
     ! Save quasiparticles energy for next cycle
 
     Conv = maxval(abs(eGW - eOld))
     eOld(:) = eGW(:)
-
-    ! Compute new density matrix in the AO basis
-
-    P(:,:) = 2d0*matmul(c(:,1:nO),transpose(c(:,1:nO)))
 
     !------------------------------------------------------------------------
     !   Compute total energy
