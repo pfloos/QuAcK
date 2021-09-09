@@ -215,9 +215,9 @@ subroutine UG0W0(doACFDT,exchange_kernel,doXBS,COHSEX,BSE,TDA_W,TDA,dBSE,dTDA,ev
 
     if(doACFDT) then
 
-      write(*,*) '------------------------------------------------------'
-      write(*,*) 'Adiabatic connection version of BSE correlation energy'
-      write(*,*) '------------------------------------------------------'
+      write(*,*) '------------------------------------------------------------'
+      write(*,*) 'Adiabatic connection version of BSE@UG0W0 correlation energy'
+      write(*,*) '------------------------------------------------------------'
       write(*,*) 
 
       if(doXBS) then 

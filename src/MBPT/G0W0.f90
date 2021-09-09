@@ -208,9 +208,9 @@ subroutine G0W0(doACFDT,exchange_kernel,doXBS,COHSEX,SOSEX,BSE,TDA_W,TDA, &
 
     if(doACFDT) then
 
-      write(*,*) '--------------------------------------------------------------'
-      write(*,*) ' Adiabatic connection version of BSE@UG0W0 correlation energy '
-      write(*,*) '--------------------------------------------------------------'
+      write(*,*) '-------------------------------------------------------------'
+      write(*,*) ' Adiabatic connection version of BSE@G0W0 correlation energy '
+      write(*,*) '-------------------------------------------------------------'
       write(*,*) 
 
       if(doXBS) then 
@@ -224,10 +224,10 @@ subroutine G0W0(doACFDT,exchange_kernel,doXBS,COHSEX,SOSEX,BSE,TDA_W,TDA, &
 
       write(*,*)
       write(*,*)'-------------------------------------------------------------------------------'
-      write(*,'(2X,A50,F20.10)') 'AC@BSE@UG0W0 correlation energy (singlet) =',EcAC(1)
-      write(*,'(2X,A50,F20.10)') 'AC@BSE@UG0W0 correlation energy (triplet) =',EcAC(2)
-      write(*,'(2X,A50,F20.10)') 'AC@BSE@UG0W0 correlation energy           =',EcAC(1) + EcAC(2)
-      write(*,'(2X,A50,F20.10)') 'AC@BSE@UG0W0 total energy                 =',ENuc + ERHF + EcAC(1) + EcAC(2)
+      write(*,'(2X,A50,F20.10)') 'AC@BSE@G0W0 correlation energy (singlet) =',EcAC(1)
+      write(*,'(2X,A50,F20.10)') 'AC@BSE@G0W0 correlation energy (triplet) =',EcAC(2)
+      write(*,'(2X,A50,F20.10)') 'AC@BSE@G0W0 correlation energy           =',EcAC(1) + EcAC(2)
+      write(*,'(2X,A50,F20.10)') 'AC@BSE@G0W0 total energy                 =',ENuc + ERHF + EcAC(1) + EcAC(2)
       write(*,*)'-------------------------------------------------------------------------------'
       write(*,*)
 
