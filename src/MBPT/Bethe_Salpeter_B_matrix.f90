@@ -36,6 +36,7 @@ subroutine Bethe_Salpeter_B_matrix(eta,nBas,nC,nO,nV,nR,nS,lambda,ERI,OmRPA,rho_
           chi = 0d0
           do kc=1,nS
             eps = OmRPA(kc)**2 + eta**2
+!           chi = chi + lambda*rho_RPA(i,b,kc)*rho_RPA(a,j,kc)*OmRPA(kc)/eps
             chi = chi + rho_RPA(i,b,kc)*rho_RPA(a,j,kc)*OmRPA(kc)/eps
           enddo
 
