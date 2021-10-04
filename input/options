@@ -1,9 +1,9 @@
 # HF: maxSCF thresh   DIIS n_diis guess_type ortho_type mix_guess stability
-       1024    0.0000001  F    5      1          1         T         F
+       1024    0.000000001  F    5      1          1         T         F
 # MP: 
       
 # CC: maxSCF thresh   DIIS n_diis
-      64     0.00001  T    5
+      64     0.0000000001  T    5
 # spin: TDA singlet triplet spin_conserved spin_flip 
          T   T       T       T              T 
 # GF: maxSCF thresh  DIIS n_diis lin eta renorm 

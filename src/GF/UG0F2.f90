@@ -105,7 +105,7 @@ subroutine UG0F2(BSE,TDA,dBSE,dTDA,evDyn,spin_conserved,spin_flip,linearize,eta,
 
 ! Compute MP2 correlation energy
 
-  call UMP2(nBas,nC,nO,nV,nR,ERI_aaaa,ERI_aabb,ERI_bbbb,ENuc,EUHF,eHF,Ec)
+  call UMP2(nBas,nC,nO,nV,nR,ERI_aaaa,ERI_aabb,ERI_bbbb,ENuc,EUHF,eGF2,Ec)
 
 ! Dump results
 
