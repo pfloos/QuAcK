@@ -5,30 +5,30 @@
 # LDA          = 1: S51,CC-S51
 # GGA          = 2: B88,G96,PBE
 # MGGA         = 3: 
-# Hybrid       = 4: HF,B3,PBE
-  4 HF
+# Hybrid       = 4: HF,B3LYP,PBE
+  1 S51
 # correlation rung: 
 # Hartree      = 0: H
 # LDA          = 1: PW92,VWN3,VWN5,eVWN5
 # GGA          = 2: LYP,PBE
 # MGGA         = 3:
-# Hybrid       = 4: HF,LYP,PBE
+# Hybrid       = 4: HF,B3LYP,PBE
  0 H
 # quadrature grid SG-n
   1
 # Number of states in ensemble (nEns)
   2
 # occupation numbers 
+ 1 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
  1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
- 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
  
- 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+ 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
  1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
  
  1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
  1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
 # Ensemble weights: wEns(1),...,wEns(nEns-1)
-  0.5 0.0
+  0.0 0.0
 # N-centered?
  F 
 # Parameters for CC weight-dependent exchange functional
