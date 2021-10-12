@@ -84,7 +84,9 @@ subroutine unrestricted_individual_energy(x_rung,x_DFA,c_rung,c_DFA,LDA_centered
   nEl(:) = 0d0
   do iEns=1,nEns
     do iBas=1,nBas
-      nEl(iEns) = nEl(iEns) + occnum(iBas,1,iEns) + occnum(iBas,2,iEns)
+      do ispin=1,nspin
+        nEl(iEns) = nEl(iEns) + occnum(iBas,ispin,iEns) 
+      end do
     end do
     kappa(iEns) = nEl(iEns)/nEl(1)
   end do
