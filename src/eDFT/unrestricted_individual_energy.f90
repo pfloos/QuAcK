@@ -97,11 +97,7 @@ subroutine unrestricted_individual_energy(x_rung,x_DFA,c_rung,c_DFA,LDA_centered
 
   do ispin=1,nspin
     do iEns=1,nEns
-      if (doNcentered) then
-        ET(ispin,iEns) = kappa(iEns)*trace_matrix(nBas,matmul(P(:,:,ispin,iEns),T(:,:)))
-      else 
         ET(ispin,iEns) = trace_matrix(nBas,matmul(P(:,:,ispin,iEns),T(:,:))) 
-      end if
     end do
   end do
 
@@ -111,11 +107,7 @@ subroutine unrestricted_individual_energy(x_rung,x_DFA,c_rung,c_DFA,LDA_centered
 
   do iEns=1,nEns
     do ispin=1,nspin
-      if (doNcentered) then
-        EV(ispin,iEns) = kappa(iEns)*trace_matrix(nBas,matmul(P(:,:,ispin,iEns),V(:,:)))
-      else 
         EV(ispin,iEns) = trace_matrix(nBas,matmul(P(:,:,ispin,iEns),V(:,:)))
-      end if  
   end do
   end do
 
@@ -129,18 +121,32 @@ subroutine unrestricted_individual_energy(x_rung,x_DFA,c_rung,c_DFA,LDA_centered
       call hartree_coulomb(nBas,Pw(:,:,ispin),ERI,J(:,:,ispin))
     end do
 
-    EJ(1,iEns) =       trace_matrix(nBas,matmul(P(:,:,1,iEns),J(:,:,1))) &
-               - 0.5d0*trace_matrix(nBas,matmul(Pw(:,:,1),J(:,:,1)))
+      if(doNcentered) then 
+ 
+        EJ(1,iEns) =   kappa(iEns)*trace_matrix(nBas,matmul(P(:,:,1,iEns),J(:,:,1))) &
+                   -0.5d0*kappa(iEns)*kappa(iEns)*trace_matrix(nBas,matmul(Pw(:,:,1),J(:,:,1)))
+   
+        EJ(2,iEns) =     kappa(iEns)*trace_matrix(nBas,matmul(P(:,:,1,iEns),J(:,:,2))) &
+                   +     kappa(iEns)*trace_matrix(nBas,matmul(P(:,:,2,iEns),J(:,:,1))) &
+                   -0.5d0*kappa(iEns)*kappa(iEns)*trace_matrix(nBas,matmul(Pw(:,:,1),J(:,:,2))) &
+                   - 0.5d0*kappa(iEns)*kappa(iEns)*trace_matrix(nBas,matmul(Pw(:,:,2),J(:,:,1)))
+   
+        EJ(3,iEns) =    kappa(iEns)*trace_matrix(nBas,matmul(P(:,:,2,iEns),J(:,:,2))) &
+                   -0.5d0*kappa(iEns)*kappa(iEns)*trace_matrix(nBas,matmul(Pw(:,:,2),J(:,:,2)))
+      else
 
-    EJ(2,iEns) =       trace_matrix(nBas,matmul(P(:,:,1,iEns),J(:,:,2))) &
-               +       trace_matrix(nBas,matmul(P(:,:,2,iEns),J(:,:,1))) &
-               - 0.5d0*trace_matrix(nBas,matmul(Pw(:,:,1),J(:,:,2)))     &
-               - 0.5d0*trace_matrix(nBas,matmul(Pw(:,:,2),J(:,:,1)))
 
-    EJ(3,iEns) =       trace_matrix(nBas,matmul(P(:,:,2,iEns),J(:,:,2))) &
-               - 0.5d0*trace_matrix(nBas,matmul(Pw(:,:,2),J(:,:,2)))
+        EJ(1,iEns) =       trace_matrix(nBas,matmul(P(:,:,1,iEns),J(:,:,1))) &
+                   - 0.5d0*trace_matrix(nBas,matmul(Pw(:,:,1),J(:,:,1)))
 
-    if(doNcentered) EJ(:,iEns) = kappa(iEns)*EJ(:,iEns)
+        EJ(2,iEns) =       trace_matrix(nBas,matmul(P(:,:,1,iEns),J(:,:,2))) &
+                   +       trace_matrix(nBas,matmul(P(:,:,2,iEns),J(:,:,1))) &
+                   - 0.5d0*trace_matrix(nBas,matmul(Pw(:,:,1),J(:,:,2)))     &
+                   - 0.5d0*trace_matrix(nBas,matmul(Pw(:,:,2),J(:,:,1)))
+
+        EJ(3,iEns) =       trace_matrix(nBas,matmul(P(:,:,2,iEns),J(:,:,2))) &
+                   - 0.5d0*trace_matrix(nBas,matmul(Pw(:,:,2),J(:,:,2)))
+      end if
 
   end do
 

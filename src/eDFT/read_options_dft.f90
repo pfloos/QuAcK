@@ -136,15 +136,16 @@ subroutine read_options_dft(nBas,method,x_rung,x_DFA,c_rung,c_DFA,SGn,nEns,wEns,
 
   if (doNcentered) then
 
-    wEns(1) = 1d0 - wEns(2) - wEns(3) 
+    wEns(1) = 1d0 - wEns(2) - wEns(3)
+    wEns(2) = (nEl(1)/nEl(2))*wEns(2)
+    wEns(3) = (nEl(1)/nEl(3))*wEns(3)
+
 
   else
 
 !   wEns(1) = 1d0 -  nEl(2)/nEl(1)*wEns(2) - nEl(3)/nEl(1)*wEns(3) 
 
     wEns(1) = 1d0 - wEns(2) - wEns(3)
-    wEns(2) = nEl(1)/nEl(2)*wEns(2)
-    wEns(3) = nEl(1)/nEl(3)*wEns(3)
 
   end if
 

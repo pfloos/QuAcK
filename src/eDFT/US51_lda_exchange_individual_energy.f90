@@ -54,8 +54,13 @@ subroutine US51_lda_exchange_individual_energy(nGrid,weight,rhow,rho,doNcentered
 
   enddo
 
-  Exrr  = kappa*Exrr
-  ExrI  = kappa*ExrI
+  if(doNcentered) then
+  
+    Exrr  = kappa*Exrr
+    ExrI  = kappa*ExrI
+
+  endif
+
 
   Ex = Exrr + ExrI + ExrrI
 
