@@ -8,7 +8,7 @@
 )
 (package
   (name quack-qcaml)
-  (synopsis "Quack toold using QCaml")
+  (synopsis "Quack tools using QCaml")
   (depends
     (ocaml (>= 4.10))
     (dune  (>= 1.10))
