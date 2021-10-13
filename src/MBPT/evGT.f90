@@ -1,6 +1,6 @@
 subroutine evGT(maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS, & 
-                BSE,TDA_W,TDA,dBSE,dTDA,evDyn,singlet,triplet,      & 
-                eta,nBas,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,dipole_int,eHF,eG0T0)
+                BSE,TDA_W,TDA,dBSE,dTDA,evDyn,singlet,triplet,eta,nBas, & 
+                nC,nO,nV,nR,nS,ENuc,ERHF,ERI_AO,ERI_MO,dipole_int,PHF,cHF,eHF,Vxc,eG0T0)
 
 ! Perform eigenvalue self-consistent calculation with a T-matrix self-energy (evGT)
 
@@ -33,8 +33,12 @@ subroutine evGT(maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS, &
   integer,intent(in)            :: nS
   double precision,intent(in)   :: ENuc
   double precision,intent(in)   :: ERHF
+  double precision,intent(in)   :: PHF(nBas,nBas)
   double precision,intent(in)   :: eHF(nBas)
-  double precision,intent(in)   :: ERI(nBas,nBas,nBas,nBas)
+  double precision,intent(in)   :: cHF(nBas,nBas)
+  double precision,intent(in)   :: Vxc(nBas)
+  double precision,intent(in)   :: ERI_AO(nBas,nBas,nBas,nBas)
+  double precision,intent(in)   :: ERI_MO(nBas,nBas,nBas,nBas)
   double precision,intent(in)   :: dipole_int(nBas,nBas,ncart)
   double precision,intent(in)   :: eG0T0(nBas)
 
@@ -68,6 +72,7 @@ subroutine evGT(maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS, &
   double precision,allocatable  :: X2s(:,:),X2t(:,:)
   double precision,allocatable  :: Y2s(:,:),Y2t(:,:)
   double precision,allocatable  :: rho2s(:,:,:),rho2t(:,:,:)
+  double precision,allocatable  :: SigX(:)
   double precision,allocatable  :: SigT(:)
   double precision,allocatable  :: Z(:)
 
@@ -96,14 +101,18 @@ subroutine evGT(maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS, &
 
 ! Memory allocation
 
-  allocate(Omega1s(nVVs),X1s(nVVs,nVVs),Y1s(nOOs,nVVs), & 
-           Omega2s(nOOs),X2s(nVVs,nOOs),Y2s(nOOs,nOOs), & 
-           rho1s(nBas,nO,nVVs),rho2s(nBas,nV,nOOs), & 
-           Omega1t(nVVt),X1t(nVVt,nVVt),Y1t(nOOt,nVVt), & 
-           Omega2t(nOOt),X2t(nVVt,nOOt),Y2t(nOOt,nOOt), & 
-           rho1t(nBas,nO,nVVt),rho2t(nBas,nV,nOOt),     &
-           eGT(nBas),eOld(nBas),Z(nBas),SigT(nBas),     &
+  allocate(Omega1s(nVVs),X1s(nVVs,nVVs),Y1s(nOOs,nVVs),        & 
+           Omega2s(nOOs),X2s(nVVs,nOOs),Y2s(nOOs,nOOs),        & 
+           rho1s(nBas,nO,nVVs),rho2s(nBas,nV,nOOs),            & 
+           Omega1t(nVVt),X1t(nVVt,nVVt),Y1t(nOOt,nVVt),        & 
+           Omega2t(nOOt),X2t(nVVt,nOOt),Y2t(nOOt,nOOt),        & 
+           rho1t(nBas,nO,nVVt),rho2t(nBas,nV,nOOt),            &
+           eGT(nBas),eOld(nBas),Z(nBas),SigX(nBas),SigT(nBas), &
            error_diis(nBas,max_diis),e_diis(nBas,max_diis))
+
+! Compute the exchange part of the self-energy
+
+  call self_energy_exchange_diag(nBas,cHF,PHF,ERI_AO,SigX)
 
 ! Initialization
 
@@ -131,7 +140,7 @@ subroutine evGT(maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS, &
  
     ! Compute linear response
  
-    call linear_response_pp(iblock,.true.,.false.,nBas,nC,nO,nV,nR,nOOs,nVVs,eHF(:),ERI(:,:,:,:),  & 
+    call linear_response_pp(iblock,.true.,.false.,nBas,nC,nO,nV,nR,nOOs,nVVs,eGT(:),ERI_MO(:,:,:,:),  & 
                             Omega1s(:),X1s(:,:),Y1s(:,:),Omega2s(:),X2s(:,:),Y2s(:,:),EcRPA(ispin))
  
 !   EcRPA(ispin) = 1d0*EcRPA(ispin)
@@ -148,7 +157,7 @@ subroutine evGT(maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS, &
 
   ! Compute linear response
 
-    call linear_response_pp(iblock,.true.,.false.,nBas,nC,nO,nV,nR,nOOt,nVVt,eHF(:),ERI(:,:,:,:),  & 
+    call linear_response_pp(iblock,.true.,.false.,nBas,nC,nO,nV,nR,nOOt,nVVt,eGT(:),ERI_MO(:,:,:,:),  & 
                           Omega1t(:),X1t(:,:),Y1t(:,:),Omega2t(:),X2t(:,:),Y2t(:,:),EcRPA(ispin))
 
 !   EcRPA(ispin) = 2d0*EcRPA(ispin)
@@ -169,7 +178,7 @@ subroutine evGT(maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS, &
     xERI   = +0d0
     alpha  = +1d0
  
-    call excitation_density_Tmatrix(iblock,dERI,xERI,nBas,nC,nO,nV,nR,nOOs,nVVs,ERI(:,:,:,:), &
+    call excitation_density_Tmatrix(iblock,dERI,xERI,nBas,nC,nO,nV,nR,nOOs,nVVs,ERI_MO(:,:,:,:), &
                                     X1s(:,:),Y1s(:,:),rho1s(:,:,:),X2s(:,:),Y2s(:,:),rho2s(:,:,:))
  
     call self_energy_Tmatrix_diag(alpha,eta,nBas,nC,nO,nV,nR,nOOs,nVVs,eGT(:), & 
@@ -183,7 +192,7 @@ subroutine evGT(maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS, &
     xERI   = -1d0
     alpha  = +1d0
  
-    call excitation_density_Tmatrix(iblock,dERI,xERI,nBas,nC,nO,nV,nR,nOOt,nVVt,ERI(:,:,:,:), &
+    call excitation_density_Tmatrix(iblock,dERI,xERI,nBas,nC,nO,nV,nR,nOOt,nVVt,ERI_MO(:,:,:,:), &
                                     X1t(:,:),Y1t(:,:),rho1t(:,:,:),X2t(:,:),Y2t(:,:),rho2t(:,:,:))
  
     call self_energy_Tmatrix_diag(alpha,eta,nBas,nC,nO,nV,nR,nOOt,nVVt,eGT(:), & 
@@ -200,7 +209,7 @@ subroutine evGT(maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS, &
   ! Solve the quasi-particle equation
   !----------------------------------------------
 
-    eGT(:) = eHF(:) + SigT(:)
+    eGT(:) = eHF(:) + SigX(:) + SigT(:) - Vxc(:)
 
     ! Convergence criteria
 
@@ -238,11 +247,11 @@ subroutine evGT(maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS, &
 
   ispin  = 1
   iblock = 3
-  call linear_response_pp(iblock,.false.,.false.,nBas,nC,nO,nV,nR,nOOs,nVVs,eGT(:),ERI(:,:,:,:),  &
+  call linear_response_pp(iblock,.false.,.false.,nBas,nC,nO,nV,nR,nOOs,nVVs,eGT(:),ERI_MO(:,:,:,:),  &
                           Omega1s(:),X1s(:,:),Y1s(:,:),Omega2s(:),X2s(:,:),Y2s(:,:),EcRPA(ispin))
   ispin  = 2
   iblock = 4
-  call linear_response_pp(iblock,.false.,.false.,nBas,nC,nO,nV,nR,nOOt,nVVt,eGT(:),ERI(:,:,:,:),  &
+  call linear_response_pp(iblock,.false.,.false.,nBas,nC,nO,nV,nR,nOOt,nVVt,eGT(:),ERI_MO(:,:,:,:),  &
                           Omega1t(:),X1t(:,:),Y1t(:,:),Omega2t(:),X2t(:,:),Y2t(:,:),EcRPA(ispin))
   EcRPA(1) = EcRPA(1) - EcRPA(2)
   EcRPA(2) = 3d0*EcRPA(2)
@@ -262,7 +271,7 @@ subroutine evGT(maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS, &
   if(BSE) then
 
     call Bethe_Salpeter(TDA_W,TDA,dBSE,dTDA,evDyn,singlet,triplet,eta, &
-                        nBas,nC,nO,nV,nR,nS,ERI,dipole_int,eGT,eGT,EcRPA,EcBSE)
+                        nBas,nC,nO,nV,nR,nS,ERI_MO,dipole_int,eGT,eGT,EcRPA,EcBSE)
 
     if(exchange_kernel) then
 
@@ -297,7 +306,7 @@ subroutine evGT(maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS, &
       end if
 
       call ACFDT(exchange_kernel,doXBS,.true.,TDA_W,TDA,BSE,singlet,triplet,eta, &
-                 nBas,nC,nO,nV,nR,nS,ERI,eGT,eGT,EcAC)
+                 nBas,nC,nO,nV,nR,nS,ERI_MO,eGT,eGT,EcAC)
 
       if(exchange_kernel) then
 

@@ -57,9 +57,9 @@ subroutine orthogonalization_matrix(ortho_type,nBas,S,X)
 
   elseif(ortho_type == 2) then
 
-    write(*,*)
-    write(*,*) 'Canonical orthogonalization'
-    write(*,*)
+!   write(*,*)
+!   write(*,*) 'Canonical orthogonalization'
+!   write(*,*)
 
     Uvec = S
     call diagonalize_matrix(nBas,Uvec,Uval)
@@ -83,9 +83,9 @@ subroutine orthogonalization_matrix(ortho_type,nBas,S,X)
  
   elseif(ortho_type == 3) then
 
-    write(*,*)
-    write(*,*) ' SVD-based orthogonalization NYI'
-    write(*,*)
+!   write(*,*)
+!   write(*,*) ' SVD-based orthogonalization NYI'
+!   write(*,*)
    
 !   Uvec = S
 !   call diagonalize_matrix(nBas,Uvec,Uval)

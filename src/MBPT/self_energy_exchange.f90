@@ -1,4 +1,4 @@
-subroutine self_energy_exchange(nBas,c,P,G,SigmaX)
+subroutine self_energy_exchange(nBas,c,P,ERI,SigX)
 
 ! Compute exchange part of the self-energy
 
@@ -8,18 +8,18 @@ subroutine self_energy_exchange(nBas,c,P,G,SigmaX)
 ! Input variables
 
   integer,intent(in)            :: nBas
-  double precision,intent(in)   :: c(nBas,nBas),P(nBas,nBas),G(nBas,nBas,nBas,nBas)
+  double precision,intent(in)   :: c(nBas,nBas),P(nBas,nBas),ERI(nBas,nBas,nBas,nBas)
 
 ! Output variables
 
-  double precision,intent(out)  :: SigmaX(nBas,nBas)
+  double precision,intent(out)  :: SigX(nBas,nBas)
 
 ! Compute exchange part of the self-energy in the AO basis
 
-  call exchange_matrix_AO_basis(nBas,P,G,SigmaX)
+  call exchange_matrix_AO_basis(nBas,P,ERI,SigX)
 
 ! Compute exchange part of the self-energy in the MO basis
 
-  SigmaX = matmul(transpose(c),matmul(SigmaX,c))
+  SigX = matmul(transpose(c),matmul(SigX,c))
 
 end subroutine self_energy_exchange

@@ -22,9 +22,8 @@ subroutine UCC_lda_exchange_individual_energy(nEns,wEns,aCC_w1,aCC_w2,nGrid,weig
 ! Local variables
 
   integer                       :: iG
-  double precision              :: r,rI,alpha
+  double precision              :: r,rI
   double precision              :: e_p,dedr
-  double precision              :: nEli,nElw
 
   double precision              :: a1,b1,c1,w1
   double precision              :: a2,b2,c2,w2
@@ -51,10 +50,6 @@ subroutine UCC_lda_exchange_individual_energy(nEns,wEns,aCC_w1,aCC_w2,nGrid,weig
   b2 = aCC_w2(2)
   c2 = aCC_w2(3)
 
-! Cx coefficient for unrestricted Slater LDA exchange
-
-  alpha = -(3d0/2d0)*(3d0/(4d0*pi))**(1d0/3d0)
-
   w1 = wEns(2)
   Fx1 = 1d0 - w1*(1d0 - w1)*(a1 + b1*(w1 - 0.5d0) + c1*(w1 - 0.5d0)**2)
 
@@ -64,20 +59,18 @@ subroutine UCC_lda_exchange_individual_energy(nEns,wEns,aCC_w1,aCC_w2,nGrid,weig
   select case (Cx_choice)
 
     case(1)
-    Cx = alpha*Fx1
+      Cx = CxLSDA*Fx1
 
     case(2)
-    Cx = alpha*Fx2
+      Cx = CxLSDA*Fx2
 
     case(3)
-    Cx = alpha*Fx2*Fx1
+      Cx = CxLSDA*Fx2*Fx1
+
+    case default
+      Cx = CxLSDA
 
   end select
-
-  nEli = electron_number(nGrid,weight,rho)
-
-  nElw = electron_number(nGrid,weight,rhow)
- 
 
 ! Compute LDA exchange matrix in the AO basis
 
@@ -92,19 +85,12 @@ subroutine UCC_lda_exchange_individual_energy(nEns,wEns,aCC_w1,aCC_w2,nGrid,weig
       e_p  =         Cx*r**(1d0/3d0)
       dedr = 1d0/3d0*Cx*r**(-2d0/3d0)
      
-      if (doNcentered) then
-        Ex = Ex - weight(iG)*dedr*r*r*(nEli/nElw)
-      else
-        Ex = Ex - weight(iG)*dedr*r*r
-      end if
+      Ex = Ex - weight(iG)*dedr*r*r
 
       if(rI > threshold) then
 
-        if (doNcentered) then
-          Ex = Ex + weight(iG)*(e_p*rI + dedr*r*rI)
-        else
-          Ex = Ex + weight(iG)*((nEli/nElw)*e_p*rI + dedr*r*rI)
-        end if
+        Ex = Ex + weight(iG)*(e_p*rI + dedr*r*rI)
+
       endif
 
     endif

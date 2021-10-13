@@ -88,7 +88,7 @@ subroutine UVWN5_lda_correlation_individual_energy(nGrid,weight,rhow,rho,Ec)
 
       decdra_f = drsdra*dxdrs*decdx_f
 
-      Ec(1) = Ec(1) + weight(iG)*(ec_z + decdra_f*r)*rI
+      Ec(1) = Ec(1) + weight(iG)*(ec_f + decdra_f*r)*rI
    
     end if
 
@@ -191,7 +191,7 @@ subroutine UVWN5_lda_correlation_individual_energy(nGrid,weight,rhow,rho,Ec)
 
       decdra_f = drsdra*dxdrs*decdx_f
 
-      Ec(3) = Ec(3) + weight(iG)*(ec_z + decdra_f*r)*rI  
+      Ec(3) = Ec(3) + weight(iG)*(ec_f + decdra_f*r)*rI  
 
     end if
 

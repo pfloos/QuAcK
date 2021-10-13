@@ -1,5 +1,5 @@
 subroutine G0T0(doACFDT,exchange_kernel,doXBS,BSE,TDA_W,TDA,dBSE,dTDA,evDyn,singlet,triplet, & 
-                linearize,eta,nBas,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,dipole_int,eHF,eG0T0)
+                linearize,eta,nBas,nC,nO,nV,nR,nS,ENuc,ERHF,ERI_AO,ERI_MO,dipole_int,PHF,cHF,eHF,Vxc,eG0T0)
 
 ! Perform one-shot calculation with a T-matrix self-energy (G0T0)
 
@@ -30,8 +30,12 @@ subroutine G0T0(doACFDT,exchange_kernel,doXBS,BSE,TDA_W,TDA,dBSE,dTDA,evDyn,sing
   integer,intent(in)            :: nS
   double precision,intent(in)   :: ENuc
   double precision,intent(in)   :: ERHF
+  double precision,intent(in)   :: Vxc(nBas)
   double precision,intent(in)   :: eHF(nBas)
-  double precision,intent(in)   :: ERI(nBas,nBas,nBas,nBas)
+  double precision,intent(in)   :: cHF(nBas,nBas)
+  double precision,intent(in)   :: PHF(nBas,nBas)
+  double precision,intent(in)   :: ERI_AO(nBas,nBas,nBas,nBas)
+  double precision,intent(in)   :: ERI_MO(nBas,nBas,nBas,nBas)
   double precision,intent(in)   :: dipole_int(nBas,nBas,ncart)
 
 ! Local variables
@@ -54,6 +58,7 @@ subroutine G0T0(doACFDT,exchange_kernel,doXBS,BSE,TDA_W,TDA,dBSE,dTDA,evDyn,sing
   double precision,allocatable  :: X2s(:,:),X2t(:,:)
   double precision,allocatable  :: Y2s(:,:),Y2t(:,:)
   double precision,allocatable  :: rho2s(:,:,:),rho2t(:,:,:)
+  double precision,allocatable  :: SigX(:)
   double precision,allocatable  :: SigT(:)
   double precision,allocatable  :: Z(:)
 
@@ -90,7 +95,7 @@ subroutine G0T0(doACFDT,exchange_kernel,doXBS,BSE,TDA_W,TDA,dBSE,dTDA,evDyn,sing
            Omega1t(nVVt),X1t(nVVt,nVVt),Y1t(nOOt,nVVt), & 
            Omega2t(nOOt),X2t(nVVt,nOOt),Y2t(nOOt,nOOt), & 
            rho1t(nBas,nO,nVVt),rho2t(nBas,nV,nOOt), & 
-           SigT(nBas),Z(nBas))
+           SigX(nBas),SigT(nBas),Z(nBas))
 
 !----------------------------------------------
 ! alpha-beta block
@@ -101,7 +106,7 @@ subroutine G0T0(doACFDT,exchange_kernel,doXBS,BSE,TDA_W,TDA,dBSE,dTDA,evDyn,sing
 
 ! Compute linear response
 
-  call linear_response_pp(iblock,.true.,.false.,nBas,nC,nO,nV,nR,nOOs,nVVs,eHF(:),ERI(:,:,:,:),  & 
+  call linear_response_pp(iblock,.true.,.false.,nBas,nC,nO,nV,nR,nOOs,nVVs,eHF(:),ERI_MO(:,:,:,:),  & 
                           Omega1s(:),X1s(:,:),Y1s(:,:),Omega2s(:),X2s(:,:),Y2s(:,:),EcRPA(ispin))
 
 ! EcRPA(ispin) = 1d0*EcRPA(ispin)
@@ -118,7 +123,7 @@ subroutine G0T0(doACFDT,exchange_kernel,doXBS,BSE,TDA_W,TDA,dBSE,dTDA,evDyn,sing
 
 ! Compute linear response
 
-  call linear_response_pp(iblock,.true.,.false.,nBas,nC,nO,nV,nR,nOOt,nVVt,eHF(:),ERI(:,:,:,:),  & 
+  call linear_response_pp(iblock,.true.,.false.,nBas,nC,nO,nV,nR,nOOt,nVVt,eHF(:),ERI_MO(:,:,:,:),  & 
                           Omega1t(:),X1t(:,:),Y1t(:,:),Omega2t(:),X2t(:,:),Y2t(:,:),EcRPA(ispin))
 
 ! EcRPA(ispin) = 2d0*EcRPA(ispin)
@@ -139,7 +144,7 @@ subroutine G0T0(doACFDT,exchange_kernel,doXBS,BSE,TDA_W,TDA,dBSE,dTDA,evDyn,sing
   xERI   = +0d0
   alpha  = +1d0
 
-  call excitation_density_Tmatrix(iblock,dERI,xERI,nBas,nC,nO,nV,nR,nOOs,nVVs,ERI(:,:,:,:), &
+  call excitation_density_Tmatrix(iblock,dERI,xERI,nBas,nC,nO,nV,nR,nOOs,nVVs,ERI_MO(:,:,:,:), &
                                   X1s(:,:),Y1s(:,:),rho1s(:,:,:),X2s(:,:),Y2s(:,:),rho2s(:,:,:))
 
   call self_energy_Tmatrix_diag(alpha,eta,nBas,nC,nO,nV,nR,nOOs,nVVs,eHF(:), & 
@@ -153,7 +158,7 @@ subroutine G0T0(doACFDT,exchange_kernel,doXBS,BSE,TDA_W,TDA,dBSE,dTDA,evDyn,sing
   xERI   = -1d0
   alpha  = +1d0
 
-  call excitation_density_Tmatrix(iblock,dERI,xERI,nBas,nC,nO,nV,nR,nOOt,nVVt,ERI(:,:,:,:), &
+  call excitation_density_Tmatrix(iblock,dERI,xERI,nBas,nC,nO,nV,nR,nOOt,nVVt,ERI_MO(:,:,:,:), &
                                   X1t(:,:),Y1t(:,:),rho1t(:,:,:),X2t(:,:),Y2t(:,:),rho2t(:,:,:))
 
   call self_energy_Tmatrix_diag(alpha,eta,nBas,nC,nO,nV,nR,nOOt,nVVt,eHF(:), & 
@@ -164,17 +169,24 @@ subroutine G0T0(doACFDT,exchange_kernel,doXBS,BSE,TDA_W,TDA,dBSE,dTDA,evDyn,sing
 
   Z(:) = 1d0/(1d0 - Z(:))
 
+
+!----------------------------------------------
+! Compute the exchange part of the self-energy
+!----------------------------------------------
+
+  call self_energy_exchange_diag(nBas,cHF,PHF,ERI_AO,SigX)
+
 !----------------------------------------------
 ! Solve the quasi-particle equation
 !----------------------------------------------
 
   if(linearize) then
 
-    eG0T0(:) = eHF(:) + Z(:)*SigT(:)
+    eG0T0(:) = eHF(:) + Z(:)*(SigX(:) + SigT(:) - Vxc(:))
 
   else
   
-    eG0T0(:) = eHF(:) + SigT(:)
+    eG0T0(:) = eHF(:) + SigX(:) + SigT(:) - Vxc(:)
 
   end if
 
@@ -188,11 +200,11 @@ subroutine G0T0(doACFDT,exchange_kernel,doXBS,BSE,TDA_W,TDA,dBSE,dTDA,evDyn,sing
 
   ispin  = 1
   iblock = 3
-  call linear_response_pp(iblock,.false.,.false.,nBas,nC,nO,nV,nR,nOOs,nVVs,eG0T0(:),ERI(:,:,:,:),  & 
+  call linear_response_pp(iblock,.false.,.false.,nBas,nC,nO,nV,nR,nOOs,nVVs,eG0T0(:),ERI_MO(:,:,:,:),  & 
                           Omega1s(:),X1s(:,:),Y1s(:,:),Omega2s(:),X2s(:,:),Y2s(:,:),EcRPA(ispin))
   ispin  = 2
   iblock = 4
-  call linear_response_pp(iblock,.false.,.false.,nBas,nC,nO,nV,nR,nOOt,nVVt,eG0T0(:),ERI(:,:,:,:),  & 
+  call linear_response_pp(iblock,.false.,.false.,nBas,nC,nO,nV,nR,nOOt,nVVt,eG0T0(:),ERI_MO(:,:,:,:),  & 
                           Omega1t(:),X1t(:,:),Y1t(:,:),Omega2t(:),X2t(:,:),Y2t(:,:),EcRPA(ispin))
   EcRPA(1) = EcRPA(1) - EcRPA(2)
   EcRPA(2) = 3d0*EcRPA(2)
@@ -211,7 +223,7 @@ subroutine G0T0(doACFDT,exchange_kernel,doXBS,BSE,TDA_W,TDA,dBSE,dTDA,evDyn,sing
   if(BSE) then
 
     call Bethe_Salpeter(TDA_W,TDA,dBSE,dTDA,evDyn,singlet,triplet,eta, &
-                        nBas,nC,nO,nV,nR,nS,ERI,dipole_int,eHF,eG0T0,EcBSE)
+                        nBas,nC,nO,nV,nR,nS,ERI_MO,dipole_int,eHF,eG0T0,EcBSE)
 
     if(exchange_kernel) then
 
@@ -246,7 +258,7 @@ subroutine G0T0(doACFDT,exchange_kernel,doXBS,BSE,TDA_W,TDA,dBSE,dTDA,evDyn,sing
       end if
 
       call ACFDT(exchange_kernel,doXBS,.true.,TDA_W,TDA,BSE,singlet,triplet,eta, &
-                 nBas,nC,nO,nV,nR,nS,ERI,eHF,eG0T0,EcAC)
+                 nBas,nC,nO,nV,nR,nS,ERI_MO,eHF,eG0T0,EcAC)
 
       if(exchange_kernel) then
 

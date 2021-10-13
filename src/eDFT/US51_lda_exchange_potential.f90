@@ -16,16 +16,11 @@ subroutine US51_lda_exchange_potential(nGrid,weight,nBas,AO,rho,Fx)
 ! Local variables
 
   integer                       :: mu,nu,iG
-  double precision              :: alpha 
   double precision              :: r,vAO
 
 ! Output variables
 
   double precision,intent(out)  :: Fx(nBas,nBas)
-
-! Cx coefficient for Slater LDA exchange
-
-  alpha = -(3d0/2d0)*(3d0/(4d0*pi))**(1d0/3d0)
 
 ! Compute LDA exchange matrix in the AO basis
 
@@ -39,7 +34,7 @@ subroutine US51_lda_exchange_potential(nGrid,weight,nBas,AO,rho,Fx)
         if(r > threshold) then
 
           vAO = weight(iG)*AO(mu,iG)*AO(nu,iG)
-          Fx(mu,nu) = Fx(mu,nu) + vAO*4d0/3d0*alpha*r**(1d0/3d0)
+          Fx(mu,nu) = Fx(mu,nu) + vAO*4d0/3d0*CxLSDA*r**(1d0/3d0)
 
         endif
 

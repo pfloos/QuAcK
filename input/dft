@@ -1,38 +1,38 @@
 # Restricted or unrestricted KS calculation
   eDFT-UKS
 # exchange rung:
-# Hartree      = 0
-# LDA          = 1: RS51,RMFL20
-# GGA          = 2: RB88
-# Hybrid       = 4
-# Hartree-Fock = 666
-  1 S51  
+# Hartree      = 0: H
+# LDA          = 1: S51,CC-S51
+# GGA          = 2: B88,G96,PBE
+# MGGA         = 3: 
+# Hybrid       = 4: HF,B3LYP,PBE
+  1 S51
 # correlation rung: 
-# Hartree      = 0
-# LDA          = 1: RVWN5,RMFL20
-# GGA          = 2: 
-# Hybrid       = 4: 
-# Hartree-Fock = 666
-  0 H 
+# Hartree      = 0: H
+# LDA          = 1: PW92,VWN3,VWN5,eVWN5
+# GGA          = 2: LYP,PBE
+# MGGA         = 3:
+# Hybrid       = 4: HF,B3LYP,PBE
+ 0 H
 # quadrature grid SG-n
   1
 # Number of states in ensemble (nEns)
-  3
-# occupation numbers of orbitals nO and nO+1
- 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 
- 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 
+  1
+# occupation numbers 
+ 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+ 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
  
- 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 
- 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 
+ 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+ 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
  
- 1 1 0 0 0 0 0 0 0 0 0 0 0 0 0 
- 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 
+ 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+ 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
 # Ensemble weights: wEns(1),...,wEns(nEns-1)
-  0.00 1.00 
+  0.0 0.0
 # N-centered?
- T 
+ F 
 # Parameters for CC weight-dependent exchange functional
-0.445525 0.0901503 -0.286898
-0.191734 -0.0364788 -0.017035
+0.0 0.0 0.0
+0.0 0.0 0.0
 # choice of UCC exchange coefficient : 1 for Cx1, 2 for Cx2, 3 for Cx1*Cx2
 2

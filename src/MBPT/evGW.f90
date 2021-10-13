@@ -1,6 +1,6 @@
 subroutine evGW(maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,COHSEX,SOSEX,BSE,TDA_W,TDA,  & 
-                G0W,GW0,dBSE,dTDA,evDyn,singlet,triplet,eta,nBas,nC,nO,nV,nR,nS,ENuc,ERHF,ERI, & 
-                dipole_int,eHF,eG0W0)
+                G0W,GW0,dBSE,dTDA,evDyn,singlet,triplet,eta,nBas,nC,nO,nV,nR,nS,ENuc,ERHF,        &
+                ERI_AO,ERI_MO,dipole_int,PHF,cHF,eHF,Vxc,eG0W0)
 
 ! Perform self-consistent eigenvalue-only GW calculation
 
@@ -31,9 +31,13 @@ subroutine evGW(maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,COHSEX,SOSE
   logical,intent(in)            :: triplet
   double precision,intent(in)   :: eta
   integer,intent(in)            :: nBas,nC,nO,nV,nR,nS
+  double precision,intent(in)   :: PHF(nBas,nBas)
   double precision,intent(in)   :: eHF(nBas)
+  double precision,intent(in)   :: cHF(nBas,nBas)
+  double precision,intent(in)   :: Vxc(nBas)
   double precision,intent(in)   :: eG0W0(nBas)
-  double precision,intent(in)   :: ERI(nBas,nBas,nBas,nBas)
+  double precision,intent(in)   :: ERI_AO(nBas,nBas,nBas,nBas)
+  double precision,intent(in)   :: ERI_MO(nBas,nBas,nBas,nBas)
   double precision,intent(in)   :: dipole_int(nBas,nBas,ncart)
 
 ! Local variables
@@ -54,6 +58,7 @@ subroutine evGW(maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,COHSEX,SOSE
   double precision,allocatable  :: eGW(:)
   double precision,allocatable  :: eOld(:)
   double precision,allocatable  :: Z(:)
+  double precision,allocatable  :: SigX(:)
   double precision,allocatable  :: SigC(:)
   double precision,allocatable  :: OmRPA(:)
   double precision,allocatable  :: XpY_RPA(:,:)
@@ -117,8 +122,12 @@ subroutine evGW(maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,COHSEX,SOSE
 
 ! Memory allocation
 
-  allocate(eGW(nBas),eOld(nBas),Z(nBas),SigC(nBas),OmRPA(nS),XpY_RPA(nS,nS),XmY_RPA(nS,nS), & 
+  allocate(eGW(nBas),eOld(nBas),Z(nBas),SigX(nBas),SigC(nBas),OmRPA(nS),XpY_RPA(nS,nS),XmY_RPA(nS,nS), & 
            rho_RPA(nBas,nBas,nS),error_diis(nBas,max_diis),e_diis(nBas,max_diis))
+
+! Compute the exchange part of the self-energy
+
+  call self_energy_exchange_diag(nBas,cHF,PHF,ERI_AO,SigX)
 
 ! Initialization
 
@@ -142,14 +151,14 @@ subroutine evGW(maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,COHSEX,SOSE
 
     if(.not. GW0 .or. nSCF == 0) then
 
-      call linear_response(ispin,.true.,TDA_W,.false.,eta,nBas,nC,nO,nV,nR,nS,1d0,eGW,ERI,OmRPA, & 
+      call linear_response(ispin,.true.,TDA_W,.false.,eta,nBas,nC,nO,nV,nR,nS,1d0,eGW,ERI_MO,OmRPA, & 
                            rho_RPA,EcRPA,OmRPA,XpY_RPA,XmY_RPA)
 
     endif
 
 !   Compute spectral weights
 
-    call excitation_density(nBas,nC,nO,nR,nS,ERI,XpY_RPA,rho_RPA)
+    call excitation_density(nBas,nC,nO,nR,nS,ERI_MO,XpY_RPA,rho_RPA)
 
 !   Compute correlation part of the self-energy 
 
@@ -167,7 +176,7 @@ subroutine evGW(maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,COHSEX,SOSE
 
     ! Solve the quasi-particle equation
 
-    eGW(:) = eHF(:) + SigC(:)
+    eGW(:) = eHF(:) + SigX(:) + SigC(:) - Vxc(:)
 
     ! Convergence criteria
 
@@ -186,11 +195,11 @@ subroutine evGW(maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,COHSEX,SOSE
     else
 
       n_diis = min(n_diis+1,max_diis)
-      call DIIS_extrapolation(rcond,nBas,nBas,n_diis,error_diis,e_diis,eGW-eOld,eGW)
-
-!    Reset DIIS if required
-
-      if(abs(rcond) < 1d-15) n_diis = 0
+      if(abs(rcond) > 1d-7) then
+        call DIIS_extrapolation(rcond,nBas,nBas,n_diis,error_diis,e_diis,eGW-eOld,eGW)
+      else
+        n_diis = 0
+      endif
 
     endif
 
@@ -233,7 +242,7 @@ subroutine evGW(maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,COHSEX,SOSE
 
   if(BSE) then
 
-    call Bethe_Salpeter(TDA_W,TDA,dBSE,dTDA,evDyn,singlet,triplet,eta,nBas,nC,nO,nV,nR,nS,ERI,dipole_int,eGW,eGW,EcBSE)
+    call Bethe_Salpeter(TDA_W,TDA,dBSE,dTDA,evDyn,singlet,triplet,eta,nBas,nC,nO,nV,nR,nS,ERI_MO,dipole_int,eGW,eGW,EcBSE)
 
     if(exchange_kernel) then
 
@@ -267,7 +276,7 @@ subroutine evGW(maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,COHSEX,SOSE
 
       end if
 
-      call ACFDT(exchange_kernel,doXBS,.true.,TDA_W,TDA,BSE,singlet,triplet,eta,nBas,nC,nO,nV,nR,nS,ERI,eGW,eGW,EcAC)
+      call ACFDT(exchange_kernel,doXBS,.true.,TDA_W,TDA,BSE,singlet,triplet,eta,nBas,nC,nO,nV,nR,nS,ERI_MO,eGW,eGW,EcAC)
 
       write(*,*)
       write(*,*)'-------------------------------------------------------------------------------'

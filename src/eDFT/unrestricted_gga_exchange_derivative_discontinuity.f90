@@ -22,11 +22,19 @@ subroutine unrestricted_gga_exchange_derivative_discontinuity(DFA,nEns,wEns,nGri
 
   double precision,intent(out)  :: ExDD(nEns)
 
-! Select correlation functional
+! Select exchange functional
 
   select case (DFA)
 
+    case ('G96')
+
+      ExDD(:) = 0d0
+
     case ('B88')
+
+      ExDD(:) = 0d0
+
+    case ('PBE')
 
       ExDD(:) = 0d0
 

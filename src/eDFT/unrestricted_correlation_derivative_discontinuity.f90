@@ -42,23 +42,19 @@ subroutine unrestricted_correlation_derivative_discontinuity(rung,DFA,nEns,wEns,
 
     case(2) 
 
-      call print_warning('!!! derivative discontinuity NYI for GGAs !!!')
-      stop
+      call unrestricted_gga_correlation_derivative_discontinuity(DFA,nEns,wEns,nGrid,weight,rhow,Ec)
+
+!   MGGA functionals
+
+    case(3) 
+
+      call unrestricted_mgga_correlation_derivative_discontinuity(DFA,nEns,wEns,nGrid,weight,rhow,Ec)
 
 !   Hybrid functionals
 
     case(4) 
 
-      call print_warning('!!! derivative discontinuity NYI for hybrids !!!')
-      stop
-
-      aC = 0.81d0
-
-!   Hartree-Fock calculation
-
-    case(666) 
-
-      Ec(:,:) = 0d0
+      call unrestricted_hybrid_correlation_derivative_discontinuity(DFA,nEns,wEns,nGrid,weight,rhow,Ec)
 
   end select
  

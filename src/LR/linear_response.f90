@@ -95,10 +95,10 @@ subroutine linear_response(ispin,dRPA,TDA,BSE,eta,nBas,nC,nO,nV,nR,nS,lambda,e,E
 
     XpY = matmul(transpose(Z),AmBSq)
     call DA(nS,1d0/sqrt(Omega),XpY)
- 
+
     XmY = matmul(transpose(Z),AmBIv)
     call DA(nS,1d0*sqrt(Omega),XmY)
-
+ 
   end if
 
   ! Compute the RPA correlation energy

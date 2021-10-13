@@ -75,8 +75,8 @@ subroutine qsUGW(maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,COHSEX,SOS
   double precision              :: EV(nspin)
   double precision              :: EJ(nsp)
   double precision              :: Ex(nspin)
-  double precision              :: Ec(nsp)
   double precision              :: EcRPA
+  double precision              :: EcGM(nspin)
   double precision              :: EqsGW
   double precision              :: EcBSE(nspin)
   double precision              :: EcAC(nspin)
@@ -92,6 +92,7 @@ subroutine qsUGW(maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,COHSEX,SOS
   double precision,allocatable  :: c(:,:,:)
   double precision,allocatable  :: cp(:,:,:)
   double precision,allocatable  :: eGW(:,:)
+  double precision,allocatable  :: eOld(:,:)
   double precision,allocatable  :: P(:,:,:)
   double precision,allocatable  :: F(:,:,:)
   double precision,allocatable  :: Fp(:,:,:)
@@ -154,10 +155,11 @@ subroutine qsUGW(maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,COHSEX,SOS
   nS_bb = nS(2)
   nS_sc = nS_aa + nS_bb
 
-  allocate(eGW(nBas,nspin),c(nBas,nBas,nspin),cp(nBas,nBas,nspin),P(nBas,nBas,nspin),F(nBas,nBas,nspin),Fp(nBas,nBas,nspin), &
-           J(nBas,nBas,nspin),K(nBas,nBas,nspin),SigC(nBas,nBas,nspin),SigCp(nBas,nBas,nspin),SigCm(nBas,nBas,nspin),        &
-           Z(nBas,nspin),OmRPA(nS_sc),XpY_RPA(nS_sc,nS_sc),XmY_RPA(nS_sc,nS_sc),rho_RPA(nBas,nBas,nS_sc,nspin),              &
-           error(nBas,nBas,nspin),error_diis(nBasSq,max_diis,nspin),F_diis(nBasSq,max_diis,nspin))
+  allocate(eGW(nBas,nspin),eOld(nBas,nspin),c(nBas,nBas,nspin),cp(nBas,nBas,nspin),P(nBas,nBas,nspin),F(nBas,nBas,nspin), &
+           Fp(nBas,nBas,nspin),J(nBas,nBas,nspin),K(nBas,nBas,nspin),SigC(nBas,nBas,nspin),SigCp(nBas,nBas,nspin),        &
+           SigCm(nBas,nBas,nspin),Z(nBas,nspin),OmRPA(nS_sc),XpY_RPA(nS_sc,nS_sc),XmY_RPA(nS_sc,nS_sc),                   &
+           rho_RPA(nBas,nBas,nS_sc,nspin),error(nBas,nBas,nspin),error_diis(nBasSq,max_diis,nspin),                       & 
+           F_diis(nBasSq,max_diis,nspin))
 
 ! Initialization
   
@@ -167,9 +169,11 @@ subroutine qsUGW(maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,COHSEX,SOS
   Conv              = 1d0
   P(:,:,:)          = PHF(:,:,:)
   eGW(:,:)          = eHF(:,:)
+  eOld(:,:)         = eHF(:,:)
   c(:,:,:)          = cHF(:,:,:)
   F_diis(:,:,:)     = 0d0
   error_diis(:,:,:) = 0d0
+  rcond             = 1d0
 
 !------------------------------------------------------------------------
 ! Main loop
@@ -230,12 +234,12 @@ subroutine qsUGW(maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,COHSEX,SOS
 
     if(G0W) then
 
-      call unrestricted_self_energy_correlation(eta,nBas,nC,nO,nV,nR,nS_sc,eHF,OmRPA,rho_RPA,SigC)
+      call unrestricted_self_energy_correlation(eta,nBas,nC,nO,nV,nR,nS_sc,eHF,OmRPA,rho_RPA,SigC,EcGM)
       call unrestricted_renormalization_factor(eta,nBas,nC,nO,nV,nR,nS_sc,eHF,OmRPA,rho_RPA,Z)
 
      else
 
-      call unrestricted_self_energy_correlation(eta,nBas,nC,nO,nV,nR,nS_sc,eGW,OmRPA,rho_RPA,SigC)
+      call unrestricted_self_energy_correlation(eta,nBas,nC,nO,nV,nR,nS_sc,eGW,OmRPA,rho_RPA,SigC,EcGM)
       call unrestricted_renormalization_factor(eta,nBas,nC,nO,nV,nR,nS_sc,eGW,OmRPA,rho_RPA,Z)
 
      endif
@@ -268,14 +272,14 @@ subroutine qsUGW(maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,COHSEX,SOS
     ! DIIS extrapolation
 
     n_diis = min(n_diis+1,max_diis)
-    do is=1,nspin
-      if(nO(is) > 1) call DIIS_extrapolation(rcond(is),nBasSq,nBasSq,n_diis,error_diis(:,1:n_diis,is), &
-                                                F_diis(:,1:n_diis,is),error(:,:,is),F(:,:,is))
-    end do
-
-    ! Reset DIIS if required
-
-    if(minval(rcond(:)) < 1d-15) n_diis = 0
+    if(minval(rcond(:)) > 1d-7) then
+      do is=1,nspin
+        if(nO(is) > 1) call DIIS_extrapolation(rcond(is),nBasSq,nBasSq,n_diis,error_diis(:,1:n_diis,is), &
+                                                  F_diis(:,1:n_diis,is),error(:,:,is),F(:,:,is))
+      end do
+    else 
+      n_diis = 0
+    end if
 
     ! Transform Fock matrix in orthogonal basis
 
@@ -296,11 +300,22 @@ subroutine qsUGW(maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,COHSEX,SOS
       c(:,:,is) = matmul(X(:,:),cp(:,:,is))
     end do
 
+    ! Back-transform self-energy
+
+    do is=1,nspin
+      SigCp(:,:,is) = matmul(transpose(c(:,:,is)),matmul(SigCp(:,:,is),c(:,:,is)))
+    end do
+
     ! Compute density matrix 
 
     do is=1,nspin
       P(:,:,is) = matmul(c(:,1:nO(is),is),transpose(c(:,1:nO(is),is)))
     end do
+
+    ! Save quasiparticles energy for next cycle
+
+    Conv = maxval(abs(eGW(:,:) - eOld(:,:)))
+    eOld(:,:) = eGW(:,:)
 
     !------------------------------------------------------------------------
     !   Compute total energy
@@ -321,7 +336,8 @@ subroutine qsUGW(maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,COHSEX,SOS
     ! Coulomb energy
 
     EJ(1) = 0.5d0*trace_matrix(nBas,matmul(P(:,:,1),J(:,:,1)))
-    EJ(2) = 1.0d0*trace_matrix(nBas,matmul(P(:,:,1),J(:,:,2)))
+    EJ(2) = 0.5d0*trace_matrix(nBas,matmul(P(:,:,1),J(:,:,2))) &
+          + 0.5d0*trace_matrix(nBas,matmul(P(:,:,2),J(:,:,1)))
     EJ(3) = 0.5d0*trace_matrix(nBas,matmul(P(:,:,2),J(:,:,2)))
 
     ! Exchange energy
@@ -330,25 +346,16 @@ subroutine qsUGW(maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,COHSEX,SOS
       Ex(is) = 0.5d0*trace_matrix(nBas,matmul(P(:,:,is),K(:,:,is)))
     end do
 
-    ! Correlation energy
-
-    Ec(:) = 0d0
-
-!   Ec(1) = - 0.25d0*trace_matrix(nBas,matmul(P(:,:,1),SigCp(:,:,1)))
-!   Ec(2) = - 0.25d0*trace_matrix(nBas,matmul(P(:,:,1),SigCp(:,:,2))) &
-!           - 0.25d0*trace_matrix(nBas,matmul(P(:,:,2),SigCp(:,:,1)))
-!   Ec(3) = - 0.25d0*trace_matrix(nBas,matmul(P(:,:,2),SigCp(:,:,2)))
-
     ! Total energy
 
-    EqsGW = sum(ET(:)) + sum(EV(:)) + sum(EJ(:)) + sum(Ex(:)) + sum(Ec(:))
+    EqsGW = sum(ET(:)) + sum(EV(:)) + sum(EJ(:)) + sum(Ex(:))
 
     !------------------------------------------------------------------------
     ! Print results
     !------------------------------------------------------------------------
 
     call dipole_moment(nBas,P(:,:,1)+P(:,:,2),nNuc,ZNuc,rNuc,dipole_int_AO,dipole)
-    call print_qsUGW(nBas,nO,nSCF,Conv,thresh,eHF,eGW,c,P,S,T,V,J,K,ENuc,ET,EV,EJ,Ex,Ec,EcRPA,EqsGW,SigCp,Z,dipole)
+    call print_qsUGW(nBas,nO,nSCF,Conv,thresh,eHF,eGW,c,P,S,T,V,J,K,ENuc,ET,EV,EJ,Ex,EcGM,EcRPA,EqsGW,SigCp,Z,dipole)
 
   enddo
 !------------------------------------------------------------------------
@@ -375,19 +382,23 @@ subroutine qsUGW(maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,COHSEX,SOS
 
 ! Deallocate memory
 
-  deallocate(c,cp,P,F,Fp,J,K,SigC,SigCp,SigCm,Z,OmRPA,XpY_RPA,XmY_RPA,rho_RPA,error,error_diis,F_diis)
+  deallocate(cp,P,F,Fp,J,K,SigC,SigCp,SigCm,Z,OmRPA,XpY_RPA,XmY_RPA,rho_RPA,error,error_diis,F_diis)
 
 ! Perform BSE calculation
 
   if(BSE) then
 
     call unrestricted_Bethe_Salpeter(TDA_W,TDA,dBSE,dTDA,evDyn,spin_conserved,spin_flip,eta,nBas,nC,nO,nV,nR,nS, &
-                                     S,ERI_aaaa,ERI_aabb,ERI_bbbb,dipole_int_aa,dipole_int_bb,cHF,eGW,eGW,EcBSE)
+                                     S,ERI_aaaa,ERI_aabb,ERI_bbbb,dipole_int_aa,dipole_int_bb,c,eGW,eGW,EcBSE)
 
     if(exchange_kernel) then
 
       EcBSE(1) = 0.5d0*EcBSE(1)
-      EcBSE(2) = 1.5d0*EcBSE(2)
+      EcBSE(2) = 0.5d0*EcBSE(2)
+
+    else
+
+      EcBSE(2) = 0.0d0
 
     end if
 
@@ -396,7 +407,7 @@ subroutine qsUGW(maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,COHSEX,SOS
     write(*,'(2X,A50,F20.10)') 'Tr@BSE@qsUGW correlation energy (spin-conserved) =',EcBSE(1)
     write(*,'(2X,A50,F20.10)') 'Tr@BSE@qsUGW correlation energy (spin-flip)      =',EcBSE(2)
     write(*,'(2X,A50,F20.10)') 'Tr@BSE@qsUGW correlation energy                  =',EcBSE(1) + EcBSE(2)
-    write(*,'(2X,A50,F20.10)') 'Tr@BSE@qsUGW total energy                        =',ENuc + EUHF + EcBSE(1) + EcBSE(2)
+    write(*,'(2X,A50,F20.10)') 'Tr@BSE@qsUGW total energy                        =',ENuc + EqsGW + EcBSE(1) + EcBSE(2)
     write(*,*)'-------------------------------------------------------------------------------'
     write(*,*)
 
@@ -424,7 +435,7 @@ subroutine qsUGW(maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,COHSEX,SOS
       write(*,'(2X,A50,F20.10)') 'AC@BSE@qsUGW correlation energy (spin-conserved) =',EcAC(1)
       write(*,'(2X,A50,F20.10)') 'AC@BSE@qsUGW correlation energy (spin-flip)      =',EcAC(2)
       write(*,'(2X,A50,F20.10)') 'AC@BSE@qsUGW correlation energy                  =',EcAC(1) + EcAC(2)
-      write(*,'(2X,A50,F20.10)') 'AC@BSE@qsUGW total energy                        =',ENuc + EUHF + EcAC(1) + EcAC(2)
+      write(*,'(2X,A50,F20.10)') 'AC@BSE@qsUGW total energy                        =',ENuc + EqsGW + EcAC(1) + EcAC(2)
       write(*,*)'-------------------------------------------------------------------------------'
       write(*,*)
 

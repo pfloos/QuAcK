@@ -146,6 +146,13 @@ subroutine URPA(TDA,doACFDT,exchange_kernel,spin_conserved,spin_flip,eta,nBas,nC
     call unrestricted_ACFDT(exchange_kernel,.false.,.true.,.false.,TDA,.false.,spin_conserved,spin_flip,eta, &
                             nBas,nC,nO,nV,nR,nS,ERI_aaaa,ERI_aabb,ERI_bbbb,e,e,EcAC)
 
+    if(exchange_kernel) then
+   
+      EcAC(1) = 0.5d0*EcAC(1)
+      EcAC(2) = 1.5d0*EcAC(2)
+
+    end if
+
     write(*,*)
     write(*,*)'-------------------------------------------------------------------------------'
     write(*,'(2X,A50,F20.10)') 'AC@URPA correlation energy (spin-conserved) =',EcAC(1)

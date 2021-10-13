@@ -24,8 +24,23 @@ subroutine unrestricted_gga_correlation_potential(DFA,nEns,wEns,nGrid,weight,nBa
 
   double precision,intent(out)  :: Fc(nBas,nBas,nspin)
 
-! Coefficients for GGA correlation functional
+! Select GGA exchange functional
 
-! Compute GGA correlation matrix in the AO basis
+  select case (DFA)
+
+    case ('LYP')
+
+      call ULYP_gga_correlation_potential(nGrid,weight,nBas,AO,dAO,rho,drho,Fc)
+
+    case ('PBE')
+
+      call UPBE_gga_correlation_potential(nGrid,weight,nBas,AO,dAO,rho,drho,Fc)
+
+    case default
+
+      call print_warning('!!! GGA correlation potential not available !!!')
+      stop
+
+  end select
 
 end subroutine unrestricted_gga_correlation_potential

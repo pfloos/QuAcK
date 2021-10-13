@@ -36,7 +36,8 @@ subroutine unrestricted_lda_exchange_energy(DFA,LDA_centered,nEns,wEns,aCC_w1,aC
 
     case default
 
-      call print_warning('!!! LDA exchange functional not available !!!')
+      call print_warning('!!! LDA exchange energy not available !!!')
+      
       stop
 
   end select

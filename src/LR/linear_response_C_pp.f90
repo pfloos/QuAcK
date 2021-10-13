@@ -96,4 +96,7 @@ subroutine linear_response_C_pp(ispin,nBas,nC,nO,nV,nR,nOO,nVV,e,ERI,C_pp)
 
   end if
 
+! print*,'C pp-matrix'
+! call matout(nVV,nVV,C_pp)
+
 end subroutine linear_response_C_pp

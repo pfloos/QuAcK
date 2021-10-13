@@ -1,4 +1,4 @@
-subroutine UHF(maxSCF,thresh,max_diis,guess_type,mix,nNuc,ZNuc,rNuc,ENuc,nBas,nO,S,T,V,Hc,ERI,dipole_int,X,EUHF,e,c,P)
+subroutine UHF(maxSCF,thresh,max_diis,guess_type,mix,nNuc,ZNuc,rNuc,ENuc,nBas,nO,S,T,V,Hc,ERI,dipole_int,X,EUHF,e,c,P,Vx)
 
 ! Perform unrestricted Hartree-Fock calculation
 
@@ -59,6 +59,7 @@ subroutine UHF(maxSCF,thresh,max_diis,guess_type,mix,nNuc,ZNuc,rNuc,ENuc,nBas,nO
   double precision,intent(out)  :: e(nBas,nspin)
   double precision,intent(out)  :: c(nBas,nBas,nspin)
   double precision,intent(out)  :: P(nBas,nBas,nspin)
+  double precision,intent(out)  :: Vx(nBas,nspin)
 
 ! Hello world
 
@@ -178,14 +179,14 @@ subroutine UHF(maxSCF,thresh,max_diis,guess_type,mix,nNuc,ZNuc,rNuc,ENuc,nBas,nO
 !   DIIS extrapolation
 
     n_diis = min(n_diis+1,max_diis)
-    do ispin=1,nspin
-      if(nO(ispin) > 1) call DIIS_extrapolation(rcond(ispin),nBasSq,nBasSq,n_diis,err_diis(:,1:n_diis,ispin), &
+    if(minval(rcond(:)) > 1d-7) then
+      do ispin=1,nspin
+        if(nO(ispin) > 1) call DIIS_extrapolation(rcond(ispin),nBasSq,nBasSq,n_diis,err_diis(:,1:n_diis,ispin), &
                                                 F_diis(:,1:n_diis,ispin),err(:,:,ispin),F(:,:,ispin))
-    end do
-
-!   Reset DIIS if required
-
-    if(minval(rcond(:)) < 1d-15) n_diis = 0
+      end do
+    else
+      n_diis = 0
+    end if
 
 !------------------------------------------------------------------------
 !   Compute UHF energy
@@ -248,5 +249,11 @@ subroutine UHF(maxSCF,thresh,max_diis,guess_type,mix,nNuc,ZNuc,rNuc,ENuc,nBas,nO
 
   call dipole_moment(nBas,P(:,:,1)+P(:,:,2),nNuc,ZNuc,rNuc,dipole_int,dipole)
   call print_UHF(nBas,nO,S,e,c,ENuc,ET,EV,EJ,Ex,EUHF,dipole)
+
+! Compute Vx for post-HF calculations
+
+  do ispin=1,nspin
+    call exchange_potential(nBas,c(:,:,ispin),K(:,:,ispin),Vx(:,ispin))
+  end do
 
 end subroutine UHF

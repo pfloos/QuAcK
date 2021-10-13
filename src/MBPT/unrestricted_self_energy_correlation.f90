@@ -1,4 +1,4 @@
-subroutine unrestricted_self_energy_correlation(eta,nBas,nC,nO,nV,nR,nSt,e,Omega,rho,SigC)
+subroutine unrestricted_self_energy_correlation(eta,nBas,nC,nO,nV,nR,nSt,e,Omega,rho,SigC,EcGM)
 
 ! Compute diagonal of the correlation part of the self-energy
 
@@ -26,10 +26,12 @@ subroutine unrestricted_self_energy_correlation(eta,nBas,nC,nO,nV,nR,nSt,e,Omega
 ! Output variables
 
   double precision,intent(out)  :: SigC(nBas,nBas,nspin)
+  double precision              :: EcGM(nspin)
 
 ! Initialize 
 
   SigC(:,:,:) = 0d0
+  EcGM(:)   = 0d0
 
 !--------------!
 ! Spin-up part !
@@ -61,6 +63,17 @@ subroutine unrestricted_self_energy_correlation(eta,nBas,nC,nO,nV,nR,nSt,e,Omega
     end do
   end do
 
+  ! GM correlation energy
+
+  do i=nC(1)+1,nO(1)
+    do a=nO(1)+1,nBas-nR(1)
+      do jb=1,nSt
+        eps = e(a,1) - e(i,1) + Omega(jb)
+        EcGM(1) = EcGM(1) - rho(a,i,jb,1)**2*eps/(eps**2 + eta**2)
+      end do
+    end do
+  end do
+
 !----------------!
 ! Spin-down part !
 !----------------!
@@ -87,6 +100,17 @@ subroutine unrestricted_self_energy_correlation(eta,nBas,nC,nO,nV,nR,nSt,e,Omega
           eps = e(p,2) - e(a,2) - Omega(jb)
           SigC(p,q,2) = SigC(p,q,2) + rho(p,a,jb,2)*rho(q,a,jb,2)*eps/(eps**2 + eta**2)
         end do
+      end do
+    end do
+  end do
+
+  ! GM correlation energy
+
+  do i=nC(2)+1,nO(2)
+    do a=nO(2)+1,nBas-nR(2)
+      do jb=1,nSt
+        eps = e(a,2) - e(i,2) + Omega(jb)
+        EcGM(2) = EcGM(2) - rho(a,i,jb,2)**2*eps/(eps**2 + eta**2)
       end do
     end do
   end do

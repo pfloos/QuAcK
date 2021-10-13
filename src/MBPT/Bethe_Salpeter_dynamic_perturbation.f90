@@ -1,4 +1,4 @@
-subroutine Bethe_Salpeter_dynamic_perturbation(dTDA,eta,nBas,nC,nO,nV,nR,nS,eGW,dipole_int,OmRPA,rho_RPA,OmBSE,XpY,XmY)
+subroutine Bethe_Salpeter_dynamic_perturbation(dTDA,eta,nBas,nC,nO,nV,nR,nS,eW,eGW,dipole_int,OmRPA,rho_RPA,OmBSE,XpY,XmY)
 
 ! Compute dynamical effects via perturbation theory for BSE
 
@@ -16,6 +16,7 @@ subroutine Bethe_Salpeter_dynamic_perturbation(dTDA,eta,nBas,nC,nO,nV,nR,nS,eGW,
   integer,intent(in)            :: nR
   integer,intent(in)            :: nS
 
+  double precision,intent(in)   :: eW(nBas)
   double precision,intent(in)   :: eGW(nBas)
   double precision,intent(in)   :: dipole_int(nBas,nBas,ncart)
   double precision,intent(in)   :: OmRPA(nS)

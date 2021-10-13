@@ -1,6 +1,6 @@
 subroutine unrestricted_gga_correlation_energy(DFA,nEns,wEns,nGrid,weight,rho,drho,Ec)
 
-! Compute unrstricted GGA correlation energy
+! Compute unrestricted GGA correlation energy
 
   implicit none
   include 'parameters.h'
@@ -24,19 +24,21 @@ subroutine unrestricted_gga_correlation_energy(DFA,nEns,wEns,nGrid,weight,rho,dr
 
   double precision              :: Ec(nsp)
 
-! Coefficients for ??? GGA exchange functional
+  select case (DFA)
 
-! Compute GGA exchange energy
+    case ('LYP')
 
-  Ec(:) = 0d0
+      call ULYP_gga_correlation_energy(nGrid,weight,rho,drho,Ec)
 
-  do iG=1,nGrid
+    case ('PBE')
 
-    ra = rho(iG,1)
-    rb = rho(iG,2)
-    ga = drho(1,iG,1)**2 + drho(2,iG,1)**2 + drho(3,iG,1)**2
-    gb = drho(1,iG,2)**2 + drho(2,iG,2)**2 + drho(3,iG,2)**2
+      call UPBE_gga_correlation_energy(nGrid,weight,rho,drho,Ec)
 
-  enddo
+    case default
+
+      call print_warning('!!! GGA correlation energy not available !!!')
+      stop
+
+  end select
 
 end subroutine unrestricted_gga_correlation_energy

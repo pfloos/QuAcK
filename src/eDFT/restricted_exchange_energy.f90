@@ -64,7 +64,7 @@ subroutine restricted_exchange_energy(rung,DFA,LDA_centered,nEns,wEns,aCC_w1,aCC
       aX = 0.72d0
       aC = 0.81d0
 
-      call restricted_lda_exchange_energy(DFA,nEns,wEns,nGrid,weight,rho,ExLDA,Cx_choice)
+      call restricted_lda_exchange_energy(DFA,LDA_centered,nEns,wEns,aCC_w1,aCC_w2,nGrid,weight,rho,ExLDA,Cx_choice)
       call restricted_gga_exchange_energy(DFA,nEns,wEns,nGrid,weight,rho,drho,ExGGA)
       call restricted_fock_exchange_energy(nBas,P,FxHF,ExHF)
 

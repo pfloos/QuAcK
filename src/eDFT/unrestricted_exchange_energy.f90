@@ -26,9 +26,6 @@ subroutine unrestricted_exchange_energy(rung,DFA,LDA_centered,nEns,wEns,aCC_w1,a
 
 ! Local variables
 
-  double precision              :: ExLDA,ExGGA,ExHF
-  double precision              :: cX,aX,aC
-
 ! Output variables
 
   double precision,intent(out)  :: Ex
@@ -46,41 +43,26 @@ subroutine unrestricted_exchange_energy(rung,DFA,LDA_centered,nEns,wEns,aCC_w1,a
     case(1) 
 
       call unrestricted_lda_exchange_energy(DFA,LDA_centered,nEns,wEns,aCC_w1,aCC_w2,nGrid,weight,&
-                                            rho,ExLDA,Cx_choice)
-
-      Ex = ExLDA
+                                            rho,Ex,Cx_choice)
 
 !   GGA functionals
 
     case(2) 
 
-      call unrestricted_gga_exchange_energy(DFA,nEns,wEns,nGrid,weight,rho,drho,ExGGA)
+      call unrestricted_gga_exchange_energy(DFA,nEns,wEns,nGrid,weight,rho,drho,Ex)
 
-      Ex = ExGGA
+!   MGGA functionals
+
+    case(3) 
+
+      call unrestricted_mgga_exchange_energy(DFA,nEns,wEns,nGrid,weight,rho,drho,Ex)
 
 !   Hybrid functionals
 
     case(4) 
 
-      cX = 0.20d0
-      aX = 0.72d0
-      aC = 0.81d0
-
-      call unrestricted_lda_exchange_energy(DFA,nEns,wEns,nGrid,weight,rho,ExLDA,Cx_choice)
-      call unrestricted_gga_exchange_energy(DFA,nEns,wEns,nGrid,weight,rho,drho,ExGGA)
-      call unrestricted_fock_exchange_energy(nBas,P,FxHF,ExHF)
-
-      Ex = ExLDA              & 
-         + cX*(ExHF  - ExLDA) &
-         + aX*(ExGGA - ExLDA) 
-
-!   Hartree-Fock calculation
-
-    case(666) 
-
-      call unrestricted_fock_exchange_energy(nBas,P,FxHF,ExHF)
-
-      Ex = ExHF
+      call unrestricted_hybrid_exchange_energy(DFA,LDA_centered,nEns,wEns,aCC_w1,aCC_w2,nGrid,weight,nBas,P,FxHF, &
+                                        rho,drho,Ex,Cx_choice)
 
   end select
  

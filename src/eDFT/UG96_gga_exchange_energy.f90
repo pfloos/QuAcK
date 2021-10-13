@@ -11,12 +11,12 @@ subroutine UG96_gga_exchange_energy(nGrid,weight,rho,drho,Ex)
   integer,intent(in)            :: nGrid
   double precision,intent(in)   :: weight(nGrid)
   double precision,intent(in)   :: rho(nGrid)
-  double precision,intent(in)   :: drho(3,nGrid)
+  double precision,intent(in)   :: drho(ncart,nGrid)
 
 ! Local variables
 
   integer                       :: iG
-  double precision              :: alpha,beta
+  double precision              :: beta
   double precision              :: r,g
 
 ! Output variables
@@ -25,7 +25,6 @@ subroutine UG96_gga_exchange_energy(nGrid,weight,rho,drho,Ex)
 
 ! Coefficients for G96 GGA exchange functional
 
-  alpha = -(3d0/2d0)*(3d0/(4d0*pi))**(1d0/3d0)
   beta  = 1d0/137d0
 
 ! Compute GGA exchange energy
@@ -40,7 +39,7 @@ subroutine UG96_gga_exchange_energy(nGrid,weight,rho,drho,Ex)
  
       g = drho(1,iG)**2 + drho(2,iG)**2 + drho(3,iG)**2
 
-      Ex = Ex + weight(iG)*r**(4d0/3d0)*(alpha - beta*g**(3d0/4d0)/r**2)
+      Ex = Ex + weight(iG)*r**(4d0/3d0)*(CxLSDA - beta*g**(3d0/4d0)/r**2)
 
     end if
 

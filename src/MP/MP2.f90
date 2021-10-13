@@ -6,9 +6,15 @@ subroutine MP2(nBas,nC,nO,nV,nR,ERI,ENuc,EHF,e,EcMP2)
 
 ! Input variables
 
-  integer,intent(in)            :: nBas,nC,nO,nV,nR
-  double precision,intent(in)   :: ENuc,EHF
-  double precision,intent(in)   :: ERI(nBas,nBas,nBas,nBas),e(nBas)
+  integer,intent(in)            :: nBas
+  integer,intent(in)            :: nC
+  integer,intent(in)            :: nO
+  integer,intent(in)            :: nV
+  integer,intent(in)            :: nR
+  double precision,intent(in)   :: ENuc
+  double precision,intent(in)   :: EHF
+  double precision,intent(in)   :: e(nBas)
+  double precision,intent(in)   :: ERI(nBas,nBas,nBas,nBas)
 
 ! Local variables
 
@@ -17,7 +23,7 @@ subroutine MP2(nBas,nC,nO,nV,nR,ERI,ENuc,EHF,e,EcMP2)
 
 ! Output variables
 
-  double precision,intent(out)  :: EcMP2(3)
+  double precision,intent(out)  :: EcMP2
 
 ! Hello world
 
@@ -51,20 +57,18 @@ subroutine MP2(nBas,nC,nO,nV,nR,ERI,ENuc,EHF,e,EcMP2)
   enddo
   enddo
 
-  EcMP2(2) = 2d0*E2a
-  EcMP2(3) = -E2b
-  EcMP2(1) = EcMP2(2) + EcMP2(3)
+  EcMP2 = 2d0*E2a - E2b
 
   write(*,*)
   write(*,'(A32)')           '--------------------------'
   write(*,'(A32)')           ' MP2 calculation          '
   write(*,'(A32)')           '--------------------------'
-  write(*,'(A32,1X,F16.10)') ' MP2 correlation energy = ',EcMP2(1)
-  write(*,'(A32,1X,F16.10)') ' Direct part            = ',EcMP2(2)
-  write(*,'(A32,1X,F16.10)') ' Exchange part          = ',EcMP2(3)
+  write(*,'(A32,1X,F16.10)') ' MP2 correlation energy = ',EcMP2
+  write(*,'(A32,1X,F16.10)') ' Direct part            = ',2d0*E2a
+  write(*,'(A32,1X,F16.10)') ' Exchange part          = ',-E2b
   write(*,'(A32)')           '--------------------------'
-  write(*,'(A32,1X,F16.10)') ' MP2 electronic  energy = ',EHF + EcMP2(1)
-  write(*,'(A32,1X,F16.10)') ' MP2 total       energy = ',ENuc + EHF + EcMP2(1)
+  write(*,'(A32,1X,F16.10)') ' MP2 electronic  energy = ',EHF + EcMP2
+  write(*,'(A32,1X,F16.10)') ' MP2 total       energy = ',ENuc + EHF + EcMP2
   write(*,'(A32)')           '--------------------------'
   write(*,*)
 

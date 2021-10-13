@@ -1,10 +1,10 @@
-subroutine eDFT(maxSCF,thresh,max_diis,guess_type,nNuc,ZNuc,rNuc,ENuc,nBas,nEl,nC,nO,nV,nR, & 
+subroutine eDFT(maxSCF,thresh,max_diis,guess_type,mix,nNuc,ZNuc,rNuc,ENuc,nBas,nEl,nC,nO,nV,nR, & 
                 nShell,TotAngMomShell,CenterShell,KShell,DShell,ExpShell, &
-                max_ang_mom,min_exponent,max_exponent,S,T,V,Hc,X,ERI,dipole_int)
+                max_ang_mom,min_exponent,max_exponent,S,T,V,Hc,X,ERI,dipole_int,Ew,eKS,cKS,PKS,Vxc)
 
 ! exchange-correlation density-functional theory calculations
 
-  use xc_f90_lib_m
+! use xc_f90_lib_m
 
   implicit none
   include 'parameters.h'
@@ -14,6 +14,7 @@ subroutine eDFT(maxSCF,thresh,max_diis,guess_type,nNuc,ZNuc,rNuc,ENuc,nBas,nEl,n
   integer,intent(in)            :: maxSCF
   integer,intent(in)            :: max_diis
   integer,intent(in)            :: guess_type
+  logical,intent(in)            :: mix
   double precision,intent(in)   :: thresh
 
   integer,intent(in)            :: nNuc
@@ -49,9 +50,6 @@ subroutine eDFT(maxSCF,thresh,max_diis,guess_type,nNuc,ZNuc,rNuc,ENuc,nBas,nEl,n
 
 ! Local variables
 
-  double precision              :: Ew
-  double precision,allocatable  :: c(:,:)
-
   character(len=8)              :: method
   integer                       :: x_rung,c_rung
   character(len=12)             :: x_DFA ,c_DFA
@@ -81,6 +79,16 @@ subroutine eDFT(maxSCF,thresh,max_diis,guess_type,nNuc,ZNuc,rNuc,ENuc,nBas,nEl,n
   integer                       :: Cx_choice
 
   integer                       :: i,vmajor,vminor,vmicro
+  integer                       :: iBas,iEns,ispin
+
+! Output variables
+
+  double precision,intent(out)  :: Ew
+  double precision,intent(out)  :: eKS(nBas,nspin)
+  double precision,intent(out)  :: cKS(nBas,nBas,nspin)
+  double precision,intent(out)  :: PKS(nBas,nBas,nspin)
+  double precision,intent(out)  :: Vxc(nBas,nspin)
+  
 
 ! Hello World
 
@@ -92,8 +100,8 @@ subroutine eDFT(maxSCF,thresh,max_diis,guess_type,nNuc,ZNuc,rNuc,ENuc,nBas,nEl,n
 
 ! Libxc version
 
-  call xc_f90_version(vmajor, vminor, vmicro)
-  write(*,'("Libxc version: ",I1,".",I1,".",I1)') vmajor, vminor, vmicro
+! call xc_f90_version(vmajor, vminor, vmicro)
+! write(*,'("Libxc version: ",I1,".",I1,".",I1)') vmajor, vminor, vmicro
 
 ! call xcinfo()
 
@@ -103,7 +111,7 @@ subroutine eDFT(maxSCF,thresh,max_diis,guess_type,nNuc,ZNuc,rNuc,ENuc,nBas,nEl,n
 
 ! Allocate ensemble weights and MO coefficients
 
-  allocate(c(nBas,nspin),wEns(maxEns),occnum(nBas,nspin,maxEns))
+  allocate(wEns(maxEns),occnum(nBas,nspin,maxEns))
   call read_options_dft(nBas,method,x_rung,x_DFA,c_rung,c_DFA,SGn,nEns,wEns,aCC_w1,aCC_w2, & 
                         doNcentered,occnum,Cx_choice)
 
@@ -132,66 +140,94 @@ subroutine eDFT(maxSCF,thresh,max_diis,guess_type,nNuc,ZNuc,rNuc,ENuc,nBas,nEl,n
 ! Compute GOK-RKS energy
 !------------------------------------------------------------------------
 
-  if(method == 'GOK-RKS') then
+! if(method == 'GOK-RKS') then
 
-    call cpu_time(start_KS)
-    call GOK_RKS(.false.,x_rung,x_DFA,c_rung,c_DFA,LDA_centered,nEns,wEns,aCC_w1,aCC_w2,nGrid,weight, &
-                 maxSCF,thresh,max_diis,guess_type,nBas,AO,dAO,nO(1),nV(1), &
-                 S,T,V,Hc,ERI,X,ENuc,Ew,c,occnum,Cx_choice)
-    call cpu_time(end_KS)
+!   call cpu_time(start_KS)
+!   call GOK_RKS(.false.,x_rung,x_DFA,c_rung,c_DFA,LDA_centered,nEns,wEns,aCC_w1,aCC_w2,nGrid,weight, &
+!                maxSCF,thresh,max_diis,guess_type,nBas,AO,dAO,nO(1),nV(1), &
+!                S,T,V,Hc,ERI,X,ENuc,Ew,c,occnum,Cx_choice)
+!   call cpu_time(end_KS)
 
-    t_KS = end_KS - start_KS
-    write(*,'(A65,1X,F9.3,A8)') 'Total CPU time for GOK-RKS = ',t_KS,' seconds'
-    write(*,*)
+!   t_KS = end_KS - start_KS
+!   write(*,'(A65,1X,F9.3,A8)') 'Total CPU time for GOK-RKS = ',t_KS,' seconds'
+!   write(*,*)
 
- end if
+!end if
 
 !------------------------------------------------------------------------
 ! Compute LIM excitation energies
 !------------------------------------------------------------------------
 
-  if(method == 'LIM-RKS') then
+! if(method == 'LIM-RKS') then
 
-    call cpu_time(start_KS)
-    call LIM_RKS(x_rung,x_DFA,c_rung,c_DFA,LDA_centered,nEns,nGrid,weight(:),           &
-                 aCC_w1,aCC_w2,maxSCF,thresh,max_diis,guess_type,nBas,AO(:,:),dAO(:,:,:),nO(1),nV(1), & 
-                 S(:,:),T(:,:),V(:,:),Hc(:,:),ERI(:,:,:,:),X(:,:),ENuc,c(:,:),occnum,Cx_choice,doNcentered)
-    call cpu_time(end_KS)
+!   call cpu_time(start_KS)
+!   call LIM_RKS(x_rung,x_DFA,c_rung,c_DFA,LDA_centered,nEns,nGrid,weight(:),           &
+!                aCC_w1,aCC_w2,maxSCF,thresh,max_diis,guess_type,nBas,AO(:,:),dAO(:,:,:),nO(1),nV(1), & 
+!                S(:,:),T(:,:),V(:,:),Hc(:,:),ERI(:,:,:,:),X(:,:),ENuc,c(:,:),occnum,Cx_choice,doNcentered)
+!   call cpu_time(end_KS)
 
-    t_KS = end_KS - start_KS
-    write(*,'(A65,1X,F9.3,A8)') 'Total CPU time for LIM-RKS = ',t_KS,' seconds'
-    write(*,*)
+!   t_KS = end_KS - start_KS
+!   write(*,'(A65,1X,F9.3,A8)') 'Total CPU time for LIM-RKS = ',t_KS,' seconds'
+!   write(*,*)
 
-  end if
+! end if
 
 !------------------------------------------------------------------------
 ! Compute MOM excitation energies
 !------------------------------------------------------------------------
 
-  if(method == 'MOM-RKS') then
+! if(method == 'MOM-RKS') then
 
-    call cpu_time(start_KS)
-    call MOM_RKS(x_rung,x_DFA,c_rung,c_DFA,LDA_centered,nEns,nGrid,weight(:),           &
-                 aCC_w1,aCC_w2,maxSCF,thresh,max_diis,guess_type,nBas,AO(:,:),dAO(:,:,:),nO(1),nV(1), & 
-                 S(:,:),T(:,:),V(:,:),Hc(:,:),ERI(:,:,:,:),X(:,:),ENuc,c(:,:),occnum,Cx_choice,doNcentered)
-    call cpu_time(end_KS)
+!   call cpu_time(start_KS)
+!   call MOM_RKS(x_rung,x_DFA,c_rung,c_DFA,LDA_centered,nEns,nGrid,weight(:),           &
+!                aCC_w1,aCC_w2,maxSCF,thresh,max_diis,guess_type,nBas,AO(:,:),dAO(:,:,:),nO(1),nV(1), & 
+!                S(:,:),T(:,:),V(:,:),Hc(:,:),ERI(:,:,:,:),X(:,:),ENuc,c(:,:),occnum,Cx_choice,doNcentered)
+!   call cpu_time(end_KS)
 
-    t_KS = end_KS - start_KS
-    write(*,'(A65,1X,F9.3,A8)') 'Total CPU time for MOM-RKS = ',t_KS,' seconds'
-    write(*,*)
+!   t_KS = end_KS - start_KS
+!   write(*,'(A65,1X,F9.3,A8)') 'Total CPU time for MOM-RKS = ',t_KS,' seconds'
+!   write(*,*)
 
-  end if
+! end if
 
 !------------------------------------------------------------------------
 ! Compute GOK-UKS energy (BROKEN)
 !------------------------------------------------------------------------
 
-  if(method == 'GOK-UKS') then
+! if(method == 'GOK-UKS') then
+
+!   call cpu_time(start_KS)
+!   call GOK_UKS(x_rung,x_DFA,c_rung,c_DFA,nEns,wEns(:),nGrid,weight(:),aCC_w1,aCC_w2,maxSCF,thresh,max_diis,guess_type, & 
+!                  nBas,AO(:,:),dAO(:,:,:),nO(:),nV(:),S(:,:),T(:,:),V(:,:),Hc(:,:),ERI(:,:,:,:),X(:,:),ENuc,Ew,occnum, &
+!                  Cx_choice,doNcentered)
+!   call cpu_time(end_KS)
+
+!   t_KS = end_KS - start_KS
+!   write(*,'(A65,1X,F9.3,A8)') 'Total CPU time for UKS = ',t_KS,' seconds'
+!   write(*,*)
+
+! end if
+
+!------------------------------------------------------------------------
+! Compute UKS energy 
+!------------------------------------------------------------------------
+
+  if(method == 'UKS') then
+
+   ! Reset occupation numbers for conventional UKS calculation
+ 
+    occnum(:,:,:) = 0d0
+    do ispin=1,nspin
+      do iBas=1,nO(ispin)
+        do iEns=1,nEns
+          occnum(iBas,ispin,iEns) = 1d0
+        end do
+      end do
+    end do
 
     call cpu_time(start_KS)
-    call GOK_UKS(x_rung,x_DFA,c_rung,c_DFA,nEns,wEns(:),nGrid,weight(:),aCC_w1,aCC_w2,maxSCF,thresh,max_diis,guess_type, & 
-                   nBas,AO(:,:),dAO(:,:,:),nO(:),nV(:),S(:,:),T(:,:),V(:,:),Hc(:,:),ERI(:,:,:,:),X(:,:),ENuc,Ew,occnum, &
-                   Cx_choice,doNcentered)
+    call eDFT_UKS(x_rung,x_DFA,c_rung,c_DFA,nEns,wEns,aCC_w1,aCC_w2,nGrid,weight,maxSCF,thresh,max_diis,guess_type,mix, & 
+                  nNuc,ZNuc,rNuc,ENuc,nBas,AO,dAO,S,T,V,Hc,ERI,dipole_int,X,occnum,Cx_choice,doNcentered,Ew,eKS,cKS,PKS,Vxc)
     call cpu_time(end_KS)
 
     t_KS = end_KS - start_KS
@@ -201,14 +237,14 @@ subroutine eDFT(maxSCF,thresh,max_diis,guess_type,nNuc,ZNuc,rNuc,ENuc,nBas,nEl,n
   end if
 
 !------------------------------------------------------------------------
-! Compute N-centered UKS energy (UNBROKEN)
+! Compute UKS energy for ensembles
 !------------------------------------------------------------------------
 
   if(method == 'eDFT-UKS') then
 
     call cpu_time(start_KS)
-    call eDFT_UKS(x_rung,x_DFA,c_rung,c_DFA,nEns,wEns,aCC_w1,aCC_w2,nGrid,weight(:),maxSCF,thresh,max_diis,guess_type, & 
-                  nBas,AO,dAO,S,T,V,Hc,ERI,X,ENuc,Ew,occnum,Cx_choice,doNcentered)
+    call eDFT_UKS(x_rung,x_DFA,c_rung,c_DFA,nEns,wEns,aCC_w1,aCC_w2,nGrid,weight,maxSCF,thresh,max_diis,guess_type,mix, & 
+                  nNuc,ZNuc,rNuc,ENuc,nBas,AO,dAO,S,T,V,Hc,ERI,dipole_int,X,occnum,Cx_choice,doNcentered,Ew,eKS,cKS,PKS,Vxc)
     call cpu_time(end_KS)
 
     t_KS = end_KS - start_KS

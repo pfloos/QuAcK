@@ -1,4 +1,4 @@
-subroutine exchange_matrix_AO_basis(nBas,P,G,K)
+subroutine exchange_matrix_AO_basis(nBas,P,ERI,K)
 
 ! Compute exchange matrix in the AO basis
 
@@ -9,7 +9,7 @@ subroutine exchange_matrix_AO_basis(nBas,P,G,K)
 
   integer,intent(in)            :: nBas
   double precision,intent(in)   :: P(nBas,nBas)
-  double precision,intent(in)   :: G(nBas,nBas,nBas,nBas)
+  double precision,intent(in)   :: ERI(nBas,nBas,nBas,nBas)
 
 ! Local variables
 
@@ -24,7 +24,7 @@ subroutine exchange_matrix_AO_basis(nBas,P,G,K)
     do si=1,nBas
       do la=1,nBas
         do mu=1,nBas
-          K(mu,nu) = K(mu,nu) - P(la,si)*G(mu,la,si,nu)
+          K(mu,nu) = K(mu,nu) - P(la,si)*ERI(mu,la,si,nu)
         enddo
       enddo
     enddo

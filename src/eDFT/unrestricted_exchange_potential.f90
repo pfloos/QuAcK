@@ -57,30 +57,18 @@ subroutine unrestricted_exchange_potential(rung,DFA,LDA_centered,nEns,wEns,aCC_w
 
       call unrestricted_gga_exchange_potential(DFA,nEns,wEns,nGrid,weight,nBas,AO,dAO,rho,drho,Fx)
 
+!   MGGA functionals
+
+    case(3) 
+
+      call unrestricted_mgga_exchange_potential(DFA,nEns,wEns,nGrid,weight,nBas,AO,dAO,rho,drho,Fx)
+
 !   Hybrid functionals
 
     case(4) 
 
-      allocate(FxLDA(nBas,nBas),FxGGA(nBas,nBas))
-
-      cX = 0.20d0
-      aX = 0.72d0
-
-      call unrestricted_lda_exchange_potential(DFA,nGrid,weight,nBas,AO,rho,FxLDA,Cx_choice)
-      call unrestricted_gga_exchange_potential(DFA,nGrid,weight,nBas,AO,dAO,rho,drho,FxGGA)
-      call unrestricted_fock_exchange_potential(nBas,P,ERI,FxHF)
-
-      Fx(:,:) = FxLDA(:,:)                   &
-              + cX*(FxHF(:,:)  - FxLDA(:,:)) &
-              + aX*(FxGGA(:,:) - FxLDA(:,:))  
-
-!   Hartree-Fock calculation
-
-    case(666) 
-
-      call unrestricted_fock_exchange_potential(nBas,P,ERI,FxHF)
-
-      Fx(:,:) = FxHF(:,:)
+      call unrestricted_hybrid_exchange_potential(DFA,LDA_centered,nEns,wEns,aCC_w1,aCC_w2,nGrid,weight,nBas,P, &
+                                                  ERI,AO,dAO,rho,drho,Fx,FxHF,Cx_choice)
 
   end select
 

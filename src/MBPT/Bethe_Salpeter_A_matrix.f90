@@ -36,6 +36,7 @@ subroutine Bethe_Salpeter_A_matrix(eta,nBas,nC,nO,nV,nR,nS,lambda,ERI,Omega,rho,
           chi = 0d0
           do kc=1,nS
             eps = Omega(kc)**2 + eta**2
+!           chi = chi + lambda*rho(i,j,kc)*rho(a,b,kc)*Omega(kc)/eps
             chi = chi + rho(i,j,kc)*rho(a,b,kc)*Omega(kc)/eps
           enddo
 

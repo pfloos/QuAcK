@@ -84,11 +84,15 @@ subroutine RCC_lda_exchange_derivative_discontinuity(nEns,wEns,aCC_w1,aCC_w2,nGr
 
     dCxdw2 = (1d0 - w1*(1d0 - w1)*(a1 + b1*(w1 - 0.5d0) + c1*(w1 - 0.5d0)**2))                            &
            * (0.5d0*b2 + (2d0*a2 + 0.5d0*c2)*(w2 - 0.5d0) - (1d0 - w2)*w2*(3d0*b2 + 4d0*c2*(w2 - 0.5d0)))
+
+    case default
+      dCxdw1 = 0.d0
+      dCxdw2 = 0.d0
+
   end select
 
   dCxdw1 = CxLDA*dCxdw1
   dCxdw2 = CxLDA*dCxdw2
-
 
   dExdw(:) = 0d0
 

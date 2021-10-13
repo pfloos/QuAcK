@@ -210,7 +210,7 @@ subroutine GOK_UKS(x_rung,x_DFA,c_rung,c_DFA,nEns,wEns,nGrid,weight,aCC_w1,aCC_w
       rhow(:,:) = rhow(:,:) + wEns(iEns)*rho(:,:,iEns) 
     end do
 
-    if(xc_rung > 1 .and. xc_rung /= 666) then 
+    if(xc_rung > 1) then 
 
 !     Ground state density 
 

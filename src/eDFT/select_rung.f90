@@ -32,10 +32,6 @@ subroutine select_rung(rung,DFA)
     case(4)
       write(*,*) "* 4th rung of Jacob's ladder: hybrid functional *"
 
-! Hartree-Fock calculation
-    case(666)
-      write(*,*) "* rung 666: Hartree-Fock calculation                              *"
-
 ! Default    
     case default
       write(*,*) "!!! rung not available !!!"

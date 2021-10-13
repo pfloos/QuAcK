@@ -1,5 +1,5 @@
-subroutine eDFT_UKS(x_rung,x_DFA,c_rung,c_DFA,nEns,wEns,aCC_w1,aCC_w2,nGrid,weight,maxSCF,thresh,max_diis,guess_type, &
-                   nBas,AO,dAO,S,T,V,Hc,ERI,X,ENuc,Ew,occnum,Cx_choice,doNcentered)
+subroutine eDFT_UKS(x_rung,x_DFA,c_rung,c_DFA,nEns,wEns,aCC_w1,aCC_w2,nGrid,weight,maxSCF,thresh,max_diis,guess_type,mix, &
+                   nNuc,ZNuc,rNuc,ENuc,nBas,AO,dAO,S,T,V,Hc,ERI,dipole_int,X,occnum,Cx_choice,doNcentered,Ew,eps,c,Pw,Vxc)
 
 ! Perform unrestricted Kohn-Sham calculation for ensembles
 
@@ -17,10 +17,16 @@ subroutine eDFT_UKS(x_rung,x_DFA,c_rung,c_DFA,nEns,wEns,aCC_w1,aCC_w2,nGrid,weig
   integer,intent(in)            :: nGrid
   double precision,intent(in)   :: weight(nGrid)
   integer,intent(in)            :: maxSCF,max_diis,guess_type
+  logical,intent(in)            :: mix
   double precision,intent(in)   :: thresh
   integer,intent(in)            :: nBas
   double precision,intent(in)   :: AO(nBas,nGrid)
   double precision,intent(in)   :: dAO(ncart,nBas,nGrid)
+
+  integer,intent(in)            :: nNuc
+  double precision,intent(in)   :: ZNuc(nNuc)
+  double precision,intent(in)   :: rNuc(nNuc,ncart)
+  double precision,intent(in)   :: ENuc
 
   double precision,intent(in)   :: S(nBas,nBas)
   double precision,intent(in)   :: T(nBas,nBas)
@@ -28,7 +34,7 @@ subroutine eDFT_UKS(x_rung,x_DFA,c_rung,c_DFA,nEns,wEns,aCC_w1,aCC_w2,nGrid,weig
   double precision,intent(in)   :: Hc(nBas,nBas) 
   double precision,intent(in)   :: X(nBas,nBas) 
   double precision,intent(in)   :: ERI(nBas,nBas,nBas,nBas)
-  double precision,intent(in)   :: ENuc
+  double precision,intent(in)   :: dipole_int(nBas,nBas,ncart)
   double precision,intent(in)   :: occnum(nBas,nspin,nEns)
   integer,intent(in)            :: Cx_choice
   logical,intent(in)            :: doNcentered
@@ -39,6 +45,7 @@ subroutine eDFT_UKS(x_rung,x_DFA,c_rung,c_DFA,nEns,wEns,aCC_w1,aCC_w2,nGrid,weig
   logical                       :: LDA_centered = .false.
   integer                       :: nSCF,nBasSq
   integer                       :: n_diis
+  integer                       :: nO(nspin)
   double precision              :: conv
   double precision              :: rcond(nspin)
   double precision              :: ET(nspin)
@@ -46,10 +53,8 @@ subroutine eDFT_UKS(x_rung,x_DFA,c_rung,c_DFA,nEns,wEns,aCC_w1,aCC_w2,nGrid,weig
   double precision              :: EJ(nsp)
   double precision              :: Ex(nspin)
   double precision              :: Ec(nsp)
-  double precision              :: Ew
+  double precision              :: dipole(ncart)
 
-  double precision,allocatable  :: eps(:,:)
-  double precision,allocatable  :: c(:,:,:)
   double precision,allocatable  :: cp(:,:,:)
   double precision,allocatable  :: J(:,:,:)
   double precision,allocatable  :: F(:,:,:)
@@ -63,7 +68,6 @@ subroutine eDFT_UKS(x_rung,x_DFA,c_rung,c_DFA,nEns,wEns,aCC_w1,aCC_w2,nGrid,weig
   double precision,external     :: trace_matrix
   double precision,external     :: electron_number
 
-  double precision,allocatable  :: Pw(:,:,:)
   double precision,allocatable  :: rhow(:,:)
   double precision,allocatable  :: drhow(:,:,:)
   double precision              :: nEl(nspin)
@@ -75,7 +79,15 @@ subroutine eDFT_UKS(x_rung,x_DFA,c_rung,c_DFA,nEns,wEns,aCC_w1,aCC_w2,nGrid,weig
   double precision              :: E(nEns)
   double precision              :: Om(nEns)
 
-  integer                       :: ispin,iEns
+  integer                       :: ispin,iEns,iBas
+
+! Output variables
+
+  double precision,intent(out)  :: Ew
+  double precision,intent(out)  :: eps(nBas,nspin)
+  double precision,intent(out)  :: Pw(nBas,nBas,nspin)
+  double precision,intent(out)  :: c(nBas,nBas,nspin)
+  double precision,intent(out)  :: Vxc(nBas,nspin)
 
 ! Hello world
 
@@ -118,16 +130,19 @@ subroutine eDFT_UKS(x_rung,x_DFA,c_rung,c_DFA,nEns,wEns,aCC_w1,aCC_w2,nGrid,weig
 
 ! Memory allocation
 
-  allocate(eps(nBas,nspin),c(nBas,nBas,nspin),cp(nBas,nBas,nspin),        &
-           J(nBas,nBas,nspin),F(nBas,nBas,nspin),Fp(nBas,nBas,nspin),     & 
+  allocate(cp(nBas,nBas,nspin),J(nBas,nBas,nspin),F(nBas,nBas,nspin),Fp(nBas,nBas,nspin),      & 
            Fx(nBas,nBas,nspin),FxHF(nBas,nBas,nspin),Fc(nBas,nBas,nspin),err(nBas,nBas,nspin), &
-           Pw(nBas,nBas,nspin),rhow(nGrid,nspin),drhow(ncart,nGrid,nspin), &
-           err_diis(nBasSq,max_diis,nspin),F_diis(nBasSq,max_diis,nspin),  &
+           rhow(nGrid,nspin),drhow(ncart,nGrid,nspin),                                         &
+           err_diis(nBasSq,max_diis,nspin),F_diis(nBasSq,max_diis,nspin),                      &
            P(nBas,nBas,nspin,nEns),rho(nGrid,nspin,nEns),drho(ncart,nGrid,nspin,nEns))
 
 ! Guess coefficients and eigenvalues
 
-
+  nO(:) = 0
+  do ispin=1,nspin
+    nO(ispin) = int(sum(occnum(:,ispin,1)))
+  end do
+  
   if(guess_type == 1) then
 
     do ispin=1,nspin
@@ -135,6 +150,10 @@ subroutine eDFT_UKS(x_rung,x_DFA,c_rung,c_DFA,nEns,wEns,aCC_w1,aCC_w2,nGrid,weig
       call diagonalize_matrix(nBas,cp(:,:,ispin),eps(:,ispin))
       c(:,:,ispin) = matmul(X(:,:),cp(:,:,ispin))
     end do
+
+    ! Mix guess to enforce symmetry breaking
+
+    if(mix) call mix_guess(nBas,nO,c)
 
   else if(guess_type == 2) then
 
@@ -212,7 +231,7 @@ subroutine eDFT_UKS(x_rung,x_DFA,c_rung,c_DFA,nEns,wEns,aCC_w1,aCC_w2,nGrid,weig
       rhow(:,:) = rhow(:,:) + wEns(iEns)*rho(:,:,iEns) 
     end do
 
-    if(xc_rung > 1 .and. xc_rung /= 666) then 
+    if(xc_rung > 1) then 
 
 !     Ground state density 
 
@@ -260,19 +279,19 @@ subroutine eDFT_UKS(x_rung,x_DFA,c_rung,c_DFA,nEns,wEns,aCC_w1,aCC_w2,nGrid,weig
       err(:,:,ispin) = matmul(F(:,:,ispin),matmul(Pw(:,:,ispin),S(:,:))) - matmul(matmul(S(:,:),Pw(:,:,ispin)),F(:,:,ispin))
     end do
 
-    conv = maxval(abs(err(:,:,:)))
+    if(nSCF > 1) conv = maxval(abs(err(:,:,:)))
     
 !   DIIS extrapolation
 
     n_diis = min(n_diis+1,max_diis)
-    do ispin=1,nspin
-      call DIIS_extrapolation(rcond(ispin),nBasSq,nBasSq,n_diis, & 
-                              err_diis(:,:,ispin),F_diis(:,:,ispin),err(:,:,ispin),F(:,:,ispin))
-    end do
-
-!   Reset DIIS if required
-
-    if(minval(rcond(:)) < 1d-15) n_diis = 0
+    if(minval(rcond(:)) > 1d-7) then
+      do ispin=1,nspin
+        call DIIS_extrapolation(rcond(ispin),nBasSq,nBasSq,n_diis, & 
+                                err_diis(:,:,ispin),F_diis(:,:,ispin),err(:,:,ispin),F(:,:,ispin))
+      end do
+    else 
+      n_diis = 0
+   end if
 
 !  Transform Fock matrix in orthogonal basis
 
@@ -337,7 +356,6 @@ subroutine eDFT_UKS(x_rung,x_DFA,c_rung,c_DFA,nEns,wEns,aCC_w1,aCC_w2,nGrid,weig
       nEl(ispin) = electron_number(nGrid,weight,rhow(:,ispin))
     end do
 
-
 !   Dump results
 
     write(*,'(1X,A1,1X,I3,1X,A1,1X,F16.10,1X,A1,1X,F16.10,1X,A1,1X,F16.10,1X,A1,1X,F10.6,1X,A1,1X,F10.6,1X,A1,1X)') & 
@@ -364,24 +382,29 @@ subroutine eDFT_UKS(x_rung,x_DFA,c_rung,c_DFA,nEns,wEns,aCC_w1,aCC_w2,nGrid,weig
   end if
 
 !!!!!
-    do iEns=1,nEns
-      print*,'occnum=',occnum(1,1,iEns),occnum(2,1,iEns),occnum(1,2,iEns),occnum(2,2,iEns)
-      print*,'nel up and down and total=', electron_number(nGrid,weight,&
-                                           rho(:,1,iEns)),electron_number(nGrid,weight,rho(:,2,iEns)),sum(nEl(:))
-
-    end do
+!   do iEns=1,nEns
+!     print*,'occnum=',occnum(1,1,iEns),occnum(2,1,iEns),occnum(1,2,iEns),occnum(2,2,iEns)
+!     print*,'nel up and down and total=', electron_number(nGrid,weight,&
+!                                          rho(:,1,iEns)),electron_number(nGrid,weight,rho(:,2,iEns)),sum(nEl(:))
+!   end do
 !!!!!
 
 ! Compute final KS energy
 
-  call print_UKS(nBas,nEns,occnum,wEns,eps,c,ENuc,ET,EV,EJ,Ex,Ec,Ew)
+  call dipole_moment(nBas,Pw(:,:,1)+Pw(:,:,2),nNuc,ZNuc,rNuc,dipole_int,dipole)
+  call print_UKS(nBas,nEns,nO,S,wEns,eps,c,ENuc,ET,EV,EJ,Ex,Ec,Ew,dipole)
+
+! Compute Vxc for post-HF calculations
+
+  call xc_potential(nBas,c,Fx,Fc,Vxc)
 
 !------------------------------------------------------------------------
 ! Compute individual energies from ensemble energy
 !------------------------------------------------------------------------
 
-  call unrestricted_individual_energy(x_rung,x_DFA,c_rung,c_DFA,LDA_centered,nEns,wEns,aCC_w1,aCC_w2,nGrid,weight,nBas, &
-                                      AO,dAO,T,V,ERI,ENuc,eps,Pw,rhow,drhow,J,Fx,FxHF,Fc,P,rho,drho,Ew,E,Om,occnum, &
-                                      Cx_choice,doNcentered)
+  if(nEns > 1) &
+    call unrestricted_individual_energy(x_rung,x_DFA,c_rung,c_DFA,LDA_centered,nEns,wEns,aCC_w1,aCC_w2,nGrid,weight,nBas, &
+                                        AO,dAO,T,V,ERI,ENuc,eps,Pw,rhow,drhow,J,Fx,FxHF,Fc,P,rho,drho,Ew,E,Om,occnum,     &
+                                        Cx_choice,doNcentered)
 
 end subroutine eDFT_UKS

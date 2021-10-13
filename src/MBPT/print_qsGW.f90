@@ -1,4 +1,4 @@
-subroutine print_qsGW(nBas,nO,nSCF,Conv,thresh,eHF,eGW,c,ENuc,P,T,V,J,K,F,SigC,Z,EcRPA,EqsGW,dipole)
+subroutine print_qsGW(nBas,nO,nSCF,Conv,thresh,eHF,eGW,c,SigC,Z,ENuc,ET,EV,EJ,Ex,EcGM,EcRPA,EqsGW,dipole)
 
 ! Print one-electron energies and other stuff for qsGW
 
@@ -7,18 +7,29 @@ subroutine print_qsGW(nBas,nO,nSCF,Conv,thresh,eHF,eGW,c,ENuc,P,T,V,J,K,F,SigC,Z
 
 ! Input variables
 
-  integer,intent(in)                 :: nBas,nO,nSCF
-  double precision,intent(in)        :: ENuc,EcRPA,Conv,thresh
-  double precision,intent(in)        :: eHF(nBas),eGW(nBas),c(nBas),P(nBas,nBas) 
-  double precision,intent(in)        :: T(nBas,nBas),V(nBas,nBas)
-  double precision,intent(in)        :: J(nBas,nBas),K(nBas,nBas),F(nBas,nBas)
-  double precision,intent(in)        :: Z(nBas),SigC(nBas,nBas)
+  integer,intent(in)                 :: nBas
+  integer,intent(in)                 :: nO
+  integer,intent(in)                 :: nSCF
+  double precision,intent(in)        :: ENuc
+  double precision,intent(in)        :: ET
+  double precision,intent(in)        :: EV
+  double precision,intent(in)        :: EJ
+  double precision,intent(in)        :: Ex
+  double precision,intent(in)        :: EcGM
+  double precision,intent(in)        :: EcRPA
+  double precision,intent(in)        :: Conv
+  double precision,intent(in)        :: thresh
+  double precision,intent(in)        :: eHF(nBas)
+  double precision,intent(in)        :: eGW(nBas)
+  double precision,intent(in)        :: c(nBas)
+  double precision,intent(in)        :: SigC(nBas,nBas)
+  double precision,intent(in)        :: Z(nBas)
   double precision,intent(in)        :: dipole(ncart)
 
 ! Local variables
 
   integer                            :: x,ixyz,HOMO,LUMO
-  double precision                   :: Gap,ET,EV,EJ,Ex,Ec
+  double precision                   :: Gap
   double precision,external          :: trace_matrix
 
 ! Output variables
@@ -32,14 +43,6 @@ subroutine print_qsGW(nBas,nO,nSCF,Conv,thresh,eHF,eGW,c,ENuc,P,T,V,J,K,F,SigC,Z
   Gap = eGW(LUMO)-eGW(HOMO)
 
 ! Compute energies
-
-  ET = trace_matrix(nBas,matmul(P,T))
-  EV = trace_matrix(nBas,matmul(P,V))
-  EJ = 0.5d0*trace_matrix(nBas,matmul(P,J))
-  Ex = 0.25d0*trace_matrix(nBas,matmul(P,K))
-  Ec = 0d0
-! Ec = -0.50d0*trace_matrix(nBas,matmul(P,SigC))
-  EqsGW = ET + EV + EJ + Ex + Ec
 
 ! Dump results
 
@@ -61,15 +64,15 @@ subroutine print_qsGW(nBas,nO,nSCF,Conv,thresh,eHF,eGW,c,ENuc,P,T,V,J,K,F,SigC,Z
 
   write(*,*)'-------------------------------------------------------------------------------'
   write(*,'(2X,A10,I3)')   'Iteration ',nSCF
-  write(*,'(2X,A19,F15.5)')'max(|FPS - SPF|) = ',Conv
+  write(*,'(2X,A14,F15.5)')'Convergence = ',Conv
   write(*,*)'-------------------------------------------'
   write(*,'(2X,A30,F15.6,A3)') 'qsGW HOMO      energy:',eGW(HOMO)*HaToeV,' eV'
   write(*,'(2X,A30,F15.6,A3)') 'qsGW LUMO      energy:',eGW(LUMO)*HaToeV,' eV'
   write(*,'(2X,A30,F15.6,A3)') 'qsGW HOMO-LUMO gap   :',Gap*HaToeV,' eV'
   write(*,*)'-------------------------------------------'
-  write(*,'(2X,A30,F15.6,A3)') '    qsGW total       energy:',EqsGW + ENuc,' au'
+  write(*,'(2X,A30,F15.6,A3)') '    qsGW total       energy:',ENuc + EqsGW,' au'
   write(*,'(2X,A30,F15.6,A3)') '    qsGW exchange    energy:',Ex,' au'
-! write(*,'(2X,A30,F15.6,A3)') '    qsGW correlation energy:',Ec,' au'
+  write(*,'(2X,A30,F15.6,A3)') ' GM@qsGW correlation energy:',EcGM,' au'
   write(*,'(2X,A30,F15.6,A3)') 'RPA@qsGW correlation energy:',EcRPA,' au'
   write(*,*)'-------------------------------------------'
   write(*,*)
@@ -89,7 +92,7 @@ subroutine print_qsGW(nBas,nO,nSCF,Conv,thresh,eHF,eGW,c,ENuc,P,T,V,J,K,F,SigC,Z
     write(*,'(A32,1X,F16.10,A3)') ' Two-electron energy: ',EJ + Ex,' au'
     write(*,'(A32,1X,F16.10,A3)') ' Hartree      energy: ',EJ,' au'
     write(*,'(A32,1X,F16.10,A3)') ' Exchange     energy: ',Ex,' au'
-!   write(*,'(A32,1X,F16.10,A3)') ' Correlation  energy: ',Ec,' au'
+    write(*,'(A32,1X,F16.10,A3)') ' Correlation  energy: ',EcGM,' au'
     write(*,'(A50)')           '---------------------------------------'
     write(*,'(A32,1X,F16.10,A3)') ' Electronic   energy: ',EqsGW,' au'
     write(*,'(A32,1X,F16.10,A3)') ' Nuclear   repulsion: ',ENuc,' au'
