@@ -61,7 +61,6 @@ subroutine US51_lda_exchange_individual_energy(nGrid,weight,rhow,rho,doNcentered
 
   endif
 
-
   Ex = Exrr + ExrI + ExrrI
 
 end subroutine US51_lda_exchange_individual_energy

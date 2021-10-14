@@ -1,4 +1,5 @@
-subroutine unrestricted_correlation_individual_energy(rung,DFA,LDA_centered,nEns,wEns,nGrid,weight,rhow,drhow,rho,drho,Ec)
+subroutine unrestricted_correlation_individual_energy(rung,DFA,LDA_centered,nEns,wEns,nGrid,weight,rhow,drhow,rho,drho, & 
+                                                      doNcentered,kappa,Ec)
 
 ! Compute the correlation energy of individual states
 
@@ -18,6 +19,8 @@ subroutine unrestricted_correlation_individual_energy(rung,DFA,LDA_centered,nEns
   double precision,intent(in)   :: drhow(ncart,nGrid,nspin)
   double precision,intent(in)   :: rho(nGrid,nspin)
   double precision,intent(in)   :: drho(ncart,nGrid,nspin)
+  logical,intent(in)            :: doNcentered
+  double precision,intent(in)   :: kappa
 
 ! Local variables
 
@@ -41,7 +44,8 @@ subroutine unrestricted_correlation_individual_energy(rung,DFA,LDA_centered,nEns
 
     case(1) 
 
-      call unrestricted_lda_correlation_individual_energy(DFA,LDA_centered,nEns,wEns,nGrid,weight,rhow,rho,Ec)
+      call unrestricted_lda_correlation_individual_energy(DFA,LDA_centered,nEns,wEns,nGrid,weight,rhow,rho, & 
+                                                          doNcentered,kappa,Ec)
 
 !   GGA functionals
 

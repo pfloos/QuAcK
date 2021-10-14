@@ -123,16 +123,16 @@ subroutine unrestricted_individual_energy(x_rung,x_DFA,c_rung,c_DFA,LDA_centered
 
       if(doNcentered) then 
  
-        EJ(1,iEns) =   kappa(iEns)*trace_matrix(nBas,matmul(P(:,:,1,iEns),J(:,:,1))) &
-                   -0.5d0*kappa(iEns)*kappa(iEns)*trace_matrix(nBas,matmul(Pw(:,:,1),J(:,:,1)))
+        EJ(1,iEns) =       kappa(iEns)*trace_matrix(nBas,matmul(P(:,:,1,iEns),J(:,:,1))) &
+                   - 0.5d0*kappa(iEns)*kappa(iEns)*trace_matrix(nBas,matmul(Pw(:,:,1),J(:,:,1)))
    
-        EJ(2,iEns) =     kappa(iEns)*trace_matrix(nBas,matmul(P(:,:,1,iEns),J(:,:,2))) &
-                   +     kappa(iEns)*trace_matrix(nBas,matmul(P(:,:,2,iEns),J(:,:,1))) &
-                   -0.5d0*kappa(iEns)*kappa(iEns)*trace_matrix(nBas,matmul(Pw(:,:,1),J(:,:,2))) &
+        EJ(2,iEns) =       kappa(iEns)*trace_matrix(nBas,matmul(P(:,:,1,iEns),J(:,:,2))) &
+                   +       kappa(iEns)*trace_matrix(nBas,matmul(P(:,:,2,iEns),J(:,:,1))) &
+                   - 0.5d0*kappa(iEns)*kappa(iEns)*trace_matrix(nBas,matmul(Pw(:,:,1),J(:,:,2))) &
                    - 0.5d0*kappa(iEns)*kappa(iEns)*trace_matrix(nBas,matmul(Pw(:,:,2),J(:,:,1)))
    
-        EJ(3,iEns) =    kappa(iEns)*trace_matrix(nBas,matmul(P(:,:,2,iEns),J(:,:,2))) &
-                   -0.5d0*kappa(iEns)*kappa(iEns)*trace_matrix(nBas,matmul(Pw(:,:,2),J(:,:,2)))
+        EJ(3,iEns) =       kappa(iEns)*trace_matrix(nBas,matmul(P(:,:,2,iEns),J(:,:,2))) &
+                   - 0.5d0*kappa(iEns)*kappa(iEns)*trace_matrix(nBas,matmul(Pw(:,:,2),J(:,:,2)))
       else
 
 
@@ -212,7 +212,7 @@ subroutine unrestricted_individual_energy(x_rung,x_DFA,c_rung,c_DFA,LDA_centered
 
   do iEns=1,nEns
     call unrestricted_correlation_individual_energy(c_rung,c_DFA,LDA_centered,nEns,wEns,nGrid,weight, &
-                                                    rhow,drhow,rho(:,:,iEns),drho(:,:,:,iEns),Ec(:,iEns))
+                                                    rhow,drhow,rho(:,:,iEns),drho(:,:,:,iEns),kappa(iEns),Ec(:,iEns))
   end do
 
 !------------------------------------------------------------------------
@@ -231,7 +231,7 @@ subroutine unrestricted_individual_energy(x_rung,x_DFA,c_rung,c_DFA,LDA_centered
                                                         rhow(:,ispin),drhow(:,:,ispin),Cx_choice,doNcentered,kappa,ExDD(ispin,:))
   end do
 
-  call unrestricted_correlation_derivative_discontinuity(c_rung,c_DFA,nEns,wEns,nGrid,weight,rhow,drhow,EcDD)
+  call unrestricted_correlation_derivative_discontinuity(c_rung,c_DFA,nEns,wEns,nGrid,weight,rhow,drhow,kappa,EcDD)
 
   ExcDD(1,:) = ExDD(1,:) + EcDD(1,:)
   ExcDD(2,:) =             EcDD(2,:)

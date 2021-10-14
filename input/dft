@@ -28,9 +28,9 @@
  1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
  1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
 # Ensemble weights: wEns(1),...,wEns(nEns-1)
-  0.0 0.0
+ 0.0 0.0
 # N-centered?
- F 
+ F   
 # Parameters for CC weight-dependent exchange functional
 0.0 0.0 0.0
 0.0 0.0 0.0

@@ -1,4 +1,4 @@
-subroutine UVWN3_lda_correlation_individual_energy(nGrid,weight,rhow,rho,Ec)
+subroutine UVWN3_lda_correlation_individual_energy(nGrid,weight,rhow,rho,doNcentered,kappa,Ec)
 
 ! Compute VWN3 LDA correlation potential
 
@@ -12,6 +12,8 @@ subroutine UVWN3_lda_correlation_individual_energy(nGrid,weight,rhow,rho,Ec)
   double precision,intent(in)   :: weight(nGrid)
   double precision,intent(in)   :: rhow(nGrid,nspin)
   double precision,intent(in)   :: rho(nGrid,nspin)
+  logical,intent(in)            :: doNcentered
+  double precision,intent(in)   :: kappa
 
 ! Local variables
 
@@ -196,6 +198,10 @@ subroutine UVWN3_lda_correlation_individual_energy(nGrid,weight,rhow,rho,Ec)
     end if
 
   end do
+
+! De-scaling for N-centered
+
+  if(doNcentered) Ec(:) = kappa*Ec(:)
 
   Ec(2) = Ec(2) - Ec(1) - Ec(3)
 
