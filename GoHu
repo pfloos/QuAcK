@@ -1,0 +1,9 @@
+#! /bin/bash
+
+cp mol/Hu         input/molecule
+cp basis/Hu       input/basis
+cp int/ERI.Hu.dat int/ERI.dat
+cp int/Kin.Hu.dat int/Kin.dat
+cp int/Nuc.Hu.dat int/Nuc.dat
+cp int/Ov.Hu.dat  int/Ov.dat
+./bin/QuAcK
