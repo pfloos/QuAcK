@@ -55,6 +55,14 @@ subroutine Bethe_Salpeter_Tmatrix(TDA_T,TDA,singlet,triplet,eta,nBas,nC,nO,nV,nR
 
   double precision,intent(out)  :: EcBSE(nspin)
 
+! Dimensions of the pp-RPA linear reponse matrices
+
+  nOOs = nO*nO
+  nVVs = nV*nV
+
+  nOOt = nO*(nO - 1)/2
+  nVVt = nV*(nV - 1)/2
+
 ! Memory allocation
 
   allocate(Omega1s(nVVs),X1s(nVVs,nVVs),Y1s(nOOs,nVVs), &
@@ -65,14 +73,6 @@ subroutine Bethe_Salpeter_Tmatrix(TDA_T,TDA,singlet,triplet,eta,nBas,nC,nO,nV,nR
            rho1t(nBas,nO,nVVt),rho2t(nBas,nV,nOOt))
 
   allocate(TA(nS,nS),TB(nS,nS),OmBSE(nS,nspin),XpY_BSE(nS,nS,nspin),XmY_BSE(nS,nS,nspin))
-
-! Dimensions of the pp-RPA linear reponse matrices
-
-  nOOs = nO*nO
-  nVVs = nV*nV
-
-  nOOt = nO*(nO - 1)/2
-  nVVt = nV*(nV - 1)/2
 
 ! Initialize T matrix
 
@@ -126,8 +126,8 @@ subroutine Bethe_Salpeter_Tmatrix(TDA_T,TDA,singlet,triplet,eta,nBas,nC,nO,nV,nR
 
     ! Compute BSE singlet excitation energies
 
-    call linear_response(ispin,.true.,TDA,.true.,eta,nBas,nC,nO,nV,nR,nS,1d0,eGT,ERI,OmRPA, &
-                         rho_RPA,EcBSE(ispin),OmBSE(:,ispin),XpY_BSE(:,:,ispin),XmY_BSE(:,:,ispin))
+    call linear_response_Tmatrix(ispin,.true.,TDA,.true.,eta,nBas,nC,nO,nV,nR,nS,1d0,eGT,ERI,TA,TB, &
+                                 EcBSE(ispin),OmBSE(:,ispin),XpY_BSE(:,:,ispin),XmY_BSE(:,:,ispin))
     call print_excitation('BSE@GT      ',ispin,nS,OmBSE(:,ispin))
     call print_transition_vectors(.true.,nBas,nC,nO,nV,nR,nS,dipole_int, & 
                                   OmBSE(:,ispin),XpY_BSE(:,:,ispin),XmY_BSE(:,:,ispin))
@@ -145,8 +145,8 @@ subroutine Bethe_Salpeter_Tmatrix(TDA_T,TDA,singlet,triplet,eta,nBas,nC,nO,nV,nR
 
     ! Compute BSE triplet excitation energies
 
-    call linear_response(ispin,.true.,TDA,.true.,eta,nBas,nC,nO,nV,nR,nS,1d0,eGT,ERI,OmRPA, &
-                         rho_RPA,EcBSE(ispin),OmBSE(:,ispin),XpY_BSE(:,:,ispin),XmY_BSE(:,:,ispin))
+    call linear_response_Tmatrix(ispin,.true.,TDA,.true.,eta,nBas,nC,nO,nV,nR,nS,1d0,eGT,ERI,TA,TB, &
+                                 EcBSE(ispin),OmBSE(:,ispin),XpY_BSE(:,:,ispin),XmY_BSE(:,:,ispin))
     call print_excitation('BSE@GT      ',ispin,nS,OmBSE(:,ispin))
     call print_transition_vectors(.false.,nBas,nC,nO,nV,nR,nS,dipole_int, & 
                                   OmBSE(:,ispin),XpY_BSE(:,:,ispin),XmY_BSE(:,:,ispin))
