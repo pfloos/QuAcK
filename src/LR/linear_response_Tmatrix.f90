@@ -13,14 +13,14 @@ subroutine linear_response_Tmatrix(ispin,dRPA,TDA,eta,nBas,nC,nO,nV,nR,nS,lambda
   double precision,intent(in)   :: lambda
   double precision,intent(in)   :: e(nBas)
   double precision,intent(in)   :: ERI(nBas,nBas,nBas,nBas)
+  double precision,intent(in)   :: A_BSE(nS,nS)
+  double precision,intent(in)   :: B_BSE(nS,nS)
 
 ! Local variables
 
   double precision              :: trace_matrix
   double precision,allocatable  :: A(:,:)
   double precision,allocatable  :: B(:,:)
-  double precision,allocatable  :: A_BSE(:,:)
-  double precision,allocatable  :: B_BSE(:,:)
   double precision,allocatable  :: ApB(:,:)
   double precision,allocatable  :: AmB(:,:)
   double precision,allocatable  :: AmBSq(:,:)
