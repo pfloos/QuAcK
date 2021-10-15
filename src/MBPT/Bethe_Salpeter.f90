@@ -16,7 +16,12 @@ subroutine Bethe_Salpeter(TDA_W,TDA,dBSE,dTDA,evDyn,singlet,triplet,eta,nBas,nC,
   logical,intent(in)            :: triplet
 
   double precision,intent(in)   :: eta
-  integer,intent(in)            :: nBas,nC,nO,nV,nR,nS
+  integer,intent(in)            :: nBas
+  integer,intent(in)            :: nC
+  integer,intent(in)            :: nO
+  integer,intent(in)            :: nV
+  integer,intent(in)            :: nR
+  integer,intent(in)            :: nS
   double precision,intent(in)   :: eW(nBas)
   double precision,intent(in)   :: eGW(nBas)
   double precision,intent(in)   :: ERI(nBas,nBas,nBas,nBas)

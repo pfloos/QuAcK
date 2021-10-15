@@ -7,7 +7,12 @@ subroutine static_screening_WB(eta,nBas,nC,nO,nV,nR,nS,lambda,ERI,Omega,rho,WB)
 
 ! Input variables
 
-  integer,intent(in)            :: nBas,nC,nO,nV,nR,nS
+  integer,intent(in)            :: nBas
+  integer,intent(in)            :: nC
+  integer,intent(in)            :: nO
+  integer,intent(in)            :: nV
+  integer,intent(in)            :: nR
+  integer,intent(in)            :: nS
   double precision,intent(in)   :: eta
   double precision,intent(in)   :: lambda
   double precision,intent(in)   :: ERI(nBas,nBas,nBas,nBas)
