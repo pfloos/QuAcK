@@ -1,4 +1,4 @@
-subroutine renormalization_factor_Tmatrix(alpha,eta,nBas,nC,nO,nV,nR,nOO,nVV,e,Omega1,rho1,Omega2,rho2,Z)
+subroutine renormalization_factor_Tmatrix(eta,nBas,nC,nO,nV,nR,nOO,nVV,e,Omega1,rho1,Omega2,rho2,Z)
 
 ! Compute renormalization factor of the T-matrix self-energy
 
@@ -7,7 +7,6 @@ subroutine renormalization_factor_Tmatrix(alpha,eta,nBas,nC,nO,nV,nR,nOO,nVV,e,O
 
 ! Input variables
 
-  double precision,intent(in)   :: alpha
   double precision,intent(in)   :: eta
   integer,intent(in)            :: nBas,nC,nO,nV,nR
   integer,intent(in)            :: nOO
@@ -33,7 +32,7 @@ subroutine renormalization_factor_Tmatrix(alpha,eta,nBas,nC,nO,nV,nR,nOO,nVV,e,O
     do i=nC+1,nO
       do cd=1,nVV
         eps  = e(p) + e(i) - Omega1(cd)
-        Z(p) = Z(p) - (rho1(p,i,cd)/eps)**2
+        Z(p) = Z(p) - rho1(p,i,cd)**2*(eps/(eps**2 + eta**2))**2
       enddo
     enddo
   enddo
@@ -44,7 +43,7 @@ subroutine renormalization_factor_Tmatrix(alpha,eta,nBas,nC,nO,nV,nR,nOO,nVV,e,O
     do a=1,nV-nR
       do kl=1,nOO
         eps  = e(p) + e(nO+a) - Omega2(kl)
-        Z(p) = Z(p) - (rho2(p,nO+a,kl)/eps)**2
+        Z(p) = Z(p) - rho2(p,nO+a,kl)**2*(eps/(eps**2 + eta**2))**2
       enddo
     enddo
   enddo
