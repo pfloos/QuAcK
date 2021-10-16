@@ -19,9 +19,9 @@ subroutine static_Tmatrix_TB(eta,nBas,nC,nO,nV,nR,nS,nOO,nVV,lambda,ERI,Omega1,r
   double precision,intent(in)   :: lambda
   double precision,intent(in)   :: ERI(nBas,nBas,nBas,nBas)
   double precision,intent(in)   :: Omega1(nVV)
-  double precision,intent(in)   :: rho1(nBas,nO,nVV)
+  double precision,intent(in)   :: rho1(nBas,nBas,nVV)
   double precision,intent(in)   :: Omega2(nOO)
-  double precision,intent(in)   :: rho2(nBas,nV,nOO)
+  double precision,intent(in)   :: rho2(nBas,nBas,nOO)
 
 ! Local variables
 

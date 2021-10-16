@@ -19,9 +19,9 @@ subroutine static_Tmatrix_TA(eta,nBas,nC,nO,nV,nR,nS,nOO,nVV,lambda,ERI,Omega1,r
   double precision,intent(in)   :: lambda
   double precision,intent(in)   :: ERI(nBas,nBas,nBas,nBas)
   double precision,intent(in)   :: Omega1(nVV)
-  double precision,intent(in)   :: rho1(nBas,nO,nVV)
+  double precision,intent(in)   :: rho1(nBas,nBas,nVV)
   double precision,intent(in)   :: Omega2(nOO)
-  double precision,intent(in)   :: rho2(nBas,nV,nOO)
+  double precision,intent(in)   :: rho2(nBas,nBas,nOO)
 
 ! Local variables
 
@@ -47,13 +47,11 @@ subroutine static_Tmatrix_TA(eta,nBas,nC,nO,nV,nR,nS,nOO,nVV,lambda,ERI,Omega1,r
           do cd=1,nVV
             eps = Omega1(cd)**2 + eta**2
             chi = chi + rho1(i,j,cd)*rho1(a,b,cd)*Omega1(cd)/eps
-            print*,rho1(i,j,cd),rho1(a,b,cd)
           enddo
 
           do kl=1,nOO
             eps = Omega2(kl)**2 + eta**2
             chi = chi + rho2(i,j,kl)*rho2(a,b,kl)*Omega2(kl)/eps
-            print*,rho2(i,j,kl),rho2(a,b,kl) 
           enddo
 
 

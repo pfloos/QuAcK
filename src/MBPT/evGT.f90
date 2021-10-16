@@ -103,10 +103,10 @@ subroutine evGT(maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS, &
 
   allocate(Omega1s(nVVs),X1s(nVVs,nVVs),Y1s(nOOs,nVVs),        & 
            Omega2s(nOOs),X2s(nVVs,nOOs),Y2s(nOOs,nOOs),        & 
-           rho1s(nBas,nO,nVVs),rho2s(nBas,nV,nOOs),            & 
+           rho1s(nBas,nBas,nVVs),rho2s(nBas,nBas,nOOs),        & 
            Omega1t(nVVt),X1t(nVVt,nVVt),Y1t(nOOt,nVVt),        & 
            Omega2t(nOOt),X2t(nVVt,nOOt),Y2t(nOOt,nOOt),        & 
-           rho1t(nBas,nO,nVVt),rho2t(nBas,nV,nOOt),            &
+           rho1t(nBas,nBas,nVVt),rho2t(nBas,nBas,nOOt),        &
            eGT(nBas),eOld(nBas),Z(nBas),SigX(nBas),SigT(nBas), &
            error_diis(nBas,max_diis),e_diis(nBas,max_diis))
 

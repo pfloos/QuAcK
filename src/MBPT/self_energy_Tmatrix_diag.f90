@@ -18,9 +18,9 @@ subroutine self_energy_Tmatrix_diag(alpha,eta,nBas,nC,nO,nV,nR,nOO,nVV,e,Omega1,
   integer,intent(in)            :: nVV
   double precision,intent(in)   :: e(nBas)
   double precision,intent(in)   :: Omega1(nVV)
-  double precision,intent(in)   :: rho1(nBas,nO,nVV)
+  double precision,intent(in)   :: rho1(nBas,nBas,nVV)
   double precision,intent(in)   :: Omega2(nOO)
-  double precision,intent(in)   :: rho2(nBas,nV,nOO)
+  double precision,intent(in)   :: rho2(nBas,nBas,nOO)
 
 ! Local variables
 
@@ -52,7 +52,7 @@ subroutine self_energy_Tmatrix_diag(alpha,eta,nBas,nC,nO,nV,nR,nOO,nVV,e,Omega1,
     do a=1,nV-nR
       do kl=1,nOO
         eps     = e(p)    + e(nO+a) - Omega2(kl)
-        SigT(p) = SigT(p) + alpha*rho2(p,a,kl)**2/eps
+        SigT(p) = SigT(p) + alpha*rho2(p,nO+a,kl)**2/eps
       enddo
     enddo
   enddo

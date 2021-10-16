@@ -14,9 +14,9 @@ subroutine renormalization_factor_Tmatrix(alpha,eta,nBas,nC,nO,nV,nR,nOO,nVV,e,O
   integer,intent(in)            :: nVV
   double precision,intent(in)   :: e(nBas)
   double precision,intent(in)   :: Omega1(nVV)
-  double precision,intent(in)   :: rho1(nBas,nO,nVV)
+  double precision,intent(in)   :: rho1(nBas,nBas,nVV)
   double precision,intent(in)   :: Omega2(nOO)
-  double precision,intent(in)   :: rho2(nBas,nV,nOO)
+  double precision,intent(in)   :: rho2(nBas,nBas,nOO)
 
 ! Local variables
 
@@ -44,13 +44,9 @@ subroutine renormalization_factor_Tmatrix(alpha,eta,nBas,nC,nO,nV,nR,nOO,nVV,e,O
     do a=1,nV-nR
       do kl=1,nOO
         eps  = e(p) + e(nO+a) - Omega2(kl)
-        Z(p) = Z(p) - (rho2(p,a,kl)/eps)**2
+        Z(p) = Z(p) - (rho2(p,nO+a,kl)/eps)**2
       enddo
     enddo
   enddo
-
-! Compute renormalization factor from derivative of SigT
- 
-! Z(:) = 1d0/(1d0 + Z(:))
 
 end subroutine renormalization_factor_Tmatrix
