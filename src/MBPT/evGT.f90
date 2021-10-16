@@ -1,5 +1,5 @@
 subroutine evGT(maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS, & 
-                BSE,TDA_W,TDA,dBSE,dTDA,evDyn,singlet,triplet,eta,nBas, & 
+                BSE,TDA_T,TDA,dBSE,dTDA,evDyn,singlet,triplet,eta,nBas, & 
                 nC,nO,nV,nR,nS,ENuc,ERHF,ERI_AO,ERI_MO,dipole_int,PHF,cHF,eHF,Vxc,eG0T0)
 
 ! Perform eigenvalue self-consistent calculation with a T-matrix self-energy (evGT)
@@ -16,7 +16,7 @@ subroutine evGT(maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS, &
   logical,intent(in)            :: exchange_kernel
   logical,intent(in)            :: doXBS
   logical,intent(in)            :: BSE
-  logical,intent(in)            :: TDA_W
+  logical,intent(in)            :: TDA_T
   logical,intent(in)            :: TDA
   logical,intent(in)            :: dBSE
   logical,intent(in)            :: dTDA
@@ -270,8 +270,9 @@ subroutine evGT(maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS, &
 
   if(BSE) then
 
-    call Bethe_Salpeter(TDA_W,TDA,dBSE,dTDA,evDyn,singlet,triplet,eta, &
-                        nBas,nC,nO,nV,nR,nS,ERI_MO,dipole_int,eGT,eGT,EcRPA,EcBSE)
+    call Bethe_Salpeter_Tmatrix(TDA_T,TDA,dBSE,dTDA,evDyn,singlet,triplet,eta,nBas,nC,nO,nV,nR,nS,nOOs,nVVs,nOOt,nVVt,   &
+                                Omega1s,X1s,Y1s,Omega2s,X2s,Y2s,rho1s,rho2s,Omega1t,X1t,Y1t,Omega2t,X2t,Y2t,rho1t,rho2t, &
+                                ERI_MO,dipole_int,eGT,eGT,EcBSE)
 
     if(exchange_kernel) then
 
@@ -305,7 +306,7 @@ subroutine evGT(maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS, &
 
       end if
 
-      call ACFDT(exchange_kernel,doXBS,.true.,TDA_W,TDA,BSE,singlet,triplet,eta, &
+      call ACFDT(exchange_kernel,doXBS,.true.,TDA_T,TDA,BSE,singlet,triplet,eta, &
                  nBas,nC,nO,nV,nR,nS,ERI_MO,eGT,eGT,EcAC)
 
       if(exchange_kernel) then
