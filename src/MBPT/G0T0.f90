@@ -106,8 +106,8 @@ subroutine G0T0(doACFDT,exchange_kernel,doXBS,BSE,TDA_T,TDA,dBSE,dTDA,evDyn,sing
 
 ! Compute linear response
 
-  call linear_response_pp(iblock,.true.,.false.,nBas,nC,nO,nV,nR,nOOs,nVVs,eHF(:),ERI_MO(:,:,:,:),  & 
-                          Omega1s(:),X1s(:,:),Y1s(:,:),Omega2s(:),X2s(:,:),Y2s(:,:),EcRPA(ispin))
+  call linear_response_pp(iblock,.true.,.false.,nBas,nC,nO,nV,nR,nOOs,nVVs,eHF,ERI_MO,  & 
+                          Omega1s,X1s,Y1s,Omega2s,X2s,Y2s,EcRPA(ispin))
 
 ! EcRPA(ispin) = 1d0*EcRPA(ispin)
 
@@ -123,8 +123,8 @@ subroutine G0T0(doACFDT,exchange_kernel,doXBS,BSE,TDA_T,TDA,dBSE,dTDA,evDyn,sing
 
 ! Compute linear response
 
-  call linear_response_pp(iblock,.true.,.false.,nBas,nC,nO,nV,nR,nOOt,nVVt,eHF(:),ERI_MO(:,:,:,:),  & 
-                          Omega1t(:),X1t(:,:),Y1t(:,:),Omega2t(:),X2t(:,:),Y2t(:,:),EcRPA(ispin))
+  call linear_response_pp(iblock,.true.,.false.,nBas,nC,nO,nV,nR,nOOt,nVVt,eHF,ERI_MO,  & 
+                          Omega1t,X1t,Y1t,Omega2t,X2t,Y2t,EcRPA(ispin))
 
 ! EcRPA(ispin) = 2d0*EcRPA(ispin)
 ! EcRPA(ispin) = 3d0*EcRPA(ispin)
@@ -143,27 +143,21 @@ subroutine G0T0(doACFDT,exchange_kernel,doXBS,BSE,TDA_T,TDA,dBSE,dTDA,evDyn,sing
   dERI   = +1d0
   xERI   = +0d0
 
-  call excitation_density_Tmatrix(iblock,dERI,xERI,nBas,nC,nO,nV,nR,nOOs,nVVs,ERI_MO(:,:,:,:), &
-                                  X1s(:,:),Y1s(:,:),rho1s(:,:,:),X2s(:,:),Y2s(:,:),rho2s(:,:,:))
+  call excitation_density_Tmatrix(iblock,dERI,xERI,nBas,nC,nO,nV,nR,nOOs,nVVs,ERI_MO,X1s,Y1s,rho1s,X2s,Y2s,rho2s)
 
-  call self_energy_Tmatrix_diag(eta,nBas,nC,nO,nV,nR,nOOs,nVVs,eHF(:), & 
-                                Omega1s(:),rho1s(:,:,:),Omega2s(:),rho2s(:,:,:),SigT(:))
+  call self_energy_Tmatrix_diag(eta,nBas,nC,nO,nV,nR,nOOs,nVVs,eHF,Omega1s,rho1s,Omega2s,rho2s,SigT)
 
-  call renormalization_factor_Tmatrix(eta,nBas,nC,nO,nV,nR,nOOs,nVVs,eHF(:), & 
-                                      Omega1s(:),rho1s(:,:,:),Omega2s(:),rho2s(:,:,:),Z(:))
+  call renormalization_factor_Tmatrix(eta,nBas,nC,nO,nV,nR,nOOs,nVVs,eHF,Omega1s,rho1s,Omega2s,rho2s,Z)
 
   iblock =  4
   dERI   = +1d0
   xERI   = -1d0
 
-  call excitation_density_Tmatrix(iblock,dERI,xERI,nBas,nC,nO,nV,nR,nOOt,nVVt,ERI_MO(:,:,:,:), &
-                                  X1t(:,:),Y1t(:,:),rho1t(:,:,:),X2t(:,:),Y2t(:,:),rho2t(:,:,:))
+  call excitation_density_Tmatrix(iblock,dERI,xERI,nBas,nC,nO,nV,nR,nOOt,nVVt,ERI_MO,X1t,Y1t,rho1t,X2t,Y2t,rho2t)
 
-  call self_energy_Tmatrix_diag(eta,nBas,nC,nO,nV,nR,nOOt,nVVt,eHF(:), & 
-                                Omega1t(:),rho1t(:,:,:),Omega2t(:),rho2t(:,:,:),SigT(:))
+  call self_energy_Tmatrix_diag(eta,nBas,nC,nO,nV,nR,nOOt,nVVt,eHF,Omega1t,rho1t,Omega2t,rho2t,SigT)
 
-  call renormalization_factor_Tmatrix(eta,nBas,nC,nO,nV,nR,nOOt,nVVt,eHF(:), & 
-                                      Omega1t(:),rho1t(:,:,:),Omega2t(:),rho2t(:,:,:),Z(:))
+  call renormalization_factor_Tmatrix(eta,nBas,nC,nO,nV,nR,nOOt,nVVt,eHF,Omega1t,rho1t,Omega2t,rho2t,Z)
 
   Z(:) = 1d0/(1d0 - Z(:))
 
@@ -196,16 +190,16 @@ subroutine G0T0(doACFDT,exchange_kernel,doXBS,BSE,TDA_T,TDA,dBSE,dTDA,evDyn,sing
 
   ispin  = 1
   iblock = 3
-  call linear_response_pp(iblock,.false.,.false.,nBas,nC,nO,nV,nR,nOOs,nVVs,eG0T0(:),ERI_MO(:,:,:,:),  & 
-                          Omega1s(:),X1s(:,:),Y1s(:,:),Omega2s(:),X2s(:,:),Y2s(:,:),EcRPA(ispin))
+  call linear_response_pp(iblock,.false.,.false.,nBas,nC,nO,nV,nR,nOOs,nVVs,eG0T0,ERI_MO,  & 
+                          Omega1s,X1s,Y1s,Omega2s,X2s,Y2s,EcRPA(ispin))
   ispin  = 2
   iblock = 4
-  call linear_response_pp(iblock,.false.,.false.,nBas,nC,nO,nV,nR,nOOt,nVVt,eG0T0(:),ERI_MO(:,:,:,:),  & 
-                          Omega1t(:),X1t(:,:),Y1t(:,:),Omega2t(:),X2t(:,:),Y2t(:,:),EcRPA(ispin))
+  call linear_response_pp(iblock,.false.,.false.,nBas,nC,nO,nV,nR,nOOt,nVVt,eG0T0,ERI_MO,  & 
+                          Omega1t,X1t,Y1t,Omega2t,X2t,Y2t,EcRPA(ispin))
   EcRPA(1) = EcRPA(1) - EcRPA(2)
   EcRPA(2) = 3d0*EcRPA(2)
 
-  call print_G0T0(nBas,nO,eHF(:),ENuc,ERHF,SigT(:),Z(:),eG0T0(:),EcRPA(:))
+  call print_G0T0(nBas,nO,eHF,ENuc,ERHF,SigT,Z,eG0T0,EcRPA)
 
 ! Perform BSE calculation
 
