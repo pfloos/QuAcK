@@ -99,6 +99,7 @@ subroutine Bethe_Salpeter_Tmatrix_dynamic_perturbation(dTDA,eta,nBas,nC,nO,nV,nR
 
     else
 
+      print*, ' Beyond-TDA dynamical correction for BSE@GT NYI'
       ! Resonant and anti-resonant part of the BSE correction
 
 !     call dynamic_Tmatrix_TAB(eta,nBas,nC,nO,nV,nR,nS,nOO,nVV,1d0,eGT,Omega1,Omega2,rho1,rho2,OmBSE(ia), &
