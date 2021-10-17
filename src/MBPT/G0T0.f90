@@ -44,9 +44,6 @@ subroutine G0T0(doACFDT,exchange_kernel,doXBS,BSE,TDA_T,TDA,dBSE,dTDA,evDyn,sing
   integer                       :: iblock
   integer                       :: nOOs,nOOt
   integer                       :: nVVs,nVVt
-  double precision              :: dERI
-  double precision              :: xERI
-  double precision              :: alpha
   double precision              :: EcRPA(nspin)
   double precision              :: EcBSE(nspin)
   double precision              :: EcAC(nspin)
@@ -140,20 +137,16 @@ subroutine G0T0(doACFDT,exchange_kernel,doXBS,BSE,TDA_T,TDA,dBSE,dTDA,evDyn,sing
   Z(:)    = 0d0
 
   iblock =  3
-  dERI   = +1d0
-  xERI   = +0d0
 
-  call excitation_density_Tmatrix(iblock,dERI,xERI,nBas,nC,nO,nV,nR,nOOs,nVVs,ERI_MO,X1s,Y1s,rho1s,X2s,Y2s,rho2s)
+  call excitation_density_Tmatrix(iblock,nBas,nC,nO,nV,nR,nOOs,nVVs,ERI_MO,X1s,Y1s,rho1s,X2s,Y2s,rho2s)
 
   call self_energy_Tmatrix_diag(eta,nBas,nC,nO,nV,nR,nOOs,nVVs,eHF,Omega1s,rho1s,Omega2s,rho2s,SigT)
 
   call renormalization_factor_Tmatrix(eta,nBas,nC,nO,nV,nR,nOOs,nVVs,eHF,Omega1s,rho1s,Omega2s,rho2s,Z)
 
   iblock =  4
-  dERI   = +1d0
-  xERI   = -1d0
 
-  call excitation_density_Tmatrix(iblock,dERI,xERI,nBas,nC,nO,nV,nR,nOOt,nVVt,ERI_MO,X1t,Y1t,rho1t,X2t,Y2t,rho2t)
+  call excitation_density_Tmatrix(iblock,nBas,nC,nO,nV,nR,nOOt,nVVt,ERI_MO,X1t,Y1t,rho1t,X2t,Y2t,rho2t)
 
   call self_energy_Tmatrix_diag(eta,nBas,nC,nO,nV,nR,nOOt,nVVt,eHF,Omega1t,rho1t,Omega2t,rho2t,SigT)
 

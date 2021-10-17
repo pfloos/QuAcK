@@ -28,7 +28,7 @@ subroutine self_energy_Tmatrix(eta,nBas,nC,nO,nV,nR,nOO,nVV,e,Omega1,rho1,Omega2
 
 ! Output variables
 
-  double precision,intent(out)  :: SigT(nBas)
+  double precision,intent(inout)  :: SigT(nBas,nBas)
 
 !----------------------------------------------
 ! Occupied part of the T-matrix self-energy 
@@ -38,8 +38,8 @@ subroutine self_energy_Tmatrix(eta,nBas,nC,nO,nV,nR,nOO,nVV,e,Omega1,rho1,Omega2
     do q=nC+1,nBas-nR
       do i=nC+1,nO
         do cd=1,nVV
-          eps     = e(p)    + e(i) - Omega1(cd)
-          SigT(p) = SigT(p) + rho1(p,i,cd)*rho1(q,i,cd)*eps/(eps**2 + eta**2)
+          eps       = e(p)      + e(i) - Omega1(cd)
+          SigT(p,q) = SigT(p,q) + rho1(p,i,cd)*rho1(q,i,cd)*eps/(eps**2 + eta**2)
         enddo
       enddo
     enddo
@@ -51,10 +51,10 @@ subroutine self_energy_Tmatrix(eta,nBas,nC,nO,nV,nR,nOO,nVV,e,Omega1,rho1,Omega2
 
   do p=nC+1,nBas-nR
     do q=nC+1,nBas-nR
-      do a=1,nV-nR
+      do a=nO+1,nBas-nR
         do kl=1,nOO
-          eps     = e(p)    + e(nO+a) - Omega2(kl)
-          SigT(p) = SigT(p) + rho2(p,nO+a,kl)*rho2(q,nO+a,kl)*eps/(eps**2 + eta**2)
+          eps       = e(p)      + e(a) - Omega2(kl)
+          SigT(p,q) = SigT(p,q) + rho2(p,a,kl)*rho2(q,a,kl)*eps/(eps**2 + eta**2)
         enddo
       enddo
     enddo

@@ -1063,6 +1063,26 @@ program QuAcK
   end if
 
 !------------------------------------------------------------------------
+! Perform qsGT calculation
+!------------------------------------------------------------------------
+
+  if(doqsGT) then 
+
+    call cpu_time(start_qsGT)
+
+    call qsGT(maxSCF_GW,thresh_GW,n_diis_GW,doACFDT,exchange_kernel,doXBS,         &
+              BSE,TDA_W,TDA,dBSE,dTDA,evDyn,singlet,triplet,eta_GW,nNuc,ZNuc,rNuc,ENuc, & 
+              nBas,nC,nO,nV,nR,nS,ERHF,S,X,T,V,Hc,ERI_AO,ERI_MO,dipole_int_AO,dipole_int_MO,PHF,cHF,eHF)
+
+    call cpu_time(end_qsGT)
+
+    t_qsGT = end_qsGT - start_qsGT
+    write(*,'(A65,1X,F9.3,A8)') 'Total CPU time for qsGT = ',t_qsGT,' seconds'
+    write(*,*)
+
+  end if
+
+!------------------------------------------------------------------------
 ! Information for Monte Carlo calculations
 !------------------------------------------------------------------------
 

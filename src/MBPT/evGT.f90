@@ -54,9 +54,6 @@ subroutine evGT(maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS, &
   integer                       :: iblock
   integer                       :: nOOs,nOOt
   integer                       :: nVVs,nVVt
-  double precision              :: dERI
-  double precision              :: xERI
-  double precision              :: alpha
   double precision              :: EcRPA(nspin)
   double precision              :: EcBSE(nspin)
   double precision              :: EcAC(nspin)
@@ -75,11 +72,6 @@ subroutine evGT(maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS, &
   double precision,allocatable  :: SigX(:)
   double precision,allocatable  :: SigT(:)
   double precision,allocatable  :: Z(:)
-
-  double precision,allocatable  :: Omega(:,:)
-  double precision,allocatable  :: XpY(:,:,:)
-  double precision,allocatable  :: XmY(:,:,:)
-  double precision,allocatable  :: rho(:,:,:,:)
 
 ! Output variables
 
@@ -140,14 +132,9 @@ subroutine evGT(maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS, &
  
     ! Compute linear response
  
-    call linear_response_pp(iblock,.true.,.false.,nBas,nC,nO,nV,nR,nOOs,nVVs,eGT(:),ERI_MO(:,:,:,:),  & 
-                            Omega1s(:),X1s(:,:),Y1s(:,:),Omega2s(:),X2s(:,:),Y2s(:,:),EcRPA(ispin))
+    call linear_response_pp(iblock,.true.,.false.,nBas,nC,nO,nV,nR,nOOs,nVVs,eGT,ERI_MO,  & 
+                            Omega1s,X1s,Y1s,Omega2s,X2s,Y2s,EcRPA(ispin))
  
-!   EcRPA(ispin) = 1d0*EcRPA(ispin)
- 
-!   call print_excitation('pp-RPA (N+2)',iblock,nVVs,Omega1s(:))
-!   call print_excitation('pp-RPA (N-2)',iblock,nOOs,Omega2s(:))
-
   !----------------------------------------------
   ! alpha-alpha block
   !----------------------------------------------
@@ -157,14 +144,8 @@ subroutine evGT(maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS, &
 
   ! Compute linear response
 
-    call linear_response_pp(iblock,.true.,.false.,nBas,nC,nO,nV,nR,nOOt,nVVt,eGT(:),ERI_MO(:,:,:,:),  & 
-                          Omega1t(:),X1t(:,:),Y1t(:,:),Omega2t(:),X2t(:,:),Y2t(:,:),EcRPA(ispin))
-
-!   EcRPA(ispin) = 2d0*EcRPA(ispin)
-!   EcRPA(ispin) = 3d0*EcRPA(ispin)
-
-!   call print_excitation('pp-RPA (N+2)',iblock,nVVt,Omega1t(:))
-!   call print_excitation('pp-RPA (N-2)',iblock,nOOt,Omega2t(:))
+    call linear_response_pp(iblock,.true.,.false.,nBas,nC,nO,nV,nR,nOOt,nVVt,eGT,ERI_MO,  & 
+                          Omega1t,X1t,Y1t,Omega2t,X2t,Y2t,EcRPA(ispin))
 
   !----------------------------------------------
   ! Compute T-matrix version of the self-energy 
@@ -174,32 +155,26 @@ subroutine evGT(maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS, &
     Z(:)    = 0d0
  
     iblock =  3
-    dERI   = +1d0
-    xERI   = +0d0
-    alpha  = +1d0
  
-    call excitation_density_Tmatrix(iblock,dERI,xERI,nBas,nC,nO,nV,nR,nOOs,nVVs,ERI_MO(:,:,:,:), &
-                                    X1s(:,:),Y1s(:,:),rho1s(:,:,:),X2s(:,:),Y2s(:,:),rho2s(:,:,:))
+    call excitation_density_Tmatrix(iblock,nBas,nC,nO,nV,nR,nOOs,nVVs,ERI_MO, &
+                                    X1s,Y1s,rho1s,X2s,Y2s,rho2s)
  
-    call self_energy_Tmatrix_diag(alpha,eta,nBas,nC,nO,nV,nR,nOOs,nVVs,eGT(:), & 
-                                  Omega1s(:),rho1s(:,:,:),Omega2s(:),rho2s(:,:,:),SigT(:))
+    call self_energy_Tmatrix_diag(eta,nBas,nC,nO,nV,nR,nOOs,nVVs,eGT, & 
+                                  Omega1s,rho1s,Omega2s,rho2s,SigT)
  
-    call renormalization_factor_Tmatrix(alpha,eta,nBas,nC,nO,nV,nR,nOOs,nVVs,eGT(:), & 
-                                        Omega1s(:),rho1s(:,:,:),Omega2s(:),rho2s(:,:,:),Z(:))
+    call renormalization_factor_Tmatrix(eta,nBas,nC,nO,nV,nR,nOOs,nVVs,eGT, & 
+                                        Omega1s,rho1s,Omega2s,rho2s,Z)
  
     iblock =  4
-    dERI   = +1d0
-    xERI   = -1d0
-    alpha  = +1d0
  
-    call excitation_density_Tmatrix(iblock,dERI,xERI,nBas,nC,nO,nV,nR,nOOt,nVVt,ERI_MO(:,:,:,:), &
-                                    X1t(:,:),Y1t(:,:),rho1t(:,:,:),X2t(:,:),Y2t(:,:),rho2t(:,:,:))
+    call excitation_density_Tmatrix(iblock,nBas,nC,nO,nV,nR,nOOt,nVVt,ERI_MO, &
+                                    X1t,Y1t,rho1t,X2t,Y2t,rho2t)
  
-    call self_energy_Tmatrix_diag(alpha,eta,nBas,nC,nO,nV,nR,nOOt,nVVt,eGT(:), & 
-                                  Omega1t(:),rho1t(:,:,:),Omega2t(:),rho2t(:,:,:),SigT(:))
+    call self_energy_Tmatrix_diag(eta,nBas,nC,nO,nV,nR,nOOt,nVVt,eGT, & 
+                                  Omega1t,rho1t,Omega2t,rho2t,SigT)
  
-    call renormalization_factor_Tmatrix(alpha,eta,nBas,nC,nO,nV,nR,nOOt,nVVt,eGT(:), & 
-                                        Omega1t(:),rho1t(:,:,:),Omega2t(:),rho2t(:,:,:),Z(:))
+    call renormalization_factor_Tmatrix(eta,nBas,nC,nO,nV,nR,nOOt,nVVt,eGT, & 
+                                        Omega1t,rho1t,Omega2t,rho2t,Z)
  
     Z(:) = 1d0/(1d0 - Z(:))
 
@@ -219,7 +194,7 @@ subroutine evGT(maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS, &
   ! Dump results
   !----------------------------------------------
 
-    call print_evGT(nBas,nO,nSCF,Conv,eHF(:),SigT(:),Z(:),eGT(:))
+    call print_evGT(nBas,nO,nSCF,Conv,eHF,SigT,Z,eGT)
 
     ! DIIS extrapolation
 
@@ -247,12 +222,12 @@ subroutine evGT(maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS, &
 
   ispin  = 1
   iblock = 3
-  call linear_response_pp(iblock,.false.,.false.,nBas,nC,nO,nV,nR,nOOs,nVVs,eGT(:),ERI_MO(:,:,:,:),  &
-                          Omega1s(:),X1s(:,:),Y1s(:,:),Omega2s(:),X2s(:,:),Y2s(:,:),EcRPA(ispin))
+  call linear_response_pp(iblock,.false.,.false.,nBas,nC,nO,nV,nR,nOOs,nVVs,eGT,ERI_MO,  &
+                          Omega1s,X1s,Y1s,Omega2s,X2s,Y2s,EcRPA(ispin))
   ispin  = 2
   iblock = 4
-  call linear_response_pp(iblock,.false.,.false.,nBas,nC,nO,nV,nR,nOOt,nVVt,eGT(:),ERI_MO(:,:,:,:),  &
-                          Omega1t(:),X1t(:,:),Y1t(:,:),Omega2t(:),X2t(:,:),Y2t(:,:),EcRPA(ispin))
+  call linear_response_pp(iblock,.false.,.false.,nBas,nC,nO,nV,nR,nOOt,nVVt,eGT,ERI_MO,  &
+                          Omega1t,X1t,Y1t,Omega2t,X2t,Y2t,EcRPA(ispin))
   EcRPA(1) = EcRPA(1) - EcRPA(2)
   EcRPA(2) = 3d0*EcRPA(2)
 
