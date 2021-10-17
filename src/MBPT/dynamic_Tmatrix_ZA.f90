@@ -29,10 +29,9 @@ subroutine dynamic_Tmatrix_ZA(eta,nBas,nC,nO,nV,nR,nS,nOO,nVV,lambda,eGT,Omega1,
   
 ! Local variables
 
-  integer                       :: maxS
   double precision              :: chi
   double precision              :: eps
-  integer                       :: i,j,a,b,ia,jb,kc
+  integer                       :: i,j,a,b,ia,jb,cd,kl
 
 ! Output variables
 
@@ -41,10 +40,6 @@ subroutine dynamic_Tmatrix_ZA(eta,nBas,nC,nO,nV,nR,nS,nOO,nVV,lambda,eGT,Omega1,
 ! Initialization
 
   ZA_dyn(:,:) = 0d0
-
-! Number of poles taken into account 
-
-  maxS = nS
 
 ! Build dynamic A matrix
 
@@ -58,21 +53,21 @@ subroutine dynamic_Tmatrix_ZA(eta,nBas,nC,nO,nV,nR,nS,nOO,nVV,lambda,eGT,Omega1,
           jb = jb + 1
  
           chi = 0d0
-          do kc=1,maxS
+          do cd=1,nVV
+            eps = + OmBSE - Omega1(cd) - (eGT(a) - eGT(j))
+            chi = chi + rho1(i,j,cd)*rho1(a,b,cd)*(eps**2 - eta**2)/(eps**2 + eta**2)**2
+          end do
 
-!           eps = + OmBSE - OmRPA(kc) - (eGW(a) - eGW(j))
-!           chi = chi + rho_RPA(i,j,kc)*rho_RPA(a,b,kc)*(eps**2 - eta**2)/(eps**2 + eta**2)**2
-
-!           eps = + OmBSE - OmRPA(kc) - (eGW(b) - eGW(i))
-!           chi = chi + rho_RPA(i,j,kc)*rho_RPA(a,b,kc)*(eps**2 - eta**2)/(eps**2 + eta**2)**2
-
-          enddo
+          do kl=1,nOO
+            eps = + OmBSE - Omega2(kl) - (eGT(b) - eGT(i))
+            chi = chi + rho2(i,j,kl)*rho2(a,b,kl)*(eps**2 - eta**2)/(eps**2 + eta**2)**2
+          end do
 
           ZA_dyn(ia,jb) = ZA_dyn(ia,jb) + 2d0*lambda*chi
 
-        enddo
-      enddo
-    enddo
-  enddo
+        end do
+      end do
+    end do
+  end do
 
 end subroutine dynamic_Tmatrix_ZA

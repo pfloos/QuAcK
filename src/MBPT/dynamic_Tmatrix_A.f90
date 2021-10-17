@@ -30,10 +30,9 @@ subroutine dynamic_Tmatrix_A(eta,nBas,nC,nO,nV,nR,nS,nOO,nVV,lambda,eGT,Omega1,O
 
 ! Local variables
 
-  integer                       :: maxS
   double precision              :: chi
   double precision              :: eps
-  integer                       :: i,j,a,b,ia,jb,kc
+  integer                       :: i,j,a,b,ia,jb,cd,kl
 
 ! Output variables
 
@@ -42,10 +41,6 @@ subroutine dynamic_Tmatrix_A(eta,nBas,nC,nO,nV,nR,nS,nOO,nVV,lambda,eGT,Omega1,O
 ! Initialization
 
   A_dyn(:,:) = 0d0
-
-! Number of poles taken into account 
-
-  maxS = nS
 
 ! Build dynamic A matrix
 
@@ -59,30 +54,34 @@ subroutine dynamic_Tmatrix_A(eta,nBas,nC,nO,nV,nR,nS,nOO,nVV,lambda,eGT,Omega1,O
           jb = jb + 1
  
           chi = 0d0
-          do kc=1,maxS
 
-!           chi = chi + rho_RPA(i,j,kc)*rho_RPA(a,b,kc)*OmRPA(kc)/(OmRPA(kc)**2 + eta**2)
+          do cd=1,nVV
+            chi = chi + rho1(i,j,cd)*rho1(a,b,cd)*Omega1(cd)/(Omega1(cd)**2 + eta**2)
+          end do
 
-          enddo
-
-          A_dyn(ia,jb) = A_dyn(ia,jb) - 4d0*lambda*chi
-
-          chi = 0d0
-          do kc=1,maxS
-
-!           eps = + OmBSE - OmRPA(kc) - (eGW(a) - eGW(j))
-!           chi = chi + rho_RPA(i,j,kc)*rho_RPA(a,b,kc)*eps/(eps**2 + eta**2)
-
-!           eps = + OmBSE - OmRPA(kc) - (eGW(b) - eGW(i))
-!           chi = chi + rho_RPA(i,j,kc)*rho_RPA(a,b,kc)*eps/(eps**2 + eta**2)
-
-          enddo
+            do kl=1,nOO
+            chi = chi + rho2(i,j,kl)*rho2(a,b,kl)*Omega2(kl)/(Omega2(kl)**2 + eta**2)
+          end do
 
           A_dyn(ia,jb) = A_dyn(ia,jb) - 2d0*lambda*chi
 
-        enddo
-      enddo
-    enddo
-  enddo
+          chi = 0d0
+
+          do cd=1,nVV
+            eps = + OmBSE - Omega1(cd) - (eGT(a) - eGT(j))
+            chi = chi + rho1(i,j,cd)*rho1(a,b,cd)*eps/(eps**2 + eta**2) 
+          end do
+
+          do kl=1,nOO
+            eps = + OmBSE - Omega2(kl) - (eGT(b) - eGT(i))
+            chi = chi + rho2(i,j,kl)*rho2(a,b,kl)*eps/(eps**2 + eta**2)
+          end do
+
+          A_dyn(ia,jb) = A_dyn(ia,jb) - 2d0*lambda*chi
+
+        end do
+      end do
+    end do
+  end do
 
 end subroutine dynamic_Tmatrix_A
