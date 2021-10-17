@@ -1,7 +1,5 @@
-subroutine Bethe_Salpeter_Tmatrix_dynamic_perturbation(dTDA,eta,nBas,nC,nO,nV,nR,nS,nOO,nVV, & 
-                                                       Omega1,Omega2,rho1,rho2, &
+subroutine Bethe_Salpeter_Tmatrix_dynamic_perturbation(dTDA,eta,nBas,nC,nO,nV,nR,nS,nOO,nVV,Omega1,Omega2,rho1,rho2, &
                                                        eT,eGT,dipole_int,OmBSE,XpY,XmY)
-
 ! Compute dynamical effects via perturbation theory for BSE@GT
 
   implicit none
@@ -90,7 +88,7 @@ subroutine Bethe_Salpeter_Tmatrix_dynamic_perturbation(dTDA,eta,nBas,nC,nO,nV,nR
 
       ! Resonant part of the BSE correction for dynamical TDA
 
-      call dynamic_Tmatrix_TA(eta,nBas,nC,nO,nV,nR,nS,nOO,nVV,1d0,eGT,Omega1,Omega2,rho1,rho2,OmBSE(ia),Ap_dyn)
+      call dynamic_Tmatrix_A(eta,nBas,nC,nO,nV,nR,nS,nOO,nVV,1d0,eGT,Omega1,Omega2,rho1,rho2,OmBSE(ia),Ap_dyn)
 
       ! Renormalization factor of the resonant parts for dynamical TDA
 

@@ -63,7 +63,7 @@ subroutine dynamic_Tmatrix_ZA(eta,nBas,nC,nO,nV,nR,nS,nOO,nVV,lambda,eGT,Omega1,
             chi = chi + rho2(i,j,kl)*rho2(a,b,kl)*(eps**2 - eta**2)/(eps**2 + eta**2)**2
           end do
 
-          ZA_dyn(ia,jb) = ZA_dyn(ia,jb) + 2d0*lambda*chi
+          ZA_dyn(ia,jb) = ZA_dyn(ia,jb) + lambda*chi
 
         end do
       end do
