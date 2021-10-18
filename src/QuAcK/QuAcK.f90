@@ -15,7 +15,7 @@ program QuAcK
   logical                       :: doRPA,doRPAx,doppRPA
   logical                       :: doADC
   logical                       :: doG0F2,doevGF2,doqsGF2,doG0F3,doevGF3
-  logical                       :: doG0W0,doevGW,doqsGW
+  logical                       :: doG0W0,doevGW,doqsGW,doufGW
   logical                       :: doG0T0,doevGT,doqsGT
   logical                       :: doMCMP2,doMinMCMP2
   logical                       :: doGTGW = .false.
@@ -99,6 +99,7 @@ program QuAcK
   double precision              :: start_G0W0   ,end_G0W0     ,t_G0W0
   double precision              :: start_evGW   ,end_evGW     ,t_evGW
   double precision              :: start_qsGW   ,end_qsGW     ,t_qsGW
+  double precision              :: start_ufGW   ,end_ufGW     ,t_ufGW
   double precision              :: start_G0T0   ,end_G0T0     ,t_G0T0
   double precision              :: start_evGT   ,end_evGT     ,t_evGT
   double precision              :: start_qsGT   ,end_qsGT     ,t_qsGT
@@ -1019,6 +1020,24 @@ program QuAcK
 
     t_qsGW = end_qsGW - start_qsGW
     write(*,'(A65,1X,F9.3,A8)') 'Total CPU time for qsGW = ',t_qsGW,' seconds'
+    write(*,*)
+
+  end if
+
+!------------------------------------------------------------------------
+! Perform ufGW calculatiom
+!------------------------------------------------------------------------
+
+  doufGW = .true.
+
+  if(doufGW) then
+    
+    call cpu_time(start_ufGW)
+    call ufGW(eta_GW,nBas,nC,nO,nV,nR,nS,ENuc,ERHF,ERI_MO,eHF)
+    call cpu_time(end_ufGW)
+  
+    t_ufGW = end_ufGW - start_ufGW
+    write(*,'(A65,1X,F9.3,A8)') 'Total CPU time for ufGW = ',t_ufGW,' seconds'
     write(*,*)
 
   end if

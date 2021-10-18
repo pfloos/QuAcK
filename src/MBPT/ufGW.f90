@@ -48,8 +48,8 @@ subroutine ufGW(eta,nBas,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,eHF)
 
 ! Dimension of the supermatrix
 
-  n2h1p = nBas*nO*nS
-  n2p1h = nBas*nV*nS
+  n2h1p = nO*nO*nS
+  n2p1h = nV*nV*nO
   nH = nBas + n2h1p + n2p1h
 
 ! Memory allocation
@@ -76,7 +76,7 @@ subroutine ufGW(eta,nBas,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,eHF)
   ! Block F !
   !---------!
 
-  do p=nC+1,nBas-nV
+  do p=nC+1,nBas-nR
     H(p,p) = eHF(p)
   end do
 
@@ -84,12 +84,12 @@ subroutine ufGW(eta,nBas,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,eHF)
   ! Block V2h1p !
   !-------------!
 
-  do p=nC+1,nBas-nV
+  do p=nC+1,nBas-nR
 
     klc = 0
     do k=nC+1,nO
       do l=nC+1,nO
-        do c=nO+1,nBas-nV
+        do c=nO+1,nBas-nR
           klc = klc + 1
 
           H(p       ,nBas+klc) = sqrt(2d0)*ERI(p,c,k,l)
@@ -105,16 +105,16 @@ subroutine ufGW(eta,nBas,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,eHF)
   ! Block V2p1h !
   !-------------!
 
-  do p=nC+1,nBas-nV
+  do p=nC+1,nBas-nR
 
     kcd = 0
     do k=nC+1,nO
-      do c=nO+1,nBas-nV
-        do d=nO+1,nBas-nV
+      do c=nO+1,nBas-nR
+        do d=nO+1,nBas-nR
           kcd = kcd + 1
 
-          H(p       ,nBas+kcd) = sqrt(2d0)*ERI(p,k,d,c)
-          H(nBas+kcd,p       ) = sqrt(2d0)*ERI(p,k,d,c)
+          H(p              ,nBas+n2h1P+kcd) = sqrt(2d0)*ERI(p,k,d,c)
+          H(nBas+n2h1p+kcd,p              ) = sqrt(2d0)*ERI(p,k,d,c)
 
         end do
       end do
@@ -129,17 +129,18 @@ subroutine ufGW(eta,nBas,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,eHF)
   ija = 0
   do i=nC+1,nO
     do j=nC+1,nO
-      do a=nO+1,nBas-nV
+      do a=nO+1,nBas-nR
         ija = ija + 1
 
         klc = 0
         do k=nC+1,nO
           do l=nC+1,nO
-            do c=nO+1,nBas-nV
+            do c=nO+1,nBas-nR
               klc = klc + 1
 
-              H(nBas+ija,nBas+klc) = ((eHF(i) + eHF(j) - eHF(a))*Kronecker_delta(j,l)*Kronecker_delta(a,c) & 
-                                   - ERI(j,c,a,l))**Kronecker_delta(i,k)
+              H(nBas+ija,nBas+klc) & 
+                = ((eHF(i) + eHF(j) - eHF(a))*Kronecker_delta(j,l)*Kronecker_delta(a,c) & 
+                - 2d0*ERI(j,c,a,l))*Kronecker_delta(i,k)
 
             end do
           end do
@@ -155,18 +156,19 @@ subroutine ufGW(eta,nBas,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,eHF)
 
   iab = 0
   do i=nC+1,nO
-    do a=nO+1,nBas-nV
-      do b=nO+1,nBas-nV
+    do a=nO+1,nBas-nR
+      do b=nO+1,nBas-nR
         iab = iab + 1
 
         kcd = 0
         do k=nC+1,nO
-          do c=nO+1,nBas-nV
-            do d=nO+1,nBas-nV
+          do c=nO+1,nBas-nR
+            do d=nO+1,nBas-nR
               kcd = kcd + 1
 
-              H(nBas+iab,nBas+kcd) = ((eHF(a) + eHF(b) - eHF(i))*Kronecker_delta(i,k)*Kronecker_delta(a,c) & 
-                                   - ERI(j,c,a,l))**Kronecker_delta(b,d)
+              H(nBas+n2h1p+iab,nBas+n2h1p+kcd) &
+                = ((eHF(a) + eHF(b) - eHF(i))*Kronecker_delta(i,k)*Kronecker_delta(a,c) & 
+                + 2d0*ERI(a,k,i,c))*Kronecker_delta(b,d)
 
             end do
           end do
