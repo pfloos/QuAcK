@@ -22,6 +22,7 @@ subroutine ufGW(eta,nBas,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,eHF)
 ! Local variables
 
   integer                       :: p
+  integer                       :: s
   integer                       :: i,j,k,l
   integer                       :: a,b,c,d
   integer                       :: klc,kcd,ija,iab
@@ -30,6 +31,7 @@ subroutine ufGW(eta,nBas,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,eHF)
   double precision,external     :: Kronecker_delta
   double precision,allocatable  :: H(:,:)
   double precision,allocatable  :: eGW(:)
+  double precision,allocatable  :: Z(:)
 
 ! Output variables
 
@@ -54,7 +56,7 @@ subroutine ufGW(eta,nBas,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,eHF)
 
 ! Memory allocation
 
-  allocate(H(nH,nH),eGW(nH))
+  allocate(H(nH,nH),eGW(nH),Z(nH))
 
 ! Initialization
 
@@ -184,15 +186,39 @@ subroutine ufGW(eta,nBas,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,eHF)
 
   call diagonalize_matrix(nH,H,eGW)
 
+!-----------------!
+! Compute weights !
+!-----------------!
+
+  Z(:) = 0d0
+  do s=1,nH
+    do p=nC+1,nBas-nR
+      Z(s) = Z(s) + H(p,s)**2
+    end do
+  end do
+
 !--------------!
 ! Dump results !
 !--------------!
 
-  write(*,*) '---------------------------------------'
-  write(*,*) ' GW supermatrix quasiparticle energies '
-  write(*,*) '---------------------------------------'
+  write(*,*) '--------------------------------------------'
+  write(*,*) ' GW supermatrix quasiparticle energies (eV) '
+  write(*,*) '--------------------------------------------'
   write(*,*) 
-  call matout(nH,1,eGW)
+  call matout(nH,1,HaToeV*eGW(:))
   write(*,*) 
+  write(*,*) '-----------------------'
+  write(*,*) ' Quasiparticle weights '
+  write(*,*) '-----------------------'
+  write(*,*) 
+  call matout(nH,1,Z(:))
+
+! write(*,*) 
+! write(*,*) '-------------------------'
+! write(*,*) ' GW supermatrix orbitals '
+! write(*,*) '-------------------------'
+! write(*,*) 
+! call matout(nH,nH,H)
+! write(*,*) 
 
 end subroutine ufGW
