@@ -1,6 +1,6 @@
-subroutine ufGW(eta,nBas,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,eHF)
+subroutine ufG0W0(eta,nBas,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,eHF)
 
-! Unfold GW equations
+! Unfold G0W0 equations
 
   implicit none
   include 'parameters.h'
@@ -30,6 +30,7 @@ subroutine ufGW(eta,nBas,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,eHF)
   integer                       :: n2h1p,n2p1h,nH
   double precision,external     :: Kronecker_delta
   double precision,allocatable  :: H(:,:)
+  double precision,allocatable  :: cGW(:,:)
   double precision,allocatable  :: eGW(:)
   double precision,allocatable  :: Z(:)
 
@@ -39,7 +40,7 @@ subroutine ufGW(eta,nBas,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,eHF)
 
   write(*,*)
   write(*,*)'**********************************************'
-  write(*,*)'|          Unfolded GW calculation           |'
+  write(*,*)'|        Unfolded G0W0 calculation           |'
   write(*,*)'**********************************************'
   write(*,*)
 
@@ -52,11 +53,11 @@ subroutine ufGW(eta,nBas,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,eHF)
 
   n2h1p = nO*nO*nS
   n2p1h = nV*nV*nO
-  nH = nBas + n2h1p + n2p1h
+  nH = 1 + n2h1p + n2p1h
 
 ! Memory allocation
 
-  allocate(H(nH,nH),eGW(nH),Z(nH))
+  allocate(H(nH,nH),cGW(nH,nH),eGW(nH),Z(nH))
 
 ! Initialization
 
@@ -74,56 +75,6 @@ subroutine ufGW(eta,nBas,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,eHF)
 !                           !
 !---------------------------!
 
-  !---------!
-  ! Block F !
-  !---------!
-
-  do p=nC+1,nBas-nR
-    H(p,p) = eHF(p)
-  end do
-
-  !-------------!
-  ! Block V2h1p !
-  !-------------!
-
-  do p=nC+1,nBas-nR
-
-    klc = 0
-    do k=nC+1,nO
-      do l=nC+1,nO
-        do c=nO+1,nBas-nR
-          klc = klc + 1
-
-          H(p       ,nBas+klc) = sqrt(2d0)*ERI(p,c,k,l)
-          H(nBas+klc,p       ) = sqrt(2d0)*ERI(p,c,k,l)
-
-        end do
-      end do
-    end do
-
-  end do
-
-  !-------------!
-  ! Block V2p1h !
-  !-------------!
-
-  do p=nC+1,nBas-nR
-
-    kcd = 0
-    do k=nC+1,nO
-      do c=nO+1,nBas-nR
-        do d=nO+1,nBas-nR
-          kcd = kcd + 1
-
-          H(p              ,nBas+n2h1p+kcd) = sqrt(2d0)*ERI(p,k,d,c)
-          H(nBas+n2h1p+kcd,p              ) = sqrt(2d0)*ERI(p,k,d,c)
-
-        end do
-      end do
-    end do
-
-  end do
-
   !-------------!
   ! Block C2h1p !
   !-------------!
@@ -140,7 +91,7 @@ subroutine ufGW(eta,nBas,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,eHF)
             do c=nO+1,nBas-nR
               klc = klc + 1
 
-              H(nBas+ija,nBas+klc) & 
+              H(1+ija,1+klc) & 
                 = ((eHF(i) + eHF(j) - eHF(a))*Kronecker_delta(j,l)*Kronecker_delta(a,c) & 
                 - 2d0*ERI(j,c,a,l))*Kronecker_delta(i,k)
 
@@ -168,7 +119,7 @@ subroutine ufGW(eta,nBas,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,eHF)
             do d=nO+1,nBas-nR
               kcd = kcd + 1
 
-              H(nBas+n2h1p+iab,nBas+n2h1p+kcd) &
+              H(1+n2h1p+iab,1+n2h1p+kcd) &
                 = ((eHF(a) + eHF(b) - eHF(i))*Kronecker_delta(i,k)*Kronecker_delta(a,c) & 
                 + 2d0*ERI(a,k,i,c))*Kronecker_delta(b,d)
 
@@ -180,42 +131,83 @@ subroutine ufGW(eta,nBas,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,eHF)
     end do
   end do
 
-!-------------------------!
-! Diagonalize supermatrix !
-!-------------------------!
+  do p=nC+1,nBas
 
-  call diagonalize_matrix(nH,H,eGW)
+  !---------!
+  ! Block F !
+  !---------!
 
-!-----------------!
-! Compute weights !
-!-----------------!
+    H(1,1) = eHF(p)
 
-  Z(:) = 0d0
-  do s=1,nH
-    do p=nC+1,nBas-nR
-      Z(s) = Z(s) + H(p,s)**2
+  !-------------!
+  ! Block V2h1p !
+  !-------------!
+
+    klc = 0
+    do k=nC+1,nO
+      do l=nC+1,nO
+        do c=nO+1,nBas-nR
+          klc = klc + 1
+
+          H(1       ,1+klc) = sqrt(2d0)*ERI(p,c,k,l)
+          H(1+klc,1       ) = sqrt(2d0)*ERI(p,c,k,l)
+
+        end do
+      end do
     end do
+
+  !-------------!
+  ! Block V2p1h !
+  !-------------!
+
+    kcd = 0
+    do k=nC+1,nO
+      do c=nO+1,nBas-nR
+        do d=nO+1,nBas-nR
+          kcd = kcd + 1
+
+          H(1              ,1+n2h1p+kcd) = sqrt(2d0)*ERI(p,k,d,c)
+          H(1+n2h1p+kcd,1              ) = sqrt(2d0)*ERI(p,k,d,c)
+
+        end do
+      end do
+    end do
+
+  !-------------------------!
+  ! Diagonalize supermatrix !
+  !-------------------------!
+
+   cGW(:,:) = H(:,:)
+   call diagonalize_matrix(nH,cGW,eGW)
+
+  !-----------------!
+  ! Compute weights !
+  !-----------------!
+
+    Z(:) = 0d0
+    do s=1,nH
+      Z(s) = Z(s) + cGW(1,s)**2
+    end do
+
+  !--------------!
+  ! Dump results !
+  !--------------!
+
+    write(*,*)'-------------------------------------------'
+    write(*,'(A35,I3)')' G0W0 energies (eV) for orbital ',p
+    write(*,*)'-------------------------------------------'
+    write(*,'(1X,A1,1X,A3,1X,A1,1X,A15,1X,A1,1X,A15,1X,A1,1X,A15,1X)') &
+              '|','#','|','e_QP (eV)','|','Z','|'
+    write(*,*)'-------------------------------------------'
+ 
+    do s=1,nH
+      write(*,'(1X,A1,1X,I3,1X,A1,1X,F15.6,1X,A1,1X,F15.6,1X,A1,1X)') &
+      '|',s,'|',eGW(s)*HaToeV,'|',Z(s),'|'
+    enddo
+ 
+    write(*,*)'-------------------------------------------'
+    write(*,*)
+
   end do
 
-!--------------!
-! Dump results !
-!--------------!
-
-
-
-  write(*,*)'-------------------------------------------'
-  write(*,*)'        unfolded GW energies (eV)          '
-  write(*,*)'-------------------------------------------'
-  write(*,'(1X,A1,1X,A3,1X,A1,1X,A15,1X,A1,1X,A15,1X,A1,1X,A15,1X)') &
-            '|','#','|','e_QP (eV)','|','Z','|'
-  write(*,*)'-------------------------------------------'
-
-  do s=1,nH
-    write(*,'(1X,A1,1X,I3,1X,A1,1X,F15.6,1X,A1,1X,F15.6,1X,A1,1X)') &
-    '|',s,'|',eGW(s)*HaToeV,'|',Z(s),'|'
-  enddo
-
-  write(*,*)'-------------------------------------------'
-  write(*,*)
-
-end subroutine ufGW
+end subroutine ufG0W0

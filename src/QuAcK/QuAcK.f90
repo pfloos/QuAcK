@@ -15,7 +15,7 @@ program QuAcK
   logical                       :: doRPA,doRPAx,doppRPA
   logical                       :: doADC
   logical                       :: doG0F2,doevGF2,doqsGF2,doG0F3,doevGF3
-  logical                       :: doG0W0,doevGW,doqsGW,doufGW
+  logical                       :: doG0W0,doevGW,doqsGW,doufG0W0,doufGW
   logical                       :: doG0T0,doevGT,doqsGT
   logical                       :: doMCMP2,doMinMCMP2
   logical                       :: doGTGW = .false.
@@ -169,6 +169,7 @@ program QuAcK
                     doG0F2,doevGF2,doqsGF2,           & 
                     doG0F3,doevGF3,                   &
                     doG0W0,doevGW,doqsGW,             &
+                    doufG0W0,doufGW,                  &
                     doG0T0,doevGT,doqsGT,             &
                     doMCMP2)
 
@@ -1025,10 +1026,24 @@ program QuAcK
   end if
 
 !------------------------------------------------------------------------
-! Perform ufGW calculatiom
+! Perform ufG0W0 calculatiom
 !------------------------------------------------------------------------
 
-  doufGW = .true.
+  if(doufG0W0) then
+    
+    call cpu_time(start_ufGW)
+    call ufG0W0(eta_GW,nBas,nC,nO,nV,nR,nS,ENuc,ERHF,ERI_MO,eHF)
+    call cpu_time(end_ufGW)
+  
+    t_ufGW = end_ufGW - start_ufGW
+    write(*,'(A65,1X,F9.3,A8)') 'Total CPU time for ufG0W0 = ',t_ufGW,' seconds'
+    write(*,*)
+
+  end if
+
+!------------------------------------------------------------------------
+! Perform ufGW calculatiom
+!------------------------------------------------------------------------
 
   if(doufGW) then
     

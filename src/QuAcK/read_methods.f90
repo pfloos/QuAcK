@@ -7,6 +7,7 @@ subroutine read_methods(doRHF,doUHF,doKS,doMOM,           &
                         doG0F2,doevGF2,doqsGF2,           &
                         doG0F3,doevGF3,                   & 
                         doG0W0,doevGW,doqsGW,             & 
+                        doufG0W0,doufGW,                  & 
                         doG0T0,doevGT,doqsGT,             & 
                         doMCMP2)
 
@@ -23,7 +24,7 @@ subroutine read_methods(doRHF,doUHF,doKS,doMOM,           &
   logical,intent(out)           :: doCIS,doCIS_D,doCID,doCISD,doFCI
   logical,intent(out)           :: doRPA,doRPAx,doppRPA
   logical,intent(out)           :: doG0F2,doevGF2,doqsGF2,doG0F3,doevGF3  
-  logical,intent(out)           :: doG0W0,doevGW,doqsGW
+  logical,intent(out)           :: doG0W0,doevGW,doqsGW,doufG0W0,doufGW
   logical,intent(out)           :: doG0T0,doevGT,doqsGT
   logical,intent(out)           :: doMCMP2
 
@@ -72,13 +73,15 @@ subroutine read_methods(doRHF,doUHF,doKS,doMOM,           &
   doG0F3  = .false.
   doevGF3 = .false.
 
-  doG0W0 = .false.
-  doevGT = .false.
-  doqsGT = .false.
+  doG0W0   = .false.
+  doevGW   = .false.
+  doqsGW   = .false.
+  doufG0W0 = .false.
+  doufGW   = .false.
 
   doG0T0 = .false.
-  doevGW = .false.
-  doqsGW = .false.
+  doevGT = .false.
+  doqsGT = .false.
 
   doMCMP2 = .false.
 
@@ -146,10 +149,12 @@ subroutine read_methods(doRHF,doUHF,doKS,doMOM,           &
 ! Read GW methods
 
   read(1,*) 
-  read(1,*) answer1,answer2,answer3
-  if(answer1 == 'T') doG0W0 = .true.
-  if(answer2 == 'T') doevGW = .true.
-  if(answer3 == 'T') doqsGW = .true.
+  read(1,*) answer1,answer2,answer3,answer4,answer5
+  if(answer1 == 'T') doG0W0   = .true.
+  if(answer2 == 'T') doevGW   = .true.
+  if(answer3 == 'T') doqsGW   = .true.
+  if(answer4 == 'T') doufG0W0 = .true.
+  if(answer5 == 'T') doufGW   = .true.
 
 ! Read GT methods
 
