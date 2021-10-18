@@ -1,4 +1,4 @@
-subroutine linear_response_B_pp(ispin,nBas,nC,nO,nV,nR,nOO,nVV,e,ERI,B_pp)
+subroutine linear_response_B_pp(ispin,nBas,nC,nO,nV,nR,nOO,nVV,lambda,e,ERI,B_pp)
 
 ! Compute the B matrix of the pp channel
 
@@ -9,6 +9,7 @@ subroutine linear_response_B_pp(ispin,nBas,nC,nO,nV,nR,nOO,nVV,e,ERI,B_pp)
 
   integer,intent(in)            :: ispin
   integer,intent(in)            :: nBas,nC,nO,nV,nR,nOO,nVV
+  double precision,intent(in)   :: lambda
   double precision,intent(in)   :: e(nBas),ERI(nBas,nBas,nBas,nBas) 
   
 ! Local variables
@@ -33,7 +34,7 @@ subroutine linear_response_B_pp(ispin,nBas,nC,nO,nV,nR,nOO,nVV,e,ERI,B_pp)
          do j=i,nO
             ij = ij + 1
  
-            B_pp(ab,ij) = (ERI(a,b,i,j) + ERI(a,b,j,i))/sqrt((1d0 + Kronecker_delta(a,b))*(1d0 + Kronecker_delta(i,j)))
+            B_pp(ab,ij) = lambda*(ERI(a,b,i,j) + ERI(a,b,j,i))/sqrt((1d0 + Kronecker_delta(a,b))*(1d0 + Kronecker_delta(i,j)))
  
           end do
         end do
@@ -55,7 +56,7 @@ subroutine linear_response_B_pp(ispin,nBas,nC,nO,nV,nR,nOO,nVV,e,ERI,B_pp)
          do j=nC+1,nO
             ij = ij + 1
  
-            B_pp(ab,ij) = ERI(a,b,i,j)
+            B_pp(ab,ij) = lambda*ERI(a,b,i,j)
  
           end do
         end do
@@ -77,7 +78,7 @@ subroutine linear_response_B_pp(ispin,nBas,nC,nO,nV,nR,nOO,nVV,e,ERI,B_pp)
          do j=i+1,nO
             ij = ij + 1
  
-            B_pp(ab,ij) = ERI(a,b,i,j) - ERI(a,b,j,i)
+            B_pp(ab,ij) = lambda*(ERI(a,b,i,j) - ERI(a,b,j,i))
  
           end do
         end do
@@ -85,8 +86,5 @@ subroutine linear_response_B_pp(ispin,nBas,nC,nO,nV,nR,nOO,nVV,e,ERI,B_pp)
     end do
 
   end if
-
-! print*,'B pp-matrix'
-! call matout(nVV,nOO,B_pp)
 
 end subroutine linear_response_B_pp

@@ -1,5 +1,4 @@
-subroutine linear_response_pp(ispin,TDA,nBas,nC,nO,nV,nR,nOO,nVV, & 
-                              e,ERI,Omega1,X1,Y1,Omega2,X2,Y2,EcRPA)
+subroutine linear_response_pp(ispin,TDA,nBas,nC,nO,nV,nR,nOO,nVV,lambda,e,ERI,Omega1,X1,Y1,Omega2,X2,Y2,EcRPA)
 
 ! Compute the p-p channel of the linear response: see Scuseria et al. JCP 139, 104113 (2013)
 
@@ -17,6 +16,7 @@ subroutine linear_response_pp(ispin,TDA,nBas,nC,nO,nV,nR,nOO,nVV, &
   integer,intent(in)            :: nR
   integer,intent(in)            :: nOO
   integer,intent(in)            :: nVV
+  double precision,intent(in)   :: lambda
   double precision,intent(in)   :: e(nBas)
   double precision,intent(in)   :: ERI(nBas,nBas,nBas,nBas)
   
@@ -60,8 +60,8 @@ subroutine linear_response_pp(ispin,TDA,nBas,nC,nO,nV,nR,nOO,nVV, &
 
 ! Build B, C and D matrices for the pp channel
 
-  call linear_response_C_pp(ispin,nBas,nC,nO,nV,nR,nOO,nVV,e,ERI,C)
-  call linear_response_D_pp(ispin,nBas,nC,nO,nV,nR,nOO,nVV,e,ERI,D)
+  call linear_response_C_pp(ispin,nBas,nC,nO,nV,nR,nOO,nVV,lambda,e,ERI,C)
+  call linear_response_D_pp(ispin,nBas,nC,nO,nV,nR,nOO,nVV,lambda,e,ERI,D)
 
   if(TDA) then
 
@@ -75,7 +75,7 @@ subroutine linear_response_pp(ispin,TDA,nBas,nC,nO,nV,nR,nOO,nVV, &
 
   else
 
-    call linear_response_B_pp(ispin,nBas,nC,nO,nV,nR,nOO,nVV,e,ERI,B)
+    call linear_response_B_pp(ispin,nBas,nC,nO,nV,nR,nOO,nVV,lambda,e,ERI,B)
 
   ! Diagonal blocks 
 

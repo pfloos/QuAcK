@@ -1,4 +1,4 @@
-subroutine linear_response_D_pp(ispin,nBas,nC,nO,nV,nR,nOO,nVV,e,ERI,D_pp)
+subroutine linear_response_D_pp(ispin,nBas,nC,nO,nV,nR,nOO,nVV,lambda,e,ERI,D_pp)
 
 ! Compute the D matrix of the pp channel
 
@@ -9,6 +9,7 @@ subroutine linear_response_D_pp(ispin,nBas,nC,nO,nV,nR,nOO,nVV,e,ERI,D_pp)
 
   integer,intent(in)            :: ispin
   integer,intent(in)            :: nBas,nC,nO,nV,nR,nOO,nVV
+  double precision,intent(in)   :: lambda
   double precision,intent(in)   :: e(nBas),ERI(nBas,nBas,nBas,nBas) 
   
 ! Local variables
@@ -41,7 +42,7 @@ subroutine linear_response_D_pp(ispin,nBas,nC,nO,nV,nR,nOO,nVV,e,ERI,D_pp)
             kl = kl + 1
  
             D_pp(ij,kl) = - (e(i) + e(j) - eF)*Kronecker_delta(i,k)*Kronecker_delta(j,l) & 
-                          + (ERI(i,j,k,l) + ERI(i,j,l,k))/sqrt((1d0 + Kronecker_delta(i,j))*(1d0 + Kronecker_delta(k,l)))
+                          + lambda*(ERI(i,j,k,l) + ERI(i,j,l,k))/sqrt((1d0 + Kronecker_delta(i,j))*(1d0 + Kronecker_delta(k,l)))
  
           end do
         end do
@@ -64,7 +65,7 @@ subroutine linear_response_D_pp(ispin,nBas,nC,nO,nV,nR,nOO,nVV,e,ERI,D_pp)
             kl = kl + 1
  
             D_pp(ij,kl) = - (e(i) + e(j) - eF)*Kronecker_delta(i,k)*Kronecker_delta(j,l) & 
-                          + ERI(i,j,k,l) - ERI(i,j,l,k)
+                          + lambda*(ERI(i,j,k,l) - ERI(i,j,l,k))
  
           end do
         end do
@@ -87,7 +88,7 @@ subroutine linear_response_D_pp(ispin,nBas,nC,nO,nV,nR,nOO,nVV,e,ERI,D_pp)
             kl = kl + 1
  
             D_pp(ij,kl) = - (e(i) + e(j) - eF)*Kronecker_delta(i,k)*Kronecker_delta(j,l) & 
-                          + ERI(i,j,k,l)
+                          + lambda*ERI(i,j,k,l)
  
           end do
         end do
@@ -95,8 +96,5 @@ subroutine linear_response_D_pp(ispin,nBas,nC,nO,nV,nR,nOO,nVV,e,ERI,D_pp)
     end do
 
   end if
-
-! print*,'D pp-matrix'
-! call matout(nOO,nOO,D_pp)
 
 end subroutine linear_response_D_pp

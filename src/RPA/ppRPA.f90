@@ -62,9 +62,9 @@ subroutine ppRPA(TDA,singlet,triplet,nBas,nC,nO,nV,nR,ENuc,ERHF,ERI,e)
     allocate(Omega1(nVV,nspin),X1(nVV,nVV,nspin),Y1(nOO,nVV,nspin), & 
              Omega2(nOO,nspin),X2(nVV,nOO,nspin),Y2(nOO,nOO,nspin))
 
-    call linear_response_pp(ispin,TDA,nBas,nC,nO,nV,nR,nOO,nVV,e,ERI,    & 
-                            Omega1(:,ispin),X1(:,:,ispin),Y1(:,:,ispin), & 
-                            Omega2(:,ispin),X2(:,:,ispin),Y2(:,:,ispin), & 
+    call linear_response_pp(ispin,TDA,nBas,nC,nO,nV,nR,nOO,nVV,1d0,e,ERI, & 
+                            Omega1(:,ispin),X1(:,:,ispin),Y1(:,:,ispin),  & 
+                            Omega2(:,ispin),X2(:,:,ispin),Y2(:,:,ispin),  & 
                             Ec_ppRPA(ispin))
 
     call print_excitation('pp-RPA (N+2)',ispin,nVV,Omega1(:,ispin))
@@ -91,9 +91,9 @@ subroutine ppRPA(TDA,singlet,triplet,nBas,nC,nO,nV,nR,ENuc,ERHF,ERI,e)
              Omega2(nOO,nspin),X2(nVV,nOO,nspin),Y2(nOO,nOO,nspin))
 
 
-    call linear_response_pp(ispin,TDA,nBas,nC,nO,nV,nR,nOO,nVV,e,ERI,    &
-                            Omega1(:,ispin),X1(:,:,ispin),Y1(:,:,ispin), & 
-                            Omega2(:,ispin),X2(:,:,ispin),Y2(:,:,ispin), & 
+    call linear_response_pp(ispin,TDA,nBas,nC,nO,nV,nR,nOO,nVV,1d0,e,ERI, &
+                            Omega1(:,ispin),X1(:,:,ispin),Y1(:,:,ispin),  & 
+                            Omega2(:,ispin),X2(:,:,ispin),Y2(:,:,ispin),  & 
                             Ec_ppRPA(ispin))
 
     call print_excitation('pp-RPA (N+2)',ispin,nVV,Omega1(:,ispin))
