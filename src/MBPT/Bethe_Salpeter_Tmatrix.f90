@@ -83,7 +83,7 @@ subroutine Bethe_Salpeter_Tmatrix(TDA_T,TDA,dBSE,dTDA,evDyn,singlet,triplet,eta,
   ispin  = 1
   iblock = 3
 
-  call linear_response_pp(iblock,.true.,.false.,nBas,nC,nO,nV,nR,nOOs,nVVs,eT,ERI,  &
+  call linear_response_pp(iblock,nBas,nC,nO,nV,nR,nOOs,nVVs,eT,ERI,  &
                           Omega1s,X1s,Y1s,Omega2s,X2s,Y2s,EcRPA(ispin))
 
 ! call excitation_density_Tmatrix(iblock,nBas,nC,nO,nV,nR,nOOs,nVVs,ERI,X1s,Y1s,rho1s,X2s,Y2s,rho2s)
@@ -98,7 +98,7 @@ subroutine Bethe_Salpeter_Tmatrix(TDA_T,TDA,dBSE,dTDA,evDyn,singlet,triplet,eta,
   ispin  = 2
   iblock = 4
 
-  call linear_response_pp(iblock,.true.,.false.,nBas,nC,nO,nV,nR,nOOt,nVVt,eT,ERI,  &
+  call linear_response_pp(iblock,nBas,nC,nO,nV,nR,nOOt,nVVt,eT,ERI,  &
                           Omega1t,X1t,Y1t,Omega2t,X2t,Y2t,EcRPA(ispin))
 
 ! call excitation_density_Tmatrix(iblock,nBas,nC,nO,nV,nR,nOOt,nVVt,ERI,X1t,Y1t,rho1t,X2t,Y2t,rho2t)

@@ -1,4 +1,4 @@
-subroutine sort_ppRPA(ortho_eigvec,nOO,nVV,Omega,Z,Omega1,X1,Y1,Omega2,X2,Y2)
+subroutine sort_ppRPA(nOO,nVV,Omega,Z,Omega1,X1,Y1,Omega2,X2,Y2)
 
 ! Compute the metric matrix for pp-RPA
 
@@ -7,7 +7,6 @@ subroutine sort_ppRPA(ortho_eigvec,nOO,nVV,Omega,Z,Omega1,X1,Y1,Omega2,X2,Y2)
 
 ! Input variables
 
-  logical,intent(in)            :: ortho_eigvec
   integer,intent(in)            :: nOO
   integer,intent(in)            :: nVV
   double precision,intent(in)   :: Omega(nOO+nVV)
@@ -117,8 +116,6 @@ subroutine sort_ppRPA(ortho_eigvec,nOO,nVV,Omega,Z,Omega1,X1,Y1,Omega2,X2,Y2)
 
 ! Orthogonalize eigenvectors
 
-  if(ortho_eigvec) then
-
 !   ! Find degenerate eigenvalues
 
       deg1 = 1
@@ -212,8 +209,6 @@ subroutine sort_ppRPA(ortho_eigvec,nOO,nVV,Omega,Z,Omega1,X1,Y1,Omega2,X2,Y2)
 
 !   Z1 = matmul(Z1,O1)
 !   Z2 = matmul(Z2,O2)
-
-  end if
 
 ! Define submatrices X1, Y1, X2, & Y2
 

@@ -188,13 +188,13 @@ subroutine qsGT(maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,BSE,TDA_T,T
     ispin  = 1
     iblock = 3
 
-    call linear_response_pp(iblock,.true.,.false.,nBas,nC,nO,nV,nR,nOOs,nVVs,eGT,ERI_MO,  &
+    call linear_response_pp(iblock,nBas,nC,nO,nV,nR,nOOs,nVVs,eGT,ERI_MO,  &
                             Omega1s,X1s,Y1s,Omega2s,X2s,Y2s,EcRPA(ispin))
 
     ispin  = 2
     iblock = 4
 
-    call linear_response_pp(iblock,.true.,.false.,nBas,nC,nO,nV,nR,nOOt,nVVt,eGT,ERI_MO,  &
+    call linear_response_pp(iblock,nBas,nC,nO,nV,nR,nOOt,nVVt,eGT,ERI_MO,  &
                           Omega1t,X1t,Y1t,Omega2t,X2t,Y2t,EcRPA(ispin))
 
     ! Compute correlation part of the self-energy 
@@ -305,11 +305,11 @@ subroutine qsGT(maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,BSE,TDA_T,T
 
   ispin  = 1
   iblock = 3
-  call linear_response_pp(iblock,.false.,.false.,nBas,nC,nO,nV,nR,nOOs,nVVs,eGT,ERI_MO,  &
+  call linear_response_pp(iblock,nBas,nC,nO,nV,nR,nOOs,nVVs,eGT,ERI_MO,  &
                           Omega1s,X1s,Y1s,Omega2s,X2s,Y2s,EcRPA(ispin))
   ispin  = 2
   iblock = 4
-  call linear_response_pp(iblock,.false.,.false.,nBas,nC,nO,nV,nR,nOOt,nVVt,eGT,ERI_MO,  &
+  call linear_response_pp(iblock,nBas,nC,nO,nV,nR,nOOt,nVVt,eGT,ERI_MO,  &
                           Omega1t,X1t,Y1t,Omega2t,X2t,Y2t,EcRPA(ispin))
   EcRPA(1) = EcRPA(1) - EcRPA(2)
   EcRPA(2) = 3d0*EcRPA(2)
