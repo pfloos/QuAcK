@@ -7,9 +7,17 @@ subroutine linear_response(ispin,dRPA,TDA,BSE,eta,nBas,nC,nO,nV,nR,nS,lambda,e,E
 
 ! Input variables
 
-  logical,intent(in)            :: dRPA,TDA,BSE
+  logical,intent(in)            :: dRPA
+  logical,intent(in)            :: TDA
+  logical,intent(in)            :: BSE
   double precision,intent(in)   :: eta
-  integer,intent(in)            :: ispin,nBas,nC,nO,nV,nR,nS
+  integer,intent(in)            :: ispin
+  integer,intent(in)            :: nBas
+  integer,intent(in)            :: nC
+  integer,intent(in)            :: nO
+  integer,intent(in)            :: nV
+  integer,intent(in)            :: nR
+  integer,intent(in)            :: nS
   double precision,intent(in)   :: lambda
   double precision,intent(in)   :: e(nBas)
   double precision,intent(in)   :: ERI(nBas,nBas,nBas,nBas)

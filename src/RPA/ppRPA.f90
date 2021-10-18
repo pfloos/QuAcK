@@ -1,4 +1,4 @@
-subroutine ppRPA(singlet_manifold,triplet_manifold,nBas,nC,nO,nV,nR,ENuc,ERHF,ERI,e)
+subroutine ppRPA(TDA,singlet,triplet,nBas,nC,nO,nV,nR,ENuc,ERHF,ERI,e)
 
 ! Perform pp-RPA calculation
 
@@ -7,8 +7,9 @@ subroutine ppRPA(singlet_manifold,triplet_manifold,nBas,nC,nO,nV,nR,ENuc,ERHF,ER
 
 ! Input variables
 
-  logical,intent(in)            :: singlet_manifold
-  logical,intent(in)            :: triplet_manifold
+  logical,intent(in)            :: TDA
+  logical,intent(in)            :: singlet
+  logical,intent(in)            :: triplet
   integer,intent(in)            :: nBas
   integer,intent(in)            :: nC
   integer,intent(in)            :: nO
@@ -47,7 +48,7 @@ subroutine ppRPA(singlet_manifold,triplet_manifold,nBas,nC,nO,nV,nR,ENuc,ERHF,ER
 
 ! Singlet manifold
 
-  if(singlet_manifold) then 
+  if(singlet) then 
 
     ispin = 1
 
@@ -61,9 +62,9 @@ subroutine ppRPA(singlet_manifold,triplet_manifold,nBas,nC,nO,nV,nR,ENuc,ERHF,ER
     allocate(Omega1(nVV,nspin),X1(nVV,nVV,nspin),Y1(nOO,nVV,nspin), & 
              Omega2(nOO,nspin),X2(nVV,nOO,nspin),Y2(nOO,nOO,nspin))
 
-    call linear_response_pp(ispin,.false.,.false.,nBas,nC,nO,nV,nR,nOO,nVV,e,ERI, & 
-                            Omega1(:,ispin),X1(:,:,ispin),Y1(:,:,ispin),  & 
-                            Omega2(:,ispin),X2(:,:,ispin),Y2(:,:,ispin),  & 
+    call linear_response_pp(ispin,TDA,nBas,nC,nO,nV,nR,nOO,nVV,e,ERI,    & 
+                            Omega1(:,ispin),X1(:,:,ispin),Y1(:,:,ispin), & 
+                            Omega2(:,ispin),X2(:,:,ispin),Y2(:,:,ispin), & 
                             Ec_ppRPA(ispin))
 
     call print_excitation('pp-RPA (N+2)',ispin,nVV,Omega1(:,ispin))
@@ -75,7 +76,7 @@ subroutine ppRPA(singlet_manifold,triplet_manifold,nBas,nC,nO,nV,nR,ENuc,ERHF,ER
 
 ! Triplet manifold 
 
-  if(triplet_manifold) then 
+  if(triplet) then 
 
     ispin = 2
 
@@ -90,9 +91,9 @@ subroutine ppRPA(singlet_manifold,triplet_manifold,nBas,nC,nO,nV,nR,ENuc,ERHF,ER
              Omega2(nOO,nspin),X2(nVV,nOO,nspin),Y2(nOO,nOO,nspin))
 
 
-    call linear_response_pp(ispin,.false.,.false.,nBas,nC,nO,nV,nR,nOO,nVV,e,ERI, &
-                            Omega1(:,ispin),X1(:,:,ispin),Y1(:,:,ispin),          & 
-                            Omega2(:,ispin),X2(:,:,ispin),Y2(:,:,ispin),          & 
+    call linear_response_pp(ispin,TDA,nBas,nC,nO,nV,nR,nOO,nVV,e,ERI,    &
+                            Omega1(:,ispin),X1(:,:,ispin),Y1(:,:,ispin), & 
+                            Omega2(:,ispin),X2(:,:,ispin),Y2(:,:,ispin), & 
                             Ec_ppRPA(ispin))
 
     call print_excitation('pp-RPA (N+2)',ispin,nVV,Omega1(:,ispin))

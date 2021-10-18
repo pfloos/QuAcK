@@ -132,7 +132,7 @@ subroutine evGT(maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS, &
  
     ! Compute linear response
  
-    call linear_response_pp(iblock,nBas,nC,nO,nV,nR,nOOs,nVVs,eGT,ERI_MO,  & 
+    call linear_response_pp(iblock,TDA_T,nBas,nC,nO,nV,nR,nOOs,nVVs,eGT,ERI_MO,  & 
                             Omega1s,X1s,Y1s,Omega2s,X2s,Y2s,EcRPA(ispin))
  
   !----------------------------------------------
@@ -144,7 +144,7 @@ subroutine evGT(maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS, &
 
   ! Compute linear response
 
-    call linear_response_pp(iblock,nBas,nC,nO,nV,nR,nOOt,nVVt,eGT,ERI_MO,  & 
+    call linear_response_pp(iblock,TDA_T,nBas,nC,nO,nV,nR,nOOt,nVVt,eGT,ERI_MO,  & 
                           Omega1t,X1t,Y1t,Omega2t,X2t,Y2t,EcRPA(ispin))
 
   !----------------------------------------------
@@ -222,11 +222,11 @@ subroutine evGT(maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS, &
 
   ispin  = 1
   iblock = 3
-  call linear_response_pp(iblock,nBas,nC,nO,nV,nR,nOOs,nVVs,eGT,ERI_MO,  &
+  call linear_response_pp(iblock,TDA_T,nBas,nC,nO,nV,nR,nOOs,nVVs,eGT,ERI_MO,  &
                           Omega1s,X1s,Y1s,Omega2s,X2s,Y2s,EcRPA(ispin))
   ispin  = 2
   iblock = 4
-  call linear_response_pp(iblock,nBas,nC,nO,nV,nR,nOOt,nVVt,eGT,ERI_MO,  &
+  call linear_response_pp(iblock,TDA_T,nBas,nC,nO,nV,nR,nOOt,nVVt,eGT,ERI_MO,  &
                           Omega1t,X1t,Y1t,Omega2t,X2t,Y2t,EcRPA(ispin))
   EcRPA(1) = EcRPA(1) - EcRPA(2)
   EcRPA(2) = 3d0*EcRPA(2)
