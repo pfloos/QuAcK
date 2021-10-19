@@ -110,13 +110,18 @@ subroutine ACFDT_Tmatrix(exchange_kernel,doXBS,dRPA,TDA_T,TDA,BSE,singlet,triple
  
       lambda = rAC(iAC)
 
+      ! Initialize T matrix
+
+      TA(:,:) = 0d0
+      TB(:,:) = 0d0
+
       if(doXBS) then
 
         isp_T  = 1
         iblock = 3
 
-!       call linear_response_pp(iblock,TDA_T,nBas,nC,nO,nV,nR,nOOs,nVVs,lambda,eT,ERI,  &
-!                               Omega1s,X1s,Y1s,Omega2s,X2s,Y2s,EcRPA(isp_T))
+        call linear_response_pp(iblock,TDA_T,nBas,nC,nO,nV,nR,nOOs,nVVs,lambda,eT,ERI,  &
+                                Omega1s,X1s,Y1s,Omega2s,X2s,Y2s,EcRPA(isp_T))
 
         call excitation_density_Tmatrix(iblock,nBas,nC,nO,nV,nR,nOOs,nVVs,ERI,X1s,Y1s,rho1s,X2s,Y2s,rho2s)
 
@@ -126,8 +131,8 @@ subroutine ACFDT_Tmatrix(exchange_kernel,doXBS,dRPA,TDA_T,TDA,BSE,singlet,triple
         isp_T  = 2
         iblock = 4
 
-!       call linear_response_pp(iblock,TDA_T,nBas,nC,nO,nV,nR,nOOt,nVVt,lambda,eT,ERI,  &
-!                               Omega1t,X1t,Y1t,Omega2t,X2t,Y2t,EcRPA(isp_T))
+        call linear_response_pp(iblock,TDA_T,nBas,nC,nO,nV,nR,nOOt,nVVt,lambda,eT,ERI,  &
+                                Omega1t,X1t,Y1t,Omega2t,X2t,Y2t,EcRPA(isp_T))
 
         call excitation_density_Tmatrix(iblock,nBas,nC,nO,nV,nR,nOOt,nVVt,ERI,X1t,Y1t,rho1t,X2t,Y2t,rho2t)
 
@@ -136,7 +141,7 @@ subroutine ACFDT_Tmatrix(exchange_kernel,doXBS,dRPA,TDA_T,TDA,BSE,singlet,triple
 
       end if
 
-      call linear_response_Tmatrix(ispin,.true.,TDA,eta,nBas,nC,nO,nV,nR,nS,lambda,eGT,ERI,TA,TB, &
+      call linear_response_Tmatrix(ispin,.false.,TDA,eta,nBas,nC,nO,nV,nR,nS,lambda,eGT,ERI,TA,TB, &
                                    EcAC(ispin),Omega(:,ispin),XpY(:,:,ispin),XmY(:,:,ispin))
 
       call ACFDT_correlation_energy(ispin,exchange_kernel,nBas,nC,nO,nV,nR,nS,ERI,XpY(:,:,ispin),XmY(:,:,ispin),Ec(iAC,ispin))
@@ -201,7 +206,7 @@ subroutine ACFDT_Tmatrix(exchange_kernel,doXBS,dRPA,TDA_T,TDA,BSE,singlet,triple
 
       end if  
 
-      call linear_response_Tmatrix(ispin,.true.,TDA,eta,nBas,nC,nO,nV,nR,nS,lambda,eGT,ERI,TA,TB, &
+      call linear_response_Tmatrix(ispin,.false.,TDA,eta,nBas,nC,nO,nV,nR,nS,lambda,eGT,ERI,TA,TB, &
                                    EcAC(ispin),Omega(:,ispin),XpY(:,:,ispin),XmY(:,:,ispin))
 
       call ACFDT_correlation_energy(ispin,exchange_kernel,nBas,nC,nO,nV,nR,nS,ERI,XpY(:,:,ispin),XmY(:,:,ispin),Ec(iAC,ispin))
