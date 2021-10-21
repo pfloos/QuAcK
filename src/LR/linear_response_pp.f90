@@ -95,6 +95,16 @@ subroutine linear_response_pp(ispin,TDA,nBas,nC,nO,nV,nR,nOO,nVV,lambda,e,ERI,Om
 
     call sort_ppRPA(nOO,nVV,Omega(:),Z(:,:),Omega1(:),X1(:,:),Y1(:,:),Omega2(:),X2(:,:),Y2(:,:))
 
+!   print*,'Omega1'
+!   call matout(nVV,1,Omega1)
+!   print*,'X1t.X1 - Y1t.Y1'
+!   call matout(nVV,nVV,matmul(transpose(X1),X1) - matmul(transpose(Y1),Y1))
+
+!   print*,'Omega2'
+!   call matout(nOO,1,Omega2)
+!   print*,'Y2t.Y2 - X2t.X2'
+!   call matout(nOO,nOO,matmul(transpose(Y2),Y2) - matmul(transpose(X2),X2))
+
   end if
 
 ! Compute the RPA correlation energy
