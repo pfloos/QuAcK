@@ -1,4 +1,4 @@
-subroutine G0W0(doACFDT,exchange_kernel,doXBS,COHSEX,SOSEX,BSE,TDA_W,TDA, & 
+subroutine G0W0(doACFDT,exchange_kernel,doXBS,COHSEX,BSE,TDA_W,TDA, & 
                 dBSE,dTDA,evDyn,singlet,triplet,linearize,eta,            & 
                 nBas,nC,nO,nV,nR,nS,ENuc,ERHF,ERI_AO,ERI_MO,dipole_int,PHF,cHF,eHF,Vxc,eG0W0)
 
@@ -14,7 +14,6 @@ subroutine G0W0(doACFDT,exchange_kernel,doXBS,COHSEX,SOSEX,BSE,TDA_W,TDA, &
   logical,intent(in)            :: exchange_kernel
   logical,intent(in)            :: doXBS
   logical,intent(in)            :: COHSEX
-  logical,intent(in)            :: SOSEX
   logical,intent(in)            :: BSE
   logical,intent(in)            :: TDA_W
   logical,intent(in)            :: TDA
@@ -75,13 +74,6 @@ subroutine G0W0(doACFDT,exchange_kernel,doXBS,COHSEX,SOSEX,BSE,TDA_W,TDA, &
 ! Initialization
 
   EcRPA = 0d0
-
-! SOSEX correction
-
-  if(SOSEX) then 
-    write(*,*) 'SOSEX correction activated but BUG!'
-    stop
-  end if
 
 ! COHSEX approximation
 

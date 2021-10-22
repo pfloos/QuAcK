@@ -46,10 +46,6 @@ subroutine unrestricted_auxiliary_energy(nBas,nEns,eps,occnum,doNcentered,Eaux)
       end do
     end do
 
-!    if (doNcentered .NE. 0) then
-!      Eaux(:,iEns) = Eaux(:,iEns)*(nEl(iEns)/nEl(1))   
-!    end if 
-
   end do
 
 end subroutine unrestricted_auxiliary_energy

@@ -26,7 +26,6 @@ subroutine unrestricted_correlation_individual_energy(rung,DFA,LDA_centered,nEns
 
   double precision              :: EcLDA(nsp)
   double precision              :: EcGGA(nsp)
-  double precision              :: aC
 
 ! Output variables
 

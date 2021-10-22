@@ -22,7 +22,7 @@ subroutine read_options_dft(nBas,method,x_rung,x_DFA,c_rung,c_DFA,SGn,nEns,wEns,
 
   character(len=8),intent(out)  :: method
   integer,intent(out)           :: x_rung,c_rung
-  character(len=12),intent(out) :: x_DFA, c_DFA
+  character(len=12),intent(out) :: x_DFA,c_DFA
   integer,intent(out)           :: SGn
   integer,intent(out)           :: nEns
   logical,intent(out)           :: doNcentered
@@ -39,11 +39,11 @@ subroutine read_options_dft(nBas,method,x_rung,x_DFA,c_rung,c_DFA,SGn,nEns,wEns,
 
 ! Default values
 
-  method  = 'GOK-RKS'
+  method  = 'eDFT-UKS'
   x_rung  = 1
   c_rung  = 1
-  x_DFA   = 'RS51'
-  c_DFA   = 'RVWN5'
+  x_DFA   = 'S51'
+  c_DFA   = 'VWN5'
   SGn     = 0
   wEns(:) = 0d0
 
@@ -134,15 +134,16 @@ subroutine read_options_dft(nBas,method,x_rung,x_DFA,c_rung,c_DFA,SGn,nEns,wEns,
 
   if(answer == 'T') doNcentered = .true.
 
+  wEns(1) = 1d0
+  do iEns=2,nEns
+    wEns(1) = wEns(1) - wEns(iEns)
+  end do
+
   if (doNcentered) then
 
-    wEns(1) = 1d0 - wEns(2) - wEns(3)
-    wEns(2) = (nEl(1)/nEl(2))*wEns(2)
-    wEns(3) = (nEl(1)/nEl(3))*wEns(3)
-
-  else
-
-    wEns(1) = 1d0 - wEns(2) - wEns(3)
+    do iEns=2,nEns
+      wEns(iEns) = (nEl(1)/nEl(iEns))*wEns(iEns)
+    end do
 
   end if
 

@@ -1,4 +1,4 @@
-subroutine qsUGW(maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,COHSEX,SOSEX,BSE,TDA_W,TDA,    & 
+subroutine qsUGW(maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,COHSEX,BSE,TDA_W,TDA,    & 
                 G0W,GW0,dBSE,dTDA,evDyn,spin_conserved,spin_flip,eta,nNuc,ZNuc,rNuc,ENuc,nBas,nC,nO, & 
                 nV,nR,nS,EUHF,S,X,T,V,Hc,ERI_AO,ERI_aaaa,ERI_aabb,ERI_bbbb,dipole_int_AO,dipole_int_aa, &
                 dipole_int_bb,PHF,cHF,eHF)
@@ -17,7 +17,6 @@ subroutine qsUGW(maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,COHSEX,SOS
   logical,intent(in)            :: exchange_kernel
   logical,intent(in)            :: doXBS
   logical,intent(in)            :: COHSEX
-  logical,intent(in)            :: SOSEX
   logical,intent(in)            :: BSE
   logical,intent(in)            :: TDA_W
   logical,intent(in)            :: TDA
@@ -120,13 +119,6 @@ subroutine qsUGW(maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,COHSEX,SOS
 ! Stuff 
 
   nBasSq = nBas*nBas
-
-! SOSEX correction
-
-  if(SOSEX) then 
-    write(*,*) 'SOSEX correction activated but BUG!'
-    stop
-  end if
 
 ! COHSEX approximation
 
