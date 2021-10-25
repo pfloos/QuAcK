@@ -7,7 +7,7 @@ subroutine unrestricted_gga_correlation_energy(DFA,nEns,wEns,nGrid,weight,rho,dr
 
 ! Input variables
 
-  character(len=12),intent(in)  :: DFA
+  integer,intent(in)            :: DFA
   integer,intent(in)            :: nEns
   double precision,intent(in)   :: wEns(nEns)
   integer,intent(in)            :: nGrid
@@ -26,11 +26,11 @@ subroutine unrestricted_gga_correlation_energy(DFA,nEns,wEns,nGrid,weight,rho,dr
 
   select case (DFA)
 
-    case ('LYP')
+    case (1)
 
       call ULYP_gga_correlation_energy(nGrid,weight,rho,drho,Ec)
 
-    case ('PBE')
+    case (2)
 
       call UPBE_gga_correlation_energy(nGrid,weight,rho,drho,Ec)
 

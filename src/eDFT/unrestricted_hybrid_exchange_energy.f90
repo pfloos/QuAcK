@@ -8,7 +8,7 @@ subroutine unrestricted_hybrid_exchange_energy(DFA,LDA_centered,nEns,wEns,aCC_w1
 
 ! Input variables
 
-  character(len=12),intent(in)  :: DFA
+  integer,intent(in)            :: DFA
   logical,intent(in)            :: LDA_centered
   integer,intent(in)            :: nEns
   double precision,intent(in)   :: wEns(nEns)
@@ -34,34 +34,34 @@ subroutine unrestricted_hybrid_exchange_energy(DFA,LDA_centered,nEns,wEns,aCC_w1
 
   select case (DFA) 
 
-    case ('HF')
+    case (1)
 
       call unrestricted_fock_exchange_energy(nBas,P,FxHF,Ex)
 
-    case ('B3LYP')
+    case (2)
 
       a0 = 0.20d0
       aX = 0.72d0
   
-      call unrestricted_lda_exchange_energy('S51         ',LDA_centered,nEns,wEns,aCC_w1,aCC_w2,nGrid,weight,&
+      call unrestricted_lda_exchange_energy(1,LDA_centered,nEns,wEns,aCC_w1,aCC_w2,nGrid,weight,&
                                             rho,ExLDA,Cx_choice)
-      call unrestricted_gga_exchange_energy('B88         ',nEns,wEns,nGrid,weight,rho,drho,ExGGA)
+      call unrestricted_gga_exchange_energy(2,nEns,wEns,nGrid,weight,rho,drho,ExGGA)
       call unrestricted_fock_exchange_energy(nBas,P,FxHF,ExHF)
   
       Ex = ExLDA              & 
          + a0*(ExHF  - ExLDA) &
          + aX*(ExGGA - ExLDA) 
 
-    case ('BHHLYP')
+    case (3)
 
-      call unrestricted_gga_exchange_energy('B88         ',nEns,wEns,nGrid,weight,rho,drho,ExGGA)
+      call unrestricted_gga_exchange_energy(2,nEns,wEns,nGrid,weight,rho,drho,ExGGA)
       call unrestricted_fock_exchange_energy(nBas,P,FxHF,ExHF)
   
       Ex = 0.5d0*ExHF + 0.5d0*ExGGA
 
-    case ('PBE')
+    case (4)
 
-      call unrestricted_gga_exchange_energy('PBE         ',nEns,wEns,nGrid,weight,rho,drho,ExGGA)
+      call unrestricted_gga_exchange_energy(3,nEns,wEns,nGrid,weight,rho,drho,ExGGA)
       call unrestricted_fock_exchange_energy(nBas,P,FxHF,ExHF)
   
       Ex = 0.25d0*ExHF + 0.75d0*ExGGA

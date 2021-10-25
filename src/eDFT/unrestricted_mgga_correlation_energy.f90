@@ -7,7 +7,7 @@ subroutine unrestricted_mgga_correlation_energy(DFA,nEns,wEns,nGrid,weight,rho,d
 
 ! Input variables
 
-  character(len=12),intent(in)  :: DFA
+  integer,intent(in)            :: DFA
   integer,intent(in)            :: nEns
   double precision,intent(in)   :: wEns(nEns)
   integer,intent(in)            :: nGrid

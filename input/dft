@@ -15,7 +15,7 @@
 # Hybrid       = 4: HF,B3LYP,PBE
  1 VWN5
 # quadrature grid SG-n
-  1
+  0
 # Number of states in ensemble (nEns)
   4
 # occupation numbers 
@@ -31,7 +31,7 @@
  1 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
  1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
 # Ensemble weights: wEns(1),...,wEns(nEns-1)
- 0.25 0.25 0.25
+ 0.00 0.00 0.00
 # N-centered?
  T   
 # Parameters for CC weight-dependent exchange functional

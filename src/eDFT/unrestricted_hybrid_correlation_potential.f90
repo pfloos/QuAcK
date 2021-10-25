@@ -7,7 +7,7 @@ subroutine unrestricted_hybrid_correlation_potential(DFA,nEns,wEns,nGrid,weight,
 
 ! Input variables
 
-  character(len=12),intent(in)  :: DFA
+  integer,intent(in)            :: DFA
   integer,intent(in)            :: nEns
   double precision,intent(in)   :: wEns(nEns)
   integer,intent(in)            :: nGrid
@@ -32,32 +32,32 @@ subroutine unrestricted_hybrid_correlation_potential(DFA,nEns,wEns,nGrid,weight,
 
   select case (DFA)
 
-    case('HF')
+    case(1)
 
       Fc(:,:,:) = 0d0
 
-    case('B3LYP')
+    case(2)
 
       allocate(FcLDA(nBas,nBas,nspin),FcGGA(nBas,nBas,nspin))
 
       aC = 0.81d0
 
-      call unrestricted_lda_correlation_potential('VWN3        ',nEns,wEns,nGrid,weight,nBas,AO,rho,FcLDA)
-      call unrestricted_gga_correlation_potential('LYP         ',nEns,wEns,nGrid,weight,nBas,AO,dAO,rho,drho,FcGGA)
+      call unrestricted_lda_correlation_potential(3,nEns,wEns,nGrid,weight,nBas,AO,rho,FcLDA)
+      call unrestricted_gga_correlation_potential(1,nEns,wEns,nGrid,weight,nBas,AO,dAO,rho,drho,FcGGA)
 
       Fc(:,:,:) = FcLDA(:,:,:) + aC*(FcGGA(:,:,:) - FcLDA(:,:,:))
 
-    case('BHHLYP')
+    case(3)
 
       allocate(FcGGA(nBas,nBas,nspin))
 
-      call unrestricted_gga_correlation_potential('LYP         ',nEns,wEns,nGrid,weight,nBas,AO,dAO,rho,drho,Fc)
+      call unrestricted_gga_correlation_potential(1,nEns,wEns,nGrid,weight,nBas,AO,dAO,rho,drho,Fc)
 
-    case('PBE')
+    case(4)
 
       allocate(FcGGA(nBas,nBas,nspin))
 
-      call unrestricted_gga_correlation_potential('PBE         ',nEns,wEns,nGrid,weight,nBas,AO,dAO,rho,drho,Fc)
+      call unrestricted_gga_correlation_potential(2,nEns,wEns,nGrid,weight,nBas,AO,dAO,rho,drho,Fc)
 
     case default
 

@@ -52,7 +52,7 @@ subroutine eDFT(maxSCF,thresh,max_diis,guess_type,mix,nNuc,ZNuc,rNuc,ENuc,nBas,n
 
   character(len=8)              :: method
   integer                       :: x_rung,c_rung
-  character(len=12)             :: x_DFA ,c_DFA
+  integer                       :: x_DFA,c_DFA
   logical                       :: LDA_centered = .true.
 
   integer                       :: SGn
@@ -80,6 +80,7 @@ subroutine eDFT(maxSCF,thresh,max_diis,guess_type,mix,nNuc,ZNuc,rNuc,ENuc,nBas,n
 
   integer                       :: i,vmajor,vminor,vmicro
   integer                       :: iBas,iEns,ispin
+  integer                       :: icart,iGrid
 
 ! Output variables
 
@@ -118,14 +119,32 @@ subroutine eDFT(maxSCF,thresh,max_diis,guess_type,mix,nNuc,ZNuc,rNuc,ENuc,nBas,n
 !------------------------------------------------------------------------
 ! Construct quadrature grid
 !------------------------------------------------------------------------
-  call read_grid(SGn,radial_precision,nRad,nAng,nGrid)
+  if(SGn == -1) then
+ 
+    write(*,*) '*** Quadrature grid on atomic sites ! ***' 
+    write(*,*) 
+    nGrid = nNuc
+    allocate(root(ncart,nGrid),weight(nGrid))
 
-  call allocate_grid(nNuc,ZNuc,max_ang_mom,min_exponent,max_exponent,radial_precision,nAng,nGrid)
+    do icart=1,ncart
+      do iGrid=1,nGrid
+        root(icart,iGrid) = rNuc(iGrid,icart)
+      end do
+    end do
+    weight(:) = 1d0
 
-  allocate(root(ncart,nGrid),weight(nGrid))
+  else
 
-  call build_grid(nNuc,ZNuc,rNuc,max_ang_mom,min_exponent,max_exponent, & 
-                  radial_precision,nRad,nAng,nGrid,weight,root)
+    call read_grid(SGn,radial_precision,nRad,nAng,nGrid)
+
+    call allocate_grid(nNuc,ZNuc,max_ang_mom,min_exponent,max_exponent,radial_precision,nAng,nGrid)
+
+    allocate(root(ncart,nGrid),weight(nGrid))
+
+    call build_grid(nNuc,ZNuc,rNuc,max_ang_mom,min_exponent,max_exponent, & 
+                    radial_precision,nRad,nAng,nGrid,weight,root)
+
+  end if
 
 !------------------------------------------------------------------------
 ! Calculate AO values at grid points

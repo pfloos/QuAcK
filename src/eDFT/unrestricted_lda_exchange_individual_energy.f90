@@ -9,7 +9,7 @@ subroutine unrestricted_lda_exchange_individual_energy(DFA,LDA_centered,nEns,wEn
 ! Input variables
 
   logical,intent(in)            :: LDA_centered
-  character(len=12),intent(in)  :: DFA
+  integer,intent(in)            :: DFA
   integer,intent(in)            :: nEns
   double precision,intent(in)   :: wEns(nEns)
   double precision,intent(in)   :: aCC_w1(3)
@@ -31,11 +31,11 @@ subroutine unrestricted_lda_exchange_individual_energy(DFA,LDA_centered,nEns,wEn
 
   select case (DFA)
 
-    case ('S51')
+    case (1)
 
       call US51_lda_exchange_individual_energy(nGrid,weight,rhow,rho,doNcentered,kappa,Ex)
 
-    case ('CC')
+    case (2)
 
       call UCC_lda_exchange_individual_energy(nEns,wEns,aCC_w1,aCC_w2,nGrid,weight,rhow,rho,&
                                               Cx_choice,doNcentered,kappa,Ex)

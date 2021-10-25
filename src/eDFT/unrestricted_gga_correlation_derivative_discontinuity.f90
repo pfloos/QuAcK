@@ -7,7 +7,7 @@ subroutine unrestricted_gga_correlation_derivative_discontinuity(DFA,nEns,wEns,n
 
 ! Input variables
 
-  character(len=12),intent(in)  :: DFA
+  integer,intent(in)            :: DFA
   integer,intent(in)            :: nEns
   double precision,intent(in)   :: wEns(nEns)
   integer,intent(in)            :: nGrid
@@ -26,11 +26,11 @@ subroutine unrestricted_gga_correlation_derivative_discontinuity(DFA,nEns,wEns,n
 
   select case (DFA)
 
-    case ('LYP')
+    case (1)
 
       Ec(:,:) = 0d0
 
-    case ('PBE')
+    case (2)
 
       Ec(:,:) = 0d0
 

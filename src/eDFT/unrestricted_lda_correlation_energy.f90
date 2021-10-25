@@ -7,7 +7,7 @@ subroutine unrestricted_lda_correlation_energy(DFA,nEns,wEns,nGrid,weight,rho,Ec
 
 ! Input variables
 
-  character(len=12),intent(in)  :: DFA
+  integer,intent(in)            :: DFA
   integer,intent(in)            :: nEns
   double precision,intent(in)   :: wEns(nEns)
   integer,intent(in)            :: nGrid
@@ -24,27 +24,23 @@ subroutine unrestricted_lda_correlation_energy(DFA,nEns,wEns,nGrid,weight,rho,Ec
 
 !   Hartree-Fock
 
-    case ('HF')
-
-      Ec(:) = 0d0
-
-    case ('W38')
+    case (1)
 
       call UW38_lda_correlation_energy(nGrid,weight,rho,Ec)
 
-    case ('PW92')
+    case (2)
 
       call UPW92_lda_correlation_energy(nGrid,weight,rho,Ec)
 
-    case ('VWN3')
+    case (3)
 
       call UVWN3_lda_correlation_energy(nGrid,weight,rho,Ec)
 
-    case ('VWN5')
+    case (4)
 
       call UVWN5_lda_correlation_energy(nGrid,weight,rho,Ec)
 
-    case ('C16')
+    case (5)
 
       call UC16_lda_correlation_energy(nGrid,weight,rho,Ec)
 

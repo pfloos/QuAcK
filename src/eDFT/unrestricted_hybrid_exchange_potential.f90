@@ -8,7 +8,7 @@ subroutine unrestricted_hybrid_exchange_potential(DFA,LDA_centered,nEns,wEns,aCC
 
 ! Input variables
 
-  character(len=12),intent(in)  :: DFA
+  integer,intent(in)            :: DFA
   logical,intent(in)            :: LDA_centered
   integer,intent(in)            :: nEns
   double precision,intent(in)   :: wEns(nEns)
@@ -38,12 +38,12 @@ subroutine unrestricted_hybrid_exchange_potential(DFA,LDA_centered,nEns,wEns,aCC
 
   select case (DFA)
 
-    case('HF') 
+    case(1) 
 
       call unrestricted_fock_exchange_potential(nBas,P,ERI,FxHF)
       Fx(:,:) = FxHF(:,:)
 
-    case('B3LYP') 
+    case(2) 
 
       allocate(FxLDA(nBas,nBas),FxGGA(nBas,nBas))
 
@@ -59,7 +59,7 @@ subroutine unrestricted_hybrid_exchange_potential(DFA,LDA_centered,nEns,wEns,aCC
               + a0*(FxHF(:,:)  - FxLDA(:,:)) &
               + aX*(FxGGA(:,:) - FxLDA(:,:))  
 
-    case('BHHLYP') 
+    case(3) 
 
       allocate(FxGGA(nBas,nBas))
 
@@ -68,7 +68,7 @@ subroutine unrestricted_hybrid_exchange_potential(DFA,LDA_centered,nEns,wEns,aCC
 
       Fx(:,:) = 0.5d0*FxHF(:,:) + 0.5d0*FxGGA(:,:)
 
-    case('PBE') 
+    case(4) 
 
       allocate(FxGGA(nBas,nBas))
 

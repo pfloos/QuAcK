@@ -8,7 +8,7 @@ subroutine unrestricted_correlation_energy(rung,DFA,nEns,wEns,nGrid,weight,rho,d
 ! Input variables
 
   integer,intent(in)            :: rung
-  character(len=12),intent(in)  :: DFA
+  integer,intent(in)            :: DFA
   integer,intent(in)            :: nEns
   double precision,intent(in)   :: wEns(nEns)
   integer,intent(in)            :: nGrid

@@ -9,7 +9,7 @@ subroutine unrestricted_lda_correlation_individual_energy(DFA,LDA_centered,nEns,
 ! Input variables
 
   logical,intent(in)            :: LDA_centered
-  character(len=12),intent(in)  :: DFA
+  integer,intent(in)            :: DFA
   integer,intent(in)            :: nEns
   double precision,intent(in)   :: wEns(nEns)
   integer,intent(in)            :: nGrid
@@ -27,13 +27,11 @@ subroutine unrestricted_lda_correlation_individual_energy(DFA,LDA_centered,nEns,
 
   select case (DFA)
 
-!   Vosko, Wilk and Nusair's functional V: Can. J. Phys. 58 (1980) 1200
-
-    case ('VWN3')
+    case (3)
 
       call UVWN3_lda_correlation_individual_energy(nGrid,weight,rhow,rho,doNcentered,kappa,Ec)
 
-    case ('VWN5')
+    case (4)
 
       call UVWN5_lda_correlation_individual_energy(nGrid,weight,rhow,rho,doNcentered,kappa,Ec)
 

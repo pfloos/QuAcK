@@ -17,12 +17,13 @@ subroutine read_options_dft(nBas,method,x_rung,x_DFA,c_rung,c_DFA,SGn,nEns,wEns,
   integer                       :: iParam
   character(len=1)              :: answer
   double precision,allocatable  :: nEl(:)
+  character(len=12)             :: x_func,c_func
 
 ! Output variables
 
   character(len=8),intent(out)  :: method
   integer,intent(out)           :: x_rung,c_rung
-  character(len=12),intent(out) :: x_DFA,c_DFA
+  integer,intent(out)           :: x_DFA,c_DFA
   integer,intent(out)           :: SGn
   integer,intent(out)           :: nEns
   logical,intent(out)           :: doNcentered
@@ -42,8 +43,8 @@ subroutine read_options_dft(nBas,method,x_rung,x_DFA,c_rung,c_DFA,SGn,nEns,wEns,
   method  = 'eDFT-UKS'
   x_rung  = 1
   c_rung  = 1
-  x_DFA   = 'S51'
-  c_DFA   = 'VWN5'
+  x_DFA   = 1
+  c_DFA   = 1
   SGn     = 0
   wEns(:) = 0d0
 
@@ -52,7 +53,9 @@ subroutine read_options_dft(nBas,method,x_rung,x_DFA,c_rung,c_DFA,SGn,nEns,wEns,
   read(1,*)
   read(1,*) method
 
-! EXCHANGE: read rung of Jacob's ladder
+!---------------------------------------!
+! EXCHANGE: read rung of Jacob's ladder !
+!---------------------------------------!
 
   read(1,*)
   read(1,*)
@@ -60,9 +63,124 @@ subroutine read_options_dft(nBas,method,x_rung,x_DFA,c_rung,c_DFA,SGn,nEns,wEns,
   read(1,*)
   read(1,*)
   read(1,*)
-  read(1,*) x_rung,x_DFA
+  read(1,*) x_rung,x_func
 
-! CORRELATION: read rung of Jacob's ladder
+  select case (x_rung) ! exchange functionals
+ 
+    case (0) ! Hartree
+   
+    select case (x_func)
+
+      case ('H')
+     
+        x_DFA = 1
+     
+      case default
+     
+        call print_warning('!!! Hartree exchange functional not available !!!')
+        stop
+
+    end select
+
+    case (1) ! LDA
+   
+    select case (x_func)
+
+      case ('S51')
+     
+        x_DFA = 1
+     
+      case ('CC-S51')
+     
+        x_DFA = 2
+     
+      case default
+     
+        call print_warning('!!! LDA exchange functional not available !!!')
+        stop
+
+    end select
+
+    case (2) ! GGA
+   
+      select case (x_func)
+ 
+        case ('G96')
+  
+          x_DFA = 1
+  
+        case ('B88')
+  
+          x_DFA = 2
+  
+        case ('PBE')
+  
+          x_DFA = 3
+  
+        case default
+ 
+          call print_warning('!!! GGA exchange functional not available !!!')
+          stop
+
+      end select
+
+    case (3) ! MGGA
+   
+    select case (x_func)
+
+      case default
+
+        call print_warning('!!! MGGA exchange functional not available !!!')
+        stop
+
+    end select
+
+    case (4) ! Hybrid
+   
+      select case (x_func)
+ 
+        case ('HF')
+  
+          x_DFA = 1
+  
+        case ('B3LYP')
+  
+          x_DFA = 2
+  
+        case ('BHHLYP')
+ 
+          x_DFA = 3
+  
+        case ('PBE')
+  
+          x_DFA = 4
+  
+        case default
+ 
+          call print_warning('!!! Hybrid exchange functional not available !!!')
+          stop
+ 
+      end select
+
+    case default
+
+      call print_warning('!!! Exchange rung not available !!!')
+      stop
+
+  end select
+
+! Select rung for exchange 
+
+  write(*,*)
+  write(*,*) '*******************************************************************'
+  write(*,*) '*                        Exchange rung                            *'
+  write(*,*) '*******************************************************************'
+
+  call select_rung(x_rung,x_func)
+
+!------------------------------------------!
+! CORRELATION: read rung of Jacob's ladder !
+!------------------------------------------!
 
   read(1,*)
   read(1,*)
@@ -70,7 +188,128 @@ subroutine read_options_dft(nBas,method,x_rung,x_DFA,c_rung,c_DFA,SGn,nEns,wEns,
   read(1,*)
   read(1,*)
   read(1,*)
-  read(1,*) c_rung,c_DFA
+  read(1,*) c_rung,c_func
+
+  select case (c_rung) ! correlation functionals
+ 
+    case (0) ! Hartree
+
+      select case (c_func)
+
+        case ('H')
+     
+          c_DFA = 1
+     
+        case default
+     
+          call print_warning('!!! Hartree correlation functional not available !!!')
+          stop
+
+      end select
+
+    case (1) ! LDA
+   
+      select case (c_func)
+ 
+        case ('W38')
+  
+          c_DFA = 1
+  
+        case ('PW92')
+  
+          c_DFA = 2
+  
+        case ('VWN3')
+  
+          c_DFA = 3
+  
+        case ('VWN5')
+  
+          c_DFA = 4
+  
+        case ('eVWN5')
+  
+          c_DFA = 5
+  
+        case default
+ 
+          call print_warning('!!! LDA correlation functional not available !!!')
+          stop
+ 
+      end select
+
+    case (2) ! GGA
+   
+    select case (c_func)
+
+      case ('LYP')
+ 
+        c_DFA = 1
+ 
+      case ('PBE')
+ 
+        c_DFA = 2
+ 
+      case default
+
+        call print_warning('!!! GGA correlation functional not available !!!')
+        stop
+
+    end select
+
+    case (3) ! MGGA
+   
+      select case (c_func)
+ 
+        case default
+ 
+          call print_warning('!!! MGGA correlation functional not available !!!')
+          stop
+ 
+      end select
+
+    case (4) ! Hybrid
+   
+      select case (c_func)
+ 
+        case ('HF')
+  
+          c_DFA = 1
+  
+        case ('B3LYP')
+  
+          c_DFA = 2
+  
+        case ('BHHLYP')
+ 
+          c_DFA = 3
+  
+        case ('PBE')
+  
+          c_DFA = 4
+  
+        case default
+ 
+          call print_warning('!!! Hybrid correlation functional not available !!!')
+          stop
+
+      end select
+
+    case default 
+
+      call print_warning('!!! Correlation rung not available !!!')
+      stop
+
+  end select
+
+! Select rung for correlation
+
+  write(*,*)
+  write(*,*) '*******************************************************************'
+  write(*,*) '*                       Correlation rung                          *'
+  write(*,*) '*******************************************************************'
+
+  call select_rung(c_rung,c_func)
 
 ! Read SG-n grid
 

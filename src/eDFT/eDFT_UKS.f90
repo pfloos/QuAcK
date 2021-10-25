@@ -9,7 +9,7 @@ subroutine eDFT_UKS(x_rung,x_DFA,c_rung,c_DFA,nEns,wEns,aCC_w1,aCC_w2,nGrid,weig
 ! Input variables
 
   integer,intent(in)            :: x_rung,c_rung
-  character(len=12),intent(in)  :: x_DFA,c_DFA
+  integer,intent(in)            :: x_DFA,c_DFA
   integer,intent(in)            :: nEns
   double precision,intent(in)   :: wEns(nEns)
   double precision,intent(in)   :: aCC_w1(3)
@@ -108,21 +108,21 @@ subroutine eDFT_UKS(x_rung,x_DFA,c_rung,c_DFA,nEns,wEns,aCC_w1,aCC_w2,nGrid,weig
 
 ! Select rung for exchange 
 
-  write(*,*)
-  write(*,*) '*******************************************************************'
-  write(*,*) '*                        Exchange rung                            *'
-  write(*,*) '*******************************************************************'
+! write(*,*)
+! write(*,*) '*******************************************************************'
+! write(*,*) '*                        Exchange rung                            *'
+! write(*,*) '*******************************************************************'
 
-  call select_rung(x_rung,x_DFA)
+! call select_rung(x_rung,x_DFA)
 
 ! Select rung for correlation
 
-  write(*,*)
-  write(*,*) '*******************************************************************'
-  write(*,*) '*                       Correlation rung                          *'
-  write(*,*) '*******************************************************************'
+! write(*,*)
+! write(*,*) '*******************************************************************'
+! write(*,*) '*                       Correlation rung                          *'
+! write(*,*) '*******************************************************************'
 
-  call select_rung(c_rung,c_DFA)
+! call select_rung(c_rung,c_DFA)
 
 ! Overall rung
 

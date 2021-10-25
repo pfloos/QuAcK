@@ -8,7 +8,7 @@ subroutine unrestricted_hybrid_exchange_derivative_discontinuity(DFA,nEns,wEns,a
 
 ! Input variables
 
-  character(len=12),intent(in)  :: DFA
+  integer,intent(in)            :: DFA
   integer,intent(in)            :: nEns
   double precision,intent(in)   :: wEns(nEns)
   double precision,intent(in)   :: aCC_w1(3)
@@ -32,15 +32,15 @@ subroutine unrestricted_hybrid_exchange_derivative_discontinuity(DFA,nEns,wEns,a
 
   select case (DFA)
 
-    case ('HF')
+    case (1)
 
       ExDD(:) = 0d0
 
-    case ('B3')
+    case (2)
 
       ExDD(:) = 0d0
 
-    case ('PBE')
+    case (3)
 
       ExDD(:) = 0d0
 

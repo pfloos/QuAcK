@@ -10,7 +10,7 @@ subroutine unrestricted_individual_energy(x_rung,x_DFA,c_rung,c_DFA,LDA_centered
 ! Input variables
 
   integer,intent(in)            :: x_rung,c_rung
-  character(len=12),intent(in)  :: x_DFA,c_DFA
+  integer,intent(in)            :: x_DFA,c_DFA
   logical,intent(in)            :: LDA_centered
   integer,intent(in)            :: nEns
   double precision,intent(in)   :: wEns(nEns)
@@ -212,7 +212,7 @@ subroutine unrestricted_individual_energy(x_rung,x_DFA,c_rung,c_DFA,LDA_centered
 
   do iEns=1,nEns
     call unrestricted_correlation_individual_energy(c_rung,c_DFA,LDA_centered,nEns,wEns,nGrid,weight, &
-                                                    rhow,drhow,rho(:,:,iEns),drho(:,:,:,iEns),kappa(iEns),Ec(:,iEns))
+                                                    rhow,drhow,rho(:,:,iEns),drho(:,:,:,iEns),doNcentered,kappa(iEns),Ec(:,iEns))
   end do
 
 !------------------------------------------------------------------------

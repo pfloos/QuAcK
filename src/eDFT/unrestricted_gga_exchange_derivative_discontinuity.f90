@@ -7,7 +7,7 @@ subroutine unrestricted_gga_exchange_derivative_discontinuity(DFA,nEns,wEns,nGri
 
 ! Input variables
 
-  character(len=12),intent(in)  :: DFA
+  integer,intent(in)            :: DFA
   integer,intent(in)            :: nEns
   double precision,intent(in)   :: wEns(nEns)
   integer,intent(in)            :: nGrid
@@ -26,15 +26,15 @@ subroutine unrestricted_gga_exchange_derivative_discontinuity(DFA,nEns,wEns,nGri
 
   select case (DFA)
 
-    case ('G96')
+    case (1)
 
       ExDD(:) = 0d0
 
-    case ('B88')
+    case (2)
 
       ExDD(:) = 0d0
 
-    case ('PBE')
+    case (3)
 
       ExDD(:) = 0d0
 

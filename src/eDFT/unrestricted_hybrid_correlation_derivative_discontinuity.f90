@@ -7,7 +7,7 @@ subroutine unrestricted_hybrid_correlation_derivative_discontinuity(DFA,nEns,wEn
 
 ! Input variables
 
-  character(len=12),intent(in)  :: DFA
+  integer,intent(in)            :: DFA
   integer,intent(in)            :: nEns
   double precision,intent(in)   :: wEns(nEns)
   integer,intent(in)            :: nGrid
@@ -26,15 +26,15 @@ subroutine unrestricted_hybrid_correlation_derivative_discontinuity(DFA,nEns,wEn
 
   select case (DFA)
 
-    case ('HF')
+    case (1)
 
       Ec(:,:) = 0d0
 
-    case ('LYP')
+    case (2)
 
       Ec(:,:) = 0d0
 
-    case ('PBE')
+    case (3)
 
       Ec(:,:) = 0d0
 

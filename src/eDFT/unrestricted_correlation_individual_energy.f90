@@ -9,7 +9,7 @@ subroutine unrestricted_correlation_individual_energy(rung,DFA,LDA_centered,nEns
 ! Input variables
 
   integer,intent(in)            :: rung
-  character(len=12),intent(in)  :: DFA
+  integer,intent(in)            :: DFA
   logical,intent(in)            :: LDA_centered
   integer,intent(in)            :: nEns
   double precision,intent(in)   :: wEns(nEns)

@@ -8,13 +8,13 @@ subroutine unrestricted_gga_exchange_energy(DFA,nEns,wEns,nGrid,weight,rho,drho,
 
 ! Input variables
 
-  character(len=12),intent(in)  :: DFA
+  integer,intent(in)            :: DFA
   integer,intent(in)            :: nEns
   double precision,intent(in)   :: wEns(nEns)
   integer,intent(in)            :: nGrid
   double precision,intent(in)   :: weight(nGrid)
   double precision,intent(in)   :: rho(nGrid)
-  double precision,intent(in)   :: drho(3,nGrid)
+  double precision,intent(in)   :: drho(ncart,nGrid)
 
 ! Output variables
 
@@ -22,15 +22,15 @@ subroutine unrestricted_gga_exchange_energy(DFA,nEns,wEns,nGrid,weight,rho,drho,
 
   select case (DFA)
 
-    case ('G96')
+    case (1)
 
       call UG96_gga_exchange_energy(nGrid,weight,rho,drho,Ex)
 
-    case ('B88')
+    case (2)
 
       call UB88_gga_exchange_energy(nGrid,weight,rho,drho,Ex)
 
-    case ('PBE')
+    case (3)
 
       call UPBE_gga_exchange_energy(nGrid,weight,rho,drho,Ex)
 

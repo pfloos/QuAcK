@@ -8,7 +8,7 @@ subroutine unrestricted_lda_exchange_derivative_discontinuity(DFA,nEns,wEns,aCC_
 
 ! Input variables
 
-  character(len=12),intent(in)  :: DFA
+  integer,intent(in)            :: DFA
   integer,intent(in)            :: nEns
   double precision,intent(in)   :: wEns(nEns)
   double precision,intent(in)   :: aCC_w1(3)
@@ -32,11 +32,11 @@ subroutine unrestricted_lda_exchange_derivative_discontinuity(DFA,nEns,wEns,aCC_
 
   select case (DFA)
 
-    case ('S51')
+    case (1)
 
       ExDD(:) = 0d0
 
-    case ('CC')
+    case (2)
 
       call UCC_lda_exchange_derivative_discontinuity(nEns,wEns,aCC_w1,aCC_w2,nGrid,weight(:),rhow(:),&
                                                      Cx_choice,doNcentered,kappa,ExDD(:))

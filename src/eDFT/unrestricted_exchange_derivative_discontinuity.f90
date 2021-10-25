@@ -9,7 +9,7 @@ subroutine unrestricted_exchange_derivative_discontinuity(rung,DFA,nEns,wEns,aCC
 ! Input variables
 
   integer,intent(in)            :: rung
-  character(len=12),intent(in)  :: DFA
+  integer,intent(in)            :: DFA
   integer,intent(in)            :: nEns
   double precision,intent(in)   :: wEns(nEns)
   double precision,intent(in)   :: aCC_w1(3)

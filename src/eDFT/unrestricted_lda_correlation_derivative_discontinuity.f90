@@ -7,7 +7,7 @@ subroutine unrestricted_lda_correlation_derivative_discontinuity(DFA,nEns,wEns,n
 
 ! Input variables
 
-  character(len=12),intent(in)  :: DFA
+  integer,intent(in)            :: DFA
   integer,intent(in)            :: nEns
   double precision,intent(in)   :: wEns(nEns)
   integer,intent(in)            :: nGrid
@@ -26,15 +26,19 @@ subroutine unrestricted_lda_correlation_derivative_discontinuity(DFA,nEns,wEns,n
 
   select case (DFA)
 
-!   Wigner's LDA correlation functional: Wigner, Trans. Faraday Soc. 34 (1938) 678
-
-    case ('W38')
+    case (1)
 
       Ec(:,:) = 0d0
 
-!   Vosko, Wilk and Nusair's functional V: Can. J. Phys. 58 (1980) 1200
+    case (2)
 
-    case ('VWN5')
+      Ec(:,:) = 0d0
+
+    case (3)
+
+      Ec(:,:) = 0d0
+
+    case (4)
 
       Ec(:,:) = 0d0
 

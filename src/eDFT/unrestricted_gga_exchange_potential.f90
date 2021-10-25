@@ -7,7 +7,7 @@ subroutine unrestricted_gga_exchange_potential(DFA,nEns,wEns,nGrid,weight,nBas,A
 
 ! Input variables
 
-  character(len=12),intent(in)  :: DFA
+  integer,intent(in)            :: DFA
   integer,intent(in)            :: nEns
   double precision,intent(in)   :: wEns(nEns)
   integer,intent(in)            :: nGrid
@@ -26,15 +26,15 @@ subroutine unrestricted_gga_exchange_potential(DFA,nEns,wEns,nGrid,weight,nBas,A
 
   select case (DFA)
 
-    case ('G96')
+    case (1)
 
       call UG96_gga_exchange_potential(nGrid,weight,nBas,AO,dAO,rho,drho,Fx)
       
-    case ('B88')
+    case (2)
     
       call UB88_gga_exchange_potential(nGrid,weight,nBas,AO,dAO,rho,drho,Fx)
 
-    case ('PBE')
+    case (3)
     
       call UPBE_gga_exchange_potential(nGrid,weight,nBas,AO,dAO,rho,drho,Fx)
 

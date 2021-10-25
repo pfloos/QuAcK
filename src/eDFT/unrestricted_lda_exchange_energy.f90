@@ -7,7 +7,7 @@ subroutine unrestricted_lda_exchange_energy(DFA,LDA_centered,nEns,wEns,aCC_w1,aC
 
 ! Input variables
 
-  character(len=12),intent(in)  :: DFA
+  integer,intent(in)            :: DFA
   logical,intent(in)            :: LDA_centered
   integer,intent(in)            :: nEns
   double precision,intent(in)   :: wEns(nEns)
@@ -26,11 +26,11 @@ subroutine unrestricted_lda_exchange_energy(DFA,LDA_centered,nEns,wEns,aCC_w1,aC
 
   select case (DFA)
 
-    case ('S51')
+    case (1)
 
       call US51_lda_exchange_energy(nGrid,weight,rho,Ex)
 
-    case ('CC')
+    case (2)
 
       call UCC_lda_exchange_energy(nEns,wEns,aCC_w1,aCC_w2,nGrid,weight,rho,Ex,Cx_choice)
 

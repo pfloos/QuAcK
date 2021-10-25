@@ -7,7 +7,7 @@ subroutine unrestricted_gga_correlation_potential(DFA,nEns,wEns,nGrid,weight,nBa
 
 ! Input variables
 
-  character(len=12),intent(in)  :: DFA
+  integer,intent(in)            :: DFA
   integer,intent(in)            :: nEns
   double precision,intent(in)   :: wEns(nEns)
   integer,intent(in)            :: nGrid
@@ -28,11 +28,11 @@ subroutine unrestricted_gga_correlation_potential(DFA,nEns,wEns,nGrid,weight,nBa
 
   select case (DFA)
 
-    case ('LYP')
+    case (1)
 
       call ULYP_gga_correlation_potential(nGrid,weight,nBas,AO,dAO,rho,drho,Fc)
 
-    case ('PBE')
+    case (2)
 
       call UPBE_gga_correlation_potential(nGrid,weight,nBas,AO,dAO,rho,drho,Fc)
 

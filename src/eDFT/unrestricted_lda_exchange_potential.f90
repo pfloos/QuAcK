@@ -9,7 +9,7 @@ subroutine unrestricted_lda_exchange_potential(DFA,LDA_centered,nEns,wEns,aCC_w1
 ! Input variables
 
   logical,intent(in)            :: LDA_centered
-  character(len=12),intent(in)  :: DFA
+  integer,intent(in)            :: DFA
   integer,intent(in)            :: nEns
   double precision,intent(in)   :: wEns(nEns)
   double precision,intent(in)   :: aCC_w1(3)
@@ -29,11 +29,11 @@ subroutine unrestricted_lda_exchange_potential(DFA,LDA_centered,nEns,wEns,aCC_w1
 
   select case (DFA)
 
-    case ('S51')
+    case (1)
 
       call US51_lda_exchange_potential(nGrid,weight,nBas,AO,rho,Fx)
 
-    case ('CC')
+    case (2)
 
       call UCC_lda_exchange_potential(nEns,wEns,aCC_w1,aCC_w2,nGrid,weight,nBas,AO,rho,Fx,Cx_choice)
 
