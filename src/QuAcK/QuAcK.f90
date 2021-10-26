@@ -953,12 +953,15 @@ program QuAcK
                  dipole_int_aa,dipole_int_bb,PHF,cHF,eHF,Vxc,eG0W0)
     else
 
-      call G0W0(doACFDT,exchange_kernel,doXBS,COHSEX,BSE,TDA_W,TDA,dBSE,dTDA,evDyn,singlet,triplet, &
-                linGW,eta_GW,nBas,nC,nO,nV,nR,nS,ENuc,ERHF,ERI_AO,ERI_MO,dipole_int_MO,PHF,cHF,eHF,Vxc,eG0W0)
-!     call G0W0_SOSEX(doACFDT,exchange_kernel,doXBS,BSE,TDA_W,TDA,dBSE,dTDA,evDyn,singlet,triplet, &
-!                     eta_GW,nBas,nC,nO,nV,nR,nS,ENuc,ERHF,ERI_AO,ERI_MO,dipole_int_MO,PHF,cHF,eHF,Vxc,eG0W0)
+      ! SOSEX extrension of GW
 
-!     call ufBSE(eta_GW,nBas,nC,nO,nV,nR,nS,ENuc,ERHF,ERI_MO,eHF,eG0W0)
+      if(SOSEX) then
+        call G0W0_SOSEX(doACFDT,exchange_kernel,doXBS,BSE,TDA_W,TDA,dBSE,dTDA,evDyn,singlet,triplet, &
+                        eta_GW,nBas,nC,nO,nV,nR,nS,ENuc,ERHF,ERI_AO,ERI_MO,dipole_int_MO,PHF,cHF,eHF,Vxc,eG0W0)
+      else
+        call G0W0(doACFDT,exchange_kernel,doXBS,COHSEX,BSE,TDA_W,TDA,dBSE,dTDA,evDyn,singlet,triplet, &
+                  linGW,eta_GW,nBas,nC,nO,nV,nR,nS,ENuc,ERHF,ERI_AO,ERI_MO,dipole_int_MO,PHF,cHF,eHF,Vxc,eG0W0)
+      end if
 
     end if
 
@@ -1058,6 +1061,8 @@ program QuAcK
     t_ufGW = end_ufGW - start_ufGW
     write(*,'(A65,1X,F9.3,A8)') 'Total CPU time for ufGW = ',t_ufGW,' seconds'
     write(*,*)
+
+!   call ufBSE(eta_GW,nBas,nC,nO,nV,nR,nS,ENuc,ERHF,ERI_MO,eHF,eG0W0)
 
   end if
 
