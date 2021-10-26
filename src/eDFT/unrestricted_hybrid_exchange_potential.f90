@@ -50,9 +50,9 @@ subroutine unrestricted_hybrid_exchange_potential(DFA,LDA_centered,nEns,wEns,aCC
       a0 = 0.20d0
       aX = 0.72d0
 
-      call unrestricted_lda_exchange_potential('S51         ',LDA_centered,nEns,wEns,aCC_w1,aCC_w2,nGrid,weight, & 
+      call unrestricted_lda_exchange_potential(1,LDA_centered,nEns,wEns,aCC_w1,aCC_w2,nGrid,weight, & 
                                                nBas,AO,rho,FxLDA,Cx_choice)
-      call unrestricted_gga_exchange_potential('B88         ',nEns,wEns,nGrid,weight,nBas,AO,dAO,rho,drho,FxGGA)
+      call unrestricted_gga_exchange_potential(2,nEns,wEns,nGrid,weight,nBas,AO,dAO,rho,drho,FxGGA)
       call unrestricted_fock_exchange_potential(nBas,P,ERI,FxHF)
 
       Fx(:,:) = FxLDA(:,:)                   &
@@ -63,7 +63,7 @@ subroutine unrestricted_hybrid_exchange_potential(DFA,LDA_centered,nEns,wEns,aCC
 
       allocate(FxGGA(nBas,nBas))
 
-      call unrestricted_gga_exchange_potential('B88         ',nEns,wEns,nGrid,weight,nBas,AO,dAO,rho,drho,FxGGA)
+      call unrestricted_gga_exchange_potential(2,nEns,wEns,nGrid,weight,nBas,AO,dAO,rho,drho,FxGGA)
       call unrestricted_fock_exchange_potential(nBas,P,ERI,FxHF)
 
       Fx(:,:) = 0.5d0*FxHF(:,:) + 0.5d0*FxGGA(:,:)
@@ -72,7 +72,7 @@ subroutine unrestricted_hybrid_exchange_potential(DFA,LDA_centered,nEns,wEns,aCC
 
       allocate(FxGGA(nBas,nBas))
 
-      call unrestricted_gga_exchange_potential('PBE         ',nEns,wEns,nGrid,weight,nBas,AO,dAO,rho,drho,FxGGA)
+      call unrestricted_gga_exchange_potential(3,nEns,wEns,nGrid,weight,nBas,AO,dAO,rho,drho,FxGGA)
       call unrestricted_fock_exchange_potential(nBas,P,ERI,FxHF)
 
       Fx(:,:) = 0.25d0*FxHF(:,:) + 0.75d0*FxGGA(:,:)
