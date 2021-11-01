@@ -67,7 +67,7 @@ subroutine UVWN5_lda_correlation_energy(nGrid,weight,rho,Ec)
       q_f   = sqrt(4d0*c_f - b_f*b_f)
 
       ec_f = a_f*( log(x**2/x_f) + 2d0*b_f/q_f*atan(q_f/(2d0*x + b_f)) &
-                 - b_f*x0_f/xx0_f*( log((x - x0_f)**2/x_f) + 2d0*(b_f + 2d0*x0_f)/q_f*atan(q_f/(2d0*x + b_f)) ) )
+           - b_f*x0_f/xx0_f*( log((x - x0_f)**2/x_f) + 2d0*(b_f + 2d0*x0_f)/q_f*atan(q_f/(2d0*x + b_f)) ) )
 
       Ec(1) = Ec(1) + weight(iG)*ec_f*ra
 

@@ -54,6 +54,8 @@ subroutine US51_lda_exchange_individual_energy(nGrid,weight,rhow,rho,doNcentered
 
   enddo
 
+! De-scaling for N-centered ensemble
+
   if(doNcentered) then
   
     Exrr  = kappa*Exrr

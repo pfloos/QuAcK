@@ -102,7 +102,7 @@ rule build_lib
   description = Linking $out
 
 """
-LIBS="$LDIR/libxcf90.a $LDIR/libxc.a $LDIR/libnumgrid.a "
+LIBS="$LDIR/libnumgrid.a "
 rule_build_exe = """
 LIBS = {0} $LAPACK $STDCXX
 
@@ -136,25 +136,6 @@ build $LDIR/libnumgrid.a: make_numgrid
   generator = true
 """
   
-build_libxc = """
-rule make_libxc
-  command = cd $QUACK_ROOT/libxc-tools ; LIBXC_VERSION="$LIBXC_VERSION" QUACK_ROOT="$QUACK_ROOT" CC="$CC" CXX="$CXX" FC="$FC" ./install_libxc.sh
-  description = Building libxc
-  pool = console
-
-rule install_libxc
-  command = cd $QUACK_ROOT/libxc-tools ; LIBXC_VERSION="$LIBXC_VERSION" QUACK_ROOT="$QUACK_ROOT" CC="$CC" CXX="$CXX" FC="$FC" ./install_libxc.sh install
-  description = Installing libxc
-  pool = console
-
-build $QUACK_ROOT/libxc-tools/libxc-$LIBXC_VERSION/src/.libs/libxcf90.a: make_libxc
-  generator = true
-
-build $LDIR/libxc.a $LDIR/libxcf90.a $IDIR/xc.h $IDIR/xc_funcs_removed.h $IDIR/xc_f90_lib_m.mod $IDIR/xc_funcs_worker.h $IDIR/xc_funcs.h $IDIR/xc_version.h: install_libxc $QUACK_ROOT/libxc-tools/libxc-$LIBXC_VERSION/src/.libs/libxcf90.a
-  generator = true
-
-"""
-
 build_qcaml = """
 rule install_qcaml
   command = cd $QUACK_ROOT/qcaml-tools ; ./install_qcaml.sh
@@ -189,7 +170,6 @@ build_in_exe_dir = "\n".join([
 	compiler,
 	rule_fortran,
 	rule_build_exe,
-	build_libxc,
 ])
 
 build_main = "\n".join([
@@ -197,7 +177,6 @@ build_main = "\n".join([
         compiler,
         rule_git_clone,
         build_numgrid,
-	build_libxc,
 	build_qcaml,
 	build_GoDuck,
 ])

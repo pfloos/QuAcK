@@ -39,6 +39,19 @@ subroutine print_unrestricted_individual_energy(nEns,ENuc,Ew,ET,EV,EJ,Ex,Ec,Exc,
   write(*,*)
 
 !------------------------------------------------------------------------
+! Individual energies 
+!------------------------------------------------------------------------
+
+  write(*,'(A60)')           '-------------------------------------------------'
+  write(*,'(A60)')           ' INDIVIDUAL TOTAL       ENERGIES'
+  write(*,'(A60)')           '-------------------------------------------------'
+  do iEns=1,nEns
+    write(*,'(A40,I2,A2,F16.10,A3)') ' Individual energy state ',iEns,': ',E(iEns) + ENuc,' au'
+  end do
+  write(*,'(A60)')           '-------------------------------------------------'
+  write(*,*)
+
+!------------------------------------------------------------------------
 ! Kinetic energy
 !------------------------------------------------------------------------
 
@@ -136,135 +149,134 @@ subroutine print_unrestricted_individual_energy(nEns,ENuc,Ew,ET,EV,EJ,Ex,Ec,Exc,
 ! Total Energy and IP and EA
 !------------------------------------------------------------------------
 
-  write(*,'(A60)') '-------------------------------------------------'
-  write(*,'(A60)') ' IP AND EA FROM AUXILIARY ENERGIES '
-  write(*,'(A60)') '-------------------------------------------------'
+! write(*,'(A60)') '-------------------------------------------------'
+! write(*,'(A60)') ' IP AND EA FROM AUXILIARY ENERGIES '
+! write(*,'(A60)') '-------------------------------------------------'
 
-    write(*,'(A43,F16.10,A4)') ' Ionization Potential  1 -> 2:',Omaux(2)+OmxcDD(2),' au'
-    write(*,*)
-    write(*,'(A44,      F16.10,A3)') ' auxiliary energy contribution  : ',Omaux(2), ' au'
-    write(*,'(A44,      F16.10,A3)') '        x  ensemble derivative  : ',OmxDD(2), ' au'
-    write(*,'(A44,      F16.10,A3)') '        c  ensemble derivative  : ',OmcDD(2), ' au'
-    write(*,'(A44,      F16.10,A3)') '       xc  ensemble derivative  : ',OmxcDD(2),' au'
-    write(*,*)
-    write(*,'(A43,F16.10,A4)') ' Electronic Affinity  1 -> 3:',-(Omaux(3)+OmxcDD(3)),' au'
-    write(*,*)
-    write(*,'(A44,      F16.10,A3)') ' auxiliary energy contribution  : ',-Omaux(3), ' au'
-    write(*,'(A44,      F16.10,A3)') '        x  ensemble derivative  : ',-OmxDD(3), ' au'
-    write(*,'(A44,      F16.10,A3)') '        c  ensemble derivative  : ',-OmcDD(3), ' au'
-    write(*,'(A44,      F16.10,A3)') '       xc  ensemble derivative  : ',-OmxcDD(3),' au'
-    write(*,*)
-    write(*,'(A43,F16.10,A4)') ' Fundamental Gap :',Omaux(2)+OmxcDD(2)+(Omaux(3)+OmxcDD(3)),' au'
-    write(*,*)
-    write(*,'(A44,      F16.10,A3)') ' auxiliary energy contribution  : ',Omaux(2)+Omaux(3), ' au'
-    write(*,'(A44,      F16.10,A3)') '        x  ensemble derivative  : ',OmxDD(2)+OmxDD(3), ' au'
-    write(*,'(A44,      F16.10,A3)') '        c  ensemble derivative  : ',OmcDD(2)+OmcDD(3), ' au'
-    write(*,'(A44,      F16.10,A3)') '       xc  ensemble derivative  : ',OmxcDD(2)+OmxcDD(3),' au'
-    write(*,*)
+!   write(*,'(A43,F16.10,A4)') ' Ionization Potential  1 -> 2:',Omaux(2)+OmxcDD(2),' au'
+!   write(*,*)
+!   write(*,'(A44,      F16.10,A3)') ' auxiliary energy contribution  : ',Omaux(2), ' au'
+!   write(*,'(A44,      F16.10,A3)') '        x  ensemble derivative  : ',OmxDD(2), ' au'
+!   write(*,'(A44,      F16.10,A3)') '        c  ensemble derivative  : ',OmcDD(2), ' au'
+!   write(*,'(A44,      F16.10,A3)') '       xc  ensemble derivative  : ',OmxcDD(2),' au'
+!   write(*,*)
+!   write(*,'(A43,F16.10,A4)') ' Electronic Affinity  1 -> 3:',-(Omaux(3)+OmxcDD(3)),' au'
+!   write(*,*)
+!   write(*,'(A44,      F16.10,A3)') ' auxiliary energy contribution  : ',-Omaux(3), ' au'
+!   write(*,'(A44,      F16.10,A3)') '        x  ensemble derivative  : ',-OmxDD(3), ' au'
+!   write(*,'(A44,      F16.10,A3)') '        c  ensemble derivative  : ',-OmcDD(3), ' au'
+!   write(*,'(A44,      F16.10,A3)') '       xc  ensemble derivative  : ',-OmxcDD(3),' au'
+!   write(*,*)
+!   write(*,'(A43,F16.10,A4)') ' Fundamental Gap :',Omaux(2)+OmxcDD(2)+(Omaux(3)+OmxcDD(3)),' au'
+!   write(*,*)
+!   write(*,'(A44,      F16.10,A3)') ' auxiliary energy contribution  : ',Omaux(2)+Omaux(3), ' au'
+!   write(*,'(A44,      F16.10,A3)') '        x  ensemble derivative  : ',OmxDD(2)+OmxDD(3), ' au'
+!   write(*,'(A44,      F16.10,A3)') '        c  ensemble derivative  : ',OmcDD(2)+OmcDD(3), ' au'
+!   write(*,'(A44,      F16.10,A3)') '       xc  ensemble derivative  : ',OmxcDD(2)+OmxcDD(3),' au'
+!   write(*,*)
 
-  write(*,'(A60)') '-------------------------------------------------'
-  write(*,*)
+! write(*,'(A60)') '-------------------------------------------------'
+! write(*,*)
 
-    write(*,'(A40,F16.10,A3)') ' Ionization Potential  1 -> 2:',(Omaux(2)+OmxcDD(2))*HaToeV,' eV'
-    write(*,*)
-    write(*,'(A44,      F16.10,A3)') ' auxiliary energy contribution  : ',Omaux(2)*HaToeV, ' eV'
-    write(*,'(A44,      F16.10,A3)') '        x  ensemble derivative  : ',OmxDD(2)*HaToeV, ' eV'
-    write(*,'(A44,      F16.10,A3)') '        c  ensemble derivative  : ',OmcDD(2)*HaToeV, ' eV'
-    write(*,'(A44,      F16.10,A3)') '       xc  ensemble derivative  : ',OmxcDD(2)*HaToeV,' eV'
-    write(*,*)
-    write(*,'(A40,F16.10,A3)') ' Electronic Affinity  1 -> 3:',-(Omaux(3)+OmxcDD(3))*HaToeV,' eV'
-    write(*,*)
-    write(*,'(A44,      F16.10,A3)') ' auxiliary energy contribution  : ',-Omaux(3)*HaToeV, ' eV'
-    write(*,'(A44,      F16.10,A3)') '        x  ensemble derivative  : ',-OmxDD(3)*HaToeV, ' eV'
-    write(*,'(A44,      F16.10,A3)') '        c  ensemble derivative  : ',-OmcDD(3)*HaToeV, ' eV'
-    write(*,'(A44,      F16.10,A3)') '       xc  ensemble derivative  : ',-OmxcDD(3)*HaToeV,' eV'
-    write(*,*)
-    write(*,'(A43,F16.10,A4)') ' Fundamental Gap :',(Omaux(2)+OmxcDD(2)+(Omaux(3)+OmxcDD(3)))*HaToeV,' eV'
-    write(*,*)
-    write(*,'(A44,      F16.10,A3)') ' auxiliary energy contribution  : ',(Omaux(2)+Omaux(3))*HaToeV, ' eV'
-    write(*,'(A44,      F16.10,A3)') '        x  ensemble derivative  : ',(OmxDD(2)+OmxDD(3))*HaToeV, ' eV'
-    write(*,'(A44,      F16.10,A3)') '        c  ensemble derivative  : ',(OmcDD(2)+OmcDD(3))*HaToeV, ' eV'
-    write(*,'(A44,      F16.10,A3)') '       xc  ensemble derivative  : ',(OmxcDD(2)+OmxcDD(3))*HaToeV,' eV'
-    write(*,*)
+!   write(*,'(A40,F16.10,A3)') ' Ionization Potential  1 -> 2:',(Omaux(2)+OmxcDD(2))*HaToeV,' eV'
+!   write(*,*)
+!   write(*,'(A44,      F16.10,A3)') ' auxiliary energy contribution  : ',Omaux(2)*HaToeV, ' eV'
+!   write(*,'(A44,      F16.10,A3)') '        x  ensemble derivative  : ',OmxDD(2)*HaToeV, ' eV'
+!   write(*,'(A44,      F16.10,A3)') '        c  ensemble derivative  : ',OmcDD(2)*HaToeV, ' eV'
+!   write(*,'(A44,      F16.10,A3)') '       xc  ensemble derivative  : ',OmxcDD(2)*HaToeV,' eV'
+!   write(*,*)
+!   write(*,'(A40,F16.10,A3)') ' Electronic Affinity  1 -> 3:',-(Omaux(3)+OmxcDD(3))*HaToeV,' eV'
+!   write(*,*)
+!   write(*,'(A44,      F16.10,A3)') ' auxiliary energy contribution  : ',-Omaux(3)*HaToeV, ' eV'
+!   write(*,'(A44,      F16.10,A3)') '        x  ensemble derivative  : ',-OmxDD(3)*HaToeV, ' eV'
+!   write(*,'(A44,      F16.10,A3)') '        c  ensemble derivative  : ',-OmcDD(3)*HaToeV, ' eV'
+!   write(*,'(A44,      F16.10,A3)') '       xc  ensemble derivative  : ',-OmxcDD(3)*HaToeV,' eV'
+!   write(*,*)
+!   write(*,'(A43,F16.10,A4)') ' Fundamental Gap :',(Omaux(2)+OmxcDD(2)+(Omaux(3)+OmxcDD(3)))*HaToeV,' eV'
+!   write(*,*)
+!   write(*,'(A44,      F16.10,A3)') ' auxiliary energy contribution  : ',(Omaux(2)+Omaux(3))*HaToeV, ' eV'
+!   write(*,'(A44,      F16.10,A3)') '        x  ensemble derivative  : ',(OmxDD(2)+OmxDD(3))*HaToeV, ' eV'
+!   write(*,'(A44,      F16.10,A3)') '        c  ensemble derivative  : ',(OmcDD(2)+OmcDD(3))*HaToeV, ' eV'
+!   write(*,'(A44,      F16.10,A3)') '       xc  ensemble derivative  : ',(OmxcDD(2)+OmxcDD(3))*HaToeV,' eV'
+!   write(*,*)
 
-  write(*,'(A60)') '-------------------------------------------------'
-  write(*,*)
+! write(*,'(A60)') '-------------------------------------------------'
+! write(*,*)
 
-  write(*,'(A60)') '-------------------------------------------------'
-  write(*,'(A60)') ' IP and EA FROM INDIVIDUAL ENERGIES '
-  write(*,'(A60)') '-------------------------------------------------'
-  do iEns=1,nEns
-    write(*,'(A40,I2,A2,F16.10,A3)') ' Individual energy state ',iEns,': ',E(iEns) + ENuc,' au'
-  end do
-  write(*,'(A60)') '-------------------------------------------------'
+! write(*,'(A60)') '-------------------------------------------------'
+! write(*,'(A60)') ' IP and EA FROM INDIVIDUAL ENERGIES '
+! write(*,'(A60)') '-------------------------------------------------'
+! do iEns=1,nEns
+!   write(*,'(A40,I2,A2,F16.10,A3)') ' Individual energy state ',iEns,': ',E(iEns) + ENuc,' au'
+! end do
+! write(*,'(A60)') '-------------------------------------------------'
 
-    write(*,'(A43,F16.10,A4)') ' Ionization Potential  1 -> 2:',Om(2),    ' au'
-    write(*,*)
-    write(*,'(A44,      F16.10,A3)') '     x  energy contribution     : ',Omx(2),   ' au'
-    write(*,'(A44,      F16.10,A3)') '     c  energy contribution     : ',Omc(2),   ' au'
-    write(*,'(A44,      F16.10,A3)') '    xc  energy contribution     : ',Omxc(2),  ' au'
-    write(*,*)
-    write(*,'(A44,      F16.10,A3)') '     x  ensemble derivative     : ',OmxDD(2), ' au'
-    write(*,'(A44,      F16.10,A3)') '     c  ensemble derivative     : ',OmcDD(2), ' au'
-    write(*,'(A44,      F16.10,A3)') '    xc  ensemble derivative     : ',OmxcDD(2),' au'
-    write(*,*)
-    write(*,'(A43,F16.10,A4)') ' Electronic Affinity  1 -> 3:',-Om(3),    ' au'
-    write(*,*)
-    write(*,'(A44,      F16.10,A3)') '     x  energy contribution     : ',-Omx(3),   ' au'
-    write(*,'(A44,      F16.10,A3)') '     c  energy contribution     : ',-Omc(3),   ' au'
-    write(*,'(A44,      F16.10,A3)') '    xc  energy contribution     : ',-Omxc(3),  ' au'
-    write(*,*)
-    write(*,'(A44,      F16.10,A3)') '     x  ensemble derivative     : ',-OmxDD(3), ' au'
-    write(*,'(A44,      F16.10,A3)') '     c  ensemble derivative     : ',-OmcDD(3), ' au'
-    write(*,'(A44,      F16.10,A3)') '    xc  ensemble derivative     : ',-OmxcDD(3),' au'
-    write(*,*)
-    write(*,'(A43,F16.10,A4)') ' Fundamental Gap :',Om(2)+Om(3),    ' au'
-    write(*,*)
-    write(*,'(A44,      F16.10,A3)') '     x  energy contribution     : ',Omx(2)+Omx(3),   ' au'
-    write(*,'(A44,      F16.10,A3)') '     c  energy contribution     : ',Omc(2)+Omc(3),   ' au'
-    write(*,'(A44,      F16.10,A3)') '    xc  energy contribution     : ',Omxc(2)+Omxc(3),  ' au'
-    write(*,*)
-    write(*,'(A44,      F16.10,A3)') '     x  ensemble derivative     : ',OmxDD(2)+OmxDD(3), ' au'
-    write(*,'(A44,      F16.10,A3)') '     c  ensemble derivative     : ',OmcDD(2)+OmcDD(3), ' au'
-    write(*,'(A44,      F16.10,A3)') '    xc  ensemble derivative     : ',OmxcDD(2)+OmxcDD(3),' au'
-    write(*,*)
+!   write(*,'(A43,F16.10,A4)') ' Ionization Potential  1 -> 2:',Om(2),    ' au'
+!   write(*,*)
+!   write(*,'(A44,      F16.10,A3)') '     x  energy contribution     : ',Omx(2),   ' au'
+!   write(*,'(A44,      F16.10,A3)') '     c  energy contribution     : ',Omc(2),   ' au'
+!   write(*,'(A44,      F16.10,A3)') '    xc  energy contribution     : ',Omxc(2),  ' au'
+!   write(*,*)
+!   write(*,'(A44,      F16.10,A3)') '     x  ensemble derivative     : ',OmxDD(2), ' au'
+!   write(*,'(A44,      F16.10,A3)') '     c  ensemble derivative     : ',OmcDD(2), ' au'
+!   write(*,'(A44,      F16.10,A3)') '    xc  ensemble derivative     : ',OmxcDD(2),' au'
+!   write(*,*)
+!   write(*,'(A43,F16.10,A4)') ' Electronic Affinity  1 -> 3:',-Om(3),    ' au'
+!   write(*,*)
+!   write(*,'(A44,      F16.10,A3)') '     x  energy contribution     : ',-Omx(3),   ' au'
+!   write(*,'(A44,      F16.10,A3)') '     c  energy contribution     : ',-Omc(3),   ' au'
+!   write(*,'(A44,      F16.10,A3)') '    xc  energy contribution     : ',-Omxc(3),  ' au'
+!   write(*,*)
+!   write(*,'(A44,      F16.10,A3)') '     x  ensemble derivative     : ',-OmxDD(3), ' au'
+!   write(*,'(A44,      F16.10,A3)') '     c  ensemble derivative     : ',-OmcDD(3), ' au'
+!   write(*,'(A44,      F16.10,A3)') '    xc  ensemble derivative     : ',-OmxcDD(3),' au'
+!   write(*,*)
+!   write(*,'(A43,F16.10,A4)') ' Fundamental Gap :',Om(2)+Om(3),    ' au'
+!   write(*,*)
+!   write(*,'(A44,      F16.10,A3)') '     x  energy contribution     : ',Omx(2)+Omx(3),   ' au'
+!   write(*,'(A44,      F16.10,A3)') '     c  energy contribution     : ',Omc(2)+Omc(3),   ' au'
+!   write(*,'(A44,      F16.10,A3)') '    xc  energy contribution     : ',Omxc(2)+Omxc(3),  ' au'
+!   write(*,*)
+!   write(*,'(A44,      F16.10,A3)') '     x  ensemble derivative     : ',OmxDD(2)+OmxDD(3), ' au'
+!   write(*,'(A44,      F16.10,A3)') '     c  ensemble derivative     : ',OmcDD(2)+OmcDD(3), ' au'
+!   write(*,'(A44,      F16.10,A3)') '    xc  ensemble derivative     : ',OmxcDD(2)+OmxcDD(3),' au'
+!   write(*,*)
 
-    write(*,'(A60)') '-------------------------------------------------'
+!   write(*,'(A60)') '-------------------------------------------------'
 
-    write(*,'(A43,F16.10,A4)') ' Ionization Potential 1 -> 2:',Om(2)*HaToeV,    ' eV'
-    write(*,*)
-    write(*,'(A44,      F16.10,A3)') '     x  energy contribution     : ',Omx(2)*HaToeV,   ' eV'
-    write(*,'(A44,      F16.10,A3)') '     c  energy contribution     : ',Omc(2)*HaToeV,   ' eV'
-    write(*,'(A44,      F16.10,A3)') '    xc  energy contribution     : ',Omxc(2)*HaToeV,  ' eV'
-    write(*,*)
-    write(*,'(A44,      F16.10,A3)') '     x  ensemble derivative     : ',OmxDD(2)*HaToeV, ' eV'
-    write(*,'(A44,      F16.10,A3)') '     c  ensemble derivative     : ',OmcDD(2)*HaToeV, ' eV'
-    write(*,'(A44,      F16.10,A3)') '    xc  ensemble derivative     : ',OmxcDD(2)*HaToeV,' eV'
-    write(*,*)
-    write(*,'(A43,F16.10,A4)') ' Electronic Affinity 1 -> 3:',-Om(3)*HaToeV,    ' eV'
-    write(*,*)
-    write(*,'(A44,      F16.10,A3)') '     x  energy contribution     : ',-Omx(3)*HaToeV,   ' eV'
-    write(*,'(A44,      F16.10,A3)') '     c  energy contribution     : ',-Omc(3)*HaToeV,   ' eV'
-    write(*,'(A44,      F16.10,A3)') '    xc  energy contribution     : ',-Omxc(3)*HaToeV,  ' eV'
-    write(*,*)
-    write(*,'(A44,      F16.10,A3)') '     x  ensemble derivative     : ',-OmxDD(3)*HaToeV, ' eV'
-    write(*,'(A44,      F16.10,A3)') '     c  ensemble derivative     : ',-OmcDD(3)*HaToeV, ' eV'
-    write(*,'(A44,      F16.10,A3)') '    xc  ensemble derivative     : ',-OmxcDD(3)*HaToeV,' eV'
-    write(*,*)
-    write(*,'(A43,F16.10,A4)') ' Fundamental Gap :',(Om(2)+Om(3))*HaToeV,    ' eV'
-    write(*,*)
-    write(*,'(A44,      F16.10,A3)') '     x  energy contribution     : ',(Omx(2)+Omx(3))*HaToeV,   ' eV'
-    write(*,'(A44,      F16.10,A3)') '     c  energy contribution     : ',(Omc(2)+Omc(3))*HaToeV,   ' eV'
-    write(*,'(A44,      F16.10,A3)') '    xc  energy contribution     : ',(Omxc(2)+Omxc(3))*HaToeV,  ' eV'
-    write(*,*)
-    write(*,'(A44,      F16.10,A3)') '     x  ensemble derivative     : ',(OmxDD(2)+OmxDD(3))*HaToeV, ' eV'
-    write(*,'(A44,      F16.10,A3)') '     c  ensemble derivative     : ',(OmcDD(2)+OmcDD(3))*HaToeV, ' eV'
-    write(*,'(A44,      F16.10,A3)') '    xc  ensemble derivative     : ',(OmxcDD(2)+OmxcDD(3))*HaToeV,' eV'
-    write(*,*)
-    
-
-  write(*,'(A60)') '-------------------------------------------------'
+!   write(*,'(A43,F16.10,A4)') ' Ionization Potential 1 -> 2:',Om(2)*HaToeV,    ' eV'
+!   write(*,*)
+!   write(*,'(A44,      F16.10,A3)') '     x  energy contribution     : ',Omx(2)*HaToeV,   ' eV'
+!   write(*,'(A44,      F16.10,A3)') '     c  energy contribution     : ',Omc(2)*HaToeV,   ' eV'
+!   write(*,'(A44,      F16.10,A3)') '    xc  energy contribution     : ',Omxc(2)*HaToeV,  ' eV'
+!   write(*,*)
+!   write(*,'(A44,      F16.10,A3)') '     x  ensemble derivative     : ',OmxDD(2)*HaToeV, ' eV'
+!   write(*,'(A44,      F16.10,A3)') '     c  ensemble derivative     : ',OmcDD(2)*HaToeV, ' eV'
+!   write(*,'(A44,      F16.10,A3)') '    xc  ensemble derivative     : ',OmxcDD(2)*HaToeV,' eV'
+!   write(*,*)
+!   write(*,'(A43,F16.10,A4)') ' Electronic Affinity 1 -> 3:',-Om(3)*HaToeV,    ' eV'
+!   write(*,*)
+!   write(*,'(A44,      F16.10,A3)') '     x  energy contribution     : ',-Omx(3)*HaToeV,   ' eV'
+!   write(*,'(A44,      F16.10,A3)') '     c  energy contribution     : ',-Omc(3)*HaToeV,   ' eV'
+!   write(*,'(A44,      F16.10,A3)') '    xc  energy contribution     : ',-Omxc(3)*HaToeV,  ' eV'
+!   write(*,*)
+!   write(*,'(A44,      F16.10,A3)') '     x  ensemble derivative     : ',-OmxDD(3)*HaToeV, ' eV'
+!   write(*,'(A44,      F16.10,A3)') '     c  ensemble derivative     : ',-OmcDD(3)*HaToeV, ' eV'
+!   write(*,'(A44,      F16.10,A3)') '    xc  ensemble derivative     : ',-OmxcDD(3)*HaToeV,' eV'
+!   write(*,*)
+!   write(*,'(A43,F16.10,A4)') ' Fundamental Gap :',(Om(2)+Om(3))*HaToeV,    ' eV'
+!   write(*,*)
+!   write(*,'(A44,      F16.10,A3)') '     x  energy contribution     : ',(Omx(2)+Omx(3))*HaToeV,   ' eV'
+!   write(*,'(A44,      F16.10,A3)') '     c  energy contribution     : ',(Omc(2)+Omc(3))*HaToeV,   ' eV'
+!   write(*,'(A44,      F16.10,A3)') '    xc  energy contribution     : ',(Omxc(2)+Omxc(3))*HaToeV,  ' eV'
+!   write(*,*)
+!   write(*,'(A44,      F16.10,A3)') '     x  ensemble derivative     : ',(OmxDD(2)+OmxDD(3))*HaToeV, ' eV'
+!   write(*,'(A44,      F16.10,A3)') '     c  ensemble derivative     : ',(OmcDD(2)+OmcDD(3))*HaToeV, ' eV'
+!   write(*,'(A44,      F16.10,A3)') '    xc  ensemble derivative     : ',(OmxcDD(2)+OmxcDD(3))*HaToeV,' eV'
+!   write(*,*)
+!   
+! write(*,'(A60)') '-------------------------------------------------'
  
-  write(*,*)
+! write(*,*)
 
 end subroutine print_unrestricted_individual_energy
