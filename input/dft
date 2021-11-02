@@ -17,7 +17,7 @@
 # quadrature grid SG-n
   0
 # Number of states in ensemble (nEns)
-  1
+  4
 # occupation numbers 
  1 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
  1 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
@@ -31,7 +31,7 @@
  1 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
  1 0 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
 # Ensemble weights: wEns(1),...,wEns(nEns-1)
- 0.00 0.00 0.00
+ 0.25 0.25 0.25
 # N-centered?
  T   
 # Parameters for CC weight-dependent exchange functional

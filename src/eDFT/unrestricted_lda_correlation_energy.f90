@@ -22,8 +22,6 @@ subroutine unrestricted_lda_correlation_energy(DFA,nEns,wEns,nGrid,weight,rho,Ec
 
   select case (DFA)
 
-!   Hartree-Fock
-
     case (1)
 
       call UW38_lda_correlation_energy(nGrid,weight,rho,Ec)

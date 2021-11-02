@@ -77,6 +77,7 @@ subroutine unrestricted_exchange_individual_energy(rung,DFA,LDA_centered,nEns,wE
 
     case(4) 
 
+!     call unrestricted_hybrid_exchange_individual_energy(DFA,nEns,wEns,nGrid,weight,nBas,P,FxHF,rho,drho,Ex)
       call print_warning('!!! Individual energies NYI for Hybrids !!!')
 
   end select

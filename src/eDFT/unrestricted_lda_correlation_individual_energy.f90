@@ -27,6 +27,14 @@ subroutine unrestricted_lda_correlation_individual_energy(DFA,LDA_centered,nEns,
 
   select case (DFA)
 
+    case (1)
+
+!     call UW38_lda_correlation_individual_energy(nGrid,weight,rhow,rho,doNcentered,kappa,Ec)
+
+    case (2)
+
+!     call UPW92_lda_correlation_individual_energy(nGrid,weight,rhow,rho,doNcentered,kappa,Ec)
+
     case (3)
 
       call UVWN3_lda_correlation_individual_energy(nGrid,weight,rhow,rho,doNcentered,kappa,Ec)

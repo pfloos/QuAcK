@@ -54,7 +54,10 @@ subroutine UVWN5_lda_correlation_individual_energy(nGrid,weight,rhow,rho,doNcent
 
 ! Initialization
 
-  Ec(:) = 0d0
+  Ec(:)    = 0d0
+  Ecrr(:)  = 0d0
+  EcrI(:)  = 0d0
+  EcrrI(:) = 0d0
 
   do iG=1,nGrid
 
