@@ -72,7 +72,7 @@ subroutine UVWN5_lda_correlation_individual_energy(nGrid,weight,rhow,rho,doNcent
     r  = ra
     rI = raI
 
-    if(r > threshold .or. rI > threshold) then
+    if(r > threshold) then
 
       rs = (4d0*pi*r/3d0)**(-1d0/3d0)
       x = sqrt(rs)
@@ -95,8 +95,13 @@ subroutine UVWN5_lda_correlation_individual_energy(nGrid,weight,rhow,rho,doNcent
       decdr_f = drsdr*dxdrs*decdx_f
 
       Ecrr(1)  = Ecrr(1)  - weight(iG)*decdr_f*r*r
-      EcrI(1)  = EcrI(1)  + weight(iG)*ec_f*rI
-      EcrrI(1) = EcrrI(1) + weight(iG)*decdr_f*r*rI
+
+      if(rI > threshold) then 
+
+        EcrI(1)  = EcrI(1)  + weight(iG)*ec_f*rI
+        EcrrI(1) = EcrrI(1) + weight(iG)*decdr_f*r*rI
+
+      end if
    
     end if
 
@@ -105,7 +110,7 @@ subroutine UVWN5_lda_correlation_individual_energy(nGrid,weight,rhow,rho,doNcent
     r  = ra + rb
     rI = raI + rbI
 
-    if(r > threshold .or. rI > threshold) then
+    if(r > threshold) then
 
       rs = (4d0*pi*r/3d0)**(-1d0/3d0)
       z = (ra - rb)/r
@@ -167,8 +172,13 @@ subroutine UVWN5_lda_correlation_individual_energy(nGrid,weight,rhow,rho,doNcent
             + (decdr_f - decdr_p)*fz*z**4 + (ec_f - ec_p)*dfzdr*z**4 + 4d0*(ec_f - ec_p)*fz*dzdr*z**3
 
       Ecrr(2)  = Ecrr(2)  - weight(iG)*decdr*r*r
-      EcrI(2)  = EcrI(2)  + weight(iG)*ec_z*rI
-      EcrrI(2) = EcrrI(2) + weight(iG)*decdr*r*rI
+
+      if(rI > threshold) then
+
+        EcrI(2)  = EcrI(2)  + weight(iG)*ec_z*rI
+        EcrrI(2) = EcrrI(2) + weight(iG)*decdr*r*rI
+
+      end if
    
     end if
 
@@ -177,7 +187,7 @@ subroutine UVWN5_lda_correlation_individual_energy(nGrid,weight,rhow,rho,doNcent
     r  = rb
     rI = rbI
  
-    if(r > threshold .or. rI > threshold) then
+    if(r > threshold) then
 
       rs = (4d0*pi*r/3d0)**(-1d0/3d0)
       x  = sqrt(rs)
@@ -200,8 +210,13 @@ subroutine UVWN5_lda_correlation_individual_energy(nGrid,weight,rhow,rho,doNcent
       decdr_f = drsdr*dxdrs*decdx_f
 
       Ecrr(3)  = Ecrr(3)  - weight(iG)*decdr_f*r*r
-      EcrI(3)  = EcrI(3)  + weight(iG)*ec_f*rI
-      EcrrI(3) = EcrrI(3) + weight(iG)*decdr_f*r*rI
+
+      if(rI > threshold) then
+
+        EcrI(3)  = EcrI(3)  + weight(iG)*ec_f*rI
+        EcrrI(3) = EcrrI(3) + weight(iG)*decdr_f*r*rI
+
+      end if
 
     end if
 
