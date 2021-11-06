@@ -52,9 +52,9 @@ subroutine linear_response_pp(ispin,TDA,nBas,nC,nO,nV,nR,nOO,nVV,lambda,e,ERI,Om
 ! Solve the p-p eigenproblem                      !
 !-------------------------------------------------!
 !                                                 !
-!  | C   -B | | X1  X2 |   | w1  0  | | X1  X2 |  !
+!  |  C   B | | X1  X2 |   | w1  0  | | X1  X2 |  !
 !  |        | |        | = |        | |        |  !
-!  | Bt  -D | | Y1  Y2 |   | 0   w2 | | Y1  Y2 |  !
+!  | -Bt -D | | Y1  Y2 |   | 0   w2 | | Y1  Y2 |  !
 !                                                 !
 !-------------------------------------------------!
 

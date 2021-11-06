@@ -7,9 +7,9 @@
 # spin: TDA singlet triplet spin_conserved spin_flip 
          F   T       T       T              T 
 # GF: maxSCF thresh  DIIS n_diis lin eta renorm 
-       256  0.00001 T    5      T   0.0   3      
+       256  0.00001 T    5      T    0.00367493  3      
 # GW/GT: maxSCF thresh  DIIS n_diis lin eta COHSEX SOSEX TDA_W G0W GW0 
-         256   0.00001   T    5     T  0.0  F      F     F     F   F  
+         256   0.00001   T    5     T   0.00367493 F      F     F     F   F  
 # ACFDT: AC Kx  XBS
          F  F   T
 # BSE: BSE dBSE dTDA evDyn

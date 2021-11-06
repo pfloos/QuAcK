@@ -32,7 +32,8 @@ subroutine CCSD(maxSCF,thresh,max_diis,doCCSDT,nBasin,nCin,nOin,nVin,nRin,ERI,EN
   integer                       :: nSCF
   double precision              :: Conv
   double precision              :: EcMP2
-  double precision              :: ECCSD,EcCCSD
+  double precision              :: ECCSD
+  double precision              :: EcCCSD
   double precision              :: EcCCT
 
   double precision,allocatable  :: seHF(:)
@@ -166,6 +167,7 @@ subroutine CCSD(maxSCF,thresh,max_diis,doCCSDT,nBasin,nCin,nOin,nVin,nRin,ERI,EN
 
   Conv = 1d0
   nSCF = 0
+  ECCSD = ERHF
 
   n_diis         = 0
   t1_diis(:,:)   = 0d0
@@ -262,7 +264,7 @@ subroutine CCSD(maxSCF,thresh,max_diis,doCCSDT,nBasin,nCin,nOin,nVin,nRin,ERI,EN
   write(*,*)'----------------------------------------------------'
   write(*,*)'                 CCSD energy                        '
   write(*,*)'----------------------------------------------------'
-  write(*,'(1X,A20,1X,F15.10)')' E(CCSD)  = ',ECCSD  
+  write(*,'(1X,A20,1X,F15.10)')' E(CCSD)  = ',ENuc+ECCSD  
   write(*,'(1X,A20,1X,F10.6)')' Ec(CCSD) = ',EcCCSD 
   write(*,*)'----------------------------------------------------'
   write(*,*)
@@ -293,7 +295,7 @@ subroutine CCSD(maxSCF,thresh,max_diis,doCCSDT,nBasin,nCin,nOin,nVin,nRin,ERI,EN
     write(*,*)'----------------------------------------------------'
     write(*,*)'                 CCSD(T) energy                     '
     write(*,*)'----------------------------------------------------'
-    write(*,'(1X,A20,1X,F15.10)')' E(CCSD(T))  = ',ECCSD  + EcCCT
+    write(*,'(1X,A20,1X,F15.10)')' E(CCSD(T))  = ',ENuc + ECCSD + EcCCT
     write(*,'(1X,A20,1X,F10.6)')' Ec(CCSD(T)) = ',EcCCSD + EcCCT
     write(*,*)'----------------------------------------------------'
     write(*,*)
