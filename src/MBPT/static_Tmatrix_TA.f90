@@ -52,8 +52,8 @@ subroutine static_Tmatrix_TA(eta,nBas,nC,nO,nV,nR,nS,nOO,nVV,lambda,ERI,Omega1,r
 
           do kl=1,nOO
             eps = Omega2(kl)**2 + eta**2
-!           chi = chi + lambda*rho2(i,j,kl)*rho2(a,b,kl)*Omega2(kl)/eps
-            chi = chi + rho2(i,j,kl)*rho2(a,b,kl)*Omega2(kl)/eps
+!           chi = chi - lambda*rho2(i,j,kl)*rho2(a,b,kl)*Omega2(kl)/eps
+            chi = chi - rho2(i,j,kl)*rho2(a,b,kl)*Omega2(kl)/eps
           enddo
 
           TA(ia,jb) = TA(ia,jb) + 2d0*lambda*chi
