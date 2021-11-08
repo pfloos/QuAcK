@@ -62,7 +62,7 @@ subroutine unrestricted_correlation_individual_energy(rung,DFA,LDA_centered,nEns
 
     case(4) 
 
-      call print_warning('!!! Individual energies NYI for hybrids !!!')
+      call unrestricted_hybrid_correlation_individual_energy(DFA,nEns,wEns,nGrid,weight,rhow,drhow,rho,drho,Ec)
 
   end select
  

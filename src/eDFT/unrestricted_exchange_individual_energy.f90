@@ -29,13 +29,6 @@ subroutine unrestricted_exchange_individual_energy(rung,DFA,LDA_centered,nEns,wE
   logical,intent(in)            :: doNcentered
   double precision,intent(in)   :: kappa
 
-! Local variables
-
-  double precision              :: ExLDA
-  double precision              :: ExGGA
-  double precision              :: ExMGGA
-  double precision              :: ExHF
-
 ! Output variables
 
   double precision,intent(out)  :: Ex
@@ -53,32 +46,25 @@ subroutine unrestricted_exchange_individual_energy(rung,DFA,LDA_centered,nEns,wE
     case(1) 
 
       call unrestricted_lda_exchange_individual_energy(DFA,LDA_centered,nEns,wEns,aCC_w1,aCC_w2,nGrid,weight,&
-                                                       rhow,rho,Cx_choice,doNcentered,kappa,ExLDA)
-
-      Ex = ExLDA
+                                                       rhow,rho,Cx_choice,doNcentered,kappa,Ex)
 
 !   GGA functionals
 
     case(2) 
 
-      call unrestricted_gga_exchange_individual_energy(DFA,nEns,wEns,nGrid,weight,rhow,drhow,rho,drho,ExGGA)
-
-      Ex = ExGGA
+      call unrestricted_gga_exchange_individual_energy(DFA,nEns,wEns,nGrid,weight,rhow,drhow,rho,drho,Ex)
 
 !   MGGA functionals
 
     case(3) 
 
-      call unrestricted_mgga_exchange_individual_energy(DFA,nEns,wEns,nGrid,weight,rhow,drhow,rho,drho,ExMGGA)
-
-      Ex = ExMGGA
+      call unrestricted_mgga_exchange_individual_energy(DFA,nEns,wEns,nGrid,weight,rhow,drhow,rho,drho,Ex)
 
 !   Hybrid functionals
 
     case(4) 
 
-!     call unrestricted_hybrid_exchange_individual_energy(DFA,nEns,wEns,nGrid,weight,nBas,P,FxHF,rho,drho,Ex)
-      call print_warning('!!! Individual energies NYI for Hybrids !!!')
+      call unrestricted_hybrid_exchange_individual_energy(DFA,nEns,wEns,nGrid,weight,nBas,ERI,Pw,P,rhow,drhow,rho,drho,Ex)
 
   end select
  
