@@ -113,8 +113,8 @@ subroutine crRPA(TDA,doACFDT,exchange_kernel,singlet,triplet,eta,nBas,nC,nO,nV,n
     write(*,*) '-------------------------------------------------------'
     write(*,*)
 
-    call ACFDT(exchange_kernel,.false.,.false.,.false.,TDA,.false.,singlet,triplet,eta, &
-               nBas,nC,nO,nV,nR,nS,ERI,eHF,eHF,EcAC)
+    call ACFDT_cr(exchange_kernel,.false.,.false.,.false.,TDA,.false.,singlet,triplet,eta, &
+                  nBas,nC,nO,nV,nR,nS,ERI,eHF,eHF,EcAC)
 
     write(*,*)
     write(*,*)'-------------------------------------------------------------------------------'
