@@ -106,25 +106,25 @@ subroutine crRPA(TDA,doACFDT,exchange_kernel,singlet,triplet,eta,nBas,nC,nO,nV,n
 
 ! Compute the correlation energy via the adiabatic connection 
 
-! if(doACFDT) then
+  if(doACFDT) then
 
-!   write(*,*) '-------------------------------------------------------'
-!   write(*,*) 'Adiabatic connection version of crRPA correlation energy'
-!   write(*,*) '-------------------------------------------------------'
-!   write(*,*)
+    write(*,*) '-------------------------------------------------------'
+    write(*,*) 'Adiabatic connection version of crRPA correlation energy'
+    write(*,*) '-------------------------------------------------------'
+    write(*,*)
 
-!   call ACFDT(exchange_kernel,.false.,.false.,.false.,TDA,.false.,singlet,triplet,eta, &
-!              nBas,nC,nO,nV,nR,nS,ERI,eHF,eHF,EcAC)
+    call ACFDT(exchange_kernel,.false.,.false.,.false.,TDA,.false.,singlet,triplet,eta, &
+               nBas,nC,nO,nV,nR,nS,ERI,eHF,eHF,EcAC)
 
-!   write(*,*)
-!   write(*,*)'-------------------------------------------------------------------------------'
-!   write(*,'(2X,A50,F20.10)') 'AC@RPAx correlation energy (singlet) =',EcAC(1)
-!   write(*,'(2X,A50,F20.10)') 'AC@RPAx correlation energy (triplet) =',EcAC(2)
-!   write(*,'(2X,A50,F20.10)') 'AC@RPAx correlation energy           =',EcAC(1) + EcAC(2)
-!   write(*,'(2X,A50,F20.10)') 'AC@RPAx total energy                 =',ENuc + ERHF + EcAC(1) + EcAC(2)
-!   write(*,*)'-------------------------------------------------------------------------------'
-!   write(*,*)
+    write(*,*)
+    write(*,*)'-------------------------------------------------------------------------------'
+    write(*,'(2X,A50,F20.10)') 'AC@crRPA correlation energy (singlet) =',EcAC(1)
+    write(*,'(2X,A50,F20.10)') 'AC@crRPA correlation energy (triplet) =',EcAC(2)
+    write(*,'(2X,A50,F20.10)') 'AC@crRPA correlation energy           =',EcAC(1) + EcAC(2)
+    write(*,'(2X,A50,F20.10)') 'AC@crRPA total energy                 =',ENuc + ERHF + EcAC(1) + EcAC(2)
+    write(*,*)'-------------------------------------------------------------------------------'
+    write(*,*)
 
-! end if
+  end if
 
 end subroutine crRPA

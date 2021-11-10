@@ -824,7 +824,7 @@ program QuAcK
   if(doppRPA) then
 
     call cpu_time(start_RPA)
-    call ppRPA(TDA,singlet,triplet,nBas,nC,nO,nV,nR,ENuc,ERHF,ERI_MO,eHF)
+    call ppRPA(TDA,doACFDT,exchange_kernel,singlet,triplet,0d0,nBas,nC,nO,nV,nR,ENuc,ERHF,ERI_MO,eHF)
     call cpu_time(end_RPA)
 
     t_RPA = end_RPA - start_RPA
