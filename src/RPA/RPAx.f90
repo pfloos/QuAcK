@@ -89,12 +89,12 @@ subroutine RPAx(TDA,doACFDT,exchange_kernel,singlet,triplet,eta,nBas,nC,nO,nV,nR
 
   endif
 
-  if(exchange_kernel) then
+! if(exchange_kernel) then
 
     EcRPAx(1) = 0.5d0*EcRPAx(1)
     EcRPAx(2) = 1.5d0*EcRPAx(2)
 
-  end if
+! end if
 
   write(*,*)
   write(*,*)'-------------------------------------------------------------------------------'

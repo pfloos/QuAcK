@@ -1,14 +1,14 @@
-subroutine read_methods(doRHF,doUHF,doKS,doMOM,           & 
-                        doMP2,doMP3,doMP2F12,             & 
-                        doCCD,doDCD,doCCSD,doCCSDT,       & 
-                        do_drCCD,do_rCCD,do_lCCD,do_pCCD, &
-                        doCIS,doCIS_D,doCID,doCISD,doFCI, & 
-                        doRPA,doRPAx,doppRPA,             & 
-                        doG0F2,doevGF2,doqsGF2,           &
-                        doG0F3,doevGF3,                   & 
-                        doG0W0,doevGW,doqsGW,             & 
-                        doufG0W0,doufGW,                  & 
-                        doG0T0,doevGT,doqsGT,             & 
+subroutine read_methods(doRHF,doUHF,doKS,doMOM,            & 
+                        doMP2,doMP3,doMP2F12,              & 
+                        doCCD,dopCCD,doDCD,doCCSD,doCCSDT, & 
+                        do_drCCD,do_rCCD,do_crCCD,do_lCCD, &
+                        doCIS,doCIS_D,doCID,doCISD,doFCI,  & 
+                        doRPA,doRPAx,docrRPA,doppRPA,      & 
+                        doG0F2,doevGF2,doqsGF2,            &
+                        doG0F3,doevGF3,                    & 
+                        doG0W0,doevGW,doqsGW,              & 
+                        doufG0W0,doufGW,                   & 
+                        doG0T0,doevGT,doqsGT,              & 
                         doMCMP2)
 
 ! Read desired methods 
@@ -19,10 +19,10 @@ subroutine read_methods(doRHF,doUHF,doKS,doMOM,           &
 
   logical,intent(out)           :: doRHF,doUHF,doKS,doMOM
   logical,intent(out)           :: doMP2,doMP3,doMP2F12
-  logical,intent(out)           :: doCCD,doDCD,doCCSD,doCCSDT
-  logical,intent(out)           :: do_drCCD,do_rCCD,do_lCCD,do_pCCD
+  logical,intent(out)           :: doCCD,dopCCD,doDCD,doCCSD,doCCSDT
+  logical,intent(out)           :: do_drCCD,do_rCCD,do_crCCD,do_lCCD
   logical,intent(out)           :: doCIS,doCIS_D,doCID,doCISD,doFCI
-  logical,intent(out)           :: doRPA,doRPAx,doppRPA
+  logical,intent(out)           :: doRPA,doRPAx,docrRPA,doppRPA
   logical,intent(out)           :: doG0F2,doevGF2,doqsGF2,doG0F3,doevGF3  
   logical,intent(out)           :: doG0W0,doevGW,doqsGW,doufG0W0,doufGW
   logical,intent(out)           :: doG0T0,doevGT,doqsGT
@@ -48,14 +48,15 @@ subroutine read_methods(doRHF,doUHF,doKS,doMOM,           &
   doMP2F12 = .false.
  
   doCCD   = .false.
+  dopCCD  = .false.
   doDCD   = .false.
   doCCSD  = .false.
   doCCSDT = .false.
 
   do_drCCD = .false.
   do_rCCD  = .false.
+  do_crCCD = .false.
   do_lCCD  = .false.
-  do_pCCD  = .false.
 
   doCIS   = .false.
   doCIS_D = .false.
@@ -65,6 +66,7 @@ subroutine read_methods(doRHF,doUHF,doKS,doMOM,           &
 
   doRPA   = .false.
   doRPAx  = .false.
+  docrRPA = .false.
   doppRPA = .false.
 
   doG0F2  = .false.
@@ -105,19 +107,20 @@ subroutine read_methods(doRHF,doUHF,doKS,doMOM,           &
 ! Read CC methods
 
   read(1,*) 
-  read(1,*) answer1,answer2,answer3,answer4
-  if(answer1 == 'T') doCCD    = .true.
-  if(answer2 == 'T') doDCD    = .true.
-  if(answer3 == 'T') doCCSD   = .true.
-  if(answer4 == 'T') doCCSDT  = .true.
+  read(1,*) answer1,answer2,answer3,answer4,answer5
+  if(answer1 == 'T') doCCD   = .true.
+  if(answer2 == 'T') dopCCD  = .true.
+  if(answer3 == 'T') doDCD   = .true.
+  if(answer4 == 'T') doCCSD  = .true.
+  if(answer5 == 'T') doCCSDT = .true.
 
 ! Read weird CC methods
   read(1,*) 
   read(1,*) answer1,answer2,answer3,answer4
   if(answer1 == 'T') do_drCCD = .true.
   if(answer2 == 'T') do_rCCD  = .true.
-  if(answer3 == 'T') do_lCCD  = .true.
-  if(answer4 == 'T') do_pCCD  = .true.
+  if(answer3 == 'T') do_crCCD = .true.
+  if(answer4 == 'T') do_lCCD  = .true.
 
 ! Read excited state methods
 
@@ -131,10 +134,11 @@ subroutine read_methods(doRHF,doUHF,doKS,doMOM,           &
   if(doCIS_D)        doCIS   = .true.
 
   read(1,*) 
-  read(1,*) answer1,answer2,answer3
+  read(1,*) answer1,answer2,answer3,answer4
   if(answer1 == 'T') doRPA   = .true.
   if(answer2 == 'T') doRPAx  = .true.
-  if(answer3 == 'T') doppRPA = .true.
+  if(answer3 == 'T') docrRPA = .true.
+  if(answer4 == 'T') doppRPA = .true.
 
 ! Read Green function methods
 

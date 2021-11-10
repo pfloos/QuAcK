@@ -39,7 +39,6 @@ subroutine drCCD(maxSCF,thresh,max_diis,nBasin,nCin,nOin,nVin,nRin,ERI,ENuc,ERHF
 
   double precision,allocatable  :: OOVV(:,:,:,:)
   double precision,allocatable  :: OVVO(:,:,:,:)
-  double precision,allocatable  :: VOOV(:,:,:,:)
 
   double precision,allocatable  :: r2(:,:,:,:)
   double precision,allocatable  :: t2(:,:,:,:)
@@ -85,11 +84,10 @@ subroutine drCCD(maxSCF,thresh,max_diis,nBasin,nCin,nOin,nVin,nRin,ERI,ENuc,ERHF
 
 ! Create integral batches
 
-  allocate(OOVV(nO,nO,nV,nV),OVVO(nO,nV,nV,nO),VOOV(nV,nO,nO,nV))
+  allocate(OOVV(nO,nO,nV,nV),OVVO(nO,nV,nV,nO))
 
   OOVV(:,:,:,:) = sERI(   1:nO  ,   1:nO  ,nO+1:nBas,nO+1:nBas)
   OVVO(:,:,:,:) = sERI(   1:nO  ,nO+1:nBas,nO+1:nBas,   1:nO  )
-  VOOV(:,:,:,:) = sERI(nO+1:nBas,    1:nO  ,   1:nO  ,nO+1:nBas)
  
   deallocate(sERI)
 
@@ -135,7 +133,7 @@ subroutine drCCD(maxSCF,thresh,max_diis,nBasin,nCin,nOin,nVin,nRin,ERI,ENuc,ERHF
 
 !   Compute residual
 
-    call form_ring_r(nC,nO,nV,nR,OVVO,VOOV,OOVV,t2,r2)
+    call form_ring_r(nC,nO,nV,nR,OVVO,OOVV,t2,r2)
 
     r2(:,:,:,:) = OOVV(:,:,:,:) + delta_OOVV(:,:,:,:)*t2(:,:,:,:) + r2(:,:,:,:) 
 
