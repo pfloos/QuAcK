@@ -261,7 +261,7 @@ subroutine eDFT_UKS(x_rung,x_DFA,c_rung,c_DFA,nEns,wEns,aCC_w1,aCC_w2,nGrid,weig
     do ispin=1,nspin
       call unrestricted_exchange_potential(x_rung,x_DFA,LDA_centered,nEns,wEns(:),aCC_w1,aCC_w2,nGrid,weight(:),nBas,    &
                                            Pw(:,:,ispin),ERI(:,:,:,:),AO(:,:),dAO(:,:,:),rhow(:,ispin),drhow(:,:,ispin), &
-                                           Fx(:,:,ispin),FxHF(:,:,ispin),Cx_choice)
+                                           Fx(:,:,ispin),FxHF(:,:,ispin),Cx_choice,doNcentered)
     end do
 
 !   Compute correlation potential
@@ -339,7 +339,8 @@ subroutine eDFT_UKS(x_rung,x_DFA,c_rung,c_DFA,nEns,wEns,aCC_w1,aCC_w2,nGrid,weig
 
     do ispin=1,nspin
       call unrestricted_exchange_energy(x_rung,x_DFA,LDA_centered,nEns,wEns,aCC_w1,aCC_w2,nGrid,weight,nBas, &
-                                        Pw(:,:,ispin),FxHF(:,:,ispin),rhow(:,ispin),drhow(:,:,ispin),Ex(ispin),Cx_choice)
+                                        Pw(:,:,ispin),FxHF(:,:,ispin),rhow(:,ispin),drhow(:,:,ispin),Ex(ispin)&
+                                        ,Cx_choice,doNcentered)
     end do
 
 !   Correlation energy

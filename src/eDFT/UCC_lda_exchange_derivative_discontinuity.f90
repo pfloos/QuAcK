@@ -60,28 +60,59 @@ subroutine UCC_lda_exchange_derivative_discontinuity(nEns,wEns,aCC_w1,aCC_w2,nGr
   w1 = wEns(2)
   w2 = wEns(3)
 
-  select case (Cx_choice)
 
-    case(1)
-      dCxdw1 = (0.5d0*b1 + (2d0*a1 + 0.5d0*c1)*(w1 - 0.5d0) - (1d0 - w1)*w1*(3d0*b1 + 4d0*c1*(w1 - 0.5d0)))
-      dCxdw2 = 0.d0
+  if (doNcentered) then
+  
+    select case (Cx_choice)
 
-    case(2)
-      dCxdw1 = 0.d0
-      dCxdw2 =(0.5d0*b2 + (2d0*a2 + 0.5d0*c2)*(w2 - 0.5d0) - (1d0 - w2)*w2*(3d0*b2 + 4d0*c2*(w2 - 0.5d0)))
+      case(1)
+        dCxdw1 = 2.d0*a1*(w1-1.d0)+(2.d0+3.d0*(w1-2.d0)*w1)*b1+2.d0*(w1-1.d0)*(1.d0+2.d0*(w1-2.d0)*w1)*c1
+        dCxdw2 = 0.d0
 
-    case(3)
-      dCxdw1 = (0.5d0*b1 + (2d0*a1 + 0.5d0*c1)*(w1 - 0.5d0) - (1d0 - w1)*w1*(3d0*b1 + 4d0*c1*(w1 - 0.5d0))) &
-             * (1d0 - w2*(1d0 - w2)*(a2 + b2*(w2 - 0.5d0) + c2*(w2 - 0.5d0)**2))
+      case(2)
+        dCxdw1 = 0.d0
+        dCxdw2 = 2.d0*a2*(w2-1.d0)+(2.d0+3.d0*(w2-2.d0)*w2)*b2+2.d0*(w2-1.d0)*(1.d0+2.d0*(w2-2.d0)*w2)*c2
 
-      dCxdw2 = (1d0 - w1*(1d0 - w1)*(a1 + b1*(w1 - 0.5d0) + c1*(w1 - 0.5d0)**2))                            &
-             * (0.5d0*b2 + (2d0*a2 + 0.5d0*c2)*(w2 - 0.5d0) - (1d0 - w2)*w2*(3d0*b2 + 4d0*c2*(w2 - 0.5d0)))  
+      case(3)
+        dCxdw1 = (2.d0*a1*(w1-1.d0)+(2.d0+3.d0*(w1-2.d0)*w1)*b1+2.d0*(w1-1.d0)*(1.d0+2.d0*(w1-2.d0)*w1)*c1) &
+               * (1d0 - w2*(2d0 - w2)*(a2 + b2*(w2 - 1d0) + c2*(w2 - 1d0)**2))
 
-    case default
-      dCxdw1 = 0d0
-      dCxdw2 = 0d0
+        dCxdw2 = (1d0 - w1*(2d0 - w1)*(a1 + b1*(w1 - 1.d0) + c1*(w1 - 1.d0)**2))                            &
+               * (2.d0*a2*(w2-1.d0)+(2.d0+3.d0*(w2-2.d0)*w2)*b2+2.d0*(w2-1.d0)*(1.d0+2.d0*(w2-2.d0)*w2)*c2)
 
-  end select
+      case default
+        dCxdw1 = 0d0
+        dCxdw2 = 0d0
+
+    end select
+
+  else
+
+
+    select case (Cx_choice)
+
+      case(1)
+        dCxdw1 = (0.5d0*b1 + (2d0*a1 + 0.5d0*c1)*(w1 - 0.5d0) - (1d0 - w1)*w1*(3d0*b1 + 4d0*c1*(w1 - 0.5d0)))
+        dCxdw2 = 0.d0
+
+      case(2)
+        dCxdw1 = 0.d0
+        dCxdw2 =(0.5d0*b2 + (2d0*a2 + 0.5d0*c2)*(w2 - 0.5d0) - (1d0 - w2)*w2*(3d0*b2 + 4d0*c2*(w2 - 0.5d0)))
+
+      case(3)
+        dCxdw1 = (0.5d0*b1 + (2d0*a1 + 0.5d0*c1)*(w1 - 0.5d0) - (1d0 - w1)*w1*(3d0*b1 + 4d0*c1*(w1 - 0.5d0))) &
+               * (1d0 - w2*(1d0 - w2)*(a2 + b2*(w2 - 0.5d0) + c2*(w2 - 0.5d0)**2))
+
+        dCxdw2 = (1d0 - w1*(1d0 - w1)*(a1 + b1*(w1 - 0.5d0) + c1*(w1 - 0.5d0)**2))                            &
+               * (0.5d0*b2 + (2d0*a2 + 0.5d0*c2)*(w2 - 0.5d0) - (1d0 - w2)*w2*(3d0*b2 + 4d0*c2*(w2 - 0.5d0)))  
+
+      case default
+        dCxdw1 = 0d0
+        dCxdw2 = 0d0
+
+    end select
+  end if
+
 
   dCxdw1 = CxLSDA*dCxdw1
   dCxdw2 = CxLSDA*dCxdw2

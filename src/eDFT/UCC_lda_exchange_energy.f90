@@ -1,4 +1,4 @@
-subroutine UCC_lda_exchange_energy(nEns,wEns,aCC_w1,aCC_w2,nGrid,weight,rho,Ex,Cx_choice)
+subroutine UCC_lda_exchange_energy(nEns,wEns,aCC_w1,aCC_w2,nGrid,weight,rho,Cx_choice,doNcentered,Ex)
 
 ! Compute the unrestricted version of the curvature-corrected exchange functional
 
@@ -15,6 +15,7 @@ subroutine UCC_lda_exchange_energy(nEns,wEns,aCC_w1,aCC_w2,nGrid,weight,rho,Ex,C
   double precision,intent(in)   :: weight(nGrid)
   double precision,intent(in)   :: rho(nGrid)
   integer,intent(in)            :: Cx_choice
+  logical,intent(in)            :: doNcentered
 
 ! Local variables
 
@@ -68,11 +69,24 @@ subroutine UCC_lda_exchange_energy(nEns,wEns,aCC_w1,aCC_w2,nGrid,weight,rho,Ex,C
 ! Fx1 for states N and N-1
 ! Fx2 for states N and N+1
 
-  w1 = wEns(2)
-  Fx1 = 1d0 - w1*(1d0 - w1)*(a1 + b1*(w1 - 0.5d0) + c1*(w1 - 0.5d0)**2)
+  if(doNcentered) then 
+    
+     w1 = wEns(2)
+     Fx1 = 1d0 - w1*(2d0 - w1)*(a1 + b1*(w1 - 1d0) + c1*(w1 - 1d0)**2)
+   
+     w2 = wEns(3)
+     Fx2 = 1d0 - w2*(2d0 - w2)*(a2 + b2*(w2 - 1d0) + c2*(w2 - 1d0)**2)
 
-  w2 = wEns(3)
-  Fx2 = 1d0 - w2*(1d0 - w2)*(a2 + b2*(w2 - 0.5d0) + c2*(w2 - 0.5d0)**2)
+  else  
+
+
+    w1 = wEns(2)
+    Fx1 = 1d0 - w1*(1d0 - w1)*(a1 + b1*(w1 - 0.5d0) + c1*(w1 - 0.5d0)**2)
+
+    w2 = wEns(3)
+    Fx2 = 1d0 - w2*(1d0 - w2)*(a2 + b2*(w2 - 0.5d0) + c2*(w2 - 0.5d0)**2)
+
+  endif
 
   select case (Cx_choice)
 

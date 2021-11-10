@@ -1,5 +1,5 @@
 subroutine unrestricted_exchange_energy(rung,DFA,LDA_centered,nEns,wEns,aCC_w1,aCC_w2,nGrid,weight,nBas,P,FxHF, &
-                                        rho,drho,Ex,Cx_choice)
+                                        rho,drho,Ex,Cx_choice,doNcentered)
 
 ! Compute the exchange energy
 
@@ -23,6 +23,7 @@ subroutine unrestricted_exchange_energy(rung,DFA,LDA_centered,nEns,wEns,aCC_w1,a
   double precision,intent(in)   :: rho(nGrid)
   double precision,intent(in)   :: drho(ncart,nGrid)
   integer,intent(in)            :: Cx_choice
+  logical,intent(in)            :: doNcentered
 
 ! Local variables
 
@@ -43,7 +44,7 @@ subroutine unrestricted_exchange_energy(rung,DFA,LDA_centered,nEns,wEns,aCC_w1,a
     case(1) 
 
       call unrestricted_lda_exchange_energy(DFA,LDA_centered,nEns,wEns,aCC_w1,aCC_w2,nGrid,weight,&
-                                            rho,Ex,Cx_choice)
+                                            rho,Ex,Cx_choice,doNcentered)
 
 !   GGA functionals
 

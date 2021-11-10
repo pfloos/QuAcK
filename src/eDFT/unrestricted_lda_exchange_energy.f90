@@ -1,4 +1,4 @@
-subroutine unrestricted_lda_exchange_energy(DFA,LDA_centered,nEns,wEns,aCC_w1,aCC_w2,nGrid,weight,rho,Ex,Cx_choice)
+subroutine unrestricted_lda_exchange_energy(DFA,LDA_centered,nEns,wEns,aCC_w1,aCC_w2,nGrid,weight,rho,Ex,Cx_choice,doNcentered)
 
 ! Select LDA exchange functional
 
@@ -17,6 +17,7 @@ subroutine unrestricted_lda_exchange_energy(DFA,LDA_centered,nEns,wEns,aCC_w1,aC
   double precision,intent(in)   :: weight(nGrid)
   double precision,intent(in)   :: rho(nGrid)
   integer,intent(in)            :: Cx_choice
+  logical,intent(in)            :: doNcentered
 
 ! Output variables
 
@@ -32,7 +33,7 @@ subroutine unrestricted_lda_exchange_energy(DFA,LDA_centered,nEns,wEns,aCC_w1,aC
 
     case (2)
 
-      call UCC_lda_exchange_energy(nEns,wEns,aCC_w1,aCC_w2,nGrid,weight,rho,Ex,Cx_choice)
+      call UCC_lda_exchange_energy(nEns,wEns,aCC_w1,aCC_w2,nGrid,weight,rho,Cx_choice,doNcentered,Ex)
 
     case default
 
