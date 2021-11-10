@@ -1,4 +1,4 @@
-subroutine Bethe_Salpeter_A_matrix_dynamic(eta,nBas,nC,nO,nV,nR,nS,lambda,eGW,OmRPA,rho_RPA,OmBSE,A_dyn)
+subroutine Bethe_Salpeter_A_matrix_dynamic(eta,nBas,nC,nO,nV,nR,nS,lambda,eGW,OmRPA,rho_RPA,OmBSE,A_dyn,ZA_dyn)
 
 ! Compute the dynamic part of the Bethe-Salpeter equation matrices
 
@@ -25,10 +25,12 @@ subroutine Bethe_Salpeter_A_matrix_dynamic(eta,nBas,nC,nO,nV,nR,nS,lambda,eGW,Om
 ! Output variables
 
   double precision,intent(out)  :: A_dyn(nS,nS)
+  double precision,intent(out)  :: ZA_dyn(nS,nS)
 
 ! Initialization
 
-  A_dyn(:,:) = 0d0
+   A_dyn(:,:) = 0d0
+  ZA_dyn(:,:) = 0d0
 
 ! Number of poles taken into account 
 
@@ -66,6 +68,19 @@ subroutine Bethe_Salpeter_A_matrix_dynamic(eta,nBas,nC,nO,nV,nR,nS,lambda,eGW,Om
           enddo
 
           A_dyn(ia,jb) = A_dyn(ia,jb) - 2d0*lambda*chi
+
+          chi = 0d0
+          do kc=1,maxS
+
+            eps = + OmBSE - OmRPA(kc) - (eGW(a) - eGW(j))
+            chi = chi + rho_RPA(i,j,kc)*rho_RPA(a,b,kc)*(eps**2 - eta**2)/(eps**2 + eta**2)**2
+
+            eps = + OmBSE - OmRPA(kc) - (eGW(b) - eGW(i))
+            chi = chi + rho_RPA(i,j,kc)*rho_RPA(a,b,kc)*(eps**2 - eta**2)/(eps**2 + eta**2)**2
+
+          enddo
+
+          ZA_dyn(ia,jb) = ZA_dyn(ia,jb) + 2d0*lambda*chi
 
         enddo
       enddo

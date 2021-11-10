@@ -220,6 +220,15 @@ subroutine CCD(maxSCF,thresh,max_diis,nBasin,nCin,nOin,nVin,nRin,ERI,ENuc,ERHF,e
 
   endif
 
+  write(*,*)
+  write(*,*)'----------------------------------------------------'
+  write(*,*)'              CCD energy                            '
+  write(*,*)'----------------------------------------------------'
+  write(*,'(1X,A30,1X,F15.10)')' E(CCD) = ',ECCD
+  write(*,'(1X,A30,1X,F15.10)')' Ec(CCD) = ',EcCCD
+  write(*,*)'----------------------------------------------------'
+  write(*,*)
+
 ! Moller-Plesset energies
 
   write(*,*)

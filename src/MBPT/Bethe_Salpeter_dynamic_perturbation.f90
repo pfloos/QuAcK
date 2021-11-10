@@ -82,11 +82,7 @@ subroutine Bethe_Salpeter_dynamic_perturbation(dTDA,eta,nBas,nC,nO,nV,nR,nS,eW,e
 
       ! Resonant part of the BSE correction for dynamical TDA
 
-      call Bethe_Salpeter_A_matrix_dynamic(eta,nBas,nC,nO,nV,nR,nS,1d0,eGW,OmRPA,rho_RPA,OmBSE(ia),Ap_dyn)
-
-      ! Renormalization factor of the resonant parts for dynamical TDA
-
-      call Bethe_Salpeter_ZA_matrix_dynamic(eta,nBas,nC,nO,nV,nR,nS,1d0,eGW,OmRPA,rho_RPA,OmBSE(ia),ZAp_dyn)
+      call Bethe_Salpeter_A_matrix_dynamic(eta,nBas,nC,nO,nV,nR,nS,1d0,eGW,OmRPA,rho_RPA,OmBSE(ia),Ap_dyn,ZAp_dyn)
 
       ZDyn(ia)  = dot_product(X,matmul(ZAp_dyn,X))
       OmDyn(ia) = dot_product(X,matmul( Ap_dyn,X))

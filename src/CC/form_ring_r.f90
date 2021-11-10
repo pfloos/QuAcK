@@ -1,4 +1,4 @@
-subroutine form_ring_r(nC,nO,nV,nR,OVVO,OOVV,t2,r2)
+subroutine form_ring_r(nC,nO,nV,nR,OVVO,VOOV,OOVV,t2,r2)
 
 ! Form residuals for ring CCD
 
@@ -9,6 +9,7 @@ subroutine form_ring_r(nC,nO,nV,nR,OVVO,OOVV,t2,r2)
   integer,intent(in)            :: nC,nO,nV,nR
   double precision,intent(in)   :: t2(nO,nO,nV,nV)
   double precision,intent(in)   :: OVVO(nO,nV,nV,nO)
+  double precision,intent(in)   :: VOOV(nV,nO,nO,nV)
   double precision,intent(in)   :: OOVV(nO,nO,nV,nV)
 
 ! Local variables
@@ -49,7 +50,7 @@ subroutine form_ring_r(nC,nO,nV,nR,OVVO,OOVV,t2,r2)
           do k=nC+1,nO
             do c=1,nV-nR
 
-              r2(i,j,a,b) = r2(i,j,a,b) + OVVO(i,c,a,k)*t2(k,j,c,b) + OVVO(j,c,b,k)*t2(i,k,a,c)
+              r2(i,j,a,b) = r2(i,j,a,b) + VOOV(a,k,i,c)*t2(k,j,c,b) + OVVO(k,b,c,j)*t2(i,k,a,c)
 
             end do
           end do
