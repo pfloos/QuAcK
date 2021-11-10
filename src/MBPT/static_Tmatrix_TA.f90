@@ -26,7 +26,6 @@ subroutine static_Tmatrix_TA(eta,nBas,nC,nO,nV,nR,nS,nOO,nVV,lambda,ERI,Omega1,r
 ! Local variables
 
   double precision              :: chi
-  double precision              :: eps
   integer                       :: i,j,a,b,ia,jb,kl,cd
 
 ! Output variables
@@ -45,18 +44,16 @@ subroutine static_Tmatrix_TA(eta,nBas,nC,nO,nV,nR,nS,nOO,nVV,lambda,ERI,Omega1,r
           chi = 0d0
 
           do cd=1,nVV
-            eps = Omega1(cd)**2 + eta**2
-!           chi = chi + lambda*rho1(i,j,cd)*rho1(a,b,cd)*Omega1(cd)/eps
-            chi = chi + rho1(i,j,cd)*rho1(a,b,cd)*Omega1(cd)/eps
+!           chi = chi + lambda*rho1(i,j,cd)*rho1(a,b,cd)*Omega1(cd)/(Omega1(cd)**2 + eta**2)
+            chi = chi + rho1(i,j,cd)*rho1(a,b,cd)*Omega1(cd)/(Omega1(cd)**2 + eta**2)
           enddo
 
           do kl=1,nOO
-            eps = Omega2(kl)**2 + eta**2
-!           chi = chi + lambda*rho2(i,j,kl)*rho2(a,b,kl)*Omega2(kl)/eps
-            chi = chi + rho2(i,j,kl)*rho2(a,b,kl)*Omega2(kl)/eps
+!           chi = chi - lambda*rho2(i,j,kl)*rho2(a,b,kl)*Omega2(kl)/(Omega2(kl)**2 + eta**2)
+            chi = chi - rho2(i,j,kl)*rho2(a,b,kl)*Omega2(kl)/(Omega2(kl)**2 + eta**2)
           enddo
 
-          TA(ia,jb) = TA(ia,jb) + 2d0*lambda*chi
+          TA(ia,jb) = TA(ia,jb) + 1d0*lambda*chi
 
         enddo
       enddo

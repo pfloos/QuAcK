@@ -1,6 +1,6 @@
-subroutine drCCD(maxSCF,thresh,max_diis,nBasin,nCin,nOin,nVin,nRin,ERI,ENuc,ERHF,eHF)
+subroutine crCCD(maxSCF,thresh,max_diis,nBasin,nCin,nOin,nVin,nRin,ERI,ENuc,ERHF,eHF)
 
-! Direct ring CCD module
+! Crossed-ring CCD module
 
   implicit none
 
@@ -32,18 +32,30 @@ subroutine drCCD(maxSCF,thresh,max_diis,nBasin,nCin,nOin,nVin,nRin,ERI,ENuc,ERHF
   double precision              :: ECCD,EcCCD
   double precision,allocatable  :: seHF(:)
   double precision,allocatable  :: sERI(:,:,:,:)
+  double precision,allocatable  :: dbERI(:,:,:,:)
 
   double precision,allocatable  :: eO(:)
   double precision,allocatable  :: eV(:)
   double precision,allocatable  :: delta_OOVV(:,:,:,:)
 
+  double precision,allocatable  :: OOOO(:,:,:,:)
   double precision,allocatable  :: OOVV(:,:,:,:)
+  double precision,allocatable  :: OVOV(:,:,:,:)
   double precision,allocatable  :: OVVO(:,:,:,:)
-  double precision,allocatable  :: VOOV(:,:,:,:)
+  double precision,allocatable  :: VVVV(:,:,:,:)
+
+  double precision,allocatable  :: X1(:,:,:,:)
+  double precision,allocatable  :: X2(:,:)
+  double precision,allocatable  :: X3(:,:)
+  double precision,allocatable  :: X4(:,:,:,:)
+
+  double precision,allocatable  :: u(:,:,:,:)
+  double precision,allocatable  :: v(:,:,:,:)
+  double precision,allocatable  :: r2r(:,:,:,:)
+  double precision,allocatable  :: r2l(:,:,:,:)
 
   double precision,allocatable  :: r2(:,:,:,:)
   double precision,allocatable  :: t2(:,:,:,:)
-
 
   integer                       :: n_diis
   double precision              :: rcond
@@ -54,7 +66,7 @@ subroutine drCCD(maxSCF,thresh,max_diis,nBasin,nCin,nOin,nVin,nRin,ERI,ENuc,ERHF
 
   write(*,*)
   write(*,*)'**************************************'
-  write(*,*)'|     direct ring CCD calculation    |'
+  write(*,*)'|    crossed-ring CCD calculation    |'
   write(*,*)'**************************************'
   write(*,*)
 
@@ -71,6 +83,14 @@ subroutine drCCD(maxSCF,thresh,max_diis,nBasin,nCin,nOin,nVin,nRin,ERI,ENuc,ERHF
   call spatial_to_spin_MO_energy(nBasin,eHF,nBas,seHF)
   call spatial_to_spin_ERI(nBasin,ERI,nBas,sERI)
 
+! Antysymmetrize ERIs
+
+  allocate(dbERI(nBas,nBas,nBas,nBas))
+
+  call antisymmetrize_ERI(2,nBas,sERI,dbERI)
+
+  deallocate(sERI)
+
 ! Form energy denominator
 
   allocate(eO(nO),eV(nV))
@@ -85,14 +105,16 @@ subroutine drCCD(maxSCF,thresh,max_diis,nBasin,nCin,nOin,nVin,nRin,ERI,ENuc,ERHF
 
 ! Create integral batches
 
-  allocate(OOVV(nO,nO,nV,nV),OVVO(nO,nV,nV,nO),VOOV(nV,nO,nO,nV))
+  allocate(OOOO(nO,nO,nO,nO),OOVV(nO,nO,nV,nV),OVOV(nO,nV,nO,nV),VVVV(nV,nV,nV,nV),OVVO(nO,nV,nV,nO))
 
-  OOVV(:,:,:,:) = sERI(   1:nO  ,   1:nO  ,nO+1:nBas,nO+1:nBas)
-  OVVO(:,:,:,:) = sERI(   1:nO  ,nO+1:nBas,nO+1:nBas,   1:nO  )
-  VOOV(:,:,:,:) = sERI(nO+1:nBas,    1:nO  ,   1:nO  ,nO+1:nBas)
+  OOOO(:,:,:,:) = dbERI(   1:nO  ,   1:nO  ,   1:nO  ,   1:nO  )
+  OOVV(:,:,:,:) = dbERI(   1:nO  ,   1:nO  ,nO+1:nBas,nO+1:nBas)
+  OVOV(:,:,:,:) = dbERI(   1:nO  ,nO+1:nBas,   1:nO  ,nO+1:nBas)
+  OVVO(:,:,:,:) = dbERI(   1:nO  ,nO+1:nBas,nO+1:nBas,   1:nO  )
+  VVVV(:,:,:,:) = dbERI(nO+1:nBas,nO+1:nBas,nO+1:nBas,nO+1:nBas)
+
+  deallocate(dbERI)
  
-  deallocate(sERI)
-
 ! MP2 guess amplitudes
 
   allocate(t2(nO,nO,nV,nV))
@@ -107,7 +129,9 @@ subroutine drCCD(maxSCF,thresh,max_diis,nBasin,nCin,nOin,nVin,nRin,ERI,ENuc,ERHF
 
 ! Initialization
 
-  allocate(r2(nO,nO,nV,nV))
+  allocate(r2(nO,nO,nV,nV),u(nO,nO,nV,nV),v(nO,nO,nV,nV))
+  allocate(r2r(nO,nO,nV,nV),r2l(nO,nO,nV,nV))
+  allocate(X1(nO,nO,nO,nO),X2(nV,nV),X3(nO,nO),X4(nO,nO,nV,nV))
 
   Conv = 1d0
   nSCF = 0
@@ -121,7 +145,7 @@ subroutine drCCD(maxSCF,thresh,max_diis,nBasin,nCin,nOin,nVin,nRin,ERI,ENuc,ERHF
 !------------------------------------------------------------------------
   write(*,*)
   write(*,*)'----------------------------------------------------'
-  write(*,*)'| direct ring CCD calculation                      |'
+  write(*,*)'| crossed-ring CCD calculation                     |'
   write(*,*)'----------------------------------------------------'
   write(*,'(1X,A1,1X,A3,1X,A1,1X,A16,1X,A1,1X,A10,1X,A1,1X,A10,1X,A1,1X)') &
             '|','#','|','E(CCD)','|','Ec(CCD)','|','Conv','|'
@@ -135,14 +159,28 @@ subroutine drCCD(maxSCF,thresh,max_diis,nBasin,nCin,nOin,nVin,nRin,ERI,ENuc,ERHF
 
 !   Compute residual
 
-    call form_ring_r(nC,nO,nV,nR,OVVO,VOOV,OOVV,t2,r2)
+!   Form linear array
 
-    r2(:,:,:,:) = OOVV(:,:,:,:) + delta_OOVV(:,:,:,:)*t2(:,:,:,:) + r2(:,:,:,:) 
+    call form_u(nC,nO,nV,nR,OOOO,VVVV,OVOV,t2,u)
+
+!   Form interemediate arrays
+
+    call form_X(nC,nO,nV,nR,OOVV,t2,X1,X2,X3,X4)
+
+!   Form quadratic array
+
+    call form_v(nC,nO,nV,nR,X1,X2,X3,X4,t2,v)
+
+    call form_ring_r(nC,nO,nV,nR,OVVO,OOVV,t2,r2r)
+
+    call form_ladder_r(nC,nO,nV,nR,OOOO,OOVV,VVVV,t2,r2l)
+
+    r2(:,:,:,:) = OOVV(:,:,:,:) + delta_OOVV(:,:,:,:)*t2(:,:,:,:) + u(:,:,:,:) + v(:,:,:,:) - r2r(:,:,:,:) - r2l(:,:,:,:)
 
 !   Check convergence 
 
     Conv = maxval(abs(r2(nC+1:nO,nC+1:nO,1:nV-nR,1:nV-nR)))
-
+  
 !   Update amplitudes
 
     t2(:,:,:,:) = t2(:,:,:,:) - r2(:,:,:,:)/delta_OOVV(:,:,:,:)
@@ -150,7 +188,6 @@ subroutine drCCD(maxSCF,thresh,max_diis,nBasin,nCin,nOin,nVin,nRin,ERI,ENuc,ERHF
 !   Compute correlation energy
 
     call CCD_correlation_energy(nC,nO,nV,nR,OOVV,t2,EcCCD)
-    EcCCD = 2d0*EcCCD
 
 !   Dump results
 
@@ -190,11 +227,11 @@ subroutine drCCD(maxSCF,thresh,max_diis,nBasin,nCin,nOin,nVin,nRin,ERI,ENuc,ERHF
 
   write(*,*)
   write(*,*)'----------------------------------------------------'
-  write(*,*)'              direct ring CCD energy                '
+  write(*,*)'          crossed-ring CCD energy                   '
   write(*,*)'----------------------------------------------------'
-  write(*,'(1X,A30,1X,F15.10)')' E(drCCD) = ',ECCD  
-  write(*,'(1X,A30,1X,F15.10)')' Ec(drCCD) = ',EcCCD 
+  write(*,'(1X,A30,1X,F15.10)')' E(crCCD)  = ',ECCD
+  write(*,'(1X,A30,1X,F15.10)')' Ec(crCCD) = ',EcCCD
   write(*,*)'----------------------------------------------------'
   write(*,*)
 
-end subroutine drCCD
+end subroutine crCCD

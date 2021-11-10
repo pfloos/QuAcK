@@ -10,7 +10,7 @@ program QuAcK
   logical                       :: doKS
   logical                       :: doMP2,doMP3,doMP2F12
   logical                       :: doCCD,doDCD,doCCSD,doCCSDT
-  logical                       :: do_drCCD,do_rCCD,do_lCCD,do_pCCD
+  logical                       :: do_drCCD,do_rCCD,do_lCCD,do_crCCD,do_pCCD
   logical                       :: doCIS,doCIS_D,doCID,doCISD,doFCI
   logical                       :: doRPA,doRPAx,doppRPA
   logical                       :: doADC
@@ -658,6 +658,27 @@ program QuAcK
 
     t_CCD = end_CCD - start_CCD
     write(*,'(A65,1X,F9.3,A8)') 'Total CPU time for ladder CCD = ',t_CCD,' seconds'
+    write(*,*)
+
+  end if
+
+!------------------------------------------------------------------------
+! Perform crossed-ring CCD calculation
+!------------------------------------------------------------------------
+
+  do_crCCD = .false.
+
+  if(do_crCCD) then
+
+    call cpu_time(start_CCD)
+    call ehRPA(TDA,doACFDT,exchange_kernel,singlet,triplet,0d0,nBas,nC,nO,nV,nR,nS,ENuc,ERHF,ERI_MO,dipole_int_MO,eHF)
+    call crCCD(maxSCF_CC,thresh_CC,n_diis_CC,nBas,nC,nO,nV,nR, &
+              ERI_MO,ENuc,ERHF,eHF)
+
+    call cpu_time(end_CCD)
+
+    t_CCD = end_CCD - start_CCD
+    write(*,'(A65,1X,F9.3,A8)') 'Total CPU time for crossed-ring CCD = ',t_CCD,' seconds'
     write(*,*)
 
   end if
