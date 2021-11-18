@@ -287,7 +287,7 @@ subroutine evGT(maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS, &
       if(exchange_kernel) then
 
         EcAC(1) = 0.5d0*EcAC(1)
-        EcAC(2) = 1.5d0*EcAC(1)
+        EcAC(2) = 1.5d0*EcAC(2)
 
       end if
 

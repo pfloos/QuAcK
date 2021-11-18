@@ -75,7 +75,7 @@ subroutine linear_response_pp(ispin,TDA,nBas,nC,nO,nV,nR,nOO,nVV,lambda,e,ERI,Om
 
   else
 
-    call linear_response_B_pp(ispin,nBas,nC,nO,nV,nR,nOO,nVV,lambda,e,ERI,B)
+    call linear_response_B_pp(ispin,nBas,nC,nO,nV,nR,nOO,nVV,lambda,ERI,B)
 
   ! Diagonal blocks 
 

@@ -1,4 +1,4 @@
-subroutine ppRPA(TDA,doACFDT,exchange_kernel,singlet,triplet,eta,nBas,nC,nO,nV,nR,ENuc,ERHF,ERI,e)
+subroutine ppRPA(TDA,doACFDT,singlet,triplet,nBas,nC,nO,nV,nR,ENuc,ERHF,ERI,e)
 
 ! Perform pp-RPA calculation
 
@@ -9,10 +9,8 @@ subroutine ppRPA(TDA,doACFDT,exchange_kernel,singlet,triplet,eta,nBas,nC,nO,nV,n
 
   logical,intent(in)            :: TDA
   logical,intent(in)            :: doACFDT
-  logical,intent(in)            :: exchange_kernel
   logical,intent(in)            :: singlet
   logical,intent(in)            :: triplet
-  double precision,intent(in)   :: eta
   integer,intent(in)            :: nBas
   integer,intent(in)            :: nC
   integer,intent(in)            :: nO
@@ -116,15 +114,7 @@ subroutine ppRPA(TDA,doACFDT,exchange_kernel,singlet,triplet,eta,nBas,nC,nO,nV,n
     write(*,*) '---------------------------------------------------------'
     write(*,*)
 
-    call ACFDT_Tmatrix(exchange_kernel,.false.,.false.,.false.,TDA,.false.,singlet,triplet,eta,nBas,nC,nO,nV,nR,nS, &
-                       ERI,e,e,EcAC)
-
-    if(exchange_kernel) then
-
-      EcAC(1) = 0.5d0*EcAC(1)
-      EcAC(2) = 1.5d0*EcAC(1)
-
-    end if
+    call ACFDT_pp(TDA,singlet,triplet,nBas,nC,nO,nV,nR,nS,ERI,e,EcAC)
 
     write(*,*)
     write(*,*)'-------------------------------------------------------------------------------'

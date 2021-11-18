@@ -245,7 +245,7 @@ subroutine G0T0(doACFDT,exchange_kernel,doXBS,BSE,TDA_T,TDA,dBSE,dTDA,evDyn,sing
       if(exchange_kernel) then
 
         EcAC(1) = 0.5d0*EcAC(1)
-        EcAC(2) = 1.5d0*EcAC(1)
+        EcAC(2) = 1.5d0*EcAC(2)
 
       end if
 

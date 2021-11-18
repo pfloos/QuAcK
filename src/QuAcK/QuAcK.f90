@@ -442,7 +442,7 @@ program QuAcK
       ket1 = 1
       ket2 = 1
       call AOtoMO_integral_transform(bra1,bra2,ket1,ket2,nBas,cHF,ERI_AO,ERI_MO)
-
+!     call AOtoMO_transform(nBas,cHF,T+V)
     end if
 
   end if
@@ -824,7 +824,7 @@ program QuAcK
   if(doppRPA) then
 
     call cpu_time(start_RPA)
-    call ppRPA(TDA,doACFDT,exchange_kernel,singlet,triplet,0d0,nBas,nC,nO,nV,nR,ENuc,ERHF,ERI_MO,eHF)
+    call ppRPA(TDA,doACFDT,singlet,triplet,nBas,nC,nO,nV,nR,ENuc,ERHF,ERI_MO,eHF)
     call cpu_time(end_RPA)
 
     t_RPA = end_RPA - start_RPA

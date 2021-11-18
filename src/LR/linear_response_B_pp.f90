@@ -1,4 +1,4 @@
-subroutine linear_response_B_pp(ispin,nBas,nC,nO,nV,nR,nOO,nVV,lambda,e,ERI,B_pp)
+subroutine linear_response_B_pp(ispin,nBas,nC,nO,nV,nR,nOO,nVV,lambda,ERI,B_pp)
 
 ! Compute the B matrix of the pp channel
 
@@ -10,7 +10,7 @@ subroutine linear_response_B_pp(ispin,nBas,nC,nO,nV,nR,nOO,nVV,lambda,e,ERI,B_pp
   integer,intent(in)            :: ispin
   integer,intent(in)            :: nBas,nC,nO,nV,nR,nOO,nVV
   double precision,intent(in)   :: lambda
-  double precision,intent(in)   :: e(nBas),ERI(nBas,nBas,nBas,nBas) 
+  double precision,intent(in)   :: ERI(nBas,nBas,nBas,nBas) 
   
 ! Local variables
 

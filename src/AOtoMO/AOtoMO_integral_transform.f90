@@ -79,7 +79,7 @@ subroutine AOtoMO_integral_transform(bra1,bra2,ket1,ket2,nBas,c,ERI_AO_basis,ERI
           do nu=1,nBas
             ERI_MO_basis(i,j,k,l) = ERI_MO_basis(i,j,k,l) + c(nu,j,ket1)*scr(i,nu,k,l)
           enddo
-!         print*,i,k,j,l,ERI_MO_basis(i,j,k,l)
+!         write(11,'(I5,I5,I5,I5,F16.10)') i,j,k,l,ERI_MO_basis(i,j,k,l)
         enddo
       enddo
     enddo
