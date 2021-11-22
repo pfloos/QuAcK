@@ -1,5 +1,4 @@
-subroutine ACFDT_Tmatrix(exchange_kernel,doXBS,dRPA,TDA_T,TDA,BSE,singlet,triplet,eta,nBas,nC,nO,nV,nR,nS,nOOs,nVVs,nOOt,nVVt, &
-                         Omega1s,X1s,Y1s,Omega2s,X2s,Y2s,rho1s,rho2s,Omega1t,X1t,Y1t,Omega2t,X2t,Y2t,rho1t,rho2t, & 
+subroutine ACFDT_Tmatrix(exchange_kernel,doXBS,dRPA,TDA_T,TDA,BSE,singlet,triplet,eta,nBas,nC,nO,nV,nR,nS, &
                          ERI,eT,eGT,EcAC)
 
 ! Compute the correlation energy via the adiabatic connection fluctuation dissipation theorem for the T-matrix
@@ -27,31 +26,9 @@ subroutine ACFDT_Tmatrix(exchange_kernel,doXBS,dRPA,TDA_T,TDA,BSE,singlet,triple
   integer,intent(in)            :: nR
   integer,intent(in)            :: nS
 
-  integer,intent(in)            :: nOOs
-  integer,intent(in)            :: nOOt
-  integer,intent(in)            :: nVVs
-  integer,intent(in)            :: nVVt
-
   double precision,intent(in)   :: eT(nBas)
   double precision,intent(in)   :: eGT(nBas)
   double precision,intent(in)   :: ERI(nBas,nBas,nBas,nBas)
-
-  double precision,intent(in)   :: Omega1s(nVVs)
-  double precision,intent(in)   :: X1s(nVVs,nVVs)
-  double precision,intent(in)   :: Y1s(nOOs,nVVs)
-  double precision,intent(in)   :: Omega2s(nOOs)
-  double precision,intent(in)   :: X2s(nVVs,nOOs)
-  double precision,intent(in)   :: Y2s(nOOs,nOOs)
-  double precision,intent(in)   :: rho1s(nBas,nBas,nVVs)
-  double precision,intent(in)   :: rho2s(nBas,nBas,nOOs)
-  double precision,intent(in)   :: Omega1t(nVVt)
-  double precision,intent(in)   :: X1t(nVVt,nVVt)
-  double precision,intent(in)   :: Y1t(nOOt,nVVt)
-  double precision,intent(in)   :: Omega2t(nOOt)
-  double precision,intent(in)   :: X2t(nVVt,nOOt)
-  double precision,intent(in)   :: Y2t(nOOt,nOOt)
-  double precision,intent(in)   :: rho1t(nBas,nBas,nVVt)
-  double precision,intent(in)   :: rho2t(nBas,nBas,nOOt)
 
 ! Local variables
 
@@ -62,6 +39,9 @@ subroutine ACFDT_Tmatrix(exchange_kernel,doXBS,dRPA,TDA_T,TDA,BSE,singlet,triple
   double precision              :: lambda
   double precision,allocatable  :: Ec(:,:)
 
+  integer                       :: nOOs,nOOt
+  integer                       :: nVVs,nVVt
+
   double precision              :: EcRPA(nspin)
   double precision,allocatable  :: TA(:,:)
   double precision,allocatable  :: TB(:,:)
@@ -69,14 +49,40 @@ subroutine ACFDT_Tmatrix(exchange_kernel,doXBS,dRPA,TDA_T,TDA,BSE,singlet,triple
   double precision,allocatable  :: XpY(:,:,:)
   double precision,allocatable  :: XmY(:,:,:)
 
+  double precision,allocatable  :: Omega1s(:),Omega1t(:)
+  double precision,allocatable  :: X1s(:,:),X1t(:,:)
+  double precision,allocatable  :: Y1s(:,:),Y1t(:,:)
+  double precision,allocatable  :: rho1s(:,:,:),rho1t(:,:,:)
+  double precision,allocatable  :: Omega2s(:),Omega2t(:)
+  double precision,allocatable  :: X2s(:,:),X2t(:,:)
+  double precision,allocatable  :: Y2s(:,:),Y2t(:,:)
+  double precision,allocatable  :: rho2s(:,:,:),rho2t(:,:,:)
+
 ! Output variables
 
   double precision,intent(out)  :: EcAC(nspin)
 
+! Useful quantities
+
+! nOOs = nO*nO
+! nVVs = nV*nV
+
+  nOOs = nO*(nO+1)/2
+  nVVs = nV*(nV+1)/2
+
+  nOOt = nO*(nO-1)/2
+  nVVt = nV*(nV-1)/2
+
 ! Memory allocation
 
-  allocate(Ec(nAC,nspin))
+  allocate(Omega1s(nVVs),X1s(nVVs,nVVs),Y1s(nOOs,nVVs), &
+           Omega2s(nOOs),X2s(nVVs,nOOs),Y2s(nOOs,nOOs), &
+           rho1s(nBas,nBas,nVVs),rho2s(nBas,nBas,nOOs), &
+           Omega1t(nVVt),X1t(nVVt,nVVt),Y1t(nOOt,nVVt), &
+           Omega2t(nOOt),X2t(nVVt,nOOt),Y2t(nOOt,nOOt), &
+           rho1t(nBas,nBas,nVVt),rho2t(nBas,nBas,nOOt))
   allocate(TA(nS,nS),TB(nS,nS),Omega(nS,nspin),XpY(nS,nS,nspin),XmY(nS,nS,nspin))
+  allocate(Ec(nAC,nspin))
 
 ! Antisymmetrized kernel version
 
@@ -115,31 +121,31 @@ subroutine ACFDT_Tmatrix(exchange_kernel,doXBS,dRPA,TDA_T,TDA,BSE,singlet,triple
       TA(:,:) = 0d0
       TB(:,:) = 0d0
 
-      if(doXBS) then
+!     if(doXBS) then
 
-        isp_T  = 1
-        iblock = 3
+!       isp_T  = 1
+!       iblock = 3
 
-        call linear_response_pp(iblock,TDA_T,nBas,nC,nO,nV,nR,nOOs,nVVs,lambda,eT,ERI,  &
-                                Omega1s,X1s,Y1s,Omega2s,X2s,Y2s,EcRPA(isp_T))
+!       call linear_response_pp(iblock,TDA_T,nBas,nC,nO,nV,nR,nOOs,nVVs,lambda,eT,ERI,  &
+!                               Omega1s,X1s,Y1s,Omega2s,X2s,Y2s,EcRPA(isp_T))
 
-        call excitation_density_Tmatrix(iblock,nBas,nC,nO,nV,nR,nOOs,nVVs,ERI,X1s,Y1s,rho1s,X2s,Y2s,rho2s)
+!       call excitation_density_Tmatrix(iblock,nBas,nC,nO,nV,nR,nOOs,nVVs,ERI,X1s,Y1s,rho1s,X2s,Y2s,rho2s)
 
-                     call static_Tmatrix_TA(eta,nBas,nC,nO,nV,nR,nS,nOOs,nVVs,lambda,ERI,Omega1s,rho1s,Omega2s,rho2s,TA)
-        if(.not.TDA) call static_Tmatrix_TB(eta,nBas,nC,nO,nV,nR,nS,nOOs,nVVs,lambda,ERI,Omega1s,rho1s,Omega2s,rho2s,TB)
+!                    call static_Tmatrix_TA(eta,nBas,nC,nO,nV,nR,nS,nOOs,nVVs,lambda,ERI,Omega1s,rho1s,Omega2s,rho2s,TA)
+!       if(.not.TDA) call static_Tmatrix_TB(eta,nBas,nC,nO,nV,nR,nS,nOOs,nVVs,lambda,ERI,Omega1s,rho1s,Omega2s,rho2s,TB)
 
-        isp_T  = 2
-        iblock = 4
+!       isp_T  = 2
+!       iblock = 4
 
-        call linear_response_pp(iblock,TDA_T,nBas,nC,nO,nV,nR,nOOt,nVVt,lambda,eT,ERI,  &
-                                Omega1t,X1t,Y1t,Omega2t,X2t,Y2t,EcRPA(isp_T))
+!       call linear_response_pp(iblock,TDA_T,nBas,nC,nO,nV,nR,nOOt,nVVt,lambda,eT,ERI,  &
+!                               Omega1t,X1t,Y1t,Omega2t,X2t,Y2t,EcRPA(isp_T))
 
-        call excitation_density_Tmatrix(iblock,nBas,nC,nO,nV,nR,nOOt,nVVt,ERI,X1t,Y1t,rho1t,X2t,Y2t,rho2t)
+!       call excitation_density_Tmatrix(iblock,nBas,nC,nO,nV,nR,nOOt,nVVt,ERI,X1t,Y1t,rho1t,X2t,Y2t,rho2t)
 
-                     call static_Tmatrix_TA(eta,nBas,nC,nO,nV,nR,nS,nOOt,nVVt,lambda,ERI,Omega1t,rho1t,Omega2t,rho2t,TA)
-        if(.not.TDA) call static_Tmatrix_TB(eta,nBas,nC,nO,nV,nR,nS,nOOt,nVVt,lambda,ERI,Omega1t,rho1t,Omega2t,rho2t,TB)
+!                    call static_Tmatrix_TA(eta,nBas,nC,nO,nV,nR,nS,nOOt,nVVt,lambda,ERI,Omega1t,rho1t,Omega2t,rho2t,TA)
+!       if(.not.TDA) call static_Tmatrix_TB(eta,nBas,nC,nO,nV,nR,nS,nOOt,nVVt,lambda,ERI,Omega1t,rho1t,Omega2t,rho2t,TB)
 
-      end if
+!     end if
 
       call linear_response_Tmatrix(ispin,.false.,TDA,eta,nBas,nC,nO,nV,nR,nS,lambda,eGT,ERI,TA,TB, &
                                    EcAC(ispin),Omega(:,ispin),XpY(:,:,ispin),XmY(:,:,ispin))
@@ -180,31 +186,36 @@ subroutine ACFDT_Tmatrix(exchange_kernel,doXBS,dRPA,TDA_T,TDA,BSE,singlet,triple
  
       lambda = rAC(iAC)
 
-      if(doXBS) then
+      ! Initialize T matrix
 
-        isp_T  = 1
-        iblock = 3
+      TA(:,:) = 0d0
+      TB(:,:) = 0d0
+
+!     if(doXBS) then
+
+!       isp_T  = 1
+!       iblock = 3
 
 !       call linear_response_pp(iblock,TDA_T,nBas,nC,nO,nV,nR,nOOs,nVVs,lambda,eT,ERI,  &
 !                               Omega1s,X1s,Y1s,Omega2s,X2s,Y2s,EcRPA(isp_T))
 
-        call excitation_density_Tmatrix(iblock,nBas,nC,nO,nV,nR,nOOs,nVVs,ERI,X1s,Y1s,rho1s,X2s,Y2s,rho2s)
+!       call excitation_density_Tmatrix(iblock,nBas,nC,nO,nV,nR,nOOs,nVVs,ERI,X1s,Y1s,rho1s,X2s,Y2s,rho2s)
 
-                     call static_Tmatrix_TA(eta,nBas,nC,nO,nV,nR,nS,nOOs,nVVs,lambda,ERI,Omega1s,rho1s,Omega2s,rho2s,TA)
-        if(.not.TDA) call static_Tmatrix_TB(eta,nBas,nC,nO,nV,nR,nS,nOOs,nVVs,lambda,ERI,Omega1s,rho1s,Omega2s,rho2s,TB)
+!                    call static_Tmatrix_TA(eta,nBas,nC,nO,nV,nR,nS,nOOs,nVVs,lambda,ERI,Omega1s,rho1s,Omega2s,rho2s,TA)
+!       if(.not.TDA) call static_Tmatrix_TB(eta,nBas,nC,nO,nV,nR,nS,nOOs,nVVs,lambda,ERI,Omega1s,rho1s,Omega2s,rho2s,TB)
 
-        isp_T  = 2
-        iblock = 4
+!       isp_T  = 2
+!       iblock = 4
 
 !       call linear_response_pp(iblock,TDA_T,nBas,nC,nO,nV,nR,nOOt,nVVt,lambda,eT,ERI,  &
 !                               Omega1t,X1t,Y1t,Omega2t,X2t,Y2t,EcRPA(isp_T))
 
-        call excitation_density_Tmatrix(iblock,nBas,nC,nO,nV,nR,nOOt,nVVt,ERI,X1t,Y1t,rho1t,X2t,Y2t,rho2t)
+!       call excitation_density_Tmatrix(iblock,nBas,nC,nO,nV,nR,nOOt,nVVt,ERI,X1t,Y1t,rho1t,X2t,Y2t,rho2t)
 
-                     call static_Tmatrix_TA(eta,nBas,nC,nO,nV,nR,nS,nOOt,nVVt,lambda,ERI,Omega1t,rho1t,Omega2t,rho2t,TA)
-        if(.not.TDA) call static_Tmatrix_TB(eta,nBas,nC,nO,nV,nR,nS,nOOt,nVVt,lambda,ERI,Omega1t,rho1t,Omega2t,rho2t,TB)
+!                    call static_Tmatrix_TA(eta,nBas,nC,nO,nV,nR,nS,nOOt,nVVt,lambda,ERI,Omega1t,rho1t,Omega2t,rho2t,TA)
+!       if(.not.TDA) call static_Tmatrix_TB(eta,nBas,nC,nO,nV,nR,nS,nOOt,nVVt,lambda,ERI,Omega1t,rho1t,Omega2t,rho2t,TB)
 
-      end if  
+!     end if  
 
       call linear_response_Tmatrix(ispin,.false.,TDA,eta,nBas,nC,nO,nV,nR,nS,lambda,eGT,ERI,TA,TB, &
                                    EcAC(ispin),Omega(:,ispin),XpY(:,:,ispin),XmY(:,:,ispin))

@@ -1,4 +1,4 @@
-subroutine ppRPA(TDA,singlet,triplet,nBas,nC,nO,nV,nR,ENuc,ERHF,ERI,e)
+subroutine ppRPA(TDA,doACFDT,singlet,triplet,nBas,nC,nO,nV,nR,ENuc,ERHF,ERI,e)
 
 ! Perform pp-RPA calculation
 
@@ -8,6 +8,7 @@ subroutine ppRPA(TDA,singlet,triplet,nBas,nC,nO,nV,nR,ENuc,ERHF,ERI,e)
 ! Input variables
 
   logical,intent(in)            :: TDA
+  logical,intent(in)            :: doACFDT
   logical,intent(in)            :: singlet
   logical,intent(in)            :: triplet
   integer,intent(in)            :: nBas
@@ -23,16 +24,18 @@ subroutine ppRPA(TDA,singlet,triplet,nBas,nC,nO,nV,nR,ENuc,ERHF,ERI,e)
 ! Local variables
 
   integer                       :: ispin
-  integer                       :: nOO
-  integer                       :: nVV
-  double precision,allocatable  :: Omega1(:,:)
-  double precision,allocatable  :: X1(:,:,:)
-  double precision,allocatable  :: Y1(:,:,:)
-  double precision,allocatable  :: Omega2(:,:)
-  double precision,allocatable  :: X2(:,:,:)
-  double precision,allocatable  :: Y2(:,:,:)
+  integer                       :: nS
+  integer                       :: nOOs,nOOt
+  integer                       :: nVVs,nVVt
+  double precision,allocatable  :: Omega1s(:),Omega1t(:)
+  double precision,allocatable  :: X1s(:,:),X1t(:,:)
+  double precision,allocatable  :: Y1s(:,:),Y1t(:,:)
+  double precision,allocatable  :: Omega2s(:),Omega2t(:)
+  double precision,allocatable  :: X2s(:,:),X2t(:,:)
+  double precision,allocatable  :: Y2s(:,:),Y2t(:,:)
 
   double precision              :: Ec_ppRPA(nspin)
+  double precision              :: EcAC(nspin)
 
 ! Hello world
 
@@ -45,6 +48,25 @@ subroutine ppRPA(TDA,singlet,triplet,nBas,nC,nO,nV,nR,ENuc,ERHF,ERI,e)
 ! Initialization
 
   Ec_ppRPA(:) = 0d0
+  EcAC(:)   = 0d0
+
+! Useful quantities
+
+  nS   = nO*nV
+
+  nOOs = nO*(nO+1)/2
+  nVVs = nV*(nV+1)/2
+
+  nOOt = nO*(nO-1)/2
+  nVVt = nV*(nV-1)/2
+
+ ! Memory allocation
+
+  allocate(Omega1s(nVVs),X1s(nVVs,nVVs),Y1s(nOOs,nVVs), & 
+           Omega2s(nOOs),X2s(nVVs,nOOs),Y2s(nOOs,nOOs))
+
+  allocate(Omega1t(nVVt),X1t(nVVt,nVVt),Y1t(nOOt,nVVt), & 
+           Omega2t(nOOt),X2t(nVVt,nOOt),Y2t(nOOt,nOOt))
 
 ! Singlet manifold
 
@@ -52,25 +74,11 @@ subroutine ppRPA(TDA,singlet,triplet,nBas,nC,nO,nV,nR,ENuc,ERHF,ERI,e)
 
     ispin = 1
 
-  ! Useful quantities
+    call linear_response_pp(ispin,TDA,nBas,nC,nO,nV,nR,nOOs,nVVs,1d0,e,ERI, & 
+                            Omega1s,X1s,Y1s,Omega2s,X2s,Y2s,Ec_ppRPA(ispin))
 
-    nOO = nO*(nO+1)/2
-    nVV = nV*(nV+1)/2
-
-   ! Memory allocation
-
-    allocate(Omega1(nVV,nspin),X1(nVV,nVV,nspin),Y1(nOO,nVV,nspin), & 
-             Omega2(nOO,nspin),X2(nVV,nOO,nspin),Y2(nOO,nOO,nspin))
-
-    call linear_response_pp(ispin,TDA,nBas,nC,nO,nV,nR,nOO,nVV,1d0,e,ERI, & 
-                            Omega1(:,ispin),X1(:,:,ispin),Y1(:,:,ispin),  & 
-                            Omega2(:,ispin),X2(:,:,ispin),Y2(:,:,ispin),  & 
-                            Ec_ppRPA(ispin))
-
-    call print_excitation('pp-RPA (N+2)',ispin,nVV,Omega1(:,ispin))
-    call print_excitation('pp-RPA (N-2)',ispin,nOO,Omega2(:,ispin))
-
-    deallocate(Omega1,X1,Y1,Omega2,X2,Y2)
+    call print_excitation('pp-RPA (N+2)',ispin,nVVs,Omega1s)
+    call print_excitation('pp-RPA (N-2)',ispin,nOOs,Omega2s)
 
   endif
 
@@ -80,26 +88,11 @@ subroutine ppRPA(TDA,singlet,triplet,nBas,nC,nO,nV,nR,ENuc,ERHF,ERI,e)
 
     ispin = 2
 
-  ! Useful quantities
+    call linear_response_pp(ispin,TDA,nBas,nC,nO,nV,nR,nOOt,nVVt,1d0,e,ERI, &
+                            Omega1t,X1t,Y1t,Omega2t,X2t,Y2t,Ec_ppRPA(ispin))
 
-    nOO = nO*(nO-1)/2
-    nVV = nV*(nV-1)/2
-
-  ! Memory allocation
-
-    allocate(Omega1(nVV,nspin),X1(nVV,nVV,nspin),Y1(nOO,nVV,nspin), & 
-             Omega2(nOO,nspin),X2(nVV,nOO,nspin),Y2(nOO,nOO,nspin))
-
-
-    call linear_response_pp(ispin,TDA,nBas,nC,nO,nV,nR,nOO,nVV,1d0,e,ERI, &
-                            Omega1(:,ispin),X1(:,:,ispin),Y1(:,:,ispin),  & 
-                            Omega2(:,ispin),X2(:,:,ispin),Y2(:,:,ispin),  & 
-                            Ec_ppRPA(ispin))
-
-    call print_excitation('pp-RPA (N+2)',ispin,nVV,Omega1(:,ispin))
-    call print_excitation('pp-RPA (N-2)',ispin,nOO,Omega2(:,ispin))
-
-    deallocate(Omega1,X1,Y1,Omega2,X2,Y2)
+    call print_excitation('pp-RPA (N+2)',ispin,nVVt,Omega1t)
+    call print_excitation('pp-RPA (N-2)',ispin,nOOt,Omega2t)
 
   endif
 
@@ -111,5 +104,28 @@ subroutine ppRPA(TDA,singlet,triplet,nBas,nC,nO,nV,nR,ENuc,ERHF,ERI,e)
   write(*,'(2X,A50,F20.10)') 'Tr@ppRPA total energy                 =',ENuc + ERHF + Ec_ppRPA(1) + 3d0*Ec_ppRPA(2)
   write(*,*)'-------------------------------------------------------------------------------'
   write(*,*)
+
+! Compute the correlation energy via the adiabatic connection 
+
+  if(doACFDT) then
+
+    write(*,*) '---------------------------------------------------------'
+    write(*,*) 'Adiabatic connection version of pp-RPA correlation energy'
+    write(*,*) '---------------------------------------------------------'
+    write(*,*)
+
+    call ACFDT_pp(TDA,singlet,triplet,nBas,nC,nO,nV,nR,nS,ERI,e,EcAC)
+
+    write(*,*)
+    write(*,*)'-------------------------------------------------------------------------------'
+    write(*,'(2X,A50,F20.10,A3)') 'AC@ppRPA correlation energy (singlet) =',EcAC(1),' au'
+    write(*,'(2X,A50,F20.10,A3)') 'AC@ppRPA correlation energy (triplet) =',EcAC(2),' au'
+    write(*,'(2X,A50,F20.10,A3)') 'AC@ppRPA correlation energy           =',EcAC(1) + EcAC(2),' au'
+    write(*,'(2X,A50,F20.10,A3)') 'AC@ppRPA total energy                 =',ENuc + ERHF + EcAC(1) + EcAC(2),' au'
+    write(*,*)'-------------------------------------------------------------------------------'
+    write(*,*)
+
+  end if
+
 
 end subroutine ppRPA

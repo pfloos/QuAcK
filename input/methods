@@ -2,14 +2,14 @@
   T   F   F  F   
 # MP2* MP3 MP2-F12
   F   F   F
-# CCD DCD CCSD CCSD(T) 
-  F   F   F    F
-# drCCD rCCD lCCD pCCD
-  T      T   F    F
+# CCD pCCD DCD CCSD CCSD(T) 
+  F   F    F   F    F
+# drCCD rCCD crCCD lCCD
+  F     F    F     F
 # CIS* CIS(D) CID CISD FCI
   F    F      F   F    F
-# RPA* RPAx* ppRPA 
-  T   T    F    
+# RPA* RPAx* crRPA ppRPA 
+  F    F     F     T    
 # G0F2* evGF2* qsGF2* G0F3 evGF3
   F     F     F      F    F
 # G0W0* evGW* qsGW* ufG0W0 ufGW

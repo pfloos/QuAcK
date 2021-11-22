@@ -1,7 +1,7 @@
-subroutine ehRPA(TDA,doACFDT,exchange_kernel,singlet,triplet,eta,nBas,nC,nO,nV,nR,nS,ENuc,ERHF, & 
+subroutine crRPA(TDA,doACFDT,exchange_kernel,singlet,triplet,eta,nBas,nC,nO,nV,nR,nS,ENuc,ERHF, & 
                 ERI,dipole_int,eHF)
 
-! Perform random phase approximation calculation with exchange (aka TDHF)
+! Crossed-ring channel of the random phase approximation 
 
   implicit none
   include 'parameters.h'
@@ -42,7 +42,7 @@ subroutine ehRPA(TDA,doACFDT,exchange_kernel,singlet,triplet,eta,nBas,nC,nO,nV,n
 
   write(*,*)
   write(*,*)'***********************************************************'
-  write(*,*)'|  Random phase approximation calculation: eh channel     |'
+  write(*,*)'|  Random phase approximation calculation: cr channel     |'
   write(*,*)'***********************************************************'
   write(*,*)
 
@@ -70,7 +70,7 @@ subroutine ehRPA(TDA,doACFDT,exchange_kernel,singlet,triplet,eta,nBas,nC,nO,nV,n
 
     call linear_response(ispin,.false.,TDA,.false.,eta,nBas,nC,nO,nV,nR,nS,-1d0,eHF,ERI,Omega(:,ispin),rho, &
                          EcRPAx(ispin),Omega(:,ispin),XpY(:,:,ispin),XmY(:,:,ispin))
-    call print_excitation('ehRPA@HF    ',ispin,nS,Omega(:,ispin))
+    call print_excitation('crRPA@HF    ',ispin,nS,Omega(:,ispin))
     call print_transition_vectors(.true.,nBas,nC,nO,nV,nR,nS,dipole_int,Omega(:,ispin),XpY(:,:,ispin),XmY(:,:,ispin))
 
   endif
@@ -83,48 +83,48 @@ subroutine ehRPA(TDA,doACFDT,exchange_kernel,singlet,triplet,eta,nBas,nC,nO,nV,n
 
     call linear_response(ispin,.false.,TDA,.false.,eta,nBas,nC,nO,nV,nR,nS,-1d0,eHF,ERI,Omega(:,ispin),rho, &
                          EcRPAx(ispin),Omega(:,ispin),XpY(:,:,ispin),XmY(:,:,ispin))
-    call print_excitation('ehRPA@HF    ',ispin,nS,Omega(:,ispin))
+    call print_excitation('crRPA@HF    ',ispin,nS,Omega(:,ispin))
     call print_transition_vectors(.false.,nBas,nC,nO,nV,nR,nS,dipole_int,Omega(:,ispin),XpY(:,:,ispin),XmY(:,:,ispin))
 
   endif
 
-  if(exchange_kernel) then
+! if(exchange_kernel) then
 
     EcRPAx(1) = 0.5d0*EcRPAx(1)
     EcRPAx(2) = 1.5d0*EcRPAx(2)
 
-  end if
+! end if
 
   write(*,*)
   write(*,*)'-------------------------------------------------------------------------------'
-  write(*,'(2X,A50,F20.10)') 'Tr@ehRPA correlation energy (singlet) =',EcRPAx(1)
-  write(*,'(2X,A50,F20.10)') 'Tr@ehRPA correlation energy (triplet) =',EcRPAx(2)
-  write(*,'(2X,A50,F20.10)') 'Tr@ehRPA correlation energy           =',EcRPAx(1) + EcRPAx(2)
-  write(*,'(2X,A50,F20.10)') 'Tr@ehRPA total energy                 =',ENuc + ERHF + EcRPAx(1) + EcRPAx(2)
+  write(*,'(2X,A50,F20.10)') 'Tr@crRPA correlation energy (singlet) =',EcRPAx(1)
+  write(*,'(2X,A50,F20.10)') 'Tr@crRPA correlation energy (triplet) =',EcRPAx(2)
+  write(*,'(2X,A50,F20.10)') 'Tr@crRPA correlation energy           =',EcRPAx(1) + EcRPAx(2)
+  write(*,'(2X,A50,F20.10)') 'Tr@crRPA total energy                 =',ENuc + ERHF + EcRPAx(1) + EcRPAx(2)
   write(*,*)'-------------------------------------------------------------------------------'
   write(*,*)
 
 ! Compute the correlation energy via the adiabatic connection 
 
-! if(doACFDT) then
+  if(doACFDT) then
 
-!   write(*,*) '-------------------------------------------------------'
-!   write(*,*) 'Adiabatic connection version of ehRPA correlation energy'
-!   write(*,*) '-------------------------------------------------------'
-!   write(*,*)
+    write(*,*) '-------------------------------------------------------'
+    write(*,*) 'Adiabatic connection version of crRPA correlation energy'
+    write(*,*) '-------------------------------------------------------'
+    write(*,*)
 
-!   call ACFDT(exchange_kernel,.false.,.false.,.false.,TDA,.false.,singlet,triplet,eta, &
-!              nBas,nC,nO,nV,nR,nS,ERI,eHF,eHF,EcAC)
+    call ACFDT_cr(exchange_kernel,.false.,.false.,.false.,TDA,.false.,singlet,triplet,eta, &
+                  nBas,nC,nO,nV,nR,nS,ERI,eHF,eHF,EcAC)
 
-!   write(*,*)
-!   write(*,*)'-------------------------------------------------------------------------------'
-!   write(*,'(2X,A50,F20.10)') 'AC@RPAx correlation energy (singlet) =',EcAC(1)
-!   write(*,'(2X,A50,F20.10)') 'AC@RPAx correlation energy (triplet) =',EcAC(2)
-!   write(*,'(2X,A50,F20.10)') 'AC@RPAx correlation energy           =',EcAC(1) + EcAC(2)
-!   write(*,'(2X,A50,F20.10)') 'AC@RPAx total energy                 =',ENuc + ERHF + EcAC(1) + EcAC(2)
-!   write(*,*)'-------------------------------------------------------------------------------'
-!   write(*,*)
+    write(*,*)
+    write(*,*)'-------------------------------------------------------------------------------'
+    write(*,'(2X,A50,F20.10)') 'AC@crRPA correlation energy (singlet) =',EcAC(1)
+    write(*,'(2X,A50,F20.10)') 'AC@crRPA correlation energy (triplet) =',EcAC(2)
+    write(*,'(2X,A50,F20.10)') 'AC@crRPA correlation energy           =',EcAC(1) + EcAC(2)
+    write(*,'(2X,A50,F20.10)') 'AC@crRPA total energy                 =',ENuc + ERHF + EcAC(1) + EcAC(2)
+    write(*,*)'-------------------------------------------------------------------------------'
+    write(*,*)
 
-! end if
+  end if
 
-end subroutine ehRPA
+end subroutine crRPA

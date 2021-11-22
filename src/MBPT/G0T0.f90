@@ -218,6 +218,11 @@ subroutine G0T0(doACFDT,exchange_kernel,doXBS,BSE,TDA_T,TDA,dBSE,dTDA,evDyn,sing
     write(*,*)'-------------------------------------------------------------------------------'
     write(*,*)
 
+! Free memory
+
+  deallocate(Omega1s,X1s,Y1s,Omega2s,X2s,Y2s,rho1s,rho2s, &
+             Omega1t,X1t,Y1t,Omega2t,X2t,Y2t,rho1t,rho2t)
+
 !   Compute the BSE correlation energy via the adiabatic connection 
 
     if(doACFDT) then
@@ -234,13 +239,13 @@ subroutine G0T0(doACFDT,exchange_kernel,doXBS,BSE,TDA_T,TDA,dBSE,dTDA,evDyn,sing
 
       end if
 
-      call ACFDT(exchange_kernel,doXBS,.true.,TDA_T,TDA,BSE,singlet,triplet,eta, &
-                 nBas,nC,nO,nV,nR,nS,ERI_MO,eHF,eG0T0,EcAC)
+      call ACFDT_Tmatrix(exchange_kernel,doXBS,.false.,TDA_T,TDA,BSE,singlet,triplet,eta,nBas,nC,nO,nV,nR,nS, &
+                         ERI_MO,eHF,eG0T0,EcAC)
 
       if(exchange_kernel) then
 
         EcAC(1) = 0.5d0*EcAC(1)
-        EcAC(2) = 1.5d0*EcAC(1)
+        EcAC(2) = 1.5d0*EcAC(2)
 
       end if
 

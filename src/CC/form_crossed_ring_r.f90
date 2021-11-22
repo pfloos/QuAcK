@@ -1,6 +1,6 @@
-subroutine form_ring_r(nC,nO,nV,nR,OVVO,OOVV,t2,r2)
+subroutine form_crossed_ring_r(nC,nO,nV,nR,OVOV,OOVV,t2,r2)
 
-! Form residuals for ring CCD
+! Form residuals for crossed-ring CCD
 
   implicit none
 
@@ -8,7 +8,7 @@ subroutine form_ring_r(nC,nO,nV,nR,OVVO,OOVV,t2,r2)
 
   integer,intent(in)            :: nC,nO,nV,nR
   double precision,intent(in)   :: t2(nO,nO,nV,nV)
-  double precision,intent(in)   :: OVVO(nO,nV,nV,nO)
+  double precision,intent(in)   :: OVOV(nO,nV,nO,nV)
   double precision,intent(in)   :: OOVV(nO,nO,nV,nV)
 
 ! Local variables
@@ -23,17 +23,17 @@ subroutine form_ring_r(nC,nO,nV,nR,OVVO,OOVV,t2,r2)
 
   r2(:,:,:,:) = 0d0
 
-  allocate(y(nO,nV,nO,nV))
+  allocate(y(nV,nO,nO,nV))
 
   y(:,:,:,:) = 0d0
 
   do i=nC+1,nO
-    do a=1,nV-nR
+    do b=1,nV-nR
       do l=nC+1,nO
         do d=1,nV-nR
           do k=nC+1,nO
             do c=1,nV-nR
-              y(i,a,l,d) = y(i,a,l,d) + t2(i,k,a,c)*OOVV(k,l,c,d)
+              y(b,i,l,d) = y(b,i,l,d) + t2(i,k,c,b)*OOVV(k,l,c,d)
             end do
           end do
         end do
@@ -49,7 +49,7 @@ subroutine form_ring_r(nC,nO,nV,nR,OVVO,OOVV,t2,r2)
           do k=nC+1,nO
             do c=1,nV-nR
 
-              r2(i,j,a,b) = r2(i,j,a,b) + OVVO(k,a,c,i)*t2(k,j,c,b) + OVVO(k,b,c,j)*t2(i,k,a,c)
+              r2(i,j,a,b) = r2(i,j,a,b) - OVOV(k,b,i,c)*t2(k,j,a,c) - OVOV(k,a,j,c)*t2(i,k,c,b)
 
             end do
           end do
@@ -57,7 +57,7 @@ subroutine form_ring_r(nC,nO,nV,nR,OVVO,OOVV,t2,r2)
           do l=nC+1,nO
             do d=1,nV-nR
 
-              r2(i,j,a,b) = r2(i,j,a,b) + y(i,a,l,d)*t2(l,j,d,b)
+              r2(i,j,a,b) = r2(i,j,a,b) - y(b,i,l,d)*t2(l,j,a,d)
 
             end do
           end do
@@ -67,4 +67,4 @@ subroutine form_ring_r(nC,nO,nV,nR,OVVO,OOVV,t2,r2)
     end do
   end do
 
-end subroutine form_ring_r
+end subroutine form_crossed_ring_r

@@ -281,13 +281,13 @@ subroutine evGT(maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS, &
 
       end if
 
-      call ACFDT(exchange_kernel,doXBS,.true.,TDA_T,TDA,BSE,singlet,triplet,eta, &
-                 nBas,nC,nO,nV,nR,nS,ERI_MO,eGT,eGT,EcAC)
+      call ACFDT_Tmatrix(exchange_kernel,doXBS,.false.,TDA_T,TDA,BSE,singlet,triplet,eta,nBas,nC,nO,nV,nR,nS, &
+                         ERI_MO,eGT,eGT,EcAC)
 
       if(exchange_kernel) then
 
         EcAC(1) = 0.5d0*EcAC(1)
-        EcAC(2) = 1.5d0*EcAC(1)
+        EcAC(2) = 1.5d0*EcAC(2)
 
       end if
 

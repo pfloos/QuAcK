@@ -381,7 +381,8 @@ subroutine qsGT(maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,BSE,TDA_T,T
 
       end if
 
-      call ACFDT(exchange_kernel,doXBS,.true.,TDA_T,TDA,BSE,singlet,triplet,eta,nBas,nC,nO,nV,nR,nS,ERI_MO,eGT,eGT,EcAC)
+      call ACFDT_Tmatrix(exchange_kernel,doXBS,.false.,TDA_T,TDA,BSE,singlet,triplet,eta,nBas,nC,nO,nV,nR,nS, &
+                         ERI_MO,eGT,eGT,EcAC)
 
       write(*,*)
       write(*,*)'-------------------------------------------------------------------------------'

@@ -9,10 +9,10 @@ program QuAcK
   logical                       :: dostab
   logical                       :: doKS
   logical                       :: doMP2,doMP3,doMP2F12
-  logical                       :: doCCD,doDCD,doCCSD,doCCSDT
-  logical                       :: do_drCCD,do_rCCD,do_lCCD,do_crCCD,do_pCCD
+  logical                       :: doCCD,dopCCD,doDCD,doCCSD,doCCSDT
+  logical                       :: do_drCCD,do_rCCD,do_crCCD,do_lCCD
   logical                       :: doCIS,doCIS_D,doCID,doCISD,doFCI
-  logical                       :: doRPA,doRPAx,doppRPA
+  logical                       :: doRPA,doRPAx,docrRPA,doppRPA
   logical                       :: doADC
   logical                       :: doG0F2,doevGF2,doqsGF2,doG0F3,doevGF3
   logical                       :: doG0W0,doevGW,doqsGW,doufG0W0,doufGW
@@ -91,8 +91,6 @@ program QuAcK
   double precision              :: start_CISD   ,end_CISD     ,t_CISD
   double precision              :: start_FCI    ,end_FCI      ,t_FCI
   double precision              :: start_RPA    ,end_RPA      ,t_RPA 
-  double precision              :: start_RPAx   ,end_RPAx     ,t_RPAx
-  double precision              :: start_ppRPA  ,end_ppRPA    ,t_ppRPA
   double precision              :: start_ADC    ,end_ADC      ,t_ADC
   double precision              :: start_GF2    ,end_GF2      ,t_GF2
   double precision              :: start_GF3    ,end_GF3      ,t_GF3
@@ -160,17 +158,17 @@ program QuAcK
 
 ! Which calculations do you want to do?
 
-  call read_methods(doRHF,doUHF,doKS,doMOM,           &
-                    doMP2,doMP3,doMP2F12,             &
-                    doCCD,doDCD,doCCSD,doCCSDT,       &
-                    do_drCCD,do_rCCD,do_lCCD,do_pCCD, &
-                    doCIS,doCIS_D,doCID,doCISD,doFCI, & 
-                    doRPA,doRPAx,doppRPA,             &
-                    doG0F2,doevGF2,doqsGF2,           & 
-                    doG0F3,doevGF3,                   &
-                    doG0W0,doevGW,doqsGW,             &
-                    doufG0W0,doufGW,                  &
-                    doG0T0,doevGT,doqsGT,             &
+  call read_methods(doRHF,doUHF,doKS,doMOM,            &
+                    doMP2,doMP3,doMP2F12,              &
+                    doCCD,dopCCD,doDCD,doCCSD,doCCSDT, &
+                    do_drCCD,do_rCCD,do_crCCD,do_lCCD, &
+                    doCIS,doCIS_D,doCID,doCISD,doFCI,  & 
+                    doRPA,doRPAx,docrRPA,doppRPA,      &
+                    doG0F2,doevGF2,doqsGF2,            & 
+                    doG0F3,doevGF3,                    &
+                    doG0W0,doevGW,doqsGW,              &
+                    doufG0W0,doufGW,                   &
+                    doG0T0,doevGT,doqsGT,              &
                     doMCMP2)
 
 ! Read options for methods
@@ -444,7 +442,7 @@ program QuAcK
       ket1 = 1
       ket2 = 1
       call AOtoMO_integral_transform(bra1,bra2,ket1,ket2,nBas,cHF,ERI_AO,ERI_MO)
-
+!     call AOtoMO_transform(nBas,cHF,T+V)
     end if
 
   end if
@@ -646,6 +644,24 @@ program QuAcK
   end if
 
 !------------------------------------------------------------------------
+! Perform crossed-ring CCD calculation
+!------------------------------------------------------------------------
+
+  if(do_crCCD) then
+
+    call cpu_time(start_CCD)
+    call crCCD(maxSCF_CC,thresh_CC,n_diis_CC,nBas,nC,nO,nV,nR, &
+              ERI_MO,ENuc,ERHF,eHF)
+
+    call cpu_time(end_CCD)
+
+    t_CCD = end_CCD - start_CCD
+    write(*,'(A65,1X,F9.3,A8)') 'Total CPU time for crossed-ring CCD = ',t_CCD,' seconds'
+    write(*,*)
+
+  end if
+
+!------------------------------------------------------------------------
 ! Perform ladder CCD calculation
 !------------------------------------------------------------------------
 
@@ -663,31 +679,10 @@ program QuAcK
   end if
 
 !------------------------------------------------------------------------
-! Perform crossed-ring CCD calculation
-!------------------------------------------------------------------------
-
-  do_crCCD = .false.
-
-  if(do_crCCD) then
-
-    call cpu_time(start_CCD)
-    call ehRPA(TDA,doACFDT,exchange_kernel,singlet,triplet,0d0,nBas,nC,nO,nV,nR,nS,ENuc,ERHF,ERI_MO,dipole_int_MO,eHF)
-    call crCCD(maxSCF_CC,thresh_CC,n_diis_CC,nBas,nC,nO,nV,nR, &
-              ERI_MO,ENuc,ERHF,eHF)
-
-    call cpu_time(end_CCD)
-
-    t_CCD = end_CCD - start_CCD
-    write(*,'(A65,1X,F9.3,A8)') 'Total CPU time for crossed-ring CCD = ',t_CCD,' seconds'
-    write(*,*)
-
-  end if
-
-!------------------------------------------------------------------------
 ! Perform pair CCD calculation
 !------------------------------------------------------------------------
 
-  if(do_pCCD) then
+  if(dopCCD) then
 
     call cpu_time(start_CCD)
     call pCCD(maxSCF_CC,thresh_CC,n_diis_CC,nBas,nC,nO,nV,nR,ERI_MO,ENuc,ERHF,eHF)
@@ -787,7 +782,7 @@ program QuAcK
 
   if(doRPAx) then
 
-    call cpu_time(start_RPAx)
+    call cpu_time(start_RPA)
     if(unrestricted) then
 
        call URPAx(TDA,doACFDT,exchange_kernel,spin_conserved,spin_flip,0d0,nBas,nC,nO,nV,nR,nS,ENuc,EUHF, &
@@ -798,10 +793,26 @@ program QuAcK
       call RPAx(TDA,doACFDT,exchange_kernel,singlet,triplet,0d0,nBas,nC,nO,nV,nR,nS,ENuc,ERHF,ERI_MO,dipole_int_MO,eHF)
 
     end if
-    call cpu_time(end_RPAx)
+    call cpu_time(end_RPA)
 
-    t_RPAx = end_RPAx - start_RPAx
-    write(*,'(A65,1X,F9.3,A8)') 'Total CPU time for RPAx = ',t_RPAx,' seconds'
+    t_RPA = end_RPA - start_RPA
+    write(*,'(A65,1X,F9.3,A8)') 'Total CPU time for RPAx = ',t_RPA,' seconds'
+    write(*,*)
+
+  end if
+
+!------------------------------------------------------------------------
+! Compute cr-RPA excitations
+!------------------------------------------------------------------------
+
+  if(docrRPA) then
+
+    call cpu_time(start_RPA)
+    call crRPA(TDA,doACFDT,exchange_kernel,singlet,triplet,0d0,nBas,nC,nO,nV,nR,nS,ENuc,ERHF,ERI_MO,dipole_int_MO,eHF)
+    call cpu_time(end_RPA)
+
+    t_RPA = end_RPA - start_RPA
+    write(*,'(A65,1X,F9.3,A8)') 'Total CPU time for pp-RPA = ',t_RPA,' seconds'
     write(*,*)
 
   end if
@@ -812,12 +823,12 @@ program QuAcK
 
   if(doppRPA) then
 
-    call cpu_time(start_ppRPA)
-    call ppRPA(TDA,singlet,triplet,nBas,nC,nO,nV,nR,ENuc,ERHF,ERI_MO,eHF)
-    call cpu_time(end_ppRPA)
+    call cpu_time(start_RPA)
+    call ppRPA(TDA,doACFDT,singlet,triplet,nBas,nC,nO,nV,nR,ENuc,ERHF,ERI_MO,eHF)
+    call cpu_time(end_RPA)
 
-    t_ppRPA = end_ppRPA - start_ppRPA
-    write(*,'(A65,1X,F9.3,A8)') 'Total CPU time for pp-RPA = ',t_ppRPA,' seconds'
+    t_RPA = end_RPA - start_RPA
+    write(*,'(A65,1X,F9.3,A8)') 'Total CPU time for pp-RPA = ',t_RPA,' seconds'
     write(*,*)
 
   end if

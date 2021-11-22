@@ -38,21 +38,8 @@ subroutine crCCD(maxSCF,thresh,max_diis,nBasin,nCin,nOin,nVin,nRin,ERI,ENuc,ERHF
   double precision,allocatable  :: eV(:)
   double precision,allocatable  :: delta_OOVV(:,:,:,:)
 
-  double precision,allocatable  :: OOOO(:,:,:,:)
   double precision,allocatable  :: OOVV(:,:,:,:)
   double precision,allocatable  :: OVOV(:,:,:,:)
-  double precision,allocatable  :: OVVO(:,:,:,:)
-  double precision,allocatable  :: VVVV(:,:,:,:)
-
-  double precision,allocatable  :: X1(:,:,:,:)
-  double precision,allocatable  :: X2(:,:)
-  double precision,allocatable  :: X3(:,:)
-  double precision,allocatable  :: X4(:,:,:,:)
-
-  double precision,allocatable  :: u(:,:,:,:)
-  double precision,allocatable  :: v(:,:,:,:)
-  double precision,allocatable  :: r2r(:,:,:,:)
-  double precision,allocatable  :: r2l(:,:,:,:)
 
   double precision,allocatable  :: r2(:,:,:,:)
   double precision,allocatable  :: t2(:,:,:,:)
@@ -66,7 +53,7 @@ subroutine crCCD(maxSCF,thresh,max_diis,nBasin,nCin,nOin,nVin,nRin,ERI,ENuc,ERHF
 
   write(*,*)
   write(*,*)'**************************************'
-  write(*,*)'|    crossed-ring CCD calculation    |'
+  write(*,*)'|   Crossed-ring CCD calculation     |'
   write(*,*)'**************************************'
   write(*,*)
 
@@ -105,13 +92,10 @@ subroutine crCCD(maxSCF,thresh,max_diis,nBasin,nCin,nOin,nVin,nRin,ERI,ENuc,ERHF
 
 ! Create integral batches
 
-  allocate(OOOO(nO,nO,nO,nO),OOVV(nO,nO,nV,nV),OVOV(nO,nV,nO,nV),VVVV(nV,nV,nV,nV),OVVO(nO,nV,nV,nO))
+  allocate(OOVV(nO,nO,nV,nV),OVOV(nO,nV,nO,nV))
 
-  OOOO(:,:,:,:) = dbERI(   1:nO  ,   1:nO  ,   1:nO  ,   1:nO  )
-  OOVV(:,:,:,:) = dbERI(   1:nO  ,   1:nO  ,nO+1:nBas,nO+1:nBas)
-  OVOV(:,:,:,:) = dbERI(   1:nO  ,nO+1:nBas,   1:nO  ,nO+1:nBas)
-  OVVO(:,:,:,:) = dbERI(   1:nO  ,nO+1:nBas,nO+1:nBas,   1:nO  )
-  VVVV(:,:,:,:) = dbERI(nO+1:nBas,nO+1:nBas,nO+1:nBas,nO+1:nBas)
+  OOVV(:,:,:,:) = dbERI(   1:nO   ,   1:nO  ,nO+1:nBas,nO+1:nBas)
+  OVOV(:,:,:,:) = dbERI(   1:nO   ,nO+1:nBas,   1:nO  ,nO+1:nBas)
 
   deallocate(dbERI)
  
@@ -129,9 +113,7 @@ subroutine crCCD(maxSCF,thresh,max_diis,nBasin,nCin,nOin,nVin,nRin,ERI,ENuc,ERHF
 
 ! Initialization
 
-  allocate(r2(nO,nO,nV,nV),u(nO,nO,nV,nV),v(nO,nO,nV,nV))
-  allocate(r2r(nO,nO,nV,nV),r2l(nO,nO,nV,nV))
-  allocate(X1(nO,nO,nO,nO),X2(nV,nV),X3(nO,nO),X4(nO,nO,nV,nV))
+  allocate(r2(nO,nO,nV,nV))
 
   Conv = 1d0
   nSCF = 0
@@ -159,23 +141,9 @@ subroutine crCCD(maxSCF,thresh,max_diis,nBasin,nCin,nOin,nVin,nRin,ERI,ENuc,ERHF
 
 !   Compute residual
 
-!   Form linear array
+    call form_crossed_ring_r(nC,nO,nV,nR,OVOV,OOVV,t2,r2)
 
-    call form_u(nC,nO,nV,nR,OOOO,VVVV,OVOV,t2,u)
-
-!   Form interemediate arrays
-
-    call form_X(nC,nO,nV,nR,OOVV,t2,X1,X2,X3,X4)
-
-!   Form quadratic array
-
-    call form_v(nC,nO,nV,nR,X1,X2,X3,X4,t2,v)
-
-    call form_ring_r(nC,nO,nV,nR,OVVO,OOVV,t2,r2r)
-
-    call form_ladder_r(nC,nO,nV,nR,OOOO,OOVV,VVVV,t2,r2l)
-
-    r2(:,:,:,:) = OOVV(:,:,:,:) + delta_OOVV(:,:,:,:)*t2(:,:,:,:) + u(:,:,:,:) + v(:,:,:,:) - r2r(:,:,:,:) - r2l(:,:,:,:)
+    r2(:,:,:,:) = OOVV(:,:,:,:) - delta_OOVV(:,:,:,:)*t2(:,:,:,:) + r2(:,:,:,:) 
 
 !   Check convergence 
 
@@ -183,7 +151,7 @@ subroutine crCCD(maxSCF,thresh,max_diis,nBasin,nCin,nOin,nVin,nRin,ERI,ENuc,ERHF
   
 !   Update amplitudes
 
-    t2(:,:,:,:) = t2(:,:,:,:) - r2(:,:,:,:)/delta_OOVV(:,:,:,:)
+    t2(:,:,:,:) = t2(:,:,:,:) + r2(:,:,:,:)/delta_OOVV(:,:,:,:)
 
 !   Compute correlation energy
 
@@ -227,10 +195,10 @@ subroutine crCCD(maxSCF,thresh,max_diis,nBasin,nCin,nOin,nVin,nRin,ERI,ENuc,ERHF
 
   write(*,*)
   write(*,*)'----------------------------------------------------'
-  write(*,*)'          crossed-ring CCD energy                   '
+  write(*,*)'       crossed-ring CCD energy                      '
   write(*,*)'----------------------------------------------------'
-  write(*,'(1X,A30,1X,F15.10)')' E(crCCD)  = ',ECCD
-  write(*,'(1X,A30,1X,F15.10)')' Ec(crCCD) = ',EcCCD
+  write(*,'(1X,A30,1X,F15.10)')' E(crCCD) = ',ECCD  
+  write(*,'(1X,A30,1X,F15.10)')' Ec(crCCD) = ',EcCCD 
   write(*,*)'----------------------------------------------------'
   write(*,*)
 
