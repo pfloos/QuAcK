@@ -67,48 +67,45 @@ subroutine UVWN5_lda_correlation_individual_energy(nGrid,weight,rhow,rho,doNcent
     raI = max(0d0,rho(iG,1))
     rbI = max(0d0,rho(iG,2))
    
-!   spin-up contribution
-   
-    r  = ra
-    rI = raI
-
-    if(r > threshold) then
-
-      rs = (4d0*pi*r/3d0)**(-1d0/3d0)
-      x = sqrt(rs)
-   
-      x_f   = x*x + b_f*x + c_f
-      xx0_f = x0_f*x0_f + b_f*x0_f + c_f
-      q_f   = sqrt(4d0*c_f - b_f*b_f)
-   
-      ec_f = a_f*( log(x**2/x_f) + 2d0*b_f/q_f*atan(q_f/(2d0*x + b_f)) & 
-           - b_f*x0_f/xx0_f*( log((x - x0_f)**2/x_f) + 2d0*(b_f + 2d0*x0_f)/q_f*atan(q_f/(2d0*x + b_f)) ) )
-   
-      drsdr = - (36d0*pi)**(-1d0/3d0)*r**(-4d0/3d0)
-      dxdrs = 0.5d0/sqrt(rs)
-
-      dxdx_f = 2d0*x + b_f
-
-      decdx_f = a_f*( 2d0/x - 4d0*b_f/( (b_f+2d0*x)**2 + q_f**2) - dxdx_f/x_f &
-              - b_f*x0_f/xx0_f*( 2/(x-x0_f) - 4d0*(b_f+2d0*x0_f)/( (b_f+2d0*x)**2 + q_f**2) - dxdx_f/x_f ) )
-
-      decdr_f = drsdr*dxdrs*decdx_f
-
-      Ecrr(1)  = Ecrr(1)  - weight(iG)*decdr_f*r*r
-
-      if(rI > threshold) then 
-
-        EcrI(1)  = EcrI(1)  + weight(iG)*ec_f*rI
-        EcrrI(1) = EcrrI(1) + weight(iG)*decdr_f*r*rI
-
-      end if
-   
-    end if
-
-!   up-down contribution
-   
     r  = ra + rb
     rI = raI + rbI
+
+!   spin-up contribution
+
+ !  if(r > threshold) then
+
+ !    rs = (4d0*pi*r/3d0)**(-1d0/3d0)
+ !    x = sqrt(rs)
+ ! 
+ !    x_f   = x*x + b_f*x + c_f
+ !    xx0_f = x0_f*x0_f + b_f*x0_f + c_f
+ !    q_f   = sqrt(4d0*c_f - b_f*b_f)
+ ! 
+ !    ec_f = a_f*( log(x**2/x_f) + 2d0*b_f/q_f*atan(q_f/(2d0*x + b_f)) & 
+ !         - b_f*x0_f/xx0_f*( log((x - x0_f)**2/x_f) + 2d0*(b_f + 2d0*x0_f)/q_f*atan(q_f/(2d0*x + b_f)) ) )
+ ! 
+ !    drsdr = - (36d0*pi)**(-1d0/3d0)*r**(-4d0/3d0)
+ !    dxdrs = 0.5d0/sqrt(rs)
+
+ !    dxdx_f = 2d0*x + b_f
+
+ !    decdx_f = a_f*( 2d0/x - 4d0*b_f/( (b_f+2d0*x)**2 + q_f**2) - dxdx_f/x_f &
+ !            - b_f*x0_f/xx0_f*( 2/(x-x0_f) - 4d0*(b_f+2d0*x0_f)/( (b_f+2d0*x)**2 + q_f**2) - dxdx_f/x_f ) )
+
+ !    decdr_f = drsdr*dxdrs*decdx_f
+
+ !    Ecrr(1)  = Ecrr(1)  - weight(iG)*decdr_f*r*r
+
+ !    if(rI > threshold) then 
+
+ !      EcrI(1)  = EcrI(1)  + weight(iG)*ec_f*rI
+ !      EcrrI(1) = EcrrI(1) + weight(iG)*decdr_f*r*rI
+
+ !    end if
+ ! 
+ !  end if
+
+!   up-down contribution
 
     if(r > threshold) then
 
@@ -171,6 +168,8 @@ subroutine UVWN5_lda_correlation_individual_energy(nGrid,weight,rhow,rho,doNcent
       decdr = decdr_p + decdr_a*fz/d2fz*(1d0-z**4) + ec_a*dfzdr/d2fz*(1d0-z**4) - 4d0*ec_a*fz/d2fz*dzdr*z**3 &
             + (decdr_f - decdr_p)*fz*z**4 + (ec_f - ec_p)*dfzdr*z**4 + 4d0*(ec_f - ec_p)*fz*dzdr*z**3
 
+      decdr  = ec_z + decdr*r
+ 
       Ecrr(2)  = Ecrr(2)  - weight(iG)*decdr*r*r
 
       if(rI > threshold) then
@@ -184,41 +183,38 @@ subroutine UVWN5_lda_correlation_individual_energy(nGrid,weight,rhow,rho,doNcent
 
 !   spin-down contribution
    
-    r  = rb
-    rI = rbI
- 
-    if(r > threshold) then
+ !  if(r > threshold) then
 
-      rs = (4d0*pi*r/3d0)**(-1d0/3d0)
-      x  = sqrt(rs)
+ !    rs = (4d0*pi*r/3d0)**(-1d0/3d0)
+ !    x  = sqrt(rs)
 
-      x_f   = x*x + b_f*x + c_f
-      xx0_f = x0_f*x0_f + b_f*x0_f + c_f
-      q_f   = sqrt(4d0*c_f - b_f*b_f)
+ !    x_f   = x*x + b_f*x + c_f
+ !    xx0_f = x0_f*x0_f + b_f*x0_f + c_f
+ !    q_f   = sqrt(4d0*c_f - b_f*b_f)
 
-      ec_f = a_f*( log(x**2/x_f) + 2d0*b_f/q_f*atan(q_f/(2d0*x + b_f)) &
-                 - b_f*x0_f/xx0_f*( log((x - x0_f)**2/x_f) + 2d0*(b_f + 2d0*x0_f)/q_f*atan(q_f/(2d0*x + b_f)) ) )
+ !    ec_f = a_f*( log(x**2/x_f) + 2d0*b_f/q_f*atan(q_f/(2d0*x + b_f)) &
+ !               - b_f*x0_f/xx0_f*( log((x - x0_f)**2/x_f) + 2d0*(b_f + 2d0*x0_f)/q_f*atan(q_f/(2d0*x + b_f)) ) )
 
-      drsdr = - (36d0*pi)**(-1d0/3d0)*r**(-4d0/3d0)
-      dxdrs = 0.5d0/sqrt(rs)
+ !    drsdr = - (36d0*pi)**(-1d0/3d0)*r**(-4d0/3d0)
+ !    dxdrs = 0.5d0/sqrt(rs)
 
-      dxdx_f = 2d0*x + b_f
+ !    dxdx_f = 2d0*x + b_f
 
-      decdx_f = a_f*( 2d0/x - 4d0*b_f/( (b_f+2d0*x)**2 + q_f**2) - dxdx_f/x_f &
-              - b_f*x0_f/xx0_f*( 2/(x-x0_f) - 4d0*(b_f+2d0*x0_f)/( (b_f+2d0*x)**2 + q_f**2) - dxdx_f/x_f ) )
+ !    decdx_f = a_f*( 2d0/x - 4d0*b_f/( (b_f+2d0*x)**2 + q_f**2) - dxdx_f/x_f &
+ !            - b_f*x0_f/xx0_f*( 2/(x-x0_f) - 4d0*(b_f+2d0*x0_f)/( (b_f+2d0*x)**2 + q_f**2) - dxdx_f/x_f ) )
 
-      decdr_f = drsdr*dxdrs*decdx_f
+ !    decdr_f = drsdr*dxdrs*decdx_f
 
-      Ecrr(3)  = Ecrr(3)  - weight(iG)*decdr_f*r*r
+ !    Ecrr(3)  = Ecrr(3)  - weight(iG)*decdr_f*r*r
 
-      if(rI > threshold) then
+ !    if(rI > threshold) then
 
-        EcrI(3)  = EcrI(3)  + weight(iG)*ec_f*rI
-        EcrrI(3) = EcrrI(3) + weight(iG)*decdr_f*r*rI
+ !      EcrI(3)  = EcrI(3)  + weight(iG)*ec_f*rI
+ !      EcrrI(3) = EcrrI(3) + weight(iG)*decdr_f*r*rI
 
-      end if
+ !    end if
 
-    end if
+ !  end if
 
   end do
 
