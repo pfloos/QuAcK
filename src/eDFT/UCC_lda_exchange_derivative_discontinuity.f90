@@ -44,14 +44,13 @@ subroutine UCC_lda_exchange_derivative_discontinuity(nEns,wEns,nCC,aCC,nGrid,wei
   allocate(dExdw(nEns))
 
 
-! Parameters for N -> N-1
+! Parameters for first state
 
   a1 = aCC(1,1)
   b1 = aCC(2,1)
   c1 = aCC(3,1)
 
-
-! Parameters for N -> N+1
+! Parameters for second state
 
   a2 = aCC(1,2)
   b2 = aCC(2,2)
@@ -60,6 +59,7 @@ subroutine UCC_lda_exchange_derivative_discontinuity(nEns,wEns,nCC,aCC,nGrid,wei
   w1 = wEns(2)
   w2 = wEns(3)
 
+! Defining enhancements factor for weight-dependent functionals
 
   if (doNcentered) then
   
@@ -87,7 +87,6 @@ subroutine UCC_lda_exchange_derivative_discontinuity(nEns,wEns,nCC,aCC,nGrid,wei
     end select
 
   else
-
 
     select case (Cx_choice)
 

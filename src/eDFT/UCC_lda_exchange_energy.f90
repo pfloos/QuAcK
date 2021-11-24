@@ -30,44 +30,19 @@ subroutine UCC_lda_exchange_energy(nEns,wEns,nCC,aCC,nGrid,weight,rho,Cx_choice,
 
   double precision              :: Ex
 
-! Single excitation parameter
-
-!  a1 = 0.0d0
-!  b1 = 0.0d0
-!  c1 = 0.0d0
-
-! Parameters for H2 at equilibrium
-
-! a2 = +0.5751782560799208d0
-! b2 = -0.021108186591137282d0
-! c2 = -0.36718902716347124d0
-
-! Parameters for stretch H2
-
-!  a2 = + 0.01922622507087411d0
-!  b2 = - 0.01799647558018601d0
-!  c2 = - 0.022945430666782573d0
-
-! Parameters for He
-
-! a2 = 1.9125735895875828d0
-! b2 = 2.715266992840757d0
-! c2 = 2.1634223380633086d0
-
-! Parameters for He N -> N-1
+! Parameters for first state
 
   a1 = aCC(1,1)
   b1 = aCC(2,1)
   c1 = aCC(3,1)
 
-! Parameters for He N -> N+1
+! Parameters for second state
 
   a2 = aCC(1,2)
   b2 = aCC(2,2)
   c2 = aCC(3,2)
 
-! Fx1 for states N and N-1
-! Fx2 for states N and N+1
+! Defining enhancements factor for weight-dependent functionals
 
   if(doNcentered) then 
     
@@ -78,7 +53,6 @@ subroutine UCC_lda_exchange_energy(nEns,wEns,nCC,aCC,nGrid,weight,rho,Cx_choice,
      Fx2 = 1d0 - w2*(2d0 - w2)*(a2 + b2*(w2 - 1d0) + c2*(w2 - 1d0)**2)
 
   else  
-
 
     w1 = wEns(2)
     Fx1 = 1d0 - w1*(1d0 - w1)*(a1 + b1*(w1 - 0.5d0) + c1*(w1 - 0.5d0)**2)
@@ -112,9 +86,7 @@ subroutine UCC_lda_exchange_energy(nEns,wEns,nCC,aCC,nGrid,weight,rho,Cx_choice,
 
     r = max(0d0,rho(iG))
 
-    if(r > threshold) then
-      Ex = Ex + weight(iG)*Cx*r**(4d0/3d0) 
-    endif
+    if(r > threshold) Ex = Ex + weight(iG)*Cx*r**(4d0/3d0) 
 
   enddo
 
