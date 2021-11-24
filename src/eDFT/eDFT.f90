@@ -62,8 +62,9 @@ subroutine eDFT(maxSCF,thresh,max_diis,guess_type,mix,nNuc,ZNuc,rNuc,ENuc,nBas,n
   integer                       :: nGrid
   double precision,allocatable  :: root(:,:)
   double precision,allocatable  :: weight(:)
-  double precision              :: aCC_w1(3)
-  double precision              :: aCC_w2(3)
+
+  integer                       :: nCC
+  double precision,allocatable  :: aCC(:,:)
 
   double precision,allocatable  :: AO(:,:)
   double precision,allocatable  :: dAO(:,:,:)
@@ -99,21 +100,14 @@ subroutine eDFT(maxSCF,thresh,max_diis,guess_type,mix,nNuc,ZNuc,rNuc,ENuc,nBas,n
   write(*,*) '******************************************'
   write(*,*)
 
-! Libxc version
-
-! call xc_f90_version(vmajor, vminor, vmicro)
-! write(*,'("Libxc version: ",I1,".",I1,".",I1)') vmajor, vminor, vmicro
-
-! call xcinfo()
-
 !------------------------------------------------------------------------
 ! DFT options
 !------------------------------------------------------------------------
 
 ! Allocate ensemble weights and MO coefficients
 
-  allocate(wEns(maxEns),occnum(nBas,nspin,maxEns))
-  call read_options_dft(nBas,method,x_rung,x_DFA,c_rung,c_DFA,SGn,nEns,wEns,aCC_w1,aCC_w2, & 
+  allocate(wEns(maxEns),aCC(maxCC,nEns-1),occnum(nBas,nspin,maxEns))
+  call read_options_dft(nBas,method,x_rung,x_DFA,c_rung,c_DFA,SGn,nEns,wEns,nCC,aCC, & 
                         doNcentered,occnum,Cx_choice)
 
 !------------------------------------------------------------------------
@@ -245,7 +239,7 @@ subroutine eDFT(maxSCF,thresh,max_diis,guess_type,mix,nNuc,ZNuc,rNuc,ENuc,nBas,n
     end do
 
     call cpu_time(start_KS)
-    call eDFT_UKS(x_rung,x_DFA,c_rung,c_DFA,nEns,wEns,aCC_w1,aCC_w2,nGrid,weight,maxSCF,thresh,max_diis,guess_type,mix, & 
+    call eDFT_UKS(x_rung,x_DFA,c_rung,c_DFA,nEns,wEns,nCC,aCC(1:nCC,1:nEns-1),nGrid,weight,maxSCF,thresh,max_diis,guess_type,mix, & 
                   nNuc,ZNuc,rNuc,ENuc,nBas,AO,dAO,S,T,V,Hc,ERI,dipole_int,X,occnum,Cx_choice,doNcentered,Ew,eKS,cKS,PKS,Vxc)
     call cpu_time(end_KS)
 
@@ -262,7 +256,7 @@ subroutine eDFT(maxSCF,thresh,max_diis,guess_type,mix,nNuc,ZNuc,rNuc,ENuc,nBas,n
   if(method == 'eDFT-UKS') then
 
     call cpu_time(start_KS)
-    call eDFT_UKS(x_rung,x_DFA,c_rung,c_DFA,nEns,wEns,aCC_w1,aCC_w2,nGrid,weight,maxSCF,thresh,max_diis,guess_type,mix, & 
+    call eDFT_UKS(x_rung,x_DFA,c_rung,c_DFA,nEns,wEns,nCC,aCC(1:nCC,1:nEns-1),nGrid,weight,maxSCF,thresh,max_diis,guess_type,mix, & 
                   nNuc,ZNuc,rNuc,ENuc,nBas,AO,dAO,S,T,V,Hc,ERI,dipole_int,X,occnum,Cx_choice,doNcentered,Ew,eKS,cKS,PKS,Vxc)
     call cpu_time(end_KS)
 

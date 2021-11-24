@@ -151,21 +151,6 @@ subroutine unrestricted_individual_energy(x_rung,x_DFA,c_rung,c_DFA,LDA_centered
   end do
 
 !------------------------------------------------------------------------
-! Checking Hartree contributions for each individual states
-!------------------------------------------------------------------------
-
-! print*,'Hartree contributions for each individual states'
-! print*,''
-! print*,''
-! print*,'EJ(aa,1)=',EJ(1,1),'EJ(ab,1)=',EJ(2,1),'EJ(bb,1)=',EJ(3,1)
-! print*,''
-! print*,'EJ(aa,2)=',EJ(1,2),'EJ(ab,2)=',EJ(2,2),'EJ(bb,2)=',EJ(3,2)
-! print*,''
-! print*,'EJ(aa,3)=',EJ(1,3),'EJ(ab,3)=',EJ(2,3),'EJ(bb,3)=',EJ(3,3)
-! print*,''
-
-
-!------------------------------------------------------------------------
 ! Individual exchange energy
 !------------------------------------------------------------------------
 
@@ -175,36 +160,9 @@ subroutine unrestricted_individual_energy(x_rung,x_DFA,c_rung,c_DFA,LDA_centered
                                                    Pw(:,:,ispin),P(:,:,ispin,iEns),rhow(:,ispin),drhow(:,:,ispin),           &  
                                                    rho(:,ispin,iEns),drho(:,:,ispin,iEns),Cx_choice,doNcentered,kappa(iEns), & 
                                                    Ex(ispin,iEns))
+
     end do
   end do
-
-!------------------------------------------------------------------------
-! Checking exchange contributions for each individual states
-!------------------------------------------------------------------------
-! print*,''
-! print*,''
-! print*,'Exchange contributions for each individual states'
-! print*,''
-! print*,''
-! print*,'Ex(aa,1) =' ,Ex(1,1),'Ex(bb,1) =' ,Ex(2,1)
-! print*,''
-! print*,'Ex(aa,2) =' ,Ex(1,2),'Ex(bb,2) =' ,Ex(2,2)
-! print*,''
-! print*,'Ex(aa,3) =' ,Ex(1,3),'Ex(bb,3) =' ,Ex(2,3)
-
-!------------------------------------------------------------------------
-! Checking number of alpha and beta electrons for each individual states
-!------------------------------------------------------------------------
-! print*,''
-! print*,''
-! print*,'Checking number of alpha and beta electrons for each individual states'
-! print*,''
-! print*,''
-! print*,'nEl(a,1) = ',electron_number(nGrid,weight,rho(:,1,1)),'nEl(b,1) = ',electron_number(nGrid,weight,rho(:,2,1))
-! print*,''
-! print*,'nEl(a,2) = ',electron_number(nGrid,weight,rho(:,1,2)),'nEl(b,2) = ',electron_number(nGrid,weight,rho(:,2,2))
-! print*,''
-! print*,'nEl(a,3) = ',electron_number(nGrid,weight,rho(:,1,3)),'nEl(b,3) = ',electron_number(nGrid,weight,rho(:,2,3))
 
 !------------------------------------------------------------------------
 ! Individual correlation energy

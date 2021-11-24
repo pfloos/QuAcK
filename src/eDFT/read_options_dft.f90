@@ -1,4 +1,4 @@
-subroutine read_options_dft(nBas,method,x_rung,x_DFA,c_rung,c_DFA,SGn,nEns,wEns,aCC_w1,aCC_w2, & 
+subroutine read_options_dft(nBas,method,x_rung,x_DFA,c_rung,c_DFA,SGn,nEns,wEns,nCC,aCC, & 
                             doNcentered,occnum,Cx_choice)
 
 ! Read DFT options
@@ -8,16 +8,17 @@ subroutine read_options_dft(nBas,method,x_rung,x_DFA,c_rung,c_DFA,SGn,nEns,wEns,
   include 'parameters.h'
 
 ! Input variables
-  integer,intent(in)           :: nBas
+  integer,intent(in)            :: nBas
 
 ! Local variables
 
   integer                       :: iBas
   integer                       :: iEns
-  integer                       :: iParam
+  integer                       :: iCC
   character(len=1)              :: answer
   double precision,allocatable  :: nEl(:)
-  character(len=12)             :: x_func,c_func
+  character(len=12)             :: x_func
+  character(len=12)             :: c_func
 
 ! Output variables
 
@@ -28,8 +29,8 @@ subroutine read_options_dft(nBas,method,x_rung,x_DFA,c_rung,c_DFA,SGn,nEns,wEns,
   integer,intent(out)           :: nEns
   logical,intent(out)           :: doNcentered
   double precision,intent(out)  :: wEns(maxEns)
-  double precision,intent(out)  :: aCC_w1(3)
-  double precision,intent(out)  :: aCC_w2(3)
+  integer,intent(out)           :: nCC
+  double precision,intent(out)  :: aCC(maxCC,maxEns-1)
   double precision,intent(out)  :: occnum(nBas,nspin,maxEns)
 
   integer,intent(out)           :: Cx_choice
@@ -394,23 +395,25 @@ subroutine read_options_dft(nBas,method,x_rung,x_DFA,c_rung,c_DFA,SGn,nEns,wEns,
   
 ! Read parameters for weight-dependent functional
   read(1,*)
-  read(1,*) (aCC_w1(iParam),iParam=1,3)
-  read(1,*) (aCC_w2(iParam),iParam=1,3)
+  read(1,*) nCC
+  do iEns=2,nEns
+    read(1,*) (aCC(iCC,iEns-1),iCC=1,nCC)
+  end do
+
 ! Read choice of exchange coefficient
   read(1,*)
   read(1,*) Cx_choice
 
   write(*,*)'----------------------------------------------------------'
-  write(*,*)' parameters for w1-dependent exchange functional coefficient '
+  write(*,*)' Parameters for weight-dependent exchange functional      '
   write(*,*)'----------------------------------------------------------'
-  call matout(3,1,aCC_w1)
+  do iEns=2,nEns
+    write(*,'(A6,I2,A2)') 'State ',iEns,':'
+    do iCC=1,nCC
+      write(*,'(I2,F10.6)') iCC,aCC(iCC,iEns-1)
+    end do
+  end do
   write(*,*)
-
-  write(*,*)'----------------------------------------------------------'
-  write(*,*)' parameters for w2-dependent exchange functional coefficient '
-  write(*,*)'----------------------------------------------------------'
-  call matout(3,1,aCC_w2)
-  write(*,*) 
 
 ! Close file with options
 

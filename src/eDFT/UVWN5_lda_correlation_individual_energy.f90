@@ -23,7 +23,7 @@ subroutine UVWN5_lda_correlation_individual_energy(nGrid,weight,rhow,rho,doNcent
   double precision              :: a_f,x0_f,xx0_f,b_f,c_f,x_f,q_f
   double precision              :: a_a,x0_a,xx0_a,b_a,c_a,x_a,q_a
   double precision              :: dfzdz,dxdrs,dxdx_p,dxdx_f,dxdx_a,decdx_p,decdx_f,decdx_a
-  double precision              :: dzdr ,dfzdr ,drsdr ,decdr_p ,decdr_f ,decdr_a, decdr
+  double precision              :: dzdra,dzdrb,dfzdra,dfzdrb,drsdr,decdr_p,decdr_f,decdr_a,decdra,decdrb,decdr
   double precision              :: ec_z,ec_p,ec_f,ec_a
   double precision              :: fz,d2fz
 
@@ -139,11 +139,15 @@ subroutine UVWN5_lda_correlation_individual_energy(nGrid,weight,rhow,rho,doNcent
       ec_a = a_a*( log(x**2/x_a) + 2d0*b_a/q_a*atan(q_a/(2d0*x + b_a)) & 
                  - b_a*x0_a/xx0_a*( log((x - x0_a)**2/x_a) + 2d0*(b_a + 2d0*x0_a)/q_a*atan(q_a/(2d0*x + b_a)) ) )
    
-      ec_z = ec_p + ec_a*fz/d2fz*(1d0-z**4) + (ec_f - ec_p)*fz*z**4
+      ec_z = ec_p + ec_a*fz/d2fz*(1d0 - z**4) + (ec_f - ec_p)*fz*z**4
 
-      dzdr  = (1d0 - z)/r
       dfzdz = (4d0/3d0)*((1d0 + z)**(1d0/3d0) - (1d0 - z)**(1d0/3d0))/(2d0*(2d0**(1d0/3d0) - 1d0))
-      dfzdr = dzdr*dfzdz
+
+      dzdra = + (1d0 - z)/r
+      dfzdra = dzdra*dfzdz
+
+      dzdrb = - (1d0 + z)/r
+      dfzdrb = dzdrb*dfzdz
 
       drsdr = - (36d0*pi)**(-1d0/3d0)*r**(-4d0/3d0)
       dxdrs = 0.5d0/sqrt(rs)
@@ -153,24 +157,29 @@ subroutine UVWN5_lda_correlation_individual_energy(nGrid,weight,rhow,rho,doNcent
       dxdx_a = 2d0*x + b_a
 
       decdx_p = a_p*( 2d0/x - 4d0*b_p/( (b_p+2d0*x)**2 + q_p**2) - dxdx_p/x_p &
-                      - b_p*x0_p/xx0_p*( 2/(x-x0_p) - 4d0*(b_p+2d0*x0_p)/( (b_p+2d0*x)**2 + q_p**2) - dxdx_p/x_p ) )
+                      - b_p*x0_p/xx0_p*( 2d0/(x-x0_p) - 4d0*(b_p+2d0*x0_p)/( (b_p+2d0*x)**2 + q_p**2) - dxdx_p/x_p ) )
 
       decdx_f = a_f*( 2d0/x - 4d0*b_f/( (b_f+2d0*x)**2 + q_f**2) - dxdx_f/x_f &
-                      - b_f*x0_f/xx0_f*( 2/(x-x0_f) - 4d0*(b_f+2d0*x0_f)/( (b_f+2d0*x)**2 + q_f**2) - dxdx_f/x_f ) )
+                      - b_f*x0_f/xx0_f*( 2d0/(x-x0_f) - 4d0*(b_f+2d0*x0_f)/( (b_f+2d0*x)**2 + q_f**2) - dxdx_f/x_f ) )
 
       decdx_a = a_a*( 2d0/x - 4d0*b_a/( (b_a+2d0*x)**2 + q_a**2) - dxdx_a/x_a &
-                      - b_a*x0_a/xx0_a*( 2/(x-x0_a) - 4d0*(b_a+2d0*x0_a)/( (b_a+2d0*x)**2 + q_a**2) - dxdx_a/x_a ) )
+                      - b_a*x0_a/xx0_a*( 2d0/(x-x0_a) - 4d0*(b_a+2d0*x0_a)/( (b_a+2d0*x)**2 + q_a**2) - dxdx_a/x_a ) )
 
       decdr_p = drsdr*dxdrs*decdx_p
       decdr_f = drsdr*dxdrs*decdx_f
       decdr_a = drsdr*dxdrs*decdx_a
 
-      decdr = decdr_p + decdr_a*fz/d2fz*(1d0-z**4) + ec_a*dfzdr/d2fz*(1d0-z**4) - 4d0*ec_a*fz/d2fz*dzdr*z**3 &
-            + (decdr_f - decdr_p)*fz*z**4 + (ec_f - ec_p)*dfzdr*z**4 + 4d0*(ec_f - ec_p)*fz*dzdr*z**3
+      decdra = decdr_p + decdr_a*fz/d2fz*(1d0-z**4) + ec_a*dfzdra/d2fz*(1d0-z**4) - 4d0*ec_a*fz/d2fz*dzdra*z**3 &
+             + (decdr_f - decdr_p)*fz*z**4 + (ec_f - ec_p)*dfzdra*z**4 + 4d0*(ec_f - ec_p)*fz*dzdra*z**3
 
-      decdr  = ec_z + decdr*r
+      decdrb = decdr_p + decdr_a*fz/d2fz*(1d0-z**4) + ec_a*dfzdrb/d2fz*(1d0-z**4) - 4d0*ec_a*fz/d2fz*dzdrb*z**3 &
+             + (decdr_f - decdr_p)*fz*z**4 + (ec_f - ec_p)*dfzdrb*z**4 + 4d0*(ec_f - ec_p)*fz*dzdrb*z**3
+      
+      decdr = 0d0
+      if(ra > threshold) decdr = decdr + decdra
+      if(rb > threshold) decdr = decdr + decdrb
  
-      Ecrr(2)  = Ecrr(2)  - weight(iG)*decdr*r*r
+      Ecrr(2)  = Ecrr(2) - weight(iG)*decdr*r*r
 
       if(rI > threshold) then
 

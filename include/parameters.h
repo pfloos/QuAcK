@@ -2,6 +2,7 @@
   integer,parameter              :: nspin = 2
   integer,parameter              :: nsp = 3
   integer,parameter              :: maxEns = 4
+  integer,parameter              :: maxCC = 5
   integer,parameter              :: maxShell = 512
   integer,parameter              :: maxL = 7
   integer,parameter              :: n1eInt = 3

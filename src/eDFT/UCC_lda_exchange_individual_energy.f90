@@ -1,4 +1,4 @@
-subroutine UCC_lda_exchange_individual_energy(nEns,wEns,aCC_w1,aCC_w2,nGrid,weight,rhow,rho,Cx_choice,doNcentered,kappa,Ex)
+subroutine UCC_lda_exchange_individual_energy(nEns,wEns,nCC,aCC,nGrid,weight,rhow,rho,Cx_choice,doNcentered,kappa,Ex)
 
 ! Compute the unrestricted version of the curvature-corrected exchange functional
 
@@ -9,8 +9,8 @@ subroutine UCC_lda_exchange_individual_energy(nEns,wEns,aCC_w1,aCC_w2,nGrid,weig
 
   integer,intent(in)            :: nEns
   double precision,intent(in)   :: wEns(nEns)
-  double precision,intent(in)   :: aCC_w1(3)
-  double precision,intent(in)   :: aCC_w2(3)
+  integer,intent(in)            :: nCC
+  double precision,intent(in)   :: aCC(nCC,nEns-1)
   integer,intent(in)            :: nGrid
   double precision,intent(in)   :: weight(nGrid)
   double precision,intent(in)   :: rhow(nGrid)
@@ -39,17 +39,19 @@ subroutine UCC_lda_exchange_individual_energy(nEns,wEns,aCC_w1,aCC_w2,nGrid,weig
   double precision,external     :: electron_number
 
 
-! Parameters for N -> N-1
+! Parameters for first state
 
-  a1 = aCC_w1(1)
-  b1 = aCC_w1(2)
-  c1 = aCC_w1(3)
+  a1 = aCC(1,1)
+  b1 = aCC(2,1)
+  c1 = aCC(3,1)
 
-! Parameters for N -> N+1
+! Parameters for second state
 
-  a2 = aCC_w2(1)
-  b2 = aCC_w2(2)
-  c2 = aCC_w2(3)
+  a2 = aCC(1,2)
+  b2 = aCC(2,2)
+  c2 = aCC(3,2)
+
+! Defining enhancements factor for weight-dependent functionals
 
   if(doNcentered) then
 
@@ -60,7 +62,6 @@ subroutine UCC_lda_exchange_individual_energy(nEns,wEns,aCC_w1,aCC_w2,nGrid,weig
      Fx2 = 1d0 - w2*(2d0 - w2)*(a2 + b2*(w2 - 1d0) + c2*(w2 - 1d0)**2)
 
   else
-
 
     w1 = wEns(2)
     Fx1 = 1d0 - w1*(1d0 - w1)*(a1 + b1*(w1 - 0.5d0) + c1*(w1 - 0.5d0)**2)

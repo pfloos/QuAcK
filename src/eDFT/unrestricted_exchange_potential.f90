@@ -1,4 +1,4 @@
-subroutine unrestricted_exchange_potential(rung,DFA,LDA_centered,nEns,wEns,aCC_w1,aCC_w2,nGrid,weight,nBas,P, & 
+subroutine unrestricted_exchange_potential(rung,DFA,LDA_centered,nEns,wEns,nCC,aCC,nGrid,weight,nBas,P, & 
                                            ERI,AO,dAO,rho,drho,Fx,FxHF,Cx_choice,doNcentered)
 
 ! Compute the exchange potential 
@@ -13,8 +13,8 @@ subroutine unrestricted_exchange_potential(rung,DFA,LDA_centered,nEns,wEns,aCC_w
   logical,intent(in)            :: LDA_centered
   integer,intent(in)            :: nEns
   double precision,intent(in)   :: wEns(nEns)
-  double precision,intent(in)   :: aCC_w1(3)
-  double precision,intent(in)   :: aCC_w2(3)
+  integer,intent(in)            :: nCC
+  double precision,intent(in)   :: aCC(nCC,nEns-1)
   integer,intent(in)            :: nGrid
   double precision,intent(in)   :: weight(nGrid)
   integer,intent(in)            :: nBas
@@ -50,7 +50,7 @@ subroutine unrestricted_exchange_potential(rung,DFA,LDA_centered,nEns,wEns,aCC_w
 
     case(1) 
 
-      call unrestricted_lda_exchange_potential(DFA,LDA_centered,nEns,wEns,aCC_w1,aCC_w2,nGrid,weight,nBas,AO,rho,Fx,&
+      call unrestricted_lda_exchange_potential(DFA,LDA_centered,nEns,wEns,nCC,aCC,nGrid,weight,nBas,AO,rho,Fx,&
                                                Cx_choice,doNcentered)
 
 !   GGA functionals
@@ -69,7 +69,7 @@ subroutine unrestricted_exchange_potential(rung,DFA,LDA_centered,nEns,wEns,aCC_w
 
     case(4) 
 
-      call unrestricted_hybrid_exchange_potential(DFA,LDA_centered,nEns,wEns,aCC_w1,aCC_w2,nGrid,weight,nBas,P, &
+      call unrestricted_hybrid_exchange_potential(DFA,LDA_centered,nEns,wEns,nCC,aCC,nGrid,weight,nBas,P, &
                                                   ERI,AO,dAO,rho,drho,Fx,FxHF,Cx_choice)
 
   end select
