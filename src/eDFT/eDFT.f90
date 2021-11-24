@@ -106,7 +106,7 @@ subroutine eDFT(maxSCF,thresh,max_diis,guess_type,mix,nNuc,ZNuc,rNuc,ENuc,nBas,n
 
 ! Allocate ensemble weights and MO coefficients
 
-  allocate(wEns(maxEns),aCC(maxCC,nEns-1),occnum(nBas,nspin,maxEns))
+  allocate(wEns(maxEns),aCC(maxCC,maxEns-1),occnum(nBas,nspin,maxEns))
   call read_options_dft(nBas,method,x_rung,x_DFA,c_rung,c_DFA,SGn,nEns,wEns,nCC,aCC, & 
                         doNcentered,occnum,Cx_choice)
 
