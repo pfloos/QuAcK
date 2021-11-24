@@ -1,5 +1,5 @@
-subroutine unrestricted_exchange_energy(rung,DFA,LDA_centered,nEns,wEns,aCC_w1,aCC_w2,nGrid,weight,nBas,P,FxHF, &
-                                        rho,drho,Ex,Cx_choice)
+subroutine unrestricted_exchange_energy(rung,DFA,LDA_centered,nEns,wEns,nCC,aCC,nGrid,weight,nBas,P,FxHF, &
+                                        rho,drho,Ex,Cx_choice,doNcentered)
 
 ! Compute the exchange energy
 
@@ -13,8 +13,8 @@ subroutine unrestricted_exchange_energy(rung,DFA,LDA_centered,nEns,wEns,aCC_w1,a
   logical,intent(in)            :: LDA_centered
   integer,intent(in)            :: nEns
   double precision,intent(in)   :: wEns(nEns)
-  double precision,intent(in)   :: aCC_w1(3)
-  double precision,intent(in)   :: aCC_w2(3)
+  integer,intent(in)            :: nCC
+  double precision,intent(in)   :: aCC(nCC,nEns-1)
   integer,intent(in)            :: nGrid
   double precision,intent(in)   :: weight(nGrid)
   integer,intent(in)            :: nBas
@@ -23,6 +23,7 @@ subroutine unrestricted_exchange_energy(rung,DFA,LDA_centered,nEns,wEns,aCC_w1,a
   double precision,intent(in)   :: rho(nGrid)
   double precision,intent(in)   :: drho(ncart,nGrid)
   integer,intent(in)            :: Cx_choice
+  logical,intent(in)            :: doNcentered
 
 ! Local variables
 
@@ -42,8 +43,8 @@ subroutine unrestricted_exchange_energy(rung,DFA,LDA_centered,nEns,wEns,aCC_w1,a
 
     case(1) 
 
-      call unrestricted_lda_exchange_energy(DFA,LDA_centered,nEns,wEns,aCC_w1,aCC_w2,nGrid,weight,&
-                                            rho,Ex,Cx_choice)
+      call unrestricted_lda_exchange_energy(DFA,LDA_centered,nEns,wEns,nCC,aCC,nGrid,weight,&
+                                            rho,Ex,Cx_choice,doNcentered)
 
 !   GGA functionals
 
@@ -61,7 +62,7 @@ subroutine unrestricted_exchange_energy(rung,DFA,LDA_centered,nEns,wEns,aCC_w1,a
 
     case(4) 
 
-      call unrestricted_hybrid_exchange_energy(DFA,LDA_centered,nEns,wEns,aCC_w1,aCC_w2,nGrid,weight,nBas,P,FxHF, &
+      call unrestricted_hybrid_exchange_energy(DFA,LDA_centered,nEns,wEns,nCC,aCC,nGrid,weight,nBas,P,FxHF, &
                                         rho,drho,Ex,Cx_choice)
 
   end select

@@ -1,4 +1,4 @@
-subroutine UCC_lda_exchange_potential(nEns,wEns,aCC_w1,aCC_w2,nGrid,weight,nBas,AO,rho,Fx,Cx_choice)
+subroutine UCC_lda_exchange_potential(nEns,wEns,nCC,aCC,nGrid,weight,nBas,AO,rho,Fx,Cx_choice,doNcentered)
 
 ! Compute the unrestricted version of the curvature-corrected exchange potential
 
@@ -9,14 +9,15 @@ subroutine UCC_lda_exchange_potential(nEns,wEns,aCC_w1,aCC_w2,nGrid,weight,nBas,
 
   integer,intent(in)            :: nEns
   double precision,intent(in)   :: wEns(nEns)
-  double precision,intent(in)   :: aCC_w1(3)
-  double precision,intent(in)   :: aCC_w2(3)
+  integer,intent(in)            :: nCC
+  double precision,intent(in)   :: aCC(nCC,nEns-1)
   integer,intent(in)            :: nGrid
   double precision,intent(in)   :: weight(nGrid)
   integer,intent(in)            :: nBas
   double precision,intent(in)   :: AO(nBas,nGrid)
   double precision,intent(in)   :: rho(nGrid)
   integer,intent(in)            :: Cx_choice
+  logical,intent(in)            :: doNcentered
 
 ! Local variables
 
@@ -57,24 +58,36 @@ subroutine UCC_lda_exchange_potential(nEns,wEns,aCC_w1,aCC_w2,nGrid,weight,nBas,
 
 ! Parameters for He N -> N-1
 
-  a1 = aCC_w1(1)
-  b1 = aCC_w1(2)
-  c1 = aCC_w1(3)
+  a1 = aCC(1,1)
+  b1 = aCC(2,1)
+  c1 = aCC(3,1)
  
 ! Parameters for He N -> N+1
 
-  a2 = aCC_w2(1)
-  b2 = aCC_w2(2)
-  c2 = aCC_w2(3)
+  a2 = aCC(1,2)
+  b2 = aCC(2,2)
+  c2 = aCC(3,2)
 
 ! Fx1 for states N and N-1
 ! Fx2 for states N and N+1
 
-  w1 = wEns(2)
-  Fx1 = 1d0 - w1*(1d0 - w1)*(a1 + b1*(w1 - 0.5d0) + c1*(w1 - 0.5d0)**2)
+  if(doNcentered) then 
 
-  w2 = wEns(3)
-  Fx2 = 1d0 - w2*(1d0 - w2)*(a2 + b2*(w2 - 0.5d0) + c2*(w2 - 0.5d0)**2)
+    w1 = wEns(2)
+    Fx1 = 1d0 - w1*(2d0 - w1)*(a1 + b1*(w1 - 1d0) + c1*(w1 - 1d0)**2)
+
+    w2 = wEns(3)
+    Fx2 = 1d0 - w2*(2d0 - w2)*(a2 + b2*(w2 - 1d0) + c2*(w2 - 1d0)**2)
+
+  else
+
+    w1 = wEns(2)
+    Fx1 = 1d0 - w1*(1d0 - w1)*(a1 + b1*(w1 - 0.5d0) + c1*(w1 - 0.5d0)**2)
+
+    w2 = wEns(3)
+    Fx2 = 1d0 - w2*(1d0 - w2)*(a2 + b2*(w2 - 0.5d0) + c2*(w2 - 0.5d0)**2)
+
+  endif
 
   select case (Cx_choice)
 

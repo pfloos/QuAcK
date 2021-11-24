@@ -198,6 +198,9 @@ subroutine G0T0(doACFDT,exchange_kernel,doXBS,BSE,TDA_T,TDA,dBSE,dTDA,evDyn,sing
 
   if(BSE) then
 
+!   eG0T0(1) = -0.5507952119d0
+!   eG0T0(2) = +1.540259769d0
+
     call Bethe_Salpeter_Tmatrix(TDA_T,TDA,dBSE,dTDA,evDyn,singlet,triplet,eta,nBas,nC,nO,nV,nR,nS,nOOs,nVVs,nOOt,nVVt,   & 
                                 Omega1s,X1s,Y1s,Omega2s,X2s,Y2s,rho1s,rho2s,Omega1t,X1t,Y1t,Omega2t,X2t,Y2t,rho1t,rho2t, &
                                 ERI_MO,dipole_int,eHF,eG0T0,EcBSE)
