@@ -382,7 +382,11 @@ subroutine read_options_dft(nBas,method,x_rung,x_DFA,c_rung,c_DFA,SGn,nEns,wEns,
   if (doNcentered) then
 
     do iEns=2,nEns
-      wEns(iEns) = (nEl(1)/nEl(iEns))*wEns(iEns)
+      if(nEl(iEns) > 0d0) then
+        wEns(iEns) = (nEl(1)/nEl(iEns))*wEns(iEns)
+      else
+        wEns(iENs) = 0d0
+      end if
     end do
 
   end if
