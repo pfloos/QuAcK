@@ -26,8 +26,8 @@ subroutine UCC_lda_exchange_derivative_discontinuity(nEns,wEns,nCC,aCC,nGrid,wei
   double precision,allocatable  :: dExdw(:)
   double precision,external     :: Kronecker_delta
 
-  double precision              :: a1,b1,c1,w1
-  double precision              :: a2,b2,c2,w2
+  double precision              :: a1,b1,c1,d1,w1
+  double precision              :: a2,b2,c2,d2,w2
   double precision              :: dCxdw1,dCxdw2
 
 ! Output variables
@@ -44,41 +44,43 @@ subroutine UCC_lda_exchange_derivative_discontinuity(nEns,wEns,nCC,aCC,nGrid,wei
   allocate(dExdw(nEns))
 
 
-! Parameters for first state
-
-  a1 = aCC(1,1)
-  b1 = aCC(2,1)
-  c1 = aCC(3,1)
-
-! Parameters for second state
-
-  a2 = aCC(1,2)
-  b2 = aCC(2,2)
-  c2 = aCC(3,2)
- 
-  w1 = wEns(2)
-  w2 = wEns(3)
-
 ! Defining enhancements factor for weight-dependent functionals
 
   if (doNcentered) then
-  
+
+! Parameters for first state
+
+    a1 = aCC(1,1)
+    b1 = aCC(2,1)
+    c1 = aCC(3,1)
+    d1 = aCC(4,1)
+
+! Parameters for second state
+
+    a2 = aCC(1,2)
+    b2 = aCC(2,2)
+    c2 = aCC(3,2)
+    d2 = aCC(4,2) 
+
+    w1 = wEns(2)
+    w2 = wEns(3)
+
     select case (Cx_choice)
 
       case(1)
-        dCxdw1 = 2.d0*a1*(w1-1.d0)+(2.d0+3.d0*(w1-2.d0)*w1)*b1+2.d0*(w1-1.d0)*(1.d0+2.d0*(w1-2.d0)*w1)*c1
+        dCxdw1 = a1 + 2.d0*b1*w1 + 3.d0*c1*w1**2 + 4.d0*d1*w1**3
         dCxdw2 = 0.d0
 
       case(2)
         dCxdw1 = 0.d0
-        dCxdw2 = 2.d0*a2*(w2-1.d0)+(2.d0+3.d0*(w2-2.d0)*w2)*b2+2.d0*(w2-1.d0)*(1.d0+2.d0*(w2-2.d0)*w2)*c2
+        dCxdw2 = a2 + 2.d0*b2*w2 + 3.d0*c2*w2**2 + 4.d0*d2*w2**3
 
       case(3)
-        dCxdw1 = (2.d0*a1*(w1-1.d0)+(2.d0+3.d0*(w1-2.d0)*w1)*b1+2.d0*(w1-1.d0)*(1.d0+2.d0*(w1-2.d0)*w1)*c1) &
-               * (1d0 - w2*(2d0 - w2)*(a2 + b2*(w2 - 1d0) + c2*(w2 - 1d0)**2))
+        dCxdw1 = (a1 + 2.d0*b1*w1 + 3.d0*c1*w1**2 + 4.d0*d1*w1**3) &
+               * (1d0 + a2*w2 + b2*w2**2 + c2*w2**3 + d2*w2**4)
 
-        dCxdw2 = (1d0 - w1*(2d0 - w1)*(a1 + b1*(w1 - 1.d0) + c1*(w1 - 1.d0)**2))                            &
-               * (2.d0*a2*(w2-1.d0)+(2.d0+3.d0*(w2-2.d0)*w2)*b2+2.d0*(w2-1.d0)*(1.d0+2.d0*(w2-2.d0)*w2)*c2)
+        dCxdw2 = (1d0 + a1*w1 + b1*w1**2 + c1*w1**3 + d1*w1**4) &
+               * (a2 + 2.d0*b2*w2 + 3.d0*c2*w2**2 + 4.d0*d2*w2**3)
 
       case default
         dCxdw1 = 0d0
@@ -87,6 +89,21 @@ subroutine UCC_lda_exchange_derivative_discontinuity(nEns,wEns,nCC,aCC,nGrid,wei
     end select
 
   else
+
+! Parameters for first state
+
+    a1 = aCC(1,1)
+    b1 = aCC(2,1)
+    c1 = aCC(3,1)
+
+! Parameters for second state
+
+    a2 = aCC(1,2)
+    b2 = aCC(2,2)
+    c2 = aCC(3,2)
+
+    w1 = wEns(2)
+    w2 = wEns(3)
 
     select case (Cx_choice)
 
