@@ -180,7 +180,6 @@ subroutine unrestricted_individual_energy(x_rung,x_DFA,c_rung,c_DFA,LDA_centered
 ! Individual exchange-correlation energy
 !------------------------------------------------------------------------
 
-  print*,LZc
   LZHxc(:) = LZH(:) + LZx(:) + LZc(:)
 
 !------------------------------------------------------------------------
