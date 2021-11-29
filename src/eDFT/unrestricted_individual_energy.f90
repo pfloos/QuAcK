@@ -1,4 +1,4 @@
-subroutine unrestricted_individual_energy(x_rung,x_DFA,c_rung,c_DFA,LDA_centered,nEns,wEns,aCC_w1,aCC_w2,nGrid,weight,nBas,AO,dAO, &
+subroutine unrestricted_individual_energy(x_rung,x_DFA,c_rung,c_DFA,LDA_centered,nEns,wEns,nCC,aCC,nGrid,weight,nBas,AO,dAO, &
                                           T,V,ERI,ENuc,eps,Pw,rhow,drhow,J,Fx,FxHF,Fc,P,rho,drho,Ew,E,Om,occnum,&
                                           Cx_choice,doNcentered)
 
@@ -14,8 +14,8 @@ subroutine unrestricted_individual_energy(x_rung,x_DFA,c_rung,c_DFA,LDA_centered
   logical,intent(in)            :: LDA_centered
   integer,intent(in)            :: nEns
   double precision,intent(in)   :: wEns(nEns)
-  double precision,intent(in)   :: aCC_w1(3)
-  double precision,intent(in)   :: aCC_w2(3)
+  integer,intent(in)            :: nCC
+  double precision,intent(in)   :: aCC(nCC,nEns-1)
   integer,intent(in)            :: nGrid
   double precision,intent(in)   :: weight(nGrid)
   integer,intent(in)            :: nBas
@@ -156,7 +156,7 @@ subroutine unrestricted_individual_energy(x_rung,x_DFA,c_rung,c_DFA,LDA_centered
 
   do iEns=1,nEns
     do ispin=1,nspin
-      call unrestricted_exchange_individual_energy(x_rung,x_DFA,LDA_centered,nEns,wEns,aCC_w1,aCC_w2,nGrid,weight,nBas,ERI,  &
+      call unrestricted_exchange_individual_energy(x_rung,x_DFA,LDA_centered,nEns,wEns,nCC,aCC,nGrid,weight,nBas,ERI,  &
                                                    Pw(:,:,ispin),P(:,:,ispin,iEns),rhow(:,ispin),drhow(:,:,ispin),           &  
                                                    rho(:,ispin,iEns),drho(:,:,ispin,iEns),Cx_choice,doNcentered,kappa(iEns), & 
                                                    Ex(ispin,iEns))
@@ -185,7 +185,7 @@ subroutine unrestricted_individual_energy(x_rung,x_DFA,c_rung,c_DFA,LDA_centered
 
   do ispin=1,nspin 
 
-    call unrestricted_exchange_derivative_discontinuity(x_rung,x_DFA,nEns,wEns,aCC_w1,aCC_w2,nGrid,weight, &
+    call unrestricted_exchange_derivative_discontinuity(x_rung,x_DFA,nEns,wEns,nCC,aCC,nGrid,weight, &
                                                         rhow(:,ispin),drhow(:,:,ispin),Cx_choice,doNcentered,kappa,ExDD(ispin,:))
   end do
 

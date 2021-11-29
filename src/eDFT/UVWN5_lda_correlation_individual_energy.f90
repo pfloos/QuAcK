@@ -177,7 +177,7 @@ subroutine UVWN5_lda_correlation_individual_energy(nGrid,weight,rhow,rho,doNcent
       
       decdr = 0d0 
       if(ra > threshold) decdr = decdr + decdra
-!     if(rb > threshold) decdr = decdr + decdrb
+      if(rb > threshold) decdr = decdr + decdrb
  
       Ecrr(2)  = Ecrr(2) - weight(iG)*decdr*r*r
 

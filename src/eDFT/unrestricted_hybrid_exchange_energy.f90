@@ -1,4 +1,4 @@
-subroutine unrestricted_hybrid_exchange_energy(DFA,LDA_centered,nEns,wEns,aCC_w1,aCC_w2,nGrid,weight,nBas,P,FxHF, &
+subroutine unrestricted_hybrid_exchange_energy(DFA,LDA_centered,nEns,wEns,nCC,aCC,nGrid,weight,nBas,P,FxHF, &
                                                rho,drho,Ex,Cx_choice)
 
 ! Compute the exchange energy for hybrid functionals
@@ -12,8 +12,8 @@ subroutine unrestricted_hybrid_exchange_energy(DFA,LDA_centered,nEns,wEns,aCC_w1
   logical,intent(in)            :: LDA_centered
   integer,intent(in)            :: nEns
   double precision,intent(in)   :: wEns(nEns)
-  double precision,intent(in)   :: aCC_w1(3)
-  double precision,intent(in)   :: aCC_w2(3)
+  integer,intent(in)            :: nCC
+  double precision,intent(in)   :: aCC(nCC,nEns-1)
   integer,intent(in)            :: nGrid
   double precision,intent(in)   :: weight(nGrid)
   integer,intent(in)            :: nBas
@@ -43,7 +43,7 @@ subroutine unrestricted_hybrid_exchange_energy(DFA,LDA_centered,nEns,wEns,aCC_w1
       a0 = 0.20d0
       aX = 0.72d0
   
-      call unrestricted_lda_exchange_energy(1,LDA_centered,nEns,wEns,aCC_w1,aCC_w2,nGrid,weight,&
+      call unrestricted_lda_exchange_energy(1,LDA_centered,nEns,wEns,nCC,aCC,nGrid,weight,&
                                             rho,ExLDA,Cx_choice)
       call unrestricted_gga_exchange_energy(2,nEns,wEns,nGrid,weight,rho,drho,ExGGA)
       call unrestricted_fock_exchange_energy(nBas,P,FxHF,ExHF)

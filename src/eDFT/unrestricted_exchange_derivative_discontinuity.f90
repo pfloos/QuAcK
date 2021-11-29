@@ -1,4 +1,4 @@
-subroutine unrestricted_exchange_derivative_discontinuity(rung,DFA,nEns,wEns,aCC_w1,aCC_w2,nGrid,weight,rhow,drhow,&
+subroutine unrestricted_exchange_derivative_discontinuity(rung,DFA,nEns,wEns,nCC,aCC,nGrid,weight,rhow,drhow,&
                                                           Cx_choice,doNcentered,kappa,ExDD)
 
 ! Compute the exchange part of the derivative discontinuity
@@ -12,8 +12,8 @@ subroutine unrestricted_exchange_derivative_discontinuity(rung,DFA,nEns,wEns,aCC
   integer,intent(in)            :: DFA
   integer,intent(in)            :: nEns
   double precision,intent(in)   :: wEns(nEns)
-  double precision,intent(in)   :: aCC_w1(3)
-  double precision,intent(in)   :: aCC_w2(3)
+  integer,intent(in)            :: nCC
+  double precision,intent(in)   :: aCC(nCC,nEns-1)
   integer,intent(in)            :: nGrid
   double precision,intent(in)   :: weight(nGrid)
   double precision,intent(in)   :: rhow(nGrid)
@@ -41,7 +41,7 @@ subroutine unrestricted_exchange_derivative_discontinuity(rung,DFA,nEns,wEns,aCC
 
     case(1) 
 
-      call unrestricted_lda_exchange_derivative_discontinuity(DFA,nEns,wEns(:),aCC_w1,aCC_w2,nGrid,weight(:),&
+      call unrestricted_lda_exchange_derivative_discontinuity(DFA,nEns,wEns(:),nCC,aCC,nGrid,weight(:),&
                                                               rhow(:),Cx_choice,doNcentered,kappa,ExDD(:))
 !   GGA functionals
 
@@ -59,7 +59,7 @@ subroutine unrestricted_exchange_derivative_discontinuity(rung,DFA,nEns,wEns,aCC
 
     case(4) 
 
-      call unrestricted_hybrid_exchange_derivative_discontinuity(DFA,nEns,wEns(:),aCC_w1,aCC_w2,nGrid,weight(:),&
+      call unrestricted_hybrid_exchange_derivative_discontinuity(DFA,nEns,wEns(:),nCC,aCC,nGrid,weight(:),&
                                                                  rhow(:),Cx_choice,doNcentered,kappa,ExDD(:))
 
   end select

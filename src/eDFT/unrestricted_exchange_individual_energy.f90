@@ -1,4 +1,4 @@
-subroutine unrestricted_exchange_individual_energy(rung,DFA,LDA_centered,nEns,wEns,aCC_w1,aCC_w2,nGrid,weight,nBas, & 
+subroutine unrestricted_exchange_individual_energy(rung,DFA,LDA_centered,nEns,wEns,nCC,aCC,nGrid,weight,nBas, & 
                                                    ERI,Pw,P,rhow,drhow,rho,drho,Cx_choice,doNcentered,kappa,Ex)
 
 ! Compute the exchange individual energy
@@ -13,8 +13,8 @@ subroutine unrestricted_exchange_individual_energy(rung,DFA,LDA_centered,nEns,wE
   logical,intent(in)            :: LDA_centered
   integer,intent(in)            :: nEns
   double precision,intent(in)   :: wEns(nEns)
-  double precision,intent(in)   :: aCC_w1(3)
-  double precision,intent(in)   :: aCC_w2(3)
+  integer,intent(in)            :: nCC
+  double precision,intent(in)   :: aCC(nCC,nEns-1)
   integer,intent(in)            :: nGrid
   double precision,intent(in)   :: weight(nGrid)
   integer,intent(in)            :: nBas
@@ -45,7 +45,7 @@ subroutine unrestricted_exchange_individual_energy(rung,DFA,LDA_centered,nEns,wE
 
     case(1) 
 
-      call unrestricted_lda_exchange_individual_energy(DFA,LDA_centered,nEns,wEns,aCC_w1,aCC_w2,nGrid,weight,&
+      call unrestricted_lda_exchange_individual_energy(DFA,LDA_centered,nEns,wEns,nCC,aCC,nGrid,weight,&
                                                        rhow,rho,Cx_choice,doNcentered,kappa,Ex)
 
 !   GGA functionals

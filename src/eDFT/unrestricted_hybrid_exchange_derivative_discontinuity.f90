@@ -1,4 +1,4 @@
-subroutine unrestricted_hybrid_exchange_derivative_discontinuity(DFA,nEns,wEns,aCC_w1,aCC_w2,nGrid,weight,rhow,&
+subroutine unrestricted_hybrid_exchange_derivative_discontinuity(DFA,nEns,wEns,nCC,aCC,nGrid,weight,rhow,&
                                                               Cx_choice,doNcentered,kappa,ExDD)
 
 ! Compute the exchange part of the derivative discontinuity for hybrid functionals
@@ -11,8 +11,8 @@ subroutine unrestricted_hybrid_exchange_derivative_discontinuity(DFA,nEns,wEns,a
   integer,intent(in)            :: DFA
   integer,intent(in)            :: nEns
   double precision,intent(in)   :: wEns(nEns)
-  double precision,intent(in)   :: aCC_w1(3)
-  double precision,intent(in)   :: aCC_w2(3)
+  integer,intent(in)            :: nCC
+  double precision,intent(in)   :: aCC(nCC,nEns-1)
  
   integer,intent(in)            :: nGrid
   double precision,intent(in)   :: weight(nGrid)
