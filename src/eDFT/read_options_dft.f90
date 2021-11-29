@@ -400,7 +400,7 @@ subroutine read_options_dft(nBas,method,x_rung,x_DFA,c_rung,c_DFA,SGn,nEns,wEns,
 ! Read parameters for weight-dependent functional
   read(1,*)
   read(1,*) nCC
-  do iEns=2,nEns
+  do iEns=2,maxEns
     read(1,*) (aCC(iCC,iEns-1),iCC=1,nCC)
   end do
 
@@ -410,12 +410,13 @@ subroutine read_options_dft(nBas,method,x_rung,x_DFA,c_rung,c_DFA,SGn,nEns,wEns,
 
   write(*,*)'----------------------------------------------------------'
   write(*,*)' Parameters for weight-dependent exchange functional      '
-  write(*,*)'----------------------------------------------------------'
-  do iEns=2,nEns
-    write(*,'(A6,I2,A2)') 'State ',iEns,':'
-    do iCC=1,nCC
-      write(*,'(I2,F10.6)') iCC,aCC(iCC,iEns-1)
-    end do
+  do iEns=2,maxEns
+    write(*,*)'----------------------------------------------------------'
+    write(*,'(A10,I2,A2)') ' State ',iEns,':'
+    write(*,*)'----------------------------------------------------------'
+    write(*,*) 
+    call matout(nCC,1,acc(:,iEns-1))
+    write(*,*) 
   end do
   write(*,*)
 

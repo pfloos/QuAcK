@@ -26,7 +26,12 @@ subroutine unrestricted_auxiliary_energy(nBas,nEns,eps,occnum,doNcentered,Eaux)
 
   double precision,intent(out)  :: Eaux(nspin,nEns)
 
+! Memory allocation
+
   allocate(nEl(nEns))
+
+! Compute the number of electrons
+
   nEl(:) = 0d0
   do iEns=1,nEns
     do iBas=1,nBas

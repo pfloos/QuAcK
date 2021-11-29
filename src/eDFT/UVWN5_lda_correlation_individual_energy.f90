@@ -175,9 +175,9 @@ subroutine UVWN5_lda_correlation_individual_energy(nGrid,weight,rhow,rho,doNcent
       decdrb = decdr_p + decdr_a*fz/d2fz*(1d0-z**4) + ec_a*dfzdrb/d2fz*(1d0-z**4) - 4d0*ec_a*fz/d2fz*dzdrb*z**3 &
              + (decdr_f - decdr_p)*fz*z**4 + (ec_f - ec_p)*dfzdrb*z**4 + 4d0*(ec_f - ec_p)*fz*dzdrb*z**3
       
-      decdr = 0d0
+      decdr = 0d0 
       if(ra > threshold) decdr = decdr + decdra
-      if(rb > threshold) decdr = decdr + decdrb
+!     if(rb > threshold) decdr = decdr + decdrb
  
       Ecrr(2)  = Ecrr(2) - weight(iG)*decdr*r*r
 
