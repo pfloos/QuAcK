@@ -1,4 +1,4 @@
-subroutine unrestricted_gga_exchange_individual_energy(DFA,nEns,wEns,nGrid,weight,rhow,drhow,rho,drho,Ex)
+subroutine unrestricted_gga_exchange_individual_energy(DFA,nEns,wEns,nGrid,weight,rhow,drhow,Ex)
 
 ! Compute GGA exchange energy for individual states
 
@@ -14,8 +14,6 @@ subroutine unrestricted_gga_exchange_individual_energy(DFA,nEns,wEns,nGrid,weigh
   double precision,intent(in)   :: weight(nGrid)
   double precision,intent(in)   :: rhow(nGrid)
   double precision,intent(in)   :: drhow(ncart,nGrid)
-  double precision,intent(in)   :: rho(nGrid)
-  double precision,intent(in)   :: drho(ncart,nGrid)
 
 ! Output variables
 

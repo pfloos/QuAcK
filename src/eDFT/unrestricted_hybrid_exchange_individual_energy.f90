@@ -1,4 +1,4 @@
-subroutine unrestricted_hybrid_exchange_individual_energy(DFA,nEns,wEns,nGrid,weight,nBas,ERI,Pw,P,rhow,drhow,rho,drho,Ex)
+subroutine unrestricted_hybrid_exchange_individual_energy(DFA,nEns,wEns,nGrid,weight,nBas,ERI,Pw,rhow,drhow,Ex)
 
 ! Compute the hybrid exchange energy for individual states
 
@@ -14,13 +14,10 @@ subroutine unrestricted_hybrid_exchange_individual_energy(DFA,nEns,wEns,nGrid,we
   double precision,intent(in)   :: weight(nGrid)
   double precision,intent(in)   :: rhow(nGrid)
   double precision,intent(in)   :: drhow(ncart,nGrid)
-  double precision,intent(in)   :: rho(nGrid)
-  double precision,intent(in)   :: drho(ncart,nGrid)
 
   integer,intent(in)            :: nBas
   double precision,intent(in)   :: ERI(nBas,nBas,nBas,nBas)
   double precision,intent(in)   :: Pw(nBas,nBas)
-  double precision,intent(in)   :: P(nBas,nBas)
 
 ! Output variables
 
@@ -32,7 +29,7 @@ subroutine unrestricted_hybrid_exchange_individual_energy(DFA,nEns,wEns,nGrid,we
 
     case (1)
 
-      call unrestricted_fock_exchange_individual_energy(nBas,Pw,P,ERI,Ex)
+      call unrestricted_fock_exchange_individual_energy(nBas,Pw,ERI,Ex)
 
     case default
 

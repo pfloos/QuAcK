@@ -1,4 +1,4 @@
-subroutine unrestricted_fock_exchange_individual_energy(nBas,Pw,P,ERI,Ex)
+subroutine unrestricted_fock_exchange_individual_energy(nBas,Pw,ERI,Ex)
 
 ! Compute the HF individual energy in the unrestricted formalism
 
@@ -8,7 +8,6 @@ subroutine unrestricted_fock_exchange_individual_energy(nBas,Pw,P,ERI,Ex)
 
   integer,intent(in)            :: nBas
   double precision,intent(in)   :: Pw(nBas,nBas)
-  double precision,intent(in)   :: P(nBas,nBas)
   double precision,intent(in)   :: ERI(nBas,nBas,nBas,nBas)
 
 ! Local variables
@@ -26,7 +25,6 @@ subroutine unrestricted_fock_exchange_individual_energy(nBas,Pw,P,ERI,Ex)
 
   call unrestricted_fock_exchange_potential(nBas,Pw,ERI,Fx)
 
-  Ex =       trace_matrix(nBas,matmul(P ,Fx)) &
-     - 0.5d0*trace_matrix(nBas,matmul(Pw,Fx))
+  Ex = - 0.5d0*trace_matrix(nBas,matmul(Pw,Fx))
 
 end subroutine unrestricted_fock_exchange_individual_energy

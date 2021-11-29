@@ -1,4 +1,4 @@
-subroutine UVWN5_lda_correlation_individual_energy(nGrid,weight,rhow,rho,doNcentered,kappa,Ec)
+subroutine UVWN5_lda_correlation_individual_energy(nGrid,weight,rhow,doNcentered,LZc)
 
 ! Compute VWN5 LDA correlation potential
 
@@ -11,9 +11,7 @@ subroutine UVWN5_lda_correlation_individual_energy(nGrid,weight,rhow,rho,doNcent
   integer,intent(in)            :: nGrid
   double precision,intent(in)   :: weight(nGrid)
   double precision,intent(in)   :: rhow(nGrid,nspin)
-  double precision,intent(in)   :: rho(nGrid,nspin)
   logical,intent(in)            :: doNcentered
-  double precision,intent(in)   :: kappa
 
 ! Local variables
 
@@ -23,17 +21,13 @@ subroutine UVWN5_lda_correlation_individual_energy(nGrid,weight,rhow,rho,doNcent
   double precision              :: a_f,x0_f,xx0_f,b_f,c_f,x_f,q_f
   double precision              :: a_a,x0_a,xx0_a,b_a,c_a,x_a,q_a
   double precision              :: dfzdz,dxdrs,dxdx_p,dxdx_f,dxdx_a,decdx_p,decdx_f,decdx_a
-  double precision              :: dzdra,dzdrb,dfzdra,dfzdrb,drsdr,decdr_p,decdr_f,decdr_a,decdra,decdrb,decdr
+  double precision              :: dzdra,dzdrb,dfzdra,dfzdrb,drsdr,decdr_p,decdr_f,decdr_a,decdra,decdrb
   double precision              :: ec_z,ec_p,ec_f,ec_a
   double precision              :: fz,d2fz
 
-  double precision              :: Ecrr(nsp)
-  double precision              :: EcrI(nsp)
-  double precision              :: EcrrI(nsp)
-
 ! Output variables
 
-  double precision              :: Ec(nsp)
+  double precision              :: LZc(nspin)
 
 ! Parameters of the functional
 
@@ -54,56 +48,14 @@ subroutine UVWN5_lda_correlation_individual_energy(nGrid,weight,rhow,rho,doNcent
 
 ! Initialization
 
-  Ec(:)    = 0d0
-  Ecrr(:)  = 0d0
-  EcrI(:)  = 0d0
-  EcrrI(:) = 0d0
+  LZc(:)    = 0d0
 
   do iG=1,nGrid
 
     ra = max(0d0,rhow(iG,1))
     rb = max(0d0,rhow(iG,2))
 
-    raI = max(0d0,rho(iG,1))
-    rbI = max(0d0,rho(iG,2))
-   
     r  = ra + rb
-    rI = raI + rbI
-
-!   spin-up contribution
-
- !  if(r > threshold) then
-
- !    rs = (4d0*pi*r/3d0)**(-1d0/3d0)
- !    x = sqrt(rs)
- ! 
- !    x_f   = x*x + b_f*x + c_f
- !    xx0_f = x0_f*x0_f + b_f*x0_f + c_f
- !    q_f   = sqrt(4d0*c_f - b_f*b_f)
- ! 
- !    ec_f = a_f*( log(x**2/x_f) + 2d0*b_f/q_f*atan(q_f/(2d0*x + b_f)) & 
- !         - b_f*x0_f/xx0_f*( log((x - x0_f)**2/x_f) + 2d0*(b_f + 2d0*x0_f)/q_f*atan(q_f/(2d0*x + b_f)) ) )
- ! 
- !    drsdr = - (36d0*pi)**(-1d0/3d0)*r**(-4d0/3d0)
- !    dxdrs = 0.5d0/sqrt(rs)
-
- !    dxdx_f = 2d0*x + b_f
-
- !    decdx_f = a_f*( 2d0/x - 4d0*b_f/( (b_f+2d0*x)**2 + q_f**2) - dxdx_f/x_f &
- !            - b_f*x0_f/xx0_f*( 2/(x-x0_f) - 4d0*(b_f+2d0*x0_f)/( (b_f+2d0*x)**2 + q_f**2) - dxdx_f/x_f ) )
-
- !    decdr_f = drsdr*dxdrs*decdx_f
-
- !    Ecrr(1)  = Ecrr(1)  - weight(iG)*decdr_f*r*r
-
- !    if(rI > threshold) then 
-
- !      EcrI(1)  = EcrI(1)  + weight(iG)*ec_f*rI
- !      EcrrI(1) = EcrrI(1) + weight(iG)*decdr_f*r*rI
-
- !    end if
- ! 
- !  end if
 
 !   up-down contribution
 
@@ -143,12 +95,6 @@ subroutine UVWN5_lda_correlation_individual_energy(nGrid,weight,rhow,rho,doNcent
 
       dfzdz = (4d0/3d0)*((1d0 + z)**(1d0/3d0) - (1d0 - z)**(1d0/3d0))/(2d0*(2d0**(1d0/3d0) - 1d0))
 
-      dzdra = + (1d0 - z)/r
-      dfzdra = dzdra*dfzdz
-
-      dzdrb = - (1d0 + z)/r
-      dfzdrb = dzdrb*dfzdz
-
       drsdr = - (36d0*pi)**(-1d0/3d0)*r**(-4d0/3d0)
       dxdrs = 0.5d0/sqrt(rs)
 
@@ -169,77 +115,32 @@ subroutine UVWN5_lda_correlation_individual_energy(nGrid,weight,rhow,rho,doNcent
       decdr_f = drsdr*dxdrs*decdx_f
       decdr_a = drsdr*dxdrs*decdx_a
 
-      decdra = decdr_p + decdr_a*fz/d2fz*(1d0-z**4) + ec_a*dfzdra/d2fz*(1d0-z**4) - 4d0*ec_a*fz/d2fz*dzdra*z**3 &
-             + (decdr_f - decdr_p)*fz*z**4 + (ec_f - ec_p)*dfzdra*z**4 + 4d0*(ec_f - ec_p)*fz*dzdra*z**3
+      if(ra > threshold) then
 
-      decdrb = decdr_p + decdr_a*fz/d2fz*(1d0-z**4) + ec_a*dfzdrb/d2fz*(1d0-z**4) - 4d0*ec_a*fz/d2fz*dzdrb*z**3 &
-             + (decdr_f - decdr_p)*fz*z**4 + (ec_f - ec_p)*dfzdrb*z**4 + 4d0*(ec_f - ec_p)*fz*dzdrb*z**3
+        dzdra = + (1d0 - z)/r
+        dfzdra = dzdra*dfzdz
+
+        decdra = decdr_p + decdr_a*fz/d2fz*(1d0-z**4) + ec_a*dfzdra/d2fz*(1d0-z**4) - 4d0*ec_a*fz/d2fz*dzdra*z**3 &
+               + (decdr_f - decdr_p)*fz*z**4 + (ec_f - ec_p)*dfzdra*z**4 + 4d0*(ec_f - ec_p)*fz*dzdra*z**3
+
+        LZc(1) = LZc(1) - weight(iG)*decdra*ra*r
+  
+      end if
+
+      if(rb > threshold) then
+
+        dzdrb = - (1d0 + z)/r
+        dfzdrb = dzdrb*dfzdz
+
+        decdrb = decdr_p + decdr_a*fz/d2fz*(1d0-z**4) + ec_a*dfzdrb/d2fz*(1d0-z**4) - 4d0*ec_a*fz/d2fz*dzdrb*z**3 &
+               + (decdr_f - decdr_p)*fz*z**4 + (ec_f - ec_p)*dfzdrb*z**4 + 4d0*(ec_f - ec_p)*fz*dzdrb*z**3
       
-      decdr = 0d0 
-      if(ra > threshold) decdr = decdr + decdra
-      if(rb > threshold) decdr = decdr + decdrb
- 
-      Ecrr(2)  = Ecrr(2) - weight(iG)*decdr*r*r
-
-      if(rI > threshold) then
-
-        EcrI(2)  = EcrI(2)  + weight(iG)*ec_z*rI
-        EcrrI(2) = EcrrI(2) + weight(iG)*decdr*r*rI
+        LZc(2) = LZc(2) - weight(iG)*decdrb*rb*r
 
       end if
-   
+
     end if
 
-!   spin-down contribution
-   
- !  if(r > threshold) then
-
- !    rs = (4d0*pi*r/3d0)**(-1d0/3d0)
- !    x  = sqrt(rs)
-
- !    x_f   = x*x + b_f*x + c_f
- !    xx0_f = x0_f*x0_f + b_f*x0_f + c_f
- !    q_f   = sqrt(4d0*c_f - b_f*b_f)
-
- !    ec_f = a_f*( log(x**2/x_f) + 2d0*b_f/q_f*atan(q_f/(2d0*x + b_f)) &
- !               - b_f*x0_f/xx0_f*( log((x - x0_f)**2/x_f) + 2d0*(b_f + 2d0*x0_f)/q_f*atan(q_f/(2d0*x + b_f)) ) )
-
- !    drsdr = - (36d0*pi)**(-1d0/3d0)*r**(-4d0/3d0)
- !    dxdrs = 0.5d0/sqrt(rs)
-
- !    dxdx_f = 2d0*x + b_f
-
- !    decdx_f = a_f*( 2d0/x - 4d0*b_f/( (b_f+2d0*x)**2 + q_f**2) - dxdx_f/x_f &
- !            - b_f*x0_f/xx0_f*( 2/(x-x0_f) - 4d0*(b_f+2d0*x0_f)/( (b_f+2d0*x)**2 + q_f**2) - dxdx_f/x_f ) )
-
- !    decdr_f = drsdr*dxdrs*decdx_f
-
- !    Ecrr(3)  = Ecrr(3)  - weight(iG)*decdr_f*r*r
-
- !    if(rI > threshold) then
-
- !      EcrI(3)  = EcrI(3)  + weight(iG)*ec_f*rI
- !      EcrrI(3) = EcrrI(3) + weight(iG)*decdr_f*r*rI
-
- !    end if
-
- !  end if
-
   end do
-
-  Ecrr(2)  = Ecrr(2)  - Ecrr(1)  - Ecrr(3)
-  EcrI(2)  = EcrI(2)  - EcrI(1)  - EcrI(3)
-  EcrrI(2) = EcrrI(2) - EcrrI(1) - EcrrI(3)
-
-! De-scaling for N-centered ensemble
-
-  if(doNcentered) then
-
-    Ecrr(:)  = kappa*Ecrr(:)
-    EcrI(:)  = kappa*EcrI(:)
-
-  endif
-
-  Ec(:) = Ecrr(:) + EcrI(:) + EcrrI(:)
 
 end subroutine UVWN5_lda_correlation_individual_energy

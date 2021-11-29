@@ -76,9 +76,6 @@ subroutine eDFT_UKS(x_rung,x_DFA,c_rung,c_DFA,nEns,wEns,nCC,aCC,nGrid,weight,max
   double precision,allocatable  :: rho(:,:,:)
   double precision,allocatable  :: drho(:,:,:,:)
 
-  double precision              :: E(nEns)
-  double precision              :: Om(nEns)
-
   integer                       :: ispin,iEns,iBas
 
 ! Output variables
@@ -382,14 +379,6 @@ subroutine eDFT_UKS(x_rung,x_DFA,c_rung,c_DFA,nEns,wEns,nCC,aCC,nGrid,weight,max
 
   end if
 
-!!!!!
-!   do iEns=1,nEns
-!     print*,'occnum=',occnum(1,1,iEns),occnum(2,1,iEns),occnum(1,2,iEns),occnum(2,2,iEns)
-!     print*,'nel up and down and total=', electron_number(nGrid,weight,&
-!                                          rho(:,1,iEns)),electron_number(nGrid,weight,rho(:,2,iEns)),sum(nEl(:))
-!   end do
-!!!!!
-
 ! Compute final KS energy
 
   call dipole_moment(nBas,Pw(:,:,1)+Pw(:,:,2),nNuc,ZNuc,rNuc,dipole_int,dipole)
@@ -403,8 +392,7 @@ subroutine eDFT_UKS(x_rung,x_DFA,c_rung,c_DFA,nEns,wEns,nCC,aCC,nGrid,weight,max
 ! Compute individual energies from ensemble energy
 !------------------------------------------------------------------------
 
-  call unrestricted_individual_energy(x_rung,x_DFA,c_rung,c_DFA,LDA_centered,nEns,wEns,nCC,aCC,nGrid,weight,nBas, &
-                                      AO,dAO,T,V,ERI,ENuc,eps,Pw,rhow,drhow,J,Fx,FxHF,Fc,P,rho,drho,Ew,E,Om,occnum,     &
-                                      Cx_choice,doNcentered)
+  call unrestricted_individual_energy(x_rung,x_DFA,c_rung,c_DFA,LDA_centered,nEns,wEns,nCC,aCC,nGrid,weight,nBas,      &
+                                      AO,dAO,T,V,ERI,ENuc,eps,Pw,rhow,drhow,J,Fx,FxHF,Fc,P,rho,drho,Ew,occnum,Cx_choice,doNcentered)
 
 end subroutine eDFT_UKS

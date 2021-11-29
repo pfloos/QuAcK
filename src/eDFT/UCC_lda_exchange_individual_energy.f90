@@ -1,4 +1,4 @@
-subroutine UCC_lda_exchange_individual_energy(nEns,wEns,nCC,aCC,nGrid,weight,rhow,rho,Cx_choice,doNcentered,kappa,Ex)
+subroutine UCC_lda_exchange_individual_energy(nEns,wEns,nCC,aCC,nGrid,weight,rhow,Cx_choice,doNcentered,Ex)
 
 ! Compute the unrestricted version of the curvature-corrected exchange functional
 
@@ -14,17 +14,14 @@ subroutine UCC_lda_exchange_individual_energy(nEns,wEns,nCC,aCC,nGrid,weight,rho
   integer,intent(in)            :: nGrid
   double precision,intent(in)   :: weight(nGrid)
   double precision,intent(in)   :: rhow(nGrid)
-  double precision,intent(in)   :: rho(nGrid)
   integer,intent(in)            :: Cx_choice
   logical,intent(in)            :: doNcentered
-  double precision,intent(in)   :: kappa
  
 ! Local variables
 
   integer                       :: iG
-  double precision              :: r,rI
-  double precision              :: e_p,dedr
-  double precision              :: Exrr,ExrI,ExrrI
+  double precision              :: r
+  double precision              :: dedr
 
   double precision              :: a1,b1,c1,d1,w1
   double precision              :: a2,b2,c2,d2,w2
@@ -33,11 +30,6 @@ subroutine UCC_lda_exchange_individual_energy(nEns,wEns,nCC,aCC,nGrid,weight,rho
 ! Output variables
 
   double precision,intent(out)  :: Ex
-
-! External variable
-
-  double precision,external     :: electron_number
-
 
 ! Defining enhancements factor for weight-dependent functionals
 
@@ -105,44 +97,19 @@ subroutine UCC_lda_exchange_individual_energy(nEns,wEns,nCC,aCC,nGrid,weight,rho
 ! Compute LDA exchange matrix in the AO basis
 
   Ex = 0d0
-  Exrr  = 0d0
-  ExrI  = 0d0
-  ExrrI = 0d0
-
 
   do iG=1,nGrid
 
     r  = max(0d0,rhow(iG))
-    rI = max(0d0,rho(iG))
 
     if(r > threshold) then
 
-      e_p  =         Cx*r**(1d0/3d0)
       dedr = 1d0/3d0*Cx*r**(-2d0/3d0)
      
-      Exrr = Exrr - weight(iG)*dedr*r*r
-
-      if(rI > threshold) then
-
-        ExrI  = ExrI  + weight(iG)*e_p*rI
-        ExrrI = ExrrI + weight(iG)*dedr*r*rI
-
-      endif
+      Ex = Ex - weight(iG)*dedr*r*r
 
     endif
 
   enddo
-
-! De-scaling for N-centered ensemble  
-
-  if(doNcentered) then 
-   
-    Exrr  = kappa*Exrr
-    ExrI  = kappa*ExrI
-
-  endif
-
-  Ex = Exrr + ExrI + ExrrI 
-
 
 end subroutine UCC_lda_exchange_individual_energy

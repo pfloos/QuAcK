@@ -1,5 +1,5 @@
-subroutine unrestricted_lda_exchange_individual_energy(DFA,LDA_centered,nEns,wEns,nCC,aCC,nGrid,weight,rhow,rho,&
-                                                       Cx_choice,doNcentered,kappa,Ex)
+subroutine unrestricted_lda_exchange_individual_energy(DFA,LDA_centered,nEns,wEns,nCC,aCC,nGrid,weight,rhow,&
+                                                       Cx_choice,doNcentered,Ex)
 
 ! Compute LDA exchange energy for individual states
 
@@ -17,10 +17,8 @@ subroutine unrestricted_lda_exchange_individual_energy(DFA,LDA_centered,nEns,wEn
   integer,intent(in)            :: nGrid
   double precision,intent(in)   :: weight(nGrid)
   double precision,intent(in)   :: rhow(nGrid)
-  double precision,intent(in)   :: rho(nGrid)
   integer,intent(in)            :: Cx_choice
   logical,intent(in)            :: doNcentered
-  double precision,intent(in)   :: kappa
 
 
 ! Output variables
@@ -33,12 +31,12 @@ subroutine unrestricted_lda_exchange_individual_energy(DFA,LDA_centered,nEns,wEn
 
     case (1)
 
-      call US51_lda_exchange_individual_energy(nGrid,weight,rhow,rho,doNcentered,kappa,Ex)
+      call US51_lda_exchange_individual_energy(nGrid,weight,rhow,Ex)
 
     case (2)
 
-      call UCC_lda_exchange_individual_energy(nEns,wEns,nCC,aCC,nGrid,weight,rhow,rho,&
-                                              Cx_choice,doNcentered,kappa,Ex)
+      call UCC_lda_exchange_individual_energy(nEns,wEns,nCC,aCC,nGrid,weight,rhow, &
+                                              Cx_choice,doNcentered,Ex)
 
     case default
 

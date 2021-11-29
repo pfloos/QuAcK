@@ -34,7 +34,7 @@ subroutine print_unrestricted_individual_energy(nEns,ENuc,Ew,ET,EV,EJ,Ex,Ec,Exc,
   write(*,'(A60)')           '-------------------------------------------------'
   write(*,'(A60)')           ' ENSEMBLE ENERGIES'
   write(*,'(A60)')           '-------------------------------------------------'
-  write(*,'(A44,F16.10,A3)') '     Ensemble energy:      ',Ew    + ENuc,' au'
+  write(*,'(A44,F16.10,A3)') '     Ensemble energy:      ',Ew + ENuc,' au'
   write(*,'(A60)')           '-------------------------------------------------'
   write(*,*)
 
@@ -55,66 +55,66 @@ subroutine print_unrestricted_individual_energy(nEns,ENuc,Ew,ET,EV,EJ,Ex,Ec,Exc,
 ! Kinetic energy
 !------------------------------------------------------------------------
 
-  write(*,'(A60)')           '-------------------------------------------------'
-  write(*,'(A60)')           ' INDIVIDUAL KINETIC     ENERGIES'
-  write(*,'(A60)')           '-------------------------------------------------'
-  do iEns=1,nEns
-    write(*,'(A40,I2,A2,F16.10,A3)') ' Kinetic     energy state ',iEns,': ',sum(ET(:,iEns)),' au'
-  end do
-  write(*,'(A60)')           '-------------------------------------------------'
-  write(*,*)
+! write(*,'(A60)')           '-------------------------------------------------'
+! write(*,'(A60)')           ' INDIVIDUAL KINETIC     ENERGIES'
+! write(*,'(A60)')           '-------------------------------------------------'
+! do iEns=1,nEns
+!   write(*,'(A40,I2,A2,F16.10,A3)') ' Kinetic     energy state ',iEns,': ',sum(ET(:,iEns)),' au'
+! end do
+! write(*,'(A60)')           '-------------------------------------------------'
+! write(*,*)
 
 !------------------------------------------------------------------------
 ! Potential energy
 !------------------------------------------------------------------------
 
-  write(*,'(A60)')           '-------------------------------------------------'
-  write(*,'(A60)')           ' INDIVIDUAL POTENTIAL   ENERGIES'
-  write(*,'(A60)')           '-------------------------------------------------'
-  do iEns=1,nEns
-    write(*,'(A40,I2,A2,F16.10,A3)') ' Potential   energy state ',iEns,': ',sum(EV(:,iEns)),' au'
-  end do
-  write(*,'(A60)')           '-------------------------------------------------'
-  write(*,*)
+! write(*,'(A60)')           '-------------------------------------------------'
+! write(*,'(A60)')           ' INDIVIDUAL POTENTIAL   ENERGIES'
+! write(*,'(A60)')           '-------------------------------------------------'
+! do iEns=1,nEns
+!   write(*,'(A40,I2,A2,F16.10,A3)') ' Potential   energy state ',iEns,': ',sum(EV(:,iEns)),' au'
+! end do
+! write(*,'(A60)')           '-------------------------------------------------'
+! write(*,*)
 
 !------------------------------------------------------------------------
 ! Hartree energy
 !------------------------------------------------------------------------
 
-  write(*,'(A60)')           '-------------------------------------------------'
-  write(*,'(A60)')           ' INDIVIDUAL HARTREE     ENERGIES'
-  write(*,'(A60)')           '-------------------------------------------------'
-  do iEns=1,nEns
-    write(*,'(A40,I2,A2,F16.10,A3)') ' Hartree     energy state ',iEns,': ',sum(EJ(:,iEns)),' au'
-  end do
-  write(*,'(A60)')           '-------------------------------------------------'
-  write(*,*)
+! write(*,'(A60)')           '-------------------------------------------------'
+! write(*,'(A60)')           ' INDIVIDUAL HARTREE     ENERGIES'
+! write(*,'(A60)')           '-------------------------------------------------'
+! do iEns=1,nEns
+!   write(*,'(A40,I2,A2,F16.10,A3)') ' Hartree     energy state ',iEns,': ',sum(EJ(:,iEns)),' au'
+! end do
+! write(*,'(A60)')           '-------------------------------------------------'
+! write(*,*)
 
 !------------------------------------------------------------------------
 ! Exchange energy
 !------------------------------------------------------------------------
 
-  write(*,'(A60)')           '-------------------------------------------------'
-  write(*,'(A60)')           ' INDIVIDUAL EXCHANGE    ENERGIES'
-  write(*,'(A60)')           '-------------------------------------------------'
-  do iEns=1,nEns
-    write(*,'(A40,I2,A2,F16.10,A3)') ' Exchange    energy state ',iEns,': ',sum(Ex(:,iEns)),' au'
-  end do
-  write(*,'(A60)')           '-------------------------------------------------'
-  write(*,*)
+! write(*,'(A60)')           '-------------------------------------------------'
+! write(*,'(A60)')           ' INDIVIDUAL EXCHANGE    ENERGIES'
+! write(*,'(A60)')           '-------------------------------------------------'
+! do iEns=1,nEns
+!   write(*,'(A40,I2,A2,F16.10,A3)') ' Exchange    energy state ',iEns,': ',sum(Ex(:,iEns)),' au'
+! end do
+! write(*,'(A60)')           '-------------------------------------------------'
+! write(*,*)
 
 !------------------------------------------------------------------------
 ! Correlation energy
 !------------------------------------------------------------------------
 
-  write(*,'(A60)')           '-------------------------------------------------'
-  write(*,'(A60)')           ' INDIVIDUAL CORRELATION ENERGIES'
-  write(*,'(A60)')           '-------------------------------------------------'
-  do iEns=1,nEns
-    write(*,'(A40,I2,A2,F16.10,A3)') ' Correlation energy state ',iEns,': ',sum(Ec(:,iEns)),' au'
-  end do
-  write(*,'(A60)')           '-------------------------------------------------'
-  write(*,*)
+! write(*,'(A60)')           '-------------------------------------------------'
+! write(*,'(A60)')           ' INDIVIDUAL CORRELATION ENERGIES'
+! write(*,'(A60)')           '-------------------------------------------------'
+! do iEns=1,nEns
+!   write(*,'(A40,I2,A2,F16.10,A3)') ' Correlation energy state ',iEns,': ',sum(Ec(:,iEns)),' au'
+! end do
+! write(*,'(A60)')           '-------------------------------------------------'
+! write(*,*)
 
 !------------------------------------------------------------------------
 ! Auxiliary energies
@@ -179,18 +179,18 @@ subroutine print_unrestricted_individual_energy(nEns,ENuc,Ew,ET,EV,EJ,Ex,Ec,Exc,
  write(*,'(A60)') '-------------------------------------------------'
   write(*,'(A60)') ' ENERGY DIFFERENCES FROM INDIVIDUAL ENERGIES '
   write(*,'(A60)') '-------------------------------------------------'
-  do iEns=1,nEns
-     write(*,'(A40,I2,A2,F16.10,A3)') ' Individual energy state ',iEns,': ',E(iEns) + ENuc,' au'
-  end do
-  write(*,'(A60)') '-------------------------------------------------'
+! do iEns=1,nEns
+!    write(*,'(A40,I2,A2,F16.10,A3)') ' Individual energy state ',iEns,': ',E(iEns) + ENuc,' au'
+! end do
+! write(*,'(A60)') '-------------------------------------------------'
 
   do iEns=2,nEns
     write(*,'(A40,I2,A1,F16.10,A3)') ' Energy difference 1 -> ',iEns,':',Om(iEns),    ' au'
     write(*,*)
-    write(*,'(A44,      F16.10,A3)') '     x  energy contribution     : ',Omx(iEns),   ' au'
-    write(*,'(A44,      F16.10,A3)') '     c  energy contribution     : ',Omc(iEns),   ' au'
-    write(*,'(A44,      F16.10,A3)') '    xc  energy contribution     : ',Omxc(iEns),  ' au'
-    write(*,*)
+!   write(*,'(A44,      F16.10,A3)') '     x  energy contribution     : ',Omx(iEns),   ' au'
+!   write(*,'(A44,      F16.10,A3)') '     c  energy contribution     : ',Omc(iEns),   ' au'
+!   write(*,'(A44,      F16.10,A3)') '    xc  energy contribution     : ',Omxc(iEns),  ' au'
+!   write(*,*)
     write(*,'(A44,      F16.10,A3)') '     x  ensemble derivative     : ',OmxDD(iEns), ' au'
     write(*,'(A44,      F16.10,A3)') '     c  ensemble derivative     : ',OmcDD(iEns), ' au'
     write(*,'(A44,      F16.10,A3)') '    xc  ensemble derivative     : ',OmxcDD(iENs),' au'
@@ -200,10 +200,10 @@ subroutine print_unrestricted_individual_energy(nEns,ENuc,Ew,ET,EV,EJ,Ex,Ec,Exc,
    
     write(*,'(A40,I2,A1,F16.10,A3)') ' Energy difference 1 -> ',iEns,':',Om(iEns)*HaToeV,    ' eV'
     write(*,*)
-    write(*,'(A44,      F16.10,A3)') '     x  energy contribution     : ',Omx(iEns)*HaToeV,   ' eV'
-    write(*,'(A44,      F16.10,A3)') '     c  energy contribution     : ',Omc(iEns)*HaToeV,   ' eV'
-    write(*,'(A44,      F16.10,A3)') '    xc  energy contribution     : ',Omxc(iEns)*HaToeV,  ' eV'
-    write(*,*)
+!   write(*,'(A44,      F16.10,A3)') '     x  energy contribution     : ',Omx(iEns)*HaToeV,   ' eV'
+!   write(*,'(A44,      F16.10,A3)') '     c  energy contribution     : ',Omc(iEns)*HaToeV,   ' eV'
+!   write(*,'(A44,      F16.10,A3)') '    xc  energy contribution     : ',Omxc(iEns)*HaToeV,  ' eV'
+!   write(*,*)
     write(*,'(A44,      F16.10,A3)') '     x  ensemble derivative     : ',OmxDD(iEns)*HaToeV, ' eV'
     write(*,'(A44,      F16.10,A3)') '     c  ensemble derivative     : ',OmcDD(iEns)*HaToeV, ' eV'
     write(*,'(A44,      F16.10,A3)') '    xc  ensemble derivative     : ',OmxcDD(iEns)*HaToeV,' eV'
