@@ -1,4 +1,4 @@
-subroutine print_UKS(nBas,nEns,nO,Ov,wEns,eps,c,ENuc,ET,EV,EJ,Ex,Ec,Ew,dipole)
+subroutine print_UKS(nBas,nEns,nO,Ov,wEns,eps,c,ENuc,ET,EV,EH,Ex,Ec,Ew,dipole)
 
 ! Print one- and two-electron energies and other stuff for KS calculation
 
@@ -17,7 +17,7 @@ subroutine print_UKS(nBas,nEns,nO,Ov,wEns,eps,c,ENuc,ET,EV,EJ,Ex,Ec,Ew,dipole)
   double precision,intent(in)        :: ENuc
   double precision,intent(in)        :: ET(nspin)
   double precision,intent(in)        :: EV(nspin)
-  double precision,intent(in)        :: EJ(nsp)
+  double precision,intent(in)        :: EH(nsp)
   double precision,intent(in)        :: Ex(nspin)
   double precision,intent(in)        :: Ec(nsp)
   double precision,intent(in)        :: Ew
@@ -69,14 +69,14 @@ subroutine print_UKS(nBas,nEns,nO,Ov,wEns,eps,c,ENuc,ET,EV,EJ,Ex,Ec,Ew,dipole)
   write(*,'(A40,1X,F16.10,A3)') ' Potential    a  energy: ',EV(1),' au'
   write(*,'(A40,1X,F16.10,A3)') ' Potential    b  energy: ',EV(2),' au'
   write(*,'(A60)')              '-------------------------------------------------'
-  write(*,'(A40,1X,F16.10,A3)') ' Two-electron a  energy: ',sum(EJ(:)) + sum(Ex(:))  + sum(Ec(:)),' au'
-  write(*,'(A40,1X,F16.10,A3)') ' Two-electron aa energy: ',EJ(1) + Ex(1) + Ec(1),' au'
-  write(*,'(A40,1X,F16.10,A3)') ' Two-electron ab energy: ',EJ(2) + Ec(2),' au'
-  write(*,'(A40,1X,F16.10,A3)') ' Two-electron bb energy: ',EJ(3) + Ex(2) + Ec(3),' au'
-  write(*,'(A40,1X,F16.10,A3)') ' Coulomb         energy: ',sum(EJ(:)),' au'
-  write(*,'(A40,1X,F16.10,A3)') ' Coulomb      aa energy: ',EJ(1),' au'
-  write(*,'(A40,1X,F16.10,A3)') ' Coulomb      ab energy: ',EJ(2),' au'
-  write(*,'(A40,1X,F16.10,A3)') ' Coulomb      bb energy: ',EJ(3),' au'
+  write(*,'(A40,1X,F16.10,A3)') ' Two-electron a  energy: ',sum(EH(:)) + sum(Ex(:))  + sum(Ec(:)),' au'
+  write(*,'(A40,1X,F16.10,A3)') ' Two-electron aa energy: ',EH(1) + Ex(1) + Ec(1),' au'
+  write(*,'(A40,1X,F16.10,A3)') ' Two-electron ab energy: ',EH(2) + Ec(2),' au'
+  write(*,'(A40,1X,F16.10,A3)') ' Two-electron bb energy: ',EH(3) + Ex(2) + Ec(3),' au'
+  write(*,'(A40,1X,F16.10,A3)') ' Hartree         energy: ',sum(EH(:)),' au'
+  write(*,'(A40,1X,F16.10,A3)') ' Hartree      aa energy: ',EH(1),' au'
+  write(*,'(A40,1X,F16.10,A3)') ' Hartree      ab energy: ',EH(2),' au'
+  write(*,'(A40,1X,F16.10,A3)') ' Hartree      bb energy: ',EH(3),' au'
   write(*,'(A40,1X,F16.10,A3)') ' Exchange        energy: ',sum(Ex(:)),' au'
   write(*,'(A40,1X,F16.10,A3)') ' Exchange     a  energy: ',Ex(1),' au'
   write(*,'(A40,1X,F16.10,A3)') ' Exchange     b  energy: ',Ex(2),' au'

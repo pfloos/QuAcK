@@ -117,11 +117,12 @@ subroutine unrestricted_individual_energy(x_rung,x_DFA,c_rung,c_DFA,LDA_centered
 ! Individual Hartree energy
 !------------------------------------------------------------------------
 
+  do ispin=1,nspin
+    call unrestricted_hartree_potential(nBas,Pw(:,:,ispin),ERI,J(:,:,ispin))
+  end do
+
 ! do iEns=1,nEns
 
-!   do ispin=1,nspin
-!     call hartree_coulomb(nBas,Pw(:,:,ispin),ERI,J(:,:,ispin))
-!   end do
 
 !     if(doNcentered) then 
 !
@@ -139,7 +140,7 @@ subroutine unrestricted_individual_energy(x_rung,x_DFA,c_rung,c_DFA,LDA_centered
 
 
 !       EJ(1,iEns) =       trace_matrix(nBas,matmul(P(:,:,1,iEns),J(:,:,1))) &
-!                  - 0.5d0*trace_matrix(nBas,matmul(Pw(:,:,1),J(:,:,1)))
+!       LZH(ispin) - 0.5d0*trace_matrix(nBas,matmul(Pw(:,:,1),J(:,:,1)))
 
 !       EJ(2,iEns) =       trace_matrix(nBas,matmul(P(:,:,1,iEns),J(:,:,2))) &
 !                  +       trace_matrix(nBas,matmul(P(:,:,2,iEns),J(:,:,1))) &

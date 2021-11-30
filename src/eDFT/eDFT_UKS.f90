@@ -50,7 +50,7 @@ subroutine eDFT_UKS(x_rung,x_DFA,c_rung,c_DFA,nEns,wEns,nCC,aCC,nGrid,weight,max
   double precision              :: rcond(nspin)
   double precision              :: ET(nspin)
   double precision              :: EV(nspin)
-  double precision              :: EJ(nsp)
+  double precision              :: EH(nsp)
   double precision              :: Ex(nspin)
   double precision              :: Ec(nsp)
   double precision              :: dipole(ncart)
@@ -250,7 +250,7 @@ subroutine eDFT_UKS(x_rung,x_DFA,c_rung,c_DFA,nEns,wEns,nCC,aCC,nGrid,weight,max
 !   Build Coulomb repulsion
 
     do ispin=1,nspin
-      call hartree_coulomb(nBas,Pw(:,:,ispin),ERI(:,:,:,:),J(:,:,ispin))
+      call unrestricted_hartree_potential(nBas,Pw(:,:,ispin),ERI(:,:,:,:),J(:,:,ispin))
     end do
 
 !   Compute exchange potential
@@ -327,10 +327,7 @@ subroutine eDFT_UKS(x_rung,x_DFA,c_rung,c_DFA,nEns,wEns,nCC,aCC,nGrid,weight,max
 
 !  Coulomb energy
 
-    EJ(1) = 0.5d0*trace_matrix(nBas,matmul(Pw(:,:,1),J(:,:,1)))
-    EJ(2) = 0.5d0*trace_matrix(nBas,matmul(Pw(:,:,1),J(:,:,2))) &
-          + 0.5d0*trace_matrix(nBas,matmul(Pw(:,:,2),J(:,:,1))) 
-    EJ(3) = 0.5d0*trace_matrix(nBas,matmul(Pw(:,:,2),J(:,:,2)))
+    call unrestricted_hartree_energy(nBas,Pw,J,EH)
 
 !   Exchange energy
 
@@ -346,7 +343,7 @@ subroutine eDFT_UKS(x_rung,x_DFA,c_rung,c_DFA,nEns,wEns,nCC,aCC,nGrid,weight,max
 
 !   Total energy
 
-    Ew = sum(ET(:)) + sum(EV(:)) + sum(EJ(:)) + sum(Ex(:)) + sum(Ec(:))
+    Ew = sum(ET(:)) + sum(EV(:)) + sum(EH(:)) + sum(Ex(:)) + sum(Ec(:))
 
 !   Check the grid accuracy by computing the number of electrons 
 
@@ -382,7 +379,7 @@ subroutine eDFT_UKS(x_rung,x_DFA,c_rung,c_DFA,nEns,wEns,nCC,aCC,nGrid,weight,max
 ! Compute final KS energy
 
   call dipole_moment(nBas,Pw(:,:,1)+Pw(:,:,2),nNuc,ZNuc,rNuc,dipole_int,dipole)
-  call print_UKS(nBas,nEns,nO,S,wEns,eps,c,ENuc,ET,EV,EJ,Ex,Ec,Ew,dipole)
+  call print_UKS(nBas,nEns,nO,S,wEns,eps,c,ENuc,ET,EV,EH,Ex,Ec,Ew,dipole)
 
 ! Compute Vxc for post-HF calculations
 
