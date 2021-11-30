@@ -247,7 +247,11 @@ subroutine eDFT_UKS(x_rung,x_DFA,c_rung,c_DFA,nEns,wEns,nCC,aCC,nGrid,weight,max
 
     end if
 
-!   Build Coulomb repulsion
+!------------------------------------------------------------------------
+!   Compute Hxc potential and Fock operator
+!------------------------------------------------------------------------
+
+!   Compute Hartree potential 
 
     do ispin=1,nspin
       call unrestricted_hartree_potential(nBas,Pw(:,:,ispin),ERI(:,:,:,:),J(:,:,ispin))
@@ -266,6 +270,7 @@ subroutine eDFT_UKS(x_rung,x_DFA,c_rung,c_DFA,nEns,wEns,nCC,aCC,nGrid,weight,max
     call unrestricted_correlation_potential(c_rung,c_DFA,nEns,wEns,nGrid,weight,nBas,AO,dAO,rhow,drhow,Fc)
 
 !   Build Fock operator
+
     do ispin=1,nspin
       F(:,:,ispin) = Hc(:,:) + J(:,:,ispin) + J(:,:,mod(ispin,2)+1) + Fx(:,:,ispin) + Fc(:,:,ispin)
     end do
@@ -313,28 +318,28 @@ subroutine eDFT_UKS(x_rung,x_DFA,c_rung,c_DFA,nEns,wEns,nCC,aCC,nGrid,weight,max
 !   Compute KS energy
 !------------------------------------------------------------------------
 
-!  Kinetic energy
+!   Kinetic energy
 
     do ispin=1,nspin
       ET(ispin) = trace_matrix(nBas,matmul(Pw(:,:,ispin),T(:,:)))
     end do
 
-!  Potential energy
+!   Potential energy
 
     do ispin=1,nspin
       EV(ispin) = trace_matrix(nBas,matmul(Pw(:,:,ispin),V(:,:)))
     end do
 
-!  Coulomb energy
+!   Hartree energy
 
     call unrestricted_hartree_energy(nBas,Pw,J,EH)
 
 !   Exchange energy
 
     do ispin=1,nspin
-      call unrestricted_exchange_energy(x_rung,x_DFA,LDA_centered,nEns,wEns,nCC,aCC,nGrid,weight,nBas, &
-                                        Pw(:,:,ispin),FxHF(:,:,ispin),rhow(:,ispin),drhow(:,:,ispin),Ex(ispin)&
-                                        ,Cx_choice,doNcentered)
+      call unrestricted_exchange_energy(x_rung,x_DFA,LDA_centered,nEns,wEns,nCC,aCC,nGrid,weight,nBas,          &
+                                        Pw(:,:,ispin),FxHF(:,:,ispin),rhow(:,ispin),drhow(:,:,ispin),Ex(ispin), &
+                                        Cx_choice,doNcentered)
     end do
 
 !   Correlation energy
@@ -358,6 +363,7 @@ subroutine eDFT_UKS(x_rung,x_DFA,c_rung,c_DFA,nEns,wEns,nCC,aCC,nGrid,weight,max
 
   end do
   write(*,*)'------------------------------------------------------------------------------------------'
+
 !------------------------------------------------------------------------
 ! End of SCF loop
 !------------------------------------------------------------------------

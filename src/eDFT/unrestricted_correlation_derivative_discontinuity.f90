@@ -19,8 +19,6 @@ subroutine unrestricted_correlation_derivative_discontinuity(rung,DFA,nEns,wEns,
 
 ! Local variables
 
-  double precision              :: aC
-
 ! Output variables
 
   double precision,intent(out)  :: Ec(nsp,nEns)

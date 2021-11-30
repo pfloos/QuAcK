@@ -36,10 +36,10 @@ subroutine unrestricted_individual_energy(x_rung,x_DFA,c_rung,c_DFA,LDA_centered
   double precision,intent(in)   :: rho(nGrid,nspin,nEns)
   double precision,intent(in)   :: drho(ncart,nGrid,nspin,nEns)
 
-  double precision,intent(in)   :: J(nBas,nBas,nspin)
-  double precision,intent(in)   :: Fx(nBas,nBas,nspin)
-  double precision,intent(in)   :: FxHF(nBas,nBas,nspin)
-  double precision,intent(in)   :: Fc(nBas,nBas,nspin)
+  double precision,intent(inout):: J(nBas,nBas,nspin)
+  double precision,intent(inout):: Fx(nBas,nBas,nspin)
+  double precision,intent(inout):: FxHF(nBas,nBas,nspin)
+  double precision,intent(inout):: Fc(nBas,nBas,nspin)
   double precision,intent(in)   :: Ew
   double precision,intent(in)   :: occnum(nBas,nspin,nEns)
   integer,intent(in)            :: Cx_choice
@@ -50,23 +50,23 @@ subroutine unrestricted_individual_energy(x_rung,x_DFA,c_rung,c_DFA,LDA_centered
 
   double precision              :: ET(nspin,nEns)
   double precision              :: EV(nspin,nEns)
-  double precision              :: EJ(nsp,nEns)
+  double precision              :: EH(nsp,nEns)
   double precision              :: Ex(nspin,nEns)
   double precision              :: Ec(nsp,nEns)
-  double precision              :: Exc(nEns)  
-  double precision              :: LZH(nspin)
+  double precision              :: LZH(nsp)
   double precision              :: LZx(nspin)
-  double precision              :: LZc(nspin)
-  double precision              :: LZHxc(nspin)  
+  double precision              :: LZc(nsp)
   double precision              :: Eaux(nspin,nEns) 
 
   double precision              :: ExDD(nspin,nEns) 
   double precision              :: EcDD(nsp,nEns) 
-  double precision              :: ExcDD(nsp,nEns)
 
-  double precision              :: Omx(nEns),Omc(nEns),Omxc(nEns) 
+  double precision              :: OmH(nEns)
+  double precision              :: Omx(nEns)
+  double precision              :: Omc(nEns)
   double precision              :: Omaux(nEns)                   
-  double precision              :: OmxDD(nEns),OmcDD(nEns),OmxcDD(nEns) 
+  double precision              :: OmxDD(nEns)
+  double precision              :: OmcDD(nEns)
 
   double precision,external     :: trace_matrix
 
@@ -97,21 +97,21 @@ subroutine unrestricted_individual_energy(x_rung,x_DFA,c_rung,c_DFA,LDA_centered
 ! Kinetic energy
 !------------------------------------------------------------------------
 
-! do ispin=1,nspin
-!   do iEns=1,nEns
-!       ET(ispin,iEns) = trace_matrix(nBas,matmul(P(:,:,ispin,iEns),T(:,:))) 
-!   end do
-! end do
+  do ispin=1,nspin
+    do iEns=1,nEns
+        ET(ispin,iEns) = trace_matrix(nBas,matmul(P(:,:,ispin,iEns),T(:,:))) 
+    end do
+  end do
 
 !------------------------------------------------------------------------
 ! Potential energy
 !------------------------------------------------------------------------
 
-! do iEns=1,nEns
-!   do ispin=1,nspin
-!       EV(ispin,iEns) = trace_matrix(nBas,matmul(P(:,:,ispin,iEns),V(:,:)))
-! end do
-! end do
+  do iEns=1,nEns
+    do ispin=1,nspin
+        EV(ispin,iEns) = trace_matrix(nBas,matmul(P(:,:,ispin,iEns),V(:,:)))
+    end do
+  end do
 
 !------------------------------------------------------------------------
 ! Individual Hartree energy
@@ -120,50 +120,67 @@ subroutine unrestricted_individual_energy(x_rung,x_DFA,c_rung,c_DFA,LDA_centered
   do ispin=1,nspin
     call unrestricted_hartree_potential(nBas,Pw(:,:,ispin),ERI,J(:,:,ispin))
   end do
+  
+  do iEns=1,nEns
 
-! do iEns=1,nEns
+      if(doNcentered) then 
+ 
+        EH(1,iEns) = kappa(iEns)*trace_matrix(nBas,matmul(P(:,:,1,iEns),J(:,:,1)))  
+        EH(2,iEns) = kappa(iEns)*trace_matrix(nBas,matmul(P(:,:,1,iEns),J(:,:,2))) &
+                   + kappa(iEns)*trace_matrix(nBas,matmul(P(:,:,2,iEns),J(:,:,1)))  
+        EH(3,iEns) = kappa(iEns)*trace_matrix(nBas,matmul(P(:,:,2,iEns),J(:,:,2)))  
 
+      else
 
-!     if(doNcentered) then 
-!
-!       EJ(1,iEns) =       kappa(iEns)*trace_matrix(nBas,matmul(P(:,:,1,iEns),J(:,:,1))) &
-!                  - 0.5d0*kappa(iEns)*kappa(iEns)*trace_matrix(nBas,matmul(Pw(:,:,1),J(:,:,1)))
-!  
-!       EJ(2,iEns) =       kappa(iEns)*trace_matrix(nBas,matmul(P(:,:,1,iEns),J(:,:,2))) &
-!                  +       kappa(iEns)*trace_matrix(nBas,matmul(P(:,:,2,iEns),J(:,:,1))) &
-!                  - 0.5d0*kappa(iEns)*kappa(iEns)*trace_matrix(nBas,matmul(Pw(:,:,1),J(:,:,2))) &
-!                  - 0.5d0*kappa(iEns)*kappa(iEns)*trace_matrix(nBas,matmul(Pw(:,:,2),J(:,:,1)))
-!  
-!       EJ(3,iEns) =       kappa(iEns)*trace_matrix(nBas,matmul(P(:,:,2,iEns),J(:,:,2))) &
-!                  - 0.5d0*kappa(iEns)*kappa(iEns)*trace_matrix(nBas,matmul(Pw(:,:,2),J(:,:,2)))
-!     else
+        EH(1,iEns) = trace_matrix(nBas,matmul(P(:,:,1,iEns),J(:,:,1)))  
+        EH(2,iEns) = trace_matrix(nBas,matmul(P(:,:,1,iEns),J(:,:,2))) &
+                   + trace_matrix(nBas,matmul(P(:,:,2,iEns),J(:,:,1)))  
+        EH(3,iEns) = trace_matrix(nBas,matmul(P(:,:,2,iEns),J(:,:,2)))  
 
+      end if
 
-!       EJ(1,iEns) =       trace_matrix(nBas,matmul(P(:,:,1,iEns),J(:,:,1))) &
-!       LZH(ispin) - 0.5d0*trace_matrix(nBas,matmul(Pw(:,:,1),J(:,:,1)))
-
-!       EJ(2,iEns) =       trace_matrix(nBas,matmul(P(:,:,1,iEns),J(:,:,2))) &
-!                  +       trace_matrix(nBas,matmul(P(:,:,2,iEns),J(:,:,1))) &
-!                  - 0.5d0*trace_matrix(nBas,matmul(Pw(:,:,1),J(:,:,2)))     &
-!                  - 0.5d0*trace_matrix(nBas,matmul(Pw(:,:,2),J(:,:,1)))
-
-!       EJ(3,iEns) =       trace_matrix(nBas,matmul(P(:,:,2,iEns),J(:,:,2))) &
-!                  - 0.5d0*trace_matrix(nBas,matmul(Pw(:,:,2),J(:,:,2)))
-!     end if
-
-! end do
-
-!------------------------------------------------------------------------
-! Individual Hartree energy
-!------------------------------------------------------------------------
-
-  do ispin=1,nspin
-    LZH(ispin) = -0.5d0*trace_matrix(nBas,matmul(Pw(:,:,1)+Pw(:,:,2),J(:,:,ispin)))
   end do
+
+  ! Levy-Zahariev shif for Hartree
+
+  if(doNcentered) then
+
+    ! Do I need to scale this term?
+!   LZH(:) = 0d0 
+
+  else 
+
+!   LZH(1) = - 0.5d0*trace_matrix(nBas,matmul(Pw(:,:,1),J(:,:,1)))
+!   LZH(2) = - 0.5d0*trace_matrix(nBas,matmul(Pw(:,:,1),J(:,:,2))) &
+!            - 0.5d0*trace_matrix(nBas,matmul(Pw(:,:,2),J(:,:,1)))
+!   LZH(3) = - 0.5d0*trace_matrix(nBas,matmul(Pw(:,:,2),J(:,:,2)))
+
+    LZH(1) = - 0.5d0*trace_matrix(nBas,matmul(Pw(:,:,1),J(:,:,1))) &
+             - 0.5d0*trace_matrix(nBas,matmul(Pw(:,:,2),J(:,:,1)))
+    LZH(2) = 0d0
+!   print*,- 0.5d0*trace_matrix(nBas,matmul(Pw(:,:,1)+Pw(:,:,2),J(:,:,2)))  
+    print*,- 0.5d0*trace_matrix(nBas,matmul(Pw(:,:,1),J(:,:,2)))  
+    print*,- 0.5d0*trace_matrix(nBas,matmul(Pw(:,:,2),J(:,:,2)))
+    LZH(3) = - 0.5d0*trace_matrix(nBas,matmul(Pw(:,:,1),J(:,:,2))) - 0.5d0*trace_matrix(nBas,matmul(Pw(:,:,2),J(:,:,2)))
+    
+    print*,LZH(3)
+    
+
+  end if
 
 !------------------------------------------------------------------------
 ! Individual exchange energy
 !------------------------------------------------------------------------
+
+  do iEns=1,nEns
+    do ispin=1,nspin
+      call unrestricted_exchange_energy(x_rung,x_DFA,LDA_centered,nEns,wEns,nCC,aCC,nGrid,weight,nBas,            &
+                                        P(:,:,ispin,iEns),FxHF(:,:,ispin),rho(:,ispin,iEns),drho(:,:,ispin,iEns), &
+                                        Ex(ispin,iEns),Cx_choice,doNcentered)
+    end do
+  end do
+
+  ! Levy-Zahariev shif for exchange
 
   do ispin=1,nspin
     call unrestricted_exchange_individual_energy(x_rung,x_DFA,LDA_centered,nEns,wEns,nCC,aCC,nGrid,weight,nBas,ERI,  &
@@ -175,13 +192,13 @@ subroutine unrestricted_individual_energy(x_rung,x_DFA,c_rung,c_DFA,LDA_centered
 ! Individual correlation energy
 !------------------------------------------------------------------------
 
+  do iEns=1,nEns
+    call unrestricted_correlation_energy(c_rung,c_DFA,nEns,wEns,nGrid,weight,rho(:,:,iEns),drho(:,:,:,iEns),Ec(:,iEns))
+  end do
+
+  ! Levy-Zahariev shif for correlation
+
   call unrestricted_correlation_individual_energy(c_rung,c_DFA,LDA_centered,nEns,wEns,nGrid,weight,rhow,drhow,doNcentered,LZc)
-
-!------------------------------------------------------------------------
-! Individual exchange-correlation energy
-!------------------------------------------------------------------------
-
-  LZHxc(:) = LZH(:) + LZx(:) + LZc(:)
 
 !------------------------------------------------------------------------
 ! Compute auxiliary energies
@@ -194,30 +211,32 @@ subroutine unrestricted_individual_energy(x_rung,x_DFA,c_rung,c_DFA,LDA_centered
 !------------------------------------------------------------------------
 
   do ispin=1,nspin 
-
     call unrestricted_exchange_derivative_discontinuity(x_rung,x_DFA,nEns,wEns,nCC,aCC,nGrid,weight, &
                                                         rhow(:,ispin),drhow(:,:,ispin),Cx_choice,doNcentered,kappa,ExDD(ispin,:))
   end do
 
   call unrestricted_correlation_derivative_discontinuity(c_rung,c_DFA,nEns,wEns,nGrid,weight,rhow,drhow,kappa,EcDD)
 
-  ExcDD(1,:) = ExDD(1,:) + EcDD(1,:)
-  ExcDD(2,:) =             EcDD(2,:)
-  ExcDD(3,:) = ExDD(2,:) + EcDD(3,:)
-
 !------------------------------------------------------------------------
 ! Total energy
 !------------------------------------------------------------------------
 
-! do iEns=1,nEns
-!   Exc(iEns) = sum(Ex(:,iEns)) + sum(Ec(:,iEns))
-!   E(iEns)   = sum(ET(:,iEns)) + sum(EV(:,iEns)) + sum(EJ(:,iEns)) &
-!             + sum(Ex(:,iEns)) + sum(Ec(:,iEns)) + sum(ExcDD(:,iEns))
-! end do
+  do iEns=1,nEns
+    E(iEns)   = sum(ET(:,iEns)) + sum(EV(:,iEns))                   & 
+              + sum(EH(:,iEns)) + sum(Ex(:,iEns)) + sum(Ec(:,iEns)) & 
+              + sum(LZH(:)) + sum(LZx(:)) + sum(LZc(:))             &
+              + sum(ExDD(:,iEns)) + sum(EcDD(:,iEns))
+  end do
+
+  print*,E
 
   do iEns=1,nEns
-    E(iEns) = sum(Eaux(:,iEns)) + sum(LZHxc(:)) + sum(ExcDD(:,iEns))
+    E(iEns) = sum(Eaux(:,iEns))                       & 
+            + sum(LZH(:)) + sum(LZx(:)) + sum(LZc(:)) &
+            + sum(ExDD(:,iEns)) + sum(EcDD(:,iEns))
   end do
+
+  print*,E
 
 !------------------------------------------------------------------------
 ! Excitation energies
@@ -226,16 +245,14 @@ subroutine unrestricted_individual_energy(x_rung,x_DFA,c_rung,c_DFA,LDA_centered
   do iEns=1,nEns
     Om(iEns) = E(iEns) - E(1)
 
-!   Omx(iEns)    = sum(Ex(:,iEns)) - sum(Ex(:,1))
-!   Omc(iEns)    = sum(Ec(:,iEns)) - sum(Ec(:,1))
-!   Omxc(iEns)   =     Exc(iEns)   -     Exc(1)
+    OmH(iEns)    = sum(EH(:,iEns)) - sum(EH(:,1))
+    Omx(iEns)    = sum(Ex(:,iEns)) - sum(Ex(:,1))
+    Omc(iEns)    = sum(Ec(:,iEns)) - sum(Ec(:,1))
 
     Omaux(iEns)  = sum(Eaux(:,iEns))  - sum(Eaux(:,1))
 
     OmxDD(iEns)  = sum(ExDD(:,iEns))  - sum(ExDD(:,1))
     OmcDD(iEns)  = sum(EcDD(:,iEns))  - sum(EcDD(:,1))
-    OmxcDD(iEns) = sum(ExcDD(:,iEns)) - sum(ExcDD(:,1))
-
 
   end do
 
@@ -243,7 +260,6 @@ subroutine unrestricted_individual_energy(x_rung,x_DFA,c_rung,c_DFA,LDA_centered
 ! Dump results
 !------------------------------------------------------------------------
 
-  call print_unrestricted_individual_energy(nEns,ENuc,Ew,ET,EV,EJ,Ex,Ec,Exc,Eaux,ExDD,EcDD,ExcDD,E, & 
-                                          Om,Omx,Omc,Omxc,Omaux,OmxDD,OmcDD,OmxcDD)
+  call print_unrestricted_individual_energy(nEns,ENuc,Ew,ET,EV,EH,Ex,Ec,Eaux,ExDD,EcDD,E,Om,Omx,Omc,Omaux,OmxDD,OmcDD)
 
 end subroutine unrestricted_individual_energy
