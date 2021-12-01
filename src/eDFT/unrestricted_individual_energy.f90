@@ -164,16 +164,17 @@ subroutine unrestricted_individual_energy(x_rung,x_DFA,c_rung,c_DFA,LDA_centered
             + sum(LZH(:)) + sum(LZx(:)) + sum(LZc(:)) &
             + sum(ExDD(:,iEns)) + sum(EcDD(:,iEns))
   end do
+  print*,E
 
 ! Alternative way of calculating individual energies
 
-! do iEns=1,nEns
-!   E(iEns)   = sum(ET(:,iEns)) + sum(EV(:,iEns))                   & 
-!             + sum(EH(:,iEns)) + sum(Ex(:,iEns)) + sum(Ec(:,iEns)) & 
-!             + sum(LZH(:)) + sum(LZx(:)) + sum(LZc(:))             &
-!             + sum(ExDD(:,iEns)) + sum(EcDD(:,iEns))
-! end do
-
+  do iEns=1,nEns
+    E(iEns)   = sum(ET(:,iEns)) + sum(EV(:,iEns))                   & 
+              + sum(EH(:,iEns)) + sum(Ex(:,iEns)) + sum(Ec(:,iEns)) & 
+              + sum(LZH(:)) + sum(LZx(:)) + sum(LZc(:))             &
+              + sum(ExDD(:,iEns)) + sum(EcDD(:,iEns))
+  end do
+  print*,E
 
 !------------------------------------------------------------------------
 ! Excitation energies
