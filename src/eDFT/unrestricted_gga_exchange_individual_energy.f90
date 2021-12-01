@@ -1,4 +1,4 @@
-subroutine unrestricted_gga_exchange_individual_energy(DFA,nEns,wEns,nGrid,weight,rhow,drhow,Ex)
+subroutine unrestricted_gga_exchange_individual_energy(DFA,nEns,wEns,nGrid,weight,rhow,drhow,rho,drho,LZx,Ex)
 
 ! Compute GGA exchange energy for individual states
 
@@ -12,12 +12,15 @@ subroutine unrestricted_gga_exchange_individual_energy(DFA,nEns,wEns,nGrid,weigh
   double precision,intent(in)   :: wEns(nEns)
   integer,intent(in)            :: nGrid
   double precision,intent(in)   :: weight(nGrid)
-  double precision,intent(in)   :: rhow(nGrid)
-  double precision,intent(in)   :: drhow(ncart,nGrid)
+  double precision,intent(in)   :: rhow(nGrid,nspin)
+  double precision,intent(in)   :: drhow(ncart,nGrid,nspin)
+  double precision,intent(in)   :: rho(nGrid,nspin,nEns)
+  double precision,intent(in)   :: drho(ncart,nGrid,nspin,nEns)
 
 ! Output variables
 
-  double precision              :: Ex
+  double precision              :: LZx(nspin)
+  double precision              :: Ex(nspin,nEns)
 
 ! Select correlation functional
 

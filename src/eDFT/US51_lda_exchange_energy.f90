@@ -25,13 +25,9 @@ subroutine US51_lda_exchange_energy(nGrid,weight,rho,Ex)
   Ex = 0d0
   do iG=1,nGrid
 
-    r = max(0d0,rho(iG))
+    r  = max(0d0,rho(iG))
 
-    if(r > threshold) then
-
-      Ex = Ex  + weight(iG)*CxLSDA*r**(4d0/3d0)
-
-    endif
+    if(r > threshold) Ex = Ex + weight(iG)*CxLSDA*r**(1d0/3d0)*r
 
   enddo
 

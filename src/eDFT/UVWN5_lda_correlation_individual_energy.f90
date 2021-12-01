@@ -1,4 +1,4 @@
-subroutine UVWN5_lda_correlation_individual_energy(nGrid,weight,rhow,doNcentered,LZc)
+subroutine UVWN5_lda_correlation_individual_energy(nEns,nGrid,weight,rhow,rho,doNcentered,LZc,Ec)
 
 ! Compute VWN5 LDA correlation potential
 
@@ -8,14 +8,17 @@ subroutine UVWN5_lda_correlation_individual_energy(nGrid,weight,rhow,doNcentered
 
 ! Input variables
 
+  integer,intent(in)            :: nEns
   integer,intent(in)            :: nGrid
   double precision,intent(in)   :: weight(nGrid)
   double precision,intent(in)   :: rhow(nGrid,nspin)
+  double precision,intent(in)   :: rho(nGrid,nspin,nEns)
   logical,intent(in)            :: doNcentered
 
 ! Local variables
 
   integer                       :: iG
+  integer                       :: iEns
   double precision              :: ra,rb,r,raI,rbI,rI,rs,x,z
   double precision              :: a_p,x0_p,xx0_p,b_p,c_p,x_p,q_p
   double precision              :: a_f,x0_f,xx0_f,b_f,c_f,x_f,q_f
@@ -27,7 +30,8 @@ subroutine UVWN5_lda_correlation_individual_energy(nGrid,weight,rhow,doNcentered
 
 ! Output variables
 
-  double precision              :: LZc(nspin)
+  double precision,intent(out)  :: LZc(nsp)
+  double precision,intent(out)  :: Ec(nsp,nEns)
 
 ! Parameters of the functional
 
@@ -48,7 +52,8 @@ subroutine UVWN5_lda_correlation_individual_energy(nGrid,weight,rhow,doNcentered
 
 ! Initialization
 
-  LZc(:)    = 0d0
+  LZc(:)  = 0d0
+  Ec(:,:) = 0d0
 
   do iG=1,nGrid
 
@@ -115,27 +120,57 @@ subroutine UVWN5_lda_correlation_individual_energy(nGrid,weight,rhow,doNcentered
       decdr_f = drsdr*dxdrs*decdx_f
       decdr_a = drsdr*dxdrs*decdx_a
 
-      if(ra > threshold) then
+      dzdra = + (1d0 - z)/r
+      dfzdra = dzdra*dfzdz
 
-        dzdra = + (1d0 - z)/r
-        dfzdra = dzdra*dfzdz
+      decdra = decdr_p + decdr_a*fz/d2fz*(1d0-z**4) + ec_a*dfzdra/d2fz*(1d0-z**4) - 4d0*ec_a*fz/d2fz*dzdra*z**3 &
+             + (decdr_f - decdr_p)*fz*z**4 + (ec_f - ec_p)*dfzdra*z**4 + 4d0*(ec_f - ec_p)*fz*dzdra*z**3
 
-        decdra = decdr_p + decdr_a*fz/d2fz*(1d0-z**4) + ec_a*dfzdra/d2fz*(1d0-z**4) - 4d0*ec_a*fz/d2fz*dzdra*z**3 &
-               + (decdr_f - decdr_p)*fz*z**4 + (ec_f - ec_p)*dfzdra*z**4 + 4d0*(ec_f - ec_p)*fz*dzdra*z**3
+      dzdrb = - (1d0 + z)/r
+      dfzdrb = dzdrb*dfzdz
 
-        LZc(1) = LZc(1) - weight(iG)*decdra*ra*r
-  
+      decdrb = decdr_p + decdr_a*fz/d2fz*(1d0-z**4) + ec_a*dfzdrb/d2fz*(1d0-z**4) - 4d0*ec_a*fz/d2fz*dzdrb*z**3 &
+             + (decdr_f - decdr_p)*fz*z**4 + (ec_f - ec_p)*dfzdrb*z**4 + 4d0*(ec_f - ec_p)*fz*dzdrb*z**3
+      
+      ! spin-up contribution
+
+      if(ra > threshold) then 
+ 
+        LZc(1) = LZc(1) - weight(iG)*decdra*ra*ra
+        
+        do iEns=1,nEns
+
+          raI = max(0d0,rho(iG,1,iEns))
+
+          if(raI > threshold) then 
+
+            Ec(1,iEns) = Ec(1,iEns) + weight(iG)*(ec_z + decdra*ra)*raI
+            Ec(2,iEns) = Ec(2,iEns) + weight(iG)*decdra*rb*raI
+
+          end if
+
+        end do
+
       end if
 
-      if(rb > threshold) then
+      ! spin-down contribution
 
-        dzdrb = - (1d0 + z)/r
-        dfzdrb = dzdrb*dfzdz
+      if(rb > threshold) then 
 
-        decdrb = decdr_p + decdr_a*fz/d2fz*(1d0-z**4) + ec_a*dfzdrb/d2fz*(1d0-z**4) - 4d0*ec_a*fz/d2fz*dzdrb*z**3 &
-               + (decdr_f - decdr_p)*fz*z**4 + (ec_f - ec_p)*dfzdrb*z**4 + 4d0*(ec_f - ec_p)*fz*dzdrb*z**3
-      
-        LZc(2) = LZc(2) - weight(iG)*decdrb*rb*r
+        LZc(3) = LZc(3) - weight(iG)*decdrb*rb*rb
+        
+        do iEns=1,nEns
+
+          rbI = max(0d0,rho(iG,2,iEns))
+
+          if(rbI > threshold) then 
+
+            Ec(3,iEns) = Ec(3,iEns) + weight(iG)*(ec_z + decdrb*rb)*rbI
+            Ec(2,iEns) = Ec(2,iEns) + weight(iG)*decdrb*ra*rbI
+
+          end if
+
+        end do
 
       end if
 

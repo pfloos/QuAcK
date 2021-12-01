@@ -1,4 +1,4 @@
-subroutine UCC_lda_exchange_potential(nEns,wEns,nCC,aCC,nGrid,weight,nBas,AO,rho,Fx,Cx_choice,doNcentered)
+subroutine UCC_lda_exchange_potential(nEns,wEns,nCC,aCC,nGrid,weight,nBas,AO,rho,Cx_choice,doNcentered,Fx)
 
 ! Compute the unrestricted version of the curvature-corrected exchange potential
 

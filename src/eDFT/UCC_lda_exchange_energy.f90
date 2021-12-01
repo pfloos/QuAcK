@@ -103,7 +103,7 @@ subroutine UCC_lda_exchange_energy(nEns,wEns,nCC,aCC,nGrid,weight,rho,Cx_choice,
 
     r = max(0d0,rho(iG))
 
-    if(r > threshold) Ex = Ex + weight(iG)*Cx*r**(4d0/3d0) 
+    if(r > threshold) Ex = Ex + weight(iG)*Cx*r**(1d0/3d0)*r
 
   enddo
 

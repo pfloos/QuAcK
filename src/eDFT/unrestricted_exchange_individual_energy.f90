@@ -1,5 +1,5 @@
 subroutine unrestricted_exchange_individual_energy(rung,DFA,LDA_centered,nEns,wEns,nCC,aCC,nGrid,weight,nBas, & 
-                                                   ERI,Pw,rhow,drhow,Cx_choice,doNcentered,Ex)
+                                                   ERI,Pw,rhow,drhow,P,rho,drho,Cx_choice,doNcentered,LZx,Ex)
 
 ! Compute the exchange individual energy
 
@@ -19,15 +19,19 @@ subroutine unrestricted_exchange_individual_energy(rung,DFA,LDA_centered,nEns,wE
   double precision,intent(in)   :: weight(nGrid)
   integer,intent(in)            :: nBas
   double precision,intent(in)   :: ERI(nBas,nBas,nBas,nBas)
-  double precision,intent(in)   :: Pw(nBas,nBas)
-  double precision,intent(in)   :: rhow(nGrid)
-  double precision,intent(in)   :: drhow(ncart,nGrid)
+  double precision,intent(in)   :: Pw(nBas,nBas,nspin)
+  double precision,intent(in)   :: rhow(nGrid,nspin)
+  double precision,intent(in)   :: drhow(ncart,nGrid,nspin)
+  double precision,intent(in)   :: P(nBas,nBas,nspin,nEns)
+  double precision,intent(in)   :: rho(nGrid,nspin,nEns)
+  double precision,intent(in)   :: drho(ncart,nGrid,nspin,nEns)
   integer,intent(in)            :: Cx_choice
   logical,intent(in)            :: doNcentered
 
 ! Output variables
 
-  double precision,intent(out)  :: Ex
+  double precision,intent(out)  :: LZx(nspin)
+  double precision,intent(out)  :: Ex(nspin,nEns)
 
   select case (rung)
 
@@ -42,25 +46,25 @@ subroutine unrestricted_exchange_individual_energy(rung,DFA,LDA_centered,nEns,wE
     case(1) 
 
       call unrestricted_lda_exchange_individual_energy(DFA,LDA_centered,nEns,wEns,nCC,aCC,nGrid,weight,&
-                                                       rhow,Cx_choice,doNcentered,Ex)
+                                                       rhow,rho,Cx_choice,doNcentered,LZx,Ex)
 
 !   GGA functionals
 
     case(2) 
 
-      call unrestricted_gga_exchange_individual_energy(DFA,nEns,wEns,nGrid,weight,rhow,drhow,Ex)
+      call unrestricted_gga_exchange_individual_energy(DFA,nEns,wEns,nGrid,weight,rhow,drhow,rho,drho,LZx,Ex)
 
 !   MGGA functionals
 
     case(3) 
 
-      call unrestricted_mgga_exchange_individual_energy(DFA,nEns,wEns,nGrid,weight,rhow,drhow,Ex)
+      call unrestricted_mgga_exchange_individual_energy(DFA,nEns,wEns,nGrid,weight,rhow,drhow,rho,drho,LZx,Ex)
 
 !   Hybrid functionals
 
     case(4) 
 
-      call unrestricted_hybrid_exchange_individual_energy(DFA,nEns,wEns,nGrid,weight,nBas,ERI,Pw,rhow,drhow,Ex)
+      call unrestricted_hybrid_exchange_individual_energy(DFA,nEns,wEns,nGrid,weight,nBas,ERI,Pw,rhow,drhow,P,rho,drho,LZx,Ex)
 
   end select
  

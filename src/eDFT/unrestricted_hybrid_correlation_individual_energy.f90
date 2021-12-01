@@ -1,4 +1,5 @@
-subroutine unrestricted_hybrid_correlation_individual_energy(DFA,nEns,wEns,nGrid,weight,rhow,drhow,Ec)
+subroutine unrestricted_hybrid_correlation_individual_energy(DFA,nEns,wEns,nGrid,weight, & 
+                                                             rhow,drhow,rho,drho,doNcentered,LZc,Ec)
 
 ! Compute the hybrid correlation energy for individual states
 
@@ -14,10 +15,14 @@ subroutine unrestricted_hybrid_correlation_individual_energy(DFA,nEns,wEns,nGrid
   double precision,intent(in)   :: weight(nGrid)
   double precision,intent(in)   :: rhow(nGrid)
   double precision,intent(in)   :: drhow(ncart,nGrid)
+  double precision,intent(in)   :: rho(nGrid,nEns)
+  double precision,intent(in)   :: drho(ncart,nGrid,nEns)
+  logical,intent(in)            :: doNcentered
 
 ! Output variables
 
-  double precision              :: Ec(nsp)
+  double precision              :: LZc(nsp)
+  double precision              :: Ec(nsp,nEns)
 
 ! Select correlation functional
 
@@ -25,7 +30,8 @@ subroutine unrestricted_hybrid_correlation_individual_energy(DFA,nEns,wEns,nGrid
 
     case (1)
 
-      Ec(:) = 0d0
+      LZc(:)  = 0d0
+      Ec(:,:) = 0d0
 
     case default
 

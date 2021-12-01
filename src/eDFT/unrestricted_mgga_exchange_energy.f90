@@ -14,7 +14,7 @@ subroutine unrestricted_mgga_exchange_energy(DFA,nEns,wEns,nGrid,weight,rho,drho
   integer,intent(in)            :: nGrid
   double precision,intent(in)   :: weight(nGrid)
   double precision,intent(in)   :: rho(nGrid)
-  double precision,intent(in)   :: drho(3,nGrid)
+  double precision,intent(in)   :: drho(ncart,nGrid)
 
 ! Output variables
 

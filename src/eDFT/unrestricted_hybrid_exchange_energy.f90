@@ -1,5 +1,5 @@
 subroutine unrestricted_hybrid_exchange_energy(DFA,LDA_centered,nEns,wEns,nCC,aCC,nGrid,weight,nBas,P,FxHF, &
-                                               rho,drho,Ex,Cx_choice)
+                                               rho,drho,Cx_choice,doNcentered,Ex)
 
 ! Compute the exchange energy for hybrid functionals
 
@@ -22,6 +22,7 @@ subroutine unrestricted_hybrid_exchange_energy(DFA,LDA_centered,nEns,wEns,nCC,aC
   double precision,intent(in)   :: rho(nGrid)
   double precision,intent(in)   :: drho(ncart,nGrid)
   integer,intent(in)            :: Cx_choice
+  logical,intent(in)            :: doNcentered
 
 ! Local variables
 
@@ -44,7 +45,7 @@ subroutine unrestricted_hybrid_exchange_energy(DFA,LDA_centered,nEns,wEns,nCC,aC
       aX = 0.72d0
   
       call unrestricted_lda_exchange_energy(1,LDA_centered,nEns,wEns,nCC,aCC,nGrid,weight,&
-                                            rho,ExLDA,Cx_choice)
+                                            rho,Cx_choice,doNcentered,ExLDA)
       call unrestricted_gga_exchange_energy(2,nEns,wEns,nGrid,weight,rho,drho,ExGGA)
       call unrestricted_fock_exchange_energy(nBas,P,FxHF,ExHF)
   

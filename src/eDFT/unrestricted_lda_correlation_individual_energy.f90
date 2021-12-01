@@ -1,4 +1,4 @@
-subroutine unrestricted_lda_correlation_individual_energy(DFA,LDA_centered,nEns,wEns,nGrid,weight,rhow,doNcentered,LZc)
+subroutine unrestricted_lda_correlation_individual_energy(DFA,LDA_centered,nEns,wEns,nGrid,weight,rhow,rho,doNcentered,LZc,Ec)
 
 ! Compute LDA correlation energy for individual states
 
@@ -14,11 +14,13 @@ subroutine unrestricted_lda_correlation_individual_energy(DFA,LDA_centered,nEns,
   integer,intent(in)            :: nGrid
   double precision,intent(in)   :: weight(nGrid)
   double precision,intent(in)   :: rhow(nGrid,nspin)
+  double precision,intent(in)   :: rho(nGrid,nspin,nEns)
   logical,intent(in)            :: doNcentered
 
 ! Output variables
 
-  double precision              :: LZc(nspin)
+  double precision              :: LZc(nsp)
+  double precision              :: Ec(nsp,nEns)
 
 ! Select correlation functional
 
@@ -34,11 +36,11 @@ subroutine unrestricted_lda_correlation_individual_energy(DFA,LDA_centered,nEns,
 
     case (3)
 
-      call UVWN3_lda_correlation_individual_energy(nGrid,weight,rhow,doNcentered,LZc)
+!     call UVWN3_lda_correlation_individual_energy(nEns,nGrid,weight,rhow,rho,doNcentered,LZc,Ec)
 
     case (4)
 
-      call UVWN5_lda_correlation_individual_energy(nGrid,weight,rhow,doNcentered,LZc)
+      call UVWN5_lda_correlation_individual_energy(nEns,nGrid,weight,rhow,rho,doNcentered,LZc,Ec)
 
     case default
 

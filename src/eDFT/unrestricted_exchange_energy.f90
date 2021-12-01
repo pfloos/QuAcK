@@ -1,5 +1,5 @@
 subroutine unrestricted_exchange_energy(rung,DFA,LDA_centered,nEns,wEns,nCC,aCC,nGrid,weight,nBas,P,FxHF, &
-                                        rho,drho,Ex,Cx_choice,doNcentered)
+                                        rho,drho,Cx_choice,doNcentered,Ex)
 
 ! Compute the exchange energy
 
@@ -43,8 +43,7 @@ subroutine unrestricted_exchange_energy(rung,DFA,LDA_centered,nEns,wEns,nCC,aCC,
 
     case(1) 
 
-      call unrestricted_lda_exchange_energy(DFA,LDA_centered,nEns,wEns,nCC,aCC,nGrid,weight,&
-                                            rho,Ex,Cx_choice,doNcentered)
+      call unrestricted_lda_exchange_energy(DFA,LDA_centered,nEns,wEns,nCC,aCC,nGrid,weight,rho,Cx_choice,doNcentered,Ex)
 
 !   GGA functionals
 
@@ -63,7 +62,7 @@ subroutine unrestricted_exchange_energy(rung,DFA,LDA_centered,nEns,wEns,nCC,aCC,
     case(4) 
 
       call unrestricted_hybrid_exchange_energy(DFA,LDA_centered,nEns,wEns,nCC,aCC,nGrid,weight,nBas,P,FxHF, &
-                                        rho,drho,Ex,Cx_choice)
+                                        rho,drho,Cx_choice,doNcentered,Ex)
 
   end select
  

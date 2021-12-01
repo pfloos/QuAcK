@@ -1,4 +1,4 @@
-subroutine unrestricted_lda_exchange_energy(DFA,LDA_centered,nEns,wEns,nCC,aCC,nGrid,weight,rho,Ex,Cx_choice,doNcentered)
+subroutine unrestricted_lda_exchange_energy(DFA,LDA_centered,nEns,wEns,nCC,aCC,nGrid,weight,rho,Cx_choice,doNcentered,Ex)
 
 ! Select LDA exchange functional
 

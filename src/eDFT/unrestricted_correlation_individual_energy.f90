@@ -1,4 +1,5 @@
-subroutine unrestricted_correlation_individual_energy(rung,DFA,LDA_centered,nEns,wEns,nGrid,weight,rhow,drhow,doNcentered,LZc)
+subroutine unrestricted_correlation_individual_energy(rung,DFA,LDA_centered,nEns,wEns,nGrid,weight, & 
+                                                      rhow,drhow,rho,drho,doNcentered,LZc,Ec)
 
 ! Compute the correlation energy of individual states
 
@@ -16,16 +17,14 @@ subroutine unrestricted_correlation_individual_energy(rung,DFA,LDA_centered,nEns
   double precision,intent(in)   :: weight(nGrid)
   double precision,intent(in)   :: rhow(nGrid,nspin)
   double precision,intent(in)   :: drhow(ncart,nGrid,nspin)
+  double precision,intent(in)   :: rho(nGrid,nspin,nEns)
+  double precision,intent(in)   :: drho(ncart,nGrid,nspin,nEns)
   logical,intent(in)            :: doNcentered
-
-! Local variables
-
-  double precision              :: LZcLDA(nspin)
-  double precision              :: LZcGGA(nspin)
 
 ! Output variables
 
-  double precision,intent(out)  :: LZc(nspin)
+  double precision,intent(out)  :: LZc(nsp)
+  double precision,intent(out)  :: Ec(nsp,nEns)
 
   select case (rung)
 
@@ -39,7 +38,7 @@ subroutine unrestricted_correlation_individual_energy(rung,DFA,LDA_centered,nEns
 
     case(1) 
 
-      call unrestricted_lda_correlation_individual_energy(DFA,LDA_centered,nEns,wEns,nGrid,weight,rhow,doNcentered,LZc)
+      call unrestricted_lda_correlation_individual_energy(DFA,LDA_centered,nEns,wEns,nGrid,weight,rhow,rho,doNcentered,LZc,Ec)
 
 !   GGA functionals
 
@@ -57,7 +56,7 @@ subroutine unrestricted_correlation_individual_energy(rung,DFA,LDA_centered,nEns
 
     case(4) 
 
-      call unrestricted_hybrid_correlation_individual_energy(DFA,nEns,wEns,nGrid,weight,rhow,drhow,LZc)
+      call unrestricted_hybrid_correlation_individual_energy(DFA,nEns,wEns,nGrid,weight,rhow,drhow,rho,drho,doNcentered,LZc,Ec)
 
   end select
  

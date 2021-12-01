@@ -1,5 +1,5 @@
 subroutine unrestricted_hybrid_exchange_potential(DFA,LDA_centered,nEns,wEns,nCC,aCC,nGrid,weight,nBas,P, & 
-                                                  ERI,AO,dAO,rho,drho,Fx,FxHF,Cx_choice)
+                                                  ERI,AO,dAO,rho,drho,Cx_choice,doNcentered,Fx,FxHF)
 
 ! Compute the exchange potential for hybrid functionals
 
@@ -24,15 +24,19 @@ subroutine unrestricted_hybrid_exchange_potential(DFA,LDA_centered,nEns,wEns,nCC
   double precision,intent(in)   :: rho(nGrid)
   double precision,intent(in)   :: drho(ncart,nGrid)
   integer,intent(in)            :: Cx_choice
+  logical,intent(in)            :: doNcentered
 
 ! Local variables
 
-  double precision,allocatable  :: FxLDA(:,:),FxGGA(:,:)
-  double precision              :: a0,aX
+  double precision,allocatable  :: FxLDA(:,:)
+  double precision,allocatable  :: FxGGA(:,:)
+  double precision              :: a0
+  double precision              :: aX
 
 ! Output variables
 
-  double precision,intent(out)  :: Fx(nBas,nBas),FxHF(nBas,nBas)
+  double precision,intent(out)  :: Fx(nBas,nBas)
+  double precision,intent(out)  :: FxHF(nBas,nBas)
 
 ! Memory allocation
 
@@ -51,7 +55,7 @@ subroutine unrestricted_hybrid_exchange_potential(DFA,LDA_centered,nEns,wEns,nCC
       aX = 0.72d0
 
       call unrestricted_lda_exchange_potential(1,LDA_centered,nEns,wEns,nCC,aCC,nGrid,weight, & 
-                                               nBas,AO,rho,FxLDA,Cx_choice)
+                                               nBas,AO,rho,Cx_choice,doNcentered,FxLDA)
       call unrestricted_gga_exchange_potential(2,nEns,wEns,nGrid,weight,nBas,AO,dAO,rho,drho,FxGGA)
       call unrestricted_fock_exchange_potential(nBas,P,ERI,FxHF)
 

@@ -1,5 +1,5 @@
 subroutine eDFT_UKS(x_rung,x_DFA,c_rung,c_DFA,nEns,wEns,nCC,aCC,nGrid,weight,maxSCF,thresh,max_diis,guess_type,mix, &
-                   nNuc,ZNuc,rNuc,ENuc,nBas,AO,dAO,S,T,V,Hc,ERI,dipole_int,X,occnum,Cx_choice,doNcentered,Ew,eps,c,Pw,Vxc)
+                   nNuc,ZNuc,rNuc,ENuc,nBas,AO,dAO,S,T,V,Hc,ERI,dipole_int,X,occnum,Cx_choice,doNcentered,Ew,eKS,c,Pw,Vxc)
 
 ! Perform unrestricted Kohn-Sham calculation for ensembles
 
@@ -16,7 +16,9 @@ subroutine eDFT_UKS(x_rung,x_DFA,c_rung,c_DFA,nEns,wEns,nCC,aCC,nGrid,weight,max
   double precision,intent(in)   :: aCC(nCC,nEns-1)
   integer,intent(in)            :: nGrid
   double precision,intent(in)   :: weight(nGrid)
-  integer,intent(in)            :: maxSCF,max_diis,guess_type
+  integer,intent(in)            :: maxSCF
+  integer,intent(in)            :: max_diis
+  integer,intent(in)            :: guess_type
   logical,intent(in)            :: mix
   double precision,intent(in)   :: thresh
   integer,intent(in)            :: nBas
@@ -81,7 +83,7 @@ subroutine eDFT_UKS(x_rung,x_DFA,c_rung,c_DFA,nEns,wEns,nCC,aCC,nGrid,weight,max
 ! Output variables
 
   double precision,intent(out)  :: Ew
-  double precision,intent(out)  :: eps(nBas,nspin)
+  double precision,intent(out)  :: eKS(nBas,nspin)
   double precision,intent(out)  :: Pw(nBas,nBas,nspin)
   double precision,intent(out)  :: c(nBas,nBas,nspin)
   double precision,intent(out)  :: Vxc(nBas,nspin)
@@ -102,26 +104,6 @@ subroutine eDFT_UKS(x_rung,x_DFA,c_rung,c_DFA,nEns,wEns,nCC,aCC,nGrid,weight,max
 !------------------------------------------------------------------------
 ! Rung of Jacob's ladder
 !------------------------------------------------------------------------
-
-! Select rung for exchange 
-
-! write(*,*)
-! write(*,*) '*******************************************************************'
-! write(*,*) '*                        Exchange rung                            *'
-! write(*,*) '*******************************************************************'
-
-! call select_rung(x_rung,x_DFA)
-
-! Select rung for correlation
-
-! write(*,*)
-! write(*,*) '*******************************************************************'
-! write(*,*) '*                       Correlation rung                          *'
-! write(*,*) '*******************************************************************'
-
-! call select_rung(c_rung,c_DFA)
-
-! Overall rung
 
   xc_rung = max(x_rung,c_rung)
 
@@ -144,7 +126,7 @@ subroutine eDFT_UKS(x_rung,x_DFA,c_rung,c_DFA,nEns,wEns,nCC,aCC,nGrid,weight,max
 
     do ispin=1,nspin
       cp(:,:,ispin) = matmul(transpose(X(:,:)),matmul(Hc(:,:),X(:,:)))
-      call diagonalize_matrix(nBas,cp(:,:,ispin),eps(:,ispin))
+      call diagonalize_matrix(nBas,cp(:,:,ispin),eKS(:,ispin))
       c(:,:,ispin) = matmul(X(:,:),cp(:,:,ispin))
     end do
 
@@ -254,15 +236,15 @@ subroutine eDFT_UKS(x_rung,x_DFA,c_rung,c_DFA,nEns,wEns,nCC,aCC,nGrid,weight,max
 !   Compute Hartree potential 
 
     do ispin=1,nspin
-      call unrestricted_hartree_potential(nBas,Pw(:,:,ispin),ERI(:,:,:,:),J(:,:,ispin))
+      call unrestricted_hartree_potential(nBas,Pw(:,:,ispin),ERI,J(:,:,ispin))
     end do
 
 !   Compute exchange potential
 
     do ispin=1,nspin
-      call unrestricted_exchange_potential(x_rung,x_DFA,LDA_centered,nEns,wEns(:),nCC,aCC,nGrid,weight(:),nBas,    &
-                                           Pw(:,:,ispin),ERI(:,:,:,:),AO(:,:),dAO(:,:,:),rhow(:,ispin),drhow(:,:,ispin), &
-                                           Fx(:,:,ispin),FxHF(:,:,ispin),Cx_choice,doNcentered)
+      call unrestricted_exchange_potential(x_rung,x_DFA,LDA_centered,nEns,wEns,nCC,aCC,nGrid,weight,nBas, &
+                                           Pw(:,:,ispin),ERI,AO,dAO,rhow(:,ispin),drhow(:,:,ispin),       &
+                                           Cx_choice,doNcentered,Fx(:,:,ispin),FxHF(:,:,ispin))
     end do
 
 !   Compute correlation potential
@@ -305,7 +287,7 @@ subroutine eDFT_UKS(x_rung,x_DFA,c_rung,c_DFA,nEns,wEns,nCC,aCC,nGrid,weight,max
 
     cp(:,:,:) = Fp(:,:,:)
     do ispin=1,nspin
-      call diagonalize_matrix(nBas,cp(:,:,ispin),eps(:,ispin))
+      call diagonalize_matrix(nBas,cp(:,:,ispin),eKS(:,ispin))
     end do
     
 !   Back-transform eigenvectors in non-orthogonal basis
@@ -337,9 +319,9 @@ subroutine eDFT_UKS(x_rung,x_DFA,c_rung,c_DFA,nEns,wEns,nCC,aCC,nGrid,weight,max
 !   Exchange energy
 
     do ispin=1,nspin
-      call unrestricted_exchange_energy(x_rung,x_DFA,LDA_centered,nEns,wEns,nCC,aCC,nGrid,weight,nBas,          &
-                                        Pw(:,:,ispin),FxHF(:,:,ispin),rhow(:,ispin),drhow(:,:,ispin),Ex(ispin), &
-                                        Cx_choice,doNcentered)
+      call unrestricted_exchange_energy(x_rung,x_DFA,LDA_centered,nEns,wEns,nCC,aCC,nGrid,weight,nBas, &
+                                        Pw(:,:,ispin),FxHF(:,:,ispin),rhow(:,ispin),drhow(:,:,ispin),  &
+                                        Cx_choice,doNcentered,Ex(ispin))
     end do
 
 !   Correlation energy
@@ -385,7 +367,7 @@ subroutine eDFT_UKS(x_rung,x_DFA,c_rung,c_DFA,nEns,wEns,nCC,aCC,nGrid,weight,max
 ! Compute final KS energy
 
   call dipole_moment(nBas,Pw(:,:,1)+Pw(:,:,2),nNuc,ZNuc,rNuc,dipole_int,dipole)
-  call print_UKS(nBas,nEns,nO,S,wEns,eps,c,ENuc,ET,EV,EH,Ex,Ec,Ew,dipole)
+  call print_UKS(nBas,nEns,nO,S,wEns,eKS,c,ENuc,ET,EV,EH,Ex,Ec,Ew,dipole)
 
 ! Compute Vxc for post-HF calculations
 
@@ -396,6 +378,6 @@ subroutine eDFT_UKS(x_rung,x_DFA,c_rung,c_DFA,nEns,wEns,nCC,aCC,nGrid,weight,max
 !------------------------------------------------------------------------
 
   call unrestricted_individual_energy(x_rung,x_DFA,c_rung,c_DFA,LDA_centered,nEns,wEns,nCC,aCC,nGrid,weight,nBas,      &
-                                      AO,dAO,T,V,ERI,ENuc,eps,Pw,rhow,drhow,J,Fx,FxHF,Fc,P,rho,drho,Ew,occnum,Cx_choice,doNcentered)
+                                      AO,dAO,T,V,ERI,ENuc,eKS,Pw,rhow,drhow,J,Fx,FxHF,Fc,P,rho,drho,occnum,Cx_choice,doNcentered,Ew)
 
 end subroutine eDFT_UKS
