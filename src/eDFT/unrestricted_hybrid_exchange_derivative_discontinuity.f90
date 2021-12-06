@@ -1,5 +1,5 @@
 subroutine unrestricted_hybrid_exchange_derivative_discontinuity(DFA,nEns,wEns,nCC,aCC,nGrid,weight,rhow,&
-                                                              Cx_choice,doNcentered,kappa,ExDD)
+                                                              Cx_choice,doNcentered,ExDD)
 
 ! Compute the exchange part of the derivative discontinuity for hybrid functionals
 
@@ -19,7 +19,6 @@ subroutine unrestricted_hybrid_exchange_derivative_discontinuity(DFA,nEns,wEns,n
   double precision,intent(in)   :: rhow(nGrid)
   integer,intent(in)            :: Cx_choice
   logical,intent(in)            :: doNcentered
-  double precision,intent(in)   :: kappa(nEns)
 
 ! Local variables
 

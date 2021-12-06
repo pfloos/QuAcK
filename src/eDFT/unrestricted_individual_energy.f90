@@ -52,8 +52,8 @@ subroutine unrestricted_individual_energy(x_rung,x_DFA,c_rung,c_DFA,LDA_centered
   double precision              :: EH(nsp,nEns)
   double precision              :: Ex(nspin,nEns)
   double precision              :: Ec(nsp,nEns)
-  double precision              :: LZH(nsp,nEns)
-  double precision              :: LZx(nspin,nEns)
+  double precision              :: LZH(nsp)
+  double precision              :: LZx(nspin)
   double precision              :: LZc(nsp)
   double precision              :: Eaux(nspin,nEns) 
 
@@ -116,18 +116,18 @@ subroutine unrestricted_individual_energy(x_rung,x_DFA,c_rung,c_DFA,LDA_centered
 ! Individual Hartree energy
 !------------------------------------------------------------------------
 
-  LZH(:,:) = 0d0
+  LZH(:) = 0d0
   EH(:,:) = 0d0
-  call unrestricted_hartree_individual_energy(nBas,nEns,Pw,P,ERI,doNcentered,kappa,LZH,EH)
+  call unrestricted_hartree_individual_energy(nBas,nEns,Pw,P,ERI,LZH,EH)
 
 !------------------------------------------------------------------------
 ! Individual exchange energy
 !------------------------------------------------------------------------
 
-  LZx(:,:) = 0d0
+  LZx(:) = 0d0
   Ex(:,:) = 0d0
   call unrestricted_exchange_individual_energy(x_rung,x_DFA,LDA_centered,nEns,wEns,nCC,aCC,nGrid,weight,nBas,ERI,  &
-                                               Pw,rhow,drhow,P,rho,drho,Cx_choice,doNcentered,kappa,LZx,Ex)
+                                               Pw,rhow,drhow,P,rho,drho,Cx_choice,doNcentered,LZx,Ex)
 
 !------------------------------------------------------------------------
 ! Individual correlation energy
@@ -136,13 +136,13 @@ subroutine unrestricted_individual_energy(x_rung,x_DFA,c_rung,c_DFA,LDA_centered
   LZc(:) = 0d0
   Ec(:,:) = 0d0
   call unrestricted_correlation_individual_energy(c_rung,c_DFA,LDA_centered,nEns,wEns,nGrid,weight, & 
-                                                  rhow,drhow,rho,drho,doNcentered,LZc,Ec)
+                                                  rhow,drhow,rho,drho,LZc,Ec)
 
 !------------------------------------------------------------------------
 ! Compute auxiliary energies
 !------------------------------------------------------------------------
  
-  call unrestricted_auxiliary_energy(nBas,nEns,eKS,occnum,doNcentered,Eaux)
+  call unrestricted_auxiliary_energy(nBas,nEns,eKS,occnum,Eaux)
 
 !------------------------------------------------------------------------
 ! Compute derivative discontinuities
@@ -150,64 +150,84 @@ subroutine unrestricted_individual_energy(x_rung,x_DFA,c_rung,c_DFA,LDA_centered
 
   do ispin=1,nspin 
     call unrestricted_exchange_derivative_discontinuity(x_rung,x_DFA,nEns,wEns,nCC,aCC,nGrid,weight, &
-                                                        rhow(:,ispin),drhow(:,:,ispin),Cx_choice,doNcentered,kappa,ExDD(ispin,:))
+                                                        rhow(:,ispin),drhow(:,:,ispin),Cx_choice,doNcentered,ExDD(ispin,:))
   end do
 
-  call unrestricted_correlation_derivative_discontinuity(c_rung,c_DFA,nEns,wEns,nGrid,weight,rhow,drhow,kappa,EcDD)
+  call unrestricted_correlation_derivative_discontinuity(c_rung,c_DFA,nEns,wEns,nGrid,weight,rhow,drhow,EcDD)
 
 !------------------------------------------------------------------------
 ! Total energy
 !------------------------------------------------------------------------
 
-  do iEns=1,nEns
-    E(iEns) = sum(Eaux(:,iEns))                       & 
-            + sum(LZH(:,iEns)) + sum(LZx(:,iEns)) + sum(LZc(:)) &
-            + sum(ExDD(:,iEns)) + sum(EcDD(:,iEns))
-  end do
+  if(doNcentered) then
+
+    do iEns=1,nEns
+      E(iEns) = sum(Eaux(:,iEns))                                     & 
+              + kappa(iEns)*(sum(LZH(:)) + sum(LZx(:)) + sum(LZc(:))) &
+              + sum(ExDD(:,iEns)) + sum(EcDD(:,iEns))
+    end do
+
+    print*,E
+
+  else 
+
+    do iEns=1,nEns
+      E(iEns) = sum(Eaux(:,iEns))                       & 
+              + sum(LZH(:)) + sum(LZx(:)) + sum(LZc(:)) &
+              + sum(ExDD(:,iEns)) + sum(EcDD(:,iEns))
+    end do
+
+  end if
   
-  !E(2) = (1.d0/2.d0)*(E(2))
+  do iEns=1,nEns
+    E(iEns)   = sum(ET(:,iEns)) + sum(EV(:,iEns))                   & 
+              + sum(EH(:,iEns)) + sum(Ex(:,iEns)) + sum(Ec(:,iEns)) & 
+              + kappa(iEns)*(sum(LZH(:)) + sum(LZx(:)) + sum(LZc(:)))            &
+              + sum(ExDD(:,iEns)) + sum(EcDD(:,iEns))
+  end do
 
-
-!  print*,'test shift =',(1.d0+wEns(2)/2.d0)*(sum(Eaux(:,2)) + sum(LZH(:,2)) &
-!         + sum(LZx(:,2)) + sum(LZc(:)))+(1.d0-kappa(2)*wEns(2))*(sum(Eaux(:,1))&
-!         +sum(LZH(:,1)) + sum(LZx(:,1)) + sum(LZc(:)))
-
-!  print*,'test=',(1.d0+wEns(2)/2.d0)*(sum(Eaux(:,2)))+(1.d0-kappa(2)*wEns(2))*(sum(Eaux(:,1))&
-!         )
-
-!  print*, 'ensemble energy=',Ew
-
-! Alternative way of calculating individual energies
-
-! do iEns=1,nEns
-!   E(iEns)   = sum(ET(:,iEns)) + sum(EV(:,iEns))                   & 
-!             + sum(EH(:,iEns)) + sum(Ex(:,iEns)) + sum(Ec(:,iEns)) & 
-!             + sum(LZH(:)) + sum(LZx(:)) + sum(LZc(:))             &
-!             + sum(ExDD(:,iEns)) + sum(EcDD(:,iEns))
-! end do
+  print*,E
 
 !------------------------------------------------------------------------
 ! Excitation energies
 !------------------------------------------------------------------------
 
   do iEns=1,nEns
+
     Om(iEns) = E(iEns) - E(1)
 
-    OmH(iEns)    = sum(EH(:,iEns)) - sum(EH(:,1))
+    OmH(iEns)    = sum(EH(:,iEns)) - sum(EH(:,1)) 
     Omx(iEns)    = sum(Ex(:,iEns)) - sum(Ex(:,1))
     Omc(iEns)    = sum(Ec(:,iEns)) - sum(Ec(:,1))
 
-    Omaux(iEns)  = sum(Eaux(:,iEns))  - sum(Eaux(:,1))
+    Omaux(iEns)  = sum(Eaux(:,iEns)) - sum(Eaux(:,1))
 
-    OmxDD(iEns)  = sum(ExDD(:,iEns))  - sum(ExDD(:,1))
-    OmcDD(iEns)  = sum(EcDD(:,iEns))  - sum(EcDD(:,1))
+    OmxDD(iEns)  = sum(ExDD(:,iEns)) - sum(ExDD(:,1))
+    OmcDD(iEns)  = sum(EcDD(:,iEns)) - sum(EcDD(:,1))
 
   end do
+
+  if(doNcentered) then
+
+    do iEns=1,nEns
+      OmH(iEns)    = OmH(iEns) + (kappa(iEns) - kappa(1))*sum(LZH(:))
+      Omx(iEns)    = Omx(iEns) + (kappa(iEns) - kappa(1))*sum(LZx(:))
+      Omc(iEns)    = Omc(iEns) + (kappa(iEns) - kappa(1))*sum(LZc(:))
+
+      Omaux(iEns)  = Omaux(iEns) &
+                   + (kappa(iEns) - kappa(1))*(sum(LZH(:)) + sum(LZx(:)) + sum(LZc(:))) 
+
+      OmxDD(iEns)  = kappa(iEns)*sum(ExDD(:,iEns)) - kappa(1)*sum(ExDD(:,1))
+      OmcDD(iEns)  = kappa(iEns)*sum(EcDD(:,iEns)) - kappa(1)*sum(EcDD(:,1))
+  
+    end do
+
+  end if
 
 !------------------------------------------------------------------------
 ! Dump results
 !------------------------------------------------------------------------
 
-  call print_unrestricted_individual_energy(nEns,ENuc,Ew,ET,EV,EH,Ex,Ec,Eaux,ExDD,EcDD,E,Om,Omx,Omc,Omaux,OmxDD,OmcDD)
+  call print_unrestricted_individual_energy(nEns,ENuc,Ew,ET,EV,EH,Ex,Ec,Eaux,ExDD,EcDD,E,Om,OmH,Omx,Omc,Omaux,OmxDD,OmcDD)
 
 end subroutine unrestricted_individual_energy

@@ -1,4 +1,4 @@
-subroutine UCC_lda_exchange_derivative_discontinuity(nEns,wEns,nCC,aCC,nGrid,weight,rhow,Cx_choice,doNcentered,kappa,ExDD)
+subroutine UCC_lda_exchange_derivative_discontinuity(nEns,wEns,nCC,aCC,nGrid,weight,rhow,Cx_choice,doNcentered,ExDD)
 
 ! Compute the unrestricted version of the curvature-corrected exchange ensemble derivative
 
@@ -16,7 +16,6 @@ subroutine UCC_lda_exchange_derivative_discontinuity(nEns,wEns,nCC,aCC,nGrid,wei
   double precision,intent(in)   :: rhow(nGrid)
   integer,intent(in)            :: Cx_choice
   logical,intent(in)            :: doNcentered
-  double precision,intent(in)   :: kappa(nEns)
 
 ! Local variables
 
@@ -154,19 +153,9 @@ subroutine UCC_lda_exchange_derivative_discontinuity(nEns,wEns,nCC,aCC,nGrid,wei
   do iEns=1,nEns
     do jEns=2,nEns
 
-!      if (doNcentered) then
-
-!        ExDD(iEns) = ExDD(iEns) + (Kronecker_delta(iEns,jEns) - kappa(iEns)*wEns(jEns))*dExdw(jEns)
-
-!      else
-
         ExDD(iEns) = ExDD(iEns) + (Kronecker_delta(iEns,jEns) - wEns(jEns))*dExdw(jEns)
-
-!      endif
 
     end do
   end do
-
- ! if(doNcentered) ExDD(:) = kappa(:)*ExDD(:)
 
 end subroutine UCC_lda_exchange_derivative_discontinuity

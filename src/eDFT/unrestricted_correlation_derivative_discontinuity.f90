@@ -1,4 +1,4 @@
-subroutine unrestricted_correlation_derivative_discontinuity(rung,DFA,nEns,wEns,nGrid,weight,rhow,drhow,kappa,Ec)
+subroutine unrestricted_correlation_derivative_discontinuity(rung,DFA,nEns,wEns,nGrid,weight,rhow,drhow,Ec)
 
 ! Compute the correlation part of the derivative discontinuity
 
@@ -15,7 +15,6 @@ subroutine unrestricted_correlation_derivative_discontinuity(rung,DFA,nEns,wEns,
   double precision,intent(in)   :: weight(nGrid)
   double precision,intent(in)   :: rhow(nGrid,nspin)
   double precision,intent(in)   :: drhow(ncart,nGrid,nspin)
-  double precision,intent(in)   :: kappa(nEns)
 
 ! Local variables
 

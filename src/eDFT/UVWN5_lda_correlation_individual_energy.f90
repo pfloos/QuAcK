@@ -1,4 +1,4 @@
-subroutine UVWN5_lda_correlation_individual_energy(nEns,nGrid,weight,rhow,rho,doNcentered,LZc,Ec)
+subroutine UVWN5_lda_correlation_individual_energy(nEns,nGrid,weight,rhow,rho,LZc,Ec)
 
 ! Compute VWN5 LDA correlation potential
 
@@ -13,7 +13,6 @@ subroutine UVWN5_lda_correlation_individual_energy(nEns,nGrid,weight,rhow,rho,do
   double precision,intent(in)   :: weight(nGrid)
   double precision,intent(in)   :: rhow(nGrid,nspin)
   double precision,intent(in)   :: rho(nGrid,nspin,nEns)
-  logical,intent(in)            :: doNcentered
 
 ! Local variables
 

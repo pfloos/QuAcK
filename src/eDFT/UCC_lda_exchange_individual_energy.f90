@@ -1,4 +1,4 @@
-subroutine UCC_lda_exchange_individual_energy(nEns,wEns,nCC,aCC,nGrid,weight,rhow,rho,Cx_choice,doNcentered,kappa,LZx,Ex)
+subroutine UCC_lda_exchange_individual_energy(nEns,wEns,nCC,aCC,nGrid,weight,rhow,rho,Cx_choice,doNcentered,LZx,Ex)
 
 
 ! Compute the unrestricted version of the curvature-corrected exchange functional
@@ -18,7 +18,6 @@ subroutine UCC_lda_exchange_individual_energy(nEns,wEns,nCC,aCC,nGrid,weight,rho
   double precision,intent(in)   :: rho(nGrid,nspin,nEns)
   integer,intent(in)            :: Cx_choice
   logical,intent(in)            :: doNcentered
-  double precision,intent(in)   :: kappa(nEns) 
 
 ! Local variables
 
@@ -32,7 +31,8 @@ subroutine UCC_lda_exchange_individual_energy(nEns,wEns,nCC,aCC,nGrid,weight,rho
 
 ! Output variables
 
-  double precision,intent(out)  :: LZx(nspin,nEns), Ex(nspin,nEns)
+  double precision,intent(out)  :: LZx(nspin)
+  double precision,intent(out)  :: Ex(nspin,nEns)
 
 ! Defining enhancements factor for weight-dependent functionals
 
@@ -51,7 +51,6 @@ subroutine UCC_lda_exchange_individual_energy(nEns,wEns,nCC,aCC,nGrid,weight,rho
     b2 = aCC(2,2)
     c2 = aCC(3,2)
     d2 = aCC(4,2)
-
 
     w1 = wEns(2)
     Fx1 = 1d0 + a1*w1 + b1*w1**2 + c1*w1**3 + d1*w1**4
@@ -100,7 +99,7 @@ subroutine UCC_lda_exchange_individual_energy(nEns,wEns,nCC,aCC,nGrid,weight,rho
 ! Compute LDA exchange matrix in the AO basis
 
   Ex(:,:) = 0d0
-  LZx(:,:) = 0d0
+  LZx(:)  = 0d0
 
   do ispin=1,nspin
 
@@ -108,43 +107,20 @@ subroutine UCC_lda_exchange_individual_energy(nEns,wEns,nCC,aCC,nGrid,weight,rho
 
       r  = max(0d0,rhow(iG,ispin))
 
-      if(doNcentered) then
+      if(r > threshold) then
 
-        if(r > threshold) then
+        e    =         Cx*r**(+1d0/3d0)
+        dedr = 1d0/3d0*Cx*r**(-2d0/3d0)
 
-          e    =         Cx*r**(+1d0/3d0)
-          dedr = 1d0/3d0*Cx*r**(-2d0/3d0)
-     
-          do iEns=1,nEns
+        LZx(ispin) = LZx(ispin) - weight(iG)*dedr*r*r
 
-            rI = max(0d0,rho(iG,ispin,iEns))
+        do iEns=1,nEns
 
-            LZx(ispin,iEns) = LZx(ispin,iEns) - weight(iG)*kappa(iEns)*dedr*r*r
+          rI = max(0d0,rho(iG,ispin,iEns))
 
-            if(rI > threshold) Ex(ispin,iEns) = Ex(ispin,iEns) + weight(iG)*(kappa(iEns)*e+dedr*r)*rI
-       
-          end do
+          if(rI > threshold) Ex(ispin,iEns) = Ex(ispin,iEns) + weight(iG)*(e+dedr*r)*rI
 
-        endif
-
-      else
-
-        if(r > threshold) then
-
-          e    =         Cx*r**(+1d0/3d0)
-          dedr = 1d0/3d0*Cx*r**(-2d0/3d0)
-
-          LZx(ispin,:) = LZx(ispin,:) - weight(iG)*dedr*r*r
-
-          do iEns=1,nEns
-
-            rI = max(0d0,rho(iG,ispin,iEns))
-
-            if(rI > threshold) Ex(ispin,iEns) = Ex(ispin,iEns) + weight(iG)*(e+dedr*r)*rI
-
-          end do
-
-        endif
+        end do
 
       endif
 

@@ -1,5 +1,5 @@
 subroutine unrestricted_exchange_derivative_discontinuity(rung,DFA,nEns,wEns,nCC,aCC,nGrid,weight,rhow,drhow,&
-                                                          Cx_choice,doNcentered,kappa,ExDD)
+                                                          Cx_choice,doNcentered,ExDD)
 
 ! Compute the exchange part of the derivative discontinuity
 
@@ -20,7 +20,6 @@ subroutine unrestricted_exchange_derivative_discontinuity(rung,DFA,nEns,wEns,nCC
   double precision,intent(in)   :: drhow(ncart,nGrid)
   integer,intent(in)            :: Cx_choice
   logical,intent(in)            :: doNcentered
-  double precision,intent(in)   :: kappa(nEns)
 
 ! Local variables
 
@@ -42,7 +41,7 @@ subroutine unrestricted_exchange_derivative_discontinuity(rung,DFA,nEns,wEns,nCC
     case(1) 
 
       call unrestricted_lda_exchange_derivative_discontinuity(DFA,nEns,wEns(:),nCC,aCC,nGrid,weight(:),&
-                                                              rhow(:),Cx_choice,doNcentered,kappa,ExDD(:))
+                                                              rhow(:),Cx_choice,doNcentered,ExDD(:))
 !   GGA functionals
 
     case(2) 
@@ -60,7 +59,7 @@ subroutine unrestricted_exchange_derivative_discontinuity(rung,DFA,nEns,wEns,nCC
     case(4) 
 
       call unrestricted_hybrid_exchange_derivative_discontinuity(DFA,nEns,wEns(:),nCC,aCC,nGrid,weight(:),&
-                                                                 rhow(:),Cx_choice,doNcentered,kappa,ExDD(:))
+                                                                 rhow(:),Cx_choice,doNcentered,ExDD(:))
 
   end select
  
