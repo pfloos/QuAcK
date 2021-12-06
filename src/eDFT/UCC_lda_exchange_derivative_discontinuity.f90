@@ -154,11 +154,19 @@ subroutine UCC_lda_exchange_derivative_discontinuity(nEns,wEns,nCC,aCC,nGrid,wei
   do iEns=1,nEns
     do jEns=2,nEns
 
-      ExDD(iEns) = ExDD(iEns) + (Kronecker_delta(iEns,jEns) - wEns(jEns))*dExdw(jEns)
+!      if (doNcentered) then
+
+!        ExDD(iEns) = ExDD(iEns) + (Kronecker_delta(iEns,jEns) - kappa(iEns)*wEns(jEns))*dExdw(jEns)
+
+!      else
+
+        ExDD(iEns) = ExDD(iEns) + (Kronecker_delta(iEns,jEns) - wEns(jEns))*dExdw(jEns)
+
+!      endif
 
     end do
   end do
 
-  if(doNcentered) ExDD(:) = kappa(:)*ExDD(:)
+ ! if(doNcentered) ExDD(:) = kappa(:)*ExDD(:)
 
 end subroutine UCC_lda_exchange_derivative_discontinuity

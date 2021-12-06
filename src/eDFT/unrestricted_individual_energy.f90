@@ -52,8 +52,8 @@ subroutine unrestricted_individual_energy(x_rung,x_DFA,c_rung,c_DFA,LDA_centered
   double precision              :: EH(nsp,nEns)
   double precision              :: Ex(nspin,nEns)
   double precision              :: Ec(nsp,nEns)
-  double precision              :: LZH(nsp)
-  double precision              :: LZx(nspin)
+  double precision              :: LZH(nsp,nEns)
+  double precision              :: LZx(nspin,nEns)
   double precision              :: LZc(nsp)
   double precision              :: Eaux(nspin,nEns) 
 
@@ -116,18 +116,18 @@ subroutine unrestricted_individual_energy(x_rung,x_DFA,c_rung,c_DFA,LDA_centered
 ! Individual Hartree energy
 !------------------------------------------------------------------------
 
-  LZH(:) = 0d0
+  LZH(:,:) = 0d0
   EH(:,:) = 0d0
-  call unrestricted_hartree_individual_energy(nBas,nEns,Pw,P,ERI,LZH,EH)
+  call unrestricted_hartree_individual_energy(nBas,nEns,Pw,P,ERI,doNcentered,kappa,LZH,EH)
 
 !------------------------------------------------------------------------
 ! Individual exchange energy
 !------------------------------------------------------------------------
 
-  LZx(:) = 0d0
+  LZx(:,:) = 0d0
   Ex(:,:) = 0d0
   call unrestricted_exchange_individual_energy(x_rung,x_DFA,LDA_centered,nEns,wEns,nCC,aCC,nGrid,weight,nBas,ERI,  &
-                                               Pw,rhow,drhow,P,rho,drho,Cx_choice,doNcentered,LZx,Ex)
+                                               Pw,rhow,drhow,P,rho,drho,Cx_choice,doNcentered,kappa,LZx,Ex)
 
 !------------------------------------------------------------------------
 ! Individual correlation energy
@@ -161,9 +161,21 @@ subroutine unrestricted_individual_energy(x_rung,x_DFA,c_rung,c_DFA,LDA_centered
 
   do iEns=1,nEns
     E(iEns) = sum(Eaux(:,iEns))                       & 
-            + sum(LZH(:)) + sum(LZx(:)) + sum(LZc(:)) &
+            + sum(LZH(:,iEns)) + sum(LZx(:,iEns)) + sum(LZc(:)) &
             + sum(ExDD(:,iEns)) + sum(EcDD(:,iEns))
   end do
+  
+  !E(2) = (1.d0/2.d0)*(E(2))
+
+
+!  print*,'test shift =',(1.d0+wEns(2)/2.d0)*(sum(Eaux(:,2)) + sum(LZH(:,2)) &
+!         + sum(LZx(:,2)) + sum(LZc(:)))+(1.d0-kappa(2)*wEns(2))*(sum(Eaux(:,1))&
+!         +sum(LZH(:,1)) + sum(LZx(:,1)) + sum(LZc(:)))
+
+!  print*,'test=',(1.d0+wEns(2)/2.d0)*(sum(Eaux(:,2)))+(1.d0-kappa(2)*wEns(2))*(sum(Eaux(:,1))&
+!         )
+
+!  print*, 'ensemble energy=',Ew
 
 ! Alternative way of calculating individual energies
 

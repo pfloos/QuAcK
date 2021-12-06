@@ -46,14 +46,14 @@ subroutine print_unrestricted_individual_energy(nEns,ENuc,Ew,ET,EV,EH,Ex,Ec,Eaux
 ! Individual energies 
 !------------------------------------------------------------------------
 
-  write(*,'(A60)')           '-------------------------------------------------'
-  write(*,'(A60)')           ' INDIVIDUAL TOTAL       ENERGIES'
-  write(*,'(A60)')           '-------------------------------------------------'
-  do iEns=1,nEns
-    write(*,'(A40,I2,A2,F16.10,A3)') ' Individual energy state ',iEns,': ',E(iEns) + ENuc,' au'
-  end do
-  write(*,'(A60)')           '-------------------------------------------------'
-  write(*,*)
+!  write(*,'(A60)')           '-------------------------------------------------'
+!  write(*,'(A60)')           ' INDIVIDUAL TOTAL       ENERGIES'
+!  write(*,'(A60)')           '-------------------------------------------------'
+!  do iEns=1,nEns
+!    write(*,'(A40,I2,A2,F16.10,A3)') ' Individual energy state ',iEns,': ',E(iEns) + ENuc,' au'
+!  end do
+!  write(*,'(A60)')           '-------------------------------------------------'
+!  write(*,*)
 
 !------------------------------------------------------------------------
 ! Kinetic energy
@@ -153,32 +153,32 @@ subroutine print_unrestricted_individual_energy(nEns,ENuc,Ew,ET,EV,EH,Ex,Ec,Eaux
 ! Total Energy and IP and EA
 !------------------------------------------------------------------------
 
-   write(*,'(A60)') '-------------------------------------------------'
-   write(*,'(A60)') ' ENERGY DIFFERENCES FROM AUXILIARY ENERGIES '
-   write(*,'(A60)') '-------------------------------------------------'
+!   write(*,'(A60)') '-------------------------------------------------'
+!   write(*,'(A60)') ' ENERGY DIFFERENCES FROM AUXILIARY ENERGIES '
+!   write(*,'(A60)') '-------------------------------------------------'
 
-   do iEns=2,nEns
-     write(*,'(A40,I2,A1,F16.10,A3)') ' Energy difference 1 -> ',iEns,':',Omaux(iEns)+OmxDD(iEns)+OmcDD(iEns),' au'
-     write(*,*)
-     write(*,'(A44,      F16.10,A3)') ' auxiliary energy contribution  : ',Omaux(iEns), ' au'
-     write(*,'(A44,      F16.10,A3)') '        x  ensemble derivative  : ',OmxDD(iEns), ' au'
-     write(*,'(A44,      F16.10,A3)') '        c  ensemble derivative  : ',OmcDD(iEns), ' au'
-     write(*,'(A44,      F16.10,A3)') '       xc  ensemble derivative  : ',OmxDD(iEns)+OmcDD(iEns), ' au'
-     write(*,*)
+!   do iEns=2,nEns
+!     write(*,'(A40,I2,A1,F16.10,A3)') ' Energy difference 1 -> ',iEns,':',Omaux(iEns)+OmxDD(iEns)+OmcDD(iEns),' au'
+!     write(*,*)
+!     write(*,'(A44,      F16.10,A3)') ' auxiliary energy contribution  : ',Omaux(iEns), ' au'
+!     write(*,'(A44,      F16.10,A3)') '        x  ensemble derivative  : ',OmxDD(iEns), ' au'
+!     write(*,'(A44,      F16.10,A3)') '        c  ensemble derivative  : ',OmcDD(iEns), ' au'
+!     write(*,'(A44,      F16.10,A3)') '       xc  ensemble derivative  : ',OmxDD(iEns)+OmcDD(iEns), ' au'
+!     write(*,*)
 
-     write(*,'(A60)') '-------------------------------------------------'
+!     write(*,'(A60)') '-------------------------------------------------'
 
-     write(*,'(A40,I2,A1,F16.10,A3)') ' Energy difference 1 -> ',iEns,':',(Omaux(iEns)+OmxDD(iEns)+OmcDD(iEns))*HaToeV,' eV'
-     write(*,*)
-     write(*,'(A44,      F16.10,A3)') ' auxiliary energy contribution  : ',Omaux(iEns)*HaToeV, ' eV'
-     write(*,'(A44,      F16.10,A3)') '        x  ensemble derivative  : ',OmxDD(iEns)*HaToeV, ' eV'
-     write(*,'(A44,      F16.10,A3)') '        c  ensemble derivative  : ',OmcDD(iEns)*HaToeV, ' eV'
-     write(*,'(A44,      F16.10,A3)') '       xc  ensemble derivative  : ',(OmxDD(iEns)+OmcDD(iEns))*HaToeV,' eV'
-     write(*,*)
-   end do
+!     write(*,'(A40,I2,A1,F16.10,A3)') ' Energy difference 1 -> ',iEns,':',(Omaux(iEns)+OmxDD(iEns)+OmcDD(iEns))*HaToeV,' eV'
+!     write(*,*)
+!     write(*,'(A44,      F16.10,A3)') ' auxiliary energy contribution  : ',Omaux(iEns)*HaToeV, ' eV'
+!     write(*,'(A44,      F16.10,A3)') '        x  ensemble derivative  : ',OmxDD(iEns)*HaToeV, ' eV'
+!     write(*,'(A44,      F16.10,A3)') '        c  ensemble derivative  : ',OmcDD(iEns)*HaToeV, ' eV'
+!     write(*,'(A44,      F16.10,A3)') '       xc  ensemble derivative  : ',(OmxDD(iEns)+OmcDD(iEns))*HaToeV,' eV'
+!     write(*,*)
+!   end do
 
-   write(*,'(A60)') '-------------------------------------------------'
-   write(*,*)
+!   write(*,'(A60)') '-------------------------------------------------'
+!   write(*,*)
 
  write(*,'(A60)') '-------------------------------------------------'
   write(*,'(A60)') ' ENERGY DIFFERENCES FROM INDIVIDUAL ENERGIES '
