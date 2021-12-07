@@ -155,6 +155,17 @@ subroutine unrestricted_individual_energy(x_rung,x_DFA,c_rung,c_DFA,LDA_centered
 
   call unrestricted_correlation_derivative_discontinuity(c_rung,c_DFA,nEns,wEns,nGrid,weight,rhow,drhow,EcDD)
 
+! Scaling derivative discontinuity for N-centered ensembles
+
+  if(doNcentered) then
+
+     do iEns=1,nEns
+       ExDD(:,iEns) = (1d0 - kappa(iEns))*ExDD(:,iEns)
+       EcDD(:,iEns) = (1d0 - kappa(iEns))*EcDD(:,iEns)
+     end do
+
+  end if
+
 !------------------------------------------------------------------------
 ! Total energy
 !------------------------------------------------------------------------
@@ -183,8 +194,6 @@ subroutine unrestricted_individual_energy(x_rung,x_DFA,c_rung,c_DFA,LDA_centered
 !             + sum(LZH(:)) + sum(LZx(:)) + sum(LZc(:)) &
 !             + sum(ExDD(:,iEns)) + sum(EcDD(:,iEns))
 ! end do
-
-!   print*,E
 
 !------------------------------------------------------------------------
 ! Excitation energies
@@ -215,9 +224,6 @@ subroutine unrestricted_individual_energy(x_rung,x_DFA,c_rung,c_DFA,LDA_centered
       Omaux(iEns) = Omaux(iEns) &
                   + (kappa(iEns) - kappa(1))*(sum(LZH(:)) + sum(LZx(:)) + sum(LZc(:))) 
 
-      OmxDD(iEns) = kappa(iEns)*sum(ExDD(:,iEns)) - kappa(1)*sum(ExDD(:,1))
-      OmcDD(iEns) = kappa(iEns)*sum(EcDD(:,iEns)) - kappa(1)*sum(EcDD(:,1))
-  
     end do
 
   end if
