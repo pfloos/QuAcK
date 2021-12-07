@@ -167,8 +167,6 @@ subroutine unrestricted_individual_energy(x_rung,x_DFA,c_rung,c_DFA,LDA_centered
               + sum(ExDD(:,iEns)) + sum(EcDD(:,iEns))
     end do
 
-    print*,E
-
   else 
 
     do iEns=1,nEns
@@ -179,14 +177,14 @@ subroutine unrestricted_individual_energy(x_rung,x_DFA,c_rung,c_DFA,LDA_centered
 
   end if
   
-  do iEns=1,nEns
-    E(iEns)   = sum(ET(:,iEns)) + sum(EV(:,iEns))                   & 
-              + sum(EH(:,iEns)) + sum(Ex(:,iEns)) + sum(Ec(:,iEns)) & 
-              + kappa(iEns)*(sum(LZH(:)) + sum(LZx(:)) + sum(LZc(:)))            &
-              + sum(ExDD(:,iEns)) + sum(EcDD(:,iEns))
-  end do
+! do iEns=1,nEns
+!   E(iEns)   = sum(ET(:,iEns)) + sum(EV(:,iEns))                     & 
+!             + sum(EH(:,iEns)) + sum(Ex(:,iEns)) + sum(Ec(:,iEns))   & 
+!             + sum(LZH(:)) + sum(LZx(:)) + sum(LZc(:)) &
+!             + sum(ExDD(:,iEns)) + sum(EcDD(:,iEns))
+! end do
 
-  print*,E
+!   print*,E
 
 !------------------------------------------------------------------------
 ! Excitation energies
@@ -196,29 +194,29 @@ subroutine unrestricted_individual_energy(x_rung,x_DFA,c_rung,c_DFA,LDA_centered
 
     Om(iEns) = E(iEns) - E(1)
 
-    OmH(iEns)    = sum(EH(:,iEns)) - sum(EH(:,1)) 
-    Omx(iEns)    = sum(Ex(:,iEns)) - sum(Ex(:,1))
-    Omc(iEns)    = sum(Ec(:,iEns)) - sum(Ec(:,1))
+    OmH(iEns)   = sum(EH(:,iEns)) - sum(EH(:,1)) 
+    Omx(iEns)   = sum(Ex(:,iEns)) - sum(Ex(:,1))
+    Omc(iEns)   = sum(Ec(:,iEns)) - sum(Ec(:,1))
 
-    Omaux(iEns)  = sum(Eaux(:,iEns)) - sum(Eaux(:,1))
+    Omaux(iEns) = sum(Eaux(:,iEns)) - sum(Eaux(:,1))
 
-    OmxDD(iEns)  = sum(ExDD(:,iEns)) - sum(ExDD(:,1))
-    OmcDD(iEns)  = sum(EcDD(:,iEns)) - sum(EcDD(:,1))
+    OmxDD(iEns) = sum(ExDD(:,iEns)) - sum(ExDD(:,1))
+    OmcDD(iEns) = sum(EcDD(:,iEns)) - sum(EcDD(:,1))
 
   end do
 
   if(doNcentered) then
 
     do iEns=1,nEns
-      OmH(iEns)    = OmH(iEns) + (kappa(iEns) - kappa(1))*sum(LZH(:))
-      Omx(iEns)    = Omx(iEns) + (kappa(iEns) - kappa(1))*sum(LZx(:))
-      Omc(iEns)    = Omc(iEns) + (kappa(iEns) - kappa(1))*sum(LZc(:))
+      OmH(iEns)   = OmH(iEns) + (kappa(iEns) - kappa(1))*sum(LZH(:))
+      Omx(iEns)   = Omx(iEns) + (kappa(iEns) - kappa(1))*sum(LZx(:))
+      Omc(iEns)   = Omc(iEns) + (kappa(iEns) - kappa(1))*sum(LZc(:))
 
-      Omaux(iEns)  = Omaux(iEns) &
-                   + (kappa(iEns) - kappa(1))*(sum(LZH(:)) + sum(LZx(:)) + sum(LZc(:))) 
+      Omaux(iEns) = Omaux(iEns) &
+                  + (kappa(iEns) - kappa(1))*(sum(LZH(:)) + sum(LZx(:)) + sum(LZc(:))) 
 
-      OmxDD(iEns)  = kappa(iEns)*sum(ExDD(:,iEns)) - kappa(1)*sum(ExDD(:,1))
-      OmcDD(iEns)  = kappa(iEns)*sum(EcDD(:,iEns)) - kappa(1)*sum(EcDD(:,1))
+      OmxDD(iEns) = kappa(iEns)*sum(ExDD(:,iEns)) - kappa(1)*sum(ExDD(:,1))
+      OmcDD(iEns) = kappa(iEns)*sum(EcDD(:,iEns)) - kappa(1)*sum(EcDD(:,1))
   
     end do
 

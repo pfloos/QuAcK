@@ -144,13 +144,17 @@ subroutine UVWN5_lda_correlation_individual_energy(nEns,nGrid,weight,rhow,rho,LZ
           if(raI > threshold) then 
 
             Ec(1,iEns) = Ec(1,iEns) + weight(iG)*(ec_z + decdra*ra)*raI
-            Ec(2,iEns) = Ec(2,iEns) + weight(iG)*decdra*rb*raI
+            if(rb > threshold) Ec(2,iEns) = Ec(2,iEns) + weight(iG)*decdra*rb*raI
 
           end if
 
         end do
 
       end if
+
+      ! up-down contribution
+
+      if(ra > threshold .and. rb > threshold) LZc(2) = LZc(2) -weight(iG)*(decdra + decdrb)*ra*rb
 
       ! spin-down contribution
 
@@ -165,7 +169,7 @@ subroutine UVWN5_lda_correlation_individual_energy(nEns,nGrid,weight,rhow,rho,LZ
           if(rbI > threshold) then 
 
             Ec(3,iEns) = Ec(3,iEns) + weight(iG)*(ec_z + decdrb*rb)*rbI
-            Ec(2,iEns) = Ec(2,iEns) + weight(iG)*decdrb*ra*rbI
+            if(ra > threshold) Ec(2,iEns) = Ec(2,iEns) + weight(iG)*decdrb*ra*rbI
 
           end if
 

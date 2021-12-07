@@ -48,7 +48,7 @@ subroutine US51_lda_exchange_individual_energy(nEns,nGrid,weight,rhow,rho,LZx,Ex
 
             rI = max(0d0,rho(iG,ispin,iEns))
 
-            if(rI > threshold) Ex(ispin,iEns) = Ex(ispin,iEns) + weight(iG)*(e+dedr*r)*rI
+            if(rI > threshold) Ex(ispin,iEns) = Ex(ispin,iEns) + weight(iG)*(e + dedr*r)*rI
 
           end do
 
