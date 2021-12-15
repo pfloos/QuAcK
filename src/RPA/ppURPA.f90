@@ -27,14 +27,14 @@ subroutine ppURPA(TDA,doACFDT,spin_conserved,spin_flip,nBas,nC,nO,nV,nR,ENuc,EUH
 
   integer                       :: ispin
   integer                       :: nS
-  integer                       :: nOOs,nOOt
-  integer                       :: nVVs,nVVt
-  double precision,allocatable  :: Omega1s(:),Omega1t(:)
-  double precision,allocatable  :: X1s(:,:),X1t(:,:)
-  double precision,allocatable  :: Y1s(:,:),Y1t(:,:)
-  double precision,allocatable  :: Omega2s(:),Omega2t(:)
-  double precision,allocatable  :: X2s(:,:),X2t(:,:)
-  double precision,allocatable  :: Y2s(:,:),Y2t(:,:)
+  integer                       :: nPaa,nPbb,nPab,nPt
+  integer                       :: nHaa,nHbb,nHab,nHt
+  double precision,allocatable  :: Omega1(:)
+  double precision,allocatable  :: X1(:,:)
+  double precision,allocatable  :: Y1(:,:)
+  double precision,allocatable  :: Omega2(:)
+  double precision,allocatable  :: X2(:,:)
+  double precision,allocatable  :: Y2(:,:)
 
   double precision              :: Ec_ppRPA(nspin)
   double precision              :: EcAC(nspin)
@@ -54,18 +54,20 @@ subroutine ppURPA(TDA,doACFDT,spin_conserved,spin_flip,nBas,nC,nO,nV,nR,ENuc,EUH
 
 ! Useful quantities
 
-! nS   = nO*nV
-
-! nOOs = nO*(nO+1)/2
-! nVVs = nV*(nV+1)/2
-
-! nOOt = nO*(nO-1)/2
-! nVVt = nV*(nV-1)/2
+  nPaa = nV(1)*(nV(1)-1)/2
+  nPab = nV(1)*nV(2)
+  nPbb = nV(2)*nV(2)
+  nPt  = nPaa + nPab + nPbb
+ 
+  nHaa = nO(1)*(nO(1)-1)/2
+  nHab = nO(1)*nO(2)
+  nHbb = nO(2)*nO(2)
+  nHt  = nHaa + nHab + nHbb
 
  ! Memory allocation
 
-! allocate(Omega1s(nVVs),X1s(nVVs,nVVs),Y1s(nOOs,nVVs), & 
-!          Omega2s(nOOs),X2s(nVVs,nOOs),Y2s(nOOs,nOOs))
+ allocate(Omega1(nPt),X1(nPt,nPt),Y1(nHt,nPt), & 
+          Omega2(nHt),X2(nPt,nHt),Y2(nHt,nHt))
 
 ! allocate(Omega1t(nVVt),X1t(nVVt,nVVt),Y1t(nOOt,nVVt), & 
 !          Omega2t(nOOt),X2t(nVVt,nOOt),Y2t(nOOt,nOOt))
