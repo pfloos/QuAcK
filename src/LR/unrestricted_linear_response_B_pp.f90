@@ -46,21 +46,21 @@ subroutine unrestricted_linear_response_B_pp(ispin,nBas,nC,nO,nV,nR,nPaa,nPab,nP
 ! Build B matrix for spin-conserving transitions
 !-----------------------------------------------
 
-  if(ispin == 1) then 
+  if(ispin == 1) then  
 
     ! aaaa block
 
     ab = 0
     do a=nO(1)+1,nBas-nR(1)
-      do b=nO(1)+1,nBas-nR(1)
+      do b=a,nBas-nR(1)
         ab = ab + 1
         ij = 0
         do i=nC(1)+1,nO(1)
-          do j=nC(1)+1,nO(1)
+          do j=i+1,nO(1)
             ij = ij + 1
  
             B_pp(ab,ij) = lambda*(ERI_aaaa(a,b,i,j) - ERI_aaaa(a,b,j,i))
-
+            
           end  do
         end  do
       end  do
@@ -70,14 +70,14 @@ subroutine unrestricted_linear_response_B_pp(ispin,nBas,nC,nO,nV,nR,nPaa,nPab,nP
 
     ab = 0
     do a=nO(2)+1,nBas-nR(2)
-      do b=nO(2)+1,nBas-nR(2)
+      do b=a+1,nBas-nR(2)
         ab = ab + 1
         ij = 0
         do i=nC(2)+1,nO(2)
-          do j=nC(2)+1,nO(2)
+          do j=i+1,nO(2)
             ij = ij + 1
  
-           B_pp(nPaa+nPab+ab,nHaa+nHab+ij) = lambda*(ERI_bbbb(a,b,i,j) - ERI_bbbb(a,b,j,i)) 
+            B_pp(nPaa+ab,nHaa+ij) = lambda*(ERI_bbbb(a,b,i,j) - ERI_bbbb(a,b,j,i)) 
 
           end  do
         end  do
@@ -104,7 +104,10 @@ subroutine unrestricted_linear_response_B_pp(ispin,nBas,nC,nO,nV,nR,nPaa,nPab,nP
         do i=nC(1)+1,nO(1)
           do j=nC(2)+1,nO(2)
             ij = ij + 1
-            B_pp(nPaa+ab,nHaa+ij) = lambda*ERI_aabb(a,b,i,j)
+
+            B_pp(ab,ij) = lambda*ERI_aabb(a,b,i,j)
+
+
           end  do
         end  do
       end  do

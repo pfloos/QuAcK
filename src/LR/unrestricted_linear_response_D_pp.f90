@@ -48,11 +48,11 @@ subroutine unrestricted_linear_response_D_pp(ispin,nBas,nC,nO,nV,nR,nHaa,nHab,nH
 
     ij = 0
     do i=nC(1)+1,nO(1)
-      do j=nC(1)+1,nO(1)
+      do j=i+1,nO(1)
         ij = ij + 1
         kl = 0
         do k=nC(1)+1,nO(1)
-          do l=nC(1)+1,nO(1)
+          do l=k+1,nO(1)
             kl = kl + 1
  
             D_pp(ij,kl) = -(e(i,1) + e(j,1) - eF)*Kronecker_delta(i,k)*Kronecker_delta(j,l) &
@@ -67,14 +67,14 @@ subroutine unrestricted_linear_response_D_pp(ispin,nBas,nC,nO,nV,nR,nHaa,nHab,nH
 
     ij = 0
     do i=nC(2)+1,nO(2)
-      do j=nC(2)+1,nO(2)
+      do j=i+1,nO(2)
         ij = ij + 1
         kl = 0
         do k=nC(2)+1,nO(2)
-          do l=nC(2)+1,nO(2)
+          do l=k+1,nO(2)
             kl = kl + 1
  
-           D_pp(nHaa+nHab+ij,nHaa+nHab+kl) = -(e(i,2) + e(j,2) - eF)*Kronecker_delta(i,k) &
+           D_pp(nHaa+ij,nHaa+kl) = -(e(i,2) + e(j,2) - eF)*Kronecker_delta(i,k) &
                        *Kronecker_delta(j,l) + lambda*(ERI_bbbb(i,j,k,l) - ERI_bbbb(i,j,l,k))
 
           end  do
@@ -102,7 +102,7 @@ subroutine unrestricted_linear_response_D_pp(ispin,nBas,nC,nO,nV,nR,nHaa,nHab,nH
         do k=nC(1)+1,nO(1)
           do l=nC(2)+1,nO(2)
             kl = kl + 1
-            D_pp(nHaa+ij,nHaa+kl) = -(e(i,1) + e(j,2))*Kronecker_delta(i,k)& 
+            D_pp(ij,kl) = -(e(i,1) + e(j,2))*Kronecker_delta(i,k)& 
                        *Kronecker_delta(j,l) +lambda*ERI_aabb(i,j,k,l) 
           end  do
         end  do

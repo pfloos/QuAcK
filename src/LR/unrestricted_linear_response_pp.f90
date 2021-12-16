@@ -1,5 +1,5 @@
 subroutine unrestricted_linear_response_pp(ispin,TDA,nBas,nC,nO,nV,nR,nPaa,nPab,nPbb,nPt, &
-nHaa,nHab,nHbb,nHt,nS_sc,lambda,e,ERI_aaaa,ERI_aabb,ERI_bbbb,Omega1,X1,Y1,Omega2,X2,Y2,&
+nHaa,nHab,nHbb,nHt,lambda,e,ERI_aaaa,ERI_aabb,ERI_bbbb,Omega1,X1,Y1,Omega2,X2,Y2,&
 EcRPA)
 
 ! Compute linear response for unrestricted formalism
@@ -23,8 +23,7 @@ EcRPA)
   integer,intent(in)            :: nHaa
   integer,intent(in)            :: nHab
   integer,intent(in)            :: nHbb
-  integer,intent(in)            :: nHt
-  integer,intent(in)            :: nS_sc
+  integer,intent(in)            :: nHt 
   double precision,intent(in)   :: lambda
   double precision,intent(in)   :: e(nBas,nspin)
   double precision,intent(in)   :: ERI_aaaa(nBas,nBas,nBas,nBas)
@@ -56,20 +55,28 @@ EcRPA)
 
 ! Memory allocation
 
- allocate(C(nPt,nPt),B(nPt,nHt),D(nHt,nHt),M(nPt+nHt,nPt+nHt),Z(nPt+nHt,nPt+nHt),&          
+ allocate(C(nPt,nPt),B(nPt,nHt),D(nHt,nHt),M(nPt+nHt,nPt+nHt),Z(nPt+nHt,nPt+nHt),&
 Omega(nPt+nHt))
-
+!write(*,*) 'ispin', ispin
+!write(*,*) 'nPt', nPt
+!write(*,*) 'nHt', nHt
 ! Build C, B and D matrices for the pp channel
 
   call unrestricted_linear_response_C_pp(ispin,nBas,nC,nO,nV,nR,nPaa,nPab,nPbb,nPt,lambda,&
 e,ERI_aaaa,ERI_aabb,ERI_bbbb,C)
 
+!call matout(nPt,nPt,C)
+!write(*,*) 'Hello'
     call unrestricted_linear_response_B_pp(ispin,nBas,nC,nO,nV,nR,nPaa,nPab,nPbb,nPt,nHaa,&
 nHab,nHbb,nHt,lambda,ERI_aaaa,ERI_aabb,ERI_bbbb,B)
 
+!call matout(nPt,nHt,B)
+!write(*,*) 'Hello'
 call unrestricted_linear_response_D_pp(ispin,nBas,nC,nO,nV,nR,nHaa,nHab,nHbb,nHt,lambda,&
 ERI_aaaa,ERI_aabb,ERI_bbbb,D)
 
+!call matout(nHt,nHt,D)
+!write(*,*) 'Hello'
 ! Diagonal blocks 
 
     M(    1:nPt    ,    1:nPt)     = + C(1:nPt,1:nPt)
@@ -80,23 +87,27 @@ ERI_aaaa,ERI_aabb,ERI_bbbb,D)
     M(    1:nPt    ,nPt+1:nHt+nPt) = -           B(1:nPt,1:nHt)
     M(nPt+1:nHt+nPt,    1:nPt)     = + transpose(B(1:nPt,1:nHt))
 
+!call matout(nPt+nHt,nPt+nHt,M)
+
 ! Diagonalize the p-h matrix
 
-    if(nHt+nPt > 0) call diagonalize_general_matrix(nHt+nPt,M,Omega,Z)
+!    if(nHt+nPt > 0) call diagonalize_general_matrix(nHt+nPt,M,Omega,Z)
 
   ! Split the various quantities in p-p and h-h parts
 
-    call sort_ppRPA(nHt,nPt,Omega(:),Z(:,:),Omega1(:),X1(:,:),Y1(:,:),Omega2(:),X2(:,:),&
-Y2(:,:))
+!    call sort_ppRPA(nHt,nPt,Omega(:),Z(:,:),Omega1(:),X1(:,:),Y1(:,:),Omega2(:),X2(:,:),&
+!Y2(:,:))
 
-  ! end if Pourquoi ne faut-il pas de end if ici ? 
+!    end if  Pourquoi ne faut-il pas de end if ici ? 
 
 ! Compute the RPA correlation energy
 
-  EcRPA = 0.5d0*( sum(Omega1(:)) - sum(Omega2(:)) - trace_matrix(nPt,C(:,:)) - trace_matrix(nHt,D(:,:)) )
-  EcRPA1 = +sum(Omega1(:)) - trace_matrix(nPt,C(:,:))
-  EcRPA2 = -sum(Omega2(:)) - trace_matrix(nHt,D(:,:))
-  if(abs(EcRPA - EcRPA1) > 1d-6 .or. abs(EcRPA - EcRPA2) > 1d-6) &
-    print*,'!!! Issue in pp-RPA linear reponse calculation RPA1 != RPA2 !!!'
+!  EcRPA = 0.5d0*( sum(Omega1(:)) - sum(Omega2(:)) - trace_matrix(nPt,C(:,:)) - trace_matrix(nHt,D(:,:)) )
+!  EcRPA1 = +sum(Omega1(:)) - trace_matrix(nPt,C(:,:))
+!  EcRPA2 = -sum(Omega2(:)) - trace_matrix(nHt,D(:,:))
+!  if(abs(EcRPA - EcRPA1) > 1d-6 .or. abs(EcRPA - EcRPA2) > 1d-6) &
+!    print*,'!!! Issue in pp-RPA linear reponse calculation RPA1 != RPA2 !!!'
+
+
  
 end subroutine unrestricted_linear_response_pp
