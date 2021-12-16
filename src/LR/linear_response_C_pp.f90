@@ -25,8 +25,8 @@ subroutine linear_response_C_pp(ispin,nBas,nC,nO,nV,nR,nOO,nVV,lambda,e,ERI,C_pp
 
 ! Define the chemical potential
  
-  eF = e(nO) + e(nO+1)
-! eF = 0d0
+! eF = e(nO) + e(nO+1)
+  eF = 0d0
 
 ! Build C matrix for the singlet manifold
 

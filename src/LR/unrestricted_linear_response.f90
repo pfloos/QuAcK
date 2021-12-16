@@ -106,7 +106,7 @@ subroutine unrestricted_linear_response(ispin,dRPA,TDA,BSE,eta,nBas,nC,nO,nV,nR,
 
     if(minval(Omega) < 0d0) & 
       call print_warning('You may have instabilities in linear response: negative excitations!!')
- 
+    
   ! do ia=1,nSt
   !   if(Omega(ia) < 0d0) Omega(ia) = 0d0
   ! end do
