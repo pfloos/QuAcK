@@ -72,9 +72,9 @@ subroutine MP2(nBas,nC,nO,nV,nR,ERI,ENuc,EHF,e,EcMP2)
 
           ! Second-order ring diagram
 
-          fs  = (1d0 - exp(-kappa*Dijab))/Dijab
-          fs2 = (1d0 - exp(-sigm1*Dijab*Dijab))/Dijab
-          fk  = (1d0 - exp(-sigm2*Dijab))**2/Dijab
+          fs  = (1d0 - exp(-sigm1*Dijab))/Dijab
+          fs2 = (1d0 - exp(-sigm2*Dijab*Dijab))/Dijab
+          fk  = (1d0 - exp(-kappa*Dijab))**2/Dijab
 
           E2d   = E2d   - ERI(i,j,a,b)*ERI(i,j,a,b)/Dijab
           E2ds  = E2ds  - ERI(i,j,a,b)*ERI(i,j,a,b)*fs 
