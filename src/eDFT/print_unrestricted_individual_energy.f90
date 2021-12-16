@@ -190,7 +190,7 @@ subroutine print_unrestricted_individual_energy(nEns,ENuc,Ew,ET,EV,EH,Ex,Ec,Eaux
   write(*,'(A60)') '-------------------------------------------------'
 
   do iEns=2,nEns
-    write(*,'(A40,I2,A1,F16.10,A3)') ' Energy difference 1 -> ',iEns,':',Om(iEns),    ' au'
+!    write(*,'(A40,I2,A1,F16.10,A3)') ' Energy difference 1 -> ',iEns,':',Om(iEns),    ' au'
     write(*,*)
     write(*,'(A44,      F16.10,A3)') '     H  energy contribution     : ',OmH(iEns),   ' au'
     write(*,'(A44,      F16.10,A3)') '     x  energy contribution     : ',Omx(iEns),   ' au'
@@ -204,7 +204,7 @@ subroutine print_unrestricted_individual_energy(nEns,ENuc,Ew,ET,EV,EH,Ex,Ec,Eaux
    
     write(*,'(A60)') '-------------------------------------------------'
    
-    write(*,'(A40,I2,A1,F16.10,A3)') ' Energy difference 1 -> ',iEns,':',Om(iEns)*HaToeV,    ' eV'
+!    write(*,'(A40,I2,A1,F16.10,A3)') ' Energy difference 1 -> ',iEns,':',Om(iEns)*HaToeV,    ' eV'
     write(*,*)
     write(*,'(A44,      F16.10,A3)') '     H  energy contribution     : ',OmH(iEns)*HaToeV,   ' eV'
     write(*,'(A44,      F16.10,A3)') '     x  energy contribution     : ',Omx(iEns)*HaToeV,   ' eV'
