@@ -88,7 +88,7 @@ subroutine regularized_self_energy_correlation_diag(COHSEX,eta,nBas,nC,nO,nV,nR,
       do i=nC+1,nO
         do jb=1,nS
           eps = e(p) - e(i) + Omega(jb)
-          fk  = (1d0 - exp(-kappa*eps))**2/eps
+          fk  = (1d0 - exp(-kappa*abs(eps)))**2/eps
           SigC(p) = SigC(p) + 2d0*rho(p,i,jb)**2*fk
         end do
       end do
@@ -100,7 +100,7 @@ subroutine regularized_self_energy_correlation_diag(COHSEX,eta,nBas,nC,nO,nV,nR,
       do a=nO+1,nBas-nR
         do jb=1,nS
           eps = e(p) - e(a) - Omega(jb)
-          fk  = (1d0 - exp(-kappa*eps))**2/eps
+          fk  = (1d0 - exp(-kappa*abs(eps)))**2/eps
           SigC(p) = SigC(p) + 2d0*rho(p,a,jb)**2*fk
         end do
       end do
@@ -113,7 +113,7 @@ subroutine regularized_self_energy_correlation_diag(COHSEX,eta,nBas,nC,nO,nV,nR,
       do a=nO+1,nBas-nR
         do jb=1,nS
           eps = e(a) - e(i) + Omega(jb)
-          fk  = (1d0 - exp(-kappa*eps))**2/eps
+          fk  = (1d0 - exp(-kappa*abs(eps)))**2/eps
           EcGM = EcGM - 4d0*rho(a,i,jb)**2*fk
         end do
       end do
