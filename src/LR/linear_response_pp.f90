@@ -47,7 +47,8 @@ subroutine linear_response_pp(ispin,TDA,nBas,nC,nO,nV,nR,nOO,nVV,lambda,e,ERI,Om
 ! Memory allocation
 
   allocate(B(nVV,nOO),C(nVV,nVV),D(nOO,nOO),M(nOO+nVV,nOO+nVV),Z(nOO+nVV,nOO+nVV),Omega(nOO+nVV))
-
+write(*,*) 'nOO', nOO
+write(*,*) 'nVV', nVV
 !-------------------------------------------------!
 ! Solve the p-p eigenproblem                      !
 !-------------------------------------------------!
@@ -62,7 +63,7 @@ subroutine linear_response_pp(ispin,TDA,nBas,nC,nO,nV,nR,nOO,nVV,lambda,e,ERI,Om
 
   call linear_response_C_pp(ispin,nBas,nC,nO,nV,nR,nOO,nVV,lambda,e,ERI,C)
   call linear_response_D_pp(ispin,nBas,nC,nO,nV,nR,nOO,nVV,lambda,e,ERI,D)
-
+!call matout(nVV,nVV,C)
   if(TDA) then
 
     X1(:,:) = +C(:,:)
@@ -76,7 +77,8 @@ subroutine linear_response_pp(ispin,TDA,nBas,nC,nO,nV,nR,nOO,nVV,lambda,e,ERI,Om
   else
 
     call linear_response_B_pp(ispin,nBas,nC,nO,nV,nR,nOO,nVV,lambda,ERI,B)
-
+!call matout(nVV,nOO,B)
+!call matout(nOO,nOO,D)
   ! Diagonal blocks 
 
     M(    1:nVV    ,    1:nVV)     = + C(1:nVV,1:nVV)
@@ -86,7 +88,7 @@ subroutine linear_response_pp(ispin,TDA,nBas,nC,nO,nV,nR,nOO,nVV,lambda,e,ERI,Om
 
     M(    1:nVV    ,nVV+1:nOO+nVV) = -           B(1:nVV,1:nOO)
     M(nVV+1:nOO+nVV,    1:nVV)     = + transpose(B(1:nVV,1:nOO))
-
+call matout(nOO+nVV,nOO+nVV,M)
   ! Diagonalize the p-h matrix
 
     if(nOO+nVV > 0) call diagonalize_general_matrix(nOO+nVV,M,Omega,Z)

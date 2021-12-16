@@ -48,16 +48,16 @@ subroutine unrestricted_linear_response_C_pp(ispin,nBas,nC,nO,nV,nR,nPaa,nPab,nP
 
     ab = 0
     do a=nO(1)+1,nBas-nR(1)
-      do b=nO(1)+1,nBas-nR(1)
+      do b=a,nBas-nR(1)
         ab = ab + 1
         cd = 0
         do c=nO(1)+1,nBas-nR(1)
-          do d=nO(1)+1,nBas-nR(1)
+          do d=c,nBas-nR(1)
             cd = cd + 1
  
             C_pp(ab,cd) = (e(a,1) + e(b,1) - eF)*Kronecker_delta(a,c)*Kronecker_delta(b,d) &
                         + lambda*(ERI_aaaa(a,b,c,d) - ERI_aaaa(a,b,d,c))
-
+!write(*,*) C_pp(ab,cd)
           end  do
         end  do
       end  do
@@ -67,23 +67,23 @@ subroutine unrestricted_linear_response_C_pp(ispin,nBas,nC,nO,nV,nR,nPaa,nPab,nP
 
     ab = 0
     do a=nO(2)+1,nBas-nR(2)
-      do b=nO(2)+1,nBas-nR(2)
+      do b=a,nBas-nR(2)
         ab = ab + 1
         cd = 0
         do c=nO(2)+1,nBas-nR(2)
-          do d=nO(2)+1,nBas-nR(2)
+          do d=c,nBas-nR(2)
             cd = cd + 1
- 
-           C_pp(nPaa+nPab+ab,nPaa+nPab+cd) = (e(a,2) + e(b,2) - eF)*Kronecker_delta(a,c) &
-  *Kronecker_delta(b,d) + lambda*(ERI_bbbb(a,b,c,d) - ERI_bbbb(a,b,d,c))
 
-          end  do
+           C_pp(nPaa+ab,nPaa+cd) = (e(a,2) + e(b,2) - eF)*Kronecker_delta(a,c) &
+  *Kronecker_delta(b,d) + lambda*(ERI_bbbb(a,b,c,d) - ERI_bbbb(a,b,d,c))
+!write(*,*) 'nPaa+ab',nPaa+ab
+        end  do
         end  do
       end  do
     end  do
 
   end if
-
+!
 !-----------------------------------------------
 ! Build C matrix for spin-flip transitions
 !-----------------------------------------------
@@ -102,7 +102,7 @@ subroutine unrestricted_linear_response_C_pp(ispin,nBas,nC,nO,nV,nR,nPaa,nPab,nP
         do c=nO(1)+1,nBas-nR(1)
           do d=nO(2)+1,nBas-nR(2)
             cd = cd + 1
-            C_pp(nPaa+ab,nPaa+cd) = (e(a,1) + e(b,2))*Kronecker_delta(a,c) & 
+            C_pp(ab,cd) = (e(a,1) + e(b,2))*Kronecker_delta(a,c) & 
 *Kronecker_delta(b,c) + lambda*ERI_aabb(a,b,c,d)
           end  do
         end  do
