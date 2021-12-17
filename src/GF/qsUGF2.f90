@@ -179,7 +179,15 @@ subroutine qsUGF2(maxSCF,thresh,max_diis,BSE,TDA,dBSE,dTDA,evDyn,spin_conserved,
     ! Compute self-energy and renormalization factor !
     !------------------------------------------------!
 
-    call unrestricted_self_energy_GF2(nBas,nC,nO,nV,nR,eta,ERI_aaaa,ERI_aabb,ERI_bbbb,eHF,eGF2,SigC,Z)
+    if(regularize) then 
+
+      call unrestricted_regularized_self_energy_GF2(nBas,nC,nO,nV,nR,eta,ERI_aaaa,ERI_aabb,ERI_bbbb,eHF,eGF2,SigC,Z)
+
+    else
+
+      call unrestricted_self_energy_GF2(nBas,nC,nO,nV,nR,eta,ERI_aaaa,ERI_aabb,ERI_bbbb,eHF,eGF2,SigC,Z)
+
+    end if
 
     ! Make correlation self-energy Hermitian and transform it back to AO basis
    

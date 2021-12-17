@@ -80,7 +80,15 @@ subroutine UG0F2(BSE,TDA,dBSE,dTDA,evDyn,spin_conserved,spin_flip,linearize,eta,
 ! Compute self-energy !
 !---------------------!
 
-  call unrestricted_self_energy_GF2_diag(nBas,nC,nO,nV,nR,eta,ERI_aaaa,ERI_aabb,ERI_bbbb,eHF,eHF,SigC,Z)
+  if(regularize) then
+
+    call unrestricted_regularized_self_energy_GF2_diag(nBas,nC,nO,nV,nR,eta,ERI_aaaa,ERI_aabb,ERI_bbbb,eHF,eHF,SigC,Z)
+
+  else
+
+    call unrestricted_self_energy_GF2_diag(nBas,nC,nO,nV,nR,eta,ERI_aaaa,ERI_aabb,ERI_bbbb,eHF,eHF,SigC,Z)
+
+  end if
 
 !-----------------------------------!
 ! Solve the quasi-particle equation !

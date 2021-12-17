@@ -59,7 +59,15 @@ subroutine G0F2(BSE,TDA,dBSE,dTDA,evDyn,singlet,triplet,linearize,eta,regularize
 
 ! Frequency-dependent second-order contribution
 
-  call self_energy_GF2_diag(eta,nBas,nC,nO,nV,nR,nS,eHF,eHF,ERI,SigC,Z)
+  if(regularize) then 
+
+    call regularized_self_energy_GF2_diag(eta,nBas,nC,nO,nV,nR,nS,eHF,eHF,ERI,SigC,Z)
+
+  else
+
+    call self_energy_GF2_diag(eta,nBas,nC,nO,nV,nR,nS,eHF,eHF,ERI,SigC,Z)
+
+  end if
 
   if(linearize) then
 
