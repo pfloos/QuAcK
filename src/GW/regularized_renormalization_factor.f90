@@ -73,7 +73,7 @@ subroutine regularized_renormalization_factor(COHSEX,eta,nBas,nC,nO,nV,nR,nS,e,O
           fk  = (1d0 - exp(-kappa*abs(eps)))**2/eps
           dfk = - 1d0/eps + 2d0*kappa*exp(-kappa*abs(eps))/(1d0 - exp(-kappa*abs(eps)))
           dfk = dfk*fk
-          Z(p) = Z(p)  - 2d0*rho(p,a,jb)**2*(eps/(eps**2 + eta**2))**2
+          Z(p) = Z(p)  - 2d0*rho(p,a,jb)**2*dfk
         end do
       end do
     end do
