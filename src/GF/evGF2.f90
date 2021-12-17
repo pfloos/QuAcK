@@ -1,5 +1,5 @@
 subroutine evGF2(BSE,TDA,dBSE,dTDA,evDyn,maxSCF,thresh,max_diis,singlet,triplet, &
-                 linearize,eta,nBas,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,dipole_int,eHF)
+                 linearize,eta,regularize,nBas,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,dipole_int,eHF)
 
 ! Perform eigenvalue self-consistent second-order Green function calculation
 
@@ -20,6 +20,8 @@ subroutine evGF2(BSE,TDA,dBSE,dTDA,evDyn,maxSCF,thresh,max_diis,singlet,triplet,
   logical,intent(in)            :: triplet
   logical,intent(in)            :: linearize
   double precision,intent(in)   :: eta
+  logical,intent(in)            :: regularize
+
   integer,intent(in)            :: nBas
   integer,intent(in)            :: nO
   integer,intent(in)            :: nC

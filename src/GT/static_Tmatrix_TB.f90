@@ -50,7 +50,7 @@ subroutine static_Tmatrix_TB(eta,nBas,nC,nO,nV,nR,nS,nOO,nVV,lambda,ERI,Omega1,r
 
           do kl=1,nOO
 !           chi = chi + lambda*rho2(i,b,kl)*rho2(a,j,kl)*Omega2(kl)/Omega2(kl)**2 + eta**2
-            chi = chi + rho2(i,b,kl)*rho2(a,j,kl)*Omega2(kl)/Omega2(kl)**2 + eta**2
+            chi = chi - rho2(i,b,kl)*rho2(a,j,kl)*Omega2(kl)/Omega2(kl)**2 + eta**2
           enddo
 
           TB(ia,jb) = TB(ia,jb) - 1d0*lambda*chi

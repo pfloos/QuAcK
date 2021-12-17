@@ -1,6 +1,6 @@
-subroutine self_energy_correlation_diag(COHSEX,eta,nBas,nC,nO,nV,nR,nS,e,Omega,rho,EcGM,SigC)
+subroutine regularized_self_energy_correlation_diag(COHSEX,eta,nBas,nC,nO,nV,nR,nS,e,Omega,rho,EcGM,SigC)
 
-! Compute diagonal of the correlation part of the self-energy
+! Compute diagonal of the correlation part of the regularized self-energy
 
   implicit none
   include 'parameters.h'
@@ -23,7 +23,9 @@ subroutine self_energy_correlation_diag(COHSEX,eta,nBas,nC,nO,nV,nR,nS,e,Omega,r
 
   integer                       :: i,a,p,q,jb
   double precision              :: eps
-  double precision,external     :: SigC_dcgw
+
+  double precision              :: kappa
+  double precision              :: fk
 
 ! Output variables
 
@@ -33,6 +35,12 @@ subroutine self_energy_correlation_diag(COHSEX,eta,nBas,nC,nO,nV,nR,nS,e,Omega,r
 ! Initialize 
 
   SigC(:) = 0d0
+
+!-----------------------------------------!
+! Parameters for regularized calculations !
+!-----------------------------------------!
+
+  kappa = 1.1d0
 
 !-----------------------------
 ! COHSEX static self-energy
@@ -79,7 +87,8 @@ subroutine self_energy_correlation_diag(COHSEX,eta,nBas,nC,nO,nV,nR,nS,e,Omega,r
       do i=nC+1,nO
         do jb=1,nS
           eps = e(p) - e(i) + Omega(jb)
-          SigC(p) = SigC(p) + 2d0*rho(p,i,jb)**2*eps/(eps**2 + eta**2)
+          fk  = (1d0 - exp(-kappa*abs(eps)))**2/eps
+          SigC(p) = SigC(p) + 2d0*rho(p,i,jb)**2*fk
         end do
       end do
     end do
@@ -90,7 +99,8 @@ subroutine self_energy_correlation_diag(COHSEX,eta,nBas,nC,nO,nV,nR,nS,e,Omega,r
       do a=nO+1,nBas-nR
         do jb=1,nS
           eps = e(p) - e(a) - Omega(jb)
-          SigC(p) = SigC(p) + 2d0*rho(p,a,jb)**2*eps/(eps**2 + eta**2)
+          fk  = (1d0 - exp(-kappa*abs(eps)))**2/eps
+          SigC(p) = SigC(p) + 2d0*rho(p,a,jb)**2*fk
         end do
       end do
     end do
@@ -102,11 +112,12 @@ subroutine self_energy_correlation_diag(COHSEX,eta,nBas,nC,nO,nV,nR,nS,e,Omega,r
       do a=nO+1,nBas-nR
         do jb=1,nS
           eps = e(a) - e(i) + Omega(jb)
-          EcGM = EcGM - 4d0*rho(a,i,jb)*rho(a,i,jb)*eps/(eps**2 + eta**2)
+          fk  = (1d0 - exp(-kappa*abs(eps)))**2/eps
+          EcGM = EcGM - 4d0*rho(a,i,jb)**2*fk
         end do
       end do
     end do
 
   end if
 
-end subroutine self_energy_correlation_diag
+end subroutine regularized_self_energy_correlation_diag

@@ -1,4 +1,4 @@
-subroutine unrestricted_self_energy_correlation(eta,nBas,nC,nO,nV,nR,nSt,e,Omega,rho,SigC,EcGM)
+subroutine unrestricted_self_energy_correlation_diag(eta,nBas,nC,nO,nV,nR,nSt,e,Omega,rho,SigC,EcGM)
 
 ! Compute diagonal of the correlation part of the self-energy
 
@@ -20,17 +20,17 @@ subroutine unrestricted_self_energy_correlation(eta,nBas,nC,nO,nV,nR,nSt,e,Omega
 
 ! Local variables
 
-  integer                       :: i,j,a,b,p,q,jb
+  integer                       :: i,a,p,q,jb
   double precision              :: eps
 
 ! Output variables
 
-  double precision,intent(out)  :: SigC(nBas,nBas,nspin)
+  double precision,intent(out)  :: SigC(nBas,nspin)
   double precision              :: EcGM(nspin)
 
 ! Initialize 
 
-  SigC(:,:,:) = 0d0
+  SigC(:,:) = 0d0
   EcGM(:)   = 0d0
 
 !--------------!
@@ -40,12 +40,10 @@ subroutine unrestricted_self_energy_correlation(eta,nBas,nC,nO,nV,nR,nSt,e,Omega
   ! Occupied part of the correlation self-energy
 
   do p=nC(1)+1,nBas-nR(1)
-    do q=nC(1)+1,nBas-nR(1)
-      do i=nC(1)+1,nO(1)
-        do jb=1,nSt
-          eps = e(p,1) - e(i,1) + Omega(jb)
-          SigC(p,q,1) = SigC(p,q,1) + rho(p,i,jb,1)*rho(q,i,jb,1)*eps/(eps**2 + eta**2)
-        end do
+    do i=nC(1)+1,nO(1)
+      do jb=1,nSt
+        eps = e(p,1) - e(i,1) + Omega(jb)
+        SigC(p,1) = SigC(p,1) + rho(p,i,jb,1)**2*eps/(eps**2 + eta**2)
       end do
     end do
   end do
@@ -53,12 +51,10 @@ subroutine unrestricted_self_energy_correlation(eta,nBas,nC,nO,nV,nR,nSt,e,Omega
   ! Virtual part of the correlation self-energy
 
   do p=nC(1)+1,nBas-nR(1)
-    do q=nC(1)+1,nBas-nR(1)
-      do a=nO(1)+1,nBas-nR(1)
-        do jb=1,nSt
-          eps = e(p,1) - e(a,1) - Omega(jb)
-          SigC(p,q,1) = SigC(p,q,1) + rho(p,a,jb,1)*rho(q,a,jb,1)*eps/(eps**2 + eta**2)
-        end do
+    do a=nO(1)+1,nBas-nR(1)
+      do jb=1,nSt
+        eps = e(p,1) - e(a,1) - Omega(jb)
+        SigC(p,1) = SigC(p,1) + rho(p,a,jb,1)**2*eps/(eps**2 + eta**2)
       end do
     end do
   end do
@@ -81,12 +77,10 @@ subroutine unrestricted_self_energy_correlation(eta,nBas,nC,nO,nV,nR,nSt,e,Omega
   ! Occupied part of the correlation self-energy
 
   do p=nC(2)+1,nBas-nR(2)
-    do q=nC(2)+1,nBas-nR(2)
-      do i=nC(2)+1,nO(2)
-        do jb=1,nSt
-          eps = e(p,2) - e(i,2) + Omega(jb)
-          SigC(p,q,2) = SigC(p,q,2) + rho(p,i,jb,2)*rho(q,i,jb,2)*eps/(eps**2 + eta**2)
-        end do
+    do i=nC(2)+1,nO(2)
+      do jb=1,nSt
+        eps = e(p,2) - e(i,2) + Omega(jb)
+        SigC(p,2) = SigC(p,2) + rho(p,i,jb,2)**2*eps/(eps**2 + eta**2)
       end do
     end do
   end do
@@ -94,12 +88,10 @@ subroutine unrestricted_self_energy_correlation(eta,nBas,nC,nO,nV,nR,nSt,e,Omega
   ! Virtual part of the correlation self-energy
 
   do p=nC(2)+1,nBas-nR(2)
-    do q=nC(2)+1,nBas-nR(2)
-      do a=nO(2)+1,nBas-nR(2)
-        do jb=1,nSt
-          eps = e(p,2) - e(a,2) - Omega(jb)
-          SigC(p,q,2) = SigC(p,q,2) + rho(p,a,jb,2)*rho(q,a,jb,2)*eps/(eps**2 + eta**2)
-        end do
+    do a=nO(2)+1,nBas-nR(2)
+      do jb=1,nSt
+        eps = e(p,2) - e(a,2) - Omega(jb)
+        SigC(p,2) = SigC(p,2) + rho(p,a,jb,2)**2*eps/(eps**2 + eta**2)
       end do
     end do
   end do
@@ -115,4 +107,5 @@ subroutine unrestricted_self_energy_correlation(eta,nBas,nC,nO,nV,nR,nSt,e,Omega
     end do
   end do
 
-end subroutine unrestricted_self_energy_correlation
+
+end subroutine unrestricted_self_energy_correlation_diag

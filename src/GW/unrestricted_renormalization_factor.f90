@@ -20,7 +20,7 @@ subroutine unrestricted_renormalization_factor(eta,nBas,nC,nO,nV,nR,nSt,e,Omega,
 
 ! Local variables
 
-  integer                       :: i,j,a,b,p,q,jb
+  integer                       :: i,a,p,jb
   double precision              :: eps
 
 ! Output variables

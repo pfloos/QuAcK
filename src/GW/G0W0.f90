@@ -1,5 +1,5 @@
 subroutine G0W0(doACFDT,exchange_kernel,doXBS,COHSEX,BSE,TDA_W,TDA, & 
-                dBSE,dTDA,evDyn,singlet,triplet,linearize,eta,            & 
+                dBSE,dTDA,evDyn,singlet,triplet,linearize,eta,regularize, & 
                 nBas,nC,nO,nV,nR,nS,ENuc,ERHF,ERI_AO,ERI_MO,dipole_int,PHF,cHF,eHF,Vxc,eG0W0)
 
 ! Perform G0W0 calculation
@@ -24,6 +24,7 @@ subroutine G0W0(doACFDT,exchange_kernel,doXBS,COHSEX,BSE,TDA_W,TDA, &
   logical,intent(in)            :: triplet
   logical,intent(in)            :: linearize
   double precision,intent(in)   :: eta
+  logical,intent(in)            :: regularize
 
   integer,intent(in)            :: nBas
   integer,intent(in)            :: nC
@@ -124,13 +125,18 @@ subroutine G0W0(doACFDT,exchange_kernel,doXBS,COHSEX,BSE,TDA_W,TDA, &
 !------------------------!
 
   call self_energy_exchange_diag(nBas,cHF,PHF,ERI_AO,SigX)
-  call self_energy_correlation_diag(COHSEX,eta,nBas,nC,nO,nV,nR,nS,eHF,OmRPA,rho_RPA,EcGM,SigC)
 
-!--------------------------------!
-! Compute renormalization factor !
-!--------------------------------!
+  if(regularize) then 
 
-  call renormalization_factor(COHSEX,eta,nBas,nC,nO,nV,nR,nS,eHF,OmRPA,rho_RPA,Z)
+    call regularized_self_energy_correlation_diag(COHSEX,eta,nBas,nC,nO,nV,nR,nS,eHF,OmRPA,rho_RPA,EcGM,SigC)
+    call regularized_renormalization_factor(COHSEX,eta,nBas,nC,nO,nV,nR,nS,eHF,OmRPA,rho_RPA,Z)
+
+  else
+
+    call self_energy_correlation_diag(COHSEX,eta,nBas,nC,nO,nV,nR,nS,eHF,OmRPA,rho_RPA,EcGM,SigC)
+    call renormalization_factor(COHSEX,eta,nBas,nC,nO,nV,nR,nS,eHF,OmRPA,rho_RPA,Z)
+
+  end if
 
 !-----------------------------------!
 ! Solve the quasi-particle equation !

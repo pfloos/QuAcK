@@ -1,4 +1,4 @@
-subroutine ufBSE(eta,nBas,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,eHF,eGW)
+subroutine ufBSE(nBas,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,eHF,eGW)
 
 ! Unfold BSE@GW equations
 
@@ -7,7 +7,6 @@ subroutine ufBSE(eta,nBas,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,eHF,eGW)
 
 ! Input variables
 
-  double precision,intent(in)   :: eta
   integer,intent(in)            :: nBas
   integer,intent(in)            :: nC
   integer,intent(in)            :: nO

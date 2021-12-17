@@ -1,5 +1,5 @@
 subroutine qsUGW(maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,COHSEX,BSE,TDA_W,TDA,    & 
-                G0W,GW0,dBSE,dTDA,evDyn,spin_conserved,spin_flip,eta,nNuc,ZNuc,rNuc,ENuc,nBas,nC,nO, & 
+                G0W,GW0,dBSE,dTDA,evDyn,spin_conserved,spin_flip,eta,regularize,nNuc,ZNuc,rNuc,ENuc,nBas,nC,nO, & 
                 nV,nR,nS,EUHF,S,X,T,V,Hc,ERI_AO,ERI_aaaa,ERI_aabb,ERI_bbbb,dipole_int_AO,dipole_int_aa, &
                 dipole_int_bb,PHF,cHF,eHF)
 
@@ -28,6 +28,7 @@ subroutine qsUGW(maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,COHSEX,BSE
   logical,intent(in)            :: spin_conserved
   logical,intent(in)            :: spin_flip
   double precision,intent(in)   :: eta
+  logical,intent(in)            :: regularize
 
   integer,intent(in)            :: nNuc
   double precision,intent(in)   :: ZNuc(nNuc)

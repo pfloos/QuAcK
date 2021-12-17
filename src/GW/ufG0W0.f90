@@ -1,4 +1,4 @@
-subroutine ufG0W0(eta,nBas,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,eHF)
+subroutine ufG0W0(nBas,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,eHF)
 
 ! Unfold G0W0 equations
 
@@ -7,7 +7,6 @@ subroutine ufG0W0(eta,nBas,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,eHF)
 
 ! Input variables
 
-  double precision,intent(in)   :: eta
   integer,intent(in)            :: nBas
   integer,intent(in)            :: nC
   integer,intent(in)            :: nO

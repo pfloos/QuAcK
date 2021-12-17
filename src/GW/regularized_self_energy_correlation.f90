@@ -1,6 +1,6 @@
-subroutine self_energy_correlation(COHSEX,eta,nBas,nC,nO,nV,nR,nS,e,Omega,rho,EcGM,SigC)
+subroutine regularized_self_energy_correlation(COHSEX,eta,nBas,nC,nO,nV,nR,nS,e,Omega,rho,EcGM,SigC)
 
-! Compute correlation part of the self-energy
+! Compute correlation part of the regularized self-energy
 
   implicit none
   include 'parameters.h'
@@ -9,7 +9,12 @@ subroutine self_energy_correlation(COHSEX,eta,nBas,nC,nO,nV,nR,nS,e,Omega,rho,Ec
 
   logical,intent(in)            :: COHSEX
   double precision,intent(in)   :: eta
-  integer,intent(in)            :: nBas,nC,nO,nV,nR,nS
+  integer,intent(in)            :: nBas
+  integer,intent(in)            :: nC
+  integer,intent(in)            :: nO
+  integer,intent(in)            :: nV
+  integer,intent(in)            :: nR
+  integer,intent(in)            :: nS
   double precision,intent(in)   :: e(nBas)
   double precision,intent(in)   :: Omega(nS)
   double precision,intent(in)   :: rho(nBas,nBas,nS)
@@ -21,6 +26,9 @@ subroutine self_energy_correlation(COHSEX,eta,nBas,nC,nO,nV,nR,nS,e,Omega,rho,Ec
   integer                       :: jb
   double precision              :: eps
 
+  double precision              :: kappa
+  double precision              :: fk
+
 ! Output variables
 
   double precision,intent(out)  :: SigC(nBas,nBas)
@@ -29,6 +37,12 @@ subroutine self_energy_correlation(COHSEX,eta,nBas,nC,nO,nV,nR,nS,e,Omega,rho,Ec
 ! Initialize 
 
   SigC(:,:) = 0d0
+
+!---------------------------------------------!
+! Parameters for regularized MP2 calculations !
+!---------------------------------------------!
+
+  kappa = 1.1d0
 
 !-----------------------------!
 ! COHSEX static approximation !
@@ -78,7 +92,8 @@ subroutine self_energy_correlation(COHSEX,eta,nBas,nC,nO,nV,nR,nS,e,Omega,rho,Ec
         do i=nC+1,nO
           do jb=1,nS
             eps = e(p) - e(i) + Omega(jb)
-            SigC(p,q) = SigC(p,q) + 2d0*rho(p,i,jb)*rho(q,i,jb)*eps/(eps**2 + eta**2)
+            fk  = (1d0 - exp(-kappa*abs(eps)))**2/eps
+            SigC(p,q) = SigC(p,q) + 2d0*rho(p,i,jb)*rho(q,i,jb)*fk
           end do
         end do
       end do
@@ -91,7 +106,8 @@ subroutine self_energy_correlation(COHSEX,eta,nBas,nC,nO,nV,nR,nS,e,Omega,rho,Ec
         do a=nO+1,nBas-nR
           do jb=1,nS
             eps = e(p) - e(a) - Omega(jb)
-            SigC(p,q) = SigC(p,q) + 2d0*rho(p,a,jb)*rho(q,a,jb)*eps/(eps**2 + eta**2)
+            fk  = (1d0 - exp(-kappa*abs(eps)))**2/eps
+            SigC(p,q) = SigC(p,q) + 2d0*rho(p,a,jb)*rho(q,a,jb)*fk
           end do
         end do
       end do
@@ -104,11 +120,12 @@ subroutine self_energy_correlation(COHSEX,eta,nBas,nC,nO,nV,nR,nS,e,Omega,rho,Ec
       do a=nO+1,nBas-nR
         do jb=1,nS
           eps = e(a) - e(i) + Omega(jb)
-          EcGM = EcGM - 4d0*rho(a,i,jb)*rho(a,i,jb)*eps/(eps**2 + eta**2)
+          fk  = (1d0 - exp(-kappa*abs(eps)))**2/eps
+          EcGM = EcGM - 4d0*rho(a,i,jb)**2*fk
         end do
       end do
     end do
 
   end if
 
-end subroutine self_energy_correlation
+end subroutine regularized_self_energy_correlation

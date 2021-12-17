@@ -1,5 +1,5 @@
 subroutine evGT(maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS, & 
-                BSE,TDA_T,TDA,dBSE,dTDA,evDyn,singlet,triplet,eta,nBas, & 
+                BSE,TDA_T,TDA,dBSE,dTDA,evDyn,singlet,triplet,eta,regularize,nBas, & 
                 nC,nO,nV,nR,nS,ENuc,ERHF,ERI_AO,ERI_MO,dipole_int,PHF,cHF,eHF,Vxc,eG0T0)
 
 ! Perform eigenvalue self-consistent calculation with a T-matrix self-energy (evGT)
@@ -24,6 +24,7 @@ subroutine evGT(maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS, &
   logical,intent(in)            :: singlet
   logical,intent(in)            :: triplet
   double precision,intent(in)   :: eta
+  logical,intent(in)            :: regularize
 
   integer,intent(in)            :: nBas
   integer,intent(in)            :: nC

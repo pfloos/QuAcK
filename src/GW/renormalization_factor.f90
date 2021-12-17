@@ -9,14 +9,19 @@ subroutine renormalization_factor(COHSEX,eta,nBas,nC,nO,nV,nR,nS,e,Omega,rho,Z)
 
   logical,intent(in)            :: COHSEX
   double precision,intent(in)   :: eta
-  integer,intent(in)            :: nBas,nC,nO,nV,nR,nS
+  integer,intent(in)            :: nBas
+  integer,intent(in)            :: nC
+  integer,intent(in)            :: nO
+  integer,intent(in)            :: nV
+  integer,intent(in)            :: nR
+  integer,intent(in)            :: nS
   double precision,intent(in)   :: e(nBas)
   double precision,intent(in)   :: Omega(nS)
   double precision,intent(in)   :: rho(nBas,nBas,nS)
 
 ! Local variables
 
-  integer                       :: i,j,a,b,x,jb
+  integer                       :: p,i,a,jb
   double precision              :: eps
 
 ! Output variables
@@ -38,30 +43,22 @@ subroutine renormalization_factor(COHSEX,eta,nBas,nC,nO,nV,nR,nS,e,Omega,rho,Z)
 
     ! Occupied part of the correlation self-energy
 
-    do x=nC+1,nBas-nR
+    do p=nC+1,nBas-nR
       do i=nC+1,nO
-        jb = 0
-        do j=nC+1,nO
-          do b=nO+1,nBas-nR
-            jb = jb + 1
-            eps = e(x) - e(i) + Omega(jb) 
-            Z(x) = Z(x)  - 2d0*rho(x,i,jb)**2*(eps/(eps**2 + eta**2))**2
-          end do
+        do jb=1,nS
+          eps = e(p) - e(i) + Omega(jb) 
+          Z(p) = Z(p)  - 2d0*rho(p,i,jb)**2*(eps/(eps**2 + eta**2))**2
         end do
       end do
     end do
 
     ! Virtual part of the correlation self-energy
 
-    do x=nC+1,nBas-nR
+    do p=nC+1,nBas-nR
       do a=nO+1,nBas-nR
-        jb = 0
-        do j=nC+1,nO
-          do b=nO+1,nBas-nR
-            jb = jb + 1
-            eps = e(x) - e(a) - Omega(jb) 
-            Z(x) = Z(x)  - 2d0*rho(x,a,jb)**2*(eps/(eps**2 + eta**2))**2
-          end do
+        do jb=1,nS
+          eps = e(p) - e(a) - Omega(jb) 
+          Z(p) = Z(p)  - 2d0*rho(p,a,jb)**2*(eps/(eps**2 + eta**2))**2
         end do
       end do
     end do

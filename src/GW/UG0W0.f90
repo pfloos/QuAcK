@@ -1,5 +1,5 @@
 subroutine UG0W0(doACFDT,exchange_kernel,doXBS,COHSEX,BSE,TDA_W,TDA,dBSE,dTDA,evDyn,spin_conserved,spin_flip, &
-                 linearize,eta,nBas,nC,nO,nV,nR,nS,ENuc,EUHF,S,ERI,ERI_aaaa,ERI_aabb,ERI_bbbb,                & 
+                 linearize,eta,regularize,nBas,nC,nO,nV,nR,nS,ENuc,EUHF,S,ERI,ERI_aaaa,ERI_aabb,ERI_bbbb,     & 
                  dipole_int_aa,dipole_int_bb,PHF,cHF,eHF,Vxc,eGW)
 
 ! Perform unrestricted G0W0 calculation
@@ -24,6 +24,7 @@ subroutine UG0W0(doACFDT,exchange_kernel,doXBS,COHSEX,BSE,TDA_W,TDA,dBSE,dTDA,ev
   logical,intent(in)            :: spin_flip
   logical,intent(in)            :: linearize
   double precision,intent(in)   :: eta
+  logical,intent(in)            :: regularize
 
   integer,intent(in)            :: nBas
   integer,intent(in)            :: nC(nspin)

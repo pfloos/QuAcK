@@ -1,4 +1,4 @@
-subroutine ufGW(eta,nBas,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,eHF)
+subroutine ufGW(nBas,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,eHF)
 
 ! Unfold GW equations
 
@@ -7,7 +7,6 @@ subroutine ufGW(eta,nBas,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,eHF)
 
 ! Input variables
 
-  double precision,intent(in)   :: eta
   integer,intent(in)            :: nBas
   integer,intent(in)            :: nC
   integer,intent(in)            :: nO
