@@ -23,7 +23,7 @@ subroutine self_energy_Tmatrix_diag(eta,nBas,nC,nO,nV,nR,nOO,nVV,e,Omega1,rho1,O
 
 ! Local variables
 
-  integer                       :: i,j,k,l,a,b,c,d,p,cd,kl
+  integer                       :: i,a,p,cd,kl
   double precision              :: eps
 
 ! Output variables
