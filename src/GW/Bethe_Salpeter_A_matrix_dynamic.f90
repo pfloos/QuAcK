@@ -48,15 +48,16 @@ subroutine Bethe_Salpeter_A_matrix_dynamic(eta,nBas,nC,nO,nV,nR,nS,lambda,eGW,Om
           jb = jb + 1
  
           chi = 0d0
+
           do kc=1,maxS
-
-            chi = chi + rho_RPA(i,j,kc)*rho_RPA(a,b,kc)*OmRPA(kc)/(OmRPA(kc)**2 + eta**2)
-
+            eps = OmRPA(kc)
+            chi = chi + rho_RPA(i,j,kc)*rho_RPA(a,b,kc)*eps/(eps**2 + eta**2)
           enddo
 
           A_dyn(ia,jb) = A_dyn(ia,jb) - 4d0*lambda*chi
 
           chi = 0d0
+
           do kc=1,maxS
 
             eps = + OmBSE - OmRPA(kc) - (eGW(a) - eGW(j))

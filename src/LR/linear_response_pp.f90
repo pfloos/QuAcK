@@ -47,8 +47,8 @@ subroutine linear_response_pp(ispin,TDA,nBas,nC,nO,nV,nR,nOO,nVV,lambda,e,ERI,Om
 ! Memory allocation
 
   allocate(B(nVV,nOO),C(nVV,nVV),D(nOO,nOO),M(nOO+nVV,nOO+nVV),Z(nOO+nVV,nOO+nVV),Omega(nOO+nVV))
-write(*,*) 'nOO', nOO
-write(*,*) 'nVV', nVV
+!write(*,*) 'nOO', nOO
+!write(*,*) 'nVV', nVV
 !-------------------------------------------------!
 ! Solve the p-p eigenproblem                      !
 !-------------------------------------------------!
@@ -88,7 +88,7 @@ write(*,*) 'nVV', nVV
 
     M(    1:nVV    ,nVV+1:nOO+nVV) = -           B(1:nVV,1:nOO)
     M(nVV+1:nOO+nVV,    1:nVV)     = + transpose(B(1:nVV,1:nOO))
-call matout(nOO+nVV,nOO+nVV,M)
+!call matout(nOO+nVV,nOO+nVV,M)
   ! Diagonalize the p-h matrix
 
     if(nOO+nVV > 0) call diagonalize_general_matrix(nOO+nVV,M,Omega,Z)
