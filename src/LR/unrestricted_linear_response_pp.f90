@@ -55,25 +55,22 @@ EcRPA)
 
 ! Memory allocation
 
- allocate(C(nPt,nPt),B(nPt,nHt),D(nHt,nHt),M(nPt+nHt,nPt+nHt),Z(nPt+nHt,nPt+nHt),&
-Omega(nPt+nHt))
-!write(*,*) 'ispin', ispin
-!write(*,*) 'nPt', nPt
-!write(*,*) 'nHt', nHt
+
+ allocate(C(nPt,nPt),B(nPt,nHt),D(nHt,nHt),M(nPt+nHt,nPt+nHt),Z(nPt+nHt,nPt+nHt)&
+,Omega(nPt+nHt))
+!write(*,*) 'Hello'
 ! Build C, B and D matrices for the pp channel
 
   call unrestricted_linear_response_C_pp(ispin,nBas,nC,nO,nV,nR,nPaa,nPab,nPbb,nPt,lambda,&
 e,ERI_aaaa,ERI_aabb,ERI_bbbb,C)
 
-!call matout(nPt,nPt,C)
-!write(*,*) 'Hello'
     call unrestricted_linear_response_B_pp(ispin,nBas,nC,nO,nV,nR,nPaa,nPab,nPbb,nPt,nHaa,&
 nHab,nHbb,nHt,lambda,ERI_aaaa,ERI_aabb,ERI_bbbb,B)
 
 !call matout(nPt,nHt,B)
 !write(*,*) 'Hello'
 call unrestricted_linear_response_D_pp(ispin,nBas,nC,nO,nV,nR,nHaa,nHab,nHbb,nHt,lambda,&
-ERI_aaaa,ERI_aabb,ERI_bbbb,D)
+e,ERI_aaaa,ERI_aabb,ERI_bbbb,D)
 
 !call matout(nHt,nHt,D)
 !write(*,*) 'Hello'
@@ -91,22 +88,20 @@ ERI_aaaa,ERI_aabb,ERI_bbbb,D)
 
 ! Diagonalize the p-h matrix
 
-!    if(nHt+nPt > 0) call diagonalize_general_matrix(nHt+nPt,M,Omega,Z)
+    if(nHt+nPt > 0) call diagonalize_general_matrix(nHt+nPt,M,Omega,Z)
 
   ! Split the various quantities in p-p and h-h parts
 
-!    call sort_ppRPA(nHt,nPt,Omega(:),Z(:,:),Omega1(:),X1(:,:),Y1(:,:),Omega2(:),X2(:,:),&
-!Y2(:,:))
-
-!    end if  Pourquoi ne faut-il pas de end if ici ? 
+    call sort_ppRPA(nHt,nPt,Omega(:),Z(:,:),Omega1(:),X1(:,:),Y1(:,:),Omega2(:),X2(:,:),&
+Y2(:,:))
 
 ! Compute the RPA correlation energy
 
-!  EcRPA = 0.5d0*( sum(Omega1(:)) - sum(Omega2(:)) - trace_matrix(nPt,C(:,:)) - trace_matrix(nHt,D(:,:)) )
-!  EcRPA1 = +sum(Omega1(:)) - trace_matrix(nPt,C(:,:))
-!  EcRPA2 = -sum(Omega2(:)) - trace_matrix(nHt,D(:,:))
-!  if(abs(EcRPA - EcRPA1) > 1d-6 .or. abs(EcRPA - EcRPA2) > 1d-6) &
-!    print*,'!!! Issue in pp-RPA linear reponse calculation RPA1 != RPA2 !!!'
+  EcRPA = 0.5d0*( sum(Omega1(:)) - sum(Omega2(:)) - trace_matrix(nPt,C(:,:)) - trace_matrix(nHt,D(:,:)) )
+  EcRPA1 = +sum(Omega1(:)) - trace_matrix(nPt,C(:,:))
+  EcRPA2 = -sum(Omega2(:)) - trace_matrix(nHt,D(:,:))
+  if(abs(EcRPA - EcRPA1) > 1d-6 .or. abs(EcRPA - EcRPA2) > 1d-6) &
+    print*,'!!! Issue in pp-RPA linear reponse calculation RPA1 != RPA2 !!!'
 
 
  
