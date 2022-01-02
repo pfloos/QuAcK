@@ -707,6 +707,7 @@ program QuAcK
   if(doCIS) then
 
     call cpu_time(start_CIS)
+
     if(unrestricted) then
 
       call UCIS(spin_conserved,spin_flip,nBas,nC,nO,nV,nR,nS,ERI_MO_aaaa,ERI_MO_aabb, & 
@@ -717,6 +718,7 @@ program QuAcK
       call CIS(singlet,triplet,doCIS_D,nBas,nC,nO,nV,nR,nS,ERI_MO,dipole_int_MO,eHF)
 
     end if
+
     call cpu_time(end_CIS)
 
     t_CIS = end_CIS - start_CIS
@@ -830,6 +832,7 @@ program QuAcK
   if(doppRPA) then
 
     call cpu_time(start_RPA)
+
     if(unrestricted) then 
 
       call ppURPA(TDA,doACFDT,spin_conserved,spin_flip,nBas,nC,nO,nV,nR,ENuc,EUHF,ERI_MO_aaaa,ERI_MO_aabb,ERI_MO_bbbb,eHF)
@@ -839,6 +842,7 @@ program QuAcK
       call ppRPA(TDA,doACFDT,singlet,triplet,nBas,nC,nO,nV,nR,ENuc,ERHF,ERI_MO,eHF)
 
     end if
+
     call cpu_time(end_RPA)
 
     t_RPA = end_RPA - start_RPA
@@ -959,7 +963,17 @@ program QuAcK
   if(doG0F3) then
 
     call cpu_time(start_GF3)
-    call G0F3(renormGF,nBas,nC,nO,nV,nR,ERI_MO,eHF)
+
+    if(unrestricted) then
+
+      print*,'!!! G0F3 NYI at the unrestricted level !!!'
+
+    else
+
+      call G0F3(renormGF,nBas,nC,nO,nV,nR,ERI_MO,eHF)
+
+    end if
+
     call cpu_time(end_GF3)
 
     t_GF3 = end_GF3 - start_GF3
@@ -975,7 +989,17 @@ program QuAcK
   if(doevGF3) then
 
     call cpu_time(start_GF3)
-    call evGF3(maxSCF_GF,thresh_GF,n_diis_GF,renormGF,nBas,nC,nO,nV,nR,ERI_MO,eHF)
+
+    if(unrestricted) then
+
+      print*,'!!! evGF3 NYI at the unrestricted level !!!'
+
+    else
+
+      call evGF3(maxSCF_GF,thresh_GF,n_diis_GF,renormGF,nBas,nC,nO,nV,nR,ERI_MO,eHF)
+
+    end if
+
     call cpu_time(end_GF3)
 
     t_GF3 = end_GF3 - start_GF3
@@ -1122,9 +1146,19 @@ program QuAcK
   if(doG0T0) then
     
     call cpu_time(start_G0T0)
-    call G0T0(doACFDT,exchange_kernel,doXBS,BSE,TDA_T,TDA,dBSE,dTDA,evDyn,singlet,triplet,  &
-              linGT,eta_GT,regGT,nBas,nC,nO,nV,nR,nS,ENuc,ERHF,ERI_AO,ERI_MO,dipole_int_MO, &  
-              PHF,cHF,eHF,Vxc,eG0T0)
+
+    if(unrestricted) then 
+
+      print*,'!!! G0T0 NYI at the unrestricted level !!!'
+
+    else
+
+      call G0T0(doACFDT,exchange_kernel,doXBS,BSE,TDA_T,TDA,dBSE,dTDA,evDyn,singlet,triplet,  &
+                linGT,eta_GT,regGT,nBas,nC,nO,nV,nR,nS,ENuc,ERHF,ERI_AO,ERI_MO,dipole_int_MO, &  
+                PHF,cHF,eHF,Vxc,eG0T0)
+
+    end if
+
     call cpu_time(end_G0T0)
   
     t_G0T0 = end_G0T0 - start_G0T0
@@ -1140,10 +1174,20 @@ program QuAcK
   if(doevGT) then
     
     call cpu_time(start_evGT)
-    call evGT(maxSCF_GT,thresh_GT,n_diis_GT,doACFDT,exchange_kernel,doXBS, &
-              BSE,TDA_T,TDA,dBSE,dTDA,evDyn,singlet,triplet,eta_GT,regGT,  & 
-              nBas,nC,nO,nV,nR,nS,ENuc,ERHF,ERI_AO,ERI_MO,dipole_int_MO,   &
-              PHF,cHF,eHF,Vxc,eG0T0)
+
+    if(unrestricted) then
+
+      print*,'!!! evGT NYI at the unrestricted level !!!'
+
+    else
+
+      call evGT(maxSCF_GT,thresh_GT,n_diis_GT,doACFDT,exchange_kernel,doXBS, &
+                BSE,TDA_T,TDA,dBSE,dTDA,evDyn,singlet,triplet,eta_GT,regGT,  & 
+                nBas,nC,nO,nV,nR,nS,ENuc,ERHF,ERI_AO,ERI_MO,dipole_int_MO,   &
+                PHF,cHF,eHF,Vxc,eG0T0)
+
+    end if
+
     call cpu_time(end_evGT)
   
     t_evGT = end_evGT - start_evGT
@@ -1160,10 +1204,18 @@ program QuAcK
 
     call cpu_time(start_qsGT)
 
-    call qsGT(maxSCF_GT,thresh_GT,n_diis_GT,doACFDT,exchange_kernel,doXBS, &
-              BSE,TDA_T,TDA,dBSE,dTDA,evDyn,singlet,triplet,eta_GT,regGT,  &
-              nNuc,ZNuc,rNuc,ENuc,nBas,nC,nO,nV,nR,nS,ERHF,S,X,T,V,Hc,     & 
-              ERI_AO,ERI_MO,dipole_int_AO,dipole_int_MO,PHF,cHF,eHF)
+    if(unrestricted) then
+
+      print*,'!!! qsGT NYI at the unrestricted level !!!'
+
+    else
+
+      call qsGT(maxSCF_GT,thresh_GT,n_diis_GT,doACFDT,exchange_kernel,doXBS, &
+                BSE,TDA_T,TDA,dBSE,dTDA,evDyn,singlet,triplet,eta_GT,regGT,  &
+                nNuc,ZNuc,rNuc,ENuc,nBas,nC,nO,nV,nR,nS,ERHF,S,X,T,V,Hc,     & 
+                ERI_AO,ERI_MO,dipole_int_AO,dipole_int_MO,PHF,cHF,eHF)
+
+    end if
 
     call cpu_time(end_qsGT)
 
