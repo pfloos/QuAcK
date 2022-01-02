@@ -39,10 +39,36 @@ subroutine unrestricted_linear_response_D_pp(ispin,nBas,nC,nO,nV,nR,nHaa,nHab,nH
   eF = 0d0 
 
 !-----------------------------------------------
-! Build D matrix for spin-conserving transitions
+! Build D matrix for spin-conserved transitions
 !-----------------------------------------------
 
   if(ispin == 1) then 
+
+    ! abab block
+
+    ij = 0
+    do i=nC(1)+1,nO(1)
+      do j=nC(2)+1,nO(2)
+        ij = ij + 1
+        kl = 0
+        do k=nC(1)+1,nO(1)
+          do l=nC(2)+1,nO(2)
+            kl = kl + 1
+            D_pp(ij,kl) = -(e(i,1) + e(j,2))*Kronecker_delta(i,k)&
+                       *Kronecker_delta(j,l) +lambda*ERI_aabb(i,j,k,l)
+          end  do
+        end  do
+      end  do
+    end  do
+
+  end if
+
+
+!-----------------------------------------------
+! Build D matrix for spin-flip transitions
+!-----------------------------------------------
+
+  if(ispin == 2) then 
 
     ! aaaa block
 
@@ -62,6 +88,9 @@ subroutine unrestricted_linear_response_D_pp(ispin,nBas,nC,nO,nV,nR,nHaa,nHab,nH
         end  do
       end  do
     end  do
+ end if
+
+  if (ispin == 3) then 
 
     ! bbbb block
 
@@ -74,7 +103,7 @@ subroutine unrestricted_linear_response_D_pp(ispin,nBas,nC,nO,nV,nR,nHaa,nHab,nH
           do l=k+1,nO(2)
             kl = kl + 1
  
-           D_pp(nHaa+ij,nHaa+kl) = -(e(i,2) + e(j,2) - eF)*Kronecker_delta(i,k) &
+           D_pp(ij,kl) = -(e(i,2) + e(j,2) - eF)*Kronecker_delta(i,k) &
                        *Kronecker_delta(j,l) + lambda*(ERI_bbbb(i,j,k,l) - ERI_bbbb(i,j,l,k))
 
           end  do
@@ -83,33 +112,5 @@ subroutine unrestricted_linear_response_D_pp(ispin,nBas,nC,nO,nV,nR,nHaa,nHab,nH
     end  do
 
   end if
-
-!-----------------------------------------------
-! Build D matrix for spin-flip transitions
-!-----------------------------------------------
-
-  if(ispin == 2) then 
-
-    D_pp(:,:) = 0d0
-
-    ! abab block
-
-    ij = 0
-    do i=nC(1)+1,nO(1)
-      do j=nC(2)+1,nO(2)
-        ij = ij + 1
-        kl = 0
-        do k=nC(1)+1,nO(1)
-          do l=nC(2)+1,nO(2)
-            kl = kl + 1
-            D_pp(ij,kl) = -(e(i,1) + e(j,2))*Kronecker_delta(i,k)& 
-                       *Kronecker_delta(j,l) +lambda*ERI_aabb(i,j,k,l) 
-          end  do
-        end  do
-      end  do
-    end  do
-
-  end if
-
 
 end subroutine unrestricted_linear_response_D_pp
