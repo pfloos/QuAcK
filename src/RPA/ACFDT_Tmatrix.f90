@@ -128,8 +128,8 @@ subroutine ACFDT_Tmatrix(exchange_kernel,doXBS,dRPA,TDA_T,TDA,BSE,singlet,triple
 
         call excitation_density_Tmatrix(iblock,nBas,nC,nO,nV,nR,nOOs,nVVs,ERI,X1s,Y1s,rho1s,X2s,Y2s,rho2s)
 
-                     call static_Tmatrix_TA(eta,nBas,nC,nO,nV,nR,nS,nOOs,nVVs,lambda,ERI,Omega1s,rho1s,Omega2s,rho2s,TA)
-        if(.not.TDA) call static_Tmatrix_TB(eta,nBas,nC,nO,nV,nR,nS,nOOs,nVVs,lambda,ERI,Omega1s,rho1s,Omega2s,rho2s,TB)
+                     call static_Tmatrix_A(eta,nBas,nC,nO,nV,nR,nS,nOOs,nVVs,lambda,ERI,Omega1s,rho1s,Omega2s,rho2s,TA)
+        if(.not.TDA) call static_Tmatrix_B(eta,nBas,nC,nO,nV,nR,nS,nOOs,nVVs,lambda,ERI,Omega1s,rho1s,Omega2s,rho2s,TB)
 
         isp_T  = 2
         iblock = 4
@@ -139,8 +139,8 @@ subroutine ACFDT_Tmatrix(exchange_kernel,doXBS,dRPA,TDA_T,TDA,BSE,singlet,triple
 
         call excitation_density_Tmatrix(iblock,nBas,nC,nO,nV,nR,nOOt,nVVt,ERI,X1t,Y1t,rho1t,X2t,Y2t,rho2t)
 
-                     call static_Tmatrix_TA(eta,nBas,nC,nO,nV,nR,nS,nOOt,nVVt,lambda,ERI,Omega1t,rho1t,Omega2t,rho2t,TA)
-        if(.not.TDA) call static_Tmatrix_TB(eta,nBas,nC,nO,nV,nR,nS,nOOt,nVVt,lambda,ERI,Omega1t,rho1t,Omega2t,rho2t,TB)
+                     call static_Tmatrix_A(eta,nBas,nC,nO,nV,nR,nS,nOOt,nVVt,lambda,ERI,Omega1t,rho1t,Omega2t,rho2t,TA)
+        if(.not.TDA) call static_Tmatrix_B(eta,nBas,nC,nO,nV,nR,nS,nOOt,nVVt,lambda,ERI,Omega1t,rho1t,Omega2t,rho2t,TB)
 
       end if
 
@@ -198,8 +198,8 @@ subroutine ACFDT_Tmatrix(exchange_kernel,doXBS,dRPA,TDA_T,TDA,BSE,singlet,triple
 
         call excitation_density_Tmatrix(iblock,nBas,nC,nO,nV,nR,nOOs,nVVs,ERI,X1s,Y1s,rho1s,X2s,Y2s,rho2s)
 
-                     call static_Tmatrix_TA(eta,nBas,nC,nO,nV,nR,nS,nOOs,nVVs,lambda,ERI,Omega1s,rho1s,Omega2s,rho2s,TA)
-        if(.not.TDA) call static_Tmatrix_TB(eta,nBas,nC,nO,nV,nR,nS,nOOs,nVVs,lambda,ERI,Omega1s,rho1s,Omega2s,rho2s,TB)
+                     call static_Tmatrix_A(eta,nBas,nC,nO,nV,nR,nS,nOOs,nVVs,lambda,ERI,Omega1s,rho1s,Omega2s,rho2s,TA)
+        if(.not.TDA) call static_Tmatrix_B(eta,nBas,nC,nO,nV,nR,nS,nOOs,nVVs,lambda,ERI,Omega1s,rho1s,Omega2s,rho2s,TB)
 
         isp_T  = 2
         iblock = 4
@@ -209,8 +209,8 @@ subroutine ACFDT_Tmatrix(exchange_kernel,doXBS,dRPA,TDA_T,TDA,BSE,singlet,triple
 
         call excitation_density_Tmatrix(iblock,nBas,nC,nO,nV,nR,nOOt,nVVt,ERI,X1t,Y1t,rho1t,X2t,Y2t,rho2t)
 
-                     call static_Tmatrix_TA(eta,nBas,nC,nO,nV,nR,nS,nOOt,nVVt,lambda,ERI,Omega1t,rho1t,Omega2t,rho2t,TA)
-        if(.not.TDA) call static_Tmatrix_TB(eta,nBas,nC,nO,nV,nR,nS,nOOt,nVVt,lambda,ERI,Omega1t,rho1t,Omega2t,rho2t,TB)
+                     call static_Tmatrix_A(eta,nBas,nC,nO,nV,nR,nS,nOOt,nVVt,lambda,ERI,Omega1t,rho1t,Omega2t,rho2t,TA)
+        if(.not.TDA) call static_Tmatrix_B(eta,nBas,nC,nO,nV,nR,nS,nOOt,nVVt,lambda,ERI,Omega1t,rho1t,Omega2t,rho2t,TB)
 
       end if  
 

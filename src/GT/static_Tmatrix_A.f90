@@ -1,4 +1,4 @@
-subroutine static_Tmatrix_TA(eta,nBas,nC,nO,nV,nR,nS,nOO,nVV,lambda,ERI,Omega1,rho1,Omega2,rho2,TA)
+subroutine static_Tmatrix_A(eta,nBas,nC,nO,nV,nR,nS,nOO,nVV,lambda,ERI,Omega1,rho1,Omega2,rho2,TA)
 
 ! Compute the OOVV block of the static T-matrix for the resonant block
 
@@ -63,4 +63,4 @@ subroutine static_Tmatrix_TA(eta,nBas,nC,nO,nV,nR,nS,nOO,nVV,lambda,ERI,Omega1,r
     enddo
   enddo
 
-end subroutine static_Tmatrix_TA
+end subroutine static_Tmatrix_A

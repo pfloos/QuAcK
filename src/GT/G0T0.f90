@@ -190,6 +190,7 @@ subroutine G0T0(doACFDT,exchange_kernel,doXBS,BSE,TDA_T,TDA,dBSE,dTDA,evDyn,sing
   iblock = 4
   call linear_response_pp(iblock,TDA_T,nBas,nC,nO,nV,nR,nOOt,nVVt,1d0,eG0T0,ERI_MO,  & 
                           Omega1t,X1t,Y1t,Omega2t,X2t,Y2t,EcRPA(ispin))
+
   EcRPA(1) = EcRPA(1) - EcRPA(2)
   EcRPA(2) = 3d0*EcRPA(2)
 
