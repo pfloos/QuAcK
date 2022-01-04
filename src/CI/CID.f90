@@ -1,6 +1,6 @@
-subroutine CISD(singlet_manifold,triplet_manifold,nBasin,nCin,nOin,nVin,nRin,ERIin,Fin,E0)
+subroutine CID(singlet_manifold,triplet_manifold,nBasin,nCin,nOin,nVin,nRin,ERIin,Fin,E0)
 
-! Perform configuration interaction with singles and doubles
+! Perform configuration interaction with doubles
 
   implicit none
   include 'parameters.h'
@@ -36,13 +36,12 @@ subroutine CISD(singlet_manifold,triplet_manifold,nBasin,nCin,nOin,nVin,nRin,ERI
   integer                       :: ia,kc,iajb,kcld
   integer                       :: ishift,jshift
   integer                       :: ispin
-  integer                       :: nS
   integer                       :: nD
   integer                       :: nH
-  integer                       :: maxH 
+  integer                       :: maxH
   double precision,external     :: Kronecker_delta
   double precision,allocatable  :: H(:,:)
-  double precision,allocatable  :: ECISD(:)
+  double precision,allocatable  :: ECID(:)
 
   double precision              :: tmp
 
@@ -75,13 +74,11 @@ subroutine CISD(singlet_manifold,triplet_manifold,nBasin,nCin,nOin,nVin,nRin,ERI
 
   deallocate(sERI)
 
-! Compute CISD matrix
+! Compute CID matrix
 
-  nS = (nO - nC)*(nV - nR)
-  nD = (nO - nC)*(nO - nC - 1)/2*(nV - nR)*(nV - nR - 1)/2
-  nH = 1 + nS + nD
+  nD  = (nO - nC)*(nO - nC - 1)/2*(nV - nR)*(nV - nR - 1)/2
+  nH  = 1 + nD
 
-  write(*,*) 'nS = ',nS 
   write(*,*) 'nD = ',nD 
   write(*,*) 'nH = ',nH
   write(*,*)
@@ -90,7 +87,7 @@ subroutine CISD(singlet_manifold,triplet_manifold,nBasin,nCin,nOin,nVin,nRin,ERI
 
   ! Memory allocation
 
-  allocate(H(nH,nH),ECISD(nH))
+  allocate(H(nH,nH),ECID(nH))
  
   ! 00 block
 
@@ -101,29 +98,10 @@ subroutine CISD(singlet_manifold,triplet_manifold,nBasin,nCin,nOin,nVin,nRin,ERI
  
   print*,'00 block done...'
 
-  ! 0S blocks
-
-  ishift = 0 
-  jshift = 1
-
-  ia = 0
-  do i=nC+1,nO
-    do a=1,nV-nR
-
-      ia = ia + 1
-      tmp = F(i,nO+a) 
-      H(ishift+1,jshift+ia) = tmp
-      H(jshift+ia,ishift+1) = tmp
-
-    end do
-  end do
-
-  print*,'0S blocks done...'
-
   ! 0D blocks
 
   ishift = 0
-  jshift = 1 + nS
+  jshift = 1
 
   iajb = 0
   do i=nC+1,nO
@@ -144,80 +122,10 @@ subroutine CISD(singlet_manifold,triplet_manifold,nBasin,nCin,nOin,nVin,nRin,ERI
   
   print*,'0D blocks done...'
 
-  ! SS block
-
-  ishift = 1
-  jshift = 1
-
-  ia = 0
-  do i=nC+1,nO
-    do a=1,nV-nR
-
-      ia = ia + 1
-      kc = 0
-      do k=nC+1,nO
-        do c=1,nV-nR
-
-          kc = kc + 1
-          tmp = E0*Kronecker_delta(i,k)*Kronecker_delta(a,c) &
-              - F(i,k)*Kronecker_delta(a,c)                  &
-              + F(nO+a,nO+c)*Kronecker_delta(i,k)            &
-              - ERI(nO+a,k,nO+c,i)
-
-          H(ishift+ia,jshift+kc) = tmp
-
-        end do
-      end do
-
-    end do
-  end do
-
-  print*,'SS block done...'
-
-  ! SD blocks
-
-  ishift = 1 
-  jshift = 1 + nS
-
-  ia = 0
-  do i=nC+1,nO
-    do a=1,nV-nR
-
-      ia = ia + 1
-      kcld = 0
-
-      do k=nC+1,nO
-        do c=1,nV-nR
-          do l=k+1,nO
-            do d=c+1,nV-nR
-
-              kcld = kcld + 1
-              tmp = - F(l,nO+d)*Kronecker_delta(a,c)*Kronecker_delta(i,k) &
-                    + F(l,nO+c)*Kronecker_delta(a,d)*Kronecker_delta(i,k) &
-                    - F(k,nO+c)*Kronecker_delta(a,d)*Kronecker_delta(i,l) &
-                    + F(k,nO+d)*Kronecker_delta(a,c)*Kronecker_delta(i,l) &
-                    - ERI(k,l,nO+d,i)*Kronecker_delta(a,c)                &
-                    + ERI(k,l,nO+c,i)*Kronecker_delta(a,d)                &
-                    - ERI(nO+a,l,nO+c,nO+d)*Kronecker_delta(i,k)          &
-                    + ERI(nO+a,k,nO+c,nO+d)*Kronecker_delta(i,l)           
-                  
-              H(ishift+ia,jshift+kcld) = tmp
-              H(jshift+kcld,ishift+ia) = tmp
-
-            end do
-          end do
-        end do
-      end do
-
-    end do
-  end do
-
-  print*,'SD blocks done...'
-
   ! DD block
 
-  ishift = 1 + nS
-  jshift = 1 + nS
+  ishift = 1 
+  jshift = 1
 
   iajb = 0
   do i=nC+1,nO
@@ -288,23 +196,23 @@ subroutine CISD(singlet_manifold,triplet_manifold,nBasin,nCin,nOin,nVin,nRin,ERI
   print*,'DD block done...'
 
   write(*,*)
-  write(*,*) 'Diagonalizing CISD matrix...'
+  write(*,*) 'Diagonalizing CID matrix...'
   write(*,*)
 
-  call diagonalize_matrix(nH,H,ECISD)
+  call diagonalize_matrix(nH,H,ECID)
 
-  print*,'CISD energies (au)'
-  call matout(maxH,1,ECISD)
+  print*,'CID energies (au)'
+  call matout(maxH,1,ECID)
   write(*,*)
 
-  print*,'CISD excitation energies (eV)'
-  call matout(maxH-1,1,(ECISD(2:maxH)-ECISD(1))*HaToeV)
+  print*,'CID excitation energies (eV)'
+  call matout(maxH-1,1,(ECID(2:maxH)-ECID(1))*HaToeV)
   write(*,*)
 
   if(dump_trans) then
-    print*,'Singlet CISD transition vectors'
+    print*,'Singlet CID transition vectors'
     call matout(nH,nH,H)
     write(*,*)
   endif
 
-end subroutine CISD
+end subroutine CID

@@ -47,13 +47,13 @@ subroutine static_Tmatrix_A(eta,nBas,nC,nO,nV,nR,nS,nOO,nVV,lambda,ERI,Omega1,rh
           do cd=1,nVV
             eps = + Omega1(cd)
 !           chi = chi + lambda*rho1(i,j,cd)*rho1(a,b,cd)*eps/(eps**2 + eta**2)
-            chi = chi + rho1(i,j,cd)*rho1(a,b,cd)*eps/(eps**2 + eta**2)
+            chi = chi + rho1(i,a,cd)*rho1(j,b,cd)*eps/(eps**2 + eta**2)
           enddo
 
           do kl=1,nOO
             eps = - Omega2(kl)
 !           chi = chi - lambda*rho2(i,j,kl)*rho2(a,b,kl)*eps/(eps**2 + eta**2)
-            chi = chi + rho2(i,j,kl)*rho2(a,b,kl)*eps/(eps**2 + eta**2)
+            chi = chi + rho2(i,a,kl)*rho2(j,b,kl)*eps/(eps**2 + eta**2)
           enddo
 
           TA(ia,jb) = TA(ia,jb) + 1d0*lambda*chi

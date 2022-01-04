@@ -64,6 +64,8 @@ program QuAcK
   double precision,allocatable  :: dipole_int_MO(:,:,:)
   double precision,allocatable  :: dipole_int_aa(:,:,:)
   double precision,allocatable  :: dipole_int_bb(:,:,:)
+  double precision,allocatable  :: F_AO(:,:)
+  double precision,allocatable  :: F_MO(:,:)
   double precision,allocatable  :: ERI_AO(:,:,:,:)
   double precision,allocatable  :: ERI_MO(:,:,:,:)
   integer                       :: ixyz
@@ -247,7 +249,7 @@ program QuAcK
 
   allocate(cHF(nBas,nBas,nspin),eHF(nBas,nspin),eG0W0(nBas,nspin),eG0T0(nBas,nspin),PHF(nBas,nBas,nspin), &
            S(nBas,nBas),T(nBas,nBas),V(nBas,nBas),Hc(nBas,nBas),X(nBas,nBas),ERI_AO(nBas,nBas,nBas,nBas), &
-           dipole_int_AO(nBas,nBas,ncart),dipole_int_MO(nBas,nBas,ncart),Vxc(nBas,nspin))
+           dipole_int_AO(nBas,nBas,ncart),dipole_int_MO(nBas,nBas,ncart),Vxc(nBas,nspin),F_AO(nBas,nBas))
 
 ! Read integrals
 
@@ -291,7 +293,7 @@ program QuAcK
 
     call cpu_time(start_HF)
     call RHF(maxSCF_HF,thresh_HF,n_diis_HF,guess_type,nNuc,ZNuc,rNuc,ENuc, &
-             nBas,nO,S,T,V,Hc,ERI_AO,dipole_int_AO,X,ERHF,eHF,cHF,PHF,Vxc)
+             nBas,nO,S,T,V,Hc,F_AO,ERI_AO,dipole_int_AO,X,ERHF,eHF,cHF,PHF,Vxc)
     call cpu_time(end_HF)
 
     t_HF = end_HF - start_HF
@@ -433,6 +435,7 @@ program QuAcK
       ! Memory allocation
      
       allocate(ERI_MO(nBas,nBas,nBas,nBas))
+      allocate(F_MO(nBas,nBas))
  
       ! Read and transform dipole-related integrals
     
@@ -448,7 +451,8 @@ program QuAcK
       ket1 = 1
       ket2 = 1
       call AOtoMO_integral_transform(bra1,bra2,ket1,ket2,nBas,cHF,ERI_AO,ERI_MO)
-!     call AOtoMO_transform(nBas,cHF,T+V)
+      F_MO(:,:) = F_AO(:,:)
+      call AOtoMO_transform(nBas,cHF,F_MO)
     end if
 
   end if
@@ -734,7 +738,7 @@ program QuAcK
   if(doCID) then
 
     call cpu_time(start_CID)
-!   call CID(singlet,triplet,nBas,nC,nO,nV,nR,ERI_MO,eHF)
+    call CID(singlet,triplet,nBas,nC,nO,nV,nR,ERI_MO,F_MO,ERHF)
     call cpu_time(end_CID)
 
     t_CID = end_CID - start_CID
@@ -750,7 +754,7 @@ program QuAcK
   if(doCISD) then
 
     call cpu_time(start_CISD)
-!   call CISD(singlet,triplet,nBas,nC,nO,nV,nR,ERI_MO,eHF)
+    call CISD(singlet,triplet,nBas,nC,nO,nV,nR,ERI_MO,F_MO,ERHF)
     call cpu_time(end_CISD)
 
     t_CISD = end_CISD - start_CISD
