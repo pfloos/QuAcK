@@ -58,44 +58,44 @@ subroutine dynamic_Tmatrix_A(eta,nBas,nC,nO,nV,nR,nS,nOO,nVV,lambda,eGT,Omega1,O
           chi = 0d0
 
           do cd=1,nVV
-            eps = + Omega1(cd) 
-            chi = chi + rho1(i,a,cd)*rho1(j,b,cd)*eps/(eps**2 + eta**2)
+            eps = - Omega1(cd) 
+            chi = chi + rho1(i,b,cd)*rho1(j,a,cd)*eps/(eps**2 + eta**2)
           end do
 
           do kl=1,nOO
-            eps = - Omega2(kl)
-            chi = chi + rho2(i,a,kl)*rho2(j,b,kl)*eps/(eps**2 + eta**2)
+            eps = + Omega2(kl)
+            chi = chi + rho2(i,b,kl)*rho2(j,a,kl)*eps/(eps**2 + eta**2)
           end do
 
-          A_dyn(ia,jb) = A_dyn(ia,jb) - 1d0*lambda*chi
+          A_dyn(ia,jb) = A_dyn(ia,jb) - lambda*chi
 
           chi = 0d0
 
           do cd=1,nVV
             eps = + OmBSE - Omega1(cd) + (eGT(i) + eGT(j))
-            chi = chi + rho1(i,a,cd)*rho1(j,b,cd)*eps/(eps**2 + eta**2) 
+            chi = chi + rho1(i,b,cd)*rho1(j,a,cd)*eps/(eps**2 + eta**2) 
           end do
 
           do kl=1,nOO
             eps = + OmBSE + Omega2(kl) - (eGT(a) + eGT(b))
-            chi = chi + rho2(i,a,kl)*rho2(j,b,kl)*eps/(eps**2 + eta**2)
+            chi = chi + rho2(i,b,kl)*rho2(j,a,kl)*eps/(eps**2 + eta**2)
           end do
 
-          A_dyn(ia,jb) = A_dyn(ia,jb) - 1d0*lambda*chi
+          A_dyn(ia,jb) = A_dyn(ia,jb) + 1d0*lambda*chi
 
           chi = 0d0
 
           do cd=1,nVV
             eps = + OmBSE - Omega1(cd) + (eGT(i) + eGT(j))
-            chi = chi + rho1(i,a,cd)*rho1(j,b,cd)*(eps**2 - eta**2)/(eps**2 + eta**2)**2
+            chi = chi + rho1(i,b,cd)*rho1(j,a,cd)*(eps**2 - eta**2)/(eps**2 + eta**2)**2
           end do
 
           do kl=1,nOO
             eps = + OmBSE + Omega2(kl) - (eGT(a) + eGT(b))
-            chi = chi + rho2(i,a,kl)*rho2(j,b,kl)*(eps**2 - eta**2)/(eps**2 + eta**2)**2
+            chi = chi + rho2(i,b,kl)*rho2(j,a,kl)*(eps**2 - eta**2)/(eps**2 + eta**2)**2
           end do
 
-          ZA_dyn(ia,jb) = ZA_dyn(ia,jb) + 1d0*lambda*chi
+          ZA_dyn(ia,jb) = ZA_dyn(ia,jb) - 1d0*lambda*chi
 
         end do
       end do

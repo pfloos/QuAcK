@@ -67,12 +67,11 @@ subroutine ppURPA(TDA,doACFDT,spin_conserved,spin_flip,nBas,nC,nO,nV,nR,ENuc,EUH
 
 ! Memory allocation
 
- allocate(Omega1sc(nP_sc),X1sc(nP_sc,nP_sc),Y1sc(nH_sc,nP_sc), &
-          Omega2sc(nH_sc),X2sc(nP_sc,nH_sc),Y2sc(nH_sc,nH_sc))
+  allocate(Omega1sc(nP_sc),X1sc(nP_sc,nP_sc),Y1sc(nH_sc,nP_sc), &
+           Omega2sc(nH_sc),X2sc(nP_sc,nH_sc),Y2sc(nH_sc,nH_sc))
 
-call unrestricted_linear_response_pp(ispin,TDA,nBas,nC,nO,nV,nR,nPaa,nPab,nPbb,nP_sc, &
-nHaa,nHab,nHbb,nH_sc,1d0,e,ERI_aaaa,ERI_aabb,ERI_bbbb,Omega1sc,X1sc,Y1sc,Omega2sc,X2sc,Y2sc,&
-Ec_ppURPA(ispin))
+  call unrestricted_linear_response_pp(ispin,TDA,nBas,nC,nO,nV,nR,nPaa,nPab,nPbb,nP_sc,nHaa,nHab,nHbb,nH_sc,1d0, & 
+                                       e,ERI_aaaa,ERI_aabb,ERI_bbbb,Omega1sc,X1sc,Y1sc,Omega2sc,X2sc,Y2sc,Ec_ppURPA(ispin))
 
    call print_excitation('pp-RPA (N+2)',5,nP_sc,Omega1sc)
    call print_excitation('pp-RPA (N-2)',5,nH_sc,Omega2sc)

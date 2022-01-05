@@ -1,4 +1,4 @@
-subroutine static_Tmatrix_B(eta,nBas,nC,nO,nV,nR,nS,nOO,nVV,lambda,ERI,Omega1,rho1,Omega2,rho2,TB)
+subroutine static_Tmatrix_B(ispin,eta,nBas,nC,nO,nV,nR,nS,nOO,nVV,lambda,ERI,Omega1,rho1,Omega2,rho2,TB)
 
 ! Compute the OVVO block of the static T-matrix for the coupling block
 
@@ -7,6 +7,8 @@ subroutine static_Tmatrix_B(eta,nBas,nC,nO,nV,nR,nS,nOO,nVV,lambda,ERI,Omega1,rh
 
 ! Input variables
 
+  integer,intent(in)            :: ispin
+  double precision,intent(in)   :: eta
   integer,intent(in)            :: nBas
   integer,intent(in)            :: nC
   integer,intent(in)            :: nO
@@ -15,7 +17,6 @@ subroutine static_Tmatrix_B(eta,nBas,nC,nO,nV,nR,nS,nOO,nVV,lambda,ERI,Omega1,rh
   integer,intent(in)            :: nS
   integer,intent(in)            :: nOO
   integer,intent(in)            :: nVV
-  double precision,intent(in)   :: eta
   double precision,intent(in)   :: lambda
   double precision,intent(in)   :: ERI(nBas,nBas,nBas,nBas)
   double precision,intent(in)   :: Omega1(nVV)
@@ -45,18 +46,18 @@ subroutine static_Tmatrix_B(eta,nBas,nC,nO,nV,nR,nS,nOO,nVV,lambda,ERI,Omega1,rh
           chi = 0d0
 
           do cd=1,nVV
-            eps = + Omega1(cd)
+            eps = - Omega1(cd)
 !           chi = chi + lambda*rho1(i,b,cd)*rho1(a,j,cd)*Omega1(cd)/Omega1(cd)**2 + eta**2
             chi = chi + rho1(i,j,cd)*rho1(a,b,cd)*eps/(eps**2 + eta**2)
           enddo
 
           do kl=1,nOO
-            eps = - Omega2(kl)
+            eps = + Omega2(kl)
 !           chi = chi + lambda*rho2(i,b,kl)*rho2(a,j,kl)*Omega2(kl)/Omega2(kl)**2 + eta**2
             chi = chi + rho2(i,j,kl)*rho2(a,b,kl)*eps/(eps**2 + eta**2)
           enddo
 
-          TB(ia,jb) = TB(ia,jb) + 1d0*lambda*chi
+          TB(ia,jb) = TB(ia,jb) + lambda*chi
 
         enddo
       enddo
