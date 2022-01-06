@@ -198,8 +198,12 @@ subroutine qsGT(maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,BSE,TDA_T,T
     call linear_response_pp(iblock,TDA_T,nBas,nC,nO,nV,nR,nOOt,nVVt,1d0,eGT,ERI_MO,  &
                           Omega1t,X1t,Y1t,Omega2t,X2t,Y2t,EcRPA(ispin))
 
+    EcRPA(1) = EcRPA(1) - EcRPA(2)
+    EcRPA(2) = 3d0*EcRPA(2)
+
     ! Compute correlation part of the self-energy 
 
+    EcGM      = 0d0
     SigT(:,:) = 0d0
     Z(:)      = 0d0
 
@@ -209,7 +213,7 @@ subroutine qsGT(maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,BSE,TDA_T,T
                                     X1s,Y1s,rho1s,X2s,Y2s,rho2s)
 
     call self_energy_Tmatrix(eta,nBas,nC,nO,nV,nR,nOOs,nVVs,eGT, &
-                             Omega1s,rho1s,Omega2s,rho2s,SigT)
+                             Omega1s,rho1s,Omega2s,rho2s,EcGM,SigT)
 
     call renormalization_factor_Tmatrix(eta,nBas,nC,nO,nV,nR,nOOs,nVVs,eGT, &
                                         Omega1s,rho1s,Omega2s,rho2s,Z)
@@ -220,7 +224,7 @@ subroutine qsGT(maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,BSE,TDA_T,T
                                     X1t,Y1t,rho1t,X2t,Y2t,rho2t)
 
     call self_energy_Tmatrix(eta,nBas,nC,nO,nV,nR,nOOt,nVVt,eGT, &
-                             Omega1t,rho1t,Omega2t,rho2t,SigT)
+                             Omega1t,rho1t,Omega2t,rho2t,EcGM,SigT)
 
     call renormalization_factor_Tmatrix(eta,nBas,nC,nO,nV,nR,nOOt,nVVt,eGT, &
                                         Omega1t,rho1t,Omega2t,rho2t,Z)
@@ -301,28 +305,6 @@ subroutine qsGT(maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,BSE,TDA_T,T
 !------------------------------------------------------------------------
 ! End main loop
 !------------------------------------------------------------------------
-
-! Compute the ppRPA correlation energy
-
-  ispin  = 1
-  iblock = 3
-  call linear_response_pp(iblock,TDA_T,nBas,nC,nO,nV,nR,nOOs,nVVs,1d0,eGT,ERI_MO,  &
-                          Omega1s,X1s,Y1s,Omega2s,X2s,Y2s,EcRPA(ispin))
-  ispin  = 2
-  iblock = 4
-  call linear_response_pp(iblock,TDA_T,nBas,nC,nO,nV,nR,nOOt,nVVt,1d0,eGT,ERI_MO,  &
-                          Omega1t,X1t,Y1t,Omega2t,X2t,Y2t,EcRPA(ispin))
-  EcRPA(1) = EcRPA(1) - EcRPA(2)
-  EcRPA(2) = 3d0*EcRPA(2)
-
-  write(*,*)
-  write(*,*)'-------------------------------------------------------------------------------'
-  write(*,'(2X,A50,F20.10)') 'Tr@ppRPA@qsGT correlation energy (singlet) =',EcRPA(1)
-  write(*,'(2X,A50,F20.10)') 'Tr@ppRPA@qsGT correlation energy (triplet) =',EcRPA(2)
-  write(*,'(2X,A50,F20.10)') 'Tr@ppRPA@qsGT correlation energy           =',EcRPA(1) + EcRPA(2)
-  write(*,'(2X,A50,F20.10)') 'Tr@ppRPA@qsGT total energy                 =',ENuc + ERHF + EcRPA(1) + EcRPA(2)
-  write(*,*)'-------------------------------------------------------------------------------'
-  write(*,*)
 
 ! Did it actually converge?
 

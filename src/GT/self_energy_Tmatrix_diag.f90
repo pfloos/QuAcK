@@ -1,4 +1,4 @@
-subroutine self_energy_Tmatrix_diag(eta,nBas,nC,nO,nV,nR,nOO,nVV,e,Omega1,rho1,Omega2,rho2,SigT)
+subroutine self_energy_Tmatrix_diag(eta,nBas,nC,nO,nV,nR,nOO,nVV,e,Omega1,rho1,Omega2,rho2,EcGM,SigT)
 
 ! Compute diagonal of the correlation part of the T-matrix self-energy
 
@@ -23,11 +23,12 @@ subroutine self_energy_Tmatrix_diag(eta,nBas,nC,nO,nV,nR,nOO,nVV,e,Omega1,rho1,O
 
 ! Local variables
 
-  integer                       :: i,a,p,cd,kl
+  integer                       :: i,j,a,b,p,cd,kl
   double precision              :: eps
 
 ! Output variables
 
+  double precision,intent(inout)  :: EcGM
   double precision,intent(inout)  :: SigT(nBas)
 
 !----------------------------------------------
@@ -52,6 +53,28 @@ subroutine self_energy_Tmatrix_diag(eta,nBas,nC,nO,nV,nR,nOO,nVV,e,Omega1,rho1,O
       do kl=1,nOO
         eps = e(p) + e(a) - Omega2(kl)
         SigT(p) = SigT(p) + rho2(p,a,kl)**2*eps/(eps**2 + eta**2)
+      enddo
+    enddo
+  enddo
+
+!----------------------------------------------
+! Galitskii-Migdal correlation energy
+!----------------------------------------------
+
+  do i=nC+1,nO
+    do j=nC+1,nO
+      do cd=1,nVV
+        eps = e(i) + e(j) - Omega2(cd)
+        EcGM = EcGM - rho1(i,j,cd)*rho1(i,j,cd)*eps/(eps**2 + eta**2)
+      enddo
+    enddo
+  enddo
+
+  do a=nO+1,nBas-nR
+    do b=nO+1,nBas-nR
+      do kl=1,nOO
+        eps = e(a) + e(b) - Omega2(kl)
+        EcGM = EcGM + rho2(a,b,kl)*rho2(a,b,kl)*eps/(eps**2 + eta**2)
       enddo
     enddo
   enddo

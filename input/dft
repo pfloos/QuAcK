@@ -13,7 +13,7 @@
 # GGA          = 2: LYP,PBE
 # MGGA         = 3:
 # Hybrid       = 4: HF,B3LYP,PBE 
-0 H
+1 VWN5
 # quadrature grid SG-n
   1
 # Number of states in ensemble (nEns)
@@ -31,7 +31,7 @@
 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 
 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
 # Ensemble weights: wEns(1),...,wEns(nEns-1)
-  1.0 0.0 0.0 
+  0.6 0.0 0.0 
 # Ncentered ? 
 F
 # Parameters for CC weight-dependent exchange functional

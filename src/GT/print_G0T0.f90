@@ -1,13 +1,15 @@
-subroutine print_G0T0(nBas,nO,eHF,ENuc,ERHF,SigT,Z,eGT,EcRPA)
+subroutine print_G0T0(nBas,nO,eHF,ENuc,ERHF,SigT,Z,eGT,EcGM,EcRPA)
 
 ! Print one-electron energies and other stuff for G0T0
 
   implicit none
   include 'parameters.h'
 
-  integer,intent(in)                 :: nBas,nO
+  integer,intent(in)                 :: nBas
+  integer,intent(in)                 :: nO
   double precision,intent(in)        :: ENuc
   double precision,intent(in)        :: ERHF
+  double precision,intent(in)        :: EcGM
   double precision,intent(in)        :: EcRPA(nspin)
   double precision,intent(in)        :: eHF(nBas)
   double precision,intent(in)        :: SigT(nBas)
@@ -50,10 +52,12 @@ subroutine print_G0T0(nBas,nO,eHF,ENuc,ERHF,SigT,Z,eGT,EcRPA)
   write(*,'(2X,A50,F15.6,A3)') 'G0T0 LUMO      energy (eV)            =',eGT(LUMO)*HaToeV,' eV'
   write(*,'(2X,A50,F15.6,A3)') 'G0T0 HOMO-LUMO gap    (eV)            =',Gap*HaToeV,' eV'
   write(*,*)'-------------------------------------------------------------------------------'
-  write(*,'(2X,A50,F20.10,A3)') 'Tr@RPA@G0T0 correlation energy (singlet) =',EcRPA(1),' au'
-  write(*,'(2X,A50,F20.10,A3)') 'Tr@RPA@G0T0 correlation energy (triplet) =',EcRPA(2),' au'
-  write(*,'(2X,A50,F20.10,A3)') 'Tr@RPA@G0T0 correlation energy           =',EcRPA(1) + EcRPA(2),' au'
-  write(*,'(2X,A50,F20.10,A3)') 'Tr@RPA@G0T0 total energy                 =',ENuc + ERHF + EcRPA(1) + EcRPA(2),' au'
+  write(*,'(2X,A50,F20.10,A3)') ' Tr@ppRPA@G0T0 correlation energy (singlet) =',EcRPA(1),' au'
+  write(*,'(2X,A50,F20.10,A3)') ' Tr@ppRPA@G0T0 correlation energy (triplet) =',EcRPA(2),' au'
+  write(*,'(2X,A50,F20.10,A3)') ' Tr@ppRPA@G0T0 correlation energy           =',EcRPA(1) + EcRPA(2),' au'
+  write(*,'(2X,A50,F20.10,A3)') ' Tr@ppRPA@G0T0 total energy                 =',ENuc + ERHF + EcRPA(1) + EcRPA(2),' au'
+  write(*,'(2X,A50,F20.10,A3)') '       GM@G0T0 correlation energy           =',EcGM,' au'
+  write(*,'(2X,A50,F20.10,A3)') '       GM@G0T0 total energy                 =',ENuc + ERHF + EcGM,' au'
   write(*,*)'-------------------------------------------------------------------------------'
   write(*,*)
 

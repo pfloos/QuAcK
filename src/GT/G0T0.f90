@@ -48,6 +48,7 @@ subroutine G0T0(doACFDT,exchange_kernel,doXBS,BSE,TDA_T,TDA,dBSE,dTDA,evDyn,sing
   double precision              :: EcRPA(nspin)
   double precision              :: EcBSE(nspin)
   double precision              :: EcAC(nspin)
+  double precision              :: EcGM
   double precision,allocatable  :: Omega1s(:),Omega1t(:)
   double precision,allocatable  :: X1s(:,:),X1t(:,:)
   double precision,allocatable  :: Y1s(:,:),Y1t(:,:)
@@ -134,6 +135,7 @@ subroutine G0T0(doACFDT,exchange_kernel,doXBS,BSE,TDA_T,TDA,dBSE,dTDA,evDyn,sing
 ! Compute T-matrix version of the self-energy 
 !----------------------------------------------
 
+  EcGM    = 0d0
   SigT(:) = 0d0
   Z(:)    = 0d0
 
@@ -141,7 +143,7 @@ subroutine G0T0(doACFDT,exchange_kernel,doXBS,BSE,TDA_T,TDA,dBSE,dTDA,evDyn,sing
 
   call excitation_density_Tmatrix(iblock,nBas,nC,nO,nV,nR,nOOs,nVVs,ERI_MO,X1s,Y1s,rho1s,X2s,Y2s,rho2s)
 
-  call self_energy_Tmatrix_diag(eta,nBas,nC,nO,nV,nR,nOOs,nVVs,eHF,Omega1s,rho1s,Omega2s,rho2s,SigT)
+  call self_energy_Tmatrix_diag(eta,nBas,nC,nO,nV,nR,nOOs,nVVs,eHF,Omega1s,rho1s,Omega2s,rho2s,EcGM,SigT)
 
   call renormalization_factor_Tmatrix(eta,nBas,nC,nO,nV,nR,nOOs,nVVs,eHF,Omega1s,rho1s,Omega2s,rho2s,Z)
 
@@ -149,7 +151,7 @@ subroutine G0T0(doACFDT,exchange_kernel,doXBS,BSE,TDA_T,TDA,dBSE,dTDA,evDyn,sing
 
   call excitation_density_Tmatrix(iblock,nBas,nC,nO,nV,nR,nOOt,nVVt,ERI_MO,X1t,Y1t,rho1t,X2t,Y2t,rho2t)
 
-  call self_energy_Tmatrix_diag(eta,nBas,nC,nO,nV,nR,nOOt,nVVt,eHF,Omega1t,rho1t,Omega2t,rho2t,SigT)
+  call self_energy_Tmatrix_diag(eta,nBas,nC,nO,nV,nR,nOOt,nVVt,eHF,Omega1t,rho1t,Omega2t,rho2t,EcGM,SigT)
 
   call renormalization_factor_Tmatrix(eta,nBas,nC,nO,nV,nR,nOOt,nVVt,eHF,Omega1t,rho1t,Omega2t,rho2t,Z)
 
@@ -194,7 +196,7 @@ subroutine G0T0(doACFDT,exchange_kernel,doXBS,BSE,TDA_T,TDA,dBSE,dTDA,evDyn,sing
   EcRPA(1) = EcRPA(1) - EcRPA(2)
   EcRPA(2) = 3d0*EcRPA(2)
 
-  call print_G0T0(nBas,nO,eHF,ENuc,ERHF,SigT,Z,eG0T0,EcRPA)
+  call print_G0T0(nBas,nO,eHF,ENuc,ERHF,SigT,Z,eG0T0,EcGM,EcRPA)
 
 ! Perform BSE calculation
 
