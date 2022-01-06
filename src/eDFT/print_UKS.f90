@@ -29,11 +29,13 @@ subroutine print_UKS(nBas,nEns,occnum,Ov,wEns,eps,c,ENuc,ET,EV,EH,Ex,Ec,Ew,dipol
   integer                      :: ispin
   integer                      :: iEns
   integer                      :: iBas
-  integer                      :: HOMO(nspin)
-  integer                      :: LUMO(nspin)
-  double precision             :: Gap(nspin)
-  double precision             :: S_exact,S2_exact
-  double precision             :: S,S2
+  integer                      :: iHOMOa,iHOMOb
+  integer                      :: iLUMOa,iLUMOb
+  double precision             :: HOMOa,HOMOb,HOMO
+  double precision             :: LUMOa,LUMOb,LUMO
+  double precision             :: Gapa,Gapb,Gap
+! double precision             :: S_exact,S2_exact
+! double precision             :: S,S2
 
   double precision             :: nO(nspin)
 
@@ -48,21 +50,34 @@ subroutine print_UKS(nBas,nEns,occnum,Ov,wEns,eps,c,ENuc,ET,EV,EH,Ex,Ec,Ew,dipol
     end do
   end do
 
-  print*,'nO = ',nO
-
 ! HOMO and LUMO
 
-  do ispin=1,nspin
+  iHOMOa = ceiling(nO(1))
+  iLUMOa = iHOMOa + 1
 
-      HOMO(ispin) = ceiling(nO(ispin))
-      LUMO(ispin) = HOMO(ispin) + 1
-      Gap(ispin)  = eps(LUMO(ispin),ispin) - eps(HOMO(ispin),ispin)
+  iHOMOb = ceiling(nO(2))
+  iLUMOb = iHOMOb + 1
 
-  end do
+  HOMOa = -huge(0d0)
+  if(iHOMOa > 0) HOMOa = eps(iHOMOa,1)
+  LUMOa = +huge(0d0) 
+  if(iLUMOa <= nBas) LUMOa = eps(iLUMOa,1)
+
+  HOMOb = -huge(0d0)
+  if(iHOMOb > 0) HOMOb = eps(iHOMOb,2)
+  LUMOb = +huge(0d0) 
+  if(iLUMOb <= nBas) LUMOb = eps(iLUMOb,1)
+
+  HOMO = max(HOMOa,HOMOb)
+  LUMO = min(LUMOa,LUMOb)
+
+  Gapa = LUMOa - HOMOa
+  Gapb = LUMOb - HOMOb
+  Gap  = LUMO  - HOMO
 
 ! Spin comtamination
 
-! S2_exact = dble(nO(1) - nO(2))/2d0*(dble(nO(1) - nO(2))/2d0 + 1d0)
+! S2_exact = (nO(1) - nO(2))/2d0*(nO(1) - nO(2))/2d0 + 1d0 
 ! S2 = S2_exact + nO(2) - sum(matmul(transpose(c(:,1:nO(1),1)),matmul(Ov,c(:,1:nO(2),2)))**2)
 
 ! S_exact = 0.5d0*dble(nO(1) - nO(2))
@@ -104,19 +119,23 @@ subroutine print_UKS(nBas,nEns,occnum,Ov,wEns,eps,c,ENuc,ET,EV,EH,Ex,Ec,Ew,dipol
   write(*,'(A40,1X,F16.10,A3)') ' Nuclear      repulsion: ',ENuc,' au'
   write(*,'(A40,1X,F16.10,A3)') ' Kohn-Sham       energy: ',Ew + ENuc,' au'
   write(*,'(A60)')              '-------------------------------------------------'
-  write(*,'(A40,F13.6,A3)')     ' KS HOMO a    energy:',eps(HOMO(1),1)*HatoeV,' eV'
-  write(*,'(A40,F13.6,A3)')     ' KS LUMO a    energy:',eps(LUMO(1),1)*HatoeV,' eV'
-  write(*,'(A40,F13.6,A3)')     ' KS HOMOa-LUMOa  gap:',Gap(1)*HatoeV,' eV'
+  write(*,'(A40,F13.6,A3)')     ' KS HOMO a    energy:',HOMOa*HatoeV,' eV'
+  write(*,'(A40,F13.6,A3)')     ' KS LUMO a    energy:',LUMOa*HatoeV,' eV'
+  write(*,'(A40,F13.6,A3)')     ' KS HOMOa-LUMOa  gap:',Gapa*HatoeV,' eV'
   write(*,'(A60)')              '-------------------------------------------------'
-  write(*,'(A40,F13.6,A3)')     ' KS HOMO b    energy:',eps(HOMO(2),2)*HatoeV,' eV'
-  write(*,'(A40,F13.6,A3)')     ' KS LUMO b    energy:',eps(LUMO(2),2)*HatoeV,' eV'
-  write(*,'(A40,F13.6,A3)')     ' KS HOMOb-LUMOb gap :',Gap(2)*HatoeV,' eV'
+  write(*,'(A40,F13.6,A3)')     ' KS HOMO b    energy:',HOMOb*HatoeV,' eV'
+  write(*,'(A40,F13.6,A3)')     ' KS LUMO b    energy:',LUMOb*HatoeV,' eV'
+  write(*,'(A40,F13.6,A3)')     ' KS HOMOb-LUMOb gap :',Gapb*HatoeV,' eV'
   write(*,'(A60)')              '-------------------------------------------------'
-  write(*,'(A40,1X,F16.6)')     '  S (exact)          :',2d0*S_exact + 1d0
-  write(*,'(A40,1X,F16.6)')     '  S                  :',2d0*S       + 1d0
-  write(*,'(A40,1X,F16.6)')     ' <S**2> (exact)      :',S2_exact
-  write(*,'(A40,1X,F16.6)')     ' <S**2>              :',S2
+  write(*,'(A40,F13.6,A3)')     ' KS HOMO      energy:',HOMO*HatoeV,' eV'
+  write(*,'(A40,F13.6,A3)')     ' KS LUMO      energy:',LUMO*HatoeV,' eV'
+  write(*,'(A40,F13.6,A3)')     ' KS HOMO -LUMO  gap :',Gap*HatoeV,' eV'
   write(*,'(A60)')              '-------------------------------------------------'
+! write(*,'(A40,1X,F16.6)')     '  S (exact)          :',2d0*S_exact + 1d0
+! write(*,'(A40,1X,F16.6)')     '  S                  :',2d0*S       + 1d0
+! write(*,'(A40,1X,F16.6)')     ' <S**2> (exact)      :',S2_exact
+! write(*,'(A40,1X,F16.6)')     ' <S**2>              :',S2
+! write(*,'(A60)')              '-------------------------------------------------'
   write(*,'(A45)')              ' Dipole moment (Debye)    '
   write(*,'(19X,4A10)')         'X','Y','Z','Tot.'
   write(*,'(19X,4F10.6)')       (dipole(ixyz)*auToD,ixyz=1,ncart),norm2(dipole)*auToD
