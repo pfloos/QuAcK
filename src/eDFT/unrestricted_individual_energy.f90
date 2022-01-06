@@ -224,6 +224,7 @@ subroutine unrestricted_individual_energy(x_rung,x_DFA,c_rung,c_DFA,LDA_centered
 ! Dump results
 !------------------------------------------------------------------------
 
-  call print_unrestricted_individual_energy(nEns,ENuc,Ew,ET,EV,EH,Ex,Ec,Eaux,ExDD,EcDD,E,Om,OmH,Omx,Omc,Omaux,OmxDD,OmcDD)
+  call print_unrestricted_individual_energy(nEns,ENuc,Ew,ET,EV,EH,Ex,Ec,Eaux,LZH,LZx,LZc,ExDD,EcDD,E, & 
+                                            Om,OmH,Omx,Omc,Omaux,OmxDD,OmcDD)
 
 end subroutine unrestricted_individual_energy
