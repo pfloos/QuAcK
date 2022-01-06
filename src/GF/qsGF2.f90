@@ -94,6 +94,8 @@ subroutine qsGF2(maxSCF,thresh,max_diis,BSE,TDA,dBSE,dTDA,evDyn,singlet,triplet,
 
   nBasSq = nBas*nBas
 
+  print*,maxSCF
+
 ! TDA 
 
   if(TDA) then 
