@@ -1,4 +1,5 @@
-subroutine print_unrestricted_individual_energy(nEns,ENuc,Ew,ET,EV,EH,Ex,Ec,Eaux,ExDD,EcDD,E,Om,OmH,Omx,Omc,Omaux,OmxDD,OmcDD)
+subroutine print_unrestricted_individual_energy(nEns,ENuc,Ew,ET,EV,EH,Ex,Ec,Eaux,LZH,LZx,LZc,ExDD,EcDD,E, & 
+                                                Om,OmH,Omx,Omc,Omaux,OmxDD,OmcDD)
 
 ! Print individual energies for eDFT calculation
 
@@ -7,26 +8,29 @@ subroutine print_unrestricted_individual_energy(nEns,ENuc,Ew,ET,EV,EH,Ex,Ec,Eaux
 
 ! Input variables
 
-  integer,intent(in)                 :: nEns
-  double precision,intent(in)        :: ENuc
-  double precision,intent(in)        :: Ew
-  double precision,intent(in)        :: ET(nspin,nEns)
-  double precision,intent(in)        :: EV(nspin,nEns)
-  double precision,intent(in)        :: EH(nsp,nEns)
-  double precision,intent(in)        :: Ex(nspin,nEns)
-  double precision,intent(in)        :: Ec(nsp,nEns)
-  double precision,intent(in)        :: Eaux(nspin,nEns)
-  double precision,intent(in)        :: ExDD(nspin,nEns)
-  double precision,intent(in)        :: EcDD(nsp,nEns)
-  double precision,intent(in)        :: E(nEns)
+  integer,intent(in)            :: nEns
+  double precision,intent(in)   :: ENuc
+  double precision,intent(in)   :: Ew
+  double precision,intent(in)   :: ET(nspin,nEns)
+  double precision,intent(in)   :: EV(nspin,nEns)
+  double precision,intent(in)   :: EH(nsp,nEns)
+  double precision,intent(in)   :: Ex(nspin,nEns)
+  double precision,intent(in)   :: Ec(nsp,nEns)
+  double precision,intent(in)   :: Eaux(nspin,nEns)
+  double precision              :: LZH(nsp)
+  double precision              :: LZx(nspin)
+  double precision              :: LZc(nsp)
+  double precision,intent(in)   :: ExDD(nspin,nEns)
+  double precision,intent(in)   :: EcDD(nsp,nEns)
+  double precision,intent(in)   :: E(nEns)
 
-  double precision,intent(in)        :: OmH(nEns)
-  double precision,intent(in)        :: Omx(nEns)
-  double precision,intent(in)        :: Omc(nEns)
-  double precision,intent(in)        :: Omaux(nEns)
-  double precision,intent(in)        :: OmxDD(nEns)
-  double precision,intent(in)        :: OmcDD(nEns)
-  double precision,intent(in)        :: Om(nEns)
+  double precision,intent(in)   :: OmH(nEns)
+  double precision,intent(in)   :: Omx(nEns)
+  double precision,intent(in)   :: Omc(nEns)
+  double precision,intent(in)   :: Omaux(nEns)
+  double precision,intent(in)   :: OmxDD(nEns)
+  double precision,intent(in)   :: OmcDD(nEns)
+  double precision,intent(in)   :: Om(nEns)
 
 ! Local variables
 
@@ -131,6 +135,26 @@ subroutine print_unrestricted_individual_energy(nEns,ENuc,Ew,ET,EV,EH,Ex,Ec,Eaux
   do iEns=1,nEns
     write(*,'(A40,I2,A2,F16.10,A3)') 'Auxiliary KS energy state ',iEns,': ',sum(Eaux(:,iEns)),' au'
   end do
+  write(*,'(A60)')           '-------------------------------------------------'
+  write(*,*)
+
+!------------------------------------------------------------------------
+! Print Levy-Zahariev shifts
+!------------------------------------------------------------------------
+
+  write(*,'(A60)')           '-------------------------------------------------'
+  write(*,'(A60)')           ' LEVY-ZAHARIEV SHIFTS CONTRIBUTIONS'
+  write(*,'(A60)')           '-------------------------------------------------'
+  write(*,*)
+  write(*,'(A40,F16.10,A3)') '   H Levy-Zahariev shift: ',sum(LZH(:)),' au'
+  write(*,'(A40,F16.10,A3)') '   x Levy-Zahariev shift: ',sum(LZx(:)),' au'
+  write(*,'(A40,F16.10,A3)') '   c Levy-Zahariev shift: ',sum(LZc(:)),' au'
+  write(*,'(A40,F16.10,A3)') ' Hxc Levy-Zahariev shift: ',sum(LZH(:))+sum(LZx(:))+sum(LZx(:)),' au'
+  write(*,*)
+  write(*,'(A40,F16.10,A3)') '   H Levy-Zahariev shift: ',sum(LZH(:))*HaToeV,' eV'
+  write(*,'(A40,F16.10,A3)') '   x Levy-Zahariev shift: ',sum(LZx(:))*HaToeV,' eV'
+  write(*,'(A40,F16.10,A3)') '   c Levy-Zahariev shift: ',sum(LZc(:))*HaToeV,' eV'
+  write(*,'(A40,F16.10,A3)') ' Hxc Levy-Zahariev shift: ',(sum(LZH(:))+sum(LZx(:))+sum(LZx(:)))*HaToeV,' eV'
   write(*,'(A60)')           '-------------------------------------------------'
   write(*,*)
 
