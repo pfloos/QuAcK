@@ -118,6 +118,7 @@ subroutine evGT(maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS, &
   eGT(:)          = eG0T0(:)
   eOld(:)         = eGT(:)
   Z(:)            = 1d0
+  rcond           = 0d0
 
 !------------------------------------------------------------------------
 ! Main loop

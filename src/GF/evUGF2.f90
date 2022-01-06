@@ -102,6 +102,7 @@ subroutine evUGF2(maxSCF,thresh,max_diis,BSE,TDA,dBSE,dTDA,evDyn,spin_conserved,
   eGF2(:,:)         = eHF(:,:)
   eOld(:,:)         = eHF(:,:)
   Z(:,:)            = 1d0
+  rcond(:)          = 0d0
 
 !------------------------------------------------------------------------
 ! Main loop

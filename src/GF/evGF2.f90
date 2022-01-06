@@ -70,6 +70,7 @@ subroutine evGF2(BSE,TDA,dBSE,dTDA,evDyn,maxSCF,thresh,max_diis,singlet,triplet,
   error_diis(:,:) = 0d0
   eGF2(:)         = eHF(:)
   eOld(:)         = eHF(:)
+  rcond           = 0d0
 
 !------------------------------------------------------------------------
 ! Main SCF loop

@@ -94,6 +94,7 @@ subroutine RHF(maxSCF,thresh,max_diis,guess_type,nNuc,ZNuc,rNuc,ENuc,nBas,nO,S,T
   error_diis(:,:) = 0d0
   Conv = 1d0
   nSCF = 0
+  rcond = 0d0
 
 !------------------------------------------------------------------------
 ! Main SCF loop
