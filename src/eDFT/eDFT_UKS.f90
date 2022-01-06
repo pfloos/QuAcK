@@ -367,7 +367,7 @@ subroutine eDFT_UKS(x_rung,x_DFA,c_rung,c_DFA,nEns,wEns,nCC,aCC,nGrid,weight,max
 ! Compute final KS energy
 
   call dipole_moment(nBas,Pw(:,:,1)+Pw(:,:,2),nNuc,ZNuc,rNuc,dipole_int,dipole)
-  call print_UKS(nBas,nEns,nO,S,wEns,eKS,c,ENuc,ET,EV,EH,Ex,Ec,Ew,dipole)
+  call print_UKS(nBas,nEns,occnum,S,wEns,eKS,c,ENuc,ET,EV,EH,Ex,Ec,Ew,dipole)
 
 ! Compute Vxc for post-HF calculations
 

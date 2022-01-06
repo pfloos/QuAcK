@@ -1,5 +1,5 @@
 subroutine qsGF2(maxSCF,thresh,max_diis,BSE,TDA,dBSE,dTDA,evDyn,singlet,triplet, & 
-                eta,nNuc,ZNuc,rNuc,ENuc,nBas,nC,nO,nV,nR,nS,ERHF, &
+                eta,regularize,nNuc,ZNuc,rNuc,ENuc,nBas,nC,nO,nV,nR,nS,ERHF, &
                 S,X,T,V,Hc,ERI_AO,ERI_MO,dipole_int_AO,dipole_int_MO,PHF,cHF,eHF)
 
 ! Perform a quasiparticle self-consistent GF2 calculation
@@ -20,6 +20,7 @@ subroutine qsGF2(maxSCF,thresh,max_diis,BSE,TDA,dBSE,dTDA,evDyn,singlet,triplet,
   logical,intent(in)            :: singlet
   logical,intent(in)            :: triplet
   double precision,intent(in)   :: eta
+  logical,intent(in)            :: regularize
 
   integer,intent(in)            :: nNuc
   double precision,intent(in)   :: ZNuc(nNuc)
@@ -144,7 +145,15 @@ subroutine qsGF2(maxSCF,thresh,max_diis,BSE,TDA,dBSE,dTDA,evDyn,singlet,triplet,
 
     ! Compute self-energy and renormalization factor
 
-    call self_energy_GF2(eta,nBas,nC,nO,nV,nR,nS,eHF,eGF2,ERI_MO,SigC,Z)
+    if(regularize) then
+
+      call regularized_self_energy_GF2(eta,nBas,nC,nO,nV,nR,nS,eHF,eGF2,ERI_MO,SigC,Z)
+
+    else
+
+      call self_energy_GF2(eta,nBas,nC,nO,nV,nR,nS,eHF,eGF2,ERI_MO,SigC,Z)
+
+    end if
 
     ! Make correlation self-energy Hermitian and transform it back to AO basis
    

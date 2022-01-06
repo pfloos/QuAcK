@@ -1,4 +1,4 @@
-subroutine UG0F2(BSE,TDA,dBSE,dTDA,evDyn,spin_conserved,spin_flip,linearize,eta,nBas,nC,nO,nV,nR,nS,ENuc,EUHF, &
+subroutine UG0F2(BSE,TDA,dBSE,dTDA,evDyn,spin_conserved,spin_flip,linearize,eta,regularize,nBas,nC,nO,nV,nR,nS,ENuc,EUHF, &
                  S,ERI,ERI_aaaa,ERI_aabb,ERI_bbbb,dipole_int_aa,dipole_int_bb,eHF)
 
 ! Perform unrestricted G0W0 calculation
@@ -18,6 +18,7 @@ subroutine UG0F2(BSE,TDA,dBSE,dTDA,evDyn,spin_conserved,spin_flip,linearize,eta,
   logical,intent(in)            :: spin_flip
   logical,intent(in)            :: linearize
   double precision,intent(in)   :: eta
+  logical,intent(in)            :: regularize
 
   integer,intent(in)            :: nBas
   integer,intent(in)            :: nC(nspin)
@@ -79,7 +80,15 @@ subroutine UG0F2(BSE,TDA,dBSE,dTDA,evDyn,spin_conserved,spin_flip,linearize,eta,
 ! Compute self-energy !
 !---------------------!
 
-  call unrestricted_self_energy_GF2_diag(nBas,nC,nO,nV,nR,eta,ERI_aaaa,ERI_aabb,ERI_bbbb,eHF,eHF,SigC,Z)
+  if(regularize) then
+
+    call unrestricted_regularized_self_energy_GF2_diag(nBas,nC,nO,nV,nR,eta,ERI_aaaa,ERI_aabb,ERI_bbbb,eHF,eHF,SigC,Z)
+
+  else
+
+    call unrestricted_self_energy_GF2_diag(nBas,nC,nO,nV,nR,eta,ERI_aaaa,ERI_aabb,ERI_bbbb,eHF,eHF,SigC,Z)
+
+  end if
 
 !-----------------------------------!
 ! Solve the quasi-particle equation !

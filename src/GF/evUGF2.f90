@@ -1,5 +1,5 @@
 subroutine evUGF2(maxSCF,thresh,max_diis,BSE,TDA,dBSE,dTDA,evDyn,spin_conserved,spin_flip, &
-                  eta,nBas,nC,nO,nV,nR,nS,ENuc,EUHF,S,ERI_AO,ERI_aaaa,ERI_aabb,ERI_bbbb,   & 
+                  eta,regularize,nBas,nC,nO,nV,nR,nS,ENuc,EUHF,S,ERI_AO,ERI_aaaa,ERI_aabb,ERI_bbbb,   & 
                   dipole_int_aa,dipole_int_bb,cHF,eHF)
 
 ! Perform self-consistent eigenvalue-only GW calculation
@@ -22,6 +22,7 @@ subroutine evUGF2(maxSCF,thresh,max_diis,BSE,TDA,dBSE,dTDA,evDyn,spin_conserved,
   logical,intent(in)            :: spin_conserved
   logical,intent(in)            :: spin_flip
   double precision,intent(in)   :: eta
+  logical,intent(in)            :: regularize
 
   integer,intent(in)            :: nBas
   integer,intent(in)            :: nC(nspin)
@@ -112,7 +113,15 @@ subroutine evUGF2(maxSCF,thresh,max_diis,BSE,TDA,dBSE,dTDA,evDyn,spin_conserved,
     ! Compute self-energy and renormalization factor !
     !------------------------------------------------!
 
-    call unrestricted_self_energy_GF2_diag(nBas,nC,nO,nV,nR,eta,ERI_aaaa,ERI_aabb,ERI_bbbb,eHF,eGF2,SigC,Z)
+    if(regularize) then
+
+      call unrestricted_regularized_self_energy_GF2_diag(nBas,nC,nO,nV,nR,eta,ERI_aaaa,ERI_aabb,ERI_bbbb,eHF,eGF2,SigC,Z)
+
+    else
+
+      call unrestricted_self_energy_GF2_diag(nBas,nC,nO,nV,nR,eta,ERI_aaaa,ERI_aabb,ERI_bbbb,eHF,eGF2,SigC,Z)
+
+    end if
 
     !-----------------------------------!
     ! Solve the quasi-particle equation !

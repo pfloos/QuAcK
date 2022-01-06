@@ -1,6 +1,6 @@
 subroutine CCSD_Ec_nc(nO,nV,t1,t2,Fov,OOVV,EcCCSD)
 
-! Compute the CCSD correlatio energy in non-conanical form
+! Compute the CCSD correlatio energy in non-canonical form
 
   implicit none
 

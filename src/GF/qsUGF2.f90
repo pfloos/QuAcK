@@ -1,4 +1,4 @@
-subroutine qsUGF2(maxSCF,thresh,max_diis,BSE,TDA,dBSE,dTDA,evDyn,spin_conserved,spin_flip,eta, &
+subroutine qsUGF2(maxSCF,thresh,max_diis,BSE,TDA,dBSE,dTDA,evDyn,spin_conserved,spin_flip,eta,regularize, &
                  nNuc,ZNuc,rNuc,ENuc,nBas,nC,nO,nV,nR,nS,EUHF,S,X,T,V,Hc,ERI_AO,               & 
                  ERI_aaaa,ERI_aabb,ERI_bbbb,dipole_int_AO,dipole_int_aa,dipole_int_bb,PHF,cHF,eHF)
 
@@ -20,6 +20,7 @@ subroutine qsUGF2(maxSCF,thresh,max_diis,BSE,TDA,dBSE,dTDA,evDyn,spin_conserved,
   logical,intent(in)            :: spin_conserved
   logical,intent(in)            :: spin_flip
   double precision,intent(in)   :: eta
+  logical,intent(in)            :: regularize
 
   integer,intent(in)            :: nNuc
   double precision,intent(in)   :: ZNuc(nNuc)
@@ -178,7 +179,15 @@ subroutine qsUGF2(maxSCF,thresh,max_diis,BSE,TDA,dBSE,dTDA,evDyn,spin_conserved,
     ! Compute self-energy and renormalization factor !
     !------------------------------------------------!
 
-    call unrestricted_self_energy_GF2(nBas,nC,nO,nV,nR,eta,ERI_aaaa,ERI_aabb,ERI_bbbb,eHF,eGF2,SigC,Z)
+    if(regularize) then 
+
+      call unrestricted_regularized_self_energy_GF2(nBas,nC,nO,nV,nR,eta,ERI_aaaa,ERI_aabb,ERI_bbbb,eHF,eGF2,SigC,Z)
+
+    else
+
+      call unrestricted_self_energy_GF2(nBas,nC,nO,nV,nR,eta,ERI_aaaa,ERI_aabb,ERI_bbbb,eHF,eGF2,SigC,Z)
+
+    end if
 
     ! Make correlation self-energy Hermitian and transform it back to AO basis
    

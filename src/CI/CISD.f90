@@ -1,4 +1,4 @@
-subroutine CISD(singlet_manifold,triplet_manifold,nBas,nC,nO,nV,nR,ERI,eHF)
+subroutine CISD(singlet_manifold,triplet_manifold,nBasin,nCin,nOin,nVin,nRin,ERIin,Fin,E0)
 
 ! Perform configuration interaction with singles and doubles
 
@@ -9,23 +9,42 @@ subroutine CISD(singlet_manifold,triplet_manifold,nBas,nC,nO,nV,nR,ERI,eHF)
 
   logical,intent(in)            :: singlet_manifold
   logical,intent(in)            :: triplet_manifold
-  integer,intent(in)            :: nBas,nC,nO,nV,nR
-  double precision,intent(in)   :: eHF(nBas)
-  double precision,intent(in)   :: ERI(nBas,nBas,nBas,nBas)
+  integer,intent(in)            :: nBasin
+  integer,intent(in)            :: nCin
+  integer,intent(in)            :: nOin
+  integer,intent(in)            :: nVin
+  integer,intent(in)            :: nRin
+  double precision,intent(in)   :: Fin(nBasin,nBasin)
+  double precision,intent(in)   :: ERIin(nBasin,nBasin,nBasin,nBasin)
+  double precision,intent(in)   :: E0
 
 ! Local variables
+
+  integer                       :: nBas
+  integer                       :: nC
+  integer                       :: nO
+  integer                       :: nV
+  integer                       :: nR
+
+  double precision,allocatable  :: F(:,:)
+  double precision,allocatable  :: sERI(:,:,:,:)
+  double precision,allocatable  :: ERI(:,:,:,:)
 
   logical                       :: dump_trans = .false.
   integer                       :: i,j,k,l
   integer                       :: a,b,c,d
-  integer                       :: ia,jb,iajb,kcld
+  integer                       :: ia,kc,iajb,kcld
   integer                       :: ishift,jshift
   integer                       :: ispin
   integer                       :: nS
   integer                       :: nD
-  integer                       :: nSD
+  integer                       :: nH
+  integer                       :: maxH 
   double precision,external     :: Kronecker_delta
-  double precision,allocatable  :: H(:,:),Omega(:)
+  double precision,allocatable  :: H(:,:)
+  double precision,allocatable  :: ECISD(:)
+
+  double precision              :: tmp
 
 ! Hello world
 
@@ -35,170 +54,257 @@ subroutine CISD(singlet_manifold,triplet_manifold,nBas,nC,nO,nV,nR,ERI,eHF)
   write(*,*)'******************************************************'
   write(*,*)
 
-! Compute CIS matrix
+! Spatial to spin orbitals
 
-  if(singlet_manifold) then
+  nBas = 2*nBasin
+  nC   = 2*nCin
+  nO   = 2*nOin
+  nV   = 2*nVin
+  nR   = 2*nRin
 
-    ispin = 1
+  allocate(F(nBas,nBas),sERI(nBas,nBas,nBas,nBas))
 
-    ! Dimensions
+  call spatial_to_spin_fock(nBasin,Fin,nBas,F)
+  call spatial_to_spin_ERI(nBasin,ERIin,nBas,sERI)
 
-    nS  = (nO - nC)*(nV - nR)
-    nD  = (nO - nC)*(nO - nC + 1)/2*(nV - nR)*(nV - nR + 1)/2
-    nSD = 1 + nS + nD
+! Antysymmetrize ERIs
 
-    print*,'nS  = ',nS 
-    print*,'nD  = ',nD 
-    print*,'nSD = ',nSD 
+  allocate(ERI(nBas,nBas,nBas,nBas))
 
-    ! Memory allocation
+  call antisymmetrize_ERI(2,nBas,sERI,ERI)
 
-    allocate(H(nSD,nSD),Omega(nSD))
-    
-    ! 0D block
+  deallocate(sERI)
 
-    ishift = 0
-    jshift = 1 + nS
+! Compute CISD matrix
 
-    iajb = 0
+  nS = (nO - nC)*(nV - nR)
+  nD = (nO - nC)*(nO - nC - 1)/2*(nV - nR)*(nV - nR - 1)/2
+  nH = 1 + nS + nD
 
-    do i=nC+1,nO
-      do a=1,nV-nR
-        do j=i,nO
-          do b=a,nV-nR
+  write(*,*) 'nS = ',nS 
+  write(*,*) 'nD = ',nD 
+  write(*,*) 'nH = ',nH
+  write(*,*)
 
-            iajb = iajb + 1
-            H(ishift+1,jshift+iajb) = ERI(i,j,nO+a,nO+b)
+  maxH = min(nH,21)
 
-          end do
+  ! Memory allocation
+
+  allocate(H(nH,nH),ECISD(nH))
+ 
+  ! 00 block
+
+  ishift = 0 
+  jshift = 0
+
+  H(ishift+1,jshift+1) = E0
+ 
+  print*,'00 block done...'
+
+  ! 0S blocks
+
+  ishift = 0 
+  jshift = 1
+
+  ia = 0
+  do i=nC+1,nO
+    do a=1,nV-nR
+
+      ia = ia + 1
+      tmp = F(i,nO+a) 
+      H(ishift+1,jshift+ia) = tmp
+      H(jshift+ia,ishift+1) = tmp
+
+    end do
+  end do
+
+  print*,'0S blocks done...'
+
+  ! 0D blocks
+
+  ishift = 0
+  jshift = 1 + nS
+
+  iajb = 0
+  do i=nC+1,nO
+    do a=1,nV-nR
+      do j=i+1,nO
+        do b=a+1,nV-nR
+
+          iajb = iajb + 1
+          tmp = ERI(i,j,nO+a,nO+b)
+
+          H(ishift+1,jshift+iajb) = tmp
+          H(jshift+iajb,ishift+1) = tmp
+
         end do
       end do
     end do
-    
-    ! SS block
+  end do
+  
+  print*,'0D blocks done...'
 
-    ishift = 1
-    jshift = 1
+  ! SS block
 
-    ia = 0
-    jb = 0
+  ishift = 1
+  jshift = 1
 
-    do i=nC+1,nO
-      do a=1,nV-nR
+  ia = 0
+  do i=nC+1,nO
+    do a=1,nV-nR
 
-        ia = ia + 1
+      ia = ia + 1
+      kc = 0
+      do k=nC+1,nO
+        do c=1,nV-nR
 
-        do j=nC+1,nO
-          do b=1,nV-nR
+          kc = kc + 1
+          tmp = E0*Kronecker_delta(i,k)*Kronecker_delta(a,c) &
+              - F(i,k)*Kronecker_delta(a,c)                  &
+              + F(nO+a,nO+c)*Kronecker_delta(i,k)            &
+              - ERI(nO+a,k,nO+c,i)
 
-            jb = jb + 1
+          H(ishift+ia,jshift+kc) = tmp
 
-            H(ishift+ia,jshift+jb) & 
-              = Kronecker_delta(i,j)*Kronecker_delta(a,b)*(eHF(nO+a) - eHF(i)) & 
-              + ERI(nO+a,j,i,nO+b) -  ERI(nO+a,j,nO+b,i)
-
-          end do
         end do
-
       end do
+
     end do
-    
-    ! SD block
+  end do
 
-    ishift = 1 
-    jshift = 1 + nS
+  print*,'SS block done...'
 
-    ia = 0
-    kcld = 0
+  ! SD blocks
 
-    do i=nC+1,nO
-      do a=1,nV-nR
+  ishift = 1 
+  jshift = 1 + nS
 
-        ia = ia + 1
+  ia = 0
+  do i=nC+1,nO
+    do a=1,nV-nR
 
-        do k=nC+1,nO
-          do c=1,nV-nR
-            do l=k,nO
-              do d=c,nV-nR
+      ia = ia + 1
+      kcld = 0
 
-                kcld = kcld + 1
+      do k=nC+1,nO
+        do c=1,nV-nR
+          do l=k+1,nO
+            do d=c+1,nV-nR
 
-                H(ishift+ia,jshift+kcld)                                               & 
-                = Kronecker_delta(i,k)*(ERI(nO+a,l,nO+c,nO+d) - ERI(nO+a,l,nO+d,nO+c)) &
-                - Kronecker_delta(i,l)*(ERI(nO+a,k,nO+c,nO+d) - ERI(nO+a,k,nO+d,nO+c)) &
-                - Kronecker_delta(a,c)*(ERI(k,l,i,nO+d)       - ERI(k,l,nO+d,i))       &
-                + Kronecker_delta(a,d)*(ERI(k,l,i,nO+c)       - ERI(k,l,nO+c,i))
+              kcld = kcld + 1
+              tmp = - F(l,nO+d)*Kronecker_delta(a,c)*Kronecker_delta(i,k) &
+                    + F(l,nO+c)*Kronecker_delta(a,d)*Kronecker_delta(i,k) &
+                    - F(k,nO+c)*Kronecker_delta(a,d)*Kronecker_delta(i,l) &
+                    + F(k,nO+d)*Kronecker_delta(a,c)*Kronecker_delta(i,l) &
+                    - ERI(k,l,nO+d,i)*Kronecker_delta(a,c)                &
+                    + ERI(k,l,nO+c,i)*Kronecker_delta(a,d)                &
+                    - ERI(nO+a,l,nO+c,nO+d)*Kronecker_delta(i,k)          &
+                    + ERI(nO+a,k,nO+c,nO+d)*Kronecker_delta(i,l)           
+                  
+              H(ishift+ia,jshift+kcld) = tmp
+              H(jshift+kcld,ishift+ia) = tmp
 
-              end do
             end do
           end do
         end do
-
       end do
+
     end do
+  end do
 
-    ! DD block
+  print*,'SD blocks done...'
 
-    ishift = 1 + nS
-    jshift = 1 + nS
+  ! DD block
 
-    iajb = 0
-    kcld = 0
+  ishift = 1 + nS
+  jshift = 1 + nS
 
-    do i=nC+1,nO
-      do a=1,nV-nR
-        do j=i,nO
-          do b=a,nV-nR
+  iajb = 0
+  do i=nC+1,nO
+    do a=1,nV-nR
+      do j=i+1,nO
+        do b=a+1,nV-nR
 
-            iajb = iajb + 1
+          iajb = iajb + 1
 
-            do k=nC+1,nO
-              do c=1,nV-nR
-                do l=k,nO
-                  do d=c,nV-nR
-         
-                    kcld = kcld + 1
-         
-!                   H(ishift+iajb,jshift+kcld)                            & 
-!                   = Kronecker_delta(i,k)*(ERI(a,l,c,d) -  ERI(a,l,d,c)) &
-!                   - Kronecker_delta(i,l)*(ERI(a,k,c,d) -  ERI(a,k,d,c)) &
-!                   - Kronecker_delta(a,c)*(ERI(k,l,i,d) -  ERI(k,l,d,i)) &
-!                   + Kronecker_delta(a,d)*(ERI(k,l,i,c) -  ERI(k,l,c,i))
-         
-                  end do
+          kcld = 0
+          do k=nC+1,nO
+            do c=1,nV-nR
+              do l=k+1,nO
+                do d=c+1,nV-nR
+       
+                  kcld = kcld + 1
+                  tmp = &
+                        E0*Kronecker_delta(i,k)*Kronecker_delta(j,l)*Kronecker_delta(a,c)*Kronecker_delta(b,d) & 
+                      + F(l,j)*Kronecker_delta(a,d)*Kronecker_delta(b,c)*Kronecker_delta(i,k) &
+                      - F(l,j)*Kronecker_delta(a,c)*Kronecker_delta(b,d)*Kronecker_delta(i,k) &
+                      - F(k,j)*Kronecker_delta(a,d)*Kronecker_delta(b,c)*Kronecker_delta(i,l) &
+                      + F(k,j)*Kronecker_delta(a,c)*Kronecker_delta(b,d)*Kronecker_delta(i,l) &
+                      - F(l,i)*Kronecker_delta(a,d)*Kronecker_delta(b,c)*Kronecker_delta(j,k) &
+                      + F(l,i)*Kronecker_delta(a,c)*Kronecker_delta(b,d)*Kronecker_delta(j,k) &
+                      + F(k,i)*Kronecker_delta(a,d)*Kronecker_delta(b,c)*Kronecker_delta(j,l) &
+                      - F(k,i)*Kronecker_delta(a,c)*Kronecker_delta(b,d)*Kronecker_delta(j,l) &
+                      + F(nO+a,nO+d)*Kronecker_delta(b,c)*Kronecker_delta(i,l)*Kronecker_delta(j,k) &
+                      - F(nO+a,nO+c)*Kronecker_delta(b,d)*Kronecker_delta(i,l)*Kronecker_delta(j,k) &
+                      - F(nO+a,nO+d)*Kronecker_delta(b,c)*Kronecker_delta(i,k)*Kronecker_delta(j,l) &
+                      + F(nO+a,nO+c)*Kronecker_delta(b,d)*Kronecker_delta(i,k)*Kronecker_delta(j,l) &
+                      - F(nO+b,nO+d)*Kronecker_delta(a,c)*Kronecker_delta(i,l)*Kronecker_delta(j,k) &
+                      + F(nO+b,nO+c)*Kronecker_delta(a,d)*Kronecker_delta(i,l)*Kronecker_delta(j,k) &
+                      + F(nO+b,nO+d)*Kronecker_delta(a,c)*Kronecker_delta(i,k)*Kronecker_delta(j,l) &
+                      - F(nO+b,nO+c)*Kronecker_delta(a,d)*Kronecker_delta(i,k)*Kronecker_delta(j,l) & 
+                      - ERI(k,l,i,j)*Kronecker_delta(a,d)*Kronecker_delta(b,c) &
+                      + ERI(k,l,i,j)*Kronecker_delta(a,c)*Kronecker_delta(b,d) &
+                      + ERI(nO+a,l,nO+d,j)*Kronecker_delta(b,c)*Kronecker_delta(i,k) & 
+                      - ERI(nO+a,l,nO+c,j)*Kronecker_delta(b,d)*Kronecker_delta(i,k) &
+                      - ERI(nO+a,k,nO+d,j)*Kronecker_delta(b,c)*Kronecker_delta(i,l) &
+                      + ERI(nO+a,k,nO+c,j)*Kronecker_delta(b,d)*Kronecker_delta(i,l) &
+                      - ERI(nO+a,l,nO+d,i)*Kronecker_delta(b,c)*Kronecker_delta(j,k) &
+                      + ERI(nO+a,l,nO+c,i)*Kronecker_delta(b,d)*Kronecker_delta(j,k) &
+                      + ERI(nO+a,k,nO+d,i)*Kronecker_delta(b,c)*Kronecker_delta(j,l) &
+                      - ERI(nO+a,k,nO+c,i)*Kronecker_delta(b,d)*Kronecker_delta(j,l) &
+                      - ERI(nO+b,l,nO+d,j)*Kronecker_delta(a,c)*Kronecker_delta(i,k) &
+                      + ERI(nO+b,l,nO+c,j)*Kronecker_delta(a,d)*Kronecker_delta(i,k) &
+                      + ERI(nO+b,k,nO+d,j)*Kronecker_delta(a,c)*Kronecker_delta(i,l) &
+                      - ERI(nO+b,k,nO+c,j)*Kronecker_delta(a,d)*Kronecker_delta(i,l) &
+                      + ERI(nO+b,l,nO+d,i)*Kronecker_delta(a,c)*Kronecker_delta(j,k) &
+                      - ERI(nO+b,l,nO+c,i)*Kronecker_delta(a,d)*Kronecker_delta(j,k) &
+                      - ERI(nO+b,k,nO+d,i)*Kronecker_delta(a,c)*Kronecker_delta(j,l) &
+                      + ERI(nO+b,k,nO+c,i)*Kronecker_delta(a,d)*Kronecker_delta(j,l) &
+                      - ERI(nO+a,nO+b,nO+c,nO+d)*Kronecker_delta(i,l)*Kronecker_delta(j,k) &
+                      + ERI(nO+a,nO+b,nO+c,nO+d)*Kronecker_delta(i,k)*Kronecker_delta(j,l)   
+
+                  H(ishift+iajb,jshift+kcld) = tmp
+       
                 end do
               end do
             end do
-
           end do
+
         end do
       end do
     end do
+  end do
 
-    call diagonalize_matrix(nSD,H,Omega)
-    call print_excitation('CISD  ',ispin,nS,Omega)
- 
-    if(dump_trans) then
-      print*,'Singlet CISD transition vectors'
-      call matout(nSD,nSD,H)
-      write(*,*)
-    endif
+  print*,'DD block done...'
 
+  write(*,*)
+  write(*,*) 'Diagonalizing CISD matrix...'
+  write(*,*)
+
+  call diagonalize_matrix(nH,H,ECISD)
+
+  print*,'CISD energies (au)'
+  call matout(maxH,1,ECISD)
+  write(*,*)
+
+  print*,'CISD excitation energies (eV)'
+  call matout(maxH-1,1,(ECISD(2:maxH)-ECISD(1))*HaToeV)
+  write(*,*)
+
+  if(dump_trans) then
+    print*,'Singlet CISD transition vectors'
+    call matout(nH,nH,H)
+    write(*,*)
   endif
-
-! if(triplet_manifold) then
-
-!   ispin = 2
-!
-!   call diagonalize_matrix(nSD,H,Omega)
-!   call print_excitation('CISD  ',ispin,nSD,Omega)
-
-!   if(dump_trans) then
-!     print*,'Triplet CIS transition vectors'
-!     call matout(nSD,nSD,H)
-!     write(*,*)
-!   endif
-
-! endif
 
 end subroutine CISD
