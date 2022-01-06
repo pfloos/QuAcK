@@ -1,4 +1,4 @@
-subroutine print_UKS(nBas,nEns,nO,Ov,wEns,eps,c,ENuc,ET,EV,EH,Ex,Ec,Ew,dipole)
+subroutine print_UKS(nBas,nEns,occnum,Ov,wEns,eps,c,ENuc,ET,EV,EH,Ex,Ec,Ew,dipole)
 
 ! Print one- and two-electron energies and other stuff for KS calculation
 
@@ -7,39 +7,54 @@ subroutine print_UKS(nBas,nEns,nO,Ov,wEns,eps,c,ENuc,ET,EV,EH,Ex,Ec,Ew,dipole)
 
 ! Input variables
 
-  integer,intent(in)                 :: nBas
-  integer,intent(in)                 :: nEns
-  integer,intent(in)                 :: nO(nspin)
-  double precision,intent(in)        :: Ov(nBas,nBas)
-  double precision,intent(in)        :: wEns(nEns)
-  double precision,intent(in)        :: eps(nBas,nspin)
-  double precision,intent(in)        :: c(nBas,nBas,nspin)
-  double precision,intent(in)        :: ENuc
-  double precision,intent(in)        :: ET(nspin)
-  double precision,intent(in)        :: EV(nspin)
-  double precision,intent(in)        :: EH(nsp)
-  double precision,intent(in)        :: Ex(nspin)
-  double precision,intent(in)        :: Ec(nsp)
-  double precision,intent(in)        :: Ew
-  double precision,intent(in)        :: dipole(ncart)
+  integer,intent(in)           :: nBas
+  integer,intent(in)           :: nEns
+  double precision,intent(in)  :: occnum(nBas,nspin,nEns)
+  double precision,intent(in)  :: Ov(nBas,nBas)
+  double precision,intent(in)  :: wEns(nEns)
+  double precision,intent(in)  :: eps(nBas,nspin)
+  double precision,intent(in)  :: c(nBas,nBas,nspin)
+  double precision,intent(in)  :: ENuc
+  double precision,intent(in)  :: ET(nspin)
+  double precision,intent(in)  :: EV(nspin)
+  double precision,intent(in)  :: EH(nsp)
+  double precision,intent(in)  :: Ex(nspin)
+  double precision,intent(in)  :: Ec(nsp)
+  double precision,intent(in)  :: Ew
+  double precision,intent(in)  :: dipole(ncart)
 
 ! Local variables
 
-  integer                            :: ixyz
-  integer                            :: ispin
-  integer                            :: iEns
-  integer                            :: iBas
-  integer                            :: HOMO(nspin)
-  integer                            :: LUMO(nspin)
-  double precision                   :: Gap(nspin)
-  double precision                   :: S_exact,S2_exact
-  double precision                   :: S,S2
+  integer                      :: ixyz
+  integer                      :: ispin
+  integer                      :: iEns
+  integer                      :: iBas
+  integer                      :: HOMO(nspin)
+  integer                      :: LUMO(nspin)
+  double precision             :: Gap(nspin)
+  double precision             :: S_exact,S2_exact
+  double precision             :: S,S2
+
+  double precision             :: nO(nspin)
+
+! Compute the number of spin-up and spin-down electrons
+
+  nO(:) = 0d0
+  do ispin=1,nspin
+    do iEns=1,nEns
+      do iBas=1,nBas
+        nO(ispin) = nO(ispin) + wEns(iEns)*occnum(iBas,ispin,iEns) 
+      end do
+    end do
+  end do
+
+  print*,'nO = ',nO
 
 ! HOMO and LUMO
 
   do ispin=1,nspin
 
-      HOMO(ispin) = nO(ispin)
+      HOMO(ispin) = ceiling(nO(ispin))
       LUMO(ispin) = HOMO(ispin) + 1
       Gap(ispin)  = eps(LUMO(ispin),ispin) - eps(HOMO(ispin),ispin)
 
@@ -47,11 +62,11 @@ subroutine print_UKS(nBas,nEns,nO,Ov,wEns,eps,c,ENuc,ET,EV,EH,Ex,Ec,Ew,dipole)
 
 ! Spin comtamination
 
-  S2_exact = dble(nO(1) - nO(2))/2d0*(dble(nO(1) - nO(2))/2d0 + 1d0)
-  S2 = S2_exact + nO(2) - sum(matmul(transpose(c(:,1:nO(1),1)),matmul(Ov,c(:,1:nO(2),2)))**2)
+! S2_exact = dble(nO(1) - nO(2))/2d0*(dble(nO(1) - nO(2))/2d0 + 1d0)
+! S2 = S2_exact + nO(2) - sum(matmul(transpose(c(:,1:nO(1),1)),matmul(Ov,c(:,1:nO(2),2)))**2)
 
-  S_exact = 0.5d0*dble(nO(1) - nO(2))
-  S = -0.5d0 + 0.5d0*sqrt(1d0 + 4d0*S2)
+! S_exact = 0.5d0*dble(nO(1) - nO(2))
+! S = -0.5d0 + 0.5d0*sqrt(1d0 + 4d0*S2)
 
 ! Dump results
 
