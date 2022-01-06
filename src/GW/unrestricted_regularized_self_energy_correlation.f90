@@ -1,4 +1,4 @@
-subroutine unrestricted_self_energy_correlation(eta,nBas,nC,nO,nV,nR,nSt,e,Omega,rho,SigC,EcGM)
+subroutine unrestricted_regularized_self_energy_correlation(eta,nBas,nC,nO,nV,nR,nSt,e,Omega,rho,SigC,EcGM)
 
 ! Compute diagonal of the correlation part of the self-energy
 
@@ -130,4 +130,4 @@ subroutine unrestricted_self_energy_correlation(eta,nBas,nC,nO,nV,nR,nSt,e,Omega
     end do
   end do
 
-end subroutine unrestricted_self_energy_correlation
+end subroutine unrestricted_regularized_self_energy_correlation
