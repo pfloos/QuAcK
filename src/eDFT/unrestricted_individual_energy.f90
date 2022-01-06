@@ -177,7 +177,9 @@ subroutine unrestricted_individual_energy(x_rung,x_DFA,c_rung,c_DFA,LDA_centered
     end do
 
   end if
-  
+ 
+  print*,"LZ shift:",sum(LZH(:)) + sum(LZx(:)) + sum(LZc(:)),"au"
+ 
 ! do iEns=1,nEns
 !   E(iEns)   = sum(ET(:,iEns)) + sum(EV(:,iEns))                     & 
 !             + sum(EH(:,iEns)) + sum(Ex(:,iEns)) + sum(Ec(:,iEns))   & 
