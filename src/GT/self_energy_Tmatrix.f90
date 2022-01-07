@@ -68,7 +68,7 @@ subroutine self_energy_Tmatrix(eta,nBas,nC,nO,nV,nR,nOO,nVV,e,Omega1,rho1,Omega2
   do i=nC+1,nO
     do j=nC+1,nO
       do cd=1,nVV
-        eps = e(i) + e(j) - Omega2(cd)
+        eps = e(i) + e(j) - Omega1(cd)
         EcGM = EcGM - rho1(i,j,cd)*rho1(i,j,cd)*eps/(eps**2 + eta**2)
       enddo
     enddo

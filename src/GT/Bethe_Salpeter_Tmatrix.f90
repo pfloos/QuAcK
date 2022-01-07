@@ -91,10 +91,10 @@ subroutine Bethe_Salpeter_Tmatrix(TDA_T,TDA,dBSE,dTDA,evDyn,singlet,triplet,eta,
                call static_Tmatrix_A(ispin,eta,nBas,nC,nO,nV,nR,nS,nOOs,nVVs,1d0,ERI,Omega1s,rho1s,Omega2s,rho2s,TA)
   if(.not.TDA) call static_Tmatrix_B(ispin,eta,nBas,nC,nO,nV,nR,nS,nOOs,nVVs,1d0,ERI,Omega1s,rho1s,Omega2s,rho2s,TB)
 
-! print*,'aa block of TA'
-! call matout(nS,nS,TA)
-! print*,'aa block of TB'
-! call matout(nS,nS,TB)
+  print*,'aa block of TA'
+  call matout(nS,nS,TA)
+  print*,'aa block of TB'
+  call matout(nS,nS,TB)
 
 !----------------------------------------------
 ! Compute T-matrix for alpha-alpha block
@@ -111,10 +111,10 @@ subroutine Bethe_Salpeter_Tmatrix(TDA_T,TDA,dBSE,dTDA,evDyn,singlet,triplet,eta,
                call static_Tmatrix_A(ispin,eta,nBas,nC,nO,nV,nR,nS,nOOt,nVVt,1d0,ERI,Omega1t,rho1t,Omega2t,rho2t,TA)
   if(.not.TDA) call static_Tmatrix_B(ispin,eta,nBas,nC,nO,nV,nR,nS,nOOt,nVVt,1d0,ERI,Omega1t,rho1t,Omega2t,rho2t,TB)
 
-! print*,'aa+ab block of TA'
-! call matout(nS,nS,TA)
-! print*,'aa+ab block of TB'
-! call matout(nS,nS,TB)
+  print*,'aa+ab block of TA'
+  call matout(nS,nS,TA)
+  print*,'aa+ab block of TB'
+  call matout(nS,nS,TB)
 
 !-------------------
 ! Singlet manifold
