@@ -42,8 +42,9 @@ subroutine linear_response_Tmatrix(ispin,dRPA,TDA,eta,nBas,nC,nO,nV,nR,nS,lambda
 
   call linear_response_A_matrix(ispin,dRPA,nBas,nC,nO,nV,nR,nS,lambda,e,ERI,A)
 
-  if(ispin == 1) A(:,:) = A(:,:) + A_BSE(:,:)
-  if(ispin == 2) A(:,:) = A(:,:) - A_BSE(:,:)
+  A(:,:) = A(:,:) + A_BSE(:,:)
+! if(ispin == 1) A(:,:) = A(:,:) + A_BSE(:,:)
+! if(ispin == 2) A(:,:) = A(:,:) - A_BSE(:,:)
 
 ! print*,'A'
 ! call matout(nS,nS,A)
@@ -64,8 +65,9 @@ subroutine linear_response_Tmatrix(ispin,dRPA,TDA,eta,nBas,nC,nO,nV,nR,nS,lambda
 
     call linear_response_B_matrix(ispin,dRPA,nBas,nC,nO,nV,nR,nS,lambda,ERI,B)
 
-    if(ispin == 1) B(:,:) = B(:,:) + B_BSE(:,:)
-    if(ispin == 2) B(:,:) = B(:,:) - B_BSE(:,:)
+    B(:,:) = B(:,:) + B_BSE(:,:)
+!   if(ispin == 1) B(:,:) = B(:,:) + B_BSE(:,:)
+!   if(ispin == 2) B(:,:) = B(:,:) - B_BSE(:,:)
 
 ! print*,'B'
 ! call matout(nS,nS,B)

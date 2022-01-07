@@ -184,7 +184,7 @@ subroutine eDFT_UKS(x_rung,x_DFA,c_rung,c_DFA,nEns,wEns,nCC,aCC,nGrid,weight,max
 !   Compute density matrix 
 !------------------------------------------------------------------------
 
-    call unrestricted_density_matrix(nBas,nEns,c(:,:,:),P(:,:,:,:),occnum(:,:,:))
+    call density_matrix(nBas,nEns,c(:,:,:),P(:,:,:,:),occnum(:,:,:))
  
 !   Weight-dependent density matrix
     
@@ -236,20 +236,20 @@ subroutine eDFT_UKS(x_rung,x_DFA,c_rung,c_DFA,nEns,wEns,nCC,aCC,nGrid,weight,max
 !   Compute Hartree potential 
 
     do ispin=1,nspin
-      call unrestricted_hartree_potential(nBas,Pw(:,:,ispin),ERI,J(:,:,ispin))
+      call hartree_potential(nBas,Pw(:,:,ispin),ERI,J(:,:,ispin))
     end do
 
 !   Compute exchange potential
 
     do ispin=1,nspin
-      call unrestricted_exchange_potential(x_rung,x_DFA,LDA_centered,nEns,wEns,nCC,aCC,nGrid,weight,nBas, &
+      call exchange_potential(x_rung,x_DFA,LDA_centered,nEns,wEns,nCC,aCC,nGrid,weight,nBas, &
                                            Pw(:,:,ispin),ERI,AO,dAO,rhow(:,ispin),drhow(:,:,ispin),       &
                                            Cx_choice,doNcentered,Fx(:,:,ispin),FxHF(:,:,ispin))
     end do
 
 !   Compute correlation potential
 
-    call unrestricted_correlation_potential(c_rung,c_DFA,nEns,wEns,nGrid,weight,nBas,AO,dAO,rhow,drhow,Fc)
+    call correlation_potential(c_rung,c_DFA,nEns,wEns,nGrid,weight,nBas,AO,dAO,rhow,drhow,Fc)
 
 !   Build Fock operator
 
@@ -314,19 +314,19 @@ subroutine eDFT_UKS(x_rung,x_DFA,c_rung,c_DFA,nEns,wEns,nCC,aCC,nGrid,weight,max
 
 !   Hartree energy
 
-    call unrestricted_hartree_energy(nBas,Pw,J,EH)
+    call hartree_energy(nBas,Pw,J,EH)
 
 !   Exchange energy
 
     do ispin=1,nspin
-      call unrestricted_exchange_energy(x_rung,x_DFA,LDA_centered,nEns,wEns,nCC,aCC,nGrid,weight,nBas, &
+      call exchange_energy(x_rung,x_DFA,LDA_centered,nEns,wEns,nCC,aCC,nGrid,weight,nBas, &
                                         Pw(:,:,ispin),FxHF(:,:,ispin),rhow(:,ispin),drhow(:,:,ispin),  &
                                         Cx_choice,doNcentered,Ex(ispin))
     end do
 
 !   Correlation energy
 
-    call unrestricted_correlation_energy(c_rung,c_DFA,nEns,wEns,nGrid,weight,rhow,drhow,Ec)
+    call correlation_energy(c_rung,c_DFA,nEns,wEns,nGrid,weight,rhow,drhow,Ec)
 
 !   Total energy
 
@@ -377,7 +377,7 @@ subroutine eDFT_UKS(x_rung,x_DFA,c_rung,c_DFA,nEns,wEns,nCC,aCC,nGrid,weight,max
 ! Compute individual energies from ensemble energy
 !------------------------------------------------------------------------
 
-  call unrestricted_individual_energy(x_rung,x_DFA,c_rung,c_DFA,LDA_centered,nEns,wEns,nCC,aCC,nGrid,weight,nBas,      &
+  call individual_energy(x_rung,x_DFA,c_rung,c_DFA,LDA_centered,nEns,wEns,nCC,aCC,nGrid,weight,nBas,      &
                                       AO,dAO,T,V,ERI,ENuc,eKS,Pw,rhow,drhow,J,Fx,FxHF,Fc,P,rho,drho,occnum,Cx_choice,doNcentered,Ew)
 
 end subroutine eDFT_UKS
