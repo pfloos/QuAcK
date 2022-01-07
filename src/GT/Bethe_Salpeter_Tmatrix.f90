@@ -58,7 +58,8 @@ subroutine Bethe_Salpeter_Tmatrix(TDA_T,TDA,dBSE,dTDA,evDyn,singlet,triplet,eta,
   integer                       :: iblock
 
   double precision              :: EcRPA(nspin)
-  double precision,allocatable  :: TA(:,:),TB(:,:)
+  double precision,allocatable  :: TAs(:,:),TBs(:,:)
+  double precision,allocatable  :: TAt(:,:),TBt(:,:)
   double precision,allocatable  :: OmBSE(:,:)
   double precision,allocatable  :: XpY_BSE(:,:,:)
   double precision,allocatable  :: XmY_BSE(:,:,:)
@@ -69,12 +70,8 @@ subroutine Bethe_Salpeter_Tmatrix(TDA_T,TDA,dBSE,dTDA,evDyn,singlet,triplet,eta,
 
 ! Memory allocation
 
-  allocate(TA(nS,nS),TB(nS,nS),OmBSE(nS,nspin),XpY_BSE(nS,nS,nspin),XmY_BSE(nS,nS,nspin))
-
-! Initialize T matrix
-
-  TA(:,:) = 0d0
-  TB(:,:) = 0d0
+  allocate(TAs(nS,nS),TBs(nS,nS),TAt(nS,nS),TBt(nS,nS), & 
+           OmBSE(nS,nspin),XpY_BSE(nS,nS,nspin),XmY_BSE(nS,nS,nspin))
 
 !----------------------------------------------
 ! Compute T-matrix for alpha-beta block
@@ -88,13 +85,13 @@ subroutine Bethe_Salpeter_Tmatrix(TDA_T,TDA,dBSE,dTDA,evDyn,singlet,triplet,eta,
 
 ! call excitation_density_Tmatrix(iblock,nBas,nC,nO,nV,nR,nOOs,nVVs,ERI,X1s,Y1s,rho1s,X2s,Y2s,rho2s)
 
-               call static_Tmatrix_A(ispin,eta,nBas,nC,nO,nV,nR,nS,nOOs,nVVs,1d0,ERI,Omega1s,rho1s,Omega2s,rho2s,TA)
-  if(.not.TDA) call static_Tmatrix_B(ispin,eta,nBas,nC,nO,nV,nR,nS,nOOs,nVVs,1d0,ERI,Omega1s,rho1s,Omega2s,rho2s,TB)
+               call static_Tmatrix_A(ispin,eta,nBas,nC,nO,nV,nR,nS,nOOs,nVVs,1d0,ERI,Omega1s,rho1s,Omega2s,rho2s,TAs)
+  if(.not.TDA) call static_Tmatrix_B(ispin,eta,nBas,nC,nO,nV,nR,nS,nOOs,nVVs,1d0,ERI,Omega1s,rho1s,Omega2s,rho2s,TBs)
 
-  print*,'aa block of TA'
-  call matout(nS,nS,TA)
-  print*,'aa block of TB'
-  call matout(nS,nS,TB)
+  print*,'ab block of TAxs'
+  call matout(nS,nS,TAs)
+  print*,'ab block of TB'
+  call matout(nS,nS,TBs)
 
 !----------------------------------------------
 ! Compute T-matrix for alpha-alpha block
@@ -108,13 +105,19 @@ subroutine Bethe_Salpeter_Tmatrix(TDA_T,TDA,dBSE,dTDA,evDyn,singlet,triplet,eta,
 
 ! call excitation_density_Tmatrix(iblock,nBas,nC,nO,nV,nR,nOOt,nVVt,ERI,X1t,Y1t,rho1t,X2t,Y2t,rho2t)
 
-               call static_Tmatrix_A(ispin,eta,nBas,nC,nO,nV,nR,nS,nOOt,nVVt,1d0,ERI,Omega1t,rho1t,Omega2t,rho2t,TA)
-  if(.not.TDA) call static_Tmatrix_B(ispin,eta,nBas,nC,nO,nV,nR,nS,nOOt,nVVt,1d0,ERI,Omega1t,rho1t,Omega2t,rho2t,TB)
+               call static_Tmatrix_A(ispin,eta,nBas,nC,nO,nV,nR,nS,nOOt,nVVt,1d0,ERI,Omega1t,rho1t,Omega2t,rho2t,TAt)
+  if(.not.TDA) call static_Tmatrix_B(ispin,eta,nBas,nC,nO,nV,nR,nS,nOOt,nVVt,1d0,ERI,Omega1t,rho1t,Omega2t,rho2t,TBt)
 
-  print*,'aa+ab block of TA'
-  call matout(nS,nS,TA)
-  print*,'aa+ab block of TB'
-  call matout(nS,nS,TB)
+  print*,'aa block of TA'
+  call matout(nS,nS,TAt)
+  print*,'aa block of TB'
+  call matout(nS,nS,TBt)
+
+  TAs(:,:) = TAs(:,:) - TAt(:,:)
+  TBs(:,:) = TBs(:,:) - TBt(:,:)
+
+  TAt(:,:) = - TAs(:,:)
+  TBt(:,:) = - TBs(:,:)
 
 !-------------------
 ! Singlet manifold
@@ -127,7 +130,7 @@ subroutine Bethe_Salpeter_Tmatrix(TDA_T,TDA,dBSE,dTDA,evDyn,singlet,triplet,eta,
 
     ! Compute BSE singlet excitation energies
 
-    call linear_response_Tmatrix(ispin,.false.,TDA,eta,nBas,nC,nO,nV,nR,nS,1d0,eGT,ERI,TA,TB, &
+    call linear_response_Tmatrix(ispin,.false.,TDA,eta,nBas,nC,nO,nV,nR,nS,1d0,eGT,ERI,TAs,TBs, &
                                  EcBSE(ispin),OmBSE(:,ispin),XpY_BSE(:,:,ispin),XmY_BSE(:,:,ispin))
 
     call print_excitation('BSE@GT      ',ispin,nS,OmBSE(:,ispin))
@@ -168,7 +171,7 @@ subroutine Bethe_Salpeter_Tmatrix(TDA_T,TDA,dBSE,dTDA,evDyn,singlet,triplet,eta,
 
     ! Compute BSE triplet excitation energies
 
-    call linear_response_Tmatrix(ispin,.false.,TDA,eta,nBas,nC,nO,nV,nR,nS,1d0,eGT,ERI,TA,TB, &
+    call linear_response_Tmatrix(ispin,.false.,TDA,eta,nBas,nC,nO,nV,nR,nS,1d0,eGT,ERI,TAt,TBt, &
                                  EcBSE(ispin),OmBSE(:,ispin),XpY_BSE(:,:,ispin),XmY_BSE(:,:,ispin))
     call print_excitation('BSE@GT      ',ispin,nS,OmBSE(:,ispin))
     call print_transition_vectors(.false.,nBas,nC,nO,nV,nR,nS,dipole_int, & 

@@ -34,6 +34,8 @@ subroutine static_Tmatrix_A(ispin,eta,nBas,nC,nO,nV,nR,nS,nOO,nVV,lambda,ERI,Ome
 
   double precision,intent(out)  :: TA(nS,nS)
 
+  TA(:,:) = 0d0
+
   ia = 0
   do i=nC+1,nO
     do a=nO+1,nBas-nR
