@@ -1,4 +1,4 @@
-subroutine exchange_potential(nBas,c,Fx,Vx)
+subroutine mo_fock_exchange_potential(nBas,c,Fx,Vx)
 
 ! Compute the exchange potential in the MO basis
 
@@ -31,4 +31,4 @@ subroutine exchange_potential(nBas,c,Fx,Vx)
     end do
   end do
 
-end subroutine exchange_potential
+end subroutine mo_fock_exchange_potential
