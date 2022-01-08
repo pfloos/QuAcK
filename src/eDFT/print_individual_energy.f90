@@ -149,12 +149,12 @@ subroutine print_individual_energy(nEns,ENuc,Ew,ET,EV,EH,Ex,Ec,Eaux,LZH,LZx,LZc,
   write(*,'(A40,F16.10,A3)') '   H Levy-Zahariev shift: ',sum(LZH(:)),' au'
   write(*,'(A40,F16.10,A3)') '   x Levy-Zahariev shift: ',sum(LZx(:)),' au'
   write(*,'(A40,F16.10,A3)') '   c Levy-Zahariev shift: ',sum(LZc(:)),' au'
-  write(*,'(A40,F16.10,A3)') ' Hxc Levy-Zahariev shift: ',sum(LZH(:))+sum(LZx(:))+sum(LZx(:)),' au'
+  write(*,'(A40,F16.10,A3)') ' Hxc Levy-Zahariev shift: ',sum(LZH(:))+sum(LZx(:))+sum(LZc(:)),' au'
   write(*,*)
   write(*,'(A40,F16.10,A3)') '   H Levy-Zahariev shift: ',sum(LZH(:))*HaToeV,' eV'
   write(*,'(A40,F16.10,A3)') '   x Levy-Zahariev shift: ',sum(LZx(:))*HaToeV,' eV'
   write(*,'(A40,F16.10,A3)') '   c Levy-Zahariev shift: ',sum(LZc(:))*HaToeV,' eV'
-  write(*,'(A40,F16.10,A3)') ' Hxc Levy-Zahariev shift: ',(sum(LZH(:))+sum(LZx(:))+sum(LZx(:)))*HaToeV,' eV'
+  write(*,'(A40,F16.10,A3)') ' Hxc Levy-Zahariev shift: ',(sum(LZH(:))+sum(LZx(:))+sum(LZc(:)))*HaToeV,' eV'
   write(*,'(A60)')           '-------------------------------------------------'
   write(*,*)
 

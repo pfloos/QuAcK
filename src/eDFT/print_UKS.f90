@@ -66,7 +66,7 @@ subroutine print_UKS(nBas,nEns,occnum,Ov,wEns,eps,c,ENuc,ET,EV,EH,Ex,Ec,Ew,dipol
   HOMOb = -huge(0d0)
   if(iHOMOb > 0) HOMOb = eps(iHOMOb,2)
   LUMOb = +huge(0d0) 
-  if(iLUMOb <= nBas) LUMOb = eps(iLUMOb,1)
+  if(iLUMOb <= nBas) LUMOb = eps(iLUMOb,2)
 
   HOMO = max(HOMOa,HOMOb)
   LUMO = min(LUMOa,LUMOb)
