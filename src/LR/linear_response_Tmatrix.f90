@@ -42,10 +42,10 @@ subroutine linear_response_Tmatrix(ispin,dRPA,TDA,eta,nBas,nC,nO,nV,nR,nS,lambda
 
   call linear_response_A_matrix(ispin,dRPA,nBas,nC,nO,nV,nR,nS,lambda,e,ERI,A)
 
-  print*,'A'
-  call matout(nS,nS,A)
-  print*,'TA'
-  call matout(nS,nS,A_BSE)
+! print*,'A'
+! call matout(nS,nS,A)
+! print*,'TA'
+! call matout(nS,nS,A_BSE)
 
   A(:,:) = A(:,:) + A_BSE(:,:)
 
@@ -63,10 +63,10 @@ subroutine linear_response_Tmatrix(ispin,dRPA,TDA,eta,nBas,nC,nO,nV,nR,nS,lambda
 
     call linear_response_B_matrix(ispin,dRPA,nBas,nC,nO,nV,nR,nS,lambda,ERI,B)
 
-    print*,'B'
-    call matout(nS,nS,B)
-    print*,'TB'
-    call matout(nS,nS,B_BSE)
+!   print*,'B'
+!   call matout(nS,nS,B)
+!   print*,'TB'
+!   call matout(nS,nS,B_BSE)
 
     B(:,:) = B(:,:) + B_BSE(:,:)
 
