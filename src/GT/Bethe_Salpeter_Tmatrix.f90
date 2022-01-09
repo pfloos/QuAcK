@@ -88,10 +88,10 @@ subroutine Bethe_Salpeter_Tmatrix(TDA_T,TDA,dBSE,dTDA,evDyn,singlet,triplet,eta,
                call static_Tmatrix_A(ispin,eta,nBas,nC,nO,nV,nR,nS,nOOs,nVVs,1d0,ERI,Omega1s,rho1s,Omega2s,rho2s,TAs)
   if(.not.TDA) call static_Tmatrix_B(ispin,eta,nBas,nC,nO,nV,nR,nS,nOOs,nVVs,1d0,ERI,Omega1s,rho1s,Omega2s,rho2s,TBs)
 
-  print*,'ab block of TAxs'
-  call matout(nS,nS,TAs)
-  print*,'ab block of TB'
-  call matout(nS,nS,TBs)
+! print*,'ab block of TA'
+! call matout(nS,nS,TAs)
+! print*,'ab block of TB'
+! call matout(nS,nS,TBs)
 
 !----------------------------------------------
 ! Compute T-matrix for alpha-alpha block
@@ -108,16 +108,10 @@ subroutine Bethe_Salpeter_Tmatrix(TDA_T,TDA,dBSE,dTDA,evDyn,singlet,triplet,eta,
                call static_Tmatrix_A(ispin,eta,nBas,nC,nO,nV,nR,nS,nOOt,nVVt,1d0,ERI,Omega1t,rho1t,Omega2t,rho2t,TAt)
   if(.not.TDA) call static_Tmatrix_B(ispin,eta,nBas,nC,nO,nV,nR,nS,nOOt,nVVt,1d0,ERI,Omega1t,rho1t,Omega2t,rho2t,TBt)
 
-  print*,'aa block of TA'
-  call matout(nS,nS,TAt)
-  print*,'aa block of TB'
-  call matout(nS,nS,TBt)
-
-  TAs(:,:) = TAs(:,:) - TAt(:,:)
-  TBs(:,:) = TBs(:,:) - TBt(:,:)
-
-  TAt(:,:) = - TAs(:,:)
-  TBt(:,:) = - TBs(:,:)
+! print*,'aa block of TA'
+! call matout(nS,nS,TAt)
+! print*,'aa block of TB'
+! call matout(nS,nS,TBt)
 
 !-------------------
 ! Singlet manifold
@@ -130,7 +124,7 @@ subroutine Bethe_Salpeter_Tmatrix(TDA_T,TDA,dBSE,dTDA,evDyn,singlet,triplet,eta,
 
     ! Compute BSE singlet excitation energies
 
-    call linear_response_Tmatrix(ispin,.false.,TDA,eta,nBas,nC,nO,nV,nR,nS,1d0,eGT,ERI,TAs,TBs, &
+    call linear_response_Tmatrix(ispin,.false.,TDA,eta,nBas,nC,nO,nV,nR,nS,1d0,eGT,ERI,TAs+TAt,TBs+TBt, &
                                  EcBSE(ispin),OmBSE(:,ispin),XpY_BSE(:,:,ispin),XmY_BSE(:,:,ispin))
 
     call print_excitation('BSE@GT      ',ispin,nS,OmBSE(:,ispin))
@@ -171,7 +165,7 @@ subroutine Bethe_Salpeter_Tmatrix(TDA_T,TDA,dBSE,dTDA,evDyn,singlet,triplet,eta,
 
     ! Compute BSE triplet excitation energies
 
-    call linear_response_Tmatrix(ispin,.false.,TDA,eta,nBas,nC,nO,nV,nR,nS,1d0,eGT,ERI,TAt,TBt, &
+    call linear_response_Tmatrix(ispin,.false.,TDA,eta,nBas,nC,nO,nV,nR,nS,1d0,eGT,ERI,TAt-TAs,TBt-TBs, &
                                  EcBSE(ispin),OmBSE(:,ispin),XpY_BSE(:,:,ispin),XmY_BSE(:,:,ispin))
     call print_excitation('BSE@GT      ',ispin,nS,OmBSE(:,ispin))
     call print_transition_vectors(.false.,nBas,nC,nO,nV,nR,nS,dipole_int, & 

@@ -48,8 +48,6 @@ subroutine linear_response_Tmatrix(ispin,dRPA,TDA,eta,nBas,nC,nO,nV,nR,nS,lambda
   call matout(nS,nS,A_BSE)
 
   A(:,:) = A(:,:) + A_BSE(:,:)
-! if(ispin == 1) A(:,:) = A(:,:) + A_BSE(:,:)
-! if(ispin == 2) A(:,:) = A(:,:) - A_BSE(:,:)
 
 ! Tamm-Dancoff approximation
 
@@ -71,8 +69,6 @@ subroutine linear_response_Tmatrix(ispin,dRPA,TDA,eta,nBas,nC,nO,nV,nR,nS,lambda
     call matout(nS,nS,B_BSE)
 
     B(:,:) = B(:,:) + B_BSE(:,:)
-!   if(ispin == 1) B(:,:) = B(:,:) + B_BSE(:,:)
-!   if(ispin == 2) B(:,:) = B(:,:) - B_BSE(:,:)
 
     ! Build A + B and A - B matrices 
 

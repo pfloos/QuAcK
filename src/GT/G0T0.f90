@@ -80,10 +80,10 @@ subroutine G0T0(doACFDT,exchange_kernel,doXBS,BSE,TDA_T,TDA,dBSE,dTDA,evDyn,sing
 
 ! Dimensions of the pp-RPA linear reponse matrices
 
-  nOOs = nO*(nO + 1)/2
-  nVVs = nV*(nV + 1)/2
-! nOOs = nO*nO
-! nVVs = nV*nV
+! nOOs = nO*(nO + 1)/2
+! nVVs = nV*(nV + 1)/2
+  nOOs = nO*nO
+  nVVs = nV*nV
 
   nOOt = nO*(nO - 1)/2
   nVVt = nV*(nV - 1)/2
@@ -103,8 +103,8 @@ subroutine G0T0(doACFDT,exchange_kernel,doXBS,BSE,TDA_T,TDA,dBSE,dTDA,evDyn,sing
 !----------------------------------------------
 
   ispin  = 1
-  iblock = 1
-! iblock = 3
+! iblock = 1
+  iblock = 3
 
 ! Compute linear response
 
@@ -142,8 +142,8 @@ subroutine G0T0(doACFDT,exchange_kernel,doXBS,BSE,TDA_T,TDA,dBSE,dTDA,evDyn,sing
   SigT(:) = 0d0
   Z(:)    = 0d0
 
-  iblock = 1
-! iblock = 3
+! iblock = 1
+  iblock = 3
 
   call excitation_density_Tmatrix(iblock,nBas,nC,nO,nV,nR,nOOs,nVVs,ERI_MO,X1s,Y1s,rho1s,X2s,Y2s,rho2s)
 
@@ -189,8 +189,8 @@ subroutine G0T0(doACFDT,exchange_kernel,doXBS,BSE,TDA_T,TDA,dBSE,dTDA,evDyn,sing
 ! Compute the ppRPA correlation energy
 
   ispin  = 1
-! iblock = 3
-  iblock = 1
+  iblock = 3
+! iblock = 1
 
   call linear_response_pp(iblock,TDA_T,nBas,nC,nO,nV,nR,nOOs,nVVs,1d0,eG0T0,ERI_MO,  & 
                           Omega1s,X1s,Y1s,Omega2s,X2s,Y2s,EcRPA(ispin))
