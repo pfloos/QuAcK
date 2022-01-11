@@ -29,7 +29,7 @@ subroutine Bethe_Salpeter_dynamic_perturbation(dTDA,eta,nBas,nC,nO,nV,nR,nS,eW,e
 
   integer                       :: ia
 
-  integer,parameter             :: maxS = 10
+  integer                       :: maxS = 10
   double precision              :: gapGW
 
   double precision,allocatable  :: OmDyn(:)
@@ -51,7 +51,8 @@ subroutine Bethe_Salpeter_dynamic_perturbation(dTDA,eta,nBas,nC,nO,nV,nR,nS,eW,e
 
 ! Memory allocation
 
-  allocate(OmDyn(nS),ZDyn(nS),X(nS),Y(nS),Ap_dyn(nS,nS),ZAp_dyn(nS,nS))
+  maxS = min(nS,maxS)
+  allocate(OmDyn(maxS),ZDyn(maxS),X(nS),Y(nS),Ap_dyn(nS,nS),ZAp_dyn(nS,nS))
 
   if(.not.dTDA) allocate(Am_dyn(nS,nS),ZAm_dyn(nS,nS),Bp_dyn(nS,nS),ZBp_dyn(nS,nS),Bm_dyn(nS,nS),ZBm_dyn(nS,nS))
 
@@ -71,7 +72,7 @@ subroutine Bethe_Salpeter_dynamic_perturbation(dTDA,eta,nBas,nC,nO,nV,nR,nS,eW,e
   write(*,'(2X,A5,1X,A20,1X,A20,1X,A20,1X,A20)') '#','Static (eV)','Dynamic (eV)','Correction (eV)','Renorm. (eV)'
   write(*,*) '---------------------------------------------------------------------------------------------------'
 
-  do ia=1,min(nS,maxS)
+  do ia=1,maxS
 
     X(:) = 0.5d0*(XpY(ia,:) + XmY(ia,:))
     Y(:) = 0.5d0*(XpY(ia,:) - XmY(ia,:))

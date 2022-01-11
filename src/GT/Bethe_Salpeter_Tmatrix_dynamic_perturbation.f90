@@ -1,5 +1,7 @@
-subroutine Bethe_Salpeter_Tmatrix_dynamic_perturbation(dTDA,eta,nBas,nC,nO,nV,nR,nS,nOO,nVV,Omega1,Omega2,rho1,rho2, &
-                                                       eT,eGT,dipole_int,OmBSE,XpY,XmY)
+subroutine Bethe_Salpeter_Tmatrix_dynamic_perturbation(singlet,triplet,dTDA,eta,nBas,nC,nO,nV,nR,nS,nOOs,nVVs,nOOt,nVVt, &
+                                                       Omega1s,Omega2s,Omega1t,Omega2t,rho1s,rho2s,rho1t,rho2t,eT,eGT,   &
+                                                       dipole_int,OmBSE,XpY,XmY,TAs,TBs,TAt,TBt)
+
 ! Compute dynamical effects via perturbation theory for BSE@GT
 
   implicit none
@@ -7,6 +9,8 @@ subroutine Bethe_Salpeter_Tmatrix_dynamic_perturbation(dTDA,eta,nBas,nC,nO,nV,nR
 
 ! Input variables
 
+  logical,intent(in)            :: singlet
+  logical,intent(in)            :: triplet
   logical,intent(in)            :: dTDA 
   double precision,intent(in)   :: eta
   integer,intent(in)            :: nBas
@@ -16,116 +20,152 @@ subroutine Bethe_Salpeter_Tmatrix_dynamic_perturbation(dTDA,eta,nBas,nC,nO,nV,nR
   integer,intent(in)            :: nR
   integer,intent(in)            :: nS
 
-  integer,intent(in)            :: nOO
-  integer,intent(in)            :: nVV
+  integer,intent(in)            :: nOOs
+  integer,intent(in)            :: nVVs
+  integer,intent(in)            :: nOOt
+  integer,intent(in)            :: nVVt
 
   double precision,intent(in)   :: eT(nBas)
   double precision,intent(in)   :: eGT(nBas)
   double precision,intent(in)   :: dipole_int(nBas,nBas,ncart)
-  double precision,intent(in)   :: OmBSE(nS)
-  double precision,intent(in)   :: XpY(nS,nS)
-  double precision,intent(in)   :: XmY(nS,nS)
+  double precision,intent(in)   :: OmBSE(nS,nspin)
+  double precision,intent(in)   :: XpY(nS,nS,nspin)
+  double precision,intent(in)   :: XmY(nS,nS,nspin)
 
-  double precision,intent(in)   :: Omega1(nVV)
-  double precision,intent(in)   :: Omega2(nOO)
-  double precision,intent(in)   :: rho1(nBas,nBas,nVV)
-  double precision,intent(in)   :: rho2(nBas,nBas,nOO)
+  double precision,intent(in)   :: Omega1s(nVVs)
+  double precision,intent(in)   :: Omega2s(nOOs)
+  double precision,intent(in)   :: rho1s(nBas,nBas,nVVs)
+  double precision,intent(in)   :: rho2s(nBas,nBas,nOOs)
+  double precision,intent(in)   :: Omega1t(nVVt)
+  double precision,intent(in)   :: Omega2t(nOOt)
+  double precision,intent(in)   :: rho1t(nBas,nBas,nVVt)
+  double precision,intent(in)   :: rho2t(nBas,nBas,nOOt)
+
+  double precision,intent(in)   :: TAs(nS,nS)
+  double precision,intent(in)   :: TBs(nS,nS)
+  double precision,intent(in)   :: TAt(nS,nS)
+  double precision,intent(in)   :: TBt(nS,nS)
 
 ! Local variables
 
   integer                       :: ia
+  integer                       :: ispin
 
-  integer,parameter             :: maxS = 10
+  integer                       :: maxS = 10
   double precision              :: gapGT
 
-  double precision,allocatable  :: OmDyn(:)
-  double precision,allocatable  :: ZDyn(:)
+  double precision,allocatable  :: OmDyn(:,:)
+  double precision,allocatable  :: ZDyn(:,:)
   double precision,allocatable  :: X(:)
   double precision,allocatable  :: Y(:)
 
-  double precision,allocatable  ::  Ap_dyn(:,:)
-  double precision,allocatable  :: ZAp_dyn(:,:)
+  double precision,allocatable  :: dTAs(:,:)
+  double precision,allocatable  :: ZAs(:,:)
 
-  double precision,allocatable  ::  Bp_dyn(:,:)
-  double precision,allocatable  :: ZBp_dyn(:,:)
-
-  double precision,allocatable  ::  Am_dyn(:,:)
-  double precision,allocatable  :: ZAm_dyn(:,:)
-
-  double precision,allocatable  ::  Bm_dyn(:,:)
-  double precision,allocatable  :: ZBm_dyn(:,:)
+  double precision,allocatable  :: dTAt(:,:)
+  double precision,allocatable  :: ZAt(:,:)
 
 ! Memory allocation
 
-  allocate(OmDyn(nS),ZDyn(nS),X(nS),Y(nS),Ap_dyn(nS,nS),ZAp_dyn(nS,nS))
-
-  if(.not.dTDA) allocate(Am_dyn(nS,nS),ZAm_dyn(nS,nS),Bp_dyn(nS,nS),ZBp_dyn(nS,nS),Bm_dyn(nS,nS),ZBm_dyn(nS,nS))
+  maxS = min(nS,maxS)
+  allocate(OmDyn(maxS,nspin),ZDyn(maxS,nspin),X(nS),Y(nS),dTAs(nS,nS),ZAs(nS,nS),dTAt(nS,nS),ZAt(nS,nS))
 
   if(dTDA) then 
     write(*,*)
     write(*,*) '*** dynamical TDA activated ***'
     write(*,*)
+  else
+    print*, ' Beyond-TDA dynamical correction for BSE@GT NYI'
+    return
   end if
+
+  OmDyn(:,:) = 0d0
+  ZDyn(:,:)  = 0d0
+
+  do ia=1,maxS
+
+  ! Compute dynamical T-matrix for alpha-beta block !
+
+    ispin = 1
+    call dynamic_Tmatrix_A(eta,nBas,nC,nO,nV,nR,nS,nOOs,nVVs,1d0,eGT,Omega1s,Omega2s,rho1s,rho2s,OmBSE(ia,ispin),dTAs,ZAs)
+ 
+  ! Compute dynamical T-matrix for alpha-beta block !
+
+    ispin = 2
+    call dynamic_Tmatrix_A(eta,nBas,nC,nO,nV,nR,nS,nOOt,nVVt,1d0,eGT,Omega1t,Omega2t,rho1t,rho2t,OmBSE(ia,ispin),dTAt,ZAt)
+
+    do ispin=1,nspin
+ 
+      X(:) = 0.5d0*(XpY(ia,:,ispin) + XmY(ia,:,ispin))
+      Y(:) = 0.5d0*(XpY(ia,:,ispin) - XmY(ia,:,ispin))
+
+      ! First-order correction 
+     
+      if(ispin == 1) then 
+        ZDyn(ia,ispin)  = dot_product(X,matmul(ZAt+ZAs,X)) 
+        OmDyn(ia,ispin) = dot_product(X,matmul(dTAt+dTAs,X)) - dot_product(X,matmul(TAt+TAs,X))
+      end if
+
+      if(ispin == 2) then 
+        ZDyn(ia,ispin)  = dot_product(X,matmul(ZAt-ZAs,X)) 
+        OmDyn(ia,ispin) = dot_product(X,matmul(dTAt-dTAs,X)) - dot_product(X,matmul(TAt-TAs,X))
+      end if
+     
+      ZDyn(ia,ispin)  = 1d0/(1d0 - ZDyn(ia,ispin))
+      OmDyn(ia,ispin) = ZDyn(ia,ispin)*OmDyn(ia,ispin)
+
+    end do
+
+  end do
+
+!--------------!
+! Dump results !
+!--------------!
 
   gapGT = eGT(nO+1) - eGT(nO) 
 
-  write(*,*) '---------------------------------------------------------------------------------------------------'
-  write(*,*) ' First-order dynamical correction to static Bethe-Salpeter excitation energies                     '
-  write(*,*) '---------------------------------------------------------------------------------------------------'
-  write(*,'(A57,F10.6,A3)') ' BSE neutral excitation must be lower than the GT gap = ',gapGT*HaToeV,' eV'
-  write(*,*) '---------------------------------------------------------------------------------------------------'
-  write(*,'(2X,A5,1X,A20,1X,A20,1X,A20,1X,A20)') '#','Static (eV)','Dynamic (eV)','Correction (eV)','Renorm. (eV)'
-  write(*,*) '---------------------------------------------------------------------------------------------------'
+  if(singlet) then 
 
-  do ia=1,min(nS,maxS)
+    ispin = 1
 
-    X(:) = 0.5d0*(XpY(ia,:) + XmY(ia,:))
-    Y(:) = 0.5d0*(XpY(ia,:) - XmY(ia,:))
+    write(*,*) '---------------------------------------------------------------------------------------------------'
+    write(*,*) ' First-order dynamical correction to static singlet Bethe-Salpeter excitation energies             '
+    write(*,*) '---------------------------------------------------------------------------------------------------'
+    write(*,'(A57,F10.6,A3)') ' BSE neutral excitation must be lower than the GT gap = ',gapGT*HaToeV,' eV'
+    write(*,*) '---------------------------------------------------------------------------------------------------'
+    write(*,'(2X,A5,1X,A20,1X,A20,1X,A20,1X,A20)') '#','Static (eV)','Dynamic (eV)','Correction (eV)','Renorm. (eV)'
+    write(*,*) '---------------------------------------------------------------------------------------------------'
 
-    ! First-order correction 
+    do ia=1,maxS
+      write(*,'(2X,I5,5X,F15.6,5X,F15.6,5X,F15.6,5X,F15.6)') & 
+        ia,OmBSE(ia,ispin)*HaToeV,(OmBSE(ia,ispin)+OmDyn(ia,ispin))*HaToeV,OmDyn(ia,ispin)*HaToeV,ZDyn(ia,ispin)
+    end do
 
-    if(dTDA) then 
+    write(*,*) '---------------------------------------------------------------------------------------------------'
+    write(*,*) 
 
-      ! Resonant part of the BSE correction for dynamical TDA
+  end if
 
-      call dynamic_Tmatrix_A(eta,nBas,nC,nO,nV,nR,nS,nOO,nVV,1d0,eGT,Omega1,Omega2,rho1,rho2,OmBSE(ia),Ap_dyn,Zap_dyn)
+  if(triplet) then 
 
-      ZDyn(ia)  = dot_product(X,matmul(ZAp_dyn,X))
-      OmDyn(ia) = dot_product(X,matmul( Ap_dyn,X))
+    ispin = 2
 
-    else
+    write(*,*) '---------------------------------------------------------------------------------------------------'
+    write(*,*) ' First-order dynamical correction to static triplet Bethe-Salpeter excitation energies             '
+    write(*,*) '---------------------------------------------------------------------------------------------------'
+    write(*,'(A57,F10.6,A3)') ' BSE neutral excitation must be lower than the GT gap = ',gapGT*HaToeV,' eV'
+    write(*,*) '---------------------------------------------------------------------------------------------------'
+    write(*,'(2X,A5,1X,A20,1X,A20,1X,A20,1X,A20)') '#','Static (eV)','Dynamic (eV)','Correction (eV)','Renorm. (eV)'
+    write(*,*) '---------------------------------------------------------------------------------------------------'
 
-      print*, ' Beyond-TDA dynamical correction for BSE@GT NYI'
-      ! Resonant and anti-resonant part of the BSE correction
+    do ia=1,maxS
+      write(*,'(2X,I5,5X,F15.6,5X,F15.6,5X,F15.6,5X,F15.6)') & 
+        ia,OmBSE(ia,ispin)*HaToeV,(OmBSE(ia,ispin)+OmDyn(ia,ispin))*HaToeV,OmDyn(ia,ispin)*HaToeV,ZDyn(ia,ispin)
+    end do
 
-!     call dynamic_Tmatrix_TAB(eta,nBas,nC,nO,nV,nR,nS,nOO,nVV,1d0,eGT,Omega1,Omega2,rho1,rho2,OmBSE(ia), &
-!                              Ap_dyn,Am_dyn,Bp_dyn,Bm_dyn)
+    write(*,*) '---------------------------------------------------------------------------------------------------'
+    write(*,*) 
 
-      ! Renormalization factor of the resonant and anti-resonant parts
-
-!     call dynamic_Tmatrix_ZAB(eta,nBas,nC,nO,nV,nR,nS,nOO,nVV,1d0,eGT,Omega1,Omega2,rho1,rho2,OmBSE(ia), &
-!                              ZAp_dyn,ZAm_dyn,ZBp_dyn,ZBm_dyn)
-
-      ZDyn(ia)  = dot_product(X,matmul(ZAp_dyn,X)) &
-                - dot_product(Y,matmul(ZAm_dyn,Y)) &
-                + dot_product(X,matmul(ZBp_dyn,Y)) & 
-                - dot_product(Y,matmul(ZBm_dyn,X))  
-
-      OmDyn(ia) = dot_product(X,matmul(Ap_dyn,X)) &
-                - dot_product(Y,matmul(Am_dyn,Y)) &
-                + dot_product(X,matmul(Bp_dyn,Y)) & 
-                - dot_product(Y,matmul(Bm_dyn,X))  
-
-    end if
-
-    ZDyn(ia)  = 1d0/(1d0 - ZDyn(ia))
-    OmDyn(ia) = ZDyn(ia)*OmDyn(ia)
-
-    write(*,'(2X,I5,5X,F15.6,5X,F15.6,5X,F15.6,5X,F15.6)') & 
-      ia,OmBSE(ia)*HaToeV,(OmBSE(ia)+OmDyn(ia))*HaToeV,OmDyn(ia)*HaToeV,ZDyn(ia)
-
-  end do
-  write(*,*) '---------------------------------------------------------------------------------------------------'
-  write(*,*) 
+  end if
 
 end subroutine Bethe_Salpeter_Tmatrix_dynamic_perturbation

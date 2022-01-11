@@ -61,11 +61,6 @@ subroutine G0T0(doACFDT,exchange_kernel,doXBS,BSE,TDA_T,TDA,dBSE,dTDA,evDyn,sing
   double precision,allocatable  :: SigT(:)
   double precision,allocatable  :: Z(:)
 
-  double precision,allocatable  :: Omega(:,:)
-  double precision,allocatable  :: XpY(:,:,:)
-  double precision,allocatable  :: XmY(:,:,:)
-  double precision,allocatable  :: rho(:,:,:,:)
-
 ! Output variables
 
   double precision,intent(out)  :: eG0T0(nBas)
@@ -147,20 +142,35 @@ subroutine G0T0(doACFDT,exchange_kernel,doXBS,BSE,TDA_T,TDA,dBSE,dTDA,evDyn,sing
 
   call excitation_density_Tmatrix(iblock,nBas,nC,nO,nV,nR,nOOs,nVVs,ERI_MO,X1s,Y1s,rho1s,X2s,Y2s,rho2s)
 
-  call self_energy_Tmatrix_diag(eta,nBas,nC,nO,nV,nR,nOOs,nVVs,eHF,sqrt(1d0)*Omega1s,rho1s,sqrt(1d0)*Omega2s,rho2s,EcGM,SigT)
+  if(regularize) then
 
-  call renormalization_factor_Tmatrix(eta,nBas,nC,nO,nV,nR,nOOs,nVVs,eHF,Omega1s,rho1s,Omega2s,rho2s,Z)
+    call regularized_self_energy_Tmatrix_diag(eta,nBas,nC,nO,nV,nR,nOOs,nVVs,eHF,Omega1s,rho1s,Omega2s,rho2s,EcGM,SigT)
+    call regularized_renormalization_factor_Tmatrix(eta,nBas,nC,nO,nV,nR,nOOs,nVVs,eHF,Omega1s,rho1s,Omega2s,rho2s,Z)
+
+  else
+
+    call self_energy_Tmatrix_diag(eta,nBas,nC,nO,nV,nR,nOOs,nVVs,eHF,Omega1s,rho1s,Omega2s,rho2s,EcGM,SigT)
+    call renormalization_factor_Tmatrix(eta,nBas,nC,nO,nV,nR,nOOs,nVVs,eHF,Omega1s,rho1s,Omega2s,rho2s,Z)
+
+  end if
 
   iblock = 4
 
   call excitation_density_Tmatrix(iblock,nBas,nC,nO,nV,nR,nOOt,nVVt,ERI_MO,X1t,Y1t,rho1t,X2t,Y2t,rho2t)
 
-  call self_energy_Tmatrix_diag(eta,nBas,nC,nO,nV,nR,nOOt,nVVt,eHF,Omega1t,sqrt(1.5d0)*rho1t,Omega2t,sqrt(1.5d0)*rho2t,EcGM,SigT)
+  if(regularize) then
 
-  call renormalization_factor_Tmatrix(eta,nBas,nC,nO,nV,nR,nOOt,nVVt,eHF,Omega1t,rho1t,Omega2t,rho2t,Z)
+    call regularized_self_energy_Tmatrix_diag(eta,nBas,nC,nO,nV,nR,nOOt,nVVt,eHF,Omega1t,rho1t,Omega2t,rho2t,EcGM,SigT)
+    call regularized_renormalization_factor_Tmatrix(eta,nBas,nC,nO,nV,nR,nOOt,nVVt,eHF,Omega1t,rho1t,Omega2t,rho2t,Z)
+
+  else
+
+    call self_energy_Tmatrix_diag(eta,nBas,nC,nO,nV,nR,nOOt,nVVt,eHF,Omega1t,rho1t,Omega2t,rho2t,EcGM,SigT)
+    call renormalization_factor_Tmatrix(eta,nBas,nC,nO,nV,nR,nOOt,nVVt,eHF,Omega1t,rho1t,Omega2t,rho2t,Z)
+
+  end if
 
   Z(:) = 1d0/(1d0 - Z(:))
-
 
 !----------------------------------------------
 ! Compute the exchange part of the self-energy
