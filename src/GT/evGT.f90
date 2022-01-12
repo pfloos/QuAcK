@@ -46,7 +46,6 @@ subroutine evGT(maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS, &
 
 ! Local variables
 
-  logical                       :: linear_mixing
   integer                       :: nSCF
   integer                       :: n_diis
   double precision              :: rcond

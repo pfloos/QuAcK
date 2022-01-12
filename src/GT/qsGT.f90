@@ -70,7 +70,6 @@ subroutine qsGT(maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,BSE,TDA_T,T
   integer                       :: nOOs,nOOt
   integer                       :: nVVs,nVVt
 
-  logical                       :: print_W = .false.
   double precision,allocatable  :: error_diis(:,:)
   double precision,allocatable  :: F_diis(:,:)
   double precision,allocatable  :: c(:,:)
@@ -212,22 +211,47 @@ subroutine qsGT(maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,BSE,TDA_T,T
     call excitation_density_Tmatrix(iblock,nBas,nC,nO,nV,nR,nOOs,nVVs,ERI_MO, &
                                     X1s,Y1s,rho1s,X2s,Y2s,rho2s)
 
-    call self_energy_Tmatrix(eta,nBas,nC,nO,nV,nR,nOOs,nVVs,eGT, &
-                             Omega1s,rho1s,Omega2s,rho2s,EcGM,SigT)
+   if(regularize) then
 
-    call renormalization_factor_Tmatrix(eta,nBas,nC,nO,nV,nR,nOOs,nVVs,eGT, &
-                                        Omega1s,rho1s,Omega2s,rho2s,Z)
+      call regularized_self_energy_Tmatrix(eta,nBas,nC,nO,nV,nR,nOOs,nVVs,eGT, &
+                                           Omega1s,rho1s,Omega2s,rho2s,EcGM,SigT)
+     
+      call regularized_renormalization_factor_Tmatrix(eta,nBas,nC,nO,nV,nR,nOOs,nVVs,eGT, &
+                                                      Omega1s,rho1s,Omega2s,rho2s,Z)
+
+    else
+
+      call self_energy_Tmatrix(eta,nBas,nC,nO,nV,nR,nOOs,nVVs,eGT, &
+                               Omega1s,rho1s,Omega2s,rho2s,EcGM,SigT)
+      
+      call renormalization_factor_Tmatrix(eta,nBas,nC,nO,nV,nR,nOOs,nVVs,eGT, &
+                                          Omega1s,rho1s,Omega2s,rho2s,Z)
+
+    end if
 
     iblock =  4
 
     call excitation_density_Tmatrix(iblock,nBas,nC,nO,nV,nR,nOOt,nVVt,ERI_MO, &
                                     X1t,Y1t,rho1t,X2t,Y2t,rho2t)
 
-    call self_energy_Tmatrix(eta,nBas,nC,nO,nV,nR,nOOt,nVVt,eGT, &
-                             Omega1t,rho1t,Omega2t,rho2t,EcGM,SigT)
+    if(regularize) then
 
-    call renormalization_factor_Tmatrix(eta,nBas,nC,nO,nV,nR,nOOt,nVVt,eGT, &
-                                        Omega1t,rho1t,Omega2t,rho2t,Z)
+      call self_energy_Tmatrix(eta,nBas,nC,nO,nV,nR,nOOt,nVVt,eGT, &
+                               Omega1t,rho1t,Omega2t,rho2t,EcGM,SigT)
+     
+      call renormalization_factor_Tmatrix(eta,nBas,nC,nO,nV,nR,nOOt,nVVt,eGT, &
+                                          Omega1t,rho1t,Omega2t,rho2t,Z)
+
+     else
+
+
+      call regularized_self_energy_Tmatrix(eta,nBas,nC,nO,nV,nR,nOOt,nVVt,eGT, &
+                                           Omega1t,rho1t,Omega2t,rho2t,EcGM,SigT)
+     
+      call regularized_renormalization_factor_Tmatrix(eta,nBas,nC,nO,nV,nR,nOOt,nVVt,eGT, &
+                                                      Omega1t,rho1t,Omega2t,rho2t,Z)
+
+    end if
 
     Z(:) = 1d0/(1d0 - Z(:))
 

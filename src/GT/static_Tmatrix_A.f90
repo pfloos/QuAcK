@@ -1,4 +1,4 @@
-subroutine static_Tmatrix_A(ispin,eta,nBas,nC,nO,nV,nR,nS,nOO,nVV,lambda,ERI,Omega1,rho1,Omega2,rho2,TA)
+subroutine static_Tmatrix_A(eta,nBas,nC,nO,nV,nR,nS,nOO,nVV,lambda,Omega1,rho1,Omega2,rho2,TA)
 
 ! Compute the OOVV block of the static T-matrix for the resonant block
 
@@ -7,7 +7,6 @@ subroutine static_Tmatrix_A(ispin,eta,nBas,nC,nO,nV,nR,nS,nOO,nVV,lambda,ERI,Ome
 
 ! Input variables
 
-  integer,intent(in)            :: ispin
   double precision,intent(in)   :: eta
   integer,intent(in)            :: nBas
   integer,intent(in)            :: nC
@@ -18,7 +17,6 @@ subroutine static_Tmatrix_A(ispin,eta,nBas,nC,nO,nV,nR,nS,nOO,nVV,lambda,ERI,Ome
   integer,intent(in)            :: nOO
   integer,intent(in)            :: nVV
   double precision,intent(in)   :: lambda
-  double precision,intent(in)   :: ERI(nBas,nBas,nBas,nBas)
   double precision,intent(in)   :: Omega1(nVV)
   double precision,intent(in)   :: rho1(nBas,nBas,nVV)
   double precision,intent(in)   :: Omega2(nOO)
