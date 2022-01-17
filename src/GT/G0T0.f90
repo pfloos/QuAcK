@@ -75,10 +75,10 @@ subroutine G0T0(doACFDT,exchange_kernel,doXBS,BSE,TDA_T,TDA,dBSE,dTDA,evDyn,sing
 
 ! Dimensions of the pp-RPA linear reponse matrices
 
-! nOOs = nO*(nO + 1)/2
-! nVVs = nV*(nV + 1)/2
   nOOs = nO*nO
   nVVs = nV*nV
+! nOOs = nO*(nO + 1)/2
+! nVVs = nV*(nV + 1)/2
 
   nOOt = nO*(nO - 1)/2
   nVVt = nV*(nV - 1)/2
@@ -98,8 +98,8 @@ subroutine G0T0(doACFDT,exchange_kernel,doXBS,BSE,TDA_T,TDA,dBSE,dTDA,evDyn,sing
 !----------------------------------------------
 
   ispin  = 1
-! iblock = 1
   iblock = 3
+! iblock = 1
 
 ! Compute linear response
 
@@ -137,8 +137,8 @@ subroutine G0T0(doACFDT,exchange_kernel,doXBS,BSE,TDA_T,TDA,dBSE,dTDA,evDyn,sing
   SigT(:) = 0d0
   Z(:)    = 0d0
 
-! iblock = 1
   iblock = 3
+! iblock = 1
 
   call excitation_density_Tmatrix(iblock,nBas,nC,nO,nV,nR,nOOs,nVVs,ERI_MO,X1s,Y1s,rho1s,X2s,Y2s,rho2s)
 

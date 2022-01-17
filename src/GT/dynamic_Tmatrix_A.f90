@@ -59,12 +59,12 @@ subroutine dynamic_Tmatrix_A(eta,nBas,nC,nO,nV,nR,nS,nOO,nVV,lambda,eGT,Omega1,O
 
           do cd=1,nVV
             eps = + OmBSE - Omega1(cd) + (eGT(i) + eGT(j))
-            chi = chi + rho1(i,b,cd)*rho1(j,a,cd)*eps/(eps**2 + eta**2) 
+            chi = chi + rho1(i,b,cd)*rho1(a,j,cd)*eps/(eps**2 + eta**2) 
           end do
 
           do kl=1,nOO
             eps = + OmBSE + Omega2(kl) - (eGT(a) + eGT(b))
-            chi = chi + rho2(i,b,kl)*rho2(j,a,kl)*eps/(eps**2 + eta**2)
+            chi = chi + rho2(i,b,kl)*rho2(a,j,kl)*eps/(eps**2 + eta**2)
           end do
 
           TA(ia,jb) = TA(ia,jb) + lambda*chi
@@ -73,12 +73,12 @@ subroutine dynamic_Tmatrix_A(eta,nBas,nC,nO,nV,nR,nS,nOO,nVV,lambda,eGT,Omega1,O
 
           do cd=1,nVV
             eps = + OmBSE - Omega1(cd) + (eGT(i) + eGT(j))
-            chi = chi + rho1(i,b,cd)*rho1(j,a,cd)*(eps**2 - eta**2)/(eps**2 + eta**2)**2
+            chi = chi + rho1(i,b,cd)*rho1(a,j,cd)*(eps**2 - eta**2)/(eps**2 + eta**2)**2
           end do
 
           do kl=1,nOO
             eps = + OmBSE + Omega2(kl) - (eGT(a) + eGT(b))
-            chi = chi + rho2(i,b,kl)*rho2(j,a,kl)*(eps**2 - eta**2)/(eps**2 + eta**2)**2
+            chi = chi + rho2(i,b,kl)*rho2(a,j,kl)*(eps**2 - eta**2)/(eps**2 + eta**2)**2
           end do
 
           ZA(ia,jb) = ZA(ia,jb) - lambda*chi

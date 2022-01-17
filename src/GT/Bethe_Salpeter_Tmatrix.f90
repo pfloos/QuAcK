@@ -131,6 +131,25 @@ subroutine Bethe_Salpeter_Tmatrix(TDA_T,TDA,dBSE,dTDA,evDyn,singlet,triplet,eta,
     call print_transition_vectors(.true.,nBas,nC,nO,nV,nR,nS,dipole_int, & 
                                   OmBSE(:,ispin),XpY_BSE(:,:,ispin),XmY_BSE(:,:,ispin))
 
+    if(dBSE) then
+ 
+      ! Compute dynamic correction for BSE via perturbation theory (iterative or renormalized)
+ 
+      if(evDyn) then
+ 
+        print*, ' Iterative dynamical correction for BSE@GT NYI'
+!       call Bethe_Salpeter_dynamic_perturbation_iterative(dTDA,eta,nBas,nC,nO,nV,nR,nS,eGW,dipole_int,OmRPA,rho_RPA, &
+!                                                          OmBSE(:,ispin),XpY_BSE(:,:,ispin),XmY_BSE(:,:,ispin))
+      else
+ 
+        call Bethe_Salpeter_Tmatrix_dynamic_perturbation(ispin,dTDA,eta,nBas,nC,nO,nV,nR,nS,nOOs,nVVs,nOOt,nVVt,          &
+                                                         Omega1s,Omega2s,Omega1t,Omega2t,rho1s,rho2s,rho1t,rho2t,eT,eGT,  & 
+                                                         dipole_int,OmBSE(:,ispin),XpY_BSE(:,:,ispin),XmY_BSE(:,:,ispin), &
+                                                         TAs,TBs,TAt,TBt)
+      end if
+ 
+    end if
+
   end if
 
 !------------------!
@@ -150,26 +169,23 @@ subroutine Bethe_Salpeter_Tmatrix(TDA_T,TDA,dBSE,dTDA,evDyn,singlet,triplet,eta,
     call print_transition_vectors(.false.,nBas,nC,nO,nV,nR,nS,dipole_int, & 
                                   OmBSE(:,ispin),XpY_BSE(:,:,ispin),XmY_BSE(:,:,ispin))
 
-  end if
-
-!--------------------------------------------------!
-! Compute the dynamical screening at the BSE level !
-!--------------------------------------------------!
-
-  if(dBSE) then
-
-    ! Compute dynamic correction for BSE via perturbation theory (iterative or renormalized)
-
-    if(evDyn) then
-
-      print*, ' Iterative dynamical correction for BSE@GT NYI'
-!     call Bethe_Salpeter_dynamic_perturbation_iterative(dTDA,eta,nBas,nC,nO,nV,nR,nS,eGW,dipole_int,OmRPA,rho_RPA, &
-!                                                        OmBSE(:,ispin),XpY_BSE(:,:,ispin),XmY_BSE(:,:,ispin))
-    else
-
-      call Bethe_Salpeter_Tmatrix_dynamic_perturbation(singlet,triplet,dTDA,eta,nBas,nC,nO,nV,nR,nS,nOOs,nVVs,nOOt,nVVt, &
-                                                       Omega1s,Omega2s,Omega1t,Omega2t,rho1s,rho2s,rho1t,rho2t,eT,eGT,   & 
-                                                       dipole_int,OmBSE,XpY_BSE,XmY_BSE,TAs,TBs,TAt,TBt)
+    if(dBSE) then
+ 
+      ! Compute dynamic correction for BSE via perturbation theory (iterative or renormalized)
+ 
+      if(evDyn) then
+ 
+        print*, ' Iterative dynamical correction for BSE@GT NYI'
+!       call Bethe_Salpeter_dynamic_perturbation_iterative(dTDA,eta,nBas,nC,nO,nV,nR,nS,eGW,dipole_int,OmRPA,rho_RPA, &
+!                                                          OmBSE(:,ispin),XpY_BSE(:,:,ispin),XmY_BSE(:,:,ispin))
+      else
+ 
+        call Bethe_Salpeter_Tmatrix_dynamic_perturbation(ispin,dTDA,eta,nBas,nC,nO,nV,nR,nS,nOOs,nVVs,nOOt,nVVt,          &
+                                                         Omega1s,Omega2s,Omega1t,Omega2t,rho1s,rho2s,rho1t,rho2t,eT,eGT,  & 
+                                                         dipole_int,OmBSE(:,ispin),XpY_BSE(:,:,ispin),XmY_BSE(:,:,ispin), &
+                                                         TAs,TBs,TAt,TBt)
+      end if
+ 
     end if
 
   end if

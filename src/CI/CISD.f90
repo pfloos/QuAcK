@@ -99,7 +99,7 @@ subroutine CISD(singlet_manifold,triplet_manifold,nBasin,nCin,nOin,nVin,nRin,ERI
 
   H(ishift+1,jshift+1) = E0
  
-  print*,'00 block done...'
+  print*,'00 block  done...'
 
   ! 0S blocks
 
@@ -172,7 +172,7 @@ subroutine CISD(singlet_manifold,triplet_manifold,nBasin,nCin,nOin,nVin,nRin,ERI
     end do
   end do
 
-  print*,'SS block done...'
+  print*,'SS block  done...'
 
   ! SD blocks
 
@@ -285,7 +285,7 @@ subroutine CISD(singlet_manifold,triplet_manifold,nBasin,nCin,nOin,nVin,nRin,ERI
     end do
   end do
 
-  print*,'DD block done...'
+  print*,'DD block  done...'
 
   write(*,*)
   write(*,*) 'Diagonalizing CISD matrix...'
