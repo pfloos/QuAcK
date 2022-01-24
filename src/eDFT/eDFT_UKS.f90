@@ -163,6 +163,7 @@ subroutine eDFT_UKS(x_rung,x_DFA,c_rung,c_DFA,nEns,wEns,nCC,aCC,nGrid,weight,max
   n_diis          = 0
   F_diis(:,:,:)   = 0d0
   err_diis(:,:,:) = 0d0
+  rcond(:)        = 1d0
 
 !------------------------------------------------------------------------
 ! Main SCF loop
@@ -268,7 +269,7 @@ subroutine eDFT_UKS(x_rung,x_DFA,c_rung,c_DFA,nEns,wEns,nCC,aCC,nGrid,weight,max
 !   DIIS extrapolation
 
     n_diis = min(n_diis+1,max_diis)
-    if(minval(rcond(:)) > 1d-7) then
+    if(minval(rcond(:)) > 1d-15) then
       do ispin=1,nspin
         call DIIS_extrapolation(rcond(ispin),nBasSq,nBasSq,n_diis, & 
                                 err_diis(:,:,ispin),F_diis(:,:,ispin),err(:,:,ispin),F(:,:,ispin))

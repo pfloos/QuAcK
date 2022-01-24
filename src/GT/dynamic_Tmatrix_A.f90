@@ -67,7 +67,7 @@ subroutine dynamic_Tmatrix_A(eta,nBas,nC,nO,nV,nR,nS,nOO,nVV,lambda,eGT,Omega1,O
             chi = chi + rho2(i,b,kl)*rho2(a,j,kl)*eps/(eps**2 + eta**2)
           end do
 
-          TA(ia,jb) = TA(ia,jb) + lambda*chi
+          TA(ia,jb) = TA(ia,jb) - lambda*chi
 
           chi = 0d0
 
@@ -81,7 +81,7 @@ subroutine dynamic_Tmatrix_A(eta,nBas,nC,nO,nV,nR,nS,nOO,nVV,lambda,eGT,Omega1,O
             chi = chi + rho2(i,b,kl)*rho2(a,j,kl)*(eps**2 - eta**2)/(eps**2 + eta**2)**2
           end do
 
-          ZA(ia,jb) = ZA(ia,jb) - lambda*chi
+          ZA(ia,jb) = ZA(ia,jb) + lambda*chi
 
         end do
       end do

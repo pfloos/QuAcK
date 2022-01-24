@@ -96,13 +96,13 @@ subroutine Bethe_Salpeter_Tmatrix_dynamic_perturbation(ispin,dTDA,eta,nBas,nC,nO
     ! First-order correction 
     
     if(ispin == 1) then 
-      ZDyn(ia)  = dot_product(X,matmul(ZAt+ZAs,X)) 
-      OmDyn(ia) = dot_product(X,matmul(dTAt+dTAs,X)) - dot_product(X,matmul(TAt+TAs,X))
+      ZDyn(ia)  = - dot_product(X,matmul(ZAt+ZAs,X)) 
+      OmDyn(ia) = - dot_product(X,matmul(dTAt+dTAs,X)) + dot_product(X,matmul(TAt+TAs,X)) 
     end if
 
     if(ispin == 2) then 
-      ZDyn(ia)  = dot_product(X,matmul(ZAt-ZAs,X)) 
-      OmDyn(ia) = dot_product(X,matmul(dTAt-dTAs,X)) - dot_product(X,matmul(TAt-TAs,X))
+      ZDyn(ia)  = - dot_product(X,matmul(ZAt-ZAs,X)) 
+      OmDyn(ia) = - dot_product(X,matmul(dTAt-dTAs,X)) + dot_product(X,matmul(TAt-TAs,X)) 
     end if
     
     ZDyn(ia)  = 1d0/(1d0 - ZDyn(ia))
