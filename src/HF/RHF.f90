@@ -205,6 +205,6 @@ subroutine RHF(maxSCF,thresh,max_diis,guess_type,nNuc,ZNuc,rNuc,ENuc,nBas,nO,S,T
 
 ! Compute Vx for post-HF calculations
 
-  call mo_fock_exchange_potential(nBas,c,K,Vx)
+  call mo_fock_exchange_potential(nBas,c,P,ERI,Vx)
 
 end subroutine RHF

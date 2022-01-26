@@ -1159,6 +1159,7 @@ program QuAcK
 
     else
 
+!     call soG0T0(eta_GT,nBas,nC,nO,nV,nR,ENuc,ERHF,ERI_MO,eHF)
       call G0T0(doACFDT,exchange_kernel,doXBS,BSE,TDA_T,TDA,dBSE,dTDA,evDyn,singlet,triplet,  &
                 linGT,eta_GT,regGT,nBas,nC,nO,nV,nR,nS,ENuc,ERHF,ERI_AO,ERI_MO,dipole_int_MO, &  
                 PHF,cHF,eHF,Vxc,eG0T0)
