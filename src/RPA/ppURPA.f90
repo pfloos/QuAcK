@@ -25,7 +25,7 @@ subroutine ppURPA(TDA,doACFDT,spin_conserved,spin_flip,nBas,nC,nO,nV,nR,ENuc,EUH
 
 ! Local variables
 
-  integer                       :: ispin 
+  integer                       :: ispin,iblock
   integer                       :: nPaa,nPbb,nPab,nP_sc,nP_sf
   integer                       :: nHaa,nHbb,nHab,nH_sc,nH_sf
   double precision,allocatable  :: Omega1sc(:),Omega1sf(:)
@@ -56,6 +56,7 @@ subroutine ppURPA(TDA,doACFDT,spin_conserved,spin_flip,nBas,nC,nO,nV,nR,ENuc,EUH
   if(spin_conserved) then 
 
     ispin = 1
+    iblock = 1
 
 !Spin-conserved quantities
 
@@ -70,10 +71,11 @@ subroutine ppURPA(TDA,doACFDT,spin_conserved,spin_flip,nBas,nC,nO,nV,nR,ENuc,EUH
     allocate(Omega1sc(nP_sc),X1sc(nP_sc,nP_sc),Y1sc(nH_sc,nP_sc), &
              Omega2sc(nH_sc),X2sc(nP_sc,nH_sc),Y2sc(nH_sc,nH_sc))
 
-    call unrestricted_linear_response_pp(ispin,TDA,nBas,nC,nO,nV,nR,nPaa,nPab,nPbb,&
-                                         nP_sc,nHaa,nHab,nHbb,nH_sc,1d0,e,ERI_aaaa,&                                          ERI_aabb,ERI_bbbb,Omega1sc,X1sc,Y1sc,&
+    call unrestricted_linear_response_pp(iblock,TDA,nBas,nC,nO,nV,nR,nPaa,nPab,nPbb, &
+                                         nP_sc,nHaa,nHab,nHbb,nH_sc,1d0,e,ERI_aaaa, &
+                                         ERI_aabb,ERI_bbbb,Omega1sc,X1sc,Y1sc, &
                                          Omega2sc,X2sc,Y2sc,Ec_ppURPA(ispin))
-
+    
     call print_excitation('pp-RPA (N+2)',5,nP_sc,Omega1sc)
     call print_excitation('pp-RPA (N-2)',5,nH_sc,Omega2sc)
 
@@ -84,6 +86,7 @@ subroutine ppURPA(TDA,doACFDT,spin_conserved,spin_flip,nBas,nC,nO,nV,nR,ENuc,EUH
   if(spin_flip) then 
 
     ispin = 2
+    iblock = 2 
 
 !Spin-flip quantities
 
@@ -100,19 +103,22 @@ subroutine ppURPA(TDA,doACFDT,spin_conserved,spin_flip,nBas,nC,nO,nV,nR,ENuc,EUH
     allocate(Omega1sf(nP_sf),X1sf(nP_sf,nP_sf),Y1sf(nH_sf,nP_sf), &
              Omega2sf(nH_sf),X2sf(nP_sf,nH_sf),Y2sf(nH_sf,nH_sf))
 
-    call unrestricted_linear_response_pp(ispin,TDA,nBas,nC,nO,nV,nR,nPaa,nPab,nPbb,&
-                                         nP_sf,nHaa,nHab,nHbb,nH_sf,1d0,e,ERI_aaaa,&                                          ERI_aabb,ERI_bbbb,Omega1sf,X1sf,Y1sf,&
+    call unrestricted_linear_response_pp(iblock,TDA,nBas,nC,nO,nV,nR,nPaa,nPab,nPbb, &
+                                         nP_sf,nHaa,nHab,nHbb,nH_sf,1d0,e,ERI_aaaa, &
+                                         ERI_aabb,ERI_bbbb,Omega1sf,X1sf,Y1sf, &
                                          Omega2sf,X2sf,Y2sf,Ec_ppURPA(ispin))
 
-    ispin = 3
+    deallocate(Omega1sf,X1sf,Y1sf,Omega2sf,X2sf,Y2sf)
+
+    iblock = 3
 
     nP_sf  = nPbb
     nH_sf  = nHbb
 
-!allocate(Omega1sf(nP_sf),X1sf(nP_sf,nP_sf),Y1sf(nH_sf,nP_sf), &
-!         Omega2sf(nH_sf),X2sf(nP_sf,nH_sf),Y2sf(nH_sf,nH_sf))
+    allocate(Omega1sf(nP_sf),X1sf(nP_sf,nP_sf),Y1sf(nH_sf,nP_sf), &
+             Omega2sf(nH_sf),X2sf(nP_sf,nH_sf),Y2sf(nH_sf,nH_sf))
 
-    call unrestricted_linear_response_pp(ispin,TDA,nBas,nC,nO,nV,nR,nPaa,nPab,nPbb,&
+    call unrestricted_linear_response_pp(iblock,TDA,nBas,nC,nO,nV,nR,nPaa,nPab,nPbb,&
                                          nP_sf,nHaa,nHab,nHbb,nH_sf,1d0,e,ERI_aaaa,&
                                          ERI_aabb,ERI_bbbb,Omega1sf,X1sf,Y1sf,&
                                          Omega2sf,X2sf,Y2sf,Ec_ppURPA(ispin))
