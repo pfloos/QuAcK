@@ -1,5 +1,5 @@
-subroutine unrestricted_linear_response_D_pp(ispin,nBas,nC,nO,nV,nR,nHaa,nHab,nHbb,nHt,lambda,& 
- e,ERI_aaaa,ERI_aabb,ERI_bbbb,D_pp)
+subroutine unrestricted_linear_response_D_pp(ispin,nBas,nC,nO,nV,nR,nHaa,nHab,nHbb,nHt,&
+                                             lambda,e,ERI_aaaa,ERI_aabb,ERI_bbbb,D_pp)
 
 ! Compute linear response
 
@@ -55,7 +55,7 @@ subroutine unrestricted_linear_response_D_pp(ispin,nBas,nC,nO,nV,nR,nHaa,nHab,nH
           do l=nC(2)+1,nO(2)
             kl = kl + 1
             D_pp(ij,kl) = -(e(i,1) + e(j,2))*Kronecker_delta(i,k)&
-                       *Kronecker_delta(j,l) +lambda*ERI_aabb(i,j,k,l)
+                          *Kronecker_delta(j,l) +lambda*ERI_aabb(i,j,k,l)
           end  do
         end  do
       end  do
@@ -81,14 +81,15 @@ subroutine unrestricted_linear_response_D_pp(ispin,nBas,nC,nO,nV,nR,nHaa,nHab,nH
           do l=k+1,nO(1)
             kl = kl + 1
  
-            D_pp(ij,kl) = -(e(i,1) + e(j,1) - eF)*Kronecker_delta(i,k)*Kronecker_delta(j,l) &
-                        + lambda*(ERI_aaaa(i,j,k,l) - ERI_aaaa(i,j,l,k))
+            D_pp(ij,kl) = -(e(i,1) + e(j,1) - eF)*Kronecker_delta(i,k)&
+                          *Kronecker_delta(j,l) + lambda*(ERI_aaaa(i,j,k,l) &
+                          - ERI_aaaa(i,j,l,k))
 
           end  do
         end  do
       end  do
     end  do
- end if
+  end if
 
   if (ispin == 3) then 
 
@@ -104,7 +105,8 @@ subroutine unrestricted_linear_response_D_pp(ispin,nBas,nC,nO,nV,nR,nHaa,nHab,nH
             kl = kl + 1
  
            D_pp(ij,kl) = -(e(i,2) + e(j,2) - eF)*Kronecker_delta(i,k) &
-                       *Kronecker_delta(j,l) + lambda*(ERI_bbbb(i,j,k,l) - ERI_bbbb(i,j,l,k))
+                         *Kronecker_delta(j,l) + lambda*(ERI_bbbb(i,j,k,l) &
+                         - ERI_bbbb(i,j,l,k))
 
           end  do
         end  do
