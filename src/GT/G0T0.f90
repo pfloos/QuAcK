@@ -184,11 +184,7 @@ subroutine G0T0(doACFDT,exchange_kernel,doXBS,BSE,TDA_T,TDA,dBSE,dTDA,evDyn,sing
 
   if(linearize) then
 
-!   eG0T0(:) = eHF(:) + Z(:)*SigT(:)
     eG0T0(:) = eHF(:) + Z(:)*(SigX(:) + SigT(:) - Vxc(:))
-
-    call matout(nBas,1,SigX)
-    call matout(nBas,1,Vxc)
 
   else
   
