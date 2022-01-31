@@ -45,7 +45,9 @@ subroutine eDFT_UKS(x_rung,x_DFA,c_rung,c_DFA,nEns,wEns,nCC,aCC,nGrid,weight,max
 
   integer                       :: xc_rung
   logical                       :: LDA_centered = .false.
-  integer                       :: nSCF,nBasSq
+  logical                       :: do_level_shift = .false.
+  integer                       :: nSCF
+  integer                       :: nBasSq
   integer                       :: n_diis
   integer                       :: nO(nspin)
   double precision              :: conv
@@ -121,31 +123,38 @@ subroutine eDFT_UKS(x_rung,x_DFA,c_rung,c_DFA,nEns,wEns,nCC,aCC,nGrid,weight,max
   do ispin=1,nspin
     nO(ispin) = int(sum(occnum(:,ispin,1)))
   end do
-  
-  if(guess_type == 1) then
+ 
+  do ispin=1,nspin
+    call mo_guess(nBas,nO(ispin),guess_type,S,Hc,ERI,J(:,:,ispin),Fx(:,:,ispin),X,cp(:,:,ispin),F(:,:,ispin), &
+                  Fp(:,:,ispin),eKS(:,ispin),c(:,:,ispin),Pw(:,:,ispin))
+  end do
 
-    do ispin=1,nspin
-      cp(:,:,ispin) = matmul(transpose(X(:,:)),matmul(Hc(:,:),X(:,:)))
-      call diagonalize_matrix(nBas,cp(:,:,ispin),eKS(:,ispin))
-      c(:,:,ispin) = matmul(X(:,:),cp(:,:,ispin))
-    end do
+  if(mix) call mix_guess(nBas,nO,c)
 
-    ! Mix guess to enforce symmetry breaking
+! if(guess_type == 1) then
 
-    if(mix) call mix_guess(nBas,nO,c)
+!   do ispin=1,nspin
+!     cp(:,:,ispin) = matmul(transpose(X(:,:)),matmul(Hc(:,:),X(:,:)))
+!     call diagonalize_matrix(nBas,cp(:,:,ispin),eKS(:,ispin))
+!     c(:,:,ispin) = matmul(X(:,:),cp(:,:,ispin))
+!   end do
 
-  else if(guess_type == 2) then
+!   ! Mix guess to enforce symmetry breaking
 
-    do ispin=1,nspin
-      call random_number(F(:,:,ispin))
-    end do
+!   if(mix) call mix_guess(nBas,nO,c)
 
-  else
+! else if(guess_type == 2) then
 
-    print*,'Wrong guess option'
-    stop
+!   do ispin=1,nspin
+!     call random_number(F(:,:,ispin))
+!   end do
 
-  end if
+! else
+
+!   print*,'Wrong guess option'
+!   stop
+
+! end if
 
 ! Initialization
 
@@ -266,17 +275,32 @@ subroutine eDFT_UKS(x_rung,x_DFA,c_rung,c_DFA,nEns,wEns,nCC,aCC,nGrid,weight,max
 
     if(nSCF > 1) conv = maxval(abs(err(:,:,:)))
     
+!   Level-shifting
+
+    if(do_level_shift) then 
+
+      do ispin=1,nspin
+        call level_shifting(nBas,nO(ispin),S,c,F(:,:,ispin))
+      end do
+
+    end if
+
 !   DIIS extrapolation
 
     n_diis = min(n_diis+1,max_diis)
-    if(minval(rcond(:)) > 1d-15) then
-      do ispin=1,nspin
+    do ispin=1,nspin
+
+      if(rcond(ispin) > 1d-15) then
+
         call DIIS_extrapolation(rcond(ispin),nBasSq,nBasSq,n_diis, & 
                                 err_diis(:,:,ispin),F_diis(:,:,ispin),err(:,:,ispin),F(:,:,ispin))
-      end do
-    else 
-      n_diis = 0
-   end if
+      else 
+
+        n_diis = 0
+
+      end if
+
+    end do
 
 !  Transform Fock matrix in orthogonal basis
 

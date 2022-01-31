@@ -93,8 +93,8 @@ subroutine G0W0_SOSEX(doACFDT,exchange_kernel,doXBS,BSE,TDA_W,TDA,dBSE,dTDA,evDy
 !-------------------!
 
   do ispin=1,nspin
-    call linear_response(ispin,.true.,TDA_W,.false.,eta,nBas,nC,nO,nV,nR,nS,1d0,eHF,ERI_MO, & 
-                         OmRPA(:,ispin),rho_RPA(:,:,:,ispin),EcRPA(ispin),OmRPA(:,ispin),XpY_RPA(:,:,ispin),XmY_RPA(:,:,ispin))
+    call linear_response(ispin,.true.,TDA_W,eta,nBas,nC,nO,nV,nR,nS,1d0,eHF,ERI_MO, & 
+                         EcRPA(ispin),OmRPA(:,ispin),XpY_RPA(:,:,ispin),XmY_RPA(:,:,ispin))
     if(print_W) call print_excitation('RPA@HF      ',ispin,nS,OmRPA)
   end do
 
@@ -126,8 +126,8 @@ subroutine G0W0_SOSEX(doACFDT,exchange_kernel,doXBS,BSE,TDA_W,TDA,dBSE,dTDA,evDy
 ! Compute the RPA correlation energy
 
   do ispin=1,nspin
-    call linear_response(ispin,.true.,TDA_W,.false.,eta,nBas,nC,nO,nV,nR,nS,1d0,eSOSEX,ERI_MO,OmRPA(:,ispin), & 
-                         rho_RPA(:,:,:,ispin),EcRPA(ispin),OmRPA(:,ispin),XpY_RPA(:,:,ispin),XmY_RPA(:,:,ispin))
+    call linear_response(ispin,.true.,TDA_W,eta,nBas,nC,nO,nV,nR,nS,1d0,eSOSEX,ERI_MO, & 
+                         EcRPA(ispin),OmRPA(:,ispin),XpY_RPA(:,:,ispin),XmY_RPA(:,:,ispin))
   end do
 
 !--------------!

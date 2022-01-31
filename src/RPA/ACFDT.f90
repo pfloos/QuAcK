@@ -32,6 +32,8 @@ subroutine ACFDT(exchange_kernel,doXBS,dRPA,TDA_W,TDA,BSE,singlet,triplet,eta,nB
   double precision,allocatable  :: Ec(:,:)
 
   double precision              :: EcRPA
+  double precision,allocatable  :: WA(:,:)
+  double precision,allocatable  :: WB(:,:)
   double precision,allocatable  :: OmRPA(:)
   double precision,allocatable  :: XpY_RPA(:,:)
   double precision,allocatable  :: XmY_RPA(:,:)
@@ -48,7 +50,7 @@ subroutine ACFDT(exchange_kernel,doXBS,dRPA,TDA_W,TDA,BSE,singlet,triplet,eta,nB
 ! Memory allocation
 
   allocate(Ec(nAC,nspin))
-  allocate(OmRPA(nS),XpY_RPA(nS,nS),XmY_RPA(nS,nS),rho_RPA(nBas,nBas,nS))
+  allocate(WA(nS,nS),WB(nS,nS),OmRPA(nS),XpY_RPA(nS,nS),XmY_RPA(nS,nS),rho_RPA(nBas,nBas,nS))
   allocate(Omega(nS,nspin),XpY(nS,nS,nspin),XmY(nS,nS,nspin))
 
 ! Antisymmetrized kernel version
@@ -69,9 +71,12 @@ subroutine ACFDT(exchange_kernel,doXBS,dRPA,TDA_W,TDA,BSE,singlet,triplet,eta,nB
   isp_W = 1
   EcRPA = 0d0
 
-  call linear_response(isp_W,.true.,TDA_W,.false.,eta,nBas,nC,nO,nV,nR,nS,1d0,eW,ERI,OmRPA, &
-                       rho_RPA,EcRPA,OmRPA,XpY_RPA,XmY_RPA)
+  call linear_response(isp_W,.true.,TDA_W,eta,nBas,nC,nO,nV,nR,nS,1d0,eW,ERI, &
+                       EcRPA,OmRPA,XpY_RPA,XmY_RPA)
   call excitation_density(nBas,nC,nO,nR,nS,ERI,XpY_RPA,rho_RPA)
+
+  call static_screening_WA(eta,nBas,nC,nO,nV,nR,nS,1d0,ERI,OmRPA,rho_RPA,WA)
+  call static_screening_WB(eta,nBas,nC,nO,nV,nR,nS,1d0,ERI,OmRPA,rho_RPA,WB)
 
 ! Singlet manifold
 
@@ -94,15 +99,18 @@ subroutine ACFDT(exchange_kernel,doXBS,dRPA,TDA_W,TDA,BSE,singlet,triplet,eta,nB
 
       if(doXBS) then
 
-        call linear_response(isp_W,.true.,TDA_W,.false.,eta,nBas,nC,nO,nV,nR,nS,lambda,eW,ERI,OmRPA, &
-                             rho_RPA,EcRPA,OmRPA,XpY_RPA,XmY_RPA)
+        call linear_response(isp_W,.true.,TDA_W,eta,nBas,nC,nO,nV,nR,nS,lambda,eW,ERI, &
+                             EcRPA,OmRPA,XpY_RPA,XmY_RPA)
         call excitation_density(nBas,nC,nO,nR,nS,ERI,XpY_RPA,rho_RPA)
 !       call print_excitation('W^lambda:   ',isp_W,nS,OmRPA)
 
+        call static_screening_WA(eta,nBas,nC,nO,nV,nR,nS,lambda,ERI,OmRPA,rho_RPA,WA)
+        call static_screening_WB(eta,nBas,nC,nO,nV,nR,nS,lambda,ERI,OmRPA,rho_RPA,WB)
+
       end if
 
-      call linear_response(ispin,dRPA,TDA,BSE,eta,nBas,nC,nO,nV,nR,nS,lambda,e,ERI,OmRPA, &
-                           rho_RPA,EcAC(ispin),Omega(:,ispin),XpY(:,:,ispin),XmY(:,:,ispin))
+      call linear_response_BSE(ispin,dRPA,TDA,BSE,eta,nBas,nC,nO,nV,nR,nS,lambda,e,ERI,WA,WB, &
+                               EcAC(ispin),Omega(:,ispin),XpY(:,:,ispin),XmY(:,:,ispin))
 
       call ACFDT_correlation_energy(ispin,exchange_kernel,nBas,nC,nO,nV,nR,nS, &
                                     ERI,XpY(:,:,ispin),XmY(:,:,ispin),Ec(iAC,ispin))
@@ -143,14 +151,17 @@ subroutine ACFDT(exchange_kernel,doXBS,dRPA,TDA_W,TDA,BSE,singlet,triplet,eta,nB
 
       if(doXBS) then
 
-        call linear_response(isp_W,.true.,TDA_W,.false.,eta,nBas,nC,nO,nV,nR,nS,lambda,eW,ERI,OmRPA, &
-                             rho_RPA,EcRPA,OmRPA,XpY_RPA,XmY_RPA)
+        call linear_response(isp_W,.true.,TDA_W,eta,nBas,nC,nO,nV,nR,nS,lambda,eW,ERI, &
+                             EcRPA,OmRPA,XpY_RPA,XmY_RPA)
         call excitation_density(nBas,nC,nO,nR,nS,ERI,XpY_RPA,rho_RPA)
+
+        call static_screening_WA(eta,nBas,nC,nO,nV,nR,nS,lambda,ERI,OmRPA,rho_RPA,WA)
+        call static_screening_WB(eta,nBas,nC,nO,nV,nR,nS,lambda,ERI,OmRPA,rho_RPA,WB)
 
       end if  
 
-      call linear_response(ispin,dRPA,TDA,BSE,eta,nBas,nC,nO,nV,nR,nS,lambda,e,ERI,OmRPA, &
-                           rho_RPA,EcAC(ispin),Omega(:,ispin),XpY(:,:,ispin),XmY(:,:,ispin))
+      call linear_response_BSE(ispin,dRPA,TDA,BSE,eta,nBas,nC,nO,nV,nR,nS,lambda,e,ERI,WA,WB, &
+                               EcAC(ispin),Omega(:,ispin),XpY(:,:,ispin),XmY(:,:,ispin))
 
       call ACFDT_correlation_energy(ispin,exchange_kernel,nBas,nC,nO,nV,nR,nS,ERI,XpY(:,:,ispin),XmY(:,:,ispin),Ec(iAC,ispin))
 

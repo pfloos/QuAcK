@@ -109,8 +109,8 @@ subroutine G0W0(doACFDT,exchange_kernel,doXBS,COHSEX,BSE,TDA_W,TDA, &
 ! Compute screening !
 !-------------------!
 
-  call linear_response(ispin,.true.,TDA_W,.false.,eta,nBas,nC,nO,nV,nR,nS,1d0, & 
-                       eHF,ERI_MO,OmRPA,rho_RPA,EcRPA,OmRPA,XpY_RPA,XmY_RPA)
+  call linear_response(ispin,.true.,TDA_W,eta,nBas,nC,nO,nV,nR,nS,1d0, & 
+                       eHF,ERI_MO,EcRPA,OmRPA,XpY_RPA,XmY_RPA)
 
   if(print_W) call print_excitation('RPA@HF      ',ispin,nS,OmRPA)
 
@@ -168,8 +168,8 @@ subroutine G0W0(doACFDT,exchange_kernel,doXBS,COHSEX,BSE,TDA_W,TDA, &
 
 ! Compute the RPA correlation energy
 
-  call linear_response(ispin,.true.,TDA_W,.false.,eta,nBas,nC,nO,nV,nR,nS,1d0,eG0W0,ERI_MO,OmRPA, & 
-                       rho_RPA,EcRPA,OmRPA,XpY_RPA,XmY_RPA)
+  call linear_response(ispin,.true.,TDA_W,eta,nBas,nC,nO,nV,nR,nS,1d0,eG0W0,ERI_MO, & 
+                       EcRPA,OmRPA,XpY_RPA,XmY_RPA)
 
 !--------------!
 ! Dump results !
