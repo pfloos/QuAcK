@@ -144,7 +144,7 @@ subroutine ACFDT_Tmatrix(exchange_kernel,doXBS,dRPA,TDA_T,TDA,BSE,singlet,triple
 
       end if
 
-      call linear_response_BSE(ispin,.false.,TDA,eta,nBas,nC,nO,nV,nR,nS,lambda,eGT,ERI,TA,TB, &
+      call linear_response_BSE(ispin,.false.,TDA,BSE,eta,nBas,nC,nO,nV,nR,nS,lambda,eGT,ERI,TA,TB, &
                                EcAC(ispin),Omega(:,ispin),XpY(:,:,ispin),XmY(:,:,ispin))
 
       call ACFDT_correlation_energy(ispin,exchange_kernel,nBas,nC,nO,nV,nR,nS,ERI,XpY(:,:,ispin),XmY(:,:,ispin),Ec(iAC,ispin))
@@ -214,7 +214,7 @@ subroutine ACFDT_Tmatrix(exchange_kernel,doXBS,dRPA,TDA_T,TDA,BSE,singlet,triple
 
       end if  
 
-      call linear_response_BSE(ispin,.false.,TDA,eta,nBas,nC,nO,nV,nR,nS,lambda,eGT,ERI,TA,TB, &
+      call linear_response_BSE(ispin,.false.,TDA,BSE,eta,nBas,nC,nO,nV,nR,nS,lambda,eGT,ERI,TA,TB, &
                                EcAC(ispin),Omega(:,ispin),XpY(:,:,ispin),XmY(:,:,ispin))
 
       call ACFDT_correlation_energy(ispin,exchange_kernel,nBas,nC,nO,nV,nR,nS,ERI,XpY(:,:,ispin),XmY(:,:,ispin),Ec(iAC,ispin))

@@ -86,7 +86,7 @@ subroutine CISD(singlet_manifold,triplet_manifold,nBasin,nCin,nOin,nVin,nRin,ERI
   write(*,*) 'nH = ',nH
   write(*,*)
 
-  maxH = min(nH,41)
+  maxH = min(nH,51)
 
   ! Memory allocation
 

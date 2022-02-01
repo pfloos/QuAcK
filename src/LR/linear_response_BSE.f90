@@ -7,11 +7,11 @@ subroutine linear_response_BSE(ispin,dRPA,TDA,BSE,eta,nBas,nC,nO,nV,nR,nS,lambda
 
 ! Input variables
 
+  integer,intent(in)            :: ispin
   logical,intent(in)            :: dRPA
   logical,intent(in)            :: TDA
   logical,intent(in)            :: BSE
   double precision,intent(in)   :: eta
-  integer,intent(in)            :: ispin
   integer,intent(in)            :: nBas
   integer,intent(in)            :: nC
   integer,intent(in)            :: nO
@@ -50,11 +50,6 @@ subroutine linear_response_BSE(ispin,dRPA,TDA,BSE,eta,nBas,nC,nO,nV,nR,nS,lambda
 
   call linear_response_A_matrix(ispin,dRPA,nBas,nC,nO,nV,nR,nS,lambda,e,ERI,A)
 
-! print*,'A'
-! call matout(nS,nS,A)
-! print*,'TA'
-! call matout(nS,nS,A_BSE)
-
   if(BSE) A(:,:) = A(:,:) - A_BSE(:,:)
 
 ! Tamm-Dancoff approximation
@@ -71,11 +66,6 @@ subroutine linear_response_BSE(ispin,dRPA,TDA,BSE,eta,nBas,nC,nO,nV,nR,nS,lambda
 
     call linear_response_B_matrix(ispin,dRPA,nBas,nC,nO,nV,nR,nS,lambda,ERI,B)
 
-!   print*,'B'
-!   call matout(nS,nS,B)
-!   print*,'TB'
-!   call matout(nS,nS,B_BSE)
-
     if(BSE) B(:,:) = B(:,:) - B_BSE(:,:)
 
     ! Build A + B and A - B matrices 
@@ -90,10 +80,6 @@ subroutine linear_response_BSE(ispin,dRPA,TDA,BSE,eta,nBas,nC,nO,nV,nR,nS,lambda
     if(minval(Omega) < 0d0) &
       call print_warning('You may have instabilities in linear response: A-B is not positive definite!!')
 
-!   do ia=1,nS
-!     if(Omega(ia) < 0d0) Omega(ia) = 0d0
-!   end do
-
     call ADAt(nS,AmB,1d0*sqrt(Omega),AmBSq)
     call ADAt(nS,AmB,1d0/sqrt(Omega),AmBIv)
 
@@ -103,10 +89,6 @@ subroutine linear_response_BSE(ispin,dRPA,TDA,BSE,eta,nBas,nC,nO,nV,nR,nS,lambda
 
     if(minval(Omega) < 0d0) & 
       call print_warning('You may have instabilities in linear response: negative excitations!!')
- 
-  ! do ia=1,nS
-  !   if(Omega(ia) < 0d0) Omega(ia) = 0d0
-  ! end do
 
     Omega = sqrt(Omega)
 

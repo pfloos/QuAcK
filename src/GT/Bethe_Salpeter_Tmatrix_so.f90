@@ -71,7 +71,7 @@ subroutine Bethe_Salpeter_Tmatrix_so(eta,nBas,nC,nO,nV,nR,nS,nOO,nVV,Omega1,X1,Y
 
     ! Compute BSE singlet excitation energies
 
-    call linear_response_BSE(ispin,.false.,.false.,eta,nBas,nC,nO,nV,nR,nS,1d0,eGT,ERI,TA,TB, &
+    call linear_response_BSE(ispin,.false.,.false.,.true.,eta,nBas,nC,nO,nV,nR,nS,1d0,eGT,ERI,TA,TB, &
                              EcBSE,OmBSE,XpY_BSE,XmY_BSE)
 
     call print_excitation('BSE@GT      ',ispin,nS,OmBSE)

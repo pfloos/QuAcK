@@ -59,9 +59,6 @@ subroutine BSE2(TDA,dBSE,dTDA,evDyn,singlet,triplet,eta,nBas,nC,nO,nV,nR,nS,ERI,
                  call BSE2_A_matrix_static(ispin,eta,nBas,nC,nO,nV,nR,nS,1d0,ERI,eGF,A_sta(:,:,ispin))
     if(.not.TDA) call BSE2_B_matrix_static(ispin,eta,nBas,nC,nO,nV,nR,nS,1d0,ERI,eGF,B_sta(:,:,ispin))
 
-    call matout(nS,nS,A_sta(:,:,ispin))
-    call matout(nS,nS,B_sta(:,:,ispin))
-
     ! Compute BSE2 excitation energies
 
     call linear_response_BSE(ispin,.false.,TDA,.true.,eta,nBas,nC,nO,nV,nR,nS,1d0,eGF,ERI,-A_sta(:,:,ispin),-B_sta(:,:,ispin), &
@@ -105,7 +102,7 @@ subroutine BSE2(TDA,dBSE,dTDA,evDyn,singlet,triplet,eta,nBas,nC,nO,nV,nR,nS,ERI,
 
     ! Compute BSE2 excitation energies
 
-    call linear_response_BSE(ispin,.false.,TDA,.false.,eta,nBas,nC,nO,nV,nR,nS,1d0,eGF,ERI,-A_sta(:,:,ispin),-B_sta(:,:,ispin), &
+    call linear_response_BSE(ispin,.false.,TDA,.true.,eta,nBas,nC,nO,nV,nR,nS,1d0,eGF,ERI,-A_sta(:,:,ispin),-B_sta(:,:,ispin), &
                              EcBSE(ispin),OmBSE(:,ispin),XpY(:,:,ispin),XmY(:,:,ispin))
     call print_excitation('BSE2        ',ispin,nS,OmBSE(:,ispin))
     call print_transition_vectors(.false.,nBas,nC,nO,nV,nR,nS,dipole_int,OmBSE(:,ispin),XpY(:,:,ispin),XmY(:,:,ispin))
