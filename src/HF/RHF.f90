@@ -1,4 +1,5 @@
-subroutine RHF(maxSCF,thresh,max_diis,guess_type,nNuc,ZNuc,rNuc,ENuc,nBas,nO,S,T,V,Hc,F,ERI,dipole_int,X,ERHF,e,c,P,Vx)
+subroutine RHF(maxSCF,thresh,max_diis,guess_type,level_shift,nNuc,ZNuc,rNuc,ENuc, & 
+               nBas,nO,S,T,V,Hc,F,ERI,dipole_int,X,ERHF,e,c,P,Vx)
 
 ! Perform restricted Hartree-Fock calculation
 
@@ -7,8 +8,11 @@ subroutine RHF(maxSCF,thresh,max_diis,guess_type,nNuc,ZNuc,rNuc,ENuc,nBas,nO,S,T
 
 ! Input variables
 
-  integer,intent(in)            :: maxSCF,max_diis,guess_type
+  integer,intent(in)            :: maxSCF
+  integer,intent(in)            :: max_diis
+  integer,intent(in)            :: guess_type
   double precision,intent(in)   :: thresh
+  logical,intent(in)            :: level_shift
 
   integer,intent(in)            :: nBas
   integer,intent(in)            :: nO
@@ -46,7 +50,6 @@ subroutine RHF(maxSCF,thresh,max_diis,guess_type,nNuc,ZNuc,rNuc,ENuc,nBas,nO,S,T
   double precision,allocatable  :: K(:,:)
   double precision,allocatable  :: cp(:,:)
   double precision,allocatable  :: Fp(:,:)
-  double precision,allocatable  :: ON(:)
 
 ! Output variables
 
@@ -71,30 +74,22 @@ subroutine RHF(maxSCF,thresh,max_diis,guess_type,nNuc,ZNuc,rNuc,ENuc,nBas,nO,S,T
 
 ! Memory allocation
 
-  allocate(J(nBas,nBas),K(nBas,nBas),error(nBas,nBas),        &
-           cp(nBas,nBas),Fp(nBas,nBas),ON(nBas),              &
+  allocate(J(nBas,nBas),K(nBas,nBas),error(nBas,nBas),cp(nBas,nBas),Fp(nBas,nBas), &
            error_diis(nBasSq,max_diis),F_diis(nBasSq,max_diis))
 
-! Guess coefficients and eigenvalues
+! Guess coefficients and density matrix
 
-  call mo_guess(nBas,nO,guess_type,S,Hc,ERI,J,K,X,cp,F,Fp,e,c,P)
-
-! ON(:) = 0d0
-! do i=1,nO
-!    ON(i) = 1d0
-!    ON(i) = dble(2*i-1)
-! end do
-
-! call density_matrix(nBas,ON,c,P)
+  call mo_guess(nBas,guess_type,S,Hc,X,c)
+  P(:,:) = 2d0*matmul(c(:,1:nO),transpose(c(:,1:nO)))
   
 ! Initialization
 
-  n_diis = 0
   F_diis(:,:)     = 0d0
   error_diis(:,:) = 0d0
-  Conv = 1d0
-  nSCF = 0
-  rcond = 0d0
+  Conv   = 1d0
+  n_diis = 0
+  nSCF   = 0
+  rcond  = 0d0
 
 !------------------------------------------------------------------------
 ! Main SCF loop
@@ -123,16 +118,24 @@ subroutine RHF(maxSCF,thresh,max_diis,guess_type,nNuc,ZNuc,rNuc,ENuc,nBas,nO,S,T
 !   Check convergence 
 
     error = matmul(F,matmul(P,S)) - matmul(matmul(S,P),F)
-    Conv = maxval(abs(error))
+    Conv  = maxval(abs(error))
 
 !   DIIS extrapolation
 
     n_diis = min(n_diis+1,max_diis)
-    if(abs(rcond) > 1d-7) then
+    if(abs(rcond) > 1d-15) then
+
       call DIIS_extrapolation(rcond,nBasSq,nBasSq,n_diis,error_diis,F_diis,error,F)
+
     else
+
       n_diis = 0
+
     end if
+
+!   Level-shifting
+
+    if(level_shift .and. Conv > thresh) call level_shifting(nBas,nO,S,c,F)
 
 !  Diagonalize Fock matrix
 
@@ -144,14 +147,12 @@ subroutine RHF(maxSCF,thresh,max_diis,guess_type,nNuc,ZNuc,rNuc,ENuc,nBas,nO,S,T
 !   Density matrix
 
     P(:,:) = 2d0*matmul(c(:,1:nO),transpose(c(:,1:nO)))
-
-!   call density_matrix(nBas,ON,c,P)
   
 !   Compute HF energy
 
-    ERHF = trace_matrix(nBas,matmul(P,Hc)) &
-        + 0.5d0*trace_matrix(nBas,matmul(P,J)) &
-        + 0.25d0*trace_matrix(nBas,matmul(P,K))
+    ERHF = trace_matrix(nBas,matmul(P,Hc))      &
+         + 0.5d0*trace_matrix(nBas,matmul(P,J)) &
+         + 0.25d0*trace_matrix(nBas,matmul(P,K))
 
 !   Compute HOMO-LUMO gap
 

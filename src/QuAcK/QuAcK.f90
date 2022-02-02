@@ -112,7 +112,7 @@ program QuAcK
 
   integer                       :: maxSCF_HF,n_diis_HF
   double precision              :: thresh_HF
-  logical                       :: DIIS_HF,guess_type,ortho_type,mix
+  logical                       :: DIIS_HF,guess_type,ortho_type,mix,level_shift
 
   integer                       :: maxSCF_CC,n_diis_CC
   double precision              :: thresh_CC
@@ -180,15 +180,15 @@ program QuAcK
 
 ! Read options for methods
 
-  call read_options(maxSCF_HF,thresh_HF,DIIS_HF,n_diis_HF,guess_type,ortho_type,mix,dostab, &
-                    maxSCF_CC,thresh_CC,DIIS_CC,n_diis_CC,                                  &
-                    TDA,singlet,triplet,spin_conserved,spin_flip,                           &
-                    maxSCF_GF,thresh_GF,DIIS_GF,n_diis_GF,linGF,eta_GF,renormGF,regGF,      &
-                    maxSCF_GW,thresh_GW,DIIS_GW,n_diis_GW,linGW,eta_GW,regGW,               & 
-                    COHSEX,SOSEX,TDA_W,G0W,GW0,                                             &  
-                    maxSCF_GT,thresh_GT,DIIS_GT,n_diis_GT,linGT,eta_GT,regGT,TDA_T,         & 
-                    doACFDT,exchange_kernel,doXBS,                                          &
-                    BSE,dBSE,dTDA,evDyn,                                                    &
+  call read_options(maxSCF_HF,thresh_HF,DIIS_HF,n_diis_HF,guess_type,ortho_type,mix,level_shift,dostab, &
+                    maxSCF_CC,thresh_CC,DIIS_CC,n_diis_CC,                                              &
+                    TDA,singlet,triplet,spin_conserved,spin_flip,                                       &
+                    maxSCF_GF,thresh_GF,DIIS_GF,n_diis_GF,linGF,eta_GF,renormGF,regGF,                  &
+                    maxSCF_GW,thresh_GW,DIIS_GW,n_diis_GW,linGW,eta_GW,regGW,                           & 
+                    COHSEX,SOSEX,TDA_W,G0W,GW0,                                                         &  
+                    maxSCF_GT,thresh_GT,DIIS_GT,n_diis_GT,linGT,eta_GT,regGT,TDA_T,                     & 
+                    doACFDT,exchange_kernel,doXBS,                                                      &
+                    BSE,dBSE,dTDA,evDyn,                                                                &
                     nMC,nEq,nWalk,dt,nPrint,iSeed,doDrift)
 
 ! Weird stuff
@@ -292,7 +292,7 @@ program QuAcK
    end if
 
     call cpu_time(start_HF)
-    call RHF(maxSCF_HF,thresh_HF,n_diis_HF,guess_type,nNuc,ZNuc,rNuc,ENuc, &
+    call RHF(maxSCF_HF,thresh_HF,n_diis_HF,guess_type,level_shift,nNuc,ZNuc,rNuc,ENuc, &
              nBas,nO,S,T,V,Hc,F_AO,ERI_AO,dipole_int_AO,X,ERHF,eHF,cHF,PHF,Vxc)
     call cpu_time(end_HF)
 
@@ -312,7 +312,7 @@ program QuAcK
     unrestricted = .true.
 
     call cpu_time(start_HF)
-    call UHF(maxSCF_HF,thresh_HF,n_diis_HF,guess_type,mix,nNuc,ZNuc,rNuc,ENuc, & 
+    call UHF(maxSCF_HF,thresh_HF,n_diis_HF,guess_type,mix,level_shift,nNuc,ZNuc,rNuc,ENuc, & 
              nBas,nO,S,T,V,Hc,ERI_AO,dipole_int_AO,X,EUHF,eHF,cHF,PHF,Vxc)
     call cpu_time(end_HF)
 
@@ -332,7 +332,7 @@ program QuAcK
     unrestricted = .true.
 
     call cpu_time(start_KS)
-    call eDFT(maxSCF_HF,thresh_HF,n_diis_HF,guess_type,mix,nNuc,ZNuc,rNuc,ENuc,nBas,nEl,nC, & 
+    call eDFT(maxSCF_HF,thresh_HF,n_diis_HF,guess_type,mix,level_shift,nNuc,ZNuc,rNuc,ENuc,nBas,nEl,nC, & 
               nO,nV,nR,nShell,TotAngMomShell,CenterShell,KShell,DShell,ExpShell,            &
               max_ang_mom,min_exponent,max_exponent,S,T,V,Hc,X,ERI_AO,dipole_int_AO,EUHF,eHF,cHF,PHF,Vxc)
              
