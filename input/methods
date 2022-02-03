@@ -3,7 +3,7 @@
 # MP2* MP3 MP2-F12
   F   F   F
 # CCD pCCD DCD CCSD CCSD(T) 
-  F   F    F   F    F
+  F   F    F   T    F
 # drCCD rCCD crCCD lCCD
   F     F    F     F
 # CIS* CIS(D) CID CISD FCI

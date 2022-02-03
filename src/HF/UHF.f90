@@ -12,7 +12,7 @@ subroutine UHF(maxSCF,thresh,max_diis,guess_type,mix,level_shift,nNuc,ZNuc,rNuc,
   integer,intent(in)            :: max_diis
   integer,intent(in)            :: guess_type
   logical,intent(in)            :: mix 
-  logical,intent(in)            :: level_shift
+  double precision,intent(in)   :: level_shift
   double precision,intent(in)   :: thresh
   integer,intent(in)            :: nBas
 
@@ -187,10 +187,10 @@ subroutine UHF(maxSCF,thresh,max_diis,guess_type,mix,level_shift,nNuc,ZNuc,rNuc,
 
 !   Level-shifting
 
-    if(level_shift .and. Conv > thresh) then
+    if(level_shift > 0d0 .and. Conv > thresh) then
 
       do ispin=1,nspin
-        call level_shifting(nBas,nO(ispin),S,c(:,:,ispin),F(:,:,ispin))
+        call level_shifting(level_shift,nBas,nO(ispin),S,c(:,:,ispin),F(:,:,ispin))
       end do
 
     end if

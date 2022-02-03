@@ -111,8 +111,8 @@ program QuAcK
   double precision              :: start_Bas    ,end_Bas      ,t_Bas
 
   integer                       :: maxSCF_HF,n_diis_HF
-  double precision              :: thresh_HF
-  logical                       :: DIIS_HF,guess_type,ortho_type,mix,level_shift
+  double precision              :: thresh_HF,level_shift
+  logical                       :: DIIS_HF,guess_type,ortho_type,mix
 
   integer                       :: maxSCF_CC,n_diis_CC
   double precision              :: thresh_CC

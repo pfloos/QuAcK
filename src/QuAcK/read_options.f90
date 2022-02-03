@@ -22,7 +22,7 @@ subroutine read_options(maxSCF_HF,thresh_HF,DIIS_HF,n_diis_HF,guess_type,ortho_t
   integer,intent(out)           :: guess_type
   integer,intent(out)           :: ortho_type
   logical,intent(out)           :: mix
-  logical,intent(out)           :: level_shift
+  double precision,intent(out)  :: level_shift
   logical,intent(out)           :: dostab
 
   integer,intent(out)           :: maxSCF_CC
@@ -101,16 +101,15 @@ subroutine read_options(maxSCF_HF,thresh_HF,DIIS_HF,n_diis_HF,guess_type,ortho_t
   guess_type   = 1
   ortho_type   = 1
   mix          = .false.
-  level_shift  = .false.
+  level_shift  = 0d0
   dostab       = .false.
 
   read(1,*) 
-  read(1,*) maxSCF_HF,thresh_HF,answer1,n_diis_HF,guess_type,ortho_type,answer2,answer3,answer4
+  read(1,*) maxSCF_HF,thresh_HF,answer1,n_diis_HF,guess_type,ortho_type,answer2,level_shift,answer3
 
   if(answer1 == 'T') DIIS_HF     = .true.
   if(answer2 == 'T') mix         = .true.
-  if(answer3 == 'T') level_shift = .true.
-  if(answer4 == 'T') dostab      = .true.
+  if(answer3 == 'T') dostab      = .true.
 
   if(.not.DIIS_HF) n_diis_HF = 1
 

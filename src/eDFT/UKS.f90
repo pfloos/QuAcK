@@ -20,7 +20,7 @@ subroutine UKS(x_rung,x_DFA,c_rung,c_DFA,nEns,wEns,nCC,aCC,nGrid,weight,maxSCF,t
   integer,intent(in)            :: max_diis
   integer,intent(in)            :: guess_type
   logical,intent(in)            :: mix
-  logical,intent(in)            :: level_shift
+  double precision,intent(in)   :: level_shift
   double precision,intent(in)   :: thresh
   integer,intent(in)            :: nBas
   double precision,intent(in)   :: AO(nBas,nGrid)
@@ -275,10 +275,10 @@ subroutine UKS(x_rung,x_DFA,c_rung,c_DFA,nEns,wEns,nCC,aCC,nGrid,weight,maxSCF,t
 
 !   Level-shifting
 
-    if(level_shift .and. Conv > thresh) then 
+    if(level_shift > 0d0 .and. Conv > thresh) then 
 
       do ispin=1,nspin
-        call level_shifting(nBas,maxval(nO(ispin,:)),S,c,F(:,:,ispin))
+        call level_shifting(level_shift,nBas,maxval(nO(ispin,:)),S,c,F(:,:,ispin))
       end do
 
     end if

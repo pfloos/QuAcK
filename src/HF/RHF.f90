@@ -12,7 +12,7 @@ subroutine RHF(maxSCF,thresh,max_diis,guess_type,level_shift,nNuc,ZNuc,rNuc,ENuc
   integer,intent(in)            :: max_diis
   integer,intent(in)            :: guess_type
   double precision,intent(in)   :: thresh
-  logical,intent(in)            :: level_shift
+  double precision,intent(in)   :: level_shift
 
   integer,intent(in)            :: nBas
   integer,intent(in)            :: nO
@@ -135,7 +135,7 @@ subroutine RHF(maxSCF,thresh,max_diis,guess_type,level_shift,nNuc,ZNuc,rNuc,ENuc
 
 !   Level-shifting
 
-    if(level_shift .and. Conv > thresh) call level_shifting(nBas,nO,S,c,F)
+    if(level_shift > 0d0 .and. Conv > thresh) call level_shifting(level_shift,nBas,nO,S,c,F)
 
 !  Diagonalize Fock matrix
 
