@@ -1,4 +1,4 @@
-subroutine print_qsUGW(nBas,nO,nSCF,Conv,thresh,eHF,eGW,cGW,PGW,Ov,T,V,J,K, & 
+subroutine print_qsUGW(nBas,nO,nSCF,Conv,thresh,eHF,eGW,cGW,Ov, & 
                        ENuc,ET,EV,EJ,Ex,EcGM,EcRPA,EqsGW,SigC,Z,dipole)
 
 ! Print one-electron energies and other stuff for qsUGW
@@ -24,12 +24,7 @@ subroutine print_qsUGW(nBas,nO,nSCF,Conv,thresh,eHF,eGW,cGW,PGW,Ov,T,V,J,K, &
   double precision,intent(in)        :: eHF(nBas,nspin)
   double precision,intent(in)        :: eGW(nBas,nspin)
   double precision,intent(in)        :: cGW(nBas,nBas,nspin)
-  double precision,intent(in)        :: PGW(nBas,nBas,nspin)
   double precision,intent(in)        :: Ov(nBas,nBas)
-  double precision,intent(in)        :: T(nBas,nBas)
-  double precision,intent(in)        :: V(nBas,nBas)
-  double precision,intent(in)        :: J(nBas,nBas,nspin)
-  double precision,intent(in)        :: K(nBas,nBas,nspin)
   double precision,intent(in)        :: SigC(nBas,nBas,nspin)
   double precision,intent(in)        :: Z(nBas,nspin)
   double precision,intent(in)        :: dipole(ncart)

@@ -30,7 +30,7 @@ subroutine read_methods(doRHF,doUHF,doKS,doMOM,            &
 
 ! Local variables
 
-  character(len=1)              :: answer1,answer2,answer3,answer4,answer5,answer6,answer7
+  character(len=1)              :: answer1,answer2,answer3,answer4,answer5
 
 ! Open file with method specification
 

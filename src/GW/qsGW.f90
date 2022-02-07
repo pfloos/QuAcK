@@ -153,7 +153,7 @@ subroutine qsGW(maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,COHSEX,BSE,
   c(:,:)          = cHF(:,:)
   F_diis(:,:)     = 0d0
   error_diis(:,:) = 0d0
-  rcond           = 1d0
+  rcond           = 0d0
 
 !------------------------------------------------------------------------
 ! Main loop

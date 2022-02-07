@@ -1,5 +1,4 @@
-subroutine allocate_grid(nNuc,ZNuc,max_ang_mom,min_exponent,max_exponent, & 
-                         radial_precision,nAng,nGrid)
+subroutine allocate_grid(nNuc,ZNuc,max_ang_mom,min_exponent,max_exponent,radial_precision,nAng,nGrid)
 
 ! Allocate quadrature grid with numgrid (Radovan Bast)
 

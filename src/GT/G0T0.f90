@@ -48,6 +48,7 @@ subroutine G0T0(doACFDT,exchange_kernel,doXBS,BSE,TDA_T,TDA,dBSE,dTDA,evDyn,sing
   double precision              :: EcRPA(nspin)
   double precision              :: EcBSE(nspin)
   double precision              :: EcAC(nspin)
+  double precision              :: EcGM
   double precision,allocatable  :: Omega1s(:),Omega1t(:)
   double precision,allocatable  :: X1s(:,:),X1t(:,:)
   double precision,allocatable  :: Y1s(:,:),Y1t(:,:)
@@ -59,11 +60,6 @@ subroutine G0T0(doACFDT,exchange_kernel,doXBS,BSE,TDA_T,TDA,dBSE,dTDA,evDyn,sing
   double precision,allocatable  :: SigX(:)
   double precision,allocatable  :: SigT(:)
   double precision,allocatable  :: Z(:)
-
-  double precision,allocatable  :: Omega(:,:)
-  double precision,allocatable  :: XpY(:,:,:)
-  double precision,allocatable  :: XmY(:,:,:)
-  double precision,allocatable  :: rho(:,:,:,:)
 
 ! Output variables
 
@@ -81,6 +77,8 @@ subroutine G0T0(doACFDT,exchange_kernel,doXBS,BSE,TDA_T,TDA,dBSE,dTDA,evDyn,sing
 
   nOOs = nO*nO
   nVVs = nV*nV
+! nOOs = nO*(nO + 1)/2
+! nVVs = nV*(nV + 1)/2
 
   nOOt = nO*(nO - 1)/2
   nVVt = nV*(nV - 1)/2
@@ -101,6 +99,7 @@ subroutine G0T0(doACFDT,exchange_kernel,doXBS,BSE,TDA_T,TDA,dBSE,dTDA,evDyn,sing
 
   ispin  = 1
   iblock = 3
+! iblock = 1
 
 ! Compute linear response
 
@@ -109,8 +108,8 @@ subroutine G0T0(doACFDT,exchange_kernel,doXBS,BSE,TDA_T,TDA,dBSE,dTDA,evDyn,sing
 
 ! EcRPA(ispin) = 1d0*EcRPA(ispin)
 
-! call print_excitation('pp-RPA (N+2)',iblock,nVVs,Omega1s(:))
-! call print_excitation('pp-RPA (N-2)',iblock,nOOs,Omega2s(:))
+  call print_excitation('pp-RPA (N+2)',iblock,nVVs,Omega1s(:))
+  call print_excitation('pp-RPA (N-2)',iblock,nOOs,Omega2s(:))
 
 !----------------------------------------------
 ! alpha-alpha block
@@ -127,34 +126,51 @@ subroutine G0T0(doACFDT,exchange_kernel,doXBS,BSE,TDA_T,TDA,dBSE,dTDA,evDyn,sing
 ! EcRPA(ispin) = 2d0*EcRPA(ispin)
 ! EcRPA(ispin) = 3d0*EcRPA(ispin)
 
-! call print_excitation('pp-RPA (N+2)',iblock,nVVt,Omega1t(:))
-! call print_excitation('pp-RPA (N-2)',iblock,nOOt,Omega2t(:))
+  call print_excitation('pp-RPA (N+2)',iblock,nVVt,Omega1t(:))
+  call print_excitation('pp-RPA (N-2)',iblock,nOOt,Omega2t(:))
 
 !----------------------------------------------
 ! Compute T-matrix version of the self-energy 
 !----------------------------------------------
 
+  EcGM    = 0d0
   SigT(:) = 0d0
   Z(:)    = 0d0
 
-  iblock =  3
+  iblock = 3
+! iblock = 1
 
   call excitation_density_Tmatrix(iblock,nBas,nC,nO,nV,nR,nOOs,nVVs,ERI_MO,X1s,Y1s,rho1s,X2s,Y2s,rho2s)
 
-  call self_energy_Tmatrix_diag(eta,nBas,nC,nO,nV,nR,nOOs,nVVs,eHF,Omega1s,rho1s,Omega2s,rho2s,SigT)
+  if(regularize) then
 
-  call renormalization_factor_Tmatrix(eta,nBas,nC,nO,nV,nR,nOOs,nVVs,eHF,Omega1s,rho1s,Omega2s,rho2s,Z)
+    call regularized_self_energy_Tmatrix_diag(eta,nBas,nC,nO,nV,nR,nOOs,nVVs,eHF,Omega1s,rho1s,Omega2s,rho2s,EcGM,SigT)
+    call regularized_renormalization_factor_Tmatrix(eta,nBas,nC,nO,nV,nR,nOOs,nVVs,eHF,Omega1s,rho1s,Omega2s,rho2s,Z)
 
-  iblock =  4
+  else
+
+    call self_energy_Tmatrix_diag(eta,nBas,nC,nO,nV,nR,nOOs,nVVs,eHF,Omega1s,rho1s,Omega2s,rho2s,EcGM,SigT)
+    call renormalization_factor_Tmatrix(eta,nBas,nC,nO,nV,nR,nOOs,nVVs,eHF,Omega1s,rho1s,Omega2s,rho2s,Z)
+
+  end if
+
+  iblock = 4
 
   call excitation_density_Tmatrix(iblock,nBas,nC,nO,nV,nR,nOOt,nVVt,ERI_MO,X1t,Y1t,rho1t,X2t,Y2t,rho2t)
 
-  call self_energy_Tmatrix_diag(eta,nBas,nC,nO,nV,nR,nOOt,nVVt,eHF,Omega1t,rho1t,Omega2t,rho2t,SigT)
+  if(regularize) then
 
-  call renormalization_factor_Tmatrix(eta,nBas,nC,nO,nV,nR,nOOt,nVVt,eHF,Omega1t,rho1t,Omega2t,rho2t,Z)
+    call regularized_self_energy_Tmatrix_diag(eta,nBas,nC,nO,nV,nR,nOOt,nVVt,eHF,Omega1t,rho1t,Omega2t,rho2t,EcGM,SigT)
+    call regularized_renormalization_factor_Tmatrix(eta,nBas,nC,nO,nV,nR,nOOt,nVVt,eHF,Omega1t,rho1t,Omega2t,rho2t,Z)
+
+  else
+
+    call self_energy_Tmatrix_diag(eta,nBas,nC,nO,nV,nR,nOOt,nVVt,eHF,Omega1t,rho1t,Omega2t,rho2t,EcGM,SigT)
+    call renormalization_factor_Tmatrix(eta,nBas,nC,nO,nV,nR,nOOt,nVVt,eHF,Omega1t,rho1t,Omega2t,rho2t,Z)
+
+  end if
 
   Z(:) = 1d0/(1d0 - Z(:))
-
 
 !----------------------------------------------
 ! Compute the exchange part of the self-energy
@@ -184,6 +200,8 @@ subroutine G0T0(doACFDT,exchange_kernel,doXBS,BSE,TDA_T,TDA,dBSE,dTDA,evDyn,sing
 
   ispin  = 1
   iblock = 3
+! iblock = 1
+
   call linear_response_pp(iblock,TDA_T,nBas,nC,nO,nV,nR,nOOs,nVVs,1d0,eG0T0,ERI_MO,  & 
                           Omega1s,X1s,Y1s,Omega2s,X2s,Y2s,EcRPA(ispin))
   ispin  = 2
@@ -194,7 +212,7 @@ subroutine G0T0(doACFDT,exchange_kernel,doXBS,BSE,TDA_T,TDA,dBSE,dTDA,evDyn,sing
   EcRPA(1) = EcRPA(1) - EcRPA(2)
   EcRPA(2) = 3d0*EcRPA(2)
 
-  call print_G0T0(nBas,nO,eHF,ENuc,ERHF,SigT,Z,eG0T0,EcRPA)
+  call print_G0T0(nBas,nO,eHF,ENuc,ERHF,SigT,Z,eG0T0,EcGM,EcRPA)
 
 ! Perform BSE calculation
 

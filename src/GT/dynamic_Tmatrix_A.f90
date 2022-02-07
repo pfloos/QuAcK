@@ -1,4 +1,4 @@
-subroutine dynamic_Tmatrix_A(eta,nBas,nC,nO,nV,nR,nS,nOO,nVV,lambda,eGT,Omega1,Omega2,rho1,rho2,OmBSE,A_dyn,ZA_dyn)
+subroutine dynamic_Tmatrix_A(eta,nBas,nC,nO,nV,nR,nS,nOO,nVV,lambda,eGT,Omega1,Omega2,rho1,rho2,OmBSE,TA,ZA)
 
 ! Compute the dynamic part of the Bethe-Salpeter equation matrices for GT
 
@@ -36,13 +36,13 @@ subroutine dynamic_Tmatrix_A(eta,nBas,nC,nO,nV,nR,nS,nOO,nVV,lambda,eGT,Omega1,O
 
 ! Output variables
 
-  double precision,intent(out)  ::  A_dyn(nS,nS)
-  double precision,intent(out)  :: ZA_dyn(nS,nS)
+  double precision,intent(out)  :: TA(nS,nS)
+  double precision,intent(out)  :: ZA(nS,nS)
 
 ! Initialization
 
-   A_dyn(:,:) = 0d0
-  ZA_dyn(:,:) = 0d0
+  TA(:,:) = 0d0
+  ZA(:,:) = 0d0
 
 ! Build dynamic A matrix
 
@@ -58,44 +58,30 @@ subroutine dynamic_Tmatrix_A(eta,nBas,nC,nO,nV,nR,nS,nOO,nVV,lambda,eGT,Omega1,O
           chi = 0d0
 
           do cd=1,nVV
-            eps = - Omega1(cd) 
-            chi = chi + rho1(i,b,cd)*rho1(j,a,cd)*eps/(eps**2 + eta**2)
+            eps = + OmBSE - Omega1(cd) + (eGT(i) + eGT(j))
+            chi = chi + rho1(i,b,cd)*rho1(a,j,cd)*eps/(eps**2 + eta**2) 
           end do
 
           do kl=1,nOO
-            eps = + Omega2(kl)
-            chi = chi + rho2(i,b,kl)*rho2(j,a,kl)*eps/(eps**2 + eta**2)
+            eps = + OmBSE + Omega2(kl) - (eGT(a) + eGT(b))
+            chi = chi + rho2(i,b,kl)*rho2(a,j,kl)*eps/(eps**2 + eta**2)
           end do
 
-          A_dyn(ia,jb) = A_dyn(ia,jb) - lambda*chi
+          TA(ia,jb) = TA(ia,jb) - lambda*chi
 
           chi = 0d0
 
           do cd=1,nVV
             eps = + OmBSE - Omega1(cd) + (eGT(i) + eGT(j))
-            chi = chi + rho1(i,b,cd)*rho1(j,a,cd)*eps/(eps**2 + eta**2) 
+            chi = chi + rho1(i,b,cd)*rho1(a,j,cd)*(eps**2 - eta**2)/(eps**2 + eta**2)**2
           end do
 
           do kl=1,nOO
             eps = + OmBSE + Omega2(kl) - (eGT(a) + eGT(b))
-            chi = chi + rho2(i,b,kl)*rho2(j,a,kl)*eps/(eps**2 + eta**2)
+            chi = chi + rho2(i,b,kl)*rho2(a,j,kl)*(eps**2 - eta**2)/(eps**2 + eta**2)**2
           end do
 
-          A_dyn(ia,jb) = A_dyn(ia,jb) + 1d0*lambda*chi
-
-          chi = 0d0
-
-          do cd=1,nVV
-            eps = + OmBSE - Omega1(cd) + (eGT(i) + eGT(j))
-            chi = chi + rho1(i,b,cd)*rho1(j,a,cd)*(eps**2 - eta**2)/(eps**2 + eta**2)**2
-          end do
-
-          do kl=1,nOO
-            eps = + OmBSE + Omega2(kl) - (eGT(a) + eGT(b))
-            chi = chi + rho2(i,b,kl)*rho2(j,a,kl)*(eps**2 - eta**2)/(eps**2 + eta**2)**2
-          end do
-
-          ZA_dyn(ia,jb) = ZA_dyn(ia,jb) - 1d0*lambda*chi
+          ZA(ia,jb) = ZA(ia,jb) + lambda*chi
 
         end do
       end do

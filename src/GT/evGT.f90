@@ -46,7 +46,6 @@ subroutine evGT(maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS, &
 
 ! Local variables
 
-  logical                       :: linear_mixing
   integer                       :: nSCF
   integer                       :: n_diis
   double precision              :: rcond
@@ -55,6 +54,7 @@ subroutine evGT(maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS, &
   integer                       :: iblock
   integer                       :: nOOs,nOOt
   integer                       :: nVVs,nVVt
+  double precision              :: EcGM
   double precision              :: EcRPA(nspin)
   double precision              :: EcBSE(nspin)
   double precision              :: EcAC(nspin)
@@ -117,6 +117,7 @@ subroutine evGT(maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS, &
   eGT(:)          = eG0T0(:)
   eOld(:)         = eGT(:)
   Z(:)            = 1d0
+  rcond           = 0d0
 
 !------------------------------------------------------------------------
 ! Main loop
@@ -148,10 +149,14 @@ subroutine evGT(maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS, &
     call linear_response_pp(iblock,TDA_T,nBas,nC,nO,nV,nR,nOOt,nVVt,1d0,eGT,ERI_MO,  & 
                           Omega1t,X1t,Y1t,Omega2t,X2t,Y2t,EcRPA(ispin))
 
+    EcRPA(1) = EcRPA(1) - EcRPA(2)
+    EcRPA(2) = 3d0*EcRPA(2)
+
   !----------------------------------------------
   ! Compute T-matrix version of the self-energy 
   !----------------------------------------------
 
+    EcGM    = 0d0
     SigT(:) = 0d0
     Z(:)    = 0d0
  
@@ -161,7 +166,7 @@ subroutine evGT(maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS, &
                                     X1s,Y1s,rho1s,X2s,Y2s,rho2s)
  
     call self_energy_Tmatrix_diag(eta,nBas,nC,nO,nV,nR,nOOs,nVVs,eGT, & 
-                                  Omega1s,rho1s,Omega2s,rho2s,SigT)
+                                  Omega1s,rho1s,Omega2s,rho2s,EcGM,SigT)
  
     call renormalization_factor_Tmatrix(eta,nBas,nC,nO,nV,nR,nOOs,nVVs,eGT, & 
                                         Omega1s,rho1s,Omega2s,rho2s,Z)
@@ -172,7 +177,7 @@ subroutine evGT(maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS, &
                                     X1t,Y1t,rho1t,X2t,Y2t,rho2t)
  
     call self_energy_Tmatrix_diag(eta,nBas,nC,nO,nV,nR,nOOt,nVVt,eGT, & 
-                                  Omega1t,rho1t,Omega2t,rho2t,SigT)
+                                  Omega1t,rho1t,Omega2t,rho2t,EcGM,SigT)
  
     call renormalization_factor_Tmatrix(eta,nBas,nC,nO,nV,nR,nOOt,nVVt,eGT, & 
                                         Omega1t,rho1t,Omega2t,rho2t,Z)
@@ -195,7 +200,7 @@ subroutine evGT(maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS, &
   ! Dump results
   !----------------------------------------------
 
-    call print_evGT(nBas,nO,nSCF,Conv,eHF,SigT,Z,eGT)
+    call print_evGT(nBas,nO,nSCF,Conv,eHF,ENuc,ERHF,SigT,Z,eGT,EcGM,EcRPA)
 
     ! DIIS extrapolation
 
@@ -218,29 +223,6 @@ subroutine evGT(maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS, &
 !------------------------------------------------------------------------
 ! End main loop
 !------------------------------------------------------------------------
-
-! Compute the ppRPA correlation energy
-
-  ispin  = 1
-  iblock = 3
-  call linear_response_pp(iblock,TDA_T,nBas,nC,nO,nV,nR,nOOs,nVVs,1d0,eGT,ERI_MO,  &
-                          Omega1s,X1s,Y1s,Omega2s,X2s,Y2s,EcRPA(ispin))
-  ispin  = 2
-  iblock = 4
-  call linear_response_pp(iblock,TDA_T,nBas,nC,nO,nV,nR,nOOt,nVVt,1d0,eGT,ERI_MO,  &
-                          Omega1t,X1t,Y1t,Omega2t,X2t,Y2t,EcRPA(ispin))
-  EcRPA(1) = EcRPA(1) - EcRPA(2)
-  EcRPA(2) = 3d0*EcRPA(2)
-
-  write(*,*)
-  write(*,*)'-------------------------------------------------------------------------------'
-  write(*,'(2X,A50,F20.10)') 'Tr@ppRPA@evGT correlation energy (singlet) =',EcRPA(1)
-  write(*,'(2X,A50,F20.10)') 'Tr@ppRPA@evGT correlation energy (triplet) =',EcRPA(2)
-  write(*,'(2X,A50,F20.10)') 'Tr@ppRPA@evGT correlation energy           =',EcRPA(1) + EcRPA(2)
-  write(*,'(2X,A50,F20.10)') 'Tr@ppRPA@evGT total energy                 =',ENuc + ERHF + EcRPA(1) + EcRPA(2)
-  write(*,*)'-------------------------------------------------------------------------------'
-  write(*,*)
-
 
 ! Perform BSE calculation
 

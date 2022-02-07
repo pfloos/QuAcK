@@ -1,4 +1,4 @@
-subroutine static_Tmatrix_A(ispin,eta,nBas,nC,nO,nV,nR,nS,nOO,nVV,lambda,ERI,Omega1,rho1,Omega2,rho2,TA)
+subroutine static_Tmatrix_A(eta,nBas,nC,nO,nV,nR,nS,nOO,nVV,lambda,Omega1,rho1,Omega2,rho2,TA)
 
 ! Compute the OOVV block of the static T-matrix for the resonant block
 
@@ -7,7 +7,6 @@ subroutine static_Tmatrix_A(ispin,eta,nBas,nC,nO,nV,nR,nS,nOO,nVV,lambda,ERI,Ome
 
 ! Input variables
 
-  integer,intent(in)            :: ispin
   double precision,intent(in)   :: eta
   integer,intent(in)            :: nBas
   integer,intent(in)            :: nC
@@ -18,7 +17,6 @@ subroutine static_Tmatrix_A(ispin,eta,nBas,nC,nO,nV,nR,nS,nOO,nVV,lambda,ERI,Ome
   integer,intent(in)            :: nOO
   integer,intent(in)            :: nVV
   double precision,intent(in)   :: lambda
-  double precision,intent(in)   :: ERI(nBas,nBas,nBas,nBas)
   double precision,intent(in)   :: Omega1(nVV)
   double precision,intent(in)   :: rho1(nBas,nBas,nVV)
   double precision,intent(in)   :: Omega2(nOO)
@@ -34,6 +32,8 @@ subroutine static_Tmatrix_A(ispin,eta,nBas,nC,nO,nV,nR,nS,nOO,nVV,lambda,ERI,Ome
 
   double precision,intent(out)  :: TA(nS,nS)
 
+  TA(:,:) = 0d0
+
   ia = 0
   do i=nC+1,nO
     do a=nO+1,nBas-nR
@@ -46,13 +46,13 @@ subroutine static_Tmatrix_A(ispin,eta,nBas,nC,nO,nV,nR,nS,nOO,nVV,lambda,ERI,Ome
           chi = 0d0
 
           do cd=1,nVV
-            eps = - Omega1(cd)
+            eps = + Omega1(cd)
 !           chi = chi + lambda*rho1(i,j,cd)*rho1(a,b,cd)*eps/(eps**2 + eta**2)
             chi = chi + rho1(i,b,cd)*rho1(a,j,cd)*eps/(eps**2 + eta**2)
           enddo
 
           do kl=1,nOO
-            eps = + Omega2(kl)
+            eps = - Omega2(kl)
 !           chi = chi - lambda*rho2(i,j,kl)*rho2(a,b,kl)*eps/(eps**2 + eta**2)
             chi = chi + rho2(i,b,kl)*rho2(a,j,kl)*eps/(eps**2 + eta**2)
           enddo

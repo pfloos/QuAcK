@@ -96,7 +96,7 @@ subroutine CID(singlet_manifold,triplet_manifold,nBasin,nCin,nOin,nVin,nRin,ERIi
 
   H(ishift+1,jshift+1) = E0
  
-  print*,'00 block done...'
+  print*,'00 block  done...'
 
   ! 0D blocks
 
@@ -193,7 +193,7 @@ subroutine CID(singlet_manifold,triplet_manifold,nBasin,nCin,nOin,nVin,nRin,ERIi
     end do
   end do
 
-  print*,'DD block done...'
+  print*,'DD block  done...'
 
   write(*,*)
   write(*,*) 'Diagonalizing CID matrix...'

@@ -253,7 +253,7 @@ subroutine UHF(maxSCF,thresh,max_diis,guess_type,mix,nNuc,ZNuc,rNuc,ENuc,nBas,nO
 ! Compute Vx for post-HF calculations
 
   do ispin=1,nspin
-    call exchange_potential(nBas,c(:,:,ispin),K(:,:,ispin),Vx(:,ispin))
+    call mo_fock_exchange_potential(nBas,c(:,:,ispin),K(:,:,ispin),Vx(:,ispin))
   end do
 
 end subroutine UHF

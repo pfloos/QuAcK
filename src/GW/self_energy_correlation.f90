@@ -28,8 +28,8 @@ subroutine self_energy_correlation(COHSEX,eta,nBas,nC,nO,nV,nR,nS,e,Omega,rho,Ec
 
 ! Output variables
 
-  double precision,intent(out)  :: SigC(nBas,nBas)
   double precision,intent(out)  :: EcGM
+  double precision,intent(out)  :: SigC(nBas,nBas)
 
 ! Initialize 
 
@@ -102,7 +102,7 @@ subroutine self_energy_correlation(COHSEX,eta,nBas,nC,nO,nV,nR,nS,e,Omega,rho,Ec
       end do
     end do
 
-    ! GM correlation energy
+    ! Galitskii-Migdal correlation energy
 
     EcGM = 0d0
     do i=nC+1,nO

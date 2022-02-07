@@ -195,15 +195,15 @@ subroutine read_options(maxSCF_HF,thresh_HF,DIIS_HF,n_diis_HF,guess_type,ortho_t
   if(answer8 == 'T') regGW   = .true.
   if(.not.DIIS_GW) n_diis_GW = 1
 
-! Read GF options
+! Read GT options
 
-  maxSCF_GF = 64
-  thresh_GF = 1d-5
-  DIIS_GF   = .false.
-  n_diis_GF = 5
-  linGF     = .false.
-  eta_GF    = 0d0
-  regGF     = .false.
+  maxSCF_GT = 64
+  thresh_GT = 1d-5
+  DIIS_GT   = .false.
+  n_diis_GT = 5
+  linGT     = .false.
+  eta_GT    = 0d0
+  regGT     = .false.
   TDA_T     = .false.
 
   read(1,*) 

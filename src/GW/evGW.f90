@@ -139,6 +139,7 @@ subroutine evGW(maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,COHSEX,BSE,
   eGW(:)          = eG0W0(:)
   eOld(:)         = eGW(:)
   Z(:)            = 1d0
+  rcond           = 0d0
 
 !------------------------------------------------------------------------
 ! Main loop

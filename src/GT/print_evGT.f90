@@ -1,4 +1,4 @@
-subroutine print_evGT(nBas,nO,nSCF,Conv,eHF,SigT,Z,eGT)
+subroutine print_evGT(nBas,nO,nSCF,Conv,eHF,ENuc,ERHF,SigT,Z,eGT,EcGM,EcRPA)
 
 ! Print one-electron energies and other stuff for evGT
 
@@ -10,6 +10,10 @@ subroutine print_evGT(nBas,nO,nSCF,Conv,eHF,SigT,Z,eGT)
   integer,intent(in)                 :: nSCF
   double precision,intent(in)        :: Conv
   double precision,intent(in)        :: eHF(nBas)
+  double precision,intent(in)        :: ENuc
+  double precision,intent(in)        :: ERHF
+  double precision,intent(in)        :: EcGM
+  double precision,intent(in)        :: EcRPA(nspin)
   double precision,intent(in)        :: SigT(nBas)
   double precision,intent(in)        :: Z(nBas)
   double precision,intent(in)        :: eGT(nBas)
@@ -48,6 +52,13 @@ subroutine print_evGT(nBas,nO,nSCF,Conv,eHF,SigT,Z,eGT)
   write(*,'(2X,A30,F15.6)') 'evGT HOMO      energy (eV):',eGT(HOMO)*HaToeV
   write(*,'(2X,A30,F15.6)') 'evGT LUMO      energy (eV):',eGT(LUMO)*HaToeV
   write(*,'(2X,A30,F15.6)') 'evGT HOMO-LUMO gap    (eV):',Gap*HaToeV
+  write(*,*)'-------------------------------------------------------------------------------'
+  write(*,'(2X,A50,F20.10,A3)') ' Tr@ppRPA@G0T0 correlation energy (singlet) =',EcRPA(1),' au'
+  write(*,'(2X,A50,F20.10,A3)') ' Tr@ppRPA@G0T0 correlation energy (triplet) =',EcRPA(2),' au'
+  write(*,'(2X,A50,F20.10,A3)') ' Tr@ppRPA@G0T0 correlation energy           =',EcRPA(1) + EcRPA(2),' au'
+  write(*,'(2X,A50,F20.10,A3)') ' Tr@ppRPA@G0T0 total energy                 =',ENuc + ERHF + EcRPA(1) + EcRPA(2),' au'
+  write(*,'(2X,A50,F20.10,A3)') '       GM@G0T0 correlation energy           =',EcGM,' au'
+  write(*,'(2X,A50,F20.10,A3)') '       GM@G0T0 total energy                 =',ENuc + ERHF + EcGM,' au'
   write(*,*)'-------------------------------------------------------------------------------'
   write(*,*)
 

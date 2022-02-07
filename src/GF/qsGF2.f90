@@ -94,6 +94,8 @@ subroutine qsGF2(maxSCF,thresh,max_diis,BSE,TDA,dBSE,dTDA,evDyn,singlet,triplet,
 
   nBasSq = nBas*nBas
 
+  print*,maxSCF
+
 ! TDA 
 
   if(TDA) then 
@@ -119,7 +121,7 @@ subroutine qsGF2(maxSCF,thresh,max_diis,BSE,TDA,dBSE,dTDA,evDyn,singlet,triplet,
   c(:,:)          = cHF(:,:)
   F_diis(:,:)     = 0d0
   error_diis(:,:) = 0d0
-  rcond           = 1d0
+  rcond           = 0d0
 
 !------------------------------------------------------------------------
 ! Main loop

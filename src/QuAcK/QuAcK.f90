@@ -451,8 +451,10 @@ program QuAcK
       ket1 = 1
       ket2 = 1
       call AOtoMO_integral_transform(bra1,bra2,ket1,ket2,nBas,cHF,ERI_AO,ERI_MO)
+
       F_MO(:,:) = F_AO(:,:)
       call AOtoMO_transform(nBas,cHF,F_MO)
+
     end if
 
   end if

@@ -48,9 +48,9 @@ subroutine print_qsGT(nBas,nO,nSCF,Conv,thresh,eHF,eGT,c,SigC,Z,ENuc,ET,EV,EJ,Ex
 
   write(*,*)'-------------------------------------------------------------------------------'
   if(nSCF < 10) then
-    write(*,'(1X,A21,I1,A1,I1,A12)')'  Self-consistent qsG',nSCF,'W',nSCF,' calculation'
+    write(*,'(1X,A21,I1,A1,I1,A12)')'  Self-consistent qsG',nSCF,'T',nSCF,' calculation'
   else
-    write(*,'(1X,A21,I2,A1,I2,A12)')'  Self-consistent qsG',nSCF,'W',nSCF,' calculation'
+    write(*,'(1X,A21,I2,A1,I2,A12)')'  Self-consistent qsG',nSCF,'T',nSCF,' calculation'
   endif
   write(*,*)'-------------------------------------------------------------------------------'
   write(*,'(1X,A1,1X,A3,1X,A1,1X,A15,1X,A1,1X,A15,1X,A1,1X,A15,1X,A1,1X,A15,1X,A1,1X)') &
@@ -70,10 +70,10 @@ subroutine print_qsGT(nBas,nO,nSCF,Conv,thresh,eHF,eGT,c,SigC,Z,ENuc,ET,EV,EJ,Ex
   write(*,'(2X,A30,F15.6,A3)') 'qsGT LUMO      energy:',eGT(LUMO)*HaToeV,' eV'
   write(*,'(2X,A30,F15.6,A3)') 'qsGT HOMO-LUMO gap   :',Gap*HaToeV,' eV'
   write(*,*)'-------------------------------------------'
-  write(*,'(2X,A30,F15.6,A3)') '    qsGT total       energy:',ENuc + EqsGT,' au'
-  write(*,'(2X,A30,F15.6,A3)') '    qsGT exchange    energy:',Ex,' au'
-  write(*,'(2X,A30,F15.6,A3)') ' GM@qsGT correlation energy:',EcGM,' au'
-  write(*,'(2X,A30,F15.6,A3)') 'RPA@qsGT correlation energy:',sum(EcRPA(:)),' au'
+  write(*,'(2X,A30,F15.6,A3)') '      qsGT total       energy:',ENuc + EqsGT,' au'
+  write(*,'(2X,A30,F15.6,A3)') '      qsGT exchange    energy:',Ex,' au'
+  write(*,'(2X,A30,F15.6,A3)') '   GM@qsGT correlation energy:',EcGM,' au'
+  write(*,'(2X,A30,F15.6,A3)') 'ppRPA@qsGT correlation energy:',sum(EcRPA(:)),' au'
   write(*,*)'-------------------------------------------'
   write(*,*)
 

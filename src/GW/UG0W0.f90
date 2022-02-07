@@ -132,21 +132,25 @@ subroutine UG0W0(doACFDT,exchange_kernel,doXBS,COHSEX,BSE,TDA_W,TDA,dBSE,dTDA,ev
  
   call unrestricted_excitation_density(nBas,nC,nO,nR,nS_aa,nS_bb,nS_sc,ERI_aaaa,ERI_aabb,ERI_bbbb,XpY_RPA,rho_RPA)
 
-!---------------------!
-! Compute self-energy !
-!---------------------!
+!------------------------------------------------!
+! Compute self-energy and renormalization factor !
+!------------------------------------------------!
 
   do is=1,nspin
     call self_energy_exchange_diag(nBas,cHF(:,:,is),PHF(:,:,is),ERI,SigX(:,is))
   end do
 
-  call unrestricted_self_energy_correlation_diag(eta,nBas,nC,nO,nV,nR,nS_sc,eHF,OmRPA,rho_RPA,SigC,EcGM)
+  if(regularize) then
 
-!--------------------------------!
-! Compute renormalization factor !
-!--------------------------------!
+    call unrestricted_regularized_self_energy_correlation_diag(eta,nBas,nC,nO,nV,nR,nS_sc,eHF,OmRPA,rho_RPA,SigC,EcGM)
+    call unrestricted_regularized_renormalization_factor(eta,nBas,nC,nO,nV,nR,nS_sc,eHF,OmRPA,rho_RPA,Z)
 
-  call unrestricted_renormalization_factor(eta,nBas,nC,nO,nV,nR,nS_sc,eHF,OmRPA,rho_RPA,Z)
+  else
+
+    call unrestricted_self_energy_correlation_diag(eta,nBas,nC,nO,nV,nR,nS_sc,eHF,OmRPA,rho_RPA,SigC,EcGM)
+    call unrestricted_renormalization_factor(eta,nBas,nC,nO,nV,nR,nS_sc,eHF,OmRPA,rho_RPA,Z)
+
+  end if
 
 !-----------------------------------!
 ! Solve the quasi-particle equation !
