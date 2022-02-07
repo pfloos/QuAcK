@@ -150,21 +150,22 @@ subroutine individual_energy(x_rung,x_DFA,c_rung,c_DFA,LDA_centered,nEns,wEns,nC
 
   do ispin=1,nspin 
     call exchange_derivative_discontinuity(x_rung,x_DFA,nEns,wEns,nCC,aCC,nGrid,weight, &
-                                                        rhow(:,ispin),drhow(:,:,ispin),Cx_choice,doNcentered,ExDD(ispin,:))
+                                           rhow(:,ispin),drhow(:,:,ispin),Cx_choice,&
+                                           doNcentered,kappa,ExDD(ispin,:))
   end do
 
   call correlation_derivative_discontinuity(c_rung,c_DFA,nEns,wEns,nGrid,weight,rhow,drhow,EcDD)
 
 ! Scaling derivative discontinuity for N-centered ensembles
 
-  if(doNcentered) then
+!  if(doNcentered) then
 
-     do iEns=1,nEns
-       ExDD(:,iEns) = (1d0 - kappa(iEns))*ExDD(:,iEns)
-       EcDD(:,iEns) = (1d0 - kappa(iEns))*EcDD(:,iEns)
-     end do
+!     do iEns=1,nEns
+!       ExDD(:,iEns) = (1d0 - kappa(iEns))*ExDD(:,iEns)
+!       EcDD(:,iEns) = (1d0 - kappa(iEns))*EcDD(:,iEns)
+!     end do
 
-  end if
+!  end if
 
 !------------------------------------------------------------------------
 ! Total energy
@@ -187,6 +188,8 @@ subroutine individual_energy(x_rung,x_DFA,c_rung,c_DFA,LDA_centered,nEns,wEns,nC
     end do
 
   end if
+
+print*,'LZshift=',sum(LZH(:)) + sum(LZx(:)) + sum(LZc(:))
   
 ! do iEns=1,nEns
 !   E(iEns)   = sum(ET(:,iEns)) + sum(EV(:,iEns))                     & 
