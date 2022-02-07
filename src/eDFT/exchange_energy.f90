@@ -49,7 +49,7 @@ subroutine exchange_energy(rung,DFA,LDA_centered,nEns,wEns,nCC,aCC,nGrid,weight,
 
     case(2) 
 
-      call gga_exchange_energy(DFA,nEns,wEns,nGrid,weight,rho,drho,Ex)
+      call gga_exchange_energy(DFA,nEns,wEns,nCC,aCC,nGrid,weight,rho,drho,Cx_choice,Ex)
 
 !   MGGA functionals
 

@@ -59,7 +59,8 @@ subroutine exchange_potential(rung,DFA,LDA_centered,nEns,wEns,nCC,aCC,nGrid,weig
 
     case(2) 
 
-      call gga_exchange_potential(DFA,nEns,wEns,nGrid,weight,nBas,AO,dAO,rho,drho,Fx)
+      call gga_exchange_potential(DFA,nEns,wEns,nCC,aCC,nGrid,weight,nBas,AO,dAO,rho,drho,&
+                                  Cx_choice,Fx)
 
 !   MGGA functionals
 

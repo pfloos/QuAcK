@@ -117,7 +117,11 @@ subroutine read_options_dft(nBas,method,x_rung,x_DFA,c_rung,c_DFA,SGn,nEns,wEns,
         case ('PBE')
   
           x_DFA = 3
-  
+ 
+        case ('CC-B88')
+
+          x_DFA = 4
+
         case default
  
           call print_warning('!!! GGA exchange functional not available !!!')
