@@ -1,4 +1,5 @@
-subroutine UHF(maxSCF,thresh,max_diis,guess_type,mix,nNuc,ZNuc,rNuc,ENuc,nBas,nO,S,T,V,Hc,ERI,dipole_int,X,EUHF,e,c,P,Vx)
+subroutine UHF(maxSCF,thresh,max_diis,guess_type,mix,level_shift,nNuc,ZNuc,rNuc,ENuc, & 
+               nBas,nO,S,T,V,Hc,ERI,dipole_int,X,EUHF,e,c,P,Vx)
 
 ! Perform unrestricted Hartree-Fock calculation
 
@@ -11,6 +12,7 @@ subroutine UHF(maxSCF,thresh,max_diis,guess_type,mix,nNuc,ZNuc,rNuc,ENuc,nBas,nO
   integer,intent(in)            :: max_diis
   integer,intent(in)            :: guess_type
   logical,intent(in)            :: mix 
+  double precision,intent(in)   :: level_shift
   double precision,intent(in)   :: thresh
   integer,intent(in)            :: nBas
 
@@ -79,22 +81,12 @@ subroutine UHF(maxSCF,thresh,max_diis,guess_type,mix,nNuc,ZNuc,rNuc,ENuc,nBas,nO
            K(nBas,nBas,nspin),err(nBas,nBas,nspin),cp(nBas,nBas,nspin), &
            err_diis(nBasSq,max_diis,nspin),F_diis(nBasSq,max_diis,nspin))
 
-! Guess coefficients and eigenvalues
+! Guess coefficients and demsity matrices
 
-  if(guess_type == 1) then
-    
-    F(:,:,:) = 0d0
-    do ispin=1,nspin
-      F(:,:,ispin) = Hc(:,:)
-    end do
-
-  else if(guess_type == 2) then
-
-    do ispin=1,nspin
-      call random_number(F(:,:,ispin))
-    end do
-
-  end if
+  do ispin=1,nspin
+    call mo_guess(nBas,guess_type,S,Hc,X,c(:,:,ispin))
+    P(:,:,ispin) = matmul(c(:,1:nO(ispin),ispin),transpose(c(:,1:nO(ispin),ispin)))
+  end do
 
 ! Initialization
 
@@ -179,13 +171,28 @@ subroutine UHF(maxSCF,thresh,max_diis,guess_type,mix,nNuc,ZNuc,rNuc,ENuc,nBas,nO
 !   DIIS extrapolation
 
     n_diis = min(n_diis+1,max_diis)
-    if(minval(rcond(:)) > 1d-7) then
+
+    if(minval(rcond(:)) > 1d-15) then
+
       do ispin=1,nspin
         if(nO(ispin) > 1) call DIIS_extrapolation(rcond(ispin),nBasSq,nBasSq,n_diis,err_diis(:,1:n_diis,ispin), &
                                                 F_diis(:,1:n_diis,ispin),err(:,:,ispin),F(:,:,ispin))
       end do
+
     else
+
       n_diis = 0
+
+    end if
+
+!   Level-shifting
+
+    if(level_shift > 0d0 .and. Conv > thresh) then
+
+      do ispin=1,nspin
+        call level_shifting(level_shift,nBas,nO(ispin),S,c(:,:,ispin),F(:,:,ispin))
+      end do
+
     end if
 
 !------------------------------------------------------------------------
@@ -253,7 +260,7 @@ subroutine UHF(maxSCF,thresh,max_diis,guess_type,mix,nNuc,ZNuc,rNuc,ENuc,nBas,nO
 ! Compute Vx for post-HF calculations
 
   do ispin=1,nspin
-    call mo_fock_exchange_potential(nBas,c(:,:,ispin),K(:,:,ispin),Vx(:,ispin))
+    call mo_fock_exchange_potential(nBas,c(:,:,ispin),P(:,:,ispin),ERI,Vx(:,ispin))
   end do
 
 end subroutine UHF

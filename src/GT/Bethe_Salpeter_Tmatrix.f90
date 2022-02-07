@@ -124,8 +124,8 @@ subroutine Bethe_Salpeter_Tmatrix(TDA_T,TDA,dBSE,dTDA,evDyn,singlet,triplet,eta,
 
     ! Compute BSE singlet excitation energies
 
-    call linear_response_Tmatrix(ispin,.false.,TDA,eta,nBas,nC,nO,nV,nR,nS,1d0,eGT,ERI,TAt+TAs,TBt+TBs, &
-                                 EcBSE(ispin),OmBSE(:,ispin),XpY_BSE(:,:,ispin),XmY_BSE(:,:,ispin))
+    call linear_response_BSE(ispin,.false.,TDA,.true.,eta,nBas,nC,nO,nV,nR,nS,1d0,eGT,ERI,TAt+TAs,TBt+TBs, &
+                         EcBSE(ispin),OmBSE(:,ispin),XpY_BSE(:,:,ispin),XmY_BSE(:,:,ispin))
 
     call print_excitation('BSE@GT      ',ispin,nS,OmBSE(:,ispin))
     call print_transition_vectors(.true.,nBas,nC,nO,nV,nR,nS,dipole_int, & 
@@ -163,8 +163,8 @@ subroutine Bethe_Salpeter_Tmatrix(TDA_T,TDA,dBSE,dTDA,evDyn,singlet,triplet,eta,
 
     ! Compute BSE triplet excitation energies
 
-    call linear_response_Tmatrix(ispin,.false.,TDA,eta,nBas,nC,nO,nV,nR,nS,1d0,eGT,ERI,TAt-TAs,TBt-TBs, &
-                                 EcBSE(ispin),OmBSE(:,ispin),XpY_BSE(:,:,ispin),XmY_BSE(:,:,ispin))
+    call linear_response_BSE(ispin,.false.,TDA,.true.,eta,nBas,nC,nO,nV,nR,nS,1d0,eGT,ERI,TAt-TAs,TBt-TBs, &
+                             EcBSE(ispin),OmBSE(:,ispin),XpY_BSE(:,:,ispin),XmY_BSE(:,:,ispin))
     call print_excitation('BSE@GT      ',ispin,nS,OmBSE(:,ispin))
     call print_transition_vectors(.false.,nBas,nC,nO,nV,nR,nS,dipole_int, & 
                                   OmBSE(:,ispin),XpY_BSE(:,:,ispin),XmY_BSE(:,:,ispin))

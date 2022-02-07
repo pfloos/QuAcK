@@ -1,4 +1,4 @@
-subroutine eDFT(maxSCF,thresh,max_diis,guess_type,mix,nNuc,ZNuc,rNuc,ENuc,nBas,nEl,nC,nO,nV,nR, & 
+subroutine eDFT(maxSCF,thresh,max_diis,guess_type,mix,level_shift,nNuc,ZNuc,rNuc,ENuc,nBas,nEl,nC,nO,nV,nR, & 
                 nShell,TotAngMomShell,CenterShell,KShell,DShell,ExpShell, &
                 max_ang_mom,min_exponent,max_exponent,S,T,V,Hc,X,ERI,dipole_int,Ew,eKS,cKS,PKS,Vxc)
 
@@ -15,6 +15,7 @@ subroutine eDFT(maxSCF,thresh,max_diis,guess_type,mix,nNuc,ZNuc,rNuc,ENuc,nBas,n
   integer,intent(in)            :: max_diis
   integer,intent(in)            :: guess_type
   logical,intent(in)            :: mix
+  logical,intent(in)            :: level_shift
   double precision,intent(in)   :: thresh
 
   integer,intent(in)            :: nNuc
@@ -165,8 +166,9 @@ subroutine eDFT(maxSCF,thresh,max_diis,guess_type,mix,nNuc,ZNuc,rNuc,ENuc,nBas,n
     end do
 
     call cpu_time(start_KS)
-    call eDFT_UKS(x_rung,x_DFA,c_rung,c_DFA,nEns,wEns,nCC,aCC(1:nCC,1:nEns-1),nGrid,weight,maxSCF,thresh,max_diis,guess_type,mix, & 
-                  nNuc,ZNuc,rNuc,ENuc,nBas,AO,dAO,S,T,V,Hc,ERI,dipole_int,X,occnum,Cx_choice,doNcentered,Ew,eKS,cKS,PKS,Vxc)
+    call UKS(x_rung,x_DFA,c_rung,c_DFA,nEns,wEns,nCC,aCC(1:nCC,1:nEns-1),nGrid,weight, & 
+             maxSCF,thresh,max_diis,guess_type,mix,level_shift,nNuc,ZNuc,rNuc,ENuc,    & 
+             nBas,AO,dAO,S,T,V,Hc,ERI,dipole_int,X,occnum,Cx_choice,doNcentered,Ew,eKS,cKS,PKS,Vxc)
     call cpu_time(end_KS)
 
     t_KS = end_KS - start_KS
@@ -182,8 +184,9 @@ subroutine eDFT(maxSCF,thresh,max_diis,guess_type,mix,nNuc,ZNuc,rNuc,ENuc,nBas,n
   if(method == 'eDFT-UKS') then
 
     call cpu_time(start_KS)
-    call eDFT_UKS(x_rung,x_DFA,c_rung,c_DFA,nEns,wEns,nCC,aCC(1:nCC,1:nEns-1),nGrid,weight,maxSCF,thresh,max_diis,guess_type,mix, & 
-                  nNuc,ZNuc,rNuc,ENuc,nBas,AO,dAO,S,T,V,Hc,ERI,dipole_int,X,occnum,Cx_choice,doNcentered,Ew,eKS,cKS,PKS,Vxc)
+    call UKS(x_rung,x_DFA,c_rung,c_DFA,nEns,wEns,nCC,aCC(1:nCC,1:nEns-1),nGrid,weight, & 
+             maxSCF,thresh,max_diis,guess_type,mix,level_shift,nNuc,ZNuc,rNuc,ENuc,    & 
+             nBas,AO,dAO,S,T,V,Hc,ERI,dipole_int,X,occnum,Cx_choice,doNcentered,Ew,eKS,cKS,PKS,Vxc)
     call cpu_time(end_KS)
 
     t_KS = end_KS - start_KS

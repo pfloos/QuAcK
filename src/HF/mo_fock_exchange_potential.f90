@@ -1,4 +1,4 @@
-subroutine mo_fock_exchange_potential(nBas,c,Fx,Vx)
+subroutine mo_fock_exchange_potential(nBas,c,P,ERI,Vx)
 
 ! Compute the exchange potential in the MO basis
 
@@ -9,12 +9,14 @@ subroutine mo_fock_exchange_potential(nBas,c,Fx,Vx)
 
   integer,intent(in)            :: nBas
   double precision,intent(in)   :: c(nBas,nBas)
-  double precision,intent(in)   :: Fx(nBas,nBas)
+  double precision,intent(in)   :: P(nBas,nBas)
+  double precision,intent(in)   :: ERI(nBas,nBas,nBas,nBas)
 
 ! Local variables
 
   integer                       :: mu,nu
-  integer                       :: p
+  integer                       :: q
+  double precision,allocatable  :: Fx(:,:)
 
 ! Output variables
 
@@ -22,13 +24,18 @@ subroutine mo_fock_exchange_potential(nBas,c,Fx,Vx)
 
 ! Compute Vx
 
+  allocate(Fx(nBas,nBas))
+  call exchange_matrix_AO_basis(nBas,P,ERI,Fx)
+
   Vx(:) = 0d0
-  do p=1,nBas
+  do q=1,nBas
     do mu=1,nBas
       do nu=1,nBas
-        Vx(p) = Vx(p) + c(mu,p)*Fx(mu,nu)*c(nu,p)
+        Vx(q) = Vx(q) + c(mu,q)*Fx(mu,nu)*c(nu,q)
       end do
     end do
   end do
+
+  deallocate(Fx)
 
 end subroutine mo_fock_exchange_potential

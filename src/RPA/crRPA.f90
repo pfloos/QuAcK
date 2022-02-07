@@ -34,7 +34,6 @@ subroutine crRPA(TDA,doACFDT,exchange_kernel,singlet,triplet,eta,nBas,nC,nO,nV,n
   double precision,allocatable  :: XpY(:,:,:)
   double precision,allocatable  :: XmY(:,:,:)
 
-  double precision              :: rho
   double precision              :: EcRPAx(nspin)
   double precision              :: EcAC(nspin)
 
@@ -68,7 +67,7 @@ subroutine crRPA(TDA,doACFDT,exchange_kernel,singlet,triplet,eta,nBas,nC,nO,nV,n
 
     ispin = 1
 
-    call linear_response(ispin,.false.,TDA,.false.,eta,nBas,nC,nO,nV,nR,nS,-1d0,eHF,ERI,Omega(:,ispin),rho, &
+    call linear_response(ispin,.false.,TDA,eta,nBas,nC,nO,nV,nR,nS,-1d0,eHF,ERI, &
                          EcRPAx(ispin),Omega(:,ispin),XpY(:,:,ispin),XmY(:,:,ispin))
     call print_excitation('crRPA@HF    ',ispin,nS,Omega(:,ispin))
     call print_transition_vectors(.true.,nBas,nC,nO,nV,nR,nS,dipole_int,Omega(:,ispin),XpY(:,:,ispin),XmY(:,:,ispin))
@@ -81,7 +80,7 @@ subroutine crRPA(TDA,doACFDT,exchange_kernel,singlet,triplet,eta,nBas,nC,nO,nV,n
 
     ispin = 2
 
-    call linear_response(ispin,.false.,TDA,.false.,eta,nBas,nC,nO,nV,nR,nS,-1d0,eHF,ERI,Omega(:,ispin),rho, &
+    call linear_response(ispin,.false.,TDA,eta,nBas,nC,nO,nV,nR,nS,-1d0,eHF,ERI, &
                          EcRPAx(ispin),Omega(:,ispin),XpY(:,:,ispin),XmY(:,:,ispin))
     call print_excitation('crRPA@HF    ',ispin,nS,Omega(:,ispin))
     call print_transition_vectors(.false.,nBas,nC,nO,nV,nR,nS,dipole_int,Omega(:,ispin),XpY(:,:,ispin),XmY(:,:,ispin))

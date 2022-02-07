@@ -265,7 +265,8 @@ subroutine evGT(maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS, &
       end if
 
       call ACFDT_Tmatrix(exchange_kernel,doXBS,.false.,TDA_T,TDA,BSE,singlet,triplet,eta,nBas,nC,nO,nV,nR,nS, &
-                         ERI_MO,eGT,eGT,EcAC)
+                         nOOs,nVVs,nOOt,nVVt,Omega1s,X1s,Y1s,Omega2s,X2s,Y2s,rho1s,rho2s,Omega1t,X1t,Y1t,     &
+                         Omega2t,X2t,Y2t,rho1t,rho2t,ERI_MO,eGT,eGT,EcAC)
 
       if(exchange_kernel) then
 

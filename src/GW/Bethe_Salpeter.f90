@@ -42,14 +42,17 @@ subroutine Bethe_Salpeter(TDA_W,TDA,dBSE,dTDA,evDyn,singlet,triplet,eta,nBas,nC,
   double precision,allocatable  :: XpY_BSE(:,:,:)
   double precision,allocatable  :: XmY_BSE(:,:,:)
 
+  double precision,allocatable  :: WA_sta(:,:)
+  double precision,allocatable  :: WB_sta(:,:)
+
 ! Output variables
 
   double precision,intent(out)  :: EcBSE(nspin)
 
 ! Memory allocation
 
-  allocate(OmRPA(nS),XpY_RPA(nS,nS),XmY_RPA(nS,nS),rho_RPA(nBas,nBas,nS))
-  allocate(OmBSE(nS,nspin),XpY_BSE(nS,nS,nspin),XmY_BSE(nS,nS,nspin))
+  allocate(OmRPA(nS),XpY_RPA(nS,nS),XmY_RPA(nS,nS),rho_RPA(nBas,nBas,nS), &
+           WA_sta(nS,nS),WB_sta(nS,nS),OmBSE(nS,nspin),XpY_BSE(nS,nS,nspin),XmY_BSE(nS,nS,nspin))
 
 !---------------------------------
 ! Compute (singlet) RPA screening 
@@ -58,9 +61,12 @@ subroutine Bethe_Salpeter(TDA_W,TDA,dBSE,dTDA,evDyn,singlet,triplet,eta,nBas,nC,
   isp_W = 1
   EcRPA = 0d0
 
-  call linear_response(isp_W,.true.,TDA_W,.false.,eta,nBas,nC,nO,nV,nR,nS,1d0,eW,ERI,OmRPA, &
-                       rho_RPA,EcRPA,OmRPA,XpY_RPA,XmY_RPA)
+  call linear_response(isp_W,.true.,TDA_W,eta,nBas,nC,nO,nV,nR,nS,1d0,eW,ERI, &
+                       EcRPA,OmRPA,XpY_RPA,XmY_RPA)
   call excitation_density(nBas,nC,nO,nR,nS,ERI,XpY_RPA,rho_RPA)
+
+  call static_screening_WA(eta,nBas,nC,nO,nV,nR,nS,1d0,ERI,OmRPA,rho_RPA,WA_sta)
+  call static_screening_WB(eta,nBas,nC,nO,nV,nR,nS,1d0,ERI,OmRPA,rho_RPA,WB_sta)
 
 !-------------------
 ! Singlet manifold
@@ -73,8 +79,8 @@ subroutine Bethe_Salpeter(TDA_W,TDA,dBSE,dTDA,evDyn,singlet,triplet,eta,nBas,nC,
 
     ! Compute BSE excitation energies
 
-    call linear_response(ispin,.true.,TDA,.true.,eta,nBas,nC,nO,nV,nR,nS,1d0,eGW,ERI,OmRPA, &
-                         rho_RPA,EcBSE(ispin),OmBSE(:,ispin),XpY_BSE(:,:,ispin),XmY_BSE(:,:,ispin))
+    call linear_response_BSE(ispin,.true.,TDA,.true.,eta,nBas,nC,nO,nV,nR,nS,1d0,eGW,ERI,WA_sta,WB_sta, &
+                             EcBSE(ispin),OmBSE(:,ispin),XpY_BSE(:,:,ispin),XmY_BSE(:,:,ispin))
     call print_excitation('BSE@GW      ',ispin,nS,OmBSE(:,ispin))
     call print_transition_vectors(.true.,nBas,nC,nO,nV,nR,nS,dipole_int, & 
                                   OmBSE(:,ispin),XpY_BSE(:,:,ispin),XmY_BSE(:,:,ispin))
@@ -112,8 +118,8 @@ subroutine Bethe_Salpeter(TDA_W,TDA,dBSE,dTDA,evDyn,singlet,triplet,eta,nBas,nC,
 
     ! Compute BSE excitation energies
 
-    call linear_response(ispin,.true.,TDA,.true.,eta,nBas,nC,nO,nV,nR,nS,1d0,eGW,ERI,OmRPA, &
-                         rho_RPA,EcBSE(ispin),OmBSE(:,ispin),XpY_BSE(:,:,ispin),XmY_BSE(:,:,ispin))
+    call linear_response_BSE(ispin,.true.,TDA,.true.,eta,nBas,nC,nO,nV,nR,nS,1d0,eGW,ERI,WA_sta,WB_sta, &
+                             EcBSE(ispin),OmBSE(:,ispin),XpY_BSE(:,:,ispin),XmY_BSE(:,:,ispin))
     call print_excitation('BSE@GW      ',ispin,nS,OmBSE(:,ispin))
     call print_transition_vectors(.false.,nBas,nC,nO,nV,nR,nS,dipole_int, & 
                                   OmBSE(:,ispin),XpY_BSE(:,:,ispin),XmY_BSE(:,:,ispin))

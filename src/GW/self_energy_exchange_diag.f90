@@ -14,7 +14,8 @@ subroutine self_energy_exchange_diag(nBas,c,P,ERI,SigX)
 
 ! Local variables
 
-  integer                       :: q,mu,nu
+  integer                       :: mu,nu
+  integer                       :: q
   double precision,allocatable  :: Fx(:,:)
 
 ! Output variables

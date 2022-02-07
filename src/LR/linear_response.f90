@@ -1,4 +1,4 @@
-subroutine linear_response(ispin,dRPA,TDA,BSE,eta,nBas,nC,nO,nV,nR,nS,lambda,e,ERI,Omega_RPA,rho_RPA,EcRPA,Omega,XpY,XmY)
+subroutine linear_response(ispin,dRPA,TDA,eta,nBas,nC,nO,nV,nR,nS,lambda,e,ERI,Ec,Omega,XpY,XmY)
 
 ! Compute linear response
 
@@ -9,7 +9,6 @@ subroutine linear_response(ispin,dRPA,TDA,BSE,eta,nBas,nC,nO,nV,nR,nS,lambda,e,E
 
   logical,intent(in)            :: dRPA
   logical,intent(in)            :: TDA
-  logical,intent(in)            :: BSE
   double precision,intent(in)   :: eta
   integer,intent(in)            :: ispin
   integer,intent(in)            :: nBas
@@ -22,9 +21,6 @@ subroutine linear_response(ispin,dRPA,TDA,BSE,eta,nBas,nC,nO,nV,nR,nS,lambda,e,E
   double precision,intent(in)   :: e(nBas)
   double precision,intent(in)   :: ERI(nBas,nBas,nBas,nBas)
 
-  double precision,intent(in)   :: Omega_RPA(nS)
-  double precision,intent(in)   :: rho_RPA(nBas,nBas,nS)
-  
 ! Local variables
 
   double precision              :: trace_matrix
@@ -38,7 +34,7 @@ subroutine linear_response(ispin,dRPA,TDA,BSE,eta,nBas,nC,nO,nV,nR,nS,lambda,e,E
 
 ! Output variables
 
-  double precision,intent(out)  :: EcRPA
+  double precision,intent(out)  :: Ec
   double precision,intent(out)  :: Omega(nS)
   double precision,intent(out)  :: XpY(nS,nS)
   double precision,intent(out)  :: XmY(nS,nS)
@@ -50,8 +46,6 @@ subroutine linear_response(ispin,dRPA,TDA,BSE,eta,nBas,nC,nO,nV,nR,nS,lambda,e,E
 ! Build A and B matrices 
 
   call linear_response_A_matrix(ispin,dRPA,nBas,nC,nO,nV,nR,nS,lambda,e,ERI,A)
-
-  if(BSE) call Bethe_Salpeter_A_matrix(eta,nBas,nC,nO,nV,nR,nS,lambda,ERI,Omega_RPA,rho_RPA,A)
 
 ! Tamm-Dancoff approximation
 
@@ -66,8 +60,6 @@ subroutine linear_response(ispin,dRPA,TDA,BSE,eta,nBas,nC,nO,nV,nR,nS,lambda,e,E
   else
 
     call linear_response_B_matrix(ispin,dRPA,nBas,nC,nO,nV,nR,nS,lambda,ERI,B)
-
-    if(BSE) call Bethe_Salpeter_B_matrix(eta,nBas,nC,nO,nV,nR,nS,lambda,ERI,Omega_RPA,rho_RPA,B)
 
     ! Build A + B and A - B matrices 
 
@@ -111,6 +103,6 @@ subroutine linear_response(ispin,dRPA,TDA,BSE,eta,nBas,nC,nO,nV,nR,nS,lambda,e,E
 
   ! Compute the RPA correlation energy
 
-    EcRPA = 0.5d0*(sum(Omega) - trace_matrix(nS,A))
+    Ec = 0.5d0*(sum(Omega) - trace_matrix(nS,A))
 
 end subroutine linear_response

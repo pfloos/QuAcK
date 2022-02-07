@@ -33,7 +33,6 @@ subroutine RPA(TDA,doACFDT,exchange_kernel,singlet,triplet,eta,nBas,nC,nO,nV,nR,
   double precision,allocatable  :: XpY(:,:,:)
   double precision,allocatable  :: XmY(:,:,:)
 
-  double precision              :: rho
   double precision              :: EcRPA(nspin)
   double precision              :: EcAC(nspin)
 
@@ -67,7 +66,7 @@ subroutine RPA(TDA,doACFDT,exchange_kernel,singlet,triplet,eta,nBas,nC,nO,nV,nR,
 
     ispin = 1
 
-    call linear_response(ispin,.true.,TDA,.false.,eta,nBas,nC,nO,nV,nR,nS,1d0,eHF,ERI,rho,Omega(:,ispin), &
+    call linear_response(ispin,.true.,TDA,eta,nBas,nC,nO,nV,nR,nS,1d0,eHF,ERI, &
                          EcRPA(ispin),Omega(:,ispin),XpY(:,:,ispin),XmY(:,:,ispin))
     call print_excitation('RPA@HF       ',ispin,nS,Omega(:,ispin))
     call print_transition_vectors(.true.,nBas,nC,nO,nV,nR,nS,dipole_int,Omega(:,ispin),XpY(:,:,ispin),XmY(:,:,ispin))
@@ -80,7 +79,7 @@ subroutine RPA(TDA,doACFDT,exchange_kernel,singlet,triplet,eta,nBas,nC,nO,nV,nR,
 
     ispin = 2
 
-    call linear_response(ispin,.true.,TDA,.false.,eta,nBas,nC,nO,nV,nR,nS,1d0,eHF,ERI,rho,Omega(:,ispin), &
+    call linear_response(ispin,.true.,TDA,eta,nBas,nC,nO,nV,nR,nS,1d0,eHF,ERI, &
                          EcRPA(ispin),Omega(:,ispin),XpY(:,:,ispin),XmY(:,:,ispin))
     call print_excitation('RPA@HF      ',ispin,nS,Omega(:,ispin))
     call print_transition_vectors(.false.,nBas,nC,nO,nV,nR,nS,dipole_int,Omega(:,ispin),XpY(:,:,ispin),XmY(:,:,ispin))

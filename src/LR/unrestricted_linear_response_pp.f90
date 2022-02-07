@@ -1,6 +1,7 @@
-subroutine unrestricted_linear_response_pp(ispin,TDA,nBas,nC,nO,nV,nR,nPaa,nPab,nPbb,nPt, &
-nHaa,nHab,nHbb,nHt,lambda,e,ERI_aaaa,ERI_aabb,ERI_bbbb,Omega1,X1,Y1,Omega2,X2,Y2,&
-EcRPA)
+subroutine unrestricted_linear_response_pp(ispin,TDA,nBas,nC,nO,nV,nR,nPaa,nPab,nPbb,&
+                                           nPt,nHaa,nHab,nHbb,nHt,lambda,e,ERI_aaaa,&
+                                           ERI_aabb,ERI_bbbb,Omega1,X1,Y1,Omega2,X2,Y2,&
+                                           EcRPA)
 
 ! Compute linear response for unrestricted formalism
 
@@ -56,53 +57,47 @@ EcRPA)
 ! Memory allocation
 
 
- allocate(C(nPt,nPt),B(nPt,nHt),D(nHt,nHt),M(nPt+nHt,nPt+nHt),Z(nPt+nHt,nPt+nHt)&
-,Omega(nPt+nHt))
-!write(*,*) 'Hello'
+  allocate(C(nPt,nPt),B(nPt,nHt),D(nHt,nHt),M(nPt+nHt,nPt+nHt),Z(nPt+nHt,nPt+nHt),&
+           Omega(nPt+nHt))
+
 ! Build C, B and D matrices for the pp channel
 
-  call unrestricted_linear_response_C_pp(ispin,nBas,nC,nO,nV,nR,nPaa,nPab,nPbb,nPt,lambda,&
-e,ERI_aaaa,ERI_aabb,ERI_bbbb,C)
+  call unrestricted_linear_response_C_pp(ispin,nBas,nC,nO,nV,nR,nPaa,nPab,nPbb,nPt,&
+                                         lambda,e,ERI_aaaa,ERI_aabb,ERI_bbbb,C)
 
-    call unrestricted_linear_response_B_pp(ispin,nBas,nC,nO,nV,nR,nPaa,nPab,nPbb,nPt,nHaa,&
-nHab,nHbb,nHt,lambda,ERI_aaaa,ERI_aabb,ERI_bbbb,B)
+  call unrestricted_linear_response_B_pp(ispin,nBas,nC,nO,nV,nR,nPaa,nPab,nPbb,nPt,nHaa,&
+                                         nHab,nHbb,nHt,lambda,ERI_aaaa,ERI_aabb,&
+                                         ERI_bbbb,B)
 
-!call matout(nPt,nHt,B)
-!write(*,*) 'Hello'
-call unrestricted_linear_response_D_pp(ispin,nBas,nC,nO,nV,nR,nHaa,nHab,nHbb,nHt,lambda,&
-e,ERI_aaaa,ERI_aabb,ERI_bbbb,D)
+  call unrestricted_linear_response_D_pp(ispin,nBas,nC,nO,nV,nR,nHaa,nHab,nHbb,nHt,&
+                                         lambda,e,ERI_aaaa,ERI_aabb,ERI_bbbb,D)
 
-!call matout(nHt,nHt,D)
-!write(*,*) 'Hello'
 ! Diagonal blocks 
 
-    M(    1:nPt    ,    1:nPt)     = + C(1:nPt,1:nPt)
-    M(nPt+1:nPt+nHt,nPt+1:nPt+nHt) = - D(1:nHt,1:nHt)
+  M(    1:nPt    ,    1:nPt)     = + C(1:nPt,1:nPt)
+  M(nPt+1:nPt+nHt,nPt+1:nPt+nHt) = - D(1:nHt,1:nHt)
 
-  ! Off-diagonal blocks
+! Off-diagonal blocks
 
-    M(    1:nPt    ,nPt+1:nHt+nPt) = -           B(1:nPt,1:nHt)
-    M(nPt+1:nHt+nPt,    1:nPt)     = + transpose(B(1:nPt,1:nHt))
-
-!call matout(nPt+nHt,nPt+nHt,M)
+  M(    1:nPt    ,nPt+1:nHt+nPt) = -           B(1:nPt,1:nHt)
+  M(nPt+1:nHt+nPt,    1:nPt)     = + transpose(B(1:nPt,1:nHt))
 
 ! Diagonalize the p-h matrix
 
     if(nHt+nPt > 0) call diagonalize_general_matrix(nHt+nPt,M,Omega,Z)
 
-  ! Split the various quantities in p-p and h-h parts
+! Split the various quantities in p-p and h-h parts
 
-    call sort_ppRPA(nHt,nPt,Omega(:),Z(:,:),Omega1(:),X1(:,:),Y1(:,:),Omega2(:),X2(:,:),&
-Y2(:,:))
+  call sort_ppRPA(nHt,nPt,Omega(:),Z(:,:),Omega1(:),X1(:,:),Y1(:,:),Omega2(:),X2(:,:),&
+                  Y2(:,:))
 
 ! Compute the RPA correlation energy
 
-  EcRPA = 0.5d0*( sum(Omega1(:)) - sum(Omega2(:)) - trace_matrix(nPt,C(:,:)) - trace_matrix(nHt,D(:,:)) )
+  EcRPA = 0.5d0*( sum(Omega1(:)) - sum(Omega2(:)) - trace_matrix(nPt,C(:,:)) &
+          - trace_matrix(nHt,D(:,:)) )
   EcRPA1 = +sum(Omega1(:)) - trace_matrix(nPt,C(:,:))
   EcRPA2 = -sum(Omega2(:)) - trace_matrix(nHt,D(:,:))
   if(abs(EcRPA - EcRPA1) > 1d-6 .or. abs(EcRPA - EcRPA2) > 1d-6) &
     print*,'!!! Issue in pp-RPA linear reponse calculation RPA1 != RPA2 !!!'
-
-
  
 end subroutine unrestricted_linear_response_pp

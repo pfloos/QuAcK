@@ -1,4 +1,4 @@
-subroutine BSE2_dynamic_perturbation(dTDA,ispin,eta,nBas,nC,nO,nV,nR,nS,ERI,dipole_int,eHF,eGF,OmBSE,XpY,XmY)
+subroutine BSE2_dynamic_perturbation(dTDA,ispin,eta,nBas,nC,nO,nV,nR,nS,ERI,dipole_int,eHF,eGF,A_sta,B_sta,OmBSE,XpY,XmY)
 
 ! Compute dynamical effects via perturbation theory for BSE
 
@@ -21,6 +21,8 @@ subroutine BSE2_dynamic_perturbation(dTDA,ispin,eta,nBas,nC,nO,nV,nR,nS,ERI,dipo
   double precision,intent(in)   :: dipole_int(nBas,nBas,ncart)
   double precision,intent(in)   :: eHF(nBas)
   double precision,intent(in)   :: eGF(nBas)
+  double precision,intent(in)   :: A_sta(nS,nS)
+  double precision,intent(in)   :: B_sta(nS,nS)
   double precision,intent(in)   :: OmBSE(nS)
   double precision,intent(in)   :: XpY(nS,nS)
   double precision,intent(in)   :: XmY(nS,nS)
@@ -81,7 +83,7 @@ subroutine BSE2_dynamic_perturbation(dTDA,ispin,eta,nBas,nC,nO,nV,nR,nS,ERI,dipo
     if(dTDA) then 
 
       ZDyn(ia)  = dot_product(X,matmul(ZAp_dyn,X))
-      OmDyn(ia) = dot_product(X,matmul(Ap_dyn,X))
+      OmDyn(ia) = dot_product(X,matmul(Ap_dyn - A_sta,X))
 
     else
 
@@ -94,10 +96,10 @@ subroutine BSE2_dynamic_perturbation(dTDA,ispin,eta,nBas,nC,nO,nV,nR,nS,ERI,dipo
       ZDyn(ia)  = dot_product(X,matmul(ZAp_dyn,X)) &
                 + dot_product(Y,matmul(ZAm_dyn,Y))  
 
-      OmDyn(ia) = dot_product(X,matmul(Ap_dyn,X)) &
-                - dot_product(Y,matmul(Am_dyn,Y)) &
-                + dot_product(X,matmul(B_dyn,Y)) & 
-                - dot_product(Y,matmul(B_dyn,X))  
+      OmDyn(ia) = dot_product(X,matmul(Ap_dyn - A_sta,X)) &
+                - dot_product(Y,matmul(Am_dyn - A_sta,Y)) &
+                + dot_product(X,matmul(B_dyn  - B_sta,Y)) & 
+                - dot_product(Y,matmul(B_dyn  - B_sta,X))  
 
     end if
 

@@ -1,5 +1,5 @@
-subroutine eDFT_UKS(x_rung,x_DFA,c_rung,c_DFA,nEns,wEns,nCC,aCC,nGrid,weight,maxSCF,thresh,max_diis,guess_type,mix, &
-                   nNuc,ZNuc,rNuc,ENuc,nBas,AO,dAO,S,T,V,Hc,ERI,dipole_int,X,occnum,Cx_choice,doNcentered,Ew,eKS,c,Pw,Vxc)
+subroutine UKS(x_rung,x_DFA,c_rung,c_DFA,nEns,wEns,nCC,aCC,nGrid,weight,maxSCF,thresh,max_diis,guess_type,mix,level_shift, &
+               nNuc,ZNuc,rNuc,ENuc,nBas,AO,dAO,S,T,V,Hc,ERI,dipole_int,X,occnum,Cx_choice,doNcentered,Ew,eKS,c,Pw,Vxc)
 
 ! Perform unrestricted Kohn-Sham calculation for ensembles
 
@@ -20,6 +20,7 @@ subroutine eDFT_UKS(x_rung,x_DFA,c_rung,c_DFA,nEns,wEns,nCC,aCC,nGrid,weight,max
   integer,intent(in)            :: max_diis
   integer,intent(in)            :: guess_type
   logical,intent(in)            :: mix
+  double precision,intent(in)   :: level_shift
   double precision,intent(in)   :: thresh
   integer,intent(in)            :: nBas
   double precision,intent(in)   :: AO(nBas,nGrid)
@@ -45,10 +46,11 @@ subroutine eDFT_UKS(x_rung,x_DFA,c_rung,c_DFA,nEns,wEns,nCC,aCC,nGrid,weight,max
 
   integer                       :: xc_rung
   logical                       :: LDA_centered = .false.
-  integer                       :: nSCF,nBasSq
+  integer                       :: nSCF
+  integer                       :: nBasSq
   integer                       :: n_diis
-  integer                       :: nO(nspin)
-  double precision              :: conv
+  integer                       :: nO(nspin,nEns)
+  double precision              :: Conv
   double precision              :: rcond(nspin)
   double precision              :: ET(nspin)
   double precision              :: EV(nspin)
@@ -117,34 +119,22 @@ subroutine eDFT_UKS(x_rung,x_DFA,c_rung,c_DFA,nEns,wEns,nCC,aCC,nGrid,weight,max
 
 ! Guess coefficients and eigenvalues
 
-  nO(:) = 0
-  do ispin=1,nspin
-    nO(ispin) = int(sum(occnum(:,ispin,1)))
+  nO(:,:) = 0
+  do iEns=1,nEns
+    do ispin=1,nspin
+      nO(ispin,iEns) = int(sum(occnum(:,ispin,iEns)))
+    end do
   end do
-  
-  if(guess_type == 1) then
 
-    do ispin=1,nspin
-      cp(:,:,ispin) = matmul(transpose(X(:,:)),matmul(Hc(:,:),X(:,:)))
-      call diagonalize_matrix(nBas,cp(:,:,ispin),eKS(:,ispin))
-      c(:,:,ispin) = matmul(X(:,:),cp(:,:,ispin))
-    end do
+  do ispin=1,nspin
+    call mo_guess(nBas,guess_type,S,Hc,X,c(:,:,ispin))
+  end do
 
-    ! Mix guess to enforce symmetry breaking
+! Mix guess for UHF solution in singlet states
 
-    if(mix) call mix_guess(nBas,nO,c)
-
-  else if(guess_type == 2) then
-
-    do ispin=1,nspin
-      call random_number(F(:,:,ispin))
-    end do
-
-  else
-
-    print*,'Wrong guess option'
-    stop
-
+  if(mix) then
+    write(*,*) '!! guess mixing disabled in UKS !!'
+    write(*,*) 
   end if
 
 ! Initialization
@@ -175,7 +165,7 @@ subroutine eDFT_UKS(x_rung,x_DFA,c_rung,c_DFA,nEns,wEns,nCC,aCC,nGrid,weight,max
             '|','#','|','E(KS)','|','Ex(KS)','|','Ec(KS)','|','Conv','|','nEl','|'
   write(*,*)'------------------------------------------------------------------------------------------'
   
-  do while(conv > thresh .and. nSCF < maxSCF)
+  do while(Conv > thresh .and. nSCF < maxSCF)
 
 !   Increment 
 
@@ -264,19 +254,34 @@ subroutine eDFT_UKS(x_rung,x_DFA,c_rung,c_DFA,nEns,wEns,nCC,aCC,nGrid,weight,max
       err(:,:,ispin) = matmul(F(:,:,ispin),matmul(Pw(:,:,ispin),S(:,:))) - matmul(matmul(S(:,:),Pw(:,:,ispin)),F(:,:,ispin))
     end do
 
-    if(nSCF > 1) conv = maxval(abs(err(:,:,:)))
+    if(nSCF > 1) Conv = maxval(abs(err(:,:,:)))
     
 !   DIIS extrapolation
 
     n_diis = min(n_diis+1,max_diis)
-    if(minval(rcond(:)) > 1d-15) then
-      do ispin=1,nspin
+    do ispin=1,nspin
+
+      if(rcond(ispin) > 1d-15) then
+
         call DIIS_extrapolation(rcond(ispin),nBasSq,nBasSq,n_diis, & 
                                 err_diis(:,:,ispin),F_diis(:,:,ispin),err(:,:,ispin),F(:,:,ispin))
+      else 
+
+        n_diis = 0
+
+      end if
+
+    end do
+
+!   Level-shifting
+
+    if(level_shift > 0d0 .and. Conv > thresh) then 
+
+      do ispin=1,nspin
+        call level_shifting(level_shift,nBas,maxval(nO(ispin,:)),S,c,F(:,:,ispin))
       end do
-    else 
-      n_diis = 0
-   end if
+
+    end if
 
 !  Transform Fock matrix in orthogonal basis
 
@@ -342,7 +347,7 @@ subroutine eDFT_UKS(x_rung,x_DFA,c_rung,c_DFA,nEns,wEns,nCC,aCC,nGrid,weight,max
 !   Dump results
 
     write(*,'(1X,A1,1X,I3,1X,A1,1X,F16.10,1X,A1,1X,F16.10,1X,A1,1X,F16.10,1X,A1,1X,F10.6,1X,A1,1X,F10.6,1X,A1,1X)') & 
-      '|',nSCF,'|',Ew + ENuc,'|',sum(Ex(:)),'|',sum(Ec(:)),'|',conv,'|',sum(nEl(:)),'|'
+      '|',nSCF,'|',Ew + ENuc,'|',sum(Ex(:)),'|',sum(Ec(:)),'|',Conv,'|',sum(nEl(:)),'|'
 
   end do
   write(*,*)'------------------------------------------------------------------------------------------'
@@ -384,4 +389,4 @@ subroutine eDFT_UKS(x_rung,x_DFA,c_rung,c_DFA,nEns,wEns,nCC,aCC,nGrid,weight,max
   call individual_energy(x_rung,x_DFA,c_rung,c_DFA,LDA_centered,nEns,wEns,nCC,aCC,nGrid,weight,nBas,      &
                                       AO,dAO,T,V,ERI,ENuc,eKS,Pw,rhow,drhow,J,Fx,FxHF,Fc,P,rho,drho,occnum,Cx_choice,doNcentered,Ew)
 
-end subroutine eDFT_UKS
+end subroutine UKS

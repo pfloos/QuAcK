@@ -1,5 +1,5 @@
-subroutine unrestricted_linear_response_C_pp(ispin,nBas,nC,nO,nV,nR,nPaa,nPab,nPbb,nPt,lambda,& 
- e,ERI_aaaa,ERI_aabb,ERI_bbbb,C_pp)
+subroutine unrestricted_linear_response_C_pp(ispin,nBas,nC,nO,nV,nR,nPaa,nPab,nPbb,nPt,&
+                                             lambda,e,ERI_aaaa,ERI_aabb,ERI_bbbb,C_pp)
 
 ! Compute linear response
 
@@ -54,7 +54,7 @@ subroutine unrestricted_linear_response_C_pp(ispin,nBas,nC,nO,nV,nR,nPaa,nPab,nP
           do d=nO(2)+1,nBas-nR(2)
             cd = cd + 1
             C_pp(ab,cd) = (e(a,1) + e(b,2))*Kronecker_delta(a,c) &
-*Kronecker_delta(b,d) + lambda*ERI_aabb(a,b,c,d)
+                          *Kronecker_delta(b,d) + lambda*ERI_aabb(a,b,c,d)
           end  do
         end  do
       end  do
@@ -79,9 +79,10 @@ subroutine unrestricted_linear_response_C_pp(ispin,nBas,nC,nO,nV,nR,nPaa,nPab,nP
           do d=c+1,nBas-nR(1)
             cd = cd + 1
  
-            C_pp(ab,cd) = (e(a,1) + e(b,1) - eF)*Kronecker_delta(a,c)*Kronecker_delta(b,d) &
-                        + lambda*(ERI_aaaa(a,b,c,d) - ERI_aaaa(a,b,d,c))
-!write(*,*) C_pp(ab,cd)
+            C_pp(ab,cd) = (e(a,1) + e(b,1) - eF)*Kronecker_delta(a,c)&
+                          *Kronecker_delta(b,d) + lambda*(ERI_aaaa(a,b,c,d) &
+                          - ERI_aaaa(a,b,d,c))
+
           end  do
         end  do
       end  do
@@ -103,12 +104,13 @@ subroutine unrestricted_linear_response_C_pp(ispin,nBas,nC,nO,nV,nR,nPaa,nPab,nP
             cd = cd + 1
 
            C_pp(ab,cd) = (e(a,2) + e(b,2) - eF)*Kronecker_delta(a,c) &
-  *Kronecker_delta(b,d) + lambda*(ERI_bbbb(a,b,c,d) - ERI_bbbb(a,b,d,c))
+                         *Kronecker_delta(b,d) + lambda*(ERI_bbbb(a,b,c,d) &
+                         - ERI_bbbb(a,b,d,c))
 
+          end  do
         end  do
-       end  do
       end  do
-     end  do
+    end  do
 
   end if
 
