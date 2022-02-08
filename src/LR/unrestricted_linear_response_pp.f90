@@ -65,8 +65,8 @@ subroutine unrestricted_linear_response_pp(ispin,TDA,nBas,nC,nO,nV,nR,nPaa,nPab,
   call unrestricted_linear_response_C_pp(ispin,nBas,nC,nO,nV,nR,nPaa,nPab,nPbb,nPt,&
                                          lambda,e,ERI_aaaa,ERI_aabb,ERI_bbbb,C)
 
-  call unrestricted_linear_response_B_pp(ispin,nBas,nC,nO,nV,nR,nPaa,nPab,nPbb,nPt,nHaa,&
-                                         nHab,nHbb,nHt,lambda,ERI_aaaa,ERI_aabb,&
+  call unrestricted_linear_response_B_pp(ispin,nBas,nC,nO,nV,nR,nPaa,nPab,nPbb,nPt,&
+                                         nHaa,nHab,nHbb,nHt,lambda,ERI_aaaa,ERI_aabb,&
                                          ERI_bbbb,B)
 
   call unrestricted_linear_response_D_pp(ispin,nBas,nC,nO,nV,nR,nHaa,nHab,nHbb,nHt,&
@@ -90,7 +90,7 @@ subroutine unrestricted_linear_response_pp(ispin,TDA,nBas,nC,nO,nV,nR,nPaa,nPab,
 
   call sort_ppRPA(nHt,nPt,Omega(:),Z(:,:),Omega1(:),X1(:,:),Y1(:,:),Omega2(:),X2(:,:),&
                   Y2(:,:))
-
+ 
 ! Compute the RPA correlation energy
 
   EcRPA = 0.5d0*( sum(Omega1(:)) - sum(Omega2(:)) - trace_matrix(nPt,C(:,:)) &
@@ -99,5 +99,5 @@ subroutine unrestricted_linear_response_pp(ispin,TDA,nBas,nC,nO,nV,nR,nPaa,nPab,
   EcRPA2 = -sum(Omega2(:)) - trace_matrix(nHt,D(:,:))
   if(abs(EcRPA - EcRPA1) > 1d-6 .or. abs(EcRPA - EcRPA2) > 1d-6) &
     print*,'!!! Issue in pp-RPA linear reponse calculation RPA1 != RPA2 !!!'
- 
+   
 end subroutine unrestricted_linear_response_pp

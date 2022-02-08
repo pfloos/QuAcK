@@ -52,7 +52,7 @@ subroutine unrestricted_excitation_density_Tmatrix(ispin,nBas,nC,nO,nV,nR,nH,nP,
         do ab=1,nP 
         cd = 0
           do c=nO(1)+1,nBas-nR(1)
-            do d=nO(2),nBas-nR(1)
+            do d=nO(2)+1,nBas-nR(1)
               cd = cd + 1
 
               rho1(p,q,ab) = rho1(p,q,ab) & 
