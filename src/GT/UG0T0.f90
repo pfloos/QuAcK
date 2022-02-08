@@ -234,7 +234,7 @@ subroutine UG0T0(doACFDT,exchange_kernel,doXBS,BSE,TDA_T,TDA,dBSE,dTDA,evDyn, &
 
 !    call matout(nBas,1,SigX)
 !    call matout(nBas,1,Vxc)
-    call matout(nBas,1,eG0T0(:,1))
+!    call matout(nBas,1,eG0T0(:,1))
   else
   
     eG0T0(:,:) = eHF(:,:) + SigX(:,:) + SigT(:,:) - Vxc(:,:)
@@ -252,20 +252,20 @@ subroutine UG0T0(doACFDT,exchange_kernel,doXBS,BSE,TDA_T,TDA,dBSE,dTDA,evDyn, &
   ispin  = 1
   iblock = 1
 
-  !call unrestricted_linear_response_pp(iblock,TDA,nBas,nC,nO,nV,nR,nPaa,nPab,nPbb, &
-  !                                     nPab,nHaa,nHab,nHbb,nHab,1d0,eG0T0,ERI_aaaa, &
-  !                                     ERI_aabb,ERI_bbbb,Omega1ab,X1ab,Y1ab, &
-  !                                     Omega2ab,X2ab,Y2ab,EcRPA(ispin))
+  call unrestricted_linear_response_pp(iblock,TDA,nBas,nC,nO,nV,nR,nPaa,nPab,nPbb, &
+                                       nPab,nHaa,nHab,nHbb,nHab,1d0,eG0T0,ERI_aaaa, &
+                                       ERI_aabb,ERI_bbbb,Omega1ab,X1ab,Y1ab, &
+                                       Omega2ab,X2ab,Y2ab,EcRPA(ispin))
 
 !alpha-alpha block
  
   ispin  = 2
   iblock = 2
   
-  !call unrestricted_linear_response_pp(iblock,TDA,nBas,nC,nO,nV,nR,nPaa,nPab,nPbb, &
-  !                                     nPaa,nHaa,nHab,nHbb,nHaa,1d0,eG0T0,ERI_aaaa, &
-  !                                     ERI_aabb,ERI_bbbb,Omega1aa,X1aa,Y1aa, &
-  !                                     Omega2aa,X2aa,Y2aa,EcRPA(ispin)) 
+  call unrestricted_linear_response_pp(iblock,TDA,nBas,nC,nO,nV,nR,nPaa,nPab,nPbb, &
+                                       nPaa,nHaa,nHab,nHbb,nHaa,1d0,eG0T0,ERI_aaaa, &
+                                       ERI_aabb,ERI_bbbb,Omega1aa,X1aa,Y1aa, &
+                                       Omega2aa,X2aa,Y2aa,EcRPA(ispin)) 
  
   Ecaa = EcRPA(2)
 
@@ -273,17 +273,17 @@ subroutine UG0T0(doACFDT,exchange_kernel,doXBS,BSE,TDA_T,TDA,dBSE,dTDA,evDyn, &
  
   iblock = 3
   
-  !call unrestricted_linear_response_pp(iblock,TDA,nBas,nC,nO,nV,nR,nPaa,nPab,nPbb, &
-  !                                     nPbb,nHaa,nHab,nHbb,nHbb,1d0,eG0T0,ERI_aaaa, &
-  !                                     ERI_aabb,ERI_bbbb,Omega1bb,X1bb,Y1bb, &
-  !                                     Omega2bb,X2bb,Y2bb,EcRPA(ispin))
+  call unrestricted_linear_response_pp(iblock,TDA,nBas,nC,nO,nV,nR,nPaa,nPab,nPbb, &
+                                       nPbb,nHaa,nHab,nHbb,nHbb,1d0,eG0T0,ERI_aaaa, &
+                                       ERI_aabb,ERI_bbbb,Omega1bb,X1bb,Y1bb, &
+                                       Omega2bb,X2bb,Y2bb,EcRPA(ispin))
   
   Ecbb = EcRPA(2) 
   EcRPA(2) = Ecaa + Ecbb
   EcRPA(1) = EcRPA(1) - EcRPA(2)
   EcRPA(2) = 3d0*EcRPA(2)
 
-!  call print_G0T0(nBas,nO,eHF,ENuc,ERHF,SigT,Z,eG0T0,EcGM,EcRPA)
+  call print_UG0T0(nBas,nO,eHF,ENuc,EUHF,SigT,Z,eG0T0,EcGM,EcRPA)
 
 ! Free memory
 
