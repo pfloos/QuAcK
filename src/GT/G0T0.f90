@@ -106,8 +106,6 @@ subroutine G0T0(doACFDT,exchange_kernel,doXBS,BSE,TDA_T,TDA,dBSE,dTDA,evDyn,sing
   call linear_response_pp(iblock,TDA_T,nBas,nC,nO,nV,nR,nOOs,nVVs,1d0,eHF,ERI_MO,  & 
                           Omega1s,X1s,Y1s,Omega2s,X2s,Y2s,EcRPA(ispin))
 
-! EcRPA(ispin) = 1d0*EcRPA(ispin)
-
   call print_excitation('pp-RPA (N+2)',iblock,nVVs,Omega1s(:))
   call print_excitation('pp-RPA (N-2)',iblock,nOOs,Omega2s(:))
 
@@ -122,9 +120,6 @@ subroutine G0T0(doACFDT,exchange_kernel,doXBS,BSE,TDA_T,TDA,dBSE,dTDA,evDyn,sing
 
   call linear_response_pp(iblock,TDA_T,nBas,nC,nO,nV,nR,nOOt,nVVt,1d0,eHF,ERI_MO,  & 
                           Omega1t,X1t,Y1t,Omega2t,X2t,Y2t,EcRPA(ispin))
-
-! EcRPA(ispin) = 2d0*EcRPA(ispin)
-! EcRPA(ispin) = 3d0*EcRPA(ispin)
 
   call print_excitation('pp-RPA (N+2)',iblock,nVVt,Omega1t(:))
   call print_excitation('pp-RPA (N-2)',iblock,nOOt,Omega2t(:))
