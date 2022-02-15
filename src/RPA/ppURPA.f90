@@ -51,82 +51,75 @@ subroutine ppURPA(TDA,doACFDT,spin_conserved,spin_flip,nBas,nC,nO,nV,nR,ENuc,EUH
   Ec_ppURPA(:) = 0d0
   EcAC(:)   = 0d0
 
-! Spin-conserved manifold
+!alpha-beta block  
 
-  if(spin_conserved) then 
+  ispin = 1
+  iblock = 3
 
-    ispin = 1
-    iblock = 1
+  nPab = nV(1)*nV(2)
+  nHab = nO(1)*nO(2)
 
-!Spin-conserved quantities
-
-    nPab = nV(1)*nV(2)
-    nHab = nO(1)*nO(2)
-
-    nP_sc = nPab
-    nH_sc = nHab
+  nP_sc = nPab
+  nH_sc = nHab
 
 ! Memory allocation
 
-    allocate(Omega1sc(nP_sc),X1sc(nP_sc,nP_sc),Y1sc(nH_sc,nP_sc), &
-             Omega2sc(nH_sc),X2sc(nP_sc,nH_sc),Y2sc(nH_sc,nH_sc))
+  allocate(Omega1sc(nP_sc),X1sc(nP_sc,nP_sc),Y1sc(nH_sc,nP_sc), &
+           Omega2sc(nH_sc),X2sc(nP_sc,nH_sc),Y2sc(nH_sc,nH_sc))
 
-    call unrestricted_linear_response_pp(iblock,TDA,nBas,nC,nO,nV,nR,nPaa,nPab,nPbb, &
-                                         nP_sc,nHaa,nHab,nHbb,nH_sc,1d0,e,ERI_aaaa, &
-                                         ERI_aabb,ERI_bbbb,Omega1sc,X1sc,Y1sc, &
-                                         Omega2sc,X2sc,Y2sc,Ec_ppURPA(ispin))
+  call unrestricted_linear_response_pp(iblock,TDA,nBas,nC,nO,nV,nR,nPaa,nPab,nPbb, &
+                                       nP_sc,nHaa,nHab,nHbb,nH_sc,1d0,e,ERI_aaaa, &
+                                       ERI_aabb,ERI_bbbb,Omega1sc,X1sc,Y1sc, &
+                                       Omega2sc,X2sc,Y2sc,Ec_ppURPA(ispin))
     
-    call print_excitation('pp-RPA (N+2)',5,nP_sc,Omega1sc)
-    call print_excitation('pp-RPA (N-2)',5,nH_sc,Omega2sc)
+  call print_excitation('pp-RPA (N+2)',iblock,nP_sc,Omega1sc)
+  call print_excitation('pp-RPA (N-2)',iblock,nH_sc,Omega2sc)
 
-  endif
+!alpha-alpha block
 
-! Spin-flip manifold 
+  ispin = 2
+  iblock = 4
 
-  if(spin_flip) then 
+  nPaa = nV(1)*(nV(1)-1)/2
+  nPbb = nV(2)*(nV(2)-1)/2
 
-    ispin = 2
-    iblock = 2 
+  nP_sf  = nPaa 
 
-!Spin-flip quantities
+  nHaa = nO(1)*(nO(1)-1)/2
+  nHbb = nO(2)*(nO(2)-1)/2
 
-    nPaa = nV(1)*(nV(1)-1)/2
-    nPbb = nV(2)*(nV(2)-1)/2
+  nH_sf  = nHaa 
 
-    nP_sf  = nPaa 
+  allocate(Omega1sf(nP_sf),X1sf(nP_sf,nP_sf),Y1sf(nH_sf,nP_sf), &
+           Omega2sf(nH_sf),X2sf(nP_sf,nH_sf),Y2sf(nH_sf,nH_sf))
 
-    nHaa = nO(1)*(nO(1)-1)/2
-    nHbb = nO(2)*(nO(2)-1)/2
+  call unrestricted_linear_response_pp(iblock,TDA,nBas,nC,nO,nV,nR,nPaa,nPab,nPbb, &
+                                       nP_sf,nHaa,nHab,nHbb,nH_sf,1d0,e,ERI_aaaa, &
+                                       ERI_aabb,ERI_bbbb,Omega1sf,X1sf,Y1sf, &
+                                       Omega2sf,X2sf,Y2sf,Ec_ppURPA(ispin))
 
-    nH_sf  = nHaa 
+  call print_excitation('pp-RPA (N+2)',iblock,nP_sf,Omega1sf)
+  call print_excitation('pp-RPA (N-2)',iblock,nH_sf,Omega2sf)
 
-    allocate(Omega1sf(nP_sf),X1sf(nP_sf,nP_sf),Y1sf(nH_sf,nP_sf), &
-             Omega2sf(nH_sf),X2sf(nP_sf,nH_sf),Y2sf(nH_sf,nH_sf))
+  deallocate(Omega1sf,X1sf,Y1sf,Omega2sf,X2sf,Y2sf)
 
-    call unrestricted_linear_response_pp(iblock,TDA,nBas,nC,nO,nV,nR,nPaa,nPab,nPbb, &
-                                         nP_sf,nHaa,nHab,nHbb,nH_sf,1d0,e,ERI_aaaa, &
-                                         ERI_aabb,ERI_bbbb,Omega1sf,X1sf,Y1sf, &
-                                         Omega2sf,X2sf,Y2sf,Ec_ppURPA(ispin))
+!beta-beta block
 
-    deallocate(Omega1sf,X1sf,Y1sf,Omega2sf,X2sf,Y2sf)
+  iblock = 7 
 
-    iblock = 3
+  nP_sf  = nPbb
+  nH_sf  = nHbb
 
-    nP_sf  = nPbb
-    nH_sf  = nHbb
+  allocate(Omega1sf(nP_sf),X1sf(nP_sf,nP_sf),Y1sf(nH_sf,nP_sf), &
+           Omega2sf(nH_sf),X2sf(nP_sf,nH_sf),Y2sf(nH_sf,nH_sf))
 
-    allocate(Omega1sf(nP_sf),X1sf(nP_sf,nP_sf),Y1sf(nH_sf,nP_sf), &
-             Omega2sf(nH_sf),X2sf(nP_sf,nH_sf),Y2sf(nH_sf,nH_sf))
+  call unrestricted_linear_response_pp(iblock,TDA,nBas,nC,nO,nV,nR,nPaa,nPab,nPbb,&
+                                       nP_sf,nHaa,nHab,nHbb,nH_sf,1d0,e,ERI_aaaa,&
+                                       ERI_aabb,ERI_bbbb,Omega1sf,X1sf,Y1sf,&
+                                       Omega2sf,X2sf,Y2sf,Ec_ppURPA(ispin))
 
-    call unrestricted_linear_response_pp(iblock,TDA,nBas,nC,nO,nV,nR,nPaa,nPab,nPbb,&
-                                         nP_sf,nHaa,nHab,nHbb,nH_sf,1d0,e,ERI_aaaa,&
-                                         ERI_aabb,ERI_bbbb,Omega1sf,X1sf,Y1sf,&
-                                         Omega2sf,X2sf,Y2sf,Ec_ppURPA(ispin))
-
-    call print_excitation('pp-RPA (N+2)',6,nP_sf,Omega1sf)
-    call print_excitation('pp-RPA (N-2)',6,nH_sf,Omega2sf)
-
-  endif
+  call print_excitation('pp-RPA (N+2)',iblock,nP_sf,Omega1sf)
+  call print_excitation('pp-RPA (N-2)',iblock,nH_sf,Omega2sf)
 
   write(*,*)
   write(*,*)'-------------------------------------------------------------------------------'
@@ -158,6 +151,5 @@ subroutine ppURPA(TDA,doACFDT,spin_conserved,spin_flip,nBas,nC,nO,nV,nR,ENuc,EUH
 !   write(*,*)
 
 ! end if
-
 
 end subroutine ppURPA

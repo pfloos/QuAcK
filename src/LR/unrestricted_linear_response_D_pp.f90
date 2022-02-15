@@ -38,11 +38,7 @@ subroutine unrestricted_linear_response_D_pp(ispin,nBas,nC,nO,nV,nR,nHaa,nHab,nH
 
   eF = 0d0 
 
-!-----------------------------------------------
-! Build D matrix for spin-conserved transitions
-!-----------------------------------------------
-
-  if(ispin == 1) then 
+  if(ispin == 3) then 
 
     ! abab block
 
@@ -63,12 +59,7 @@ subroutine unrestricted_linear_response_D_pp(ispin,nBas,nC,nO,nV,nR,nHaa,nHab,nH
 
   end if
 
-
-!-----------------------------------------------
-! Build D matrix for spin-flip transitions
-!-----------------------------------------------
-
-  if(ispin == 2) then 
+  if(ispin == 4) then 
 
     ! aaaa block
 
@@ -91,7 +82,7 @@ subroutine unrestricted_linear_response_D_pp(ispin,nBas,nC,nO,nV,nR,nHaa,nHab,nH
     end  do
   end if
 
-  if (ispin == 3) then 
+  if (ispin == 7) then 
 
     ! bbbb block
 

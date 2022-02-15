@@ -106,6 +106,7 @@ subroutine UG0T0(doACFDT,exchange_kernel,doXBS,BSE,TDA_T,TDA,dBSE,dTDA,evDyn, &
            Omega2aa(nHaa),X2aa(nPaa,nHaa),Y2aa(nHaa,nHaa), & 
            rho1aa(nBas,nBas,nPaa),rho2aa(nBas,nBas,nHaa), & 
            Omega1bb(nPbb),X1bb(nPbb,nPbb),Y1bb(nHbb,nPbb), &
+           Omega2bb(nPbb),X2bb(nPbb,nPbb),Y2bb(nHbb,nPbb), &
            rho1bb(nBas,nBas,nPbb),rho2bb(nBas,nBas,nHbb), &
            SigX(nBas,nspin),SigT(nBas,nspin),Z(nBas,nspin))
 
@@ -114,16 +115,16 @@ subroutine UG0T0(doACFDT,exchange_kernel,doXBS,BSE,TDA_T,TDA,dBSE,dTDA,evDyn, &
 !----------------------------------------------
 
   ispin  = 1
-  iblock = 1
+  iblock = 3
 ! iblock = 1
 
 ! Compute linear response
 
   call unrestricted_linear_response_pp(iblock,TDA,nBas,nC,nO,nV,nR,nPaa,nPab,nPbb, &
-                                       nP_sc,nHaa,nHab,nHbb,nH_sc,1d0,eHF,ERI_aaaa, &
+                                       nPab,nHaa,nHab,nHbb,nHab,1d0,eHF,ERI_aaaa, &
                                        ERI_aabb,ERI_bbbb,Omega1ab,X1ab,Y1ab, &
                                        Omega2ab,X2ab,Y2ab,EcRPA(ispin)) 
-
+  
 ! EcRPA(ispin) = 1d0*EcRPA(ispin)
 
   call print_excitation('pp-RPA (N+2)',iblock,nPab,Omega1ab(:))
@@ -134,16 +135,15 @@ subroutine UG0T0(doACFDT,exchange_kernel,doXBS,BSE,TDA_T,TDA,dBSE,dTDA,evDyn, &
 !----------------------------------------------
 
   ispin  = 2
-  iblock = 2 
+  iblock = 4
 
 ! Compute linear response
 
   call unrestricted_linear_response_pp(iblock,TDA,nBas,nC,nO,nV,nR,nPaa,nPab,nPbb, &
-                                       nP_sf,nHaa,nHab,nHbb,nH_sc,1d0,eHF,ERI_aaaa, &
+                                       nPaa,nHaa,nHab,nHbb,nHaa,1d0,eHF,ERI_aaaa, &
                                        ERI_aabb,ERI_bbbb,Omega1aa,X1aa,Y1aa, &
                                        Omega2aa,X2aa,Y2aa,EcRPA(ispin))  
- 
-
+  
 ! EcRPA(ispin) = 2d0*EcRPA(ispin)
 ! EcRPA(ispin) = 3d0*EcRPA(ispin)
 
@@ -155,15 +155,14 @@ subroutine UG0T0(doACFDT,exchange_kernel,doXBS,BSE,TDA_T,TDA,dBSE,dTDA,evDyn, &
 !----------------------------------------------
 
   ispin  = 2
-  iblock = 3
+  iblock = 7
 
 ! Compute linear response
 
   call unrestricted_linear_response_pp(iblock,TDA,nBas,nC,nO,nV,nR,nPaa,nPab,nPbb, &
-                                       nP_sc,nHaa,nHab,nHbb,nH_sf,1d0,eHF,ERI_aaaa, &
+                                       nPbb,nHaa,nHab,nHbb,nHbb,1d0,eHF,ERI_aaaa, &
                                        ERI_aabb,ERI_bbbb,Omega1bb,X1bb,Y1bb, &
                                        Omega2bb,X2bb,Y2bb,EcRPA(ispin))
-
 
 ! EcRPA(ispin) = 2d0*EcRPA(ispin)
 ! EcRPA(ispin) = 3d0*EcRPA(ispin)
@@ -180,44 +179,38 @@ subroutine UG0T0(doACFDT,exchange_kernel,doXBS,BSE,TDA_T,TDA,dBSE,dTDA,evDyn, &
   Z(:,:)    = 0d0
 
 !alpha-beta block
-  ispin = 1 
-  iblock = 1 
+  
+  iblock = 3
 
   call unrestricted_excitation_density_Tmatrix(iblock,nBas,nC,nO,nV,nR,nHab,nPab, &
                                                ERI_aaaa,ERI_aabb,ERI_bbbb,X1ab,Y1ab, &
                                                rho1ab,X2ab,Y2ab,rho2ab)
-
-  call unrestricted_self_energy_Tmatrix_diag(ispin,eta,nBas,nC,nO,nV,nR,nHab,nPab,eHF, &
-                                             Omega1ab,rho1ab,Omega2ab,rho2ab,EcGM,SigT) 
-
-  call unrestricted_renormalization_factor_Tmatrix(eta,nBas,nC,nO,nV,nR,nHab,nPab,eHF, &
-                                                   Omega1ab,rho1ab,Omega2ab,rho2ab,Z) 
 !alpha-alpha block
-  ispin = 2 
-  iblock = 2 
 
+  iblock = 4
+  
   call unrestricted_excitation_density_Tmatrix(iblock,nBas,nC,nO,nV,nR,nHaa,nPaa, &
                                                ERI_aaaa,ERI_aabb,ERI_bbbb,X1aa,Y1aa, &
                                                rho1aa,X2aa,Y2aa,rho2aa)
 
-  call unrestricted_self_energy_Tmatrix_diag(ispin,eta,nBas,nC,nO,nV,nR,nHaa,nPaa,eHF, &
-                                             Omega1aa,rho1aa,Omega2aa,rho2aa,EcGM,SigT)
-
-  call unrestricted_renormalization_factor_Tmatrix(eta,nBas,nC,nO,nV,nR,nHaa,nPaa,eHF, &
-                                                   Omega1aa,rho1aa,Omega2aa,rho2aa,Z)
-!beta-beta block
-  ispin = 2 
-  iblock = 3 
+!beta-beta block 
+  
+  iblock = 7
 
   call unrestricted_excitation_density_Tmatrix(iblock,nBas,nC,nO,nV,nR,nHbb,nPbb, &
                                                ERI_aaaa,ERI_aabb,ERI_bbbb,X1bb,Y1bb, &
                                                rho1bb,X2bb,Y2bb,rho2bb)
 
-  call unrestricted_self_energy_Tmatrix_diag(ispin,eta,nBas,nC,nO,nV,nR,nHbb,nPbb,eHF, &
-                                             Omega1bb,rho1bb,Omega2bb,rho2bb,EcGM,SigT)
+  call unrestricted_self_energy_Tmatrix_diag(eta,nBas,nC,nO,nV,nR,nHaa,nHab,nHbb,nPaa,&
+                                             nPab,nPbb,eHF,Omega1aa,Omega1ab,Omega1bb,&
+                                             rho1aa,rho1ab,rho1bb,Omega2aa,Omega2ab,&
+                                             Omega2bb,rho2aa,rho2ab,rho2bb,EcGM,SigT)
 
-  call unrestricted_renormalization_factor_Tmatrix(eta,nBas,nC,nO,nV,nR,nHbb,nPbb,eHF, &
-                                                   Omega1bb,rho1bb,Omega2bb,rho2bb,Z)  
+  call unrestricted_renormalization_factor_Tmatrix(eta,nBas,nC,nO,nV,nR,nHaa,nHab,nHbb,&
+                                                   nPaa,nPab,nPbb,eHF,Omega1aa,Omega1ab,&
+                                                   Omega1bb,rho1aa,rho1ab,rho1bb, &
+                                                   Omega2aa,Omega2ab,Omega2bb,rho2aa, &
+                                                   rho2ab,rho2bb,Z) 
 
 
   Z(:,:) = 1d0/(1d0 - Z(:,:))
@@ -241,7 +234,7 @@ subroutine UG0T0(doACFDT,exchange_kernel,doXBS,BSE,TDA_T,TDA,dBSE,dTDA,evDyn, &
 
 !    call matout(nBas,1,SigX)
 !    call matout(nBas,1,Vxc)
-
+!    call matout(nBas,1,eG0T0(:,1))
   else
   
     eG0T0(:,:) = eHF(:,:) + SigX(:,:) + SigT(:,:) - Vxc(:,:)
@@ -257,20 +250,20 @@ subroutine UG0T0(doACFDT,exchange_kernel,doXBS,BSE,TDA_T,TDA,dBSE,dTDA,evDyn, &
 !alpha-beta block
 
   ispin  = 1
-  iblock = 1
+  iblock = 3 
 
   call unrestricted_linear_response_pp(iblock,TDA,nBas,nC,nO,nV,nR,nPaa,nPab,nPbb, &
-                                       nP_sc,nHaa,nHab,nHbb,nH_sc,1d0,eG0T0,ERI_aaaa, &
+                                       nPab,nHaa,nHab,nHbb,nHab,1d0,eG0T0,ERI_aaaa, &
                                        ERI_aabb,ERI_bbbb,Omega1ab,X1ab,Y1ab, &
                                        Omega2ab,X2ab,Y2ab,EcRPA(ispin))
 
 !alpha-alpha block
  
   ispin  = 2
-  iblock = 2
+  iblock = 4 
   
   call unrestricted_linear_response_pp(iblock,TDA,nBas,nC,nO,nV,nR,nPaa,nPab,nPbb, &
-                                       nP_sc,nHaa,nHab,nHbb,nH_sc,1d0,eG0T0,ERI_aaaa, &
+                                       nPaa,nHaa,nHab,nHbb,nHaa,1d0,eG0T0,ERI_aaaa, &
                                        ERI_aabb,ERI_bbbb,Omega1aa,X1aa,Y1aa, &
                                        Omega2aa,X2aa,Y2aa,EcRPA(ispin)) 
  
@@ -278,10 +271,10 @@ subroutine UG0T0(doACFDT,exchange_kernel,doXBS,BSE,TDA_T,TDA,dBSE,dTDA,evDyn, &
 
 !beta-beta block
  
-  iblock = 3
+  iblock = 7
   
   call unrestricted_linear_response_pp(iblock,TDA,nBas,nC,nO,nV,nR,nPaa,nPab,nPbb, &
-                                       nP_sc,nHaa,nHab,nHbb,nH_sc,1d0,eG0T0,ERI_aaaa, &
+                                       nPbb,nHaa,nHab,nHbb,nHbb,1d0,eG0T0,ERI_aaaa, &
                                        ERI_aabb,ERI_bbbb,Omega1bb,X1bb,Y1bb, &
                                        Omega2bb,X2bb,Y2bb,EcRPA(ispin))
   
@@ -290,7 +283,7 @@ subroutine UG0T0(doACFDT,exchange_kernel,doXBS,BSE,TDA_T,TDA,dBSE,dTDA,evDyn, &
   EcRPA(1) = EcRPA(1) - EcRPA(2)
   EcRPA(2) = 3d0*EcRPA(2)
 
-!  call print_G0T0(nBas,nO,eHF,ENuc,ERHF,SigT,Z,eG0T0,EcGM,EcRPA)
+  call print_UG0T0(nBas,nO,eHF,ENuc,EUHF,SigT,Z,eG0T0,EcGM,EcRPA)
 
 ! Free memory
 
