@@ -41,11 +41,7 @@ subroutine unrestricted_linear_response_B_pp(ispin,nBas,nC,nO,nV,nR,nPaa,nPab,nP
 
   eF = 0d0 
 
-!-----------------------------------------------
-! Build B matrix for spin-conserved transitions
-!-----------------------------------------------
-
-  if(ispin == 1) then
+  if(ispin == 3) then
 
     ! abab block
 
@@ -67,11 +63,8 @@ subroutine unrestricted_linear_response_B_pp(ispin,nBas,nC,nO,nV,nR,nPaa,nPab,nP
 
   end if
 
-!-----------------------------------------------
-! Build B matrix for spin-flip transitions
-!-----------------------------------------------
 
-  if(ispin == 2) then  
+  if(ispin == 4) then  
 
     ! aaaa block
 
@@ -92,7 +85,7 @@ subroutine unrestricted_linear_response_B_pp(ispin,nBas,nC,nO,nV,nR,nPaa,nPab,nP
     end  do
  end if 
 
-  if (ispin == 3) then
+  if (ispin == 7) then
 
     ! bbbb block
 

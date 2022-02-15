@@ -20,9 +20,10 @@ subroutine print_excitation(method,ispin,nS,Omega)
   if(ispin == 1) spin_manifold = 'singlet'
   if(ispin == 2) spin_manifold = 'triplet'
   if(ispin == 3) spin_manifold = 'alpha-beta'
-  if(ispin == 4) spin_manifold = 'alpha-alpha'
+  if(ispin == 4) spin_manifold = 'alpha-alpha' 
   if(ispin == 5) spin_manifold = 'spin-conserved'
   if(ispin == 6) spin_manifold = 'spin-flip'
+  if(ispin == 7) spin_manifold = 'beta-beta'
 
   write(*,*)
   write(*,*)'-------------------------------------------------------------'
