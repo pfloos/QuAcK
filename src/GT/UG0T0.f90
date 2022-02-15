@@ -115,7 +115,7 @@ subroutine UG0T0(doACFDT,exchange_kernel,doXBS,BSE,TDA_T,TDA,dBSE,dTDA,evDyn, &
 !----------------------------------------------
 
   ispin  = 1
-  iblock = 1
+  iblock = 3
 ! iblock = 1
 
 ! Compute linear response
@@ -135,7 +135,7 @@ subroutine UG0T0(doACFDT,exchange_kernel,doXBS,BSE,TDA_T,TDA,dBSE,dTDA,evDyn, &
 !----------------------------------------------
 
   ispin  = 2
-  iblock = 2 
+  iblock = 4
 
 ! Compute linear response
 
@@ -155,7 +155,7 @@ subroutine UG0T0(doACFDT,exchange_kernel,doXBS,BSE,TDA_T,TDA,dBSE,dTDA,evDyn, &
 !----------------------------------------------
 
   ispin  = 2
-  iblock = 3
+  iblock = 7
 
 ! Compute linear response
 
@@ -180,14 +180,14 @@ subroutine UG0T0(doACFDT,exchange_kernel,doXBS,BSE,TDA_T,TDA,dBSE,dTDA,evDyn, &
 
 !alpha-beta block
   
-  iblock = 1 
+  iblock = 3
 
   call unrestricted_excitation_density_Tmatrix(iblock,nBas,nC,nO,nV,nR,nHab,nPab, &
                                                ERI_aaaa,ERI_aabb,ERI_bbbb,X1ab,Y1ab, &
                                                rho1ab,X2ab,Y2ab,rho2ab)
 !alpha-alpha block
 
-  iblock = 2 
+  iblock = 4
   
   call unrestricted_excitation_density_Tmatrix(iblock,nBas,nC,nO,nV,nR,nHaa,nPaa, &
                                                ERI_aaaa,ERI_aabb,ERI_bbbb,X1aa,Y1aa, &
@@ -195,7 +195,7 @@ subroutine UG0T0(doACFDT,exchange_kernel,doXBS,BSE,TDA_T,TDA,dBSE,dTDA,evDyn, &
 
 !beta-beta block 
   
-  iblock = 3  
+  iblock = 7
 
   call unrestricted_excitation_density_Tmatrix(iblock,nBas,nC,nO,nV,nR,nHbb,nPbb, &
                                                ERI_aaaa,ERI_aabb,ERI_bbbb,X1bb,Y1bb, &
@@ -250,7 +250,7 @@ subroutine UG0T0(doACFDT,exchange_kernel,doXBS,BSE,TDA_T,TDA,dBSE,dTDA,evDyn, &
 !alpha-beta block
 
   ispin  = 1
-  iblock = 1
+  iblock = 3 
 
   call unrestricted_linear_response_pp(iblock,TDA,nBas,nC,nO,nV,nR,nPaa,nPab,nPbb, &
                                        nPab,nHaa,nHab,nHbb,nHab,1d0,eG0T0,ERI_aaaa, &
@@ -260,7 +260,7 @@ subroutine UG0T0(doACFDT,exchange_kernel,doXBS,BSE,TDA_T,TDA,dBSE,dTDA,evDyn, &
 !alpha-alpha block
  
   ispin  = 2
-  iblock = 2
+  iblock = 4 
   
   call unrestricted_linear_response_pp(iblock,TDA,nBas,nC,nO,nV,nR,nPaa,nPab,nPbb, &
                                        nPaa,nHaa,nHab,nHbb,nHaa,1d0,eG0T0,ERI_aaaa, &
@@ -271,7 +271,7 @@ subroutine UG0T0(doACFDT,exchange_kernel,doXBS,BSE,TDA_T,TDA,dBSE,dTDA,evDyn, &
 
 !beta-beta block
  
-  iblock = 3
+  iblock = 7
   
   call unrestricted_linear_response_pp(iblock,TDA,nBas,nC,nO,nV,nR,nPaa,nPab,nPbb, &
                                        nPbb,nHaa,nHab,nHbb,nHbb,1d0,eG0T0,ERI_aaaa, &
