@@ -81,8 +81,7 @@ subroutine evUGT(maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,BSE, &
 
   write(*,*)
   write(*,*)'************************************************'
-  write(*,*)'|          One-shot G0T0 calculation           |'
-  write(*,*)'|         *** Unrestricted version ***         |'
+  write(*,*)'|      Self-consistent evUGT calculation        |'
   write(*,*)'************************************************'
   write(*,*)
 
@@ -161,10 +160,7 @@ subroutine evUGT(maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,BSE, &
                                          ERI_aabb,ERI_bbbb,Omega1ab,X1ab,Y1ab, &
                                          Omega2ab,X2ab,Y2ab,EcRPA(ispin)) 
   
-! EcRPA(ispin) = 1d0*EcRPA(ispin)
-
-    call print_excitation('pp-RPA (N+2)',iblock,nPab,Omega1ab(:))
-    call print_excitation('pp-RPA (N-2)',iblock,nHab,Omega2ab(:))
+! EcRPA(ispin) = 1d0*EcRPA(ispin) 
 
 !----------------------------------------------
 ! alpha-alpha block
@@ -181,10 +177,7 @@ subroutine evUGT(maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,BSE, &
                                          Omega2aa,X2aa,Y2aa,EcRPA(ispin))  
   
 ! EcRPA(ispin) = 2d0*EcRPA(ispin)
-! EcRPA(ispin) = 3d0*EcRPA(ispin)
-
-    call print_excitation('pp-RPA (N+2)',iblock,nPaa,Omega1aa(:))
-    call print_excitation('pp-RPA (N-2)',iblock,nHaa,Omega2aa(:))
+! EcRPA(ispin) = 3d0*EcRPA(ispin) 
 
 !----------------------------------------------
 ! beta-beta block
@@ -201,10 +194,7 @@ subroutine evUGT(maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,BSE, &
                                          Omega2bb,X2bb,Y2bb,EcRPA(ispin))
 
 ! EcRPA(ispin) = 2d0*EcRPA(ispin)
-! EcRPA(ispin) = 3d0*EcRPA(ispin)
-
-    call print_excitation('pp-RPA (N+2)',iblock,nPbb,Omega1bb(:))
-    call print_excitation('pp-RPA (N-2)',iblock,nHbb,Omega2bb(:))
+! EcRPA(ispin) = 3d0*EcRPA(ispin) 
 
 !----------------------------------------------
 ! Compute T-matrix version of the self-energy 
@@ -269,41 +259,41 @@ subroutine evUGT(maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,BSE, &
 
 !alpha-beta block
 
-    ispin  = 1
-    iblock = 3 
+!    ispin  = 1
+!    iblock = 3 
 
-    call unrestricted_linear_response_pp(iblock,TDA,nBas,nC,nO,nV,nR,nPaa,nPab,nPbb, &
-                                         nPab,nHaa,nHab,nHbb,nHab,1d0,eG0T0,ERI_aaaa, &
-                                         ERI_aabb,ERI_bbbb,Omega1ab,X1ab,Y1ab, &
-                                         Omega2ab,X2ab,Y2ab,EcRPA(ispin))
+!    call unrestricted_linear_response_pp(iblock,TDA,nBas,nC,nO,nV,nR,nPaa,nPab,nPbb, &
+!                                         nPab,nHaa,nHab,nHbb,nHab,1d0,eG0T0,ERI_aaaa, &
+!                                         ERI_aabb,ERI_bbbb,Omega1ab,X1ab,Y1ab, &
+!                                         Omega2ab,X2ab,Y2ab,EcRPA(ispin))
 
 !alpha-alpha block
  
-    ispin  = 2
-    iblock = 4 
+!    ispin  = 2
+!    iblock = 4 
   
-    call unrestricted_linear_response_pp(iblock,TDA,nBas,nC,nO,nV,nR,nPaa,nPab,nPbb, &
-                                         nPaa,nHaa,nHab,nHbb,nHaa,1d0,eG0T0,ERI_aaaa, &
-                                         ERI_aabb,ERI_bbbb,Omega1aa,X1aa,Y1aa, &
-                                         Omega2aa,X2aa,Y2aa,EcRPA(ispin)) 
+!    call unrestricted_linear_response_pp(iblock,TDA,nBas,nC,nO,nV,nR,nPaa,nPab,nPbb, &
+!                                         nPaa,nHaa,nHab,nHbb,nHaa,1d0,eG0T0,ERI_aaaa, &
+!                                         ERI_aabb,ERI_bbbb,Omega1aa,X1aa,Y1aa, &
+!                                         Omega2aa,X2aa,Y2aa,EcRPA(ispin)) 
  
     Ecaa = EcRPA(2)
 
 !beta-beta block
  
-    iblock = 7
+!    iblock = 7
   
-    call unrestricted_linear_response_pp(iblock,TDA,nBas,nC,nO,nV,nR,nPaa,nPab,nPbb, &
-                                         nPbb,nHaa,nHab,nHbb,nHbb,1d0,eG0T0,ERI_aaaa, &
-                                         ERI_aabb,ERI_bbbb,Omega1bb,X1bb,Y1bb, &
-                                         Omega2bb,X2bb,Y2bb,EcRPA(ispin))
+!    call unrestricted_linear_response_pp(iblock,TDA,nBas,nC,nO,nV,nR,nPaa,nPab,nPbb, &
+!                                         nPbb,nHaa,nHab,nHbb,nHbb,1d0,eG0T0,ERI_aaaa, &
+!                                         ERI_aabb,ERI_bbbb,Omega1bb,X1bb,Y1bb, &
+!                                         Omega2bb,X2bb,Y2bb,EcRPA(ispin))
   
     Ecbb = EcRPA(2) 
     EcRPA(2) = Ecaa + Ecbb
     EcRPA(1) = EcRPA(1) - EcRPA(2)
     EcRPA(2) = 3d0*EcRPA(2)
 
-    call print_evUGT(nBas,nO,eHF,ENuc,EUHF,SigT,Z,eGT,EcGM,EcRPA)
+    call print_evUGT(nBas,nO,nSCF,Conv,eHF,ENuc,EUHF,SigT,Z,eGT,EcGM,EcRPA)
 
     ! DIIS extrapolation
 

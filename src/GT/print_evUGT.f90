@@ -1,4 +1,4 @@
-subroutine print_evUGT(nBas,nO,eHF,ENuc,EUHF,SigT,Z,eGT,EcGM,EcRPA)
+subroutine print_evUGT(nBas,nO,nSCF,Conv,eHF,ENuc,EUHF,SigT,Z,eGT,EcGM,EcRPA)
 
 ! Print one-electron energies and other stuff for UG0T0
 
@@ -7,6 +7,8 @@ subroutine print_evUGT(nBas,nO,eHF,ENuc,EUHF,SigT,Z,eGT,EcGM,EcRPA)
 
   integer,intent(in)                 :: nBas
   integer,intent(in)                 :: nO(nspin)
+  integer,intent(in)                 :: nSCF
+  double precision,intent(in)        :: Conv
   double precision,intent(in)        :: ENuc
   double precision,intent(in)        :: EUHF
   double precision,intent(in)        :: EcGM
@@ -36,9 +38,13 @@ subroutine print_evUGT(nBas,nO,eHF,ENuc,EUHF,SigT,Z,eGT,EcGM,EcRPA)
   end do
 
 ! Dump results
-
+ 
   write(*,*)'-------------------------------------------------------------------------------'
-  write(*,*)'  Unrestricted one-shot G0T0 calculation (T-matrix self-energy)  '
+  if(nSCF < 10) then
+    write(*,'(1X,A21,I1,A1,I1,A12)')'  Self-consistent evG',nSCF,'T',nSCF,' calculation'
+  else
+    write(*,'(1X,A21,I2,A1,I2,A12)')'  Self-consistent evG',nSCF,'T',nSCF,' calculation'
+  endif
   write(*,*)'-------------------------------------------------------------------------------'
   write(*,'(1X,A1,1X,A3,1X,A1,1X,A15,1X,A1,1X,A15,1X,A1,1X,A15,1X,A1,1X,A15,1X,A1,1X)') &
             '|','#','|','e_HF (eV)','|','Sigma_T (eV)','|','Z','|','e_QP (eV)','|'
@@ -51,16 +57,20 @@ subroutine print_evUGT(nBas,nO,eHF,ENuc,EUHF,SigT,Z,eGT,EcGM,EcRPA)
   enddo
 
   write(*,*)'-------------------------------------------------------------------------------'
-  write(*,'(2X,A50,F15.6,A3)') 'UG0T0 HOMO      energy (eV)            =',maxval(HOMO(:))*HaToeV,' eV'
-  write(*,'(2X,A50,F15.6,A3)') 'UG0T0 LUMO      energy (eV)            =',minval(LUMO(:))*HaToeV,' eV'
-  write(*,'(2X,A50,F15.6,A3)') 'UG0T0 HOMO-LUMO gap    (eV)            =',(minval(LUMO(:))-maxval(HOMO(:)))*HaToeV,' eV'
+  write(*,'(2X,A10,I3)')   'Iteration ',nSCF
+  write(*,'(2X,A14,F15.5)')'Convergence = ',Conv
   write(*,*)'-------------------------------------------------------------------------------'
-  write(*,'(2X,A50,F20.10,A3)') ' Tr@ppRPA@UG0T0 correlation energy (singlet) =',EcRPA(1),' au'
-  write(*,'(2X,A50,F20.10,A3)') ' Tr@ppRPA@UG0T0 correlation energy (triplet) =',EcRPA(2),' au'
-  write(*,'(2X,A50,F20.10,A3)') ' Tr@ppRPA@UG0T0 correlation energy           =',EcRPA(1) + EcRPA(2),' au'
-  write(*,'(2X,A50,F20.10,A3)') ' Tr@ppRPA@UG0T0 total energy                 =',ENuc + EUHF + EcRPA(1) + EcRPA(2),' au'
-  write(*,'(2X,A50,F20.10,A3)') '       GM@UG0T0 correlation energy           =',EcGM,' au'
-  write(*,'(2X,A50,F20.10,A3)') '       GM@UG0T0 total energy                 =',ENuc + EUHF + EcGM,' au'
+  write(*,*)'-------------------------------------------------------------------------------'
+  write(*,'(2X,A50,F15.6,A3)') 'evUGT HOMO      energy (eV)            =',maxval(HOMO(:))*HaToeV,' eV'
+  write(*,'(2X,A50,F15.6,A3)') 'evUGT LUMO      energy (eV)            =',minval(LUMO(:))*HaToeV,' eV'
+  write(*,'(2X,A50,F15.6,A3)') 'evUGT HOMO-LUMO gap    (eV)            =',(minval(LUMO(:))-maxval(HOMO(:)))*HaToeV,' eV'
+  write(*,*)'-------------------------------------------------------------------------------'
+  write(*,'(2X,A50,F20.10,A3)') ' Tr@ppRPA@evUGT correlation energy (singlet) =',EcRPA(1),' au'
+  write(*,'(2X,A50,F20.10,A3)') ' Tr@ppRPA@evUGT correlation energy (triplet) =',EcRPA(2),' au'
+  write(*,'(2X,A50,F20.10,A3)') ' Tr@ppRPA@evUGT correlation energy           =',EcRPA(1) + EcRPA(2),' au'
+  write(*,'(2X,A50,F20.10,A3)') ' Tr@ppRPA@evUGT total energy                 =',ENuc + EUHF + EcRPA(1) + EcRPA(2),' au'
+  write(*,'(2X,A50,F20.10,A3)') '       GM@evUGT correlation energy           =',EcGM,' au'
+  write(*,'(2X,A50,F20.10,A3)') '       GM@evUGT total energy                 =',ENuc + EUHF + EcGM,' au'
   write(*,*)'-------------------------------------------------------------------------------'
   write(*,*)
 
