@@ -45,7 +45,7 @@ subroutine unrestricted_excitation_density_Tmatrix(ispin,nBas,nC,nO,nV,nR,nH,nP,
 ! alpha-beta block
 !----------------------------------------------
 
-  if(ispin == 1) then
+  if(ispin == 3) then
 
     do p=nC(1)+1,nBas-nR(1)
       do q=nC(2)+1,nBas-nR(2)
@@ -111,7 +111,7 @@ subroutine unrestricted_excitation_density_Tmatrix(ispin,nBas,nC,nO,nV,nR,nH,nP,
 ! alpha-alpha block 
 !----------------------------------------------
 
-  if(ispin == 2) then
+  if(ispin == 4) then
 
     do p=nC(1)+1,nBas-nR(1)
       do q=nC(1)+1,nBas-nR(1)
@@ -169,7 +169,7 @@ subroutine unrestricted_excitation_density_Tmatrix(ispin,nBas,nC,nO,nV,nR,nH,nP,
 ! beta-beta block
 !----------------------------------------------
 
-  if(ispin == 3) then
+  if(ispin == 7) then
 
     do p=nC(2)+1,nBas-nR(2)
       do q=nC(2)+1,nBas-nR(2)

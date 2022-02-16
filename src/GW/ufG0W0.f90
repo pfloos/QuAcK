@@ -34,7 +34,7 @@ subroutine ufG0W0(nBas,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,eHF)
   double precision,allocatable  :: Z(:)
 
   logical                       :: verbose = .true.
-  double precision,parameter    :: cutoff1 = 0.01d0
+  double precision,parameter    :: cutoff1 = 0.0d0
   double precision,parameter    :: cutoff2 = 0.01d0
 
 ! Output variables

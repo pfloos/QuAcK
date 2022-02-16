@@ -95,7 +95,6 @@ subroutine UG0T0(doACFDT,exchange_kernel,doXBS,BSE,TDA_T,TDA,dBSE,dTDA,evDyn, &
 
   nP_sf = nPaa + nPbb
   nH_sf = nHaa + nHbb
-  
 
 ! Memory allocation
 
@@ -124,12 +123,12 @@ subroutine UG0T0(doACFDT,exchange_kernel,doXBS,BSE,TDA_T,TDA,dBSE,dTDA,evDyn, &
                                        nPab,nHaa,nHab,nHbb,nHab,1d0,eHF,ERI_aaaa, &
                                        ERI_aabb,ERI_bbbb,Omega1ab,X1ab,Y1ab, &
                                        Omega2ab,X2ab,Y2ab,EcRPA(ispin)) 
-  
+call matout(nHab,nPab,Y1ab)  
 ! EcRPA(ispin) = 1d0*EcRPA(ispin)
 
   call print_excitation('pp-RPA (N+2)',iblock,nPab,Omega1ab(:))
   call print_excitation('pp-RPA (N-2)',iblock,nHab,Omega2ab(:))
-
+ 
 !----------------------------------------------
 ! alpha-alpha block
 !----------------------------------------------
@@ -222,7 +221,7 @@ subroutine UG0T0(doACFDT,exchange_kernel,doXBS,BSE,TDA_T,TDA,dBSE,dTDA,evDyn, &
   do is=1,nspin
     call self_energy_exchange_diag(nBas,cHF(:,:,is),PHF(:,:,is),ERI,SigX(:,is))
   end do 
-
+!call matout(nBas,nspin,SigX)
 !----------------------------------------------
 ! Solve the quasi-particle equation
 !----------------------------------------------
@@ -231,10 +230,11 @@ subroutine UG0T0(doACFDT,exchange_kernel,doXBS,BSE,TDA_T,TDA,dBSE,dTDA,evDyn, &
 
 !   eG0T0(:) = eHF(:) + Z(:)*SigT(:)
     eG0T0(:,:) = eHF(:,:) + Z(:,:)*(SigX(:,:) + SigT(:,:) - Vxc(:,:))
-
+    
 !    call matout(nBas,1,SigX)
 !    call matout(nBas,1,Vxc)
-!    call matout(nBas,1,eG0T0(:,1))
+!    call matout(nBas,1,eG0T0(:,1)*HaToeV)
+!    call matout(nBas,nspin,SigT*HaToeV) 
   else
   
     eG0T0(:,:) = eHF(:,:) + SigX(:,:) + SigT(:,:) - Vxc(:,:)
