@@ -1188,7 +1188,12 @@ program QuAcK
 
     if(unrestricted) then
 
-      print*,'!!! evGT NYI at the unrestricted level !!!'
+      !print*,'!!! evGT NYI at the unrestricted level !!!'
+      call evUGT(maxSCF_GT,thresh_GT,n_diis_GT,doACFDT,exchange_kernel,doXBS, &
+                 BSE,TDA_T,TDA,dBSE,dTDA,evDyn,spin_conserved,spin_flip,&
+                 eta_GT,regGT,nBas,nC,nO,nV,nR,nS,ENuc,EUHF,ERI_AO, &
+                 ERI_MO_aaaa,ERI_MO_aabb,ERI_MO_bbbb,dipole_int_aa, &
+                 dipole_int_bb,PHF,cHF,eHF,Vxc,eG0T0)
 
     else
 
