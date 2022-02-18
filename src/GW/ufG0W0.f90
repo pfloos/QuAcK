@@ -237,6 +237,7 @@ subroutine ufG0W0(nBas,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,eHF)
               do c=nO+1,nBas-nR
          
                 klc = klc + 1
+
 !               if(abs(cGW(1+klc,s)) > cutoff2)               &
                 write(*,'(1X,A3,I3,A1,I3,A6,I3,A7,1X,F15.6,1X,F15.6)') &
                 '  (',k,',',l,') -> (',c,')      ',cGW(1+klc,s),cGW(1+klc,s)**2
