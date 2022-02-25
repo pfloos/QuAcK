@@ -1222,8 +1222,11 @@ program QuAcK
 
     if(unrestricted) then
 
-      print*,'!!! qsGT NYI at the unrestricted level !!!'
-
+      !print*,'!!! qsGT NYI at the unrestricted level !!!'
+      call qsUGT(maxSCF_GT,thresh_GT,n_diis_GT,doACFDT,exchange_kernel,doXBS,BSE,TDA_T, &
+                 TDA,dBSE,dTDA,evDyn,spin_conserved,spin_flip,eta_GT,regGT,nBas,nC,nO,nV,&
+                 nR,nS,nNuc,ZNuc,rNuc,ENuc,EUHF,S,X,T,V,Hc,ERI_AO,ERI_MO_aaaa,ERI_MO_aabb,&
+                 ERI_MO_bbbb,dipole_int_AO,dipole_int_aa,dipole_int_bb,PHF,cHF,eHF) 
     else
 
       call qsGT(maxSCF_GT,thresh_GT,n_diis_GT,doACFDT,exchange_kernel,doXBS, &
