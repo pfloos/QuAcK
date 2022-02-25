@@ -1,4 +1,4 @@
-subroutine print_qsUGT(nBas,nO,nSCF,Conv,eHF,ENuc,EUHF,SigT,Z,eGT,ET,EV,EJ,Ex,EcGM,EcRPA,EqsGT)
+subroutine print_qsUGT(nBas,nO,nSCF,Conv,thresh,eHF,eGT,c,SigT,Z,ENuc,ET,EV,EJ,Ex,EcGM,EcRPA,EqsGT,dipole)
 
 ! Print one-electron energies and other stuff for UG0T0
 
@@ -9,8 +9,8 @@ subroutine print_qsUGT(nBas,nO,nSCF,Conv,eHF,ENuc,EUHF,SigT,Z,eGT,ET,EV,EJ,Ex,Ec
   integer,intent(in)                 :: nO(nspin)
   integer,intent(in)                 :: nSCF
   double precision,intent(in)        :: Conv
+  double precision,intent(in)        :: thresh
   double precision,intent(in)        :: ENuc
-  double precision,intent(in)        :: EUHF
   double precision,intent(in)        :: ET(nspin)
   double precision,intent(in)        :: EV(nspin)
   double precision,intent(in)        :: EJ(nsp)
@@ -22,6 +22,8 @@ subroutine print_qsUGT(nBas,nO,nSCF,Conv,eHF,ENuc,EUHF,SigT,Z,eGT,ET,EV,EJ,Ex,Ec
   double precision,intent(in)        :: SigT(nBas,nBas,nspin)
   double precision,intent(in)        :: Z(nBas,nspin)
   double precision,intent(in)        :: eGT(nBas,nspin)
+  double precision,intent(in)        :: c(nBas,nBas,nspin)
+  double precision,intent(in)        :: dipole(ncart)
 
   integer                            :: p
   integer                            :: ispin 

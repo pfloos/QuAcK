@@ -315,9 +315,9 @@ subroutine qsUGT(maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,BSE, &
 
     do ispin=1,nspin
       F(:,:,ispin) = Hc(:,:) + J(:,:,ispin) + J(:,:,mod(ispin,2)+1) + K(:,:,ispin) &
-                     + SigT(:,:,ispin)
+                     + SigTp(:,:,ispin)
     end do    
- 
+
 ! Compute commutator and convergence criteria
 
     do ispin=1,nspin
@@ -403,7 +403,7 @@ subroutine qsUGT(maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,BSE, &
     do ispin=1,nspin
       Ex(ispin) = 0.5d0*trace_matrix(nBas,matmul(P(:,:,ispin),K(:,:,ispin)))
     end do
-
+write(*,*) 'EcGM', EcGM(1)
     ! Total energy
 
     EqsGT = sum(ET(:)) + sum(EV(:)) + sum(EJ(:)) + sum(Ex(:))
