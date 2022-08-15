@@ -29,7 +29,7 @@ subroutine Bethe_Salpeter_dynamic_perturbation_iterative(dTDA,eta,nBas,nC,nO,nV,
 
   integer                       :: ia
 
-  integer,parameter             :: maxS = 10
+  integer                       :: maxS = 10
   double precision              :: gapGW
 
   integer                       :: nSCF
@@ -43,16 +43,23 @@ subroutine Bethe_Salpeter_dynamic_perturbation_iterative(dTDA,eta,nBas,nC,nO,nV,
   double precision,allocatable  :: X(:)
   double precision,allocatable  :: Y(:)
 
-  double precision,allocatable  :: Ap_dyn(:,:)
-  double precision,allocatable  :: Am_dyn(:,:)
-  double precision,allocatable  :: Bp_dyn(:,:)
-  double precision,allocatable  :: Bm_dyn(:,:)
+  double precision,allocatable  ::  Ap_dyn(:,:)
+  double precision,allocatable  :: ZAp_dyn(:,:)
+
+  double precision,allocatable  ::  Bp_dyn(:,:)
+
+  double precision,allocatable  ::  Am_dyn(:,:)
+  double precision,allocatable  :: ZAm_dyn(:,:)
+
+  double precision,allocatable  ::  Bm_dyn(:,:)
 
 ! Memory allocation
 
-  allocate(OmDyn(nS),OmOld(nS),X(nS),Y(nS),Ap_dyn(nS,nS))
+  maxS = min(nS,maxS)
+  allocate(OmDyn(maxS),OmOld(maxS),X(nS),Y(nS),Ap_dyn(nS,nS),ZAp_dyn(nS,nS))
 
-  if(.not.dTDA) allocate(Am_dyn(nS,nS),Bp_dyn(nS,nS),Bm_dyn(nS,nS))
+  if(.not.dTDA) &
+    allocate(Am_dyn(nS,nS),ZAm_dyn(nS,nS),Bp_dyn(nS,nS),Bm_dyn(nS,nS))
 
   if(dTDA) then
     write(*,*)
@@ -64,7 +71,7 @@ subroutine Bethe_Salpeter_dynamic_perturbation_iterative(dTDA,eta,nBas,nC,nO,nV,
 
   Conv = 1d0
   nSCF = 0
-  OmOld(:) = OmBSE(:)
+  OmOld(1:maxS) = OmBSE(1:maxS)
 
   write(*,*) '---------------------------------------------------------------------------------------------------'
   write(*,*) ' First-order dynamical correction to static Bethe-Salpeter excitation energies                     '
@@ -83,9 +90,8 @@ subroutine Bethe_Salpeter_dynamic_perturbation_iterative(dTDA,eta,nBas,nC,nO,nV,
     write(*,'(2X,A5,1X,A20,1X,A20,1X,A20,A20)') '#','Static (eV)','Dynamic (eV)','Correction (eV)','Convergence (eV)'
     write(*,*) '---------------------------------------------------------------------------------------------------'
 
-    do ia=1,min(nS,maxS)
+    do ia=1,maxS
 
- 
       X(:) = 0.5d0*(XpY(ia,:) + XmY(ia,:))
       Y(:) = 0.5d0*(XpY(ia,:) - XmY(ia,:))
  
@@ -95,7 +101,7 @@ subroutine Bethe_Salpeter_dynamic_perturbation_iterative(dTDA,eta,nBas,nC,nO,nV,
 
        ! Resonant part of the BSE correction
  
-        call Bethe_Salpeter_A_matrix_dynamic(eta,nBas,nC,nO,nV,nR,nS,1d0,eGW,OmRPA,rho_RPA,OmOld(ia),Ap_dyn)
+        call Bethe_Salpeter_A_matrix_dynamic(eta,nBas,nC,nO,nV,nR,nS,1d0,eGW,OmRPA,rho_RPA,OmOld(ia),Ap_dyn,ZAp_dyn)
  
         OmDyn(ia) = dot_product(X(:),matmul(Ap_dyn(:,:),X(:)))
  
@@ -118,8 +124,8 @@ subroutine Bethe_Salpeter_dynamic_perturbation_iterative(dTDA,eta,nBas,nC,nO,nV,
  
     end do
 
-    Conv = maxval(abs(OmBSE(:) + OmDyn(:) - OmOld(:)))*HaToeV
-    OmOld(:) = OmBSE(:) + OmDyn(:)
+    Conv = maxval(abs(OmBSE(1:maxS) + OmDyn(:) - OmOld(:)))*HaToeV
+    OmOld(:) = OmBSE(1:maxS) + OmDyn(:)
 
     write(*,*) '---------------------------------------------------------------------------------------------------'
     write(*,'(2X,A20,1X,F10.6)') ' Convergence = ',Conv
