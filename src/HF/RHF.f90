@@ -204,6 +204,10 @@ subroutine RHF(maxSCF,thresh,max_diis,guess_type,level_shift,nNuc,ZNuc,rNuc,ENuc
   call dipole_moment(nBas,P,nNuc,ZNuc,rNuc,dipole_int,dipole)
   call print_RHF(nBas,nO,e,C,ENuc,ET,EV,EJ,EK,ERHF,dipole)
 
+! dump orbitals for potential restart
+
+  call dump_orbitals(nBas,c)
+
 ! Compute Vx for post-HF calculations
 
   call mo_fock_exchange_potential(nBas,c,P,ERI,Vx)
