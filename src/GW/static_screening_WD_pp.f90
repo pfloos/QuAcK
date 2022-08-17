@@ -24,6 +24,7 @@ subroutine static_screening_WD_pp(ispin,eta,nBas,nC,nO,nV,nR,nS,nOO,nVV,lambda,E
 
 ! Local variables
 
+  double precision,external     :: Kronecker_delta
   double precision              :: chi
   double precision              :: eps
   integer                       :: i,j,k,l,ij,kl,m
@@ -57,7 +58,7 @@ subroutine static_screening_WD_pp(ispin,eta,nBas,nC,nO,nV,nR,nS,nOO,nVV,lambda,E
               chi = chi + rho(i,l,m)*rho(j,k,m)*Omega(m)/eps
             enddo
  
-            WD(ij,kl) = WD(ij,kl) - 4d0*lambda*chi
+            WD(ij,kl) = WD(ij,kl) + 4d0*lambda*chi/sqrt((1d0 + Kronecker_delta(i,j))*(1d0 + Kronecker_delta(k,l)))
 
           end do
         end do

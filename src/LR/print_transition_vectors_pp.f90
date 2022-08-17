@@ -27,24 +27,24 @@ subroutine print_transition_vectors_pp(spin_allowed,nBas,nC,nO,nV,nR,nOO,nVV,dip
 
   integer                       :: a,b,c,d,ab,cd
   integer                       :: i,j,k,l,ij,kl
-  integer                       :: maxOO
+  integer                       :: maxOO = 10
   integer                       :: maxVV = 10
   double precision              :: S2
   double precision,parameter    :: thres_vec = 0.1d0
-  double precision,allocatable  :: osOO(:)
-  double precision,allocatable  :: osVV(:)
+  double precision,allocatable  :: os1(:)
+  double precision,allocatable  :: os2(:)
 
 ! Memory allocation
 
   maxOO = min(nOO,maxOO)
   maxVV = min(nVV,maxVV)
 
-  allocate(osOO(maxOO),osVV(maxVV))
+  allocate(os1(nVV),os2(nOO))
 
 ! Compute oscillator strengths
 
-  osOO(:) = 0d0
-  osVV(:) = 0d0
+  os1(:) = 0d0
+  os2(:) = 0d0
 
 ! if(spin_allowed) call oscillator_strength(nBas,nC,nO,nV,nR,nS,maxS,dipole_int,Omega,XpY,XmY,os)
 
@@ -63,8 +63,8 @@ subroutine print_transition_vectors_pp(spin_allowed,nBas,nC,nO,nV,nR,nOO,nVV,dip
     end if
 
     print*,'-------------------------------------------------------------'
-    write(*,'(A20,I3,A2,F10.6,A3,A6,F6.4,A11,F6.4)') &
-            ' p-p excitation n. ',ab,': ',Omega1(ab)*HaToeV,' eV','  f = ',osVV(ab),'  <S**2> = ',S2
+    write(*,'(A20,I3,A2,F10.4,A3,A6,F6.4,A11,F6.4)') &
+            ' p-p excitation n. ',ab,': ',Omega1(ab)*HaToeV,' eV','  f = ',os1(ab),'  <S**2> = ',S2
     print*,'-------------------------------------------------------------'
 
    if(spin_allowed) then
@@ -111,14 +111,14 @@ subroutine print_transition_vectors_pp(spin_allowed,nBas,nC,nO,nV,nR,nOO,nVV,dip
 
 ! Thomas-Reiche-Kuhn sum rule
 
-  write(*,'(A50,F10.6)') 'Thomas-Reiche-Kuhn sum rule for p-p sector = ',sum(osVV(:))
+  write(*,'(A50,F10.6)') 'Thomas-Reiche-Kuhn sum rule for p-p sector = ',sum(os1(:))
   write(*,*)
 
 !-----------------------------------------------!
 ! Print details about excitations for hh sector !
 !-----------------------------------------------!
 
-  do ij=1,maxOO
+  do ij=nOO,nOO-maxOO+1,-1
 
     ! <S**2> values
 
@@ -129,8 +129,8 @@ subroutine print_transition_vectors_pp(spin_allowed,nBas,nC,nO,nV,nR,nOO,nVV,dip
     end if
 
     print*,'-------------------------------------------------------------'
-    write(*,'(A20,I3,A2,F10.6,A3,A6,F6.4,A11,F6.4)') &
-            ' h-h excitation n. ',ij,': ',Omega2(ij)*HaToeV,' eV','  f = ',osOO(ij),'  <S**2> = ',S2
+    write(*,'(A20,I3,A2,F10.4,A3,A6,F6.4,A11,F6.4)') &
+            ' h-h excitation n. ',ij,': ',Omega2(ij)*HaToeV,' eV','  f = ',os2(ij),'  <S**2> = ',S2
     print*,'-------------------------------------------------------------'
 
    if(spin_allowed) then
@@ -177,7 +177,7 @@ subroutine print_transition_vectors_pp(spin_allowed,nBas,nC,nO,nV,nR,nOO,nVV,dip
 
 ! Thomas-Reiche-Kuhn sum rule
 
-  write(*,'(A50,F10.6)') 'Thomas-Reiche-Kuhn sum rule for h-h sector = ',sum(osOO(:))
+  write(*,'(A50,F10.6)') 'Thomas-Reiche-Kuhn sum rule for h-h sector = ',sum(os2(:))
   write(*,*)
 
 end subroutine print_transition_vectors_pp

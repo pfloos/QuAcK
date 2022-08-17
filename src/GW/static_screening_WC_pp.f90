@@ -24,6 +24,7 @@ subroutine static_screening_WC_pp(ispin,eta,nBas,nC,nO,nV,nR,nS,nOO,nVV,lambda,E
 
 ! Local variables
 
+  double precision,external     :: Kronecker_delta
   double precision              :: chi
   double precision              :: eps
   integer                       :: a,b,c,d,ab,cd,m
@@ -57,8 +58,7 @@ subroutine static_screening_WC_pp(ispin,eta,nBas,nC,nO,nV,nR,nS,nOO,nVV,lambda,E
               chi = chi + rho(a,d,m)*rho(b,c,m)*Omega(m)/eps
             enddo
             
-            WC(ab,cd) = WC(ab,cd) - 4d0*lambda*chi
-
+            WC(ab,cd) = WC(ab,cd) + 4d0*lambda*chi/sqrt((1d0 + Kronecker_delta(a,b))*(1d0 + Kronecker_delta(c,d)))
 
           end do
         end do
