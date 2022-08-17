@@ -97,6 +97,8 @@ subroutine Bethe_Salpeter_pp(TDA_W,TDA,singlet,triplet,eta,nBas,nC,nO,nV,nR,nS,E
     call print_excitation('pp-BSE (N+2)',ispin,nVV,Omega1)
     call print_excitation('pp-BSE (N-2)',ispin,nOO,Omega2)
 
+    call print_transition_vectors_pp(.true.,nBas,nC,nO,nV,nR,nOO,nVV,dipole_int,Omega1,X1,Y1,Omega2,X2,Y2)
+
     deallocate(Omega1,X1,Y1,Omega2,X2,Y2,WB,WC,WD)
 
   end if
@@ -128,6 +130,8 @@ subroutine Bethe_Salpeter_pp(TDA_W,TDA,singlet,triplet,eta,nBas,nC,nO,nV,nR,nS,E
 
     call print_excitation('pp-BSE (N+2)',ispin,nVV,Omega1)
     call print_excitation('pp-BSE (N-2)',ispin,nOO,Omega2)
+
+    call print_transition_vectors_pp(.false.,nBas,nC,nO,nV,nR,nOO,nVV,dipole_int,Omega1,X1,Y1,Omega2,X2,Y2)
 
     deallocate(Omega1,X1,Y1,Omega2,X2,Y2,WB,WC,WD)
 

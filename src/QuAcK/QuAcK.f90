@@ -845,7 +845,7 @@ program QuAcK
 
     else
 
-      call ppRPA(TDA,doACFDT,singlet,triplet,nBas,nC,nO,nV,nR,ENuc,ERHF,ERI_MO,eHF)
+      call ppRPA(TDA,doACFDT,singlet,triplet,nBas,nC,nO,nV,nR,ENuc,ERHF,ERI_MO,dipole_int_MO,eHF)
 
     end if
 

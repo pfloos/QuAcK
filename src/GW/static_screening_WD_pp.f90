@@ -44,11 +44,11 @@ subroutine static_screening_WD_pp(ispin,eta,nBas,nC,nO,nV,nR,nS,nOO,nVV,lambda,E
 
     ij = 0
     do i=nC+1,nO
-     do j=i,nO
+      do j=i,nO
         ij = ij + 1
         kl = 0
         do k=nC+1,nO
-         do l=k,nO
+          do l=k,nO
             kl = kl + 1
 
             chi = 0d0
@@ -74,11 +74,11 @@ subroutine static_screening_WD_pp(ispin,eta,nBas,nC,nO,nV,nR,nS,nOO,nVV,lambda,E
 
     ij = 0
     do i=nC+1,nO
-     do j=i+1,nO
+      do j=i+1,nO
         ij = ij + 1
         kl = 0
         do k=nC+1,nO
-         do l=k+1,nO
+          do l=k+1,nO
             kl = kl + 1
 
             chi = 0d0

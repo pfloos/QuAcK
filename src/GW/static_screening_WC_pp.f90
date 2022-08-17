@@ -44,11 +44,11 @@ subroutine static_screening_WC_pp(ispin,eta,nBas,nC,nO,nV,nR,nS,nOO,nVV,lambda,E
 
     ab = 0
     do a=nO+1,nBas-nR
-     do b=a,nBas-nR
+      do b=a,nBas-nR
         ab = ab + 1
         cd = 0
         do c=nO+1,nBas-nR
-         do d=c,nBas-nR
+          do d=c,nBas-nR
             cd = cd + 1
 
             chi = 0d0
@@ -75,11 +75,11 @@ subroutine static_screening_WC_pp(ispin,eta,nBas,nC,nO,nV,nR,nS,nOO,nVV,lambda,E
 
     ab = 0
     do a=nO+1,nBas-nR
-     do b=a+1,nBas-nR
+      do b=a+1,nBas-nR
         ab = ab + 1
         cd = 0
         do c=nO+1,nBas-nR
-         do d=c+1,nBas-nR
+          do d=c+1,nBas-nR
             cd = cd + 1
 
             chi = 0d0
