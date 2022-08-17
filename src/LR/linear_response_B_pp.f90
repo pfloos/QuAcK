@@ -8,7 +8,13 @@ subroutine linear_response_B_pp(ispin,nBas,nC,nO,nV,nR,nOO,nVV,lambda,ERI,B_pp)
 ! Input variables
 
   integer,intent(in)            :: ispin
-  integer,intent(in)            :: nBas,nC,nO,nV,nR,nOO,nVV
+  integer,intent(in)            :: nBas
+  integer,intent(in)            :: nC
+  integer,intent(in)            :: nO
+  integer,intent(in)            :: nV
+  integer,intent(in)            :: nR
+  integer,intent(in)            :: nOO
+  integer,intent(in)            :: nVV
   double precision,intent(in)   :: lambda
   double precision,intent(in)   :: ERI(nBas,nBas,nBas,nBas) 
   
@@ -27,36 +33,14 @@ subroutine linear_response_B_pp(ispin,nBas,nC,nO,nV,nR,nOO,nVV,lambda,ERI,B_pp)
 
     ab = 0
     do a=nO+1,nBas-nR
-     do b=a,nBas-nR
+      do b=a,nBas-nR
         ab = ab + 1
         ij = 0
         do i=nC+1,nO
-         do j=i,nO
+          do j=i,nO
             ij = ij + 1
  
             B_pp(ab,ij) = lambda*(ERI(a,b,i,j) + ERI(a,b,j,i))/sqrt((1d0 + Kronecker_delta(a,b))*(1d0 + Kronecker_delta(i,j)))
- 
-          end do
-        end do
-      end do
-    end do
-
-  end if
-
-! Build the alpha-beta block of the B matrix
-
-  if(ispin == 3) then
-
-    ab = 0
-    do a=nO+1,nBas-nR
-     do b=nO+1,nBas-nR
-        ab = ab + 1
-        ij = 0
-        do i=nC+1,nO
-         do j=nC+1,nO
-            ij = ij + 1
- 
-            B_pp(ab,ij) = lambda*ERI(a,b,i,j)
  
           end do
         end do
@@ -79,6 +63,28 @@ subroutine linear_response_B_pp(ispin,nBas,nC,nO,nV,nR,nOO,nVV,lambda,ERI,B_pp)
             ij = ij + 1
  
             B_pp(ab,ij) = lambda*(ERI(a,b,i,j) - ERI(a,b,j,i))
+ 
+          end do
+        end do
+      end do
+    end do
+
+  end if
+
+! Build the alpha-beta block of the B matrix
+
+  if(ispin == 3) then
+
+    ab = 0
+    do a=nO+1,nBas-nR
+     do b=nO+1,nBas-nR
+        ab = ab + 1
+        ij = 0
+        do i=nC+1,nO
+         do j=nC+1,nO
+            ij = ij + 1
+ 
+            B_pp(ab,ij) = lambda*ERI(a,b,i,j)
  
           end do
         end do

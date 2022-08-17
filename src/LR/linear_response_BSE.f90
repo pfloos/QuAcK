@@ -1,6 +1,6 @@
 subroutine linear_response_BSE(ispin,dRPA,TDA,BSE,eta,nBas,nC,nO,nV,nR,nS,lambda,e,ERI,A_BSE,B_BSE,Ec,Omega,XpY,XmY)
 
-! Compute linear response
+! Compute linear response with BSE additional terms
 
   implicit none
   include 'parameters.h'

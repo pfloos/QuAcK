@@ -8,7 +8,13 @@ subroutine linear_response_D_pp(ispin,nBas,nC,nO,nV,nR,nOO,nVV,lambda,e,ERI,D_pp
 ! Input variables
 
   integer,intent(in)            :: ispin
-  integer,intent(in)            :: nBas,nC,nO,nV,nR,nOO,nVV
+  integer,intent(in)            :: nBas
+  integer,intent(in)            :: nC
+  integer,intent(in)            :: nO
+  integer,intent(in)            :: nV
+  integer,intent(in)            :: nR
+  integer,intent(in)            :: nOO
+  integer,intent(in)            :: nVV
   double precision,intent(in)   :: lambda
   double precision,intent(in)   :: e(nBas),ERI(nBas,nBas,nBas,nBas) 
   

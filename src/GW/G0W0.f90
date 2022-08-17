@@ -15,6 +15,7 @@ subroutine G0W0(doACFDT,exchange_kernel,doXBS,COHSEX,BSE,TDA_W,TDA, &
   logical,intent(in)            :: doXBS
   logical,intent(in)            :: COHSEX
   logical,intent(in)            :: BSE
+  logical                       :: ppBSE = .true.
   logical,intent(in)            :: TDA_W
   logical,intent(in)            :: TDA
   logical,intent(in)            :: dBSE
@@ -49,6 +50,7 @@ subroutine G0W0(doACFDT,exchange_kernel,doXBS,COHSEX,BSE,TDA_W,TDA, &
   double precision              :: EcRPA
   double precision              :: EcBSE(nspin)
   double precision              :: EcAC(nspin)
+  double precision              :: EcppBSE(nspin)
   double precision              :: EcGM
   double precision,allocatable  :: SigX(:)
   double precision,allocatable  :: SigC(:)
@@ -235,6 +237,21 @@ subroutine G0W0(doACFDT,exchange_kernel,doXBS,COHSEX,BSE,TDA_W,TDA, &
       write(*,*)
 
     end if
+
+  end if
+
+  if(ppBSE) then
+
+    call Bethe_Salpeter_pp(TDA_W,TDA,singlet,triplet,eta,nBas,nC,nO,nV,nR,nS,ERI_MO,dipole_int,eHF,eG0W0,EcppBSE)
+
+    write(*,*)
+    write(*,*)'-------------------------------------------------------------------------------'
+    write(*,'(2X,A50,F20.10)') 'Tr@ppBSE@G0W0 correlation energy (singlet) =',EcppBSE(1)
+    write(*,'(2X,A50,F20.10)') 'Tr@ppBSE@G0W0 correlation energy (triplet) =',3d0*EcppBSE(2)
+    write(*,'(2X,A50,F20.10)') 'Tr@ppBSE@G0W0 correlation energy           =',EcppBSE(1) + 3d0*EcppBSE(2)
+    write(*,'(2X,A50,F20.10)') 'Tr@ppBSE@G0W0 total energy                 =',ENuc + ERHF + EcppBSE(1) + 3d0*EcppBSE(2)
+    write(*,*)'-------------------------------------------------------------------------------'
+    write(*,*)
 
   end if
 

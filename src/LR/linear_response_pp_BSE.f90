@@ -1,6 +1,6 @@
-subroutine linear_response_pp(ispin,TDA,nBas,nC,nO,nV,nR,nOO,nVV,lambda,e,ERI,Omega1,X1,Y1,Omega2,X2,Y2,EcRPA)
+subroutine linear_response_pp_BSE(ispin,TDA,BSE,nBas,nC,nO,nV,nR,nOO,nVV,lambda,e,ERI,WB,WC,WD,Omega1,X1,Y1,Omega2,X2,Y2,EcBSE)
 
-! Compute the p-p channel of the linear response: see Scuseria et al. JCP 139, 104113 (2013)
+! Compute the p-p channel of BSE
 
   implicit none
   include 'parameters.h'
@@ -9,6 +9,7 @@ subroutine linear_response_pp(ispin,TDA,nBas,nC,nO,nV,nR,nOO,nVV,lambda,e,ERI,Om
 
   integer,intent(in)            :: ispin
   logical,intent(in)            :: TDA
+  logical,intent(in)            :: BSE
   integer,intent(in)            :: nBas
   integer,intent(in)            :: nC
   integer,intent(in)            :: nO
@@ -19,14 +20,17 @@ subroutine linear_response_pp(ispin,TDA,nBas,nC,nO,nV,nR,nOO,nVV,lambda,e,ERI,Om
   double precision,intent(in)   :: lambda
   double precision,intent(in)   :: e(nBas)
   double precision,intent(in)   :: ERI(nBas,nBas,nBas,nBas)
+  double precision,intent(in)   :: WB(nVV,nOO)
+  double precision,intent(in)   :: WC(nVV,nVV)
+  double precision,intent(in)   :: WD(nOO,nOO)
   
 ! Local variables
 
   integer                       :: ab,cd,ij,kl
   integer                       :: p,q,r,s
   double precision              :: trace_matrix
-  double precision              :: EcRPA1
-  double precision              :: EcRPA2
+  double precision              :: EcBSE1
+  double precision              :: EcBSE2
   double precision,allocatable  :: B(:,:)
   double precision,allocatable  :: C(:,:)
   double precision,allocatable  :: D(:,:)
@@ -42,13 +46,12 @@ subroutine linear_response_pp(ispin,TDA,nBas,nC,nO,nV,nR,nOO,nVV,lambda,e,ERI,Om
   double precision,intent(out)  :: Omega2(nOO)
   double precision,intent(out)  :: X2(nVV,nOO)
   double precision,intent(out)  :: Y2(nOO,nOO)
-  double precision,intent(out)  :: EcRPA
+  double precision,intent(out)  :: EcBSE
 
 ! Memory allocation
 
   allocate(B(nVV,nOO),C(nVV,nVV),D(nOO,nOO),M(nOO+nVV,nOO+nVV),Z(nOO+nVV,nOO+nVV),Omega(nOO+nVV))
-!write(*,*) 'nOO', nOO
-!write(*,*) 'nVV', nVV
+
 !-------------------------------------------------!
 ! Solve the p-p eigenproblem                      !
 !-------------------------------------------------!
@@ -64,6 +67,13 @@ subroutine linear_response_pp(ispin,TDA,nBas,nC,nO,nV,nR,nOO,nVV,lambda,e,ERI,Om
   call linear_response_C_pp(ispin,nBas,nC,nO,nV,nR,nOO,nVV,lambda,e,ERI,C)
   call linear_response_D_pp(ispin,nBas,nC,nO,nV,nR,nOO,nVV,lambda,e,ERI,D)
 
+  if(BSE) then
+
+    C(:,:) = C(:,:) - WC(:,:)
+    D(:,:) = D(:,:) - WD(:,:)
+
+  end if
+
   if(TDA) then
 
     X1(:,:) = +C(:,:)
@@ -77,6 +87,7 @@ subroutine linear_response_pp(ispin,TDA,nBas,nC,nO,nV,nR,nOO,nVV,lambda,e,ERI,Om
   else
 
     call linear_response_B_pp(ispin,nBas,nC,nO,nV,nR,nOO,nVV,lambda,ERI,B)
+    if(BSE) B(:,:) = B(:,:) - WB(:,:)
 
   ! Diagonal blocks 
 
@@ -94,17 +105,17 @@ subroutine linear_response_pp(ispin,TDA,nBas,nC,nO,nV,nR,nOO,nVV,lambda,e,ERI,Om
 
   ! Split the various quantities in p-p and h-h parts
 
-    call sort_ppRPA(nOO,nVV,Omega(:),Z(:,:),Omega1(:),X1(:,:),Y1(:,:),Omega2(:),X2(:,:),Y2(:,:))
+    call sort_ppRPA(nOO,nVV,Omega,Z,Omega1,X1,Y1,Omega2,X2,Y2)
 
   end if
 
-! Compute the RPA correlation energy
+! Compute the BSE correlation energy
 
-  EcRPA = 0.5d0*( sum(Omega1(:)) - sum(Omega2(:)) - trace_matrix(nVV,C(:,:)) - trace_matrix(nOO,D(:,:)) )
-  EcRPA1 = +sum(Omega1(:)) - trace_matrix(nVV,C(:,:))
-  EcRPA2 = -sum(Omega2(:)) - trace_matrix(nOO,D(:,:))
+  EcBSE = 0.5d0*( sum(Omega1(:)) - sum(Omega2(:)) - trace_matrix(nVV,C(:,:)) - trace_matrix(nOO,D(:,:)) )
+  EcBSE1 = +sum(Omega1(:)) - trace_matrix(nVV,C(:,:))
+  EcBSE2 = -sum(Omega2(:)) - trace_matrix(nOO,D(:,:))
 
-  if(abs(EcRPA - EcRPA1) > 1d-6 .or. abs(EcRPA - EcRPA2) > 1d-6) & 
-    print*,'!!! Issue in pp-RPA linear reponse calculation RPA1 != RPA2 !!!'
+  if(abs(EcBSE - EcBSE1) > 1d-6 .or. abs(EcBSE - EcBSE2) > 1d-6) & 
+    print*,'!!! Issue in pp-BSE linear reponse calculation BSE1 != BSE2 !!!'
 
-end subroutine linear_response_pp
+end subroutine linear_response_pp_BSE
