@@ -139,7 +139,7 @@ program QuAcK
   logical                       :: DIIS_GT,TDA_T,linGT,regGT
   double precision              :: eta_GT
 
-  logical                       :: BSE,dBSE,dTDA,evDyn
+  logical                       :: BSE,dBSE,dTDA,evDyn,ppBSE
 
   integer                       :: nMC,nEq,nWalk,nPrint,iSeed
   double precision              :: dt
@@ -188,7 +188,7 @@ program QuAcK
                     COHSEX,SOSEX,TDA_W,G0W,GW0,                                                         &  
                     maxSCF_GT,thresh_GT,DIIS_GT,n_diis_GT,linGT,eta_GT,regGT,TDA_T,                     & 
                     doACFDT,exchange_kernel,doXBS,                                                      &
-                    BSE,dBSE,dTDA,evDyn,                                                                &
+                    BSE,dBSE,dTDA,evDyn,ppBSE,                                                          &
                     nMC,nEq,nWalk,dt,nPrint,iSeed,doDrift)
 
 ! Weird stuff
@@ -1036,7 +1036,7 @@ program QuAcK
         call G0W0_SOSEX(doACFDT,exchange_kernel,doXBS,BSE,TDA_W,TDA,dBSE,dTDA,evDyn,singlet,triplet, &
                         eta_GW,regGW,nBas,nC,nO,nV,nR,nS,ENuc,ERHF,ERI_AO,ERI_MO,dipole_int_MO,PHF,cHF,eHF,Vxc,eG0W0)
       else
-        call G0W0(doACFDT,exchange_kernel,doXBS,COHSEX,BSE,TDA_W,TDA,dBSE,dTDA,evDyn,singlet,triplet, &
+        call G0W0(doACFDT,exchange_kernel,doXBS,COHSEX,BSE,TDA_W,TDA,dBSE,dTDA,evDyn,ppBSE,singlet,triplet, &
                   linGW,eta_GW,regGW,nBas,nC,nO,nV,nR,nS,ENuc,ERHF,ERI_AO,ERI_MO,dipole_int_MO,PHF,cHF,eHF,Vxc,eG0W0)
       end if
 
@@ -1316,7 +1316,7 @@ program QuAcK
   end if
 
 !------------------------------------------------------------------------
-! Range-separeted GT/GW
+! Range-separated GT/GW
 !------------------------------------------------------------------------
 
 ! if(doGTGW) then
