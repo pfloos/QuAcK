@@ -49,15 +49,20 @@ subroutine ppRPA(TDA,doACFDT,singlet,triplet,nBas,nC,nO,nV,nR,ENuc,ERHF,ERI,dipo
 ! Initialization
 
   Ec_ppRPA(:) = 0d0
-  EcAC(:)   = 0d0
+  EcAC(:)     = 0d0
 
 ! Useful quantities
 
-  nS   = nO*nV
+  nS = nO*nV
 
 ! Singlet manifold
 
   if(singlet) then 
+
+    write(*,*) '****************'
+    write(*,*) '*** Singlets ***'
+    write(*,*) '****************'
+    write(*,*)
 
     ispin = 1
 
@@ -69,10 +74,10 @@ subroutine ppRPA(TDA,doACFDT,singlet,triplet,nBas,nC,nO,nV,nR,ENuc,ERHF,ERI,dipo
     call linear_response_pp(ispin,TDA,nBas,nC,nO,nV,nR,nOO,nVV,1d0,e,ERI, & 
                             Omega1,X1,Y1,Omega2,X2,Y2,Ec_ppRPA(ispin))
 
-!   call print_excitation('pp-RPA (N+2)',ispin,nVV,Omega1)
-!   call print_excitation('pp-RPA (N-2)',ispin,nOO,Omega2)
-
     call print_transition_vectors_pp(.true.,nBas,nC,nO,nV,nR,nOO,nVV,dipole_int,Omega1,X1,Y1,Omega2,X2,Y2)
+
+!   call print_excitation('pp-BSE (N+2)',ispin,nVV,Omega1)
+!   call print_excitation('pp-BSE (N-2)',ispin,nOO,Omega2)
 
     deallocate(Omega1,X1,Y1,Omega2,X2,Y2)
 
@@ -81,6 +86,11 @@ subroutine ppRPA(TDA,doACFDT,singlet,triplet,nBas,nC,nO,nV,nR,ENuc,ERHF,ERI,dipo
 ! Triplet manifold 
 
   if(triplet) then 
+
+    write(*,*) '****************'
+    write(*,*) '*** Triplets ***'
+    write(*,*) '****************'
+    write(*,*)
 
     ispin = 2
 
@@ -92,10 +102,10 @@ subroutine ppRPA(TDA,doACFDT,singlet,triplet,nBas,nC,nO,nV,nR,ENuc,ERHF,ERI,dipo
     call linear_response_pp(ispin,TDA,nBas,nC,nO,nV,nR,nOO,nVV,1d0,e,ERI, &
                             Omega1,X1,Y1,Omega2,X2,Y2,Ec_ppRPA(ispin))
 
-!   call print_excitation('pp-RPA (N+2)',ispin,nVV,Omega1)
-!   call print_excitation('pp-RPA (N-2)',ispin,nOO,Omega2)
-
     call print_transition_vectors_pp(.false.,nBas,nC,nO,nV,nR,nOO,nVV,dipole_int,Omega1,X1,Y1,Omega2,X2,Y2)
+
+!   call print_excitation('pp-BSE (N+2)',ispin,nVV,Omega1)
+!   call print_excitation('pp-BSE (N-2)',ispin,nOO,Omega2)
 
     deallocate(Omega1,X1,Y1,Omega2,X2,Y2)
 
@@ -131,6 +141,5 @@ subroutine ppRPA(TDA,doACFDT,singlet,triplet,nBas,nC,nO,nV,nR,ENuc,ERHF,ERI,dipo
     write(*,*)
 
   end if
-
 
 end subroutine ppRPA

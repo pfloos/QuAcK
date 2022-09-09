@@ -69,7 +69,7 @@ subroutine linear_response_pp(ispin,TDA,nBas,nC,nO,nV,nR,nOO,nVV,lambda,e,ERI,Om
     X1(:,:) = +C(:,:)
     Y1(:,:) = 0d0
     if(nVV > 0) call diagonalize_matrix(nVV,X1,Omega1)
- 
+
     X2(:,:) = 0d0
     Y2(:,:) = -D(:,:)
     if(nOO > 0) call diagonalize_matrix(nOO,Y2,Omega2)

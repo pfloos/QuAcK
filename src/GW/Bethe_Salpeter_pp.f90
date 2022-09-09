@@ -75,6 +75,11 @@ subroutine Bethe_Salpeter_pp(TDA_W,TDA,singlet,triplet,eta,nBas,nC,nO,nV,nR,nS,E
 
  if(singlet) then
 
+    write(*,*) '****************'
+    write(*,*) '*** Singlets ***'
+    write(*,*) '****************'
+    write(*,*) 
+
     ispin = 1
     EcBSE(ispin) = 0d0
 
@@ -108,6 +113,11 @@ subroutine Bethe_Salpeter_pp(TDA_W,TDA,singlet,triplet,eta,nBas,nC,nO,nV,nR,nS,E
 !-------------------
 
  if(triplet) then
+
+    write(*,*) '****************'
+    write(*,*) '*** Triplets ***'
+    write(*,*) '****************'
+    write(*,*) 
 
     ispin = 2
     EcBSE(ispin) = 0d0

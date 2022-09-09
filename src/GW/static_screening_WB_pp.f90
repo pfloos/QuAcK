@@ -55,10 +55,11 @@ subroutine static_screening_WB_pp(ispin,eta,nBas,nC,nO,nV,nR,nS,nOO,nVV,lambda,E
             chi = 0d0
             do m=1,nS
               eps = Omega(m)**2 + eta**2
-              chi = chi + rho(a,j,m)*rho(b,i,m)*Omega(m)/eps
+              chi = chi + rho(a,i,m)*rho(b,j,m)*Omega(m)/eps &
+                        + rho(a,j,m)*rho(b,i,m)*Omega(m)/eps
             enddo
            
-            WB(ab,ij) = WB(ab,ij) + 4d0*lambda*chi/sqrt((1d0 + Kronecker_delta(a,b))*(1d0 + Kronecker_delta(i,j)))
+            WB(ab,ij) = + 4d0*lambda*chi/sqrt((1d0 + Kronecker_delta(a,b))*(1d0 + Kronecker_delta(i,j)))
 
           end do
         end do
@@ -85,10 +86,42 @@ subroutine static_screening_WB_pp(ispin,eta,nBas,nC,nO,nV,nR,nS,nOO,nVV,lambda,E
             chi = 0d0
             do m=1,nS
               eps = Omega(m)**2 + eta**2
-              chi = chi + rho(a,j,m)*rho(b,i,m)*Omega(m)/eps
+              chi = chi + rho(a,i,m)*rho(b,j,m)*Omega(m)/eps &
+                        - rho(a,j,m)*rho(b,i,m)*Omega(m)/eps
             enddo
 
-            WB(ab,ij) = WB(ab,ij) - 4d0*lambda*chi
+            WB(ab,ij) = + 4d0*lambda*chi
+
+          end do
+        end do
+      end do
+    end do
+
+  end if
+
+!---------------!
+! SpinOrb block !
+!---------------!
+
+  if(ispin == 4) then
+
+    ab = 0
+    do a=nO+1,nBas-nR
+     do b=a+1,nBas-nR
+        ab = ab + 1
+        ij = 0
+        do i=nC+1,nO
+         do j=i+1,nO
+            ij = ij + 1
+
+            chi = 0d0
+            do m=1,nS
+              eps = Omega(m)**2 + eta**2
+              chi = chi + rho(a,i,m)*rho(b,j,m)*Omega(m)/eps &
+                        - rho(a,j,m)*rho(b,i,m)*Omega(m)/eps
+            enddo
+
+            WB(ab,ij) = + 2d0*lambda*chi
 
           end do
         end do

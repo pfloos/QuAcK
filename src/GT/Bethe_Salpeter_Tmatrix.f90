@@ -1,5 +1,5 @@
-subroutine Bethe_Salpeter_Tmatrix(TDA_T,TDA,dBSE,dTDA,evDyn,singlet,triplet,eta,nBas,nC,nO,nV,nR,nS,nOOs,nVVs,nOOt,nVVt, &
-                                  Omega1s,X1s,Y1s,Omega2s,X2s,Y2s,rho1s,rho2s,Omega1t,X1t,Y1t,Omega2t,X2t,Y2t,rho1t,rho2t, & 
+subroutine Bethe_Salpeter_Tmatrix(TDA_T,TDA,dBSE,dTDA,evDyn,singlet,triplet,eta,nBas,nC,nO,nV,nR,nS,nOOab,nVVab,nOOaa,nVVaa,   &
+                                  Om1ab,X1ab,Y1ab,Om2ab,X2ab,Y2ab,rho1ab,rho2ab,Om1aa,X1aa,Y1aa,Om2aa,X2aa,Y2aa,rho1aa,rho2aa, & 
                                   ERI,dipole_int,eT,eGT,EcBSE)
 
 ! Compute the Bethe-Salpeter excitation energies with the T-matrix kernel
@@ -25,32 +25,32 @@ subroutine Bethe_Salpeter_Tmatrix(TDA_T,TDA,dBSE,dTDA,evDyn,singlet,triplet,eta,
   integer,intent(in)            :: nR
   integer,intent(in)            :: nS
 
-  integer,intent(in)            :: nOOs
-  integer,intent(in)            :: nOOt
-  integer,intent(in)            :: nVVs
-  integer,intent(in)            :: nVVt
+  integer,intent(in)            :: nOOab
+  integer,intent(in)            :: nOOaa
+  integer,intent(in)            :: nVVab
+  integer,intent(in)            :: nVVaa
 
   double precision,intent(in)   :: eT(nBas)
   double precision,intent(in)   :: eGT(nBas)
   double precision,intent(in)   :: ERI(nBas,nBas,nBas,nBas)
   double precision,intent(in)   :: dipole_int(nBas,nBas,ncart)
 
-  double precision,intent(in)   :: Omega1s(nVVs)
-  double precision,intent(in)   :: X1s(nVVs,nVVs)
-  double precision,intent(in)   :: Y1s(nOOs,nVVs)
-  double precision,intent(in)   :: Omega2s(nOOs)
-  double precision,intent(in)   :: X2s(nVVs,nOOs)
-  double precision,intent(in)   :: Y2s(nOOs,nOOs)
-  double precision,intent(in)   :: rho1s(nBas,nBas,nVVs)
-  double precision,intent(in)   :: rho2s(nBas,nBas,nOOs)
-  double precision,intent(in)   :: Omega1t(nVVt)
-  double precision,intent(in)   :: X1t(nVVt,nVVt)
-  double precision,intent(in)   :: Y1t(nOOt,nVVt)
-  double precision,intent(in)   :: Omega2t(nOOt)
-  double precision,intent(in)   :: X2t(nVVt,nOOt)
-  double precision,intent(in)   :: Y2t(nOOt,nOOt) 
-  double precision,intent(in)   :: rho1t(nBas,nBas,nVVt)
-  double precision,intent(in)   :: rho2t(nBas,nBas,nOOt)
+  double precision,intent(in)   :: Om1ab(nVVab)
+  double precision,intent(in)   :: X1ab(nVVab,nVVab)
+  double precision,intent(in)   :: Y1ab(nOOab,nVVab)
+  double precision,intent(in)   :: Om2ab(nOOab)
+  double precision,intent(in)   :: X2ab(nVVab,nOOab)
+  double precision,intent(in)   :: Y2ab(nOOab,nOOab)
+  double precision,intent(in)   :: rho1ab(nBas,nBas,nVVab)
+  double precision,intent(in)   :: rho2ab(nBas,nBas,nOOab)
+  double precision,intent(in)   :: Om1aa(nVVaa)
+  double precision,intent(in)   :: X1aa(nVVaa,nVVaa)
+  double precision,intent(in)   :: Y1aa(nOOaa,nVVaa)
+  double precision,intent(in)   :: Om2aa(nOOaa)
+  double precision,intent(in)   :: X2aa(nVVaa,nOOaa)
+  double precision,intent(in)   :: Y2aa(nOOaa,nOOaa) 
+  double precision,intent(in)   :: rho1aa(nBas,nBas,nVVaa)
+  double precision,intent(in)   :: rho2aa(nBas,nBas,nOOaa)
 
 ! Local variables
 
@@ -58,8 +58,8 @@ subroutine Bethe_Salpeter_Tmatrix(TDA_T,TDA,dBSE,dTDA,evDyn,singlet,triplet,eta,
   integer                       :: iblock
 
   double precision              :: EcRPA(nspin)
-  double precision,allocatable  :: TAs(:,:),TBs(:,:)
-  double precision,allocatable  :: TAt(:,:),TBt(:,:)
+  double precision,allocatable  :: TAab(:,:),TBab(:,:)
+  double precision,allocatable  :: TAaa(:,:),TBaa(:,:)
   double precision,allocatable  :: OmBSE(:,:)
   double precision,allocatable  :: XpY_BSE(:,:,:)
   double precision,allocatable  :: XmY_BSE(:,:,:)
@@ -70,7 +70,7 @@ subroutine Bethe_Salpeter_Tmatrix(TDA_T,TDA,dBSE,dTDA,evDyn,singlet,triplet,eta,
 
 ! Memory allocation
 
-  allocate(TAs(nS,nS),TBs(nS,nS),TAt(nS,nS),TBt(nS,nS), & 
+  allocate(TAab(nS,nS),TBab(nS,nS),TAaa(nS,nS),TBaa(nS,nS), & 
            OmBSE(nS,nspin),XpY_BSE(nS,nS,nspin),XmY_BSE(nS,nS,nspin))
 
 !---------------------------------------!
@@ -80,13 +80,11 @@ subroutine Bethe_Salpeter_Tmatrix(TDA_T,TDA,dBSE,dTDA,evDyn,singlet,triplet,eta,
   ispin  = 1
   iblock = 3
 
-  call linear_response_pp(iblock,TDA_T,nBas,nC,nO,nV,nR,nOOs,nVVs,1d0,eT,ERI,  &
-                          Omega1s,X1s,Y1s,Omega2s,X2s,Y2s,EcRPA(ispin))
+  call linear_response_pp(iblock,TDA_T,nBas,nC,nO,nV,nR,nOOab,nVVab,1d0,eT,ERI,  &
+                          Om1ab,X1ab,Y1ab,Om2ab,X2ab,Y2ab,EcRPA(ispin))
 
-! call excitation_density_Tmatrix(iblock,nBas,nC,nO,nV,nR,nOOs,nVVs,ERI,X1s,Y1s,rho1s,X2s,Y2s,rho2s)
-
-               call static_Tmatrix_A(eta,nBas,nC,nO,nV,nR,nS,nOOs,nVVs,1d0,Omega1s,rho1s,Omega2s,rho2s,TAs)
-  if(.not.TDA) call static_Tmatrix_B(eta,nBas,nC,nO,nV,nR,nS,nOOs,nVVs,1d0,Omega1s,rho1s,Omega2s,rho2s,TBs)
+               call static_Tmatrix_A(eta,nBas,nC,nO,nV,nR,nS,nOOab,nVVab,1d0,Om1ab,rho1ab,Om2ab,rho2ab,TAab)
+  if(.not.TDA) call static_Tmatrix_B(eta,nBas,nC,nO,nV,nR,nS,nOOab,nVVab,1d0,Om1ab,rho1ab,Om2ab,rho2ab,TBab)
 
 !----------------------------------------!
 ! Compute T-matrix for alpha-alpha block !
@@ -95,13 +93,11 @@ subroutine Bethe_Salpeter_Tmatrix(TDA_T,TDA,dBSE,dTDA,evDyn,singlet,triplet,eta,
   ispin  = 2
   iblock = 4
 
-  call linear_response_pp(iblock,TDA_T,nBas,nC,nO,nV,nR,nOOt,nVVt,1d0,eT,ERI,  &
-                          Omega1t,X1t,Y1t,Omega2t,X2t,Y2t,EcRPA(ispin))
+  call linear_response_pp(iblock,TDA_T,nBas,nC,nO,nV,nR,nOOaa,nVVaa,1d0,eT,ERI,  &
+                          Om1aa,X1aa,Y1aa,Om2aa,X2aa,Y2aa,EcRPA(ispin))
 
-! call excitation_density_Tmatrix(iblock,nBas,nC,nO,nV,nR,nOOt,nVVt,ERI,X1t,Y1t,rho1t,X2t,Y2t,rho2t)
-
-               call static_Tmatrix_A(eta,nBas,nC,nO,nV,nR,nS,nOOt,nVVt,1d0,Omega1t,rho1t,Omega2t,rho2t,TAt)
-  if(.not.TDA) call static_Tmatrix_B(eta,nBas,nC,nO,nV,nR,nS,nOOt,nVVt,1d0,Omega1t,rho1t,Omega2t,rho2t,TBt)
+               call static_Tmatrix_A(eta,nBas,nC,nO,nV,nR,nS,nOOaa,nVVaa,1d0,Om1aa,rho1aa,Om2aa,rho2aa,TAaa)
+  if(.not.TDA) call static_Tmatrix_B(eta,nBas,nC,nO,nV,nR,nS,nOOaa,nVVaa,1d0,Om1aa,rho1aa,Om2aa,rho2aa,TBaa)
 
 !------------------!
 ! Singlet manifold !
@@ -114,12 +110,11 @@ subroutine Bethe_Salpeter_Tmatrix(TDA_T,TDA,dBSE,dTDA,evDyn,singlet,triplet,eta,
 
     ! Compute BSE singlet excitation energies
 
-    call linear_response_BSE(ispin,.false.,TDA,.true.,eta,nBas,nC,nO,nV,nR,nS,1d0,eGT,ERI,TAs+TAt,TBs+TBt, &
+    call linear_response_BSE(ispin,.false.,TDA,.true.,eta,nBas,nC,nO,nV,nR,nS,1d0,eGT,ERI,TAab+TAaa,TBab+TBaa, &
                              EcBSE(ispin),OmBSE(:,ispin),XpY_BSE(:,:,ispin),XmY_BSE(:,:,ispin))
 
     call print_excitation('BSE@GT      ',ispin,nS,OmBSE(:,ispin))
-    call print_transition_vectors(.true.,nBas,nC,nO,nV,nR,nS,dipole_int, & 
-                                  OmBSE(:,ispin),XpY_BSE(:,:,ispin),XmY_BSE(:,:,ispin))
+    call print_transition_vectors(.true.,nBas,nC,nO,nV,nR,nS,dipole_int,OmBSE(:,ispin),XpY_BSE(:,:,ispin),XmY_BSE(:,:,ispin))
 
     if(dBSE) then
  
@@ -132,10 +127,9 @@ subroutine Bethe_Salpeter_Tmatrix(TDA_T,TDA,dBSE,dTDA,evDyn,singlet,triplet,eta,
 !                                                          OmBSE(:,ispin),XpY_BSE(:,:,ispin),XmY_BSE(:,:,ispin))
       else
  
-        call Bethe_Salpeter_Tmatrix_dynamic_perturbation(ispin,dTDA,eta,nBas,nC,nO,nV,nR,nS,nOOs,nVVs,nOOt,nVVt,          &
-                                                         Omega1s,Omega2s,Omega1t,Omega2t,rho1s,rho2s,rho1t,rho2t,eT,eGT,  & 
-                                                         dipole_int,OmBSE(:,ispin),XpY_BSE(:,:,ispin),XmY_BSE(:,:,ispin), &
-                                                         TAs,TBs,TAt,TBt)
+        call Bethe_Salpeter_Tmatrix_dynamic_perturbation(ispin,dTDA,eta,nBas,nC,nO,nV,nR,nS,nOOab,nVVab,nOOaa,nVVaa, &
+                                                         Om1ab,Om2ab,Om1aa,Om2aa,rho1ab,rho2ab,rho1aa,rho2aa,eT,eGT, & 
+                                                         dipole_int,OmBSE(:,ispin),XpY_BSE(:,:,ispin),XmY_BSE(:,:,ispin),TAab,TAaa)
       end if
  
     end if
@@ -153,11 +147,10 @@ subroutine Bethe_Salpeter_Tmatrix(TDA_T,TDA,dBSE,dTDA,evDyn,singlet,triplet,eta,
 
     ! Compute BSE triplet excitation energies
 
-    call linear_response_BSE(ispin,.false.,TDA,.true.,eta,nBas,nC,nO,nV,nR,nS,1d0,eGT,ERI,TAt-TAs,TBt-TBs, &
+    call linear_response_BSE(ispin,.false.,TDA,.true.,eta,nBas,nC,nO,nV,nR,nS,1d0,eGT,ERI,TAaa-TAab,TBaa-TBab, &
                              EcBSE(ispin),OmBSE(:,ispin),XpY_BSE(:,:,ispin),XmY_BSE(:,:,ispin))
     call print_excitation('BSE@GT      ',ispin,nS,OmBSE(:,ispin))
-    call print_transition_vectors(.false.,nBas,nC,nO,nV,nR,nS,dipole_int, & 
-                                  OmBSE(:,ispin),XpY_BSE(:,:,ispin),XmY_BSE(:,:,ispin))
+    call print_transition_vectors(.false.,nBas,nC,nO,nV,nR,nS,dipole_int,OmBSE(:,ispin),XpY_BSE(:,:,ispin),XmY_BSE(:,:,ispin))
 
     if(dBSE) then
  
@@ -170,10 +163,9 @@ subroutine Bethe_Salpeter_Tmatrix(TDA_T,TDA,dBSE,dTDA,evDyn,singlet,triplet,eta,
 !                                                          OmBSE(:,ispin),XpY_BSE(:,:,ispin),XmY_BSE(:,:,ispin))
       else
  
-        call Bethe_Salpeter_Tmatrix_dynamic_perturbation(ispin,dTDA,eta,nBas,nC,nO,nV,nR,nS,nOOs,nVVs,nOOt,nVVt,          &
-                                                         Omega1s,Omega2s,Omega1t,Omega2t,rho1s,rho2s,rho1t,rho2t,eT,eGT,  & 
-                                                         dipole_int,OmBSE(:,ispin),XpY_BSE(:,:,ispin),XmY_BSE(:,:,ispin), &
-                                                         TAs,TBs,TAt,TBt)
+        call Bethe_Salpeter_Tmatrix_dynamic_perturbation(ispin,dTDA,eta,nBas,nC,nO,nV,nR,nS,nOOab,nVVab,nOOaa,nVVaa, &
+                                                         Om1ab,Om2ab,Om1aa,Om2aa,rho1ab,rho2ab,rho1aa,rho2aa,eT,eGT, & 
+                                                         dipole_int,OmBSE(:,ispin),XpY_BSE(:,:,ispin),XmY_BSE(:,:,ispin),TAab,TAaa)
       end if
  
     end if

@@ -1,6 +1,5 @@
-subroutine evGW(maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,COHSEX,BSE,TDA_W,TDA,  & 
-                G0W,GW0,dBSE,dTDA,evDyn,singlet,triplet,eta,regularize,nBas,nC,nO,nV,nR,nS,ENuc,ERHF,        &
-                ERI_AO,ERI_MO,dipole_int,PHF,cHF,eHF,Vxc,eG0W0)
+subroutine evGW(maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,COHSEX,BSE,TDA_W,TDA,G0W,GW0,dBSE,dTDA,evDyn,ppBSE, & 
+                singlet,triplet,eta,regularize,nBas,nC,nO,nV,nR,nS,ENuc,ERHF,ERI_AO,ERI_MO,dipole_int,PHF,cHF,eHF,Vxc,eG0W0)
 
 ! Perform self-consistent eigenvalue-only GW calculation
 
@@ -24,6 +23,7 @@ subroutine evGW(maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,COHSEX,BSE,
   logical,intent(in)            :: dBSE
   logical,intent(in)            :: dTDA
   logical,intent(in)            :: evDyn
+  logical,intent(in)            :: ppBSE
   logical,intent(in)            :: G0W
   logical,intent(in)            :: GW0
   logical,intent(in)            :: singlet
@@ -57,6 +57,7 @@ subroutine evGW(maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,COHSEX,BSE,
   double precision              :: EcRPA
   double precision              :: EcBSE(nspin)
   double precision              :: EcAC(nspin)
+  double precision              :: EcppBSE(nspin)
   double precision              :: EcGM
   double precision              :: alpha
   double precision,allocatable  :: error_diis(:,:)
@@ -70,6 +71,15 @@ subroutine evGW(maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,COHSEX,BSE,
   double precision,allocatable  :: XpY_RPA(:,:)
   double precision,allocatable  :: XmY_RPA(:,:)
   double precision,allocatable  :: rho_RPA(:,:,:)
+
+  integer                       :: nBas2
+  integer                       :: nC2
+  integer                       :: nO2
+  integer                       :: nV2
+  integer                       :: nR2
+  integer                       :: nS2
+
+  double precision,allocatable  :: seHF(:),seGW(:),sERI(:,:,:,:)
 
 ! Hello world
 
@@ -306,6 +316,36 @@ subroutine evGW(maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,COHSEX,BSE,
       write(*,*)
 
     end if
+
+  end if
+
+  if(ppBSE) then
+
+    call Bethe_Salpeter_pp(TDA_W,TDA,singlet,triplet,eta,nBas,nC,nO,nV,nR,nS,ERI_MO,dipole_int,eHF,eGW,EcppBSE)
+
+    write(*,*)
+    write(*,*)'-------------------------------------------------------------------------------'
+    write(*,'(2X,A50,F20.10)') 'Tr@ppBSE@G0W0 correlation energy (singlet) =',EcppBSE(1)
+    write(*,'(2X,A50,F20.10)') 'Tr@ppBSE@G0W0 correlation energy (triplet) =',3d0*EcppBSE(2)
+    write(*,'(2X,A50,F20.10)') 'Tr@ppBSE@G0W0 correlation energy =',EcppBSE(1) + 3d0*EcppBSE(2)
+    write(*,'(2X,A50,F20.10)') 'Tr@ppBSE@G0W0 total energy =',ENuc + ERHF + EcppBSE(1) + 3d0*EcppBSE(2)
+    write(*,*)'-------------------------------------------------------------------------------'
+    write(*,*)
+
+    nBas2 = 2*nBas
+    nO2   = 2*nO
+    nV2   = 2*nV
+    nC2   = 2*nC
+    nR2   = 2*nR
+    nS2   = nO2*nV2
+ 
+    allocate(seHF(nBas2),seGW(nBas2),sERI(nBas2,nBas2,nBas2,nBas2))
+ 
+    call spatial_to_spin_MO_energy(nBas,eHF,nBas2,seHF)
+    call spatial_to_spin_MO_energy(nBas,eGW,nBas2,seGW)
+    call spatial_to_spin_ERI(nBas,ERI_MO,nBas2,sERI)
+ 
+    call Bethe_Salpeter_pp_so(TDA_W,TDA,singlet,triplet,eta,nBas2,nC2,nO2,nV2,nR2,nS2,sERI,dipole_int,seHF,seGW,EcppBSE)
 
   end if
 

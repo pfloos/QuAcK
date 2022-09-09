@@ -15,13 +15,13 @@ subroutine print_transition_vectors_pp(spin_allowed,nBas,nC,nO,nV,nR,nOO,nVV,dip
   integer,intent(in)            :: nR
   integer,intent(in)            :: nOO
   integer,intent(in)            :: nVV
-  double precision              :: dipole_int(nBas,nBas,ncart)
-  double precision,intent(out)  :: Omega1(nVV)
-  double precision,intent(out)  :: X1(nVV,nVV)
-  double precision,intent(out)  :: Y1(nOO,nVV)
-  double precision,intent(out)  :: Omega2(nOO)
-  double precision,intent(out)  :: X2(nVV,nOO)
-  double precision,intent(out)  :: Y2(nOO,nOO)
+  double precision,intent(in)   :: dipole_int(nBas,nBas,ncart)
+  double precision,intent(in)   :: Omega1(nVV)
+  double precision,intent(in)   :: X1(nVV,nVV)
+  double precision,intent(in)   :: Y1(nOO,nVV)
+  double precision,intent(in)   :: Omega2(nOO)
+  double precision,intent(in)   :: X2(nVV,nOO)
+  double precision,intent(in)   :: Y2(nOO,nOO)
 
 ! Local variables
 
@@ -46,11 +46,17 @@ subroutine print_transition_vectors_pp(spin_allowed,nBas,nC,nO,nV,nR,nOO,nVV,dip
   os1(:) = 0d0
   os2(:) = 0d0
 
-! if(spin_allowed) call oscillator_strength(nBas,nC,nO,nV,nR,nS,maxS,dipole_int,Omega,XpY,XmY,os)
+  if(spin_allowed) & 
+    call oscillator_strength_pp(nBas,nC,nO,nV,nR,nOO,nVV,maxOO,maxVV,dipole_int,Omega1,X1,Y1,Omega2,X2,Y2,os1,os2)
 
 !-----------------------------------------------!
 ! Print details about excitations for pp sector !
 !-----------------------------------------------!
+
+  write(*,*) '*****************************'
+  write(*,*) '*** (N+2)-electron states ***'
+  write(*,*) '*****************************'
+  write(*,*)
 
   do ab=1,maxVV
 
@@ -63,7 +69,7 @@ subroutine print_transition_vectors_pp(spin_allowed,nBas,nC,nO,nV,nR,nOO,nVV,dip
     end if
 
     print*,'-------------------------------------------------------------'
-    write(*,'(A20,I3,A2,F10.4,A3,A6,F6.4,A11,F6.4)') &
+    write(*,'(A20,I3,A2,F10.6,A3,A6,F6.4,A11,F6.4)') &
             ' p-p excitation n. ',ab,': ',Omega1(ab)*HaToeV,' eV','  f = ',os1(ab),'  <S**2> = ',S2
     print*,'-------------------------------------------------------------'
 
@@ -111,12 +117,17 @@ subroutine print_transition_vectors_pp(spin_allowed,nBas,nC,nO,nV,nR,nOO,nVV,dip
 
 ! Thomas-Reiche-Kuhn sum rule
 
-  write(*,'(A50,F10.6)') 'Thomas-Reiche-Kuhn sum rule for p-p sector = ',sum(os1(:))
+  if(nVV > 0) write(*,'(A50,F10.6)') 'Thomas-Reiche-Kuhn sum rule for p-p sector = ',sum(os1(:))
   write(*,*)
 
 !-----------------------------------------------!
 ! Print details about excitations for hh sector !
 !-----------------------------------------------!
+
+  write(*,*) '*****************************'
+  write(*,*) '*** (N-2)-electron states ***'
+  write(*,*) '*****************************'
+  write(*,*)
 
   do ij=nOO,nOO-maxOO+1,-1
 
@@ -129,7 +140,7 @@ subroutine print_transition_vectors_pp(spin_allowed,nBas,nC,nO,nV,nR,nOO,nVV,dip
     end if
 
     print*,'-------------------------------------------------------------'
-    write(*,'(A20,I3,A2,F10.4,A3,A6,F6.4,A11,F6.4)') &
+    write(*,'(A20,I3,A2,F10.6,A3,A6,F6.4,A11,F6.4)') &
             ' h-h excitation n. ',ij,': ',Omega2(ij)*HaToeV,' eV','  f = ',os2(ij),'  <S**2> = ',S2
     print*,'-------------------------------------------------------------'
 
@@ -177,7 +188,7 @@ subroutine print_transition_vectors_pp(spin_allowed,nBas,nC,nO,nV,nR,nOO,nVV,dip
 
 ! Thomas-Reiche-Kuhn sum rule
 
-  write(*,'(A50,F10.6)') 'Thomas-Reiche-Kuhn sum rule for h-h sector = ',sum(os2(:))
+  if(nOO > 0) write(*,'(A50,F10.6)') 'Thomas-Reiche-Kuhn sum rule for h-h sector = ',sum(os2(:))
   write(*,*)
 
 end subroutine print_transition_vectors_pp

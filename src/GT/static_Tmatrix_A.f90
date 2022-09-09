@@ -1,6 +1,6 @@
 subroutine static_Tmatrix_A(eta,nBas,nC,nO,nV,nR,nS,nOO,nVV,lambda,Omega1,rho1,Omega2,rho2,TA)
 
-! Compute the OOVV block of the static T-matrix for the resonant block
+! Compute the OOVV block of the static T-matrix
 
   implicit none
   include 'parameters.h'
@@ -47,18 +47,16 @@ subroutine static_Tmatrix_A(eta,nBas,nC,nO,nV,nR,nS,nOO,nVV,lambda,Omega1,rho1,O
 
           do cd=1,nVV
             eps = + Omega1(cd)
-!           chi = chi + lambda*rho1(i,b,cd)*rho1(a,j,cd)*eps/(eps**2 + eta**2)
             chi = chi + rho1(i,b,cd)*rho1(a,j,cd)*eps/(eps**2 + eta**2)
 
           enddo
 
           do kl=1,nOO
             eps = - Omega2(kl)
-!           chi = chi + lambda*rho2(i,j,kl)*rho2(a,b,kl)*eps/(eps**2 + eta**2)
             chi = chi + rho2(i,b,kl)*rho2(a,j,kl)*eps/(eps**2 + eta**2)
           enddo
 
-          TA(ia,jb) = TA(ia,jb) + lambda*chi
+          TA(ia,jb) = lambda*chi
 
         enddo
       enddo

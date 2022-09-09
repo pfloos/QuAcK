@@ -28,7 +28,7 @@ subroutine oscillator_strength(nBas,nC,nO,nV,nR,nS,maxS,dipole_int,Omega,XpY,XmY
 
 ! Output variables
 
-  double precision              :: os(nS)
+  double precision,intent(out)  :: os(nS)
 
 ! Memory allocation
 

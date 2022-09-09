@@ -1,6 +1,6 @@
 subroutine G0W0(doACFDT,exchange_kernel,doXBS,COHSEX,BSE,TDA_W,TDA,dBSE,dTDA,evDyn,ppBSE, & 
                 singlet,triplet,linearize,eta,regularize,nBas,nC,nO,nV,nR,nS,ENuc,ERHF,   & 
-                ERI_AO,ERI_MO,dipole_int,PHF,cHF,eHF,Vxc,eG0W0)
+                ERI_AO,ERI_MO,dipole_int,PHF,cHF,eHF,Vxc,eGW)
 
 ! Perform G0W0 calculation
 
@@ -60,11 +60,20 @@ subroutine G0W0(doACFDT,exchange_kernel,doXBS,COHSEX,BSE,TDA_W,TDA,dBSE,dTDA,evD
   double precision,allocatable  :: XmY_RPA(:,:)
   double precision,allocatable  :: rho_RPA(:,:,:)
 
-  double precision,allocatable  :: eG0W0lin(:)
+  double precision,allocatable  :: eGWlin(:)
+
+  integer                       :: nBas2
+  integer                       :: nC2
+  integer                       :: nO2
+  integer                       :: nV2
+  integer                       :: nR2
+  integer                       :: nS2
+
+  double precision,allocatable  :: seHF(:),seGW(:),sERI(:,:,:,:)
 
 ! Output variables
 
-  double precision              :: eG0W0(nBas)
+  double precision              :: eGW(nBas)
 
 ! Hello world
 
@@ -105,7 +114,7 @@ subroutine G0W0(doACFDT,exchange_kernel,doXBS,COHSEX,BSE,TDA_W,TDA,dBSE,dTDA,evD
 
 ! Memory allocation
 
-  allocate(SigC(nBas),SigX(nBas),Z(nBas),OmRPA(nS),XpY_RPA(nS,nS),XmY_RPA(nS,nS),rho_RPA(nBas,nBas,nS),eG0W0lin(nBas))
+  allocate(SigC(nBas),SigX(nBas),Z(nBas),OmRPA(nS),XpY_RPA(nS,nS),XmY_RPA(nS,nS),rho_RPA(nBas,nBas,nS),eGWlin(nBas))
 
 !-------------------!
 ! Compute screening !
@@ -144,7 +153,7 @@ subroutine G0W0(doACFDT,exchange_kernel,doXBS,COHSEX,BSE,TDA_W,TDA,dBSE,dTDA,evD
 ! Solve the quasi-particle equation !
 !-----------------------------------!
 
-  eG0W0lin(:) = eHF(:) + Z(:)*(SigX(:) + SigC(:) - Vxc(:))
+  eGWlin(:) = eHF(:) + Z(:)*(SigX(:) + SigC(:) - Vxc(:))
 
   ! Linearized or graphical solution?
 
@@ -153,14 +162,14 @@ subroutine G0W0(doACFDT,exchange_kernel,doXBS,COHSEX,BSE,TDA_W,TDA,dBSE,dTDA,evD
     write(*,*) ' *** Quasiparticle energies obtained by linearization *** '
     write(*,*)
 
-    eG0W0(:) = eG0W0lin(:)
+    eGW(:) = eGWlin(:)
 
   else 
 
     write(*,*) ' *** Quasiparticle energies obtained by root search (experimental) *** '
     write(*,*)
   
-    call QP_graph(nBas,nC,nO,nV,nR,nS,eta,eHF,SigX,Vxc,OmRPA,rho_RPA,eG0W0lin,eG0W0)
+    call QP_graph(nBas,nC,nO,nV,nR,nS,eta,eHF,SigX,Vxc,OmRPA,rho_RPA,eGWlin,eGW)
 
     ! Find all the roots of the QP equation if necessary
 
@@ -170,18 +179,18 @@ subroutine G0W0(doACFDT,exchange_kernel,doXBS,COHSEX,BSE,TDA_W,TDA,dBSE,dTDA,evD
 
 ! Compute the RPA correlation energy
 
-  call linear_response(ispin,.true.,TDA_W,eta,nBas,nC,nO,nV,nR,nS,1d0,eG0W0,ERI_MO, & 
+  call linear_response(ispin,.true.,TDA_W,eta,nBas,nC,nO,nV,nR,nS,1d0,eGW,ERI_MO, & 
                        EcRPA,OmRPA,XpY_RPA,XmY_RPA)
 
 !--------------!
 ! Dump results !
 !--------------!
 
-  call print_G0W0(nBas,nO,eHF,ENuc,ERHF,SigC,Z,eG0W0,EcRPA,EcGM)
+  call print_G0W0(nBas,nO,eHF,ENuc,ERHF,SigC,Z,eGW,EcRPA,EcGM)
 
 ! Deallocate memory
 
-  deallocate(SigC,Z,OmRPA,XpY_RPA,XmY_RPA,rho_RPA,eG0W0lin)
+  deallocate(SigC,Z,OmRPA,XpY_RPA,XmY_RPA,rho_RPA,eGWlin)
 
 ! Plot stuff
 
@@ -191,7 +200,7 @@ subroutine G0W0(doACFDT,exchange_kernel,doXBS,COHSEX,BSE,TDA_W,TDA,dBSE,dTDA,evD
 
   if(BSE) then
 
-    call Bethe_Salpeter(TDA_W,TDA,dBSE,dTDA,evDyn,singlet,triplet,eta,nBas,nC,nO,nV,nR,nS,ERI_MO,dipole_int,eHF,eG0W0,EcBSE)
+    call Bethe_Salpeter(TDA_W,TDA,dBSE,dTDA,evDyn,singlet,triplet,eta,nBas,nC,nO,nV,nR,nS,ERI_MO,dipole_int,eHF,eGW,EcBSE)
 
     if(exchange_kernel) then
  
@@ -202,10 +211,10 @@ subroutine G0W0(doACFDT,exchange_kernel,doXBS,COHSEX,BSE,TDA_W,TDA,dBSE,dTDA,evD
 
     write(*,*)
     write(*,*)'-------------------------------------------------------------------------------'
-    write(*,'(2X,A50,F20.10)') 'Tr@BSE@G0W0 correlation energy (singlet) =',EcBSE(1)
-    write(*,'(2X,A50,F20.10)') 'Tr@BSE@G0W0 correlation energy (triplet) =',EcBSE(2)
-    write(*,'(2X,A50,F20.10)') 'Tr@BSE@G0W0 correlation energy           =',EcBSE(1) + EcBSE(2)
-    write(*,'(2X,A50,F20.10)') 'Tr@BSE@G0W0 total energy                 =',ENuc + ERHF + EcBSE(1) + EcBSE(2)
+    write(*,'(2X,A50,F20.10,A3)') 'Tr@BSE@G0W0 correlation energy (singlet) =',EcBSE(1),' au'
+    write(*,'(2X,A50,F20.10,A3)') 'Tr@BSE@G0W0 correlation energy (triplet) =',EcBSE(2),' au'
+    write(*,'(2X,A50,F20.10,A3)') 'Tr@BSE@G0W0 correlation energy           =',EcBSE(1) + EcBSE(2),' au'
+    write(*,'(2X,A50,F20.10,A3)') 'Tr@BSE@G0W0 total energy                 =',ENuc + ERHF + EcBSE(1) + EcBSE(2),' au'
     write(*,*)'-------------------------------------------------------------------------------'
     write(*,*)
 
@@ -225,14 +234,14 @@ subroutine G0W0(doACFDT,exchange_kernel,doXBS,COHSEX,BSE,TDA_W,TDA,dBSE,dTDA,evD
 
       end if
 
-      call ACFDT(exchange_kernel,doXBS,.true.,TDA_W,TDA,BSE,singlet,triplet,eta,nBas,nC,nO,nV,nR,nS,ERI_MO,eHF,eG0W0,EcAC)
+      call ACFDT(exchange_kernel,doXBS,.true.,TDA_W,TDA,BSE,singlet,triplet,eta,nBas,nC,nO,nV,nR,nS,ERI_MO,eHF,eGW,EcAC)
 
       write(*,*)
       write(*,*)'-------------------------------------------------------------------------------'
-      write(*,'(2X,A50,F20.10)') 'AC@BSE@G0W0 correlation energy (singlet) =',EcAC(1)
-      write(*,'(2X,A50,F20.10)') 'AC@BSE@G0W0 correlation energy (triplet) =',EcAC(2)
-      write(*,'(2X,A50,F20.10)') 'AC@BSE@G0W0 correlation energy           =',EcAC(1) + EcAC(2)
-      write(*,'(2X,A50,F20.10)') 'AC@BSE@G0W0 total energy                 =',ENuc + ERHF + EcAC(1) + EcAC(2)
+      write(*,'(2X,A50,F20.10,A3)') 'AC@BSE@G0W0 correlation energy (singlet) =',EcAC(1),' au'
+      write(*,'(2X,A50,F20.10,A3)') 'AC@BSE@G0W0 correlation energy (triplet) =',EcAC(2),' au'
+      write(*,'(2X,A50,F20.10,A3)') 'AC@BSE@G0W0 correlation energy           =',EcAC(1) + EcAC(2),' au'
+      write(*,'(2X,A50,F20.10,A3)') 'AC@BSE@G0W0 total energy                 =',ENuc + ERHF + EcAC(1) + EcAC(2),' au'
       write(*,*)'-------------------------------------------------------------------------------'
       write(*,*)
 
@@ -242,16 +251,31 @@ subroutine G0W0(doACFDT,exchange_kernel,doXBS,COHSEX,BSE,TDA_W,TDA,dBSE,dTDA,evD
 
   if(ppBSE) then
 
-    call Bethe_Salpeter_pp(TDA_W,TDA,singlet,triplet,eta,nBas,nC,nO,nV,nR,nS,ERI_MO,dipole_int,eHF,eG0W0,EcppBSE)
+    call Bethe_Salpeter_pp(TDA_W,TDA,singlet,triplet,eta,nBas,nC,nO,nV,nR,nS,ERI_MO,dipole_int,eHF,eGW,EcppBSE)
 
     write(*,*)
     write(*,*)'-------------------------------------------------------------------------------'
-    write(*,'(2X,A50,F20.10)') 'Tr@ppBSE@G0W0 correlation energy (singlet) =',EcppBSE(1)
-    write(*,'(2X,A50,F20.10)') 'Tr@ppBSE@G0W0 correlation energy (triplet) =',3d0*EcppBSE(2)
-    write(*,'(2X,A50,F20.10)') 'Tr@ppBSE@G0W0 correlation energy           =',EcppBSE(1) + 3d0*EcppBSE(2)
-    write(*,'(2X,A50,F20.10)') 'Tr@ppBSE@G0W0 total energy                 =',ENuc + ERHF + EcppBSE(1) + 3d0*EcppBSE(2)
+    write(*,'(2X,A50,F20.10,A3)') 'Tr@ppBSE@G0W0 correlation energy (singlet) =',EcppBSE(1),' au'
+    write(*,'(2X,A50,F20.10,A3)') 'Tr@ppBSE@G0W0 correlation energy (triplet) =',3d0*EcppBSE(2),' au'
+    write(*,'(2X,A50,F20.10,A3)') 'Tr@ppBSE@G0W0 correlation energy           =',EcppBSE(1) + 3d0*EcppBSE(2),' au'
+    write(*,'(2X,A50,F20.10,A3)') 'Tr@ppBSE@G0W0 total energy                 =',ENuc + ERHF + EcppBSE(1) + 3d0*EcppBSE(2),' au'
     write(*,*)'-------------------------------------------------------------------------------'
     write(*,*)
+
+!   nBas2 = 2*nBas
+!   nO2   = 2*nO
+!   nV2   = 2*nV
+!   nC2   = 2*nC
+!   nR2   = 2*nR
+!   nS2   = nO2*nV2
+!
+!   allocate(seHF(nBas2),seGW(nBas2),sERI(nBas2,nBas2,nBas2,nBas2))
+!
+!   call spatial_to_spin_MO_energy(nBas,eHF,nBas2,seHF)
+!   call spatial_to_spin_MO_energy(nBas,eGW,nBas2,seGW)
+!   call spatial_to_spin_ERI(nBas,ERI_MO,nBas2,sERI)
+!
+!   call  Bethe_Salpeter_pp_so(TDA_W,TDA,singlet,triplet,eta,nBas2,nC2,nO2,nV2,nR2,nS2,sERI,dipole_int,seHF,seGW,EcppBSE)
 
   end if
 
