@@ -56,7 +56,7 @@ subroutine static_screening_WC_pp(ispin,eta,nBas,nC,nO,nV,nR,nS,nOO,nVV,lambda,E
               do m=1,nS
                 eps = Omega(m)**2 + eta**2
                 chi = chi + rho(a,c,m)*rho(b,d,m)*Omega(m)/eps &
-                          - rho(a,d,m)*rho(b,c,m)*Omega(m)/eps
+                          + rho(a,d,m)*rho(b,c,m)*Omega(m)/eps
               enddo
 
               WC(ab,cd) = + 4d0*lambda*chi/sqrt((1d0 + Kronecker_delta(a,b))*(1d0 + Kronecker_delta(c,d)))

@@ -52,13 +52,19 @@ subroutine CCD(BSE,maxSCF,thresh,max_diis,nBasin,nCin,nOin,nVin,nRin,ERI,ENuc,ER
   double precision,allocatable  :: u(:,:,:,:)
   double precision,allocatable  :: v(:,:,:,:)
 
-  double precision,allocatable  :: r2(:,:,:,:)
-  double precision,allocatable  :: t2(:,:,:,:)
+  double precision,allocatable  :: r(:,:,:,:)
+  double precision,allocatable  :: t(:,:,:,:)
 
   integer                       :: n_diis,i,j,a,b
   double precision              :: rcond
   double precision,allocatable  :: error_diis(:,:)
   double precision,allocatable  :: t_diis(:,:)
+
+  logical                       :: do_EE_EOM_CC_1h1p = .false.
+  logical                       :: do_EA_EOM_CC_1p   = .false.
+  logical                       :: do_IP_EOM_CC_1h   = .false.
+  logical                       :: do_DEA_EOM_CC_2p  = .true.
+  logical                       :: do_DIP_EOM_CC_2h  = .true.
 
 ! Hello world
 
@@ -123,11 +129,11 @@ subroutine CCD(BSE,maxSCF,thresh,max_diis,nBasin,nCin,nOin,nVin,nRin,ERI,ENuc,ER
  
 ! MP2 guess amplitudes
 
-  allocate(t2(nO-nC,nO-nC,nV-nR,nV-nR))
+  allocate(t(nO-nC,nO-nC,nV-nR,nV-nR))
 
-  t2(:,:,:,:) = -OOVV(:,:,:,:)/delta_OOVV(:,:,:,:)
+  t(:,:,:,:) = -OOVV(:,:,:,:)/delta_OOVV(:,:,:,:)
 
-  call CCD_correlation_energy(nC,nO,nV,nR,OOVV,t2,EcMP2)
+  call CCD_correlation_energy(nC,nO,nV,nR,OOVV,t,EcMP2)
   EcMP4 = 0d0
 
 ! Memory allocation for DIIS
@@ -136,7 +142,7 @@ subroutine CCD(BSE,maxSCF,thresh,max_diis,nBasin,nCin,nOin,nVin,nRin,ERI,ENuc,ER
 
 ! Initialization
 
-  allocate(r2(nO-nC,nO-nC,nV-nR,nV-nR),u(nO-nC,nO-nC,nV-nR,nV-nR),v(nO-nC,nO-nC,nV-nR,nV-nR))
+  allocate(r(nO-nC,nO-nC,nV-nR,nV-nR),u(nO-nC,nO-nC,nV-nR,nV-nR),v(nO-nC,nO-nC,nV-nR,nV-nR))
   allocate(X1(nO-nC,nO-nC,nO-nC,nO-nC),X2(nV-nR,nV-nR),X3(nO-nC,nO-nC),X4(nO-nC,nO-nC,nV-nR,nV-nR))
 
   Conv = 1d0
@@ -165,33 +171,33 @@ subroutine CCD(BSE,maxSCF,thresh,max_diis,nBasin,nCin,nOin,nVin,nRin,ERI,ENuc,ER
 
 !   Form linear array
 
-    call form_u(nC,nO,nV,nR,OOOO,VVVV,OVOV,t2,u)
+    call form_u(nC,nO,nV,nR,OOOO,VVVV,OVOV,t,u)
 
 !   Form interemediate arrays
 
-    call form_X(nC,nO,nV,nR,OOVV,t2,X1,X2,X3,X4)
+    call form_X(nC,nO,nV,nR,OOVV,t,X1,X2,X3,X4)
 
 !   Form quadratic array
 
-    call form_v(nC,nO,nV,nR,X1,X2,X3,X4,t2,v)
+    call form_v(nC,nO,nV,nR,X1,X2,X3,X4,t,v)
 
 !   Compute residual
 
-    r2(:,:,:,:) = OOVV(:,:,:,:) + delta_OOVV(:,:,:,:)*t2(:,:,:,:) + u(:,:,:,:) + v(:,:,:,:)
+    r(:,:,:,:) = OOVV(:,:,:,:) + delta_OOVV(:,:,:,:)*t(:,:,:,:) + u(:,:,:,:) + v(:,:,:,:)
 
 !   Check convergence 
 
-    Conv = maxval(abs(r2(:,:,:,:)))
+    Conv = maxval(abs(r(:,:,:,:)))
   
 !   Update amplitudes
 
-    t2(:,:,:,:) = t2(:,:,:,:) - r2(:,:,:,:)/delta_OOVV(:,:,:,:)
+    t(:,:,:,:) = t(:,:,:,:) - r(:,:,:,:)/delta_OOVV(:,:,:,:)
 
 !   Compute correlation energy
 
-    call CCD_correlation_energy(nC,nO,nV,nR,OOVV,t2,EcCCD)
+    call CCD_correlation_energy(nC,nO,nV,nR,OOVV,t,EcCCD)
 
-    if(nSCF == 1) call MP3_correlation_energy(nC,nO,nV,nR,OOVV,t2,v,delta_OOVV,EcMP3)
+    if(nSCF == 1) call MP3_correlation_energy(nC,nO,nV,nR,OOVV,t,v,delta_OOVV,EcMP3)
 
 !   Dump results
 
@@ -200,7 +206,7 @@ subroutine CCD(BSE,maxSCF,thresh,max_diis,nBasin,nCin,nOin,nVin,nRin,ERI,ENuc,ER
     ! DIIS extrapolation
 
     n_diis = min(n_diis+1,max_diis)
-    call DIIS_extrapolation(rcond,(nO-nC)**2*(nV-nR)**2,(nO-nC)**2*(nV-nR)**2,n_diis,error_diis,t_diis,-r2/delta_OOVV,t2)
+    call DIIS_extrapolation(rcond,(nO-nC)**2*(nV-nR)**2,(nO-nC)**2*(nV-nR)**2,n_diis,error_diis,t_diis,-r/delta_OOVV,t)
 
     !  Reset DIIS if required
 
@@ -245,5 +251,29 @@ subroutine CCD(BSE,maxSCF,thresh,max_diis,nBasin,nCin,nOin,nVin,nRin,ERI,ENuc,ER
   write(*,'(1X,A15,1X,F10.6)') 'Ec(MP3)     = ',EcMP3
   write(*,'(1X,A15,1X,F10.6)') 'Ec(MP4-SDQ) = ',EcMP4
   write(*,*)
+
+!------------------------------------------------------------------------
+! EOM section
+!------------------------------------------------------------------------
+
+! EE-EOM-CCD (1h1p)
+
+! if(do_EE-EOM-CC_1h1p) call EE-EOM-CCD_1h1p()
+
+! EA-EOM (1p)
+
+! if(do_EA-EOM-CC_1p) call EA-EOM-CCD_1p()
+
+! IP-EOM-CCD(1h)
+
+! if(do_IP-EOM-CC_1h) call IP-EOM-CCD_1h()
+
+! DEA-EOM (2p)
+
+  if(do_DEA_EOM_CC_2p) call DEA_EOM_CCD_2p(nC,nO,nV,nR,eV,OOVV,VVVV,t)
+
+! DIP-EOM-CCD(2h)
+
+  if(do_DIP_EOM_CC_2h) call DIP_EOM_CCD_2h(nC,nO,nV,nR,eO,OOVV,OOOO,t)
 
 end subroutine CCD

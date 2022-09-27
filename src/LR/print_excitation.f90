@@ -33,7 +33,7 @@ subroutine print_excitation(method,ispin,nS,Omega)
             '|','State','|',' Excitation energy (au) ','|',' Excitation energy (eV) ','|'
   write(*,*)'-------------------------------------------------------------'
 
-  do ia=1,maxS
+  do ia=1,min(maxS,nS)
     write(*,'(1X,A1,1X,I5,1X,A1,1X,F23.6,1X,A1,1X,F23.6,1X,A1,1X)') & 
       '|',ia,'|',Omega(ia),'|',Omega(ia)*HaToeV,'|'
   enddo

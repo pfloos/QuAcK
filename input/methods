@@ -3,7 +3,7 @@
 # MP2* MP3 MP2-F12
   F   F   F
 # CCD pCCD DCD CCSD CCSD(T) 
-  F   F    F   F    F
+  T   F    F   F    F
 # drCCD rCCD crCCD lCCD
   F     F    F     F
 # CIS* CIS(D) CID CISD FCI
@@ -15,7 +15,7 @@
 # G0W0* evGW* qsGW* ufG0W0 ufGW
   F     F     F     F      F
 # G0T0 evGT qsGT 
-  T    F    F
+  F    F    F
 # MCMP2
   F
 # * unrestricted version available

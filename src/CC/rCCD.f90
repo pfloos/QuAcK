@@ -1,4 +1,4 @@
-subroutine rCCD(maxSCF,thresh,max_diis,nBasin,nCin,nOin,nVin,nRin,ERI,ENuc,ERHF,eHF)
+subroutine rCCD(BSE,maxSCF,thresh,max_diis,nBasin,nCin,nOin,nVin,nRin,ERI,ENuc,ERHF,eHF)
 
 ! Ring CCD module
 
@@ -6,6 +6,7 @@ subroutine rCCD(maxSCF,thresh,max_diis,nBasin,nCin,nOin,nVin,nRin,ERI,ENuc,ERHF,
 
 ! Input variables
 
+  logical,intent(in)            :: BSE
   integer,intent(in)            :: maxSCF
   integer,intent(in)            :: max_diis
   double precision,intent(in)   :: thresh
@@ -74,7 +75,15 @@ subroutine rCCD(maxSCF,thresh,max_diis,nBasin,nCin,nOin,nVin,nRin,ERI,ENuc,ERHF,
 
   allocate(dbERI(nBas,nBas,nBas,nBas))
 
-  call antisymmetrize_ERI(2,nBas,sERI,dbERI)
+  if(BSE) then
+
+    call static_screening(nBas,nC,nO,nV,nR,seHF,sERI,dbERI)
+
+  else
+
+    call antisymmetrize_ERI(2,nBas,sERI,dbERI)
+
+  end if
 
   deallocate(sERI)
 

@@ -55,15 +55,17 @@ subroutine static_Tmatrix_C_pp(ispin,eta,nBas,nC,nO,nV,nR,nOO,nVV,nOOx,nVVx,lamb
  
             do ef=1,nVV
               eps = + Om1(ef)
-              chi = chi + rho1(a,b,ef)*rho1(c,d,ef)*eps/(eps**2 + eta**2)
+              chi = chi + rho1(a,b,ef)*rho1(c,d,ef)*eps/(eps**2 + eta**2) &
+                        + rho1(a,b,ef)*rho1(d,c,ef)*eps/(eps**2 + eta**2)
             end do
  
             do mn=1,nOO
               eps = - Om2(mn)
-              chi = chi + rho2(a,b,mn)*rho2(c,d,mn)*eps/(eps**2 + eta**2)
+              chi = chi + rho2(a,b,mn)*rho2(c,d,mn)*eps/(eps**2 + eta**2) &
+                        + rho2(a,b,mn)*rho2(d,c,mn)*eps/(eps**2 + eta**2)
             end do
  
-            TC(ab,cd) = lambda*chi/sqrt((1d0 + Kronecker_delta(a,b))*(1d0 + Kronecker_delta(c,d)))
+            TC(ab,cd) = 0.5d0*lambda*chi/sqrt((1d0 + Kronecker_delta(a,b))*(1d0 + Kronecker_delta(c,d)))
  
           end do
         end do
