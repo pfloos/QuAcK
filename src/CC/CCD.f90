@@ -44,6 +44,8 @@ subroutine CCD(BSE,maxSCF,thresh,max_diis,nBasin,nCin,nOin,nVin,nRin,ERI,ENuc,ER
   double precision,allocatable  :: OVOV(:,:,:,:)
   double precision,allocatable  :: VVVV(:,:,:,:)
 
+  double precision,allocatable  :: OVVO(:,:,:,:)
+
   double precision,allocatable  :: X1(:,:,:,:)
   double precision,allocatable  :: X2(:,:)
   double precision,allocatable  :: X3(:,:)
@@ -60,11 +62,11 @@ subroutine CCD(BSE,maxSCF,thresh,max_diis,nBasin,nCin,nOin,nVin,nRin,ERI,ENuc,ER
   double precision,allocatable  :: error_diis(:,:)
   double precision,allocatable  :: t_diis(:,:)
 
-  logical                       :: do_EE_EOM_CC_1h1p = .false.
+  logical                       :: do_EE_EOM_CC_1h1p = .true.
   logical                       :: do_EA_EOM_CC_1p   = .false.
   logical                       :: do_IP_EOM_CC_1h   = .false.
-  logical                       :: do_DEA_EOM_CC_2p  = .true.
-  logical                       :: do_DIP_EOM_CC_2h  = .true.
+  logical                       :: do_DEA_EOM_CC_2p  = .false.
+  logical                       :: do_DIP_EOM_CC_2h  = .false.
 
 ! Hello world
 
@@ -124,6 +126,9 @@ subroutine CCD(BSE,maxSCF,thresh,max_diis,nBasin,nCin,nOin,nVin,nRin,ERI,ENuc,ER
   OOVV(:,:,:,:) = dbERI(nC+1:nO     ,nC+1:nO     ,nO+1:nBas-nR,nO+1:nBas-nR)
   OVOV(:,:,:,:) = dbERI(nC+1:nO     ,nO+1:nBas-nR,nC+1:nO     ,nO+1:nBas-nR)
   VVVV(:,:,:,:) = dbERI(nO+1:nBas-nR,nO+1:nBas-nR,nO+1:nBas-nR,nO+1:nBas-nR)
+
+  allocate(OVVO(nO-nC,nV-nR,nV-nR,nO-nC))
+  OVVO(:,:,:,:) = dbERI(nC+1:nO,nO+1:nBas-nR,nO+1:nBas-nR,nC+1:nO)
 
   deallocate(dbERI)
  
@@ -258,7 +263,7 @@ subroutine CCD(BSE,maxSCF,thresh,max_diis,nBasin,nCin,nOin,nVin,nRin,ERI,ENuc,ER
 
 ! EE-EOM-CCD (1h1p)
 
-! if(do_EE-EOM-CC_1h1p) call EE-EOM-CCD_1h1p()
+  if(do_EE_EOM_CC_1h1p)  call EE_EOM_CCD_1h1p(nC,nO,nV,nR,eO,eV,OOVV,OVVO,t)
 
 ! EA-EOM (1p)
 

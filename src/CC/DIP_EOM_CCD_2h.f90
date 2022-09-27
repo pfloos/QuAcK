@@ -45,14 +45,14 @@ subroutine DIP_EOM_CCD_2h(nC,nO,nV,nR,eO,OOVV,OOOO,t)
 
 ! Form one-body terms
 
-  do i=1,nO-nR
-    do j=1,nO-nR
+  do i=1,nO-nC
+    do j=1,nO-nC
  
       F(i,j) = eO(i)*Kronecker_delta(i,j) 
 
-      do k=1,nO-nR
-        do a=1,nV-nC
-          do b=1,nV-nC
+      do k=1,nO-nC
+        do a=1,nV-nR
+          do b=1,nV-nR
     
             F(i,j) = F(i,j) + 0.5d0*OOVV(i,k,a,b)*t(j,k,a,b)
 
