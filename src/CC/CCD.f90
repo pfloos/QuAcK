@@ -62,7 +62,7 @@ subroutine CCD(BSE,maxSCF,thresh,max_diis,nBasin,nCin,nOin,nVin,nRin,ERI,ENuc,ER
   double precision,allocatable  :: error_diis(:,:)
   double precision,allocatable  :: t_diis(:,:)
 
-  logical                       :: do_EE_EOM_CC_1h1p = .true.
+  logical                       :: do_EE_EOM_CC_1h1p = .false.
   logical                       :: do_EA_EOM_CC_1p   = .false.
   logical                       :: do_IP_EOM_CC_1h   = .false.
   logical                       :: do_DEA_EOM_CC_2p  = .false.

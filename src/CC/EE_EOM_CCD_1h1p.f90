@@ -28,7 +28,9 @@ subroutine EE_EOM_CCD_1h1p(nC,nO,nV,nR,eO,eV,OOVV,OVVO,t)
   double precision,allocatable  :: Wovvo(:,:,:,:)
   double precision,allocatable  :: H(:,:)
   double precision,allocatable  :: Om(:)
+  double precision,allocatable  :: Z(:,:)
 
+  integer,allocatable           :: order(:)
 
 ! Hello world
 
@@ -44,7 +46,9 @@ subroutine EE_EOM_CCD_1h1p(nC,nO,nV,nR,eO,eV,OOVV,OVVO,t)
 
 ! Memory allocation
 
-  allocate(Foo(nO,nO),Fvv(nV,nV),Wovvo(nO,nV,nV,nO),H(nS,nS),Om(nS))
+  allocate(Foo(nO,nO),Fvv(nV,nV),Wovvo(nO,nV,nV,nO),H(nS,nS),Om(nS),Z(nS,nS))
+  allocate(order(nS))
+
 
 ! Form one-body terms
 
@@ -57,7 +61,7 @@ subroutine EE_EOM_CCD_1h1p(nC,nO,nV,nR,eO,eV,OOVV,OVVO,t)
         do j=1,nO-nC
           do c=1,nV-nR
     
-            Fvv(a,b) = Fvv(a,b) - 0.5d0*OOVV(i,j,b,c)*t(i,j,a,c)
+!           Fvv(a,b) = Fvv(a,b) - 0.5d0*OOVV(i,j,b,c)*t(i,j,a,c)
 
           end do
         end do
@@ -75,7 +79,7 @@ subroutine EE_EOM_CCD_1h1p(nC,nO,nV,nR,eO,eV,OOVV,OVVO,t)
         do a=1,nV-nR
           do b=1,nV-nR
 
-            Foo(i,j) = Foo(i,j) + 0.5d0*OOVV(i,k,a,b)*t(j,k,a,b)
+!           Foo(i,j) = Foo(i,j) + 0.5d0*OOVV(i,k,a,b)*t(j,k,a,b)
 
           end do
         end do
@@ -128,10 +132,19 @@ subroutine EE_EOM_CCD_1h1p(nC,nO,nV,nR,eO,eV,OOVV,OVVO,t)
 
 ! Diagonalize EOM Hamiltonian
 
-  if(nS > 0) call diagonalize_matrix(nS,H,Om)
+  if(nS > 0) then 
 
-! Dump results
+    call diagonalize_general_matrix(nS,H,Om,Z)
 
-  call print_excitation('EE-EOM-CCD  ',3,nS,Om)
+    do ia=1,nS
+      order(ia) = ia
+    end do
+
+    call quick_sort(Om,order,nS)
+    call set_order(Z,order,nS,nS)
+
+    call print_excitation('EE-EOM-CCD  ',3,nS,Om)
+
+  end if
 
 end subroutine EE_EOM_CCD_1h1p

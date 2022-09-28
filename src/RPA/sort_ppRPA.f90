@@ -15,8 +15,8 @@ subroutine sort_ppRPA(nOO,nVV,Omega,Z,Omega1,X1,Y1,Omega2,X2,Y2)
 ! Local variables
 
   integer                       :: pq,ab,ij
-  integer                       :: deg1,ab_start,ab_end
-  integer                       :: deg2,ij_start,ij_end
+! integer                       :: deg1,ab_start,ab_end
+! integer                       :: deg2,ij_start,ij_end
   double precision,allocatable  :: M(:,:)
   double precision,allocatable  :: Z1(:,:)
   double precision,allocatable  :: Z2(:,:)

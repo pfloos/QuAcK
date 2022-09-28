@@ -662,21 +662,22 @@ program QuAcK
 
   if(do_rCCD) then
 
-    call cpu_time(start_CCD)
-    call rCCD(.false.,maxSCF_CC,thresh_CC,n_diis_CC,nBas,nC,nO,nV,nR,ERI_MO,ENuc,ERHF,eHF)
-    call cpu_time(end_CCD)
+!   call cpu_time(start_CCD)
+!   call rCCD(.false.,maxSCF_CC,thresh_CC,n_diis_CC,nBas,nC,nO,nV,nR,ERI_MO,ENuc,ERHF,eHF,eHF)
+!   call cpu_time(end_CCD)
 
-    t_CCD = end_CCD - start_CCD
-    write(*,'(A65,1X,F9.3,A8)') 'Total CPU time for ring CCD = ',t_CCD,' seconds'
-    write(*,*)
+!   t_CCD = end_CCD - start_CCD
+!   write(*,'(A65,1X,F9.3,A8)') 'Total CPU time for rCCD = ',t_CCD,' seconds'
+!   write(*,*)
+
     call cpu_time(start_CCD)
     call G0W0(doACFDT,exchange_kernel,doXBS,COHSEX,BSE,TDA_W,TDA,dBSE,dTDA,evDyn,ppBSE,singlet,triplet, &
               linGW,eta_GW,regGW,nBas,nC,nO,nV,nR,nS,ENuc,ERHF,ERI_AO,ERI_MO,dipole_int_MO,PHF,cHF,eHF,Vxc,eG0W0)
-    call rCCD(.true.,maxSCF_CC,thresh_CC,n_diis_CC,nBas,nC,nO,nV,nR,ERI_MO,ENuc,ERHF,eG0W0)
+    call rCCD(.true.,maxSCF_CC,thresh_CC,n_diis_CC,nBas,nC,nO,nV,nR,ERI_MO,ENuc,ERHF,eHF,eG0W0)
     call cpu_time(end_CCD)
 
     t_CCD = end_CCD - start_CCD
-    write(*,'(A65,1X,F9.3,A8)') 'Total CPU time for ring CCD = ',t_CCD,' seconds'
+    write(*,'(A65,1X,F9.3,A8)') 'Total CPU time for rCCD@BSE = ',t_CCD,' seconds'
     write(*,*)
 
   end if
@@ -829,7 +830,7 @@ program QuAcK
 
     else 
 
-      call RPAx(TDA,doACFDT,exchange_kernel,singlet,triplet,0d0,nBas,nC,nO,nV,nR,nS,ENuc,ERHF,ERI_MO,dipole_int_MO,eHF)
+     call RPAx(TDA,doACFDT,exchange_kernel,singlet,triplet,0d0,nBas,nC,nO,nV,nR,nS,ENuc,ERHF,ERI_MO,dipole_int_MO,eHF)
 
     end if
     call cpu_time(end_RPA)
