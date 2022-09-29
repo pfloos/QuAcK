@@ -1161,6 +1161,7 @@ program QuAcK
     
     call cpu_time(start_ufGW)
     call ufGW(nBas,nC,nO,nV,nR,nS,ENuc,ERHF,ERI_MO,eHF)
+    call CCGW(maxSCF_CC,thresh_CC,nBas,nC,nO,nV,nR,ERI_MO,ENuc,ERHF,eHF)
     call cpu_time(end_ufGW)
   
     t_ufGW = end_ufGW - start_ufGW
