@@ -31,96 +31,106 @@ subroutine CCGW(maxSCF,thresh,nBas,nC,nO,nV,nR,ERI,ENuc,ERHF,e)
 
   double precision,allocatable  :: eO(:)
   double precision,allocatable  :: eV(:)
-  double precision,allocatable  :: delta_2h1p(:,:,:,:)
-  double precision,allocatable  :: delta_2p1h(:,:,:,:)
 
   double precision,allocatable  :: OVVO(:,:,:,:)
   double precision,allocatable  :: VOOV(:,:,:,:)
-  double precision,allocatable  :: NVOO(:,:,:,:)
-  double precision,allocatable  :: NOVV(:,:,:,:)
+
+  double precision,allocatable  :: delta_2h1p(:,:,:,:)
+  double precision,allocatable  :: delta_2p1h(:,:,:,:)
+
+  double precision,allocatable  :: V_2h1p(:,:,:,:)
+  double precision,allocatable  :: V_2p1h(:,:,:,:)
 
   double precision,allocatable  :: r_2h1p(:,:,:,:)
   double precision,allocatable  :: r_2p1h(:,:,:,:)
+
   double precision,allocatable  :: t_2h1p(:,:,:,:)
   double precision,allocatable  :: t_2p1h(:,:,:,:)
 
+  double precision,allocatable  :: x_2h1p(:,:)
+  double precision,allocatable  :: x_2p1h(:,:)
+
   double precision,allocatable  :: eGW(:)
+  double precision,allocatable  :: SigGW(:,:)
+  double precision,allocatable  :: cGW(:,:)
   double precision,allocatable  :: Z(:)
+
+  integer,allocatable           :: order(:)
 
 ! Hello world
 
   write(*,*)
-  write(*,*)'**************************************'
-  write(*,*)'|     ring CCD calculation           |'
-  write(*,*)'**************************************'
+  write(*,*)'*****************************'
+  write(*,*)'|     CCGW calculation      |'
+  write(*,*)'*****************************'
   write(*,*)
 
 ! Create integral batches
 
-  allocate(OVVO(nO,nV,nV,nO),VOOV(nV,nO,nO,nV),NVOO(nBas,nV,nO,nO),NOVV(nBas,nO,nV,nV))
+  allocate(OVVO(nO,nV,nV,nO),VOOV(nV,nO,nO,nV))
 
   OVVO(:,:,:,:) = ERI(   1:nO   ,nO+1:nBas,nO+1:nBas,   1:nO  )
   VOOV(:,:,:,:) = ERI(nO+1:nBas ,   1:nO  ,   1:nO  ,nO+1:nBas)
-  NVOO(:,:,:,:) = ERI(   1:nBas ,nO+1:nBas,   1:nO  ,   1:nO  )
-  NOVV(:,:,:,:) = ERI(   1:nBas ,   1:nO  ,nO+1:nBas,nO+1:nBas)
  
 ! Form energy denominator and guess amplitudes
 
   allocate(eO(nO),eV(nV))
   allocate(delta_2h1p(nO,nO,nV,nBas),delta_2p1h(nO,nV,nV,nBas))
+  allocate(V_2h1p(nBas,nO,nO,nV),V_2p1h(nBas,nO,nV,nV))
   allocate(t_2h1p(nO,nO,nV,nBas),t_2p1h(nO,nV,nV,nBas))
+  allocate(x_2h1p(nBas,nBas),x_2p1h(nBas,nBas))
 
   eO(:) = e(1:nO)
   eV(:) = e(nO+1:nBas)
 
   do i=nC+1,nO
     do j=nC+1,nO
-
       do a=1,nV-nR
         do p=nC+1,nBas-nR
 
           delta_2h1p(i,j,a,p) = eO(i) + eO(j) - eV(a) - e(p)
-          t_2h1p(i,j,a,p) = - sqrt(2d0)*NVOO(p,a,i,j)/delta_2h1p(i,j,a,p)
+          V_2h1p(p,i,j,a) = sqrt(2d0)*ERI(p,nO+a,j,i)
 
         end do
       end do
-
     end do
   end do
 
-  do a=1,nV-nR
-    do b=1,nV-nR
-
-      do i=nC+1,nO
+  do i=nC+1,nO
+    do a=1,nV-nR
+      do b=1,nV-nR
         do p=nC+1,nBas-nR
 
           delta_2p1h(i,a,b,p) = eV(a) + eV(b) - eO(i) - e(p)
-          t_2p1h(i,a,b,p) = - sqrt(2d0)*NOVV(p,i,b,a)/delta_2p1h(i,a,b,p)
+          V_2p1h(p,i,a,b) = sqrt(2d0)*ERI(p,i,nO+b,nO+a)
 
         end do
       end do
-
     end do
   end do
 
 ! Initialization
 
   allocate(r_2h1p(nO,nO,nV,nBas),r_2p1h(nO,nV,nV,nBas))
-  allocate(eGW(nBas),Z(nBas))
+  allocate(eGW(nBas),SigGW(nBas,nBas),cGW(nBas,nBas),Z(nBas))
+  allocate(order(nBas))
 
   Conv = 1d0
   nSCF = 0
+
+  t_2h1p(:,:,:,:) = 0d0
+  t_2p1h(:,:,:,:) = 0d0
 
 !------------------------------------------------------------------------
 ! Main SCF loop
 !------------------------------------------------------------------------
   write(*,*)
-  write(*,*)'----------------------------------------------------'
-  write(*,*)'| CCGW calculation                                 |'
-  write(*,*)'----------------------------------------------------'
-  write(*,'(1X,A1,1X,A3,1X,A1,1X,A16,1X,A1,1X,A10,1X,A1,1X,A10,1X,A1,1X)') &
+  write(*,*)'----------------------------------------------'
+  write(*,*)'| CCGW calculation                           |'
+  write(*,*)'----------------------------------------------'
+  write(*,'(1X,A1,1X,A3,1X,A1,1X,A10,1X,A1,1X,A10,1X,A1,1X,A10,1X,A1,1X)') &
             '|','#','|','HOMO','|','LUMO','|','Conv','|'
-  write(*,*)'----------------------------------------------------'
+  write(*,*)'----------------------------------------------'
 
   do while(Conv > thresh .and. nSCF < maxSCF)
 
@@ -128,117 +138,154 @@ subroutine CCGW(maxSCF,thresh,nBas,nC,nO,nV,nR,ERI,ENuc,ERHF,e)
 
     nSCF = nSCF + 1
 
+!   Compute intermediates
+
+    x_2h1p(:,:) = 0d0 
+
+    do p=nC+1,nBas-nR
+      do q=nC+1,nBas-nR
+
+        do k=nC+1,nO
+          do l=nC+1,nO
+            do c=1,nV-nR
+      
+              x_2h1p(p,q) = x_2h1p(p,q) + V_2h1p(q,k,l,c)*t_2h1p(k,l,c,p)
+      
+            end do
+          end do
+        end do
+
+      end do
+    end do
+   
+    x_2p1h(:,:) = 0d0 
+
+    do p=nC+1,nBas-nR
+      do q=nC+1,nBas-nR
+
+        do k=nC+1,nO
+          do c=1,nV-nR
+            do d=1,nV-nR
+      
+              x_2p1h(p,q) = x_2p1h(p,q) + V_2p1h(q,k,c,d)*t_2p1h(k,c,d,p)
+     
+          end do
+        end do
+      end do
+
+      end do
+    end do
+   
 !   Compute residual for 2h1p sector
 
     do i=nC+1,nO
       do j=nC+1,nO
         do a=1,nV-nR
+
           do p=nC+1,nBas-nR
- 
-            r_2h1p(i,j,a,p) = sqrt(2d0)*NVOO(p,a,i,j) + delta_2h1p(i,j,a,p)*t_2h1p(i,j,a,p)
+
+            r_2h1p(i,j,a,p) = V_2h1p(p,i,j,a) + delta_2h1p(i,j,a,p)*t_2h1p(i,j,a,p)
 
             do k=nC+1,nO
               do c=1,nV-nR
 
                 r_2h1p(i,j,a,p) = r_2h1p(i,j,a,p) - 2d0*OVVO(j,c,a,k)*t_2h1p(i,k,c,p)
 
-                do l=nC+1,nO
-                  do q=nC+1,nBas-nR
-
-                    r_2h1p(i,j,a,p) = r_2h1p(i,j,a,p) - sqrt(2d0)*t_2h1p(i,j,a,q)*NVOO(q,c,k,l)*t_2h1p(k,l,c,p)
-
-                  end do
-                end do
-
-                do d=1,nV-nR
-                  do q=nC+1,nBas-nR
-
-                    r_2h1p(i,j,a,p) = r_2h1p(i,j,a,p) - sqrt(2d0)*t_2h1p(i,j,a,q)*NOVV(q,k,d,c)*t_2p1h(k,c,d,p)
-
-                  end do
-                end do
-
               end do
+            end do
+
+            do q=nC+1,nBas-nR
+
+              r_2h1p(i,j,a,p) = r_2h1p(i,j,a,p) - t_2h1p(i,j,a,q)*x_2h1p(p,q) - t_2h1p(i,j,a,q)*x_2p1h(p,q)
+
             end do
  
           end do
+
         end do
       end do
     end do
- 
+
 !   Compute residual for 2p1h sector
- 
+
     do i=nC+1,nO
       do a=1,nV-nR
         do b=1,nV-nR
+
           do p=nC+1,nBas-nR
- 
-            r_2p1h(i,a,b,p) = sqrt(2d0)*NOVV(p,i,b,a) + delta_2p1h(i,a,b,p)*t_2p1h(i,a,b,p)
+
+            r_2p1h(i,a,b,p) = V_2p1h(p,i,a,b) + delta_2p1h(i,a,b,p)*t_2p1h(i,a,b,p)
 
             do k=nC+1,nO
               do c=1,nV-nR
 
-                r_2p1h(p,i,a,b) = r_2p1h(p,i,a,b) + 2d0*VOOV(a,k,i,c)*t_2p1h(k,c,b,p)
-
-                do l=nC+1,nO
-                  do q=nC+1,nBas-nR
-
-                    r_2p1h(p,i,a,b) = r_2p1h(p,i,a,b) - sqrt(2d0)*t_2p1h(i,a,b,q)*NVOO(q,c,k,l)*t_2h1p(k,l,c,p)
-
-                  end do
-                end do
-
-                do d=1,nV-nR
-                  do q=nC+1,nBas-nR
-
-                    r_2p1h(p,i,a,b) = r_2p1h(p,i,a,b) - sqrt(2d0)*t_2p1h(i,a,b,q)*NOVV(q,k,d,c)*t_2p1h(k,c,d,p)
-
-                  end do
-                end do
+                r_2p1h(i,a,b,p) = r_2p1h(i,a,b,p) + 2d0*VOOV(a,k,i,c)*t_2p1h(k,c,b,p)
 
               end do
             end do
+
+            do q=nC+1,nBas-nR
+
+              r_2p1h(i,a,b,p) = r_2p1h(i,a,b,p) - t_2p1h(i,a,b,q)*x_2h1p(p,q) - t_2p1h(i,a,b,q)*x_2p1h(p,q)
+
+            end do
  
           end do
+
         end do
       end do
     end do
-
+ 
 !   Check convergence 
 
     Conv = max(maxval(abs(r_2h1p)),maxval(abs(r_2p1h)))
   
 !   Update amplitudes
 
-    t_2h1p = t_2h1p - r_2h1p/delta_2h1p
-    t_2p1h = t_2p1h - r_2p1h/delta_2p1h
+    t_2h1p(:,:,:,:) = t_2h1p(:,:,:,:) - r_2h1p(:,:,:,:)/delta_2h1p(:,:,:,:)
+    t_2p1h(:,:,:,:) = t_2p1h(:,:,:,:) - r_2p1h(:,:,:,:)/delta_2p1h(:,:,:,:)
 
 !   Compute correlation energy
 
-    eGW(:) = e(:)
+    SigGW(:,:) = 0d0
+
     do p=nC+1,nBas-nR
 
-      do i=nC+1,nO
-        do j=nC+1,nO
+      SigGW(p,p) = SigGW(p,p) + e(p)
+
+      do q=nC+1,nBas-nR
+
+        do i=nC+1,nO
+          do j=nC+1,nO
+            do a=1,nV-nR
+
+              SigGW(p,q) = SigGW(p,q) + V_2h1p(p,i,j,a)*t_2h1p(i,j,a,q)
+ 
+            end do
+          end do
+        end do
+
+        do i=nC+1,nO
           do a=1,nV-nR
+            do b=1,nV-nR
 
-            eGW(p) = eGW(p) + sqrt(2d0)*t_2h1p(i,j,a,p)*NVOO(p,a,i,j)
-
+              SigGW(p,q) = SigGW(p,q) + V_2p1h(p,i,a,b)*t_2p1h(i,a,b,q)
+ 
+            end do
           end do
         end do
+
       end do
-
-      do i=nC+1,nO
-        do a=1,nV-nR
-          do b=1,nV-nR
-
-            eGW(p) = eGW(p) + sqrt(2d0)*t_2p1h(i,a,b,p)*NOVV(p,i,a,b)
-
-          end do
-        end do
-      end do
-
     end do
+
+    call diagonalize_general_matrix(nBas,SigGW,eGW,cGW)
+
+    do p=1,nBas
+      order(p) = p
+    end do
+
+    call quick_sort(eGW,order,nBas)
+    call set_order(cGW,order,nBas,nBas)
 
 !   Renormalization factor
 
@@ -246,11 +293,11 @@ subroutine CCGW(maxSCF,thresh,nBas,nC,nO,nV,nR,ERI,ENuc,ERHF,e)
 
 !   Dump results
 
-    write(*,'(1X,A1,1X,I3,1X,A1,1X,F16.10,1X,A1,1X,F10.6,1X,A1,1X,F10.6,1X,A1,1X)') &
-      '|',nSCF,'|',eGW(nO),'|',eGW(nO+1),'|',Conv,'|'
+    write(*,'(1X,A1,1X,I3,1X,A1,1X,F10.6,1X,A1,1X,F10.6,1X,A1,1X,F10.6,1X,A1,1X)') &
+      '|',nSCF,'|',eGW(nO)*HaToeV,'|',eGW(nO+1)*HaToeV,'|',Conv,'|'
 
   enddo
-  write(*,*)'----------------------------------------------------'
+  write(*,*)'----------------------------------------------'
 !------------------------------------------------------------------------
 ! End of SCF loop
 !------------------------------------------------------------------------
@@ -281,9 +328,5 @@ subroutine CCGW(maxSCF,thresh,nBas,nC,nO,nV,nR,ERI,ENuc,ERHF,e)
     '|',p,'|',e(p)*HaToeV,'|',(eGW(p)-e(p))*HaToeV,'|',Z(p),'|',eGW(p)*HaToeV,'|'
   enddo
   write(*,*)'-------------------------------------------------------------------------------'
-
-!------------------------------------------------------------------------
-! EOM section
-!------------------------------------------------------------------------
 
 end subroutine CCGW
