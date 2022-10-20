@@ -89,7 +89,7 @@ subroutine CCGW(maxSCF,thresh,nBas,nC,nO,nV,nR,ERI,ENuc,ERHF,e)
         do p=nC+1,nBas-nR
 
           delta_2h1p(i,j,a,p) = eO(i) + eO(j) - eV(a) - e(p)
-          V_2h1p(p,i,j,a) = sqrt(2d0)*ERI(p,nO+a,j,i)
+          V_2h1p(p,i,j,a) = sqrt(2d0)*ERI(p,nO+a,i,j)
 
         end do
       end do
