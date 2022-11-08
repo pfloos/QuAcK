@@ -582,16 +582,6 @@ program QuAcK
     write(*,'(A65,1X,F9.3,A8)') 'Total CPU time for CCD = ',t_CCD,' seconds'
     write(*,*)
 
-!   call cpu_time(start_CCD)
-!   call G0W0(doACFDT,exchange_kernel,doXBS,COHSEX,BSE,TDA_W,TDA,dBSE,dTDA,evDyn,ppBSE,singlet,triplet, &
-!             linGW,eta_GW,regGW,nBas,nC,nO,nV,nR,nS,ENuc,ERHF,ERI_AO,ERI_MO,dipole_int_MO,PHF,cHF,eHF,Vxc,eG0W0)
-!   call CCD(.true.,maxSCF_CC,thresh_CC,n_diis_CC,nBas,nC,nO,nV,nR,ERI_MO,ENuc,ERHF,eG0W0)
-!   call cpu_time(end_CCD)
-
-!   t_CCD = end_CCD - start_CCD
-!   write(*,'(A65,1X,F9.3,A8)') 'Total CPU time for CCD@BSE = ',t_CCD,' seconds'
-!   write(*,*)
-
   end if
 
 !------------------------------------------------------------------------
@@ -627,17 +617,6 @@ program QuAcK
     write(*,'(A65,1X,F9.3,A8)') 'Total CPU time for CCSD or CCSD(T)= ',t_CCSD,' seconds'
     write(*,*)
 
-!   call cpu_time(start_CCSD)
-!   call G0W0(doACFDT,exchange_kernel,doXBS,COHSEX,BSE,TDA_W,TDA,dBSE,dTDA,evDyn,ppBSE,singlet,triplet, &
-!             linGW,eta_GW,regGW,nBas,nC,nO,nV,nR,nS,ENuc,ERHF,ERI_AO,ERI_MO,dipole_int_MO,PHF,cHF,eHF,Vxc,eG0W0)
-
-!   call CCSD(.true.,maxSCF_CC,thresh_CC,n_diis_CC,doCCSDT,nBas,nC,nO,nV,nR,ERI_MO,ENuc,ERHF,eG0W0)
-!   call cpu_time(end_CCSD)
-
-!   t_CCSD = end_CCSD - start_CCSD
-!   write(*,'(A65,1X,F9.3,A8)') 'Total CPU time for CCSD or CCSD(T)= ',t_CCSD,' seconds'
-!   write(*,*)
-
   end if
 
 !------------------------------------------------------------------------
@@ -662,22 +641,12 @@ program QuAcK
 
   if(do_rCCD) then
 
-!   call cpu_time(start_CCD)
-!   call rCCD(.false.,maxSCF_CC,thresh_CC,n_diis_CC,nBas,nC,nO,nV,nR,ERI_MO,ENuc,ERHF,eHF,eHF)
-!   call cpu_time(end_CCD)
-
-!   t_CCD = end_CCD - start_CCD
-!   write(*,'(A65,1X,F9.3,A8)') 'Total CPU time for rCCD = ',t_CCD,' seconds'
-!   write(*,*)
-
     call cpu_time(start_CCD)
-    call G0W0(doACFDT,exchange_kernel,doXBS,COHSEX,BSE,TDA_W,TDA,dBSE,dTDA,evDyn,ppBSE,singlet,triplet, &
-              linGW,eta_GW,regGW,nBas,nC,nO,nV,nR,nS,ENuc,ERHF,ERI_AO,ERI_MO,dipole_int_MO,PHF,cHF,eHF,Vxc,eG0W0)
-    call rCCD(.true.,maxSCF_CC,thresh_CC,n_diis_CC,nBas,nC,nO,nV,nR,ERI_MO,ENuc,ERHF,eHF,eG0W0)
+    call rCCD(.false.,maxSCF_CC,thresh_CC,n_diis_CC,nBas,nC,nO,nV,nR,ERI_MO,ENuc,ERHF,eHF,eHF)
     call cpu_time(end_CCD)
 
     t_CCD = end_CCD - start_CCD
-    write(*,'(A65,1X,F9.3,A8)') 'Total CPU time for rCCD@BSE = ',t_CCD,' seconds'
+    write(*,'(A65,1X,F9.3,A8)') 'Total CPU time for rCCD = ',t_CCD,' seconds'
     write(*,*)
 
   end if
@@ -1060,7 +1029,7 @@ program QuAcK
 
       if(SOSEX) then
         call G0W0_SOSEX(doACFDT,exchange_kernel,doXBS,BSE,TDA_W,TDA,dBSE,dTDA,evDyn,singlet,triplet, &
-                        eta_GW,regGW,nBas,nC,nO,nV,nR,nS,ENuc,ERHF,ERI_AO,ERI_MO,dipole_int_MO,PHF,cHF,eHF,Vxc,eG0W0)
+                        eta_GW,nBas,nC,nO,nV,nR,nS,ENuc,ERHF,ERI_AO,ERI_MO,dipole_int_MO,PHF,cHF,eHF,Vxc,eG0W0)
       else
         call G0W0(doACFDT,exchange_kernel,doXBS,COHSEX,BSE,TDA_W,TDA,dBSE,dTDA,evDyn,ppBSE,singlet,triplet, &
                   linGW,eta_GW,regGW,nBas,nC,nO,nV,nR,nS,ENuc,ERHF,ERI_AO,ERI_MO,dipole_int_MO,PHF,cHF,eHF,Vxc,eG0W0)
@@ -1168,7 +1137,7 @@ program QuAcK
     write(*,'(A65,1X,F9.3,A8)') 'Total CPU time for ufGW = ',t_ufGW,' seconds'
     write(*,*)
 
-!   call ufBSE(nBas,nC,nO,nV,nR,nS,ENuc,ERHF,ERI_MO,eHF,eG0W0)
+    if(BSE) call ufBSE(nBas,nC,nO,nV,nR,nS,ENuc,ERHF,ERI_MO,eHF,eG0W0)
 
   end if
 
@@ -1217,7 +1186,6 @@ program QuAcK
 
     if(unrestricted) then
 
-      !print*,'!!! evGT NYI at the unrestricted level !!!'
       call evUGT(maxSCF_GT,thresh_GT,n_diis_GT,doACFDT,exchange_kernel,doXBS, &
                  BSE,TDA_T,TDA,dBSE,dTDA,evDyn,spin_conserved,spin_flip,&
                  eta_GT,regGT,nBas,nC,nO,nV,nR,nS,ENuc,EUHF,ERI_AO, &
@@ -1251,7 +1219,6 @@ program QuAcK
 
     if(unrestricted) then
 
-      !print*,'!!! qsGT NYI at the unrestricted level !!!'
       call qsUGT(maxSCF_GT,thresh_GT,n_diis_GT,doACFDT,exchange_kernel,doXBS,BSE,TDA_T, &
                  TDA,dBSE,dTDA,evDyn,spin_conserved,spin_flip,eta_GT,regGT,nBas,nC,nO,nV,&
                  nR,nS,nNuc,ZNuc,rNuc,ENuc,EUHF,S,X,T,V,Hc,ERI_AO,ERI_MO_aaaa,ERI_MO_aabb,&

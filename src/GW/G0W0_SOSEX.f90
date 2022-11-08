@@ -68,7 +68,7 @@ subroutine G0W0_SOSEX(doACFDT,exchange_kernel,doXBS,BSE,TDA_W,TDA,dBSE,dTDA,evDy
 
 ! Initialization
 
-  EcRPA = 0d0
+  EcRPA(:) = 0d0
 
 ! TDA for W
 
@@ -95,8 +95,9 @@ subroutine G0W0_SOSEX(doACFDT,exchange_kernel,doXBS,BSE,TDA_W,TDA,dBSE,dTDA,evDy
   do ispin=1,nspin
     call linear_response(ispin,.true.,TDA_W,eta,nBas,nC,nO,nV,nR,nS,1d0,eHF,ERI_MO, & 
                          EcRPA(ispin),OmRPA(:,ispin),XpY_RPA(:,:,ispin),XmY_RPA(:,:,ispin))
-    if(print_W) call print_excitation('RPA@HF      ',ispin,nS,OmRPA)
+    if(print_W) call print_excitation('RPA@HF      ',ispin,nS,OmRPA(:,ispin))
   end do
+
 
 !--------------------------!
 ! Compute spectral weights !
