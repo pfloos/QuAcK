@@ -1,6 +1,6 @@
-subroutine static_screening_WA(eta,nBas,nC,nO,nV,nR,nS,lambda,ERI,Omega,rho,WA)
+subroutine BSE_static_kernel_KA(eta,nBas,nC,nO,nV,nR,nS,lambda,ERI,Omega,rho,WA)
 
-! Compute the OOVV block of the static screening W for the resonant block
+! Compute the BSE static kernel for the resonant block
 
   implicit none
   include 'parameters.h'
@@ -50,4 +50,4 @@ subroutine static_screening_WA(eta,nBas,nC,nO,nV,nR,nS,lambda,ERI,Omega,rho,WA)
     enddo
   enddo
 
-end subroutine static_screening_WA
+end subroutine BSE_static_kernel_KA

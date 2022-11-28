@@ -1,6 +1,6 @@
-subroutine static_screening_WB(eta,nBas,nC,nO,nV,nR,nS,lambda,ERI,Omega,rho,WB)
+subroutine BSE_static_kernel_KB(eta,nBas,nC,nO,nV,nR,nS,lambda,ERI,Omega,rho,KB)
 
-! Compute the static screening W for the coupling block
+! Compute the BSE static kernel for the coupling block
 
   implicit none
   include 'parameters.h'
@@ -27,11 +27,11 @@ subroutine static_screening_WB(eta,nBas,nC,nO,nV,nR,nS,lambda,ERI,Omega,rho,WB)
 
 ! Output variables
 
-  double precision,intent(out)  :: WB(nS,nS)
+  double precision,intent(out)  :: KB(nS,nS)
 
 ! Initialize 
 
-  WB(:,:) = 0d0
+  KB(:,:) = 0d0
 
   ia = 0
   do i=nC+1,nO
@@ -48,11 +48,11 @@ subroutine static_screening_WB(eta,nBas,nC,nO,nV,nR,nS,lambda,ERI,Omega,rho,WB)
             chi = chi + rho(i,b,kc)*rho(a,j,kc)*Omega(kc)/eps
           enddo
 
-          WB(ia,jb) = WB(ia,jb) + lambda*ERI(i,j,b,a) - 4d0*lambda*chi
+          KB(ia,jb) = KB(ia,jb) + lambda*ERI(i,j,b,a) - 4d0*lambda*chi
 
         enddo
       enddo
     enddo
   enddo
 
-end subroutine static_screening_WB
+end subroutine BSE_static_kernel_KB

@@ -1,4 +1,4 @@
-subroutine G0W0(doACFDT,exchange_kernel,doXBS,COHSEX,BSE,TDA_W,TDA,dBSE,dTDA,evDyn,ppBSE, & 
+subroutine G0W0(doACFDT,exchange_kernel,doXBS,COHSEX,BSE,BSE2,TDA_W,TDA,dBSE,dTDA,evDyn,ppBSE, & 
                 singlet,triplet,linearize,eta,regularize,nBas,nC,nO,nV,nR,nS,ENuc,ERHF,   & 
                 ERI_AO,ERI_MO,dipole_int,PHF,cHF,eHF,Vxc,eGW)
 
@@ -15,6 +15,7 @@ subroutine G0W0(doACFDT,exchange_kernel,doXBS,COHSEX,BSE,TDA_W,TDA,dBSE,dTDA,evD
   logical,intent(in)            :: doXBS
   logical,intent(in)            :: COHSEX
   logical,intent(in)            :: BSE
+  logical,intent(in)            :: BSE2
   logical,intent(in)            :: ppBSE
   logical,intent(in)            :: TDA_W
   logical,intent(in)            :: TDA
@@ -200,7 +201,7 @@ subroutine G0W0(doACFDT,exchange_kernel,doXBS,COHSEX,BSE,TDA_W,TDA,dBSE,dTDA,evD
 
   if(BSE) then
 
-    call Bethe_Salpeter(TDA_W,TDA,dBSE,dTDA,evDyn,singlet,triplet,eta,nBas,nC,nO,nV,nR,nS,ERI_MO,dipole_int,eHF,eGW,EcBSE)
+    call Bethe_Salpeter(BSE2,TDA_W,TDA,dBSE,dTDA,evDyn,singlet,triplet,eta,nBas,nC,nO,nV,nR,nS,ERI_MO,dipole_int,eHF,eGW,EcBSE)
 
     if(exchange_kernel) then
  

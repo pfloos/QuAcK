@@ -75,8 +75,8 @@ subroutine ACFDT(exchange_kernel,doXBS,dRPA,TDA_W,TDA,BSE,singlet,triplet,eta,nB
                        EcRPA,OmRPA,XpY_RPA,XmY_RPA)
   call excitation_density(nBas,nC,nO,nR,nS,ERI,XpY_RPA,rho_RPA)
 
-  call static_screening_WA(eta,nBas,nC,nO,nV,nR,nS,1d0,ERI,OmRPA,rho_RPA,WA)
-  call static_screening_WB(eta,nBas,nC,nO,nV,nR,nS,1d0,ERI,OmRPA,rho_RPA,WB)
+  call BSE_static_kernel_KA(eta,nBas,nC,nO,nV,nR,nS,1d0,ERI,OmRPA,rho_RPA,WA)
+  call BSE_static_kernel_KB(eta,nBas,nC,nO,nV,nR,nS,1d0,ERI,OmRPA,rho_RPA,WB)
 
 ! Singlet manifold
 
@@ -104,8 +104,8 @@ subroutine ACFDT(exchange_kernel,doXBS,dRPA,TDA_W,TDA,BSE,singlet,triplet,eta,nB
         call excitation_density(nBas,nC,nO,nR,nS,ERI,XpY_RPA,rho_RPA)
 !       call print_excitation('W^lambda:   ',isp_W,nS,OmRPA)
 
-        call static_screening_WA(eta,nBas,nC,nO,nV,nR,nS,lambda,ERI,OmRPA,rho_RPA,WA)
-        call static_screening_WB(eta,nBas,nC,nO,nV,nR,nS,lambda,ERI,OmRPA,rho_RPA,WB)
+        call BSE_static_kernel_KA(eta,nBas,nC,nO,nV,nR,nS,lambda,ERI,OmRPA,rho_RPA,WA)
+        call BSE_static_kernel_KB(eta,nBas,nC,nO,nV,nR,nS,lambda,ERI,OmRPA,rho_RPA,WB)
 
       end if
 
@@ -155,8 +155,8 @@ subroutine ACFDT(exchange_kernel,doXBS,dRPA,TDA_W,TDA,BSE,singlet,triplet,eta,nB
                              EcRPA,OmRPA,XpY_RPA,XmY_RPA)
         call excitation_density(nBas,nC,nO,nR,nS,ERI,XpY_RPA,rho_RPA)
 
-        call static_screening_WA(eta,nBas,nC,nO,nV,nR,nS,lambda,ERI,OmRPA,rho_RPA,WA)
-        call static_screening_WB(eta,nBas,nC,nO,nV,nR,nS,lambda,ERI,OmRPA,rho_RPA,WB)
+        call BSE_static_kernel_KA(eta,nBas,nC,nO,nV,nR,nS,lambda,ERI,OmRPA,rho_RPA,WA)
+        call BSE_static_kernel_KB(eta,nBas,nC,nO,nV,nR,nS,lambda,ERI,OmRPA,rho_RPA,WB)
 
       end if  
 

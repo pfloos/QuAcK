@@ -6,7 +6,7 @@ subroutine read_options(maxSCF_HF,thresh_HF,DIIS_HF,n_diis_HF,guess_type,ortho_t
                         COHSEX,SOSEX,TDA_W,G0W,GW0,                                                         &
                         maxSCF_GT,thresh_GT,DIIS_GT,n_diis_GT,linGT,eta_GT,regGT,TDA_T,                     &
                         doACFDT,exchange_kernel,doXBS,                                                      &
-                        BSE,dBSE,dTDA,evDyn,ppBSE,                                                          &
+                        BSE,dBSE,dTDA,evDyn,ppBSE,BSE2,                                                     &
                         nMC,nEq,nWalk,dt,nPrint,iSeed,doDrift)
 
 ! Read desired methods 
@@ -76,6 +76,7 @@ subroutine read_options(maxSCF_HF,thresh_HF,DIIS_HF,n_diis_HF,guess_type,ortho_t
   logical,intent(out)           :: dTDA
   logical,intent(out)           :: evDyn
   logical,intent(out)           :: ppBSE
+  logical,intent(out)           :: BSE2
 
   integer,intent(out)           :: nMC
   integer,intent(out)           :: nEq
@@ -239,15 +240,17 @@ subroutine read_options(maxSCF_HF,thresh_HF,DIIS_HF,n_diis_HF,guess_type,ortho_t
   dTDA  = .true.
   evDyn = .false.
   ppBSE = .false.
+  BSE2  = .false.
 
   read(1,*) 
-  read(1,*) answer1,answer2,answer3,answer4,answer5
+  read(1,*) answer1,answer2,answer3,answer4,answer5,answer6
 
   if(answer1 == 'T') BSE   = .true.
   if(answer2 == 'T') dBSE  = .true.
   if(answer3 == 'F') dTDA  = .false.
   if(answer4 == 'T') evDyn = .true.
   if(answer5 == 'T') ppBSE = .true.
+  if(answer6 == 'T') BSE2  = .true.
 
 ! Read options for MC-MP2: Monte Carlo steps, number of equilibration steps, number of walkers,
 ! Monte Carlo time step, frequency of output results, and seed for random number generator

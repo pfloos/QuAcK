@@ -139,7 +139,7 @@ program QuAcK
   logical                       :: DIIS_GT,TDA_T,linGT,regGT
   double precision              :: eta_GT
 
-  logical                       :: BSE,dBSE,dTDA,evDyn,ppBSE
+  logical                       :: BSE,dBSE,dTDA,evDyn,ppBSE,BSE2
 
   integer                       :: nMC,nEq,nWalk,nPrint,iSeed
   double precision              :: dt
@@ -188,7 +188,7 @@ program QuAcK
                     COHSEX,SOSEX,TDA_W,G0W,GW0,                                                         &  
                     maxSCF_GT,thresh_GT,DIIS_GT,n_diis_GT,linGT,eta_GT,regGT,TDA_T,                     & 
                     doACFDT,exchange_kernel,doXBS,                                                      &
-                    BSE,dBSE,dTDA,evDyn,ppBSE,                                                          &
+                    BSE,dBSE,dTDA,evDyn,ppBSE,BSE2,                                                     &
                     nMC,nEq,nWalk,dt,nPrint,iSeed,doDrift)
 
 ! Weird stuff
@@ -1028,10 +1028,10 @@ program QuAcK
       ! SOSEX extrension of GW
 
       if(SOSEX) then
-        call G0W0_SOSEX(doACFDT,exchange_kernel,doXBS,BSE,TDA_W,TDA,dBSE,dTDA,evDyn,singlet,triplet, &
+        call G0W0_SOSEX(doACFDT,exchange_kernel,doXBS,BSE,BSE2,TDA_W,TDA,dBSE,dTDA,evDyn,singlet,triplet, &
                         eta_GW,nBas,nC,nO,nV,nR,nS,ENuc,ERHF,ERI_AO,ERI_MO,dipole_int_MO,PHF,cHF,eHF,Vxc,eG0W0)
       else
-        call G0W0(doACFDT,exchange_kernel,doXBS,COHSEX,BSE,TDA_W,TDA,dBSE,dTDA,evDyn,ppBSE,singlet,triplet, &
+        call G0W0(doACFDT,exchange_kernel,doXBS,COHSEX,BSE,BSE2,TDA_W,TDA,dBSE,dTDA,evDyn,ppBSE,singlet,triplet, &
                   linGW,eta_GW,regGW,nBas,nC,nO,nV,nR,nS,ENuc,ERHF,ERI_AO,ERI_MO,dipole_int_MO,PHF,cHF,eHF,Vxc,eG0W0)
 !       call soG0W0(doACFDT,exchange_kernel,doXBS,COHSEX,BSE,TDA_W,TDA,dBSE,dTDA,evDyn,ppBSE,singlet,triplet, &
 !                 linGW,eta_GW,regGW,nBas,nC,nO,nV,nR,nS,ENuc,ERHF,ERI_AO,ERI_MO,dipole_int_MO,PHF,cHF,eHF,Vxc,eG0W0)
@@ -1064,7 +1064,7 @@ program QuAcK
     else
 
       call evGW(maxSCF_GW,thresh_GW,n_diis_GW,doACFDT,exchange_kernel,doXBS,COHSEX,       &
-                BSE,TDA_W,TDA,G0W,GW0,dBSE,dTDA,evDyn,ppBSE,singlet,triplet,eta_GW,regGW, &
+                BSE,BSE2,TDA_W,TDA,G0W,GW0,dBSE,dTDA,evDyn,ppBSE,singlet,triplet,eta_GW,regGW, &
                 nBas,nC,nO,nV,nR,nS,ENuc,ERHF,ERI_AO,ERI_MO,dipole_int_MO,PHF,cHF,eHF,Vxc,eG0W0)
     end if
     call cpu_time(end_evGW)
@@ -1093,7 +1093,7 @@ program QuAcK
     else
  
       call qsGW(maxSCF_GW,thresh_GW,n_diis_GW,doACFDT,exchange_kernel,doXBS,COHSEX,               &
-                BSE,TDA_W,TDA,G0W,GW0,dBSE,dTDA,evDyn,singlet,triplet,eta_GW,regGW,nNuc,ZNuc,rNuc,ENuc, & 
+                BSE,BSE2,TDA_W,TDA,G0W,GW0,dBSE,dTDA,evDyn,singlet,triplet,eta_GW,regGW,nNuc,ZNuc,rNuc,ENuc, & 
                 nBas,nC,nO,nV,nR,nS,ERHF,S,X,T,V,Hc,ERI_AO,ERI_MO,dipole_int_AO,dipole_int_MO,PHF,cHF,eHF)
 
     end if
