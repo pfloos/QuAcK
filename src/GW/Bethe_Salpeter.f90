@@ -46,6 +46,10 @@ subroutine Bethe_Salpeter(BSE2,TDA_W,TDA,dBSE,dTDA,evDyn,singlet,triplet,eta,nBa
   double precision,allocatable  :: KA_sta(:,:)
   double precision,allocatable  :: KB_sta(:,:)
 
+  double precision,allocatable  :: W(:,:,:,:)
+  double precision,allocatable  :: KA2_sta(:,:)
+  double precision,allocatable  :: KB2_sta(:,:)
+
 ! Output variables
 
   double precision,intent(out)  :: EcBSE(nspin)
@@ -78,13 +82,25 @@ subroutine Bethe_Salpeter(BSE2,TDA_W,TDA,dBSE,dTDA,evDyn,singlet,triplet,eta,nBa
     ispin = 1
     EcBSE(ispin) = 0d0
 
-    ! Second-order BSE staic kernel
+    ! Second-order BSE static kernel
   
-    if(BSE2) call BSE2_static_kernel(eta,nBas,nC,nO,nV,nR,nS,1d0,eW,ERI,OmRPA,rho_RPA,KA_sta)
-  
+    allocate(W(nBas,nBas,nBas,nBas),KA2_sta(nS,nS),KB2_sta(nS,nS))
+    KA2_sta(:,:) = 0d0
+    KB2_sta(:,:) = 0d0
+
+    if(BSE2) then 
+
+      write(*,*) '*** Second-order BSE static kernel activated! ***'
+      call static_kernel_W(eta,nBas,nC,nO,nV,nR,nS,1d0,ERI,OmRPA,rho_RPA,W)
+      call BSE2_static_kernel_KA(eta,nBas,nC,nO,nV,nR,nS,1d0,eW,W,KA2_sta)
+
+      if(.not.TDA) call BSE2_static_kernel_KB(eta,nBas,nC,nO,nV,nR,nS,1d0,eW,W,KB2_sta)
+
+    end if
+
     ! Compute BSE excitation energies
 
-    call linear_response_BSE(ispin,.true.,TDA,.true.,eta,nBas,nC,nO,nV,nR,nS,1d0,eGW,ERI,KA_sta,KB_sta, &
+    call linear_response_BSE(ispin,.true.,TDA,.true.,eta,nBas,nC,nO,nV,nR,nS,1d0,eGW,ERI,KA_sta-KA2_sta,KB_sta-KB2_sta, &
                              EcBSE(ispin),OmBSE(:,ispin),XpY_BSE(:,:,ispin),XmY_BSE(:,:,ispin))
     call print_excitation('BSE@GW      ',ispin,nS,OmBSE(:,ispin))
     call print_transition_vectors(.true.,nBas,nC,nO,nV,nR,nS,dipole_int, & 
