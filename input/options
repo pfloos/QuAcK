@@ -1,5 +1,5 @@
 # HF: maxSCF thresh   DIIS n_diis guess_type ortho_type mix_guess level_shift stability
-      512    0.0000001  T    0     1          1          F         0.0         F
+      512    0.0000001  T    5     1          1          F         0.0         F
 # MP: 
       
 # CC: maxSCF thresh   DIIS n_diis
@@ -9,7 +9,7 @@
 # GF: maxSCF thresh  DIIS n_diis lin eta renorm reg
       256    0.00001 T    5      T   0.0 3      F
 # GW: maxSCF thresh  DIIS n_diis lin eta COHSEX SOSEX TDA_W G0W GW0 reg
-      25     0.00001  T    5      T   0.0 F      F     F     F   F   F
+      256     0.00001  T   5       T   0.01 F      F     F     F   F   F
 # GT: maxSCF thresh  DIIS n_diis lin eta TDA_T reg
       10    0.00001  T    5      T   0.0 F     F  
 # ACFDT: AC Kx  XBS
