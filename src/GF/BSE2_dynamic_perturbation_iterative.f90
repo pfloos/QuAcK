@@ -120,7 +120,7 @@ subroutine BSE2_dynamic_perturbation_iterative(dTDA,ispin,eta,nBas,nC,nO,nV,nR,n
 
       OmDyn(ia) = dot_product(X,matmul(Ap_dyn - A_sta,X)) &
                 - dot_product(Y,matmul(Am_dyn - A_sta,Y)) &
-                + dot_product(X,matmul(B_dyn  - B_sta,Y))  &
+                + dot_product(X,matmul(B_dyn  - B_sta,Y)) &
                 - dot_product(Y,matmul(B_dyn  - B_sta,X))
 
       end if

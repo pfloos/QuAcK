@@ -17,9 +17,6 @@ program QuAcK
   logical                       :: doG0F2,doevGF2,doqsGF2,doG0F3,doevGF3
   logical                       :: doG0W0,doevGW,doqsGW,doufG0W0,doufGW
   logical                       :: doG0T0,doevGT,doqsGT
-  logical                       :: doMCMP2,doMinMCMP2
-  logical                       :: doGTGW = .false.
-  logical                       :: doBas
 
   integer                       :: nNuc,nBas,nBasCABS
   integer                       :: nEl(nspin)
@@ -29,7 +26,7 @@ program QuAcK
   integer                       :: nR(nspin)
   integer                       :: nS(nspin)
   double precision              :: ENuc,ERHF,EUHF,Norm
-  double precision              :: EcMP2(3),EcMP3,EcMP2F12(3),EcMCMP2(3),Err_EcMCMP2(3),Var_EcMCMP2(3)
+  double precision              :: EcMP2(3),EcMP3,EcMP2F12(3)
 
   double precision,allocatable  :: ZNuc(:),rNuc(:,:)
   double precision,allocatable  :: cHF(:,:,:),eHF(:,:),PHF(:,:,:)
@@ -106,9 +103,6 @@ program QuAcK
   double precision              :: start_MP2    ,end_MP2      ,t_MP2
   double precision              :: start_MP3    ,end_MP3      ,t_MP3
   double precision              :: start_MP2F12 ,end_MP2F12   ,t_MP2F12
-  double precision              :: start_MCMP2  ,end_MCMP2    ,t_MCMP2
-  double precision              :: start_MinMCMP2,end_MinMCMP2,t_MinMCMP2
-  double precision              :: start_Bas    ,end_Bas      ,t_Bas
 
   integer                       :: maxSCF_HF,n_diis_HF
   double precision              :: thresh_HF,level_shift
@@ -175,8 +169,7 @@ program QuAcK
                     doG0F3,doevGF3,                    &
                     doG0W0,doevGW,doqsGW,              &
                     doufG0W0,doufGW,                   &
-                    doG0T0,doevGT,doqsGT,              &
-                    doMCMP2)
+                    doG0T0,doevGT,doqsGT)
 
 ! Read options for methods
 
@@ -188,12 +181,7 @@ program QuAcK
                     COHSEX,SOSEX,TDA_W,G0W,GW0,                                                         &  
                     maxSCF_GT,thresh_GT,DIIS_GT,n_diis_GT,linGT,eta_GT,regGT,TDA_T,                     & 
                     doACFDT,exchange_kernel,doXBS,                                                      &
-                    BSE,dBSE,dTDA,evDyn,ppBSE,BSE2,                                                     &
-                    nMC,nEq,nWalk,dt,nPrint,iSeed,doDrift)
-
-! Weird stuff
-
-  doMinMCMP2 = .false.
+                    BSE,dBSE,dTDA,evDyn,ppBSE,BSE2)
 
 !------------------------------------------------------------------------
 ! Read input information
@@ -226,20 +214,6 @@ program QuAcK
   call read_basis(nNuc,rNuc,nBas,nO,nV,nShell,TotAngMomShell,CenterShell,KShell,DShell,ExpShell, & 
                   max_ang_mom,min_exponent,max_exponent)
   nS(:) = (nO(:) - nC(:))*(nV(:) - nR(:))
-
-!------------------------------------------------------------------------
-! Read auxiliary basis set information
-!------------------------------------------------------------------------
-
-! call ReadAuxBasis(nNuc,rNuc,nShell,CenterShell,TotAngMomShell,KShell,DShell,ExpShell)
-
-! Compute the number of basis functions
-
-! call CalcNBasis(nShell,TotAngMomShell,nA)
-
-! Number of virtual orbitals in complete space
-
-! nBasCABS = nA - nBas
 
 !------------------------------------------------------------------------
 ! Read one- and two-electron integrals
@@ -1236,154 +1210,6 @@ program QuAcK
 
     t_qsGT = end_qsGT - start_qsGT
     write(*,'(A65,1X,F9.3,A8)') 'Total CPU time for qsGT = ',t_qsGT,' seconds'
-    write(*,*)
-
-  end if
-
-!------------------------------------------------------------------------
-! Information for Monte Carlo calculations
-!------------------------------------------------------------------------
-
-  if(doMCMP2 .or. doMinMCMP2) then
-
-!   Print simulation details
-
-    write(*,'(A32)') '----------------------'
-    write(*,'(A32,1X,I16)')    'Number of Monte Carlo   steps',nMC
-    write(*,'(A32,1X,I16)')    'Number of equilibration steps',nEq
-    write(*,'(A32,1X,I16)')    'Number of walkers',nWalk
-    write(*,'(A32,1X,F16.10)') 'Initial time step',dt
-    write(*,'(A32,1X,I16)')    'Frequency of ouput',nPrint
-    write(*,'(A32,1X,I16)')    'Seed for random number generator',iSeed
-    write(*,'(A32)') '----------------------'
-    write(*,*)
-
-!   Initialize random number generator
-
-    call initialize_random_generator(iSeed)
-
-!------------------------------------------------------------------------
-!   Type of weight function
-!------------------------------------------------------------------------
-!   TrialType = 0 => HF density
-!   TrialType = 1 => Custom one-electron function
-!------------------------------------------------------------------------
-
-    TrialType = 0
-    allocate(cTrial(nBas),gradient(nBas),hessian(nBas,nBas))
-
-  end if
-!------------------------------------------------------------------------
-! Compute MC-MP2 energy
-!------------------------------------------------------------------------
-
-  if(doMCMP2) then
-
-    call cpu_time(start_MCMP2)
-!   call MCMP2(doDrift,nBas,nC,nO,nV,cHF,eHF,EcMP2,        &
-!              nMC,nEq,nWalk,dt,nPrint,                                  &
-!              nShell,CenterShell,TotAngMomShell,KShell,DShell,ExpShell, &
-!              Norm,EcMCMP2,Err_EcMCMP2,Var_EcMCMP2)
-    call cpu_time(end_MCMP2)
-
-    t_MCMP2 = end_MCMP2 - start_MCMP2
-    write(*,'(A65,1X,F9.3,A8)') 'Total CPU time for MC-MP2 = ',t_MCMP2,' seconds'
-    write(*,*)
-
-  end if
-
-!------------------------------------------------------------------------
-! Minimize MC-MP2 variance
-!------------------------------------------------------------------------
-
-  if(doMinMCMP2) then
-
-    call cpu_time(start_MinMCMP2)
-!   call MinMCMP2(nBas,nEl,nC,nO,nV,cHF,eHF,EcMP2,                              & 
-!                 nMC,nEq,nWalk,dt,nPrint,                                  &
-!                 nShell,CenterShell,TotAngMomShell,KShell,DShell,ExpShell, & 
-!                 TrialType,Norm,cTrial,gradient,hessian)
-    call cpu_time(end_MinMCMP2)
-    
-    t_MinMCMP2 = end_MinMCMP2 - start_MinMCMP2
-    write(*,'(A65,1X,F9.3,A8)') 'Total CPU time for MC-MP2 variance minimization = ',t_MinMCMP2,' seconds'
-    write(*,*)
-
-  end if
-
-!------------------------------------------------------------------------
-! Range-separated GT/GW
-!------------------------------------------------------------------------
-
-! if(doGTGW) then
-
-!   ! Read and transform long-range two-electron integrals
-
-!   allocate(ERI_ERF_AO(nBas,nBas,nBas,nBas),ERI_ERF_MO(nBas,nBas,nBas,nBas))
-!   call read_LR(nBas,ERI_ERF_AO)
-
-!   call cpu_time(start_AOtoMO)
-
-!   write(*,*)
-!   write(*,*) 'AO to MO transformation for long-range ERIs... Please be patient'
-!   write(*,*)
-
-!   call AOtoMO_integral_transform(nBas,cHF,ERI_ERF_AO,ERI_ERF_MO)
-
-!   call cpu_time(end_AOtoMO)
-
-!   deallocate(ERI_ERF_AO)
-
-!   t_AOtoMO = end_AOtoMO - start_AOtoMO
-
-!   write(*,'(A65,1X,F9.3,A8)') 'Total CPU time for AO to MO transformation = ',t_AOtoMO,' seconds'
-!   write(*,*)
-
-!   ! Long-range G0W0 calculation
-
-!   call cpu_time(start_G0W0)
-!   call G0W0(doACFDT,exchange_kernel,doXBS,COHSEX,BSE,TDA_W,TDA,       & 
-!             dBSE,dTDA,evDyn,singlet,triplet,linGW,eta_GW, & 
-!             nBas,nC,nO,nV,nR,nS,ENuc,ERHF,ERI_ERF_MO,dipole_int_MO,eHF,eG0W0)
-!   call cpu_time(end_G0W0)
-! 
-!   t_G0W0 = end_G0W0 - start_G0W0
-!   write(*,'(A65,1X,F9.3,A8)') 'Total CPU time for G0W0 = ',t_G0W0,' seconds'
-!   write(*,*)
-
-!   ! Short-range G0T0 calculation
-
-!   ERI_ERF_MO(:,:,:,:) = ERI_MO(:,:,:,:) - ERI_ERF_MO(:,:,:,:)
-
-!   call cpu_time(start_G0T0)
-!   call G0T0(doACFDT,exchange_kernel,doXBS,BSE,TDA_W,TDA,dBSE,dTDA,evDyn, &
-!             singlet,triplet,linGW,eta_GW,              &  
-!             nBas,nC,nO,nV,nR,nS,ENuc,ERHF,ERI_ERF_MO,dipole_int_MO,eHF,eG0T0)
-!   call cpu_time(end_G0T0)
-! 
-!   t_G0T0 = end_G0T0 - start_G0T0
-!   write(*,'(A65,1X,F9.3,A8)') 'Total CPU time for G0T0 = ',t_G0T0,' seconds'
-!   write(*,*)
-
-!   call matout(nBas,1,(eG0W0+eG0T0-eHF(:,1))*HaToeV)
-
-! end if
-
-!------------------------------------------------------------------------
-! Basis set correction
-!------------------------------------------------------------------------
-
-  doBas = .false.
-
-  if(doBas) then
-
-    call cpu_time(start_Bas)
-    call basis_correction(nBas,nO,nShell,CenterShell,TotAngMomShell,KShell,DShell,ExpShell, &
-                          ERI_MO,eHF,cHF,PHF,eG0W0)
-    call cpu_time(end_Bas)
-
-    t_Bas = end_Bas - start_Bas
-    write(*,'(A65,1X,F9.3,A8)') 'Total CPU time for basis set correction = ',t_Bas,' seconds'
     write(*,*)
 
   end if

@@ -301,14 +301,6 @@ subroutine qsGW(maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,COHSEX,BSE,
 
 ! call qsGW_PT(nBas,nC,nO,nV,nR,nS,eGW,SigCm)
 
-! Compute the overlap between HF and GW orbitals
-
-! call overlap(nBas,cHF,c)
-
-! Compute natural orbitals and occupancies
-
-! call natural_orbital(nBas,nO,cHF,c)
-
 ! Did it actually converge?
 
   if(nSCF == maxSCF+1) then

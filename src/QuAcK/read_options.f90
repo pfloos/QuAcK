@@ -6,8 +6,7 @@ subroutine read_options(maxSCF_HF,thresh_HF,DIIS_HF,n_diis_HF,guess_type,ortho_t
                         COHSEX,SOSEX,TDA_W,G0W,GW0,                                                         &
                         maxSCF_GT,thresh_GT,DIIS_GT,n_diis_GT,linGT,eta_GT,regGT,TDA_T,                     &
                         doACFDT,exchange_kernel,doXBS,                                                      &
-                        BSE,dBSE,dTDA,evDyn,ppBSE,BSE2,                                                     &
-                        nMC,nEq,nWalk,dt,nPrint,iSeed,doDrift)
+                        BSE,dBSE,dTDA,evDyn,ppBSE,BSE2)
 
 ! Read desired methods 
 
@@ -78,14 +77,6 @@ subroutine read_options(maxSCF_HF,thresh_HF,DIIS_HF,n_diis_HF,guess_type,ortho_t
   logical,intent(out)           :: ppBSE
   logical,intent(out)           :: BSE2
 
-  integer,intent(out)           :: nMC
-  integer,intent(out)           :: nEq
-  integer,intent(out)           :: nWalk
-  double precision,intent(out)  :: dt
-  integer,intent(out)           :: nPrint
-  integer,intent(out)           :: iSeed
-  logical,intent(out)           :: doDrift
-  
 ! Local variables
 
   character(len=1)              :: answer1,answer2,answer3,answer4,answer5,answer6,answer7,answer8
@@ -251,22 +242,6 @@ subroutine read_options(maxSCF_HF,thresh_HF,DIIS_HF,n_diis_HF,guess_type,ortho_t
   if(answer4 == 'T') evDyn = .true.
   if(answer5 == 'T') ppBSE = .true.
   if(answer6 == 'T') BSE2  = .true.
-
-! Read options for MC-MP2: Monte Carlo steps, number of equilibration steps, number of walkers,
-! Monte Carlo time step, frequency of output results, and seed for random number generator
-
-  nMC    = 100000
-  nEq    = 10000
-  nWalk  = 10
-  dt     = 0.3d0
-  nPrint = 1000
-  iSeed  = 0
-  doDrift = .false.
-
-  read(1,*)
-  read(1,*) nMC,nEq,nWalk,dt,nPrint,iSeed,answer1
-
-  if(answer1 == 'T') doDrift = .true.
 
 ! Close file with options
 
