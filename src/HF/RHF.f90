@@ -122,14 +122,10 @@ subroutine RHF(maxSCF,thresh,max_diis,guess_type,level_shift,nNuc,ZNuc,rNuc,ENuc
 
 !   DIIS extrapolation
 
-    n_diis = min(n_diis+1,max_diis)
-    if(abs(rcond) > 1d-15) then
+    if(max_diis > 1) then
 
+      n_diis = min(n_diis+1,max_diis)
       call DIIS_extrapolation(rcond,nBasSq,nBasSq,n_diis,error_diis,F_diis,error,F)
-
-    else
-
-      n_diis = 0
 
     end if
 

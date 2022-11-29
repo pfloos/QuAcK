@@ -45,10 +45,17 @@ subroutine DIIS_extrapolation(rcond,n_err,n_e,n_diis,error,e,error_in,e_inout)
 
 ! Solve linear system
 
-  call linear_solve(n_diis+1,A,b,w,rcond)
+  call easy_linear_solve(n_diis+1,A,b,w)
+! call linear_solve(n_diis+1,A,b,w,rcond)
+
+  call matout(n_diis+1,1,w)
 
 ! Extrapolate
 
-    e_inout(:) = matmul(w(1:n_diis),transpose(e(:,1:n_diis)))
+! print*,e_inout
+
+  e_inout(:) = matmul(w(1:n_diis),transpose(e(:,1:n_diis)))
+
+! print*,e_inout
 
 end subroutine DIIS_extrapolation

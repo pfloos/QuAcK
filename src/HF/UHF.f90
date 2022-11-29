@@ -170,18 +170,13 @@ subroutine UHF(maxSCF,thresh,max_diis,guess_type,mix,level_shift,nNuc,ZNuc,rNuc,
     
 !   DIIS extrapolation
 
-    n_diis = min(n_diis+1,max_diis)
+    if(max_diis > 1) then
 
-    if(minval(rcond(:)) > 1d-15) then
-
+      n_diis = min(n_diis+1,max_diis)
       do ispin=1,nspin
         if(nO(ispin) > 1) call DIIS_extrapolation(rcond(ispin),nBasSq,nBasSq,n_diis,err_diis(:,1:n_diis,ispin), &
                                                 F_diis(:,1:n_diis,ispin),err(:,:,ispin),F(:,:,ispin))
       end do
-
-    else
-
-      n_diis = 0
 
     end if
 

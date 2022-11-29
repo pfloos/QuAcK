@@ -142,6 +142,8 @@ subroutine SRG_qsGW(maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,BSE,BSE
   error_diis(:,:) = 0d0
   rcond           = 0d0
 
+   print*,max_diis
+
 !------------------------------------------------------------------------
 ! Main loop
 !------------------------------------------------------------------------
@@ -190,11 +192,11 @@ subroutine SRG_qsGW(maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,BSE,BSE
 
     ! DIIS extrapolation 
 
-    n_diis = min(n_diis+1,max_diis)
-    if(abs(rcond) > 1d-7) then 
+    if(max_diis > 1) then
+
+      n_diis = min(n_diis+1,max_diis)
       call DIIS_extrapolation(rcond,nBasSq,nBasSq,n_diis,error_diis,F_diis,error,F)
-    else
-      n_diis = 0
+
     end if
 
     ! Diagonalize Hamiltonian in AO basis
@@ -211,7 +213,7 @@ subroutine SRG_qsGW(maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,BSE,BSE
 
     ! Save quasiparticles energy for next cycle
 
-    Conv = maxval(abs(eGW - eOld))
+    Conv = maxval(abs(error))
     eOld(:) = eGW(:)
 
     !------------------------------------------------------------------------
