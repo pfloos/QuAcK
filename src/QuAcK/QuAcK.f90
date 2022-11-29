@@ -15,7 +15,7 @@ program QuAcK
   logical                       :: doRPA,doRPAx,docrRPA,doppRPA
   logical                       :: doADC
   logical                       :: doG0F2,doevGF2,doqsGF2,doG0F3,doevGF3
-  logical                       :: doG0W0,doevGW,doqsGW,doufG0W0,doufGW
+  logical                       :: doG0W0,doevGW,doqsGW,doufG0W0,doufGW,doSRGqsGW
   logical                       :: doG0T0,doevGT,doqsGT
 
   integer                       :: nNuc,nBas,nBasCABS
@@ -167,7 +167,7 @@ program QuAcK
                     doRPA,doRPAx,docrRPA,doppRPA,      &
                     doG0F2,doevGF2,doqsGF2,            & 
                     doG0F3,doevGF3,                    &
-                    doG0W0,doevGW,doqsGW,              &
+                    doG0W0,doevGW,doqsGW,doSRGqsGW,    &
                     doufG0W0,doufGW,                   &
                     doG0T0,doevGT,doqsGT)
 
@@ -1069,6 +1069,34 @@ program QuAcK
       call qsGW(maxSCF_GW,thresh_GW,n_diis_GW,doACFDT,exchange_kernel,doXBS,COHSEX,               &
                 BSE,BSE2,TDA_W,TDA,G0W,GW0,dBSE,dTDA,evDyn,singlet,triplet,eta_GW,regGW,nNuc,ZNuc,rNuc,ENuc, & 
                 nBas,nC,nO,nV,nR,nS,ERHF,S,X,T,V,Hc,ERI_AO,ERI_MO,dipole_int_AO,dipole_int_MO,PHF,cHF,eHF)
+
+    end if
+
+    call cpu_time(end_qsGW)
+
+    t_qsGW = end_qsGW - start_qsGW
+    write(*,'(A65,1X,F9.3,A8)') 'Total CPU time for qsGW = ',t_qsGW,' seconds'
+    write(*,*)
+
+  end if
+
+!------------------------------------------------------------------------
+! Perform SRG-qsGW calculation
+!------------------------------------------------------------------------
+
+  if(doSRGqsGW) then 
+
+    call cpu_time(start_qsGW)
+
+    if(unrestricted) then 
+
+    print*,'Unrestricted version of SRG-qsGW NYI'
+
+    else
+ 
+      call SRG_qsGW(maxSCF_GW,thresh_GW,n_diis_GW,doACFDT,exchange_kernel,doXBS,BSE,BSE2,TDA_W,TDA,dBSE,dTDA,evDyn, & 
+                    singlet,triplet,eta_GW,nNuc,ZNuc,rNuc,ENuc,nBas,nC,nO,nV,nR,nS,ERHF,S,X,T,V,Hc,ERI_AO,ERI_MO,   & 
+                    dipole_int_AO,dipole_int_MO,PHF,cHF,eHF)
 
     end if
 
