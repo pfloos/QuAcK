@@ -1,5 +1,5 @@
 subroutine qsGW(maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,COHSEX,BSE,BSE2,TDA_W,TDA,          & 
-                G0W,GW0,dBSE,dTDA,evDyn,singlet,triplet,eta,regularize,nNuc,ZNuc,rNuc,ENuc,nBas,nC,nO,nV,nR,nS,ERHF, &
+                dBSE,dTDA,evDyn,singlet,triplet,eta,regularize,nNuc,ZNuc,rNuc,ENuc,nBas,nC,nO,nV,nR,nS,ERHF, &
                 S,X,T,V,Hc,ERI_AO,ERI_MO,dipole_int_AO,dipole_int_MO,PHF,cHF,eHF)
 
 ! Perform a quasiparticle self-consistent GW calculation
@@ -23,8 +23,6 @@ subroutine qsGW(maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,COHSEX,BSE,
   logical,intent(in)            :: dBSE
   logical,intent(in)            :: dTDA
   logical,intent(in)            :: evDyn
-  logical,intent(in)            :: G0W
-  logical,intent(in)            :: GW0
   logical,intent(in)            :: singlet
   logical,intent(in)            :: triplet
   double precision,intent(in)   :: eta
@@ -180,45 +178,23 @@ subroutine qsGW(maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,COHSEX,BSE,
 
     ! Compute linear response
 
-    if(.not. GW0 .or. nSCF == 0) then
-
-      call linear_response(ispin,.true.,TDA_W,eta,nBas,nC,nO,nV,nR,nS,1d0,eGW,ERI_MO, &
-                           EcRPA,OmRPA,XpY_RPA,XmY_RPA)
-      if(print_W) call print_excitation('RPA@qsGW    ',ispin,nS,OmRPA)
-
-    endif
+    call linear_response(ispin,.true.,TDA_W,eta,nBas,nC,nO,nV,nR,nS,1d0,eGW,ERI_MO, &
+                         EcRPA,OmRPA,XpY_RPA,XmY_RPA)
+    if(print_W) call print_excitation('RPA@qsGW    ',ispin,nS,OmRPA)
 
     ! Compute correlation part of the self-energy 
 
     call excitation_density(nBas,nC,nO,nR,nS,ERI_MO,XpY_RPA,rho_RPA)
 
-    if(G0W) then
+     if(regularize) then
 
-      if(regularize) then
-
-        call regularized_self_energy_correlation(COHSEX,eta,nBas,nC,nO,nV,nR,nS,eHF,OmRPA,rho_RPA,EcGM,SigC)
-        call regularized_renormalization_factor(COHSEX,eta,nBas,nC,nO,nV,nR,nS,eHF,OmRPA,rho_RPA,Z)
-
-      else
-
-        call self_energy_correlation(COHSEX,eta,nBas,nC,nO,nV,nR,nS,eHF,OmRPA,rho_RPA,EcGM,SigC)
-        call renormalization_factor(COHSEX,eta,nBas,nC,nO,nV,nR,nS,eHF,OmRPA,rho_RPA,Z)
-
-      end if
+       call regularized_self_energy_correlation(COHSEX,eta,nBas,nC,nO,nV,nR,nS,eGW,OmRPA,rho_RPA,EcGM,SigC)
+       call regularized_renormalization_factor(COHSEX,eta,nBas,nC,nO,nV,nR,nS,eGW,OmRPA,rho_RPA,Z)
 
      else
 
-       if(regularize) then
-
-         call regularized_self_energy_correlation(COHSEX,eta,nBas,nC,nO,nV,nR,nS,eGW,OmRPA,rho_RPA,EcGM,SigC)
-         call regularized_renormalization_factor(COHSEX,eta,nBas,nC,nO,nV,nR,nS,eGW,OmRPA,rho_RPA,Z)
-
-       else
-
-         call self_energy_correlation(COHSEX,eta,nBas,nC,nO,nV,nR,nS,eGW,OmRPA,rho_RPA,EcGM,SigC)
-         call renormalization_factor(COHSEX,eta,nBas,nC,nO,nV,nR,nS,eGW,OmRPA,rho_RPA,Z)
-
-       endif
+       call self_energy_correlation(COHSEX,eta,nBas,nC,nO,nV,nR,nS,eGW,OmRPA,rho_RPA,EcGM,SigC)
+       call renormalization_factor(COHSEX,eta,nBas,nC,nO,nV,nR,nS,eGW,OmRPA,rho_RPA,Z)
 
      endif
 

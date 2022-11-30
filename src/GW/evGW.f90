@@ -1,4 +1,4 @@
-subroutine evGW(maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,COHSEX,BSE,BSE2,TDA_W,TDA,G0W,GW0,dBSE,dTDA,evDyn,ppBSE, & 
+subroutine evGW(maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,COHSEX,BSE,BSE2,TDA_W,TDA,dBSE,dTDA,evDyn,ppBSE, & 
                 singlet,triplet,eta,regularize,nBas,nC,nO,nV,nR,nS,ENuc,ERHF,ERI_AO,ERI_MO,dipole_int,PHF,cHF,eHF,Vxc,eG0W0)
 
 ! Perform self-consistent eigenvalue-only GW calculation
@@ -25,8 +25,6 @@ subroutine evGW(maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,COHSEX,BSE,
   logical,intent(in)            :: dTDA
   logical,intent(in)            :: evDyn
   logical,intent(in)            :: ppBSE
-  logical,intent(in)            :: G0W
-  logical,intent(in)            :: GW0
   logical,intent(in)            :: singlet
   logical,intent(in)            :: triplet
   double precision,intent(in)   :: eta
@@ -111,20 +109,6 @@ subroutine evGW(maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,COHSEX,BSE,
     write(*,*)
   end if
 
-! GW0
-
-  if(GW0) then 
-    write(*,*) 'GW0 scheme activated!'
-    write(*,*)
-  end if
-
-! G0W
-
-  if(G0W) then 
-    write(*,*) 'G0W scheme activated!'
-    write(*,*)
-  end if
-
 ! Linear mixing
 
   linear_mixing = .false.
@@ -160,46 +144,24 @@ subroutine evGW(maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,COHSEX,BSE,
 
    ! Compute screening
 
-    if(.not. GW0 .or. nSCF == 0) then
+    call linear_response(ispin,.true.,TDA_W,eta,nBas,nC,nO,nV,nR,nS,1d0,eGW,ERI_MO, & 
+                         EcRPA,OmRPA,XpY_RPA,XmY_RPA)
 
-      call linear_response(ispin,.true.,TDA_W,eta,nBas,nC,nO,nV,nR,nS,1d0,eGW,ERI_MO, & 
-                           EcRPA,OmRPA,XpY_RPA,XmY_RPA)
-
-    end if
-
-!   Compute spectral weights
+   ! Compute spectral weights
 
     call excitation_density(nBas,nC,nO,nR,nS,ERI_MO,XpY_RPA,rho_RPA)
 
-!   Compute correlation part of the self-energy 
+    ! Compute correlation part of the self-energy 
 
-    if(G0W) then
+    if(regularize) then 
 
-      if(regularize) then 
+      call regularized_self_energy_correlation_diag(COHSEX,eta,nBas,nC,nO,nV,nR,nS,eGW,OmRPA,rho_RPA,EcGM,SigC)
+      call regularized_renormalization_factor(COHSEX,eta,nBas,nC,nO,nV,nR,nS,eGW,OmRPA,rho_RPA,Z)
 
-        call regularized_self_energy_correlation_diag(COHSEX,eta,nBas,nC,nO,nV,nR,nS,eHF,OmRPA,rho_RPA,EcGM,SigC)
-        call regularized_renormalization_factor(COHSEX,eta,nBas,nC,nO,nV,nR,nS,eHF,OmRPA,rho_RPA,Z)
+    else
 
-      else
-
-        call self_energy_correlation_diag(COHSEX,eta,nBas,nC,nO,nV,nR,nS,eHF,OmRPA,rho_RPA,EcGM,SigC)
-        call renormalization_factor(COHSEX,eta,nBas,nC,nO,nV,nR,nS,eHF,OmRPA,rho_RPA,Z)
-
-      end if
-
-    else 
-
-      if(regularize) then 
-
-        call regularized_self_energy_correlation_diag(COHSEX,eta,nBas,nC,nO,nV,nR,nS,eGW,OmRPA,rho_RPA,EcGM,SigC)
-        call regularized_renormalization_factor(COHSEX,eta,nBas,nC,nO,nV,nR,nS,eGW,OmRPA,rho_RPA,Z)
-
-      else
-
-        call self_energy_correlation_diag(COHSEX,eta,nBas,nC,nO,nV,nR,nS,eGW,OmRPA,rho_RPA,EcGM,SigC)
-        call renormalization_factor(COHSEX,eta,nBas,nC,nO,nV,nR,nS,eGW,OmRPA,rho_RPA,Z)
-
-      end if
+      call self_energy_correlation_diag(COHSEX,eta,nBas,nC,nO,nV,nR,nS,eGW,OmRPA,rho_RPA,EcGM,SigC)
+      call renormalization_factor(COHSEX,eta,nBas,nC,nO,nV,nR,nS,eGW,OmRPA,rho_RPA,Z)
 
     end if
 

@@ -1,5 +1,5 @@
 subroutine evUGW(maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,COHSEX,BSE,TDA_W,TDA,    & 
-                G0W,GW0,dBSE,dTDA,evDyn,spin_conserved,spin_flip,eta,regularize,nBas,nC,nO,nV,nR,nS,ENuc, &
+                dBSE,dTDA,evDyn,spin_conserved,spin_flip,eta,regularize,nBas,nC,nO,nV,nR,nS,ENuc, &
                 EUHF,S,ERI_AO,ERI_aaaa,ERI_aabb,ERI_bbbb,dipole_int_aa,dipole_int_bb,PHF,cHF,eHF,Vxc,eG0W0)
 
 ! Perform self-consistent eigenvalue-only GW calculation
@@ -24,8 +24,6 @@ subroutine evUGW(maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,COHSEX,BSE
   logical,intent(in)            :: dBSE
   logical,intent(in)            :: dTDA
   logical,intent(in)            :: evDyn
-  logical,intent(in)            :: G0W
-  logical,intent(in)            :: GW0
   logical,intent(in)            :: spin_conserved
   logical,intent(in)            :: spin_flip
   double precision,intent(in)   :: eta
@@ -107,20 +105,6 @@ subroutine evUGW(maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,COHSEX,BSE
     write(*,*)
   end if
 
-! GW0
-
-  if(GW0) then 
-    write(*,*) 'GW0 scheme activated!'
-    write(*,*)
-  end if
-
-! G0W
-
-  if(G0W) then 
-    write(*,*) 'G0W scheme activated!'
-    write(*,*)
-  end if
-
 ! Linear mixing
 
   linear_mixing = .false.
@@ -163,11 +147,8 @@ subroutine evUGW(maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,COHSEX,BSE
 
    ! Compute screening
 
-    if(.not. GW0 .or. nSCF == 0) then
-
-      call unrestricted_linear_response(ispin,.true.,TDA_W,.false.,eta,nBas,nC,nO,nV,nR,nS_aa,nS_bb,nS_sc,nS_sc,1d0, &
-                                        eGW,ERI_aaaa,ERI_aabb,ERI_bbbb,OmRPA,rho_RPA,EcRPA,OmRPA,XpY_RPA,XmY_RPA)
-    end if
+    call unrestricted_linear_response(ispin,.true.,TDA_W,.false.,eta,nBas,nC,nO,nV,nR,nS_aa,nS_bb,nS_sc,nS_sc,1d0, &
+                                      eGW,ERI_aaaa,ERI_aabb,ERI_bbbb,OmRPA,rho_RPA,EcRPA,OmRPA,XpY_RPA,XmY_RPA)
 
     !----------------------!
     ! Excitation densities !
@@ -179,33 +160,15 @@ subroutine evUGW(maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,COHSEX,BSE
     ! Compute self-energy and renormalization factor !
     !------------------------------------------------!
 
-    if(G0W) then
+    if(regularize) then 
 
-      if(regularize) then 
+      call unrestricted_regularized_self_energy_correlation_diag(eta,nBas,nC,nO,nV,nR,nS_sc,eGW,OmRPA,rho_RPA,SigC,EcGM)
+      call unrestricted_regularized_renormalization_factor(eta,nBas,nC,nO,nV,nR,nS_sc,eGW,OmRPA,rho_RPA,Z)
 
-        call unrestricted_regularized_self_energy_correlation_diag(eta,nBas,nC,nO,nV,nR,nS_sc,eHF,OmRPA,rho_RPA,SigC,EcGM)
-        call unrestricted_regularized_renormalization_factor(eta,nBas,nC,nO,nV,nR,nS_sc,eHF,OmRPA,rho_RPA,Z)
+    else
 
-      else
-
-        call unrestricted_self_energy_correlation_diag(eta,nBas,nC,nO,nV,nR,nS_sc,eHF,OmRPA,rho_RPA,SigC,EcGM)
-        call unrestricted_renormalization_factor(eta,nBas,nC,nO,nV,nR,nS_sc,eHF,OmRPA,rho_RPA,Z)
-
-      end if
-
-    else 
-
-      if(regularize) then 
-
-        call unrestricted_regularized_self_energy_correlation_diag(eta,nBas,nC,nO,nV,nR,nS_sc,eGW,OmRPA,rho_RPA,SigC,EcGM)
-        call unrestricted_regularized_renormalization_factor(eta,nBas,nC,nO,nV,nR,nS_sc,eGW,OmRPA,rho_RPA,Z)
-
-      else
-
-        call unrestricted_self_energy_correlation_diag(eta,nBas,nC,nO,nV,nR,nS_sc,eGW,OmRPA,rho_RPA,SigC,EcGM)
-        call unrestricted_renormalization_factor(eta,nBas,nC,nO,nV,nR,nS_sc,eGW,OmRPA,rho_RPA,Z)
-
-      end if
+      call unrestricted_self_energy_correlation_diag(eta,nBas,nC,nO,nV,nR,nS_sc,eGW,OmRPA,rho_RPA,SigC,EcGM)
+      call unrestricted_renormalization_factor(eta,nBas,nC,nO,nV,nR,nS_sc,eGW,OmRPA,rho_RPA,Z)
 
     end if
 

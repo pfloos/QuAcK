@@ -1,5 +1,5 @@
 subroutine qsUGW(maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,COHSEX,BSE,TDA_W,TDA,    & 
-                G0W,GW0,dBSE,dTDA,evDyn,spin_conserved,spin_flip,eta,regularize,nNuc,ZNuc,rNuc,ENuc,nBas,nC,nO, & 
+                dBSE,dTDA,evDyn,spin_conserved,spin_flip,eta,regularize,nNuc,ZNuc,rNuc,ENuc,nBas,nC,nO, & 
                 nV,nR,nS,EUHF,S,X,T,V,Hc,ERI_AO,ERI_aaaa,ERI_aabb,ERI_bbbb,dipole_int_AO,dipole_int_aa, &
                 dipole_int_bb,PHF,cHF,eHF)
 
@@ -23,8 +23,6 @@ subroutine qsUGW(maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,COHSEX,BSE
   logical,intent(in)            :: dBSE
   logical,intent(in)            :: dTDA
   logical,intent(in)            :: evDyn
-  logical,intent(in)            :: G0W
-  logical,intent(in)            :: GW0
   logical,intent(in)            :: spin_conserved
   logical,intent(in)            :: spin_flip
   double precision,intent(in)   :: eta
@@ -208,12 +206,8 @@ subroutine qsUGW(maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,COHSEX,BSE
 
     ! Compute linear response
 
-    if(.not. GW0 .or. nSCF == 0) then
-
-      call unrestricted_linear_response(ispin,.true.,TDA_W,.false.,eta,nBas,nC,nO,nV,nR,nS_aa,nS_bb,nS_sc,nS_sc,1d0, &
-                                        eGW,ERI_aaaa,ERI_aabb,ERI_bbbb,OmRPA,rho_RPA,EcRPA,OmRPA,XpY_RPA,XmY_RPA)
-
-    endif
+    call unrestricted_linear_response(ispin,.true.,TDA_W,.false.,eta,nBas,nC,nO,nV,nR,nS_aa,nS_bb,nS_sc,nS_sc,1d0, &
+                                      eGW,ERI_aaaa,ERI_aabb,ERI_bbbb,OmRPA,rho_RPA,EcRPA,OmRPA,XpY_RPA,XmY_RPA)
 
     !----------------------!
     ! Excitation densities !
@@ -225,35 +219,17 @@ subroutine qsUGW(maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,COHSEX,BSE
     ! Compute self-energy and renormalization factor !
     !------------------------------------------------!
 
-    if(G0W) then
+    if(regularize) then
 
-      if(regularize) then
+      call unrestricted_regularized_self_energy_correlation(eta,nBas,nC,nO,nV,nR,nS_sc,eGW,OmRPA,rho_RPA,SigC,EcGM)
+      call unrestricted_regularized_renormalization_factor(eta,nBas,nC,nO,nV,nR,nS_sc,eGW,OmRPA,rho_RPA,Z)
 
-        call unrestricted_regularized_self_energy_correlation(eta,nBas,nC,nO,nV,nR,nS_sc,eHF,OmRPA,rho_RPA,SigC,EcGM)
-        call unrestricted_regularized_renormalization_factor(eta,nBas,nC,nO,nV,nR,nS_sc,eHF,OmRPA,rho_RPA,Z)
+    else
 
-      else
+      call unrestricted_self_energy_correlation(eta,nBas,nC,nO,nV,nR,nS_sc,eGW,OmRPA,rho_RPA,SigC,EcGM)
+      call unrestricted_renormalization_factor(eta,nBas,nC,nO,nV,nR,nS_sc,eGW,OmRPA,rho_RPA,Z)
 
-        call unrestricted_self_energy_correlation(eta,nBas,nC,nO,nV,nR,nS_sc,eHF,OmRPA,rho_RPA,SigC,EcGM)
-        call unrestricted_renormalization_factor(eta,nBas,nC,nO,nV,nR,nS_sc,eHF,OmRPA,rho_RPA,Z)
-
-      end if
-
-     else
-
-      if(regularize) then
-
-        call unrestricted_regularized_self_energy_correlation(eta,nBas,nC,nO,nV,nR,nS_sc,eGW,OmRPA,rho_RPA,SigC,EcGM)
-        call unrestricted_regularized_renormalization_factor(eta,nBas,nC,nO,nV,nR,nS_sc,eGW,OmRPA,rho_RPA,Z)
-
-      else
-
-        call unrestricted_self_energy_correlation(eta,nBas,nC,nO,nV,nR,nS_sc,eGW,OmRPA,rho_RPA,SigC,EcGM)
-        call unrestricted_renormalization_factor(eta,nBas,nC,nO,nV,nR,nS_sc,eGW,OmRPA,rho_RPA,Z)
-
-      end if
-
-     endif
+    end if
 
     ! Make correlation self-energy Hermitian and transform it back to AO basis
    
