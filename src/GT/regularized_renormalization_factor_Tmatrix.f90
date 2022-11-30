@@ -33,7 +33,7 @@ subroutine regularized_renormalization_factor_Tmatrix(eta,nBas,nC,nO,nV,nR,nOO,n
 ! Parameters for regularized calculations !
 !-----------------------------------------!
 
-  kappa = 1.1d0
+  kappa = 1d0
 
 ! Occupied part of the T-matrix self-energy 
 
@@ -43,10 +43,8 @@ subroutine regularized_renormalization_factor_Tmatrix(eta,nBas,nC,nO,nV,nR,nOO,n
 
         eps = e(p) + e(i) - Omega1(cd)
 
-        fk  = (1d0 - exp(-kappa*abs(eps)))**2/eps
-        dfk = - 1d0/eps + 2d0*kappa*exp(-kappa*abs(eps))/(1d0 - exp(-kappa*abs(eps)))
-        dfk = dfk*fk
-
+        fk  = (1d0 - exp(-2d0*eps**2/kappa**2))/eps
+        dfk = - fk/eps + 4d0*kappa**2*exp(-2d0*eps**2/kappa**2)
         Z(p) = Z(p) - rho1(p,i,cd)**2*dfk
 
       enddo
@@ -61,9 +59,8 @@ subroutine regularized_renormalization_factor_Tmatrix(eta,nBas,nC,nO,nV,nR,nOO,n
 
         eps = e(p) + e(nO+a) - Omega2(kl)
 
-        fk  = (1d0 - exp(-kappa*abs(eps)))**2/eps
-        dfk = - 1d0/eps + 2d0*kappa*exp(-kappa*abs(eps))/(1d0 - exp(-kappa*abs(eps)))
-        dfk = dfk*fk
+        fk  = (1d0 - exp(-2d0*eps**2/kappa**2))/eps
+        dfk = - fk/eps + 4d0*kappa**2*exp(-2d0*eps**2/kappa**2)
 
         Z(p) = Z(p) - rho2(p,nO+a,kl)**2*dfk
 

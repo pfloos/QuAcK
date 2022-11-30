@@ -37,7 +37,7 @@ subroutine regularized_self_energy_Tmatrix_diag(eta,nBas,nC,nO,nV,nR,nOO,nVV,e,O
 ! Parameters for regularized calculations !
 !-----------------------------------------!
 
-  kappa = 1.1d0
+  kappa = 1d0
 
 !----------------------------------------------
 ! Occupied part of the T-matrix self-energy 
@@ -48,7 +48,7 @@ subroutine regularized_self_energy_Tmatrix_diag(eta,nBas,nC,nO,nV,nR,nOO,nVV,e,O
       do cd=1,nVV
 
         eps = e(p) + e(i) - Omega1(cd)
-        fk  = (1d0 - exp(-kappa*abs(eps)))**2/eps
+        fk  = (1d0 - exp(-2d0*eps**2/kappa**2))/eps
 
         SigT(p) = SigT(p) + rho1(p,i,cd)**2*fk
 
@@ -65,7 +65,7 @@ subroutine regularized_self_energy_Tmatrix_diag(eta,nBas,nC,nO,nV,nR,nOO,nVV,e,O
       do kl=1,nOO
 
         eps = e(p) + e(a) - Omega2(kl)
-        fk  = (1d0 - exp(-kappa*abs(eps)))**2/eps
+        fk  = (1d0 - exp(-2d0*eps**2/kappa**2))/eps
 
         SigT(p) = SigT(p) + rho2(p,a,kl)**2*fk
 

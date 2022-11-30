@@ -1,4 +1,4 @@
-subroutine MP2(nBas,nC,nO,nV,nR,ERI,ENuc,EHF,e,EcMP2)
+subroutine MP2(regularize,nBas,nC,nO,nV,nR,ERI,ENuc,EHF,e,EcMP2)
 
 ! Perform second-order Moller-Plesset calculation with and without regularizers
 
@@ -6,6 +6,7 @@ subroutine MP2(nBas,nC,nO,nV,nR,ERI,ENuc,EHF,e,EcMP2)
 
 ! Input variables
 
+  logical,intent(in)            :: regularize
   integer,intent(in)            :: nBas
   integer,intent(in)            :: nC
   integer,intent(in)            :: nO
@@ -115,55 +116,59 @@ subroutine MP2(nBas,nC,nO,nV,nR,ERI,ENuc,EHF,e,EcMP2)
   write(*,'(A32)')           '--------------------------'
   write(*,*)
 
+  if(regularize) then
+
 !-------------------!
 ! sigma1-MP2 energy !
 !-------------------!
 
-  write(*,*)
-  write(*,'(A32)')           '--------------------------'
-  write(*,'(A32)')           ' sigma-MP2 calculation    '
-  write(*,'(A32)')           '--------------------------'
-  write(*,'(A32,1X,F16.10)') ' MP2 correlation energy = ',EcsMP2
-  write(*,'(A32,1X,F16.10)') ' Direct part            = ',2d0*E2ds
-  write(*,'(A32,1X,F16.10)') ' Exchange part          = ',-E2xs
-  write(*,'(A32)')           '--------------------------'
-  write(*,'(A32,1X,F16.10)') ' MP2 electronic  energy = ',EHF + EcsMP2
-  write(*,'(A32,1X,F16.10)') ' MP2 total       energy = ',ENuc + EHF + EcsMP2
-  write(*,'(A32)')           '--------------------------'
-  write(*,*)
+    write(*,*)
+    write(*,'(A32)')           '--------------------------'
+    write(*,'(A32)')           ' sigma-MP2 calculation    '
+    write(*,'(A32)')           '--------------------------'
+    write(*,'(A32,1X,F16.10)') ' MP2 correlation energy = ',EcsMP2
+    write(*,'(A32,1X,F16.10)') ' Direct part            = ',2d0*E2ds
+    write(*,'(A32,1X,F16.10)') ' Exchange part          = ',-E2xs
+    write(*,'(A32)')           '--------------------------'
+    write(*,'(A32,1X,F16.10)') ' MP2 electronic  energy = ',EHF + EcsMP2
+    write(*,'(A32,1X,F16.10)') ' MP2 total       energy = ',ENuc + EHF + EcsMP2
+    write(*,'(A32)')           '--------------------------'
+    write(*,*)
 
 !--------------------!
 ! sigma^2-MP2 energy !
 !--------------------!
 
-  write(*,*)
-  write(*,'(A32)')           '--------------------------'
-  write(*,'(A32)')           ' sigma^2-MP2 calculation  '
-  write(*,'(A32)')           '--------------------------'
-  write(*,'(A32,1X,F16.10)') ' MP2 correlation energy = ',Ecs2MP2
-  write(*,'(A32,1X,F16.10)') ' Direct part            = ',2d0*E2ds2
-  write(*,'(A32,1X,F16.10)') ' Exchange part          = ',-E2xs2
-  write(*,'(A32)')           '--------------------------'
-  write(*,'(A32,1X,F16.10)') ' MP2 electronic  energy = ',EHF + Ecs2MP2
-  write(*,'(A32,1X,F16.10)') ' MP2 total       energy = ',ENuc + EHF + Ecs2MP2
-  write(*,'(A32)')           '--------------------------'
-  write(*,*)
+    write(*,*)
+    write(*,'(A32)')           '--------------------------'
+    write(*,'(A32)')           ' sigma^2-MP2 calculation  '
+    write(*,'(A32)')           '--------------------------'
+    write(*,'(A32,1X,F16.10)') ' MP2 correlation energy = ',Ecs2MP2
+    write(*,'(A32,1X,F16.10)') ' Direct part            = ',2d0*E2ds2
+    write(*,'(A32,1X,F16.10)') ' Exchange part          = ',-E2xs2
+    write(*,'(A32)')           '--------------------------'
+    write(*,'(A32,1X,F16.10)') ' MP2 electronic  energy = ',EHF + Ecs2MP2
+    write(*,'(A32,1X,F16.10)') ' MP2 total       energy = ',ENuc + EHF + Ecs2MP2
+    write(*,'(A32)')           '--------------------------'
+    write(*,*)
 
 !------------------!
 ! kappa-MP2 energy !
 !------------------!
 
-  write(*,*)
-  write(*,'(A32)')           '--------------------------'
-  write(*,'(A32)')           ' kappa-MP2 calculation    '
-  write(*,'(A32)')           '--------------------------'
-  write(*,'(A32,1X,F16.10)') ' MP2 correlation energy = ',EckMP2
-  write(*,'(A32,1X,F16.10)') ' Direct part            = ',2d0*E2dk
-  write(*,'(A32,1X,F16.10)') ' Exchange part          = ',-E2xk
-  write(*,'(A32)')           '--------------------------'
-  write(*,'(A32,1X,F16.10)') ' MP2 electronic  energy = ',EHF + EckMP2
-  write(*,'(A32,1X,F16.10)') ' MP2 total       energy = ',ENuc + EHF + EckMP2
-  write(*,'(A32)')           '--------------------------'
-  write(*,*)
+    write(*,*)
+    write(*,'(A32)')           '--------------------------'
+    write(*,'(A32)')           ' kappa-MP2 calculation    '
+    write(*,'(A32)')           '--------------------------'
+    write(*,'(A32,1X,F16.10)') ' MP2 correlation energy = ',EckMP2
+    write(*,'(A32,1X,F16.10)') ' Direct part            = ',2d0*E2dk
+    write(*,'(A32,1X,F16.10)') ' Exchange part          = ',-E2xk
+    write(*,'(A32)')           '--------------------------'
+    write(*,'(A32,1X,F16.10)') ' MP2 electronic  energy = ',EHF + EckMP2
+    write(*,'(A32,1X,F16.10)') ' MP2 total       energy = ',ENuc + EHF + EckMP2
+    write(*,'(A32)')           '--------------------------'
+    write(*,*)
+
+  end if
 
 end subroutine MP2

@@ -42,7 +42,7 @@ subroutine regularized_self_energy_correlation(COHSEX,eta,nBas,nC,nO,nV,nR,nS,e,
 ! Parameters for regularized MP2 calculations !
 !---------------------------------------------!
 
-  kappa = 1.1d0
+  kappa = 1d0
 
 !-----------------------------!
 ! COHSEX static approximation !
@@ -92,7 +92,7 @@ subroutine regularized_self_energy_correlation(COHSEX,eta,nBas,nC,nO,nV,nR,nS,e,
         do i=nC+1,nO
           do jb=1,nS
             eps = e(p) - e(i) + Omega(jb)
-            fk  = (1d0 - exp(-kappa*abs(eps)))**2/eps
+            fk  = (1d0 - exp(-2d0*eps**2/kappa**2))/eps
             SigC(p,q) = SigC(p,q) + 2d0*rho(p,i,jb)*rho(q,i,jb)*fk
           end do
         end do
@@ -106,7 +106,7 @@ subroutine regularized_self_energy_correlation(COHSEX,eta,nBas,nC,nO,nV,nR,nS,e,
         do a=nO+1,nBas-nR
           do jb=1,nS
             eps = e(p) - e(a) - Omega(jb)
-            fk  = (1d0 - exp(-kappa*abs(eps)))**2/eps
+            fk  = (1d0 - exp(-2d0*eps**2/kappa**2))/eps
             SigC(p,q) = SigC(p,q) + 2d0*rho(p,a,jb)*rho(q,a,jb)*fk
           end do
         end do
@@ -120,7 +120,7 @@ subroutine regularized_self_energy_correlation(COHSEX,eta,nBas,nC,nO,nV,nR,nS,e,
       do a=nO+1,nBas-nR
         do jb=1,nS
           eps = e(a) - e(i) + Omega(jb)
-          fk  = (1d0 - exp(-kappa*abs(eps)))**2/eps
+          fk  = (1d0 - exp(-2d0*eps**2/kappa**2))/eps
           EcGM = EcGM - 4d0*rho(a,i,jb)**2*fk
         end do
       end do

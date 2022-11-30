@@ -37,7 +37,7 @@ subroutine regularized_self_energy_GF2(eta,nBas,nC,nO,nV,nR,nS,eHF,eGF2,ERI,SigC
 ! Parameters for regularized calculations !
 !-----------------------------------------!
 
-  kappa = 1.1d0
+  kappa = 1d0
 
 !----------------------------------------------------!
 ! Compute GF2 self-energy and renormalization factor !
@@ -52,9 +52,8 @@ subroutine regularized_self_energy_GF2(eta,nBas,nC,nO,nV,nR,nS,eHF,eGF2,ERI,SigC
             eps = eGF2(p) + eHF(a) - eHF(i) - eHF(j)
             num = (2d0*ERI(p,a,i,j) - ERI(p,a,j,i))*ERI(q,a,i,j)
 
-            fk  = (1d0 - exp(-kappa*abs(eps)))**2/eps
-            dfk = - 1d0/eps + 2d0*kappa*exp(-kappa*abs(eps))/(1d0 - exp(-kappa*abs(eps)))
-            dfk = dfk*fk
+            fk  = (1d0 - exp(-2d0*eps**2/kappa**2))/eps
+            dfk = - fk/eps + 4d0*kappa**2*exp(-2d0*eps**2/kappa**2)
 
             SigC(p,q) = SigC(p,q) + num*fk
             if(p == q) Z(p) = Z(p) - num*dfk
@@ -74,9 +73,8 @@ subroutine regularized_self_energy_GF2(eta,nBas,nC,nO,nV,nR,nS,eHF,eGF2,ERI,SigC
             eps = eGF2(p) + eHF(i) - eHF(a) - eHF(b)
             num = (2d0*ERI(p,i,a,b) - ERI(p,i,b,a))*ERI(q,i,a,b)
 
-            fk  = (1d0 - exp(-kappa*abs(eps)))**2/eps
-            dfk = - 1d0/eps + 2d0*kappa*exp(-kappa*abs(eps))/(1d0 - exp(-kappa*abs(eps)))
-            dfk = dfk*fk
+             fk  = (1d0 - exp(-2d0*eps**2/kappa**2))/eps
+             dfk = - fk/eps + 4d0*kappa**2*exp(-2d0*eps**2/kappa**2)
 
             SigC(p,q) = SigC(p,q) + num*fk
             if(p == q) Z(p) = Z(p) - num*dfk

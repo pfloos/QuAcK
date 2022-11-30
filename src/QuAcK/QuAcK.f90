@@ -108,6 +108,8 @@ program QuAcK
   double precision              :: thresh_HF,level_shift
   logical                       :: DIIS_HF,guess_type,ortho_type,mix
 
+  logical                       :: regMP
+
   integer                       :: maxSCF_CC,n_diis_CC
   double precision              :: thresh_CC
   logical                       :: DIIS_CC
@@ -174,6 +176,7 @@ program QuAcK
 ! Read options for methods
 
   call read_options(maxSCF_HF,thresh_HF,DIIS_HF,n_diis_HF,guess_type,ortho_type,mix,level_shift,dostab, &
+                    regMP,                                                                              &
                     maxSCF_CC,thresh_CC,DIIS_CC,n_diis_CC,                                              &
                     TDA,singlet,triplet,spin_conserved,spin_flip,                                       &
                     maxSCF_GF,thresh_GF,DIIS_GF,n_diis_GF,linGF,eta_GF,renormGF,regGF,                  &
@@ -479,7 +482,7 @@ program QuAcK
 
     else
 
-      call MP2(nBas,nC,nO,nV,nR,ERI_MO,ENuc,ERHF,eHF,EcMP2)
+      call MP2(regMP,nBas,nC,nO,nV,nR,ERI_MO,ENuc,ERHF,eHF,EcMP2)
 
     end if
 

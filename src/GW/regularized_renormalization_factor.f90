@@ -39,7 +39,7 @@ subroutine regularized_renormalization_factor(COHSEX,eta,nBas,nC,nO,nV,nR,nS,e,O
 ! Parameters for regularized calculations !
 !-----------------------------------------!
 
-  kappa = 1.1d0
+  kappa = 1d0
 
 ! static COHSEX approximation
 
@@ -56,9 +56,8 @@ subroutine regularized_renormalization_factor(COHSEX,eta,nBas,nC,nO,nV,nR,nS,e,O
       do i=nC+1,nO
         do jb=1,nS
           eps = e(p) - e(i) + Omega(jb) 
-          fk  = (1d0 - exp(-kappa*abs(eps)))**2/eps
-          dfk = - 1d0/eps + 2d0*kappa*exp(-kappa*abs(eps))/(1d0 - exp(-kappa*abs(eps)))
-          dfk = dfk*fk
+          fk  = (1d0 - exp(-2d0*eps**2/kappa**2))/eps
+          dfk = - fk/eps + 4d0*kappa**2*exp(-2d0*eps**2/kappa**2)
           Z(p) = Z(p)  - 2d0*rho(p,i,jb)**2*dfk
         end do
       end do
@@ -70,9 +69,8 @@ subroutine regularized_renormalization_factor(COHSEX,eta,nBas,nC,nO,nV,nR,nS,e,O
       do a=nO+1,nBas-nR
         do jb=1,nS
           eps = e(p) - e(a) - Omega(jb) 
-          fk  = (1d0 - exp(-kappa*abs(eps)))**2/eps
-          dfk = - 1d0/eps + 2d0*kappa*exp(-kappa*abs(eps))/(1d0 - exp(-kappa*abs(eps)))
-          dfk = dfk*fk
+          fk  = (1d0 - exp(-2d0*eps**2/kappa**2))/eps
+          dfk = - fk/eps + 4d0*kappa**2*exp(-2d0*eps**2/kappa**2)
           Z(p) = Z(p)  - 2d0*rho(p,a,jb)**2*dfk
         end do
       end do

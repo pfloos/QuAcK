@@ -1,4 +1,5 @@
 subroutine read_options(maxSCF_HF,thresh_HF,DIIS_HF,n_diis_HF,guess_type,ortho_type,mix,level_shift,dostab, &
+                        regMP,                                                                              &
                         maxSCF_CC,thresh_CC,DIIS_CC,n_diis_CC,                                              &
                         TDA,singlet,triplet,spin_conserved,spin_flip,                                       &
                         maxSCF_GF,thresh_GF,DIIS_GF,n_diis_GF,linGF,eta_GF,renormGF,regGF,                  &
@@ -23,6 +24,8 @@ subroutine read_options(maxSCF_HF,thresh_HF,DIIS_HF,n_diis_HF,guess_type,ortho_t
   logical,intent(out)           :: mix
   double precision,intent(out)  :: level_shift
   logical,intent(out)           :: dostab
+
+  logical,intent(out)           :: regMP
 
   integer,intent(out)           :: maxSCF_CC
   double precision,intent(out)  :: thresh_CC
@@ -106,8 +109,11 @@ subroutine read_options(maxSCF_HF,thresh_HF,DIIS_HF,n_diis_HF,guess_type,ortho_t
 
 ! Read MPn options
 
-  read(1,*) 
+  regMP = .false.
   read(1,*)
+  read(1,*) answer1
+
+  if(answer1 == 'T') regMP = .true.
 
 ! Read CC options
 
