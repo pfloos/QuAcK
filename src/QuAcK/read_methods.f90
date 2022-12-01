@@ -1,5 +1,5 @@
 subroutine read_methods(doRHF,doUHF,doKS,doMOM,            & 
-                        doMP2,doMP3,doMP2F12,              & 
+                        doMP2,doMP3,                       & 
                         doCCD,dopCCD,doDCD,doCCSD,doCCSDT, & 
                         do_drCCD,do_rCCD,do_crCCD,do_lCCD, &
                         doCIS,doCIS_D,doCID,doCISD,doFCI,  & 
@@ -17,7 +17,7 @@ subroutine read_methods(doRHF,doUHF,doKS,doMOM,            &
 ! Input variables
 
   logical,intent(out)           :: doRHF,doUHF,doKS,doMOM
-  logical,intent(out)           :: doMP2,doMP3,doMP2F12
+  logical,intent(out)           :: doMP2,doMP3
   logical,intent(out)           :: doCCD,dopCCD,doDCD,doCCSD,doCCSDT
   logical,intent(out)           :: do_drCCD,do_rCCD,do_crCCD,do_lCCD
   logical,intent(out)           :: doCIS,doCIS_D,doCID,doCISD,doFCI
@@ -43,7 +43,6 @@ subroutine read_methods(doRHF,doUHF,doKS,doMOM,            &
 
   doMP2    = .false.
   doMP3    = .false.
-  doMP2F12 = .false.
  
   doCCD   = .false.
   dopCCD  = .false.
@@ -96,10 +95,9 @@ subroutine read_methods(doRHF,doUHF,doKS,doMOM,            &
 ! Read MPn methods
 
   read(1,*) 
-  read(1,*) answer1,answer2,answer3
+  read(1,*) answer1,answer2
   if(answer1 == 'T') doMP2    = .true.
   if(answer2 == 'T') doMP3    = .true.
-  if(answer3 == 'T') doMP2F12 = .true.
 
 ! Read CC methods
 

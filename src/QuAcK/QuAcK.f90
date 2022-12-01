@@ -8,7 +8,7 @@ program QuAcK
   logical                       :: doRHF,doUHF,doMOM 
   logical                       :: dostab
   logical                       :: doKS
-  logical                       :: doMP2,doMP3,doMP2F12
+  logical                       :: doMP2,doMP3
   logical                       :: doCCD,dopCCD,doDCD,doCCSD,doCCSDT
   logical                       :: do_drCCD,do_rCCD,do_crCCD,do_lCCD
   logical                       :: doCIS,doCIS_D,doCID,doCISD,doFCI
@@ -26,7 +26,7 @@ program QuAcK
   integer                       :: nR(nspin)
   integer                       :: nS(nspin)
   double precision              :: ENuc,ERHF,EUHF,Norm
-  double precision              :: EcMP2(3),EcMP3,EcMP2F12(3)
+  double precision              :: EcMP2(3),EcMP3
 
   double precision,allocatable  :: ZNuc(:),rNuc(:,:)
   double precision,allocatable  :: cHF(:,:,:),eHF(:,:),PHF(:,:,:)
@@ -73,7 +73,6 @@ program QuAcK
   double precision,allocatable  :: ERI_MO_bbbb(:,:,:,:)
   double precision,allocatable  :: ERI_ERF_AO(:,:,:,:)
   double precision,allocatable  :: ERI_ERF_MO(:,:,:,:)
-  double precision,allocatable  :: F12(:,:,:,:),Yuk(:,:,:,:),FC(:,:,:,:,:,:)
 
   double precision              :: start_QuAcK  ,end_QuAcK    ,t_QuAcK
   double precision              :: start_int    ,end_int      ,t_int  
@@ -102,7 +101,6 @@ program QuAcK
   double precision              :: start_qsGT   ,end_qsGT     ,t_qsGT
   double precision              :: start_MP2    ,end_MP2      ,t_MP2
   double precision              :: start_MP3    ,end_MP3      ,t_MP3
-  double precision              :: start_MP2F12 ,end_MP2F12   ,t_MP2F12
 
   integer                       :: maxSCF_HF,n_diis_HF
   double precision              :: thresh_HF,level_shift
@@ -162,7 +160,7 @@ program QuAcK
 ! Which calculations do you want to do?
 
   call read_methods(doRHF,doUHF,doKS,doMOM,            &
-                    doMP2,doMP3,doMP2F12,              &
+                    doMP2,doMP3,                       &
                     doCCD,dopCCD,doDCD,doCCSD,doCCSDT, &
                     do_drCCD,do_rCCD,do_crCCD,do_lCCD, &
                     doCIS,doCIS_D,doCID,doCISD,doFCI,  & 
@@ -517,30 +515,6 @@ program QuAcK
 
     t_MP3 = end_MP3 - start_MP3
     write(*,'(A65,1X,F9.3,A8)') 'Total CPU time for MP3 = ',t_MP3,' seconds'
-    write(*,*)
-
-  end if
-
-!------------------------------------------------------------------------
-! Compute MP2-F12 energy
-!------------------------------------------------------------------------
-
-  if(doMP2F12) then
-
-    call cpu_time(start_MP2F12)
-
-!   Memory allocation for one- and two-electron integrals
-
-    allocate(F12(nBas,nBas,nBas,nBas),Yuk(nBas,nBas,nBas,nBas),FC(nBas,nBas,nBas,nBas,nBas,nBas))
-
-!   Read integrals
-
-    call read_F12_integrals(nBas,S,ERI_AO,F12,Yuk,FC)
-    call MP2F12(nBas,nC,nO,nV,ERI_AO,F12,Yuk,FC,ERHF,eHF,cHF)
-    call cpu_time(end_MP2F12)
-
-    t_MP2F12 = end_MP2F12 - start_MP2F12
-    write(*,'(A65,1X,F9.3,A8)') 'Total CPU time for MP2-F12 = ',t_MP2F12,' seconds'
     write(*,*)
 
   end if
