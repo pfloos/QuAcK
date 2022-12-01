@@ -1226,7 +1226,8 @@ program QuAcK
   if(doFCI) then
 
     call cpu_time(start_FCI)
-    call FCI(nBas,nC,nO,nV,nR,ERI_MO,eHF)
+    write(*,*) ' FCI is not yet implemented! Sorry.'
+!   call FCI(nBas,nC,nO,nV,nR,ERI_MO,eHF)
     call cpu_time(end_FCI)
 
     t_FCI = end_FCI - start_FCI
