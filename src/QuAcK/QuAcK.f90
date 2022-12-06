@@ -984,7 +984,7 @@ program QuAcK
       else
         call G0W0(doACFDT,exchange_kernel,doXBS,COHSEX,BSE,BSE2,TDA_W,TDA,dBSE,dTDA,evDyn,ppBSE,singlet,triplet, &
                   linGW,eta_GW,regGW,nBas,nC,nO,nV,nR,nS,ENuc,ERHF,ERI_AO,ERI_MO,dipole_int_MO,PHF,cHF,eHF,Vxc,eG0W0)
-!       call soG0W0(doACFDT,exchange_kernel,doXBS,COHSEX,BSE,TDA_W,TDA,dBSE,dTDA,evDyn,ppBSE,singlet,triplet, &
+!       call ehTM(doACFDT,exchange_kernel,doXBS,COHSEX,BSE,TDA_W,TDA,dBSE,dTDA,evDyn,ppBSE,singlet,triplet, &
 !                 linGW,eta_GW,regGW,nBas,nC,nO,nV,nR,nS,ENuc,ERHF,ERI_AO,ERI_MO,dipole_int_MO,PHF,cHF,eHF,Vxc,eG0W0)
       end if
 
