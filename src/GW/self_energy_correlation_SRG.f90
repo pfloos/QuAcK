@@ -40,13 +40,15 @@ subroutine self_energy_correlation_SRG(eta,nBas,nC,nO,nV,nR,nS,e,Omega,rho,EcGM,
 
 ! Occupied part of the correlation self-energy
 
-  do p=nC+1,nBas-nR
-    do q=nC+1,nBas-nR
-      do i=nC+1,nO
-        do m=1,nS
+  
+  do m=1,nS
+    do i=nC+1,nO
+      do q=nC+1,nBas-nR
+        do p=nC+1,nBas-nR
           Dpim = e(p) - e(i) + Omega(m)
           Dqim = e(q) - e(i) + Omega(m)
-          SigC(p,q) = SigC(p,q) + 2d0*rho(p,i,m)*rho(q,i,m)*(Dpim + Dqim)/(Dpim**2 + Dqim**2)
+          SigC(p,q) = SigC(p,q) + 2d0*rho(p,i,m)*rho(q,i,m)*(1-exp(-eta*Dpim**2)*exp(-eta*Dqim**2)) &
+               *(Dpim + Dqim)/(Dpim**2 + Dqim**2)
         end do
       end do
     end do
@@ -54,13 +56,14 @@ subroutine self_energy_correlation_SRG(eta,nBas,nC,nO,nV,nR,nS,e,Omega,rho,EcGM,
 
 ! Virtual part of the correlation self-energy
 
-  do p=nC+1,nBas-nR
-    do q=nC+1,nBas-nR
-      do a=nO+1,nBas-nR
-        do m=1,nS
+  do m=1,nS
+    do a=nO+1,nBas-nR
+      do q=nC+1,nBas-nR
+        do p=nC+1,nBas-nR
           Dpam = e(p) - e(a) - Omega(m)
           Dqam = e(q) - e(a) - Omega(m)
-          SigC(p,q) = SigC(p,q) + 2d0*rho(p,a,m)*rho(q,a,m)*(Dpam + Dqam)/(Dpam**2 + Dqam**2)
+          SigC(p,q) = SigC(p,q) + 2d0*rho(p,a,m)*rho(q,a,m)*(1-exp(-eta*Dpam**2)*exp(-eta*Dqam**2)) &
+               *(Dpam + Dqam)/(Dpam**2 + Dqam**2)
         end do
       end do
     end do

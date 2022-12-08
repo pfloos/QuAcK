@@ -78,10 +78,10 @@ subroutine self_energy_correlation(COHSEX,eta,nBas,nC,nO,nV,nR,nS,e,Omega,rho,Ec
 
   ! Occupied part of the correlation self-energy
 
-    do p=nC+1,nBas-nR
-      do q=nC+1,nBas-nR
-        do i=nC+1,nO
-          do jb=1,nS
+    do jb=1,nS
+      do i=nC+1,nO
+        do q=nC+1,nBas-nR
+          do p=nC+1,nBas-nR
             eps = e(p) - e(i) + Omega(jb)
             SigC(p,q) = SigC(p,q) + 2d0*rho(p,i,jb)*rho(q,i,jb)*eps/(eps**2 + eta**2)
           end do
@@ -91,10 +91,10 @@ subroutine self_energy_correlation(COHSEX,eta,nBas,nC,nO,nV,nR,nS,e,Omega,rho,Ec
  
     ! Virtual part of the correlation self-energy
  
-    do p=nC+1,nBas-nR
-      do q=nC+1,nBas-nR
-        do a=nO+1,nBas-nR
-          do jb=1,nS
+    do jb=1,nS
+      do a=nO+1,nBas-nR
+        do q=nC+1,nBas-nR
+          do p=nC+1,nBas-nR
             eps = e(p) - e(a) - Omega(jb)
             SigC(p,q) = SigC(p,q) + 2d0*rho(p,a,jb)*rho(q,a,jb)*eps/(eps**2 + eta**2)
           end do
@@ -105,9 +105,9 @@ subroutine self_energy_correlation(COHSEX,eta,nBas,nC,nO,nV,nR,nS,e,Omega,rho,Ec
     ! Galitskii-Migdal correlation energy
 
     EcGM = 0d0
-    do i=nC+1,nO
+    do jb=1,nS
       do a=nO+1,nBas-nR
-        do jb=1,nS
+        do i=nC+1,nO
           eps = e(a) - e(i) + Omega(jb)
           EcGM = EcGM - 4d0*rho(a,i,jb)*rho(a,i,jb)*eps/(eps**2 + eta**2)
         end do
