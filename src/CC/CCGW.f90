@@ -29,9 +29,6 @@ subroutine CCGW(maxSCF,thresh,nBas,nC,nO,nV,nR,ERI,ENuc,ERHF,e)
   integer                       :: nSCF
   double precision              :: Conv
 
-  double precision,allocatable  :: eO(:)
-  double precision,allocatable  :: eV(:)
-
   double precision,allocatable  :: OVVO(:,:,:,:)
   double precision,allocatable  :: VOOV(:,:,:,:)
 
@@ -74,21 +71,16 @@ subroutine CCGW(maxSCF,thresh,nBas,nC,nO,nV,nR,ERI,ENuc,ERHF,e)
  
 ! Form energy denominator and guess amplitudes
 
-  allocate(eO(nO),eV(nV))
   allocate(delta_2h1p(nO,nO,nV,nBas),delta_2p1h(nO,nV,nV,nBas))
   allocate(V_2h1p(nBas,nO,nO,nV),V_2p1h(nBas,nO,nV,nV))
   allocate(t_2h1p(nO,nO,nV,nBas),t_2p1h(nO,nV,nV,nBas))
   allocate(x_2h1p(nBas,nBas),x_2p1h(nBas,nBas))
-
-  eO(:) = e(1:nO)
-  eV(:) = e(nO+1:nBas)
 
   do i=nC+1,nO
     do j=nC+1,nO
       do a=1,nV-nR
         do p=nC+1,nBas-nR
 
-          delta_2h1p(i,j,a,p) = eO(i) + eO(j) - eV(a) - e(p)
           V_2h1p(p,i,j,a) = sqrt(2d0)*ERI(p,nO+a,i,j)
 
         end do
@@ -101,7 +93,6 @@ subroutine CCGW(maxSCF,thresh,nBas,nC,nO,nV,nR,ERI,ENuc,ERHF,e)
       do b=1,nV-nR
         do p=nC+1,nBas-nR
 
-          delta_2p1h(i,a,b,p) = eV(a) + eV(b) - eO(i) - e(p)
           V_2p1h(p,i,a,b) = sqrt(2d0)*ERI(p,i,nO+b,nO+a)
 
         end do
@@ -117,6 +108,7 @@ subroutine CCGW(maxSCF,thresh,nBas,nC,nO,nV,nR,ERI,ENuc,ERHF,e)
 
   Conv = 1d0
   nSCF = 0
+  eGW(:) = e(:)
 
   t_2h1p(:,:,:,:) = 0d0
   t_2p1h(:,:,:,:) = 0d0
@@ -137,6 +129,32 @@ subroutine CCGW(maxSCF,thresh,nBas,nC,nO,nV,nR,ERI,ENuc,ERHF,e)
 !   Increment 
 
     nSCF = nSCF + 1
+
+! Compute energy differences
+
+    do i=nC+1,nO
+      do j=nC+1,nO
+        do a=1,nV-nR
+          do p=nC+1,nBas-nR
+ 
+            delta_2h1p(i,j,a,p) = eGW(i) + eGW(j) - eGW(nO+a) - e(p)
+ 
+          end do
+        end do
+      end do
+    end do
+
+    do i=nC+1,nO
+      do a=1,nV-nR
+        do b=1,nV-nR
+          do p=nC+1,nBas-nR
+ 
+            delta_2p1h(i,a,b,p) = eGW(nO+a) + eGW(nO+b) - eGW(i) - e(p)
+ 
+          end do
+        end do
+      end do
+    end do
 
 !   Compute intermediates
 
@@ -277,6 +295,8 @@ subroutine CCGW(maxSCF,thresh,nBas,nC,nO,nV,nR,ERI,ENuc,ERHF,e)
 
       end do
     end do
+
+!   Diagonalize non-Hermitian matrix
 
     call diagonalize_general_matrix(nBas,SigGW,eGW,cGW)
 
