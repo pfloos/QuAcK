@@ -126,11 +126,11 @@ subroutine CCGW(maxSCF,thresh,nBas,nC,nO,nV,nR,ERI,ENuc,ERHF,e)
 
   do while(Conv > thresh .and. nSCF < maxSCF)
 
-!   Increment 
+   ! Increment 
 
     nSCF = nSCF + 1
 
-! Compute energy differences
+    ! Compute energy differences
 
     do i=nC+1,nO
       do j=nC+1,nO
@@ -156,7 +156,7 @@ subroutine CCGW(maxSCF,thresh,nBas,nC,nO,nV,nR,ERI,ENuc,ERHF,e)
       end do
     end do
 
-!   Compute intermediates
+    !  Compute intermediates
 
     x_2h1p(:,:) = 0d0 
 
@@ -194,7 +194,7 @@ subroutine CCGW(maxSCF,thresh,nBas,nC,nO,nV,nR,ERI,ENuc,ERHF,e)
       end do
     end do
    
-!   Compute residual for 2h1p sector
+    ! Compute residual for 2h1p sector
 
     do i=nC+1,nO
       do j=nC+1,nO
@@ -224,7 +224,7 @@ subroutine CCGW(maxSCF,thresh,nBas,nC,nO,nV,nR,ERI,ENuc,ERHF,e)
       end do
     end do
 
-!   Compute residual for 2p1h sector
+    ! Compute residual for 2p1h sector
 
     do i=nC+1,nO
       do a=1,nV-nR
@@ -254,16 +254,16 @@ subroutine CCGW(maxSCF,thresh,nBas,nC,nO,nV,nR,ERI,ENuc,ERHF,e)
       end do
     end do
  
-!   Check convergence 
+    !  Check convergence 
 
     Conv = max(maxval(abs(r_2h1p)),maxval(abs(r_2p1h)))
   
-!   Update amplitudes
+    ! Update amplitudes
 
     t_2h1p(:,:,:,:) = t_2h1p(:,:,:,:) - r_2h1p(:,:,:,:)/delta_2h1p(:,:,:,:)
     t_2p1h(:,:,:,:) = t_2p1h(:,:,:,:) - r_2p1h(:,:,:,:)/delta_2p1h(:,:,:,:)
 
-!   Compute correlation energy
+    ! Compute self-energy
 
     SigGW(:,:) = 0d0
 
@@ -296,7 +296,7 @@ subroutine CCGW(maxSCF,thresh,nBas,nC,nO,nV,nR,ERI,ENuc,ERHF,e)
       end do
     end do
 
-!   Diagonalize non-Hermitian matrix
+    !  Diagonalize non-Hermitian matrix
 
     call diagonalize_general_matrix(nBas,SigGW,eGW,cGW)
 
@@ -307,11 +307,11 @@ subroutine CCGW(maxSCF,thresh,nBas,nC,nO,nV,nR,ERI,ENuc,ERHF,e)
     call quick_sort(eGW,order,nBas)
     call set_order(cGW,order,nBas,nBas)
 
-!   Renormalization factor
+    ! Renormalization factor
 
     Z(:) = 1d0
 
-!   Dump results
+    ! Dump results
 
     write(*,'(1X,A1,1X,I3,1X,A1,1X,F10.6,1X,A1,1X,F10.6,1X,A1,1X,F10.6,1X,A1,1X)') &
       '|',nSCF,'|',eGW(nO)*HaToeV,'|',eGW(nO+1)*HaToeV,'|',Conv,'|'
