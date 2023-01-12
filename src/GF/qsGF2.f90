@@ -220,7 +220,7 @@ subroutine qsGF2(maxSCF,thresh,max_diis,BSE,TDA,dBSE,dTDA,evDyn,singlet,triplet,
 
     ! Correlation energy
 
-    call MP2(nBas,nC,nO,nV,nR,ERI_MO,ENuc,EqsGF2,eGF2,Ec)
+    call MP2(regularize,nBas,nC,nO,nV,nR,ERI_MO,ENuc,EqsGF2,eGF2,Ec)
 
     ! Total energy
 
