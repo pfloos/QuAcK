@@ -19,8 +19,15 @@ subroutine diagonalize_general_matrix(N,A,WR,VR)
 
 ! Memory allocation
 
-  lwork = 4*N
-  allocate(WI(N),VL(N,N),work(lwork))
+  allocate(work(1),WI(N),VL(N,N))
+  
+  lwork = -1
+  call dgeev('V','V',N,A,N,WR,WI,VL,N,VR,N,work,lwork,info)
+  lwork = int(work(1))
+
+  deallocate(work)
+
+  allocate(work(lwork))
 
   call dgeev('V','V',N,A,N,WR,WI,VL,N,VR,N,work,lwork,info)
 
@@ -49,8 +56,15 @@ subroutine diagonalize_matrix(N,A,e)
 
 ! Memory allocation
 
-  allocate(work(3*N))
-  lwork = size(work)
+  allocate(work(1))
+  
+  lwork = -1
+  call dsyev('V','U',N,A,N,e,work,lwork,info)
+  lwork = int(work(1))
+
+  deallocate(work)
+
+  allocate(work(lwork))
 
   call dsyev('V','U',N,A,N,e,work,lwork,info)
  
