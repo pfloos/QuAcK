@@ -53,7 +53,7 @@ subroutine BSE2_static_kernel_KB(eta,nBas,nC,nO,nV,nR,nS,lambda,eW,W,KB2_sta)
               KB2_sta(ia,jb) =  KB2_sta(ia,jb) - num*dem/(dem**2 + eta**2)
 
               dem = + (eW(c) - eW(k))
-              num = 2d0*W(b,c,i,k)*W(a,k,b,c) 
+              num = 2d0*W(b,c,i,k)*W(a,k,j,c) 
 
               KB2_sta(ia,jb) =  KB2_sta(ia,jb) + num*dem/(dem**2 + eta**2)
 
