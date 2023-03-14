@@ -155,7 +155,7 @@ program QuAcK
   
   doSph = .false.
 
-  call cpu_time(start_QuAcK)
+  call wall_time(start_QuAcK)
 
 ! Which calculations do you want to do?
 
@@ -228,7 +228,7 @@ program QuAcK
 
 ! Read integrals
 
-  call cpu_time(start_int)
+  call wall_time(start_int)
 
   if(doSph) then
 
@@ -241,11 +241,11 @@ program QuAcK
 
   end if
 
-  call cpu_time(end_int)
+  call wall_time(end_int)
 
     t_int = end_int - start_int
     write(*,*)
-    write(*,'(A65,1X,F9.3,A8)') 'Total CPU time for reading integrals = ',t_int,' seconds'
+    write(*,'(A65,1X,F9.3,A8)') 'Total wall time for reading integrals = ',t_int,' seconds'
     write(*,*)
 
 ! Compute orthogonalization matrix
@@ -266,13 +266,13 @@ program QuAcK
      stop
    end if
 
-    call cpu_time(start_HF)
+    call wall_time(start_HF)
     call RHF(maxSCF_HF,thresh_HF,n_diis_HF,guess_type,level_shift,nNuc,ZNuc,rNuc,ENuc, &
              nBas,nO,S,T,V,Hc,F_AO,ERI_AO,dipole_int_AO,X,ERHF,eHF,cHF,PHF,Vxc)
-    call cpu_time(end_HF)
+    call wall_time(end_HF)
 
     t_HF = end_HF - start_HF
-    write(*,'(A65,1X,F9.3,A8)') 'Total CPU time for RHF = ',t_HF,' seconds'
+    write(*,'(A65,1X,F9.3,A8)') 'Total wall time for RHF = ',t_HF,' seconds'
     write(*,*)
 
   end if
@@ -350,7 +350,7 @@ program QuAcK
 ! AO to MO integral transform for post-HF methods
 !------------------------------------------------------------------------
 
-  call cpu_time(start_AOtoMO)
+  call wall_time(start_AOtoMO)
 
   write(*,*)
   write(*,*) 'AO to MO transformation... Please be patient'
@@ -434,10 +434,10 @@ program QuAcK
 
   end if
 
-  call cpu_time(end_AOtoMO)
+  call wall_time(end_AOtoMO)
 
   t_AOtoMO = end_AOtoMO - start_AOtoMO
-  write(*,'(A65,1X,F9.3,A8)') 'Total CPU time for AO to MO transformation = ',t_AOtoMO,' seconds'
+  write(*,'(A65,1X,F9.3,A8)') 'Total wall time for AO to MO transformation = ',t_AOtoMO,' seconds'
   write(*,*)
 
 !------------------------------------------------------------------------
@@ -1032,7 +1032,7 @@ program QuAcK
 
   if(doqsGW) then 
 
-    call cpu_time(start_qsGW)
+    call wall_time(start_qsGW)
 
     if(unrestricted) then 
     
@@ -1049,10 +1049,10 @@ program QuAcK
 
     end if
 
-    call cpu_time(end_qsGW)
+    call wall_time(end_qsGW)
 
     t_qsGW = end_qsGW - start_qsGW
-    write(*,'(A65,1X,F9.3,A8)') 'Total CPU time for qsGW = ',t_qsGW,' seconds'
+    write(*,'(A65,1X,F9.3,A8)') 'Total wall time for qsGW = ',t_qsGW,' seconds'
     write(*,*)
 
   end if
@@ -1063,7 +1063,7 @@ program QuAcK
 
   if(doSRGqsGW) then 
 
-    call cpu_time(start_qsGW)
+    call wall_time(start_qsGW)
 
     if(unrestricted) then 
 
@@ -1077,10 +1077,10 @@ program QuAcK
 
     end if
 
-    call cpu_time(end_qsGW)
+    call wall_time(end_qsGW)
 
     t_qsGW = end_qsGW - start_qsGW
-    write(*,'(A65,1X,F9.3,A8)') 'Total CPU time for qsGW = ',t_qsGW,' seconds'
+    write(*,'(A65,1X,F9.3,A8)') 'Total wall time for qsGW = ',t_qsGW,' seconds'
     write(*,*)
 
   end if
@@ -1240,10 +1240,10 @@ program QuAcK
 ! End of QuAcK
 !------------------------------------------------------------------------
 
-  call cpu_time(end_QuAcK)
+  call wall_time(end_QuAcK)
 
   t_QuAcK = end_QuAcK - start_QuAcK
-  write(*,'(A65,1X,F9.3,A8)') 'Total CPU time for QuAcK = ',t_QuAcK,' seconds'
+  write(*,'(A65,1X,F9.3,A8)') 'Total wall time for QuAcK = ',t_QuAcK,' seconds'
   write(*,*)
 
 end program QuAcK

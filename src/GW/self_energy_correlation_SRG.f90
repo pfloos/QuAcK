@@ -23,8 +23,9 @@ subroutine self_energy_correlation_SRG(eta,nBas,nC,nO,nV,nR,nS,e,Omega,rho,EcGM,
   integer                       :: i,j,a,b
   integer                       :: p,q,r
   integer                       :: m
-  double precision              :: Dpim,Dqim,Dpam,Dqam
-
+  double precision     :: Dpim,Dqim,Dpam,Dqam
+  double precision     :: t1,t2
+  
 ! Output variables
 
   double precision,intent(out)  :: EcGM
@@ -38,36 +39,59 @@ subroutine self_energy_correlation_SRG(eta,nBas,nC,nO,nV,nR,nS,e,Omega,rho,EcGM,
 ! SRG-GW self-energy !
 !--------------------!
 
-! Occupied part of the correlation self-energy
+  ! Occupied part of the correlation self-energy
 
-  
-  do m=1,nS
-    do i=nC+1,nO
-      do q=nC+1,nBas-nR
-        do p=nC+1,nBas-nR
-          Dpim = e(p) - e(i) + Omega(m)
-          Dqim = e(q) - e(i) + Omega(m)
-          SigC(p,q) = SigC(p,q) + 2d0*rho(p,i,m)*rho(q,i,m)*(1-exp(-eta*Dpim**2)*exp(-eta*Dqim**2)) &
-               *(Dpim + Dqim)/(Dpim**2 + Dqim**2)
+  call wall_time(t1)
+
+  !$OMP PARALLEL &
+  !$OMP SHARED(SigC,rho,eta,nS,nC,nO,nBas,nR,e,Omega) &
+  !$OMP PRIVATE(m,i,q,p,Dpim,Dqim) &
+  !$OMP DEFAULT(NONE)
+  !$OMP DO
+  do q=nC+1,nBas-nR
+     do p=nC+1,nBas-nR
+        do m=1,nS
+           do i=nC+1,nO
+              Dpim = e(p) - e(i) + Omega(m)
+              Dqim = e(q) - e(i) + Omega(m)
+              SigC(p,q) = SigC(p,q) + 2d0*rho(p,i,m)*rho(q,i,m)*(1d0-dexp(-eta*Dpim*Dpim)*dexp(-eta*Dqim*Dqim)) &
+                   *(Dpim + Dqim)/(Dpim*Dpim + Dqim*Dqim)
+           end do
         end do
-      end do
-    end do
+     end do
   end do
+  !$OMP END DO
+  !$OMP END PARALLEL
+
+ call wall_time(t2)
+ print *, "first loop", (t2-t1)
 
 ! Virtual part of the correlation self-energy
 
-  do m=1,nS
-    do a=nO+1,nBas-nR
-      do q=nC+1,nBas-nR
-        do p=nC+1,nBas-nR
-          Dpam = e(p) - e(a) - Omega(m)
-          Dqam = e(q) - e(a) - Omega(m)
-          SigC(p,q) = SigC(p,q) + 2d0*rho(p,a,m)*rho(q,a,m)*(1-exp(-eta*Dpam**2)*exp(-eta*Dqam**2)) &
-               *(Dpam + Dqam)/(Dpam**2 + Dqam**2)
-        end do
-      end do
+ call wall_time(t1)
+ !$OMP PARALLEL &
+ !$OMP SHARED(SigC,rho,eta,nS,nC,nO,nR,nBas,e,Omega) &
+ !$OMP PRIVATE(m,a,q,p,Dpam,Dqam) &
+ !$OMP DEFAULT(NONE)
+ !$OMP DO
+ do q=nC+1,nBas-nR
+    do p=nC+1,nBas-nR
+       do m=1,nS
+          do a=nO+1,nBas-nR
+             Dpam = e(p) - e(a) - Omega(m)
+             Dqam = e(q) - e(a)- Omega(m)
+             SigC(p,q) = SigC(p,q) + 2d0*rho(p,a,m)*rho(q,a,m)*(1d0-exp(-eta*Dpam*Dpam)*exp(-eta*Dqam*Dqam)) &
+                  *(Dpam + Dqam)/(Dpam*Dpam + Dqam*Dqam)
+          end do
+       end do
     end do
-  end do
+ end do
+ !$OMP END DO
+ !$OMP END PARALLEL
+
+ call wall_time(t2)
+  print *, "second loop", (t2-t1)
+ 
 
 ! Galitskii-Migdal correlation energy
 

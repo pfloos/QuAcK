@@ -68,6 +68,7 @@ subroutine SRG_qsGW(maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,BSE,BSE
   double precision              :: EcGM
   double precision              :: Conv
   double precision              :: rcond
+  double precision              :: tao,tao1,tao2,tsrg,tsrg1,tsrg2,tlr,tlr1,tlr2,t1,t2,tt,tmo1,tmo2,tmo,tex,tex1,tex2
   double precision,external     :: trace_matrix
   double precision              :: dipole(ncart)
 
@@ -155,34 +156,63 @@ subroutine SRG_qsGW(maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,BSE,BSE
     nSCF = nSCF + 1
 
     ! Buid Coulomb matrix
-
+    call wall_time(t1)
     call Coulomb_matrix_AO_basis(nBas,P,ERI_AO,J)
 
     ! Compute exchange part of the self-energy 
 
     call exchange_matrix_AO_basis(nBas,P,ERI_AO,K)
+    call wall_time(t2)
+    tt=tt+t2-t1
 
     ! AO to MO transformation of two-electron integrals
 
-    call AOtoMO_integral_transform(1,1,1,1,nBas,c,ERI_AO,ERI_MO)
+     call wall_time(tao1)
+    
+     call AOtoMO_integral_transform(1,1,1,1,nBas,c,ERI_AO,ERI_MO)
+
+    call wall_time(tao2)
+
+    tao = tao + tao2 -tao1
 
     ! Compute linear response
 
-    call linear_response(ispin,.true.,TDA_W,eta,nBas,nC,nO,nV,nR,nS,1d0,eGW,ERI_MO, &
-                         EcRPA,OmRPA,XpY_RPA,XmY_RPA)
+     call wall_time(tlr1)
+    
+     call linear_response(ispin,.true.,TDA_W,eta,nBas,nC,nO,nV,nR,nS,1d0,eGW,ERI_MO, &
+         EcRPA,OmRPA,XpY_RPA,XmY_RPA)
+
+    call wall_time(tlr2)
+
+    tlr = tlr + tlr2 -tlr1
+
     if(print_W) call print_excitation('RPA@qsGW    ',ispin,nS,OmRPA)
 
     ! Compute correlation part of the self-energy 
 
+    call wall_time(tex1)
+    
     call excitation_density(nBas,nC,nO,nR,nS,ERI_MO,XpY_RPA,rho_RPA)
+
+    call wall_time(tex2)
+    tex=tex+tex2-tex1
+
+    call wall_time(tsrg1)
     call self_energy_correlation_SRG(eta,nBas,nC,nO,nV,nR,nS,eGW,OmRPA,rho_RPA,EcGM,SigC)
     call renormalization_factor_SRG(eta,nBas,nC,nO,nV,nR,nS,eGW,OmRPA,rho_RPA,Z)
 
+    call wall_time(tsrg2)
+
+    tsrg = tsrg + tsrg2 -tsrg1
+
+
     ! Make correlation self-energy Hermitian and transform it back to AO basis
-   
+
+    call wall_time(tmo1)
     call MOtoAO_transform(nBas,S,c,SigC)
- 
-    ! Solve the quasi-particle equation
+    call wall_time(tmo2)
+    tmo = tmo + tmo2 - tmo1
+   ! Solve the quasi-particle equation
 
     F(:,:) = Hc(:,:) + J(:,:) + 0.5d0*K(:,:) + SigC(:,:)
 
@@ -262,7 +292,14 @@ subroutine SRG_qsGW(maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,BSE,BSE
 
     stop
 
-  endif
+ endif
+
+ print *, "Wall time for Fock and exchange build", tt
+ print *, "Wall Time for AO to MO", tao
+ print *, "Wall Time for LR", tlr
+ print *, "Wall Time for excitation density", tex
+ print *, "Wall Time for SRG", tsrg
+ print *, "Wall time MO to AO Sigma", tmo
 
 ! Deallocate memory
 
