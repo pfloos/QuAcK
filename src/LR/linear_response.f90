@@ -21,7 +21,9 @@ subroutine linear_response(ispin,dRPA,TDA,eta,nBas,nC,nO,nV,nR,nS,lambda,e,ERI,E
   double precision,intent(in)   :: e(nBas)
   double precision,intent(in)   :: ERI(nBas,nBas,nBas,nBas)
 
-! Local variables
+  ! Local variables
+
+  integer :: i,j,k
 
   double precision              :: trace_matrix
   double precision,allocatable  :: A(:,:)
@@ -31,6 +33,7 @@ subroutine linear_response(ispin,dRPA,TDA,eta,nBas,nC,nO,nV,nR,nS,lambda,e,ERI,E
   double precision,allocatable  :: AmBSq(:,:)
   double precision,allocatable  :: AmBIv(:,:)
   double precision,allocatable  :: Z(:,:)
+  double precision,allocatable  :: tmp(:,:)
 
 ! Output variables
 
@@ -41,7 +44,7 @@ subroutine linear_response(ispin,dRPA,TDA,eta,nBas,nC,nO,nV,nR,nS,lambda,e,ERI,E
 
 ! Memory allocation
 
-  allocate(A(nS,nS),B(nS,nS),ApB(nS,nS),AmB(nS,nS),AmBSq(nS,nS),AmBIv(nS,nS),Z(nS,nS))
+  allocate(A(nS,nS),B(nS,nS),ApB(nS,nS),AmB(nS,nS),AmBSq(nS,nS),AmBIv(nS,nS),Z(nS,nS),tmp(nS,nS))
 
 ! Build A and B matrices 
 
@@ -77,10 +80,11 @@ subroutine linear_response(ispin,dRPA,TDA,eta,nBas,nC,nO,nV,nR,nS,lambda,e,ERI,E
 !     if(Omega(ia) < 0d0) Omega(ia) = 0d0
 !   end do
 
-    call ADAt(nS,AmB,1d0*sqrt(Omega),AmBSq)
-    call ADAt(nS,AmB,1d0/sqrt(Omega),AmBIv)
+    call ADAt(nS,AmB,1d0*dsqrt(Omega),AmBSq)
+    call ADAt(nS,AmB,1d0/dsqrt(Omega),AmBIv)
 
-    Z = matmul(AmBSq,matmul(ApB,AmBSq))
+    call dgemm('N','N',nS,nS,nS,1d0,ApB,size(ApB,1),AmBSq,size(AmBSq,1),0d0,tmp,size(tmp,1))
+    call dgemm('N','N',nS,nS,nS,1d0,AmBSq,size(AmBSq,1),tmp,size(tmp,1),0d0,Z,size(Z,1))
 
    call diagonalize_matrix(nS,Z,Omega)
 
@@ -91,13 +95,13 @@ subroutine linear_response(ispin,dRPA,TDA,eta,nBas,nC,nO,nV,nR,nS,lambda,e,ERI,E
   !   if(Omega(ia) < 0d0) Omega(ia) = 0d0
   ! end do
 
-    Omega = sqrt(Omega)
+    Omega = dsqrt(Omega)
 
-    XpY = matmul(transpose(Z),AmBSq)
-    call DA(nS,1d0/sqrt(Omega),XpY)
+    call dgemm('T','N',nS,nS,nS,1d0,Z,size(Z,1),AmBSq,size(AmBSq,1),0d0,XpY,size(XpY,1))
+    call DA(nS,1d0/dsqrt(Omega),XpY)
 
-    XmY = matmul(transpose(Z),AmBIv)
-    call DA(nS,1d0*sqrt(Omega),XmY)
+    call dgemm('T','N',nS,nS,nS,1d0,Z,size(Z,1),AmBIv,size(AmBIv,1),0d0,XmY,size(XmY,1))
+    call DA(nS,1d0*dsqrt(Omega),XmY)
  
   end if
 

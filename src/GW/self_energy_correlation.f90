@@ -78,29 +78,43 @@ subroutine self_energy_correlation(COHSEX,eta,nBas,nC,nO,nV,nR,nS,e,Omega,rho,Ec
 
   ! Occupied part of the correlation self-energy
 
-    do jb=1,nS
-      do i=nC+1,nO
-        do q=nC+1,nBas-nR
-          do p=nC+1,nBas-nR
+!$OMP PARALLEL &
+!$OMP SHARED(SigC,rho,eta,nS,nC,nO,nBas,nR,e,Omega) &
+!$OMP PRIVATE(jb,i,q,p,eps) &
+!$OMP DEFAULT(NONE)
+!$OMP DO
+do q=nC+1,nBas-nR
+   do p=nC+1,nBas-nR
+      do jb=1,nS
+         do i=nC+1,nO
             eps = e(p) - e(i) + Omega(jb)
             SigC(p,q) = SigC(p,q) + 2d0*rho(p,i,jb)*rho(q,i,jb)*eps/(eps**2 + eta**2)
-          end do
-        end do
+         end do
       end do
-    end do
- 
+   end do
+end do
+!$OMP END DO
+!$OMP END PARALLEL
+
     ! Virtual part of the correlation self-energy
- 
-    do jb=1,nS
-      do a=nO+1,nBas-nR
-        do q=nC+1,nBas-nR
-          do p=nC+1,nBas-nR
+
+!$OMP PARALLEL &
+!$OMP SHARED(SigC,rho,eta,nS,nC,nO,nBas,nR,e,Omega) &
+!$OMP PRIVATE(jb,a,q,p,eps) &
+!$OMP DEFAULT(NONE)
+!$OMP DO  
+do q=nC+1,nBas-nR
+   do p=nC+1,nBas-nR
+      do jb=1,nS
+         do a=nO+1,nBas-nR
             eps = e(p) - e(a) - Omega(jb)
             SigC(p,q) = SigC(p,q) + 2d0*rho(p,a,jb)*rho(q,a,jb)*eps/(eps**2 + eta**2)
-          end do
-        end do
+         end do
       end do
-    end do
+   end do
+end do
+!$OMP END DO
+!$OMP END PARALLEL
 
     ! Galitskii-Migdal correlation energy
 
