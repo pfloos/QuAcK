@@ -531,3 +531,16 @@ subroutine CalcInv4(a,det)
   enddo
 
 end subroutine CalcInv4
+
+subroutine wall_time(t)
+  implicit none
+  double precision, intent(out)  :: t
+  integer*8                        :: c
+  integer*8, save                  :: rate = 0
+  if (rate == 0) then
+    CALL SYSTEM_CLOCK(count_rate=rate)
+  endif
+  CALL SYSTEM_CLOCK(count=c)
+  t = dble(c)/dble(rate)
+end subroutine wall_time
+
