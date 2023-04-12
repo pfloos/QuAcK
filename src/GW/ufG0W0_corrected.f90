@@ -1,4 +1,4 @@
-subroutine ufG0W0(nBas,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,eHF)
+subroutine ufG0W0_corrected(nBas,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,eHF)
 
 ! Unfold G0W0 equations
 
@@ -44,6 +44,7 @@ subroutine ufG0W0(nBas,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,eHF)
   write(*,*)
   write(*,*)'**********************************************'
   write(*,*)'|        Unfolded G0W0 calculation           |'
+  write(*,*)'|      with self-screening correction        |'
   write(*,*)'**********************************************'
   write(*,*)
 
@@ -54,8 +55,8 @@ subroutine ufG0W0(nBas,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,eHF)
 
 ! Dimension of the supermatrix
 
-  n2h1p = nO*nO*nV
-  n2p1h = nV*nV*nO
+  n2h1p = nO*(nO+1)/2*nV
+  n2p1h = nV*(nV+1)/2*nO
   nH = 1 + n2h1p + n2p1h
 
 ! Memory allocation
@@ -84,13 +85,13 @@ subroutine ufG0W0(nBas,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,eHF)
 
   ija = 0
   do i=nC+1,nO
-    do j=nC+1,nO
+    do j=i,nO
       do a=nO+1,nBas-nR
         ija = ija + 1
 
         klc = 0
         do k=nC+1,nO
-          do l=nC+1,nO
+          do l=k,nO
             do c=nO+1,nBas-nR
               klc = klc + 1
 
@@ -113,13 +114,13 @@ subroutine ufG0W0(nBas,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,eHF)
   iab = 0
   do i=nC+1,nO
     do a=nO+1,nBas-nR
-      do b=nO+1,nBas-nR
+      do b=a,nBas-nR
         iab = iab + 1
 
         kcd = 0
         do k=nC+1,nO
           do c=nO+1,nBas-nR
-            do d=nO+1,nBas-nR
+            do d=c,nBas-nR
               kcd = kcd + 1
 
               H(1+n2h1p+iab,1+n2h1p+kcd) &
@@ -148,7 +149,7 @@ subroutine ufG0W0(nBas,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,eHF)
 
     klc = 0
     do k=nC+1,nO
-      do l=nC+1,nO
+      do l=k,nO
         do c=nO+1,nBas-nR
           klc = klc + 1
 
@@ -166,7 +167,7 @@ subroutine ufG0W0(nBas,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,eHF)
     kcd = 0
     do k=nC+1,nO
       do c=nO+1,nBas-nR
-        do d=nO+1,nBas-nR
+        do d=c,nBas-nR
           kcd = kcd + 1
 
           H(1              ,1+n2h1p+kcd) = sqrt(2d0)*ERI(p,k,d,c)
@@ -271,4 +272,4 @@ subroutine ufG0W0(nBas,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,eHF)
 
   end do
 
-end subroutine ufG0W0
+end subroutine ufG0W0_corrected
