@@ -1093,7 +1093,6 @@ program QuAcK
     
     call cpu_time(start_ufGW)
     call ufG0W0(nBas,nC,nO,nV,nR,nS,ENuc,ERHF,ERI_MO,eHF)
-!   call ufG0W0_corrected(nBas,nC,nO,nV,nR,nS,ENuc,ERHF,ERI_MO,eHF)
     call cpu_time(end_ufGW)
   
     t_ufGW = end_ufGW - start_ufGW
