@@ -16,6 +16,7 @@
   double precision,parameter    :: HaToeV = 27.21138602d0
   double precision,parameter    :: pmtoau = 0.0188973d0
   double precision,parameter    :: BoToAn = 0.529177249d0
+  double precision,parameter    :: AnToBo = 1.889716165d0
   double precision,parameter    :: auToD = 2.5415802529d0
 
   double precision,parameter    :: CxLDA  = - (3d0/4d0)*(3d0/pi)**(1d0/3d0)

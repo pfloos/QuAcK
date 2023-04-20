@@ -48,7 +48,7 @@ subroutine read_geometry(nNuc,ZNuc,rNuc,ENuc)
   do i=1,nNuc-1
     do j=i+1,nNuc
       RAB = (rNuc(i,1)-rNuc(j,1))**2 + (rNuc(i,2)-rNuc(j,2))**2 + (rNuc(i,3)-rNuc(j,3))**2
-      ENuc = ENuc + ZNuc(i)*ZNuc(j)/sqrt(RAB)
+      ENuc = ENuc + ZNuc(i)*ZNuc(j)/(AnToBo*sqrt(RAB))
     enddo
   enddo
 

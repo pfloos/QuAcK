@@ -1,4 +1,4 @@
-subroutine ufG0W0(nBas,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,eHF)
+subroutine ufG0W0(nBas,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,eHF,TDA_W)
 
 ! Unfold G0W0 equations
 
@@ -17,6 +17,7 @@ subroutine ufG0W0(nBas,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,eHF)
   double precision,intent(in)   :: ERHF
   double precision,intent(in)   :: ERI(nBas,nBas,nBas,nBas)
   double precision,intent(in)   :: eHF(nBas)
+  logical,intent(in)            :: TDA_W
 
 ! Local variables
 
@@ -24,14 +25,21 @@ subroutine ufG0W0(nBas,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,eHF)
   integer                       :: s
   integer                       :: i,j,k,l
   integer                       :: a,b,c,d
-  integer                       :: klc,kcd,ija,iab
+  integer                       :: jb,kc,ia,ja
+  integer                       :: klc,kcd,ija,ijb,iab,jab
 
+  integer                       :: ispin
+  double precision              :: EcRPA
   integer                       :: n2h1p,n2p1h,nH
   double precision,external     :: Kronecker_delta
   double precision,allocatable  :: H(:,:)
   double precision,allocatable  :: cGW(:,:)
   double precision,allocatable  :: eGW(:)
   double precision,allocatable  :: Z(:)
+  double precision,allocatable  :: OmRPA(:)
+  double precision,allocatable  :: XpY_RPA(:,:)
+  double precision,allocatable  :: XmY_RPA(:,:)
+  double precision,allocatable  :: rho_RPA(:,:,:)
 
   logical                       :: verbose = .true.
   double precision,parameter    :: cutoff1 = 0.0d0
@@ -47,135 +55,231 @@ subroutine ufG0W0(nBas,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,eHF)
   write(*,*)'**********************************************'
   write(*,*)
 
-! TDA for W
+  ! Dimension of the supermatrix
 
-  write(*,*) 'Tamm-Dancoff approximation for dynamic screening by default!'
-  write(*,*)
-
-! Dimension of the supermatrix
-
-  n2h1p = nO*nO*nS
+  n2h1p = nO*nO*nV
   n2p1h = nV*nV*nO
   nH = 1 + n2h1p + n2p1h
 
-! Memory allocation
+  ! Memory allocation
 
   allocate(H(nH,nH),cGW(nH,nH),eGW(nH),Z(nH))
 
-! Initialization
+  ! Initialization
 
   H(:,:) = 0d0
 
-!---------------------------!
-!  Compute GW supermatrix   !
-!---------------------------!
-!                           !
-!     |   F   V2h1p V2p1h | ! 
-!     |                   | ! 
-! H = | V2h1p C2h1p     0 | ! 
-!     |                   | ! 
-!     | V2p1h   0   C2p1h | ! 
-!                           !
-!---------------------------!
+  p=nO !Compute only the HOMO!
 
-  !-------------!
-  ! Block C2h1p !
-  !-------------!
+  if (TDA_W) then
 
-  ija = 0
-  do i=nC+1,nO
-    do j=nC+1,nO
-      do a=nO+1,nBas-nR
-        ija = ija + 1
+     ! TDA for W
 
-        klc = 0
-        do k=nC+1,nO
-          do l=nC+1,nO
-            do c=nO+1,nBas-nR
+     write(*,*) 'Tamm-Dancoff approximation'
+     write(*,*) 'No need to compute RPA quantities first'
+     write(*,*)
+
+     !---------------------------!
+     !  Compute GW supermatrix   !
+     !---------------------------!
+     !                           !
+     !     |   F   V2h1p V2p1h | ! 
+     !     |                   | ! 
+     ! H = | V2h1p C2h1p     0 | ! 
+     !     |                   | ! 
+     !     | V2p1h   0   C2p1h | ! 
+     !                           !
+     !---------------------------!
+     !-------------!
+     ! Block C2h1p !
+     !-------------!
+
+     ija = 0
+     do i=nC+1,nO
+        do j=nC+1,nO
+           do a=nO+1,nBas-nR
+              ija = ija + 1
+              
+              klc = 0
+              do k=nC+1,nO
+                 do l=nC+1,nO
+                    do c=nO+1,nBas-nR
+                       klc = klc + 1
+                       
+                       H(1+ija,1+klc) & 
+                            = ((eHF(i) + eHF(j) - eHF(a))*Kronecker_delta(j,l)*Kronecker_delta(a,c) & 
+                            - 2d0*ERI(j,c,a,l))*Kronecker_delta(i,k)
+                       
+                    end do
+                 end do
+              end do
+
+           end do
+        end do
+     end do
+
+     !-------------!
+     ! Block C2p1h !
+     !-------------!
+     
+     iab = 0
+     do i=nC+1,nO
+        do a=nO+1,nBas-nR
+           do b=nO+1,nBas-nR
+              iab = iab + 1
+              
+              kcd = 0
+              do k=nC+1,nO
+                 do c=nO+1,nBas-nR
+                    do d=nO+1,nBas-nR
+                       kcd = kcd + 1
+                       
+                       H(1+n2h1p+iab,1+n2h1p+kcd) &
+                            = ((eHF(a) + eHF(b) - eHF(i))*Kronecker_delta(i,k)*Kronecker_delta(a,c) & 
+                            + 2d0*ERI(a,k,i,c))*Kronecker_delta(b,d)
+                       
+                    end do
+                 end do
+              end do
+       
+           end do
+        end do
+     end do
+
+     !---------!
+     ! Block F !
+     !---------!
+     
+     H(1,1) = eHF(p)
+     
+     !-------------!
+     ! Block V2h1p !
+     !-------------!
+     klc = 0
+     do k=nC+1,nO
+        do l=nC+1,nO
+           do c=nO+1,nBas-nR
               klc = klc + 1
+              
+              H(1       ,1+klc) = sqrt(2d0)*ERI(p,c,k,l)
+              H(1+klc,1       ) = sqrt(2d0)*ERI(p,c,k,l)
 
-              H(1+ija,1+klc) & 
-                = ((eHF(i) + eHF(j) - eHF(a))*Kronecker_delta(j,l)*Kronecker_delta(a,c) & 
-                - 2d0*ERI(j,c,a,l))*Kronecker_delta(i,k)
-
-            end do
-          end do
+           end do
         end do
+     end do
 
-      end do
-    end do
-  end do
-
-  !-------------!
-  ! Block C2p1h !
-  !-------------!
-
-  iab = 0
-  do i=nC+1,nO
-    do a=nO+1,nBas-nR
-      do b=nO+1,nBas-nR
-        iab = iab + 1
-
-        kcd = 0
-        do k=nC+1,nO
-          do c=nO+1,nBas-nR
-            do d=nO+1,nBas-nR
-              kcd = kcd + 1
-
-              H(1+n2h1p+iab,1+n2h1p+kcd) &
-                = ((eHF(a) + eHF(b) - eHF(i))*Kronecker_delta(i,k)*Kronecker_delta(a,c) & 
-                + 2d0*ERI(a,k,i,c))*Kronecker_delta(b,d)
-
-            end do
-          end do
-        end do
-
-      end do
-    end do
-  end do
-
-  do p=nC+1,nBas
-
-  !---------!
-  ! Block F !
-  !---------!
-
-    H(1,1) = eHF(p)
-
-  !-------------!
-  ! Block V2h1p !
-  !-------------!
-
-    klc = 0
-    do k=nC+1,nO
-      do l=nC+1,nO
+     !-------------!
+     ! Block V2p1h !
+     !-------------!     
+     kcd = 0
+     do k=nC+1,nO
         do c=nO+1,nBas-nR
-          klc = klc + 1
-
-          H(1       ,1+klc) = sqrt(2d0)*ERI(p,c,k,l)
-          H(1+klc,1       ) = sqrt(2d0)*ERI(p,c,k,l)
-
+           do d=nO+1,nBas-nR
+              
+              kcd = kcd + 1   
+              H(1              ,1+n2h1p+kcd) = sqrt(2d0)*ERI(p,k,d,c)
+              H(1+n2h1p+kcd,1              ) = sqrt(2d0)*ERI(p,k,d,c)
+              
+           end do
         end do
-      end do
-    end do
+     end do
+     
+  else
 
-  !-------------!
-  ! Block V2p1h !
-  !-------------!
+     ! No TDA for W
 
-    kcd = 0
-    do k=nC+1,nO
-      do c=nO+1,nBas-nR
-        do d=nO+1,nBas-nR
-          kcd = kcd + 1
+     write(*,*) 'NO Tamm-Dancoff approximation'
+     write(*,*) 'A prior RPA calculation will be done'
+     write(*,*)
 
-          H(1              ,1+n2h1p+kcd) = sqrt(2d0)*ERI(p,k,d,c)
-          H(1+n2h1p+kcd,1              ) = sqrt(2d0)*ERI(p,k,d,c)
+     !---------------------------!
+     !  Compute GW supermatrix   !
+     !---------------------------!
+     !                           !
+     !     |   F   W2h1p W2p1h | ! 
+     !     |                   | ! 
+     ! H = | W2h1p D2h1p     0 | ! 
+     !     |                   | ! 
+     !     | W2p1h   0   D2p1h | ! 
+     !                           !
+     !---------------------------!
 
+     ! Memory allocation !
+     allocate(OmRPA(nS),XpY_RPA(nS,nS),XmY_RPA(nS,nS),rho_RPA(nBas,nBas,nS))
+
+     ! Spin manifold 
+     ispin = 1
+     !-------------------!
+     ! Compute screening !
+     !-------------------!
+     call linear_response(ispin,.true.,TDA_W,0d0,nBas,nC,nO,nV,nR,nS,1d0, & 
+          eHF,ERI,EcRPA,OmRPA,XpY_RPA,XmY_RPA)
+     !--------------------------!
+     ! Compute spectral weights !
+     !--------------------------!
+     call excitation_density(nBas,nC,nO,nR,nS,ERI,XpY_RPA,rho_RPA)
+
+     !---------!
+     ! Block F !
+     !---------!
+     H(1,1) = eHF(p)
+
+     !-------------!
+     ! Block D2h1p !
+     !-------------!
+     ija = 0
+     do i=nC+1,nO
+        do ja=1,nS
+           ija = ija + 1
+           H(1+ija,1+ija) = eHF(i) - OmRPA(ja) 
         end do
-      end do
-    end do
+     end do
 
+     !-------------!
+     ! Block W2h1p !
+     !-------------!
+     ija = 0
+     do i=nC+1,nO
+        do ja=1,nS
+           ija = ija + 1
+           H(1    ,1+ija) = sqrt(2d0)*rho_RPA(p,i,ja)
+           H(1+ija,1    ) = sqrt(2d0)*rho_RPA(p,i,ja)
+        end do
+     end do
+
+     !-------------!
+     ! Block D2h1p !
+     !-------------!
+     iab = 0
+     do b=nO+1,nBas-nR
+        ia = 0
+        do i=nC+1,nO
+           do a=nO+1,nBas-nR
+              ia = ia + 1
+              iab = iab + 1
+              H(1+n2h1p+iab,1+n2h1p+iab) = eHF(b) + OmRPA(ia)
+           end do
+        end do
+     end do
+
+     !-------------!
+     ! Block W2p1h !
+     !-------------!
+     iab = 0
+     do b=nO+1,nBas-nR
+        ia = 0
+        do i=nC+1,nO
+           do a=nO+1,nBas-nR
+              ia = ia + 1
+              iab = iab + 1
+              H(1          ,1+n2h1p+iab) = sqrt(2d0)*rho_RPA(p,b,ia)
+              H(1+n2h1p+iab,1          ) = sqrt(2d0)*rho_RPA(p,b,ia)
+           end do
+        end do
+     end do
+     
+  end if
+  
   !-------------------------!
   ! Diagonalize supermatrix !
   !-------------------------!
@@ -238,7 +342,7 @@ subroutine ufG0W0(nBas,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,eHF)
          
                 klc = klc + 1
 
-!               if(abs(cGW(1+klc,s)) > cutoff2)               &
+               if(abs(cGW(1+klc,s)) > cutoff2)               &
                 write(*,'(1X,A3,I3,A1,I3,A6,I3,A7,1X,F15.6,1X,F15.6)') &
                 '  (',k,',',l,') -> (',c,')      ',cGW(1+klc,s),cGW(1+klc,s)**2
          
@@ -252,10 +356,10 @@ subroutine ufG0W0(nBas,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,eHF)
               do d=nO+1,nBas-nR
          
                 kcd = kcd + 1
-!               if(abs(cGW(1+n2h1p+kcd,s)) > cutoff2)           &
+                if(abs(cGW(1+n2h1p+kcd,s)) > cutoff2)           &
                   write(*,'(1X,A7,I3,A6,I3,A1,I3,A3,1X,F15.6,1X,F15.6)') &
                   '      (',k,') -> (',c,',',d,')  ',cGW(1+n2h1p+kcd,s),cGW(1+n2h1p+kcd,s)**2
-         
+                
               end do
             end do
           end do
@@ -269,6 +373,5 @@ subroutine ufG0W0(nBas,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,eHF)
 
     end if
 
-  end do
 
 end subroutine ufG0W0
