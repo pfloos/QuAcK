@@ -49,7 +49,7 @@ subroutine ufGW(nBas,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,eHF)
 
 ! Dimension of the supermatrix
 
-  n2h1p = nO*nO*nS
+  n2h1p = nO*nO*nV
   n2p1h = nV*nV*nO
   nH = nBas + n2h1p + n2p1h
 

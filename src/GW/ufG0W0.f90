@@ -57,6 +57,11 @@ subroutine ufG0W0(nBas,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,eHF,TDA_W)
 
   ! Dimension of the supermatrix
 
+  write(*,*) 'Tamm-Dancoff approximation for dynamic screening by default!'
+  write(*,*)
+
+! Dimension of the supermatrix
+
   n2h1p = nO*nO*nV
   n2p1h = nV*nV*nO
   nH = 1 + n2h1p + n2p1h
@@ -342,7 +347,7 @@ subroutine ufG0W0(nBas,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,eHF,TDA_W)
          
                 klc = klc + 1
 
-               if(abs(cGW(1+klc,s)) > cutoff2)               &
+                if(abs(cGW(1+klc,s)) > cutoff2)               &
                 write(*,'(1X,A3,I3,A1,I3,A6,I3,A7,1X,F15.6,1X,F15.6)') &
                 '  (',k,',',l,') -> (',c,')      ',cGW(1+klc,s),cGW(1+klc,s)**2
          
