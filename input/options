@@ -15,4 +15,4 @@
 # ACFDT: AC Kx  XBS
          F  T   T
 # BSE: BSE dBSE dTDA evDyn ppBSE BSE2
-        T    T    T    F   F     F
+        F    T    T    F   F     F

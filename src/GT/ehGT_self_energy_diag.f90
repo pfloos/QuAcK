@@ -43,7 +43,7 @@ subroutine ehGT_self_energy_diag(eta,nBas,nC,nO,nV,nR,nS,e,Om,rhoL,rhoR,EcGM,Sig
     do i=nC+1,nO
       do m=1,nS
         eps = e(p) - e(i) + Om(m)
-        SigC(p) = SigC(p) + rhoL(p,i,m)*rhoR(p,i,m)*eps/(eps**2 + eta**2)
+        SigC(p) = SigC(p) + rhoL(i,p,m)*rhoR(i,p,m)*eps/(eps**2 + eta**2)
       end do
     end do
   end do

@@ -38,7 +38,7 @@ subroutine ehGT_renormalization_factor(eta,nBas,nC,nO,nV,nR,nS,e,Om,rhoL,rhoR,Z)
     do i=nC+1,nO
       do m=1,nS
         eps = e(p) - e(i) + Om(m) 
-        Z(p) = Z(p) - rhoL(p,i,m)*rhoR(p,i,m)*(eps/(eps**2 + eta**2))**2
+        Z(p) = Z(p) - rhoL(i,p,m)*rhoR(i,p,m)*(eps/(eps**2 + eta**2))**2
       end do
     end do
   end do
