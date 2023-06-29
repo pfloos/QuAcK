@@ -1,6 +1,6 @@
-subroutine ufBSE(nBas,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,eHF,eGW)
+subroutine ufXBSE(nBas,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,eHF,OmRPA,sERI)
 
-! Unfold BSE@GW equations
+! Unfolded BSE+ equations
 
   implicit none
   include 'parameters.h'
@@ -17,7 +17,8 @@ subroutine ufBSE(nBas,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,eHF,eGW)
   double precision,intent(in)   :: ERHF
   double precision,intent(in)   :: ERI(nBas,nBas,nBas,nBas)
   double precision,intent(in)   :: eHF(nBas)
-  double precision,intent(in)   :: eGW(nBas)
+  double precision,intent(in)   :: OmRPA(nS)
+  double precision,intent(in)   :: sERI(nBas,nBas,nS)
 
 ! Local variables
 
@@ -26,12 +27,12 @@ subroutine ufBSE(nBas,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,eHF,eGW)
   integer                       :: a,b,c,d
   integer                       :: ia,jb,kc,iajb,kcld
   integer,parameter             :: maxH = 20
-  double precision              :: tmp
+  double precision              :: eps1,eps2
+  double precision              :: Ve,Vh,C2h2p
 
   integer                       :: n1h1p,n2h2p,nH
   double precision,external     :: Kronecker_delta
 
-  integer,allocatable           :: order(:)
   double precision,allocatable  :: H(:,:)
   double precision,allocatable  :: X(:,:)
   double precision,allocatable  :: Om(:)
@@ -43,7 +44,7 @@ subroutine ufBSE(nBas,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,eHF,eGW)
 
   write(*,*)
   write(*,*)'**********************************************'
-  write(*,*)'|        Unfolded BSE@GW calculation          |'
+  write(*,*)'|        Unfolded BSE+ calculation           |'
   write(*,*)'**********************************************'
   write(*,*)
 
@@ -56,25 +57,23 @@ subroutine ufBSE(nBas,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,eHF,eGW)
 
   n1h1p = nO*nV
   n2h2p = nO*nO*nV*nV
-     nH = n1h1p + n2h2p + n2h2p
+     nH = n1h1p + n2h2p
 
 ! Memory allocation
 
-  allocate(order(nH),H(nH,nH),X(nH,nH),Om(nH),Z(nH))
+  allocate(H(nH,nH),X(nH,nH),Om(nH),Z(nH))
 
 ! Initialization
 
   H(:,:) = 0d0
 
 !---------------------------!
-!  Compute BSE supermatrix  !
+!  Compute BSE+ supermatrix !
 !---------------------------!
 !                           !
-!     |  A   -Ve   -Vh  |   ! 
-!     |                 |   ! 
-! H = | +Vh C2h2p   0   |   ! 
-!     |                 |   ! 
-!     | +Ve   0   C2p2h |   ! 
+!     |  A     Ve-Vh |      !
+! H = |              |      ! 
+!     | Ve-Vh  C2h2p |      ! 
 !                           !
 !---------------------------!
 
@@ -92,8 +91,28 @@ subroutine ufBSE(nBas,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,eHF,eGW)
       do b=nO+1,nBas-nR
       jb = jb + 1
 
-        H(ia,jb) = (eGW(a) - eGW(i))*Kronecker_delta(i,j)*Kronecker_delta(a,b) &
+        H(ia,jb) = (eHF(a) - eHF(i))*Kronecker_delta(i,j)*Kronecker_delta(a,b) &
                  + 2d0*ERI(i,b,a,j) - ERI(i,b,j,a)
+
+        do kc=1,nS
+
+          do l=nC+1,nO
+            eps1 = 1d0/(eHF(a) - eHF(l) + OmRPA(kc))
+            eps2 = 1d0/(eHF(b) - eHF(l) + OmRPA(kc))
+            H(ia,jb) = H(ia,jb) + Kronecker_delta(i,j)*sERI(a,l,kc)*sERI(b,l,kc)*(eps1+eps2)
+          enddo
+
+          do d=nO+1,nBas-nR
+            eps1 = 1d0/(- eHF(i) + eHF(d) + OmRPA(kc))
+            eps2 = 1d0/(- eHF(j) + eHF(d) + OmRPA(kc))
+            H(ia,jb) = H(ia,jb) + Kronecker_delta(a,b)*sERI(i,d,kc)*sERI(j,d,kc)*(eps1+eps2)
+          enddo
+
+           eps1 = 1d0/(eHF(a) - eHF(i) + OmRPA(kc))
+           eps2 = 1d0/(eHF(b) - eHF(j) + OmRPA(kc))
+           H(ia,jb) = H(ia,jb) - 2d0*sERI(i,a,kc)*sERI(j,b,kc)*(eps1+eps2)
+
+        end do
 
         end do
       end do
@@ -117,14 +136,12 @@ subroutine ufBSE(nBas,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,eHF,eGW)
           do c=nO+1,nBas-nR
             kc = kc + 1
 
-            tmp = sqrt(2d0)*Kronecker_delta(k,j)*ERI(b,a,c,i)
-            H(n1h1p+iajb,kc              ) = +tmp
-            H(kc        ,n1h1p+n2h2p+iajb) = -tmp
-           
-            tmp = sqrt(2d0)*Kronecker_delta(b,c)*ERI(a,k,i,j)
-            H(n1h1p+n2h2p+iajb,kc        ) = +tmp
-            H(kc              ,n1h1p+iajb) = -tmp
+            Ve = sqrt(2d0)*Kronecker_delta(k,j)*ERI(b,a,c,i)
+            Vh = sqrt(2d0)*Kronecker_delta(b,c)*ERI(a,k,i,j)
 
+            H(n1h1p+iajb,kc        ) = Ve - Vh
+            H(kc        ,n1h1p+iajb) = Ve - Vh
+           
             end do
           end do
 
@@ -132,6 +149,34 @@ subroutine ufBSE(nBas,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,eHF,eGW)
       end do
     end do
   end do
+
+! iajb=0
+! ia = 0
+! do i=nC+1,nO
+!   do a=nO+1,nBas-nR
+!     ia = ia + 1
+!     do j=nC+1,nO
+!       do b=nO+1,nBas-nR
+!       iajb = iajb + 1
+
+!       kc = 0
+!       do k=nC+1,nO
+!         do c=nO+1,nBas-nR
+!           kc = kc + 1
+
+!           Ve = sqrt(2d0)*Kronecker_delta(k,j)*sERI(b,c,ia)
+!           Vh = sqrt(2d0)*Kronecker_delta(b,c)*sERI(k,j,ia)
+
+!           H(n1h1p+iajb,kc        ) = Ve - Vh
+!           H(kc        ,n1h1p+iajb) = Ve - Vh
+!          
+!           end do
+!         end do
+
+!       end do
+!     end do
+!   end do
+! end do
 
   !-------------!
   ! Block 2h2p !
@@ -149,12 +194,12 @@ subroutine ufBSE(nBas,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,eHF,eGW)
             do c=nO+1,nBas-nR
               do l=nC+1,nO
                 do d=nO+1,nBas-nR
-                kcld = kcld + 1
+                  kcld = kcld + 1
 
-                tmp = ((eHF(a) + eGW(b) - eHF(i) - eGW(j))*Kronecker_delta(i,k)*Kronecker_delta(a,c) & 
-                    + 2d0*ERI(a,k,i,c))*Kronecker_delta(j,l)*Kronecker_delta(b,d)
-                H(n1h1p      +iajb,n1h1p      +kcld) = tmp
-                H(n1h1p+n2h2p+iajb,n1h1p+n2h2p+kcld) = tmp
+                  C2h2p = ((eHF(a) + eHF(b) - eHF(i) - eHF(j))*Kronecker_delta(i,k)*Kronecker_delta(a,c) & 
+                        + 2d0*ERI(a,k,i,c))*Kronecker_delta(j,l)*Kronecker_delta(b,d)
+
+                  H(n1h1p+iajb,n1h1p+kcld) = C2h2p
 
                 end do
               end do
@@ -166,20 +211,28 @@ subroutine ufBSE(nBas,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,eHF,eGW)
     end do
   end do
 
+! iajb = 0
+! ia = 0
+! do i=nC+1,nO
+!   do a=nO+1,nBas-nR
+!     ia = ia + 1
+!     do j=nC+1,nO
+!       do b=nO+1,nBas-nR
+!         iajb = iajb + 1
+
+!         H(n1h1p+iajb,n1h1p+iajb) = Om(ia) + eHF(b) - eHF(j) 
+
+!       end do
+!     end do
+!   end do
+! end do
+
 !-------------------------!
 ! Diagonalize supermatrix !
 !-------------------------!
 
-! call matout(nH,nH,H)
-
-  call diagonalize_general_matrix(nH,H,Om,X)
-
-  do s=1,nH
-    order(s) = s
-  end do
-
-  call quick_sort(Om,order,nH)
-  call set_order(X,order,nH,nH)
+  X(:,:) = H(:,:)
+  call diagonalize_matrix(nH,X,Om)
 
 !-----------------!
 ! Compute weights !
@@ -197,7 +250,7 @@ subroutine ufBSE(nBas,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,eHF,eGW)
 !--------------!
 
   write(*,*)'-------------------------------------------'
-  write(*,*)'   unfolded BSE excitation energies (eV)   '
+  write(*,*)'       BSE+ excitation energies (eV)       '
   write(*,*)'-------------------------------------------'
   write(*,'(1X,A1,1X,A3,1X,A1,1X,A15,1X,A1,1X,A15,1X,A1,1X,A15,1X)') &
             '|','#','|','Omega (eV)','|','Z','|'
@@ -212,4 +265,4 @@ subroutine ufBSE(nBas,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,eHF,eGW)
   write(*,*)'-------------------------------------------'
   write(*,*)
 
-end subroutine ufBSE
+end subroutine 

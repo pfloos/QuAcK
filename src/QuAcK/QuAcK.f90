@@ -17,6 +17,7 @@ program QuAcK
   logical                       :: doG0F2,doevGF2,doqsGF2,doG0F3,doevGF3
   logical                       :: doG0W0,doevGW,doqsGW,doufG0W0,doufGW,doSRGqsGW
   logical                       :: doG0T0,doevGT,doqsGT
+  logical                       :: doehG0T0
 
   integer                       :: nNuc,nBas,nBasCABS
   integer                       :: nEl(nspin)
@@ -169,7 +170,8 @@ program QuAcK
                     doG0F3,doevGF3,                    &
                     doG0W0,doevGW,doqsGW,doSRGqsGW,    &
                     doufG0W0,doufGW,                   &
-                    doG0T0,doevGT,doqsGT)
+                    doG0T0,doevGT,doqsGT,              &
+                    doehG0T0)
 
 ! Read options for methods
 
@@ -1099,6 +1101,8 @@ program QuAcK
     write(*,'(A65,1X,F9.3,A8)') 'Total CPU time for ufG0W0 = ',t_ufGW,' seconds'
     write(*,*)
 
+    if(BSE) call ufBSE(nBas,nC,nO,nV,nR,nS,ENuc,ERHF,ERI_MO,eHF,eG0W0)
+
   end if
 
 !------------------------------------------------------------------------
@@ -1109,7 +1113,7 @@ program QuAcK
     
     call cpu_time(start_ufGW)
     call ufGW(nBas,nC,nO,nV,nR,nS,ENuc,ERHF,ERI_MO,eHF)
-    call CCGW(maxSCF_CC,thresh_CC,nBas,nC,nO,nV,nR,ERI_MO,ENuc,ERHF,eHF)
+!   call CCGW(maxSCF_CC,thresh_CC,nBas,nC,nO,nV,nR,ERI_MO,ENuc,ERHF,eHF)
     call cpu_time(end_ufGW)
   
     t_ufGW = end_ufGW - start_ufGW
@@ -1215,6 +1219,35 @@ program QuAcK
 
     t_qsGT = end_qsGT - start_qsGT
     write(*,'(A65,1X,F9.3,A8)') 'Total CPU time for qsGT = ',t_qsGT,' seconds'
+    write(*,*)
+
+  end if
+
+!------------------------------------------------------------------------
+! Perform ehG0T0 calculatiom
+!------------------------------------------------------------------------
+
+  eG0T0(:,:) = eHF(:,:)
+
+  if(doehG0T0) then
+    
+    call cpu_time(start_G0T0)
+
+    if(unrestricted) then 
+
+      print*,'!!! ehG0T0 NYI at the unrestricted level !!!'
+
+    else
+
+      call ehG0T0(doACFDT,exchange_kernel,doXBS,BSE,BSE2,TDA_W,TDA,dBSE,dTDA,evDyn,ppBSE,singlet,triplet, &
+                  linGW,eta_GW,regGW,nBas,nC,nO,nV,nR,nS,ENuc,ERHF,ERI_AO,ERI_MO,dipole_int_MO,PHF,cHF,eHF,Vxc,eG0T0)
+
+    end if
+
+    call cpu_time(end_G0T0)
+  
+    t_G0T0 = end_G0T0 - start_G0T0
+    write(*,'(A65,1X,F9.3,A8)') 'Total CPU time for G0T0 = ',t_G0T0,' seconds'
     write(*,*)
 
   end if
