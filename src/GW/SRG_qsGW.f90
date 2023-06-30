@@ -72,7 +72,7 @@ subroutine SRG_qsGW(maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,BSE,BSE
   double precision,external     :: trace_matrix
   double precision              :: dipole(ncart)
 
-  logical                       :: print_W = .false.
+  logical                       :: print_W = .true.
   double precision,allocatable  :: error_diis(:,:)
   double precision,allocatable  :: F_diis(:,:)
   double precision,allocatable  :: OmRPA(:)

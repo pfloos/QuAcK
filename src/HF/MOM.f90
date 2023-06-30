@@ -102,7 +102,7 @@ subroutine MOM(maxSCF,thresh,max_diis,nBas,nO,S,T,V,Hc,ERI,X,ENuc,ERHF,c,e,P)
     call Coulomb_matrix_AO_basis(nBas,P,ERI,J)
     call exchange_matrix_AO_basis(nBas,P,ERI,K)
     
-    F(:,:) = Hc(:,:) + J(:,:) + K(:,:)
+    F(:,:) = Hc(:,:) + J(:,:) + 0.5*K(:,:)
 
 !   Check convergence 
 

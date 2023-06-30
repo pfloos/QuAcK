@@ -26,7 +26,7 @@ subroutine MOM_overlap(nBas,nO,S,cG,c,ON)
 
   do i=1,nBas
     do j=1,nBas
-      pOv(j) = pOv(j) + ON(i)*Ov(i,j)**2
+      pOv(j) = pOv(j) + Ov(i,j)**2
     enddo
   enddo
 
@@ -41,7 +41,8 @@ subroutine MOM_overlap(nBas,nO,S,cG,c,ON)
     ploc = maxloc(pOv,nBas)
     ON(ploc) = 1d0
     pOv(ploc) = 0d0
-  enddo 
+ enddo
+
 
 ! print*,'--- Occupation numbers ---'
 ! call matout(nBas,1,ON)

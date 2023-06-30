@@ -1,4 +1,4 @@
-subroutine QP_graph(nBas,nC,nO,nV,nR,nS,eta,eHF,SigX,Vxc,Omega,rho,eGWlin,eGW)
+subroutine QP_graph(nBas,nC,nO,nV,nR,nS,eta,eHF,SigX,Vxc,Omega,rho,eGWlin,eGW,regularize)
 
 ! Compute the graphical solution of the QP equation
 
@@ -21,6 +21,7 @@ subroutine QP_graph(nBas,nC,nO,nV,nR,nS,eta,eHF,SigX,Vxc,Omega,rho,eGWlin,eGW)
   double precision,intent(in)   :: rho(nBas,nBas,nS)
 
   double precision,intent(in)   :: eGWlin(nBas)
+  logical,intent(in)            :: regularize
 
 ! Local variables
 
@@ -54,8 +55,8 @@ subroutine QP_graph(nBas,nC,nO,nV,nR,nS,eta,eHF,SigX,Vxc,Omega,rho,eGWlin,eGW)
     
       nIt = nIt + 1
 
-      sigC  =  SigmaC(p,w,eta,nBas,nC,nO,nV,nR,nS,eHF,Omega,rho)
-      dsigC = dSigmaC(p,w,eta,nBas,nC,nO,nV,nR,nS,eHF,Omega,rho)
+      sigC  =  SigmaC(p,w,eta,nBas,nC,nO,nV,nR,nS,eHF,Omega,rho,regularize)
+      dsigC = dSigmaC(p,w,eta,nBas,nC,nO,nV,nR,nS,eHF,Omega,rho,regularize)
       f  = w - eHF(p) - SigX(p) - sigC + Vxc(p)
       df = 1d0 - dsigC
     

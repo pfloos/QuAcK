@@ -1,5 +1,5 @@
 subroutine evGW(maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,COHSEX,BSE,BSE2,TDA_W,TDA,dBSE,dTDA,evDyn,ppBSE, & 
-                singlet,triplet,eta,regularize,nBas,nC,nO,nV,nR,nS,ENuc,ERHF,ERI_AO,ERI_MO,dipole_int,PHF,cHF,eHF,Vxc,eG0W0)
+                singlet,triplet,linearize,eta,regularize,nBas,nC,nO,nV,nR,nS,ENuc,ERHF,ERI_AO,ERI_MO,dipole_int,PHF,cHF,eHF,Vxc,eG0W0)
 
 ! Perform self-consistent eigenvalue-only GW calculation
 
@@ -27,6 +27,7 @@ subroutine evGW(maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,COHSEX,BSE,
   logical,intent(in)            :: ppBSE
   logical,intent(in)            :: singlet
   logical,intent(in)            :: triplet
+  logical,intent(in)            :: linearize
   double precision,intent(in)   :: eta
   logical,intent(in)            :: regularize
 
@@ -51,6 +52,7 @@ subroutine evGW(maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,COHSEX,BSE,
   integer                       :: ispin
   integer                       :: nSCF
   integer                       :: n_diis
+  integer                       :: i,a,jb,p
   double precision              :: rcond
   double precision              :: Conv
   double precision              :: EcRPA
@@ -59,6 +61,7 @@ subroutine evGW(maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,COHSEX,BSE,
   double precision              :: EcppBSE(nspin)
   double precision              :: EcGM
   double precision              :: alpha
+  double precision              :: Dpijb,Dpajb
   double precision,allocatable  :: error_diis(:,:)
   double precision,allocatable  :: e_diis(:,:)
   double precision,allocatable  :: eGW(:)
@@ -70,6 +73,8 @@ subroutine evGW(maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,COHSEX,BSE,
   double precision,allocatable  :: XpY_RPA(:,:)
   double precision,allocatable  :: XmY_RPA(:,:)
   double precision,allocatable  :: rho_RPA(:,:,:)
+  
+  double precision,allocatable  :: eGWlin(:)
 
   integer                       :: nBas2
   integer                       :: nC2
@@ -117,7 +122,7 @@ subroutine evGW(maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,COHSEX,BSE,
 ! Memory allocation
 
   allocate(eGW(nBas),eOld(nBas),Z(nBas),SigX(nBas),SigC(nBas),OmRPA(nS),XpY_RPA(nS,nS),XmY_RPA(nS,nS), & 
-           rho_RPA(nBas,nBas,nS),error_diis(nBas,max_diis),e_diis(nBas,max_diis))
+           rho_RPA(nBas,nBas,nS),error_diis(nBas,max_diis),e_diis(nBas,max_diis),eGWlin(nBas))
 
 ! Compute the exchange part of the self-energy
 
@@ -136,6 +141,8 @@ subroutine evGW(maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,COHSEX,BSE,
   Z(:)            = 1d0
   rcond           = 0d0
 
+
+  
 !------------------------------------------------------------------------
 ! Main loop
 !------------------------------------------------------------------------
@@ -156,7 +163,7 @@ subroutine evGW(maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,COHSEX,BSE,
     if(regularize) then 
 
       call regularized_self_energy_correlation_diag(COHSEX,eta,nBas,nC,nO,nV,nR,nS,eGW,OmRPA,rho_RPA,EcGM,SigC)
-      call regularized_renormalization_factor(COHSEX,eta,nBas,nC,nO,nV,nR,nS,eGW,OmRPA,rho_RPA,Z)
+      call renormalization_factor_SRG(eta,nBas,nC,nO,nV,nR,nS,eGW,OmRPA,rho_RPA,Z)
 
     else
 
@@ -167,7 +174,25 @@ subroutine evGW(maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,COHSEX,BSE,
 
     ! Solve the quasi-particle equation
 
-    eGW(:) = eHF(:) + SigX(:) + SigC(:) - Vxc(:)
+    eGWlin(:) = eHF(:) + SigX(:) + SigC(:) - Vxc(:)
+
+    ! Linearized or graphical solution?
+
+    if(linearize) then 
+ 
+       write(*,*) ' *** Quasiparticle energies obtained by linearization *** '
+       write(*,*)
+
+       eGW(:) = eGWlin(:)
+
+    else 
+
+       write(*,*) ' *** Quasiparticle energies obtained by root search (experimental) *** '
+       write(*,*)
+  
+       call QP_graph(nBas,nC,nO,nV,nR,nS,eta,eHF,SigX,Vxc,OmRPA,rho_RPA,eGWlin,eGW,regularize)
+ 
+    end if
 
     ! Convergence criteria
 

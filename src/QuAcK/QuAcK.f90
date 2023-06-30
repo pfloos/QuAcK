@@ -335,7 +335,7 @@ program QuAcK
 
     else
 
-      call RMOM(maxSCF_HF,thresh_HF,n_diis_HF,guess_type,nNuc,ZNuc,rNuc,ENuc, &
+      call MOM(maxSCF_HF,thresh_HF,n_diis_HF,guess_type,nNuc,ZNuc,rNuc,ENuc, &
              nBas,nO,S,T,V,Hc,ERI_AO,dipole_int_AO,X,ERHF,eHF,cHF,PHF,Vxc)
 
     end if
@@ -1017,7 +1017,7 @@ program QuAcK
     else
 
       call evGW(maxSCF_GW,thresh_GW,n_diis_GW,doACFDT,exchange_kernel,doXBS,COHSEX,       &
-                BSE,BSE2,TDA_W,TDA,dBSE,dTDA,evDyn,ppBSE,singlet,triplet,eta_GW,regGW, &
+                BSE,BSE2,TDA_W,TDA,dBSE,dTDA,evDyn,ppBSE,singlet,triplet,linGW,eta_GW,regGW, &
                 nBas,nC,nO,nV,nR,nS,ENuc,ERHF,ERI_AO,ERI_MO,dipole_int_MO,PHF,cHF,eHF,Vxc,eG0W0)
     end if
     call cpu_time(end_evGW)
@@ -1094,7 +1094,7 @@ program QuAcK
   if(doufG0W0) then
     
     call cpu_time(start_ufGW)
-    call ufG0W0(nBas,nC,nO,nV,nR,nS,ENuc,ERHF,ERI_MO,eHF)
+    call ufG0W0(nBas,nC,nO,nV,nR,nS,ENuc,ERHF,ERI_MO,eHF,TDA_W)
     call cpu_time(end_ufGW)
   
     t_ufGW = end_ufGW - start_ufGW

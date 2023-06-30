@@ -1,4 +1,4 @@
-double precision function dSigmaC(x,w,eta,nBas,nC,nO,nV,nR,nS,e,Omega,rho)
+double precision function dSigmaC(x,w,eta,nBas,nC,nO,nV,nR,nS,e,Omega,rho,regularize)
 
 ! Compute the derivative of the correlation part of the self-energy
 
@@ -19,40 +19,60 @@ double precision function dSigmaC(x,w,eta,nBas,nC,nO,nV,nR,nS,e,Omega,rho)
   double precision,intent(in)   :: e(nBas)
   double precision,intent(in)   :: Omega(nS)
   double precision,intent(in)   :: rho(nBas,nBas,nS)
+  logical,intent(in)            :: regularize
 
 ! Local variables
 
   integer                       :: i,j,a,b,p,jb
   double precision              :: eps
+  double precision              :: Dpijb,Dpajb
 
 ! Initialize 
 
   dSigmaC = 0d0
 
-! Occupied part of the correlation self-energy
+  if (regularize) then
+  ! Occupied part of the correlation self-energy
+     do i=nC+1,nO
+        do jb=1,nS
+           eps = w - e(i) + Omega(jb)
+           Dpijb = e(p) - e(i) + Omega(jb)
+           dSigmaC = dSigmaC - 2d0*rho(p,i,jb)**2*(1d0-exp(-2*eta*Dpijb*Dpijb))/(eps**2)
+        enddo
+     enddo
+  ! Virtual part of the correlation self-energy
+     do a=nO+1,nBas-nR
+        do jb=1,nS
+           eps = w - e(a) - Omega(jb)
+           Dpajb = e(p) - e(a) - Omega(jb)
+           dSigmaC = dSigmaC - 2d0*rho(p,a,jb)**2*(1d0-exp(-2*eta*Dpajb*Dpajb))/(eps**2)
+        enddo
+     enddo
 
-  do i=nC+1,nO
-    jb = 0
-    do j=nC+1,nO
-      do b=nO+1,nBas-nR
-        jb = jb + 1
-        eps = w - e(i) + Omega(jb)
-        dSigmaC = dSigmaC - 2d0*rho(x,i,jb)**2*(eps**2 - eta**2)/(eps**2 + eta**2)**2
-      enddo
-    enddo
-  enddo
+  else
+   ! Occupied part of the correlation self-energy
+     do i=nC+1,nO
+        jb = 0
+        do j=nC+1,nO
+           do b=nO+1,nBas-nR
+              jb = jb + 1
+              eps = w - e(i) + Omega(jb)
+              dSigmaC = dSigmaC - 2d0*rho(x,i,jb)**2*(eps**2 - eta**2)/(eps**2 + eta**2)**2
+           enddo
+        enddo
+     enddo
 
 ! Virtual part of the correlation self-energy
-
-  do a=nO+1,nBas-nR
-    jb = 0
-    do j=nC+1,nO
-      do b=nO+1,nBas-nR
-        jb = jb + 1
-        eps = w - e(a) - Omega(jb)
-        dSigmaC = dSigmaC - 2d0*rho(x,a,jb)**2*(eps**2 - eta**2)/(eps**2 + eta**2)**2
-      enddo
-    enddo
-  enddo
+     do a=nO+1,nBas-nR
+        jb = 0
+        do j=nC+1,nO
+           do b=nO+1,nBas-nR
+              jb = jb + 1
+              eps = w - e(a) - Omega(jb)
+              dSigmaC = dSigmaC - 2d0*rho(x,a,jb)**2*(eps**2 - eta**2)/(eps**2 + eta**2)**2
+           enddo
+        enddo
+     enddo
+  end if
 
 end function dSigmaC

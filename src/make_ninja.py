@@ -42,6 +42,17 @@ LAPACK=-lblas -llapack
 STDCXX=-lstdc++
 FIX_ORDER_OF_LIBS=-Wl,--start-group 
 """
+    
+    compile_ifort_linux = """
+FC = ifort -mkl=parallel -qopenmp
+AR = ar crs
+FFLAGS = -I$IDIR -g -Ofast -traceback
+CC = icc
+CXX = icpc
+LAPACK=
+STDCXX=-lstdc++
+FIX_ORDER_OF_LIBS=-Wl,--start-group 
+"""
 else:
     compile_gfortran_mac = """
 FC = gfortran
@@ -67,7 +78,8 @@ FIX_ORDER_OF_LIBS=-Wl,--start-group
 
 
 if sys.platform in ["linux", "linux2"]:
-  compiler = compile_gfortran_linux
+#  compiler = compile_gfortran_linux
+  compiler = compile_ifort_linux
 elif sys.platform == "darwin":
   compiler = compile_gfortran_mac
 else:

@@ -22,10 +22,7 @@ subroutine regularized_self_energy_correlation_diag(COHSEX,eta,nBas,nC,nO,nV,nR,
 ! Local variables
 
   integer                       :: i,a,p,q,jb
-  double precision              :: eps
-
-  double precision              :: kappa
-  double precision              :: fk
+  double precision              :: Dpijb,Dpajb
 
 ! Output variables
 
@@ -35,12 +32,6 @@ subroutine regularized_self_energy_correlation_diag(COHSEX,eta,nBas,nC,nO,nV,nR,
 ! Initialize 
 
   SigC(:) = 0d0
-
-!-----------------------------------------!
-! Parameters for regularized calculations !
-!-----------------------------------------!
-
-  kappa = 1d0
 
 !-----------------------------
 ! COHSEX static self-energy
@@ -86,9 +77,8 @@ subroutine regularized_self_energy_correlation_diag(COHSEX,eta,nBas,nC,nO,nV,nR,
     do p=nC+1,nBas-nR
       do i=nC+1,nO
         do jb=1,nS
-          eps = e(p) - e(i) + Omega(jb)
-          fk  = (1d0 - exp(-2d0*eps**2/kappa**2))/eps
-          SigC(p) = SigC(p) + 2d0*rho(p,i,jb)**2*fk
+          Dpijb = e(p) - e(i) + Omega(jb)
+          SigC(p) = SigC(p) + 2d0*rho(p,i,jb)**2*(1d0 - exp(-2d0*eta*Dpijb*Dpijb))/Dpijb
         end do
       end do
     end do
@@ -98,9 +88,8 @@ subroutine regularized_self_energy_correlation_diag(COHSEX,eta,nBas,nC,nO,nV,nR,
     do p=nC+1,nBas-nR
       do a=nO+1,nBas-nR
         do jb=1,nS
-          eps = e(p) - e(a) - Omega(jb)
-          fk  = (1d0 - exp(-2d0*eps**2/kappa**2))/eps
-          SigC(p) = SigC(p) + 2d0*rho(p,a,jb)**2*fk
+          Dpajb = e(p) - e(a) - Omega(jb)
+          SigC(p) = SigC(p) + 2d0*rho(p,a,jb)**2*(1d0 - exp(-2d0*eta*Dpajb*Dpajb))/Dpajb
         end do
       end do
     end do
@@ -111,9 +100,7 @@ subroutine regularized_self_energy_correlation_diag(COHSEX,eta,nBas,nC,nO,nV,nR,
     do i=nC+1,nO
       do a=nO+1,nBas-nR
         do jb=1,nS
-          eps = e(a) - e(i) + Omega(jb)
-          fk  = (1d0 - exp(-2d0*eps**2/kappa**2))/eps
-          EcGM = EcGM - 4d0*rho(a,i,jb)**2*fk
+          EcGM = EcGM - 4d0*rho(a,i,jb)**2
         end do
       end do
     end do

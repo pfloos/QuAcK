@@ -21,7 +21,7 @@ subroutine QP_roots(nBas,nC,nO,nV,nR,nS,eta,eHF,Omega,rho,eGW)
 ! Local variables
 
   integer                       :: i,j,a,b,x,jb,g
-  integer,parameter             :: nGrid = 100000
+  integer,parameter             :: nGrid = 1000000
   double precision,parameter    :: wmin = -50d0
   double precision,parameter    :: wmax = +50d0
   double precision              :: dw

@@ -205,8 +205,11 @@ subroutine sort_ppRPA(nOO,nVV,Omega,Z,Omega1,X1,Y1,Omega2,X2,Y2)
 
   call dgemm ('N', 'N', nOO+nVV, nVV, nOO+nVV, 1d0,  M, nOO+nVV, Z1, nOO+nVV, 0d0, tmp1, nOO+nVV)
   call dgemm ('T', 'N', nVV    , nVV, nOO+nVV, 1d0, Z1, nOO+nVV, tmp1, nOO+nVV, 0d0, S1, nVV)
- 
-  S2 = - matmul(transpose(Z2),matmul(M,Z2))
+  !S1 = + matmul(transpose(Z1),matmul(M,Z1))
+
+  call dgemm ('N', 'N', nOO+nVV, nOO, nOO+nVV, 1d0,  M, nOO+nVV, -1d0*Z2, nOO+nVV, 0d0, tmp2, nOO+nVV)
+  call dgemm ('T', 'N', nOO    , nOO, nOO+nVV, 1d0, Z2, nOO+nVV, tmp2, nOO+nVV, 0d0, S2, nOO)
+  ! S2 = - matmul(transpose(Z2),matmul(M,Z2))
 
   if(nVV > 0) call orthogonalization_matrix(1,nVV,S1,O1)
   if(nOO > 0) call orthogonalization_matrix(1,nOO,S2,O2)
@@ -214,8 +217,11 @@ subroutine sort_ppRPA(nOO,nVV,Omega,Z,Omega1,X1,Y1,Omega2,X2,Y2)
   
   write (*,*) 'OK SO FAR'
 
-  call dgemm ('N', 'N', nVV, nVV, nVV, 1d0,  Z1, nVV, O1, nVV, 0d0, Z1, nVV)
-  Z2 = matmul(Z2,O2)
+  !Z1 = matmul(Z1,O1)
+  call dgemm ('N', 'N', nOO+nVV,nVV,nVV, 1d0, Z1, nOO+nVV, O1, nVV,0d0, tmp1, nOO+nVV)
+  Z1 = tmp1
+  call dgemm ('N', 'N', nOO+nVV,nOO,nOO, 1d0, Z2, nOO+nVV, O2, nOO,0d0, tmp2, nOO+nVV)
+  Z2 = tmp2
 
 ! Define submatrices X1, Y1, X2, & Y2
 

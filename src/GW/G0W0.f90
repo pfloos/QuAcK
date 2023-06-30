@@ -170,11 +170,11 @@ subroutine G0W0(doACFDT,exchange_kernel,doXBS,COHSEX,BSE,BSE2,TDA_W,TDA,dBSE,dTD
     write(*,*) ' *** Quasiparticle energies obtained by root search (experimental) *** '
     write(*,*)
   
-    call QP_graph(nBas,nC,nO,nV,nR,nS,eta,eHF,SigX,Vxc,OmRPA,rho_RPA,eGWlin,eGW)
+    call QP_graph(nBas,nC,nO,nV,nR,nS,eta,eHF,SigX,Vxc,OmRPA,rho_RPA,eGWlin,eGW,regularize)
 
     ! Find all the roots of the QP equation if necessary
 
-    ! call QP_roots(nBas,nC,nO,nV,nR,nS,eta,eHF,Omega,rho,eGWlin)
+    ! call QP_roots(nBas,nC,nO,nV,nR,nS,eta,eHF,OmRPA,rho_RPA,eGWlin) 
  
   end if
 
@@ -195,7 +195,7 @@ subroutine G0W0(doACFDT,exchange_kernel,doXBS,COHSEX,BSE,BSE2,TDA_W,TDA,dBSE,dTD
 
 ! Plot stuff
 
-! call plot_GW(nBas,nC,nO,nV,nR,nS,eHF,eGW,OmRPA,rho_RPA)
+!  call plot_GW(nBas,nC,nO,nV,nR,nS,eHF,eGW,OmRPA,rho_RPA)
 
 ! Perform BSE calculation
 

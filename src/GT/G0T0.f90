@@ -62,6 +62,7 @@ subroutine G0T0(doACFDT,exchange_kernel,doXBS,BSE,TDA_T,TDA,dBSE,dTDA,evDyn,ppBS
   double precision,allocatable  :: SigX(:)
   double precision,allocatable  :: SigT(:)
   double precision,allocatable  :: Z(:)
+  double precision,allocatable  :: eGTlin(:)
 
 ! Output variables
 
@@ -91,7 +92,7 @@ subroutine G0T0(doACFDT,exchange_kernel,doXBS,BSE,TDA_T,TDA,dBSE,dTDA,evDyn,ppBS
            Om1aa(nVVaa),X1aa(nVVaa,nVVaa),Y1aa(nOOaa,nVVaa), & 
            Om2aa(nOOaa),X2aa(nVVaa,nOOaa),Y2aa(nOOaa,nOOaa), & 
            rho1aa(nBas,nBas,nVVaa),rho2aa(nBas,nBas,nOOaa), & 
-           SigX(nBas),SigT(nBas),Z(nBas))
+           SigX(nBas),SigT(nBas),Z(nBas),eGTlin(nBas))
 
 !----------------------------------------------
 ! alpha-beta block
@@ -175,13 +176,22 @@ subroutine G0T0(doACFDT,exchange_kernel,doXBS,BSE,TDA_T,TDA,dBSE,dTDA,evDyn,ppBS
 ! Solve the quasi-particle equation
 !----------------------------------------------
 
+eGTlin(:) = 0d0
+eGTlin(:) = eHF(:) + Z(:)*(SigX(:) + SigT(:) - Vxc(:))
+  
   if(linearize) then
 
-    eGT(:) = eHF(:) + Z(:)*(SigX(:) + SigT(:) - Vxc(:))
+    write(*,*) ' *** Quasiparticle energies obtained by linearization *** '
+    write(*,*)
+
+    eGT(:) = eGTlin(:)
 
   else
-  
-    eGT(:) = eHF(:) + SigX(:) + SigT(:) - Vxc(:)
+
+    write(*,*) ' *** Quasiparticle energies obtained by root search (experimental) *** '
+    write(*,*)
+     
+   call QP_graph_GT(eta,nBas,nC,nO,nV,nR,nOOaa,nVVaa,eHF,Om1aa,rho1aa,Om2aa,rho2aa,eGTlin,eGT)
 
   end if
 
