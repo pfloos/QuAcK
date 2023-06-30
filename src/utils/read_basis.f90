@@ -52,135 +52,135 @@ subroutine read_basis(nNuc,rNuc,nBas,nO,nV,nShell,TotAngMomShell,CenterShell,KSh
 !------------------------------------------------------------------------
 ! Loop over atoms
 !------------------------------------------------------------------------
- !  do i=1,nNuc
+  do i=1,nNuc
 
-!     read(2,*) iNuc,nShAt
-!     write(*,'(A28,1X,I16)') 'Atom n. ',iNuc
-!     write(*,'(A28,1X,I16)') 'number of shells ',nShAt
-!     write(*,'(A28)') '------------------'
+    read(2,*) iNuc,nShAt
+    write(*,'(A28,1X,I16)') 'Atom n. ',iNuc
+    write(*,'(A28,1X,I16)') 'number of shells ',nShAt
+    write(*,'(A28)') '------------------'
 
-! !------------------------------------------------------------------------
-! ! Loop over shells
-! !------------------------------------------------------------------------
-!     do j=1,nShAt
+!------------------------------------------------------------------------
+! Loop over shells
+!------------------------------------------------------------------------
+    do j=1,nShAt
 
-!       nShell = nShell + 1
+      nShell = nShell + 1
 
-!      ! Basis function centers
+     ! Basis function centers
 
-!       do k=1,ncart
-!         CenterShell(nShell,k) = rNuc(iNuc,k)
-!       enddo
+      do k=1,ncart
+        CenterShell(nShell,k) = rNuc(iNuc,k)
+      enddo
 
-!       ! Shell type and contraction degree
+      ! Shell type and contraction degree
 
-!       read(2,*) shelltype,KShell(nShell)
+      read(2,*) shelltype,KShell(nShell)
 
-!       select case (shelltype)
-!         case ("S") 
+      select case (shelltype)
+        case ("S") 
 
-!           TotAngMomShell(nShell) = 0
-!           write(*,'(A28,1X,I16)') 's-type shell with K = ',KShell(nShell)
+          TotAngMomShell(nShell) = 0
+          write(*,'(A28,1X,I16)') 's-type shell with K = ',KShell(nShell)
 
-!         case ("P")
+        case ("P")
 
-!           TotAngMomShell(nShell) = 1
-!            write(*,'(A28,1X,I16)') 'p-type shell with K = ',KShell(nShell)
+          TotAngMomShell(nShell) = 1
+           write(*,'(A28,1X,I16)') 'p-type shell with K = ',KShell(nShell)
 
-!         case ("D")
+        case ("D")
 
-!           TotAngMomShell(nShell) = 2
-!           write(*,'(A28,1X,I16)') 'd-type shell with K = ',KShell(nShell)
+          TotAngMomShell(nShell) = 2
+          write(*,'(A28,1X,I16)') 'd-type shell with K = ',KShell(nShell)
 
-!         case ("F")
+        case ("F")
 
-!           TotAngMomShell(nShell) = 3
-!           write(*,'(A28,1X,I16)') 'f-type shell with K = ',KShell(nShell)
+          TotAngMomShell(nShell) = 3
+          write(*,'(A28,1X,I16)') 'f-type shell with K = ',KShell(nShell)
 
-!         case ("G")
+        case ("G")
 
-!           TotAngMomShell(nShell) = 4
-!           write(*,'(A28,1X,I16)') 'g-type shell with K = ',KShell(nShell)
+          TotAngMomShell(nShell) = 4
+          write(*,'(A28,1X,I16)') 'g-type shell with K = ',KShell(nShell)
 
-!         case ("H")
+        case ("H")
 
-!           TotAngMomShell(nShell) = 5
-!           write(*,'(A28,1X,I16)') 'h-type shell with K = ',KShell(nShell)
+          TotAngMomShell(nShell) = 5
+          write(*,'(A28,1X,I16)') 'h-type shell with K = ',KShell(nShell)
 
-!         case ("I")
+        case ("I")
 
-!           TotAngMomShell(nShell) = 6
-!           write(*,'(A28,1X,I16)') 'i-type shell with K = ',KShell(nShell)
+          TotAngMomShell(nShell) = 6
+          write(*,'(A28,1X,I16)') 'i-type shell with K = ',KShell(nShell)
 
-!         case ("J")
+        case ("J")
 
-!           TotAngMomShell(nShell) = 7
-!           write(*,'(A28,1X,I16)') 'j-type shell with K = ',KShell(nShell)
+          TotAngMomShell(nShell) = 7
+          write(*,'(A28,1X,I16)') 'j-type shell with K = ',KShell(nShell)
 
-!         case default 
+        case default 
 
-!          call print_warning('!!! Angular momentum too high !!!')
-!          stop
+         call print_warning('!!! Angular momentum too high !!!')
+         stop
 
-!       end select
+      end select
 
-! ! Read exponents and contraction coefficients
+! Read exponents and contraction coefficients
 
-!       write(*,'(A28,1X,A16,A16)') '','Exponents','Contraction'
-!       do k=1,Kshell(nShell)
-!         read(2,*) kk,ExpShell(nShell,k),DShell(nShell,k)
-!         write(*,'(A28,1X,F16.10,F16.10)') '',ExpShell(nShell,k),DShell(nShell,k)
-!       enddo
+      write(*,'(A28,1X,A16,A16)') '','Exponents','Contraction'
+      do k=1,Kshell(nShell)
+        read(2,*) kk,ExpShell(nShell,k),DShell(nShell,k)
+        write(*,'(A28,1X,F16.10,F16.10)') '',ExpShell(nShell,k),DShell(nShell,k)
+      enddo
 
-!       min_exponent(iNuc,TotAngMomShell(nShell)+1) & 
-!         = min(min_exponent(iNuc,TotAngMomShell(nShell)+1),minval(ExpShell(nShell,1:KShell(nShell))))
-!       max_exponent(iNuc) = max(max_exponent(iNuc),maxval(ExpShell(nShell,:)))
-!       max_ang_mom(iNuc)  = max(max_ang_mom(iNuc),TotAngMomShell(nShell))
+      min_exponent(iNuc,TotAngMomShell(nShell)+1) & 
+        = min(min_exponent(iNuc,TotAngMomShell(nShell)+1),minval(ExpShell(nShell,1:KShell(nShell))))
+      max_exponent(iNuc) = max(max_exponent(iNuc),maxval(ExpShell(nShell,:)))
+      max_ang_mom(iNuc)  = max(max_ang_mom(iNuc),TotAngMomShell(nShell))
 
-!     enddo
-! !------------------------------------------------------------------------
-! !   End loop over shells
-! !------------------------------------------------------------------------
+    enddo
+!------------------------------------------------------------------------
+!   End loop over shells
+!------------------------------------------------------------------------
 
-!     write(*,'(A28)') '------------------'
+    write(*,'(A28)') '------------------'
 
-! !   print*,'maximum angular momemtum for atom n. ',iNuc,' = '
-! !   print*,max_ang_mom(iNuc)
-! !   print*,'maximum exponent for atom n. ',iNuc,' = '
-! !   print*,max_exponent(iNuc)
-! !   print*,'minimum exponent for atom n. ',iNuc,' = '
-! !   print*,min_exponent(iNuc,1:max_ang_mom(iNuc)+1)
+!   print*,'maximum angular momemtum for atom n. ',iNuc,' = '
+!   print*,max_ang_mom(iNuc)
+!   print*,'maximum exponent for atom n. ',iNuc,' = '
+!   print*,max_exponent(iNuc)
+!   print*,'minimum exponent for atom n. ',iNuc,' = '
+!   print*,min_exponent(iNuc,1:max_ang_mom(iNuc)+1)
 
-!   enddo
-! !------------------------------------------------------------------------
-! ! End loop over atoms
-! !------------------------------------------------------------------------
+  enddo
+!------------------------------------------------------------------------
+! End loop over atoms
+!------------------------------------------------------------------------
 
-! ! Total number of shells
+! Total number of shells
 
-!   write(*,'(A28,1X,I16)') 'Number of shells',nShell
-!   write(*,'(A28)') '------------------'
-!   write(*,*)
+  write(*,'(A28,1X,I16)') 'Number of shells',nShell
+  write(*,'(A28)') '------------------'
+  write(*,*)
 
-! ! Close file with basis set specification
+! Close file with basis set specification
 
-!   close(unit=2)
+  close(unit=2)
 
-! Calculate number of basis functions
+Calculate number of basis functions
 
-  ! nBas = 0
-  ! do iShell=1,nShell
-  !   nBas = nBas + (TotAngMomShell(iShell)*TotAngMomShell(iShell) + 3*TotAngMomShell(iShell) + 2)/2
-  ! enddo
+  nBas = 0
+  do iShell=1,nShell
+    nBas = nBas + (TotAngMomShell(iShell)*TotAngMomShell(iShell) + 3*TotAngMomShell(iShell) + 2)/2
+  enddo
 
-!  write(*,'(A28)') '------------------'
-!  write(*,'(A28,1X,I16)') 'Number of basis functions',NBas
-!  write(*,'(A28)') '------------------'
-!  write(*,*)
+ write(*,'(A28)') '------------------'
+ write(*,'(A28,1X,I16)') 'Number of basis functions',NBas
+ write(*,'(A28)') '------------------'
+ write(*,*)
 
- open(unit=3,file='int/nBas.dat')
- read(3,*) nBas
- close(unit=3)
+ ! open(unit=3,file='int/nBas.dat')
+ ! read(3,*) nBas
+ ! close(unit=3)
 
 ! Number of virtual orbitals
 

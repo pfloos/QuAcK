@@ -78,8 +78,8 @@ FIX_ORDER_OF_LIBS=-Wl,--start-group
 
 
 if sys.platform in ["linux", "linux2"]:
-#  compiler = compile_gfortran_linux
-  compiler = compile_ifort_linux
+  compiler = compile_gfortran_linux
+#  compiler = compile_ifort_linux
 elif sys.platform == "darwin":
   compiler = compile_gfortran_mac
 else:
