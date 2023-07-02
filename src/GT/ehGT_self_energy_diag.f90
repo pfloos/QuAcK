@@ -66,7 +66,7 @@ subroutine ehGT_self_energy_diag(eta,nBas,nC,nO,nV,nR,nS,e,Om,rhoL,rhoR,EcGM,Sig
     do a=nO+1,nBas-nR
       do m=1,nS
         eps = e(a) - e(i) + Om(m)
-        EcGM = EcGM - 2d0*rhoL(a,i,m)*rhoR(a,i,m)*eps/(eps**2 + eta**2)
+        EcGM = EcGM - rhoL(i,a,m)*rhoR(i,a,m)*eps/(eps**2 + eta**2)
       end do
     end do
   end do

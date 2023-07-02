@@ -166,7 +166,7 @@ subroutine read_basis(nNuc,rNuc,nBas,nO,nV,nShell,TotAngMomShell,CenterShell,KSh
 
   close(unit=2)
 
-Calculate number of basis functions
+! Calculate number of basis functions
 
   nBas = 0
   do iShell=1,nShell
