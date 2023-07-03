@@ -1,4 +1,4 @@
-subroutine ehGT_renormalization_factor(eta,nBas,nC,nO,nV,nR,nS,e,Om,rhoL,rhoR,Z)
+subroutine GTeh_renormalization_factor(eta,nBas,nC,nO,nV,nR,nS,e,Om,rhoL,rhoR,Z)
 
 ! Compute renormalization factor for GW
 

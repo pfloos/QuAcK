@@ -8,8 +8,8 @@ subroutine read_methods(doRHF,doUHF,doKS,doMOM,            &
                         doG0F3,doevGF3,                    & 
                         doG0W0,doevGW,doqsGW,doSRGqsGW,    & 
                         doufG0W0,doufGW,                   & 
-                        doG0T0,doevGT,doqsGT,              &
-                        doehG0T0)
+                        doG0T0pp,doevGTpp,doqsGTpp,        &
+                        doG0T0eh,doevGTeh,doqsGTeh)
 
 ! Read desired methods 
 
@@ -25,8 +25,8 @@ subroutine read_methods(doRHF,doUHF,doKS,doMOM,            &
   logical,intent(out)           :: doRPA,doRPAx,docrRPA,doppRPA
   logical,intent(out)           :: doG0F2,doevGF2,doqsGF2,doG0F3,doevGF3  
   logical,intent(out)           :: doG0W0,doevGW,doqsGW,doSRGqsGW,doufG0W0,doufGW
-  logical,intent(out)           :: doG0T0,doevGT,doqsGT
-  logical,intent(out)           :: doehG0T0
+  logical,intent(out)           :: doG0T0pp,doevGTpp,doqsGTpp
+  logical,intent(out)           :: doG0T0eh,doevGTeh,doqsGTeh
 
 ! Local variables
 
@@ -81,9 +81,12 @@ subroutine read_methods(doRHF,doUHF,doKS,doMOM,            &
   doufG0W0  = .false.
   doufGW    = .false.
 
-  doG0T0 = .false.
-  doevGT = .false.
-  doqsGT = .false.
+  doG0T0pp = .false.
+  doevGTpp = .false.
+  doqsGTpp = .false.
+  doG0T0eh = .false.
+  doevGTeh = .false.
+  doqsGTeh = .false.
 
 ! Read mean-field methods
 
@@ -161,11 +164,13 @@ subroutine read_methods(doRHF,doUHF,doKS,doMOM,            &
 ! Read GT methods
 
   read(1,*) 
-  read(1,*) answer1,answer2,answer3,answer4
-  if(answer1 == 'T') doG0T0   = .true.
-  if(answer2 == 'T') doevGT   = .true.
-  if(answer3 == 'T') doqsGT   = .true.
-  if(answer4 == 'T') doehG0T0 = .true.
+  read(1,*) answer1,answer2,answer3,answer4,answer5,answer6
+  if(answer1 == 'T') doG0T0pp   = .true.
+  if(answer2 == 'T') doevGTpp   = .true.
+  if(answer3 == 'T') doqsGTpp   = .true.
+  if(answer4 == 'T') doG0T0eh   = .true.
+  if(answer5 == 'T') doevGTeh   = .true.
+  if(answer6 == 'T') doqsGTeh   = .true.
 
 ! Close file with geometry specification
 

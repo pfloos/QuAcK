@@ -1,4 +1,4 @@
-subroutine ehGT_self_energy_diag(eta,nBas,nC,nO,nV,nR,nS,e,Om,rhoL,rhoR,EcGM,SigC)
+subroutine GTeh_self_energy_diag(eta,nBas,nC,nO,nV,nR,nS,e,Om,rhoL,rhoR,EcGM,SigC)
 
 ! Compute diagonal of the correlation part of the self-energy
 

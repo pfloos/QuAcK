@@ -16,8 +16,8 @@ program QuAcK
   logical                       :: doADC
   logical                       :: doG0F2,doevGF2,doqsGF2,doG0F3,doevGF3
   logical                       :: doG0W0,doevGW,doqsGW,doufG0W0,doufGW,doSRGqsGW
-  logical                       :: doG0T0,doevGT,doqsGT
-  logical                       :: doehG0T0
+  logical                       :: doG0T0pp,doevGTpp,doqsGTpp
+  logical                       :: doG0T0eh,doevGTeh,doqsGTeh
 
   integer                       :: nNuc,nBas,nBasCABS
   integer                       :: nEl(nspin)
@@ -170,8 +170,8 @@ program QuAcK
                     doG0F3,doevGF3,                    &
                     doG0W0,doevGW,doqsGW,doSRGqsGW,    &
                     doufG0W0,doufGW,                   &
-                    doG0T0,doevGT,doqsGT,              &
-                    doehG0T0)
+                    doG0T0pp,doevGTpp,doqsGTpp,        &
+                    doG0T0eh,doevGTeh,doqsGTeh)
 
 ! Read options for methods
 
@@ -1131,7 +1131,7 @@ program QuAcK
 
   eG0T0(:,:) = eHF(:,:)
 
-  if(doG0T0) then
+  if(doG0T0pp) then
     
     call cpu_time(start_G0T0)
 
@@ -1164,7 +1164,7 @@ program QuAcK
 ! Perform evGT calculatiom
 !------------------------------------------------------------------------
 
-  if(doevGT) then
+  if(doevGTpp) then
     
     call cpu_time(start_evGT)
 
@@ -1197,7 +1197,7 @@ program QuAcK
 ! Perform qsGT calculation
 !------------------------------------------------------------------------
 
-  if(doqsGT) then 
+  if(doqsGTpp) then 
 
     call cpu_time(start_qsGT)
 
@@ -1225,22 +1225,22 @@ program QuAcK
   end if
 
 !------------------------------------------------------------------------
-! Perform ehG0T0 calculatiom
+! Perform G0T0eh calculatiom
 !------------------------------------------------------------------------
 
   eG0T0(:,:) = eHF(:,:)
 
-  if(doehG0T0) then
+  if(doG0T0eh) then
     
     call cpu_time(start_G0T0)
 
     if(unrestricted) then 
 
-      print*,'!!! ehG0T0 NYI at the unrestricted level !!!'
+      print*,'!!! eh G0T0 NYI at the unrestricted level !!!'
 
     else
 
-      call ehG0T0(doACFDT,exchange_kernel,doXBS,BSE,BSE2,TDA_W,TDA,dBSE,dTDA,evDyn,ppBSE,singlet,triplet, &
+      call G0T0eh(doACFDT,exchange_kernel,doXBS,BSE,BSE2,TDA_W,TDA,dBSE,dTDA,evDyn,ppBSE,singlet,triplet, &
                   linGW,eta_GW,regGW,nBas,nC,nO,nV,nR,nS,ENuc,ERHF,ERI_AO,ERI_MO,dipole_int_MO,PHF,cHF,eHF,Vxc,eG0T0)
 
     end if
@@ -1249,6 +1249,29 @@ program QuAcK
   
     t_G0T0 = end_G0T0 - start_G0T0
     write(*,'(A65,1X,F9.3,A8)') 'Total CPU time for G0T0 = ',t_G0T0,' seconds'
+    write(*,*)
+
+  end if
+
+!------------------------------------------------------------------------
+! Perform evGTeh calculation
+!------------------------------------------------------------------------
+
+  if(doevGTeh) then
+
+    call cpu_time(start_evGT)
+    if(unrestricted) then 
+
+    else
+
+      call evGTeh(maxSCF_GT,thresh_GT,n_diis_GT,doACFDT,exchange_kernel,doXBS,                 &
+                  BSE,BSE2,TDA_W,TDA,dBSE,dTDA,evDyn,ppBSE,singlet,triplet,linGT,eta_GT,regGT, &
+                  nBas,nC,nO,nV,nR,nS,ENuc,ERHF,ERI_AO,ERI_MO,dipole_int_MO,PHF,cHF,eHF,Vxc,eG0T0)
+    end if
+    call cpu_time(end_evGT)
+
+    t_evGT = end_evGT - start_evGT
+    write(*,'(A65,1X,F9.3,A8)') 'Total CPU time for evGT = ',t_evGT,' seconds'
     write(*,*)
 
   end if

@@ -1,4 +1,4 @@
-subroutine ehG0T0(doACFDT,exchange_kernel,doXBS,BSE,BSE2,TDA_T,TDA,dBSE,dTDA,evDyn,ppBSE, & 
+subroutine G0T0eh(doACFDT,exchange_kernel,doXBS,BSE,BSE2,TDA_T,TDA,dBSE,dTDA,evDyn,ppBSE, & 
                   singlet,triplet,linearize,eta,regularize,nBas,nC,nO,nV,nR,nS,ENuc,ERHF,   & 
                   ERI_AO,ERI_MO,dipole_int,PHF,cHF,eHF,Vxc,eGT)
 
@@ -115,7 +115,7 @@ subroutine ehG0T0(doACFDT,exchange_kernel,doXBS,BSE,BSE2,TDA_T,TDA,dBSE,dTDA,evD
 ! Compute spectral weights !
 !--------------------------!
 
-  call ehGT_excitation_density(nBas,nC,nO,nR,nS,ERI_MO,XpY_RPA,XmY_RPA,rhoL_RPA,rhoR_RPA)
+  call GTeh_excitation_density(nBas,nC,nO,nR,nS,ERI_MO,XpY_RPA,XmY_RPA,rhoL_RPA,rhoR_RPA)
 
 !------------------------!
 ! Compute GW self-energy !
@@ -130,8 +130,8 @@ subroutine ehG0T0(doACFDT,exchange_kernel,doXBS,BSE,BSE2,TDA_T,TDA,dBSE,dTDA,evD
 
   else
 
-    call ehGT_self_energy_diag(eta,nBas,nC,nO,nV,nR,nS,eHF,OmRPA,rhoL_RPA,rhoR_RPA,EcGM,SigC)
-    call ehGT_renormalization_factor(eta,nBas,nC,nO,nV,nR,nS,eHF,OmRPA,rhoL_RPA,rhoR_RPA,Z)
+    call GTeh_self_energy_diag(eta,nBas,nC,nO,nV,nR,nS,eHF,OmRPA,rhoL_RPA,rhoR_RPA,EcGM,SigC)
+    call GTeh_renormalization_factor(eta,nBas,nC,nO,nV,nR,nS,eHF,OmRPA,rhoL_RPA,rhoR_RPA,Z)
 
   end if
 
@@ -172,7 +172,7 @@ subroutine ehG0T0(doACFDT,exchange_kernel,doXBS,BSE,BSE2,TDA_T,TDA,dBSE,dTDA,evD
 ! Dump results !
 !--------------!
 
-  call print_ehG0T0(nBas,nO,eHF,ENuc,ERHF,SigC,Z,eGT,EcRPA,EcGM)
+  call print_G0T0eh(nBas,nO,eHF,ENuc,ERHF,SigC,Z,eGT,EcRPA,EcGM)
 
 ! Deallocate memory
 
