@@ -19,7 +19,9 @@ double precision function dSigmaC_GF2(p,w,eta,nBas,nC,nO,nV,nR,nS,eHF,ERI)
   integer                       :: i,j,a,b
   double precision              :: eps
 
+! Initialize 
 
+  dSigmaC_GF2 = 0d0
 
   ! Occupied part of the correlation self-energy
   do i=nC+1,nO
