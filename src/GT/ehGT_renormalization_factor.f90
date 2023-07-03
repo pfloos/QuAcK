@@ -31,7 +31,7 @@ subroutine ehGT_renormalization_factor(eta,nBas,nC,nO,nV,nR,nS,e,Om,rhoL,rhoR,Z)
 ! Initialize
 
   Z(:)  = 0d0
- 
+
 ! Occupied part of the correlation self-energy
 
   do p=nC+1,nBas-nR

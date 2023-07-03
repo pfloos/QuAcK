@@ -114,7 +114,7 @@ rule build_lib
   description = Linking $out
 
 """
-LIBS="$LDIR/libnumgrid.a "
+LIBS=""
 rule_build_exe = """
 LIBS = {0} $LAPACK $STDCXX
 
@@ -138,37 +138,6 @@ rule git_clone
 
 """
 
-build_numgrid = """
-rule make_numgrid
-  command = cd $QUACK_ROOT/numgrid-tools ; LDIR="$LDIR" SDIR="$SDIR" CC="$CC" CXX="$CXX" FC="$FC" ./install_numgrid.sh
-  description = Building numgrid
-  pool = console
-
-build $LDIR/libnumgrid.a: make_numgrid 
-  generator = true
-"""
-  
-build_qcaml = """
-rule install_qcaml
-  command = cd $QUACK_ROOT/qcaml-tools ; ./install_qcaml.sh
-  pool = console
-  description = Installing QCaml
-  generator = true
-
-build $QUACK_ROOT/qcaml-tools/qcaml/README.md: install_qcaml
-  generator = true
-"""
-
-build_GoDuck = """
-rule make_goduck
-  command = cd $QUACK_ROOT/qcaml-tools ; make
-  pool = console
-  description = Compiling GoDuck 
-
-build $QUACK_ROOT/GoDuck: make_goduck $QUACK_ROOT/qcaml-tools/qcaml/README.md
-"""
-
-
 build_in_lib_dir = "\n".join([
 	header,
 	compiler,
@@ -188,9 +157,6 @@ build_main = "\n".join([
 	header,
         compiler,
         rule_git_clone,
-        build_numgrid,
-	build_qcaml,
-	build_GoDuck,
 ])
 
 exe_dirs = [ "QuAcK"]
@@ -258,18 +224,15 @@ rule build_lib
             sources = [ "$SDIR/{0}/{1}".format(exe_dir,x) for x in  os.listdir(exe_dir) ]
             sources = filter(lambda x: x.endswith(".f") or x.endswith(".f90"), sources)
             sources = " ".join(sources)
-            f.write("build $BDIR/{0}: build_exe {1} $LDIR/libnumgrid.a {2}\n".format(exe_dir,libs,sources))
+            f.write("build $BDIR/{0}: build_exe {1} {2}\n".format(exe_dir,libs,sources))
             f.write("  dir = {0} \n".format(exe_dir) )
 
         for libname in lib_dirs:
             sources = [ "$SDIR/{0}/{1}".format(libname,x) for x in  os.listdir(libname) ]
             sources = filter(lambda x: x.endswith(".f") or x.endswith(".f90"), sources)
             sources = " ".join(sources)
-            if libname == "numgrid":
-              f.write("build $LDIR/{0}.a: build_lib {1}\n  dir = $SDIR/{0}\n".format(libname, sources))
-            else:
-              f.write("build $LDIR/{0}.a: build_lib {1} $LDIR/numgrid.a\n  dir = $SDIR/{0}\n".format(libname, sources))
-        f.write("build all: phony $QUACK_ROOT/GoDuck $BDIR/QuAcK\n")
+            f.write("build $LDIR/{0}.a: build_lib {1} \n  dir = $SDIR/{0}\n".format(libname, sources))
+        f.write("build all: phony $BDIR/QuAcK\n")
         f.write("default all\n")
 
 def create_makefile(directory):

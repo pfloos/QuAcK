@@ -3,7 +3,6 @@ subroutine read_geometry(nNuc,ZNuc,rNuc,ENuc)
 ! Read molecular geometry
 
   implicit none
-
   include 'parameters.h'
 
 ! Ouput variables

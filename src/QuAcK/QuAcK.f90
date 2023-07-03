@@ -40,15 +40,15 @@ program QuAcK
   logical                       :: exchange_kernel
   logical                       :: doXBS
 
-  integer                       :: nShell
-  integer,allocatable           :: TotAngMomShell(:)
-  integer,allocatable           :: KShell(:)
-  double precision,allocatable  :: CenterShell(:,:)
-  double precision,allocatable  :: DShell(:,:)
-  double precision,allocatable  :: ExpShell(:,:)
-  integer,allocatable           :: max_ang_mom(:)
-  double precision,allocatable  :: min_exponent(:,:)
-  double precision,allocatable  :: max_exponent(:)
+! integer                       :: nShell
+! integer,allocatable           :: TotAngMomShell(:)
+! integer,allocatable           :: KShell(:)
+! double precision,allocatable  :: CenterShell(:,:)
+! double precision,allocatable  :: DShell(:,:)
+! double precision,allocatable  :: ExpShell(:,:)
+! integer,allocatable           :: max_ang_mom(:)
+! double precision,allocatable  :: min_exponent(:,:)
+! double precision,allocatable  :: max_exponent(:)
 
   integer                       :: TrialType
   double precision,allocatable  :: cTrial(:),gradient(:),hessian(:,:)
@@ -207,15 +207,16 @@ program QuAcK
 
   call read_geometry(nNuc,ZNuc,rNuc,ENuc)
 
-  allocate(CenterShell(maxShell,ncart),TotAngMomShell(maxShell),KShell(maxShell),DShell(maxShell,maxK), & 
-           ExpShell(maxShell,maxK),max_ang_mom(nNuc),min_exponent(nNuc,maxL+1),max_exponent(nNuc))
+! allocate(CenterShell(maxShell,ncart),TotAngMomShell(maxShell),KShell(maxShell),DShell(maxShell,maxK), & 
+!          ExpShell(maxShell,maxK),max_ang_mom(nNuc),min_exponent(nNuc,maxL+1),max_exponent(nNuc))
 
 !------------------------------------------------------------------------
-! Read basis set information
+! Read basis set information from PySCF
 !------------------------------------------------------------------------
 
-  call read_basis(nNuc,rNuc,nBas,nO,nV,nShell,TotAngMomShell,CenterShell,KShell,DShell,ExpShell, & 
-                  max_ang_mom,min_exponent,max_exponent)
+  call read_basis_pyscf (nBas,nO,nV)
+! call read_basis(nNuc,rNuc,nBas,nO,nV,nShell,TotAngMomShell,CenterShell,KShell,DShell,ExpShell, & 
+!                 max_ang_mom,min_exponent,max_exponent)
   nS(:) = (nO(:) - nC(:))*(nV(:) - nR(:))
 
 !------------------------------------------------------------------------
@@ -309,9 +310,9 @@ program QuAcK
     unrestricted = .true.
 
     call cpu_time(start_KS)
-    call eDFT(maxSCF_HF,thresh_HF,n_diis_HF,guess_type,mix,level_shift,nNuc,ZNuc,rNuc,ENuc,nBas,nEl,nC, & 
-              nO,nV,nR,nShell,TotAngMomShell,CenterShell,KShell,DShell,ExpShell,            &
-              max_ang_mom,min_exponent,max_exponent,S,T,V,Hc,X,ERI_AO,dipole_int_AO,EUHF,eHF,cHF,PHF,Vxc)
+!   call eDFT(maxSCF_HF,thresh_HF,n_diis_HF,guess_type,mix,level_shift,nNuc,ZNuc,rNuc,ENuc,nBas,nEl,nC, & 
+!             nO,nV,nR,nShell,TotAngMomShell,CenterShell,KShell,DShell,ExpShell,            &
+!             max_ang_mom,min_exponent,max_exponent,S,T,V,Hc,X,ERI_AO,dipole_int_AO,EUHF,eHF,cHF,PHF,Vxc)
              
     call cpu_time(end_KS)
 

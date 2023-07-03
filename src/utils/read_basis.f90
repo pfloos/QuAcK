@@ -173,14 +173,10 @@ subroutine read_basis(nNuc,rNuc,nBas,nO,nV,nShell,TotAngMomShell,CenterShell,KSh
     nBas = nBas + (TotAngMomShell(iShell)*TotAngMomShell(iShell) + 3*TotAngMomShell(iShell) + 2)/2
   enddo
 
- write(*,'(A28)') '------------------'
- write(*,'(A28,1X,I16)') 'Number of basis functions',NBas
- write(*,'(A28)') '------------------'
- write(*,*)
-
- ! open(unit=3,file='int/nBas.dat')
- ! read(3,*) nBas
- ! close(unit=3)
+  write(*,'(A28)') '------------------'
+  write(*,'(A28,1X,I16)') 'Number of basis functions',NBas
+  write(*,'(A28)') '------------------'
+  write(*,*)
 
 ! Number of virtual orbitals
 

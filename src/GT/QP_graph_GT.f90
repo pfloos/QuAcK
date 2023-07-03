@@ -1,5 +1,8 @@
 subroutine QP_graph_GT(eta,nBas,nC,nO,nV,nR,nOO,nVV,eHF,Omega1,rho1,Omega2,rho2,eGTlin,eGT)
 
+  implicit none
+  include 'parameters.h'
+
 ! Iput variables
   integer,intent(in)            :: nBas
   integer,intent(in)            :: nC
