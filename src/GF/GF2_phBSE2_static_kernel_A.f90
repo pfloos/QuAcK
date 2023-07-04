@@ -1,4 +1,4 @@
-subroutine BSE2_A_matrix_static(ispin,eta,nBas,nC,nO,nV,nR,nS,lambda,ERI,eGF,A_sta)
+subroutine GF2_phBSE2_static_kernel_A(ispin,eta,nBas,nC,nO,nV,nR,nS,lambda,ERI,eGF,A_sta)
 
 ! Compute the resonant part of the static BSE2 matrix
 
@@ -154,4 +154,4 @@ subroutine BSE2_A_matrix_static(ispin,eta,nBas,nC,nO,nV,nR,nS,lambda,ERI,eGF,A_s
   end if
 
 
-end subroutine BSE2_A_matrix_static
+end subroutine 

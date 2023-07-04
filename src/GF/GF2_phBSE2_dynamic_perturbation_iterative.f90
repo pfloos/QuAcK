@@ -1,5 +1,5 @@
-subroutine BSE2_dynamic_perturbation_iterative(dTDA,ispin,eta,nBas,nC,nO,nV,nR,nS,ERI,dipole_int, & 
-                                               eHF,eGF,A_sta,B_sta,OmBSE,XpY,XmY)
+subroutine GF2_phBSE2_dynamic_perturbation_iterative(dTDA,ispin,eta,nBas,nC,nO,nV,nR,nS,ERI,dipole_int, & 
+                                                     eHF,eGF,A_sta,B_sta,OmBSE,XpY,XmY)
 
 ! Compute self-consistently the dynamical effects via perturbation theory for BSE2
 
@@ -100,7 +100,7 @@ subroutine BSE2_dynamic_perturbation_iterative(dTDA,ispin,eta,nBas,nC,nO,nV,nR,n
       Y(:) = 0.5d0*(XpY(ia,:) - XmY(ia,:))
  
      ! Resonant part of the BSE correction
-      call BSE2_A_matrix_dynamic(ispin,eta,nBas,nC,nO,nV,nR,nS,1d0,ERI,eGF,+OmOld(ia),Ap_dyn,ZAp_dyn)
+      call GF2_phBSE2_dynamic_kernel_A(ispin,eta,nBas,nC,nO,nV,nR,nS,1d0,ERI,eGF,+OmOld(ia),Ap_dyn,ZAp_dyn)
 
       if(dTDA) then 
  
@@ -111,9 +111,9 @@ subroutine BSE2_dynamic_perturbation_iterative(dTDA,ispin,eta,nBas,nC,nO,nV,nR,n
  
         ! Anti-resonant part of the BSE correction
  
-      call BSE2_A_matrix_dynamic(ispin,eta,nBas,nC,nO,nV,nR,nS,1d0,ERI,eGF,-OmOld(ia),Am_dyn,ZAm_dyn)
+      call GF2_phBSE2_dynamic_kernel_A(ispin,eta,nBas,nC,nO,nV,nR,nS,1d0,ERI,eGF,-OmOld(ia),Am_dyn,ZAm_dyn)
 
-      call BSE2_B_matrix_dynamic(ispin,eta,nBas,nC,nO,nV,nR,nS,1d0,ERI,eGF,B_dyn)
+      call GF2_phBSE2_dynamic_kernel_B(ispin,eta,nBas,nC,nO,nV,nR,nS,1d0,ERI,eGF,B_dyn)
 
       ZDyn(ia)  = dot_product(X,matmul(ZAp_dyn,X)) &
                 + dot_product(Y,matmul(ZAm_dyn,Y))  
@@ -152,4 +152,4 @@ subroutine BSE2_dynamic_perturbation_iterative(dTDA,ispin,eta,nBas,nC,nO,nV,nR,n
 
   endif
 
-end subroutine BSE2_dynamic_perturbation_iterative
+end subroutine 

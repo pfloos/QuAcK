@@ -56,8 +56,8 @@ subroutine GF2_phBSE2(TDA,dBSE,dTDA,evDyn,singlet,triplet,eta,nBas,nC,nO,nV,nR,n
 
     ! Compute static kernel
 
-                 call BSE2_A_matrix_static(ispin,eta,nBas,nC,nO,nV,nR,nS,1d0,ERI,eGF,A_sta(:,:,ispin))
-    if(.not.TDA) call BSE2_B_matrix_static(ispin,eta,nBas,nC,nO,nV,nR,nS,1d0,ERI,eGF,B_sta(:,:,ispin))
+                 call GF2_phBSE2_static_kernel_A(ispin,eta,nBas,nC,nO,nV,nR,nS,1d0,ERI,eGF,A_sta(:,:,ispin))
+    if(.not.TDA) call GF2_phBSE2_static_kernel_B(ispin,eta,nBas,nC,nO,nV,nR,nS,1d0,ERI,eGF,B_sta(:,:,ispin))
 
     ! Compute BSE2 excitation energies
 
@@ -73,12 +73,12 @@ subroutine GF2_phBSE2(TDA,dBSE,dTDA,evDyn,singlet,triplet,eta,nBas,nC,nO,nV,nR,n
 
      if(evDyn) then
 
-      call BSE2_dynamic_perturbation_iterative(dTDA,ispin,eta,nBas,nC,nO,nV,nR,nS,ERI,dipole_int,eHF,eGF, & 
-                                               A_sta(:,:,ispin),B_sta(:,:,ispin),OmBSE(:,ispin),XpY(:,:,ispin),XmY(:,:,ispin))
+      call GF2_phBSE2_dynamic_perturbation_iterative(dTDA,ispin,eta,nBas,nC,nO,nV,nR,nS,ERI,dipole_int,eHF,eGF, & 
+                                                     A_sta(:,:,ispin),B_sta(:,:,ispin),OmBSE(:,ispin),XpY(:,:,ispin),XmY(:,:,ispin))
      else
  
-      call BSE2_dynamic_perturbation(dTDA,ispin,eta,nBas,nC,nO,nV,nR,nS,ERI,dipole_int,eHF,eGF, & 
-                                     A_sta(:,:,ispin),B_sta(:,:,ispin),OmBSE(:,ispin),XpY(:,:,ispin),XmY(:,:,ispin))
+      call GF2_phBSE2_dynamic_perturbation(dTDA,ispin,eta,nBas,nC,nO,nV,nR,nS,ERI,dipole_int,eHF,eGF, & 
+                                           A_sta(:,:,ispin),B_sta(:,:,ispin),OmBSE(:,ispin),XpY(:,:,ispin),XmY(:,:,ispin))
  
       end if
 
@@ -97,8 +97,8 @@ subroutine GF2_phBSE2(TDA,dBSE,dTDA,evDyn,singlet,triplet,eta,nBas,nC,nO,nV,nR,n
 
     ! Compute static kernel
 
-                 call BSE2_A_matrix_static(ispin,eta,nBas,nC,nO,nV,nR,nS,1d0,ERI,eGF,A_sta(:,:,ispin))
-    if(.not.TDA) call BSE2_B_matrix_static(ispin,eta,nBas,nC,nO,nV,nR,nS,1d0,ERI,eGF,B_sta(:,:,ispin))
+                 call GF2_phBSE2_static_kernel_A(ispin,eta,nBas,nC,nO,nV,nR,nS,1d0,ERI,eGF,A_sta(:,:,ispin))
+    if(.not.TDA) call GF2_phBSE2_static_kernel_B(ispin,eta,nBas,nC,nO,nV,nR,nS,1d0,ERI,eGF,B_sta(:,:,ispin))
 
     ! Compute BSE2 excitation energies
 
@@ -113,12 +113,12 @@ subroutine GF2_phBSE2(TDA,dBSE,dTDA,evDyn,singlet,triplet,eta,nBas,nC,nO,nV,nR,n
 
      if(evDyn) then
 
-      call BSE2_dynamic_perturbation_iterative(dTDA,ispin,eta,nBas,nC,nO,nV,nR,nS,ERI,dipole_int,eHF,eGF, & 
-                                               A_sta(:,:,ispin),B_sta(:,:,ispin),OmBSE(:,ispin),XpY(:,:,ispin),XmY(:,:,ispin))
+      call GF2_phBSE2_dynamic_perturbation_iterative(dTDA,ispin,eta,nBas,nC,nO,nV,nR,nS,ERI,dipole_int,eHF,eGF, & 
+                                                     A_sta(:,:,ispin),B_sta(:,:,ispin),OmBSE(:,ispin),XpY(:,:,ispin),XmY(:,:,ispin))
      else
  
-      call BSE2_dynamic_perturbation(dTDA,ispin,eta,nBas,nC,nO,nV,nR,nS,ERI,dipole_int,eHF,eGF, &
-                                     A_sta(:,:,ispin),B_sta(:,:,ispin),OmBSE(:,ispin),XpY(:,:,ispin),XmY(:,:,ispin))
+      call GF2_phBSE2_dynamic_perturbation(dTDA,ispin,eta,nBas,nC,nO,nV,nR,nS,ERI,dipole_int,eHF,eGF, &
+                                           A_sta(:,:,ispin),B_sta(:,:,ispin),OmBSE(:,ispin),XpY(:,:,ispin),XmY(:,:,ispin))
  
       end if
 
