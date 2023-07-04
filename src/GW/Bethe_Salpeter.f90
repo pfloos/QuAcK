@@ -68,7 +68,7 @@ subroutine Bethe_Salpeter(BSE2,TDA_W,TDA,dBSE,dTDA,evDyn,singlet,triplet,eta,nBa
 
   call linear_response(isp_W,.true.,TDA_W,eta,nBas,nC,nO,nV,nR,nS,1d0,eW,ERI, &
                        EcRPA,OmRPA,XpY_RPA,XmY_RPA)
-  call excitation_density(nBas,nC,nO,nR,nS,ERI,XpY_RPA,rho_RPA)
+  call GW_excitation_density(nBas,nC,nO,nR,nS,ERI,XpY_RPA,rho_RPA)
 
   call BSE_static_kernel_KA(eta,nBas,nC,nO,nV,nR,nS,1d0,ERI,OmRPA,rho_RPA,KA_sta)
   call BSE_static_kernel_KB(eta,nBas,nC,nO,nV,nR,nS,1d0,ERI,OmRPA,rho_RPA,KB_sta)
@@ -167,4 +167,4 @@ subroutine Bethe_Salpeter(BSE2,TDA_W,TDA,dBSE,dTDA,evDyn,singlet,triplet,eta,nBa
 
   end if
 
-end subroutine Bethe_Salpeter
+end subroutine 

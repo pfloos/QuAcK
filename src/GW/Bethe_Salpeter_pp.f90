@@ -67,7 +67,7 @@ subroutine Bethe_Salpeter_pp(TDA_W,TDA,singlet,triplet,eta,nBas,nC,nO,nV,nR,nS,E
 
   call linear_response(isp_W,.true.,TDA_W,eta,nBas,nC,nO,nV,nR,nS,1d0,eW,ERI, &
                        EcRPA,OmRPA,XpY_RPA,XmY_RPA)
-  call excitation_density(nBas,nC,nO,nR,nS,ERI,XpY_RPA,rho_RPA)
+  call GW_excitation_density(nBas,nC,nO,nR,nS,ERI,XpY_RPA,rho_RPA)
 
 !-------------------
 ! Singlet manifold

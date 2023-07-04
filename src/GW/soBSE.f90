@@ -62,7 +62,7 @@ subroutine soBSE(TDA_W,TDA,eta,nBas,nC,nO,nV,nR,nS,ERI,eW,eGW)
 
   call linear_response(isp_W,.true.,TDA_W,eta,nBas,nC,nO,nV,nR,nS,1d0,eW,ERI, &
                        EcRPA,OmRPA,XpY_RPA,XmY_RPA)
-  call excitation_density(nBas,nC,nO,nR,nS,ERI,XpY_RPA,rho_RPA)
+  call GW_excitation_density(nBas,nC,nO,nR,nS,ERI,XpY_RPA,rho_RPA)
 
   call static_screening_WA_so(eta,nBas,nC,nO,nV,nR,nS,1d0,ERI,OmRPA,rho_RPA,WA_sta)
   call static_screening_WB_so(eta,nBas,nC,nO,nV,nR,nS,1d0,ERI,OmRPA,rho_RPA,WB_sta)
@@ -119,4 +119,4 @@ subroutine soBSE(TDA_W,TDA,eta,nBas,nC,nO,nV,nR,nS,ERI,eW,eGW)
 
 ! call matout(nO*nO,nV*nV,t)
 
-end subroutine soBSE
+end subroutine 

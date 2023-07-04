@@ -143,7 +143,7 @@ subroutine soG0W0(doACFDT,exchange_kernel,doXBS,COHSEX,BSE,TDA_W,TDA,dBSE,dTDA,e
 ! Compute spectral weights !
 !--------------------------!
 
-  call excitation_density(nBas2,nC2,nO2,nR2,nS2,sERI,XpY_RPA,rho_RPA)
+  call GW_excitation_density(nBas2,nC2,nO2,nR2,nS2,sERI,XpY_RPA,rho_RPA)
 
 !------------------------!
 ! Compute GW self-energy !

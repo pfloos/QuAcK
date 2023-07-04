@@ -222,7 +222,7 @@ subroutine ufG0W0(nBas,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,eHF,TDA_W)
      !--------------------------!
      ! Compute spectral weights !
      !--------------------------!
-     call excitation_density(nBas,nC,nO,nR,nS,ERI,XpY_RPA,rho_RPA)
+     call GW_excitation_density(nBas,nC,nO,nR,nS,ERI,XpY_RPA,rho_RPA)
 
      !---------!
      ! Block F !

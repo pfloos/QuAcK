@@ -1,4 +1,4 @@
-subroutine excitation_density(nBas,nC,nO,nR,nS,ERI,XpY,rho)
+subroutine GW_excitation_density(nBas,nC,nO,nR,nS,ERI,XpY,rho)
 
 ! Compute excitation densities
 
@@ -40,4 +40,4 @@ subroutine excitation_density(nBas,nC,nO,nR,nS,ERI,XpY,rho)
   !$OMP END DO
   !$OMP END PARALLEL
 
-end subroutine excitation_density
+end subroutine 
