@@ -1265,7 +1265,7 @@ program QuAcK
     else
 
       call evGTeh(maxSCF_GT,thresh_GT,n_diis_GT,doACFDT,exchange_kernel,doXBS,                 &
-                  BSE,BSE2,TDA_W,TDA,dBSE,dTDA,evDyn,ppBSE,singlet,triplet,linGT,eta_GT,regGT, &
+                  BSE,BSE2,TDA_T,TDA,dBSE,dTDA,evDyn,ppBSE,singlet,triplet,linGT,eta_GT,regGT, &
                   nBas,nC,nO,nV,nR,nS,ENuc,ERHF,ERI_AO,ERI_MO,dipole_int_MO,PHF,cHF,eHF,Vxc,eG0T0)
     end if
     call cpu_time(end_evGT)

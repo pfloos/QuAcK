@@ -116,7 +116,7 @@ subroutine evGTeh(maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,BSE,BSE2,
 ! Initialization
 
   nSCF            = 0
-  ispin           = 3
+  ispin           = 2
   n_diis          = 0
   Conv            = 1d0
   e_diis(:,:)     = 0d0
