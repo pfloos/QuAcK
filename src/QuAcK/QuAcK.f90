@@ -40,19 +40,6 @@ program QuAcK
   logical                       :: exchange_kernel
   logical                       :: doXBS
 
-! integer                       :: nShell
-! integer,allocatable           :: TotAngMomShell(:)
-! integer,allocatable           :: KShell(:)
-! double precision,allocatable  :: CenterShell(:,:)
-! double precision,allocatable  :: DShell(:,:)
-! double precision,allocatable  :: ExpShell(:,:)
-! integer,allocatable           :: max_ang_mom(:)
-! double precision,allocatable  :: min_exponent(:,:)
-! double precision,allocatable  :: max_exponent(:)
-
-  integer                       :: TrialType
-  double precision,allocatable  :: cTrial(:),gradient(:),hessian(:,:)
-
   double precision,allocatable  :: S(:,:)
   double precision,allocatable  :: T(:,:)
   double precision,allocatable  :: V(:,:)
@@ -80,28 +67,14 @@ program QuAcK
   double precision              :: start_HF     ,end_HF       ,t_HF
   double precision              :: start_stab   ,end_stab     ,t_stab
   double precision              :: start_KS     ,end_KS       ,t_KS
-  double precision              :: start_MOM    ,end_MOM      ,t_MOM
   double precision              :: start_AOtoMO ,end_AOtoMO   ,t_AOtoMO
-  double precision              :: start_CCD    ,end_CCD      ,t_CCD
-  double precision              :: start_DCD    ,end_DCD      ,t_DCD
-  double precision              :: start_CCSD   ,end_CCSD     ,t_CCSD
-  double precision              :: start_CIS    ,end_CIS      ,t_CIS
-  double precision              :: start_CID    ,end_CID      ,t_CID
-  double precision              :: start_CISD   ,end_CISD     ,t_CISD
-  double precision              :: start_FCI    ,end_FCI      ,t_FCI
+  double precision              :: start_CC     ,end_CC       ,t_CC 
+  double precision              :: start_CI     ,end_CI       ,t_CI 
   double precision              :: start_RPA    ,end_RPA      ,t_RPA 
-  double precision              :: start_ADC    ,end_ADC      ,t_ADC
-  double precision              :: start_GF2    ,end_GF2      ,t_GF2
-  double precision              :: start_GF3    ,end_GF3      ,t_GF3
-  double precision              :: start_G0W0   ,end_G0W0     ,t_G0W0
-  double precision              :: start_evGW   ,end_evGW     ,t_evGW
-  double precision              :: start_qsGW   ,end_qsGW     ,t_qsGW
-  double precision              :: start_ufGW   ,end_ufGW     ,t_ufGW
-  double precision              :: start_G0T0   ,end_G0T0     ,t_G0T0
-  double precision              :: start_evGT   ,end_evGT     ,t_evGT
-  double precision              :: start_qsGT   ,end_qsGT     ,t_qsGT
-  double precision              :: start_MP2    ,end_MP2      ,t_MP2
-  double precision              :: start_MP3    ,end_MP3      ,t_MP3
+  double precision              :: start_GF     ,end_GF       ,t_GF 
+  double precision              :: start_GW     ,end_GW       ,t_GW 
+  double precision              :: start_GT     ,end_GT       ,t_GT
+  double precision              :: start_MP     ,end_MP       ,t_MP 
 
   integer                       :: maxSCF_HF,n_diis_HF
   double precision              :: thresh_HF,level_shift
@@ -135,10 +108,6 @@ program QuAcK
   double precision              :: eta_GT
 
   logical                       :: BSE,dBSE,dTDA,evDyn,ppBSE,BSE2
-
-  integer                       :: nMC,nEq,nWalk,nPrint,iSeed
-  double precision              :: dt
-  logical                       :: doDrift
 
 ! Hello World
 
@@ -328,7 +297,7 @@ program QuAcK
 
   if(doMOM) then
 
-    call cpu_time(start_MOM)
+    call cpu_time(start_HF)
 
     if(unrestricted) then
 
@@ -341,10 +310,10 @@ program QuAcK
 
     end if
 
-    call cpu_time(end_MOM)
+    call cpu_time(end_HF)
 
-    t_MOM = end_MOM - start_MOM
-    write(*,'(A65,1X,F9.3,A8)') 'Total CPU time for MOM = ',t_MOM,' seconds'
+    t_HF = end_HF - start_HF
+    write(*,'(A65,1X,F9.3,A8)') 'Total CPU time for MOM = ',t_HF,' seconds'
     write(*,*)
 
   end if
@@ -475,7 +444,7 @@ program QuAcK
 
   if(doMP2) then
 
-    call cpu_time(start_MP2)
+    call cpu_time(start_MP)
 
     if(unrestricted) then
 
@@ -487,10 +456,10 @@ program QuAcK
 
     end if
 
-    call cpu_time(end_MP2)
+    call cpu_time(end_MP)
 
-    t_MP2 = end_MP2 - start_MP2
-    write(*,'(A65,1X,F9.3,A8)') 'Total CPU time for MP2 = ',t_MP2,' seconds'
+    t_MP = end_MP - start_MP
+    write(*,'(A65,1X,F9.3,A8)') 'Total CPU time for MP2 = ',t_MP,' seconds'
     write(*,*)
 
   end if
@@ -501,7 +470,7 @@ program QuAcK
 
   if(doMP3) then
 
-    call cpu_time(start_MP3)
+    call cpu_time(start_MP)
     
     if(unrestricted) then
 
@@ -514,10 +483,10 @@ program QuAcK
 
     end if
 
-    call cpu_time(end_MP3)
+    call cpu_time(end_MP)
 
-    t_MP3 = end_MP3 - start_MP3
-    write(*,'(A65,1X,F9.3,A8)') 'Total CPU time for MP3 = ',t_MP3,' seconds'
+    t_MP = end_MP - start_MP
+    write(*,'(A65,1X,F9.3,A8)') 'Total CPU time for MP3 = ',t_MP,' seconds'
     write(*,*)
 
   end if
@@ -528,12 +497,12 @@ program QuAcK
 
   if(doCCD) then
 
-    call cpu_time(start_CCD)
+    call cpu_time(start_CC)
     call CCD(.false.,maxSCF_CC,thresh_CC,n_diis_CC,nBas,nC,nO,nV,nR,ERI_MO,ENuc,ERHF,eHF)
-    call cpu_time(end_CCD)
+    call cpu_time(end_CC)
 
-    t_CCD = end_CCD - start_CCD
-    write(*,'(A65,1X,F9.3,A8)') 'Total CPU time for CCD = ',t_CCD,' seconds'
+    t_CC = end_CC - start_CC
+    write(*,'(A65,1X,F9.3,A8)') 'Total CPU time for CCD = ',t_CC,' seconds'
     write(*,*)
 
   end if
@@ -544,13 +513,13 @@ program QuAcK
 
   if(doDCD) then
 
-    call cpu_time(start_DCD)
+    call cpu_time(start_CC)
     call DCD(maxSCF_CC,thresh_CC,n_diis_CC,nBas,nC,nO,nV,nR, & 
              ERI_MO,ENuc,ERHF,eHF)
-    call cpu_time(end_DCD)
+    call cpu_time(end_CC)
 
-    t_DCD = end_DCD - start_DCD
-    write(*,'(A65,1X,F9.3,A8)') 'Total CPU time for DCD = ',t_DCD,' seconds'
+    t_CC = end_CC - start_CC
+    write(*,'(A65,1X,F9.3,A8)') 'Total CPU time for DCD = ',t_CC,' seconds'
     write(*,*)
 
   end if
@@ -563,12 +532,12 @@ program QuAcK
 
   if(doCCSD) then
 
-    call cpu_time(start_CCSD)
+    call cpu_time(start_CC)
     call CCSD(.false.,maxSCF_CC,thresh_CC,n_diis_CC,doCCSDT,nBas,nC,nO,nV,nR,ERI_MO,ENuc,ERHF,eHF)
-    call cpu_time(end_CCSD)
+    call cpu_time(end_CC)
 
-    t_CCSD = end_CCSD - start_CCSD
-    write(*,'(A65,1X,F9.3,A8)') 'Total CPU time for CCSD or CCSD(T)= ',t_CCSD,' seconds'
+    t_CC = end_CC - start_CC
+    write(*,'(A65,1X,F9.3,A8)') 'Total CPU time for CCSD or CCSD(T)= ',t_CC,' seconds'
     write(*,*)
 
   end if
@@ -579,12 +548,12 @@ program QuAcK
 
   if(do_drCCD) then
 
-    call cpu_time(start_CCD)
+    call cpu_time(start_CC)
     call drCCD(maxSCF_CC,thresh_CC,n_diis_CC,nBas,nC,nO,nV,nR,ERI_MO,ENuc,ERHF,eHF)
-    call cpu_time(end_CCD)
+    call cpu_time(end_CC)
 
-    t_CCD = end_CCD - start_CCD
-    write(*,'(A65,1X,F9.3,A8)') 'Total CPU time for direct ring CCD = ',t_CCD,' seconds'
+    t_CC = end_CC - start_CC
+    write(*,'(A65,1X,F9.3,A8)') 'Total CPU time for direct ring CCD = ',t_CC,' seconds'
     write(*,*)
 
   end if
@@ -595,12 +564,12 @@ program QuAcK
 
   if(do_rCCD) then
 
-    call cpu_time(start_CCD)
+    call cpu_time(start_CC)
     call rCCD(.false.,maxSCF_CC,thresh_CC,n_diis_CC,nBas,nC,nO,nV,nR,ERI_MO,ENuc,ERHF,eHF,eHF)
-    call cpu_time(end_CCD)
+    call cpu_time(end_CC)
 
-    t_CCD = end_CCD - start_CCD
-    write(*,'(A65,1X,F9.3,A8)') 'Total CPU time for rCCD = ',t_CCD,' seconds'
+    t_CC = end_CC - start_CC
+    write(*,'(A65,1X,F9.3,A8)') 'Total CPU time for rCCD = ',t_CC,' seconds'
     write(*,*)
 
   end if
@@ -611,13 +580,12 @@ program QuAcK
 
   if(do_crCCD) then
 
-    call cpu_time(start_CCD)
+    call cpu_time(start_CC)
     call crCCD(maxSCF_CC,thresh_CC,n_diis_CC,nBas,nC,nO,nV,nR,ERI_MO,ENuc,ERHF,eHF)
+    call cpu_time(end_CC)
 
-    call cpu_time(end_CCD)
-
-    t_CCD = end_CCD - start_CCD
-    write(*,'(A65,1X,F9.3,A8)') 'Total CPU time for crossed-ring CCD = ',t_CCD,' seconds'
+    t_CC = end_CC - start_CC
+    write(*,'(A65,1X,F9.3,A8)') 'Total CPU time for crossed-ring CCD = ',t_CC,' seconds'
     write(*,*)
 
   end if
@@ -628,13 +596,13 @@ program QuAcK
 
   if(do_lCCD) then
 
-    call cpu_time(start_CCD)
+    call cpu_time(start_CC)
     call lCCD(maxSCF_CC,thresh_CC,n_diis_CC,nBas,nC,nO,nV,nR, &
               ERI_MO,ENuc,ERHF,eHF)
-    call cpu_time(end_CCD)
+    call cpu_time(end_CC)
 
-    t_CCD = end_CCD - start_CCD
-    write(*,'(A65,1X,F9.3,A8)') 'Total CPU time for ladder CCD = ',t_CCD,' seconds'
+    t_CC = end_CC - start_CC
+    write(*,'(A65,1X,F9.3,A8)') 'Total CPU time for ladder CCD = ',t_CC,' seconds'
     write(*,*)
 
   end if
@@ -645,12 +613,12 @@ program QuAcK
 
   if(dopCCD) then
 
-    call cpu_time(start_CCD)
+    call cpu_time(start_CC)
     call pCCD(maxSCF_CC,thresh_CC,n_diis_CC,nBas,nC,nO,nV,nR,ERI_MO,ENuc,ERHF,eHF)
-    call cpu_time(end_CCD)
+    call cpu_time(end_CC)
 
-    t_CCD = end_CCD - start_CCD
-    write(*,'(A65,1X,F9.3,A8)') 'Total CPU time for pair CCD = ',t_CCD,' seconds'
+    t_CC = end_CC - start_CC
+    write(*,'(A65,1X,F9.3,A8)') 'Total CPU time for pair CCD = ',t_CC,' seconds'
     write(*,*)
 
   end if
@@ -661,7 +629,7 @@ program QuAcK
 
   if(doCIS) then
 
-    call cpu_time(start_CIS)
+    call cpu_time(start_CI)
 
     if(unrestricted) then
 
@@ -674,10 +642,10 @@ program QuAcK
 
     end if
 
-    call cpu_time(end_CIS)
+    call cpu_time(end_CI)
 
-    t_CIS = end_CIS - start_CIS
-    write(*,'(A65,1X,F9.3,A8)') 'Total CPU time for CIS = ',t_CIS,' seconds'
+    t_CI = end_CI - start_CI
+    write(*,'(A65,1X,F9.3,A8)') 'Total CPU time for CIS = ',t_CI,' seconds'
     write(*,*)
 
   end if
@@ -688,12 +656,12 @@ program QuAcK
 
   if(doCID) then
 
-    call cpu_time(start_CID)
+    call cpu_time(start_CI)
     call CID(singlet,triplet,nBas,nC,nO,nV,nR,ERI_MO,F_MO,ERHF)
-    call cpu_time(end_CID)
+    call cpu_time(end_CI)
 
-    t_CID = end_CID - start_CID
-    write(*,'(A65,1X,F9.3,A8)') 'Total CPU time for CID = ',t_CID,' seconds'
+    t_CI = end_CI - start_CI
+    write(*,'(A65,1X,F9.3,A8)') 'Total CPU time for CID = ',t_CI,' seconds'
     write(*,*)
 
   end if
@@ -704,12 +672,12 @@ program QuAcK
 
   if(doCISD) then
 
-    call cpu_time(start_CISD)
+    call cpu_time(start_CI)
     call CISD(singlet,triplet,nBas,nC,nO,nV,nR,ERI_MO,F_MO,ERHF)
-    call cpu_time(end_CISD)
+    call cpu_time(end_CI)
 
-    t_CISD = end_CISD - start_CISD
-    write(*,'(A65,1X,F9.3,A8)') 'Total CPU time for CISD = ',t_CISD,' seconds'
+    t_CI = end_CI - start_CI
+    write(*,'(A65,1X,F9.3,A8)') 'Total CPU time for CISD = ',t_CI,' seconds'
     write(*,*)
 
   end if
@@ -829,7 +797,7 @@ program QuAcK
 
   if(doG0F2) then
 
-    call cpu_time(start_GF2)
+    call cpu_time(start_GF)
 
     if(unrestricted) then
 
@@ -844,10 +812,10 @@ program QuAcK
 
     end if
 
-    call cpu_time(end_GF2)
+    call cpu_time(end_GF)
 
-    t_GF2 = end_GF2 - start_GF2
-    write(*,'(A65,1X,F9.3,A8)') 'Total CPU time for GF2 = ',t_GF2,' seconds'
+    t_GF = end_GF - start_GF
+    write(*,'(A65,1X,F9.3,A8)') 'Total CPU time for GF2 = ',t_GF,' seconds'
     write(*,*)
 
   end if
@@ -858,7 +826,7 @@ program QuAcK
 
   if(doevGF2) then
 
-    call cpu_time(start_GF2)
+    call cpu_time(start_GF)
 
     if(unrestricted) then
 
@@ -874,10 +842,10 @@ program QuAcK
 
     end if
 
-    call cpu_time(end_GF2)
+    call cpu_time(end_GF)
 
-    t_GF2 = end_GF2 - start_GF2
-    write(*,'(A65,1X,F9.3,A8)') 'Total CPU time for GF2 = ',t_GF2,' seconds'
+    t_GF = end_GF - start_GF
+    write(*,'(A65,1X,F9.3,A8)') 'Total CPU time for GF2 = ',t_GF,' seconds'
     write(*,*)
 
   end if
@@ -888,7 +856,7 @@ program QuAcK
 
   if(doqsGF2) then 
 
-    call cpu_time(start_GF2)
+    call cpu_time(start_GF)
 
     if(unrestricted) then
 
@@ -903,10 +871,10 @@ program QuAcK
 
     end if
 
-    call cpu_time(end_GF2)
+    call cpu_time(end_GF)
 
-    t_GF2 = end_GF2 - start_GF2
-    write(*,'(A65,1X,F9.3,A8)') 'Total CPU time for qsGF2 = ',t_GF2,' seconds'
+    t_GF = end_GF - start_GF
+    write(*,'(A65,1X,F9.3,A8)') 'Total CPU time for qsGF2 = ',t_GF,' seconds'
     write(*,*)
 
   end if
@@ -917,7 +885,7 @@ program QuAcK
 
   if(doG0F3) then
 
-    call cpu_time(start_GF3)
+    call cpu_time(start_GF)
 
     if(unrestricted) then
 
@@ -929,10 +897,10 @@ program QuAcK
 
     end if
 
-    call cpu_time(end_GF3)
+    call cpu_time(end_GF)
 
-    t_GF3 = end_GF3 - start_GF3
-    write(*,'(A65,1X,F9.3,A8)') 'Total CPU time for GF3 = ',t_GF3,' seconds'
+    t_GF = end_GF - start_GF
+    write(*,'(A65,1X,F9.3,A8)') 'Total CPU time for GF3 = ',t_GF,' seconds'
     write(*,*)
 
   end if
@@ -943,7 +911,7 @@ program QuAcK
 
   if(doevGF3) then
 
-    call cpu_time(start_GF3)
+    call cpu_time(start_GF)
 
     if(unrestricted) then
 
@@ -955,10 +923,10 @@ program QuAcK
 
     end if
 
-    call cpu_time(end_GF3)
+    call cpu_time(end_GF)
 
-    t_GF3 = end_GF3 - start_GF3
-    write(*,'(A65,1X,F9.3,A8)') 'Total CPU time for GF3 = ',t_GF3,' seconds'
+    t_GF = end_GF - start_GF
+    write(*,'(A65,1X,F9.3,A8)') 'Total CPU time for GF3 = ',t_GF,' seconds'
     write(*,*)
 
   end if
@@ -971,7 +939,7 @@ program QuAcK
 
   if(doG0W0) then
     
-    call cpu_time(start_G0W0)
+    call cpu_time(start_GW)
     if(unrestricted) then 
 
       call UG0W0(doACFDT,exchange_kernel,doXBS,COHSEX,BSE,TDA_W,TDA,dBSE,dTDA,evDyn,spin_conserved,spin_flip,   & 
@@ -987,16 +955,14 @@ program QuAcK
       else
         call G0W0(doACFDT,exchange_kernel,doXBS,COHSEX,BSE,BSE2,TDA_W,TDA,dBSE,dTDA,evDyn,ppBSE,singlet,triplet, &
                   linGW,eta_GW,regGW,nBas,nC,nO,nV,nR,nS,ENuc,ERHF,ERI_AO,ERI_MO,dipole_int_MO,PHF,cHF,eHF,Vxc,eG0W0)
-!       call ehTM(doACFDT,exchange_kernel,doXBS,COHSEX,BSE,TDA_W,TDA,dBSE,dTDA,evDyn,ppBSE,singlet,triplet, &
-!                 linGW,eta_GW,regGW,nBas,nC,nO,nV,nR,nS,ENuc,ERHF,ERI_AO,ERI_MO,dipole_int_MO,PHF,cHF,eHF,Vxc,eG0W0)
       end if
 
     end if
 
-    call cpu_time(end_G0W0)
+    call cpu_time(end_GW)
   
-    t_G0W0 = end_G0W0 - start_G0W0
-    write(*,'(A65,1X,F9.3,A8)') 'Total CPU time for G0W0 = ',t_G0W0,' seconds'
+    t_GW = end_GW - start_GW
+    write(*,'(A65,1X,F9.3,A8)') 'Total CPU time for G0W0 = ',t_GW,' seconds'
     write(*,*)
 
   end if
@@ -1007,7 +973,7 @@ program QuAcK
 
   if(doevGW) then
 
-    call cpu_time(start_evGW)
+    call cpu_time(start_GW)
     if(unrestricted) then 
 
       call evUGW(maxSCF_GW,thresh_GW,n_diis_GW,doACFDT,exchange_kernel,doXBS,COHSEX,BSE,TDA_W,TDA,   &
@@ -1021,10 +987,10 @@ program QuAcK
                 BSE,BSE2,TDA_W,TDA,dBSE,dTDA,evDyn,ppBSE,singlet,triplet,linGW,eta_GW,regGW, &
                 nBas,nC,nO,nV,nR,nS,ENuc,ERHF,ERI_AO,ERI_MO,dipole_int_MO,PHF,cHF,eHF,Vxc,eG0W0)
     end if
-    call cpu_time(end_evGW)
+    call cpu_time(end_GW)
 
-    t_evGW = end_evGW - start_evGW
-    write(*,'(A65,1X,F9.3,A8)') 'Total CPU time for evGW = ',t_evGW,' seconds'
+    t_GW = end_GW - start_GW
+    write(*,'(A65,1X,F9.3,A8)') 'Total CPU time for evGW = ',t_GW,' seconds'
     write(*,*)
 
   end if
@@ -1035,7 +1001,7 @@ program QuAcK
 
   if(doqsGW) then 
 
-    call wall_time(start_qsGW)
+    call wall_time(start_GW)
 
     if(unrestricted) then 
     
@@ -1052,10 +1018,10 @@ program QuAcK
 
     end if
 
-    call wall_time(end_qsGW)
+    call wall_time(end_GW)
 
-    t_qsGW = end_qsGW - start_qsGW
-    write(*,'(A65,1X,F9.3,A8)') 'Total wall time for qsGW = ',t_qsGW,' seconds'
+    t_GW = end_GW - start_GW
+    write(*,'(A65,1X,F9.3,A8)') 'Total wall time for qsGW = ',t_GW,' seconds'
     write(*,*)
 
   end if
@@ -1066,7 +1032,7 @@ program QuAcK
 
   if(doSRGqsGW) then 
 
-    call wall_time(start_qsGW)
+    call wall_time(start_GW)
 
     if(unrestricted) then 
 
@@ -1080,10 +1046,10 @@ program QuAcK
 
     end if
 
-    call wall_time(end_qsGW)
+    call wall_time(end_GW)
 
-    t_qsGW = end_qsGW - start_qsGW
-    write(*,'(A65,1X,F9.3,A8)') 'Total wall time for qsGW = ',t_qsGW,' seconds'
+    t_GW = end_GW - start_GW
+    write(*,'(A65,1X,F9.3,A8)') 'Total wall time for qsGW = ',t_GW,' seconds'
     write(*,*)
 
   end if
@@ -1094,12 +1060,12 @@ program QuAcK
 
   if(doufG0W0) then
     
-    call cpu_time(start_ufGW)
+    call cpu_time(start_GW)
     call ufG0W0(nBas,nC,nO,nV,nR,nS,ENuc,ERHF,ERI_MO,eHF,TDA_W)
-    call cpu_time(end_ufGW)
+    call cpu_time(end_GW)
   
-    t_ufGW = end_ufGW - start_ufGW
-    write(*,'(A65,1X,F9.3,A8)') 'Total CPU time for ufG0W0 = ',t_ufGW,' seconds'
+    t_GW = end_GW - start_GW
+    write(*,'(A65,1X,F9.3,A8)') 'Total CPU time for ufG0W0 = ',t_GW,' seconds'
     write(*,*)
 
     if(BSE) call ufBSE(nBas,nC,nO,nV,nR,nS,ENuc,ERHF,ERI_MO,eHF,eG0W0)
@@ -1112,13 +1078,13 @@ program QuAcK
 
   if(doufGW) then
     
-    call cpu_time(start_ufGW)
+    call cpu_time(start_GW)
     call ufGW(nBas,nC,nO,nV,nR,nS,ENuc,ERHF,ERI_MO,eHF)
 !   call CCGW(maxSCF_CC,thresh_CC,nBas,nC,nO,nV,nR,ERI_MO,ENuc,ERHF,eHF)
-    call cpu_time(end_ufGW)
+    call cpu_time(end_GW)
   
-    t_ufGW = end_ufGW - start_ufGW
-    write(*,'(A65,1X,F9.3,A8)') 'Total CPU time for ufGW = ',t_ufGW,' seconds'
+    t_GW = end_GW - start_GW
+    write(*,'(A65,1X,F9.3,A8)') 'Total CPU time for ufGW = ',t_GW,' seconds'
     write(*,*)
 
     if(BSE) call ufBSE(nBas,nC,nO,nV,nR,nS,ENuc,ERHF,ERI_MO,eHF,eG0W0)
@@ -1133,7 +1099,7 @@ program QuAcK
 
   if(doG0T0pp) then
     
-    call cpu_time(start_G0T0)
+    call cpu_time(start_GT)
 
     if(unrestricted) then 
 
@@ -1152,10 +1118,10 @@ program QuAcK
 
     end if
 
-    call cpu_time(end_G0T0)
+    call cpu_time(end_GT)
   
-    t_G0T0 = end_G0T0 - start_G0T0
-    write(*,'(A65,1X,F9.3,A8)') 'Total CPU time for G0T0 = ',t_G0T0,' seconds'
+    t_GT = end_GT - start_GT
+    write(*,'(A65,1X,F9.3,A8)') 'Total CPU time for G0T0 = ',t_GT,' seconds'
     write(*,*)
 
   end if
@@ -1166,7 +1132,7 @@ program QuAcK
 
   if(doevGTpp) then
     
-    call cpu_time(start_evGT)
+    call cpu_time(start_GT)
 
     if(unrestricted) then
 
@@ -1185,10 +1151,10 @@ program QuAcK
 
     end if
 
-    call cpu_time(end_evGT)
+    call cpu_time(end_GT)
   
-    t_evGT = end_evGT - start_evGT
-    write(*,'(A65,1X,F9.3,A8)') 'Total CPU time for evGT = ',t_evGT,' seconds'
+    t_GT = end_GT - start_GT
+    write(*,'(A65,1X,F9.3,A8)') 'Total CPU time for evGT = ',t_GT,' seconds'
     write(*,*)
 
   end if
@@ -1199,7 +1165,7 @@ program QuAcK
 
   if(doqsGTpp) then 
 
-    call cpu_time(start_qsGT)
+    call cpu_time(start_GT)
 
     if(unrestricted) then
 
@@ -1216,10 +1182,10 @@ program QuAcK
 
     end if
 
-    call cpu_time(end_qsGT)
+    call cpu_time(end_GT)
 
-    t_qsGT = end_qsGT - start_qsGT
-    write(*,'(A65,1X,F9.3,A8)') 'Total CPU time for qsGT = ',t_qsGT,' seconds'
+    t_GT = end_GT - start_GT
+    write(*,'(A65,1X,F9.3,A8)') 'Total CPU time for qsGT = ',t_GT,' seconds'
     write(*,*)
 
   end if
@@ -1232,7 +1198,7 @@ program QuAcK
 
   if(doG0T0eh) then
     
-    call cpu_time(start_G0T0)
+    call cpu_time(start_GT)
 
     if(unrestricted) then 
 
@@ -1245,10 +1211,10 @@ program QuAcK
 
     end if
 
-    call cpu_time(end_G0T0)
+    call cpu_time(end_GT)
   
-    t_G0T0 = end_G0T0 - start_G0T0
-    write(*,'(A65,1X,F9.3,A8)') 'Total CPU time for G0T0 = ',t_G0T0,' seconds'
+    t_GT = end_GT - start_GT
+    write(*,'(A65,1X,F9.3,A8)') 'Total CPU time for G0T0 = ',t_GT,' seconds'
     write(*,*)
 
   end if
@@ -1259,7 +1225,7 @@ program QuAcK
 
   if(doevGTeh) then
 
-    call cpu_time(start_evGT)
+    call cpu_time(start_GT)
     if(unrestricted) then 
 
     else
@@ -1268,10 +1234,36 @@ program QuAcK
                   BSE,BSE2,TDA_T,TDA,dBSE,dTDA,evDyn,ppBSE,singlet,triplet,linGT,eta_GT,regGT, &
                   nBas,nC,nO,nV,nR,nS,ENuc,ERHF,ERI_AO,ERI_MO,dipole_int_MO,PHF,cHF,eHF,Vxc,eG0T0)
     end if
-    call cpu_time(end_evGT)
+    call cpu_time(end_GT)
 
-    t_evGT = end_evGT - start_evGT
-    write(*,'(A65,1X,F9.3,A8)') 'Total CPU time for evGT = ',t_evGT,' seconds'
+    t_GT = end_GT - start_GT
+    write(*,'(A65,1X,F9.3,A8)') 'Total CPU time for evGT = ',t_GT,' seconds'
+    write(*,*)
+
+  end if
+
+!------------------------------------------------------------------------
+! Perform qsGTeh calculation
+!------------------------------------------------------------------------
+
+  if(doqsGTeh) then 
+
+    call wall_time(start_GT)
+
+    if(unrestricted) then 
+    
+    else
+ 
+      call qsGTeh(maxSCF_GT,thresh_GT,n_diis_GT,doACFDT,exchange_kernel,doXBS,                      &
+                  BSE,BSE2,TDA_T,TDA,dBSE,dTDA,evDyn,singlet,triplet,eta_GT,regGT,nNuc,ZNuc,rNuc,ENuc, & 
+                  nBas,nC,nO,nV,nR,nS,ERHF,S,X,T,V,Hc,ERI_AO,ERI_MO,dipole_int_AO,dipole_int_MO,PHF,cHF,eHF)
+
+    end if
+
+    call wall_time(end_GT)
+
+    t_GT = end_GT - start_GT
+    write(*,'(A65,1X,F9.3,A8)') 'Total wall time for qsGW = ',t_GT,' seconds'
     write(*,*)
 
   end if
@@ -1282,13 +1274,13 @@ program QuAcK
 
   if(doFCI) then
 
-    call cpu_time(start_FCI)
+    call cpu_time(start_CI)
     write(*,*) ' FCI is not yet implemented! Sorry.'
 !   call FCI(nBas,nC,nO,nV,nR,ERI_MO,eHF)
-    call cpu_time(end_FCI)
+    call cpu_time(end_CI)
 
-    t_FCI = end_FCI - start_FCI
-    write(*,'(A65,1X,F9.3,A8)') 'Total CPU time for FCI = ',t_FCI,' seconds'
+    t_CI = end_CI - start_CI
+    write(*,'(A65,1X,F9.3,A8)') 'Total CPU time for FCI = ',t_CI,' seconds'
     write(*,*)
 
   end if
