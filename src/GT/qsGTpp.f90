@@ -1,6 +1,6 @@
-subroutine qsGT(maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,BSE,TDA_T,TDA,          & 
-                dBSE,dTDA,evDyn,singlet,triplet,eta,regularize,nNuc,ZNuc,rNuc,ENuc,nBas,nC,nO,nV,nR,nS,ERHF, &
-                S,X,T,V,Hc,ERI_AO,ERI_MO,dipole_int_AO,dipole_int_MO,PHF,cHF,eHF)
+subroutine qsGTpp(maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,BSE,TDA_T,TDA,          & 
+                  dBSE,dTDA,evDyn,singlet,triplet,eta,regularize,nNuc,ZNuc,rNuc,ENuc,nBas,nC,nO,nV,nR,nS,ERHF, &
+                  S,X,T,V,Hc,ERI_AO,ERI_MO,dipole_int_AO,dipole_int_MO,PHF,cHF,eHF)
 
 ! Perform a quasiparticle self-consistent GT calculation
 
@@ -76,11 +76,11 @@ subroutine qsGT(maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,BSE,TDA_T,T
   double precision,allocatable  :: cp(:,:)
   double precision,allocatable  :: eGT(:)
   double precision,allocatable  :: eOld(:)
-  double precision,allocatable  :: Omega1s(:),Omega1t(:)
+  double precision,allocatable  :: Om1s(:),Om1t(:)
   double precision,allocatable  :: X1s(:,:),X1t(:,:)
   double precision,allocatable  :: Y1s(:,:),Y1t(:,:)
   double precision,allocatable  :: rho1s(:,:,:),rho1t(:,:,:)
-  double precision,allocatable  :: Omega2s(:),Omega2t(:)
+  double precision,allocatable  :: Om2s(:),Om2t(:)
   double precision,allocatable  :: X2s(:,:),X2t(:,:)
   double precision,allocatable  :: Y2s(:,:),Y2t(:,:)
   double precision,allocatable  :: rho2s(:,:,:),rho2t(:,:,:)
@@ -140,11 +140,11 @@ subroutine qsGT(maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,BSE,TDA_T,T
            J(nBas,nBas),K(nBas,nBas),SigT(nBas,nBas),SigTp(nBas,nBas),SigTm(nBas,nBas),Z(nBas),     & 
            error(nBas,nBas),error_diis(nBasSq,max_diis),F_diis(nBasSq,max_diis))
 
-  allocate(Omega1s(nVVs),X1s(nVVs,nVVs),Y1s(nOOs,nVVs),        &
-           Omega2s(nOOs),X2s(nVVs,nOOs),Y2s(nOOs,nOOs),        &
+  allocate(Om1s(nVVs),X1s(nVVs,nVVs),Y1s(nOOs,nVVs),        &
+           Om2s(nOOs),X2s(nVVs,nOOs),Y2s(nOOs,nOOs),        &
            rho1s(nBas,nBas,nVVs),rho2s(nBas,nBas,nOOs),        &
-           Omega1t(nVVt),X1t(nVVt,nVVt),Y1t(nOOt,nVVt),        &
-           Omega2t(nOOt),X2t(nVVt,nOOt),Y2t(nOOt,nOOt),        &
+           Om1t(nVVt),X1t(nVVt,nVVt),Y1t(nOOt,nVVt),        &
+           Om2t(nOOt),X2t(nVVt,nOOt),Y2t(nOOt,nOOt),        &
            rho1t(nBas,nBas,nVVt),rho2t(nBas,nBas,nOOt))
 
 ! Initialization
@@ -189,13 +189,13 @@ subroutine qsGT(maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,BSE,TDA_T,T
     iblock = 3
 
     call linear_response_pp(iblock,TDA_T,nBas,nC,nO,nV,nR,nOOs,nVVs,1d0,eGT,ERI_MO,  &
-                            Omega1s,X1s,Y1s,Omega2s,X2s,Y2s,EcRPA(ispin))
+                            Om1s,X1s,Y1s,Om2s,X2s,Y2s,EcRPA(ispin))
 
     ispin  = 2
     iblock = 4
 
     call linear_response_pp(iblock,TDA_T,nBas,nC,nO,nV,nR,nOOt,nVVt,1d0,eGT,ERI_MO,  &
-                          Omega1t,X1t,Y1t,Omega2t,X2t,Y2t,EcRPA(ispin))
+                          Om1t,X1t,Y1t,Om2t,X2t,Y2t,EcRPA(ispin))
 
     EcRPA(1) = EcRPA(1) - EcRPA(2)
     EcRPA(2) = 3d0*EcRPA(2)
@@ -208,48 +208,38 @@ subroutine qsGT(maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,BSE,TDA_T,T
 
     iblock =  3
 
-    call excitation_density_Tmatrix(iblock,nBas,nC,nO,nV,nR,nOOs,nVVs,ERI_MO, &
-                                    X1s,Y1s,rho1s,X2s,Y2s,rho2s)
+    call GTpp_excitation_density(iblock,nBas,nC,nO,nV,nR,nOOs,nVVs,ERI_MO,X1s,Y1s,rho1s,X2s,Y2s,rho2s)
 
    if(regularize) then
 
-      call regularized_self_energy_Tmatrix(eta,nBas,nC,nO,nV,nR,nOOs,nVVs,eGT, &
-                                           Omega1s,rho1s,Omega2s,rho2s,EcGM,SigT)
+      call regularized_self_energy_Tmatrix(eta,nBas,nC,nO,nV,nR,nOOs,nVVs,eGT,Om1s,rho1s,Om2s,rho2s,EcGM,SigT)
      
-      call regularized_renormalization_factor_Tmatrix(eta,nBas,nC,nO,nV,nR,nOOs,nVVs,eGT, &
-                                                      Omega1s,rho1s,Omega2s,rho2s,Z)
+      call regularized_renormalization_factor_Tmatrix(eta,nBas,nC,nO,nV,nR,nOOs,nVVs,eGT,Om1s,rho1s,Om2s,rho2s,Z)
 
     else
 
-      call self_energy_Tmatrix(eta,nBas,nC,nO,nV,nR,nOOs,nVVs,eGT, &
-                               Omega1s,rho1s,Omega2s,rho2s,EcGM,SigT)
+      call GTpp_self_energy(eta,nBas,nC,nO,nV,nR,nOOs,nVVs,eGT,Om1s,rho1s,Om2s,rho2s,EcGM,SigT)
       
-      call renormalization_factor_Tmatrix(eta,nBas,nC,nO,nV,nR,nOOs,nVVs,eGT, &
-                                          Omega1s,rho1s,Omega2s,rho2s,Z)
+      call GTpp_renormalization_factor(eta,nBas,nC,nO,nV,nR,nOOs,nVVs,eGT,Om1s,rho1s,Om2s,rho2s,Z)
 
     end if
 
     iblock =  4
 
-    call excitation_density_Tmatrix(iblock,nBas,nC,nO,nV,nR,nOOt,nVVt,ERI_MO, &
-                                    X1t,Y1t,rho1t,X2t,Y2t,rho2t)
+    call GTpp_excitation_density(iblock,nBas,nC,nO,nV,nR,nOOt,nVVt,ERI_MO,X1t,Y1t,rho1t,X2t,Y2t,rho2t)
 
     if(regularize) then
 
-      call self_energy_Tmatrix(eta,nBas,nC,nO,nV,nR,nOOt,nVVt,eGT, &
-                               Omega1t,rho1t,Omega2t,rho2t,EcGM,SigT)
+      call regularized_self_energy_Tmatrix(eta,nBas,nC,nO,nV,nR,nOOt,nVVt,eGT,Om1t,rho1t,Om2t,rho2t,EcGM,SigT)
      
-      call renormalization_factor_Tmatrix(eta,nBas,nC,nO,nV,nR,nOOt,nVVt,eGT, &
-                                          Omega1t,rho1t,Omega2t,rho2t,Z)
+      call regularized_renormalization_factor_Tmatrix(eta,nBas,nC,nO,nV,nR,nOOt,nVVt,eGT, &
+                                                      Om1t,rho1t,Om2t,rho2t,Z)
 
      else
 
-
-      call regularized_self_energy_Tmatrix(eta,nBas,nC,nO,nV,nR,nOOt,nVVt,eGT, &
-                                           Omega1t,rho1t,Omega2t,rho2t,EcGM,SigT)
+      call GTpp_self_energy(eta,nBas,nC,nO,nV,nR,nOOt,nVVt,eGT,Om1t,rho1t,Om2t,rho2t,EcGM,SigT)
      
-      call regularized_renormalization_factor_Tmatrix(eta,nBas,nC,nO,nV,nR,nOOt,nVVt,eGT, &
-                                                      Omega1t,rho1t,Omega2t,rho2t,Z)
+      call GTpp_renormalization_factor(eta,nBas,nC,nO,nV,nR,nOOt,nVVt,eGT,Om1t,rho1t,Om2t,rho2t,Z)
 
     end if
 
@@ -323,7 +313,7 @@ subroutine qsGT(maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,BSE,TDA_T,T
     ! Print results
 
     call dipole_moment(nBas,P,nNuc,ZNuc,rNuc,dipole_int_AO,dipole)
-    call print_qsGT(nBas,nO,nSCF,Conv,thresh,eHF,eGT,c,SigTp,Z,ENuc,ET,EV,EJ,Ex,EcGM,EcRPA,EqsGT,dipole)
+    call print_qsGTpp(nBas,nO,nSCF,Conv,thresh,eHF,eGT,c,SigTp,Z,ENuc,ET,EV,EJ,Ex,EcGM,EcRPA,EqsGT,dipole)
 
   enddo
 !------------------------------------------------------------------------
@@ -353,7 +343,7 @@ subroutine qsGT(maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,BSE,TDA_T,T
   if(BSE) then
 
     call Bethe_Salpeter_Tmatrix(TDA_T,TDA,dBSE,dTDA,evDyn,singlet,triplet,eta,nBas,nC,nO,nV,nR,nS,nOOs,nVVs,nOOt,nVVt,   &
-                                Omega1s,X1s,Y1s,Omega2s,X2s,Y2s,rho1s,rho2s,Omega1t,X1t,Y1t,Omega2t,X2t,Y2t,rho1t,rho2t, &
+                                Om1s,X1s,Y1s,Om2s,X2s,Y2s,rho1s,rho2s,Om1t,X1t,Y1t,Om2t,X2t,Y2t,rho1t,rho2t, &
                                 ERI_MO,dipole_int_MO,eGT,eGT,EcBSE)
 
     if(exchange_kernel) then
@@ -389,8 +379,8 @@ subroutine qsGT(maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,BSE,TDA_T,T
       end if
 
       call ACFDT_Tmatrix(exchange_kernel,doXBS,.false.,TDA_T,TDA,BSE,singlet,triplet,eta,nBas,nC,nO,nV,nR,nS, &
-                         nOOs,nVVs,nOOt,nVVt,Omega1s,X1s,Y1s,Omega2s,X2s,Y2s,rho1s,rho2s,Omega1t,X1t,Y1t,     &
-                         Omega2t,X2t,Y2t,rho1t,rho2t,ERI_MO,eGT,eGT,EcAC)
+                         nOOs,nVVs,nOOt,nVVt,Om1s,X1s,Y1s,Om2s,X2s,Y2s,rho1s,rho2s,Om1t,X1t,Y1t,     &
+                         Om2t,X2t,Y2t,rho1t,rho2t,ERI_MO,eGT,eGT,EcAC)
 
       write(*,*)
       write(*,*)'-------------------------------------------------------------------------------'
@@ -405,4 +395,4 @@ subroutine qsGT(maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,BSE,TDA_T,T
 
   end if
 
-end subroutine qsGT
+end subroutine 

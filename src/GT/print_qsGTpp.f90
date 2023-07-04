@@ -1,4 +1,4 @@
-subroutine print_qsGT(nBas,nO,nSCF,Conv,thresh,eHF,eGT,c,SigC,Z,ENuc,ET,EV,EJ,Ex,EcGM,EcRPA,EqsGT,dipole)
+subroutine print_qsGTpp(nBas,nO,nSCF,Conv,thresh,eHF,eGT,c,SigC,Z,ENuc,ET,EV,EJ,Ex,EcGM,EcRPA,EqsGT,dipole)
 
 ! Print one-electron energies and other stuff for qsGT
 
@@ -117,4 +117,4 @@ subroutine print_qsGT(nBas,nO,nSCF,Conv,thresh,eHF,eGT,c,SigC,Z,ENuc,ET,EV,EJ,Ex
 
   endif
 
-end subroutine print_qsGT
+end subroutine 

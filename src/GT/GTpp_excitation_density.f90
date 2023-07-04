@@ -1,4 +1,4 @@
-subroutine excitation_density_Tmatrix(ispin,nBas,nC,nO,nV,nR,nOO,nVV,ERI,X1,Y1,rho1,X2,Y2,rho2)
+subroutine GTpp_excitation_density(ispin,nBas,nC,nO,nV,nR,nOO,nVV,ERI,X1,Y1,rho1,X2,Y2,rho2)
 
 ! Compute excitation densities for T-matrix self-energy
 
@@ -228,7 +228,4 @@ subroutine excitation_density_Tmatrix(ispin,nBas,nC,nO,nV,nR,nOO,nVV,ERI,X1,Y1,r
 
   end if
 
-! call matout(nBas**2,nVV,rho1)
-! call matout(nBas**2,nOO,rho2)
-
-end subroutine excitation_density_Tmatrix
+end subroutine 

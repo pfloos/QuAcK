@@ -1,6 +1,6 @@
-subroutine evGT(maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS, & 
-                BSE,TDA_T,TDA,dBSE,dTDA,evDyn,singlet,triplet,eta,regularize,nBas, & 
-                nC,nO,nV,nR,nS,ENuc,ERHF,ERI_AO,ERI_MO,dipole_int,PHF,cHF,eHF,Vxc,eG0T0)
+subroutine evGTpp(maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS, & 
+                  BSE,TDA_T,TDA,dBSE,dTDA,evDyn,singlet,triplet,eta,regularize,nBas, & 
+                  nC,nO,nV,nR,nS,ENuc,ERHF,ERI_AO,ERI_MO,dipole_int,PHF,cHF,eHF,Vxc,eG0T0)
 
 ! Perform eigenvalue self-consistent calculation with a T-matrix self-energy (evGT)
 
@@ -162,25 +162,25 @@ subroutine evGT(maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS, &
  
     iblock =  3
  
-    call excitation_density_Tmatrix(iblock,nBas,nC,nO,nV,nR,nOOs,nVVs,ERI_MO, &
-                                    X1s,Y1s,rho1s,X2s,Y2s,rho2s)
+    call GTpp_excitation_density(iblock,nBas,nC,nO,nV,nR,nOOs,nVVs,ERI_MO, &
+                                 X1s,Y1s,rho1s,X2s,Y2s,rho2s)
  
-    call self_energy_Tmatrix_diag(eta,nBas,nC,nO,nV,nR,nOOs,nVVs,eGT, & 
-                                  Omega1s,rho1s,Omega2s,rho2s,EcGM,SigT)
+    call GTpp_self_energy_diag(eta,nBas,nC,nO,nV,nR,nOOs,nVVs,eGT, & 
+                               Omega1s,rho1s,Omega2s,rho2s,EcGM,SigT)
  
-    call renormalization_factor_Tmatrix(eta,nBas,nC,nO,nV,nR,nOOs,nVVs,eGT, & 
-                                        Omega1s,rho1s,Omega2s,rho2s,Z)
+    call GTpp_renormalization_factor(eta,nBas,nC,nO,nV,nR,nOOs,nVVs,eGT, & 
+                                     Omega1s,rho1s,Omega2s,rho2s,Z)
  
     iblock =  4
  
-    call excitation_density_Tmatrix(iblock,nBas,nC,nO,nV,nR,nOOt,nVVt,ERI_MO, &
-                                    X1t,Y1t,rho1t,X2t,Y2t,rho2t)
+    call GTpp_excitation_density(iblock,nBas,nC,nO,nV,nR,nOOt,nVVt,ERI_MO, &
+                                 X1t,Y1t,rho1t,X2t,Y2t,rho2t)
  
-    call self_energy_Tmatrix_diag(eta,nBas,nC,nO,nV,nR,nOOt,nVVt,eGT, & 
-                                  Omega1t,rho1t,Omega2t,rho2t,EcGM,SigT)
+    call GTpp_self_energy_diag(eta,nBas,nC,nO,nV,nR,nOOt,nVVt,eGT, & 
+                               Omega1t,rho1t,Omega2t,rho2t,EcGM,SigT)
  
-    call renormalization_factor_Tmatrix(eta,nBas,nC,nO,nV,nR,nOOt,nVVt,eGT, & 
-                                        Omega1t,rho1t,Omega2t,rho2t,Z)
+    call GTpp_renormalization_factor(eta,nBas,nC,nO,nV,nR,nOOt,nVVt,eGT, & 
+                                     Omega1t,rho1t,Omega2t,rho2t,Z)
  
     Z(:) = 1d0/(1d0 - Z(:))
 
@@ -200,7 +200,7 @@ subroutine evGT(maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS, &
   ! Dump results
   !----------------------------------------------
 
-    call print_evGT(nBas,nO,nSCF,Conv,eHF,ENuc,ERHF,SigT,Z,eGT,EcGM,EcRPA)
+    call print_evGTpp(nBas,nO,nSCF,Conv,eHF,ENuc,ERHF,SigT,Z,eGT,EcGM,EcRPA)
 
     ! DIIS extrapolation
 
@@ -288,4 +288,4 @@ subroutine evGT(maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS, &
 
   end if
 
-end subroutine evGT
+end subroutine 

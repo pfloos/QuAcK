@@ -1,5 +1,5 @@
-subroutine G0T0(doACFDT,exchange_kernel,doXBS,BSE,TDA_T,TDA,dBSE,dTDA,evDyn,ppBSE,singlet,triplet, & 
-                linearize,eta,regularize,nBas,nC,nO,nV,nR,nS,ENuc,ERHF,ERI_AO,ERI_MO,dipole_int,PHF,cHF,eHF,Vxc,eGT)
+subroutine G0T0pp(doACFDT,exchange_kernel,doXBS,BSE,TDA_T,TDA,dBSE,dTDA,evDyn,ppBSE,singlet,triplet, & 
+                  linearize,eta,regularize,nBas,nC,nO,nV,nR,nS,ENuc,ERHF,ERI_AO,ERI_MO,dipole_int,PHF,cHF,eHF,Vxc,eGT)
 
 ! Perform one-shot calculation with a T-matrix self-energy (G0T0)
 
@@ -134,7 +134,7 @@ subroutine G0T0(doACFDT,exchange_kernel,doXBS,BSE,TDA_T,TDA,dBSE,dTDA,evDyn,ppBS
 
   iblock = 3
 
-  call excitation_density_Tmatrix(iblock,nBas,nC,nO,nV,nR,nOOab,nVVab,ERI_MO,X1ab,Y1ab,rho1ab,X2ab,Y2ab,rho2ab)
+  call GTpp_excitation_density(iblock,nBas,nC,nO,nV,nR,nOOab,nVVab,ERI_MO,X1ab,Y1ab,rho1ab,X2ab,Y2ab,rho2ab)
 
   if(regularize) then
 
@@ -143,14 +143,14 @@ subroutine G0T0(doACFDT,exchange_kernel,doXBS,BSE,TDA_T,TDA,dBSE,dTDA,evDyn,ppBS
 
   else
 
-    call self_energy_Tmatrix_diag(eta,nBas,nC,nO,nV,nR,nOOab,nVVab,eHF,Om1ab,rho1ab,Om2ab,rho2ab,EcGM,SigT)
-    call renormalization_factor_Tmatrix(eta,nBas,nC,nO,nV,nR,nOOab,nVVab,eHF,Om1ab,rho1ab,Om2ab,rho2ab,Z)
+    call GTpp_self_energy_diag(eta,nBas,nC,nO,nV,nR,nOOab,nVVab,eHF,Om1ab,rho1ab,Om2ab,rho2ab,EcGM,SigT)
+    call GTpp_renormalization_factor(eta,nBas,nC,nO,nV,nR,nOOab,nVVab,eHF,Om1ab,rho1ab,Om2ab,rho2ab,Z)
 
   end if
 
   iblock = 4
 
-  call excitation_density_Tmatrix(iblock,nBas,nC,nO,nV,nR,nOOaa,nVVaa,ERI_MO,X1aa,Y1aa,rho1aa,X2aa,Y2aa,rho2aa)
+  call GTpp_excitation_density(iblock,nBas,nC,nO,nV,nR,nOOaa,nVVaa,ERI_MO,X1aa,Y1aa,rho1aa,X2aa,Y2aa,rho2aa)
 
   if(regularize) then
 
@@ -159,8 +159,8 @@ subroutine G0T0(doACFDT,exchange_kernel,doXBS,BSE,TDA_T,TDA,dBSE,dTDA,evDyn,ppBS
 
   else
 
-    call self_energy_Tmatrix_diag(eta,nBas,nC,nO,nV,nR,nOOaa,nVVaa,eHF,Om1aa,rho1aa,Om2aa,rho2aa,EcGM,SigT)
-    call renormalization_factor_Tmatrix(eta,nBas,nC,nO,nV,nR,nOOaa,nVVaa,eHF,Om1aa,rho1aa,Om2aa,rho2aa,Z)
+    call GTpp_self_energy_diag(eta,nBas,nC,nO,nV,nR,nOOaa,nVVaa,eHF,Om1aa,rho1aa,Om2aa,rho2aa,EcGM,SigT)
+    call GTpp_renormalization_factor(eta,nBas,nC,nO,nV,nR,nOOaa,nVVaa,eHF,Om1aa,rho1aa,Om2aa,rho2aa,Z)
 
   end if
 
@@ -176,8 +176,7 @@ subroutine G0T0(doACFDT,exchange_kernel,doXBS,BSE,TDA_T,TDA,dBSE,dTDA,evDyn,ppBS
 ! Solve the quasi-particle equation
 !----------------------------------------------
 
-eGTlin(:) = 0d0
-eGTlin(:) = eHF(:) + Z(:)*(SigX(:) + SigT(:) - Vxc(:))
+  eGTlin(:) = eHF(:) + Z(:)*(SigX(:) + SigT(:) - Vxc(:))
   
   if(linearize) then
 
@@ -215,7 +214,7 @@ eGTlin(:) = eHF(:) + Z(:)*(SigX(:) + SigT(:) - Vxc(:))
   EcRPA(1) = EcRPA(1) - EcRPA(2)
   EcRPA(2) = 3d0*EcRPA(2)
 
-  call print_G0T0(nBas,nO,eHF,ENuc,ERHF,SigT,Z,eGT,EcGM,EcRPA)
+  call print_G0T0pp(nBas,nO,eHF,ENuc,ERHF,SigT,Z,eGT,EcGM,EcRPA)
 
 ! Perform BSE calculation
 
@@ -298,4 +297,4 @@ eGTlin(:) = eHF(:) + Z(:)*(SigX(:) + SigT(:) - Vxc(:))
 
   end if
 
-end subroutine G0T0
+end subroutine 

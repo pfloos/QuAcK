@@ -1,4 +1,4 @@
-subroutine print_evGT(nBas,nO,nSCF,Conv,eHF,ENuc,ERHF,SigT,Z,eGT,EcGM,EcRPA)
+subroutine print_evGTpp(nBas,nO,nSCF,Conv,eHF,ENuc,ERHF,SigT,Z,eGT,EcGM,EcRPA)
 
 ! Print one-electron energies and other stuff for evGT
 
@@ -62,4 +62,4 @@ subroutine print_evGT(nBas,nO,nSCF,Conv,eHF,ENuc,ERHF,SigT,Z,eGT,EcGM,EcRPA)
   write(*,*)'-------------------------------------------------------------------------------'
   write(*,*)
 
-end subroutine print_evGT
+end subroutine 

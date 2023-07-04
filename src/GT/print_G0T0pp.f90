@@ -1,4 +1,4 @@
-subroutine print_G0T0(nBas,nO,eHF,ENuc,ERHF,SigT,Z,eGT,EcGM,EcRPA)
+subroutine print_G0T0pp(nBas,nO,eHF,ENuc,ERHF,SigT,Z,eGT,EcGM,EcRPA)
 
 ! Print one-electron energies and other stuff for G0T0
 
@@ -61,6 +61,4 @@ subroutine print_G0T0(nBas,nO,eHF,ENuc,ERHF,SigT,Z,eGT,EcGM,EcRPA)
   write(*,*)'-------------------------------------------------------------------------------'
   write(*,*)
 
-end subroutine print_G0T0
-
-
+end subroutine 

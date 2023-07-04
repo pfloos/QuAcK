@@ -1,6 +1,6 @@
-subroutine self_energy_Tmatrix_diag(eta,nBas,nC,nO,nV,nR,nOO,nVV,e,Omega1,rho1,Omega2,rho2,EcGM,SigT)
+subroutine GTpp_self_energy(eta,nBas,nC,nO,nV,nR,nOO,nVV,e,Omega1,rho1,Omega2,rho2,EcGM,SigT)
 
-! Compute diagonal of the correlation part of the T-matrix self-energy
+! Compute the correlation part of the T-matrix self-energy
 
   implicit none
   include 'parameters.h'
@@ -23,23 +23,25 @@ subroutine self_energy_Tmatrix_diag(eta,nBas,nC,nO,nV,nR,nOO,nVV,e,Omega1,rho1,O
 
 ! Local variables
 
-  integer                       :: i,j,a,b,p,cd,kl
+  integer                       :: i,j,a,b,p,q,cd,kl
   double precision              :: eps
 
 ! Output variables
 
-  double precision,intent(inout)  :: EcGM
-  double precision,intent(inout)  :: SigT(nBas)
+  double precision,intent(inout):: EcGM
+  double precision,intent(inout):: SigT(nBas,nBas)
 
 !----------------------------------------------
 ! Occupied part of the T-matrix self-energy 
 !----------------------------------------------
 
   do p=nC+1,nBas-nR
-    do i=nC+1,nO
-      do cd=1,nVV
-        eps = e(p) + e(i) - Omega1(cd)
-        SigT(p) = SigT(p) + rho1(p,i,cd)**2*eps/(eps**2 + eta**2)
+    do q=nC+1,nBas-nR
+      do i=nC+1,nO
+        do cd=1,nVV
+          eps = e(p) + e(i) - Omega1(cd)
+          SigT(p,q) = SigT(p,q) + rho1(p,i,cd)*rho1(q,i,cd)*eps/(eps**2 + eta**2)
+        enddo
       enddo
     enddo
   enddo
@@ -49,10 +51,12 @@ subroutine self_energy_Tmatrix_diag(eta,nBas,nC,nO,nV,nR,nOO,nVV,e,Omega1,rho1,O
 !----------------------------------------------
 
   do p=nC+1,nBas-nR
-    do a=nO+1,nBas-nR
-      do kl=1,nOO
-        eps = e(p) + e(a) - Omega2(kl)
-        SigT(p) = SigT(p) + rho2(p,a,kl)**2*eps/(eps**2 + eta**2)
+    do q=nC+1,nBas-nR
+      do a=nO+1,nBas-nR
+        do kl=1,nOO
+          eps = e(p) + e(a) - Omega2(kl)
+          SigT(p,q) = SigT(p,q) + rho2(p,a,kl)*rho2(q,a,kl)*eps/(eps**2 + eta**2)
+        enddo
       enddo
     enddo
   enddo
@@ -79,4 +83,4 @@ subroutine self_energy_Tmatrix_diag(eta,nBas,nC,nO,nV,nR,nOO,nVV,e,Omega1,rho1,O
     enddo
   enddo
 
-end subroutine self_energy_Tmatrix_diag
+end subroutine 

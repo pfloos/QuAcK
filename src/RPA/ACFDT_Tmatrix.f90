@@ -121,7 +121,7 @@ subroutine ACFDT_Tmatrix(exchange_kernel,doXBS,dRPA,TDA_T,TDA,BSE,singlet,triple
         call linear_response_pp(iblock,TDA_T,nBas,nC,nO,nV,nR,nOOs,nVVs,lambda,eT,ERI,  &
                                 Omega1s,X1s,Y1s,Omega2s,X2s,Y2s,EcRPA(isp_T))
 
-        call excitation_density_Tmatrix(iblock,nBas,nC,nO,nV,nR,nOOs,nVVs,ERI,X1s,Y1s,rho1s,X2s,Y2s,rho2s)
+        call GTpp_excitation_density(iblock,nBas,nC,nO,nV,nR,nOOs,nVVs,ERI,X1s,Y1s,rho1s,X2s,Y2s,rho2s)
 
                      call static_Tmatrix_A(eta,nBas,nC,nO,nV,nR,nS,nOOs,nVVs,lambda,Omega1s,rho1s,Omega2s,rho2s,TAs)
         if(.not.TDA) call static_Tmatrix_B(eta,nBas,nC,nO,nV,nR,nS,nOOs,nVVs,lambda,Omega1s,rho1s,Omega2s,rho2s,TBs)
@@ -132,7 +132,7 @@ subroutine ACFDT_Tmatrix(exchange_kernel,doXBS,dRPA,TDA_T,TDA,BSE,singlet,triple
         call linear_response_pp(iblock,TDA_T,nBas,nC,nO,nV,nR,nOOt,nVVt,lambda,eT,ERI,  &
                                 Omega1t,X1t,Y1t,Omega2t,X2t,Y2t,EcRPA(isp_T))
 
-        call excitation_density_Tmatrix(iblock,nBas,nC,nO,nV,nR,nOOt,nVVt,ERI,X1t,Y1t,rho1t,X2t,Y2t,rho2t)
+        call GTpp_excitation_density(iblock,nBas,nC,nO,nV,nR,nOOt,nVVt,ERI,X1t,Y1t,rho1t,X2t,Y2t,rho2t)
 
                      call static_Tmatrix_A(eta,nBas,nC,nO,nV,nR,nS,nOOt,nVVt,lambda,Omega1t,rho1t,Omega2t,rho2t,TAt)
         if(.not.TDA) call static_Tmatrix_B(eta,nBas,nC,nO,nV,nR,nS,nOOt,nVVt,lambda,Omega1t,rho1t,Omega2t,rho2t,TBt)
@@ -186,7 +186,7 @@ subroutine ACFDT_Tmatrix(exchange_kernel,doXBS,dRPA,TDA_T,TDA,BSE,singlet,triple
         call linear_response_pp(iblock,TDA_T,nBas,nC,nO,nV,nR,nOOs,nVVs,lambda,eT,ERI,  &
                                 Omega1s,X1s,Y1s,Omega2s,X2s,Y2s,EcRPA(isp_T))
 
-        call excitation_density_Tmatrix(iblock,nBas,nC,nO,nV,nR,nOOs,nVVs,ERI,X1s,Y1s,rho1s,X2s,Y2s,rho2s)
+        call GTpp_excitation_density(iblock,nBas,nC,nO,nV,nR,nOOs,nVVs,ERI,X1s,Y1s,rho1s,X2s,Y2s,rho2s)
 
                      call static_Tmatrix_A(eta,nBas,nC,nO,nV,nR,nS,nOOs,nVVs,lambda,Omega1s,rho1s,Omega2s,rho2s,TAs)
         if(.not.TDA) call static_Tmatrix_B(eta,nBas,nC,nO,nV,nR,nS,nOOs,nVVs,lambda,Omega1s,rho1s,Omega2s,rho2s,TBs)
@@ -197,7 +197,7 @@ subroutine ACFDT_Tmatrix(exchange_kernel,doXBS,dRPA,TDA_T,TDA,BSE,singlet,triple
         call linear_response_pp(iblock,TDA_T,nBas,nC,nO,nV,nR,nOOt,nVVt,lambda,eT,ERI,  &
                                 Omega1t,X1t,Y1t,Omega2t,X2t,Y2t,EcRPA(isp_T))
 
-        call excitation_density_Tmatrix(iblock,nBas,nC,nO,nV,nR,nOOt,nVVt,ERI,X1t,Y1t,rho1t,X2t,Y2t,rho2t)
+        call GTpp_excitation_density(iblock,nBas,nC,nO,nV,nR,nOOt,nVVt,ERI,X1t,Y1t,rho1t,X2t,Y2t,rho2t)
 
                      call static_Tmatrix_A(eta,nBas,nC,nO,nV,nR,nS,nOOt,nVVt,lambda,Omega1t,rho1t,Omega2t,rho2t,TAt)
         if(.not.TDA) call static_Tmatrix_B(eta,nBas,nC,nO,nV,nR,nS,nOOt,nVVt,lambda,Omega1t,rho1t,Omega2t,rho2t,TBt)

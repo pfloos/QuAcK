@@ -1092,7 +1092,7 @@ program QuAcK
   end if
 
 !------------------------------------------------------------------------
-! Perform G0T0 calculatiom
+! Perform G0T0pp calculatiom
 !------------------------------------------------------------------------
 
   eG0T0(:,:) = eHF(:,:)
@@ -1112,9 +1112,9 @@ program QuAcK
     else
 
 !     call soG0T0(eta_GT,nBas,nC,nO,nV,nR,ENuc,ERHF,ERI_MO,eHF)
-      call G0T0(doACFDT,exchange_kernel,doXBS,BSE,TDA_T,TDA,dBSE,dTDA,evDyn,ppBSE,singlet,triplet, &
-                linGT,eta_GT,regGT,nBas,nC,nO,nV,nR,nS,ENuc,ERHF,ERI_AO,ERI_MO,dipole_int_MO,      &  
-                PHF,cHF,eHF,Vxc,eG0T0)
+      call G0T0pp(doACFDT,exchange_kernel,doXBS,BSE,TDA_T,TDA,dBSE,dTDA,evDyn,ppBSE,singlet,triplet, &
+                  linGT,eta_GT,regGT,nBas,nC,nO,nV,nR,nS,ENuc,ERHF,ERI_AO,ERI_MO,dipole_int_MO,      &  
+                  PHF,cHF,eHF,Vxc,eG0T0)
 
     end if
 
@@ -1127,7 +1127,7 @@ program QuAcK
   end if
 
 !------------------------------------------------------------------------
-! Perform evGT calculatiom
+! Perform evGTpp calculatiom
 !------------------------------------------------------------------------
 
   if(doevGTpp) then
@@ -1144,10 +1144,10 @@ program QuAcK
 
     else
 
-      call evGT(maxSCF_GT,thresh_GT,n_diis_GT,doACFDT,exchange_kernel,doXBS, &
-                BSE,TDA_T,TDA,dBSE,dTDA,evDyn,singlet,triplet,eta_GT,regGT,  & 
-                nBas,nC,nO,nV,nR,nS,ENuc,ERHF,ERI_AO,ERI_MO,dipole_int_MO,   &
-                PHF,cHF,eHF,Vxc,eG0T0)
+      call evGTpp(maxSCF_GT,thresh_GT,n_diis_GT,doACFDT,exchange_kernel,doXBS, &
+                  BSE,TDA_T,TDA,dBSE,dTDA,evDyn,singlet,triplet,eta_GT,regGT,  & 
+                  nBas,nC,nO,nV,nR,nS,ENuc,ERHF,ERI_AO,ERI_MO,dipole_int_MO,   &
+                  PHF,cHF,eHF,Vxc,eG0T0)
 
     end if
 
@@ -1160,7 +1160,7 @@ program QuAcK
   end if
 
 !------------------------------------------------------------------------
-! Perform qsGT calculation
+! Perform qsGTpp calculation
 !------------------------------------------------------------------------
 
   if(doqsGTpp) then 
@@ -1175,10 +1175,10 @@ program QuAcK
                  ERI_MO_bbbb,dipole_int_AO,dipole_int_aa,dipole_int_bb,PHF,cHF,eHF) 
     else
 
-      call qsGT(maxSCF_GT,thresh_GT,n_diis_GT,doACFDT,exchange_kernel,doXBS, &
-                BSE,TDA_T,TDA,dBSE,dTDA,evDyn,singlet,triplet,eta_GT,regGT,  &
-                nNuc,ZNuc,rNuc,ENuc,nBas,nC,nO,nV,nR,nS,ERHF,S,X,T,V,Hc,     & 
-                ERI_AO,ERI_MO,dipole_int_AO,dipole_int_MO,PHF,cHF,eHF)
+      call qsGTpp(maxSCF_GT,thresh_GT,n_diis_GT,doACFDT,exchange_kernel,doXBS, &
+                  BSE,TDA_T,TDA,dBSE,dTDA,evDyn,singlet,triplet,eta_GT,regGT,  &
+                  nNuc,ZNuc,rNuc,ENuc,nBas,nC,nO,nV,nR,nS,ERHF,S,X,T,V,Hc,     & 
+                  ERI_AO,ERI_MO,dipole_int_AO,dipole_int_MO,PHF,cHF,eHF)
 
     end if
 
