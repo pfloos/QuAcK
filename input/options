@@ -8,8 +8,8 @@
         F   T       F       T              T 
 # GF: maxSCF thresh  DIIS n_diis lin eta renorm reg
       256    0.00001 T    5      T   0.0 0      F
-# GW: maxSCF thresh  DIIS n_diis lin eta COHSEX SOSEX TDA_W reg
-      256     0.00001  T  5      T    0.0  F      F     F     F 
+# GW: maxSCF thresh  DIIS n_diis lin eta COHSEX TDA_W reg
+      256     0.00001  T  5      T    0.0  F    F     F 
 # GT: maxSCF thresh  DIIS n_diis lin eta TDA_T reg
       256    0.00001  T    5      T   0.1 F     F  
 # ACFDT: AC Kx  XBS

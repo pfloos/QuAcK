@@ -99,7 +99,7 @@ program QuAcK
 
   integer                       :: maxSCF_GW,n_diis_GW
   double precision              :: thresh_GW
-  logical                       :: DIIS_GW,COHSEX,SOSEX,TDA_W,linGW,regGW
+  logical                       :: DIIS_GW,COHSEX,TDA_W,linGW,regGW
   double precision              :: eta_GW
 
   integer                       :: maxSCF_GT,n_diis_GT
@@ -149,8 +149,7 @@ program QuAcK
                     maxSCF_CC,thresh_CC,DIIS_CC,n_diis_CC,                                              &
                     TDA,singlet,triplet,spin_conserved,spin_flip,                                       &
                     maxSCF_GF,thresh_GF,DIIS_GF,n_diis_GF,linGF,eta_GF,renormGF,regGF,                  &
-                    maxSCF_GW,thresh_GW,DIIS_GW,n_diis_GW,linGW,eta_GW,regGW,                           & 
-                    COHSEX,SOSEX,TDA_W,                                                                 &  
+                    maxSCF_GW,thresh_GW,DIIS_GW,n_diis_GW,linGW,eta_GW,regGW,COHSEX,TDA_W,              &  
                     maxSCF_GT,thresh_GT,DIIS_GT,n_diis_GT,linGT,eta_GT,regGT,TDA_T,                     & 
                     doACFDT,exchange_kernel,doXBS,                                                      &
                     BSE,dBSE,dTDA,evDyn,ppBSE,BSE2)
@@ -947,16 +946,8 @@ program QuAcK
                  dipole_int_aa,dipole_int_bb,PHF,cHF,eHF,Vxc,eG0W0)
     else
 
-      ! SOSEX extrension of GW
-
-      if(SOSEX) then
-        call G0W0_SOSEX(doACFDT,exchange_kernel,doXBS,BSE,BSE2,TDA_W,TDA,dBSE,dTDA,evDyn,singlet,triplet, &
-                        eta_GW,nBas,nC,nO,nV,nR,nS,ENuc,ERHF,ERI_AO,ERI_MO,dipole_int_MO,PHF,cHF,eHF,Vxc,eG0W0)
-      else
-        call G0W0(doACFDT,exchange_kernel,doXBS,COHSEX,BSE,BSE2,TDA_W,TDA,dBSE,dTDA,evDyn,ppBSE,singlet,triplet, &
-                  linGW,eta_GW,regGW,nBas,nC,nO,nV,nR,nS,ENuc,ERHF,ERI_AO,ERI_MO,dipole_int_MO,PHF,cHF,eHF,Vxc,eG0W0)
-      end if
-
+      call G0W0(doACFDT,exchange_kernel,doXBS,COHSEX,BSE,BSE2,TDA_W,TDA,dBSE,dTDA,evDyn,ppBSE,singlet,triplet, &
+                linGW,eta_GW,regGW,nBas,nC,nO,nV,nR,nS,ENuc,ERHF,ERI_AO,ERI_MO,dipole_int_MO,PHF,cHF,eHF,Vxc,eG0W0)
     end if
 
     call cpu_time(end_GW)
