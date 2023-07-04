@@ -77,14 +77,14 @@ subroutine evGW(maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,COHSEX,BSE,
   
   double precision,allocatable  :: eGWlin(:)
 
-  integer                       :: nBas2
-  integer                       :: nC2
-  integer                       :: nO2
-  integer                       :: nV2
-  integer                       :: nR2
-  integer                       :: nS2
+! integer                       :: nBas2
+! integer                       :: nC2
+! integer                       :: nO2
+! integer                       :: nV2
+! integer                       :: nR2
+! integer                       :: nS2
 
-  double precision,allocatable  :: seHF(:),seGW(:),sERI(:,:,:,:)
+! double precision,allocatable  :: seHF(:),seGW(:),sERI(:,:,:,:)
 
 ! Hello world
 
@@ -259,7 +259,7 @@ subroutine evGW(maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,COHSEX,BSE,
 
   if(BSE) then
 
-    call Bethe_Salpeter(BSE2,TDA_W,TDA,dBSE,dTDA,evDyn,singlet,triplet,eta,nBas,nC,nO,nV,nR,nS,ERI_MO,dipole_int,eGW,eGW,EcBSE)
+    call GW_phBSE(BSE2,TDA_W,TDA,dBSE,dTDA,evDyn,singlet,triplet,eta,nBas,nC,nO,nV,nR,nS,ERI_MO,dipole_int,eGW,eGW,EcBSE)
 
     if(exchange_kernel) then
 
@@ -310,7 +310,7 @@ subroutine evGW(maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,COHSEX,BSE,
 
   if(ppBSE) then
 
-    call Bethe_Salpeter_pp(TDA_W,TDA,singlet,triplet,eta,nBas,nC,nO,nV,nR,nS,ERI_MO,dipole_int,eHF,eGW,EcppBSE)
+    call GW_ppBSE(TDA_W,TDA,singlet,triplet,eta,nBas,nC,nO,nV,nR,nS,ERI_MO,dipole_int,eHF,eGW,EcppBSE)
 
     write(*,*)
     write(*,*)'-------------------------------------------------------------------------------'
@@ -321,20 +321,20 @@ subroutine evGW(maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,COHSEX,BSE,
     write(*,*)'-------------------------------------------------------------------------------'
     write(*,*)
 
-    nBas2 = 2*nBas
-    nO2   = 2*nO
-    nV2   = 2*nV
-    nC2   = 2*nC
-    nR2   = 2*nR
-    nS2   = nO2*nV2
- 
-    allocate(seHF(nBas2),seGW(nBas2),sERI(nBas2,nBas2,nBas2,nBas2))
- 
-    call spatial_to_spin_MO_energy(nBas,eHF,nBas2,seHF)
-    call spatial_to_spin_MO_energy(nBas,eGW,nBas2,seGW)
-    call spatial_to_spin_ERI(nBas,ERI_MO,nBas2,sERI)
- 
-    call Bethe_Salpeter_pp_so(TDA_W,TDA,singlet,triplet,eta,nBas2,nC2,nO2,nV2,nR2,nS2,sERI,dipole_int,seHF,seGW,EcppBSE)
+!   nBas2 = 2*nBas
+!   nO2   = 2*nO
+!   nV2   = 2*nV
+!   nC2   = 2*nC
+!   nR2   = 2*nR
+!   nS2   = nO2*nV2
+!
+!   allocate(seHF(nBas2),seGW(nBas2),sERI(nBas2,nBas2,nBas2,nBas2))
+!
+!   call spatial_to_spin_MO_energy(nBas,eHF,nBas2,seHF)
+!   call spatial_to_spin_MO_energy(nBas,eGW,nBas2,seGW)
+!   call spatial_to_spin_ERI(nBas,ERI_MO,nBas2,sERI)
+!
+!   call GW_ppBSE_so(TDA_W,TDA,singlet,triplet,eta,nBas2,nC2,nO2,nV2,nR2,nS2,sERI,dipole_int,seHF,seGW,EcppBSE)
 
   end if
 

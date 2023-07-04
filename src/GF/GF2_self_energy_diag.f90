@@ -1,4 +1,4 @@
-subroutine self_energy_GF2_diag(eta,nBas,nC,nO,nV,nR,nS,eHF,eGF2,ERI,SigC,Z)
+subroutine GF2_self_energy_diag(eta,nBas,nC,nO,nV,nR,nS,eHF,eGF2,ERI,SigC,Z)
 
 ! Compute diagonal part of the GF2 self-energy and its renormalization factor
 
@@ -66,4 +66,4 @@ subroutine self_energy_GF2_diag(eta,nBas,nC,nO,nV,nR,nS,eHF,eGF2,ERI,SigC,Z)
 
   Z(:) = 1d0/(1d0 - Z(:))
 
-end subroutine self_energy_GF2_diag
+end subroutine 

@@ -62,11 +62,11 @@ subroutine evGTpp(maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS, &
   double precision,allocatable  :: e_diis(:,:)
   double precision,allocatable  :: eGT(:)
   double precision,allocatable  :: eOld(:)
-  double precision,allocatable  :: Omega1s(:),Omega1t(:)
+  double precision,allocatable  :: Om1s(:),Om1t(:)
   double precision,allocatable  :: X1s(:,:),X1t(:,:)
   double precision,allocatable  :: Y1s(:,:),Y1t(:,:)
   double precision,allocatable  :: rho1s(:,:,:),rho1t(:,:,:)
-  double precision,allocatable  :: Omega2s(:),Omega2t(:)
+  double precision,allocatable  :: Om2s(:),Om2t(:)
   double precision,allocatable  :: X2s(:,:),X2t(:,:)
   double precision,allocatable  :: Y2s(:,:),Y2t(:,:)
   double precision,allocatable  :: rho2s(:,:,:),rho2t(:,:,:)
@@ -94,11 +94,11 @@ subroutine evGTpp(maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS, &
 
 ! Memory allocation
 
-  allocate(Omega1s(nVVs),X1s(nVVs,nVVs),Y1s(nOOs,nVVs),        & 
-           Omega2s(nOOs),X2s(nVVs,nOOs),Y2s(nOOs,nOOs),        & 
+  allocate(Om1s(nVVs),X1s(nVVs,nVVs),Y1s(nOOs,nVVs),        & 
+           Om2s(nOOs),X2s(nVVs,nOOs),Y2s(nOOs,nOOs),        & 
            rho1s(nBas,nBas,nVVs),rho2s(nBas,nBas,nOOs),        & 
-           Omega1t(nVVt),X1t(nVVt,nVVt),Y1t(nOOt,nVVt),        & 
-           Omega2t(nOOt),X2t(nVVt,nOOt),Y2t(nOOt,nOOt),        & 
+           Om1t(nVVt),X1t(nVVt,nVVt),Y1t(nOOt,nVVt),        & 
+           Om2t(nOOt),X2t(nVVt,nOOt),Y2t(nOOt,nOOt),        & 
            rho1t(nBas,nBas,nVVt),rho2t(nBas,nBas,nOOt),        &
            eGT(nBas),eOld(nBas),Z(nBas),SigX(nBas),SigT(nBas), &
            error_diis(nBas,max_diis),e_diis(nBas,max_diis))
@@ -135,7 +135,7 @@ subroutine evGTpp(maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS, &
     ! Compute linear response
  
     call linear_response_pp(iblock,TDA_T,nBas,nC,nO,nV,nR,nOOs,nVVs,1d0,eGT,ERI_MO,  & 
-                            Omega1s,X1s,Y1s,Omega2s,X2s,Y2s,EcRPA(ispin))
+                            Om1s,X1s,Y1s,Om2s,X2s,Y2s,EcRPA(ispin))
  
   !----------------------------------------------
   ! alpha-alpha block
@@ -147,7 +147,7 @@ subroutine evGTpp(maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS, &
   ! Compute linear response
 
     call linear_response_pp(iblock,TDA_T,nBas,nC,nO,nV,nR,nOOt,nVVt,1d0,eGT,ERI_MO,  & 
-                          Omega1t,X1t,Y1t,Omega2t,X2t,Y2t,EcRPA(ispin))
+                          Om1t,X1t,Y1t,Om2t,X2t,Y2t,EcRPA(ispin))
 
     EcRPA(1) = EcRPA(1) - EcRPA(2)
     EcRPA(2) = 3d0*EcRPA(2)
@@ -166,10 +166,10 @@ subroutine evGTpp(maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS, &
                                  X1s,Y1s,rho1s,X2s,Y2s,rho2s)
  
     call GTpp_self_energy_diag(eta,nBas,nC,nO,nV,nR,nOOs,nVVs,eGT, & 
-                               Omega1s,rho1s,Omega2s,rho2s,EcGM,SigT)
+                               Om1s,rho1s,Om2s,rho2s,EcGM,SigT)
  
     call GTpp_renormalization_factor(eta,nBas,nC,nO,nV,nR,nOOs,nVVs,eGT, & 
-                                     Omega1s,rho1s,Omega2s,rho2s,Z)
+                                     Om1s,rho1s,Om2s,rho2s,Z)
  
     iblock =  4
  
@@ -177,10 +177,10 @@ subroutine evGTpp(maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS, &
                                  X1t,Y1t,rho1t,X2t,Y2t,rho2t)
  
     call GTpp_self_energy_diag(eta,nBas,nC,nO,nV,nR,nOOt,nVVt,eGT, & 
-                               Omega1t,rho1t,Omega2t,rho2t,EcGM,SigT)
+                               Om1t,rho1t,Om2t,rho2t,EcGM,SigT)
  
     call GTpp_renormalization_factor(eta,nBas,nC,nO,nV,nR,nOOt,nVVt,eGT, & 
-                                     Omega1t,rho1t,Omega2t,rho2t,Z)
+                                     Om1t,rho1t,Om2t,rho2t,Z)
  
     Z(:) = 1d0/(1d0 - Z(:))
 
@@ -228,9 +228,9 @@ subroutine evGTpp(maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS, &
 
   if(BSE) then
 
-    call Bethe_Salpeter_Tmatrix(TDA_T,TDA,dBSE,dTDA,evDyn,singlet,triplet,eta,nBas,nC,nO,nV,nR,nS,nOOs,nVVs,nOOt,nVVt,   &
-                                Omega1s,X1s,Y1s,Omega2s,X2s,Y2s,rho1s,rho2s,Omega1t,X1t,Y1t,Omega2t,X2t,Y2t,rho1t,rho2t, &
-                                ERI_MO,dipole_int,eGT,eGT,EcBSE)
+    call GTpp_phBSE(TDA_T,TDA,dBSE,dTDA,evDyn,singlet,triplet,eta,nBas,nC,nO,nV,nR,nS,nOOs,nVVs,nOOt,nVVt,   &
+                    Om1s,X1s,Y1s,Om2s,X2s,Y2s,rho1s,rho2s,Om1t,X1t,Y1t,Om2t,X2t,Y2t,rho1t,rho2t, &
+                    ERI_MO,dipole_int,eGT,eGT,EcBSE)
 
     if(exchange_kernel) then
 
@@ -265,8 +265,8 @@ subroutine evGTpp(maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS, &
       end if
 
       call ACFDT_Tmatrix(exchange_kernel,doXBS,.false.,TDA_T,TDA,BSE,singlet,triplet,eta,nBas,nC,nO,nV,nR,nS, &
-                         nOOs,nVVs,nOOt,nVVt,Omega1s,X1s,Y1s,Omega2s,X2s,Y2s,rho1s,rho2s,Omega1t,X1t,Y1t,     &
-                         Omega2t,X2t,Y2t,rho1t,rho2t,ERI_MO,eGT,eGT,EcAC)
+                         nOOs,nVVs,nOOt,nVVt,Om1s,X1s,Y1s,Om2s,X2s,Y2s,rho1s,rho2s,Om1t,X1t,Y1t,     &
+                         Om2t,X2t,Y2t,rho1t,rho2t,ERI_MO,eGT,eGT,EcAC)
 
       if(exchange_kernel) then
 

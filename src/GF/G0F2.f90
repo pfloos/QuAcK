@@ -66,7 +66,7 @@ subroutine G0F2(BSE,TDA,dBSE,dTDA,evDyn,singlet,triplet,linearize,eta,regularize
 
   else
 
-    call self_energy_GF2_diag(eta,nBas,nC,nO,nV,nR,nS,eHF,eHF,ERI,SigC,Z)
+    call GF2_self_energy_diag(eta,nBas,nC,nO,nV,nR,nS,eHF,eHF,ERI,SigC,Z)
 
   end if
 
@@ -95,8 +95,8 @@ subroutine G0F2(BSE,TDA,dBSE,dTDA,evDyn,singlet,triplet,linearize,eta,regularize
 
   if(BSE) then
 
-    call BSE2(TDA,dBSE,dTDA,evDyn,singlet,triplet,eta,nBas,nC,nO,nV,nR,nS,ERI,dipole_int,eHF,eGF2,EcBSE)
+    call GF2_phBSE2(TDA,dBSE,dTDA,evDyn,singlet,triplet,eta,nBas,nC,nO,nV,nR,nS,ERI,dipole_int,eHF,eGF2,EcBSE)
 
   end if
 
-end subroutine G0F2
+end subroutine 

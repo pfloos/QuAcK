@@ -159,7 +159,7 @@ subroutine G0T0eh(doACFDT,exchange_kernel,doXBS,BSE,BSE2,TDA_T,TDA,dBSE,dTDA,evD
 
     ! Find all the roots of the QP equation if necessary
 
-    ! call QP_roots(nBas,nC,nO,nV,nR,nS,eta,eHF,Omega,rho,eGWlin)
+    ! call QP_roots(nBas,nC,nO,nV,nR,nS,eta,eHF,Om,rho,eGWlin)
  
   end if
 
