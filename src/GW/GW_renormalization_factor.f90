@@ -1,4 +1,4 @@
-subroutine renormalization_factor(COHSEX,eta,nBas,nC,nO,nV,nR,nS,e,Omega,rho,Z)
+subroutine GW_renormalization_factor(COHSEX,eta,nBas,nC,nO,nV,nR,nS,e,Omega,rho,Z)
 
 ! Compute renormalization factor for GW
 
@@ -69,4 +69,4 @@ subroutine renormalization_factor(COHSEX,eta,nBas,nC,nO,nV,nR,nS,e,Omega,rho,Z)
  
   Z(:) = 1d0/(1d0 - Z(:))
 
-end subroutine renormalization_factor
+end subroutine 

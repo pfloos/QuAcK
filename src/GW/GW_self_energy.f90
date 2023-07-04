@@ -1,4 +1,4 @@
-subroutine self_energy_correlation(COHSEX,eta,nBas,nC,nO,nV,nR,nS,e,Omega,rho,EcGM,SigC)
+subroutine GW_self_energy(COHSEX,eta,nBas,nC,nO,nV,nR,nS,e,Omega,rho,EcGM,SigC)
 
 ! Compute correlation part of the self-energy
 
@@ -130,4 +130,4 @@ end do
 
   end if
 
-end subroutine self_energy_correlation
+end subroutine 

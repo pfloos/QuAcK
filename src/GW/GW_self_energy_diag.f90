@@ -1,4 +1,4 @@
-subroutine self_energy_correlation_diag(COHSEX,eta,nBas,nC,nO,nV,nR,nS,e,Omega,rho,EcGM,SigC)
+subroutine GW_self_energy_diag(COHSEX,eta,nBas,nC,nO,nV,nR,nS,e,Omega,rho,EcGM,SigC)
 
 ! Compute diagonal of the correlation part of the self-energy
 
@@ -108,4 +108,4 @@ subroutine self_energy_correlation_diag(COHSEX,eta,nBas,nC,nO,nV,nR,nS,e,Omega,r
 
   end if
 
-end subroutine self_energy_correlation_diag
+end subroutine 
