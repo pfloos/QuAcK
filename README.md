@@ -8,7 +8,8 @@
   
 # What is it?
 
-
+QuAcK is a small electronic structure program written in `Fortran 90` and developed at the Laboratoire de Chimie et Physique Quantiques [LCPQ](https://www.lcpq.ups-tlse.fr) (Toulouse, France).
+QuAcK is usually used for prototyping purposes and the successful ideas are usually implemented more efficiently in [quantum package](https://quantumpackage.github.io/qp2/). QuAcK is an excellent place to start for experienced PhD students or postdocs as the code is simple and written in a fairly well-known and straightforward language.
 
 # Installation guide
 The QuAcK software can be downloaded on GitHub as a Git repository
