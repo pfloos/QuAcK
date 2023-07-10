@@ -1,17 +1,1 @@
-* define $QUACK_ROOT  
-* ninja
-* opam
- opam install ocamlc dune lacaml getopt zarith gmp alcotest 
-* cmake
-* wget
-* autoconf
-* automake
-* blas 
-* lapack
-* gfortran
-* python3
-* libtool
-
-- problems with libxc install
-- make clean in $QUACK_ROOT does not work
 
