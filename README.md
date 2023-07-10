@@ -4,6 +4,7 @@
 - [Pierre-Francois Loos](https://pfloos.github.io/WEB_LOOS)
 - [Enzo Monino](https://enzomonino.github.io)
 - [Antoine Marie](https://antoine-marie.github.io)
+- [Anthony Scemama](https://scemama.github.io)
   
 # What is it?
 
