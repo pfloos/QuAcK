@@ -112,3 +112,6 @@ For example, if you want to run a calculation on water using the cc-pvdz basis s
 QuAcK 💩 % python PyDuck.py -x water -b cc-pvdz
 ```
 
+<img src="https://lcpq.github.io/PTEROSOR/img/ERC.png" width="200" />
+
+QuAcK is supported by the [PTEROSOR](https://lcpq.github.io/PTEROSOR/) project that has received funding from the European Research Council (ERC) under the European Union’s Horizon 2020 research and innovation programme (Grant agreement No. 863481).
