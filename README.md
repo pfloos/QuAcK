@@ -16,7 +16,7 @@ The QuAcK software can be downloaded on GitHub as a Git repository
 git clone https://github.com/pfloos/QuAcK.git
 ```
 
-Then, one must define the variable `QCMATH_ROOT` and install [PySCF](https://pyscf.org) using `pip`
+Then, one must define the variable `QUACK_ROOT` and install [PySCF](https://pyscf.org) using `pip`
 ```
 pip install pyscf
 ```
