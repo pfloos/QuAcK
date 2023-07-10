@@ -38,14 +38,16 @@ subroutine Bethe_Salpeter_A_matrix_dynamic(eta,nBas,nC,nO,nV,nR,nS,lambda,eGW,Om
 
 ! Build dynamic A matrix
 
-  ia = 0
-  do i=nC+1,nO
-    do a=nO+1,nBas-nR
-      ia = ia + 1
-      jb = 0
-      do j=nC+1,nO
-        do b=nO+1,nBas-nR
-          jb = jb + 1
+  jb = 0
+!$omp parallel do default(private) shared(A_dyn,ZA_dyn,OmRPA,OmBSE,eGW,rho_RPA,nO,nBas,maxS,chi,eps,eta,nC,nR,lambda)
+  do j=nC+1,nO
+    do b=nO+1,nBas-nR
+      jb = (b-nO) + (j-1)*(nBas-nO) 
+
+      ia = 0
+      do i=nC+1,nO
+        do a=nO+1,nBas-nR
+          ia = (a-nO) + (i-1)*(nBas-nO) 
  
           chi = 0d0
 
@@ -87,5 +89,7 @@ subroutine Bethe_Salpeter_A_matrix_dynamic(eta,nBas,nC,nO,nV,nR,nS,lambda,eGW,Om
       enddo
     enddo
   enddo
+
+!$omp end parallel do
 
 end subroutine Bethe_Salpeter_A_matrix_dynamic
