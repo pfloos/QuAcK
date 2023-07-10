@@ -46,14 +46,16 @@ subroutine dynamic_Tmatrix_A(eta,nBas,nC,nO,nV,nR,nS,nOO,nVV,lambda,eGT,Omega1,O
 
 ! Build dynamic A matrix
 
-  ia = 0
-  do i=nC+1,nO
-    do a=nO+1,nBas-nR
-      ia = ia + 1
-      jb = 0
-      do j=nC+1,nO
-        do b=nO+1,nBas-nR
-          jb = jb + 1
+  jb = 0
+!$omp parallel do default(private) shared(TA,ZA,Omega1,Omega2,OmBSE,eGT,rho1,rho2,nO,nBas,nVV,nOO,chi,eps,eta,nC,nR,lambda)
+  do j=nC+1,nO
+    do b=nO+1,nBas-nR
+      jb = (b-nO) + (j-1)*(nBas-nO) 
+
+      ia = 0
+      do i=nC+1,nO
+        do a=nO+1,nBas-nR
+          ia = (a-nO) + (i-1)*(nBas-nO) 
  
           chi = 0d0
 
@@ -87,5 +89,7 @@ subroutine dynamic_Tmatrix_A(eta,nBas,nC,nO,nV,nR,nS,nOO,nVV,lambda,eGT,Omega1,O
       end do
     end do
   end do
+
+!$omp end parallel do
 
 end subroutine dynamic_Tmatrix_A

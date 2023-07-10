@@ -34,14 +34,16 @@ subroutine static_Tmatrix_A(eta,nBas,nC,nO,nV,nR,nS,nOO,nVV,lambda,Omega1,rho1,O
 
   TA(:,:) = 0d0
 
-  ia = 0
-  do i=nC+1,nO
-    do a=nO+1,nBas-nR
-      ia = ia + 1
-      jb = 0
-      do j=nC+1,nO
-        do b=nO+1,nBas-nR
-          jb = jb + 1
+  jb = 0
+!$omp parallel do default(private) shared(TA,Omega1,Omega2,rho1,rho2,nO,nBas,nVV,nOO,chi,eps,eta,nC,nR,lambda)
+  do j=nC+1,nO
+    do b=nO+1,nBas-nR
+      jb = (b-nO) + (j-1)*(nBas-nO) 
+
+      ia = 0
+      do i=nC+1,nO
+        do a=nO+1,nBas-nR
+          ia = (a-nO) + (i-1)*(nBas-nO) 
 
           chi = 0d0
 
@@ -62,5 +64,7 @@ subroutine static_Tmatrix_A(eta,nBas,nC,nO,nV,nR,nS,nOO,nVV,lambda,Omega1,rho1,O
       enddo
     enddo
   enddo
+
+!$omp end parallel do
 
 end subroutine static_Tmatrix_A

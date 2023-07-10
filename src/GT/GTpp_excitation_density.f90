@@ -44,8 +44,14 @@ subroutine GTpp_excitation_density(ispin,nBas,nC,nO,nV,nR,nOO,nVV,ERI,X1,Y1,rho1
 
   if(ispin == 1) then
 
-    do p=nC+1,nBas-nR
-      do q=nC+1,nBas-nR
+    !$OMP PARALLEL &
+    !$OMP SHARED(nC,nBas,nR,nO,nVV,nOO,rho1,rho2,ERI,X1,Y1,X2,Y2) &
+    !$OMP PRIVATE(q,p,ab,cd,kl,ij) &
+    !$OMP DEFAULT(NONE)
+    !$OMP DO
+
+    do q=nC+1,nBas-nR
+      do p=nC+1,nBas-nR
 
         do ab=1,nVV
  
@@ -68,7 +74,9 @@ subroutine GTpp_excitation_density(ispin,nBas,nC,nO,nV,nR,nOO,nVV,ERI,X1,Y1,rho1
           end do
  
         end do
- 
+    !$OMP END DO
+
+    !$OMP DO
         do ij=1,nOO
  
           cd = 0
@@ -93,7 +101,8 @@ subroutine GTpp_excitation_density(ispin,nBas,nC,nO,nV,nR,nOO,nVV,ERI,X1,Y1,rho1
 
       end do
     end do
-
+  !$OMP END DO
+  !$OMP END PARALLEL
   end if
 
 !----------------------------------------------
@@ -102,8 +111,8 @@ subroutine GTpp_excitation_density(ispin,nBas,nC,nO,nV,nR,nOO,nVV,ERI,X1,Y1,rho1
 
   if(ispin == 2 .or. ispin == 4) then
 
-    do p=nC+1,nBas-nR
-      do q=nC+1,nBas-nR
+    do q=nC+1,nBas-nR
+      do p=nC+1,nBas-nR
  
 !       do ab=1,nVV
         ab = 0
@@ -170,8 +179,14 @@ subroutine GTpp_excitation_density(ispin,nBas,nC,nO,nV,nR,nOO,nVV,ERI,X1,Y1,rho1
 
   if(ispin == 3) then
 
-    do p=nC+1,nBas-nR
-      do q=nC+1,nBas-nR
+    !$OMP PARALLEL &
+    !$OMP SHARED(nC,nBas,nR,nO,nVV,nOO,rho1,rho2,ERI,X1,Y1,X2,Y2) &
+    !$OMP PRIVATE(q,p,ab,cd,kl,ij,c,d,k,l) &
+    !$OMP DEFAULT(NONE)
+    !$OMP DO
+
+    do q=nC+1,nBas-nR
+      do p=nC+1,nBas-nR
  
 !       do ab=1,nVV
         ab = 0
@@ -197,6 +212,9 @@ subroutine GTpp_excitation_density(ispin,nBas,nC,nO,nV,nR,nOO,nVV,ERI,X1,Y1,rho1
  
         end do
         end do
+    !$OMP END DO 
+
+    !$OMP DO
  
 !       do ij=1,nOO
         ij = 0
@@ -225,6 +243,8 @@ subroutine GTpp_excitation_density(ispin,nBas,nC,nO,nV,nR,nOO,nVV,ERI,X1,Y1,rho1
 
       end do
     end do
+  !$OMP END DO
+  !$OMP END PARALLEL
 
   end if
 
