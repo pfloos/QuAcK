@@ -33,15 +33,16 @@ subroutine GF2_phBSE2_dynamic_kernel_B(ispin,eta,nBas,nC,nO,nV,nR,nS,lambda,ERI,
 
   if(ispin == 1) then
 
-    ia = 0
-    do i=nC+1,nO
-      do a=nO+1,nBas-nR
-        ia = ia + 1
+    jb = 0
+!$omp parallel do default(private) shared(B_dyn,ERI,num,dem,eGF,nO,nBas,eta,nC,nR)
+    do j=nC+1,nO
+      do b=nO+1,nBas-nR
+        jb = (b-nO) + (j-1)*(nBas-nO)
  
-        jb = 0
-        do j=nC+1,nO
-          do b=nO+1,nBas-nR
-            jb = jb + 1
+        ia = 0
+        do i=nC+1,nO
+          do a=nO+1,nBas-nR
+            ia = (a-nO) + (i-1)*(nBas-nO)
   
             do k=nC+1,nO
               do c=nO+1,nBas-nR
@@ -90,6 +91,7 @@ subroutine GF2_phBSE2_dynamic_kernel_B(ispin,eta,nBas,nC,nO,nV,nR,nS,lambda,ERI,
 
       end do
     end do
+!$omp end parallel do
 
   end if
 
@@ -97,16 +99,17 @@ subroutine GF2_phBSE2_dynamic_kernel_B(ispin,eta,nBas,nC,nO,nV,nR,nS,lambda,ERI,
 
   if(ispin == 2) then
 
-    ia = 0
-    do i=nC+1,nO
-      do a=nO+1,nBas-nR
-        ia = ia + 1
+    jb = 0
+!$omp parallel do default(private) shared(B_dyn,ERI,num,dem,eGF,nO,nBas,eta,nC,nR)
+    do j=nC+1,nO
+      do b=nO+1,nBas-nR
+        jb = (b-nO) + (j-1)*(nBas-nO)
  
-        jb = 0
-        do j=nC+1,nO
-          do b=nO+1,nBas-nR
-            jb = jb + 1
-  
+        ia = 0
+        do i=nC+1,nO
+          do a=nO+1,nBas-nR
+            ia = (a-nO) + (i-1)*(nBas-nO) 
+
             do k=nC+1,nO
               do c=nO+1,nBas-nR
      
@@ -150,6 +153,7 @@ subroutine GF2_phBSE2_dynamic_kernel_B(ispin,eta,nBas,nC,nO,nV,nR,nS,lambda,ERI,
 
       end do
     end do
+!$omp end parallel do
 
   end if
 
