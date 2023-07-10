@@ -1,11 +1,25 @@
 # QuAcK
 
-QuAcK is a small quantum chemistry package which does some weird stuff.
+**Contributors:**
+- [Pierre-Francois Loos](https://pfloos.github.io/WEB_LOOS)
+- [Enzo Monino](https://enzomonino.github.io)
+- [Antoine Marie](https://antoine-marie.github.io)
+  
+# What is it?
 
-In particular, quack can perform
 
-i) various types of GW calculations (G0W0, evGW, qsGW, etc).
 
-ii) ensemble DFT calculations (under progress)
+# Installation guide
+The QuAcK software can be downloaded on GitHub as a Git repository
+```
+git clone https://github.com/pfloos/qcmath.git
+```
 
-QuAcK also includes a very slow integral package called IntPak which does compute many types of different integrals.
+Then, one must define the variable `QCMATH_ROOT` and install [PySCF](https://pyscf.org) using `pip`
+```
+pip install pyscf
+```
+
+PySCF is used for the computation of one- and two-electron integrals. 
+
+# Quick start
