@@ -31,7 +31,7 @@ PySCF is used for the computation of one- and two-electron integrals (mainly).
 
 ```
 QuAcK 💩 % cd $QUACK_ROOT
-QuAcK 💩 % python3 PyDuck.py -h
+QuAcK 💩 % python PyDuck.py -h
 usage: PyDuck.py [-h] -b BASIS [--bohr] [-c CHARGE] [--cartesian] [-fc FROZEN_CORE] [-m MULTIPLICITY] [--working_dir WORKING_DIR] -x XYZ
 
 This script is the main script of QuAcK, it is used to run the calculation. If $QUACK_ROOT is not set, $QUACK_ROOT is replaces by the current
