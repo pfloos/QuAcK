@@ -9,7 +9,7 @@
 # What is it?
 
 QuAcK is a small electronic structure program written in `Fortran 90` and developed at the Laboratoire de Chimie et Physique Quantiques [LCPQ](https://www.lcpq.ups-tlse.fr) (Toulouse, France).
-QuAcK is usually used for prototyping purposes and the successful ideas are usually implemented more efficiently in [quantum package](https://quantumpackage.github.io/qp2/). QuAcK is an excellent place to start for experienced PhD students or postdocs as the code is simple and written in a fairly well-known and straightforward language. For beginners, we suggest having a look at [qcmath](https://github.com/LCPQ/qcmath/), a [Mathematica](https://www.wolfram.com/mathematica/)-based program to help newcomers in quantum chemistry easily develop their ideas. 
+QuAcK is usually used for prototyping purposes and the successful ideas are usually implemented more efficiently in [Quantum Package](https://quantumpackage.github.io/qp2/). QuAcK is an excellent place to start for experienced PhD students or postdocs as the code is simple and written with a fairly well-known and straightforward language. For beginners, we suggest having a look at [qcmath](https://github.com/LCPQ/qcmath/), a [Mathematica](https://www.wolfram.com/mathematica/)-based program to help newcomers in quantum chemistry easily develop their ideas. 
 
 # Installation guide
 The QuAcK software can be downloaded on GitHub as a Git repository
@@ -31,7 +31,7 @@ PySCF is used for the computation of one- and two-electron integrals (mainly).
 # Quick start
 
 ```
-QuAcK 💩 % cd $QUACK_ROOT
+~ 💩 % cd $QUACK_ROOT
 QuAcK 💩 % python PyDuck.py -h
 usage: PyDuck.py [-h] -b BASIS [--bohr] [-c CHARGE] [--cartesian] [-fc FROZEN_CORE] [-m MULTIPLICITY] [--working_dir WORKING_DIR] -x XYZ
 
@@ -58,8 +58,8 @@ options:
 ```
 
 The two most important files are:
-- the file `$QUACK_ROOT/input/methods` that gathers the methods you want to use.
-- the file `$QUACK_ROOT/input/options` that gathers the different options associated these methods.
+- `$QUACK_ROOT/input/methods` that gathers the methods you want to use.
+- `$QUACK_ROOT/input/options` that gathers the different options associated these methods.
 
 These files look like this
 ```
