@@ -1,4 +1,4 @@
-# QuAcK
+# QuAcK: a software for emerging quantum electronic structure methods
 
 **Contributors:**
 - [Pierre-Francois Loos](https://pfloos.github.io/WEB_LOOS)
