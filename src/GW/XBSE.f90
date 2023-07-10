@@ -45,6 +45,7 @@ subroutine XBSE(TDA_W,TDA,dBSE,dTDA,singlet,triplet,eta,nBas,nC,nO,nV,nR,nS,ERI,
   double precision,allocatable  :: KB_sta(:,:)
 
   double precision,allocatable  :: W(:,:,:,:)
+  double precision,allocatable  :: KA2_sta(:,:)
 
 ! Output variables
 
@@ -52,8 +53,10 @@ subroutine XBSE(TDA_W,TDA,dBSE,dTDA,singlet,triplet,eta,nBas,nC,nO,nV,nR,nS,ERI,
 
 ! Memory allocation
 
-  allocate(OmRPA(nS),XpY_RPA(nS,nS),XmY_RPA(nS,nS),rho_RPA(nBas,nBas,nS), &
-           KA_sta(nS,nS),KB_sta(nS,nS),OmBSE(nS,nspin),XpY_BSE(nS,nS,nspin),XmY_BSE(nS,nS,nspin))
+  allocate(OmRPA(nS),XpY_RPA(nS,nS),XmY_RPA(nS,nS),rho_RPA(nBas,nBas,nS),KA_sta(nS,nS), &
+           KB_sta(nS,nS),KA2_sta(nS,nS),OmBSE(nS,nspin),XpY_BSE(nS,nS,nspin),XmY_BSE(nS,nS,nspin))
+
+  KA2_sta(:,:) = 0d0
 
 !---------------------------------
 ! Compute (singlet) RPA screening 
@@ -92,8 +95,8 @@ subroutine XBSE(TDA_W,TDA,dBSE,dTDA,singlet,triplet,eta,nBas,nC,nO,nV,nR,nS,ERI,
 
     if(dBSE) then
 
-      call Bethe_Salpeter_dynamic_perturbation(dTDA,eta,nBas,nC,nO,nV,nR,nS,eW,eW,dipole_int,OmRPA,rho_RPA, &
-                                               OmBSE(:,ispin),XpY_BSE(:,:,ispin),XmY_BSE(:,:,ispin))
+      call Bethe_Salpeter_dynamic_perturbation(.false.,dTDA,eta,nBas,nC,nO,nV,nR,nS,eW,eW,dipole_int,OmRPA,rho_RPA, &
+                           OmBSE(:,ispin),XpY_BSE(:,:,ispin),XmY_BSE(:,:,ispin),W(:,:,:,:),KA2_sta)
     end if
  
   end if
@@ -123,8 +126,8 @@ subroutine XBSE(TDA_W,TDA,dBSE,dTDA,singlet,triplet,eta,nBas,nC,nO,nV,nR,nS,ERI,
 
       ! Compute dynamic correction for BSE via perturbation theory (iterative or renormalized)
 
-      call Bethe_Salpeter_dynamic_perturbation(dTDA,eta,nBas,nC,nO,nV,nR,nS,eW,eW,dipole_int,OmRPA,rho_RPA, &
-                                               OmBSE(:,ispin),XpY_BSE(:,:,ispin),XmY_BSE(:,:,ispin))
+      call Bethe_Salpeter_dynamic_perturbation(.false.,dTDA,eta,nBas,nC,nO,nV,nR,nS,eW,eW,dipole_int,OmRPA,rho_RPA, &
+                        OmBSE(:,ispin),XpY_BSE(:,:,ispin),XmY_BSE(:,:,ispin),W(:,:,:,:),KA2_sta)
 
     end if
 

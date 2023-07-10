@@ -1,4 +1,5 @@
-subroutine Bethe_Salpeter_dynamic_perturbation(dTDA,eta,nBas,nC,nO,nV,nR,nS,eW,eGW,dipole_int,OmRPA,rho_RPA,OmBSE,XpY,XmY)
+subroutine Bethe_Salpeter_dynamic_perturbation(BSE2,dTDA,eta,nBas,nC,nO,nV,nR,nS,eW,eGW, &
+dipole_int,OmRPA,rho_RPA,OmBSE,XpY,XmY,W,A_stat)
 
 ! Compute dynamical effects via perturbation theory for BSE
 
@@ -7,6 +8,7 @@ subroutine Bethe_Salpeter_dynamic_perturbation(dTDA,eta,nBas,nC,nO,nV,nR,nS,eW,e
 
 ! Input variables
 
+  logical,intent(in)            :: BSE2
   logical,intent(in)            :: dTDA 
   double precision,intent(in)   :: eta
   integer,intent(in)            :: nBas
@@ -24,6 +26,8 @@ subroutine Bethe_Salpeter_dynamic_perturbation(dTDA,eta,nBas,nC,nO,nV,nR,nS,eW,e
   double precision,intent(in)   :: OmBSE(nS)
   double precision,intent(in)   :: XpY(nS,nS)
   double precision,intent(in)   :: XmY(nS,nS)
+  double precision,intent(in)   :: W(nBas,nBas,nBas,nBas)
+  double precision,intent(in)   :: A_stat(nS,nS)
 
 ! Local variables
 
@@ -85,8 +89,10 @@ subroutine Bethe_Salpeter_dynamic_perturbation(dTDA,eta,nBas,nC,nO,nV,nR,nS,eW,e
 
       call Bethe_Salpeter_A_matrix_dynamic(eta,nBas,nC,nO,nV,nR,nS,1d0,eGW,OmRPA,rho_RPA,OmBSE(ia),Ap_dyn,ZAp_dyn)
 
+if(BSE2) call BSE2_GW_A_matrix_dynamic(eta,nBas,nC,nO,nV,nR,nS,eGW,W,OmBSE(ia),Ap_dyn,ZAp_dyn,W)
+
       ZDyn(ia)  = dot_product(X,matmul(ZAp_dyn,X))
-      OmDyn(ia) = dot_product(X,matmul( Ap_dyn,X))
+      OmDyn(ia) = dot_product(X,matmul( Ap_dyn - A_stat,X))
 
     else
 
