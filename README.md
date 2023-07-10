@@ -54,9 +54,60 @@ options:
                         Set a working directory to run the calculation.
   -x XYZ, --xyz XYZ     Name of the file containing the nuclear coordinates in xyz format in the $QUACK_ROOT/mol/ directory without the .xyz
                         extension
-'''
+```
+
+The two most important files are:
+- the file `$QUACK_ROOT/input/methods` that gathers the methods you want to use.
+- the file `$QUACK_ROOT/input/options` that gathers the different options associated these methods.
+
+These files look like this
+```
+QuAcK 💩 % cat input/methods 
+# RHF UHF KS MOM 
+  T   F   F  F   
+# MP2* MP3 
+  F   F   
+# CCD pCCD DCD CCSD CCSD(T) 
+  F   F    F   F    F
+# drCCD rCCD crCCD lCCD
+  F     F    F     F
+# CIS* CIS(D) CID CISD FCI
+  F    F      F   F    F
+# RPA* RPAx* crRPA ppRPA 
+  F    F     F      F
+# G0F2* evGF2* qsGF2* G0F3 evGF3
+  F     F      F      F    F
+# G0W0* evGW* qsGW* SRG-qsGW ufG0W0 ufGW
+  T     F     F     F        F      F
+# G0T0pp evGTpp qsGTpp G0T0eh evGTeh qsGTeh
+  F      F      F      F      F      F
+# * unrestricted version available
+```
+and
+```
+QuAcK 💩 % cat input/options 
+# HF: maxSCF thresh   DIIS n_diis guess_type ortho_type mix_guess level_shift stability
+      512    0.0000001  T    5     1          1          F         0.0         F
+# MP: reg
+      F
+# CC: maxSCF thresh   DIIS n_diis
+      64     0.0000001  T    5
+# spin: TDA singlet triplet spin_conserved spin_flip 
+        F   T       F       T              T 
+# GF: maxSCF thresh  DIIS n_diis lin eta renorm reg
+      256    0.00001 T    5      T   0.0 0      F
+# GW: maxSCF thresh  DIIS n_diis lin eta COHSEX TDA_W reg
+      256     0.00001  T  5      T    0.0  F    F     F 
+# GT: maxSCF thresh  DIIS n_diis lin eta TDA_T reg
+      256    0.00001  T    5      T   0.1 F     F  
+# ACFDT: AC Kx  XBS
+         F  T   T
+# BSE: BSE dBSE dTDA evDyn ppBSE BSE2
+        T    T    T    F   F     F
+```
 
 For example, if you want to run a calculation on water using the cc-pvdz basis set:
 ```
 QuAcK 💩 % python PyDuck.py -x water -b cc-pvdz
-'''
+```
+
