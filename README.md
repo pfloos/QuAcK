@@ -12,7 +12,7 @@
 # Installation guide
 The QuAcK software can be downloaded on GitHub as a Git repository
 ```
-git clone https://github.com/pfloos/qcmath.git
+git clone https://github.com/pfloos/QuAcK.git
 ```
 
 Then, one must define the variable `QCMATH_ROOT` and install [PySCF](https://pyscf.org) using `pip`
