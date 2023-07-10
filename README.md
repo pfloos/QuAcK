@@ -55,3 +55,8 @@ options:
   -x XYZ, --xyz XYZ     Name of the file containing the nuclear coordinates in xyz format in the $QUACK_ROOT/mol/ directory without the .xyz
                         extension
 '''
+
+For example, if you want to run a calculation on water using the cc-pvdz basis set:
+```
+QuAcK 💩 % python PyDuck.py -x water -b cc-pvdz
+'''
