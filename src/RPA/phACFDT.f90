@@ -1,4 +1,4 @@
-subroutine ACFDT(exchange_kernel,doXBS,dRPA,TDA_W,TDA,BSE,singlet,triplet,eta,nBas,nC,nO,nV,nR,nS,ERI,eW,e,EcAC)
+subroutine phACFDT(exchange_kernel,doXBS,dRPA,TDA_W,TDA,BSE,singlet,triplet,eta,nBas,nC,nO,nV,nR,nS,ERI,eW,e,EcAC)
 
 ! Compute the correlation energy via the adiabatic connection fluctuation dissipation theorem
 

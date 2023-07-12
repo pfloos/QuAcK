@@ -14,5 +14,5 @@
       256    0.00001  T    5      T   0.0 F     F  
 # ACFDT: AC Kx  XBS
          F  T   T
-# BSE: BSE dBSE dTDA evDyn ppBSE BSE2
-        F    T    T    F   F     F
+# BSE: phBSE phBSE2 ppBSE dBSE dTDA evDyn 
+       T     F      F     T   F     F

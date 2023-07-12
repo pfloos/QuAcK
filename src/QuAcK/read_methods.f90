@@ -3,7 +3,7 @@ subroutine read_methods(doRHF,doUHF,doKS,doMOM,            &
                         doCCD,dopCCD,doDCD,doCCSD,doCCSDT, & 
                         do_drCCD,do_rCCD,do_crCCD,do_lCCD, &
                         doCIS,doCIS_D,doCID,doCISD,doFCI,  & 
-                        doRPA,doRPAx,docrRPA,doppRPA,      & 
+                        dophRPA,dophRPAx,docrRPA,doppRPA,  & 
                         doG0F2,doevGF2,doqsGF2,            &
                         doG0F3,doevGF3,                    & 
                         doG0W0,doevGW,doqsGW,doSRGqsGW,    & 
@@ -22,7 +22,7 @@ subroutine read_methods(doRHF,doUHF,doKS,doMOM,            &
   logical,intent(out)           :: doCCD,dopCCD,doDCD,doCCSD,doCCSDT
   logical,intent(out)           :: do_drCCD,do_rCCD,do_crCCD,do_lCCD
   logical,intent(out)           :: doCIS,doCIS_D,doCID,doCISD,doFCI
-  logical,intent(out)           :: doRPA,doRPAx,docrRPA,doppRPA
+  logical,intent(out)           :: dophRPA,dophRPAx,docrRPA,doppRPA
   logical,intent(out)           :: doG0F2,doevGF2,doqsGF2,doG0F3,doevGF3  
   logical,intent(out)           :: doG0W0,doevGW,doqsGW,doSRGqsGW,doufG0W0,doufGW
   logical,intent(out)           :: doG0T0pp,doevGTpp,doqsGTpp
@@ -63,10 +63,10 @@ subroutine read_methods(doRHF,doUHF,doKS,doMOM,            &
   doCISD  = .false.
   doFCI   = .false.
 
-  doRPA   = .false.
-  doRPAx  = .false.
-  docrRPA = .false.
-  doppRPA = .false.
+  dophRPA  = .false.
+  dophRPAx = .false.
+  docrRPA  = .false.
+  doppRPA  = .false.
 
   doG0F2  = .false.
   doevGF2 = .false.
@@ -135,10 +135,10 @@ subroutine read_methods(doRHF,doUHF,doKS,doMOM,            &
 
   read(1,*) 
   read(1,*) answer1,answer2,answer3,answer4
-  if(answer1 == 'T') doRPA   = .true.
-  if(answer2 == 'T') doRPAx  = .true.
-  if(answer3 == 'T') docrRPA = .true.
-  if(answer4 == 'T') doppRPA = .true.
+  if(answer1 == 'T') dophRPA  = .true.
+  if(answer2 == 'T') dophRPAx = .true.
+  if(answer3 == 'T') docrRPA  = .true.
+  if(answer4 == 'T') doppRPA  = .true.
 
 ! Read Green function methods
 

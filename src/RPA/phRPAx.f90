@@ -114,8 +114,8 @@ subroutine phRPAx(TDA,doACFDT,exchange_kernel,singlet,triplet,eta,nBas,nC,nO,nV,
     write(*,*) '-------------------------------------------------------'
     write(*,*)
 
-    call ACFDT(exchange_kernel,.false.,.false.,.false.,TDA,.false.,singlet,triplet,eta, &
-               nBas,nC,nO,nV,nR,nS,ERI,eHF,eHF,EcAC)
+    call phACFDT(exchange_kernel,.false.,.false.,.false.,TDA,.false.,singlet,triplet,eta, &
+                 nBas,nC,nO,nV,nR,nS,ERI,eHF,eHF,EcAC)
 
     write(*,*)
     write(*,*)'-------------------------------------------------------------------------------'
