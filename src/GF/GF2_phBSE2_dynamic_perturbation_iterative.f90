@@ -62,7 +62,7 @@ subroutine GF2_phBSE2_dynamic_perturbation_iterative(dTDA,ispin,eta,nBas,nC,nO,n
 
 ! Print main components of transition vectors
 
-  call print_transition_vectors(.false.,nBas,nC,nO,nV,nR,nS,OmBSE,XpY,XmY)
+  call print_transition_vectors_ph(.false.,nBas,nC,nO,nV,nR,nS,OmBSE,XpY,XmY)
 
   if(dTDA) then
     write(*,*)

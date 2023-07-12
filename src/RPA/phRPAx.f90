@@ -69,7 +69,7 @@ subroutine phRPAx(TDA,doACFDT,exchange_kernel,singlet,triplet,eta,nBas,nC,nO,nV,
 
     call phLR(ispin,.false.,TDA,eta,nBas,nC,nO,nV,nR,nS,1d0,eHF,ERI,EcRPAx(ispin),Om,XpY,XmY)
     call print_excitation('RPAx@HF     ',ispin,nS,Om)
-    call print_transition_vectors(.true.,nBas,nC,nO,nV,nR,nS,dipole_int,Om,XpY,XmY)
+    call print_transition_vectors_ph(.true.,nBas,nC,nO,nV,nR,nS,dipole_int,Om,XpY,XmY)
 
   endif
 
@@ -81,7 +81,7 @@ subroutine phRPAx(TDA,doACFDT,exchange_kernel,singlet,triplet,eta,nBas,nC,nO,nV,
 
     call phLR(ispin,.false.,TDA,eta,nBas,nC,nO,nV,nR,nS,1d0,eHF,ERI,EcRPAx(ispin),Om,XpY,XmY)
     call print_excitation('RPAx@HF     ',ispin,nS,Om)
-    call print_transition_vectors(.false.,nBas,nC,nO,nV,nR,nS,dipole_int,Om,XpY,XmY)
+    call print_transition_vectors_ph(.false.,nBas,nC,nO,nV,nR,nS,dipole_int,Om,XpY,XmY)
 
   endif
 

@@ -122,4 +122,4 @@ subroutine oscillator_strength_pp(nBas,nC,nO,nV,nR,nOO,nVV,maxOO,maxVV,dipole_in
   write(*,*) '---------------------------------------------------------------'
   write(*,*)
 
-end subroutine oscillator_strength_pp
+end subroutine 

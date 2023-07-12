@@ -39,9 +39,9 @@ subroutine GW_phBSE(BSE2,TDA_W,TDA,dBSE,dTDA,evDyn,singlet,triplet,eta,nBas,nC,n
   double precision,allocatable  :: XmY_RPA(:,:)
   double precision,allocatable  :: rho_RPA(:,:,:)
 
-  double precision,allocatable  :: OmBSE(:,:)
-  double precision,allocatable  :: XpY_BSE(:,:,:)
-  double precision,allocatable  :: XmY_BSE(:,:,:)
+  double precision,allocatable  :: OmBSE(:)
+  double precision,allocatable  :: XpY_BSE(:,:)
+  double precision,allocatable  :: XmY_BSE(:,:)
 
   double precision,allocatable  :: KA_sta(:,:)
   double precision,allocatable  :: KB_sta(:,:)
@@ -57,7 +57,7 @@ subroutine GW_phBSE(BSE2,TDA_W,TDA,dBSE,dTDA,evDyn,singlet,triplet,eta,nBas,nC,n
 ! Memory allocation
 
   allocate(OmRPA(nS),XpY_RPA(nS,nS),XmY_RPA(nS,nS),rho_RPA(nBas,nBas,nS), &
-           KA_sta(nS,nS),KB_sta(nS,nS),OmBSE(nS,nspin),XpY_BSE(nS,nS,nspin),XmY_BSE(nS,nS,nspin))
+           KA_sta(nS,nS),KB_sta(nS,nS),OmBSE(nS),XpY_BSE(nS,nS),XmY_BSE(nS,nS))
 
 !---------------------------------
 ! Compute (singlet) RPA screening 
@@ -100,10 +100,9 @@ subroutine GW_phBSE(BSE2,TDA_W,TDA,dBSE,dTDA,evDyn,singlet,triplet,eta,nBas,nC,n
     ! Compute BSE excitation energies
 
     call linear_response_BSE(ispin,.true.,TDA,.true.,eta,nBas,nC,nO,nV,nR,nS,1d0,eGW,ERI,KA_sta-KA2_sta,KB_sta-KB2_sta, &
-                             EcBSE(ispin),OmBSE(:,ispin),XpY_BSE(:,:,ispin),XmY_BSE(:,:,ispin))
-    call print_excitation('BSE@GW      ',ispin,nS,OmBSE(:,ispin))
-    call print_transition_vectors(.true.,nBas,nC,nO,nV,nR,nS,dipole_int, & 
-                                  OmBSE(:,ispin),XpY_BSE(:,:,ispin),XmY_BSE(:,:,ispin))
+                             EcBSE(ispin),OmBSE,XpY_BSE,XmY_BSE)
+    call print_excitation('BSE@GW      ',ispin,nS,OmBSE)
+    call print_transition_vectors_ph(.true.,nBas,nC,nO,nV,nR,nS,dipole_int,OmBSE,XpY_BSE,XmY_BSE)
 
     !-------------------------------------------------
     ! Compute the dynamical screening at the BSE level
@@ -116,11 +115,11 @@ subroutine GW_phBSE(BSE2,TDA_W,TDA,dBSE,dTDA,evDyn,singlet,triplet,eta,nBas,nC,n
       if(evDyn) then
  
         call Bethe_Salpeter_dynamic_perturbation_iterative(dTDA,eta,nBas,nC,nO,nV,nR,nS,eGW,dipole_int,OmRPA,rho_RPA, &
-                                                           OmBSE(:,ispin),XpY_BSE(:,:,ispin),XmY_BSE(:,:,ispin))
+                                                           OmBSE,XpY_BSE,XmY_BSE)
       else
 
         call Bethe_Salpeter_dynamic_perturbation(BSE2,dTDA,eta,nBas,nC,nO,nV,nR,nS,eW,eGW,dipole_int,OmRPA,rho_RPA, &
-                            OmBSE(:,ispin),XpY_BSE(:,:,ispin),XmY_BSE(:,:,ispin),W(:,:,:,:),KA2_sta)
+                            OmBSE,XpY_BSE,XmY_BSE,W,KA2_sta)
       end if
 
     end if
@@ -138,11 +137,9 @@ subroutine GW_phBSE(BSE2,TDA_W,TDA,dBSE,dTDA,evDyn,singlet,triplet,eta,nBas,nC,n
 
     ! Compute BSE excitation energies
 
-    call linear_response_BSE(ispin,.true.,TDA,.true.,eta,nBas,nC,nO,nV,nR,nS,1d0,eGW,ERI,KA_sta,KB_sta, &
-                             EcBSE(ispin),OmBSE(:,ispin),XpY_BSE(:,:,ispin),XmY_BSE(:,:,ispin))
-    call print_excitation('BSE@GW      ',ispin,nS,OmBSE(:,ispin))
-    call print_transition_vectors(.false.,nBas,nC,nO,nV,nR,nS,dipole_int, & 
-                                  OmBSE(:,ispin),XpY_BSE(:,:,ispin),XmY_BSE(:,:,ispin))
+    call linear_response_BSE(ispin,.true.,TDA,.true.,eta,nBas,nC,nO,nV,nR,nS,1d0,eGW,ERI,KA_sta,KB_sta,EcBSE,OmBSE,XpY_BSE,XmY_BSE)
+    call print_excitation('BSE@GW      ',ispin,nS,OmBSE)
+    call print_transition_vectors_ph(.false.,nBas,nC,nO,nV,nR,nS,dipole_int,OmBSE,XpY_BSE,XmY_BSE)
 
     !-------------------------------------------------
     ! Compute the dynamical screening at the BSE level
@@ -155,11 +152,11 @@ subroutine GW_phBSE(BSE2,TDA_W,TDA,dBSE,dTDA,evDyn,singlet,triplet,eta,nBas,nC,n
       if(evDyn) then
      
         call Bethe_Salpeter_dynamic_perturbation_iterative(dTDA,eta,nBas,nC,nO,nV,nR,nS,eGW,dipole_int,OmRPA,rho_RPA, &
-                                                           OmBSE(:,ispin),XpY_BSE(:,:,ispin),XmY_BSE(:,:,ispin))
+                                                           OmBSE,XpY_BSE,XmY_BSE)
       else
      
         call Bethe_Salpeter_dynamic_perturbation(BSE2,dTDA,eta,nBas,nC,nO,nV,nR,nS,eW,eGW,dipole_int,OmRPA,rho_RPA, &
-                             OmBSE(:,ispin),XpY_BSE(:,:,ispin),XmY_BSE(:,:,ispin),W(:,:,:,:),KA2_sta)
+                             OmBSE,XpY_BSE,XmY_BSE,W,KA2_sta)
       end if
 
     end if

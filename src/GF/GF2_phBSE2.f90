@@ -29,12 +29,12 @@ subroutine GF2_phBSE2(TDA,dBSE,dTDA,evDyn,singlet,triplet,eta,nBas,nC,nO,nV,nR,n
 ! Local variables
 
   integer                       :: ispin
-  double precision,allocatable  :: OmBSE(:,:)
-  double precision,allocatable  :: XpY(:,:,:)
-  double precision,allocatable  :: XmY(:,:,:)
+  double precision,allocatable  :: OmBSE(:)
+  double precision,allocatable  :: XpY(:,:)
+  double precision,allocatable  :: XmY(:,:)
   double precision              :: rho
-  double precision,allocatable  :: A_sta(:,:,:)
-  double precision,allocatable  :: B_sta(:,:,:)
+  double precision,allocatable  :: A_sta(:,:)
+  double precision,allocatable  :: B_sta(:,:)
 
 ! Output variables
 
@@ -42,8 +42,7 @@ subroutine GF2_phBSE2(TDA,dBSE,dTDA,evDyn,singlet,triplet,eta,nBas,nC,nO,nV,nR,n
 
 ! Memory allocation
 
-  allocate(OmBSE(nS,nspin),XpY(nS,nS,nspin),XmY(nS,nS,nspin), &
-           A_sta(nS,nS,nspin),B_sta(nS,nS,nspin))
+  allocate(OmBSE(nS),XpY(nS,nS),XmY(nS,nS),A_sta(nS,nS),B_sta(nS,nS))
 
 !-------------------
 ! Singlet manifold
@@ -56,15 +55,14 @@ subroutine GF2_phBSE2(TDA,dBSE,dTDA,evDyn,singlet,triplet,eta,nBas,nC,nO,nV,nR,n
 
     ! Compute static kernel
 
-                 call GF2_phBSE2_static_kernel_A(ispin,eta,nBas,nC,nO,nV,nR,nS,1d0,ERI,eGF,A_sta(:,:,ispin))
-    if(.not.TDA) call GF2_phBSE2_static_kernel_B(ispin,eta,nBas,nC,nO,nV,nR,nS,1d0,ERI,eGF,B_sta(:,:,ispin))
+                 call GF2_phBSE2_static_kernel_A(ispin,eta,nBas,nC,nO,nV,nR,nS,1d0,ERI,eGF,A_sta)
+    if(.not.TDA) call GF2_phBSE2_static_kernel_B(ispin,eta,nBas,nC,nO,nV,nR,nS,1d0,ERI,eGF,B_sta)
 
     ! Compute BSE2 excitation energies
 
-    call linear_response_BSE(ispin,.false.,TDA,.true.,eta,nBas,nC,nO,nV,nR,nS,1d0,eGF,ERI,-A_sta(:,:,ispin),-B_sta(:,:,ispin), &
-                             EcBSE(ispin),OmBSE(:,ispin),XpY(:,:,ispin),XmY(:,:,ispin))
-    call print_excitation('BSE2        ',ispin,nS,OmBSE(:,ispin))
-    call print_transition_vectors(.true.,nBas,nC,nO,nV,nR,nS,dipole_int,OmBSE(:,ispin),XpY(:,:,ispin),XmY(:,:,ispin))
+    call linear_response_BSE(ispin,.false.,TDA,.true.,eta,nBas,nC,nO,nV,nR,nS,1d0,eGF,ERI,-A_sta,-B_sta,EcBSE(ispin),OmBSE,XpY,XmY)
+    call print_excitation('BSE2        ',ispin,nS,OmBSE)
+    call print_transition_vectors_ph(.true.,nBas,nC,nO,nV,nR,nS,dipole_int,OmBSE,XpY,XmY)
 
 
     ! Compute dynamic correction for BSE via perturbation theory
@@ -74,11 +72,10 @@ subroutine GF2_phBSE2(TDA,dBSE,dTDA,evDyn,singlet,triplet,eta,nBas,nC,nO,nV,nR,n
      if(evDyn) then
 
       call GF2_phBSE2_dynamic_perturbation_iterative(dTDA,ispin,eta,nBas,nC,nO,nV,nR,nS,ERI,dipole_int,eHF,eGF, & 
-                                                     A_sta(:,:,ispin),B_sta(:,:,ispin),OmBSE(:,ispin),XpY(:,:,ispin),XmY(:,:,ispin))
+                                                     A_sta,B_sta,OmBSE,XpY,XmY)
      else
  
-      call GF2_phBSE2_dynamic_perturbation(dTDA,ispin,eta,nBas,nC,nO,nV,nR,nS,ERI,dipole_int,eHF,eGF, & 
-                                           A_sta(:,:,ispin),B_sta(:,:,ispin),OmBSE(:,ispin),XpY(:,:,ispin),XmY(:,:,ispin))
+      call GF2_phBSE2_dynamic_perturbation(dTDA,ispin,eta,nBas,nC,nO,nV,nR,nS,ERI,dipole_int,eHF,eGF,A_sta,B_sta,OmBSE,XpY,XmY)
  
       end if
 
@@ -97,15 +94,14 @@ subroutine GF2_phBSE2(TDA,dBSE,dTDA,evDyn,singlet,triplet,eta,nBas,nC,nO,nV,nR,n
 
     ! Compute static kernel
 
-                 call GF2_phBSE2_static_kernel_A(ispin,eta,nBas,nC,nO,nV,nR,nS,1d0,ERI,eGF,A_sta(:,:,ispin))
-    if(.not.TDA) call GF2_phBSE2_static_kernel_B(ispin,eta,nBas,nC,nO,nV,nR,nS,1d0,ERI,eGF,B_sta(:,:,ispin))
+                 call GF2_phBSE2_static_kernel_A(ispin,eta,nBas,nC,nO,nV,nR,nS,1d0,ERI,eGF,A_sta)
+    if(.not.TDA) call GF2_phBSE2_static_kernel_B(ispin,eta,nBas,nC,nO,nV,nR,nS,1d0,ERI,eGF,B_sta)
 
     ! Compute BSE2 excitation energies
 
-    call linear_response_BSE(ispin,.false.,TDA,.true.,eta,nBas,nC,nO,nV,nR,nS,1d0,eGF,ERI,-A_sta(:,:,ispin),-B_sta(:,:,ispin), &
-                             EcBSE(ispin),OmBSE(:,ispin),XpY(:,:,ispin),XmY(:,:,ispin))
-    call print_excitation('BSE2        ',ispin,nS,OmBSE(:,ispin))
-    call print_transition_vectors(.false.,nBas,nC,nO,nV,nR,nS,dipole_int,OmBSE(:,ispin),XpY(:,:,ispin),XmY(:,:,ispin))
+    call linear_response_BSE(ispin,.false.,TDA,.true.,eta,nBas,nC,nO,nV,nR,nS,1d0,eGF,ERI,-A_sta,-B_sta,EcBSE(ispin),OmBSE,XpY,XmY)
+    call print_excitation('BSE2        ',ispin,nS,OmBSE)
+    call print_transition_vectors_ph(.false.,nBas,nC,nO,nV,nR,nS,dipole_int,OmBSE,XpY,XmY)
 
     ! Compute dynamic correction for BSE via perturbation theory
 
@@ -114,11 +110,10 @@ subroutine GF2_phBSE2(TDA,dBSE,dTDA,evDyn,singlet,triplet,eta,nBas,nC,nO,nV,nR,n
      if(evDyn) then
 
       call GF2_phBSE2_dynamic_perturbation_iterative(dTDA,ispin,eta,nBas,nC,nO,nV,nR,nS,ERI,dipole_int,eHF,eGF, & 
-                                                     A_sta(:,:,ispin),B_sta(:,:,ispin),OmBSE(:,ispin),XpY(:,:,ispin),XmY(:,:,ispin))
+                                                     A_sta,B_sta,OmBSE,XpY,XmY)
      else
  
-      call GF2_phBSE2_dynamic_perturbation(dTDA,ispin,eta,nBas,nC,nO,nV,nR,nS,ERI,dipole_int,eHF,eGF, &
-                                           A_sta(:,:,ispin),B_sta(:,:,ispin),OmBSE(:,ispin),XpY(:,:,ispin),XmY(:,:,ispin))
+      call GF2_phBSE2_dynamic_perturbation(dTDA,ispin,eta,nBas,nC,nO,nV,nR,nS,ERI,dipole_int,eHF,eGF,A_sta,B_sta,OmBSE,XpY,XmY)
  
       end if
 

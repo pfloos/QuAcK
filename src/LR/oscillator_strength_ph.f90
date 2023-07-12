@@ -1,4 +1,4 @@
-subroutine oscillator_strength(nBas,nC,nO,nV,nR,nS,maxS,dipole_int,Omega,XpY,XmY,os)
+subroutine oscillator_strength_ph(nBas,nC,nO,nV,nR,nS,maxS,dipole_int,Omega,XpY,XmY,os)
 
 ! Compute linear response
 
@@ -68,4 +68,4 @@ subroutine oscillator_strength(nBas,nC,nO,nV,nR,nS,maxS,dipole_int,Omega,XpY,XmY
   write(*,*) '---------------------------------------------------------------'
   write(*,*)
 
-end subroutine oscillator_strength
+end subroutine 
