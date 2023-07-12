@@ -1,6 +1,6 @@
-subroutine GW_self_energy_diag(COHSEX,eta,nBas,nC,nO,nV,nR,nS,e,Omega,rho,EcGM,SigC)
+subroutine GW_self_energy_diag(COHSEX,eta,nBas,nC,nO,nV,nR,nS,e,Omega,rho,EcGM,Sig,Z)
 
-! Compute diagonal of the correlation part of the self-energy
+! Compute diagonal of the correlation part of the self-energy and the renormalization factor
 
   implicit none
   include 'parameters.h'
@@ -22,16 +22,18 @@ subroutine GW_self_energy_diag(COHSEX,eta,nBas,nC,nO,nV,nR,nS,e,Omega,rho,EcGM,S
 ! Local variables
 
   integer                       :: i,a,p,q,jb
-  double precision              :: eps
+  double precision              :: num,eps
 
 ! Output variables
 
-  double precision,intent(out)  :: SigC(nBas)
+  double precision,intent(out)  :: Sig(nBas)
+  double precision,intent(out)  :: Z(nBas)
   double precision,intent(out)  :: EcGM
 
 ! Initialize 
 
-  SigC(:) = 0d0
+  Sig(:) = 0d0
+  Z(:)   = 0d0
 
 !-----------------------------
 ! COHSEX static self-energy
@@ -44,7 +46,7 @@ subroutine GW_self_energy_diag(COHSEX,eta,nBas,nC,nO,nV,nR,nS,e,Omega,rho,EcGM,S
     do p=nC+1,nBas-nR
       do i=nC+1,nO
         do jb=1,nS
-          SigC(p) = SigC(p) + 4d0*rho(p,i,jb)**2/Omega(jb)
+          Sig(p) = Sig(p) + 4d0*rho(p,i,jb)**2/Omega(jb)
         end do
       end do
     end do
@@ -54,7 +56,7 @@ subroutine GW_self_energy_diag(COHSEX,eta,nBas,nC,nO,nV,nR,nS,e,Omega,rho,EcGM,S
     do p=nC+1,nBas-nR
       do q=nC+1,nBas-nR
         do jb=1,nS
-          SigC(p) = SigC(p) - 2d0*rho(p,q,jb)**2/Omega(jb)
+          Sig(p) = Sig(p) - 2d0*rho(p,q,jb)**2/Omega(jb)
         end do
       end do
     end do
@@ -63,7 +65,7 @@ subroutine GW_self_energy_diag(COHSEX,eta,nBas,nC,nO,nV,nR,nS,e,Omega,rho,EcGM,S
 
     EcGM = 0d0
     do i=nC+1,nO
-      EcGM = EcGM - SigC(i)
+      EcGM = EcGM - Sig(i)
     end do
 
 !-----------------------------
@@ -77,8 +79,12 @@ subroutine GW_self_energy_diag(COHSEX,eta,nBas,nC,nO,nV,nR,nS,e,Omega,rho,EcGM,S
     do p=nC+1,nBas-nR
       do i=nC+1,nO
         do jb=1,nS
+
           eps = e(p) - e(i) + Omega(jb)
-          SigC(p) = SigC(p) + 2d0*rho(p,i,jb)**2*eps/(eps**2 + eta**2)
+          num = 2d0*rho(p,i,jb)**2
+          Sig(p) = Sig(p) + num*eps/(eps**2 + eta**2)
+          Z(p)   = Z(p)   - num*(eps**2 - eta**2)/(eps**2 + eta**2)**2
+
         end do
       end do
     end do
@@ -88,8 +94,12 @@ subroutine GW_self_energy_diag(COHSEX,eta,nBas,nC,nO,nV,nR,nS,e,Omega,rho,EcGM,S
     do p=nC+1,nBas-nR
       do a=nO+1,nBas-nR
         do jb=1,nS
+
           eps = e(p) - e(a) - Omega(jb)
-          SigC(p) = SigC(p) + 2d0*rho(p,a,jb)**2*eps/(eps**2 + eta**2)
+          num = 2d0*rho(p,a,jb)**2
+          Sig(p) = Sig(p) + num*eps/(eps**2 + eta**2)
+          Z(p)   = Z(p)   - num*(eps**2 - eta**2)/(eps**2 + eta**2)**2
+
         end do
       end do
     end do
@@ -100,12 +110,19 @@ subroutine GW_self_energy_diag(COHSEX,eta,nBas,nC,nO,nV,nR,nS,e,Omega,rho,EcGM,S
     do i=nC+1,nO
       do a=nO+1,nBas-nR
         do jb=1,nS
+
           eps = e(a) - e(i) + Omega(jb)
-          EcGM = EcGM - 4d0*rho(a,i,jb)*rho(a,i,jb)*eps/(eps**2 + eta**2)
+          num = 4d0*rho(a,i,jb)**2
+          EcGM = EcGM - num*eps/(eps**2 + eta**2)
+
         end do
       end do
     end do
 
   end if
+
+! Compute renormalization factor from derivative 
+
+  Z(:) = 1d0/(1d0 - Z(:))
 
 end subroutine 

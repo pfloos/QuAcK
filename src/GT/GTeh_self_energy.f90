@@ -1,6 +1,6 @@
-subroutine GTeh_self_energy(eta,nBas,nC,nO,nV,nR,nS,e,Om,rhoL,rhoR,EcGM,SigC)
+subroutine GTeh_self_energy(eta,nBas,nC,nO,nV,nR,nS,e,Om,rhoL,rhoR,EcGM,Sig,Z)
 
-! Compute correlation part of the self-energy for GTeh
+! Compute correlation part of the self-energy for GTeh and the renormalization factor
 
   implicit none
   include 'parameters.h'
@@ -24,16 +24,18 @@ subroutine GTeh_self_energy(eta,nBas,nC,nO,nV,nR,nS,e,Om,rhoL,rhoR,EcGM,SigC)
   integer                       :: i,j,a,b
   integer                       :: p,q,r
   integer                       :: m
-  double precision              :: eps
+  double precision              :: num,eps
 
 ! Output variables
 
   double precision,intent(out)  :: EcGM
-  double precision,intent(out)  :: SigC(nBas,nBas)
+  double precision,intent(out)  :: Sig(nBas,nBas)
+  double precision,intent(out)  :: Z(nBas)
 
 ! Initialize 
 
-  SigC(:,:) = 0d0
+  Sig(:,:) = 0d0
+  Z(:)     = 0d0
 
 !----------------!
 ! GW self-energy !
@@ -42,16 +44,20 @@ subroutine GTeh_self_energy(eta,nBas,nC,nO,nV,nR,nS,e,Om,rhoL,rhoR,EcGM,SigC)
   ! Occupied part of the correlation self-energy
 
 !$OMP PARALLEL &
-!$OMP SHARED(SigC,rho,eta,nS,nC,nO,nBas,nR,e,Om) &
-!$OMP PRIVATE(m,i,q,p,eps) &
+!$OMP SHARED(Sig,rho,eta,nS,nC,nO,nBas,nR,e,Om) &
+!$OMP PRIVATE(m,i,q,p,num,eps) &
 !$OMP DEFAULT(NONE)
 !$OMP DO
   do q=nC+1,nBas-nR
      do p=nC+1,nBas-nR
         do m=1,nS
            do i=nC+1,nO
+
               eps = e(p) - e(i) + Om(m)
-              SigC(p,q) = SigC(p,q) + rhoL(i,p,m)*rhoR(i,q,m)*eps/(eps**2 + eta**2)
+              num = rhoL(i,p,m)*rhoR(i,q,m)
+              Sig(p,q) = Sig(p,q) + num*eps/(eps**2 + eta**2)
+              if(p == q) Z(p) = Z(p) - num*(eps**2 - eta**2)/(eps**2 + eta**2)**2
+
            end do
         end do
      end do
@@ -62,16 +68,20 @@ subroutine GTeh_self_energy(eta,nBas,nC,nO,nV,nR,nS,e,Om,rhoL,rhoR,EcGM,SigC)
     ! Virtual part of the correlation self-energy
 
 !$OMP PARALLEL &
-!$OMP SHARED(SigC,rho,eta,nS,nC,nO,nBas,nR,e,Om) &
-!$OMP PRIVATE(m,a,q,p,eps) &
+!$OMP SHARED(Sig,rho,eta,nS,nC,nO,nBas,nR,e,Om) &
+!$OMP PRIVATE(m,a,q,p,num,eps) &
 !$OMP DEFAULT(NONE)
 !$OMP DO  
   do q=nC+1,nBas-nR
      do p=nC+1,nBas-nR
         do m=1,nS
            do a=nO+1,nBas-nR
+
               eps = e(p) - e(a) - Om(m)
-              SigC(p,q) = SigC(p,q) + rhoL(p,a,m)*rhoR(q,a,m)*eps/(eps**2 + eta**2)
+              num = rhoL(p,a,m)*rhoR(q,a,m)
+              Sig(p,q) = Sig(p,q) + num*eps/(eps**2 + eta**2)
+              if(p == q) Z(p) = Z(p) - num*(eps**2 - eta**2)/(eps**2 + eta**2)**2
+
            end do
         end do
      end do
@@ -86,9 +96,14 @@ subroutine GTeh_self_energy(eta,nBas,nC,nO,nV,nR,nS,e,Om,rhoL,rhoR,EcGM,SigC)
     do a=nO+1,nBas-nR
       do i=nC+1,nO
         eps = e(a) - e(i) + Om(m)
-        EcGM = EcGM - rhoL(i,a,m)*rhoR(i,a,m)*eps/(eps**2 + eta**2)
+        num = rhoL(i,a,m)*rhoR(i,a,m)
+        EcGM = EcGM - num*eps/(eps**2 + eta**2)
       end do
     end do
   end do
+
+! Compute renormalization factor from derivative 
+
+  Z(:) = 1d0/(1d0 - Z(:))
 
 end subroutine 

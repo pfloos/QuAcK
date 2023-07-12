@@ -60,7 +60,7 @@ subroutine G0T0pp(doACFDT,exchange_kernel,doXBS,BSE,TDA_T,TDA,dBSE,dTDA,evDyn,pp
   double precision,allocatable  :: Y2ab(:,:),Y2aa(:,:)
   double precision,allocatable  :: rho2ab(:,:,:),rho2aa(:,:,:)
   double precision,allocatable  :: SigX(:)
-  double precision,allocatable  :: SigT(:)
+  double precision,allocatable  :: Sig(:)
   double precision,allocatable  :: Z(:)
   double precision,allocatable  :: eGTlin(:)
 
@@ -92,7 +92,7 @@ subroutine G0T0pp(doACFDT,exchange_kernel,doXBS,BSE,TDA_T,TDA,dBSE,dTDA,evDyn,pp
            Om1aa(nVVaa),X1aa(nVVaa,nVVaa),Y1aa(nOOaa,nVVaa), & 
            Om2aa(nOOaa),X2aa(nVVaa,nOOaa),Y2aa(nOOaa,nOOaa), & 
            rho1aa(nBas,nBas,nVVaa),rho2aa(nBas,nBas,nOOaa), & 
-           SigX(nBas),SigT(nBas),Z(nBas),eGTlin(nBas))
+           SigX(nBas),Sig(nBas),Z(nBas),eGTlin(nBas))
 
 !----------------------------------------------
 ! alpha-beta block
@@ -127,7 +127,7 @@ subroutine G0T0pp(doACFDT,exchange_kernel,doXBS,BSE,TDA_T,TDA,dBSE,dTDA,evDyn,pp
 !----------------------------------------------
 
   EcGM    = 0d0
-  SigT(:) = 0d0
+  Sig(:) = 0d0
   Z(:)    = 0d0
 
   iblock = 3
@@ -136,13 +136,12 @@ subroutine G0T0pp(doACFDT,exchange_kernel,doXBS,BSE,TDA_T,TDA,dBSE,dTDA,evDyn,pp
 
   if(regularize) then
 
-    call regularized_self_energy_Tmatrix_diag(eta,nBas,nC,nO,nV,nR,nOOab,nVVab,eHF,Om1ab,rho1ab,Om2ab,rho2ab,EcGM,SigT)
+    call regularized_self_energy_Tmatrix_diag(eta,nBas,nC,nO,nV,nR,nOOab,nVVab,eHF,Om1ab,rho1ab,Om2ab,rho2ab,EcGM,Sig)
     call regularized_renormalization_factor_Tmatrix(eta,nBas,nC,nO,nV,nR,nOOab,nVVab,eHF,Om1ab,rho1ab,Om2ab,rho2ab,Z)
 
   else
 
-    call GTpp_self_energy_diag(eta,nBas,nC,nO,nV,nR,nOOab,nVVab,eHF,Om1ab,rho1ab,Om2ab,rho2ab,EcGM,SigT)
-    call GTpp_renormalization_factor(eta,nBas,nC,nO,nV,nR,nOOab,nVVab,eHF,Om1ab,rho1ab,Om2ab,rho2ab,Z)
+    call GTpp_self_energy_diag(eta,nBas,nC,nO,nV,nR,nOOab,nVVab,eHF,Om1ab,rho1ab,Om2ab,rho2ab,EcGM,Sig,Z)
 
   end if
 
@@ -152,13 +151,12 @@ subroutine G0T0pp(doACFDT,exchange_kernel,doXBS,BSE,TDA_T,TDA,dBSE,dTDA,evDyn,pp
 
   if(regularize) then
 
-    call regularized_self_energy_Tmatrix_diag(eta,nBas,nC,nO,nV,nR,nOOaa,nVVaa,eHF,Om1aa,rho1aa,Om2aa,rho2aa,EcGM,SigT)
+    call regularized_self_energy_Tmatrix_diag(eta,nBas,nC,nO,nV,nR,nOOaa,nVVaa,eHF,Om1aa,rho1aa,Om2aa,rho2aa,EcGM,Sig)
     call regularized_renormalization_factor_Tmatrix(eta,nBas,nC,nO,nV,nR,nOOaa,nVVaa,eHF,Om1aa,rho1aa,Om2aa,rho2aa,Z)
 
   else
 
-    call GTpp_self_energy_diag(eta,nBas,nC,nO,nV,nR,nOOaa,nVVaa,eHF,Om1aa,rho1aa,Om2aa,rho2aa,EcGM,SigT)
-    call GTpp_renormalization_factor(eta,nBas,nC,nO,nV,nR,nOOaa,nVVaa,eHF,Om1aa,rho1aa,Om2aa,rho2aa,Z)
+    call GTpp_self_energy_diag(eta,nBas,nC,nO,nV,nR,nOOaa,nVVaa,eHF,Om1aa,rho1aa,Om2aa,rho2aa,EcGM,Sig,Z)
 
   end if
 
@@ -174,7 +172,7 @@ subroutine G0T0pp(doACFDT,exchange_kernel,doXBS,BSE,TDA_T,TDA,dBSE,dTDA,evDyn,pp
 ! Solve the quasi-particle equation
 !----------------------------------------------
 
-  eGTlin(:) = eHF(:) + Z(:)*(SigX(:) + SigT(:) - Vxc(:))
+  eGTlin(:) = eHF(:) + Z(:)*(SigX(:) + Sig(:) - Vxc(:))
   
   if(linearize) then
 
@@ -210,7 +208,7 @@ subroutine G0T0pp(doACFDT,exchange_kernel,doXBS,BSE,TDA_T,TDA,dBSE,dTDA,evDyn,pp
   EcRPA(1) = EcRPA(1) - EcRPA(2)
   EcRPA(2) = 3d0*EcRPA(2)
 
-  call print_G0T0pp(nBas,nO,eHF,ENuc,ERHF,SigT,Z,eGT,EcGM,EcRPA)
+  call print_G0T0pp(nBas,nO,eHF,ENuc,ERHF,Sig,Z,eGT,EcGM,EcRPA)
 
 ! Perform BSE calculation
 

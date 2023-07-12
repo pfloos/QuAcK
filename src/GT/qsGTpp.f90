@@ -89,9 +89,9 @@ subroutine qsGTpp(maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,BSE,TDA_T
   double precision,allocatable  :: Fp(:,:)
   double precision,allocatable  :: J(:,:)
   double precision,allocatable  :: K(:,:)
-  double precision,allocatable  :: SigT(:,:)
-  double precision,allocatable  :: SigTp(:,:)
-  double precision,allocatable  :: SigTm(:,:)
+  double precision,allocatable  :: Sig(:,:)
+  double precision,allocatable  :: Sigp(:,:)
+  double precision,allocatable  :: Sigm(:,:)
   double precision,allocatable  :: Z(:)
   double precision,allocatable  :: error(:,:)
 
@@ -137,7 +137,7 @@ subroutine qsGTpp(maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,BSE,TDA_T
 ! Memory allocation
 
   allocate(eGT(nBas),eOld(nBas),c(nBas,nBas),cp(nBas,nBas),P(nBas,nBas),F(nBas,nBas),Fp(nBas,nBas), &
-           J(nBas,nBas),K(nBas,nBas),SigT(nBas,nBas),SigTp(nBas,nBas),SigTm(nBas,nBas),Z(nBas),     & 
+           J(nBas,nBas),K(nBas,nBas),Sig(nBas,nBas),Sigp(nBas,nBas),Sigm(nBas,nBas),Z(nBas),     & 
            error(nBas,nBas),error_diis(nBasSq,max_diis),F_diis(nBasSq,max_diis))
 
   allocate(Om1s(nVVs),X1s(nVVs,nVVs),Y1s(nOOs,nVVs),        &
@@ -201,7 +201,7 @@ subroutine qsGTpp(maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,BSE,TDA_T
     ! Compute correlation part of the self-energy 
 
     EcGM      = 0d0
-    SigT(:,:) = 0d0
+    Sig(:,:) = 0d0
     Z(:)      = 0d0
 
     iblock =  3
@@ -210,15 +210,13 @@ subroutine qsGTpp(maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,BSE,TDA_T
 
    if(regularize) then
 
-      call regularized_self_energy_Tmatrix(eta,nBas,nC,nO,nV,nR,nOOs,nVVs,eGT,Om1s,rho1s,Om2s,rho2s,EcGM,SigT)
+      call regularized_self_energy_Tmatrix(eta,nBas,nC,nO,nV,nR,nOOs,nVVs,eGT,Om1s,rho1s,Om2s,rho2s,EcGM,Sig)
      
       call regularized_renormalization_factor_Tmatrix(eta,nBas,nC,nO,nV,nR,nOOs,nVVs,eGT,Om1s,rho1s,Om2s,rho2s,Z)
 
     else
 
-      call GTpp_self_energy(eta,nBas,nC,nO,nV,nR,nOOs,nVVs,eGT,Om1s,rho1s,Om2s,rho2s,EcGM,SigT)
-      
-      call GTpp_renormalization_factor(eta,nBas,nC,nO,nV,nR,nOOs,nVVs,eGT,Om1s,rho1s,Om2s,rho2s,Z)
+      call GTpp_self_energy(eta,nBas,nC,nO,nV,nR,nOOs,nVVs,eGT,Om1s,rho1s,Om2s,rho2s,EcGM,Sig,Z)
 
     end if
 
@@ -228,16 +226,14 @@ subroutine qsGTpp(maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,BSE,TDA_T
 
     if(regularize) then
 
-      call regularized_self_energy_Tmatrix(eta,nBas,nC,nO,nV,nR,nOOt,nVVt,eGT,Om1t,rho1t,Om2t,rho2t,EcGM,SigT)
+      call regularized_self_energy_Tmatrix(eta,nBas,nC,nO,nV,nR,nOOt,nVVt,eGT,Om1t,rho1t,Om2t,rho2t,EcGM,Sig)
      
       call regularized_renormalization_factor_Tmatrix(eta,nBas,nC,nO,nV,nR,nOOt,nVVt,eGT, &
                                                       Om1t,rho1t,Om2t,rho2t,Z)
 
      else
 
-      call GTpp_self_energy(eta,nBas,nC,nO,nV,nR,nOOt,nVVt,eGT,Om1t,rho1t,Om2t,rho2t,EcGM,SigT)
-     
-      call GTpp_renormalization_factor(eta,nBas,nC,nO,nV,nR,nOOt,nVVt,eGT,Om1t,rho1t,Om2t,rho2t,Z)
+      call GTpp_self_energy(eta,nBas,nC,nO,nV,nR,nOOt,nVVt,eGT,Om1t,rho1t,Om2t,rho2t,EcGM,Sig,Z)
 
     end if
 
@@ -245,14 +241,14 @@ subroutine qsGTpp(maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,BSE,TDA_T
 
     ! Make correlation self-energy Hermitian and transform it back to AO basis
    
-    SigTp = 0.5d0*(SigT + transpose(SigT))
-    SigTm = 0.5d0*(SigT - transpose(SigT))
+    Sigp = 0.5d0*(Sig + transpose(Sig))
+    Sigm = 0.5d0*(Sig - transpose(Sig))
 
-    call MOtoAO_transform(nBas,S,c,SigTp)
+    call MOtoAO_transform(nBas,S,c,Sigp)
  
     ! Solve the quasi-particle equation
 
-    F(:,:) = Hc(:,:) + J(:,:) + 0.5d0*K(:,:) + SigTp(:,:)
+    F(:,:) = Hc(:,:) + J(:,:) + 0.5d0*K(:,:) + Sigp(:,:)
 
     ! Compute commutator and convergence criteria
 
@@ -273,7 +269,7 @@ subroutine qsGTpp(maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,BSE,TDA_T
     cp(:,:) = Fp(:,:)
     call diagonalize_matrix(nBas,cp,eGT)
     c = matmul(X,cp)
-    SigTp = matmul(transpose(c),matmul(SigTp,c))
+    Sigp = matmul(transpose(c),matmul(Sigp,c))
 
     ! Compute new density matrix in the AO basis
 
@@ -311,7 +307,7 @@ subroutine qsGTpp(maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,BSE,TDA_T
     ! Print results
 
     call dipole_moment(nBas,P,nNuc,ZNuc,rNuc,dipole_int_AO,dipole)
-    call print_qsGTpp(nBas,nO,nSCF,Conv,thresh,eHF,eGT,c,SigTp,Z,ENuc,ET,EV,EJ,Ex,EcGM,EcRPA,EqsGT,dipole)
+    call print_qsGTpp(nBas,nO,nSCF,Conv,thresh,eHF,eGT,c,Sigp,Z,ENuc,ET,EV,EJ,Ex,EcGM,EcRPA,EqsGT,dipole)
 
   enddo
 !------------------------------------------------------------------------
@@ -334,7 +330,7 @@ subroutine qsGTpp(maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,BSE,TDA_T
 
 ! Deallocate memory
 
-  deallocate(c,cp,P,F,Fp,J,K,SigT,SigTp,SigTm,Z,error,error_diis,F_diis)
+  deallocate(c,cp,P,F,Fp,J,K,Sig,Sigp,Sigm,Z,error,error_diis,F_diis)
 
 ! Perform BSE calculation
 

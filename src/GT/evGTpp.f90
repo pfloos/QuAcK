@@ -71,7 +71,7 @@ subroutine evGTpp(maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS, &
   double precision,allocatable  :: Y2s(:,:),Y2t(:,:)
   double precision,allocatable  :: rho2s(:,:,:),rho2t(:,:,:)
   double precision,allocatable  :: SigX(:)
-  double precision,allocatable  :: SigT(:)
+  double precision,allocatable  :: Sig(:)
   double precision,allocatable  :: Z(:)
 
 ! Output variables
@@ -100,7 +100,7 @@ subroutine evGTpp(maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS, &
            Om1t(nVVt),X1t(nVVt,nVVt),Y1t(nOOt,nVVt),        & 
            Om2t(nOOt),X2t(nVVt,nOOt),Y2t(nOOt,nOOt),        & 
            rho1t(nBas,nBas,nVVt),rho2t(nBas,nBas,nOOt),        &
-           eGT(nBas),eOld(nBas),Z(nBas),SigX(nBas),SigT(nBas), &
+           eGT(nBas),eOld(nBas),Z(nBas),SigX(nBas),Sig(nBas), &
            error_diis(nBas,max_diis),e_diis(nBas,max_diis))
 
 ! Compute the exchange part of the self-energy
@@ -155,30 +155,20 @@ subroutine evGTpp(maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS, &
   !----------------------------------------------
 
     EcGM    = 0d0
-    SigT(:) = 0d0
+    Sig(:) = 0d0
     Z(:)    = 0d0
  
     iblock =  3
  
-    call GTpp_excitation_density(iblock,nBas,nC,nO,nV,nR,nOOs,nVVs,ERI_MO, &
-                                 X1s,Y1s,rho1s,X2s,Y2s,rho2s)
+    call GTpp_excitation_density(iblock,nBas,nC,nO,nV,nR,nOOs,nVVs,ERI_MO,X1s,Y1s,rho1s,X2s,Y2s,rho2s)
  
-    call GTpp_self_energy_diag(eta,nBas,nC,nO,nV,nR,nOOs,nVVs,eGT, & 
-                               Om1s,rho1s,Om2s,rho2s,EcGM,SigT)
- 
-    call GTpp_renormalization_factor(eta,nBas,nC,nO,nV,nR,nOOs,nVVs,eGT, & 
-                                     Om1s,rho1s,Om2s,rho2s,Z)
+    call GTpp_self_energy_diag(eta,nBas,nC,nO,nV,nR,nOOs,nVVs,eGT,Om1s,rho1s,Om2s,rho2s,EcGM,Sig,Z)
  
     iblock =  4
  
-    call GTpp_excitation_density(iblock,nBas,nC,nO,nV,nR,nOOt,nVVt,ERI_MO, &
-                                 X1t,Y1t,rho1t,X2t,Y2t,rho2t)
+    call GTpp_excitation_density(iblock,nBas,nC,nO,nV,nR,nOOt,nVVt,ERI_MO,X1t,Y1t,rho1t,X2t,Y2t,rho2t)
  
-    call GTpp_self_energy_diag(eta,nBas,nC,nO,nV,nR,nOOt,nVVt,eGT, & 
-                               Om1t,rho1t,Om2t,rho2t,EcGM,SigT)
- 
-    call GTpp_renormalization_factor(eta,nBas,nC,nO,nV,nR,nOOt,nVVt,eGT, & 
-                                     Om1t,rho1t,Om2t,rho2t,Z)
+    call GTpp_self_energy_diag(eta,nBas,nC,nO,nV,nR,nOOt,nVVt,eGT,Om1t,rho1t,Om2t,rho2t,EcGM,Sig,Z)
  
     Z(:) = 1d0/(1d0 - Z(:))
 
@@ -188,7 +178,7 @@ subroutine evGTpp(maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS, &
   ! Solve the quasi-particle equation
   !----------------------------------------------
 
-    eGT(:) = eHF(:) + SigX(:) + SigT(:) - Vxc(:)
+    eGT(:) = eHF(:) + SigX(:) + Sig(:) - Vxc(:)
 
     ! Convergence criteria
 
@@ -198,7 +188,7 @@ subroutine evGTpp(maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS, &
   ! Dump results
   !----------------------------------------------
 
-    call print_evGTpp(nBas,nO,nSCF,Conv,eHF,ENuc,ERHF,SigT,Z,eGT,EcGM,EcRPA)
+    call print_evGTpp(nBas,nO,nSCF,Conv,eHF,ENuc,ERHF,Sig,Z,eGT,EcGM,EcRPA)
 
     ! DIIS extrapolation
 

@@ -89,9 +89,9 @@ subroutine qsGTeh(maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,BSE,BSE2,
   double precision,allocatable  :: Fp(:,:)
   double precision,allocatable  :: J(:,:)
   double precision,allocatable  :: K(:,:)
-  double precision,allocatable  :: SigC(:,:)
-  double precision,allocatable  :: SigCp(:,:)
-  double precision,allocatable  :: SigCm(:,:)
+  double precision,allocatable  :: Sig(:,:)
+  double precision,allocatable  :: Sigp(:,:)
+  double precision,allocatable  :: Sigm(:,:)
   double precision,allocatable  :: Z(:)
   double precision,allocatable  :: error(:,:)
 
@@ -129,7 +129,7 @@ subroutine qsGTeh(maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,BSE,BSE2,
 ! Memory allocation
 
   allocate(eGT(nBas),eOld(nBas),c(nBas,nBas),cp(nBas,nBas),P(nBas,nBas),F(nBas,nBas),Fp(nBas,nBas), &
-           J(nBas,nBas),K(nBas,nBas),SigC(nBas,nBas),SigCp(nBas,nBas),SigCm(nBas,nBas),Z(nBas),     & 
+           J(nBas,nBas),K(nBas,nBas),Sig(nBas,nBas),Sigp(nBas,nBas),Sigm(nBas,nBas),Z(nBas),     & 
            OmRPA(nS),XpY_RPA(nS,nS),XmY_RPA(nS,nS),rhoL_RPA(nBas,nBas,nS),rhoR_RPA(nBas,nBas,nS),   &
            error(nBas,nBas),error_diis(nBasSq,max_diis),F_diis(nBasSq,max_diis))
 
@@ -180,26 +180,25 @@ subroutine qsGTeh(maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,BSE,BSE2,
 
      if(regularize) then
 
-!      call regularized_self_energy_correlation(eta,nBas,nC,nO,nV,nR,nS,eGT,OmRPA,rhoL_RPA,rhoR_RPA,EcGM,SigC)
+!      call regularized_self_energy_correlation(eta,nBas,nC,nO,nV,nR,nS,eGT,OmRPA,rhoL_RPA,rhoR_RPA,EcGM,Sig)
 !      call regularized_renormalization_factor(eta,nBas,nC,nO,nV,nR,nS,eGT,OmRPA,rhoL_RPA,rhoR_RPA,Z)
 
      else
 
-       call GTeh_self_energy(eta,nBas,nC,nO,nV,nR,nS,eGT,OmRPA,rhoL_RPA,rhoR_RPA,EcGM,SigC)
-       call GTeh_renormalization_factor(eta,nBas,nC,nO,nV,nR,nS,eGT,OmRPA,rhoL_RPA,rhoR_RPA,Z)
+       call GTeh_self_energy(eta,nBas,nC,nO,nV,nR,nS,eGT,OmRPA,rhoL_RPA,rhoR_RPA,EcGM,Sig,Z)
 
      endif
 
     ! Make correlation self-energy Hermitian and transform it back to AO basis
    
-    SigCp = 0.5d0*(SigC + transpose(SigC))
-    SigCm = 0.5d0*(SigC - transpose(SigC))
+    Sigp = 0.5d0*(Sig + transpose(Sig))
+    Sigm = 0.5d0*(Sig - transpose(Sig))
 
-    call MOtoAO_transform(nBas,S,c,SigCp)
+    call MOtoAO_transform(nBas,S,c,Sigp)
  
     ! Solve the quasi-particle equation
 
-    F(:,:) = Hc(:,:) + J(:,:) + 0.5d0*K(:,:) + SigCp(:,:)
+    F(:,:) = Hc(:,:) + J(:,:) + 0.5d0*K(:,:) + Sigp(:,:)
 
     ! Compute commutator and convergence criteria
 
@@ -220,7 +219,7 @@ subroutine qsGTeh(maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,BSE,BSE2,
     cp(:,:) = Fp(:,:)
     call diagonalize_matrix(nBas,cp,eGT)
     c = matmul(X,cp)
-    SigCp = matmul(transpose(c),matmul(SigCp,c))
+    Sigp = matmul(transpose(c),matmul(Sigp,c))
 
     ! Compute new density matrix in the AO basis
 
@@ -258,7 +257,7 @@ subroutine qsGTeh(maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,BSE,BSE2,
     ! Print results
 
     call dipole_moment(nBas,P,nNuc,ZNuc,rNuc,dipole_int_AO,dipole)
-    call print_qsGTeh(nBas,nO,nSCF,Conv,thresh,eHF,eGT,c,SigCp,Z,ENuc,ET,EV,EJ,Ex,EcGM,EcRPA,EqsGT,dipole)
+    call print_qsGTeh(nBas,nO,nSCF,Conv,thresh,eHF,eGT,c,Sigp,Z,ENuc,ET,EV,EJ,Ex,EcGM,EcRPA,EqsGT,dipole)
 
   enddo
 !------------------------------------------------------------------------
@@ -281,7 +280,7 @@ subroutine qsGTeh(maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,BSE,BSE2,
 
 ! Deallocate memory
 
-  deallocate(c,cp,P,F,Fp,J,K,SigC,SigCp,SigCm,Z,OmRPA,XpY_RPA,XmY_RPA,rhoL_RPA,rhoR_RPA,error,error_diis,F_diis)
+  deallocate(c,cp,P,F,Fp,J,K,Sig,Sigp,Sigm,Z,OmRPA,XpY_RPA,XmY_RPA,rhoL_RPA,rhoR_RPA,error,error_diis,F_diis)
 
 ! Perform BSE calculation
 

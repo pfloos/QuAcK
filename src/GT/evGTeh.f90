@@ -68,7 +68,7 @@ subroutine evGTeh(maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,BSE,BSE2,
   double precision,allocatable  :: eOld(:)
   double precision,allocatable  :: Z(:)
   double precision,allocatable  :: SigX(:)
-  double precision,allocatable  :: SigC(:)
+  double precision,allocatable  :: Sig(:)
   double precision,allocatable  :: OmRPA(:)
   double precision,allocatable  :: XpY_RPA(:,:)
   double precision,allocatable  :: XmY_RPA(:,:)
@@ -106,7 +106,7 @@ subroutine evGTeh(maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,BSE,BSE2,
 
 ! Memory allocation
 
-  allocate(eGT(nBas),eOld(nBas),Z(nBas),SigX(nBas),SigC(nBas),OmRPA(nS),XpY_RPA(nS,nS),XmY_RPA(nS,nS), & 
+  allocate(eGT(nBas),eOld(nBas),Z(nBas),SigX(nBas),Sig(nBas),OmRPA(nS),XpY_RPA(nS,nS),XmY_RPA(nS,nS), & 
            rhoL_RPA(nBas,nBas,nS),rhoR_RPA(nBas,nBas,nS),error_diis(nBas,max_diis),e_diis(nBas,max_diis),eGTlin(nBas))
 
 ! Compute the exchange part of the self-energy
@@ -146,19 +146,18 @@ subroutine evGTeh(maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,BSE,BSE2,
 
     if(regularize) then 
 
-!     call regularized_self_energy_correlation_diag(COHSEX,eta,nBas,nC,nO,nV,nR,nS,eGW,OmRPA,rho_RPA,EcGM,SigC)
+!     call regularized_self_energy_correlation_diag(COHSEX,eta,nBas,nC,nO,nV,nR,nS,eGW,OmRPA,rho_RPA,EcGM,Sig)
 !     call renormalization_factor_SRG(eta,nBas,nC,nO,nV,nR,nS,eGW,OmRPA,rho_RPA,Z)
 
     else
 
-      call GTeh_self_energy_diag(eta,nBas,nC,nO,nV,nR,nS,eGT,OmRPA,rhoL_RPA,rhoR_RPA,EcGM,SigC)
-      call GTeh_renormalization_factor(eta,nBas,nC,nO,nV,nR,nS,eGT,OmRPA,rhoL_RPA,rhoR_RPA,Z)
+      call GTeh_self_energy_diag(eta,nBas,nC,nO,nV,nR,nS,eGT,OmRPA,rhoL_RPA,rhoR_RPA,EcGM,Sig,Z)
 
     end if
 
     ! Solve the quasi-particle equation
 
-    eGTlin(:) = eHF(:) + SigX(:) + SigC(:) - Vxc(:)
+    eGTlin(:) = eHF(:) + SigX(:) + Sig(:) - Vxc(:)
 
     ! Linearized or graphical solution?
 
@@ -184,7 +183,7 @@ subroutine evGTeh(maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,BSE,BSE2,
 
     ! Print results
 
-    call print_evGTeh(nBas,nO,nSCF,Conv,eHF,ENuc,ERHF,SigC,Z,eGT,EcRPA,EcGM)
+    call print_evGTeh(nBas,nO,nSCF,Conv,eHF,ENuc,ERHF,Sig,Z,eGT,EcRPA,EcGM)
 
     ! Linear mixing or DIIS extrapolation
 
@@ -232,7 +231,7 @@ subroutine evGTeh(maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,BSE,BSE2,
 
 ! Deallocate memory
 
-  deallocate(eOld,Z,SigC,OmRPA,XpY_RPA,XmY_RPA,rhoL_RPA,rhoR_RPA,error_diis,e_diis)
+  deallocate(eOld,Z,Sig,OmRPA,XpY_RPA,XmY_RPA,rhoL_RPA,rhoR_RPA,error_diis,e_diis)
 
 ! Perform BSE calculation
 

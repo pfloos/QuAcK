@@ -1,6 +1,6 @@
-subroutine GTeh_self_energy_diag(eta,nBas,nC,nO,nV,nR,nS,e,Om,rhoL,rhoR,EcGM,SigC)
+subroutine GTeh_self_energy_diag(eta,nBas,nC,nO,nV,nR,nS,e,Om,rhoL,rhoR,EcGM,Sig,Z)
 
-! Compute diagonal of the correlation part of the self-energy
+! Compute diagonal of the correlation part of the self-energy and the renormalization factor
 
   implicit none
   include 'parameters.h'
@@ -22,16 +22,18 @@ subroutine GTeh_self_energy_diag(eta,nBas,nC,nO,nV,nR,nS,e,Om,rhoL,rhoR,EcGM,Sig
 ! Local variables
 
   integer                       :: i,a,p,q,m
-  double precision              :: eps
+  double precision              :: num,eps
 
 ! Output variables
 
-  double precision,intent(out)  :: SigC(nBas)
+  double precision,intent(out)  :: Sig(nBas)
+  double precision,intent(out)  :: Z(nBas)
   double precision,intent(out)  :: EcGM
 
 ! Initialize 
 
-  SigC(:) = 0d0
+  Sig(:) = 0d0
+  Z(:)   = 0d0
 
 !-----------------------------
 ! GW self-energy
@@ -42,8 +44,12 @@ subroutine GTeh_self_energy_diag(eta,nBas,nC,nO,nV,nR,nS,e,Om,rhoL,rhoR,EcGM,Sig
   do p=nC+1,nBas-nR
     do i=nC+1,nO
       do m=1,nS
+
         eps = e(p) - e(i) + Om(m)
-        SigC(p) = SigC(p) + rhoL(i,p,m)*rhoR(i,p,m)*eps/(eps**2 + eta**2)
+        num = rhoL(i,p,m)*rhoR(i,p,m)
+        Sig(p) = Sig(p) + num*eps/(eps**2 + eta**2)
+        Z(p)   = Z(p)   - num*(eps**2 - eta**2)/(eps**2 + eta**2)**2
+
       end do
     end do
   end do
@@ -53,8 +59,12 @@ subroutine GTeh_self_energy_diag(eta,nBas,nC,nO,nV,nR,nS,e,Om,rhoL,rhoR,EcGM,Sig
   do p=nC+1,nBas-nR
     do a=nO+1,nBas-nR
       do m=1,nS
+
         eps = e(p) - e(a) - Om(m)
-        SigC(p) = SigC(p) + rhoL(p,a,m)*rhoR(p,a,m)*eps/(eps**2 + eta**2)
+        num = rhoL(p,a,m)*rhoR(p,a,m)
+        Sig(p) = Sig(p) + num*eps/(eps**2 + eta**2)
+        Z(p)   = Z(p)   - num*(eps**2 - eta**2)/(eps**2 + eta**2)**2
+
       end do
     end do
   end do
@@ -65,10 +75,17 @@ subroutine GTeh_self_energy_diag(eta,nBas,nC,nO,nV,nR,nS,e,Om,rhoL,rhoR,EcGM,Sig
   do i=nC+1,nO
     do a=nO+1,nBas-nR
       do m=1,nS
+
         eps = e(a) - e(i) + Om(m)
-        EcGM = EcGM - rhoL(i,a,m)*rhoR(i,a,m)*eps/(eps**2 + eta**2)
+        num = rhoL(i,a,m)*rhoR(i,a,m)
+        EcGM = EcGM - num*eps/(eps**2 + eta**2)
+
       end do
     end do
   end do
+
+! Compute renormalization factor from derivative 
+
+  Z(:) = 1d0/(1d0 - Z(:))
 
 end subroutine 

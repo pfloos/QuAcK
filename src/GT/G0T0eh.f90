@@ -53,7 +53,7 @@ subroutine G0T0eh(doACFDT,exchange_kernel,doXBS,BSE,BSE2,TDA_T,TDA,dBSE,dTDA,evD
   double precision              :: EcppBSE(nspin)
   double precision              :: EcGM
   double precision,allocatable  :: SigX(:)
-  double precision,allocatable  :: SigC(:)
+  double precision,allocatable  :: Sig(:)
   double precision,allocatable  :: Z(:)
   double precision,allocatable  :: OmRPA(:)
   double precision,allocatable  :: XpY_RPA(:,:)
@@ -99,7 +99,7 @@ subroutine G0T0eh(doACFDT,exchange_kernel,doXBS,BSE,BSE2,TDA_T,TDA,dBSE,dTDA,evD
 
 ! Memory allocation
 
-  allocate(SigC(nBas),SigX(nBas),Z(nBas),OmRPA(nS),XpY_RPA(nS,nS),XmY_RPA(nS,nS), & 
+  allocate(Sig(nBas),SigX(nBas),Z(nBas),OmRPA(nS),XpY_RPA(nS,nS),XmY_RPA(nS,nS), & 
            rhoL_RPA(nBas,nBas,nS),rhoR_RPA(nBas,nBas,nS),eGTlin(nBas))
 
 !-------------------!
@@ -124,13 +124,12 @@ subroutine G0T0eh(doACFDT,exchange_kernel,doXBS,BSE,BSE2,TDA_T,TDA,dBSE,dTDA,evD
 
   if(regularize) then 
 
-!   call regularized_self_energy_correlation_diag(eta,nBas,nC,nO,nV,nR,nS,eHF,OmRPA,rho_RPA,EcGM,SigC)
+!   call regularized_self_energy_correlation_diag(eta,nBas,nC,nO,nV,nR,nS,eHF,OmRPA,rho_RPA,EcGM,Sig)
 !   call regularized_renormalization_factor(eta,nBas,nC,nO,nV,nR,nS,eHF,OmRPA,rho_RPA,Z)
 
   else
 
-    call GTeh_self_energy_diag(eta,nBas,nC,nO,nV,nR,nS,eHF,OmRPA,rhoL_RPA,rhoR_RPA,EcGM,SigC)
-    call GTeh_renormalization_factor(eta,nBas,nC,nO,nV,nR,nS,eHF,OmRPA,rhoL_RPA,rhoR_RPA,Z)
+    call GTeh_self_energy_diag(eta,nBas,nC,nO,nV,nR,nS,eHF,OmRPA,rhoL_RPA,rhoR_RPA,EcGM,Sig,Z)
 
   end if
 
@@ -138,7 +137,7 @@ subroutine G0T0eh(doACFDT,exchange_kernel,doXBS,BSE,BSE2,TDA_T,TDA,dBSE,dTDA,evD
 ! Solve the quasi-particle equation !
 !-----------------------------------!
 
-  eGTlin(:) = eHF(:) + Z(:)*(SigX(:) + SigC(:) - Vxc(:))
+  eGTlin(:) = eHF(:) + Z(:)*(SigX(:) + Sig(:) - Vxc(:))
 
   ! Linearized or graphical solution?
 
@@ -170,11 +169,11 @@ subroutine G0T0eh(doACFDT,exchange_kernel,doXBS,BSE,BSE2,TDA_T,TDA,dBSE,dTDA,evD
 ! Dump results !
 !--------------!
 
-  call print_G0T0eh(nBas,nO,eHF,ENuc,ERHF,SigC,Z,eGT,EcRPA,EcGM)
+  call print_G0T0eh(nBas,nO,eHF,ENuc,ERHF,Sig,Z,eGT,EcRPA,EcGM)
 
 ! Deallocate memory
 
-! deallocate(SigC,Z,OmRPA,XpY_RPA,XmY_RPA,rho_RPA,eGWlin)
+! deallocate(Sig,Z,OmRPA,XpY_RPA,XmY_RPA,rho_RPA,eGWlin)
 
 ! Plot stuff
 
