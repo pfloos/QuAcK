@@ -13,7 +13,6 @@ program QuAcK
   logical                       :: do_drCCD,do_rCCD,do_crCCD,do_lCCD
   logical                       :: doCIS,doCIS_D,doCID,doCISD,doFCI
   logical                       :: doRPA,doRPAx,docrRPA,doppRPA
-  logical                       :: doADC
   logical                       :: doG0F2,doevGF2,doqsGF2,doG0F3,doevGF3
   logical                       :: doG0W0,doevGW,doqsGW,doufG0W0,doufGW,doSRGqsGW
   logical                       :: doG0T0pp,doevGTpp,doqsGTpp
@@ -772,23 +771,6 @@ program QuAcK
     write(*,*)
 
   end if
-
-!------------------------------------------------------------------------
-! Compute ADC excitations
-!------------------------------------------------------------------------
-
-! if(doADC) then
-
-!   call cpu_time(start_ADC)
-!   call ADC(singlet,triplet,maxSCF_GF,thresh_GF,n_diis_GF, & 
-!            nBas,nC,nO,nV,nR,eHF,ERI_MO)
-!   call cpu_time(end_ADC)
-
-!   t_ADC = end_ADC - start_ADC
-!   write(*,'(A65,1X,F9.3,A8)') 'Total CPU time for ADC = ',t_ADC,' seconds'
-!   write(*,*)
-
-! end if
 
 !------------------------------------------------------------------------
 ! Compute G0F2 electronic binding energies
