@@ -61,8 +61,8 @@ subroutine ppLR(ispin,TDA,nBas,nC,nO,nV,nR,nOO,nVV,lambda,e,ERI,Omega1,X1,Y1,Ome
 
 ! Build B, C and D matrices for the pp channel
 
-  call linear_response_C_pp(ispin,nBas,nC,nO,nV,nR,nOO,nVV,lambda,e,ERI,C)
-  call linear_response_D_pp(ispin,nBas,nC,nO,nV,nR,nOO,nVV,lambda,e,ERI,D)
+  call ppLR_C(ispin,nBas,nC,nO,nV,nR,nOO,nVV,lambda,e,ERI,C)
+  call ppLR_D(ispin,nBas,nC,nO,nV,nR,nOO,nVV,lambda,e,ERI,D)
 
   if(TDA) then
 
@@ -76,7 +76,7 @@ subroutine ppLR(ispin,TDA,nBas,nC,nO,nV,nR,nOO,nVV,lambda,e,ERI,Omega1,X1,Y1,Ome
 
   else
 
-    call linear_response_B_pp(ispin,nBas,nC,nO,nV,nR,nOO,nVV,lambda,ERI,B)
+    call ppLR_B(ispin,nBas,nC,nO,nV,nR,nOO,nVV,lambda,ERI,B)
 
   ! Diagonal blocks 
 

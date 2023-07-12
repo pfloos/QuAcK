@@ -83,8 +83,7 @@ subroutine soG0T0(eta,nBas,nC,nO,nV,nR,ENuc,ERHF,ERI,eHF)
 
 ! Compute linear response
 
-  call linear_response_pp(ispin,.false.,nBas2,nC2,nO2,nV2,nR2,nOO,nVV,1d0,seHF,sERI, & 
-                          Omega1,X1,Y1,Omega2,X2,Y2,EcRPA)
+  call ppLR(ispin,.false.,nBas2,nC2,nO2,nV2,nR2,nOO,nVV,1d0,seHF,sERI,Omega1,X1,Y1,Omega2,X2,Y2,EcRPA)
 
   call print_excitation('pp-RPA (N+2)',ispin,nVV,Omega1)
   call print_excitation('pp-RPA (N-2)',ispin,nOO,Omega2)

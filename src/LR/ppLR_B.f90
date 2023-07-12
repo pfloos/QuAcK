@@ -1,4 +1,4 @@
-subroutine linear_response_B_pp(ispin,nBas,nC,nO,nV,nR,nOO,nVV,lambda,ERI,B_pp)
+subroutine ppLR_B(ispin,nBas,nC,nO,nV,nR,nOO,nVV,lambda,ERI,Bpp)
 
 ! Compute the B matrix of the pp channel
 
@@ -25,7 +25,7 @@ subroutine linear_response_B_pp(ispin,nBas,nC,nO,nV,nR,nOO,nVV,lambda,ERI,B_pp)
 
 ! Output variables
 
-  double precision,intent(out)  :: B_pp(nVV,nOO)
+  double precision,intent(out)  :: Bpp(nVV,nOO)
 
 ! Build B matrix for the singlet manifold
  
@@ -40,7 +40,7 @@ subroutine linear_response_B_pp(ispin,nBas,nC,nO,nV,nR,nOO,nVV,lambda,ERI,B_pp)
           do j=i,nO
             ij = ij + 1
  
-            B_pp(ab,ij) = lambda*(ERI(a,b,i,j) + ERI(a,b,j,i))/sqrt((1d0 + Kronecker_delta(a,b))*(1d0 + Kronecker_delta(i,j)))
+            Bpp(ab,ij) = lambda*(ERI(a,b,i,j) + ERI(a,b,j,i))/sqrt((1d0 + Kronecker_delta(a,b))*(1d0 + Kronecker_delta(i,j)))
  
           end do
         end do
@@ -62,7 +62,7 @@ subroutine linear_response_B_pp(ispin,nBas,nC,nO,nV,nR,nOO,nVV,lambda,ERI,B_pp)
          do j=i+1,nO
             ij = ij + 1
  
-            B_pp(ab,ij) = lambda*(ERI(a,b,i,j) - ERI(a,b,j,i))
+            Bpp(ab,ij) = lambda*(ERI(a,b,i,j) - ERI(a,b,j,i))
  
           end do
         end do
@@ -84,7 +84,7 @@ subroutine linear_response_B_pp(ispin,nBas,nC,nO,nV,nR,nOO,nVV,lambda,ERI,B_pp)
          do j=nC+1,nO
             ij = ij + 1
  
-            B_pp(ab,ij) = lambda*ERI(a,b,i,j)
+            Bpp(ab,ij) = lambda*ERI(a,b,i,j)
  
           end do
         end do
@@ -93,4 +93,4 @@ subroutine linear_response_B_pp(ispin,nBas,nC,nO,nV,nR,nOO,nVV,lambda,ERI,B_pp)
 
   end if
 
-end subroutine linear_response_B_pp
+end subroutine 

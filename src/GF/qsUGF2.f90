@@ -337,4 +337,4 @@ subroutine qsUGF2(maxSCF,thresh,max_diis,BSE,TDA,dBSE,dTDA,evDyn,spin_conserved,
 
   end if
 
-end subroutine qsUGF2
+end subroutine 

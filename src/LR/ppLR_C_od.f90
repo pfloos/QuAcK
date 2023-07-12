@@ -1,6 +1,6 @@
-subroutine linear_response_C_pp(ispin,nBas,nC,nO,nV,nR,nOO,nVV,lambda,e,ERI,C_pp)
+subroutine ppLR_C_od(ispin,nBas,nC,nO,nV,nR,nOO,nVV,lambda,ERI,Cpp)
 
-! Compute the C matrix of the pp channel
+! Compute the C matrix of the pp channel (without diagonal term)
 
   implicit none
   include 'parameters.h'
@@ -8,32 +8,20 @@ subroutine linear_response_C_pp(ispin,nBas,nC,nO,nV,nR,nOO,nVV,lambda,e,ERI,C_pp
 ! Input variables
 
   integer,intent(in)            :: ispin
-  integer,intent(in)            :: nBas
-  integer,intent(in)            :: nC
-  integer,intent(in)            :: nO
-  integer,intent(in)            :: nV
-  integer,intent(in)            :: nR
-  integer,intent(in)            :: nOO
-  integer,intent(in)            :: nVV
+  integer,intent(in)            :: nBas,nC,nO,nV,nR,nOO,nVV
   double precision,intent(in)   :: lambda
-  double precision,intent(in)   :: e(nBas),ERI(nBas,nBas,nBas,nBas) 
+  double precision,intent(in)   :: ERI(nBas,nBas,nBas,nBas) 
   
 ! Local variables
 
-  double precision              :: eF
   double precision,external     :: Kronecker_delta
 
   integer                       :: a,b,c,d,ab,cd
 
 ! Output variables
 
-  double precision,intent(out)  :: C_pp(nVV,nVV)
-
-! Define the chemical potential
+  double precision,intent(out)  :: Cpp(nVV,nVV)
  
-! eF = e(nO) + e(nO+1)
-  eF = 0d0
-
 ! Build C matrix for the singlet manifold
 
   if(ispin == 1) then
@@ -47,8 +35,7 @@ subroutine linear_response_C_pp(ispin,nBas,nC,nO,nV,nR,nOO,nVV,lambda,e,ERI,C_pp
          do d=c,nBas-nR
             cd = cd + 1
  
-            C_pp(ab,cd) = + (e(a) + e(b) - eF)*Kronecker_delta(a,c)*Kronecker_delta(b,d) &
-                          + lambda*(ERI(a,b,c,d) + ERI(a,b,d,c))/sqrt((1d0 + Kronecker_delta(a,b))*(1d0 + Kronecker_delta(c,d)))
+            Cpp(ab,cd) = lambda*(ERI(a,b,c,d) + ERI(a,b,d,c))/sqrt((1d0 + Kronecker_delta(a,b))*(1d0 + Kronecker_delta(c,d)))
  
           end do
         end do
@@ -70,8 +57,7 @@ subroutine linear_response_C_pp(ispin,nBas,nC,nO,nV,nR,nOO,nVV,lambda,e,ERI,C_pp
          do d=c+1,nBas-nR
             cd = cd + 1
  
-            C_pp(ab,cd) = + (e(a) + e(b) - eF)*Kronecker_delta(a,c)*Kronecker_delta(b,d) & 
-                          + lambda*(ERI(a,b,c,d) - ERI(a,b,d,c))
+            Cpp(ab,cd) = lambda*(ERI(a,b,c,d) - ERI(a,b,d,c))
  
           end do
         end do
@@ -93,8 +79,7 @@ subroutine linear_response_C_pp(ispin,nBas,nC,nO,nV,nR,nOO,nVV,lambda,e,ERI,C_pp
          do d=nO+1,nBas-nR
             cd = cd + 1
  
-            C_pp(ab,cd) = + (e(a) + e(b) - eF)*Kronecker_delta(a,c)*Kronecker_delta(b,d) & 
-                          + lambda*ERI(a,b,c,d)
+            Cpp(ab,cd) = lambda*ERI(a,b,c,d)
  
           end do
         end do
@@ -103,4 +88,4 @@ subroutine linear_response_C_pp(ispin,nBas,nC,nO,nV,nR,nOO,nVV,lambda,e,ERI,C_pp
 
   end if
 
-end subroutine linear_response_C_pp
+end subroutine 

@@ -48,7 +48,7 @@ subroutine linear_response_BSE(ispin,dRPA,TDA,BSE,eta,nBas,nC,nO,nV,nR,nS,lambda
 
 ! Build A and B matrices 
 
-  call linear_response_A_matrix(ispin,dRPA,nBas,nC,nO,nV,nR,nS,lambda,e,ERI,A)
+  call phLR_A(ispin,dRPA,nBas,nC,nO,nV,nR,nS,lambda,e,ERI,A)
 
   if(BSE) A(:,:) = A(:,:) - A_BSE(:,:)
 
@@ -64,7 +64,7 @@ subroutine linear_response_BSE(ispin,dRPA,TDA,BSE,eta,nBas,nC,nO,nV,nR,nS,lambda
 
   else
 
-    call linear_response_B_matrix(ispin,dRPA,nBas,nC,nO,nV,nR,nS,lambda,ERI,B)
+    call phLR_B(ispin,dRPA,nBas,nC,nO,nV,nR,nS,lambda,ERI,B)
 
     if(BSE) B(:,:) = B(:,:) - B_BSE(:,:)
 
@@ -104,4 +104,4 @@ subroutine linear_response_BSE(ispin,dRPA,TDA,BSE,eta,nBas,nC,nO,nV,nR,nS,lambda
 
     Ec = 0.5d0*(sum(Omega) - trace_matrix(nS,A))
 
-end subroutine linear_response_BSE
+end subroutine 

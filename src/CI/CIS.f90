@@ -45,7 +45,7 @@ subroutine CIS(singlet,triplet,doCIS_D,nBas,nC,nO,nV,nR,nS,ERI,dipole_int,eHF)
   if(singlet) then
 
     ispin = 1
-    call linear_response_A_matrix(ispin,.false.,nBas,nC,nO,nV,nR,nS,lambda,eHF,ERI,A)
+    call phLR_A(ispin,.false.,nBas,nC,nO,nV,nR,nS,lambda,eHF,ERI,A)
  
     if(dump_matrix) then
       print*,'CIS matrix (singlet state)'
@@ -73,7 +73,7 @@ subroutine CIS(singlet,triplet,doCIS_D,nBas,nC,nO,nV,nR,nS,ERI,dipole_int,eHF)
   if(triplet) then
 
     ispin = 2
-    call linear_response_A_matrix(ispin,.false.,nBas,nC,nO,nV,nR,nS,lambda,eHF,ERI,A)
+    call phLR_A(ispin,.false.,nBas,nC,nO,nV,nR,nS,lambda,eHF,ERI,A)
  
     if(dump_matrix) then
       print*,'CIS matrix (triplet state)'
@@ -98,4 +98,4 @@ subroutine CIS(singlet,triplet,doCIS_D,nBas,nC,nO,nV,nR,nS,ERI,dipole_int,eHF)
 
   endif
 
-end subroutine CIS
+end subroutine 

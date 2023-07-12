@@ -38,4 +38,4 @@ subroutine print_G0F3(nBas,nO,eHF,Z,eGF3)
   write(*,*)'-------------------------------------------------------------'
   write(*,*)
 
-end subroutine print_G0F3
+end subroutine 

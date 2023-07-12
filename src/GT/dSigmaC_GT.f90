@@ -35,20 +35,26 @@ double precision function dSigmaC_GT(p,w,eta,nBas,nC,nO,nV,nR,nOO,nVV,e,Omega1,r
 !----------------------------------------------
 ! Occupied part of the T-matrix self-energy 
 !----------------------------------------------
+
   do i=nC+1,nO
-     do cd=1,nVV
-        eps = w + e(i) - Omega1(cd)
-        dSigmaC_GT = dSigmaC_GT - rho1(p,i,cd)**2*(eps**2 - eta**2)/(eps**2 + eta**2)**2
-     enddo
+    do cd=1,nVV
+
+      eps = w + e(i) - Omega1(cd)
+      dSigmaC_GT = dSigmaC_GT - rho1(p,i,cd)**2*(eps**2 - eta**2)/(eps**2 + eta**2)**2
+
+    enddo
   enddo
+
 !----------------------------------------------
 ! Virtual part of the T-matrix self-energy
+!
 !----------------------------------------------
+
   do a=nO+1,nBas-nR
-     do kl=1,nOO
-        eps = w + e(a) - Omega2(kl)
-        dSigmaC_GT = dSigmaC_GT - rho2(p,a,kl)**2*(eps**2 - eta**2)/(eps**2 + eta**2)**2
-     enddo
+    do kl=1,nOO
+      eps = w + e(a) - Omega2(kl)
+      dSigmaC_GT = dSigmaC_GT - rho2(p,a,kl)**2*(eps**2 - eta**2)/(eps**2 + eta**2)**2
+    enddo
   enddo
      
-end function dSigmaC_GT
+end function 

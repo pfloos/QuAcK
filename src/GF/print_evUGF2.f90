@@ -78,4 +78,4 @@ subroutine print_evUGF2(nBas,nO,nSCF,Conv,eHF,ENuc,EUHF,SigC,Z,eGF2,Ec)
               -------------------------------------------------'
   write(*,*)
 
-end subroutine print_evUGF2
+end subroutine 

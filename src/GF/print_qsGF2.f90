@@ -116,4 +116,4 @@ subroutine print_qsGF2(nBas,nO,nSCF,Conv,thresh,eHF,eGF2,c,P,T,V,J,K,F,SigC,Z, &
   endif
 
 
-end subroutine print_qsGF2
+end subroutine 

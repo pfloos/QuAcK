@@ -1,6 +1,6 @@
-subroutine linear_response_A_matrix(ispin,dRPA,nBas,nC,nO,nV,nR,nS,lambda,e,ERI,A_lr)
+subroutine phLR_A(ispin,dRPA,nBas,nC,nO,nV,nR,nS,lambda,e,ERI,Aph)
 
-! Compute linear response
+! Compute resonant block of the ph channel
 
   implicit none
   include 'parameters.h'
@@ -8,7 +8,13 @@ subroutine linear_response_A_matrix(ispin,dRPA,nBas,nC,nO,nV,nR,nS,lambda,e,ERI,
 ! Input variables
 
   logical,intent(in)            :: dRPA
-  integer,intent(in)            :: ispin,nBas,nC,nO,nV,nR,nS
+  integer,intent(in)            :: ispin
+  integer,intent(in)            :: nBas
+  integer,intent(in)            :: nC
+  integer,intent(in)            :: nO
+  integer,intent(in)            :: nV
+  integer,intent(in)            :: nR
+  integer,intent(in)            :: nS
   double precision,intent(in)   :: lambda
   double precision,intent(in)   :: e(nBas)
   double precision,intent(in)   :: ERI(nBas,nBas,nBas,nBas) 
@@ -22,7 +28,7 @@ subroutine linear_response_A_matrix(ispin,dRPA,nBas,nC,nO,nV,nR,nS,lambda,e,ERI,
 
 ! Output variables
 
-  double precision,intent(out)  :: A_lr(nS,nS)
+  double precision,intent(out)  :: Aph(nS,nS)
 
 ! Direct RPA
 
@@ -42,8 +48,8 @@ subroutine linear_response_A_matrix(ispin,dRPA,nBas,nC,nO,nV,nR,nS,lambda,e,ERI,
           do b=nO+1,nBas-nR
             jb = jb + 1
  
-            A_lr(ia,jb) = (e(a) - e(i))*Kronecker_delta(i,j)*Kronecker_delta(a,b) &
-                        + 2d0*lambda*ERI(i,b,a,j) - (1d0 - delta_dRPA)*lambda*ERI(i,b,j,a)
+            Aph(ia,jb) = (e(a) - e(i))*Kronecker_delta(i,j)*Kronecker_delta(a,b) &
+                       + 2d0*lambda*ERI(i,b,a,j) - (1d0 - delta_dRPA)*lambda*ERI(i,b,j,a)
 
           end  do
         end  do
@@ -65,8 +71,8 @@ subroutine linear_response_A_matrix(ispin,dRPA,nBas,nC,nO,nV,nR,nS,lambda,e,ERI,
           do b=nO+1,nBas-nR
             jb = jb + 1
  
-            A_lr(ia,jb) = (e(a) - e(i))*Kronecker_delta(i,j)*Kronecker_delta(a,b) &
-                        - (1d0 - delta_dRPA)*lambda*ERI(i,b,j,a)
+            Aph(ia,jb) = (e(a) - e(i))*Kronecker_delta(i,j)*Kronecker_delta(a,b) &
+                       - (1d0 - delta_dRPA)*lambda*ERI(i,b,j,a)
 
           end  do
         end  do
@@ -88,8 +94,8 @@ subroutine linear_response_A_matrix(ispin,dRPA,nBas,nC,nO,nV,nR,nS,lambda,e,ERI,
           do b=nO+1,nBas-nR
             jb = jb + 1
  
-            A_lr(ia,jb) = (e(a) - e(i))*Kronecker_delta(i,j)*Kronecker_delta(a,b) &
-                        + lambda*ERI(i,b,a,j) - (1d0 - delta_dRPA)*lambda*ERI(i,b,j,a)
+            Aph(ia,jb) = (e(a) - e(i))*Kronecker_delta(i,j)*Kronecker_delta(a,b) &
+                       + lambda*ERI(i,b,a,j) - (1d0 - delta_dRPA)*lambda*ERI(i,b,j,a)
 
           end  do
         end  do
@@ -98,4 +104,4 @@ subroutine linear_response_A_matrix(ispin,dRPA,nBas,nC,nO,nV,nR,nS,lambda,e,ERI,
 
   end if
 
-end subroutine linear_response_A_matrix
+end subroutine 

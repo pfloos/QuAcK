@@ -175,4 +175,4 @@ subroutine print_qsUGF2(nBas,nO,nSCF,Conv,thresh,eHF,eGF2,cGF2,PGF2,Ov,T,V,J,K, 
 
   endif
 
-end subroutine print_qsUGF2
+end subroutine 

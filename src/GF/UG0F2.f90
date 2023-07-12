@@ -128,4 +128,4 @@ subroutine UG0F2(BSE,TDA,dBSE,dTDA,evDyn,spin_conserved,spin_flip,linearize,eta,
 
   end if
 
-end subroutine UG0F2
+end subroutine 

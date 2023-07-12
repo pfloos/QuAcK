@@ -38,8 +38,8 @@ subroutine RHF_stability(nBas,nC,nO,nV,nR,nS,eHF,ERI)
  
   ispin = 1
 
-  call linear_response_A_matrix(ispin,.false.,nBas,nC,nO,nV,nR,nS,1d0,eHF,ERI,A)
-  call linear_response_B_matrix(ispin,.false.,nBas,nC,nO,nV,nR,nS,1d0,ERI,B)
+  call phLR_A(ispin,.false.,nBas,nC,nO,nV,nR,nS,1d0,eHF,ERI,A)
+  call phLR_B(ispin,.false.,nBas,nC,nO,nV,nR,nS,1d0,ERI,B)
 
   AB(:,:) = A(:,:) + B(:,:)
 
@@ -111,8 +111,8 @@ subroutine RHF_stability(nBas,nC,nO,nV,nR,nS,eHF,ERI)
  
   ispin = 2
 
-  call linear_response_A_matrix(ispin,.false.,nBas,nC,nO,nV,nR,nS,1d0,eHF,ERI,A)
-  call linear_response_B_matrix(ispin,.false.,nBas,nC,nO,nV,nR,nS,1d0,ERI,B)
+  call phLR_A(ispin,.false.,nBas,nC,nO,nV,nR,nS,1d0,eHF,ERI,A)
+  call phLR_B(ispin,.false.,nBas,nC,nO,nV,nR,nS,1d0,ERI,B)
 
   AB(:,:) = A(:,:) + B(:,:)
 
@@ -144,4 +144,4 @@ subroutine RHF_stability(nBas,nC,nO,nV,nR,nS,eHF,ERI)
   write(*,*)'-------------------------------------------------------------'
   write(*,*)
     
-end subroutine RHF_stability
+end subroutine 

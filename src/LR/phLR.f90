@@ -48,7 +48,7 @@ subroutine phLR(ispin,dRPA,TDA,eta,nBas,nC,nO,nV,nR,nS,lambda,e,ERI,Ec,Omega,XpY
 
 ! Build A and B matrices 
 
-  call linear_response_A_matrix(ispin,dRPA,nBas,nC,nO,nV,nR,nS,lambda,e,ERI,A)
+  call phLR_A(ispin,dRPA,nBas,nC,nO,nV,nR,nS,lambda,e,ERI,A)
 
 ! Tamm-Dancoff approximation
 
@@ -62,7 +62,7 @@ subroutine phLR(ispin,dRPA,TDA,eta,nBas,nC,nO,nV,nR,nS,lambda,e,ERI,Ec,Omega,XpY
 
   else
 
-    call linear_response_B_matrix(ispin,dRPA,nBas,nC,nO,nV,nR,nS,lambda,ERI,B)
+    call phLR_B(ispin,dRPA,nBas,nC,nO,nV,nR,nS,lambda,ERI,B)
 
     ! Build A + B and A - B matrices 
 

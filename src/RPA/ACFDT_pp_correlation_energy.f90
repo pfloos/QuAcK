@@ -35,9 +35,9 @@ subroutine ACFDT_pp_correlation_energy(ispin,nBas,nC,nO,nV,nR,nS,ERI,nOO,nVV,X1,
 
 ! Build pp matrices
 
-  call linear_response_B_pp   (ispin,nBas,nC,nO,nV,nR,nOO,nVV,1d0,ERI,B)
-  call linear_response_C_pp_od(ispin,nBas,nC,nO,nV,nR,nOO,nVV,1d0,ERI,C)
-  call linear_response_D_pp_od(ispin,nBas,nC,nO,nV,nR,nOO,nVV,1d0,ERI,D)
+  call ppLR_B   (ispin,nBas,nC,nO,nV,nR,nOO,nVV,1d0,ERI,B)
+  call ppLR_C_od(ispin,nBas,nC,nO,nV,nR,nOO,nVV,1d0,ERI,C)
+  call ppLR_D_od(ispin,nBas,nC,nO,nV,nR,nOO,nVV,1d0,ERI,D)
 
 ! Compute Tr(K x P_lambda)
 

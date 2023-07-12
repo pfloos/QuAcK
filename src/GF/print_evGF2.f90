@@ -56,4 +56,4 @@ subroutine print_evGF2(nBas,nO,nSCF,Conv,eHF,Sig,Z,eGF2,ENuc,ERHF,Ec)
   write(*,*)'-------------------------------------------------------------------------------'
   write(*,*)
 
-end subroutine print_evGF2
+end subroutine 

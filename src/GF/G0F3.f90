@@ -430,4 +430,4 @@
 
   call print_G0F3(nBas,nO,e0,Z,eGF3)
 
-end subroutine G0F3
+end subroutine 

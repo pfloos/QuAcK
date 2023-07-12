@@ -1,6 +1,6 @@
-subroutine linear_response_B_matrix(ispin,dRPA,nBas,nC,nO,nV,nR,nS,lambda,ERI,B_lr)
+subroutine phLR_B(ispin,dRPA,nBas,nC,nO,nV,nR,nS,lambda,ERI,Bph)
 
-! Compute linear response
+! Compute the coupling block of the ph channel
 
   implicit none
   include 'parameters.h'
@@ -20,7 +20,7 @@ subroutine linear_response_B_matrix(ispin,dRPA,nBas,nC,nO,nV,nR,nS,lambda,ERI,B_
 
 ! Output variables
 
-  double precision,intent(out)  :: B_lr(nS,nS)
+  double precision,intent(out)  :: Bph(nS,nS)
 
 ! Direct RPA
 
@@ -40,7 +40,7 @@ subroutine linear_response_B_matrix(ispin,dRPA,nBas,nC,nO,nV,nR,nS,lambda,ERI,B_
           do b=nO+1,nBas-nR
             jb = jb + 1
  
-            B_lr(ia,jb) = 2d0*lambda*ERI(i,j,a,b) - (1d0 - delta_dRPA)*lambda*ERI(i,j,b,a)
+            Bph(ia,jb) = 2d0*lambda*ERI(i,j,a,b) - (1d0 - delta_dRPA)*lambda*ERI(i,j,b,a)
  
           end do
         end do
@@ -62,7 +62,7 @@ subroutine linear_response_B_matrix(ispin,dRPA,nBas,nC,nO,nV,nR,nS,lambda,ERI,B_
           do b=nO+1,nBas-nR
             jb = jb + 1
  
-            B_lr(ia,jb) = - (1d0 - delta_dRPA)*lambda*ERI(i,j,b,a)
+            Bph(ia,jb) = - (1d0 - delta_dRPA)*lambda*ERI(i,j,b,a)
  
           end do
         end do
@@ -84,7 +84,7 @@ subroutine linear_response_B_matrix(ispin,dRPA,nBas,nC,nO,nV,nR,nS,lambda,ERI,B_
           do b=nO+1,nBas-nR
             jb = jb + 1
  
-            B_lr(ia,jb) = lambda*ERI(i,j,a,b) - (1d0 - delta_dRPA)*lambda*ERI(i,j,b,a)
+            Bph(ia,jb) = lambda*ERI(i,j,a,b) - (1d0 - delta_dRPA)*lambda*ERI(i,j,b,a)
  
           end do
         end do
@@ -93,4 +93,4 @@ subroutine linear_response_B_matrix(ispin,dRPA,nBas,nC,nO,nV,nR,nS,lambda,ERI,B_
 
   end if
 
-end subroutine linear_response_B_matrix
+end subroutine 

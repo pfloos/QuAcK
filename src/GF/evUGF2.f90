@@ -201,4 +201,4 @@ subroutine evUGF2(maxSCF,thresh,max_diis,BSE,TDA,dBSE,dTDA,evDyn,spin_conserved,
 
   endif
 
-end subroutine evUGF2
+end subroutine 

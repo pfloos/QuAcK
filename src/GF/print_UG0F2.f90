@@ -68,6 +68,4 @@ subroutine print_UG0F2(nBas,nO,eHF,ENuc,EUHF,SigC,Z,eGF2,Ec)
               -------------------------------------------------'
   write(*,*)
 
-end subroutine print_UG0F2
-
-
+end subroutine 

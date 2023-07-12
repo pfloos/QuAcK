@@ -34,22 +34,23 @@ double precision function SigmaC_GT(p,w,eta,nBas,nC,nO,nV,nR,nOO,nVV,e,Omega1,rh
 !----------------------------------------------
 ! Occupied part of the T-matrix self-energy 
 !----------------------------------------------
+
   do i=nC+1,nO
-     do cd=1,nVV
-        eps = w + e(i) - Omega1(cd)
-        SigmaC_GT = SigmaC_GT + rho1(p,i,cd)**2*eps/(eps**2 + eta**2)
-     enddo
+    do cd=1,nVV
+      eps = w + e(i) - Omega1(cd)
+      SigmaC_GT = SigmaC_GT + rho1(p,i,cd)**2*eps/(eps**2 + eta**2)
+    enddo
   enddo
-  write (*,*) SigmaC_GT
+
 !----------------------------------------------
 ! Virtual part of the T-matrix self-energy
 !----------------------------------------------
+
   do a=nO+1,nBas-nR
-     do kl=1,nOO
-        eps = w + e(a) - Omega2(kl)
-        SigmaC_GT = SigmaC_GT + rho2(p,a,kl)**2*eps/(eps**2 + eta**2)
-     enddo
+    do kl=1,nOO
+      eps = w + e(a) - Omega2(kl)
+      SigmaC_GT = SigmaC_GT + rho2(p,a,kl)**2*eps/(eps**2 + eta**2)
+    enddo
   enddo
-  write (*,*) SigmaC_GT
      
-end function SigmaC_GT
+end function 

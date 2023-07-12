@@ -41,4 +41,4 @@ subroutine print_evGF3(nBas,nO,nSCF,Conv,eHF,Z,eGF3)
   write(*,*)'-------------------------------------------------------------'
   write(*,*)
 
-end subroutine print_evGF3
+end subroutine 

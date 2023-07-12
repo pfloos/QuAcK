@@ -50,4 +50,4 @@ subroutine print_G0F2(nBas,nO,eHF,Sig,eGF2,Z,ENuc,ERHF,Ec)
   write(*,*)'-------------------------------------------------------------------------------'
   write(*,*)
 
-end subroutine print_G0F2
+end subroutine 
