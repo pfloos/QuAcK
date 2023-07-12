@@ -103,8 +103,7 @@ subroutine G0T0pp(doACFDT,exchange_kernel,doXBS,BSE,TDA_T,TDA,dBSE,dTDA,evDyn,pp
 
 ! Compute linear response
 
-  call linear_response_pp(iblock,TDA_T,nBas,nC,nO,nV,nR,nOOab,nVVab,1d0,eHF,ERI_MO,  & 
-                          Om1ab,X1ab,Y1ab,Om2ab,X2ab,Y2ab,EcRPA(ispin))
+  call ppLR(iblock,TDA_T,nBas,nC,nO,nV,nR,nOOab,nVVab,1d0,eHF,ERI_MO,Om1ab,X1ab,Y1ab,Om2ab,X2ab,Y2ab,EcRPA(ispin))
 
   call print_excitation('pp-RPA (N+2)',iblock,nVVab,Om1ab(:))
   call print_excitation('pp-RPA (N-2)',iblock,nOOab,Om2ab(:))
@@ -118,8 +117,7 @@ subroutine G0T0pp(doACFDT,exchange_kernel,doXBS,BSE,TDA_T,TDA,dBSE,dTDA,evDyn,pp
 
 ! Compute linear response
 
-  call linear_response_pp(iblock,TDA_T,nBas,nC,nO,nV,nR,nOOaa,nVVaa,1d0,eHF,ERI_MO,  & 
-                          Om1aa,X1aa,Y1aa,Om2aa,X2aa,Y2aa,EcRPA(ispin))
+  call ppLR(iblock,TDA_T,nBas,nC,nO,nV,nR,nOOaa,nVVaa,1d0,eHF,ERI_MO,Om1aa,X1aa,Y1aa,Om2aa,X2aa,Y2aa,EcRPA(ispin))
 
   call print_excitation('pp-RPA (N+2)',iblock,nVVaa,Om1aa(:))
   call print_excitation('pp-RPA (N-2)',iblock,nOOaa,Om2aa(:))
@@ -203,13 +201,11 @@ subroutine G0T0pp(doACFDT,exchange_kernel,doXBS,BSE,TDA_T,TDA,dBSE,dTDA,evDyn,pp
   ispin  = 1
   iblock = 3
 
-  call linear_response_pp(iblock,TDA_T,nBas,nC,nO,nV,nR,nOOab,nVVab,1d0,eGT,ERI_MO,  & 
-                          Om1ab,X1ab,Y1ab,Om2ab,X2ab,Y2ab,EcRPA(ispin))
+  call ppLR(iblock,TDA_T,nBas,nC,nO,nV,nR,nOOab,nVVab,1d0,eGT,ERI_MO,Om1ab,X1ab,Y1ab,Om2ab,X2ab,Y2ab,EcRPA(ispin))
   ispin  = 2
   iblock = 4
 
-  call linear_response_pp(iblock,TDA_T,nBas,nC,nO,nV,nR,nOOaa,nVVaa,1d0,eGT,ERI_MO,  & 
-                          Om1aa,X1aa,Y1aa,Om2aa,X2aa,Y2aa,EcRPA(ispin))
+  call ppLR(iblock,TDA_T,nBas,nC,nO,nV,nR,nOOaa,nVVaa,1d0,eGT,ERI_MO,Om1aa,X1aa,Y1aa,Om2aa,X2aa,Y2aa,EcRPA(ispin))
 
   EcRPA(1) = EcRPA(1) - EcRPA(2)
   EcRPA(2) = 3d0*EcRPA(2)

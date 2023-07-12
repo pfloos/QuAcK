@@ -1,4 +1,4 @@
-subroutine linear_response(ispin,dRPA,TDA,eta,nBas,nC,nO,nV,nR,nS,lambda,e,ERI,Ec,Omega,XpY,XmY)
+subroutine phLR(ispin,dRPA,TDA,eta,nBas,nC,nO,nV,nR,nS,lambda,e,ERI,Ec,Omega,XpY,XmY)
 
 ! Compute linear response
 
@@ -109,4 +109,4 @@ subroutine linear_response(ispin,dRPA,TDA,eta,nBas,nC,nO,nV,nR,nS,lambda,e,ERI,E
 
     Ec = 0.5d0*(sum(Omega) - trace_matrix(nS,A))
 
-end subroutine linear_response
+end subroutine 

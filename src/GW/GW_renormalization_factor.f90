@@ -47,7 +47,7 @@ subroutine GW_renormalization_factor(COHSEX,eta,nBas,nC,nO,nV,nR,nS,e,Omega,rho,
       do i=nC+1,nO
         do jb=1,nS
           eps = e(p) - e(i) + Omega(jb) 
-          Z(p) = Z(p)  - 2d0*rho(p,i,jb)**2*(eps/(eps**2 + eta**2))**2
+          Z(p) = Z(p)  - 2d0*rho(p,i,jb)**2*(eps**2 - eta**2)/(eps**2 + eta**2)**2
         end do
       end do
     end do
@@ -58,7 +58,7 @@ subroutine GW_renormalization_factor(COHSEX,eta,nBas,nC,nO,nV,nR,nS,e,Omega,rho,
       do a=nO+1,nBas-nR
         do jb=1,nS
           eps = e(p) - e(a) - Omega(jb) 
-          Z(p) = Z(p)  - 2d0*rho(p,a,jb)**2*(eps/(eps**2 + eta**2))**2
+          Z(p) = Z(p)  - 2d0*rho(p,a,jb)**2*(eps**2 - eta**2)/(eps**2 + eta**2)**2
         end do
       end do
     end do

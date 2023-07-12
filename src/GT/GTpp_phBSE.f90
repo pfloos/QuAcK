@@ -80,8 +80,7 @@ subroutine GTpp_phBSE(TDA_T,TDA,dBSE,dTDA,evDyn,singlet,triplet,eta,nBas,nC,nO,n
   ispin  = 1
   iblock = 3
 
-  call linear_response_pp(iblock,TDA_T,nBas,nC,nO,nV,nR,nOOab,nVVab,1d0,eT,ERI,  &
-                          Om1ab,X1ab,Y1ab,Om2ab,X2ab,Y2ab,EcRPA(ispin))
+  call ppLR(iblock,TDA_T,nBas,nC,nO,nV,nR,nOOab,nVVab,1d0,eT,ERI,Om1ab,X1ab,Y1ab,Om2ab,X2ab,Y2ab,EcRPA(ispin))
 
                call static_Tmatrix_A(eta,nBas,nC,nO,nV,nR,nS,nOOab,nVVab,1d0,Om1ab,rho1ab,Om2ab,rho2ab,TAab)
   if(.not.TDA) call static_Tmatrix_B(eta,nBas,nC,nO,nV,nR,nS,nOOab,nVVab,1d0,Om1ab,rho1ab,Om2ab,rho2ab,TBab)
@@ -93,8 +92,7 @@ subroutine GTpp_phBSE(TDA_T,TDA,dBSE,dTDA,evDyn,singlet,triplet,eta,nBas,nC,nO,n
   ispin  = 2
   iblock = 4
 
-  call linear_response_pp(iblock,TDA_T,nBas,nC,nO,nV,nR,nOOaa,nVVaa,1d0,eT,ERI,  &
-                          Om1aa,X1aa,Y1aa,Om2aa,X2aa,Y2aa,EcRPA(ispin))
+  call ppLR(iblock,TDA_T,nBas,nC,nO,nV,nR,nOOaa,nVVaa,1d0,eT,ERI,Om1aa,X1aa,Y1aa,Om2aa,X2aa,Y2aa,EcRPA(ispin))
 
                call static_Tmatrix_A(eta,nBas,nC,nO,nV,nR,nS,nOOaa,nVVaa,1d0,Om1aa,rho1aa,Om2aa,rho2aa,TAaa)
   if(.not.TDA) call static_Tmatrix_B(eta,nBas,nC,nO,nV,nR,nS,nOOaa,nVVaa,1d0,Om1aa,rho1aa,Om2aa,rho2aa,TBaa)

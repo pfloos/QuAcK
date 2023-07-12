@@ -28,10 +28,10 @@ subroutine ppRPA(TDA,doACFDT,singlet,triplet,nBas,nC,nO,nV,nR,ENuc,ERHF,ERI,dipo
   integer                       :: nS
   integer                       :: nOO
   integer                       :: nVV
-  double precision,allocatable  :: Omega1(:)
+  double precision,allocatable  :: Om1(:)
   double precision,allocatable  :: X1(:,:)
   double precision,allocatable  :: Y1(:,:)
-  double precision,allocatable  :: Omega2(:)
+  double precision,allocatable  :: Om2(:)
   double precision,allocatable  :: X2(:,:)
   double precision,allocatable  :: Y2(:,:)
 
@@ -69,17 +69,16 @@ subroutine ppRPA(TDA,doACFDT,singlet,triplet,nBas,nC,nO,nV,nR,ENuc,ERHF,ERI,dipo
     nOO = nO*(nO+1)/2
     nVV = nV*(nV+1)/2
 
-    allocate(Omega1(nVV),X1(nVV,nVV),Y1(nOO,nVV),Omega2(nOO),X2(nVV,nOO),Y2(nOO,nOO))
+    allocate(Om1(nVV),X1(nVV,nVV),Y1(nOO,nVV),Om2(nOO),X2(nVV,nOO),Y2(nOO,nOO))
 
-    call linear_response_pp(ispin,TDA,nBas,nC,nO,nV,nR,nOO,nVV,1d0,e,ERI, & 
-                            Omega1,X1,Y1,Omega2,X2,Y2,Ec_ppRPA(ispin))
+    call ppLR(ispin,TDA,nBas,nC,nO,nV,nR,nOO,nVV,1d0,e,ERI,Om1,X1,Y1,Om2,X2,Y2,Ec_ppRPA(ispin))
 
-!   call print_transition_vectors_pp(.true.,nBas,nC,nO,nV,nR,nOO,nVV,dipole_int,Omega1,X1,Y1,Omega2,X2,Y2)
+!   call print_transition_vectors_pp(.true.,nBas,nC,nO,nV,nR,nOO,nVV,dipole_int,Om1,X1,Y1,Om2,X2,Y2)
 
-    call print_excitation('pp-BSE (N+2)',ispin,nVV,Omega1)
-    call print_excitation('pp-BSE (N-2)',ispin,nOO,Omega2)
+    call print_excitation('pp-BSE (N+2)',ispin,nVV,Om1)
+    call print_excitation('pp-BSE (N-2)',ispin,nOO,Om2)
 
-    deallocate(Omega1,X1,Y1,Omega2,X2,Y2)
+    deallocate(Om1,X1,Y1,Om2,X2,Y2)
 
   endif
 
@@ -97,17 +96,16 @@ subroutine ppRPA(TDA,doACFDT,singlet,triplet,nBas,nC,nO,nV,nR,ENuc,ERHF,ERI,dipo
     nOO = nO*(nO-1)/2
     nVV = nV*(nV-1)/2
 
-    allocate(Omega1(nVV),X1(nVV,nVV),Y1(nOO,nVV),Omega2(nOO),X2(nVV,nOO),Y2(nOO,nOO))
+    allocate(Om1(nVV),X1(nVV,nVV),Y1(nOO,nVV),Om2(nOO),X2(nVV,nOO),Y2(nOO,nOO))
 
-    call linear_response_pp(ispin,TDA,nBas,nC,nO,nV,nR,nOO,nVV,1d0,e,ERI, &
-                            Omega1,X1,Y1,Omega2,X2,Y2,Ec_ppRPA(ispin))
+    call ppLR(ispin,TDA,nBas,nC,nO,nV,nR,nOO,nVV,1d0,e,ERI,Om1,X1,Y1,Om2,X2,Y2,Ec_ppRPA(ispin))
 
-!   call print_transition_vectors_pp(.false.,nBas,nC,nO,nV,nR,nOO,nVV,dipole_int,Omega1,X1,Y1,Omega2,X2,Y2)
+!   call print_transition_vectors_pp(.false.,nBas,nC,nO,nV,nR,nOO,nVV,dipole_int,Om1,X1,Y1,Om2,X2,Y2)
 
-    call print_excitation('pp-BSE (N+2)',ispin,nVV,Omega1)
-    call print_excitation('pp-BSE (N-2)',ispin,nOO,Omega2)
+    call print_excitation('pp-BSE (N+2)',ispin,nVV,Om1)
+    call print_excitation('pp-BSE (N-2)',ispin,nOO,Om2)
 
-    deallocate(Omega1,X1,Y1,Omega2,X2,Y2)
+    deallocate(Om1,X1,Y1,Om2,X2,Y2)
 
   endif
 

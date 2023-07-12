@@ -179,8 +179,7 @@ subroutine SRG_qsGW(maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,BSE,BSE
 
      call wall_time(tlr1)
     
-     call linear_response(ispin,.true.,TDA_W,eta,nBas,nC,nO,nV,nR,nS,1d0,eGW,ERI_MO, &
-         EcRPA,OmRPA,XpY_RPA,XmY_RPA)
+     call phLR(ispin,.true.,TDA_W,eta,nBas,nC,nO,nV,nR,nS,1d0,eGW,ERI_MO,EcRPA,OmRPA,XpY_RPA,XmY_RPA)
 
     call wall_time(tlr2)
 

@@ -62,7 +62,7 @@ subroutine soRPAx(TDA,nBas,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,eHF)
 
   ispin = 3
 
-  call linear_response(ispin,.false.,TDA,0d0,nBas,nC,nO,nV,nR,nS,1d0,eHF,ERI,EcRPAx,Omega,XpY,XmY)
+  call pphLR(ispin,.false.,TDA,0d0,nBas,nC,nO,nV,nR,nS,1d0,eHF,ERI,EcRPAx,Omega,XpY,XmY)
   call print_excitation('soRPAx@HF   ',ispin,nS,Omega)
 
   EcRPAx = 0.5d0*EcRPAx

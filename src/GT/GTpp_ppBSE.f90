@@ -96,7 +96,7 @@ subroutine GTpp_ppBSE(TDA_T,TDA,dBSE,dTDA,evDyn,singlet,triplet,eta,nBas,nC,nO,n
  
     EcRPA(ispin) = 0d0
  
-    call linear_response_pp(iblock,TDA_T,nBas,nC,nO,nV,nR,nOOab,nVVab,1d0,eT,ERI,Om1ab,X1ab,Y1ab,Om2ab,X2ab,Y2ab,EcRPA(ispin))
+    call ppLR(iblock,TDA_T,nBas,nC,nO,nV,nR,nOOab,nVVab,1d0,eT,ERI,Om1ab,X1ab,Y1ab,Om2ab,X2ab,Y2ab,EcRPA(ispin))
  
     allocate(TBab(nVVs,nOOs),TCab(nVVs,nVVs),TDab(nOOs,nOOs))
  
@@ -111,7 +111,7 @@ subroutine GTpp_ppBSE(TDA_T,TDA,dBSE,dTDA,evDyn,singlet,triplet,eta,nBas,nC,nO,n
     iblock = 4
     EcRPA(ispin) = 0d0
  
-    call linear_response_pp(iblock,TDA_T,nBas,nC,nO,nV,nR,nOOaa,nVVaa,1d0,eT,ERI,Om1aa,X1aa,Y1aa,Om2aa,X2aa,Y2aa,EcRPA(ispin))
+    call ppLR(iblock,TDA_T,nBas,nC,nO,nV,nR,nOOaa,nVVaa,1d0,eT,ERI,Om1aa,X1aa,Y1aa,Om2aa,X2aa,Y2aa,EcRPA(ispin))
 
     allocate(TBaa(nVVs,nOOs),TCaa(nVVs,nVVs),TDaa(nOOs,nOOs))
  
@@ -154,7 +154,7 @@ subroutine GTpp_ppBSE(TDA_T,TDA,dBSE,dTDA,evDyn,singlet,triplet,eta,nBas,nC,nO,n
     iblock = 3
     EcRPA(ispin) = 0d0
  
-    call linear_response_pp(iblock,TDA_T,nBas,nC,nO,nV,nR,nOOab,nVVab,1d0,eT,ERI,Om1ab,X1ab,Y1ab,Om2ab,X2ab,Y2ab,EcRPA(ispin))
+    call ppLR(iblock,TDA_T,nBas,nC,nO,nV,nR,nOOab,nVVab,1d0,eT,ERI,Om1ab,X1ab,Y1ab,Om2ab,X2ab,Y2ab,EcRPA(ispin))
  
     allocate(TBab(nVVt,nOOt),TCab(nVVt,nVVt),TDab(nOOt,nOOt))
  
@@ -171,7 +171,7 @@ subroutine GTpp_ppBSE(TDA_T,TDA,dBSE,dTDA,evDyn,singlet,triplet,eta,nBas,nC,nO,n
  
     EcRPA(ispin) = 0d0
  
-    call linear_response_pp(iblock,TDA_T,nBas,nC,nO,nV,nR,nOOaa,nVVaa,1d0,eT,ERI,Om1aa,X1aa,Y1aa,Om2aa,X2aa,Y2aa,EcRPA(ispin))
+    call ppLR(iblock,TDA_T,nBas,nC,nO,nV,nR,nOOaa,nVVaa,1d0,eT,ERI,Om1aa,X1aa,Y1aa,Om2aa,X2aa,Y2aa,EcRPA(ispin))
 
     allocate(TBaa(nVVt,nOOt),TCaa(nVVt,nVVt),TDaa(nOOt,nOOt))
  

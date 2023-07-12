@@ -1,4 +1,4 @@
-subroutine linear_response_pp(ispin,TDA,nBas,nC,nO,nV,nR,nOO,nVV,lambda,e,ERI,Omega1,X1,Y1,Omega2,X2,Y2,EcRPA)
+subroutine ppLR(ispin,TDA,nBas,nC,nO,nV,nR,nOO,nVV,lambda,e,ERI,Omega1,X1,Y1,Omega2,X2,Y2,EcRPA)
 
 ! Compute the p-p channel of the linear response: see Scuseria et al. JCP 139, 104113 (2013)
 
@@ -107,4 +107,4 @@ subroutine linear_response_pp(ispin,TDA,nBas,nC,nO,nV,nR,nOO,nVV,lambda,e,ERI,Om
   if(abs(EcRPA - EcRPA1) > 1d-6 .or. abs(EcRPA - EcRPA2) > 1d-6) & 
     print*,'!!! Issue in pp-RPA linear reponse calculation RPA1 != RPA2 !!!'
 
-end subroutine linear_response_pp
+end subroutine 

@@ -171,8 +171,7 @@ subroutine qsGTeh(maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,BSE,BSE2,
 
     ! Compute linear response
 
-    call linear_response(ispin,.false.,TDA_T,eta,nBas,nC,nO,nV,nR,nS,1d0,eGT,ERI_MO, &
-                         EcRPA,OmRPA,XpY_RPA,XmY_RPA)
+    call phLR(ispin,.false.,TDA_T,eta,nBas,nC,nO,nV,nR,nS,1d0,eGT,ERI_MO,EcRPA,OmRPA,XpY_RPA,XmY_RPA)
     if(print_T) call print_excitation('RPA@qsGTeh  ',ispin,nS,OmRPA)
 
     ! Compute correlation part of the self-energy 

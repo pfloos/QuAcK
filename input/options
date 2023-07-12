@@ -11,8 +11,8 @@
 # GW: maxSCF thresh  DIIS n_diis lin eta COHSEX TDA_W reg
       256     0.00001  T  5      T    0.0  F    F     F 
 # GT: maxSCF thresh  DIIS n_diis lin eta TDA_T reg
-      256    0.00001  T    5      T   0.1 F     F  
+      256    0.00001  T    5      T   0.0 F     F  
 # ACFDT: AC Kx  XBS
          F  T   T
 # BSE: BSE dBSE dTDA evDyn ppBSE BSE2
-        T    T    T    F   F     F
+        F    T    T    F   F     F

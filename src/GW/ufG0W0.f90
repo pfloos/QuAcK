@@ -217,8 +217,7 @@ subroutine ufG0W0(nBas,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,eHF,TDA_W)
      !-------------------!
      ! Compute screening !
      !-------------------!
-     call linear_response(ispin,.true.,TDA_W,0d0,nBas,nC,nO,nV,nR,nS,1d0, & 
-          eHF,ERI,EcRPA,OmRPA,XpY_RPA,XmY_RPA)
+     call phLR(ispin,.true.,TDA_W,0d0,nBas,nC,nO,nV,nR,nS,1d0,eHF,ERI,EcRPA,OmRPA,XpY_RPA,XmY_RPA)
      !--------------------------!
      ! Compute spectral weights !
      !--------------------------!

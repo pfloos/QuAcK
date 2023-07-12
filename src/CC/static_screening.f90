@@ -52,7 +52,7 @@ subroutine static_screening(nBas,nC,nO,nV,nR,eW,ERI,dbERI)
   eta = 0d0
   TDA = .false.
 
-  call linear_response(ispin,.true.,TDA,eta,nBas,nC,nO,nV,nR,nS,1d0,eW,ERI,EcRPA,Om,XpY,XmY)
+  call phLR(ispin,.true.,TDA,eta,nBas,nC,nO,nV,nR,nS,1d0,eW,ERI,EcRPA,Om,XpY,XmY)
   call GW_excitation_density(nBas,nC,nO,nR,nS,ERI,XpY,rho)
 
   do p=1,nBas
@@ -71,4 +71,4 @@ subroutine static_screening(nBas,nC,nO,nV,nR,eW,ERI,dbERI)
     enddo
   enddo
 
-end subroutine static_screening
+end subroutine 

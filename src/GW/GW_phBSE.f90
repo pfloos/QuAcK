@@ -66,8 +66,7 @@ subroutine GW_phBSE(BSE2,TDA_W,TDA,dBSE,dTDA,evDyn,singlet,triplet,eta,nBas,nC,n
   isp_W = 1
   EcRPA = 0d0
 
-  call linear_response(isp_W,.true.,TDA_W,eta,nBas,nC,nO,nV,nR,nS,1d0,eW,ERI, &
-                       EcRPA,OmRPA,XpY_RPA,XmY_RPA)
+  call phLR(isp_W,.true.,TDA_W,eta,nBas,nC,nO,nV,nR,nS,1d0,eW,ERI,EcRPA,OmRPA,XpY_RPA,XmY_RPA)
   call GW_excitation_density(nBas,nC,nO,nR,nS,ERI,XpY_RPA,rho_RPA)
 
   call BSE_static_kernel_KA(eta,nBas,nC,nO,nV,nR,nS,1d0,ERI,OmRPA,rho_RPA,KA_sta)

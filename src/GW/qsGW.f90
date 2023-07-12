@@ -178,8 +178,7 @@ subroutine qsGW(maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,COHSEX,BSE,
 
     ! Compute linear response
 
-    call linear_response(ispin,.true.,TDA_W,eta,nBas,nC,nO,nV,nR,nS,1d0,eGW,ERI_MO, &
-                         EcRPA,OmRPA,XpY_RPA,XmY_RPA)
+    call phLR(ispin,.true.,TDA_W,eta,nBas,nC,nO,nV,nR,nS,1d0,eGW,ERI_MO,EcRPA,OmRPA,XpY_RPA,XmY_RPA)
     if(print_W) call print_excitation('RPA@qsGW    ',ispin,nS,OmRPA)
 
     ! Compute correlation part of the self-energy 

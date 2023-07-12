@@ -14,17 +14,21 @@ subroutine GTeh_excitation_density(nBas,nC,nO,nR,nS,ERI,XpY,XmY,rhoL,rhoR)
 ! Local variables
 
   integer                       :: m,jb,p,q,j,b
+  double precision              :: X,Y
 
 ! Output variables
 
   double precision,intent(out)  :: rhoL(nBas,nBas,nS)
   double precision,intent(out)  :: rhoR(nBas,nBas,nS)
 
+! Initialization
+ 
   rhoL(:,:,:) = 0d0   
   rhoR(:,:,:) = 0d0   
+
   !$OMP PARALLEL &
   !$OMP SHARED(nC,nBas,nR,nO,nS,rhoL,rhoR,ERI,XpY,XmY) &
-  !$OMP PRIVATE(q,p,jb,m) &
+  !$OMP PRIVATE(q,p,jb,m,X,Y) &
   !$OMP DEFAULT(NONE)
   !$OMP DO
   do q=nC+1,nBas-nR
@@ -35,13 +39,12 @@ subroutine GTeh_excitation_density(nBas,nC,nO,nR,nS,ERI,XpY,XmY,rhoL,rhoR)
               jb = jb + 1
               do m=1,nS
 
-                 rhoL(p,q,m) = rhoL(p,q,m)                                 & 
-                              + ERI(p,j,b,q)*0.5d0*(XpY(m,jb) + XmY(m,jb)) &
-                              + ERI(p,b,j,q)*0.5d0*(XpY(m,jb) - XmY(m,jb))
+                 X = 0.5d0*(XpY(m,jb) + XmY(m,jb))
+                 Y = 0.5d0*(XpY(m,jb) - XmY(m,jb))
 
-                 rhoR(p,q,m) = rhoR(p,q,m)                                                      & 
-                              + (2d0*ERI(p,j,b,q) - ERI(p,j,q,b))*0.5d0*(XpY(m,jb) + XmY(m,jb)) &
-                              + (2d0*ERI(p,b,j,q) - ERI(p,b,q,j))*0.5d0*(XpY(m,jb) - XmY(m,jb))
+                 rhoL(p,q,m) = rhoL(p,q,m) + ERI(p,j,b,q)*X + ERI(p,b,j,q)*Y
+                 rhoR(p,q,m) = rhoR(p,q,m) + (2d0*ERI(p,j,b,q) - ERI(p,j,q,b))*X + (2d0*ERI(p,b,j,q) - ERI(p,b,q,j))*Y
+
               enddo
            enddo
         enddo

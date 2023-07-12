@@ -188,14 +188,12 @@ subroutine qsGTpp(maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,BSE,TDA_T
     ispin  = 1
     iblock = 3
 
-    call linear_response_pp(iblock,TDA_T,nBas,nC,nO,nV,nR,nOOs,nVVs,1d0,eGT,ERI_MO,  &
-                            Om1s,X1s,Y1s,Om2s,X2s,Y2s,EcRPA(ispin))
+    call ppLR(iblock,TDA_T,nBas,nC,nO,nV,nR,nOOs,nVVs,1d0,eGT,ERI_MO,Om1s,X1s,Y1s,Om2s,X2s,Y2s,EcRPA(ispin))
 
     ispin  = 2
     iblock = 4
 
-    call linear_response_pp(iblock,TDA_T,nBas,nC,nO,nV,nR,nOOt,nVVt,1d0,eGT,ERI_MO,  &
-                          Om1t,X1t,Y1t,Om2t,X2t,Y2t,EcRPA(ispin))
+    call ppLR(iblock,TDA_T,nBas,nC,nO,nV,nR,nOOt,nVVt,1d0,eGT,ERI_MO,Om1t,X1t,Y1t,Om2t,X2t,Y2t,EcRPA(ispin))
 
     EcRPA(1) = EcRPA(1) - EcRPA(2)
     EcRPA(2) = 3d0*EcRPA(2)

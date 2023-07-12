@@ -71,8 +71,7 @@ subroutine ACFDT(exchange_kernel,doXBS,dRPA,TDA_W,TDA,BSE,singlet,triplet,eta,nB
   isp_W = 1
   EcRPA = 0d0
 
-  call linear_response(isp_W,.true.,TDA_W,eta,nBas,nC,nO,nV,nR,nS,1d0,eW,ERI, &
-                       EcRPA,OmRPA,XpY_RPA,XmY_RPA)
+  call phLR(isp_W,.true.,TDA_W,eta,nBas,nC,nO,nV,nR,nS,1d0,eW,ERI,EcRPA,OmRPA,XpY_RPA,XmY_RPA)
   call GW_excitation_density(nBas,nC,nO,nR,nS,ERI,XpY_RPA,rho_RPA)
 
   call BSE_static_kernel_KA(eta,nBas,nC,nO,nV,nR,nS,1d0,ERI,OmRPA,rho_RPA,WA)
@@ -99,8 +98,7 @@ subroutine ACFDT(exchange_kernel,doXBS,dRPA,TDA_W,TDA,BSE,singlet,triplet,eta,nB
 
       if(doXBS) then
 
-        call linear_response(isp_W,.true.,TDA_W,eta,nBas,nC,nO,nV,nR,nS,lambda,eW,ERI, &
-                             EcRPA,OmRPA,XpY_RPA,XmY_RPA)
+        call phLR(isp_W,.true.,TDA_W,eta,nBas,nC,nO,nV,nR,nS,lambda,eW,ERI,EcRPA,OmRPA,XpY_RPA,XmY_RPA)
         call GW_excitation_density(nBas,nC,nO,nR,nS,ERI,XpY_RPA,rho_RPA)
 !       call print_excitation('W^lambda:   ',isp_W,nS,OmRPA)
 
@@ -151,8 +149,7 @@ subroutine ACFDT(exchange_kernel,doXBS,dRPA,TDA_W,TDA,BSE,singlet,triplet,eta,nB
 
       if(doXBS) then
 
-        call linear_response(isp_W,.true.,TDA_W,eta,nBas,nC,nO,nV,nR,nS,lambda,eW,ERI, &
-                             EcRPA,OmRPA,XpY_RPA,XmY_RPA)
+        call phLR(isp_W,.true.,TDA_W,eta,nBas,nC,nO,nV,nR,nS,lambda,eW,ERI,EcRPA,OmRPA,XpY_RPA,XmY_RPA)
         call GW_excitation_density(nBas,nC,nO,nR,nS,ERI,XpY_RPA,rho_RPA)
 
         call BSE_static_kernel_KA(eta,nBas,nC,nO,nV,nR,nS,lambda,ERI,OmRPA,rho_RPA,WA)
@@ -180,4 +177,4 @@ subroutine ACFDT(exchange_kernel,doXBS,dRPA,TDA_W,TDA,BSE,singlet,triplet,eta,nB
 
   end if
 
-end subroutine ACFDT
+end subroutine 

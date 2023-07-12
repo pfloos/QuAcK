@@ -1,4 +1,4 @@
-subroutine Bethe_Salpeter_Tmatrix_so(eta,nBas,nC,nO,nV,nR,nS,nOO,nVV,Omega1,X1,Y1,Omega2,X2,Y2,rho1,rho2, &
+subroutine Bethe_Salpeter_Tmatrix_so(eta,nBas,nC,nO,nV,nR,nS,nOO,nVV,Om1,X1,Y1,Om2,X2,Y2,rho1,rho2, &
                                      ERI,eT,eGT,EcBSE)
 
 ! Compute the Bethe-Salpeter excitation energies with the T-matrix kernel
@@ -23,10 +23,10 @@ subroutine Bethe_Salpeter_Tmatrix_so(eta,nBas,nC,nO,nV,nR,nS,nOO,nVV,Omega1,X1,Y
   double precision,intent(in)   :: eGT(nBas)
   double precision,intent(in)   :: ERI(nBas,nBas,nBas,nBas)
 
-  double precision,intent(in)   :: Omega1(nVV)
+  double precision,intent(in)   :: Om1(nVV)
   double precision,intent(in)   :: X1(nVV,nVV)
   double precision,intent(in)   :: Y1(nOO,nVV)
-  double precision,intent(in)   :: Omega2(nOO)
+  double precision,intent(in)   :: Om2(nOO)
   double precision,intent(in)   :: X2(nVV,nOO)
   double precision,intent(in)   :: Y2(nOO,nOO)
   double precision,intent(in)   :: rho1(nBas,nBas,nVV)
@@ -56,11 +56,10 @@ subroutine Bethe_Salpeter_Tmatrix_so(eta,nBas,nC,nO,nV,nR,nS,nOO,nVV,Omega1,X1,Y
 
   ispin = 4
 
-  call linear_response_pp(ispin,.false.,nBas,nC,nO,nV,nR,nOO,nVV,1d0,eT,ERI, &
-                          Omega1,X1,Y1,Omega2,X2,Y2,EcRPA)
+  call ppLR(ispin,.false.,nBas,nC,nO,nV,nR,nOO,nVV,1d0,eT,ERI,Om1,X1,Y1,Om2,X2,Y2,EcRPA)
 
-  call static_Tmatrix_A(eta,nBas,nC,nO,nV,nR,nS,nOO,nVV,1d0,Omega1,rho1,Omega2,rho2,TA)
-  call static_Tmatrix_B(eta,nBas,nC,nO,nV,nR,nS,nOO,nVV,1d0,Omega1,rho1,Omega2,rho2,TB)
+  call static_Tmatrix_A(eta,nBas,nC,nO,nV,nR,nS,nOO,nVV,1d0,Om1,rho1,Om2,rho2,TA)
+  call static_Tmatrix_B(eta,nBas,nC,nO,nV,nR,nS,nOO,nVV,1d0,Om1,rho1,Om2,rho2,TB)
 
 !------------------!
 ! Singlet manifold !
@@ -76,4 +75,4 @@ subroutine Bethe_Salpeter_Tmatrix_so(eta,nBas,nC,nO,nV,nR,nS,nOO,nVV,Omega1,X1,Y
 
     call print_excitation('BSE@GT      ',ispin,nS,OmBSE)
 
-end subroutine Bethe_Salpeter_Tmatrix_so
+end subroutine 

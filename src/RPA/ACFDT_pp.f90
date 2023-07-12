@@ -87,7 +87,7 @@ subroutine ACFDT_pp(TDA,singlet,triplet,nBas,nC,nO,nV,nR,nS,ERI,e,EcAC)
  
       lambda = rAC(iAC)
 
-      call linear_response_pp(ispin,TDA,nBas,nC,nO,nV,nR,nOOs,nVVs,lambda,e,ERI,Omega1s,X1s,Y1s,Omega2s,X2s,Y2s,EcAC(ispin))
+      call ppLR(ispin,TDA,nBas,nC,nO,nV,nR,nOOs,nVVs,lambda,e,ERI,Omega1s,X1s,Y1s,Omega2s,X2s,Y2s,EcAC(ispin))
 
       call ACFDT_pp_correlation_energy(ispin,nBas,nC,nO,nV,nR,nS,ERI,nOOs,nVVs,X1s,Y1s,X2s,Y2s,Ec(iAC,ispin))
 
@@ -125,7 +125,7 @@ subroutine ACFDT_pp(TDA,singlet,triplet,nBas,nC,nO,nV,nR,nS,ERI,e,EcAC)
 
       ! Initialize T matrix
 
-      call linear_response_pp(ispin,TDA,nBas,nC,nO,nV,nR,nOOt,nVVt,lambda,e,ERI,Omega1t,X1t,Y1t,Omega2t,X2t,Y2t,EcAC(ispin))
+      call ppLR(ispin,TDA,nBas,nC,nO,nV,nR,nOOt,nVVt,lambda,e,ERI,Omega1t,X1t,Y1t,Omega2t,X2t,Y2t,EcAC(ispin))
 
       call ACFDT_pp_correlation_energy(ispin,nBas,nC,nO,nV,nR,nS,ERI,nOOt,nVVt,X1t,Y1t,X2t,Y2t,Ec(iAC,ispin))
 

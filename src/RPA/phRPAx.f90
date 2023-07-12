@@ -1,5 +1,4 @@
-subroutine RPAx(TDA,doACFDT,exchange_kernel,singlet,triplet,eta,nBas,nC,nO,nV,nR,nS,ENuc,ERHF, & 
-                ERI,dipole_int,eHF)
+subroutine phRPAx(TDA,doACFDT,exchange_kernel,singlet,triplet,eta,nBas,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,dipole_int,eHF)
 
 ! Perform random phase approximation calculation with exchange (aka TDHF)
 
@@ -30,9 +29,9 @@ subroutine RPAx(TDA,doACFDT,exchange_kernel,singlet,triplet,eta,nBas,nC,nO,nV,nR
 ! Local variables
 
   integer                       :: ispin
-  double precision,allocatable  :: Omega(:,:)
-  double precision,allocatable  :: XpY(:,:,:)
-  double precision,allocatable  :: XmY(:,:,:)
+  double precision,allocatable  :: Om(:)
+  double precision,allocatable  :: XpY(:,:)
+  double precision,allocatable  :: XmY(:,:)
 
   double precision              :: EcRPAx(nspin)
   double precision              :: EcAC(nspin)
@@ -60,7 +59,7 @@ subroutine RPAx(TDA,doACFDT,exchange_kernel,singlet,triplet,eta,nBas,nC,nO,nV,nR
 
 ! Memory allocation
 
-  allocate(Omega(nS,nspin),XpY(nS,nS,nspin),XmY(nS,nS,nspin))
+  allocate(Om(nS),XpY(nS,nS),XmY(nS,nS))
 
 ! Singlet manifold
 
@@ -68,10 +67,9 @@ subroutine RPAx(TDA,doACFDT,exchange_kernel,singlet,triplet,eta,nBas,nC,nO,nV,nR
 
     ispin = 1
 
-    call linear_response(ispin,.false.,TDA,eta,nBas,nC,nO,nV,nR,nS,1d0,eHF,ERI, &
-                         EcRPAx(ispin),Omega(:,ispin),XpY(:,:,ispin),XmY(:,:,ispin))
-    call print_excitation('RPAx@HF     ',ispin,nS,Omega(:,ispin))
-    call print_transition_vectors(.true.,nBas,nC,nO,nV,nR,nS,dipole_int,Omega(:,ispin),XpY(:,:,ispin),XmY(:,:,ispin))
+    call phLR(ispin,.false.,TDA,eta,nBas,nC,nO,nV,nR,nS,1d0,eHF,ERI,EcRPAx(ispin),Om,XpY,XmY)
+    call print_excitation('RPAx@HF     ',ispin,nS,Om)
+    call print_transition_vectors(.true.,nBas,nC,nO,nV,nR,nS,dipole_int,Om,XpY,XmY)
 
   endif
 
@@ -81,10 +79,9 @@ subroutine RPAx(TDA,doACFDT,exchange_kernel,singlet,triplet,eta,nBas,nC,nO,nV,nR
 
     ispin = 2
 
-    call linear_response(ispin,.false.,TDA,eta,nBas,nC,nO,nV,nR,nS,1d0,eHF,ERI, &
-                         EcRPAx(ispin),Omega(:,ispin),XpY(:,:,ispin),XmY(:,:,ispin))
-    call print_excitation('RPAx@HF     ',ispin,nS,Omega(:,ispin))
-    call print_transition_vectors(.false.,nBas,nC,nO,nV,nR,nS,dipole_int,Omega(:,ispin),XpY(:,:,ispin),XmY(:,:,ispin))
+    call phLR(ispin,.false.,TDA,eta,nBas,nC,nO,nV,nR,nS,1d0,eHF,ERI,EcRPAx(ispin),Om,XpY,XmY)
+    call print_excitation('RPAx@HF     ',ispin,nS,Om)
+    call print_transition_vectors(.false.,nBas,nC,nO,nV,nR,nS,dipole_int,Om,XpY,XmY)
 
   endif
 
@@ -103,6 +100,10 @@ subroutine RPAx(TDA,doACFDT,exchange_kernel,singlet,triplet,eta,nBas,nC,nO,nV,nR
   write(*,'(2X,A50,F20.10)') 'Tr@RPAx total energy                 =',ENuc + ERHF + EcRPAx(1) + EcRPAx(2)
   write(*,*)'-------------------------------------------------------------------------------'
   write(*,*)
+
+! deallocate memory
+
+  deallocate(Om,XpY,XmY)
 
 ! Compute the correlation energy via the adiabatic connection 
 
@@ -127,4 +128,4 @@ subroutine RPAx(TDA,doACFDT,exchange_kernel,singlet,triplet,eta,nBas,nC,nO,nV,nR
 
   end if
 
-end subroutine RPAx
+end subroutine 
