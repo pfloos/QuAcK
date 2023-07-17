@@ -1,4 +1,4 @@
-subroutine ppLR(TDA,nBas,nOO,nVV,Om1,X1,Y1,Om2,X2,Y2,EcRPA)
+subroutine ppLR(TDA,nOO,nVV,B,C,D,Om1,X1,Y1,Om2,X2,Y2,EcRPA)
 
 ! Compute the p-p channel of the linear response: see Scuseria et al. JCP 139, 104113 (2013)
 
@@ -60,8 +60,6 @@ subroutine ppLR(TDA,nBas,nOO,nVV,Om1,X1,Y1,Om2,X2,Y2,EcRPA)
     if(nOO > 0) call diagonalize_matrix(nOO,Y2,Om2)
 
   else
-
-    call ppLR_B(ispin,nBas,nC,nO,nV,nR,nOO,nVV,lambda,ERI,B)
 
   ! Diagonal blocks 
 

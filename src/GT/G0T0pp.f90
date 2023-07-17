@@ -51,6 +51,9 @@ subroutine G0T0pp(doACFDT,exchange_kernel,doXBS,BSE,TDA_T,TDA,dBSE,dTDA,evDyn,pp
   double precision              :: EcAC(nspin)
   double precision              :: EcppBSE(nspin)
   double precision              :: EcGM
+  double precision,allocatable  :: Bpp(:,:)
+  double precision,allocatable  :: Cpp(:,:)
+  double precision,allocatable  :: Dpp(:,:)
   double precision,allocatable  :: Om1ab(:),Om1aa(:)
   double precision,allocatable  :: X1ab(:,:),X1aa(:,:)
   double precision,allocatable  :: Y1ab(:,:),Y1aa(:,:)
@@ -102,7 +105,15 @@ subroutine G0T0pp(doACFDT,exchange_kernel,doXBS,BSE,TDA_T,TDA,dBSE,dTDA,evDyn,pp
 
 ! Compute linear response
 
-  call ppLR(iblock,TDA_T,nBas,nC,nO,nV,nR,nOOab,nVVab,1d0,eHF,ERI_MO,Om1ab,X1ab,Y1ab,Om2ab,X2ab,Y2ab,EcRPA(ispin))
+  allocate(Bpp(nVVab,nOOab),Cpp(nVVab,nVVab),Dpp(nOOab,nOOab))
+
+  if(.not.TDA_T) call ppLR_B(iblock,nBas,nC,nO,nV,nR,nOOab,nVVab,1d0,ERI_MO,Bpp)
+                 call ppLR_C(iblock,nBas,nC,nO,nV,nR,nOOab,nVVab,1d0,eHF,ERI_MO,Cpp)
+                 call ppLR_D(iblock,nBas,nC,nO,nV,nR,nOOab,nVVab,1d0,eHF,ERI_MO,Dpp)
+
+  call ppLR(TDA_T,nOOab,nVVab,Bpp,Cpp,Dpp,Om1ab,X1ab,Y1ab,Om2ab,X2ab,Y2ab,EcRPA(ispin))
+
+  deallocate(Bpp,Cpp,Dpp)
 
   call print_excitation('pp-RPA (N+2)',iblock,nVVab,Om1ab(:))
   call print_excitation('pp-RPA (N-2)',iblock,nOOab,Om2ab(:))
@@ -116,7 +127,15 @@ subroutine G0T0pp(doACFDT,exchange_kernel,doXBS,BSE,TDA_T,TDA,dBSE,dTDA,evDyn,pp
 
 ! Compute linear response
 
-  call ppLR(iblock,TDA_T,nBas,nC,nO,nV,nR,nOOaa,nVVaa,1d0,eHF,ERI_MO,Om1aa,X1aa,Y1aa,Om2aa,X2aa,Y2aa,EcRPA(ispin))
+  allocate(Bpp(nVVaa,nOOaa),Cpp(nVVaa,nVVaa),Dpp(nOOaa,nOOaa))
+
+  if(.not.TDA_T) call ppLR_B(iblock,nBas,nC,nO,nV,nR,nOOaa,nVVaa,1d0,ERI_MO,Bpp)
+                 call ppLR_C(iblock,nBas,nC,nO,nV,nR,nOOaa,nVVaa,1d0,eHF,ERI_MO,Cpp)
+                 call ppLR_D(iblock,nBas,nC,nO,nV,nR,nOOaa,nVVaa,1d0,eHF,ERI_MO,Dpp)
+
+  call ppLR(TDA_T,nOOaa,nVVaa,Bpp,Cpp,Dpp,Om1aa,X1aa,Y1aa,Om2aa,X2aa,Y2aa,EcRPA(ispin))
+
+  deallocate(Bpp,Cpp,Dpp)
 
   call print_excitation('pp-RPA (N+2)',iblock,nVVaa,Om1aa(:))
   call print_excitation('pp-RPA (N-2)',iblock,nOOaa,Om2aa(:))
@@ -198,11 +217,28 @@ subroutine G0T0pp(doACFDT,exchange_kernel,doXBS,BSE,TDA_T,TDA,dBSE,dTDA,evDyn,pp
   ispin  = 1
   iblock = 3
 
-  call ppLR(iblock,TDA_T,nBas,nC,nO,nV,nR,nOOab,nVVab,1d0,eGT,ERI_MO,Om1ab,X1ab,Y1ab,Om2ab,X2ab,Y2ab,EcRPA(ispin))
+  allocate(Bpp(nVVab,nOOab),Cpp(nVVab,nVVab),Dpp(nOOab,nOOab))
+
+  if(.not.TDA_T) call ppLR_B(iblock,nBas,nC,nO,nV,nR,nOOab,nVVab,1d0,ERI_MO,Bpp)
+                 call ppLR_C(iblock,nBas,nC,nO,nV,nR,nOOab,nVVab,1d0,eGT,ERI_MO,Cpp)
+                 call ppLR_D(iblock,nBas,nC,nO,nV,nR,nOOab,nVVab,1d0,eGT,ERI_MO,Dpp)
+
+  call ppLR(TDA_T,nOOab,nVVab,Bpp,Cpp,Dpp,Om1ab,X1ab,Y1ab,Om2ab,X2ab,Y2ab,EcRPA(ispin))
+
+  deallocate(Bpp,Cpp,Dpp)
+
   ispin  = 2
   iblock = 4
 
-  call ppLR(iblock,TDA_T,nBas,nC,nO,nV,nR,nOOaa,nVVaa,1d0,eGT,ERI_MO,Om1aa,X1aa,Y1aa,Om2aa,X2aa,Y2aa,EcRPA(ispin))
+  allocate(Bpp(nVVaa,nOOaa),Cpp(nVVaa,nVVaa),Dpp(nOOaa,nOOaa))
+
+  if(.not.TDA_T) call ppLR_B(iblock,nBas,nC,nO,nV,nR,nOOaa,nVVaa,1d0,ERI_MO,Bpp)
+                 call ppLR_C(iblock,nBas,nC,nO,nV,nR,nOOaa,nVVaa,1d0,eGT,ERI_MO,Cpp)
+                 call ppLR_D(iblock,nBas,nC,nO,nV,nR,nOOaa,nVVaa,1d0,eGT,ERI_MO,Dpp)
+
+  call ppLR(TDA_T,nOOaa,nVVaa,Bpp,Cpp,Dpp,Om1aa,X1aa,Y1aa,Om2aa,X2aa,Y2aa,EcRPA(ispin))
+
+  deallocate(Bpp,Cpp,Dpp)
 
   EcRPA(1) = EcRPA(1) - EcRPA(2)
   EcRPA(2) = 3d0*EcRPA(2)

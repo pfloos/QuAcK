@@ -60,6 +60,9 @@ subroutine evGTpp(maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,BSE,TDA_T
   double precision,allocatable  :: e_diis(:,:)
   double precision,allocatable  :: eGT(:)
   double precision,allocatable  :: eOld(:)
+  double precision,allocatable  :: Bpp(:,:)
+  double precision,allocatable  :: Cpp(:,:)
+  double precision,allocatable  :: Dpp(:,:)
   double precision,allocatable  :: Om1s(:),Om1t(:)
   double precision,allocatable  :: X1s(:,:),X1t(:,:)
   double precision,allocatable  :: Y1s(:,:),Y1t(:,:)
@@ -132,7 +135,15 @@ subroutine evGTpp(maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,BSE,TDA_T
  
     ! Compute linear response
  
-    call ppLR(iblock,TDA_T,nBas,nC,nO,nV,nR,nOOs,nVVs,1d0,eGT,ERI_MO,Om1s,X1s,Y1s,Om2s,X2s,Y2s,EcRPA(ispin))
+    allocate(Bpp(nVVs,nOOs),Cpp(nVVs,nVVs),Dpp(nOOs,nOOs))
+
+    if(.not.TDA_T) call ppLR_B(iblock,nBas,nC,nO,nV,nR,nOOs,nVVs,1d0,ERI_MO,Bpp)
+                   call ppLR_C(iblock,nBas,nC,nO,nV,nR,nOOs,nVVs,1d0,eHF,ERI_MO,Cpp)
+                   call ppLR_D(iblock,nBas,nC,nO,nV,nR,nOOs,nVVs,1d0,eHF,ERI_MO,Dpp)
+
+    call ppLR(TDA_T,nOOs,nVVs,Bpp,Cpp,Dpp,Om1s,X1s,Y1s,Om2s,X2s,Y2s,EcRPA(ispin))
+
+    deallocate(Bpp,Cpp,Dpp)
  
   !----------------------------------------------
   ! alpha-alpha block
@@ -143,7 +154,15 @@ subroutine evGTpp(maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,BSE,TDA_T
 
   ! Compute linear response
 
-    call ppLR(iblock,TDA_T,nBas,nC,nO,nV,nR,nOOt,nVVt,1d0,eGT,ERI_MO,Om1t,X1t,Y1t,Om2t,X2t,Y2t,EcRPA(ispin))
+    allocate(Bpp(nVVt,nOOt),Cpp(nVVt,nVVt),Dpp(nOOt,nOOt))
+
+    if(.not.TDA_T) call ppLR_B(iblock,nBas,nC,nO,nV,nR,nOOt,nVVt,1d0,ERI_MO,Bpp)
+                   call ppLR_C(iblock,nBas,nC,nO,nV,nR,nOOt,nVVt,1d0,eHF,ERI_MO,Cpp)
+                   call ppLR_D(iblock,nBas,nC,nO,nV,nR,nOOt,nVVt,1d0,eHF,ERI_MO,Dpp)
+
+    call ppLR(TDA_T,nOOt,nVVt,Bpp,Cpp,Dpp,Om1t,X1t,Y1t,Om2t,X2t,Y2t,EcRPA(ispin))
+
+    deallocate(Bpp,Cpp,Dpp)
 
     EcRPA(1) = EcRPA(1) - EcRPA(2)
     EcRPA(2) = 3d0*EcRPA(2)
