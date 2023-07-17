@@ -17,18 +17,17 @@ program QuAcK
   logical                       :: doG0T0pp,doevGTpp,doqsGTpp
   logical                       :: doG0T0eh,doevGTeh,doqsGTeh
 
-  integer                       :: nNuc,nBas,nBasCABS
+  integer                       :: nNuc,nBas
   integer                       :: nEl(nspin)
   integer                       :: nC(nspin)
   integer                       :: nO(nspin)
   integer                       :: nV(nspin)
   integer                       :: nR(nspin)
   integer                       :: nS(nspin)
-  double precision              :: ENuc,ERHF,EUHF,Norm
-  double precision              :: EcMP2(3),EcMP3
+  double precision              :: ENuc,EHF
 
   double precision,allocatable  :: ZNuc(:),rNuc(:,:)
-  double precision,allocatable  :: cHF(:,:,:),eHF(:,:),PHF(:,:,:)
+  double precision,allocatable  :: cHF(:,:,:),epsHF(:,:),PHF(:,:,:)
   double precision,allocatable  :: Vxc(:,:)
 
   logical                       :: doACFDT
@@ -187,7 +186,7 @@ program QuAcK
 
 ! Memory allocation for one- and two-electron integrals
 
-  allocate(cHF(nBas,nBas,nspin),eHF(nBas,nspin),PHF(nBas,nBas,nspin),S(nBas,nBas),T(nBas,nBas),                &
+  allocate(cHF(nBas,nBas,nspin),epsHF(nBas,nspin),PHF(nBas,nBas,nspin),S(nBas,nBas),T(nBas,nBas),                &
            V(nBas,nBas),Hc(nBas,nBas),X(nBas,nBas),ERI_AO(nBas,nBas,nBas,nBas),dipole_int_AO(nBas,nBas,ncart), & 
            dipole_int_MO(nBas,nBas,ncart),Vxc(nBas,nspin),F_AO(nBas,nBas))
 
@@ -220,7 +219,7 @@ program QuAcK
     call wall_time(start_HF)
     call HF(doRHF,doUHF,doRMOM,doUMOM,unrestricted,maxSCF_HF,thresh_HF,n_diis_HF, & 
             guess_type,mix,level_shift,nNuc,ZNuc,rNuc,ENuc,nBas,nO,S,T,V,Hc,F_AO, & 
-            ERI_AO,dipole_int_AO,X,ERHF,eHF,cHF,PHF,Vxc)
+            ERI_AO,dipole_int_AO,X,EHF,epsHF,cHF,PHF,Vxc)
     call wall_time(end_HF)
 
     t_HF = end_HF - start_HF
@@ -241,7 +240,7 @@ program QuAcK
     call cpu_time(start_KS)
 !   call eDFT(maxSCF_HF,thresh_HF,n_diis_HF,guess_type,mix,level_shift,nNuc,ZNuc,rNuc,ENuc,nBas,nEl,nC, & 
 !             nO,nV,nR,nShell,TotAngMomShell,CenterShell,KShell,DShell,ExpShell,            &
-!             max_ang_mom,min_exponent,max_exponent,S,T,V,Hc,X,ERI_AO,dipole_int_AO,EUHF,eHF,cHF,PHF,Vxc)
+!             max_ang_mom,min_exponent,max_exponent,S,T,V,Hc,X,ERI_AO,dipole_int_AO,EHF,epsHF,cHF,PHF,Vxc)
              
     call cpu_time(end_KS)
 
@@ -344,11 +343,11 @@ program QuAcK
 
     if(unrestricted) then
 
-      call UHF_stability(nBas,nC,nO,nV,nR,nS,eHF,ERI_MO_aaaa,ERI_MO_aabb,ERI_MO_bbbb)
+      call UHF_stability(nBas,nC,nO,nV,nR,nS,epsHF,ERI_MO_aaaa,ERI_MO_aabb,ERI_MO_bbbb)
 
     else
 
-      call RHF_stability(nBas,nC,nO,nV,nR,nS,eHF,ERI_MO)
+      call RHF_stability(nBas,nC,nO,nV,nR,nS,epsHF,ERI_MO)
 
     end if
 
@@ -370,11 +369,11 @@ program QuAcK
 
     if(unrestricted) then
 
-      call UMP2(nBas,nC,nO,nV,nR,ERI_MO_aaaa,ERI_MO_aabb,ERI_MO_bbbb,ENuc,EUHF,eHF,EcMP2)
+      call UMP2(nBas,nC,nO,nV,nR,ERI_MO_aaaa,ERI_MO_aabb,ERI_MO_bbbb,ENuc,EHF,epsHF)
 
     else
 
-      call MP2(regMP,nBas,nC,nO,nV,nR,ERI_MO,ENuc,ERHF,eHF,EcMP2)
+      call MP2(regMP,nBas,nC,nO,nV,nR,ERI_MO,ENuc,EHF,epsHF)
 
     end if
 
@@ -401,7 +400,7 @@ program QuAcK
 
     else
 
-      call MP3(nBas,nC,nO,nV,nR,ERI_MO,eHF,ENuc,ERHF)
+      call MP3(nBas,nC,nO,nV,nR,ERI_MO,ENuc,EHF,epsHF)
 
     end if
 
@@ -420,7 +419,7 @@ program QuAcK
   if(doCCD) then
 
     call cpu_time(start_CC)
-    call CCD(.false.,maxSCF_CC,thresh_CC,n_diis_CC,nBas,nC,nO,nV,nR,ERI_MO,ENuc,ERHF,eHF)
+    call CCD(.false.,maxSCF_CC,thresh_CC,n_diis_CC,nBas,nC,nO,nV,nR,ERI_MO,ENuc,EHF,epsHF)
     call cpu_time(end_CC)
 
     t_CC = end_CC - start_CC
@@ -437,7 +436,7 @@ program QuAcK
 
     call cpu_time(start_CC)
     call DCD(maxSCF_CC,thresh_CC,n_diis_CC,nBas,nC,nO,nV,nR, & 
-             ERI_MO,ENuc,ERHF,eHF)
+             ERI_MO,ENuc,EHF,epsHF)
     call cpu_time(end_CC)
 
     t_CC = end_CC - start_CC
@@ -455,7 +454,7 @@ program QuAcK
   if(doCCSD) then
 
     call cpu_time(start_CC)
-    call CCSD(.false.,maxSCF_CC,thresh_CC,n_diis_CC,doCCSDT,nBas,nC,nO,nV,nR,ERI_MO,ENuc,ERHF,eHF)
+    call CCSD(.false.,maxSCF_CC,thresh_CC,n_diis_CC,doCCSDT,nBas,nC,nO,nV,nR,ERI_MO,ENuc,EHF,epsHF)
     call cpu_time(end_CC)
 
     t_CC = end_CC - start_CC
@@ -471,7 +470,7 @@ program QuAcK
   if(do_drCCD) then
 
     call cpu_time(start_CC)
-    call drCCD(maxSCF_CC,thresh_CC,n_diis_CC,nBas,nC,nO,nV,nR,ERI_MO,ENuc,ERHF,eHF)
+    call drCCD(maxSCF_CC,thresh_CC,n_diis_CC,nBas,nC,nO,nV,nR,ERI_MO,ENuc,EHF,epsHF)
     call cpu_time(end_CC)
 
     t_CC = end_CC - start_CC
@@ -487,7 +486,7 @@ program QuAcK
   if(do_rCCD) then
 
     call cpu_time(start_CC)
-    call rCCD(.false.,maxSCF_CC,thresh_CC,n_diis_CC,nBas,nC,nO,nV,nR,ERI_MO,ENuc,ERHF,eHF,eHF)
+    call rCCD(.false.,maxSCF_CC,thresh_CC,n_diis_CC,nBas,nC,nO,nV,nR,ERI_MO,ENuc,EHF,epsHF,epsHF)
     call cpu_time(end_CC)
 
     t_CC = end_CC - start_CC
@@ -503,7 +502,7 @@ program QuAcK
   if(do_crCCD) then
 
     call cpu_time(start_CC)
-    call crCCD(maxSCF_CC,thresh_CC,n_diis_CC,nBas,nC,nO,nV,nR,ERI_MO,ENuc,ERHF,eHF)
+    call crCCD(maxSCF_CC,thresh_CC,n_diis_CC,nBas,nC,nO,nV,nR,ERI_MO,ENuc,EHF,epsHF)
     call cpu_time(end_CC)
 
     t_CC = end_CC - start_CC
@@ -519,8 +518,7 @@ program QuAcK
   if(do_lCCD) then
 
     call cpu_time(start_CC)
-    call lCCD(maxSCF_CC,thresh_CC,n_diis_CC,nBas,nC,nO,nV,nR, &
-              ERI_MO,ENuc,ERHF,eHF)
+    call lCCD(maxSCF_CC,thresh_CC,n_diis_CC,nBas,nC,nO,nV,nR,ERI_MO,ENuc,EHF,epsHF)
     call cpu_time(end_CC)
 
     t_CC = end_CC - start_CC
@@ -536,7 +534,7 @@ program QuAcK
   if(dopCCD) then
 
     call cpu_time(start_CC)
-    call pCCD(maxSCF_CC,thresh_CC,n_diis_CC,nBas,nC,nO,nV,nR,ERI_MO,ENuc,ERHF,eHF)
+    call pCCD(maxSCF_CC,thresh_CC,n_diis_CC,nBas,nC,nO,nV,nR,ERI_MO,ENuc,EHF,epsHF)
     call cpu_time(end_CC)
 
     t_CC = end_CC - start_CC
@@ -556,11 +554,11 @@ program QuAcK
     if(unrestricted) then
 
       call UCIS(spin_conserved,spin_flip,nBas,nC,nO,nV,nR,nS,ERI_MO_aaaa,ERI_MO_aabb, & 
-                ERI_MO_bbbb,dipole_int_aa,dipole_int_bb,eHF,cHF,S)
+                ERI_MO_bbbb,dipole_int_aa,dipole_int_bb,epsHF,cHF,S)
 
    else 
 
-      call CIS(singlet,triplet,doCIS_D,nBas,nC,nO,nV,nR,nS,ERI_MO,dipole_int_MO,eHF)
+      call CIS(singlet,triplet,doCIS_D,nBas,nC,nO,nV,nR,nS,ERI_MO,dipole_int_MO,epsHF)
 
     end if
 
@@ -579,7 +577,7 @@ program QuAcK
   if(doCID) then
 
     call cpu_time(start_CI)
-    call CID(singlet,triplet,nBas,nC,nO,nV,nR,ERI_MO,F_MO,ERHF)
+    call CID(singlet,triplet,nBas,nC,nO,nV,nR,ERI_MO,F_MO,EHF)
     call cpu_time(end_CI)
 
     t_CI = end_CI - start_CI
@@ -595,7 +593,7 @@ program QuAcK
   if(doCISD) then
 
     call cpu_time(start_CI)
-    call CISD(singlet,triplet,nBas,nC,nO,nV,nR,ERI_MO,F_MO,ERHF)
+    call CISD(singlet,triplet,nBas,nC,nO,nV,nR,ERI_MO,F_MO,EHF)
     call cpu_time(end_CI)
 
     t_CI = end_CI - start_CI
@@ -613,12 +611,12 @@ program QuAcK
     call cpu_time(start_RPA)
     if(unrestricted) then
 
-       call URPA(TDA,doACFDT,exchange_kernel,spin_conserved,spin_flip,0d0,nBas,nC,nO,nV,nR,nS,ENuc,EUHF, &
-                 ERI_MO_aaaa,ERI_MO_aabb,ERI_MO_bbbb,dipole_int_aa,dipole_int_bb,eHF,cHF,S)
+       call URPA(TDA,doACFDT,exchange_kernel,spin_conserved,spin_flip,0d0,nBas,nC,nO,nV,nR,nS,ENuc,EHF, &
+                 ERI_MO_aaaa,ERI_MO_aabb,ERI_MO_bbbb,dipole_int_aa,dipole_int_bb,epsHF,cHF,S)
 
     else
 
-      call phRPA(TDA,doACFDT,exchange_kernel,singlet,triplet,0d0,nBas,nC,nO,nV,nR,nS,ENuc,ERHF,ERI_MO,dipole_int_MO,eHF)
+      call phRPA(TDA,doACFDT,exchange_kernel,singlet,triplet,0d0,nBas,nC,nO,nV,nR,nS,ENuc,EHF,ERI_MO,dipole_int_MO,epsHF)
 
     end if
     call cpu_time(end_RPA)
@@ -638,12 +636,12 @@ program QuAcK
     call cpu_time(start_RPA)
     if(unrestricted) then
 
-       call URPAx(TDA,doACFDT,exchange_kernel,spin_conserved,spin_flip,0d0,nBas,nC,nO,nV,nR,nS,ENuc,EUHF, &
-                  ERI_MO_aaaa,ERI_MO_aabb,ERI_MO_bbbb,dipole_int_aa,dipole_int_bb,eHF,cHF,S)
+       call URPAx(TDA,doACFDT,exchange_kernel,spin_conserved,spin_flip,0d0,nBas,nC,nO,nV,nR,nS,ENuc,EHF, &
+                  ERI_MO_aaaa,ERI_MO_aabb,ERI_MO_bbbb,dipole_int_aa,dipole_int_bb,epsHF,cHF,S)
 
     else 
 
-     call phRPAx(TDA,doACFDT,exchange_kernel,singlet,triplet,0d0,nBas,nC,nO,nV,nR,nS,ENuc,ERHF,ERI_MO,dipole_int_MO,eHF)
+     call phRPAx(TDA,doACFDT,exchange_kernel,singlet,triplet,0d0,nBas,nC,nO,nV,nR,nS,ENuc,EHF,ERI_MO,dipole_int_MO,epsHF)
 
     end if
     call cpu_time(end_RPA)
@@ -661,7 +659,7 @@ program QuAcK
   if(docrRPA) then
 
     call cpu_time(start_RPA)
-    call crRPA(TDA,doACFDT,exchange_kernel,singlet,triplet,0d0,nBas,nC,nO,nV,nR,nS,ENuc,ERHF,ERI_MO,dipole_int_MO,eHF)
+    call crRPA(TDA,doACFDT,exchange_kernel,singlet,triplet,0d0,nBas,nC,nO,nV,nR,nS,ENuc,EHF,ERI_MO,dipole_int_MO,epsHF)
     call cpu_time(end_RPA)
 
     t_RPA = end_RPA - start_RPA
@@ -680,11 +678,11 @@ program QuAcK
 
     if(unrestricted) then 
 
-      call ppURPA(TDA,doACFDT,spin_conserved,spin_flip,nBas,nC,nO,nV,nR,ENuc,EUHF,ERI_MO_aaaa,ERI_MO_aabb,ERI_MO_bbbb,eHF)
+      call ppURPA(TDA,doACFDT,spin_conserved,spin_flip,nBas,nC,nO,nV,nR,ENuc,EHF,ERI_MO_aaaa,ERI_MO_aabb,ERI_MO_bbbb,epsHF)
 
     else
 
-      call ppRPA(TDA,doACFDT,singlet,triplet,nBas,nC,nO,nV,nR,ENuc,ERHF,ERI_MO,dipole_int_MO,eHF)
+      call ppRPA(TDA,doACFDT,singlet,triplet,nBas,nC,nO,nV,nR,ENuc,EHF,ERI_MO,dipole_int_MO,epsHF)
 
     end if
 
@@ -707,13 +705,13 @@ program QuAcK
     if(unrestricted) then
 
       call UG0F2(dophBSE,TDA,dBSE,dTDA,evDyn,spin_conserved,spin_flip,linGF,eta_GF,regGF,        &
-                 nBas,nC,nO,nV,nR,nS,ENuc,EUHF,S,ERI_AO,ERI_MO_aaaa,ERI_MO_aabb,ERI_MO_bbbb, & 
-                 dipole_int_aa,dipole_int_bb,eHF)
+                 nBas,nC,nO,nV,nR,nS,ENuc,EHF,S,ERI_AO,ERI_MO_aaaa,ERI_MO_aabb,ERI_MO_bbbb, & 
+                 dipole_int_aa,dipole_int_bb,epsHF)
 
     else
 
       call G0F2(dophBSE,TDA,dBSE,dTDA,evDyn,singlet,triplet,linGF,eta_GF,regGF, & 
-                nBas,nC,nO,nV,nR,nS,ENuc,ERHF,ERI_MO,dipole_int_MO,eHF)
+                nBas,nC,nO,nV,nR,nS,ENuc,EHF,ERI_MO,dipole_int_MO,epsHF)
 
     end if
 
@@ -736,14 +734,14 @@ program QuAcK
     if(unrestricted) then
 
       call evUGF2(maxSCF_GF,thresh_GF,n_diis_GF,dophBSE,TDA,dBSE,dTDA,evDyn,spin_conserved,spin_flip,    &
-                  eta_GF,regGF,nBas,nC,nO,nV,nR,nS,ENuc,EUHF,S,ERI_AO,ERI_MO_aaaa,ERI_MO_aabb,ERI_MO_bbbb, & 
-                  dipole_int_aa,dipole_int_bb,cHF,eHF)
+                  eta_GF,regGF,nBas,nC,nO,nV,nR,nS,ENuc,EHF,S,ERI_AO,ERI_MO_aaaa,ERI_MO_aabb,ERI_MO_bbbb, & 
+                  dipole_int_aa,dipole_int_bb,cHF,epsHF)
 
     else
 
       call evGF2(dophBSE,TDA,dBSE,dTDA,evDyn,maxSCF_GF,thresh_GF,n_diis_GF, & 
-                 singlet,triplet,linGF,eta_GF,regGF,nBas,nC,nO,nV,nR,nS,ENuc,ERHF, & 
-                 ERI_MO,dipole_int_MO,eHF)
+                 singlet,triplet,linGF,eta_GF,regGF,nBas,nC,nO,nV,nR,nS,ENuc,EHF, & 
+                 ERI_MO,dipole_int_MO,epsHF)
 
     end if
 
@@ -766,13 +764,13 @@ program QuAcK
     if(unrestricted) then
 
       call qsUGF2(maxSCF_GF,thresh_GF,n_diis_GF,dophBSE,TDA,dBSE,dTDA,evDyn,spin_conserved,spin_flip,eta_GF,regGF, &
-                  nNuc,ZNuc,rNuc,ENuc,nBas,nC,nO,nV,nR,nS,EUHF,S,X,T,V,Hc,ERI_AO,                        & 
-                  ERI_MO_aaaa,ERI_MO_aabb,ERI_MO_bbbb,dipole_int_AO,dipole_int_aa,dipole_int_bb,PHF,cHF,eHF)
+                  nNuc,ZNuc,rNuc,ENuc,nBas,nC,nO,nV,nR,nS,EHF,S,X,T,V,Hc,ERI_AO,                        & 
+                  ERI_MO_aaaa,ERI_MO_aabb,ERI_MO_bbbb,dipole_int_AO,dipole_int_aa,dipole_int_bb,PHF,cHF,epsHF)
 
     else
 
       call qsGF2(maxSCF_GF,thresh_GF,n_diis_GF,dophBSE,TDA,dBSE,dTDA,evDyn,singlet,triplet,eta_GF,regGF,nNuc,ZNuc,rNuc,ENuc, & 
-                 nBas,nC,nO,nV,nR,nS,ERHF,S,X,T,V,Hc,ERI_AO,ERI_MO,dipole_int_AO,dipole_int_MO,PHF,cHF,eHF)
+                 nBas,nC,nO,nV,nR,nS,EHF,S,X,T,V,Hc,ERI_AO,ERI_MO,dipole_int_AO,dipole_int_MO,PHF,cHF,epsHF)
 
     end if
 
@@ -798,7 +796,7 @@ program QuAcK
 
     else
 
-      call G0F3(renormGF,nBas,nC,nO,nV,nR,ERI_MO,eHF)
+      call G0F3(renormGF,nBas,nC,nO,nV,nR,ERI_MO,epsHF)
 
     end if
 
@@ -824,7 +822,7 @@ program QuAcK
 
     else
 
-      call evGF3(maxSCF_GF,thresh_GF,n_diis_GF,renormGF,nBas,nC,nO,nV,nR,ERI_MO,eHF)
+      call evGF3(maxSCF_GF,thresh_GF,n_diis_GF,renormGF,nBas,nC,nO,nV,nR,ERI_MO,epsHF)
 
     end if
 
@@ -846,12 +844,12 @@ program QuAcK
     if(unrestricted) then 
 
       call UG0W0(doACFDT,exchange_kernel,doXBS,COHSEX,dophBSE,TDA_W,TDA,dBSE,dTDA,evDyn,spin_conserved,spin_flip,   & 
-                 linGW,eta_GW,regGW,nBas,nC,nO,nV,nR,nS,ENuc,EUHF,S,ERI_AO,ERI_MO_aaaa,ERI_MO_aabb,ERI_MO_bbbb, & 
-                 dipole_int_aa,dipole_int_bb,PHF,cHF,eHF,Vxc)
+                 linGW,eta_GW,regGW,nBas,nC,nO,nV,nR,nS,ENuc,EHF,S,ERI_AO,ERI_MO_aaaa,ERI_MO_aabb,ERI_MO_bbbb, & 
+                 dipole_int_aa,dipole_int_bb,PHF,cHF,epsHF,Vxc)
     else
 
       call G0W0(doACFDT,exchange_kernel,doXBS,COHSEX,dophBSE,dophBSE2,TDA_W,TDA,dBSE,dTDA,evDyn,doppBSE,singlet,triplet, &
-                linGW,eta_GW,regGW,nBas,nC,nO,nV,nR,nS,ENuc,ERHF,ERI_AO,ERI_MO,dipole_int_MO,PHF,cHF,eHF,Vxc)
+                linGW,eta_GW,regGW,nBas,nC,nO,nV,nR,nS,ENuc,EHF,ERI_AO,ERI_MO,dipole_int_MO,PHF,cHF,epsHF,Vxc)
     end if
 
     call cpu_time(end_GW)
@@ -873,14 +871,14 @@ program QuAcK
 
       call evUGW(maxSCF_GW,thresh_GW,n_diis_GW,doACFDT,exchange_kernel,doXBS,COHSEX,dophBSE,TDA_W,TDA,   &
                 dBSE,dTDA,evDyn,spin_conserved,spin_flip,eta_GW,regGW,nBas,nC,nO,nV,nR,nS,ENuc,    &
-                EUHF,S,ERI_AO,ERI_MO_aaaa,ERI_MO_aabb,ERI_MO_bbbb,dipole_int_aa,dipole_int_bb, & 
-                PHF,cHF,eHF,Vxc)
+                EHF,S,ERI_AO,ERI_MO_aaaa,ERI_MO_aabb,ERI_MO_bbbb,dipole_int_aa,dipole_int_bb, & 
+                PHF,cHF,epsHF,Vxc)
 
     else
 
       call evGW(maxSCF_GW,thresh_GW,n_diis_GW,doACFDT,exchange_kernel,doXBS,COHSEX,       &
                 dophBSE,dophBSE2,TDA_W,TDA,dBSE,dTDA,evDyn,doppBSE,singlet,triplet,linGW,eta_GW,regGW, &
-                nBas,nC,nO,nV,nR,nS,ENuc,ERHF,ERI_AO,ERI_MO,dipole_int_MO,PHF,cHF,eHF,Vxc)
+                nBas,nC,nO,nV,nR,nS,ENuc,EHF,ERI_AO,ERI_MO,dipole_int_MO,PHF,cHF,epsHF,Vxc)
     end if
     call cpu_time(end_GW)
 
@@ -902,14 +900,14 @@ program QuAcK
     
       call qsUGW(maxSCF_GW,thresh_GW,n_diis_GW,doACFDT,exchange_kernel,doXBS,COHSEX,dophBSE,TDA_W,TDA, &
                  dBSE,dTDA,evDyn,spin_conserved,spin_flip,eta_GW,regGW,nNuc,ZNuc,rNuc,ENuc,nBas,nC,nO, &
-                 nV,nR,nS,EUHF,S,X,T,V,Hc,ERI_AO,ERI_MO_aaaa,ERI_MO_aabb,ERI_MO_bbbb,dipole_int_AO,      &
-                 dipole_int_aa,dipole_int_bb,PHF,cHF,eHF)
+                 nV,nR,nS,EHF,S,X,T,V,Hc,ERI_AO,ERI_MO_aaaa,ERI_MO_aabb,ERI_MO_bbbb,dipole_int_AO,      &
+                 dipole_int_aa,dipole_int_bb,PHF,cHF,epsHF)
 
     else
  
       call qsGW(maxSCF_GW,thresh_GW,n_diis_GW,doACFDT,exchange_kernel,doXBS,COHSEX,               &
                 dophBSE,dophBSE2,TDA_W,TDA,dBSE,dTDA,evDyn,singlet,triplet,eta_GW,regGW,nNuc,ZNuc,rNuc,ENuc, & 
-                nBas,nC,nO,nV,nR,nS,ERHF,S,X,T,V,Hc,ERI_AO,ERI_MO,dipole_int_AO,dipole_int_MO,PHF,cHF,eHF)
+                nBas,nC,nO,nV,nR,nS,EHF,S,X,T,V,Hc,ERI_AO,ERI_MO,dipole_int_AO,dipole_int_MO,PHF,cHF,epsHF)
 
     end if
 
@@ -936,8 +934,8 @@ program QuAcK
     else
  
       call SRG_qsGW(maxSCF_GW,thresh_GW,n_diis_GW,doACFDT,exchange_kernel,doXBS,dophBSE,dophBSE2,TDA_W,TDA,dBSE,dTDA,evDyn, & 
-                    singlet,triplet,eta_GW,nNuc,ZNuc,rNuc,ENuc,nBas,nC,nO,nV,nR,nS,ERHF,S,X,T,V,Hc,ERI_AO,ERI_MO,   & 
-                    dipole_int_AO,dipole_int_MO,PHF,cHF,eHF)
+                    singlet,triplet,eta_GW,nNuc,ZNuc,rNuc,ENuc,nBas,nC,nO,nV,nR,nS,EHF,S,X,T,V,Hc,ERI_AO,ERI_MO,   & 
+                    dipole_int_AO,dipole_int_MO,PHF,cHF,epsHF)
 
     end if
 
@@ -956,14 +954,14 @@ program QuAcK
   if(doufG0W0) then
     
     call cpu_time(start_GW)
-    call ufG0W0(nBas,nC,nO,nV,nR,nS,ENuc,ERHF,ERI_MO,eHF,TDA_W)
+    call ufG0W0(nBas,nC,nO,nV,nR,nS,ENuc,EHF,ERI_MO,epsHF,TDA_W)
     call cpu_time(end_GW)
   
     t_GW = end_GW - start_GW
     write(*,'(A65,1X,F9.3,A8)') 'Total CPU time for ufG0W0 = ',t_GW,' seconds'
     write(*,*)
 
-!   if(dophBSE) call ufBSE(nBas,nC,nO,nV,nR,nS,ENuc,ERHF,ERI_MO,eHF,eG0W0)
+!   if(dophBSE) call ufBSE(nBas,nC,nO,nV,nR,nS,ENuc,EHF,ERI_MO,epsHF,eG0W0)
 
   end if
 
@@ -974,15 +972,15 @@ program QuAcK
   if(doufGW) then
     
     call cpu_time(start_GW)
-    call ufGW(nBas,nC,nO,nV,nR,nS,ENuc,ERHF,ERI_MO,eHF)
-!   call CCGW(maxSCF_CC,thresh_CC,nBas,nC,nO,nV,nR,ERI_MO,ENuc,ERHF,eHF)
+    call ufGW(nBas,nC,nO,nV,nR,nS,ENuc,EHF,ERI_MO,epsHF)
+!   call CCGW(maxSCF_CC,thresh_CC,nBas,nC,nO,nV,nR,ERI_MO,ENuc,EHF,epsHF)
     call cpu_time(end_GW)
   
     t_GW = end_GW - start_GW
     write(*,'(A65,1X,F9.3,A8)') 'Total CPU time for ufGW = ',t_GW,' seconds'
     write(*,*)
 
-!   if(dophBSE) call ufBSE(nBas,nC,nO,nV,nR,nS,ENuc,ERHF,ERI_MO,eHF,eG0W0)
+!   if(dophBSE) call ufBSE(nBas,nC,nO,nV,nR,nS,ENuc,EHF,ERI_MO,epsHF,eG0W0)
 
   end if
 
@@ -999,14 +997,14 @@ program QuAcK
       !print*,'!!! G0T0 NYI at the unrestricted level !!!'
        call UG0T0(doACFDT,exchange_kernel,doXBS,dophBSE,TDA_T,TDA,dBSE,dTDA,evDyn, &
                  spin_conserved,spin_flip,linGT,eta_GT,regGT,nBas,nC,nO,nV, &
-                 nR,nS,ENuc,EUHF,ERI_AO,ERI_MO_aaaa,ERI_MO_aabb,ERI_MO_bbbb, &
-                 dipole_int_aa,dipole_int_bb,PHF,cHF,eHF,Vxc)
+                 nR,nS,ENuc,EHF,ERI_AO,ERI_MO_aaaa,ERI_MO_aabb,ERI_MO_bbbb, &
+                 dipole_int_aa,dipole_int_bb,PHF,cHF,epsHF,Vxc)
 
     else
 
-!     call soG0T0(eta_GT,nBas,nC,nO,nV,nR,ENuc,ERHF,ERI_MO,eHF)
+!     call soG0T0(eta_GT,nBas,nC,nO,nV,nR,ENuc,EHF,ERI_MO,epsHF)
       call G0T0pp(doACFDT,exchange_kernel,doXBS,dophBSE,TDA_T,TDA,dBSE,dTDA,evDyn,doppBSE,singlet,triplet, &
-                  linGT,eta_GT,regGT,nBas,nC,nO,nV,nR,nS,ENuc,ERHF,ERI_AO,ERI_MO,dipole_int_MO,PHF,cHF,eHF,Vxc)
+                  linGT,eta_GT,regGT,nBas,nC,nO,nV,nR,nS,ENuc,EHF,ERI_AO,ERI_MO,dipole_int_MO,PHF,cHF,epsHF,Vxc)
 
     end if
 
@@ -1030,16 +1028,16 @@ program QuAcK
 
       call evUGT(maxSCF_GT,thresh_GT,n_diis_GT,doACFDT,exchange_kernel,doXBS, &
                  dophBSE,TDA_T,TDA,dBSE,dTDA,evDyn,spin_conserved,spin_flip,&
-                 eta_GT,regGT,nBas,nC,nO,nV,nR,nS,ENuc,EUHF,ERI_AO, &
+                 eta_GT,regGT,nBas,nC,nO,nV,nR,nS,ENuc,EHF,ERI_AO, &
                  ERI_MO_aaaa,ERI_MO_aabb,ERI_MO_bbbb,dipole_int_aa, &
-                 dipole_int_bb,PHF,cHF,eHF,Vxc)
+                 dipole_int_bb,PHF,cHF,epsHF,Vxc)
 
     else
 
       call evGTpp(maxSCF_GT,thresh_GT,n_diis_GT,doACFDT,exchange_kernel,doXBS, &
                   dophBSE,TDA_T,TDA,dBSE,dTDA,evDyn,singlet,triplet,eta_GT,regGT,  & 
-                  nBas,nC,nO,nV,nR,nS,ENuc,ERHF,ERI_AO,ERI_MO,dipole_int_MO,   &
-                  PHF,cHF,eHF,Vxc)
+                  nBas,nC,nO,nV,nR,nS,ENuc,EHF,ERI_AO,ERI_MO,dipole_int_MO,   &
+                  PHF,cHF,epsHF,Vxc)
 
     end if
 
@@ -1063,14 +1061,14 @@ program QuAcK
 
       call qsUGT(maxSCF_GT,thresh_GT,n_diis_GT,doACFDT,exchange_kernel,doXBS,dophBSE,TDA_T, &
                  TDA,dBSE,dTDA,evDyn,spin_conserved,spin_flip,eta_GT,regGT,nBas,nC,nO,nV,&
-                 nR,nS,nNuc,ZNuc,rNuc,ENuc,EUHF,S,X,T,V,Hc,ERI_AO,ERI_MO_aaaa,ERI_MO_aabb,&
-                 ERI_MO_bbbb,dipole_int_AO,dipole_int_aa,dipole_int_bb,PHF,cHF,eHF) 
+                 nR,nS,nNuc,ZNuc,rNuc,ENuc,EHF,S,X,T,V,Hc,ERI_AO,ERI_MO_aaaa,ERI_MO_aabb,&
+                 ERI_MO_bbbb,dipole_int_AO,dipole_int_aa,dipole_int_bb,PHF,cHF,epsHF) 
     else
 
       call qsGTpp(maxSCF_GT,thresh_GT,n_diis_GT,doACFDT,exchange_kernel,doXBS, &
                   dophBSE,TDA_T,TDA,dBSE,dTDA,evDyn,singlet,triplet,eta_GT,regGT,  &
-                  nNuc,ZNuc,rNuc,ENuc,nBas,nC,nO,nV,nR,nS,ERHF,S,X,T,V,Hc,     & 
-                  ERI_AO,ERI_MO,dipole_int_AO,dipole_int_MO,PHF,cHF,eHF)
+                  nNuc,ZNuc,rNuc,ENuc,nBas,nC,nO,nV,nR,nS,EHF,S,X,T,V,Hc,     & 
+                  ERI_AO,ERI_MO,dipole_int_AO,dipole_int_MO,PHF,cHF,epsHF)
 
     end if
 
@@ -1097,7 +1095,7 @@ program QuAcK
     else
 
       call G0T0eh(doACFDT,exchange_kernel,doXBS,dophBSE,dophBSE2,TDA_W,TDA,dBSE,dTDA,evDyn,doppBSE,singlet,triplet, &
-                  linGW,eta_GW,regGW,nBas,nC,nO,nV,nR,nS,ENuc,ERHF,ERI_AO,ERI_MO,dipole_int_MO,PHF,cHF,eHF,Vxc)
+                  linGW,eta_GW,regGW,nBas,nC,nO,nV,nR,nS,ENuc,EHF,ERI_AO,ERI_MO,dipole_int_MO,PHF,cHF,epsHF,Vxc)
 
     end if
 
@@ -1122,7 +1120,7 @@ program QuAcK
 
       call evGTeh(maxSCF_GT,thresh_GT,n_diis_GT,doACFDT,exchange_kernel,doXBS,                 &
                   dophBSE,dophBSE2,TDA_T,TDA,dBSE,dTDA,evDyn,doppBSE,singlet,triplet,linGT,eta_GT,regGT, &
-                  nBas,nC,nO,nV,nR,nS,ENuc,ERHF,ERI_AO,ERI_MO,dipole_int_MO,PHF,cHF,eHF,Vxc)
+                  nBas,nC,nO,nV,nR,nS,ENuc,EHF,ERI_AO,ERI_MO,dipole_int_MO,PHF,cHF,epsHF,Vxc)
     end if
     call cpu_time(end_GT)
 
@@ -1146,7 +1144,7 @@ program QuAcK
  
       call qsGTeh(maxSCF_GT,thresh_GT,n_diis_GT,doACFDT,exchange_kernel,doXBS,                      &
                   dophBSE,dophBSE2,TDA_T,TDA,dBSE,dTDA,evDyn,singlet,triplet,eta_GT,regGT,nNuc,ZNuc,rNuc,ENuc, & 
-                  nBas,nC,nO,nV,nR,nS,ERHF,S,X,T,V,Hc,ERI_AO,ERI_MO,dipole_int_AO,dipole_int_MO,PHF,cHF,eHF)
+                  nBas,nC,nO,nV,nR,nS,EHF,S,X,T,V,Hc,ERI_AO,ERI_MO,dipole_int_AO,dipole_int_MO,PHF,cHF,epsHF)
 
     end if
 
@@ -1166,7 +1164,7 @@ program QuAcK
 
     call cpu_time(start_CI)
     write(*,*) ' FCI is not yet implemented! Sorry.'
-!   call FCI(nBas,nC,nO,nV,nR,ERI_MO,eHF)
+!   call FCI(nBas,nC,nO,nV,nR,ERI_MO,epsHF)
     call cpu_time(end_CI)
 
     t_CI = end_CI - start_CI

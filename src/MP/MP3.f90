@@ -1,4 +1,4 @@
-subroutine MP3(nBasin,nCin,nOin,nVin,nRin,ERI,e,ENuc,EHF)
+subroutine MP3(nBasin,nCin,nOin,nVin,nRin,ERI,ENuc,EHF,e)
 
 ! Perform third-order Moller-Plesset calculation
 
