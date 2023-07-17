@@ -368,7 +368,7 @@ program QuAcK
   if(doMP) then
 
     call cpu_time(start_MP)
-    call MP(doMP2,doMP3,unrestricted,regMP,nBas,nC,nO,nV,nR,ERI_MO,ENuc,EHF,epsHF)
+    call MP(doMP2,doMP3,unrestricted,regMP,nBas,nC,nO,nV,nR,ERI_MO,ERI_MO_aaaa,ERI_MO_aabb,ERI_MO_bbbb,ENuc,EHF,epsHF)
     call cpu_time(end_MP)
 
     t_MP = end_MP - start_MP
