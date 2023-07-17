@@ -1,4 +1,4 @@
-subroutine read_methods(doRHF,doUHF,doKS,doMOM,            & 
+subroutine read_methods(doRHF,doUHF,doRMOM,doUMOM,doKS,    & 
                         doMP2,doMP3,                       & 
                         doCCD,dopCCD,doDCD,doCCSD,doCCSDT, & 
                         do_drCCD,do_rCCD,do_crCCD,do_lCCD, &
@@ -17,7 +17,7 @@ subroutine read_methods(doRHF,doUHF,doKS,doMOM,            &
 
 ! Input variables
 
-  logical,intent(out)           :: doRHF,doUHF,doKS,doMOM
+  logical,intent(out)           :: doRHF,doUHF,doRMOM,doUMOM,doKS
   logical,intent(out)           :: doMP2,doMP3
   logical,intent(out)           :: doCCD,dopCCD,doDCD,doCCSD,doCCSDT
   logical,intent(out)           :: do_drCCD,do_rCCD,do_crCCD,do_lCCD
@@ -38,10 +38,11 @@ subroutine read_methods(doRHF,doUHF,doKS,doMOM,            &
 
 ! Set all the booleans to false
 
-  doRHF = .false.
-  doUHF = .false.
-  doKS  = .false.
-  doMOM = .false.
+  doRHF  = .false.
+  doUHF  = .false.
+  doRMOM = .false.
+  doUMOM = .false.
+  doKS   = .false.
 
   doMP2    = .false.
   doMP3    = .false.
@@ -91,11 +92,12 @@ subroutine read_methods(doRHF,doUHF,doKS,doMOM,            &
 ! Read mean-field methods
 
   read(1,*) 
-  read(1,*) answer1,answer2,answer3,answer4
-  if(answer1 == 'T') doRHF = .true.
-  if(answer2 == 'T') doUHF = .true.
-  if(answer3 == 'T') doKS  = .true.
-  if(answer4 == 'T') doMOM = .true.
+  read(1,*) answer1,answer2,answer3,answer4,answer5
+  if(answer1 == 'T') doRHF  = .true.
+  if(answer2 == 'T') doUHF  = .true.
+  if(answer3 == 'T') doRMOM = .true.
+  if(answer4 == 'T') doUMOM = .true.
+  if(answer5 == 'T') doKS   = .true.
 
 ! Read MPn methods
 

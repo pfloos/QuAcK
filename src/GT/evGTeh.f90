@@ -1,6 +1,6 @@
 subroutine evGTeh(maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,BSE,BSE2,TDA_T,TDA,dBSE,dTDA,evDyn,ppBSE, & 
                   singlet,triplet,linearize,eta,regularize,nBas,nC,nO,nV,nR,nS,ENuc,ERHF,ERI_AO,ERI_MO,dipole_int,PHF,  & 
-                  cHF,eHF,Vxc,eG0T0)
+                  cHF,eHF,Vxc)
 
 ! Perform self-consistent eigenvalue-only ehGT calculation
 
@@ -41,7 +41,6 @@ subroutine evGTeh(maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,BSE,BSE2,
   double precision,intent(in)   :: eHF(nBas)
   double precision,intent(in)   :: cHF(nBas,nBas)
   double precision,intent(in)   :: Vxc(nBas)
-  double precision,intent(in)   :: eG0T0(nBas)
   double precision,intent(in)   :: ERI_AO(nBas,nBas,nBas,nBas)
   double precision,intent(in)   :: ERI_MO(nBas,nBas,nBas,nBas)
   double precision,intent(in)   :: dipole_int(nBas,nBas,ncart)
@@ -121,7 +120,7 @@ subroutine evGTeh(maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,BSE,BSE2,
   Conv            = 1d0
   e_diis(:,:)     = 0d0
   error_diis(:,:) = 0d0
-  eGT(:)          = eG0T0(:)
+  eGT(:)          = eHF(:)
   eOld(:)         = eGT(:)
   Z(:)            = 1d0
   rcond           = 0d0

@@ -1,6 +1,6 @@
 subroutine G0W0(doACFDT,exchange_kernel,doXBS,COHSEX,BSE,BSE2,TDA_W,TDA,dBSE,dTDA,evDyn,ppBSE, & 
                 singlet,triplet,linearize,eta,regularize,nBas,nC,nO,nV,nR,nS,ENuc,ERHF,   & 
-                ERI_AO,ERI_MO,dipole_int,PHF,cHF,eHF,Vxc,eGW)
+                ERI_AO,ERI_MO,dipole_int,PHF,cHF,eHF,Vxc)
 
 ! Perform G0W0 calculation
 
@@ -61,6 +61,7 @@ subroutine G0W0(doACFDT,exchange_kernel,doXBS,COHSEX,BSE,BSE2,TDA_W,TDA,dBSE,dTD
   double precision,allocatable  :: XmY_RPA(:,:)
   double precision,allocatable  :: rho_RPA(:,:,:)
 
+  double precision,allocatable  :: eGW(:)
   double precision,allocatable  :: eGWlin(:)
 
   integer                       :: nBas2
@@ -70,11 +71,7 @@ subroutine G0W0(doACFDT,exchange_kernel,doXBS,COHSEX,BSE,BSE2,TDA_W,TDA,dBSE,dTD
   integer                       :: nR2
   integer                       :: nS2
 
-  double precision,allocatable  :: seHF(:),seGW(:),sERI(:,:,:,:)
-
 ! Output variables
-
-  double precision              :: eGW(nBas)
 
 ! Hello world
 
@@ -115,7 +112,7 @@ subroutine G0W0(doACFDT,exchange_kernel,doXBS,COHSEX,BSE,BSE2,TDA_W,TDA,dBSE,dTD
 
 ! Memory allocation
 
-  allocate(SigC(nBas),SigX(nBas),Z(nBas),OmRPA(nS),XpY_RPA(nS,nS),XmY_RPA(nS,nS),rho_RPA(nBas,nBas,nS),eGWlin(nBas))
+  allocate(SigC(nBas),SigX(nBas),Z(nBas),OmRPA(nS),XpY_RPA(nS,nS),XmY_RPA(nS,nS),rho_RPA(nBas,nBas,nS),eGW(nBas),eGWlin(nBas))
 
 !-------------------!
 ! Compute screening !

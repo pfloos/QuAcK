@@ -1,6 +1,6 @@
 subroutine G0T0eh(doACFDT,exchange_kernel,doXBS,BSE,BSE2,TDA_T,TDA,dBSE,dTDA,evDyn,ppBSE, & 
                   singlet,triplet,linearize,eta,regularize,nBas,nC,nO,nV,nR,nS,ENuc,ERHF,   & 
-                  ERI_AO,ERI_MO,dipole_int,PHF,cHF,eHF,Vxc,eGT)
+                  ERI_AO,ERI_MO,dipole_int,PHF,cHF,eHF,Vxc)
 
 ! Perform ehG0T0 calculation
 
@@ -58,14 +58,13 @@ subroutine G0T0eh(doACFDT,exchange_kernel,doXBS,BSE,BSE2,TDA_T,TDA,dBSE,dTDA,evD
   double precision,allocatable  :: OmRPA(:)
   double precision,allocatable  :: XpY_RPA(:,:)
   double precision,allocatable  :: XmY_RPA(:,:)
-  double precision,allocatable  :: rhoL_RPA(:,:,:)
-  double precision,allocatable  :: rhoR_RPA(:,:,:)
+  double precision,allocatable  :: rhoL_RPA(:,:,:,:)
+  double precision,allocatable  :: rhoR_RPA(:,:,:,:)
 
+  double precision,allocatable  :: eGT(:)
   double precision,allocatable  :: eGTlin(:)
 
 ! Output variables
-
-  double precision              :: eGT(nBas)
 
 ! Hello world
 
@@ -100,7 +99,7 @@ subroutine G0T0eh(doACFDT,exchange_kernel,doXBS,BSE,BSE2,TDA_T,TDA,dBSE,dTDA,evD
 ! Memory allocation
 
   allocate(Sig(nBas),SigX(nBas),Z(nBas),OmRPA(nS),XpY_RPA(nS,nS),XmY_RPA(nS,nS), & 
-           rhoL_RPA(nBas,nBas,nS),rhoR_RPA(nBas,nBas,nS),eGTlin(nBas))
+           rhoL_RPA(nBas,nBas,nS,2),rhoR_RPA(nBas,nBas,nS,2),eGT(nBas),eGTlin(nBas))
 
 !-------------------!
 ! Compute screening !

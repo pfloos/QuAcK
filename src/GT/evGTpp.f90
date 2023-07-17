@@ -1,6 +1,5 @@
-subroutine evGTpp(maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS, & 
-                  BSE,TDA_T,TDA,dBSE,dTDA,evDyn,singlet,triplet,eta,regularize,nBas, & 
-                  nC,nO,nV,nR,nS,ENuc,ERHF,ERI_AO,ERI_MO,dipole_int,PHF,cHF,eHF,Vxc,eG0T0)
+subroutine evGTpp(maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,BSE,TDA_T,TDA,dBSE,dTDA,evDyn, &
+                  singlet,triplet,eta,regularize,nBas,nC,nO,nV,nR,nS,ENuc,ERHF,ERI_AO,ERI_MO,dipole_int,PHF,cHF,eHF,Vxc)
 
 ! Perform eigenvalue self-consistent calculation with a T-matrix self-energy (evGT)
 
@@ -41,7 +40,6 @@ subroutine evGTpp(maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS, &
   double precision,intent(in)   :: ERI_AO(nBas,nBas,nBas,nBas)
   double precision,intent(in)   :: ERI_MO(nBas,nBas,nBas,nBas)
   double precision,intent(in)   :: dipole_int(nBas,nBas,ncart)
-  double precision,intent(in)   :: eG0T0(nBas)
 
 
 ! Local variables
@@ -114,7 +112,7 @@ subroutine evGTpp(maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS, &
   Conv            = 1d0
   e_diis(:,:)     = 0d0
   error_diis(:,:) = 0d0
-  eGT(:)          = eG0T0(:)
+  eGT(:)          = eHF(:)
   eOld(:)         = eGT(:)
   Z(:)            = 1d0
   rcond           = 0d0

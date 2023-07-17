@@ -1,6 +1,6 @@
 subroutine evGW(maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,COHSEX,BSE,BSE2,TDA_W,TDA,dBSE,dTDA,evDyn,ppBSE, & 
                 singlet,triplet,linearize,eta,regularize,nBas,nC,nO,nV,nR,nS,ENuc,ERHF,ERI_AO,ERI_MO,dipole_int,PHF,  & 
-                cHF,eHF,Vxc,eG0W0)
+                cHF,eHF,Vxc)
 
 ! Perform self-consistent eigenvalue-only GW calculation
 
@@ -42,7 +42,6 @@ subroutine evGW(maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,COHSEX,BSE,
   double precision,intent(in)   :: eHF(nBas)
   double precision,intent(in)   :: cHF(nBas,nBas)
   double precision,intent(in)   :: Vxc(nBas)
-  double precision,intent(in)   :: eG0W0(nBas)
   double precision,intent(in)   :: ERI_AO(nBas,nBas,nBas,nBas)
   double precision,intent(in)   :: ERI_MO(nBas,nBas,nBas,nBas)
   double precision,intent(in)   :: dipole_int(nBas,nBas,ncart)
@@ -137,7 +136,7 @@ subroutine evGW(maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,COHSEX,BSE,
   Conv            = 1d0
   e_diis(:,:)     = 0d0
   error_diis(:,:) = 0d0
-  eGW(:)          = eG0W0(:)
+  eGW(:)          = eHF(:)
   eOld(:)         = eGW(:)
   Z(:)            = 1d0
   rcond           = 0d0
@@ -312,10 +311,10 @@ subroutine evGW(maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,COHSEX,BSE,
 
     write(*,*)
     write(*,*)'-------------------------------------------------------------------------------'
-    write(*,'(2X,A50,F20.10)') 'Tr@ppBSE@G0W0 correlation energy (singlet) =',EcppBSE(1)
-    write(*,'(2X,A50,F20.10)') 'Tr@ppBSE@G0W0 correlation energy (triplet) =',3d0*EcppBSE(2)
-    write(*,'(2X,A50,F20.10)') 'Tr@ppBSE@G0W0 correlation energy =',EcppBSE(1) + 3d0*EcppBSE(2)
-    write(*,'(2X,A50,F20.10)') 'Tr@ppBSE@G0W0 total energy =',ENuc + ERHF + EcppBSE(1) + 3d0*EcppBSE(2)
+    write(*,'(2X,A50,F20.10)') 'Tr@ppBSE@evGW correlation energy (singlet) =',EcppBSE(1)
+    write(*,'(2X,A50,F20.10)') 'Tr@ppBSE@evGW correlation energy (triplet) =',3d0*EcppBSE(2)
+    write(*,'(2X,A50,F20.10)') 'Tr@ppBSE@evGW correlation energy =',EcppBSE(1) + 3d0*EcppBSE(2)
+    write(*,'(2X,A50,F20.10)') 'Tr@ppBSE@evGW total energy =',ENuc + ERHF + EcppBSE(1) + 3d0*EcppBSE(2)
     write(*,*)'-------------------------------------------------------------------------------'
     write(*,*)
 

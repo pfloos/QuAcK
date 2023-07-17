@@ -1,5 +1,5 @@
 subroutine G0T0pp(doACFDT,exchange_kernel,doXBS,BSE,TDA_T,TDA,dBSE,dTDA,evDyn,ppBSE,singlet,triplet, & 
-                  linearize,eta,regularize,nBas,nC,nO,nV,nR,nS,ENuc,ERHF,ERI_AO,ERI_MO,dipole_int,PHF,cHF,eHF,Vxc,eGT)
+                  linearize,eta,regularize,nBas,nC,nO,nV,nR,nS,ENuc,ERHF,ERI_AO,ERI_MO,dipole_int,PHF,cHF,eHF,Vxc)
 
 ! Perform one-shot calculation with a T-matrix self-energy (G0T0)
 
@@ -62,11 +62,10 @@ subroutine G0T0pp(doACFDT,exchange_kernel,doXBS,BSE,TDA_T,TDA,dBSE,dTDA,evDyn,pp
   double precision,allocatable  :: SigX(:)
   double precision,allocatable  :: Sig(:)
   double precision,allocatable  :: Z(:)
+  double precision,allocatable  :: eGT(:)
   double precision,allocatable  :: eGTlin(:)
 
 ! Output variables
-
-  double precision,intent(out)  :: eGT(nBas)
 
 ! Hello world
 
@@ -88,11 +87,11 @@ subroutine G0T0pp(doACFDT,exchange_kernel,doXBS,BSE,TDA_T,TDA,dBSE,dTDA,evDyn,pp
 
   allocate(Om1ab(nVVab),X1ab(nVVab,nVVab),Y1ab(nOOab,nVVab), & 
            Om2ab(nOOab),X2ab(nVVab,nOOab),Y2ab(nOOab,nOOab), & 
-           rho1ab(nBas,nBas,nVVab),rho2ab(nBas,nBas,nOOab), & 
+           rho1ab(nBas,nBas,nVVab),rho2ab(nBas,nBas,nOOab),  & 
            Om1aa(nVVaa),X1aa(nVVaa,nVVaa),Y1aa(nOOaa,nVVaa), & 
            Om2aa(nOOaa),X2aa(nVVaa,nOOaa),Y2aa(nOOaa,nOOaa), & 
-           rho1aa(nBas,nBas,nVVaa),rho2aa(nBas,nBas,nOOaa), & 
-           SigX(nBas),Sig(nBas),Z(nBas),eGTlin(nBas))
+           rho1aa(nBas,nBas,nVVaa),rho2aa(nBas,nBas,nOOaa),  & 
+           SigX(nBas),Sig(nBas),Z(nBas),eGT(nBas),eGTlin(nBas))
 
 !----------------------------------------------
 ! alpha-beta block

@@ -1,4 +1,4 @@
-subroutine dynamic_Tmatrix_A(eta,nBas,nC,nO,nV,nR,nS,nOO,nVV,lambda,eGT,Omega1,Omega2,rho1,rho2,OmBSE,TA,ZA)
+subroutine dynamic_Tmatrix_A(eta,nBas,nC,nO,nV,nR,nS,nOO,nVV,lambda,eGT,Om1,Om2,rho1,rho2,OmBSE,TA,ZA)
 
 ! Compute the dynamic part of the Bethe-Salpeter equation matrices for GT
 
@@ -23,8 +23,8 @@ subroutine dynamic_Tmatrix_A(eta,nBas,nC,nO,nV,nR,nS,nOO,nVV,lambda,eGT,Omega1,O
   double precision,intent(in)   :: OmBSE
   
 
-  double precision,intent(in)   :: Omega1(nVV)
-  double precision,intent(in)   :: Omega2(nOO)
+  double precision,intent(in)   :: Om1(nVV)
+  double precision,intent(in)   :: Om2(nOO)
   double precision,intent(in)   :: rho1(nBas,nBas,nVV)
   double precision,intent(in)   :: rho2(nBas,nBas,nOO)
 
@@ -47,7 +47,7 @@ subroutine dynamic_Tmatrix_A(eta,nBas,nC,nO,nV,nR,nS,nOO,nVV,lambda,eGT,Omega1,O
 ! Build dynamic A matrix
 
   jb = 0
-!$omp parallel do default(private) shared(TA,ZA,Omega1,Omega2,OmBSE,eGT,rho1,rho2,nO,nBas,nVV,nOO,chi,eps,eta,nC,nR,lambda)
+!$omp parallel do default(private) shared(TA,ZA,Om1,Om2,OmBSE,eGT,rho1,rho2,nO,nBas,nVV,nOO,chi,eps,eta,nC,nR,lambda)
   do j=nC+1,nO
     do b=nO+1,nBas-nR
       jb = (b-nO) + (j-1)*(nBas-nO) 
@@ -60,12 +60,12 @@ subroutine dynamic_Tmatrix_A(eta,nBas,nC,nO,nV,nR,nS,nOO,nVV,lambda,eGT,Omega1,O
           chi = 0d0
 
           do cd=1,nVV
-            eps = + OmBSE - Omega1(cd) + (eGT(i) + eGT(j))
+            eps = + OmBSE - Om1(cd) + (eGT(i) + eGT(j))
             chi = chi + rho1(i,b,cd)*rho1(a,j,cd)*eps/(eps**2 + eta**2) 
           end do
 
           do kl=1,nOO
-            eps = + OmBSE + Omega2(kl) - (eGT(a) + eGT(b))
+            eps = + OmBSE + Om2(kl) - (eGT(a) + eGT(b))
             chi = chi + rho2(i,b,kl)*rho2(a,j,kl)*eps/(eps**2 + eta**2)
           end do
 
@@ -74,12 +74,12 @@ subroutine dynamic_Tmatrix_A(eta,nBas,nC,nO,nV,nR,nS,nOO,nVV,lambda,eGT,Omega1,O
           chi = 0d0
 
           do cd=1,nVV
-            eps = + OmBSE - Omega1(cd) + (eGT(i) + eGT(j))
+            eps = + OmBSE - Om1(cd) + (eGT(i) + eGT(j))
             chi = chi + rho1(i,b,cd)*rho1(a,j,cd)*(eps**2 - eta**2)/(eps**2 + eta**2)**2
           end do
 
           do kl=1,nOO
-            eps = + OmBSE + Omega2(kl) - (eGT(a) + eGT(b))
+            eps = + OmBSE + Om2(kl) - (eGT(a) + eGT(b))
             chi = chi + rho2(i,b,kl)*rho2(a,j,kl)*(eps**2 - eta**2)/(eps**2 + eta**2)**2
           end do
 
