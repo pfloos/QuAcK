@@ -7,7 +7,7 @@ program QuAcK
   logical                       :: doHF,doRHF,doUHF,doRMOM,doUMOM
   logical                       :: dostab
   logical                       :: doKS
-  logical                       :: doMP2,doMP3
+  logical                       :: doMP,doMP2,doMP3
   logical                       :: doCCD,dopCCD,doDCD,doCCSD,doCCSDT
   logical                       :: do_drCCD,do_rCCD,do_crCCD,do_lCCD
   logical                       :: doCIS,doCIS_D,doCID,doCISD,doFCI
@@ -229,7 +229,7 @@ program QuAcK
   end if
 
 !------------------------------------------------------------------------
-! KS module
+! Kohn-Sham module
 !------------------------------------------------------------------------
 
   if(doKS) then
@@ -360,54 +360,19 @@ program QuAcK
   end if
 
 !------------------------------------------------------------------------
-! Compute MP2 energy
+! Moller-Plesset module
 !------------------------------------------------------------------------
 
-  if(doMP2) then
+  doMP = doMP2 .or. doMP3
+
+  if(doMP) then
 
     call cpu_time(start_MP)
-
-    if(unrestricted) then
-
-      call UMP2(nBas,nC,nO,nV,nR,ERI_MO_aaaa,ERI_MO_aabb,ERI_MO_bbbb,ENuc,EHF,epsHF)
-
-    else
-
-      call MP2(regMP,nBas,nC,nO,nV,nR,ERI_MO,ENuc,EHF,epsHF)
-
-    end if
-
+    call MP(doMP2,doMP3,unrestricted,regMP,nBas,nC,nO,nV,nR,ERI_MO,ENuc,EHF,epsHF)
     call cpu_time(end_MP)
 
     t_MP = end_MP - start_MP
     write(*,'(A65,1X,F9.3,A8)') 'Total CPU time for MP2 = ',t_MP,' seconds'
-    write(*,*)
-
-  end if
-
-!------------------------------------------------------------------------
-! Compute MP3 energy
-!------------------------------------------------------------------------
-
-  if(doMP3) then
-
-    call cpu_time(start_MP)
-    
-    if(unrestricted) then
-
-      write(*,*) 'MP3 NYI for UHF reference'
-      stop
-
-    else
-
-      call MP3(nBas,nC,nO,nV,nR,ERI_MO,ENuc,EHF,epsHF)
-
-    end if
-
-    call cpu_time(end_MP)
-
-    t_MP = end_MP - start_MP
-    write(*,'(A65,1X,F9.3,A8)') 'Total CPU time for MP3 = ',t_MP,' seconds'
     write(*,*)
 
   end if
