@@ -1,4 +1,4 @@
-subroutine ppLR(ispin,TDA,nBas,nC,nO,nV,nR,nOO,nVV,lambda,e,ERI,Omega1,X1,Y1,Omega2,X2,Y2,EcRPA)
+subroutine ppLR(TDA,nBas,nOO,nVV,Om1,X1,Y1,Om2,X2,Y2,EcRPA)
 
 ! Compute the p-p channel of the linear response: see Scuseria et al. JCP 139, 104113 (2013)
 
@@ -7,18 +7,12 @@ subroutine ppLR(ispin,TDA,nBas,nC,nO,nV,nR,nOO,nVV,lambda,e,ERI,Omega1,X1,Y1,Ome
 
 ! Input variables
 
-  integer,intent(in)            :: ispin
   logical,intent(in)            :: TDA
-  integer,intent(in)            :: nBas
-  integer,intent(in)            :: nC
-  integer,intent(in)            :: nO
-  integer,intent(in)            :: nV
-  integer,intent(in)            :: nR
   integer,intent(in)            :: nOO
   integer,intent(in)            :: nVV
-  double precision,intent(in)   :: lambda
-  double precision,intent(in)   :: e(nBas)
-  double precision,intent(in)   :: ERI(nBas,nBas,nBas,nBas)
+  double precision,intent(in)   :: B(nVV,nOO)
+  double precision,intent(in)   :: C(nVV,nVV)
+  double precision,intent(in)   :: D(nOO,nOO)
   
 ! Local variables
 
@@ -27,28 +21,24 @@ subroutine ppLR(ispin,TDA,nBas,nC,nO,nV,nR,nOO,nVV,lambda,e,ERI,Omega1,X1,Y1,Ome
   double precision              :: trace_matrix
   double precision              :: EcRPA1
   double precision              :: EcRPA2
-  double precision,allocatable  :: B(:,:)
-  double precision,allocatable  :: C(:,:)
-  double precision,allocatable  :: D(:,:)
   double precision,allocatable  :: M(:,:)
   double precision,allocatable  :: Z(:,:)
-  double precision,allocatable  :: Omega(:)
+  double precision,allocatable  :: Om(:)
 
 ! Output variables
 
-  double precision,intent(out)  :: Omega1(nVV)
+  double precision,intent(out)  :: Om1(nVV)
   double precision,intent(out)  :: X1(nVV,nVV)
   double precision,intent(out)  :: Y1(nOO,nVV)
-  double precision,intent(out)  :: Omega2(nOO)
+  double precision,intent(out)  :: Om2(nOO)
   double precision,intent(out)  :: X2(nVV,nOO)
   double precision,intent(out)  :: Y2(nOO,nOO)
   double precision,intent(out)  :: EcRPA
 
 ! Memory allocation
 
-  allocate(B(nVV,nOO),C(nVV,nVV),D(nOO,nOO),M(nOO+nVV,nOO+nVV),Z(nOO+nVV,nOO+nVV),Omega(nOO+nVV))
-!write(*,*) 'nOO', nOO
-!write(*,*) 'nVV', nVV
+  allocate(M(nOO+nVV,nOO+nVV),Z(nOO+nVV,nOO+nVV),Om(nOO+nVV))
+
 !-------------------------------------------------!
 ! Solve the p-p eigenproblem                      !
 !-------------------------------------------------!
@@ -59,20 +49,15 @@ subroutine ppLR(ispin,TDA,nBas,nC,nO,nV,nR,nOO,nVV,lambda,e,ERI,Omega1,X1,Y1,Ome
 !                                                 !
 !-------------------------------------------------!
 
-! Build B, C and D matrices for the pp channel
-
-  call ppLR_C(ispin,nBas,nC,nO,nV,nR,nOO,nVV,lambda,e,ERI,C)
-  call ppLR_D(ispin,nBas,nC,nO,nV,nR,nOO,nVV,lambda,e,ERI,D)
-
   if(TDA) then
 
     X1(:,:) = +C(:,:)
     Y1(:,:) = 0d0
-    if(nVV > 0) call diagonalize_matrix(nVV,X1,Omega1)
+    if(nVV > 0) call diagonalize_matrix(nVV,X1,Om1)
 
     X2(:,:) = 0d0
     Y2(:,:) = -D(:,:)
-    if(nOO > 0) call diagonalize_matrix(nOO,Y2,Omega2)
+    if(nOO > 0) call diagonalize_matrix(nOO,Y2,Om2)
 
   else
 
@@ -90,19 +75,19 @@ subroutine ppLR(ispin,TDA,nBas,nC,nO,nV,nR,nOO,nVV,lambda,e,ERI,Omega1,X1,Y1,Ome
 
   ! Diagonalize the p-p matrix
 
-    if(nOO+nVV > 0) call diagonalize_general_matrix(nOO+nVV,M,Omega,Z)
+    if(nOO+nVV > 0) call diagonalize_general_matrix(nOO+nVV,M,Om,Z)
 
   ! Split the various quantities in p-p and h-h parts
 
-    call sort_ppRPA(nOO,nVV,Omega(:),Z(:,:),Omega1(:),X1(:,:),Y1(:,:),Omega2(:),X2(:,:),Y2(:,:))
+    call sort_ppRPA(nOO,nVV,Om(:),Z(:,:),Om1(:),X1(:,:),Y1(:,:),Om2(:),X2(:,:),Y2(:,:))
 
   end if
 
 ! Compute the RPA correlation energy
 
-  EcRPA = 0.5d0*( sum(Omega1(:)) - sum(Omega2(:)) - trace_matrix(nVV,C(:,:)) - trace_matrix(nOO,D(:,:)) )
-  EcRPA1 = +sum(Omega1(:)) - trace_matrix(nVV,C(:,:))
-  EcRPA2 = -sum(Omega2(:)) - trace_matrix(nOO,D(:,:))
+  EcRPA = 0.5d0*( sum(Om1(:)) - sum(Om2(:)) - trace_matrix(nVV,C(:,:)) - trace_matrix(nOO,D(:,:)) )
+  EcRPA1 = +sum(Om1(:)) - trace_matrix(nVV,C(:,:))
+  EcRPA2 = -sum(Om2(:)) - trace_matrix(nOO,D(:,:))
 
   if(abs(EcRPA - EcRPA1) > 1d-6 .or. abs(EcRPA - EcRPA2) > 1d-6) & 
     print*,'!!! Issue in pp-RPA linear reponse calculation RPA1 != RPA2 !!!'
