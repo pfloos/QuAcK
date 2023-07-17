@@ -93,10 +93,10 @@ subroutine phRPA(TDA,doACFDT,exchange_kernel,singlet,triplet,eta,nBas,nC,nO,nV,n
 
   write(*,*)
   write(*,*)'-------------------------------------------------------------------------------'
-  write(*,'(2X,A50,F20.10)') 'Tr@RPA  correlation energy (singlet) =',EcRPA(1)
-  write(*,'(2X,A50,F20.10)') 'Tr@RPA  correlation energy (triplet) =',EcRPA(2)
-  write(*,'(2X,A50,F20.10)') 'Tr@RPA  correlation energy           =',EcRPA(1) + EcRPA(2)
-  write(*,'(2X,A50,F20.10)') 'Tr@RPA  total energy                 =',ENuc + ERHF + EcRPA(1) + EcRPA(2)
+  write(*,'(2X,A50,F20.10)') 'Tr@phRPA correlation energy (singlet) =',EcRPA(1)
+  write(*,'(2X,A50,F20.10)') 'Tr@phRPA correlation energy (triplet) =',EcRPA(2)
+  write(*,'(2X,A50,F20.10)') 'Tr@phRPA correlation energy           =',EcRPA(1) + EcRPA(2)
+  write(*,'(2X,A50,F20.10)') 'Tr@phRPA total energy                 =',ENuc + ERHF + EcRPA(1) + EcRPA(2)
   write(*,*)'-------------------------------------------------------------------------------'
   write(*,*)
 
@@ -124,10 +124,10 @@ subroutine phRPA(TDA,doACFDT,exchange_kernel,singlet,triplet,eta,nBas,nC,nO,nV,n
 
     write(*,*)
     write(*,*)'-------------------------------------------------------------------------------'
-    write(*,'(2X,A50,F20.10)') 'AC@RPA  correlation energy (singlet) =',EcAC(1)
-    write(*,'(2X,A50,F20.10)') 'AC@RPA  correlation energy (triplet) =',EcAC(2)
-    write(*,'(2X,A50,F20.10)') 'AC@RPA  correlation energy           =',EcAC(1) + EcAC(2)
-    write(*,'(2X,A50,F20.10)') 'AC@RPA  total energy                 =',ENuc + ERHF + EcAC(1) + EcAC(2)
+    write(*,'(2X,A50,F20.10)') 'AC@phRPA correlation energy (singlet) =',EcAC(1)
+    write(*,'(2X,A50,F20.10)') 'AC@phRPA correlation energy (triplet) =',EcAC(2)
+    write(*,'(2X,A50,F20.10)') 'AC@phRPA correlation energy           =',EcAC(1) + EcAC(2)
+    write(*,'(2X,A50,F20.10)') 'AC@phRPA total energy                 =',ENuc + ERHF + EcAC(1) + EcAC(2)
     write(*,*)'-------------------------------------------------------------------------------'
     write(*,*)
 

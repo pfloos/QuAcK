@@ -8,7 +8,12 @@ subroutine ppACFDT_correlation_energy(ispin,nBas,nC,nO,nV,nR,nS,ERI,nOO,nVV,X1,Y
 ! Input variables
 
   integer,intent(in)            :: ispin
-  integer,intent(in)            :: nBas,nC,nO,nV,nR,nS
+  integer,intent(in)            :: nBas
+  integer,intent(in)            :: nC
+  integer,intent(in)            :: nO
+  integer,intent(in)            :: nV
+  integer,intent(in)            :: nR
+  integer,intent(in)            :: nS
   double precision,intent(in)   :: ERI(nBas,nBas,nBas,nBas)
 
   integer,intent(in)            :: nOO

@@ -30,7 +30,7 @@ subroutine crRPA(TDA,doACFDT,exchange_kernel,singlet,triplet,eta,nBas,nC,nO,nV,n
 ! Local variables
 
   integer                       :: ispin
-  double precision,allocatable  :: Omega(:,:)
+  double precision,allocatable  :: Om(:,:)
   double precision,allocatable  :: XpY(:,:,:)
   double precision,allocatable  :: XmY(:,:,:)
 
@@ -59,7 +59,7 @@ subroutine crRPA(TDA,doACFDT,exchange_kernel,singlet,triplet,eta,nBas,nC,nO,nV,n
 
 ! Memory allocation
 
-  allocate(Omega(nS,nspin),XpY(nS,nS,nspin),XmY(nS,nS,nspin))
+  allocate(Om(nS,nspin),XpY(nS,nS,nspin),XmY(nS,nS,nspin))
 
 ! Singlet manifold
 
@@ -67,9 +67,9 @@ subroutine crRPA(TDA,doACFDT,exchange_kernel,singlet,triplet,eta,nBas,nC,nO,nV,n
 
     ispin = 1
 
-    call phLR(ispin,.false.,TDA,eta,nBas,nC,nO,nV,nR,nS,-1d0,eHF,ERI,EcRPAx(ispin),Omega(:,ispin),XpY(:,:,ispin),XmY(:,:,ispin))
-    call print_excitation('crRPA@HF    ',ispin,nS,Omega(:,ispin))
-    call print_transition_vectors_ph(.true.,nBas,nC,nO,nV,nR,nS,dipole_int,Omega(:,ispin),XpY(:,:,ispin),XmY(:,:,ispin))
+    call phLR(ispin,.false.,TDA,eta,nBas,nC,nO,nV,nR,nS,-1d0,eHF,ERI,EcRPAx(ispin),Om(:,ispin),XpY(:,:,ispin),XmY(:,:,ispin))
+    call print_excitation('crRPA@HF    ',ispin,nS,Om(:,ispin))
+    call print_transition_vectors_ph(.true.,nBas,nC,nO,nV,nR,nS,dipole_int,Om(:,ispin),XpY(:,:,ispin),XmY(:,:,ispin))
 
   endif
 
@@ -79,9 +79,9 @@ subroutine crRPA(TDA,doACFDT,exchange_kernel,singlet,triplet,eta,nBas,nC,nO,nV,n
 
     ispin = 2
 
-    call phLR(ispin,.false.,TDA,eta,nBas,nC,nO,nV,nR,nS,-1d0,eHF,ERI,EcRPAx(ispin),Omega(:,ispin),XpY(:,:,ispin),XmY(:,:,ispin))
-    call print_excitation('crRPA@HF    ',ispin,nS,Omega(:,ispin))
-    call print_transition_vectors_ph(.false.,nBas,nC,nO,nV,nR,nS,dipole_int,Omega(:,ispin),XpY(:,:,ispin),XmY(:,:,ispin))
+    call phLR(ispin,.false.,TDA,eta,nBas,nC,nO,nV,nR,nS,-1d0,eHF,ERI,EcRPAx(ispin),Om(:,ispin),XpY(:,:,ispin),XmY(:,:,ispin))
+    call print_excitation('crRPA@HF    ',ispin,nS,Om(:,ispin))
+    call print_transition_vectors_ph(.false.,nBas,nC,nO,nV,nR,nS,dipole_int,Om(:,ispin),XpY(:,:,ispin),XmY(:,:,ispin))
 
   endif
 
@@ -110,8 +110,8 @@ subroutine crRPA(TDA,doACFDT,exchange_kernel,singlet,triplet,eta,nBas,nC,nO,nV,n
     write(*,*) '-------------------------------------------------------'
     write(*,*)
 
-    call ACFDT_cr(exchange_kernel,.false.,.false.,.false.,TDA,.false.,singlet,triplet,eta, &
-                  nBas,nC,nO,nV,nR,nS,ERI,eHF,eHF,EcAC)
+    call crACFDT(exchange_kernel,.false.,.false.,.false.,TDA,.false.,singlet,triplet,eta, &
+                 nBas,nC,nO,nV,nR,nS,ERI,eHF,eHF,EcAC)
 
     write(*,*)
     write(*,*)'-------------------------------------------------------------------------------'
@@ -124,4 +124,4 @@ subroutine crRPA(TDA,doACFDT,exchange_kernel,singlet,triplet,eta,nBas,nC,nO,nV,n
 
   end if
 
-end subroutine crRPA
+end subroutine 

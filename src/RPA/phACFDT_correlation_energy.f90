@@ -1,4 +1,4 @@
-subroutine ACFDT_correlation_energy(ispin,exchange_kernel,nBas,nC,nO,nV,nR,nS,ERI,XpY,XmY,EcAC)
+subroutine phACFDT_correlation_energy(ispin,exchange_kernel,nBas,nC,nO,nV,nR,nS,ERI,XpY,XmY,EcAC)
 
 ! Compute the correlation energy via the adiabatic connection formula
 
@@ -9,7 +9,12 @@ subroutine ACFDT_correlation_energy(ispin,exchange_kernel,nBas,nC,nO,nV,nR,nS,ER
 
   integer,intent(in)            :: ispin
   logical,intent(in)            :: exchange_kernel
-  integer,intent(in)            :: nBas,nC,nO,nV,nR,nS
+  integer,intent(in)            :: nBas
+  integer,intent(in)            :: nC
+  integer,intent(in)            :: nO
+  integer,intent(in)            :: nV
+  integer,intent(in)            :: nR
+  integer,intent(in)            :: nS
   double precision,intent(in)   :: ERI(nBas,nBas,nBas,nBas)
   double precision,intent(in)   :: XpY(nS,nS)
   double precision,intent(in)   :: XmY(nS,nS)
@@ -56,11 +61,9 @@ subroutine ACFDT_correlation_energy(ispin,exchange_kernel,nBas,nC,nO,nV,nR,nS,ER
         do b=nO+1,nBas-nR
           jb = jb + 1
 
-            Ap(ia,jb) = (1d0 + delta_spin)*ERI(i,b,a,j) & 
-                      - delta_Kx*ERI(i,b,j,a)
+            Ap(ia,jb) = (1d0 + delta_spin)*ERI(i,b,a,j) - delta_Kx*ERI(i,b,j,a)
 
-            Bp(ia,jb) = (1d0 + delta_spin)*ERI(i,j,a,b) &
-                      - delta_Kx*ERI(i,j,b,a)
+            Bp(ia,jb) = (1d0 + delta_spin)*ERI(i,j,a,b) - delta_Kx*ERI(i,j,b,a)
 
         enddo
       enddo
@@ -76,5 +79,4 @@ subroutine ACFDT_correlation_energy(ispin,exchange_kernel,nBas,nC,nO,nV,nR,nS,ER
        + trace_matrix(nS,matmul(X,matmul(Ap,transpose(X))) + matmul(Y,matmul(Ap,transpose(Y)))) &
        - trace_matrix(nS,Ap)
 
-end subroutine ACFDT_correlation_energy
-
+end subroutine 
