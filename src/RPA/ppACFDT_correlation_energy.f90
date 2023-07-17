@@ -1,4 +1,4 @@
-subroutine ACFDT_pp_correlation_energy(ispin,nBas,nC,nO,nV,nR,nS,ERI,nOO,nVV,X1,Y1,X2,Y2,EcAC)
+subroutine ppACFDT_correlation_energy(ispin,nBas,nC,nO,nV,nR,nS,ERI,nOO,nVV,X1,Y1,X2,Y2,EcAC)
 
 ! Compute the correlation energy via the adiabatic connection formula for the pp sector
 
@@ -47,5 +47,5 @@ subroutine ACFDT_pp_correlation_energy(ispin,nBas,nC,nO,nV,nR,nS,ERI,nOO,nVV,X1,
        + trace_matrix(nOO,matmul(transpose(X2),matmul(C,X2)) + matmul(transpose(Y2),matmul(D,Y2)))  &
        - trace_matrix(nVV,C) - trace_matrix(nOO,D)
 
-end subroutine ACFDT_pp_correlation_energy
+end subroutine 
 

@@ -170,4 +170,4 @@ subroutine MP2(regularize,nBas,nC,nO,nV,nR,ERI,ENuc,EHF,e)
 
   end if
 
-end subroutine MP2
+end subroutine 

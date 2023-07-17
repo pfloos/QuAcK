@@ -156,4 +156,4 @@ subroutine UMP2(nBas,nC,nO,nV,nR,ERI_aa,ERI_ab,ERI_bb,ENuc,EHF,e,Ec)
   write(*,'(A32)')           '--------------------------'
   write(*,*)
 
-end subroutine UMP2
+end subroutine 

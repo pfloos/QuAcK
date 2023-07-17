@@ -127,7 +127,7 @@ subroutine ppRPA(TDA,doACFDT,singlet,triplet,nBas,nC,nO,nV,nR,ENuc,ERHF,ERI,dipo
     write(*,*) '---------------------------------------------------------'
     write(*,*)
 
-    call ACFDT_pp(TDA,singlet,triplet,nBas,nC,nO,nV,nR,nS,ERI,e,EcAC)
+    call ppACFDT(TDA,singlet,triplet,nBas,nC,nO,nV,nR,nS,ERI,e,EcAC)
 
     write(*,*)
     write(*,*)'-------------------------------------------------------------------------------'

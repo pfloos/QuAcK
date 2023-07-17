@@ -191,4 +191,4 @@ subroutine MP3(nBasin,nCin,nOin,nVin,nRin,ERI,ENuc,EHF,e)
   write(*,'(A32)')           '-----------------------'
   write(*,*)
 
-end subroutine MP3
+end subroutine 

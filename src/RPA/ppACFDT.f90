@@ -1,4 +1,4 @@
-subroutine ACFDT_pp(TDA,singlet,triplet,nBas,nC,nO,nV,nR,nS,ERI,e,EcAC)
+subroutine ppACFDT(TDA,singlet,triplet,nBas,nC,nO,nV,nR,nS,ERI,e,EcAC)
 
 ! Compute the correlation energy via the adiabatic connection fluctuation dissipation theorem for pp sector
 
@@ -29,38 +29,24 @@ subroutine ACFDT_pp(TDA,singlet,triplet,nBas,nC,nO,nV,nR,nS,ERI,e,EcAC)
   double precision              :: lambda
   double precision,allocatable  :: Ec(:,:)
 
-  integer                       :: nOOs,nOOt
-  integer                       :: nVVs,nVVt
+  integer                       :: nOO
+  integer                       :: nVV
 
-  double precision,allocatable  :: Omega1s(:),Omega1t(:)
-  double precision,allocatable  :: X1s(:,:),X1t(:,:)
-  double precision,allocatable  :: Y1s(:,:),Y1t(:,:)
-  double precision,allocatable  :: rho1s(:,:,:),rho1t(:,:,:)
-  double precision,allocatable  :: Omega2s(:),Omega2t(:)
-  double precision,allocatable  :: X2s(:,:),X2t(:,:)
-  double precision,allocatable  :: Y2s(:,:),Y2t(:,:)
-  double precision,allocatable  :: rho2s(:,:,:),rho2t(:,:,:)
+  double precision,allocatable  :: Om1(:)
+  double precision,allocatable  :: X1(:,:)
+  double precision,allocatable  :: Y1(:,:)
+  double precision,allocatable  :: rho1(:,:,:)
+  double precision,allocatable  :: Om2(:)
+  double precision,allocatable  :: X2(:,:)
+  double precision,allocatable  :: Y2(:,:)
+  double precision,allocatable  :: rho2(:,:,:)
 
 ! Output variables
 
   double precision,intent(out)  :: EcAC(nspin)
 
-! Useful quantities
-
-  nOOs = nO*(nO+1)/2
-  nVVs = nV*(nV+1)/2
-
-  nOOt = nO*(nO-1)/2
-  nVVt = nV*(nV-1)/2
-
 ! Memory allocation
 
-  allocate(Omega1s(nVVs),X1s(nVVs,nVVs),Y1s(nOOs,nVVs), &
-           Omega2s(nOOs),X2s(nVVs,nOOs),Y2s(nOOs,nOOs), &
-           rho1s(nBas,nBas,nVVs),rho2s(nBas,nBas,nOOs), &
-           Omega1t(nVVt),X1t(nVVt,nVVt),Y1t(nOOt,nVVt), &
-           Omega2t(nOOt),X2t(nVVt,nOOt),Y2t(nOOt,nOOt), &
-           rho1t(nBas,nBas,nVVt),rho2t(nBas,nBas,nOOt))
   allocate(Ec(nAC,nspin))
 
 ! Antisymmetrized kernel version
@@ -73,6 +59,12 @@ subroutine ACFDT_pp(TDA,singlet,triplet,nBas,nC,nO,nV,nR,nS,ERI,e,EcAC)
   if(singlet) then
 
     ispin = 1
+
+    nOO = nO*(nO+1)/2
+    nVV = nV*(nV+1)/2
+
+    allocate(Om1(nVV),X1(nVV,nVV),Y1(nOO,nVV),rho1(nBas,nBas,nVV), & 
+             Om2(nOO),X2(nVV,nOO),Y2(nOO,nOO),rho2(nBas,nBas,nOO))
 
     write(*,*) '--------------'
     write(*,*) 'Singlet states'
@@ -87,9 +79,9 @@ subroutine ACFDT_pp(TDA,singlet,triplet,nBas,nC,nO,nV,nR,nS,ERI,e,EcAC)
  
       lambda = rAC(iAC)
 
-      call ppLR(ispin,TDA,nBas,nC,nO,nV,nR,nOOs,nVVs,lambda,e,ERI,Omega1s,X1s,Y1s,Omega2s,X2s,Y2s,EcAC(ispin))
+      call ppLR(ispin,TDA,nBas,nC,nO,nV,nR,nOO,nVV,lambda,e,ERI,Om1,X1,Y1,Om2,X2,Y2,EcAC(ispin))
 
-      call ACFDT_pp_correlation_energy(ispin,nBas,nC,nO,nV,nR,nS,ERI,nOOs,nVVs,X1s,Y1s,X2s,Y2s,Ec(iAC,ispin))
+      call ppACFDT_correlation_energy(ispin,nBas,nC,nO,nV,nR,nS,ERI,nOO,nVV,X1,Y1,X2,Y2,Ec(iAC,ispin))
 
       write(*,'(2X,F15.6,1X,F30.15,1X,F30.15)') lambda,EcAC(ispin),Ec(iAC,ispin)
 
@@ -102,6 +94,8 @@ subroutine ACFDT_pp(TDA,singlet,triplet,nBas,nC,nO,nV,nR,nS,ERI,e,EcAC)
     write(*,*) '-----------------------------------------------------------------------------------'
     write(*,*)
 
+    deallocate(Om1,X1,Y1,rho1,Om2,X2,Y2,rho2)
+
   end if
  
 ! Triplet manifold
@@ -109,6 +103,12 @@ subroutine ACFDT_pp(TDA,singlet,triplet,nBas,nC,nO,nV,nR,nS,ERI,e,EcAC)
   if(triplet) then
 
     ispin = 2
+
+    nOO = nO*(nO-1)/2
+    nVV = nV*(nV-1)/2
+
+    allocate(Om1(nVV),X1(nVV,nVV),Y1(nOO,nVV),rho1(nBas,nBas,nVV), & 
+             Om2(nOO),X2(nVV,nOO),Y2(nOO,nOO),rho2(nBas,nBas,nOO))
 
     write(*,*) '--------------'
     write(*,*) 'Triplet states'
@@ -125,9 +125,9 @@ subroutine ACFDT_pp(TDA,singlet,triplet,nBas,nC,nO,nV,nR,nS,ERI,e,EcAC)
 
       ! Initialize T matrix
 
-      call ppLR(ispin,TDA,nBas,nC,nO,nV,nR,nOOt,nVVt,lambda,e,ERI,Omega1t,X1t,Y1t,Omega2t,X2t,Y2t,EcAC(ispin))
+      call ppLR(ispin,TDA,nBas,nC,nO,nV,nR,nOO,nVV,lambda,e,ERI,Om1,X1,Y1,Om2,X2,Y2,EcAC(ispin))
 
-      call ACFDT_pp_correlation_energy(ispin,nBas,nC,nO,nV,nR,nS,ERI,nOOt,nVVt,X1t,Y1t,X2t,Y2t,Ec(iAC,ispin))
+      call ppACFDT_correlation_energy(ispin,nBas,nC,nO,nV,nR,nS,ERI,nOO,nVV,X1,Y1,X2,Y2,Ec(iAC,ispin))
 
       write(*,'(2X,F15.6,1X,F30.15,1X,F30.15)') lambda,EcAC(ispin),Ec(iAC,ispin)
 
@@ -140,6 +140,8 @@ subroutine ACFDT_pp(TDA,singlet,triplet,nBas,nC,nO,nV,nR,nS,ERI,e,EcAC)
     write(*,*) '-----------------------------------------------------------------------------------'
     write(*,*)
 
+    deallocate(Om1,X1,Y1,rho1,Om2,X2,Y2,rho2)
+
   end if
 
-end subroutine ACFDT_pp
+end subroutine 
