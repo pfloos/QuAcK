@@ -1,5 +1,5 @@
 subroutine RHF(maxSCF,thresh,max_diis,guess_type,level_shift,nNuc,ZNuc,rNuc,ENuc, & 
-               nBas,nO,S,T,V,Hc,F,ERI,dipole_int,X,ERHF,e,c,P,Vx)
+               nBas,nO,S,T,V,Hc,F,ERI,dipole_int,X,EHF,eps,c,P,Vx)
 
 ! Perform restricted Hartree-Fock calculation
 
@@ -53,8 +53,8 @@ subroutine RHF(maxSCF,thresh,max_diis,guess_type,level_shift,nNuc,ZNuc,rNuc,ENuc
 
 ! Output variables
 
-  double precision,intent(out)  :: ERHF
-  double precision,intent(out)  :: e(nBas)
+  double precision,intent(out)  :: EHF
+  double precision,intent(out)  :: eps(nBas)
   double precision,intent(out)  :: c(nBas,nBas)
   double precision,intent(out)  :: P(nBas,nBas)
   double precision,intent(out)  :: Vx(nBas)
@@ -137,7 +137,7 @@ subroutine RHF(maxSCF,thresh,max_diis,guess_type,level_shift,nNuc,ZNuc,rNuc,ENuc
 
     Fp = matmul(transpose(X),matmul(F,X))
     cp(:,:) = Fp(:,:)
-    call diagonalize_matrix(nBas,cp,e)
+    call diagonalize_matrix(nBas,cp,eps)
     c = matmul(X,cp)
 
 !   Density matrix
@@ -146,15 +146,15 @@ subroutine RHF(maxSCF,thresh,max_diis,guess_type,level_shift,nNuc,ZNuc,rNuc,ENuc
   
 !   Compute HF energy
 
-    ERHF = trace_matrix(nBas,matmul(P,Hc))      &
-         + 0.5d0*trace_matrix(nBas,matmul(P,J)) &
-         + 0.25d0*trace_matrix(nBas,matmul(P,K))
+    EHF = trace_matrix(nBas,matmul(P,Hc))      &
+        + 0.5d0*trace_matrix(nBas,matmul(P,J)) &
+        + 0.25d0*trace_matrix(nBas,matmul(P,K))
 
 !   Compute HOMO-LUMO gap
 
     if(nBas > nO) then 
 
-      Gap = e(nO+1) - e(nO)
+      Gap = eps(nO+1) - eps(nO)
 
     else
 
@@ -165,7 +165,7 @@ subroutine RHF(maxSCF,thresh,max_diis,guess_type,level_shift,nNuc,ZNuc,rNuc,ENuc
 !  Dump results
 
     write(*,'(1X,A1,1X,I3,1X,A1,1X,F16.10,1X,A1,1X,F10.6,1X,A1,1X,F10.6,1X,A1,1X)') & 
-      '|',nSCF,'|',ERHF+ENuc,'|',Conv,'|',Gap,'|'
+      '|',nSCF,'|',EHF+ENuc,'|',Conv,'|',Gap,'|'
 
   enddo
   write(*,*)'----------------------------------------------------'
@@ -193,16 +193,12 @@ subroutine RHF(maxSCF,thresh,max_diis,guess_type,level_shift,nNuc,ZNuc,rNuc,ENuc
   EV = trace_matrix(nBas,matmul(P,V))
   EJ = 0.5d0*trace_matrix(nBas,matmul(P,J))
   EK = 0.25d0*trace_matrix(nBas,matmul(P,K))
-  ERHF = ET + EV + EJ + EK
+  EHF = ET + EV + EJ + EK
 
 ! Compute dipole moments
 
   call dipole_moment(nBas,P,nNuc,ZNuc,rNuc,dipole_int,dipole)
-  call print_RHF(nBas,nO,e,C,ENuc,ET,EV,EJ,EK,ERHF,dipole)
-
-! dump orbitals for potential restart
-
-  call dump_orbitals(nBas,c)
+  call print_RHF(nBas,nO,eps,C,ENuc,ET,EV,EJ,EK,EHF,dipole)
 
 ! Compute Vx for post-HF calculations
 

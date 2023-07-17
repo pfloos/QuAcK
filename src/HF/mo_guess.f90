@@ -20,11 +20,7 @@ subroutine mo_guess(nBas,guess_type,S,Hc,X,c)
 
   double precision,intent(out)  :: c(nBas,nBas)
 
-  if(guess_type == 0) then
-
-    call read_guess(nBas,c)
-
-  elseif(guess_type == 1) then
+  if(guess_type == 1) then
 
     call core_guess(nBas,Hc,X,c)
 
