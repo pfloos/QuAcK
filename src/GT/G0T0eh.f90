@@ -1,4 +1,4 @@
-subroutine G0T0eh(doACFDT,exchange_kernel,doXBS,BSE,BSE2,TDA_T,TDA,dBSE,dTDA,evDyn,ppBSE, & 
+subroutine G0T0eh(doACFDT,exchange_kernel,doXBS,dophBSE,dophBSE2,TDA_T,TDA,dBSE,dTDA,evDyn,doppBSE, & 
                   singlet,triplet,linearize,eta,regularize,nBas,nC,nO,nV,nR,nS,ENuc,ERHF,   & 
                   ERI_AO,ERI_MO,dipole_int,PHF,cHF,eHF,Vxc)
 
@@ -13,9 +13,9 @@ subroutine G0T0eh(doACFDT,exchange_kernel,doXBS,BSE,BSE2,TDA_T,TDA,dBSE,dTDA,evD
   logical,intent(in)            :: doACFDT
   logical,intent(in)            :: exchange_kernel
   logical,intent(in)            :: doXBS
-  logical,intent(in)            :: BSE
-  logical,intent(in)            :: BSE2
-  logical,intent(in)            :: ppBSE
+  logical,intent(in)            :: dophBSE
+  logical,intent(in)            :: dophBSE2
+  logical,intent(in)            :: doppBSE
   logical,intent(in)            :: TDA_T
   logical,intent(in)            :: TDA
   logical,intent(in)            :: dBSE
@@ -46,20 +46,22 @@ subroutine G0T0eh(doACFDT,exchange_kernel,doXBS,BSE,BSE2,TDA_T,TDA,dBSE,dTDA,evD
 ! Local variables
 
   logical                       :: print_W = .true.
+  logical                       :: dRPA = .false.
   integer                       :: ispin
   double precision              :: EcRPA
   double precision              :: EcBSE(nspin)
   double precision              :: EcAC(nspin)
-  double precision              :: EcppBSE(nspin)
   double precision              :: EcGM
+  double precision,allocatable  :: Aph(:,:)
+  double precision,allocatable  :: Bph(:,:)
   double precision,allocatable  :: SigX(:)
   double precision,allocatable  :: Sig(:)
   double precision,allocatable  :: Z(:)
-  double precision,allocatable  :: OmRPA(:)
-  double precision,allocatable  :: XpY_RPA(:,:)
-  double precision,allocatable  :: XmY_RPA(:,:)
-  double precision,allocatable  :: rhoL_RPA(:,:,:,:)
-  double precision,allocatable  :: rhoR_RPA(:,:,:,:)
+  double precision,allocatable  :: Om(:)
+  double precision,allocatable  :: XpY(:,:)
+  double precision,allocatable  :: XmY(:,:)
+  double precision,allocatable  :: rhoL(:,:,:,:)
+  double precision,allocatable  :: rhoR(:,:,:,:)
 
   double precision,allocatable  :: eGT(:)
   double precision,allocatable  :: eGTlin(:)
@@ -98,22 +100,25 @@ subroutine G0T0eh(doACFDT,exchange_kernel,doXBS,BSE,BSE2,TDA_T,TDA,dBSE,dTDA,evD
 
 ! Memory allocation
 
-  allocate(Sig(nBas),SigX(nBas),Z(nBas),OmRPA(nS),XpY_RPA(nS,nS),XmY_RPA(nS,nS), & 
-           rhoL_RPA(nBas,nBas,nS,2),rhoR_RPA(nBas,nBas,nS,2),eGT(nBas),eGTlin(nBas))
+  allocate(Aph(nS,nS),Bph(nS,nS),Sig(nBas),SigX(nBas),Z(nBas),Om(nS),XpY(nS,nS),XmY(nS,nS), & 
+           rhoL(nBas,nBas,nS,2),rhoR(nBas,nBas,nS,2),eGT(nBas),eGTlin(nBas))
 
 !-------------------!
 ! Compute screening !
 !-------------------!
 
-  call phLR(ispin,.false.,TDA_T,eta,nBas,nC,nO,nV,nR,nS,1d0,eHF,ERI_MO,EcRPA,OmRPA,XpY_RPA,XmY_RPA)
+  call phLR_A(ispin,dRPA,nBas,nC,nO,nV,nR,nS,1d0,eHF,ERI_MO,Aph)
+  if(.not.TDA_T) call phLR_B(ispin,dRPA,nBas,nC,nO,nV,nR,nS,1d0,ERI_MO,Bph)
 
-  if(print_W) call print_excitation('RPA@HF      ',ispin,nS,OmRPA)
+  call phLR(TDA_T,nS,Aph,Bph,EcRPA,Om,XpY,XmY)
+
+  if(print_W) call print_excitation('RPA@HF      ',ispin,nS,Om)
 
 !--------------------------!
 ! Compute spectral weights !
 !--------------------------!
 
-  call GTeh_excitation_density(nBas,nC,nO,nR,nS,ERI_MO,XpY_RPA,XmY_RPA,rhoL_RPA,rhoR_RPA)
+  call GTeh_excitation_density(nBas,nC,nO,nR,nS,ERI_MO,XpY,XmY,rhoL,rhoR)
 
 !------------------------!
 ! Compute GW self-energy !
@@ -123,12 +128,12 @@ subroutine G0T0eh(doACFDT,exchange_kernel,doXBS,BSE,BSE2,TDA_T,TDA,dBSE,dTDA,evD
 
   if(regularize) then 
 
-!   call regularized_self_energy_correlation_diag(eta,nBas,nC,nO,nV,nR,nS,eHF,OmRPA,rho_RPA,EcGM,Sig)
-!   call regularized_renormalization_factor(eta,nBas,nC,nO,nV,nR,nS,eHF,OmRPA,rho_RPA,Z)
+!   call regularized_self_energy_correlation_diag(eta,nBas,nC,nO,nV,nR,nS,eHF,Om,rho,EcGM,Sig)
+!   call regularized_renormalization_factor(eta,nBas,nC,nO,nV,nR,nS,eHF,Om,rho,Z)
 
   else
 
-    call GTeh_self_energy_diag(eta,nBas,nC,nO,nV,nR,nS,eHF,OmRPA,rhoL_RPA,rhoR_RPA,EcGM,Sig,Z)
+    call GTeh_self_energy_diag(eta,nBas,nC,nO,nV,nR,nS,eHF,Om,rhoL,rhoR,EcGM,Sig,Z)
 
   end if
 
@@ -152,17 +157,20 @@ subroutine G0T0eh(doACFDT,exchange_kernel,doXBS,BSE,BSE2,TDA_T,TDA,dBSE,dTDA,evD
     write(*,*) ' *** Quasiparticle energies obtained by root search (experimental) *** '
     write(*,*)
   
-!   call QP_graph(nBas,nC,nO,nV,nR,nS,eta,eHF,SigX,Vxc,OmRPA,rho_RPA,eGWlin,eGW)
+!   call QP_graph(nBas,nC,nO,nV,nR,nS,eta,eHF,SigX,Vxc,Om,rho,eGTlin,eGT)
 
     ! Find all the roots of the QP equation if necessary
 
-    ! call QP_roots(nBas,nC,nO,nV,nR,nS,eta,eHF,Om,rho,eGWlin)
+    ! call QP_roots(nBas,nC,nO,nV,nR,nS,eta,eHF,Om,rho,eGTlin)
  
   end if
 
 ! Compute the RPA correlation energy
 
-  call phLR(ispin,.false.,TDA_T,eta,nBas,nC,nO,nV,nR,nS,1d0,eGT,ERI_MO,EcRPA,OmRPA,XpY_RPA,XmY_RPA)
+  call phLR_A(ispin,dRPA,nBas,nC,nO,nV,nR,nS,1d0,eGT,ERI_MO,Aph)
+  if(.not.TDA_T) call phLR_B(ispin,dRPA,nBas,nC,nO,nV,nR,nS,1d0,ERI_MO,Bph)
+
+  call phLR(TDA_T,nS,Aph,Bph,EcRPA,Om,XpY,XmY)
 
 !--------------!
 ! Dump results !
@@ -172,11 +180,7 @@ subroutine G0T0eh(doACFDT,exchange_kernel,doXBS,BSE,BSE2,TDA_T,TDA,dBSE,dTDA,evD
 
 ! Deallocate memory
 
-! deallocate(Sig,Z,OmRPA,XpY_RPA,XmY_RPA,rho_RPA,eGWlin)
-
-! Plot stuff
-
-! call plot_GW(nBas,nC,nO,nV,nR,nS,eHF,eGW,OmRPA,rho_RPA)
+! deallocate(Sig,Z,Om,XpY,XmY,rho,eGTlin)
 
 ! Perform BSE calculation
 
@@ -233,23 +237,23 @@ subroutine G0T0eh(doACFDT,exchange_kernel,doXBS,BSE,BSE2,TDA_T,TDA,dBSE,dTDA,evD
 
 ! if(ppBSE) then
 
-!   call Bethe_Salpeter_pp(TDA_T,TDA,singlet,triplet,eta,nBas,nC,nO,nV,nR,nS,ERI_MO,dipole_int,eHF,eGW,EcppBSE)
+!   call Bethe_Salpeter_pp(TDA_T,TDA,singlet,triplet,eta,nBas,nC,nO,nV,nR,nS,ERI_MO,dipole_int,eHF,eGW,EcBSE)
 
 !   write(*,*)
 !   write(*,*)'-------------------------------------------------------------------------------'
-!   write(*,'(2X,A50,F20.10,A3)') 'Tr@ppBSE@G0W0 correlation energy (singlet) =',EcppBSE(1),' au'
-!   write(*,'(2X,A50,F20.10,A3)') 'Tr@ppBSE@G0W0 correlation energy (triplet) =',3d0*EcppBSE(2),' au'
-!   write(*,'(2X,A50,F20.10,A3)') 'Tr@ppBSE@G0W0 correlation energy           =',EcppBSE(1) + 3d0*EcppBSE(2),' au'
-!   write(*,'(2X,A50,F20.10,A3)') 'Tr@ppBSE@G0W0 total energy                 =',ENuc + ERHF + EcppBSE(1) + 3d0*EcppBSE(2),' au'
+!   write(*,'(2X,A50,F20.10,A3)') 'Tr@ppBSE@G0W0 correlation energy (singlet) =',EcBSE(1),' au'
+!   write(*,'(2X,A50,F20.10,A3)') 'Tr@ppBSE@G0W0 correlation energy (triplet) =',3d0*EcBSE(2),' au'
+!   write(*,'(2X,A50,F20.10,A3)') 'Tr@ppBSE@G0W0 correlation energy           =',EcBSE(1) + 3d0*EcBSE(2),' au'
+!   write(*,'(2X,A50,F20.10,A3)') 'Tr@ppBSE@G0W0 total energy                 =',ENuc + ERHF + EcBSE(1) + 3d0*EcBSE(2),' au'
 !   write(*,*)'-------------------------------------------------------------------------------'
 !   write(*,*)
 
 ! end if
 
 ! if(BSE) call ufBSE(nBas,nC,nO,nV,nR,nS,ENuc,ERHF,ERI_MO,eHF,eGW)
-! if(BSE) call ufXBSE(nBas,nC,nO,nV,nR,nS,ENuc,ERHF,ERI_MO,eHF,OmRPA,rho_RPA)
+! if(BSE) call ufXBSE(nBas,nC,nO,nV,nR,nS,ENuc,ERHF,ERI_MO,eHF,Om,rho)
 
-! if(BSE) call XBSE(TDA_W,TDA,dBSE,dTDA,singlet,triplet,eta,nBas,nC,nO,nV,nR,nS,ERI_MO,dipole_int,eHF,eGW,EcBSE)
+! if(BSE) call XBSE(TDA_T,TDA,dBSE,dTDA,singlet,triplet,eta,nBas,nC,nO,nV,nR,nS,ERI_MO,dipole_int,eHF,eGW,EcBSE)
 
 
 end subroutine 

@@ -52,7 +52,6 @@ subroutine evGW(maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,dophBSE,dop
   integer                       :: ispin
   integer                       :: nSCF
   integer                       :: n_diis
-  integer                       :: i,a,jb,p
   double precision              :: rcond
   double precision              :: Conv
   double precision              :: EcRPA

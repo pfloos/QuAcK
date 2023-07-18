@@ -54,6 +54,7 @@ subroutine qsGTeh(maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,BSE,BSE2,
 
 ! Local variables
 
+  logical                       :: dRPA = .true.
   integer                       :: nSCF
   integer                       :: nBasSq
   integer                       :: ispin
@@ -75,11 +76,13 @@ subroutine qsGTeh(maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,BSE,BSE2,
   logical                       :: print_T = .true.
   double precision,allocatable  :: error_diis(:,:)
   double precision,allocatable  :: F_diis(:,:)
-  double precision,allocatable  :: OmRPA(:)
-  double precision,allocatable  :: XpY_RPA(:,:)
-  double precision,allocatable  :: XmY_RPA(:,:)
-  double precision,allocatable  :: rhoL_RPA(:,:,:)
-  double precision,allocatable  :: rhoR_RPA(:,:,:)
+  double precision,allocatable  :: Aph(:,:)
+  double precision,allocatable  :: Bph(:,:)
+  double precision,allocatable  :: Om(:)
+  double precision,allocatable  :: XpY(:,:)
+  double precision,allocatable  :: XmY(:,:)
+  double precision,allocatable  :: rhoL(:,:,:)
+  double precision,allocatable  :: rhoR(:,:,:)
   double precision,allocatable  :: c(:,:)
   double precision,allocatable  :: cp(:,:)
   double precision,allocatable  :: eGT(:)
@@ -128,10 +131,9 @@ subroutine qsGTeh(maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,BSE,BSE2,
 
 ! Memory allocation
 
-  allocate(eGT(nBas),eOld(nBas),c(nBas,nBas),cp(nBas,nBas),P(nBas,nBas),F(nBas,nBas),Fp(nBas,nBas), &
-           J(nBas,nBas),K(nBas,nBas),Sig(nBas,nBas),Sigp(nBas,nBas),Sigm(nBas,nBas),Z(nBas),     & 
-           OmRPA(nS),XpY_RPA(nS,nS),XmY_RPA(nS,nS),rhoL_RPA(nBas,nBas,nS),rhoR_RPA(nBas,nBas,nS),   &
-           error(nBas,nBas),error_diis(nBasSq,max_diis),F_diis(nBasSq,max_diis))
+  allocate(Aph(nS,nS),Bph(nS,nS),eGT(nBas),eOld(nBas),c(nBas,nBas),cp(nBas,nBas),P(nBas,nBas),F(nBas,nBas),Fp(nBas,nBas), &
+           J(nBas,nBas),K(nBas,nBas),Sig(nBas,nBas),Sigp(nBas,nBas),Sigm(nBas,nBas),Z(nBas),Om(nS),XpY(nS,nS),XmY(nS,nS), & 
+           rhoL(nBas,nBas,nS),rhoR(nBas,nBas,nS),error(nBas,nBas),error_diis(nBasSq,max_diis),F_diis(nBasSq,max_diis))
 
 ! Initialization
   
@@ -171,21 +173,25 @@ subroutine qsGTeh(maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,BSE,BSE2,
 
     ! Compute linear response
 
-    call phLR(ispin,.false.,TDA_T,eta,nBas,nC,nO,nV,nR,nS,1d0,eGT,ERI_MO,EcRPA,OmRPA,XpY_RPA,XmY_RPA)
-    if(print_T) call print_excitation('RPA@qsGTeh  ',ispin,nS,OmRPA)
+    call phLR_A(ispin,dRPA,nBas,nC,nO,nV,nR,nS,1d0,eGT,ERI_MO,Aph)
+    if(.not.TDA_T) call phLR_B(ispin,dRPA,nBas,nC,nO,nV,nR,nS,1d0,ERI_MO,Bph)
+
+    call phLR(TDA_T,nS,Aph,Bph,EcRPA,Om,XpY,XmY)
+
+    if(print_T) call print_excitation('RPA@qsGTeh  ',ispin,nS,Om)
 
     ! Compute correlation part of the self-energy 
 
-    call GTeh_excitation_density(nBas,nC,nO,nR,nS,ERI_MO,XpY_RPA,XmY_RPA,rhoL_RPA,rhoR_RPA)
+    call GTeh_excitation_density(nBas,nC,nO,nR,nS,ERI_MO,XpY,XmY,rhoL,rhoR)
 
      if(regularize) then
 
-!      call regularized_self_energy_correlation(eta,nBas,nC,nO,nV,nR,nS,eGT,OmRPA,rhoL_RPA,rhoR_RPA,EcGM,Sig)
-!      call regularized_renormalization_factor(eta,nBas,nC,nO,nV,nR,nS,eGT,OmRPA,rhoL_RPA,rhoR_RPA,Z)
+!      call regularized_self_energy_correlation(eta,nBas,nC,nO,nV,nR,nS,eGT,Om,rhoL,rhoR,EcGM,Sig)
+!      call regularized_renormalization_factor(eta,nBas,nC,nO,nV,nR,nS,eGT,Om,rhoL,rhoR,Z)
 
      else
 
-       call GTeh_self_energy(eta,nBas,nC,nO,nV,nR,nS,eGT,OmRPA,rhoL_RPA,rhoR_RPA,EcGM,Sig,Z)
+       call GTeh_self_energy(eta,nBas,nC,nO,nV,nR,nS,eGT,Om,rhoL,rhoR,EcGM,Sig,Z)
 
      endif
 
@@ -280,14 +286,14 @@ subroutine qsGTeh(maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,BSE,BSE2,
 
 ! Deallocate memory
 
-  deallocate(c,cp,P,F,Fp,J,K,Sig,Sigp,Sigm,Z,OmRPA,XpY_RPA,XmY_RPA,rhoL_RPA,rhoR_RPA,error,error_diis,F_diis)
+  deallocate(c,cp,P,F,Fp,J,K,Sig,Sigp,Sigm,Z,Om,XpY,XmY,rhoL,rhoR,error,error_diis,F_diis)
 
 ! Perform BSE calculation
 
 ! if(BSE) then
 
 !   call Bethe_Salpeter(BSE2,TDA_T,TDA,dBSE,dTDA,evDyn,singlet,triplet,eta,nBas,nC,nO,nV,nR,nS,ERI_MO,dipole_int_MO, & 
-!                       eGW,eGW,EcBSE)
+!                       eGT,eGT,EcBSE)
 
 !   if(exchange_kernel) then
 
