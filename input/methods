@@ -1,7 +1,7 @@
 # RHF UHF RMOM UMOM KS
-  F   T   F    F    F  
+  T   F   F    F    F  
 # MP2* MP3 
-  T   T   
+  F   F   
 # CCD pCCD DCD CCSD CCSD(T) 
   F   F    F   F    F
 # drCCD rCCD crCCD lCCD

@@ -133,7 +133,5 @@ def write_tensor_to_file(tensor,size,file,cutoff=1e-15):
 subprocess.call(['rm', working_dir + '/int/ERI.dat'])
 write_tensor_to_file(eri_ao,norb,working_dir+'/int/ERI.dat')
 
-subprocess.call(['rm', working_dir + '/int/MO.dat'])
-
 #Execute the QuAcK fortran program
 subprocess.call(QuAcK_dir+'/bin/QuAcK')
