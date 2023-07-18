@@ -813,7 +813,7 @@ program QuAcK
                  dipole_int_aa,dipole_int_bb,PHF,cHF,epsHF,Vxc)
     else
 
-      call G0W0(doACFDT,exchange_kernel,doXBS,COHSEX,dophBSE,dophBSE2,TDA_W,TDA,dBSE,dTDA,evDyn,doppBSE,singlet,triplet, &
+      call G0W0(doACFDT,exchange_kernel,doXBS,dophBSE,dophBSE2,TDA_W,TDA,dBSE,dTDA,evDyn,doppBSE,singlet,triplet, &
                 linGW,eta_GW,regGW,nBas,nC,nO,nV,nR,nS,ENuc,EHF,ERI_AO,ERI_MO,dipole_int_MO,PHF,cHF,epsHF,Vxc)
     end if
 
@@ -841,7 +841,7 @@ program QuAcK
 
     else
 
-      call evGW(maxSCF_GW,thresh_GW,n_diis_GW,doACFDT,exchange_kernel,doXBS,COHSEX,       &
+      call evGW(maxSCF_GW,thresh_GW,n_diis_GW,doACFDT,exchange_kernel,doXBS,       &
                 dophBSE,dophBSE2,TDA_W,TDA,dBSE,dTDA,evDyn,doppBSE,singlet,triplet,linGW,eta_GW,regGW, &
                 nBas,nC,nO,nV,nR,nS,ENuc,EHF,ERI_AO,ERI_MO,dipole_int_MO,PHF,cHF,epsHF,Vxc)
     end if
@@ -870,7 +870,7 @@ program QuAcK
 
     else
  
-      call qsGW(maxSCF_GW,thresh_GW,n_diis_GW,doACFDT,exchange_kernel,doXBS,COHSEX,               &
+      call qsGW(maxSCF_GW,thresh_GW,n_diis_GW,doACFDT,exchange_kernel,doXBS,               &
                 dophBSE,dophBSE2,TDA_W,TDA,dBSE,dTDA,evDyn,singlet,triplet,eta_GW,regGW,nNuc,ZNuc,rNuc,ENuc, & 
                 nBas,nC,nO,nV,nR,nS,EHF,S,X,T,V,Hc,ERI_AO,ERI_MO,dipole_int_AO,dipole_int_MO,PHF,cHF,epsHF)
 
