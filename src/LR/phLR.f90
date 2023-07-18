@@ -1,4 +1,4 @@
-subroutine phLR(ispin,dRPA,TDA,eta,nBas,nC,nO,nV,nR,nS,lambda,e,ERI,Ec,Omega,XpY,XmY)
+subroutine phLR(TDA,nS,A,B,EcRPA,Om,XpY,XmY)
 
 ! Compute linear response
 
@@ -7,27 +7,16 @@ subroutine phLR(ispin,dRPA,TDA,eta,nBas,nC,nO,nV,nR,nS,lambda,e,ERI,Ec,Omega,XpY
 
 ! Input variables
 
-  logical,intent(in)            :: dRPA
   logical,intent(in)            :: TDA
-  double precision,intent(in)   :: eta
-  integer,intent(in)            :: ispin
-  integer,intent(in)            :: nBas
-  integer,intent(in)            :: nC
-  integer,intent(in)            :: nO
-  integer,intent(in)            :: nV
-  integer,intent(in)            :: nR
   integer,intent(in)            :: nS
-  double precision,intent(in)   :: lambda
-  double precision,intent(in)   :: e(nBas)
-  double precision,intent(in)   :: ERI(nBas,nBas,nBas,nBas)
+  double precision,intent(in)   :: A(nS,nS)
+  double precision,intent(in)   :: B(nS,nS)
 
   ! Local variables
 
   integer :: i,j,k
 
   double precision              :: trace_matrix
-  double precision,allocatable  :: A(:,:)
-  double precision,allocatable  :: B(:,:)
   double precision,allocatable  :: ApB(:,:)
   double precision,allocatable  :: AmB(:,:)
   double precision,allocatable  :: AmBSq(:,:)
@@ -37,32 +26,25 @@ subroutine phLR(ispin,dRPA,TDA,eta,nBas,nC,nO,nV,nR,nS,lambda,e,ERI,Ec,Omega,XpY
 
 ! Output variables
 
-  double precision,intent(out)  :: Ec
-  double precision,intent(out)  :: Omega(nS)
+  double precision,intent(out)  :: EcRPA
+  double precision,intent(out)  :: Om(nS)
   double precision,intent(out)  :: XpY(nS,nS)
   double precision,intent(out)  :: XmY(nS,nS)
 
 ! Memory allocation
 
-  allocate(A(nS,nS),B(nS,nS),ApB(nS,nS),AmB(nS,nS),AmBSq(nS,nS),AmBIv(nS,nS),Z(nS,nS),tmp(nS,nS))
-
-! Build A and B matrices 
-
-  call phLR_A(ispin,dRPA,nBas,nC,nO,nV,nR,nS,lambda,e,ERI,A)
+  allocate(ApB(nS,nS),AmB(nS,nS),AmBSq(nS,nS),AmBIv(nS,nS),Z(nS,nS),tmp(nS,nS))
 
 ! Tamm-Dancoff approximation
 
   if(TDA) then
  
-    B(:,:)   = 0d0
     XpY(:,:) = A(:,:)
-    call diagonalize_matrix(nS,XpY,Omega)
+    call diagonalize_matrix(nS,XpY,Om)
     XpY(:,:) = transpose(XpY(:,:))
     XmY(:,:) = XpY(:,:)
 
   else
-
-    call phLR_B(ispin,dRPA,nBas,nC,nO,nV,nR,nS,lambda,ERI,B)
 
     ! Build A + B and A - B matrices 
 
@@ -71,42 +53,34 @@ subroutine phLR(ispin,dRPA,TDA,eta,nBas,nC,nO,nV,nR,nS,lambda,e,ERI,Ec,Omega,XpY
 
   ! Diagonalize linear response matrix
 
-    call diagonalize_matrix(nS,AmB,Omega)
+    call diagonalize_matrix(nS,AmB,Om)
 
-    if(minval(Omega) < 0d0) &
+    if(minval(Om) < 0d0) &
       call print_warning('You may have instabilities in linear response: A-B is not positive definite!!')
 
-!   do ia=1,nS
-!     if(Omega(ia) < 0d0) Omega(ia) = 0d0
-!   end do
-
-    call ADAt(nS,AmB,1d0*dsqrt(Omega),AmBSq)
-    call ADAt(nS,AmB,1d0/dsqrt(Omega),AmBIv)
+    call ADAt(nS,AmB,1d0*dsqrt(Om),AmBSq)
+    call ADAt(nS,AmB,1d0/dsqrt(Om),AmBIv)
 
     call dgemm('N','N',nS,nS,nS,1d0,ApB,size(ApB,1),AmBSq,size(AmBSq,1),0d0,tmp,size(tmp,1))
     call dgemm('N','N',nS,nS,nS,1d0,AmBSq,size(AmBSq,1),tmp,size(tmp,1),0d0,Z,size(Z,1))
 
-   call diagonalize_matrix(nS,Z,Omega)
+   call diagonalize_matrix(nS,Z,Om)
 
-    if(minval(Omega) < 0d0) & 
+    if(minval(Om) < 0d0) & 
       call print_warning('You may have instabilities in linear response: negative excitations!!')
  
-  ! do ia=1,nS
-  !   if(Omega(ia) < 0d0) Omega(ia) = 0d0
-  ! end do
-
-    Omega = dsqrt(Omega)
+    Om = sqrt(Om)
 
     call dgemm('T','N',nS,nS,nS,1d0,Z,size(Z,1),AmBSq,size(AmBSq,1),0d0,XpY,size(XpY,1))
-    call DA(nS,1d0/dsqrt(Omega),XpY)
+    call DA(nS,1d0/dsqrt(Om),XpY)
 
     call dgemm('T','N',nS,nS,nS,1d0,Z,size(Z,1),AmBIv,size(AmBIv,1),0d0,XmY,size(XmY,1))
-    call DA(nS,1d0*dsqrt(Omega),XmY)
+    call DA(nS,1d0*dsqrt(Om),XmY)
  
   end if
 
   ! Compute the RPA correlation energy
 
-    Ec = 0.5d0*(sum(Omega) - trace_matrix(nS,A))
+    EcRPA = 0.5d0*(sum(Om) - trace_matrix(nS,A))
 
 end subroutine 

@@ -1,4 +1,4 @@
-subroutine phRPA(TDA,doACFDT,exchange_kernel,singlet,triplet,eta,nBas,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,dipole_int,eHF)
+subroutine phRPA(TDA,doACFDT,exchange_kernel,singlet,triplet,nBas,nC,nO,nV,nR,nS,ENuc,EHF,ERI,dipole_int,e)
 
 ! Perform a direct random phase approximation calculation
 
@@ -13,7 +13,6 @@ subroutine phRPA(TDA,doACFDT,exchange_kernel,singlet,triplet,eta,nBas,nC,nO,nV,n
   logical,intent(in)            :: exchange_kernel
   logical,intent(in)            :: singlet
   logical,intent(in)            :: triplet
-  double precision,intent(in)   :: eta
   integer,intent(in)            :: nBas
   integer,intent(in)            :: nC
   integer,intent(in)            :: nO
@@ -21,19 +20,22 @@ subroutine phRPA(TDA,doACFDT,exchange_kernel,singlet,triplet,eta,nBas,nC,nO,nV,n
   integer,intent(in)            :: nR
   integer,intent(in)            :: nS
   double precision,intent(in)   :: ENuc
-  double precision,intent(in)   :: ERHF
-  double precision,intent(in)   :: eHF(nBas)
+  double precision,intent(in)   :: EHF
+  double precision,intent(in)   :: e(nBas)
   double precision,intent(in)   :: ERI(nBas,nBas,nBas,nBas)
   double precision,intent(in)   :: dipole_int(nBas,nBas,ncart)
 
 ! Local variables
 
   integer                       :: ispin
+  logical                       :: dRPA
+  double precision,allocatable  :: Aph(:,:)
+  double precision,allocatable  :: Bph(:,:)
   double precision,allocatable  :: Om(:)
   double precision,allocatable  :: XpY(:,:)
   double precision,allocatable  :: XmY(:,:)
 
-  double precision              :: EcRPA(nspin)
+  double precision              :: EcTr(nspin)
   double precision              :: EcAC(nspin)
 
 ! Hello world
@@ -53,12 +55,15 @@ subroutine phRPA(TDA,doACFDT,exchange_kernel,singlet,triplet,eta,nBas,nC,nO,nV,n
 
 ! Initialization
 
-  EcRPA(:) = 0d0
+  dRPA = .true.
+
+  EcTr(:) = 0d0
   EcAC(:)  = 0d0
 
 ! Memory allocation
 
-  allocate(Om(nS),XpY(nS,nS),XmY(nS,nS))
+  allocate(Om(nS),XpY(nS,nS),XmY(nS,nS),Aph(nS,nS))
+  if(.not.TDA) allocate(Bph(nS,nS))
 
 ! Singlet manifold
 
@@ -66,8 +71,11 @@ subroutine phRPA(TDA,doACFDT,exchange_kernel,singlet,triplet,eta,nBas,nC,nO,nV,n
 
     ispin = 1
 
-    call phLR(ispin,.true.,TDA,eta,nBas,nC,nO,nV,nR,nS,1d0,eHF,ERI,EcRPA(ispin),Om,XpY,XmY)
-    call print_excitation('RPA@HF       ',ispin,nS,Om)
+    call phLR_A(ispin,dRPA,nBas,nC,nO,nV,nR,nS,1d0,e,ERI,Aph)
+    if(.not.TDA) call phLR_B(ispin,dRPA,nBas,nC,nO,nV,nR,nS,1d0,ERI,Bph)
+
+    call phLR(TDA,nS,Aph,Bph,EcTr(ispin),Om,XpY,XmY)
+    call print_excitation('phRPA@HF     ',ispin,nS,Om)
     call print_transition_vectors_ph(.true.,nBas,nC,nO,nV,nR,nS,dipole_int,Om,XpY,XmY)
 
   endif
@@ -78,59 +86,52 @@ subroutine phRPA(TDA,doACFDT,exchange_kernel,singlet,triplet,eta,nBas,nC,nO,nV,n
 
     ispin = 2
 
-    call phLR(ispin,.true.,TDA,eta,nBas,nC,nO,nV,nR,nS,1d0,eHF,ERI,EcRPA(ispin),Om,XpY,XmY)
-    call print_excitation('RPA@HF      ',ispin,nS,Om)
+    call phLR_A(ispin,dRPA,nBas,nC,nO,nV,nR,nS,1d0,e,ERI,Aph)
+    if(.not.TDA) call phLR_B(ispin,dRPA,nBas,nC,nO,nV,nR,nS,1d0,ERI,Bph)
+
+    call phLR(TDA,nS,Aph,Bph,EcTr(ispin),Om,XpY,XmY)
+    call print_excitation('phRPA@HF    ',ispin,nS,Om)
     call print_transition_vectors_ph(.false.,nBas,nC,nO,nV,nR,nS,dipole_int,Om,XpY,XmY)
 
   endif
 
-! if(exchange_kernel) then
+  if(exchange_kernel) then
 
-!   EcRPA(1) = 0.5d0*EcRPA(1)
-!   EcRPA(2) = 1.5d0*EcRPA(2)
+    EcTr(1) = 0.5d0*EcTr(1)
+    EcTr(2) = 1.5d0*EcTr(2)
 
-! end if
+  end if
 
   write(*,*)
   write(*,*)'-------------------------------------------------------------------------------'
-  write(*,'(2X,A50,F20.10)') 'Tr@phRPA correlation energy (singlet) =',EcRPA(1)
-  write(*,'(2X,A50,F20.10)') 'Tr@phRPA correlation energy (triplet) =',EcRPA(2)
-  write(*,'(2X,A50,F20.10)') 'Tr@phRPA correlation energy           =',EcRPA(1) + EcRPA(2)
-  write(*,'(2X,A50,F20.10)') 'Tr@phRPA total energy                 =',ENuc + ERHF + EcRPA(1) + EcRPA(2)
+  write(*,'(2X,A50,F20.10)') 'Tr@phRPA correlation energy (singlet) =',EcTr(1)
+  write(*,'(2X,A50,F20.10)') 'Tr@phRPA correlation energy (triplet) =',EcTr(2)
+  write(*,'(2X,A50,F20.10)') 'Tr@phRPA correlation energy           =',EcTr(1) + EcTr(2)
+  write(*,'(2X,A50,F20.10)') 'Tr@phRPA total energy                 =',ENuc + EHF + EcTr(1) + EcTr(2)
   write(*,*)'-------------------------------------------------------------------------------'
   write(*,*)
 
-  deallocate(Om,XpY,XmY)
+  deallocate(Om,XpY,XmY,Aph,Bph)
 
 ! Compute the correlation energy via the adiabatic connection 
-! Switch off ACFDT for RPA as the trace formula is equivalent 
 
   if(doACFDT) then
 
-    write(*,*) '------------------------------------------------------'
-    write(*,*) 'Adiabatic connection version of RPA correlation energy'
-    write(*,*) '------------------------------------------------------'
+    write(*,*) '--------------------------------------------------------'
+    write(*,*) 'Adiabatic connection version of phRPA correlation energy'
+    write(*,*) '--------------------------------------------------------'
     write(*,*) 
 
-    call phACFDT(exchange_kernel,.false.,.true.,.false.,TDA,.false.,singlet,triplet,eta, &
-                 nBas,nC,nO,nV,nR,nS,ERI,eHF,eHF,EcAC)
-
-    if(exchange_kernel) then
-    
-      EcAC(1) = 0.5d0*EcAC(1)
-      EcAC(2) = 1.5d0*EcAC(2)
-    
-    end if
+    call phACFDT(exchange_kernel,dRPA,TDA,singlet,triplet,nBas,nC,nO,nV,nR,nS,ERI,e,EcAC)
 
     write(*,*)
     write(*,*)'-------------------------------------------------------------------------------'
     write(*,'(2X,A50,F20.10)') 'AC@phRPA correlation energy (singlet) =',EcAC(1)
     write(*,'(2X,A50,F20.10)') 'AC@phRPA correlation energy (triplet) =',EcAC(2)
     write(*,'(2X,A50,F20.10)') 'AC@phRPA correlation energy           =',EcAC(1) + EcAC(2)
-    write(*,'(2X,A50,F20.10)') 'AC@phRPA total energy                 =',ENuc + ERHF + EcAC(1) + EcAC(2)
+    write(*,'(2X,A50,F20.10)') 'AC@phRPA total energy                 =',ENuc + EHF + EcAC(1) + EcAC(2)
     write(*,*)'-------------------------------------------------------------------------------'
     write(*,*)
-
 
   end if
 

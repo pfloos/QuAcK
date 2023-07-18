@@ -581,7 +581,7 @@ program QuAcK
 
     else
 
-      call phRPA(TDA,doACFDT,exchange_kernel,singlet,triplet,0d0,nBas,nC,nO,nV,nR,nS,ENuc,EHF,ERI_MO,dipole_int_MO,epsHF)
+      call phRPA(TDA,doACFDT,exchange_kernel,singlet,triplet,nBas,nC,nO,nV,nR,nS,ENuc,EHF,ERI_MO,dipole_int_MO,epsHF)
 
     end if
     call cpu_time(end_RPA)
@@ -606,7 +606,7 @@ program QuAcK
 
     else 
 
-     call phRPAx(TDA,doACFDT,exchange_kernel,singlet,triplet,0d0,nBas,nC,nO,nV,nR,nS,ENuc,EHF,ERI_MO,dipole_int_MO,epsHF)
+     call phRPAx(TDA,doACFDT,exchange_kernel,singlet,triplet,nBas,nC,nO,nV,nR,nS,ENuc,EHF,ERI_MO,dipole_int_MO,epsHF)
 
     end if
     call cpu_time(end_RPA)
@@ -624,7 +624,7 @@ program QuAcK
   if(docrRPA) then
 
     call cpu_time(start_RPA)
-    call crRPA(TDA,doACFDT,exchange_kernel,singlet,triplet,0d0,nBas,nC,nO,nV,nR,nS,ENuc,EHF,ERI_MO,dipole_int_MO,epsHF)
+    call crRPA(TDA,doACFDT,exchange_kernel,singlet,triplet,nBas,nC,nO,nV,nR,nS,ENuc,EHF,ERI_MO,dipole_int_MO,epsHF)
     call cpu_time(end_RPA)
 
     t_RPA = end_RPA - start_RPA

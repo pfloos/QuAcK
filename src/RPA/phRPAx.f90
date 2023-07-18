@@ -1,4 +1,4 @@
-subroutine phRPAx(TDA,doACFDT,exchange_kernel,singlet,triplet,eta,nBas,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,dipole_int,eHF)
+subroutine phRPAx(TDA,doACFDT,exchange_kernel,singlet,triplet,nBas,nC,nO,nV,nR,nS,ENuc,EHF,ERI,dipole_int,e)
 
 ! Perform random phase approximation calculation with exchange (aka TDHF)
 
@@ -13,7 +13,6 @@ subroutine phRPAx(TDA,doACFDT,exchange_kernel,singlet,triplet,eta,nBas,nC,nO,nV,
   logical,intent(in)            :: exchange_kernel
   logical,intent(in)            :: singlet
   logical,intent(in)            :: triplet
-  double precision,intent(in)   :: eta
   integer,intent(in)            :: nBas
   integer,intent(in)            :: nC
   integer,intent(in)            :: nO
@@ -21,19 +20,22 @@ subroutine phRPAx(TDA,doACFDT,exchange_kernel,singlet,triplet,eta,nBas,nC,nO,nV,
   integer,intent(in)            :: nR
   integer,intent(in)            :: nS
   double precision,intent(in)   :: ENuc
-  double precision,intent(in)   :: ERHF
-  double precision,intent(in)   :: eHF(nBas)
+  double precision,intent(in)   :: EHF
+  double precision,intent(in)   :: e(nBas)
   double precision,intent(in)   :: ERI(nBas,nBas,nBas,nBas)
   double precision,intent(in)   :: dipole_int(nBas,nBas,ncart)
 
 ! Local variables
 
   integer                       :: ispin
+  logical                       :: dRPA
+  double precision,allocatable  :: Aph(:,:)
+  double precision,allocatable  :: Bph(:,:)
   double precision,allocatable  :: Om(:)
   double precision,allocatable  :: XpY(:,:)
   double precision,allocatable  :: XmY(:,:)
 
-  double precision              :: EcRPAx(nspin)
+  double precision              :: EcTr(nspin)
   double precision              :: EcAC(nspin)
 
 ! Hello world
@@ -54,12 +56,15 @@ subroutine phRPAx(TDA,doACFDT,exchange_kernel,singlet,triplet,eta,nBas,nC,nO,nV,
 
 ! Initialization
 
-  EcRPAx(:) = 0d0
-  EcAC(:)   = 0d0
+  dRPA = .false.
+
+  EcTr(:) = 0d0
+  EcAC(:) = 0d0
 
 ! Memory allocation
 
-  allocate(Om(nS),XpY(nS,nS),XmY(nS,nS))
+  allocate(Om(nS),XpY(nS,nS),XmY(nS,nS),Aph(nS,nS))
+  if(.not.TDA) allocate(Bph(nS,nS))
 
 ! Singlet manifold
 
@@ -67,8 +72,11 @@ subroutine phRPAx(TDA,doACFDT,exchange_kernel,singlet,triplet,eta,nBas,nC,nO,nV,
 
     ispin = 1
 
-    call phLR(ispin,.false.,TDA,eta,nBas,nC,nO,nV,nR,nS,1d0,eHF,ERI,EcRPAx(ispin),Om,XpY,XmY)
-    call print_excitation('RPAx@HF     ',ispin,nS,Om)
+    call phLR_A(ispin,dRPA,nBas,nC,nO,nV,nR,nS,1d0,e,ERI,Aph)
+    if(.not.TDA) call phLR_B(ispin,dRPA,nBas,nC,nO,nV,nR,nS,1d0,ERI,Bph)
+
+    call phLR(TDA,nS,Aph,Bph,EcTr(ispin),Om,XpY,XmY)
+    call print_excitation('phRPAx@HF   ',ispin,nS,Om)
     call print_transition_vectors_ph(.true.,nBas,nC,nO,nV,nR,nS,dipole_int,Om,XpY,XmY)
 
   endif
@@ -79,50 +87,52 @@ subroutine phRPAx(TDA,doACFDT,exchange_kernel,singlet,triplet,eta,nBas,nC,nO,nV,
 
     ispin = 2
 
-    call phLR(ispin,.false.,TDA,eta,nBas,nC,nO,nV,nR,nS,1d0,eHF,ERI,EcRPAx(ispin),Om,XpY,XmY)
-    call print_excitation('RPAx@HF     ',ispin,nS,Om)
+    call phLR_A(ispin,dRPA,nBas,nC,nO,nV,nR,nS,1d0,e,ERI,Aph)
+    if(.not.TDA) call phLR_B(ispin,dRPA,nBas,nC,nO,nV,nR,nS,1d0,ERI,Bph)
+  
+    call phLR(TDA,nS,Aph,Bph,EcTr(ispin),Om,XpY,XmY)
+    call print_excitation('phRPAx@HF   ',ispin,nS,Om)
     call print_transition_vectors_ph(.false.,nBas,nC,nO,nV,nR,nS,dipole_int,Om,XpY,XmY)
 
   endif
 
-! if(exchange_kernel) then
+  if(exchange_kernel) then
 
-    EcRPAx(1) = 0.5d0*EcRPAx(1)
-    EcRPAx(2) = 1.5d0*EcRPAx(2)
+    EcTr(1) = 0.5d0*EcTr(1)
+    EcTr(2) = 1.5d0*EcTr(2)
 
-! end if
+  end if
 
   write(*,*)
   write(*,*)'-------------------------------------------------------------------------------'
-  write(*,'(2X,A50,F20.10)') 'Tr@RPAx correlation energy (singlet) =',EcRPAx(1)
-  write(*,'(2X,A50,F20.10)') 'Tr@RPAx correlation energy (triplet) =',EcRPAx(2)
-  write(*,'(2X,A50,F20.10)') 'Tr@RPAx correlation energy           =',EcRPAx(1) + EcRPAx(2)
-  write(*,'(2X,A50,F20.10)') 'Tr@RPAx total energy                 =',ENuc + ERHF + EcRPAx(1) + EcRPAx(2)
+  write(*,'(2X,A50,F20.10)') 'Tr@phRPAx correlation energy (singlet) =',EcTr(1)
+  write(*,'(2X,A50,F20.10)') 'Tr@phRPAx correlation energy (triplet) =',EcTr(2)
+  write(*,'(2X,A50,F20.10)') 'Tr@phRPAx correlation energy           =',EcTr(1) + EcTr(2)
+  write(*,'(2X,A50,F20.10)') 'Tr@phRPAx total energy                 =',ENuc + EHF + EcTr(1) + EcTr(2)
   write(*,*)'-------------------------------------------------------------------------------'
   write(*,*)
 
 ! deallocate memory
 
-  deallocate(Om,XpY,XmY)
+  deallocate(Om,XpY,XmY,Aph,Bph)
 
 ! Compute the correlation energy via the adiabatic connection 
 
   if(doACFDT) then
 
-    write(*,*) '-------------------------------------------------------'
-    write(*,*) 'Adiabatic connection version of RPAx correlation energy'
-    write(*,*) '-------------------------------------------------------'
+    write(*,*) '---------------------------------------------------------'
+    write(*,*) 'Adiabatic connection version of phRPAx correlation energy'
+    write(*,*) '---------------------------------------------------------'
     write(*,*)
 
-    call phACFDT(exchange_kernel,.false.,.false.,.false.,TDA,.false.,singlet,triplet,eta, &
-                 nBas,nC,nO,nV,nR,nS,ERI,eHF,eHF,EcAC)
+    call phACFDT(exchange_kernel,dRPA,TDA,singlet,triplet,nBas,nC,nO,nV,nR,nS,ERI,e,EcAC)
 
     write(*,*)
     write(*,*)'-------------------------------------------------------------------------------'
-    write(*,'(2X,A50,F20.10)') 'AC@RPAx correlation energy (singlet) =',EcAC(1)
-    write(*,'(2X,A50,F20.10)') 'AC@RPAx correlation energy (triplet) =',EcAC(2)
-    write(*,'(2X,A50,F20.10)') 'AC@RPAx correlation energy           =',EcAC(1) + EcAC(2)
-    write(*,'(2X,A50,F20.10)') 'AC@RPAx total energy                 =',ENuc + ERHF + EcAC(1) + EcAC(2)
+    write(*,'(2X,A50,F20.10)') 'AC@phRPAx correlation energy (singlet) =',EcAC(1)
+    write(*,'(2X,A50,F20.10)') 'AC@phRPAx correlation energy (triplet) =',EcAC(2)
+    write(*,'(2X,A50,F20.10)') 'AC@phRPAx correlation energy           =',EcAC(1) + EcAC(2)
+    write(*,'(2X,A50,F20.10)') 'AC@phRPAx total energy                 =',ENuc + EHF + EcAC(1) + EcAC(2)
     write(*,*)'-------------------------------------------------------------------------------'
     write(*,*)
 
