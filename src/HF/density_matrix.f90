@@ -27,4 +27,4 @@ subroutine density_matrix(nBas,ON,c,P)
     enddo
   enddo
 
-end subroutine density_matrix
+end subroutine 

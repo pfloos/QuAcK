@@ -134,4 +134,4 @@ subroutine UCIS(spin_conserved,spin_flip,nBas,nC,nO,nV,nR,nS,ERI_aaaa,ERI_aabb,E
 
   endif
 
-end subroutine UCIS
+end subroutine 

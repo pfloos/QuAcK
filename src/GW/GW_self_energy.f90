@@ -1,4 +1,4 @@
-subroutine GW_self_energy(COHSEX,eta,nBas,nC,nO,nV,nR,nS,e,Omega,rho,EcGM,Sig,Z)
+subroutine GW_self_energy(eta,nBas,nC,nO,nV,nR,nS,e,Omega,rho,EcGM,Sig,Z)
 
 ! Compute correlation part of the self-energy and the renormalization factor 
 
@@ -7,7 +7,6 @@ subroutine GW_self_energy(COHSEX,eta,nBas,nC,nO,nV,nR,nS,e,Omega,rho,EcGM,Sig,Z)
 
 ! Input variables
 
-  logical,intent(in)            :: COHSEX
   double precision,intent(in)   :: eta
   integer,intent(in)            :: nBas
   integer,intent(in)            :: nC
@@ -37,113 +36,72 @@ subroutine GW_self_energy(COHSEX,eta,nBas,nC,nO,nV,nR,nS,e,Omega,rho,EcGM,Sig,Z)
   Sig(:,:) = 0d0
   Z(:)     = 0d0
 
-!-----------------------------!
-! COHSEX static approximation !
-!-----------------------------!
-
-  if(COHSEX) then
-
-   ! COHSEX: SEX of the COHSEX correlation self-energy
-
-    do p=nC+1,nBas-nR
-      do q=nC+1,nBas-nR
-        do i=nC+1,nO
-          do jb=1,nS
-            Sig(p,q) = Sig(p,q) + 4d0*rho(p,i,jb)*rho(q,i,jb)/Omega(jb)
-          end do
-        end do
-      end do
-    end do
- 
-    ! COHSEX: COH part of the COHSEX correlation self-energy
- 
-    do p=nC+1,nBas-nR
-      do q=nC+1,nBas-nR
-        do r=nC+1,nBas-nR
-          do jb=1,nS
-            Sig(p,q) = Sig(p,q) - 2d0*rho(p,r,jb)*rho(q,r,jb)/Omega(jb)
-          end do
-        end do
-      end do
-    end do
-
-    EcGM = 0d0
-    do i=nC+1,nO
-      EcGM = EcGM + 0.5d0*Sig(i,i)
-    end do
-
-    Z(:) = 0d0
-
-  else
-
 !----------------!
 ! GW self-energy !
 !----------------!
 
-  ! Occupied part of the correlation self-energy
+! Occupied part of the correlation self-energy
 
-    !$OMP PARALLEL &
-    !$OMP SHARED(Sig,rho,eta,nS,nC,nO,nBas,nR,e,Omega) &
-    !$OMP PRIVATE(jb,i,q,p,eps,num) &
-    !$OMP DEFAULT(NONE)
-    !$OMP DO
-    do q=nC+1,nBas-nR
-       do p=nC+1,nBas-nR
-          do jb=1,nS
-             do i=nC+1,nO
-   
-                eps = e(p) - e(i) + Omega(jb)
-                num = 2d0*rho(p,i,jb)*rho(q,i,jb)
-                Sig(p,q) = Sig(p,q) + num*eps/(eps**2 + eta**2)
-                if(p == q) Z(p) = Z(p) - num*(eps**2 - eta**2)/(eps**2 + eta**2)**2
-   
-             end do
-          end do
-       end do
-    end do
-    !$OMP END DO
-    !$OMP END PARALLEL
-
-    ! Virtual part of the correlation self-energy
-
-    !$OMP PARALLEL &
-    !$OMP SHARED(Sig,rho,eta,nS,nC,nO,nBas,nR,e,Omega) &
-    !$OMP PRIVATE(jb,a,q,p,eps,num) &
-    !$OMP DEFAULT(NONE)
-    !$OMP DO  
-    do q=nC+1,nBas-nR
-       do p=nC+1,nBas-nR
-          do jb=1,nS
-             do a=nO+1,nBas-nR
-   
-                eps = e(p) - e(a) - Omega(jb)
-                num = 2d0*rho(p,a,jb)*rho(q,a,jb)
-                Sig(p,q) = Sig(p,q) + num*eps/(eps**2 + eta**2)
-                if(p == q) Z(p) = Z(p) - num*(eps**2 - eta**2)/(eps**2 + eta**2)**2
-   
-             end do
-          end do
-       end do
-    end do
-    !$OMP END DO
-    !$OMP END PARALLEL
-
-    ! Galitskii-Migdal correlation energy
-
-    EcGM = 0d0
-    do jb=1,nS
-      do a=nO+1,nBas-nR
-        do i=nC+1,nO
-
-          eps = e(a) - e(i) + Omega(jb)
-          num = 4d0*rho(a,i,jb)*rho(a,i,jb)
-          EcGM = EcGM - num*eps/(eps**2 + eta**2)
-
+!$OMP PARALLEL &
+!$OMP SHARED(Sig,rho,eta,nS,nC,nO,nBas,nR,e,Omega) &
+!$OMP PRIVATE(jb,i,q,p,eps,num) &
+!$OMP DEFAULT(NONE)
+!$OMP DO
+  do q=nC+1,nBas-nR
+     do p=nC+1,nBas-nR
+        do jb=1,nS
+           do i=nC+1,nO
+ 
+              eps = e(p) - e(i) + Omega(jb)
+              num = 2d0*rho(p,i,jb)*rho(q,i,jb)
+              Sig(p,q) = Sig(p,q) + num*eps/(eps**2 + eta**2)
+              if(p == q) Z(p) = Z(p) - num*(eps**2 - eta**2)/(eps**2 + eta**2)**2
+ 
+           end do
         end do
+     end do
+  end do
+  !$OMP END DO
+  !$OMP END PARALLEL
+
+! Virtual part of the correlation self-energy
+
+!$OMP PARALLEL &
+!$OMP SHARED(Sig,rho,eta,nS,nC,nO,nBas,nR,e,Omega) &
+!$OMP PRIVATE(jb,a,q,p,eps,num) &
+!$OMP DEFAULT(NONE)
+!$OMP DO  
+  do q=nC+1,nBas-nR
+     do p=nC+1,nBas-nR
+        do jb=1,nS
+           do a=nO+1,nBas-nR
+ 
+              eps = e(p) - e(a) - Omega(jb)
+              num = 2d0*rho(p,a,jb)*rho(q,a,jb)
+              Sig(p,q) = Sig(p,q) + num*eps/(eps**2 + eta**2)
+              if(p == q) Z(p) = Z(p) - num*(eps**2 - eta**2)/(eps**2 + eta**2)**2
+ 
+           end do
+        end do
+     end do
+  end do
+!$OMP END DO
+!$OMP END PARALLEL
+
+! Galitskii-Migdal correlation energy
+
+  EcGM = 0d0
+  do jb=1,nS
+    do a=nO+1,nBas-nR
+      do i=nC+1,nO
+
+        eps = e(a) - e(i) + Omega(jb)
+        num = 4d0*rho(a,i,jb)*rho(a,i,jb)
+        EcGM = EcGM - num*eps/(eps**2 + eta**2)
+
       end do
     end do
-
-  end if
+  end do
 
 ! Compute renormalization factor from derivative 
 

@@ -24,4 +24,4 @@ subroutine MOtoAO_transform(nBas,S,c,A)
   Sc = matmul(S,c)
   A = matmul(Sc,matmul(A,transpose(Sc)))
 
-end subroutine MOtoAO_transform
+end subroutine 

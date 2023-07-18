@@ -171,4 +171,4 @@ subroutine UHF_stability(nBas,nC,nO,nV,nR,nS,eHF,ERI_aaaa,ERI_aabb,ERI_bbbb)
   write(*,*)'-------------------------------------------------------------'
   write(*,*)
     
-end subroutine UHF_stability
+end subroutine 

@@ -178,4 +178,4 @@ subroutine read_methods(doRHF,doUHF,doRMOM,doUMOM,doKS,    &
 
   close(unit=1)
 
-end subroutine read_methods
+end subroutine 

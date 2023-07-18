@@ -23,4 +23,4 @@ subroutine Coulomb_matrix_MO_basis(nBas,c,P,G,J)
 
   J = matmul(transpose(c),matmul(J,c))
 
-end subroutine Coulomb_matrix_MO_basis
+end subroutine 

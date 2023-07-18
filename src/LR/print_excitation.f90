@@ -41,6 +41,4 @@ subroutine print_excitation(method,ispin,nS,Omega)
   write(*,*)'-------------------------------------------------------------'
   write(*,*)
 
-end subroutine print_excitation
-
-
+end subroutine 

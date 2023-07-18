@@ -73,4 +73,4 @@ subroutine QP_graph_GF2(eta,nBas,nC,nO,nV,nR,nS,eHF,eGF2lin,ERI,eGF2)
 
 end do
 
-end subroutine QP_graph_GF2
+end subroutine 

@@ -74,4 +74,4 @@ subroutine AOtoMO_oovv(nBas,nO,nV,cO,cV,O,ooOvv)
     enddo
   enddo
 
-end subroutine AOtoMO_oovv
+end subroutine 

@@ -30,4 +30,4 @@ subroutine chem_to_phys_ERI(nBas,ERI)
 
   ERI(:,:,:,:) = pERI(:,:,:,:)
 
-end subroutine chem_to_phys_ERI
+end subroutine 

@@ -204,4 +204,4 @@ subroutine RHF(maxSCF,thresh,max_diis,guess_type,level_shift,nNuc,ZNuc,rNuc,ENuc
 
   call mo_fock_exchange_potential(nBas,c,P,ERI,Vx)
 
-end subroutine RHF
+end subroutine 

@@ -30,4 +30,4 @@ subroutine Hartree_matrix_AO_basis(nBas,P,Hc,G,H)
     enddo
   enddo
 
-end subroutine Hartree_matrix_AO_basis
+end subroutine 

@@ -34,4 +34,4 @@ subroutine level_shifting(level_shift,nBas,nO,S,c,F)
   Sc(:,:) = matmul(S,c)
   F(:,:) = matmul(Sc,matmul(F_MO,transpose(Sc)))
 
-end subroutine level_shifting
+end subroutine 

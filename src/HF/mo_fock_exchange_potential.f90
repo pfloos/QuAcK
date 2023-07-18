@@ -38,4 +38,4 @@ subroutine mo_fock_exchange_potential(nBas,c,P,ERI,Vx)
 
   deallocate(Fx)
 
-end subroutine mo_fock_exchange_potential
+end subroutine 

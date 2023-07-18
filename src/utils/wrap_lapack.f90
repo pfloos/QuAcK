@@ -35,7 +35,7 @@ subroutine diagonalize_general_matrix(N,A,WR,VR)
     print*,'Problem in diagonalize_general_matrix (dgeev)!!'
   endif
 
-end subroutine diagonalize_general_matrix
+end subroutine 
 
 subroutine diagonalize_matrix(N,A,e)
 
@@ -72,7 +72,7 @@ subroutine diagonalize_matrix(N,A,e)
     print*,'Problem in diagonalize_matrix (dsyev)!!'
   endif
   
-end subroutine diagonalize_matrix
+end subroutine 
 
 subroutine svd(N,A,U,D,Vt)
 
@@ -157,7 +157,7 @@ subroutine inverse_matrix(N,A,B)
 
   deallocate(ipiv,work)
 
-end subroutine inverse_matrix
+end subroutine 
 
 subroutine linear_solve(N,A,b,x,rcond)
 
@@ -187,7 +187,7 @@ subroutine linear_solve(N,A,b,x,rcond)
 
 ! endif
 
-end subroutine linear_solve
+end subroutine 
 
 subroutine easy_linear_solve(N,A,b,x)
 
@@ -218,5 +218,5 @@ subroutine easy_linear_solve(N,A,b,x)
 
   endif
 
-end subroutine easy_linear_solve
+end subroutine 
 

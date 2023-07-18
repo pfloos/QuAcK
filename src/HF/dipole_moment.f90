@@ -50,4 +50,4 @@ subroutine dipole_moment(nBas,P,nNuc,ZNuc,rNuc,dipole_int,dipole)
 
   enddo
 
-end subroutine dipole_moment
+end subroutine 

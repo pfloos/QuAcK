@@ -74,6 +74,4 @@ subroutine print_RHF(nBas,nO,eHF,cHF,ENuc,ET,EV,EJ,EK,ERHF,dipole)
   call matout(nBas,1,eHF)
   write(*,*)
 
-end subroutine print_RHF
-
-
+end subroutine 

@@ -1,4 +1,4 @@
-subroutine GW_self_energy_diag(COHSEX,eta,nBas,nC,nO,nV,nR,nS,e,Omega,rho,EcGM,Sig,Z)
+subroutine GW_self_energy_diag(eta,nBas,nC,nO,nV,nR,nS,e,Omega,rho,EcGM,Sig,Z)
 
 ! Compute diagonal of the correlation part of the self-energy and the renormalization factor
 
@@ -7,7 +7,6 @@ subroutine GW_self_energy_diag(COHSEX,eta,nBas,nC,nO,nV,nR,nS,e,Omega,rho,EcGM,S
 
 ! Input variables
 
-  logical,intent(in)            :: COHSEX
   double precision,intent(in)   :: eta
   integer,intent(in)            :: nBas
   integer,intent(in)            :: nC
@@ -35,91 +34,54 @@ subroutine GW_self_energy_diag(COHSEX,eta,nBas,nC,nO,nV,nR,nS,e,Omega,rho,EcGM,S
   Sig(:) = 0d0
   Z(:)   = 0d0
 
-!-----------------------------
-! COHSEX static self-energy
-!-----------------------------
-
-  if(COHSEX) then
-
-    ! COHSEX: SEX part of the COHSEX correlation self-energy
-
-    do p=nC+1,nBas-nR
-      do i=nC+1,nO
-        do jb=1,nS
-          Sig(p) = Sig(p) + 4d0*rho(p,i,jb)**2/Omega(jb)
-        end do
-      end do
-    end do
+!----------------!
+! GW self-energy !
+!----------------!
  
-    ! COHSEX: COH part of the COHSEX correlation self-energy
- 
-    do p=nC+1,nBas-nR
-      do q=nC+1,nBas-nR
-        do jb=1,nS
-          Sig(p) = Sig(p) - 2d0*rho(p,q,jb)**2/Omega(jb)
-        end do
-      end do
-    end do
+! Occupied part of the correlation self-energy
 
-    ! GM correlation energy
-
-    EcGM = 0d0
+  do p=nC+1,nBas-nR
     do i=nC+1,nO
-      EcGM = EcGM - Sig(i)
-    end do
+      do jb=1,nS
 
-!-----------------------------
-! GW self-energy
-!-----------------------------
+        eps = e(p) - e(i) + Omega(jb)
+        num = 2d0*rho(p,i,jb)**2
+        Sig(p) = Sig(p) + num*eps/(eps**2 + eta**2)
+        Z(p)   = Z(p)   - num*(eps**2 - eta**2)/(eps**2 + eta**2)**2
 
-  else
- 
-    ! Occupied part of the correlation self-energy
- 
-    do p=nC+1,nBas-nR
-      do i=nC+1,nO
-        do jb=1,nS
-
-          eps = e(p) - e(i) + Omega(jb)
-          num = 2d0*rho(p,i,jb)**2
-          Sig(p) = Sig(p) + num*eps/(eps**2 + eta**2)
-          Z(p)   = Z(p)   - num*(eps**2 - eta**2)/(eps**2 + eta**2)**2
-
-        end do
       end do
     end do
- 
-    ! Virtual part of the correlation self-energy
- 
-    do p=nC+1,nBas-nR
-      do a=nO+1,nBas-nR
-        do jb=1,nS
+  end do
 
-          eps = e(p) - e(a) - Omega(jb)
-          num = 2d0*rho(p,a,jb)**2
-          Sig(p) = Sig(p) + num*eps/(eps**2 + eta**2)
-          Z(p)   = Z(p)   - num*(eps**2 - eta**2)/(eps**2 + eta**2)**2
+! Virtual part of the correlation self-energy
 
-        end do
+  do p=nC+1,nBas-nR
+    do a=nO+1,nBas-nR
+      do jb=1,nS
+
+        eps = e(p) - e(a) - Omega(jb)
+        num = 2d0*rho(p,a,jb)**2
+        Sig(p) = Sig(p) + num*eps/(eps**2 + eta**2)
+        Z(p)   = Z(p)   - num*(eps**2 - eta**2)/(eps**2 + eta**2)**2
+
       end do
     end do
+  end do
 
-    ! GM correlation energy
+! Galitskii-Migdal correlation energy
 
-    EcGM = 0d0
-    do i=nC+1,nO
-      do a=nO+1,nBas-nR
-        do jb=1,nS
+  EcGM = 0d0
+  do i=nC+1,nO
+    do a=nO+1,nBas-nR
+      do jb=1,nS
 
-          eps = e(a) - e(i) + Omega(jb)
-          num = 4d0*rho(a,i,jb)**2
-          EcGM = EcGM - num*eps/(eps**2 + eta**2)
+        eps = e(a) - e(i) + Omega(jb)
+        num = 4d0*rho(a,i,jb)**2
+        EcGM = EcGM - num*eps/(eps**2 + eta**2)
 
-        end do
       end do
     end do
-
-  end if
+  end do
 
 ! Compute renormalization factor from derivative 
 

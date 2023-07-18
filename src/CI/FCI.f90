@@ -28,4 +28,4 @@ subroutine FCI(nBas,nC,nO,nV,nR,ERI,e)
 ! Diagonalize FCI matrix
 
 
-end subroutine FCI
+end subroutine 

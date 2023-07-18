@@ -49,4 +49,4 @@ subroutine MOM_overlap(nBas,nO,S,cG,c,ON)
 
   
 
-end subroutine MOM_overlap
+end subroutine 

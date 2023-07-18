@@ -243,4 +243,4 @@ subroutine read_options(maxSCF_HF,thresh_HF,DIIS_HF,n_diis_HF,guess_type,ortho_t
 
   close(unit=1)
 
-end subroutine read_options
+end subroutine 

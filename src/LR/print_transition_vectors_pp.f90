@@ -191,4 +191,4 @@ subroutine print_transition_vectors_pp(spin_allowed,nBas,nC,nO,nV,nR,nOO,nVV,dip
   if(nOO > 0) write(*,'(A50,F10.6)') 'Thomas-Reiche-Kuhn sum rule for h-h sector = ',sum(os2(:))
   write(*,*)
 
-end subroutine print_transition_vectors_pp
+end subroutine 

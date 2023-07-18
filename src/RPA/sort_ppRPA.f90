@@ -234,4 +234,4 @@ subroutine sort_ppRPA(nOO,nVV,Omega,Z,Omega1,X1,Y1,Omega2,X2,Y2)
 ! call matout(nVV,nOO,X2)
 ! call matout(nOO,nOO,Y2)
 
-end subroutine sort_ppRPA
+end subroutine 

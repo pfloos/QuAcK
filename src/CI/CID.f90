@@ -215,4 +215,4 @@ subroutine CID(singlet_manifold,triplet_manifold,nBasin,nCin,nOin,nVin,nRin,ERIi
     write(*,*)
   endif
 
-end subroutine CID
+end subroutine 

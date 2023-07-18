@@ -1,4 +1,4 @@
-subroutine qsGW(maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,COHSEX,BSE,BSE2,TDA_W,TDA,dBSE,dTDA,evDyn, & 
+subroutine qsGW(maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,dophBSE,dophBSE2,TDA_W,TDA,dBSE,dTDA,evDyn,doppBSE, & 
                 singlet,triplet,eta,regularize,nNuc,ZNuc,rNuc,ENuc,nBas,nC,nO,nV,nR,nS,ERHF,S,X,T,V,Hc,ERI_AO,  & 
                 ERI_MO,dipole_int_AO,dipole_int_MO,PHF,cHF,eHF)
 
@@ -15,14 +15,14 @@ subroutine qsGW(maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,COHSEX,BSE,
   logical,intent(in)            :: doACFDT
   logical,intent(in)            :: exchange_kernel
   logical,intent(in)            :: doXBS
-  logical,intent(in)            :: COHSEX
-  logical,intent(in)            :: BSE
-  logical,intent(in)            :: BSE2
+  logical,intent(in)            :: dophBSE
+  logical,intent(in)            :: dophBSE2
   logical,intent(in)            :: TDA_W
   logical,intent(in)            :: TDA
   logical,intent(in)            :: dBSE
   logical,intent(in)            :: dTDA
   logical,intent(in)            :: evDyn
+  logical,intent(in)            :: doppBSE
   logical,intent(in)            :: singlet
   logical,intent(in)            :: triplet
   double precision,intent(in)   :: eta
@@ -73,13 +73,16 @@ subroutine qsGW(maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,COHSEX,BSE,
   double precision,external     :: trace_matrix
   double precision              :: dipole(ncart)
 
+  logical                       :: dRPA = .true.
   logical                       :: print_W = .true.
   double precision,allocatable  :: error_diis(:,:)
   double precision,allocatable  :: F_diis(:,:)
-  double precision,allocatable  :: OmRPA(:)
-  double precision,allocatable  :: XpY_RPA(:,:)
-  double precision,allocatable  :: XmY_RPA(:,:)
-  double precision,allocatable  :: rho_RPA(:,:,:)
+  double precision,allocatable  :: Aph(:,:)
+  double precision,allocatable  :: Bph(:,:)
+  double precision,allocatable  :: Om(:)
+  double precision,allocatable  :: XpY(:,:)
+  double precision,allocatable  :: XmY(:,:)
+  double precision,allocatable  :: rho(:,:,:)
   double precision,allocatable  :: c(:,:)
   double precision,allocatable  :: cp(:,:)
   double precision,allocatable  :: eGW(:)
@@ -112,13 +115,6 @@ subroutine qsGW(maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,COHSEX,BSE,
 
   nBasSq = nBas*nBas
 
-! COHSEX approximation
-
-  if(COHSEX) then 
-    write(*,*) 'COHSEX approximation activated!'
-    write(*,*)
-  end if
-
 ! TDA for W
 
   if(TDA_W) then 
@@ -137,7 +133,7 @@ subroutine qsGW(maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,COHSEX,BSE,
 
   allocate(eGW(nBas),eOld(nBas),c(nBas,nBas),cp(nBas,nBas),P(nBas,nBas),F(nBas,nBas),Fp(nBas,nBas), &
            J(nBas,nBas),K(nBas,nBas),SigC(nBas,nBas),SigCp(nBas,nBas),SigCm(nBas,nBas),Z(nBas),     & 
-           OmRPA(nS),XpY_RPA(nS,nS),XmY_RPA(nS,nS),rho_RPA(nBas,nBas,nS),                           &
+           Aph(nS,nS),Bph(nS,nS),Om(nS),XpY(nS,nS),XmY(nS,nS),rho(nBas,nBas,nS),                    &
            error(nBas,nBas),error_diis(nBasSq,max_diis),F_diis(nBasSq,max_diis))
 
 ! Initialization
@@ -178,21 +174,24 @@ subroutine qsGW(maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,COHSEX,BSE,
 
     ! Compute linear response
 
-    call phLR(ispin,.true.,TDA_W,eta,nBas,nC,nO,nV,nR,nS,1d0,eGW,ERI_MO,EcRPA,OmRPA,XpY_RPA,XmY_RPA)
-    if(print_W) call print_excitation('RPA@qsGW    ',ispin,nS,OmRPA)
+    call phLR_A(ispin,dRPA,nBas,nC,nO,nV,nR,nS,1d0,eGW,ERI_MO,Aph)
+    if(.not.TDA_W) call phLR_B(ispin,dRPA,nBas,nC,nO,nV,nR,nS,1d0,ERI_MO,Bph)
+
+    call phLR(TDA_W,nS,Aph,Bph,EcRPA,Om,XpY,XmY)
+    if(print_W) call print_excitation('RPA@qsGW    ',ispin,nS,Om)
 
     ! Compute correlation part of the self-energy 
 
-    call GW_excitation_density(nBas,nC,nO,nR,nS,ERI_MO,XpY_RPA,rho_RPA)
+    call GW_excitation_density(nBas,nC,nO,nR,nS,ERI_MO,XpY,rho)
 
      if(regularize) then
 
-       call regularized_self_energy_correlation(COHSEX,eta,nBas,nC,nO,nV,nR,nS,eGW,OmRPA,rho_RPA,EcGM,SigC)
-       call regularized_renormalization_factor(COHSEX,eta,nBas,nC,nO,nV,nR,nS,eGW,OmRPA,rho_RPA,Z)
+       call regularized_self_energy_correlation(eta,nBas,nC,nO,nV,nR,nS,eGW,Om,rho,EcGM,SigC)
+       call regularized_renormalization_factor(eta,nBas,nC,nO,nV,nR,nS,eGW,Om,rho,Z)
 
      else
 
-       call GW_self_energy(COHSEX,eta,nBas,nC,nO,nV,nR,nS,eGW,OmRPA,rho_RPA,EcGM,SigC,Z)
+       call GW_self_energy(eta,nBas,nC,nO,nV,nR,nS,eGW,Om,rho,EcGM,SigC,Z)
 
      endif
 
@@ -291,13 +290,13 @@ subroutine qsGW(maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,COHSEX,BSE,
 
 ! Deallocate memory
 
-  deallocate(c,cp,P,F,Fp,J,K,SigC,SigCp,SigCm,Z,OmRPA,XpY_RPA,XmY_RPA,rho_RPA,error,error_diis,F_diis)
+  deallocate(c,cp,P,F,Fp,J,K,SigC,SigCp,SigCm,Z,Om,XpY,XmY,rho,error,error_diis,F_diis)
 
 ! Perform BSE calculation
 
-  if(BSE) then
+  if(dophBSE) then
 
-    call GW_phBSE(BSE2,TDA_W,TDA,dBSE,dTDA,evDyn,singlet,triplet,eta,nBas,nC,nO,nV,nR,nS,ERI_MO,dipole_int_MO,eGW,eGW,EcBSE)
+    call GW_phBSE(dophBSE2,TDA_W,TDA,dBSE,dTDA,evDyn,singlet,triplet,eta,nBas,nC,nO,nV,nR,nS,ERI_MO,dipole_int_MO,eGW,eGW,EcBSE)
 
     if(exchange_kernel) then
 
@@ -331,7 +330,7 @@ subroutine qsGW(maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,COHSEX,BSE,
 
       end if
 
-      call GW_phACFDT(exchange_kernel,doXBS,.true.,TDA_W,TDA,BSE,singlet,triplet,eta,nBas,nC,nO,nV,nR,nS,ERI_MO,eGW,eGW,EcAC)
+      call GW_phACFDT(exchange_kernel,doXBS,.true.,TDA_W,TDA,dophBSE,singlet,triplet,eta,nBas,nC,nO,nV,nR,nS,ERI_MO,eGW,eGW,EcAC)
 
       write(*,*)
       write(*,*)'-------------------------------------------------------------------------------'
@@ -343,6 +342,21 @@ subroutine qsGW(maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,COHSEX,BSE,
       write(*,*)
 
     end if
+
+  end if
+
+  if(doppBSE) then
+      
+    call GW_ppBSE(TDA_W,TDA,singlet,triplet,eta,nBas,nC,nO,nV,nR,nS,ERI_MO,dipole_int_MO,eHF,eGW,EcBSE)
+    
+    write(*,*)
+    write(*,*)'-------------------------------------------------------------------------------'
+    write(*,'(2X,A50,F20.10)') 'Tr@ppBSE@qsGW correlation energy (singlet) =',EcBSE(1)
+    write(*,'(2X,A50,F20.10)') 'Tr@ppBSE@qsGW correlation energy (triplet) =',3d0*EcBSE(2)
+    write(*,'(2X,A50,F20.10)') 'Tr@ppBSE@qsGW correlation energy =',EcBSE(1) + 3d0*EcBSE(2)
+    write(*,'(2X,A50,F20.10)') 'Tr@ppBSE@qsGW total energy =',ENuc + ERHF + EcBSE(1) + 3d0*EcBSE(2)
+    write(*,*)'-------------------------------------------------------------------------------'
+    write(*,*)
 
   end if
 

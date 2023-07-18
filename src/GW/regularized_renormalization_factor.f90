@@ -1,4 +1,4 @@
-subroutine regularized_renormalization_factor(COHSEX,eta,nBas,nC,nO,nV,nR,nS,e,Omega,rho,Z)
+subroutine regularized_renormalization_factor(eta,nBas,nC,nO,nV,nR,nS,e,Omega,rho,Z)
 
 ! Compute the regularized version of the GW renormalization factor
 
@@ -7,7 +7,6 @@ subroutine regularized_renormalization_factor(COHSEX,eta,nBas,nC,nO,nV,nR,nS,e,O
 
 ! Input variables
 
-  logical,intent(in)            :: COHSEX
   double precision,intent(in)   :: eta
   integer,intent(in)            :: nBas
   integer,intent(in)            :: nC
@@ -41,45 +40,34 @@ subroutine regularized_renormalization_factor(COHSEX,eta,nBas,nC,nO,nV,nR,nS,e,O
 
   kappa = 1d0
 
-! static COHSEX approximation
+! Occupied part of the correlation self-energy
 
-  if(COHSEX) then
-    
-    Z(:) = 1d0
-    return
- 
-  else
-
-    ! Occupied part of the correlation self-energy
-
-    do p=nC+1,nBas-nR
-      do i=nC+1,nO
-        do jb=1,nS
-          eps = e(p) - e(i) + Omega(jb) 
-          fk  = (1d0 - exp(-2d0*eps**2/kappa**2))/eps
-          dfk = - fk/eps + 4d0*kappa**2*exp(-2d0*eps**2/kappa**2)
-          Z(p) = Z(p)  - 2d0*rho(p,i,jb)**2*dfk
-        end do
+  do p=nC+1,nBas-nR
+    do i=nC+1,nO
+      do jb=1,nS
+        eps = e(p) - e(i) + Omega(jb) 
+        fk  = (1d0 - exp(-2d0*eps**2/kappa**2))/eps
+        dfk = - fk/eps + 4d0*kappa**2*exp(-2d0*eps**2/kappa**2)
+        Z(p) = Z(p)  - 2d0*rho(p,i,jb)**2*dfk
       end do
     end do
+  end do
 
-    ! Virtual part of the correlation self-energy
+! Virtual part of the correlation self-energy
 
-    do p=nC+1,nBas-nR
-      do a=nO+1,nBas-nR
-        do jb=1,nS
-          eps = e(p) - e(a) - Omega(jb) 
-          fk  = (1d0 - exp(-2d0*eps**2/kappa**2))/eps
-          dfk = - fk/eps + 4d0*kappa**2*exp(-2d0*eps**2/kappa**2)
-          Z(p) = Z(p)  - 2d0*rho(p,a,jb)**2*dfk
-        end do
+  do p=nC+1,nBas-nR
+    do a=nO+1,nBas-nR
+      do jb=1,nS
+        eps = e(p) - e(a) - Omega(jb) 
+        fk  = (1d0 - exp(-2d0*eps**2/kappa**2))/eps
+        dfk = - fk/eps + 4d0*kappa**2*exp(-2d0*eps**2/kappa**2)
+        Z(p) = Z(p)  - 2d0*rho(p,a,jb)**2*dfk
       end do
     end do
-
-  end if
+  end do
 
 ! Compute renormalization factor from derivative of SigC
  
   Z(:) = 1d0/(1d0 - Z(:))
 
-end subroutine regularized_renormalization_factor
+end subroutine 

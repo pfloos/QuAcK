@@ -30,4 +30,4 @@ subroutine exchange_matrix_AO_basis(nBas,P,ERI,K)
     enddo
   enddo
 
-end subroutine exchange_matrix_AO_basis
+end subroutine 

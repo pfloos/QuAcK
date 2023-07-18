@@ -8,7 +8,7 @@
 
   call rec_quicksort(x,iorder,isize,1,isize,1)           
 
-end subroutine quick_sort 
+end subroutine
 
 recursive subroutine rec_quicksort(x,iorder,isize,first,last,level) 
 
@@ -58,7 +58,7 @@ recursive subroutine rec_quicksort(x,iorder,isize,first,last,level)
       call rec_quicksort(x, iorder, isize, j+1, last,level/2)  
     endif                                                        
   endif                                                          
-end subroutine rec_quicksort
+end subroutine
 
 subroutine set_order(x,iorder,isize,jsize)
 
@@ -86,4 +86,4 @@ subroutine set_order(x,iorder,isize,jsize)
 
   deallocate(xtmp)                                               
 
-end subroutine set_order
+end subroutine 

@@ -31,4 +31,4 @@ subroutine Coulomb_matrix_AO_basis(nBas,P,G,J)
   enddo
 
 
-end subroutine Coulomb_matrix_AO_basis
+end subroutine 

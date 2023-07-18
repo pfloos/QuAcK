@@ -15,4 +15,4 @@ subroutine AOtoMO_transform(nBas,c,A)
 
   A = matmul(transpose(c),matmul(A,c))
 
-end subroutine AOtoMO_transform
+end subroutine 

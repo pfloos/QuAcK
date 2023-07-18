@@ -23,4 +23,4 @@ subroutine Hartree_matrix_MO_basis(nBas,c,P,Hc,G,H)
 
   H = matmul(transpose(c),matmul(H,c))
 
-end subroutine Hartree_matrix_MO_basis
+end subroutine 

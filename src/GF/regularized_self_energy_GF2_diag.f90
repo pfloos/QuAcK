@@ -83,4 +83,4 @@ subroutine regularized_self_energy_GF2_diag(eta,nBas,nC,nO,nV,nR,nS,eHF,eGF2,ERI
 
   Z(:) = 1d0/(1d0 - Z(:))
 
-end subroutine regularized_self_energy_GF2_diag
+end subroutine 

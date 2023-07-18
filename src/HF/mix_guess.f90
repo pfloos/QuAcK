@@ -45,4 +45,4 @@ subroutine mix_guess(nBas,nO,c)
   c(:,nO(2),2)   = HOMOb(:)
   c(:,nO(2)+1,2) = LUMOb(:)
 
-end subroutine mix_guess
+end subroutine 

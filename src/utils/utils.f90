@@ -19,7 +19,7 @@ function Kronecker_delta(i,j) result(delta)
     delta = 0d0
   endif
 
-end function Kronecker_delta
+end function 
 
 function KroneckerDelta(i,j) result(delta)
 
@@ -42,7 +42,7 @@ function KroneckerDelta(i,j) result(delta)
     delta = 0
   endif
 
-end function KroneckerDelta
+end function 
 
 !------------------------------------------------------------------------
 subroutine matout(m,n,A)
@@ -73,7 +73,7 @@ subroutine matout(m,n,A)
     enddo
   enddo
 
-end subroutine matout
+end subroutine 
 
 !------------------------------------------------------------------------
 subroutine trace_vector(n,v,Tr)
@@ -101,7 +101,7 @@ subroutine trace_vector(n,v,Tr)
     Tr = Tr + v(i)
   enddo
 
-end subroutine trace_vector
+end subroutine 
 
 !------------------------------------------------------------------------
 function trace_matrix(n,A) result(Tr)
@@ -128,7 +128,7 @@ function trace_matrix(n,A) result(Tr)
     Tr = Tr + A(i,i)
   enddo
 
-end function trace_matrix
+end function 
 
 !------------------------------------------------------------------------
 subroutine compute_error(nData,Mean,Var,Error)
@@ -148,7 +148,7 @@ subroutine compute_error(nData,Mean,Var,Error)
   
   Error = sqrt((Var-Mean**2/nData)/nData/(nData-1d0))
 
-end subroutine compute_error
+end subroutine 
 
 !------------------------------------------------------------------------
 subroutine identity_matrix(N,A)
@@ -175,7 +175,7 @@ subroutine identity_matrix(N,A)
     A(i,i) = 1d0
   enddo
      
-end subroutine identity_matrix
+end subroutine 
 
 !------------------------------------------------------------------------
 subroutine prepend(N,M,A,b)
@@ -208,7 +208,7 @@ subroutine prepend(N,M,A,b)
     A(i,1) = b(i)
   enddo
 
-end subroutine prepend
+end subroutine 
 
 !------------------------------------------------------------------------
 subroutine append(N,M,A,b)
@@ -237,7 +237,7 @@ subroutine append(N,M,A,b)
     A(i,M) = b(i)
   enddo
 
-end subroutine append
+end subroutine 
 
 !------------------------------------------------------------------------
 subroutine AtDA(N,A,D,B)
@@ -270,7 +270,7 @@ subroutine AtDA(N,A,D,B)
     enddo
   enddo
 
-end subroutine AtDA
+end subroutine 
 
 !------------------------------------------------------------------------
 subroutine ADAt(N,A,D,B)
@@ -303,7 +303,7 @@ subroutine ADAt(N,A,D,B)
     enddo
   enddo
 
-end subroutine ADAt
+end subroutine 
 !------------------------------------------------------------------------
 subroutine DA(N,D,A)
 
@@ -323,7 +323,7 @@ subroutine DA(N,D,A)
     enddo
   enddo
 
-end subroutine DA
+end subroutine 
 
 !------------------------------------------------------------------------
 subroutine AD(N,A,D)
@@ -344,7 +344,7 @@ subroutine AD(N,A,D)
     enddo
   enddo
 
-end subroutine AD
+end subroutine 
 
 !------------------------------------------------------------------------
 subroutine print_warning(message)
@@ -357,7 +357,7 @@ subroutine print_warning(message)
 
   write(*,*) message
 
-end subroutine print_warning
+end subroutine 
 
 !------------------------------------------------------------------------
 
@@ -387,7 +387,7 @@ subroutine CalcTrAB(n,A,B,Tr)
     enddo
   enddo
 
-end subroutine CalcTrAB
+end subroutine 
 
 !------------------------------------------------------------------------
 
@@ -408,7 +408,7 @@ function EpsilonSwitch(i,j) result(delta)
     delta = -1
   endif
 
-end function EpsilonSwitch
+end function 
 
 !------------------------------------------------------------------------
 
@@ -429,7 +429,7 @@ function KappaCross(i,j,k) result(kappa)
 
   kappa = dble(EpsilonSwitch(i,j)*KroneckerDelta(i,k) - EpsilonSwitch(k,i)*KroneckerDelta(i,j))
 
-end function KappaCross
+end function 
 
 !------------------------------------------------------------------------
 
@@ -472,7 +472,7 @@ subroutine CalcInv3(a,det)
     enddo
   enddo
 
-end subroutine CalcInv3
+end subroutine 
 
 !------------------------------------------------------------------------
 
@@ -530,7 +530,7 @@ subroutine CalcInv4(a,det)
     enddo
   enddo
 
-end subroutine CalcInv4
+end subroutine 
 
 subroutine wall_time(t)
   implicit none
@@ -542,5 +542,5 @@ subroutine wall_time(t)
   endif
   CALL SYSTEM_CLOCK(count=c)
   t = dble(c)/dble(rate)
-end subroutine wall_time
+end subroutine 
 

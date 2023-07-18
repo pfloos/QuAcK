@@ -52,4 +52,4 @@ subroutine DIIS_extrapolation(rcond,n_err,n_e,n_diis,error,e,error_in,e_inout)
 
   e_inout(:) = matmul(w(1:n_diis),transpose(e(:,1:n_diis)))
 
-end subroutine DIIS_extrapolation
+end subroutine 

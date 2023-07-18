@@ -274,4 +274,4 @@ subroutine D_correction(ispin,nBasin,nCin,nOin,nVin,nRin,nSin,maxS,eHF,ERI,w,X)
 !------------------------------------------------------------------------
 ! End of loop over single excitations
 !------------------------------------------------------------------------
-end subroutine D_correction
+end subroutine 

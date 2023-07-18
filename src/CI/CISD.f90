@@ -307,4 +307,4 @@ subroutine CISD(singlet_manifold,triplet_manifold,nBasin,nCin,nOin,nVin,nRin,ERI
     write(*,*)
   endif
 
-end subroutine CISD
+end subroutine 

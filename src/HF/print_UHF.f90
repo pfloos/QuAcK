@@ -124,4 +124,4 @@ subroutine print_UHF(nBas,nO,Ov,e,c,ENuc,ET,EV,EJ,Ex,EUHF,dipole)
   call matout(nBas,1,e(:,2))
   write(*,*)
 
-end subroutine print_UHF
+end subroutine 

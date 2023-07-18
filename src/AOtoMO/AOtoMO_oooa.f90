@@ -82,4 +82,4 @@ subroutine AOtoMO_oooa(nBas,nO,nA,cO,cA,O,ooOoa)
 
   deallocate(scr1,scr2)
 
-end subroutine AOtoMO_oooa
+end subroutine 

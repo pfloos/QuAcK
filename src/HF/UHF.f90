@@ -258,4 +258,4 @@ subroutine UHF(maxSCF,thresh,max_diis,guess_type,mix,level_shift,nNuc,ZNuc,rNuc,
     call mo_fock_exchange_potential(nBas,c(:,:,ispin),P(:,:,ispin),ERI,Vx(:,ispin))
   end do
 
-end subroutine UHF
+end subroutine 
