@@ -1,6 +1,6 @@
 subroutine ppLR(TDA,nOO,nVV,B,C,D,Om1,X1,Y1,Om2,X2,Y2,EcRPA)
 
-! Compute the p-p channel of the linear response: see Scuseria et al. JCP 139, 104113 (2013)
+! Compute the pp channel of the linear response: see Scuseria et al. JCP 139, 104113 (2013)
 
   implicit none
   include 'parameters.h'
@@ -16,8 +16,6 @@ subroutine ppLR(TDA,nOO,nVV,B,C,D,Om1,X1,Y1,Om2,X2,Y2,EcRPA)
   
 ! Local variables
 
-  integer                       :: ab,cd,ij,kl
-  integer                       :: p,q,r,s
   double precision              :: trace_matrix
   double precision              :: EcRPA1
   double precision              :: EcRPA2
@@ -77,15 +75,15 @@ subroutine ppLR(TDA,nOO,nVV,B,C,D,Om1,X1,Y1,Om2,X2,Y2,EcRPA)
 
   ! Split the various quantities in p-p and h-h parts
 
-    call sort_ppRPA(nOO,nVV,Om(:),Z(:,:),Om1(:),X1(:,:),Y1(:,:),Om2(:),X2(:,:),Y2(:,:))
+    call sort_ppRPA(nOO,nVV,Om,Z,Om1,X1,Y1,Om2,X2,Y2)
 
   end if
 
 ! Compute the RPA correlation energy
 
-  EcRPA = 0.5d0*( sum(Om1(:)) - sum(Om2(:)) - trace_matrix(nVV,C(:,:)) - trace_matrix(nOO,D(:,:)) )
-  EcRPA1 = +sum(Om1(:)) - trace_matrix(nVV,C(:,:))
-  EcRPA2 = -sum(Om2(:)) - trace_matrix(nOO,D(:,:))
+  EcRPA = 0.5d0*( sum(Om1) - sum(Om2) - trace_matrix(nVV,C) - trace_matrix(nOO,D) )
+  EcRPA1 = +sum(Om1) - trace_matrix(nVV,C)
+  EcRPA2 = -sum(Om2) - trace_matrix(nOO,D)
 
   if(abs(EcRPA - EcRPA1) > 1d-6 .or. abs(EcRPA - EcRPA2) > 1d-6) & 
     print*,'!!! Issue in pp-RPA linear reponse calculation RPA1 != RPA2 !!!'

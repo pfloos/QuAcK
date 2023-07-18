@@ -1,4 +1,4 @@
-subroutine ppACFDT(TDA,singlet,triplet,nBas,nC,nO,nV,nR,nS,ERI,e,EcAC)
+subroutine ppACFDT(TDA,singlet,triplet,nBas,nC,nO,nV,nR,ERI,e,EcAC)
 
 ! Compute the correlation energy via the adiabatic connection fluctuation dissipation theorem for pp sector
 
@@ -17,7 +17,6 @@ subroutine ppACFDT(TDA,singlet,triplet,nBas,nC,nO,nV,nR,nS,ERI,e,EcAC)
   integer,intent(in)            :: nO
   integer,intent(in)            :: nV
   integer,intent(in)            :: nR
-  integer,intent(in)            :: nS
 
   double precision,intent(in)   :: e(nBas)
   double precision,intent(in)   :: ERI(nBas,nBas,nBas,nBas)
@@ -32,6 +31,9 @@ subroutine ppACFDT(TDA,singlet,triplet,nBas,nC,nO,nV,nR,nS,ERI,e,EcAC)
   integer                       :: nOO
   integer                       :: nVV
 
+  double precision,allocatable  :: Bpp(:,:)
+  double precision,allocatable  :: Cpp(:,:)
+  double precision,allocatable  :: Dpp(:,:)
   double precision,allocatable  :: Om1(:)
   double precision,allocatable  :: X1(:,:)
   double precision,allocatable  :: Y1(:,:)
@@ -64,7 +66,8 @@ subroutine ppACFDT(TDA,singlet,triplet,nBas,nC,nO,nV,nR,nS,ERI,e,EcAC)
     nVV = nV*(nV+1)/2
 
     allocate(Om1(nVV),X1(nVV,nVV),Y1(nOO,nVV),rho1(nBas,nBas,nVV), & 
-             Om2(nOO),X2(nVV,nOO),Y2(nOO,nOO),rho2(nBas,nBas,nOO))
+             Om2(nOO),X2(nVV,nOO),Y2(nOO,nOO),rho2(nBas,nBas,nOO), &
+             Bpp(nVV,nOO),Cpp(nVV,nVV),Dpp(nOO,nOO))
 
     write(*,*) '--------------'
     write(*,*) 'Singlet states'
@@ -79,9 +82,13 @@ subroutine ppACFDT(TDA,singlet,triplet,nBas,nC,nO,nV,nR,nS,ERI,e,EcAC)
  
       lambda = rAC(iAC)
 
-      call ppLR(ispin,TDA,nBas,nC,nO,nV,nR,nOO,nVV,lambda,e,ERI,Om1,X1,Y1,Om2,X2,Y2,EcAC(ispin))
+      if(.not.TDA) call ppLR_B(ispin,nBas,nC,nO,nV,nR,nOO,nVV,lambda,ERI,Bpp)
+                   call ppLR_C(ispin,nBas,nC,nO,nV,nR,nVV,lambda,e,ERI,Cpp)
+                   call ppLR_D(ispin,nBas,nC,nO,nV,nR,nOO,lambda,e,ERI,Dpp)
 
-      call ppACFDT_correlation_energy(ispin,nBas,nC,nO,nV,nR,nS,ERI,nOO,nVV,X1,Y1,X2,Y2,Ec(iAC,ispin))
+      call ppLR(TDA,nOO,nVV,Bpp,Cpp,Dpp,Om1,X1,Y1,Om2,X2,Y2,EcAC(ispin))
+
+      call ppACFDT_correlation_energy(ispin,nBas,nC,nO,nV,nR,ERI,nOO,nVV,X1,Y1,X2,Y2,Ec(iAC,ispin))
 
       write(*,'(2X,F15.6,1X,F30.15,1X,F30.15)') lambda,EcAC(ispin),Ec(iAC,ispin)
 
@@ -94,7 +101,7 @@ subroutine ppACFDT(TDA,singlet,triplet,nBas,nC,nO,nV,nR,nS,ERI,e,EcAC)
     write(*,*) '-----------------------------------------------------------------------------------'
     write(*,*)
 
-    deallocate(Om1,X1,Y1,rho1,Om2,X2,Y2,rho2)
+    deallocate(Om1,X1,Y1,rho1,Om2,X2,Y2,rho2,Bpp,Cpp,Dpp)
 
   end if
  
@@ -108,7 +115,8 @@ subroutine ppACFDT(TDA,singlet,triplet,nBas,nC,nO,nV,nR,nS,ERI,e,EcAC)
     nVV = nV*(nV-1)/2
 
     allocate(Om1(nVV),X1(nVV,nVV),Y1(nOO,nVV),rho1(nBas,nBas,nVV), & 
-             Om2(nOO),X2(nVV,nOO),Y2(nOO,nOO),rho2(nBas,nBas,nOO))
+             Om2(nOO),X2(nVV,nOO),Y2(nOO,nOO),rho2(nBas,nBas,nOO), &
+             Bpp(nVV,nOO),Cpp(nVV,nVV),Dpp(nOO,nOO))
 
     write(*,*) '--------------'
     write(*,*) 'Triplet states'
@@ -123,11 +131,13 @@ subroutine ppACFDT(TDA,singlet,triplet,nBas,nC,nO,nV,nR,nS,ERI,e,EcAC)
  
       lambda = rAC(iAC)
 
-      ! Initialize T matrix
+      if(.not.TDA) call ppLR_B(ispin,nBas,nC,nO,nV,nR,nOO,nVV,lambda,ERI,Bpp)
+                   call ppLR_C(ispin,nBas,nC,nO,nV,nR,nVV,lambda,e,ERI,Cpp)
+                   call ppLR_D(ispin,nBas,nC,nO,nV,nR,nOO,lambda,e,ERI,Dpp)
 
-      call ppLR(ispin,TDA,nBas,nC,nO,nV,nR,nOO,nVV,lambda,e,ERI,Om1,X1,Y1,Om2,X2,Y2,EcAC(ispin))
+      call ppLR(TDA,nOO,nVV,Bpp,Cpp,Dpp,Om1,X1,Y1,Om2,X2,Y2,EcAC(ispin))
 
-      call ppACFDT_correlation_energy(ispin,nBas,nC,nO,nV,nR,nS,ERI,nOO,nVV,X1,Y1,X2,Y2,Ec(iAC,ispin))
+      call ppACFDT_correlation_energy(ispin,nBas,nC,nO,nV,nR,ERI,nOO,nVV,X1,Y1,X2,Y2,Ec(iAC,ispin))
 
       write(*,'(2X,F15.6,1X,F30.15,1X,F30.15)') lambda,EcAC(ispin),Ec(iAC,ispin)
 
@@ -140,7 +150,7 @@ subroutine ppACFDT(TDA,singlet,triplet,nBas,nC,nO,nV,nR,nS,ERI,e,EcAC)
     write(*,*) '-----------------------------------------------------------------------------------'
     write(*,*)
 
-    deallocate(Om1,X1,Y1,rho1,Om2,X2,Y2,rho2)
+    deallocate(Om1,X1,Y1,rho1,Om2,X2,Y2,rho2,Bpp,Cpp,Dpp)
 
   end if
 

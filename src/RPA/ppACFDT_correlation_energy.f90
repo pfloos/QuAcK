@@ -1,4 +1,4 @@
-subroutine ppACFDT_correlation_energy(ispin,nBas,nC,nO,nV,nR,nS,ERI,nOO,nVV,X1,Y1,X2,Y2,EcAC)
+subroutine ppACFDT_correlation_energy(ispin,nBas,nC,nO,nV,nR,ERI,nOO,nVV,X1,Y1,X2,Y2,EcAC)
 
 ! Compute the correlation energy via the adiabatic connection formula for the pp sector
 
@@ -13,7 +13,6 @@ subroutine ppACFDT_correlation_energy(ispin,nBas,nC,nO,nV,nR,nS,ERI,nOO,nVV,X1,Y
   integer,intent(in)            :: nO
   integer,intent(in)            :: nV
   integer,intent(in)            :: nR
-  integer,intent(in)            :: nS
   double precision,intent(in)   :: ERI(nBas,nBas,nBas,nBas)
 
   integer,intent(in)            :: nOO
@@ -53,4 +52,3 @@ subroutine ppACFDT_correlation_energy(ispin,nBas,nC,nO,nV,nR,nS,ERI,nOO,nVV,X1,Y
        - trace_matrix(nVV,C) - trace_matrix(nOO,D)
 
 end subroutine 
-
