@@ -1,4 +1,4 @@
-double precision function dSigmaC(x,w,eta,nBas,nC,nO,nV,nR,nS,e,Omega,rho,regularize)
+double precision function dSigmaC(p,w,eta,nBas,nC,nO,nV,nR,nS,e,Omega,rho,regularize)
 
 ! Compute the derivative of the correlation part of the self-energy
 
@@ -7,7 +7,7 @@ double precision function dSigmaC(x,w,eta,nBas,nC,nO,nV,nR,nS,e,Omega,rho,regula
 
 ! Input variables
 
-  integer,intent(in)            :: x
+  integer,intent(in)            :: p
   double precision,intent(in)   :: w
   double precision,intent(in)   :: eta
   integer,intent(in)            :: nBas
@@ -23,7 +23,7 @@ double precision function dSigmaC(x,w,eta,nBas,nC,nO,nV,nR,nS,e,Omega,rho,regula
 
 ! Local variables
 
-  integer                       :: i,j,a,b,p,jb
+  integer                       :: i,j,a,b,jb
   double precision              :: eps
   double precision              :: Dpijb,Dpajb
 
@@ -57,7 +57,7 @@ double precision function dSigmaC(x,w,eta,nBas,nC,nO,nV,nR,nS,e,Omega,rho,regula
            do b=nO+1,nBas-nR
               jb = jb + 1
               eps = w - e(i) + Omega(jb)
-              dSigmaC = dSigmaC - 2d0*rho(x,i,jb)**2*(eps**2 - eta**2)/(eps**2 + eta**2)**2
+              dSigmaC = dSigmaC - 2d0*rho(p,i,jb)**2*(eps**2 - eta**2)/(eps**2 + eta**2)**2
            enddo
         enddo
      enddo
@@ -69,7 +69,7 @@ double precision function dSigmaC(x,w,eta,nBas,nC,nO,nV,nR,nS,e,Omega,rho,regula
            do b=nO+1,nBas-nR
               jb = jb + 1
               eps = w - e(a) - Omega(jb)
-              dSigmaC = dSigmaC - 2d0*rho(x,a,jb)**2*(eps**2 - eta**2)/(eps**2 + eta**2)**2
+              dSigmaC = dSigmaC - 2d0*rho(p,a,jb)**2*(eps**2 - eta**2)/(eps**2 + eta**2)**2
            enddo
         enddo
      enddo
