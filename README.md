@@ -28,7 +28,8 @@ You must also install [PySCF](https://pyscf.org) (for example using `pip`)
 pip install pyscf
 ```
 
-PySCF is used for the computation of one- and two-electron integrals (mainly).
+PySCF is used for the computation of one- and two-electron integrals (mainly) which are dumped in files and read by QuAcK.
+Therefore, it is very easy to use other software to compute the integrals or to add other types of integrals.
 
 # Quick start
 
