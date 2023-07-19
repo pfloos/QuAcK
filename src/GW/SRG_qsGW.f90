@@ -357,4 +357,4 @@ subroutine SRG_qsGW(maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,BSE,BSE
 
   end if
 
-end subroutine SRG_qsGW
+end subroutine 
