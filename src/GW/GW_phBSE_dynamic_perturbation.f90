@@ -1,5 +1,5 @@
-subroutine Bethe_Salpeter_dynamic_perturbation(BSE2,dTDA,eta,nBas,nC,nO,nV,nR,nS,eW,eGW, &
-dipole_int,OmRPA,rho_RPA,OmBSE,XpY,XmY,W,A_stat)
+subroutine GW_phBSE_dynamic_perturbation(BSE2,dTDA,eta,nBas,nC,nO,nV,nR,nS,eW,eGW,dipole_int, & 
+                                         OmRPA,rho_RPA,OmBSE,XpY,XmY,W,A_stat)
 
 ! Compute dynamical effects via perturbation theory for BSE
 
@@ -57,8 +57,7 @@ dipole_int,OmRPA,rho_RPA,OmBSE,XpY,XmY,W,A_stat)
 
   maxS = min(nS,maxS)
   allocate(OmDyn(maxS),ZDyn(maxS),X(nS),Y(nS),Ap_dyn(nS,nS),ZAp_dyn(nS,nS))
-
-  if(.not.dTDA) allocate(Am_dyn(nS,nS),ZAm_dyn(nS,nS),Bp_dyn(nS,nS),ZBp_dyn(nS,nS),Bm_dyn(nS,nS),ZBm_dyn(nS,nS))
+  allocate(Am_dyn(nS,nS),ZAm_dyn(nS,nS),Bp_dyn(nS,nS),ZBp_dyn(nS,nS),Bm_dyn(nS,nS),ZBm_dyn(nS,nS))
 
   if(dTDA) then 
     write(*,*)
@@ -87,9 +86,9 @@ dipole_int,OmRPA,rho_RPA,OmBSE,XpY,XmY,W,A_stat)
 
       ! Resonant part of the BSE correction for dynamical TDA
 
-      call Bethe_Salpeter_A_matrix_dynamic(eta,nBas,nC,nO,nV,nR,nS,1d0,eGW,OmRPA,rho_RPA,OmBSE(ia),Ap_dyn,ZAp_dyn)
+      call GW_phBSE_dynamic_kernel_A(eta,nBas,nC,nO,nV,nR,nS,1d0,eGW,OmRPA,rho_RPA,OmBSE(ia),Ap_dyn,ZAp_dyn)
 
-if(BSE2) call BSE2_GW_A_matrix_dynamic(eta,nBas,nC,nO,nV,nR,nS,eGW,W,OmBSE(ia),Ap_dyn,ZAp_dyn,W)
+      if(BSE2) call GW_phBSE2_dynamic_kernel_A(eta,nBas,nC,nO,nV,nR,nS,eGW,W,OmBSE(ia),Ap_dyn,ZAp_dyn,W)
 
       ZDyn(ia)  = dot_product(X,matmul(ZAp_dyn,X))
       OmDyn(ia) = dot_product(X,matmul( Ap_dyn - A_stat,X))
@@ -98,13 +97,11 @@ if(BSE2) call BSE2_GW_A_matrix_dynamic(eta,nBas,nC,nO,nV,nR,nS,eGW,W,OmBSE(ia),A
 
       ! Resonant and anti-resonant part of the BSE correction
 
-      call Bethe_Salpeter_AB_matrix_dynamic(eta,nBas,nC,nO,nV,nR,nS,1d0,eGW,OmRPA,rho_RPA,OmBSE(ia), &
-                                            Ap_dyn,Am_dyn,Bp_dyn,Bm_dyn)
+      call GW_phBSE_dynamic_kernel(eta,nBas,nC,nO,nV,nR,nS,1d0,eGW,OmRPA,rho_RPA,OmBSE(ia),Ap_dyn,Am_dyn,Bp_dyn,Bm_dyn)
 
       ! Renormalization factor of the resonant and anti-resonant parts
 
-      call Bethe_Salpeter_ZAB_matrix_dynamic(eta,nBas,nC,nO,nV,nR,nS,1d0,eGW,OmRPA,rho_RPA,OmBSE(ia), &
-                                             ZAp_dyn,ZAm_dyn,ZBp_dyn,ZBm_dyn)
+      call GW_phBSE_dynamic_kernel_Z(eta,nBas,nC,nO,nV,nR,nS,1d0,eGW,OmRPA,rho_RPA,OmBSE(ia),ZAp_dyn,ZAm_dyn,ZBp_dyn,ZBm_dyn)
 
       ZDyn(ia)  = dot_product(X,matmul(ZAp_dyn,X)) &
                 - dot_product(Y,matmul(ZAm_dyn,Y)) &
@@ -128,4 +125,4 @@ if(BSE2) call BSE2_GW_A_matrix_dynamic(eta,nBas,nC,nO,nV,nR,nS,eGW,W,OmBSE(ia),A
   write(*,*) '---------------------------------------------------------------------------------------------------'
   write(*,*) 
 
-end subroutine Bethe_Salpeter_dynamic_perturbation
+end subroutine 

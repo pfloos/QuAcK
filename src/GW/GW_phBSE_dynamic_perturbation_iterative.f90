@@ -1,5 +1,4 @@
-subroutine Bethe_Salpeter_dynamic_perturbation_iterative(dTDA,eta,nBas,nC,nO,nV,nR,nS,eGW,dipole_int, & 
-                                                         OmRPA,rho_RPA,OmBSE,XpY,XmY)
+subroutine GW_phBSE_dynamic_perturbation_iterative(dTDA,eta,nBas,nC,nO,nV,nR,nS,eGW,dipole_int,OmRPA,rho_RPA,OmBSE,XpY,XmY)
 
 ! Compute self-consistently the dynamical effects via perturbation theory for BSE
 
@@ -57,9 +56,7 @@ subroutine Bethe_Salpeter_dynamic_perturbation_iterative(dTDA,eta,nBas,nC,nO,nV,
 
   maxS = min(nS,maxS)
   allocate(OmDyn(maxS),OmOld(maxS),X(nS),Y(nS),Ap_dyn(nS,nS),ZAp_dyn(nS,nS))
-
-  if(.not.dTDA) &
-    allocate(Am_dyn(nS,nS),ZAm_dyn(nS,nS),Bp_dyn(nS,nS),Bm_dyn(nS,nS))
+  allocate(Am_dyn(nS,nS),ZAm_dyn(nS,nS),Bp_dyn(nS,nS),Bm_dyn(nS,nS))
 
   if(dTDA) then
     write(*,*)
@@ -101,7 +98,7 @@ subroutine Bethe_Salpeter_dynamic_perturbation_iterative(dTDA,eta,nBas,nC,nO,nV,
 
        ! Resonant part of the BSE correction
  
-        call Bethe_Salpeter_A_matrix_dynamic(eta,nBas,nC,nO,nV,nR,nS,1d0,eGW,OmRPA,rho_RPA,OmOld(ia),Ap_dyn,ZAp_dyn)
+        call GW_phBSE_dynamic_kernel_A(eta,nBas,nC,nO,nV,nR,nS,1d0,eGW,OmRPA,rho_RPA,OmOld(ia),Ap_dyn,ZAp_dyn)
  
         OmDyn(ia) = dot_product(X(:),matmul(Ap_dyn(:,:),X(:)))
  
@@ -109,8 +106,7 @@ subroutine Bethe_Salpeter_dynamic_perturbation_iterative(dTDA,eta,nBas,nC,nO,nV,
  
         ! Anti-resonant part of the BSE correction
  
-        call Bethe_Salpeter_AB_matrix_dynamic(eta,nBas,nC,nO,nV,nR,nS,1d0,eGW,OmRPA,rho_RPA,OmOld(ia), &
-                                              Ap_dyn,Am_dyn,Bp_dyn,Bm_dyn)
+        call GW_phBSE_dynamic_kernel(eta,nBas,nC,nO,nV,nR,nS,1d0,eGW,OmRPA,rho_RPA,OmOld(ia),Ap_dyn,Am_dyn,Bp_dyn,Bm_dyn)
  
         OmDyn(ia) = dot_product(X(:),matmul(Ap_dyn(:,:),X(:))) &
                   - dot_product(Y(:),matmul(Am_dyn(:,:),Y(:))) &
@@ -146,4 +142,4 @@ subroutine Bethe_Salpeter_dynamic_perturbation_iterative(dTDA,eta,nBas,nC,nO,nV,
 
   endif
 
-end subroutine Bethe_Salpeter_dynamic_perturbation_iterative
+end subroutine 

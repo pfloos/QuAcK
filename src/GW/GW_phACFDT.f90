@@ -30,6 +30,7 @@ subroutine GW_phACFDT(exchange_kernel,doXBS,dRPA,TDA_W,TDA,BSE,singlet,triplet,e
 
 ! Local variables
 
+  logical                       :: dRPA_W = .true.
   integer                       :: ispin
   integer                       :: isp_W
   integer                       :: iAC
@@ -57,8 +58,9 @@ subroutine GW_phACFDT(exchange_kernel,doXBS,dRPA,TDA_W,TDA,BSE,singlet,triplet,e
 ! Memory allocation
 
   allocate(Ec(nAC,nspin))
-  allocate(KA(nS,nS),KB(nS,nS),OmRPA(nS),XpY_RPA(nS,nS),XmY_RPA(nS,nS),rho_RPA(nBas,nBas,nS))
-  allocate(Om(nS),XpY(nS,nS),XmY(nS,nS))
+  allocate(Aph(nS,nS),KA(nS,nS),OmRPA(nS),XpY_RPA(nS,nS),XmY_RPA(nS,nS), & 
+           rho_RPA(nBas,nBas,nS),Om(nS),XpY(nS,nS),XmY(nS,nS))
+  if(.not.TDA) allocate(Aph(nS,nS),KB(nS,nS))
 
 ! Antisymmetrized kernel version
 
@@ -78,11 +80,14 @@ subroutine GW_phACFDT(exchange_kernel,doXBS,dRPA,TDA_W,TDA,BSE,singlet,triplet,e
   isp_W = 1
   EcRPA = 0d0
 
-  call phLR(isp_W,.true.,TDA_W,eta,nBas,nC,nO,nV,nR,nS,1d0,eW,ERI,EcRPA,OmRPA,XpY_RPA,XmY_RPA)
+                 call phLR_A(isp_W,dRPA_W,nBas,nC,nO,nV,nR,nS,1d0,eW,ERI,Aph)
+  if(.not.TDA_W) call phLR_B(isp_W,dRPA_W,nBas,nC,nO,nV,nR,nS,1d0,ERI,Bph)
+
+  call phLR(TDA_W,nS,Aph,Bph,EcRPA,OmRPA,XpY_RPA,XmY_RPA)
   call GW_excitation_density(nBas,nC,nO,nR,nS,ERI,XpY_RPA,rho_RPA)
 
-  call BSE_static_kernel_KA(eta,nBas,nC,nO,nV,nR,nS,1d0,ERI,OmRPA,rho_RPA,KA)
-  call BSE_static_kernel_KB(eta,nBas,nC,nO,nV,nR,nS,1d0,ERI,OmRPA,rho_RPA,KB)
+  call GW_phBSE_static_kernel_A(eta,nBas,nC,nO,nV,nR,nS,1d0,ERI,OmRPA,rho_RPA,KA)
+  call GW_phBSE_static_kernel_B(eta,nBas,nC,nO,nV,nR,nS,1d0,ERI,OmRPA,rho_RPA,KB)
 
 ! Singlet manifold
 
@@ -105,15 +110,21 @@ subroutine GW_phACFDT(exchange_kernel,doXBS,dRPA,TDA_W,TDA,BSE,singlet,triplet,e
 
       if(doXBS) then
 
-        call phLR(isp_W,.true.,TDA_W,eta,nBas,nC,nO,nV,nR,nS,lambda,eW,ERI,EcRPA,OmRPA,XpY_RPA,XmY_RPA)
+                       call phLR_A(isp_W,dRPA_W,nBas,nC,nO,nV,nR,nS,lambda,eW,ERI,Aph)
+        if(.not.TDA_W) call phLR_B(isp_W,dRPA_W,nBas,nC,nO,nV,nR,nS,lambda,ERI,Bph)
+   
+        call phLR(TDA_W,nS,Aph,Bph,EcRPA,OmRPA,XpY_RPA,XmY_RPA)
         call GW_excitation_density(nBas,nC,nO,nR,nS,ERI,XpY_RPA,rho_RPA)
-
-        call BSE_static_kernel_KA(eta,nBas,nC,nO,nV,nR,nS,lambda,ERI,OmRPA,rho_RPA,KA)
-        call BSE_static_kernel_KB(eta,nBas,nC,nO,nV,nR,nS,lambda,ERI,OmRPA,rho_RPA,KB)
+   
+        call GW_phBSE_static_kernel_A(eta,nBas,nC,nO,nV,nR,nS,lambda,ERI,OmRPA,rho_RPA,KA)
+        call GW_phBSE_static_kernel_B(eta,nBas,nC,nO,nV,nR,nS,lambda,ERI,OmRPA,rho_RPA,KB)
 
       end if
 
-      call linear_response_BSE(ispin,dRPA,TDA,BSE,eta,nBas,nC,nO,nV,nR,nS,lambda,e,ERI,KA,KB,EcAC(ispin),Om,XpY,XmY)
+                   Aph(:,:) = Aph(:,:) + KA(:,:)
+      if(.not.TDA) Bph(:,:) = Bph(:,:) + KB(:,:)
+
+      call phLR(TDA,nS,Aph,Bph,EcAC(ispin),Om,XpY,XmY)
 
       call phACFDT_correlation_energy(ispin,exchange_kernel,nBas,nC,nO,nV,nR,nS,ERI,XpY,XmY,Ec(iAC,ispin))
 
@@ -153,15 +164,21 @@ subroutine GW_phACFDT(exchange_kernel,doXBS,dRPA,TDA_W,TDA,BSE,singlet,triplet,e
 
       if(doXBS) then
 
-        call phLR(isp_W,.true.,TDA_W,eta,nBas,nC,nO,nV,nR,nS,lambda,eW,ERI,EcRPA,OmRPA,XpY_RPA,XmY_RPA)
+                       call phLR_A(isp_W,dRPA_W,nBas,nC,nO,nV,nR,nS,lambda,eW,ERI,Aph)
+        if(.not.TDA_W) call phLR_B(isp_W,dRPA_W,nBas,nC,nO,nV,nR,nS,lambda,ERI,Bph)
+  
+        call phLR(TDA_W,nS,Aph,Bph,EcRPA,OmRPA,XpY_RPA,XmY_RPA)
         call GW_excitation_density(nBas,nC,nO,nR,nS,ERI,XpY_RPA,rho_RPA)
-
-        call BSE_static_kernel_KA(eta,nBas,nC,nO,nV,nR,nS,lambda,ERI,OmRPA,rho_RPA,KA)
-        call BSE_static_kernel_KB(eta,nBas,nC,nO,nV,nR,nS,lambda,ERI,OmRPA,rho_RPA,KB)
+  
+        call GW_phBSE_static_kernel_A(eta,nBas,nC,nO,nV,nR,nS,lambda,ERI,OmRPA,rho_RPA,KA)
+        call GW_phBSE_static_kernel_B(eta,nBas,nC,nO,nV,nR,nS,lambda,ERI,OmRPA,rho_RPA,KB)
 
       end if  
 
-      call linear_response_BSE(ispin,dRPA,TDA,BSE,eta,nBas,nC,nO,nV,nR,nS,lambda,e,ERI,KA,KB,EcAC(ispin),Om,XpY,XmY)
+                   Aph(:,:) = Aph(:,:) + KA(:,:)
+      if(.not.TDA) Bph(:,:) = Bph(:,:) + KB(:,:)
+
+      call phLR(TDA,nS,Aph,Bph,EcAC(ispin),Om,XpY,XmY)
 
       call phACFDT_correlation_energy(ispin,exchange_kernel,nBas,nC,nO,nV,nR,nS,ERI,XpY,XmY,Ec(iAC,ispin))
 

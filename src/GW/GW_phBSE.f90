@@ -30,6 +30,9 @@ subroutine GW_phBSE(BSE2,TDA_W,TDA,dBSE,dTDA,evDyn,singlet,triplet,eta,nBas,nC,n
 
 ! Local variables
 
+  logical                       :: dRPA   = .false.
+  logical                       :: dRPA_W = .true.
+
   integer                       :: ispin
   integer                       :: isp_W
 
@@ -42,6 +45,9 @@ subroutine GW_phBSE(BSE2,TDA_W,TDA,dBSE,dTDA,evDyn,singlet,triplet,eta,nBas,nC,n
   double precision,allocatable  :: OmBSE(:)
   double precision,allocatable  :: XpY_BSE(:,:)
   double precision,allocatable  :: XmY_BSE(:,:)
+
+  double precision,allocatable  :: A_sta(:,:)
+  double precision,allocatable  :: B_sta(:,:)
 
   double precision,allocatable  :: KA_sta(:,:)
   double precision,allocatable  :: KB_sta(:,:)
@@ -57,7 +63,8 @@ subroutine GW_phBSE(BSE2,TDA_W,TDA,dBSE,dTDA,evDyn,singlet,triplet,eta,nBas,nC,n
 ! Memory allocation
 
   allocate(OmRPA(nS),XpY_RPA(nS,nS),XmY_RPA(nS,nS),rho_RPA(nBas,nBas,nS), &
-           KA_sta(nS,nS),KB_sta(nS,nS),OmBSE(nS),XpY_BSE(nS,nS),XmY_BSE(nS,nS))
+           A_sta(nS,nS),KA_sta(nS,nS),KA2_sta(nS,nS),OmBSE(nS),XpY_BSE(nS,nS),XmY_BSE(nS,nS))
+  allocate(B_sta(nS,nS),KB_sta(nS,nS),KB2_sta(nS,nS))
 
 !---------------------------------
 ! Compute (singlet) RPA screening 
@@ -66,11 +73,14 @@ subroutine GW_phBSE(BSE2,TDA_W,TDA,dBSE,dTDA,evDyn,singlet,triplet,eta,nBas,nC,n
   isp_W = 1
   EcRPA = 0d0
 
-  call phLR(isp_W,.true.,TDA_W,eta,nBas,nC,nO,nV,nR,nS,1d0,eW,ERI,EcRPA,OmRPA,XpY_RPA,XmY_RPA)
+                 call phLR_A(isp_W,dRPA_W,nBas,nC,nO,nV,nR,nS,1d0,eW,ERI,A_sta)
+  if(.not.TDA_W) call phLR_B(isp_W,dRPA_W,nBas,nC,nO,nV,nR,nS,1d0,ERI,B_sta)
+
+  call phLR(TDA_W,nS,A_sta,B_sta,EcRPA,OmRPA,XpY_RPA,XmY_RPA)
   call GW_excitation_density(nBas,nC,nO,nR,nS,ERI,XpY_RPA,rho_RPA)
 
-  call BSE_static_kernel_KA(eta,nBas,nC,nO,nV,nR,nS,1d0,ERI,OmRPA,rho_RPA,KA_sta)
-  call BSE_static_kernel_KB(eta,nBas,nC,nO,nV,nR,nS,1d0,ERI,OmRPA,rho_RPA,KB_sta)
+  call GW_phBSE_static_kernel_A(eta,nBas,nC,nO,nV,nR,nS,1d0,ERI,OmRPA,rho_RPA,KA_sta)
+  call GW_phBSE_static_kernel_B(eta,nBas,nC,nO,nV,nR,nS,1d0,ERI,OmRPA,rho_RPA,KB_sta)
 
 !-------------------
 ! Singlet manifold
@@ -81,27 +91,39 @@ subroutine GW_phBSE(BSE2,TDA_W,TDA,dBSE,dTDA,evDyn,singlet,triplet,eta,nBas,nC,n
     ispin = 1
     EcBSE(ispin) = 0d0
 
+    ! Compute BSE excitation energies
+
+                 call phLR_A(ispin,dRPA,nBas,nC,nO,nV,nR,nS,1d0,eGW,ERI,A_sta)
+    if(.not.TDA) call phLR_B(ispin,dRPA,nBas,nC,nO,nV,nR,nS,1d0,ERI,B_sta)
+
+                 A_sta(:,:) = A_sta(:,:) + KA_sta(:,:)
+    if(.not.TDA) B_sta(:,:) = B_sta(:,:) + KB_sta(:,:)
+
     ! Second-order BSE static kernel
   
-    allocate(W(nBas,nBas,nBas,nBas),KA2_sta(nS,nS),KB2_sta(nS,nS))
-    KA2_sta(:,:) = 0d0
-    KB2_sta(:,:) = 0d0
-
     if(BSE2) then 
 
-      write(*,*) '*** Second-order BSE static kernel activated! ***'
-      call static_kernel_W(eta,nBas,nC,nO,nV,nR,nS,1d0,ERI,OmRPA,rho_RPA,W)
-      call BSE2_static_kernel_KA(eta,nBas,nC,nO,nV,nR,nS,1d0,eW,W,KA2_sta)
+      allocate(W(nBas,nBas,nBas,nBas))
 
-      if(.not.TDA) call BSE2_static_kernel_KB(eta,nBas,nC,nO,nV,nR,nS,1d0,eW,W,KB2_sta)
+      write(*,*) 
+      write(*,*) '*** Second-order BSE static kernel activated! ***'
+      write(*,*) 
+
+      call static_kernel_W(eta,nBas,nC,nO,nV,nR,nS,1d0,ERI,OmRPA,rho_RPA,W)
+      call GW_phBSE2_static_kernel_A(eta,nBas,nC,nO,nV,nR,nS,1d0,eW,W,KA2_sta)
+
+      if(.not.TDA) call GW_phBSE2_static_kernel_B(eta,nBas,nC,nO,nV,nR,nS,1d0,eW,W,KB2_sta)
+
+      deallocate(W)
+
+                   A_sta(:,:) = A_sta(:,:) + KA2_sta(:,:)
+      if(.not.TDA) B_sta(:,:) = B_sta(:,:) + KB2_sta(:,:)
 
     end if
 
-    ! Compute BSE excitation energies
+    call phLR(TDA,nS,A_sta,B_sta,EcBSE(ispin),OmBSE,XpY_BSE,XmY_BSE)
 
-    call linear_response_BSE(ispin,.true.,TDA,.true.,eta,nBas,nC,nO,nV,nR,nS,1d0,eGW,ERI,KA_sta-KA2_sta,KB_sta-KB2_sta, &
-                             EcBSE(ispin),OmBSE,XpY_BSE,XmY_BSE)
-    call print_excitation('BSE@GW      ',ispin,nS,OmBSE)
+    call print_excitation('phBSE@GW    ',ispin,nS,OmBSE)
     call print_transition_vectors_ph(.true.,nBas,nC,nO,nV,nR,nS,dipole_int,OmBSE,XpY_BSE,XmY_BSE)
 
     !-------------------------------------------------
@@ -114,12 +136,12 @@ subroutine GW_phBSE(BSE2,TDA_W,TDA,dBSE,dTDA,evDyn,singlet,triplet,eta,nBas,nC,n
  
       if(evDyn) then
  
-        call Bethe_Salpeter_dynamic_perturbation_iterative(dTDA,eta,nBas,nC,nO,nV,nR,nS,eGW,dipole_int,OmRPA,rho_RPA, &
-                                                           OmBSE,XpY_BSE,XmY_BSE)
+        call GW_phBSE_dynamic_perturbation_iterative(dTDA,eta,nBas,nC,nO,nV,nR,nS,eGW,dipole_int,OmRPA,rho_RPA, &
+                                                     OmBSE,XpY_BSE,XmY_BSE)
       else
 
-        call Bethe_Salpeter_dynamic_perturbation(BSE2,dTDA,eta,nBas,nC,nO,nV,nR,nS,eW,eGW,dipole_int,OmRPA,rho_RPA, &
-                            OmBSE,XpY_BSE,XmY_BSE,W,KA2_sta)
+        call GW_phBSE_dynamic_perturbation(BSE2,dTDA,eta,nBas,nC,nO,nV,nR,nS,eW,eGW,dipole_int,OmRPA,rho_RPA, &
+                                           OmBSE,XpY_BSE,XmY_BSE,W,KA2_sta)
       end if
 
     end if
@@ -137,8 +159,15 @@ subroutine GW_phBSE(BSE2,TDA_W,TDA,dBSE,dTDA,evDyn,singlet,triplet,eta,nBas,nC,n
 
     ! Compute BSE excitation energies
 
-    call linear_response_BSE(ispin,.true.,TDA,.true.,eta,nBas,nC,nO,nV,nR,nS,1d0,eGW,ERI,KA_sta,KB_sta,EcBSE,OmBSE,XpY_BSE,XmY_BSE)
-    call print_excitation('BSE@GW      ',ispin,nS,OmBSE)
+                 call phLR_A(ispin,dRPA,nBas,nC,nO,nV,nR,nS,1d0,eGW,ERI,A_sta)
+    if(.not.TDA) call phLR_B(ispin,dRPA,nBas,nC,nO,nV,nR,nS,1d0,ERI,B_sta)
+
+                 A_sta(:,:) = A_sta(:,:) + KA_sta(:,:)
+    if(.not.TDA) B_sta(:,:) = B_sta(:,:) + KB_sta(:,:)
+
+    call phLR(TDA,nS,A_sta,B_sta,EcBSE(ispin),OmBSE,XpY_BSE,XmY_BSE)
+
+    call print_excitation('phBSE@GW    ',ispin,nS,OmBSE)
     call print_transition_vectors_ph(.false.,nBas,nC,nO,nV,nR,nS,dipole_int,OmBSE,XpY_BSE,XmY_BSE)
 
     !-------------------------------------------------
@@ -151,12 +180,12 @@ subroutine GW_phBSE(BSE2,TDA_W,TDA,dBSE,dTDA,evDyn,singlet,triplet,eta,nBas,nC,n
 
       if(evDyn) then
      
-        call Bethe_Salpeter_dynamic_perturbation_iterative(dTDA,eta,nBas,nC,nO,nV,nR,nS,eGW,dipole_int,OmRPA,rho_RPA, &
-                                                           OmBSE,XpY_BSE,XmY_BSE)
+        call GW_phBSE_dynamic_perturbation_iterative(dTDA,eta,nBas,nC,nO,nV,nR,nS,eGW,dipole_int,OmRPA,rho_RPA, &
+                                                     OmBSE,XpY_BSE,XmY_BSE)
       else
      
-        call Bethe_Salpeter_dynamic_perturbation(BSE2,dTDA,eta,nBas,nC,nO,nV,nR,nS,eW,eGW,dipole_int,OmRPA,rho_RPA, &
-                             OmBSE,XpY_BSE,XmY_BSE,W,KA2_sta)
+        call GW_phBSE_dynamic_perturbation(BSE2,dTDA,eta,nBas,nC,nO,nV,nR,nS,eW,eGW,dipole_int,OmRPA,rho_RPA, &
+                                           OmBSE,XpY_BSE,XmY_BSE,W,KA2_sta)
       end if
 
     end if

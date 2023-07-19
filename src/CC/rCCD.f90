@@ -1,4 +1,4 @@
-subroutine rCCD(BSE,maxSCF,thresh,max_diis,nBasin,nCin,nOin,nVin,nRin,ERI,ENuc,ERHF,eHF,eGW)
+subroutine rCCD(maxSCF,thresh,max_diis,nBasin,nCin,nOin,nVin,nRin,ERI,ENuc,ERHF,eHF,eGW)
 
 ! Ring CCD module
 
@@ -6,7 +6,6 @@ subroutine rCCD(BSE,maxSCF,thresh,max_diis,nBasin,nCin,nOin,nVin,nRin,ERI,ENuc,E
 
 ! Input variables
 
-  logical,intent(in)            :: BSE
   integer,intent(in)            :: maxSCF
   integer,intent(in)            :: max_diis
   double precision,intent(in)   :: thresh
@@ -77,23 +76,11 @@ subroutine rCCD(BSE,maxSCF,thresh,max_diis,nBasin,nCin,nOin,nVin,nRin,ERI,ENuc,E
   call spatial_to_spin_MO_energy(nBasin,eGW,nBas,seGW)
   call spatial_to_spin_ERI(nBasin,ERI,nBas,sERI)
 
-! call soRPAx(.false.,nBas,nC,nO,nV,nR,nO*nV,ENuc,ERHF,sERI,seHF)
-
-  call soBSE(.false.,.false.,0.0,nBas,nC,nO,nV,nR,nO*nV,sERI,seHF,seGW)
-
 ! Antysymmetrize ERIs
 
   allocate(dbERI(nBas,nBas,nBas,nBas))
 
-  if(BSE) then
-
-    call static_screening(nBas,nC,nO,nV,nR,seHF,sERI,dbERI)
-
-  else
-
-    call antisymmetrize_ERI(2,nBas,sERI,dbERI)
-
-  end if
+  call antisymmetrize_ERI(2,nBas,sERI,dbERI)
 
   deallocate(sERI)
 

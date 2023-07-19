@@ -1,4 +1,4 @@
-subroutine CCD(BSE,maxSCF,thresh,max_diis,nBasin,nCin,nOin,nVin,nRin,ERI,ENuc,ERHF,eHF)
+subroutine CCD(maxSCF,thresh,max_diis,nBasin,nCin,nOin,nVin,nRin,ERI,ENuc,ERHF,eHF)
 
 ! CCD module
 
@@ -6,7 +6,6 @@ subroutine CCD(BSE,maxSCF,thresh,max_diis,nBasin,nCin,nOin,nVin,nRin,ERI,ENuc,ER
 
 ! Input variables
 
-  logical,intent(in)            :: BSE
   integer,intent(in)            :: maxSCF
   integer,intent(in)            :: max_diis
   double precision,intent(in)   :: thresh
@@ -93,15 +92,7 @@ subroutine CCD(BSE,maxSCF,thresh,max_diis,nBasin,nCin,nOin,nVin,nRin,ERI,ENuc,ER
 
   allocate(dbERI(nBas,nBas,nBas,nBas))
 
-  if(BSE) then 
-    
-    call static_screening(nBas,nC,nO,nV,nR,seHF,sERI,dbERI)
-    
-  else
-
-    call antisymmetrize_ERI(2,nBas,sERI,dbERI)
-
-  end if
+  call antisymmetrize_ERI(2,nBas,sERI,dbERI)
 
   deallocate(sERI)
 

@@ -1,4 +1,4 @@
-subroutine BSE2_GW_A_matrix_dynamic(eta,nBas,nC,nO,nV,nR,nS,eGW,W,OmBSE,A_dyn,ZA_dyn)
+subroutine GW_phBSE2_dynamic_kernel_A(eta,nBas,nC,nO,nV,nR,nS,eGW,W,OmBSE,A_dyn,ZA_dyn)
 
 ! Compute the dynamic part of the Bethe-Salpeter equation matrices
 
@@ -92,4 +92,4 @@ subroutine BSE2_GW_A_matrix_dynamic(eta,nBas,nC,nO,nV,nR,nS,eGW,W,OmBSE,A_dyn,ZA
   enddo
 !$omp end parallel do
 
-end subroutine BSE2_GW_A_matrix_dynamic
+end subroutine 

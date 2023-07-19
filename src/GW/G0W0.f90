@@ -107,7 +107,7 @@ subroutine G0W0(doACFDT,exchange_kernel,doXBS,dophBSE,dophBSE2,TDA_W,TDA,dBSE,dT
 ! Compute screening !
 !-------------------!
 
-  call phLR_A(ispin,dRPA,nBas,nC,nO,nV,nR,nS,1d0,eHF,ERI_MO,Aph)
+                 call phLR_A(ispin,dRPA,nBas,nC,nO,nV,nR,nS,1d0,eHF,ERI_MO,Aph)
   if(.not.TDA_W) call phLR_B(ispin,dRPA,nBas,nC,nO,nV,nR,nS,1d0,ERI_MO,Bph)
 
   call phLR(TDA_W,nS,Aph,Bph,EcRPA,Om,XpY,XmY)

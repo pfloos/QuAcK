@@ -1,6 +1,6 @@
-subroutine BSE2_static_kernel_KB(eta,nBas,nC,nO,nV,nR,nS,lambda,eW,W,KB2_sta)
+subroutine GW_phBSE2_static_kernel_A(eta,nBas,nC,nO,nV,nR,nS,lambda,eW,W,KA2_sta)
 
-! Compute the second-order static BSE kernel for the coupling block (only for singlets!)
+! Compute the second-order static BSE kernel for the resonant block (only for singlets!)
 
   implicit none
   include 'parameters.h'
@@ -28,14 +28,14 @@ subroutine BSE2_static_kernel_KB(eta,nBas,nC,nO,nV,nR,nS,lambda,eW,W,KB2_sta)
 
 ! Output variables
 
-  double precision,intent(out)   :: KB2_sta(nS,nS)
+  double precision,intent(out)   :: KA2_sta(nS,nS)
 
 !------------------------------------------------
 ! Compute BSE2 kernel
 !------------------------------------------------
 
   jb = 0
-!$omp parallel do default(private) shared(KB2_sta,W,num,dem,eW,nO,nBas,eta,nC,nR)
+!$omp parallel do default(private) shared(KA2_sta,W,num,dem,eW,nO,nBas,eta,nC,nR)
   do j=nC+1,nO
     do b=nO+1,nBas-nR
       jb = (b-nO) + (j-1)*(nBas-nO) 
@@ -49,14 +49,14 @@ subroutine BSE2_static_kernel_KB(eta,nBas,nC,nO,nV,nR,nS,lambda,eW,W,KB2_sta)
             do c=nO+1,nBas-nR
 
               dem = - (eW(c) - eW(k))
-              num = 2d0*W(b,k,i,c)*W(a,c,j,k)
+              num = 2d0*W(j,k,i,c)*W(a,c,b,k)
 
-              KB2_sta(ia,jb) =  KB2_sta(ia,jb) - num*dem/(dem**2 + eta**2)
+              KA2_sta(ia,jb) =  KA2_sta(ia,jb) - num*dem/(dem**2 + eta**2)
 
               dem = + (eW(c) - eW(k))
-              num = 2d0*W(b,c,i,k)*W(a,k,j,c) 
+              num = 2d0*W(j,c,i,k)*W(a,k,b,c) 
 
-              KB2_sta(ia,jb) =  KB2_sta(ia,jb) + num*dem/(dem**2 + eta**2)
+              KA2_sta(ia,jb) =  KA2_sta(ia,jb) + num*dem/(dem**2 + eta**2)
 
             end do
           end do
@@ -65,9 +65,9 @@ subroutine BSE2_static_kernel_KB(eta,nBas,nC,nO,nV,nR,nS,lambda,eW,W,KB2_sta)
             do d=nO+1,nBas-nR
 
               dem = - (eW(c) + eW(d))
-              num = 2d0*W(a,b,c,d)*W(c,d,i,j)
+              num = 2d0*W(a,j,c,d)*W(c,d,i,b)
 
-              KB2_sta(ia,jb) =  KB2_sta(ia,jb) + num*dem/(dem**2 + eta**2)
+              KA2_sta(ia,jb) =  KA2_sta(ia,jb) + num*dem/(dem**2 + eta**2)
 
             end do
           end do
@@ -76,9 +76,9 @@ subroutine BSE2_static_kernel_KB(eta,nBas,nC,nO,nV,nR,nS,lambda,eW,W,KB2_sta)
             do l=nC+1,nO
 
               dem = - (eW(k) + eW(l))
-              num = 2d0*W(a,b,k,l)*W(k,l,i,j) 
+              num = 2d0*W(a,j,k,l)*W(k,l,i,b) 
 
-              KB2_sta(ia,jb) =  KB2_sta(ia,jb) - num*dem/(dem**2 + eta**2)
+              KA2_sta(ia,jb) =  KA2_sta(ia,jb) - num*dem/(dem**2 + eta**2)
 
             end do
           end do
@@ -91,4 +91,4 @@ subroutine BSE2_static_kernel_KB(eta,nBas,nC,nO,nV,nR,nS,lambda,eW,W,KB2_sta)
 
 !$omp end parallel do
 
-end subroutine BSE2_static_kernel_KB
+end subroutine 

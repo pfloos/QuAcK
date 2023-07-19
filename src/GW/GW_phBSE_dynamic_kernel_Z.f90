@@ -1,5 +1,4 @@
-subroutine Bethe_Salpeter_ZAB_matrix_dynamic(eta,nBas,nC,nO,nV,nR,nS,lambda,eGW,OmRPA,rho_RPA,OmBSE, & 
-                                             ZAp,ZAm,ZBp,ZBm)
+subroutine GW_phBSE_dynamic_kernel_Z(eta,nBas,nC,nO,nV,nR,nS,lambda,eGW,OmRPA,rho_RPA,OmBSE,ZAp,ZAm,ZBp,ZBm)
 
 ! Compute the dynamic part of the renormalization for the Bethe-Salpeter equation matrices
 
@@ -99,4 +98,4 @@ subroutine Bethe_Salpeter_ZAB_matrix_dynamic(eta,nBas,nC,nO,nV,nR,nS,lambda,eGW,
     enddo
   enddo
 
-end subroutine Bethe_Salpeter_ZAB_matrix_dynamic
+end subroutine 

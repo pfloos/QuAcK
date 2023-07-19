@@ -1,4 +1,4 @@
-subroutine CCSD(BSE,maxSCF,thresh,max_diis,doCCSDT,nBasin,nCin,nOin,nVin,nRin,ERI,ENuc,ERHF,eHF)
+subroutine CCSD(maxSCF,thresh,max_diis,doCCSDT,nBasin,nCin,nOin,nVin,nRin,ERI,ENuc,ERHF,eHF)
 
 ! CCSD module
 
@@ -6,7 +6,6 @@ subroutine CCSD(BSE,maxSCF,thresh,max_diis,doCCSDT,nBasin,nCin,nOin,nVin,nRin,ER
 
 ! Input variables
 
-  logical,intent(in)            :: BSE
   integer,intent(in)            :: maxSCF
   integer,intent(in)            :: max_diis
   double precision,intent(in)   :: thresh
@@ -105,15 +104,7 @@ subroutine CCSD(BSE,maxSCF,thresh,max_diis,doCCSDT,nBasin,nCin,nOin,nVin,nRin,ER
 
   allocate(dbERI(nBas,nBas,nBas,nBas))
 
-  if(BSE) then
-
-    call static_screening(nBas,nC,nO,nV,nR,seHF,sERI,dbERI)
-
-  else
-
-    call antisymmetrize_ERI(2,nBas,sERI,dbERI)
-
-  end if
+  call antisymmetrize_ERI(2,nBas,sERI,dbERI)
 
   deallocate(sERI)
 

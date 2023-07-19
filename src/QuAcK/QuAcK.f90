@@ -384,7 +384,7 @@ program QuAcK
   if(doCCD) then
 
     call cpu_time(start_CC)
-    call CCD(.false.,maxSCF_CC,thresh_CC,n_diis_CC,nBas,nC,nO,nV,nR,ERI_MO,ENuc,EHF,epsHF)
+    call CCD(maxSCF_CC,thresh_CC,n_diis_CC,nBas,nC,nO,nV,nR,ERI_MO,ENuc,EHF,epsHF)
     call cpu_time(end_CC)
 
     t_CC = end_CC - start_CC
@@ -419,7 +419,7 @@ program QuAcK
   if(doCCSD) then
 
     call cpu_time(start_CC)
-    call CCSD(.false.,maxSCF_CC,thresh_CC,n_diis_CC,doCCSDT,nBas,nC,nO,nV,nR,ERI_MO,ENuc,EHF,epsHF)
+    call CCSD(maxSCF_CC,thresh_CC,n_diis_CC,doCCSDT,nBas,nC,nO,nV,nR,ERI_MO,ENuc,EHF,epsHF)
     call cpu_time(end_CC)
 
     t_CC = end_CC - start_CC
@@ -451,7 +451,7 @@ program QuAcK
   if(do_rCCD) then
 
     call cpu_time(start_CC)
-    call rCCD(.false.,maxSCF_CC,thresh_CC,n_diis_CC,nBas,nC,nO,nV,nR,ERI_MO,ENuc,EHF,epsHF,epsHF)
+    call rCCD(maxSCF_CC,thresh_CC,n_diis_CC,nBas,nC,nO,nV,nR,ERI_MO,ENuc,EHF,epsHF,epsHF)
     call cpu_time(end_CC)
 
     t_CC = end_CC - start_CC

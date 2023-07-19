@@ -1,4 +1,4 @@
-subroutine BSE_static_kernel_KA(eta,nBas,nC,nO,nV,nR,nS,lambda,ERI,Omega,rho,WA)
+subroutine GW_phBSE_static_kernel_A(eta,nBas,nC,nO,nV,nR,nS,lambda,ERI,Om,rho,KA)
 
 ! Compute the BSE static kernel for the resonant block
 
@@ -11,7 +11,7 @@ subroutine BSE_static_kernel_KA(eta,nBas,nC,nO,nV,nR,nS,lambda,ERI,Omega,rho,WA)
   double precision,intent(in)   :: eta
   double precision,intent(in)   :: lambda
   double precision,intent(in)   :: ERI(nBas,nBas,nBas,nBas)
-  double precision,intent(in)   :: Omega(nS)
+  double precision,intent(in)   :: Om(nS)
   double precision,intent(in)   :: rho(nBas,nBas,nS)
 
 ! Local variables
@@ -22,11 +22,9 @@ subroutine BSE_static_kernel_KA(eta,nBas,nC,nO,nV,nR,nS,lambda,ERI,Omega,rho,WA)
 
 ! Output variables
 
-  double precision,intent(out)  :: WA(nS,nS)
+  double precision,intent(out)  :: KA(nS,nS)
 
-! Initialize 
-
-  WA(:,:) = 0d0
+! Compute static kernel
 
   ia = 0
   do i=nC+1,nO
@@ -39,15 +37,15 @@ subroutine BSE_static_kernel_KA(eta,nBas,nC,nO,nV,nR,nS,lambda,ERI,Omega,rho,WA)
 
           chi = 0d0
           do kc=1,nS
-            eps = Omega(kc)**2 + eta**2
-            chi = chi + rho(i,j,kc)*rho(a,b,kc)*Omega(kc)/eps
+            eps = Om(kc)**2 + eta**2
+            chi = chi + rho(i,j,kc)*rho(a,b,kc)*Om(kc)/eps
           enddo
 
-          WA(ia,jb) = WA(ia,jb) + lambda*ERI(i,b,j,a) - 4d0*lambda*chi
+          KA(ia,jb) = 4d0*lambda*chi
 
         enddo
       enddo
     enddo
   enddo
 
-end subroutine BSE_static_kernel_KA
+end subroutine 

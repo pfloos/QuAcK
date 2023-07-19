@@ -1,4 +1,4 @@
-subroutine GF2_phBSE2_dynamic_perturbation(dTDA,ispin,eta,nBas,nC,nO,nV,nR,nS,ERI,dipole_int,eHF,eGF,A_sta,B_sta,OmBSE,XpY,XmY)
+subroutine GF2_phBSE2_dynamic_perturbation(dTDA,ispin,eta,nBas,nC,nO,nV,nR,nS,ERI,dipole_int,eHF,eGF,KA_sta,KB_sta,OmBSE,XpY,XmY)
 
 ! Compute dynamical effects via perturbation theory for BSE
 
@@ -21,8 +21,8 @@ subroutine GF2_phBSE2_dynamic_perturbation(dTDA,ispin,eta,nBas,nC,nO,nV,nR,nS,ER
   double precision,intent(in)   :: dipole_int(nBas,nBas,ncart)
   double precision,intent(in)   :: eHF(nBas)
   double precision,intent(in)   :: eGF(nBas)
-  double precision,intent(in)   :: A_sta(nS,nS)
-  double precision,intent(in)   :: B_sta(nS,nS)
+  double precision,intent(in)   :: KA_sta(nS,nS)
+  double precision,intent(in)   :: KB_sta(nS,nS)
   double precision,intent(in)   :: OmBSE(nS)
   double precision,intent(in)   :: XpY(nS,nS)
   double precision,intent(in)   :: XmY(nS,nS)
@@ -38,18 +38,17 @@ subroutine GF2_phBSE2_dynamic_perturbation(dTDA,ispin,eta,nBas,nC,nO,nV,nR,nS,ER
   double precision,allocatable  :: X(:)
   double precision,allocatable  :: Y(:)
 
-  double precision,allocatable  ::  Ap_dyn(:,:)
-  double precision,allocatable  ::  Am_dyn(:,:)
+  double precision,allocatable  :: KAp_dyn(:,:)
+  double precision,allocatable  :: KAm_dyn(:,:)
   double precision,allocatable  :: ZAp_dyn(:,:)
   double precision,allocatable  :: ZAm_dyn(:,:)
 
-  double precision,allocatable  ::  B_dyn(:,:)
+  double precision,allocatable  ::  KB_dyn(:,:)
 
 ! Memory allocation
 
-  allocate(OmDyn(nS),ZDyn(nS),X(nS),Y(nS),Ap_dyn(nS,nS),ZAp_dyn(nS,nS))
-
-  if(.not.dTDA) allocate(Am_dyn(nS,nS),ZAm_dyn(nS,nS),B_dyn(nS,nS))
+  allocate(OmDyn(nS),ZDyn(nS),X(nS),Y(nS),KAp_dyn(nS,nS),ZAp_dyn(nS,nS))
+  allocate(KAm_dyn(nS,nS),ZAm_dyn(nS,nS),KB_dyn(nS,nS))
 
   if(dTDA) then
     write(*,*)
@@ -78,28 +77,28 @@ subroutine GF2_phBSE2_dynamic_perturbation(dTDA,ispin,eta,nBas,nC,nO,nV,nR,nS,ER
 
     ! Resonant part of the BSE correction for dynamical TDA
 
-    call GF2_phBSE2_dynamic_kernel_A(ispin,eta,nBas,nC,nO,nV,nR,nS,1d0,ERI,eGF,+OmBSE(ia),Ap_dyn,ZAp_dyn)
+    call GF2_phBSE2_dynamic_kernel_A(ispin,eta,nBas,nC,nO,nV,nR,nS,1d0,ERI,eGF,+OmBSE(ia),KAp_dyn,ZAp_dyn)
 
     if(dTDA) then 
 
       ZDyn(ia)  = dot_product(X,matmul(ZAp_dyn,X))
-      OmDyn(ia) = dot_product(X,matmul(Ap_dyn - A_sta,X))
+      OmDyn(ia) = dot_product(X,matmul(KAp_dyn - KA_sta,X))
 
     else
 
       ! Second part of the resonant and anti-resonant part of the BSE correction (frequency independent)
 
-      call GF2_phBSE2_dynamic_kernel_A(ispin,eta,nBas,nC,nO,nV,nR,nS,1d0,ERI,eGF,-OmBSE(ia),Am_dyn,ZAm_dyn)
+      call GF2_phBSE2_dynamic_kernel_A(ispin,eta,nBas,nC,nO,nV,nR,nS,1d0,ERI,eGF,-OmBSE(ia),KAm_dyn,ZAm_dyn)
 
-      call GF2_phBSE2_dynamic_kernel_B(ispin,eta,nBas,nC,nO,nV,nR,nS,1d0,ERI,eGF,B_dyn)
+      call GF2_phBSE2_dynamic_kernel_B(ispin,eta,nBas,nC,nO,nV,nR,nS,1d0,ERI,eGF,KB_dyn)
 
       ZDyn(ia)  = dot_product(X,matmul(ZAp_dyn,X)) &
                 + dot_product(Y,matmul(ZAm_dyn,Y))  
 
-      OmDyn(ia) = dot_product(X,matmul(Ap_dyn - A_sta,X)) &
-                - dot_product(Y,matmul(Am_dyn - A_sta,Y)) &
-                + dot_product(X,matmul(B_dyn  - B_sta,Y)) & 
-                - dot_product(Y,matmul(B_dyn  - B_sta,X))  
+      OmDyn(ia) = dot_product(X,matmul(KAp_dyn - KA_sta,X)) &
+                - dot_product(Y,matmul(KAm_dyn - KA_sta,Y)) &
+                + dot_product(X,matmul(KB_dyn  - KB_sta,Y)) & 
+                - dot_product(Y,matmul(KB_dyn  - KB_sta,X))  
 
     end if
 
