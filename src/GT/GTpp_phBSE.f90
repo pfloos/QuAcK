@@ -54,15 +54,24 @@ subroutine GTpp_phBSE(TDA_T,TDA,dBSE,dTDA,evDyn,singlet,triplet,eta,nBas,nC,nO,n
 
 ! Local variables
 
+  logical                       :: dRPA
+
   integer                       :: ispin
   integer                       :: iblock
+
+  double precision,allocatable  :: Bpp(:,:)
+  double precision,allocatable  :: Cpp(:,:)
+  double precision,allocatable  :: Dpp(:,:)
+
+  double precision,allocatable  :: Aph(:,:)
+  double precision,allocatable  :: Bph(:,:)
 
   double precision              :: EcRPA(nspin)
   double precision,allocatable  :: TAab(:,:),TBab(:,:)
   double precision,allocatable  :: TAaa(:,:),TBaa(:,:)
-  double precision,allocatable  :: OmBSE(:,:)
-  double precision,allocatable  :: XpY_BSE(:,:,:)
-  double precision,allocatable  :: XmY_BSE(:,:,:)
+  double precision,allocatable  :: OmBSE(:)
+  double precision,allocatable  :: XpY_BSE(:,:)
+  double precision,allocatable  :: XmY_BSE(:,:)
 
 ! Output variables
 
@@ -70,8 +79,8 @@ subroutine GTpp_phBSE(TDA_T,TDA,dBSE,dTDA,evDyn,singlet,triplet,eta,nBas,nC,nO,n
 
 ! Memory allocation
 
-  allocate(TAab(nS,nS),TBab(nS,nS),TAaa(nS,nS),TBaa(nS,nS), & 
-           OmBSE(nS,nspin),XpY_BSE(nS,nS,nspin),XmY_BSE(nS,nS,nspin))
+  allocate(Aph(nS,nS),Bph(nS,nS),TAab(nS,nS),TBab(nS,nS),TAaa(nS,nS),TBaa(nS,nS), & 
+           OmBSE(nS),XpY_BSE(nS,nS),XmY_BSE(nS,nS))
 
 !---------------------------------------!
 ! Compute T-matrix for alpha-beta block !
@@ -80,7 +89,15 @@ subroutine GTpp_phBSE(TDA_T,TDA,dBSE,dTDA,evDyn,singlet,triplet,eta,nBas,nC,nO,n
   ispin  = 1
   iblock = 3
 
-  call ppLR(iblock,TDA_T,nBas,nC,nO,nV,nR,nOOab,nVVab,1d0,eT,ERI,Om1ab,X1ab,Y1ab,Om2ab,X2ab,Y2ab,EcRPA(ispin))
+  allocate(Bpp(nVVab,nOOab),Cpp(nVVab,nVVab),Dpp(nOOab,nOOab))
+
+  if(.not.TDA_T) call ppLR_B(iblock,nBas,nC,nO,nV,nR,nOOab,nVVab,1d0,ERI,Bpp)
+                 call ppLR_C(iblock,nBas,nC,nO,nV,nR,nVVab,1d0,eT,ERI,Cpp)
+                 call ppLR_D(iblock,nBas,nC,nO,nV,nR,nOOab,1d0,eT,ERI,Dpp)
+
+  call ppLR(TDA_T,nOOab,nVVab,Bpp,Cpp,Dpp,Om1ab,X1ab,Y1ab,Om2ab,X2ab,Y2ab,EcRPA(ispin))
+
+  deallocate(Bpp,Cpp,Dpp)
 
                call static_Tmatrix_A(eta,nBas,nC,nO,nV,nR,nS,nOOab,nVVab,1d0,Om1ab,rho1ab,Om2ab,rho2ab,TAab)
   if(.not.TDA) call static_Tmatrix_B(eta,nBas,nC,nO,nV,nR,nS,nOOab,nVVab,1d0,Om1ab,rho1ab,Om2ab,rho2ab,TBab)
@@ -92,7 +109,15 @@ subroutine GTpp_phBSE(TDA_T,TDA,dBSE,dTDA,evDyn,singlet,triplet,eta,nBas,nC,nO,n
   ispin  = 2
   iblock = 4
 
-  call ppLR(iblock,TDA_T,nBas,nC,nO,nV,nR,nOOaa,nVVaa,1d0,eT,ERI,Om1aa,X1aa,Y1aa,Om2aa,X2aa,Y2aa,EcRPA(ispin))
+  allocate(Bpp(nVVaa,nOOaa),Cpp(nVVaa,nVVaa),Dpp(nOOaa,nOOaa))
+
+  if(.not.TDA_T) call ppLR_B(iblock,nBas,nC,nO,nV,nR,nOOaa,nVVaa,1d0,ERI,Bpp)
+                 call ppLR_C(iblock,nBas,nC,nO,nV,nR,nVVaa,1d0,eT,ERI,Cpp)
+                 call ppLR_D(iblock,nBas,nC,nO,nV,nR,nOOaa,1d0,eT,ERI,Dpp)
+
+  call ppLR(TDA_T,nOOaa,nVVaa,Bpp,Cpp,Dpp,Om1aa,X1aa,Y1aa,Om2aa,X2aa,Y2aa,EcRPA(ispin))
+
+  deallocate(Bpp,Cpp,Dpp)
 
                call static_Tmatrix_A(eta,nBas,nC,nO,nV,nR,nS,nOOaa,nVVaa,1d0,Om1aa,rho1aa,Om2aa,rho2aa,TAaa)
   if(.not.TDA) call static_Tmatrix_B(eta,nBas,nC,nO,nV,nR,nS,nOOaa,nVVaa,1d0,Om1aa,rho1aa,Om2aa,rho2aa,TBaa)
@@ -104,15 +129,19 @@ subroutine GTpp_phBSE(TDA_T,TDA,dBSE,dTDA,evDyn,singlet,triplet,eta,nBas,nC,nO,n
  if(singlet) then
 
     ispin = 1
-    EcBSE(ispin) = 0d0
 
     ! Compute BSE singlet excitation energies
 
-    call linear_response_BSE(ispin,.false.,TDA,.true.,eta,nBas,nC,nO,nV,nR,nS,1d0,eGT,ERI,TAab+TAaa,TBab+TBaa, &
-                             EcBSE(ispin),OmBSE(:,ispin),XpY_BSE(:,:,ispin),XmY_BSE(:,:,ispin))
+                 call phLR_A(ispin,dRPA,nBas,nC,nO,nV,nR,nS,1d0,eGT,ERI,Aph)
+    if(.not.TDA) call phLR_B(ispin,dRPA,nBas,nC,nO,nV,nR,nS,1d0,ERI,Bph)
 
-    call print_excitation('BSE@GT      ',ispin,nS,OmBSE(:,ispin))
-    call print_transition_vectors_ph(.true.,nBas,nC,nO,nV,nR,nS,dipole_int,OmBSE(:,ispin),XpY_BSE(:,:,ispin),XmY_BSE(:,:,ispin))
+                 Aph(:,:) = Aph(:,:) + TAaa(:,:) + TAab(:,:) 
+    if(.not.TDA) Bph(:,:) = Bph(:,:) + TBaa(:,:) + TBab(:,:) 
+
+    call phLR(TDA,nS,Aph,Bph,EcBSE(ispin),OmBSE,XpY_BSE,XmY_BSE)
+
+    call print_excitation('phBSE@GTpp  ',ispin,nS,OmBSE)
+    call print_transition_vectors_ph(.true.,nBas,nC,nO,nV,nR,nS,dipole_int,OmBSE,XpY_BSE,XmY_BSE)
 
     if(dBSE) then
  
@@ -121,13 +150,12 @@ subroutine GTpp_phBSE(TDA_T,TDA,dBSE,dTDA,evDyn,singlet,triplet,eta,nBas,nC,nO,n
       if(evDyn) then
  
         print*, ' Iterative dynamical correction for BSE@GT NYI'
-!       call Bethe_Salpeter_dynamic_perturbation_iterative(dTDA,eta,nBas,nC,nO,nV,nR,nS,eGW,dipole_int,OmRPA,rho_RPA, &
-!                                                          OmBSE(:,ispin),XpY_BSE(:,:,ispin),XmY_BSE(:,:,ispin))
+
       else
  
         call Bethe_Salpeter_Tmatrix_dynamic_perturbation(ispin,dTDA,eta,nBas,nC,nO,nV,nR,nS,nOOab,nVVab,nOOaa,nVVaa, &
                                                          Om1ab,Om2ab,Om1aa,Om2aa,rho1ab,rho2ab,rho1aa,rho2aa,eT,eGT, & 
-                                                         dipole_int,OmBSE(:,ispin),XpY_BSE(:,:,ispin),XmY_BSE(:,:,ispin),TAab,TAaa)
+                                                         dipole_int,OmBSE,XpY_BSE,XmY_BSE,TAab,TAaa)
       end if
  
     end if
@@ -141,14 +169,19 @@ subroutine GTpp_phBSE(TDA_T,TDA,dBSE,dTDA,evDyn,singlet,triplet,eta,nBas,nC,nO,n
  if(triplet) then
 
     ispin = 2
-    EcBSE(ispin) = 0d0
 
     ! Compute BSE triplet excitation energies
 
-    call linear_response_BSE(ispin,.false.,TDA,.true.,eta,nBas,nC,nO,nV,nR,nS,1d0,eGT,ERI,TAaa-TAab,TBaa-TBab, &
-                             EcBSE(ispin),OmBSE(:,ispin),XpY_BSE(:,:,ispin),XmY_BSE(:,:,ispin))
-    call print_excitation('BSE@GT      ',ispin,nS,OmBSE(:,ispin))
-    call print_transition_vectors_ph(.false.,nBas,nC,nO,nV,nR,nS,dipole_int,OmBSE(:,ispin),XpY_BSE(:,:,ispin),XmY_BSE(:,:,ispin))
+                 call phLR_A(ispin,dRPA,nBas,nC,nO,nV,nR,nS,1d0,eGT,ERI,Aph)
+    if(.not.TDA) call phLR_B(ispin,dRPA,nBas,nC,nO,nV,nR,nS,1d0,ERI,Bph)
+
+                 Aph(:,:) = Aph(:,:) + TAaa(:,:) - TAab(:,:) 
+    if(.not.TDA) Bph(:,:) = Bph(:,:) + TBaa(:,:) - TBab(:,:) 
+
+    call phLR(TDA,nS,Aph,Bph,EcBSE(ispin),OmBSE,XpY_BSE,XmY_BSE)
+
+    call print_excitation('phBSE@GTpp  ',ispin,nS,OmBSE)
+    call print_transition_vectors_ph(.false.,nBas,nC,nO,nV,nR,nS,dipole_int,OmBSE,XpY_BSE,XmY_BSE)
 
     if(dBSE) then
  
@@ -157,13 +190,12 @@ subroutine GTpp_phBSE(TDA_T,TDA,dBSE,dTDA,evDyn,singlet,triplet,eta,nBas,nC,nO,n
       if(evDyn) then
  
         print*, ' Iterative dynamical correction for BSE@GT NYI'
-!       call Bethe_Salpeter_dynamic_perturbation_iterative(dTDA,eta,nBas,nC,nO,nV,nR,nS,eGW,dipole_int,OmRPA,rho_RPA, &
-!                                                          OmBSE(:,ispin),XpY_BSE(:,:,ispin),XmY_BSE(:,:,ispin))
+
       else
  
         call Bethe_Salpeter_Tmatrix_dynamic_perturbation(ispin,dTDA,eta,nBas,nC,nO,nV,nR,nS,nOOab,nVVab,nOOaa,nVVaa, &
                                                          Om1ab,Om2ab,Om1aa,Om2aa,rho1ab,rho2ab,rho1aa,rho2aa,eT,eGT, & 
-                                                         dipole_int,OmBSE(:,ispin),XpY_BSE(:,:,ispin),XmY_BSE(:,:,ispin),TAab,TAaa)
+                                                         dipole_int,OmBSE,XpY_BSE,XmY_BSE,TAab,TAaa)
       end if
  
     end if

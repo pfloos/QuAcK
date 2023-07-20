@@ -1,6 +1,6 @@
-subroutine ACFDT_Tmatrix(exchange_kernel,doXBS,dRPA,TDA_T,TDA,BSE,singlet,triplet,eta,nBas,nC,nO,nV,nR,nS, &
-                         nOOs,nVVs,nOOt,nVVt,Om1s,X1s,Y1s,Om2s,X2s,Y2s,rho1s,rho2s,Om1t,X1t,Y1t,  & 
-                         Om2t,X2t,Y2t,rho1t,rho2t,ERI,eT,eGT,EcAC)
+subroutine GTpp_phACFDT(exchange_kernel,doXBS,dRPA,TDA_T,TDA,BSE,singlet,triplet,eta,nBas,nC,nO,nV,nR,nS, &
+                        nOOs,nVVs,nOOt,nVVt,Om1s,X1s,Y1s,Om2s,X2s,Y2s,rho1s,rho2s,Om1t,X1t,Y1t,           & 
+                        Om2t,X2t,Y2t,rho1t,rho2t,ERI,eT,eGT,EcAC)
 
 ! Compute the correlation energy via the adiabatic connection fluctuation dissipation theorem for the T-matrix
 
@@ -63,13 +63,18 @@ subroutine ACFDT_Tmatrix(exchange_kernel,doXBS,dRPA,TDA_T,TDA,BSE,singlet,triple
   double precision,allocatable  :: Ec(:,:)
 
   double precision              :: EcRPA(nspin)
+  double precision,allocatable  :: Aph(:,:)
+  double precision,allocatable  :: Bph(:,:)
+  double precision,allocatable  :: Bpp(:,:)
+  double precision,allocatable  :: Cpp(:,:)
+  double precision,allocatable  :: Dpp(:,:)
   double precision,allocatable  :: TAs(:,:)
   double precision,allocatable  :: TBs(:,:)
   double precision,allocatable  :: TAt(:,:)
   double precision,allocatable  :: TBt(:,:)
-  double precision,allocatable  :: Om(:,:)
-  double precision,allocatable  :: XpY(:,:,:)
-  double precision,allocatable  :: XmY(:,:,:)
+  double precision,allocatable  :: Om(:)
+  double precision,allocatable  :: XpY(:,:)
+  double precision,allocatable  :: XmY(:,:)
 
 ! Output variables
 
@@ -77,8 +82,7 @@ subroutine ACFDT_Tmatrix(exchange_kernel,doXBS,dRPA,TDA_T,TDA,BSE,singlet,triple
 
 ! Memory allocation
 
-  allocate(TAs(nS,nS),TBs(nS,nS),TAt(nS,nS),TBt(nS,nS), &
-           Om(nS,nspin),XpY(nS,nS,nspin),XmY(nS,nS,nspin))
+  allocate(Aph(nS,nS),Bph(nS,nS),TAs(nS,nS),TBs(nS,nS),TAt(nS,nS),TBt(nS,nS),Om(nS),XpY(nS,nS),XmY(nS,nS))
   allocate(Ec(nAC,nspin))
 
 ! Antisymmetrized kernel version
@@ -118,7 +122,15 @@ subroutine ACFDT_Tmatrix(exchange_kernel,doXBS,dRPA,TDA_T,TDA,BSE,singlet,triple
         isp_T  = 1
         iblock = 3
 
-        call ppLR(iblock,TDA_T,nBas,nC,nO,nV,nR,nOOs,nVVs,lambda,eT,ERI,Om1s,X1s,Y1s,Om2s,X2s,Y2s,EcRPA(isp_T))
+        allocate(Bpp(nVVs,nOOs),Cpp(nVVs,nVVs),Dpp(nOOs,nOOs))
+
+        if(.not.TDA_T) call ppLR_B(iblock,nBas,nC,nO,nV,nR,nOOs,nVVs,lambda,ERI,Bpp)
+                       call ppLR_C(iblock,nBas,nC,nO,nV,nR,nVVs,lambda,eT,ERI,Cpp)
+                       call ppLR_D(iblock,nBas,nC,nO,nV,nR,nOOs,lambda,eT,ERI,Dpp)
+
+        call ppLR(TDA_T,nOOs,nVVs,Bpp,Cpp,Dpp,Om1s,X1s,Y1s,Om2s,X2s,Y2s,EcRPA(isp_T))
+
+        deallocate(Bpp,Cpp,Dpp)
 
         call GTpp_excitation_density(iblock,nBas,nC,nO,nV,nR,nOOs,nVVs,ERI,X1s,Y1s,rho1s,X2s,Y2s,rho2s)
 
@@ -128,7 +140,15 @@ subroutine ACFDT_Tmatrix(exchange_kernel,doXBS,dRPA,TDA_T,TDA,BSE,singlet,triple
         isp_T  = 2
         iblock = 4
 
-        call ppLR(iblock,TDA_T,nBas,nC,nO,nV,nR,nOOt,nVVt,lambda,eT,ERI,Om1t,X1t,Y1t,Om2t,X2t,Y2t,EcRPA(isp_T))
+        allocate(Bpp(nVVt,nOOt),Cpp(nVVt,nVVt),Dpp(nOOt,nOOt))
+
+        if(.not.TDA_T) call ppLR_B(iblock,nBas,nC,nO,nV,nR,nOOt,nVVt,lambda,ERI,Bpp)
+                       call ppLR_C(iblock,nBas,nC,nO,nV,nR,nVVt,lambda,eT,ERI,Cpp)
+                       call ppLR_D(iblock,nBas,nC,nO,nV,nR,nOOt,lambda,eT,ERI,Dpp)
+
+        call ppLR(TDA_T,nOOt,nVVt,Bpp,Cpp,Dpp,Om1t,X1t,Y1t,Om2t,X2t,Y2t,EcRPA(isp_T))
+
+        deallocate(Bpp,Cpp,Dpp)
 
         call GTpp_excitation_density(iblock,nBas,nC,nO,nV,nR,nOOt,nVVt,ERI,X1t,Y1t,rho1t,X2t,Y2t,rho2t)
 
@@ -137,10 +157,15 @@ subroutine ACFDT_Tmatrix(exchange_kernel,doXBS,dRPA,TDA_T,TDA,BSE,singlet,triple
 
       end if
 
-      call linear_response_BSE(ispin,.false.,TDA,BSE,eta,nBas,nC,nO,nV,nR,nS,lambda,eGT,ERI,TAt+TAs,TBt+TBs, &
-                               EcAC(ispin),Om(:,ispin),XpY(:,:,ispin),XmY(:,:,ispin))
+                   call phLR_A(ispin,dRPA,nBas,nC,nO,nV,nR,nS,lambda,eGT,ERI,Aph)
+      if(.not.TDA) call phLR_B(ispin,dRPA,nBas,nC,nO,nV,nR,nS,lambda,ERI,Bph)
+ 
+                   Aph(:,:) = Aph(:,:) + TAt(:,:) + TAs(:,:)
+      if(.not.TDA) Bph(:,:) = Bph(:,:) + TBt(:,:) + TBs(:,:)
+ 
+      call phLR(TDA,nS,Aph,Bph,EcAc(ispin),Om,XpY,XmY)
 
-      call phACFDT_correlation_energy(ispin,exchange_kernel,nBas,nC,nO,nV,nR,nS,ERI,XpY(:,:,ispin),XmY(:,:,ispin),Ec(iAC,ispin))
+      call phACFDT_correlation_energy(ispin,exchange_kernel,nBas,nC,nO,nV,nR,nS,ERI,XpY,XmY,Ec(iAC,ispin))
 
       write(*,'(2X,F15.6,1X,F30.15,1X,F30.15)') lambda,EcAC(ispin),Ec(iAC,ispin)
 
@@ -181,7 +206,15 @@ subroutine ACFDT_Tmatrix(exchange_kernel,doXBS,dRPA,TDA_T,TDA,BSE,singlet,triple
         isp_T  = 1
         iblock = 3
 
-        call ppLR(iblock,TDA_T,nBas,nC,nO,nV,nR,nOOs,nVVs,lambda,eT,ERI,Om1s,X1s,Y1s,Om2s,X2s,Y2s,EcRPA(isp_T))
+        allocate(Bpp(nVVs,nOOs),Cpp(nVVs,nVVs),Dpp(nOOs,nOOs))
+
+        if(.not.TDA_T) call ppLR_B(iblock,nBas,nC,nO,nV,nR,nOOs,nVVs,lambda,ERI,Bpp)
+                       call ppLR_C(iblock,nBas,nC,nO,nV,nR,nVVs,lambda,eT,ERI,Cpp)
+                       call ppLR_D(iblock,nBas,nC,nO,nV,nR,nOOs,lambda,eT,ERI,Dpp)
+
+        call ppLR(TDA_T,nOOs,nVVs,Bpp,Cpp,Dpp,Om1s,X1s,Y1s,Om2s,X2s,Y2s,EcRPA(isp_T))
+
+        deallocate(Bpp,Cpp,Dpp)
 
         call GTpp_excitation_density(iblock,nBas,nC,nO,nV,nR,nOOs,nVVs,ERI,X1s,Y1s,rho1s,X2s,Y2s,rho2s)
 
@@ -191,19 +224,32 @@ subroutine ACFDT_Tmatrix(exchange_kernel,doXBS,dRPA,TDA_T,TDA,BSE,singlet,triple
         isp_T  = 2
         iblock = 4
 
-        call ppLR(iblock,TDA_T,nBas,nC,nO,nV,nR,nOOt,nVVt,lambda,eT,ERI,Om1t,X1t,Y1t,Om2t,X2t,Y2t,EcRPA(isp_T))
+        allocate(Bpp(nVVt,nOOt),Cpp(nVVt,nVVt),Dpp(nOOt,nOOt))
+
+        if(.not.TDA_T) call ppLR_B(iblock,nBas,nC,nO,nV,nR,nOOt,nVVt,lambda,ERI,Bpp)
+                       call ppLR_C(iblock,nBas,nC,nO,nV,nR,nVVt,lambda,eT,ERI,Cpp)
+                       call ppLR_D(iblock,nBas,nC,nO,nV,nR,nOOt,lambda,eT,ERI,Dpp)
+
+        call ppLR(TDA_T,nOOt,nVVt,Bpp,Cpp,Dpp,Om1t,X1t,Y1t,Om2t,X2t,Y2t,EcRPA(isp_T))
+
+        deallocate(Bpp,Cpp,Dpp)
 
         call GTpp_excitation_density(iblock,nBas,nC,nO,nV,nR,nOOt,nVVt,ERI,X1t,Y1t,rho1t,X2t,Y2t,rho2t)
 
                      call static_Tmatrix_A(eta,nBas,nC,nO,nV,nR,nS,nOOt,nVVt,lambda,Om1t,rho1t,Om2t,rho2t,TAt)
         if(.not.TDA) call static_Tmatrix_B(eta,nBas,nC,nO,nV,nR,nS,nOOt,nVVt,lambda,Om1t,rho1t,Om2t,rho2t,TBt)
 
-      end if  
+      end if
 
-      call linear_response_BSE(ispin,.false.,TDA,BSE,eta,nBas,nC,nO,nV,nR,nS,lambda,eGT,ERI,TAt-TAs,TBt-TBs, &
-                               EcAC(ispin),Om(:,ispin),XpY(:,:,ispin),XmY(:,:,ispin))
+                   call phLR_A(ispin,dRPA,nBas,nC,nO,nV,nR,nS,lambda,eGT,ERI,Aph)
+      if(.not.TDA) call phLR_B(ispin,dRPA,nBas,nC,nO,nV,nR,nS,lambda,ERI,Bph)
 
-      call phACFDT_correlation_energy(ispin,exchange_kernel,nBas,nC,nO,nV,nR,nS,ERI,XpY(:,:,ispin),XmY(:,:,ispin),Ec(iAC,ispin))
+                   Aph(:,:) = Aph(:,:) + TAt(:,:) - TAs(:,:)
+      if(.not.TDA) Bph(:,:) = Bph(:,:) + TBt(:,:) - TBs(:,:)
+
+      call phLR(TDA,nS,Aph,Bph,EcAc(ispin),Om,XpY,XmY)
+
+      call phACFDT_correlation_energy(ispin,exchange_kernel,nBas,nC,nO,nV,nR,nS,ERI,XpY,XmY,Ec(iAC,ispin))
 
       write(*,'(2X,F15.6,1X,F30.15,1X,F30.15)') lambda,EcAC(ispin),Ec(iAC,ispin)
 

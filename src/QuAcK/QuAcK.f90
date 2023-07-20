@@ -176,8 +176,6 @@ program QuAcK
 !------------------------------------------------------------------------
 
   call read_basis_pyscf (nBas,nO,nV)
-! call read_basis(nNuc,rNuc,nBas,nO,nV,nShell,TotAngMomShell,CenterShell,KShell,DShell,ExpShell, & 
-!                 max_ang_mom,min_exponent,max_exponent)
   nS(:) = (nO(:) - nC(:))*(nV(:) - nR(:))
 
 !------------------------------------------------------------------------
@@ -926,8 +924,6 @@ program QuAcK
     write(*,'(A65,1X,F9.3,A8)') 'Total CPU time for ufG0W0 = ',t_GW,' seconds'
     write(*,*)
 
-!   if(dophBSE) call ufBSE(nBas,nC,nO,nV,nR,nS,ENuc,EHF,ERI_MO,epsHF,eG0W0)
-
   end if
 
 !------------------------------------------------------------------------
@@ -938,14 +934,11 @@ program QuAcK
     
     call cpu_time(start_GW)
     call ufGW(nBas,nC,nO,nV,nR,nS,ENuc,EHF,ERI_MO,epsHF)
-!   call CCGW(maxSCF_CC,thresh_CC,nBas,nC,nO,nV,nR,ERI_MO,ENuc,EHF,epsHF)
     call cpu_time(end_GW)
   
     t_GW = end_GW - start_GW
     write(*,'(A65,1X,F9.3,A8)') 'Total CPU time for ufGW = ',t_GW,' seconds'
     write(*,*)
-
-!   if(dophBSE) call ufBSE(nBas,nC,nO,nV,nR,nS,ENuc,EHF,ERI_MO,epsHF,eG0W0)
 
   end if
 
@@ -959,7 +952,6 @@ program QuAcK
 
     if(unrestricted) then 
 
-      !print*,'!!! G0T0 NYI at the unrestricted level !!!'
        call UG0T0(doACFDT,exchange_kernel,doXBS,dophBSE,TDA_T,TDA,dBSE,dTDA,evDyn, &
                  spin_conserved,spin_flip,linGT,eta_GT,regGT,nBas,nC,nO,nV, &
                  nR,nS,ENuc,EHF,ERI_AO,ERI_MO_aaaa,ERI_MO_aabb,ERI_MO_bbbb, &
@@ -967,7 +959,6 @@ program QuAcK
 
     else
 
-!     call soG0T0(eta_GT,nBas,nC,nO,nV,nR,ENuc,EHF,ERI_MO,epsHF)
       call G0T0pp(doACFDT,exchange_kernel,doXBS,dophBSE,TDA_T,TDA,dBSE,dTDA,evDyn,doppBSE,singlet,triplet, &
                   linGT,eta_GT,regGT,nBas,nC,nO,nV,nR,nS,ENuc,EHF,ERI_AO,ERI_MO,dipole_int_MO,PHF,cHF,epsHF,Vxc)
 
@@ -1148,4 +1139,4 @@ program QuAcK
   write(*,'(A65,1X,F9.3,A8)') 'Total wall time for QuAcK = ',t_QuAcK,' seconds'
   write(*,*)
 
-end program QuAcK
+end program 

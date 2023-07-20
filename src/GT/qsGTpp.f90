@@ -391,9 +391,9 @@ subroutine qsGTpp(maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,BSE,TDA_T
 
       end if
 
-      call ACFDT_Tmatrix(exchange_kernel,doXBS,.false.,TDA_T,TDA,BSE,singlet,triplet,eta,nBas,nC,nO,nV,nR,nS, &
-                         nOOs,nVVs,nOOt,nVVt,Om1s,X1s,Y1s,Om2s,X2s,Y2s,rho1s,rho2s,Om1t,X1t,Y1t,     &
-                         Om2t,X2t,Y2t,rho1t,rho2t,ERI_MO,eGT,eGT,EcAC)
+      call GTpp_phACFDT(exchange_kernel,doXBS,.false.,TDA_T,TDA,BSE,singlet,triplet,eta,nBas,nC,nO,nV,nR,nS, &
+                        nOOs,nVVs,nOOt,nVVt,Om1s,X1s,Y1s,Om2s,X2s,Y2s,rho1s,rho2s,Om1t,X1t,Y1t,     &
+                        Om2t,X2t,Y2t,rho1t,rho2t,ERI_MO,eGT,eGT,EcAC)
 
       write(*,*)
       write(*,*)'-------------------------------------------------------------------------------'
