@@ -47,6 +47,10 @@ subroutine GW_ppBSE(TDA_W,TDA,singlet,triplet,eta,nBas,nC,nO,nV,nR,nS,ERI,dipole
   double precision,allocatable  :: XmY_RPA(:,:)
   double precision,allocatable  :: rho_RPA(:,:,:)
 
+  double precision,allocatable  :: Bpp(:,:)
+  double precision,allocatable  :: Cpp(:,:)
+  double precision,allocatable  :: Dpp(:,:)
+
   double precision,allocatable  :: Om1(:)
   double precision,allocatable  :: X1(:,:)
   double precision,allocatable  :: Y1(:,:)
@@ -91,30 +95,35 @@ subroutine GW_ppBSE(TDA_W,TDA,singlet,triplet,eta,nBas,nC,nO,nV,nR,nS,ERI,dipole
     write(*,*) 
 
     ispin = 1
-    EcBSE(ispin) = 0d0
 
     nOO = nO*(nO+1)/2
     nVV = nV*(nV+1)/2
 
-    allocate(Om1(nVV),X1(nVV,nVV),Y1(nOO,nVV), &
-             Om2(nOO),X2(nVV,nOO),Y2(nOO,nOO), &
+    allocate(Om1(nVV),X1(nVV,nVV),Y1(nOO,nVV),       &
+             Om2(nOO),X2(nVV,nOO),Y2(nOO,nOO),       &
+             Bpp(nVV,nOO),Cpp(nVV,nVV),Dpp(nOO,nOO), &
              WB(nVV,nOO),WC(nVV,nVV),WD(nOO,nOO))
+
+    ! Compute BSE excitation energies
 
     if(.not.TDA) call static_screening_WB_pp(ispin,eta,nBas,nC,nO,nV,nR,nS,nOO,nVV,1d0,ERI,OmRPA,rho_RPA,WB)
     call static_screening_WC_pp(ispin,eta,nBas,nC,nO,nV,nR,nS,nOO,nVV,1d0,ERI,OmRPA,rho_RPA,WC)
     call static_screening_WD_pp(ispin,eta,nBas,nC,nO,nV,nR,nS,nOO,nVV,1d0,ERI,OmRPA,rho_RPA,WD)
 
-    ! Compute BSE excitation energies
 
-    call linear_response_pp_BSE(ispin,TDA,dRPA,nBas,nC,nO,nV,nR,nOO,nVV,1d0,eGW,ERI,WB,WC,WD, &
-                                Om1,X1,Y1,Om2,X2,Y2,EcBSE(ispin))
+    if(.not.TDA) call ppLR_B(ispin,nBas,nC,nO,nV,nR,nOO,nVV,1d0,ERI,Bpp)
+                 call ppLR_C(ispin,nBas,nC,nO,nV,nR,nVV,1d0,eGW,ERI,Cpp)
+                 call ppLR_D(ispin,nBas,nC,nO,nV,nR,nOO,1d0,eGW,ERI,Dpp)
 
-!   call print_excitation('pp-BSE (N+2)',ispin,nVV,Om1)
-!   call print_excitation('pp-BSE (N-2)',ispin,nOO,Om2)
+    Bpp(:,:) = Bpp(:,:) + WB(:,:)
+    Cpp(:,:) = Cpp(:,:) + WC(:,:)
+    Dpp(:,:) = Dpp(:,:) + WD(:,:)
+
+    call ppLR(TDA,nOO,nVV,Bpp,Cpp,Dpp,Om1,X1,Y1,Om2,X2,Y2,EcBSE(ispin))
 
     call print_transition_vectors_pp(.true.,nBas,nC,nO,nV,nR,nOO,nVV,dipole_int,Om1,X1,Y1,Om2,X2,Y2)
 
-    deallocate(Om1,X1,Y1,Om2,X2,Y2,WB,WC,WD)
+    deallocate(Om1,X1,Y1,Om2,X2,Y2,Bpp,Cpp,Dpp,WB,WC,WD)
 
   end if
 
@@ -135,25 +144,31 @@ subroutine GW_ppBSE(TDA_W,TDA,singlet,triplet,eta,nBas,nC,nO,nV,nR,nS,ERI,dipole
     nOO = nO*(nO-1)/2
     nVV = nV*(nV-1)/2
 
-    allocate(Om1(nVV),X1(nVV,nVV),Y1(nOO,nVV), &
-             Om2(nOO),X2(nVV,nOO),Y2(nOO,nOO), &
+    allocate(Om1(nVV),X1(nVV,nVV),Y1(nOO,nVV),       &
+             Om2(nOO),X2(nVV,nOO),Y2(nOO,nOO),       &
+             Bpp(nVV,nOO),Cpp(nVV,nVV),Dpp(nOO,nOO), &
              WB(nVV,nOO),WC(nVV,nVV),WD(nOO,nOO))
+
+    ! Compute BSE excitation energies
 
     if(.not.TDA) call static_screening_WB_pp(ispin,eta,nBas,nC,nO,nV,nR,nS,nOO,nVV,1d0,ERI,OmRPA,rho_RPA,WB)
     call static_screening_WC_pp(ispin,eta,nBas,nC,nO,nV,nR,nS,nOO,nVV,1d0,ERI,OmRPA,rho_RPA,WC)
     call static_screening_WD_pp(ispin,eta,nBas,nC,nO,nV,nR,nS,nOO,nVV,1d0,ERI,OmRPA,rho_RPA,WD)
 
-    ! Compute BSE excitation energies
 
-    call linear_response_pp_BSE(ispin,TDA,dRPA,nBas,nC,nO,nV,nR,nOO,nVV,1d0,eGW,ERI,WB,WC,WD, &
-                                Om1,X1,Y1,Om2,X2,Y2,EcBSE(ispin))
+    if(.not.TDA) call ppLR_B(ispin,nBas,nC,nO,nV,nR,nOO,nVV,1d0,ERI,Bpp)
+                 call ppLR_C(ispin,nBas,nC,nO,nV,nR,nVV,1d0,eGW,ERI,Cpp)
+                 call ppLR_D(ispin,nBas,nC,nO,nV,nR,nOO,1d0,eGW,ERI,Dpp)
 
-!   call print_excitation('pp-BSE (N+2)',ispin,nVV,Om1)
-!   call print_excitation('pp-BSE (N-2)',ispin,nOO,Om2)
+    Bpp(:,:) = Bpp(:,:) + WB(:,:)
+    Cpp(:,:) = Cpp(:,:) + WC(:,:)
+    Dpp(:,:) = Dpp(:,:) + WD(:,:)
+
+    call ppLR(TDA,nOO,nVV,Bpp,Cpp,Dpp,Om1,X1,Y1,Om2,X2,Y2,EcBSE(ispin))
 
     call print_transition_vectors_pp(.false.,nBas,nC,nO,nV,nR,nOO,nVV,dipole_int,Om1,X1,Y1,Om2,X2,Y2)
 
-    deallocate(Om1,X1,Y1,Om2,X2,Y2,WB,WC,WD)
+    deallocate(Om1,X1,Y1,Om2,X2,Y2,Bpp,Cpp,Dpp,WB,WC,WD)
 
   end if
 

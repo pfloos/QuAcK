@@ -1,4 +1,4 @@
-subroutine static_Tmatrix_A(eta,nBas,nC,nO,nV,nR,nS,nOO,nVV,lambda,Omega1,rho1,Omega2,rho2,TA)
+subroutine GTpp_static_kernel_Aph(eta,nBas,nC,nO,nV,nR,nS,nOO,nVV,lambda,Omega1,rho1,Omega2,rho2,KA)
 
 ! Compute the OOVV block of the static T-matrix
 
@@ -30,12 +30,12 @@ subroutine static_Tmatrix_A(eta,nBas,nC,nO,nV,nR,nS,nOO,nVV,lambda,Omega1,rho1,O
 
 ! Output variables
 
-  double precision,intent(out)  :: TA(nS,nS)
+  double precision,intent(out)  :: KA(nS,nS)
 
-  TA(:,:) = 0d0
+  KA(:,:) = 0d0
 
   jb = 0
-!$omp parallel do default(private) shared(TA,Omega1,Omega2,rho1,rho2,nO,nBas,nVV,nOO,chi,eps,eta,nC,nR,lambda)
+!$omp parallel do default(private) shared(KA,Omega1,Omega2,rho1,rho2,nO,nBas,nVV,nOO,chi,eps,eta,nC,nR,lambda)
   do j=nC+1,nO
     do b=nO+1,nBas-nR
       jb = (b-nO) + (j-1)*(nBas-nO) 
@@ -58,7 +58,7 @@ subroutine static_Tmatrix_A(eta,nBas,nC,nO,nV,nR,nS,nOO,nVV,lambda,Omega1,rho1,O
             chi = chi + rho2(i,b,kl)*rho2(a,j,kl)*eps/(eps**2 + eta**2)
           enddo
 
-          TA(ia,jb) = lambda*chi
+          KA(ia,jb) = lambda*chi
 
         enddo
       enddo
@@ -67,4 +67,4 @@ subroutine static_Tmatrix_A(eta,nBas,nC,nO,nV,nR,nS,nOO,nVV,lambda,Omega1,rho1,O
 
 !$omp end parallel do
 
-end subroutine static_Tmatrix_A
+end subroutine 

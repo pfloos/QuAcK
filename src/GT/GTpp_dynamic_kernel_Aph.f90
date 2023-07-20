@@ -1,4 +1,4 @@
-subroutine dynamic_Tmatrix_A(eta,nBas,nC,nO,nV,nR,nS,nOO,nVV,lambda,eGT,Om1,Om2,rho1,rho2,OmBSE,TA,ZA)
+subroutine GTpp_dynamic_kernel_Aph(eta,nBas,nC,nO,nV,nR,nS,nOO,nVV,lambda,eGT,Om1,Om2,rho1,rho2,OmBSE,TA,ZA)
 
 ! Compute the dynamic part of the Bethe-Salpeter equation matrices for GT
 
@@ -92,4 +92,4 @@ subroutine dynamic_Tmatrix_A(eta,nBas,nC,nO,nV,nR,nS,nOO,nVV,lambda,eGT,Om1,Om2,
 
 !$omp end parallel do
 
-end subroutine dynamic_Tmatrix_A
+end subroutine 

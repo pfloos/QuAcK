@@ -99,8 +99,8 @@ subroutine GTpp_phBSE(TDA_T,TDA,dBSE,dTDA,evDyn,singlet,triplet,eta,nBas,nC,nO,n
 
   deallocate(Bpp,Cpp,Dpp)
 
-               call static_Tmatrix_A(eta,nBas,nC,nO,nV,nR,nS,nOOab,nVVab,1d0,Om1ab,rho1ab,Om2ab,rho2ab,TAab)
-  if(.not.TDA) call static_Tmatrix_B(eta,nBas,nC,nO,nV,nR,nS,nOOab,nVVab,1d0,Om1ab,rho1ab,Om2ab,rho2ab,TBab)
+               call GTpp_static_kernel_Aph(eta,nBas,nC,nO,nV,nR,nS,nOOab,nVVab,1d0,Om1ab,rho1ab,Om2ab,rho2ab,TAab)
+  if(.not.TDA) call GTpp_static_kernel_Bph(eta,nBas,nC,nO,nV,nR,nS,nOOab,nVVab,1d0,Om1ab,rho1ab,Om2ab,rho2ab,TBab)
 
 !----------------------------------------!
 ! Compute T-matrix for alpha-alpha block !
@@ -119,8 +119,8 @@ subroutine GTpp_phBSE(TDA_T,TDA,dBSE,dTDA,evDyn,singlet,triplet,eta,nBas,nC,nO,n
 
   deallocate(Bpp,Cpp,Dpp)
 
-               call static_Tmatrix_A(eta,nBas,nC,nO,nV,nR,nS,nOOaa,nVVaa,1d0,Om1aa,rho1aa,Om2aa,rho2aa,TAaa)
-  if(.not.TDA) call static_Tmatrix_B(eta,nBas,nC,nO,nV,nR,nS,nOOaa,nVVaa,1d0,Om1aa,rho1aa,Om2aa,rho2aa,TBaa)
+               call GTpp_static_kernel_Aph(eta,nBas,nC,nO,nV,nR,nS,nOOaa,nVVaa,1d0,Om1aa,rho1aa,Om2aa,rho2aa,TAaa)
+  if(.not.TDA) call GTpp_static_kernel_Bph(eta,nBas,nC,nO,nV,nR,nS,nOOaa,nVVaa,1d0,Om1aa,rho1aa,Om2aa,rho2aa,TBaa)
 
 !------------------!
 ! Singlet manifold !
@@ -153,9 +153,9 @@ subroutine GTpp_phBSE(TDA_T,TDA,dBSE,dTDA,evDyn,singlet,triplet,eta,nBas,nC,nO,n
 
       else
  
-        call Bethe_Salpeter_Tmatrix_dynamic_perturbation(ispin,dTDA,eta,nBas,nC,nO,nV,nR,nS,nOOab,nVVab,nOOaa,nVVaa, &
-                                                         Om1ab,Om2ab,Om1aa,Om2aa,rho1ab,rho2ab,rho1aa,rho2aa,eT,eGT, & 
-                                                         dipole_int,OmBSE,XpY_BSE,XmY_BSE,TAab,TAaa)
+        call GTpp_phBSE_dynamic_perturbation(ispin,dTDA,eta,nBas,nC,nO,nV,nR,nS,nOOab,nVVab,nOOaa,nVVaa, &
+                                             Om1ab,Om2ab,Om1aa,Om2aa,rho1ab,rho2ab,rho1aa,rho2aa,eT,eGT, & 
+                                             dipole_int,OmBSE,XpY_BSE,XmY_BSE,TAab,TAaa)
       end if
  
     end if
@@ -193,9 +193,9 @@ subroutine GTpp_phBSE(TDA_T,TDA,dBSE,dTDA,evDyn,singlet,triplet,eta,nBas,nC,nO,n
 
       else
  
-        call Bethe_Salpeter_Tmatrix_dynamic_perturbation(ispin,dTDA,eta,nBas,nC,nO,nV,nR,nS,nOOab,nVVab,nOOaa,nVVaa, &
-                                                         Om1ab,Om2ab,Om1aa,Om2aa,rho1ab,rho2ab,rho1aa,rho2aa,eT,eGT, & 
-                                                         dipole_int,OmBSE,XpY_BSE,XmY_BSE,TAab,TAaa)
+        call GTpp_phBSE_dynamic_perturbation(ispin,dTDA,eta,nBas,nC,nO,nV,nR,nS,nOOab,nVVab,nOOaa,nVVaa, &
+                                             Om1ab,Om2ab,Om1aa,Om2aa,rho1ab,rho2ab,rho1aa,rho2aa,eT,eGT, & 
+                                             dipole_int,OmBSE,XpY_BSE,XmY_BSE,TAab,TAaa)
       end if
  
     end if

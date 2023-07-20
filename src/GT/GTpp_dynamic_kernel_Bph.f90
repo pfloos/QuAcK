@@ -1,4 +1,4 @@
-subroutine dynamic_Tmatrix_B(eta,nBas,nC,nO,nV,nR,nS,nOO,nVV,lambda,eGT,Omega1,Omega2,rho1,rho2,OmBSE,TB,ZB)
+subroutine GTpp_dynamic_kernel_Bph(eta,nBas,nC,nO,nV,nR,nS,nOO,nVV,lambda,eGT,Omega1,Omega2,rho1,rho2,OmBSE,TB,ZB)
 
 ! Compute the off-diagonal dynamic part of the Bethe-Salpeter equation matrices for GT
 
@@ -88,4 +88,4 @@ subroutine dynamic_Tmatrix_B(eta,nBas,nC,nO,nV,nR,nS,nOO,nVV,lambda,eGT,Omega1,O
     end do
   end do
 
-end subroutine dynamic_Tmatrix_B
+end subroutine 

@@ -134,8 +134,8 @@ subroutine GTpp_phACFDT(exchange_kernel,doXBS,dRPA,TDA_T,TDA,BSE,singlet,triplet
 
         call GTpp_excitation_density(iblock,nBas,nC,nO,nV,nR,nOOs,nVVs,ERI,X1s,Y1s,rho1s,X2s,Y2s,rho2s)
 
-                     call static_Tmatrix_A(eta,nBas,nC,nO,nV,nR,nS,nOOs,nVVs,lambda,Om1s,rho1s,Om2s,rho2s,TAs)
-        if(.not.TDA) call static_Tmatrix_B(eta,nBas,nC,nO,nV,nR,nS,nOOs,nVVs,lambda,Om1s,rho1s,Om2s,rho2s,TBs)
+                     call GTpp_static_kernel_Aph(eta,nBas,nC,nO,nV,nR,nS,nOOs,nVVs,lambda,Om1s,rho1s,Om2s,rho2s,TAs)
+        if(.not.TDA) call GTpp_static_kernel_Bph(eta,nBas,nC,nO,nV,nR,nS,nOOs,nVVs,lambda,Om1s,rho1s,Om2s,rho2s,TBs)
 
         isp_T  = 2
         iblock = 4
@@ -152,16 +152,16 @@ subroutine GTpp_phACFDT(exchange_kernel,doXBS,dRPA,TDA_T,TDA,BSE,singlet,triplet
 
         call GTpp_excitation_density(iblock,nBas,nC,nO,nV,nR,nOOt,nVVt,ERI,X1t,Y1t,rho1t,X2t,Y2t,rho2t)
 
-                     call static_Tmatrix_A(eta,nBas,nC,nO,nV,nR,nS,nOOt,nVVt,lambda,Om1t,rho1t,Om2t,rho2t,TAt)
-        if(.not.TDA) call static_Tmatrix_B(eta,nBas,nC,nO,nV,nR,nS,nOOt,nVVt,lambda,Om1t,rho1t,Om2t,rho2t,TBt)
+                     call GTpp_static_kernel_Aph(eta,nBas,nC,nO,nV,nR,nS,nOOt,nVVt,lambda,Om1t,rho1t,Om2t,rho2t,TAt)
+        if(.not.TDA) call Gtpp_static_kernel_Bph(eta,nBas,nC,nO,nV,nR,nS,nOOt,nVVt,lambda,Om1t,rho1t,Om2t,rho2t,TBt)
 
       end if
 
                    call phLR_A(ispin,dRPA,nBas,nC,nO,nV,nR,nS,lambda,eGT,ERI,Aph)
       if(.not.TDA) call phLR_B(ispin,dRPA,nBas,nC,nO,nV,nR,nS,lambda,ERI,Bph)
  
-                   Aph(:,:) = Aph(:,:) + TAt(:,:) + TAs(:,:)
-      if(.not.TDA) Bph(:,:) = Bph(:,:) + TBt(:,:) + TBs(:,:)
+                   Aph(:,:) = Aph(:,:) - TAt(:,:) - TAs(:,:)
+      if(.not.TDA) Bph(:,:) = Bph(:,:) - TBt(:,:) - TBs(:,:)
  
       call phLR(TDA,nS,Aph,Bph,EcAc(ispin),Om,XpY,XmY)
 
@@ -218,8 +218,8 @@ subroutine GTpp_phACFDT(exchange_kernel,doXBS,dRPA,TDA_T,TDA,BSE,singlet,triplet
 
         call GTpp_excitation_density(iblock,nBas,nC,nO,nV,nR,nOOs,nVVs,ERI,X1s,Y1s,rho1s,X2s,Y2s,rho2s)
 
-                     call static_Tmatrix_A(eta,nBas,nC,nO,nV,nR,nS,nOOs,nVVs,lambda,Om1s,rho1s,Om2s,rho2s,TAs)
-        if(.not.TDA) call static_Tmatrix_B(eta,nBas,nC,nO,nV,nR,nS,nOOs,nVVs,lambda,Om1s,rho1s,Om2s,rho2s,TBs)
+                     call GTpp_static_kernel_Aph(eta,nBas,nC,nO,nV,nR,nS,nOOs,nVVs,lambda,Om1s,rho1s,Om2s,rho2s,TAs)
+        if(.not.TDA) call GTpp_static_kernel_Bph(eta,nBas,nC,nO,nV,nR,nS,nOOs,nVVs,lambda,Om1s,rho1s,Om2s,rho2s,TBs)
 
         isp_T  = 2
         iblock = 4
@@ -236,16 +236,16 @@ subroutine GTpp_phACFDT(exchange_kernel,doXBS,dRPA,TDA_T,TDA,BSE,singlet,triplet
 
         call GTpp_excitation_density(iblock,nBas,nC,nO,nV,nR,nOOt,nVVt,ERI,X1t,Y1t,rho1t,X2t,Y2t,rho2t)
 
-                     call static_Tmatrix_A(eta,nBas,nC,nO,nV,nR,nS,nOOt,nVVt,lambda,Om1t,rho1t,Om2t,rho2t,TAt)
-        if(.not.TDA) call static_Tmatrix_B(eta,nBas,nC,nO,nV,nR,nS,nOOt,nVVt,lambda,Om1t,rho1t,Om2t,rho2t,TBt)
+                     call GTpp_static_kernel_Aph(eta,nBas,nC,nO,nV,nR,nS,nOOt,nVVt,lambda,Om1t,rho1t,Om2t,rho2t,TAt)
+        if(.not.TDA) call GTpp_static_kernel_Bph(eta,nBas,nC,nO,nV,nR,nS,nOOt,nVVt,lambda,Om1t,rho1t,Om2t,rho2t,TBt)
 
       end if
 
                    call phLR_A(ispin,dRPA,nBas,nC,nO,nV,nR,nS,lambda,eGT,ERI,Aph)
       if(.not.TDA) call phLR_B(ispin,dRPA,nBas,nC,nO,nV,nR,nS,lambda,ERI,Bph)
 
-                   Aph(:,:) = Aph(:,:) + TAt(:,:) - TAs(:,:)
-      if(.not.TDA) Bph(:,:) = Bph(:,:) + TBt(:,:) - TBs(:,:)
+                   Aph(:,:) = Aph(:,:) + TAs(:,:) - TAt(:,:)
+      if(.not.TDA) Bph(:,:) = Bph(:,:) + TBs(:,:) - TBt(:,:)
 
       call phLR(TDA,nS,Aph,Bph,EcAc(ispin),Om,XpY,XmY)
 

@@ -1,4 +1,4 @@
-subroutine static_Tmatrix_B_pp(ispin,eta,nBas,nC,nO,nV,nR,nOO,nVV,nOOx,nVVx,lambda,Om1,rho1,Om2,rho2,TB)
+subroutine GTpp_static_kernel_Bpp(ispin,eta,nBas,nC,nO,nV,nR,nOO,nVV,nOOx,nVVx,lambda,Om1,rho1,Om2,rho2,TB)
 
 ! Compute the VVOO block of the static T-matrix
 
@@ -148,4 +148,4 @@ subroutine static_Tmatrix_B_pp(ispin,eta,nBas,nC,nO,nV,nR,nOO,nVV,nOOx,nVVx,lamb
 
   end if
 
-end subroutine static_Tmatrix_B_pp
+end subroutine 

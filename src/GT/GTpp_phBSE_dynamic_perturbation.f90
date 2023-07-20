@@ -1,6 +1,5 @@
-subroutine Bethe_Salpeter_Tmatrix_dynamic_perturbation(ispin,dTDA,eta,nBas,nC,nO,nV,nR,nS,nOOab,nVVab,nOOaa,nVVaa,         &
-                                                       Om1ab,Om2ab,Om1aa,Om2aa,rho1ab,rho2ab,rho1aa,rho2aa,eT,eGT, &
-                                                       dipole_int,OmBSE,XpY,XmY,TAab,TAaa)
+subroutine GTpp_phBSE_dynamic_perturbation(ispin,dTDA,eta,nBas,nC,nO,nV,nR,nS,nOOab,nVVab,nOOaa,nVVaa,Om1ab,Om2ab,Om1aa,Om2aa, & 
+                                           rho1ab,rho2ab,rho1aa,rho2aa,eT,eGT,dipole_int,OmBSE,XpY,XmY,TAab,TAaa)
 
 ! Compute dynamical effects via perturbation theory for BSE@GT
 
@@ -82,11 +81,11 @@ subroutine Bethe_Salpeter_Tmatrix_dynamic_perturbation(ispin,dTDA,eta,nBas,nC,nO
 
     ! Compute dynamical T-matrix for alpha-beta block  
 
-    call dynamic_Tmatrix_A(eta,nBas,nC,nO,nV,nR,nS,nOOab,nVVab,1d0,eGT,Om1ab,Om2ab,rho1ab,rho2ab,OmBSE(ia),dTAab,ZAab)
+    call GTpp_dynamic_kernel_Aph(eta,nBas,nC,nO,nV,nR,nS,nOOab,nVVab,1d0,eGT,Om1ab,Om2ab,rho1ab,rho2ab,OmBSE(ia),dTAab,ZAab)
  
     ! Compute dynamical T-matrix for alpha-beta block  
 
-    call dynamic_Tmatrix_A(eta,nBas,nC,nO,nV,nR,nS,nOOaa,nVVaa,1d0,eGT,Om1aa,Om2aa,rho1aa,rho2aa,OmBSE(ia),dTAaa,ZAaa)
+    call GTpp_dynamic_kernel_Aph(eta,nBas,nC,nO,nV,nR,nS,nOOaa,nVVaa,1d0,eGT,Om1aa,Om2aa,rho1aa,rho2aa,OmBSE(ia),dTAaa,ZAaa)
  
     X(:) = 0.5d0*(XpY(ia,:) + XmY(ia,:))
     Y(:) = 0.5d0*(XpY(ia,:) - XmY(ia,:))
@@ -130,4 +129,4 @@ subroutine Bethe_Salpeter_Tmatrix_dynamic_perturbation(ispin,dTDA,eta,nBas,nC,nO
   write(*,*) '---------------------------------------------------------------------------------------------------'
   write(*,*) 
 
-end subroutine Bethe_Salpeter_Tmatrix_dynamic_perturbation
+end subroutine 

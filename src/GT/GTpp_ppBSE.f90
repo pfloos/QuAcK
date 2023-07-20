@@ -62,6 +62,7 @@ subroutine GTpp_ppBSE(TDA_T,TDA,dBSE,dTDA,evDyn,singlet,triplet,eta,nBas,nC,nO,n
   integer                       :: nVVt
 
   double precision              :: EcRPA(nspin)
+  double precision,allocatable  :: Bpp(:,:),Cpp(:,:),Dpp(:,:)
   double precision,allocatable  :: TBab(:,:),TCab(:,:),TDab(:,:)
   double precision,allocatable  :: TBaa(:,:),TCaa(:,:),TDaa(:,:)
 
@@ -94,30 +95,41 @@ subroutine GTpp_ppBSE(TDA_T,TDA,dBSE,dTDA,evDyn,singlet,triplet,eta,nBas,nC,nO,n
 
     iblock = 3
  
-    EcRPA(ispin) = 0d0
+    allocate(Bpp(nVVab,nOOab),Cpp(nVVab,nVVab),Dpp(nOOab,nOOab))
  
-    call ppLR(iblock,TDA_T,nBas,nC,nO,nV,nR,nOOab,nVVab,1d0,eT,ERI,Om1ab,X1ab,Y1ab,Om2ab,X2ab,Y2ab,EcRPA(ispin))
+    if(.not.TDA_T) call ppLR_B(iblock,nBas,nC,nO,nV,nR,nOOab,nVVab,1d0,ERI,Bpp)
+                   call ppLR_C(iblock,nBas,nC,nO,nV,nR,nVVab,1d0,eT,ERI,Cpp)
+                   call ppLR_D(iblock,nBas,nC,nO,nV,nR,nOOab,1d0,eT,ERI,Dpp)
  
+    call ppLR(TDA_T,nOOab,nVVab,Bpp,Cpp,Dpp,Om1ab,X1ab,Y1ab,Om2ab,X2ab,Y2ab,EcRPA(ispin))
+ 
+    deallocate(Bpp,Cpp,Dpp)
     allocate(TBab(nVVs,nOOs),TCab(nVVs,nVVs),TDab(nOOs,nOOs))
  
-    if(.not.TDA) call static_Tmatrix_B_pp(ispin,eta,nBas,nC,nO,nV,nR,nOOab,nVVab,nOOs,nVVs,1d0,Om1ab,rho1ab,Om2ab,rho2ab,TBab)
-                 call static_Tmatrix_C_pp(ispin,eta,nBas,nC,nO,nV,nR,nOOab,nVVab,nOOs,nVVs,1d0,Om1ab,rho1ab,Om2ab,rho2ab,TCab)
-                 call static_Tmatrix_D_pp(ispin,eta,nBas,nC,nO,nV,nR,nOOab,nVVab,nOOs,nVVs,1d0,Om1ab,rho1ab,Om2ab,rho2ab,TDab)
+    if(.not.TDA_T) call GTpp_static_kernel_Bpp(ispin,eta,nBas,nC,nO,nV,nR,nOOab,nVVab,nOOs,nVVs,1d0,Om1ab,rho1ab,Om2ab,rho2ab,TBab)
+                   call GTpp_static_kernel_Cpp(ispin,eta,nBas,nC,nO,nV,nR,nOOab,nVVab,nOOs,nVVs,1d0,Om1ab,rho1ab,Om2ab,rho2ab,TCab)
+                   call GTpp_static_kernel_Dpp(ispin,eta,nBas,nC,nO,nV,nR,nOOab,nVVab,nOOs,nVVs,1d0,Om1ab,rho1ab,Om2ab,rho2ab,TDab)
 
   !----------------------------------------!
   ! Compute T-matrix for alpha-alpha block !
   !----------------------------------------!
 
     iblock = 4
-    EcRPA(ispin) = 0d0
  
-    call ppLR(iblock,TDA_T,nBas,nC,nO,nV,nR,nOOaa,nVVaa,1d0,eT,ERI,Om1aa,X1aa,Y1aa,Om2aa,X2aa,Y2aa,EcRPA(ispin))
-
+    allocate(Bpp(nVVaa,nOOaa),Cpp(nVVaa,nVVaa),Dpp(nOOaa,nOOaa))
+ 
+    if(.not.TDA_T) call ppLR_B(iblock,nBas,nC,nO,nV,nR,nOOaa,nVVaa,1d0,ERI,Bpp)
+                   call ppLR_C(iblock,nBas,nC,nO,nV,nR,nVVaa,1d0,eT,ERI,Cpp)
+                   call ppLR_D(iblock,nBas,nC,nO,nV,nR,nOOaa,1d0,eT,ERI,Dpp)
+ 
+    call ppLR(TDA_T,nOOaa,nVVaa,Bpp,Cpp,Dpp,Om1aa,X1aa,Y1aa,Om2aa,X2aa,Y2aa,EcRPA(ispin))
+ 
+    deallocate(Bpp,Cpp,Dpp)
     allocate(TBaa(nVVs,nOOs),TCaa(nVVs,nVVs),TDaa(nOOs,nOOs))
  
-    if(.not.TDA) call static_Tmatrix_B_pp(ispin,eta,nBas,nC,nO,nV,nR,nOOaa,nVVaa,nOOs,nVVs,1d0,Om1aa,rho1aa,Om2aa,rho2aa,TBaa)
-                 call static_Tmatrix_C_pp(ispin,eta,nBas,nC,nO,nV,nR,nOOaa,nVVaa,nOOs,nVVs,1d0,Om1aa,rho1aa,Om2aa,rho2aa,TCaa)
-                 call static_Tmatrix_D_pp(ispin,eta,nBas,nC,nO,nV,nR,nOOaa,nVVaa,nOOs,nVVs,1d0,Om1aa,rho1aa,Om2aa,rho2aa,TDaa)
+    if(.not.TDA_T) call GTpp_static_kernel_Bpp(ispin,eta,nBas,nC,nO,nV,nR,nOOaa,nVVaa,nOOs,nVVs,1d0,Om1aa,rho1aa,Om2aa,rho2aa,TBaa)
+                   call GTpp_static_kernel_Cpp(ispin,eta,nBas,nC,nO,nV,nR,nOOaa,nVVaa,nOOs,nVVs,1d0,Om1aa,rho1aa,Om2aa,rho2aa,TCaa)
+                   call GTpp_static_kernel_Dpp(ispin,eta,nBas,nC,nO,nV,nR,nOOaa,nVVaa,nOOs,nVVs,1d0,Om1aa,rho1aa,Om2aa,rho2aa,TDaa)
 
   !----------------------------------!
   ! pp/hh sectors for singlet states !
@@ -125,14 +137,22 @@ subroutine GTpp_ppBSE(TDA_T,TDA,dBSE,dTDA,evDyn,singlet,triplet,eta,nBas,nC,nO,n
 
     EcBSE(ispin) = 0d0
 
-    allocate(Om1s(nVVs),X1s(nVVs,nVVs),Y1s(nOOs,nVVs),Om2s(nOOs),X2s(nVVs,nOOs),Y2s(nOOs,nOOs))
-  
-    call linear_response_pp_BSE(ispin,TDA,.true.,nBas,nC,nO,nV,nR,nOOs,nVVs,1d0,eGT,ERI, &
-                                TBaa+TBab,TCaa+TCab,TDaa+TDab,Om1s,X1s,Y1s,Om2s,X2s,Y2s,EcBSE(ispin))
+    allocate(Om1s(nVVs),X1s(nVVs,nVVs),Y1s(nOOs,nVVs),Om2s(nOOs),X2s(nVVs,nOOs),Y2s(nOOs,nOOs), &
+             Bpp(nVVs,nOOs),Cpp(nVVs,nVVs),Dpp(nOOs,nOOs))
+
+    if(.not.TDA) call ppLR_B(ispin,nBas,nC,nO,nV,nR,nOOs,nVVs,1d0,ERI,Bpp)
+                 call ppLR_C(ispin,nBas,nC,nO,nV,nR,nVVs,1d0,eGT,ERI,Cpp)
+                 call ppLR_D(ispin,nBas,nC,nO,nV,nR,nOOs,1d0,eGT,ERI,Dpp)
+
+    Bpp(:,:) = Bpp(:,:) - TBab(:,:) - TBaa(:,:) 
+    Cpp(:,:) = Cpp(:,:) - TCab(:,:) - TCaa(:,:) 
+    Dpp(:,:) = Dpp(:,:) - TDab(:,:) - TDaa(:,:) 
+
+    call ppLR(TDA,nOOs,nVVs,Bpp,Cpp,Dpp,Om1s,X1s,Y1s,Om2s,X2s,Y2s,EcBSE(ispin))
 
     call print_transition_vectors_pp(.true.,nBas,nC,nO,nV,nR,nOOs,nVVs,dipole_int,Om1s,X1s,Y1s,Om2s,X2s,Y2s)
 
-    deallocate(Om1s,X1s,Y1s,Om2s,X2s,Y2s,TBab,TCab,TDab,TBaa,TCaa,TDaa)
+    deallocate(Om1s,X1s,Y1s,Om2s,X2s,Y2s,TBab,TCab,TDab,TBaa,TCaa,TDaa,Bpp,Cpp,Dpp) 
 
   end if
 
@@ -152,32 +172,42 @@ subroutine GTpp_ppBSE(TDA_T,TDA,dBSE,dTDA,evDyn,singlet,triplet,eta,nBas,nC,nO,n
   !---------------------------------------!
 
     iblock = 3
-    EcRPA(ispin) = 0d0
- 
-    call ppLR(iblock,TDA_T,nBas,nC,nO,nV,nR,nOOab,nVVab,1d0,eT,ERI,Om1ab,X1ab,Y1ab,Om2ab,X2ab,Y2ab,EcRPA(ispin))
- 
+
+    allocate(Bpp(nVVab,nOOab),Cpp(nVVab,nVVab),Dpp(nOOab,nOOab))
+
+    if(.not.TDA_T) call ppLR_B(iblock,nBas,nC,nO,nV,nR,nOOab,nVVab,1d0,ERI,Bpp)
+                   call ppLR_C(iblock,nBas,nC,nO,nV,nR,nVVab,1d0,eT,ERI,Cpp)
+                   call ppLR_D(iblock,nBas,nC,nO,nV,nR,nOOab,1d0,eT,ERI,Dpp)
+
+    call ppLR(TDA_T,nOOab,nVVab,Bpp,Cpp,Dpp,Om1ab,X1ab,Y1ab,Om2ab,X2ab,Y2ab,EcRPA(ispin))
+
+    deallocate(Bpp,Cpp,Dpp)
     allocate(TBab(nVVt,nOOt),TCab(nVVt,nVVt),TDab(nOOt,nOOt))
  
-    if(.not.TDA) call static_Tmatrix_B_pp(ispin,eta,nBas,nC,nO,nV,nR,nOOab,nVVab,nOOt,nVVt,1d0,Om1ab,rho1ab,Om2ab,rho2ab,TBab)
-                 call static_Tmatrix_C_pp(ispin,eta,nBas,nC,nO,nV,nR,nOOab,nVVab,nOOt,nVVt,1d0,Om1ab,rho1ab,Om2ab,rho2ab,TCab)
-                 call static_Tmatrix_D_pp(ispin,eta,nBas,nC,nO,nV,nR,nOOab,nVVab,nOOt,nVVt,1d0,Om1ab,rho1ab,Om2ab,rho2ab,TDab)
+    if(.not.TDA_T) call GTpp_static_kernel_Bpp(ispin,eta,nBas,nC,nO,nV,nR,nOOab,nVVab,nOOt,nVVt,1d0,Om1ab,rho1ab,Om2ab,rho2ab,TBab)
+                   call GTpp_static_kernel_Cpp(ispin,eta,nBas,nC,nO,nV,nR,nOOab,nVVab,nOOt,nVVt,1d0,Om1ab,rho1ab,Om2ab,rho2ab,TCab)
+                   call GTpp_static_kernel_Dpp(ispin,eta,nBas,nC,nO,nV,nR,nOOab,nVVab,nOOt,nVVt,1d0,Om1ab,rho1ab,Om2ab,rho2ab,TDab)
  
   !----------------------------------------!
   ! Compute T-matrix for alpha-alpha block !
   !----------------------------------------!
 
-    ispin  = 2
     iblock = 4
  
-    EcRPA(ispin) = 0d0
- 
-    call ppLR(iblock,TDA_T,nBas,nC,nO,nV,nR,nOOaa,nVVaa,1d0,eT,ERI,Om1aa,X1aa,Y1aa,Om2aa,X2aa,Y2aa,EcRPA(ispin))
+    allocate(Bpp(nVVaa,nOOaa),Cpp(nVVaa,nVVaa),Dpp(nOOaa,nOOaa))
 
+    if(.not.TDA_T) call ppLR_B(iblock,nBas,nC,nO,nV,nR,nOOaa,nVVaa,1d0,ERI,Bpp)
+                   call ppLR_C(iblock,nBas,nC,nO,nV,nR,nVVaa,1d0,eT,ERI,Cpp)
+                   call ppLR_D(iblock,nBas,nC,nO,nV,nR,nOOaa,1d0,eT,ERI,Dpp)
+
+    call ppLR(TDA_T,nOOaa,nVVaa,Bpp,Cpp,Dpp,Om1aa,X1aa,Y1aa,Om2aa,X2aa,Y2aa,EcRPA(ispin))
+
+    deallocate(Bpp,Cpp,Dpp)
     allocate(TBaa(nVVt,nOOt),TCaa(nVVt,nVVt),TDaa(nOOt,nOOt))
  
-    if(.not.TDA) call static_Tmatrix_B_pp(ispin,eta,nBas,nC,nO,nV,nR,nOOaa,nVVaa,nOOt,nVVt,1d0,Om1aa,rho1aa,Om2aa,rho2aa,TBaa)
-                 call static_Tmatrix_C_pp(ispin,eta,nBas,nC,nO,nV,nR,nOOaa,nVVaa,nOOt,nVVt,1d0,Om1aa,rho1aa,Om2aa,rho2aa,TCaa)
-                 call static_Tmatrix_D_pp(ispin,eta,nBas,nC,nO,nV,nR,nOOaa,nVVaa,nOOt,nVVt,1d0,Om1aa,rho1aa,Om2aa,rho2aa,TDaa)
+    if(.not.TDA_T) call GTpp_static_kernel_Bpp(ispin,eta,nBas,nC,nO,nV,nR,nOOaa,nVVaa,nOOt,nVVt,1d0,Om1aa,rho1aa,Om2aa,rho2aa,TBaa)
+                   call GTpp_static_kernel_Cpp(ispin,eta,nBas,nC,nO,nV,nR,nOOaa,nVVaa,nOOt,nVVt,1d0,Om1aa,rho1aa,Om2aa,rho2aa,TCaa)
+                   call GTpp_static_kernel_Dpp(ispin,eta,nBas,nC,nO,nV,nR,nOOaa,nVVaa,nOOt,nVVt,1d0,Om1aa,rho1aa,Om2aa,rho2aa,TDaa)
 
   !----------------------------------!
   ! pp/hh sectors for triplet states !
@@ -185,14 +215,23 @@ subroutine GTpp_ppBSE(TDA_T,TDA,dBSE,dTDA,evDyn,singlet,triplet,eta,nBas,nC,nO,n
 
     EcBSE(ispin) = 0d0
 
-    allocate(Om1t(nVVt),X1t(nVVt,nVVt),Y1t(nOOt,nVVt),Om2t(nOOt),X2t(nVVt,nOOt),Y2t(nOOt,nOOt))
+    allocate(Om1t(nVVt),X1t(nVVt,nVVt),Y1t(nOOt,nVVt),Om2t(nOOt),X2t(nVVt,nOOt),Y2t(nOOt,nOOt), &
+             Bpp(nVVt,nOOt),Cpp(nVVt,nVVt),Dpp(nOOt,nOOt))
+
   
-    call linear_response_pp_BSE(ispin,TDA,.true.,nBas,nC,nO,nV,nR,nOOt,nVVt,1d0,eGT,ERI, &
-                                TBaa-TBab,TCaa-TCab,TDaa-TDab,Om1t,X1t,Y1t,Om2t,X2t,Y2t,EcBSE(ispin))
+    if(.not.TDA) call ppLR_B(ispin,nBas,nC,nO,nV,nR,nOOs,nVVs,1d0,ERI,Bpp)
+                 call ppLR_C(ispin,nBas,nC,nO,nV,nR,nVVs,1d0,eGT,ERI,Cpp)
+                 call ppLR_D(ispin,nBas,nC,nO,nV,nR,nOOs,1d0,eGT,ERI,Dpp)
+
+    Bpp(:,:) = Bpp(:,:) + TBab(:,:) - TBaa(:,:)
+    Cpp(:,:) = Cpp(:,:) + TCab(:,:) - TCaa(:,:)
+    Dpp(:,:) = Dpp(:,:) + TDab(:,:) - TDaa(:,:)
+
+    call ppLR(TDA,nOOs,nVVs,Bpp,Cpp,Dpp,Om1s,X1s,Y1s,Om2s,X2s,Y2s,EcBSE(ispin))
 
     call print_transition_vectors_pp(.false.,nBas,nC,nO,nV,nR,nOOt,nVVt,dipole_int,Om1t,X1t,Y1t,Om2t,X2t,Y2t)
 
-    deallocate(Om1t,X1t,Y1t,Om2t,X2t,Y2t,TBab,TCab,TDab,TBaa,TCaa,TDaa)
+    deallocate(Om1t,X1t,Y1t,Om2t,X2t,Y2t,TBab,TCab,TDab,TBaa,TCaa,TDaa,Bpp,Cpp,Dpp)
 
   end if
 

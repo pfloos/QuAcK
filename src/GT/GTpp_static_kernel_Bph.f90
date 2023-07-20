@@ -1,4 +1,4 @@
-subroutine static_Tmatrix_B(eta,nBas,nC,nO,nV,nR,nS,nOO,nVV,lambda,Omega1,rho1,Omega2,rho2,TB)
+subroutine GTpp_static_kernel_Bph(eta,nBas,nC,nO,nV,nR,nS,nOO,nVV,lambda,Omega1,rho1,Omega2,rho2,KB)
 
 ! Compute the OVVO block of the static T-matrix
 
@@ -30,9 +30,9 @@ subroutine static_Tmatrix_B(eta,nBas,nC,nO,nV,nR,nS,nOO,nVV,lambda,Omega1,rho1,O
 
 ! Output variables
 
-  double precision,intent(out)  :: TB(nS,nS)
+  double precision,intent(out)  :: KB(nS,nS)
 
-  TB(:,:) = 0d0
+  KB(:,:) = 0d0
 
   ia = 0
   do i=nC+1,nO
@@ -55,11 +55,11 @@ subroutine static_Tmatrix_B(eta,nBas,nC,nO,nV,nR,nS,nOO,nVV,lambda,Omega1,rho1,O
             chi = chi + rho2(i,j,kl)*rho2(a,b,kl)*eps/(eps**2 + eta**2)
           enddo
 
-          TB(ia,jb) = lambda*chi
+          KB(ia,jb) = lambda*chi
 
         enddo
       enddo
     enddo
   enddo
 
-end subroutine static_Tmatrix_B
+end subroutine 
