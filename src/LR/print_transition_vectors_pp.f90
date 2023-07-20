@@ -1,4 +1,4 @@
-subroutine print_transition_vectors_pp(spin_allowed,nBas,nC,nO,nV,nR,nOO,nVV,dipole_int,Omega1,X1,Y1,Omega2,X2,Y2)
+subroutine print_transition_vectors_pp(spin_allowed,nBas,nC,nO,nV,nR,nOO,nVV,dipole_int,Om1,X1,Y1,Om2,X2,Y2)
 
 ! Print transition vectors for p-p linear response calculation
 
@@ -16,10 +16,10 @@ subroutine print_transition_vectors_pp(spin_allowed,nBas,nC,nO,nV,nR,nOO,nVV,dip
   integer,intent(in)            :: nOO
   integer,intent(in)            :: nVV
   double precision,intent(in)   :: dipole_int(nBas,nBas,ncart)
-  double precision,intent(in)   :: Omega1(nVV)
+  double precision,intent(in)   :: Om1(nVV)
   double precision,intent(in)   :: X1(nVV,nVV)
   double precision,intent(in)   :: Y1(nOO,nVV)
-  double precision,intent(in)   :: Omega2(nOO)
+  double precision,intent(in)   :: Om2(nOO)
   double precision,intent(in)   :: X2(nVV,nOO)
   double precision,intent(in)   :: Y2(nOO,nOO)
 
@@ -47,7 +47,7 @@ subroutine print_transition_vectors_pp(spin_allowed,nBas,nC,nO,nV,nR,nOO,nVV,dip
   os2(:) = 0d0
 
   if(spin_allowed) & 
-    call oscillator_strength_pp(nBas,nC,nO,nV,nR,nOO,nVV,maxOO,maxVV,dipole_int,Omega1,X1,Y1,Omega2,X2,Y2,os1,os2)
+    call oscillator_strength_pp(nBas,nC,nO,nV,nR,nOO,nVV,maxOO,maxVV,dipole_int,Om1,X1,Y1,Om2,X2,Y2,os1,os2)
 
 !-----------------------------------------------!
 ! Print details about excitations for pp sector !
@@ -70,7 +70,7 @@ subroutine print_transition_vectors_pp(spin_allowed,nBas,nC,nO,nV,nR,nOO,nVV,dip
 
     print*,'-------------------------------------------------------------'
     write(*,'(A20,I3,A2,F10.6,A3,A6,F6.4,A11,F6.4)') &
-            ' p-p excitation n. ',ab,': ',Omega1(ab)*HaToeV,' eV','  f = ',os1(ab),'  <S**2> = ',S2
+            ' p-p excitation n. ',ab,': ',Om1(ab)*HaToeV,' eV','  f = ',os1(ab),'  <S**2> = ',S2
     print*,'-------------------------------------------------------------'
 
    if(spin_allowed) then
@@ -141,7 +141,7 @@ subroutine print_transition_vectors_pp(spin_allowed,nBas,nC,nO,nV,nR,nOO,nVV,dip
 
     print*,'-------------------------------------------------------------'
     write(*,'(A20,I3,A2,F10.6,A3,A6,F6.4,A11,F6.4)') &
-            ' h-h excitation n. ',ij,': ',Omega2(ij)*HaToeV,' eV','  f = ',os2(ij),'  <S**2> = ',S2
+            ' h-h excitation n. ',ij,': ',Om2(ij)*HaToeV,' eV','  f = ',os2(ij),'  <S**2> = ',S2
     print*,'-------------------------------------------------------------'
 
    if(spin_allowed) then

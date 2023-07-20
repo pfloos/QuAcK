@@ -1,4 +1,4 @@
-subroutine phLR(TDA,nS,A,B,EcRPA,Om,XpY,XmY)
+subroutine phLR(TDA,nS,Aph,Bph,EcRPA,Om,XpY,XmY)
 
 ! Compute linear response
 
@@ -9,12 +9,10 @@ subroutine phLR(TDA,nS,A,B,EcRPA,Om,XpY,XmY)
 
   logical,intent(in)            :: TDA
   integer,intent(in)            :: nS
-  double precision,intent(in)   :: A(nS,nS)
-  double precision,intent(in)   :: B(nS,nS)
+  double precision,intent(in)   :: Aph(nS,nS)
+  double precision,intent(in)   :: Bph(nS,nS)
 
   ! Local variables
-
-  integer :: i,j,k
 
   double precision              :: trace_matrix
   double precision,allocatable  :: ApB(:,:)
@@ -39,7 +37,7 @@ subroutine phLR(TDA,nS,A,B,EcRPA,Om,XpY,XmY)
 
   if(TDA) then
  
-    XpY(:,:) = A(:,:)
+    XpY(:,:) = Aph(:,:)
     call diagonalize_matrix(nS,XpY,Om)
     XpY(:,:) = transpose(XpY(:,:))
     XmY(:,:) = XpY(:,:)
@@ -48,8 +46,8 @@ subroutine phLR(TDA,nS,A,B,EcRPA,Om,XpY,XmY)
 
     ! Build A + B and A - B matrices 
 
-    ApB = A + B
-    AmB = A - B
+    ApB(:,:) = Aph(:,:) + Bph(:,:)
+    AmB(:,:) = Aph(:,:) - Bph(:,:)
 
   ! Diagonalize linear response matrix
 
@@ -81,6 +79,6 @@ subroutine phLR(TDA,nS,A,B,EcRPA,Om,XpY,XmY)
 
   ! Compute the RPA correlation energy
 
-    EcRPA = 0.5d0*(sum(Om) - trace_matrix(nS,A))
+    EcRPA = 0.5d0*(sum(Om) - trace_matrix(nS,Aph))
 
 end subroutine 

@@ -1,4 +1,4 @@
-subroutine print_transition_vectors_ph(spin_allowed,nBas,nC,nO,nV,nR,nS,dipole_int,Omega,XpY,XmY)
+subroutine print_transition_vectors_ph(spin_allowed,nBas,nC,nO,nV,nR,nS,dipole_int,Om,XpY,XmY)
 
 ! Print transition vectors for linear response calculation
 
@@ -15,7 +15,7 @@ subroutine print_transition_vectors_ph(spin_allowed,nBas,nC,nO,nV,nR,nS,dipole_i
   integer,intent(in)            :: nR
   integer,intent(in)            :: nS
   double precision              :: dipole_int(nBas,nBas,ncart)
-  double precision,intent(in)   :: Omega(nS)
+  double precision,intent(in)   :: Om(nS)
   double precision,intent(in)   :: XpY(nS,nS)
   double precision,intent(in)   :: XmY(nS,nS)
 
@@ -37,7 +37,7 @@ subroutine print_transition_vectors_ph(spin_allowed,nBas,nC,nO,nV,nR,nS,dipole_i
 ! Compute oscillator strengths
 
   os(:) = 0d0
-  if(spin_allowed) call oscillator_strength_ph(nBas,nC,nO,nV,nR,nS,maxS,dipole_int,Omega,XpY,XmY,os)
+  if(spin_allowed) call oscillator_strength_ph(nBas,nC,nO,nV,nR,nS,maxS,dipole_int,Om,XpY,XmY,os)
 
 ! Print details about excitations
 
@@ -56,7 +56,7 @@ subroutine print_transition_vectors_ph(spin_allowed,nBas,nC,nO,nV,nR,nS,dipole_i
 
     print*,'-------------------------------------------------------------'
     write(*,'(A15,I3,A2,F10.6,A3,A6,F6.4,A11,F6.4)') &
-            ' Excitation n. ',ia,': ',Omega(ia)*HaToeV,' eV','  f = ',os(ia),'  <S**2> = ',S2
+            ' Excitation n. ',ia,': ',Om(ia)*HaToeV,' eV','  f = ',os(ia),'  <S**2> = ',S2
     print*,'-------------------------------------------------------------'
 
     jb = 0

@@ -1,4 +1,4 @@
-subroutine oscillator_strength_ph(nBas,nC,nO,nV,nR,nS,maxS,dipole_int,Omega,XpY,XmY,os)
+subroutine oscillator_strength_ph(nBas,nC,nO,nV,nR,nS,maxS,dipole_int,Om,XpY,XmY,os)
 
 ! Compute linear response
 
@@ -15,7 +15,7 @@ subroutine oscillator_strength_ph(nBas,nC,nO,nV,nR,nS,maxS,dipole_int,Omega,XpY,
   integer,intent(in)            :: nS
   integer,intent(in)            :: maxS
   double precision              :: dipole_int(nBas,nBas,ncart)
-  double precision,intent(in)   :: Omega(nS)
+  double precision,intent(in)   :: Om(nS)
   double precision,intent(in)   :: XpY(nS,nS)
   double precision,intent(in)   :: XmY(nS,nS)
   
@@ -54,7 +54,7 @@ subroutine oscillator_strength_ph(nBas,nC,nO,nV,nR,nS,maxS,dipole_int,Omega,XpY,
   f(:,:) = sqrt(2d0)*f(:,:)
 
   do ia=1,maxS
-    os(ia) = 2d0/3d0*Omega(ia)*sum(f(ia,:)**2)
+    os(ia) = 2d0/3d0*Om(ia)*sum(f(ia,:)**2)
   end do
  
   write(*,*) '---------------------------------------------------------------'

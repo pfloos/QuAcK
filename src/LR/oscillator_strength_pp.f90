@@ -1,4 +1,4 @@
-subroutine oscillator_strength_pp(nBas,nC,nO,nV,nR,nOO,nVV,maxOO,maxVV,dipole_int,Omega1,X1,Y1,Omega2,X2,Y2,os1,os2)
+subroutine oscillator_strength_pp(nBas,nC,nO,nV,nR,nOO,nVV,maxOO,maxVV,dipole_int,Om1,X1,Y1,Om2,X2,Y2,os1,os2)
 
 ! Compute linear response
 
@@ -17,10 +17,10 @@ subroutine oscillator_strength_pp(nBas,nC,nO,nV,nR,nOO,nVV,maxOO,maxVV,dipole_in
   integer,intent(in)            :: maxOO
   integer,intent(in)            :: maxVV
   double precision,intent(in)   :: dipole_int(nBas,nBas,ncart)
-  double precision,intent(in)   :: Omega1(nVV)
+  double precision,intent(in)   :: Om1(nVV)
   double precision,intent(in)   :: X1(nVV,nVV)
   double precision,intent(in)   :: Y1(nOO,nVV)
-  double precision,intent(in)   :: Omega2(nOO)
+  double precision,intent(in)   :: Om2(nOO)
   double precision,intent(in)   :: X2(nVV,nOO)
   double precision,intent(in)   :: Y2(nOO,nOO)
   
@@ -73,7 +73,7 @@ subroutine oscillator_strength_pp(nBas,nC,nO,nV,nR,nOO,nVV,maxOO,maxVV,dipole_in
   f1(:,:) = sqrt(2d0)*f1(:,:)
 
   do ab=1,maxVV
-    os1(ab) = +2d0/3d0*abs(Omega1(ab))*sum(f1(ab,:)**2)
+    os1(ab) = +2d0/3d0*abs(Om1(ab))*sum(f1(ab,:)**2)
   end do
 
 
@@ -101,7 +101,7 @@ subroutine oscillator_strength_pp(nBas,nC,nO,nV,nR,nOO,nVV,maxOO,maxVV,dipole_in
   f2(:,:) = sqrt(2d0)*f2(:,:)
 
   do ij=1,maxOO
-    os2(ij) = 2d0/3d0*abs(Omega2(ij))*sum(f2(ij,:)**2)
+    os2(ij) = 2d0/3d0*abs(Om2(ij))*sum(f2(ij,:)**2)
   end do
  
   write(*,*) '---------------------------------------------------------------'
