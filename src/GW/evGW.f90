@@ -212,10 +212,6 @@ subroutine evGW(maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,dophBSE,dop
 ! End main loop
 !------------------------------------------------------------------------
 
-! Plot stuff
-
-! call plot_GW(nBas,nC,nO,nV,nR,nS,eHF,eGW,Omega(:,ispin),rho(:,:,:,ispin),rhox(:,:,:,ispin))
-
 ! Did it actually converge?
 
   if(nSCF == maxSCF+1) then
