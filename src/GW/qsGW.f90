@@ -270,10 +270,6 @@ subroutine qsGW(maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,dophBSE,dop
 ! End main loop
 !------------------------------------------------------------------------
 
-! Compute second-order correction of the Hermitization error
-
-! call qsGW_PT(nBas,nC,nO,nV,nR,nS,eGW,SigCm)
-
 ! Did it actually converge?
 
   if(nSCF == maxSCF+1) then

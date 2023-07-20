@@ -58,9 +58,8 @@ subroutine GW_phACFDT(exchange_kernel,doXBS,dRPA,TDA_W,TDA,BSE,singlet,triplet,e
 ! Memory allocation
 
   allocate(Ec(nAC,nspin))
-  allocate(Aph(nS,nS),KA(nS,nS),OmRPA(nS),XpY_RPA(nS,nS),XmY_RPA(nS,nS), & 
+  allocate(Aph(nS,nS),Bph(nS,nS),KA(nS,nS),KB(nS,nS),OmRPA(nS),XpY_RPA(nS,nS),XmY_RPA(nS,nS), & 
            rho_RPA(nBas,nBas,nS),Om(nS),XpY(nS,nS),XmY(nS,nS))
-  if(.not.TDA) allocate(Aph(nS,nS),KB(nS,nS))
 
 ! Antisymmetrized kernel version
 
