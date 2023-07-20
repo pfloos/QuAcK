@@ -81,11 +81,11 @@ subroutine GTpp_phBSE_dynamic_perturbation(ispin,dTDA,eta,nBas,nC,nO,nV,nR,nS,nO
 
     ! Compute dynamical T-matrix for alpha-beta block  
 
-    call GTpp_dynamic_kernel_Aph(eta,nBas,nC,nO,nV,nR,nS,nOOab,nVVab,1d0,eGT,Om1ab,Om2ab,rho1ab,rho2ab,OmBSE(ia),dTAab,ZAab)
+    call GTpp_phBSE_dynamic_kernel_A(eta,nBas,nC,nO,nV,nR,nS,nOOab,nVVab,1d0,eGT,Om1ab,Om2ab,rho1ab,rho2ab,OmBSE(ia),dTAab,ZAab)
  
     ! Compute dynamical T-matrix for alpha-beta block  
 
-    call GTpp_dynamic_kernel_Aph(eta,nBas,nC,nO,nV,nR,nS,nOOaa,nVVaa,1d0,eGT,Om1aa,Om2aa,rho1aa,rho2aa,OmBSE(ia),dTAaa,ZAaa)
+    call GTpp_phBSE_dynamic_kernel_A(eta,nBas,nC,nO,nV,nR,nS,nOOaa,nVVaa,1d0,eGT,Om1aa,Om2aa,rho1aa,rho2aa,OmBSE(ia),dTAaa,ZAaa)
  
     X(:) = 0.5d0*(XpY(ia,:) + XmY(ia,:))
     Y(:) = 0.5d0*(XpY(ia,:) - XmY(ia,:))

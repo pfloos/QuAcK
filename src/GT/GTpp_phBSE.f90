@@ -99,8 +99,8 @@ subroutine GTpp_phBSE(TDA_T,TDA,dBSE,dTDA,evDyn,singlet,triplet,eta,nBas,nC,nO,n
 
   deallocate(Bpp,Cpp,Dpp)
 
-               call GTpp_static_kernel_Aph(eta,nBas,nC,nO,nV,nR,nS,nOOab,nVVab,1d0,Om1ab,rho1ab,Om2ab,rho2ab,TAab)
-  if(.not.TDA) call GTpp_static_kernel_Bph(eta,nBas,nC,nO,nV,nR,nS,nOOab,nVVab,1d0,Om1ab,rho1ab,Om2ab,rho2ab,TBab)
+               call GTpp_phBSE_static_kernel_A(eta,nBas,nC,nO,nV,nR,nS,nOOab,nVVab,1d0,Om1ab,rho1ab,Om2ab,rho2ab,TAab)
+  if(.not.TDA) call GTpp_phBSE_static_kernel_B(eta,nBas,nC,nO,nV,nR,nS,nOOab,nVVab,1d0,Om1ab,rho1ab,Om2ab,rho2ab,TBab)
 
 !----------------------------------------!
 ! Compute T-matrix for alpha-alpha block !
@@ -119,8 +119,8 @@ subroutine GTpp_phBSE(TDA_T,TDA,dBSE,dTDA,evDyn,singlet,triplet,eta,nBas,nC,nO,n
 
   deallocate(Bpp,Cpp,Dpp)
 
-               call GTpp_static_kernel_Aph(eta,nBas,nC,nO,nV,nR,nS,nOOaa,nVVaa,1d0,Om1aa,rho1aa,Om2aa,rho2aa,TAaa)
-  if(.not.TDA) call GTpp_static_kernel_Bph(eta,nBas,nC,nO,nV,nR,nS,nOOaa,nVVaa,1d0,Om1aa,rho1aa,Om2aa,rho2aa,TBaa)
+               call GTpp_phBSE_static_kernel_A(eta,nBas,nC,nO,nV,nR,nS,nOOaa,nVVaa,1d0,Om1aa,rho1aa,Om2aa,rho2aa,TAaa)
+  if(.not.TDA) call GTpp_phBSE_static_kernel_B(eta,nBas,nC,nO,nV,nR,nS,nOOaa,nVVaa,1d0,Om1aa,rho1aa,Om2aa,rho2aa,TBaa)
 
 !------------------!
 ! Singlet manifold !

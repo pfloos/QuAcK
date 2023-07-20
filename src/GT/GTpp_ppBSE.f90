@@ -106,9 +106,12 @@ subroutine GTpp_ppBSE(TDA_T,TDA,dBSE,dTDA,evDyn,singlet,triplet,eta,nBas,nC,nO,n
     deallocate(Bpp,Cpp,Dpp)
     allocate(TBab(nVVs,nOOs),TCab(nVVs,nVVs),TDab(nOOs,nOOs))
  
-    if(.not.TDA_T) call GTpp_static_kernel_Bpp(ispin,eta,nBas,nC,nO,nV,nR,nOOab,nVVab,nOOs,nVVs,1d0,Om1ab,rho1ab,Om2ab,rho2ab,TBab)
-                   call GTpp_static_kernel_Cpp(ispin,eta,nBas,nC,nO,nV,nR,nOOab,nVVab,nOOs,nVVs,1d0,Om1ab,rho1ab,Om2ab,rho2ab,TCab)
-                   call GTpp_static_kernel_Dpp(ispin,eta,nBas,nC,nO,nV,nR,nOOab,nVVab,nOOs,nVVs,1d0,Om1ab,rho1ab,Om2ab,rho2ab,TDab)
+    if(.not.TDA_T) call GTpp_ppBSE_static_kernel_B(ispin,eta,nBas,nC,nO,nV,nR,nOOab,nVVab,nOOs,nVVs,1d0, & 
+                                                   Om1ab,rho1ab,Om2ab,rho2ab,TBab)
+                   call GTpp_ppBSE_static_kernel_C(ispin,eta,nBas,nC,nO,nV,nR,nOOab,nVVab,nOOs,nVVs,1d0, & 
+                                                   Om1ab,rho1ab,Om2ab,rho2ab,TCab)
+                   call GTpp_ppBSE_static_kernel_D(ispin,eta,nBas,nC,nO,nV,nR,nOOab,nVVab,nOOs,nVVs,1d0, & 
+                                                   Om1ab,rho1ab,Om2ab,rho2ab,TDab)
 
   !----------------------------------------!
   ! Compute T-matrix for alpha-alpha block !
@@ -127,9 +130,12 @@ subroutine GTpp_ppBSE(TDA_T,TDA,dBSE,dTDA,evDyn,singlet,triplet,eta,nBas,nC,nO,n
     deallocate(Bpp,Cpp,Dpp)
     allocate(TBaa(nVVs,nOOs),TCaa(nVVs,nVVs),TDaa(nOOs,nOOs))
  
-    if(.not.TDA_T) call GTpp_static_kernel_Bpp(ispin,eta,nBas,nC,nO,nV,nR,nOOaa,nVVaa,nOOs,nVVs,1d0,Om1aa,rho1aa,Om2aa,rho2aa,TBaa)
-                   call GTpp_static_kernel_Cpp(ispin,eta,nBas,nC,nO,nV,nR,nOOaa,nVVaa,nOOs,nVVs,1d0,Om1aa,rho1aa,Om2aa,rho2aa,TCaa)
-                   call GTpp_static_kernel_Dpp(ispin,eta,nBas,nC,nO,nV,nR,nOOaa,nVVaa,nOOs,nVVs,1d0,Om1aa,rho1aa,Om2aa,rho2aa,TDaa)
+    if(.not.TDA_T) call GTpp_ppBSE_static_kernel_B(ispin,eta,nBas,nC,nO,nV,nR,nOOaa,nVVaa,nOOs,nVVs,1d0, & 
+                                                   Om1aa,rho1aa,Om2aa,rho2aa,TBaa)
+                   call GTpp_ppBSE_static_kernel_C(ispin,eta,nBas,nC,nO,nV,nR,nOOaa,nVVaa,nOOs,nVVs,1d0, & 
+                                                   Om1aa,rho1aa,Om2aa,rho2aa,TCaa)
+                   call GTpp_ppBSE_static_kernel_D(ispin,eta,nBas,nC,nO,nV,nR,nOOaa,nVVaa,nOOs,nVVs,1d0, & 
+                                                   Om1aa,rho1aa,Om2aa,rho2aa,TDaa)
 
   !----------------------------------!
   ! pp/hh sectors for singlet states !
@@ -184,9 +190,12 @@ subroutine GTpp_ppBSE(TDA_T,TDA,dBSE,dTDA,evDyn,singlet,triplet,eta,nBas,nC,nO,n
     deallocate(Bpp,Cpp,Dpp)
     allocate(TBab(nVVt,nOOt),TCab(nVVt,nVVt),TDab(nOOt,nOOt))
  
-    if(.not.TDA_T) call GTpp_static_kernel_Bpp(ispin,eta,nBas,nC,nO,nV,nR,nOOab,nVVab,nOOt,nVVt,1d0,Om1ab,rho1ab,Om2ab,rho2ab,TBab)
-                   call GTpp_static_kernel_Cpp(ispin,eta,nBas,nC,nO,nV,nR,nOOab,nVVab,nOOt,nVVt,1d0,Om1ab,rho1ab,Om2ab,rho2ab,TCab)
-                   call GTpp_static_kernel_Dpp(ispin,eta,nBas,nC,nO,nV,nR,nOOab,nVVab,nOOt,nVVt,1d0,Om1ab,rho1ab,Om2ab,rho2ab,TDab)
+    if(.not.TDA_T) call GTpp_ppBSE_static_kernel_B(ispin,eta,nBas,nC,nO,nV,nR,nOOab,nVVab,nOOt,nVVt,1d0, & 
+                                                   Om1ab,rho1ab,Om2ab,rho2ab,TBab)
+                   call GTpp_ppBSE_static_kernel_C(ispin,eta,nBas,nC,nO,nV,nR,nOOab,nVVab,nOOt,nVVt,1d0, & 
+                                                   Om1ab,rho1ab,Om2ab,rho2ab,TCab)
+                   call GTpp_ppBSE_static_kernel_D(ispin,eta,nBas,nC,nO,nV,nR,nOOab,nVVab,nOOt,nVVt,1d0, & 
+                                                   Om1ab,rho1ab,Om2ab,rho2ab,TDab)
  
   !----------------------------------------!
   ! Compute T-matrix for alpha-alpha block !
@@ -205,9 +214,12 @@ subroutine GTpp_ppBSE(TDA_T,TDA,dBSE,dTDA,evDyn,singlet,triplet,eta,nBas,nC,nO,n
     deallocate(Bpp,Cpp,Dpp)
     allocate(TBaa(nVVt,nOOt),TCaa(nVVt,nVVt),TDaa(nOOt,nOOt))
  
-    if(.not.TDA_T) call GTpp_static_kernel_Bpp(ispin,eta,nBas,nC,nO,nV,nR,nOOaa,nVVaa,nOOt,nVVt,1d0,Om1aa,rho1aa,Om2aa,rho2aa,TBaa)
-                   call GTpp_static_kernel_Cpp(ispin,eta,nBas,nC,nO,nV,nR,nOOaa,nVVaa,nOOt,nVVt,1d0,Om1aa,rho1aa,Om2aa,rho2aa,TCaa)
-                   call GTpp_static_kernel_Dpp(ispin,eta,nBas,nC,nO,nV,nR,nOOaa,nVVaa,nOOt,nVVt,1d0,Om1aa,rho1aa,Om2aa,rho2aa,TDaa)
+    if(.not.TDA_T) call GTpp_ppBSE_static_kernel_B(ispin,eta,nBas,nC,nO,nV,nR,nOOaa,nVVaa,nOOt,nVVt,1d0, & 
+                                                   Om1aa,rho1aa,Om2aa,rho2aa,TBaa)
+                   call GTpp_ppBSE_static_kernel_C(ispin,eta,nBas,nC,nO,nV,nR,nOOaa,nVVaa,nOOt,nVVt,1d0, & 
+                                                   Om1aa,rho1aa,Om2aa,rho2aa,TCaa)
+                   call GTpp_ppBSE_static_kernel_D(ispin,eta,nBas,nC,nO,nV,nR,nOOaa,nVVaa,nOOt,nVVt,1d0, & 
+                                                   Om1aa,rho1aa,Om2aa,rho2aa,TDaa)
 
   !----------------------------------!
   ! pp/hh sectors for triplet states !

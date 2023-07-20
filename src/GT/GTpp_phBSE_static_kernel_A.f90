@@ -1,4 +1,4 @@
-subroutine GTpp_static_kernel_Aph(eta,nBas,nC,nO,nV,nR,nS,nOO,nVV,lambda,Omega1,rho1,Omega2,rho2,KA)
+subroutine GTpp_phBSE_static_kernel_A(eta,nBas,nC,nO,nV,nR,nS,nOO,nVV,lambda,Omega1,rho1,Omega2,rho2,KA)
 
 ! Compute the OOVV block of the static T-matrix
 

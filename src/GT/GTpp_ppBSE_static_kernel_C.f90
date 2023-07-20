@@ -1,4 +1,4 @@
-subroutine GTpp_static_kernel_Cpp(ispin,eta,nBas,nC,nO,nV,nR,nOO,nVV,nOOx,nVVx,lambda,Om1,rho1,Om2,rho2,TC)
+subroutine GTpp_ppBSE_static_kernel_C(ispin,eta,nBas,nC,nO,nV,nR,nOO,nVV,nOOx,nVVx,lambda,Om1,rho1,Om2,rho2,TC)
 
 ! Compute the VVVV block of the static T-matrix
 

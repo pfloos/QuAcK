@@ -1,6 +1,6 @@
-subroutine static_screening_WD_pp(ispin,eta,nBas,nC,nO,nV,nR,nS,nOO,nVV,lambda,ERI,Omega,rho,WD)
+subroutine GW_ppBSE_static_kernel_B(ispin,eta,nBas,nC,nO,nV,nR,nS,nOO,nVV,lambda,ERI,Omega,rho,WB)
 
-! Compute the OOOO block of the static screening W for the pp-BSE
+! Compute the VVOO block of the static screening W for the pp-BSE
 
   implicit none
   include 'parameters.h'
@@ -27,15 +27,15 @@ subroutine static_screening_WD_pp(ispin,eta,nBas,nC,nO,nV,nR,nS,nOO,nVV,lambda,E
   double precision,external     :: Kronecker_delta
   double precision              :: chi
   double precision              :: eps
-  integer                       :: i,j,k,l,ij,kl,m
+  integer                       :: a,b,i,j,ab,ij,m
 
 ! Output variables
 
-  double precision,intent(out)  :: WD(nOO,nOO)
+  double precision,intent(out)  :: WB(nVV,nOO)
 
 ! Initialization
 
-  WD(:,:) = 0d0
+  WB(:,:) = 0d0
 
 !---------------!
 ! Singlet block !
@@ -43,23 +43,23 @@ subroutine static_screening_WD_pp(ispin,eta,nBas,nC,nO,nV,nR,nS,nOO,nVV,lambda,E
 
   if(ispin == 1) then
 
-    ij = 0
-    do i=nC+1,nO
-      do j=i,nO
-        ij = ij + 1
-        kl = 0
-        do k=nC+1,nO
-          do l=k,nO
-            kl = kl + 1
+    ab = 0
+    do a=nO+1,nBas-nR
+      do b=a,nBas-nR
+        ab = ab + 1
+        ij = 0
+        do i=nC+1,nO
+          do j=i,nO
+            ij = ij + 1
 
             chi = 0d0
             do m=1,nS
               eps = Omega(m)**2 + eta**2
-              chi = chi + rho(i,k,m)*rho(j,l,m)*Omega(m)/eps &
-                        + rho(i,l,m)*rho(j,k,m)*Omega(m)/eps
+              chi = chi + rho(a,i,m)*rho(b,j,m)*Omega(m)/eps &
+                        + rho(a,j,m)*rho(b,i,m)*Omega(m)/eps
             enddo
- 
-            WD(ij,kl) = + 4d0*lambda*chi/sqrt((1d0 + Kronecker_delta(i,j))*(1d0 + Kronecker_delta(k,l)))
+           
+            WB(ab,ij) = + 4d0*lambda*chi/sqrt((1d0 + Kronecker_delta(a,b))*(1d0 + Kronecker_delta(i,j)))
 
           end do
         end do
@@ -74,23 +74,23 @@ subroutine static_screening_WD_pp(ispin,eta,nBas,nC,nO,nV,nR,nS,nOO,nVV,lambda,E
 
   if(ispin == 2) then
 
-    ij = 0
-    do i=nC+1,nO
-      do j=i+1,nO
-        ij = ij + 1
-        kl = 0
-        do k=nC+1,nO
-          do l=k+1,nO
-            kl = kl + 1
+    ab = 0
+    do a=nO+1,nBas-nR
+     do b=a+1,nBas-nR
+        ab = ab + 1
+        ij = 0
+        do i=nC+1,nO
+         do j=i+1,nO
+            ij = ij + 1
 
             chi = 0d0
             do m=1,nS
               eps = Omega(m)**2 + eta**2
-              chi = chi + rho(i,k,m)*rho(j,l,m)*Omega(m)/eps &
-                        - rho(i,l,m)*rho(j,k,m)*Omega(m)/eps
+              chi = chi + rho(a,i,m)*rho(b,j,m)*Omega(m)/eps &
+                        - rho(a,j,m)*rho(b,i,m)*Omega(m)/eps
             enddo
- 
-            WD(ij,kl) = + 4d0*lambda*chi
+
+            WB(ab,ij) = + 4d0*lambda*chi
 
           end do
         end do
@@ -105,23 +105,23 @@ subroutine static_screening_WD_pp(ispin,eta,nBas,nC,nO,nV,nR,nS,nOO,nVV,lambda,E
 
   if(ispin == 4) then
 
-    ij = 0
-    do i=nC+1,nO
-      do j=i+1,nO
-        ij = ij + 1
-        kl = 0
-        do k=nC+1,nO
-          do l=k+1,nO
-            kl = kl + 1
+    ab = 0
+    do a=nO+1,nBas-nR
+     do b=a+1,nBas-nR
+        ab = ab + 1
+        ij = 0
+        do i=nC+1,nO
+         do j=i+1,nO
+            ij = ij + 1
 
             chi = 0d0
             do m=1,nS
               eps = Omega(m)**2 + eta**2
-              chi = chi + rho(i,k,m)*rho(j,l,m)*Omega(m)/eps &
-                        - rho(i,l,m)*rho(j,k,m)*Omega(m)/eps
+              chi = chi + rho(a,i,m)*rho(b,j,m)*Omega(m)/eps &
+                        - rho(a,j,m)*rho(b,i,m)*Omega(m)/eps
             enddo
- 
-            WD(ij,kl) = + 2d0*lambda*chi
+
+            WB(ab,ij) = + 2d0*lambda*chi
 
           end do
         end do
@@ -130,4 +130,4 @@ subroutine static_screening_WD_pp(ispin,eta,nBas,nC,nO,nV,nR,nS,nOO,nVV,lambda,E
 
   end if
 
-end subroutine static_screening_WD_pp
+end subroutine 

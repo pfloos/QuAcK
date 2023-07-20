@@ -1,4 +1,4 @@
-subroutine GTpp_static_kernel_Dpp(ispin,eta,nBas,nC,nO,nV,nR,nOO,nVV,nOOx,nVVx,lambda,Om1,rho1,Om2,rho2,TD)
+subroutine GTpp_ppBSE_static_kernel_D(ispin,eta,nBas,nC,nO,nV,nR,nOO,nVV,nOOx,nVVx,lambda,Om1,rho1,Om2,rho2,TD)
 
 ! Compute the OOOO block of the static T-matrix 
 
