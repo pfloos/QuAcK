@@ -159,10 +159,6 @@ subroutine G0W0(doACFDT,exchange_kernel,doXBS,dophBSE,dophBSE2,TDA_W,TDA,dBSE,dT
   
     call QP_graph(nBas,nC,nO,nV,nR,nS,eta,eHF,SigX,Vxc,Om,rho,eGWlin,eGW,regularize)
 
-    ! Find all the roots of the QP equation if necessary
-
-    ! call QP_roots(nBas,nC,nO,nV,nR,nS,eta,eHF,Om,rho,eGWlin) 
- 
   end if
 
 ! Compute the RPA correlation energy
