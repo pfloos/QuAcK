@@ -88,15 +88,13 @@ subroutine GW_phBSE_dynamic_perturbation(dophBSE2,dTDA,eta,nBas,nC,nO,nV,nR,nS,e
     X(:) = 0.5d0*(XpY(ia,:) + XmY(ia,:))
     Y(:) = 0.5d0*(XpY(ia,:) - XmY(ia,:))
 
-    ! First-order correction 
+    ! Resonant part of the BSE correction for dynamical TDA
+
+    call GW_phBSE_dynamic_kernel_A(eta,nBas,nC,nO,nV,nR,nS,1d0,eGW,OmRPA,rho_RPA,+OmBSE(ia),KAp_dyn,ZAp_dyn)
+
+    if(dophBSE2) call GW_phBSE2_dynamic_kernel_A(eta,nBas,nC,nO,nV,nR,nS,eGW,W,OmBSE(ia),KAp_dyn,ZAp_dyn)
 
     if(dTDA) then 
-
-      ! Resonant part of the BSE correction for dynamical TDA
-
-      call GW_phBSE_dynamic_kernel_A(eta,nBas,nC,nO,nV,nR,nS,1d0,eGW,OmRPA,rho_RPA,+OmBSE(ia),KAp_dyn,ZAp_dyn)
-
-      if(dophBSE2) call GW_phBSE2_dynamic_kernel_A(eta,nBas,nC,nO,nV,nR,nS,eGW,W,OmBSE(ia),KAp_dyn,ZAp_dyn)
 
       ZDyn(ia)  = dot_product(X,matmul(ZAp_dyn,X))
       OmDyn(ia) = dot_product(X,matmul(KAp_dyn - KA_sta,X))
