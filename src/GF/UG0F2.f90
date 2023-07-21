@@ -1,4 +1,4 @@
-subroutine UG0F2(BSE,TDA,dBSE,dTDA,evDyn,spin_conserved,spin_flip,linearize,eta,regularize,nBas,nC,nO,nV,nR,nS,ENuc,EUHF, &
+subroutine UG0F2(BSE,TDA,dBSE,dTDA,spin_conserved,spin_flip,linearize,eta,regularize,nBas,nC,nO,nV,nR,nS,ENuc,EUHF, &
                  S,ERI,ERI_aaaa,ERI_aabb,ERI_bbbb,dipole_int_aa,dipole_int_bb,eHF)
 
 ! Perform unrestricted G0W0 calculation
@@ -13,7 +13,6 @@ subroutine UG0F2(BSE,TDA,dBSE,dTDA,evDyn,spin_conserved,spin_flip,linearize,eta,
   logical,intent(in)            :: TDA
   logical,intent(in)            :: dBSE
   logical,intent(in)            :: dTDA
-  logical,intent(in)            :: evDyn
   logical,intent(in)            :: spin_conserved
   logical,intent(in)            :: spin_flip
   logical,intent(in)            :: linearize

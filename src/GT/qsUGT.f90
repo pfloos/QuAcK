@@ -1,5 +1,5 @@
 subroutine qsUGT(maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,BSE, &
-                 TDA_T,TDA,dBSE,dTDA,evDyn,spin_conserved,spin_flip,&
+                 TDA_T,TDA,dBSE,dTDA,spin_conserved,spin_flip,&
                  eta,regularize,nBas,nC,nO,nV,nR,nS,nNuc,ZNuc,rNuc,ENuc,EUHF,S,X,T,V,Hc,ERI_AO,ERI_aaaa,&
                  ERI_aabb,ERI_bbbb,dipole_int_AO,dipole_int_aa,dipole_int_bb,PHF,cHF,eHF)
 
@@ -20,7 +20,6 @@ subroutine qsUGT(maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,BSE, &
   logical,intent(in)            :: TDA
   logical,intent(in)            :: dBSE
   logical,intent(in)            :: dTDA
-  logical,intent(in)            :: evDyn
   logical,intent(in)            :: spin_conserved
   logical,intent(in)            :: spin_flip 
   double precision,intent(in)   :: eta

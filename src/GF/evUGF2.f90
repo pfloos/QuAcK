@@ -1,4 +1,4 @@
-subroutine evUGF2(maxSCF,thresh,max_diis,BSE,TDA,dBSE,dTDA,evDyn,spin_conserved,spin_flip, &
+subroutine evUGF2(maxSCF,thresh,max_diis,BSE,TDA,dBSE,dTDA,spin_conserved,spin_flip, &
                   eta,regularize,nBas,nC,nO,nV,nR,nS,ENuc,EUHF,S,ERI_AO,ERI_aaaa,ERI_aabb,ERI_bbbb,   & 
                   dipole_int_aa,dipole_int_bb,cHF,eHF)
 
@@ -18,7 +18,6 @@ subroutine evUGF2(maxSCF,thresh,max_diis,BSE,TDA,dBSE,dTDA,evDyn,spin_conserved,
   logical,intent(in)            :: TDA
   logical,intent(in)            :: dBSE
   logical,intent(in)            :: dTDA
-  logical,intent(in)            :: evDyn
   logical,intent(in)            :: spin_conserved
   logical,intent(in)            :: spin_flip
   double precision,intent(in)   :: eta

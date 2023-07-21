@@ -43,12 +43,12 @@ subroutine GF2_phBSE2_dynamic_perturbation(dTDA,ispin,eta,nBas,nC,nO,nV,nR,nS,ER
   double precision,allocatable  :: ZAp_dyn(:,:)
   double precision,allocatable  :: ZAm_dyn(:,:)
 
-  double precision,allocatable  ::  KB_dyn(:,:)
+  double precision,allocatable  :: KB_dyn(:,:)
 
 ! Memory allocation
 
-  allocate(OmDyn(nS),ZDyn(nS),X(nS),Y(nS),KAp_dyn(nS,nS),ZAp_dyn(nS,nS))
-  allocate(KAm_dyn(nS,nS),ZAm_dyn(nS,nS),KB_dyn(nS,nS))
+  allocate(OmDyn(nS),ZDyn(nS),X(nS),Y(nS),KAp_dyn(nS,nS),ZAp_dyn(nS,nS), &
+           KAm_dyn(nS,nS),ZAm_dyn(nS,nS),KB_dyn(nS,nS))
 
   if(dTDA) then
     write(*,*)

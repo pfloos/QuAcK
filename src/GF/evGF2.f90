@@ -1,4 +1,4 @@
-subroutine evGF2(BSE,TDA,dBSE,dTDA,evDyn,maxSCF,thresh,max_diis,singlet,triplet, &
+subroutine evGF2(BSE,TDA,dBSE,dTDA,maxSCF,thresh,max_diis,singlet,triplet, &
                  linearize,eta,regularize,nBas,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,dipole_int,eHF)
 
 ! Perform eigenvalue self-consistent second-order Green function calculation
@@ -12,7 +12,6 @@ subroutine evGF2(BSE,TDA,dBSE,dTDA,evDyn,maxSCF,thresh,max_diis,singlet,triplet,
   logical,intent(in)            :: TDA
   logical,intent(in)            :: dBSE
   logical,intent(in)            :: dTDA
-  logical,intent(in)            :: evDyn
   integer,intent(in)            :: maxSCF
   double precision,intent(in)   :: thresh
   integer,intent(in)            :: max_diis
@@ -143,7 +142,7 @@ subroutine evGF2(BSE,TDA,dBSE,dTDA,evDyn,maxSCF,thresh,max_diis,singlet,triplet,
 
   if(BSE) then
 
-    call GF2_phBSE2(TDA,dBSE,dTDA,evDyn,singlet,triplet,eta,nBas,nC,nO,nV,nR,nS,ERI,dipole_int,eHF,eGF2,EcBSE)
+    call GF2_phBSE2(TDA,dBSE,dTDA,singlet,triplet,eta,nBas,nC,nO,nV,nR,nS,ERI,dipole_int,eHF,eGF2,EcBSE)
 
   end if
 

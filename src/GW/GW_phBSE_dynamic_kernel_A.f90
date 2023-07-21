@@ -17,7 +17,6 @@ subroutine GW_phBSE_dynamic_kernel_A(eta,nBas,nC,nO,nV,nR,nS,lambda,eGW,OmRPA,rh
   
 ! Local variables
 
-  integer                       :: maxS
   double precision              :: chi
   double precision              :: eps
   integer                       :: i,j,a,b,ia,jb,kc
@@ -32,14 +31,10 @@ subroutine GW_phBSE_dynamic_kernel_A(eta,nBas,nC,nO,nV,nR,nS,lambda,eGW,OmRPA,rh
    A_dyn(:,:) = 0d0
   ZA_dyn(:,:) = 0d0
 
-! Number of poles taken into account 
-
-  maxS = nS
-
 ! Build dynamic A matrix
 
   jb = 0
-!$omp parallel do default(private) shared(A_dyn,ZA_dyn,OmRPA,OmBSE,eGW,rho_RPA,nO,nBas,maxS,chi,eps,eta,nC,nR,lambda)
+!$omp parallel do default(private) shared(A_dyn,ZA_dyn,OmRPA,OmBSE,eGW,rho_RPA,nO,nBas,nS,chi,eps,eta,nC,nR,lambda)
   do j=nC+1,nO
     do b=nO+1,nBas-nR
       jb = (b-nO) + (j-1)*(nBas-nO) 
@@ -51,7 +46,7 @@ subroutine GW_phBSE_dynamic_kernel_A(eta,nBas,nC,nO,nV,nR,nS,lambda,eGW,OmRPA,rh
  
           chi = 0d0
 
-          do kc=1,maxS
+          do kc=1,nS
             eps = OmRPA(kc)
             chi = chi + rho_RPA(i,j,kc)*rho_RPA(a,b,kc)*eps/(eps**2 + eta**2)
           enddo
@@ -60,7 +55,7 @@ subroutine GW_phBSE_dynamic_kernel_A(eta,nBas,nC,nO,nV,nR,nS,lambda,eGW,OmRPA,rh
 
           chi = 0d0
 
-          do kc=1,maxS
+          do kc=1,nS
 
             eps = + OmBSE - OmRPA(kc) - (eGW(a) - eGW(j))
             chi = chi + rho_RPA(i,j,kc)*rho_RPA(a,b,kc)*eps/(eps**2 + eta**2)
@@ -73,7 +68,7 @@ subroutine GW_phBSE_dynamic_kernel_A(eta,nBas,nC,nO,nV,nR,nS,lambda,eGW,OmRPA,rh
           A_dyn(ia,jb) = A_dyn(ia,jb) - 2d0*lambda*chi
 
           chi = 0d0
-          do kc=1,maxS
+          do kc=1,nS
 
             eps = + OmBSE - OmRPA(kc) - (eGW(a) - eGW(j))
             chi = chi + rho_RPA(i,j,kc)*rho_RPA(a,b,kc)*(eps**2 - eta**2)/(eps**2 + eta**2)**2

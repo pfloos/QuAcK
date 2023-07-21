@@ -1,4 +1,4 @@
-subroutine GF2_phBSE2(TDA,dBSE,dTDA,evDyn,singlet,triplet,eta,nBas,nC,nO,nV,nR,nS,ERI,dipole_int,eHF,eGF,EcBSE)
+subroutine GF2_phBSE2(TDA,dBSE,dTDA,singlet,triplet,eta,nBas,nC,nO,nV,nR,nS,ERI,dipole_int,eHF,eGF,EcBSE)
 
 ! Compute the second-order Bethe-Salpeter excitation energies
 
@@ -10,7 +10,6 @@ subroutine GF2_phBSE2(TDA,dBSE,dTDA,evDyn,singlet,triplet,eta,nBas,nC,nO,nV,nR,n
   logical,intent(in)            :: TDA
   logical,intent(in)            :: dBSE
   logical,intent(in)            :: dTDA
-  logical,intent(in)            :: evDyn
   logical,intent(in)            :: singlet
   logical,intent(in)            :: triplet
 
@@ -75,19 +74,8 @@ subroutine GF2_phBSE2(TDA,dBSE,dTDA,evDyn,singlet,triplet,eta,nBas,nC,nO,nV,nR,n
 
     ! Compute dynamic correction for BSE via perturbation theory
 
-    if(dBSE) then
-
-     if(evDyn) then
-
-      call GF2_phBSE2_dynamic_perturbation_iterative(dTDA,ispin,eta,nBas,nC,nO,nV,nR,nS,ERI,dipole_int,eHF,eGF, & 
-                                                     KA_sta,KB_sta,OmBSE,XpY,XmY)
-     else
- 
+    if(dBSE) &
       call GF2_phBSE2_dynamic_perturbation(dTDA,ispin,eta,nBas,nC,nO,nV,nR,nS,ERI,dipole_int,eHF,eGF,KA_sta,KB_sta,OmBSE,XpY,XmY)
- 
-      end if
-
-    end if
 
   end if
 
@@ -119,19 +107,8 @@ subroutine GF2_phBSE2(TDA,dBSE,dTDA,evDyn,singlet,triplet,eta,nBas,nC,nO,nV,nR,n
 
     ! Compute dynamic correction for BSE via perturbation theory
 
-    if(dBSE) then
-
-     if(evDyn) then
-
-      call GF2_phBSE2_dynamic_perturbation_iterative(dTDA,ispin,eta,nBas,nC,nO,nV,nR,nS,ERI,dipole_int,eHF,eGF, & 
-                                                     KA_sta,KB_sta,OmBSE,XpY,XmY)
-     else
- 
+    if(dBSE) &
       call GF2_phBSE2_dynamic_perturbation(dTDA,ispin,eta,nBas,nC,nO,nV,nR,nS,ERI,dipole_int,eHF,eGF,KA_sta,KB_sta,OmBSE,XpY,XmY)
- 
-      end if
-
-    end if
 
   end if
 

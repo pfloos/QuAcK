@@ -24,16 +24,10 @@ subroutine GW_phBSE2_dynamic_kernel_A(eta,nBas,nC,nO,nV,nR,nS,eGW,W,OmBSE,A_dyn,
   double precision,intent(out)  :: A_dyn(nS,nS)
   double precision,intent(out)  :: ZA_dyn(nS,nS)
 
-! Initialization
-
-!   A_dyn(:,:) = 0d0
-!  ZA_dyn(:,:) = 0d0
-
-! Number of poles taken into account 
-
 ! Build dynamic A matrix
 
   jb = 0
+
 !$omp parallel do default(private) shared(A_dyn,ZA_dyn,OmBSE,W,num,dem,eGW,nO,nBas,eta,nC,nR)
   do j=nC+1,nO
     do b=nO+1,nBas-nR

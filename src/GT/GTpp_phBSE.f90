@@ -1,4 +1,4 @@
-subroutine GTpp_phBSE(TDA_T,TDA,dBSE,dTDA,evDyn,singlet,triplet,eta,nBas,nC,nO,nV,nR,nS,nOOab,nVVab,nOOaa,nVVaa,   &
+subroutine GTpp_phBSE(TDA_T,TDA,dBSE,dTDA,singlet,triplet,eta,nBas,nC,nO,nV,nR,nS,nOOab,nVVab,nOOaa,nVVaa,   &
                       Om1ab,X1ab,Y1ab,Om2ab,X2ab,Y2ab,rho1ab,rho2ab,Om1aa,X1aa,Y1aa,Om2aa,X2aa,Y2aa,rho1aa,rho2aa, & 
                       ERI,dipole_int,eT,eGT,EcBSE)
 
@@ -13,7 +13,6 @@ subroutine GTpp_phBSE(TDA_T,TDA,dBSE,dTDA,evDyn,singlet,triplet,eta,nBas,nC,nO,n
   logical,intent(in)            :: TDA
   logical,intent(in)            :: dBSE
   logical,intent(in)            :: dTDA
-  logical,intent(in)            :: evDyn
   logical,intent(in)            :: singlet
   logical,intent(in)            :: triplet
 
@@ -143,22 +142,12 @@ subroutine GTpp_phBSE(TDA_T,TDA,dBSE,dTDA,evDyn,singlet,triplet,eta,nBas,nC,nO,n
     call print_excitation('phBSE@GTpp  ',ispin,nS,OmBSE)
     call print_transition_vectors_ph(.true.,nBas,nC,nO,nV,nR,nS,dipole_int,OmBSE,XpY_BSE,XmY_BSE)
 
-    if(dBSE) then
- 
-      ! Compute dynamic correction for BSE via perturbation theory (iterative or renormalized)
- 
-      if(evDyn) then
- 
-        print*, ' Iterative dynamical correction for BSE@GT NYI'
+    ! Compute dynamic correction for BSE via renormalized perturbation theory 
 
-      else
- 
+    if(dBSE) &
         call GTpp_phBSE_dynamic_perturbation(ispin,dTDA,eta,nBas,nC,nO,nV,nR,nS,nOOab,nVVab,nOOaa,nVVaa, &
                                              Om1ab,Om2ab,Om1aa,Om2aa,rho1ab,rho2ab,rho1aa,rho2aa,eT,eGT, & 
                                              dipole_int,OmBSE,XpY_BSE,XmY_BSE,TAab,TAaa)
-      end if
- 
-    end if
 
   end if
 
@@ -183,23 +172,12 @@ subroutine GTpp_phBSE(TDA_T,TDA,dBSE,dTDA,evDyn,singlet,triplet,eta,nBas,nC,nO,n
     call print_excitation('phBSE@GTpp  ',ispin,nS,OmBSE)
     call print_transition_vectors_ph(.false.,nBas,nC,nO,nV,nR,nS,dipole_int,OmBSE,XpY_BSE,XmY_BSE)
 
-    if(dBSE) then
- 
-      ! Compute dynamic correction for BSE via perturbation theory (iterative or renormalized)
- 
-      if(evDyn) then
- 
-        print*, ' Iterative dynamical correction for BSE@GT NYI'
+    ! Compute dynamic correction for BSE via renormalized perturbation theory 
 
-      else
- 
+    if(dBSE) &
         call GTpp_phBSE_dynamic_perturbation(ispin,dTDA,eta,nBas,nC,nO,nV,nR,nS,nOOab,nVVab,nOOaa,nVVaa, &
                                              Om1ab,Om2ab,Om1aa,Om2aa,rho1ab,rho2ab,rho1aa,rho2aa,eT,eGT, & 
                                              dipole_int,OmBSE,XpY_BSE,XmY_BSE,TAab,TAaa)
-      end if
- 
-    end if
-
   end if
 
 end subroutine 

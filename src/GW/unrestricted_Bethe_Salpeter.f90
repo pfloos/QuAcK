@@ -1,4 +1,4 @@
-subroutine unrestricted_Bethe_Salpeter(TDA_W,TDA,dBSE,dTDA,evDyn,spin_conserved,spin_flip,eta,  & 
+subroutine unrestricted_Bethe_Salpeter(TDA_W,TDA,dBSE,dTDA,spin_conserved,spin_flip,eta,  & 
                                        nBas,nC,nO,nV,nR,nS,S,ERI_aaaa,ERI_aabb,ERI_bbbb, & 
                                        dipole_int_aa,dipole_int_bb,cW,eW,eGW,EcBSE)
 
@@ -13,7 +13,6 @@ subroutine unrestricted_Bethe_Salpeter(TDA_W,TDA,dBSE,dTDA,evDyn,spin_conserved,
   logical,intent(in)            :: TDA
   logical,intent(in)            :: dBSE
   logical,intent(in)            :: dTDA
-  logical,intent(in)            :: evDyn
   logical,intent(in)            :: spin_conserved 
   logical,intent(in)            :: spin_flip
 

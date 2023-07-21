@@ -6,7 +6,7 @@ subroutine read_options(maxSCF_HF,thresh_HF,DIIS_HF,n_diis_HF,guess_type,ortho_t
                         maxSCF_GW,thresh_GW,DIIS_GW,n_diis_GW,linGW,eta_GW,regGW,COHSEX,TDA_W,              &
                         maxSCF_GT,thresh_GT,DIIS_GT,n_diis_GT,linGT,eta_GT,regGT,TDA_T,                     &
                         doACFDT,exchange_kernel,doXBS,                                                      &
-                        dophBSE,dophBSE2,doppBSE,dBSE,dTDA,evDyn)
+                        dophBSE,dophBSE2,doppBSE,dBSE,dTDA)
 
 ! Read desired methods 
 
@@ -74,7 +74,6 @@ subroutine read_options(maxSCF_HF,thresh_HF,DIIS_HF,n_diis_HF,guess_type,ortho_t
   logical,intent(out)           :: doppBSE
   logical,intent(out)           :: dBSE
   logical,intent(out)           :: dTDA
-  logical,intent(out)           :: evDyn
 
 ! Local variables
 
@@ -227,17 +226,15 @@ subroutine read_options(maxSCF_HF,thresh_HF,DIIS_HF,n_diis_HF,guess_type,ortho_t
   doppBSE  = .false.
   dBSE     = .false.
   dTDA     = .true.
-  evDyn    = .false.
 
   read(1,*) 
-  read(1,*) answer1,answer2,answer3,answer4,answer5,answer6
+  read(1,*) answer1,answer2,answer3,answer4,answer5
 
   if(answer1 == 'T') dophBSE  = .true.
   if(answer2 == 'T') dophBSE2 = .true.
   if(answer3 == 'T') doppBSE  = .true.
   if(answer4 == 'T') dBSE     = .true.
   if(answer5 == 'F') dTDA     = .false.
-  if(answer6 == 'T') evDyn    = .true.
 
 ! Close file with options
 

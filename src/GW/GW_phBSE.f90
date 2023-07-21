@@ -1,4 +1,4 @@
-subroutine GW_phBSE(BSE2,TDA_W,TDA,dBSE,dTDA,evDyn,singlet,triplet,eta,nBas,nC,nO,nV,nR,nS,ERI,dipole_int,eW,eGW,EcBSE)
+subroutine GW_phBSE(BSE2,TDA_W,TDA,dBSE,dTDA,singlet,triplet,eta,nBas,nC,nO,nV,nR,nS,ERI,dipole_int,eW,eGW,EcBSE)
 
 ! Compute the Bethe-Salpeter excitation energies
 
@@ -12,7 +12,6 @@ subroutine GW_phBSE(BSE2,TDA_W,TDA,dBSE,dTDA,evDyn,singlet,triplet,eta,nBas,nC,n
   logical,intent(in)            :: TDA
   logical,intent(in)            :: dBSE
   logical,intent(in)            :: dTDA
-  logical,intent(in)            :: evDyn
   logical,intent(in)            :: singlet
   logical,intent(in)            :: triplet
 
@@ -53,8 +52,6 @@ subroutine GW_phBSE(BSE2,TDA_W,TDA,dBSE,dTDA,evDyn,singlet,triplet,eta,nBas,nC,n
   double precision,allocatable  :: KB_sta(:,:)
 
   double precision,allocatable  :: W(:,:,:,:)
-  double precision,allocatable  :: KA2_sta(:,:)
-  double precision,allocatable  :: KB2_sta(:,:)
 
 ! Output variables
 
@@ -63,8 +60,8 @@ subroutine GW_phBSE(BSE2,TDA_W,TDA,dBSE,dTDA,evDyn,singlet,triplet,eta,nBas,nC,n
 ! Memory allocation
 
   allocate(OmRPA(nS),XpY_RPA(nS,nS),XmY_RPA(nS,nS),rho_RPA(nBas,nBas,nS), &
-           A_sta(nS,nS),KA_sta(nS,nS),KA2_sta(nS,nS),OmBSE(nS),XpY_BSE(nS,nS),XmY_BSE(nS,nS))
-  allocate(B_sta(nS,nS),KB_sta(nS,nS),KB2_sta(nS,nS))
+           A_sta(nS,nS),B_sta(nS,nS),KA_sta(nS,nS),KB_sta(nS,nS), &
+           OmBSE(nS),XpY_BSE(nS,nS),XmY_BSE(nS,nS))
 
 !---------------------------------
 ! Compute (singlet) RPA screening 
@@ -96,9 +93,6 @@ subroutine GW_phBSE(BSE2,TDA_W,TDA,dBSE,dTDA,evDyn,singlet,triplet,eta,nBas,nC,n
                  call phLR_A(ispin,dRPA,nBas,nC,nO,nV,nR,nS,1d0,eGW,ERI,A_sta)
     if(.not.TDA) call phLR_B(ispin,dRPA,nBas,nC,nO,nV,nR,nS,1d0,ERI,B_sta)
 
-                 A_sta(:,:) = A_sta(:,:) + KA_sta(:,:)
-    if(.not.TDA) B_sta(:,:) = B_sta(:,:) + KB_sta(:,:)
-
     ! Second-order BSE static kernel
   
     if(BSE2) then 
@@ -110,16 +104,16 @@ subroutine GW_phBSE(BSE2,TDA_W,TDA,dBSE,dTDA,evDyn,singlet,triplet,eta,nBas,nC,n
       write(*,*) 
 
       call static_kernel_W(eta,nBas,nC,nO,nV,nR,nS,1d0,ERI,OmRPA,rho_RPA,W)
-      call GW_phBSE2_static_kernel_A(eta,nBas,nC,nO,nV,nR,nS,1d0,eW,W,KA2_sta)
+      call GW_phBSE2_static_kernel_A(eta,nBas,nC,nO,nV,nR,nS,1d0,eW,W,KA_sta)
 
-      if(.not.TDA) call GW_phBSE2_static_kernel_B(eta,nBas,nC,nO,nV,nR,nS,1d0,eW,W,KB2_sta)
+      if(.not.TDA) call GW_phBSE2_static_kernel_B(eta,nBas,nC,nO,nV,nR,nS,1d0,eW,W,KB_sta)
 
       deallocate(W)
 
-                   A_sta(:,:) = A_sta(:,:) + KA2_sta(:,:)
-      if(.not.TDA) B_sta(:,:) = B_sta(:,:) + KB2_sta(:,:)
-
     end if
+
+                 A_sta(:,:) = A_sta(:,:) + KA_sta(:,:)
+    if(.not.TDA) B_sta(:,:) = B_sta(:,:) + KB_sta(:,:)
 
     call phLR(TDA,nS,A_sta,B_sta,EcBSE(ispin),OmBSE,XpY_BSE,XmY_BSE)
 
@@ -130,22 +124,10 @@ subroutine GW_phBSE(BSE2,TDA_W,TDA,dBSE,dTDA,evDyn,singlet,triplet,eta,nBas,nC,n
     ! Compute the dynamical screening at the BSE level
     !-------------------------------------------------
 
-    if(dBSE) then
+    if(dBSE) &
+        call GW_phBSE_dynamic_perturbation(BSE2,dTDA,eta,nBas,nC,nO,nV,nR,nS,eW,eGW,ERI,dipole_int,OmRPA,rho_RPA, &
+                                           OmBSE,XpY_BSE,XmY_BSE,KA_sta,KB_sta)
 
-      ! Compute dynamic correction for BSE via perturbation theory (iterative or renormalized)
- 
-      if(evDyn) then
- 
-        call GW_phBSE_dynamic_perturbation_iterative(dTDA,eta,nBas,nC,nO,nV,nR,nS,eGW,dipole_int,OmRPA,rho_RPA, &
-                                                     OmBSE,XpY_BSE,XmY_BSE)
-      else
-
-        call GW_phBSE_dynamic_perturbation(BSE2,dTDA,eta,nBas,nC,nO,nV,nR,nS,eW,eGW,dipole_int,OmRPA,rho_RPA, &
-                                           OmBSE,XpY_BSE,XmY_BSE,W,KA2_sta)
-      end if
-
-    end if
- 
   end if
 
 !-------------------
@@ -174,21 +156,9 @@ subroutine GW_phBSE(BSE2,TDA_W,TDA,dBSE,dTDA,evDyn,singlet,triplet,eta,nBas,nC,n
     ! Compute the dynamical screening at the BSE level
     !-------------------------------------------------
 
-    if(dBSE) then
-
-      ! Compute dynamic correction for BSE via perturbation theory (iterative or renormalized)
-
-      if(evDyn) then
-     
-        call GW_phBSE_dynamic_perturbation_iterative(dTDA,eta,nBas,nC,nO,nV,nR,nS,eGW,dipole_int,OmRPA,rho_RPA, &
-                                                     OmBSE,XpY_BSE,XmY_BSE)
-      else
-     
-        call GW_phBSE_dynamic_perturbation(BSE2,dTDA,eta,nBas,nC,nO,nV,nR,nS,eW,eGW,dipole_int,OmRPA,rho_RPA, &
-                                           OmBSE,XpY_BSE,XmY_BSE,W,KA2_sta)
-      end if
-
-    end if
+    if(dBSE) &
+        call GW_phBSE_dynamic_perturbation(BSE2,dTDA,eta,nBas,nC,nO,nV,nR,nS,eW,eGW,ERI,dipole_int,OmRPA,rho_RPA, &
+                                           OmBSE,XpY_BSE,XmY_BSE,KA_sta,KB_sta)
 
   end if
 

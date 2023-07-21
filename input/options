@@ -13,6 +13,6 @@
 # GT: maxSCF thresh  DIIS n_diis lin eta TDA_T reg
       256    0.00001  T    5      T   0.0 F     F  
 # ACFDT: AC Kx  XBS
-         T  T   F
-# BSE: phBSE phBSE2 ppBSE dBSE dTDA evDyn 
-       T     T      T     T   F     F
+         F  F   T
+# BSE: phBSE phBSE2 ppBSE dBSE dTDA
+       T     T      T     T   F     

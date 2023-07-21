@@ -1,5 +1,5 @@
-subroutine GW_phBSE_dynamic_perturbation(BSE2,dTDA,eta,nBas,nC,nO,nV,nR,nS,eW,eGW,dipole_int, & 
-                                         OmRPA,rho_RPA,OmBSE,XpY,XmY,W,A_stat)
+subroutine GW_phBSE_dynamic_perturbation(dophBSE2,dTDA,eta,nBas,nC,nO,nV,nR,nS,eW,eGW,ERI,dipole_int, & 
+                                         OmRPA,rho_RPA,OmBSE,XpY,XmY,KA_sta,KB_sta)
 
 ! Compute dynamical effects via perturbation theory for BSE
 
@@ -8,7 +8,7 @@ subroutine GW_phBSE_dynamic_perturbation(BSE2,dTDA,eta,nBas,nC,nO,nV,nR,nS,eW,eG
 
 ! Input variables
 
-  logical,intent(in)            :: BSE2
+  logical,intent(in)            :: dophBSE2
   logical,intent(in)            :: dTDA 
   double precision,intent(in)   :: eta
   integer,intent(in)            :: nBas
@@ -18,6 +18,7 @@ subroutine GW_phBSE_dynamic_perturbation(BSE2,dTDA,eta,nBas,nC,nO,nV,nR,nS,eW,eG
   integer,intent(in)            :: nR
   integer,intent(in)            :: nS
 
+  double precision,intent(in)   :: ERI(nBas,nBas,nBas,nBas)
   double precision,intent(in)   :: eW(nBas)
   double precision,intent(in)   :: eGW(nBas)
   double precision,intent(in)   :: dipole_int(nBas,nBas,ncart)
@@ -26,8 +27,8 @@ subroutine GW_phBSE_dynamic_perturbation(BSE2,dTDA,eta,nBas,nC,nO,nV,nR,nS,eW,eG
   double precision,intent(in)   :: OmBSE(nS)
   double precision,intent(in)   :: XpY(nS,nS)
   double precision,intent(in)   :: XmY(nS,nS)
-  double precision,intent(in)   :: W(nBas,nBas,nBas,nBas)
-  double precision,intent(in)   :: A_stat(nS,nS)
+  double precision,intent(in)   :: KA_sta(nS,nS)
+  double precision,intent(in)   :: KB_sta(nS,nS)
 
 ! Local variables
 
@@ -41,28 +42,35 @@ subroutine GW_phBSE_dynamic_perturbation(BSE2,dTDA,eta,nBas,nC,nO,nV,nR,nS,eW,eG
   double precision,allocatable  :: X(:)
   double precision,allocatable  :: Y(:)
 
-  double precision,allocatable  ::  Ap_dyn(:,:)
+  double precision,allocatable  :: KAp_dyn(:,:)
+  double precision,allocatable  :: KAm_dyn(:,:)
   double precision,allocatable  :: ZAp_dyn(:,:)
-
-  double precision,allocatable  ::  Bp_dyn(:,:)
-  double precision,allocatable  :: ZBp_dyn(:,:)
-
-  double precision,allocatable  ::  Am_dyn(:,:)
   double precision,allocatable  :: ZAm_dyn(:,:)
 
-  double precision,allocatable  ::  Bm_dyn(:,:)
-  double precision,allocatable  :: ZBm_dyn(:,:)
+  double precision,allocatable  :: KB_dyn(:,:)
+
+  double precision,allocatable  :: W(:,:,:,:)
 
 ! Memory allocation
 
-  maxS = min(nS,maxS)
-  allocate(OmDyn(maxS),ZDyn(maxS),X(nS),Y(nS),Ap_dyn(nS,nS),ZAp_dyn(nS,nS))
-  allocate(Am_dyn(nS,nS),ZAm_dyn(nS,nS),Bp_dyn(nS,nS),ZBp_dyn(nS,nS),Bm_dyn(nS,nS),ZBm_dyn(nS,nS))
+  allocate(OmDyn(maxS),ZDyn(maxS),X(nS),Y(nS),KAp_dyn(nS,nS),ZAp_dyn(nS,nS), &
+           KAm_dyn(nS,nS),ZAm_dyn(nS,nS),KB_dyn(nS,nS))
 
   if(dTDA) then 
     write(*,*)
     write(*,*) '*** dynamical TDA activated ***'
     write(*,*)
+  end if
+
+  if(dophBSE2) then 
+
+    write(*,*)
+    write(*,*) '*** Second-order BSE static kernel activated! ***'
+    write(*,*)
+
+    allocate(W(nBas,nBas,nBas,nBas))
+    call static_kernel_W(eta,nBas,nC,nO,nV,nR,nS,1d0,ERI,OmRPA,rho_RPA,W)
+
   end if
 
   gapGW = eGW(nO+1) - eGW(nO) 
@@ -75,7 +83,7 @@ subroutine GW_phBSE_dynamic_perturbation(BSE2,dTDA,eta,nBas,nC,nO,nV,nR,nS,eW,eG
   write(*,'(2X,A5,1X,A20,1X,A20,1X,A20,1X,A20)') '#','Static (eV)','Dynamic (eV)','Correction (eV)','Renorm. (eV)'
   write(*,*) '---------------------------------------------------------------------------------------------------'
 
-  do ia=1,maxS
+  do ia=1,min(nS,maxS)
 
     X(:) = 0.5d0*(XpY(ia,:) + XmY(ia,:))
     Y(:) = 0.5d0*(XpY(ia,:) - XmY(ia,:))
@@ -86,32 +94,29 @@ subroutine GW_phBSE_dynamic_perturbation(BSE2,dTDA,eta,nBas,nC,nO,nV,nR,nS,eW,eG
 
       ! Resonant part of the BSE correction for dynamical TDA
 
-      call GW_phBSE_dynamic_kernel_A(eta,nBas,nC,nO,nV,nR,nS,1d0,eGW,OmRPA,rho_RPA,OmBSE(ia),Ap_dyn,ZAp_dyn)
+      call GW_phBSE_dynamic_kernel_A(eta,nBas,nC,nO,nV,nR,nS,1d0,eGW,OmRPA,rho_RPA,+OmBSE(ia),KAp_dyn,ZAp_dyn)
 
-      if(BSE2) call GW_phBSE2_dynamic_kernel_A(eta,nBas,nC,nO,nV,nR,nS,eGW,W,OmBSE(ia),Ap_dyn,ZAp_dyn,W)
+      if(dophBSE2) call GW_phBSE2_dynamic_kernel_A(eta,nBas,nC,nO,nV,nR,nS,eGW,W,OmBSE(ia),KAp_dyn,ZAp_dyn)
 
       ZDyn(ia)  = dot_product(X,matmul(ZAp_dyn,X))
-      OmDyn(ia) = dot_product(X,matmul( Ap_dyn - A_stat,X))
+      OmDyn(ia) = dot_product(X,matmul(KAp_dyn - KA_sta,X))
 
     else
 
       ! Resonant and anti-resonant part of the BSE correction
 
-      call GW_phBSE_dynamic_kernel(eta,nBas,nC,nO,nV,nR,nS,1d0,eGW,OmRPA,rho_RPA,OmBSE(ia),Ap_dyn,Am_dyn,Bp_dyn,Bm_dyn)
+      call GW_phBSE_dynamic_kernel_A(eta,nBas,nC,nO,nV,nR,nS,1d0,eGW,OmRPA,rho_RPA,-OmBSE(ia),KAm_dyn,ZAm_dyn)
+      call GW_phBSE_dynamic_kernel_B(eta,nBas,nC,nO,nV,nR,nS,1d0,eGW,OmRPA,rho_RPA,KB_dyn)
 
       ! Renormalization factor of the resonant and anti-resonant parts
 
-      call GW_phBSE_dynamic_kernel_Z(eta,nBas,nC,nO,nV,nR,nS,1d0,eGW,OmRPA,rho_RPA,OmBSE(ia),ZAp_dyn,ZAm_dyn,ZBp_dyn,ZBm_dyn)
-
       ZDyn(ia)  = dot_product(X,matmul(ZAp_dyn,X)) &
-                - dot_product(Y,matmul(ZAm_dyn,Y)) &
-                + dot_product(X,matmul(ZBp_dyn,Y)) & 
-                - dot_product(Y,matmul(ZBm_dyn,X))  
+                + dot_product(Y,matmul(ZAm_dyn,Y))
 
-      OmDyn(ia) = dot_product(X,matmul(Ap_dyn,X)) &
-                - dot_product(Y,matmul(Am_dyn,Y)) &
-                + dot_product(X,matmul(Bp_dyn,Y)) & 
-                - dot_product(Y,matmul(Bm_dyn,X))  
+      OmDyn(ia) = dot_product(X,matmul(KAp_dyn - KA_sta,X)) &
+                - dot_product(Y,matmul(KAm_dyn - KA_sta,Y)) &
+                + dot_product(X,matmul(KB_dyn  - KB_sta,Y)) &
+                - dot_product(Y,matmul(KB_dyn  - KB_sta,X))
 
     end if
 

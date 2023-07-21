@@ -1,4 +1,4 @@
-subroutine UG0T0(doACFDT,exchange_kernel,doXBS,BSE,TDA_T,TDA,dBSE,dTDA,evDyn, &
+subroutine UG0T0(doACFDT,exchange_kernel,doXBS,BSE,TDA_T,TDA,dBSE,dTDA, &
                  spin_conserved,spin_flip,linearize,eta,regularize,nBas,nC,nO,nV, &
                  nR,nS,ENuc,EUHF,ERI,ERI_aaaa,ERI_aabb,ERI_bbbb, &
                  dipole_int_aa,dipole_int_bb,PHF,cHF,eHF,Vxc,eG0T0)
@@ -18,7 +18,6 @@ subroutine UG0T0(doACFDT,exchange_kernel,doXBS,BSE,TDA_T,TDA,dBSE,dTDA,evDyn, &
   logical,intent(in)            :: TDA
   logical,intent(in)            :: dBSE
   logical,intent(in)            :: dTDA
-  logical,intent(in)            :: evDyn
   logical,intent(in)            :: spin_conserved
   logical,intent(in)            :: spin_flip
   logical,intent(in)            :: linearize
