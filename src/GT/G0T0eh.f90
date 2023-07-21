@@ -1,5 +1,5 @@
 subroutine G0T0eh(doACFDT,exchange_kernel,doXBS,dophBSE,dophBSE2,TDA_T,TDA,dBSE,dTDA,doppBSE, & 
-                  singlet,triplet,linearize,eta,regularize,nBas,nC,nO,nV,nR,nS,ENuc,ERHF,   & 
+                  singlet,triplet,linearize,eta,regularize,nBas,nC,nO,nV,nR,nS,ENuc,ERHF,     & 
                   ERI_AO,ERI_MO,dipole_int,PHF,cHF,eHF,Vxc)
 
 ! Perform ehG0T0 calculation
@@ -59,8 +59,8 @@ subroutine G0T0eh(doACFDT,exchange_kernel,doXBS,dophBSE,dophBSE2,TDA_T,TDA,dBSE,
   double precision,allocatable  :: Om(:)
   double precision,allocatable  :: XpY(:,:)
   double precision,allocatable  :: XmY(:,:)
-  double precision,allocatable  :: rhoL(:,:,:,:)
-  double precision,allocatable  :: rhoR(:,:,:,:)
+  double precision,allocatable  :: rhoL(:,:,:)
+  double precision,allocatable  :: rhoR(:,:,:)
 
   double precision,allocatable  :: eGT(:)
   double precision,allocatable  :: eGTlin(:)
@@ -93,14 +93,14 @@ subroutine G0T0eh(doACFDT,exchange_kernel,doXBS,dophBSE,dophBSE2,TDA_T,TDA,dBSE,
     write(*,*)
   end if
 
-! Spin manifold 
+! Spin manifold (triplet for GTeh)
 
   ispin = 2
 
 ! Memory allocation
 
   allocate(Aph(nS,nS),Bph(nS,nS),Sig(nBas),SigX(nBas),Z(nBas),Om(nS),XpY(nS,nS),XmY(nS,nS), & 
-           rhoL(nBas,nBas,nS,2),rhoR(nBas,nBas,nS,2),eGT(nBas),eGTlin(nBas))
+           rhoL(nBas,nBas,nS),rhoR(nBas,nBas,nS),eGT(nBas),eGTlin(nBas))
 
 !-------------------!
 ! Compute screening !
@@ -126,9 +126,9 @@ subroutine G0T0eh(doACFDT,exchange_kernel,doXBS,dophBSE,dophBSE2,TDA_T,TDA,dBSE,
   call self_energy_exchange_diag(nBas,cHF,PHF,ERI_AO,SigX)
 
   if(regularize) then 
-
-!   call regularized_self_energy_correlation_diag(eta,nBas,nC,nO,nV,nR,nS,eHF,Om,rho,EcGM,Sig)
-!   call regularized_renormalization_factor(eta,nBas,nC,nO,nV,nR,nS,eHF,Om,rho,Z)
+  
+    write(*,*) 'Regularization not yet implemented at the G0T0eh level!'
+    stop
 
   else
 
@@ -153,14 +153,12 @@ subroutine G0T0eh(doACFDT,exchange_kernel,doXBS,dophBSE,dophBSE2,TDA_T,TDA,dBSE,
 
   else 
 
-    write(*,*) ' *** Quasiparticle energies obtained by root search (experimental) *** '
+    write(*,*) ' *** Root search not yet implemented in G0T0eh *** '
     write(*,*)
-  
-!   call QP_graph(nBas,nC,nO,nV,nR,nS,eta,eHF,SigX,Vxc,Om,rho,eGTlin,eGT)
 
   end if
 
-! Compute the RPA correlation energy
+! Compute the RPA correlation energy based on the G0T0eh quasiparticle energies
 
   call phLR_A(ispin,dRPA,nBas,nC,nO,nV,nR,nS,1d0,eGT,ERI_MO,Aph)
   if(.not.TDA_T) call phLR_B(ispin,dRPA,nBas,nC,nO,nV,nR,nS,1d0,ERI_MO,Bph)
@@ -172,83 +170,5 @@ subroutine G0T0eh(doACFDT,exchange_kernel,doXBS,dophBSE,dophBSE2,TDA_T,TDA,dBSE,
 !--------------!
 
   call print_G0T0eh(nBas,nO,eHF,ENuc,ERHF,Sig,Z,eGT,EcRPA,EcGM)
-
-! Deallocate memory
-
-! deallocate(Sig,Z,Om,XpY,XmY,rho,eGTlin)
-
-! Perform BSE calculation
-
-! if(BSE) then
-
-!   call Bethe_Salpeter(BSE2,TDA_T,TDA,dBSE,dTDA,singlet,triplet,eta,nBas,nC,nO,nV,nR,nS,ERI_MO,dipole_int,eHF,eGW,EcBSE)
-
-!   if(exchange_kernel) then
-!
-!     EcBSE(1) = 0.5d0*EcBSE(1)
-!     EcBSE(2) = 1.5d0*EcBSE(2)
-!
-!   end if
-
-!   write(*,*)
-!   write(*,*)'-------------------------------------------------------------------------------'
-!   write(*,'(2X,A50,F20.10,A3)') 'Tr@BSE@G0W0 correlation energy (singlet) =',EcBSE(1),' au'
-!   write(*,'(2X,A50,F20.10,A3)') 'Tr@BSE@G0W0 correlation energy (triplet) =',EcBSE(2),' au'
-!   write(*,'(2X,A50,F20.10,A3)') 'Tr@BSE@G0W0 correlation energy           =',EcBSE(1) + EcBSE(2),' au'
-!   write(*,'(2X,A50,F20.10,A3)') 'Tr@BSE@G0W0 total energy                 =',ENuc + ERHF + EcBSE(1) + EcBSE(2),' au'
-!   write(*,*)'-------------------------------------------------------------------------------'
-!   write(*,*)
-
-!   Compute the BSE correlation energy via the adiabatic connection 
-
-!   if(doACFDT) then
-
-!     write(*,*) '-------------------------------------------------------------'
-!     write(*,*) ' Adiabatic connection version of BSE@G0W0 correlation energy '
-!     write(*,*) '-------------------------------------------------------------'
-!     write(*,*) 
-
-!     if(doXBS) then 
-
-!       write(*,*) '*** scaled screening version (XBS) ***'
-!       write(*,*)
-
-!     end if
-
-!     call ACFDT(exchange_kernel,doXBS,.true.,TDA_T,TDA,BSE,singlet,triplet,eta,nBas,nC,nO,nV,nR,nS,ERI_MO,eHF,eGW,EcAC)
-
-!     write(*,*)
-!     write(*,*)'-------------------------------------------------------------------------------'
-!     write(*,'(2X,A50,F20.10,A3)') 'AC@BSE@G0W0 correlation energy (singlet) =',EcAC(1),' au'
-!     write(*,'(2X,A50,F20.10,A3)') 'AC@BSE@G0W0 correlation energy (triplet) =',EcAC(2),' au'
-!     write(*,'(2X,A50,F20.10,A3)') 'AC@BSE@G0W0 correlation energy           =',EcAC(1) + EcAC(2),' au'
-!     write(*,'(2X,A50,F20.10,A3)') 'AC@BSE@G0W0 total energy                 =',ENuc + ERHF + EcAC(1) + EcAC(2),' au'
-!     write(*,*)'-------------------------------------------------------------------------------'
-!     write(*,*)
-
-!   end if
-
-! end if
-
-! if(ppBSE) then
-
-!   call Bethe_Salpeter_pp(TDA_T,TDA,singlet,triplet,eta,nBas,nC,nO,nV,nR,nS,ERI_MO,dipole_int,eHF,eGW,EcBSE)
-
-!   write(*,*)
-!   write(*,*)'-------------------------------------------------------------------------------'
-!   write(*,'(2X,A50,F20.10,A3)') 'Tr@ppBSE@G0W0 correlation energy (singlet) =',EcBSE(1),' au'
-!   write(*,'(2X,A50,F20.10,A3)') 'Tr@ppBSE@G0W0 correlation energy (triplet) =',3d0*EcBSE(2),' au'
-!   write(*,'(2X,A50,F20.10,A3)') 'Tr@ppBSE@G0W0 correlation energy           =',EcBSE(1) + 3d0*EcBSE(2),' au'
-!   write(*,'(2X,A50,F20.10,A3)') 'Tr@ppBSE@G0W0 total energy                 =',ENuc + ERHF + EcBSE(1) + 3d0*EcBSE(2),' au'
-!   write(*,*)'-------------------------------------------------------------------------------'
-!   write(*,*)
-
-! end if
-
-! if(BSE) call ufBSE(nBas,nC,nO,nV,nR,nS,ENuc,ERHF,ERI_MO,eHF,eGW)
-! if(BSE) call ufXBSE(nBas,nC,nO,nV,nR,nS,ENuc,ERHF,ERI_MO,eHF,Om,rho)
-
-! if(BSE) call XBSE(TDA_T,TDA,dBSE,dTDA,singlet,triplet,eta,nBas,nC,nO,nV,nR,nS,ERI_MO,dipole_int,eHF,eGW,EcBSE)
-
 
 end subroutine 
