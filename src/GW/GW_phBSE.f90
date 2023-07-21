@@ -45,8 +45,8 @@ subroutine GW_phBSE(dophBSE2,TDA_W,TDA,dBSE,dTDA,singlet,triplet,eta,nBas,nC,nO,
   double precision,allocatable  :: XpY_BSE(:,:)
   double precision,allocatable  :: XmY_BSE(:,:)
 
-  double precision,allocatable  :: A_sta(:,:)
-  double precision,allocatable  :: B_sta(:,:)
+  double precision,allocatable  :: Aph(:,:)
+  double precision,allocatable  :: Bph(:,:)
 
   double precision,allocatable  :: KA_sta(:,:)
   double precision,allocatable  :: KB_sta(:,:)
@@ -60,7 +60,7 @@ subroutine GW_phBSE(dophBSE2,TDA_W,TDA,dBSE,dTDA,singlet,triplet,eta,nBas,nC,nO,
 ! Memory allocation
 
   allocate(OmRPA(nS),XpY_RPA(nS,nS),XmY_RPA(nS,nS),rho_RPA(nBas,nBas,nS), &
-           A_sta(nS,nS),B_sta(nS,nS),KA_sta(nS,nS),KB_sta(nS,nS), &
+           Aph(nS,nS),Bph(nS,nS),KA_sta(nS,nS),KB_sta(nS,nS), &
            OmBSE(nS),XpY_BSE(nS,nS),XmY_BSE(nS,nS))
 
 !---------------------------------
@@ -70,10 +70,10 @@ subroutine GW_phBSE(dophBSE2,TDA_W,TDA,dBSE,dTDA,singlet,triplet,eta,nBas,nC,nO,
   isp_W = 1
   EcRPA = 0d0
 
-                 call phLR_A(isp_W,dRPA_W,nBas,nC,nO,nV,nR,nS,1d0,eW,ERI,A_sta)
-  if(.not.TDA_W) call phLR_B(isp_W,dRPA_W,nBas,nC,nO,nV,nR,nS,1d0,ERI,B_sta)
+                 call phLR_A(isp_W,dRPA_W,nBas,nC,nO,nV,nR,nS,1d0,eW,ERI,Aph)
+  if(.not.TDA_W) call phLR_B(isp_W,dRPA_W,nBas,nC,nO,nV,nR,nS,1d0,ERI,Bph)
 
-  call phLR(TDA_W,nS,A_sta,B_sta,EcRPA,OmRPA,XpY_RPA,XmY_RPA)
+  call phLR(TDA_W,nS,Aph,Bph,EcRPA,OmRPA,XpY_RPA,XmY_RPA)
   call GW_excitation_density(nBas,nC,nO,nR,nS,ERI,XpY_RPA,rho_RPA)
 
   call GW_phBSE_static_kernel_A(eta,nBas,nC,nO,nV,nR,nS,1d0,ERI,OmRPA,rho_RPA,KA_sta)
@@ -90,8 +90,8 @@ subroutine GW_phBSE(dophBSE2,TDA_W,TDA,dBSE,dTDA,singlet,triplet,eta,nBas,nC,nO,
 
     ! Compute BSE excitation energies
 
-                 call phLR_A(ispin,dRPA,nBas,nC,nO,nV,nR,nS,1d0,eGW,ERI,A_sta)
-    if(.not.TDA) call phLR_B(ispin,dRPA,nBas,nC,nO,nV,nR,nS,1d0,ERI,B_sta)
+                 call phLR_A(ispin,dRPA,nBas,nC,nO,nV,nR,nS,1d0,eGW,ERI,Aph)
+    if(.not.TDA) call phLR_B(ispin,dRPA,nBas,nC,nO,nV,nR,nS,1d0,ERI,Bph)
 
     ! Second-order BSE static kernel
   
@@ -112,10 +112,10 @@ subroutine GW_phBSE(dophBSE2,TDA_W,TDA,dBSE,dTDA,singlet,triplet,eta,nBas,nC,nO,
 
     end if
 
-                 A_sta(:,:) = A_sta(:,:) + KA_sta(:,:)
-    if(.not.TDA) B_sta(:,:) = B_sta(:,:) + KB_sta(:,:)
+                 Aph(:,:) = Aph(:,:) + KA_sta(:,:)
+    if(.not.TDA) Bph(:,:) = Bph(:,:) + KB_sta(:,:)
 
-    call phLR(TDA,nS,A_sta,B_sta,EcBSE(ispin),OmBSE,XpY_BSE,XmY_BSE)
+    call phLR(TDA,nS,Aph,Bph,EcBSE(ispin),OmBSE,XpY_BSE,XmY_BSE)
 
     call print_excitation('phBSE@GW    ',ispin,nS,OmBSE)
     call print_transition_vectors_ph(.true.,nBas,nC,nO,nV,nR,nS,dipole_int,OmBSE,XpY_BSE,XmY_BSE)
@@ -141,13 +141,13 @@ subroutine GW_phBSE(dophBSE2,TDA_W,TDA,dBSE,dTDA,singlet,triplet,eta,nBas,nC,nO,
 
     ! Compute BSE excitation energies
 
-                 call phLR_A(ispin,dRPA,nBas,nC,nO,nV,nR,nS,1d0,eGW,ERI,A_sta)
-    if(.not.TDA) call phLR_B(ispin,dRPA,nBas,nC,nO,nV,nR,nS,1d0,ERI,B_sta)
+                 call phLR_A(ispin,dRPA,nBas,nC,nO,nV,nR,nS,1d0,eGW,ERI,Aph)
+    if(.not.TDA) call phLR_B(ispin,dRPA,nBas,nC,nO,nV,nR,nS,1d0,ERI,Bph)
 
-                 A_sta(:,:) = A_sta(:,:) + KA_sta(:,:)
-    if(.not.TDA) B_sta(:,:) = B_sta(:,:) + KB_sta(:,:)
+                 Aph(:,:) = Aph(:,:) + KA_sta(:,:)
+    if(.not.TDA) Bph(:,:) = Bph(:,:) + KB_sta(:,:)
 
-    call phLR(TDA,nS,A_sta,B_sta,EcBSE(ispin),OmBSE,XpY_BSE,XmY_BSE)
+    call phLR(TDA,nS,Aph,Bph,EcBSE(ispin),OmBSE,XpY_BSE,XmY_BSE)
 
     call print_excitation('phBSE@GW    ',ispin,nS,OmBSE)
     call print_transition_vectors_ph(.false.,nBas,nC,nO,nV,nR,nS,dipole_int,OmBSE,XpY_BSE,XmY_BSE)

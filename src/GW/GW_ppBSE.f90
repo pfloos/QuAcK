@@ -35,11 +35,8 @@ subroutine GW_ppBSE(TDA_W,TDA,singlet,triplet,eta,nBas,nC,nO,nV,nR,nS,ERI,dipole
   integer                       :: nOO
   integer                       :: nVV
 
-  double precision,allocatable  :: A_sta(:,:)
-  double precision,allocatable  :: B_sta(:,:)
-  double precision,allocatable  :: KA_sta(:,:)
-  double precision,allocatable  :: KB_sta(:,:)
-
+  double precision,allocatable  :: Aph(:,:)
+  double precision,allocatable  :: Bph(:,:)
 
   double precision              :: EcRPA
   double precision,allocatable  :: OmRPA(:)
@@ -59,9 +56,9 @@ subroutine GW_ppBSE(TDA_W,TDA,singlet,triplet,eta,nBas,nC,nO,nV,nR,nS,ERI,dipole
   double precision,allocatable  :: X2(:,:)
   double precision,allocatable  :: Y2(:,:)
 
-  double precision,allocatable  :: WB(:,:)
-  double precision,allocatable  :: WC(:,:)
-  double precision,allocatable  :: WD(:,:)
+  double precision,allocatable  :: KB_sta(:,:)
+  double precision,allocatable  :: KC_sta(:,:)
+  double precision,allocatable  :: KD_sta(:,:)
 
 ! Output variables
 
@@ -74,14 +71,16 @@ subroutine GW_ppBSE(TDA_W,TDA,singlet,triplet,eta,nBas,nC,nO,nV,nR,nS,ERI,dipole
   isp_W = 1
   EcRPA = 0d0
 
-                 call phLR_A(isp_W,dRPA_W,nBas,nC,nO,nV,nR,nS,1d0,eW,ERI,A_sta)
-  if(.not.TDA_W) call phLR_B(isp_W,dRPA_W,nBas,nC,nO,nV,nR,nS,1d0,ERI,B_sta)
+  allocate(OmRPA(nS),XpY_RPA(nS,nS),XmY_RPA(nS,nS),rho_RPA(nBas,nBas,nS), &
+           Aph(nS,nS),Bph(nS,nS))
+ 
+                 call phLR_A(isp_W,dRPA_W,nBas,nC,nO,nV,nR,nS,1d0,eW,ERI,Aph)
+  if(.not.TDA_W) call phLR_B(isp_W,dRPA_W,nBas,nC,nO,nV,nR,nS,1d0,ERI,Bph)
 
-  call phLR(TDA_W,nS,A_sta,B_sta,EcRPA,OmRPA,XpY_RPA,XmY_RPA)
+  call phLR(TDA_W,nS,Aph,Bph,EcRPA,OmRPA,XpY_RPA,XmY_RPA)
   call GW_excitation_density(nBas,nC,nO,nR,nS,ERI,XpY_RPA,rho_RPA)
 
-  call GW_phBSE_static_kernel_A(eta,nBas,nC,nO,nV,nR,nS,1d0,ERI,OmRPA,rho_RPA,KA_sta)
-  call GW_phBSE_static_kernel_B(eta,nBas,nC,nO,nV,nR,nS,1d0,ERI,OmRPA,rho_RPA,KB_sta)
+  deallocate(XpY_RPA,XmY_RPA,Aph,Bph)
 
 !-------------------
 ! Singlet manifold
@@ -95,6 +94,7 @@ subroutine GW_ppBSE(TDA_W,TDA,singlet,triplet,eta,nBas,nC,nO,nV,nR,nS,ERI,dipole
     write(*,*) 
 
     ispin = 1
+    EcBSE(ispin) = 0d0
 
     nOO = nO*(nO+1)/2
     nVV = nV*(nV+1)/2
@@ -102,27 +102,27 @@ subroutine GW_ppBSE(TDA_W,TDA,singlet,triplet,eta,nBas,nC,nO,nV,nR,nS,ERI,dipole
     allocate(Om1(nVV),X1(nVV,nVV),Y1(nOO,nVV),       &
              Om2(nOO),X2(nVV,nOO),Y2(nOO,nOO),       &
              Bpp(nVV,nOO),Cpp(nVV,nVV),Dpp(nOO,nOO), &
-             WB(nVV,nOO),WC(nVV,nVV),WD(nOO,nOO))
+             KB_sta(nVV,nOO),KC_sta(nVV,nVV),KD_sta(nOO,nOO))
 
     ! Compute BSE excitation energies
 
-    if(.not.TDA) call GW_ppBSE_static_kernel_B(ispin,eta,nBas,nC,nO,nV,nR,nS,nOO,nVV,1d0,ERI,OmRPA,rho_RPA,WB)
-                 call GW_ppBSE_static_kernel_C(ispin,eta,nBas,nC,nO,nV,nR,nS,nOO,nVV,1d0,ERI,OmRPA,rho_RPA,WC)
-                 call GW_ppBSE_static_kernel_D(ispin,eta,nBas,nC,nO,nV,nR,nS,nOO,nVV,1d0,ERI,OmRPA,rho_RPA,WD)
+    if(.not.TDA) call GW_ppBSE_static_kernel_B(ispin,eta,nBas,nC,nO,nV,nR,nS,nOO,nVV,1d0,ERI,OmRPA,rho_RPA,KB_sta)
+                 call GW_ppBSE_static_kernel_C(ispin,eta,nBas,nC,nO,nV,nR,nS,nOO,nVV,1d0,ERI,OmRPA,rho_RPA,KC_sta)
+                 call GW_ppBSE_static_kernel_D(ispin,eta,nBas,nC,nO,nV,nR,nS,nOO,nVV,1d0,ERI,OmRPA,rho_RPA,KD_sta)
 
     if(.not.TDA) call ppLR_B(ispin,nBas,nC,nO,nV,nR,nOO,nVV,1d0,ERI,Bpp)
                  call ppLR_C(ispin,nBas,nC,nO,nV,nR,nVV,1d0,eGW,ERI,Cpp)
                  call ppLR_D(ispin,nBas,nC,nO,nV,nR,nOO,1d0,eGW,ERI,Dpp)
 
-    Bpp(:,:) = Bpp(:,:) + WB(:,:)
-    Cpp(:,:) = Cpp(:,:) + WC(:,:)
-    Dpp(:,:) = Dpp(:,:) + WD(:,:)
+    Bpp(:,:) = Bpp(:,:) + KB_sta(:,:)
+    Cpp(:,:) = Cpp(:,:) + KC_sta(:,:)
+    Dpp(:,:) = Dpp(:,:) + KD_sta(:,:)
 
     call ppLR(TDA,nOO,nVV,Bpp,Cpp,Dpp,Om1,X1,Y1,Om2,X2,Y2,EcBSE(ispin))
 
     call print_transition_vectors_pp(.true.,nBas,nC,nO,nV,nR,nOO,nVV,dipole_int,Om1,X1,Y1,Om2,X2,Y2)
 
-    deallocate(Om1,X1,Y1,Om2,X2,Y2,Bpp,Cpp,Dpp,WB,WC,WD)
+    deallocate(Om1,X1,Y1,Om2,X2,Y2,Bpp,Cpp,Dpp,KB_sta,KC_sta,KD_sta)
 
   end if
 
@@ -146,28 +146,28 @@ subroutine GW_ppBSE(TDA_W,TDA,singlet,triplet,eta,nBas,nC,nO,nV,nR,nS,ERI,dipole
     allocate(Om1(nVV),X1(nVV,nVV),Y1(nOO,nVV),       &
              Om2(nOO),X2(nVV,nOO),Y2(nOO,nOO),       &
              Bpp(nVV,nOO),Cpp(nVV,nVV),Dpp(nOO,nOO), &
-             WB(nVV,nOO),WC(nVV,nVV),WD(nOO,nOO))
+             KB_sta(nVV,nOO),KC_sta(nVV,nVV),KD_sta(nOO,nOO))
 
     ! Compute BSE excitation energies
 
-    if(.not.TDA) call GW_ppBSE_static_kernel_B(ispin,eta,nBas,nC,nO,nV,nR,nS,nOO,nVV,1d0,ERI,OmRPA,rho_RPA,WB)
-    call GW_ppBSE_static_kernel_C(ispin,eta,nBas,nC,nO,nV,nR,nS,nOO,nVV,1d0,ERI,OmRPA,rho_RPA,WC)
-    call GW_ppBSE_static_kernel_D(ispin,eta,nBas,nC,nO,nV,nR,nS,nOO,nVV,1d0,ERI,OmRPA,rho_RPA,WD)
+    if(.not.TDA) call GW_ppBSE_static_kernel_B(ispin,eta,nBas,nC,nO,nV,nR,nS,nOO,nVV,1d0,ERI,OmRPA,rho_RPA,KB_sta)
+    call GW_ppBSE_static_kernel_C(ispin,eta,nBas,nC,nO,nV,nR,nS,nOO,nVV,1d0,ERI,OmRPA,rho_RPA,KC_sta)
+    call GW_ppBSE_static_kernel_D(ispin,eta,nBas,nC,nO,nV,nR,nS,nOO,nVV,1d0,ERI,OmRPA,rho_RPA,KD_sta)
 
 
     if(.not.TDA) call ppLR_B(ispin,nBas,nC,nO,nV,nR,nOO,nVV,1d0,ERI,Bpp)
                  call ppLR_C(ispin,nBas,nC,nO,nV,nR,nVV,1d0,eGW,ERI,Cpp)
                  call ppLR_D(ispin,nBas,nC,nO,nV,nR,nOO,1d0,eGW,ERI,Dpp)
 
-    Bpp(:,:) = Bpp(:,:) + WB(:,:)
-    Cpp(:,:) = Cpp(:,:) + WC(:,:)
-    Dpp(:,:) = Dpp(:,:) + WD(:,:)
+    Bpp(:,:) = Bpp(:,:) + KB_sta(:,:)
+    Cpp(:,:) = Cpp(:,:) + KC_sta(:,:)
+    Dpp(:,:) = Dpp(:,:) + KD_sta(:,:)
 
     call ppLR(TDA,nOO,nVV,Bpp,Cpp,Dpp,Om1,X1,Y1,Om2,X2,Y2,EcBSE(ispin))
 
     call print_transition_vectors_pp(.false.,nBas,nC,nO,nV,nR,nOO,nVV,dipole_int,Om1,X1,Y1,Om2,X2,Y2)
 
-    deallocate(Om1,X1,Y1,Om2,X2,Y2,Bpp,Cpp,Dpp,WB,WC,WD)
+    deallocate(Om1,X1,Y1,Om2,X2,Y2,Bpp,Cpp,Dpp,KB_sta,KC_sta,KD_sta)
 
   end if
 
