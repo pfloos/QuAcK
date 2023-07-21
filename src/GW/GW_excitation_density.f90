@@ -6,7 +6,11 @@ subroutine GW_excitation_density(nBas,nC,nO,nR,nS,ERI,XpY,rho)
 
 ! Input variables
 
-  integer,intent(in)            :: nBas,nC,nO,nR,nS
+  integer,intent(in)            :: nBas
+  integer,intent(in)            :: nC
+  integer,intent(in)            :: nO
+  integer,intent(in)            :: nR
+  integer,intent(in)            :: nS
   double precision,intent(in)   :: ERI(nBas,nBas,nBas,nBas)
   double precision,intent(in)   :: XpY(nS,nS)
 

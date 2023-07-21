@@ -65,7 +65,7 @@ subroutine GW_phBSE_dynamic_perturbation(dophBSE2,dTDA,eta,nBas,nC,nO,nV,nR,nS,e
   if(dophBSE2) then 
 
     write(*,*)
-    write(*,*) '*** Second-order BSE static kernel activated! ***'
+    write(*,*) '*** Second-order BSE dynamic kernel activated! ***'
     write(*,*)
 
     allocate(W(nBas,nBas,nBas,nBas))
@@ -107,6 +107,8 @@ subroutine GW_phBSE_dynamic_perturbation(dophBSE2,dTDA,eta,nBas,nC,nO,nV,nR,nS,e
 
       call GW_phBSE_dynamic_kernel_A(eta,nBas,nC,nO,nV,nR,nS,1d0,eGW,OmRPA,rho_RPA,-OmBSE(ia),KAm_dyn,ZAm_dyn)
       call GW_phBSE_dynamic_kernel_B(eta,nBas,nC,nO,nV,nR,nS,1d0,eGW,OmRPA,rho_RPA,KB_dyn)
+
+      if(dophBSE2) call GW_phBSE2_dynamic_kernel_B(eta,nBas,nC,nO,nV,nR,nS,eGW,W,KB_dyn)
 
       ! Renormalization factor of the resonant and anti-resonant parts
 
