@@ -69,8 +69,8 @@ The two most important files are:
 These files look like this
 ```
 QuAcK 💩 % cat input/methods 
-# RHF UHF KS MOM 
-  T   F   F  F   
+# RHF UHF RMOM UMOM KS
+  T   F   F    F    F  
 # MP2* MP3 
   F   F   
 # CCD pCCD DCD CCSD CCSD(T) 
@@ -79,8 +79,8 @@ QuAcK 💩 % cat input/methods
   F     F    F     F
 # CIS* CIS(D) CID CISD FCI
   F    F      F   F    F
-# RPA* RPAx* crRPA ppRPA 
-  F    F     F      F
+# phRPA* phRPAx* crRPA ppRPA 
+  F      F       F     F 
 # G0F2* evGF2* qsGF2* G0F3 evGF3
   F     F      F      F    F
 # G0W0* evGW* qsGW* SRG-qsGW ufG0W0 ufGW
