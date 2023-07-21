@@ -1,5 +1,4 @@
-subroutine unrestricted_linear_response_B_matrix(ispin,dRPA,nBas,nC,nO,nV,nR,nSa,nSb,nSt,lambda, & 
-                                                 ERI_aaaa,ERI_aabb,ERI_bbbb,B_lr)
+subroutine phULR_B(ispin,dRPA,nBas,nC,nO,nV,nR,nSa,nSb,nSt,lambda,ERI_aaaa,ERI_aabb,ERI_bbbb,Bph)
 
 ! Compute linear response
 
@@ -32,7 +31,7 @@ subroutine unrestricted_linear_response_B_matrix(ispin,dRPA,nBas,nC,nO,nV,nR,nSa
 
 ! Output variables
 
-  double precision,intent(out)  :: B_lr(nSt,nSt)
+  double precision,intent(out)  :: Bph(nSt,nSt)
 
 ! Direct RPA
 
@@ -56,7 +55,7 @@ subroutine unrestricted_linear_response_B_matrix(ispin,dRPA,nBas,nC,nO,nV,nR,nSa
           do b=nO(1)+1,nBas-nR(1)
             jb = jb + 1
  
-            B_lr(ia,jb) = lambda*ERI_aaaa(i,j,a,b) - (1d0 - delta_dRPA)*lambda*ERI_aaaa(i,j,b,a)
+            Bph(ia,jb) = lambda*ERI_aaaa(i,j,a,b) - (1d0 - delta_dRPA)*lambda*ERI_aaaa(i,j,b,a)
 
           end  do
         end  do
@@ -74,7 +73,7 @@ subroutine unrestricted_linear_response_B_matrix(ispin,dRPA,nBas,nC,nO,nV,nR,nSa
           do b=nO(2)+1,nBas-nR(2)
             jb = jb + 1
  
-            B_lr(ia,nSa+jb) = lambda*ERI_aabb(i,j,a,b) 
+            Bph(ia,nSa+jb) = lambda*ERI_aabb(i,j,a,b) 
 
           end  do
         end  do
@@ -92,7 +91,7 @@ subroutine unrestricted_linear_response_B_matrix(ispin,dRPA,nBas,nC,nO,nV,nR,nSa
           do b=nO(1)+1,nBas-nR(1)
             jb = jb + 1
  
-            B_lr(nSa+ia,jb) = lambda*ERI_aabb(j,i,b,a)
+            Bph(nSa+ia,jb) = lambda*ERI_aabb(j,i,b,a)
 
           end  do
         end  do
@@ -110,7 +109,7 @@ subroutine unrestricted_linear_response_B_matrix(ispin,dRPA,nBas,nC,nO,nV,nR,nSa
           do b=nO(2)+1,nBas-nR(2)
             jb = jb + 1
  
-            B_lr(nSa+ia,nSa+jb) = lambda*ERI_bbbb(i,j,a,b) - (1d0 - delta_dRPA)*lambda*ERI_bbbb(i,j,b,a)
+            Bph(nSa+ia,nSa+jb) = lambda*ERI_bbbb(i,j,a,b) - (1d0 - delta_dRPA)*lambda*ERI_bbbb(i,j,b,a)
 
           end  do
         end  do
@@ -125,7 +124,7 @@ subroutine unrestricted_linear_response_B_matrix(ispin,dRPA,nBas,nC,nO,nV,nR,nSa
 
   if(ispin == 2) then
 
-    B_lr(:,:) = 0d0
+    Bph(:,:) = 0d0
 
     ! abba block
 
@@ -138,7 +137,7 @@ subroutine unrestricted_linear_response_B_matrix(ispin,dRPA,nBas,nC,nO,nV,nR,nSa
           do b=nO(1)+1,nBas-nR(1)
             jb = jb + 1
  
-            B_lr(ia,nSa+jb) = - (1d0 - delta_dRPA)*lambda*ERI_aabb(i,j,b,a)
+            Bph(ia,nSa+jb) = - (1d0 - delta_dRPA)*lambda*ERI_aabb(i,j,b,a)
 
           end  do
         end  do
@@ -156,7 +155,7 @@ subroutine unrestricted_linear_response_B_matrix(ispin,dRPA,nBas,nC,nO,nV,nR,nSa
           do b=nO(2)+1,nBas-nR(2)
             jb = jb + 1
  
-            B_lr(nSa+ia,jb) = - (1d0 - delta_dRPA)*lambda*ERI_aabb(j,i,a,b)
+            Bph(nSa+ia,jb) = - (1d0 - delta_dRPA)*lambda*ERI_aabb(j,i,a,b)
 
           end  do
         end  do
@@ -166,4 +165,4 @@ subroutine unrestricted_linear_response_B_matrix(ispin,dRPA,nBas,nC,nO,nV,nR,nSa
   end if
 
 
-end subroutine unrestricted_linear_response_B_matrix
+end subroutine 

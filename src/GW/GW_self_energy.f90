@@ -1,4 +1,4 @@
-subroutine GW_self_energy(eta,nBas,nC,nO,nV,nR,nS,e,Omega,rho,EcGM,Sig,Z)
+subroutine GW_self_energy(eta,nBas,nC,nO,nV,nR,nS,e,Om,rho,EcGM,Sig,Z)
 
 ! Compute correlation part of the self-energy and the renormalization factor 
 
@@ -15,7 +15,7 @@ subroutine GW_self_energy(eta,nBas,nC,nO,nV,nR,nS,e,Omega,rho,EcGM,Sig,Z)
   integer,intent(in)            :: nR
   integer,intent(in)            :: nS
   double precision,intent(in)   :: e(nBas)
-  double precision,intent(in)   :: Omega(nS)
+  double precision,intent(in)   :: Om(nS)
   double precision,intent(in)   :: rho(nBas,nBas,nS)
 
 ! Local variables
@@ -43,7 +43,7 @@ subroutine GW_self_energy(eta,nBas,nC,nO,nV,nR,nS,e,Omega,rho,EcGM,Sig,Z)
 ! Occupied part of the correlation self-energy
 
 !$OMP PARALLEL &
-!$OMP SHARED(Sig,rho,eta,nS,nC,nO,nBas,nR,e,Omega) &
+!$OMP SHARED(Sig,rho,eta,nS,nC,nO,nBas,nR,e,Om) &
 !$OMP PRIVATE(jb,i,q,p,eps,num) &
 !$OMP DEFAULT(NONE)
 !$OMP DO
@@ -52,7 +52,7 @@ subroutine GW_self_energy(eta,nBas,nC,nO,nV,nR,nS,e,Omega,rho,EcGM,Sig,Z)
         do jb=1,nS
            do i=nC+1,nO
  
-              eps = e(p) - e(i) + Omega(jb)
+              eps = e(p) - e(i) + Om(jb)
               num = 2d0*rho(p,i,jb)*rho(q,i,jb)
               Sig(p,q) = Sig(p,q) + num*eps/(eps**2 + eta**2)
               if(p == q) Z(p) = Z(p) - num*(eps**2 - eta**2)/(eps**2 + eta**2)**2
@@ -67,7 +67,7 @@ subroutine GW_self_energy(eta,nBas,nC,nO,nV,nR,nS,e,Omega,rho,EcGM,Sig,Z)
 ! Virtual part of the correlation self-energy
 
 !$OMP PARALLEL &
-!$OMP SHARED(Sig,rho,eta,nS,nC,nO,nBas,nR,e,Omega) &
+!$OMP SHARED(Sig,rho,eta,nS,nC,nO,nBas,nR,e,Om) &
 !$OMP PRIVATE(jb,a,q,p,eps,num) &
 !$OMP DEFAULT(NONE)
 !$OMP DO  
@@ -76,7 +76,7 @@ subroutine GW_self_energy(eta,nBas,nC,nO,nV,nR,nS,e,Omega,rho,EcGM,Sig,Z)
         do jb=1,nS
            do a=nO+1,nBas-nR
  
-              eps = e(p) - e(a) - Omega(jb)
+              eps = e(p) - e(a) - Om(jb)
               num = 2d0*rho(p,a,jb)*rho(q,a,jb)
               Sig(p,q) = Sig(p,q) + num*eps/(eps**2 + eta**2)
               if(p == q) Z(p) = Z(p) - num*(eps**2 - eta**2)/(eps**2 + eta**2)**2
@@ -95,7 +95,7 @@ subroutine GW_self_energy(eta,nBas,nC,nO,nV,nR,nS,e,Omega,rho,EcGM,Sig,Z)
     do a=nO+1,nBas-nR
       do i=nC+1,nO
 
-        eps = e(a) - e(i) + Omega(jb)
+        eps = e(a) - e(i) + Om(jb)
         num = 4d0*rho(a,i,jb)*rho(a,i,jb)
         EcGM = EcGM - num*eps/(eps**2 + eta**2)
 

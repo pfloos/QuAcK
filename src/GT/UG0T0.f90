@@ -53,11 +53,11 @@ subroutine UG0T0(doACFDT,exchange_kernel,doXBS,BSE,TDA_T,TDA,dBSE,dTDA, &
   double precision              :: EcBSE(nspin)
   double precision              :: EcAC(nspin)
   double precision              :: EcGM
-  double precision,allocatable  :: Omega1ab(:),Omega1aa(:),Omega1bb(:)
+  double precision,allocatable  :: Om1ab(:),Om1aa(:),Om1bb(:)
   double precision,allocatable  :: X1ab(:,:),X1aa(:,:),X1bb(:,:)
   double precision,allocatable  :: Y1ab(:,:),Y1aa(:,:),Y1bb(:,:)
   double precision,allocatable  :: rho1ab(:,:,:),rho1aa(:,:,:),rho1bb(:,:,:)
-  double precision,allocatable  :: Omega2ab(:),Omega2aa(:),Omega2bb(:)
+  double precision,allocatable  :: Om2ab(:),Om2aa(:),Om2bb(:)
   double precision,allocatable  :: X2ab(:,:),X2aa(:,:),X2bb(:,:)
   double precision,allocatable  :: Y2ab(:,:),Y2aa(:,:),Y2bb(:,:)
   double precision,allocatable  :: rho2ab(:,:,:),rho2aa(:,:,:),rho2bb(:,:,:)
@@ -97,14 +97,14 @@ subroutine UG0T0(doACFDT,exchange_kernel,doXBS,BSE,TDA_T,TDA,dBSE,dTDA, &
 
 ! Memory allocation
 
-  allocate(Omega1ab(nPab),X1ab(nPab,nPab),Y1ab(nHab,nPab), & 
-           Omega2ab(nHab),X2ab(nPab,nHab),Y2ab(nHab,nHab), & 
+  allocate(Om1ab(nPab),X1ab(nPab,nPab),Y1ab(nHab,nPab), & 
+           Om2ab(nHab),X2ab(nPab,nHab),Y2ab(nHab,nHab), & 
            rho1ab(nBas,nBas,nPab),rho2ab(nBas,nBas,nHab), & 
-           Omega1aa(nPaa),X1aa(nPaa,nPaa),Y1aa(nHaa,nPaa), & 
-           Omega2aa(nHaa),X2aa(nPaa,nHaa),Y2aa(nHaa,nHaa), & 
+           Om1aa(nPaa),X1aa(nPaa,nPaa),Y1aa(nHaa,nPaa), & 
+           Om2aa(nHaa),X2aa(nPaa,nHaa),Y2aa(nHaa,nHaa), & 
            rho1aa(nBas,nBas,nPaa),rho2aa(nBas,nBas,nHaa), & 
-           Omega1bb(nPbb),X1bb(nPbb,nPbb),Y1bb(nHbb,nPbb), &
-           Omega2bb(nPbb),X2bb(nPbb,nPbb),Y2bb(nHbb,nPbb), &
+           Om1bb(nPbb),X1bb(nPbb,nPbb),Y1bb(nHbb,nPbb), &
+           Om2bb(nPbb),X2bb(nPbb,nPbb),Y2bb(nHbb,nPbb), &
            rho1bb(nBas,nBas,nPbb),rho2bb(nBas,nBas,nHbb), &
            SigX(nBas,nspin),SigT(nBas,nspin),Z(nBas,nspin))
 
@@ -118,15 +118,15 @@ subroutine UG0T0(doACFDT,exchange_kernel,doXBS,BSE,TDA_T,TDA,dBSE,dTDA, &
 
 ! Compute linear response
 
-  call unrestricted_linear_response_pp(iblock,TDA,nBas,nC,nO,nV,nR,nPaa,nPab,nPbb, &
-                                       nPab,nHaa,nHab,nHbb,nHab,1d0,eHF,ERI_aaaa, &
-                                       ERI_aabb,ERI_bbbb,Omega1ab,X1ab,Y1ab, &
-                                       Omega2ab,X2ab,Y2ab,EcRPA(ispin)) 
-call matout(nHab,nPab,Y1ab)  
+  call ppULR(iblock,TDA,nBas,nC,nO,nV,nR,nPaa,nPab,nPbb, &
+             nPab,nHaa,nHab,nHbb,nHab,1d0,eHF,ERI_aaaa, &
+             ERI_aabb,ERI_bbbb,Om1ab,X1ab,Y1ab, &
+             Om2ab,X2ab,Y2ab,EcRPA(ispin)) 
+
 ! EcRPA(ispin) = 1d0*EcRPA(ispin)
 
-  call print_excitation('pp-RPA (N+2)',iblock,nPab,Omega1ab(:))
-  call print_excitation('pp-RPA (N-2)',iblock,nHab,Omega2ab(:))
+  call print_excitation('pp-RPA (N+2)',iblock,nPab,Om1ab(:))
+  call print_excitation('pp-RPA (N-2)',iblock,nHab,Om2ab(:))
  
 !----------------------------------------------
 ! alpha-alpha block
@@ -137,16 +137,16 @@ call matout(nHab,nPab,Y1ab)
 
 ! Compute linear response
 
-  call unrestricted_linear_response_pp(iblock,TDA,nBas,nC,nO,nV,nR,nPaa,nPab,nPbb, &
-                                       nPaa,nHaa,nHab,nHbb,nHaa,1d0,eHF,ERI_aaaa, &
-                                       ERI_aabb,ERI_bbbb,Omega1aa,X1aa,Y1aa, &
-                                       Omega2aa,X2aa,Y2aa,EcRPA(ispin))  
+  call ppULR(iblock,TDA,nBas,nC,nO,nV,nR,nPaa,nPab,nPbb, &
+             nPaa,nHaa,nHab,nHbb,nHaa,1d0,eHF,ERI_aaaa, &
+             ERI_aabb,ERI_bbbb,Om1aa,X1aa,Y1aa, &
+             Om2aa,X2aa,Y2aa,EcRPA(ispin))  
   
 ! EcRPA(ispin) = 2d0*EcRPA(ispin)
 ! EcRPA(ispin) = 3d0*EcRPA(ispin)
 
-  call print_excitation('pp-RPA (N+2)',iblock,nPaa,Omega1aa(:))
-  call print_excitation('pp-RPA (N-2)',iblock,nHaa,Omega2aa(:))
+  call print_excitation('pp-RPA (N+2)',iblock,nPaa,Om1aa(:))
+  call print_excitation('pp-RPA (N-2)',iblock,nHaa,Om2aa(:))
 
 !----------------------------------------------
 ! beta-beta block
@@ -157,16 +157,16 @@ call matout(nHab,nPab,Y1ab)
 
 ! Compute linear response
 
-  call unrestricted_linear_response_pp(iblock,TDA,nBas,nC,nO,nV,nR,nPaa,nPab,nPbb, &
-                                       nPbb,nHaa,nHab,nHbb,nHbb,1d0,eHF,ERI_aaaa, &
-                                       ERI_aabb,ERI_bbbb,Omega1bb,X1bb,Y1bb, &
-                                       Omega2bb,X2bb,Y2bb,EcRPA(ispin))
+  call ppULR(iblock,TDA,nBas,nC,nO,nV,nR,nPaa,nPab,nPbb, &
+             nPbb,nHaa,nHab,nHbb,nHbb,1d0,eHF,ERI_aaaa, &
+             ERI_aabb,ERI_bbbb,Om1bb,X1bb,Y1bb, &
+             Om2bb,X2bb,Y2bb,EcRPA(ispin))
 
 ! EcRPA(ispin) = 2d0*EcRPA(ispin)
 ! EcRPA(ispin) = 3d0*EcRPA(ispin)
 
-  call print_excitation('pp-RPA (N+2)',iblock,nPbb,Omega1bb(:))
-  call print_excitation('pp-RPA (N-2)',iblock,nHbb,Omega2bb(:))
+  call print_excitation('pp-RPA (N+2)',iblock,nPbb,Om1bb(:))
+  call print_excitation('pp-RPA (N-2)',iblock,nHbb,Om2bb(:))
 
 !----------------------------------------------
 ! Compute T-matrix version of the self-energy 
@@ -200,14 +200,14 @@ call matout(nHab,nPab,Y1ab)
                                                rho1bb,X2bb,Y2bb,rho2bb)
 
   call unrestricted_self_energy_Tmatrix_diag(eta,nBas,nC,nO,nV,nR,nHaa,nHab,nHbb,nPaa,&
-                                             nPab,nPbb,eHF,Omega1aa,Omega1ab,Omega1bb,&
-                                             rho1aa,rho1ab,rho1bb,Omega2aa,Omega2ab,&
-                                             Omega2bb,rho2aa,rho2ab,rho2bb,EcGM,SigT)
+                                             nPab,nPbb,eHF,Om1aa,Om1ab,Om1bb,&
+                                             rho1aa,rho1ab,rho1bb,Om2aa,Om2ab,&
+                                             Om2bb,rho2aa,rho2ab,rho2bb,EcGM,SigT)
 
   call unrestricted_renormalization_factor_Tmatrix(eta,nBas,nC,nO,nV,nR,nHaa,nHab,nHbb,&
-                                                   nPaa,nPab,nPbb,eHF,Omega1aa,Omega1ab,&
-                                                   Omega1bb,rho1aa,rho1ab,rho1bb, &
-                                                   Omega2aa,Omega2ab,Omega2bb,rho2aa, &
+                                                   nPaa,nPab,nPbb,eHF,Om1aa,Om1ab,&
+                                                   Om1bb,rho1aa,rho1ab,rho1bb, &
+                                                   Om2aa,Om2ab,Om2bb,rho2aa, &
                                                    rho2ab,rho2bb,Z) 
 
 
@@ -251,20 +251,20 @@ call matout(nHab,nPab,Y1ab)
   ispin  = 1
   iblock = 3 
 
-  call unrestricted_linear_response_pp(iblock,TDA,nBas,nC,nO,nV,nR,nPaa,nPab,nPbb, &
-                                       nPab,nHaa,nHab,nHbb,nHab,1d0,eG0T0,ERI_aaaa, &
-                                       ERI_aabb,ERI_bbbb,Omega1ab,X1ab,Y1ab, &
-                                       Omega2ab,X2ab,Y2ab,EcRPA(ispin))
+  call ppULR(iblock,TDA,nBas,nC,nO,nV,nR,nPaa,nPab,nPbb, &
+             nPab,nHaa,nHab,nHbb,nHab,1d0,eG0T0,ERI_aaaa, &
+             ERI_aabb,ERI_bbbb,Om1ab,X1ab,Y1ab, &
+             Om2ab,X2ab,Y2ab,EcRPA(ispin))
 
 !alpha-alpha block
  
   ispin  = 2
   iblock = 4 
   
-  call unrestricted_linear_response_pp(iblock,TDA,nBas,nC,nO,nV,nR,nPaa,nPab,nPbb, &
-                                       nPaa,nHaa,nHab,nHbb,nHaa,1d0,eG0T0,ERI_aaaa, &
-                                       ERI_aabb,ERI_bbbb,Omega1aa,X1aa,Y1aa, &
-                                       Omega2aa,X2aa,Y2aa,EcRPA(ispin)) 
+  call ppULR(iblock,TDA,nBas,nC,nO,nV,nR,nPaa,nPab,nPbb, &
+             nPaa,nHaa,nHab,nHbb,nHaa,1d0,eG0T0,ERI_aaaa, &
+             ERI_aabb,ERI_bbbb,Om1aa,X1aa,Y1aa, &
+             Om2aa,X2aa,Y2aa,EcRPA(ispin)) 
  
   Ecaa = EcRPA(2)
 
@@ -272,10 +272,10 @@ call matout(nHab,nPab,Y1ab)
  
   iblock = 7
   
-  call unrestricted_linear_response_pp(iblock,TDA,nBas,nC,nO,nV,nR,nPaa,nPab,nPbb, &
-                                       nPbb,nHaa,nHab,nHbb,nHbb,1d0,eG0T0,ERI_aaaa, &
-                                       ERI_aabb,ERI_bbbb,Omega1bb,X1bb,Y1bb, &
-                                       Omega2bb,X2bb,Y2bb,EcRPA(ispin))
+  call ppULR(iblock,TDA,nBas,nC,nO,nV,nR,nPaa,nPab,nPbb, &
+             nPbb,nHaa,nHab,nHbb,nHbb,1d0,eG0T0,ERI_aaaa, &
+             ERI_aabb,ERI_bbbb,Om1bb,X1bb,Y1bb, &
+             Om2bb,X2bb,Y2bb,EcRPA(ispin))
   
   Ecbb = EcRPA(2) 
   EcRPA(2) = Ecaa + Ecbb
@@ -286,8 +286,8 @@ call matout(nHab,nPab,Y1ab)
 
 ! Free memory
 
-  deallocate(Omega1ab,X1ab,Y1ab,Omega2ab,X2ab,Y2ab,rho1ab,rho2ab, &
-             Omega1aa,X1aa,Y1aa,Omega2aa,X2aa,Y2aa,rho1aa,rho2aa, &
-             Omega1bb,X1bb,Y1bb,Omega2bb,X2bb,Y2bb,rho1bb,rho2bb)
+  deallocate(Om1ab,X1ab,Y1ab,Om2ab,X2ab,Y2ab,rho1ab,rho2ab, &
+             Om1aa,X1aa,Y1aa,Om2aa,X2aa,Y2aa,rho1aa,rho2aa, &
+             Om1bb,X1bb,Y1bb,Om2bb,X2bb,Y2bb,rho1bb,rho2bb)
 
-end subroutine UG0T0
+end subroutine 

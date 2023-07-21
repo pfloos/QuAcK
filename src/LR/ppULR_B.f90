@@ -1,5 +1,4 @@
-subroutine unrestricted_linear_response_B_pp(ispin,nBas,nC,nO,nV,nR,nPaa,nPab,nPbb,nPt,nHaa, &  
- nHab,nHbb,nHt,lambda,ERI_aaaa,ERI_aabb,ERI_bbbb,B_pp)
+subroutine ppULR_B(ispin,nBas,nC,nO,nV,nR,nPaa,nPab,nPbb,nPt,nHaa,nHab,nHbb,nHt,lambda,ERI_aaaa,ERI_aabb,ERI_bbbb,Bpp)
 
 ! Compute linear response
 
@@ -36,7 +35,7 @@ subroutine unrestricted_linear_response_B_pp(ispin,nBas,nC,nO,nV,nR,nPaa,nPab,nP
 
 ! Output variables
 
-  double precision,intent(out)  :: B_pp(nPt,nHt)
+  double precision,intent(out)  :: Bpp(nPt,nHt)
 
 
   eF = 0d0 
@@ -54,7 +53,7 @@ subroutine unrestricted_linear_response_B_pp(ispin,nBas,nC,nO,nV,nR,nPaa,nPab,nP
           do j=nC(2)+1,nO(2)
             ij = ij + 1
 
-            B_pp(ab,ij) = lambda*ERI_aabb(a,b,i,j)
+            Bpp(ab,ij) = lambda*ERI_aabb(a,b,i,j)
 
           end  do
         end  do
@@ -77,7 +76,7 @@ subroutine unrestricted_linear_response_B_pp(ispin,nBas,nC,nO,nV,nR,nPaa,nPab,nP
           do j=i+1,nO(1)
             ij = ij + 1
  
-            B_pp(ab,ij) = lambda*(ERI_aaaa(a,b,i,j) - ERI_aaaa(a,b,j,i))
+            Bpp(ab,ij) = lambda*(ERI_aaaa(a,b,i,j) - ERI_aaaa(a,b,j,i))
             
           end  do
         end  do
@@ -98,7 +97,7 @@ subroutine unrestricted_linear_response_B_pp(ispin,nBas,nC,nO,nV,nR,nPaa,nPab,nP
           do j=i+1,nO(2)
             ij = ij + 1
  
-            B_pp(ab,ij) = lambda*(ERI_bbbb(a,b,i,j) - ERI_bbbb(a,b,j,i)) 
+            Bpp(ab,ij) = lambda*(ERI_bbbb(a,b,i,j) - ERI_bbbb(a,b,j,i)) 
 
           end  do
         end  do
@@ -107,4 +106,4 @@ subroutine unrestricted_linear_response_B_pp(ispin,nBas,nC,nO,nV,nR,nPaa,nPab,nP
 
   end if
 
-end subroutine unrestricted_linear_response_B_pp
+end subroutine 

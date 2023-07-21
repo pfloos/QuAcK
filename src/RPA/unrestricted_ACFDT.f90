@@ -93,8 +93,8 @@ subroutine unrestricted_ACFDT(exchange_kernel,doXBS,dRPA,TDA_W,TDA,BSE,spin_cons
 
   allocate(OmRPA(nS_sc),XpY_RPA(nS_sc,nS_sc),XmY_RPA(nS_sc,nS_sc),rho_RPA(nBas,nBas,nS_sc,nspin))
 
-  call unrestricted_linear_response(isp_W,.true.,TDA_W,.false.,eta,nBas,nC,nO,nV,nR,nS_aa,nS_bb,nS_sc,nS_sc,1d0,eW, &
-                                    ERI_aaaa,ERI_aabb,ERI_bbbb,OmRPA,rho_RPA,EcRPA,OmRPA,XpY_RPA,XmY_RPA)
+  call phULR(isp_W,.true.,TDA_W,.false.,eta,nBas,nC,nO,nV,nR,nS_aa,nS_bb,nS_sc,nS_sc,1d0,eW, &
+             ERI_aaaa,ERI_aabb,ERI_bbbb,OmRPA,rho_RPA,EcRPA,OmRPA,XpY_RPA,XmY_RPA)
   call unrestricted_excitation_density(nBas,nC,nO,nR,nS_aa,nS_bb,nS_sc,ERI_aaaa,ERI_aabb,ERI_bbbb,XpY_RPA,rho_RPA)
 
 ! Spin-conserved manifold
@@ -120,14 +120,14 @@ subroutine unrestricted_ACFDT(exchange_kernel,doXBS,dRPA,TDA_W,TDA,BSE,spin_cons
 
       if(doXBS) then
 
-        call unrestricted_linear_response(isp_W,.true.,TDA_W,.false.,eta,nBas,nC,nO,nV,nR,nS_aa,nS_bb,nS_sc,nS_sc,lambda,eW, &
-                                          ERI_aaaa,ERI_aabb,ERI_bbbb,OmRPA,rho_RPA,EcRPA,OmRPA,XpY_RPA,XmY_RPA)
+        call phULR(isp_W,.true.,TDA_W,.false.,eta,nBas,nC,nO,nV,nR,nS_aa,nS_bb,nS_sc,nS_sc,lambda,eW, &
+                   ERI_aaaa,ERI_aabb,ERI_bbbb,OmRPA,rho_RPA,EcRPA,OmRPA,XpY_RPA,XmY_RPA)
         call unrestricted_excitation_density(nBas,nC,nO,nR,nS_aa,nS_bb,nS_sc,ERI_aaaa,ERI_aabb,ERI_bbbb,XpY_RPA,rho_RPA)
 
       end if
 
-      call unrestricted_linear_response(ispin,dRPA,TDA,BSE,eta,nBas,nC,nO,nV,nR,nS_aa,nS_bb,nS_sc,nS_sc,lambda,e, &
-                                        ERI_aaaa,ERI_aabb,ERI_bbbb,OmRPA,rho_RPA,EcAC(ispin),Omega_sc,XpY_sc,XmY_sc)
+      call phULR(ispin,dRPA,TDA,BSE,eta,nBas,nC,nO,nV,nR,nS_aa,nS_bb,nS_sc,nS_sc,lambda,e, &
+                 ERI_aaaa,ERI_aabb,ERI_bbbb,OmRPA,rho_RPA,EcAC(ispin),Omega_sc,XpY_sc,XmY_sc)
 
       call unrestricted_ACFDT_correlation_energy(ispin,exchange_kernel,nBas,nC,nO,nV,nR,nS,nS_aa,nS_bb,nS_sc, &
                                                  ERI_aaaa,ERI_aabb,ERI_bbbb,XpY_sc,XmY_sc,Ec(iAC,ispin))
@@ -174,14 +174,14 @@ subroutine unrestricted_ACFDT(exchange_kernel,doXBS,dRPA,TDA_W,TDA,BSE,spin_cons
 
       if(doXBS) then
 
-        call unrestricted_linear_response(isp_W,.true.,TDA_W,.false.,eta,nBas,nC,nO,nV,nR,nS_aa,nS_bb,nS_sc,nS_sc,lambda,eW, &
-                                          ERI_aaaa,ERI_aabb,ERI_bbbb,OmRPA,rho_RPA,EcRPA,OmRPA,XpY_RPA,XmY_RPA)
+        call phULR(isp_W,.true.,TDA_W,.false.,eta,nBas,nC,nO,nV,nR,nS_aa,nS_bb,nS_sc,nS_sc,lambda,eW, &
+                   ERI_aaaa,ERI_aabb,ERI_bbbb,OmRPA,rho_RPA,EcRPA,OmRPA,XpY_RPA,XmY_RPA)
         call unrestricted_excitation_density(nBas,nC,nO,nR,nS_aa,nS_bb,nS_sc,ERI_aaaa,ERI_aabb,ERI_bbbb,XpY_RPA,rho_RPA)
 
       end if
 
-      call unrestricted_linear_response(ispin,dRPA,TDA,BSE,eta,nBas,nC,nO,nV,nR,nS_ab,nS_ba,nS_sf,nS_sc,lambda,e, &
-                                        ERI_aaaa,ERI_aabb,ERI_bbbb,OmRPA,rho_RPA,EcAC(ispin),Omega_sf,XpY_sf,XmY_sf)
+      call phULR(ispin,dRPA,TDA,BSE,eta,nBas,nC,nO,nV,nR,nS_ab,nS_ba,nS_sf,nS_sc,lambda,e, &
+                 ERI_aaaa,ERI_aabb,ERI_bbbb,OmRPA,rho_RPA,EcAC(ispin),Omega_sf,XpY_sf,XmY_sf)
 
       call unrestricted_ACFDT_correlation_energy(ispin,exchange_kernel,nBas,nC,nO,nV,nR,nS,nS_ab,nS_ba,nS_sf, &
                                                  ERI_aaaa,ERI_aabb,ERI_bbbb,XpY_sf,XmY_sf,Ec(iAC,ispin))
@@ -203,4 +203,4 @@ subroutine unrestricted_ACFDT(exchange_kernel,doXBS,dRPA,TDA_W,TDA,BSE,spin_cons
 
   end if
 
-end subroutine unrestricted_ACFDT
+end subroutine 

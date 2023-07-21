@@ -51,10 +51,8 @@ subroutine UHF_stability(nBas,nC,nO,nV,nR,nS,eHF,ERI_aaaa,ERI_aabb,ERI_bbbb)
  
   ispin = 1
 
-  call unrestricted_linear_response_A_matrix(ispin,.false.,nBas,nC,nO,nV,nR,nS_aa,nS_bb,nS_sc,1d0,eHF, &
-                                             ERI_aaaa,ERI_aabb,ERI_bbbb,A_sc)
-  call unrestricted_linear_response_B_matrix(ispin,.false.,nBas,nC,nO,nV,nR,nS_aa,nS_bb,nS_sc,1d0, &
-                                               ERI_aaaa,ERI_aabb,ERI_bbbb,B_sc)
+  call phULR_A(ispin,.false.,nBas,nC,nO,nV,nR,nS_aa,nS_bb,nS_sc,1d0,eHF,ERI_aaaa,ERI_aabb,ERI_bbbb,A_sc)
+  call phULR_B(ispin,.false.,nBas,nC,nO,nV,nR,nS_aa,nS_bb,nS_sc,1d0,ERI_aaaa,ERI_aabb,ERI_bbbb,B_sc)
 
   AB_sc(:,:) = A_sc(:,:) + B_sc(:,:)
 
@@ -136,10 +134,8 @@ subroutine UHF_stability(nBas,nC,nO,nV,nR,nS,eHF,ERI_aaaa,ERI_aabb,ERI_bbbb)
  
   ispin = 2
 
-  call unrestricted_linear_response_A_matrix(ispin,.false.,nBas,nC,nO,nV,nR,nS_ab,nS_ba,nS_sf,1d0,eHF, &
-                                             ERI_aaaa,ERI_aabb,ERI_bbbb,A_sf)
-  call unrestricted_linear_response_B_matrix(ispin,.false.,nBas,nC,nO,nV,nR,nS_ab,nS_ba,nS_sf,1d0, &
-                                               ERI_aaaa,ERI_aabb,ERI_bbbb,B_sf)
+  call phULR_A(ispin,.false.,nBas,nC,nO,nV,nR,nS_ab,nS_ba,nS_sf,1d0,eHF,ERI_aaaa,ERI_aabb,ERI_bbbb,A_sf)
+  call phULR_B(ispin,.false.,nBas,nC,nO,nV,nR,nS_ab,nS_ba,nS_sf,1d0,ERI_aaaa,ERI_aabb,ERI_bbbb,B_sf)
 
   AB_sf(:,:) = A_sf(:,:) + B_sf(:,:)
 

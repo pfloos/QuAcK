@@ -1,5 +1,4 @@
-subroutine unrestricted_linear_response_A_matrix(ispin,dRPA,nBas,nC,nO,nV,nR,nSa,nSb,nSt,lambda, & 
-                                                 e,ERI_aaaa,ERI_aabb,ERI_bbbb,A_lr)
+subroutine phULR_A(ispin,dRPA,nBas,nC,nO,nV,nR,nSa,nSb,nSt,lambda,e,ERI_aaaa,ERI_aabb,ERI_bbbb,Aph)
 
 ! Compute linear response
 
@@ -33,7 +32,7 @@ subroutine unrestricted_linear_response_A_matrix(ispin,dRPA,nBas,nC,nO,nV,nR,nSa
 
 ! Output variables
 
-  double precision,intent(out)  :: A_lr(nSt,nSt)
+  double precision,intent(out)  :: Aph(nSt,nSt)
 
 ! Direct RPA
 
@@ -57,7 +56,7 @@ subroutine unrestricted_linear_response_A_matrix(ispin,dRPA,nBas,nC,nO,nV,nR,nSa
           do b=nO(1)+1,nBas-nR(1)
             jb = jb + 1
  
-            A_lr(ia,jb) = (e(a,1) - e(i,1))*Kronecker_delta(i,j)*Kronecker_delta(a,b) &
+            Aph(ia,jb) = (e(a,1) - e(i,1))*Kronecker_delta(i,j)*Kronecker_delta(a,b) &
                         + lambda*ERI_aaaa(i,b,a,j) - (1d0 - delta_dRPA)*lambda*ERI_aaaa(i,b,j,a)
 
           end  do
@@ -76,7 +75,7 @@ subroutine unrestricted_linear_response_A_matrix(ispin,dRPA,nBas,nC,nO,nV,nR,nSa
           do b=nO(2)+1,nBas-nR(2)
             jb = jb + 1
  
-            A_lr(ia,nSa+jb) = lambda*ERI_aabb(i,b,a,j) 
+            Aph(ia,nSa+jb) = lambda*ERI_aabb(i,b,a,j) 
 
           end  do
         end  do
@@ -94,7 +93,7 @@ subroutine unrestricted_linear_response_A_matrix(ispin,dRPA,nBas,nC,nO,nV,nR,nSa
           do b=nO(1)+1,nBas-nR(1)
             jb = jb + 1
  
-            A_lr(nSa+ia,jb) = lambda*ERI_aabb(b,i,j,a)
+            Aph(nSa+ia,jb) = lambda*ERI_aabb(b,i,j,a)
 
           end  do
         end  do
@@ -112,7 +111,7 @@ subroutine unrestricted_linear_response_A_matrix(ispin,dRPA,nBas,nC,nO,nV,nR,nSa
           do b=nO(2)+1,nBas-nR(2)
             jb = jb + 1
  
-            A_lr(nSa+ia,nSa+jb) = (e(a,2) - e(i,2))*Kronecker_delta(i,j)*Kronecker_delta(a,b) &
+            Aph(nSa+ia,nSa+jb) = (e(a,2) - e(i,2))*Kronecker_delta(i,j)*Kronecker_delta(a,b) &
                                 + lambda*ERI_bbbb(i,b,a,j) - (1d0 - delta_dRPA)*lambda*ERI_bbbb(i,b,j,a)
 
           end  do
@@ -128,7 +127,7 @@ subroutine unrestricted_linear_response_A_matrix(ispin,dRPA,nBas,nC,nO,nV,nR,nSa
 
   if(ispin == 2) then 
 
-    A_lr(:,:) = 0d0
+    Aph(:,:) = 0d0
 
     ! abab block
 
@@ -140,7 +139,7 @@ subroutine unrestricted_linear_response_A_matrix(ispin,dRPA,nBas,nC,nO,nV,nR,nSa
         do j=nC(1)+1,nO(1)
           do b=nO(2)+1,nBas-nR(2)
             jb = jb + 1
-            A_lr(ia,jb) = (e(a,2) - e(i,1))*Kronecker_delta(i,j)*Kronecker_delta(a,b) &
+            Aph(ia,jb) = (e(a,2) - e(i,1))*Kronecker_delta(i,j)*Kronecker_delta(a,b) &
                         - (1d0 - delta_dRPA)*lambda*ERI_aabb(i,b,j,a)
           end  do
         end  do
@@ -158,7 +157,7 @@ subroutine unrestricted_linear_response_A_matrix(ispin,dRPA,nBas,nC,nO,nV,nR,nSa
           do b=nO(1)+1,nBas-nR(1)
             jb = jb + 1
  
-            A_lr(nSa+ia,nSa+jb) = (e(a,1) - e(i,2))*Kronecker_delta(i,j)*Kronecker_delta(a,b) &
+            Aph(nSa+ia,nSa+jb) = (e(a,1) - e(i,2))*Kronecker_delta(i,j)*Kronecker_delta(a,b) &
                                 - (1d0 - delta_dRPA)*lambda*ERI_aabb(b,i,a,j)
 
           end  do
@@ -169,4 +168,4 @@ subroutine unrestricted_linear_response_A_matrix(ispin,dRPA,nBas,nC,nO,nV,nR,nSa
   end if
 
 
-end subroutine unrestricted_linear_response_A_matrix
+end subroutine 

@@ -1,5 +1,4 @@
-subroutine unrestricted_linear_response_D_pp(ispin,nBas,nC,nO,nV,nR,nHaa,nHab,nHbb,nHt,&
-                                             lambda,e,ERI_aaaa,ERI_aabb,ERI_bbbb,D_pp)
+subroutine ppULR_D(ispin,nBas,nC,nO,nV,nR,nHaa,nHab,nHbb,nHt,lambda,e,ERI_aaaa,ERI_aabb,ERI_bbbb,Dpp)
 
 ! Compute linear response
 
@@ -33,7 +32,7 @@ subroutine unrestricted_linear_response_D_pp(ispin,nBas,nC,nO,nV,nR,nHaa,nHab,nH
 
 ! Output variables
 
-  double precision,intent(out)  :: D_pp(nHt,nHt)
+  double precision,intent(out)  :: Dpp(nHt,nHt)
 
 
   eF = 0d0 
@@ -50,7 +49,7 @@ subroutine unrestricted_linear_response_D_pp(ispin,nBas,nC,nO,nV,nR,nHaa,nHab,nH
         do k=nC(1)+1,nO(1)
           do l=nC(2)+1,nO(2)
             kl = kl + 1
-            D_pp(ij,kl) = -(e(i,1) + e(j,2))*Kronecker_delta(i,k)&
+            Dpp(ij,kl) = -(e(i,1) + e(j,2))*Kronecker_delta(i,k)&
                           *Kronecker_delta(j,l) +lambda*ERI_aabb(i,j,k,l)
           end  do
         end  do
@@ -72,7 +71,7 @@ subroutine unrestricted_linear_response_D_pp(ispin,nBas,nC,nO,nV,nR,nHaa,nHab,nH
           do l=k+1,nO(1)
             kl = kl + 1
  
-            D_pp(ij,kl) = -(e(i,1) + e(j,1) - eF)*Kronecker_delta(i,k)&
+            Dpp(ij,kl) = -(e(i,1) + e(j,1) - eF)*Kronecker_delta(i,k)&
                           *Kronecker_delta(j,l) + lambda*(ERI_aaaa(i,j,k,l) &
                           - ERI_aaaa(i,j,l,k))
 
@@ -95,7 +94,7 @@ subroutine unrestricted_linear_response_D_pp(ispin,nBas,nC,nO,nV,nR,nHaa,nHab,nH
           do l=k+1,nO(2)
             kl = kl + 1
  
-           D_pp(ij,kl) = -(e(i,2) + e(j,2) - eF)*Kronecker_delta(i,k) &
+           Dpp(ij,kl) = -(e(i,2) + e(j,2) - eF)*Kronecker_delta(i,k) &
                          *Kronecker_delta(j,l) + lambda*(ERI_bbbb(i,j,k,l) &
                          - ERI_bbbb(i,j,l,k))
 
@@ -106,4 +105,4 @@ subroutine unrestricted_linear_response_D_pp(ispin,nBas,nC,nO,nV,nR,nHaa,nHab,nH
 
   end if
 
-end subroutine unrestricted_linear_response_D_pp
+end subroutine 

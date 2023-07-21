@@ -84,8 +84,8 @@ subroutine URPA(TDA,doACFDT,exchange_kernel,spin_conserved,spin_flip,eta,nBas,nC
 
     allocate(Omega_sc(nS_sc),XpY_sc(nS_sc,nS_sc),XmY_sc(nS_sc,nS_sc))
 
-    call unrestricted_linear_response(ispin,.true.,TDA,.false.,eta,nBas,nC,nO,nV,nR,nS_aa,nS_bb,nS_sc,nS_sc,1d0,e, & 
-                                      ERI_aaaa,ERI_aabb,ERI_bbbb,Omega_sc,rho_sc,EcRPA(ispin),Omega_sc,XpY_sc,XmY_sc)
+    call phULR(ispin,.true.,TDA,.false.,eta,nBas,nC,nO,nV,nR,nS_aa,nS_bb,nS_sc,nS_sc,1d0,e, & 
+               ERI_aaaa,ERI_aabb,ERI_bbbb,Omega_sc,rho_sc,EcRPA(ispin),Omega_sc,XpY_sc,XmY_sc)
     call print_excitation('URPA   ',5,nS_sc,Omega_sc)
     call print_unrestricted_transition_vectors(ispin,nBas,nC,nO,nV,nR,nS,nS_aa,nS_bb,nS_sc,dipole_int_aa,dipole_int_bb, &
                                                c,S,Omega_sc,XpY_sc,XmY_sc)
@@ -108,8 +108,8 @@ subroutine URPA(TDA,doACFDT,exchange_kernel,spin_conserved,spin_flip,eta,nBas,nC
 
     allocate(Omega_sf(nS_sf),XpY_sf(nS_sf,nS_sf),XmY_sf(nS_sf,nS_sf))
 
-    call unrestricted_linear_response(ispin,.true.,TDA,.false.,eta,nBas,nC,nO,nV,nR,nS_ab,nS_ba,nS_sf,nS_sf,1d0,e, &
-                                      ERI_aaaa,ERI_aabb,ERI_bbbb,Omega_sf,rho_sf,EcRPA(ispin),Omega_sf,XpY_sf,XmY_sf)
+    call phULR(ispin,.true.,TDA,.false.,eta,nBas,nC,nO,nV,nR,nS_ab,nS_ba,nS_sf,nS_sf,1d0,e, &
+               ERI_aaaa,ERI_aabb,ERI_bbbb,Omega_sf,rho_sf,EcRPA(ispin),Omega_sf,XpY_sf,XmY_sf)
     call print_excitation('URPA   ',6,nS_sf,Omega_sf)
     call print_unrestricted_transition_vectors(ispin,nBas,nC,nO,nV,nR,nS,nS_ab,nS_ba,nS_sf,dipole_int_aa,dipole_int_bb, &
                                                c,S,Omega_sf,XpY_sf,XmY_sf)
