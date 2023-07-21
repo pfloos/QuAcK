@@ -1,4 +1,4 @@
-subroutine qsGTpp(maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,BSE,TDA_T,TDA,          & 
+subroutine qsGTpp(maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,dophBSE,TDA_T,TDA,          & 
                   dBSE,dTDA,singlet,triplet,eta,regularize,nNuc,ZNuc,rNuc,ENuc,nBas,nC,nO,nV,nR,nS,ERHF, &
                   S,X,T,V,Hc,ERI_AO,ERI_MO,dipole_int_AO,dipole_int_MO,PHF,cHF,eHF)
 
@@ -15,7 +15,7 @@ subroutine qsGTpp(maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,BSE,TDA_T
   logical,intent(in)            :: doACFDT
   logical,intent(in)            :: exchange_kernel
   logical,intent(in)            :: doXBS
-  logical,intent(in)            :: BSE
+  logical,intent(in)            :: dophBSE
   logical,intent(in)            :: TDA_T
   logical,intent(in)            :: TDA
   logical,intent(in)            :: dBSE
@@ -59,7 +59,6 @@ subroutine qsGTpp(maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,BSE,TDA_T
   double precision              :: EqsGT
   double precision              :: EcRPA(nspin)
   double precision              :: EcBSE(nspin)
-  double precision              :: EcAC(nspin)
   double precision              :: EcGM
   double precision              :: Conv
   double precision              :: rcond
@@ -352,7 +351,7 @@ subroutine qsGTpp(maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,BSE,TDA_T
 
 ! Perform BSE calculation
 
-  if(BSE) then
+  if(dophBSE) then
 
     call GTpp_phBSE(TDA_T,TDA,dBSE,dTDA,singlet,triplet,eta,nBas,nC,nO,nV,nR,nS,nOOs,nVVs,nOOt,nVVt,   &
                     Om1s,X1s,Y1s,Om2s,X2s,Y2s,rho1s,rho2s,Om1t,X1t,Y1t,Om2t,X2t,Y2t,rho1t,rho2t, &
@@ -367,10 +366,10 @@ subroutine qsGTpp(maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,BSE,TDA_T
 
     write(*,*)
     write(*,*)'-------------------------------------------------------------------------------'
-    write(*,'(2X,A50,F20.10)') 'Tr@BSE@qsGT correlation energy (singlet) =',EcBSE(1)
-    write(*,'(2X,A50,F20.10)') 'Tr@BSE@qsGT correlation energy (triplet) =',EcBSE(2)
-    write(*,'(2X,A50,F20.10)') 'Tr@BSE@qsGT correlation energy           =',EcBSE(1) + EcBSE(2)
-    write(*,'(2X,A50,F20.10)') 'Tr@BSE@qsGT total energy                 =',ENuc + EqsGT + EcBSE(1) + EcBSE(2)
+    write(*,'(2X,A50,F20.10)') 'Tr@phBSE@qsGTpp correlation energy (singlet) =',EcBSE(1)
+    write(*,'(2X,A50,F20.10)') 'Tr@BphSE@qsGTpp correlation energy (triplet) =',EcBSE(2)
+    write(*,'(2X,A50,F20.10)') 'Tr@phBSE@qsGTpp correlation energy           =',EcBSE(1) + EcBSE(2)
+    write(*,'(2X,A50,F20.10)') 'Tr@phBSE@qsGTpp total energy                 =',ENuc + EqsGT + EcBSE(1) + EcBSE(2)
     write(*,*)'-------------------------------------------------------------------------------'
     write(*,*)
 
@@ -390,16 +389,16 @@ subroutine qsGTpp(maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,BSE,TDA_T
 
       end if
 
-      call GTpp_phACFDT(exchange_kernel,doXBS,.false.,TDA_T,TDA,BSE,singlet,triplet,eta,nBas,nC,nO,nV,nR,nS, &
+      call GTpp_phACFDT(exchange_kernel,doXBS,.false.,TDA_T,TDA,dophBSE,singlet,triplet,eta,nBas,nC,nO,nV,nR,nS, &
                         nOOs,nVVs,nOOt,nVVt,Om1s,X1s,Y1s,Om2s,X2s,Y2s,rho1s,rho2s,Om1t,X1t,Y1t,     &
-                        Om2t,X2t,Y2t,rho1t,rho2t,ERI_MO,eGT,eGT,EcAC)
+                        Om2t,X2t,Y2t,rho1t,rho2t,ERI_MO,eGT,eGT,EcBSE)
 
       write(*,*)
       write(*,*)'-------------------------------------------------------------------------------'
-      write(*,'(2X,A50,F20.10)') 'AC@BSE@qsGT correlation energy (singlet) =',EcAC(1)
-      write(*,'(2X,A50,F20.10)') 'AC@BSE@qsGT correlation energy (triplet) =',EcAC(2)
-      write(*,'(2X,A50,F20.10)') 'AC@BSE@qsGT correlation energy           =',EcAC(1) + EcAC(2)
-      write(*,'(2X,A50,F20.10)') 'AC@BSE@qsGT total energy                 =',ENuc + EqsGT + EcAC(1) + EcAC(2)
+      write(*,'(2X,A50,F20.10)') 'AC@phBSE@qsGTpp correlation energy (singlet) =',EcBSE(1)
+      write(*,'(2X,A50,F20.10)') 'AC@phBSE@qsGTpp correlation energy (triplet) =',EcBSE(2)
+      write(*,'(2X,A50,F20.10)') 'AC@phBSE@qsGTpp correlation energy           =',EcBSE(1) + EcBSE(2)
+      write(*,'(2X,A50,F20.10)') 'AC@phBSE@qsGTpp total energy                 =',ENuc + EqsGT + EcBSE(1) + EcBSE(2)
       write(*,*)'-------------------------------------------------------------------------------'
       write(*,*)
 

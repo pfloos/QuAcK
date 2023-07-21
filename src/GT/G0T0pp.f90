@@ -1,4 +1,4 @@
-subroutine G0T0pp(doACFDT,exchange_kernel,doXBS,BSE,TDA_T,TDA,dBSE,dTDA,ppBSE,singlet,triplet, & 
+subroutine G0T0pp(doACFDT,exchange_kernel,doXBS,dophBSE,TDA_T,TDA,dBSE,dTDA,doppBSE,singlet,triplet, & 
                   linearize,eta,regularize,nBas,nC,nO,nV,nR,nS,ENuc,ERHF,ERI_AO,ERI_MO,dipole_int,PHF,cHF,eHF,Vxc)
 
 ! Perform one-shot calculation with a T-matrix self-energy (G0T0)
@@ -11,8 +11,8 @@ subroutine G0T0pp(doACFDT,exchange_kernel,doXBS,BSE,TDA_T,TDA,dBSE,dTDA,ppBSE,si
   logical,intent(in)            :: doACFDT
   logical,intent(in)            :: exchange_kernel
   logical,intent(in)            :: doXBS
-  logical,intent(in)            :: BSE
-  logical,intent(in)            :: ppBSE
+  logical,intent(in)            :: dophBSE
+  logical,intent(in)            :: doppBSE
   logical,intent(in)            :: TDA_T
   logical,intent(in)            :: TDA
   logical,intent(in)            :: dBSE
@@ -47,8 +47,6 @@ subroutine G0T0pp(doACFDT,exchange_kernel,doXBS,BSE,TDA_T,TDA,dBSE,dTDA,ppBSE,si
   integer                       :: nVVab,nVVaa
   double precision              :: EcRPA(nspin)
   double precision              :: EcBSE(nspin)
-  double precision              :: EcAC(nspin)
-  double precision              :: EcppBSE(nspin)
   double precision              :: EcGM
   double precision,allocatable  :: Bpp(:,:)
   double precision,allocatable  :: Cpp(:,:)
@@ -246,7 +244,7 @@ subroutine G0T0pp(doACFDT,exchange_kernel,doXBS,BSE,TDA_T,TDA,dBSE,dTDA,ppBSE,si
 
 ! Perform BSE calculation
 
-  if(BSE) then
+  if(dophBSE) then
 
     call GTpp_phBSE(TDA_T,TDA,dBSE,dTDA,singlet,triplet,eta,nBas,nC,nO,nV,nR,nS,nOOab,nVVab,nOOaa,nVVaa,   & 
                     Om1ab,X1ab,Y1ab,Om2ab,X2ab,Y2ab,rho1ab,rho2ab,Om1aa,X1aa,Y1aa,Om2aa,X2aa,Y2aa,rho1aa,rho2aa, &
@@ -254,17 +252,17 @@ subroutine G0T0pp(doACFDT,exchange_kernel,doXBS,BSE,TDA_T,TDA,dBSE,dTDA,ppBSE,si
 
     if(exchange_kernel) then
 
-      EcRPA(1) = 0.5d0*EcRPA(1)
-      EcRPA(2) = 1.5d0*EcRPA(1)
+      EcBSE(1) = 0.5d0*EcBSE(1)
+      EcBSE(2) = 1.5d0*EcBSE(1)
 
     end if
 
     write(*,*)
     write(*,*)'-------------------------------------------------------------------------------'
-    write(*,'(2X,A50,F20.10,A3)') 'Tr@BSE@G0T0 correlation energy (singlet) =',EcBSE(1),' au'
-    write(*,'(2X,A50,F20.10,A3)') 'Tr@BSE@G0T0 correlation energy (triplet) =',EcBSE(2),' au'
-    write(*,'(2X,A50,F20.10,A3)') 'Tr@BSE@G0T0 correlation energy           =',EcBSE(1) + EcBSE(2),' au'
-    write(*,'(2X,A50,F20.10,A3)') 'Tr@BSE@G0T0 total energy                 =',ENuc + ERHF + EcBSE(1) + EcBSE(2),' au'
+    write(*,'(2X,A50,F20.10,A3)') 'Tr@phBSE@G0T0pp correlation energy (singlet) =',EcBSE(1),' au'
+    write(*,'(2X,A50,F20.10,A3)') 'Tr@phBSE@G0T0pp correlation energy (triplet) =',EcBSE(2),' au'
+    write(*,'(2X,A50,F20.10,A3)') 'Tr@phBSE@G0T0pp correlation energy           =',EcBSE(1) + EcBSE(2),' au'
+    write(*,'(2X,A50,F20.10,A3)') 'Tr@phBSE@G0T0pp total energy                 =',ENuc + ERHF + EcBSE(1) + EcBSE(2),' au'
     write(*,*)'-------------------------------------------------------------------------------'
     write(*,*)
 
@@ -272,9 +270,9 @@ subroutine G0T0pp(doACFDT,exchange_kernel,doXBS,BSE,TDA_T,TDA,dBSE,dTDA,ppBSE,si
 
     if(doACFDT) then
 
-      write(*,*) '------------------------------------------------------'
-      write(*,*) 'Adiabatic connection version of BSE correlation energy'
-      write(*,*) '------------------------------------------------------'
+      write(*,*) '--------------------------------------------------------'
+      write(*,*) 'Adiabatic connection version of phBSE correlation energy'
+      write(*,*) '--------------------------------------------------------'
       write(*,*)
 
       if(doXBS) then
@@ -284,23 +282,23 @@ subroutine G0T0pp(doACFDT,exchange_kernel,doXBS,BSE,TDA_T,TDA,dBSE,dTDA,ppBSE,si
 
       end if
 
-      call GTpp_phACFDT(exchange_kernel,doXBS,.false.,TDA_T,TDA,BSE,singlet,triplet,eta,nBas,nC,nO,nV,nR,nS, &
+      call GTpp_phACFDT(exchange_kernel,doXBS,.false.,TDA_T,TDA,dophBSE,singlet,triplet,eta,nBas,nC,nO,nV,nR,nS, &
                         nOOab,nVVab,nOOaa,nVVaa,Om1ab,X1ab,Y1ab,Om2ab,X2ab,Y2ab,rho1ab,rho2ab,Om1aa,X1aa,Y1aa,     & 
-                        Om2aa,X2aa,Y2aa,rho1aa,rho2aa,ERI_MO,eHF,eGT,EcAC)
+                        Om2aa,X2aa,Y2aa,rho1aa,rho2aa,ERI_MO,eHF,eGT,EcBSE)
 
       if(exchange_kernel) then
 
-        EcAC(1) = 0.5d0*EcAC(1)
-        EcAC(2) = 1.5d0*EcAC(2)
+        EcBSE(1) = 0.5d0*EcBSE(1)
+        EcBSE(2) = 1.5d0*EcBSE(2)
 
       end if
 
       write(*,*)
       write(*,*)'-------------------------------------------------------------------------------'
-      write(*,'(2X,A50,F20.10,A3)') 'AC@BSE@G0T0 correlation energy (singlet) =',EcAC(1),' au'
-      write(*,'(2X,A50,F20.10,A3)') 'AC@BSE@G0T0 correlation energy (triplet) =',EcAC(2),' au'
-      write(*,'(2X,A50,F20.10,A3)') 'AC@BSE@G0T0 correlation energy           =',EcAC(1) + EcAC(2),' au'
-      write(*,'(2X,A50,F20.10,A3)') 'AC@BSE@G0T0 total energy                 =',ENuc + ERHF + EcAC(1) + EcAC(2),' au'
+      write(*,'(2X,A50,F20.10,A3)') 'AC@phBSE@G0T0pp correlation energy (singlet) =',EcBSE(1),' au'
+      write(*,'(2X,A50,F20.10,A3)') 'AC@phBSE@G0T0pp correlation energy (triplet) =',EcBSE(2),' au'
+      write(*,'(2X,A50,F20.10,A3)') 'AC@phBSE@G0T0pp correlation energy           =',EcBSE(1) + EcBSE(2),' au'
+      write(*,'(2X,A50,F20.10,A3)') 'AC@phBSE@G0T0pp total energy                 =',ENuc + ERHF + EcBSE(1) + EcBSE(2),' au'
       write(*,*)'-------------------------------------------------------------------------------'
       write(*,*)
 
@@ -308,18 +306,18 @@ subroutine G0T0pp(doACFDT,exchange_kernel,doXBS,BSE,TDA_T,TDA,dBSE,dTDA,ppBSE,si
 
   end if
 
-  if(ppBSE) then
+  if(doppBSE) then
 
     call GTpp_ppBSE(TDA_T,TDA,dBSE,dTDA,singlet,triplet,eta,nBas,nC,nO,nV,nR,nOOab,nVVab,nOOaa,nVVaa,      &
                     Om1ab,X1ab,Y1ab,Om2ab,X2ab,Y2ab,rho1ab,rho2ab,Om1aa,X1aa,Y1aa,Om2aa,X2aa,Y2aa,rho1aa,rho2aa, &
-                    ERI_MO,dipole_int,eHF,eGT,EcppBSE)
+                    ERI_MO,dipole_int,eHF,eGT,EcBSE)
 
     write(*,*)
     write(*,*)'-------------------------------------------------------------------------------'
-    write(*,'(2X,A50,F20.10,A3)') 'Tr@ppBSE@G0T0 correlation energy (singlet) =',EcppBSE(1),' au'
-    write(*,'(2X,A50,F20.10,A3)') 'Tr@ppBSE@G0T0 correlation energy (triplet) =',EcppBSE(2),' au'
-    write(*,'(2X,A50,F20.10,A3)') 'Tr@ppBSE@G0T0 correlation energy =',EcppBSE(1) + EcppBSE(2),' au'
-    write(*,'(2X,A50,F20.10,A3)') 'Tr@ppBSE@G0T0 total energy =',ENuc + ERHF + EcppBSE(1) + EcppBSE(2),' au'
+    write(*,'(2X,A50,F20.10,A3)') 'Tr@ppBSE@G0T0pp correlation energy (singlet) =',EcBSE(1),' au'
+    write(*,'(2X,A50,F20.10,A3)') 'Tr@ppBSE@G0T0pp correlation energy (triplet) =',EcBSE(2),' au'
+    write(*,'(2X,A50,F20.10,A3)') 'Tr@ppBSE@G0T0pp correlation energy =',EcBSE(1) + EcBSE(2),' au'
+    write(*,'(2X,A50,F20.10,A3)') 'Tr@ppBSE@G0T0pp total energy =',ENuc + ERHF + EcBSE(1) + EcBSE(2),' au'
     write(*,*)'-------------------------------------------------------------------------------'
     write(*,*)
 

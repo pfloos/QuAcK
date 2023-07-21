@@ -54,7 +54,6 @@ subroutine evGTpp(maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,BSE,TDA_T
   double precision              :: EcGM
   double precision              :: EcRPA(nspin)
   double precision              :: EcBSE(nspin)
-  double precision              :: EcAC(nspin)
   double precision,allocatable  :: error_diis(:,:)
   double precision,allocatable  :: e_diis(:,:)
   double precision,allocatable  :: eGT(:)
@@ -245,10 +244,10 @@ subroutine evGTpp(maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,BSE,TDA_T
 
     write(*,*)
     write(*,*)'-------------------------------------------------------------------------------'
-    write(*,'(2X,A50,F20.10)') 'Tr@BSE@evGT correlation energy (singlet) =',EcBSE(1)
-    write(*,'(2X,A50,F20.10)') 'Tr@BSE@evGT correlation energy (triplet) =',EcBSE(2)
-    write(*,'(2X,A50,F20.10)') 'Tr@BSE@evGT correlation energy           =',EcBSE(1) + EcBSE(2)
-    write(*,'(2X,A50,F20.10)') 'Tr@BSE@evGT total energy                 =',ENuc + ERHF + EcBSE(1) + EcBSE(2)
+    write(*,'(2X,A50,F20.10)') 'Tr@phBSE@evGTpp correlation energy (singlet) =',EcBSE(1)
+    write(*,'(2X,A50,F20.10)') 'Tr@phBSE@evGTpp correlation energy (triplet) =',EcBSE(2)
+    write(*,'(2X,A50,F20.10)') 'Tr@phBSE@evGTpp correlation energy           =',EcBSE(1) + EcBSE(2)
+    write(*,'(2X,A50,F20.10)') 'Tr@phBSE@evGTpp total energy                 =',ENuc + ERHF + EcBSE(1) + EcBSE(2)
     write(*,*)'-------------------------------------------------------------------------------'
     write(*,*)
 
@@ -270,21 +269,21 @@ subroutine evGTpp(maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,BSE,TDA_T
 
       call GTpp_phACFDT(exchange_kernel,doXBS,.false.,TDA_T,TDA,BSE,singlet,triplet,eta,nBas,nC,nO,nV,nR,nS, &
                         nOOs,nVVs,nOOt,nVVt,Om1s,X1s,Y1s,Om2s,X2s,Y2s,rho1s,rho2s,Om1t,X1t,Y1t,     &
-                        Om2t,X2t,Y2t,rho1t,rho2t,ERI_MO,eGT,eGT,EcAC)
+                        Om2t,X2t,Y2t,rho1t,rho2t,ERI_MO,eGT,eGT,EcBSE)
 
       if(exchange_kernel) then
 
-        EcAC(1) = 0.5d0*EcAC(1)
-        EcAC(2) = 1.5d0*EcAC(2)
+        EcBSE(1) = 0.5d0*EcBSE(1)
+        EcBSE(2) = 1.5d0*EcBSE(2)
 
       end if
 
       write(*,*)
       write(*,*)'-------------------------------------------------------------------------------'
-      write(*,'(2X,A50,F20.10)') 'AC@BSE@evGT correlation energy (singlet) =',EcAC(1)
-      write(*,'(2X,A50,F20.10)') 'AC@BSE@evGT correlation energy (triplet) =',EcAC(2)
-      write(*,'(2X,A50,F20.10)') 'AC@BSE@evGT correlation energy           =',EcAC(1) + EcAC(2)
-      write(*,'(2X,A50,F20.10)') 'AC@BSE@evGT total energy                 =',ENuc + ERHF + EcAC(1) + EcAC(2)
+      write(*,'(2X,A50,F20.10)') 'AC@phBSE@evGTpp correlation energy (singlet) =',EcBSE(1)
+      write(*,'(2X,A50,F20.10)') 'AC@phBSE@evGTpp correlation energy (triplet) =',EcBSE(2)
+      write(*,'(2X,A50,F20.10)') 'AC@phBSE@evGTpp correlation energy           =',EcBSE(1) + EcBSE(2)
+      write(*,'(2X,A50,F20.10)') 'AC@phBSE@evGTpp total energy                 =',ENuc + ERHF + EcBSE(1) + EcBSE(2)
       write(*,*)'-------------------------------------------------------------------------------'
       write(*,*)
 
