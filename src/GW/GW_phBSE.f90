@@ -1,4 +1,4 @@
-subroutine GW_phBSE(BSE2,TDA_W,TDA,dBSE,dTDA,singlet,triplet,eta,nBas,nC,nO,nV,nR,nS,ERI,dipole_int,eW,eGW,EcBSE)
+subroutine GW_phBSE(dophBSE2,TDA_W,TDA,dBSE,dTDA,singlet,triplet,eta,nBas,nC,nO,nV,nR,nS,ERI,dipole_int,eW,eGW,EcBSE)
 
 ! Compute the Bethe-Salpeter excitation energies
 
@@ -7,7 +7,7 @@ subroutine GW_phBSE(BSE2,TDA_W,TDA,dBSE,dTDA,singlet,triplet,eta,nBas,nC,nO,nV,n
 
 ! Input variables
 
-  logical,intent(in)            :: BSE2
+  logical,intent(in)            :: dophBSE2
   logical,intent(in)            :: TDA_W
   logical,intent(in)            :: TDA
   logical,intent(in)            :: dBSE
@@ -95,7 +95,7 @@ subroutine GW_phBSE(BSE2,TDA_W,TDA,dBSE,dTDA,singlet,triplet,eta,nBas,nC,nO,nV,n
 
     ! Second-order BSE static kernel
   
-    if(BSE2) then 
+    if(dophBSE2) then 
 
       allocate(W(nBas,nBas,nBas,nBas))
 
@@ -125,7 +125,7 @@ subroutine GW_phBSE(BSE2,TDA_W,TDA,dBSE,dTDA,singlet,triplet,eta,nBas,nC,nO,nV,n
     !-------------------------------------------------
 
     if(dBSE) &
-        call GW_phBSE_dynamic_perturbation(BSE2,dTDA,eta,nBas,nC,nO,nV,nR,nS,eW,eGW,ERI,dipole_int,OmRPA,rho_RPA, &
+        call GW_phBSE_dynamic_perturbation(dophBSE2,dTDA,eta,nBas,nC,nO,nV,nR,nS,eW,eGW,ERI,dipole_int,OmRPA,rho_RPA, &
                                            OmBSE,XpY_BSE,XmY_BSE,KA_sta,KB_sta)
 
   end if
@@ -157,7 +157,7 @@ subroutine GW_phBSE(BSE2,TDA_W,TDA,dBSE,dTDA,singlet,triplet,eta,nBas,nC,nO,nV,n
     !-------------------------------------------------
 
     if(dBSE) &
-        call GW_phBSE_dynamic_perturbation(BSE2,dTDA,eta,nBas,nC,nO,nV,nR,nS,eW,eGW,ERI,dipole_int,OmRPA,rho_RPA, &
+        call GW_phBSE_dynamic_perturbation(dophBSE2,dTDA,eta,nBas,nC,nO,nV,nR,nS,eW,eGW,ERI,dipole_int,OmRPA,rho_RPA, &
                                            OmBSE,XpY_BSE,XmY_BSE,KA_sta,KB_sta)
 
   end if

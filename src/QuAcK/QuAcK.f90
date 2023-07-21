@@ -145,7 +145,7 @@ program QuAcK
                     maxSCF_GW,thresh_GW,DIIS_GW,n_diis_GW,linGW,eta_GW,regGW,COHSEX,TDA_W,              &  
                     maxSCF_GT,thresh_GT,DIIS_GT,n_diis_GT,linGT,eta_GT,regGT,TDA_T,                     & 
                     doACFDT,exchange_kernel,doXBS,                                                      &
-                    dophBSE,dBSE,dTDA,doppBSE,dophBSE2)
+                    dophBSE,dophBSE2,doppBSE,dBSE,dTDA)
 
 !------------------------------------------------------------------------
 ! Read input information

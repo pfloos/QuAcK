@@ -1,4 +1,4 @@
-subroutine GW_phBSE_dynamic_kernel_A(eta,nBas,nC,nO,nV,nR,nS,lambda,eGW,OmRPA,rho_RPA,OmBSE,A_dyn,ZA_dyn)
+subroutine GW_phBSE_dynamic_kernel_A(eta,nBas,nC,nO,nV,nR,nS,lambda,eGW,OmRPA,rho_RPA,OmBSE,KA_dyn,ZA_dyn)
 
 ! Compute the dynamic part of the Bethe-Salpeter equation matrices
 
@@ -23,18 +23,18 @@ subroutine GW_phBSE_dynamic_kernel_A(eta,nBas,nC,nO,nV,nR,nS,lambda,eGW,OmRPA,rh
 
 ! Output variables
 
-  double precision,intent(out)  :: A_dyn(nS,nS)
+  double precision,intent(out)  :: KA_dyn(nS,nS)
   double precision,intent(out)  :: ZA_dyn(nS,nS)
 
 ! Initialization
 
-   A_dyn(:,:) = 0d0
+  KA_dyn(:,:) = 0d0
   ZA_dyn(:,:) = 0d0
 
 ! Build dynamic A matrix
 
   jb = 0
-!$omp parallel do default(private) shared(A_dyn,ZA_dyn,OmRPA,OmBSE,eGW,rho_RPA,nO,nBas,nS,chi,eps,eta,nC,nR,lambda)
+!$omp parallel do default(private) shared(KA_dyn,ZA_dyn,OmRPA,OmBSE,eGW,rho_RPA,nO,nBas,nS,chi,eps,eta,nC,nR,lambda)
   do j=nC+1,nO
     do b=nO+1,nBas-nR
       jb = (b-nO) + (j-1)*(nBas-nO) 
@@ -45,16 +45,6 @@ subroutine GW_phBSE_dynamic_kernel_A(eta,nBas,nC,nO,nV,nR,nS,lambda,eGW,OmRPA,rh
           ia = (a-nO) + (i-1)*(nBas-nO) 
  
           chi = 0d0
-
-          do kc=1,nS
-            eps = OmRPA(kc)
-            chi = chi + rho_RPA(i,j,kc)*rho_RPA(a,b,kc)*eps/(eps**2 + eta**2)
-          enddo
-
-          A_dyn(ia,jb) = A_dyn(ia,jb) - 4d0*lambda*chi
-
-          chi = 0d0
-
           do kc=1,nS
 
             eps = + OmBSE - OmRPA(kc) - (eGW(a) - eGW(j))
@@ -65,7 +55,7 @@ subroutine GW_phBSE_dynamic_kernel_A(eta,nBas,nC,nO,nV,nR,nS,lambda,eGW,OmRPA,rh
 
           enddo
 
-          A_dyn(ia,jb) = A_dyn(ia,jb) - 2d0*lambda*chi
+          KA_dyn(ia,jb) = KA_dyn(ia,jb) - 2d0*lambda*chi
 
           chi = 0d0
           do kc=1,nS

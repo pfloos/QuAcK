@@ -183,6 +183,7 @@ subroutine G0W0(doACFDT,exchange_kernel,doXBS,dophBSE,dophBSE2,TDA_W,TDA,dBSE,dT
 
     call GW_phBSE(dophBSE2,TDA_W,TDA,dBSE,dTDA,singlet,triplet,eta,nBas,nC,nO,nV,nR,nS,ERI_MO,dipole_int,eHF,eGW,EcBSE)
 
+
     if(exchange_kernel) then
  
       EcBSE(1) = 0.5d0*EcBSE(1)
