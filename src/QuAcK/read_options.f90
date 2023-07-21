@@ -3,7 +3,7 @@ subroutine read_options(maxSCF_HF,thresh_HF,DIIS_HF,n_diis_HF,guess_type,ortho_t
                         maxSCF_CC,thresh_CC,DIIS_CC,n_diis_CC,                                              &
                         TDA,singlet,triplet,spin_conserved,spin_flip,                                       &
                         maxSCF_GF,thresh_GF,DIIS_GF,n_diis_GF,linGF,eta_GF,renormGF,regGF,                  &
-                        maxSCF_GW,thresh_GW,DIIS_GW,n_diis_GW,linGW,eta_GW,regGW,COHSEX,TDA_W,              &
+                        maxSCF_GW,thresh_GW,DIIS_GW,n_diis_GW,linGW,eta_GW,regGW,TDA_W,                     &
                         maxSCF_GT,thresh_GT,DIIS_GT,n_diis_GT,linGT,eta_GT,regGT,TDA_T,                     &
                         doACFDT,exchange_kernel,doXBS,                                                      &
                         dophBSE,dophBSE2,doppBSE,dBSE,dTDA)
@@ -50,7 +50,6 @@ subroutine read_options(maxSCF_HF,thresh_HF,DIIS_HF,n_diis_HF,guess_type,ortho_t
   double precision,intent(out)  :: thresh_GW
   logical,intent(out)           :: DIIS_GW
   integer,intent(out)           :: n_diis_GW
-  logical,intent(out)           :: COHSEX
   logical,intent(out)           :: TDA_W
   logical,intent(out)           :: linGW
   double precision,intent(out)  :: eta_GW
@@ -171,18 +170,16 @@ subroutine read_options(maxSCF_HF,thresh_HF,DIIS_HF,n_diis_HF,guess_type,ortho_t
   linGW     = .false.
   eta_GW    = 0d0
   regGW     = .false.
-  COHSEX    = .false.
   TDA_W     = .false.
 
   read(1,*) 
   read(1,*) maxSCF_GW,thresh_GW,answer1,n_diis_GW,answer2,eta_GW, &
-            answer3,answer4,answer5
+            answer3,answer4
 
   if(answer1 == 'T') DIIS_GW = .true.
   if(answer2 == 'T') linGW   = .true.
-  if(answer3 == 'T') COHSEX  = .true.
-  if(answer4 == 'T') TDA_W   = .true.
-  if(answer5 == 'T') regGW   = .true.
+  if(answer3 == 'T') TDA_W   = .true.
+  if(answer4 == 'T') regGW   = .true.
   if(.not.DIIS_GW) n_diis_GW = 1
 
 ! Read GT options
