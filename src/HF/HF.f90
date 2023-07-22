@@ -1,5 +1,5 @@
 subroutine HF(doRHF,doUHF,doRMOM,doUMOM,unrestricted,maxSCF,thresh,max_diis,guess_type,mix,level_shift, & 
-              nNuc,ZNuc,rNuc,ENuc,nBas,nO,S,T,V,Hc,F,ERI,dipole_int,X,EHF,epsHF,cHF,PHF,vHF)
+              nNuc,ZNuc,rNuc,ENuc,nBas,nO,S,T,V,Hc,F,ERI,dipole_int,X,EHF,epsHF,cHF,PHF)
 
 ! Hartree-Fock module
 
@@ -36,6 +36,8 @@ subroutine HF(doRHF,doUHF,doRMOM,doUMOM,unrestricted,maxSCF,thresh,max_diis,gues
 
 ! Local variables
 
+  double precision              :: start_HF     ,end_HF       ,t_HF
+
   integer                       :: nSCF
   integer                       :: n_diis
   double precision              :: ET
@@ -64,7 +66,6 @@ subroutine HF(doRHF,doUHF,doRMOM,doUMOM,unrestricted,maxSCF,thresh,max_diis,gues
   double precision,intent(out)  :: epsHF(nBas)
   double precision,intent(out)  :: cHF(nBas,nBas)
   double precision,intent(out)  :: PHF(nBas,nBas)
-  double precision,intent(out)  :: vHF(nBas)
   double precision,intent(out)  :: F(nBas,nBas)
 
 !------------------------------------------------------------------------
@@ -81,8 +82,14 @@ subroutine HF(doRHF,doUHF,doRMOM,doUMOM,unrestricted,maxSCF,thresh,max_diis,gues
       stop
     end if
 
+    call wall_time(start_HF)
     call RHF(maxSCF,thresh,n_diis,guess_type,level_shift,nNuc,ZNuc,rNuc,ENuc, &
-             nBas,nO,S,T,V,Hc,F,ERI,dipole_int,X,EHF,epsHF,cHF,PHF,vHF)
+             nBas,nO,S,T,V,Hc,F,ERI,dipole_int,X,EHF,epsHF,cHF,PHF)
+    call wall_time(end_HF)
+
+    t_HF = end_HF - start_HF
+    write(*,'(A65,1X,F9.3,A8)') 'Total wall time for HF = ',t_HF,' seconds'
+    write(*,*)
 
   end if
 
@@ -95,8 +102,14 @@ subroutine HF(doRHF,doUHF,doRMOM,doUMOM,unrestricted,maxSCF,thresh,max_diis,gues
     ! Switch on the unrestricted flag
     unrestricted = .true.
 
+    call wall_time(start_HF)
     call UHF(maxSCF,thresh,n_diis,guess_type,mix,level_shift,nNuc,ZNuc,rNuc,ENuc, &
-             nBas,nO,S,T,V,Hc,ERI,dipole_int,X,EHF,epsHF,cHF,PHF,vHF)
+             nBas,nO,S,T,V,Hc,ERI,dipole_int,X,EHF,epsHF,cHF,PHF)
+    call wall_time(end_HF)
+
+    t_HF = end_HF - start_HF
+    write(*,'(A65,1X,F9.3,A8)') 'Total wall time for HF = ',t_HF,' seconds'
+    write(*,*)
 
   end if
 
@@ -115,7 +128,7 @@ subroutine HF(doRHF,doUHF,doRMOM,doUMOM,unrestricted,maxSCF,thresh,max_diis,gues
     end if
 
 !   call RMOM(maxSCF,thresh,n_diis,guess_type,nNuc,ZNuc,rNuc,ENuc, &
-!           nBas,nO,S,T,V,Hc,ERI,dipole_int,X,EHF,epsHF,cHF,PHF,vHF)
+!           nBas,nO,S,T,V,Hc,ERI,dipole_int,X,EHF,epsHF,cHF,PHF)
 
   end if
 
@@ -129,7 +142,7 @@ subroutine HF(doRHF,doUHF,doRMOM,doUMOM,unrestricted,maxSCF,thresh,max_diis,gues
     unrestricted = .true.
 
 !   call UMOM(maxSCF,thresh,n_diis,guess_type,nNuc,ZNuc,rNuc,ENuc, &
-!           nBas,nO,S,T,V,Hc,ERI,dipole_int,X,EHF,epsHF,cHF,PHF,vHF)
+!           nBas,nO,S,T,V,Hc,ERI,dipole_int,X,EHF,epsHF,cHF,PHF)
 
   end if
 

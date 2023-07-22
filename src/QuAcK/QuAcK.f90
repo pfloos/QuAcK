@@ -8,7 +8,7 @@ program QuAcK
   logical                       :: dostab
   logical                       :: doKS
   logical                       :: doMP,doMP2,doMP3
-  logical                       :: doCCD,dopCCD,doDCD,doCCSD,doCCSDT
+  logical                       :: doCC,doCCD,dopCCD,doDCD,doCCSD,doCCSDT
   logical                       :: do_drCCD,do_rCCD,do_crCCD,do_lCCD
   logical                       :: doCIS,doCIS_D,doCID,doCISD,doFCI
   logical                       :: dophRPA,dophRPAx,docrRPA,doppRPA
@@ -369,138 +369,26 @@ program QuAcK
     call cpu_time(end_MP)
 
     t_MP = end_MP - start_MP
-    write(*,'(A65,1X,F9.3,A8)') 'Total CPU time for MP2 = ',t_MP,' seconds'
+    write(*,'(A65,1X,F9.3,A8)') 'Total CPU time for MP = ',t_MP,' seconds'
     write(*,*)
 
   end if
 
 !------------------------------------------------------------------------
-! Perform CCD calculation
+! Coupled-cluster module
 !------------------------------------------------------------------------
 
-  if(doCCD) then
+  doCC = doCCD .or. dopCCD .or. doDCD .or. doCCSD .or. doCCSDT
+
+  if(doCC) then
 
     call cpu_time(start_CC)
-    call CCD(maxSCF_CC,thresh_CC,n_diis_CC,nBas,nC,nO,nV,nR,ERI_MO,ENuc,EHF,epsHF)
+    call CC(doCCD,dopCCD,doDCD,doCCSD,doCCSDT,do_drCCD,do_rCCD,do_crCCD,do_lCCD, & 
+            maxSCF_CC,thresh_CC,n_diis_CC,nBas,nC,nO,nV,nR,ERI_MO,ENuc,EHF,epsHF)
     call cpu_time(end_CC)
 
     t_CC = end_CC - start_CC
-    write(*,'(A65,1X,F9.3,A8)') 'Total CPU time for CCD = ',t_CC,' seconds'
-    write(*,*)
-
-  end if
-
-!------------------------------------------------------------------------
-! Perform DCD calculation
-!------------------------------------------------------------------------
-
-  if(doDCD) then
-
-    call cpu_time(start_CC)
-    call DCD(maxSCF_CC,thresh_CC,n_diis_CC,nBas,nC,nO,nV,nR, & 
-             ERI_MO,ENuc,EHF,epsHF)
-    call cpu_time(end_CC)
-
-    t_CC = end_CC - start_CC
-    write(*,'(A65,1X,F9.3,A8)') 'Total CPU time for DCD = ',t_CC,' seconds'
-    write(*,*)
-
-  end if
-
-!------------------------------------------------------------------------
-! Perform CCSD or CCSD(T) calculation
-!------------------------------------------------------------------------
-
-  if(doCCSDT) doCCSD = .true.
-
-  if(doCCSD) then
-
-    call cpu_time(start_CC)
-    call CCSD(maxSCF_CC,thresh_CC,n_diis_CC,doCCSDT,nBas,nC,nO,nV,nR,ERI_MO,ENuc,EHF,epsHF)
-    call cpu_time(end_CC)
-
-    t_CC = end_CC - start_CC
-    write(*,'(A65,1X,F9.3,A8)') 'Total CPU time for CCSD or CCSD(T)= ',t_CC,' seconds'
-    write(*,*)
-
-  end if
-
-!------------------------------------------------------------------------
-! Perform direct ring CCD calculation
-!------------------------------------------------------------------------
-
-  if(do_drCCD) then
-
-    call cpu_time(start_CC)
-    call drCCD(maxSCF_CC,thresh_CC,n_diis_CC,nBas,nC,nO,nV,nR,ERI_MO,ENuc,EHF,epsHF)
-    call cpu_time(end_CC)
-
-    t_CC = end_CC - start_CC
-    write(*,'(A65,1X,F9.3,A8)') 'Total CPU time for direct ring CCD = ',t_CC,' seconds'
-    write(*,*)
-
-  end if
-
-!------------------------------------------------------------------------
-! Perform ring CCD calculation
-!------------------------------------------------------------------------
-
-  if(do_rCCD) then
-
-    call cpu_time(start_CC)
-    call rCCD(maxSCF_CC,thresh_CC,n_diis_CC,nBas,nC,nO,nV,nR,ERI_MO,ENuc,EHF,epsHF,epsHF)
-    call cpu_time(end_CC)
-
-    t_CC = end_CC - start_CC
-    write(*,'(A65,1X,F9.3,A8)') 'Total CPU time for rCCD = ',t_CC,' seconds'
-    write(*,*)
-
-  end if
-
-!------------------------------------------------------------------------
-! Perform crossed-ring CCD calculation
-!------------------------------------------------------------------------
-
-  if(do_crCCD) then
-
-    call cpu_time(start_CC)
-    call crCCD(maxSCF_CC,thresh_CC,n_diis_CC,nBas,nC,nO,nV,nR,ERI_MO,ENuc,EHF,epsHF)
-    call cpu_time(end_CC)
-
-    t_CC = end_CC - start_CC
-    write(*,'(A65,1X,F9.3,A8)') 'Total CPU time for crossed-ring CCD = ',t_CC,' seconds'
-    write(*,*)
-
-  end if
-
-!------------------------------------------------------------------------
-! Perform ladder CCD calculation
-!------------------------------------------------------------------------
-
-  if(do_lCCD) then
-
-    call cpu_time(start_CC)
-    call lCCD(maxSCF_CC,thresh_CC,n_diis_CC,nBas,nC,nO,nV,nR,ERI_MO,ENuc,EHF,epsHF)
-    call cpu_time(end_CC)
-
-    t_CC = end_CC - start_CC
-    write(*,'(A65,1X,F9.3,A8)') 'Total CPU time for ladder CCD = ',t_CC,' seconds'
-    write(*,*)
-
-  end if
-
-!------------------------------------------------------------------------
-! Perform pair CCD calculation
-!------------------------------------------------------------------------
-
-  if(dopCCD) then
-
-    call cpu_time(start_CC)
-    call pCCD(maxSCF_CC,thresh_CC,n_diis_CC,nBas,nC,nO,nV,nR,ERI_MO,ENuc,EHF,epsHF)
-    call cpu_time(end_CC)
-
-    t_CC = end_CC - start_CC
-    write(*,'(A65,1X,F9.3,A8)') 'Total CPU time for pair CCD = ',t_CC,' seconds'
+    write(*,'(A65,1X,F9.3,A8)') 'Total CPU time for CC = ',t_CC,' seconds'
     write(*,*)
 
   end if
