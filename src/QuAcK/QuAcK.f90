@@ -869,7 +869,7 @@ program QuAcK
     else
  
       call qsGW(maxSCF_GW,thresh_GW,n_diis_GW,doACFDT,exchange_kernel,doXBS,               &
-                dophBSE,dophBSE2,TDA_W,TDA,dBSE,dTDA,singlet,triplet,eta_GW,regGW,nNuc,ZNuc,rNuc,ENuc, & 
+                dophBSE,dophBSE2,TDA_W,TDA,dBSE,dTDA,doppBSE,singlet,triplet,eta_GW,regGW,nNuc,ZNuc,rNuc,ENuc, & 
                 nBas,nC,nO,nV,nR,nS,EHF,S,X,T,V,Hc,ERI_AO,ERI_MO,dipole_int_AO,dipole_int_MO,PHF,cHF,epsHF)
 
     end if

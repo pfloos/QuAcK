@@ -176,7 +176,7 @@ subroutine qsGW(maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,dophBSE,dop
     if(.not.TDA_W) call phLR_B(ispin,dRPA,nBas,nC,nO,nV,nR,nS,1d0,ERI_MO,Bph)
 
     call phLR(TDA_W,nS,Aph,Bph,EcRPA,Om,XpY,XmY)
-    if(print_W) call print_excitation('RPA@qsGW    ',ispin,nS,Om)
+    if(print_W) call print_excitation('phRPA@qsGW  ',ispin,nS,Om)
 
     ! Compute correlation part of the self-energy 
 
