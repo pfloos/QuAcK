@@ -1,4 +1,4 @@
-subroutine QP_graph(nBas,nC,nO,nV,nR,nS,eta,eHF,SigX,Vxc,Omega,rho,eGWlin,eGW,regularize)
+subroutine QP_graph(nBas,nC,nO,nV,nR,nS,eta,eHF,Omega,rho,eGWlin,eGW,regularize)
 
 ! Compute the graphical solution of the QP equation
 
@@ -15,8 +15,6 @@ subroutine QP_graph(nBas,nC,nO,nV,nR,nS,eta,eHF,SigX,Vxc,Omega,rho,eGWlin,eGW,re
   integer,intent(in)            :: nS
   double precision,intent(in)   :: eta
   double precision,intent(in)   :: eHF(nBas)
-  double precision,intent(in)   :: SigX(nBas)
-  double precision,intent(in)   :: Vxc(nBas)
   double precision,intent(in)   :: Omega(nS)
   double precision,intent(in)   :: rho(nBas,nBas,nS)
 
@@ -57,7 +55,7 @@ subroutine QP_graph(nBas,nC,nO,nV,nR,nS,eta,eHF,SigX,Vxc,Omega,rho,eGWlin,eGW,re
 
       sigC  =  SigmaC(p,w,eta,nBas,nC,nO,nV,nR,nS,eHF,Omega,rho,regularize)
       dsigC = dSigmaC(p,w,eta,nBas,nC,nO,nV,nR,nS,eHF,Omega,rho,regularize)
-      f  = w - eHF(p) - SigX(p) - sigC + Vxc(p)
+      f  = w - eHF(p) - SigC
       df = 1d0 - dsigC
     
       w = w - f/df

@@ -1,4 +1,4 @@
-subroutine unrestricted_excitation_density_Tmatrix(ispin,nBas,nC,nO,nV,nR,nH,nP,ERI_aaaa,ERI_aabb,ERI_bbbb,X1,Y1,rho1,X2,Y2,rho2)
+subroutine UGTpp_excitation_density(ispin,nBas,nC,nO,nV,nR,nH,nP,ERI_aaaa,ERI_aabb,ERI_bbbb,X1,Y1,rho1,X2,Y2,rho2)
 
 ! Compute excitation densities for T-matrix self-energy
 
@@ -219,4 +219,4 @@ subroutine unrestricted_excitation_density_Tmatrix(ispin,nBas,nC,nO,nV,nR,nH,nP,
 
   end if
 
-end subroutine unrestricted_excitation_density_Tmatrix
+end subroutine 

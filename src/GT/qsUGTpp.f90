@@ -1,7 +1,7 @@
-subroutine qsUGT(maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,BSE, &
-                 TDA_T,TDA,dBSE,dTDA,spin_conserved,spin_flip,&
-                 eta,regularize,nBas,nC,nO,nV,nR,nS,nNuc,ZNuc,rNuc,ENuc,EUHF,S,X,T,V,Hc,ERI_AO,ERI_aaaa,&
-                 ERI_aabb,ERI_bbbb,dipole_int_AO,dipole_int_aa,dipole_int_bb,PHF,cHF,eHF)
+subroutine qsUGTpp(maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,BSE, &
+                   TDA_T,TDA,dBSE,dTDA,spin_conserved,spin_flip,&
+                   eta,regularize,nBas,nC,nO,nV,nR,nS,nNuc,ZNuc,rNuc,ENuc,EUHF,S,X,T,V,Hc,ERI_AO,ERI_aaaa,&
+                   ERI_aabb,ERI_bbbb,dipole_int_AO,dipole_int_aa,dipole_int_bb,PHF,cHF,eHF)
 
 ! Perform a quasiparticle self-consistent GT calculation
 
@@ -208,10 +208,8 @@ subroutine qsUGT(maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,BSE, &
 
 ! Compute linear response
 
-    call ppULR(iblock,TDA,nBas,nC,nO,nV,nR,nPaa,nPab,nPbb, &
-               nPab,nHaa,nHab,nHbb,nHab,1d0,eGT,ERI_aaaa, &
-               ERI_aabb,ERI_bbbb,Om1ab,X1ab,Y1ab, &
-               Om2ab,X2ab,Y2ab,EcRPA(ispin)) 
+    call ppULR(iblock,TDA,nBas,nC,nO,nV,nR,nPaa,nPab,nPbb,nPab,nHaa,nHab,nHbb,nHab,1d0,eGT,ERI_aaaa, &
+               ERI_aabb,ERI_bbbb,Om1ab,X1ab,Y1ab,Om2ab,X2ab,Y2ab,EcRPA(ispin)) 
   
 ! EcRPA(ispin) = 1d0*EcRPA(ispin) 
 
@@ -224,13 +222,9 @@ subroutine qsUGT(maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,BSE, &
 
 ! Compute linear response
 
-    call ppULR(iblock,TDA,nBas,nC,nO,nV,nR,nPaa,nPab,nPbb, &
-               nPaa,nHaa,nHab,nHbb,nHaa,1d0,eGT,ERI_aaaa, &
-               ERI_aabb,ERI_bbbb,Om1aa,X1aa,Y1aa, &
-               Om2aa,X2aa,Y2aa,EcRPA(ispin))  
+    call ppULR(iblock,TDA,nBas,nC,nO,nV,nR,nPaa,nPab,nPbb,nPaa,nHaa,nHab,nHbb,nHaa,1d0,eGT,ERI_aaaa, &
+               ERI_aabb,ERI_bbbb,Om1aa,X1aa,Y1aa,Om2aa,X2aa,Y2aa,EcRPA(ispin))  
   
-! EcRPA(ispin) = 2d0*EcRPA(ispin)
-! EcRPA(ispin) = 3d0*EcRPA(ispin) 
     Ecaa = EcRPA(2)
 
 !----------------------------------------------
@@ -242,13 +236,9 @@ subroutine qsUGT(maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,BSE, &
 
 ! Compute linear response
 
-    call ppULR(iblock,TDA,nBas,nC,nO,nV,nR,nPaa,nPab,nPbb, &
-               nPbb,nHaa,nHab,nHbb,nHbb,1d0,eGT,ERI_aaaa, &
-               ERI_aabb,ERI_bbbb,Om1bb,X1bb,Y1bb, &
-               Om2bb,X2bb,Y2bb,EcRPA(ispin))
+    call ppULR(iblock,TDA,nBas,nC,nO,nV,nR,nPaa,nPab,nPbb,nPbb,nHaa,nHab,nHbb,nHbb,1d0,eGT,ERI_aaaa, &
+               ERI_aabb,ERI_bbbb,Om1bb,X1bb,Y1bb,Om2bb,X2bb,Y2bb,EcRPA(ispin))
 
-! EcRPA(ispin) = 2d0*EcRPA(ispin)
-! EcRPA(ispin) = 3d0*EcRPA(ispin) 
     Ecbb = EcRPA(2)
     EcRPA(2) = Ecaa + Ecbb
     EcRPA(1) = EcRPA(1) - EcRPA(2)
@@ -266,35 +256,27 @@ subroutine qsUGT(maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,BSE, &
   
     iblock = 3
 
-    call unrestricted_excitation_density_Tmatrix(iblock,nBas,nC,nO,nV,nR,nHab,nPab, &
-                                                 ERI_aaaa,ERI_aabb,ERI_bbbb,X1ab,Y1ab, &
-                                                 rho1ab,X2ab,Y2ab,rho2ab)
+    call UGTpp_excitation_density(iblock,nBas,nC,nO,nV,nR,nHab,nPab,ERI_aaaa,ERI_aabb,ERI_bbbb,X1ab,Y1ab, &
+                                  rho1ab,X2ab,Y2ab,rho2ab)
 !alpha-alpha block
 
     iblock = 4
   
-    call unrestricted_excitation_density_Tmatrix(iblock,nBas,nC,nO,nV,nR,nHaa,nPaa, &
-                                                 ERI_aaaa,ERI_aabb,ERI_bbbb,X1aa,Y1aa, &
-                                                 rho1aa,X2aa,Y2aa,rho2aa)
+    call UGTpp_excitation_density(iblock,nBas,nC,nO,nV,nR,nHaa,nPaa,ERI_aaaa,ERI_aabb,ERI_bbbb,X1aa,Y1aa, &
+                                  rho1aa,X2aa,Y2aa,rho2aa)
 
 !beta-beta block 
   
     iblock = 7
 
-    call unrestricted_excitation_density_Tmatrix(iblock,nBas,nC,nO,nV,nR,nHbb,nPbb, &
-                                                 ERI_aaaa,ERI_aabb,ERI_bbbb,X1bb,Y1bb, &
-                                                 rho1bb,X2bb,Y2bb,rho2bb)
+    call UGTpp_excitation_density(iblock,nBas,nC,nO,nV,nR,nHbb,nPbb,ERI_aaaa,ERI_aabb,ERI_bbbb,X1bb,Y1bb, &
+                                  rho1bb,X2bb,Y2bb,rho2bb)
 
-    call unrestricted_self_energy_Tmatrix(eta,nBas,nC,nO,nV,nR,nHaa,nHab,nHbb,nPaa,&
-                                               nPab,nPbb,eGT,Om1aa,Om1ab,Om1bb,&
-                                               rho1aa,rho1ab,rho1bb,Om2aa,Om2ab,&
-                                               Om2bb,rho2aa,rho2ab,rho2bb,EcGM,SigT)
+    call UGTpp_self_energy(eta,nBas,nC,nO,nV,nR,nHaa,nHab,nHbb,nPaa,nPab,nPbb,eGT,Om1aa,Om1ab,Om1bb,&
+                           rho1aa,rho1ab,rho1bb,Om2aa,Om2ab,Om2bb,rho2aa,rho2ab,rho2bb,EcGM,SigT)
 
-    call unrestricted_renormalization_factor_Tmatrix(eta,nBas,nC,nO,nV,nR,nHaa,nHab,nHbb,&
-                                                     nPaa,nPab,nPbb,eGT,Om1aa,Om1ab,&
-                                                     Om1bb,rho1aa,rho1ab,rho1bb, &
-                                                     Om2aa,Om2ab,Om2bb,rho2aa, &
-                                                     rho2ab,rho2bb,Z) 
+    call UGTpp_renormalization_factor(eta,nBas,nC,nO,nV,nR,nHaa,nHab,nHbb,nPaa,nPab,nPbb,eGT,Om1aa,Om1ab,&
+                                      Om1bb,rho1aa,rho1ab,rho1bb,Om2aa,Om2ab,Om2bb,rho2aa,rho2ab,rho2bb,Z) 
 
 
     Z(:,:) = 1d0/(1d0 - Z(:,:))

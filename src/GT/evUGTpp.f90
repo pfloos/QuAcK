@@ -1,8 +1,7 @@
-subroutine evUGT(maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,BSE, &
-                 TDA_T,TDA,dBSE,dTDA,spin_conserved,spin_flip,&
-                 eta,regularize,nBas,nC,nO,nV,nR,nS,ENuc,EUHF,ERI_AO,ERI_aaaa, &
-                 ERI_aabb,ERI_bbbb,dipole_int_aa,dipole_int_bb,PHF,cHF,eHF, &
-                 Vxc,eG0T0)
+subroutine evUGTpp(maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,BSE, &
+                   TDA_T,TDA,dBSE,dTDA,spin_conserved,spin_flip,&
+                   eta,regularize,nBas,nC,nO,nV,nR,nS,ENuc,EUHF,ERI_AO,ERI_aaaa, &
+                   ERI_aabb,ERI_bbbb,dipole_int_aa,dipole_int_bb,PHF,cHF,eHF)
 
 ! Perform one-shot calculation with a T-matrix self-energy (G0T0)
 
@@ -34,7 +33,6 @@ subroutine evUGT(maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,BSE, &
   integer,intent(in)            :: nS(nspin)
   double precision,intent(in)   :: ENuc
   double precision,intent(in)   :: EUHF
-  double precision,intent(in)   :: Vxc(nBas,nspin)
   double precision,intent(in)   :: eHF(nBas,nspin)
   double precision,intent(in)   :: cHF(nBas,nBas,nspin)
   double precision,intent(in)   :: PHF(nBas,nBas,nspin)
@@ -44,7 +42,6 @@ subroutine evUGT(maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,BSE, &
   double precision,intent(in)   :: ERI_bbbb(nBas,nBas,nBas,nBas)
   double precision,intent(in)   :: dipole_int_aa(nBas,nBas,ncart)
   double precision,intent(in)   :: dipole_int_bb(nBas,nBas,ncart)
-  double precision,intent(in)   :: eG0T0(nBas,nspin)
 
 ! Local variables
   integer                       :: nSCF
@@ -67,7 +64,6 @@ subroutine evUGT(maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,BSE, &
   double precision,allocatable  :: X2ab(:,:),X2aa(:,:),X2bb(:,:)
   double precision,allocatable  :: Y2ab(:,:),Y2aa(:,:),Y2bb(:,:)
   double precision,allocatable  :: rho2ab(:,:,:),rho2aa(:,:,:),rho2bb(:,:,:)
-  double precision,allocatable  :: SigX(:,:)
   double precision,allocatable  :: SigT(:,:)
   double precision,allocatable  :: Z(:,:)
   double precision,allocatable  :: eGT(:,:)
@@ -113,18 +109,13 @@ subroutine evUGT(maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,BSE, &
            Om1bb(nPbb),X1bb(nPbb,nPbb),Y1bb(nHbb,nPbb), &
            Om2bb(nPbb),X2bb(nPbb,nPbb),Y2bb(nHbb,nPbb), &
            rho1bb(nBas,nBas,nPbb),rho2bb(nBas,nBas,nHbb), &
-           SigX(nBas,nspin),SigT(nBas,nspin),Z(nBas,nspin), &
+           SigT(nBas,nspin),Z(nBas,nspin), &
            eGT(nBas,nspin),eOld(nBas,nspin),error_diis(nBas,max_diis,nspin), &
            e_diis(nBas,max_diis,nspin))
 
 !----------------------------------------------
 ! Compute the exchange part of the self-energy
 !----------------------------------------------
- 
-  do is=1,nspin
-    call self_energy_exchange_diag(nBas,cHF(:,:,is),PHF(:,:,is),ERI_AO, &
-                                   SigX(:,is))
-  end do
 
 !Initialization
   
@@ -133,7 +124,7 @@ subroutine evUGT(maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,BSE, &
   Conv              = 1d0
   e_diis(:,:,:)     = 0d0
   error_diis(:,:,:) = 0d0  
-  eGT(:,:)          = eG0T0(:,:)
+  eGT(:,:)          = eHF(:,:)
   eOld(:,:)         = eGT(:,:)
   Z(:,:)            = 1d0
   rcond(:)          = 0d0 
@@ -154,13 +145,9 @@ subroutine evUGT(maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,BSE, &
 
 ! Compute linear response
 
-    call ppULR(iblock,TDA,nBas,nC,nO,nV,nR,nPaa,nPab,nPbb, &
-               nPab,nHaa,nHab,nHbb,nHab,1d0,eGT,ERI_aaaa, &
-               ERI_aabb,ERI_bbbb,Om1ab,X1ab,Y1ab, &
-               Om2ab,X2ab,Y2ab,EcRPA(ispin)) 
+    call ppULR(iblock,TDA,nBas,nC,nO,nV,nR,nPaa,nPab,nPbb,nPab,nHaa,nHab,nHbb,nHab,1d0,eGT,ERI_aaaa, &
+               ERI_aabb,ERI_bbbb,Om1ab,X1ab,Y1ab,Om2ab,X2ab,Y2ab,EcRPA(ispin)) 
   
-! EcRPA(ispin) = 1d0*EcRPA(ispin) 
-
 !----------------------------------------------
 ! alpha-alpha block
 !----------------------------------------------
@@ -170,14 +157,9 @@ subroutine evUGT(maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,BSE, &
 
 ! Compute linear response
 
-    call ppULR(iblock,TDA,nBas,nC,nO,nV,nR,nPaa,nPab,nPbb, &
-               nPaa,nHaa,nHab,nHbb,nHaa,1d0,eGT,ERI_aaaa, &
-               ERI_aabb,ERI_bbbb,Om1aa,X1aa,Y1aa, &
-               Om2aa,X2aa,Y2aa,EcRPA(ispin))  
+    call ppULR(iblock,TDA,nBas,nC,nO,nV,nR,nPaa,nPab,nPbb,nPaa,nHaa,nHab,nHbb,nHaa,1d0,eGT,ERI_aaaa, &
+               ERI_aabb,ERI_bbbb,Om1aa,X1aa,Y1aa,Om2aa,X2aa,Y2aa,EcRPA(ispin))  
   
-! EcRPA(ispin) = 2d0*EcRPA(ispin)
-! EcRPA(ispin) = 3d0*EcRPA(ispin) 
-
 !----------------------------------------------
 ! beta-beta block
 !----------------------------------------------
@@ -187,13 +169,8 @@ subroutine evUGT(maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,BSE, &
 
 ! Compute linear response
 
-    call ppULR(iblock,TDA,nBas,nC,nO,nV,nR,nPaa,nPab,nPbb, &
-               nPbb,nHaa,nHab,nHbb,nHbb,1d0,eGT,ERI_aaaa, &
-               ERI_aabb,ERI_bbbb,Om1bb,X1bb,Y1bb, &
-               Om2bb,X2bb,Y2bb,EcRPA(ispin))
-
-! EcRPA(ispin) = 2d0*EcRPA(ispin)
-! EcRPA(ispin) = 3d0*EcRPA(ispin) 
+    call ppULR(iblock,TDA,nBas,nC,nO,nV,nR,nPaa,nPab,nPbb,nPbb,nHaa,nHab,nHbb,nHbb,1d0,eGT,ERI_aaaa, &
+               ERI_aabb,ERI_bbbb,Om1bb,X1bb,Y1bb,Om2bb,X2bb,Y2bb,EcRPA(ispin))
 
 !----------------------------------------------
 ! Compute T-matrix version of the self-energy 
@@ -207,35 +184,27 @@ subroutine evUGT(maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,BSE, &
   
     iblock = 3
 
-    call unrestricted_excitation_density_Tmatrix(iblock,nBas,nC,nO,nV,nR,nHab,nPab, &
-                                                 ERI_aaaa,ERI_aabb,ERI_bbbb,X1ab,Y1ab, &
-                                                 rho1ab,X2ab,Y2ab,rho2ab)
+    call UGTpp_excitation_density(iblock,nBas,nC,nO,nV,nR,nHab,nPab,ERI_aaaa,ERI_aabb,ERI_bbbb,X1ab,Y1ab, &
+                                  rho1ab,X2ab,Y2ab,rho2ab)
 !alpha-alpha block
 
     iblock = 4
   
-    call unrestricted_excitation_density_Tmatrix(iblock,nBas,nC,nO,nV,nR,nHaa,nPaa, &
-                                                 ERI_aaaa,ERI_aabb,ERI_bbbb,X1aa,Y1aa, &
-                                                 rho1aa,X2aa,Y2aa,rho2aa)
+    call UGTpp_excitation_density(iblock,nBas,nC,nO,nV,nR,nHaa,nPaa,ERI_aaaa,ERI_aabb,ERI_bbbb,X1aa,Y1aa, &
+                                  rho1aa,X2aa,Y2aa,rho2aa)
 
 !beta-beta block 
   
     iblock = 7
 
-    call unrestricted_excitation_density_Tmatrix(iblock,nBas,nC,nO,nV,nR,nHbb,nPbb, &
-                                                 ERI_aaaa,ERI_aabb,ERI_bbbb,X1bb,Y1bb, &
-                                                 rho1bb,X2bb,Y2bb,rho2bb)
+    call UGTpp_excitation_density(iblock,nBas,nC,nO,nV,nR,nHbb,nPbb,ERI_aaaa,ERI_aabb,ERI_bbbb,X1bb,Y1bb, &
+                                  rho1bb,X2bb,Y2bb,rho2bb)
 
-    call unrestricted_self_energy_Tmatrix_diag(eta,nBas,nC,nO,nV,nR,nHaa,nHab,nHbb,nPaa,&
-                                               nPab,nPbb,eGT,Om1aa,Om1ab,Om1bb,&
-                                               rho1aa,rho1ab,rho1bb,Om2aa,Om2ab,&
-                                               Om2bb,rho2aa,rho2ab,rho2bb,EcGM,SigT)
+    call UGTpp_self_energy_diag(eta,nBas,nC,nO,nV,nR,nHaa,nHab,nHbb,nPaa,nPab,nPbb,eGT,Om1aa,Om1ab,Om1bb,&
+                                rho1aa,rho1ab,rho1bb,Om2aa,Om2ab,Om2bb,rho2aa,rho2ab,rho2bb,EcGM,SigT)
 
-    call unrestricted_renormalization_factor_Tmatrix(eta,nBas,nC,nO,nV,nR,nHaa,nHab,nHbb,&
-                                                     nPaa,nPab,nPbb,eGT,Om1aa,Om1ab,&
-                                                     Om1bb,rho1aa,rho1ab,rho1bb, &
-                                                     Om2aa,Om2ab,Om2bb,rho2aa, &
-                                                     rho2ab,rho2bb,Z) 
+    call UGTpp_renormalization_factor(eta,nBas,nC,nO,nV,nR,nHaa,nHab,nHbb,nPaa,nPab,nPbb,eGT,Om1aa,Om1ab,&
+                                      Om1bb,rho1aa,rho1ab,rho1bb,Om2aa,Om2ab,Om2bb,rho2aa,rho2ab,rho2bb,Z) 
 
 
     Z(:,:) = 1d0/(1d0 - Z(:,:))
@@ -244,7 +213,7 @@ subroutine evUGT(maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,BSE, &
 ! Solve the quasi-particle equation
 !----------------------------------------------
   
-    eGT(:,:) = eHF(:,:) + SigX(:,:) + SigT(:,:) - Vxc(:,:)
+    eGT(:,:) = eHF(:,:) + SigT(:,:) 
 
 ! Convergence criteria
 

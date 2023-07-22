@@ -1,6 +1,6 @@
 subroutine UG0W0(doACFDT,exchange_kernel,doXBS,BSE,TDA_W,TDA,dBSE,dTDA,spin_conserved,spin_flip, &
                  linearize,eta,regularize,nBas,nC,nO,nV,nR,nS,ENuc,EUHF,S,ERI,ERI_aaaa,ERI_aabb,ERI_bbbb,     & 
-                 dipole_int_aa,dipole_int_bb,PHF,cHF,eHF,Vxc,eGW)
+                 dipole_int_aa,dipole_int_bb,PHF,cHF,eHF)
 
 ! Perform unrestricted G0W0 calculation
 
@@ -42,7 +42,6 @@ subroutine UG0W0(doACFDT,exchange_kernel,doXBS,BSE,TDA_W,TDA,dBSE,dTDA,spin_cons
   double precision,intent(in)   :: eHF(nBas,nspin)
   double precision,intent(in)   :: cHF(nBas,nBas,nspin)
   double precision,intent(in)   :: PHF(nBas,nBas,nspin)
-  double precision,intent(in)   :: Vxc(nBas,nspin)
 
 ! Local variables
 
@@ -53,7 +52,6 @@ subroutine UG0W0(doACFDT,exchange_kernel,doXBS,BSE,TDA_W,TDA,dBSE,dTDA,spin_cons
   double precision              :: EcGM(nspin)
   double precision              :: EcBSE(nspin)
   double precision              :: EcAC(nspin)
-  double precision,allocatable  :: SigX(:,:)
   double precision,allocatable  :: SigC(:,:)
   double precision,allocatable  :: Z(:,:)
   integer                       :: nS_aa,nS_bb,nS_sc
@@ -101,7 +99,7 @@ subroutine UG0W0(doACFDT,exchange_kernel,doXBS,BSE,TDA_W,TDA,dBSE,dTDA,spin_cons
   nS_bb = nS(2)
   nS_sc = nS_aa + nS_bb
 
-  allocate(SigX(nBas,nspin),SigC(nBas,nspin),Z(nBas,nspin),eGWlin(nBas,nspin), &
+  allocate(SigC(nBas,nspin),Z(nBas,nspin),eGWlin(nBas,nspin), &
            OmRPA(nS_sc),XpY_RPA(nS_sc,nS_sc),XmY_RPA(nS_sc,nS_sc),rho_RPA(nBas,nBas,nS_sc,nspin))
 
 !-------------------!
@@ -127,10 +125,6 @@ subroutine UG0W0(doACFDT,exchange_kernel,doXBS,BSE,TDA_W,TDA,dBSE,dTDA,spin_cons
 ! Compute self-energy and renormalization factor !
 !------------------------------------------------!
 
-  do is=1,nspin
-    call self_energy_exchange_diag(nBas,cHF(:,:,is),PHF(:,:,is),ERI,SigX(:,is))
-  end do
-
   if(regularize) then
 
     call unrestricted_regularized_self_energy_correlation_diag(eta,nBas,nC,nO,nV,nR,nS_sc,eHF,OmRPA,rho_RPA,SigC,EcGM)
@@ -147,7 +141,7 @@ subroutine UG0W0(doACFDT,exchange_kernel,doXBS,BSE,TDA_W,TDA,dBSE,dTDA,spin_cons
 ! Solve the quasi-particle equation !
 !-----------------------------------!
 
-  eGWlin(:,:) = eHF(:,:) + Z(:,:)*(SigX(:,:) + SigC(:,:) - Vxc(:,:))
+  eGWlin(:,:) = eHF(:,:) + Z(:,:)*SigC(:,:) 
 
   if(linearize) then 
  
@@ -161,7 +155,7 @@ subroutine UG0W0(doACFDT,exchange_kernel,doXBS,BSE,TDA_W,TDA,dBSE,dTDA,spin_cons
   ! Find graphical solution of the QP equation
 
     do is=1,nspin
-      call unrestricted_QP_graph(nBas,nC(is),nO(is),nV(is),nR(is),nS_sc,eta,eHF(:,is),SigX(:,is),Vxc(:,is), & 
+      call unrestricted_QP_graph(nBas,nC(is),nO(is),nV(is),nR(is),nS_sc,eta,eHF(:,is), & 
                                  OmRPA,rho_RPA(:,:,:,is),eGWlin(:,is),eGW(:,is))
     end do
  

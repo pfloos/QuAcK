@@ -1,6 +1,6 @@
 subroutine evUGW(maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,BSE,TDA_W,TDA,    & 
                 dBSE,dTDA,spin_conserved,spin_flip,eta,regularize,nBas,nC,nO,nV,nR,nS,ENuc, &
-                EUHF,S,ERI_AO,ERI_aaaa,ERI_aabb,ERI_bbbb,dipole_int_aa,dipole_int_bb,PHF,cHF,eHF,Vxc,eG0W0)
+                EUHF,S,ERI_AO,ERI_aaaa,ERI_aabb,ERI_bbbb,dipole_int_aa,dipole_int_bb,PHF,cHF,eHF)
 
 ! Perform self-consistent eigenvalue-only GW calculation
 
@@ -37,8 +37,6 @@ subroutine evUGW(maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,BSE,TDA_W,
   double precision,intent(in)   :: PHF(nBas,nBas,nspin)
   double precision,intent(in)   :: eHF(nBas,nspin)
   double precision,intent(in)   :: cHF(nBas,nBas,nspin)
-  double precision,intent(in)   :: Vxc(nBas,nspin)
-  double precision,intent(in)   :: eG0W0(nBas,nspin)
   double precision,intent(in)   :: S(nBas,nBas)
   double precision,intent(in)   :: ERI_AO(nBas,nBas,nBas,nBas)
   double precision,intent(in)   :: ERI_aaaa(nBas,nBas,nBas,nBas)
@@ -67,7 +65,6 @@ subroutine evUGW(maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,BSE,TDA_W,
   double precision,allocatable  :: eOld(:,:)
   double precision,allocatable  :: Z(:,:)
   integer                       :: nS_aa,nS_bb,nS_sc
-  double precision,allocatable  :: SigX(:,:)
   double precision,allocatable  :: SigC(:,:)
   double precision,allocatable  :: OmRPA(:)
   double precision,allocatable  :: XpY_RPA(:,:)
@@ -107,15 +104,9 @@ subroutine evUGW(maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,BSE,TDA_W,
   nS_bb = nS(2)
   nS_sc = nS_aa + nS_bb
 
-  allocate(eGW(nBas,nspin),eOld(nBas,nspin),Z(nBas,nspin),SigX(nBas,nspin),SigC(nBas,nspin), &
+  allocate(eGW(nBas,nspin),eOld(nBas,nspin),Z(nBas,nspin),SigC(nBas,nspin), &
            OmRPA(nS_sc),XpY_RPA(nS_sc,nS_sc),XmY_RPA(nS_sc,nS_sc),rho_RPA(nBas,nBas,nS_sc,nspin),            &
            error_diis(nBas,max_diis,nspin),e_diis(nBas,max_diis,nspin))
-
-! Compute the exchange part of the self-energy
-
-  do is=1,nspin
-    call self_energy_exchange_diag(nBas,cHF(:,:,is),PHF(:,:,is),ERI_AO,SigX(:,is))
-  end do
 
 ! Initialization
 
@@ -125,7 +116,7 @@ subroutine evUGW(maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,BSE,TDA_W,
   Conv              = 1d0
   e_diis(:,:,:)     = 0d0
   error_diis(:,:,:) = 0d0
-  eGW(:,:)          = eG0W0(:,:)
+  eGW(:,:)          = eHF(:,:)
   eOld(:,:)         = eGW(:,:)
   Z(:,:)            = 1d0
   rcond(:)          = 0d0
@@ -167,7 +158,7 @@ subroutine evUGW(maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,BSE,TDA_W,
     ! Solve the quasi-particle equation !
     !-----------------------------------!
 
-    eGW(:,:) = eHF(:,:) + SigX(:,:) + SigC(:,:) - Vxc(:,:)
+    eGW(:,:) = eHF(:,:) + SigC(:,:)
 
     ! Convergence criteria
 

@@ -1,4 +1,4 @@
-subroutine unrestricted_QP_graph(nBas,nC,nO,nV,nR,nS,eta,eHF,SigX,Vxc,Omega,rho,eGWlin,eGW)
+subroutine unrestricted_QP_graph(nBas,nC,nO,nV,nR,nS,eta,eHF,Omega,rho,eGWlin,eGW)
 
 ! Compute the graphical solution of the QP equation
 
@@ -15,8 +15,6 @@ subroutine unrestricted_QP_graph(nBas,nC,nO,nV,nR,nS,eta,eHF,SigX,Vxc,Omega,rho,
   integer,intent(in)            :: nS
   double precision,intent(in)   :: eta
   double precision,intent(in)   :: eHF(nBas)
-  double precision,intent(in)   :: SigX(nBas)
-  double precision,intent(in)   :: Vxc(nBas)
   double precision,intent(in)   :: Omega(nS)
   double precision,intent(in)   :: rho(nBas,nBas,nS,nspin)
 
@@ -56,7 +54,7 @@ subroutine unrestricted_QP_graph(nBas,nC,nO,nV,nR,nS,eta,eHF,SigX,Vxc,Omega,rho,
 
       sigC  =  USigmaC(p,w,eta,nBas,nC,nO,nV,nR,nS,eHF,Omega,rho)
       dsigC = dUSigmaC(p,w,eta,nBas,nC,nO,nV,nR,nS,eHF,Omega,rho)
-      f  = w - eHF(p) - SigX(p) + Vxc(p) - sigC
+      f  = w - eHF(p) - sigC
       df = 1d0 - dsigC
     
       w = w - f/df

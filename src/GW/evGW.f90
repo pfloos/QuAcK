@@ -1,6 +1,6 @@
 subroutine evGW(maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,dophBSE,dophBSE2,TDA_W,TDA,dBSE,dTDA,doppBSE, & 
                 singlet,triplet,linearize,eta,regularize,nBas,nC,nO,nV,nR,nS,ENuc,ERHF,ERI_AO,ERI_MO,dipole_int,PHF,  & 
-                cHF,eHF,Vxc)
+                cHF,eHF)
 
 ! Perform self-consistent eigenvalue-only GW calculation
 
@@ -39,7 +39,6 @@ subroutine evGW(maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,dophBSE,dop
   double precision,intent(in)   :: PHF(nBas,nBas)
   double precision,intent(in)   :: eHF(nBas)
   double precision,intent(in)   :: cHF(nBas,nBas)
-  double precision,intent(in)   :: Vxc(nBas)
   double precision,intent(in)   :: ERI_AO(nBas,nBas,nBas,nBas)
   double precision,intent(in)   :: ERI_MO(nBas,nBas,nBas,nBas)
   double precision,intent(in)   :: dipole_int(nBas,nBas,ncart)
@@ -64,7 +63,6 @@ subroutine evGW(maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,dophBSE,dop
   double precision,allocatable  :: eGW(:)
   double precision,allocatable  :: eOld(:)
   double precision,allocatable  :: Z(:)
-  double precision,allocatable  :: SigX(:)
   double precision,allocatable  :: SigC(:)
   double precision,allocatable  :: Om(:)
   double precision,allocatable  :: XpY(:,:)
@@ -100,12 +98,8 @@ subroutine evGW(maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,dophBSE,dop
 
 ! Memory allocation
 
-  allocate(Aph(nS,nS),Bph(nS,nS),eGW(nBas),eOld(nBas),Z(nBas),SigX(nBas),SigC(nBas), & 
+  allocate(Aph(nS,nS),Bph(nS,nS),eGW(nBas),eOld(nBas),Z(nBas),SigC(nBas), & 
            Om(nS),XpY(nS,nS),XmY(nS,nS),rho(nBas,nBas,nS),error_diis(nBas,max_diis),e_diis(nBas,max_diis))
-
-! Compute the exchange part of the self-energy
-
-  call self_energy_exchange_diag(nBas,cHF,PHF,ERI_AO,SigX)
 
 ! Initialization
 
@@ -152,7 +146,7 @@ subroutine evGW(maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,dophBSE,dop
 
     ! Solve the quasi-particle equation
 
-    eGW(:) = eHF(:) + SigX(:) + SigC(:) - Vxc(:)
+    eGW(:) = eHF(:) + SigC(:)
 
     ! Linearized or graphical solution?
 
@@ -168,7 +162,7 @@ subroutine evGW(maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,dophBSE,dop
        write(*,*) ' *** Quasiparticle energies obtained by root search (experimental) *** '
        write(*,*)
   
-       call QP_graph(nBas,nC,nO,nV,nR,nS,eta,eHF,SigX,Vxc,Om,rho,eGW,eGW,regularize)
+       call QP_graph(nBas,nC,nO,nV,nR,nS,eta,eHF,Om,rho,eGW,eGW,regularize)
  
     end if
 

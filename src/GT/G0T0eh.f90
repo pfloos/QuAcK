@@ -1,6 +1,6 @@
 subroutine G0T0eh(doACFDT,exchange_kernel,doXBS,dophBSE,dophBSE2,TDA_T,TDA,dBSE,dTDA,doppBSE, & 
                   singlet,triplet,linearize,eta,regularize,nBas,nC,nO,nV,nR,nS,ENuc,ERHF,     & 
-                  ERI_AO,ERI_MO,dipole_int,PHF,cHF,eHF,Vxc)
+                  ERI_AO,ERI_MO,dipole_int,PHF,cHF,eHF)
 
 ! Perform ehG0T0 calculation
 
@@ -37,7 +37,6 @@ subroutine G0T0eh(doACFDT,exchange_kernel,doXBS,dophBSE,dophBSE2,TDA_T,TDA,dBSE,
   double precision,intent(in)   :: ERI_AO(nBas,nBas,nBas,nBas)
   double precision,intent(in)   :: ERI_MO(nBas,nBas,nBas,nBas)
   double precision,intent(in)   :: dipole_int(nBas,nBas,ncart)
-  double precision,intent(in)   :: Vxc(nBas)
   double precision,intent(in)   :: eHF(nBas)
   double precision,intent(in)   :: cHF(nBas,nBas)
   double precision,intent(in)   :: PHF(nBas,nBas)
@@ -53,7 +52,6 @@ subroutine G0T0eh(doACFDT,exchange_kernel,doXBS,dophBSE,dophBSE2,TDA_T,TDA,dBSE,
   double precision              :: EcGM
   double precision,allocatable  :: Aph(:,:)
   double precision,allocatable  :: Bph(:,:)
-  double precision,allocatable  :: SigX(:)
   double precision,allocatable  :: Sig(:)
   double precision,allocatable  :: Z(:)
   double precision,allocatable  :: Om(:)
@@ -99,7 +97,7 @@ subroutine G0T0eh(doACFDT,exchange_kernel,doXBS,dophBSE,dophBSE2,TDA_T,TDA,dBSE,
 
 ! Memory allocation
 
-  allocate(Aph(nS,nS),Bph(nS,nS),Sig(nBas),SigX(nBas),Z(nBas),Om(nS),XpY(nS,nS),XmY(nS,nS), & 
+  allocate(Aph(nS,nS),Bph(nS,nS),Sig(nBas),Z(nBas),Om(nS),XpY(nS,nS),XmY(nS,nS), & 
            rhoL(nBas,nBas,nS),rhoR(nBas,nBas,nS),eGT(nBas),eGTlin(nBas))
 
 !-------------------!
@@ -123,8 +121,6 @@ subroutine G0T0eh(doACFDT,exchange_kernel,doXBS,dophBSE,dophBSE2,TDA_T,TDA,dBSE,
 ! Compute GW self-energy !
 !------------------------!
 
-  call self_energy_exchange_diag(nBas,cHF,PHF,ERI_AO,SigX)
-
   if(regularize) then 
   
     write(*,*) 'Regularization not yet implemented at the G0T0eh level!'
@@ -140,7 +136,7 @@ subroutine G0T0eh(doACFDT,exchange_kernel,doXBS,dophBSE,dophBSE2,TDA_T,TDA,dBSE,
 ! Solve the quasi-particle equation !
 !-----------------------------------!
 
-  eGTlin(:) = eHF(:) + Z(:)*(SigX(:) + Sig(:) - Vxc(:))
+  eGTlin(:) = eHF(:) + Z(:)*Sig(:)
 
   ! Linearized or graphical solution?
 

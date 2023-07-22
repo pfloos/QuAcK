@@ -1,5 +1,5 @@
 subroutine G0T0pp(doACFDT,exchange_kernel,doXBS,dophBSE,TDA_T,TDA,dBSE,dTDA,doppBSE,singlet,triplet, & 
-                  linearize,eta,regularize,nBas,nC,nO,nV,nR,nS,ENuc,ERHF,ERI_AO,ERI_MO,dipole_int,PHF,cHF,eHF,Vxc)
+                  linearize,eta,regularize,nBas,nC,nO,nV,nR,nS,ENuc,ERHF,ERI_AO,ERI_MO,dipole_int,PHF,cHF,eHF)
 
 ! Perform one-shot calculation with a T-matrix self-energy (G0T0)
 
@@ -31,7 +31,6 @@ subroutine G0T0pp(doACFDT,exchange_kernel,doXBS,dophBSE,TDA_T,TDA,dBSE,dTDA,dopp
   integer,intent(in)            :: nS
   double precision,intent(in)   :: ENuc
   double precision,intent(in)   :: ERHF
-  double precision,intent(in)   :: Vxc(nBas)
   double precision,intent(in)   :: eHF(nBas)
   double precision,intent(in)   :: cHF(nBas,nBas)
   double precision,intent(in)   :: PHF(nBas,nBas)
@@ -59,7 +58,6 @@ subroutine G0T0pp(doACFDT,exchange_kernel,doXBS,dophBSE,TDA_T,TDA,dBSE,dTDA,dopp
   double precision,allocatable  :: X2ab(:,:),X2aa(:,:)
   double precision,allocatable  :: Y2ab(:,:),Y2aa(:,:)
   double precision,allocatable  :: rho2ab(:,:,:),rho2aa(:,:,:)
-  double precision,allocatable  :: SigX(:)
   double precision,allocatable  :: Sig(:)
   double precision,allocatable  :: Z(:)
   double precision,allocatable  :: eGT(:)
@@ -91,7 +89,7 @@ subroutine G0T0pp(doACFDT,exchange_kernel,doXBS,dophBSE,TDA_T,TDA,dBSE,dTDA,dopp
            Om1aa(nVVaa),X1aa(nVVaa,nVVaa),Y1aa(nOOaa,nVVaa), & 
            Om2aa(nOOaa),X2aa(nVVaa,nOOaa),Y2aa(nOOaa,nOOaa), & 
            rho1aa(nBas,nBas,nVVaa),rho2aa(nBas,nBas,nOOaa),  & 
-           SigX(nBas),Sig(nBas),Z(nBas),eGT(nBas),eGTlin(nBas))
+           Sig(nBas),Z(nBas),eGT(nBas),eGTlin(nBas))
 
 !----------------------------------------------
 ! alpha-beta block
@@ -178,16 +176,10 @@ subroutine G0T0pp(doACFDT,exchange_kernel,doXBS,dophBSE,TDA_T,TDA,dBSE,dTDA,dopp
   Z(:) = 1d0/(1d0 - Z(:))
 
 !----------------------------------------------
-! Compute the exchange part of the self-energy
-!----------------------------------------------
-
-  call self_energy_exchange_diag(nBas,cHF,PHF,ERI_AO,SigX)
-
-!----------------------------------------------
 ! Solve the quasi-particle equation
 !----------------------------------------------
 
-  eGTlin(:) = eHF(:) + Z(:)*(SigX(:) + Sig(:) - Vxc(:))
+  eGTlin(:) = eHF(:) + Z(:)*Sig(:)
   
   if(linearize) then
 

@@ -1,5 +1,5 @@
 subroutine G0W0(doACFDT,exchange_kernel,doXBS,dophBSE,dophBSE2,TDA_W,TDA,dBSE,dTDA,doppBSE,singlet,triplet, & 
-                linearize,eta,regularize,nBas,nC,nO,nV,nR,nS,ENuc,ERHF,ERI_AO,ERI_MO,dipole_int,PHF,cHF,eHF,Vxc)
+                linearize,eta,regularize,nBas,nC,nO,nV,nR,nS,ENuc,ERHF,ERI_AO,ERI_MO,dipole_int,PHF,cHF,eHF)
 
 ! Perform G0W0 calculation
 
@@ -36,7 +36,6 @@ subroutine G0W0(doACFDT,exchange_kernel,doXBS,dophBSE,dophBSE2,TDA_W,TDA,dBSE,dT
   double precision,intent(in)   :: ERI_AO(nBas,nBas,nBas,nBas)
   double precision,intent(in)   :: ERI_MO(nBas,nBas,nBas,nBas)
   double precision,intent(in)   :: dipole_int(nBas,nBas,ncart)
-  double precision,intent(in)   :: Vxc(nBas)
   double precision,intent(in)   :: eHF(nBas)
   double precision,intent(in)   :: cHF(nBas,nBas)
   double precision,intent(in)   :: PHF(nBas,nBas)
@@ -51,7 +50,6 @@ subroutine G0W0(doACFDT,exchange_kernel,doXBS,dophBSE,dophBSE2,TDA_W,TDA,dBSE,dT
   double precision              :: EcGM
   double precision,allocatable  :: Aph(:,:)
   double precision,allocatable  :: Bph(:,:)
-  double precision,allocatable  :: SigX(:)
   double precision,allocatable  :: SigC(:)
   double precision,allocatable  :: Z(:)
   double precision,allocatable  :: Om(:)
@@ -97,7 +95,7 @@ subroutine G0W0(doACFDT,exchange_kernel,doXBS,dophBSE,dophBSE2,TDA_W,TDA,dBSE,dT
 
 ! Memory allocation
 
-  allocate(Aph(nS,nS),Bph(nS,nS),SigC(nBas),SigX(nBas),Z(nBas),Om(nS),XpY(nS,nS),XmY(nS,nS),rho(nBas,nBas,nS), & 
+  allocate(Aph(nS,nS),Bph(nS,nS),SigC(nBas),Z(nBas),Om(nS),XpY(nS,nS),XmY(nS,nS),rho(nBas,nBas,nS), & 
            eGW(nBas),eGWlin(nBas))
 
 !-------------------!
@@ -121,8 +119,6 @@ subroutine G0W0(doACFDT,exchange_kernel,doXBS,dophBSE,dophBSE2,TDA_W,TDA,dBSE,dT
 ! Compute GW self-energy !
 !------------------------!
 
-  call self_energy_exchange_diag(nBas,cHF,PHF,ERI_AO,SigX)
-
   if(regularize) then 
 
     call regularized_self_energy_correlation_diag(eta,nBas,nC,nO,nV,nR,nS,eHF,Om,rho,EcGM,SigC)
@@ -138,7 +134,7 @@ subroutine G0W0(doACFDT,exchange_kernel,doXBS,dophBSE,dophBSE2,TDA_W,TDA,dBSE,dT
 ! Solve the quasi-particle equation !
 !-----------------------------------!
 
-  eGWlin(:) = eHF(:) + Z(:)*(SigX(:) + SigC(:) - Vxc(:))
+  eGWlin(:) = eHF(:) + Z(:)*SigC(:)
 
   ! Linearized or graphical solution?
 
@@ -154,7 +150,7 @@ subroutine G0W0(doACFDT,exchange_kernel,doXBS,dophBSE,dophBSE2,TDA_W,TDA,dBSE,dT
     write(*,*) ' *** Quasiparticle energies obtained by root search (experimental) *** '
     write(*,*)
   
-    call QP_graph(nBas,nC,nO,nV,nR,nS,eta,eHF,SigX,Vxc,Om,rho,eGWlin,eGW,regularize)
+    call QP_graph(nBas,nC,nO,nV,nR,nS,eta,eHF,Om,rho,eGWlin,eGW,regularize)
 
   end if
 

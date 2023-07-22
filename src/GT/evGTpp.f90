@@ -1,5 +1,5 @@
 subroutine evGTpp(maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,BSE,TDA_T,TDA,dBSE,dTDA, &
-                  singlet,triplet,eta,regularize,nBas,nC,nO,nV,nR,nS,ENuc,ERHF,ERI_AO,ERI_MO,dipole_int,PHF,cHF,eHF,Vxc)
+                  singlet,triplet,eta,regularize,nBas,nC,nO,nV,nR,nS,ENuc,ERHF,ERI_AO,ERI_MO,dipole_int,PHF,cHF,eHF)
 
 ! Perform eigenvalue self-consistent calculation with a T-matrix self-energy (evGT)
 
@@ -35,7 +35,6 @@ subroutine evGTpp(maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,BSE,TDA_T
   double precision,intent(in)   :: PHF(nBas,nBas)
   double precision,intent(in)   :: eHF(nBas)
   double precision,intent(in)   :: cHF(nBas,nBas)
-  double precision,intent(in)   :: Vxc(nBas)
   double precision,intent(in)   :: ERI_AO(nBas,nBas,nBas,nBas)
   double precision,intent(in)   :: ERI_MO(nBas,nBas,nBas,nBas)
   double precision,intent(in)   :: dipole_int(nBas,nBas,ncart)
@@ -69,7 +68,6 @@ subroutine evGTpp(maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,BSE,TDA_T
   double precision,allocatable  :: X2s(:,:),X2t(:,:)
   double precision,allocatable  :: Y2s(:,:),Y2t(:,:)
   double precision,allocatable  :: rho2s(:,:,:),rho2t(:,:,:)
-  double precision,allocatable  :: SigX(:)
   double precision,allocatable  :: Sig(:)
   double precision,allocatable  :: Z(:)
 
@@ -99,12 +97,8 @@ subroutine evGTpp(maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,BSE,TDA_T
            Om1t(nVVt),X1t(nVVt,nVVt),Y1t(nOOt,nVVt),        & 
            Om2t(nOOt),X2t(nVVt,nOOt),Y2t(nOOt,nOOt),        & 
            rho1t(nBas,nBas,nVVt),rho2t(nBas,nBas,nOOt),        &
-           eGT(nBas),eOld(nBas),Z(nBas),SigX(nBas),Sig(nBas), &
+           eGT(nBas),eOld(nBas),Z(nBas),Sig(nBas), &
            error_diis(nBas,max_diis),e_diis(nBas,max_diis))
-
-! Compute the exchange part of the self-energy
-
-  call self_energy_exchange_diag(nBas,cHF,PHF,ERI_AO,SigX)
 
 ! Initialization
 
@@ -193,7 +187,7 @@ subroutine evGTpp(maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,BSE,TDA_T
   ! Solve the quasi-particle equation
   !----------------------------------------------
 
-    eGT(:) = eHF(:) + SigX(:) + Sig(:) - Vxc(:)
+    eGT(:) = eHF(:) + Sig(:)
 
     ! Convergence criteria
 

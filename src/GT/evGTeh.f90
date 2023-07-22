@@ -1,6 +1,6 @@
 subroutine evGTeh(maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,dophBSE,dophBSE2,TDA_T,TDA,dBSE,dTDA,doppBSE, & 
                   singlet,triplet,linearize,eta,regularize,nBas,nC,nO,nV,nR,nS,ENuc,ERHF,ERI_AO,ERI_MO,dipole_int,PHF,  & 
-                  cHF,eHF,Vxc)
+                  cHF,eHF)
 
 ! Perform self-consistent eigenvalue-only ehGT calculation
 
@@ -39,7 +39,6 @@ subroutine evGTeh(maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,dophBSE,d
   double precision,intent(in)   :: PHF(nBas,nBas)
   double precision,intent(in)   :: eHF(nBas)
   double precision,intent(in)   :: cHF(nBas,nBas)
-  double precision,intent(in)   :: Vxc(nBas)
   double precision,intent(in)   :: ERI_AO(nBas,nBas,nBas,nBas)
   double precision,intent(in)   :: ERI_MO(nBas,nBas,nBas,nBas)
   double precision,intent(in)   :: dipole_int(nBas,nBas,ncart)
@@ -64,7 +63,6 @@ subroutine evGTeh(maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,dophBSE,d
   double precision,allocatable  :: eGT(:)
   double precision,allocatable  :: eOld(:)
   double precision,allocatable  :: Z(:)
-  double precision,allocatable  :: SigX(:)
   double precision,allocatable  :: Sig(:)
   double precision,allocatable  :: Om(:)
   double precision,allocatable  :: XpY(:,:)
@@ -103,12 +101,8 @@ subroutine evGTeh(maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,dophBSE,d
 
 ! Memory allocation
 
-  allocate(Aph(nS,nS),Bph(nS,nS),eGT(nBas),eOld(nBas),Z(nBas),SigX(nBas),Sig(nBas),Om(nS),XpY(nS,nS),XmY(nS,nS), & 
+  allocate(Aph(nS,nS),Bph(nS,nS),eGT(nBas),eOld(nBas),Z(nBas),Sig(nBas),Om(nS),XpY(nS,nS),XmY(nS,nS), & 
            rhoL(nBas,nBas,nS),rhoR(nBas,nBas,nS),error_diis(nBas,max_diis),e_diis(nBas,max_diis),eGTlin(nBas))
-
-! Compute the exchange part of the self-energy
-
-  call self_energy_exchange_diag(nBas,cHF,PHF,ERI_AO,SigX)
 
 ! Initialization
 
@@ -155,7 +149,7 @@ subroutine evGTeh(maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,dophBSE,d
 
     ! Solve the quasi-particle equation
 
-    eGTlin(:) = eHF(:) + SigX(:) + Sig(:) - Vxc(:)
+    eGTlin(:) = eHF(:) + Sig(:)
 
     ! Linearized or graphical solution?
 
@@ -170,9 +164,7 @@ subroutine evGTeh(maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,dophBSE,d
 
 !      write(*,*) ' *** Quasiparticle energies obtained by root search (experimental) *** '
 !      write(*,*)
-! 
-!      call QP_graph(nBas,nC,nO,nV,nR,nS,eta,eHF,SigX,Vxc,Om,rho,eGTlin,eGT,regularize)
- 
+
     end if
 
     ! Convergence criteria
