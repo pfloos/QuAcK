@@ -1,5 +1,5 @@
-subroutine unrestricted_ACFDT_correlation_energy(ispin,exchange_kernel,nBas,nC,nO,nV,nR,nS,nSa,nSb,nSt, & 
-                                                 ERI_aaaa,ERI_aabb,ERI_bbbb,XpY,XmY,EcAC)
+subroutine UACFDT_correlation_energy(ispin,exchange_kernel,nBas,nC,nO,nV,nR,nS,nSa,nSb,nSt, & 
+                                     ERI_aaaa,ERI_aabb,ERI_bbbb,XpY,XmY,EcAC)
 
 ! Compute the correlation energy via the adiabatic connection formula
 
@@ -230,4 +230,4 @@ subroutine unrestricted_ACFDT_correlation_energy(ispin,exchange_kernel,nBas,nC,n
        + trace_matrix(nSt,matmul(X,matmul(Ap,transpose(X))) + matmul(Y,matmul(Ap,transpose(Y)))) &
        - trace_matrix(nSt,Ap)
 
-end subroutine unrestricted_ACFDT_correlation_energy
+end subroutine 

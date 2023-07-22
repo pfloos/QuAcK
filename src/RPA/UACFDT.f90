@@ -1,5 +1,5 @@
-subroutine unrestricted_ACFDT(exchange_kernel,doXBS,dRPA,TDA_W,TDA,BSE,spin_conserved,spin_flip,eta, &
-                              nBas,nC,nO,nV,nR,nS,ERI_aaaa,ERI_aabb,ERI_bbbb,eW,e,EcAC)
+subroutine UACFDT(exchange_kernel,doXBS,dRPA,TDA_W,TDA,BSE,spin_conserved,spin_flip,eta, &
+                  nBas,nC,nO,nV,nR,nS,ERI_aaaa,ERI_aabb,ERI_bbbb,eW,e,EcAC)
 
 ! Compute the correlation energy via the adiabatic connection fluctuation dissipation theorem
 
@@ -46,12 +46,12 @@ subroutine unrestricted_ACFDT(exchange_kernel,doXBS,dRPA,TDA_W,TDA,BSE,spin_cons
   double precision,allocatable  :: rho_RPA(:,:,:,:)
 
   integer                       :: nS_aa,nS_bb,nS_sc
-  double precision,allocatable  :: Omega_sc(:)
+  double precision,allocatable  :: Om_sc(:)
   double precision,allocatable  :: XpY_sc(:,:)
   double precision,allocatable  :: XmY_sc(:,:)
 
   integer                       :: nS_ab,nS_ba,nS_sf
-  double precision,allocatable  :: Omega_sf(:)
+  double precision,allocatable  :: Om_sf(:)
   double precision,allocatable  :: XpY_sf(:,:)
   double precision,allocatable  :: XmY_sf(:,:)
 
@@ -103,7 +103,7 @@ subroutine unrestricted_ACFDT(exchange_kernel,doXBS,dRPA,TDA_W,TDA,BSE,spin_cons
 
     ispin = 1
 
-    allocate(Omega_sc(nS_sc),XpY_sc(nS_sc,nS_sc),XmY_sc(nS_sc,nS_sc))
+    allocate(Om_sc(nS_sc),XpY_sc(nS_sc,nS_sc),XmY_sc(nS_sc,nS_sc))
 
     write(*,*) '------------------------'
     write(*,*) 'Spin-conserved manifold '
@@ -127,10 +127,10 @@ subroutine unrestricted_ACFDT(exchange_kernel,doXBS,dRPA,TDA_W,TDA,BSE,spin_cons
       end if
 
       call phULR(ispin,dRPA,TDA,BSE,eta,nBas,nC,nO,nV,nR,nS_aa,nS_bb,nS_sc,nS_sc,lambda,e, &
-                 ERI_aaaa,ERI_aabb,ERI_bbbb,OmRPA,rho_RPA,EcAC(ispin),Omega_sc,XpY_sc,XmY_sc)
+                 ERI_aaaa,ERI_aabb,ERI_bbbb,OmRPA,rho_RPA,EcAC(ispin),Om_sc,XpY_sc,XmY_sc)
 
-      call unrestricted_ACFDT_correlation_energy(ispin,exchange_kernel,nBas,nC,nO,nV,nR,nS,nS_aa,nS_bb,nS_sc, &
-                                                 ERI_aaaa,ERI_aabb,ERI_bbbb,XpY_sc,XmY_sc,Ec(iAC,ispin))
+      call UACFDT_correlation_energy(ispin,exchange_kernel,nBas,nC,nO,nV,nR,nS,nS_aa,nS_bb,nS_sc, &
+                                     ERI_aaaa,ERI_aabb,ERI_bbbb,XpY_sc,XmY_sc,Ec(iAC,ispin))
 
       write(*,'(2X,F15.6,1X,F30.15,1X,F30.15)') lambda,EcAC(ispin),Ec(iAC,ispin)
 
@@ -145,7 +145,7 @@ subroutine unrestricted_ACFDT(exchange_kernel,doXBS,dRPA,TDA_W,TDA,BSE,spin_cons
     write(*,*) '-----------------------------------------------------------------------------------'
     write(*,*)
 
-    deallocate(Omega_sc,XpY_sc,XmY_sc)
+    deallocate(Om_sc,XpY_sc,XmY_sc)
 
   end if
  
@@ -157,7 +157,7 @@ subroutine unrestricted_ACFDT(exchange_kernel,doXBS,dRPA,TDA_W,TDA,BSE,spin_cons
 
     ! Memory allocation
 
-    allocate(Omega_sf(nS_sf),XpY_sf(nS_sf,nS_sf),XmY_sf(nS_sf,nS_sf))
+    allocate(Om_sf(nS_sf),XpY_sf(nS_sf,nS_sf),XmY_sf(nS_sf,nS_sf))
 
     write(*,*) '--------------------'
     write(*,*) ' Spin-flip manifold '
@@ -181,10 +181,10 @@ subroutine unrestricted_ACFDT(exchange_kernel,doXBS,dRPA,TDA_W,TDA,BSE,spin_cons
       end if
 
       call phULR(ispin,dRPA,TDA,BSE,eta,nBas,nC,nO,nV,nR,nS_ab,nS_ba,nS_sf,nS_sc,lambda,e, &
-                 ERI_aaaa,ERI_aabb,ERI_bbbb,OmRPA,rho_RPA,EcAC(ispin),Omega_sf,XpY_sf,XmY_sf)
+                 ERI_aaaa,ERI_aabb,ERI_bbbb,OmRPA,rho_RPA,EcAC(ispin),Om_sf,XpY_sf,XmY_sf)
 
-      call unrestricted_ACFDT_correlation_energy(ispin,exchange_kernel,nBas,nC,nO,nV,nR,nS,nS_ab,nS_ba,nS_sf, &
-                                                 ERI_aaaa,ERI_aabb,ERI_bbbb,XpY_sf,XmY_sf,Ec(iAC,ispin))
+      call UACFDT_correlation_energy(ispin,exchange_kernel,nBas,nC,nO,nV,nR,nS,nS_ab,nS_ba,nS_sf, &
+                                     ERI_aaaa,ERI_aabb,ERI_bbbb,XpY_sf,XmY_sf,Ec(iAC,ispin))
 
       write(*,'(2X,F15.6,1X,F30.15,1X,F30.15)') lambda,EcAC(ispin),Ec(iAC,ispin)
 
@@ -199,7 +199,7 @@ subroutine unrestricted_ACFDT(exchange_kernel,doXBS,dRPA,TDA_W,TDA,BSE,spin_cons
     write(*,*) '-----------------------------------------------------------------------------------'
     write(*,*)
 
-    deallocate(Omega_sf,XpY_sf,XmY_sf)
+    deallocate(Om_sf,XpY_sf,XmY_sf)
 
   end if
 

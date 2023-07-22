@@ -48,7 +48,6 @@ subroutine URPA(TDA,doACFDT,exchange_kernel,spin_conserved,spin_flip,eta,nBas,nC
 
   double precision              :: rho_sc,rho_sf
   double precision              :: EcRPA(nspin)
-  double precision              :: EcAC(nspin)
 
 ! Hello world
 
@@ -68,7 +67,7 @@ subroutine URPA(TDA,doACFDT,exchange_kernel,spin_conserved,spin_flip,eta,nBas,nC
 ! Initialization
 
   EcRPA(:) = 0d0
-  EcAC(:)  = 0d0
+  EcRPA(:)  = 0d0
 
 ! Spin-conserved transitions
 
@@ -143,25 +142,25 @@ subroutine URPA(TDA,doACFDT,exchange_kernel,spin_conserved,spin_flip,eta,nBas,nC
     write(*,*) '---------------------------------------------------------'
     write(*,*)
 
-    call unrestricted_ACFDT(exchange_kernel,.false.,.true.,.false.,TDA,.false.,spin_conserved,spin_flip,eta, &
-                            nBas,nC,nO,nV,nR,nS,ERI_aaaa,ERI_aabb,ERI_bbbb,e,e,EcAC)
+    call UACFDT(exchange_kernel,.false.,.true.,.false.,TDA,.false.,spin_conserved,spin_flip,eta, &
+                nBas,nC,nO,nV,nR,nS,ERI_aaaa,ERI_aabb,ERI_bbbb,e,e,EcRPA)
 
     if(exchange_kernel) then
    
-      EcAC(1) = 0.5d0*EcAC(1)
-      EcAC(2) = 1.5d0*EcAC(2)
+      EcRPA(1) = 0.5d0*EcRPA(1)
+      EcRPA(2) = 1.5d0*EcRPA(2)
 
     end if
 
     write(*,*)
     write(*,*)'-------------------------------------------------------------------------------'
-    write(*,'(2X,A50,F20.10)') 'AC@URPA correlation energy (spin-conserved) =',EcAC(1)
-    write(*,'(2X,A50,F20.10)') 'AC@URPA correlation energy (spin-flip)      =',EcAC(2)
-    write(*,'(2X,A50,F20.10)') 'AC@URPA correlation energy                  =',EcAC(1) + EcAC(2)
-    write(*,'(2X,A50,F20.10)') 'AC@URPA total energy                        =',ENuc + EUHF + EcAC(1) + EcAC(2)
+    write(*,'(2X,A50,F20.10)') 'AC@URPA correlation energy (spin-conserved) =',EcRPA(1)
+    write(*,'(2X,A50,F20.10)') 'AC@URPA correlation energy (spin-flip)      =',EcRPA(2)
+    write(*,'(2X,A50,F20.10)') 'AC@URPA correlation energy                  =',EcRPA(1) + EcRPA(2)
+    write(*,'(2X,A50,F20.10)') 'AC@URPA total energy                        =',ENuc + EUHF + EcRPA(1) + EcRPA(2)
     write(*,*)'-------------------------------------------------------------------------------'
     write(*,*)
 
   end if
 
-end subroutine URPA
+end subroutine 
