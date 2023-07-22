@@ -1,4 +1,4 @@
-subroutine unrestricted_self_energy_GF2(nBas,nC,nO,nV,nR,eta,ERI_aa,ERI_ab,ERI_bb,eHF,eGF2,SigC,Z)
+subroutine UGF2_self_energy(nBas,nC,nO,nV,nR,eta,ERI_aa,ERI_ab,ERI_bb,eHF,eGF2,SigC,Z)
 
 ! Perform unrestricted GF2 self-energy and its renormalization factor
 
@@ -192,4 +192,4 @@ subroutine unrestricted_self_energy_GF2(nBas,nC,nO,nV,nR,eta,ERI_aa,ERI_ab,ERI_b
 
   Z(:,:) = 1d0/(1d0 - Z(:,:))
 
-end subroutine unrestricted_self_energy_GF2
+end subroutine 

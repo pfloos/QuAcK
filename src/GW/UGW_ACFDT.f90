@@ -1,4 +1,4 @@
-subroutine GW_UACFDT(exchange_kernel,doXBS,dRPA,TDA_W,TDA,BSE,spin_conserved,spin_flip,eta, &
+subroutine UGW_ACFDT(exchange_kernel,doXBS,dRPA,TDA_W,TDA,BSE,spin_conserved,spin_flip,eta, &
                      nBas,nC,nO,nV,nR,nS,ERI_aaaa,ERI_aabb,ERI_bbbb,eW,e,EcAC)
 
 ! Compute the correlation energy via the adiabatic connection fluctuation dissipation theorem

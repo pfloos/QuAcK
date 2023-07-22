@@ -119,7 +119,7 @@ subroutine evUGF2(maxSCF,thresh,max_diis,BSE,TDA,dBSE,dTDA,spin_conserved,spin_f
 
     else
 
-      call unrestricted_self_energy_GF2_diag(nBas,nC,nO,nV,nR,eta,ERI_aaaa,ERI_aabb,ERI_bbbb,eHF,eGF2,SigC,Z)
+      call UGF2_self_energy_diag(nBas,nC,nO,nV,nR,eta,ERI_aaaa,ERI_aabb,ERI_bbbb,eHF,eGF2,SigC,Z)
 
     end if
 

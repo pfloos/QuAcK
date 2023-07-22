@@ -85,7 +85,7 @@ subroutine UG0F2(BSE,TDA,dBSE,dTDA,spin_conserved,spin_flip,linearize,eta,regula
 
   else
 
-    call unrestricted_self_energy_GF2_diag(nBas,nC,nO,nV,nR,eta,ERI_aaaa,ERI_aabb,ERI_bbbb,eHF,eHF,SigC,Z)
+    call UGF2_self_energy_diag(nBas,nC,nO,nV,nR,eta,ERI_aaaa,ERI_aabb,ERI_bbbb,eHF,eHF,SigC,Z)
 
   end if
 
