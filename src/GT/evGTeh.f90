@@ -69,8 +69,6 @@ subroutine evGTeh(maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,dophBSE,d
   double precision,allocatable  :: XmY(:,:)
   double precision,allocatable  :: rhoL(:,:,:)
   double precision,allocatable  :: rhoR(:,:,:)
-  
-  double precision,allocatable  :: eGTlin(:)
 
 ! Hello world
 
@@ -102,7 +100,7 @@ subroutine evGTeh(maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,dophBSE,d
 ! Memory allocation
 
   allocate(Aph(nS,nS),Bph(nS,nS),eGT(nBas),eOld(nBas),Z(nBas),Sig(nBas),Om(nS),XpY(nS,nS),XmY(nS,nS), & 
-           rhoL(nBas,nBas,nS),rhoR(nBas,nBas,nS),error_diis(nBas,max_diis),e_diis(nBas,max_diis),eGTlin(nBas))
+           rhoL(nBas,nBas,nS),rhoR(nBas,nBas,nS),error_diis(nBas,max_diis),e_diis(nBas,max_diis))
 
 ! Initialization
 
@@ -149,23 +147,7 @@ subroutine evGTeh(maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,dophBSE,d
 
     ! Solve the quasi-particle equation
 
-    eGTlin(:) = eHF(:) + Sig(:)
-
-    ! Linearized or graphical solution?
-
-    if(linearize) then 
- 
-       write(*,*) ' *** Quasiparticle energies obtained by linearization *** '
-       write(*,*)
-
-       eGT(:) = eGTlin(:)
-
-    else 
-
-!      write(*,*) ' *** Quasiparticle energies obtained by root search (experimental) *** '
-!      write(*,*)
-
-    end if
+    eGT(:) = eHF(:) + Sig(:)
 
     ! Convergence criteria
 

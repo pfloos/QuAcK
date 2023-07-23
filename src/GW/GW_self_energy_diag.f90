@@ -20,7 +20,7 @@ subroutine GW_self_energy_diag(eta,nBas,nC,nO,nV,nR,nS,e,Om,rho,EcGM,Sig,Z)
 
 ! Local variables
 
-  integer                       :: i,a,p,q,jb
+  integer                       :: i,a,p,m
   double precision              :: num,eps
 
 ! Output variables
@@ -42,10 +42,10 @@ subroutine GW_self_energy_diag(eta,nBas,nC,nO,nV,nR,nS,e,Om,rho,EcGM,Sig,Z)
 
   do p=nC+1,nBas-nR
     do i=nC+1,nO
-      do jb=1,nS
+      do m=1,nS
 
-        eps = e(p) - e(i) + Om(jb)
-        num = 2d0*rho(p,i,jb)**2
+        eps = e(p) - e(i) + Om(m)
+        num = 2d0*rho(p,i,m)**2
         Sig(p) = Sig(p) + num*eps/(eps**2 + eta**2)
         Z(p)   = Z(p)   - num*(eps**2 - eta**2)/(eps**2 + eta**2)**2
 
@@ -57,10 +57,10 @@ subroutine GW_self_energy_diag(eta,nBas,nC,nO,nV,nR,nS,e,Om,rho,EcGM,Sig,Z)
 
   do p=nC+1,nBas-nR
     do a=nO+1,nBas-nR
-      do jb=1,nS
+      do m=1,nS
 
-        eps = e(p) - e(a) - Om(jb)
-        num = 2d0*rho(p,a,jb)**2
+        eps = e(p) - e(a) - Om(m)
+        num = 2d0*rho(p,a,m)**2
         Sig(p) = Sig(p) + num*eps/(eps**2 + eta**2)
         Z(p)   = Z(p)   - num*(eps**2 - eta**2)/(eps**2 + eta**2)**2
 
@@ -73,10 +73,10 @@ subroutine GW_self_energy_diag(eta,nBas,nC,nO,nV,nR,nS,e,Om,rho,EcGM,Sig,Z)
   EcGM = 0d0
   do i=nC+1,nO
     do a=nO+1,nBas-nR
-      do jb=1,nS
+      do m=1,nS
 
-        eps = e(a) - e(i) + Om(jb)
-        num = 4d0*rho(a,i,jb)**2
+        eps = e(a) - e(i) + Om(m)
+        num = 4d0*rho(a,i,m)**2
         EcGM = EcGM - num*eps/(eps**2 + eta**2)
 
       end do

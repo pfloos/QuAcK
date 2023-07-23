@@ -39,7 +39,6 @@ subroutine HF(doRHF,doUHF,doRMOM,doUMOM,unrestricted,maxSCF,thresh,max_diis,gues
   double precision              :: start_HF     ,end_HF       ,t_HF
 
   integer                       :: nSCF
-  integer                       :: n_diis
   double precision              :: ET
   double precision              :: EV
   double precision              :: EJ
@@ -83,7 +82,7 @@ subroutine HF(doRHF,doUHF,doRMOM,doUMOM,unrestricted,maxSCF,thresh,max_diis,gues
     end if
 
     call wall_time(start_HF)
-    call RHF(maxSCF,thresh,n_diis,guess_type,level_shift,nNuc,ZNuc,rNuc,ENuc, &
+    call RHF(maxSCF,thresh,max_diis,guess_type,level_shift,nNuc,ZNuc,rNuc,ENuc, &
              nBas,nO,S,T,V,Hc,F,ERI,dipole_int,X,EHF,epsHF,cHF,PHF)
     call wall_time(end_HF)
 
@@ -103,7 +102,7 @@ subroutine HF(doRHF,doUHF,doRMOM,doUMOM,unrestricted,maxSCF,thresh,max_diis,gues
     unrestricted = .true.
 
     call wall_time(start_HF)
-    call UHF(maxSCF,thresh,n_diis,guess_type,mix,level_shift,nNuc,ZNuc,rNuc,ENuc, &
+    call UHF(maxSCF,thresh,max_diis,guess_type,mix,level_shift,nNuc,ZNuc,rNuc,ENuc, &
              nBas,nO,S,T,V,Hc,ERI,dipole_int,X,EHF,epsHF,cHF,PHF)
     call wall_time(end_HF)
 
@@ -127,7 +126,7 @@ subroutine HF(doRHF,doUHF,doRMOM,doUMOM,unrestricted,maxSCF,thresh,max_diis,gues
       stop
     end if
 
-!   call RMOM(maxSCF,thresh,n_diis,guess_type,nNuc,ZNuc,rNuc,ENuc, &
+!   call RMOM(maxSCF,thresh,max_diis,guess_type,nNuc,ZNuc,rNuc,ENuc, &
 !           nBas,nO,S,T,V,Hc,ERI,dipole_int,X,EHF,epsHF,cHF,PHF)
 
   end if
@@ -141,7 +140,7 @@ subroutine HF(doRHF,doUHF,doRMOM,doUMOM,unrestricted,maxSCF,thresh,max_diis,gues
     ! Switch on the unrestricted flag
     unrestricted = .true.
 
-!   call UMOM(maxSCF,thresh,n_diis,guess_type,nNuc,ZNuc,rNuc,ENuc, &
+!   call UMOM(maxSCF,thresh,max_diis,guess_type,nNuc,ZNuc,rNuc,ENuc, &
 !           nBas,nO,S,T,V,Hc,ERI,dipole_int,X,EHF,epsHF,cHF,PHF)
 
   end if

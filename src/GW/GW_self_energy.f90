@@ -21,8 +21,7 @@ subroutine GW_self_energy(eta,nBas,nC,nO,nV,nR,nS,e,Om,rho,EcGM,Sig,Z)
 ! Local variables
 
   integer                       :: i,j,a,b
-  integer                       :: p,q,r
-  integer                       :: jb
+  integer                       :: p,q,m
   double precision              :: num,eps
 
 ! Output variables
@@ -44,16 +43,16 @@ subroutine GW_self_energy(eta,nBas,nC,nO,nV,nR,nS,e,Om,rho,EcGM,Sig,Z)
 
 !$OMP PARALLEL &
 !$OMP SHARED(Sig,rho,eta,nS,nC,nO,nBas,nR,e,Om) &
-!$OMP PRIVATE(jb,i,q,p,eps,num) &
+!$OMP PRIVATE(m,i,q,p,eps,num) &
 !$OMP DEFAULT(NONE)
 !$OMP DO
   do q=nC+1,nBas-nR
      do p=nC+1,nBas-nR
-        do jb=1,nS
+        do m=1,nS
            do i=nC+1,nO
  
-              eps = e(p) - e(i) + Om(jb)
-              num = 2d0*rho(p,i,jb)*rho(q,i,jb)
+              eps = e(p) - e(i) + Om(m)
+              num = 2d0*rho(p,i,m)*rho(q,i,m)
               Sig(p,q) = Sig(p,q) + num*eps/(eps**2 + eta**2)
               if(p == q) Z(p) = Z(p) - num*(eps**2 - eta**2)/(eps**2 + eta**2)**2
  
@@ -68,16 +67,16 @@ subroutine GW_self_energy(eta,nBas,nC,nO,nV,nR,nS,e,Om,rho,EcGM,Sig,Z)
 
 !$OMP PARALLEL &
 !$OMP SHARED(Sig,rho,eta,nS,nC,nO,nBas,nR,e,Om) &
-!$OMP PRIVATE(jb,a,q,p,eps,num) &
+!$OMP PRIVATE(m,a,q,p,eps,num) &
 !$OMP DEFAULT(NONE)
 !$OMP DO  
   do q=nC+1,nBas-nR
      do p=nC+1,nBas-nR
-        do jb=1,nS
+        do m=1,nS
            do a=nO+1,nBas-nR
  
-              eps = e(p) - e(a) - Om(jb)
-              num = 2d0*rho(p,a,jb)*rho(q,a,jb)
+              eps = e(p) - e(a) - Om(m)
+              num = 2d0*rho(p,a,m)*rho(q,a,m)
               Sig(p,q) = Sig(p,q) + num*eps/(eps**2 + eta**2)
               if(p == q) Z(p) = Z(p) - num*(eps**2 - eta**2)/(eps**2 + eta**2)**2
  
@@ -91,12 +90,12 @@ subroutine GW_self_energy(eta,nBas,nC,nO,nV,nR,nS,e,Om,rho,EcGM,Sig,Z)
 ! Galitskii-Migdal correlation energy
 
   EcGM = 0d0
-  do jb=1,nS
+  do m=1,nS
     do a=nO+1,nBas-nR
       do i=nC+1,nO
 
-        eps = e(a) - e(i) + Om(jb)
-        num = 4d0*rho(a,i,jb)*rho(a,i,jb)
+        eps = e(a) - e(i) + Om(m)
+        num = 4d0*rho(a,i,m)*rho(a,i,m)
         EcGM = EcGM - num*eps/(eps**2 + eta**2)
 
       end do
