@@ -12,7 +12,7 @@ program QuAcK
   logical                       :: dodrCCD,dorCCD,docrCCD,dolCCD
   logical                       :: doCI,doCIS,doCIS_D,doCID,doCISD,doFCI
   logical                       :: doRPA,dophRPA,dophRPAx,docrRPA,doppRPA
-  logical                       :: doG0F2,doevGF2,doqsGF2,doG0F3,doevGF3
+  logical                       :: doGF,doG0F2,doevGF2,doqsGF2,doG0F3,doevGF3
   logical                       :: doG0W0,doevGW,doqsGW,doufG0W0,doufGW,doSRGqsGW
   logical                       :: doG0T0pp,doevGTpp,doqsGTpp
   logical                       :: doG0T0eh,doevGTeh,doqsGTeh
@@ -67,13 +67,13 @@ program QuAcK
   double precision              :: start_GT     ,end_GT       ,t_GT
   double precision              :: start_MP     ,end_MP       ,t_MP 
 
-  integer                       :: maxSCF_HF,n_diis_HF
+  integer                       :: maxSCF_HF,max_diis_HF
   double precision              :: thresh_HF,level_shift
   logical                       :: DIIS_HF,guess_type,ortho_type,mix
 
   logical                       :: regMP
 
-  integer                       :: maxSCF_CC,n_diis_CC
+  integer                       :: maxSCF_CC,max_diis_CC
   double precision              :: thresh_CC
   logical                       :: DIIS_CC
 
@@ -83,17 +83,17 @@ program QuAcK
   logical                       :: spin_flip
   logical                       :: TDA
 
-  integer                       :: maxSCF_GF,n_diis_GF,renormGF
+  integer                       :: maxSCF_GF,max_diis_GF,renormGF
   double precision              :: thresh_GF
   logical                       :: DIIS_GF,linGF,regGF
   double precision              :: eta_GF
 
-  integer                       :: maxSCF_GW,n_diis_GW
+  integer                       :: maxSCF_GW,max_diis_GW
   double precision              :: thresh_GW
   logical                       :: DIIS_GW,TDA_W,linGW,regGW
   double precision              :: eta_GW
 
-  integer                       :: maxSCF_GT,n_diis_GT
+  integer                       :: maxSCF_GT,max_diis_GT
   double precision              :: thresh_GT
   logical                       :: DIIS_GT,TDA_T,linGT,regGT
   double precision              :: eta_GT
@@ -134,13 +134,13 @@ program QuAcK
 
 ! Read options for methods
 
-  call read_options(maxSCF_HF,thresh_HF,DIIS_HF,n_diis_HF,guess_type,ortho_type,mix,level_shift,dostab, &
+  call read_options(maxSCF_HF,thresh_HF,DIIS_HF,max_diis_HF,guess_type,ortho_type,mix,level_shift,dostab, &
                     regMP,                                                                              &
-                    maxSCF_CC,thresh_CC,DIIS_CC,n_diis_CC,                                              &
+                    maxSCF_CC,thresh_CC,DIIS_CC,max_diis_CC,                                              &
                     TDA,singlet,triplet,spin_conserved,spin_flip,                                       &
-                    maxSCF_GF,thresh_GF,DIIS_GF,n_diis_GF,linGF,eta_GF,renormGF,regGF,                  &
-                    maxSCF_GW,thresh_GW,DIIS_GW,n_diis_GW,linGW,eta_GW,regGW,TDA_W,                     &  
-                    maxSCF_GT,thresh_GT,DIIS_GT,n_diis_GT,linGT,eta_GT,regGT,TDA_T,                     & 
+                    maxSCF_GF,thresh_GF,DIIS_GF,max_diis_GF,linGF,eta_GF,renormGF,regGF,                  &
+                    maxSCF_GW,thresh_GW,DIIS_GW,max_diis_GW,linGW,eta_GW,regGW,TDA_W,                     &  
+                    maxSCF_GT,thresh_GT,DIIS_GT,max_diis_GT,linGT,eta_GT,regGT,TDA_T,                     & 
                     doACFDT,exchange_kernel,doXBS,                                                      &
                     dophBSE,dophBSE2,doppBSE,dBSE,dTDA)
 
@@ -209,7 +209,7 @@ program QuAcK
   if(doHF) then
 
     call wall_time(start_HF)
-    call HF(doRHF,doUHF,doRMOM,doUMOM,unrestricted,maxSCF_HF,thresh_HF,n_diis_HF, & 
+    call HF(doRHF,doUHF,doRMOM,doUMOM,unrestricted,maxSCF_HF,thresh_HF,max_diis_HF, & 
             guess_type,mix,level_shift,nNuc,ZNuc,rNuc,ENuc,nBas,nO,S,T,V,Hc,F_AO, & 
             ERI_AO,dipole_int_AO,X,EHF,epsHF,cHF,PHF)
     call wall_time(end_HF)
@@ -233,7 +233,7 @@ program QuAcK
     write(*,*)
     write(*,*) 'KS module has been disabled for now! Sorry.'
     write(*,*)
-!   call eDFT(maxSCF_HF,thresh_HF,n_diis_HF,guess_type,mix,level_shift,nNuc,ZNuc,rNuc,ENuc,nBas,nEl,nC, & 
+!   call eDFT(maxSCF_HF,thresh_HF,max_diis_HF,guess_type,mix,level_shift,nNuc,ZNuc,rNuc,ENuc,nBas,nEl,nC, & 
 !             nO,nV,nR,nShell,TotAngMomShell,CenterShell,KShell,DShell,ExpShell,            &
 !             max_ang_mom,min_exponent,max_exponent,S,T,V,Hc,X,ERI_AO,dipole_int_AO,EHF,epsHF,cHF,PHF,Vxc)
     call cpu_time(end_KS)
@@ -376,7 +376,7 @@ program QuAcK
 
     call cpu_time(start_CC)
     call CC(doCCD,dopCCD,doDCD,doCCSD,doCCSDT,dodrCCD,dorCCD,docrCCD,dolCCD, & 
-            maxSCF_CC,thresh_CC,n_diis_CC,nBas,nC,nO,nV,nR,ERI_MO,ENuc,EHF,epsHF)
+            maxSCF_CC,thresh_CC,max_diis_CC,nBas,nC,nO,nV,nR,ERI_MO,ENuc,EHF,epsHF)
     call cpu_time(end_CC)
 
     t_CC = end_CC - start_CC
@@ -427,141 +427,22 @@ program QuAcK
   end if
 
 !------------------------------------------------------------------------
-! Compute G0F2 electronic binding energies
+! Green's function module
 !------------------------------------------------------------------------
 
-  if(doG0F2) then
+  doGF = doG0F2 .or. doevGF2 .or. doqsGF2 .or. doG0F3 .or. doevGF3
+
+  if(doGF) then
 
     call cpu_time(start_GF)
-
-    if(unrestricted) then
-
-      call UG0F2(dophBSE,TDA,dBSE,dTDA,spin_conserved,spin_flip,linGF,eta_GF,regGF,        &
-                 nBas,nC,nO,nV,nR,nS,ENuc,EHF,S,ERI_AO,ERI_MO_aaaa,ERI_MO_aabb,ERI_MO_bbbb, & 
-                 dipole_int_aa,dipole_int_bb,epsHF)
-
-    else
-
-      call G0F2(dophBSE,TDA,dBSE,dTDA,singlet,triplet,linGF,eta_GF,regGF, & 
-                nBas,nC,nO,nV,nR,nS,ENuc,EHF,ERI_MO,dipole_int_MO,epsHF)
-
-    end if
-
+    call GF(doG0F2,doevGF2,doqsGF2,doG0F3,doevGF3,unrestricted,renormGF,maxSCF_GF,thresh_GF,max_diis_GF,              &
+            dophBSE,TDA,dBSE,dTDA,singlet,triplet,spin_conserved,spin_flip,linGF,eta_GF,regGF,                        &
+            nNuc,ZNuc,rNuc,ENuc,nBas,nC,nO,nV,nR,nS,EHF,S,X,T,V,Hc,ERI_AO,ERI_MO,ERI_MO_aaaa,ERI_MO_aabb,ERI_MO_bbbb, &
+            dipole_int_AO,dipole_int_MO,dipole_int_aa,dipole_int_bb,PHF,cHF,epsHF)
     call cpu_time(end_GF)
 
     t_GF = end_GF - start_GF
     write(*,'(A65,1X,F9.3,A8)') 'Total CPU time for GF2 = ',t_GF,' seconds'
-    write(*,*)
-
-  end if
-
-!------------------------------------------------------------------------
-! Compute evGF2 electronic binding energies
-!------------------------------------------------------------------------
-
-  if(doevGF2) then
-
-    call cpu_time(start_GF)
-
-    if(unrestricted) then
-
-      call evUGF2(maxSCF_GF,thresh_GF,n_diis_GF,dophBSE,TDA,dBSE,dTDA,spin_conserved,spin_flip,    &
-                  eta_GF,regGF,nBas,nC,nO,nV,nR,nS,ENuc,EHF,S,ERI_AO,ERI_MO_aaaa,ERI_MO_aabb,ERI_MO_bbbb, & 
-                  dipole_int_aa,dipole_int_bb,cHF,epsHF)
-
-    else
-
-      call evGF2(dophBSE,TDA,dBSE,dTDA,maxSCF_GF,thresh_GF,n_diis_GF, & 
-                 singlet,triplet,linGF,eta_GF,regGF,nBas,nC,nO,nV,nR,nS,ENuc,EHF, & 
-                 ERI_MO,dipole_int_MO,epsHF)
-
-    end if
-
-    call cpu_time(end_GF)
-
-    t_GF = end_GF - start_GF
-    write(*,'(A65,1X,F9.3,A8)') 'Total CPU time for GF2 = ',t_GF,' seconds'
-    write(*,*)
-
-  end if
-
-!------------------------------------------------------------------------
-! Perform qsGF2 calculation
-!------------------------------------------------------------------------
-
-  if(doqsGF2) then 
-
-    call cpu_time(start_GF)
-
-    if(unrestricted) then
-
-      call qsUGF2(maxSCF_GF,thresh_GF,n_diis_GF,dophBSE,TDA,dBSE,dTDA,spin_conserved,spin_flip,eta_GF,regGF, &
-                  nNuc,ZNuc,rNuc,ENuc,nBas,nC,nO,nV,nR,nS,EHF,S,X,T,V,Hc,ERI_AO,                        & 
-                  ERI_MO_aaaa,ERI_MO_aabb,ERI_MO_bbbb,dipole_int_AO,dipole_int_aa,dipole_int_bb,PHF,cHF,epsHF)
-
-    else
-
-      call qsGF2(maxSCF_GF,thresh_GF,n_diis_GF,dophBSE,TDA,dBSE,dTDA,singlet,triplet,eta_GF,regGF,nNuc,ZNuc,rNuc,ENuc, & 
-                 nBas,nC,nO,nV,nR,nS,EHF,S,X,T,V,Hc,ERI_AO,ERI_MO,dipole_int_AO,dipole_int_MO,PHF,cHF,epsHF)
-
-    end if
-
-    call cpu_time(end_GF)
-
-    t_GF = end_GF - start_GF
-    write(*,'(A65,1X,F9.3,A8)') 'Total CPU time for qsGF2 = ',t_GF,' seconds'
-    write(*,*)
-
-  end if
-
-!------------------------------------------------------------------------
-! Compute G0F3 electronic binding energies
-!------------------------------------------------------------------------
-
-  if(doG0F3) then
-
-    call cpu_time(start_GF)
-
-    if(unrestricted) then
-
-      print*,'!!! G0F3 NYI at the unrestricted level !!!'
-
-    else
-
-      call G0F3(renormGF,nBas,nC,nO,nV,nR,ERI_MO,epsHF)
-
-    end if
-
-    call cpu_time(end_GF)
-
-    t_GF = end_GF - start_GF
-    write(*,'(A65,1X,F9.3,A8)') 'Total CPU time for GF3 = ',t_GF,' seconds'
-    write(*,*)
-
-  end if
-
-!------------------------------------------------------------------------
-! Compute evGF3 electronic binding energies
-!------------------------------------------------------------------------
-
-  if(doevGF3) then
-
-    call cpu_time(start_GF)
-
-    if(unrestricted) then
-
-      print*,'!!! evGF3 NYI at the unrestricted level !!!'
-
-    else
-
-      call evGF3(maxSCF_GF,thresh_GF,n_diis_GF,renormGF,nBas,nC,nO,nV,nR,ERI_MO,epsHF)
-
-    end if
-
-    call cpu_time(end_GF)
-
-    t_GF = end_GF - start_GF
-    write(*,'(A65,1X,F9.3,A8)') 'Total CPU time for GF3 = ',t_GF,' seconds'
     write(*,*)
 
   end if
@@ -601,14 +482,14 @@ program QuAcK
     call cpu_time(start_GW)
     if(unrestricted) then 
 
-      call evUGW(maxSCF_GW,thresh_GW,n_diis_GW,doACFDT,exchange_kernel,doXBS,dophBSE,TDA_W,TDA,   &
+      call evUGW(maxSCF_GW,thresh_GW,max_diis_GW,doACFDT,exchange_kernel,doXBS,dophBSE,TDA_W,TDA,   &
                 dBSE,dTDA,spin_conserved,spin_flip,eta_GW,regGW,nBas,nC,nO,nV,nR,nS,ENuc,    &
                 EHF,S,ERI_AO,ERI_MO_aaaa,ERI_MO_aabb,ERI_MO_bbbb,dipole_int_aa,dipole_int_bb, & 
                 PHF,cHF,epsHF)
 
     else
 
-      call evGW(maxSCF_GW,thresh_GW,n_diis_GW,doACFDT,exchange_kernel,doXBS,       &
+      call evGW(maxSCF_GW,thresh_GW,max_diis_GW,doACFDT,exchange_kernel,doXBS,       &
                 dophBSE,dophBSE2,TDA_W,TDA,dBSE,dTDA,doppBSE,singlet,triplet,linGW,eta_GW,regGW, &
                 nBas,nC,nO,nV,nR,nS,ENuc,EHF,ERI_AO,ERI_MO,dipole_int_MO,PHF,cHF,epsHF)
     end if
@@ -630,14 +511,14 @@ program QuAcK
 
     if(unrestricted) then 
     
-      call qsUGW(maxSCF_GW,thresh_GW,n_diis_GW,doACFDT,exchange_kernel,doXBS,dophBSE,TDA_W,TDA, &
+      call qsUGW(maxSCF_GW,thresh_GW,max_diis_GW,doACFDT,exchange_kernel,doXBS,dophBSE,TDA_W,TDA, &
                  dBSE,dTDA,spin_conserved,spin_flip,eta_GW,regGW,nNuc,ZNuc,rNuc,ENuc,nBas,nC,nO, &
                  nV,nR,nS,EHF,S,X,T,V,Hc,ERI_AO,ERI_MO_aaaa,ERI_MO_aabb,ERI_MO_bbbb,dipole_int_AO,      &
                  dipole_int_aa,dipole_int_bb,PHF,cHF,epsHF)
 
     else
  
-      call qsGW(maxSCF_GW,thresh_GW,n_diis_GW,doACFDT,exchange_kernel,doXBS,               &
+      call qsGW(maxSCF_GW,thresh_GW,max_diis_GW,doACFDT,exchange_kernel,doXBS,               &
                 dophBSE,dophBSE2,TDA_W,TDA,dBSE,dTDA,doppBSE,singlet,triplet,eta_GW,regGW,nNuc,ZNuc,rNuc,ENuc, & 
                 nBas,nC,nO,nV,nR,nS,EHF,S,X,T,V,Hc,ERI_AO,ERI_MO,dipole_int_AO,dipole_int_MO,PHF,cHF,epsHF)
 
@@ -665,7 +546,7 @@ program QuAcK
 
     else
  
-      call SRG_qsGW(maxSCF_GW,thresh_GW,n_diis_GW,doACFDT,exchange_kernel,doXBS,dophBSE,dophBSE2,TDA_W,TDA,dBSE,dTDA, & 
+      call SRG_qsGW(maxSCF_GW,thresh_GW,max_diis_GW,doACFDT,exchange_kernel,doXBS,dophBSE,dophBSE2,TDA_W,TDA,dBSE,dTDA, & 
                     singlet,triplet,eta_GW,nNuc,ZNuc,rNuc,ENuc,nBas,nC,nO,nV,nR,nS,EHF,S,X,T,V,Hc,ERI_AO,ERI_MO,   & 
                     dipole_int_AO,dipole_int_MO,PHF,cHF,epsHF)
 
@@ -751,7 +632,7 @@ program QuAcK
 
     if(unrestricted) then
 
-      call evUGTpp(maxSCF_GT,thresh_GT,n_diis_GT,doACFDT,exchange_kernel,doXBS, &
+      call evUGTpp(maxSCF_GT,thresh_GT,max_diis_GT,doACFDT,exchange_kernel,doXBS, &
                    dophBSE,TDA_T,TDA,dBSE,dTDA,spin_conserved,spin_flip,&
                    eta_GT,regGT,nBas,nC,nO,nV,nR,nS,ENuc,EHF,ERI_AO, &
                    ERI_MO_aaaa,ERI_MO_aabb,ERI_MO_bbbb,dipole_int_aa, &
@@ -759,7 +640,7 @@ program QuAcK
 
     else
 
-      call evGTpp(maxSCF_GT,thresh_GT,n_diis_GT,doACFDT,exchange_kernel,doXBS, &
+      call evGTpp(maxSCF_GT,thresh_GT,max_diis_GT,doACFDT,exchange_kernel,doXBS, &
                   dophBSE,TDA_T,TDA,dBSE,dTDA,singlet,triplet,eta_GT,regGT,  & 
                   nBas,nC,nO,nV,nR,nS,ENuc,EHF,ERI_AO,ERI_MO,dipole_int_MO,   &
                   PHF,cHF,epsHF)
@@ -784,13 +665,13 @@ program QuAcK
 
     if(unrestricted) then
 
-      call qsUGTpp(maxSCF_GT,thresh_GT,n_diis_GT,doACFDT,exchange_kernel,doXBS,dophBSE,TDA_T, &
+      call qsUGTpp(maxSCF_GT,thresh_GT,max_diis_GT,doACFDT,exchange_kernel,doXBS,dophBSE,TDA_T, &
                    TDA,dBSE,dTDA,spin_conserved,spin_flip,eta_GT,regGT,nBas,nC,nO,nV,&
                    nR,nS,nNuc,ZNuc,rNuc,ENuc,EHF,S,X,T,V,Hc,ERI_AO,ERI_MO_aaaa,ERI_MO_aabb,&
                    ERI_MO_bbbb,dipole_int_AO,dipole_int_aa,dipole_int_bb,PHF,cHF,epsHF) 
     else
 
-      call qsGTpp(maxSCF_GT,thresh_GT,n_diis_GT,doACFDT,exchange_kernel,doXBS, &
+      call qsGTpp(maxSCF_GT,thresh_GT,max_diis_GT,doACFDT,exchange_kernel,doXBS, &
                   dophBSE,TDA_T,TDA,dBSE,dTDA,singlet,triplet,eta_GT,regGT,  &
                   nNuc,ZNuc,rNuc,ENuc,nBas,nC,nO,nV,nR,nS,EHF,S,X,T,V,Hc,     & 
                   ERI_AO,ERI_MO,dipole_int_AO,dipole_int_MO,PHF,cHF,epsHF)
@@ -843,7 +724,7 @@ program QuAcK
 
     else
 
-      call evGTeh(maxSCF_GT,thresh_GT,n_diis_GT,doACFDT,exchange_kernel,doXBS,                 &
+      call evGTeh(maxSCF_GT,thresh_GT,max_diis_GT,doACFDT,exchange_kernel,doXBS,                 &
                   dophBSE,dophBSE2,TDA_T,TDA,dBSE,dTDA,doppBSE,singlet,triplet,linGT,eta_GT,regGT, &
                   nBas,nC,nO,nV,nR,nS,ENuc,EHF,ERI_AO,ERI_MO,dipole_int_MO,PHF,cHF,epsHF)
     end if
@@ -867,7 +748,7 @@ program QuAcK
     
     else
  
-      call qsGTeh(maxSCF_GT,thresh_GT,n_diis_GT,doACFDT,exchange_kernel,doXBS,                      &
+      call qsGTeh(maxSCF_GT,thresh_GT,max_diis_GT,doACFDT,exchange_kernel,doXBS,                      &
                   dophBSE,dophBSE2,TDA_T,TDA,dBSE,dTDA,singlet,triplet,eta_GT,regGT,nNuc,ZNuc,rNuc,ENuc, & 
                   nBas,nC,nO,nV,nR,nS,EHF,S,X,T,V,Hc,ERI_AO,ERI_MO,dipole_int_AO,dipole_int_MO,PHF,cHF,epsHF)
 

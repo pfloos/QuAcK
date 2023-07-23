@@ -1,5 +1,5 @@
 subroutine UG0F2(BSE,TDA,dBSE,dTDA,spin_conserved,spin_flip,linearize,eta,regularize,nBas,nC,nO,nV,nR,nS,ENuc,EUHF, &
-                 S,ERI,ERI_aaaa,ERI_aabb,ERI_bbbb,dipole_int_aa,dipole_int_bb,eHF)
+                 ERI_aaaa,ERI_aabb,ERI_bbbb,dipole_int_aa,dipole_int_bb,eHF)
 
 ! Perform unrestricted G0W0 calculation
 
@@ -27,8 +27,6 @@ subroutine UG0F2(BSE,TDA,dBSE,dTDA,spin_conserved,spin_flip,linearize,eta,regula
   integer,intent(in)            :: nS(nspin)
   double precision,intent(in)   :: ENuc
   double precision,intent(in)   :: EUHF
-  double precision,intent(in)   :: S(nBas,nBas)
-  double precision,intent(in)   :: ERI(nBas,nBas,nBas,nBas)
   double precision,intent(in)   :: ERI_aaaa(nBas,nBas,nBas,nBas)
   double precision,intent(in)   :: ERI_aabb(nBas,nBas,nBas,nBas)
   double precision,intent(in)   :: ERI_bbbb(nBas,nBas,nBas,nBas)
