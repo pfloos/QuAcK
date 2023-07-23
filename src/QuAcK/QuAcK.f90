@@ -402,7 +402,9 @@ program QuAcK
   if(doCI) then
 
     call cpu_time(start_CI)
-    call CI(singlet,triplet,nBas,nC,nO,nV,nR,ERI_MO,F_MO,EHF)
+    call CI(doCIS,doCIS_D,doCID,doCISD,doFCI,unrestricted,singlet,triplet,spin_conserved,spin_flip,    &
+            nBas,nC,nO,nV,nR,nS,ERI_MO,ERI_MO_aaaa,ERI_MO_aabb,ERI_MO_bbbb,dipole_int_MO,dipole_int_aa,dipole_int_bb, &
+            epsHF,EHF,cHF,S,F_MO)
     call cpu_time(end_CI)
 
     t_CI = end_CI - start_CI
