@@ -13,8 +13,8 @@ program QuAcK
   logical                       :: doCI,doCIS,doCIS_D,doCID,doCISD,doFCI
   logical                       :: doRPA,dophRPA,dophRPAx,docrRPA,doppRPA
   logical                       :: doGF,doG0F2,doevGF2,doqsGF2,doG0F3,doevGF3
-  logical                       :: doG0W0,doevGW,doqsGW,doufG0W0,doufGW,doSRGqsGW
-  logical                       :: doG0T0pp,doevGTpp,doqsGTpp
+  logical                       :: doGW,doG0W0,doevGW,doqsGW,doufG0W0,doufGW,doSRGqsGW
+  logical                       :: doGT,doG0T0pp,doevGTpp,doqsGTpp
   logical                       :: doG0T0eh,doevGTeh,doqsGTeh
 
   integer                       :: nNuc,nBas
@@ -59,13 +59,13 @@ program QuAcK
   double precision              :: start_stab   ,end_stab     ,t_stab
   double precision              :: start_KS     ,end_KS       ,t_KS
   double precision              :: start_AOtoMO ,end_AOtoMO   ,t_AOtoMO
+  double precision              :: start_MP     ,end_MP       ,t_MP 
   double precision              :: start_CC     ,end_CC       ,t_CC 
   double precision              :: start_CI     ,end_CI       ,t_CI 
   double precision              :: start_RPA    ,end_RPA      ,t_RPA 
   double precision              :: start_GF     ,end_GF       ,t_GF 
   double precision              :: start_GW     ,end_GW       ,t_GW 
   double precision              :: start_GT     ,end_GT       ,t_GT
-  double precision              :: start_MP     ,end_MP       ,t_MP 
 
   integer                       :: maxSCF_HF,max_diis_HF
   double precision              :: thresh_HF,level_shift
@@ -448,316 +448,45 @@ program QuAcK
   end if
 
 !------------------------------------------------------------------------
-! Perform G0W0 calculatiom
+! GW module
 !------------------------------------------------------------------------
 
-  if(doG0W0) then
+  doGW = doG0W0 .or. doevGW .or. doqsGW .or. doufG0W0 .or. doufGW .or. doSRGqsGW
+
+  if(doGW) then
     
     call cpu_time(start_GW)
-    if(unrestricted) then 
-
-      call UG0W0(doACFDT,exchange_kernel,doXBS,dophBSE,TDA_W,TDA,dBSE,dTDA,spin_conserved,spin_flip,   & 
-                 linGW,eta_GW,regGW,nBas,nC,nO,nV,nR,nS,ENuc,EHF,S,ERI_AO,ERI_MO_aaaa,ERI_MO_aabb,ERI_MO_bbbb, & 
-                 dipole_int_aa,dipole_int_bb,PHF,cHF,epsHF)
-    else
-
-      call G0W0(doACFDT,exchange_kernel,doXBS,dophBSE,dophBSE2,TDA_W,TDA,dBSE,dTDA,doppBSE,singlet,triplet, &
-                linGW,eta_GW,regGW,nBas,nC,nO,nV,nR,nS,ENuc,EHF,ERI_AO,ERI_MO,dipole_int_MO,PHF,cHF,epsHF)
-    end if
-
+    call GW(doG0W0,doevGW,doqsGW,doufG0W0,doufGW,doSRGqsGW,unrestricted,maxSCF_GW,thresh_GW,max_diis_GW,doACFDT, &
+            exchange_kernel,doXBS,dophBSE,dophBSE2,doppBSE,TDA_W,TDA,dBSE,dTDA,singlet,triplet,spin_conserved,spin_flip, &
+            linGW,eta_GW,regGW,nNuc,ZNuc,rNuc,ENuc,nBas,nC,nO,nV,nR,nS,EHF,S,X,T,V,Hc,                        &  
+            ERI_AO,ERI_MO,ERI_MO_aaaa,ERI_MO_aabb,ERI_MO_bbbb,dipole_int_AO,dipole_int_MO,dipole_int_aa,dipole_int_bb, & 
+            PHF,cHF,epsHF)
     call cpu_time(end_GW)
   
     t_GW = end_GW - start_GW
-    write(*,'(A65,1X,F9.3,A8)') 'Total CPU time for G0W0 = ',t_GW,' seconds'
+    write(*,'(A65,1X,F9.3,A8)') 'Total CPU time for GW = ',t_GW,' seconds'
     write(*,*)
 
   end if
 
 !------------------------------------------------------------------------
-! Perform evGW calculation
+! T-matrix module
 !------------------------------------------------------------------------
 
-  if(doevGW) then
+  doGT = doG0T0pp .or. doevGTpp .or. doqsGTpp .or. doG0T0eh .or. doevGTeh .or. doqsGTeh
 
-    call cpu_time(start_GW)
-    if(unrestricted) then 
-
-      call evUGW(maxSCF_GW,thresh_GW,max_diis_GW,doACFDT,exchange_kernel,doXBS,dophBSE,TDA_W,TDA,   &
-                dBSE,dTDA,spin_conserved,spin_flip,eta_GW,regGW,nBas,nC,nO,nV,nR,nS,ENuc,    &
-                EHF,S,ERI_AO,ERI_MO_aaaa,ERI_MO_aabb,ERI_MO_bbbb,dipole_int_aa,dipole_int_bb, & 
-                PHF,cHF,epsHF)
-
-    else
-
-      call evGW(maxSCF_GW,thresh_GW,max_diis_GW,doACFDT,exchange_kernel,doXBS,       &
-                dophBSE,dophBSE2,TDA_W,TDA,dBSE,dTDA,doppBSE,singlet,triplet,linGW,eta_GW,regGW, &
-                nBas,nC,nO,nV,nR,nS,ENuc,EHF,ERI_AO,ERI_MO,dipole_int_MO,PHF,cHF,epsHF)
-    end if
-    call cpu_time(end_GW)
-
-    t_GW = end_GW - start_GW
-    write(*,'(A65,1X,F9.3,A8)') 'Total CPU time for evGW = ',t_GW,' seconds'
-    write(*,*)
-
-  end if
-
-!------------------------------------------------------------------------
-! Perform qsGW calculation
-!------------------------------------------------------------------------
-
-  if(doqsGW) then 
-
-    call wall_time(start_GW)
-
-    if(unrestricted) then 
-    
-      call qsUGW(maxSCF_GW,thresh_GW,max_diis_GW,doACFDT,exchange_kernel,doXBS,dophBSE,TDA_W,TDA, &
-                 dBSE,dTDA,spin_conserved,spin_flip,eta_GW,regGW,nNuc,ZNuc,rNuc,ENuc,nBas,nC,nO, &
-                 nV,nR,nS,EHF,S,X,T,V,Hc,ERI_AO,ERI_MO_aaaa,ERI_MO_aabb,ERI_MO_bbbb,dipole_int_AO,      &
-                 dipole_int_aa,dipole_int_bb,PHF,cHF,epsHF)
-
-    else
- 
-      call qsGW(maxSCF_GW,thresh_GW,max_diis_GW,doACFDT,exchange_kernel,doXBS,               &
-                dophBSE,dophBSE2,TDA_W,TDA,dBSE,dTDA,doppBSE,singlet,triplet,eta_GW,regGW,nNuc,ZNuc,rNuc,ENuc, & 
-                nBas,nC,nO,nV,nR,nS,EHF,S,X,T,V,Hc,ERI_AO,ERI_MO,dipole_int_AO,dipole_int_MO,PHF,cHF,epsHF)
-
-    end if
-
-    call wall_time(end_GW)
-
-    t_GW = end_GW - start_GW
-    write(*,'(A65,1X,F9.3,A8)') 'Total wall time for qsGW = ',t_GW,' seconds'
-    write(*,*)
-
-  end if
-
-!------------------------------------------------------------------------
-! Perform SRG-qsGW calculation
-!------------------------------------------------------------------------
-
-  if(doSRGqsGW) then 
-
-    call wall_time(start_GW)
-
-    if(unrestricted) then 
-
-    print*,'Unrestricted version of SRG-qsGW NYI'
-
-    else
- 
-      call SRG_qsGW(maxSCF_GW,thresh_GW,max_diis_GW,doACFDT,exchange_kernel,doXBS,dophBSE,dophBSE2,TDA_W,TDA,dBSE,dTDA, & 
-                    singlet,triplet,eta_GW,nNuc,ZNuc,rNuc,ENuc,nBas,nC,nO,nV,nR,nS,EHF,S,X,T,V,Hc,ERI_AO,ERI_MO,   & 
-                    dipole_int_AO,dipole_int_MO,PHF,cHF,epsHF)
-
-    end if
-
-    call wall_time(end_GW)
-
-    t_GW = end_GW - start_GW
-    write(*,'(A65,1X,F9.3,A8)') 'Total wall time for qsGW = ',t_GW,' seconds'
-    write(*,*)
-
-  end if
-
-!------------------------------------------------------------------------
-! Perform ufG0W0 calculatiom
-!------------------------------------------------------------------------
-
-  if(doufG0W0) then
-    
-    call cpu_time(start_GW)
-    call ufG0W0(nBas,nC,nO,nV,nR,nS,ENuc,EHF,ERI_MO,epsHF,TDA_W)
-    call cpu_time(end_GW)
-  
-    t_GW = end_GW - start_GW
-    write(*,'(A65,1X,F9.3,A8)') 'Total CPU time for ufG0W0 = ',t_GW,' seconds'
-    write(*,*)
-
-  end if
-
-!------------------------------------------------------------------------
-! Perform ufGW calculatiom
-!------------------------------------------------------------------------
-
-  if(doufGW) then
-    
-    call cpu_time(start_GW)
-    call ufGW(nBas,nC,nO,nV,nR,nS,ENuc,EHF,ERI_MO,epsHF)
-    call cpu_time(end_GW)
-  
-    t_GW = end_GW - start_GW
-    write(*,'(A65,1X,F9.3,A8)') 'Total CPU time for ufGW = ',t_GW,' seconds'
-    write(*,*)
-
-  end if
-
-!------------------------------------------------------------------------
-! Perform G0T0pp calculatiom
-!------------------------------------------------------------------------
-
-  if(doG0T0pp) then
+  if(doGT) then
     
     call cpu_time(start_GT)
-
-    if(unrestricted) then 
-
-       call UG0T0pp(doACFDT,exchange_kernel,doXBS,dophBSE,TDA_T,TDA,dBSE,dTDA, &
-                    spin_conserved,spin_flip,linGT,eta_GT,regGT,nBas,nC,nO,nV, &
-                    nR,nS,ENuc,EHF,ERI_AO,ERI_MO_aaaa,ERI_MO_aabb,ERI_MO_bbbb, &
-                    dipole_int_aa,dipole_int_bb,PHF,cHF,epsHF)
-
-    else
-
-      call G0T0pp(doACFDT,exchange_kernel,doXBS,dophBSE,TDA_T,TDA,dBSE,dTDA,doppBSE,singlet,triplet, &
-                  linGT,eta_GT,regGT,nBas,nC,nO,nV,nR,nS,ENuc,EHF,ERI_AO,ERI_MO,dipole_int_MO,PHF,cHF,epsHF)
-
-    end if
-
+    call GT(doG0T0pp,doevGTpp,doqsGTpp,doG0T0eh,doevGTeh,doqsGTeh,unrestricted,maxSCF_GT,thresh_GT,max_diis_GT,doACFDT, &
+            exchange_kernel,doXBS,dophBSE,dophBSE2,doppBSE,TDA_W,TDA,dBSE,dTDA,singlet,triplet,spin_conserved,spin_flip, &
+            linGT,eta_GT,regGT,nNuc,ZNuc,rNuc,ENuc,nBas,nC,nO,nV,nR,nS,EHF,S,X,T,V,Hc,                        &
+            ERI_AO,ERI_MO,ERI_MO_aaaa,ERI_MO_aabb,ERI_MO_bbbb,dipole_int_AO,dipole_int_MO,dipole_int_aa,dipole_int_bb, & 
+            PHF,cHF,epsHF)
     call cpu_time(end_GT)
   
     t_GT = end_GT - start_GT
-    write(*,'(A65,1X,F9.3,A8)') 'Total CPU time for G0T0 = ',t_GT,' seconds'
-    write(*,*)
-
-  end if
-
-!------------------------------------------------------------------------
-! Perform evGTpp calculatiom
-!------------------------------------------------------------------------
-
-  if(doevGTpp) then
-    
-    call cpu_time(start_GT)
-
-    if(unrestricted) then
-
-      call evUGTpp(maxSCF_GT,thresh_GT,max_diis_GT,doACFDT,exchange_kernel,doXBS, &
-                   dophBSE,TDA_T,TDA,dBSE,dTDA,spin_conserved,spin_flip,&
-                   eta_GT,regGT,nBas,nC,nO,nV,nR,nS,ENuc,EHF,ERI_AO, &
-                   ERI_MO_aaaa,ERI_MO_aabb,ERI_MO_bbbb,dipole_int_aa, &
-                   dipole_int_bb,PHF,cHF,epsHF)
-
-    else
-
-      call evGTpp(maxSCF_GT,thresh_GT,max_diis_GT,doACFDT,exchange_kernel,doXBS, &
-                  dophBSE,TDA_T,TDA,dBSE,dTDA,singlet,triplet,eta_GT,regGT,  & 
-                  nBas,nC,nO,nV,nR,nS,ENuc,EHF,ERI_AO,ERI_MO,dipole_int_MO,   &
-                  PHF,cHF,epsHF)
-
-    end if
-
-    call cpu_time(end_GT)
-  
-    t_GT = end_GT - start_GT
-    write(*,'(A65,1X,F9.3,A8)') 'Total CPU time for evGT = ',t_GT,' seconds'
-    write(*,*)
-
-  end if
-
-!------------------------------------------------------------------------
-! Perform qsGTpp calculation
-!------------------------------------------------------------------------
-
-  if(doqsGTpp) then 
-
-    call cpu_time(start_GT)
-
-    if(unrestricted) then
-
-      call qsUGTpp(maxSCF_GT,thresh_GT,max_diis_GT,doACFDT,exchange_kernel,doXBS,dophBSE,TDA_T, &
-                   TDA,dBSE,dTDA,spin_conserved,spin_flip,eta_GT,regGT,nBas,nC,nO,nV,&
-                   nR,nS,nNuc,ZNuc,rNuc,ENuc,EHF,S,X,T,V,Hc,ERI_AO,ERI_MO_aaaa,ERI_MO_aabb,&
-                   ERI_MO_bbbb,dipole_int_AO,dipole_int_aa,dipole_int_bb,PHF,cHF,epsHF) 
-    else
-
-      call qsGTpp(maxSCF_GT,thresh_GT,max_diis_GT,doACFDT,exchange_kernel,doXBS, &
-                  dophBSE,TDA_T,TDA,dBSE,dTDA,singlet,triplet,eta_GT,regGT,  &
-                  nNuc,ZNuc,rNuc,ENuc,nBas,nC,nO,nV,nR,nS,EHF,S,X,T,V,Hc,     & 
-                  ERI_AO,ERI_MO,dipole_int_AO,dipole_int_MO,PHF,cHF,epsHF)
-
-    end if
-
-    call cpu_time(end_GT)
-
-    t_GT = end_GT - start_GT
-    write(*,'(A65,1X,F9.3,A8)') 'Total CPU time for qsGT = ',t_GT,' seconds'
-    write(*,*)
-
-  end if
-
-!------------------------------------------------------------------------
-! Perform G0T0eh calculatiom
-!------------------------------------------------------------------------
-
-  if(doG0T0eh) then
-    
-    call cpu_time(start_GT)
-
-    if(unrestricted) then 
-
-      print*,'!!! eh G0T0 NYI at the unrestricted level !!!'
-
-    else
-
-      call G0T0eh(doACFDT,exchange_kernel,doXBS,dophBSE,dophBSE2,TDA_T,TDA,dBSE,dTDA,doppBSE,singlet,triplet, &
-                  linGT,eta_GT,regGT,nBas,nC,nO,nV,nR,nS,ENuc,EHF,ERI_AO,ERI_MO,dipole_int_MO,PHF,cHF,epsHF)
-
-    end if
-
-    call cpu_time(end_GT)
-  
-    t_GT = end_GT - start_GT
-    write(*,'(A65,1X,F9.3,A8)') 'Total CPU time for G0T0 = ',t_GT,' seconds'
-    write(*,*)
-
-  end if
-
-!------------------------------------------------------------------------
-! Perform evGTeh calculation
-!------------------------------------------------------------------------
-
-  if(doevGTeh) then
-
-    call cpu_time(start_GT)
-    if(unrestricted) then 
-
-    else
-
-      call evGTeh(maxSCF_GT,thresh_GT,max_diis_GT,doACFDT,exchange_kernel,doXBS,                 &
-                  dophBSE,dophBSE2,TDA_T,TDA,dBSE,dTDA,doppBSE,singlet,triplet,linGT,eta_GT,regGT, &
-                  nBas,nC,nO,nV,nR,nS,ENuc,EHF,ERI_AO,ERI_MO,dipole_int_MO,PHF,cHF,epsHF)
-    end if
-    call cpu_time(end_GT)
-
-    t_GT = end_GT - start_GT
-    write(*,'(A65,1X,F9.3,A8)') 'Total CPU time for evGT = ',t_GT,' seconds'
-    write(*,*)
-
-  end if
-
-!------------------------------------------------------------------------
-! Perform qsGTeh calculation
-!------------------------------------------------------------------------
-
-  if(doqsGTeh) then 
-
-    call wall_time(start_GT)
-
-    if(unrestricted) then 
-    
-    else
- 
-      call qsGTeh(maxSCF_GT,thresh_GT,max_diis_GT,doACFDT,exchange_kernel,doXBS,                      &
-                  dophBSE,dophBSE2,TDA_T,TDA,dBSE,dTDA,singlet,triplet,eta_GT,regGT,nNuc,ZNuc,rNuc,ENuc, & 
-                  nBas,nC,nO,nV,nR,nS,EHF,S,X,T,V,Hc,ERI_AO,ERI_MO,dipole_int_AO,dipole_int_MO,PHF,cHF,epsHF)
-
-    end if
-
-    call wall_time(end_GT)
-
-    t_GT = end_GT - start_GT
-    write(*,'(A65,1X,F9.3,A8)') 'Total wall time for qsGW = ',t_GT,' seconds'
+    write(*,'(A65,1X,F9.3,A8)') 'Total CPU time for GT = ',t_GT,' seconds'
     write(*,*)
 
   end if
