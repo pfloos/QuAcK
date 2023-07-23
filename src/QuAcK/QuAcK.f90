@@ -10,7 +10,7 @@ program QuAcK
   logical                       :: doMP,doMP2,doMP3
   logical                       :: doCC,doCCD,dopCCD,doDCD,doCCSD,doCCSDT
   logical                       :: do_drCCD,do_rCCD,do_crCCD,do_lCCD
-  logical                       :: doCIS,doCIS_D,doCID,doCISD,doFCI
+  logical                       :: doCI,doCIS,doCIS_D,doCID,doCISD,doFCI
   logical                       :: dophRPA,dophRPAx,docrRPA,doppRPA
   logical                       :: doG0F2,doevGF2,doqsGF2,doG0F3,doevGF3
   logical                       :: doG0W0,doevGW,doqsGW,doufG0W0,doufGW,doSRGqsGW
@@ -52,8 +52,6 @@ program QuAcK
   double precision,allocatable  :: ERI_MO_aaaa(:,:,:,:)
   double precision,allocatable  :: ERI_MO_aabb(:,:,:,:)
   double precision,allocatable  :: ERI_MO_bbbb(:,:,:,:)
-  double precision,allocatable  :: ERI_ERF_AO(:,:,:,:)
-  double precision,allocatable  :: ERI_ERF_MO(:,:,:,:)
 
   double precision              :: start_QuAcK  ,end_QuAcK    ,t_QuAcK
   double precision              :: start_int    ,end_int      ,t_int  
@@ -235,10 +233,12 @@ program QuAcK
     unrestricted = .true.
 
     call cpu_time(start_KS)
+    write(*,*)
+    write(*,*) 'KS module has been disabled for now! Sorry.'
+    write(*,*)
 !   call eDFT(maxSCF_HF,thresh_HF,n_diis_HF,guess_type,mix,level_shift,nNuc,ZNuc,rNuc,ENuc,nBas,nEl,nC, & 
 !             nO,nV,nR,nShell,TotAngMomShell,CenterShell,KShell,DShell,ExpShell,            &
 !             max_ang_mom,min_exponent,max_exponent,S,T,V,Hc,X,ERI_AO,dipole_int_AO,EHF,epsHF,cHF,PHF,Vxc)
-             
     call cpu_time(end_KS)
 
     t_KS = end_KS - start_KS
@@ -394,60 +394,19 @@ program QuAcK
   end if
 
 !------------------------------------------------------------------------
-! Compute CIS excitations
+! Configuration interaction module
 !------------------------------------------------------------------------
 
-  if(doCIS) then
+  doCI = doCIS .or. doCID .or. doCISD .or. doFCI
+
+  if(doCI) then
 
     call cpu_time(start_CI)
-
-    if(unrestricted) then
-
-      call UCIS(spin_conserved,spin_flip,nBas,nC,nO,nV,nR,nS,ERI_MO_aaaa,ERI_MO_aabb, & 
-                ERI_MO_bbbb,dipole_int_aa,dipole_int_bb,epsHF,cHF,S)
-
-   else 
-
-      call CIS(singlet,triplet,doCIS_D,nBas,nC,nO,nV,nR,nS,ERI_MO,dipole_int_MO,epsHF)
-
-    end if
-
+    call CI(singlet,triplet,nBas,nC,nO,nV,nR,ERI_MO,F_MO,EHF)
     call cpu_time(end_CI)
 
     t_CI = end_CI - start_CI
-    write(*,'(A65,1X,F9.3,A8)') 'Total CPU time for CIS = ',t_CI,' seconds'
-    write(*,*)
-
-  end if
-
-!------------------------------------------------------------------------
-! Compute CID excitations
-!------------------------------------------------------------------------
-
-  if(doCID) then
-
-    call cpu_time(start_CI)
-    call CID(singlet,triplet,nBas,nC,nO,nV,nR,ERI_MO,F_MO,EHF)
-    call cpu_time(end_CI)
-
-    t_CI = end_CI - start_CI
-    write(*,'(A65,1X,F9.3,A8)') 'Total CPU time for CID = ',t_CI,' seconds'
-    write(*,*)
-
-  end if
-
-!------------------------------------------------------------------------
-! Compute CISD excitations
-!------------------------------------------------------------------------
-
-  if(doCISD) then
-
-    call cpu_time(start_CI)
-    call CISD(singlet,triplet,nBas,nC,nO,nV,nR,ERI_MO,F_MO,EHF)
-    call cpu_time(end_CI)
-
-    t_CI = end_CI - start_CI
-    write(*,'(A65,1X,F9.3,A8)') 'Total CPU time for CISD = ',t_CI,' seconds'
+    write(*,'(A65,1X,F9.3,A8)') 'Total CPU time for CI = ',t_CI,' seconds'
     write(*,*)
 
   end if
@@ -503,7 +462,7 @@ program QuAcK
   end if
 
 !------------------------------------------------------------------------
-! Compute cr-RPA excitations
+! Compute crRPA excitations
 !------------------------------------------------------------------------
 
   if(docrRPA) then
@@ -519,7 +478,7 @@ program QuAcK
   end if
 
 !------------------------------------------------------------------------
-! Compute pp-RPA excitations
+! Compute ppRPA excitations
 !------------------------------------------------------------------------
 
   if(doppRPA) then
@@ -995,23 +954,6 @@ program QuAcK
 
     t_GT = end_GT - start_GT
     write(*,'(A65,1X,F9.3,A8)') 'Total wall time for qsGW = ',t_GT,' seconds'
-    write(*,*)
-
-  end if
-
-!------------------------------------------------------------------------
-! Compute FCI 
-!------------------------------------------------------------------------
-
-  if(doFCI) then
-
-    call cpu_time(start_CI)
-    write(*,*) ' FCI is not yet implemented! Sorry.'
-!   call FCI(nBas,nC,nO,nV,nR,ERI_MO,epsHF)
-    call cpu_time(end_CI)
-
-    t_CI = end_CI - start_CI
-    write(*,'(A65,1X,F9.3,A8)') 'Total CPU time for FCI = ',t_CI,' seconds'
     write(*,*)
 
   end if
