@@ -1,5 +1,5 @@
-subroutine URPA(TDA,doACFDT,exchange_kernel,spin_conserved,spin_flip,eta,nBas,nC,nO,nV,nR,nS,ENuc,EUHF, & 
-                 ERI_aaaa,ERI_aabb,ERI_bbbb,dipole_int_aa,dipole_int_bb,e,c,S)
+subroutine phURPA(TDA,doACFDT,exchange_kernel,spin_conserved,spin_flip,nBas,nC,nO,nV,nR,nS,ENuc,EUHF, & 
+                  ERI_aaaa,ERI_aabb,ERI_bbbb,dipole_int_aa,dipole_int_bb,e,c,S)
 
 ! Perform random phase approximation calculation with exchange (aka TDHF) in the unrestricted formalism
 
@@ -20,7 +20,6 @@ subroutine URPA(TDA,doACFDT,exchange_kernel,spin_conserved,spin_flip,eta,nBas,nC
   integer,intent(in)            :: nV(nspin)
   integer,intent(in)            :: nR(nspin)
   integer,intent(in)            :: nS(nspin)
-  double precision,intent(in)   :: eta
   double precision,intent(in)   :: ENuc
   double precision,intent(in)   :: EUHF
   double precision,intent(in)   :: e(nBas,nspin)
@@ -83,7 +82,7 @@ subroutine URPA(TDA,doACFDT,exchange_kernel,spin_conserved,spin_flip,eta,nBas,nC
 
     allocate(Omega_sc(nS_sc),XpY_sc(nS_sc,nS_sc),XmY_sc(nS_sc,nS_sc))
 
-    call phULR(ispin,.true.,TDA,.false.,eta,nBas,nC,nO,nV,nR,nS_aa,nS_bb,nS_sc,nS_sc,1d0,e, & 
+    call phULR(ispin,.true.,TDA,.false.,nBas,nC,nO,nV,nR,nS_aa,nS_bb,nS_sc,nS_sc,1d0,e, & 
                ERI_aaaa,ERI_aabb,ERI_bbbb,Omega_sc,rho_sc,EcRPA(ispin),Omega_sc,XpY_sc,XmY_sc)
     call print_excitation('URPA   ',5,nS_sc,Omega_sc)
     call print_unrestricted_transition_vectors(ispin,nBas,nC,nO,nV,nR,nS,nS_aa,nS_bb,nS_sc,dipole_int_aa,dipole_int_bb, &
@@ -107,7 +106,7 @@ subroutine URPA(TDA,doACFDT,exchange_kernel,spin_conserved,spin_flip,eta,nBas,nC
 
     allocate(Omega_sf(nS_sf),XpY_sf(nS_sf,nS_sf),XmY_sf(nS_sf,nS_sf))
 
-    call phULR(ispin,.true.,TDA,.false.,eta,nBas,nC,nO,nV,nR,nS_ab,nS_ba,nS_sf,nS_sf,1d0,e, &
+    call phULR(ispin,.true.,TDA,.false.,nBas,nC,nO,nV,nR,nS_ab,nS_ba,nS_sf,nS_sf,1d0,e, &
                ERI_aaaa,ERI_aabb,ERI_bbbb,Omega_sf,rho_sf,EcRPA(ispin),Omega_sf,XpY_sf,XmY_sf)
     call print_excitation('URPA   ',6,nS_sf,Omega_sf)
     call print_unrestricted_transition_vectors(ispin,nBas,nC,nO,nV,nR,nS,nS_ab,nS_ba,nS_sf,dipole_int_aa,dipole_int_bb, &
@@ -142,8 +141,8 @@ subroutine URPA(TDA,doACFDT,exchange_kernel,spin_conserved,spin_flip,eta,nBas,nC
     write(*,*) '---------------------------------------------------------'
     write(*,*)
 
-    call UACFDT(exchange_kernel,.false.,.true.,.false.,TDA,.false.,spin_conserved,spin_flip,eta, &
-                nBas,nC,nO,nV,nR,nS,ERI_aaaa,ERI_aabb,ERI_bbbb,e,e,EcRPA)
+    call phUACFDT(exchange_kernel,.false.,.true.,.false.,TDA,.false.,spin_conserved,spin_flip, &
+                  nBas,nC,nO,nV,nR,nS,ERI_aaaa,ERI_aabb,ERI_bbbb,e,e,EcRPA)
 
     if(exchange_kernel) then
    

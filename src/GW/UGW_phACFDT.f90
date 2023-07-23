@@ -1,5 +1,5 @@
-subroutine UGW_ACFDT(exchange_kernel,doXBS,dRPA,TDA_W,TDA,BSE,spin_conserved,spin_flip,eta, &
-                     nBas,nC,nO,nV,nR,nS,ERI_aaaa,ERI_aabb,ERI_bbbb,eW,e,EcAC)
+subroutine UGW_phACFDT(exchange_kernel,doXBS,dRPA,TDA_W,TDA,BSE,spin_conserved,spin_flip,eta, &
+                       nBas,nC,nO,nV,nR,nS,ERI_aaaa,ERI_aabb,ERI_bbbb,eW,e,EcAC)
 
 ! Compute the correlation energy via the adiabatic connection fluctuation dissipation theorem
 
@@ -93,7 +93,7 @@ subroutine UGW_ACFDT(exchange_kernel,doXBS,dRPA,TDA_W,TDA,BSE,spin_conserved,spi
 
   allocate(OmRPA(nS_sc),XpY_RPA(nS_sc,nS_sc),XmY_RPA(nS_sc,nS_sc),rho_RPA(nBas,nBas,nS_sc,nspin))
 
-  call phULR(isp_W,.true.,TDA_W,.false.,eta,nBas,nC,nO,nV,nR,nS_aa,nS_bb,nS_sc,nS_sc,1d0,eW, &
+  call phULR(isp_W,.true.,TDA_W,.false.,nBas,nC,nO,nV,nR,nS_aa,nS_bb,nS_sc,nS_sc,1d0,eW, &
              ERI_aaaa,ERI_aabb,ERI_bbbb,OmRPA,rho_RPA,EcRPA,OmRPA,XpY_RPA,XmY_RPA)
   call unrestricted_excitation_density(nBas,nC,nO,nR,nS_aa,nS_bb,nS_sc,ERI_aaaa,ERI_aabb,ERI_bbbb,XpY_RPA,rho_RPA)
 
@@ -120,17 +120,17 @@ subroutine UGW_ACFDT(exchange_kernel,doXBS,dRPA,TDA_W,TDA,BSE,spin_conserved,spi
 
       if(doXBS) then
 
-        call phULR(isp_W,.true.,TDA_W,.false.,eta,nBas,nC,nO,nV,nR,nS_aa,nS_bb,nS_sc,nS_sc,lambda,eW, &
+        call phULR(isp_W,.true.,TDA_W,.false.,nBas,nC,nO,nV,nR,nS_aa,nS_bb,nS_sc,nS_sc,lambda,eW, &
                    ERI_aaaa,ERI_aabb,ERI_bbbb,OmRPA,rho_RPA,EcRPA,OmRPA,XpY_RPA,XmY_RPA)
         call unrestricted_excitation_density(nBas,nC,nO,nR,nS_aa,nS_bb,nS_sc,ERI_aaaa,ERI_aabb,ERI_bbbb,XpY_RPA,rho_RPA)
 
       end if
 
-      call phULR(ispin,dRPA,TDA,BSE,eta,nBas,nC,nO,nV,nR,nS_aa,nS_bb,nS_sc,nS_sc,lambda,e, &
+      call phULR(ispin,dRPA,TDA,BSE,nBas,nC,nO,nV,nR,nS_aa,nS_bb,nS_sc,nS_sc,lambda,e, &
                  ERI_aaaa,ERI_aabb,ERI_bbbb,OmRPA,rho_RPA,EcAC(ispin),Om_sc,XpY_sc,XmY_sc)
 
-      call UACFDT_correlation_energy(ispin,exchange_kernel,nBas,nC,nO,nV,nR,nS,nS_aa,nS_bb,nS_sc, &
-                                     ERI_aaaa,ERI_aabb,ERI_bbbb,XpY_sc,XmY_sc,Ec(iAC,ispin))
+      call phUACFDT_correlation_energy(ispin,exchange_kernel,nBas,nC,nO,nV,nR,nS,nS_aa,nS_bb,nS_sc, &
+                                       ERI_aaaa,ERI_aabb,ERI_bbbb,XpY_sc,XmY_sc,Ec(iAC,ispin))
 
       write(*,'(2X,F15.6,1X,F30.15,1X,F30.15)') lambda,EcAC(ispin),Ec(iAC,ispin)
 
@@ -174,17 +174,17 @@ subroutine UGW_ACFDT(exchange_kernel,doXBS,dRPA,TDA_W,TDA,BSE,spin_conserved,spi
 
       if(doXBS) then
 
-        call phULR(isp_W,.true.,TDA_W,.false.,eta,nBas,nC,nO,nV,nR,nS_aa,nS_bb,nS_sc,nS_sc,lambda,eW, &
+        call phULR(isp_W,.true.,TDA_W,.false.,nBas,nC,nO,nV,nR,nS_aa,nS_bb,nS_sc,nS_sc,lambda,eW, &
                    ERI_aaaa,ERI_aabb,ERI_bbbb,OmRPA,rho_RPA,EcRPA,OmRPA,XpY_RPA,XmY_RPA)
         call unrestricted_excitation_density(nBas,nC,nO,nR,nS_aa,nS_bb,nS_sc,ERI_aaaa,ERI_aabb,ERI_bbbb,XpY_RPA,rho_RPA)
 
       end if
 
-      call phULR(ispin,dRPA,TDA,BSE,eta,nBas,nC,nO,nV,nR,nS_ab,nS_ba,nS_sf,nS_sc,lambda,e, &
+      call phULR(ispin,dRPA,TDA,BSE,nBas,nC,nO,nV,nR,nS_ab,nS_ba,nS_sf,nS_sc,lambda,e, &
                  ERI_aaaa,ERI_aabb,ERI_bbbb,OmRPA,rho_RPA,EcAC(ispin),Om_sf,XpY_sf,XmY_sf)
 
-      call UACFDT_correlation_energy(ispin,exchange_kernel,nBas,nC,nO,nV,nR,nS,nS_ab,nS_ba,nS_sf, &
-                                     ERI_aaaa,ERI_aabb,ERI_bbbb,XpY_sf,XmY_sf,Ec(iAC,ispin))
+      call phUACFDT_correlation_energy(ispin,exchange_kernel,nBas,nC,nO,nV,nR,nS,nS_ab,nS_ba,nS_sf, &
+                                       ERI_aaaa,ERI_aabb,ERI_bbbb,XpY_sf,XmY_sf,Ec(iAC,ispin))
 
       write(*,'(2X,F15.6,1X,F30.15,1X,F30.15)') lambda,EcAC(ispin),Ec(iAC,ispin)
 

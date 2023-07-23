@@ -1,4 +1,4 @@
-subroutine phULR(ispin,dRPA,TDA,BSE,eta,nBas,nC,nO,nV,nR,nSa,nSb,nSt,nS_sc,lambda,e, & 
+subroutine phULR(ispin,dRPA,TDA,BSE,nBas,nC,nO,nV,nR,nSa,nSb,nSt,nS_sc,lambda,e, & 
                  ERI_aaaa,ERI_aabb,ERI_bbbb,OmRPA,rho_RPA,EcRPA,Om,XpY,XmY)
 
 ! Compute linear response for unrestricted formalism
@@ -12,7 +12,6 @@ subroutine phULR(ispin,dRPA,TDA,BSE,eta,nBas,nC,nO,nV,nR,nSa,nSb,nSt,nS_sc,lambd
   logical,intent(in)            :: dRPA
   logical,intent(in)            :: TDA
   logical,intent(in)            :: BSE
-  double precision,intent(in)   :: eta
   integer,intent(in)            :: nBas
   integer,intent(in)            :: nC(nspin)
   integer,intent(in)            :: nO(nspin)
@@ -58,7 +57,7 @@ subroutine phULR(ispin,dRPA,TDA,BSE,eta,nBas,nC,nO,nV,nR,nSa,nSb,nSt,nS_sc,lambd
   call phULR_A(ispin,dRPA,nBas,nC,nO,nV,nR,nSa,nSb,nSt,lambda,e,ERI_aaaa,ERI_aabb,ERI_bbbb,Aph)
 
   if(BSE) & 
-    call unrestricted_Bethe_Salpeter_A_matrix(ispin,eta,nBas,nC,nO,nV,nR,nSa,nSb,nSt,nS_sc,lambda,e, & 
+    call unrestricted_Bethe_Salpeter_A_matrix(ispin,nBas,nC,nO,nV,nR,nSa,nSb,nSt,nS_sc,lambda,e, & 
                                               ERI_aaaa,ERI_aabb,ERI_bbbb,OmRPA,rho_RPA,Aph)
 
 ! Tamm-Dancoff approximation
@@ -76,7 +75,7 @@ subroutine phULR(ispin,dRPA,TDA,BSE,eta,nBas,nC,nO,nV,nR,nSa,nSb,nSt,nS_sc,lambd
     call phULR_B(ispin,dRPA,nBas,nC,nO,nV,nR,nSa,nSb,nSt,lambda,ERI_aaaa,ERI_aabb,ERI_bbbb,Bph)
 
     if(BSE) &
-      call unrestricted_Bethe_Salpeter_B_matrix(ispin,eta,nBas,nC,nO,nV,nR,nSa,nSb,nSt,nS_sc,lambda, & 
+      call unrestricted_Bethe_Salpeter_B_matrix(ispin,nBas,nC,nO,nV,nR,nSa,nSb,nSt,nS_sc,lambda, & 
                                                 ERI_aaaa,ERI_aabb,ERI_bbbb,OmRPA,rho_RPA,Bph)
 
   ! Build A + B and A - B matrices 

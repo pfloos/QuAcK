@@ -9,9 +9,9 @@ program QuAcK
   logical                       :: doKS
   logical                       :: doMP,doMP2,doMP3
   logical                       :: doCC,doCCD,dopCCD,doDCD,doCCSD,doCCSDT
-  logical                       :: do_drCCD,do_rCCD,do_crCCD,do_lCCD
+  logical                       :: dodrCCD,dorCCD,docrCCD,dolCCD
   logical                       :: doCI,doCIS,doCIS_D,doCID,doCISD,doFCI
-  logical                       :: dophRPA,dophRPAx,docrRPA,doppRPA
+  logical                       :: doRPA,dophRPA,dophRPAx,docrRPA,doppRPA
   logical                       :: doG0F2,doevGF2,doqsGF2,doG0F3,doevGF3
   logical                       :: doG0W0,doevGW,doqsGW,doufG0W0,doufGW,doSRGqsGW
   logical                       :: doG0T0pp,doevGTpp,doqsGTpp
@@ -122,7 +122,7 @@ program QuAcK
   call read_methods(doRHF,doUHF,doRMOM,doUMOM,doKS,    &
                     doMP2,doMP3,                       &
                     doCCD,dopCCD,doDCD,doCCSD,doCCSDT, &
-                    do_drCCD,do_rCCD,do_crCCD,do_lCCD, &
+                    dodrCCD,dorCCD,docrCCD,dolCCD,     &
                     doCIS,doCIS_D,doCID,doCISD,doFCI,  & 
                     dophRPA,dophRPAx,docrRPA,doppRPA,  &
                     doG0F2,doevGF2,doqsGF2,            & 
@@ -165,9 +165,6 @@ program QuAcK
 
   call read_geometry(nNuc,ZNuc,rNuc,ENuc)
 
-! allocate(CenterShell(maxShell,ncart),TotAngMomShell(maxShell),KShell(maxShell),DShell(maxShell,maxK), & 
-!          ExpShell(maxShell,maxK),max_ang_mom(nNuc),min_exponent(nNuc,maxL+1),max_exponent(nNuc))
-
 !------------------------------------------------------------------------
 ! Read basis set information from PySCF
 !------------------------------------------------------------------------
@@ -181,7 +178,7 @@ program QuAcK
 
 ! Memory allocation for one- and two-electron integrals
 
-  allocate(cHF(nBas,nBas,nspin),epsHF(nBas,nspin),PHF(nBas,nBas,nspin),S(nBas,nBas),T(nBas,nBas),                &
+  allocate(cHF(nBas,nBas,nspin),epsHF(nBas,nspin),PHF(nBas,nBas,nspin),S(nBas,nBas),T(nBas,nBas),              &
            V(nBas,nBas),Hc(nBas,nBas),X(nBas,nBas),ERI_AO(nBas,nBas,nBas,nBas),dipole_int_AO(nBas,nBas,ncart), & 
            dipole_int_MO(nBas,nBas,ncart),F_AO(nBas,nBas))
 
@@ -194,10 +191,10 @@ program QuAcK
 
   call wall_time(end_int)
 
-    t_int = end_int - start_int
-    write(*,*)
-    write(*,'(A65,1X,F9.3,A8)') 'Total wall time for reading integrals = ',t_int,' seconds'
-    write(*,*)
+  t_int = end_int - start_int
+  write(*,*)
+  write(*,'(A65,1X,F9.3,A8)') 'Total wall time for reading integrals = ',t_int,' seconds'
+  write(*,*)
 
 ! Compute orthogonalization matrix
 
@@ -337,17 +334,11 @@ program QuAcK
   if(dostab) then
 
     call cpu_time(start_stab)
-
     if(unrestricted) then
-
       call UHF_stability(nBas,nC,nO,nV,nR,nS,epsHF,ERI_MO_aaaa,ERI_MO_aabb,ERI_MO_bbbb)
-
     else
-
       call RHF_stability(nBas,nC,nO,nV,nR,nS,epsHF,ERI_MO)
-
     end if
-
     call cpu_time(end_stab)
 
     t_stab = end_stab - start_stab
@@ -378,12 +369,13 @@ program QuAcK
 ! Coupled-cluster module
 !------------------------------------------------------------------------
 
-  doCC = doCCD .or. dopCCD .or. doDCD .or. doCCSD .or. doCCSDT
+  doCC = doCCD .or. dopCCD .or. doDCD .or. doCCSD .or. doCCSDT .or. &  
+         dodrCCD .or. dorCCD .or. docrCCD .or. dolCCD
 
   if(doCC) then
 
     call cpu_time(start_CC)
-    call CC(doCCD,dopCCD,doDCD,doCCSD,doCCSDT,do_drCCD,do_rCCD,do_crCCD,do_lCCD, & 
+    call CC(doCCD,dopCCD,doDCD,doCCSD,doCCSDT,dodrCCD,dorCCD,docrCCD,dolCCD, & 
             maxSCF_CC,thresh_CC,n_diis_CC,nBas,nC,nO,nV,nR,ERI_MO,ENuc,EHF,epsHF)
     call cpu_time(end_CC)
 
@@ -402,7 +394,7 @@ program QuAcK
   if(doCI) then
 
     call cpu_time(start_CI)
-    call CI(doCIS,doCIS_D,doCID,doCISD,doFCI,unrestricted,singlet,triplet,spin_conserved,spin_flip,    &
+    call CI(doCIS,doCIS_D,doCID,doCISD,doFCI,unrestricted,singlet,triplet,spin_conserved,spin_flip,                   &
             nBas,nC,nO,nV,nR,nS,ERI_MO,ERI_MO_aaaa,ERI_MO_aabb,ERI_MO_bbbb,dipole_int_MO,dipole_int_aa,dipole_int_bb, &
             epsHF,EHF,cHF,S,F_MO)
     call cpu_time(end_CI)
@@ -414,93 +406,22 @@ program QuAcK
   end if
 
 !------------------------------------------------------------------------
-! Compute (direct) RPA excitations
+! Random-phase approximation module
 !------------------------------------------------------------------------
 
-  if(dophRPA) then
+  doRPA = dophRPA .or. dophRPAx .or. docrRPA .or. doppRPA
+
+  if(doRPA) then
 
     call cpu_time(start_RPA)
-    if(unrestricted) then
-
-       call URPA(TDA,doACFDT,exchange_kernel,spin_conserved,spin_flip,0d0,nBas,nC,nO,nV,nR,nS,ENuc,EHF, &
-                 ERI_MO_aaaa,ERI_MO_aabb,ERI_MO_bbbb,dipole_int_aa,dipole_int_bb,epsHF,cHF,S)
-
-    else
-
-      call phRPA(TDA,doACFDT,exchange_kernel,singlet,triplet,nBas,nC,nO,nV,nR,nS,ENuc,EHF,ERI_MO,dipole_int_MO,epsHF)
-
-    end if
+    call RPA(dophRPA,dophRPAx,docrRPA,doppRPA,unrestricted,                           & 
+             TDA,doACFDT,exchange_kernel,singlet,triplet,spin_conserved,spin_flip,    & 
+             nBas,nC,nO,nV,nR,nS,ENuc,EHF,ERI_MO,ERI_MO_aaaa,ERI_MO_aabb,ERI_MO_bbbb, & 
+             dipole_int_MO,dipole_int_aa,dipole_int_bb,epsHF,cHF,S)
     call cpu_time(end_RPA)
 
     t_RPA = end_RPA - start_RPA
     write(*,'(A65,1X,F9.3,A8)') 'Total CPU time for RPA = ',t_RPA,' seconds'
-    write(*,*)
-
-  end if
-
-!------------------------------------------------------------------------
-! Compute RPAx (RPA with exchange) excitations
-!------------------------------------------------------------------------
-
-  if(dophRPAx) then
-
-    call cpu_time(start_RPA)
-    if(unrestricted) then
-
-       call URPAx(TDA,doACFDT,exchange_kernel,spin_conserved,spin_flip,0d0,nBas,nC,nO,nV,nR,nS,ENuc,EHF, &
-                  ERI_MO_aaaa,ERI_MO_aabb,ERI_MO_bbbb,dipole_int_aa,dipole_int_bb,epsHF,cHF,S)
-
-    else 
-
-     call phRPAx(TDA,doACFDT,exchange_kernel,singlet,triplet,nBas,nC,nO,nV,nR,nS,ENuc,EHF,ERI_MO,dipole_int_MO,epsHF)
-
-    end if
-    call cpu_time(end_RPA)
-
-    t_RPA = end_RPA - start_RPA
-    write(*,'(A65,1X,F9.3,A8)') 'Total CPU time for RPAx = ',t_RPA,' seconds'
-    write(*,*)
-
-  end if
-
-!------------------------------------------------------------------------
-! Compute crRPA excitations
-!------------------------------------------------------------------------
-
-  if(docrRPA) then
-
-    call cpu_time(start_RPA)
-    call crRPA(TDA,doACFDT,exchange_kernel,singlet,triplet,nBas,nC,nO,nV,nR,nS,ENuc,EHF,ERI_MO,dipole_int_MO,epsHF)
-    call cpu_time(end_RPA)
-
-    t_RPA = end_RPA - start_RPA
-    write(*,'(A65,1X,F9.3,A8)') 'Total CPU time for pp-RPA = ',t_RPA,' seconds'
-    write(*,*)
-
-  end if
-
-!------------------------------------------------------------------------
-! Compute ppRPA excitations
-!------------------------------------------------------------------------
-
-  if(doppRPA) then
-
-    call cpu_time(start_RPA)
-
-    if(unrestricted) then 
-
-      call ppURPA(TDA,doACFDT,spin_conserved,spin_flip,nBas,nC,nO,nV,nR,ENuc,EHF,ERI_MO_aaaa,ERI_MO_aabb,ERI_MO_bbbb,epsHF)
-
-    else
-
-      call ppRPA(TDA,doACFDT,singlet,triplet,nBas,nC,nO,nV,nR,ENuc,EHF,ERI_MO,dipole_int_MO,epsHF)
-
-    end if
-
-    call cpu_time(end_RPA)
-
-    t_RPA = end_RPA - start_RPA
-    write(*,'(A65,1X,F9.3,A8)') 'Total CPU time for pp-RPA = ',t_RPA,' seconds'
     write(*,*)
 
   end if

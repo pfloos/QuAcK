@@ -1,5 +1,5 @@
-subroutine UACFDT_correlation_energy(ispin,exchange_kernel,nBas,nC,nO,nV,nR,nS,nSa,nSb,nSt, & 
-                                     ERI_aaaa,ERI_aabb,ERI_bbbb,XpY,XmY,EcAC)
+subroutine phUACFDT_correlation_energy(ispin,exchange_kernel,nBas,nC,nO,nV,nR,nS,nSa,nSb,nSt, & 
+                                       ERI_aaaa,ERI_aabb,ERI_bbbb,XpY,XmY,EcAC)
 
 ! Compute the correlation energy via the adiabatic connection formula
 

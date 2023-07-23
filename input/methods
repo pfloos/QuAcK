@@ -1,5 +1,5 @@
 # RHF UHF RMOM UMOM KS
-  F   F   F    F    F  
+  F   T   F    F    F  
 # MP2* MP3 
   F   F   
 # CCD pCCD DCD CCSD CCSD(T) 
@@ -7,9 +7,9 @@
 # drCCD rCCD crCCD lCCD
   F     F    F     F
 # CIS* CIS(D) CID CISD FCI
-  T    F      F   F    F
+  F    F      F   F    F
 # phRPA* phRPAx* crRPA ppRPA 
-  F      F       F     F 
+  T      T       T     T 
 # G0F2* evGF2* qsGF2* G0F3 evGF3
   F     F      F      F    F
 # G0W0* evGW* qsGW* SRG-qsGW ufG0W0 ufGW

@@ -50,18 +50,12 @@ subroutine CI(doCIS,doCIS_D,doCID,doCISD,doFCI,unrestricted,singlet,triplet,spin
   if(doCIS) then
 
     call cpu_time(start_CI)
-
     if(unrestricted) then
-
       call UCIS(spin_conserved,spin_flip,nBas,nC,nO,nV,nR,nS,ERI_aaaa,ERI_aabb, & 
                 ERI_bbbb,dipole_int_aa,dipole_int_bb,epsHF,cHF,S)
-
-   else 
-
+    else 
       call CIS(singlet,triplet,doCIS_D,nBas,nC,nO,nV,nR,nS,ERI,dipole_int,epsHF)
-
     end if
-
     call cpu_time(end_CI)
 
     t_CI = end_CI - start_CI
