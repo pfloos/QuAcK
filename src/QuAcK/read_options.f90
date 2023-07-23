@@ -1,10 +1,10 @@
-subroutine read_options(maxSCF_HF,thresh_HF,DIIS_HF,n_diis_HF,guess_type,ortho_type,mix,level_shift,dostab, &
+subroutine read_options(maxSCF_HF,thresh_HF,DIIS_HF,max_diis_HF,guess_type,ortho_type,mix,level_shift,dostab, &
                         regMP,                                                                              &
-                        maxSCF_CC,thresh_CC,DIIS_CC,n_diis_CC,                                              &
+                        maxSCF_CC,thresh_CC,DIIS_CC,max_diis_CC,                                              &
                         TDA,singlet,triplet,spin_conserved,spin_flip,                                       &
-                        maxSCF_GF,thresh_GF,DIIS_GF,n_diis_GF,linGF,eta_GF,renormGF,regGF,                  &
-                        maxSCF_GW,thresh_GW,DIIS_GW,n_diis_GW,linGW,eta_GW,regGW,TDA_W,                     &
-                        maxSCF_GT,thresh_GT,DIIS_GT,n_diis_GT,linGT,eta_GT,regGT,TDA_T,                     &
+                        maxSCF_GF,thresh_GF,DIIS_GF,max_diis_GF,linGF,eta_GF,renormGF,regGF,                  &
+                        maxSCF_GW,thresh_GW,DIIS_GW,max_diis_GW,linGW,eta_GW,regGW,TDA_W,                     &
+                        maxSCF_GT,thresh_GT,DIIS_GT,max_diis_GT,linGT,eta_GT,regGT,TDA_T,                     &
                         doACFDT,exchange_kernel,doXBS,                                                      &
                         dophBSE,dophBSE2,doppBSE,dBSE,dTDA)
 
@@ -17,7 +17,7 @@ subroutine read_options(maxSCF_HF,thresh_HF,DIIS_HF,n_diis_HF,guess_type,ortho_t
   integer,intent(out)           :: maxSCF_HF
   double precision,intent(out)  :: thresh_HF
   logical,intent(out)           :: DIIS_HF
-  integer,intent(out)           :: n_diis_HF
+  integer,intent(out)           :: max_diis_HF
   integer,intent(out)           :: guess_type
   integer,intent(out)           :: ortho_type
   logical,intent(out)           :: mix
@@ -29,7 +29,7 @@ subroutine read_options(maxSCF_HF,thresh_HF,DIIS_HF,n_diis_HF,guess_type,ortho_t
   integer,intent(out)           :: maxSCF_CC
   double precision,intent(out)  :: thresh_CC
   logical,intent(out)           :: DIIS_CC
-  integer,intent(out)           :: n_diis_CC
+  integer,intent(out)           :: max_diis_CC
 
   logical,intent(out)           :: TDA
   logical,intent(out)           :: singlet
@@ -40,7 +40,7 @@ subroutine read_options(maxSCF_HF,thresh_HF,DIIS_HF,n_diis_HF,guess_type,ortho_t
   integer,intent(out)           :: maxSCF_GF
   double precision,intent(out)  :: thresh_GF
   logical,intent(out)           :: DIIS_GF
-  integer,intent(out)           :: n_diis_GF
+  integer,intent(out)           :: max_diis_GF
   logical,intent(out)           :: linGF
   integer,intent(out)           :: renormGF
   double precision,intent(out)  :: eta_GF
@@ -49,7 +49,7 @@ subroutine read_options(maxSCF_HF,thresh_HF,DIIS_HF,n_diis_HF,guess_type,ortho_t
   integer,intent(out)           :: maxSCF_GW
   double precision,intent(out)  :: thresh_GW
   logical,intent(out)           :: DIIS_GW
-  integer,intent(out)           :: n_diis_GW
+  integer,intent(out)           :: max_diis_GW
   logical,intent(out)           :: TDA_W
   logical,intent(out)           :: linGW
   double precision,intent(out)  :: eta_GW
@@ -58,7 +58,7 @@ subroutine read_options(maxSCF_HF,thresh_HF,DIIS_HF,n_diis_HF,guess_type,ortho_t
   integer,intent(out)           :: maxSCF_GT
   double precision,intent(out)  :: thresh_GT
   logical,intent(out)           :: DIIS_GT
-  integer,intent(out)           :: n_diis_GT
+  integer,intent(out)           :: max_diis_GT
   logical,intent(out)           :: TDA_T
   logical,intent(out)           :: linGT
   double precision,intent(out)  :: eta_GT
@@ -87,7 +87,7 @@ subroutine read_options(maxSCF_HF,thresh_HF,DIIS_HF,n_diis_HF,guess_type,ortho_t
   maxSCF_HF    = 64
   thresh_HF    = 1d-6
   DIIS_HF      = .false.
-  n_diis_HF    = 5
+  max_diis_HF    = 5
   guess_type   = 1
   ortho_type   = 1
   mix          = .false.
@@ -95,13 +95,13 @@ subroutine read_options(maxSCF_HF,thresh_HF,DIIS_HF,n_diis_HF,guess_type,ortho_t
   dostab       = .false.
 
   read(1,*) 
-  read(1,*) maxSCF_HF,thresh_HF,answer1,n_diis_HF,guess_type,ortho_type,answer2,level_shift,answer3
+  read(1,*) maxSCF_HF,thresh_HF,answer1,max_diis_HF,guess_type,ortho_type,answer2,level_shift,answer3
 
   if(answer1 == 'T') DIIS_HF     = .true.
   if(answer2 == 'T') mix         = .true.
   if(answer3 == 'T') dostab      = .true.
 
-  if(.not.DIIS_HF) n_diis_HF = 1
+  if(.not.DIIS_HF) max_diis_HF = 1
 
 ! Read MPn options
 
@@ -116,14 +116,14 @@ subroutine read_options(maxSCF_HF,thresh_HF,DIIS_HF,n_diis_HF,guess_type,ortho_t
   maxSCF_CC    = 64
   thresh_CC    = 1d-5
   DIIS_CC      = .false.
-  n_diis_CC    = 5
+  max_diis_CC    = 5
 
   read(1,*)
-  read(1,*) maxSCF_CC,thresh_CC,answer1,n_diis_CC
+  read(1,*) maxSCF_CC,thresh_CC,answer1,max_diis_CC
 
   if(answer1 == 'T') DIIS_CC    = .true.
 
-  if(.not.DIIS_CC) n_diis_CC = 1
+  if(.not.DIIS_CC) max_diis_CC = 1
 
 ! Read excited state options
 
@@ -147,61 +147,61 @@ subroutine read_options(maxSCF_HF,thresh_HF,DIIS_HF,n_diis_HF,guess_type,ortho_t
   maxSCF_GF = 64
   thresh_GF = 1d-5
   DIIS_GF   = .false.
-  n_diis_GF = 5
+  max_diis_GF = 5
   linGF     = .false.
   eta_GF    = 0d0
   renormGF  = 0
   regGF     = .false.
 
   read(1,*) 
-  read(1,*) maxSCF_GF,thresh_GF,answer1,n_diis_GF,answer2,eta_GF,renormGF,answer3
+  read(1,*) maxSCF_GF,thresh_GF,answer1,max_diis_GF,answer2,eta_GF,renormGF,answer3
 
   if(answer1 == 'T') DIIS_GF = .true.
   if(answer2 == 'T') linGF   = .true.
   if(answer3 == 'T') regGF   = .true.
-  if(.not.DIIS_GF) n_diis_GF = 1
+  if(.not.DIIS_GF) max_diis_GF = 1
 
 ! Read GW options
 
   maxSCF_GW = 64
   thresh_GW = 1d-5
   DIIS_GW   = .false.
-  n_diis_GW = 5
+  max_diis_GW = 5
   linGW     = .false.
   eta_GW    = 0d0
   regGW     = .false.
   TDA_W     = .false.
 
   read(1,*) 
-  read(1,*) maxSCF_GW,thresh_GW,answer1,n_diis_GW,answer2,eta_GW, &
+  read(1,*) maxSCF_GW,thresh_GW,answer1,max_diis_GW,answer2,eta_GW, &
             answer3,answer4
 
   if(answer1 == 'T') DIIS_GW = .true.
   if(answer2 == 'T') linGW   = .true.
   if(answer3 == 'T') TDA_W   = .true.
   if(answer4 == 'T') regGW   = .true.
-  if(.not.DIIS_GW) n_diis_GW = 1
+  if(.not.DIIS_GW) max_diis_GW = 1
 
 ! Read GT options
 
   maxSCF_GT = 64
   thresh_GT = 1d-5
   DIIS_GT   = .false.
-  n_diis_GT = 5
+  max_diis_GT = 5
   linGT     = .false.
   eta_GT    = 0d0
   regGT     = .false.
   TDA_T     = .false.
 
   read(1,*) 
-  read(1,*) maxSCF_GT,thresh_GT,answer1,n_diis_GT,answer2,eta_GT, &
+  read(1,*) maxSCF_GT,thresh_GT,answer1,max_diis_GT,answer2,eta_GT, &
             answer3,answer4
 
   if(answer1 == 'T') DIIS_GT = .true.
   if(answer2 == 'T') linGT   = .true.
   if(answer3 == 'T') TDA_T   = .true.
   if(answer4 == 'T') regGT   = .true.
-  if(.not.DIIS_GT) n_diis_GT = 1
+  if(.not.DIIS_GT) max_diis_GT = 1
 
 ! Options for adiabatic connection
 
