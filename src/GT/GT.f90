@@ -85,11 +85,11 @@ subroutine GT(doG0T0pp,doevGTpp,doqsGTpp,doG0T0eh,doevGTeh,doqsGTeh,unrestricted
     call wall_time(start_GT)
     if(unrestricted) then 
        call UG0T0pp(doACFDT,exchange_kernel,doXBS,dophBSE,TDA_T,TDA,dBSE,dTDA,spin_conserved,spin_flip,      &
-                    linearize,eta,regularize,nBas,nC,nO,nV,nR,nS,ENuc,EHF,ERI_AO,ERI_aaaa,ERI_aabb,ERI_bbbb, &
+                    linearize,eta,regularize,nBas,nC,nO,nV,nR,nS,ENuc,EHF,ERI_aaaa,ERI_aabb,ERI_bbbb, &
                     dipole_int_aa,dipole_int_bb,PHF,cHF,epsHF)
     else
       call G0T0pp(doACFDT,exchange_kernel,doXBS,dophBSE,TDA_T,TDA,dBSE,dTDA,doppBSE,singlet,triplet, &
-                  linearize,eta,regularize,nBas,nC,nO,nV,nR,nS,ENuc,EHF,ERI_AO,ERI,dipole_int,PHF,cHF,epsHF)
+                  linearize,eta,regularize,nBas,nC,nO,nV,nR,nS,ENuc,EHF,ERI,dipole_int,PHF,cHF,epsHF)
     end if
     call wall_time(end_GT)
   
@@ -108,11 +108,11 @@ subroutine GT(doG0T0pp,doevGTpp,doqsGTpp,doG0T0eh,doevGTeh,doqsGTeh,unrestricted
     call wall_time(start_GT)
     if(unrestricted) then
       call evUGTpp(maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,dophBSE,TDA_T,TDA,dBSE,dTDA,spin_conserved,spin_flip, &
-                   eta,regularize,nBas,nC,nO,nV,nR,nS,ENuc,EHF,ERI_AO,ERI_aaaa,ERI_aabb,ERI_bbbb,dipole_int_aa,dipole_int_bb, & 
+                   eta,regularize,nBas,nC,nO,nV,nR,nS,ENuc,EHF,ERI_aaaa,ERI_aabb,ERI_bbbb,dipole_int_aa,dipole_int_bb, & 
                    PHF,cHF,epsHF)
     else
       call evGTpp(maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,dophBSE,TDA_T,TDA,dBSE,dTDA,singlet,triplet, &
-                  eta,regularize,nBas,nC,nO,nV,nR,nS,ENuc,EHF,ERI_AO,ERI,dipole_int,PHF,cHF,epsHF)
+                  eta,regularize,nBas,nC,nO,nV,nR,nS,ENuc,EHF,ERI,dipole_int,PHF,cHF,epsHF)
     end if
     call wall_time(end_GT)
   
@@ -157,7 +157,7 @@ subroutine GT(doG0T0pp,doevGTpp,doqsGTpp,doG0T0eh,doevGTeh,doqsGTeh,unrestricted
       print*,'Unrestricted version of G0T0eh not yet implemented! Sorry.'
     else
       call G0T0eh(doACFDT,exchange_kernel,doXBS,dophBSE,dophBSE2,TDA_T,TDA,dBSE,dTDA,doppBSE,singlet,triplet, &
-                  linearize,eta,regularize,nBas,nC,nO,nV,nR,nS,ENuc,EHF,ERI_AO,ERI,dipole_int,PHF,cHF,epsHF)
+                  linearize,eta,regularize,nBas,nC,nO,nV,nR,nS,ENuc,EHF,ERI,dipole_int,PHF,cHF,epsHF)
     end if
     call wall_time(end_GT)
   
@@ -178,8 +178,7 @@ subroutine GT(doG0T0pp,doevGTpp,doqsGTpp,doG0T0eh,doevGTeh,doqsGTeh,unrestricted
       print*,'Unrestricted version of evGTeh not yet implemented! Sorry.'
     else
       call evGTeh(maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,dophBSE,dophBSE2,TDA_T,TDA,dBSE,dTDA,doppBSE, &
-                  singlet,triplet,linearize,eta,regularize,nBas,nC,nO,nV,nR,nS,ENuc,EHF,ERI_AO,ERI,dipole_int,       & 
-                  PHF,cHF,epsHF)
+                  singlet,triplet,linearize,eta,regularize,nBas,nC,nO,nV,nR,nS,ENuc,EHF,ERI,dipole_int,PHF,cHF,epsHF)
     end if
     call wall_time(end_GT)
 

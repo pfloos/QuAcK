@@ -1,5 +1,5 @@
 subroutine evGTpp(maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,BSE,TDA_T,TDA,dBSE,dTDA, &
-                  singlet,triplet,eta,regularize,nBas,nC,nO,nV,nR,nS,ENuc,ERHF,ERI_AO,ERI_MO,dipole_int,PHF,cHF,eHF)
+                  singlet,triplet,eta,regularize,nBas,nC,nO,nV,nR,nS,ENuc,ERHF,ERI_MO,dipole_int,PHF,cHF,eHF)
 
 ! Perform eigenvalue self-consistent calculation with a T-matrix self-energy (evGT)
 
@@ -35,7 +35,6 @@ subroutine evGTpp(maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,BSE,TDA_T
   double precision,intent(in)   :: PHF(nBas,nBas)
   double precision,intent(in)   :: eHF(nBas)
   double precision,intent(in)   :: cHF(nBas,nBas)
-  double precision,intent(in)   :: ERI_AO(nBas,nBas,nBas,nBas)
   double precision,intent(in)   :: ERI_MO(nBas,nBas,nBas,nBas)
   double precision,intent(in)   :: dipole_int(nBas,nBas,ncart)
 

@@ -1,5 +1,5 @@
 subroutine G0W0(doACFDT,exchange_kernel,doXBS,dophBSE,dophBSE2,TDA_W,TDA,dBSE,dTDA,doppBSE,singlet,triplet, & 
-                linearize,eta,regularize,nBas,nC,nO,nV,nR,nS,ENuc,ERHF,ERI_AO,ERI_MO,dipole_int,PHF,cHF,eHF)
+                linearize,eta,regularize,nBas,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,dipole_int,PHF,cHF,eHF)
 
 ! Perform G0W0 calculation
 
@@ -33,8 +33,7 @@ subroutine G0W0(doACFDT,exchange_kernel,doXBS,dophBSE,dophBSE2,TDA_W,TDA,dBSE,dT
   integer,intent(in)            :: nS
   double precision,intent(in)   :: ENuc
   double precision,intent(in)   :: ERHF
-  double precision,intent(in)   :: ERI_AO(nBas,nBas,nBas,nBas)
-  double precision,intent(in)   :: ERI_MO(nBas,nBas,nBas,nBas)
+  double precision,intent(in)   :: ERI(nBas,nBas,nBas,nBas)
   double precision,intent(in)   :: dipole_int(nBas,nBas,ncart)
   double precision,intent(in)   :: eHF(nBas)
   double precision,intent(in)   :: cHF(nBas,nBas)
@@ -102,8 +101,8 @@ subroutine G0W0(doACFDT,exchange_kernel,doXBS,dophBSE,dophBSE2,TDA_W,TDA,dBSE,dT
 ! Compute screening !
 !-------------------!
 
-                 call phLR_A(ispin,dRPA,nBas,nC,nO,nV,nR,nS,1d0,eHF,ERI_MO,Aph)
-  if(.not.TDA_W) call phLR_B(ispin,dRPA,nBas,nC,nO,nV,nR,nS,1d0,ERI_MO,Bph)
+                 call phLR_A(ispin,dRPA,nBas,nC,nO,nV,nR,nS,1d0,eHF,ERI,Aph)
+  if(.not.TDA_W) call phLR_B(ispin,dRPA,nBas,nC,nO,nV,nR,nS,1d0,ERI,Bph)
 
   call phLR(TDA_W,nS,Aph,Bph,EcRPA,Om,XpY,XmY)
 
@@ -113,7 +112,7 @@ subroutine G0W0(doACFDT,exchange_kernel,doXBS,dophBSE,dophBSE2,TDA_W,TDA,dBSE,dT
 ! Compute spectral weights !
 !--------------------------!
 
-  call GW_excitation_density(nBas,nC,nO,nR,nS,ERI_MO,XpY,rho)
+  call GW_excitation_density(nBas,nC,nO,nR,nS,ERI,XpY,rho)
 
 !------------------------!
 ! Compute GW self-energy !
@@ -156,8 +155,8 @@ subroutine G0W0(doACFDT,exchange_kernel,doXBS,dophBSE,dophBSE2,TDA_W,TDA,dBSE,dT
 
 ! Compute the RPA correlation energy
 
-  call phLR_A(ispin,dRPA,nBas,nC,nO,nV,nR,nS,1d0,eGW,ERI_MO,Aph)
-  if(.not.TDA_W) call phLR_B(ispin,dRPA,nBas,nC,nO,nV,nR,nS,1d0,ERI_MO,Bph)
+  call phLR_A(ispin,dRPA,nBas,nC,nO,nV,nR,nS,1d0,eGW,ERI,Aph)
+  if(.not.TDA_W) call phLR_B(ispin,dRPA,nBas,nC,nO,nV,nR,nS,1d0,ERI,Bph)
 
   call phLR(TDA_W,nS,Aph,Bph,EcRPA,Om,XpY,XmY)
 
@@ -175,7 +174,7 @@ subroutine G0W0(doACFDT,exchange_kernel,doXBS,dophBSE,dophBSE2,TDA_W,TDA,dBSE,dT
 
   if(dophBSE) then
 
-    call GW_phBSE(dophBSE2,TDA_W,TDA,dBSE,dTDA,singlet,triplet,eta,nBas,nC,nO,nV,nR,nS,ERI_MO,dipole_int,eHF,eGW,EcBSE)
+    call GW_phBSE(dophBSE2,TDA_W,TDA,dBSE,dTDA,singlet,triplet,eta,nBas,nC,nO,nV,nR,nS,ERI,dipole_int,eHF,eGW,EcBSE)
 
 
     if(exchange_kernel) then
@@ -210,7 +209,7 @@ subroutine G0W0(doACFDT,exchange_kernel,doXBS,dophBSE,dophBSE2,TDA_W,TDA,dBSE,dT
 
       end if
 
-      call GW_phACFDT(exchange_kernel,doXBS,dRPA,TDA_W,TDA,dophBSE,singlet,triplet,eta,nBas,nC,nO,nV,nR,nS,ERI_MO,eHF,eGW,EcBSE)
+      call GW_phACFDT(exchange_kernel,doXBS,dRPA,TDA_W,TDA,dophBSE,singlet,triplet,eta,nBas,nC,nO,nV,nR,nS,ERI,eHF,eGW,EcBSE)
 
       write(*,*)
       write(*,*)'-------------------------------------------------------------------------------'
@@ -227,7 +226,7 @@ subroutine G0W0(doACFDT,exchange_kernel,doXBS,dophBSE,dophBSE2,TDA_W,TDA,dBSE,dT
 
   if(doppBSE) then
 
-    call GW_ppBSE(TDA_W,TDA,singlet,triplet,eta,nBas,nC,nO,nV,nR,nS,ERI_MO,dipole_int,eHF,eGW,EcBSE)
+    call GW_ppBSE(TDA_W,TDA,singlet,triplet,eta,nBas,nC,nO,nV,nR,nS,ERI,dipole_int,eHF,eGW,EcBSE)
 
     write(*,*)
     write(*,*)'-------------------------------------------------------------------------------'

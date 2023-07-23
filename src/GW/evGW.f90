@@ -1,5 +1,5 @@
 subroutine evGW(maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,dophBSE,dophBSE2,TDA_W,TDA,dBSE,dTDA,doppBSE, & 
-                singlet,triplet,linearize,eta,regularize,nBas,nC,nO,nV,nR,nS,ENuc,ERHF,ERI_AO,ERI_MO,dipole_int,PHF,  & 
+                singlet,triplet,linearize,eta,regularize,nBas,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,dipole_int,PHF,  & 
                 cHF,eHF)
 
 ! Perform self-consistent eigenvalue-only GW calculation
@@ -39,8 +39,7 @@ subroutine evGW(maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,dophBSE,dop
   double precision,intent(in)   :: PHF(nBas,nBas)
   double precision,intent(in)   :: eHF(nBas)
   double precision,intent(in)   :: cHF(nBas,nBas)
-  double precision,intent(in)   :: ERI_AO(nBas,nBas,nBas,nBas)
-  double precision,intent(in)   :: ERI_MO(nBas,nBas,nBas,nBas)
+  double precision,intent(in)   :: ERI(nBas,nBas,nBas,nBas)
   double precision,intent(in)   :: dipole_int(nBas,nBas,ncart)
 
 ! Local variables
@@ -122,14 +121,14 @@ subroutine evGW(maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,dophBSE,dop
 
    ! Compute screening
 
-    call phLR_A(ispin,dRPA,nBas,nC,nO,nV,nR,nS,1d0,eGW,ERI_MO,Aph)
-    if(.not.TDA_W) call phLR_B(ispin,dRPA,nBas,nC,nO,nV,nR,nS,1d0,ERI_MO,Bph)
+    call phLR_A(ispin,dRPA,nBas,nC,nO,nV,nR,nS,1d0,eGW,ERI,Aph)
+    if(.not.TDA_W) call phLR_B(ispin,dRPA,nBas,nC,nO,nV,nR,nS,1d0,ERI,Bph)
 
     call phLR(TDA_W,nS,Aph,Bph,EcRPA,Om,XpY,XmY)
 
    ! Compute spectral weights
 
-    call GW_excitation_density(nBas,nC,nO,nR,nS,ERI_MO,XpY,rho)
+    call GW_excitation_density(nBas,nC,nO,nR,nS,ERI,XpY,rho)
 
     ! Compute correlation part of the self-energy 
 
@@ -226,7 +225,7 @@ subroutine evGW(maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,dophBSE,dop
 
   if(dophBSE) then
 
-    call GW_phBSE(dophBSE2,TDA_W,TDA,dBSE,dTDA,singlet,triplet,eta,nBas,nC,nO,nV,nR,nS,ERI_MO,dipole_int,eGW,eGW,EcBSE)
+    call GW_phBSE(dophBSE2,TDA_W,TDA,dBSE,dTDA,singlet,triplet,eta,nBas,nC,nO,nV,nR,nS,ERI,dipole_int,eGW,eGW,EcBSE)
 
     if(exchange_kernel) then
 
@@ -260,7 +259,7 @@ subroutine evGW(maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,dophBSE,dop
 
       end if
 
-      call GW_phACFDT(exchange_kernel,doXBS,dRPA,TDA_W,TDA,dophBSE,singlet,triplet,eta,nBas,nC,nO,nV,nR,nS,ERI_MO,eGW,eGW,EcBSE)
+      call GW_phACFDT(exchange_kernel,doXBS,dRPA,TDA_W,TDA,dophBSE,singlet,triplet,eta,nBas,nC,nO,nV,nR,nS,ERI,eGW,eGW,EcBSE)
 
       write(*,*)
       write(*,*)'-------------------------------------------------------------------------------'
@@ -277,7 +276,7 @@ subroutine evGW(maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,dophBSE,dop
 
   if(doppBSE) then
 
-    call GW_ppBSE(TDA_W,TDA,singlet,triplet,eta,nBas,nC,nO,nV,nR,nS,ERI_MO,dipole_int,eHF,eGW,EcBSE)
+    call GW_ppBSE(TDA_W,TDA,singlet,triplet,eta,nBas,nC,nO,nV,nR,nS,ERI,dipole_int,eHF,eGW,EcBSE)
 
     write(*,*)
     write(*,*)'-------------------------------------------------------------------------------'

@@ -1,6 +1,6 @@
 subroutine UG0T0pp(doACFDT,exchange_kernel,doXBS,BSE,TDA_T,TDA,dBSE,dTDA, &
                    spin_conserved,spin_flip,linearize,eta,regularize,nBas,nC,nO,nV, &
-                   nR,nS,ENuc,EUHF,ERI,ERI_aaaa,ERI_aabb,ERI_bbbb, &
+                   nR,nS,ENuc,EUHF,ERI_aaaa,ERI_aabb,ERI_bbbb, &
                    dipole_int_aa,dipole_int_bb,PHF,cHF,eHF)
 
 ! Perform one-shot calculation with a T-matrix self-energy (G0T0)
@@ -35,7 +35,6 @@ subroutine UG0T0pp(doACFDT,exchange_kernel,doXBS,BSE,TDA_T,TDA,dBSE,dTDA, &
   double precision,intent(in)   :: eHF(nBas,nspin)
   double precision,intent(in)   :: cHF(nBas,nBas,nspin)
   double precision,intent(in)   :: PHF(nBas,nBas,nspin)
-  double precision,intent(in)   :: ERI(nBas,nBas,nBas,nBas) 
   double precision,intent(in)   :: ERI_aaaa(nBas,nBas,nBas,nBas)
   double precision,intent(in)   :: ERI_aabb(nBas,nBas,nBas,nBas)
   double precision,intent(in)   :: ERI_bbbb(nBas,nBas,nBas,nBas)

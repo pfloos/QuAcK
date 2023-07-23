@@ -1,5 +1,5 @@
-subroutine UG0W0(doACFDT,exchange_kernel,doXBS,BSE,TDA_W,TDA,dBSE,dTDA,spin_conserved,spin_flip, &
-                 linearize,eta,regularize,nBas,nC,nO,nV,nR,nS,ENuc,EUHF,S,ERI,ERI_aaaa,ERI_aabb,ERI_bbbb,     & 
+subroutine UG0W0(doACFDT,exchange_kernel,doXBS,BSE,TDA_W,TDA,dBSE,dTDA,spin_conserved,spin_flip,      &
+                 linearize,eta,regularize,nBas,nC,nO,nV,nR,nS,ENuc,EUHF,S,ERI_aaaa,ERI_aabb,ERI_bbbb, & 
                  dipole_int_aa,dipole_int_bb,PHF,cHF,eHF)
 
 ! Perform unrestricted G0W0 calculation
@@ -33,7 +33,6 @@ subroutine UG0W0(doACFDT,exchange_kernel,doXBS,BSE,TDA_W,TDA,dBSE,dTDA,spin_cons
   double precision,intent(in)   :: ENuc
   double precision,intent(in)   :: EUHF
   double precision,intent(in)   :: S(nBas,nBas)
-  double precision,intent(in)   :: ERI(nBas,nBas,nBas,nBas)
   double precision,intent(in)   :: ERI_aaaa(nBas,nBas,nBas,nBas)
   double precision,intent(in)   :: ERI_aabb(nBas,nBas,nBas,nBas)
   double precision,intent(in)   :: ERI_bbbb(nBas,nBas,nBas,nBas)

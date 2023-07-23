@@ -47,7 +47,6 @@ subroutine GTeh_self_energy_diag(eta,nBas,nC,nO,nV,nR,nS,e,Om,rhoL,rhoR,EcGM,Sig
 
         eps = e(p) - e(i) + Om(m)
         num = rhoL(i,p,m)*rhoR(i,p,m)
-!       num = 0.5d0*rhoL(p,i,m)*rhoL(p,i,m)
         Sig(p) = Sig(p) + num*eps/(eps**2 + eta**2)
         Z(p)   = Z(p)   - num*(eps**2 - eta**2)/(eps**2 + eta**2)**2
 
@@ -63,7 +62,6 @@ subroutine GTeh_self_energy_diag(eta,nBas,nC,nO,nV,nR,nS,e,Om,rhoL,rhoR,EcGM,Sig
 
         eps = e(p) - e(a) - Om(m)
         num = rhoL(p,a,m)*rhoR(p,a,m)
-!       num = 0.5d0*rhoL(p,a,m)*rhoL(p,a,m)
         Sig(p) = Sig(p) + num*eps/(eps**2 + eta**2)
         Z(p)   = Z(p)   - num*(eps**2 - eta**2)/(eps**2 + eta**2)**2
 
