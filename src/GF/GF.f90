@@ -1,6 +1,6 @@
-subroutine GF(doG0F2,doevGF2,doqsGF2,doG0F3,doevGF3,unrestricted,renorm,maxSCF,thresh,max_diis,             &
-              dophBSE,TDA,dBSE,dTDA,singlet,triplet,spin_conserved,spin_flip,linearize,eta,regularize,      & 
-              nNuc,ZNuc,rNuc,ENuc,nBas,nC,nO,nV,nR,nS,EHF,S,X,T,V,Hc,ERI_AO,ERI,ERI_aaaa,ERI_aabb,ERI_bbbb, & 
+subroutine GF(doG0F2,doevGF2,doqsGF2,doG0F3,doevGF3,unrestricted,renorm,maxSCF,thresh,max_diis,                &
+              dophBSE,doppBSE,TDA,dBSE,dTDA,singlet,triplet,spin_conserved,spin_flip,linearize,eta,regularize, & 
+              nNuc,ZNuc,rNuc,ENuc,nBas,nC,nO,nV,nR,nS,EHF,S,X,T,V,Hc,ERI_AO,ERI,ERI_aaaa,ERI_aabb,ERI_bbbb,    & 
               dipole_int_AO,dipole_int,dipole_int_aa,dipole_int_bb,PHF,cHF,epsHF)
 
 ! Green's function module
@@ -22,6 +22,7 @@ subroutine GF(doG0F2,doevGF2,doqsGF2,doG0F3,doevGF3,unrestricted,renorm,maxSCF,t
   integer,intent(in)            :: max_diis
   double precision,intent(in)   :: thresh
   logical,intent(in)            :: dophBSE
+  logical,intent(in)            :: doppBSE
   logical,intent(in)            :: TDA
   logical,intent(in)            :: dBSE
   logical,intent(in)            :: dTDA

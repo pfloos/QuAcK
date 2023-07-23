@@ -83,7 +83,7 @@ subroutine GW(doG0W0,doevGW,doqsGW,doufG0W0,doufGW,doSRGqsGW,unrestricted,maxSCF
     
     call wall_time(start_GW)
     if(unrestricted) then 
-      call UG0W0(doACFDT,exchange_kernel,doXBS,dophBSE,TDA_W,TDA,dBSE,dTDA,spin_conserved,spin_flip,   & 
+      call UG0W0(doACFDT,exchange_kernel,doXBS,dophBSE,TDA_W,TDA,dBSE,dTDA,spin_conserved,spin_flip,        & 
                  linearize,eta,regularize,nBas,nC,nO,nV,nR,nS,ENuc,EHF,S,ERI_AO,ERI_aaaa,ERI_aabb,ERI_bbbb, & 
                  dipole_int_aa,dipole_int_bb,PHF,cHF,epsHF)
     else
@@ -106,14 +106,12 @@ subroutine GW(doG0W0,doevGW,doqsGW,doufG0W0,doufGW,doSRGqsGW,unrestricted,maxSCF
 
     call wall_time(start_GW)
     if(unrestricted) then 
-      call evUGW(maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,dophBSE,TDA_W,TDA,   &
-                dBSE,dTDA,spin_conserved,spin_flip,eta,regularize,nBas,nC,nO,nV,nR,nS,ENuc,    &
-                EHF,S,ERI_AO,ERI_aaaa,ERI_aabb,ERI_bbbb,dipole_int_aa,dipole_int_bb, & 
+      call evUGW(maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,dophBSE,TDA_W,TDA,dBSE,dTDA,spin_conserved,spin_flip,  & 
+                eta,regularize,nBas,nC,nO,nV,nR,nS,ENuc,EHF,S,ERI_AO,ERI_aaaa,ERI_aabb,ERI_bbbb,dipole_int_aa,dipole_int_bb, & 
                 PHF,cHF,epsHF)
     else
-      call evGW(maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,       &
-                dophBSE,dophBSE2,TDA_W,TDA,dBSE,dTDA,doppBSE,singlet,triplet,linearize,eta,regularize, &
-                nBas,nC,nO,nV,nR,nS,ENuc,EHF,ERI_AO,ERI,dipole_int,PHF,cHF,epsHF)
+      call evGW(maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,dophBSE,dophBSE2,TDA_W,TDA,dBSE,dTDA,doppBSE, &
+                singlet,triplet,linearize,eta,regularize,nBas,nC,nO,nV,nR,nS,ENuc,EHF,ERI_AO,ERI,dipole_int,PHF,cHF,epsHF)
     end if
     call wall_time(end_GW)
 
@@ -131,14 +129,13 @@ subroutine GW(doG0W0,doevGW,doqsGW,doufG0W0,doufGW,doSRGqsGW,unrestricted,maxSCF
 
     call wall_time(start_GW)
     if(unrestricted) then 
-      call qsUGW(maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,dophBSE,TDA_W,TDA, &
-                 dBSE,dTDA,spin_conserved,spin_flip,eta,regularize,nNuc,ZNuc,rNuc,ENuc,nBas,nC,nO, &
-                 nV,nR,nS,EHF,S,X,T,V,Hc,ERI_AO,ERI_aaaa,ERI_aabb,ERI_bbbb,dipole_int_AO,      &
-                 dipole_int_aa,dipole_int_bb,PHF,cHF,epsHF)
+      call qsUGW(maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,dophBSE,TDA_W,TDA,dBSE,dTDA,spin_conserved,spin_flip, & 
+                 eta,regularize,nNuc,ZNuc,rNuc,ENuc,nBas,nC,nO,nV,nR,nS,EHF,S,X,T,V,Hc,ERI_AO,ERI_aaaa,ERI_aabb,ERI_bbbb,   & 
+                 dipole_int_AO,dipole_int_aa,dipole_int_bb,PHF,cHF,epsHF)
     else
-      call qsGW(maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,               &
-                dophBSE,dophBSE2,TDA_W,TDA,dBSE,dTDA,doppBSE,singlet,triplet,eta,regularize,nNuc,ZNuc,rNuc,ENuc, & 
-                nBas,nC,nO,nV,nR,nS,EHF,S,X,T,V,Hc,ERI_AO,ERI,dipole_int_AO,dipole_int,PHF,cHF,epsHF)
+      call qsGW(maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,dophBSE,dophBSE2,TDA_W,TDA,dBSE,dTDA,doppBSE, & 
+                singlet,triplet,eta,regularize,nNuc,ZNuc,rNuc,ENuc,nBas,nC,nO,nV,nR,nS,EHF,S,X,T,V,Hc,ERI_AO,ERI,  & 
+                dipole_int_AO,dipole_int,PHF,cHF,epsHF)
     end if
 
     call wall_time(end_GW)

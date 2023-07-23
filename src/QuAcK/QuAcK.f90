@@ -436,7 +436,7 @@ program QuAcK
 
     call cpu_time(start_GF)
     call GF(doG0F2,doevGF2,doqsGF2,doG0F3,doevGF3,unrestricted,renormGF,maxSCF_GF,thresh_GF,max_diis_GF,              &
-            dophBSE,TDA,dBSE,dTDA,singlet,triplet,spin_conserved,spin_flip,linGF,eta_GF,regGF,                        &
+            dophBSE,doppBSE,TDA,dBSE,dTDA,singlet,triplet,spin_conserved,spin_flip,linGF,eta_GF,regGF,                &
             nNuc,ZNuc,rNuc,ENuc,nBas,nC,nO,nV,nR,nS,EHF,S,X,T,V,Hc,ERI_AO,ERI_MO,ERI_MO_aaaa,ERI_MO_aabb,ERI_MO_bbbb, &
             dipole_int_AO,dipole_int_MO,dipole_int_aa,dipole_int_bb,PHF,cHF,epsHF)
     call cpu_time(end_GF)
@@ -456,10 +456,10 @@ program QuAcK
   if(doGW) then
     
     call cpu_time(start_GW)
-    call GW(doG0W0,doevGW,doqsGW,doufG0W0,doufGW,doSRGqsGW,unrestricted,maxSCF_GW,thresh_GW,max_diis_GW,doACFDT, &
+    call GW(doG0W0,doevGW,doqsGW,doufG0W0,doufGW,doSRGqsGW,unrestricted,maxSCF_GW,thresh_GW,max_diis_GW,doACFDT,         &
             exchange_kernel,doXBS,dophBSE,dophBSE2,doppBSE,TDA_W,TDA,dBSE,dTDA,singlet,triplet,spin_conserved,spin_flip, &
-            linGW,eta_GW,regGW,nNuc,ZNuc,rNuc,ENuc,nBas,nC,nO,nV,nR,nS,EHF,S,X,T,V,Hc,                        &  
-            ERI_AO,ERI_MO,ERI_MO_aaaa,ERI_MO_aabb,ERI_MO_bbbb,dipole_int_AO,dipole_int_MO,dipole_int_aa,dipole_int_bb, & 
+            linGW,eta_GW,regGW,nNuc,ZNuc,rNuc,ENuc,nBas,nC,nO,nV,nR,nS,EHF,S,X,T,V,Hc,                                   &  
+            ERI_AO,ERI_MO,ERI_MO_aaaa,ERI_MO_aabb,ERI_MO_bbbb,dipole_int_AO,dipole_int_MO,dipole_int_aa,dipole_int_bb,   & 
             PHF,cHF,epsHF)
     call cpu_time(end_GW)
   
@@ -478,10 +478,10 @@ program QuAcK
   if(doGT) then
     
     call cpu_time(start_GT)
-    call GT(doG0T0pp,doevGTpp,doqsGTpp,doG0T0eh,doevGTeh,doqsGTeh,unrestricted,maxSCF_GT,thresh_GT,max_diis_GT,doACFDT, &
+    call GT(doG0T0pp,doevGTpp,doqsGTpp,doG0T0eh,doevGTeh,doqsGTeh,unrestricted,maxSCF_GT,thresh_GT,max_diis_GT,doACFDT,  &
             exchange_kernel,doXBS,dophBSE,dophBSE2,doppBSE,TDA_W,TDA,dBSE,dTDA,singlet,triplet,spin_conserved,spin_flip, &
-            linGT,eta_GT,regGT,nNuc,ZNuc,rNuc,ENuc,nBas,nC,nO,nV,nR,nS,EHF,S,X,T,V,Hc,                        &
-            ERI_AO,ERI_MO,ERI_MO_aaaa,ERI_MO_aabb,ERI_MO_bbbb,dipole_int_AO,dipole_int_MO,dipole_int_aa,dipole_int_bb, & 
+            linGT,eta_GT,regGT,nNuc,ZNuc,rNuc,ENuc,nBas,nC,nO,nV,nR,nS,EHF,S,X,T,V,Hc,                                   &
+            ERI_AO,ERI_MO,ERI_MO_aaaa,ERI_MO_aabb,ERI_MO_bbbb,dipole_int_AO,dipole_int_MO,dipole_int_aa,dipole_int_bb,   & 
             PHF,cHF,epsHF)
     call cpu_time(end_GT)
   
