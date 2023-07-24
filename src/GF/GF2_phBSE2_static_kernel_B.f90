@@ -1,4 +1,4 @@
-subroutine GF2_phBSE2_static_kernel_B(ispin,eta,nBas,nC,nO,nV,nR,nS,lambda,ERI,eGF,B_sta)
+subroutine GF2_phBSE2_static_kernel_B(ispin,eta,nBas,nC,nO,nV,nR,nS,lambda,ERI,eGF,KB_sta)
 
 ! Compute the anti-resonant part of the static BSE2 matrix
 
@@ -23,18 +23,18 @@ subroutine GF2_phBSE2_static_kernel_B(ispin,eta,nBas,nC,nO,nV,nR,nS,lambda,ERI,e
 
 ! Output variables
 
-  double precision,intent(out)  :: B_sta(nS,nS)
+  double precision,intent(out)  :: KB_sta(nS,nS)
 
 ! Initialization
 
-   B_sta(:,:) = 0d0
+  KB_sta(:,:) = 0d0
 
 ! Second-order correlation kernel for the block A of the singlet manifold
 
   if(ispin == 1) then
 
     jb = 0
-!$omp parallel do default(private) shared(B_sta,ERI,num,dem,eGF,nO,nBas,eta,nC,nR)
+!$omp parallel do default(private) shared(KB_sta,ERI,num,dem,eGF,nO,nBas,eta,nC,nR)
     do j=nC+1,nO
       do b=nO+1,nBas-nR
         jb = (b-nO) + (j-1)*(nBas-nO) 
@@ -51,13 +51,13 @@ subroutine GF2_phBSE2_static_kernel_B(ispin,eta,nBas,nC,nO,nV,nR,nS,lambda,ERI,e
                 num = 2d0*ERI(b,k,i,c)*ERI(a,c,j,k) -     ERI(b,k,i,c)*ERI(a,c,k,j) & 
                     -     ERI(b,k,c,i)*ERI(a,c,j,k) + 2d0*ERI(b,k,c,i)*ERI(a,c,k,j)
 
-                 B_sta(ia,jb) =  B_sta(ia,jb) - num*dem/(dem**2 + eta**2)
+                KB_sta(ia,jb) = KB_sta(ia,jb) - num*dem/(dem**2 + eta**2)
             
                 dem = - eGF(c) + eGF(k)
                 num = 2d0*ERI(b,c,i,k)*ERI(a,k,j,c) -     ERI(b,c,i,k)*ERI(a,k,c,j) & 
                     -     ERI(b,c,k,i)*ERI(a,k,j,c) + 2d0*ERI(b,c,k,i)*ERI(a,k,c,j)
 
-                 B_sta(ia,jb) =  B_sta(ia,jb) - num*dem/(dem**2 + eta**2)
+                KB_sta(ia,jb) = KB_sta(ia,jb) - num*dem/(dem**2 + eta**2)
             
               end do
             end do
@@ -69,7 +69,7 @@ subroutine GF2_phBSE2_static_kernel_B(ispin,eta,nBas,nC,nO,nV,nR,nS,lambda,ERI,e
                 num = 2d0*ERI(a,b,c,d)*ERI(c,d,i,j) -     ERI(a,b,c,d)*ERI(c,d,j,i) & 
                     -     ERI(a,b,d,c)*ERI(c,d,i,j) + 2d0*ERI(a,b,d,c)*ERI(c,d,j,i)
 
-                 B_sta(ia,jb) =  B_sta(ia,jb) + 0.5d0*num*dem/(dem**2 + eta**2)
+                KB_sta(ia,jb) = KB_sta(ia,jb) + 0.5d0*num*dem/(dem**2 + eta**2)
             
               end do
             end do
@@ -81,7 +81,7 @@ subroutine GF2_phBSE2_static_kernel_B(ispin,eta,nBas,nC,nO,nV,nR,nS,lambda,ERI,e
                 num = 2d0*ERI(a,b,k,l)*ERI(k,l,i,j) -     ERI(a,b,k,l)*ERI(k,l,j,i) & 
                     -     ERI(a,b,l,k)*ERI(k,l,i,j) + 2d0*ERI(a,b,l,k)*ERI(k,l,j,i)
 
-                 B_sta(ia,jb) =  B_sta(ia,jb) + 0.5d0*num*dem/(dem**2 + eta**2)
+                KB_sta(ia,jb) = KB_sta(ia,jb) + 0.5d0*num*dem/(dem**2 + eta**2)
             
               end do
             end do
@@ -100,7 +100,7 @@ subroutine GF2_phBSE2_static_kernel_B(ispin,eta,nBas,nC,nO,nV,nR,nS,lambda,ERI,e
   if(ispin == 2) then
 
     jb = 0
-!$omp parallel do default(private) shared(B_sta,ERI,num,dem,eGF,nO,nBas,eta,nC,nR)
+!$omp parallel do default(private) shared(KB_sta,ERI,num,dem,eGF,nO,nBas,eta,nC,nR)
     do j=nC+1,nO
       do b=nO+1,nBas-nR
         jb = (b-nO) + (j-1)*(nBas-nO)
@@ -116,12 +116,12 @@ subroutine GF2_phBSE2_static_kernel_B(ispin,eta,nBas,nC,nO,nV,nR,nS,lambda,ERI,e
                 dem = + eGF(k) - eGF(c)
                 num = 2d0*ERI(b,k,i,c)*ERI(a,c,j,k) - ERI(b,k,i,c)*ERI(a,c,k,j) - ERI(b,k,c,i)*ERI(a,c,j,k) 
 
-                 B_sta(ia,jb) =  B_sta(ia,jb) - num*dem/(dem**2 + eta**2)
+                KB_sta(ia,jb) = KB_sta(ia,jb) - num*dem/(dem**2 + eta**2)
             
                 dem = - eGF(c) + eGF(k)
                 num = 2d0*ERI(b,c,i,k)*ERI(a,k,j,c) - ERI(b,c,i,k)*ERI(a,k,c,j) - ERI(b,c,k,i)*ERI(a,k,j,c)
 
-                 B_sta(ia,jb) =  B_sta(ia,jb) - num*dem/(dem**2 + eta**2)
+                KB_sta(ia,jb) = KB_sta(ia,jb) - num*dem/(dem**2 + eta**2)
             
               end do
             end do
@@ -132,7 +132,7 @@ subroutine GF2_phBSE2_static_kernel_B(ispin,eta,nBas,nC,nO,nV,nR,nS,lambda,ERI,e
                 dem = - eGF(c) - eGF(d)
                 num = ERI(a,b,c,d)*ERI(c,d,j,i) + ERI(a,b,d,c)*ERI(c,d,i,j)
 
-                 B_sta(ia,jb) =  B_sta(ia,jb) - 0.5d0*num*dem/(dem**2 + eta**2)
+                KB_sta(ia,jb) = KB_sta(ia,jb) - 0.5d0*num*dem/(dem**2 + eta**2)
             
               end do
             end do
@@ -143,7 +143,7 @@ subroutine GF2_phBSE2_static_kernel_B(ispin,eta,nBas,nC,nO,nV,nR,nS,lambda,ERI,e
                 dem = + eGF(k) + eGF(l)
                 num = ERI(a,b,k,l)*ERI(k,l,j,i) + ERI(a,b,l,k)*ERI(k,l,i,j)
 
-                 B_sta(ia,jb) =  B_sta(ia,jb) - 0.5d0*num*dem/(dem**2 + eta**2)
+                KB_sta(ia,jb) = KB_sta(ia,jb) - 0.5d0*num*dem/(dem**2 + eta**2)
             
               end do
             end do
