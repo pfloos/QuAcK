@@ -120,9 +120,9 @@ subroutine GW_phBSE(dophBSE2,TDA_W,TDA,dBSE,dTDA,singlet,triplet,eta,nBas,nC,nO,
     call print_excitation('phBSE@GW    ',ispin,nS,OmBSE)
     call print_transition_vectors_ph(.true.,nBas,nC,nO,nV,nR,nS,dipole_int,OmBSE,XpY_BSE,XmY_BSE)
 
-    !-------------------------------------------------
-    ! Compute the dynamical screening at the BSE level
-    !-------------------------------------------------
+    !----------------------------------------------------!
+    ! Compute the dynamical screening at the phBSE level !
+    !----------------------------------------------------!
 
     if(dBSE) &
         call GW_phBSE_dynamic_perturbation(dophBSE2,dTDA,eta,nBas,nC,nO,nV,nR,nS,eW,eGW,ERI,dipole_int,OmRPA,rho_RPA, &

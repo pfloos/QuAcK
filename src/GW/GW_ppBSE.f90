@@ -1,4 +1,4 @@
-subroutine GW_ppBSE(TDA_W,TDA,singlet,triplet,eta,nBas,nC,nO,nV,nR,nS,ERI,dipole_int,eW,eGW,EcBSE)
+subroutine GW_ppBSE(TDA_W,TDA,dBSE,dTDA,singlet,triplet,eta,nBas,nC,nO,nV,nR,nS,ERI,dipole_int,eW,eGW,EcBSE)
 
 ! Compute the Bethe-Salpeter excitation energies at the pp level
 
@@ -9,6 +9,8 @@ subroutine GW_ppBSE(TDA_W,TDA,singlet,triplet,eta,nBas,nC,nO,nV,nR,nS,ERI,dipole
 
   logical,intent(in)            :: TDA_W
   logical,intent(in)            :: TDA
+  logical,intent(in)            :: dBSE
+  logical,intent(in)            :: dTDA
   logical,intent(in)            :: singlet
   logical,intent(in)            :: triplet
 
@@ -122,6 +124,14 @@ subroutine GW_ppBSE(TDA_W,TDA,singlet,triplet,eta,nBas,nC,nO,nV,nR,nS,ERI,dipole
 
     call print_transition_vectors_pp(.true.,nBas,nC,nO,nV,nR,nOO,nVV,dipole_int,Om1,X1,Y1,Om2,X2,Y2)
 
+    !----------------------------------------------------!
+    ! Compute the dynamical screening at the ppBSE level !
+    !----------------------------------------------------!
+
+    if(dBSE) &
+        call GW_ppBSE_dynamic_perturbation(dTDA,eta,nBas,nC,nO,nV,nR,nS,nOO,nVV,eW,eGW,ERI,dipole_int,OmRPA,rho_RPA, &
+                                           Om1,X1,Y1,Om2,X2,Y2,KB_sta,KC_sta,KD_sta)
+
     deallocate(Om1,X1,Y1,Om2,X2,Y2,Bpp,Cpp,Dpp,KB_sta,KC_sta,KD_sta)
 
   end if
@@ -166,6 +176,14 @@ subroutine GW_ppBSE(TDA_W,TDA,singlet,triplet,eta,nBas,nC,nO,nV,nR,nS,ERI,dipole
     call ppLR(TDA,nOO,nVV,Bpp,Cpp,Dpp,Om1,X1,Y1,Om2,X2,Y2,EcBSE(ispin))
 
     call print_transition_vectors_pp(.false.,nBas,nC,nO,nV,nR,nOO,nVV,dipole_int,Om1,X1,Y1,Om2,X2,Y2)
+
+    !----------------------------------------------------!
+    ! Compute the dynamical screening at the ppBSE level !
+    !----------------------------------------------------!
+
+    if(dBSE) &
+        call GW_ppBSE_dynamic_perturbation(dTDA,eta,nBas,nC,nO,nV,nR,nS,nOO,nVV,eW,eGW,ERI,dipole_int,OmRPA,rho_RPA, &
+                                           Om1,X1,Y1,Om2,X2,Y2,KB_sta,KC_sta,KD_sta)
 
     deallocate(Om1,X1,Y1,Om2,X2,Y2,Bpp,Cpp,Dpp,KB_sta,KC_sta,KD_sta)
 

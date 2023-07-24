@@ -276,7 +276,7 @@ subroutine evGW(maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,dophBSE,dop
 
   if(doppBSE) then
 
-    call GW_ppBSE(TDA_W,TDA,singlet,triplet,eta,nBas,nC,nO,nV,nR,nS,ERI,dipole_int,eHF,eGW,EcBSE)
+    call GW_ppBSE(TDA_W,TDA,dBSE,dTDA,singlet,triplet,eta,nBas,nC,nO,nV,nR,nS,ERI,dipole_int,eHF,eGW,EcBSE)
 
     write(*,*)
     write(*,*)'-------------------------------------------------------------------------------'
