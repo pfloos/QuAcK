@@ -1,4 +1,4 @@
-subroutine GF2_phBSE2_dynamic_kernel_A(ispin,eta,nBas,nC,nO,nV,nR,nS,lambda,ERI,eGF,OmBSE,A_dyn,ZA_dyn)
+subroutine GF2_phBSE2_dynamic_kernel_A(ispin,eta,nBas,nC,nO,nV,nR,nS,lambda,ERI,eGF,OmBSE,KA_dyn,ZA_dyn)
 
 ! Compute the resonant part of the dynamic BSE2 matrix
 
@@ -24,12 +24,12 @@ subroutine GF2_phBSE2_dynamic_kernel_A(ispin,eta,nBas,nC,nO,nV,nR,nS,lambda,ERI,
 
 ! Output variables
 
-  double precision,intent(out)  :: A_dyn(nS,nS)
+  double precision,intent(out)  :: KA_dyn(nS,nS)
   double precision,intent(out)  :: ZA_dyn(nS,nS)
 
 ! Initialization
 
-   A_dyn(:,:) = 0d0
+  KA_dyn(:,:) = 0d0
   ZA_dyn(:,:) = 0d0
 
 ! Second-order correlation kernel for the block A of the singlet manifold
@@ -53,14 +53,14 @@ subroutine GF2_phBSE2_dynamic_kernel_A(ispin,eta,nBas,nC,nO,nV,nR,nS,lambda,ERI,
                 num = 2d0*ERI(j,k,i,c)*ERI(a,c,b,k) -     ERI(j,k,i,c)*ERI(a,c,k,b) & 
                     -     ERI(j,k,c,i)*ERI(a,c,b,k) + 2d0*ERI(j,k,c,i)*ERI(a,c,k,b)
 
-                 A_dyn(ia,jb) =  A_dyn(ia,jb) - num*dem/(dem**2 + eta**2)
+                KA_dyn(ia,jb) = KA_dyn(ia,jb) - num*dem/(dem**2 + eta**2)
                 ZA_dyn(ia,jb) = ZA_dyn(ia,jb) + num*(dem**2 - eta**2)/(dem**2 + eta**2)**2
             
                 dem = OmBSE + eGF(i) - eGF(c) + eGF(k) - eGF(b)
                 num = 2d0*ERI(j,c,i,k)*ERI(a,k,b,c) -     ERI(j,c,i,k)*ERI(a,k,c,b) & 
                     -     ERI(j,c,k,i)*ERI(a,k,b,c) + 2d0*ERI(j,c,k,i)*ERI(a,k,c,b)
 
-                 A_dyn(ia,jb) =  A_dyn(ia,jb) - num*dem/(dem**2 + eta**2)
+                KA_dyn(ia,jb) = KA_dyn(ia,jb) - num*dem/(dem**2 + eta**2)
                 ZA_dyn(ia,jb) = ZA_dyn(ia,jb) + num*(dem**2 - eta**2)/(dem**2 + eta**2)**2
             
               end do
@@ -73,7 +73,7 @@ subroutine GF2_phBSE2_dynamic_kernel_A(ispin,eta,nBas,nC,nO,nV,nR,nS,lambda,ERI,
                 num = 2d0*ERI(a,j,c,d)*ERI(c,d,i,b) -     ERI(a,j,c,d)*ERI(c,d,b,i) & 
                     -     ERI(a,j,d,c)*ERI(c,d,i,b) + 2d0*ERI(a,j,d,c)*ERI(c,d,b,i)
 
-                 A_dyn(ia,jb) =  A_dyn(ia,jb) + 0.5d0*num*dem/(dem**2 + eta**2)
+                KA_dyn(ia,jb) = KA_dyn(ia,jb) + 0.5d0*num*dem/(dem**2 + eta**2)
                 ZA_dyn(ia,jb) = ZA_dyn(ia,jb) - 0.5d0*num*(dem**2 - eta**2)/(dem**2 + eta**2)**2
             
               end do
@@ -86,7 +86,7 @@ subroutine GF2_phBSE2_dynamic_kernel_A(ispin,eta,nBas,nC,nO,nV,nR,nS,lambda,ERI,
                 num = 2d0*ERI(a,j,k,l)*ERI(k,l,i,b) -     ERI(a,j,k,l)*ERI(k,l,b,i) & 
                     -     ERI(a,j,l,k)*ERI(k,l,i,b) + 2d0*ERI(a,j,l,k)*ERI(k,l,b,i)
 
-                 A_dyn(ia,jb) =  A_dyn(ia,jb) + 0.5d0*num*dem/(dem**2 + eta**2)
+                KA_dyn(ia,jb) = KA_dyn(ia,jb) + 0.5d0*num*dem/(dem**2 + eta**2)
                 ZA_dyn(ia,jb) = ZA_dyn(ia,jb) - 0.5d0*num*(dem**2 - eta**2)/(dem**2 + eta**2)**2
             
               end do
@@ -122,13 +122,13 @@ subroutine GF2_phBSE2_dynamic_kernel_A(ispin,eta,nBas,nC,nO,nV,nR,nS,lambda,ERI,
                 dem = OmBSE - eGF(a) + eGF(k) - eGF(c) + eGF(j)
                 num = 2d0*ERI(j,k,i,c)*ERI(a,c,b,k) - ERI(j,k,i,c)*ERI(a,c,k,b) - ERI(j,k,c,i)*ERI(a,c,b,k) 
 
-                 A_dyn(ia,jb) =  A_dyn(ia,jb) - num*dem/(dem**2 + eta**2)
+                KA_dyn(ia,jb) = KA_dyn(ia,jb) - num*dem/(dem**2 + eta**2)
                 ZA_dyn(ia,jb) = ZA_dyn(ia,jb) + num*(dem**2 - eta**2)/(dem**2 + eta**2)**2
             
                 dem = OmBSE + eGF(i) - eGF(c) + eGF(k) - eGF(b)
                 num = 2d0*ERI(j,c,i,k)*ERI(a,k,b,c) - ERI(j,c,i,k)*ERI(a,k,c,b) - ERI(j,c,k,i)*ERI(a,k,b,c)
 
-                 A_dyn(ia,jb) =  A_dyn(ia,jb) - num*dem/(dem**2 + eta**2)
+                KA_dyn(ia,jb) = KA_dyn(ia,jb) - num*dem/(dem**2 + eta**2)
                 ZA_dyn(ia,jb) = ZA_dyn(ia,jb) + num*(dem**2 - eta**2)/(dem**2 + eta**2)**2
             
               end do
@@ -140,7 +140,7 @@ subroutine GF2_phBSE2_dynamic_kernel_A(ispin,eta,nBas,nC,nO,nV,nR,nS,lambda,ERI,
                 dem = OmBSE + eGF(i) + eGF(j) - eGF(c) - eGF(d)
                 num = ERI(a,j,c,d)*ERI(c,d,b,i) + ERI(a,j,d,c)*ERI(c,d,i,b)
 
-                 A_dyn(ia,jb) =  A_dyn(ia,jb) - 0.5d0*num*dem/(dem**2 + eta**2)
+                KA_dyn(ia,jb) = KA_dyn(ia,jb) - 0.5d0*num*dem/(dem**2 + eta**2)
                 ZA_dyn(ia,jb) = ZA_dyn(ia,jb) + 0.5d0*num*(dem**2 - eta**2)/(dem**2 + eta**2)**2
             
               end do
@@ -152,7 +152,7 @@ subroutine GF2_phBSE2_dynamic_kernel_A(ispin,eta,nBas,nC,nO,nV,nR,nS,lambda,ERI,
                 dem = OmBSE - eGF(a) - eGF(b) + eGF(k) + eGF(l)
                 num = ERI(a,j,k,l)*ERI(k,l,b,i) + ERI(a,j,l,k)*ERI(k,l,i,b)
 
-                 A_dyn(ia,jb) =  A_dyn(ia,jb) - 0.5d0*num*dem/(dem**2 + eta**2)
+                KA_dyn(ia,jb) = KA_dyn(ia,jb) - 0.5d0*num*dem/(dem**2 + eta**2)
                 ZA_dyn(ia,jb) = ZA_dyn(ia,jb) + 0.5d0*num*(dem**2 - eta**2)/(dem**2 + eta**2)**2
             
               end do
