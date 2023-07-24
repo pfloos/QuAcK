@@ -136,4 +136,5 @@ subroutine GW_ppBSE_dynamic_kernel_C(ispin,eta,nBas,nC,nO,nV,nR,nS,nVV,lambda,eG
     end do
 
   end if
+
 end subroutine 
