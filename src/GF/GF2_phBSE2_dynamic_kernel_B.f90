@@ -121,7 +121,7 @@ subroutine GF2_phBSE2_dynamic_kernel_B(ispin,eta,nBas,nC,nO,nV,nR,nS,lambda,ERI,
                 dem = + eGF(i) - eGF(c) + eGF(k) - eGF(b)
                 num = 2d0*ERI(b,c,i,k)*ERI(a,k,j,c) - ERI(b,c,i,k)*ERI(a,k,c,j) - ERI(b,c,k,i)*ERI(a,k,j,c)
 
-                 B_dyn(ia,jb) =  B_dyn(ia,jb) - num*dem/(dem**2 + eta**2)
+                KB_dyn(ia,jb) = KB_dyn(ia,jb) - num*dem/(dem**2 + eta**2)
             
               end do
             end do

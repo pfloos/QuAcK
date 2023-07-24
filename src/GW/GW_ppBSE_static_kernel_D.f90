@@ -1,4 +1,4 @@
-subroutine GW_ppBSE_static_kernel_D(ispin,eta,nBas,nC,nO,nV,nR,nS,nOO,nVV,lambda,ERI,Om,rho,WD)
+subroutine GW_ppBSE_static_kernel_D(ispin,eta,nBas,nC,nO,nV,nR,nS,nOO,nVV,lambda,ERI,Om,rho,KD)
 
 ! Compute the OOOO block of the static screening W for the pp-BSE
 
@@ -31,11 +31,11 @@ subroutine GW_ppBSE_static_kernel_D(ispin,eta,nBas,nC,nO,nV,nR,nS,nOO,nVV,lambda
 
 ! Output variables
 
-  double precision,intent(out)  :: WD(nOO,nOO)
+  double precision,intent(out)  :: KD(nOO,nOO)
 
 ! Initialization
 
-  WD(:,:) = 0d0
+  KD(:,:) = 0d0
 
 !---------------!
 ! Singlet block !
@@ -55,11 +55,11 @@ subroutine GW_ppBSE_static_kernel_D(ispin,eta,nBas,nC,nO,nV,nR,nS,nOO,nVV,lambda
             chi = 0d0
             do m=1,nS
               eps = Om(m)**2 + eta**2
-              chi = chi + rho(i,k,m)*rho(j,l,m)*Om(m)/eps &
+              chi = chi - rho(i,k,m)*rho(j,l,m)*Om(m)/eps &
                         + rho(i,l,m)*rho(j,k,m)*Om(m)/eps
             enddo
  
-            WD(ij,kl) = + 4d0*lambda*chi/sqrt((1d0 + Kronecker_delta(i,j))*(1d0 + Kronecker_delta(k,l)))
+            KD(ij,kl) = 2d0*lambda*chi/sqrt((1d0 + Kronecker_delta(i,j))*(1d0 + Kronecker_delta(k,l)))
 
           end do
         end do
@@ -86,11 +86,11 @@ subroutine GW_ppBSE_static_kernel_D(ispin,eta,nBas,nC,nO,nV,nR,nS,nOO,nVV,lambda
             chi = 0d0
             do m=1,nS
               eps = Om(m)**2 + eta**2
-              chi = chi + rho(i,k,m)*rho(j,l,m)*Om(m)/eps &
-                        - rho(i,l,m)*rho(j,k,m)*Om(m)/eps
+              chi = chi - rho(i,k,m)*rho(j,l,m)*Om(m)/eps &
+                        + rho(i,l,m)*rho(j,k,m)*Om(m)/eps
             enddo
  
-            WD(ij,kl) = + 4d0*lambda*chi
+            KD(ij,kl) = 2d0*lambda*chi
 
           end do
         end do
@@ -117,11 +117,11 @@ subroutine GW_ppBSE_static_kernel_D(ispin,eta,nBas,nC,nO,nV,nR,nS,nOO,nVV,lambda
             chi = 0d0
             do m=1,nS
               eps = Om(m)**2 + eta**2
-              chi = chi + rho(i,k,m)*rho(j,l,m)*Om(m)/eps &
-                        - rho(i,l,m)*rho(j,k,m)*Om(m)/eps
+              chi = chi - rho(i,k,m)*rho(j,l,m)*Om(m)/eps &
+                        + rho(i,l,m)*rho(j,k,m)*Om(m)/eps
             enddo
  
-            WD(ij,kl) = + 2d0*lambda*chi
+            KD(ij,kl) = lambda*chi
 
           end do
         end do

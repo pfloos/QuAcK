@@ -13,6 +13,7 @@ subroutine GF2_ppBSE2_dynamic_kernel_B(ispin,eta,nBas,nC,nO,nV,nR,nOO,nVV,lambda
   integer,intent(in)            :: nO
   integer,intent(in)            :: nV
   integer,intent(in)            :: nR
+  integer,intent(in)            :: nOO
   integer,intent(in)            :: nVV
   double precision,intent(in)   :: eta
   double precision,intent(in)   :: lambda
@@ -54,25 +55,25 @@ subroutine GF2_ppBSE2_dynamic_kernel_B(ispin,eta,nBas,nC,nO,nV,nR,nOO,nVV,lambda
                 num = 2d0*ERI(a,k,i,c)*ERI(b,c,j,k) -     ERI(a,k,i,c)*ERI(b,c,k,j) & 
                     -     ERI(a,k,c,i)*ERI(b,c,j,k) + 2d0*ERI(a,k,c,i)*ERI(b,c,k,j)
 
-                KB_dyn(ia,jb) = KB_dyn(ia,jb) + 0.5d0*num*dem/(dem**2 + eta**2)
+                KB_dyn(ab,ij) = KB_dyn(ab,ij) + 0.5d0*num*dem/(dem**2 + eta**2)
             
                 dem = eGF(j) + eGF(k) - eGF(c) - eGF(a)
                 num = 2d0*ERI(b,k,i,c)*ERI(a,c,j,k) -     ERI(b,k,i,c)*ERI(a,c,k,j) & 
                     -     ERI(b,k,c,i)*ERI(a,c,j,k) + 2d0*ERI(b,k,c,i)*ERI(a,c,k,j)
 
-                KB_dyn(ia,jb) = KB_dyn(ia,jb) - 0.5d0*num*dem/(dem**2 + eta**2)
+                KB_dyn(ab,ij) = KB_dyn(ab,ij) - 0.5d0*num*dem/(dem**2 + eta**2)
             
                 dem = eGF(i) + eGF(k) - eGF(c) - eGF(a)
                 num = 2d0*ERI(a,c,i,k)*ERI(b,k,j,c) -     ERI(a,c,i,k)*ERI(b,k,c,j) & 
                     -     ERI(a,c,k,i)*ERI(b,k,j,c) + 2d0*ERI(a,c,k,i)*ERI(b,k,c,j)
 
-                KB_dyn(ia,jb) = KB_dyn(ia,jb) + 0.5d0*num*dem/(dem**2 + eta**2)
+                KB_dyn(ab,ij) = KB_dyn(ab,ij) + 0.5d0*num*dem/(dem**2 + eta**2)
             
                 dem = eGF(i) + eGF(k) - eGF(c) - eGF(b)
                 num = 2d0*ERI(b,c,i,k)*ERI(a,k,j,c) -     ERI(b,c,i,k)*ERI(a,k,c,j) & 
                     -     ERI(b,c,k,i)*ERI(a,k,j,c) + 2d0*ERI(b,c,k,i)*ERI(a,k,c,j)
 
-                KB_dyn(ia,jb) = KB_dyn(ia,jb) - 0.5d0*num*dem/(dem**2 + eta**2)
+                KB_dyn(ab,ij) = KB_dyn(ab,ij) - 0.5d0*num*dem/(dem**2 + eta**2)
             
               end do
             end do
@@ -105,22 +106,22 @@ subroutine GF2_ppBSE2_dynamic_kernel_B(ispin,eta,nBas,nC,nO,nV,nR,nOO,nVV,lambda
                 dem = eGF(j) + eGF(k) - eGF(c) - eGF(b)
                 num = 2d0*ERI(a,k,i,c)*ERI(b,c,j,k) - ERI(a,k,i,c)*ERI(b,c,k,j) - ERI(a,k,c,i)*ERI(b,c,j,k) 
 
-                KB_dyn(ia,jb) = KB_dyn(ia,jb) + 0.5d0*num*dem/(dem**2 + eta**2)
+                KB_dyn(ab,ij) = KB_dyn(ab,ij) + 0.5d0*num*dem/(dem**2 + eta**2)
             
                 dem = eGF(j) + eGF(k) - eGF(c) - eGF(a)
                 num = 2d0*ERI(b,k,i,c)*ERI(a,c,j,k) - ERI(b,k,i,c)*ERI(a,c,k,j) - ERI(b,k,c,i)*ERI(a,c,j,k) 
 
-                KB_dyn(ia,jb) = KB_dyn(ia,jb) - 0.5d0*num*dem/(dem**2 + eta**2)
+                KB_dyn(ab,ij) = KB_dyn(ab,ij) - 0.5d0*num*dem/(dem**2 + eta**2)
             
                 dem = eGF(i) + eGF(k) - eGF(c) - eGF(a)
                 num = 2d0*ERI(a,c,i,k)*ERI(b,k,j,c) - ERI(a,c,i,k)*ERI(b,k,c,j) - ERI(a,c,k,i)*ERI(b,k,j,c) 
 
-                KB_dyn(ia,jb) = KB_dyn(ia,jb) + 0.5d0*num*dem/(dem**2 + eta**2)
+                KB_dyn(ab,ij) = KB_dyn(ab,ij) + 0.5d0*num*dem/(dem**2 + eta**2)
             
                 dem = eGF(i) + eGF(k) - eGF(c) - eGF(b)
                 num = 2d0*ERI(b,c,i,k)*ERI(a,k,j,c) - ERI(b,c,i,k)*ERI(a,k,c,j) - ERI(b,c,k,i)*ERI(a,k,j,c) 
 
-                KB_dyn(ia,jb) = KB_dyn(ia,jb) - 0.5d0*num*dem/(dem**2 + eta**2)
+                KB_dyn(ab,ij) = KB_dyn(ab,ij) - 0.5d0*num*dem/(dem**2 + eta**2)
             
               end do
             end do

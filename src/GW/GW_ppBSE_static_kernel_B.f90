@@ -1,4 +1,4 @@
-subroutine GW_ppBSE_static_kernel_B(ispin,eta,nBas,nC,nO,nV,nR,nS,nOO,nVV,lambda,ERI,Om,rho,WB)
+subroutine GW_ppBSE_static_kernel_B(ispin,eta,nBas,nC,nO,nV,nR,nS,nOO,nVV,lambda,ERI,Om,rho,KB)
 
 ! Compute the VVOO block of the static screening W for the pp-BSE
 
@@ -31,11 +31,11 @@ subroutine GW_ppBSE_static_kernel_B(ispin,eta,nBas,nC,nO,nV,nR,nS,nOO,nVV,lambda
 
 ! Output variables
 
-  double precision,intent(out)  :: WB(nVV,nOO)
+  double precision,intent(out)  :: KB(nVV,nOO)
 
 ! Initialization
 
-  WB(:,:) = 0d0
+  KB(:,:) = 0d0
 
 !---------------!
 ! Singlet block !
@@ -55,11 +55,11 @@ subroutine GW_ppBSE_static_kernel_B(ispin,eta,nBas,nC,nO,nV,nR,nS,nOO,nVV,lambda
             chi = 0d0
             do m=1,nS
               eps = Om(m)**2 + eta**2
-              chi = chi + rho(a,i,m)*rho(b,j,m)*Om(m)/eps &
-                        + rho(a,j,m)*rho(b,i,m)*Om(m)/eps
+              chi = chi - rho(i,a,m)*rho(j,b,m)*Om(m)/eps &
+                        + rho(i,b,m)*rho(a,j,m)*Om(m)/eps
             enddo
            
-            WB(ab,ij) = + 4d0*lambda*chi/sqrt((1d0 + Kronecker_delta(a,b))*(1d0 + Kronecker_delta(i,j)))
+            KB(ab,ij) = 2d0*lambda*chi/sqrt((1d0 + Kronecker_delta(a,b))*(1d0 + Kronecker_delta(i,j)))
 
           end do
         end do
@@ -86,11 +86,11 @@ subroutine GW_ppBSE_static_kernel_B(ispin,eta,nBas,nC,nO,nV,nR,nS,nOO,nVV,lambda
             chi = 0d0
             do m=1,nS
               eps = Om(m)**2 + eta**2
-              chi = chi + rho(a,i,m)*rho(b,j,m)*Om(m)/eps &
-                        - rho(a,j,m)*rho(b,i,m)*Om(m)/eps
+              chi = chi - rho(i,a,m)*rho(j,b,m)*Om(m)/eps &
+                        + rho(i,b,m)*rho(a,j,m)*Om(m)/eps
             enddo
 
-            WB(ab,ij) = + 4d0*lambda*chi
+            KB(ab,ij) = 2d0*lambda*chi
 
           end do
         end do
@@ -117,11 +117,11 @@ subroutine GW_ppBSE_static_kernel_B(ispin,eta,nBas,nC,nO,nV,nR,nS,nOO,nVV,lambda
             chi = 0d0
             do m=1,nS
               eps = Om(m)**2 + eta**2
-              chi = chi + rho(a,i,m)*rho(b,j,m)*Om(m)/eps &
-                        - rho(a,j,m)*rho(b,i,m)*Om(m)/eps
+              chi = chi - rho(i,a,m)*rho(j,b,m)*Om(m)/eps &
+                        + rho(i,b,m)*rho(a,j,m)*Om(m)/eps
             enddo
 
-            WB(ab,ij) = + 2d0*lambda*chi
+            KB(ab,ij) = lambda*chi
 
           end do
         end do
