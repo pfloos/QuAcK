@@ -1,4 +1,4 @@
-subroutine GF2_phBSE2_dynamic_perturbation(dTDA,ispin,eta,nBas,nC,nO,nV,nR,nS,ERI,dipole_int,eHF,eGF,KA_sta,KB_sta,OmBSE,XpY,XmY)
+subroutine GF2_phBSE2_dynamic_perturbation(dTDA,ispin,eta,nBas,nC,nO,nV,nR,nS,ERI,dipole_int,eGF,KA_sta,KB_sta,OmBSE,XpY,XmY)
 
 ! Compute dynamical effects via perturbation theory for BSE
 
@@ -19,7 +19,6 @@ subroutine GF2_phBSE2_dynamic_perturbation(dTDA,ispin,eta,nBas,nC,nO,nV,nR,nS,ER
 
   double precision,intent(in)   :: ERI(nBas,nBas,nBas,nBas)
   double precision,intent(in)   :: dipole_int(nBas,nBas,ncart)
-  double precision,intent(in)   :: eHF(nBas)
   double precision,intent(in)   :: eGF(nBas)
   double precision,intent(in)   :: KA_sta(nS,nS)
   double precision,intent(in)   :: KB_sta(nS,nS)

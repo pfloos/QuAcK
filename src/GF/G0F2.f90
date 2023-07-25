@@ -1,4 +1,4 @@
-subroutine G0F2(BSE,TDA,dBSE,dTDA,singlet,triplet,linearize,eta,regularize, &
+subroutine G0F2(dophBSE,doppBSE,TDA,dBSE,dTDA,singlet,triplet,linearize,eta,regularize, &
                 nBas,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,dipole_int,eHF)
 
 ! Perform a one-shot second-order Green function calculation
@@ -8,7 +8,8 @@ subroutine G0F2(BSE,TDA,dBSE,dTDA,singlet,triplet,linearize,eta,regularize, &
 
 ! Input variables
 
-  logical,intent(in)            :: BSE
+  logical,intent(in)            :: dophBSE
+  logical,intent(in)            :: doppBSE
   logical,intent(in)            :: TDA
   logical,intent(in)            :: dBSE
   logical,intent(in)            :: dTDA
@@ -33,8 +34,8 @@ subroutine G0F2(BSE,TDA,dBSE,dTDA,singlet,triplet,linearize,eta,regularize, &
 
   double precision              :: Ec
   double precision              :: EcBSE(nspin)
-  double precision,allocatable  :: eGF2(:)
-  double precision,allocatable  :: eGF2lin(:)
+  double precision,allocatable  :: eGF(:)
+  double precision,allocatable  :: eGFlin(:)
   double precision,allocatable  :: SigC(:)
   double precision,allocatable  :: Z(:)
 
@@ -48,7 +49,7 @@ subroutine G0F2(BSE,TDA,dBSE,dTDA,singlet,triplet,linearize,eta,regularize, &
 
 ! Memory allocation
 
-  allocate(SigC(nBas),Z(nBas),eGF2(nBas),eGF2lin(nBas))
+  allocate(SigC(nBas),Z(nBas),eGF(nBas),eGFlin(nBas))
 
   if(linearize) then 
   
@@ -69,33 +70,46 @@ subroutine G0F2(BSE,TDA,dBSE,dTDA,singlet,triplet,linearize,eta,regularize, &
 
   end if
 
-  eGF2lin(:) = eHF(:) + Z(:)*SigC(:)
+  eGFlin(:) = eHF(:) + Z(:)*SigC(:)
   
   if(linearize) then
 
-    eGF2(:) = eGF2lin(:)
+    eGF(:) = eGFlin(:)
 
  else
 
     write(*,*) ' *** Quasiparticle energies obtained by root search (experimental) *** '
     write(*,*)
 
-    call QP_graph_GF2(eta,nBas,nC,nO,nV,nR,nS,eHF,eGF2lin,ERI,eGF2)
+    call QP_graph_GF2(eta,nBas,nC,nO,nV,nR,nS,eHF,eGFlin,ERI,eGF)
 
 
   end if
 
   ! Print results
 
-  call MP2(regularize,nBas,nC,nO,nV,nR,ERI,ENuc,EHF,eGF2,Ec)
-  call print_G0F2(nBas,nO,eHF,SigC,eGF2,Z,ENuc,ERHF,Ec)
+  call MP2(regularize,nBas,nC,nO,nV,nR,ERI,ENuc,EHF,eGF,Ec)
+  call print_G0F2(nBas,nO,eHF,SigC,eGF,Z,ENuc,ERHF,Ec)
 
 ! Perform BSE2 calculation
 
-  if(BSE) then
+  if(dophBSE) then 
+  
+    call GF2_phBSE2(TDA,dBSE,dTDA,singlet,triplet,eta,nBas,nC,nO,nV,nR,nS,ERI,dipole_int,eGF,EcBSE)
 
-    call GF2_phBSE2(TDA,dBSE,dTDA,singlet,triplet,eta,nBas,nC,nO,nV,nR,nS,ERI,dipole_int,eHF,eGF2,EcBSE)
+    write(*,*)
+    write(*,*)'-------------------------------------------------------------------------------'
+    write(*,'(2X,A50,F20.10)') 'Tr@phBSE@G0F2  correlation energy (singlet) =',EcBSE(1)
+    write(*,'(2X,A50,F20.10)') 'Tr@phBSE@G0F2  correlation energy (triplet) =',EcBSE(2)
+    write(*,'(2X,A50,F20.10)') 'Tr@phBSE@G0F2  correlation energy           =',sum(EcBSE(:))
+    write(*,'(2X,A50,F20.10)') 'Tr@phBSE@G0F2  total energy                 =',ENuc + EHF + sum(EcBSE(:))
+    write(*,*)'-------------------------------------------------------------------------------'
+    write(*,*)
 
   end if
+
+! Perform ppBSE2 calculation
+
+  if(doppBSE) call GF2_ppBSE2(TDA,dBSE,dTDA,singlet,triplet,eta,nBas,nC,nO,nV,nR,nS,ERI,dipole_int,eGF,EcBSE)
 
 end subroutine 

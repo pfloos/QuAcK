@@ -1,4 +1,4 @@
-subroutine evGF2(BSE,TDA,dBSE,dTDA,maxSCF,thresh,max_diis,singlet,triplet, &
+subroutine evGF2(dophBSE,doppBSE,TDA,dBSE,dTDA,maxSCF,thresh,max_diis,singlet,triplet, &
                  linearize,eta,regularize,nBas,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,dipole_int,eHF)
 
 ! Perform eigenvalue self-consistent second-order Green function calculation
@@ -8,7 +8,8 @@ subroutine evGF2(BSE,TDA,dBSE,dTDA,maxSCF,thresh,max_diis,singlet,triplet, &
 
 ! Input variables
 
-  logical,intent(in)            :: BSE
+  logical,intent(in)            :: dophBSE
+  logical,intent(in)            :: doppBSE
   logical,intent(in)            :: TDA
   logical,intent(in)            :: dBSE
   logical,intent(in)            :: dTDA
@@ -41,7 +42,7 @@ subroutine evGF2(BSE,TDA,dBSE,dTDA,maxSCF,thresh,max_diis,singlet,triplet, &
   double precision              :: EcBSE(nspin)
   double precision              :: Conv
   double precision              :: rcond
-  double precision,allocatable  :: eGF2(:)
+  double precision,allocatable  :: eGF(:)
   double precision,allocatable  :: eOld(:)
   double precision,allocatable  :: SigC(:)
   double precision,allocatable  :: Z(:)
@@ -58,7 +59,7 @@ subroutine evGF2(BSE,TDA,dBSE,dTDA,maxSCF,thresh,max_diis,singlet,triplet, &
 
 ! Memory allocation
 
-  allocate(SigC(nBas),Z(nBas),eGF2(nBas),eOld(nBas),error_diis(nBas,max_diis),e_diis(nBas,max_diis))
+  allocate(SigC(nBas),Z(nBas),eGF(nBas),eOld(nBas),error_diis(nBas,max_diis),e_diis(nBas,max_diis))
 
 ! Initialization
 
@@ -67,7 +68,7 @@ subroutine evGF2(BSE,TDA,dBSE,dTDA,maxSCF,thresh,max_diis,singlet,triplet, &
   n_diis          = 0
   e_diis(:,:)     = 0d0
   error_diis(:,:) = 0d0
-  eGF2(:)         = eHF(:)
+  eGF(:)         = eHF(:)
   eOld(:)         = eHF(:)
   rcond           = 0d0
 
@@ -81,39 +82,39 @@ subroutine evGF2(BSE,TDA,dBSE,dTDA,maxSCF,thresh,max_diis,singlet,triplet, &
 
     if(regularize) then 
 
-      call regularized_self_energy_GF2_diag(eta,nBas,nC,nO,nV,nR,nS,eHF,eGF2,ERI,SigC,Z)
+      call regularized_self_energy_GF2_diag(eta,nBas,nC,nO,nV,nR,nS,eHF,eGF,ERI,SigC,Z)
 
     else
 
-      call GF2_self_energy_diag(eta,nBas,nC,nO,nV,nR,nS,eHF,eGF2,ERI,SigC,Z)
+      call GF2_self_energy_diag(eta,nBas,nC,nO,nV,nR,nS,eHF,eGF,ERI,SigC,Z)
 
     end if
 
     if(linearize) then
 
-      eGF2(:) = eHF(:) + Z(:)*SigC(:)
+      eGF(:) = eHF(:) + Z(:)*SigC(:)
 
     else
 
-      eGF2(:) = eHF(:) + SigC(:)
+      eGF(:) = eHF(:) + SigC(:)
 
     end if
 
-    Conv = maxval(abs(eGF2 - eOld))
+    Conv = maxval(abs(eGF - eOld))
 
     ! Print results
 
-    call MP2(regularize,nBas,nC,nO,nV,nR,ERI,ENuc,EHF,eGF2,Ec)
-    call print_evGF2(nBas,nO,nSCF,Conv,eHF,SigC,Z,eGF2,ENuc,ERHF,Ec)
+    call MP2(regularize,nBas,nC,nO,nV,nR,ERI,ENuc,EHF,eGF,Ec)
+    call print_evGF2(nBas,nO,nSCF,Conv,eHF,SigC,Z,eGF,ENuc,ERHF,Ec)
 
     ! DIIS extrapolation
 
     n_diis = min(n_diis+1,max_diis)
-    call DIIS_extrapolation(rcond,nBas,nBas,n_diis,error_diis,e_diis,eGF2-eOld,eGF2)
+    call DIIS_extrapolation(rcond,nBas,nBas,n_diis,error_diis,e_diis,eGF-eOld,eGF)
 
     if(abs(rcond) < 1d-15) n_diis = 0
 
-    eOld(:) = eGF2(:)
+    eOld(:) = eGF(:)
 
     ! Increment
 
@@ -140,10 +141,23 @@ subroutine evGF2(BSE,TDA,dBSE,dTDA,maxSCF,thresh,max_diis,singlet,triplet, &
 
 ! Perform BSE2 calculation
 
-  if(BSE) then
+  if(dophBSE) then 
+  
+    call GF2_phBSE2(TDA,dBSE,dTDA,singlet,triplet,eta,nBas,nC,nO,nV,nR,nS,ERI,dipole_int,eGF,EcBSE)
 
-    call GF2_phBSE2(TDA,dBSE,dTDA,singlet,triplet,eta,nBas,nC,nO,nV,nR,nS,ERI,dipole_int,eHF,eGF2,EcBSE)
+    write(*,*)
+    write(*,*)'-------------------------------------------------------------------------------'
+    write(*,'(2X,A50,F20.10)') 'Tr@phBSE@evGF2 correlation energy (singlet) =',EcBSE(1)
+    write(*,'(2X,A50,F20.10)') 'Tr@phBSE@evGF2 correlation energy (triplet) =',EcBSE(2)
+    write(*,'(2X,A50,F20.10)') 'Tr@phBSE@evGF2 correlation energy           =',sum(EcBSE(:))
+    write(*,'(2X,A50,F20.10)') 'Tr@phBSE@evGF2 total energy                 =',ENuc + EHF + sum(EcBSE(:))
+    write(*,*)'-------------------------------------------------------------------------------'
+    write(*,*)
 
   end if
+
+! Perform ppBSE2 calculation
+
+  if(doppBSE) call GF2_ppBSE2(TDA,dBSE,dTDA,singlet,triplet,eta,nBas,nC,nO,nV,nR,nS,ERI,dipole_int,eGF,EcBSE)
 
 end subroutine 

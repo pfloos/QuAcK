@@ -81,7 +81,7 @@ subroutine GF(doG0F2,doevGF2,doqsGF2,doG0F3,doevGF3,unrestricted,renorm,maxSCF,t
                  nBas,nC,nO,nV,nR,nS,ENuc,EHF,ERI_aaaa,ERI_aabb,ERI_bbbb,  & 
                  dipole_int_aa,dipole_int_bb,epsHF)
     else
-      call G0F2(dophBSE,TDA,dBSE,dTDA,singlet,triplet,linearize,eta,regularize, & 
+      call G0F2(dophBSE,doppBSE,TDA,dBSE,dTDA,singlet,triplet,linearize,eta,regularize, & 
                 nBas,nC,nO,nV,nR,nS,ENuc,EHF,ERI,dipole_int,epsHF)
     end if
     call cpu_time(end_GF)
@@ -104,7 +104,7 @@ subroutine GF(doG0F2,doevGF2,doqsGF2,doG0F3,doevGF3,unrestricted,renorm,maxSCF,t
                   eta,regularize,nBas,nC,nO,nV,nR,nS,ENuc,EHF,ERI_aaaa,ERI_aabb,ERI_bbbb, & 
                   dipole_int_aa,dipole_int_bb,cHF,epsHF)
     else
-      call evGF2(dophBSE,TDA,dBSE,dTDA,maxSCF,thresh,max_diis, & 
+      call evGF2(dophBSE,doppBSE,TDA,dBSE,dTDA,maxSCF,thresh,max_diis, & 
                  singlet,triplet,linearize,eta,regularize,nBas,nC,nO,nV,nR,nS,ENuc,EHF, & 
                  ERI,dipole_int,epsHF)
     end if
@@ -128,7 +128,7 @@ subroutine GF(doG0F2,doevGF2,doqsGF2,doG0F3,doevGF3,unrestricted,renorm,maxSCF,t
                   nNuc,ZNuc,rNuc,ENuc,nBas,nC,nO,nV,nR,nS,EHF,S,X,T,V,Hc,ERI_AO,                        & 
                   ERI_aaaa,ERI_aabb,ERI_bbbb,dipole_int_AO,dipole_int_aa,dipole_int_bb,PHF,cHF,epsHF)
     else
-      call qsGF2(maxSCF,thresh,max_diis,dophBSE,TDA,dBSE,dTDA,singlet,triplet,eta,regularize,nNuc,ZNuc,rNuc,ENuc, & 
+      call qsGF2(maxSCF,thresh,max_diis,dophBSE,doppBSE,TDA,dBSE,dTDA,singlet,triplet,eta,regularize,nNuc,ZNuc,rNuc,ENuc, & 
                  nBas,nC,nO,nV,nR,nS,EHF,S,X,T,V,Hc,ERI_AO,ERI,dipole_int_AO,dipole_int,PHF,cHF,epsHF)
     end if
     call cpu_time(end_GF)

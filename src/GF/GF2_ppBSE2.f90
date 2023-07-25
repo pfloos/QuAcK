@@ -1,4 +1,4 @@
-subroutine GW_ppBSE(TDA_W,TDA,dBSE,dTDA,singlet,triplet,eta,nBas,nC,nO,nV,nR,nS,ERI,dipole_int,eW,eGW,EcBSE)
+subroutine GF2_ppBSE2(TDA,dBSE,dTDA,singlet,triplet,eta,nBas,nC,nO,nV,nR,nS,ERI,dipole_int,eGF,EcBSE)
 
 ! Compute the Bethe-Salpeter excitation energies at the pp level
 
@@ -7,7 +7,6 @@ subroutine GW_ppBSE(TDA_W,TDA,dBSE,dTDA,singlet,triplet,eta,nBas,nC,nO,nV,nR,nS,
 
 ! Input variables
 
-  logical,intent(in)            :: TDA_W
   logical,intent(in)            :: TDA
   logical,intent(in)            :: dBSE
   logical,intent(in)            :: dTDA
@@ -21,30 +20,21 @@ subroutine GW_ppBSE(TDA_W,TDA,dBSE,dTDA,singlet,triplet,eta,nBas,nC,nO,nV,nR,nS,
   integer,intent(in)            :: nV
   integer,intent(in)            :: nR
   integer,intent(in)            :: nS
-  double precision,intent(in)   :: eW(nBas)
-  double precision,intent(in)   :: eGW(nBas)
+  double precision,intent(in)   :: eGF(nBas)
   double precision,intent(in)   :: ERI(nBas,nBas,nBas,nBas)
   double precision,intent(in)   :: dipole_int(nBas,nBas,ncart)
 
 ! Local variables
 
   integer                       :: ispin
-  integer                       :: isp_W
 
   logical                       :: dRPA   = .false.
-  logical                       :: dRPA_W = .true.
 
   integer                       :: nOO
   integer                       :: nVV
 
   double precision,allocatable  :: Aph(:,:)
   double precision,allocatable  :: Bph(:,:)
-
-  double precision              :: EcRPA
-  double precision,allocatable  :: OmRPA(:)
-  double precision,allocatable  :: XpY_RPA(:,:)
-  double precision,allocatable  :: XmY_RPA(:,:)
-  double precision,allocatable  :: rho_RPA(:,:,:)
 
   double precision,allocatable  :: Bpp(:,:)
   double precision,allocatable  :: Cpp(:,:)
@@ -65,24 +55,6 @@ subroutine GW_ppBSE(TDA_W,TDA,dBSE,dTDA,singlet,triplet,eta,nBas,nC,nO,nV,nR,nS,
 ! Output variables
 
   double precision,intent(out)  :: EcBSE(nspin)
-
-!---------------------------------
-! Compute (singlet) RPA screening 
-!---------------------------------
-
-  isp_W = 1
-  EcRPA = 0d0
-
-  allocate(OmRPA(nS),XpY_RPA(nS,nS),XmY_RPA(nS,nS),rho_RPA(nBas,nBas,nS), &
-           Aph(nS,nS),Bph(nS,nS))
- 
-                 call phLR_A(isp_W,dRPA_W,nBas,nC,nO,nV,nR,nS,1d0,eW,ERI,Aph)
-  if(.not.TDA_W) call phLR_B(isp_W,dRPA_W,nBas,nC,nO,nV,nR,nS,1d0,ERI,Bph)
-
-  call phLR(TDA_W,nS,Aph,Bph,EcRPA,OmRPA,XpY_RPA,XmY_RPA)
-  call GW_excitation_density(nBas,nC,nO,nR,nS,ERI,XpY_RPA,rho_RPA)
-
-  deallocate(XpY_RPA,XmY_RPA,Aph,Bph)
 
 !-------------------
 ! Singlet manifold
@@ -108,13 +80,13 @@ subroutine GW_ppBSE(TDA_W,TDA,dBSE,dTDA,singlet,triplet,eta,nBas,nC,nO,nV,nR,nS,
 
     ! Compute BSE excitation energies
 
-    if(.not.TDA) call GW_ppBSE_static_kernel_B(ispin,eta,nBas,nC,nO,nV,nR,nS,nOO,nVV,1d0,ERI,OmRPA,rho_RPA,KB_sta)
-                 call GW_ppBSE_static_kernel_C(ispin,eta,nBas,nC,nO,nV,nR,nS,nVV,1d0,ERI,OmRPA,rho_RPA,KC_sta)
-                 call GW_ppBSE_static_kernel_D(ispin,eta,nBas,nC,nO,nV,nR,nS,nOO,1d0,ERI,OmRPA,rho_RPA,KD_sta)
+    if(.not.TDA) call GF2_ppBSE2_static_kernel_B(ispin,eta,nBas,nC,nO,nV,nR,nS,nOO,nVV,1d0,ERI,KB_sta)
+                 call GF2_ppBSE2_static_kernel_C(ispin,eta,nBas,nC,nO,nV,nR,nS,nVV,1d0,ERI,KC_sta)
+                 call GF2_ppBSE2_static_kernel_D(ispin,eta,nBas,nC,nO,nV,nR,nS,nOO,1d0,ERI,KD_sta)
 
     if(.not.TDA) call ppLR_B(ispin,nBas,nC,nO,nV,nR,nOO,nVV,1d0,ERI,Bpp)
-                 call ppLR_C(ispin,nBas,nC,nO,nV,nR,nVV,1d0,eGW,ERI,Cpp)
-                 call ppLR_D(ispin,nBas,nC,nO,nV,nR,nOO,1d0,eGW,ERI,Dpp)
+                 call ppLR_C(ispin,nBas,nC,nO,nV,nR,nVV,1d0,eGF,ERI,Cpp)
+                 call ppLR_D(ispin,nBas,nC,nO,nV,nR,nOO,1d0,eGF,ERI,Dpp)
 
     Bpp(:,:) = Bpp(:,:) + KB_sta(:,:)
     Cpp(:,:) = Cpp(:,:) + KC_sta(:,:)
@@ -128,9 +100,9 @@ subroutine GW_ppBSE(TDA_W,TDA,dBSE,dTDA,singlet,triplet,eta,nBas,nC,nO,nV,nR,nS,
     ! Compute the dynamical screening at the ppBSE level !
     !----------------------------------------------------!
 
-    if(dBSE) &
-        call GW_ppBSE_dynamic_perturbation(ispin,dTDA,eta,nBas,nC,nO,nV,nR,nS,nOO,nVV,eW,eGW,ERI,dipole_int,OmRPA,rho_RPA, &
-                                           Om1,X1,Y1,Om2,X2,Y2,KB_sta,KC_sta,KD_sta)
+!   if(dBSE) &
+!       call GF2_ppBSE2_dynamic_perturbation(ispin,dTDA,eta,nBas,nC,nO,nV,nR,nS,nOO,nVV,eGF,ERI,dipole_int, &
+!                                            Om1,X1,Y1,Om2,X2,Y2,KB_sta,KC_sta,KD_sta)
 
     deallocate(Om1,X1,Y1,Om2,X2,Y2,Bpp,Cpp,Dpp,KB_sta,KC_sta,KD_sta)
 
@@ -160,14 +132,14 @@ subroutine GW_ppBSE(TDA_W,TDA,dBSE,dTDA,singlet,triplet,eta,nBas,nC,nO,nV,nR,nS,
 
     ! Compute BSE excitation energies
 
-    if(.not.TDA) call GW_ppBSE_static_kernel_B(ispin,eta,nBas,nC,nO,nV,nR,nS,nOO,nVV,1d0,ERI,OmRPA,rho_RPA,KB_sta)
-                 call GW_ppBSE_static_kernel_C(ispin,eta,nBas,nC,nO,nV,nR,nS,nVV,1d0,ERI,OmRPA,rho_RPA,KC_sta)
-                 call GW_ppBSE_static_kernel_D(ispin,eta,nBas,nC,nO,nV,nR,nS,nOO,1d0,ERI,OmRPA,rho_RPA,KD_sta)
+    if(.not.TDA) call GF2_ppBSE2_static_kernel_B(ispin,eta,nBas,nC,nO,nV,nR,nS,nOO,nVV,1d0,ERI,KB_sta)
+                 call GF2_ppBSE2_static_kernel_C(ispin,eta,nBas,nC,nO,nV,nR,nS,nVV,1d0,ERI,KC_sta)
+                 call GF2_ppBSE2_static_kernel_D(ispin,eta,nBas,nC,nO,nV,nR,nS,nOO,1d0,ERI,KD_sta)
 
 
     if(.not.TDA) call ppLR_B(ispin,nBas,nC,nO,nV,nR,nOO,nVV,1d0,ERI,Bpp)
-                 call ppLR_C(ispin,nBas,nC,nO,nV,nR,nVV,1d0,eGW,ERI,Cpp)
-                 call ppLR_D(ispin,nBas,nC,nO,nV,nR,nOO,1d0,eGW,ERI,Dpp)
+                 call ppLR_C(ispin,nBas,nC,nO,nV,nR,nVV,1d0,eGF,ERI,Cpp)
+                 call ppLR_D(ispin,nBas,nC,nO,nV,nR,nOO,1d0,eGF,ERI,Dpp)
 
     Bpp(:,:) = Bpp(:,:) + KB_sta(:,:)
     Cpp(:,:) = Cpp(:,:) + KC_sta(:,:)
@@ -181,9 +153,9 @@ subroutine GW_ppBSE(TDA_W,TDA,dBSE,dTDA,singlet,triplet,eta,nBas,nC,nO,nV,nR,nS,
     ! Compute the dynamical screening at the ppBSE level !
     !----------------------------------------------------!
 
-    if(dBSE) &
-        call GW_ppBSE_dynamic_perturbation(ispin,dTDA,eta,nBas,nC,nO,nV,nR,nS,nOO,nVV,eW,eGW,ERI,dipole_int,OmRPA,rho_RPA, &
-                                           Om1,X1,Y1,Om2,X2,Y2,KB_sta,KC_sta,KD_sta)
+!   if(dBSE) &
+!       call GF2_ppBSE2_dynamic_perturbation(ispin,dTDA,eta,nBas,nC,nO,nV,nR,nS,nOO,nVV,eGF,ERI,dipole_int, &
+!                                            Om1,X1,Y1,Om2,X2,Y2,KB_sta,KC_sta,KD_sta)
 
     deallocate(Om1,X1,Y1,Om2,X2,Y2,Bpp,Cpp,Dpp,KB_sta,KC_sta,KD_sta)
 

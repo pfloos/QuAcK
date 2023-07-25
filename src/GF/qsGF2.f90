@@ -1,4 +1,4 @@
-subroutine qsGF2(maxSCF,thresh,max_diis,BSE,TDA,dBSE,dTDA,singlet,triplet, & 
+subroutine qsGF2(maxSCF,thresh,max_diis,dophBSE,doppBSE,TDA,dBSE,dTDA,singlet,triplet, & 
                 eta,regularize,nNuc,ZNuc,rNuc,ENuc,nBas,nC,nO,nV,nR,nS,ERHF, &
                 S,X,T,V,Hc,ERI_AO,ERI_MO,dipole_int_AO,dipole_int_MO,PHF,cHF,eHF)
 
@@ -12,7 +12,8 @@ subroutine qsGF2(maxSCF,thresh,max_diis,BSE,TDA,dBSE,dTDA,singlet,triplet, &
   integer,intent(in)            :: maxSCF
   integer,intent(in)            :: max_diis
   double precision,intent(in)   :: thresh
-  logical,intent(in)            :: BSE
+  logical,intent(in)            :: dophBSE
+  logical,intent(in)            :: doppBSE
   logical,intent(in)            :: TDA
   logical,intent(in)            :: dBSE
   logical,intent(in)            :: dTDA
@@ -63,7 +64,7 @@ subroutine qsGF2(maxSCF,thresh,max_diis,BSE,TDA,dBSE,dTDA,singlet,triplet, &
   double precision,allocatable  :: F_diis(:,:)
   double precision,allocatable  :: c(:,:)
   double precision,allocatable  :: cp(:,:)
-  double precision,allocatable  :: eGF2(:)
+  double precision,allocatable  :: eGF(:)
   double precision,allocatable  :: eOld(:)
   double precision,allocatable  :: P(:,:)
   double precision,allocatable  :: F(:,:)
@@ -104,7 +105,7 @@ subroutine qsGF2(maxSCF,thresh,max_diis,BSE,TDA,dBSE,dTDA,singlet,triplet, &
 
 ! Memory allocation
 
-  allocate(eGF2(nBas),eOld(nbas),c(nBas,nBas),cp(nBas,nBas),P(nBas,nBas),F(nBas,nBas),Fp(nBas,nBas), &
+  allocate(eGF(nBas),eOld(nbas),c(nBas,nBas),cp(nBas,nBas),P(nBas,nBas),F(nBas,nBas),Fp(nBas,nBas), &
            J(nBas,nBas),K(nBas,nBas),SigC(nBas,nBas),SigCp(nBas,nBas),SigCm(nBas,nBas),Z(nBas),      & 
            error(nBas,nBas),error_diis(nBasSq,max_diis),F_diis(nBasSq,max_diis))
 
@@ -116,7 +117,7 @@ subroutine qsGF2(maxSCF,thresh,max_diis,BSE,TDA,dBSE,dTDA,singlet,triplet, &
   Conv            = 1d0
   P(:,:)          = PHF(:,:)
   eOld(:)         = eHF(:)
-  eGF2(:)         = eHF(:)
+  eGF(:)         = eHF(:)
   c(:,:)          = cHF(:,:)
   F_diis(:,:)     = 0d0
   error_diis(:,:) = 0d0
@@ -148,11 +149,11 @@ subroutine qsGF2(maxSCF,thresh,max_diis,BSE,TDA,dBSE,dTDA,singlet,triplet, &
 
     if(regularize) then
 
-      call regularized_self_energy_GF2(eta,nBas,nC,nO,nV,nR,nS,eHF,eGF2,ERI_MO,SigC,Z)
+      call regularized_self_energy_GF2(eta,nBas,nC,nO,nV,nR,nS,eHF,eGF,ERI_MO,SigC,Z)
 
     else
 
-      call GF2_self_energy(eta,nBas,nC,nO,nV,nR,nS,eHF,eGF2,ERI_MO,SigC,Z)
+      call GF2_self_energy(eta,nBas,nC,nO,nV,nR,nS,eHF,eGF,ERI_MO,SigC,Z)
 
     end if
 
@@ -184,7 +185,7 @@ subroutine qsGF2(maxSCF,thresh,max_diis,BSE,TDA,dBSE,dTDA,singlet,triplet, &
 
     Fp = matmul(transpose(X),matmul(F,X))
     cp(:,:) = Fp(:,:)
-    call diagonalize_matrix(nBas,cp,eGF2)
+    call diagonalize_matrix(nBas,cp,eGF)
     c = matmul(X,cp)
     SigCp = matmul(transpose(c),matmul(SigCp,c))
 
@@ -194,8 +195,8 @@ subroutine qsGF2(maxSCF,thresh,max_diis,BSE,TDA,dBSE,dTDA,singlet,triplet, &
 
     ! Save quasiparticles energy for next cycle
 
-    Conv = maxval(abs(eGF2 - eOld))
-    eOld(:) = eGF2(:)
+    Conv = maxval(abs(eGF - eOld))
+    eOld(:) = eGF(:)
 
     !------------------------------------------------------------------------
     !   Compute total energy
@@ -219,7 +220,7 @@ subroutine qsGF2(maxSCF,thresh,max_diis,BSE,TDA,dBSE,dTDA,singlet,triplet, &
 
     ! Correlation energy
 
-    call MP2(regularize,nBas,nC,nO,nV,nR,ERI_MO,ENuc,EqsGF2,eGF2,Ec)
+    call MP2(regularize,nBas,nC,nO,nV,nR,ERI_MO,ENuc,EqsGF2,eGF,Ec)
 
     ! Total energy
 
@@ -231,7 +232,7 @@ subroutine qsGF2(maxSCF,thresh,max_diis,BSE,TDA,dBSE,dTDA,singlet,triplet, &
     !------------------------------------------------------------------------
 
     call dipole_moment(nBas,P,nNuc,ZNuc,rNuc,dipole_int_AO,dipole)
-    call print_qsGF2(nBas,nO,nSCF,Conv,thresh,eHF,eGF2,c,P,T,V,J,K,F,SigCp,Z, & 
+    call print_qsGF2(nBas,nO,nSCF,Conv,thresh,eHF,eGF,c,P,T,V,J,K,F,SigCp,Z, & 
                      ENuc,ET,EV,EJ,Ex,Ec,EqsGF2,dipole)
 
   enddo
@@ -259,19 +260,24 @@ subroutine qsGF2(maxSCF,thresh,max_diis,BSE,TDA,dBSE,dTDA,singlet,triplet, &
 
 ! Perform BSE calculation
 
-  if(BSE) then
+  if(dophBSE) then
 
-    call GF2_phBSE2(TDA,dBSE,dTDA,singlet,triplet,eta,nBas,nC,nO,nV,nR,nS,ERI_MO,dipole_int_MO,eHF,eGF2,EcBSE)
+    call GF2_phBSE2(TDA,dBSE,dTDA,singlet,triplet,eta,nBas,nC,nO,nV,nR,nS,ERI_MO,dipole_int_MO,eGF,EcBSE)
 
     write(*,*)
     write(*,*)'-------------------------------------------------------------------------------'
-    write(*,'(2X,A50,F20.10)') 'Tr@BSE@qsGF2 correlation energy (singlet) =',EcBSE(1)
-    write(*,'(2X,A50,F20.10)') 'Tr@BSE@qsGF2 correlation energy (triplet) =',EcBSE(2)
-    write(*,'(2X,A50,F20.10)') 'Tr@BSE@qsGF2 correlation energy           =',sum(EcBSE(:))
-    write(*,'(2X,A50,F20.10)') 'Tr@BSE@qsGF2 total energy                 =',ENuc + EqsGF2 + sum(EcBSE(:))
+    write(*,'(2X,A50,F20.10)') 'Tr@phBSE@qsGF2 correlation energy (singlet) =',EcBSE(1)
+    write(*,'(2X,A50,F20.10)') 'Tr@phBSE@qsGF2 correlation energy (triplet) =',EcBSE(2)
+    write(*,'(2X,A50,F20.10)') 'Tr@phBSE@qsGF2 correlation energy           =',sum(EcBSE(:))
+    write(*,'(2X,A50,F20.10)') 'Tr@phBSE@qsGF2 total energy                 =',ENuc + EqsGF2 + sum(EcBSE(:))
     write(*,*)'-------------------------------------------------------------------------------'
     write(*,*)
 
   end if
+
+
+! Perform ppBSE2 calculation
+
+  if(doppBSE) call GF2_ppBSE2(TDA,dBSE,dTDA,singlet,triplet,eta,nBas,nC,nO,nV,nR,nS,ERI_MO,dipole_int_MO,eGF,EcBSE)
 
 end subroutine 
