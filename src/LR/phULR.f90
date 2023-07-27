@@ -57,8 +57,8 @@ subroutine phULR(ispin,dRPA,TDA,BSE,nBas,nC,nO,nV,nR,nSa,nSb,nSt,nS_sc,lambda,e,
   call phULR_A(ispin,dRPA,nBas,nC,nO,nV,nR,nSa,nSb,nSt,lambda,e,ERI_aaaa,ERI_aabb,ERI_bbbb,Aph)
 
   if(BSE) & 
-    call unrestricted_Bethe_Salpeter_A_matrix(ispin,nBas,nC,nO,nV,nR,nSa,nSb,nSt,nS_sc,lambda,e, & 
-                                              ERI_aaaa,ERI_aabb,ERI_bbbb,OmRPA,rho_RPA,Aph)
+    call UGW_phBSE_static_kernel_A(ispin,nBas,nC,nO,nV,nR,nSa,nSb,nSt,nS_sc,lambda,e, & 
+                                   ERI_aaaa,ERI_aabb,ERI_bbbb,OmRPA,rho_RPA,Aph)
 
 ! Tamm-Dancoff approximation
 
@@ -75,8 +75,8 @@ subroutine phULR(ispin,dRPA,TDA,BSE,nBas,nC,nO,nV,nR,nSa,nSb,nSt,nS_sc,lambda,e,
     call phULR_B(ispin,dRPA,nBas,nC,nO,nV,nR,nSa,nSb,nSt,lambda,ERI_aaaa,ERI_aabb,ERI_bbbb,Bph)
 
     if(BSE) &
-      call unrestricted_Bethe_Salpeter_B_matrix(ispin,nBas,nC,nO,nV,nR,nSa,nSb,nSt,nS_sc,lambda, & 
-                                                ERI_aaaa,ERI_aabb,ERI_bbbb,OmRPA,rho_RPA,Bph)
+      call UGW_phBSE_static_kernel_B(ispin,nBas,nC,nO,nV,nR,nSa,nSb,nSt,nS_sc,lambda, & 
+                                     ERI_aaaa,ERI_aabb,ERI_bbbb,OmRPA,rho_RPA,Bph)
 
   ! Build A + B and A - B matrices 
 

@@ -1,7 +1,7 @@
-subroutine unrestricted_Bethe_Salpeter_A_matrix(ispin,eta,nBas,nC,nO,nV,nR,nSa,nSb,nSt,nS_sc,lambda,eGW, & 
-                                                ERI_aaaa,ERI_aabb,ERI_bbbb,Omega,rho,A_lr)
+subroutine UGW_phBSE_static_kernel_B(ispin,eta,nBas,nC,nO,nV,nR,nSa,nSb,nSt,nS_sc,lambda, & 
+                                     ERI_aaaa,ERI_aabb,ERI_bbbb,Omega,rho,B_lr)
 
-! Compute the extra term for Bethe-Salpeter equation for linear response in the unrestricted formalism
+! Compute the extra term for Bethe-Salpeter equation for linear response 
 
   implicit none
   include 'parameters.h'
@@ -20,7 +20,6 @@ subroutine unrestricted_Bethe_Salpeter_A_matrix(ispin,eta,nBas,nC,nO,nV,nR,nSa,n
   integer,intent(in)            :: nS_sc
   double precision,intent(in)   :: eta
   double precision,intent(in)   :: lambda
-  double precision,intent(in)   :: eGW(nBas,nspin)
   double precision,intent(in)   :: ERI_aaaa(nBas,nBas,nBas,nBas)
   double precision,intent(in)   :: ERI_aabb(nBas,nBas,nBas,nBas)
   double precision,intent(in)   :: ERI_bbbb(nBas,nBas,nBas,nBas)
@@ -35,7 +34,7 @@ subroutine unrestricted_Bethe_Salpeter_A_matrix(ispin,eta,nBas,nC,nO,nV,nR,nSa,n
 
 ! Output variables
 
-  double precision,intent(out)  :: A_lr(nSt,nSt)
+  double precision,intent(out)  :: B_lr(nSt,nSt)
 
 !--------------------------------------------------!
 ! Build BSE matrix for spin-conserving transitions !
@@ -57,16 +56,17 @@ subroutine unrestricted_Bethe_Salpeter_A_matrix(ispin,eta,nBas,nC,nO,nV,nR,nSa,n
             chi = 0d0
             do kc=1,nS_sc
               eps = Omega(kc)**2 + eta**2
-              chi = chi + rho(i,j,kc,1)*rho(a,b,kc,1)*Omega(kc)/eps
+              chi = chi + rho(i,b,kc,1)*rho(a,j,kc,1)*Omega(kc)/eps   
             enddo
  
-            A_lr(ia,jb) = A_lr(ia,jb) - lambda*ERI_aaaa(i,b,j,a) + 2d0*lambda*chi
+            B_lr(ia,jb) = B_lr(ia,jb) - lambda*ERI_aaaa(i,j,b,a) + 2d0*lambda*chi
  
           enddo
         enddo
       enddo
     enddo
-
+ 
+ 
     ! bbbb block
  
     ia = 0
@@ -81,10 +81,10 @@ subroutine unrestricted_Bethe_Salpeter_A_matrix(ispin,eta,nBas,nC,nO,nV,nR,nSa,n
             chi = 0d0
             do kc=1,nS_sc
               eps = Omega(kc)**2 + eta**2
-              chi = chi + rho(i,j,kc,2)*rho(a,b,kc,2)*Omega(kc)/eps 
+              chi = chi + rho(i,b,kc,2)*rho(a,j,kc,2)*Omega(kc)/eps
             enddo
  
-            A_lr(nSa+ia,nSa+jb) = A_lr(nSa+ia,nSa+jb) - lambda*ERI_bbbb(i,b,j,a) + 2d0*lambda*chi
+            B_lr(nSa+ia,nSa+jb) = B_lr(nSa+ia,nSa+jb) - lambda*ERI_bbbb(i,j,b,a) + 2d0*lambda*chi
  
           enddo
         enddo
@@ -93,41 +93,18 @@ subroutine unrestricted_Bethe_Salpeter_A_matrix(ispin,eta,nBas,nC,nO,nV,nR,nSa,n
 
   end if
 
+
 !--------------------------------------------!
 ! Build BSE matrix for spin-flip transitions !
 !--------------------------------------------!
 
   if(ispin == 2) then
 
-    ! abab block
+    ! abba block
 
     ia = 0
     do i=nC(1)+1,nO(1)
       do a=nO(2)+1,nBas-nR(2)
-        ia = ia + 1
-        jb = 0
-        do j=nC(1)+1,nO(1)
-          do b=nO(2)+1,nBas-nR(2)
-            jb = jb + 1
-
-            chi = 0d0
-            do kc=1,nS_sc
-              eps = Omega(kc)**2 + eta**2
-              chi = chi + rho(i,j,kc,1)*rho(a,b,kc,2)*Omega(kc)/eps
-            enddo
-
-            A_lr(ia,jb) = A_lr(ia,jb) - lambda*ERI_aabb(i,b,j,a) + 2d0*lambda*chi
-
-          end  do
-        end  do
-      end  do
-    end  do
-
-    ! baba block
-
-    ia = 0
-    do i=nC(2)+1,nO(2)
-      do a=nO(1)+1,nBas-nR(1)
         ia = ia + 1
         jb = 0
         do j=nC(2)+1,nO(2)
@@ -137,10 +114,34 @@ subroutine unrestricted_Bethe_Salpeter_A_matrix(ispin,eta,nBas,nC,nO,nV,nR,nSa,n
             chi = 0d0
             do kc=1,nS_sc
               eps = Omega(kc)**2 + eta**2
-              chi = chi + rho(i,j,kc,2)*rho(a,b,kc,1)*Omega(kc)/eps
+              chi = chi + rho(i,b,kc,1)*rho(a,j,kc,2)*Omega(kc)/eps
             enddo
 
-            A_lr(nSa+ia,nSa+jb) = A_lr(nSa+ia,nSa+jb) - lambda*ERI_aabb(b,i,a,j) + 2d0*lambda*chi
+            B_lr(ia,nSa+jb) = B_lr(ia,nSa+jb) - lambda*ERI_aabb(i,j,b,a) + 2d0*lambda*chi
+
+          end  do
+        end  do
+      end  do
+    end  do
+
+    ! baab block
+
+    ia = 0
+    do i=nC(2)+1,nO(2)
+      do a=nO(1)+1,nBas-nR(1)
+        ia = ia + 1
+        jb = 0
+        do j=nC(1)+1,nO(1)
+          do b=nO(2)+1,nBas-nR(2)
+            jb = jb + 1
+
+            chi = 0d0
+            do kc=1,nS_sc
+              eps = Omega(kc)**2 + eta**2
+              chi = chi + rho(i,b,kc,2)*rho(a,j,kc,1)*Omega(kc)/eps
+            enddo
+
+            B_lr(nSa+ia,jb) =  B_lr(nSa+ia,jb) - lambda*ERI_aabb(j,i,a,b) + 2d0*lambda*chi
 
           end  do
         end  do
@@ -149,4 +150,4 @@ subroutine unrestricted_Bethe_Salpeter_A_matrix(ispin,eta,nBas,nC,nO,nV,nR,nSa,n
 
   end if
 
-end subroutine unrestricted_Bethe_Salpeter_A_matrix
+end subroutine 

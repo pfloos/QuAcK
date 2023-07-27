@@ -1,4 +1,4 @@
-subroutine unrestricted_excitation_density(nBas,nC,nO,nR,nSa,nSb,nSt,ERI_aaaa,ERI_aabb,ERI_bbbb,XpY,rho)
+subroutine UGW_excitation_density(nBas,nC,nO,nR,nSa,nSb,nSt,ERI_aaaa,ERI_aabb,ERI_bbbb,XpY,rho)
 
 ! Compute excitation densities for unrestricted reference
 
@@ -103,4 +103,4 @@ subroutine unrestricted_excitation_density(nBas,nC,nO,nR,nSa,nSb,nSt,ERI_aaaa,ER
     enddo
   enddo
 
-end subroutine unrestricted_excitation_density
+end subroutine 

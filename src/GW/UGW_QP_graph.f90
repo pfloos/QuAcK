@@ -1,4 +1,4 @@
-subroutine unrestricted_QP_graph(nBas,nC,nO,nV,nR,nS,eta,eHF,Omega,rho,eGWlin,eGW)
+subroutine UGW_QP_graph(nBas,nC,nO,nV,nR,nS,eta,eHF,Omega,rho,eGWlin,eGW)
 
 ! Compute the graphical solution of the QP equation
 
@@ -80,4 +80,4 @@ subroutine unrestricted_QP_graph(nBas,nC,nO,nV,nR,nS,eta,eHF,Omega,rho,eGWlin,eG
           
   end do
 
-end subroutine unrestricted_QP_graph
+end subroutine 

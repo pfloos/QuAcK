@@ -1,6 +1,6 @@
-subroutine unrestricted_Bethe_Salpeter(TDA_W,TDA,dBSE,dTDA,spin_conserved,spin_flip,eta,  & 
-                                       nBas,nC,nO,nV,nR,nS,S,ERI_aaaa,ERI_aabb,ERI_bbbb, & 
-                                       dipole_int_aa,dipole_int_bb,cW,eW,eGW,EcBSE)
+subroutine UGW_phBSE(TDA_W,TDA,dBSE,dTDA,spin_conserved,spin_flip,eta,  & 
+                     nBas,nC,nO,nV,nR,nS,S,ERI_aaaa,ERI_aabb,ERI_bbbb, & 
+                     dipole_int_aa,dipole_int_bb,cW,eW,eGW,EcBSE)
 
 ! Compute the Bethe-Salpeter excitation energies
 
@@ -82,7 +82,7 @@ subroutine unrestricted_Bethe_Salpeter(TDA_W,TDA,dBSE,dTDA,spin_conserved,spin_f
   call phULR(isp_W,.true.,TDA_W,.false.,eta,nBas,nC,nO,nV,nR,nS_aa,nS_bb,nS_sc,nS_sc,1d0, &
              eW,ERI_aaaa,ERI_aabb,ERI_bbbb,OmRPA,rho_RPA,EcRPA,OmRPA,XpY_RPA,XmY_RPA)
 
-  call unrestricted_excitation_density(nBas,nC,nO,nR,nS_aa,nS_bb,nS_sc,ERI_aaaa,ERI_aabb,ERI_bbbb,XpY_RPA,rho_RPA)
+  call UGW_excitation_density(nBas,nC,nO,nR,nS_aa,nS_bb,nS_sc,ERI_aaaa,ERI_aabb,ERI_bbbb,XpY_RPA,rho_RPA)
 
 
 !----------------------------!
