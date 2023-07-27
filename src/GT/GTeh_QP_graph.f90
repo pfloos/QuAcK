@@ -1,4 +1,4 @@
-subroutine QP_graph_GT(eta,nBas,nC,nO,nV,nR,nOO,nVV,eHF,Omega1,rho1,Omega2,rho2,eGTlin,eGT)
+subroutine GTeh_QP_graph(eta,nBas,nC,nO,nV,nR,nS,eHF,Om,rhoL,rhoR,eGTlin,eGT)
 
   implicit none
   include 'parameters.h'
@@ -9,15 +9,13 @@ subroutine QP_graph_GT(eta,nBas,nC,nO,nV,nR,nOO,nVV,eHF,Omega1,rho1,Omega2,rho2,
   integer,intent(in)            :: nO
   integer,intent(in)            :: nV
   integer,intent(in)            :: nR
-  integer,intent(in)            :: nOO
-  integer,intent(in)            :: nVV
+  integer,intent(in)            :: nS
   
   double precision,intent(in)   :: eta
   double precision,intent(in)   :: eHF(nBas)
-  double precision,intent(in)   :: Omega1(nVV)
-  double precision,intent(in)   :: rho1(nBas,nBas,nVV)
-  double precision,intent(in)   :: Omega2(nOO)
-  double precision,intent(in)   :: rho2(nBas,nBas,nOO)
+  double precision,intent(in)   :: Om(nS)
+  double precision,intent(in)   :: rhoL(nBas,nBas,nS,2)
+  double precision,intent(in)   :: rhoR(nBas,nBas,nS,2)
 
   double precision,intent(in)   :: eGTlin(nBas)
   
@@ -26,7 +24,7 @@ subroutine QP_graph_GT(eta,nBas,nC,nO,nV,nR,nOO,nVV,eHF,Omega1,rho1,Omega2,rho2,
   integer                       :: nIt
   integer,parameter             :: maxIt = 64
   double precision,parameter    :: thresh = 1d-6
-  double precision,external     :: SigmaC_GT,dSigmaC_GT
+  double precision,external     :: GTeh_SigC,GTeh_dSigC
   double precision              :: sigC,dsigC
   double precision              :: f,df
   double precision              :: w
@@ -45,7 +43,6 @@ subroutine QP_graph_GT(eta,nBas,nC,nO,nV,nR,nOO,nVV,eHF,Omega1,rho1,Omega2,rho2,
     write(*,*) '-----------------'
 
     w = eGTlin(p)
-    write(*,*) 'HERE', eGTlin(p), eHF(p)
     nIt = 0
     f = 1d0
     write(*,'(A3,I3,A1,1X,3F15.9)') 'It.',nIt,':',w*HaToeV,f
@@ -54,9 +51,8 @@ subroutine QP_graph_GT(eta,nBas,nC,nO,nV,nR,nOO,nVV,eHF,Omega1,rho1,Omega2,rho2,
 
        nIt = nIt + 1
 
-       sigC  =  SigmaC_GT(p,w,eta,nBas,nC,nO,nV,nR,nOO,nVV,eHF,Omega1,rho1,Omega2,rho2)
-       dsigC = dSigmaC_GT(p,w,eta,nBas,nC,nO,nV,nR,nOO,nVV,eHF,Omega1,rho1,Omega2,rho2)
-       write (*,*) sigC
+       sigC  = GTeh_SigC(p,w,eta,nBas,nC,nO,nV,nR,nS,eHF,Om,rhoL,rhoR)
+       dsigC = GTeh_dSigC(p,w,eta,nBas,nC,nO,nV,nR,nS,eHF,Om,rhoL,rhoR)
        f  = w - eHF(p)  - sigC 
        df = 1d0 - dsigC
     
@@ -76,4 +72,4 @@ subroutine QP_graph_GT(eta,nBas,nC,nO,nV,nR,nOO,nVV,eHF,Omega1,rho1,Omega2,rho2,
 
   end do
   
-end subroutine QP_graph_GT
+end subroutine 

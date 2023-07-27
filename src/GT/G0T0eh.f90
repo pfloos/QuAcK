@@ -155,8 +155,10 @@ subroutine G0T0eh(doACFDT,exchange_kernel,doXBS,dophBSE,dophBSE2,TDA_T,TDA,dBSE,
 
   else 
 
-    write(*,*) ' *** Root search not yet implemented in G0T0eh *** '
+    write(*,*) ' *** Quasiparticle energies obtained by root search (experimental) *** '
     write(*,*)
+
+    call GTeh_QP_graph(eta,nBas,nC,nO,nV,nR,nS,eHF,Om,rhoL,rhoR,eGTlin,eGT)
 
   end if
 

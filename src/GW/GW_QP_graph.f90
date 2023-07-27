@@ -1,4 +1,4 @@
-subroutine QP_graph(nBas,nC,nO,nV,nR,nS,eta,eHF,Omega,rho,eGWlin,eGW,regularize)
+subroutine GW_QP_graph(nBas,nC,nO,nV,nR,nS,eta,eHF,Omega,rho,eGWlin,eGW,regularize)
 
 ! Compute the graphical solution of the QP equation
 
@@ -27,7 +27,7 @@ subroutine QP_graph(nBas,nC,nO,nV,nR,nS,eta,eHF,Omega,rho,eGWlin,eGW,regularize)
   integer                       :: nIt
   integer,parameter             :: maxIt = 64
   double precision,parameter    :: thresh = 1d-6
-  double precision,external     :: SigmaC,dSigmaC
+  double precision,external     :: GW_SigC,GW_dSigC
   double precision              :: sigC,dsigC
   double precision              :: f,df
   double precision              :: w
@@ -53,8 +53,8 @@ subroutine QP_graph(nBas,nC,nO,nV,nR,nS,eta,eHF,Omega,rho,eGWlin,eGW,regularize)
     
       nIt = nIt + 1
 
-      sigC  =  SigmaC(p,w,eta,nBas,nC,nO,nV,nR,nS,eHF,Omega,rho,regularize)
-      dsigC = dSigmaC(p,w,eta,nBas,nC,nO,nV,nR,nS,eHF,Omega,rho,regularize)
+      sigC  = GW_SigC(p,w,eta,nBas,nC,nO,nV,nR,nS,eHF,Omega,rho,regularize)
+      dsigC = GW_dSigC(p,w,eta,nBas,nC,nO,nV,nR,nS,eHF,Omega,rho,regularize)
       f  = w - eHF(p) - SigC
       df = 1d0 - dsigC
     
@@ -80,4 +80,4 @@ subroutine QP_graph(nBas,nC,nO,nV,nR,nS,eta,eHF,Omega,rho,eGWlin,eGW,regularize)
           
   end do
 
-end subroutine QP_graph
+end subroutine 

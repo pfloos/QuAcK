@@ -51,12 +51,12 @@ subroutine GTeh_excitation_density(nBas,nC,nO,nR,nS,ERI,XpY,XmY,rhoL,rhoR)
               do m=1,nS
 
                  rhoL(p,q,m,1) = rhoL(p,q,m,1) + ERI(p,j,b,q)*X(jb,m) + ERI(p,b,j,q)*Y(jb,m)
-                 rhoL(p,q,m,2) = rhoL(p,q,m,2) + ERI(b,p,q,j)*Y(jb,m) + ERI(j,p,q,b)*X(jb,m)
+                 rhoL(p,q,m,2) = rhoL(p,q,m,2) + ERI(p,j,b,q)*Y(jb,m) + ERI(p,b,j,q)*X(jb,m)
 
                  rhoR(p,q,m,1) = rhoR(p,q,m,1) & 
-                               + (2d0*ERI(b,q,p,j) - ERI(b,q,j,p))*X(jb,m) + (2d0*ERI(j,q,p,b) - ERI(j,q,b,p))*Y(jb,m)
+                               + (2d0*ERI(p,j,b,q) - ERI(p,j,q,b))*X(jb,m) + (2d0*ERI(p,b,j,q) - ERI(p,b,q,j))*Y(jb,m)
                  rhoR(p,q,m,2) = rhoR(p,q,m,2) & 
-                               + (2d0*ERI(b,p,q,j) - ERI(b,p,j,q))*Y(jb,m) + (2d0*ERI(j,p,q,b) - ERI(j,p,b,q))*X(jb,m)
+                               + (2d0*ERI(p,j,b,q) - ERI(p,j,q,b))*Y(jb,m) + (2d0*ERI(p,b,j,q) - ERI(p,b,q,j))*X(jb,m)
 
               enddo
            enddo
