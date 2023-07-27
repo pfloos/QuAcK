@@ -1,4 +1,4 @@
-subroutine GTpp_self_energy(eta,nBas,nC,nO,nV,nR,nOO,nVV,e,Om1,rho1,Om2,rho2,EcGM,Sig,Z)
+subroutine GTpp_self_energy(eta,nBas,nC,nO,nV,nR,nOOs,nVVs,nOOt,nVVt,e,Om1s,rho1s,Om2s,rho2s,Om1t,rho1t,Om2t,rho2t,EcGM,Sig,Z)
 
 ! Compute the correlation part of the T-matrix self-energy and the renormalization factor
 
@@ -13,13 +13,13 @@ subroutine GTpp_self_energy(eta,nBas,nC,nO,nV,nR,nOO,nVV,e,Om1,rho1,Om2,rho2,EcG
   integer,intent(in)            :: nO
   integer,intent(in)            :: nV
   integer,intent(in)            :: nR
-  integer,intent(in)            :: nOO
-  integer,intent(in)            :: nVV
+  integer,intent(in)            :: nOOs,nOOt
+  integer,intent(in)            :: nVVs,nVVt
   double precision,intent(in)   :: e(nBas)
-  double precision,intent(in)   :: Om1(nVV)
-  double precision,intent(in)   :: rho1(nBas,nBas,nVV)
-  double precision,intent(in)   :: Om2(nOO)
-  double precision,intent(in)   :: rho2(nBas,nBas,nOO)
+  double precision,intent(in)   :: Om1s(nVVs),Om1t(nVVt)
+  double precision,intent(in)   :: rho1s(nBas,nBas,nVVs),rho1t(nBas,nBas,nVVt)
+  double precision,intent(in)   :: Om2s(nOOs),Om2t(nOOt)
+  double precision,intent(in)   :: rho2s(nBas,nBas,nOOs),rho2t(nBas,nBas,nOOt)
 
 ! Local variables
 
@@ -32,6 +32,12 @@ subroutine GTpp_self_energy(eta,nBas,nC,nO,nV,nR,nOO,nVV,e,Om1,rho1,Om2,rho2,EcG
   double precision,intent(inout):: Sig(nBas,nBas)
   double precision,intent(inout):: Z(nBas)
 
+! Initialization
+
+  Sig(:,:) = 0d0
+  Z(:)     = 0d0
+  EcGM     = 0d0
+
 !----------------------------------------------
 ! Occupied part of the T-matrix self-energy 
 !----------------------------------------------
@@ -39,14 +45,21 @@ subroutine GTpp_self_energy(eta,nBas,nC,nO,nV,nR,nOO,nVV,e,Om1,rho1,Om2,rho2,EcG
   do p=nC+1,nBas-nR
     do q=nC+1,nBas-nR
       do i=nC+1,nO
-        do cd=1,nVV
 
-          eps = e(p) + e(i) - Om1(cd)
-          num = rho1(p,i,cd)*rho1(q,i,cd)
+        do cd=1,nVVs
+          eps = e(p) + e(i) - Om1s(cd)
+          num = rho1s(p,i,cd)*rho1s(q,i,cd)
           Sig(p,q) = Sig(p,q) + num*eps/(eps**2 + eta**2)
           if(p == q) Z(p) = Z(p) - num*(eps**2 - eta**2)/(eps**2 + eta**2)**2
-
         enddo
+
+        do cd=1,nVVt
+          eps = e(p) + e(i) - Om1t(cd)
+          num = rho1t(p,i,cd)*rho1t(q,i,cd)
+          Sig(p,q) = Sig(p,q) + num*eps/(eps**2 + eta**2)
+          if(p == q) Z(p) = Z(p) - num*(eps**2 - eta**2)/(eps**2 + eta**2)**2
+        enddo
+
       enddo
     enddo
   enddo
@@ -58,14 +71,21 @@ subroutine GTpp_self_energy(eta,nBas,nC,nO,nV,nR,nOO,nVV,e,Om1,rho1,Om2,rho2,EcG
   do p=nC+1,nBas-nR
     do q=nC+1,nBas-nR
       do a=nO+1,nBas-nR
-        do kl=1,nOO
 
-          eps = e(p) + e(a) - Om2(kl)
-          num = rho2(p,a,kl)*rho2(q,a,kl)
+        do kl=1,nOOs
+          eps = e(p) + e(a) - Om2s(kl)
+          num = rho2s(p,a,kl)*rho2s(q,a,kl)
           Sig(p,q) = Sig(p,q) + num*eps/(eps**2 + eta**2)
           if(p == q) Z(p) = Z(p) - num*(eps**2 - eta**2)/(eps**2 + eta**2)**2
-
         enddo
+
+        do kl=1,nOOt
+          eps = e(p) + e(a) - Om2t(kl)
+          num = rho2t(p,a,kl)*rho2t(q,a,kl)
+          Sig(p,q) = Sig(p,q) + num*eps/(eps**2 + eta**2)
+          if(p == q) Z(p) = Z(p) - num*(eps**2 - eta**2)/(eps**2 + eta**2)**2
+        enddo
+
       enddo
     enddo
   enddo
@@ -76,26 +96,40 @@ subroutine GTpp_self_energy(eta,nBas,nC,nO,nV,nR,nOO,nVV,e,Om1,rho1,Om2,rho2,EcG
 
   do i=nC+1,nO
     do j=nC+1,nO
-      do cd=1,nVV
 
-        eps = e(i) + e(j) - Om1(cd)
-        num = rho1(i,j,cd)*rho1(i,j,cd)
+      do cd=1,nVVs
+        eps = e(i) + e(j) - Om1s(cd)
+        num = rho1s(i,j,cd)*rho1s(i,j,cd)
         EcGM = EcGM + num*eps/(eps**2 + eta**2)
-
       enddo
+
+      do cd=1,nVVt
+        eps = e(i) + e(j) - Om1t(cd)
+        num = rho1t(i,j,cd)*rho1t(i,j,cd)
+        EcGM = EcGM + num*eps/(eps**2 + eta**2)
+      enddo
+
     enddo
   enddo
 
   do a=nO+1,nBas-nR
     do b=nO+1,nBas-nR
-      do kl=1,nOO
 
-        eps = e(a) + e(b) - Om2(kl)
-        num = rho2(a,b,kl)*rho2(a,b,kl)
+      do kl=1,nOOs
+        eps = e(a) + e(b) - Om2s(kl)
+        num = rho2s(a,b,kl)*rho2s(a,b,kl)
         EcGM = EcGM - num*eps/(eps**2 + eta**2)
-
       enddo
+
+      do kl=1,nOOt
+        eps = e(a) + e(b) - Om2t(kl)
+        num = rho2t(a,b,kl)*rho2t(a,b,kl)
+        EcGM = EcGM - num*eps/(eps**2 + eta**2)
+      enddo
+
     enddo
   enddo
+
+  Z(:) = 1d0/(1d0 - Z(:)) 
 
 end subroutine 

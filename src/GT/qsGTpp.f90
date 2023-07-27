@@ -138,14 +138,14 @@ subroutine qsGTpp(maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,dophBSE,T
 ! Memory allocation
 
   allocate(eGT(nBas),eOld(nBas),c(nBas,nBas),cp(nBas,nBas),P(nBas,nBas),F(nBas,nBas),Fp(nBas,nBas), &
-           J(nBas,nBas),K(nBas,nBas),Sig(nBas,nBas),Sigp(nBas,nBas),Sigm(nBas,nBas),Z(nBas),     & 
+           J(nBas,nBas),K(nBas,nBas),Sig(nBas,nBas),Sigp(nBas,nBas),Sigm(nBas,nBas),Z(nBas),        & 
            error(nBas,nBas),error_diis(nBasSq,max_diis),F_diis(nBasSq,max_diis))
 
-  allocate(Om1s(nVVs),X1s(nVVs,nVVs),Y1s(nOOs,nVVs),        &
-           Om2s(nOOs),X2s(nVVs,nOOs),Y2s(nOOs,nOOs),        &
-           rho1s(nBas,nBas,nVVs),rho2s(nBas,nBas,nOOs),        &
-           Om1t(nVVt),X1t(nVVt,nVVt),Y1t(nOOt,nVVt),        &
-           Om2t(nOOt),X2t(nVVt,nOOt),Y2t(nOOt,nOOt),        &
+  allocate(Om1s(nVVs),X1s(nVVs,nVVs),Y1s(nOOs,nVVs),    &
+           Om2s(nOOs),X2s(nVVs,nOOs),Y2s(nOOs,nOOs),    &
+           rho1s(nBas,nBas,nVVs),rho2s(nBas,nBas,nOOs), &
+           Om1t(nVVt),X1t(nVVt,nVVt),Y1t(nOOt,nVVt),    &
+           Om2t(nOOt),X2t(nVVt,nOOt),Y2t(nOOt,nOOt),    &
            rho1t(nBas,nBas,nVVt),rho2t(nBas,nBas,nOOt))
 
 ! Initialization
@@ -217,44 +217,14 @@ subroutine qsGTpp(maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,dophBSE,T
 
     ! Compute correlation part of the self-energy 
 
-    EcGM      = 0d0
-    Sig(:,:)  = 0d0
-    Z(:)      = 0d0
-
     iblock =  3
-
     call GTpp_excitation_density(iblock,nBas,nC,nO,nV,nR,nOOs,nVVs,ERI_MO,X1s,Y1s,rho1s,X2s,Y2s,rho2s)
 
-   if(regularize) then
-
-      call regularized_self_energy_Tmatrix(eta,nBas,nC,nO,nV,nR,nOOs,nVVs,eGT,Om1s,rho1s,Om2s,rho2s,EcGM,Sig)
-     
-      call regularized_renormalization_factor_Tmatrix(eta,nBas,nC,nO,nV,nR,nOOs,nVVs,eGT,Om1s,rho1s,Om2s,rho2s,Z)
-
-    else
-
-      call GTpp_self_energy(eta,nBas,nC,nO,nV,nR,nOOs,nVVs,eGT,Om1s,rho1s,Om2s,rho2s,EcGM,Sig,Z)
-
-    end if
-
     iblock =  4
-
     call GTpp_excitation_density(iblock,nBas,nC,nO,nV,nR,nOOt,nVVt,ERI_MO,X1t,Y1t,rho1t,X2t,Y2t,rho2t)
 
-    if(regularize) then
-
-      call regularized_self_energy_Tmatrix(eta,nBas,nC,nO,nV,nR,nOOt,nVVt,eGT,Om1t,rho1t,Om2t,rho2t,EcGM,Sig)
-     
-      call regularized_renormalization_factor_Tmatrix(eta,nBas,nC,nO,nV,nR,nOOt,nVVt,eGT, &
-                                                      Om1t,rho1t,Om2t,rho2t,Z)
-
-     else
-
-      call GTpp_self_energy(eta,nBas,nC,nO,nV,nR,nOOt,nVVt,eGT,Om1t,rho1t,Om2t,rho2t,EcGM,Sig,Z)
-
-    end if
-
-    Z(:) = 1d0/(1d0 - Z(:))
+    call GTpp_self_energy(eta,nBas,nC,nO,nV,nR,nOOs,nVVs,nOOt,nVVt,eGT,Om1s,rho1s,Om2s,rho2s, & 
+                          Om1t,rho1t,Om2t,rho2t,EcGM,Sig,Z)
 
     ! Make correlation self-energy Hermitian and transform it back to AO basis
    

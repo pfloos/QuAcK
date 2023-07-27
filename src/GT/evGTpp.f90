@@ -1,5 +1,5 @@
-subroutine evGTpp(maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,BSE,TDA_T,TDA,dBSE,dTDA, &
-                  singlet,triplet,eta,regularize,nBas,nC,nO,nV,nR,nS,ENuc,ERHF,ERI_MO,dipole_int,PHF,cHF,eHF)
+subroutine evGTpp(maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,BSE,TDA_T,TDA,dBSE,dTDA,singlet,triplet, & 
+                  linearize,eta,regularize,nBas,nC,nO,nV,nR,nS,ENuc,ERHF,ERI_MO,dipole_int,PHF,cHF,eHF)
 
 ! Perform eigenvalue self-consistent calculation with a T-matrix self-energy (evGT)
 
@@ -21,6 +21,7 @@ subroutine evGTpp(maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,BSE,TDA_T
   logical,intent(in)            :: dTDA
   logical,intent(in)            :: singlet
   logical,intent(in)            :: triplet
+  logical,intent(in)            :: linearize
   double precision,intent(in)   :: eta
   logical,intent(in)            :: regularize
 
@@ -92,11 +93,11 @@ subroutine evGTpp(maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,BSE,TDA_T
 
   allocate(Om1s(nVVs),X1s(nVVs,nVVs),Y1s(nOOs,nVVs),        & 
            Om2s(nOOs),X2s(nVVs,nOOs),Y2s(nOOs,nOOs),        & 
-           rho1s(nBas,nBas,nVVs),rho2s(nBas,nBas,nOOs),        & 
+           rho1s(nBas,nBas,nVVs),rho2s(nBas,nBas,nOOs),     & 
            Om1t(nVVt),X1t(nVVt,nVVt),Y1t(nOOt,nVVt),        & 
            Om2t(nOOt),X2t(nVVt,nOOt),Y2t(nOOt,nOOt),        & 
-           rho1t(nBas,nBas,nVVt),rho2t(nBas,nBas,nOOt),        &
-           eGT(nBas),eOld(nBas),Z(nBas),Sig(nBas), &
+           rho1t(nBas,nBas,nVVt),rho2t(nBas,nBas,nOOt),     &
+           eGT(nBas),eOld(nBas),Z(nBas),Sig(nBas),          &
            error_diis(nBas,max_diis),e_diis(nBas,max_diis))
 
 ! Initialization
@@ -161,24 +162,15 @@ subroutine evGTpp(maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,BSE,TDA_T
   !----------------------------------------------
   ! Compute T-matrix version of the self-energy 
   !----------------------------------------------
-
-    EcGM    = 0d0
-    Sig(:) = 0d0
-    Z(:)    = 0d0
  
-    iblock =  3
- 
+    iblock = 3
     call GTpp_excitation_density(iblock,nBas,nC,nO,nV,nR,nOOs,nVVs,ERI_MO,X1s,Y1s,rho1s,X2s,Y2s,rho2s)
  
-    call GTpp_self_energy_diag(eta,nBas,nC,nO,nV,nR,nOOs,nVVs,eGT,Om1s,rho1s,Om2s,rho2s,EcGM,Sig,Z)
- 
-    iblock =  4
- 
+    iblock = 4
     call GTpp_excitation_density(iblock,nBas,nC,nO,nV,nR,nOOt,nVVt,ERI_MO,X1t,Y1t,rho1t,X2t,Y2t,rho2t)
  
-    call GTpp_self_energy_diag(eta,nBas,nC,nO,nV,nR,nOOt,nVVt,eGT,Om1t,rho1t,Om2t,rho2t,EcGM,Sig,Z)
- 
-    Z(:) = 1d0/(1d0 - Z(:))
+    call GTpp_self_energy_diag(eta,nBas,nC,nO,nV,nR,nooS,nVVt,nOOt,nVVt,eGT,Om1s,rho1s,Om2s,rho2s, & 
+                               Om1t,rho1t,Om2t,rho2t,EcGM,Sig,Z)
 
     ! Solve the quasi-particle equation
 
@@ -186,7 +178,22 @@ subroutine evGTpp(maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,BSE,TDA_T
   ! Solve the quasi-particle equation
   !----------------------------------------------
 
-    eGT(:) = eHF(:) + Sig(:)
+    if(linearize) then
+ 
+      write(*,*) ' *** Quasiparticle energies obtained by linearization *** '
+      write(*,*)
+ 
+      eGT(:) = eHF(:) + Sig(:)
+ 
+    else
+ 
+      write(*,*) ' *** Quasiparticle energies obtained by root search (experimental) *** '
+      write(*,*)
+ 
+     call GTpp_QP_graph(eta,nBas,nC,nO,nV,nR,nOOs,nVVs,nOOt,nVVt,eHF,Om1s,rho1s,Om2s,rho2s, & 
+                        Om1t,rho1t,Om2t,rho2t,eOld,eGT)
+ 
+    end if
 
     ! Convergence criteria
 
