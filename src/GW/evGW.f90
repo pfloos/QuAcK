@@ -145,23 +145,19 @@ subroutine evGW(maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,dophBSE,dop
 
     ! Solve the quasi-particle equation
 
-    eGW(:) = eHF(:) + SigC(:)
-
-    ! Linearized or graphical solution?
-
     if(linearize) then 
  
        write(*,*) ' *** Quasiparticle energies obtained by linearization *** '
        write(*,*)
 
-       eGW(:) = eGW(:)
+       eGW(:) = eHF(:) + SigC(:)
 
     else 
 
        write(*,*) ' *** Quasiparticle energies obtained by root search (experimental) *** '
        write(*,*)
   
-       call GW_QP_graph(nBas,nC,nO,nV,nR,nS,eta,eHF,Om,rho,eGW,eGW,regularize)
+       call GW_QP_graph(eta,nBas,nC,nO,nV,nR,nS,eHF,Om,rho,eOld,eGW)
  
     end if
 

@@ -51,8 +51,8 @@ subroutine GTeh_QP_graph(eta,nBas,nC,nO,nV,nR,nS,eHF,Om,rhoL,rhoR,eGTlin,eGT)
 
        nIt = nIt + 1
 
-       sigC  = GTeh_SigC(p,w,eta,nBas,nC,nO,nV,nR,nS,eHF,Om,rhoL,rhoR)
-       dsigC = GTeh_dSigC(p,w,eta,nBas,nC,nO,nV,nR,nS,eHF,Om,rhoL,rhoR)
+       sigC  = GTeh_SigC(p,w,eta,nBas,nC,nO,nV,nR,nS,eGTlin,Om,rhoL,rhoR)
+       dsigC = GTeh_dSigC(p,w,eta,nBas,nC,nO,nV,nR,nS,eGTlin,Om,rhoL,rhoR)
        f  = w - eHF(p)  - sigC 
        df = 1d0 - dsigC
     

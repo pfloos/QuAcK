@@ -1,4 +1,4 @@
-subroutine GW_QP_graph(nBas,nC,nO,nV,nR,nS,eta,eHF,Omega,rho,eGWlin,eGW,regularize)
+subroutine GW_QP_graph(eta,nBas,nC,nO,nV,nR,nS,eHF,Om,rho,eGWlin,eGW)
 
 ! Compute the graphical solution of the QP equation
 
@@ -15,11 +15,10 @@ subroutine GW_QP_graph(nBas,nC,nO,nV,nR,nS,eta,eHF,Omega,rho,eGWlin,eGW,regulari
   integer,intent(in)            :: nS
   double precision,intent(in)   :: eta
   double precision,intent(in)   :: eHF(nBas)
-  double precision,intent(in)   :: Omega(nS)
+  double precision,intent(in)   :: Om(nS)
   double precision,intent(in)   :: rho(nBas,nBas,nS)
 
   double precision,intent(in)   :: eGWlin(nBas)
-  logical,intent(in)            :: regularize
 
 ! Local variables
 
@@ -53,8 +52,8 @@ subroutine GW_QP_graph(nBas,nC,nO,nV,nR,nS,eta,eHF,Omega,rho,eGWlin,eGW,regulari
     
       nIt = nIt + 1
 
-      sigC  = GW_SigC(p,w,eta,nBas,nC,nO,nV,nR,nS,eHF,Omega,rho,regularize)
-      dsigC = GW_dSigC(p,w,eta,nBas,nC,nO,nV,nR,nS,eHF,Omega,rho,regularize)
+      sigC  = GW_SigC(p,w,eta,nBas,nC,nO,nV,nR,nS,eGWlin,Om,rho)
+      dsigC = GW_dSigC(p,w,eta,nBas,nC,nO,nV,nR,nS,eGWlin,Om,rho)
       f  = w - eHF(p) - SigC
       df = 1d0 - dsigC
     

@@ -90,14 +90,19 @@ subroutine evGF2(dophBSE,doppBSE,TDA,dBSE,dTDA,maxSCF,thresh,max_diis,singlet,tr
 
     end if
 
+    ! Solve the quasi-particle equation
+ 
     if(linearize) then
-
-      eGF(:) = eHF(:) + Z(:)*SigC(:)
-
-    else
-
+ 
       eGF(:) = eHF(:) + SigC(:)
-
+ 
+    else
+ 
+      write(*,*) ' *** Quasiparticle energies obtained by root search (experimental) *** '
+      write(*,*)
+ 
+      call GF2_QP_graph(eta,nBas,nC,nO,nV,nR,eHF,ERI,eGF)
+ 
     end if
 
     Conv = maxval(abs(eGF - eOld))

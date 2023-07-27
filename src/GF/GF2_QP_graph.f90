@@ -1,4 +1,4 @@
-subroutine QP_graph_GF2(eta,nBas,nC,nO,nV,nR,nS,eHF,eGF2lin,ERI,eGF2)
+subroutine GF2_QP_graph(eta,nBas,nC,nO,nV,nR,nS,eHF,ERI,eGF)
 
 ! Compute the graphical solution of the GF2 QP equation
 
@@ -10,7 +10,6 @@ subroutine QP_graph_GF2(eta,nBas,nC,nO,nV,nR,nS,eHF,eGF2lin,ERI,eGF2)
   double precision,intent(in)   :: eta
   integer,intent(in)            :: nBas,nC,nO,nV,nR,nS
   double precision,intent(in)   :: eHF(nBas)
-  double precision,intent(in)   :: eGF2lin(nBas)
   double precision,intent(in)   :: ERI(nBas,nBas,nBas,nBas)
 
 ! Local variables
@@ -19,14 +18,14 @@ subroutine QP_graph_GF2(eta,nBas,nC,nO,nV,nR,nS,eHF,eGF2lin,ERI,eGF2)
   integer                       :: nIt
   integer,parameter             :: maxIt = 64
   double precision,parameter    :: thresh = 1d-6
-  double precision,external     :: SigmaC_GF2,dSigmaC_GF2
+  double precision,external     :: GF2_SigC,GF2_dSigC
   double precision              :: sigC,dsigC
   double precision              :: f,df
   double precision              :: w
   
 ! Output variables
 
-  double precision,intent(out)  :: eGF2(nBas)
+  double precision,intent(out)  :: eGF(nBas)
 
 
 ! Run Newton's algorithm to find the root
@@ -37,7 +36,7 @@ subroutine QP_graph_GF2(eta,nBas,nC,nO,nV,nR,nS,eHF,eGF2lin,ERI,eGF2)
     write(*,'(A10,I3)') 'Orbital ',p
     write(*,*) '-----------------'
 
-    w = eGF2lin(p)
+    w = eHF(p)
     nIt = 0
     f = 1d0
     write(*,'(A3,I3,A1,1X,3F15.9)') 'It.',nIt,':',w*HaToeV,f
@@ -46,8 +45,8 @@ subroutine QP_graph_GF2(eta,nBas,nC,nO,nV,nR,nS,eHF,eGF2lin,ERI,eGF2)
     
       nIt = nIt + 1
 
-      sigC  =  SigmaC_GF2(p,w,eta,nBas,nC,nO,nV,nR,nS,eHF,ERI)
-      dsigC = dSigmaC_GF2(p,w,eta,nBas,nC,nO,nV,nR,nS,eHF,ERI)
+      sigC  = GF2_SigC(p,w,eta,nBas,nC,nO,nV,nR,nS,eHF,ERI)
+      dsigC = GF2_dSigC(p,w,eta,nBas,nC,nO,nV,nR,nS,eHF,ERI)
       f  = w - eHF(p) - sigC
       df = 1d0 - dsigC
     
@@ -64,9 +63,9 @@ subroutine QP_graph_GF2(eta,nBas,nC,nO,nV,nR,nS,eHF,eGF2lin,ERI,eGF2)
 
     else
 
-      eGF2(p) = w
+      eGF(p) = w
 
-      write(*,'(A32,F16.10)')   'Quasiparticle energy (eV)   ',eGF2(p)*HaToeV
+      write(*,'(A32,F16.10)')   'Quasiparticle energy (eV)   ',eGF(p)*HaToeV
       write(*,*)
 
    end if

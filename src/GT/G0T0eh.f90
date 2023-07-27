@@ -62,7 +62,6 @@ subroutine G0T0eh(doACFDT,exchange_kernel,doXBS,dophBSE,dophBSE2,TDA_T,TDA,dBSE,
   double precision,allocatable  :: rhoR(:,:,:,:)
 
   double precision,allocatable  :: eGT(:)
-  double precision,allocatable  :: eGTlin(:)
 
   double precision,allocatable  :: KA_sta(:,:)
   double precision,allocatable  :: KB_sta(:,:)
@@ -102,7 +101,7 @@ subroutine G0T0eh(doACFDT,exchange_kernel,doXBS,dophBSE,dophBSE2,TDA_T,TDA,dBSE,
 ! Memory allocation
 
   allocate(Aph(nS,nS),Bph(nS,nS),Sig(nBas),Z(nBas),Om(nS),XpY(nS,nS),XmY(nS,nS), & 
-           rhoL(nBas,nBas,nS,2),rhoR(nBas,nBas,nS,2),eGT(nBas),eGTlin(nBas))
+           rhoL(nBas,nBas,nS,2),rhoR(nBas,nBas,nS,2),eGT(nBas))
 
 !---------------------------------
 ! Compute (triplet) RPA screening 
@@ -142,8 +141,6 @@ subroutine G0T0eh(doACFDT,exchange_kernel,doXBS,dophBSE,dophBSE2,TDA_T,TDA,dBSE,
 ! Solve the quasi-particle equation !
 !-----------------------------------!
 
-  eGTlin(:) = eHF(:) + Z(:)*Sig(:)
-
   ! Linearized or graphical solution?
 
   if(linearize) then 
@@ -151,14 +148,14 @@ subroutine G0T0eh(doACFDT,exchange_kernel,doXBS,dophBSE,dophBSE2,TDA_T,TDA,dBSE,
     write(*,*) ' *** Quasiparticle energies obtained by linearization *** '
     write(*,*)
 
-    eGT(:) = eGTlin(:)
+    eGT(:) = eHF(:) + Z(:)*Sig(:)
 
   else 
 
     write(*,*) ' *** Quasiparticle energies obtained by root search (experimental) *** '
     write(*,*)
 
-    call GTeh_QP_graph(eta,nBas,nC,nO,nV,nR,nS,eHF,Om,rhoL,rhoR,eGTlin,eGT)
+    call GTeh_QP_graph(eta,nBas,nC,nO,nV,nR,nS,eHF,Om,rhoL,rhoR,eHF,eGT)
 
   end if
 

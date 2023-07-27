@@ -35,7 +35,7 @@ double precision function GTeh_SigC(p,w,eta,nBas,nC,nO,nV,nR,nS,e,Om,rhoL,rhoR)
   do i=nC+1,nO
      do m=1,nS
         eps = w - e(i) + Om(m)
-        num = rhoL(i,p,m,1)*rhoR(i,p,m,2)
+        num = rhoL(i,p,m,1)*rhoR(i,p,m,1)
         GTeh_SigC = GTeh_SigC + num*eps/(eps**2 + eta**2)
      enddo
   enddo
@@ -45,7 +45,7 @@ double precision function GTeh_SigC(p,w,eta,nBas,nC,nO,nV,nR,nS,e,Om,rhoL,rhoR)
   do a=nO+1,nBas-nR
      do m=1,nS
         eps = w - e(a) - Om(m)
-        num = rhoL(p,a,m,1)*rhoR(p,a,m,2)
+        num = rhoL(p,a,m,1)*rhoR(p,a,m,1)
         GTeh_SigC = GTeh_SigC + num*eps/(eps**2 + eta**2)
      enddo
   enddo

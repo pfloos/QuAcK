@@ -57,7 +57,6 @@ subroutine G0W0(doACFDT,exchange_kernel,doXBS,dophBSE,dophBSE2,TDA_W,TDA,dBSE,dT
   double precision,allocatable  :: rho(:,:,:)
 
   double precision,allocatable  :: eGW(:)
-  double precision,allocatable  :: eGWlin(:)
 
 ! Output variables
 
@@ -94,8 +93,7 @@ subroutine G0W0(doACFDT,exchange_kernel,doXBS,dophBSE,dophBSE2,TDA_W,TDA,dBSE,dT
 
 ! Memory allocation
 
-  allocate(Aph(nS,nS),Bph(nS,nS),SigC(nBas),Z(nBas),Om(nS),XpY(nS,nS),XmY(nS,nS),rho(nBas,nBas,nS), & 
-           eGW(nBas),eGWlin(nBas))
+  allocate(Aph(nS,nS),Bph(nS,nS),SigC(nBas),Z(nBas),Om(nS),XpY(nS,nS),XmY(nS,nS),rho(nBas,nBas,nS),eGW(nBas))
 
 !-------------------!
 ! Compute screening !
@@ -133,8 +131,6 @@ subroutine G0W0(doACFDT,exchange_kernel,doXBS,dophBSE,dophBSE2,TDA_W,TDA,dBSE,dT
 ! Solve the quasi-particle equation !
 !-----------------------------------!
 
-  eGWlin(:) = eHF(:) + Z(:)*SigC(:)
-
   ! Linearized or graphical solution?
 
   if(linearize) then 
@@ -142,14 +138,14 @@ subroutine G0W0(doACFDT,exchange_kernel,doXBS,dophBSE,dophBSE2,TDA_W,TDA,dBSE,dT
     write(*,*) ' *** Quasiparticle energies obtained by linearization *** '
     write(*,*)
 
-    eGW(:) = eGWlin(:)
+    eGW(:) = eHF(:) + Z(:)*SigC(:)
 
   else 
 
     write(*,*) ' *** Quasiparticle energies obtained by root search (experimental) *** '
     write(*,*)
   
-    call GW_QP_graph(nBas,nC,nO,nV,nR,nS,eta,eHF,Om,rho,eGWlin,eGW,regularize)
+    call GW_QP_graph(eta,nBas,nC,nO,nV,nR,nS,eHF,Om,rho,eHF,eGW)
 
   end if
 
@@ -168,7 +164,7 @@ subroutine G0W0(doACFDT,exchange_kernel,doXBS,dophBSE,dophBSE2,TDA_W,TDA,dBSE,dT
 
 ! Deallocate memory
 
-  deallocate(SigC,Z,Om,XpY,XmY,rho,eGWlin)
+  deallocate(SigC,Z,Om,XpY,XmY,rho)
 
 ! Perform BSE calculation
 

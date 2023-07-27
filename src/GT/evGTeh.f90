@@ -148,6 +148,22 @@ subroutine evGTeh(maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,dophBSE,d
 
     eGT(:) = eHF(:) + Sig(:)
 
+    if(linearize) then
+
+       write(*,*) ' *** Quasiparticle energies obtained by linearization *** '
+       write(*,*)
+
+       eGT(:) = eGT(:)
+
+    else
+
+       write(*,*) ' *** Quasiparticle energies obtained by root search (experimental) *** '
+       write(*,*)
+
+       call GTeh_QP_graph(eta,nBas,nC,nO,nV,nR,nS,eHF,Om,rhoL,rhoR,eOld,eGT)
+
+    end if
+
     ! Convergence criteria
 
     Conv = maxval(abs(eGT - eOld))

@@ -35,7 +35,6 @@ subroutine G0F2(dophBSE,doppBSE,TDA,dBSE,dTDA,singlet,triplet,linearize,eta,regu
   double precision              :: Ec
   double precision              :: EcBSE(nspin)
   double precision,allocatable  :: eGF(:)
-  double precision,allocatable  :: eGFlin(:)
   double precision,allocatable  :: SigC(:)
   double precision,allocatable  :: Z(:)
 
@@ -49,7 +48,7 @@ subroutine G0F2(dophBSE,doppBSE,TDA,dBSE,dTDA,singlet,triplet,linearize,eta,regu
 
 ! Memory allocation
 
-  allocate(SigC(nBas),Z(nBas),eGF(nBas),eGFlin(nBas))
+  allocate(SigC(nBas),Z(nBas),eGF(nBas))
 
   if(linearize) then 
   
@@ -69,20 +68,17 @@ subroutine G0F2(dophBSE,doppBSE,TDA,dBSE,dTDA,singlet,triplet,linearize,eta,regu
     call GF2_self_energy_diag(eta,nBas,nC,nO,nV,nR,eHF,eHF,ERI,SigC,Z)
 
   end if
-
-  eGFlin(:) = eHF(:) + Z(:)*SigC(:)
   
   if(linearize) then
 
-    eGF(:) = eGFlin(:)
+    eGF(:) = eHF(:) + Z(:)*SigC(:)
 
- else
+  else
 
     write(*,*) ' *** Quasiparticle energies obtained by root search (experimental) *** '
     write(*,*)
 
-    call QP_graph_GF2(eta,nBas,nC,nO,nV,nR,eHF,eGFlin,ERI,eGF)
-
+    call GF2_QP_graph(eta,nBas,nC,nO,nV,nR,eHF,ERI,eGF)
 
   end if
 
