@@ -1,6 +1,6 @@
-subroutine unrestricted_Bethe_Salpeter_dynamic_perturbation(ispin,dTDA,eta,nBas,nC,nO,nV,nR,nS,nSa,nSb,nSt,nS_sc,eW,eGW, &
-                                                            ERI_aaaa,ERI_aabb,ERI_bbbb,dipole_int_aa,dipole_int_bb,      & 
-                                                            OmRPA,rho_RPA,OmBSE,XpY_BSE,XmY_BSE)
+subroutine UGW_phBSE_dynamic_perturbation(ispin,dTDA,eta,nBas,nC,nO,nV,nR,nS,nSa,nSb,nSt,nS_sc,eW,eGW, &
+                                          ERI_aaaa,ERI_aabb,ERI_bbbb,dipole_int_aa,dipole_int_bb,      & 
+                                          OmRPA,rho_RPA,OmBSE,XpY_BSE,XmY_BSE)
 
 ! Compute dynamical effects via perturbation theory for BSE
 
@@ -82,15 +82,10 @@ subroutine unrestricted_Bethe_Salpeter_dynamic_perturbation(ispin,dTDA,eta,nBas,
 
     if(dTDA) then 
 
-      ! Resonant part of the BSE correction for dynamical TDA
+      ! Resonant part of the BSE correction for dynamical TDA and its renormalization factor
 
-      call unrestricted_Bethe_Salpeter_A_matrix_dynamic(ispin,eta,nBas,nC,nO,nV,nR,nSa,nSb,nSt,nS_sc,1d0,eGW, & 
-                                                        ERI_aaaa,ERI_aabb,ERI_bbbb,OmRPA,rho_RPA,OmBSE(ia),A_dyn)
-
-      ! Renormalization factor of the resonant parts for dynamical TDA
-
-      call unrestricted_Bethe_Salpeter_ZA_matrix_dynamic(ispin,eta,nBas,nC,nO,nV,nR,nSa,nSb,nSt,nS_sc,1d0,eGW, & 
-                                                         ERI_aaaa,ERI_aabb,ERI_bbbb,OmRPA,rho_RPA,OmBSE(ia),ZA_dyn)
+      call UGW_phBSE_dynamic_kernel_A(ispin,eta,nBas,nC,nO,nV,nR,nSa,nSb,nSt,nS_sc,1d0,eGW, & 
+                                      ERI_aaaa,ERI_aabb,ERI_bbbb,OmRPA,rho_RPA,OmBSE(ia),A_dyn,ZA_dyn)
 
       ZDyn(ia)  = dot_product(X,matmul(ZA_dyn,X))
       OmDyn(ia) = dot_product(X,matmul( A_dyn,X))
@@ -107,4 +102,4 @@ subroutine unrestricted_Bethe_Salpeter_dynamic_perturbation(ispin,dTDA,eta,nBas,
   write(*,*) '---------------------------------------------------------------------------------------------------'
   write(*,*) 
 
-end subroutine unrestricted_Bethe_Salpeter_dynamic_perturbation
+end subroutine 

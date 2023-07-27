@@ -1,5 +1,5 @@
-subroutine unrestricted_Bethe_Salpeter_A_matrix_dynamic(ispin,eta,nBas,nC,nO,nV,nR,nSa,nSb,nSt,nS_sc,lambda,eGW, & 
-                                                        ERI_aaaa,ERI_aabb,ERI_bbbb,OmRPA,rho_RPA,OmBSE,A_dyn)
+subroutine UGW_phBSE_dynamic_kernel_A(ispin,eta,nBas,nC,nO,nV,nR,nSa,nSb,nSt,nS_sc,lambda,eGW, & 
+                                      ERI_aaaa,ERI_aabb,ERI_bbbb,OmRPA,rho_RPA,OmBSE,A_dyn,ZA_dyn)
 
 ! Compute the extra term for dynamical Bethe-Salpeter equation for linear response in the unrestricted formalism
 
@@ -37,6 +37,7 @@ subroutine unrestricted_Bethe_Salpeter_A_matrix_dynamic(ispin,eta,nBas,nC,nO,nV,
 ! Output variables
 
   double precision,intent(out)  :: A_dyn(nSt,nSt)
+  double precision,intent(out)  :: ZA_dyn(nSt,nSt)
 
 !--------------------------------------------------!
 ! Build BSE matrix for spin-conserving transitions !
@@ -76,6 +77,19 @@ subroutine unrestricted_Bethe_Salpeter_A_matrix_dynamic(ispin,eta,nBas,nC,nO,nV,
             enddo
 
             A_dyn(ia,jb) = A_dyn(ia,jb) - lambda*chi
+
+            chi = 0d0
+            do kc=1,nS_sc
+  
+              eps = + OmBSE - OmRPA(kc) - (eGW(a,1) - eGW(j,1))
+              chi = chi + rho_RPA(i,j,kc,1)*rho_RPA(a,b,kc,1)*(eps**2 - eta**2)/(eps**2 + eta**2)**2
+  
+              eps = + OmBSE - OmRPA(kc) - (eGW(b,1) - eGW(i,1))
+              chi = chi + rho_RPA(i,j,kc,1)*rho_RPA(a,b,kc,1)*(eps**2 - eta**2)/(eps**2 + eta**2)**2
+  
+            enddo
+
+            ZA_dyn(ia,jb) = ZA_dyn(ia,jb) + lambda*chi
  
           enddo
         enddo
@@ -112,6 +126,19 @@ subroutine unrestricted_Bethe_Salpeter_A_matrix_dynamic(ispin,eta,nBas,nC,nO,nV,
             enddo
 
             A_dyn(nSa+ia,nSa+jb) = A_dyn(nSa+ia,nSa+jb) - lambda*chi
+
+            chi = 0d0
+            do kc=1,nS_sc
+
+              eps = + OmBSE - OmRPA(kc) - (eGW(a,2) - eGW(j,2))
+              chi = chi + rho_RPA(i,j,kc,2)*rho_RPA(a,b,kc,2)*(eps**2 - eta**2)/(eps**2 + eta**2)**2
+
+              eps = + OmBSE - OmRPA(kc) - (eGW(b,2) - eGW(i,2))
+              chi = chi + rho_RPA(i,j,kc,2)*rho_RPA(a,b,kc,2)*(eps**2 - eta**2)/(eps**2 + eta**2)**2
+
+            enddo
+
+            ZA_dyn(nSa+ia,nSa+jb) = ZA_dyn(nSa+ia,nSa+jb) + lambda*chi
  
           enddo
         enddo
@@ -157,6 +184,19 @@ subroutine unrestricted_Bethe_Salpeter_A_matrix_dynamic(ispin,eta,nBas,nC,nO,nV,
 
             A_dyn(ia,jb) = A_dyn(ia,jb) - lambda*chi
 
+            chi = 0d0
+            do kc=1,nS_sc
+
+              eps = + OmBSE - OmRPA(kc) - (eGW(a,2) - eGW(j,1))
+              chi = chi + rho_RPA(i,j,kc,1)*rho_RPA(a,b,kc,2)*(eps**2 - eta**2)/(eps**2 + eta**2)**2
+
+              eps = + OmBSE - OmRPA(kc) - (eGW(b,2) - eGW(i,1))
+              chi = chi + rho_RPA(i,j,kc,1)*rho_RPA(a,b,kc,2)*(eps**2 - eta**2)/(eps**2 + eta**2)**2
+
+            enddo
+
+            ZA_dyn(ia,jb) = ZA_dyn(ia,jb) + lambda*chi
+
           end  do
         end  do
       end  do
@@ -193,6 +233,19 @@ subroutine unrestricted_Bethe_Salpeter_A_matrix_dynamic(ispin,eta,nBas,nC,nO,nV,
 
             A_dyn(nSa+ia,nSa+jb) = A_dyn(nSa+ia,nSa+jb) - lambda*chi
 
+            chi = 0d0
+            do kc=1,nS_sc
+
+              eps = + OmBSE - OmRPA(kc) - (eGW(a,1) - eGW(j,2))
+              chi = chi + rho_RPA(i,j,kc,2)*rho_RPA(a,b,kc,1)*(eps**2 - eta**2)/(eps**2 + eta**2)**2
+
+              eps = + OmBSE - OmRPA(kc) - (eGW(b,1) - eGW(i,2))
+              chi = chi + rho_RPA(i,j,kc,2)*rho_RPA(a,b,kc,1)*(eps**2 - eta**2)/(eps**2 + eta**2)**2
+
+            enddo
+
+            ZA_dyn(nSa+ia,nSa+jb) = ZA_dyn(nSa+ia,nSa+jb) + lambda*chi
+
           end  do
         end  do
       end  do
@@ -200,4 +253,4 @@ subroutine unrestricted_Bethe_Salpeter_A_matrix_dynamic(ispin,eta,nBas,nC,nO,nV,
 
   end if
 
-end subroutine unrestricted_Bethe_Salpeter_A_matrix_dynamic
+end subroutine 

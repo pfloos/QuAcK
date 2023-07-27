@@ -109,9 +109,9 @@ subroutine UGW_phBSE(TDA_W,TDA,dBSE,dTDA,spin_conserved,spin_flip,eta,  &
     !-------------------------------------------------
 
     if(dBSE) &
-      call unrestricted_Bethe_Salpeter_dynamic_perturbation(ispin,dTDA,eta,nBas,nC,nO,nV,nR,nS,nS_aa,nS_bb,nS_sc,nS_sc, &
-                                                            eW,eGW,ERI_aaaa,ERI_aabb,ERI_bbbb,dipole_int_aa,dipole_int_bb, &
-                                                            OmRPA,rho_RPA,OmBSE_sc,XpY_BSE_sc,XmY_BSE_sc)
+      call UGW_phBSE_dynamic_perturbation(ispin,dTDA,eta,nBas,nC,nO,nV,nR,nS,nS_aa,nS_bb,nS_sc,nS_sc,    &
+                                          eW,eGW,ERI_aaaa,ERI_aabb,ERI_bbbb,dipole_int_aa,dipole_int_bb, &
+                                          OmRPA,rho_RPA,OmBSE_sc,XpY_BSE_sc,XmY_BSE_sc)
 
     deallocate(OmBSE_sc,XpY_BSE_sc,XmY_BSE_sc)
 
@@ -145,9 +145,9 @@ subroutine UGW_phBSE(TDA_W,TDA,dBSE,dTDA,spin_conserved,spin_flip,eta,  &
     !-------------------------------------------------
 
     if(dBSE) &
-      call unrestricted_Bethe_Salpeter_dynamic_perturbation(ispin,dTDA,eta,nBas,nC,nO,nV,nR,nS,nS_ab,nS_ba,nS_sf,nS_sc, &
-                                                            eW,eGW,ERI_aaaa,ERI_aabb,ERI_bbbb,dipole_int_aa,dipole_int_bb, &
-                                                            OmRPA,rho_RPA,OmBSE_sf,XpY_BSE_sf,XmY_BSE_sf)
+      call UGW_phBSE_dynamic_perturbation(ispin,dTDA,eta,nBas,nC,nO,nV,nR,nS,nS_ab,nS_ba,nS_sf,nS_sc,    &
+                                          eW,eGW,ERI_aaaa,ERI_aabb,ERI_bbbb,dipole_int_aa,dipole_int_bb, &
+                                          OmRPA,rho_RPA,OmBSE_sf,XpY_BSE_sf,XmY_BSE_sf)
 
     deallocate(OmBSE_sf,XpY_BSE_sf,XmY_BSE_sf)
  
