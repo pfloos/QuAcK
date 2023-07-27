@@ -1,4 +1,4 @@
-subroutine GW_ppBSE_static_kernel_D(ispin,eta,nBas,nC,nO,nV,nR,nS,nOO,nVV,lambda,ERI,Om,rho,KD)
+subroutine GW_ppBSE_static_kernel_D(ispin,eta,nBas,nC,nO,nV,nR,nS,nOO,lambda,ERI,Om,rho,KD)
 
 ! Compute the OOOO block of the static screening W for the pp-BSE
 
@@ -15,7 +15,6 @@ subroutine GW_ppBSE_static_kernel_D(ispin,eta,nBas,nC,nO,nV,nR,nS,nOO,nVV,lambda
   integer,intent(in)            :: nR
   integer,intent(in)            :: nS
   integer,intent(in)            :: nOO
-  integer,intent(in)            :: nVV
   double precision,intent(in)   :: eta
   double precision,intent(in)   :: lambda
   double precision,intent(in)   :: ERI(nBas,nBas,nBas,nBas)

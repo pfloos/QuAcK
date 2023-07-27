@@ -1,4 +1,4 @@
-subroutine GF2_ppBSE2_dynamic_perturbation(ispin,dTDA,eta,nBas,nC,nO,nV,nR,nS,nOO,nVV,eGF,ERI,dipole_int, & 
+subroutine GF2_ppBSE2_dynamic_perturbation(ispin,dTDA,eta,nBas,nC,nO,nV,nR,nOO,nVV,eGF,ERI,dipole_int, & 
                                            Om1,X1,Y1,Om2,X2,Y2,KB_sta,KC_sta,KD_sta)
 
 ! Compute dynamical effects via perturbation theory for BSE
@@ -16,7 +16,6 @@ subroutine GF2_ppBSE2_dynamic_perturbation(ispin,dTDA,eta,nBas,nC,nO,nV,nR,nS,nO
   integer,intent(in)            :: nO
   integer,intent(in)            :: nV
   integer,intent(in)            :: nR
-  integer,intent(in)            :: nS
   integer,intent(in)            :: nOO
   integer,intent(in)            :: nVV
 
@@ -71,8 +70,9 @@ subroutine GF2_ppBSE2_dynamic_perturbation(ispin,dTDA,eta,nBas,nC,nO,nV,nR,nS,nO
 
   do ab=1,min(nVV,maxVV)
 
-!   if(.not.dTDA) call GF2_ppBSE2_dynamic_kernel_B(eta,nBas,nC,nO,nV,nR,nS,nOO,nVV,1d0,eGF,OmBSE(ab),KB_dyn)
-    call GF2_ppBSE2_dynamic_kernel_C(ispin,eta,nBas,nC,nO,nV,nR,nS,nVV,1d0,eGF,Om1(ab),KC_dyn,ZC_dyn)
+!   if(.not.dTDA) call GF2_ppBSE2_dynamic_kernel_B(eta,nBas,nC,nO,nV,nR,nOO,nVV,1d0,ERI,eGF,OmBSE(ab),KB_dyn)
+    call GF2_ppBSE2_dynamic_kernel_C(ispin,eta,nBas,nC,nO,nV,nR,nVV,1d0,ERI,eGF,Om1(ab),KC_dyn,ZC_dyn)
+
 
     Z1Dyn(ab)  = dot_product(X1(:,ab),matmul(ZC_dyn,X1(:,ab)))
     Om1Dyn(ab) = dot_product(X1(:,ab),matmul(KC_dyn - KC_sta,X1(:,ab)))
@@ -95,8 +95,8 @@ subroutine GF2_ppBSE2_dynamic_perturbation(ispin,dTDA,eta,nBas,nC,nO,nV,nR,nS,nO
 
   do ij=1,min(nOO,maxOO)
 
-!   if(.not.dTDA) call GF2_ppBSE2_dynamic_kernel_B(eta,nBas,nC,nO,nV,nR,nS,nOO,nVV,1d0,eGF,OmBSE(ab),KB_dyn)
-    call GF2_ppBSE2_dynamic_kernel_D(ispin,eta,nBas,nC,nO,nV,nR,nS,nOO,1d0,eGF,Om2(ij),KD_dyn,ZD_dyn)
+!   if(.not.dTDA) call GF2_ppBSE2_dynamic_kernel_B(eta,nBas,nC,nO,nV,nR,nOO,nVV,1d0,ERI,eGF,OmBSE(ab),KB_dyn)
+    call GF2_ppBSE2_dynamic_kernel_D(ispin,eta,nBas,nC,nO,nV,nR,nOO,1d0,ERI,eGF,Om2(ij),KD_dyn,ZD_dyn)
 
     Z2Dyn(ij)  = dot_product(Y2(:,ij),matmul(ZD_dyn,Y2(:,ij)))
     Om2Dyn(ij) = dot_product(Y2(:,ij),matmul(KD_dyn - KD_sta,Y2(:,ij)))

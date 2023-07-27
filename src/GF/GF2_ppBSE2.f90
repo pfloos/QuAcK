@@ -1,4 +1,4 @@
-subroutine GF2_ppBSE2(TDA,dBSE,dTDA,singlet,triplet,eta,nBas,nC,nO,nV,nR,nS,ERI,dipole_int,eGF,EcBSE)
+subroutine GF2_ppBSE2(TDA,dBSE,dTDA,singlet,triplet,eta,nBas,nC,nO,nV,nR,ERI,dipole_int,eGF,EcBSE)
 
 ! Compute the Bethe-Salpeter excitation energies at the pp level
 
@@ -19,7 +19,6 @@ subroutine GF2_ppBSE2(TDA,dBSE,dTDA,singlet,triplet,eta,nBas,nC,nO,nV,nR,nS,ERI,
   integer,intent(in)            :: nO
   integer,intent(in)            :: nV
   integer,intent(in)            :: nR
-  integer,intent(in)            :: nS
   double precision,intent(in)   :: eGF(nBas)
   double precision,intent(in)   :: ERI(nBas,nBas,nBas,nBas)
   double precision,intent(in)   :: dipole_int(nBas,nBas,ncart)
@@ -80,9 +79,9 @@ subroutine GF2_ppBSE2(TDA,dBSE,dTDA,singlet,triplet,eta,nBas,nC,nO,nV,nR,nS,ERI,
 
     ! Compute BSE excitation energies
 
-    if(.not.TDA) call GF2_ppBSE2_static_kernel_B(ispin,eta,nBas,nC,nO,nV,nR,nS,nOO,nVV,1d0,ERI,KB_sta)
-                 call GF2_ppBSE2_static_kernel_C(ispin,eta,nBas,nC,nO,nV,nR,nS,nVV,1d0,ERI,KC_sta)
-                 call GF2_ppBSE2_static_kernel_D(ispin,eta,nBas,nC,nO,nV,nR,nS,nOO,1d0,ERI,KD_sta)
+    if(.not.TDA) call GF2_ppBSE2_static_kernel_B(ispin,eta,nBas,nC,nO,nV,nR,nOO,nVV,1d0,ERI,eGF,KB_sta)
+                 call GF2_ppBSE2_static_kernel_C(ispin,eta,nBas,nC,nO,nV,nR,nVV,1d0,ERI,eGF,KC_sta)
+                 call GF2_ppBSE2_static_kernel_D(ispin,eta,nBas,nC,nO,nV,nR,nOO,1d0,ERI,eGF,KD_sta)
 
     if(.not.TDA) call ppLR_B(ispin,nBas,nC,nO,nV,nR,nOO,nVV,1d0,ERI,Bpp)
                  call ppLR_C(ispin,nBas,nC,nO,nV,nR,nVV,1d0,eGF,ERI,Cpp)
@@ -100,9 +99,9 @@ subroutine GF2_ppBSE2(TDA,dBSE,dTDA,singlet,triplet,eta,nBas,nC,nO,nV,nR,nS,ERI,
     ! Compute the dynamical screening at the ppBSE level !
     !----------------------------------------------------!
 
-!   if(dBSE) &
-!       call GF2_ppBSE2_dynamic_perturbation(ispin,dTDA,eta,nBas,nC,nO,nV,nR,nS,nOO,nVV,eGF,ERI,dipole_int, &
-!                                            Om1,X1,Y1,Om2,X2,Y2,KB_sta,KC_sta,KD_sta)
+    if(dBSE) &
+        call GF2_ppBSE2_dynamic_perturbation(ispin,dTDA,eta,nBas,nC,nO,nV,nR,nOO,nVV,eGF,ERI,dipole_int, &
+                                             Om1,X1,Y1,Om2,X2,Y2,KB_sta,KC_sta,KD_sta)
 
     deallocate(Om1,X1,Y1,Om2,X2,Y2,Bpp,Cpp,Dpp,KB_sta,KC_sta,KD_sta)
 
@@ -132,9 +131,9 @@ subroutine GF2_ppBSE2(TDA,dBSE,dTDA,singlet,triplet,eta,nBas,nC,nO,nV,nR,nS,ERI,
 
     ! Compute BSE excitation energies
 
-    if(.not.TDA) call GF2_ppBSE2_static_kernel_B(ispin,eta,nBas,nC,nO,nV,nR,nS,nOO,nVV,1d0,ERI,KB_sta)
-                 call GF2_ppBSE2_static_kernel_C(ispin,eta,nBas,nC,nO,nV,nR,nS,nVV,1d0,ERI,KC_sta)
-                 call GF2_ppBSE2_static_kernel_D(ispin,eta,nBas,nC,nO,nV,nR,nS,nOO,1d0,ERI,KD_sta)
+    if(.not.TDA) call GF2_ppBSE2_static_kernel_B(ispin,eta,nBas,nC,nO,nV,nR,nOO,nVV,1d0,ERI,eGF,KB_sta)
+                 call GF2_ppBSE2_static_kernel_C(ispin,eta,nBas,nC,nO,nV,nR,nVV,1d0,ERI,eGF,KC_sta)
+                 call GF2_ppBSE2_static_kernel_D(ispin,eta,nBas,nC,nO,nV,nR,nOO,1d0,ERI,eGF,KD_sta)
 
 
     if(.not.TDA) call ppLR_B(ispin,nBas,nC,nO,nV,nR,nOO,nVV,1d0,ERI,Bpp)
@@ -153,9 +152,9 @@ subroutine GF2_ppBSE2(TDA,dBSE,dTDA,singlet,triplet,eta,nBas,nC,nO,nV,nR,nS,ERI,
     ! Compute the dynamical screening at the ppBSE level !
     !----------------------------------------------------!
 
-!   if(dBSE) &
-!       call GF2_ppBSE2_dynamic_perturbation(ispin,dTDA,eta,nBas,nC,nO,nV,nR,nS,nOO,nVV,eGF,ERI,dipole_int, &
-!                                            Om1,X1,Y1,Om2,X2,Y2,KB_sta,KC_sta,KD_sta)
+    if(dBSE) &
+        call GF2_ppBSE2_dynamic_perturbation(ispin,dTDA,eta,nBas,nC,nO,nV,nR,nOO,nVV,eGF,ERI,dipole_int, &
+                                             Om1,X1,Y1,Om2,X2,Y2,KB_sta,KC_sta,KD_sta)
 
     deallocate(Om1,X1,Y1,Om2,X2,Y2,Bpp,Cpp,Dpp,KB_sta,KC_sta,KD_sta)
 

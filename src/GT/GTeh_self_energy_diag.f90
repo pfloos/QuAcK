@@ -16,8 +16,8 @@ subroutine GTeh_self_energy_diag(eta,nBas,nC,nO,nV,nR,nS,e,Om,rhoL,rhoR,EcGM,Sig
   integer,intent(in)            :: nS
   double precision,intent(in)   :: e(nBas)
   double precision,intent(in)   :: Om(nS)
-  double precision,intent(in)   :: rhoL(nBas,nBas,nS)
-  double precision,intent(in)   :: rhoR(nBas,nBas,nS)
+  double precision,intent(in)   :: rhoL(nBas,nBas,nS,2)
+  double precision,intent(in)   :: rhoR(nBas,nBas,nS,2)
 
 ! Local variables
 
@@ -46,7 +46,7 @@ subroutine GTeh_self_energy_diag(eta,nBas,nC,nO,nV,nR,nS,e,Om,rhoL,rhoR,EcGM,Sig
       do m=1,nS
 
         eps = e(p) - e(i) + Om(m)
-        num = rhoL(i,p,m)*rhoR(i,p,m)
+        num = rhoL(p,i,m,2)*rhoR(i,p,m,2)
         Sig(p) = Sig(p) + num*eps/(eps**2 + eta**2)
         Z(p)   = Z(p)   - num*(eps**2 - eta**2)/(eps**2 + eta**2)**2
 
@@ -61,7 +61,7 @@ subroutine GTeh_self_energy_diag(eta,nBas,nC,nO,nV,nR,nS,e,Om,rhoL,rhoR,EcGM,Sig
       do m=1,nS
 
         eps = e(p) - e(a) - Om(m)
-        num = rhoL(p,a,m)*rhoR(p,a,m)
+        num = rhoL(a,p,m,1)*rhoR(p,a,m,1)
         Sig(p) = Sig(p) + num*eps/(eps**2 + eta**2)
         Z(p)   = Z(p)   - num*(eps**2 - eta**2)/(eps**2 + eta**2)**2
 

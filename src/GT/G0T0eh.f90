@@ -58,8 +58,8 @@ subroutine G0T0eh(doACFDT,exchange_kernel,doXBS,dophBSE,dophBSE2,TDA_T,TDA,dBSE,
   double precision,allocatable  :: Om(:)
   double precision,allocatable  :: XpY(:,:)
   double precision,allocatable  :: XmY(:,:)
-  double precision,allocatable  :: rhoL(:,:,:)
-  double precision,allocatable  :: rhoR(:,:,:)
+  double precision,allocatable  :: rhoL(:,:,:,:)
+  double precision,allocatable  :: rhoR(:,:,:,:)
 
   double precision,allocatable  :: eGT(:)
   double precision,allocatable  :: eGTlin(:)
@@ -102,41 +102,16 @@ subroutine G0T0eh(doACFDT,exchange_kernel,doXBS,dophBSE,dophBSE2,TDA_T,TDA,dBSE,
 ! Memory allocation
 
   allocate(Aph(nS,nS),Bph(nS,nS),Sig(nBas),Z(nBas),Om(nS),XpY(nS,nS),XmY(nS,nS), & 
-           rhoL(nBas,nBas,nS),rhoR(nBas,nBas,nS),eGT(nBas),eGTlin(nBas))
+           rhoL(nBas,nBas,nS,2),rhoR(nBas,nBas,nS,2),eGT(nBas),eGTlin(nBas))
 
 !---------------------------------
-! Compute (singlet) RPA screening 
+! Compute (triplet) RPA screening 
 !---------------------------------
-
-! allocate(OmRPA(nS),XpY_RPA(nS,nS),XmY_RPA(nS,nS),rho_RPA(nBas,nBas,nS),KA_sta(nS,nS),KB_sta(nS,nS))
-
-! isp_W = 1
-! EcRPA = 0d0
-
-!                call phLR_A(isp_W,dRPA_W,nBas,nC,nO,nV,nR,nS,1d0,eHF,ERI,Aph)
-! if(.not.TDA_T) call phLR_B(isp_W,dRPA_W,nBas,nC,nO,nV,nR,nS,1d0,ERI,Bph)
-
-! call phLR(TDA_T,nS,Aph,Bph,EcRPA,OmRPA,XpY_RPA,XmY_RPA)
-! call GW_excitation_density(nBas,nC,nO,nR,nS,ERI,XpY_RPA,rho_RPA)
-
-! call GW_phBSE_static_kernel_A(eta,nBas,nC,nO,nV,nR,nS,1d0,ERI,OmRPA,rho_RPA,KA_sta)
-! call GW_phBSE_static_kernel_B(eta,nBas,nC,nO,nV,nR,nS,1d0,ERI,OmRPA,rho_RPA,KB_sta)
-
-! deallocate(OmRPA,XpY_RPA,XmY_RPA,rho_RPA)
-
-!-------------------!
-! Compute screening !
-!-------------------!
-
-! Spin manifold (triplet for GTeh)
 
   ispin = 2
 
   call phLR_A(ispin,dRPA,nBas,nC,nO,nV,nR,nS,1d0,eHF,ERI,Aph)
   if(.not.TDA_T) call phLR_B(ispin,dRPA,nBas,nC,nO,nV,nR,nS,1d0,ERI,Bph)
-
-!                Aph(:,:) = Aph(:,:) + KA_sta(:,:)
-! if(.not.TDA_T) Bph(:,:) = Bph(:,:) + KB_sta(:,:)
 
   call phLR(TDA_T,nS,Aph,Bph,EcRPA,Om,XpY,XmY)
 

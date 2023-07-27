@@ -1,4 +1,4 @@
-subroutine regularized_self_energy_GF2(eta,nBas,nC,nO,nV,nR,nS,eHF,eGF2,ERI,SigC,Z)
+subroutine regularized_self_energy_GF2(eta,nBas,nC,nO,nV,nR,eHF,eGF2,ERI,SigC,Z)
 
 ! Compute GF2 self-energy and its renormalization factor
 
@@ -8,7 +8,11 @@ subroutine regularized_self_energy_GF2(eta,nBas,nC,nO,nV,nR,nS,eHF,eGF2,ERI,SigC
 ! Input variables
 
   double precision,intent(in)   :: eta
-  integer,intent(in)            :: nBas,nC,nO,nV,nR,nS
+  integer,intent(in)            :: nBas
+  integer,intent(in)            :: nC
+  integer,intent(in)            :: nO
+  integer,intent(in)            :: nV
+  integer,intent(in)            :: nR
   double precision,intent(in)   :: eHF(nBas)
   double precision,intent(in)   :: eGF2(nBas)
   double precision,intent(in)   :: ERI(nBas,nBas,nBas,nBas)

@@ -62,11 +62,11 @@ subroutine G0F2(dophBSE,doppBSE,TDA,dBSE,dTDA,singlet,triplet,linearize,eta,regu
 
   if(regularize) then 
 
-    call regularized_self_energy_GF2_diag(eta,nBas,nC,nO,nV,nR,nS,eHF,eHF,ERI,SigC,Z)
+    call regularized_self_energy_GF2_diag(eta,nBas,nC,nO,nV,nR,eHF,eHF,ERI,SigC,Z)
 
   else
 
-    call GF2_self_energy_diag(eta,nBas,nC,nO,nV,nR,nS,eHF,eHF,ERI,SigC,Z)
+    call GF2_self_energy_diag(eta,nBas,nC,nO,nV,nR,eHF,eHF,ERI,SigC,Z)
 
   end if
 
@@ -81,7 +81,7 @@ subroutine G0F2(dophBSE,doppBSE,TDA,dBSE,dTDA,singlet,triplet,linearize,eta,regu
     write(*,*) ' *** Quasiparticle energies obtained by root search (experimental) *** '
     write(*,*)
 
-    call QP_graph_GF2(eta,nBas,nC,nO,nV,nR,nS,eHF,eGFlin,ERI,eGF)
+    call QP_graph_GF2(eta,nBas,nC,nO,nV,nR,eHF,eGFlin,ERI,eGF)
 
 
   end if
@@ -110,6 +110,19 @@ subroutine G0F2(dophBSE,doppBSE,TDA,dBSE,dTDA,singlet,triplet,linearize,eta,regu
 
 ! Perform ppBSE2 calculation
 
-  if(doppBSE) call GF2_ppBSE2(TDA,dBSE,dTDA,singlet,triplet,eta,nBas,nC,nO,nV,nR,nS,ERI,dipole_int,eGF,EcBSE)
+  if(doppBSE) then 
+   
+    call GF2_ppBSE2(TDA,dBSE,dTDA,singlet,triplet,eta,nBas,nC,nO,nV,nR,ERI,dipole_int,eGF,EcBSE)
+
+    write(*,*)
+    write(*,*)'-------------------------------------------------------------------------------'
+    write(*,'(2X,A50,F20.10,A3)') 'Tr@ppBSE@G0F2 correlation energy (singlet) =',EcBSE(1),' au'
+    write(*,'(2X,A50,F20.10,A3)') 'Tr@ppBSE@G0F2 correlation energy (triplet) =',3d0*EcBSE(2),' au'
+    write(*,'(2X,A50,F20.10,A3)') 'Tr@ppBSE@G0F2 correlation energy           =',EcBSE(1) + 3d0*EcBSE(2),' au'
+    write(*,'(2X,A50,F20.10,A3)') 'Tr@ppBSE@G0F2 total energy                 =',ENuc + ERHF + EcBSE(1) + 3d0*EcBSE(2),' au'
+    write(*,*)'-------------------------------------------------------------------------------'
+    write(*,*)
+
+  end if
 
 end subroutine 

@@ -1,4 +1,4 @@
-subroutine GW_ppBSE_static_kernel_C(ispin,eta,nBas,nC,nO,nV,nR,nS,nOO,nVV,lambda,ERI,Om,rho,KC)
+subroutine GW_ppBSE_static_kernel_C(ispin,eta,nBas,nC,nO,nV,nR,nS,nVV,lambda,ERI,Om,rho,KC)
 
 ! Compute the VVVV block of the static screening W for the pp-BSE
 
@@ -14,7 +14,6 @@ subroutine GW_ppBSE_static_kernel_C(ispin,eta,nBas,nC,nO,nV,nR,nS,nOO,nVV,lambda
   integer,intent(in)            :: nV
   integer,intent(in)            :: nR
   integer,intent(in)            :: nS
-  integer,intent(in)            :: nOO
   integer,intent(in)            :: nVV
   double precision,intent(in)   :: eta
   double precision,intent(in)   :: lambda
