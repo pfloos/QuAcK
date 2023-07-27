@@ -15,5 +15,5 @@
 # G0W0* evGW* qsGW* SRG-qsGW ufG0W0 ufGW
   F     F     F     F        F      F
 # G0T0pp evGTpp qsGTpp G0T0eh evGTeh qsGTeh
-  T      T      F      F      F      F
+  F      F      F      T      F      F
 # * unrestricted version available

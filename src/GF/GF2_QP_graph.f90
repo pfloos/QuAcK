@@ -1,4 +1,4 @@
-subroutine GF2_QP_graph(eta,nBas,nC,nO,nV,nR,nS,eHF,ERI,eGF)
+subroutine GF2_QP_graph(eta,nBas,nC,nO,nV,nR,nS,eHF,ERI,eGF,Z)
 
 ! Compute the graphical solution of the GF2 QP equation
 
@@ -26,7 +26,7 @@ subroutine GF2_QP_graph(eta,nBas,nC,nO,nV,nR,nS,eHF,ERI,eGF)
 ! Output variables
 
   double precision,intent(out)  :: eGF(nBas)
-
+  double precision,intent(out)  :: Z(nBas)
 
 ! Run Newton's algorithm to find the root
  
@@ -48,22 +48,23 @@ subroutine GF2_QP_graph(eta,nBas,nC,nO,nV,nR,nS,eHF,ERI,eGF)
       sigC  = GF2_SigC(p,w,eta,nBas,nC,nO,nV,nR,nS,eHF,ERI)
       dsigC = GF2_dSigC(p,w,eta,nBas,nC,nO,nV,nR,nS,eHF,ERI)
       f  = w - eHF(p) - sigC
-      df = 1d0 - dsigC
+      df = 1d0/(1d0 - dsigC)
     
-      w = w - f/df
+      w = w - df*f
 
-      write(*,'(A3,I3,A1,1X,3F15.9)') 'It.',nIt,':',w*HaToeV,f,sigC
-    
+      write(*,'(A3,I3,A1,1X,3F15.9)') 'It.',nIt,':',w*HaToeV,df,f
     
     end do
  
     if(nIt == maxIt) then 
 
       write(*,*) 'Newton root search has not converged!'
+      eGF(p) = eHF(p)
 
     else
 
       eGF(p) = w
+      Z(p)   = df
 
       write(*,'(A32,F16.10)')   'Quasiparticle energy (eV)   ',eGF(p)*HaToeV
       write(*,*)

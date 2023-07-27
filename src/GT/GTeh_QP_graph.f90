@@ -1,4 +1,4 @@
-subroutine GTeh_QP_graph(eta,nBas,nC,nO,nV,nR,nS,eHF,Om,rhoL,rhoR,eGTlin,eGT)
+subroutine GTeh_QP_graph(eta,nBas,nC,nO,nV,nR,nS,eHF,Om,rhoL,rhoR,eGTlin,eGT,Z)
 
   implicit none
   include 'parameters.h'
@@ -30,7 +30,9 @@ subroutine GTeh_QP_graph(eta,nBas,nC,nO,nV,nR,nS,eHF,Om,rhoL,rhoR,eGTlin,eGT)
   double precision              :: w
   
 ! Output variables
+
   double precision,intent(out)  :: eGT(nBas)
+  double precision,intent(out)  :: Z(nBas)
 
   sigC = 0d0
   dsigC = 0d0
@@ -54,20 +56,26 @@ subroutine GTeh_QP_graph(eta,nBas,nC,nO,nV,nR,nS,eHF,Om,rhoL,rhoR,eGTlin,eGT)
        sigC  = GTeh_SigC(p,w,eta,nBas,nC,nO,nV,nR,nS,eGTlin,Om,rhoL,rhoR)
        dsigC = GTeh_dSigC(p,w,eta,nBas,nC,nO,nV,nR,nS,eGTlin,Om,rhoL,rhoR)
        f  = w - eHF(p)  - sigC 
-       df = 1d0 - dsigC
+       df = 1d0/(1d0 - dsigC)
     
-       w = w - f/df
+       w = w - df*f
 
-       write(*,'(A3,I3,A1,1X,3F15.9)') 'It.',nIt,':',w*HaToeV,f,sigC
+       write(*,'(A3,I3,A1,1X,3F15.9)') 'It.',nIt,':',w*HaToeV,df,f
 
     end do
 
     if(nIt == maxIt) then 
+
       write(*,*) 'Newton root search has not converged!'
+      eGT(p) = eGTlin(p)
+
     else
+
       eGT(p) = w
+      Z(p)   = df
       write(*,'(A32,F16.10)')   'Quasiparticle energy (eV)   ',eGT(p)*HaToeV
       write(*,*)
+
     end if
 
   end do

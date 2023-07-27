@@ -164,7 +164,7 @@ subroutine G0T0pp(doACFDT,exchange_kernel,doXBS,dophBSE,TDA_T,TDA,dBSE,dTDA,dopp
     write(*,*)
      
    call GTpp_QP_graph(eta,nBas,nC,nO,nV,nR,nOOs,nVVs,nOOt,nVVt,eHF,Om1s,rho1s,Om2s,rho2s, & 
-                      Om1t,rho1t,Om2t,rho2t,eHF,eGT)
+                      Om1t,rho1t,Om2t,rho2t,eHF,eGT,Z)
 
   end if
 
