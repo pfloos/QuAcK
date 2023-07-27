@@ -113,4 +113,4 @@ subroutine DIP_EOM_CCD_2h(nC,nO,nV,nR,eO,OOVV,OOOO,t)
 
   call print_excitation('DIP-EOM-CCD ',3,nOO,Om)
 
-end subroutine DIP_EOM_CCD_2h
+end subroutine 

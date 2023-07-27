@@ -45,4 +45,4 @@ subroutine form_ub(nC,nO,nV,nR,OOVV,t1,ub)
     end do
   end do
 
-end subroutine form_ub
+end subroutine 

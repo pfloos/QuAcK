@@ -50,4 +50,4 @@ subroutine form_g(nC,nO,nV,nR,hvv,hoo,VOVV,OOOV,t1,gvv,goo)
     end do
   end do
 
-end subroutine form_g
+end subroutine 

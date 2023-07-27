@@ -76,4 +76,4 @@ subroutine form_v(nC,nO,nV,nR,X1,X2,X3,X4,t2,v)
     enddo
   enddo
 
-end subroutine form_v
+end subroutine 

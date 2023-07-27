@@ -33,4 +33,4 @@ subroutine CCD_correlation_energy(nC,nO,nV,nR,OOVV,t2,EcCCD)
 
   EcCCD = 0.25d0*EcCCD
 
-end subroutine CCD_correlation_energy
+end subroutine 

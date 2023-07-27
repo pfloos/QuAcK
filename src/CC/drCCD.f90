@@ -195,4 +195,4 @@ subroutine drCCD(maxSCF,thresh,max_diis,nBasin,nCin,nOin,nVin,nRin,ERI,ENuc,ERHF
   write(*,*)'----------------------------------------------------'
   write(*,*)
 
-end subroutine drCCD
+end subroutine 

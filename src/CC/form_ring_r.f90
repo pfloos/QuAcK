@@ -67,4 +67,4 @@ subroutine form_ring_r(nC,nO,nV,nR,OVVO,OOVV,t2,r2)
     end do
   end do
 
-end subroutine form_ring_r
+end subroutine 

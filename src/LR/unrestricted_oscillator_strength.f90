@@ -82,4 +82,4 @@ subroutine unrestricted_oscillator_strength(nBas,nC,nO,nV,nR,nS,nSa,nSb,nSt,maxS
   write(*,*) '---------------------------------------------------------------'
   write(*,*)
 
-end subroutine unrestricted_oscillator_strength
+end subroutine 

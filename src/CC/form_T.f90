@@ -43,4 +43,4 @@ subroutine form_T(nC,nO,nV,nR,delta_OOOVVV,ub,ubb,EcCCT)
 
   EcCCT = - EcCCT/36d0
 
-end subroutine form_T
+end subroutine 

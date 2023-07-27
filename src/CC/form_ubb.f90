@@ -64,4 +64,4 @@ subroutine form_ubb(nC,nO,nV,nR,VVVO,VOOO,t2,ubb)
     end do
   end do
 
-end subroutine form_ubb
+end subroutine 

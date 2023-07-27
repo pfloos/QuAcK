@@ -68,4 +68,4 @@ subroutine form_u(nC,nO,nV,nR,OOOO,VVVV,OVOV,t2,u)
     enddo
   enddo
 
-end subroutine form_u
+end subroutine 

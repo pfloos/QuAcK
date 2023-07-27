@@ -43,4 +43,4 @@ subroutine antisymmetrize_ERI(ispin,nBas,ERI,db_ERI)
 
   endif
 
-end subroutine antisymmetrize_ERI
+end subroutine 

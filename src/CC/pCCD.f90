@@ -212,4 +212,4 @@ subroutine pCCD(maxSCF,thresh,max_diis,nBas,nC,nO,nV,nR,ERI,ENuc,ERHF,eHF)
 
   endif
 
-end subroutine pCCD
+end subroutine 

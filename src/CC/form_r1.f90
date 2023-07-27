@@ -74,4 +74,4 @@ subroutine form_r1(nC,nO,nV,nR,OVVO,OVVV,OOOV,hvv,hoo,hvo,t1,t2,tau,r1)
     end do
   end do
 
-end subroutine form_r1
+end subroutine 

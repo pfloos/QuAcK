@@ -233,4 +233,4 @@ subroutine BCCD(maxSCF,thresh,max_diis,nBasin,nCin,nOin,nVin,nRin,ERI,ENuc,ERHF,
   write(*,'(1X,A15,1X,F10.6)') 'Ec(MP4-SDQ) = ',EcMP4
   write(*,*)
 
-end subroutine BCCD
+end subroutine 

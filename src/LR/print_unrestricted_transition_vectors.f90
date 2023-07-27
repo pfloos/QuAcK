@@ -49,7 +49,7 @@ subroutine print_unrestricted_transition_vectors(ispin,nBas,nC,nO,nV,nR,nS,nSa,n
 
 ! Compute <S**2>
 
-  call unrestricted_S2_expval(ispin,nBas,nC,nO,nV,nR,nS,nSa,nSb,nSt,maxS,c,S,Omega,XpY,XmY,S2)
+  call S2_expval(ispin,nBas,nC,nO,nV,nR,nS,nSa,nSb,nSt,maxS,c,S,Omega,XpY,XmY,S2)
 
 ! Print details about spin-conserved excitations
 
@@ -167,4 +167,4 @@ subroutine print_unrestricted_transition_vectors(ispin,nBas,nC,nO,nV,nR,nS,nSa,n
   write(*,'(A30,F10.6)') 'Thomas-Reiche-Kuhn sum rule = ',sum(os(:))
   write(*,*)
 
-end subroutine print_unrestricted_transition_vectors
+end subroutine 

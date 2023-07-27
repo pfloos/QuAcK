@@ -70,4 +70,4 @@ subroutine form_ladder_r(nC,nO,nV,nR,OOOO,OOVV,VVVV,t2,r2)
     end do
   end do
 
-end subroutine form_ladder_r
+end subroutine 

@@ -136,4 +136,4 @@ subroutine form_r2(nC,nO,nV,nR,OOVV,OVOO,OVVV,OVVO,gvv,goo,aoooo,bvvvv,hovvo,t1,
     end do
   end do
 
-end subroutine form_r2
+end subroutine 

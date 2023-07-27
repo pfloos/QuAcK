@@ -349,4 +349,4 @@ subroutine CCGW(maxSCF,thresh,nBas,nC,nO,nV,nR,ERI,ENuc,ERHF,e)
   enddo
   write(*,*)'-------------------------------------------------------------------------------'
 
-end subroutine CCGW
+end subroutine 

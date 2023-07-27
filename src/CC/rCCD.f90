@@ -223,4 +223,4 @@ subroutine rCCD(maxSCF,thresh,max_diis,nBasin,nCin,nOin,nVin,nRin,ERI,ENuc,ERHF,
 
   if(do_EE_EOM_CC_1h1p) call EE_EOM_CCD_1h1p(nC,nO,nV,nR,eO,eV,OOVV,OVVO,t)
 
-end subroutine rCCD
+end subroutine 

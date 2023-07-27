@@ -33,4 +33,4 @@ subroutine CCSD_correlation_energy(nC,nO,nV,nR,OOVV,tau,EcCCSD)
 
   EcCCSD = 0.5d0*EcCCSD
 
-end subroutine CCSD_correlation_energy
+end subroutine 

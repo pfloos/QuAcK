@@ -86,4 +86,4 @@ subroutine form_FB(nC,nO,nV,nR,foo,fvv,fov,OOOV,OOVV,OVVV,t,FooB,FvvB,FovB)
     enddo
   enddo
 
-end subroutine form_FB
+end subroutine 

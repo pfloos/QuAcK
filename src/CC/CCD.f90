@@ -272,4 +272,4 @@ subroutine CCD(maxSCF,thresh,max_diis,nBasin,nCin,nOin,nVin,nRin,ERI,ENuc,ERHF,e
 
   if(do_DIP_EOM_CC_2h) call DIP_EOM_CCD_2h(nC,nO,nV,nR,eO,OOVV,OOOO,t)
 
-end subroutine CCD
+end subroutine 

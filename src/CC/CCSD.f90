@@ -302,4 +302,4 @@ subroutine CCSD(maxSCF,thresh,max_diis,doCCSDT,nBasin,nCin,nOin,nVin,nRin,ERI,EN
 
   end if
 
-end subroutine CCSD
+end subroutine 
