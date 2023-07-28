@@ -118,7 +118,7 @@ subroutine UCIS(spin_conserved,spin_flip,nBas,nC,nO,nV,nR,nS,ERI_aaaa,ERI_aabb,E
 
     call diagonalize_matrix(nS_sf,A_sf,Om_sf)
     A_sf(:,:) = transpose(A_sf)
-    call print_excitation_energies('UCIS        ',6,nS_sf,Om_sf)
+    call print_excitation_energies('UCIS',6,nS_sf,Om_sf)
     call phULR_transition_vectors(ispin,nBas,nC,nO,nV,nR,nS,nS_ab,nS_ba,nS_sf,dipole_int_aa,dipole_int_bb, &
                                   cHF,S,Om_sf,A_sf,A_sf)
  

@@ -84,7 +84,7 @@ subroutine phURPA(TDA,doACFDT,exchange_kernel,spin_conserved,spin_flip,nBas,nC,n
 
     call phULR(ispin,.true.,TDA,.false.,nBas,nC,nO,nV,nR,nS_aa,nS_bb,nS_sc,nS_sc,1d0,e, & 
                ERI_aaaa,ERI_aabb,ERI_bbbb,Om_sc,rho_sc,EcRPA(ispin),Om_sc,XpY_sc,XmY_sc)
-    call print_excitation_energies('phURPA@HF',5,nS_sc,Om_sc)
+    call print_excitation_energies('phRPA@UHF',5,nS_sc,Om_sc)
     call phULR_transition_vectors(ispin,nBas,nC,nO,nV,nR,nS,nS_aa,nS_bb,nS_sc,dipole_int_aa,dipole_int_bb, &
                                   c,S,Om_sc,XpY_sc,XmY_sc)
 
@@ -108,7 +108,7 @@ subroutine phURPA(TDA,doACFDT,exchange_kernel,spin_conserved,spin_flip,nBas,nC,n
 
     call phULR(ispin,.true.,TDA,.false.,nBas,nC,nO,nV,nR,nS_ab,nS_ba,nS_sf,nS_sf,1d0,e, &
                ERI_aaaa,ERI_aabb,ERI_bbbb,Om_sf,rho_sf,EcRPA(ispin),Om_sf,XpY_sf,XmY_sf)
-    call print_excitation_energies('phURPA@HF',6,nS_sf,Om_sf)
+    call print_excitation_energies('phRPA@UHF',6,nS_sf,Om_sf)
     call phULR_transition_vectors(ispin,nBas,nC,nO,nV,nR,nS,nS_ab,nS_ba,nS_sf,dipole_int_aa,dipole_int_bb, &
                                   c,S,Om_sf,XpY_sf,XmY_sf)
 

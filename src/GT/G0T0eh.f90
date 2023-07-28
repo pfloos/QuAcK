@@ -114,7 +114,7 @@ subroutine G0T0eh(doACFDT,exchange_kernel,doXBS,dophBSE,dophBSE2,TDA_T,TDA,dBSE,
 
   call phLR(TDA_T,nS,Aph,Bph,EcRPA,Om,XpY,XmY)
 
-  if(print_T) call print_excitation_energies('RPA@HF      ',ispin,nS,Om)
+  if(print_T) call print_excitation_energies('phRPA@HF',ispin,nS,Om)
 
 !--------------------------!
 ! Compute spectral weights !

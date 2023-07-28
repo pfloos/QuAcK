@@ -7,7 +7,7 @@ subroutine print_excitation_energies(method,ispin,nS,Om)
 
 ! Input variables
 
-  character(len=20),intent(in)       :: method
+  character(len=*),intent(in)        :: method
   integer,intent(in)                 :: ispin
   integer,intent(in)                 :: nS
   double precision,intent(in)        :: Om(nS)
@@ -27,19 +27,19 @@ subroutine print_excitation_energies(method,ispin,nS,Om)
   if(ispin == 7) spin_manifold = 'beta-beta'
 
   write(*,*)
-  write(*,*)'-------------------------------------------------------------------------------'
-  write(*,'(1X,A20,A20,A20,A9)') trim(method),' calculation: ',trim(spin_manifold),' manifold'
-  write(*,*)'-------------------------------------------------------------------------------'
+  write(*,*)'-------------------------------------------------------------'
+  write(*,'(1X,A15,A15,A15,A9)') trim(method),' calculation: ',trim(spin_manifold),' manifold'
+  write(*,*)'-------------------------------------------------------------'
   write(*,'(1X,A1,1X,A5,1X,A1,1X,A23,1X,A1,1X,A23,1X,A1,1X)') &
             '|','State','|',' Excitation energy (au) ','|',' Excitation energy (eV) ','|'
-  write(*,*)'-------------------------------------------------------------------------------'
+  write(*,*)'-------------------------------------------------------------'
 
   do ia=1,min(maxS,nS)
     write(*,'(1X,A1,1X,I5,1X,A1,1X,F23.6,1X,A1,1X,F23.6,1X,A1,1X)') & 
       '|',ia,'|',Om(ia),'|',Om(ia)*HaToeV,'|'
   enddo
 
-  write(*,*)'-------------------------------------------------------------------------------'
+  write(*,*)'-------------------------------------------------------------'
   write(*,*)
 
 end subroutine 

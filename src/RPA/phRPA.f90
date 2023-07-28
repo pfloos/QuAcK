@@ -90,7 +90,7 @@ subroutine phRPA(TDA,doACFDT,exchange_kernel,singlet,triplet,nBas,nC,nO,nV,nR,nS
     if(.not.TDA) call phLR_B(ispin,dRPA,nBas,nC,nO,nV,nR,nS,1d0,ERI,Bph)
 
     call phLR(TDA,nS,Aph,Bph,EcTr(ispin),Om,XpY,XmY)
-    call print_excitation_energies('phRPA@HF    ',ispin,nS,Om)
+    call print_excitation_energies('phRPA@HF',ispin,nS,Om)
     call phLR_transition_vectors(.false.,nBas,nC,nO,nV,nR,nS,dipole_int,Om,XpY,XmY)
 
   endif

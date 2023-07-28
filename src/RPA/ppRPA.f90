@@ -78,8 +78,8 @@ subroutine ppRPA(TDA,doACFDT,singlet,triplet,nBas,nC,nO,nV,nR,ENuc,EHF,ERI,dipol
 
 !   call print_transition_vectors_pp(.true.,nBas,nC,nO,nV,nR,nOO,nVV,dipole_int,Om1,X1,Y1,Om2,X2,Y2)
 
-    call print_excitation_energies('ppRPA (N+2) ',ispin,nVV,Om1)
-    call print_excitation_energies('ppRPA (N-2) ',ispin,nOO,Om2)
+    call print_excitation_energies('ppRPA@HF (N+2)',ispin,nVV,Om1)
+    call print_excitation_energies('ppRPA@HF (N-2)',ispin,nOO,Om2)
 
     deallocate(Om1,X1,Y1,Om2,X2,Y2,Bpp,Cpp,Dpp)
 
@@ -110,8 +110,8 @@ subroutine ppRPA(TDA,doACFDT,singlet,triplet,nBas,nC,nO,nV,nR,ENuc,EHF,ERI,dipol
 
 !   call print_transition_vectors_pp(.false.,nBas,nC,nO,nV,nR,nOO,nVV,dipole_int,Om1,X1,Y1,Om2,X2,Y2)
 
-    call print_excitation_energies('ppRPA (N+2) ',ispin,nVV,Om1)
-    call print_excitation_energies('ppRPA (N-2) ',ispin,nOO,Om2)
+    call print_excitation_energies('ppRPA@HF (N+2)',ispin,nVV,Om1)
+    call print_excitation_energies('ppRPA@HF (N-2)',ispin,nOO,Om2)
 
     deallocate(Om1,X1,Y1,Om2,X2,Y2,Bpp,Cpp,Dpp)
 
