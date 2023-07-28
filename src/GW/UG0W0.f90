@@ -231,4 +231,4 @@ subroutine UG0W0(doACFDT,exchange_kernel,doXBS,BSE,TDA_W,TDA,dBSE,dTDA,spin_cons
 
   end if
 
-end subroutine UG0W0
+end subroutine 

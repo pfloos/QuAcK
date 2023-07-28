@@ -69,7 +69,7 @@ subroutine GW_phBSE_dynamic_perturbation(dophBSE2,dTDA,eta,nBas,nC,nO,nV,nR,nS,e
     write(*,*)
 
     allocate(W(nBas,nBas,nBas,nBas))
-    call static_kernel_W(eta,nBas,nC,nO,nV,nR,nS,1d0,ERI,OmRPA,rho_RPA,W)
+    call GW_phBSE_static_kernel(eta,nBas,nC,nO,nV,nR,nS,1d0,ERI,OmRPA,rho_RPA,W)
 
   end if
 

@@ -378,4 +378,4 @@ subroutine ufG0W0(nBas,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,eHF,TDA_W)
     end if
 
 
-end subroutine ufG0W0
+end subroutine 

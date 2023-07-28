@@ -40,4 +40,4 @@ subroutine self_energy_exchange_diag(nBas,c,P,ERI,SigX)
 
   deallocate(Fx)
 
-end subroutine self_energy_exchange_diag
+end subroutine 

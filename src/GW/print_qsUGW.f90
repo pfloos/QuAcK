@@ -171,4 +171,4 @@ subroutine print_qsUGW(nBas,nO,nSCF,Conv,thresh,eHF,eGW,cGW,Ov, &
 
   endif
 
-end subroutine print_qsUGW
+end subroutine 

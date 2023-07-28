@@ -58,4 +58,4 @@ subroutine print_evGW(nBas,nO,nSCF,Conv,eHF,ENuc,ERHF,SigC,Z,eGW,EcRPA,EcGM)
   write(*,*)'-------------------------------------------------------------------------------'
   write(*,*)
 
-end subroutine print_evGW
+end subroutine 

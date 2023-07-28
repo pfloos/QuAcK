@@ -416,4 +416,4 @@ subroutine qsUGW(maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,BSE,TDA_W,
 
   end if
 
-end subroutine qsUGW
+end subroutine 

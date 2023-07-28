@@ -200,8 +200,6 @@ subroutine ufGW(nBas,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,eHF)
 ! Dump results !
 !--------------!
 
-
-
   write(*,*)'-------------------------------------------'
   write(*,*)'        unfolded GW energies (eV)          '
   write(*,*)'-------------------------------------------'
@@ -217,4 +215,4 @@ subroutine ufGW(nBas,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,eHF)
   write(*,*)'-------------------------------------------'
   write(*,*)
 
-end subroutine ufGW
+end subroutine 

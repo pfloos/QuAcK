@@ -71,6 +71,4 @@ subroutine print_UG0W0(nBas,nO,eHF,ENuc,EUHF,SigC,Z,eGW,EcRPA,EcGM)
               -------------------------------------------------'
   write(*,*)
 
-end subroutine print_UG0W0
-
-
+end subroutine 

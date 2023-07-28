@@ -81,4 +81,4 @@ subroutine print_evUGW(nBas,nO,nSCF,Conv,eHF,ENuc,EUHF,SigC,Z,eGW,EcRPA,EcGM)
               -------------------------------------------------'
   write(*,*)
 
-end subroutine print_evUGW
+end subroutine 

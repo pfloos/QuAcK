@@ -118,4 +118,4 @@ subroutine print_qsGW(nBas,nO,nSCF,Conv,thresh,eHF,eGW,c,SigC,Z,ENuc,ET,EV,EJ,Ex
   endif
 
 
-end subroutine print_qsGW
+end subroutine 

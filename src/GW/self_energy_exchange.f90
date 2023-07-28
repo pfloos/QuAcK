@@ -22,4 +22,4 @@ subroutine self_energy_exchange(nBas,c,P,ERI,SigX)
 
   SigX = matmul(transpose(c),matmul(SigX,c))
 
-end subroutine self_energy_exchange
+end subroutine 

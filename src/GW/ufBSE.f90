@@ -212,4 +212,4 @@ subroutine ufBSE(nBas,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,eHF,eGW)
   write(*,*)'-------------------------------------------'
   write(*,*)
 
-end subroutine ufBSE
+end subroutine 

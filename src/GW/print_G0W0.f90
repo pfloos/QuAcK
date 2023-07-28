@@ -50,6 +50,4 @@ subroutine print_G0W0(nBas,nO,eHF,ENuc,ERHF,SigC,Z,eGW,EcRPA,EcGM)
   write(*,*)'-------------------------------------------------------------------------------'
   write(*,*)
 
-end subroutine print_G0W0
-
-
+end subroutine 
