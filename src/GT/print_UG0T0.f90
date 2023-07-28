@@ -64,6 +64,4 @@ subroutine print_UG0T0(nBas,nO,eHF,ENuc,EUHF,SigT,Z,eGT,EcGM,EcRPA)
   write(*,*)'-------------------------------------------------------------------------------'
   write(*,*)
 
-end subroutine print_UG0T0
-
-
+end subroutine 

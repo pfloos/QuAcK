@@ -74,6 +74,4 @@ subroutine print_evUGT(nBas,nO,nSCF,Conv,eHF,ENuc,EUHF,SigT,Z,eGT,EcGM,EcRPA)
   write(*,*)'-------------------------------------------------------------------------------'
   write(*,*)
 
-end subroutine print_evUGT
-
-
+end subroutine 

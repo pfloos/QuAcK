@@ -79,6 +79,4 @@ write(*,'(2X,A50,F15.6,A3)') 'ppRPA@qsGT correlation energy:',sum(EcRPA(:)),' au
 write(*,*)'-------------------------------------------'
 write(*,*) 
 
-end subroutine print_qsUGT
-
-
+end subroutine 
