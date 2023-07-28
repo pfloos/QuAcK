@@ -1,4 +1,4 @@
-subroutine print_transition_vectors_ph(spin_allowed,nBas,nC,nO,nV,nR,nS,dipole_int,Om,XpY,XmY)
+subroutine phLR_transition_vectors(spin_allowed,nBas,nC,nO,nV,nR,nS,dipole_int,Om,XpY,XmY)
 
 ! Print transition vectors for linear response calculation
 
@@ -37,7 +37,7 @@ subroutine print_transition_vectors_ph(spin_allowed,nBas,nC,nO,nV,nR,nS,dipole_i
 ! Compute oscillator strengths
 
   os(:) = 0d0
-  if(spin_allowed) call oscillator_strength_ph(nBas,nC,nO,nV,nR,nS,maxS,dipole_int,Om,XpY,XmY,os)
+  if(spin_allowed) call phLR_oscillator_strength(nBas,nC,nO,nV,nR,nS,maxS,dipole_int,Om,XpY,XmY,os)
 
 ! Print details about excitations
 

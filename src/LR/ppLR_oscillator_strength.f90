@@ -1,4 +1,4 @@
-subroutine oscillator_strength_pp(nBas,nC,nO,nV,nR,nOO,nVV,maxOO,maxVV,dipole_int,Om1,X1,Y1,Om2,X2,Y2,os1,os2)
+subroutine ppLR_oscillator_strength(nBas,nC,nO,nV,nR,nOO,nVV,maxOO,maxVV,dipole_int,Om1,X1,Y1,Om2,X2,Y2,os1,os2)
 
 ! Compute linear response
 

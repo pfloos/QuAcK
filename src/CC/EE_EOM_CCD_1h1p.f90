@@ -143,7 +143,7 @@ subroutine EE_EOM_CCD_1h1p(nC,nO,nV,nR,eO,eV,OOVV,OVVO,t)
     call quick_sort(Om,order,nS)
     call set_order(Z,order,nS,nS)
 
-    call print_excitation('EE-EOM-CCD  ',3,nS,Om)
+    call print_excitation_energies('EE-EOM-CCD',3,nS,Om)
 
   end if
 

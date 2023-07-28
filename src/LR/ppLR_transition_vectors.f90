@@ -1,4 +1,4 @@
-subroutine print_transition_vectors_pp(spin_allowed,nBas,nC,nO,nV,nR,nOO,nVV,dipole_int,Om1,X1,Y1,Om2,X2,Y2)
+subroutine ppLR_transition_vectors(spin_allowed,nBas,nC,nO,nV,nR,nOO,nVV,dipole_int,Om1,X1,Y1,Om2,X2,Y2)
 
 ! Print transition vectors for p-p linear response calculation
 
@@ -47,7 +47,7 @@ subroutine print_transition_vectors_pp(spin_allowed,nBas,nC,nO,nV,nR,nOO,nVV,dip
   os2(:) = 0d0
 
   if(spin_allowed) & 
-    call oscillator_strength_pp(nBas,nC,nO,nV,nR,nOO,nVV,maxOO,maxVV,dipole_int,Om1,X1,Y1,Om2,X2,Y2,os1,os2)
+    call ppLR_oscillator_strength(nBas,nC,nO,nV,nR,nOO,nVV,maxOO,maxVV,dipole_int,Om1,X1,Y1,Om2,X2,Y2,os1,os2)
 
 !-----------------------------------------------!
 ! Print details about excitations for pp sector !

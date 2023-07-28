@@ -34,11 +34,11 @@ subroutine UCIS(spin_conserved,spin_flip,nBas,nC,nO,nV,nR,nS,ERI_aaaa,ERI_aabb,E
 
   integer                       :: nS_aa,nS_bb,nS_sc
   double precision,allocatable  :: A_sc(:,:)
-  double precision,allocatable  :: Omega_sc(:)
+  double precision,allocatable  :: Om_sc(:)
 
   integer                       :: nS_ab,nS_ba,nS_sf
   double precision,allocatable  :: A_sf(:,:)
-  double precision,allocatable  :: Omega_sf(:)
+  double precision,allocatable  :: Om_sf(:)
 
 ! Hello world
 
@@ -66,7 +66,7 @@ subroutine UCIS(spin_conserved,spin_flip,nBas,nC,nO,nV,nR,nS,ERI_aaaa,ERI_aabb,E
     nS_bb = nS(2)
     nS_sc = nS_aa + nS_bb
 
-    allocate(A_sc(nS_sc,nS_sc),Omega_sc(nS_sc))
+    allocate(A_sc(nS_sc,nS_sc),Om_sc(nS_sc))
 
     call phULR_A(ispin,.false.,nBas,nC,nO,nV,nR,nS_aa,nS_bb,nS_sc,lambda,eHF,ERI_aaaa,ERI_aabb,ERI_bbbb,A_sc)
  
@@ -76,11 +76,11 @@ subroutine UCIS(spin_conserved,spin_flip,nBas,nC,nO,nV,nR,nS,ERI_aaaa,ERI_aabb,E
       write(*,*)
     endif
 
-    call diagonalize_matrix(nS_sc,A_sc,Omega_sc)
+    call diagonalize_matrix(nS_sc,A_sc,Om_sc)
     A_sc(:,:) = transpose(A_sc)
-    call print_excitation('UCIS        ',5,nS_sc,Omega_sc)
-    call print_unrestricted_transition_vectors(ispin,nBas,nC,nO,nV,nR,nS,nS_aa,nS_bb,nS_sc,dipole_int_aa,dipole_int_bb, &
-                                               cHF,S,Omega_sc,A_sc,A_sc)
+    call print_excitation_energies('UCIS',5,nS_sc,Om_sc)
+    call phULR_transition_vectors(ispin,nBas,nC,nO,nV,nR,nS,nS_aa,nS_bb,nS_sc,dipole_int_aa,dipole_int_bb, &
+                                  cHF,S,Om_sc,A_sc,A_sc)
  
     if(dump_trans) then
       print*,'Spin-conserved CIS transition vectors'
@@ -88,7 +88,7 @@ subroutine UCIS(spin_conserved,spin_flip,nBas,nC,nO,nV,nR,nS,ERI_aaaa,ERI_aabb,E
       write(*,*)
     endif
 
-    deallocate(A_sc,Omega_sc)
+    deallocate(A_sc,Om_sc)
 
   endif
 
@@ -106,7 +106,7 @@ subroutine UCIS(spin_conserved,spin_flip,nBas,nC,nO,nV,nR,nS,ERI_aaaa,ERI_aabb,E
     nS_ba = (nO(2) - nC(2))*(nV(1) - nR(1))
     nS_sf = nS_ab + nS_ba
 
-    allocate(A_sf(nS_sf,nS_sf),Omega_sf(nS_sf))
+    allocate(A_sf(nS_sf,nS_sf),Om_sf(nS_sf))
     
     call phULR_A(ispin,.false.,nBas,nC,nO,nV,nR,nS_ab,nS_ba,nS_sf,lambda,eHF,ERI_aaaa,ERI_aabb,ERI_bbbb,A_sf)
 
@@ -116,11 +116,11 @@ subroutine UCIS(spin_conserved,spin_flip,nBas,nC,nO,nV,nR,nS,ERI_aaaa,ERI_aabb,E
       write(*,*)
     endif
 
-    call diagonalize_matrix(nS_sf,A_sf,Omega_sf)
+    call diagonalize_matrix(nS_sf,A_sf,Om_sf)
     A_sf(:,:) = transpose(A_sf)
-    call print_excitation('UCIS        ',6,nS_sf,Omega_sf)
-    call print_unrestricted_transition_vectors(ispin,nBas,nC,nO,nV,nR,nS,nS_ab,nS_ba,nS_sf,dipole_int_aa,dipole_int_bb, &
-                                               cHF,S,Omega_sf,A_sf,A_sf)
+    call print_excitation_energies('UCIS        ',6,nS_sf,Om_sf)
+    call phULR_transition_vectors(ispin,nBas,nC,nO,nV,nR,nS,nS_ab,nS_ba,nS_sf,dipole_int_aa,dipole_int_bb, &
+                                  cHF,S,Om_sf,A_sf,A_sf)
  
     if(dump_trans) then
       print*,'Spin-flip CIS transition vectors'
@@ -128,7 +128,7 @@ subroutine UCIS(spin_conserved,spin_flip,nBas,nC,nO,nV,nR,nS,ERI_aaaa,ERI_aabb,E
       write(*,*)
     endif
 
-    deallocate(A_sf,Omega_sf)
+    deallocate(A_sf,Om_sf)
 
   endif
 

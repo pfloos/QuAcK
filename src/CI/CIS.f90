@@ -55,8 +55,8 @@ subroutine CIS(singlet,triplet,doCIS_D,nBas,nC,nO,nV,nR,nS,ERI,dipole_int,eHF)
     endif
 
     call diagonalize_matrix(nS,A,Om)
-    call print_excitation('CIS         ',ispin,nS,Om)
-    call print_transition_vectors_ph(.true.,nBas,nC,nO,nV,nR,nS,dipole_int,Om,transpose(A),transpose(A))
+    call print_excitation_energies('CIS',ispin,nS,Om)
+    call phLR_transition_vectors(.true.,nBas,nC,nO,nV,nR,nS,dipole_int,Om,transpose(A),transpose(A))
  
     if(dump_trans) then
       print*,'Singlet CIS transition vectors'
@@ -67,7 +67,7 @@ subroutine CIS(singlet,triplet,doCIS_D,nBas,nC,nO,nV,nR,nS,ERI,dipole_int,eHF)
     ! Compute CIS(D) correction 
 
     maxS = min(maxS,nS)
-    if(doCIS_D) call D_correction(ispin,nBas,nC,nO,nV,nR,nS,maxS,eHF,ERI,Om(1:maxS),A(:,1:maxS))
+    if(doCIS_D) call CIS_D(ispin,nBas,nC,nO,nV,nR,nS,maxS,eHF,ERI,Om(1:maxS),A(:,1:maxS))
 
   endif
 
@@ -83,8 +83,8 @@ subroutine CIS(singlet,triplet,doCIS_D,nBas,nC,nO,nV,nR,nS,ERI,dipole_int,eHF)
     endif
  
     call diagonalize_matrix(nS,A,Om)
-    call print_excitation('CIS          ',ispin,nS,Om)
-    call print_transition_vectors_ph(.false.,nBas,nC,nO,nV,nR,nS,dipole_int,Om,transpose(A),transpose(A))
+    call print_excitation_energies('CIS',ispin,nS,Om)
+    call phLR_transition_vectors(.false.,nBas,nC,nO,nV,nR,nS,dipole_int,Om,transpose(A),transpose(A))
 
     if(dump_trans) then
       print*,'Triplet CIS transition vectors'
@@ -95,7 +95,7 @@ subroutine CIS(singlet,triplet,doCIS_D,nBas,nC,nO,nV,nR,nS,ERI,dipole_int,eHF)
     ! Compute CIS(D) correction 
 
     maxS = min(maxS,nS)
-    if(doCIS_D) call D_correction(ispin,nBas,nC,nO,nV,nR,nS,maxS,eHF,ERI,Om(1:maxS),A(:,1:maxS))
+    if(doCIS_D) call CIS_D(ispin,nBas,nC,nO,nV,nR,nS,maxS,eHF,ERI,Om(1:maxS),A(:,1:maxS))
 
   endif
 

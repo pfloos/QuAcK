@@ -1,4 +1,4 @@
-subroutine D_correction(ispin,nBasin,nCin,nOin,nVin,nRin,nSin,maxS,eHF,ERI,w,X)
+subroutine CIS_D(ispin,nBasin,nCin,nOin,nVin,nRin,nSin,maxS,eHF,ERI,w,X)
 
 ! Compute the D correction of CIS(D)
 
@@ -274,4 +274,5 @@ subroutine D_correction(ispin,nBasin,nCin,nOin,nVin,nRin,nSin,maxS,eHF,ERI,w,X)
 !------------------------------------------------------------------------
 ! End of loop over single excitations
 !------------------------------------------------------------------------
+
 end subroutine 

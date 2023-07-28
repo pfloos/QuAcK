@@ -109,8 +109,8 @@ subroutine G0T0pp(doACFDT,exchange_kernel,doXBS,dophBSE,TDA_T,TDA,dBSE,dTDA,dopp
 
   deallocate(Bpp,Cpp,Dpp)
 
-  call print_excitation('pp-RPA (N+2)',iblock,nVVs,Om1s(:))
-  call print_excitation('pp-RPA (N-2)',iblock,nOOs,Om2s(:))
+  call print_excitation_energies('pp-RPA (N+2)',iblock,nVVs,Om1s(:))
+  call print_excitation_energies('pp-RPA (N-2)',iblock,nOOs,Om2s(:))
 
 !----------------------------------------------
 ! alpha-alpha block
@@ -131,8 +131,8 @@ subroutine G0T0pp(doACFDT,exchange_kernel,doXBS,dophBSE,TDA_T,TDA,dBSE,dTDA,dopp
 
   deallocate(Bpp,Cpp,Dpp)
 
-  call print_excitation('ppRPA (N+2) ',iblock,nVVt,Om1t)
-  call print_excitation('ppRPA (N-2) ',iblock,nOOt,Om2t)
+  call print_excitation_energies('ppRPA (N+2)',iblock,nVVt,Om1t)
+  call print_excitation_energies('ppRPA (N-2)',iblock,nOOt,Om2t)
 
 !----------------------------------------------
 ! Compute T-matrix version of the self-energy 

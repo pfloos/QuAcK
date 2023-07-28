@@ -120,8 +120,8 @@ subroutine UG0T0pp(doACFDT,exchange_kernel,doXBS,BSE,TDA_T,TDA,dBSE,dTDA, &
 
 ! EcRPA(ispin) = 1d0*EcRPA(ispin)
 
-  call print_excitation('pp-RPA (N+2)',iblock,nPab,Om1ab(:))
-  call print_excitation('pp-RPA (N-2)',iblock,nHab,Om2ab(:))
+  call print_excitation_energies('ppRPA@HF (N+2)',iblock,nPab,Om1ab(:))
+  call print_excitation_energies('ppRPA@HF (N-2)',iblock,nHab,Om2ab(:))
  
 !----------------------------------------------
 ! alpha-alpha block
@@ -138,8 +138,8 @@ subroutine UG0T0pp(doACFDT,exchange_kernel,doXBS,BSE,TDA_T,TDA,dBSE,dTDA, &
 ! EcRPA(ispin) = 2d0*EcRPA(ispin)
 ! EcRPA(ispin) = 3d0*EcRPA(ispin)
 
-  call print_excitation('pp-RPA (N+2)',iblock,nPaa,Om1aa(:))
-  call print_excitation('pp-RPA (N-2)',iblock,nHaa,Om2aa(:))
+  call print_excitation_energies('ppRPA@HF (N+2)',iblock,nPaa,Om1aa(:))
+  call print_excitation_energies('ppRPA@HF (N-2)',iblock,nHaa,Om2aa(:))
 
 !----------------------------------------------
 ! beta-beta block
@@ -156,8 +156,8 @@ subroutine UG0T0pp(doACFDT,exchange_kernel,doXBS,BSE,TDA_T,TDA,dBSE,dTDA, &
 ! EcRPA(ispin) = 2d0*EcRPA(ispin)
 ! EcRPA(ispin) = 3d0*EcRPA(ispin)
 
-  call print_excitation('pp-RPA (N+2)',iblock,nPbb,Om1bb(:))
-  call print_excitation('pp-RPA (N-2)',iblock,nHbb,Om2bb(:))
+  call print_excitation_energies('ppRPA@HF (N+2)',iblock,nPbb,Om1bb(:))
+  call print_excitation_energies('ppRPA@HF (N-2)',iblock,nHbb,Om2bb(:))
 
 !----------------------------------------------
 ! Compute T-matrix version of the self-energy 

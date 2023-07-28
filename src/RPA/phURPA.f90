@@ -36,12 +36,12 @@ subroutine phURPA(TDA,doACFDT,exchange_kernel,spin_conserved,spin_flip,nBas,nC,n
   integer                       :: ispin
 
   integer                       :: nS_aa,nS_bb,nS_sc
-  double precision,allocatable  :: Omega_sc(:)
+  double precision,allocatable  :: Om_sc(:)
   double precision,allocatable  :: XpY_sc(:,:)
   double precision,allocatable  :: XmY_sc(:,:)
 
   integer                       :: nS_ab,nS_ba,nS_sf
-  double precision,allocatable  :: Omega_sf(:)
+  double precision,allocatable  :: Om_sf(:)
   double precision,allocatable  :: XpY_sf(:,:)
   double precision,allocatable  :: XmY_sf(:,:)
 
@@ -80,15 +80,15 @@ subroutine phURPA(TDA,doACFDT,exchange_kernel,spin_conserved,spin_flip,nBas,nC,n
     nS_bb = nS(2)
     nS_sc = nS_aa + nS_bb
 
-    allocate(Omega_sc(nS_sc),XpY_sc(nS_sc,nS_sc),XmY_sc(nS_sc,nS_sc))
+    allocate(Om_sc(nS_sc),XpY_sc(nS_sc,nS_sc),XmY_sc(nS_sc,nS_sc))
 
     call phULR(ispin,.true.,TDA,.false.,nBas,nC,nO,nV,nR,nS_aa,nS_bb,nS_sc,nS_sc,1d0,e, & 
-               ERI_aaaa,ERI_aabb,ERI_bbbb,Omega_sc,rho_sc,EcRPA(ispin),Omega_sc,XpY_sc,XmY_sc)
-    call print_excitation('URPA   ',5,nS_sc,Omega_sc)
-    call print_unrestricted_transition_vectors(ispin,nBas,nC,nO,nV,nR,nS,nS_aa,nS_bb,nS_sc,dipole_int_aa,dipole_int_bb, &
-                                               c,S,Omega_sc,XpY_sc,XmY_sc)
+               ERI_aaaa,ERI_aabb,ERI_bbbb,Om_sc,rho_sc,EcRPA(ispin),Om_sc,XpY_sc,XmY_sc)
+    call print_excitation_energies('phURPA@HF',5,nS_sc,Om_sc)
+    call phULR_transition_vectors(ispin,nBas,nC,nO,nV,nR,nS,nS_aa,nS_bb,nS_sc,dipole_int_aa,dipole_int_bb, &
+                                  c,S,Om_sc,XpY_sc,XmY_sc)
 
-    deallocate(Omega_sc,XpY_sc,XmY_sc)
+    deallocate(Om_sc,XpY_sc,XmY_sc)
 
   endif
 
@@ -104,15 +104,15 @@ subroutine phURPA(TDA,doACFDT,exchange_kernel,spin_conserved,spin_flip,nBas,nC,n
     nS_ba = (nO(2) - nC(2))*(nV(1) - nR(1))
     nS_sf = nS_ab + nS_ba
 
-    allocate(Omega_sf(nS_sf),XpY_sf(nS_sf,nS_sf),XmY_sf(nS_sf,nS_sf))
+    allocate(Om_sf(nS_sf),XpY_sf(nS_sf,nS_sf),XmY_sf(nS_sf,nS_sf))
 
     call phULR(ispin,.true.,TDA,.false.,nBas,nC,nO,nV,nR,nS_ab,nS_ba,nS_sf,nS_sf,1d0,e, &
-               ERI_aaaa,ERI_aabb,ERI_bbbb,Omega_sf,rho_sf,EcRPA(ispin),Omega_sf,XpY_sf,XmY_sf)
-    call print_excitation('URPA   ',6,nS_sf,Omega_sf)
-    call print_unrestricted_transition_vectors(ispin,nBas,nC,nO,nV,nR,nS,nS_ab,nS_ba,nS_sf,dipole_int_aa,dipole_int_bb, &
-                                               c,S,Omega_sf,XpY_sf,XmY_sf)
+               ERI_aaaa,ERI_aabb,ERI_bbbb,Om_sf,rho_sf,EcRPA(ispin),Om_sf,XpY_sf,XmY_sf)
+    call print_excitation_energies('phURPA@HF',6,nS_sf,Om_sf)
+    call phULR_transition_vectors(ispin,nBas,nC,nO,nV,nR,nS,nS_ab,nS_ba,nS_sf,dipole_int_aa,dipole_int_bb, &
+                                  c,S,Om_sf,XpY_sf,XmY_sf)
 
-    deallocate(Omega_sf,XpY_sf,XmY_sf)
+    deallocate(Om_sf,XpY_sf,XmY_sf)
 
   endif
 

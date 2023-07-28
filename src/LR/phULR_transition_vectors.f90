@@ -1,5 +1,4 @@
-subroutine print_unrestricted_transition_vectors(ispin,nBas,nC,nO,nV,nR,nS,nSa,nSb,nSt,dipole_int_aa,dipole_int_bb, & 
-                                                 c,S,Omega,XpY,XmY)
+subroutine phULR_transition_vectors(ispin,nBas,nC,nO,nV,nR,nS,nSa,nSb,nSt,dipole_int_aa,dipole_int_bb,c,S,Omega,XpY,XmY)
 
 ! Print transition vectors for linear response calculation
 
@@ -44,8 +43,8 @@ subroutine print_unrestricted_transition_vectors(ispin,nBas,nC,nO,nV,nR,nS,nSa,n
 ! Compute oscillator strengths
 
   os(:) = 0d0
-  if(ispin == 1) call unrestricted_oscillator_strength(nBas,nC,nO,nV,nR,nS,nSa,nSb,nSt,maxS, & 
-                                                         dipole_int_aa,dipole_int_bb,Omega,XpY,XmY,os)
+  if(ispin == 1) call phULR_oscillator_strength(nBas,nC,nO,nV,nR,nS,nSa,nSb,nSt,maxS, & 
+                                                dipole_int_aa,dipole_int_bb,Omega,XpY,XmY,os)
 
 ! Compute <S**2>
 

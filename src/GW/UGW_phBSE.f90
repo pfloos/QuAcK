@@ -100,9 +100,9 @@ subroutine UGW_phBSE(TDA_W,TDA,dBSE,dTDA,spin_conserved,spin_flip,eta,  &
 
     call phULR(ispin,.true.,TDA,.true.,eta,nBas,nC,nO,nV,nR,nS_aa,nS_bb,nS_sc,nS_sc,1d0, &
                eGW,ERI_aaaa,ERI_aabb,ERI_bbbb,OmRPA,rho_RPA,EcBSE(ispin),OmBSE_sc,XpY_BSE_sc,XmY_BSE_sc)
-    call print_excitation('BSE@UGW  ',5,nS_sc,OmBSE_sc)
-    call print_unrestricted_transition_vectors(ispin,nBas,nC,nO,nV,nR,nS,nS_aa,nS_bb,nS_sc,dipole_int_aa,dipole_int_bb, &
-                                               cW,S,OmBSE_sc,XpY_BSE_sc,XmY_BSE_sc)
+    call print_excitation_energies('phBSE@UGW',5,nS_sc,OmBSE_sc)
+    call phULR_transition_vectors(ispin,nBas,nC,nO,nV,nR,nS,nS_aa,nS_bb,nS_sc,dipole_int_aa,dipole_int_bb, &
+                                  cW,S,OmBSE_sc,XpY_BSE_sc,XmY_BSE_sc)
 
     !-------------------------------------------------
     ! Compute the dynamical screening at the BSE level
@@ -136,9 +136,9 @@ subroutine UGW_phBSE(TDA_W,TDA,dBSE,dTDA,spin_conserved,spin_flip,eta,  &
                eGW,ERI_aaaa,ERI_aabb,ERI_bbbb,OmRPA,rho_RPA,EcBSE(ispin),       & 
                OmBSE_sf,XpY_BSE_sf,XmY_BSE_sf)
 
-    call print_excitation('BSE@UGW  ',6,nS_sf,OmBSE_sf)
-    call print_unrestricted_transition_vectors(ispin,nBas,nC,nO,nV,nR,nS,nS_ab,nS_ba,nS_sf,dipole_int_aa,dipole_int_bb, &
-                                               cW,S,OmBSE_sf,XpY_BSE_sf,XmY_BSE_sf)
+    call print_excitation_energies('phBSE@UGW',6,nS_sf,OmBSE_sf)
+    call phULR_transition_vectors(ispin,nBas,nC,nO,nV,nR,nS,nS_ab,nS_ba,nS_sf,dipole_int_aa,dipole_int_bb, &
+                                  cW,S,OmBSE_sf,XpY_BSE_sf,XmY_BSE_sf)
 
     !-------------------------------------------------
     ! Compute the dynamical screening at the BSE level

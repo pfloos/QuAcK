@@ -68,8 +68,8 @@ subroutine GF2_phBSE2(TDA,dBSE,dTDA,singlet,triplet,eta,nBas,nC,nO,nV,nR,nS,ERI,
     ! Compute phBSE2@GF2 excitation energies
 
     call phLR(TDA,nS,A_sta,B_sta,EcBSE(ispin),OmBSE,XpY,XmY)
-    call print_excitation('phBSE2@GF2  ',ispin,nS,OmBSE)
-    call print_transition_vectors_ph(.true.,nBas,nC,nO,nV,nR,nS,dipole_int,OmBSE,XpY,XmY)
+    call print_excitation_energies('phBSE2@GF2',ispin,nS,OmBSE)
+    call phLR_transition_vectors(.true.,nBas,nC,nO,nV,nR,nS,dipole_int,OmBSE,XpY,XmY)
 
     ! Compute dynamic correction for BSE via perturbation theory
 
@@ -101,8 +101,8 @@ subroutine GF2_phBSE2(TDA,dBSE,dTDA,singlet,triplet,eta,nBas,nC,nO,nV,nR,nS,ERI,
     ! Compute phBSE2@GF2 excitation energies
 
     call phLR(TDA,nS,A_sta,B_sta,EcBSE(ispin),OmBSE,XpY,XmY)
-    call print_excitation('phBSE2@GF2  ',ispin,nS,OmBSE)
-    call print_transition_vectors_ph(.false.,nBas,nC,nO,nV,nR,nS,dipole_int,OmBSE,XpY,XmY)
+    call print_excitation_energies('phBSE2@GF2',ispin,nS,OmBSE)
+    call phLR_transition_vectors(.false.,nBas,nC,nO,nV,nR,nS,dipole_int,OmBSE,XpY,XmY)
 
     ! Compute dynamic correction for BSE via perturbation theory
 

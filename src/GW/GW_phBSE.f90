@@ -117,8 +117,8 @@ subroutine GW_phBSE(dophBSE2,TDA_W,TDA,dBSE,dTDA,singlet,triplet,eta,nBas,nC,nO,
 
     call phLR(TDA,nS,Aph,Bph,EcBSE(ispin),OmBSE,XpY_BSE,XmY_BSE)
 
-    call print_excitation('phBSE@GW    ',ispin,nS,OmBSE)
-    call print_transition_vectors_ph(.true.,nBas,nC,nO,nV,nR,nS,dipole_int,OmBSE,XpY_BSE,XmY_BSE)
+    call print_excitation_energies('phBSE@GW',ispin,nS,OmBSE)
+    call phLR_transition_vectors(.true.,nBas,nC,nO,nV,nR,nS,dipole_int,OmBSE,XpY_BSE,XmY_BSE)
 
     !----------------------------------------------------!
     ! Compute the dynamical screening at the phBSE level !
@@ -149,8 +149,8 @@ subroutine GW_phBSE(dophBSE2,TDA_W,TDA,dBSE,dTDA,singlet,triplet,eta,nBas,nC,nO,
 
     call phLR(TDA,nS,Aph,Bph,EcBSE(ispin),OmBSE,XpY_BSE,XmY_BSE)
 
-    call print_excitation('phBSE@GW    ',ispin,nS,OmBSE)
-    call print_transition_vectors_ph(.false.,nBas,nC,nO,nV,nR,nS,dipole_int,OmBSE,XpY_BSE,XmY_BSE)
+    call print_excitation_energies('phBSE@GW',ispin,nS,OmBSE)
+    call phLR_transition_vectors(.false.,nBas,nC,nO,nV,nR,nS,dipole_int,OmBSE,XpY_BSE,XmY_BSE)
 
     !-------------------------------------------------
     ! Compute the dynamical screening at the BSE level

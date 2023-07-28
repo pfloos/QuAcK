@@ -141,8 +141,6 @@ subroutine SRG_qsGW(maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,BSE,BSE
   error_diis(:,:) = 0d0
   rcond           = 0d0
 
-   print*,max_diis
-
 !------------------------------------------------------------------------
 ! Main loop
 !------------------------------------------------------------------------
@@ -183,7 +181,7 @@ subroutine SRG_qsGW(maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,BSE,BSE
 
     tlr = tlr + tlr2 -tlr1
 
-    if(print_W) call print_excitation('RPA@qsGW    ',ispin,nS,OmRPA)
+    if(print_W) call print_excitation_energies('phRPA@SRG-qsGW',ispin,nS,OmRPA)
 
     ! Compute correlation part of the self-energy 
 

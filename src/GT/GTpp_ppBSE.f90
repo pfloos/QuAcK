@@ -155,7 +155,7 @@ subroutine GTpp_ppBSE(TDA_T,TDA,dBSE,dTDA,singlet,triplet,eta,nBas,nC,nO,nV,nR,n
 
     call ppLR(TDA,nOOs,nVVs,Bpp,Cpp,Dpp,Om1s,X1s,Y1s,Om2s,X2s,Y2s,EcBSE(ispin))
 
-    call print_transition_vectors_pp(.true.,nBas,nC,nO,nV,nR,nOOs,nVVs,dipole_int,Om1s,X1s,Y1s,Om2s,X2s,Y2s)
+    call ppLR_transition_vectors(.true.,nBas,nC,nO,nV,nR,nOOs,nVVs,dipole_int,Om1s,X1s,Y1s,Om2s,X2s,Y2s)
 
     deallocate(Om1s,X1s,Y1s,Om2s,X2s,Y2s,TBab,TCab,TDab,TBaa,TCaa,TDaa,Bpp,Cpp,Dpp) 
 
@@ -240,7 +240,7 @@ subroutine GTpp_ppBSE(TDA_T,TDA,dBSE,dTDA,singlet,triplet,eta,nBas,nC,nO,nV,nR,n
 
     call ppLR(TDA,nOOs,nVVs,Bpp,Cpp,Dpp,Om1s,X1s,Y1s,Om2s,X2s,Y2s,EcBSE(ispin))
 
-    call print_transition_vectors_pp(.false.,nBas,nC,nO,nV,nR,nOOt,nVVt,dipole_int,Om1t,X1t,Y1t,Om2t,X2t,Y2t)
+    call ppLR_transition_vectors(.false.,nBas,nC,nO,nV,nR,nOOt,nVVt,dipole_int,Om1t,X1t,Y1t,Om2t,X2t,Y2t)
 
     deallocate(Om1t,X1t,Y1t,Om2t,X2t,Y2t,TBab,TCab,TDab,TBaa,TCaa,TDaa,Bpp,Cpp,Dpp)
 

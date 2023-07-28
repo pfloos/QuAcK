@@ -72,8 +72,8 @@ subroutine ppURPA(TDA,doACFDT,spin_conserved,spin_flip,nBas,nC,nO,nV,nR,ENuc,EUH
              ERI_aabb,ERI_bbbb,Om1sc,X1sc,Y1sc, &
              Om2sc,X2sc,Y2sc,Ec_ppURPA(ispin))
     
-  call print_excitation('pp-RPA (N+2)',iblock,nP_sc,Om1sc)
-  call print_excitation('pp-RPA (N-2)',iblock,nH_sc,Om2sc)
+  call print_excitation_energies('ppRPA@HF (N+2)',iblock,nP_sc,Om1sc)
+  call print_excitation_energies('ppRPA@HF (N-2)',iblock,nH_sc,Om2sc)
 
 !alpha-alpha block
 
@@ -98,8 +98,8 @@ subroutine ppURPA(TDA,doACFDT,spin_conserved,spin_flip,nBas,nC,nO,nV,nR,ENuc,EUH
              ERI_aabb,ERI_bbbb,Om1sf,X1sf,Y1sf, &
              Om2sf,X2sf,Y2sf,Ec_ppURPA(ispin))
 
-  call print_excitation('pp-RPA (N+2)',iblock,nP_sf,Om1sf)
-  call print_excitation('pp-RPA (N-2)',iblock,nH_sf,Om2sf)
+  call print_excitation_energies('ppRPA@HF (N+2)',iblock,nP_sf,Om1sf)
+  call print_excitation_energies('ppRPA@HF (N-2)',iblock,nH_sf,Om2sf)
 
   deallocate(Om1sf,X1sf,Y1sf,Om2sf,X2sf,Y2sf)
 
@@ -118,8 +118,8 @@ subroutine ppURPA(TDA,doACFDT,spin_conserved,spin_flip,nBas,nC,nO,nV,nR,ENuc,EUH
              ERI_aabb,ERI_bbbb,Om1sf,X1sf,Y1sf,&
              Om2sf,X2sf,Y2sf,Ec_ppURPA(ispin))
 
-  call print_excitation('pp-RPA (N+2)',iblock,nP_sf,Om1sf)
-  call print_excitation('pp-RPA (N-2)',iblock,nH_sf,Om2sf)
+  call print_excitation_energies('ppRPA@HF (N+2)',iblock,nP_sf,Om1sf)
+  call print_excitation_energies('ppRPA@HF (N-2)',iblock,nH_sf,Om2sf)
 
   write(*,*)
   write(*,*)'-------------------------------------------------------------------------------'

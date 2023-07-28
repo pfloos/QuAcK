@@ -1,4 +1,4 @@
-subroutine unrestricted_oscillator_strength(nBas,nC,nO,nV,nR,nS,nSa,nSb,nSt,maxS,dipole_int_aa,dipole_int_bb,Omega,XpY,XmY,os)
+subroutine phULR_oscillator_strength(nBas,nC,nO,nV,nR,nS,nSa,nSb,nSt,maxS,dipole_int_aa,dipole_int_bb,Omega,XpY,XmY,os)
 
 ! Compute linear response
 
