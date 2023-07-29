@@ -36,60 +36,13 @@ subroutine read_methods(doRHF,doUHF,doRMOM,doUMOM,doKS,    &
 
   open(unit=1,file='input/methods')
 
-! Set all the booleans to false
+! Read mean-field methods
 
   doRHF  = .false.
   doUHF  = .false.
   doRMOM = .false.
   doUMOM = .false.
   doKS   = .false.
-
-  doMP2    = .false.
-  doMP3    = .false.
- 
-  doCCD   = .false.
-  dopCCD  = .false.
-  doDCD   = .false.
-  doCCSD  = .false.
-  doCCSDT = .false.
-
-  do_drCCD = .false.
-  do_rCCD  = .false.
-  do_crCCD = .false.
-  do_lCCD  = .false.
-
-  doCIS   = .false.
-  doCIS_D = .false.
-  doCID   = .false.
-  doCISD  = .false.
-  doFCI   = .false.
-
-  dophRPA  = .false.
-  dophRPAx = .false.
-  docrRPA  = .false.
-  doppRPA  = .false.
-
-  doG0F2  = .false.
-  doevGF2 = .false.
-  doqsGF2 = .false.
-  doG0F3  = .false.
-  doevGF3 = .false.
-
-  doG0W0    = .false.
-  doevGW    = .false.
-  doqsGW    = .false.
-  doSRGqsGW = .false.
-  doufG0W0  = .false.
-  doufGW    = .false.
-
-  doG0T0pp = .false.
-  doevGTpp = .false.
-  doqsGTpp = .false.
-  doG0T0eh = .false.
-  doevGTeh = .false.
-  doqsGTeh = .false.
-
-! Read mean-field methods
 
   read(1,*) 
   read(1,*) answer1,answer2,answer3,answer4,answer5
@@ -101,12 +54,21 @@ subroutine read_methods(doRHF,doUHF,doRMOM,doUMOM,doKS,    &
 
 ! Read MPn methods
 
+  doMP2    = .false.
+  doMP3    = .false.
+
   read(1,*) 
   read(1,*) answer1,answer2
   if(answer1 == 'T') doMP2    = .true.
   if(answer2 == 'T') doMP3    = .true.
 
 ! Read CC methods
+
+  doCCD   = .false.
+  dopCCD  = .false.
+  doDCD   = .false.
+  doCCSD  = .false.
+  doCCSDT = .false.
 
   read(1,*) 
   read(1,*) answer1,answer2,answer3,answer4,answer5
@@ -117,6 +79,12 @@ subroutine read_methods(doRHF,doUHF,doRMOM,doUMOM,doKS,    &
   if(answer5 == 'T') doCCSDT = .true.
 
 ! Read weird CC methods
+
+  do_drCCD = .false.
+  do_rCCD  = .false.
+  do_crCCD = .false.
+  do_lCCD  = .false.
+
   read(1,*) 
   read(1,*) answer1,answer2,answer3,answer4
   if(answer1 == 'T') do_drCCD = .true.
@@ -124,7 +92,13 @@ subroutine read_methods(doRHF,doUHF,doRMOM,doUMOM,doKS,    &
   if(answer3 == 'T') do_crCCD = .true.
   if(answer4 == 'T') do_lCCD  = .true.
 
-! Read excited state methods
+! Read CI methods
+
+  doCIS   = .false.
+  doCIS_D = .false.
+  doCID   = .false.
+  doCISD  = .false.
+  doFCI   = .false.
 
   read(1,*) 
   read(1,*) answer1,answer2,answer3,answer4,answer5
@@ -135,6 +109,13 @@ subroutine read_methods(doRHF,doUHF,doRMOM,doUMOM,doKS,    &
   if(answer5 == 'T') doFCI   = .true.
   if(doCIS_D)        doCIS   = .true.
 
+! Read RPA methods
+
+  dophRPA  = .false.
+  dophRPAx = .false.
+  docrRPA  = .false.
+  doppRPA  = .false.
+
   read(1,*) 
   read(1,*) answer1,answer2,answer3,answer4
   if(answer1 == 'T') dophRPA  = .true.
@@ -142,7 +123,13 @@ subroutine read_methods(doRHF,doUHF,doRMOM,doUMOM,doKS,    &
   if(answer3 == 'T') docrRPA  = .true.
   if(answer4 == 'T') doppRPA  = .true.
 
-! Read Green function methods
+! Read Green's function methods
+
+  doG0F2  = .false.
+  doevGF2 = .false.
+  doqsGF2 = .false.
+  doG0F3  = .false.
+  doevGF3 = .false.
 
   read(1,*) 
   read(1,*) answer1,answer2,answer3,answer4,answer5
@@ -154,6 +141,13 @@ subroutine read_methods(doRHF,doUHF,doRMOM,doUMOM,doKS,    &
 
 ! Read GW methods
 
+  doG0W0    = .false.
+  doevGW    = .false.
+  doqsGW    = .false.
+  doSRGqsGW = .false.
+  doufG0W0  = .false.
+  doufGW    = .false.
+
   read(1,*) 
   read(1,*) answer1,answer2,answer3,answer4,answer5,answer6
   if(answer1 == 'T') doG0W0    = .true.
@@ -164,6 +158,13 @@ subroutine read_methods(doRHF,doUHF,doRMOM,doUMOM,doKS,    &
   if(answer6 == 'T') doufGW    = .true.
 
 ! Read GT methods
+
+  doG0T0pp = .false.
+  doevGTpp = .false.
+  doqsGTpp = .false.
+  doG0T0eh = .false.
+  doevGTeh = .false.
+  doqsGTeh = .false.
 
   read(1,*) 
   read(1,*) answer1,answer2,answer3,answer4,answer5,answer6
