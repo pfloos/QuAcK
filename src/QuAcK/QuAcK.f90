@@ -47,8 +47,6 @@ program QuAcK
   double precision,allocatable  :: ERI_AO(:,:,:,:)
   double precision,allocatable  :: ERI_MO(:,:,:,:)
   integer                       :: ixyz
-  integer                       :: bra1,bra2
-  integer                       :: ket1,ket2
   double precision,allocatable  :: ERI_MO_aaaa(:,:,:,:)
   double precision,allocatable  :: ERI_MO_aabb(:,:,:,:)
   double precision,allocatable  :: ERI_MO_bbbb(:,:,:,:)
@@ -101,7 +99,9 @@ program QuAcK
   logical                       :: dophBSE,dophBSE2,doppBSE,dBSE,dTDA
 
 
-! Hello World
+!-------------!
+! Hello World !
+!-------------!
 
   write(*,*)
   write(*,*) '******************************************************************************************'
@@ -113,11 +113,15 @@ program QuAcK
   write(*,*) '******************************************************************************************'
   write(*,*)
 
-! Spherium calculation?
+!-----------------------!
+! Starting QuAcK timing !
+!-----------------------!
 
   call wall_time(start_QuAcK)
 
-! Which calculations do you want to do?
+!------------------!
+! Method selection !
+!------------------!
 
   call read_methods(doRHF,doUHF,doRMOM,doUMOM,doKS,    &
                     doMP2,doMP3,                       &
@@ -132,7 +136,9 @@ program QuAcK
                     doG0T0pp,doevGTpp,doqsGTpp,        &
                     doG0T0eh,doevGTeh,doqsGTeh)
 
-! Read options for methods
+!--------------------------!
+! Read options for methods !
+!--------------------------!
 
   call read_options(maxSCF_HF,thresh_HF,DIIS_HF,max_diis_HF,guess_type,ortho_type,mix,level_shift,dostab, &
                     regMP,                                                                              &
@@ -144,19 +150,18 @@ program QuAcK
                     doACFDT,exchange_kernel,doXBS,                                                      &
                     dophBSE,dophBSE2,doppBSE,dBSE,dTDA)
 
-!------------------------------------------------------------------------
-! Read input information
-!------------------------------------------------------------------------
-
-! Read number of atoms, number of electrons of the system
-! nC   = number of core orbitals
-! nO   = number of occupied orbitals
-! nV   = number of virtual orbitals (see below)
-! nR   = number of Rydberg orbitals 
-! nBas = number of basis functions (see below)
-!      = nO + nV
-! nS   = number of single excitation 
-!      = nO*nV
+!------------------------------------------------!
+! Read input information                         !
+!------------------------------------------------!
+! nC   = number of core orbitals                 !
+! nO   = number of occupied orbitals             !
+! nV   = number of virtual orbitals (see below)  !
+! nR   = number of Rydberg orbitals              !
+! nBas = number of basis functions (see below)   !
+!      = nO + nV                                 !
+! nS   = number of single excitation             !
+!      = nO*nV                                   !
+!------------------------------------------------!
 
   call read_molecule(nNuc,nEl,nO,nC,nR)
   allocate(ZNuc(nNuc),rNuc(nNuc,ncart))
@@ -165,16 +170,16 @@ program QuAcK
 
   call read_geometry(nNuc,ZNuc,rNuc,ENuc)
 
-!------------------------------------------------------------------------
-! Read basis set information from PySCF
-!------------------------------------------------------------------------
+!---------------------------------------!
+! Read basis set information from PySCF !
+!---------------------------------------!
 
   call read_basis_pyscf (nBas,nO,nV)
   nS(:) = (nO(:) - nC(:))*(nV(:) - nR(:))
 
-!------------------------------------------------------------------------
-! Read one- and two-electron integrals
-!------------------------------------------------------------------------
+!--------------------------------------!
+! Read one- and two-electron integrals !
+!--------------------------------------!
 
 ! Memory allocation for one- and two-electron integrals
 
@@ -200,9 +205,9 @@ program QuAcK
 
   call orthogonalization_matrix(ortho_type,nBas,S,X)
 
-!------------------------------------------------------------------------
-! Hartree-Fock module
-!------------------------------------------------------------------------
+!---------------------!
+! Hartree-Fock module !
+!---------------------!
 
   doHF = doRHF .or. doUHF .or. doRMOM .or. doUMOM
 
@@ -220,23 +225,23 @@ program QuAcK
 
   end if
 
-!------------------------------------------------------------------------
-! Kohn-Sham module
-!------------------------------------------------------------------------
+!------------------!
+! Kohn-Sham module !
+!------------------!
 
   if(doKS) then
 
     ! Switch on the unrestricted flag
     unrestricted = .true.
 
-    call cpu_time(start_KS)
+    call wall_time(start_KS)
     write(*,*)
     write(*,*) 'KS module has been disabled for now! Sorry.'
     write(*,*)
 !   call eDFT(maxSCF_HF,thresh_HF,max_diis_HF,guess_type,mix,level_shift,nNuc,ZNuc,rNuc,ENuc,nBas,nEl,nC, & 
 !             nO,nV,nR,nShell,TotAngMomShell,CenterShell,KShell,DShell,ExpShell,            &
 !             max_ang_mom,min_exponent,max_exponent,S,T,V,Hc,X,ERI_AO,dipole_int_AO,EHF,epsHF,cHF,PHF,Vxc)
-    call cpu_time(end_KS)
+    call wall_time(end_KS)
 
     t_KS = end_KS - start_KS
     write(*,'(A65,1X,F9.3,A8)') 'Total CPU time for KS = ',t_KS,' seconds'
@@ -244,9 +249,9 @@ program QuAcK
 
   end if
 
-!------------------------------------------------------------------------
-! AO to MO integral transform for post-HF methods
-!------------------------------------------------------------------------
+!----------------------------------!
+! AO to MO integral transformation !
+!----------------------------------!
 
   call wall_time(start_AOtoMO)
 
@@ -272,34 +277,21 @@ program QuAcK
    
     ! 4-index transform for (aa|aa) block
    
-    bra1 = 1
-    bra2 = 1
-    ket1 = 1
-    ket2 = 1
-    call AOtoMO_integral_transform(bra1,bra2,ket1,ket2,nBas,cHF,ERI_AO,ERI_MO_aaaa)
+    call AOtoMO_integral_transform(1,1,1,1,nBas,cHF,ERI_AO,ERI_MO_aaaa)
     
     ! 4-index transform for (aa|bb) block
    
-    bra1 = 1
-    bra2 = 1
-    ket1 = 2
-    ket2 = 2
-    call AOtoMO_integral_transform(bra1,bra2,ket1,ket2,nBas,cHF,ERI_AO,ERI_MO_aabb)
+    call AOtoMO_integral_transform(1,1,2,2,nBas,cHF,ERI_AO,ERI_MO_aabb)
    
     ! 4-index transform for (bb|bb) block
    
-    bra1 = 2
-    bra2 = 2
-    ket1 = 2
-    ket2 = 2
-    call AOtoMO_integral_transform(bra1,bra2,ket1,ket2,nBas,cHF,ERI_AO,ERI_MO_bbbb)
+    call AOtoMO_integral_transform(2,2,2,2,nBas,cHF,ERI_AO,ERI_MO_bbbb)
 
   else
 
     ! Memory allocation
    
-    allocate(ERI_MO(nBas,nBas,nBas,nBas))
-    allocate(F_MO(nBas,nBas))
+    allocate(ERI_MO(nBas,nBas,nBas,nBas),F_MO(nBas,nBas))
 
     ! Read and transform dipole-related integrals
   
@@ -310,11 +302,7 @@ program QuAcK
 
     ! 4-index transform 
    
-    bra1 = 1
-    bra2 = 1
-    ket1 = 1
-    ket2 = 1
-    call AOtoMO_integral_transform(bra1,bra2,ket1,ket2,nBas,cHF,ERI_AO,ERI_MO)
+    call AOtoMO_integral_transform(1,1,1,1,nBas,cHF,ERI_AO,ERI_MO)
 
     F_MO(:,:) = F_AO(:,:)
     call AOtoMO_transform(nBas,cHF,F_MO)
@@ -327,19 +315,19 @@ program QuAcK
   write(*,'(A65,1X,F9.3,A8)') 'Total wall time for AO to MO transformation = ',t_AOtoMO,' seconds'
   write(*,*)
 
-!------------------------------------------------------------------------
-! Stability analysis of HF solution
-!------------------------------------------------------------------------
+!-----------------------------------!
+! Stability analysis of HF solution !
+!-----------------------------------!
 
   if(dostab) then
 
-    call cpu_time(start_stab)
+    call wall_time(start_stab)
     if(unrestricted) then
       call UHF_stability(nBas,nC,nO,nV,nR,nS,epsHF,ERI_MO_aaaa,ERI_MO_aabb,ERI_MO_bbbb)
     else
       call RHF_stability(nBas,nC,nO,nV,nR,nS,epsHF,ERI_MO)
     end if
-    call cpu_time(end_stab)
+    call wall_time(end_stab)
 
     t_stab = end_stab - start_stab
     write(*,'(A65,1X,F9.3,A8)') 'Total CPU time for stability analysis = ',t_stab,' seconds'
@@ -347,17 +335,17 @@ program QuAcK
 
   end if
 
-!------------------------------------------------------------------------
-! Moller-Plesset module
-!------------------------------------------------------------------------
+!-----------------------!
+! Moller-Plesset module !
+!-----------------------!
 
   doMP = doMP2 .or. doMP3
 
   if(doMP) then
 
-    call cpu_time(start_MP)
+    call wall_time(start_MP)
     call MP(doMP2,doMP3,unrestricted,regMP,nBas,nC,nO,nV,nR,ERI_MO,ERI_MO_aaaa,ERI_MO_aabb,ERI_MO_bbbb,ENuc,EHF,epsHF)
-    call cpu_time(end_MP)
+    call wall_time(end_MP)
 
     t_MP = end_MP - start_MP
     write(*,'(A65,1X,F9.3,A8)') 'Total CPU time for MP = ',t_MP,' seconds'
@@ -365,19 +353,19 @@ program QuAcK
 
   end if
 
-!------------------------------------------------------------------------
-! Coupled-cluster module
-!------------------------------------------------------------------------
+!------------------------!
+! Coupled-cluster module !
+!------------------------!
 
   doCC = doCCD .or. dopCCD .or. doDCD .or. doCCSD .or. doCCSDT .or. &  
          dodrCCD .or. dorCCD .or. docrCCD .or. dolCCD
 
   if(doCC) then
 
-    call cpu_time(start_CC)
+    call wall_time(start_CC)
     call CC(doCCD,dopCCD,doDCD,doCCSD,doCCSDT,dodrCCD,dorCCD,docrCCD,dolCCD, & 
             maxSCF_CC,thresh_CC,max_diis_CC,nBas,nC,nO,nV,nR,ERI_MO,ENuc,EHF,epsHF)
-    call cpu_time(end_CC)
+    call wall_time(end_CC)
 
     t_CC = end_CC - start_CC
     write(*,'(A65,1X,F9.3,A8)') 'Total CPU time for CC = ',t_CC,' seconds'
@@ -385,19 +373,19 @@ program QuAcK
 
   end if
 
-!------------------------------------------------------------------------
-! Configuration interaction module
-!------------------------------------------------------------------------
+!----------------------------------!
+! Configuration interaction module !
+!----------------------------------!
 
   doCI = doCIS .or. doCID .or. doCISD .or. doFCI
 
   if(doCI) then
 
-    call cpu_time(start_CI)
+    call wall_time(start_CI)
     call CI(doCIS,doCIS_D,doCID,doCISD,doFCI,unrestricted,singlet,triplet,spin_conserved,spin_flip,                   &
             nBas,nC,nO,nV,nR,nS,ERI_MO,ERI_MO_aaaa,ERI_MO_aabb,ERI_MO_bbbb,dipole_int_MO,dipole_int_aa,dipole_int_bb, &
             epsHF,EHF,cHF,S,F_MO)
-    call cpu_time(end_CI)
+    call wall_time(end_CI)
 
     t_CI = end_CI - start_CI
     write(*,'(A65,1X,F9.3,A8)') 'Total CPU time for CI = ',t_CI,' seconds'
@@ -405,20 +393,20 @@ program QuAcK
 
   end if
 
-!------------------------------------------------------------------------
-! Random-phase approximation module
-!------------------------------------------------------------------------
+!-----------------------------------!
+! Random-phase approximation module !
+!-----------------------------------!
 
   doRPA = dophRPA .or. dophRPAx .or. docrRPA .or. doppRPA
 
   if(doRPA) then
 
-    call cpu_time(start_RPA)
+    call wall_time(start_RPA)
     call RPA(dophRPA,dophRPAx,docrRPA,doppRPA,unrestricted,                           & 
              TDA,doACFDT,exchange_kernel,singlet,triplet,spin_conserved,spin_flip,    & 
              nBas,nC,nO,nV,nR,nS,ENuc,EHF,ERI_MO,ERI_MO_aaaa,ERI_MO_aabb,ERI_MO_bbbb, & 
              dipole_int_MO,dipole_int_aa,dipole_int_bb,epsHF,cHF,S)
-    call cpu_time(end_RPA)
+    call wall_time(end_RPA)
 
     t_RPA = end_RPA - start_RPA
     write(*,'(A65,1X,F9.3,A8)') 'Total CPU time for RPA = ',t_RPA,' seconds'
@@ -426,20 +414,20 @@ program QuAcK
 
   end if
 
-!------------------------------------------------------------------------
-! Green's function module
-!------------------------------------------------------------------------
+!-------------------------!
+! Green's function module !
+!-------------------------!
 
   doGF = doG0F2 .or. doevGF2 .or. doqsGF2 .or. doG0F3 .or. doevGF3
 
   if(doGF) then
 
-    call cpu_time(start_GF)
+    call wall_time(start_GF)
     call GF(doG0F2,doevGF2,doqsGF2,doG0F3,doevGF3,unrestricted,renormGF,maxSCF_GF,thresh_GF,max_diis_GF,              &
             dophBSE,doppBSE,TDA,dBSE,dTDA,singlet,triplet,spin_conserved,spin_flip,linGF,eta_GF,regGF,                &
             nNuc,ZNuc,rNuc,ENuc,nBas,nC,nO,nV,nR,nS,EHF,S,X,T,V,Hc,ERI_AO,ERI_MO,ERI_MO_aaaa,ERI_MO_aabb,ERI_MO_bbbb, &
             dipole_int_AO,dipole_int_MO,dipole_int_aa,dipole_int_bb,PHF,cHF,epsHF)
-    call cpu_time(end_GF)
+    call wall_time(end_GF)
 
     t_GF = end_GF - start_GF
     write(*,'(A65,1X,F9.3,A8)') 'Total CPU time for GF2 = ',t_GF,' seconds'
@@ -447,21 +435,21 @@ program QuAcK
 
   end if
 
-!------------------------------------------------------------------------
-! GW module
-!------------------------------------------------------------------------
+!-----------!
+! GW module !
+!-----------!
 
   doGW = doG0W0 .or. doevGW .or. doqsGW .or. doufG0W0 .or. doufGW .or. doSRGqsGW
 
   if(doGW) then
     
-    call cpu_time(start_GW)
+    call wall_time(start_GW)
     call GW(doG0W0,doevGW,doqsGW,doufG0W0,doufGW,doSRGqsGW,unrestricted,maxSCF_GW,thresh_GW,max_diis_GW,doACFDT,         &
             exchange_kernel,doXBS,dophBSE,dophBSE2,doppBSE,TDA_W,TDA,dBSE,dTDA,singlet,triplet,spin_conserved,spin_flip, &
             linGW,eta_GW,regGW,nNuc,ZNuc,rNuc,ENuc,nBas,nC,nO,nV,nR,nS,EHF,S,X,T,V,Hc,                                   &  
             ERI_AO,ERI_MO,ERI_MO_aaaa,ERI_MO_aabb,ERI_MO_bbbb,dipole_int_AO,dipole_int_MO,dipole_int_aa,dipole_int_bb,   & 
             PHF,cHF,epsHF)
-    call cpu_time(end_GW)
+    call wall_time(end_GW)
   
     t_GW = end_GW - start_GW
     write(*,'(A65,1X,F9.3,A8)') 'Total CPU time for GW = ',t_GW,' seconds'
@@ -469,21 +457,21 @@ program QuAcK
 
   end if
 
-!------------------------------------------------------------------------
-! T-matrix module
-!------------------------------------------------------------------------
+!-----------------!
+! T-matrix module !
+!-----------------!
 
   doGT = doG0T0pp .or. doevGTpp .or. doqsGTpp .or. doG0T0eh .or. doevGTeh .or. doqsGTeh
 
   if(doGT) then
     
-    call cpu_time(start_GT)
+    call wall_time(start_GT)
     call GT(doG0T0pp,doevGTpp,doqsGTpp,doG0T0eh,doevGTeh,doqsGTeh,unrestricted,maxSCF_GT,thresh_GT,max_diis_GT,doACFDT,  &
             exchange_kernel,doXBS,dophBSE,dophBSE2,doppBSE,TDA_T,TDA,dBSE,dTDA,singlet,triplet,spin_conserved,spin_flip, &
             linGT,eta_GT,regGT,nNuc,ZNuc,rNuc,ENuc,nBas,nC,nO,nV,nR,nS,EHF,S,X,T,V,Hc,                                   &
             ERI_AO,ERI_MO,ERI_MO_aaaa,ERI_MO_aabb,ERI_MO_bbbb,dipole_int_AO,dipole_int_MO,dipole_int_aa,dipole_int_bb,   & 
             PHF,cHF,epsHF)
-    call cpu_time(end_GT)
+    call wall_time(end_GT)
   
     t_GT = end_GT - start_GT
     write(*,'(A65,1X,F9.3,A8)') 'Total CPU time for GT = ',t_GT,' seconds'
@@ -491,9 +479,9 @@ program QuAcK
 
   end if
 
-!------------------------------------------------------------------------
-! End of QuAcK
-!------------------------------------------------------------------------
+!--------------!
+! End of QuAcK !
+!--------------!
 
   call wall_time(end_QuAcK)
 
