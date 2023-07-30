@@ -1,6 +1,5 @@
 subroutine evGW(maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,dophBSE,dophBSE2,TDA_W,TDA,dBSE,dTDA,doppBSE, & 
-                singlet,triplet,linearize,eta,regularize,nBas,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,dipole_int,PHF,  & 
-                cHF,eHF)
+                singlet,triplet,linearize,eta,regularize,nBas,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,dipole_int,eHF)
 
 ! Perform self-consistent eigenvalue-only GW calculation
 
@@ -36,9 +35,7 @@ subroutine evGW(maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,dophBSE,dop
   integer,intent(in)            :: nV
   integer,intent(in)            :: nR
   integer,intent(in)            :: nS
-  double precision,intent(in)   :: PHF(nBas,nBas)
   double precision,intent(in)   :: eHF(nBas)
-  double precision,intent(in)   :: cHF(nBas,nBas)
   double precision,intent(in)   :: ERI(nBas,nBas,nBas,nBas)
   double precision,intent(in)   :: dipole_int(nBas,nBas,ncart)
 
@@ -147,17 +144,17 @@ subroutine evGW(maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,dophBSE,dop
 
     if(linearize) then 
  
-       write(*,*) ' *** Quasiparticle energies obtained by linearization *** '
-       write(*,*)
+      write(*,*) ' *** Quasiparticle energies obtained by linearization *** '
+      write(*,*)
 
-       eGW(:) = eHF(:) + SigC(:)
+      eGW(:) = eHF(:) + SigC(:)
 
     else 
 
-       write(*,*) ' *** Quasiparticle energies obtained by root search (experimental) *** '
-       write(*,*)
+      write(*,*) ' *** Quasiparticle energies obtained by root search (experimental) *** '
+      write(*,*)
   
-       call GW_QP_graph(eta,nBas,nC,nO,nV,nR,nS,eHF,Om,rho,eOld,eGW,Z)
+      call GW_QP_graph(eta,nBas,nC,nO,nV,nR,nS,eHF,Om,rho,eOld,eGW,Z)
  
     end if
 

@@ -104,4 +104,4 @@ subroutine self_energy_correlation_SRG(eta,nBas,nC,nO,nV,nR,nS,e,Omega,rho,EcGM,
 !   end do
 ! end do
 
-end subroutine self_energy_correlation_SRG
+end subroutine 

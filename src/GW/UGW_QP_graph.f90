@@ -1,4 +1,4 @@
-subroutine UGW_QP_graph(nBas,nC,nO,nV,nR,nS,eta,eHF,Omega,rho,eGWlin,eGW)
+subroutine UGW_QP_graph(eta,nBas,nC,nO,nV,nR,nS,eHF,Om,rho,eGWlin,eGW,Z)
 
 ! Compute the graphical solution of the QP equation
 
@@ -15,7 +15,7 @@ subroutine UGW_QP_graph(nBas,nC,nO,nV,nR,nS,eta,eHF,Omega,rho,eGWlin,eGW)
   integer,intent(in)            :: nS
   double precision,intent(in)   :: eta
   double precision,intent(in)   :: eHF(nBas)
-  double precision,intent(in)   :: Omega(nS)
+  double precision,intent(in)   :: Om(nS)
   double precision,intent(in)   :: rho(nBas,nBas,nS,nspin)
 
   double precision,intent(in)   :: eGWlin(nBas)
@@ -24,9 +24,9 @@ subroutine UGW_QP_graph(nBas,nC,nO,nV,nR,nS,eta,eHF,Omega,rho,eGWlin,eGW)
 
   integer                       :: p
   integer                       :: nIt
-  integer,parameter             :: maxIt = 10
+  integer,parameter             :: maxIt = 64
   double precision,parameter    :: thresh = 1d-6
-  double precision,external     :: USigmaC,dUSigmaC
+  double precision,external     :: UGW_SigC,UGW_dSigC
   double precision              :: sigC,dsigC
   double precision              :: f,df
   double precision              :: w
@@ -34,6 +34,7 @@ subroutine UGW_QP_graph(nBas,nC,nO,nV,nR,nS,eta,eHF,Omega,rho,eGWlin,eGW)
 ! Output variables
 
   double precision,intent(out)  :: eGW(nBas)
+  double precision,intent(out)  :: Z(nBas)
 
 ! Run Newton's algorithm to find the root
  
@@ -52,15 +53,14 @@ subroutine UGW_QP_graph(nBas,nC,nO,nV,nR,nS,eta,eHF,Omega,rho,eGWlin,eGW)
     
       nIt = nIt + 1
 
-      sigC  =  USigmaC(p,w,eta,nBas,nC,nO,nV,nR,nS,eHF,Omega,rho)
-      dsigC = dUSigmaC(p,w,eta,nBas,nC,nO,nV,nR,nS,eHF,Omega,rho)
+      sigC  = UGW_SigC(p,w,eta,nBas,nC,nO,nV,nR,nS,eGWlin,Om,rho)
+      dsigC = UGW_dSigC(p,w,eta,nBas,nC,nO,nV,nR,nS,eGWlin,Om,rho)
       f  = w - eHF(p) - sigC
-      df = 1d0 - dsigC
+      df = 1d0/(1d0 - dsigC)
     
-      w = w - f/df
+      w = w - df*f
 
-      write(*,'(A3,I3,A1,1X,3F15.9)') 'It.',nIt,':',w*HaToeV,f,sigC
-    
+      write(*,'(A3,I3,A1,1X,3F15.9)') 'It.',nIt,':',w*HaToeV,df,f
     
     end do
  
@@ -72,6 +72,7 @@ subroutine UGW_QP_graph(nBas,nC,nO,nV,nR,nS,eta,eHF,Omega,rho,eGWlin,eGW)
     else
 
       eGW(p) = w
+      Z(p)   = df
 
       write(*,'(A32,F16.10)')   'Quasiparticle energy (eV)   ',eGW(p)*HaToeV
       write(*,*)

@@ -23,7 +23,7 @@ double precision function GW_SigC(p,w,eta,nBas,nC,nO,nV,nR,nS,e,Om,rho)
 ! Local variables
 
   integer                       :: i,a,m
-  double precision              :: eps
+  double precision              :: num,eps
 
 ! Initialize 
 
@@ -34,7 +34,8 @@ double precision function GW_SigC(p,w,eta,nBas,nC,nO,nV,nR,nS,e,Om,rho)
   do i=nC+1,nO
      do m=1,nS
         eps = w - e(i) + Om(m)
-        GW_SigC = GW_SigC + 2d0*rho(p,i,m)**2*eps/(eps**2 + eta**2)
+        num = 2d0*rho(p,i,m)**2
+        GW_SigC = GW_SigC + num*eps/(eps**2 + eta**2)
      enddo
   enddo
 
@@ -43,7 +44,8 @@ double precision function GW_SigC(p,w,eta,nBas,nC,nO,nV,nR,nS,e,Om,rho)
   do a=nO+1,nBas-nR
      do m=1,nS
         eps = w - e(a) - Om(m)
-        GW_SigC = GW_SigC + 2d0*rho(p,a,m)**2*eps/(eps**2 + eta**2)
+        num = 2d0*rho(p,a,m)**2
+        GW_SigC = GW_SigC + num*eps/(eps**2 + eta**2)
      enddo
   enddo
 

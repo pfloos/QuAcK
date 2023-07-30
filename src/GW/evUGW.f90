@@ -1,6 +1,6 @@
-subroutine evUGW(maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,BSE,TDA_W,TDA,    & 
-                dBSE,dTDA,spin_conserved,spin_flip,eta,regularize,nBas,nC,nO,nV,nR,nS,ENuc, &
-                EUHF,S,ERI_aaaa,ERI_aabb,ERI_bbbb,dipole_int_aa,dipole_int_bb,PHF,cHF,eHF)
+subroutine evUGW(maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,BSE,TDA_W,TDA,dBSE,dTDA, & 
+                 spin_conserved,spin_flip,linearize,eta,regularize,nBas,nC,nO,nV,nR,nS,ENuc,   &
+                 EUHF,S,ERI_aaaa,ERI_aabb,ERI_bbbb,dipole_int_aa,dipole_int_bb,cHF,eHF)
 
 ! Perform self-consistent eigenvalue-only GW calculation
 
@@ -24,6 +24,7 @@ subroutine evUGW(maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,BSE,TDA_W,
   logical,intent(in)            :: dTDA
   logical,intent(in)            :: spin_conserved
   logical,intent(in)            :: spin_flip
+  logical,intent(in)            :: linearize
   double precision,intent(in)   :: eta
   logical,intent(in)            :: regularize
 
@@ -34,7 +35,6 @@ subroutine evUGW(maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,BSE,TDA_W,
   integer,intent(in)            :: nR(nspin)
   integer,intent(in)            :: nS(nspin)
 
-  double precision,intent(in)   :: PHF(nBas,nBas,nspin)
   double precision,intent(in)   :: eHF(nBas,nspin)
   double precision,intent(in)   :: cHF(nBas,nBas,nspin)
   double precision,intent(in)   :: S(nBas,nBas)
@@ -156,7 +156,24 @@ subroutine evUGW(maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,BSE,TDA_W,
     ! Solve the quasi-particle equation !
     !-----------------------------------!
 
-    eGW(:,:) = eHF(:,:) + SigC(:,:)
+    if(linearize) then
+
+      write(*,*) ' *** Quasiparticle energies obtained by linearization *** '
+      write(*,*)
+
+      eGW(:,:) = eHF(:,:) + SigC(:,:)
+
+    else
+
+      write(*,*) ' *** Quasiparticle energies obtained by root search (experimental) *** '
+      write(*,*)
+
+      do is=1,nspin
+        call UGW_QP_graph(eta,nBas,nC(is),nO(is),nV(is),nR(is),nS_sc,eHF(:,is), &
+                          OmRPA,rho_RPA(:,:,:,is),eOld(:,is),eGW(:,is),Z(:,is))
+      end do
+
+    end if
 
     ! Convergence criteria
 

@@ -1,6 +1,6 @@
 subroutine UG0W0(doACFDT,exchange_kernel,doXBS,BSE,TDA_W,TDA,dBSE,dTDA,spin_conserved,spin_flip,      &
                  linearize,eta,regularize,nBas,nC,nO,nV,nR,nS,ENuc,EUHF,S,ERI_aaaa,ERI_aabb,ERI_bbbb, & 
-                 dipole_int_aa,dipole_int_bb,PHF,cHF,eHF)
+                 dipole_int_aa,dipole_int_bb,cHF,eHF)
 
 ! Perform unrestricted G0W0 calculation
 
@@ -40,7 +40,6 @@ subroutine UG0W0(doACFDT,exchange_kernel,doXBS,BSE,TDA_W,TDA,dBSE,dTDA,spin_cons
   double precision,intent(in)   :: dipole_int_bb(nBas,nBas,ncart)
   double precision,intent(in)   :: eHF(nBas,nspin)
   double precision,intent(in)   :: cHF(nBas,nBas,nspin)
-  double precision,intent(in)   :: PHF(nBas,nBas,nspin)
 
 ! Local variables
 
@@ -153,8 +152,8 @@ subroutine UG0W0(doACFDT,exchange_kernel,doXBS,BSE,TDA_W,TDA,dBSE,dTDA,spin_cons
   ! Find graphical solution of the QP equation
 
     do is=1,nspin
-      call UGW_QP_graph(nBas,nC(is),nO(is),nV(is),nR(is),nS_sc,eta,eHF(:,is), & 
-                        OmRPA,rho_RPA(:,:,:,is),eGWlin(:,is),eGW(:,is))
+      call UGW_QP_graph(eta,nBas,nC(is),nO(is),nV(is),nR(is),nS_sc,eHF(:,is), & 
+                        OmRPA,rho_RPA(:,:,:,is),eHF(:,is),eGW(:,is),Z(:,is))
     end do
  
   end if

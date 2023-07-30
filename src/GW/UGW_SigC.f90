@@ -1,6 +1,6 @@
-double precision function dUSigmaC(p,w,eta,nBas,nC,nO,nV,nR,nS,e,Omega,rho)
+double precision function UGW_SigC(p,w,eta,nBas,nC,nO,nV,nR,nS,e,Om,rho)
 
-! Compute the derivative of the correlation part of the self-energy
+! Compute diagonal of the correlation part of the self-energy
 
   implicit none
   include 'parameters.h'
@@ -17,24 +17,25 @@ double precision function dUSigmaC(p,w,eta,nBas,nC,nO,nV,nR,nS,e,Omega,rho)
   integer,intent(in)            :: nR
   integer,intent(in)            :: nS
   double precision,intent(in)   :: e(nBas)
-  double precision,intent(in)   :: Omega(nS)
+  double precision,intent(in)   :: Om(nS)
   double precision,intent(in)   :: rho(nBas,nBas,nS)
 
 ! Local variables
 
   integer                       :: i,a,jb
-  double precision              :: eps
+  double precision              :: num,eps
 
 ! Initialize 
 
-  dUSigmaC = 0d0
+  UGW_SigC = 0d0
 
 ! Occupied part of the correlation self-energy
 
   do i=nC+1,nO
     do jb=1,nS
-      eps = w - e(i) + Omega(jb)
-      dUSigmaC = dUSigmaC + rho(p,i,jb)**2*(eps/(eps**2 + eta**2))**2  
+      eps = w - e(i) + Om(jb)
+      num = rho(p,i,jb)**2
+      UGW_SigC = UGW_SigC + num*eps/(eps**2 + eta**2)  
     end do
   end do
 
@@ -42,9 +43,10 @@ double precision function dUSigmaC(p,w,eta,nBas,nC,nO,nV,nR,nS,e,Omega,rho)
 
   do a=nO+1,nBas-nR
     do jb=1,nS
-      eps = w - e(a) - Omega(jb)
-      dUSigmaC = dUSigmaC + rho(p,a,jb)**2*(eps/(eps**2 + eta**2))**2 
+      eps = w - e(a) - Om(jb)
+      num = rho(p,a,jb)**2
+      UGW_SigC = UGW_SigC + num*eps/(eps**2 + eta**2)
     end do
   end do
 
-end function dUSigmaC
+end function 
