@@ -117,7 +117,7 @@ For example, if you want to run a calculation on water using the cc-pvdz basis s
 QuAcK 💩 % python PyDuck.py -x water -b cc-pvdz
 ```
 
-QuAcK runs calculations in its own directory which is quite unusual but it can be easily modified to run calculations elsewhere.
+QuAcK runs calculations in the `QUACK_ROOT` directory which is quite unusual but it can be easily modified to run calculations elsewhere.
 You just have to make sure that QuAcK reads/writes the integrals and molecular information at the right spot.
 
 <img src="https://lcpq.github.io/PTEROSOR/img/ERC.png" width="200" />
