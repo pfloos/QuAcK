@@ -1,5 +1,4 @@
-subroutine print_qsGF2(nBas,nO,nSCF,Conv,thresh,eHF,eGF2,c,P,T,V,J,K,F,SigC,Z, & 
-                       ENuc,ET,EV,EJ,Ex,Ec,EqsGF2,dipole)
+subroutine print_qsGF2(nBas,nO,nSCF,Conv,thresh,eHF,eGF2,c,SigC,Z,ENuc,ET,EV,EJ,Ex,Ec,EqsGF2,dipole)
 
 ! Print one-electron energies and other stuff for qsGF2
 
@@ -17,10 +16,8 @@ subroutine print_qsGF2(nBas,nO,nSCF,Conv,thresh,eHF,eGF2,c,P,T,V,J,K,F,SigC,Z, &
   double precision,intent(in)        :: eHF(nBas)
   double precision,intent(in)        :: eGF2(nBas)
   double precision,intent(in)        :: c(nBas)
-  double precision,intent(in)        :: P(nBas,nBas) 
-  double precision,intent(in)        :: T(nBas,nBas),V(nBas,nBas)
-  double precision,intent(in)        :: J(nBas,nBas),K(nBas,nBas),F(nBas,nBas)
-  double precision,intent(in)        :: Z(nBas),SigC(nBas,nBas)
+  double precision,intent(in)        :: SigC(nBas,nBas)
+  double precision,intent(in)        :: Z(nBas)
   double precision,intent(in)        :: ET
   double precision,intent(in)        :: EV
   double precision,intent(in)        :: EJ

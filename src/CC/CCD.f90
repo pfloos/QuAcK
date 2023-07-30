@@ -56,7 +56,7 @@ subroutine CCD(maxSCF,thresh,max_diis,nBasin,nCin,nOin,nVin,nRin,ERI,ENuc,ERHF,e
   double precision,allocatable  :: r(:,:,:,:)
   double precision,allocatable  :: t(:,:,:,:)
 
-  integer                       :: n_diis,i,j,a,b
+  integer                       :: n_diis
   double precision              :: rcond
   double precision,allocatable  :: error_diis(:,:)
   double precision,allocatable  :: t_diis(:,:)

@@ -94,8 +94,6 @@ subroutine qsGF2(maxSCF,thresh,max_diis,dophBSE,doppBSE,TDA,dBSE,dTDA,singlet,tr
 
   nBasSq = nBas*nBas
 
-  print*,maxSCF
-
 ! TDA 
 
   if(TDA) then 
@@ -232,8 +230,7 @@ subroutine qsGF2(maxSCF,thresh,max_diis,dophBSE,doppBSE,TDA,dBSE,dTDA,singlet,tr
     !------------------------------------------------------------------------
 
     call dipole_moment(nBas,P,nNuc,ZNuc,rNuc,dipole_int_AO,dipole)
-    call print_qsGF2(nBas,nO,nSCF,Conv,thresh,eHF,eGF,c,P,T,V,J,K,F,SigCp,Z, & 
-                     ENuc,ET,EV,EJ,Ex,Ec,EqsGF2,dipole)
+    call print_qsGF2(nBas,nO,nSCF,Conv,thresh,eHF,eGF,c,SigCp,Z,ENuc,ET,EV,EJ,Ex,Ec,EqsGF2,dipole)
 
   enddo
 !------------------------------------------------------------------------

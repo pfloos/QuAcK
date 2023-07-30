@@ -1,11 +1,11 @@
 subroutine read_options(maxSCF_HF,thresh_HF,DIIS_HF,max_diis_HF,guess_type,ortho_type,mix,level_shift,dostab, &
-                        regMP,                                                                              &
+                        regMP,                                                                                &
                         maxSCF_CC,thresh_CC,DIIS_CC,max_diis_CC,                                              &
-                        TDA,singlet,triplet,spin_conserved,spin_flip,                                       &
+                        TDA,singlet,triplet,spin_conserved,spin_flip,                                         &
                         maxSCF_GF,thresh_GF,DIIS_GF,max_diis_GF,linGF,eta_GF,renormGF,regGF,                  &
                         maxSCF_GW,thresh_GW,DIIS_GW,max_diis_GW,linGW,eta_GW,regGW,TDA_W,                     &
                         maxSCF_GT,thresh_GT,DIIS_GT,max_diis_GT,linGT,eta_GT,regGT,TDA_T,                     &
-                        doACFDT,exchange_kernel,doXBS,                                                      &
+                        doACFDT,exchange_kernel,doXBS,                                                        &
                         dophBSE,dophBSE2,doppBSE,dBSE,dTDA)
 
 ! Read desired methods 
@@ -76,7 +76,7 @@ subroutine read_options(maxSCF_HF,thresh_HF,DIIS_HF,max_diis_HF,guess_type,ortho
 
 ! Local variables
 
-  character(len=1)              :: answer1,answer2,answer3,answer4,answer5,answer6,answer7,answer8
+  character(len=1)              :: ans1,ans2,ans3,ans4,ans5
 
 ! Open file with method specification
 
@@ -95,11 +95,11 @@ subroutine read_options(maxSCF_HF,thresh_HF,DIIS_HF,max_diis_HF,guess_type,ortho
   dostab       = .false.
 
   read(1,*) 
-  read(1,*) maxSCF_HF,thresh_HF,answer1,max_diis_HF,guess_type,ortho_type,answer2,level_shift,answer3
+  read(1,*) maxSCF_HF,thresh_HF,ans1,max_diis_HF,guess_type,ortho_type,ans2,level_shift,ans3
 
-  if(answer1 == 'T') DIIS_HF     = .true.
-  if(answer2 == 'T') mix         = .true.
-  if(answer3 == 'T') dostab      = .true.
+  if(ans1 == 'T') DIIS_HF     = .true.
+  if(ans2 == 'T') mix         = .true.
+  if(ans3 == 'T') dostab      = .true.
 
   if(.not.DIIS_HF) max_diis_HF = 1
 
@@ -107,9 +107,9 @@ subroutine read_options(maxSCF_HF,thresh_HF,DIIS_HF,max_diis_HF,guess_type,ortho
 
   regMP = .false.
   read(1,*)
-  read(1,*) answer1
+  read(1,*) ans1
 
-  if(answer1 == 'T') regMP = .true.
+  if(ans1 == 'T') regMP = .true.
 
 ! Read CC options
 
@@ -119,9 +119,9 @@ subroutine read_options(maxSCF_HF,thresh_HF,DIIS_HF,max_diis_HF,guess_type,ortho
   max_diis_CC    = 5
 
   read(1,*)
-  read(1,*) maxSCF_CC,thresh_CC,answer1,max_diis_CC
+  read(1,*) maxSCF_CC,thresh_CC,ans1,max_diis_CC
 
-  if(answer1 == 'T') DIIS_CC    = .true.
+  if(ans1 == 'T') DIIS_CC    = .true.
 
   if(.not.DIIS_CC) max_diis_CC = 1
 
@@ -134,13 +134,13 @@ subroutine read_options(maxSCF_HF,thresh_HF,DIIS_HF,max_diis_HF,guess_type,ortho
   spin_flip      = .false.
 
   read(1,*) 
-  read(1,*) answer1,answer2,answer3,answer4,answer5
+  read(1,*) ans1,ans2,ans3,ans4,ans5
 
-  if(answer1 == 'T') TDA            = .true.
-  if(answer2 == 'T') singlet        = .true.
-  if(answer3 == 'T') triplet        = .true.
-  if(answer4 == 'T') spin_conserved = .true.
-  if(answer5 == 'T') spin_flip      = .true.
+  if(ans1 == 'T') TDA            = .true.
+  if(ans2 == 'T') singlet        = .true.
+  if(ans3 == 'T') triplet        = .true.
+  if(ans4 == 'T') spin_conserved = .true.
+  if(ans5 == 'T') spin_flip      = .true.
 
 ! Read GF options
 
@@ -154,11 +154,11 @@ subroutine read_options(maxSCF_HF,thresh_HF,DIIS_HF,max_diis_HF,guess_type,ortho
   regGF     = .false.
 
   read(1,*) 
-  read(1,*) maxSCF_GF,thresh_GF,answer1,max_diis_GF,answer2,eta_GF,renormGF,answer3
+  read(1,*) maxSCF_GF,thresh_GF,ans1,max_diis_GF,ans2,eta_GF,renormGF,ans3
 
-  if(answer1 == 'T') DIIS_GF = .true.
-  if(answer2 == 'T') linGF   = .true.
-  if(answer3 == 'T') regGF   = .true.
+  if(ans1 == 'T') DIIS_GF = .true.
+  if(ans2 == 'T') linGF   = .true.
+  if(ans3 == 'T') regGF   = .true.
   if(.not.DIIS_GF) max_diis_GF = 1
 
 ! Read GW options
@@ -173,13 +173,13 @@ subroutine read_options(maxSCF_HF,thresh_HF,DIIS_HF,max_diis_HF,guess_type,ortho
   TDA_W     = .false.
 
   read(1,*) 
-  read(1,*) maxSCF_GW,thresh_GW,answer1,max_diis_GW,answer2,eta_GW, &
-            answer3,answer4
+  read(1,*) maxSCF_GW,thresh_GW,ans1,max_diis_GW,ans2,eta_GW, &
+            ans3,ans4
 
-  if(answer1 == 'T') DIIS_GW = .true.
-  if(answer2 == 'T') linGW   = .true.
-  if(answer3 == 'T') TDA_W   = .true.
-  if(answer4 == 'T') regGW   = .true.
+  if(ans1 == 'T') DIIS_GW = .true.
+  if(ans2 == 'T') linGW   = .true.
+  if(ans3 == 'T') TDA_W   = .true.
+  if(ans4 == 'T') regGW   = .true.
   if(.not.DIIS_GW) max_diis_GW = 1
 
 ! Read GT options
@@ -194,13 +194,13 @@ subroutine read_options(maxSCF_HF,thresh_HF,DIIS_HF,max_diis_HF,guess_type,ortho
   TDA_T     = .false.
 
   read(1,*) 
-  read(1,*) maxSCF_GT,thresh_GT,answer1,max_diis_GT,answer2,eta_GT, &
-            answer3,answer4
+  read(1,*) maxSCF_GT,thresh_GT,ans1,max_diis_GT,ans2,eta_GT, &
+            ans3,ans4
 
-  if(answer1 == 'T') DIIS_GT = .true.
-  if(answer2 == 'T') linGT   = .true.
-  if(answer3 == 'T') TDA_T   = .true.
-  if(answer4 == 'T') regGT   = .true.
+  if(ans1 == 'T') DIIS_GT = .true.
+  if(ans2 == 'T') linGT   = .true.
+  if(ans3 == 'T') TDA_T   = .true.
+  if(ans4 == 'T') regGT   = .true.
   if(.not.DIIS_GT) max_diis_GT = 1
 
 ! Options for adiabatic connection
@@ -210,11 +210,11 @@ subroutine read_options(maxSCF_HF,thresh_HF,DIIS_HF,max_diis_HF,guess_type,ortho
   doXBS           = .false.
 
   read(1,*) 
-  read(1,*) answer1,answer2,answer3
+  read(1,*) ans1,ans2,ans3
 
-  if(answer1 == 'T') doACFDT = .true.
-  if(answer2 == 'T') exchange_kernel = .true.
-  if(answer3 == 'T') doXBS   = .true.
+  if(ans1 == 'T') doACFDT = .true.
+  if(ans2 == 'T') exchange_kernel = .true.
+  if(ans3 == 'T') doXBS   = .true.
 
 ! Options for dynamical BSE calculations
 
@@ -225,13 +225,13 @@ subroutine read_options(maxSCF_HF,thresh_HF,DIIS_HF,max_diis_HF,guess_type,ortho
   dTDA     = .true.
 
   read(1,*) 
-  read(1,*) answer1,answer2,answer3,answer4,answer5
+  read(1,*) ans1,ans2,ans3,ans4,ans5
 
-  if(answer1 == 'T') dophBSE  = .true.
-  if(answer2 == 'T') dophBSE2 = .true.
-  if(answer3 == 'T') doppBSE  = .true.
-  if(answer4 == 'T') dBSE     = .true.
-  if(answer5 == 'F') dTDA     = .false.
+  if(ans1 == 'T') dophBSE  = .true.
+  if(ans2 == 'T') dophBSE2 = .true.
+  if(ans3 == 'T') doppBSE  = .true.
+  if(ans4 == 'T') dBSE     = .true.
+  if(ans5 == 'F') dTDA     = .false.
 
 ! Close file with options
 

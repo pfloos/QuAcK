@@ -111,6 +111,6 @@ subroutine DEA_EOM_CCD_2p(nC,nO,nV,nR,eV,OOVV,VVVV,t)
 
 ! Dump results
 
-  call print_excitation('DEA-EOM-CCD ',3,nVV,Om)
+  call print_excitation_energies('DEA-EOM-CCD',3,nVV,Om)
 
 end subroutine 

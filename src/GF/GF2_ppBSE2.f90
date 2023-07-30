@@ -27,13 +27,8 @@ subroutine GF2_ppBSE2(TDA,dBSE,dTDA,singlet,triplet,eta,nBas,nC,nO,nV,nR,ERI,dip
 
   integer                       :: ispin
 
-  logical                       :: dRPA   = .false.
-
   integer                       :: nOO
   integer                       :: nVV
-
-  double precision,allocatable  :: Aph(:,:)
-  double precision,allocatable  :: Bph(:,:)
 
   double precision,allocatable  :: Bpp(:,:)
   double precision,allocatable  :: Cpp(:,:)
