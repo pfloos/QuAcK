@@ -85,8 +85,8 @@ QuAcK 💩 % cat input/methods
   F     F      F      F    F
 # G0W0* evGW* qsGW* SRG-qsGW ufG0W0 ufGW
   T     F     F     F        F      F
-# G0T0pp evGTpp qsGTpp G0T0eh evGTeh qsGTeh
-  F      F      F      F      F      F
+# G0T0pp* evGTpp* qsGTpp* G0T0eh evGTeh qsGTeh
+  F       F       F       F      F      F
 # * unrestricted version available
 ```
 and
