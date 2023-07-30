@@ -13,7 +13,7 @@
 QuAcK is a small electronic structure program written in `Fortran 90` and developed at the Laboratoire de Chimie et Physique Quantiques [LCPQ](https://www.lcpq.ups-tlse.fr) (Toulouse, France).
 QuAcK is usually used for prototyping purposes and the successful ideas are usually implemented more efficiently in [Quantum Package](https://quantumpackage.github.io/qp2/). QuAcK is an excellent place to start for experienced PhD students or postdocs as the code is simple and written with a fairly well-known and straightforward language. For beginners, we suggest having a look at [qcmath](https://github.com/LCPQ/qcmath/), a [Mathematica](https://www.wolfram.com/mathematica/)-based program to help newcomers in quantum chemistry easily develop their ideas. 
 
-QuAcK is under continuous and active development, so it is very (very) likely to contain many bugs and errors. QuAcK is a code for experts, which means that must know what you're doing and you have to make sure you're not doing anything silly (QuAcK may allow silly things to happen!). You have been warned.
+QuAcK is under continuous and active development, so it is very (very) likely to contain many bugs and errors. QuAcK is a code for experts, which means that you must know what you're doing and you have to make sure you're not doing anything silly (QuAcK may allow silly things to happen on purpose!). You have been warned.
 
 # Installation guide
 The QuAcK software can be downloaded on GitHub as a Git repository
