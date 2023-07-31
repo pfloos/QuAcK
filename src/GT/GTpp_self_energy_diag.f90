@@ -59,6 +59,7 @@ subroutine GTpp_self_energy_diag(eta,nBas,nC,nO,nV,nR,nOOs,nVVs,nOOt,nVVt,e,Om1s
         Sig(p) = Sig(p) + num*eps/(eps**2 + eta**2)
         Z(p)   = Z(p)   - num*(eps**2 - eta**2)/(eps**2 + eta**2)**2
       enddo
+
     enddo
   enddo
 
