@@ -75,7 +75,7 @@ subroutine GF(doG0F2,doevGF2,doqsGF2,doG0F3,doevGF3,unrestricted,renorm,maxSCF,t
 
   if(doG0F2) then
 
-    call cpu_time(start_GF)
+    call wall_time(start_GF)
     if(unrestricted) then
       call UG0F2(dophBSE,TDA,dBSE,dTDA,spin_conserved,spin_flip,linearize,eta,regularize, &
                  nBas,nC,nO,nV,nR,nS,ENuc,EHF,ERI_aaaa,ERI_aabb,ERI_bbbb,  & 
@@ -84,7 +84,7 @@ subroutine GF(doG0F2,doevGF2,doqsGF2,doG0F3,doevGF3,unrestricted,renorm,maxSCF,t
       call G0F2(dophBSE,doppBSE,TDA,dBSE,dTDA,singlet,triplet,linearize,eta,regularize, & 
                 nBas,nC,nO,nV,nR,nS,ENuc,EHF,ERI,dipole_int,epsHF)
     end if
-    call cpu_time(end_GF)
+    call wall_time(end_GF)
 
     t_GF = end_GF - start_GF
     write(*,'(A65,1X,F9.3,A8)') 'Total CPU time for GF2 = ',t_GF,' seconds'
@@ -98,7 +98,7 @@ subroutine GF(doG0F2,doevGF2,doqsGF2,doG0F3,doevGF3,unrestricted,renorm,maxSCF,t
 
   if(doevGF2) then
 
-    call cpu_time(start_GF)
+    call wall_time(start_GF)
     if(unrestricted) then
       call evUGF2(maxSCF,thresh,max_diis,dophBSE,TDA,dBSE,dTDA,spin_conserved,spin_flip,  &
                   eta,regularize,nBas,nC,nO,nV,nR,nS,ENuc,EHF,ERI_aaaa,ERI_aabb,ERI_bbbb, & 
@@ -108,7 +108,7 @@ subroutine GF(doG0F2,doevGF2,doqsGF2,doG0F3,doevGF3,unrestricted,renorm,maxSCF,t
                  singlet,triplet,linearize,eta,regularize,nBas,nC,nO,nV,nR,nS,ENuc,EHF, & 
                  ERI,dipole_int,epsHF)
     end if
-    call cpu_time(end_GF)
+    call wall_time(end_GF)
 
     t_GF = end_GF - start_GF
     write(*,'(A65,1X,F9.3,A8)') 'Total CPU time for GF2 = ',t_GF,' seconds'
@@ -122,7 +122,7 @@ subroutine GF(doG0F2,doevGF2,doqsGF2,doG0F3,doevGF3,unrestricted,renorm,maxSCF,t
 
   if(doqsGF2) then 
 
-    call cpu_time(start_GF)
+    call wall_time(start_GF)
     if(unrestricted) then
       call qsUGF2(maxSCF,thresh,max_diis,dophBSE,TDA,dBSE,dTDA,spin_conserved,spin_flip,eta,regularize, &
                   nNuc,ZNuc,rNuc,ENuc,nBas,nC,nO,nV,nR,nS,EHF,S,X,T,V,Hc,ERI_AO,                        & 
@@ -131,7 +131,7 @@ subroutine GF(doG0F2,doevGF2,doqsGF2,doG0F3,doevGF3,unrestricted,renorm,maxSCF,t
       call qsGF2(maxSCF,thresh,max_diis,dophBSE,doppBSE,TDA,dBSE,dTDA,singlet,triplet,eta,regularize,nNuc,ZNuc,rNuc,ENuc, & 
                  nBas,nC,nO,nV,nR,nS,EHF,S,X,T,V,Hc,ERI_AO,ERI,dipole_int_AO,dipole_int,PHF,cHF,epsHF)
     end if
-    call cpu_time(end_GF)
+    call wall_time(end_GF)
 
     t_GF = end_GF - start_GF
     write(*,'(A65,1X,F9.3,A8)') 'Total CPU time for qsGF2 = ',t_GF,' seconds'
@@ -145,13 +145,13 @@ subroutine GF(doG0F2,doevGF2,doqsGF2,doG0F3,doevGF3,unrestricted,renorm,maxSCF,t
 
   if(doG0F3) then
 
-    call cpu_time(start_GF)
+    call wall_time(start_GF)
     if(unrestricted) then
       print*,'Unrestricted version of G0F3 not yet implemented! Sorry.'
     else
       call G0F3(renorm,nBas,nC,nO,nV,nR,ERI,epsHF)
     end if
-    call cpu_time(end_GF)
+    call wall_time(end_GF)
 
     t_GF = end_GF - start_GF
     write(*,'(A65,1X,F9.3,A8)') 'Total CPU time for GF3 = ',t_GF,' seconds'
@@ -165,13 +165,13 @@ subroutine GF(doG0F2,doevGF2,doqsGF2,doG0F3,doevGF3,unrestricted,renorm,maxSCF,t
 
   if(doevGF3) then
 
-    call cpu_time(start_GF)
+    call wall_time(start_GF)
     if(unrestricted) then
       print*,'Unrestricted version of evGF3 not yet implemented! Sorry.'
     else
       call evGF3(maxSCF,thresh,max_diis,renorm,nBas,nC,nO,nV,nR,ERI,epsHF)
     end if
-    call cpu_time(end_GF)
+    call wall_time(end_GF)
 
     t_GF = end_GF - start_GF
     write(*,'(A65,1X,F9.3,A8)') 'Total CPU time for GF3 = ',t_GF,' seconds'

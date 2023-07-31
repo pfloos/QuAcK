@@ -283,9 +283,9 @@ subroutine CCSD(maxSCF,thresh,max_diis,doCCSDT,nBasin,nCin,nOin,nVin,nRin,ERI,EN
 !------------------------------------------------------------------------
   if(doCCSDT) then
 
-    call cpu_time(start_CCSDT)
+    call wall_time(start_CCSDT)
     call CCSDT(nC,nO,nV,nR,eO,eV,OOVV,VVVO,VOOO,t1,t2,EcCCT)
-    call cpu_time(end_CCSDT)
+    call wall_time(end_CCSDT)
 
      t_CCSDT = end_CCSDT - start_CCSDT
      write(*,'(A65,1X,F9.3,A8)') 'Total CPU time for (T) = ',t_CCSDT,' seconds'

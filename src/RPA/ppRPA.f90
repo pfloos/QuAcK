@@ -38,7 +38,6 @@ subroutine ppRPA(TDA,doACFDT,singlet,triplet,nBas,nC,nO,nV,nR,ENuc,EHF,ERI,dipol
   double precision,allocatable  :: Y2(:,:)
 
   double precision              :: EcRPA(nspin)
-  double precision              :: EcAC(nspin)
 
 ! Hello world
 
@@ -51,7 +50,6 @@ subroutine ppRPA(TDA,doACFDT,singlet,triplet,nBas,nC,nO,nV,nR,ENuc,EHF,ERI,dipol
 ! Initialization
 
   EcRPA(:) = 0d0
-  EcAC(:)  = 0d0
 
 ! Singlet manifold
 
@@ -135,14 +133,14 @@ subroutine ppRPA(TDA,doACFDT,singlet,triplet,nBas,nC,nO,nV,nR,ENuc,EHF,ERI,dipol
     write(*,*) '--------------------------------------------------------'
     write(*,*)
 
-    call ppACFDT(TDA,singlet,triplet,nBas,nC,nO,nV,nR,ERI,e,EcAC)
+    call ppACFDT(TDA,singlet,triplet,nBas,nC,nO,nV,nR,ERI,e,EcRPA)
 
     write(*,*)
     write(*,*)'-------------------------------------------------------------------------------'
-    write(*,'(2X,A50,F20.10,A3)') 'AC@ppRPA correlation energy (singlet) =',EcAC(1),' au'
-    write(*,'(2X,A50,F20.10,A3)') 'AC@ppRPA correlation energy (triplet) =',EcAC(2),' au'
-    write(*,'(2X,A50,F20.10,A3)') 'AC@ppRPA correlation energy           =',EcAC(1) + EcAC(2),' au'
-    write(*,'(2X,A50,F20.10,A3)') 'AC@ppRPA total energy                 =',ENuc + EHF + EcAC(1) + EcAC(2),' au'
+    write(*,'(2X,A50,F20.10,A3)') 'AC@ppRPA correlation energy (singlet) =',EcRPA(1),' au'
+    write(*,'(2X,A50,F20.10,A3)') 'AC@ppRPA correlation energy (triplet) =',EcRPA(2),' au'
+    write(*,'(2X,A50,F20.10,A3)') 'AC@ppRPA correlation energy           =',EcRPA(1) + EcRPA(2),' au'
+    write(*,'(2X,A50,F20.10,A3)') 'AC@ppRPA total energy                 =',ENuc + EHF + EcRPA(1) + EcRPA(2),' au'
     write(*,*)'-------------------------------------------------------------------------------'
     write(*,*)
 

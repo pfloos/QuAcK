@@ -1,4 +1,4 @@
-subroutine sort_ppRPA(nOO,nVV,Omega,Z,Omega1,X1,Y1,Omega2,X2,Y2)
+subroutine sort_ppRPA(nOO,nVV,Om,Z,Om1,X1,Y1,Om2,X2,Y2)
 
 ! Compute the metric matrix for pp-RPA
 
@@ -9,7 +9,7 @@ subroutine sort_ppRPA(nOO,nVV,Omega,Z,Omega1,X1,Y1,Omega2,X2,Y2)
 
   integer,intent(in)            :: nOO
   integer,intent(in)            :: nVV
-  double precision,intent(in)   :: Omega(nOO+nVV)
+  double precision,intent(in)   :: Om(nOO+nVV)
   double precision,intent(in)   :: Z(nOO+nVV,nOO+nVV)
   
 ! Local variables
@@ -32,10 +32,10 @@ subroutine sort_ppRPA(nOO,nVV,Omega,Z,Omega1,X1,Y1,Omega2,X2,Y2)
 
 ! Output variables
 
-  double precision,intent(out)  :: Omega1(nVV)
+  double precision,intent(out)  :: Om1(nVV)
   double precision,intent(out)  :: X1(nVV,nVV)
   double precision,intent(out)  :: Y1(nOO,nVV)
-  double precision,intent(out)  :: Omega2(nOO)
+  double precision,intent(out)  :: Om2(nOO)
   double precision,intent(out)  :: X2(nVV,nOO)
   double precision,intent(out)  :: Y2(nOO,nOO)
 
@@ -47,11 +47,11 @@ subroutine sort_ppRPA(nOO,nVV,Omega,Z,Omega1,X1,Y1,Omega2,X2,Y2)
 
 ! Initializatiom
 
-  Omega1(:) = 0d0
+  Om1(:) = 0d0
   X1(:,:)   = 0d0
   Y1(:,:)   = 0d0
 
-  Omega2(:) = 0d0
+  Om2(:) = 0d0
   X2(:,:)   = 0d0
   Y2(:,:)   = 0d0
 
@@ -74,24 +74,24 @@ subroutine sort_ppRPA(nOO,nVV,Omega,Z,Omega1,X1,Y1,Omega2,X2,Y2)
 
   do pq=1,nOO+nVV
 
-    if(Omega(pq) > 0d0) then 
+    if(Om(pq) > 0d0) then 
 
       ab = ab + 1
-      Omega1(ab) = Omega(pq)
+      Om1(ab) = Om(pq)
       Z1(1:nOO+nVV,ab) = Z(1:nOO+nVV,pq)
 
     else
 
       ij = ij + 1
-      Omega2(ij) = Omega(pq)
+      Om2(ij) = Om(pq)
       Z2(1:nOO+nVV,ij) = Z(1:nOO+nVV,pq)
 
     end if
 
  end do
 
-  if(minval(Omega1(:)) < 0d0 .or. ab /= nVV) call print_warning('You may have instabilities in pp-RPA!!')
-  if(maxval(Omega2(:)) > 0d0 .or. ij /= nOO) call print_warning('You may have instabilities in pp-RPA!!')
+  if(minval(Om1(:)) < 0d0 .or. ab /= nVV) call print_warning('You may have instabilities in pp-RPA!!')
+  if(maxval(Om2(:)) > 0d0 .or. ij /= nOO) call print_warning('You may have instabilities in pp-RPA!!')
 
 
   if(nVV > 0) then 
@@ -100,7 +100,7 @@ subroutine sort_ppRPA(nOO,nVV,Omega,Z,Omega1,X1,Y1,Omega2,X2,Y2)
       order1(ab) = ab
     end do
 
-    call quick_sort(Omega1(:),order1(:),nVV)
+    call quick_sort(Om1(:),order1(:),nVV)
     call set_order(Z1(:,:),order1(:),nOO+nVV,nVV)
 
   end if
@@ -111,7 +111,7 @@ subroutine sort_ppRPA(nOO,nVV,Omega,Z,Omega1,X1,Y1,Omega2,X2,Y2)
       order2(ij) = ij
     end do
 
-    call quick_sort(Omega2(:),order2(:),nOO)
+    call quick_sort(Om2(:),order2(:),nOO)
     call set_order(Z2(:,:),order2(:),nOO+nVV,nOO)
 
  end if
@@ -123,7 +123,7 @@ subroutine sort_ppRPA(nOO,nVV,Omega,Z,Omega1,X1,Y1,Omega2,X2,Y2)
 
 ! do ab=2,nVV
 
-!   if(abs(Omega1(ab-1) - Omega1(ab)) < 1d-6) then 
+!   if(abs(Om1(ab-1) - Om1(ab)) < 1d-6) then 
 
 !     deg1 = deg1 + 1
 
@@ -164,7 +164,7 @@ subroutine sort_ppRPA(nOO,nVV,Omega,Z,Omega1,X1,Y1,Omega2,X2,Y2)
 
 ! do ij=2,nOO
 
-!   if(abs(Omega2(ij-1) - Omega2(ij)) < 1d-6) then 
+!   if(abs(Om2(ij-1) - Om2(ij)) < 1d-6) then 
 
 !     deg2 = deg2 + 1
 

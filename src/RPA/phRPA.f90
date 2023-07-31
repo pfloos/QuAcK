@@ -35,8 +35,7 @@ subroutine phRPA(TDA,doACFDT,exchange_kernel,singlet,triplet,nBas,nC,nO,nV,nR,nS
   double precision,allocatable  :: XpY(:,:)
   double precision,allocatable  :: XmY(:,:)
 
-  double precision              :: EcTr(nspin)
-  double precision              :: EcAC(nspin)
+  double precision              :: EcRPA(nspin)
 
 ! Hello world
 
@@ -57,8 +56,7 @@ subroutine phRPA(TDA,doACFDT,exchange_kernel,singlet,triplet,nBas,nC,nO,nV,nR,nS
 
   dRPA = .true.
 
-  EcTr(:) = 0d0
-  EcAC(:)  = 0d0
+  EcRPA(:) = 0d0
 
 ! Memory allocation
 
@@ -74,7 +72,7 @@ subroutine phRPA(TDA,doACFDT,exchange_kernel,singlet,triplet,nBas,nC,nO,nV,nR,nS
     call phLR_A(ispin,dRPA,nBas,nC,nO,nV,nR,nS,1d0,e,ERI,Aph)
     if(.not.TDA) call phLR_B(ispin,dRPA,nBas,nC,nO,nV,nR,nS,1d0,ERI,Bph)
 
-    call phLR(TDA,nS,Aph,Bph,EcTr(ispin),Om,XpY,XmY)
+    call phLR(TDA,nS,Aph,Bph,EcRPA(ispin),Om,XpY,XmY)
     call print_excitation_energies('phRPA@HF',ispin,nS,Om)
     call phLR_transition_vectors(.true.,nBas,nC,nO,nV,nR,nS,dipole_int,Om,XpY,XmY)
 
@@ -89,7 +87,7 @@ subroutine phRPA(TDA,doACFDT,exchange_kernel,singlet,triplet,nBas,nC,nO,nV,nR,nS
     call phLR_A(ispin,dRPA,nBas,nC,nO,nV,nR,nS,1d0,e,ERI,Aph)
     if(.not.TDA) call phLR_B(ispin,dRPA,nBas,nC,nO,nV,nR,nS,1d0,ERI,Bph)
 
-    call phLR(TDA,nS,Aph,Bph,EcTr(ispin),Om,XpY,XmY)
+    call phLR(TDA,nS,Aph,Bph,EcRPA(ispin),Om,XpY,XmY)
     call print_excitation_energies('phRPA@HF',ispin,nS,Om)
     call phLR_transition_vectors(.false.,nBas,nC,nO,nV,nR,nS,dipole_int,Om,XpY,XmY)
 
@@ -97,17 +95,17 @@ subroutine phRPA(TDA,doACFDT,exchange_kernel,singlet,triplet,nBas,nC,nO,nV,nR,nS
 
   if(exchange_kernel) then
 
-    EcTr(1) = 0.5d0*EcTr(1)
-    EcTr(2) = 1.5d0*EcTr(2)
+    EcRPA(1) = 0.5d0*EcRPA(1)
+    EcRPA(2) = 1.5d0*EcRPA(2)
 
   end if
 
   write(*,*)
   write(*,*)'-------------------------------------------------------------------------------'
-  write(*,'(2X,A50,F20.10)') 'Tr@phRPA correlation energy (singlet) =',EcTr(1)
-  write(*,'(2X,A50,F20.10)') 'Tr@phRPA correlation energy (triplet) =',EcTr(2)
-  write(*,'(2X,A50,F20.10)') 'Tr@phRPA correlation energy           =',EcTr(1) + EcTr(2)
-  write(*,'(2X,A50,F20.10)') 'Tr@phRPA total energy                 =',ENuc + EHF + EcTr(1) + EcTr(2)
+  write(*,'(2X,A50,F20.10)') 'Tr@phRPA correlation energy (singlet) =',EcRPA(1)
+  write(*,'(2X,A50,F20.10)') 'Tr@phRPA correlation energy (triplet) =',EcRPA(2)
+  write(*,'(2X,A50,F20.10)') 'Tr@phRPA correlation energy           =',EcRPA(1) + EcRPA(2)
+  write(*,'(2X,A50,F20.10)') 'Tr@phRPA total energy                 =',ENuc + EHF + EcRPA(1) + EcRPA(2)
   write(*,*)'-------------------------------------------------------------------------------'
   write(*,*)
 
@@ -122,14 +120,14 @@ subroutine phRPA(TDA,doACFDT,exchange_kernel,singlet,triplet,nBas,nC,nO,nV,nR,nS
     write(*,*) '--------------------------------------------------------'
     write(*,*) 
 
-    call phACFDT(exchange_kernel,dRPA,TDA,singlet,triplet,nBas,nC,nO,nV,nR,nS,ERI,e,EcAC)
+    call phACFDT(exchange_kernel,dRPA,TDA,singlet,triplet,nBas,nC,nO,nV,nR,nS,ERI,e,EcRPA)
 
     write(*,*)
     write(*,*)'-------------------------------------------------------------------------------'
-    write(*,'(2X,A50,F20.10)') 'AC@phRPA correlation energy (singlet) =',EcAC(1)
-    write(*,'(2X,A50,F20.10)') 'AC@phRPA correlation energy (triplet) =',EcAC(2)
-    write(*,'(2X,A50,F20.10)') 'AC@phRPA correlation energy           =',EcAC(1) + EcAC(2)
-    write(*,'(2X,A50,F20.10)') 'AC@phRPA total energy                 =',ENuc + EHF + EcAC(1) + EcAC(2)
+    write(*,'(2X,A50,F20.10)') 'AC@phRPA correlation energy (singlet) =',EcRPA(1)
+    write(*,'(2X,A50,F20.10)') 'AC@phRPA correlation energy (triplet) =',EcRPA(2)
+    write(*,'(2X,A50,F20.10)') 'AC@phRPA correlation energy           =',EcRPA(1) + EcRPA(2)
+    write(*,'(2X,A50,F20.10)') 'AC@phRPA total energy                 =',ENuc + EHF + EcRPA(1) + EcRPA(2)
     write(*,*)'-------------------------------------------------------------------------------'
     write(*,*)
 

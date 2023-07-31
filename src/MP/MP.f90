@@ -37,13 +37,13 @@ subroutine MP(doMP2,doMP3,unrestricted,regularize,nBas,nC,nO,nV,nR,ERI,ERI_aaaa,
 
   if(doMP2) then    
        
-    call cpu_time(start_MP)
+    call wall_time(start_MP)
     if(unrestricted) then
       call UMP2(nBas,nC,nO,nV,nR,ERI_aaaa,ERI_aabb,ERI_bbbb,ENuc,EHF,epsHF)
     else
       call MP2(regularize,nBas,nC,nO,nV,nR,ERI,ENuc,EHF,epsHF)
     end if          
-    call cpu_time(end_MP)
+    call wall_time(end_MP)
 
     t_MP = end_MP - start_MP
     write(*,'(A65,1X,F9.3,A8)') 'Total CPU time for MP2 = ',t_MP,' seconds'
@@ -57,7 +57,7 @@ subroutine MP(doMP2,doMP3,unrestricted,regularize,nBas,nC,nO,nV,nR,ERI,ERI_aaaa,
                     
   if(doMP3) then    
 
-    call cpu_time(start_MP)
+    call wall_time(start_MP)
 
     if(unrestricted) then
       write(*,*) 'MP3 NYI for UHF reference'
@@ -65,7 +65,7 @@ subroutine MP(doMP2,doMP3,unrestricted,regularize,nBas,nC,nO,nV,nR,ERI,ERI_aaaa,
     else
       call MP3(nBas,nC,nO,nV,nR,ERI,ENuc,EHF,epsHF)
     end if
-    call cpu_time(end_MP)
+    call wall_time(end_MP)
 
     t_MP = end_MP - start_MP
     write(*,'(A65,1X,F9.3,A8)') 'Total CPU time for MP2 = ',t_MP,' seconds'

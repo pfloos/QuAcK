@@ -49,14 +49,14 @@ subroutine CI(doCIS,doCIS_D,doCID,doCISD,doFCI,unrestricted,singlet,triplet,spin
 
   if(doCIS) then
 
-    call cpu_time(start_CI)
+    call wall_time(start_CI)
     if(unrestricted) then
       call UCIS(spin_conserved,spin_flip,nBas,nC,nO,nV,nR,nS,ERI_aaaa,ERI_aabb, & 
                 ERI_bbbb,dipole_int_aa,dipole_int_bb,epsHF,cHF,S)
     else 
       call CIS(singlet,triplet,doCIS_D,nBas,nC,nO,nV,nR,nS,ERI,dipole_int,epsHF)
     end if
-    call cpu_time(end_CI)
+    call wall_time(end_CI)
 
     t_CI = end_CI - start_CI
     write(*,'(A65,1X,F9.3,A8)') 'Total CPU time for CIS = ',t_CI,' seconds'
@@ -70,9 +70,9 @@ subroutine CI(doCIS,doCIS_D,doCID,doCISD,doFCI,unrestricted,singlet,triplet,spin
 
   if(doCID) then
 
-    call cpu_time(start_CI)
+    call wall_time(start_CI)
     call CID(singlet,triplet,nBas,nC,nO,nV,nR,ERI,F,EHF)
-    call cpu_time(end_CI)
+    call wall_time(end_CI)
 
     t_CI = end_CI - start_CI
     write(*,'(A65,1X,F9.3,A8)') 'Total CPU time for CID = ',t_CI,' seconds'
@@ -86,9 +86,9 @@ subroutine CI(doCIS,doCIS_D,doCID,doCISD,doFCI,unrestricted,singlet,triplet,spin
 
   if(doCISD) then
 
-    call cpu_time(start_CI)
+    call wall_time(start_CI)
     call CISD(singlet,triplet,nBas,nC,nO,nV,nR,ERI,F,EHF)
-    call cpu_time(end_CI)
+    call wall_time(end_CI)
 
     t_CI = end_CI - start_CI
     write(*,'(A65,1X,F9.3,A8)') 'Total CPU time for CISD = ',t_CI,' seconds'
@@ -102,10 +102,10 @@ subroutine CI(doCIS,doCIS_D,doCID,doCISD,doFCI,unrestricted,singlet,triplet,spin
 
   if(doFCI) then
 
-    call cpu_time(start_CI)
+    call wall_time(start_CI)
     write(*,*) ' FCI is not yet implemented! Sorry.'
 !   call FCI(nBas,nC,nO,nV,nR,ERI,epsHF)
-    call cpu_time(end_CI)
+    call wall_time(end_CI)
 
     t_CI = end_CI - start_CI
     write(*,'(A65,1X,F9.3,A8)') 'Total CPU time for FCI = ',t_CI,' seconds'

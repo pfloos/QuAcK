@@ -52,14 +52,14 @@ subroutine RPA(dophRPA,dophRPAx,docrRPA,doppRPA,unrestricted,                   
 
   if(dophRPA) then
 
-    call cpu_time(start_RPA)
+    call wall_time(start_RPA)
     if(unrestricted) then
        call phURPA(TDA,doACFDT,exchange_kernel,spin_conserved,spin_flip,nBas,nC,nO,nV,nR,nS,ENuc,EHF, &
                    ERI_aaaa,ERI_aabb,ERI_bbbb,dipole_int_aa,dipole_int_bb,epsHF,cHF,S)
     else
       call phRPA(TDA,doACFDT,exchange_kernel,singlet,triplet,nBas,nC,nO,nV,nR,nS,ENuc,EHF,ERI,dipole_int,epsHF)
     end if
-    call cpu_time(end_RPA)
+    call wall_time(end_RPA)
 
     t_RPA = end_RPA - start_RPA
     write(*,'(A65,1X,F9.3,A8)') 'Total CPU time for RPA = ',t_RPA,' seconds'
@@ -73,14 +73,14 @@ subroutine RPA(dophRPA,dophRPAx,docrRPA,doppRPA,unrestricted,                   
 
   if(dophRPAx) then
 
-    call cpu_time(start_RPA)
+    call wall_time(start_RPA)
     if(unrestricted) then
        call phURPAx(TDA,doACFDT,exchange_kernel,spin_conserved,spin_flip,nBas,nC,nO,nV,nR,nS,ENuc,EHF, &
                     ERI_aaaa,ERI_aabb,ERI_bbbb,dipole_int_aa,dipole_int_bb,epsHF,cHF,S)
     else 
       call phRPAx(TDA,doACFDT,exchange_kernel,singlet,triplet,nBas,nC,nO,nV,nR,nS,ENuc,EHF,ERI,dipole_int,epsHF)
     end if
-    call cpu_time(end_RPA)
+    call wall_time(end_RPA)
 
     t_RPA = end_RPA - start_RPA
     write(*,'(A65,1X,F9.3,A8)') 'Total CPU time for RPAx = ',t_RPA,' seconds'
@@ -94,13 +94,13 @@ subroutine RPA(dophRPA,dophRPAx,docrRPA,doppRPA,unrestricted,                   
 
   if(docrRPA) then
 
-    call cpu_time(start_RPA)
+    call wall_time(start_RPA)
     if(unrestricted) then 
       write(*,*) 'Unrestricted version of crRPA not yet implemented! Sorry.'
     else
       call crRPA(TDA,doACFDT,exchange_kernel,singlet,triplet,nBas,nC,nO,nV,nR,nS,ENuc,EHF,ERI,dipole_int,epsHF)
     end if
-    call cpu_time(end_RPA)
+    call wall_time(end_RPA)
 
     t_RPA = end_RPA - start_RPA
     write(*,'(A65,1X,F9.3,A8)') 'Total CPU time for pp-RPA = ',t_RPA,' seconds'
@@ -114,13 +114,13 @@ subroutine RPA(dophRPA,dophRPAx,docrRPA,doppRPA,unrestricted,                   
 
   if(doppRPA) then
 
-    call cpu_time(start_RPA)
+    call wall_time(start_RPA)
     if(unrestricted) then 
       call ppURPA(TDA,doACFDT,spin_conserved,spin_flip,nBas,nC,nO,nV,nR,ENuc,EHF,ERI_aaaa,ERI_aabb,ERI_bbbb,epsHF)
     else
       call ppRPA(TDA,doACFDT,singlet,triplet,nBas,nC,nO,nV,nR,ENuc,EHF,ERI,dipole_int,epsHF)
     end if
-    call cpu_time(end_RPA)
+    call wall_time(end_RPA)
 
     t_RPA = end_RPA - start_RPA
     write(*,'(A65,1X,F9.3,A8)') 'Total CPU time for pp-RPA = ',t_RPA,' seconds'
