@@ -1,5 +1,5 @@
 subroutine UGTpp_self_energy(eta,nBas,nC,nO,nV,nR,nHaa,nHab,nHbb,nPaa,nPab,nPbb,e,Om1aa,Om1ab,Om1bb,&
-                             rho1aa,rho1ab,rho1bb,Om2aa,Om2ab,Om2bb,rho2aa,rho2ab,rho2bb,EcGM,SigT)
+                             rho1aa,rho1ab,rho1bb,Om2aa,Om2ab,Om2bb,rho2aa,rho2ab,rho2bb,EcGM,SigT,Z)
 
 ! Compute the correlation part of the T-matrix self-energy
 
@@ -27,12 +27,19 @@ subroutine UGTpp_self_energy(eta,nBas,nC,nO,nV,nR,nHaa,nHab,nHbb,nPaa,nPab,nPbb,
 ! Local variables
 
   integer                       :: i,j,a,b,p,q,cd,kl
-  double precision              :: eps
+  double precision              :: num,eps
 
 ! Output variables
 
   double precision,intent(inout)  :: EcGM(nspin)
   double precision,intent(inout)  :: SigT(nBas,nBas,nspin)
+  double precision,intent(inout)  :: Z(nBas,nspin)
+
+! Initialization
+
+  EcGM(:)     = 0d0
+  SigT(:,:,:) = 0d0
+  Z(:,:)      = 0d0
 
 !----------------------------------------------
 ! Occupied part of the T-matrix self-energy 
@@ -45,18 +52,22 @@ subroutine UGTpp_self_energy(eta,nBas,nC,nO,nV,nR,nHaa,nHab,nHbb,nPaa,nPab,nPbb,
       do i=nC(1)+1,nO(1)
         do cd=1,nPaa
           eps = e(p,1) + e(i,1) - Om1aa(cd)
-          SigT(p,q,1) = SigT(p,q,1) + rho1aa(p,i,cd)*rho1aa(q,i,cd)*eps/(eps**2 + eta**2)
-        enddo
-      enddo
+          num = rho1aa(p,i,cd)*rho1aa(q,i,cd)
+          SigT(p,q,1) = SigT(p,q,1) + num*eps/(eps**2 + eta**2)
+          if(p == q) Z(p,1) = Z(p,1) - num*(eps**2 - eta**2)/(eps**2 + eta**2)**2
+        end do
+      end do
 
       do i=nC(2)+1,nO(2)
         do cd=1,nPab
           eps = e(p,1) + e(i,1) - Om1ab(cd)
-          SigT(p,q,1) = SigT(p,q,1) + rho1ab(p,i,cd)*rho1ab(q,i,cd)*eps/(eps**2 + eta**2)
+          num = rho1ab(p,i,cd)*rho1ab(q,i,cd)
+          SigT(p,q,1) = SigT(p,q,1) + num*eps/(eps**2 + eta**2)
+          if(p == q) Z(p,1) = Z(p,1) - num*(eps**2 - eta**2)/(eps**2 + eta**2)**2
         end do
       end do  
-    enddo
-  enddo
+    end do
+  end do
  
 !spin down part
   
@@ -65,18 +76,22 @@ subroutine UGTpp_self_energy(eta,nBas,nC,nO,nV,nR,nHaa,nHab,nHbb,nPaa,nPab,nPbb,
       do i=nC(2)+1,nO(2)
         do cd=1,nPbb
           eps = e(p,2) + e(i,2) - Om1bb(cd)
-          SigT(p,q,2) = SigT(p,q,2) + rho1bb(p,i,cd)*rho1bb(q,i,cd)*eps/(eps**2 + eta**2)
-        enddo
-      enddo
+          num = rho1bb(p,i,cd)*rho1bb(q,i,cd)
+          SigT(p,q,2) = SigT(p,q,2) + num*eps/(eps**2 + eta**2)
+          if(p == q) Z(p,2) = Z(p,2) - num*(eps**2 - eta**2)/(eps**2 + eta**2)**2
+        end do
+      end do
  
       do i=nC(2)+1,nO(2)
         do cd=1,nPab
           eps = e(p,2) + e(i,2) - Om1ab(cd)
-          SigT(p,q,2) = SigT(p,q,2) + rho1ab(p,i,cd)*rho1ab(q,i,cd)*eps/(eps**2 + eta**2)
+          num = rho1ab(p,i,cd)*rho1ab(q,i,cd)
+          SigT(p,q,2) = SigT(p,q,2) + num*eps/(eps**2 + eta**2)
+          if(p == q) Z(p,2) = Z(p,2) - num*(eps**2 - eta**2)/(eps**2 + eta**2)**2
         end do 
       end do  
-    enddo
-  enddo
+    end do
+  end do
   
 !----------------------------------------------
 ! Virtual part of the T-matrix self-energy
@@ -89,18 +104,22 @@ subroutine UGTpp_self_energy(eta,nBas,nC,nO,nV,nR,nHaa,nHab,nHbb,nPaa,nPab,nPbb,
       do a=nO(1)+1,nBas-nR(1)
         do kl=1,nHaa
           eps = e(p,1) + e(a,1) - Om2aa(kl)
-          SigT(p,q,1) = SigT(p,q,1) + rho2aa(p,a,kl)*rho2aa(q,a,kl)*eps/(eps**2 + eta**2)
-        enddo
+          num = rho2aa(p,a,kl)*rho2aa(q,a,kl)
+          SigT(p,q,1) = SigT(p,q,1) + num*eps/(eps**2 + eta**2)
+          if(p == q) Z(p,1) = Z(p,1) - num*(eps**2 - eta**2)/(eps**2 + eta**2)**2
+        end do
       end do 
       
       do a=nO(1)+1,nBas-nR(1)
         do kl=1,nHab
           eps = e(p,1) + e(a,1) - Om2ab(kl)
-          SigT(p,q,1) = SigT(p,q,1) + rho2ab(p,a,kl)*rho2ab(q,a,kl)*eps/(eps**2 + eta**2)
+          num = rho2ab(p,a,kl)*rho2ab(q,a,kl)
+          SigT(p,q,1) = SigT(p,q,1) + num*eps/(eps**2 + eta**2)
+          if(p == q) Z(p,1) = Z(p,1) - num*(eps**2 - eta**2)/(eps**2 + eta**2)**2
         end do
       end do   
-    enddo
-  enddo
+    end do
+  end do
 
 !spin down part
 
@@ -109,18 +128,24 @@ subroutine UGTpp_self_energy(eta,nBas,nC,nO,nV,nR,nHaa,nHab,nHbb,nPaa,nPab,nPbb,
       do a=nO(2)+1,nBas-nR(2)
         do kl=1,nHbb
           eps = e(p,2) + e(a,2) - Om2bb(kl)
-          SigT(p,q,2) = SigT(p,q,2) + rho2bb(p,a,kl)*rho2bb(q,a,kl)*eps/(eps**2 + eta**2)
-        enddo
-      enddo
+          num = rho2bb(p,a,kl)*rho2bb(q,a,kl)
+          SigT(p,q,2) = SigT(p,q,2) + num*eps/(eps**2 + eta**2)
+          if(p == q) Z(p,2) = Z(p,2) - num*(eps**2 - eta**2)/(eps**2 + eta**2)**2
+        end do
+      end do
 
       do a=nO(2)+1,nBas-nR(2)
         do kl=1,nHab
           eps = e(p,2) + e(a,2) - Om2ab(kl)
-          SigT(p,q,2) = SigT(p,q,2) + rho2ab(p,a,kl)*rho2ab(q,a,kl)*eps/(eps**2 + eta**2)
+          num = rho2ab(p,a,kl)*rho2ab(q,a,kl)
+          SigT(p,q,2) = SigT(p,q,2) + num*eps/(eps**2 + eta**2)
+          if(p == q) Z(p,2) = Z(p,2) - num*(eps**2 - eta**2)/(eps**2 + eta**2)**2
         end do
       end do 
-    enddo
-  enddo
+    end do
+  end do
+
+  Z(:,:) = 1d0/(1d0 - Z(:,:))
 
 !----------------------------------------------
 ! Galitskii-Migdal correlation energy
@@ -133,9 +158,9 @@ subroutine UGTpp_self_energy(eta,nBas,nC,nO,nV,nR,nHaa,nHab,nHbb,nPaa,nPab,nPbb,
       do cd=1,nPaa
         eps = e(i,1) + e(j,1) - Om1aa(cd)
         EcGM(1) = EcGM(1) + rho1aa(i,j,cd)*rho1aa(i,j,cd)*eps/(eps**2 + eta**2)
-      enddo
-    enddo
-  enddo 
+      end do
+    end do
+  end do 
   
   do i=nC(1)+1,nO(1)
     do j=nC(2)+1,nO(2)
@@ -151,18 +176,18 @@ subroutine UGTpp_self_energy(eta,nBas,nC,nO,nV,nR,nHaa,nHab,nHbb,nPaa,nPab,nPbb,
       do kl=1,nHaa
         eps = e(a,1) + e(b,1) - Om2aa(kl)
         EcGM(1) = EcGM(1) - rho2aa(a,b,kl)*rho2aa(a,b,kl)*eps/(eps**2 + eta**2)
-      enddo
-    enddo
-  enddo
+      end do
+    end do
+  end do
 
   do a=nO(1)+1,nBas-nR(1)
     do b=nO(1)+1,nBas-nR(1)
       do kl=1,nHab
         eps = e(a,1) + e(b,1) - Om2ab(kl)
         EcGM(1) = EcGM(1) - rho2ab(a,b,kl)*rho2ab(a,b,kl)*eps/(eps**2 + eta**2)
-      enddo
-    enddo
-  enddo
+      end do
+    end do
+  end do
 
 ! spin down part 
 
@@ -171,9 +196,9 @@ subroutine UGTpp_self_energy(eta,nBas,nC,nO,nV,nR,nHaa,nHab,nHbb,nPaa,nPab,nPbb,
       do cd=1,nPbb
         eps = e(i,2) + e(j,2) - Om1bb(cd)
         EcGM(2) = EcGM(2) + rho1bb(i,j,cd)*rho1bb(i,j,cd)*eps/(eps**2 + eta**2)
-      enddo
-    enddo
-  enddo  
+      end do
+    end do
+  end do  
   
   do i=nC(1)+1,nO(1)
     do j=nC(2)+1,nO(2)
@@ -189,17 +214,17 @@ subroutine UGTpp_self_energy(eta,nBas,nC,nO,nV,nR,nHaa,nHab,nHbb,nPaa,nPab,nPbb,
       do kl=1,nHab
         eps = e(a,2) + e(b,2) - Om2ab(kl)
         EcGM(2) = EcGM(2) - rho2ab(a,b,kl)*rho2ab(a,b,kl)*eps/(eps**2 + eta**2)
-      enddo
-    enddo
-  enddo
+      end do
+    end do
+  end do
 
   do a=nO(2)+1,nBas-nR(2)
     do b=nO(2)+1,nBas-nR(2)
       do kl=1,nHbb
         eps = e(a,2) + e(b,2) - Om2bb(kl)
         EcGM(2) = EcGM(2) - rho2bb(a,b,kl)*rho2bb(a,b,kl)*eps/(eps**2 + eta**2)
-      enddo
-    enddo
-  enddo
+      end do
+    end do
+  end do
 
 end subroutine 

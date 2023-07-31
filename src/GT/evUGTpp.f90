@@ -98,17 +98,17 @@ subroutine evUGTpp(maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,BSE, &
 
 ! Memory allocation
 
-  allocate(Om1ab(nPab),X1ab(nPab,nPab),Y1ab(nHab,nPab), & 
-           Om2ab(nHab),X2ab(nPab,nHab),Y2ab(nHab,nHab), & 
-           rho1ab(nBas,nBas,nPab),rho2ab(nBas,nBas,nHab), & 
-           Om1aa(nPaa),X1aa(nPaa,nPaa),Y1aa(nHaa,nPaa), & 
-           Om2aa(nHaa),X2aa(nPaa,nHaa),Y2aa(nHaa,nHaa), & 
-           rho1aa(nBas,nBas,nPaa),rho2aa(nBas,nBas,nHaa), & 
-           Om1bb(nPbb),X1bb(nPbb,nPbb),Y1bb(nHbb,nPbb), &
-           Om2bb(nPbb),X2bb(nPbb,nPbb),Y2bb(nHbb,nPbb), &
-           rho1bb(nBas,nBas,nPbb),rho2bb(nBas,nBas,nHbb), &
-           SigT(nBas,nspin),Z(nBas,nspin), &
-           eGT(nBas,nspin),eOld(nBas,nspin),error_diis(nBas,max_diis,nspin), &
+  allocate(Om1ab(nPab),X1ab(nPab,nPab),Y1ab(nHab,nPab),      & 
+           Om2ab(nHab),X2ab(nPab,nHab),Y2ab(nHab,nHab),      & 
+           rho1ab(nBas,nBas,nPab),rho2ab(nBas,nBas,nHab),    & 
+           Om1aa(nPaa),X1aa(nPaa,nPaa),Y1aa(nHaa,nPaa),      & 
+           Om2aa(nHaa),X2aa(nPaa,nHaa),Y2aa(nHaa,nHaa),      & 
+           rho1aa(nBas,nBas,nPaa),rho2aa(nBas,nBas,nHaa),    & 
+           Om1bb(nPbb),X1bb(nPbb,nPbb),Y1bb(nHbb,nPbb),      &
+           Om2bb(nPbb),X2bb(nPbb,nPbb),Y2bb(nHbb,nPbb),      &
+           rho1bb(nBas,nBas,nPbb),rho2bb(nBas,nBas,nHbb),    &
+           SigT(nBas,nspin),Z(nBas,nspin),eGT(nBas,nspin),   & 
+           eOld(nBas,nspin),error_diis(nBas,max_diis,nspin), &
            e_diis(nBas,max_diis,nspin))
 
 !----------------------------------------------
@@ -139,7 +139,6 @@ subroutine evUGTpp(maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,BSE, &
 
     ispin  = 1
     iblock = 3
-! iblock = 1
 
 ! Compute linear response
 
@@ -174,10 +173,6 @@ subroutine evUGTpp(maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,BSE, &
 ! Compute T-matrix version of the self-energy 
 !----------------------------------------------
 
-    EcGM    = 0d0
-    SigT(:,:) = 0d0
-    Z(:,:)    = 0d0
-
 !alpha-beta block
   
     iblock = 3
@@ -199,13 +194,7 @@ subroutine evUGTpp(maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,BSE, &
                                   rho1bb,X2bb,Y2bb,rho2bb)
 
     call UGTpp_self_energy_diag(eta,nBas,nC,nO,nV,nR,nHaa,nHab,nHbb,nPaa,nPab,nPbb,eGT,Om1aa,Om1ab,Om1bb,&
-                                rho1aa,rho1ab,rho1bb,Om2aa,Om2ab,Om2bb,rho2aa,rho2ab,rho2bb,EcGM,SigT)
-
-    call UGTpp_renormalization_factor(eta,nBas,nC,nO,nV,nR,nHaa,nHab,nHbb,nPaa,nPab,nPbb,eGT,Om1aa,Om1ab,&
-                                      Om1bb,rho1aa,rho1ab,rho1bb,Om2aa,Om2ab,Om2bb,rho2aa,rho2ab,rho2bb,Z) 
-
-
-    Z(:,:) = 1d0/(1d0 - Z(:,:))
+                                rho1aa,rho1ab,rho1bb,Om2aa,Om2ab,Om2bb,rho2aa,rho2ab,rho2bb,EcGM,SigT,Z)
 
 !----------------------------------------------
 ! Solve the quasi-particle equation

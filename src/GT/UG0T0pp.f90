@@ -92,17 +92,16 @@ subroutine UG0T0pp(doACFDT,exchange_kernel,doXBS,BSE,TDA_T,TDA,dBSE,dTDA, &
 
 ! Memory allocation
 
-  allocate(Om1ab(nPab),X1ab(nPab,nPab),Y1ab(nHab,nPab), & 
-           Om2ab(nHab),X2ab(nPab,nHab),Y2ab(nHab,nHab), & 
+  allocate(Om1ab(nPab),X1ab(nPab,nPab),Y1ab(nHab,nPab),   & 
+           Om2ab(nHab),X2ab(nPab,nHab),Y2ab(nHab,nHab),   & 
            rho1ab(nBas,nBas,nPab),rho2ab(nBas,nBas,nHab), & 
-           Om1aa(nPaa),X1aa(nPaa,nPaa),Y1aa(nHaa,nPaa), & 
-           Om2aa(nHaa),X2aa(nPaa,nHaa),Y2aa(nHaa,nHaa), & 
+           Om1aa(nPaa),X1aa(nPaa,nPaa),Y1aa(nHaa,nPaa),   & 
+           Om2aa(nHaa),X2aa(nPaa,nHaa),Y2aa(nHaa,nHaa),   & 
            rho1aa(nBas,nBas,nPaa),rho2aa(nBas,nBas,nHaa), & 
-           Om1bb(nPbb),X1bb(nPbb,nPbb),Y1bb(nHbb,nPbb), &
-           Om2bb(nPbb),X2bb(nPbb,nPbb),Y2bb(nHbb,nPbb), &
+           Om1bb(nPbb),X1bb(nPbb,nPbb),Y1bb(nHbb,nPbb),   &
+           Om2bb(nPbb),X2bb(nPbb,nPbb),Y2bb(nHbb,nPbb),   &
            rho1bb(nBas,nBas,nPbb),rho2bb(nBas,nBas,nHbb), &
-           SigT(nBas,nspin),Z(nBas,nspin), &
-           eG0T0(nBas,nspin))
+           SigT(nBas,nspin),Z(nBas,nspin),eG0T0(nBas,nspin))
 
 !----------------------------------------------
 ! alpha-beta block
@@ -110,14 +109,11 @@ subroutine UG0T0pp(doACFDT,exchange_kernel,doXBS,BSE,TDA_T,TDA,dBSE,dTDA, &
 
   ispin  = 1
   iblock = 3
-! iblock = 1
 
 ! Compute linear response
 
   call ppULR(iblock,TDA,nBas,nC,nO,nV,nR,nPaa,nPab,nPbb,nPab,nHaa,nHab,nHbb,nHab,1d0,eHF,ERI_aaaa, &
              ERI_aabb,ERI_bbbb,Om1ab,X1ab,Y1ab,Om2ab,X2ab,Y2ab,EcRPA(ispin)) 
-
-! EcRPA(ispin) = 1d0*EcRPA(ispin)
 
   call print_excitation_energies('ppRPA@HF (N+2)',iblock,nPab,Om1ab(:))
   call print_excitation_energies('ppRPA@HF (N-2)',iblock,nHab,Om2ab(:))
@@ -134,9 +130,6 @@ subroutine UG0T0pp(doACFDT,exchange_kernel,doXBS,BSE,TDA_T,TDA,dBSE,dTDA, &
   call ppULR(iblock,TDA,nBas,nC,nO,nV,nR,nPaa,nPab,nPbb,nPaa,nHaa,nHab,nHbb,nHaa,1d0,eHF,ERI_aaaa, &
              ERI_aabb,ERI_bbbb,Om1aa,X1aa,Y1aa,Om2aa,X2aa,Y2aa,EcRPA(ispin))  
   
-! EcRPA(ispin) = 2d0*EcRPA(ispin)
-! EcRPA(ispin) = 3d0*EcRPA(ispin)
-
   call print_excitation_energies('ppRPA@HF (N+2)',iblock,nPaa,Om1aa(:))
   call print_excitation_energies('ppRPA@HF (N-2)',iblock,nHaa,Om2aa(:))
 
@@ -152,19 +145,12 @@ subroutine UG0T0pp(doACFDT,exchange_kernel,doXBS,BSE,TDA_T,TDA,dBSE,dTDA, &
   call ppULR(iblock,TDA,nBas,nC,nO,nV,nR,nPaa,nPab,nPbb,nPbb,nHaa,nHab,nHbb,nHbb,1d0,eHF,ERI_aaaa, &
              ERI_aabb,ERI_bbbb,Om1bb,X1bb,Y1bb,Om2bb,X2bb,Y2bb,EcRPA(ispin))
 
-! EcRPA(ispin) = 2d0*EcRPA(ispin)
-! EcRPA(ispin) = 3d0*EcRPA(ispin)
-
   call print_excitation_energies('ppRPA@HF (N+2)',iblock,nPbb,Om1bb(:))
   call print_excitation_energies('ppRPA@HF (N-2)',iblock,nHbb,Om2bb(:))
 
 !----------------------------------------------
 ! Compute T-matrix version of the self-energy 
 !----------------------------------------------
-
-  EcGM    = 0d0
-  SigT(:,:) = 0d0
-  Z(:,:)    = 0d0
 
 !alpha-beta block
   
@@ -187,11 +173,7 @@ subroutine UG0T0pp(doACFDT,exchange_kernel,doXBS,BSE,TDA_T,TDA,dBSE,dTDA, &
                                 rho1bb,X2bb,Y2bb,rho2bb)
 
   call UGTpp_self_energy_diag(eta,nBas,nC,nO,nV,nR,nHaa,nHab,nHbb,nPaa,nPab,nPbb,eHF,Om1aa,Om1ab,Om1bb,&
-                              rho1aa,rho1ab,rho1bb,Om2aa,Om2ab,Om2bb,rho2aa,rho2ab,rho2bb,EcGM,SigT)
-
-  call UGTpp_renormalization_factor(eta,nBas,nC,nO,nV,nR,nHaa,nHab,nHbb,nPaa,nPab,nPbb,eHF,Om1aa,Om1ab,&
-                                    Om1bb,rho1aa,rho1ab,rho1bb,Om2aa,Om2ab,Om2bb,rho2aa,rho2ab,rho2bb,Z) 
-
+                              rho1aa,rho1ab,rho1bb,Om2aa,Om2ab,Om2bb,rho2aa,rho2ab,rho2bb,EcGM,SigT,Z)
 
   Z(:,:) = 1d0/(1d0 - Z(:,:))
 
@@ -199,13 +181,14 @@ subroutine UG0T0pp(doACFDT,exchange_kernel,doXBS,BSE,TDA_T,TDA,dBSE,dTDA, &
 ! Solve the quasi-particle equation
 !----------------------------------------------
 
-  if(linearize) then
+  if(linearize) then 
 
-    eG0T0(:,:) = eHF(:,:) + Z(:,:)*SigT(:,:) 
-    
+    eG0T0(:,:) = eHF(:,:) + Z(:,:)*SigT(:,:)
+
   else
-  
-    eG0T0(:,:) = eHF(:,:) + SigT(:,:)
+ 
+    write(*,*) 'Root search not yet implemented for UG0T0pp! Sorry.' 
+    stop
 
   end if
 

@@ -248,10 +248,6 @@ subroutine qsUGTpp(maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,BSE, &
 ! Compute T-matrix version of the self-energy 
 !----------------------------------------------
 
-    EcGM    = 0d0
-    SigT(:,:,:) = 0d0
-    Z(:,:)    = 0d0
-
 !alpha-beta block
   
     iblock = 3
@@ -273,13 +269,7 @@ subroutine qsUGTpp(maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,BSE, &
                                   rho1bb,X2bb,Y2bb,rho2bb)
 
     call UGTpp_self_energy(eta,nBas,nC,nO,nV,nR,nHaa,nHab,nHbb,nPaa,nPab,nPbb,eGT,Om1aa,Om1ab,Om1bb,&
-                           rho1aa,rho1ab,rho1bb,Om2aa,Om2ab,Om2bb,rho2aa,rho2ab,rho2bb,EcGM,SigT)
-
-    call UGTpp_renormalization_factor(eta,nBas,nC,nO,nV,nR,nHaa,nHab,nHbb,nPaa,nPab,nPbb,eGT,Om1aa,Om1ab,&
-                                      Om1bb,rho1aa,rho1ab,rho1bb,Om2aa,Om2ab,Om2bb,rho2aa,rho2ab,rho2bb,Z) 
-
-
-    Z(:,:) = 1d0/(1d0 - Z(:,:))
+                           rho1aa,rho1ab,rho1bb,Om2aa,Om2ab,Om2bb,rho2aa,rho2ab,rho2bb,EcGM,SigT,Z)
 
 ! Make correlation self-energy Hermitian and transform it back to AO basis
 
@@ -296,7 +286,7 @@ subroutine qsUGTpp(maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,BSE, &
 
     do ispin=1,nspin
       F(:,:,ispin) = Hc(:,:) + J(:,:,ispin) + J(:,:,mod(ispin,2)+1) + K(:,:,ispin) &
-                     + SigTp(:,:,ispin)
+                   + SigTp(:,:,ispin)
     end do    
 
 ! Compute commutator and convergence criteria
