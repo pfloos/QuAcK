@@ -171,7 +171,10 @@ subroutine evGTpp(maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,BSE,TDA_T
   ! Compute T-matrix version of the self-energy 
   !----------------------------------------------
 
-  ! if(regularize) call GTpp_regularization(eta,nBas,nC,nO,nV,nR,nOO,nVV,eGT,Om1s,rho1s,Om2s,rho2s,Om1t,rho1t,Om2t,rho2t)
+    if(regularize) then 
+      call GTpp_regularization(eta,nBas,nC,nO,nV,nR,nOOs,nVVs,eGT,Om1s,rho1s,Om2s,rho2s)
+      call GTpp_regularization(eta,nBas,nC,nO,nV,nR,nOOt,nVVt,eGT,Om1t,rho1t,Om2t,rho2t)
+    end if 
 
     call GTpp_self_energy_diag(eta,nBas,nC,nO,nV,nR,nooS,nVVt,nOOt,nVVt,eGT,Om1s,rho1s,Om2s,rho2s, & 
                                Om1t,rho1t,Om2t,rho2t,EcGM,Sig,Z)
