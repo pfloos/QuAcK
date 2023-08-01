@@ -223,6 +223,8 @@ subroutine qsGTpp(maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,dophBSE,T
     iblock =  4
     call GTpp_excitation_density(iblock,nBas,nC,nO,nV,nR,nOOt,nVVt,ERI_MO,X1t,Y1t,rho1t,X2t,Y2t,rho2t)
 
+  ! if(regularize) call GTpp_regularization(eta,nBas,nC,nO,nV,nR,nOO,nVV,eGT,Om1s,rho1s,Om2s,rho2s,Om1t,rho1t,Om2t,rho2t)
+
     call GTpp_self_energy(eta,nBas,nC,nO,nV,nR,nOOs,nVVs,nOOt,nVVt,eGT,Om1s,rho1s,Om2s,rho2s, & 
                           Om1t,rho1t,Om2t,rho2t,EcGM,Sig,Z)
 

@@ -130,16 +130,9 @@ subroutine evGTeh(maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,dophBSE,d
 
     ! Compute correlation part of the self-energy 
 
-    if(regularize) then 
+    if(regularize) call GTeh_regularization(eta,nBas,nC,nO,nV,nR,nS,eGT,Om,rhoL,rhoR)
 
-!     call regularized_self_energy_correlation_diag(COHSEX,eta,nBas,nC,nO,nV,nR,nS,eGT,Om,rho,EcGM,Sig)
-!     call renormalization_factor_SRG(eta,nBas,nC,nO,nV,nR,nS,eGT,Om,rho,Z)
-
-    else
-
-      call GTeh_self_energy_diag(eta,nBas,nC,nO,nV,nR,nS,eGT,Om,rhoL,rhoR,EcGM,Sig,Z)
-
-    end if
+    call GTeh_self_energy_diag(eta,nBas,nC,nO,nV,nR,nS,eGT,Om,rhoL,rhoR,EcGM,Sig,Z)
 
     ! Solve the quasi-particle equation
 

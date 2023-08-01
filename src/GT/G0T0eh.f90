@@ -124,16 +124,9 @@ subroutine G0T0eh(doACFDT,exchange_kernel,doXBS,dophBSE,dophBSE2,TDA_T,TDA,dBSE,
 ! Compute GW self-energy !
 !------------------------!
 
-  if(regularize) then 
-  
-    write(*,*) 'Regularization not yet implemented at the G0T0eh level!'
-    stop
+  if(regularize) call GTeh_regularization(eta,nBas,nC,nO,nV,nR,nS,eHF,Om,rhoL,rhoR)
 
-  else
-
-    call GTeh_self_energy_diag(eta,nBas,nC,nO,nV,nR,nS,eHF,Om,rhoL,rhoR,EcGM,Sig,Z)
-
-  end if
+  call GTeh_self_energy_diag(eta,nBas,nC,nO,nV,nR,nS,eHF,Om,rhoL,rhoR,EcGM,Sig,Z)
 
 !-----------------------------------!
 ! Solve the quasi-particle equation !

@@ -183,16 +183,9 @@ subroutine qsGTeh(maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,BSE,BSE2,
 
     call GTeh_excitation_density(nBas,nC,nO,nR,nS,ERI_MO,XpY,XmY,rhoL,rhoR)
 
-     if(regularize) then
+    if(regularize) call GTeh_regularization(eta,nBas,nC,nO,nV,nR,nS,eGT,Om,rhoL,rhoR)
 
-!      call regularized_self_energy_correlation(eta,nBas,nC,nO,nV,nR,nS,eGT,Om,rhoL,rhoR,EcGM,Sig)
-!      call regularized_renormalization_factor(eta,nBas,nC,nO,nV,nR,nS,eGT,Om,rhoL,rhoR,Z)
-
-     else
-
-       call GTeh_self_energy(eta,nBas,nC,nO,nV,nR,nS,eGT,Om,rhoL,rhoR,EcGM,Sig,Z)
-
-     endif
+    call GTeh_self_energy(eta,nBas,nC,nO,nV,nR,nS,eGT,Om,rhoL,rhoR,EcGM,Sig,Z)
 
     ! Make correlation self-energy Hermitian and transform it back to AO basis
    
