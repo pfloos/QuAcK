@@ -53,10 +53,10 @@ subroutine UG0W0(doACFDT,exchange_kernel,doXBS,BSE,TDA_W,TDA,dBSE,dTDA,spin_cons
   double precision,allocatable  :: SigC(:,:)
   double precision,allocatable  :: Z(:,:)
   integer                       :: nS_aa,nS_bb,nS_sc
-  double precision,allocatable  :: OmRPA(:)
-  double precision,allocatable  :: XpY_RPA(:,:)
-  double precision,allocatable  :: XmY_RPA(:,:)
-  double precision,allocatable  :: rho_RPA(:,:,:,:)
+  double precision,allocatable  :: Om(:)
+  double precision,allocatable  :: XpY(:,:)
+  double precision,allocatable  :: XmY(:,:)
+  double precision,allocatable  :: rho(:,:,:,:)
 
   double precision,allocatable  :: eGWlin(:,:)
 
@@ -98,7 +98,7 @@ subroutine UG0W0(doACFDT,exchange_kernel,doXBS,BSE,TDA_W,TDA,dBSE,dTDA,spin_cons
   nS_sc = nS_aa + nS_bb
 
   allocate(SigC(nBas,nspin),Z(nBas,nspin),eGWlin(nBas,nspin), &
-           OmRPA(nS_sc),XpY_RPA(nS_sc,nS_sc),XmY_RPA(nS_sc,nS_sc),rho_RPA(nBas,nBas,nS_sc,nspin))
+           Om(nS_sc),XpY(nS_sc,nS_sc),XmY(nS_sc,nS_sc),rho(nBas,nBas,nS_sc,nspin))
 
 !-------------------!
 ! Compute screening !
@@ -109,30 +109,27 @@ subroutine UG0W0(doACFDT,exchange_kernel,doXBS,BSE,TDA_W,TDA,dBSE,dTDA,spin_cons
   ispin = 1
 
   call phULR(ispin,.true.,TDA_W,.false.,eta,nBas,nC,nO,nV,nR,nS_aa,nS_bb,nS_sc,nS_sc,1d0, &
-             eHF,ERI_aaaa,ERI_aabb,ERI_bbbb,OmRPA,rho_RPA,EcRPA,OmRPA,XpY_RPA,XmY_RPA)
+             eHF,ERI_aaaa,ERI_aabb,ERI_bbbb,Om,rho,EcRPA,Om,XpY,XmY)
 
-  if(print_W) call print_excitation_energies('phRPA@UHF',5,nS_sc,OmRPA)
+  if(print_W) call print_excitation_energies('phRPA@UHF',5,nS_sc,Om)
 
 !----------------------!
 ! Excitation densities !
 !----------------------!
  
-  call UGW_excitation_density(nBas,nC,nO,nR,nS_aa,nS_bb,nS_sc,ERI_aaaa,ERI_aabb,ERI_bbbb,XpY_RPA,rho_RPA)
+  call UGW_excitation_density(nBas,nC,nO,nR,nS_aa,nS_bb,nS_sc,ERI_aaaa,ERI_aabb,ERI_bbbb,XpY,rho)
 
 !------------------------------------------------!
 ! Compute self-energy and renormalization factor !
 !------------------------------------------------!
 
   if(regularize) then
-
-    call unrestricted_regularized_self_energy_correlation_diag(eta,nBas,nC,nO,nV,nR,nS_sc,eHF,OmRPA,rho_RPA,SigC,EcGM)
-    call unrestricted_regularized_renormalization_factor(eta,nBas,nC,nO,nV,nR,nS_sc,eHF,OmRPA,rho_RPA,Z)
-
-  else
-
-    call UGW_self_energy_diag(eta,nBas,nC,nO,nV,nR,nS_sc,eHF,OmRPA,rho_RPA,SigC,Z,EcGM)
-
+    do is=1,nspin
+      call GW_regularization(nBas,nC(is),nO(is),nV(is),nR(is),nS_sc,eHF(:,is),Om,rho(:,:,:,is))
+    end do
   end if
+
+  call UGW_self_energy_diag(eta,nBas,nC,nO,nV,nR,nS_sc,eHF,Om,rho,SigC,Z,EcGM)
 
 !-----------------------------------!
 ! Solve the quasi-particle equation !
@@ -153,7 +150,7 @@ subroutine UG0W0(doACFDT,exchange_kernel,doXBS,BSE,TDA_W,TDA,dBSE,dTDA,spin_cons
 
     do is=1,nspin
       call UGW_QP_graph(eta,nBas,nC(is),nO(is),nV(is),nR(is),nS_sc,eHF(:,is), & 
-                        OmRPA,rho_RPA(:,:,:,is),eHF(:,is),eGW(:,is),Z(:,is))
+                        Om,rho(:,:,:,is),eHF(:,is),eGW(:,is),Z(:,is))
     end do
  
   end if
@@ -161,7 +158,7 @@ subroutine UG0W0(doACFDT,exchange_kernel,doXBS,BSE,TDA_W,TDA,dBSE,dTDA,spin_cons
 ! Compute RPA correlation energy
 
   call phULR(ispin,.true.,TDA_W,.false.,eta,nBas,nC,nO,nV,nR,nS_aa,nS_bb,nS_sc,nS_sc,1d0, &
-             eGW,ERI_aaaa,ERI_aabb,ERI_bbbb,OmRPA,rho_RPA,EcRPA,OmRPA,XpY_RPA,XmY_RPA)
+             eGW,ERI_aaaa,ERI_aabb,ERI_bbbb,Om,rho,EcRPA,Om,XpY,XmY)
 
 ! Dump results
 
@@ -169,7 +166,7 @@ subroutine UG0W0(doACFDT,exchange_kernel,doXBS,BSE,TDA_W,TDA,dBSE,dTDA,spin_cons
 
 ! Free memory
 
-  deallocate(OmRPA,XpY_RPA,XmY_RPA,rho_RPA)
+  deallocate(Om,XpY,XmY,rho)
 
 ! Perform BSE calculation
 

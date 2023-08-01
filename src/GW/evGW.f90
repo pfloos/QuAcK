@@ -123,22 +123,15 @@ subroutine evGW(maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,dophBSE,dop
 
     call phLR(TDA_W,nS,Aph,Bph,EcRPA,Om,XpY,XmY)
 
-   ! Compute spectral weights
+    ! Compute spectral weights
 
     call GW_excitation_density(nBas,nC,nO,nR,nS,ERI,XpY,rho)
 
     ! Compute correlation part of the self-energy 
 
-    if(regularize) then 
+    if(regularize) call GW_regularization(nBas,nC,nO,nR,nS,eGW,Om,rho)
 
-      call regularized_self_energy_correlation_diag(eta,nBas,nC,nO,nV,nR,nS,eGW,Om,rho,EcGM,SigC)
-      call renormalization_factor_SRG(eta,nBas,nC,nO,nV,nR,nS,eGW,Om,rho,Z)
-
-    else
-
-      call GW_self_energy_diag(eta,nBas,nC,nO,nV,nR,nS,eGW,Om,rho,EcGM,SigC,Z)
-
-    end if
+    call GW_self_energy_diag(eta,nBas,nC,nO,nV,nR,nS,eGW,Om,rho,EcGM,SigC,Z)
 
     ! Solve the quasi-particle equation
 

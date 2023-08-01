@@ -114,16 +114,9 @@ subroutine G0W0(doACFDT,exchange_kernel,doXBS,dophBSE,dophBSE2,TDA_W,TDA,dBSE,dT
 ! Compute GW self-energy !
 !------------------------!
 
-  if(regularize) then 
+  if(regularize) call GW_regularization(nBas,nC,nO,nR,nS,eHF,Om,rho)
 
-    call regularized_self_energy_correlation_diag(eta,nBas,nC,nO,nV,nR,nS,eHF,Om,rho,EcGM,SigC)
-    call regularized_renormalization_factor(eta,nBas,nC,nO,nV,nR,nS,eHF,Om,rho,Z)
-
-  else
-
-    call GW_self_energy_diag(eta,nBas,nC,nO,nV,nR,nS,eHF,Om,rho,EcGM,SigC,Z)
-
-  end if
+  call GW_self_energy_diag(eta,nBas,nC,nO,nV,nR,nS,eHF,Om,rho,EcGM,SigC,Z)
 
 !-----------------------------------!
 ! Solve the quasi-particle equation !

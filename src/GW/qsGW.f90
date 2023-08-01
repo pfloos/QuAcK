@@ -182,16 +182,9 @@ subroutine qsGW(maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,dophBSE,dop
 
     call GW_excitation_density(nBas,nC,nO,nR,nS,ERI_MO,XpY,rho)
 
-     if(regularize) then
+    if(regularize) call GW_regularization(nBas,nC,nO,nR,nS,eGW,Om,rho)
 
-       call regularized_self_energy_correlation(eta,nBas,nC,nO,nV,nR,nS,eGW,Om,rho,EcGM,SigC)
-       call regularized_renormalization_factor(eta,nBas,nC,nO,nV,nR,nS,eGW,Om,rho,Z)
-
-     else
-
-       call GW_self_energy(eta,nBas,nC,nO,nV,nR,nS,eGW,Om,rho,EcGM,SigC,Z)
-
-     endif
+    call GW_self_energy(eta,nBas,nC,nO,nV,nR,nS,eGW,Om,rho,EcGM,SigC,Z)
 
     ! Make correlation self-energy Hermitian and transform it back to AO basis
    
