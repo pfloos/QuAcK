@@ -82,7 +82,7 @@ subroutine evGF2(dophBSE,doppBSE,TDA,dBSE,dTDA,maxSCF,thresh,max_diis,singlet,tr
 
     if(regularize) then 
 
-      call regularized_self_energy_GF2_diag(eta,nBas,nC,nO,nV,nR,eHF,eGF,ERI,SigC,Z)
+      call GF2_reg_self_energy_diag(eta,nBas,nC,nO,nV,nR,eHF,eGF,ERI,SigC,Z)
 
     else
 

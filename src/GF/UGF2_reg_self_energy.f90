@@ -1,4 +1,4 @@
-subroutine unrestricted_regularized_self_energy_GF2(nBas,nC,nO,nV,nR,eta,ERI_aa,ERI_ab,ERI_bb,eHF,eGF2,SigC,Z)
+subroutine UGF2_reg_self_energy(nBas,nC,nO,nV,nR,eta,ERI_aa,ERI_ab,ERI_bb,eHF,eGF2,SigC,Z)
 
 ! Perform unrestricted GF2 self-energy and its renormalization factor
 
@@ -26,8 +26,8 @@ subroutine unrestricted_regularized_self_energy_GF2(nBas,nC,nO,nV,nR,eta,ERI_aa,
   integer                       :: i,j,a,b
   double precision              :: eps,num
 
+  double precision              :: s
   double precision              :: kappa
-  double precision              :: fk,dfk
 
 ! Output variables
 
@@ -45,7 +45,7 @@ subroutine unrestricted_regularized_self_energy_GF2(nBas,nC,nO,nV,nR,eta,ERI_aa,
 ! Parameters for regularized calculations !
 !-----------------------------------------!
 
-  kappa = 1.1d0
+  s = 100d0
 
   !----------------!
   ! Spin-up sector
@@ -63,13 +63,11 @@ subroutine unrestricted_regularized_self_energy_GF2(nBas,nC,nO,nV,nR,eta,ERI_aa,
             eps = eGF2(p,1) + eHF(i,1) - eHF(a,1) - eHF(b,1) 
             num = ERI_aa(i,q,a,b)*ERI_aa(a,b,i,p) &
                 - ERI_aa(i,q,a,b)*ERI_aa(a,b,p,i)
-
-            fk  = (1d0 - exp(-kappa*abs(eps)))**2/eps
-            dfk = - 1d0/eps + 2d0*kappa*exp(-kappa*abs(eps))/(1d0 - exp(-kappa*abs(eps)))
-            dfk = dfk*fk
+            kappa = exp(-2d0*eps**2*s)
+            num = kappa*num
          
-            SigC(p,q,1) = SigC(p,q,1) + num*fk
-            if(p == q) Z(p,1) = Z(p,1) - num*dfk
+            SigC(p,q,1) = SigC(p,q,1) + num*eps/(eps**2 + eta**2)
+            if(p == q) Z(p,1) = Z(p,1) - num*(eps**2 - eta**2)/(eps**2 + eta**2)**2
 
           enddo
         enddo
@@ -83,13 +81,11 @@ subroutine unrestricted_regularized_self_energy_GF2(nBas,nC,nO,nV,nR,eta,ERI_aa,
 
             eps = eGF2(p,1) + eHF(i,2) - eHF(a,2) - eHF(b,1) 
             num = ERI_ab(q,i,b,a)*ERI_ab(b,a,p,i)
-
-            fk  = (1d0 - exp(-kappa*abs(eps)))**2/eps
-            dfk = - 1d0/eps + 2d0*kappa*exp(-kappa*abs(eps))/(1d0 - exp(-kappa*abs(eps)))
-            dfk = dfk*fk
+            kappa = exp(-2d0*eps**2*s)
+            num = kappa*num
          
-            SigC(p,q,1) = SigC(p,q,1) + num*fk
-            if(p == q) Z(p,1) = Z(p,1) - num*dfk
+            SigC(p,q,1) = SigC(p,q,1) + num*eps/(eps**2 + eta**2)
+            if(p == q) Z(p,1) = Z(p,1) - num*(eps**2 - eta**2)/(eps**2 + eta**2)**2
 
           enddo
         enddo
@@ -104,13 +100,11 @@ subroutine unrestricted_regularized_self_energy_GF2(nBas,nC,nO,nV,nR,eta,ERI_aa,
             eps = eGF2(p,1) + eHF(a,1) - eHF(i,1) - eHF(j,1) 
             num = ERI_aa(a,q,i,j)*ERI_aa(i,j,a,p) &
                 - ERI_aa(a,q,i,j)*ERI_aa(i,j,p,a)
-
-            fk  = (1d0 - exp(-kappa*abs(eps)))**2/eps
-            dfk = - 1d0/eps + 2d0*kappa*exp(-kappa*abs(eps))/(1d0 - exp(-kappa*abs(eps)))
-            dfk = dfk*fk
+            kappa = exp(-2d0*eps**2*s)
+            num = kappa*num
          
-            SigC(p,q,1) = SigC(p,q,1) + num*fk
-            if(p == q) Z(p,1) = Z(p,1) - num*dfk
+            SigC(p,q,1) = SigC(p,q,1) + num*eps/(eps**2 + eta**2)
+            if(p == q) Z(p,1) = Z(p,1) - num*(eps**2 - eta**2)/(eps**2 + eta**2)**2
 
           enddo
         enddo
@@ -124,13 +118,11 @@ subroutine unrestricted_regularized_self_energy_GF2(nBas,nC,nO,nV,nR,eta,ERI_aa,
 
             eps = eGF2(p,1) + eHF(a,2) - eHF(i,2) - eHF(j,1) 
             num = ERI_ab(q,a,j,i)*ERI_ab(j,i,p,a)
-
-            fk  = (1d0 - exp(-kappa*abs(eps)))**2/eps
-            dfk = - 1d0/eps + 2d0*kappa*exp(-kappa*abs(eps))/(1d0 - exp(-kappa*abs(eps)))
-            dfk = dfk*fk
+            kappa = exp(-2d0*eps**2*s)
+            num = kappa*num
          
-            SigC(p,q,1) = SigC(p,q,1) + num*fk
-            if(p == q) Z(p,1) = Z(p,1) - num*dfk
+            SigC(p,q,1) = SigC(p,q,1) + num*eps/(eps**2 + eta**2)
+            if(p == q) Z(p,1) = Z(p,1) - num*(eps**2 - eta**2)/(eps**2 + eta**2)**2
 
           enddo
         enddo
@@ -155,10 +147,8 @@ subroutine unrestricted_regularized_self_energy_GF2(nBas,nC,nO,nV,nR,eta,ERI_aa,
             eps = eGF2(p,2) + eHF(i,2) - eHF(a,2) - eHF(b,2) 
             num = ERI_bb(i,q,a,b)*ERI_bb(a,b,i,p) &
                 - ERI_bb(i,q,a,b)*ERI_bb(a,b,p,i)
-
-            fk  = (1d0 - exp(-kappa*abs(eps)))**2/eps
-            dfk = - 1d0/eps + 2d0*kappa*exp(-kappa*abs(eps))/(1d0 - exp(-kappa*abs(eps)))
-            dfk = dfk*fk
+            kappa = exp(-2d0*eps**2*s)
+            num = kappa*num
          
             SigC(p,q,2) = SigC(p,q,2) + num*eps/(eps**2 + eta**2)
             if(p == q) Z(p,2) = Z(p,2) - num*(eps**2 - eta**2)/(eps**2 + eta**2)**2
@@ -175,13 +165,11 @@ subroutine unrestricted_regularized_self_energy_GF2(nBas,nC,nO,nV,nR,eta,ERI_aa,
 
             eps = eGF2(p,2) + eHF(i,1) - eHF(a,1) - eHF(b,2) 
             num = ERI_ab(i,q,a,b)*ERI_ab(a,b,i,p)
-
-            fk  = (1d0 - exp(-kappa*abs(eps)))**2/eps
-            dfk = - 1d0/eps + 2d0*kappa*exp(-kappa*abs(eps))/(1d0 - exp(-kappa*abs(eps)))
-            dfk = dfk*fk
+            kappa = exp(-2d0*eps**2*s)
+            num = kappa*num
          
-            SigC(p,q,2) = SigC(p,q,2) + num*fk
-            if(p == q) Z(p,2) = Z(p,2) - num*dfk
+            SigC(p,q,2) = SigC(p,q,2) + num*eps/(eps**2 + eta**2)
+            if(p == q) Z(p,2) = Z(p,2) - num*(eps**2 - eta**2)/(eps**2 + eta**2)**2
 
           enddo
         enddo
@@ -196,13 +184,11 @@ subroutine unrestricted_regularized_self_energy_GF2(nBas,nC,nO,nV,nR,eta,ERI_aa,
             eps = eGF2(p,2) + eHF(a,2) - eHF(i,2) - eHF(j,2) 
             num = ERI_bb(a,q,i,j)*ERI_bb(i,j,a,p) &
                 - ERI_bb(a,q,i,j)*ERI_bb(i,j,p,a)
+            kappa = exp(-2d0*eps**2*s)
+            num = kappa*num
 
-            fk  = (1d0 - exp(-kappa*abs(eps)))**2/eps
-            dfk = - 1d0/eps + 2d0*kappa*exp(-kappa*abs(eps))/(1d0 - exp(-kappa*abs(eps)))
-            dfk = dfk*fk
-
-            SigC(p,q,2) = SigC(p,q,2) + num*fk
-            if(p == q) Z(p,2) = Z(p,2) - num*dfk
+            SigC(p,q,2) = SigC(p,q,2) + num*eps/(eps**2 + eta**2)
+            if(p == q) Z(p,2) = Z(p,2) - num*(eps**2 - eta**2)/(eps**2 + eta**2)**2
 
           enddo
         enddo
@@ -216,13 +202,11 @@ subroutine unrestricted_regularized_self_energy_GF2(nBas,nC,nO,nV,nR,eta,ERI_aa,
 
             eps = eGF2(p,2) + eHF(a,1) - eHF(i,1) - eHF(j,2) 
             num = ERI_ab(a,q,i,j)*ERI_ab(i,j,a,p)
+            kappa = exp(-2d0*eps**2*s)
+            num = kappa*num
 
-            fk  = (1d0 - exp(-kappa*abs(eps)))**2/eps
-            dfk = - 1d0/eps + 2d0*kappa*exp(-kappa*abs(eps))/(1d0 - exp(-kappa*abs(eps)))
-            dfk = dfk*fk
-         
-            SigC(p,q,2) = SigC(p,q,2) + num*fk
-            if(p == q) Z(p,2) = Z(p,2) - num*dfk
+            SigC(p,q,2) = SigC(p,q,2) + num*eps/(eps**2 + eta**2)
+            if(p == q) Z(p,2) = Z(p,2) - num*(eps**2 - eta**2)/(eps**2 + eta**2)**2
 
           enddo
         enddo
@@ -233,4 +217,4 @@ subroutine unrestricted_regularized_self_energy_GF2(nBas,nC,nO,nV,nR,eta,ERI_aa,
 
   Z(:,:) = 1d0/(1d0 - Z(:,:))
 
-end subroutine unrestricted_regularized_self_energy_GF2
+end subroutine 

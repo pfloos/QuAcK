@@ -1,4 +1,4 @@
-subroutine regularized_self_energy_GF2_diag(eta,nBas,nC,nO,nV,nR,eHF,eGF2,ERI,SigC,Z)
+subroutine GF2_reg_self_energy_diag(eta,nBas,nC,nO,nV,nR,eHF,eGF2,ERI,SigC,Z)
 
 ! Compute diagonal part of the GF2 self-energy and its renormalization factor
 
@@ -24,8 +24,8 @@ subroutine regularized_self_energy_GF2_diag(eta,nBas,nC,nO,nV,nR,eHF,eGF2,ERI,Si
   double precision              :: eps
   double precision              :: num
 
+  double precision              :: s
   double precision              :: kappa
-  double precision              :: fk,dfk
 
 ! Output variables
 
@@ -41,7 +41,7 @@ subroutine regularized_self_energy_GF2_diag(eta,nBas,nC,nO,nV,nR,eHF,eGF2,ERI,Si
 ! Parameters for regularized calculations !
 !-----------------------------------------!
 
-  kappa = 1d0
+  s = 100d0
 
 !----------------------------------------------------!
 ! Compute GF2 self-energy and renormalization factor !
@@ -53,13 +53,11 @@ subroutine regularized_self_energy_GF2_diag(eta,nBas,nC,nO,nV,nR,eHF,eGF2,ERI,Si
         do a=nO+1,nBas-nR
 
           eps = eGF2(p) + eHF(a) - eHF(i) - eHF(j)
-          num = (2d0*ERI(p,a,i,j) - ERI(p,a,j,i))*ERI(p,a,i,j)
+          kappa = exp(-2d0*eps**2*s)
+          num = kappa*(2d0*ERI(p,a,i,j) - ERI(p,a,j,i))*ERI(p,a,i,j)
 
-          fk  = (1d0 - exp(-2d0*eps**2/kappa**2))/eps
-          dfk = - fk/eps + 4d0*kappa**2*exp(-2d0*eps**2/kappa**2)
-
-          SigC(p) = SigC(p) + num*fk
-          Z(p)    = Z(p)    - num*dfk
+          SigC(p) = SigC(p) + num*eps/(eps**2 + eta**2)
+          Z(p)    = Z(p)    - num*(eps**2 - eta**2)/(eps**2 + eta**2)**2
 
         end do
       end do
@@ -72,13 +70,11 @@ subroutine regularized_self_energy_GF2_diag(eta,nBas,nC,nO,nV,nR,eHF,eGF2,ERI,Si
         do b=nO+1,nBas-nR
 
           eps = eGF2(p) + eHF(i) - eHF(a) - eHF(b)
-          num = (2d0*ERI(p,i,a,b) - ERI(p,i,b,a))*ERI(p,i,a,b)
+          kappa = exp(-2d0*eps**2*s)
+          num = kappa*(2d0*ERI(p,i,a,b) - ERI(p,i,b,a))*ERI(p,i,a,b)
 
-          fk  = (1d0 - exp(-2d0*eps**2/kappa**2))/eps
-          dfk = - fk/eps + 4d0*kappa**2*exp(-2d0*eps**2/kappa**2)
-
-          SigC(p) = SigC(p) + num*fk
-          Z(p)    = Z(p)    - num*dfk
+          SigC(p) = SigC(p) + num*eps/(eps**2 + eta**2)
+          Z(p)    = Z(p)    - num*(eps**2 - eta**2)/(eps**2 + eta**2)**2
 
         end do
       end do

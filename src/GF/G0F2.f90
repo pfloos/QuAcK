@@ -61,7 +61,7 @@ subroutine G0F2(dophBSE,doppBSE,TDA,dBSE,dTDA,singlet,triplet,linearize,eta,regu
 
   if(regularize) then 
 
-    call regularized_self_energy_GF2_diag(eta,nBas,nC,nO,nV,nR,eHF,eHF,ERI,SigC,Z)
+    call GF2_reg_self_energy_diag(eta,nBas,nC,nO,nV,nR,eHF,eHF,ERI,SigC,Z)
 
   else
 
