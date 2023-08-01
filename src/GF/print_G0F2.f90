@@ -1,4 +1,4 @@
-subroutine print_G0F2(nBas,nO,eHF,Sig,eGF2,Z,ENuc,ERHF,Ec)
+subroutine print_G0F2(nBas,nO,eHF,Sig,eGF,Z,ENuc,ERHF,Ec)
 
 ! Print one-electron energies and other stuff for G0F2
 
@@ -9,7 +9,7 @@ subroutine print_G0F2(nBas,nO,eHF,Sig,eGF2,Z,ENuc,ERHF,Ec)
   integer,intent(in)                 :: nO
   double precision,intent(in)        :: eHF(nBas)
   double precision,intent(in)        :: Sig(nBas)
-  double precision,intent(in)        :: eGF2(nBas)
+  double precision,intent(in)        :: eGF(nBas)
   double precision,intent(in)        :: Z(nBas)
   double precision,intent(in)        :: ENuc
   double precision,intent(in)        :: ERHF
@@ -24,29 +24,29 @@ subroutine print_G0F2(nBas,nO,eHF,Sig,eGF2,Z,ENuc,ERHF,Ec)
 
   HOMO = nO
   LUMO = HOMO + 1
-  Gap = eGF2(LUMO) - eGF2(HOMO)
+  Gap = eGF(LUMO) - eGF(HOMO)
 
 ! Dump results
 
-  write(*,*)'--------------------------------------------------------------------------'
-  write(*,*)' Frequency-dependent G0F2 calculation'
-  write(*,*)'--------------------------------------------------------------------------'
-  write(*,'(1X,A1,1X,A3,1X,A1,1X,A15,1X,A1,1X,A15,1X,A1,1X,A15,1X,A1,1X,A10,1X,A1,1X)') &
-            '|','#','|','e_HF (eV)','|','Sigma (eV)','|','e_G0F2 (eV)','|','Z','|'
-  write(*,*)'--------------------------------------------------------------------------'
+  write(*,*)'-------------------------------------------------------------------------------'
+  write(*,*)' One-shot G0F2 calculation'
+  write(*,*)'-------------------------------------------------------------------------------'
+  write(*,'(1X,A1,1X,A3,1X,A1,1X,A15,1X,A1,1X,A15,1X,A1,1X,A15,1X,A1,1X,A15,1X,A1,1X)') &
+            '|','#','|','e_HF (eV)','|','Sig_GF2 (eV)','|','Z','|','e_GF2 (eV)','|'
+  write(*,*)'-------------------------------------------------------------------------------'
 
   do p=1,nBas
-    write(*,'(1X,A1,1X,I3,1X,A1,1X,F15.6,1X,A1,1X,F15.6,1X,A1,1X,F15.6,1X,A1,1X,F10.6,1X,A1,1X)') &
-    '|',p,'|',eHF(p)*HaToeV,'|',Sig(p)*HaToeV,'|',eGF2(p)*HaToeV,'|',Z(p),'|'
+    write(*,'(1X,A1,1X,I3,1X,A1,1X,F15.6,1X,A1,1X,F15.6,1X,A1,1X,F15.6,1X,A1,1X,F15.6,1X,A1,1X)') &
+    '|',p,'|',eHF(p)*HaToeV,'|',Sig(p)*HaToeV,'|',Z(p),'|',eGF(p)*HaToeV,'|'
   enddo
 
-  write(*,*)'--------------------------------------------------------------------------'
-  write(*,'(2X,A30,F15.6)') 'G0F2  HOMO      energy (eV):',eGF2(HOMO)*HaToeV
-  write(*,'(2X,A30,F15.6)') 'G0F2  LUMO      energy (eV):',eGF2(LUMO)*HaToeV
-  write(*,'(2X,A30,F15.6)') 'G0F2  HOMO-LUMO gap    (eV):',Gap*HaToeV
-  write(*,*)'--------------------------------------------------------------------------'
-  write(*,'(2X,A30,F15.6,A3)') 'G0F2 total energy      :',ENuc + ERHF + Ec,' au'
-  write(*,'(2X,A30,F15.6,A3)') 'G0F2 correlation energy:',Ec,' au'
+  write(*,*)'-------------------------------------------------------------------------------'
+  write(*,'(2X,A60,F15.6,A3)') 'G0F2  HOMO      energy =',eGF(HOMO)*HaToeV,' eV'
+  write(*,'(2X,A60,F15.6,A3)') 'G0F2  LUMO      energy =',eGF(LUMO)*HaToeV,' eV'
+  write(*,'(2X,A60,F15.6,A3)') 'G0F2  HOMO-LUMO gap    =',Gap*HaToeV,' eV'
+  write(*,*)'-------------------------------------------------------------------------------'
+  write(*,'(2X,A60,F15.6,A3)') 'G0F2 total energy       =',ENuc + ERHF + Ec,' au'
+  write(*,'(2X,A60,F15.6,A3)') 'G0F2 correlation energy =',Ec,' au'
   write(*,*)'-------------------------------------------------------------------------------'
   write(*,*)
 

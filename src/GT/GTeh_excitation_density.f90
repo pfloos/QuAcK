@@ -18,13 +18,13 @@ subroutine GTeh_excitation_density(nBas,nC,nO,nR,nS,ERI,XpY,XmY,rhoL,rhoR)
 
 ! Output variables
 
-  double precision,intent(out)  :: rhoL(nBas,nBas,nS,2)
-  double precision,intent(out)  :: rhoR(nBas,nBas,nS,2)
+  double precision,intent(out)  :: rhoL(nBas,nBas,nS)
+  double precision,intent(out)  :: rhoR(nBas,nBas,nS)
 
 ! Initialization
  
-  rhoL(:,:,:,:) = 0d0   
-  rhoR(:,:,:,:) = 0d0   
+  rhoL(:,:,:) = 0d0   
+  rhoR(:,:,:) = 0d0   
 
   allocate(X(nS,nS),Y(nS,nS))
 
@@ -50,13 +50,13 @@ subroutine GTeh_excitation_density(nBas,nC,nO,nR,nS,ERI,XpY,XmY,rhoL,rhoR)
               jb = jb + 1
               do m=1,nS
 
-                 rhoL(p,q,m,1) = rhoL(p,q,m,1) + ERI(p,j,b,q)*X(jb,m) + ERI(p,b,j,q)*Y(jb,m)
-                 rhoL(p,q,m,2) = rhoL(p,q,m,2) + ERI(p,j,b,q)*Y(jb,m) + ERI(p,b,j,q)*X(jb,m)
+                 rhoL(p,q,m) = rhoL(p,q,m) + ERI(p,j,b,q)*X(jb,m) + ERI(p,b,j,q)*Y(jb,m)
+!                rhoL(p,q,m,2) = rhoL(p,q,m,2) + ERI(p,j,b,q)*Y(jb,m) + ERI(p,b,j,q)*X(jb,m)
 
-                 rhoR(p,q,m,1) = rhoR(p,q,m,1) & 
+                 rhoR(p,q,m) = rhoR(p,q,m) & 
                                + (2d0*ERI(p,j,b,q) - ERI(p,j,q,b))*X(jb,m) + (2d0*ERI(p,b,j,q) - ERI(p,b,q,j))*Y(jb,m)
-                 rhoR(p,q,m,2) = rhoR(p,q,m,2) & 
-                               + (2d0*ERI(p,j,b,q) - ERI(p,j,q,b))*Y(jb,m) + (2d0*ERI(p,b,j,q) - ERI(p,b,q,j))*X(jb,m)
+!                rhoR(p,q,m,2) = rhoR(p,q,m,2) & 
+!                              + (2d0*ERI(p,j,b,q) - ERI(p,j,q,b))*Y(jb,m) + (2d0*ERI(p,b,j,q) - ERI(p,b,q,j))*X(jb,m)
 
               enddo
            enddo

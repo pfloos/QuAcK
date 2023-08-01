@@ -1,4 +1,4 @@
-subroutine print_qsGF2(nBas,nO,nSCF,Conv,thresh,eHF,eGF2,c,SigC,Z,ENuc,ET,EV,EJ,Ex,Ec,EqsGF2,dipole)
+subroutine print_qsGF2(nBas,nO,nSCF,Conv,thresh,eHF,eGF,c,SigC,Z,ENuc,ET,EV,EJ,Ex,Ec,EqsGF,dipole)
 
 ! Print one-electron energies and other stuff for qsGF2
 
@@ -14,7 +14,7 @@ subroutine print_qsGF2(nBas,nO,nSCF,Conv,thresh,eHF,eGF2,c,SigC,Z,ENuc,ET,EV,EJ,
   double precision,intent(in)        :: Conv
   double precision,intent(in)        :: thresh
   double precision,intent(in)        :: eHF(nBas)
-  double precision,intent(in)        :: eGF2(nBas)
+  double precision,intent(in)        :: eGF(nBas)
   double precision,intent(in)        :: c(nBas)
   double precision,intent(in)        :: SigC(nBas,nBas)
   double precision,intent(in)        :: Z(nBas)
@@ -23,7 +23,7 @@ subroutine print_qsGF2(nBas,nO,nSCF,Conv,thresh,eHF,eGF2,c,SigC,Z,ENuc,ET,EV,EJ,
   double precision,intent(in)        :: EJ
   double precision,intent(in)        :: Ex
   double precision,intent(in)        :: Ec
-  double precision,intent(in)        :: EqsGF2
+  double precision,intent(in)        :: EqsGF
   double precision,intent(in)        :: dipole(ncart)
 
 ! Local variables
@@ -38,7 +38,7 @@ subroutine print_qsGF2(nBas,nO,nSCF,Conv,thresh,eHF,eGF2,c,SigC,Z,ENuc,ET,EV,EJ,
 
   HOMO = nO
   LUMO = HOMO + 1
-  Gap = eGF2(LUMO)-eGF2(HOMO)
+  Gap = eGF(LUMO)-eGF(HOMO)
 
 ! Dump results
 
@@ -55,21 +55,21 @@ subroutine print_qsGF2(nBas,nO,nSCF,Conv,thresh,eHF,eGF2,c,SigC,Z,ENuc,ET,EV,EJ,
 
   do q=1,nBas
     write(*,'(1X,A1,1X,I3,1X,A1,1X,F15.6,1X,A1,1X,F15.6,1X,A1,1X,F15.6,1X,A1,1X,F15.6,1X,A1,1X)') &
-    '|',q,'|',eHF(q)*HaToeV,'|',SigC(q,q)*HaToeV,'|',Z(q),'|',eGF2(q)*HaToeV,'|'
+    '|',q,'|',eHF(q)*HaToeV,'|',SigC(q,q)*HaToeV,'|',Z(q),'|',eGF(q)*HaToeV,'|'
   enddo
 
   write(*,*)'-------------------------------------------------------------------------------'
   write(*,'(2X,A10,I3)')   'Iteration ',nSCF
   write(*,'(2X,A14,F15.5)')'Convergence = ',Conv
-  write(*,*)'-------------------------------------------'
-  write(*,'(2X,A30,F15.6,A3)') 'qsGF2 HOMO      energy:',eGF2(HOMO)*HaToeV,' eV'
-  write(*,'(2X,A30,F15.6,A3)') 'qsGF2 LUMO      energy:',eGF2(LUMO)*HaToeV,' eV'
-  write(*,'(2X,A30,F15.6,A3)') 'qsGF2 HOMO-LUMO gap   :',Gap*HaToeV,' eV'
-  write(*,*)'-------------------------------------------'
-  write(*,'(2X,A30,F15.6,A3)') '    qsGF2 total       energy:',ENuc + EqsGF2,' au'
-  write(*,'(2X,A30,F15.6,A3)') '    qsGF2 exchange    energy:',Ex,' au'
-  write(*,'(2X,A30,F15.6,A3)') '    qsGF2 correlation energy:',Ec,' au'
-  write(*,*)'-------------------------------------------'
+  write(*,*)'-------------------------------------------------------------------------------'
+  write(*,'(2X,A60,F15.6,A3)') 'qsGF2 HOMO      energy =',eGF(HOMO)*HaToeV,' eV'
+  write(*,'(2X,A60,F15.6,A3)') 'qsGF2 LUMO      energy =',eGF(LUMO)*HaToeV,' eV'
+  write(*,'(2X,A60,F15.6,A3)') 'qsGF2 HOMO-LUMO gap    =',Gap*HaToeV,' eV'
+  write(*,*)'-------------------------------------------------------------------------------'
+  write(*,'(2X,A60,F15.6,A3)') '    qsGF2 total       energy =',ENuc + EqsGF,' au'
+  write(*,'(2X,A60,F15.6,A3)') '    qsGF2 exchange    energy =',Ex,' au'
+  write(*,'(2X,A60,F15.6,A3)') '    qsGF2 correlation energy =',Ec,' au'
+  write(*,*)'-------------------------------------------------------------------------------'
   write(*,*)
 
 ! Dump results for final iteration
@@ -89,9 +89,9 @@ subroutine print_qsGF2(nBas,nO,nSCF,Conv,thresh,eHF,eGF2,c,SigC,Z,ENuc,ET,EV,EJ,
     write(*,'(A32,1X,F16.10,A3)') ' Exchange     energy: ',Ex,' au'
     write(*,'(A32,1X,F16.10,A3)') ' Correlation  energy: ',Ec,' au'
     write(*,'(A50)')           '---------------------------------------'
-    write(*,'(A32,1X,F16.10,A3)') ' Electronic   energy: ',EqsGF2,' au'
+    write(*,'(A32,1X,F16.10,A3)') ' Electronic   energy: ',EqsGF,' au'
     write(*,'(A32,1X,F16.10,A3)') ' Nuclear   repulsion: ',ENuc,' au'
-    write(*,'(A32,1X,F16.10,A3)') ' qsGF2        energy: ',ENuc + EqsGF2,' au'
+    write(*,'(A32,1X,F16.10,A3)') ' qsGF2        energy: ',ENuc + EqsGF,' au'
     write(*,'(A50)')           '---------------------------------------'
     write(*,'(A35)')           ' Dipole moment (Debye)    '
     write(*,'(10X,4A10)')      'X','Y','Z','Tot.'
@@ -107,7 +107,7 @@ subroutine print_qsGF2(nBas,nO,nSCF,Conv,thresh,eHF,eGF2,c,SigC,Z,ENuc,ET,EV,EJ,
     write(*,'(A50)') '---------------------------------------'
     write(*,'(A32)') ' qsGF2 MO energies'
     write(*,'(A50)') '---------------------------------------'
-    call matout(nBas,1,eGF2)
+    call matout(nBas,1,eGF)
     write(*,*)
 
   endif

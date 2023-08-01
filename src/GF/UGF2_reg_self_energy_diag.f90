@@ -61,7 +61,7 @@ subroutine UGF2_reg_self_energy_diag(nBas,nC,nO,nV,nR,eta,ERI_aa,ERI_ab,ERI_bb,e
           eps = eGF2(p,1) + eHF(i,1) - eHF(a,1) - eHF(b,1) 
           num = ERI_aa(i,p,a,b)*ERI_aa(a,b,i,p) &
               - ERI_aa(i,p,a,b)*ERI_aa(a,b,p,i)
-          kappa = exp(-2d0*eps**2*s)
+          kappa = 1d0 - exp(-2d0*eps**2*s)
           num = kappa*num
 
           SigC(p,1) = SigC(p,1) + num*eps/(eps**2 + eta**2)
@@ -79,7 +79,7 @@ subroutine UGF2_reg_self_energy_diag(nBas,nC,nO,nV,nR,eta,ERI_aa,ERI_ab,ERI_bb,e
 
           eps = eGF2(p,1) + eHF(i,2) - eHF(a,2) - eHF(b,1) 
           num = ERI_ab(p,i,b,a)*ERI_ab(b,a,p,i)
-          kappa = exp(-2d0*eps**2*s)
+          kappa = 1d0 - exp(-2d0*eps**2*s)
           num = kappa*num
 
           SigC(p,1) = SigC(p,1) + num*eps/(eps**2 + eta**2)
@@ -98,7 +98,7 @@ subroutine UGF2_reg_self_energy_diag(nBas,nC,nO,nV,nR,eta,ERI_aa,ERI_ab,ERI_bb,e
           eps = eGF2(p,1) + eHF(a,1) - eHF(i,1) - eHF(j,1) 
           num = ERI_aa(a,p,i,j)*ERI_aa(i,j,a,p) &
               - ERI_aa(a,p,i,j)*ERI_aa(i,j,p,a)
-          kappa = exp(-2d0*eps**2*s)
+          kappa = 1d0 - exp(-2d0*eps**2*s)
           num = kappa*num
 
           SigC(p,1) = SigC(p,1) + num*eps/(eps**2 + eta**2)
@@ -116,7 +116,7 @@ subroutine UGF2_reg_self_energy_diag(nBas,nC,nO,nV,nR,eta,ERI_aa,ERI_ab,ERI_bb,e
 
           eps = eGF2(p,1) + eHF(a,2) - eHF(i,2) - eHF(j,1) 
           num = ERI_ab(p,a,j,i)*ERI_ab(j,i,p,a)
-          kappa = exp(-2d0*eps**2*s)
+          kappa = 1d0 - exp(-2d0*eps**2*s)
           num = kappa*num
 
           SigC(p,1) = SigC(p,1) + num*eps/(eps**2 + eta**2)
@@ -143,7 +143,7 @@ subroutine UGF2_reg_self_energy_diag(nBas,nC,nO,nV,nR,eta,ERI_aa,ERI_ab,ERI_bb,e
           eps = eGF2(p,2) + eHF(i,2) - eHF(a,2) - eHF(b,2) 
           num = ERI_bb(i,p,a,b)*ERI_bb(a,b,i,p) &
               - ERI_bb(i,p,a,b)*ERI_bb(a,b,p,i)
-          kappa = exp(-2d0*eps**2*s)
+          kappa = 1d0 - exp(-2d0*eps**2*s)
           num = kappa*num
        
           SigC(p,2) = SigC(p,2) + num*eps/(eps**2 + eta**2)
@@ -161,7 +161,7 @@ subroutine UGF2_reg_self_energy_diag(nBas,nC,nO,nV,nR,eta,ERI_aa,ERI_ab,ERI_bb,e
 
           eps = eGF2(p,2) + eHF(i,1) - eHF(a,1) - eHF(b,2) 
           num = ERI_ab(i,p,a,b)*ERI_ab(a,b,i,p)
-          kappa = exp(-2d0*eps**2*s)
+          kappa = 1d0 - exp(-2d0*eps**2*s)
           num = kappa*num
        
           SigC(p,2) = SigC(p,2) + num*eps/(eps**2 + eta**2)
@@ -180,7 +180,7 @@ subroutine UGF2_reg_self_energy_diag(nBas,nC,nO,nV,nR,eta,ERI_aa,ERI_ab,ERI_bb,e
           eps = eGF2(p,2) + eHF(a,2) - eHF(i,2) - eHF(j,2) 
           num = ERI_bb(a,p,i,j)*ERI_bb(i,j,a,p) &
               - ERI_bb(a,p,i,j)*ERI_bb(i,j,p,a)
-          kappa = exp(-2d0*eps**2*s)
+          kappa = 1d0 - exp(-2d0*eps**2*s)
           num = kappa*num
 
           SigC(p,2) = SigC(p,2) + num*eps/(eps**2 + eta**2)
@@ -198,7 +198,7 @@ subroutine UGF2_reg_self_energy_diag(nBas,nC,nO,nV,nR,eta,ERI_aa,ERI_ab,ERI_bb,e
 
           eps = eGF2(p,2) + eHF(a,1) - eHF(i,1) - eHF(j,2) 
           num = ERI_ab(a,p,i,j)*ERI_ab(i,j,a,p)
-          kappa = exp(-2d0*eps**2*s)
+          kappa = 1d0 - exp(-2d0*eps**2*s)
           num = kappa*num
 
           SigC(p,2) = SigC(p,2) + num*eps/(eps**2 + eta**2)

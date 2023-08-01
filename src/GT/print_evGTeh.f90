@@ -35,7 +35,7 @@ subroutine print_evGTeh(nBas,nO,nSCF,Conv,eHF,ENuc,ERHF,SigC,Z,eGT,EcRPA,EcGM)
   endif
   write(*,*)'-------------------------------------------------------------------------------'
   write(*,'(1X,A1,1X,A3,1X,A1,1X,A15,1X,A1,1X,A15,1X,A1,1X,A15,1X,A1,1X,A15,1X,A1,1X)') &
-            '|','#','|','e_HF (eV)','|','Sigma_c (eV)','|','Z','|','e_QP (eV)','|'
+            '|','#','|','e_HF (eV)','|','Sig_GTeh (eV)','|','Z','|','e_GTeh (eV)','|'
   write(*,*)'-------------------------------------------------------------------------------'
 
   do p=1,nBas
@@ -47,14 +47,14 @@ subroutine print_evGTeh(nBas,nO,nSCF,Conv,eHF,ENuc,ERHF,SigC,Z,eGT,EcRPA,EcGM)
   write(*,'(2X,A10,I3)')   'Iteration ',nSCF
   write(*,'(2X,A14,F15.5)')'Convergence = ',Conv
   write(*,*)'-------------------------------------------------------------------------------'
-  write(*,'(2X,A30,F15.6,A3)') 'evGTeh HOMO      energy:',eGT(HOMO)*HaToeV,' eV'
-  write(*,'(2X,A30,F15.6,A3)') 'evGTeh LUMO      energy:',eGT(LUMO)*HaToeV,' eV'
-  write(*,'(2X,A30,F15.6,A3)') 'evGTeh HOMO-LUMO gap   :',Gap*HaToeV,' eV'
+  write(*,'(2X,A60,F15.6,A3)') 'evGTeh HOMO      energy =',eGT(HOMO)*HaToeV,' eV'
+  write(*,'(2X,A60,F15.6,A3)') 'evGTeh LUMO      energy =',eGT(LUMO)*HaToeV,' eV'
+  write(*,'(2X,A60,F15.6,A3)') 'evGTeh HOMO-LUMO gap    =',Gap*HaToeV,' eV'
   write(*,*)'-------------------------------------------------------------------------------'
-  write(*,'(2X,A30,F15.6,A3)') 'RPA@evGTeh total energy      :',ENuc + ERHF + EcRPA,' au'
-  write(*,'(2X,A30,F15.6,A3)') 'RPA@evGTeh correlation energy:',EcRPA,' au'
-  write(*,'(2X,A30,F15.6,A3)') 'GM@evGTeh  total energy      :',ENuc + ERHF + EcGM,' au'
-  write(*,'(2X,A30,F15.6,A3)') 'GM@evGTeh  correlation energy:',EcGM,' au'
+  write(*,'(2X,A60,F15.6,A3)') 'phRPA@evGTeh total energy       =',ENuc + ERHF + EcRPA,' au'
+  write(*,'(2X,A60,F15.6,A3)') 'phRPA@evGTeh correlation energy =',EcRPA,' au'
+  write(*,'(2X,A60,F15.6,A3)') '   GM@evGTeh total energy       =',ENuc + ERHF + EcGM,' au'
+  write(*,'(2X,A60,F15.6,A3)') '   GM@evGTeh correlation energy =',EcGM,' au'
   write(*,*)'-------------------------------------------------------------------------------'
   write(*,*)
 

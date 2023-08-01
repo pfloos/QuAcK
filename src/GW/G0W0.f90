@@ -114,7 +114,7 @@ subroutine G0W0(doACFDT,exchange_kernel,doXBS,dophBSE,dophBSE2,TDA_W,TDA,dBSE,dT
 ! Compute GW self-energy !
 !------------------------!
 
-  if(regularize) call GW_regularization(nBas,nC,nO,nR,nS,eHF,Om,rho)
+  if(regularize) call GW_regularization(nBas,nC,nO,nV,nR,nS,eHF,Om,rho)
 
   call GW_self_energy_diag(eta,nBas,nC,nO,nV,nR,nS,eHF,Om,rho,EcGM,SigC,Z)
 

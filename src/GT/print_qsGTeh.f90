@@ -54,7 +54,7 @@ subroutine print_qsGTeh(nBas,nO,nSCF,Conv,thresh,eHF,eGT,c,SigC,Z,ENuc,ET,EV,EJ,
   endif
   write(*,*)'-------------------------------------------------------------------------------'
   write(*,'(1X,A1,1X,A3,1X,A1,1X,A15,1X,A1,1X,A15,1X,A1,1X,A15,1X,A1,1X,A15,1X,A1,1X)') &
-            '|','#','|','e_HF (eV)','|','Sig_T (eV)','|','Z','|','e_QP (eV)','|'
+            '|','#','|','e_HF (eV)','|','Sig_GTeh (eV)','|','Z','|','e_GTeh (eV)','|'
   write(*,*)'-------------------------------------------------------------------------------'
 
   do p=1,nBas
@@ -65,16 +65,16 @@ subroutine print_qsGTeh(nBas,nO,nSCF,Conv,thresh,eHF,eGT,c,SigC,Z,ENuc,ET,EV,EJ,
   write(*,*)'-------------------------------------------------------------------------------'
   write(*,'(2X,A10,I3)')   'Iteration ',nSCF
   write(*,'(2X,A14,F15.5)')'Convergence = ',Conv
-  write(*,*)'-------------------------------------------'
-  write(*,'(2X,A30,F15.6,A3)') 'qsGTeh HOMO      energy:',eGT(HOMO)*HaToeV,' eV'
-  write(*,'(2X,A30,F15.6,A3)') 'qsGTeh LUMO      energy:',eGT(LUMO)*HaToeV,' eV'
-  write(*,'(2X,A30,F15.6,A3)') 'qsGTeh HOMO-LUMO gap   :',Gap*HaToeV,' eV'
-  write(*,*)'-------------------------------------------'
-  write(*,'(2X,A30,F15.6,A3)') '      qsGTeh total       energy:',ENuc + EqsGT,' au'
-  write(*,'(2X,A30,F15.6,A3)') '      qsGTeh exchange    energy:',Ex,' au'
-  write(*,'(2X,A30,F15.6,A3)') '   GM@qsGTeh correlation energy:',EcGM,' au'
-  write(*,'(2X,A30,F15.6,A3)') 'ppRPA@qsGTeh correlation energy:',sum(EcRPA(:)),' au'
-  write(*,*)'-------------------------------------------'
+  write(*,*)'-------------------------------------------------------------------------------'
+  write(*,'(2X,A60,F15.6,A3)') 'qsGTeh HOMO      energy =',eGT(HOMO)*HaToeV,' eV'
+  write(*,'(2X,A60,F15.6,A3)') 'qsGTeh LUMO      energy =',eGT(LUMO)*HaToeV,' eV'
+  write(*,'(2X,A60,F15.6,A3)') 'qsGTeh HOMO-LUMO gap    =',Gap*HaToeV,' eV'
+  write(*,*)'-------------------------------------------------------------------------------'
+  write(*,'(2X,A60,F15.6,A3)') '      qsGTeh total       energy =',ENuc + EqsGT,' au'
+  write(*,'(2X,A60,F15.6,A3)') '      qsGTeh exchange    energy =',Ex,' au'
+  write(*,'(2X,A60,F15.6,A3)') '   GM@qsGTeh correlation energy =',EcGM,' au'
+  write(*,'(2X,A60,F15.6,A3)') 'ppRPA@qsGTeh correlation energy =',sum(EcRPA(:)),' au'
+  write(*,*)'-------------------------------------------------------------------------------'
   write(*,*)
 
 ! Dump results for final iteration

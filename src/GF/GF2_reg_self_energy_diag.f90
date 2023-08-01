@@ -53,7 +53,7 @@ subroutine GF2_reg_self_energy_diag(eta,nBas,nC,nO,nV,nR,eHF,eGF2,ERI,SigC,Z)
         do a=nO+1,nBas-nR
 
           eps = eGF2(p) + eHF(a) - eHF(i) - eHF(j)
-          kappa = exp(-2d0*eps**2*s)
+          kappa = 1d0 - exp(-2d0*eps**2*s)
           num = kappa*(2d0*ERI(p,a,i,j) - ERI(p,a,j,i))*ERI(p,a,i,j)
 
           SigC(p) = SigC(p) + num*eps/(eps**2 + eta**2)
@@ -70,7 +70,7 @@ subroutine GF2_reg_self_energy_diag(eta,nBas,nC,nO,nV,nR,eHF,eGF2,ERI,SigC,Z)
         do b=nO+1,nBas-nR
 
           eps = eGF2(p) + eHF(i) - eHF(a) - eHF(b)
-          kappa = exp(-2d0*eps**2*s)
+          kappa = 1d0 - exp(-2d0*eps**2*s)
           num = kappa*(2d0*ERI(p,i,a,b) - ERI(p,i,b,a))*ERI(p,i,a,b)
 
           SigC(p) = SigC(p) + num*eps/(eps**2 + eta**2)

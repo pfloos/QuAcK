@@ -130,7 +130,7 @@ subroutine evGTeh(maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,dophBSE,d
 
     ! Compute correlation part of the self-energy 
 
-    if(regularize) call GTeh_regularization(eta,nBas,nC,nO,nV,nR,nS,eGT,Om,rhoL,rhoR)
+    if(regularize) call GTeh_regularization(nBas,nC,nO,nV,nR,nS,eGT,Om,rhoL,rhoR)
 
     call GTeh_self_energy_diag(eta,nBas,nC,nO,nV,nR,nS,eGT,Om,rhoL,rhoR,EcGM,Sig,Z)
 

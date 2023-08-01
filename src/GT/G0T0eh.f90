@@ -56,8 +56,8 @@ subroutine G0T0eh(doACFDT,exchange_kernel,doXBS,dophBSE,dophBSE2,TDA_T,TDA,dBSE,
   double precision,allocatable  :: Om(:)
   double precision,allocatable  :: XpY(:,:)
   double precision,allocatable  :: XmY(:,:)
-  double precision,allocatable  :: rhoL(:,:,:,:)
-  double precision,allocatable  :: rhoR(:,:,:,:)
+  double precision,allocatable  :: rhoL(:,:,:)
+  double precision,allocatable  :: rhoR(:,:,:)
 
   double precision,allocatable  :: eGT(:)
 
@@ -99,7 +99,7 @@ subroutine G0T0eh(doACFDT,exchange_kernel,doXBS,dophBSE,dophBSE2,TDA_T,TDA,dBSE,
 ! Memory allocation
 
   allocate(Aph(nS,nS),Bph(nS,nS),Sig(nBas),Z(nBas),Om(nS),XpY(nS,nS),XmY(nS,nS), & 
-           rhoL(nBas,nBas,nS,2),rhoR(nBas,nBas,nS,2),eGT(nBas))
+           rhoL(nBas,nBas,nS),rhoR(nBas,nBas,nS),eGT(nBas))
 
 !---------------------------------
 ! Compute (triplet) RPA screening 
@@ -124,7 +124,7 @@ subroutine G0T0eh(doACFDT,exchange_kernel,doXBS,dophBSE,dophBSE2,TDA_T,TDA,dBSE,
 ! Compute GW self-energy !
 !------------------------!
 
-  if(regularize) call GTeh_regularization(eta,nBas,nC,nO,nV,nR,nS,eHF,Om,rhoL,rhoR)
+  if(regularize) call GTeh_regularization(nBas,nC,nO,nV,nR,nS,eHF,Om,rhoL,rhoR)
 
   call GTeh_self_energy_diag(eta,nBas,nC,nO,nV,nR,nS,eHF,Om,rhoL,rhoR,EcGM,Sig,Z)
 

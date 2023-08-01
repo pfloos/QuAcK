@@ -1,4 +1,4 @@
-subroutine GW_regularization(nBas,nC,nO,nR,nS,e,Om,rho)
+subroutine GW_regularization(nBas,nC,nO,nV,nR,nS,e,Om,rho)
 
 ! Regularize GW excitation densities via SRG
 
@@ -9,6 +9,7 @@ subroutine GW_regularization(nBas,nC,nO,nR,nS,e,Om,rho)
   integer,intent(in)            :: nBas
   integer,intent(in)            :: nC
   integer,intent(in)            :: nO
+  integer,intent(in)            :: nV
   integer,intent(in)            :: nR
   integer,intent(in)            :: nS
   integer,intent(in)            :: e(nBas)
@@ -36,13 +37,13 @@ subroutine GW_regularization(nBas,nC,nO,nR,nS,e,Om,rho)
 
       do i=nC+1,nO
         Dpim = e(p) - e(i) + Om(m)
-        kappa = exp(-Dpim*Dpim*s)
+        kappa = 1d0 - exp(-Dpim*Dpim*s)
         rho(p,i,m) = kappa*rho(p,i,m)
       enddo
 
       do a=nO+1,nBas-nR
         Dpam = e(p) - e(a) - Om(m)
-        kappa = exp(-Dpam*Dpam*s)
+        kappa = 1d0 - exp(-Dpam*Dpam*s)
         rho(p,a,m) = kappa*rho(p,a,m)
       enddo
 

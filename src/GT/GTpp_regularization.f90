@@ -1,4 +1,4 @@
-subroutine GTpp_regularization(nBas,nC,nO,nR,nOO,nVV,e,Om1,rho1,Om2,rho2)
+subroutine GTpp_regularization(nBas,nC,nO,nV,nR,nOO,nVV,e,Om1,rho1,Om2,rho2)
 
 ! Regularize GTpp excitation densities via SRG
 
@@ -9,6 +9,7 @@ subroutine GTpp_regularization(nBas,nC,nO,nR,nOO,nVV,e,Om1,rho1,Om2,rho2)
   integer,intent(in)            :: nBas
   integer,intent(in)            :: nC
   integer,intent(in)            :: nO
+  integer,intent(in)            :: nV
   integer,intent(in)            :: nR
   integer,intent(in)            :: nOO
   integer,intent(in)            :: nVV

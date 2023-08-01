@@ -18,8 +18,8 @@ double precision function GTeh_dSigC(p,w,eta,nBas,nC,nO,nV,nR,nS,e,Om,rhoL,rhoR)
   integer,intent(in)            :: nS
   double precision,intent(in)   :: e(nBas)
   double precision,intent(in)   :: Om(nS)
-  double precision,intent(in)   :: rhoL(nBas,nBas,nS,2)
-  double precision,intent(in)   :: rhoR(nBas,nBas,nS,2)
+  double precision,intent(in)   :: rhoL(nBas,nBas,nS)
+  double precision,intent(in)   :: rhoR(nBas,nBas,nS)
 
 ! Local variables
 
@@ -35,7 +35,7 @@ double precision function GTeh_dSigC(p,w,eta,nBas,nC,nO,nV,nR,nS,e,Om,rhoL,rhoR)
   do i=nC+1,nO
      do m=1,nS
         eps = w - e(i) + Om(m)
-        num = rhoL(i,p,m,1)*rhoR(i,p,m,1)
+        num = rhoL(i,p,m)*rhoR(i,p,m)
         GTeh_dSigC = GTeh_dSigC - num*(eps**2 - eta**2)/(eps**2 + eta**2)**2
      enddo
   enddo
@@ -45,7 +45,7 @@ double precision function GTeh_dSigC(p,w,eta,nBas,nC,nO,nV,nR,nS,e,Om,rhoL,rhoR)
   do a=nO+1,nBas-nR
      do m=1,nS
         eps = w - e(a) - Om(m)
-        num = rhoL(p,a,m,1)*rhoR(p,a,m,1)
+        num = rhoL(p,a,m)*rhoR(p,a,m)
         GTeh_dSigC = GTeh_dSigC - num*(eps**2 - eta**2)/(eps**2 + eta**2)**2
      enddo
   enddo

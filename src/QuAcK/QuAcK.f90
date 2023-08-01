@@ -69,7 +69,7 @@ program QuAcK
   double precision              :: thresh_HF,level_shift
   logical                       :: DIIS_HF,guess_type,ortho_type,mix
 
-  logical                       :: regMP
+  logical                       :: reg_MP
 
   integer                       :: maxSCF_CC,max_diis_CC
   double precision              :: thresh_CC
@@ -81,19 +81,19 @@ program QuAcK
   logical                       :: spin_flip
   logical                       :: TDA
 
-  integer                       :: maxSCF_GF,max_diis_GF,renormGF
+  integer                       :: maxSCF_GF,max_diis_GF,renorm_GF
   double precision              :: thresh_GF
-  logical                       :: DIIS_GF,linGF,regGF
+  logical                       :: DIIS_GF,lin_GF,reg_GF
   double precision              :: eta_GF
 
   integer                       :: maxSCF_GW,max_diis_GW
   double precision              :: thresh_GW
-  logical                       :: DIIS_GW,TDA_W,linGW,regGW
+  logical                       :: DIIS_GW,TDA_W,lin_GW,reg_GW
   double precision              :: eta_GW
 
   integer                       :: maxSCF_GT,max_diis_GT
   double precision              :: thresh_GT
-  logical                       :: DIIS_GT,TDA_T,linGT,regGT
+  logical                       :: DIIS_GT,TDA_T,lin_GT,reg_GT
   double precision              :: eta_GT
 
   logical                       :: dophBSE,dophBSE2,doppBSE,dBSE,dTDA
@@ -141,13 +141,13 @@ program QuAcK
 !--------------------------!
 
   call read_options(maxSCF_HF,thresh_HF,DIIS_HF,max_diis_HF,guess_type,ortho_type,mix,level_shift,dostab, &
-                    regMP,                                                                              &
+                    reg_MP,                                                                               &
                     maxSCF_CC,thresh_CC,DIIS_CC,max_diis_CC,                                              &
-                    TDA,singlet,triplet,spin_conserved,spin_flip,                                       &
-                    maxSCF_GF,thresh_GF,DIIS_GF,max_diis_GF,linGF,eta_GF,renormGF,regGF,                  &
-                    maxSCF_GW,thresh_GW,DIIS_GW,max_diis_GW,linGW,eta_GW,regGW,TDA_W,                     &  
-                    maxSCF_GT,thresh_GT,DIIS_GT,max_diis_GT,linGT,eta_GT,regGT,TDA_T,                     & 
-                    doACFDT,exchange_kernel,doXBS,                                                      &
+                    TDA,singlet,triplet,spin_conserved,spin_flip,                                         &
+                    maxSCF_GF,thresh_GF,DIIS_GF,max_diis_GF,lin_GF,eta_GF,renorm_GF,reg_GF,               &
+                    maxSCF_GW,thresh_GW,DIIS_GW,max_diis_GW,lin_GW,eta_GW,reg_GW,TDA_W,                   &  
+                    maxSCF_GT,thresh_GT,DIIS_GT,max_diis_GT,lin_GT,eta_GT,reg_GT,TDA_T,                   & 
+                    doACFDT,exchange_kernel,doXBS,                                                        &
                     dophBSE,dophBSE2,doppBSE,dBSE,dTDA)
 
 !------------------------------------------------!
@@ -344,7 +344,7 @@ program QuAcK
   if(doMP) then
 
     call wall_time(start_MP)
-    call MP(doMP2,doMP3,unrestricted,regMP,nBas,nC,nO,nV,nR,ERI_MO,ERI_MO_aaaa,ERI_MO_aabb,ERI_MO_bbbb,ENuc,EHF,epsHF)
+    call MP(doMP2,doMP3,unrestricted,reg_MP,nBas,nC,nO,nV,nR,ERI_MO,ERI_MO_aaaa,ERI_MO_aabb,ERI_MO_bbbb,ENuc,EHF,epsHF)
     call wall_time(end_MP)
 
     t_MP = end_MP - start_MP
@@ -423,8 +423,8 @@ program QuAcK
   if(doGF) then
 
     call wall_time(start_GF)
-    call GF(doG0F2,doevGF2,doqsGF2,doG0F3,doevGF3,unrestricted,renormGF,maxSCF_GF,thresh_GF,max_diis_GF,              &
-            dophBSE,doppBSE,TDA,dBSE,dTDA,singlet,triplet,spin_conserved,spin_flip,linGF,eta_GF,regGF,                &
+    call GF(doG0F2,doevGF2,doqsGF2,doG0F3,doevGF3,unrestricted,renorm_GF,maxSCF_GF,thresh_GF,max_diis_GF,             &
+            dophBSE,doppBSE,TDA,dBSE,dTDA,singlet,triplet,spin_conserved,spin_flip,lin_GF,eta_GF,reg_GF,              &
             nNuc,ZNuc,rNuc,ENuc,nBas,nC,nO,nV,nR,nS,EHF,S,X,T,V,Hc,ERI_AO,ERI_MO,ERI_MO_aaaa,ERI_MO_aabb,ERI_MO_bbbb, &
             dipole_int_AO,dipole_int_MO,dipole_int_aa,dipole_int_bb,PHF,cHF,epsHF)
     call wall_time(end_GF)
@@ -446,7 +446,7 @@ program QuAcK
     call wall_time(start_GW)
     call GW(doG0W0,doevGW,doqsGW,doufG0W0,doufGW,doSRGqsGW,unrestricted,maxSCF_GW,thresh_GW,max_diis_GW,doACFDT,         &
             exchange_kernel,doXBS,dophBSE,dophBSE2,doppBSE,TDA_W,TDA,dBSE,dTDA,singlet,triplet,spin_conserved,spin_flip, &
-            linGW,eta_GW,regGW,nNuc,ZNuc,rNuc,ENuc,nBas,nC,nO,nV,nR,nS,EHF,S,X,T,V,Hc,                                   &  
+            lin_GW,eta_GW,reg_GW,nNuc,ZNuc,rNuc,ENuc,nBas,nC,nO,nV,nR,nS,EHF,S,X,T,V,Hc,                                 &  
             ERI_AO,ERI_MO,ERI_MO_aaaa,ERI_MO_aabb,ERI_MO_bbbb,dipole_int_AO,dipole_int_MO,dipole_int_aa,dipole_int_bb,   & 
             PHF,cHF,epsHF)
     call wall_time(end_GW)
@@ -468,7 +468,7 @@ program QuAcK
     call wall_time(start_GT)
     call GT(doG0T0pp,doevGTpp,doqsGTpp,doG0T0eh,doevGTeh,doqsGTeh,unrestricted,maxSCF_GT,thresh_GT,max_diis_GT,doACFDT,  &
             exchange_kernel,doXBS,dophBSE,dophBSE2,doppBSE,TDA_T,TDA,dBSE,dTDA,singlet,triplet,spin_conserved,spin_flip, &
-            linGT,eta_GT,regGT,nNuc,ZNuc,rNuc,ENuc,nBas,nC,nO,nV,nR,nS,EHF,S,X,T,V,Hc,                                   &
+            lin_GT,eta_GT,reg_GT,nNuc,ZNuc,rNuc,ENuc,nBas,nC,nO,nV,nR,nS,EHF,S,X,T,V,Hc,                                 &
             ERI_AO,ERI_MO,ERI_MO_aaaa,ERI_MO_aabb,ERI_MO_bbbb,dipole_int_AO,dipole_int_MO,dipole_int_aa,dipole_int_bb,   & 
             PHF,cHF,epsHF)
     call wall_time(end_GT)

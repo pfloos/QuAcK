@@ -129,7 +129,7 @@ subroutine evGW(maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,dophBSE,dop
 
     ! Compute correlation part of the self-energy 
 
-    if(regularize) call GW_regularization(nBas,nC,nO,nR,nS,eGW,Om,rho)
+    if(regularize) call GW_regularization(nBas,nC,nO,nV,nR,nS,eGW,Om,rho)
 
     call GW_self_energy_diag(eta,nBas,nC,nO,nV,nR,nS,eGW,Om,rho,EcGM,SigC,Z)
 

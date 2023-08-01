@@ -14,8 +14,8 @@ subroutine GTeh_QP_graph(eta,nBas,nC,nO,nV,nR,nS,eHF,Om,rhoL,rhoR,eGTlin,eGT,Z)
   double precision,intent(in)   :: eta
   double precision,intent(in)   :: eHF(nBas)
   double precision,intent(in)   :: Om(nS)
-  double precision,intent(in)   :: rhoL(nBas,nBas,nS,2)
-  double precision,intent(in)   :: rhoR(nBas,nBas,nS,2)
+  double precision,intent(in)   :: rhoL(nBas,nBas,nS)
+  double precision,intent(in)   :: rhoR(nBas,nBas,nS)
 
   double precision,intent(in)   :: eGTlin(nBas)
   

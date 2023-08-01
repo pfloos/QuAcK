@@ -58,15 +58,15 @@ subroutine print_UG0W0(nBas,nO,eHF,ENuc,EUHF,SigC,Z,eGW,EcRPA,EcGM)
 
   write(*,*)'-------------------------------------------------------------------------------& 
               -------------------------------------------------'
-  write(*,'(2X,A30,F15.6,A3)') 'UG0W0 HOMO      energy:',maxval(HOMO(:))*HaToeV,' eV'
-  write(*,'(2X,A30,F15.6,A3)') 'UG0W0 LUMO      energy:',minval(LUMO(:))*HaToeV,' eV'
-  write(*,'(2X,A30,F15.6,A3)') 'UG0W0 HOMO-LUMO gap   :',(minval(LUMO(:))-maxval(HOMO(:)))*HaToeV,' eV'
+  write(*,'(2X,A50,F15.6,A3)') 'UG0W0 HOMO      energy:',maxval(HOMO(:))*HaToeV,' eV'
+  write(*,'(2X,A50,F15.6,A3)') 'UG0W0 LUMO      energy:',minval(LUMO(:))*HaToeV,' eV'
+  write(*,'(2X,A50,F15.6,A3)') 'UG0W0 HOMO-LUMO gap   :',(minval(LUMO(:))-maxval(HOMO(:)))*HaToeV,' eV'
   write(*,*)'-------------------------------------------------------------------------------& 
               -------------------------------------------------'
-  write(*,'(2X,A30,F15.6,A3)') 'RPA@UG0W0 total energy      :',ENuc + EUHF + EcRPA,' au'
-  write(*,'(2X,A30,F15.6,A3)') 'RPA@UG0W0 correlation energy:',EcRPA,' au'
-  write(*,'(2X,A30,F15.6,A3)') ' GM@UG0W0 total energy      :',ENuc + EUHF + sum(EcGM(:)),' au'
-  write(*,'(2X,A30,F15.6,A3)') ' GM@UG0W0 correlation energy:',sum(EcGM(:)),' au'
+  write(*,'(2X,A50,F15.6,A3)') 'phRPA@UG0W0 total energy      :',ENuc + EUHF + EcRPA,' au'
+  write(*,'(2X,A50,F15.6,A3)') 'phRPA@UG0W0 correlation energy:',EcRPA,' au'
+  write(*,'(2X,A50,F15.6,A3)') '   GM@UG0W0 total energy      :',ENuc + EUHF + sum(EcGM(:)),' au'
+  write(*,'(2X,A50,F15.6,A3)') '   GM@UG0W0 correlation energy:',sum(EcGM(:)),' au'
   write(*,*)'-------------------------------------------------------------------------------& 
               -------------------------------------------------'
   write(*,*)

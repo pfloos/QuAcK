@@ -182,7 +182,7 @@ subroutine qsGW(maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,dophBSE,dop
 
     call GW_excitation_density(nBas,nC,nO,nR,nS,ERI_MO,XpY,rho)
 
-    if(regularize) call GW_regularization(nBas,nC,nO,nR,nS,eGW,Om,rho)
+    if(regularize) call GW_regularization(nBas,nC,nO,nV,nR,nS,eGW,Om,rho)
 
     call GW_self_energy(eta,nBas,nC,nO,nV,nR,nS,eGW,Om,rho,EcGM,SigC,Z)
 

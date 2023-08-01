@@ -183,7 +183,7 @@ subroutine qsGTeh(maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,BSE,BSE2,
 
     call GTeh_excitation_density(nBas,nC,nO,nR,nS,ERI_MO,XpY,XmY,rhoL,rhoR)
 
-    if(regularize) call GTeh_regularization(eta,nBas,nC,nO,nV,nR,nS,eGT,Om,rhoL,rhoR)
+    if(regularize) call GTeh_regularization(nBas,nC,nO,nV,nR,nS,eGT,Om,rhoL,rhoR)
 
     call GTeh_self_energy(eta,nBas,nC,nO,nV,nR,nS,eGT,Om,rhoL,rhoR,EcGM,Sig,Z)
 
