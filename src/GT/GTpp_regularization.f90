@@ -40,7 +40,7 @@ subroutine GTpp_regularization(nBas,nC,nO,nR,nOO,nVV,e,Om1,rho1,Om2,rho2)
     do m=1,nVV
       do i=nC+1,nO
         Dpim = e(p) + e(i) - Om1(m)
-        kappa  = 1d0 - exp(-Dpim*Dpim*s)
+        kappa  = exp(-Dpim*Dpim*s)
         rho1(p,i,m) = kappa*rho1(p,i,m)
       end do
     end do
@@ -48,7 +48,7 @@ subroutine GTpp_regularization(nBas,nC,nO,nR,nOO,nVV,e,Om1,rho1,Om2,rho2)
     do m=1,nOO
       do a=nO+1,nBas-nR
         Dpam = e(p) + e(a) - Om2(m)
-        kappa  = 1d0 - exp(-Dpam*Dpam*s)
+        kappa  = exp(-Dpam*Dpam*s)
         rho2(p,a,m) = kappa*rho2(p,a,m)
       end do
     end do

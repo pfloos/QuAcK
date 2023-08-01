@@ -36,13 +36,13 @@ subroutine GW_regularization(nBas,nC,nO,nR,nS,e,Om,rho)
 
       do i=nC+1,nO
         Dpim = e(p) - e(i) + Om(m)
-        kappa  = 1d0 - exp(-Dpim*Dpim*s)
+        kappa = exp(-Dpim*Dpim*s)
         rho(p,i,m) = kappa*rho(p,i,m)
       enddo
 
       do a=nO+1,nBas-nR
         Dpam = e(p) - e(a) - Om(m)
-        kappa  = 1d0 - exp(-Dpam*Dpam*s)
+        kappa = exp(-Dpam*Dpam*s)
         rho(p,a,m) = kappa*rho(p,a,m)
       enddo
 
