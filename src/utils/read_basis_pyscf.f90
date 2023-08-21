@@ -7,7 +7,7 @@ subroutine read_basis_pyscf(nBas,nO,nV)
 
 ! Input variables
 
-  integer,intent(out)           :: nO(nspin)
+  integer,intent(in)           :: nO(nspin)
 
 ! Local variables
 

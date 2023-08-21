@@ -44,7 +44,7 @@ subroutine GTeh_self_energy(eta,nBas,nC,nO,nV,nR,nS,e,Om,rhoL,rhoR,EcGM,Sig,Z)
   ! Occupied part of the correlation self-energy
 
 !$OMP PARALLEL &
-!$OMP SHARED(Sig,rho,eta,nS,nC,nO,nBas,nR,e,Om) &
+!$OMP SHARED(Sig,Z,rhoL,rhoR,eta,nS,nC,nO,nBas,nR,e,Om) &
 !$OMP PRIVATE(m,i,q,p,num,eps) &
 !$OMP DEFAULT(NONE)
 !$OMP DO
@@ -65,10 +65,10 @@ subroutine GTeh_self_energy(eta,nBas,nC,nO,nV,nR,nS,e,Om,rhoL,rhoR,EcGM,Sig,Z)
 !$OMP END DO
 !$OMP END PARALLEL
 
-    ! Virtual part of the correlation self-energy
+! Virtual part of the correlation self-energy
 
 !$OMP PARALLEL &
-!$OMP SHARED(Sig,rho,eta,nS,nC,nO,nBas,nR,e,Om) &
+!$OMP SHARED(Sig,Z,rhoL,rhoR,eta,nS,nC,nO,nBas,nR,e,Om) &
 !$OMP PRIVATE(m,a,q,p,num,eps) &
 !$OMP DEFAULT(NONE)
 !$OMP DO  

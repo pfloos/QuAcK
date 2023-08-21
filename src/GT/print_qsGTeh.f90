@@ -24,6 +24,7 @@ subroutine print_qsGTeh(nBas,nO,nSCF,Conv,thresh,eHF,eGT,c,SigC,Z,ENuc,ET,EV,EJ,
   double precision,intent(in)        :: c(nBas)
   double precision,intent(in)        :: SigC(nBas,nBas)
   double precision,intent(in)        :: Z(nBas)
+  double precision,intent(in)        :: EqsGT
   double precision,intent(in)        :: dipole(ncart)
 
 ! Local variables
@@ -33,8 +34,6 @@ subroutine print_qsGTeh(nBas,nO,nSCF,Conv,thresh,eHF,eGT,c,SigC,Z,ENuc,ET,EV,EJ,
   double precision,external          :: trace_matrix
 
 ! Output variables
-
-  double precision,intent(out)       :: EqsGT
 
 ! HOMO and LUMO
 

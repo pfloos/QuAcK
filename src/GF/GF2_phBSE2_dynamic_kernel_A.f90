@@ -97,7 +97,6 @@ subroutine GF2_phBSE2_dynamic_kernel_A(ispin,eta,nBas,nC,nO,nV,nR,nS,lambda,ERI,
 
       end do
     end do
-!$omp end parallel do
 
   end if
 
@@ -106,7 +105,7 @@ subroutine GF2_phBSE2_dynamic_kernel_A(ispin,eta,nBas,nC,nO,nV,nR,nS,lambda,ERI,
   if(ispin == 2) then
 
     jb = 0
-!$omp parallel do default(private) shared(A_dyn,ZA_dyn,ERI,OmBSE,num,dem,eGF,nO,nBas,eta,nC,nR)
+!$omp parallel do default(private) shared(KA_dyn,ZA_dyn,ERI,OmBSE,num,dem,eGF,nO,nBas,eta,nC,nR)
     do j=nC+1,nO
       do b=nO+1,nBas-nR
         jb = (b-nO) + (j-1)*(nBas-nO)

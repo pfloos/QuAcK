@@ -24,6 +24,7 @@ subroutine print_qsGW(nBas,nO,nSCF,Conv,thresh,eHF,eGW,c,SigC,Z,ENuc,ET,EV,EJ,Ex
   double precision,intent(in)        :: c(nBas)
   double precision,intent(in)        :: SigC(nBas,nBas)
   double precision,intent(in)        :: Z(nBas)
+  double precision,intent(in)        :: EqsGW
   double precision,intent(in)        :: dipole(ncart)
 
 ! Local variables
@@ -33,8 +34,6 @@ subroutine print_qsGW(nBas,nO,nSCF,Conv,thresh,eHF,eGW,c,SigC,Z,ENuc,ET,EV,EJ,Ex
   double precision,external          :: trace_matrix
 
 ! Output variables
-
-  double precision,intent(out)       :: EqsGW
 
 ! HOMO and LUMO
 

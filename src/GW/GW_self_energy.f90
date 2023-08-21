@@ -42,7 +42,7 @@ subroutine GW_self_energy(eta,nBas,nC,nO,nV,nR,nS,e,Om,rho,EcGM,Sig,Z)
 ! Occupied part of the correlation self-energy
 
 !$OMP PARALLEL &
-!$OMP SHARED(Sig,rho,eta,nS,nC,nO,nBas,nR,e,Om) &
+!$OMP SHARED(Sig,Z,rho,eta,nS,nC,nO,nBas,nR,e,Om) &
 !$OMP PRIVATE(m,i,q,p,eps,num) &
 !$OMP DEFAULT(NONE)
 !$OMP DO
@@ -66,7 +66,7 @@ subroutine GW_self_energy(eta,nBas,nC,nO,nV,nR,nS,e,Om,rho,EcGM,Sig,Z)
 ! Virtual part of the correlation self-energy
 
 !$OMP PARALLEL &
-!$OMP SHARED(Sig,rho,eta,nS,nC,nO,nBas,nR,e,Om) &
+!$OMP SHARED(Sig,Z,rho,eta,nS,nC,nO,nBas,nR,e,Om) &
 !$OMP PRIVATE(m,a,q,p,eps,num) &
 !$OMP DEFAULT(NONE)
 !$OMP DO  
