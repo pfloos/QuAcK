@@ -1,9 +1,12 @@
 subroutine GTeh_QP_graph(eta,nBas,nC,nO,nV,nR,nS,eHF,Om,rhoL,rhoR,eGTlin,eGT,Z)
 
+! Compute the graphical solution of the QP equation
+
   implicit none
   include 'parameters.h'
 
-! Iput variables
+! Input variables
+
   integer,intent(in)            :: nBas
   integer,intent(in)            :: nC
   integer,intent(in)            :: nO
@@ -20,6 +23,7 @@ subroutine GTeh_QP_graph(eta,nBas,nC,nO,nV,nR,nS,eHF,Om,rhoL,rhoR,eGTlin,eGT,Z)
   double precision,intent(in)   :: eGTlin(nBas)
   
 ! Local variables
+
   integer                       :: p
   integer                       :: nIt
   integer,parameter             :: maxIt = 64
@@ -34,10 +38,8 @@ subroutine GTeh_QP_graph(eta,nBas,nC,nO,nV,nR,nS,eHF,Om,rhoL,rhoR,eGTlin,eGT,Z)
   double precision,intent(out)  :: eGT(nBas)
   double precision,intent(out)  :: Z(nBas)
 
-  sigC = 0d0
-  dsigC = 0d0
-
 ! Run Newton's algorithm to find the root
+
   do p=nC+1,nBas-nR
 
     write(*,*) '-----------------'
@@ -51,16 +53,16 @@ subroutine GTeh_QP_graph(eta,nBas,nC,nO,nV,nR,nS,eHF,Om,rhoL,rhoR,eGTlin,eGT,Z)
 
     do while (abs(f) > thresh .and. nIt < maxIt)
 
-       nIt = nIt + 1
+      nIt = nIt + 1
 
-       sigC  = GTeh_SigC(p,w,eta,nBas,nC,nO,nV,nR,nS,eGTlin,Om,rhoL,rhoR)
-       dsigC = GTeh_dSigC(p,w,eta,nBas,nC,nO,nV,nR,nS,eGTlin,Om,rhoL,rhoR)
-       f  = w - eHF(p)  - sigC 
-       df = 1d0/(1d0 - dsigC)
+      sigC  = GTeh_SigC(p,w,eta,nBas,nC,nO,nV,nR,nS,eGTlin,Om,rhoL,rhoR)
+      dsigC = GTeh_dSigC(p,w,eta,nBas,nC,nO,nV,nR,nS,eGTlin,Om,rhoL,rhoR)
+      f  = w - eHF(p)  - sigC 
+      df = 1d0/(1d0 - dsigC)
     
-       w = w - df*f
+      w = w - df*f
 
-       write(*,'(A3,I3,A1,1X,3F15.9)') 'It.',nIt,':',w*HaToeV,df,f
+      write(*,'(A3,I3,A1,1X,3F15.9)') 'It.',nIt,':',w*HaToeV,df,f
 
     end do
 
@@ -73,6 +75,7 @@ subroutine GTeh_QP_graph(eta,nBas,nC,nO,nV,nR,nS,eHF,Om,rhoL,rhoR,eGTlin,eGT,Z)
 
       eGT(p) = w
       Z(p)   = df
+
       write(*,'(A32,F16.10)')   'Quasiparticle energy (eV)   ',eGT(p)*HaToeV
       write(*,*)
 

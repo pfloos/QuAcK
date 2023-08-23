@@ -140,6 +140,8 @@ subroutine G0W0(doACFDT,exchange_kernel,doXBS,dophBSE,dophBSE2,TDA_W,TDA,dBSE,dT
 
   end if
 
+  call GW_plot_self_energy(eta,nBas,nC,nO,nV,nR,nS,eHF,eGW,Om,rho)
+
 ! Compute the RPA correlation energy
 
   call phLR_A(ispin,dRPA,nBas,nC,nO,nV,nR,nS,1d0,eGW,ERI,Aph)
