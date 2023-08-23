@@ -41,7 +41,8 @@ subroutine evGTeh(maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,dophBSE,d
 
 ! Local variables
 
-  logical                       :: dRPA = .true.
+  logical                       :: print_T = .true.
+  logical                       :: dRPA = .false.
   logical                       :: linear_mixing
   integer                       :: ispin
   integer                       :: nSCF
@@ -123,6 +124,8 @@ subroutine evGTeh(maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,dophBSE,d
     if(.not.TDA_T) call phLR_B(ispin,dRPA,nBas,nC,nO,nV,nR,nS,1d0,ERI,Bph)
 
     call phLR(TDA_T,nS,Aph,Bph,EcRPA,Om,XpY,XmY)
+
+    if(print_T) call print_excitation_energies('phRPA@GTeh',ispin,nS,Om)
 
    ! Compute spectral weights
 

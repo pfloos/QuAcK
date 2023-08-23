@@ -75,9 +75,23 @@ subroutine evGTpp(maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,BSE,TDA_T
 
   write(*,*)
   write(*,*)'************************************************'
-  write(*,*)'|      Self-consistent evGT calculation        |'
+  write(*,*)'|      Self-consistent evGTpp calculation      |'
   write(*,*)'************************************************'
   write(*,*)
+
+! TDA for T
+
+  if(TDA_T) then
+    write(*,*) 'Tamm-Dancoff approximation for pp T-matrix!'
+    write(*,*)
+  end if
+
+! TDA 
+
+  if(TDA) then
+    write(*,*) 'Tamm-Dancoff approximation activated!'
+    write(*,*)
+  end if
 
 ! Dimensions of the pp-RPA linear reponse matrices
 

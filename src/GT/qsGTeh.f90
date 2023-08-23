@@ -1,4 +1,4 @@
-subroutine qsGTeh(maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,BSE,BSE2,TDA_T,TDA,          & 
+subroutine qsGTeh(maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,dophBSE,dophBSE2,TDA_T,TDA,       & 
                   dBSE,dTDA,singlet,triplet,eta,regularize,nNuc,ZNuc,rNuc,ENuc,nBas,nC,nO,nV,nR,nS,ERHF, &
                   S,X,T,V,Hc,ERI_AO,ERI_MO,dipole_int_AO,dipole_int_MO,PHF,cHF,eHF)
 
@@ -15,8 +15,8 @@ subroutine qsGTeh(maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,BSE,BSE2,
   logical,intent(in)            :: doACFDT
   logical,intent(in)            :: exchange_kernel
   logical,intent(in)            :: doXBS
-  logical,intent(in)            :: BSE
-  logical,intent(in)            :: BSE2
+  logical,intent(in)            :: dophBSE
+  logical,intent(in)            :: dophBSE2
   logical,intent(in)            :: TDA_T
   logical,intent(in)            :: TDA
   logical,intent(in)            :: dBSE
@@ -53,7 +53,7 @@ subroutine qsGTeh(maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,BSE,BSE2,
 
 ! Local variables
 
-  logical                       :: dRPA = .true.
+  logical                       :: dRPA = .false.
   integer                       :: nSCF
   integer                       :: nBasSq
   integer                       :: ispin
@@ -117,7 +117,7 @@ subroutine qsGTeh(maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,BSE,BSE2,
 ! TDA for T
 
   if(TDA_T) then 
-    write(*,*) 'Tamm-Dancoff approximation for dynamic screening!'
+    write(*,*) 'Tamm-Dancoff approximation for eh T-matrix!'
     write(*,*)
   end if
 

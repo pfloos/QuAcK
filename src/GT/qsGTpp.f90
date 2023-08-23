@@ -100,7 +100,7 @@ subroutine qsGTpp(maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,dophBSE,T
 
   write(*,*)
   write(*,*)'************************************************'
-  write(*,*)'|       Self-consistent qsGT calculation       |'
+  write(*,*)'|       Self-consistent qsGTpp calculation     |'
   write(*,*)'************************************************'
   write(*,*)
 
@@ -124,7 +124,7 @@ subroutine qsGTpp(maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,dophBSE,T
 ! TDA for T
 
   if(TDA_T) then 
-    write(*,*) 'Tamm-Dancoff approximation for T-matrix!'
+    write(*,*) 'Tamm-Dancoff approximation for pp T-matrix!'
     write(*,*)
   end if
 

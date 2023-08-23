@@ -42,7 +42,6 @@ subroutine G0T0eh(doACFDT,exchange_kernel,doXBS,dophBSE,dophBSE2,TDA_T,TDA,dBSE,
 
   logical                       :: print_T = .true.
   logical                       :: dRPA = .false.
-  logical                       :: dRPA_W = .true.
   integer                       :: ispin
   integer                       :: isp_W
   double precision              :: EcRPA
@@ -74,7 +73,7 @@ subroutine G0T0eh(doACFDT,exchange_kernel,doXBS,dophBSE,dophBSE2,TDA_T,TDA,dBSE,
 
   write(*,*)
   write(*,*)'************************************************'
-  write(*,*)'|        One-shot eh G0T0 calculation          |'
+  write(*,*)'|        One-shot G0T0eh calculation           |'
   write(*,*)'************************************************'
   write(*,*)
 

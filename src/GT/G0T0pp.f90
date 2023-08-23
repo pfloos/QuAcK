@@ -66,9 +66,24 @@ subroutine G0T0pp(doACFDT,exchange_kernel,doXBS,dophBSE,TDA_T,TDA,dBSE,dTDA,dopp
 
   write(*,*)
   write(*,*)'************************************************'
-  write(*,*)'|          One-shot G0T0 calculation           |'
+  write(*,*)'|          One-shot G0T0pp calculation           |'
   write(*,*)'************************************************'
   write(*,*)
+
+
+! TDA for T
+
+  if(TDA_T) then
+    write(*,*) 'Tamm-Dancoff approximation for pp T-matrix!'
+    write(*,*)
+  end if
+
+! TDA 
+
+  if(TDA) then
+    write(*,*) 'Tamm-Dancoff approximation activated!'
+    write(*,*)
+  end if
 
 ! Dimensions of the pp-RPA linear reponse matrices
 
