@@ -28,7 +28,7 @@ subroutine GW_QP_graph(eta,nBas,nC,nO,nV,nR,nS,eHF,Om,rho,eGWlin,eGW,Z)
   integer,parameter             :: maxIt = 64
   double precision,parameter    :: thresh = 1d-6
   double precision,external     :: GW_SigC,GW_dSigC
-  double precision              :: sigC,dsigC
+  double precision              :: SigC,dSigC
   double precision              :: f,df
   double precision              :: w
 
@@ -54,10 +54,10 @@ subroutine GW_QP_graph(eta,nBas,nC,nO,nV,nR,nS,eHF,Om,rho,eGWlin,eGW,Z)
     
       nIt = nIt + 1
 
-      sigC  = GW_SigC(p,w,eta,nBas,nC,nO,nV,nR,nS,eGWlin,Om,rho)
-      dsigC = GW_dSigC(p,w,eta,nBas,nC,nO,nV,nR,nS,eGWlin,Om,rho)
-      f  = w - eHF(p) - sigC
-      df = 1d0/(1d0 - dsigC)
+      SigC  = GW_SigC(p,w,eta,nBas,nC,nO,nV,nR,nS,eGWlin,Om,rho)
+      dSigC = GW_dSigC(p,w,eta,nBas,nC,nO,nV,nR,nS,eGWlin,Om,rho)
+      f  = w - eHF(p) - SigC
+      df = 1d0/(1d0 - dSigC)
     
       w = w - df*f
 

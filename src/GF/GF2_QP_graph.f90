@@ -19,7 +19,7 @@ subroutine GF2_QP_graph(eta,nBas,nC,nO,nV,nR,nS,eHF,ERI,eGF,Z)
   integer,parameter             :: maxIt = 64
   double precision,parameter    :: thresh = 1d-6
   double precision,external     :: GF2_SigC,GF2_dSigC
-  double precision              :: sigC,dsigC
+  double precision              :: SigC,dSigC
   double precision              :: f,df
   double precision              :: w
   
@@ -45,10 +45,10 @@ subroutine GF2_QP_graph(eta,nBas,nC,nO,nV,nR,nS,eHF,ERI,eGF,Z)
     
       nIt = nIt + 1
 
-      sigC  = GF2_SigC(p,w,eta,nBas,nC,nO,nV,nR,nS,eHF,ERI)
-      dsigC = GF2_dSigC(p,w,eta,nBas,nC,nO,nV,nR,nS,eHF,ERI)
-      f  = w - eHF(p) - sigC
-      df = 1d0/(1d0 - dsigC)
+      SigC  = GF2_SigC(p,w,eta,nBas,nC,nO,nV,nR,nS,eHF,ERI)
+      dSigC = GF2_dSigC(p,w,eta,nBas,nC,nO,nV,nR,nS,eHF,ERI)
+      f  = w - eHF(p) - SigC
+      df = 1d0/(1d0 - dSigC)
     
       w = w - df*f
 

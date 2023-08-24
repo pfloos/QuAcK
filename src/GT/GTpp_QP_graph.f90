@@ -28,7 +28,7 @@ subroutine GTpp_QP_graph(eta,nBas,nC,nO,nV,nR,nOOs,nVVs,nOOt,nVVt,eHF,Om1s,rho1s
   integer,parameter             :: maxIt = 64
   double precision,parameter    :: thresh = 1d-6
   double precision,external     :: GTpp_SigC,GTpp_dSigC
-  double precision              :: sigC,dsigC
+  double precision              :: SigC,dSigC
   double precision              :: f,df
   double precision              :: w
   
@@ -37,8 +37,8 @@ subroutine GTpp_QP_graph(eta,nBas,nC,nO,nV,nR,nOOs,nVVs,nOOt,nVVt,eHF,Om1s,rho1s
   double precision,intent(out)  :: eGT(nBas)
   double precision,intent(out)  :: Z(nBas)
 
-  sigC = 0d0
-  dsigC = 0d0
+  SigC = 0d0
+  dSigC = 0d0
 
 ! Run Newton's algorithm to find the root
   do p=nC+1,nBas-nR
@@ -57,11 +57,10 @@ subroutine GTpp_QP_graph(eta,nBas,nC,nO,nV,nR,nOOs,nVVs,nOOt,nVVt,eHF,Om1s,rho1s
 
        nIt = nIt + 1
 
-       sigC  = GTpp_SigC(p,w,eta,nBas,nC,nO,nV,nR,nOOs,nVVs,nOOt,nVVt,eHF,Om1s,rho1s,Om2s,rho2s,Om1t,rho1t,Om2t,rho2t)
-       dsigC = GTpp_dSigC(p,w,eta,nBas,nC,nO,nV,nR,nOOs,nVVs,nOOt,nVVt,eHF,Om1s,rho1s,Om2s,rho2s,Om1t,rho1t,Om2t,rho2t)
-       write (*,*) sigC
-       f  = w - eHF(p)  - sigC 
-       df = 1d0/(1d0 - dsigC)
+       SigC  = GTpp_SigC(p,w,eta,nBas,nC,nO,nV,nR,nOOs,nVVs,nOOt,nVVt,eHF,Om1s,rho1s,Om2s,rho2s,Om1t,rho1t,Om2t,rho2t)
+       dSigC = GTpp_dSigC(p,w,eta,nBas,nC,nO,nV,nR,nOOs,nVVs,nOOt,nVVt,eHF,Om1s,rho1s,Om2s,rho2s,Om1t,rho1t,Om2t,rho2t)
+       f  = w - eHF(p)  - SigC 
+       df = 1d0/(1d0 - dSigC)
     
        w = w - f/df
 

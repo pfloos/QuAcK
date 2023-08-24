@@ -149,7 +149,7 @@ subroutine G0T0eh(doACFDT,exchange_kernel,doXBS,dophBSE,dophBSE2,TDA_T,TDA,dBSE,
 
   end if
 
-  call GTeh_plot_self_energy(eta,nBas,nC,nO,nV,nR,nS,eHF,eGT,Om,rhoL,rhoR)
+  call GTeh_plot_self_energy(eta,nBas,nC,nO,nV,nR,nS,eHF,eHF,Om,rhoL,rhoR)
 
 ! Compute the RPA correlation energy based on the G0T0eh quasiparticle energies
 

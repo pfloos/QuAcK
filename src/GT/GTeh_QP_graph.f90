@@ -29,7 +29,7 @@ subroutine GTeh_QP_graph(eta,nBas,nC,nO,nV,nR,nS,eHF,Om,rhoL,rhoR,eGTlin,eGT,Z)
   integer,parameter             :: maxIt = 64
   double precision,parameter    :: thresh = 1d-6
   double precision,external     :: GTeh_SigC,GTeh_dSigC
-  double precision              :: sigC,dsigC
+  double precision              :: SigC,dSigC
   double precision              :: f,df
   double precision              :: w
   
@@ -55,11 +55,10 @@ subroutine GTeh_QP_graph(eta,nBas,nC,nO,nV,nR,nS,eHF,Om,rhoL,rhoR,eGTlin,eGT,Z)
 
       nIt = nIt + 1
 
-      sigC  = GTeh_SigC(p,w,eta,nBas,nC,nO,nV,nR,nS,eGTlin,Om,rhoL,rhoR)
-      dsigC = GTeh_dSigC(p,w,eta,nBas,nC,nO,nV,nR,nS,eGTlin,Om,rhoL,rhoR)
-      f  = w - eHF(p)  - sigC 
-      df = 1d0/(1d0 - dsigC)
-    
+      SigC  = GTeh_SigC(p,w,eta,nBas,nC,nO,nV,nR,nS,eGTlin,Om,rhoL,rhoR)
+      dSigC = GTeh_dSigC(p,w,eta,nBas,nC,nO,nV,nR,nS,eGTlin,Om,rhoL,rhoR)
+      f  = w - eHF(p) - SigC 
+      df = 1d0/(1d0 - dSigC)
       w = w - df*f
 
       write(*,'(A3,I3,A1,1X,3F15.9)') 'It.',nIt,':',w*HaToeV,df,f
