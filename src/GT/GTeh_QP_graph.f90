@@ -1,5 +1,6 @@
 subroutine GTeh_QP_graph(eta,nBas,nC,nO,nV,nR,nS,eHF,Om,rhoL,rhoR,eGTlin,eGT,Z)
 
+
 ! Compute the graphical solution of the QP equation
 
   implicit none
@@ -67,8 +68,8 @@ subroutine GTeh_QP_graph(eta,nBas,nC,nO,nV,nR,nS,eHF,Om,rhoL,rhoR,eGTlin,eGT,Z)
 
     if(nIt == maxIt) then 
 
-      write(*,*) 'Newton root search has not converged!'
       eGT(p) = eGTlin(p)
+      write(*,*) 'Newton root search has not converged!'
 
     else
 
