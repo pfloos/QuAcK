@@ -41,11 +41,11 @@ subroutine GTeh_QP_graph(eta,nBas,nC,nO,nV,nR,nS,eHF,Om,rhoL,rhoR,eGTlin,eGT,Z)
 
 ! Run Newton's algorithm to find the root
 
-  do p=nC+1,nBas-nR
+  write(*,*)'------------------------------------'
+  write(*,'(A5,1X,A3,1X,A15,1X,A10)') 'Orb.','It.','e_GTeh (eV)','Z'
+  write(*,*)'------------------------------------'
 
-    write(*,*) '-----------------'
-    write(*,'(A10,I3)') 'Orbital ',p
-    write(*,*) '-----------------'
+  do p=nC+1,nBas-nR
 
     w = eGTlin(p)
     nIt = 0
@@ -66,19 +66,20 @@ subroutine GTeh_QP_graph(eta,nBas,nC,nO,nV,nR,nS,eHF,Om,rhoL,rhoR,eGTlin,eGT,Z)
     if(nIt == maxIt) then 
 
       eGT(p) = eGTlin(p)
-      write(*,*) 'Newton root search has not converged!'
+      write(*,'(I5,1X,I3,1X,F15.9,1X,F10.6,1X,A12)') p,nIt,eGT(p)*HaToeV,Z(p),'Cvg Failed!'
 
     else
 
       eGT(p) = w
       Z(p)   = df
 
-      write(*,'(A3,I3,A1,1X,3F15.9)') 'It.',nIt,':',w*HaToeV,df,f
-      write(*,'(A32,F16.10)')   'Quasiparticle energy (eV)   ',eGT(p)*HaToeV
-      write(*,*)
+      write(*,'(I5,1X,I3,1X,F15.9,1X,F10.6)') p,nIt,eGT(p)*HaToeV,Z(p)
 
     end if
 
   end do
+
+  write(*,*)'------------------------------------'
+  write(*,*)
   
 end subroutine 
