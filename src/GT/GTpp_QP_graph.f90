@@ -55,7 +55,6 @@ subroutine GTpp_QP_graph(eta,nBas,nC,nO,nV,nR,nOOs,nVVs,nOOt,nVVt,eHF,Om1s,rho1s
     w = eGTlin(p)
     nIt = 0
     f = 1d0
-    write(*,'(A3,I3,A1,1X,3F15.9)') 'It.',nIt,':',w*HaToeV,f
 
     do while (abs(f) > thresh .and. nIt < maxIt)
 
@@ -66,8 +65,6 @@ subroutine GTpp_QP_graph(eta,nBas,nC,nO,nV,nR,nOOs,nVVs,nOOt,nVVt,eHF,Om1s,rho1s
       f  = w - eHF(p) - SigC 
       df = 1d0/(1d0 - dSigC)
       w = w - df*f
-
-      write(*,'(A3,I3,A1,1X,3F15.9)') 'It.',nIt,':',w*HaToeV,df,f
 
     end do
 
@@ -81,6 +78,7 @@ subroutine GTpp_QP_graph(eta,nBas,nC,nO,nV,nR,nOOs,nVVs,nOOt,nVVt,eHF,Om1s,rho1s
       eGT(p) = w
       Z(p)   = df
 
+      write(*,'(A3,I3,A1,1X,3F15.9)') 'It.',nIt,':',w*HaToeV,df,f
       write(*,'(A32,F16.10)')   'Quasiparticle energy (eV)   ',eGT(p)*HaToeV
       write(*,*)
 

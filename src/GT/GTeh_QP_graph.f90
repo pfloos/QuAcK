@@ -50,7 +50,6 @@ subroutine GTeh_QP_graph(eta,nBas,nC,nO,nV,nR,nS,eHF,Om,rhoL,rhoR,eGTlin,eGT,Z)
     w = eGTlin(p)
     nIt = 0
     f = 1d0
-    write(*,'(A3,I3,A1,1X,3F15.9)') 'It.',nIt,':',w*HaToeV,f
 
     do while (abs(f) > thresh .and. nIt < maxIt)
 
@@ -61,8 +60,6 @@ subroutine GTeh_QP_graph(eta,nBas,nC,nO,nV,nR,nS,eHF,Om,rhoL,rhoR,eGTlin,eGT,Z)
       f  = w - eHF(p) - SigC 
       df = 1d0/(1d0 - dSigC)
       w = w - df*f
-
-      write(*,'(A3,I3,A1,1X,3F15.9)') 'It.',nIt,':',w*HaToeV,df,f
 
     end do
 
@@ -76,6 +73,7 @@ subroutine GTeh_QP_graph(eta,nBas,nC,nO,nV,nR,nS,eHF,Om,rhoL,rhoR,eGTlin,eGT,Z)
       eGT(p) = w
       Z(p)   = df
 
+      write(*,'(A3,I3,A1,1X,3F15.9)') 'It.',nIt,':',w*HaToeV,df,f
       write(*,'(A32,F16.10)')   'Quasiparticle energy (eV)   ',eGT(p)*HaToeV
       write(*,*)
 

@@ -41,14 +41,9 @@ subroutine GW_QP_graph(eta,nBas,nC,nO,nV,nR,nS,eHF,Om,rho,eGWlin,eGW,Z)
  
   do p=nC+1,nBas-nR
 
-    write(*,*) '-----------------'
-    write(*,'(A10,I3)') 'Orbital ',p
-    write(*,*) '-----------------'
-
     w = eGWlin(p)
     nIt = 0
     f = 1d0
-    write(*,'(A3,I3,A1,1X,3F15.9)') 'It.',nIt,':',w*HaToeV,f
     
     do while (abs(f) > thresh .and. nIt < maxIt)
     
@@ -60,8 +55,6 @@ subroutine GW_QP_graph(eta,nBas,nC,nO,nV,nR,nS,eHF,Om,rho,eGWlin,eGW,Z)
       df = 1d0/(1d0 - dSigC)
     
       w = w - df*f
-
-      write(*,'(A3,I3,A1,1X,3F15.9)') 'It.',nIt,':',w*HaToeV,df,f
     
     end do
  
@@ -75,7 +68,11 @@ subroutine GW_QP_graph(eta,nBas,nC,nO,nV,nR,nS,eHF,Om,rho,eGWlin,eGW,Z)
       eGW(p) = w
       Z(p)   = df
 
-      write(*,'(A32,F16.10)')   'Quasiparticle energy (eV)   ',eGW(p)*HaToeV
+
+      write(*,*)'-------------------------------------------------------------------------------'
+      write(*,'(A5,1X,A3,1X,A15,1X,A10)') 'Orb.','It.','e_QP (eV)','Z'
+      write(*,'(I5,1X,I3,1X,F15.9,1X,F10.6)') p,nIt,eGW(p)*HaToeV,Z(p)
+      write(*,*)'-------------------------------------------------------------------------------'
       write(*,*)
 
     end if
