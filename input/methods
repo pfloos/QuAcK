@@ -1,5 +1,5 @@
-# RHF UHF RMOM UMOM KS
-  T   F   F    F    F  
+# RHF UHF ROHF RMOM UMOM KS
+  T   F   T    F    F    F  
 # MP2* MP3 
   F   F   
 # CCD pCCD DCD CCSD CCSD(T) 
@@ -15,5 +15,5 @@
 # G0W0* evGW* qsGW* SRG-qsGW ufG0W0 ufGW
   F     F     F     F        F      F
 # G0T0pp* evGTpp* qsGTpp* G0T0eh evGTeh qsGTeh
-  F       F       F       T      F      F
+  F       F       F       F      F      F
 # * unrestricted version available

@@ -1,5 +1,5 @@
-subroutine UHF(maxSCF,thresh,max_diis,guess_type,mix,level_shift,nNuc,ZNuc,rNuc,ENuc, & 
-               nBas,nO,S,T,V,Hc,ERI,dipole_int,X,EHF,e,c,P)
+subroutine ROHF(maxSCF,thresh,max_diis,guess_type,mix,level_shift,nNuc,ZNuc,rNuc,ENuc, & 
+                nBas,nO,S,T,V,Hc,ERI,dipole_int,X,EHF,e,c,P)
 
 ! Perform unrestricted Hartree-Fock calculation
 
@@ -36,21 +36,23 @@ subroutine UHF(maxSCF,thresh,max_diis,guess_type,mix,level_shift,nNuc,ZNuc,rNuc,
   integer                       :: nBasSq
   integer                       :: n_diis
   double precision              :: conv
-  double precision              :: rcond(nspin)
+  double precision              :: rcond
   double precision              :: ET(nspin)
   double precision              :: EV(nspin)
   double precision              :: EJ(nsp)
   double precision              :: Ex(nspin)
   double precision              :: dipole(ncart)
 
-  double precision,allocatable  :: cp(:,:,:)
+  double precision,allocatable  :: cp(:,:)
   double precision,allocatable  :: J(:,:,:)
   double precision,allocatable  :: F(:,:,:)
-  double precision,allocatable  :: Fp(:,:,:)
+  double precision,allocatable  :: Fp(:,:)
+  double precision,allocatable  :: Ftot(:,:)
+  double precision,allocatable  :: Ptot(:,:)
   double precision,allocatable  :: K(:,:,:)
-  double precision,allocatable  :: err(:,:,:)
-  double precision,allocatable  :: err_diis(:,:,:)
-  double precision,allocatable  :: F_diis(:,:,:)
+  double precision,allocatable  :: err(:,:)
+  double precision,allocatable  :: err_diis(:,:)
+  double precision,allocatable  :: F_diis(:,:)
   double precision,external     :: trace_matrix
 
   integer                       :: ispin
@@ -58,15 +60,15 @@ subroutine UHF(maxSCF,thresh,max_diis,guess_type,mix,level_shift,nNuc,ZNuc,rNuc,
 ! Output variables
 
   double precision,intent(out)  :: EHF
-  double precision,intent(out)  :: e(nBas,nspin)
-  double precision,intent(out)  :: c(nBas,nBas,nspin)
+  double precision,intent(out)  :: e(nBas)
+  double precision,intent(out)  :: c(nBas,nBas)
   double precision,intent(out)  :: P(nBas,nBas,nspin)
 
 ! Hello world
 
   write(*,*)
   write(*,*)'************************************************'
-  write(*,*)'*    Unrestricted Hartree-Fock calculation     *'
+  write(*,*)'*      Restricted Open-Shell Hartree-Fock      *'
   write(*,*)'************************************************'
   write(*,*)
 
@@ -76,25 +78,26 @@ subroutine UHF(maxSCF,thresh,max_diis,guess_type,mix,level_shift,nNuc,ZNuc,rNuc,
 
 ! Memory allocation
 
-  allocate(J(nBas,nBas,nspin),F(nBas,nBas,nspin),Fp(nBas,nBas,nspin),   & 
-           K(nBas,nBas,nspin),err(nBas,nBas,nspin),cp(nBas,nBas,nspin), &
-           err_diis(nBasSq,max_diis,nspin),F_diis(nBasSq,max_diis,nspin))
+  allocate(J(nBas,nBas,nspin),F(nBas,nBas,nspin),Fp(nBas,nBas),Ftot(nBas,nBas),   & 
+           Ptot(nBas,nBas),K(nBas,nBas,nspin),err(nBas,nBas),cp(nBas,nBas), &
+           err_diis(nBasSq,max_diis),F_diis(nBasSq,max_diis))
 
 ! Guess coefficients and demsity matrices
 
+  call mo_guess(nBas,guess_type,S,Hc,X,c)
   do ispin=1,nspin
-    call mo_guess(nBas,guess_type,S,Hc,X,c(:,:,ispin))
-    P(:,:,ispin) = matmul(c(:,1:nO(ispin),ispin),transpose(c(:,1:nO(ispin),ispin)))
+    P(:,:,ispin) = matmul(c(:,1:nO(ispin)),transpose(c(:,1:nO(ispin))))
   end do
 
 ! Initialization
 
+  n_diis          = 0
+  F_diis(:,:)   = 0d0
+  err_diis(:,:) = 0d0
+  rcond         = 0d0
+
   nSCF = 0
   conv = 1d0
-
-  n_diis          = 0
-  F_diis(:,:,:)   = 0d0
-  err_diis(:,:,:) = 0d0
 
 !------------------------------------------------------------------------
 ! Main SCF loop
@@ -103,7 +106,7 @@ subroutine UHF(maxSCF,thresh,max_diis,guess_type,mix,level_shift,nNuc,ZNuc,rNuc,
   write(*,*)
   write(*,*)'----------------------------------------------------------'
   write(*,'(1X,A1,1X,A3,1X,A1,1X,A16,1X,A1,1X,A16,1X,A1,1X,A10,1X,A1,1X)') & 
-            '|','#','|','E(UHF)','|','Ex(UHF)','|','Conv','|'
+            '|','#','|','E(ROHF)','|','Ex(ROHF)','|','Conv','|'
   write(*,*)'----------------------------------------------------------'
   
   do while(conv > thresh .and. nSCF < maxSCF)
@@ -112,35 +115,6 @@ subroutine UHF(maxSCF,thresh,max_diis,guess_type,mix,level_shift,nNuc,ZNuc,rNuc,
 
     nSCF = nSCF + 1
 
-!  Transform Fock matrix in orthogonal basis
-
-    do ispin=1,nspin
-      Fp(:,:,ispin) = matmul(transpose(X(:,:)),matmul(F(:,:,ispin),X(:,:)))
-    end do
-
-!  Diagonalize Fock matrix to get eigenvectors and eigenvalues
-
-    cp(:,:,:) = Fp(:,:,:)
-    do ispin=1,nspin
-      call diagonalize_matrix(nBas,cp(:,:,ispin),e(:,ispin))
-    end do
-    
-!   Back-transform eigenvectors in non-orthogonal basis
-
-    do ispin=1,nspin
-      c(:,:,ispin) = matmul(X(:,:),cp(:,:,ispin))
-    end do
-
-!   Mix guess for UHF solution in singlet states
-
-    if(mix .and. nSCF == 1) call mix_guess(nBas,nO,c)
-
-!   Compute density matrix 
-
-    do ispin=1,nspin
-      P(:,:,ispin) = matmul(c(:,1:nO(ispin),ispin),transpose(c(:,1:nO(ispin),ispin)))
-    end do
- 
 !   Build Coulomb repulsion
 
     do ispin=1,nspin
@@ -159,23 +133,19 @@ subroutine UHF(maxSCF,thresh,max_diis,guess_type,mix,level_shift,nNuc,ZNuc,rNuc,
       F(:,:,ispin) = Hc(:,:) + J(:,:,ispin) + J(:,:,mod(ispin,2)+1) + K(:,:,ispin)
     end do
 
+    call ROHF_fock_matrix(nBas,nO(1),nO(2),S,c,F(:,:,1),F(:,:,2),Ftot)
+
 !   Check convergence 
 
-    do ispin=1,nspin
-      err(:,:,ispin) = matmul(F(:,:,ispin),matmul(P(:,:,ispin),S(:,:))) - matmul(matmul(S(:,:),P(:,:,ispin)),F(:,:,ispin))
-    end do
-
-    if(nSCF > 1) conv = maxval(abs(err(:,:,:)))
+    err(:,:) = matmul(Ftot(:,:),matmul(Ptot(:,:),S(:,:))) - matmul(matmul(S(:,:),Ptot(:,:)),Ftot(:,:))
+    if(nSCF > 1) conv = maxval(abs(err(:,:)))
     
 !   DIIS extrapolation
 
     if(max_diis > 1) then
 
       n_diis = min(n_diis+1,max_diis)
-      do ispin=1,nspin
-        if(nO(ispin) > 1) call DIIS_extrapolation(rcond(ispin),nBasSq,nBasSq,n_diis,err_diis(:,1:n_diis,ispin), &
-                                                F_diis(:,1:n_diis,ispin),err(:,:,ispin),F(:,:,ispin))
-      end do
+      call DIIS_extrapolation(rcond,nBasSq,nBasSq,n_diis,err_diis(:,1:n_diis),F_diis(:,1:n_diis),err,Ftot)
 
     end if
 
@@ -184,13 +154,33 @@ subroutine UHF(maxSCF,thresh,max_diis,guess_type,mix,level_shift,nNuc,ZNuc,rNuc,
     if(level_shift > 0d0 .and. Conv > thresh) then
 
       do ispin=1,nspin
-        call level_shifting(level_shift,nBas,nO(ispin),S,c(:,:,ispin),F(:,:,ispin))
+        call level_shifting(level_shift,nBas,maxval(nO),S,c,Ftot)
       end do
 
     end if
 
+!  Transform Fock matrix in orthogonal basis
+
+    Fp(:,:) = matmul(transpose(X(:,:)),matmul(Ftot(:,:),X(:,:)))
+
+!  Diagonalize Fock matrix to get eigenvectors and eigenvalues
+
+    cp(:,:) = Ftot(:,:)
+    call diagonalize_matrix(nBas,cp,e)
+    
+!   Back-transform eigenvectors in non-orthogonal basis
+
+    c(:,:) = matmul(X(:,:),cp(:,:))
+
+!   Compute density matrix 
+
+    do ispin=1,nspin
+      P(:,:,ispin) = matmul(c(:,1:nO(ispin)),transpose(c(:,1:nO(ispin))))
+    end do
+    Ptot(:,:) = P(:,:,1) + P(:,:,2) 
+
 !------------------------------------------------------------------------
-!   Compute UHF energy
+!   Compute ROHF energy
 !------------------------------------------------------------------------
 
 !  Kinetic energy
@@ -248,7 +238,7 @@ subroutine UHF(maxSCF,thresh,max_diis,guess_type,mix,level_shift,nNuc,ZNuc,rNuc,
 
 ! Compute final UHF energy
 
-  call dipole_moment(nBas,P(:,:,1)+P(:,:,2),nNuc,ZNuc,rNuc,dipole_int,dipole)
-  call print_UHF(nBas,nO,S,e,c,ENuc,ET,EV,EJ,Ex,EHF,dipole)
+! call dipole_moment(nBas,P(:,:,1)+P(:,:,2),nNuc,ZNuc,rNuc,dipole_int,dipole)
+! call print_ROHF(nBas,nO,S,e,c,ENuc,ET,EV,EJ,Ex,EHF,dipole)
 
 end subroutine 

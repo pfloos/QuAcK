@@ -1,4 +1,4 @@
-subroutine HF(doRHF,doUHF,doRMOM,doUMOM,unrestricted,maxSCF,thresh,max_diis,guess_type,mix,level_shift, & 
+subroutine HF(doRHF,doUHF,doROHF,doRMOM,doUMOM,unrestricted,maxSCF,thresh,max_diis,guess_type,mix,level_shift, & 
               nNuc,ZNuc,rNuc,ENuc,nBas,nO,S,T,V,Hc,F,ERI,dipole_int,X,EHF,epsHF,cHF,PHF)
 
 ! Hartree-Fock module
@@ -10,6 +10,7 @@ subroutine HF(doRHF,doUHF,doRMOM,doUMOM,unrestricted,maxSCF,thresh,max_diis,gues
 
   logical,intent(in)            :: doRHF
   logical,intent(in)            :: doUHF
+  logical,intent(in)            :: doROHF
   logical,intent(in)            :: doRMOM
   logical,intent(in)            :: doUMOM
 
@@ -87,7 +88,7 @@ subroutine HF(doRHF,doUHF,doRMOM,doUMOM,unrestricted,maxSCF,thresh,max_diis,gues
     call wall_time(end_HF)
 
     t_HF = end_HF - start_HF
-    write(*,'(A65,1X,F9.3,A8)') 'Total wall time for HF = ',t_HF,' seconds'
+    write(*,'(A65,1X,F9.3,A8)') 'Total wall time for RHF = ',t_HF,' seconds'
     write(*,*)
 
   end if
@@ -107,7 +108,27 @@ subroutine HF(doRHF,doUHF,doRMOM,doUMOM,unrestricted,maxSCF,thresh,max_diis,gues
     call wall_time(end_HF)
 
     t_HF = end_HF - start_HF
-    write(*,'(A65,1X,F9.3,A8)') 'Total wall time for HF = ',t_HF,' seconds'
+    write(*,'(A65,1X,F9.3,A8)') 'Total wall time for UHF = ',t_HF,' seconds'
+    write(*,*)
+
+  end if
+
+!------------------------------------------------------------------------
+! Compute ROHF energy
+!------------------------------------------------------------------------
+
+  if(doROHF) then
+
+    ! Switch on the unrestricted flag
+    unrestricted = .true.
+
+    call wall_time(start_HF)
+    call ROHF(maxSCF,thresh,max_diis,guess_type,mix,level_shift,nNuc,ZNuc,rNuc,ENuc, &
+              nBas,nO,S,T,V,Hc,ERI,dipole_int,X,EHF,epsHF,cHF,PHF)
+    call wall_time(end_HF)
+
+    t_HF = end_HF - start_HF
+    write(*,'(A65,1X,F9.3,A8)') 'Total wall time for ROHF = ',t_HF,' seconds'
     write(*,*)
 
   end if

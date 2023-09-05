@@ -1,14 +1,14 @@
-subroutine read_methods(doRHF,doUHF,doRMOM,doUMOM,doKS,    & 
-                        doMP2,doMP3,                       & 
-                        doCCD,dopCCD,doDCD,doCCSD,doCCSDT, & 
-                        do_drCCD,do_rCCD,do_crCCD,do_lCCD, &
-                        doCIS,doCIS_D,doCID,doCISD,doFCI,  & 
-                        dophRPA,dophRPAx,docrRPA,doppRPA,  & 
-                        doG0F2,doevGF2,doqsGF2,            &
-                        doG0F3,doevGF3,                    & 
-                        doG0W0,doevGW,doqsGW,doSRGqsGW,    & 
-                        doufG0W0,doufGW,                   & 
-                        doG0T0pp,doevGTpp,doqsGTpp,        &
+subroutine read_methods(doRHF,doUHF,doROHF,doRMOM,doUMOM,doKS, & 
+                        doMP2,doMP3,                           & 
+                        doCCD,dopCCD,doDCD,doCCSD,doCCSDT,     & 
+                        do_drCCD,do_rCCD,do_crCCD,do_lCCD,     &
+                        doCIS,doCIS_D,doCID,doCISD,doFCI,      & 
+                        dophRPA,dophRPAx,docrRPA,doppRPA,      & 
+                        doG0F2,doevGF2,doqsGF2,                &
+                        doG0F3,doevGF3,                        & 
+                        doG0W0,doevGW,doqsGW,doSRGqsGW,        & 
+                        doufG0W0,doufGW,                       & 
+                        doG0T0pp,doevGTpp,doqsGTpp,            &
                         doG0T0eh,doevGTeh,doqsGTeh)
 
 ! Read desired methods 
@@ -17,7 +17,7 @@ subroutine read_methods(doRHF,doUHF,doRMOM,doUMOM,doKS,    &
 
 ! Input variables
 
-  logical,intent(out)           :: doRHF,doUHF,doRMOM,doUMOM,doKS
+  logical,intent(out)           :: doRHF,doUHF,doROHF,doRMOM,doUMOM,doKS
   logical,intent(out)           :: doMP2,doMP3
   logical,intent(out)           :: doCCD,dopCCD,doDCD,doCCSD,doCCSDT
   logical,intent(out)           :: do_drCCD,do_rCCD,do_crCCD,do_lCCD
@@ -40,17 +40,19 @@ subroutine read_methods(doRHF,doUHF,doRMOM,doUMOM,doKS,    &
 
   doRHF  = .false.
   doUHF  = .false.
+  doROHF = .false.
   doRMOM = .false.
   doUMOM = .false.
   doKS   = .false.
 
   read(1,*) 
-  read(1,*) answer1,answer2,answer3,answer4,answer5
+  read(1,*) answer1,answer2,answer3,answer4,answer5,answer6
   if(answer1 == 'T') doRHF  = .true.
   if(answer2 == 'T') doUHF  = .true.
-  if(answer3 == 'T') doRMOM = .true.
-  if(answer4 == 'T') doUMOM = .true.
-  if(answer5 == 'T') doKS   = .true.
+  if(answer3 == 'T') doROHF = .true.
+  if(answer4 == 'T') doRMOM = .true.
+  if(answer5 == 'T') doUMOM = .true.
+  if(answer6 == 'T') doKS   = .true.
 
 ! Read MPn methods
 

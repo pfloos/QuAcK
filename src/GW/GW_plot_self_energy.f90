@@ -32,7 +32,7 @@ subroutine GW_plot_self_energy(eta,nBas,nC,nO,nV,nR,nS,eHF,eGW,Om,rho)
 
 ! Construct grid
 
-  nGrid = 1000
+  nGrid = 5000
   allocate(w(nGrid),SigC(nBas,nGrid),Z(nBas,nGrid),S(nBas,nGrid))
 
 ! Initialize 

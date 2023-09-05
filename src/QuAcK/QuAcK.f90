@@ -4,7 +4,7 @@ program QuAcK
   include 'parameters.h'
 
   logical                       :: unrestricted = .false.
-  logical                       :: doHF,doRHF,doUHF,doRMOM,doUMOM
+  logical                       :: doHF,doRHF,doUHF,doROHF,doRMOM,doUMOM
   logical                       :: dostab
   logical                       :: doKS
   logical                       :: doMP,doMP2,doMP3
@@ -123,17 +123,17 @@ program QuAcK
 ! Method selection !
 !------------------!
 
-  call read_methods(doRHF,doUHF,doRMOM,doUMOM,doKS,    &
-                    doMP2,doMP3,                       &
-                    doCCD,dopCCD,doDCD,doCCSD,doCCSDT, &
-                    dodrCCD,dorCCD,docrCCD,dolCCD,     &
-                    doCIS,doCIS_D,doCID,doCISD,doFCI,  & 
-                    dophRPA,dophRPAx,docrRPA,doppRPA,  &
-                    doG0F2,doevGF2,doqsGF2,            & 
-                    doG0F3,doevGF3,                    &
-                    doG0W0,doevGW,doqsGW,doSRGqsGW,    &
-                    doufG0W0,doufGW,                   &
-                    doG0T0pp,doevGTpp,doqsGTpp,        &
+  call read_methods(doRHF,doUHF,doROHF,doRMOM,doUMOM,doKS, &
+                    doMP2,doMP3,                           &
+                    doCCD,dopCCD,doDCD,doCCSD,doCCSDT,     &
+                    dodrCCD,dorCCD,docrCCD,dolCCD,         &
+                    doCIS,doCIS_D,doCID,doCISD,doFCI,      & 
+                    dophRPA,dophRPAx,docrRPA,doppRPA,      &
+                    doG0F2,doevGF2,doqsGF2,                & 
+                    doG0F3,doevGF3,                        &
+                    doG0W0,doevGW,doqsGW,doSRGqsGW,        &
+                    doufG0W0,doufGW,                       &
+                    doG0T0pp,doevGTpp,doqsGTpp,            &
                     doG0T0eh,doevGTeh,doqsGTeh)
 
 !--------------------------!
@@ -209,13 +209,13 @@ program QuAcK
 ! Hartree-Fock module !
 !---------------------!
 
-  doHF = doRHF .or. doUHF .or. doRMOM .or. doUMOM
+  doHF = doRHF .or. doUHF .or. doROHF .or. doRMOM .or. doUMOM
 
   if(doHF) then
 
     call wall_time(start_HF)
-    call HF(doRHF,doUHF,doRMOM,doUMOM,unrestricted,maxSCF_HF,thresh_HF,max_diis_HF, & 
-            guess_type,mix,level_shift,nNuc,ZNuc,rNuc,ENuc,nBas,nO,S,T,V,Hc,F_AO, & 
+    call HF(doRHF,doUHF,doROHF,doRMOM,doUMOM,unrestricted,maxSCF_HF,thresh_HF,max_diis_HF, & 
+            guess_type,mix,level_shift,nNuc,ZNuc,rNuc,ENuc,nBas,nO,S,T,V,Hc,F_AO,          & 
             ERI_AO,dipole_int_AO,X,EHF,epsHF,cHF,PHF)
     call wall_time(end_HF)
 
