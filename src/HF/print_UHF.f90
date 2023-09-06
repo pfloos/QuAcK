@@ -88,7 +88,7 @@ subroutine print_UHF(nBas,nO,Ov,e,c,ENuc,ET,EV,EJ,Ex,EUHF,dipole)
   write(*,'(A60)')              '-------------------------------------------------'
   write(*,'(A40,1X,F16.6,A3)')  ' UHF HOMO b    energy:',HOMO(2)*HatoeV,' eV'
   write(*,'(A40,1X,F16.6,A3)')  ' UHF LUMO b    energy:',LUMO(2)*HatoeV,' eV'
-  write(*,'(A40,1X,F16.6,A3)')  ' UHF HOMOb-LUMOb gap :',Gap(2)*HatoeV,' eV'
+  write(*,'(A40,1X,F16.6,A3)')  ' UHF HOMOb-LUMOb  gap:',Gap(2)*HatoeV,' eV'
   write(*,'(A60)')              '-------------------------------------------------'
   write(*,'(A40,1X,F16.6)')     '  S (exact)          :',2d0*S_exact + 1d0
   write(*,'(A40,1X,F16.6)')     '  S                  :',2d0*S       + 1d0
