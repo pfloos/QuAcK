@@ -1,7 +1,7 @@
 subroutine ROHF(maxSCF,thresh,max_diis,guess_type,mix,level_shift,nNuc,ZNuc,rNuc,ENuc, & 
                 nBas,nO,S,T,V,Hc,ERI,dipole_int,X,EHF,e,c,P)
 
-! Perform unrestricted Hartree-Fock calculation
+! Perform restricted open-shell Hartree-Fock calculation
 
   implicit none
   include 'parameters.h'
@@ -165,7 +165,7 @@ subroutine ROHF(maxSCF,thresh,max_diis,guess_type,mix,level_shift,nNuc,ZNuc,rNuc
 
 !  Diagonalize Fock matrix to get eigenvectors and eigenvalues
 
-    cp(:,:) = Ftot(:,:)
+    cp(:,:) = Fp(:,:)
     call diagonalize_matrix(nBas,cp,e)
     
 !   Back-transform eigenvectors in non-orthogonal basis

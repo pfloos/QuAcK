@@ -1,5 +1,5 @@
 # HF: maxSCF thresh   DIIS n_diis guess_type ortho_type mix_guess level_shift stability
-      64    0.0000001  F    5     1          1          F         0.0         F
+      64    0.0000001  T    5     1          1          F         0.0         F
 # MP: reg
       F
 # CC: maxSCF thresh   DIIS n_diis
