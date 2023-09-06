@@ -50,14 +50,13 @@ f.close()
 #Definition of the molecule
 mol = gto.M(
     atom = list_pos_atom,
-    basis = input_basis
+    basis = input_basis,
+    charge = charge,
+    spin = multiplicity
 )
 
 #Fix the unit for the lengths
 mol.unit=unit
-#Fix charge and spin
-mol.charge=charge
-mol.spin=multiplicity
 #
 mol.cart = cartesian
 
