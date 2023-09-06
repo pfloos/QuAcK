@@ -238,7 +238,7 @@ subroutine ROHF(maxSCF,thresh,max_diis,guess_type,mix,level_shift,nNuc,ZNuc,rNuc
 
 ! Compute final UHF energy
 
-! call dipole_moment(nBas,P(:,:,1)+P(:,:,2),nNuc,ZNuc,rNuc,dipole_int,dipole)
-! call print_ROHF(nBas,nO,S,e,c,ENuc,ET,EV,EJ,Ex,EHF,dipole)
+  call dipole_moment(nBas,Ptot,nNuc,ZNuc,rNuc,dipole_int,dipole)
+  call print_ROHF(nBas,nO,S,e,c,ENuc,ET,EV,EJ,Ex,EHF,dipole)
 
 end subroutine 
