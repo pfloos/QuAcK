@@ -19,7 +19,7 @@ parser.add_argument('--bohr', default='Angstrom', action='store_const', const='B
 parser.add_argument('-c', '--charge', type=int, default=0, help='Total charge of the molecule. Specify negative charges with "m" instead of the minus sign, for example m1 instead of -1. Default is 0')
 parser.add_argument('--cartesian', default=False, action='store_true', help='Add this option if you want to use cartesian basis functions.')
 parser.add_argument('-fc', '--frozen_core', type=bool, default=False, help='Freeze core MOs. Default is false')
-parser.add_argument('-m', '--multiplicity', type=int, default=0, help='Number of unpaired electrons 2S. Default is 0 therefore singlet')
+parser.add_argument('-m', '--multiplicity', type=int, default=1, help='Spin multiplicity. Default is 1 therefore singlet')
 parser.add_argument('--working_dir', type=str, default=QuAcK_dir, help='Set a working directory to run the calculation.')
 parser.add_argument('-x', '--xyz', type=str, required=True, help='Name of the file containing the nuclear coordinates in xyz format in the $QUACK_ROOT/mol/ directory without the .xyz extension')
 
@@ -52,7 +52,7 @@ mol = gto.M(
     atom = list_pos_atom,
     basis = input_basis,
     charge = charge,
-    spin = multiplicity
+    spin = multiplicity - 1
 )
 
 #Fix the unit for the lengths
