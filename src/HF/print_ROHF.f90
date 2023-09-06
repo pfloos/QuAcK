@@ -44,11 +44,8 @@ subroutine print_ROHF(nBas,nO,Ov,e,c,ENuc,ET,EV,EJ,Ex,EHF,dipole)
     end if
   end do
 
-  S2_exact = dble(nO(1) - nO(2))/2d0*(dble(nO(1) - nO(2))/2d0 + 1d0) 
-  S2 = S2_exact + nO(2) - sum(matmul(transpose(c(:,1:nO(1))),matmul(Ov,c(:,1:nO(2))))**2)
-
-  S_exact = 0.5d0*dble(nO(1) - nO(2))
-  S = -0.5d0 + 0.5d0*sqrt(1d0 + 4d0*S2)
+  S2 = dble(nO(1) - nO(2))/2d0*(dble(nO(1) - nO(2))/2d0 + 1d0) 
+  S  = 0.5d0*dble(nO(1) - nO(2))
 
 ! Dump results
 
@@ -90,9 +87,7 @@ subroutine print_ROHF(nBas,nO,Ov,e,c,ENuc,ET,EV,EJ,Ex,EHF,dipole)
   write(*,'(A40,1X,F16.6,A3)')  ' UHF LUMO b    energy:',LUMO(2)*HatoeV,' eV'
   write(*,'(A40,1X,F16.6,A3)')  ' UHF HOMOb-LUMOb gap :',Gap(2)*HatoeV,' eV'
   write(*,'(A60)')              '-------------------------------------------------'
-  write(*,'(A40,1X,F16.6)')     '  S (exact)          :',2d0*S_exact + 1d0
   write(*,'(A40,1X,F16.6)')     '  S                  :',2d0*S       + 1d0
-  write(*,'(A40,1X,F16.6)')     ' <S**2> (exact)      :',S2_exact
   write(*,'(A40,1X,F16.6)')     ' <S**2>              :',S2
   write(*,'(A60)')              '-------------------------------------------------'
   write(*,'(A45)')              ' Dipole moment (Debye)    '
