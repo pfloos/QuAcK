@@ -159,7 +159,6 @@ subroutine CC(doCCD,dopCCD,doDCD,doCCSD,doCCSDT,do_drCCD,do_rCCD,do_crCCD,do_lCC
 
     call wall_time(start_CC)
     call pCCD(maxSCF,thresh,max_diis,nBas,nC,nO,nV,nR,ERI,ENuc,EHF,epsHF)
-    call pCCDso(maxSCF,thresh,max_diis,nBas,nC,nO,nV,nR,ERI,ENuc,EHF,epsHF)
     call wall_time(end_CC)
 
     t_CC = end_CC - start_CC
