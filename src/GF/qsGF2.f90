@@ -147,11 +147,11 @@ subroutine qsGF2(maxSCF,thresh,max_diis,dophBSE,doppBSE,TDA,dBSE,dTDA,singlet,tr
 
     if(regularize) then
 
-      call GF2_reg_self_energy(eta,nBas,nC,nO,nV,nR,eHF,eGF,ERI_MO,SigC,Z)
+      call GF2_reg_self_energy(eta,nBas,nC,nO,nV,nR,eGF,ERI_MO,SigC,Z)
 
     else
 
-      call GF2_self_energy(eta,nBas,nC,nO,nV,nR,eHF,eGF,ERI_MO,SigC,Z)
+      call GF2_self_energy(eta,nBas,nC,nO,nV,nR,eGF,ERI_MO,SigC,Z)
 
     end if
 

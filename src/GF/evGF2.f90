@@ -82,11 +82,11 @@ subroutine evGF2(dophBSE,doppBSE,TDA,dBSE,dTDA,maxSCF,thresh,max_diis,singlet,tr
 
     if(regularize) then 
 
-      call GF2_reg_self_energy_diag(eta,nBas,nC,nO,nV,nR,eHF,eGF,ERI,SigC,Z)
+      call GF2_reg_self_energy_diag(eta,nBas,nC,nO,nV,nR,eGF,ERI,SigC,Z)
 
     else
 
-      call GF2_self_energy_diag(eta,nBas,nC,nO,nV,nR,eHF,eGF,ERI,SigC,Z)
+      call GF2_self_energy_diag(eta,nBas,nC,nO,nV,nR,eGF,ERI,SigC,Z)
 
     end if
 
@@ -94,14 +94,12 @@ subroutine evGF2(dophBSE,doppBSE,TDA,dBSE,dTDA,maxSCF,thresh,max_diis,singlet,tr
  
     if(linearize) then
  
-      eGF(:) = eHF(:) + SigC(:)
- 
     else
  
       write(*,*) ' *** Quasiparticle energies obtained by root search (experimental) *** '
       write(*,*)
  
-      call GF2_QP_graph(eta,nBas,nC,nO,nV,nR,eHF,ERI,eGF,Z)
+      call GF2_QP_graph(eta,nBas,nC,nO,nV,nR,eHF,ERI,eOld,eGF,Z)
  
     end if
 

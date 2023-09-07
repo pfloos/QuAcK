@@ -34,6 +34,7 @@ subroutine G0F2(dophBSE,doppBSE,TDA,dBSE,dTDA,singlet,triplet,linearize,eta,regu
 
   double precision              :: Ec
   double precision              :: EcBSE(nspin)
+  double precision,allocatable  :: eGFlin(:)
   double precision,allocatable  :: eGF(:)
   double precision,allocatable  :: SigC(:)
   double precision,allocatable  :: Z(:)
@@ -48,37 +49,34 @@ subroutine G0F2(dophBSE,doppBSE,TDA,dBSE,dTDA,singlet,triplet,linearize,eta,regu
 
 ! Memory allocation
 
-  allocate(SigC(nBas),Z(nBas),eGF(nBas))
-
-  if(linearize) then 
-  
-     write(*,*) '*** Quasiparticle equation will be linearized ***'
-     write(*,*)
-
-  end  if
+  allocate(SigC(nBas),Z(nBas),eGFlin(nBas),eGF(nBas))
 
 ! Frequency-dependent second-order contribution
 
   if(regularize) then 
 
-    call GF2_reg_self_energy_diag(eta,nBas,nC,nO,nV,nR,eHF,eHF,ERI,SigC,Z)
+    call GF2_reg_self_energy_diag(eta,nBas,nC,nO,nV,nR,eHF,ERI,SigC,Z)
 
   else
 
-    call GF2_self_energy_diag(eta,nBas,nC,nO,nV,nR,eHF,eHF,ERI,SigC,Z)
+    call GF2_self_energy_diag(eta,nBas,nC,nO,nV,nR,eHF,ERI,SigC,Z)
 
   end if
   
+  eGFlin(:) = eHF(:) + Z(:)*SigC(:)
+
   if(linearize) then
 
-    eGF(:) = eHF(:) + Z(:)*SigC(:)
+    write(*,*) '*** Quasiparticle energies obtained by linearization ***'
+
+    eGF(:) = eGFlin(:)
 
   else
 
     write(*,*) ' *** Quasiparticle energies obtained by root search (experimental) *** '
     write(*,*)
 
-    call GF2_QP_graph(eta,nBas,nC,nO,nV,nR,eHF,ERI,eGF,Z)
+    call GF2_QP_graph(eta,nBas,nC,nO,nV,nR,eHF,ERI,eGFlin,eGF,Z)
 
   end if
 

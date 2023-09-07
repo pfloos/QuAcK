@@ -1,4 +1,4 @@
-double precision function GF2_SigC(p,w,eta,nBas,nC,nO,nV,nR,nS,eHF,ERI)
+double precision function GF2_SigC(p,w,eta,nBas,nC,nO,nV,nR,eHF,ERI)
 
 ! Compute diagonal of the correlation part of the self-energy
 
@@ -10,7 +10,7 @@ double precision function GF2_SigC(p,w,eta,nBas,nC,nO,nV,nR,nS,eHF,ERI)
   integer,intent(in)            :: p
   double precision,intent(in)   :: w
   double precision,intent(in)   :: eta
-  integer,intent(in)            :: nBas,nC,nO,nV,nR,nS
+  integer,intent(in)            :: nBas,nC,nO,nV,nR
   double precision,intent(in)   :: eHF(nBas)
   double precision,intent(in)   :: ERI(nBas,nBas,nBas,nBas)
 

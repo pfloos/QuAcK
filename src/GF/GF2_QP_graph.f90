@@ -1,4 +1,4 @@
-subroutine GF2_QP_graph(eta,nBas,nC,nO,nV,nR,nS,eHF,ERI,eGF,Z)
+subroutine GF2_QP_graph(eta,nBas,nC,nO,nV,nR,eHF,ERI,eGFlin,eGF,Z)
 
 ! Compute the graphical solution of the GF2 QP equation
 
@@ -8,8 +8,13 @@ subroutine GF2_QP_graph(eta,nBas,nC,nO,nV,nR,nS,eHF,ERI,eGF,Z)
 ! Input variables
 
   double precision,intent(in)   :: eta
-  integer,intent(in)            :: nBas,nC,nO,nV,nR,nS
+  integer,intent(in)            :: nBas
+  integer,intent(in)            :: nC
+  integer,intent(in)            :: nO
+  integer,intent(in)            :: nV
+  integer,intent(in)            :: nR
   double precision,intent(in)   :: eHF(nBas)
+  double precision,intent(in)   :: eGFlin(nBas)
   double precision,intent(in)   :: ERI(nBas,nBas,nBas,nBas)
 
 ! Local variables
@@ -30,47 +35,43 @@ subroutine GF2_QP_graph(eta,nBas,nC,nO,nV,nR,nS,eHF,ERI,eGF,Z)
 
 ! Run Newton's algorithm to find the root
  
+  write(*,*)'-----------------------------------------------------'
+  write(*,'(A5,1X,A3,1X,A15,1X,A15,1X,A10)') 'Orb.','It.','e_GFlin (eV)','e_GF (eV)','Z'
+  write(*,*)'-----------------------------------------------------'
+
   do p=nC+1,nBas-nR
 
-    write(*,*) '-----------------'
-    write(*,'(A10,I3)') 'Orbital ',p
-    write(*,*) '-----------------'
-
-    w = eHF(p)
+    w = eGFlin(p)
     nIt = 0
     f = 1d0
-    write(*,'(A3,I3,A1,1X,3F15.9)') 'It.',nIt,':',w*HaToeV,f
     
     do while (abs(f) > thresh .and. nIt < maxIt)
     
       nIt = nIt + 1
 
-      SigC  = GF2_SigC(p,w,eta,nBas,nC,nO,nV,nR,nS,eHF,ERI)
-      dSigC = GF2_dSigC(p,w,eta,nBas,nC,nO,nV,nR,nS,eHF,ERI)
+      SigC  = GF2_SigC(p,w,eta,nBas,nC,nO,nV,nR,eHF,ERI)
+      dSigC = GF2_dSigC(p,w,eta,nBas,nC,nO,nV,nR,eHF,ERI)
       f  = w - eHF(p) - SigC
       df = 1d0/(1d0 - dSigC)
     
       w = w - df*f
-
-      write(*,'(A3,I3,A1,1X,3F15.9)') 'It.',nIt,':',w*HaToeV,df,f
     
     end do
  
     if(nIt == maxIt) then 
 
-      write(*,*) 'Newton root search has not converged!'
-      eGF(p) = eHF(p)
+      eGF(p) = eGFlin(p)
+      write(*,'(I5,1X,I3,1X,F15.9,1X,F15.9,1X,F10.6,1X,A12)') p,nIt,eGFlin(p)*HaToeV,eGF(p)*HaToeV,Z(p),'Cvg Failed!'
 
     else
 
       eGF(p) = w
       Z(p)   = df
 
-      write(*,'(A32,F16.10)')   'Quasiparticle energy (eV)   ',eGF(p)*HaToeV
-      write(*,*)
+      write(*,'(I5,1X,I3,1X,F15.9,1X,F15.9,1X,F10.6)') p,nIt,eGFlin(p)*HaToeV,eGF(p)*HaToeV,Z(p)
 
-   end if
+    end if
 
-end do
+  end do
 
 end subroutine 

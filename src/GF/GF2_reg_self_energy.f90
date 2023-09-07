@@ -1,4 +1,4 @@
-subroutine GF2_reg_self_energy(eta,nBas,nC,nO,nV,nR,eHF,eGF2,ERI,SigC,Z)
+subroutine GF2_reg_self_energy(eta,nBas,nC,nO,nV,nR,e,ERI,SigC,Z)
 
 ! Compute GF2 self-energy and its renormalization factor
 
@@ -13,8 +13,7 @@ subroutine GF2_reg_self_energy(eta,nBas,nC,nO,nV,nR,eHF,eGF2,ERI,SigC,Z)
   integer,intent(in)            :: nO
   integer,intent(in)            :: nV
   integer,intent(in)            :: nR
-  double precision,intent(in)   :: eHF(nBas)
-  double precision,intent(in)   :: eGF2(nBas)
+  double precision,intent(in)   :: e(nBas)
   double precision,intent(in)   :: ERI(nBas,nBas,nBas,nBas)
 
 ! Local variables
@@ -53,7 +52,7 @@ subroutine GF2_reg_self_energy(eta,nBas,nC,nO,nV,nR,eHF,eGF2,ERI,SigC,Z)
         do j=nC+1,nO
           do a=nO+1,nBas-nR
 
-            eps = eGF2(p) + eHF(a) - eHF(i) - eHF(j)
+            eps = e(p) + e(a) - e(i) - e(j)
             kappa = 1d0 - exp(-2d0*eps**2*s)
             num = kappa*(2d0*ERI(p,a,i,j) - ERI(p,a,j,i))*ERI(q,a,i,j)
 
@@ -72,7 +71,7 @@ subroutine GF2_reg_self_energy(eta,nBas,nC,nO,nV,nR,eHF,eGF2,ERI,SigC,Z)
         do a=nO+1,nBas-nR
           do b=nO+1,nBas-nR
 
-            eps = eGF2(p) + eHF(i) - eHF(a) - eHF(b)
+            eps = e(p) + e(i) - e(a) - e(b)
             kappa = 1d0 - exp(-2d0*eps**2*s)
             num = kappa*(2d0*ERI(p,i,a,b) - ERI(p,i,b,a))*ERI(q,i,a,b)
 
