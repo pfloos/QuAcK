@@ -58,6 +58,7 @@ subroutine G0T0eh(doACFDT,exchange_kernel,doXBS,dophBSE,dophBSE2,TDA_T,TDA,dBSE,
   double precision,allocatable  :: rhoL(:,:,:)
   double precision,allocatable  :: rhoR(:,:,:)
 
+  double precision,allocatable  :: eGTlin(:)
   double precision,allocatable  :: eGT(:)
 
   double precision,allocatable  :: KA_sta(:,:)
@@ -98,7 +99,7 @@ subroutine G0T0eh(doACFDT,exchange_kernel,doXBS,dophBSE,dophBSE2,TDA_T,TDA,dBSE,
 ! Memory allocation
 
   allocate(Aph(nS,nS),Bph(nS,nS),Sig(nBas),Z(nBas),Om(nS),XpY(nS,nS),XmY(nS,nS), & 
-           rhoL(nBas,nBas,nS),rhoR(nBas,nBas,nS),eGT(nBas))
+           rhoL(nBas,nBas,nS),rhoR(nBas,nBas,nS),eGT(nBas),eGTlin(nBas))
 
 !---------------------------------
 ! Compute (triplet) RPA screening 
@@ -133,23 +134,25 @@ subroutine G0T0eh(doACFDT,exchange_kernel,doXBS,dophBSE,dophBSE2,TDA_T,TDA,dBSE,
 
   ! Linearized or graphical solution?
 
+  eGTlin(:) = eHF(:) + Z(:)*Sig(:)
+
   if(linearize) then 
  
     write(*,*) ' *** Quasiparticle energies obtained by linearization *** '
     write(*,*)
 
-    eGT(:) = eHF(:) + Z(:)*Sig(:)
+    eGT(:) = eGTlin(:) 
 
   else 
 
     write(*,*) ' *** Quasiparticle energies obtained by root search (experimental) *** '
     write(*,*)
 
-    call GTeh_QP_graph(eta,nBas,nC,nO,nV,nR,nS,eHF,Om,rhoL,rhoR,eHF,eGT,Z)
+    call GTeh_QP_graph(eta,nBas,nC,nO,nV,nR,nS,eHF,Om,rhoL,rhoR,eGTlin,eGT,Z)
 
   end if
 
-! call GTeh_plot_self_energy(eta,nBas,nC,nO,nV,nR,nS,eHF,eHF,Om,rhoL,rhoR)
+  call GTeh_plot_self_energy(eta,nBas,nC,nO,nV,nR,nS,eHF,eHF,Om,rhoL,rhoR)
 
 ! Compute the RPA correlation energy based on the G0T0eh quasiparticle energies
 

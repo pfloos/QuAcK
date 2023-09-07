@@ -54,6 +54,7 @@ subroutine G0W0(doACFDT,exchange_kernel,doXBS,dophBSE,dophBSE2,TDA_W,TDA,dBSE,dT
   double precision,allocatable  :: XmY(:,:)
   double precision,allocatable  :: rho(:,:,:)
 
+  double precision,allocatable  :: eGWlin(:)
   double precision,allocatable  :: eGW(:)
 
 ! Output variables
@@ -91,7 +92,8 @@ subroutine G0W0(doACFDT,exchange_kernel,doXBS,dophBSE,dophBSE2,TDA_W,TDA,dBSE,dT
 
 ! Memory allocation
 
-  allocate(Aph(nS,nS),Bph(nS,nS),SigC(nBas),Z(nBas),Om(nS),XpY(nS,nS),XmY(nS,nS),rho(nBas,nBas,nS),eGW(nBas))
+  allocate(Aph(nS,nS),Bph(nS,nS),SigC(nBas),Z(nBas),Om(nS),XpY(nS,nS),XmY(nS,nS),rho(nBas,nBas,nS), & 
+           eGW(nBas),eGWlin(nBas))
 
 !-------------------!
 ! Compute screening !
@@ -124,23 +126,25 @@ subroutine G0W0(doACFDT,exchange_kernel,doXBS,dophBSE,dophBSE2,TDA_W,TDA,dBSE,dT
 
   ! Linearized or graphical solution?
 
+  eGWlin(:) = eHF(:) + Z(:)*SigC(:)
+
   if(linearize) then 
  
     write(*,*) ' *** Quasiparticle energies obtained by linearization *** '
     write(*,*)
 
-    eGW(:) = eHF(:) + Z(:)*SigC(:)
+    eGW(:) = eGWlin(:)
 
   else 
 
     write(*,*) ' *** Quasiparticle energies obtained by root search (experimental) *** '
     write(*,*)
   
-    call GW_QP_graph(eta,nBas,nC,nO,nV,nR,nS,eHF,Om,rho,eHF,eGW,Z)
+    call GW_QP_graph(eta,nBas,nC,nO,nV,nR,nS,eHF,Om,rho,eGWlin,eGW,Z)
 
   end if
 
-! call GW_plot_self_energy(eta,nBas,nC,nO,nV,nR,nS,eHF,eHF,Om,rho)
+  call GW_plot_self_energy(eta,nBas,nC,nO,nV,nR,nS,eHF,eHF,Om,rho)
 
 ! Compute the RPA correlation energy
 
@@ -164,7 +168,6 @@ subroutine G0W0(doACFDT,exchange_kernel,doXBS,dophBSE,dophBSE2,TDA_W,TDA,dBSE,dT
   if(dophBSE) then
 
     call GW_phBSE(dophBSE2,TDA_W,TDA,dBSE,dTDA,singlet,triplet,eta,nBas,nC,nO,nV,nR,nS,ERI,dipole_int,eHF,eGW,EcBSE)
-
 
     if(exchange_kernel) then
  
