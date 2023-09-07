@@ -46,10 +46,9 @@ subroutine GTpp_QP_graph(eta,nBas,nC,nO,nV,nR,nOOs,nVVs,nOOt,nVVt,eHF,Om1s,rho1s
 
 ! Run Newton's algorithm to find the root
 
-
-  write(*,*)'------------------------------------'
-  write(*,'(A5,1X,A3,1X,A15,1X,A10)') 'Orb.','It.','e_GTpp (eV)','Z'
-  write(*,*)'------------------------------------'
+  write(*,*)'-----------------------------------------------------'
+  write(*,'(A5,1X,A3,1X,A15,1X,A15,1X,A10)') 'Orb.','It.','e_GTpplin (eV)','e_GTpplin (eV)','Z'
+  write(*,*)'-----------------------------------------------------'
 
   do p=nC+1,nBas-nR
 
@@ -72,20 +71,20 @@ subroutine GTpp_QP_graph(eta,nBas,nC,nO,nV,nR,nOOs,nVVs,nOOt,nVVt,eHF,Om1s,rho1s
     if(nIt == maxIt) then 
 
       eGT(p) = eGTlin(p)
-      write(*,'(I5,1X,I3,1X,F15.9,1X,F10.6,1X,A12)') p,nIt,eGT(p)*HaToeV,Z(p),'Cvg Failed!'
+      write(*,'(I5,1X,I3,1X,F15.9,1X,F15.9,1X,F10.6,1X,A12)') p,nIt,eGTlin(p)*HaToeV,eGT(p)*HaToeV,Z(p),'Cvg Failed!'
 
     else
 
       eGT(p) = w
       Z(p)   = df
 
-      write(*,'(I5,1X,I3,1X,F15.9,1X,F10.6)') p,nIt,eGT(p)*HaToeV,Z(p)
+      write(*,'(I5,1X,I3,1X,F15.9,1X,F15.9,1X,F10.6)') p,nIt,eGTlin(p)*HaToeV,eGT(p)*HaToeV,Z(p)
 
     end if
 
   end do
 
-  write(*,*)'------------------------------------'
+  write(*,*)'-----------------------------------------------------'
   write(*,*)
   
 end subroutine 

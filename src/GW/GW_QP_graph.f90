@@ -39,9 +39,9 @@ subroutine GW_QP_graph(eta,nBas,nC,nO,nV,nR,nS,eHF,Om,rho,eGWlin,eGW,Z)
 
 ! Run Newton's algorithm to find the root
  
-  write(*,*)'------------------------------------'
-  write(*,'(A5,1X,A3,1X,A15,1X,A10)') 'Orb.','It.','e_GW (eV)','Z'
-  write(*,*)'------------------------------------'
+  write(*,*)'-----------------------------------------------------'
+  write(*,'(A5,1X,A3,1X,A15,1X,A15,1X,A10)') 'Orb.','It.','e_GWlin (eV)','e_GW (eV)','Z'
+  write(*,*)'-----------------------------------------------------'
 
   do p=nC+1,nBas-nR
 
@@ -65,20 +65,20 @@ subroutine GW_QP_graph(eta,nBas,nC,nO,nV,nR,nS,eHF,Om,rho,eGWlin,eGW,Z)
     if(nIt == maxIt) then 
 
       eGW(p) = eGWlin(p)
-      write(*,'(I5,1X,I3,1X,F15.9,1X,F10.6,1X,A12)') p,nIt,eGW(p)*HaToeV,Z(p),'Cvg Failed!'
+      write(*,'(I5,1X,I3,1X,F15.9,1X,F15.9,1X,F10.6,1X,A12)') p,nIt,eGWlin(p)*HaToeV,eGW(p)*HaToeV,Z(p),'Cvg Failed!'
 
     else
 
       eGW(p) = w
       Z(p)   = df
 
-      write(*,'(I5,1X,I3,1X,F15.9,1X,F10.6)') p,nIt,eGW(p)*HaToeV,Z(p)
+      write(*,'(I5,1X,I3,1X,F15.9,1X,F15.9,1X,F10.6)') p,nIt,eGWlin(p)*HaToeV,eGW(p)*HaToeV,Z(p)
 
     end if
           
   end do
 
-  write(*,*)'------------------------------------'
+  write(*,*)'-----------------------------------------------------'
   write(*,*)
 
 end subroutine 
