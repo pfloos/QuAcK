@@ -199,8 +199,8 @@ subroutine G0T0pp(doACFDT,exchange_kernel,doXBS,dophBSE,TDA_T,TDA,dBSE,dTDA,dopp
 
   end if
 
-  call GTpp_plot_self_energy(eta,nBas,nC,nO,nV,nR,nOOs,nVVs,nOOt,nVVt,eHF,eGT,Om1s,rho1s,Om2s,rho2s, &
-                             Om1t,rho1t,Om2t,rho2t)
+! call GTpp_plot_self_energy(eta,nBas,nC,nO,nV,nR,nOOs,nVVs,nOOt,nVVt,eHF,eGT,Om1s,rho1s,Om2s,rho2s, &
+!                            Om1t,rho1t,Om2t,rho2t)
 
 !----------------------------------------------
 ! Dump results
