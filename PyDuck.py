@@ -96,7 +96,7 @@ def write_matrix_to_file(matrix,size,file,cutoff=1e-15):
     for i in range(size):
         for j in range(i,size):
             if abs(matrix[i][j]) > cutoff:
-                f.write(str(i+1)+' '+str(j+1)+' '+"{}".format(matrix[i][j]))
+                f.write(str(i+1)+' '+str(j+1)+' '+"{:.16E}".format(matrix[i][j]))
                 f.write('\n')
     f.close()
     
@@ -125,7 +125,7 @@ def write_tensor_to_file(tensor,size,file,cutoff=1e-15):
             for k in range(i,size):
                 for l in range(j,size):
                     if abs(tensor[i][k][j][l]) > cutoff:
-                        f.write(str(i+1)+' '+str(j+1)+' '+str(k+1)+' '+str(l+1)+' '+"{}".format(tensor[i][k][j][l]))
+                        f.write(str(i+1)+' '+str(j+1)+' '+str(k+1)+' '+str(l+1)+' '+"{:.16E}".format(tensor[i][k][j][l]))
                         f.write('\n')
     f.close()
 
