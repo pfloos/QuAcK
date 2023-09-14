@@ -46,11 +46,11 @@ subroutine GW_phBSE_dynamic_kernel_B(eta,nBas,nC,nO,nV,nR,nS,lambda,eGW,OmRPA,rh
           chi = 0d0
           do kc=1,nS
 
-            eps =     - OmRPA(kc) - (eGW(a) - eGW(b))
-            chi = chi + rho(i,b,kc)*rho(a,j,kc)*eps/(eps**2 + eta**2)
+            eps =     - OmRPA(kc) - (eGW(b) - eGW(i))
+            chi = chi + rho(i,b,kc)*rho(j,a,kc)*eps/(eps**2 + eta**2)
 
-            eps =     - OmRPA(kc) - (eGW(j) - eGW(i))
-            chi = chi + rho(i,b,kc)*rho(a,j,kc)*eps/(eps**2 + eta**2)
+            eps =     - OmRPA(kc) - (eGW(a) - eGW(j))
+            chi = chi + rho(i,b,kc)*rho(j,a,kc)*eps/(eps**2 + eta**2)
 
           enddo
 
