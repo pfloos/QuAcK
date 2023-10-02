@@ -1,4 +1,4 @@
-subroutine GF2_QP_graph(eta,nBas,nC,nO,nV,nR,eHF,ERI,eGFlin,eGF,Z)
+subroutine GF2_QP_graph(eta,nBas,nC,nO,nV,nR,eHF,ERI,eGFlin,eOld,eGF,Z)
 
 ! Compute the graphical solution of the GF2 QP equation
 
@@ -15,6 +15,7 @@ subroutine GF2_QP_graph(eta,nBas,nC,nO,nV,nR,eHF,ERI,eGFlin,eGF,Z)
   integer,intent(in)            :: nR
   double precision,intent(in)   :: eHF(nBas)
   double precision,intent(in)   :: eGFlin(nBas)
+  double precision,intent(in)   :: eOld(nBas)
   double precision,intent(in)   :: ERI(nBas,nBas,nBas,nBas)
 
 ! Local variables
@@ -49,8 +50,8 @@ subroutine GF2_QP_graph(eta,nBas,nC,nO,nV,nR,eHF,ERI,eGFlin,eGF,Z)
     
       nIt = nIt + 1
 
-      SigC  = GF2_SigC(p,w,eta,nBas,nC,nO,nV,nR,eHF,ERI)
-      dSigC = GF2_dSigC(p,w,eta,nBas,nC,nO,nV,nR,eHF,ERI)
+      SigC  = GF2_SigC(p,w,eta,nBas,nC,nO,nV,nR,eOld,ERI)
+      dSigC = GF2_dSigC(p,w,eta,nBas,nC,nO,nV,nR,eOld,ERI)
       f  = w - eHF(p) - SigC
       df = 1d0/(1d0 - dSigC)
     

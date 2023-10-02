@@ -76,7 +76,7 @@ subroutine G0F2(dophBSE,doppBSE,TDA,dBSE,dTDA,singlet,triplet,linearize,eta,regu
     write(*,*) ' *** Quasiparticle energies obtained by root search (experimental) *** '
     write(*,*)
 
-    call GF2_QP_graph(eta,nBas,nC,nO,nV,nR,eHF,ERI,eGFlin,eGF,Z)
+    call GF2_QP_graph(eta,nBas,nC,nO,nV,nR,eHF,ERI,eGFlin,eHF,eGF,Z)
 
   end if
 

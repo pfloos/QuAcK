@@ -1,6 +1,5 @@
 subroutine GTeh_QP_graph(eta,nBas,nC,nO,nV,nR,nS,eHF,Om,rhoL,rhoR,eGTlin,eOld,eGT,Z)
 
-
 ! Compute the graphical solution of the QP equation
 
   implicit none
