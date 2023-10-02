@@ -1,4 +1,4 @@
-subroutine CC(doCCD,dopCCD,doDCD,doCCSD,doCCSDT,do_drCCD,do_rCCD,do_crCCD,do_lCCD, & 
+subroutine CC(doCCD,dopCCD,doDCD,doCCSD,doCCSDT,dodrCCD,dorCCD,docrCCD,dolCCD, & 
               maxSCF,thresh,max_diis,nBas,nC,nO,nV,nR,ERI,ENuc,EHF,epsHF)
 
 ! Coupled-cluster module
@@ -13,20 +13,20 @@ subroutine CC(doCCD,dopCCD,doDCD,doCCSD,doCCSDT,do_drCCD,do_rCCD,do_crCCD,do_lCC
   logical                       :: doDCD
   logical                       :: doCCSD
   logical                       :: doCCSDT
-  logical                       :: do_drCCD
-  logical                       :: do_rCCD
-  logical                       :: do_crCCD
-  logical                       :: do_lCCD
+  logical                       :: dodrCCD
+  logical                       :: dorCCD
+  logical                       :: docrCCD
+  logical                       :: dolCCD
 
   integer,intent(in)            :: maxSCF
   integer,intent(in)            :: max_diis
   double precision,intent(in)   :: thresh
 
   integer,intent(in)            :: nBas
-  integer,intent(in)            :: nC
-  integer,intent(in)            :: nO
-  integer,intent(in)            :: nV
-  integer,intent(in)            :: nR
+  integer,intent(in)            :: nC(nspin)
+  integer,intent(in)            :: nO(nspin)
+  integer,intent(in)            :: nV(nspin)
+  integer,intent(in)            :: nR(nspin)
   double precision,intent(in)   :: ENuc
   double precision,intent(in)   :: EHF
   double precision,intent(in)   :: epsHF(nBas)
@@ -91,7 +91,7 @@ subroutine CC(doCCD,dopCCD,doDCD,doCCSD,doCCSDT,do_drCCD,do_rCCD,do_crCCD,do_lCC
 ! Perform direct ring CCD calculation
 !------------------------------------------------------------------------
 
-  if(do_drCCD) then
+  if(dodrCCD) then
 
     call wall_time(start_CC)
     call drCCD(maxSCF,thresh,max_diis,nBas,nC,nO,nV,nR,ERI,ENuc,EHF,epsHF)
@@ -107,7 +107,7 @@ subroutine CC(doCCD,dopCCD,doDCD,doCCSD,doCCSDT,do_drCCD,do_rCCD,do_crCCD,do_lCC
 ! Perform ring CCD calculation
 !------------------------------------------------------------------------
 
-  if(do_rCCD) then
+  if(dorCCD) then
 
     call wall_time(start_CC)
     call rCCD(maxSCF,thresh,max_diis,nBas,nC,nO,nV,nR,ERI,ENuc,EHF,epsHF,epsHF)
@@ -123,7 +123,7 @@ subroutine CC(doCCD,dopCCD,doDCD,doCCSD,doCCSDT,do_drCCD,do_rCCD,do_crCCD,do_lCC
 ! Perform crossed-ring CCD calculation
 !------------------------------------------------------------------------
 
-  if(do_crCCD) then
+  if(docrCCD) then
 
     call wall_time(start_CC)
     call crCCD(maxSCF,thresh,max_diis,nBas,nC,nO,nV,nR,ERI,ENuc,EHF,epsHF)
@@ -139,7 +139,7 @@ subroutine CC(doCCD,dopCCD,doDCD,doCCSD,doCCSDT,do_drCCD,do_rCCD,do_crCCD,do_lCC
 ! Perform ladder CCD calculation
 !------------------------------------------------------------------------
 
-  if(do_lCCD) then
+  if(dolCCD) then
 
     call wall_time(start_CC)
     call lCCD(maxSCF,thresh,max_diis,nBas,nC,nO,nV,nR,ERI,ENuc,EHF,epsHF)
@@ -158,7 +158,9 @@ subroutine CC(doCCD,dopCCD,doDCD,doCCSD,doCCSDT,do_drCCD,do_rCCD,do_crCCD,do_lCC
   if(dopCCD) then
 
     call wall_time(start_CC)
-    call pCCD(maxSCF,thresh,max_diis,nBas,nC,nO,nV,nR,ERI,ENuc,EHF,epsHF)
+!   call pCCD(maxSCF,thresh,max_diis,nBas,nC,nO,nV,nR,ERI,ENuc,EHF,epsHF)
+    call ROpCCD(maxSCF,thresh,max_diis,nBas,nC,nO,nV,nR,ERI,ENuc,EHF,epsHF)
+
     call wall_time(end_CC)
 
     t_CC = end_CC - start_CC

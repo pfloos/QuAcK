@@ -1,4 +1,4 @@
-subroutine GW_QP_graph(eta,nBas,nC,nO,nV,nR,nS,eHF,Om,rho,eGWlin,eGW,Z)
+subroutine GW_QP_graph(eta,nBas,nC,nO,nV,nR,nS,eHF,Om,rho,eGWlin,eOld,eGW,Z)
 
 ! Compute the graphical solution of the QP equation
 
@@ -34,11 +34,12 @@ subroutine GW_QP_graph(eta,nBas,nC,nO,nV,nR,nS,eHF,Om,rho,eGWlin,eGW,Z)
 
 ! Output variables
 
+  double precision,intent(out)  :: eOld(nBas)
   double precision,intent(out)  :: eGW(nBas)
   double precision,intent(out)  :: Z(nBas)
 
 ! Run Newton's algorithm to find the root
- 
+
   write(*,*)'-----------------------------------------------------'
   write(*,'(A5,1X,A3,1X,A15,1X,A15,1X,A10)') 'Orb.','It.','e_GWlin (eV)','e_GW (eV)','Z'
   write(*,*)'-----------------------------------------------------'
@@ -53,8 +54,8 @@ subroutine GW_QP_graph(eta,nBas,nC,nO,nV,nR,nS,eHF,Om,rho,eGWlin,eGW,Z)
     
       nIt = nIt + 1
 
-      SigC  = GW_SigC(p,w,eta,nBas,nC,nO,nV,nR,nS,eGWlin,Om,rho)
-      dSigC = GW_dSigC(p,w,eta,nBas,nC,nO,nV,nR,nS,eGWlin,Om,rho)
+      SigC  = GW_SigC(p,w,eta,nBas,nC,nO,nV,nR,nS,eOld,Om,rho)
+      dSigC = GW_dSigC(p,w,eta,nBas,nC,nO,nV,nR,nS,eOld,Om,rho)
       f  = w - eHF(p) - SigC
       df = 1d0/(1d0 - dSigC)
     
