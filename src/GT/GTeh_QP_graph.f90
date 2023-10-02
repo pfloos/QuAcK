@@ -1,4 +1,4 @@
-subroutine GTeh_QP_graph(eta,nBas,nC,nO,nV,nR,nS,eHF,Om,rhoL,rhoR,eGTlin,eGT,Z)
+subroutine GTeh_QP_graph(eta,nBas,nC,nO,nV,nR,nS,eHF,Om,rhoL,rhoR,eGTlin,eOld,eGT,Z)
 
 
 ! Compute the graphical solution of the QP equation
@@ -22,6 +22,7 @@ subroutine GTeh_QP_graph(eta,nBas,nC,nO,nV,nR,nS,eHF,Om,rhoL,rhoR,eGTlin,eGT,Z)
   double precision,intent(in)   :: rhoR(nBas,nBas,nS)
 
   double precision,intent(in)   :: eGTlin(nBas)
+  double precision,intent(in)   :: eOld(nBas)
   
 ! Local variables
 
@@ -55,8 +56,8 @@ subroutine GTeh_QP_graph(eta,nBas,nC,nO,nV,nR,nS,eHF,Om,rhoL,rhoR,eGTlin,eGT,Z)
 
       nIt = nIt + 1
 
-      SigC  = GTeh_SigC(p,w,eta,nBas,nC,nO,nV,nR,nS,eGTlin,Om,rhoL,rhoR)
-      dSigC = GTeh_dSigC(p,w,eta,nBas,nC,nO,nV,nR,nS,eGTlin,Om,rhoL,rhoR)
+      SigC  = GTeh_SigC(p,w,eta,nBas,nC,nO,nV,nR,nS,eOld,Om,rhoL,rhoR)
+      dSigC = GTeh_dSigC(p,w,eta,nBas,nC,nO,nV,nR,nS,eOld,Om,rhoL,rhoR)
       f  = w - eHF(p) - SigC 
       df = 1d0/(1d0 - dSigC)
       w = w - df*f

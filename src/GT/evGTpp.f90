@@ -210,7 +210,7 @@ subroutine evGTpp(maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,BSE,TDA_T
       write(*,*)
  
      call GTpp_QP_graph(eta,nBas,nC,nO,nV,nR,nOOs,nVVs,nOOt,nVVt,eHF,Om1s,rho1s,Om2s,rho2s, & 
-                        Om1t,rho1t,Om2t,rho2t,eOld,eGT,Z)
+                        Om1t,rho1t,Om2t,rho2t,eOld,eOld,eGT,Z)
  
     end if
 

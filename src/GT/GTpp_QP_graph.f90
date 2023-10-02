@@ -1,5 +1,5 @@
 subroutine GTpp_QP_graph(eta,nBas,nC,nO,nV,nR,nOOs,nVVs,nOOt,nVVt,eHF,Om1s,rho1s,Om2s,rho2s, & 
-                         Om1t,rho1t,Om2t,rho2t,eGTlin,eGT,Z)
+                         Om1t,rho1t,Om2t,rho2t,eGTlin,eOld,eGT,Z)
 
 ! Compute the graphical solution of the QP equation
 
@@ -24,6 +24,7 @@ subroutine GTpp_QP_graph(eta,nBas,nC,nO,nV,nR,nOOs,nVVs,nOOt,nVVt,eHF,Om1s,rho1s
   double precision,intent(in)   :: rho2s(nBas,nBas,nOOs),rho2t(nBas,nBas,nOOt)
 
   double precision,intent(in)   :: eGTlin(nBas)
+  double precision,intent(in)   :: eOld(nBas)
   
 ! Local variables
 
@@ -60,8 +61,8 @@ subroutine GTpp_QP_graph(eta,nBas,nC,nO,nV,nR,nOOs,nVVs,nOOt,nVVt,eHF,Om1s,rho1s
 
       nIt = nIt + 1
 
-      SigC  = GTpp_SigC(p,w,eta,nBas,nC,nO,nV,nR,nOOs,nVVs,nOOt,nVVt,eGTlin,Om1s,rho1s,Om2s,rho2s,Om1t,rho1t,Om2t,rho2t)
-      dSigC = GTpp_dSigC(p,w,eta,nBas,nC,nO,nV,nR,nOOs,nVVs,nOOt,nVVt,eGTlin,Om1s,rho1s,Om2s,rho2s,Om1t,rho1t,Om2t,rho2t)
+      SigC  = GTpp_SigC(p,w,eta,nBas,nC,nO,nV,nR,nOOs,nVVs,nOOt,nVVt,eOld,Om1s,rho1s,Om2s,rho2s,Om1t,rho1t,Om2t,rho2t)
+      dSigC = GTpp_dSigC(p,w,eta,nBas,nC,nO,nV,nR,nOOs,nVVs,nOOt,nVVt,eOld,Om1s,rho1s,Om2s,rho2s,Om1t,rho1t,Om2t,rho2t)
       f  = w - eHF(p) - SigC 
       df = 1d0/(1d0 - dSigC)
       w = w - df*f

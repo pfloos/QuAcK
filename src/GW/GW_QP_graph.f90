@@ -20,6 +20,7 @@ subroutine GW_QP_graph(eta,nBas,nC,nO,nV,nR,nS,eHF,Om,rho,eGWlin,eOld,eGW,Z)
   double precision,intent(in)   :: rho(nBas,nBas,nS)
 
   double precision,intent(in)   :: eGWlin(nBas)
+  double precision,intent(in)   :: eOld(nBas)
 
 ! Local variables
 
@@ -34,7 +35,6 @@ subroutine GW_QP_graph(eta,nBas,nC,nO,nV,nR,nS,eHF,Om,rho,eGWlin,eOld,eGW,Z)
 
 ! Output variables
 
-  double precision,intent(out)  :: eOld(nBas)
   double precision,intent(out)  :: eGW(nBas)
   double precision,intent(out)  :: Z(nBas)
 
