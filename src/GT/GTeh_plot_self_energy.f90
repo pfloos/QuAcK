@@ -1,4 +1,4 @@
-subroutine GTeh_plot_self_energy(eta,nBas,nC,nO,nV,nR,nS,eHF,eGT,Om,rhoL,rhoR)
+subroutine GTeh_plot_self_energy(nBas,nC,nO,nV,nR,nS,eHF,eGT,Om,rhoL,rhoR)
 
 ! Dump several GTeh quantities for external plotting
 
@@ -13,7 +13,6 @@ subroutine GTeh_plot_self_energy(eta,nBas,nC,nO,nV,nR,nS,eHF,eGT,Om,rhoL,rhoR)
   integer,intent(in)            :: nV
   integer,intent(in)            :: nR
   integer,intent(in)            :: nS
-  double precision,intent(in)   :: eta
   double precision,intent(in)   :: eHF(nBas)
   double precision,intent(in)   :: eGT(nBas)
   double precision,intent(in)   :: Om(nS)
@@ -22,6 +21,7 @@ subroutine GTeh_plot_self_energy(eta,nBas,nC,nO,nV,nR,nS,eHF,eGT,Om,rhoL,rhoR)
 
 ! Local variables
 
+  double precision              :: eta
   integer                       :: p,g
   integer                       :: nGrid
   double precision              :: wmin,wmax,dw
@@ -30,6 +30,10 @@ subroutine GTeh_plot_self_energy(eta,nBas,nC,nO,nV,nR,nS,eHF,eGT,Om,rhoL,rhoR)
   double precision,allocatable  :: SigC(:,:)
   double precision,allocatable  :: Z(:,:)
   double precision,allocatable  :: S(:,:)
+
+! Broadening parameter
+
+  eta = 0.1d0
 
 ! Construct grid
 

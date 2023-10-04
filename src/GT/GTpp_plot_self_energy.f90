@@ -1,4 +1,4 @@
-subroutine GTpp_plot_self_energy(eta,nBas,nC,nO,nV,nR,nOOs,nVVs,nOOt,nVVt,eHF,eGT,Om1s,rho1s,Om2s,rho2s, &
+subroutine GTpp_plot_self_energy(nBas,nC,nO,nV,nR,nOOs,nVVs,nOOt,nVVt,eHF,eGT,Om1s,rho1s,Om2s,rho2s, &
                                  Om1t,rho1t,Om2t,rho2t)
 
 ! Dump several GTpp quantities for external plotting
@@ -16,7 +16,6 @@ subroutine GTpp_plot_self_energy(eta,nBas,nC,nO,nV,nR,nOOs,nVVs,nOOt,nVVt,eHF,eG
   integer,intent(in)            :: nOOs,nOOt
   integer,intent(in)            :: nVVs,nVVt
 
-  double precision,intent(in)   :: eta
   double precision,intent(in)   :: eHF(nBas)
   double precision,intent(in)   :: eGT(nBas)
   double precision,intent(in)   :: Om1s(nVVs),Om1t(nVVt)
@@ -26,6 +25,7 @@ subroutine GTpp_plot_self_energy(eta,nBas,nC,nO,nV,nR,nOOs,nVVs,nOOt,nVVt,eHF,eG
 
 ! Local variables
 
+  double precision              :: eta
   integer                       :: p,g
   integer                       :: nGrid
   double precision              :: wmin,wmax,dw
@@ -34,6 +34,10 @@ subroutine GTpp_plot_self_energy(eta,nBas,nC,nO,nV,nR,nOOs,nVVs,nOOt,nVVt,eHF,eG
   double precision,allocatable  :: SigC(:,:)
   double precision,allocatable  :: Z(:,:)
   double precision,allocatable  :: S(:,:)
+
+! Broadening parameter
+
+  eta = 0.1d0
 
 ! Construct grid
 
