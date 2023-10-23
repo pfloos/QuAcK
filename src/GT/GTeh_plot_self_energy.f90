@@ -33,7 +33,7 @@ subroutine GTeh_plot_self_energy(nBas,nC,nO,nV,nR,nS,eHF,eGT,Om,rhoL,rhoR)
 
 ! Broadening parameter
 
-  eta = 0.1d0
+  eta = 0.01d0
 
 ! Construct grid
 

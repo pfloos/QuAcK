@@ -44,6 +44,7 @@ subroutine UG0W0(doACFDT,exchange_kernel,doXBS,BSE,TDA_W,TDA,dBSE,dTDA,spin_cons
 ! Local variables
 
   logical                       :: print_W = .true.
+  logical                       :: dRPA
   integer                       :: is
   integer                       :: ispin
   double precision              :: EcRPA
@@ -76,6 +77,7 @@ subroutine UG0W0(doACFDT,exchange_kernel,doXBS,BSE,TDA_W,TDA,dBSE,dTDA,spin_cons
 ! Initialization
 
   EcRPA = 0d0
+  dRPA = .true.
 
 ! TDA for W
 
@@ -104,11 +106,11 @@ subroutine UG0W0(doACFDT,exchange_kernel,doXBS,BSE,TDA_W,TDA,dBSE,dTDA,spin_cons
 ! Compute screening !
 !-------------------!
 
-! Spin-conserving transition
+! Spin-conserving transitions
 
   ispin = 1
 
-  call phULR(ispin,.true.,TDA_W,.false.,eta,nBas,nC,nO,nV,nR,nS_aa,nS_bb,nS_sc,nS_sc,1d0, &
+  call phULR(ispin,dRPA,TDA_W,.false.,nBas,nC,nO,nV,nR,nS_aa,nS_bb,nS_sc,nS_sc,1d0, &
              eHF,ERI_aaaa,ERI_aabb,ERI_bbbb,Om,rho,EcRPA,Om,XpY,XmY)
 
   if(print_W) call print_excitation_energies('phRPA@UHF',5,nS_sc,Om)
@@ -157,7 +159,7 @@ subroutine UG0W0(doACFDT,exchange_kernel,doXBS,BSE,TDA_W,TDA,dBSE,dTDA,spin_cons
 
 ! Compute RPA correlation energy
 
-  call phULR(ispin,.true.,TDA_W,.false.,eta,nBas,nC,nO,nV,nR,nS_aa,nS_bb,nS_sc,nS_sc,1d0, &
+  call phULR(ispin,dRPA,TDA_W,.false.,nBas,nC,nO,nV,nR,nS_aa,nS_bb,nS_sc,nS_sc,1d0, &
              eGW,ERI_aaaa,ERI_aabb,ERI_bbbb,Om,rho,EcRPA,Om,XpY,XmY)
 
 ! Dump results

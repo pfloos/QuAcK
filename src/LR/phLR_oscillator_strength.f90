@@ -21,7 +21,7 @@ subroutine phLR_oscillator_strength(nBas,nC,nO,nV,nR,nS,maxS,dipole_int,Om,XpY,X
   
 ! Local variables
 
-  integer                       :: ia,jb,i,j,a,b
+  integer                       :: m,jb,i,j,a,b
   integer                       :: ixyz
 
   double precision,allocatable  :: f(:,:)
@@ -40,21 +40,21 @@ subroutine phLR_oscillator_strength(nBas,nC,nO,nV,nR,nS,maxS,dipole_int,Om,XpY,X
 
 ! Compute dipole moments and oscillator strengths
 
-  do ia=1,maxS
+  do m=1,maxS
     do ixyz=1,ncart
       jb = 0
       do j=nC+1,nO
         do b=nO+1,nBas-nR
           jb = jb + 1
-          f(ia,ixyz) = f(ia,ixyz) + dipole_int(j,b,ixyz)*XpY(ia,jb)
+          f(m,ixyz) = f(m,ixyz) + dipole_int(j,b,ixyz)*XpY(m,jb)
         end do
       end do
     end do
   end do
   f(:,:) = sqrt(2d0)*f(:,:)
 
-  do ia=1,maxS
-    os(ia) = 2d0/3d0*Om(ia)*sum(f(ia,:)**2)
+  do m=1,maxS
+    os(m) = 2d0/3d0*Om(m)*sum(f(m,:)**2)
   end do
  
   write(*,*) '---------------------------------------------------------------'
@@ -62,10 +62,14 @@ subroutine phLR_oscillator_strength(nBas,nC,nO,nV,nR,nS,maxS,dipole_int,Om,XpY,X
   write(*,*) '---------------------------------------------------------------'
   write(*,'(A3,5A12)') '#','X','Y','Z','dip. str.','osc. str.'
   write(*,*) '---------------------------------------------------------------'
-  do ia=1,maxS
-    write(*,'(I3,5F12.6)') ia,(f(ia,ixyz),ixyz=1,ncart),sum(f(ia,:)**2),os(ia)
+  do m=1,maxS
+    write(*,'(I3,5F12.6)') m,(f(m,ixyz),ixyz=1,ncart),sum(f(m,:)**2),os(m)
   end do
   write(*,*) '---------------------------------------------------------------'
   write(*,*)
+
+! do m=1,maxS
+!   write(*,'(I3,3F12.6)') m,Om(m),os(m)
+! end do
 
 end subroutine 

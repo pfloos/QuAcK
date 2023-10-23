@@ -66,7 +66,7 @@ subroutine G0T0pp(doACFDT,exchange_kernel,doXBS,dophBSE,TDA_T,TDA,dBSE,dTDA,dopp
 
   write(*,*)
   write(*,*)'************************************************'
-  write(*,*)'|          One-shot G0T0pp calculation           |'
+  write(*,*)'|          One-shot G0T0pp calculation          |'
   write(*,*)'************************************************'
   write(*,*)
 
