@@ -12,10 +12,6 @@ subroutine mo_guess(nBas,guess_type,S,Hc,X,c)
   double precision,intent(in)   :: Hc(nBas,nBas)
   double precision,intent(in)   :: X(nBas,nBas)
 
-! Local variables
-
-  integer                       :: nSCF
-
 ! Output variables
 
   double precision,intent(out)  :: c(nBas,nBas)

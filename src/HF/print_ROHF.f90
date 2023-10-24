@@ -1,4 +1,4 @@
-subroutine print_ROHF(nBas,nO,Ov,e,c,ENuc,ET,EV,EJ,Ex,EHF,dipole)
+subroutine print_ROHF(nBas,nO,e,c,ENuc,ET,EV,EJ,Ex,EHF,dipole)
 
 ! Print one- and two-electron energies and other stuff for RoHF calculation
 
@@ -7,7 +7,6 @@ subroutine print_ROHF(nBas,nO,Ov,e,c,ENuc,ET,EV,EJ,Ex,EHF,dipole)
 
   integer,intent(in)                 :: nBas
   integer,intent(in)                 :: nO(nspin)
-  double precision,intent(in)        :: Ov(nBas,nBas)
   double precision,intent(in)        :: e(nBas)
   double precision,intent(in)        :: c(nBas,nBas)
   double precision,intent(in)        :: ENuc
@@ -23,7 +22,6 @@ subroutine print_ROHF(nBas,nO,Ov,e,c,ENuc,ET,EV,EJ,Ex,EHF,dipole)
   double precision                   :: HOMO(nspin)
   double precision                   :: LUMO(nspin)
   double precision                   :: Gap(nspin)
-  double precision                   :: S_exact,S2_exact
   double precision                   :: S,S2
 
 ! HOMO and LUMO

@@ -42,8 +42,8 @@ program QuAcK
   double precision,allocatable  :: dipole_int_MO(:,:,:)
   double precision,allocatable  :: dipole_int_aa(:,:,:)
   double precision,allocatable  :: dipole_int_bb(:,:,:)
-  double precision,allocatable  :: F_AO(:,:)
-  double precision,allocatable  :: F_MO(:,:)
+  double precision,allocatable  :: F_AO(:,:,:)
+  double precision,allocatable  :: F_MO(:,:,:)
   double precision,allocatable  :: ERI_AO(:,:,:,:)
   double precision,allocatable  :: ERI_MO(:,:,:,:)
   integer                       :: ixyz
@@ -185,7 +185,7 @@ program QuAcK
 
   allocate(cHF(nBas,nBas,nspin),epsHF(nBas,nspin),PHF(nBas,nBas,nspin),S(nBas,nBas),T(nBas,nBas),              &
            V(nBas,nBas),Hc(nBas,nBas),X(nBas,nBas),ERI_AO(nBas,nBas,nBas,nBas),dipole_int_AO(nBas,nBas,ncart), & 
-           dipole_int_MO(nBas,nBas,ncart),F_AO(nBas,nBas))
+           dipole_int_MO(nBas,nBas,ncart),F_AO(nBas,nBas,nspin))
 
 ! Read integrals
 
@@ -215,8 +215,8 @@ program QuAcK
 
     call wall_time(start_HF)
     call HF(doRHF,doUHF,doROHF,doRMOM,doUMOM,unrestricted,maxSCF_HF,thresh_HF,max_diis_HF, & 
-            guess_type,mix,level_shift,nNuc,ZNuc,rNuc,ENuc,nBas,nO,S,T,V,Hc,F_AO,          & 
-            ERI_AO,dipole_int_AO,X,EHF,epsHF,cHF,PHF)
+            guess_type,mix,level_shift,nNuc,ZNuc,rNuc,ENuc,nBas,nO,S,T,V,Hc,F_AO,ERI_AO,   & 
+            dipole_int_AO,X,EHF,epsHF,cHF,PHF)
     call wall_time(end_HF)
 
     t_HF = end_HF - start_HF
@@ -291,7 +291,7 @@ program QuAcK
 
     ! Memory allocation
    
-    allocate(ERI_MO(nBas,nBas,nBas,nBas),F_MO(nBas,nBas))
+    allocate(ERI_MO(nBas,nBas,nBas,nBas),F_MO(nBas,nBas,nspin))
 
     ! Read and transform dipole-related integrals
   
@@ -304,7 +304,7 @@ program QuAcK
    
     call AOtoMO_integral_transform(1,1,1,1,nBas,cHF,ERI_AO,ERI_MO)
 
-    F_MO(:,:) = F_AO(:,:)
+    F_MO(:,:,1) = F_AO(:,:,1)
     call AOtoMO_transform(nBas,cHF,F_MO)
 
   end if

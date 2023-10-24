@@ -39,34 +39,15 @@ subroutine HF(doRHF,doUHF,doROHF,doRMOM,doUMOM,unrestricted,maxSCF,thresh,max_di
 
   double precision              :: start_HF     ,end_HF       ,t_HF
 
-  integer                       :: nSCF
-  double precision              :: ET
-  double precision              :: EV
-  double precision              :: EJ
-  double precision              :: EK
-  double precision              :: dipole(ncart)
-
-  double precision              :: Conv
-  double precision              :: Gap 
-  double precision              :: rcond
-  double precision,external     :: trace_matrix
-  double precision,allocatable  :: error(:,:)
-  double precision,allocatable  :: error_diis(:,:)
-  double precision,allocatable  :: F_diis(:,:)
-  double precision,allocatable  :: J(:,:)
-  double precision,allocatable  :: K(:,:)
-  double precision,allocatable  :: cp(:,:)
-  double precision,allocatable  :: Fp(:,:)
-
 ! Output variables
 
   logical,intent(out)           :: unrestricted
 
   double precision,intent(out)  :: EHF
-  double precision,intent(out)  :: epsHF(nBas)
-  double precision,intent(out)  :: cHF(nBas,nBas)
-  double precision,intent(out)  :: PHF(nBas,nBas)
-  double precision,intent(out)  :: F(nBas,nBas)
+  double precision,intent(out)  :: epsHF(nBas,nspin)
+  double precision,intent(out)  :: cHF(nBas,nBas,nspin)
+  double precision,intent(out)  :: PHF(nBas,nBas,nspin)
+  double precision,intent(out)  :: F(nBas,nBas,nspin)
 
 !------------------------------------------------------------------------
 ! Compute RHF energy

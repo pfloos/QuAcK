@@ -112,35 +112,6 @@ subroutine UHF(maxSCF,thresh,max_diis,guess_type,mix,level_shift,nNuc,ZNuc,rNuc,
 
     nSCF = nSCF + 1
 
-!  Transform Fock matrix in orthogonal basis
-
-    do ispin=1,nspin
-      Fp(:,:,ispin) = matmul(transpose(X(:,:)),matmul(F(:,:,ispin),X(:,:)))
-    end do
-
-!  Diagonalize Fock matrix to get eigenvectors and eigenvalues
-
-    cp(:,:,:) = Fp(:,:,:)
-    do ispin=1,nspin
-      call diagonalize_matrix(nBas,cp(:,:,ispin),e(:,ispin))
-    end do
-    
-!   Back-transform eigenvectors in non-orthogonal basis
-
-    do ispin=1,nspin
-      c(:,:,ispin) = matmul(X(:,:),cp(:,:,ispin))
-    end do
-
-!   Mix guess for UHF solution in singlet states
-
-    if(mix .and. nSCF == 1) call mix_guess(nBas,nO,c)
-
-!   Compute density matrix 
-
-    do ispin=1,nspin
-      P(:,:,ispin) = matmul(c(:,1:nO(ispin),ispin),transpose(c(:,1:nO(ispin),ispin)))
-    end do
- 
 !   Build Coulomb repulsion
 
     do ispin=1,nspin
@@ -189,6 +160,35 @@ subroutine UHF(maxSCF,thresh,max_diis,guess_type,mix,level_shift,nNuc,ZNuc,rNuc,
 
     end if
 
+!  Transform Fock matrix in orthogonal basis
+
+    do ispin=1,nspin
+      Fp(:,:,ispin) = matmul(transpose(X(:,:)),matmul(F(:,:,ispin),X(:,:)))
+    end do
+
+!  Diagonalize Fock matrix to get eigenvectors and eigenvalues
+
+    cp(:,:,:) = Fp(:,:,:)
+    do ispin=1,nspin
+      call diagonalize_matrix(nBas,cp(:,:,ispin),e(:,ispin))
+    end do
+    
+!   Back-transform eigenvectors in non-orthogonal basis
+
+    do ispin=1,nspin
+      c(:,:,ispin) = matmul(X(:,:),cp(:,:,ispin))
+    end do
+
+!   Mix guess for UHF solution in singlet states
+
+    if(mix .and. nSCF == 1) call mix_guess(nBas,nO,c)
+
+!   Compute density matrix 
+
+    do ispin=1,nspin
+      P(:,:,ispin) = matmul(c(:,1:nO(ispin),ispin),transpose(c(:,1:nO(ispin),ispin)))
+    end do
+ 
 !------------------------------------------------------------------------
 !   Compute UHF energy
 !------------------------------------------------------------------------

@@ -57,7 +57,7 @@ else:
     compile_gfortran_mac = """
 FC = gfortran
 AR = libtool -static -o
-FFLAGS = -I$IDIR -J$IDIR -fbacktrace -Wall -g -msse4.2 -fcheck=all -Waliasing -Wampersand -Wconversion -Wsurprising -Wintrinsics-std -Wno-tabs -Wintrinsic-shadow -Wline-truncation -Wreal-q-constant
+FFLAGS = -I$IDIR -J$IDIR -fbacktrace -Wall -g -fcheck=all -Waliasing -Wampersand -Wconversion -Wsurprising -Wintrinsics-std -Wno-tabs -Wintrinsic-shadow -Wline-truncation -Wreal-q-constant
 CC = gcc
 CXX = g++
 LAPACK=-lblas -llapack
@@ -68,7 +68,7 @@ FIX_ORDER_OF_LIBS=
     compile_gfortran_linux = """
 FC = gfortran
 AR = ar crs
-FFLAGS = -I$IDIR -J$IDIR -fbacktrace -Wall -g -msse4.2 -fcheck=all -Waliasing -Wampersand -Wconversion -Wsurprising -Wintrinsics-std -Wno-tabs -Wintrinsic-shadow -Wline-truncation -Wreal-q-constant
+FFLAGS = -I$IDIR -J$IDIR -fbacktrace -Wall -g -fcheck=all -Waliasing -Wampersand -Wconversion -Wsurprising -Wintrinsics-std -Wno-tabs -Wintrinsic-shadow -Wline-truncation -Wreal-q-constant
 CC = gcc
 CXX = g++
 LAPACK=-lblas -llapack
