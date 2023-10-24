@@ -128,7 +128,7 @@ subroutine evUGW(maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,BSE,TDA_W,
 
    ! Compute screening
 
-    call phULR(ispin,.true.,TDA_W,.false.,eta,nBas,nC,nO,nV,nR,nS_aa,nS_bb,nS_sc,nS_sc,1d0, &
+    call phULR(ispin,.true.,TDA_W,.false.,nBas,nC,nO,nV,nR,nS_aa,nS_bb,nS_sc,nS_sc,1d0, &
                eGW,ERI_aaaa,ERI_aabb,ERI_bbbb,Om,rho,EcRPA,Om,XpY,XmY)
 
     !----------------------!
