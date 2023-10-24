@@ -69,7 +69,7 @@ subroutine HF(doRHF,doUHF,doROHF,doRMOM,doUMOM,unrestricted,maxSCF,thresh,max_di
     call wall_time(end_HF)
 
     t_HF = end_HF - start_HF
-    write(*,'(A65,1X,F9.3,A8)') 'Total wall time for RHF = ',t_HF,' seconds'
+    write(*,'(A65,1X,F9.3,A8)') 'Total CPU time for RHF = ',t_HF,' seconds'
     write(*,*)
 
   end if
@@ -89,7 +89,7 @@ subroutine HF(doRHF,doUHF,doROHF,doRMOM,doUMOM,unrestricted,maxSCF,thresh,max_di
     call wall_time(end_HF)
 
     t_HF = end_HF - start_HF
-    write(*,'(A65,1X,F9.3,A8)') 'Total wall time for UHF = ',t_HF,' seconds'
+    write(*,'(A65,1X,F9.3,A8)') 'Total CPU time for UHF = ',t_HF,' seconds'
     write(*,*)
 
   end if
@@ -109,7 +109,7 @@ subroutine HF(doRHF,doUHF,doROHF,doRMOM,doUMOM,unrestricted,maxSCF,thresh,max_di
     call wall_time(end_HF)
 
     t_HF = end_HF - start_HF
-    write(*,'(A65,1X,F9.3,A8)') 'Total wall time for ROHF = ',t_HF,' seconds'
+    write(*,'(A65,1X,F9.3,A8)') 'Total CPU time for ROHF = ',t_HF,' seconds'
     write(*,*)
 
   end if

@@ -207,7 +207,7 @@ subroutine GT(doG0T0pp,doevGTpp,doqsGTpp,doG0T0eh,doevGTeh,doqsGTeh,unrestricted
     call wall_time(end_GT)
 
     t_GT = end_GT - start_GT
-    write(*,'(A65,1X,F9.3,A8)') 'Total wall time for qsGW = ',t_GT,' seconds'
+    write(*,'(A65,1X,F9.3,A8)') 'Total CPU time for qsGW = ',t_GT,' seconds'
     write(*,*)
 
   end if

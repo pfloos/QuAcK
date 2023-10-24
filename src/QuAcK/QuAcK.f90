@@ -198,7 +198,7 @@ program QuAcK
 
   t_int = end_int - start_int
   write(*,*)
-  write(*,'(A65,1X,F9.3,A8)') 'Total wall time for reading integrals = ',t_int,' seconds'
+  write(*,'(A65,1X,F9.3,A8)') 'Total CPU time for reading integrals = ',t_int,' seconds'
   write(*,*)
 
 ! Compute orthogonalization matrix
@@ -220,7 +220,7 @@ program QuAcK
     call wall_time(end_HF)
 
     t_HF = end_HF - start_HF
-    write(*,'(A65,1X,F9.3,A8)') 'Total wall time for HF = ',t_HF,' seconds'
+    write(*,'(A65,1X,F9.3,A8)') 'Total CPU time for HF = ',t_HF,' seconds'
     write(*,*)
 
   end if
@@ -312,7 +312,7 @@ program QuAcK
   call wall_time(end_AOtoMO)
 
   t_AOtoMO = end_AOtoMO - start_AOtoMO
-  write(*,'(A65,1X,F9.3,A8)') 'Total wall time for AO to MO transformation = ',t_AOtoMO,' seconds'
+  write(*,'(A65,1X,F9.3,A8)') 'Total CPU time for AO to MO transformation = ',t_AOtoMO,' seconds'
   write(*,*)
 
 !-----------------------------------!
@@ -486,7 +486,7 @@ program QuAcK
   call wall_time(end_QuAcK)
 
   t_QuAcK = end_QuAcK - start_QuAcK
-  write(*,'(A65,1X,F9.3,A8)') 'Total wall time for QuAcK = ',t_QuAcK,' seconds'
+  write(*,'(A65,1X,F9.3,A8)') 'Total CPU time for QuAcK = ',t_QuAcK,' seconds'
   write(*,*)
 
 end program 

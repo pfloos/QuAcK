@@ -60,10 +60,7 @@ subroutine UG0W0(doACFDT,exchange_kernel,doXBS,BSE,TDA_W,TDA,dBSE,dTDA,spin_cons
   double precision,allocatable  :: rho(:,:,:,:)
 
   double precision,allocatable  :: eGWlin(:,:)
-
-! Output variables
-
-  double precision              :: eGW(nBas,nspin)
+  double precision,allocatable  :: eGW(:,:)
 
 ! Hello world
 
@@ -99,7 +96,7 @@ subroutine UG0W0(doACFDT,exchange_kernel,doXBS,BSE,TDA_W,TDA,dBSE,dTDA,spin_cons
   nS_bb = nS(2)
   nS_sc = nS_aa + nS_bb
 
-  allocate(SigC(nBas,nspin),Z(nBas,nspin),eGWlin(nBas,nspin), &
+  allocate(SigC(nBas,nspin),Z(nBas,nspin),eGWlin(nBas,nspin),eGW(nBas,nspin), &
            Om(nS_sc),XpY(nS_sc,nS_sc),XmY(nS_sc,nS_sc),rho(nBas,nBas,nS_sc,nspin))
 
 !-------------------!
@@ -112,7 +109,7 @@ subroutine UG0W0(doACFDT,exchange_kernel,doXBS,BSE,TDA_W,TDA,dBSE,dTDA,spin_cons
 
   call phULR(ispin,dRPA,TDA_W,.false.,nBas,nC,nO,nV,nR,nS_aa,nS_bb,nS_sc,nS_sc,1d0, &
              eHF,ERI_aaaa,ERI_aabb,ERI_bbbb,Om,rho,EcRPA,Om,XpY,XmY)
-
+  
   if(print_W) call print_excitation_energies('phRPA@UHF',5,nS_sc,Om)
 
 !----------------------!

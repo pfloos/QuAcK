@@ -81,7 +81,7 @@ subroutine UGW_excitation_density(nBas,nC,nO,nR,nSa,nSb,nSt,ERI_aaaa,ERI_aabb,ER
           do b=nO(1)+1,nBas-nR(1)
             jb = jb + 1
 
-            rho(p,q,ia,2) = rho(p,q,ia,2) + ERI_aabb(p,j,q,b)*XpY(ia,jb)
+            rho(p,q,ia,2) = rho(p,q,ia,2) + ERI_aabb(j,p,b,q)*XpY(ia,jb)
 
           enddo
         enddo

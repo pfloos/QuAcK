@@ -141,7 +141,7 @@ subroutine GW(doG0W0,doevGW,doqsGW,doufG0W0,doufGW,doSRGqsGW,unrestricted,maxSCF
     call wall_time(end_GW)
 
     t_GW = end_GW - start_GW
-    write(*,'(A65,1X,F9.3,A8)') 'Total wall time for qsGW = ',t_GW,' seconds'
+    write(*,'(A65,1X,F9.3,A8)') 'Total CPU time for qsGW = ',t_GW,' seconds'
     write(*,*)
 
   end if
@@ -163,7 +163,7 @@ subroutine GW(doG0W0,doevGW,doqsGW,doufG0W0,doufGW,doSRGqsGW,unrestricted,maxSCF
     call wall_time(end_GW)
 
     t_GW = end_GW - start_GW
-    write(*,'(A65,1X,F9.3,A8)') 'Total wall time for qsGW = ',t_GW,' seconds'
+    write(*,'(A65,1X,F9.3,A8)') 'Total CPU time for qsGW = ',t_GW,' seconds'
     write(*,*)
 
   end if
