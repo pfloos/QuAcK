@@ -1,5 +1,5 @@
 subroutine ROHF(maxSCF,thresh,max_diis,guess_type,mix,level_shift,nNuc,ZNuc,rNuc,ENuc, & 
-                nBas,nO,S,T,V,Hc,ERI,dipole_int,X,EHF,e,c,P)
+                nBas,nO,S,T,V,Hc,ERI,dipole_int,X,EHF,e,c,Ptot)
 
 ! Perform restricted open-shell Hartree-Fock calculation
 
@@ -11,7 +11,7 @@ subroutine ROHF(maxSCF,thresh,max_diis,guess_type,mix,level_shift,nNuc,ZNuc,rNuc
   integer,intent(in)            :: maxSCF
   integer,intent(in)            :: max_diis
   integer,intent(in)            :: guess_type
-  logical,intent(in)            :: mix 
+  double precision,intent(in)   :: mix 
   double precision,intent(in)   :: level_shift
   double precision,intent(in)   :: thresh
   integer,intent(in)            :: nBas
@@ -48,7 +48,7 @@ subroutine ROHF(maxSCF,thresh,max_diis,guess_type,mix,level_shift,nNuc,ZNuc,rNuc
   double precision,allocatable  :: F(:,:,:)
   double precision,allocatable  :: Fp(:,:)
   double precision,allocatable  :: Ftot(:,:)
-  double precision,allocatable  :: Ptot(:,:)
+  double precision,allocatable  :: P(:,:,:)
   double precision,allocatable  :: K(:,:,:)
   double precision,allocatable  :: err(:,:)
   double precision,allocatable  :: err_diis(:,:)
@@ -62,7 +62,7 @@ subroutine ROHF(maxSCF,thresh,max_diis,guess_type,mix,level_shift,nNuc,ZNuc,rNuc
   double precision,intent(out)  :: EHF
   double precision,intent(out)  :: e(nBas)
   double precision,intent(out)  :: c(nBas,nBas)
-  double precision,intent(out)  :: P(nBas,nBas,nspin)
+  double precision,intent(out)  :: Ptot(nBas,nBas)
 
 ! Hello world
 
@@ -79,7 +79,7 @@ subroutine ROHF(maxSCF,thresh,max_diis,guess_type,mix,level_shift,nNuc,ZNuc,rNuc
 ! Memory allocation
 
   allocate(J(nBas,nBas,nspin),F(nBas,nBas,nspin),Fp(nBas,nBas),Ftot(nBas,nBas),   & 
-           Ptot(nBas,nBas),K(nBas,nBas,nspin),err(nBas,nBas),cp(nBas,nBas), &
+           P(nBas,nBas,nspin),K(nBas,nBas,nspin),err(nBas,nBas),cp(nBas,nBas), &
            err_diis(nBasSq,max_diis),F_diis(nBasSq,max_diis))
 
 ! Guess coefficients and demsity matrices

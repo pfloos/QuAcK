@@ -1,14 +1,14 @@
-subroutine read_methods(doRHF,doUHF,doROHF,doRMOM,doUMOM,doKS, & 
-                        doMP2,doMP3,                           & 
-                        doCCD,dopCCD,doDCD,doCCSD,doCCSDT,     & 
-                        do_drCCD,do_rCCD,do_crCCD,do_lCCD,     &
-                        doCIS,doCIS_D,doCID,doCISD,doFCI,      & 
-                        dophRPA,dophRPAx,docrRPA,doppRPA,      & 
-                        doG0F2,doevGF2,doqsGF2,                &
-                        doG0F3,doevGF3,                        & 
-                        doG0W0,doevGW,doqsGW,doSRGqsGW,        & 
-                        doufG0W0,doufGW,                       & 
-                        doG0T0pp,doevGTpp,doqsGTpp,            &
+subroutine read_methods(doRHF,doUHF,doGHF,doROHF,          &
+                        doMP2,doMP3,                       & 
+                        doCCD,dopCCD,doDCD,doCCSD,doCCSDT, & 
+                        do_drCCD,do_rCCD,do_crCCD,do_lCCD, &
+                        doCIS,doCIS_D,doCID,doCISD,doFCI,  & 
+                        dophRPA,dophRPAx,docrRPA,doppRPA,  & 
+                        doG0F2,doevGF2,doqsGF2,            &
+                        doG0F3,doevGF3,                    & 
+                        doG0W0,doevGW,doqsGW,doSRGqsGW,    & 
+                        doufG0W0,doufGW,                   & 
+                        doG0T0pp,doevGTpp,doqsGTpp,        &
                         doG0T0eh,doevGTeh,doqsGTeh)
 
 ! Read desired methods 
@@ -17,7 +17,7 @@ subroutine read_methods(doRHF,doUHF,doROHF,doRMOM,doUMOM,doKS, &
 
 ! Input variables
 
-  logical,intent(out)           :: doRHF,doUHF,doROHF,doRMOM,doUMOM,doKS
+  logical,intent(out)           :: doRHF,doUHF,doGHF,doROHF
   logical,intent(out)           :: doMP2,doMP3
   logical,intent(out)           :: doCCD,dopCCD,doDCD,doCCSD,doCCSDT
   logical,intent(out)           :: do_drCCD,do_rCCD,do_crCCD,do_lCCD
@@ -30,7 +30,7 @@ subroutine read_methods(doRHF,doUHF,doROHF,doRMOM,doUMOM,doKS, &
 
 ! Local variables
 
-  character(len=1)              :: answer1,answer2,answer3,answer4,answer5,answer6
+  character(len=1)              :: ans1,ans2,ans3,ans4,ans5,ans6
 
 ! Open file with method specification
 
@@ -40,19 +40,15 @@ subroutine read_methods(doRHF,doUHF,doROHF,doRMOM,doUMOM,doKS, &
 
   doRHF  = .false.
   doUHF  = .false.
+  doGHF  = .false.
   doROHF = .false.
-  doRMOM = .false.
-  doUMOM = .false.
-  doKS   = .false.
 
   read(1,*) 
-  read(1,*) answer1,answer2,answer3,answer4,answer5,answer6
-  if(answer1 == 'T') doRHF  = .true.
-  if(answer2 == 'T') doUHF  = .true.
-  if(answer3 == 'T') doROHF = .true.
-  if(answer4 == 'T') doRMOM = .true.
-  if(answer5 == 'T') doUMOM = .true.
-  if(answer6 == 'T') doKS   = .true.
+  read(1,*) ans1,ans2,ans3,ans4
+  if(ans1 == 'T') doRHF  = .true.
+  if(ans2 == 'T') doUHF  = .true.
+  if(ans3 == 'T') doGHF  = .true.
+  if(ans4 == 'T') doROHF = .true.
 
 ! Read MPn methods
 
@@ -60,9 +56,9 @@ subroutine read_methods(doRHF,doUHF,doROHF,doRMOM,doUMOM,doKS, &
   doMP3    = .false.
 
   read(1,*) 
-  read(1,*) answer1,answer2
-  if(answer1 == 'T') doMP2    = .true.
-  if(answer2 == 'T') doMP3    = .true.
+  read(1,*) ans1,ans2
+  if(ans1 == 'T') doMP2    = .true.
+  if(ans2 == 'T') doMP3    = .true.
 
 ! Read CC methods
 
@@ -73,12 +69,12 @@ subroutine read_methods(doRHF,doUHF,doROHF,doRMOM,doUMOM,doKS, &
   doCCSDT = .false.
 
   read(1,*) 
-  read(1,*) answer1,answer2,answer3,answer4,answer5
-  if(answer1 == 'T') doCCD   = .true.
-  if(answer2 == 'T') dopCCD  = .true.
-  if(answer3 == 'T') doDCD   = .true.
-  if(answer4 == 'T') doCCSD  = .true.
-  if(answer5 == 'T') doCCSDT = .true.
+  read(1,*) ans1,ans2,ans3,ans4,ans5
+  if(ans1 == 'T') doCCD   = .true.
+  if(ans2 == 'T') dopCCD  = .true.
+  if(ans3 == 'T') doDCD   = .true.
+  if(ans4 == 'T') doCCSD  = .true.
+  if(ans5 == 'T') doCCSDT = .true.
 
 ! Read weird CC methods
 
@@ -88,11 +84,11 @@ subroutine read_methods(doRHF,doUHF,doROHF,doRMOM,doUMOM,doKS, &
   do_lCCD  = .false.
 
   read(1,*) 
-  read(1,*) answer1,answer2,answer3,answer4
-  if(answer1 == 'T') do_drCCD = .true.
-  if(answer2 == 'T') do_rCCD  = .true.
-  if(answer3 == 'T') do_crCCD = .true.
-  if(answer4 == 'T') do_lCCD  = .true.
+  read(1,*) ans1,ans2,ans3,ans4
+  if(ans1 == 'T') do_drCCD = .true.
+  if(ans2 == 'T') do_rCCD  = .true.
+  if(ans3 == 'T') do_crCCD = .true.
+  if(ans4 == 'T') do_lCCD  = .true.
 
 ! Read CI methods
 
@@ -103,12 +99,12 @@ subroutine read_methods(doRHF,doUHF,doROHF,doRMOM,doUMOM,doKS, &
   doFCI   = .false.
 
   read(1,*) 
-  read(1,*) answer1,answer2,answer3,answer4,answer5
-  if(answer1 == 'T') doCIS   = .true.
-  if(answer2 == 'T') doCIS_D = .true.
-  if(answer3 == 'T') doCID   = .true.
-  if(answer4 == 'T') doCISD  = .true.
-  if(answer5 == 'T') doFCI   = .true.
+  read(1,*) ans1,ans2,ans3,ans4,ans5
+  if(ans1 == 'T') doCIS   = .true.
+  if(ans2 == 'T') doCIS_D = .true.
+  if(ans3 == 'T') doCID   = .true.
+  if(ans4 == 'T') doCISD  = .true.
+  if(ans5 == 'T') doFCI   = .true.
   if(doCIS_D)        doCIS   = .true.
 
 ! Read RPA methods
@@ -119,11 +115,11 @@ subroutine read_methods(doRHF,doUHF,doROHF,doRMOM,doUMOM,doKS, &
   doppRPA  = .false.
 
   read(1,*) 
-  read(1,*) answer1,answer2,answer3,answer4
-  if(answer1 == 'T') dophRPA  = .true.
-  if(answer2 == 'T') dophRPAx = .true.
-  if(answer3 == 'T') docrRPA  = .true.
-  if(answer4 == 'T') doppRPA  = .true.
+  read(1,*) ans1,ans2,ans3,ans4
+  if(ans1 == 'T') dophRPA  = .true.
+  if(ans2 == 'T') dophRPAx = .true.
+  if(ans3 == 'T') docrRPA  = .true.
+  if(ans4 == 'T') doppRPA  = .true.
 
 ! Read Green's function methods
 
@@ -134,12 +130,12 @@ subroutine read_methods(doRHF,doUHF,doROHF,doRMOM,doUMOM,doKS, &
   doevGF3 = .false.
 
   read(1,*) 
-  read(1,*) answer1,answer2,answer3,answer4,answer5
-  if(answer1 == 'T') doG0F2  = .true.
-  if(answer2 == 'T') doevGF2 = .true.
-  if(answer3 == 'T') doqsGF2 = .true.
-  if(answer4 == 'T') doG0F3  = .true.
-  if(answer5 == 'T') doevGF3 = .true.
+  read(1,*) ans1,ans2,ans3,ans4,ans5
+  if(ans1 == 'T') doG0F2  = .true.
+  if(ans2 == 'T') doevGF2 = .true.
+  if(ans3 == 'T') doqsGF2 = .true.
+  if(ans4 == 'T') doG0F3  = .true.
+  if(ans5 == 'T') doevGF3 = .true.
 
 ! Read GW methods
 
@@ -151,13 +147,13 @@ subroutine read_methods(doRHF,doUHF,doROHF,doRMOM,doUMOM,doKS, &
   doufGW    = .false.
 
   read(1,*) 
-  read(1,*) answer1,answer2,answer3,answer4,answer5,answer6
-  if(answer1 == 'T') doG0W0    = .true.
-  if(answer2 == 'T') doevGW    = .true.
-  if(answer3 == 'T') doqsGW    = .true.
-  if(answer4 == 'T') doSRGqsGW = .true.
-  if(answer5 == 'T') doufG0W0  = .true.
-  if(answer6 == 'T') doufGW    = .true.
+  read(1,*) ans1,ans2,ans3,ans4,ans5,ans6
+  if(ans1 == 'T') doG0W0    = .true.
+  if(ans2 == 'T') doevGW    = .true.
+  if(ans3 == 'T') doqsGW    = .true.
+  if(ans4 == 'T') doSRGqsGW = .true.
+  if(ans5 == 'T') doufG0W0  = .true.
+  if(ans6 == 'T') doufGW    = .true.
 
 ! Read GT methods
 
@@ -169,13 +165,13 @@ subroutine read_methods(doRHF,doUHF,doROHF,doRMOM,doUMOM,doKS, &
   doqsGTeh = .false.
 
   read(1,*) 
-  read(1,*) answer1,answer2,answer3,answer4,answer5,answer6
-  if(answer1 == 'T') doG0T0pp   = .true.
-  if(answer2 == 'T') doevGTpp   = .true.
-  if(answer3 == 'T') doqsGTpp   = .true.
-  if(answer4 == 'T') doG0T0eh   = .true.
-  if(answer5 == 'T') doevGTeh   = .true.
-  if(answer6 == 'T') doqsGTeh   = .true.
+  read(1,*) ans1,ans2,ans3,ans4,ans5,ans6
+  if(ans1 == 'T') doG0T0pp   = .true.
+  if(ans2 == 'T') doevGTpp   = .true.
+  if(ans3 == 'T') doqsGTpp   = .true.
+  if(ans4 == 'T') doG0T0eh   = .true.
+  if(ans5 == 'T') doevGTeh   = .true.
+  if(ans6 == 'T') doqsGTeh   = .true.
 
 ! Close file with geometry specification
 

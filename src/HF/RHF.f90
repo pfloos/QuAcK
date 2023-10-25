@@ -1,5 +1,5 @@
 subroutine RHF(maxSCF,thresh,max_diis,guess_type,level_shift,nNuc,ZNuc,rNuc,ENuc, & 
-               nBas,nO,S,T,V,Hc,F,ERI,dipole_int,X,EHF,eps,c,P)
+               nBas,nO,S,T,V,Hc,ERI,dipole_int,X,EHF,eps,c,P)
 
 ! Perform restricted Hartree-Fock calculation
 
@@ -49,6 +49,7 @@ subroutine RHF(maxSCF,thresh,max_diis,guess_type,level_shift,nNuc,ZNuc,rNuc,ENuc
   double precision,allocatable  :: J(:,:)
   double precision,allocatable  :: K(:,:)
   double precision,allocatable  :: cp(:,:)
+  double precision,allocatable  :: F(:,:)
   double precision,allocatable  :: Fp(:,:)
 
 ! Output variables
@@ -57,7 +58,6 @@ subroutine RHF(maxSCF,thresh,max_diis,guess_type,level_shift,nNuc,ZNuc,rNuc,ENuc
   double precision,intent(out)  :: eps(nBas)
   double precision,intent(out)  :: c(nBas,nBas)
   double precision,intent(out)  :: P(nBas,nBas)
-  double precision,intent(out)  :: F(nBas,nBas)
 
 ! Hello world
 
@@ -73,8 +73,8 @@ subroutine RHF(maxSCF,thresh,max_diis,guess_type,level_shift,nNuc,ZNuc,rNuc,ENuc
 
 ! Memory allocation
 
-  allocate(J(nBas,nBas),K(nBas,nBas),error(nBas,nBas),cp(nBas,nBas),Fp(nBas,nBas), &
-           error_diis(nBasSq,max_diis),F_diis(nBasSq,max_diis))
+  allocate(J(nBas,nBas),K(nBas,nBas),error(nBas,nBas),cp(nBas,nBas),F(nBas,nBas), &
+           Fp(nBas,nBas),error_diis(nBasSq,max_diis),F_diis(nBasSq,max_diis))
 
 ! Guess coefficients and density matrix
 

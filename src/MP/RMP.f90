@@ -1,4 +1,4 @@
-subroutine MP(doMP2,doMP3,unrestricted,regularize,nBas,nC,nO,nV,nR,ERI,ERI_aaaa,ERI_aabb,ERI_bbbb,ENuc,EHF,epsHF)
+subroutine RMP(doMP2,doMP3,regularize,nBas,nC,nO,nV,nR,ERI,ENuc,EHF,epsHF)
 
 ! Moller-Plesset module
 
@@ -9,7 +9,6 @@ subroutine MP(doMP2,doMP3,unrestricted,regularize,nBas,nC,nO,nV,nR,ERI,ERI_aaaa,
 
   logical,intent(in)            :: doMP2
   logical,intent(in)            :: doMP3
-  logical,intent(in)            :: unrestricted
 
   logical,intent(in)            :: regularize
   integer,intent(in)            :: nBas
@@ -21,9 +20,6 @@ subroutine MP(doMP2,doMP3,unrestricted,regularize,nBas,nC,nO,nV,nR,ERI,ERI_aaaa,
   double precision,intent(in)   :: EHF
   double precision,intent(in)   :: epsHF(nBas)
   double precision,intent(in)   :: ERI(nBas,nBas,nBas,nBas)
-  double precision,intent(in)   :: ERI_aaaa(nBas,nBas,nBas,nBas)
-  double precision,intent(in)   :: ERI_aabb(nBas,nBas,nBas,nBas)
-  double precision,intent(in)   :: ERI_bbbb(nBas,nBas,nBas,nBas)
 
 ! Local variables
 
@@ -38,11 +34,7 @@ subroutine MP(doMP2,doMP3,unrestricted,regularize,nBas,nC,nO,nV,nR,ERI,ERI_aaaa,
   if(doMP2) then    
        
     call wall_time(start_MP)
-    if(unrestricted) then
-      call UMP2(nBas,nC,nO,nV,nR,ERI_aaaa,ERI_aabb,ERI_bbbb,ENuc,EHF,epsHF)
-    else
-      call MP2(regularize,nBas,nC,nO,nV,nR,ERI,ENuc,EHF,epsHF)
-    end if          
+    call MP2(regularize,nBas,nC,nO,nV,nR,ERI,ENuc,EHF,epsHF)
     call wall_time(end_MP)
 
     t_MP = end_MP - start_MP
@@ -58,13 +50,7 @@ subroutine MP(doMP2,doMP3,unrestricted,regularize,nBas,nC,nO,nV,nR,ERI,ERI_aaaa,
   if(doMP3) then    
 
     call wall_time(start_MP)
-
-    if(unrestricted) then
-      write(*,*) 'MP3 NYI for UHF reference'
-      stop
-    else
-      call MP3(nBas,nC,nO,nV,nR,ERI,ENuc,EHF,epsHF)
-    end if
+    write(*,*) 'MP3 NYI for UHF reference'
     call wall_time(end_MP)
 
     t_MP = end_MP - start_MP

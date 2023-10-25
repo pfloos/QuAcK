@@ -1,4 +1,4 @@
-subroutine orthogonalization_matrix(ortho_type,nBas,S,X)
+subroutine orthogonalization_matrix(nBas,S,X)
 
 ! Compute the orthogonalization matrix X
 
@@ -6,7 +6,7 @@ subroutine orthogonalization_matrix(ortho_type,nBas,S,X)
 
 ! Input variables
 
-  integer,intent(in)            :: nBas,ortho_type
+  integer,intent(in)            :: nBas
   double precision,intent(in)   :: S(nBas,nBas)
 
 ! Local variables
@@ -14,6 +14,7 @@ subroutine orthogonalization_matrix(ortho_type,nBas,S,X)
   logical                       :: debug
   double precision,allocatable  :: UVec(:,:),Uval(:)
   double precision,parameter    :: thresh = 1d-6
+  integer,parameter             :: ortho_type = 1
 
   integer                       :: i
 

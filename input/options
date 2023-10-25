@@ -1,17 +1,17 @@
-# HF: maxSCF thresh   DIIS n_diis guess_type ortho_type mix_guess level_shift stability
-      5000    0.0000001  T    5     1          1          T         0.0        T
+# HF: maxSCF thresh    DIIS guess mix_guess level_shift stability
+      5000   0.0000001  5     1   0.0       0.0         T
 # MP: reg
       F
-# CC: maxSCF thresh   DIIS n_diis
-      64     0.0000001  T    5
-# spin: TDA singlet triplet spin_conserved spin_flip 
-        F   T       T       T              T 
-# GF: maxSCF thresh  DIIS n_diis lin eta renorm reg
-      256    0.00001 T    5      T   0.0 0      F
-# GW: maxSCF thresh  DIIS n_diis lin eta TDA_W reg
-      256    0.00001 T    5      F   0.0 F     F 
-# GT: maxSCF thresh  DIIS n_diis lin eta TDA_T reg
-      256    0.00001 T    5      F   0.0 F     F  
+# CC: maxSCF thresh     DIIS
+      64     0.0000001  5
+# spin: TDA spin_conserved spin_flip 
+        F   T               T
+# GF: maxSCF thresh  DIIS lin eta renorm reg
+      256    0.00001 5      F   0.0 0      F
+# GW: maxSCF thresh  DIIS lin eta TDA_W reg
+      256    0.00001 5      F   0.0 F     F 
+# GT: maxSCF thresh  DIIS lin eta TDA_T reg
+      256    0.00001 5      F   0.0 F     F  
 # ACFDT: AC Kx  XBS
          F  F   T
 # BSE: phBSE phBSE2 ppBSE dBSE dTDA

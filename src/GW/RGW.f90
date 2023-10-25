@@ -1,8 +1,7 @@
-subroutine GW(doG0W0,doevGW,doqsGW,doufG0W0,doufGW,doSRGqsGW,unrestricted,maxSCF,thresh,max_diis,doACFDT, &
-              exchange_kernel,doXBS,dophBSE,dophBSE2,doppBSE,TDA_W,TDA,dBSE,dTDA,singlet,triplet,spin_conserved,spin_flip, &
-              linearize,eta,regularize,nNuc,ZNuc,rNuc,ENuc,nBas,nC,nO,nV,nR,nS,EHF,S,X,T,V,Hc,               & 
-              ERI_AO,ERI,ERI_aaaa,ERI_aabb,ERI_bbbb,dipole_int_AO,dipole_int,dipole_int_aa,dipole_int_bb,    & 
-              PHF,cHF,epsHF)
+subroutine RGW(doG0W0,doevGW,doqsGW,doufG0W0,doufGW,doSRGqsGW,maxSCF,thresh,max_diis,doACFDT,      &
+               exchange_kernel,doXBS,dophBSE,dophBSE2,doppBSE,TDA_W,TDA,dBSE,dTDA,singlet,triplet, &
+               linearize,eta,regularize,nNuc,ZNuc,rNuc,ENuc,nBas,nC,nO,nV,nR,nS,EHF,S,X,T,V,Hc,    & 
+               ERI_AO,ERI,dipole_int_AO,dipole_int,PHF,cHF,epsHF)
 
 ! GW module
 
@@ -17,7 +16,6 @@ subroutine GW(doG0W0,doevGW,doqsGW,doufG0W0,doufGW,doSRGqsGW,unrestricted,maxSCF
   logical                       :: doufG0W0
   logical                       :: doufGW
   logical                       :: doSRGqsGW
-  logical                       :: unrestricted
 
   integer,intent(in)            :: maxSCF
   integer,intent(in)            :: max_diis
@@ -34,8 +32,6 @@ subroutine GW(doG0W0,doevGW,doqsGW,doufG0W0,doufGW,doSRGqsGW,unrestricted,maxSCF
   logical,intent(in)            :: doppBSE
   logical,intent(in)            :: singlet
   logical,intent(in)            :: triplet
-  logical,intent(in)            :: spin_conserved
-  logical,intent(in)            :: spin_flip
   logical,intent(in)            :: linearize
   double precision,intent(in)   :: eta
   logical,intent(in)            :: regularize
@@ -53,9 +49,9 @@ subroutine GW(doG0W0,doevGW,doqsGW,doufG0W0,doufGW,doSRGqsGW,unrestricted,maxSCF
   integer,intent(in)            :: nS(nspin)
 
   double precision,intent(in)   :: EHF
-  double precision,intent(in)   :: epsHF(nBas,nspin)
-  double precision,intent(in)   :: cHF(nBas,nBas,nspin)
-  double precision,intent(in)   :: PHF(nBas,nBas,nspin)
+  double precision,intent(in)   :: epsHF(nBas)
+  double precision,intent(in)   :: cHF(nBas,nBas)
+  double precision,intent(in)   :: PHF(nBas,nBas)
   double precision,intent(in)   :: S(nBas,nBas)
   double precision,intent(in)   :: T(nBas,nBas)
   double precision,intent(in)   :: V(nBas,nBas)
@@ -63,13 +59,8 @@ subroutine GW(doG0W0,doevGW,doqsGW,doufG0W0,doufGW,doSRGqsGW,unrestricted,maxSCF
   double precision,intent(in)   :: X(nBas,nBas)
   double precision,intent(in)   :: ERI_AO(nBas,nBas,nBas,nBas)
   double precision,intent(in)   :: ERI(nBas,nBas,nBas,nBas)
-  double precision,intent(inout):: ERI_aaaa(nBas,nBas,nBas,nBas)
-  double precision,intent(inout):: ERI_aabb(nBas,nBas,nBas,nBas)
-  double precision,intent(inout):: ERI_bbbb(nBas,nBas,nBas,nBas)
   double precision,intent(in)   :: dipole_int_AO(nBas,nBas,ncart)
   double precision,intent(in)   :: dipole_int(nBas,nBas,ncart)
-  double precision,intent(in)   :: dipole_int_aa(nBas,nBas,ncart)
-  double precision,intent(in)   :: dipole_int_bb(nBas,nBas,ncart)
 
 ! Local variables
 
@@ -82,14 +73,8 @@ subroutine GW(doG0W0,doevGW,doqsGW,doufG0W0,doufGW,doSRGqsGW,unrestricted,maxSCF
   if(doG0W0) then
     
     call wall_time(start_GW)
-    if(unrestricted) then 
-      call UG0W0(doACFDT,exchange_kernel,doXBS,dophBSE,TDA_W,TDA,dBSE,dTDA,spin_conserved,spin_flip, & 
-                 linearize,eta,regularize,nBas,nC,nO,nV,nR,nS,ENuc,EHF,S,ERI_aaaa,ERI_aabb,ERI_bbbb, & 
-                 dipole_int_aa,dipole_int_bb,cHF,epsHF)
-    else
-      call G0W0(doACFDT,exchange_kernel,doXBS,dophBSE,dophBSE2,TDA_W,TDA,dBSE,dTDA,doppBSE,singlet,triplet, &
-                linearize,eta,regularize,nBas,nC,nO,nV,nR,nS,ENuc,EHF,ERI,dipole_int,epsHF)
-    end if
+    call G0W0(doACFDT,exchange_kernel,doXBS,dophBSE,dophBSE2,TDA_W,TDA,dBSE,dTDA,doppBSE,singlet,triplet, &
+              linearize,eta,regularize,nBas,nC,nO,nV,nR,nS,ENuc,EHF,ERI,dipole_int,epsHF)
     call wall_time(end_GW)
   
     t_GW = end_GW - start_GW
@@ -105,14 +90,8 @@ subroutine GW(doG0W0,doevGW,doqsGW,doufG0W0,doufGW,doSRGqsGW,unrestricted,maxSCF
   if(doevGW) then
 
     call wall_time(start_GW)
-    if(unrestricted) then 
-      call evUGW(maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,dophBSE,TDA_W,TDA,dBSE,dTDA, & 
-                spin_conserved,spin_flip,linearize,eta,regularize,nBas,nC,nO,nV,nR,nS,ENuc,EHF,S,  & 
-                ERI_aaaa,ERI_aabb,ERI_bbbb,dipole_int_aa,dipole_int_bb,cHF,epsHF)
-    else
-      call evGW(maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,dophBSE,dophBSE2,TDA_W,TDA,dBSE,dTDA,doppBSE, &
-                singlet,triplet,linearize,eta,regularize,nBas,nC,nO,nV,nR,nS,ENuc,EHF,ERI,dipole_int,epsHF)
-    end if
+    call evGW(maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,dophBSE,dophBSE2,TDA_W,TDA,dBSE,dTDA,doppBSE, &
+              singlet,triplet,linearize,eta,regularize,nBas,nC,nO,nV,nR,nS,ENuc,EHF,ERI,dipole_int,epsHF)
     call wall_time(end_GW)
 
     t_GW = end_GW - start_GW
@@ -128,15 +107,9 @@ subroutine GW(doG0W0,doevGW,doqsGW,doufG0W0,doufGW,doSRGqsGW,unrestricted,maxSCF
   if(doqsGW) then 
 
     call wall_time(start_GW)
-    if(unrestricted) then 
-      call qsUGW(maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,dophBSE,TDA_W,TDA,dBSE,dTDA,spin_conserved,spin_flip, & 
-                 eta,regularize,nNuc,ZNuc,rNuc,ENuc,nBas,nC,nO,nV,nR,nS,EHF,S,X,T,V,Hc,ERI_AO,ERI_aaaa,ERI_aabb,ERI_bbbb,   & 
-                 dipole_int_AO,dipole_int_aa,dipole_int_bb,PHF,cHF,epsHF)
-    else
-      call qsGW(maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,dophBSE,dophBSE2,TDA_W,TDA,dBSE,dTDA,doppBSE, & 
-                singlet,triplet,eta,regularize,nNuc,ZNuc,rNuc,ENuc,nBas,nC,nO,nV,nR,nS,EHF,S,X,T,V,Hc,ERI_AO,ERI,  & 
-                dipole_int_AO,dipole_int,PHF,cHF,epsHF)
-    end if
+    call qsGW(maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,dophBSE,dophBSE2,TDA_W,TDA,dBSE,dTDA,doppBSE, & 
+              singlet,triplet,eta,regularize,nNuc,ZNuc,rNuc,ENuc,nBas,nC,nO,nV,nR,nS,EHF,S,X,T,V,Hc,ERI_AO,ERI,  & 
+              dipole_int_AO,dipole_int,PHF,cHF,epsHF)
 
     call wall_time(end_GW)
 
@@ -153,13 +126,9 @@ subroutine GW(doG0W0,doevGW,doqsGW,doufG0W0,doufGW,doSRGqsGW,unrestricted,maxSCF
   if(doSRGqsGW) then 
 
     call wall_time(start_GW)
-    if(unrestricted) then 
-      print*,'Unrestricted version of SRG-qsGW not yet implemented! Sorry.'
-    else
-      call SRG_qsGW(maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,dophBSE,dophBSE2,TDA_W,TDA,dBSE,dTDA, & 
-                    singlet,triplet,eta,nNuc,ZNuc,rNuc,ENuc,nBas,nC,nO,nV,nR,nS,EHF,S,X,T,V,Hc,ERI_AO,ERI,   & 
-                    dipole_int_AO,dipole_int,PHF,cHF,epsHF)
-    end if
+    call SRG_qsGW(maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,dophBSE,dophBSE2,TDA_W,TDA,dBSE,dTDA, & 
+                  singlet,triplet,eta,nNuc,ZNuc,rNuc,ENuc,nBas,nC,nO,nV,nR,nS,EHF,S,X,T,V,Hc,ERI_AO,ERI,   & 
+                  dipole_int_AO,dipole_int,PHF,cHF,epsHF)
     call wall_time(end_GW)
 
     t_GW = end_GW - start_GW

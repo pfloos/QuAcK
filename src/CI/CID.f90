@@ -1,4 +1,4 @@
-subroutine CID(singlet_manifold,triplet_manifold,nBasin,nCin,nOin,nVin,nRin,ERIin,Fin,E0)
+subroutine CID(singlet_manifold,triplet_manifold,nBasin,nCin,nOin,nVin,nRin,ERIin,eHFin,E0)
 
 ! Perform configuration interaction with doubles
 
@@ -14,7 +14,7 @@ subroutine CID(singlet_manifold,triplet_manifold,nBasin,nCin,nOin,nVin,nRin,ERIi
   integer,intent(in)            :: nOin
   integer,intent(in)            :: nVin
   integer,intent(in)            :: nRin
-  double precision,intent(in)   :: Fin(nBasin,nBasin)
+  double precision,intent(in)   :: eHFin(nBasin)
   double precision,intent(in)   :: ERIin(nBasin,nBasin,nBasin,nBasin)
   double precision,intent(in)   :: E0
 
@@ -26,7 +26,7 @@ subroutine CID(singlet_manifold,triplet_manifold,nBasin,nCin,nOin,nVin,nRin,ERIi
   integer                       :: nV
   integer                       :: nR
 
-  double precision,allocatable  :: F(:,:)
+  double precision,allocatable  :: eHF(:)
   double precision,allocatable  :: sERI(:,:,:,:)
   double precision,allocatable  :: ERI(:,:,:,:)
 
@@ -61,9 +61,9 @@ subroutine CID(singlet_manifold,triplet_manifold,nBasin,nCin,nOin,nVin,nRin,ERIi
   nV   = 2*nVin
   nR   = 2*nRin
 
-  allocate(F(nBas,nBas),sERI(nBas,nBas,nBas,nBas))
-
-  call spatial_to_spin_fock(nBasin,Fin,nBas,F)
+  allocate(eHF(nBas),sERI(nBas,nBas,nBas,nBas))
+                      
+  call spatial_to_spin_MO_energy(nBasin,eHFin,nBas,eHF)
   call spatial_to_spin_ERI(nBasin,ERIin,nBas,sERI)
 
 ! Antysymmetrize ERIs
@@ -144,22 +144,22 @@ subroutine CID(singlet_manifold,triplet_manifold,nBasin,nCin,nOin,nVin,nRin,ERIi
                   kcld = kcld + 1
                   tmp = &
                         E0*Kronecker_delta(i,k)*Kronecker_delta(j,l)*Kronecker_delta(a,c)*Kronecker_delta(b,d) & 
-                      + F(l,j)*Kronecker_delta(a,d)*Kronecker_delta(b,c)*Kronecker_delta(i,k) &
-                      - F(l,j)*Kronecker_delta(a,c)*Kronecker_delta(b,d)*Kronecker_delta(i,k) &
-                      - F(k,j)*Kronecker_delta(a,d)*Kronecker_delta(b,c)*Kronecker_delta(i,l) &
-                      + F(k,j)*Kronecker_delta(a,c)*Kronecker_delta(b,d)*Kronecker_delta(i,l) &
-                      - F(l,i)*Kronecker_delta(a,d)*Kronecker_delta(b,c)*Kronecker_delta(j,k) &
-                      + F(l,i)*Kronecker_delta(a,c)*Kronecker_delta(b,d)*Kronecker_delta(j,k) &
-                      + F(k,i)*Kronecker_delta(a,d)*Kronecker_delta(b,c)*Kronecker_delta(j,l) &
-                      - F(k,i)*Kronecker_delta(a,c)*Kronecker_delta(b,d)*Kronecker_delta(j,l) &
-                      + F(nO+a,nO+d)*Kronecker_delta(b,c)*Kronecker_delta(i,l)*Kronecker_delta(j,k) &
-                      - F(nO+a,nO+c)*Kronecker_delta(b,d)*Kronecker_delta(i,l)*Kronecker_delta(j,k) &
-                      - F(nO+a,nO+d)*Kronecker_delta(b,c)*Kronecker_delta(i,k)*Kronecker_delta(j,l) &
-                      + F(nO+a,nO+c)*Kronecker_delta(b,d)*Kronecker_delta(i,k)*Kronecker_delta(j,l) &
-                      - F(nO+b,nO+d)*Kronecker_delta(a,c)*Kronecker_delta(i,l)*Kronecker_delta(j,k) &
-                      + F(nO+b,nO+c)*Kronecker_delta(a,d)*Kronecker_delta(i,l)*Kronecker_delta(j,k) &
-                      + F(nO+b,nO+d)*Kronecker_delta(a,c)*Kronecker_delta(i,k)*Kronecker_delta(j,l) &
-                      - F(nO+b,nO+c)*Kronecker_delta(a,d)*Kronecker_delta(i,k)*Kronecker_delta(j,l) & 
+                      + eHF(j)*Kronecker_delta(l,j)*Kronecker_delta(a,d)*Kronecker_delta(b,c)*Kronecker_delta(i,k) &
+                      - eHF(j)*Kronecker_delta(l,j)*Kronecker_delta(a,c)*Kronecker_delta(b,d)*Kronecker_delta(i,k) &
+                      - eHF(j)*Kronecker_delta(k,j)*Kronecker_delta(a,d)*Kronecker_delta(b,c)*Kronecker_delta(i,l) &
+                      + eHF(j)*Kronecker_delta(k,j)*Kronecker_delta(a,c)*Kronecker_delta(b,d)*Kronecker_delta(i,l) &
+                      - eHF(i)*Kronecker_delta(l,i)*Kronecker_delta(a,d)*Kronecker_delta(b,c)*Kronecker_delta(j,k) &
+                      + eHF(i)*Kronecker_delta(l,i)*Kronecker_delta(a,c)*Kronecker_delta(b,d)*Kronecker_delta(j,k) &
+                      + eHF(i)*Kronecker_delta(k,i)*Kronecker_delta(a,d)*Kronecker_delta(b,c)*Kronecker_delta(j,l) &
+                      - eHF(i)*Kronecker_delta(k,i)*Kronecker_delta(a,c)*Kronecker_delta(b,d)*Kronecker_delta(j,l) &
+                      + eHF(a)*Kronecker_delta(a,d)*Kronecker_delta(b,c)*Kronecker_delta(i,l)*Kronecker_delta(j,k) &
+                      - eHF(a)*Kronecker_delta(a,c)*Kronecker_delta(b,d)*Kronecker_delta(i,l)*Kronecker_delta(j,k) &
+                      - eHF(a)*Kronecker_delta(a,d)*Kronecker_delta(b,c)*Kronecker_delta(i,k)*Kronecker_delta(j,l) &
+                      + eHF(a)*Kronecker_delta(a,c)*Kronecker_delta(b,d)*Kronecker_delta(i,k)*Kronecker_delta(j,l) &
+                      - eHF(b)*Kronecker_delta(b,d)*Kronecker_delta(a,c)*Kronecker_delta(i,l)*Kronecker_delta(j,k) &
+                      + eHF(b)*Kronecker_delta(b,c)*Kronecker_delta(a,d)*Kronecker_delta(i,l)*Kronecker_delta(j,k) &
+                      + eHF(b)*Kronecker_delta(b,d)*Kronecker_delta(a,c)*Kronecker_delta(i,k)*Kronecker_delta(j,l) &
+                      - eHF(b)*Kronecker_delta(b,c)*Kronecker_delta(a,d)*Kronecker_delta(i,k)*Kronecker_delta(j,l) &  
                       - ERI(k,l,i,j)*Kronecker_delta(a,d)*Kronecker_delta(b,c) &
                       + ERI(k,l,i,j)*Kronecker_delta(a,c)*Kronecker_delta(b,d) &
                       + ERI(nO+a,l,nO+d,j)*Kronecker_delta(b,c)*Kronecker_delta(i,k) & 

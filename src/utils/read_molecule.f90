@@ -1,4 +1,4 @@
-subroutine read_molecule(nNuc,nEl,nO,nC,nR)
+subroutine read_molecule(nNuc,nO,nC,nR)
 
 ! Read number of atoms and number of electrons 
 
@@ -6,18 +6,17 @@ subroutine read_molecule(nNuc,nEl,nO,nC,nR)
 
   include 'parameters.h'
 
-! Input variables
-
-  integer,intent(out)           :: nNuc
-  integer,intent(out)           :: nEl(nspin)
-  integer,intent(out)           :: nO(nspin)
-  integer,intent(out)           :: nC(nspin)
-  integer,intent(out)           :: nR(nspin)
-
 ! Local variables
 
   integer                       :: nCore
   integer                       :: nRyd
+
+! Output variables
+
+  integer,intent(out)           :: nNuc
+  integer,intent(out)           :: nO(nspin)
+  integer,intent(out)           :: nC(nspin)
+  integer,intent(out)           :: nR(nspin)
 
 ! Open file with geometry specification
 
@@ -26,7 +25,7 @@ subroutine read_molecule(nNuc,nEl,nO,nC,nR)
 ! Read number of atoms and number of electrons
 
   read(1,*) 
-  read(1,*) nNuc,nEl(1),nEl(2),nCore,nRyd
+  read(1,*) nNuc,nO(1),nO(2),nCore,nRyd
 
   if(mod(nCore,2) /= 0 .or. mod(nRyd,2) /= 0) then
 
@@ -35,9 +34,8 @@ subroutine read_molecule(nNuc,nEl,nO,nC,nR)
 
   end if
 
-  nO(:) = nEl(:)
   nC(:) = nCore/2
-  nR(:) = nRyd
+  nR(:) = nRyd/2
 
 ! Print results
 
@@ -46,9 +44,9 @@ subroutine read_molecule(nNuc,nEl,nO,nC,nR)
   write(*,'(A28)') '----------------------'
   write(*,*)
   write(*,'(A28)') '----------------------'
-  write(*,'(A28,1X,I16)') 'Number of spin-up   electrons',nEl(1)
-  write(*,'(A28,1X,I16)') 'Number of spin-down electrons',nEl(2)
-  write(*,'(A28,1X,I16)') '    Total number of electrons',sum(nEl(:))
+  write(*,'(A28,1X,I16)') 'Number of spin-up   electrons',nO(1)
+  write(*,'(A28,1X,I16)') 'Number of spin-down electrons',nO(2)
+  write(*,'(A28,1X,I16)') '    Total number of electrons',sum(nO(:))
   write(*,'(A28)') '----------------------'
   write(*,*)
   write(*,'(A28)') '----------------------'

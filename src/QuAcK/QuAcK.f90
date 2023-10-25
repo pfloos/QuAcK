@@ -3,35 +3,27 @@ program QuAcK
   implicit none
   include 'parameters.h'
 
-  logical                       :: unrestricted = .false.
-  logical                       :: doHF,doRHF,doUHF,doROHF,doRMOM,doUMOM
+  logical                       :: doRQuAcK,doUQuAcK,doGQuAcK
+  logical                       :: doRHF,doUHF,doGHF,doROHF
   logical                       :: dostab
-  logical                       :: doKS
-  logical                       :: doMP,doMP2,doMP3
-  logical                       :: doCC,doCCD,dopCCD,doDCD,doCCSD,doCCSDT
+  logical                       :: doMP2,doMP3
+  logical                       :: doCCD,dopCCD,doDCD,doCCSD,doCCSDT
   logical                       :: dodrCCD,dorCCD,docrCCD,dolCCD
-  logical                       :: doCI,doCIS,doCIS_D,doCID,doCISD,doFCI
-  logical                       :: doRPA,dophRPA,dophRPAx,docrRPA,doppRPA
-  logical                       :: doGF,doG0F2,doevGF2,doqsGF2,doG0F3,doevGF3
-  logical                       :: doGW,doG0W0,doevGW,doqsGW,doufG0W0,doufGW,doSRGqsGW
-  logical                       :: doGT,doG0T0pp,doevGTpp,doqsGTpp
-  logical                       :: doG0T0eh,doevGTeh,doqsGTeh
+  logical                       :: doCIS,doCIS_D,doCID,doCISD,doFCI
+  logical                       :: dophRPA,dophRPAx,docrRPA,doppRPA
+  logical                       :: doG0F2,doevGF2,doqsGF2,doG0F3,doevGF3
+  logical                       :: doG0W0,doevGW,doqsGW,doufG0W0,doufGW,doSRGqsGW
+  logical                       :: doG0T0pp,doevGTpp,doqsGTpp,doG0T0eh,doevGTeh,doqsGTeh
 
   integer                       :: nNuc,nBas
-  integer                       :: nEl(nspin)
   integer                       :: nC(nspin)
   integer                       :: nO(nspin)
   integer                       :: nV(nspin)
   integer                       :: nR(nspin)
   integer                       :: nS(nspin)
-  double precision              :: ENuc,EHF
+  double precision              :: ENuc
 
   double precision,allocatable  :: ZNuc(:),rNuc(:,:)
-  double precision,allocatable  :: cHF(:,:,:),epsHF(:,:),PHF(:,:,:)
-
-  logical                       :: doACFDT
-  logical                       :: exchange_kernel
-  logical                       :: doXBS
 
   double precision,allocatable  :: S(:,:)
   double precision,allocatable  :: T(:,:)
@@ -39,65 +31,41 @@ program QuAcK
   double precision,allocatable  :: Hc(:,:)
   double precision,allocatable  :: X(:,:)
   double precision,allocatable  :: dipole_int_AO(:,:,:)
-  double precision,allocatable  :: dipole_int_MO(:,:,:)
-  double precision,allocatable  :: dipole_int_aa(:,:,:)
-  double precision,allocatable  :: dipole_int_bb(:,:,:)
-  double precision,allocatable  :: F_AO(:,:,:)
-  double precision,allocatable  :: F_MO(:,:,:)
   double precision,allocatable  :: ERI_AO(:,:,:,:)
-  double precision,allocatable  :: ERI_MO(:,:,:,:)
-  integer                       :: ixyz
-  double precision,allocatable  :: ERI_MO_aaaa(:,:,:,:)
-  double precision,allocatable  :: ERI_MO_aabb(:,:,:,:)
-  double precision,allocatable  :: ERI_MO_bbbb(:,:,:,:)
 
-  double precision              :: start_QuAcK  ,end_QuAcK    ,t_QuAcK
-  double precision              :: start_int    ,end_int      ,t_int  
-  double precision              :: start_HF     ,end_HF       ,t_HF
-  double precision              :: start_stab   ,end_stab     ,t_stab
-  double precision              :: start_KS     ,end_KS       ,t_KS
-  double precision              :: start_AOtoMO ,end_AOtoMO   ,t_AOtoMO
-  double precision              :: start_MP     ,end_MP       ,t_MP 
-  double precision              :: start_CC     ,end_CC       ,t_CC 
-  double precision              :: start_CI     ,end_CI       ,t_CI 
-  double precision              :: start_RPA    ,end_RPA      ,t_RPA 
-  double precision              :: start_GF     ,end_GF       ,t_GF 
-  double precision              :: start_GW     ,end_GW       ,t_GW 
-  double precision              :: start_GT     ,end_GT       ,t_GT
+  double precision              :: start_QuAcK,end_QuAcK,t_QuAcK
+  double precision              :: start_int  ,end_int  ,t_int
 
   integer                       :: maxSCF_HF,max_diis_HF
-  double precision              :: thresh_HF,level_shift
-  logical                       :: DIIS_HF,guess_type,ortho_type,mix
+  double precision              :: thresh_HF,level_shift,mix
+  logical                       :: guess_type
 
   logical                       :: reg_MP
 
   integer                       :: maxSCF_CC,max_diis_CC
   double precision              :: thresh_CC
-  logical                       :: DIIS_CC
 
-  logical                       :: singlet
-  logical                       :: triplet
   logical                       :: spin_conserved
   logical                       :: spin_flip
   logical                       :: TDA
-
+  
   integer                       :: maxSCF_GF,max_diis_GF,renorm_GF
   double precision              :: thresh_GF
-  logical                       :: DIIS_GF,lin_GF,reg_GF
+  logical                       :: lin_GF,reg_GF
   double precision              :: eta_GF
 
   integer                       :: maxSCF_GW,max_diis_GW
   double precision              :: thresh_GW
-  logical                       :: DIIS_GW,TDA_W,lin_GW,reg_GW
+  logical                       :: TDA_W,lin_GW,reg_GW
   double precision              :: eta_GW
 
   integer                       :: maxSCF_GT,max_diis_GT
   double precision              :: thresh_GT
-  logical                       :: DIIS_GT,TDA_T,lin_GT,reg_GT
+  logical                       :: TDA_T,lin_GT,reg_GT
   double precision              :: eta_GT
 
   logical                       :: dophBSE,dophBSE2,doppBSE,dBSE,dTDA
-
+  logical                       :: doACFDT,exchange_kernel,doXBS
 
 !-------------!
 ! Hello World !
@@ -123,31 +91,31 @@ program QuAcK
 ! Method selection !
 !------------------!
 
-  call read_methods(doRHF,doUHF,doROHF,doRMOM,doUMOM,doKS, &
-                    doMP2,doMP3,                           &
-                    doCCD,dopCCD,doDCD,doCCSD,doCCSDT,     &
-                    dodrCCD,dorCCD,docrCCD,dolCCD,         &
-                    doCIS,doCIS_D,doCID,doCISD,doFCI,      & 
-                    dophRPA,dophRPAx,docrRPA,doppRPA,      &
-                    doG0F2,doevGF2,doqsGF2,                & 
-                    doG0F3,doevGF3,                        &
-                    doG0W0,doevGW,doqsGW,doSRGqsGW,        &
-                    doufG0W0,doufGW,                       &
-                    doG0T0pp,doevGTpp,doqsGTpp,            &
+  call read_methods(doRHF,doUHF,doGHF,doROHF,          &
+                    doMP2,doMP3,                       &
+                    doCCD,dopCCD,doDCD,doCCSD,doCCSDT, &
+                    dodrCCD,dorCCD,docrCCD,dolCCD,     &
+                    doCIS,doCIS_D,doCID,doCISD,doFCI,  & 
+                    dophRPA,dophRPAx,docrRPA,doppRPA,  &
+                    doG0F2,doevGF2,doqsGF2,            & 
+                    doG0F3,doevGF3,                    &
+                    doG0W0,doevGW,doqsGW,doSRGqsGW,    &
+                    doufG0W0,doufGW,                   &
+                    doG0T0pp,doevGTpp,doqsGTpp,        &
                     doG0T0eh,doevGTeh,doqsGTeh)
 
 !--------------------------!
 ! Read options for methods !
 !--------------------------!
 
-  call read_options(maxSCF_HF,thresh_HF,DIIS_HF,max_diis_HF,guess_type,ortho_type,mix,level_shift,dostab, &
-                    reg_MP,                                                                               &
-                    maxSCF_CC,thresh_CC,DIIS_CC,max_diis_CC,                                              &
-                    TDA,singlet,triplet,spin_conserved,spin_flip,                                         &
-                    maxSCF_GF,thresh_GF,DIIS_GF,max_diis_GF,lin_GF,eta_GF,renorm_GF,reg_GF,               &
-                    maxSCF_GW,thresh_GW,DIIS_GW,max_diis_GW,lin_GW,eta_GW,reg_GW,TDA_W,                   &  
-                    maxSCF_GT,thresh_GT,DIIS_GT,max_diis_GT,lin_GT,eta_GT,reg_GT,TDA_T,                   & 
-                    doACFDT,exchange_kernel,doXBS,                                                        &
+  call read_options(maxSCF_HF,thresh_HF,max_diis_HF,guess_type,mix,level_shift,dostab, &
+                    reg_MP,                                                            &
+                    maxSCF_CC,thresh_CC,max_diis_CC,                                   &
+                    TDA,spin_conserved,spin_flip,                                      &
+                    maxSCF_GF,thresh_GF,max_diis_GF,lin_GF,eta_GF,renorm_GF,reg_GF,    &
+                    maxSCF_GW,thresh_GW,max_diis_GW,lin_GW,eta_GW,reg_GW,TDA_W,        &  
+                    maxSCF_GT,thresh_GT,max_diis_GT,lin_GT,eta_GT,reg_GT,TDA_T,        & 
+                    doACFDT,exchange_kernel,doXBS,                                     &
                     dophBSE,dophBSE2,doppBSE,dBSE,dTDA)
 
 !------------------------------------------------!
@@ -163,7 +131,7 @@ program QuAcK
 !      = nO*nV                                   !
 !------------------------------------------------!
 
-  call read_molecule(nNuc,nEl,nO,nC,nR)
+  call read_molecule(nNuc,nO,nC,nR)
   allocate(ZNuc(nNuc),rNuc(nNuc,ncart))
 
 ! Read geometry
@@ -183,9 +151,8 @@ program QuAcK
 
 ! Memory allocation for one- and two-electron integrals
 
-  allocate(cHF(nBas,nBas,nspin),epsHF(nBas,nspin),PHF(nBas,nBas,nspin),S(nBas,nBas),T(nBas,nBas),              &
-           V(nBas,nBas),Hc(nBas,nBas),X(nBas,nBas),ERI_AO(nBas,nBas,nBas,nBas),dipole_int_AO(nBas,nBas,ncart), & 
-           dipole_int_MO(nBas,nBas,ncart),F_AO(nBas,nBas,nspin))
+  allocate(S(nBas,nBas),T(nBas,nBas),V(nBas,nBas),Hc(nBas,nBas),X(nBas,nBas), & 
+           ERI_AO(nBas,nBas,nBas,nBas),dipole_int_AO(nBas,nBas,ncart))
 
 ! Read integrals
 
@@ -203,281 +170,56 @@ program QuAcK
 
 ! Compute orthogonalization matrix
 
-  call orthogonalization_matrix(ortho_type,nBas,S,X)
+  call orthogonalization_matrix(nBas,S,X)
 
 !---------------------!
-! Hartree-Fock module !
+! Choose QuAcK branch !
 !---------------------!
 
-  doHF = doRHF .or. doUHF .or. doROHF .or. doRMOM .or. doUMOM
+  doRQuAcK = .false.
+  if(doRHF) doRQuAcK = .true.
 
-  if(doHF) then
+  doUQuAcK = .false.
+  if(doUHF) doUQuAcK = .true.
 
-    call wall_time(start_HF)
-    call HF(doRHF,doUHF,doROHF,doRMOM,doUMOM,unrestricted,maxSCF_HF,thresh_HF,max_diis_HF, & 
-            guess_type,mix,level_shift,nNuc,ZNuc,rNuc,ENuc,nBas,nO,S,T,V,Hc,F_AO,ERI_AO,   & 
-            dipole_int_AO,X,EHF,epsHF,cHF,PHF)
-    call wall_time(end_HF)
-
-    t_HF = end_HF - start_HF
-    write(*,'(A65,1X,F9.3,A8)') 'Total CPU time for HF = ',t_HF,' seconds'
-    write(*,*)
-
-  end if
-
-!------------------!
-! Kohn-Sham module !
-!------------------!
-
-  if(doKS) then
-
-    ! Switch on the unrestricted flag
-    unrestricted = .true.
-
-    call wall_time(start_KS)
-    write(*,*)
-    write(*,*) 'KS module has been disabled for now! Sorry.'
-    write(*,*)
-!   call eDFT(maxSCF_HF,thresh_HF,max_diis_HF,guess_type,mix,level_shift,nNuc,ZNuc,rNuc,ENuc,nBas,nEl,nC, & 
-!             nO,nV,nR,nShell,TotAngMomShell,CenterShell,KShell,DShell,ExpShell,            &
-!             max_ang_mom,min_exponent,max_exponent,S,T,V,Hc,X,ERI_AO,dipole_int_AO,EHF,epsHF,cHF,PHF,Vxc)
-    call wall_time(end_KS)
-
-    t_KS = end_KS - start_KS
-    write(*,'(A65,1X,F9.3,A8)') 'Total CPU time for KS = ',t_KS,' seconds'
-    write(*,*)
-
-  end if
-
-!----------------------------------!
-! AO to MO integral transformation !
-!----------------------------------!
-
-  call wall_time(start_AOtoMO)
-
-  write(*,*)
-  write(*,*) 'AO to MO transformation... Please be patient'
-  write(*,*)
-
-  if(unrestricted) then
-
-    ! Read and transform dipole-related integrals
-  
-    allocate(dipole_int_aa(nBas,nBas,ncart),dipole_int_bb(nBas,nBas,ncart))
-    dipole_int_aa(:,:,:) = dipole_int_AO(:,:,:)
-    dipole_int_bb(:,:,:) = dipole_int_AO(:,:,:)
-    do ixyz=1,ncart
-        call AOtoMO_transform(nBas,cHF(:,:,1),dipole_int_aa(:,:,ixyz))
-        call AOtoMO_transform(nBas,cHF(:,:,2),dipole_int_bb(:,:,ixyz))
-    end do 
-
-    ! Memory allocation
-   
-    allocate(ERI_MO_aaaa(nBas,nBas,nBas,nBas),ERI_MO_aabb(nBas,nBas,nBas,nBas),ERI_MO_bbbb(nBas,nBas,nBas,nBas))
-   
-    ! 4-index transform for (aa|aa) block
-   
-    call AOtoMO_integral_transform(1,1,1,1,nBas,cHF,ERI_AO,ERI_MO_aaaa)
-    
-    ! 4-index transform for (aa|bb) block
-   
-    call AOtoMO_integral_transform(1,1,2,2,nBas,cHF,ERI_AO,ERI_MO_aabb)
-   
-    ! 4-index transform for (bb|bb) block
-   
-    call AOtoMO_integral_transform(2,2,2,2,nBas,cHF,ERI_AO,ERI_MO_bbbb)
-
-  else
-
-    ! Memory allocation
-   
-    allocate(ERI_MO(nBas,nBas,nBas,nBas),F_MO(nBas,nBas,nspin))
-
-    ! Read and transform dipole-related integrals
-  
-    dipole_int_MO(:,:,:) = dipole_int_AO(:,:,:)
-    do ixyz=1,ncart
-      call AOtoMO_transform(nBas,cHF,dipole_int_MO(:,:,ixyz))
-    end do 
-
-    ! 4-index transform 
-   
-    call AOtoMO_integral_transform(1,1,1,1,nBas,cHF,ERI_AO,ERI_MO)
-
-    F_MO(:,:,1) = F_AO(:,:,1)
-    call AOtoMO_transform(nBas,cHF,F_MO)
-
-  end if
-
-  call wall_time(end_AOtoMO)
-
-  t_AOtoMO = end_AOtoMO - start_AOtoMO
-  write(*,'(A65,1X,F9.3,A8)') 'Total CPU time for AO to MO transformation = ',t_AOtoMO,' seconds'
-  write(*,*)
-
-!-----------------------------------!
-! Stability analysis of HF solution !
-!-----------------------------------!
-
-  if(dostab) then
-
-    call wall_time(start_stab)
-    if(unrestricted) then
-      call UHF_stability(nBas,nC,nO,nV,nR,nS,epsHF,ERI_MO_aaaa,ERI_MO_aabb,ERI_MO_bbbb)
-    else
-      call RHF_stability(nBas,nC,nO,nV,nR,nS,epsHF,ERI_MO)
-    end if
-    call wall_time(end_stab)
-
-    t_stab = end_stab - start_stab
-    write(*,'(A65,1X,F9.3,A8)') 'Total CPU time for stability analysis = ',t_stab,' seconds'
-    write(*,*)
-
-  end if
-
-!-----------------------!
-! Moller-Plesset module !
-!-----------------------!
-
-  doMP = doMP2 .or. doMP3
-
-  if(doMP) then
-
-    call wall_time(start_MP)
-    call MP(doMP2,doMP3,unrestricted,reg_MP,nBas,nC,nO,nV,nR,ERI_MO,ERI_MO_aaaa,ERI_MO_aabb,ERI_MO_bbbb,ENuc,EHF,epsHF)
-    call wall_time(end_MP)
-
-    t_MP = end_MP - start_MP
-    write(*,'(A65,1X,F9.3,A8)') 'Total CPU time for MP = ',t_MP,' seconds'
-    write(*,*)
-
-  end if
-
-!------------------------!
-! Coupled-cluster module !
-!------------------------!
-
-  doCC = doCCD .or. dopCCD .or. doDCD .or. doCCSD .or. doCCSDT .or. &  
-         dodrCCD .or. dorCCD .or. docrCCD .or. dolCCD
-
-  if(doCC) then
-
-    call wall_time(start_CC)
-    call CC(doCCD,dopCCD,doDCD,doCCSD,doCCSDT,dodrCCD,dorCCD,docrCCD,dolCCD, & 
-            maxSCF_CC,thresh_CC,max_diis_CC,nBas,nC,nO,nV,nR,ERI_MO,ENuc,EHF,epsHF)
-    call wall_time(end_CC)
-
-    t_CC = end_CC - start_CC
-    write(*,'(A65,1X,F9.3,A8)') 'Total CPU time for CC = ',t_CC,' seconds'
-    write(*,*)
-
-  end if
-
-!----------------------------------!
-! Configuration interaction module !
-!----------------------------------!
-
-  doCI = doCIS .or. doCID .or. doCISD .or. doFCI
-
-  if(doCI) then
-
-    call wall_time(start_CI)
-    call CI(doCIS,doCIS_D,doCID,doCISD,doFCI,unrestricted,singlet,triplet,spin_conserved,spin_flip,                   &
-            nBas,nC,nO,nV,nR,nS,ERI_MO,ERI_MO_aaaa,ERI_MO_aabb,ERI_MO_bbbb,dipole_int_MO,dipole_int_aa,dipole_int_bb, &
-            epsHF,EHF,cHF,S,F_MO)
-    call wall_time(end_CI)
-
-    t_CI = end_CI - start_CI
-    write(*,'(A65,1X,F9.3,A8)') 'Total CPU time for CI = ',t_CI,' seconds'
-    write(*,*)
-
-  end if
-
-!-----------------------------------!
-! Random-phase approximation module !
-!-----------------------------------!
-
-  doRPA = dophRPA .or. dophRPAx .or. docrRPA .or. doppRPA
-
-  if(doRPA) then
-
-    call wall_time(start_RPA)
-    call RPA(dophRPA,dophRPAx,docrRPA,doppRPA,unrestricted,                           & 
-             TDA,doACFDT,exchange_kernel,singlet,triplet,spin_conserved,spin_flip,    & 
-             nBas,nC,nO,nV,nR,nS,ENuc,EHF,ERI_MO,ERI_MO_aaaa,ERI_MO_aabb,ERI_MO_bbbb, & 
-             dipole_int_MO,dipole_int_aa,dipole_int_bb,epsHF,cHF,S)
-    call wall_time(end_RPA)
-
-    t_RPA = end_RPA - start_RPA
-    write(*,'(A65,1X,F9.3,A8)') 'Total CPU time for RPA = ',t_RPA,' seconds'
-    write(*,*)
-
-  end if
+  doGQuAcK = .false.
+  if(doGHF) doGQuAcK = .true.
 
 !-------------------------!
-! Green's function module !
+! Restricted QuAcK branch !
 !-------------------------!
 
-  doGF = doG0F2 .or. doevGF2 .or. doqsGF2 .or. doG0F3 .or. doevGF3
+  if(doRQuAcK) &
+    call RQuAcK(doRHF,doROHF,dostab,doMP2,doMP3,doCCD,dopCCD,doDCD,doCCSD,doCCSDT,                                  &
+                dodrCCD,dorCCD,docrCCD,dolCCD,doCIS,doCIS_D,doCID,doCISD,doFCI,dophRPA,dophRPAx,docrRPA,doppRPA,    &
+                doG0F2,doevGF2,doqsGF2,doG0F3,doevGF3,doG0W0,doevGW,doqsGW,doufG0W0,doufGW,doSRGqsGW,               &
+                doG0T0pp,doevGTpp,doqsGTpp,doG0T0eh,doevGTeh,doqsGTeh,nNuc,nBas,nC,nO,nV,nR,nS,ENuc,ZNuc,rNuc,  &
+                S,T,V,Hc,X,dipole_int_AO,ERI_AO,maxSCF_HF,max_diis_HF,thresh_HF,level_shift,                        &
+                guess_type,mix,reg_MP,maxSCF_CC,max_diis_CC,thresh_CC,spin_conserved,spin_flip,TDA,      &
+                maxSCF_GF,max_diis_GF,renorm_GF,thresh_GF,lin_GF,reg_GF,eta_GF,maxSCF_GW,max_diis_GW,thresh_GW,     &
+                TDA_W,lin_GW,reg_GW,eta_GW,maxSCF_GT,max_diis_GT,thresh_GT,TDA_T,lin_GT,reg_GT,eta_GT,              &
+                dophBSE,dophBSE2,doppBSE,dBSE,dTDA,doACFDT,exchange_kernel,doXBS)
 
-  if(doGF) then
+!---------------------------!
+! Unrestricted QuAcK branch !
+!---------------------------!
 
-    call wall_time(start_GF)
-    call GF(doG0F2,doevGF2,doqsGF2,doG0F3,doevGF3,unrestricted,renorm_GF,maxSCF_GF,thresh_GF,max_diis_GF,             &
-            dophBSE,doppBSE,TDA,dBSE,dTDA,singlet,triplet,spin_conserved,spin_flip,lin_GF,eta_GF,reg_GF,              &
-            nNuc,ZNuc,rNuc,ENuc,nBas,nC,nO,nV,nR,nS,EHF,S,X,T,V,Hc,ERI_AO,ERI_MO,ERI_MO_aaaa,ERI_MO_aabb,ERI_MO_bbbb, &
-            dipole_int_AO,dipole_int_MO,dipole_int_aa,dipole_int_bb,PHF,cHF,epsHF)
-    call wall_time(end_GF)
+  if(doUQuAcK) &
+    call UQuAcK(doUHF,dostab,doMP2,doMP3,doCCD,dopCCD,doDCD,doCCSD,doCCSDT,                                                    &
+                dodrCCD,dorCCD,docrCCD,dolCCD,doCIS,doCIS_D,doCID,doCISD,doFCI,dophRPA,dophRPAx,docrRPA,doppRPA,               &
+                doG0F2,doevGF2,doqsGF2,doG0F3,doevGF3,doG0W0,doevGW,doqsGW,doufG0W0,doufGW,doSRGqsGW,                          &
+                doG0T0pp,doevGTpp,doqsGTpp,doG0T0eh,doevGTeh,doqsGTeh,nNuc,nBas,nC,nO,nV,nR,nS,ENuc,ZNuc,rNuc,             &
+                S,T,V,Hc,X,dipole_int_AO,ERI_AO,maxSCF_HF,max_diis_HF,thresh_HF,level_shift,                                   &
+                guess_type,mix,reg_MP,maxSCF_CC,max_diis_CC,thresh_CC,spin_conserved,spin_flip,TDA, &
+                maxSCF_GF,max_diis_GF,renorm_GF,thresh_GF,lin_GF,reg_GF,eta_GF,maxSCF_GW,max_diis_GW,thresh_GW,        &
+                TDA_W,lin_GW,reg_GW,eta_GW,maxSCF_GT,max_diis_GT,thresh_GT,TDA_T,lin_GT,reg_GT,eta_GT,         &
+                dophBSE,dophBSE2,doppBSE,dBSE,dTDA,doACFDT,exchange_kernel,doXBS)
 
-    t_GF = end_GF - start_GF
-    write(*,'(A65,1X,F9.3,A8)') 'Total CPU time for GF2 = ',t_GF,' seconds'
-    write(*,*)
+!--------------------------!
+! Generalized QuAcK branch !
+!--------------------------!
 
-  end if
-
-!-----------!
-! GW module !
-!-----------!
-
-  doGW = doG0W0 .or. doevGW .or. doqsGW .or. doufG0W0 .or. doufGW .or. doSRGqsGW
-
-  if(doGW) then
-    
-    call wall_time(start_GW)
-    call GW(doG0W0,doevGW,doqsGW,doufG0W0,doufGW,doSRGqsGW,unrestricted,maxSCF_GW,thresh_GW,max_diis_GW,doACFDT,         &
-            exchange_kernel,doXBS,dophBSE,dophBSE2,doppBSE,TDA_W,TDA,dBSE,dTDA,singlet,triplet,spin_conserved,spin_flip, &
-            lin_GW,eta_GW,reg_GW,nNuc,ZNuc,rNuc,ENuc,nBas,nC,nO,nV,nR,nS,EHF,S,X,T,V,Hc,                                 &  
-            ERI_AO,ERI_MO,ERI_MO_aaaa,ERI_MO_aabb,ERI_MO_bbbb,dipole_int_AO,dipole_int_MO,dipole_int_aa,dipole_int_bb,   & 
-            PHF,cHF,epsHF)
-    call wall_time(end_GW)
-  
-    t_GW = end_GW - start_GW
-    write(*,'(A65,1X,F9.3,A8)') 'Total CPU time for GW = ',t_GW,' seconds'
-    write(*,*)
-
-  end if
-
-!-----------------!
-! T-matrix module !
-!-----------------!
-
-  doGT = doG0T0pp .or. doevGTpp .or. doqsGTpp .or. doG0T0eh .or. doevGTeh .or. doqsGTeh
-
-  if(doGT) then
-    
-    call wall_time(start_GT)
-    call GT(doG0T0pp,doevGTpp,doqsGTpp,doG0T0eh,doevGTeh,doqsGTeh,unrestricted,maxSCF_GT,thresh_GT,max_diis_GT,doACFDT,  &
-            exchange_kernel,doXBS,dophBSE,dophBSE2,doppBSE,TDA_T,TDA,dBSE,dTDA,singlet,triplet,spin_conserved,spin_flip, &
-            lin_GT,eta_GT,reg_GT,nNuc,ZNuc,rNuc,ENuc,nBas,nC,nO,nV,nR,nS,EHF,S,X,T,V,Hc,                                 &
-            ERI_AO,ERI_MO,ERI_MO_aaaa,ERI_MO_aabb,ERI_MO_bbbb,dipole_int_AO,dipole_int_MO,dipole_int_aa,dipole_int_bb,   & 
-            PHF,cHF,epsHF)
-    call wall_time(end_GT)
-  
-    t_GT = end_GT - start_GT
-    write(*,'(A65,1X,F9.3,A8)') 'Total CPU time for GT = ',t_GT,' seconds'
-    write(*,*)
-
-  end if
+! if(doGQuAcK) call GQuAcK()
 
 !--------------!
 ! End of QuAcK !

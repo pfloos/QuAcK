@@ -1,7 +1,5 @@
-subroutine RPA(dophRPA,dophRPAx,docrRPA,doppRPA,unrestricted,                        & 
-               TDA,doACFDT,exchange_kernel,singlet,triplet,spin_conserved,spin_flip, &  
-               nBas,nC,nO,nV,nR,nS,ENuc,EHF,ERI,ERI_aaaa,ERI_aabb,ERI_bbbb,          &     
-               dipole_int,dipole_int_aa,dipole_int_bb,epsHF,cHF,S)
+subroutine RRPA(dophRPA,dophRPAx,docrRPA,doppRPA,TDA,doACFDT,exchange_kernel,singlet,triplet, &  
+                nBas,nC,nO,nV,nR,nS,ENuc,EHF,ERI,dipole_int,epsHF,cHF,S)
 
 ! Random-phase approximation module
 
@@ -14,15 +12,12 @@ subroutine RPA(dophRPA,dophRPAx,docrRPA,doppRPA,unrestricted,                   
   logical                       :: dophRPAx
   logical                       :: docrRPA
   logical                       :: doppRPA
-  logical                       :: unrestricted
 
   logical,intent(in)            :: TDA
   logical,intent(in)            :: doACFDT
   logical,intent(in)            :: exchange_kernel
   logical,intent(in)            :: singlet
   logical,intent(in)            :: triplet
-  logical,intent(in)            :: spin_conserved
-  logical,intent(in)            :: spin_flip
   integer,intent(in)            :: nBas
   integer,intent(in)            :: nC(nspin)
   integer,intent(in)            :: nO(nspin)
@@ -31,16 +26,11 @@ subroutine RPA(dophRPA,dophRPAx,docrRPA,doppRPA,unrestricted,                   
   integer,intent(in)            :: nS(nspin)
   double precision,intent(in)   :: ENuc
   double precision,intent(in)   :: EHF
-  double precision,intent(in)   :: epsHF(nBas,nspin)
-  double precision,intent(in)   :: cHF(nBas,nBas,nspin)
+  double precision,intent(in)   :: epsHF(nBas)
+  double precision,intent(in)   :: cHF(nBas,nBas)
   double precision,intent(in)   :: S(nBas,nBas)
   double precision,intent(in)   :: ERI(nBas,nBas,nBas,nBas)
-  double precision,intent(in)   :: ERI_aaaa(nBas,nBas,nBas,nBas)
-  double precision,intent(in)   :: ERI_aabb(nBas,nBas,nBas,nBas)
-  double precision,intent(in)   :: ERI_bbbb(nBas,nBas,nBas,nBas)
   double precision,intent(in)   :: dipole_int(nBas,nBas,ncart)
-  double precision,intent(in)   :: dipole_int_aa(nBas,nBas,ncart)
-  double precision,intent(in)   :: dipole_int_bb(nBas,nBas,ncart)
 
 ! Local variables
 
@@ -53,12 +43,7 @@ subroutine RPA(dophRPA,dophRPAx,docrRPA,doppRPA,unrestricted,                   
   if(dophRPA) then
 
     call wall_time(start_RPA)
-    if(unrestricted) then
-       call phURPA(TDA,doACFDT,exchange_kernel,spin_conserved,spin_flip,nBas,nC,nO,nV,nR,nS,ENuc,EHF, &
-                   ERI_aaaa,ERI_aabb,ERI_bbbb,dipole_int_aa,dipole_int_bb,epsHF,cHF,S)
-    else
-      call phRPA(TDA,doACFDT,exchange_kernel,singlet,triplet,nBas,nC,nO,nV,nR,nS,ENuc,EHF,ERI,dipole_int,epsHF)
-    end if
+    call phRPA(TDA,doACFDT,exchange_kernel,singlet,triplet,nBas,nC,nO,nV,nR,nS,ENuc,EHF,ERI,dipole_int,epsHF)
     call wall_time(end_RPA)
 
     t_RPA = end_RPA - start_RPA
@@ -74,12 +59,7 @@ subroutine RPA(dophRPA,dophRPAx,docrRPA,doppRPA,unrestricted,                   
   if(dophRPAx) then
 
     call wall_time(start_RPA)
-    if(unrestricted) then
-       call phURPAx(TDA,doACFDT,exchange_kernel,spin_conserved,spin_flip,nBas,nC,nO,nV,nR,nS,ENuc,EHF, &
-                    ERI_aaaa,ERI_aabb,ERI_bbbb,dipole_int_aa,dipole_int_bb,epsHF,cHF,S)
-    else 
-      call phRPAx(TDA,doACFDT,exchange_kernel,singlet,triplet,nBas,nC,nO,nV,nR,nS,ENuc,EHF,ERI,dipole_int,epsHF)
-    end if
+    call phRPAx(TDA,doACFDT,exchange_kernel,singlet,triplet,nBas,nC,nO,nV,nR,nS,ENuc,EHF,ERI,dipole_int,epsHF)
     call wall_time(end_RPA)
 
     t_RPA = end_RPA - start_RPA
@@ -95,11 +75,7 @@ subroutine RPA(dophRPA,dophRPAx,docrRPA,doppRPA,unrestricted,                   
   if(docrRPA) then
 
     call wall_time(start_RPA)
-    if(unrestricted) then 
-      write(*,*) 'Unrestricted version of crRPA not yet implemented! Sorry.'
-    else
-      call crRPA(TDA,doACFDT,exchange_kernel,singlet,triplet,nBas,nC,nO,nV,nR,nS,ENuc,EHF,ERI,dipole_int,epsHF)
-    end if
+    call crRPA(TDA,doACFDT,exchange_kernel,singlet,triplet,nBas,nC,nO,nV,nR,nS,ENuc,EHF,ERI,dipole_int,epsHF)
     call wall_time(end_RPA)
 
     t_RPA = end_RPA - start_RPA
@@ -115,11 +91,7 @@ subroutine RPA(dophRPA,dophRPAx,docrRPA,doppRPA,unrestricted,                   
   if(doppRPA) then
 
     call wall_time(start_RPA)
-    if(unrestricted) then 
-      call ppURPA(TDA,doACFDT,spin_conserved,spin_flip,nBas,nC,nO,nV,nR,ENuc,EHF,ERI_aaaa,ERI_aabb,ERI_bbbb,epsHF)
-    else
-      call ppRPA(TDA,doACFDT,singlet,triplet,nBas,nC,nO,nV,nR,ENuc,EHF,ERI,dipole_int,epsHF)
-    end if
+    call ppRPA(TDA,doACFDT,singlet,triplet,nBas,nC,nO,nV,nR,ENuc,EHF,ERI,dipole_int,epsHF)
     call wall_time(end_RPA)
 
     t_RPA = end_RPA - start_RPA

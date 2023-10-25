@@ -1,4 +1,4 @@
-subroutine mix_guess(nBas,nO,c)
+subroutine mix_guess(nBas,nO,mix,c)
 
 !  Guess mixing for UHF calculations on singlet states
 
@@ -9,14 +9,15 @@ subroutine mix_guess(nBas,nO,c)
 
   integer,intent(in)            :: nBas
   integer,intent(in)            :: nO(nspin)
+  double precision,intent(in)   :: mix
 
 ! Local variables
-
-  double precision,parameter   :: th = 0.1d0
 
   double precision,allocatable :: HOMO(:), LUMO(:)
   double precision,allocatable :: HOMOa(:),LUMOa(:)
   double precision,allocatable :: HOMOb(:),LUMOb(:)
+
+  double precision              :: th
 
 ! Output variables
 
@@ -29,6 +30,8 @@ subroutine mix_guess(nBas,nO,c)
            HOMOb(nBas),LUMOb(nBas))
 
 ! Perform HOMO and LUMO rotation for guess mixing
+
+  th = 2d0*pi*mix
 
   HOMO(:) = c(:,nO(1),1)
   LUMO(:) = c(:,nO(1)+1,1)

@@ -1,6 +1,5 @@
-subroutine CI(doCIS,doCIS_D,doCID,doCISD,doFCI,unrestricted,singlet,triplet,spin_conserved,spin_flip,    &
-              nBas,nC,nO,nV,nR,nS,ERI,ERI_aaaa,ERI_aabb,ERI_bbbb,dipole_int,dipole_int_aa,dipole_int_bb, & 
-              epsHF,EHF,cHF,S,F)
+subroutine UCI(doCIS,doCIS_D,doCID,doCISD,doFCI,spin_conserved,spin_flip,nBas,nC,nO,nV,nR,nS, & 
+               ERI_aaaa,ERI_aabb,ERI_bbbb,dipole_int_aa,dipole_int_bb,epsHF,EHF,cHF,S,F)
 
 ! Configuration interaction module
 
@@ -14,10 +13,7 @@ subroutine CI(doCIS,doCIS_D,doCID,doCISD,doFCI,unrestricted,singlet,triplet,spin
   logical                       :: doCID
   logical                       :: doCISD
   logical                       :: doFCI
-  logical                       :: unrestricted
 
-  logical,intent(in)            :: singlet
-  logical,intent(in)            :: triplet
   logical,intent(in)            :: spin_conserved
   logical,intent(in)            :: spin_flip
   integer,intent(in)            :: nBas
@@ -31,11 +27,9 @@ subroutine CI(doCIS,doCIS_D,doCID,doCISD,doFCI,unrestricted,singlet,triplet,spin
   double precision,intent(in)   :: cHF(nBas,nBas,nspin)
   double precision,intent(in)   :: F(nBas,nBas)
   double precision,intent(in)   :: S(nBas,nBas)
-  double precision,intent(in)   :: ERI(nBas,nBas,nBas,nBas)
   double precision,intent(in)   :: ERI_aaaa(nBas,nBas,nBas,nBas)
   double precision,intent(in)   :: ERI_aabb(nBas,nBas,nBas,nBas)
   double precision,intent(in)   :: ERI_bbbb(nBas,nBas,nBas,nBas)
-  double precision,intent(in)   :: dipole_int(nBas,nBas,ncart)
   double precision,intent(in)   :: dipole_int_aa(nBas,nBas,ncart,nspin)
   double precision,intent(in)   :: dipole_int_bb(nBas,nBas,ncart,nspin)
 
@@ -50,12 +44,8 @@ subroutine CI(doCIS,doCIS_D,doCID,doCISD,doFCI,unrestricted,singlet,triplet,spin
   if(doCIS) then
 
     call wall_time(start_CI)
-    if(unrestricted) then
-      call UCIS(spin_conserved,spin_flip,nBas,nC,nO,nV,nR,nS,ERI_aaaa,ERI_aabb, & 
-                ERI_bbbb,dipole_int_aa,dipole_int_bb,epsHF,cHF,S)
-    else 
-      call CIS(singlet,triplet,doCIS_D,nBas,nC,nO,nV,nR,nS,ERI,dipole_int,epsHF)
-    end if
+    call UCIS(spin_conserved,spin_flip,nBas,nC,nO,nV,nR,nS,ERI_aaaa,ERI_aabb, & 
+              ERI_bbbb,dipole_int_aa,dipole_int_bb,epsHF,cHF,S)
     call wall_time(end_CI)
 
     t_CI = end_CI - start_CI
@@ -71,7 +61,6 @@ subroutine CI(doCIS,doCIS_D,doCID,doCISD,doFCI,unrestricted,singlet,triplet,spin
   if(doCID) then
 
     call wall_time(start_CI)
-    call CID(singlet,triplet,nBas,nC,nO,nV,nR,ERI,F,EHF)
     call wall_time(end_CI)
 
     t_CI = end_CI - start_CI
@@ -87,7 +76,6 @@ subroutine CI(doCIS,doCIS_D,doCID,doCISD,doFCI,unrestricted,singlet,triplet,spin
   if(doCISD) then
 
     call wall_time(start_CI)
-    call CISD(singlet,triplet,nBas,nC,nO,nV,nR,ERI,F,EHF)
     call wall_time(end_CI)
 
     t_CI = end_CI - start_CI
@@ -104,7 +92,6 @@ subroutine CI(doCIS,doCIS_D,doCID,doCISD,doFCI,unrestricted,singlet,triplet,spin
 
     call wall_time(start_CI)
     write(*,*) ' FCI is not yet implemented! Sorry.'
-!   call FCI(nBas,nC,nO,nV,nR,ERI,epsHF)
     call wall_time(end_CI)
 
     t_CI = end_CI - start_CI

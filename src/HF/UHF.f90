@@ -11,7 +11,7 @@ subroutine UHF(maxSCF,thresh,max_diis,guess_type,mix,level_shift,nNuc,ZNuc,rNuc,
   integer,intent(in)            :: maxSCF
   integer,intent(in)            :: max_diis
   integer,intent(in)            :: guess_type
-  logical,intent(in)            :: mix 
+  double precision,intent(in)   :: mix 
   double precision,intent(in)   :: level_shift
   double precision,intent(in)   :: thresh
   integer,intent(in)            :: nBas
@@ -181,7 +181,7 @@ subroutine UHF(maxSCF,thresh,max_diis,guess_type,mix,level_shift,nNuc,ZNuc,rNuc,
 
 !   Mix guess for UHF solution in singlet states
 
-    if(mix .and. nSCF == 1) call mix_guess(nBas,nO,c)
+    if(nSCF == 1) call mix_guess(nBas,nO,mix,c)
 
 !   Compute density matrix 
 

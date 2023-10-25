@@ -1,7 +1,7 @@
-subroutine GF(doG0F2,doevGF2,doqsGF2,doG0F3,doevGF3,unrestricted,renorm,maxSCF,thresh,max_diis,                &
-              dophBSE,doppBSE,TDA,dBSE,dTDA,singlet,triplet,spin_conserved,spin_flip,linearize,eta,regularize, & 
-              nNuc,ZNuc,rNuc,ENuc,nBas,nC,nO,nV,nR,nS,EHF,S,X,T,V,Hc,ERI_AO,ERI,ERI_aaaa,ERI_aabb,ERI_bbbb,    & 
-              dipole_int_AO,dipole_int,dipole_int_aa,dipole_int_bb,PHF,cHF,epsHF)
+subroutine UGF(doG0F2,doevGF2,doqsGF2,doG0F3,doevGF3,renorm,maxSCF,thresh,max_diis,                      &
+               dophBSE,doppBSE,TDA,dBSE,dTDA,spin_conserved,spin_flip,linearize,eta,regularize,          & 
+               nNuc,ZNuc,rNuc,ENuc,nBas,nC,nO,nV,nR,nS,EHF,S,X,T,V,Hc,ERI_AO,ERI_aaaa,ERI_aabb,ERI_bbbb, & 
+               dipole_int_AO,dipole_int_aa,dipole_int_bb,PHF,cHF,epsHF)
 
 ! Green's function module
 
@@ -15,7 +15,6 @@ subroutine GF(doG0F2,doevGF2,doqsGF2,doG0F3,doevGF3,unrestricted,renorm,maxSCF,t
   logical                       :: doqsGF2
   logical                       :: doG0F3
   logical                       :: doevGF3
-  logical                       :: unrestricted
 
   integer                       :: renorm
   integer,intent(in)            :: maxSCF
@@ -26,8 +25,6 @@ subroutine GF(doG0F2,doevGF2,doqsGF2,doG0F3,doevGF3,unrestricted,renorm,maxSCF,t
   logical,intent(in)            :: TDA
   logical,intent(in)            :: dBSE
   logical,intent(in)            :: dTDA
-  logical,intent(in)            :: singlet
-  logical,intent(in)            :: triplet
   logical,intent(in)            :: spin_conserved
   logical,intent(in)            :: spin_flip
   logical,intent(in)            :: linearize
@@ -56,12 +53,10 @@ subroutine GF(doG0F2,doevGF2,doqsGF2,doG0F3,doevGF3,unrestricted,renorm,maxSCF,t
   double precision,intent(in)   :: Hc(nBas,nBas)
   double precision,intent(in)   :: X(nBas,nBas)
   double precision,intent(in)   :: ERI_AO(nBas,nBas,nBas,nBas)
-  double precision,intent(in)   :: ERI(nBas,nBas,nBas,nBas)
   double precision,intent(in)   :: ERI_aaaa(nBas,nBas,nBas,nBas)
   double precision,intent(in)   :: ERI_aabb(nBas,nBas,nBas,nBas)
   double precision,intent(in)   :: ERI_bbbb(nBas,nBas,nBas,nBas)
   double precision,intent(in)   :: dipole_int_AO(nBas,nBas,ncart)
-  double precision,intent(in)   :: dipole_int(nBas,nBas,ncart)
   double precision,intent(in)   :: dipole_int_aa(nBas,nBas,ncart)
   double precision,intent(in)   :: dipole_int_bb(nBas,nBas,ncart)
 
@@ -76,14 +71,9 @@ subroutine GF(doG0F2,doevGF2,doqsGF2,doG0F3,doevGF3,unrestricted,renorm,maxSCF,t
   if(doG0F2) then
 
     call wall_time(start_GF)
-    if(unrestricted) then
-      call UG0F2(dophBSE,TDA,dBSE,dTDA,spin_conserved,spin_flip,linearize,eta,regularize, &
-                 nBas,nC,nO,nV,nR,nS,ENuc,EHF,ERI_aaaa,ERI_aabb,ERI_bbbb,  & 
-                 dipole_int_aa,dipole_int_bb,epsHF)
-    else
-      call G0F2(dophBSE,doppBSE,TDA,dBSE,dTDA,singlet,triplet,linearize,eta,regularize, & 
-                nBas,nC,nO,nV,nR,nS,ENuc,EHF,ERI,dipole_int,epsHF)
-    end if
+    call UG0F2(dophBSE,TDA,dBSE,dTDA,spin_conserved,spin_flip,linearize,eta,regularize, &
+               nBas,nC,nO,nV,nR,nS,ENuc,EHF,ERI_aaaa,ERI_aabb,ERI_bbbb,  & 
+               dipole_int_aa,dipole_int_bb,epsHF)
     call wall_time(end_GF)
 
     t_GF = end_GF - start_GF
@@ -99,15 +89,9 @@ subroutine GF(doG0F2,doevGF2,doqsGF2,doG0F3,doevGF3,unrestricted,renorm,maxSCF,t
   if(doevGF2) then
 
     call wall_time(start_GF)
-    if(unrestricted) then
-      call evUGF2(maxSCF,thresh,max_diis,dophBSE,TDA,dBSE,dTDA,spin_conserved,spin_flip,  &
-                  eta,regularize,nBas,nC,nO,nV,nR,nS,ENuc,EHF,ERI_aaaa,ERI_aabb,ERI_bbbb, & 
-                  dipole_int_aa,dipole_int_bb,cHF,epsHF)
-    else
-      call evGF2(dophBSE,doppBSE,TDA,dBSE,dTDA,maxSCF,thresh,max_diis, & 
-                 singlet,triplet,linearize,eta,regularize,nBas,nC,nO,nV,nR,nS,ENuc,EHF, & 
-                 ERI,dipole_int,epsHF)
-    end if
+    call evUGF2(maxSCF,thresh,max_diis,dophBSE,TDA,dBSE,dTDA,spin_conserved,spin_flip,  &
+                eta,regularize,nBas,nC,nO,nV,nR,nS,ENuc,EHF,ERI_aaaa,ERI_aabb,ERI_bbbb, & 
+                dipole_int_aa,dipole_int_bb,cHF,epsHF)
     call wall_time(end_GF)
 
     t_GF = end_GF - start_GF
@@ -123,14 +107,9 @@ subroutine GF(doG0F2,doevGF2,doqsGF2,doG0F3,doevGF3,unrestricted,renorm,maxSCF,t
   if(doqsGF2) then 
 
     call wall_time(start_GF)
-    if(unrestricted) then
-      call qsUGF2(maxSCF,thresh,max_diis,dophBSE,TDA,dBSE,dTDA,spin_conserved,spin_flip,eta,regularize, &
-                  nNuc,ZNuc,rNuc,ENuc,nBas,nC,nO,nV,nR,nS,EHF,S,X,T,V,Hc,ERI_AO,                        & 
-                  ERI_aaaa,ERI_aabb,ERI_bbbb,dipole_int_AO,dipole_int_aa,dipole_int_bb,PHF,cHF,epsHF)
-    else
-      call qsGF2(maxSCF,thresh,max_diis,dophBSE,doppBSE,TDA,dBSE,dTDA,singlet,triplet,eta,regularize,nNuc,ZNuc,rNuc,ENuc, & 
-                 nBas,nC,nO,nV,nR,nS,EHF,S,X,T,V,Hc,ERI_AO,ERI,dipole_int_AO,dipole_int,PHF,cHF,epsHF)
-    end if
+    call qsUGF2(maxSCF,thresh,max_diis,dophBSE,TDA,dBSE,dTDA,spin_conserved,spin_flip,eta,regularize, &
+                nNuc,ZNuc,rNuc,ENuc,nBas,nC,nO,nV,nR,nS,EHF,S,X,T,V,Hc,ERI_AO,                        & 
+                ERI_aaaa,ERI_aabb,ERI_bbbb,dipole_int_AO,dipole_int_aa,dipole_int_bb,PHF,cHF,epsHF)
     call wall_time(end_GF)
 
     t_GF = end_GF - start_GF
@@ -146,11 +125,7 @@ subroutine GF(doG0F2,doevGF2,doqsGF2,doG0F3,doevGF3,unrestricted,renorm,maxSCF,t
   if(doG0F3) then
 
     call wall_time(start_GF)
-    if(unrestricted) then
-      print*,'Unrestricted version of G0F3 not yet implemented! Sorry.'
-    else
-      call G0F3(renorm,nBas,nC,nO,nV,nR,ERI,epsHF)
-    end if
+    print*,'Unrestricted version of G0F3 not yet implemented! Sorry.'
     call wall_time(end_GF)
 
     t_GF = end_GF - start_GF
@@ -166,11 +141,7 @@ subroutine GF(doG0F2,doevGF2,doqsGF2,doG0F3,doevGF3,unrestricted,renorm,maxSCF,t
   if(doevGF3) then
 
     call wall_time(start_GF)
-    if(unrestricted) then
-      print*,'Unrestricted version of evGF3 not yet implemented! Sorry.'
-    else
-      call evGF3(maxSCF,thresh,max_diis,renorm,nBas,nC,nO,nV,nR,ERI,epsHF)
-    end if
+    print*,'Unrestricted version of evGF3 not yet implemented! Sorry.'
     call wall_time(end_GF)
 
     t_GF = end_GF - start_GF
