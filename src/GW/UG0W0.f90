@@ -147,9 +147,17 @@ subroutine UG0W0(doACFDT,exchange_kernel,doXBS,BSE,TDA_W,TDA,dBSE,dTDA,spin_cons
   
   ! Find graphical solution of the QP equation
 
+    write(*,*) ' *** Quasiparticle energies obtained by root search (experimental) *** '
+    write(*,*)
+
     do is=1,nspin
+
+      write(*,*)'-----------------------------------------------------'
+      if(is==1) write(*,*)'    Spin-up   orbitals    '
+      if(is==2) write(*,*)'    Spin-down orbitals    '
+
       call UGW_QP_graph(eta,nBas,nC(is),nO(is),nV(is),nR(is),nS_sc,eHF(:,is), & 
-                        Om,rho(:,:,:,is),eHF(:,is),eGW(:,is),Z(:,is))
+                        Om,rho(:,:,:,is),eGWlin(:,is),eHF(:,is),eGW(:,is),Z(:,is))
     end do
  
   end if

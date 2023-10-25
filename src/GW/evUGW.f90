@@ -166,8 +166,13 @@ subroutine evUGW(maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,BSE,TDA_W,
       write(*,*)
 
       do is=1,nspin
+
+        write(*,*)'-----------------------------------------------------'
+        if(is==1) write(*,*)'    Spin-up   orbitals    '
+        if(is==2) write(*,*)'    Spin-down orbitals    '
+
         call UGW_QP_graph(eta,nBas,nC(is),nO(is),nV(is),nR(is),nS_sc,eHF(:,is), &
-                          Om,rho(:,:,:,is),eOld(:,is),eGW(:,is),Z(:,is))
+                          Om,rho(:,:,:,is),eOld(:,is),eOld(:,is),eGW(:,is),Z(:,is))
       end do
 
     end if

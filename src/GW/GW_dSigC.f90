@@ -32,21 +32,21 @@ double precision function GW_dSigC(p,w,eta,nBas,nC,nO,nV,nR,nS,e,Om,rho)
 ! Occupied part of the correlation self-energy
 
   do i=nC+1,nO
-     do m=1,nS
-       eps = w - e(i) + Om(m)
-       num = 2d0*rho(p,i,m)**2
-       GW_dSigC = GW_dSigC - num*(eps**2 - eta**2)/(eps**2 + eta**2)**2
-     enddo
-  enddo
+    do m=1,nS
+      eps = w - e(i) + Om(m)
+      num = 2d0*rho(p,i,m)**2
+      GW_dSigC = GW_dSigC - num*(eps**2 - eta**2)/(eps**2 + eta**2)**2
+    end do
+  end do
 
 ! Virtual part of the correlation self-energy
 
   do a=nO+1,nBas-nR
-     do m=1,nS
-       eps = w - e(a) - Om(m)
-       num = 2d0*rho(p,a,m)**2
-       GW_dSigC = GW_dSigC - num*(eps**2 - eta**2)/(eps**2 + eta**2)**2
-     enddo
-  enddo
+    do m=1,nS
+      eps = w - e(a) - Om(m)
+      num = 2d0*rho(p,a,m)**2
+      GW_dSigC = GW_dSigC - num*(eps**2 - eta**2)/(eps**2 + eta**2)**2
+    end do
+  end do
 
 end function 

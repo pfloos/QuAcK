@@ -22,7 +22,7 @@ double precision function UGW_SigC(p,w,eta,nBas,nC,nO,nV,nR,nS,e,Om,rho)
 
 ! Local variables
 
-  integer                       :: i,a,jb
+  integer                       :: i,a,m
   double precision              :: num,eps
 
 ! Initialize 
@@ -32,9 +32,9 @@ double precision function UGW_SigC(p,w,eta,nBas,nC,nO,nV,nR,nS,e,Om,rho)
 ! Occupied part of the correlation self-energy
 
   do i=nC+1,nO
-    do jb=1,nS
-      eps = w - e(i) + Om(jb)
-      num = rho(p,i,jb)**2
+    do m=1,nS
+      eps = w - e(i) + Om(m)
+      num = rho(p,i,m)**2
       UGW_SigC = UGW_SigC + num*eps/(eps**2 + eta**2)  
     end do
   end do
@@ -42,9 +42,9 @@ double precision function UGW_SigC(p,w,eta,nBas,nC,nO,nV,nR,nS,e,Om,rho)
 ! Virtual part of the correlation self-energy
 
   do a=nO+1,nBas-nR
-    do jb=1,nS
-      eps = w - e(a) - Om(jb)
-      num = rho(p,a,jb)**2
+    do m=1,nS
+      eps = w - e(a) - Om(m)
+      num = rho(p,a,m)**2
       UGW_SigC = UGW_SigC + num*eps/(eps**2 + eta**2)
     end do
   end do
