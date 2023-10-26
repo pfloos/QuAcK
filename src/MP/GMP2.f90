@@ -22,6 +22,7 @@ subroutine GMP2(regularize,nBas,nC,nO,nV,nR,ERI,ENuc,EHF,e)
   integer                       :: i,j,a,b
 
   double precision              :: kappa,sigm1,sigm2
+  double precision              :: num
   double precision              :: Dijab
   double precision              :: fs,fs2,fk
 
@@ -76,28 +77,29 @@ subroutine GMP2(regularize,nBas,nC,nO,nV,nR,ERI,ENuc,EHF,e)
           fs2 = (1d0 - exp(-sigm2*Dijab*Dijab))/Dijab
           fk  = (1d0 - exp(-kappa*Dijab))**2/Dijab
 
-          E2d   = E2d   - 0.25d0*(ERI(i,j,a,b)-ERI(i,j,b,a))**2/Dijab
-          E2ds  = E2ds  - ERI(i,j,a,b)*ERI(i,j,a,b)*fs 
-          E2ds2 = E2ds2 - ERI(i,j,a,b)*ERI(i,j,a,b)*fs2
-          E2dk  = E2dk  - ERI(i,j,a,b)*ERI(i,j,a,b)*fk
+          num   = 0.25d0*(ERI(i,j,a,b)**2 + ERI(i,j,b,a)**2)
+          E2d   = E2d   - num/Dijab
+          E2ds  = E2ds  - num*fs 
+          E2ds2 = E2ds2 - num*fs2
+          E2dk  = E2dk  - num*fk
 
           ! Second-order exchange diagram
 
-          E2x   = E2x   - ERI(i,j,a,b)*ERI(i,j,b,a)/Dijab
-          E2x   = 0d0
-          E2xs  = E2xs  - ERI(i,j,a,b)*ERI(i,j,b,a)*fs 
-          E2xs2 = E2xs2 - ERI(i,j,a,b)*ERI(i,j,b,a)*fs2
-          E2xk  = E2xk  - ERI(i,j,a,b)*ERI(i,j,b,a)*fk
+          num   = 0.5d0*ERI(i,j,a,b)*ERI(i,j,b,a)
+          E2x   = E2x   + num/Dijab
+          E2xs  = E2xs  + num*fs 
+          E2xs2 = E2xs2 + num*fs2
+          E2xk  = E2xk  + num*fk
 
         enddo
       enddo
     enddo
   enddo
 
-  EcMP2   = E2d   - E2x
-  EcsMP2  = E2ds  - E2xs
-  Ecs2MP2 = E2ds2 - E2xs2
-  EckMP2  = E2dk  - E2xk
+  EcMP2   = E2d   + E2x
+  EcsMP2  = E2ds  + E2xs
+  Ecs2MP2 = E2ds2 + E2xs2
+  EckMP2  = E2dk  + E2xk
 
 !------------!
 ! MP2 energy !
@@ -109,7 +111,7 @@ subroutine GMP2(regularize,nBas,nC,nO,nV,nR,ERI,ENuc,EHF,e)
   write(*,'(A32)')           '---------------------------'
   write(*,'(A32,1X,F16.10)') ' GMP2 correlation energy = ',EcMP2
   write(*,'(A32,1X,F16.10)') ' Direct part             = ',E2d
-  write(*,'(A32,1X,F16.10)') ' Exchange part           = ',-E2x
+  write(*,'(A32,1X,F16.10)') ' Exchange part           = ',E2x
   write(*,'(A32)')           '---------------------------'
   write(*,'(A32,1X,F16.10)') ' GMP2 electronic  energy = ',EHF + EcMP2
   write(*,'(A32,1X,F16.10)') ' GMP2 total       energy = ',ENuc + EHF + EcMP2
@@ -128,7 +130,7 @@ subroutine GMP2(regularize,nBas,nC,nO,nV,nR,ERI,ENuc,EHF,e)
     write(*,'(A32)')           '---------------------------'
     write(*,'(A32,1X,F16.10)') ' GMP2 correlation energy = ',EcsMP2
     write(*,'(A32,1X,F16.10)') ' Direct part             = ',E2ds
-    write(*,'(A32,1X,F16.10)') ' Exchange part           = ',-E2xs
+    write(*,'(A32,1X,F16.10)') ' Exchange part           = ',E2xs
     write(*,'(A32)')           '---------------------------'
     write(*,'(A32,1X,F16.10)') ' GMP2 electronic  energy = ',EHF + EcsMP2
     write(*,'(A32,1X,F16.10)') ' GMP2 total       energy = ',ENuc + EHF + EcsMP2
@@ -145,7 +147,7 @@ subroutine GMP2(regularize,nBas,nC,nO,nV,nR,ERI,ENuc,EHF,e)
     write(*,'(A32)')           '---------------------------'
     write(*,'(A32,1X,F16.10)') ' GMP2 correlation energy = ',Ecs2MP2
     write(*,'(A32,1X,F16.10)') ' Direct part             = ',E2ds2
-    write(*,'(A32,1X,F16.10)') ' Exchange part           = ',-E2xs2
+    write(*,'(A32,1X,F16.10)') ' Exchange part           = ',E2xs2
     write(*,'(A32)')           '---------------------------'
     write(*,'(A32,1X,F16.10)') ' GMP2 electronic  energy = ',EHF + Ecs2MP2
     write(*,'(A32,1X,F16.10)') ' GMP2 total       energy = ',ENuc + EHF + Ecs2MP2

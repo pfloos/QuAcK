@@ -120,20 +120,18 @@ subroutine GQuAcK(doGHF,dostab,doMP2,dophRPA,dophRPAx,doppRPA,doG0W0,doevGW,doqs
   write(*,*) 'AO to MO transformation... Please be patient'
   write(*,*)
 
-  ! Read and transform dipole-related integrals
-  
-  dipole_int_MO(:,:,:) = dipole_int_AO(:,:,:)
-
-  do ixyz=1,ncart
-      call AOtoMO_transform(nBas2,cHF,dipole_int_MO(:,:,ixyz))
-  end do 
-  
-  ! 4-index transform 
-  
   allocate(Ca(nBas,nBas2),Cb(nBas,nBas2),ERI_tmp(nBas2,nBas2,nBas2,nBas2))
 
   Ca(:,:) = cHF(1:nBas,1:nBas2)
   Cb(:,:) = cHF(nBas+1:nBas2,1:nBas2)
+
+  ! Transform dipole-related integrals
+
+  do ixyz=1,ncart
+      call AOtoMO_transform_GHF(nBas,nBas2,Ca,Cb,dipole_int_AO(:,:,ixyz),dipole_int_MO(:,:,ixyz))
+  end do 
+  
+  ! 4-index transform 
 
   call AOtoMO_integral_transform_GHF(nBas,nBas2,Ca,Ca,Ca,Ca,ERI_AO,ERI_tmp)
   ERI_MO(:,:,:,:) = ERI_tmp(:,:,:,:)
