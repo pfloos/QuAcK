@@ -1,4 +1,4 @@
-subroutine print_GHF(nBas,nO,eHF,cHF,ENuc,ET,EV,EJ,EK,EGHF,dipole)
+subroutine print_GHF(nBas,nBas2,nO,e,C,P,ENuc,ET,EV,EJ,EK,EHF,dipole)
 
 ! Print one-electron energies and other stuff for GHF
 
@@ -8,32 +8,77 @@ subroutine print_GHF(nBas,nO,eHF,cHF,ENuc,ET,EV,EJ,EK,EGHF,dipole)
 ! Input variables
 
   integer,intent(in)                 :: nBas
+  integer,intent(in)                 :: nBas2
   integer,intent(in)                 :: nO
-  double precision,intent(in)        :: eHF(nBas)
-  double precision,intent(in)        :: cHF(nBas,nBas)
+  double precision,intent(in)        :: e(nBas2)
+  double precision,intent(in)        :: C(nBas2,nBas2)
+  double precision,intent(in)        :: P(nBas2,nBas2)
   double precision,intent(in)        :: ENuc
   double precision,intent(in)        :: ET
   double precision,intent(in)        :: EV
   double precision,intent(in)        :: EJ
   double precision,intent(in)        :: EK
-  double precision,intent(in)        :: EGHF
+  double precision,intent(in)        :: EHF
   double precision,intent(in)        :: dipole(ncart)
 
 ! Local variables
 
   integer                            :: ixyz
+  integer                            :: i,j
   integer                            :: HOMO
   integer                            :: LUMO
   double precision                   :: Gap
+  double precision                   :: Sx2,Sy2,Sz2,S2
+
+  double precision,allocatable       :: Paa(:,:)
+  double precision,allocatable       :: Pab(:,:)
+  double precision,allocatable       :: Pba(:,:)
+  double precision,allocatable       :: Pbb(:,:)
+
+  double precision,external     :: trace_matrix
 
 ! HOMO and LUMO
 
   HOMO = nO
   LUMO = HOMO + 1
-  Gap = eHF(LUMO)-eHF(HOMO)
+  Gap = e(LUMO)-e(HOMO)
+
+! Density matrices
+
+  allocate(Paa(nBas,nBas),Pab(nBas,nBas),Pba(nBas,nBas),Pbb(nBas,nBas))
+
+  Paa(:,:) = P(     1:nBas ,     1:nBas )
+  Pab(:,:) = P(     1:nBas ,nBas+1:nBas2)
+  Pba(:,:) = P(nBas+1:nBas2,     1:nBas )
+  Pbb(:,:) = P(nBas+1:nBas2,nBas+1:nBas2)
+
+! Compute expectation values of S^2
+
+  Sx2 = 0.25d0*trace_matrix(nBas,Paa+Pbb) + 0.25d0*trace_matrix(nBas,Pab+Pba)**2
+  do i=1,nBas
+    do j=1,nBas
+        Sx2 = Sx2 - 0.5d0*(Paa(i,j)*Pbb(j,i) + Pab(i,j)*Pab(j,i))
+    end do
+  end do
+
+  Sy2 = 0.25d0*trace_matrix(nBas,Paa+Pbb) - 0.25d0*trace_matrix(nBas,Pab+Pba)**2
+  do i=1,nBas
+    do j=1,nBas
+        Sy2 = Sy2 - 0.5d0*(Paa(i,j)*Pbb(j,i) - Pab(i,j)*Pab(j,i))
+    end do
+  end do
+
+  Sz2 = 0.25d0*trace_matrix(nBas,Paa+Pbb) + 0.25d0*trace_matrix(nBas,Pab-Pba)**2
+  do i=1,nBas
+    do j=1,nBas
+        Sz2 = Sz2 - 0.25d0*(Paa(i,j)*Pbb(j,i) - Pab(i,j)*Pab(j,i))
+        Sz2 = Sz2 + 0.25d0*(Pab(i,j)*Pba(j,i) - Pba(i,j)*Pab(j,i))
+    end do
+  end do
+
+  S2 = Sx2 + Sy2 + Sz2
 
 ! Dump results
-
 
   write(*,*)
   write(*,'(A50)')           '-----------------------------------------'
@@ -47,13 +92,15 @@ subroutine print_GHF(nBas,nO,eHF,cHF,ENuc,ET,EV,EJ,EK,EGHF,dipole)
   write(*,'(A32,1X,F16.10,A3)') ' Hartree      energy: ',EJ,' au'
   write(*,'(A32,1X,F16.10,A3)') ' Exchange     energy: ',EK,' au'
   write(*,'(A50)')           '-----------------------------------------'
-  write(*,'(A32,1X,F16.10,A3)') ' Electronic   energy: ',EGHF,' au'
+  write(*,'(A32,1X,F16.10,A3)') ' Electronic   energy: ',EHF,' au'
   write(*,'(A32,1X,F16.10,A3)') ' Nuclear   repulsion: ',ENuc,' au'
-  write(*,'(A32,1X,F16.10,A3)') ' GHF          energy: ',EGHF + ENuc,' au'
+  write(*,'(A32,1X,F16.10,A3)') ' GHF          energy: ',EHF + ENuc,' au'
   write(*,'(A50)')           '-----------------------------------------'
-  write(*,'(A32,1X,F16.6,A3)')  ' HF HOMO      energy: ',eHF(HOMO)*HaToeV,' eV'
-  write(*,'(A32,1X,F16.6,A3)')  ' HF LUMO      energy: ',eHF(LUMO)*HaToeV,' eV'
-  write(*,'(A32,1X,F16.6,A3)')  ' HF HOMO-LUMO gap   : ',Gap*HaToeV,' eV'
+  write(*,'(A32,1X,F16.6,A3)')  ' GHF HOMO     energy: ',e(HOMO)*HaToeV,' eV'
+  write(*,'(A32,1X,F16.6,A3)')  ' GHF LUMO     energy: ',e(LUMO)*HaToeV,' eV'
+  write(*,'(A32,1X,F16.6,A3)')  ' GHF HOMO-LUMO gap  : ',Gap*HaToeV,' eV'
+  write(*,'(A50)')           '-----------------------------------------'
+  write(*,'(A32,1X,F16.6)')     ' <S**2>             :',S2
   write(*,'(A50)')           '-----------------------------------------'
   write(*,'(A35)')           ' Dipole moment (Debye)    '
   write(*,'(10X,4A10)')      'X','Y','Z','Tot.'
@@ -66,12 +113,12 @@ subroutine print_GHF(nBas,nO,eHF,cHF,ENuc,ET,EV,EJ,EK,EGHF,dipole)
   write(*,'(A50)')  '---------------------------------------'
   write(*,'(A32)') 'MO coefficients'
   write(*,'(A50)')  '---------------------------------------'
-  call matout(nBas,nBas,cHF)
+  call matout(nBas2,nBas2,c)
   write(*,*)
   write(*,'(A50)') '---------------------------------------'
   write(*,'(A32)') 'MO energies'
   write(*,'(A50)') '---------------------------------------'
-  call matout(nBas,1,eHF)
+  call matout(nBas2,1,e)
   write(*,*)
 
 end subroutine 

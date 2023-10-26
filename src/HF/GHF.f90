@@ -292,6 +292,6 @@ subroutine GHF(maxSCF,thresh,max_diis,guess_type,mix,level_shift,nNuc,ZNuc,rNuc,
 
 ! Compute final GHF energy
 
-  call print_GHF(nBas2,nO,e,C,ENuc,ET,EV,EJ,EK,EHF,dipole)
+  call print_GHF(nBas,nBas2,nO,e,C,P,ENuc,ET,EV,EJ,EK,EHF,dipole)
 
 end subroutine 
