@@ -22,7 +22,7 @@ subroutine GHF(maxSCF,thresh,max_diis,guess_type,mix,level_shift,nNuc,ZNuc,rNuc,
   double precision,intent(in)   :: rNuc(nNuc,ncart)
   double precision,intent(in)   :: ENuc
 
-  integer,intent(in)            :: nO(nspin)
+  integer,intent(in)            :: nO
   double precision,intent(in)   :: Ov(nBas,nBas)
   double precision,intent(in)   :: T(nBas,nBas)
   double precision,intent(in)   :: V(nBas,nBas)
@@ -36,9 +36,6 @@ subroutine GHF(maxSCF,thresh,max_diis,guess_type,mix,level_shift,nNuc,ZNuc,rNuc,
   integer                       :: nSCF
   integer                       :: nBasSq
   integer                       :: nBas2Sq
-  integer                       :: nOa
-  integer                       :: nOb
-  integer                       :: nOcc
   integer                       :: n_diis
   double precision              :: Conv
   double precision              :: rcond
@@ -48,7 +45,6 @@ subroutine GHF(maxSCF,thresh,max_diis,guess_type,mix,level_shift,nNuc,ZNuc,rNuc,
   double precision              :: Ex,Exaaaa,Exabba,Exbaab,Exbbbb
   double precision              :: dipole(ncart)
 
-  double precision,allocatable  :: Ca(:,:),Cb(:,:)
   double precision,allocatable  :: Jaa(:,:),Jbb(:,:)
   double precision,allocatable  :: Kaa(:,:),Kab(:,:),Kba(:,:),Kbb(:,:)
   double precision,allocatable  :: Faa(:,:),Fab(:,:),Fba(:,:),Fbb(:,:)
@@ -83,21 +79,17 @@ subroutine GHF(maxSCF,thresh,max_diis,guess_type,mix,level_shift,nNuc,ZNuc,rNuc,
 
 ! Useful stuff
 
-  nBasSq = nBas*nBas
+  nBasSq  = nBas *nBas
   nBas2Sq = nBas2*nBas2
-
-  nOa  = nO(1)
-  nOb  = nO(2)
-  nOcc = nOa + nOb
 
 ! Memory allocation
 
-  allocate(Ca(nBas,nBas2),Cb(nBas,nBas2),Jaa(nBas,nBas),Jbb(nBas,nBas), &
-           Kaa(nBas,nBas),Kab(nBas,nBas),Kba(nBas,nBas),Kbb(nBas,nBas), &
-           Faa(nBas,nBas),Fab(nBas,nBas),Fba(nBas,nBas),Fbb(nBas,nBas), &
-           Paa(nBas,nBas),Pab(nBas,nBas),Pba(nBas,nBas),Pbb(nBas,nBas), &
-           F(nBas2,nBas2),Fp(nBas2,nBas2),Cp(nBas2,nBas2),              &
-           H(nBas2,nBas2),S(nBas2,nBas2),X(nBas2,nBas2),err(nBas2,nBas2), &
+  allocate(Jaa(nBas,nBas),Jbb(nBas,nBas),                                 &
+           Kaa(nBas,nBas),Kab(nBas,nBas),Kba(nBas,nBas),Kbb(nBas,nBas),   &
+           Faa(nBas,nBas),Fab(nBas,nBas),Fba(nBas,nBas),Fbb(nBas,nBas),   &
+           Paa(nBas,nBas),Pab(nBas,nBas),Pba(nBas,nBas),Pbb(nBas,nBas),   &
+           F(nBas2,nBas2),Fp(nBas2,nBas2),Cp(nBas2,nBas2),H(nBas2,nBas2), & 
+           S(nBas2,nBas2),X(nBas2,nBas2),err(nBas2,nBas2),                &
            err_diis(nBas2Sq,max_diis),F_diis(nBas2Sq,max_diis))
 
 ! Initialization
@@ -131,12 +123,14 @@ subroutine GHF(maxSCF,thresh,max_diis,guess_type,mix,level_shift,nNuc,ZNuc,rNuc,
 
   call mo_guess(nBas2,guess_type,S,H,X,C)
 
-  P(:,:) = matmul(C(:,1:nOcc),transpose(C(:,1:nOcc)))
+! Construct super density matrix
 
-  Paa(:,:) = P(1:nBas,1:nBas)
-  Pab(:,:) = P(1:nBas,nBas+1:nBas2)
-  Pba(:,:) = P(nBas+1:nBas2,1:nBas)
-  Pbb(:,:) = P(nBas+1:nBAs2,nBAs+1:nBas2)
+  P(:,:) = matmul(C(:,1:nO),transpose(C(:,1:nO)))
+
+  Paa(:,:) = P(     1:nBas ,     1:nBas )
+  Pab(:,:) = P(     1:nBas ,nBas+1:nBas2)
+  Pba(:,:) = P(nBas+1:nBas2,     1:nBas )
+  Pbb(:,:) = P(nBas+1:nBas2,nBas+1:nBas2)
 
 !------------------------------------------------------------------------
 ! Main SCF loop
@@ -189,18 +183,14 @@ subroutine GHF(maxSCF,thresh,max_diis,guess_type,mix,level_shift,nNuc,ZNuc,rNuc,
 !   DIIS extrapolation
 
     if(max_diis > 1) then
-
       n_diis = min(n_diis+1,max_diis)
       call DIIS_extrapolation(rcond,nBas2Sq,nBas2Sq,n_diis,err_diis(:,1:n_diis),F_diis(:,1:n_diis),err,F)
-
     end if
 
 !   Level-shifting
 
     if(level_shift > 0d0 .and. Conv > thresh) then
-
-      call level_shifting(level_shift,nBas,nOa+nOb,S,C,F)
-
+      call level_shifting(level_shift,nBas,nO,S,C,F)
     end if
 
 !  Transform Fock matrix in orthogonal basis
@@ -216,23 +206,21 @@ subroutine GHF(maxSCF,thresh,max_diis,guess_type,mix,level_shift,nNuc,ZNuc,rNuc,
 
     C(:,:) = matmul(X,Cp)
 
-!   Form individual coefficient matrices
-
-    Ca(1:nBas,1:nBas2) = C(     1:nBas ,1:nBas2) 
-    Cb(1:nBas,1:nBas2) = C(nBas+1:nBas2,1:nBas2) 
-
 !   Mix guess for UHF solution in singlet states
 
 !   if(nSCF == 1) call mix_guess(nBas,nO,mix,c)
 
-!   Compute individual density matrices
-    P(:,:) = matmul(C(:,1:nOcc),transpose(C(:,1:nOcc)))
+!   Form super density matrix
 
-    Paa(:,:) = P(1:nBas,1:nBas)
-    Pab(:,:) = P(1:nBas,nBas+1:nBas2)
-    Pba(:,:) = P(nBas+1:nBas2,1:nBas)
+    P(:,:) = matmul(C(:,1:nO),transpose(C(:,1:nO)))
+
+!   Compute individual density matrices
+
+    Paa(:,:) = P(     1:nBas ,     1:nBas )
+    Pab(:,:) = P(     1:nBas ,nBas+1:nBas2)
+    Pba(:,:) = P(nBas+1:nBas2,     1:nBas )
     Pbb(:,:) = P(nBas+1:nBas2,nBas+1:nBas2)
- 
+
 !------------------------------------------------------------------------
 !   Compute UHF energy
 !------------------------------------------------------------------------
@@ -298,9 +286,12 @@ subroutine GHF(maxSCF,thresh,max_diis,guess_type,mix,level_shift,nNuc,ZNuc,rNuc,
 
   end if
 
-! Compute final UHF energy
+! Compute dipole moments
 
-! call dipole_moment(nBas,P(:,:,1)+P(:,:,2),nNuc,ZNuc,rNuc,dipole_int,dipole)
+  call dipole_moment(nBas2,P,nNuc,ZNuc,rNuc,dipole_int,dipole)
+
+! Compute final GHF energy
+
 ! call print_GHF(nBas,nO,S,e,c,ENuc,ET,EV,EJ,Ex,EHF,dipole)
 
 end subroutine 

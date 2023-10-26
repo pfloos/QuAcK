@@ -1,7 +1,7 @@
 subroutine RQuAcK(doRHF,doROHF,dostab,doMP2,doMP3,doCCD,dopCCD,doDCD,doCCSD,doCCSDT,                               &   
                   dodrCCD,dorCCD,docrCCD,dolCCD,doCIS,doCIS_D,doCID,doCISD,doFCI,dophRPA,dophRPAx,docrRPA,doppRPA, & 
                   doG0F2,doevGF2,doqsGF2,doG0F3,doevGF3,doG0W0,doevGW,doqsGW,doufG0W0,doufGW,doSRGqsGW,            &
-                  doG0T0pp,doevGTpp,doqsGTpp,doG0T0eh,doevGTeh,doqsGTeh,nNuc,nBas,nC,nO,nV,nR,nS,ENuc,ZNuc,rNuc,   & 
+                  doG0T0pp,doevGTpp,doqsGTpp,doG0T0eh,doevGTeh,doqsGTeh,nNuc,nBas,nC,nO,nV,nR,ENuc,ZNuc,rNuc,      & 
                   S,T,V,Hc,X,dipole_int_AO,ERI_AO,maxSCF_HF,max_diis_HF,thresh_HF,level_shift,                     &
                   guess_type,mix,reg_MP,maxSCF_CC,max_diis_CC,thresh_CC,singlet,triplet,TDA,                       &
                   maxSCF_GF,max_diis_GF,renorm_GF,thresh_GF,lin_GF,reg_GF,eta_GF,maxSCF_GW,max_diis_GW,thresh_GW,  & 
@@ -25,11 +25,10 @@ subroutine RQuAcK(doRHF,doROHF,dostab,doMP2,doMP3,doCCD,dopCCD,doDCD,doCCSD,doCC
   logical,intent(in)            :: doG0T0pp,doevGTpp,doqsGTpp,doG0T0eh,doevGTeh,doqsGTeh
 
   integer,intent(in)            :: nNuc,nBas
-  integer,intent(in)            :: nC(nspin)
-  integer,intent(in)            :: nO(nspin)
-  integer,intent(in)            :: nV(nspin)
-  integer,intent(in)            :: nR(nspin)
-  integer,intent(in)            :: nS(nspin)
+  integer,intent(in)            :: nC
+  integer,intent(in)            :: nO
+  integer,intent(in)            :: nV
+  integer,intent(in)            :: nR
   double precision,intent(in)   :: ENuc
 
   double precision,intent(in)   :: ZNuc(nNuc),rNuc(nNuc,ncart)
@@ -93,6 +92,7 @@ subroutine RQuAcK(doRHF,doROHF,dostab,doMP2,doMP3,doCCD,dopCCD,doDCD,doCCSD,doCC
   double precision,allocatable  :: dipole_int_MO(:,:,:)
   double precision,allocatable  :: ERI_MO(:,:,:,:)
   integer                       :: ixyz
+  integer                       :: nS
 
   write(*,*)
   write(*,*) '******************************'
@@ -167,6 +167,8 @@ subroutine RQuAcK(doRHF,doROHF,dostab,doMP2,doMP3,doCCD,dopCCD,doDCD,doCCSD,doCC
 !-----------------------------------!
 ! Stability analysis of HF solution !
 !-----------------------------------!
+
+  nS = (nO - nC)*(nV - nR)
 
   if(dostab) then
 

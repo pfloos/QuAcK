@@ -1,7 +1,7 @@
 subroutine UQuAcK(doUHF,dostab,doMP2,doMP3,doCCD,dopCCD,doDCD,doCCSD,doCCSDT,                                      &
                   dodrCCD,dorCCD,docrCCD,dolCCD,doCIS,doCIS_D,doCID,doCISD,doFCI,dophRPA,dophRPAx,docrRPA,doppRPA, &
                   doG0F2,doevGF2,doqsGF2,doG0F3,doevGF3,doG0W0,doevGW,doqsGW,doufG0W0,doufGW,doSRGqsGW,            &
-                  doG0T0pp,doevGTpp,doqsGTpp,doG0T0eh,doevGTeh,doqsGTeh,nNuc,nBas,nC,nO,nV,nR,nS,ENuc,ZNuc,rNuc,   &
+                  doG0T0pp,doevGTpp,doqsGTpp,doG0T0eh,doevGTeh,doqsGTeh,nNuc,nBas,nC,nO,nV,nR,ENuc,ZNuc,rNuc,      &
                   S,T,V,Hc,X,dipole_int_AO,ERI_AO,maxSCF_HF,max_diis_HF,thresh_HF,level_shift,                     &
                   guess_type,mix,reg_MP,maxSCF_CC,max_diis_CC,thresh_CC,spin_conserved,spin_flip,TDA,              &
                   maxSCF_GF,max_diis_GF,renorm_GF,thresh_GF,lin_GF,reg_GF,eta_GF,maxSCF_GW,max_diis_GW,thresh_GW,  &
@@ -27,7 +27,6 @@ subroutine UQuAcK(doUHF,dostab,doMP2,doMP3,doCCD,dopCCD,doDCD,doCCSD,doCCSDT,   
   integer,intent(in)            :: nO(nspin)
   integer,intent(in)            :: nV(nspin)
   integer,intent(in)            :: nR(nspin)
-  integer,intent(in)            :: nS(nspin)
   double precision,intent(in)   :: ENuc
 
   double precision,intent(in)   :: ZNuc(nNuc),rNuc(nNuc,ncart)
@@ -91,6 +90,7 @@ subroutine UQuAcK(doUHF,dostab,doMP2,doMP3,doCCD,dopCCD,doDCD,doCCSD,doCCSDT,   
   double precision,allocatable  :: dipole_int_aa(:,:,:),dipole_int_bb(:,:,:)
   double precision,allocatable  :: ERI_aaaa(:,:,:,:),ERI_aabb(:,:,:,:),ERI_bbbb(:,:,:,:)
   integer                       :: ixyz
+  integer                       :: nS(nspin)
 
   write(*,*)
   write(*,*) '********************************'
@@ -185,6 +185,8 @@ subroutine UQuAcK(doUHF,dostab,doMP2,doMP3,doCCD,dopCCD,doDCD,doCCSD,doCCSDT,   
 !-----------------------------------!
 ! Stability analysis of HF solution !
 !-----------------------------------!
+
+  nS(:) = (nO(:) - nC(:))*(nV(:) - nR(:))
 
   if(dostab) then
 

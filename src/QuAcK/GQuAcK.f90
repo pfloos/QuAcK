@@ -1,5 +1,5 @@
 subroutine GQuAcK(doGHF,dostab,doMP2,dophRPA,dophRPAx,doppRPA,doG0W0,doevGW,doqsGW,doG0F2,doevGF2,doqsGF2, &
-                  nNuc,nBas,nC,nO,nV,nR,nS,ENuc,ZNuc,rNuc,S,T,V,Hc,X,dipole_int_AO,ERI_AO,                 &
+                  nNuc,nBas,nC,nO,nV,nR,ENuc,ZNuc,rNuc,S,T,V,Hc,X,dipole_int_AO,ERI_AO,                    &
                   maxSCF_HF,max_diis_HF,thresh_HF,level_shift,guess_type,mix,reg_MP,                       &
                   spin_conserved,spin_flip,TDA,maxSCF_GF,max_diis_GF,thresh_GF,lin_GF,reg_GF,eta_GF,       &
                   maxSCF_GW,max_diis_GW,thresh_GW,TDA_W,lin_GW,reg_GW,eta_GW,                              &
@@ -16,11 +16,10 @@ subroutine GQuAcK(doGHF,dostab,doMP2,dophRPA,dophRPAx,doppRPA,doG0W0,doevGW,doqs
   logical,intent(in)            :: doG0W0,doevGW,doqsGW
 
   integer,intent(in)            :: nNuc,nBas
-  integer,intent(in)            :: nC(nspin)
-  integer,intent(in)            :: nO(nspin)
-  integer,intent(in)            :: nV(nspin)
-  integer,intent(in)            :: nR(nspin)
-  integer,intent(in)            :: nS(nspin)
+  integer,intent(in)            :: nC
+  integer,intent(in)            :: nO
+  integer,intent(in)            :: nV
+  integer,intent(in)            :: nR
   double precision,intent(in)   :: ENuc
 
   double precision,intent(in)   :: ZNuc(nNuc),rNuc(nNuc,ncart)
@@ -77,6 +76,7 @@ subroutine GQuAcK(doGHF,dostab,doMP2,dophRPA,dophRPAx,doppRPA,doG0W0,doevGW,doqs
 
   integer                       :: ixyz
   integer                       :: nBas2
+  integer                       :: nS
 
   write(*,*)
   write(*,*) '*******************************'
@@ -131,16 +131,23 @@ subroutine GQuAcK(doGHF,dostab,doMP2,dophRPA,dophRPAx,doppRPA,doG0W0,doevGW,doqs
   ! 4-index transform 
   
   allocate(Ca(nBas,nBas2),Cb(nBas,nBas2),ERI_tmp(nBas2,nBas2,nBas2,nBas2))
+
   Ca(:,:) = cHF(1:nBas,1:nBas2)
   Cb(:,:) = cHF(nBas+1:nBas2,1:nBas2)
+
   call AOtoMO_integral_transform_GHF(nBas,nBas2,Ca,Ca,Ca,Ca,ERI_AO,ERI_tmp)
   ERI_MO(:,:,:,:) = ERI_tmp(:,:,:,:)
+
   call AOtoMO_integral_transform_GHF(nBas,nBas2,Ca,Cb,Ca,Cb,ERI_AO,ERI_tmp)
   ERI_MO(:,:,:,:) = ERI_MO(:,:,:,:) + ERI_tmp(:,:,:,:)
+
   call AOtoMO_integral_transform_GHF(nBas,nBas2,Cb,Ca,Cb,Ca,ERI_AO,ERI_tmp)
   ERI_MO(:,:,:,:) = ERI_MO(:,:,:,:) + ERI_tmp(:,:,:,:)
+
   call AOtoMO_integral_transform_GHF(nBas,nBas2,Cb,Cb,Cb,Cb,ERI_AO,ERI_tmp)
   ERI_MO(:,:,:,:) = ERI_MO(:,:,:,:) + ERI_tmp(:,:,:,:)
+
+  deallocate(Ca,Cb,ERI_tmp)
 
   call wall_time(end_AOtoMO)
 
@@ -152,10 +159,12 @@ subroutine GQuAcK(doGHF,dostab,doMP2,dophRPA,dophRPAx,doppRPA,doG0W0,doevGW,doqs
 ! Stability analysis of HF solution !
 !-----------------------------------!
 
+  nS = (nO - nC)*(nV - nR)
+
   if(dostab) then
 
     call wall_time(start_stab)
-    call GHF_stability(nBas2,sum(nC),sum(nO),sum(nV),sum(nR),sum(nO)*sum(nV),epsHF,ERI_MO)
+    call GHF_stability(nBas2,nC,nO,nV,nR,nS,epsHF,ERI_MO)
     call wall_time(end_stab)
 
     t_stab = end_stab - start_stab
@@ -173,7 +182,7 @@ subroutine GQuAcK(doGHF,dostab,doMP2,dophRPA,dophRPAx,doppRPA,doG0W0,doevGW,doqs
   if(doMP) then
 
     call wall_time(start_MP)
-    call GMP(doMP2,reg_MP,nBas2,sum(nC),sum(nO),sum(nV),sum(nR),ERI_MO,ENuc,EHF,epsHF)
+    call GMP(doMP2,reg_MP,nBas2,nC,nO,nV,nR,ERI_MO,ENuc,EHF,epsHF)
     call wall_time(end_MP)
 
     t_MP = end_MP - start_MP
@@ -192,7 +201,7 @@ subroutine GQuAcK(doGHF,dostab,doMP2,dophRPA,dophRPAx,doppRPA,doG0W0,doevGW,doqs
 
     call wall_time(start_RPA)
     call GRPA(dophRPA,dophRPAx,doppRPA,TDA,doACFDT,exchange_kernel, & 
-              nBas2,sum(nC),sum(nO),sum(nV),sum(nR),sum(nO)*sum(nV),ENuc,EHF,ERI_MO,dipole_int_MO,epsHF,cHF,S)
+              nBas2,nC,nO,nV,nR,nS,ENuc,EHF,ERI_MO,dipole_int_MO,epsHF,cHF,S)
     call wall_time(end_RPA)
 
     t_RPA = end_RPA - start_RPA
@@ -231,9 +240,9 @@ subroutine GQuAcK(doGHF,dostab,doMP2,dophRPA,dophRPAx,doppRPA,doG0W0,doevGW,doqs
   if(doGW) then
     
     call wall_time(start_GW)
-    call GGW(doG0W0,doevGW,doqsGW,maxSCF_GW,thresh_GW,max_diis_GW,doACFDT, &
-             exchange_kernel,doXBS,dophBSE,dophBSE2,doppBSE,TDA_W,TDA,dBSE,dTDA,                     &
-             lin_GW,eta_GW,reg_GW,nNuc,ZNuc,rNuc,ENuc,nBas2,sum(nC),sum(nO),sum(nV),sum(nR),sum(nO)*sum(nV), &
+    call GGW(doG0W0,doevGW,doqsGW,maxSCF_GW,thresh_GW,max_diis_GW,doACFDT,       &
+             exchange_kernel,doXBS,dophBSE,dophBSE2,doppBSE,TDA_W,TDA,dBSE,dTDA, & 
+             lin_GW,eta_GW,reg_GW,nNuc,ZNuc,rNuc,ENuc,nBas2,nC,nO,nV,nR,nS,      &
              EHF,S,X,T,V,Hc,ERI_AO,ERI_MO,dipole_int_AO,dipole_int_MO,PHF,cHF,epsHF)
     call wall_time(end_GW)
   
