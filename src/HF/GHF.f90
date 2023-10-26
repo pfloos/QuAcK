@@ -1,5 +1,5 @@
 subroutine GHF(maxSCF,thresh,max_diis,guess_type,mix,level_shift,nNuc,ZNuc,rNuc,ENuc, & 
-               nBas,nBas2,nO,S,T,V,Hc,ERI,dipole_int,X,EHF,e,c,P)
+               nBas,nBas2,nO,Ov,T,V,Hc,ERI,dipole_int,Or,EHF,e,c,P)
 
 ! Perform unrestricted Hartree-Fock calculation
 
@@ -23,11 +23,11 @@ subroutine GHF(maxSCF,thresh,max_diis,guess_type,mix,level_shift,nNuc,ZNuc,rNuc,
   double precision,intent(in)   :: ENuc
 
   integer,intent(in)            :: nO(nspin)
-  double precision,intent(in)   :: S(nBas,nBas)
+  double precision,intent(in)   :: Ov(nBas,nBas)
   double precision,intent(in)   :: T(nBas,nBas)
   double precision,intent(in)   :: V(nBas,nBas)
   double precision,intent(in)   :: Hc(nBas,nBas) 
-  double precision,intent(in)   :: X(nBas,nBas) 
+  double precision,intent(in)   :: Or(nBas,nBas) 
   double precision,intent(in)   :: ERI(nBas,nBas,nBas,nBas)
   double precision,intent(in)   :: dipole_int(nBas,nBas,ncart)
 
@@ -41,10 +41,10 @@ subroutine GHF(maxSCF,thresh,max_diis,guess_type,mix,level_shift,nNuc,ZNuc,rNuc,
   integer                       :: n_diis
   double precision              :: Conv
   double precision              :: rcond
-  double precision              :: ET(nspin)
-  double precision              :: EV(nspin)
-  double precision              :: EJ(nsp)
-  double precision              :: Ex(nspin)
+  double precision              :: ET,ETaa,ETab,ETba,ETbb
+  double precision              :: EV,EVaa,EVab,EVba,EVbb
+  double precision              :: EJ,EJaa,EJab,EJba,EJbb
+  double precision              :: Ex,Exaa,Exab,Exba,Exbb
   double precision              :: dipole(ncart)
 
   double precision,allocatable  :: Caa(:,:),Cab(:,:),Cba(:,:),Cbb(:,:)
@@ -55,6 +55,8 @@ subroutine GHF(maxSCF,thresh,max_diis,guess_type,mix,level_shift,nNuc,ZNuc,rNuc,
   double precision,allocatable  :: F(:,:)
   double precision,allocatable  :: Fp(:,:)
   double precision,allocatable  :: Cp(:,:)
+  double precision,allocatable  :: S(:,:)
+  double precision,allocatable  :: X(:,:)
   double precision,allocatable  :: err(:,:)
   double precision,allocatable  :: err_diis(:,:)
   double precision,allocatable  :: F_diis(:,:)
@@ -87,12 +89,13 @@ subroutine GHF(maxSCF,thresh,max_diis,guess_type,mix,level_shift,nNuc,ZNuc,rNuc,
 
 ! Memory allocation
 
-  allocate(Caa(nBas,nBas),Cab(nBas,nBas),Cba(nBas,nBas),Cbb(nBas,nBas),     &
-           Jaa(nBas,nBas),Jab(nBas,nBas),Jba(nBas,nBas),Jbb(nBas,nBas),     &
-           Kaa(nBas,nBas),Kab(nBas,nBas),Kba(nBas,nBas),Kbb(nBas,nBas),     &
-           Faa(nBas,nBas),Fab(nBas,nBas),Fba(nBas,nBas),Fbb(nBas,nBas),     &
-           Paa(nBas,nBas),Pab(nBas,nBas),Pba(nBas,nBas),Pbb(nBas,nBas),     &
-           F(nBas2,nBas2),Fp(nBas2,nBas2),Cp(nBas2,nBas2),err(nBas2,nBas2), &
+  allocate(Caa(nBas,nBas),Cab(nBas,nBas),Cba(nBas,nBas),Cbb(nBas,nBas), &
+           Jaa(nBas,nBas),Jab(nBas,nBas),Jba(nBas,nBas),Jbb(nBas,nBas), &
+           Kaa(nBas,nBas),Kab(nBas,nBas),Kba(nBas,nBas),Kbb(nBas,nBas), &
+           Faa(nBas,nBas),Fab(nBas,nBas),Fba(nBas,nBas),Fbb(nBas,nBas), &
+           Paa(nBas,nBas),Pab(nBas,nBas),Pba(nBas,nBas),Pbb(nBas,nBas), &
+           F(nBas2,nBas2),Fp(nBas2,nBas2),Cp(nBas2,nBas2),              &
+           S(nBas2,nBas2),X(nBas2,nBas2),err(nBas2,nBas2),              &
            err_diis(nBas2Sq,max_diis),F_diis(nBas2Sq,max_diis))
 
 ! Guess coefficients and demsity matrices
@@ -113,21 +116,25 @@ subroutine GHF(maxSCF,thresh,max_diis,guess_type,mix,level_shift,nNuc,ZNuc,rNuc,
 
 ! Construct super overlap matrix
 
-! TO DO
+  S(      :     ,       :    ) = 0d0
+  S(     1:nBas ,     1:nBas ) = Ov(1:nBas,1:nBas)
+  S(nBas+1:nBas2,nBas+1:nBas2) = Ov(1:nBas,1:nBas)
 
 ! Construct super orthogonalization matrix
 
-! TO DO
+  X(      :     ,       :    ) = 0d0
+  X(     1:nBas ,     1:nBas ) = Or(1:nBas,1:nBas)
+  X(nBas+1:nBas2,nBas+1:nBas2) = Or(1:nBas,1:nBas)
 
 !------------------------------------------------------------------------
 ! Main SCF loop
 !------------------------------------------------------------------------
 
   write(*,*)
-  write(*,*)'----------------------------------------------------------'
-  write(*,'(1X,A1,1X,A3,1X,A1,1X,A16,1X,A1,1X,A16,1X,A1,1X,A10,1X,A1,1X)') & 
-            '|','#','|','E(UHF)','|','Ex(UHF)','|','Conv','|'
-  write(*,*)'----------------------------------------------------------'
+  write(*,*)'-----------------------------------------------------------------------'
+  write(*,'(1X,A1,1X,A3,1X,A1,1X,A16,1X,A1,1X,A161X,A1,1X,A16,1X,A1,1X,A10,1X,A1,1X)') & 
+            '|','#','|','E(GHF)','|','EJ(GHF)','|','Ex(GHF)','|','Conv','|'
+  write(*,*)'-----------------------------------------------------------------------'
   
   do while(Conv > thresh .and. nSCF < maxSCF)
 
@@ -165,18 +172,18 @@ subroutine GHF(maxSCF,thresh,max_diis,guess_type,mix,level_shift,nNuc,ZNuc,rNuc,
 
 !   Check convergence 
 
-!   err(:,:) = matmul(F(:,:),matmul(P(:,:),S(:,:))) - matmul(matmul(S(:,:),P(:,:)),F(:,:))
+    err(:,:) = matmul(F,matmul(P,S)) - matmul(matmul(S,P),F)
 
-!   if(nSCF > 1) conv = maxval(abs(err(:,:)))
+    if(nSCF > 1) Conv = maxval(abs(err))
     
 !   DIIS extrapolation
 
-!   if(max_diis > 1) then
+    if(max_diis > 1) then
 
       n_diis = min(n_diis+1,max_diis)
       call DIIS_extrapolation(rcond,nBas2Sq,nBas2Sq,n_diis,err_diis(:,1:n_diis),F_diis(:,1:n_diis),err,F)
 
-!   end if
+    end if
 
 !   Level-shifting
 
@@ -201,7 +208,10 @@ subroutine GHF(maxSCF,thresh,max_diis,guess_type,mix,level_shift,nNuc,ZNuc,rNuc,
 
 !   Form individual coefficient matrices
 
-!   TO DO
+    Caa(1:nBas,1:nBas) = C(     1:nBas ,     1:nBas ) 
+    Cab(1:nBas,1:nBas) = C(nBas+1:nBas2,     1:nBas ) 
+    Cba(1:nBas,1:nBas) = C(     1:nBas ,nBas+1:nBas2) 
+    Cbb(1:nBas,1:nBas) = C(nBas+1:nBas2,nBas+1:nBas2) 
 
 !   Mix guess for UHF solution in singlet states
 
@@ -220,39 +230,45 @@ subroutine GHF(maxSCF,thresh,max_diis,guess_type,mix,level_shift,nNuc,ZNuc,rNuc,
 
 !  Kinetic energy
 
-!   do ispin=1,nspin
-!     ET(ispin) = trace_matrix(nBas,matmul(P(:,:,ispin),T(:,:)))
-!   end do
+    ETaa = trace_matrix(nBas,matmul(Paa,T))
+    ETab = trace_matrix(nBas,matmul(Pab,T))
+    ETba = trace_matrix(nBas,matmul(Pba,T))
+    ETbb = trace_matrix(nBas,matmul(Pbb,T))
+
+    ET = ETaa + ETab + ETba + ETbb
 
 !  Potential energy
 
-!   do ispin=1,nspin
-!     EV(ispin) = trace_matrix(nBas,matmul(P(:,:,ispin),V(:,:)))
-!   end do
+   EVaa = trace_matrix(nBas,matmul(Paa,V))
+   EVab = trace_matrix(nBas,matmul(Pab,V))
+   EVba = trace_matrix(nBas,matmul(Pba,V))
+   EVbb = trace_matrix(nBas,matmul(Pbb,V))
 
-!  Hartree energy
+   EV = EVaa + EVab + EVba + EVbb
 
-!   EJ(1) = 0.5d0*trace_matrix(nBas,matmul(P(:,:,1),J(:,:,1)))
-!   EJ(2) = trace_matrix(nBas,matmul(P(:,:,1),J(:,:,2)))
-!   EJ(3) = 0.5d0*trace_matrix(nBas,matmul(P(:,:,2),J(:,:,2)))
+!  Hartree energy: 16 terms?
 
+    EJaa = trace_matrix(nBas,matmul(Paa,Jaa))
+
+    EJ = EJaa
+  
 !   Exchange energy
 
-!   do ispin=1,nspin
-!     Ex(ispin) = 0.5d0*trace_matrix(nBas,matmul(P(:,:,ispin),K(:,:,ispin)))
-!   end do
+    Exaa = -0.5d0*trace_matrix(nBas,matmul(Paa,Kaa))
+
+    Ex = Exaa
 
 !   Total energy
 
-!   EHF = sum(ET(:)) + sum(EV(:)) + sum(EJ(:)) + sum(Ex(:))
+    EHF = ET + EV + EJ + Ex
 
 !   Dump results
 
-!   write(*,'(1X,A1,1X,I3,1X,A1,1X,F16.10,1X,A1,1X,F16.10,1X,A1,1X,F10.6,1X,A1,1X)') & 
-!     '|',nSCF,'|',EHF + ENuc,'|',sum(Ex(:)),'|',conv,'|'
+    write(*,'(1X,A1,1X,I3,1X,A1,1X,F16.10,1X,A1,1X,F16.10,A1,1X,F16.10,1X,A1,1X,F10.6,1X,A1,1X)') & 
+      '|',nSCF,'|',EHF + ENuc,'|',EJ,'|',Ex,'|',conv,'|'
  
   end do
-  write(*,*)'----------------------------------------------------------'
+  write(*,*)'-----------------------------------------------------------------------'
 !------------------------------------------------------------------------
 ! End of SCF loop
 !------------------------------------------------------------------------
