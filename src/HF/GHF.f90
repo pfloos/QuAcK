@@ -42,7 +42,7 @@ subroutine GHF(maxSCF,thresh,max_diis,guess_type,mix,level_shift,nNuc,ZNuc,rNuc,
   double precision              :: ET,ETaa,ETbb
   double precision              :: EV,EVaa,EVbb
   double precision              :: EJ,EJaaaa,EJaabb,EJbbaa,EJbbbb
-  double precision              :: Ex,Exaaaa,Exabba,Exbaab,Exbbbb
+  double precision              :: EK,EKaaaa,EKabba,EKbaab,EKbbbb
   double precision              :: dipole(ncart)
 
   double precision,allocatable  :: Jaa(:,:),Jbb(:,:)
@@ -139,7 +139,7 @@ subroutine GHF(maxSCF,thresh,max_diis,guess_type,mix,level_shift,nNuc,ZNuc,rNuc,
   write(*,*)
   write(*,*)'-----------------------------------------------------------------------------'
   write(*,'(1X,A1,1X,A3,1X,A1,1X,A16,1X,A1,1X,A16,1X,A1,1X,A16,1X,A1,1X,A10,1X,A1,1X)') & 
-            '|','#','|','E(GHF)','|','EJ(GHF)','|','Ex(GHF)','|','Conv','|'
+            '|','#','|','E(GHF)','|','EJ(GHF)','|','EK(GHF)','|','Conv','|'
   write(*,*)'-----------------------------------------------------------------------------'
   
   do while(Conv > thresh .and. nSCF < maxSCF)
@@ -239,7 +239,7 @@ subroutine GHF(maxSCF,thresh,max_diis,guess_type,mix,level_shift,nNuc,ZNuc,rNuc,
 
    EV = EVaa + EVbb
 
-!  Hartree energy: 16 terms?
+!  Hartree energy
 
     EJaaaa = 0.5d0*trace_matrix(nBas,matmul(Paa,Jaa))
     EJaabb = 0.5d0*trace_matrix(nBas,matmul(Paa,Jbb))
@@ -250,21 +250,21 @@ subroutine GHF(maxSCF,thresh,max_diis,guess_type,mix,level_shift,nNuc,ZNuc,rNuc,
   
 !   Exchange energy
 
-    Exaaaa = 0.5d0*trace_matrix(nBas,matmul(Paa,Kaa))
-    Exabba = 0.5d0*trace_matrix(nBas,matmul(Pab,Kba))
-    Exbaab = 0.5d0*trace_matrix(nBas,matmul(Pba,Kab))
-    Exbbbb = 0.5d0*trace_matrix(nBas,matmul(Pbb,Kbb))
+    EKaaaa = 0.5d0*trace_matrix(nBas,matmul(Paa,Kaa))
+    EKabba = 0.5d0*trace_matrix(nBas,matmul(Pab,Kba))
+    EKbaab = 0.5d0*trace_matrix(nBas,matmul(Pba,Kab))
+    EKbbbb = 0.5d0*trace_matrix(nBas,matmul(Pbb,Kbb))
 
-    Ex = Exaaaa + Exabba + Exbaab + Exbbbb
+    EK = EKaaaa + EKabba + EKbaab + EKbbbb
 
 !   Total energy
 
-    EHF = ET + EV + EJ + Ex
+    EHF = ET + EV + EJ + EK
 
 !   Dump results
 
     write(*,'(1X,A1,1X,I3,1X,A1,1X,F16.10,1X,A1,1X,F16.10,1X,A1,1X,F16.10,1X,A1,1X,F10.6,1X,A1,1X)') & 
-      '|',nSCF,'|',EHF + ENuc,'|',EJ,'|',Ex,'|',Conv,'|'
+      '|',nSCF,'|',EHF + ENuc,'|',EJ,'|',EK,'|',Conv,'|'
  
   end do
   write(*,*)'-----------------------------------------------------------------------------'
@@ -292,6 +292,6 @@ subroutine GHF(maxSCF,thresh,max_diis,guess_type,mix,level_shift,nNuc,ZNuc,rNuc,
 
 ! Compute final GHF energy
 
-! call print_GHF(nBas,nO,S,e,c,ENuc,ET,EV,EJ,Ex,EHF,dipole)
+  call print_GHF(nBas2,nO,e,C,ENuc,ET,EV,EJ,EK,EHF,dipole)
 
 end subroutine 
