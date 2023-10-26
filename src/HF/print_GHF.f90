@@ -30,6 +30,8 @@ subroutine print_GHF(nBas,nBas2,nO,e,C,P,ENuc,ET,EV,EJ,EK,EHF,dipole)
   double precision                   :: Gap
   double precision                   :: Sx2,Sy2,Sz2,S2
 
+  double precision,allocatable       :: Ca(:,:)
+  double precision,allocatable       :: Cb(:,:)
   double precision,allocatable       :: Paa(:,:)
   double precision,allocatable       :: Pab(:,:)
   double precision,allocatable       :: Pba(:,:)
@@ -45,37 +47,49 @@ subroutine print_GHF(nBas,nBas2,nO,e,C,P,ENuc,ET,EV,EJ,EK,EHF,dipole)
 
 ! Density matrices
 
-  allocate(Paa(nBas,nBas),Pab(nBas,nBas),Pba(nBas,nBas),Pbb(nBas,nBas))
+  allocate(Paa(nBas2,nBas2),Pab(nBas2,nBas2),Pba(nBas2,nBas2),Pbb(nBas2,nBas2))
 
-  Paa(:,:) = P(     1:nBas ,     1:nBas )
-  Pab(:,:) = P(     1:nBas ,nBas+1:nBas2)
-  Pba(:,:) = P(nBas+1:nBas2,     1:nBas )
-  Pbb(:,:) = P(nBas+1:nBas2,nBas+1:nBas2)
+! Paa(:,:) = P(     1:nBas ,     1:nBas )
+! Pab(:,:) = P(     1:nBas ,nBas+1:nBas2)
+! Pba(:,:) = P(nBas+1:nBas2,     1:nBas )
+! Pbb(:,:) = P(nBas+1:nBas2,nBas+1:nBas2)
+
+  allocate(Ca(nBas,nBas2),Cb(nBas,nBas2))
+
+  Ca(:,:) = C(     1:nBas ,1:nBas2)
+  Cb(:,:) = C(nBas+1:nBas2,1:nBas2)
+
+  Paa = matmul(transpose(Ca),matmul(P(     1:nBas ,     1:nBas ),Ca))
+  Pab = matmul(transpose(Ca),matmul(P(     1:nBas ,nBas+1:nBas2),Cb))
+  Pba = matmul(transpose(Cb),matmul(P(nBas+1:nBas2,     1:nBas ),Ca))
+  Pbb = matmul(transpose(Cb),matmul(P(nBas+1:nBas2,nBas+1:nBas2),Cb))
 
 ! Compute expectation values of S^2
 
-  Sx2 = 0.25d0*trace_matrix(nBas,Paa+Pbb) + 0.25d0*trace_matrix(nBas,Pab+Pba)**2
-  do i=1,nBas
-    do j=1,nBas
+  Sx2 = 0.25d0*trace_matrix(nBas2,Paa+Pbb) + 0.25d0*trace_matrix(nBas2,Pab+Pba)**2
+  do i=1,nBas2
+    do j=1,nBas2
         Sx2 = Sx2 - 0.5d0*(Paa(i,j)*Pbb(j,i) + Pab(i,j)*Pab(j,i))
     end do
   end do
 
-  Sy2 = 0.25d0*trace_matrix(nBas,Paa+Pbb) - 0.25d0*trace_matrix(nBas,Pab+Pba)**2
-  do i=1,nBas
-    do j=1,nBas
+  Sy2 = 0.25d0*trace_matrix(nBas2,Paa+Pbb) - 0.25d0*trace_matrix(nBas2,Pab+Pba)**2
+  do i=1,nBas2
+    do j=1,nBas2
         Sy2 = Sy2 - 0.5d0*(Paa(i,j)*Pbb(j,i) - Pab(i,j)*Pab(j,i))
     end do
   end do
 
-  Sz2 = 0.25d0*trace_matrix(nBas,Paa+Pbb) + 0.25d0*trace_matrix(nBas,Pab-Pba)**2
-  do i=1,nBas
-    do j=1,nBas
+  Sz2 = 0.25d0*trace_matrix(nBas2,Paa+Pbb) + 0.25d0*trace_matrix(nBas2,Pab-Pba)**2
+  do i=1,nBas2
+    do j=1,nBas2
         Sz2 = Sz2 - 0.25d0*(Paa(i,j)*Pbb(j,i) - Pab(i,j)*Pab(j,i))
         Sz2 = Sz2 + 0.25d0*(Pab(i,j)*Pba(j,i) - Pba(i,j)*Pab(j,i))
     end do
   end do
 
+  print*,Sx2,Sy2,Sz2
+  
   S2 = Sx2 + Sy2 + Sz2
 
 ! Dump results

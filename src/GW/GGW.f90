@@ -40,11 +40,11 @@ subroutine GGW(doG0W0,doevGW,doqsGW,maxSCF,thresh,max_diis,doACFDT,      &
   double precision,intent(in)   :: ENuc
 
   integer,intent(in)            :: nBas
-  integer,intent(in)            :: nC(nspin)
-  integer,intent(in)            :: nO(nspin)
-  integer,intent(in)            :: nV(nspin)
-  integer,intent(in)            :: nR(nspin)
-  integer,intent(in)            :: nS(nspin)
+  integer,intent(in)            :: nC
+  integer,intent(in)            :: nO
+  integer,intent(in)            :: nV
+  integer,intent(in)            :: nR
+  integer,intent(in)            :: nS
 
   double precision,intent(in)   :: EHF
   double precision,intent(in)   :: epsHF(nBas)
