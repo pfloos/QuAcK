@@ -56,6 +56,7 @@ subroutine GHF(maxSCF,thresh,max_diis,guess_type,mix,level_shift,nNuc,ZNuc,rNuc,
   double precision,allocatable  :: F(:,:)
   double precision,allocatable  :: Fp(:,:)
   double precision,allocatable  :: Cp(:,:)
+  double precision,allocatable  :: H(:,:)
   double precision,allocatable  :: S(:,:)
   double precision,allocatable  :: X(:,:)
   double precision,allocatable  :: err(:,:)
@@ -85,8 +86,8 @@ subroutine GHF(maxSCF,thresh,max_diis,guess_type,mix,level_shift,nNuc,ZNuc,rNuc,
   nBasSq = nBas*nBas
   nBas2Sq = nBas2*nBas2
 
-  nOa = nO(1)
-  nOb = nO(2)
+  nOa  = nO(1)
+  nOb  = nO(2)
   nOcc = nOa + nOb
 
 ! Memory allocation
@@ -96,15 +97,8 @@ subroutine GHF(maxSCF,thresh,max_diis,guess_type,mix,level_shift,nNuc,ZNuc,rNuc,
            Faa(nBas,nBas),Fab(nBas,nBas),Fba(nBas,nBas),Fbb(nBas,nBas), &
            Paa(nBas,nBas),Pab(nBas,nBas),Pba(nBas,nBas),Pbb(nBas,nBas), &
            F(nBas2,nBas2),Fp(nBas2,nBas2),Cp(nBas2,nBas2),              &
-           S(nBas2,nBas2),X(nBas2,nBas2),err(nBas2,nBas2),              &
+           H(nBas2,nBas2),S(nBas2,nBas2),X(nBas2,nBas2),err(nBas2,nBas2), &
            err_diis(nBas2Sq,max_diis),F_diis(nBas2Sq,max_diis))
-
-! Guess coefficients and demsity matrices
-
-! do ispin=1,nspin
-!   call mo_guess(nBas,guess_type,S,Hc,X,c(:,:,ispin))
-!   P(:,:,ispin) = matmul(c(:,1:nO(ispin),ispin),transpose(c(:,1:nO(ispin),ispin)))
-! end do
 
 ! Initialization
 
@@ -127,6 +121,23 @@ subroutine GHF(maxSCF,thresh,max_diis,guess_type,mix,level_shift,nNuc,ZNuc,rNuc,
   X(     1:nBas ,     1:nBas ) = Or(1:nBas,1:nBas)
   X(nBas+1:nBas2,nBas+1:nBas2) = Or(1:nBas,1:nBas)
 
+! Construct super orthogonalization matrix
+
+  H(      :     ,       :    ) = 0d0
+  H(     1:nBas ,     1:nBas ) = Hc(1:nBas,1:nBas)
+  H(nBas+1:nBas2,nBas+1:nBas2) = Hc(1:nBas,1:nBas)
+
+! Guess coefficients and density matrices
+
+  call mo_guess(nBas2,guess_type,S,H,X,C)
+
+  P(:,:) = matmul(C(:,1:nOcc),transpose(C(:,1:nOcc)))
+
+  Paa(:,:) = P(1:nBas,1:nBas)
+  Pab(:,:) = P(1:nBas,nBas+1:nBas2)
+  Pba(:,:) = P(nBas+1:nBas2,1:nBas)
+  Pbb(:,:) = P(nBas+1:nBAs2,nBAs+1:nBas2)
+
 !------------------------------------------------------------------------
 ! Main SCF loop
 !------------------------------------------------------------------------
@@ -146,8 +157,6 @@ subroutine GHF(maxSCF,thresh,max_diis,guess_type,mix,level_shift,nNuc,ZNuc,rNuc,
 !   Build individual Hartree matrices
 
     call Hartree_matrix_AO_basis(nBas,Paa,ERI,Jaa)
-!   call Hartree_matrix_AO_basis(nBas,Pab,ERI,Jab)
-!   call Hartree_matrix_AO_basis(nBas,Pba,ERI,Jba)
     call Hartree_matrix_AO_basis(nBas,Pbb,ERI,Jbb)
 
 !   Compute individual exchange matrices
@@ -167,8 +176,8 @@ subroutine GHF(maxSCF,thresh,max_diis,guess_type,mix,level_shift,nNuc,ZNuc,rNuc,
 !  Build super Fock matrix
 
     F(     1:nBas ,     1:nBas ) = Faa(1:nBas,1:nBas)
-    F(nBas+1:nBas2,     1:nBas ) = Fab(1:nBas,1:nBas)
-    F(     1:nBas ,nBas+1:nBas2) = Fba(1:nBas,1:nBas)
+    F(     1:nBas ,nBas+1:nBas2) = Fab(1:nBas,1:nBas)
+    F(nBas+1:nBas2,     1:nBas ) = Fba(1:nBas,1:nBas)
     F(nBas+1:nBas2,nBas+1:nBas2) = Fbb(1:nBas,1:nBas)
 
 !   Check convergence 
@@ -217,11 +226,12 @@ subroutine GHF(maxSCF,thresh,max_diis,guess_type,mix,level_shift,nNuc,ZNuc,rNuc,
 !   if(nSCF == 1) call mix_guess(nBas,nO,mix,c)
 
 !   Compute individual density matrices
+    P(:,:) = matmul(C(:,1:nOcc),transpose(C(:,1:nOcc)))
 
-    Paa(:,:) = matmul(Ca(:,1:nOcc),transpose(Ca(:,1:nOcc)))
-    Pab(:,:) = matmul(Ca(:,1:nOcc),transpose(Cb(:,1:nOcc)))
-    Pba(:,:) = matmul(Cb(:,1:nOcc),transpose(Ca(:,1:nOcc)))
-    Pbb(:,:) = matmul(Cb(:,1:nOcc),transpose(Cb(:,1:nOcc)))
+    Paa(:,:) = P(1:nBas,1:nBas)
+    Pab(:,:) = P(1:nBas,nBas+1:nBas2)
+    Pba(:,:) = P(nBas+1:nBas2,1:nBas)
+    Pbb(:,:) = P(nBas+1:nBas2,nBas+1:nBas2)
  
 !------------------------------------------------------------------------
 !   Compute UHF energy
@@ -243,19 +253,19 @@ subroutine GHF(maxSCF,thresh,max_diis,guess_type,mix,level_shift,nNuc,ZNuc,rNuc,
 
 !  Hartree energy: 16 terms?
 
-    EJaaaa = +0.5d0*trace_matrix(nBas,matmul(Paa,Jaa))
-    EJaabb = +0.5d0*trace_matrix(nBas,matmul(Paa,Jbb))
-    EJbbaa = +0.5d0*trace_matrix(nBas,matmul(Pbb,Jaa))
-    EJbbbb = +0.5d0*trace_matrix(nBas,matmul(Pbb,Jbb))
+    EJaaaa = 0.5d0*trace_matrix(nBas,matmul(Paa,Jaa))
+    EJaabb = 0.5d0*trace_matrix(nBas,matmul(Paa,Jbb))
+    EJbbaa = 0.5d0*trace_matrix(nBas,matmul(Pbb,Jaa))
+    EJbbbb = 0.5d0*trace_matrix(nBas,matmul(Pbb,Jbb))
 
     EJ = EJaaaa + EJaabb + EJbbaa + EJbbbb
   
 !   Exchange energy
 
-    Exaaaa = -0.5d0*trace_matrix(nBas,matmul(Paa,Kaa))
-    Exabba = -0.5d0*trace_matrix(nBas,matmul(Pab,Kba))
-    Exbaab = -0.5d0*trace_matrix(nBas,matmul(Pba,Kab))
-    Exbbbb = -0.5d0*trace_matrix(nBas,matmul(Pbb,Kbb))
+    Exaaaa = 0.5d0*trace_matrix(nBas,matmul(Paa,Kaa))
+    Exabba = 0.5d0*trace_matrix(nBas,matmul(Pab,Kba))
+    Exbaab = 0.5d0*trace_matrix(nBas,matmul(Pba,Kab))
+    Exbbbb = 0.5d0*trace_matrix(nBas,matmul(Pbb,Kbb))
 
     Ex = Exaaaa + Exabba + Exbaab + Exbbbb
 

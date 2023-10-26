@@ -28,6 +28,8 @@ subroutine mo_guess(nBas,guess_type,S,Hc,X,c)
 
     call random_number(c)
 
+    c(:,:) = 2d0*c(:,:) - 1d0
+
   else
 
     print*,'Wrong guess option'
