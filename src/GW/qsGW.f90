@@ -158,9 +158,9 @@ subroutine qsGW(maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,dophBSE,dop
 
     nSCF = nSCF + 1
 
-    ! Buid Coulomb matrix
+    ! Buid Hartree matrix
 
-    call Coulomb_matrix_AO_basis(nBas,P,ERI_AO,J)
+    call Hartree_matrix_AO_basis(nBas,P,ERI_AO,J)
 
     ! Compute exchange part of the self-energy 
 
@@ -239,7 +239,7 @@ subroutine qsGW(maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,dophBSE,dop
 
     EV = trace_matrix(nBas,matmul(P,V))
 
-    ! Coulomb energy
+    ! Hartree energy
 
     EJ = 0.5d0*trace_matrix(nBas,matmul(P,J))
 

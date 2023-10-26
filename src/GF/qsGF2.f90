@@ -131,9 +131,9 @@ subroutine qsGF2(maxSCF,thresh,max_diis,dophBSE,doppBSE,TDA,dBSE,dTDA,singlet,tr
 
     nSCF = nSCF + 1
 
-    ! Buid Coulomb matrix
+    ! Buid Hartree matrix
 
-    call Coulomb_matrix_AO_basis(nBas,P,ERI_AO,J)
+    call Hartree_matrix_AO_basis(nBas,P,ERI_AO,J)
 
     ! Compute exchange part of the self-energy 
 
@@ -208,7 +208,7 @@ subroutine qsGF2(maxSCF,thresh,max_diis,dophBSE,doppBSE,TDA,dBSE,dTDA,singlet,tr
 
     EV = trace_matrix(nBas,matmul(P,V))
 
-    ! Coulomb energy
+    ! Hartree energy
 
     EJ = 0.5d0*trace_matrix(nBas,matmul(P,J))
 

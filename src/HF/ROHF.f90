@@ -115,10 +115,10 @@ subroutine ROHF(maxSCF,thresh,max_diis,guess_type,mix,level_shift,nNuc,ZNuc,rNuc
 
     nSCF = nSCF + 1
 
-!   Build Coulomb repulsion
+!   Build Hartree repulsion
 
     do ispin=1,nspin
-      call Coulomb_matrix_AO_basis(nBas,P(:,:,ispin),ERI(:,:,:,:),J(:,:,ispin))
+      call Hartree_matrix_AO_basis(nBas,P(:,:,ispin),ERI(:,:,:,:),J(:,:,ispin))
     end do
 
 !   Compute exchange potential
@@ -195,7 +195,7 @@ subroutine ROHF(maxSCF,thresh,max_diis,guess_type,mix,level_shift,nNuc,ZNuc,rNuc
       EV(ispin) = trace_matrix(nBas,matmul(P(:,:,ispin),V(:,:)))
     end do
 
-!  Coulomb energy
+!  Hartree energy
 
     EJ(1) = 0.5d0*trace_matrix(nBas,matmul(P(:,:,1),J(:,:,1)))
     EJ(2) = trace_matrix(nBas,matmul(P(:,:,1),J(:,:,2)))

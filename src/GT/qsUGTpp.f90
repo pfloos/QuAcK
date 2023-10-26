@@ -172,9 +172,9 @@ subroutine qsUGTpp(maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,BSE, &
 
     nSCF = nSCF + 1
 
-! Buid Coulomb matrix
+! Buid Hartree matrix
     do ispin=1,nspin
-      call Coulomb_matrix_AO_basis(nBas,P(:,:,ispin),ERI_AO(:,:,:,:), &
+      call Hartree_matrix_AO_basis(nBas,P(:,:,ispin),ERI_AO(:,:,:,:), &
                                    J(:,:,ispin))
     end do
 
@@ -362,7 +362,7 @@ subroutine qsUGTpp(maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,BSE, &
       EV(ispin) = trace_matrix(nBas,matmul(P(:,:,ispin),V(:,:)))
     end do
 
-! Coulomb energy
+! Hartree energy
 
     EJ(1) = 0.5d0*trace_matrix(nBas,matmul(P(:,:,1),J(:,:,1)))
     EJ(2) = 0.5d0*trace_matrix(nBas,matmul(P(:,:,1),J(:,:,2))) &
