@@ -38,17 +38,18 @@ subroutine GHF(maxSCF,thresh,max_diis,guess_type,mix,level_shift,nNuc,ZNuc,rNuc,
   integer                       :: nBas2Sq
   integer                       :: nOa
   integer                       :: nOb
+  integer                       :: nOcc
   integer                       :: n_diis
   double precision              :: Conv
   double precision              :: rcond
-  double precision              :: ET,ETaa,ETab,ETba,ETbb
-  double precision              :: EV,EVaa,EVab,EVba,EVbb
-  double precision              :: EJ,EJaa,EJab,EJba,EJbb
-  double precision              :: Ex,Exaa,Exab,Exba,Exbb
+  double precision              :: ET,ETaa,ETbb
+  double precision              :: EV,EVaa,EVbb
+  double precision              :: EJ,EJaaaa,EJaabb,EJbbaa,EJbbbb
+  double precision              :: Ex,Exaaaa,Exabba,Exbaab,Exbbbb
   double precision              :: dipole(ncart)
 
-  double precision,allocatable  :: Caa(:,:),Cab(:,:),Cba(:,:),Cbb(:,:)
-  double precision,allocatable  :: Jaa(:,:),Jab(:,:),Jba(:,:),Jbb(:,:)
+  double precision,allocatable  :: Ca(:,:),Cb(:,:)
+  double precision,allocatable  :: Jaa(:,:),Jbb(:,:)
   double precision,allocatable  :: Kaa(:,:),Kab(:,:),Kba(:,:),Kbb(:,:)
   double precision,allocatable  :: Faa(:,:),Fab(:,:),Fba(:,:),Fbb(:,:)
   double precision,allocatable  :: Paa(:,:),Pab(:,:),Pba(:,:),Pbb(:,:)
@@ -74,9 +75,9 @@ subroutine GHF(maxSCF,thresh,max_diis,guess_type,mix,level_shift,nNuc,ZNuc,rNuc,
 ! Hello world
 
   write(*,*)
-  write(*,*)'************************************************'
-  write(*,*)'*    Unrestricted Hartree-Fock calculation     *'
-  write(*,*)'************************************************'
+  write(*,*)'***********************************************'
+  write(*,*)'*    Generalized Hartree-Fock calculation     *'
+  write(*,*)'***********************************************'
   write(*,*)
 
 ! Useful stuff
@@ -86,11 +87,11 @@ subroutine GHF(maxSCF,thresh,max_diis,guess_type,mix,level_shift,nNuc,ZNuc,rNuc,
 
   nOa = nO(1)
   nOb = nO(2)
+  nOcc = nOa + nOb
 
 ! Memory allocation
 
-  allocate(Caa(nBas,nBas),Cab(nBas,nBas),Cba(nBas,nBas),Cbb(nBas,nBas), &
-           Jaa(nBas,nBas),Jab(nBas,nBas),Jba(nBas,nBas),Jbb(nBas,nBas), &
+  allocate(Ca(nBas,nBas2),Cb(nBas,nBas2),Jaa(nBas,nBas),Jbb(nBas,nBas), &
            Kaa(nBas,nBas),Kab(nBas,nBas),Kba(nBas,nBas),Kbb(nBas,nBas), &
            Faa(nBas,nBas),Fab(nBas,nBas),Fba(nBas,nBas),Fbb(nBas,nBas), &
            Paa(nBas,nBas),Pab(nBas,nBas),Pba(nBas,nBas),Pbb(nBas,nBas), &
@@ -131,10 +132,10 @@ subroutine GHF(maxSCF,thresh,max_diis,guess_type,mix,level_shift,nNuc,ZNuc,rNuc,
 !------------------------------------------------------------------------
 
   write(*,*)
-  write(*,*)'-----------------------------------------------------------------------'
-  write(*,'(1X,A1,1X,A3,1X,A1,1X,A16,1X,A1,1X,A161X,A1,1X,A16,1X,A1,1X,A10,1X,A1,1X)') & 
+  write(*,*)'-----------------------------------------------------------------------------'
+  write(*,'(1X,A1,1X,A3,1X,A1,1X,A16,1X,A1,1X,A16,1X,A1,1X,A16,1X,A1,1X,A10,1X,A1,1X)') & 
             '|','#','|','E(GHF)','|','EJ(GHF)','|','Ex(GHF)','|','Conv','|'
-  write(*,*)'-----------------------------------------------------------------------'
+  write(*,*)'-----------------------------------------------------------------------------'
   
   do while(Conv > thresh .and. nSCF < maxSCF)
 
@@ -145,23 +146,23 @@ subroutine GHF(maxSCF,thresh,max_diis,guess_type,mix,level_shift,nNuc,ZNuc,rNuc,
 !   Build individual Hartree matrices
 
     call Hartree_matrix_AO_basis(nBas,Paa,ERI,Jaa)
-    call Hartree_matrix_AO_basis(nBas,Pab,ERI,Jab)
-    call Hartree_matrix_AO_basis(nBas,Pba,ERI,Jba)
+!   call Hartree_matrix_AO_basis(nBas,Pab,ERI,Jab)
+!   call Hartree_matrix_AO_basis(nBas,Pba,ERI,Jba)
     call Hartree_matrix_AO_basis(nBas,Pbb,ERI,Jbb)
 
 !   Compute individual exchange matrices
 
     call exchange_matrix_AO_basis(nBas,Paa,ERI,Kaa)
-    call exchange_matrix_AO_basis(nBas,Pab,ERI,Kab)
-    call exchange_matrix_AO_basis(nBas,Pba,ERI,Kba)
+    call exchange_matrix_AO_basis(nBas,Pba,ERI,Kab)
+    call exchange_matrix_AO_basis(nBas,Pab,ERI,Kba)
     call exchange_matrix_AO_basis(nBas,Pbb,ERI,Kbb)
  
 !   Build individual Fock matrices
 
-    Faa(:,:) = Hc(:,:) + Jaa(:,:) + Jab(:,:) + Kaa(:,:)
-    Fab(:,:) = Hc(:,:) + Jab(:,:) + Jba(:,:) + Kab(:,:)
-    Fba(:,:) = Hc(:,:) + Jba(:,:) + Jab(:,:) + Kba(:,:)
-    Fbb(:,:) = Hc(:,:) + Jbb(:,:) + Jba(:,:) + Kbb(:,:)
+    Faa(:,:) = Hc(:,:) + Jaa(:,:) + Jbb(:,:) + Kaa(:,:)
+    Fab(:,:) =                               + Kab(:,:)
+    Fba(:,:) =                               + Kba(:,:)
+    Fbb(:,:) = Hc(:,:) + Jbb(:,:) + Jaa(:,:) + Kbb(:,:)
 
 !  Build super Fock matrix
 
@@ -208,10 +209,8 @@ subroutine GHF(maxSCF,thresh,max_diis,guess_type,mix,level_shift,nNuc,ZNuc,rNuc,
 
 !   Form individual coefficient matrices
 
-    Caa(1:nBas,1:nBas) = C(     1:nBas ,     1:nBas ) 
-    Cab(1:nBas,1:nBas) = C(nBas+1:nBas2,     1:nBas ) 
-    Cba(1:nBas,1:nBas) = C(     1:nBas ,nBas+1:nBas2) 
-    Cbb(1:nBas,1:nBas) = C(nBas+1:nBas2,nBas+1:nBas2) 
+    Ca(1:nBas,1:nBas2) = C(     1:nBas ,1:nBas2) 
+    Cb(1:nBas,1:nBas2) = C(nBas+1:nBas2,1:nBas2) 
 
 !   Mix guess for UHF solution in singlet states
 
@@ -219,10 +218,10 @@ subroutine GHF(maxSCF,thresh,max_diis,guess_type,mix,level_shift,nNuc,ZNuc,rNuc,
 
 !   Compute individual density matrices
 
-    Paa(:,:) = matmul(Caa(:,1:nOa),transpose(Caa(:,1:nOa)))
-    Pab(:,:) = matmul(Cab(:,1:nOb),transpose(Cab(:,1:nOb)))
-    Pba(:,:) = matmul(Cba(:,1:nOa),transpose(Cba(:,1:nOa)))
-    Pbb(:,:) = matmul(Cbb(:,1:nOb),transpose(Cbb(:,1:nOb)))
+    Paa(:,:) = matmul(Ca(:,1:nOcc),transpose(Ca(:,1:nOcc)))
+    Pab(:,:) = matmul(Ca(:,1:nOcc),transpose(Cb(:,1:nOcc)))
+    Pba(:,:) = matmul(Cb(:,1:nOcc),transpose(Ca(:,1:nOcc)))
+    Pbb(:,:) = matmul(Cb(:,1:nOcc),transpose(Cb(:,1:nOcc)))
  
 !------------------------------------------------------------------------
 !   Compute UHF energy
@@ -231,32 +230,34 @@ subroutine GHF(maxSCF,thresh,max_diis,guess_type,mix,level_shift,nNuc,ZNuc,rNuc,
 !  Kinetic energy
 
     ETaa = trace_matrix(nBas,matmul(Paa,T))
-    ETab = trace_matrix(nBas,matmul(Pab,T))
-    ETba = trace_matrix(nBas,matmul(Pba,T))
     ETbb = trace_matrix(nBas,matmul(Pbb,T))
 
-    ET = ETaa + ETab + ETba + ETbb
+    ET = ETaa + ETbb
 
 !  Potential energy
 
    EVaa = trace_matrix(nBas,matmul(Paa,V))
-   EVab = trace_matrix(nBas,matmul(Pab,V))
-   EVba = trace_matrix(nBas,matmul(Pba,V))
    EVbb = trace_matrix(nBas,matmul(Pbb,V))
 
-   EV = EVaa + EVab + EVba + EVbb
+   EV = EVaa + EVbb
 
 !  Hartree energy: 16 terms?
 
-    EJaa = trace_matrix(nBas,matmul(Paa,Jaa))
+    EJaaaa = +0.5d0*trace_matrix(nBas,matmul(Paa,Jaa))
+    EJaabb = +0.5d0*trace_matrix(nBas,matmul(Paa,Jbb))
+    EJbbaa = +0.5d0*trace_matrix(nBas,matmul(Pbb,Jaa))
+    EJbbbb = +0.5d0*trace_matrix(nBas,matmul(Pbb,Jbb))
 
-    EJ = EJaa
+    EJ = EJaaaa + EJaabb + EJbbaa + EJbbbb
   
 !   Exchange energy
 
-    Exaa = -0.5d0*trace_matrix(nBas,matmul(Paa,Kaa))
+    Exaaaa = -0.5d0*trace_matrix(nBas,matmul(Paa,Kaa))
+    Exabba = -0.5d0*trace_matrix(nBas,matmul(Pab,Kba))
+    Exbaab = -0.5d0*trace_matrix(nBas,matmul(Pba,Kab))
+    Exbbbb = -0.5d0*trace_matrix(nBas,matmul(Pbb,Kbb))
 
-    Ex = Exaa
+    Ex = Exaaaa + Exabba + Exbaab + Exbbbb
 
 !   Total energy
 
@@ -264,11 +265,11 @@ subroutine GHF(maxSCF,thresh,max_diis,guess_type,mix,level_shift,nNuc,ZNuc,rNuc,
 
 !   Dump results
 
-    write(*,'(1X,A1,1X,I3,1X,A1,1X,F16.10,1X,A1,1X,F16.10,A1,1X,F16.10,1X,A1,1X,F10.6,1X,A1,1X)') & 
-      '|',nSCF,'|',EHF + ENuc,'|',EJ,'|',Ex,'|',conv,'|'
+    write(*,'(1X,A1,1X,I3,1X,A1,1X,F16.10,1X,A1,1X,F16.10,1X,A1,1X,F16.10,1X,A1,1X,F10.6,1X,A1,1X)') & 
+      '|',nSCF,'|',EHF + ENuc,'|',EJ,'|',Ex,'|',Conv,'|'
  
   end do
-  write(*,*)'-----------------------------------------------------------------------'
+  write(*,*)'-----------------------------------------------------------------------------'
 !------------------------------------------------------------------------
 ! End of SCF loop
 !------------------------------------------------------------------------

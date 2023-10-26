@@ -98,8 +98,8 @@ subroutine GQuAcK(doGHF,dostab,doMP2,dophRPA,dophRPAx,doppRPA,doG0W0,doevGW,doqs
   if(doGHF) then
 
     call wall_time(start_HF)
-!   call GHF(maxSCF_HF,thresh_HF,max_diis_HF,guess_type,mix,level_shift,nNuc,ZNuc,rNuc,ENuc, &
-!            nBas,nO,S,T,V,Hc,ERI_AO,dipole_int_AO,X,EHF,epsHF,cHF,PHF)
+    call GHF(maxSCF_HF,thresh_HF,max_diis_HF,guess_type,mix,level_shift,nNuc,ZNuc,rNuc,ENuc, &
+             nBas,nBas2,nO,S,T,V,Hc,ERI_AO,dipole_int_AO,X,EHF,epsHF,cHF,PHF)
     call wall_time(end_HF)
 
     t_HF = end_HF - start_HF
