@@ -1,4 +1,4 @@
-subroutine GMP2(regularize,nBas,nC,nO,nV,nR,ERI,ENuc,EHF,e)
+subroutine GMP2(regularize,nBas,nC,nO,nV,nR,ERI,ENuc,EHF,e,EcMP2)
 
 ! Perform second-order Moller-Plesset calculation with and without regularizers
 
@@ -30,9 +30,10 @@ subroutine GMP2(regularize,nBas,nC,nO,nV,nR,ERI,ENuc,EHF,e)
   double precision              :: E2x,E2xs,E2xs2,E2xk
 
   double precision              :: EcsMP2,Ecs2MP2,EckMP2
-  double precision              :: EcMP2
 
 ! Output variables
+
+  double precision,intent(out)  :: EcMP2
 
 ! Hello world
 

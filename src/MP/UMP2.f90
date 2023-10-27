@@ -29,9 +29,10 @@ subroutine UMP2(nBas,nC,nO,nV,nR,ERI_aa,ERI_ab,ERI_bb,ENuc,EHF,e,Ec)
   double precision              :: Edab,Exab,Ecab
   double precision              :: Edbb,Exbb,Ecbb
   double precision              :: Ed,Ex
-  double precision              :: Ec(nsp)
 
 ! Output variables
+
+  double precision,intent(out)  :: Ec(nsp)
 
 ! Hello world
 

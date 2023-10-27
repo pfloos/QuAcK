@@ -215,7 +215,7 @@ program QuAcK
 !--------------------------!
 
   if(doGQuAcK) & 
-    call GQuAcK(doGHF,dostab,doMP2,dophRPA,dophRPAx,doppRPA,doG0W0,doevGW,doqsGW,doG0F2,doevGF2,doqsGF2,     &
+    call GQuAcK(doGHF,dostab,doMP2,doMP3,dophRPA,dophRPAx,doppRPA,doG0W0,doevGW,doqsGW,doG0F2,doevGF2,doqsGF2,     &
                 nNuc,nBas,sum(nC),sum(nO),sum(nV),sum(nR),ENuc,ZNuc,rNuc,S,T,V,Hc,X,dipole_int_AO,ERI_AO,    &
                 maxSCF_HF,max_diis_HF,thresh_HF,level_shift,guess_type,mix,reg_MP,                           & 
                 spin_conserved,spin_flip,TDA,maxSCF_GF,max_diis_GF,thresh_GF,lin_GF,reg_GF,eta_GF,           & 

@@ -1,4 +1,4 @@
-subroutine GMP(doMP2,regularize,nBas,nC,nO,nV,nR,ERI,ENuc,EHF,epsHF)
+subroutine GMP(doMP2,doMP3,regularize,nBas,nC,nO,nV,nR,ERI,ENuc,EHF,epsHF)
 
 ! Moller-Plesset module
 
@@ -8,6 +8,7 @@ subroutine GMP(doMP2,regularize,nBas,nC,nO,nV,nR,ERI,ENuc,EHF,epsHF)
 ! Input variables
 
   logical,intent(in)            :: doMP2
+  logical,intent(in)            :: doMP3
 
   logical,intent(in)            :: regularize
   integer,intent(in)            :: nBas
@@ -23,6 +24,7 @@ subroutine GMP(doMP2,regularize,nBas,nC,nO,nV,nR,ERI,ENuc,EHF,epsHF)
 ! Local variables
 
   double precision              :: start_MP     ,end_MP       ,t_MP
+  double precision              :: Ec
 
 ! Output variables
 
@@ -33,7 +35,23 @@ subroutine GMP(doMP2,regularize,nBas,nC,nO,nV,nR,ERI,ENuc,EHF,epsHF)
   if(doMP2) then    
        
     call wall_time(start_MP)
-    call GMP2(regularize,nBas,nC,nO,nV,nR,ERI,ENuc,EHF,epsHF)
+    call GMP2(regularize,nBas,nC,nO,nV,nR,ERI,ENuc,EHF,epsHF,Ec)
+    call wall_time(end_MP)
+
+    t_MP = end_MP - start_MP
+    write(*,'(A65,1X,F9.3,A8)') 'Total CPU time for MP2 = ',t_MP,' seconds'
+    write(*,*)
+                    
+  end if
+
+!------------------------------------------------------------------------
+! Compute MP3 energy
+!------------------------------------------------------------------------                               
+
+  if(doMP3) then    
+       
+    call wall_time(start_MP)
+    call GMP3(nBas,nC,nO,nV,nR,ERI,ENuc,EHF,epsHF)
     call wall_time(end_MP)
 
     t_MP = end_MP - start_MP

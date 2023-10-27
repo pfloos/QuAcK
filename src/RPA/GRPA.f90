@@ -70,7 +70,7 @@ subroutine GRPA(dophRPA,dophRPAx,doppRPA,TDA,doACFDT,exchange_kernel,nBas,nC,nO,
   if(doppRPA) then
 
     call wall_time(start_RPA)
-!   call ppGRPA(TDA,doACFDT,nBas,nC,nO,nV,nR,ENuc,EHF,ERI,epsHF)
+    call ppGRPA(TDA,doACFDT,nBas,nC,nO,nV,nR,ENuc,EHF,ERI,dipole_int,epsHF)
     call wall_time(end_RPA)
 
     t_RPA = end_RPA - start_RPA

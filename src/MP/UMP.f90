@@ -26,6 +26,7 @@ subroutine UMP(doMP2,doMP3,regularize,nBas,nC,nO,nV,nR,ERI_aaaa,ERI_aabb,ERI_bbb
 ! Local variables
 
   double precision              :: start_MP     ,end_MP       ,t_MP
+  double precision              :: Ec(nsp)
 
 ! Output variables
 
@@ -36,7 +37,7 @@ subroutine UMP(doMP2,doMP3,regularize,nBas,nC,nO,nV,nR,ERI_aaaa,ERI_aabb,ERI_bbb
   if(doMP2) then    
        
     call wall_time(start_MP)
-    call UMP2(nBas,nC,nO,nV,nR,ERI_aaaa,ERI_aabb,ERI_bbbb,ENuc,EHF,epsHF)
+    call UMP2(nBas,nC,nO,nV,nR,ERI_aaaa,ERI_aabb,ERI_bbbb,ENuc,EHF,epsHF,Ec)
     call wall_time(end_MP)
 
     t_MP = end_MP - start_MP

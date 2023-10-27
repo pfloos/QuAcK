@@ -1,4 +1,4 @@
-subroutine GQuAcK(doGHF,dostab,doMP2,dophRPA,dophRPAx,doppRPA,doG0W0,doevGW,doqsGW,doG0F2,doevGF2,doqsGF2, &
+subroutine GQuAcK(doGHF,dostab,doMP2,doMP3,dophRPA,dophRPAx,doppRPA,doG0W0,doevGW,doqsGW,doG0F2,doevGF2,doqsGF2, &
                   nNuc,nBas,nC,nO,nV,nR,ENuc,ZNuc,rNuc,S,T,V,Hc,X,dipole_int_AO,ERI_AO,                    &
                   maxSCF_HF,max_diis_HF,thresh_HF,level_shift,guess_type,mix,reg_MP,                       &
                   spin_conserved,spin_flip,TDA,maxSCF_GF,max_diis_GF,thresh_GF,lin_GF,reg_GF,eta_GF,       &
@@ -11,6 +11,7 @@ subroutine GQuAcK(doGHF,dostab,doMP2,dophRPA,dophRPAx,doppRPA,doG0W0,doevGW,doqs
   logical,intent(in)            :: doGHF
   logical,intent(in)            :: dostab
   logical,intent(in)            :: doMP2
+  logical,intent(in)            :: doMP3
   logical,intent(in)            :: dophRPA,dophRPAx,doppRPA
   logical,intent(in)            :: doG0F2,doevGF2,doqsGF2
   logical,intent(in)            :: doG0W0,doevGW,doqsGW
@@ -180,7 +181,7 @@ subroutine GQuAcK(doGHF,dostab,doMP2,dophRPA,dophRPAx,doppRPA,doG0W0,doevGW,doqs
   if(doMP) then
 
     call wall_time(start_MP)
-    call GMP(doMP2,reg_MP,nBas2,nC,nO,nV,nR,ERI_MO,ENuc,EHF,epsHF)
+    call GMP(doMP2,doMP3,reg_MP,nBas2,nC,nO,nV,nR,ERI_MO,ENuc,EHF,epsHF)
     call wall_time(end_MP)
 
     t_MP = end_MP - start_MP
@@ -198,8 +199,8 @@ subroutine GQuAcK(doGHF,dostab,doMP2,dophRPA,dophRPAx,doppRPA,doG0W0,doevGW,doqs
   if(doRPA) then
 
     call wall_time(start_RPA)
-    call GRPA(dophRPA,dophRPAx,doppRPA,TDA,doACFDT,exchange_kernel, & 
-              nBas2,nC,nO,nV,nR,nS,ENuc,EHF,ERI_MO,dipole_int_MO,epsHF,cHF,S)
+    call GRPA(dophRPA,dophRPAx,doppRPA,TDA,doACFDT,exchange_kernel,nBas2,nC,nO,nV,nR,nS,ENuc,EHF, & 
+              ERI_MO,dipole_int_MO,epsHF,cHF,S)
     call wall_time(end_RPA)
 
     t_RPA = end_RPA - start_RPA
@@ -217,10 +218,8 @@ subroutine GQuAcK(doGHF,dostab,doMP2,dophRPA,dophRPAx,doppRPA,doG0W0,doevGW,doqs
   if(doGF) then
 
     call wall_time(start_GF)
-!   call GGF(doG0F2,doevGF2,doqsGF2,doG0F3,doevGF3,renorm_GF,maxSCF_GF,thresh_GF,max_diis_GF, &
-!            dophBSE,doppBSE,TDA,dBSE,dTDA,spin_conserved,spin_flip,lin_GF,eta_GF,reg_GF,     &
-!            nNuc,ZNuc,rNuc,ENuc,nBas,nC,nO,nV,nR,nS,EHF,S,X,T,V,Hc,ERI_AO,ERI_MO,            &
-!            dipole_int_AO,dipole_int_MO,PHF,cHF,epsHF)
+    call GGF(doG0F2,doevGF2,doqsGF2,maxSCF_GF,thresh_GF,max_diis_GF,dophBSE,doppBSE,TDA,dBSE,dTDA,lin_GF,eta_GF,reg_GF, &
+             nNuc,ZNuc,rNuc,ENuc,nBas2,nC,nO,nV,nR,nS,EHF,S,X,T,V,Hc,ERI_AO,ERI_MO,dipole_int_AO,dipole_int_MO,PHF,cHF,epsHF)
     call wall_time(end_GF)
 
     t_GF = end_GF - start_GF
@@ -238,10 +237,9 @@ subroutine GQuAcK(doGHF,dostab,doMP2,dophRPA,dophRPAx,doppRPA,doG0W0,doevGW,doqs
   if(doGW) then
     
     call wall_time(start_GW)
-    call GGW(doG0W0,doevGW,doqsGW,maxSCF_GW,thresh_GW,max_diis_GW,doACFDT,       &
-             exchange_kernel,doXBS,dophBSE,dophBSE2,doppBSE,TDA_W,TDA,dBSE,dTDA, & 
-             lin_GW,eta_GW,reg_GW,nNuc,ZNuc,rNuc,ENuc,nBas2,nC,nO,nV,nR,nS,      &
-             EHF,S,X,T,V,Hc,ERI_AO,ERI_MO,dipole_int_AO,dipole_int_MO,PHF,cHF,epsHF)
+    call GGW(doG0W0,doevGW,doqsGW,maxSCF_GW,thresh_GW,max_diis_GW,doACFDT,exchange_kernel,doXBS,    & 
+             dophBSE,dophBSE2,doppBSE,TDA_W,TDA,dBSE,dTDA,lin_GW,eta_GW,reg_GW,nNuc,ZNuc,rNuc,ENuc, & 
+             nBas2,nC,nO,nV,nR,nS,EHF,S,X,T,V,Hc,ERI_AO,ERI_MO,dipole_int_AO,dipole_int_MO,PHF,cHF,epsHF)
     call wall_time(end_GW)
   
     t_GW = end_GW - start_GW
