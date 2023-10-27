@@ -31,7 +31,7 @@ subroutine GG0F2(dophBSE,doppBSE,TDA,dBSE,dTDA,linearize,eta,regularize, &
 ! Local variables
 
   double precision              :: Ec
-  double precision              :: EcBSE(nspin)
+  double precision              :: EcBSE
   double precision,allocatable  :: eGFlin(:)
   double precision,allocatable  :: eGF(:)
   double precision,allocatable  :: SigC(:)
@@ -85,33 +85,29 @@ subroutine GG0F2(dophBSE,doppBSE,TDA,dBSE,dTDA,linearize,eta,regularize, &
 
 ! Perform BSE2 calculation
 
-! if(dophBSE) then 
-! 
-!   call GF2_phBSE2(TDA,dBSE,dTDA,singlet,triplet,eta,nBas,nC,nO,nV,nR,nS,ERI,dipole_int,eGF,EcBSE)
+  if(dophBSE) then 
+  
+    call GGF2_phBSE2(TDA,dBSE,dTDA,eta,nBas,nC,nO,nV,nR,nS,ERI,dipole_int,eGF,EcBSE)
 
-!   write(*,*)
-!   write(*,*)'-------------------------------------------------------------------------------'
-!   write(*,'(2X,A50,F20.10)') 'Tr@phBSE@G0F2  correlation energy (singlet) =',EcBSE(1)
-!   write(*,'(2X,A50,F20.10)') 'Tr@phBSE@G0F2  correlation energy (triplet) =',EcBSE(2)
-!   write(*,'(2X,A50,F20.10)') 'Tr@phBSE@G0F2  correlation energy           =',sum(EcBSE(:))
-!   write(*,'(2X,A50,F20.10)') 'Tr@phBSE@G0F2  total energy                 =',ENuc + EHF + sum(EcBSE(:))
-!   write(*,*)'-------------------------------------------------------------------------------'
-!   write(*,*)
+    write(*,*)
+    write(*,*)'-------------------------------------------------------------------------------'
+    write(*,'(2X,A50,F20.10,A3)') 'Tr@phBSE@GG0F2  correlation energy          =',EcBSE,' au'
+    write(*,'(2X,A50,F20.10,A3)') 'Tr@phBSE@GG0F2  total energy                =',ENuc + EHF + EcBSE,' au'
+    write(*,*)'-------------------------------------------------------------------------------'
+    write(*,*)
 
-! end if
+  end if
 
 ! Perform ppBSE2 calculation
 
 ! if(doppBSE) then 
 !  
-!   call GF2_ppBSE2(TDA,dBSE,dTDA,singlet,triplet,eta,nBas,nC,nO,nV,nR,ERI,dipole_int,eGF,EcBSE)
+!   call GGF2_ppBSE2(TDA,dBSE,dTDA,eta,nBas,nC,nO,nV,nR,ERI,dipole_int,eGF,EcBSE)
 
 !   write(*,*)
 !   write(*,*)'-------------------------------------------------------------------------------'
-!   write(*,'(2X,A50,F20.10,A3)') 'Tr@ppBSE@G0F2 correlation energy (singlet) =',EcBSE(1),' au'
-!   write(*,'(2X,A50,F20.10,A3)') 'Tr@ppBSE@G0F2 correlation energy (triplet) =',3d0*EcBSE(2),' au'
-!   write(*,'(2X,A50,F20.10,A3)') 'Tr@ppBSE@G0F2 correlation energy           =',EcBSE(1) + 3d0*EcBSE(2),' au'
-!   write(*,'(2X,A50,F20.10,A3)') 'Tr@ppBSE@G0F2 total energy                 =',ENuc + ERHF + EcBSE(1) + 3d0*EcBSE(2),' au'
+!   write(*,'(2X,A50,F20.10,A3)') 'Tr@ppBSE@GG0F2 correlation energy          =',EcBSE,' au'
+!   write(*,'(2X,A50,F20.10,A3)') 'Tr@ppBSE@GG0F2 total energy                =',ENuc + ERHF + EcBSE,' au'
 !   write(*,*)'-------------------------------------------------------------------------------'
 !   write(*,*)
 

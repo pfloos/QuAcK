@@ -78,9 +78,8 @@ subroutine GGF(doG0F2,doevGF2,doqsGF2,maxSCF,thresh,max_diis,dophBSE,doppBSE,TDA
   if(doevGF2) then
 
     call wall_time(start_GF)
-!   call evGGF2(dophBSE,doppBSE,TDA,dBSE,dTDA,maxSCF,thresh,max_diis, & 
-!               linearize,eta,regularize,nBas,nC,nO,nV,nR,nS,ENuc,EHF, & 
-!               ERI,dipole_int,epsHF)
+    call evGGF2(dophBSE,doppBSE,TDA,dBSE,dTDA,maxSCF,thresh,max_diis,linearize,eta,regularize, & 
+                nBas,nC,nO,nV,nR,nS,ENuc,EHF,ERI,dipole_int,epsHF)
     call wall_time(end_GF)
 
     t_GF = end_GF - start_GF

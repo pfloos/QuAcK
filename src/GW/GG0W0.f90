@@ -202,7 +202,7 @@ subroutine GG0W0(doACFDT,exchange_kernel,doXBS,dophBSE,dophBSE2,TDA_W,TDA,dBSE,d
 
 !   end if
 
-! end if
+  end if
 
 ! if(doppBSE) then
 
@@ -217,6 +217,6 @@ subroutine GG0W0(doACFDT,exchange_kernel,doXBS,dophBSE,dophBSE2,TDA_W,TDA,dBSE,d
 !   write(*,*)'-------------------------------------------------------------------------------'
 !   write(*,*)
 
-  end if
+! end if
 
 end subroutine 

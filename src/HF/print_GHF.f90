@@ -82,8 +82,6 @@ subroutine print_GHF(nBas,nBas2,nO,e,C,P,ENuc,ET,EV,EJ,EK,EHF,dipole)
         Sz2 = Sz2 + 0.25d0*(Pab(mu,nu)*Pba(nu,mu) - Pba(mu,nu)*Pab(nu,mu))
     end do
   end do
-
-  print*,Sx2,Sy2,Sz2
   
   S2 = Sx2 + Sy2 + Sz2
 

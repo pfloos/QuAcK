@@ -1,5 +1,5 @@
-subroutine evGF2(dophBSE,doppBSE,TDA,dBSE,dTDA,maxSCF,thresh,max_diis,singlet,triplet, &
-                 linearize,eta,regularize,nBas,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,dipole_int,eHF)
+subroutine evGGF2(dophBSE,doppBSE,TDA,dBSE,dTDA,maxSCF,thresh,max_diis, &
+                  linearize,eta,regularize,nBas,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,dipole_int,eHF)
 
 ! Perform eigenvalue self-consistent second-order Green function calculation
 
@@ -16,8 +16,6 @@ subroutine evGF2(dophBSE,doppBSE,TDA,dBSE,dTDA,maxSCF,thresh,max_diis,singlet,tr
   integer,intent(in)            :: maxSCF
   double precision,intent(in)   :: thresh
   integer,intent(in)            :: max_diis
-  logical,intent(in)            :: singlet
-  logical,intent(in)            :: triplet
   logical,intent(in)            :: linearize
   double precision,intent(in)   :: eta
   logical,intent(in)            :: regularize
@@ -39,7 +37,7 @@ subroutine evGF2(dophBSE,doppBSE,TDA,dBSE,dTDA,maxSCF,thresh,max_diis,singlet,tr
   integer                       :: nSCF
   integer                       :: n_diis
   double precision              :: Ec
-  double precision              :: EcBSE(nspin)
+  double precision              :: EcBSE
   double precision              :: Conv
   double precision              :: rcond
   double precision,allocatable  :: eGF(:)
@@ -82,11 +80,11 @@ subroutine evGF2(dophBSE,doppBSE,TDA,dBSE,dTDA,maxSCF,thresh,max_diis,singlet,tr
 
     if(regularize) then 
 
-      call GF2_reg_self_energy_diag(eta,nBas,nC,nO,nV,nR,eGF,ERI,SigC,Z)
+!     call GGF2_reg_self_energy_diag(eta,nBas,nC,nO,nV,nR,eGF,ERI,SigC,Z)
 
     else
 
-      call GF2_self_energy_diag(eta,nBas,nC,nO,nV,nR,eGF,ERI,SigC,Z)
+      call GGF2_self_energy_diag(eta,nBas,nC,nO,nV,nR,eGF,ERI,SigC,Z)
 
     end if
 
@@ -99,7 +97,7 @@ subroutine evGF2(dophBSE,doppBSE,TDA,dBSE,dTDA,maxSCF,thresh,max_diis,singlet,tr
       write(*,*) ' *** Quasiparticle energies obtained by root search (experimental) *** '
       write(*,*)
  
-      call GF2_QP_graph(eta,nBas,nC,nO,nV,nR,eHF,ERI,eOld,eOld,eGF,Z)
+      call GGF2_QP_graph(eta,nBas,nC,nO,nV,nR,eHF,ERI,eOld,eOld,eGF,Z)
  
     end if
 
@@ -107,7 +105,7 @@ subroutine evGF2(dophBSE,doppBSE,TDA,dBSE,dTDA,maxSCF,thresh,max_diis,singlet,tr
 
     ! Print results
 
-    call MP2(regularize,nBas,nC,nO,nV,nR,ERI,ENuc,ERHF,eGF,Ec)
+    call GMP2(regularize,nBas,nC,nO,nV,nR,ERI,ENuc,ERHF,eGF,Ec)
     call print_evGF2(nBas,nO,nSCF,Conv,eHF,SigC,Z,eGF,ENuc,ERHF,Ec)
 
     ! DIIS extrapolation
@@ -146,14 +144,12 @@ subroutine evGF2(dophBSE,doppBSE,TDA,dBSE,dTDA,maxSCF,thresh,max_diis,singlet,tr
 
   if(dophBSE) then 
   
-    call GF2_phBSE2(TDA,dBSE,dTDA,singlet,triplet,eta,nBas,nC,nO,nV,nR,nS,ERI,dipole_int,eGF,EcBSE)
+    call GGF2_phBSE2(TDA,dBSE,dTDA,eta,nBas,nC,nO,nV,nR,nS,ERI,dipole_int,eGF,EcBSE)
 
     write(*,*)
     write(*,*)'-------------------------------------------------------------------------------'
-    write(*,'(2X,A50,F20.10)') 'Tr@phBSE@evGF2 correlation energy (singlet) =',EcBSE(1)
-    write(*,'(2X,A50,F20.10)') 'Tr@phBSE@evGF2 correlation energy (triplet) =',EcBSE(2)
-    write(*,'(2X,A50,F20.10)') 'Tr@phBSE@evGF2 correlation energy           =',sum(EcBSE(:))
-    write(*,'(2X,A50,F20.10)') 'Tr@phBSE@evGF2 total energy                 =',ENuc + ERHF + sum(EcBSE(:))
+    write(*,'(2X,A50,F20.10,A3)') 'Tr@phBSE@evGGF2 correlation energy          =',EcBSE,' au'
+    write(*,'(2X,A50,F20.10,A3)') 'Tr@phBSE@evGGF2 total energy                =',ENuc + ERHF + EcBSE,' au'
     write(*,*)'-------------------------------------------------------------------------------'
     write(*,*)
 
@@ -161,19 +157,17 @@ subroutine evGF2(dophBSE,doppBSE,TDA,dBSE,dTDA,maxSCF,thresh,max_diis,singlet,tr
 
 ! Perform ppBSE2 calculation
 
-  if(doppBSE) then
+! if(doppBSE) then
 
-    call GF2_ppBSE2(TDA,dBSE,dTDA,singlet,triplet,eta,nBas,nC,nO,nV,nR,ERI,dipole_int,eGF,EcBSE)
+!   call GGF2_ppBSE2(TDA,dBSE,dTDA,eta,nBas,nC,nO,nV,nR,ERI,dipole_int,eGF,EcBSE)
 
-    write(*,*)
-    write(*,*)'-------------------------------------------------------------------------------'
-    write(*,'(2X,A50,F20.10,A3)') 'Tr@ppBSE@evGF2 correlation energy (singlet) =',EcBSE(1),' au'
-    write(*,'(2X,A50,F20.10,A3)') 'Tr@ppBSE@evGF2 correlation energy (triplet) =',3d0*EcBSE(2),' au'
-    write(*,'(2X,A50,F20.10,A3)') 'Tr@ppBSE@evGF2 correlation energy           =',EcBSE(1) + 3d0*EcBSE(2),' au'
-    write(*,'(2X,A50,F20.10,A3)') 'Tr@ppBSE@evGF2 total energy                 =',ENuc + ERHF + EcBSE(1) + 3d0*EcBSE(2),' au'
-    write(*,*)'-------------------------------------------------------------------------------'
-    write(*,*)
+!   write(*,*)
+!   write(*,*)'-------------------------------------------------------------------------------'
+!   write(*,'(2X,A50,F20.10,A3)') 'Tr@ppBSE@evGGF2 correlation energy          =',EcBSE),' au'
+!   write(*,'(2X,A50,F20.10,A3)') 'Tr@ppBSE@evGGF2 total energy                =',ENuc + ERHF + EcBSE,' au'
+!   write(*,*)'-------------------------------------------------------------------------------'
+!   write(*,*)
 
-  end if
+! end if
 
 end subroutine 
