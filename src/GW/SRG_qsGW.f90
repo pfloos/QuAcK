@@ -199,8 +199,7 @@ subroutine SRG_qsGW(maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,BSE,BSE
     tex=tex+tex2-tex1
 
     call wall_time(tsrg1)
-    call self_energy_correlation_SRG(eta,nBas,nC,nO,nV,nR,nS,eGW,OmRPA,rho_RPA,EcGM,SigC)
-    call renormalization_factor_SRG(eta,nBas,nC,nO,nV,nR,nS,eGW,OmRPA,rho_RPA,Z)
+    call SRG_self_energy(eta,nBas,nC,nO,nV,nR,nS,eGW,OmRPA,rho_RPA,EcGM,SigC,Z)
 
     call wall_time(tsrg2)
 
