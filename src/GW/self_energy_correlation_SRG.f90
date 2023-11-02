@@ -1,4 +1,4 @@
-subroutine self_energy_correlation_SRG(eta,nBas,nC,nO,nV,nR,nS,e,Omega,rho,EcGM,SigC)
+subroutine self_energy_correlation_SRG(eta,nBas,nC,nO,nV,nR,nS,e,Om,rho,EcGM,SigC)
 
 ! Compute correlation part of the self-energy
 
@@ -15,7 +15,7 @@ subroutine self_energy_correlation_SRG(eta,nBas,nC,nO,nV,nR,nS,e,Omega,rho,EcGM,
   integer,intent(in)            :: nR
   integer,intent(in)            :: nS
   double precision,intent(in)   :: e(nBas)
-  double precision,intent(in)   :: Omega(nS)
+  double precision,intent(in)   :: Om(nS)
   double precision,intent(in)   :: rho(nBas,nBas,nS)
 
 ! Local variables
@@ -23,8 +23,8 @@ subroutine self_energy_correlation_SRG(eta,nBas,nC,nO,nV,nR,nS,e,Omega,rho,EcGM,
   integer                       :: i,j,a,b
   integer                       :: p,q,r
   integer                       :: m
-  double precision     :: Dpim,Dqim,Dpam,Dqam
-  double precision     :: t1,t2
+  double precision              :: Dpim,Dqim,Dpam,Dqam,Diam
+  double precision              :: t1,t2
   
 ! Output variables
 
@@ -44,7 +44,7 @@ subroutine self_energy_correlation_SRG(eta,nBas,nC,nO,nV,nR,nS,e,Omega,rho,EcGM,
   call wall_time(t1)
 
   !$OMP PARALLEL &
-  !$OMP SHARED(SigC,rho,eta,nS,nC,nO,nBas,nR,e,Omega) &
+  !$OMP SHARED(SigC,rho,eta,nS,nC,nO,nBas,nR,e,Om) &
   !$OMP PRIVATE(m,i,q,p,Dpim,Dqim) &
   !$OMP DEFAULT(NONE)
   !$OMP DO
@@ -52,8 +52,8 @@ subroutine self_energy_correlation_SRG(eta,nBas,nC,nO,nV,nR,nS,e,Omega,rho,EcGM,
      do p=nC+1,nBas-nR
         do m=1,nS
            do i=nC+1,nO
-              Dpim = e(p) - e(i) + Omega(m)
-              Dqim = e(q) - e(i) + Omega(m)
+              Dpim = e(p) - e(i) + Om(m)
+              Dqim = e(q) - e(i) + Om(m)
               SigC(p,q) = SigC(p,q) + 2d0*rho(p,i,m)*rho(q,i,m)*(1d0-dexp(-eta*Dpim*Dpim)*dexp(-eta*Dqim*Dqim)) &
                    *(Dpim + Dqim)/(Dpim*Dpim + Dqim*Dqim)
            end do
@@ -70,7 +70,7 @@ subroutine self_energy_correlation_SRG(eta,nBas,nC,nO,nV,nR,nS,e,Omega,rho,EcGM,
 
  call wall_time(t1)
  !$OMP PARALLEL &
- !$OMP SHARED(SigC,rho,eta,nS,nC,nO,nR,nBas,e,Omega) &
+ !$OMP SHARED(SigC,rho,eta,nS,nC,nO,nR,nBas,e,Om) &
  !$OMP PRIVATE(m,a,q,p,Dpam,Dqam) &
  !$OMP DEFAULT(NONE)
  !$OMP DO
@@ -78,8 +78,8 @@ subroutine self_energy_correlation_SRG(eta,nBas,nC,nO,nV,nR,nS,e,Omega,rho,EcGM,
     do p=nC+1,nBas-nR
        do m=1,nS
           do a=nO+1,nBas-nR
-             Dpam = e(p) - e(a) - Omega(m)
-             Dqam = e(q) - e(a)- Omega(m)
+             Dpam = e(p) - e(a) - Om(m)
+             Dqam = e(q) - e(a) - Om(m)
              SigC(p,q) = SigC(p,q) + 2d0*rho(p,a,m)*rho(q,a,m)*(1d0-exp(-eta*Dpam*Dpam)*exp(-eta*Dqam*Dqam)) &
                   *(Dpam + Dqam)/(Dpam*Dpam + Dqam*Dqam)
           end do
@@ -96,12 +96,13 @@ subroutine self_energy_correlation_SRG(eta,nBas,nC,nO,nV,nR,nS,e,Omega,rho,EcGM,
 ! Galitskii-Migdal correlation energy
 
   EcGM = 0d0
-! do i=nC+1,nO
-!   do a=nO+1,nBas-nR
-!     do m=1,nS
-!       EcGM = EcGM - 4d0*rho(a,i,jb)*rho(a,i,jb)*eps/(eps**2 + eta**2)
-!     end do
-!   end do
-! end do
+  do i=nC+1,nO
+    do a=nO+1,nBas-nR
+      do m=1,nS
+        Diam = e(a) - e(i) + Om(m)
+        EcGM = EcGM - 4d0*rho(a,i,m)*rho(a,i,m)*(1d0-exp(-2d0*eta*Diam*Diam))/Diam 
+      end do
+    end do
+  end do
 
 end subroutine 
