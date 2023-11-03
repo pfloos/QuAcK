@@ -37,7 +37,7 @@ program QuAcK
 
   integer                       :: maxSCF_HF,max_diis_HF
   double precision              :: thresh_HF,level_shift,mix
-  logical                       :: guess_type
+  integer                       :: guess_type
 
   logical                       :: reg_MP
 

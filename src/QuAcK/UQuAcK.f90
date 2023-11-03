@@ -41,7 +41,7 @@ subroutine UQuAcK(doUHF,dostab,doMP2,doMP3,doCCD,dopCCD,doDCD,doCCSD,doCCSDT,   
 
   integer,intent(in)            :: maxSCF_HF,max_diis_HF
   double precision,intent(in)   :: thresh_HF,level_shift,mix
-  logical,intent(in)            :: guess_type
+  integer,intent(in)            :: guess_type
 
   logical,intent(in)            :: reg_MP
 

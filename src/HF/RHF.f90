@@ -1,5 +1,5 @@
 subroutine RHF(maxSCF,thresh,max_diis,guess_type,level_shift,nNuc,ZNuc,rNuc,ENuc, & 
-               nBas,nO,S,T,V,Hc,ERI,dipole_int,X,EHF,eps,c,P)
+               nBas,nO,S,T,V,Hc,ERI,dipole_int,X,EHF,e,c,P)
 
 ! Perform restricted Hartree-Fock calculation
 
@@ -55,8 +55,8 @@ subroutine RHF(maxSCF,thresh,max_diis,guess_type,level_shift,nNuc,ZNuc,rNuc,ENuc
 ! Output variables
 
   double precision,intent(out)  :: EHF
-  double precision,intent(out)  :: eps(nBas)
-  double precision,intent(out)  :: c(nBas,nBas)
+  double precision,intent(out)  :: e(nBas)
+  double precision,intent(inout):: c(nBas,nBas)
   double precision,intent(out)  :: P(nBas,nBas)
 
 ! Hello world
@@ -136,7 +136,7 @@ subroutine RHF(maxSCF,thresh,max_diis,guess_type,level_shift,nNuc,ZNuc,rNuc,ENuc
 
     Fp = matmul(transpose(X),matmul(F,X))
     cp(:,:) = Fp(:,:)
-    call diagonalize_matrix(nBas,cp,eps)
+    call diagonalize_matrix(nBas,cp,e)
     c = matmul(X,cp)
 
 !   Density matrix
@@ -153,20 +153,20 @@ subroutine RHF(maxSCF,thresh,max_diis,guess_type,level_shift,nNuc,ZNuc,rNuc,ENuc
 
     if(nBas > nO) then 
 
-      Gap = eps(nO+1) - eps(nO)
+      Gap = e(nO+1) - e(nO)
 
     else
 
       Gap = 0d0
 
-    endif
+    end if
 
 !  Dump results
 
     write(*,'(1X,A1,1X,I3,1X,A1,1X,F16.10,1X,A1,1X,F10.6,1X,A1,1X,F10.6,1X,A1,1X)') & 
       '|',nSCF,'|',EHF+ENuc,'|',Conv,'|',Gap,'|'
 
-  enddo
+  end do
   write(*,*)'----------------------------------------------------'
 !------------------------------------------------------------------------
 ! End of SCF loop
@@ -184,7 +184,7 @@ subroutine RHF(maxSCF,thresh,max_diis,guess_type,level_shift,nNuc,ZNuc,rNuc,ENuc
 
     stop
 
-  endif
+  end if
 
 ! Compute HF energy
 
@@ -197,6 +197,6 @@ subroutine RHF(maxSCF,thresh,max_diis,guess_type,level_shift,nNuc,ZNuc,rNuc,ENuc
 ! Compute dipole moments
 
   call dipole_moment(nBas,P,nNuc,ZNuc,rNuc,dipole_int,dipole)
-  call print_RHF(nBas,nO,eps,C,ENuc,ET,EV,EJ,EK,EHF,dipole)
+  call print_RHF(nBas,nO,e,C,ENuc,ET,EV,EJ,EK,EHF,dipole)
 
 end subroutine 
