@@ -57,6 +57,7 @@ subroutine UHF_stability(nBas,nC,nO,nV,nR,nS,eHF,ERI_aaaa,ERI_aabb,ERI_bbbb)
   AB_sc(:,:) = A_sc(:,:) + B_sc(:,:)
 
   call diagonalize_matrix(nS_sc,AB_sc,Om_sc)
+  Om_sc(:) = 0.5d0*Om_sc(:)
 
   write(*,*)'-------------------------------------------------------------'
   write(*,*)'|       Stability analysis: Real UHF -> Real UHF            |'
@@ -91,6 +92,7 @@ subroutine UHF_stability(nBas,nC,nO,nV,nR,nS,eHF,ERI_aaaa,ERI_aabb,ERI_bbbb)
   AB_sc(:,:) = A_sc(:,:) - B_sc(:,:)
 
   call diagonalize_matrix(nS_sc,AB_sc,Om_sc)
+  Om_sc(:) = 0.5d0*Om_sc(:)
 
   write(*,*)'-------------------------------------------------------------'
   write(*,*)'|       Stability analysis: Real UHF -> Complex UHF         |'
@@ -140,6 +142,7 @@ subroutine UHF_stability(nBas,nC,nO,nV,nR,nS,eHF,ERI_aaaa,ERI_aabb,ERI_bbbb)
   AB_sf(:,:) = A_sf(:,:) + B_sf(:,:)
 
   call diagonalize_matrix(nS_sf,AB_sf,Om_sf)
+  Om_sf(:) = 0.5d0*Om_sf(:)
 
   write(*,*)'-------------------------------------------------------------'
   write(*,*)'|       Stability analysis: Real UHF -> Real GHF            |'

@@ -44,6 +44,7 @@ subroutine RHF_stability(nBas,nC,nO,nV,nR,nS,eHF,ERI)
   AB(:,:) = A(:,:) + B(:,:)
 
   call diagonalize_matrix(nS,AB,Om)
+  Om(:) = 0.5d0*Om(:)
 
   write(*,*)'-------------------------------------------------------------'
   write(*,*)'|       Stability analysis: Real RHF -> Real RHF            |'
@@ -78,6 +79,7 @@ subroutine RHF_stability(nBas,nC,nO,nV,nR,nS,eHF,ERI)
   AB(:,:) = A(:,:) - B(:,:)
 
   call diagonalize_matrix(nS,AB,Om)
+  Om(:) = 0.5d0*Om(:)
 
   write(*,*)'-------------------------------------------------------------'
   write(*,*)'|       Stability analysis: Real RHF -> Complex RHF         |'
@@ -117,6 +119,7 @@ subroutine RHF_stability(nBas,nC,nO,nV,nR,nS,eHF,ERI)
   AB(:,:) = A(:,:) + B(:,:)
 
   call diagonalize_matrix(nS,AB,Om)
+  Om(:) = 0.5d0*Om(:)
 
   write(*,*)'-------------------------------------------------------------'
   write(*,*)'|       Stability analysis: Real RHF -> Real UHF            |'
