@@ -1,11 +1,11 @@
-subroutine read_options(maxSCF_HF,thresh_HF,max_diis_HF,guess_type,mix,level_shift,dostab, &
-                        reg_MP,                                                            &
-                        maxSCF_CC,thresh_CC,max_diis_CC,                                   &
-                        TDA,spin_conserved,spin_flip,                                      &
-                        maxSCF_GF,thresh_GF,max_diis_GF,lin_GF,eta_GF,renorm_GF,reg_GF,    &
-                        maxSCF_GW,thresh_GW,max_diis_GW,lin_GW,eta_GW,reg_GW,TDA_W,        &
-                        maxSCF_GT,thresh_GT,max_diis_GT,lin_GT,eta_GT,reg_GT,TDA_T,        &
-                        doACFDT,exchange_kernel,doXBS,                                     &
+subroutine read_options(maxSCF_HF,thresh_HF,max_diis_HF,guess_type,mix,level_shift,dostab,dosearch, &
+                        reg_MP,                                                                     &
+                        maxSCF_CC,thresh_CC,max_diis_CC,                                            &
+                        TDA,spin_conserved,spin_flip,                                               &
+                        maxSCF_GF,thresh_GF,max_diis_GF,lin_GF,eta_GF,renorm_GF,reg_GF,             &
+                        maxSCF_GW,thresh_GW,max_diis_GW,lin_GW,eta_GW,reg_GW,TDA_W,                 &
+                        maxSCF_GT,thresh_GT,max_diis_GT,lin_GT,eta_GT,reg_GT,TDA_T,                 &
+                        doACFDT,exchange_kernel,doXBS,                                              &
                         dophBSE,dophBSE2,doppBSE,dBSE,dTDA)
 
 ! Read desired methods 
@@ -21,6 +21,7 @@ subroutine read_options(maxSCF_HF,thresh_HF,max_diis_HF,guess_type,mix,level_shi
   double precision,intent(out)  :: mix
   double precision,intent(out)  :: level_shift
   logical,intent(out)           :: dostab
+  logical,intent(out)           :: dosearch
 
   logical,intent(out)           :: reg_MP
 
@@ -83,11 +84,13 @@ subroutine read_options(maxSCF_HF,thresh_HF,max_diis_HF,guess_type,mix,level_shi
   mix          = 0d0
   level_shift  = 0d0
   dostab       = .false.
+  dosearch     = .false.
 
   read(1,*) 
-  read(1,*) maxSCF_HF,thresh_HF,max_diis_HF,guess_type,mix,level_shift,ans1
+  read(1,*) maxSCF_HF,thresh_HF,max_diis_HF,guess_type,mix,level_shift,ans1,ans2
 
-  if(ans1 == 'T') dostab = .true.
+  if(ans1 == 'T') dostab   = .true.
+  if(ans2 == 'T') dosearch = .true.
 
 ! Read MPn options
 

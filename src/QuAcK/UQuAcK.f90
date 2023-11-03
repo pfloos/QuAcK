@@ -1,4 +1,4 @@
-subroutine UQuAcK(doUHF,dostab,doMP2,doMP3,doCCD,dopCCD,doDCD,doCCSD,doCCSDT,                                      &
+subroutine UQuAcK(doUHF,dostab,dosearch,doMP2,doMP3,doCCD,dopCCD,doDCD,doCCSD,doCCSDT,                             &
                   dodrCCD,dorCCD,docrCCD,dolCCD,doCIS,doCIS_D,doCID,doCISD,doFCI,dophRPA,dophRPAx,docrRPA,doppRPA, &
                   doG0F2,doevGF2,doqsGF2,doG0F3,doevGF3,doG0W0,doevGW,doqsGW,doufG0W0,doufGW,doSRGqsGW,            &
                   doG0T0pp,doevGTpp,doqsGTpp,doG0T0eh,doevGTeh,doqsGTeh,nNuc,nBas,nC,nO,nV,nR,ENuc,ZNuc,rNuc,      &
@@ -13,6 +13,7 @@ subroutine UQuAcK(doUHF,dostab,doMP2,doMP3,doCCD,dopCCD,doDCD,doCCSD,doCCSDT,   
 
   logical,intent(in)            :: doUHF
   logical,intent(in)            :: dostab
+  logical,intent(in)            :: dosearch
   logical,intent(in)            :: doMP2,doMP3
   logical,intent(in)            :: doCCD,dopCCD,doDCD,doCCSD,doCCSDT
   logical,intent(in)            :: dodrCCD,dorCCD,docrCCD,dolCCD

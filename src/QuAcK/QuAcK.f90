@@ -5,7 +5,7 @@ program QuAcK
 
   logical                       :: doRQuAcK,doUQuAcK,doGQuAcK
   logical                       :: doRHF,doUHF,doGHF,doROHF
-  logical                       :: dostab
+  logical                       :: dostab,dosearch
   logical                       :: doMP2,doMP3
   logical                       :: doCCD,dopCCD,doDCD,doCCSD,doCCSDT
   logical                       :: dodrCCD,dorCCD,docrCCD,dolCCD
@@ -107,14 +107,14 @@ program QuAcK
 ! Read options for methods !
 !--------------------------!
 
-  call read_options(maxSCF_HF,thresh_HF,max_diis_HF,guess_type,mix,level_shift,dostab, &
-                    reg_MP,                                                            &
-                    maxSCF_CC,thresh_CC,max_diis_CC,                                   &
-                    TDA,spin_conserved,spin_flip,                                      &
-                    maxSCF_GF,thresh_GF,max_diis_GF,lin_GF,eta_GF,renorm_GF,reg_GF,    &
-                    maxSCF_GW,thresh_GW,max_diis_GW,lin_GW,eta_GW,reg_GW,TDA_W,        &  
-                    maxSCF_GT,thresh_GT,max_diis_GT,lin_GT,eta_GT,reg_GT,TDA_T,        & 
-                    doACFDT,exchange_kernel,doXBS,                                     &
+  call read_options(maxSCF_HF,thresh_HF,max_diis_HF,guess_type,mix,level_shift,dostab,dosearch, &
+                    reg_MP,                                                                     &
+                    maxSCF_CC,thresh_CC,max_diis_CC,                                            &
+                    TDA,spin_conserved,spin_flip,                                               &
+                    maxSCF_GF,thresh_GF,max_diis_GF,lin_GF,eta_GF,renorm_GF,reg_GF,             &
+                    maxSCF_GW,thresh_GW,max_diis_GW,lin_GW,eta_GW,reg_GW,TDA_W,                 &  
+                    maxSCF_GT,thresh_GT,max_diis_GT,lin_GT,eta_GT,reg_GT,TDA_T,                 & 
+                    doACFDT,exchange_kernel,doXBS,                                              &
                     dophBSE,dophBSE2,doppBSE,dBSE,dTDA)
 
 !------------------------------------------------!
@@ -185,7 +185,7 @@ program QuAcK
 !-------------------------!
 
   if(doRQuAcK) &
-    call RQuAcK(doRHF,doROHF,dostab,doMP2,doMP3,doCCD,dopCCD,doDCD,doCCSD,doCCSDT,                               &
+    call RQuAcK(doRHF,doROHF,dostab,dosearch,doMP2,doMP3,doCCD,dopCCD,doDCD,doCCSD,doCCSDT,                      &
                 dodrCCD,dorCCD,docrCCD,dolCCD,doCIS,doCIS_D,doCID,doCISD,doFCI,dophRPA,dophRPAx,docrRPA,doppRPA, &
                 doG0F2,doevGF2,doqsGF2,doG0F3,doevGF3,doG0W0,doevGW,doqsGW,doufG0W0,doufGW,doSRGqsGW,            &
                 doG0T0pp,doevGTpp,doqsGTpp,doG0T0eh,doevGTeh,doqsGTeh,nNuc,nBas,nC,nO,nV,nR,ENuc,ZNuc,rNuc,      &
@@ -200,7 +200,7 @@ program QuAcK
 !---------------------------!
 
   if(doUQuAcK) &
-    call UQuAcK(doUHF,dostab,doMP2,doMP3,doCCD,dopCCD,doDCD,doCCSD,doCCSDT,                                      &
+    call UQuAcK(doUHF,dostab,dosearch,doMP2,doMP3,doCCD,dopCCD,doDCD,doCCSD,doCCSDT,                             &
                 dodrCCD,dorCCD,docrCCD,dolCCD,doCIS,doCIS_D,doCID,doCISD,doFCI,dophRPA,dophRPAx,docrRPA,doppRPA, &
                 doG0F2,doevGF2,doqsGF2,doG0F3,doevGF3,doG0W0,doevGW,doqsGW,doufG0W0,doufGW,doSRGqsGW,            &
                 doG0T0pp,doevGTpp,doqsGTpp,doG0T0eh,doevGTeh,doqsGTeh,nNuc,nBas,nC,nO,nV,nR,ENuc,ZNuc,rNuc,      &
@@ -215,11 +215,12 @@ program QuAcK
 !--------------------------!
 
   if(doGQuAcK) & 
-    call GQuAcK(doGHF,dostab,doMP2,doMP3,dophRPA,dophRPAx,doppRPA,doG0W0,doevGW,doqsGW,doG0F2,doevGF2,doqsGF2,     &
-                nNuc,nBas,sum(nC),sum(nO),sum(nV),sum(nR),ENuc,ZNuc,rNuc,S,T,V,Hc,X,dipole_int_AO,ERI_AO,    &
-                maxSCF_HF,max_diis_HF,thresh_HF,level_shift,guess_type,mix,reg_MP,                           & 
-                spin_conserved,spin_flip,TDA,maxSCF_GF,max_diis_GF,thresh_GF,lin_GF,reg_GF,eta_GF,           & 
-                maxSCF_GW,max_diis_GW,thresh_GW,TDA_W,lin_GW,reg_GW,eta_GW,                                  &
+    call GQuAcK(doGHF,dostab,dosearch,doMP2,doMP3,dophRPA,dophRPAx,doppRPA,                               &  
+                doG0W0,doevGW,doqsGW,doG0F2,doevGF2,doqsGF2,                                              &
+                nNuc,nBas,sum(nC),sum(nO),sum(nV),sum(nR),ENuc,ZNuc,rNuc,S,T,V,Hc,X,dipole_int_AO,ERI_AO, &
+                maxSCF_HF,max_diis_HF,thresh_HF,level_shift,guess_type,mix,reg_MP,                        & 
+                spin_conserved,spin_flip,TDA,maxSCF_GF,max_diis_GF,thresh_GF,lin_GF,reg_GF,eta_GF,        & 
+                maxSCF_GW,max_diis_GW,thresh_GW,TDA_W,lin_GW,reg_GW,eta_GW,                               &
                 dophBSE,dophBSE2,doppBSE,dBSE,dTDA,doACFDT,exchange_kernel,doXBS)
 
 !--------------!

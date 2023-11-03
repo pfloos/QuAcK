@@ -14,11 +14,12 @@ subroutine mo_guess(nBas,guess_type,S,Hc,X,c)
 
 ! Output variables
 
-  double precision,intent(out)  :: c(nBas,nBas)
+  double precision,intent(inout)  :: c(nBas,nBas)
 
   if(guess_type == 0) then
 
     write(*,*) 'Reading HF coefficients...'
+    c(:,:) = c(:,:)
 
   elseif(guess_type == 1) then
 

@@ -1,4 +1,4 @@
-subroutine RQuAcK(doRHF,doROHF,dostab,doMP2,doMP3,doCCD,dopCCD,doDCD,doCCSD,doCCSDT,                               &   
+subroutine RQuAcK(doRHF,doROHF,dostab,dosearch,doMP2,doMP3,doCCD,dopCCD,doDCD,doCCSD,doCCSDT,                      &   
                   dodrCCD,dorCCD,docrCCD,dolCCD,doCIS,doCIS_D,doCID,doCISD,doFCI,dophRPA,dophRPAx,docrRPA,doppRPA, & 
                   doG0F2,doevGF2,doqsGF2,doG0F3,doevGF3,doG0W0,doevGW,doqsGW,doufG0W0,doufGW,doSRGqsGW,            &
                   doG0T0pp,doevGTpp,doqsGTpp,doG0T0eh,doevGTeh,doqsGTeh,nNuc,nBas,nC,nO,nV,nR,ENuc,ZNuc,rNuc,      & 
@@ -15,6 +15,7 @@ subroutine RQuAcK(doRHF,doROHF,dostab,doMP2,doMP3,doCCD,dopCCD,doDCD,doCCSD,doCC
 
   logical,intent(in)            :: doRHF,doROHF
   logical,intent(in)            :: dostab
+  logical,intent(in)            :: dosearch
   logical,intent(in)            :: doMP2,doMP3
   logical,intent(in)            :: doCCD,dopCCD,doDCD,doCCSD,doCCSDT
   logical,intent(in)            :: dodrCCD,dorCCD,docrCCD,dolCCD
@@ -182,7 +183,7 @@ subroutine RQuAcK(doRHF,doROHF,dostab,doMP2,doMP3,doCCD,dopCCD,doDCD,doCCSD,doCC
 
   end if
 
-  if(dostab) then
+  if(dosearch) then
 
     call wall_time(start_stab)
     call RHF_search(maxSCF_HF,thresh_HF,max_diis_HF,guess_type,level_shift,nNuc,ZNuc,rNuc,ENuc, &

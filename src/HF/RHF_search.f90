@@ -41,13 +41,14 @@ subroutine RHF_search(maxSCF,thresh,max_diis,guess_type,level_shift,nNuc,ZNuc,rN
   integer                       :: nS
 
   integer,parameter             :: maxS = 20
-  integer                       :: ia
+  integer                       :: ia,i,a
   integer                       :: ispin
 
-  double precision,allocatable  :: A(:,:)
-  double precision,allocatable  :: B(:,:)
+  double precision,allocatable  :: Aph(:,:)
+  double precision,allocatable  :: Bph(:,:)
   double precision,allocatable  :: AB(:,:)
   double precision,allocatable  :: Om(:)
+  double precision,allocatable  :: R(:,:)
   
   integer                       :: eig
   double precision              :: eigval
@@ -74,7 +75,7 @@ subroutine RHF_search(maxSCF,thresh,max_diis,guess_type,level_shift,nNuc,ZNuc,rN
 
   nS = (nO - nC)*(nV - nR)
   allocate(ERI_MO(nBas,nBas,nBas,nBas),eigvec(nS))
-  allocate(A(nS,nS),B(nS,nS),AB(nS,nS),Om(nS))
+  allocate(Aph(nS,nS),Bph(nS,nS),AB(nS,nS),Om(nS),R(nBas,nBas))
 
 !------------------!
 ! Search algorithm !
@@ -119,10 +120,10 @@ subroutine RHF_search(maxSCF,thresh,max_diis,guess_type,level_shift,nNuc,ZNuc,rN
 
     ispin = 1
  
-    call phLR_A(ispin,.false.,nBas,nC,nO,nV,nR,nS,1d0,e,ERI_MO,A)
-    call phLR_B(ispin,.false.,nBas,nC,nO,nV,nR,nS,1d0,ERI_MO,B)
+    call phLR_A(ispin,.false.,nBas,nC,nO,nV,nR,nS,1d0,e,ERI_MO,Aph)
+    call phLR_B(ispin,.false.,nBas,nC,nO,nV,nR,nS,1d0,ERI_MO,Bph)
  
-    AB(:,:) = A(:,:) + B(:,:)
+    AB(:,:) = Aph(:,:) + Bph(:,:)
  
     call diagonalize_matrix(nS,AB,Om)
     Om(:) = 0.5d0*Om(:)
@@ -148,8 +149,32 @@ subroutine RHF_search(maxSCF,thresh,max_diis,guess_type,level_shift,nNuc,ZNuc,rN
       read(*,*) eig
  
       eigval = Om(eig)
-      eigvec = AB(:,eig)
- 
+      eigvec(:) = AB(:,eig)
+
+      print*,eigval
+      call matout(nS,1,eigvec)
+
+      R(:,:) = 0d0
+      ia = 0
+      do i=nC+1,nO
+        do a=nO+1,nBas-nR
+          ia = ia + 1
+          R(i,a) = +eigvec(ia) 
+          R(a,i) = -eigvec(ia) 
+        end do       
+      end do       
+    
+      print*,'rotation matrix'
+      call matout(nBas,nBas,R)
+
+      print*,'old coefficients'
+      call matout(nBas,nBas,c)
+
+      c = c - 0.1d0*matmul(c,R)
+
+      print*,'new coefficients'
+      call matout(nBas,nBas,c)
+
     else
  
       write(*,'(1X,A40,1X)')        'Well done, RHF solution is stable!'
