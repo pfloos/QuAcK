@@ -160,14 +160,15 @@ subroutine UHF_search(maxSCF,thresh,max_diis,guess_type,mix,level_shift,nNuc,ZNu
  
     if(minval(Om_sc(:)) < 0d0) then
  
-      write(*,'(1X,A40,1X)')        'Too bad, UHF solution is unstable!'
-      write(*,'(1X,A40,1X,F10.6,A3)') 'Largest negative eigenvalue:',Om_sc(1),' au'
+      write(*,'(1X,A40,1X)')           'Too bad, UHF solution is unstable!'
+      write(*,'(1X,A40,1X,F15.10,A3)') 'Largest negative eigenvalue:',Om_sc(1),' au'
+      write(*,'(1X,A40,1X,F15.10,A3)') 'E(UHF) = ',EHF,' au'
       write(*,*)
-      write(*,'(1X,A40,1X,A10)')        'Which one would you like to follow?','[Exit:0]'
+      write(*,'(1X,A40,1X,A10)')       'Which one would you like to follow?','[Exit:0]'
       read(*,*) eig
 
       if(eig < 0 .or. eig > nS_sc)  then
-        write(*,'(1X,A40,1X,A10)') 'Invalid option...','Stop...'
+        write(*,'(1X,A40,1X,A10)')     'Invalid option...','Stop...'
         write(*,*)
         stop
       end if
@@ -206,8 +207,9 @@ subroutine UHF_search(maxSCF,thresh,max_diis,guess_type,mix,level_shift,nNuc,ZNu
  
     else
  
-      write(*,'(1X,A40,1X)')        'Well done, UHF solution is stable!'
+      write(*,'(1X,A40,1X)')           'Well done, UHF solution is stable!'
       write(*,'(1X,A40,1X,F15.10,A3)') 'Smallest eigenvalue: ',Om_sc(1),' au'
+      write(*,'(1X,A40,1X,F15.10,A3)') 'E(UHF) = ',EHF,' au'
  
       unstab = .false.
  

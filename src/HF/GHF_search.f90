@@ -85,6 +85,7 @@ subroutine GHF_search(maxSCF,thresh,max_diis,guess_type,mix,level_shift,nNuc,ZNu
 
   unstab = .true.
   guess  = 0
+  mix = 0d0
 
   do while(unstab) 
 
@@ -128,8 +129,9 @@ subroutine GHF_search(maxSCF,thresh,max_diis,guess_type,mix,level_shift,nNuc,ZNu
  
     call AOtoMO_integral_transform_GHF(nBas,nBas2,Cb,Cb,Cb,Cb,ERI_AO,ERI_tmp)
     ERI_MO(:,:,:,:) = ERI_MO(:,:,:,:) + ERI_tmp(:,:,:,:)
- 
+
     deallocate(Ca,Cb,ERI_tmp)
+    call wall_time(end_AOtoMO)
  
     t_AOtoMO = end_AOtoMO - start_AOtoMO
     write(*,'(A65,1X,F9.3,A8)') 'Total CPU time for AO to MO transformation = ',t_AOtoMO,' seconds'
@@ -141,8 +143,8 @@ subroutine GHF_search(maxSCF,thresh,max_diis,guess_type,mix,level_shift,nNuc,ZNu
 
     ispin = 3
 
-    call phLR_A(ispin,.false.,nBas,nC,nO,nV,nR,nS,1d0,e,ERI_MO,Aph)
-    call phLR_B(ispin,.false.,nBas,nC,nO,nV,nR,nS,1d0,ERI_MO,Bph)
+    call phLR_A(ispin,.false.,nBas2,nC,nO,nV,nR,nS,1d0,e,ERI_MO,Aph)
+    call phLR_B(ispin,.false.,nBas2,nC,nO,nV,nR,nS,1d0,ERI_MO,Bph)
  
     AB(:,:) = Aph(:,:) + Bph(:,:)
  
@@ -163,14 +165,15 @@ subroutine GHF_search(maxSCF,thresh,max_diis,guess_type,mix,level_shift,nNuc,ZNu
  
     if(minval(Om(:)) < 0d0) then
  
-      write(*,'(1X,A40,1X)')        'Too bad, GHF solution is unstable!'
+      write(*,'(1X,A40,1X)')           'Too bad, GHF solution is unstable!'
       write(*,'(1X,A40,1X,F15.10,A3)') 'Largest negative eigenvalue:',Om(1),' au'
+      write(*,'(1X,A40,1X,F15.10,A3)') 'E(GHF) = ',EHF,' au'
       write(*,*) 
-      write(*,'(1X,A40,1X,A10)')        'Which one would you like to follow?','[Exit:0]'
+      write(*,'(1X,A40,1X,A10)')       'Which one would you like to follow?','[Exit:0]'
       read(*,*) eig
 
       if(eig < 0 .or. eig > nS)  then
-        write(*,'(1X,A40,1X,A10)') 'Invalid option...','Stop...'
+        write(*,'(1X,A40,1X,A10)')     'Invalid option...','Stop...'
         write(*,*)
         stop
       end if
@@ -179,11 +182,11 @@ subroutine GHF_search(maxSCF,thresh,max_diis,guess_type,mix,level_shift,nNuc,ZNu
 
       step = 1d0
 
-      do mu=1,nBas
+      do mu=1,nBas2
         ia = 0
         do i=nC+1,nO
           kick = 0d0
-          do a=nO+1,nBas-nR
+          do a=nO+1,nBas2-nR
             ia = ia + 1
             kick = kick + AB(ia,eig)*c(mu,a)
           end do
@@ -193,8 +196,9 @@ subroutine GHF_search(maxSCF,thresh,max_diis,guess_type,mix,level_shift,nNuc,ZNu
 
     else
  
-      write(*,'(1X,A40,1X)')        'Well done, GHF solution is stable!'
+      write(*,'(1X,A40,1X)')           'Well done, GHF solution is stable!'
       write(*,'(1X,A40,1X,F15.10,A3)') 'Smallest eigenvalue: ',Om(1),' au'
+      write(*,'(1X,A40,1X,F15.10,A3)') 'E(GHF) = ',EHF,' au'
  
       unstab = .false.
  
