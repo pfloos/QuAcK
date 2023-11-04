@@ -59,7 +59,7 @@ subroutine UHF(maxSCF,thresh,max_diis,guess_type,mix,level_shift,nNuc,ZNuc,rNuc,
 
   double precision,intent(out)  :: EHF
   double precision,intent(out)  :: e(nBas,nspin)
-  double precision,intent(out)  :: c(nBas,nBas,nspin)
+  double precision,intent(inout):: c(nBas,nBas,nspin)
   double precision,intent(out)  :: P(nBas,nBas,nspin)
 
 ! Hello world
@@ -181,7 +181,7 @@ subroutine UHF(maxSCF,thresh,max_diis,guess_type,mix,level_shift,nNuc,ZNuc,rNuc,
 
 !   Mix guess for UHF solution in singlet states
 
-    if(nSCF == 1) call mix_guess(nBas,nO,mix,c)
+    if(nSCF == 1 .and. mix > 0d0) call mix_guess(nBas,nO,mix,c)
 
 !   Compute density matrix 
 

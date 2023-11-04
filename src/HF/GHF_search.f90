@@ -1,7 +1,7 @@
-subroutine RHF_search(maxSCF,thresh,max_diis,guess_type,level_shift,nNuc,ZNuc,rNuc,ENuc, &
-                      nBas,nC,nO,nV,nR,S,T,V,Hc,ERI_AO,dipole_int_AO,X,EHF,e,c,P)
+subroutine GHF_search(maxSCF,thresh,max_diis,guess_type,mix,level_shift,nNuc,ZNuc,rNuc,ENuc, &
+                      nBas,nBas2,nC,nO,nV,nR,S,T,V,Hc,ERI_AO,dipole_int_AO,X,EHF,e,c,P)
 
-! Search for RHF solutions
+! Search for GHF solutions
 
   implicit none
   include 'parameters.h'
@@ -10,9 +10,11 @@ subroutine RHF_search(maxSCF,thresh,max_diis,guess_type,level_shift,nNuc,ZNuc,rN
   integer,intent(in)            :: max_diis
   integer,intent(in)            :: guess_type
   double precision,intent(in)   :: thresh
+  double precision,intent(inout):: mix
   double precision,intent(in)   :: level_shift
 
   integer,intent(in)            :: nBas
+  integer,intent(in)            :: nBas2
   integer,intent(in)            :: nC
   integer,intent(in)            :: nO
   integer,intent(in)            :: nV
@@ -38,6 +40,8 @@ subroutine RHF_search(maxSCF,thresh,max_diis,guess_type,level_shift,nNuc,ZNuc,rN
   logical                       :: unstab
   integer                       :: guess
   double precision,allocatable  :: ERI_MO(:,:,:,:)
+  double precision,allocatable  :: ERI_tmp(:,:,:,:)
+  double precision,allocatable  :: Ca(:,:),Cb(:,:)
   integer                       :: nS
 
   integer,parameter             :: maxS = 20
@@ -63,7 +67,7 @@ subroutine RHF_search(maxSCF,thresh,max_diis,guess_type,level_shift,nNuc,ZNuc,rN
 
   write(*,*)
   write(*,*) '****************************'
-  write(*,*) '* Search for RHF solutions *'
+  write(*,*) '* Search for GHF solutions *'
   write(*,*) '****************************'
   write(*,*)
 
@@ -72,7 +76,8 @@ subroutine RHF_search(maxSCF,thresh,max_diis,guess_type,level_shift,nNuc,ZNuc,rN
 !-------------------!
 
   nS = (nO - nC)*(nV - nR)
-  allocate(ERI_MO(nBas,nBas,nBas,nBas),Aph(nS,nS),Bph(nS,nS),AB(nS,nS),Om(nS))
+
+  allocate(ERI_MO(nBas2,nBas2,nBas2,nBas2),Aph(nS,nS),Bph(nS,nS),AB(nS,nS),Om(nS))
 
 !------------------!
 ! Search algorithm !
@@ -88,12 +93,12 @@ subroutine RHF_search(maxSCF,thresh,max_diis,guess_type,level_shift,nNuc,ZNuc,rN
 !---------------------!
 
     call wall_time(start_HF)
-    call RHF(maxSCF,thresh,max_diis,guess,level_shift,nNuc,ZNuc,rNuc,ENuc, &
-             nBas,nO,S,T,V,Hc,ERI_AO,dipole_int_AO,X,EHF,e,c,P)
+    call GHF(maxSCF,thresh,max_diis,guess,mix,level_shift,nNuc,ZNuc,rNuc,ENuc, &
+             nBas,nBas2,nO,S,T,V,Hc,ERI_AO,dipole_int_AO,X,EHF,e,c,P)
     call wall_time(end_HF)
 
     t_HF = end_HF - start_HF
-    write(*,'(A65,1X,F9.3,A8)') 'Total CPU time for RHF = ',t_HF,' seconds'
+    write(*,'(A65,1X,F9.3,A8)') 'Total CPU time for GHF = ',t_HF,' seconds'
     write(*,*)
 
 !----------------------------------!
@@ -104,19 +109,38 @@ subroutine RHF_search(maxSCF,thresh,max_diis,guess_type,level_shift,nNuc,ZNuc,rN
     write(*,*)
     write(*,*) 'AO to MO transformation... Please be patient'
     write(*,*)
-    call AOtoMO_integral_transform(1,1,1,1,nBas,c,ERI_AO,ERI_MO)
-    call wall_time(end_AOtoMO)
+
+    allocate(Ca(nBas,nBas2),Cb(nBas,nBas2),ERI_tmp(nBas2,nBas2,nBas2,nBas2))
+
+    Ca(:,:) = c(1:nBas,1:nBas2)
+    Cb(:,:) = c(nBas+1:nBas2,1:nBas2)
+
+    ! 4-index transform 
+ 
+    call AOtoMO_integral_transform_GHF(nBas,nBas2,Ca,Ca,Ca,Ca,ERI_AO,ERI_tmp)
+    ERI_MO(:,:,:,:) = ERI_tmp(:,:,:,:)
+ 
+    call AOtoMO_integral_transform_GHF(nBas,nBas2,Ca,Cb,Ca,Cb,ERI_AO,ERI_tmp)
+    ERI_MO(:,:,:,:) = ERI_MO(:,:,:,:) + ERI_tmp(:,:,:,:)
+ 
+    call AOtoMO_integral_transform_GHF(nBas,nBas2,Cb,Ca,Cb,Ca,ERI_AO,ERI_tmp)
+    ERI_MO(:,:,:,:) = ERI_MO(:,:,:,:) + ERI_tmp(:,:,:,:)
+ 
+    call AOtoMO_integral_transform_GHF(nBas,nBas2,Cb,Cb,Cb,Cb,ERI_AO,ERI_tmp)
+    ERI_MO(:,:,:,:) = ERI_MO(:,:,:,:) + ERI_tmp(:,:,:,:)
+ 
+    deallocate(Ca,Cb,ERI_tmp)
  
     t_AOtoMO = end_AOtoMO - start_AOtoMO
     write(*,'(A65,1X,F9.3,A8)') 'Total CPU time for AO to MO transformation = ',t_AOtoMO,' seconds'
     write(*,*)
 
 !-------------------------------------------------------------!
-! Stability analysis: Real RHF -> Real RHF  
+! Stability analysis: Real GHF -> Real GHF  
 !-------------------------------------------------------------!
 
-    ispin = 1
- 
+    ispin = 3
+
     call phLR_A(ispin,.false.,nBas,nC,nO,nV,nR,nS,1d0,e,ERI_MO,Aph)
     call phLR_B(ispin,.false.,nBas,nC,nO,nV,nR,nS,1d0,ERI_MO,Bph)
  
@@ -126,7 +150,7 @@ subroutine RHF_search(maxSCF,thresh,max_diis,guess_type,level_shift,nNuc,ZNuc,rN
     Om(:) = 0.5d0*Om(:)
  
     write(*,*)'-------------------------------------------------------------'
-    write(*,*)'|       Stability analysis: Real RHF -> Real RHF            |'
+    write(*,*)'|       Stability analysis: Real GHF -> Real GHF            |'
     write(*,*)'-------------------------------------------------------------'
     write(*,'(1X,A1,1X,A5,1X,A1,1X,A23,1X,A1,1X,A23,1X,A1,1X)') &
               '|','State','|',' Excitation energy (au) ','|',' Excitation energy (eV) ','|'
@@ -139,7 +163,7 @@ subroutine RHF_search(maxSCF,thresh,max_diis,guess_type,level_shift,nNuc,ZNuc,rN
  
     if(minval(Om(:)) < 0d0) then
  
-      write(*,'(1X,A40,1X)')        'Too bad, RHF solution is unstable!'
+      write(*,'(1X,A40,1X)')        'Too bad, GHF solution is unstable!'
       write(*,'(1X,A40,1X,F15.10,A3)') 'Largest negative eigenvalue:',Om(1),' au'
       write(*,*) 
       write(*,'(1X,A40,1X,A10)')        'Which one would you like to follow?','[Exit:0]'
@@ -169,7 +193,7 @@ subroutine RHF_search(maxSCF,thresh,max_diis,guess_type,level_shift,nNuc,ZNuc,rN
 
     else
  
-      write(*,'(1X,A40,1X)')        'Well done, RHF solution is stable!'
+      write(*,'(1X,A40,1X)')        'Well done, GHF solution is stable!'
       write(*,'(1X,A40,1X,F15.10,A3)') 'Smallest eigenvalue: ',Om(1),' au'
  
       unstab = .false.

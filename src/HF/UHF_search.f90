@@ -1,7 +1,7 @@
-subroutine RHF_search(maxSCF,thresh,max_diis,guess_type,level_shift,nNuc,ZNuc,rNuc,ENuc, &
+subroutine UHF_search(maxSCF,thresh,max_diis,guess_type,mix,level_shift,nNuc,ZNuc,rNuc,ENuc, &
                       nBas,nC,nO,nV,nR,S,T,V,Hc,ERI_AO,dipole_int_AO,X,EHF,e,c,P)
 
-! Search for RHF solutions
+! Search for UHF solutions
 
   implicit none
   include 'parameters.h'
@@ -10,13 +10,14 @@ subroutine RHF_search(maxSCF,thresh,max_diis,guess_type,level_shift,nNuc,ZNuc,rN
   integer,intent(in)            :: max_diis
   integer,intent(in)            :: guess_type
   double precision,intent(in)   :: thresh
+  double precision,intent(inout):: mix
   double precision,intent(in)   :: level_shift
 
   integer,intent(in)            :: nBas
-  integer,intent(in)            :: nC
-  integer,intent(in)            :: nO
-  integer,intent(in)            :: nV
-  integer,intent(in)            :: nR
+  integer,intent(in)            :: nC(nspin)
+  integer,intent(in)            :: nO(nspin)
+  integer,intent(in)            :: nV(nspin)
+  integer,intent(in)            :: nR(nspin)
   integer,intent(in)            :: nNuc
   double precision,intent(in)   :: ZNuc(nNuc)
   double precision,intent(in)   :: rNuc(nNuc,ncart)
@@ -37,17 +38,21 @@ subroutine RHF_search(maxSCF,thresh,max_diis,guess_type,level_shift,nNuc,ZNuc,rN
 
   logical                       :: unstab
   integer                       :: guess
-  double precision,allocatable  :: ERI_MO(:,:,:,:)
-  integer                       :: nS
+  double precision,allocatable  :: ERI_aaaa(:,:,:,:)
+  double precision,allocatable  :: ERI_aabb(:,:,:,:)
+  double precision,allocatable  :: ERI_bbbb(:,:,:,:)
+
+  integer                       :: nS(nspin)
 
   integer,parameter             :: maxS = 20
   integer                       :: ia,i,a,mu
   integer                       :: ispin
 
-  double precision,allocatable  :: Aph(:,:)
-  double precision,allocatable  :: Bph(:,:)
-  double precision,allocatable  :: AB(:,:)
-  double precision,allocatable  :: Om(:)
+  integer                       :: nS_aa,nS_bb,nS_sc
+  double precision,allocatable  :: Om_sc(:)
+  double precision,allocatable  :: A_sc(:,:)
+  double precision,allocatable  :: B_sc(:,:)
+  double precision,allocatable  :: AB_sc(:,:)
   
   integer                       :: eig
   double precision              :: kick,step
@@ -55,15 +60,15 @@ subroutine RHF_search(maxSCF,thresh,max_diis,guess_type,level_shift,nNuc,ZNuc,rN
 ! Output variables
 
   double precision,intent(out)  :: EHF
-  double precision,intent(out)  :: e(nBas)
-  double precision,intent(inout):: c(nBas,nBas)
-  double precision,intent(out)  :: P(nBas,nBas)
+  double precision,intent(out)  :: e(nBas,nspin)
+  double precision,intent(inout):: c(nBas,nBas,nspin)
+  double precision,intent(out)  :: P(nBas,nBas,nspin)
 
 ! Memory allocation
 
   write(*,*)
   write(*,*) '****************************'
-  write(*,*) '* Search for RHF solutions *'
+  write(*,*) '* Search for UHF solutions *'
   write(*,*) '****************************'
   write(*,*)
 
@@ -71,8 +76,14 @@ subroutine RHF_search(maxSCF,thresh,max_diis,guess_type,level_shift,nNuc,ZNuc,rN
 ! Memory allocation !
 !-------------------!
 
-  nS = (nO - nC)*(nV - nR)
-  allocate(ERI_MO(nBas,nBas,nBas,nBas),Aph(nS,nS),Bph(nS,nS),AB(nS,nS),Om(nS))
+  nS(:) = (nO(:) - nC(:))*(nV(:) - nR(:))
+
+  nS_aa = nS(1)
+  nS_bb = nS(2)
+  nS_sc = nS_aa + nS_bb
+
+  allocate(ERI_aaaa(nBas,nBas,nBas,nBas),ERI_aabb(nBas,nBas,nBas,nBas),ERI_bbbb(nBas,nBas,nBas,nBas))
+  allocate(Om_sc(nS_sc),A_sc(nS_sc,nS_sc),B_sc(nS_sc,nS_sc),AB_sc(nS_sc,nS_sc))
 
 !------------------!
 ! Search algorithm !
@@ -80,6 +91,7 @@ subroutine RHF_search(maxSCF,thresh,max_diis,guess_type,level_shift,nNuc,ZNuc,rN
 
   unstab = .true.
   guess  = 0
+  mix = 0d0
 
   do while(unstab) 
 
@@ -88,12 +100,12 @@ subroutine RHF_search(maxSCF,thresh,max_diis,guess_type,level_shift,nNuc,ZNuc,rN
 !---------------------!
 
     call wall_time(start_HF)
-    call RHF(maxSCF,thresh,max_diis,guess,level_shift,nNuc,ZNuc,rNuc,ENuc, &
+    call UHF(maxSCF,thresh,max_diis,guess,mix,level_shift,nNuc,ZNuc,rNuc,ENuc, &
              nBas,nO,S,T,V,Hc,ERI_AO,dipole_int_AO,X,EHF,e,c,P)
     call wall_time(end_HF)
 
     t_HF = end_HF - start_HF
-    write(*,'(A65,1X,F9.3,A8)') 'Total CPU time for RHF = ',t_HF,' seconds'
+    write(*,'(A65,1X,F9.3,A8)') 'Total CPU time for UHF = ',t_HF,' seconds'
     write(*,*)
 
 !----------------------------------!
@@ -104,7 +116,16 @@ subroutine RHF_search(maxSCF,thresh,max_diis,guess_type,level_shift,nNuc,ZNuc,rN
     write(*,*)
     write(*,*) 'AO to MO transformation... Please be patient'
     write(*,*)
-    call AOtoMO_integral_transform(1,1,1,1,nBas,c,ERI_AO,ERI_MO)
+
+    ! 4-index transform for (aa|aa) block
+    call AOtoMO_integral_transform(1,1,1,1,nBas,c,ERI_AO,ERI_aaaa)
+ 
+    ! 4-index transform for (aa|bb) block
+    call AOtoMO_integral_transform(1,1,2,2,nBas,c,ERI_AO,ERI_aabb)
+ 
+    ! 4-index transform for (bb|bb) block
+    call AOtoMO_integral_transform(2,2,2,2,nBas,c,ERI_AO,ERI_bbbb)
+
     call wall_time(end_AOtoMO)
  
     t_AOtoMO = end_AOtoMO - start_AOtoMO
@@ -112,40 +133,40 @@ subroutine RHF_search(maxSCF,thresh,max_diis,guess_type,level_shift,nNuc,ZNuc,rN
     write(*,*)
 
 !-------------------------------------------------------------!
-! Stability analysis: Real RHF -> Real RHF  
+! Stability analysis: Real UHF -> Real UHF  
 !-------------------------------------------------------------!
 
     ispin = 1
  
-    call phLR_A(ispin,.false.,nBas,nC,nO,nV,nR,nS,1d0,e,ERI_MO,Aph)
-    call phLR_B(ispin,.false.,nBas,nC,nO,nV,nR,nS,1d0,ERI_MO,Bph)
+    call phULR_A(ispin,.false.,nBas,nC,nO,nV,nR,nS_aa,nS_bb,nS_sc,1d0,e,ERI_aaaa,ERI_aabb,ERI_bbbb,A_sc)
+    call phULR_B(ispin,.false.,nBas,nC,nO,nV,nR,nS_aa,nS_bb,nS_sc,1d0,ERI_aaaa,ERI_aabb,ERI_bbbb,B_sc)
  
-    AB(:,:) = Aph(:,:) + Bph(:,:)
+    AB_sc(:,:) = A_sc(:,:) + B_sc(:,:)
  
-    call diagonalize_matrix(nS,AB,Om)
-    Om(:) = 0.5d0*Om(:)
+    call diagonalize_matrix(nS_sc,AB_sc,Om_sc)
+    Om_sc(:) = 0.5d0*Om_sc(:)
  
     write(*,*)'-------------------------------------------------------------'
-    write(*,*)'|       Stability analysis: Real RHF -> Real RHF            |'
+    write(*,*)'|       Stability analysis: Real UHF -> Real UHF            |'
     write(*,*)'-------------------------------------------------------------'
     write(*,'(1X,A1,1X,A5,1X,A1,1X,A23,1X,A1,1X,A23,1X,A1,1X)') &
               '|','State','|',' Excitation energy (au) ','|',' Excitation energy (eV) ','|'
     write(*,*)'-------------------------------------------------------------'
-    do ia=1,min(nS,maxS)
+    do ia=1,min(nS_sc,maxS)
       write(*,'(1X,A1,1X,I5,1X,A1,1X,F23.6,1X,A1,1X,F23.6,1X,A1,1X)') &
-        '|',ia,'|',Om(ia),'|',Om(ia)*HaToeV,'|'
+        '|',ia,'|',Om_sc(ia),'|',Om_sc(ia)*HaToeV,'|'
     enddo
     write(*,*)'-------------------------------------------------------------'
  
-    if(minval(Om(:)) < 0d0) then
+    if(minval(Om_sc(:)) < 0d0) then
  
-      write(*,'(1X,A40,1X)')        'Too bad, RHF solution is unstable!'
-      write(*,'(1X,A40,1X,F15.10,A3)') 'Largest negative eigenvalue:',Om(1),' au'
-      write(*,*) 
+      write(*,'(1X,A40,1X)')        'Too bad, UHF solution is unstable!'
+      write(*,'(1X,A40,1X,F10.6,A3)') 'Largest negative eigenvalue:',Om_sc(1),' au'
+      write(*,*)
       write(*,'(1X,A40,1X,A10)')        'Which one would you like to follow?','[Exit:0]'
       read(*,*) eig
 
-      if(eig < 0 .or. eig > nS)  then
+      if(eig < 0 .or. eig > nS_sc)  then
         write(*,'(1X,A40,1X,A10)') 'Invalid option...','Stop...'
         write(*,*)
         stop
@@ -155,22 +176,38 @@ subroutine RHF_search(maxSCF,thresh,max_diis,guess_type,level_shift,nNuc,ZNuc,rN
 
       step = 1d0
 
+      ! Spin-up kick
+
       do mu=1,nBas
         ia = 0
-        do i=nC+1,nO
+        do i=nC(1)+1,nO(1)
           kick = 0d0
-          do a=nO+1,nBas-nR
+          do a=nO(1)+1,nBas-nR(1)
             ia = ia + 1
-            kick = kick + AB(ia,eig)*c(mu,a)
+            kick = kick + AB_sc(ia,eig)*c(mu,a,1)
           end do
-          c(mu,i) = c(mu,i) + step*kick
+          c(mu,i,1) = c(mu,i,1) + step*kick
         end do
       end do
 
+      ! Spin-down kick
+
+      do mu=1,nBas
+        ia = nS_aa
+        do i=nC(2)+1,nO(2)
+          kick = 0d0
+          do a=nO(2)+1,nBas-nR(2)
+            ia = ia + 1
+            kick = kick + AB_sc(ia,eig)*c(mu,a,2)
+          end do
+          c(mu,i,2) = c(mu,i,2) + step*kick
+        end do
+      end do
+ 
     else
  
-      write(*,'(1X,A40,1X)')        'Well done, RHF solution is stable!'
-      write(*,'(1X,A40,1X,F15.10,A3)') 'Smallest eigenvalue: ',Om(1),' au'
+      write(*,'(1X,A40,1X)')        'Well done, UHF solution is stable!'
+      write(*,'(1X,A40,1X,F15.10,A3)') 'Smallest eigenvalue: ',Om_sc(1),' au'
  
       unstab = .false.
  

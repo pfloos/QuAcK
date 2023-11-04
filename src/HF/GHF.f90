@@ -66,7 +66,7 @@ subroutine GHF(maxSCF,thresh,max_diis,guess_type,mix,level_shift,nNuc,ZNuc,rNuc,
 
   double precision,intent(out)  :: EHF
   double precision,intent(out)  :: e(nBas2)
-  double precision,intent(out)  :: C(nBas2,nBas2)
+  double precision,intent(inout):: C(nBas2,nBas2)
   double precision,intent(out)  :: P(nBas2,nBas2)
 
 ! Hello world

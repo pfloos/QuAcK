@@ -201,6 +201,20 @@ subroutine UQuAcK(doUHF,dostab,dosearch,doMP2,doMP3,doCCD,dopCCD,doDCD,doCCSD,do
 
   end if
 
+  if(dosearch) then
+
+    call wall_time(start_stab)
+    call UHF_search(maxSCF_HF,thresh_HF,max_diis_HF,guess_type,mix,level_shift,nNuc,ZNuc,rNuc,ENuc, &
+                    nBas,nC,nO,nV,nR,S,T,V,Hc,ERI_AO,dipole_int_AO,X,EHF,epsHF,cHF,PHF)
+
+    call wall_time(end_stab)
+
+    t_stab = end_stab - start_stab
+    write(*,'(A65,1X,F9.3,A8)') 'Total CPU time for stability analysis = ',t_stab,' seconds'
+    write(*,*)
+
+  end if
+
 !-----------------------!
 ! Moller-Plesset module !
 !-----------------------!
