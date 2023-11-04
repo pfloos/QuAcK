@@ -41,7 +41,7 @@ subroutine RHF_search(maxSCF,thresh,max_diis,guess_type,level_shift,nNuc,ZNuc,rN
   integer                       :: nS
 
   integer,parameter             :: maxS = 20
-  integer                       :: ia,i,a
+  integer                       :: ia,i,a,mu
   integer                       :: ispin
 
   double precision,allocatable  :: Aph(:,:)
@@ -51,8 +51,7 @@ subroutine RHF_search(maxSCF,thresh,max_diis,guess_type,level_shift,nNuc,ZNuc,rN
   double precision,allocatable  :: R(:,:)
   
   integer                       :: eig
-  double precision              :: eigval
-  double precision,allocatable  :: eigvec(:)
+  double precision              :: kick,step
 
 ! Output variables
 
@@ -74,8 +73,7 @@ subroutine RHF_search(maxSCF,thresh,max_diis,guess_type,level_shift,nNuc,ZNuc,rN
 !-------------------!
 
   nS = (nO - nC)*(nV - nR)
-  allocate(ERI_MO(nBas,nBas,nBas,nBas),eigvec(nS))
-  allocate(Aph(nS,nS),Bph(nS,nS),AB(nS,nS),Om(nS),R(nBas,nBas))
+  allocate(ERI_MO(nBas,nBas,nBas,nBas),Aph(nS,nS),Bph(nS,nS),AB(nS,nS),Om(nS),R(nBas,nBas))
 
 !------------------!
 ! Search algorithm !
@@ -147,33 +145,20 @@ subroutine RHF_search(maxSCF,thresh,max_diis,guess_type,level_shift,nNuc,ZNuc,rN
       write(*,*) 
       write(*,'(1X,A40,1X)')        'Which one would you like to follow?'
       read(*,*) eig
- 
-      eigval = Om(eig)
-      eigvec(:) = AB(:,eig)
 
-      print*,eigval
-      call matout(nS,1,eigvec)
+      step = 1d0
 
-      R(:,:) = 0d0
-      ia = 0
-      do i=nC+1,nO
-        do a=nO+1,nBas-nR
-          ia = ia + 1
-          R(i,a) = +eigvec(ia) 
-          R(a,i) = -eigvec(ia) 
-        end do       
-      end do       
-    
-      print*,'rotation matrix'
-      call matout(nBas,nBas,R)
-
-      print*,'old coefficients'
-      call matout(nBas,nBas,c)
-
-      c = c - 0.1d0*matmul(c,R)
-
-      print*,'new coefficients'
-      call matout(nBas,nBas,c)
+      do mu=1,nBas
+        ia = 0
+        do i=nC+1,nO
+          kick = 0d0
+          do a=nO+1,nBas-nR
+            ia = ia + 1
+            kick = kick + AB(ia,eig)*c(mu,a)
+          end do
+          c(mu,i) = c(mu,i) + step*kick
+        end do
+      end do
 
     else
  
