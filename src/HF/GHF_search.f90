@@ -167,7 +167,7 @@ subroutine GHF_search(maxSCF,thresh,max_diis,guess_type,mix,level_shift,nNuc,ZNu
  
       write(*,'(1X,A40,1X)')           'Too bad, GHF solution is unstable!'
       write(*,'(1X,A40,1X,F15.10,A3)') 'Largest negative eigenvalue:',Om(1),' au'
-      write(*,'(1X,A40,1X,F15.10,A3)') 'E(GHF) = ',EHF,' au'
+      write(*,'(1X,A40,1X,F15.10,A3)') 'E(GHF) = ',ENuc + EHF,' au'
       write(*,*) 
       write(*,'(1X,A40,1X,A10)')       'Which one would you like to follow?','[Exit:0]'
       read(*,*) eig
@@ -198,7 +198,7 @@ subroutine GHF_search(maxSCF,thresh,max_diis,guess_type,mix,level_shift,nNuc,ZNu
  
       write(*,'(1X,A40,1X)')           'Well done, GHF solution is stable!'
       write(*,'(1X,A40,1X,F15.10,A3)') 'Smallest eigenvalue: ',Om(1),' au'
-      write(*,'(1X,A40,1X,F15.10,A3)') 'E(GHF) = ',EHF,' au'
+      write(*,'(1X,A40,1X,F15.10,A3)') 'E(GHF) = ',ENuc + EHF,' au'
  
       unstab = .false.
  

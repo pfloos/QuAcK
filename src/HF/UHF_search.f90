@@ -162,7 +162,7 @@ subroutine UHF_search(maxSCF,thresh,max_diis,guess_type,mix,level_shift,nNuc,ZNu
  
       write(*,'(1X,A40,1X)')           'Too bad, UHF solution is unstable!'
       write(*,'(1X,A40,1X,F15.10,A3)') 'Largest negative eigenvalue:',Om_sc(1),' au'
-      write(*,'(1X,A40,1X,F15.10,A3)') 'E(UHF) = ',EHF,' au'
+      write(*,'(1X,A40,1X,F15.10,A3)') 'E(UHF) = ',ENuc + EHF,' au'
       write(*,*)
       write(*,'(1X,A40,1X,A10)')       'Which one would you like to follow?','[Exit:0]'
       read(*,*) eig
@@ -209,7 +209,7 @@ subroutine UHF_search(maxSCF,thresh,max_diis,guess_type,mix,level_shift,nNuc,ZNu
  
       write(*,'(1X,A40,1X)')           'Well done, UHF solution is stable!'
       write(*,'(1X,A40,1X,F15.10,A3)') 'Smallest eigenvalue: ',Om_sc(1),' au'
-      write(*,'(1X,A40,1X,F15.10,A3)') 'E(UHF) = ',EHF,' au'
+      write(*,'(1X,A40,1X,F15.10,A3)') 'E(UHF) = ',ENuc + EHF,' au'
  
       unstab = .false.
  

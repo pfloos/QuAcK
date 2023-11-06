@@ -141,7 +141,7 @@ subroutine RHF_search(maxSCF,thresh,max_diis,guess_type,level_shift,nNuc,ZNuc,rN
  
       write(*,'(1X,A40,1X)')           'Too bad, RHF solution is unstable!'
       write(*,'(1X,A40,1X,F15.10,A3)') 'Largest negative eigenvalue:',Om(1),' au'
-      write(*,'(1X,A40,1X,F15.10,A3)') 'E(RHF) = ',EHF,' au'
+      write(*,'(1X,A40,1X,F15.10,A3)') 'E(RHF) = ',ENuc + EHF,' au'
       write(*,*) 
       write(*,'(1X,A40,1X,A10)')       'Which one would you like to follow?','[Exit:0]'
       read(*,*) eig
@@ -172,7 +172,7 @@ subroutine RHF_search(maxSCF,thresh,max_diis,guess_type,level_shift,nNuc,ZNuc,rN
  
       write(*,'(1X,A40,1X)')           'Well done, RHF solution is stable!'
       write(*,'(1X,A40,1X,F15.10,A3)') 'Smallest eigenvalue: ',Om(1),' au'
-      write(*,'(1X,A40,1X,F15.10,A3)') 'E(RHF) = ',EHF,' au'
+      write(*,'(1X,A40,1X,F15.10,A3)') 'E(RHF) = ',ENuc + EHF,' au'
  
       unstab = .false.
  
