@@ -28,6 +28,7 @@ subroutine ufG0W0(nBas,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,eHF,TDA_W)
   integer                       :: jb,kc,ia,ja
   integer                       :: klc,kcd,ija,ijb,iab,jab
 
+  logical                       :: dRPA
   integer                       :: ispin
   double precision              :: EcRPA
   integer                       :: n2h1p,n2p1h,nH
@@ -36,13 +37,15 @@ subroutine ufG0W0(nBas,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,eHF,TDA_W)
   double precision,allocatable  :: cGW(:,:)
   double precision,allocatable  :: eGW(:)
   double precision,allocatable  :: Z(:)
-  double precision,allocatable  :: OmRPA(:)
-  double precision,allocatable  :: XpY_RPA(:,:)
-  double precision,allocatable  :: XmY_RPA(:,:)
-  double precision,allocatable  :: rho_RPA(:,:,:)
+  double precision,allocatable  :: Aph(:,:)
+  double precision,allocatable  :: Bph(:,:)
+  double precision,allocatable  :: Om(:)
+  double precision,allocatable  :: XpY(:,:)
+  double precision,allocatable  :: XmY(:,:)
+  double precision,allocatable  :: rho(:,:,:)
 
   logical                       :: verbose = .true.
-  double precision,parameter    :: cutoff1 = 0.0d0
+  double precision,parameter    :: cutoff1 = 0.01d0
   double precision,parameter    :: cutoff2 = 0.01d0
 
 ! Output variables
@@ -55,33 +58,33 @@ subroutine ufG0W0(nBas,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,eHF,TDA_W)
   write(*,*)'**********************************************'
   write(*,*)
 
-  ! Dimension of the supermatrix
-
-  write(*,*) 'Tamm-Dancoff approximation for dynamic screening by default!'
-  write(*,*)
-
 ! Dimension of the supermatrix
 
   n2h1p = nO*nO*nV
   n2p1h = nV*nV*nO
   nH = 1 + n2h1p + n2p1h
 
-  ! Memory allocation
+! Memory allocation
 
   allocate(H(nH,nH),cGW(nH,nH),eGW(nH),Z(nH))
 
-  ! Initialization
+! Initialization
+
+  dRPA = .true.
+  EcRPA = 0d0
 
   H(:,:) = 0d0
 
-  p=nO !Compute only the HOMO!
+
+!!! Compute only the HOMO !!!
+
+  p=nO 
 
   if (TDA_W) then
 
      ! TDA for W
 
-     write(*,*) 'Tamm-Dancoff approximation'
-     write(*,*) 'No need to compute RPA quantities first'
+     write(*,*) 'Tamm-Dancoff approximation actived!'
      write(*,*)
 
      !---------------------------!
@@ -95,6 +98,7 @@ subroutine ufG0W0(nBas,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,eHF,TDA_W)
      !     | V2p1h   0   C2p1h | ! 
      !                           !
      !---------------------------!
+
      !-------------!
      ! Block C2h1p !
      !-------------!
@@ -160,6 +164,7 @@ subroutine ufG0W0(nBas,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,eHF,TDA_W)
      !-------------!
      ! Block V2h1p !
      !-------------!
+
      klc = 0
      do k=nC+1,nO
         do l=nC+1,nO
@@ -176,6 +181,7 @@ subroutine ufG0W0(nBas,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,eHF,TDA_W)
      !-------------!
      ! Block V2p1h !
      !-------------!     
+
      kcd = 0
      do k=nC+1,nO
         do c=nO+1,nBas-nR
@@ -191,10 +197,9 @@ subroutine ufG0W0(nBas,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,eHF,TDA_W)
      
   else
 
-     ! No TDA for W
+     ! RPA for W
 
-     write(*,*) 'NO Tamm-Dancoff approximation'
-     write(*,*) 'A prior RPA calculation will be done'
+     write(*,*) 'Tamm-Dancoff approximation deactivated!'
      write(*,*)
 
      !---------------------------!
@@ -210,50 +215,62 @@ subroutine ufG0W0(nBas,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,eHF,TDA_W)
      !---------------------------!
 
      ! Memory allocation !
-     allocate(OmRPA(nS),XpY_RPA(nS,nS),XmY_RPA(nS,nS),rho_RPA(nBas,nBas,nS))
+     allocate(Om(nS),Aph(nS,nS),Bph(nS,nS),XpY(nS,nS),XmY(nS,nS),rho(nBas,nBas,nS))
 
      ! Spin manifold 
+
      ispin = 1
+
      !-------------------!
      ! Compute screening !
      !-------------------!
-     call phLR(ispin,.true.,TDA_W,0d0,nBas,nC,nO,nV,nR,nS,1d0,eHF,ERI,EcRPA,OmRPA,XpY_RPA,XmY_RPA)
+
+                   call phLR_A(ispin,dRPA,nBas,nC,nO,nV,nR,nS,1d0,eHF,ERI,Aph)
+    if(.not.TDA_W) call phLR_B(ispin,dRPA,nBas,nC,nO,nV,nR,nS,1d0,ERI,Bph)
+
+     call phLR(TDA_W,nS,Aph,Bph,EcRPA,Om,XpY,XmY)
+
      !--------------------------!
      ! Compute spectral weights !
      !--------------------------!
-     call GW_excitation_density(nBas,nC,nO,nR,nS,ERI,XpY_RPA,rho_RPA)
+
+     call GW_excitation_density(nBas,nC,nO,nR,nS,ERI,XpY,rho)
 
      !---------!
      ! Block F !
      !---------!
+
      H(1,1) = eHF(p)
 
      !-------------!
      ! Block D2h1p !
      !-------------!
+
      ija = 0
      do i=nC+1,nO
         do ja=1,nS
            ija = ija + 1
-           H(1+ija,1+ija) = eHF(i) - OmRPA(ja) 
+           H(1+ija,1+ija) = eHF(i) - Om(ja) 
         end do
      end do
 
      !-------------!
      ! Block W2h1p !
      !-------------!
+
      ija = 0
      do i=nC+1,nO
         do ja=1,nS
            ija = ija + 1
-           H(1    ,1+ija) = sqrt(2d0)*rho_RPA(p,i,ja)
-           H(1+ija,1    ) = sqrt(2d0)*rho_RPA(p,i,ja)
+           H(1    ,1+ija) = sqrt(2d0)*rho(p,i,ja)
+           H(1+ija,1    ) = sqrt(2d0)*rho(p,i,ja)
         end do
      end do
 
      !-------------!
      ! Block D2h1p !
      !-------------!
+
      iab = 0
      do b=nO+1,nBas-nR
         ia = 0
@@ -261,7 +278,7 @@ subroutine ufG0W0(nBas,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,eHF,TDA_W)
            do a=nO+1,nBas-nR
               ia = ia + 1
               iab = iab + 1
-              H(1+n2h1p+iab,1+n2h1p+iab) = eHF(b) + OmRPA(ia)
+              H(1+n2h1p+iab,1+n2h1p+iab) = eHF(b) + Om(ia)
            end do
         end do
      end do
@@ -269,6 +286,7 @@ subroutine ufG0W0(nBas,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,eHF,TDA_W)
      !-------------!
      ! Block W2p1h !
      !-------------!
+
      iab = 0
      do b=nO+1,nBas-nR
         ia = 0
@@ -276,8 +294,8 @@ subroutine ufG0W0(nBas,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,eHF,TDA_W)
            do a=nO+1,nBas-nR
               ia = ia + 1
               iab = iab + 1
-              H(1          ,1+n2h1p+iab) = sqrt(2d0)*rho_RPA(p,b,ia)
-              H(1+n2h1p+iab,1          ) = sqrt(2d0)*rho_RPA(p,b,ia)
+              H(1          ,1+n2h1p+iab) = sqrt(2d0)*rho(p,b,ia)
+              H(1+n2h1p+iab,1          ) = sqrt(2d0)*rho(p,b,ia)
            end do
         end do
      end do
@@ -311,9 +329,11 @@ subroutine ufG0W0(nBas,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,eHF,TDA_W)
     write(*,*)'-------------------------------------------'
  
     do s=1,nH
-      write(*,'(1X,A1,1X,I3,1X,A1,1X,F15.6,1X,A1,1X,F15.6,1X,A1,1X)') &
-      '|',s,'|',eGW(s)*HaToeV,'|',Z(s),'|'
-    enddo
+      if(Z(s) > cutoff1) then
+        write(*,'(1X,A1,1X,I3,1X,A1,1X,F15.6,1X,A1,1X,F15.6,1X,A1,1X)') &
+        '|',s,'|',eGW(s)*HaToeV,'|',Z(s),'|'
+      end if
+    end do
  
     write(*,*)'-------------------------------------------'
     write(*,*)
