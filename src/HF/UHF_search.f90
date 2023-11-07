@@ -53,6 +53,8 @@ subroutine UHF_search(maxSCF,thresh,max_diis,guess_type,mix,level_shift,nNuc,ZNu
   double precision,allocatable  :: A_sc(:,:)
   double precision,allocatable  :: B_sc(:,:)
   double precision,allocatable  :: AB_sc(:,:)
+  double precision,allocatable  :: R(:,:)
+  double precision,allocatable  :: ExpR(:,:)
   
   integer                       :: eig
   double precision              :: kick,step
@@ -83,7 +85,7 @@ subroutine UHF_search(maxSCF,thresh,max_diis,guess_type,mix,level_shift,nNuc,ZNu
   nS_sc = nS_aa + nS_bb
 
   allocate(ERI_aaaa(nBas,nBas,nBas,nBas),ERI_aabb(nBas,nBas,nBas,nBas),ERI_bbbb(nBas,nBas,nBas,nBas))
-  allocate(Om_sc(nS_sc),A_sc(nS_sc,nS_sc),B_sc(nS_sc,nS_sc),AB_sc(nS_sc,nS_sc))
+  allocate(Om_sc(nS_sc),A_sc(nS_sc,nS_sc),B_sc(nS_sc,nS_sc),AB_sc(nS_sc,nS_sc),R(nBas,nBas),ExpR(nBas,nBas))
 
 !------------------!
 ! Search algorithm !
@@ -179,31 +181,57 @@ subroutine UHF_search(maxSCF,thresh,max_diis,guess_type,mix,level_shift,nNuc,ZNu
 
       ! Spin-up kick
 
-      do mu=1,nBas
-        ia = 0
-        do i=nC(1)+1,nO(1)
-          kick = 0d0
-          do a=nO(1)+1,nBas-nR(1)
-            ia = ia + 1
-            kick = kick + AB_sc(ia,eig)*c(mu,a,1)
-          end do
-          c(mu,i,1) = c(mu,i,1) + step*kick
+!     do mu=1,nBas
+!       ia = 0
+!       do i=nC(1)+1,nO(1)
+!         kick = 0d0
+!         do a=nO(1)+1,nBas-nR(1)
+!           ia = ia + 1
+!           kick = kick + AB_sc(ia,eig)*c(mu,a,1)
+!         end do
+!         c(mu,i,1) = c(mu,i,1) + step*kick
+!       end do
+!     end do
+
+      R(:,:) = 0d0
+      ia = 0
+      do i=nC(1)+1,nO(1)
+        do a=nO(1)+1,nBas-nR(1)
+          ia = ia + 1
+          R(a,i) = +AB_sc(ia,eig)
+          R(i,a) = -AB_sc(ia,eig)
         end do
       end do
+
+      call matrix_exponential(nBas,R,ExpR)
+      c(:,:,1) = matmul(c(:,:,1),ExpR)
 
       ! Spin-down kick
 
-      do mu=1,nBas
-        ia = nS_aa
-        do i=nC(2)+1,nO(2)
-          kick = 0d0
-          do a=nO(2)+1,nBas-nR(2)
-            ia = ia + 1
-            kick = kick + AB_sc(ia,eig)*c(mu,a,2)
-          end do
-          c(mu,i,2) = c(mu,i,2) + step*kick
+!     do mu=1,nBas
+!       ia = nS_aa
+!       do i=nC(2)+1,nO(2)
+!         kick = 0d0
+!         do a=nO(2)+1,nBas-nR(2)
+!           ia = ia + 1
+!           kick = kick + AB_sc(ia,eig)*c(mu,a,2)
+!         end do
+!         c(mu,i,2) = c(mu,i,2) + step*kick
+!       end do
+!     end do
+ 
+      R(:,:) = 0d0
+      ia = nS_aa
+      do i=nC(2)+1,nO(2)
+        do a=nO(2)+1,nBas-nR(2)
+          ia = ia + 1
+          R(a,i) = +AB_sc(ia,eig)
+          R(i,a) = -AB_sc(ia,eig)
         end do
       end do
+
+      call matrix_exponential(nBas,R,ExpR)
+      c(:,:,2) = matmul(c(:,:,2),ExpR)
  
     else
  

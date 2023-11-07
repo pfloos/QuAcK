@@ -159,30 +159,30 @@ subroutine RHF_search(maxSCF,thresh,max_diis,guess_type,level_shift,nNuc,ZNuc,rN
 
       step = 1d0
 
-      do mu=1,nBas
-        ia = 0
-        do i=nC+1,nO
-          kick = 0d0
-          do a=nO+1,nBas-nR
-            ia = ia + 1
-            kick = kick + AB(ia,eig)*c(mu,a)
-          end do
-          c(mu,i) = c(mu,i) + step*kick
-        end do
-      end do
-
-!     R(:,:) = 0d0
-!     ia = 0
-!     do i=nC+1,nO
-!       do a=nO+1,nBas-nR
-!         ia = ia + 1
-!         R(a,i) = +AB(ia,eig)
-!         R(i,a) = -AB(ia,eig)
+!     do mu=1,nBas
+!       ia = 0
+!       do i=nC+1,nO
+!         kick = 0d0
+!         do a=nO+1,nBas-nR
+!           ia = ia + 1
+!           kick = kick + AB(ia,eig)*c(mu,a)
+!         end do
+!         c(mu,i) = c(mu,i) + step*kick
 !       end do
 !     end do
 
-!     call matrix_exponential(nBas,R,ExpR)
-!     c = matmul(c,ExpR)
+      R(:,:) = 0d0
+      ia = 0
+      do i=nC+1,nO
+        do a=nO+1,nBas-nR
+          ia = ia + 1
+          R(a,i) = +AB(ia,eig)
+          R(i,a) = -AB(ia,eig)
+        end do
+      end do
+
+      call matrix_exponential(nBas,R,ExpR)
+      c = matmul(c,ExpR)
 
     else
  
