@@ -57,8 +57,6 @@ subroutine qsUGW(maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,BSE,TDA_W,
 
 ! Local variables
 
-  logical                       :: doGWPT = .false.
-
   integer                       :: nSCF
   integer                       :: nBasSq
   integer                       :: ispin

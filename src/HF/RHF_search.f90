@@ -48,6 +48,8 @@ subroutine RHF_search(maxSCF,thresh,max_diis,guess_type,level_shift,nNuc,ZNuc,rN
   double precision,allocatable  :: Bph(:,:)
   double precision,allocatable  :: AB(:,:)
   double precision,allocatable  :: Om(:)
+  double precision,allocatable  :: R(:,:)
+  double precision,allocatable  :: ExpR(:,:)
   
   integer                       :: eig
   double precision              :: kick,step
@@ -72,7 +74,8 @@ subroutine RHF_search(maxSCF,thresh,max_diis,guess_type,level_shift,nNuc,ZNuc,rN
 !-------------------!
 
   nS = (nO - nC)*(nV - nR)
-  allocate(ERI_MO(nBas,nBas,nBas,nBas),Aph(nS,nS),Bph(nS,nS),AB(nS,nS),Om(nS))
+  allocate(ERI_MO(nBas,nBas,nBas,nBas),Aph(nS,nS),Bph(nS,nS),AB(nS,nS),Om(nS), &
+           R(nBas,nBas),ExpR(nBas,nBas))
 
 !------------------!
 ! Search algorithm !
@@ -124,7 +127,7 @@ subroutine RHF_search(maxSCF,thresh,max_diis,guess_type,level_shift,nNuc,ZNuc,rN
  
     call diagonalize_matrix(nS,AB,Om)
     Om(:) = 0.5d0*Om(:)
- 
+
     write(*,*)'-------------------------------------------------------------'
     write(*,*)'|       Stability analysis: Real RHF -> Real RHF            |'
     write(*,*)'-------------------------------------------------------------'
@@ -167,6 +170,19 @@ subroutine RHF_search(maxSCF,thresh,max_diis,guess_type,level_shift,nNuc,ZNuc,rN
           c(mu,i) = c(mu,i) + step*kick
         end do
       end do
+
+!     R(:,:) = 0d0
+!     ia = 0
+!     do i=nC+1,nO
+!       do a=nO+1,nBas-nR
+!         ia = ia + 1
+!         R(a,i) = +AB(ia,eig)
+!         R(i,a) = -AB(ia,eig)
+!       end do
+!     end do
+
+!     call matrix_exponential(nBas,R,ExpR)
+!     c = matmul(c,ExpR)
 
     else
  

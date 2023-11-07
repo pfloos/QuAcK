@@ -105,9 +105,9 @@ subroutine GGW(doG0W0,doevGW,doqsGW,maxSCF,thresh,max_diis,doACFDT,      &
   if(doqsGW) then 
 
     call wall_time(start_GW)
-!   call qsGW(maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,dophBSE,dophBSE2,TDA_W,TDA,dBSE,dTDA,doppBSE, & 
-!             eta,regularize,nNuc,ZNuc,rNuc,ENuc,nBas,nC,nO,nV,nR,nS,EHF,S,X,T,V,Hc,ERI_AO,ERI,  & 
-!             dipole_int_AO,dipole_int,PHF,cHF,epsHF)
+!   call qsGGW(maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,dophBSE,dophBSE2,TDA_W,TDA,dBSE,dTDA,doppBSE, & 
+!              eta,regularize,nNuc,ZNuc,rNuc,ENuc,nBas,nBas2,nC,nO,nV,nR,nS,EHF,S,X,T,V,Hc,ERI_AO,ERI,  & 
+!              dipole_int_AO,dipole_int,PHF,cHF,epsHF)
     call wall_time(end_GW)
 
     t_GW = end_GW - start_GW

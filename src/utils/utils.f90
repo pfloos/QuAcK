@@ -45,6 +45,69 @@ function KroneckerDelta(i,j) result(delta)
 end function 
 
 !------------------------------------------------------------------------
+subroutine diagonal_matrix(N,D,A)
+
+! Construct diagonal matrix A from vector D
+
+  implicit none
+
+  integer,intent(in)            :: N
+  double precision,intent(in)   :: D(N)
+  double precision,intent(out)  :: A(N,N)
+
+  integer                       :: i
+
+  A(:,:) = 0d0
+  do i=1,N
+    A(i,i) = D(i)
+  end do
+
+end subroutine
+
+!------------------------------------------------------------------------
+subroutine matrix_exponential(N,A,ExpA)
+
+! Compute Exp(A)
+
+  implicit none
+
+  integer,intent(in)            :: N
+  double precision,intent(in)   :: A(N,N)
+  double precision,allocatable  :: W(:,:)
+  double precision,allocatable  :: tau(:)
+  double precision,allocatable  :: t(:,:)
+  double precision,intent(out)  :: ExpA(N,N)
+
+! Memory allocation
+
+  allocate(W(N,N),tau(N),t(N,N))
+
+! Initialize
+
+  ExpA(:,:) = 0d0
+
+! Diagonalize
+
+  W(:,:) = - matmul(A,A)
+  call diagonalize_matrix(N,W,tau)
+  tau(:) = sqrt(tau(:))
+
+! Construct cos part
+
+  call diagonal_matrix(N,cos(tau),t)
+  t(:,:) = matmul(t,transpose(W))
+  ExpA(:,:) = ExpA(:,:) + matmul(W,t) 
+
+! Construct sin part
+
+  call diagonal_matrix(N,sin(tau)/tau,t)
+  t(:,:) = matmul(t,transpose(W))
+  t(:,:) = matmul(t,A)
+  ExpA(:,:) = ExpA(:,:) + matmul(W,t)
+
+end subroutine
+
+!------------------------------------------------------------------------
 subroutine matout(m,n,A)
 
 ! Print the MxN array A
