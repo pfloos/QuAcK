@@ -52,6 +52,9 @@ subroutine GHF_search(maxSCF,thresh,max_diis,guess_type,mix,level_shift,nNuc,ZNu
   double precision,allocatable  :: Bph(:,:)
   double precision,allocatable  :: AB(:,:)
   double precision,allocatable  :: Om(:)
+  double precision,allocatable  :: R(:,:)
+  double precision,allocatable  :: ExpR(:,:)
+
   
   integer                       :: eig
   double precision              :: kick,step
@@ -59,9 +62,9 @@ subroutine GHF_search(maxSCF,thresh,max_diis,guess_type,mix,level_shift,nNuc,ZNu
 ! Output variables
 
   double precision,intent(out)  :: EHF
-  double precision,intent(out)  :: e(nBas)
-  double precision,intent(inout):: c(nBas,nBas)
-  double precision,intent(out)  :: P(nBas,nBas)
+  double precision,intent(out)  :: e(nBas2)
+  double precision,intent(inout):: c(nBas2,nBas2)
+  double precision,intent(out)  :: P(nBas2,nBas2)
 
 ! Memory allocation
 
@@ -77,7 +80,8 @@ subroutine GHF_search(maxSCF,thresh,max_diis,guess_type,mix,level_shift,nNuc,ZNu
 
   nS = (nO - nC)*(nV - nR)
 
-  allocate(ERI_MO(nBas2,nBas2,nBas2,nBas2),Aph(nS,nS),Bph(nS,nS),AB(nS,nS),Om(nS))
+  allocate(ERI_MO(nBas2,nBas2,nBas2,nBas2),Aph(nS,nS),Bph(nS,nS),AB(nS,nS),Om(nS), &
+           R(nBas2,nBas2),ExpR(nBas2,nBas2))
 
 !------------------!
 ! Search algorithm !
@@ -145,11 +149,11 @@ subroutine GHF_search(maxSCF,thresh,max_diis,guess_type,mix,level_shift,nNuc,ZNu
 
     call phLR_A(ispin,.false.,nBas2,nC,nO,nV,nR,nS,1d0,e,ERI_MO,Aph)
     call phLR_B(ispin,.false.,nBas2,nC,nO,nV,nR,nS,1d0,ERI_MO,Bph)
- 
-    AB(:,:) = Aph(:,:) - Bph(:,:)
+
+    AB(:,:) = Aph(:,:) + Bph(:,:)
  
     call diagonalize_matrix(nS,AB,Om)
-    Om(:) = 0.5d0*Om(:)
+    Om(:) = 2d0*Om(:)
  
     write(*,*)'-------------------------------------------------------------'
     write(*,*)'|       Stability analysis: Real GHF -> Real GHF            |'
@@ -182,17 +186,30 @@ subroutine GHF_search(maxSCF,thresh,max_diis,guess_type,mix,level_shift,nNuc,ZNu
 
       step = 1d0
 
-      do mu=1,nBas2
-        ia = 0
-        do i=nC+1,nO
-          kick = 0d0
-          do a=nO+1,nBas2-nR
-            ia = ia + 1
-            kick = kick + AB(ia,eig)*c(mu,a)
-          end do
-          c(mu,i) = c(mu,i) + step*kick
+!     do mu=1,nBas2
+!       ia = 0
+!       do i=nC+1,nO
+!         kick = 0d0
+!         do a=nO+1,nBas2-nR
+!           ia = ia + 1
+!           kick = kick + AB(ia,eig)*c(mu,a)
+!         end do
+!         c(mu,i) = c(mu,i) + step*kick
+!       end do
+!     end do
+
+      R(:,:) = 0d0
+      ia = 0
+      do i=nC+1,nO
+        do a=nO+1,nBas2-nR
+          ia = ia + 1
+          R(a,i) = +AB(ia,eig)
+          R(i,a) = -AB(ia,eig)
         end do
       end do
+
+      call matrix_exponential(nBas2,R,ExpR)
+      c = matmul(c,ExpR)
 
     else
  

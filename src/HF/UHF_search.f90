@@ -144,7 +144,7 @@ subroutine UHF_search(maxSCF,thresh,max_diis,guess_type,mix,level_shift,nNuc,ZNu
     AB_sc(:,:) = A_sc(:,:) + B_sc(:,:)
  
     call diagonalize_matrix(nS_sc,AB_sc,Om_sc)
-    Om_sc(:) = 0.5d0*Om_sc(:)
+    Om_sc(:) = 2d0*Om_sc(:)
  
     write(*,*)'-------------------------------------------------------------'
     write(*,*)'|       Stability analysis: Real UHF -> Real UHF            |'

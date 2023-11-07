@@ -72,6 +72,7 @@ subroutine matrix_exponential(N,A,ExpA)
   implicit none
 
   integer,intent(in)            :: N
+  integer                       :: i
   double precision,intent(in)   :: A(N,N)
   double precision,allocatable  :: W(:,:)
   double precision,allocatable  :: tau(:)
@@ -90,7 +91,13 @@ subroutine matrix_exponential(N,A,ExpA)
 
   W(:,:) = - matmul(A,A)
   call diagonalize_matrix(N,W,tau)
-  tau(:) = sqrt(tau(:))
+
+  call matout(N,1,tau)
+! do i=1,N
+!   tau(i) = max(abs(tau(i)),1d-14)
+! end do
+  tau(:) = sqrt(abs(tau(:)))
+  call matout(N,1,tau)
 
 ! Construct cos part
 

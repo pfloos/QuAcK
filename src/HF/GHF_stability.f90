@@ -44,7 +44,7 @@ subroutine GHF_stability(nBas,nC,nO,nV,nR,nS,eHF,ERI)
   AB(:,:) = A(:,:) + B(:,:)
 
   call diagonalize_matrix(nS,AB,Om)
-  Om(:) = 0.5d0*Om(:)
+  Om(:) = 2d0*Om(:)
 
   write(*,*)'-------------------------------------------------------------'
   write(*,*)'|       Stability analysis: Real GHF -> Real GHF            |'
@@ -79,7 +79,7 @@ subroutine GHF_stability(nBas,nC,nO,nV,nR,nS,eHF,ERI)
   AB(:,:) = A(:,:) - B(:,:)
 
   call diagonalize_matrix(nS,AB,Om)
-  Om(:) = 0.5d0*Om(:)
+  Om(:) = 2d0*Om(:)
 
   write(*,*)'-------------------------------------------------------------'
   write(*,*)'|       Stability analysis: Real GHF -> Complex GHF         |'
