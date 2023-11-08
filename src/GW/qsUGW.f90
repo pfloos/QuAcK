@@ -57,6 +57,7 @@ subroutine qsUGW(maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,BSE,TDA_W,
 
 ! Local variables
 
+  logical                       :: dRPA
   integer                       :: nSCF
   integer                       :: nBasSq
   integer                       :: ispin
@@ -113,6 +114,7 @@ subroutine qsUGW(maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,BSE,TDA_W,
 ! Stuff 
 
   nBasSq = nBas*nBas
+  dRPA = .true.
 
 ! TDA for W
 
@@ -136,9 +138,8 @@ subroutine qsUGW(maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,BSE,TDA_W,
 
   allocate(eGW(nBas,nspin),c(nBas,nBas,nspin),cp(nBas,nBas,nspin),P(nBas,nBas,nspin),F(nBas,nBas,nspin),           &
            Fp(nBas,nBas,nspin),J(nBas,nBas,nspin),K(nBas,nBas,nspin),SigC(nBas,nBas,nspin),SigCp(nBas,nBas,nspin), &
-           Z(nBas,nspin),Om(nS_sc),XpY(nS_sc,nS_sc),XmY(nS_sc,nS_sc),                       &
-           rho(nBas,nBas,nS_sc,nspin),err(nBas,nBas,nspin),err_diis(nBasSq,max_diis,nspin),                        & 
-           F_diis(nBasSq,max_diis,nspin))
+           Z(nBas,nspin),Om(nS_sc),XpY(nS_sc,nS_sc),XmY(nS_sc,nS_sc),rho(nBas,nBas,nS_sc,nspin),                   &
+           err(nBas,nBas,nspin),err_diis(nBasSq,max_diis,nspin),F_diis(nBasSq,max_diis,nspin))
 
 ! Initialization
   
@@ -198,7 +199,7 @@ subroutine qsUGW(maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,BSE,TDA_W,
 
     ! Compute linear response
 
-    call phULR(ispin,.true.,TDA_W,.false.,nBas,nC,nO,nV,nR,nS_aa,nS_bb,nS_sc,nS_sc,1d0, &
+    call phULR(ispin,dRPA,TDA_W,.false.,nBas,nC,nO,nV,nR,nS_aa,nS_bb,nS_sc,nS_sc,1d0, &
                eGW,ERI_aaaa,ERI_aabb,ERI_bbbb,Om,rho,EcRPA,Om,XpY,XmY)
 
     !----------------------!
@@ -277,7 +278,7 @@ subroutine qsUGW(maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,BSE,TDA_W,
     ! Back-transform self-energy
 
     do is=1,nspin
-      SigCp(:,:,is) = matmul(transpose(c(:,:,is)),matmul(SigCp(:,:,is),c(:,:,is)))
+      call AOtoMO_transform(nBas,c(:,:,is),SigCp(:,:,is),SigC(:,:,is))
     end do
 
     ! Compute density matrix 
