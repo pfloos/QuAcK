@@ -85,7 +85,6 @@ subroutine qsGW(maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,dophBSE,dop
   double precision,allocatable  :: c(:,:)
   double precision,allocatable  :: cp(:,:)
   double precision,allocatable  :: eGW(:)
-  double precision,allocatable  :: eOld(:)
   double precision,allocatable  :: P(:,:)
   double precision,allocatable  :: F(:,:)
   double precision,allocatable  :: Fp(:,:)
@@ -93,7 +92,6 @@ subroutine qsGW(maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,dophBSE,dop
   double precision,allocatable  :: K(:,:)
   double precision,allocatable  :: SigC(:,:)
   double precision,allocatable  :: SigCp(:,:)
-  double precision,allocatable  :: SigCm(:,:)
   double precision,allocatable  :: Z(:)
   double precision,allocatable  :: error(:,:)
 
@@ -130,9 +128,9 @@ subroutine qsGW(maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,dophBSE,dop
 
 ! Memory allocation
 
-  allocate(eGW(nBas),eOld(nBas),c(nBas,nBas),cp(nBas,nBas),P(nBas,nBas),F(nBas,nBas),Fp(nBas,nBas), &
-           J(nBas,nBas),K(nBas,nBas),SigC(nBas,nBas),SigCp(nBas,nBas),SigCm(nBas,nBas),Z(nBas),     & 
-           Aph(nS,nS),Bph(nS,nS),Om(nS),XpY(nS,nS),XmY(nS,nS),rho(nBas,nBas,nS),                    &
+  allocate(eGW(nBas),c(nBas,nBas),cp(nBas,nBas),P(nBas,nBas),F(nBas,nBas),Fp(nBas,nBas), &
+           J(nBas,nBas),K(nBas,nBas),SigC(nBas,nBas),SigCp(nBas,nBas),Z(nBas),           & 
+           Aph(nS,nS),Bph(nS,nS),Om(nS),XpY(nS,nS),XmY(nS,nS),rho(nBas,nBas,nS),         &
            error(nBas,nBas),error_diis(nBasSq,max_diis),F_diis(nBasSq,max_diis))
 
 ! Initialization
@@ -143,7 +141,6 @@ subroutine qsGW(maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,dophBSE,dop
   Conv            = 1d0
   P(:,:)          = PHF(:,:)
   eGW(:)          = eHF(:)
-  eOld(:)         = eHF(:)
   c(:,:)          = cHF(:,:)
   F_diis(:,:)     = 0d0
   error_diis(:,:) = 0d0
@@ -169,9 +166,8 @@ subroutine qsGW(maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,dophBSE,dop
 
     ! AO to MO transformation of two-electron integrals
 
-    dipole_int_MO(:,:,:) = dipole_int_AO(:,:,:)
     do ixyz=1,ncart
-      call AOtoMO_transform(nBas,cHF,dipole_int_MO(:,:,ixyz))
+      call AOtoMO_transform(nBas,cHF,dipole_int_AO(:,:,ixyz),dipole_int_MO(:,:,ixyz))
     end do
 
     call AOtoMO_integral_transform(1,1,1,1,nBas,c,ERI_AO,ERI_MO)
@@ -194,10 +190,9 @@ subroutine qsGW(maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,dophBSE,dop
 
     ! Make correlation self-energy Hermitian and transform it back to AO basis
    
-    SigCp = 0.5d0*(SigC + transpose(SigC))
-    SigCm = 0.5d0*(SigC - transpose(SigC))
+    SigC = 0.5d0*(SigC + transpose(SigC))
 
-    call MOtoAO_transform(nBas,S,c,SigCp)
+    call MOtoAO_transform(nBas,S,c,SigC,SigCp)
  
     ! Solve the quasi-particle equation
 
@@ -222,7 +217,7 @@ subroutine qsGW(maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,dophBSE,dop
     cp(:,:) = Fp(:,:)
     call diagonalize_matrix(nBas,cp,eGW)
     c = matmul(X,cp)
-    SigCp = matmul(transpose(c),matmul(SigCp,c))
+    call AOtoMO_transform(nBas,c,SigCp,SigC)
 
     ! Compute new density matrix in the AO basis
 
@@ -230,8 +225,7 @@ subroutine qsGW(maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,dophBSE,dop
 
     ! Save quasiparticles energy for next cycle
 
-    Conv = maxval(abs(error))
-    eOld(:) = eGW(:)
+    if(nSCF > 1) Conv = maxval(abs(error))
 
     !------------------------------------------------------------------------
     !   Compute total energy
@@ -283,7 +277,7 @@ subroutine qsGW(maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,dophBSE,dop
 
 ! Deallocate memory
 
-  deallocate(c,cp,P,F,Fp,J,K,SigC,SigCp,SigCm,Z,Om,XpY,XmY,rho,error,error_diis,F_diis)
+  deallocate(c,cp,P,F,Fp,J,K,SigC,SigCp,Z,Om,XpY,XmY,rho,error,error_diis,F_diis)
 
 ! Perform BSE calculation
 

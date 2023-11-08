@@ -93,7 +93,6 @@ subroutine qsGTeh(maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,dophBSE,d
   double precision,allocatable  :: K(:,:)
   double precision,allocatable  :: Sig(:,:)
   double precision,allocatable  :: Sigp(:,:)
-  double precision,allocatable  :: Sigm(:,:)
   double precision,allocatable  :: Z(:)
   double precision,allocatable  :: error(:,:)
 
@@ -131,7 +130,7 @@ subroutine qsGTeh(maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,dophBSE,d
 ! Memory allocation
 
   allocate(Aph(nS,nS),Bph(nS,nS),eGT(nBas),eOld(nBas),c(nBas,nBas),cp(nBas,nBas),P(nBas,nBas),F(nBas,nBas),Fp(nBas,nBas), &
-           J(nBas,nBas),K(nBas,nBas),Sig(nBas,nBas),Sigp(nBas,nBas),Sigm(nBas,nBas),Z(nBas),Om(nS),XpY(nS,nS),XmY(nS,nS), & 
+           J(nBas,nBas),K(nBas,nBas),Sig(nBas,nBas),Sigp(nBas,nBas),Z(nBas),Om(nS),XpY(nS,nS),XmY(nS,nS), & 
            rhoL(nBas,nBas,nS),rhoR(nBas,nBas,nS),error(nBas,nBas),error_diis(nBasSq,max_diis),F_diis(nBasSq,max_diis))
 
 ! Initialization
@@ -189,10 +188,9 @@ subroutine qsGTeh(maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,dophBSE,d
 
     ! Make correlation self-energy Hermitian and transform it back to AO basis
    
-    Sigp = 0.5d0*(Sig + transpose(Sig))
-    Sigm = 0.5d0*(Sig - transpose(Sig))
+    Sig = 0.5d0*(Sig + transpose(Sig))
 
-    call MOtoAO_transform(nBas,S,c,Sigp)
+    call MOtoAO_transform(nBas,S,c,Sig,Sigp)
  
     ! Solve the quasi-particle equation
 
@@ -278,7 +276,7 @@ subroutine qsGTeh(maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,dophBSE,d
 
 ! Deallocate memory
 
-  deallocate(c,cp,P,F,Fp,J,K,Sig,Sigp,Sigm,Z,Om,XpY,XmY,rhoL,rhoR,error,error_diis,F_diis)
+  deallocate(c,cp,P,F,Fp,J,K,Sig,Sigp,Z,Om,XpY,XmY,rhoL,rhoR,error,error_diis,F_diis)
 
 ! Perform BSE calculation
 

@@ -156,13 +156,10 @@ subroutine UQuAcK(doUHF,dostab,dosearch,doMP2,doMP3,doCCD,dopCCD,doDCD,doCCSD,do
   write(*,*)
 
   ! Read and transform dipole-related integrals
-  
-  dipole_int_aa(:,:,:) = dipole_int_AO(:,:,:)
-  dipole_int_bb(:,:,:) = dipole_int_AO(:,:,:)
 
   do ixyz=1,ncart
-      call AOtoMO_transform(nBas,cHF(:,:,1),dipole_int_aa(:,:,ixyz))
-      call AOtoMO_transform(nBas,cHF(:,:,2),dipole_int_bb(:,:,ixyz))
+      call AOtoMO_transform(nBas,cHF(:,:,1),dipole_int_AO(:,:,ixyz),dipole_int_aa(:,:,ixyz))
+      call AOtoMO_transform(nBas,cHF(:,:,2),dipole_int_AO(:,:,ixyz),dipole_int_bb(:,:,ixyz))
   end do 
   
   ! 4-index transform for (aa|aa) block

@@ -61,7 +61,7 @@ subroutine print_GHF(nBas,nBas2,nO,e,C,P,ENuc,ET,EV,EJ,EK,EHF,dipole)
   Ca(:,:) = C(     1:nBas ,1:nBas2)
   Cb(:,:) = C(nBas+1:nBas2,1:nBas2)
 
-! Compute expectation values of S^2
+! Compute expectation values of S^2 (WRONG!)
 
   Sx2 = 0.25d0*trace_matrix(nBas,Paa+Pbb) + 0.25d0*trace_matrix(nBas,Pab+Pba)**2
   do mu=1,nBas
@@ -109,8 +109,8 @@ subroutine print_GHF(nBas,nBas2,nO,e,C,P,ENuc,ET,EV,EJ,EK,EHF,dipole)
   write(*,'(A32,1X,F16.6,A3)')  ' GHF LUMO     energy: ',e(LUMO)*HaToeV,' eV'
   write(*,'(A32,1X,F16.6,A3)')  ' GHF HOMO-LUMO gap  : ',Gap*HaToeV,' eV'
   write(*,'(A50)')           '-----------------------------------------'
-  write(*,'(A32,1X,F16.6)')     ' <S**2>             :',S2
-  write(*,'(A50)')           '-----------------------------------------'
+! write(*,'(A32,1X,F16.6)')     ' <S**2>             :',S2
+! write(*,'(A50)')           '-----------------------------------------'
   write(*,'(A35)')           ' Dipole moment (Debye)    '
   write(*,'(10X,4A10)')      'X','Y','Z','Tot.'
   write(*,'(10X,4F10.6)')    (dipole(ixyz)*auToD,ixyz=1,ncart),norm2(dipole)*auToD
@@ -124,8 +124,8 @@ subroutine print_GHF(nBas,nBas2,nO,e,C,P,ENuc,ET,EV,EJ,EK,EHF,dipole)
     write(*,'(A32)') ' GHF orbital coefficients'
     write(*,'(A50)') '---------------------------------------'
     call matout(nBas2,nBas2,c)
+    write(*,*)
   end if
-  write(*,*)
   write(*,'(A50)') '---------------------------------------'
   write(*,'(A32)') ' GHF orbital energies'
   write(*,'(A50)') '---------------------------------------'

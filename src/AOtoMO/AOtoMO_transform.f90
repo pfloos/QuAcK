@@ -1,4 +1,4 @@
-subroutine AOtoMO_transform(nBas,c,A)
+subroutine AOtoMO_transform(nBas,c,A,B)
 
 ! Perform AO to MO transformation of a matrix A for given coefficients c
 
@@ -8,11 +8,12 @@ subroutine AOtoMO_transform(nBas,c,A)
 
   integer,intent(in)            :: nBas
   double precision,intent(in)   :: c(nBas,nBas)
+  double precision,intent(in)   :: A(nBas,nBas)
 
 ! Output variables
 
-  double precision,intent(inout):: A(nBas,nBas)
+  double precision,intent(out)  :: B(nBas,nBas)
 
-  A = matmul(transpose(c),matmul(A,c))
+  B = matmul(transpose(c),matmul(A,c))
 
 end subroutine 

@@ -69,7 +69,7 @@ subroutine qsUGW(maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,BSE,TDA_W,
   double precision              :: ET(nspin)
   double precision              :: EV(nspin)
   double precision              :: EJ(nsp)
-  double precision              :: Ex(nspin)
+  double precision              :: EK(nspin)
   double precision              :: EcRPA
   double precision              :: EcGM(nspin)
   double precision              :: EqsGW
@@ -78,7 +78,7 @@ subroutine qsUGW(maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,BSE,TDA_W,
   double precision              :: Conv
   double precision              :: rcond(nspin)
   double precision,external     :: trace_matrix
-  double precision,allocatable  :: error_diis(:,:,:)
+  double precision,allocatable  :: err_diis(:,:,:)
   double precision,allocatable  :: F_diis(:,:,:)
   double precision,allocatable  :: Om(:)
   double precision,allocatable  :: XpY(:,:)
@@ -87,7 +87,6 @@ subroutine qsUGW(maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,BSE,TDA_W,
   double precision,allocatable  :: c(:,:,:)
   double precision,allocatable  :: cp(:,:,:)
   double precision,allocatable  :: eGW(:,:)
-  double precision,allocatable  :: eOld(:,:)
   double precision,allocatable  :: P(:,:,:)
   double precision,allocatable  :: F(:,:,:)
   double precision,allocatable  :: Fp(:,:,:)
@@ -95,9 +94,8 @@ subroutine qsUGW(maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,BSE,TDA_W,
   double precision,allocatable  :: K(:,:,:)
   double precision,allocatable  :: SigC(:,:,:)
   double precision,allocatable  :: SigCp(:,:,:)
-  double precision,allocatable  :: SigCm(:,:,:)
   double precision,allocatable  :: Z(:,:)
-  double precision,allocatable  :: error(:,:,:)
+  double precision,allocatable  :: err(:,:,:)
 
 ! Hello world
 
@@ -136,25 +134,24 @@ subroutine qsUGW(maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,BSE,TDA_W,
   nS_bb = nS(2)
   nS_sc = nS_aa + nS_bb
 
-  allocate(eGW(nBas,nspin),eOld(nBas,nspin),c(nBas,nBas,nspin),cp(nBas,nBas,nspin),P(nBas,nBas,nspin),F(nBas,nBas,nspin), &
-           Fp(nBas,nBas,nspin),J(nBas,nBas,nspin),K(nBas,nBas,nspin),SigC(nBas,nBas,nspin),SigCp(nBas,nBas,nspin),        &
-           SigCm(nBas,nBas,nspin),Z(nBas,nspin),Om(nS_sc),XpY(nS_sc,nS_sc),XmY(nS_sc,nS_sc),                   &
-           rho(nBas,nBas,nS_sc,nspin),error(nBas,nBas,nspin),error_diis(nBasSq,max_diis,nspin),                       & 
+  allocate(eGW(nBas,nspin),c(nBas,nBas,nspin),cp(nBas,nBas,nspin),P(nBas,nBas,nspin),F(nBas,nBas,nspin),           &
+           Fp(nBas,nBas,nspin),J(nBas,nBas,nspin),K(nBas,nBas,nspin),SigC(nBas,nBas,nspin),SigCp(nBas,nBas,nspin), &
+           Z(nBas,nspin),Om(nS_sc),XpY(nS_sc,nS_sc),XmY(nS_sc,nS_sc),                       &
+           rho(nBas,nBas,nS_sc,nspin),err(nBas,nBas,nspin),err_diis(nBasSq,max_diis,nspin),                        & 
            F_diis(nBasSq,max_diis,nspin))
 
 ! Initialization
   
-  nSCF              = -1
-  n_diis            = 0
-  ispin             = 1
-  Conv              = 1d0
-  P(:,:,:)          = PHF(:,:,:)
-  eGW(:,:)          = eHF(:,:)
-  eOld(:,:)         = eHF(:,:)
-  c(:,:,:)          = cHF(:,:,:)
-  F_diis(:,:,:)     = 0d0
-  error_diis(:,:,:) = 0d0
-  rcond(:)          = 0d0
+  nSCF            = -1
+  n_diis          = 0
+  ispin           = 1
+  Conv            = 1d0
+  P(:,:,:)        = PHF(:,:,:)
+  eGW(:,:)        = eHF(:,:)
+  c(:,:,:)        = cHF(:,:,:)
+  F_diis(:,:,:)   = 0d0
+  err_diis(:,:,:) = 0d0
+  rcond(:)        = 0d0
 
 !------------------------------------------------------------------------
 ! Main loop
@@ -181,13 +178,10 @@ subroutine qsUGW(maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,BSE,TDA_W,
     !--------------------------------------------------
     ! AO to MO transformation of two-electron integrals
     !--------------------------------------------------
-
-    dipole_int_aa(:,:,:) = dipole_int_AO(:,:,:)
-    dipole_int_bb(:,:,:) = dipole_int_AO(:,:,:)
  
     do ixyz=1,ncart
-        call AOtoMO_transform(nBas,cHF(:,:,1),dipole_int_aa(:,:,ixyz))
-        call AOtoMO_transform(nBas,cHF(:,:,2),dipole_int_bb(:,:,ixyz))
+        call AOtoMO_transform(nBas,cHF(:,:,1),dipole_int_AO(:,:,ixyz),dipole_int_aa(:,:,ixyz))
+        call AOtoMO_transform(nBas,cHF(:,:,2),dipole_int_AO(:,:,ixyz),dipole_int_bb(:,:,ixyz))
     end do
 
     ! 4-index transform for (aa|aa) block
@@ -228,12 +222,11 @@ subroutine qsUGW(maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,BSE,TDA_W,
     ! Make correlation self-energy Hermitian and transform it back to AO basis
    
     do is=1,nspin
-      SigCp(:,:,is) = 0.5d0*(SigC(:,:,is) + transpose(SigC(:,:,is)))
-      SigCm(:,:,is) = 0.5d0*(SigC(:,:,is) - transpose(SigC(:,:,is)))
+      SigC(:,:,is) = 0.5d0*(SigC(:,:,is) + transpose(SigC(:,:,is)))
     end do
 
     do is=1,nspin
-      call MOtoAO_transform(nBas,S,c(:,:,is),SigCp(:,:,is))
+      call MOtoAO_transform(nBas,S,c(:,:,is),SigC(:,:,is),SigCp(:,:,is))
     end do
  
     ! Solve the quasi-particle equation
@@ -245,18 +238,18 @@ subroutine qsUGW(maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,BSE,TDA_W,
    ! Check convergence 
 
     do is=1,nspin
-      error(:,:,is) = matmul(F(:,:,is),matmul(P(:,:,is),S(:,:))) - matmul(matmul(S(:,:),P(:,:,is)),F(:,:,is))
+      err(:,:,is) = matmul(F(:,:,is),matmul(P(:,:,is),S(:,:))) - matmul(matmul(S(:,:),P(:,:,is)),F(:,:,is))
     end do
 
-    if(nSCF > 1) conv = maxval(abs(error(:,:,:)))
+    if(nSCF > 1) Conv = maxval(abs(err(:,:,:)))
 
     ! DIIS extrapolation
 
     n_diis = min(n_diis+1,max_diis)
     if(minval(rcond(:)) > 1d-7) then
       do is=1,nspin
-        if(nO(is) > 1) call DIIS_extrapolation(rcond(is),nBasSq,nBasSq,n_diis,error_diis(:,1:n_diis,is), &
-                                                  F_diis(:,1:n_diis,is),error(:,:,is),F(:,:,is))
+        if(nO(is) > 1) call DIIS_extrapolation(rcond(is),nBasSq,nBasSq,n_diis,err_diis(:,1:n_diis,is), &
+                                               F_diis(:,1:n_diis,is),err(:,:,is),F(:,:,is))
       end do
     else 
       n_diis = 0
@@ -293,11 +286,6 @@ subroutine qsUGW(maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,BSE,TDA_W,
       P(:,:,is) = matmul(c(:,1:nO(is),is),transpose(c(:,1:nO(is),is)))
     end do
 
-    ! Save quasiparticles energy for next cycle
-
-    Conv = maxval(abs(eGW(:,:) - eOld(:,:)))
-    eOld(:,:) = eGW(:,:)
-
     !------------------------------------------------------------------------
     !   Compute total energy
     !------------------------------------------------------------------------
@@ -324,19 +312,19 @@ subroutine qsUGW(maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,BSE,TDA_W,
     ! Exchange energy
 
     do is=1,nspin
-      Ex(is) = 0.5d0*trace_matrix(nBas,matmul(P(:,:,is),K(:,:,is)))
+      EK(is) = 0.5d0*trace_matrix(nBas,matmul(P(:,:,is),K(:,:,is)))
     end do
 
     ! Total energy
 
-    EqsGW = sum(ET(:)) + sum(EV(:)) + sum(EJ(:)) + sum(Ex(:))
+    EqsGW = sum(ET(:)) + sum(EV(:)) + sum(EJ(:)) + sum(EK(:))
 
     !------------------------------------------------------------------------
     ! Print results
     !------------------------------------------------------------------------
 
     call dipole_moment(nBas,P(:,:,1)+P(:,:,2),nNuc,ZNuc,rNuc,dipole_int_AO,dipole)
-    call print_qsUGW(nBas,nO,nSCF,Conv,thresh,eHF,eGW,c,S,ENuc,ET,EV,EJ,Ex,EcGM,EcRPA,EqsGW,SigCp,Z,dipole)
+    call print_qsUGW(nBas,nO,nSCF,Conv,thresh,eHF,eGW,c,S,ENuc,ET,EV,EJ,EK,EcGM,EcRPA,EqsGW,SigCp,Z,dipole)
 
   enddo
 !------------------------------------------------------------------------
@@ -359,7 +347,7 @@ subroutine qsUGW(maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,BSE,TDA_W,
 
 ! Deallocate memory
 
-  deallocate(cp,P,F,Fp,J,K,SigC,SigCp,SigCm,Z,Om,XpY,XmY,rho,error,error_diis,F_diis)
+  deallocate(cp,P,F,Fp,J,K,SigC,SigCp,Z,Om,XpY,XmY,rho,err,err_diis,F_diis)
 
 ! Perform BSE calculation
 

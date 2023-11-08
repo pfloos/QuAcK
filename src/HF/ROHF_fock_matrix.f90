@@ -59,8 +59,8 @@ subroutine ROHF_fock_matrix(nBas,nOa,nOb,S,c,Fa,Fb,F)
 
 ! Block-by-block Fock matrix 
 
-  call AOtoMO_transform(nBas,c,Fa)
-  call AOtoMO_transform(nBas,c,Fb)
+  Fa = matmul(transpose(c),matmul(Fa,c))
+  Fb = matmul(transpose(c),matmul(Fb,c))
 
   F(1:nC,      1:nC      ) =    aC*Fa(1:nC,      1:nC      ) +    bC*Fb(1:nC,      1:nC      )
   F(1:nC,   nC+1:nC+nO   ) =                                         Fb(1:nC,   nC+1:nC+nO   )

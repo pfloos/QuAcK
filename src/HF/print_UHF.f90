@@ -119,8 +119,8 @@ subroutine print_UHF(nBas,nO,Ov,e,c,ENuc,ET,EV,EJ,Ex,EUHF,dipole)
     write(*,'(A50)') 'UHF spin-down orbital coefficients '
     write(*,'(A50)') '-----------------------------------------'
     call matout(nBas,nBas,c(:,:,2))
+    write(*,*)
   end if
-  write(*,*)
   write(*,'(A50)') '---------------------------------------'
   write(*,'(A50)') ' UHF spin-up   orbital energies  '
   write(*,'(A50)') '---------------------------------------'

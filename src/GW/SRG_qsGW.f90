@@ -77,10 +77,10 @@ subroutine SRG_qsGW(maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,BSE,BSE
   double precision,allocatable  :: F_diis(:,:)
   double precision,allocatable  :: Aph(:,:)
   double precision,allocatable  :: Bph(:,:)
-  double precision,allocatable  :: OmRPA(:)
-  double precision,allocatable  :: XpY_RPA(:,:)
-  double precision,allocatable  :: XmY_RPA(:,:)
-  double precision,allocatable  :: rho_RPA(:,:,:)
+  double precision,allocatable  :: Om(:)
+  double precision,allocatable  :: XpY(:,:)
+  double precision,allocatable  :: XmY(:,:)
+  double precision,allocatable  :: rho(:,:,:)
   double precision,allocatable  :: c(:,:)
   double precision,allocatable  :: cp(:,:)
   double precision,allocatable  :: eGW(:)
@@ -91,6 +91,7 @@ subroutine SRG_qsGW(maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,BSE,BSE
   double precision,allocatable  :: J(:,:)
   double precision,allocatable  :: K(:,:)
   double precision,allocatable  :: SigC(:,:)
+  double precision,allocatable  :: SigCp(:,:)
   double precision,allocatable  :: Z(:)
   double precision,allocatable  :: error(:,:)
 
@@ -127,9 +128,9 @@ subroutine SRG_qsGW(maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,BSE,BSE
 
 ! Memory allocation
 
-  allocate(eGW(nBas),eOld(nBas),c(nBas,nBas),cp(nBas,nBas),P(nBas,nBas),F(nBas,nBas),Fp(nBas,nBas),   &
-           J(nBas,nBas),K(nBas,nBas),SigC(nBas,nBas),Z(nBas),Aph(nS,nS),Bph(nS,nS),OmRPA(nS),XpY_RPA(nS,nS),XmY_RPA(nS,nS), & 
-           rho_RPA(nBas,nBas,nS),error(nBas,nBas),error_diis(nBasSq,max_diis),F_diis(nBasSq,max_diis))
+  allocate(eGW(nBas),eOld(nBas),c(nBas,nBas),cp(nBas,nBas),P(nBas,nBas),F(nBas,nBas),Fp(nBas,nBas),  &
+           J(nBas,nBas),K(nBas,nBas),SigC(nBas,nBas),SigCp(nBas,nBas),Z(nBas),Aph(nS,nS),Bph(nS,nS), & 
+           Om(nS),XpY(nS,nS),XmY(nS,nS),rho(nBas,nBas,nS),error(nBas,nBas),error_diis(nBasSq,max_diis),F_diis(nBasSq,max_diis))
 
 ! Initialization
   
@@ -169,9 +170,8 @@ subroutine SRG_qsGW(maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,BSE,BSE
 
     call wall_time(tao1)
     
-    dipole_int_MO(:,:,:) = dipole_int_AO(:,:,:)
     do ixyz=1,ncart             
-      call AOtoMO_transform(nBas,cHF,dipole_int_MO(:,:,ixyz))
+      call AOtoMO_transform(nBas,cHF,dipole_int_AO(:,:,ixyz),dipole_int_MO(:,:,ixyz))
     end do  
 
     call AOtoMO_integral_transform(1,1,1,1,nBas,c,ERI_AO,ERI_MO)
@@ -187,40 +187,39 @@ subroutine SRG_qsGW(maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,BSE,BSE
     call phLR_A(ispin,dRPA,nBas,nC,nO,nV,nR,nS,1d0,eGW,ERI_MO,Aph)
     if(.not.TDA_W) call phLR_B(ispin,dRPA,nBas,nC,nO,nV,nR,nS,1d0,ERI_MO,Bph)
 
-    call phLR(TDA_W,nS,Aph,Bph,EcRPA,OmRPA,XpY_RPA,XmY_RPA)
+    call phLR(TDA_W,nS,Aph,Bph,EcRPA,Om,XpY,XmY)
 
     call wall_time(tlr2)
 
     tlr = tlr + tlr2 -tlr1
 
-    if(print_W) call print_excitation_energies('phRPA@SRG-qsGW',ispin,nS,OmRPA)
+    if(print_W) call print_excitation_energies('phRPA@SRG-qsGW',ispin,nS,Om)
 
     ! Compute correlation part of the self-energy 
 
     call wall_time(tex1)
     
-    call GW_excitation_density(nBas,nC,nO,nR,nS,ERI_MO,XpY_RPA,rho_RPA)
+    call GW_excitation_density(nBas,nC,nO,nR,nS,ERI_MO,XpY,rho)
 
     call wall_time(tex2)
     tex=tex+tex2-tex1
 
     call wall_time(tsrg1)
-    call SRG_self_energy(eta,nBas,nC,nO,nV,nR,nS,eGW,OmRPA,rho_RPA,EcGM,SigC,Z)
+    call SRG_self_energy(eta,nBas,nC,nO,nV,nR,nS,eGW,Om,rho,EcGM,SigC,Z)
 
     call wall_time(tsrg2)
 
     tsrg = tsrg + tsrg2 -tsrg1
 
-
     ! Make correlation self-energy Hermitian and transform it back to AO basis
 
     call wall_time(tmo1)
-    call MOtoAO_transform(nBas,S,c,SigC)
+    call MOtoAO_transform(nBas,S,c,SigC,SigCp)
     call wall_time(tmo2)
     tmo = tmo + tmo2 - tmo1
    ! Solve the quasi-particle equation
 
-    F(:,:) = Hc(:,:) + J(:,:) + 0.5d0*K(:,:) + SigC(:,:)
+    F(:,:) = Hc(:,:) + J(:,:) + 0.5d0*K(:,:) + SigCp(:,:)
 
     ! Compute commutator and convergence criteria
 
@@ -241,7 +240,8 @@ subroutine SRG_qsGW(maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,BSE,BSE
     cp(:,:) = Fp(:,:)
     call diagonalize_matrix(nBas,cp,eGW)
     c = matmul(X,cp)
-    SigC = matmul(transpose(c),matmul(SigC,c))
+
+    call AOtoMO_transform(nBas,c,SigCp,SigC)
 
     ! Compute new density matrix in the AO basis
 
@@ -309,7 +309,7 @@ subroutine SRG_qsGW(maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,BSE,BSE
 
 ! Deallocate memory
 
-  deallocate(c,cp,P,F,Fp,J,K,SigC,Z,OmRPA,XpY_RPA,XmY_RPA,rho_RPA,error,error_diis,F_diis)
+  deallocate(c,cp,P,F,Fp,J,K,SigC,Z,Om,XpY,XmY,rho,error,error_diis,F_diis)
 
 ! Perform BSE calculation
 

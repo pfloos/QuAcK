@@ -91,7 +91,6 @@ subroutine qsUGTpp(maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,BSE, &
   double precision,allocatable  :: K(:,:,:) 
   double precision,allocatable  :: SigT(:,:,:)
   double precision,allocatable  :: SigTp(:,:,:)
-  double precision,allocatable  :: SigTm(:,:,:)
   double precision,allocatable  :: Z(:,:)
   double precision,allocatable  :: eGT(:,:)
   double precision,allocatable  :: eOld(:,:)
@@ -131,7 +130,7 @@ subroutine qsUGTpp(maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,BSE, &
 
 ! Memory allocation
 
-  allocate(SigT(nBas,nbas,nspin),SigTp(nBas,nbas,nspin),SigTm(nBas,nbas,nspin), &
+  allocate(SigT(nBas,nbas,nspin),SigTp(nBas,nbas,nspin), &
            Z(nBas,nspin),eGT(nBas,nspin),eOld(nBas,nspin), &
            error_diis(nBas,max_diis,nspin),e_diis(nBasSq,max_diis,nspin), &
            F_diis(nBasSq,max_diis,nspin),error(nBas,nBas,nspin),&
@@ -274,12 +273,11 @@ subroutine qsUGTpp(maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,BSE, &
 ! Make correlation self-energy Hermitian and transform it back to AO basis
 
     do ispin=1,nspin
-      SigTp(:,:,ispin) = 0.5d0*(SigT(:,:,ispin) + transpose(SigT(:,:,ispin)))
-      SigTm(:,:,ispin) = 0.5d0*(SigT(:,:,ispin) - transpose(SigT(:,:,ispin)))
+      SigT(:,:,ispin) = 0.5d0*(SigT(:,:,ispin) + transpose(SigT(:,:,ispin)))
     end do
 
     do ispin=1,nspin
-      call MOtoAO_transform(nBas,S,c(:,:,ispin),SigTp(:,:,ispin))
+      call MOtoAO_transform(nBas,S,c(:,:,ispin),SigT(:,:,ispin),SigTp(:,:,ispin))
     end do
 
 ! Solve the quasi-particle equation
@@ -409,6 +407,6 @@ write(*,*) 'EcGM', EcGM(1)
              Om1aa,X1aa,Y1aa,Om2aa,X2aa,Y2aa,rho1aa,rho2aa, &
              Om1bb,X1bb,Y1bb,Om2bb,X2bb,Y2bb,rho1bb,rho2bb)
 
-  deallocate(c,cp,P,F,Fp,J,K,SigT,SigTp,SigTm,Z,error,error_diis,F_diis) 
+  deallocate(c,cp,P,F,Fp,J,K,SigT,SigTp,Z,error,error_diis,F_diis) 
 
 end subroutine 

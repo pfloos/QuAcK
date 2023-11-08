@@ -35,7 +35,7 @@ subroutine UHF(maxSCF,thresh,max_diis,guess_type,mix,level_shift,nNuc,ZNuc,rNuc,
   integer                       :: nSCF
   integer                       :: nBasSq
   integer                       :: n_diis
-  double precision              :: conv
+  double precision              :: Conv
   double precision              :: rcond(nspin)
   double precision              :: ET(nspin)
   double precision              :: EV(nspin)
@@ -90,7 +90,7 @@ subroutine UHF(maxSCF,thresh,max_diis,guess_type,mix,level_shift,nNuc,ZNuc,rNuc,
 ! Initialization
 
   nSCF = 0
-  conv = 1d0
+  Conv = 1d0
 
   n_diis          = 0
   F_diis(:,:,:)   = 0d0
@@ -106,7 +106,7 @@ subroutine UHF(maxSCF,thresh,max_diis,guess_type,mix,level_shift,nNuc,ZNuc,rNuc,
             '|','#','|','E(UHF)','|','Ex(UHF)','|','Conv','|'
   write(*,*)'----------------------------------------------------------'
   
-  do while(conv > thresh .and. nSCF < maxSCF)
+  do while(Conv > thresh .and. nSCF < maxSCF)
 
 !   Increment 
 
@@ -136,7 +136,7 @@ subroutine UHF(maxSCF,thresh,max_diis,guess_type,mix,level_shift,nNuc,ZNuc,rNuc,
       err(:,:,ispin) = matmul(F(:,:,ispin),matmul(P(:,:,ispin),S(:,:))) - matmul(matmul(S(:,:),P(:,:,ispin)),F(:,:,ispin))
     end do
 
-    if(nSCF > 1) conv = maxval(abs(err(:,:,:)))
+    if(nSCF > 1) Conv = maxval(abs(err(:,:,:)))
     
 !   DIIS extrapolation
 
@@ -224,7 +224,7 @@ subroutine UHF(maxSCF,thresh,max_diis,guess_type,mix,level_shift,nNuc,ZNuc,rNuc,
 !   Dump results
 
     write(*,'(1X,A1,1X,I3,1X,A1,1X,F16.10,1X,A1,1X,F16.10,1X,A1,1X,F10.6,1X,A1,1X)') & 
-      '|',nSCF,'|',EHF + ENuc,'|',sum(Ex(:)),'|',conv,'|'
+      '|',nSCF,'|',EHF + ENuc,'|',sum(Ex(:)),'|',Conv,'|'
  
   end do
   write(*,*)'----------------------------------------------------------'

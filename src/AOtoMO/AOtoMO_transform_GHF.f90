@@ -10,11 +10,11 @@ subroutine AOtoMO_transform_GHF(nBas,nBas2,Ca,Cb,A,B)
   integer,intent(in)            :: nBas2
   double precision,intent(in)   :: Ca(nBas,nBas2)
   double precision,intent(in)   :: Cb(nBas,nBas2)
-  double precision,intent(inout):: A(nBas,nBas)
+  double precision,intent(in)   :: A(nBas,nBas)
 
 ! Output variables
 
-  double precision,intent(inout):: B(nBas2,nBas2)
+  double precision,intent(out)  :: B(nBas2,nBas2)
 
   B = matmul(transpose(Ca),matmul(A,Ca)) &
     + matmul(transpose(Cb),matmul(A,Cb))

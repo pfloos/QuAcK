@@ -150,9 +150,8 @@ subroutine RQuAcK(doRHF,doROHF,dostab,dosearch,doMP2,doMP3,doCCD,dopCCD,doDCD,do
 
   ! Read and transform dipole-related integrals
   
-  dipole_int_MO(:,:,:) = dipole_int_AO(:,:,:)
   do ixyz=1,ncart
-    call AOtoMO_transform(nBas,cHF,dipole_int_MO(:,:,ixyz))
+    call AOtoMO_transform(nBas,cHF,dipole_int_AO(:,:,ixyz),dipole_int_MO(:,:,ixyz))
   end do 
 
   ! 4-index transform 

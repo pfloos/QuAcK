@@ -31,6 +31,7 @@ subroutine print_qsUGW(nBas,nO,nSCF,Conv,thresh,eHF,eGW,cGW,Ov, &
 
 ! Local variables
 
+  logical                            :: dump_orb = .false.
   integer                            :: p
   integer                            :: ispin,ixyz
   double precision                   :: HOMO(nspin)
@@ -158,17 +159,19 @@ subroutine print_qsUGW(nBas,nO,nSCF,Conv,thresh,eHF,eGW,cGW,Ov, &
 
     ! Print orbitals
 
-    write(*,'(A50)') '-----------------------------------------'
-    write(*,'(A50)') 'qsUGW spin-up   orbital coefficients '
-    write(*,'(A50)') '-----------------------------------------'
-    call matout(nBas,nBas,cGW(:,:,1))
-    write(*,*)
-    write(*,'(A50)') '-----------------------------------------'
-    write(*,'(A50)') 'qsUGW spin-down orbital coefficients '
-    write(*,'(A50)') '-----------------------------------------'
-    call matout(nBas,nBas,cGW(:,:,2))
-    write(*,*)
+    if(dump_orb) then
+      write(*,'(A50)') '-----------------------------------------'
+      write(*,'(A50)') 'qsUGW spin-up   orbital coefficients '
+      write(*,'(A50)') '-----------------------------------------'
+      call matout(nBas,nBas,cGW(:,:,1))
+      write(*,*)
+      write(*,'(A50)') '-----------------------------------------'
+      write(*,'(A50)') 'qsUGW spin-down orbital coefficients '
+      write(*,'(A50)') '-----------------------------------------'
+      call matout(nBas,nBas,cGW(:,:,2))
+      write(*,*)
+    end if
 
-  endif
+  end if
 
 end subroutine 

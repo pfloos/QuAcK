@@ -92,7 +92,6 @@ subroutine qsGTpp(maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,dophBSE,T
   double precision,allocatable  :: K(:,:)
   double precision,allocatable  :: Sig(:,:)
   double precision,allocatable  :: Sigp(:,:)
-  double precision,allocatable  :: Sigm(:,:)
   double precision,allocatable  :: Z(:)
   double precision,allocatable  :: error(:,:)
 
@@ -138,7 +137,7 @@ subroutine qsGTpp(maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,dophBSE,T
 ! Memory allocation
 
   allocate(eGT(nBas),eOld(nBas),c(nBas,nBas),cp(nBas,nBas),P(nBas,nBas),F(nBas,nBas),Fp(nBas,nBas), &
-           J(nBas,nBas),K(nBas,nBas),Sig(nBas,nBas),Sigp(nBas,nBas),Sigm(nBas,nBas),Z(nBas),        & 
+           J(nBas,nBas),K(nBas,nBas),Sig(nBas,nBas),Sigp(nBas,nBas),Z(nBas),        & 
            error(nBas,nBas),error_diis(nBasSq,max_diis),F_diis(nBasSq,max_diis))
 
   allocate(Om1s(nVVs),X1s(nVVs,nVVs),Y1s(nOOs,nVVs),    &
@@ -233,10 +232,9 @@ subroutine qsGTpp(maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,dophBSE,T
 
     ! Make correlation self-energy Hermitian and transform it back to AO basis
    
-    Sigp = 0.5d0*(Sig + transpose(Sig))
-    Sigm = 0.5d0*(Sig - transpose(Sig))
+    Sig = 0.5d0*(Sig + transpose(Sig))
 
-    call MOtoAO_transform(nBas,S,c,Sigp)
+    call MOtoAO_transform(nBas,S,c,Sig,Sigp)
  
     ! Solve the quasi-particle equation
 
@@ -322,7 +320,7 @@ subroutine qsGTpp(maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,dophBSE,T
 
 ! Deallocate memory
 
-  deallocate(c,cp,P,F,Fp,J,K,Sig,Sigp,Sigm,Z,error,error_diis,F_diis)
+  deallocate(c,cp,P,F,Fp,J,K,Sig,Sigp,Z,error,error_diis,F_diis)
 
 ! Perform BSE calculation
 

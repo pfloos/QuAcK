@@ -72,9 +72,9 @@ subroutine GHF(maxSCF,thresh,max_diis,guess_type,mix,level_shift,nNuc,ZNuc,rNuc,
 ! Hello world
 
   write(*,*)
-  write(*,*)'***********************************************'
-  write(*,*)'*    Generalized Hartree-Fock calculation     *'
-  write(*,*)'***********************************************'
+  write(*,*)'****************************************'
+  write(*,*)'* Generalized Hartree-Fock Calculation *'
+  write(*,*)'****************************************'
   write(*,*)
 
 ! Useful stuff

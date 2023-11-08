@@ -29,6 +29,7 @@ subroutine print_qsGW(nBas,nO,nSCF,Conv,thresh,eHF,eGW,c,SigC,Z,ENuc,ET,EV,EJ,Ex
 
 ! Local variables
 
+  logical                            :: dump_orb = .false.
   integer                            :: p,ixyz,HOMO,LUMO
   double precision                   :: Gap
   double precision,external          :: trace_matrix
@@ -103,11 +104,13 @@ subroutine print_qsGW(nBas,nO,nSCF,Conv,thresh,eHF,eGW,c,SigC,Z,ENuc,ET,EV,EJ,Ex
     write(*,'(A50)')           '-----------------------------------------'
     write(*,*)
  
-    write(*,'(A50)') '---------------------------------------'
-    write(*,'(A32)') ' qsGW MO coefficients'
-    write(*,'(A50)') '---------------------------------------'
-    call matout(nBas,nBas,c)
-    write(*,*)
+    if(dump_orb) then
+      write(*,'(A50)') '---------------------------------------'
+      write(*,'(A32)') ' qsGW MO coefficients'
+      write(*,'(A50)') '---------------------------------------'
+      call matout(nBas,nBas,c)
+      write(*,*)
+    end if
     write(*,'(A50)') '---------------------------------------'
     write(*,'(A32)') ' qsGW MO energies'
     write(*,'(A50)') '---------------------------------------'

@@ -65,7 +65,7 @@ subroutine qsGGW(maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,dophBSE,do
   double precision              :: EK,EKaaaa,EKabba,EKbaab,EKbbbb
   double precision              :: EqsGW
   double precision              :: EcRPA
-  double precision              :: EcBSE(nspin)
+  double precision              :: EcBSE
   double precision              :: EcGM
   double precision              :: Conv
   double precision              :: rcond
@@ -93,7 +93,6 @@ subroutine qsGGW(maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,dophBSE,do
   double precision,allocatable  :: C(:,:)
   double precision,allocatable  :: Cp(:,:)
   double precision,allocatable  :: eGW(:)
-  double precision,allocatable  :: eOld(:)
   double precision,allocatable  :: P(:,:)
   double precision,allocatable  :: F(:,:)
   double precision,allocatable  :: H(:,:)
@@ -101,15 +100,16 @@ subroutine qsGGW(maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,dophBSE,do
   double precision,allocatable  :: X(:,:)
   double precision,allocatable  :: Fp(:,:)
   double precision,allocatable  :: SigC(:,:)
+  double precision,allocatable  :: SigCp(:,:)
   double precision,allocatable  :: Z(:)
   double precision,allocatable  :: err(:,:)
 
 ! Hello world
 
   write(*,*)
-  write(*,*)'************************************************'
-  write(*,*)'|       Self-consistent qsGW calculation       |'
-  write(*,*)'************************************************'
+  write(*,*)'********************************'
+  write(*,*)'| Generalized qsGW Calculation |'
+  write(*,*)'********************************'
   write(*,*)
 
 ! Warning 
@@ -138,17 +138,15 @@ subroutine qsGGW(maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,dophBSE,do
 
 ! Memory allocation
 
-
-  allocate(P(nBas2,nBas2),Jaa(nBas,nBas),Jbb(nBas,nBas),                  &
+  allocate(Ca(nBas,nBas2),Cb(nBas,nBas2),P(nBas2,nBas2),Jaa(nBas,nBas),Jbb(nBas,nBas), &
            Kaa(nBas,nBas),Kab(nBas,nBas),Kba(nBas,nBas),Kbb(nBas,nBas),   &
            Faa(nBas,nBas),Fab(nBas,nBas),Fba(nBas,nBas),Fbb(nBas,nBas),   &
            Paa(nBas,nBas),Pab(nBas,nBas),Pba(nBas,nBas),Pbb(nBas,nBas),   &
            F(nBas2,nBas2),Fp(nBas2,nBas2),C(nBas2,nBas2),Cp(nBas2,nBas2), &
            H(nBas2,nBas2),S(nBas2,nBas2),X(nBas2,nBas2),err(nBas2,nBas2), &
-           err_diis(nBas2Sq,max_diis),F_diis(nBas2Sq,max_diis))
-
-  allocate(eGW(nBas2),eOld(nBas2),SigC(nBas2,nBas2),Z(nBas2),     & 
-           Aph(nS,nS),Bph(nS,nS),Om(nS),XpY(nS,nS),XmY(nS,nS),rho(nBas2,nBas2,nS))
+           err_diis(nBas2Sq,max_diis),F_diis(nBas2Sq,max_diis),           &
+           eGW(nBas2),SigC(nBas2,nBas2),SigCp(nBas,nBas),Z(nBas2),Aph(nS,nS),Bph(nS,nS),   & 
+           Om(nS),XpY(nS,nS),XmY(nS,nS),rho(nBas2,nBas2,nS))
 
 ! Initialization
   
@@ -158,7 +156,6 @@ subroutine qsGGW(maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,dophBSE,do
   Conv          = 1d0
   P(:,:)        = PHF(:,:)
   eGW(:)        = eHF(:)
-  eOld(:)       = eHF(:)
   c(:,:)        = cHF(:,:)
   F_diis(:,:)   = 0d0
   err_diis(:,:) = 0d0
@@ -182,6 +179,15 @@ subroutine qsGGW(maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,dophBSE,do
   H(     1:nBas ,     1:nBas ) = Hc(1:nBas,1:nBas)
   H(nBas+1:nBas2,nBas+1:nBas2) = Hc(1:nBas,1:nBas)
 
+! Construct super density matrix
+
+  P(:,:) = matmul(C(:,1:nO),transpose(C(:,1:nO)))
+
+  Paa(:,:) = P(     1:nBas ,     1:nBas )
+  Pab(:,:) = P(     1:nBas ,nBas+1:nBas2)
+  Pba(:,:) = P(nBas+1:nBas2,     1:nBas )
+  Pbb(:,:) = P(nBas+1:nBas2,nBas+1:nBas2)
+
 !------------------------------------------------------------------------
 ! Main loop
 !------------------------------------------------------------------------
@@ -204,9 +210,23 @@ subroutine qsGGW(maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,dophBSE,do
     call exchange_matrix_AO_basis(nBas,Pab,ERI_AO,Kba)
     call exchange_matrix_AO_basis(nBas,Pbb,ERI_AO,Kbb)
 
+!   Build individual Fock matrices
+
+    Faa(:,:) = Hc(:,:) + Jaa(:,:) + Jbb(:,:) + Kaa(:,:) 
+    Fab(:,:) =                               + Kab(:,:)
+    Fba(:,:) =                               + Kba(:,:)
+    Fbb(:,:) = Hc(:,:) + Jbb(:,:) + Jaa(:,:) + Kbb(:,:)
+
+!   Build super Fock matrix
+
+    F(     1:nBas ,     1:nBas ) = Faa(1:nBas,1:nBas)
+    F(     1:nBas ,nBas+1:nBas2) = Fab(1:nBas,1:nBas)
+    F(nBas+1:nBas2,     1:nBas ) = Fba(1:nBas,1:nBas)
+    F(nBas+1:nBas2,nBas+1:nBas2) = Fbb(1:nBas,1:nBas)
+
 !   AO to MO transformation of two-electron integrals
 
-    allocate(Ca(nBas,nBas2),Cb(nBas,nBas2),ERI_tmp(nBas2,nBas2,nBas2,nBas2))
+    allocate(ERI_tmp(nBas2,nBas2,nBas2,nBas2))
  
     Ca(:,:) = C(1:nBas,1:nBas2)
     Cb(:,:) = C(nBas+1:nBas2,1:nBas2)
@@ -227,7 +247,7 @@ subroutine qsGGW(maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,dophBSE,do
     call AOtoMO_integral_transform_GHF(nBas,nBas2,Cb,Cb,Cb,Cb,ERI_AO,ERI_tmp)
     ERI_MO(:,:,:,:) = ERI_MO(:,:,:,:) + ERI_tmp(:,:,:,:)
 
-    deallocate(Ca,Cb,ERI_tmp)
+    deallocate(ERI_tmp)
 
 !   Compute linear response
 
@@ -249,29 +269,17 @@ subroutine qsGGW(maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,dophBSE,do
    
     SigC = 0.5d0*(SigC + transpose(SigC))
 
-!   call MOtoAO_transform(nBas2,S,C,SigC)
- 
-!   Build individual Fock matrices
-
-    Faa(:,:) = Hc(:,:) + Jaa(:,:) + Jbb(:,:) + Kaa(:,:) 
-    Fab(:,:) =                               + Kab(:,:)
-    Fba(:,:) =                               + Kba(:,:)
-    Fbb(:,:) = Hc(:,:) + Jbb(:,:) + Jaa(:,:) + Kbb(:,:)
-
-!   Build super Fock matrix
-
-    F(     1:nBas ,     1:nBas ) = Faa(1:nBas,1:nBas)
-    F(     1:nBas ,nBas+1:nBas2) = Fab(1:nBas,1:nBas)
-    F(nBas+1:nBas2,     1:nBas ) = Fba(1:nBas,1:nBas)
-    F(nBas+1:nBas2,nBas+1:nBas2) = Fbb(1:nBas,1:nBas)
+    call MOtoAO_transform_GHF(nBas2,nBas,S,Ca,Cb,SigC,SigCp)
 
 !   ... and add self-energy 
 
-    F(:,:) = F(:,:) + SigC(:,:)
+    F(:,:) = F(:,:) + SigCp(:,:)
 
 !   Compute commutator and convergence criteria
 
     err = matmul(F,matmul(P,S)) - matmul(matmul(S,P),F)
+
+    if(nSCF > 1) Conv = maxval(abs(err))
 
 !   DIIS extrapolation 
 
@@ -279,6 +287,10 @@ subroutine qsGGW(maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,dophBSE,do
       n_diis = min(n_diis+1,max_diis)
       call DIIS_extrapolation(rcond,nBas2Sq,nBas2Sq,n_diis,err_diis,F_diis,err,F)
     end if
+
+!  Transform Fock matrix in orthogonal basis
+
+    Fp(:,:) = matmul(transpose(X),matmul(F,X))
 
 !  Diagonalize Fock matrix to get eigenvectors and eigenvalues
 
@@ -289,7 +301,7 @@ subroutine qsGGW(maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,dophBSE,do
 
     C(:,:) = matmul(X,Cp)
 
-    SigC = matmul(transpose(c),matmul(SigC,c))
+    call AOtoMO_transform_GHF(nBas,nBas2,Ca,Cb,SigCp,SigC)
 
 !   Form super density matrix
 
@@ -301,11 +313,6 @@ subroutine qsGGW(maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,dophBSE,do
     Pab(:,:) = P(     1:nBas ,nBas+1:nBas2)
     Pba(:,:) = P(nBas+1:nBas2,     1:nBas )
     Pbb(:,:) = P(nBas+1:nBas2,nBas+1:nBas2)
-
-    ! Save quasiparticles energy for next cycle
-
-    Conv = maxval(abs(err))
-    eOld(:) = eGW(:)
 
     !------------------------------------------------------------------------
     !   Compute total energy
@@ -350,7 +357,7 @@ subroutine qsGGW(maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,dophBSE,do
     ! Print results
 
     call dipole_moment(nBas2,P,nNuc,ZNuc,rNuc,dipole_int_AO,dipole)
-    call print_qsGW(nBas2,nO,nSCF,Conv,thresh,eHF,eGW,c,SigC,Z,ENuc,ET,EV,EJ,EK,EcGM,EcRPA,EqsGW,dipole)
+    call print_qsGGW(nBas2,nO,nSCF,Conv,thresh,eHF,eGW,c,SigC,Z,ENuc,ET,EV,EJ,EK,EcGM,EcRPA,EqsGW,dipole)
 
   enddo
 !------------------------------------------------------------------------
@@ -377,19 +384,10 @@ subroutine qsGGW(maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,dophBSE,do
 
     call GGW_phBSE(dophBSE2,TDA_W,TDA,dBSE,dTDA,eta,nBas2,nC,nO,nV,nR,nS,ERI_MO,dipole_int_MO,eGW,eGW,EcBSE)
 
-    if(exchange_kernel) then
-
-      EcBSE(1) = 0.5d0*EcBSE(1)
-      EcBSE(2) = 1.5d0*EcBSE(2)
-
-    end if
-
     write(*,*)
     write(*,*)'-------------------------------------------------------------------------------'
-    write(*,'(2X,A50,F20.10)') 'Tr@BSE@qsGW correlation energy (singlet) =',EcBSE(1)
-    write(*,'(2X,A50,F20.10)') 'Tr@BSE@qsGW correlation energy (triplet) =',EcBSE(2)
-    write(*,'(2X,A50,F20.10)') 'Tr@BSE@qsGW correlation energy           =',EcBSE(1) + EcBSE(2)
-    write(*,'(2X,A50,F20.10)') 'Tr@BSE@qsGW total energy                 =',ENuc + EqsGW + EcBSE(1) + EcBSE(2)
+    write(*,'(2X,A50,F20.10,A3)') 'Tr@BSE@qsGW correlation energy           =',EcBSE,' au'
+    write(*,'(2X,A50,F20.10,A4)') 'Tr@BSE@qsGW total energy                 =',ENuc + EqsGW + EcBSE,' au'
     write(*,*)'-------------------------------------------------------------------------------'
     write(*,*)
 

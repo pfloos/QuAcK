@@ -84,7 +84,6 @@ subroutine qsUGF2(maxSCF,thresh,max_diis,BSE,TDA,dBSE,dTDA,spin_conserved,spin_f
   double precision,allocatable  :: K(:,:,:)
   double precision,allocatable  :: SigC(:,:,:)
   double precision,allocatable  :: SigCp(:,:,:)
-  double precision,allocatable  :: SigCm(:,:,:)
   double precision,allocatable  :: Z(:,:)
   double precision,allocatable  :: error(:,:,:)
 
@@ -120,7 +119,7 @@ subroutine qsUGF2(maxSCF,thresh,max_diis,BSE,TDA,dBSE,dTDA,spin_conserved,spin_f
 
   allocate(eGF2(nBas,nspin),eOld(nBas,nspin),c(nBas,nBas,nspin),cp(nBas,nBas,nspin),P(nBas,nBas,nspin),F(nBas,nBas,nspin), &
            Fp(nBas,nBas,nspin),J(nBas,nBas,nspin),K(nBas,nBas,nspin),SigC(nBas,nBas,nspin),SigCp(nBas,nBas,nspin),         &
-           SigCm(nBas,nBas,nspin),Z(nBas,nspin),error(nBas,nBas,nspin),error_diis(nBasSq,max_diis,nspin),                  &
+           Z(nBas,nspin),error(nBas,nBas,nspin),error_diis(nBasSq,max_diis,nspin),                  &
            F_diis(nBasSq,max_diis,nspin))
 
 ! Initialization
@@ -191,12 +190,11 @@ subroutine qsUGF2(maxSCF,thresh,max_diis,BSE,TDA,dBSE,dTDA,spin_conserved,spin_f
     ! Make correlation self-energy Hermitian and transform it back to AO basis
    
     do is=1,nspin
-      SigCp(:,:,is) = 0.5d0*(SigC(:,:,is) + transpose(SigC(:,:,is)))
-      SigCm(:,:,is) = 0.5d0*(SigC(:,:,is) - transpose(SigC(:,:,is)))
+      SigC(:,:,is) = 0.5d0*(SigC(:,:,is) + transpose(SigC(:,:,is)))
     end do
 
     do is=1,nspin
-      call MOtoAO_transform(nBas,S,c(:,:,is),SigCp(:,:,is))
+      call MOtoAO_transform(nBas,S,c(:,:,is),SigC(:,:,is),SigCp(:,:,is))
     end do
  
     ! Solve the quasi-particle equation
@@ -326,7 +324,7 @@ subroutine qsUGF2(maxSCF,thresh,max_diis,BSE,TDA,dBSE,dTDA,spin_conserved,spin_f
 
 ! Deallocate memory
 
-  deallocate(cp,P,F,Fp,J,K,SigC,SigCp,SigCm,Z,error,error_diis,F_diis)
+  deallocate(cp,P,F,Fp,J,K,SigC,SigCp,Z,error,error_diis,F_diis)
 
 ! Perform BSE calculation
 
