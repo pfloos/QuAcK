@@ -254,7 +254,7 @@ subroutine GQuAcK(doGHF,dostab,dosearch,doMP2,doMP3,dophRPA,dophRPAx,doppRPA,   
     call wall_time(start_GW)
     call GGW(doG0W0,doevGW,doqsGW,maxSCF_GW,thresh_GW,max_diis_GW,doACFDT,exchange_kernel,doXBS,    & 
              dophBSE,dophBSE2,doppBSE,TDA_W,TDA,dBSE,dTDA,lin_GW,eta_GW,reg_GW,nNuc,ZNuc,rNuc,ENuc, & 
-             nBas2,nC,nO,nV,nR,nS,EHF,S,X,T,V,Hc,ERI_AO,ERI_MO,dipole_int_AO,dipole_int_MO,PHF,cHF,epsHF)
+             nBas,nBas2,nC,nO,nV,nR,nS,EHF,S,X,T,V,Hc,ERI_AO,ERI_MO,dipole_int_AO,dipole_int_MO,PHF,cHF,epsHF)
     call wall_time(end_GW)
   
     t_GW = end_GW - start_GW

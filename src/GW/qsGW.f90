@@ -50,13 +50,14 @@ subroutine qsGW(maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,dophBSE,dop
   double precision,intent(in)   :: ERI_AO(nBas,nBas,nBas,nBas)
   double precision,intent(inout):: ERI_MO(nBas,nBas,nBas,nBas)
   double precision,intent(in)   :: dipole_int_AO(nBas,nBas,ncart)
-  double precision,intent(in)   :: dipole_int_MO(nBas,nBas,ncart)
+  double precision,intent(inout):: dipole_int_MO(nBas,nBas,ncart)
 
 ! Local variables
 
   integer                       :: nSCF
   integer                       :: nBasSq
   integer                       :: ispin
+  integer                       :: ixyz
   integer                       :: n_diis
   double precision              :: ET
   double precision              :: EV
@@ -167,6 +168,11 @@ subroutine qsGW(maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,dophBSE,dop
     call exchange_matrix_AO_basis(nBas,P,ERI_AO,K)
 
     ! AO to MO transformation of two-electron integrals
+
+    dipole_int_MO(:,:,:) = dipole_int_AO(:,:,:)
+    do ixyz=1,ncart
+      call AOtoMO_transform(nBas,cHF,dipole_int_MO(:,:,ixyz))
+    end do
 
     call AOtoMO_integral_transform(1,1,1,1,nBas,c,ERI_AO,ERI_MO)
 

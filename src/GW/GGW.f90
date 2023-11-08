@@ -1,6 +1,6 @@
 subroutine GGW(doG0W0,doevGW,doqsGW,maxSCF,thresh,max_diis,doACFDT,      &
                exchange_kernel,doXBS,dophBSE,dophBSE2,doppBSE,TDA_W,TDA,dBSE,dTDA, &
-               linearize,eta,regularize,nNuc,ZNuc,rNuc,ENuc,nBas,nC,nO,nV,nR,nS,EHF,S,X,T,V,Hc,    & 
+               linearize,eta,regularize,nNuc,ZNuc,rNuc,ENuc,nBas,nBas2,nC,nO,nV,nR,nS,EHF,S,X,T,V,Hc,    & 
                ERI_AO,ERI,dipole_int_AO,dipole_int,PHF,cHF,epsHF)
 
 ! GW module
@@ -40,6 +40,7 @@ subroutine GGW(doG0W0,doevGW,doqsGW,maxSCF,thresh,max_diis,doACFDT,      &
   double precision,intent(in)   :: ENuc
 
   integer,intent(in)            :: nBas
+  integer,intent(in)            :: nBas2
   integer,intent(in)            :: nC
   integer,intent(in)            :: nO
   integer,intent(in)            :: nV
@@ -47,18 +48,18 @@ subroutine GGW(doG0W0,doevGW,doqsGW,maxSCF,thresh,max_diis,doACFDT,      &
   integer,intent(in)            :: nS
 
   double precision,intent(in)   :: EHF
-  double precision,intent(in)   :: epsHF(nBas)
-  double precision,intent(in)   :: cHF(nBas,nBas)
-  double precision,intent(in)   :: PHF(nBas,nBas)
-  double precision,intent(in)   :: S(nBas,nBas)
-  double precision,intent(in)   :: T(nBas,nBas)
-  double precision,intent(in)   :: V(nBas,nBas)
-  double precision,intent(in)   :: Hc(nBas,nBas)
-  double precision,intent(in)   :: X(nBas,nBas)
-  double precision,intent(in)   :: ERI_AO(nBas,nBas,nBas,nBas)
-  double precision,intent(in)   :: ERI(nBas,nBas,nBas,nBas)
-  double precision,intent(in)   :: dipole_int_AO(nBas,nBas,ncart)
-  double precision,intent(in)   :: dipole_int(nBas,nBas,ncart)
+  double precision,intent(in)   :: epsHF(nBas2)
+  double precision,intent(in)   :: cHF(nBas2,nBas2)
+  double precision,intent(in)   :: PHF(nBas2,nBas2)
+  double precision,intent(in)   :: S(nBas2,nBas2)
+  double precision,intent(in)   :: T(nBas2,nBas2)
+  double precision,intent(in)   :: V(nBas2,nBas2)
+  double precision,intent(in)   :: Hc(nBas2,nBas2)
+  double precision,intent(in)   :: X(nBas2,nBas2)
+  double precision,intent(in)   :: ERI_AO(nBas2,nBas2,nBas2,nBas2)
+  double precision,intent(in)   :: ERI(nBas2,nBas2,nBas2,nBas2)
+  double precision,intent(in)   :: dipole_int_AO(nBas2,nBas2,ncart)
+  double precision,intent(in)   :: dipole_int(nBas2,nBas2,ncart)
 
 ! Local variables
 
@@ -72,7 +73,7 @@ subroutine GGW(doG0W0,doevGW,doqsGW,maxSCF,thresh,max_diis,doACFDT,      &
     
     call wall_time(start_GW)
     call GG0W0(doACFDT,exchange_kernel,doXBS,dophBSE,dophBSE2,TDA_W,TDA,dBSE,dTDA,doppBSE, &
-              linearize,eta,regularize,nBas,nC,nO,nV,nR,nS,ENuc,EHF,ERI,dipole_int,epsHF)
+              linearize,eta,regularize,nBas2,nC,nO,nV,nR,nS,ENuc,EHF,ERI,dipole_int,epsHF)
     call wall_time(end_GW)
   
     t_GW = end_GW - start_GW
@@ -89,7 +90,7 @@ subroutine GGW(doG0W0,doevGW,doqsGW,maxSCF,thresh,max_diis,doACFDT,      &
 
     call wall_time(start_GW)
     call evGGW(maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,dophBSE,dophBSE2,TDA_W,TDA,dBSE,dTDA,doppBSE, &
-               linearize,eta,regularize,nBas,nC,nO,nV,nR,nS,ENuc,EHF,ERI,dipole_int,epsHF)
+               linearize,eta,regularize,nBas2,nC,nO,nV,nR,nS,ENuc,EHF,ERI,dipole_int,epsHF)
     call wall_time(end_GW)
 
     t_GW = end_GW - start_GW
@@ -105,9 +106,9 @@ subroutine GGW(doG0W0,doevGW,doqsGW,maxSCF,thresh,max_diis,doACFDT,      &
   if(doqsGW) then 
 
     call wall_time(start_GW)
-!   call qsGGW(maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,dophBSE,dophBSE2,TDA_W,TDA,dBSE,dTDA,doppBSE, & 
-!              eta,regularize,nNuc,ZNuc,rNuc,ENuc,nBas,nBas2,nC,nO,nV,nR,nS,EHF,S,X,T,V,Hc,ERI_AO,ERI,  & 
-!              dipole_int_AO,dipole_int,PHF,cHF,epsHF)
+    call qsGGW(maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,dophBSE,dophBSE2,TDA_W,TDA,dBSE,dTDA,doppBSE, & 
+               eta,regularize,nNuc,ZNuc,rNuc,ENuc,nBas,nBas2,nC,nO,nV,nR,nS,EHF,S,X,T,V,Hc,ERI_AO,ERI,  & 
+               dipole_int_AO,dipole_int,PHF,cHF,epsHF)
     call wall_time(end_GW)
 
     t_GW = end_GW - start_GW

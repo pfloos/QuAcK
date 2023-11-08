@@ -1,8 +1,8 @@
 subroutine qsGGW(maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,dophBSE,dophBSE2,TDA_W,TDA,dBSE,dTDA,doppBSE, & 
-                 singlet,triplet,eta,regularize,nNuc,ZNuc,rNuc,ENuc,nBas,nBas2,nC,nO,nV,nR,nS,ERHF,S,X,T,V,Hc,ERI_AO,  & 
+                 eta,regularize,nNuc,ZNuc,rNuc,ENuc,nBas,nBas2,nC,nO,nV,nR,nS,EGHF,Ov,Or,T,V,Hc,ERI_AO,  & 
                  ERI_MO,dipole_int_AO,dipole_int_MO,PHF,cHF,eHF)
 
-! Perform a quasiparticle self-consistent GW calculation
+! Generalized version of quasiparticle self-consistent GW 
 
   implicit none
   include 'parameters.h'
@@ -22,8 +22,6 @@ subroutine qsGGW(maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,dophBSE,do
   logical,intent(in)            :: dBSE
   logical,intent(in)            :: dTDA
   logical,intent(in)            :: doppBSE
-  logical,intent(in)            :: singlet
-  logical,intent(in)            :: triplet
   double precision,intent(in)   :: eta
   logical,intent(in)            :: regularize
 
@@ -39,30 +37,32 @@ subroutine qsGGW(maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,dophBSE,do
   integer,intent(in)            :: nV
   integer,intent(in)            :: nR
   integer,intent(in)            :: nS
-  double precision,intent(in)   :: ERHF
-  double precision,intent(in)   :: eHF(nBas)
-  double precision,intent(in)   :: cHF(nBas,nBas)
-  double precision,intent(in)   :: PHF(nBas,nBas)
-  double precision,intent(in)   :: S(nBas,nBas)
+  double precision,intent(in)   :: EGHF
+  double precision,intent(in)   :: eHF(nBas2)
+  double precision,intent(in)   :: cHF(nBas2,nBas2)
+  double precision,intent(in)   :: PHF(nBas2,nBas2)
+  double precision,intent(in)   :: Ov(nBas,nBas)
   double precision,intent(in)   :: T(nBas,nBas)
   double precision,intent(in)   :: V(nBas,nBas)
   double precision,intent(in)   :: Hc(nBas,nBas)
-  double precision,intent(in)   :: X(nBas,nBas)
+  double precision,intent(in)   :: Or(nBas,nBas)
   double precision,intent(in)   :: ERI_AO(nBas,nBas,nBas,nBas)
-  double precision,intent(inout):: ERI_MO(nBas,nBas,nBas,nBas)
+  double precision,intent(inout):: ERI_MO(nBas2,nBas2,nBas2,nBas2)
   double precision,intent(in)   :: dipole_int_AO(nBas,nBas,ncart)
-  double precision,intent(in)   :: dipole_int_MO(nBas,nBas,ncart)
+  double precision,intent(inout):: dipole_int_MO(nBas2,nBas2,ncart)
 
 ! Local variables
 
   integer                       :: nSCF
   integer                       :: nBasSq
+  integer                       :: nBas2Sq
   integer                       :: ispin
+  integer                       :: ixyz
   integer                       :: n_diis
-  double precision              :: ET
-  double precision              :: EV
-  double precision              :: EJ
-  double precision              :: Ex
+  double precision              :: ET,ETaa,ETbb
+  double precision              :: EV,EVaa,EVbb
+  double precision              :: EJ,EJaaaa,EJaabb,EJbbaa,EJbbbb
+  double precision              :: EK,EKaaaa,EKabba,EKbaab,EKbbbb
   double precision              :: EqsGW
   double precision              :: EcRPA
   double precision              :: EcBSE(nspin)
@@ -74,7 +74,7 @@ subroutine qsGGW(maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,dophBSE,do
 
   logical                       :: dRPA = .true.
   logical                       :: print_W = .true.
-  double precision,allocatable  :: error_diis(:,:)
+  double precision,allocatable  :: err_diis(:,:)
   double precision,allocatable  :: F_diis(:,:)
   double precision,allocatable  :: Aph(:,:)
   double precision,allocatable  :: Bph(:,:)
@@ -82,20 +82,27 @@ subroutine qsGGW(maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,dophBSE,do
   double precision,allocatable  :: XpY(:,:)
   double precision,allocatable  :: XmY(:,:)
   double precision,allocatable  :: rho(:,:,:)
-  double precision,allocatable  :: c(:,:)
-  double precision,allocatable  :: cp(:,:)
+
+  double precision,allocatable  :: Ca(:,:),Cb(:,:)
+  double precision,allocatable  :: ERI_tmp(:,:,:,:)
+  double precision,allocatable  :: Jaa(:,:),Jbb(:,:)
+  double precision,allocatable  :: Kaa(:,:),Kab(:,:),Kba(:,:),Kbb(:,:)
+  double precision,allocatable  :: Faa(:,:),Fab(:,:),Fba(:,:),Fbb(:,:)
+  double precision,allocatable  :: Paa(:,:),Pab(:,:),Pba(:,:),Pbb(:,:)
+
+  double precision,allocatable  :: C(:,:)
+  double precision,allocatable  :: Cp(:,:)
   double precision,allocatable  :: eGW(:)
   double precision,allocatable  :: eOld(:)
   double precision,allocatable  :: P(:,:)
   double precision,allocatable  :: F(:,:)
+  double precision,allocatable  :: H(:,:)
+  double precision,allocatable  :: S(:,:)
+  double precision,allocatable  :: X(:,:)
   double precision,allocatable  :: Fp(:,:)
-  double precision,allocatable  :: J(:,:)
-  double precision,allocatable  :: K(:,:)
   double precision,allocatable  :: SigC(:,:)
-  double precision,allocatable  :: SigCp(:,:)
-  double precision,allocatable  :: SigCm(:,:)
   double precision,allocatable  :: Z(:)
-  double precision,allocatable  :: error(:,:)
+  double precision,allocatable  :: err(:,:)
 
 ! Hello world
 
@@ -113,6 +120,7 @@ subroutine qsGGW(maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,dophBSE,do
 ! Stuff 
 
   nBasSq = nBas*nBas
+  nBas2Sq = nBas2*nBas2
 
 ! TDA for W
 
@@ -130,24 +138,49 @@ subroutine qsGGW(maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,dophBSE,do
 
 ! Memory allocation
 
-  allocate(eGW(nBas),eOld(nBas),c(nBas,nBas),cp(nBas,nBas),P(nBas,nBas),F(nBas,nBas),Fp(nBas,nBas), &
-           J(nBas,nBas),K(nBas,nBas),SigC(nBas,nBas),SigCp(nBas,nBas),SigCm(nBas,nBas),Z(nBas),     & 
-           Aph(nS,nS),Bph(nS,nS),Om(nS),XpY(nS,nS),XmY(nS,nS),rho(nBas,nBas,nS),                    &
-           error(nBas,nBas),error_diis(nBasSq,max_diis),F_diis(nBasSq,max_diis))
+
+  allocate(P(nBas2,nBas2),Jaa(nBas,nBas),Jbb(nBas,nBas),                  &
+           Kaa(nBas,nBas),Kab(nBas,nBas),Kba(nBas,nBas),Kbb(nBas,nBas),   &
+           Faa(nBas,nBas),Fab(nBas,nBas),Fba(nBas,nBas),Fbb(nBas,nBas),   &
+           Paa(nBas,nBas),Pab(nBas,nBas),Pba(nBas,nBas),Pbb(nBas,nBas),   &
+           F(nBas2,nBas2),Fp(nBas2,nBas2),C(nBas2,nBas2),Cp(nBas2,nBas2), &
+           H(nBas2,nBas2),S(nBas2,nBas2),X(nBas2,nBas2),err(nBas2,nBas2), &
+           err_diis(nBas2Sq,max_diis),F_diis(nBas2Sq,max_diis))
+
+  allocate(eGW(nBas2),eOld(nBas2),SigC(nBas2,nBas2),Z(nBas2),     & 
+           Aph(nS,nS),Bph(nS,nS),Om(nS),XpY(nS,nS),XmY(nS,nS),rho(nBas2,nBas2,nS))
 
 ! Initialization
   
-  nSCF            = -1
-  n_diis          = 0
-  ispin           = 3
-  Conv            = 1d0
-  P(:,:)          = PHF(:,:)
-  eGW(:)          = eHF(:)
-  eOld(:)         = eHF(:)
-  c(:,:)          = cHF(:,:)
-  F_diis(:,:)     = 0d0
-  error_diis(:,:) = 0d0
-  rcond           = 0d0
+  nSCF          = -1
+  n_diis        = 0
+  ispin         = 3
+  Conv          = 1d0
+  P(:,:)        = PHF(:,:)
+  eGW(:)        = eHF(:)
+  eOld(:)       = eHF(:)
+  c(:,:)        = cHF(:,:)
+  F_diis(:,:)   = 0d0
+  err_diis(:,:) = 0d0
+  rcond         = 0d0
+
+! Construct super overlap matrix
+
+  S(      :     ,       :    ) = 0d0
+  S(     1:nBas ,     1:nBas ) = Ov(1:nBas,1:nBas)
+  S(nBas+1:nBas2,nBas+1:nBas2) = Ov(1:nBas,1:nBas)
+
+! Construct super orthogonalization matrix
+
+  X(      :     ,       :    ) = 0d0
+  X(     1:nBas ,     1:nBas ) = Or(1:nBas,1:nBas)
+  X(nBas+1:nBas2,nBas+1:nBas2) = Or(1:nBas,1:nBas)
+
+! Construct super orthogonalization matrix
+
+  H(      :     ,       :    ) = 0d0
+  H(     1:nBas ,     1:nBas ) = Hc(1:nBas,1:nBas)
+  H(nBas+1:nBas2,nBas+1:nBas2) = Hc(1:nBas,1:nBas)
 
 !------------------------------------------------------------------------
 ! Main loop
@@ -155,107 +188,169 @@ subroutine qsGGW(maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,dophBSE,do
 
   do while(Conv > thresh .and. nSCF <= maxSCF)
 
-    ! Increment
+!   Increment
 
     nSCF = nSCF + 1
 
-    ! Buid Hartree matrix
+!   Buid Hartree matrix
 
-    call Hartree_matrix_AO_basis(nBas,P,ERI_AO,J)
+    call Hartree_matrix_AO_basis(nBas,Paa,ERI_AO,Jaa)
+    call Hartree_matrix_AO_basis(nBas,Pbb,ERI_AO,Jbb)
 
-    ! Compute exchange part of the self-energy 
+!   Compute exchange part of the self-energy 
 
-    call exchange_matrix_AO_basis(nBas,P,ERI_AO,K)
+    call exchange_matrix_AO_basis(nBas,Paa,ERI_AO,Kaa)
+    call exchange_matrix_AO_basis(nBas,Pba,ERI_AO,Kab)
+    call exchange_matrix_AO_basis(nBas,Pab,ERI_AO,Kba)
+    call exchange_matrix_AO_basis(nBas,Pbb,ERI_AO,Kbb)
 
-    ! AO to MO transformation of two-electron integrals
+!   AO to MO transformation of two-electron integrals
 
-    call AOtoMO_integral_transform(1,1,1,1,nBas,c,ERI_AO,ERI_MO)
+    allocate(Ca(nBas,nBas2),Cb(nBas,nBas2),ERI_tmp(nBas2,nBas2,nBas2,nBas2))
+ 
+    Ca(:,:) = C(1:nBas,1:nBas2)
+    Cb(:,:) = C(nBas+1:nBas2,1:nBas2)
 
-    ! Compute linear response
+    do ixyz=1,ncart
+        call AOtoMO_transform_GHF(nBas,nBas2,Ca,Cb,dipole_int_AO(:,:,ixyz),dipole_int_MO(:,:,ixyz))
+    end do
 
-    call phLR_A(ispin,dRPA,nBas,nC,nO,nV,nR,nS,1d0,eGW,ERI_MO,Aph)
-    if(.not.TDA_W) call phLR_B(ispin,dRPA,nBas,nC,nO,nV,nR,nS,1d0,ERI_MO,Bph)
+    call AOtoMO_integral_transform_GHF(nBas,nBas2,Ca,Ca,Ca,Ca,ERI_AO,ERI_tmp)
+    ERI_MO(:,:,:,:) = ERI_tmp(:,:,:,:)
+
+    call AOtoMO_integral_transform_GHF(nBas,nBas2,Ca,Cb,Ca,Cb,ERI_AO,ERI_tmp)
+    ERI_MO(:,:,:,:) = ERI_MO(:,:,:,:) + ERI_tmp(:,:,:,:)
+
+    call AOtoMO_integral_transform_GHF(nBas,nBas2,Cb,Ca,Cb,Ca,ERI_AO,ERI_tmp)
+    ERI_MO(:,:,:,:) = ERI_MO(:,:,:,:) + ERI_tmp(:,:,:,:)
+
+    call AOtoMO_integral_transform_GHF(nBas,nBas2,Cb,Cb,Cb,Cb,ERI_AO,ERI_tmp)
+    ERI_MO(:,:,:,:) = ERI_MO(:,:,:,:) + ERI_tmp(:,:,:,:)
+
+    deallocate(Ca,Cb,ERI_tmp)
+
+!   Compute linear response
+
+    call phLR_A(ispin,dRPA,nBas2,nC,nO,nV,nR,nS,1d0,eGW,ERI_MO,Aph)
+    if(.not.TDA_W) call phLR_B(ispin,dRPA,nBas2,nC,nO,nV,nR,nS,1d0,ERI_MO,Bph)
 
     call phLR(TDA_W,nS,Aph,Bph,EcRPA,Om,XpY,XmY)
-    if(print_W) call print_excitation_energies('phRPA@qsGW',ispin,nS,Om)
+    if(print_W) call print_excitation_energies('phRPA@qsGGW',ispin,nS,Om)
 
-    ! Compute correlation part of the self-energy 
+!   Compute correlation part of the self-energy 
 
-    call GW_excitation_density(nBas,nC,nO,nR,nS,ERI_MO,XpY,rho)
+    call GW_excitation_density(nBas2,nC,nO,nR,nS,ERI_MO,XpY,rho)
 
-    if(regularize) call GW_regularization(nBas,nC,nO,nV,nR,nS,eGW,Om,rho)
+    if(regularize) call GW_regularization(nBas2,nC,nO,nV,nR,nS,eGW,Om,rho)
 
-    call GW_self_energy(eta,nBas,nC,nO,nV,nR,nS,eGW,Om,rho,EcGM,SigC,Z)
+    call GGW_self_energy(eta,nBas2,nC,nO,nV,nR,nS,eGW,Om,rho,EcGM,SigC,Z)
 
-    ! Make correlation self-energy Hermitian and transform it back to AO basis
+!   Make correlation self-energy Hermitian and transform it back to AO basis
    
-    SigCp = 0.5d0*(SigC + transpose(SigC))
-    SigCm = 0.5d0*(SigC - transpose(SigC))
+    SigC = 0.5d0*(SigC + transpose(SigC))
 
-    call MOtoAO_transform(nBas,S,c,SigCp)
+!   call MOtoAO_transform(nBas2,S,C,SigC)
  
-    ! Solve the quasi-particle equation
+!   Build individual Fock matrices
 
-    F(:,:) = Hc(:,:) + J(:,:) + 0.5d0*K(:,:) + SigCp(:,:)
+    Faa(:,:) = Hc(:,:) + Jaa(:,:) + Jbb(:,:) + Kaa(:,:) 
+    Fab(:,:) =                               + Kab(:,:)
+    Fba(:,:) =                               + Kba(:,:)
+    Fbb(:,:) = Hc(:,:) + Jbb(:,:) + Jaa(:,:) + Kbb(:,:)
 
-    ! Compute commutator and convergence criteria
+!   Build super Fock matrix
 
-    error = matmul(F,matmul(P,S)) - matmul(matmul(S,P),F)
+    F(     1:nBas ,     1:nBas ) = Faa(1:nBas,1:nBas)
+    F(     1:nBas ,nBas+1:nBas2) = Fab(1:nBas,1:nBas)
+    F(nBas+1:nBas2,     1:nBas ) = Fba(1:nBas,1:nBas)
+    F(nBas+1:nBas2,nBas+1:nBas2) = Fbb(1:nBas,1:nBas)
 
-    ! DIIS extrapolation 
+!   ... and add self-energy 
+
+    F(:,:) = F(:,:) + SigC(:,:)
+
+!   Compute commutator and convergence criteria
+
+    err = matmul(F,matmul(P,S)) - matmul(matmul(S,P),F)
+
+!   DIIS extrapolation 
 
     if(max_diis > 1) then
-
       n_diis = min(n_diis+1,max_diis)
-      call DIIS_extrapolation(rcond,nBasSq,nBasSq,n_diis,error_diis,F_diis,error,F)
-
+      call DIIS_extrapolation(rcond,nBas2Sq,nBas2Sq,n_diis,err_diis,F_diis,err,F)
     end if
 
-    ! Diagonalize Hamiltonian in AO basis
+!  Diagonalize Fock matrix to get eigenvectors and eigenvalues
 
-    Fp = matmul(transpose(X),matmul(F,X))
-    cp(:,:) = Fp(:,:)
-    call diagonalize_matrix(nBas,cp,eGW)
-    c = matmul(X,cp)
-    SigCp = matmul(transpose(c),matmul(SigCp,c))
+    Cp(:,:) = Fp(:,:)
+    call diagonalize_matrix(nBas2,Cp,eGW)
 
-    ! Compute new density matrix in the AO basis
+!   Back-transform eigenvectors in non-orthogonal basis
 
-    P(:,:) = 2d0*matmul(c(:,1:nO),transpose(c(:,1:nO)))
+    C(:,:) = matmul(X,Cp)
+
+    SigC = matmul(transpose(c),matmul(SigC,c))
+
+!   Form super density matrix
+
+    P(:,:) = matmul(C(:,1:nO),transpose(C(:,1:nO)))
+
+!   Compute individual density matrices
+
+    Paa(:,:) = P(     1:nBas ,     1:nBas )
+    Pab(:,:) = P(     1:nBas ,nBas+1:nBas2)
+    Pba(:,:) = P(nBas+1:nBas2,     1:nBas )
+    Pbb(:,:) = P(nBas+1:nBas2,nBas+1:nBas2)
 
     ! Save quasiparticles energy for next cycle
 
-    Conv = maxval(abs(error))
+    Conv = maxval(abs(err))
     eOld(:) = eGW(:)
 
     !------------------------------------------------------------------------
     !   Compute total energy
     !------------------------------------------------------------------------
 
-    ! Kinetic energy
+!  Kinetic energy
 
-    ET = trace_matrix(nBas,matmul(P,T))
+    ETaa = trace_matrix(nBas,matmul(Paa,T))
+    ETbb = trace_matrix(nBas,matmul(Pbb,T))
 
-    ! Potential energy
+    ET = ETaa + ETbb
 
-    EV = trace_matrix(nBas,matmul(P,V))
+!  Potential energy
 
-    ! Hartree energy
+   EVaa = trace_matrix(nBas,matmul(Paa,V))
+   EVbb = trace_matrix(nBas,matmul(Pbb,V))
 
-    EJ = 0.5d0*trace_matrix(nBas,matmul(P,J))
+   EV = EVaa + EVbb
 
-    ! Exchange energy
+!  Hartree energy
 
-    Ex = 0.25d0*trace_matrix(nBas,matmul(P,K))
+    EJaaaa = 0.5d0*trace_matrix(nBas,matmul(Paa,Jaa))
+    EJaabb = 0.5d0*trace_matrix(nBas,matmul(Paa,Jbb))
+    EJbbaa = 0.5d0*trace_matrix(nBas,matmul(Pbb,Jaa))
+    EJbbbb = 0.5d0*trace_matrix(nBas,matmul(Pbb,Jbb))
 
-    ! Total energy
+    EJ = EJaaaa + EJaabb + EJbbaa + EJbbbb
 
-    EqsGW = ET + EV + EJ + Ex 
+!   Exchange energy
+
+    EKaaaa = 0.5d0*trace_matrix(nBas,matmul(Paa,Kaa))
+    EKabba = 0.5d0*trace_matrix(nBas,matmul(Pab,Kba))
+    EKbaab = 0.5d0*trace_matrix(nBas,matmul(Pba,Kab))
+    EKbbbb = 0.5d0*trace_matrix(nBas,matmul(Pbb,Kbb))
+
+    EK = EKaaaa + EKabba + EKbaab + EKbbbb
+
+!   Total energy
+
+    EqsGW = ET + EV + EJ + EK 
 
     ! Print results
 
-    call dipole_moment(nBas,P,nNuc,ZNuc,rNuc,dipole_int_AO,dipole)
-    call print_qsGW(nBas,nO,nSCF,Conv,thresh,eHF,eGW,c,SigCp,Z,ENuc,ET,EV,EJ,Ex,EcGM,EcRPA,EqsGW,dipole)
+    call dipole_moment(nBas2,P,nNuc,ZNuc,rNuc,dipole_int_AO,dipole)
+    call print_qsGW(nBas2,nO,nSCF,Conv,thresh,eHF,eGW,c,SigC,Z,ENuc,ET,EV,EJ,EK,EcGM,EcRPA,EqsGW,dipole)
 
   enddo
 !------------------------------------------------------------------------
@@ -276,15 +371,11 @@ subroutine qsGGW(maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,dophBSE,do
 
   endif
 
-! Deallocate memory
-
-  deallocate(c,cp,P,F,Fp,J,K,SigC,SigCp,SigCm,Z,Om,XpY,XmY,rho,error,error_diis,F_diis)
-
 ! Perform BSE calculation
 
   if(dophBSE) then
 
-    call GW_phBSE(dophBSE2,TDA_W,TDA,dBSE,dTDA,singlet,triplet,eta,nBas,nC,nO,nV,nR,nS,ERI_MO,dipole_int_MO,eGW,eGW,EcBSE)
+    call GGW_phBSE(dophBSE2,TDA_W,TDA,dBSE,dTDA,eta,nBas2,nC,nO,nV,nR,nS,ERI_MO,dipole_int_MO,eGW,eGW,EcBSE)
 
     if(exchange_kernel) then
 
@@ -342,7 +433,7 @@ subroutine qsGGW(maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,dophBSE,do
 !   write(*,'(2X,A50,F20.10)') 'Tr@ppBSE@qsGW correlation energy (singlet) =',EcBSE(1)
 !   write(*,'(2X,A50,F20.10)') 'Tr@ppBSE@qsGW correlation energy (triplet) =',3d0*EcBSE(2)
 !   write(*,'(2X,A50,F20.10)') 'Tr@ppBSE@qsGW correlation energy =',EcBSE(1) + 3d0*EcBSE(2)
-!   write(*,'(2X,A50,F20.10)') 'Tr@ppBSE@qsGW total energy =',ENuc + ERHF + EcBSE(1) + 3d0*EcBSE(2)
+!   write(*,'(2X,A50,F20.10)') 'Tr@ppBSE@qsGW total energy =',ENuc + EGHF + EcBSE(1) + 3d0*EcBSE(2)
 !   write(*,*)'-------------------------------------------------------------------------------'
 !   write(*,*)
 

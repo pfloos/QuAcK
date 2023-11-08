@@ -1,5 +1,5 @@
 # HF: maxSCF thresh  DIIS guess mix   shift stab search
-      10000  0.0000001  5     2    0.0   0.0    T    T
+      10000  0.0000001  5     1    0.0   0.0    F    F
 # MP: reg
       F
 # CC: maxSCF thresh     DIIS

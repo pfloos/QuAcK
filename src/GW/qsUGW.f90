@@ -52,14 +52,15 @@ subroutine qsUGW(maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,BSE,TDA_W,
   double precision,intent(inout):: ERI_aabb(nBas,nBas,nBas,nBas)
   double precision,intent(inout):: ERI_bbbb(nBas,nBas,nBas,nBas)
   double precision,intent(in)   :: dipole_int_AO(nBas,nBas,ncart)
-  double precision,intent(in)   :: dipole_int_aa(nBas,nBas,ncart)
-  double precision,intent(in)   :: dipole_int_bb(nBas,nBas,ncart)
+  double precision,intent(inout):: dipole_int_aa(nBas,nBas,ncart)
+  double precision,intent(inout):: dipole_int_bb(nBas,nBas,ncart)
 
 ! Local variables
 
   integer                       :: nSCF
   integer                       :: nBasSq
   integer                       :: ispin
+  integer                       :: ixyz
   integer                       :: is
   integer                       :: n_diis
   integer                       :: nS_aa,nS_bb,nS_sc
@@ -180,6 +181,14 @@ subroutine qsUGW(maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,BSE,TDA_W,
     !--------------------------------------------------
     ! AO to MO transformation of two-electron integrals
     !--------------------------------------------------
+
+    dipole_int_aa(:,:,:) = dipole_int_AO(:,:,:)
+    dipole_int_bb(:,:,:) = dipole_int_AO(:,:,:)
+ 
+    do ixyz=1,ncart
+        call AOtoMO_transform(nBas,cHF(:,:,1),dipole_int_aa(:,:,ixyz))
+        call AOtoMO_transform(nBas,cHF(:,:,2),dipole_int_bb(:,:,ixyz))
+    end do
 
     ! 4-index transform for (aa|aa) block
 
