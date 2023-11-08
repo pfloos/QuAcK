@@ -5,6 +5,8 @@ subroutine print_UHF(nBas,nO,Ov,e,c,ENuc,ET,EV,EJ,Ex,EUHF,dipole)
   implicit none
   include 'parameters.h'
 
+! Input variables
+
   integer,intent(in)                 :: nBas
   integer,intent(in)                 :: nO(nspin)
   double precision,intent(in)        :: Ov(nBas,nBas)
@@ -18,6 +20,8 @@ subroutine print_UHF(nBas,nO,Ov,e,c,ENuc,ET,EV,EJ,Ex,EUHF,dipole)
   double precision,intent(in)        :: EUHF
   double precision,intent(in)        :: dipole(ncart)
 
+! Local variables
+
   integer                            :: ixyz
   integer                            :: ispin
   double precision                   :: HOMO(nspin)
@@ -25,6 +29,8 @@ subroutine print_UHF(nBas,nO,Ov,e,c,ENuc,ET,EV,EJ,Ex,EUHF,dipole)
   double precision                   :: Gap(nspin)
   double precision                   :: S_exact,S2_exact
   double precision                   :: S,S2
+
+  logical                            :: dump_orb = .false.
 
 ! HOMO and LUMO
 
@@ -97,21 +103,23 @@ subroutine print_UHF(nBas,nO,Ov,e,c,ENuc,ET,EV,EJ,Ex,EUHF,dipole)
   write(*,'(A60)')              '-------------------------------------------------'
   write(*,'(A45)')              ' Dipole moment (Debye)    '
   write(*,'(19X,4A10)')         'X','Y','Z','Tot.'
-  write(*,'(19X,4F10.6)')       (dipole(ixyz)*auToD,ixyz=1,ncart),norm2(dipole)*auToD
+  write(*,'(19X,4F10.4)')       (dipole(ixyz)*auToD,ixyz=1,ncart),norm2(dipole)*auToD
   write(*,'(A60)')              '-------------------------------------------------'
   write(*,*)
 
 ! Print results
 
-  write(*,'(A50)') '-----------------------------------------'
-  write(*,'(A50)') 'UHF spin-up   orbital coefficients '
-  write(*,'(A50)') '-----------------------------------------'
-  call matout(nBas,nBas,c(:,:,1))
-  write(*,*)
-  write(*,'(A50)') '-----------------------------------------'
-  write(*,'(A50)') 'UHF spin-down orbital coefficients '
-  write(*,'(A50)') '-----------------------------------------'
-  call matout(nBas,nBas,c(:,:,2))
+  if(dump_orb) then
+    write(*,'(A50)') '-----------------------------------------'
+    write(*,'(A50)') 'UHF spin-up   orbital coefficients '
+    write(*,'(A50)') '-----------------------------------------'
+    call matout(nBas,nBas,c(:,:,1))
+    write(*,*)
+    write(*,'(A50)') '-----------------------------------------'
+    write(*,'(A50)') 'UHF spin-down orbital coefficients '
+    write(*,'(A50)') '-----------------------------------------'
+    call matout(nBas,nBas,c(:,:,2))
+  end if
   write(*,*)
   write(*,'(A50)') '---------------------------------------'
   write(*,'(A50)') ' UHF spin-up   orbital energies  '

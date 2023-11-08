@@ -25,6 +25,9 @@ subroutine print_RHF(nBas,nO,eHF,cHF,ENuc,ET,EV,EJ,EK,ERHF,dipole)
   integer                            :: HOMO
   integer                            :: LUMO
   double precision                   :: Gap
+  double precision                   :: S,S2
+
+  logical                            :: dump_orb = .false.
 
 ! HOMO and LUMO
 
@@ -32,8 +35,10 @@ subroutine print_RHF(nBas,nO,eHF,cHF,ENuc,ET,EV,EJ,EK,ERHF,dipole)
   LUMO = HOMO + 1
   Gap = eHF(LUMO)-eHF(HOMO)
 
-! Dump results
+  S2 = 0d0
+  S  = 0d0
 
+! Dump results
 
   write(*,*)
   write(*,'(A50)')           '-----------------------------------------'
@@ -55,21 +60,26 @@ subroutine print_RHF(nBas,nO,eHF,cHF,ENuc,ET,EV,EJ,EK,ERHF,dipole)
   write(*,'(A32,1X,F16.6,A3)')  ' HF LUMO      energy: ',eHF(LUMO)*HaToeV,' eV'
   write(*,'(A32,1X,F16.6,A3)')  ' HF HOMO-LUMO gap   : ',Gap*HaToeV,' eV'
   write(*,'(A50)')           '-----------------------------------------'
+  write(*,'(A32,1X,F16.6)')     '  S                 :',2d0*S+ 1d0
+  write(*,'(A32,1X,F16.6)')     ' <S**2>             :',S2
+  write(*,'(A50)')           '-----------------------------------------'
   write(*,'(A35)')           ' Dipole moment (Debye)    '
   write(*,'(10X,4A10)')      'X','Y','Z','Tot.'
-  write(*,'(10X,4F10.6)')    (dipole(ixyz)*auToD,ixyz=1,ncart),norm2(dipole)*auToD
+  write(*,'(10X,4F10.4)')    (dipole(ixyz)*auToD,ixyz=1,ncart),norm2(dipole)*auToD
   write(*,'(A50)')           '-----------------------------------------'
   write(*,*)
 
 ! Print results
 
-  write(*,'(A50)')  '---------------------------------------'
-  write(*,'(A32)') 'MO coefficients'
-  write(*,'(A50)')  '---------------------------------------'
-  call matout(nBas,nBas,cHF)
+  if(dump_orb) then 
+    write(*,'(A50)') '---------------------------------------'
+    write(*,'(A32)') ' RHF orbital coefficients'
+    write(*,'(A50)') '---------------------------------------'
+    call matout(nBas,nBas,cHF)
+  end if
   write(*,*)
   write(*,'(A50)') '---------------------------------------'
-  write(*,'(A32)') 'MO energies'
+  write(*,'(A32)') ' RHF orbital energies'
   write(*,'(A50)') '---------------------------------------'
   call matout(nBas,1,eHF)
   write(*,*)

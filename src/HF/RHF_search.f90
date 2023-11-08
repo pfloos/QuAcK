@@ -123,7 +123,7 @@ subroutine RHF_search(maxSCF,thresh,max_diis,guess_type,level_shift,nNuc,ZNuc,rN
     call phLR_A(ispin,.false.,nBas,nC,nO,nV,nR,nS,1d0,e,ERI_MO,Aph)
     call phLR_B(ispin,.false.,nBas,nC,nO,nV,nR,nS,1d0,ERI_MO,Bph)
  
-    AB(:,:) = Aph(:,:) - Bph(:,:)
+    AB(:,:) = Aph(:,:) + Bph(:,:)
  
     call diagonalize_matrix(nS,AB,Om)
     Om(:) = 2d0*Om(:)

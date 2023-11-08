@@ -37,7 +37,9 @@ subroutine print_GHF(nBas,nBas2,nO,e,C,P,ENuc,ET,EV,EJ,EK,EHF,dipole)
   double precision,allocatable       :: Pba(:,:)
   double precision,allocatable       :: Pbb(:,:)
 
-  double precision,external     :: trace_matrix
+  double precision,external          :: trace_matrix
+
+  logical                            :: dump_orb = .false.
 
 ! HOMO and LUMO
 
@@ -117,13 +119,15 @@ subroutine print_GHF(nBas,nBas2,nO,e,C,P,ENuc,ET,EV,EJ,EK,EHF,dipole)
 
 ! Print results
 
-  write(*,'(A50)')  '---------------------------------------'
-  write(*,'(A32)') 'MO coefficients'
-  write(*,'(A50)')  '---------------------------------------'
-  call matout(nBas2,nBas2,c)
+  if(dump_orb) then
+    write(*,'(A50)') '---------------------------------------'
+    write(*,'(A32)') ' GHF orbital coefficients'
+    write(*,'(A50)') '---------------------------------------'
+    call matout(nBas2,nBas2,c)
+  end if
   write(*,*)
   write(*,'(A50)') '---------------------------------------'
-  write(*,'(A32)') 'MO energies'
+  write(*,'(A32)') ' GHF orbital energies'
   write(*,'(A50)') '---------------------------------------'
   call matout(nBas2,1,e)
   write(*,*)
