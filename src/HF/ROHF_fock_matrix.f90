@@ -74,8 +74,8 @@ subroutine ROHF_fock_matrix(nBas,nOa,nOb,S,c,Fa,Fb,F)
   F(nO+nC+1:nC+nO+nV,   nC+1:nC+nO   ) =       Fa(nO+nC+1:nC+nO+nV,   nC+1:nC+nO   )
   F(nO+nC+1:nC+nO+nV,nO+nC+1:nC+nO+nV) =    aV*Fa(nO+nC+1:nC+nO+nV,nO+nC+1:nC+nO+nV) +    bV*Fb(nO+nC+1:nC+nO+nV,nO+nC+1:nC+nO+nV)
 
-  call MOtoAO_transform(nBas,S,c,F) 
-  call MOtoAO_transform(nBas,S,c,Fa)
-  call MOtoAO_transform(nBas,S,c,Fb)
+  call MOtoAO_transform(nBas,S,c,F,F) 
+  call MOtoAO_transform(nBas,S,c,Fa,Fa)
+  call MOtoAO_transform(nBas,S,c,Fb,Fb)
 
 end subroutine

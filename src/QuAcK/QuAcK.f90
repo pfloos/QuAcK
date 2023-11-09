@@ -172,7 +172,7 @@ program QuAcK
 !---------------------!
 
   doRQuAcK = .false.
-  if(doRHF) doRQuAcK = .true.
+  if(doRHF .or. doROHF) doRQuAcK = .true.
 
   doUQuAcK = .false.
   if(doUHF) doUQuAcK = .true.

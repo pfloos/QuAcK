@@ -90,7 +90,7 @@ subroutine print_ROHF(nBas,nO,e,c,ENuc,ET,EV,EJ,Ex,EHF,dipole)
   write(*,'(A60)')              '-------------------------------------------------'
   write(*,'(A45)')              ' Dipole moment (Debye)    '
   write(*,'(19X,4A10)')         'X','Y','Z','Tot.'
-  write(*,'(19X,4F10.6)')       (dipole(ixyz)*auToD,ixyz=1,ncart),norm2(dipole)*auToD
+  write(*,'(19X,4F10.4)')       (dipole(ixyz)*auToD,ixyz=1,ncart),norm2(dipole)*auToD
   write(*,'(A60)')              '-------------------------------------------------'
   write(*,*)
 
@@ -102,7 +102,7 @@ subroutine print_ROHF(nBas,nO,e,c,ENuc,ET,EV,EJ,Ex,EHF,dipole)
   call matout(nBas,nBas,c)
   write(*,*)
   write(*,'(A50)') '---------------------------------------'
-  write(*,'(A50)') ' ROHF orbital energies  '
+  write(*,'(A50)') ' ROHF orbital energies (au) '
   write(*,'(A50)') '---------------------------------------'
   call matout(nBas,1,e)
   write(*,*)

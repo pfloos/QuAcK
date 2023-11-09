@@ -35,7 +35,7 @@ subroutine ROHF(maxSCF,thresh,max_diis,guess_type,mix,level_shift,nNuc,ZNuc,rNuc
   integer                       :: nSCF
   integer                       :: nBasSq
   integer                       :: n_diis
-  double precision              :: conv
+  double precision              :: Conv
   double precision              :: rcond
   double precision              :: ET(nspin)
   double precision              :: EV(nspin)
@@ -67,9 +67,9 @@ subroutine ROHF(maxSCF,thresh,max_diis,guess_type,mix,level_shift,nNuc,ZNuc,rNuc
 ! Hello world
 
   write(*,*)
-  write(*,*)'************************************************'
-  write(*,*)'*      Restricted Open-Shell Hartree-Fock      *'
-  write(*,*)'************************************************'
+  write(*,*)'****************************************'
+  write(*,*)'* Restricted Open-Shell HF Calculation *'
+  write(*,*)'****************************************'
   write(*,*)
 
 ! Useful stuff
@@ -91,13 +91,13 @@ subroutine ROHF(maxSCF,thresh,max_diis,guess_type,mix,level_shift,nNuc,ZNuc,rNuc
 
 ! Initialization
 
-  n_diis          = 0
+  n_diis        = 0
   F_diis(:,:)   = 0d0
   err_diis(:,:) = 0d0
   rcond         = 0d0
 
   nSCF = 0
-  conv = 1d0
+  Conv = 1d0
 
 !------------------------------------------------------------------------
 ! Main SCF loop
@@ -109,7 +109,7 @@ subroutine ROHF(maxSCF,thresh,max_diis,guess_type,mix,level_shift,nNuc,ZNuc,rNuc
             '|','#','|','E(ROHF)','|','Ex(ROHF)','|','Conv','|'
   write(*,*)'----------------------------------------------------------'
   
-  do while(conv > thresh .and. nSCF < maxSCF)
+  do while(Conv > thresh .and. nSCF < maxSCF)
 
 !   Increment 
 
@@ -138,7 +138,7 @@ subroutine ROHF(maxSCF,thresh,max_diis,guess_type,mix,level_shift,nNuc,ZNuc,rNuc
 !   Check convergence 
 
     err(:,:) = matmul(Ftot(:,:),matmul(Ptot(:,:),S(:,:))) - matmul(matmul(S(:,:),Ptot(:,:)),Ftot(:,:))
-    if(nSCF > 1) conv = maxval(abs(err(:,:)))
+    if(nSCF > 1) Conv = maxval(abs(err(:,:)))
     
 !   DIIS extrapolation
 
@@ -214,7 +214,7 @@ subroutine ROHF(maxSCF,thresh,max_diis,guess_type,mix,level_shift,nNuc,ZNuc,rNuc
 !   Dump results
 
     write(*,'(1X,A1,1X,I3,1X,A1,1X,F16.10,1X,A1,1X,F16.10,1X,A1,1X,F10.6,1X,A1,1X)') & 
-      '|',nSCF,'|',EHF + ENuc,'|',sum(Ex(:)),'|',conv,'|'
+      '|',nSCF,'|',EHF + ENuc,'|',sum(Ex(:)),'|',Conv,'|'
  
   end do
   write(*,*)'----------------------------------------------------------'

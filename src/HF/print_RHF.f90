@@ -73,7 +73,7 @@ subroutine print_RHF(nBas,nO,eHF,cHF,ENuc,ET,EV,EJ,EK,ERHF,dipole)
 
   if(dump_orb) then 
     write(*,'(A50)') '---------------------------------------'
-    write(*,'(A50)') ' RHF orbital coefficients'
+    write(*,'(A50)') ' RHF orbital coefficients '
     write(*,'(A50)') '---------------------------------------'
     call matout(nBas,nBas,cHF)
     write(*,*)
@@ -81,7 +81,7 @@ subroutine print_RHF(nBas,nO,eHF,cHF,ENuc,ET,EV,EJ,EK,ERHF,dipole)
   write(*,'(A50)') '---------------------------------------'
   write(*,'(A50)') ' RHF orbital energies (au) '
   write(*,'(A50)') '---------------------------------------'
-  call matout(nBas,1,eHF)
+  call vecout(nBas,eHF)
   write(*,*)
 
 end subroutine 
