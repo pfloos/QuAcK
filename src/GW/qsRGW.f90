@@ -167,7 +167,7 @@ subroutine qsRGW(maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,dophBSE,do
     ! AO to MO transformation of two-electron integrals
 
     do ixyz=1,ncart
-      call AOtoMO_transform(nBas,cHF,dipole_int_AO(:,:,ixyz),dipole_int_MO(:,:,ixyz))
+      call AOtoMO_transform(nBas,c,dipole_int_AO(:,:,ixyz),dipole_int_MO(:,:,ixyz))
     end do
 
     call AOtoMO_integral_transform(1,1,1,1,nBas,c,ERI_AO,ERI_MO)
@@ -202,13 +202,13 @@ subroutine qsRGW(maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,dophBSE,do
 
     error = matmul(F,matmul(P,S)) - matmul(matmul(S,P),F)
 
+    if(nSCF > 1) Conv = maxval(abs(error))
+
     ! DIIS extrapolation 
 
     if(max_diis > 1) then
-
       n_diis = min(n_diis+1,max_diis)
       call DIIS_extrapolation(rcond,nBasSq,nBasSq,n_diis,error_diis,F_diis,error,F)
-
     end if
 
     ! Diagonalize Hamiltonian in AO basis
@@ -222,10 +222,6 @@ subroutine qsRGW(maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,dophBSE,do
     ! Compute new density matrix in the AO basis
 
     P(:,:) = 2d0*matmul(c(:,1:nO),transpose(c(:,1:nO)))
-
-    ! Save quasiparticles energy for next cycle
-
-    if(nSCF > 1) Conv = maxval(abs(error))
 
     !------------------------------------------------------------------------
     !   Compute total energy

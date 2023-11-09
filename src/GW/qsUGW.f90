@@ -1,7 +1,6 @@
-subroutine qsUGW(maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,BSE,TDA_W,TDA,    & 
-                dBSE,dTDA,spin_conserved,spin_flip,eta,regularize,nNuc,ZNuc,rNuc,ENuc,nBas,nC,nO, & 
-                nV,nR,nS,EUHF,S,X,T,V,Hc,ERI_AO,ERI_aaaa,ERI_aabb,ERI_bbbb,dipole_int_AO,dipole_int_aa, &
-                dipole_int_bb,PHF,cHF,eHF)
+subroutine qsUGW(maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,BSE,TDA_W,TDA,dBSE,dTDA,spin_conserved,spin_flip, &
+                eta,regularize,nNuc,ZNuc,rNuc,ENuc,nBas,nC,nO,nV,nR,nS,EUHF,S,X,T,V,Hc,ERI_AO,ERI_aaaa,ERI_aabb,ERI_bbbb, & 
+                dipole_int_AO,dipole_int_aa,dipole_int_bb,PHF,cHF,eHF)
 
 ! Perform a quasiparticle self-consistent GW calculation
 
@@ -181,8 +180,8 @@ subroutine qsUGW(maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,BSE,TDA_W,
     !--------------------------------------------------
  
     do ixyz=1,ncart
-        call AOtoMO_transform(nBas,cHF(:,:,1),dipole_int_AO(:,:,ixyz),dipole_int_aa(:,:,ixyz))
-        call AOtoMO_transform(nBas,cHF(:,:,2),dipole_int_AO(:,:,ixyz),dipole_int_bb(:,:,ixyz))
+        call AOtoMO_transform(nBas,c(:,:,1),dipole_int_AO(:,:,ixyz),dipole_int_aa(:,:,ixyz))
+        call AOtoMO_transform(nBas,c(:,:,2),dipole_int_AO(:,:,ixyz),dipole_int_bb(:,:,ixyz))
     end do
 
     ! 4-index transform for (aa|aa) block
@@ -247,14 +246,10 @@ subroutine qsUGW(maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,BSE,TDA_W,
     ! DIIS extrapolation
 
     n_diis = min(n_diis+1,max_diis)
-    if(minval(rcond(:)) > 1d-7) then
-      do is=1,nspin
-        if(nO(is) > 1) call DIIS_extrapolation(rcond(is),nBasSq,nBasSq,n_diis,err_diis(:,1:n_diis,is), &
-                                               F_diis(:,1:n_diis,is),err(:,:,is),F(:,:,is))
-      end do
-    else 
-      n_diis = 0
-    end if
+    do is=1,nspin
+      if(nO(is) > 1) call DIIS_extrapolation(rcond(is),nBasSq,nBasSq,n_diis,err_diis(:,1:n_diis,is), &
+                                             F_diis(:,1:n_diis,is),err(:,:,is),F(:,:,is))
+    end do
 
     ! Transform Fock matrix in orthogonal basis
 
