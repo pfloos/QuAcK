@@ -144,6 +144,20 @@ subroutine matout(m,n,A)
 end subroutine 
 
 !------------------------------------------------------------------------
+subroutine vecout(m,A)
+
+! Print the N vector A
+
+  implicit none
+
+  integer,intent(in)            :: m
+  double precision,intent(in)   :: A(m)
+ 
+  call matout(m,1,A) 
+
+end subroutine 
+
+!------------------------------------------------------------------------
 subroutine trace_vector(n,v,Tr)
 
 ! Calculate the trace of the vector v of length n

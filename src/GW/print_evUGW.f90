@@ -42,11 +42,7 @@ subroutine print_evUGW(nBas,nO,nSCF,Conv,eHF,ENuc,EUHF,SigC,Z,eGW,EcRPA,EcGM)
 
   write(*,*)'-------------------------------------------------------------------------------& 
               ------------------------------------------------'
-  if(nSCF < 10) then
-    write(*,'(1X,A21,I1,A1,I1,A12)')'  Self-consistent evG',nSCF,'W',nSCF,' calculation'
-  else
-    write(*,'(1X,A21,I2,A1,I2,A12)')'  Self-consistent evG',nSCF,'W',nSCF,' calculation'
-  endif
+  write(*,'(1X,A21,I3,A1,I3,A12)')'  Self-consistent evUG',nSCF,'W',nSCF,' calculation'
   write(*,*)'-------------------------------------------------------------------------------& 
               ------------------------------------------------'
   write(*,'(A1,A3,A1,A30,A1,A30,A1,A30,A1,A30,A1)') &
@@ -68,15 +64,15 @@ subroutine print_evUGW(nBas,nO,nSCF,Conv,eHF,ENuc,EUHF,SigC,Z,eGW,EcRPA,EcGM)
   write(*,'(2X,A14,F15.5)')'Convergence = ',Conv
   write(*,*)'-------------------------------------------------------------------------------& 
               -------------------------------------------------'
-  write(*,'(2X,A30,F15.6,A3)') 'evGW HOMO      energy:',maxval(HOMO(:))*HaToeV,' eV'
-  write(*,'(2X,A30,F15.6,A3)') 'evGW LUMO      energy:',minval(LUMO(:))*HaToeV,' eV'
-  write(*,'(2X,A30,F15.6,A3)') 'evGW HOMO-LUMO gap   :',(minval(LUMO(:))-maxval(HOMO(:)))*HaToeV,' eV'
+  write(*,'(2X,A30,F15.6,A3)') 'evUGW HOMO      energy:',maxval(HOMO(:))*HaToeV,' eV'
+  write(*,'(2X,A30,F15.6,A3)') 'evUGW LUMO      energy:',minval(LUMO(:))*HaToeV,' eV'
+  write(*,'(2X,A30,F15.6,A3)') 'evUGW HOMO-LUMO gap   :',(minval(LUMO(:))-maxval(HOMO(:)))*HaToeV,' eV'
   write(*,*)'-------------------------------------------------------------------------------& 
               ------------------------------------------------'
-  write(*,'(2X,A30,F15.6,A3)') 'RPA@evGW total energy      :',ENuc + EUHF + EcRPA,' au'
-  write(*,'(2X,A30,F15.6,A3)') 'RPA@evGW correlation energy:',EcRPA,' au'
-  write(*,'(2X,A30,F15.6,A3)') ' GM@evGW total energy      :',ENuc + EUHF + sum(EcGM(:)),' au'
-  write(*,'(2X,A30,F15.6,A3)') ' GM@evGW correlation energy:',sum(EcGM(:)),' au'
+  write(*,'(2X,A30,F15.6,A3)') 'RPA@evUGW total energy      :',ENuc + EUHF + EcRPA,' au'
+  write(*,'(2X,A30,F15.6,A3)') 'RPA@evUGW correlation energy:',EcRPA,' au'
+  write(*,'(2X,A30,F15.6,A3)') ' GM@evUGW total energy      :',ENuc + EUHF + sum(EcGM(:)),' au'
+  write(*,'(2X,A30,F15.6,A3)') ' GM@evUGW correlation energy:',sum(EcGM(:)),' au'
   write(*,*)'-------------------------------------------------------------------------------& 
               -------------------------------------------------'
   write(*,*)

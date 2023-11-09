@@ -154,7 +154,7 @@ subroutine GG0W0(doACFDT,exchange_kernel,doXBS,dophBSE,dophBSE2,TDA_W,TDA,dBSE,d
 ! Dump results !
 !--------------!
 
-  call print_G0W0(nBas,nO,eHF,ENuc,ERHF,SigC,Z,eGW,EcRPA,EcGM)
+  call print_GG0W0(nBas,nO,eHF,ENuc,ERHF,SigC,Z,eGW,EcRPA,EcGM)
 
 ! Deallocate memory
 

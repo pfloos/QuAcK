@@ -1,4 +1,4 @@
-subroutine print_evGW(nBas,nO,nSCF,Conv,eHF,ENuc,ERHF,SigC,Z,eGW,EcRPA,EcGM)
+subroutine print_evRGW(nBas,nO,nSCF,Conv,eHF,ENuc,ERHF,SigC,Z,eGW,EcRPA,EcGM)
 
 ! Print one-electron energies and other stuff for evGW
 
@@ -28,11 +28,7 @@ subroutine print_evGW(nBas,nO,nSCF,Conv,eHF,ENuc,ERHF,SigC,Z,eGW,EcRPA,EcGM)
 ! Dump results
 
   write(*,*)'-------------------------------------------------------------------------------'
-  if(nSCF < 10) then
-    write(*,'(1X,A21,I1,A1,I1,A12)')'  Self-consistent evG',nSCF,'W',nSCF,' calculation'
-  else
-    write(*,'(1X,A21,I2,A1,I2,A12)')'  Self-consistent evG',nSCF,'W',nSCF,' calculation'
-  endif
+  write(*,'(1X,A21,I3,A1,I3,A12)')'  Self-consistent evRG',nSCF,'W',nSCF,' calculation'
   write(*,*)'-------------------------------------------------------------------------------'
   write(*,'(1X,A1,1X,A3,1X,A1,1X,A15,1X,A1,1X,A15,1X,A1,1X,A15,1X,A1,1X,A15,1X,A1,1X)') &
             '|','#','|','e_HF (eV)','|','Sig_GW (eV)','|','Z','|','e_GW (eV)','|'
@@ -47,14 +43,14 @@ subroutine print_evGW(nBas,nO,nSCF,Conv,eHF,ENuc,ERHF,SigC,Z,eGW,EcRPA,EcGM)
   write(*,'(2X,A10,I3)')   'Iteration ',nSCF
   write(*,'(2X,A14,F15.5)')'Convergence = ',Conv
   write(*,*)'-------------------------------------------------------------------------------'
-  write(*,'(2X,A60,F15.6,A3)') 'evGW HOMO      energy =',eGW(HOMO)*HaToeV,' eV'
-  write(*,'(2X,A60,F15.6,A3)') 'evGW LUMO      energy =',eGW(LUMO)*HaToeV,' eV'
-  write(*,'(2X,A60,F15.6,A3)') 'evGW HOMO-LUMO gap    =',Gap*HaToeV,' eV'
+  write(*,'(2X,A60,F15.6,A3)') 'evRGW HOMO      energy =',eGW(HOMO)*HaToeV,' eV'
+  write(*,'(2X,A60,F15.6,A3)') 'evRGW LUMO      energy =',eGW(LUMO)*HaToeV,' eV'
+  write(*,'(2X,A60,F15.6,A3)') 'evRGW HOMO-LUMO gap    =',Gap*HaToeV,' eV'
   write(*,*)'-------------------------------------------------------------------------------'
-  write(*,'(2X,A60,F15.6,A3)') 'phRPA@evGW total energy       =',ENuc + ERHF + EcRPA,' au'
-  write(*,'(2X,A60,F15.6,A3)') 'phRPA@evGW correlation energy =',EcRPA,' au'
-  write(*,'(2X,A60,F15.6,A3)') '   GM@evGW total energy       =',ENuc + ERHF + EcGM,' au'
-  write(*,'(2X,A60,F15.6,A3)') '   GM@evGW correlation energy =',EcGM,' au'
+  write(*,'(2X,A60,F15.6,A3)') 'phRPA@evRGW total energy       =',ENuc + ERHF + EcRPA,' au'
+  write(*,'(2X,A60,F15.6,A3)') 'phRPA@evRGW correlation energy =',EcRPA,' au'
+  write(*,'(2X,A60,F15.6,A3)') '   GM@evRGW total energy       =',ENuc + ERHF + EcGM,' au'
+  write(*,'(2X,A60,F15.6,A3)') '   GM@evRGW correlation energy =',EcGM,' au'
   write(*,*)'-------------------------------------------------------------------------------'
   write(*,*)
 

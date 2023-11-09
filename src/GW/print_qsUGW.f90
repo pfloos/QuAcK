@@ -65,11 +65,7 @@ subroutine print_qsUGW(nBas,nO,nSCF,Conv,thresh,eHF,eGW,cGW,Ov, &
 
   write(*,*)'-------------------------------------------------------------------------------& 
               ------------------------------------------------'
-  if(nSCF < 10) then
-    write(*,'(1X,A21,I1,A1,I1,A12)')'  Self-consistent qsG',nSCF,'W',nSCF,' calculation'
-  else
-    write(*,'(1X,A21,I2,A1,I2,A12)')'  Self-consistent qsG',nSCF,'W',nSCF,' calculation'
-  endif
+  write(*,'(1X,A21,I3,A1,I3,A12)')'  Self-consistent qsUG',nSCF,'W',nSCF,' calculation'
   write(*,*)'-------------------------------------------------------------------------------& 
               ------------------------------------------------'
   write(*,'(A1,A3,A1,A30,A1,A30,A1,A30,A1,A30,A1)') &
@@ -153,7 +149,7 @@ subroutine print_qsUGW(nBas,nO,nSCF,Conv,thresh,eHF,eGW,cGW,Ov, &
     write(*,'(A60)')              '-------------------------------------------------'
     write(*,'(A45)')              ' Dipole moment (Debye)    '
     write(*,'(19X,4A10)')         'X','Y','Z','Tot.'
-    write(*,'(19X,4F10.6)')       (dipole(ixyz)*auToD,ixyz=1,ncart),norm2(dipole)*auToD
+    write(*,'(19X,4F10.4)')       (dipole(ixyz)*auToD,ixyz=1,ncart),norm2(dipole)*auToD
     write(*,'(A60)')              '-------------------------------------------------'
     write(*,*)
 

@@ -48,9 +48,11 @@ subroutine print_qsGGW(nBas,nO,nSCF,Conv,thresh,eHF,eGW,c,SigC,Z,ENuc,ET,EV,EJ,E
 
   write(*,*)'-------------------------------------------------------------------------------'
   if(nSCF < 10) then
-    write(*,'(1X,A21,I1,A1,I1,A12)')'  Self-consistent qsG',nSCF,'W',nSCF,' calculation'
+    write(*,'(1X,A22,I1,A1,I1,A12)')'  Self-consistent qsRG',nSCF,'W',nSCF,' calculation'
+  elseif(nSCF < 100) then
+    write(*,'(1X,A22,I2,A1,I2,A12)')'  Self-consistent qsRG',nSCF,'W',nSCF,' calculation'
   else
-    write(*,'(1X,A21,I2,A1,I2,A12)')'  Self-consistent qsG',nSCF,'W',nSCF,' calculation'
+    write(*,'(1X,A22,I3,A1,I3,A12)')'  Self-consistent qsRG',nSCF,'W',nSCF,' calculation'
   endif
   write(*,*)'-------------------------------------------------------------------------------'
   write(*,'(1X,A1,1X,A3,1X,A1,1X,A15,1X,A1,1X,A15,1X,A1,1X,A15,1X,A1,1X,A15,1X,A1,1X)') &
@@ -66,14 +68,14 @@ subroutine print_qsGGW(nBas,nO,nSCF,Conv,thresh,eHF,eGW,c,SigC,Z,ENuc,ET,EV,EJ,E
   write(*,'(2X,A10,I3)')   'Iteration ',nSCF
   write(*,'(2X,A14,F15.5)')'Convergence = ',Conv
   write(*,*)'-------------------------------------------------------------------------------'
-  write(*,'(2X,A60,F15.6,A3)') 'qsGGW HOMO     energy =',eGW(HOMO)*HaToeV,' eV'
-  write(*,'(2X,A60,F15.6,A3)') 'qsGGW LUMO     energy =',eGW(LUMO)*HaToeV,' eV'
-  write(*,'(2X,A60,F15.6,A3)') 'qsGGW HOMO-LUMO gap   =',Gap*HaToeV,' eV'
+  write(*,'(2X,A60,F15.6,A3)') 'qsGGW HOMO     energy = ',eGW(HOMO)*HaToeV,' eV'
+  write(*,'(2X,A60,F15.6,A3)') 'qsGGW LUMO     energy = ',eGW(LUMO)*HaToeV,' eV'
+  write(*,'(2X,A60,F15.6,A3)') 'qsGGW HOMO-LUMO gap   = ',Gap*HaToeV,' eV'
   write(*,*)'-------------------------------------------------------------------------------'
-  write(*,'(2X,A60,F15.6,A3)') '      qsGGW total       energy =',ENuc + EqsGW,' au'
-  write(*,'(2X,A60,F15.6,A3)') '      qsGGW exchange    energy =',Ex,' au'
-  write(*,'(2X,A60,F15.6,A3)') '   GM@qsgGW correlation energy =',EcGM,' au'
-  write(*,'(2X,A60,F15.6,A3)') 'phRPA@qsGGW correlation energy =',EcRPA,' au'
+  write(*,'(2X,A60,F15.6,A3)') '      qsGGW total       energy = ',ENuc + EqsGW,' au'
+  write(*,'(2X,A60,F15.6,A3)') '      qsGGW exchange    energy = ',Ex,' au'
+  write(*,'(2X,A60,F15.6,A3)') '   GM@qsGGW correlation energy = ',EcGM,' au'
+  write(*,'(2X,A60,F15.6,A3)') 'phRPA@qsGGW correlation energy = ',EcRPA,' au'
   write(*,*)'-------------------------------------------------------------------------------'
   write(*,*)
 
@@ -83,38 +85,38 @@ subroutine print_qsGGW(nBas,nO,nSCF,Conv,thresh,eHF,eGW,c,SigC,Z,ENuc,ET,EV,EJ,E
 
     write(*,*)
     write(*,'(A50)')           '---------------------------------------'
-    write(*,'(A32)')           ' Summary              '
+    write(*,'(A33)')           ' Summary              '
     write(*,'(A50)')           '---------------------------------------'
-    write(*,'(A32,1X,F16.10,A3)') ' One-electron energy: ',ET + EV,' au'
-    write(*,'(A32,1X,F16.10,A3)') ' Kinetic      energy: ',ET,' au'
-    write(*,'(A32,1X,F16.10,A3)') ' Potential    energy: ',EV,' au'
+    write(*,'(A33,1X,F16.10,A3)') ' One-electron energy = ',ET + EV,' au'
+    write(*,'(A33,1X,F16.10,A3)') ' Kinetic      energy = ',ET,' au'
+    write(*,'(A33,1X,F16.10,A3)') ' Potential    energy = ',EV,' au'
     write(*,'(A50)')           '---------------------------------------'
-    write(*,'(A32,1X,F16.10,A3)') ' Two-electron energy: ',EJ + Ex,' au'
-    write(*,'(A32,1X,F16.10,A3)') ' Hartree      energy: ',EJ,' au'
-    write(*,'(A32,1X,F16.10,A3)') ' Exchange     energy: ',Ex,' au'
-    write(*,'(A32,1X,F16.10,A3)') ' Correlation  energy: ',EcGM,' au'
+    write(*,'(A33,1X,F16.10,A3)') ' Two-electron energy = ',EJ + Ex,' au'
+    write(*,'(A33,1X,F16.10,A3)') ' Hartree      energy = ',EJ,' au'
+    write(*,'(A33,1X,F16.10,A3)') ' Exchange     energy = ',Ex,' au'
+    write(*,'(A33,1X,F16.10,A3)') ' Correlation  energy = ',EcGM,' au'
     write(*,'(A50)')           '---------------------------------------'
-    write(*,'(A32,1X,F16.10,A3)') ' Electronic   energy: ',EqsGW,' au'
-    write(*,'(A32,1X,F16.10,A3)') ' Nuclear   repulsion: ',ENuc,' au'
-    write(*,'(A32,1X,F16.10,A3)') ' qsGGW        energy: ',ENuc + EqsGW,' au'
+    write(*,'(A33,1X,F16.10,A3)') ' Electronic   energy = ',EqsGW,' au'
+    write(*,'(A33,1X,F16.10,A3)') ' Nuclear   repulsion = ',ENuc,' au'
+    write(*,'(A33,1X,F16.10,A3)') ' qsGGW        energy = ',ENuc + EqsGW,' au'
     write(*,'(A50)')           '---------------------------------------'
-    write(*,'(A35)')           ' Dipole moment (Debye)    '
+    write(*,'(A36)')           ' Dipole moment (Debye)    '
     write(*,'(10X,4A10)')      'X','Y','Z','Tot.'
-    write(*,'(10X,4F10.6)')    (dipole(ixyz)*auToD,ixyz=1,ncart),norm2(dipole)*auToD
+    write(*,'(10X,4F10.4)')    (dipole(ixyz)*auToD,ixyz=1,ncart),norm2(dipole)*auToD
     write(*,'(A50)')           '-----------------------------------------'
     write(*,*)
  
     if(dump_orb) then
       write(*,'(A50)') '---------------------------------------'
-      write(*,'(A32)') ' qsGGW orbital coefficients'
+      write(*,'(A32)') ' Generalized qsGW orbital coefficients '
       write(*,'(A50)') '---------------------------------------'
       call matout(nBas,nBas,c)
       write(*,*)
     end if
     write(*,'(A50)') '---------------------------------------'
-    write(*,'(A32)') ' qsGGW orbital energies'
+    write(*,'(A32)') ' Generalized qsGW orbital energies (au)'
     write(*,'(A50)') '---------------------------------------'
-    call matout(nBas,1,eGW)
+    call vecout(nBas,eGW)
     write(*,*)
 
   endif

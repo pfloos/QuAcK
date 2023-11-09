@@ -62,7 +62,7 @@ subroutine qsRGW(maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,dophBSE,do
   double precision              :: ET
   double precision              :: EV
   double precision              :: EJ
-  double precision              :: Ex
+  double precision              :: EK
   double precision              :: EqsGW
   double precision              :: EcRPA
   double precision              :: EcBSE(nspin)
@@ -73,7 +73,7 @@ subroutine qsRGW(maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,dophBSE,do
   double precision              :: dipole(ncart)
 
   logical                       :: dRPA = .true.
-  logical                       :: print_W = .true.
+  logical                       :: print_W = .false.
   double precision,allocatable  :: error_diis(:,:)
   double precision,allocatable  :: F_diis(:,:)
   double precision,allocatable  :: Aph(:,:)
@@ -245,16 +245,16 @@ subroutine qsRGW(maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,dophBSE,do
 
     ! Exchange energy
 
-    Ex = 0.25d0*trace_matrix(nBas,matmul(P,K))
+    EK = 0.25d0*trace_matrix(nBas,matmul(P,K))
 
     ! Total energy
 
-    EqsGW = ET + EV + EJ + Ex 
+    EqsGW = ET + EV + EJ + EK 
 
     ! Print results
 
     call dipole_moment(nBas,P,nNuc,ZNuc,rNuc,dipole_int_AO,dipole)
-    call print_qsGW(nBas,nO,nSCF,Conv,thresh,eHF,eGW,c,SigCp,Z,ENuc,ET,EV,EJ,Ex,EcGM,EcRPA,EqsGW,dipole)
+    call print_qsRGW(nBas,nO,nSCF,Conv,thresh,eHF,eGW,c,SigCp,Z,ENuc,ET,EV,EJ,EK,EcGM,EcRPA,EqsGW,dipole)
 
   enddo
 !------------------------------------------------------------------------
