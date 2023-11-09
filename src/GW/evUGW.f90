@@ -73,9 +73,9 @@ subroutine evUGW(maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,BSE,TDA_W,
 ! Hello world
 
   write(*,*)
-  write(*,*)'************************************************'
-  write(*,*)'|       Self-consistent evGW calculation       |'
-  write(*,*)'************************************************'
+  write(*,*)'*********************************'
+  write(*,*)'| Unrestricted evGW Calculation *'
+  write(*,*)'*********************************'
   write(*,*)
 
 ! TDA for W

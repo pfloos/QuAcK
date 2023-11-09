@@ -59,9 +59,9 @@ subroutine GG0W0(doACFDT,exchange_kernel,doXBS,dophBSE,dophBSE2,TDA_W,TDA,dBSE,d
 ! Hello world
 
   write(*,*)
-  write(*,*)'************************************************'
-  write(*,*)'|          One-shot G0W0 calculation           |'
-  write(*,*)'************************************************'
+  write(*,*)'********************************'
+  write(*,*)'* Generalized G0W0 Calculation *'
+  write(*,*)'********************************'
   write(*,*)
 
 ! Initialization

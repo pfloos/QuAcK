@@ -108,7 +108,7 @@ subroutine qsGGW(maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,dophBSE,do
 
   write(*,*)
   write(*,*)'********************************'
-  write(*,*)'| Generalized qsGW Calculation |'
+  write(*,*)'* Generalized qsGW Calculation *'
   write(*,*)'********************************'
   write(*,*)
 

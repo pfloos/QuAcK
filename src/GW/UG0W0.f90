@@ -65,10 +65,9 @@ subroutine UG0W0(doACFDT,exchange_kernel,doXBS,BSE,TDA_W,TDA,dBSE,dTDA,spin_cons
 ! Hello world
 
   write(*,*)
-  write(*,*)'************************************************'
-  write(*,*)'|          One-shot G0W0 calculation           |'
-  write(*,*)'|         *** Unrestricted version ***         |'
-  write(*,*)'************************************************'
+  write(*,*)'*********************************'
+  write(*,*)'* Unrestricted G0W0 Calculation *'
+  write(*,*)'*********************************'
   write(*,*)
 
 ! Initialization
