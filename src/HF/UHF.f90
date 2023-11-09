@@ -65,9 +65,9 @@ subroutine UHF(maxSCF,thresh,max_diis,guess_type,mix,level_shift,nNuc,ZNuc,rNuc,
 ! Hello world
 
   write(*,*)
-  write(*,*)'************************************************'
-  write(*,*)'*    Unrestricted Hartree-Fock calculation     *'
-  write(*,*)'************************************************'
+  write(*,*)'*******************************'
+  write(*,*)'* Unrestricted HF Calculation *'
+  write(*,*)'*******************************'
   write(*,*)
 
 ! Useful stuff

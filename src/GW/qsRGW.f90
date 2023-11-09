@@ -99,7 +99,7 @@ subroutine qsRGW(maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,dophBSE,do
 
   write(*,*)
   write(*,*)'*******************************'
-  write(*,*)'| Restricted qsGW Calculation |'
+  write(*,*)'* Restricted qsGW Calculation *'
   write(*,*)'*******************************'
   write(*,*)
 

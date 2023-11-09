@@ -62,9 +62,9 @@ subroutine RHF(maxSCF,thresh,max_diis,guess_type,level_shift,nNuc,ZNuc,rNuc,ENuc
 ! Hello world
 
   write(*,*)
-  write(*,*)'************************************************'
-  write(*,*)'|    Restricted Hartree-Fock calculation       |'
-  write(*,*)'************************************************'
+  write(*,*)'*****************************'
+  write(*,*)'* Restricted HF Calculation *'
+  write(*,*)'*****************************'
   write(*,*)
 
 ! Useful quantities

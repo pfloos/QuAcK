@@ -68,14 +68,14 @@ subroutine print_qsRGW(nBas,nO,nSCF,Conv,thresh,eHF,eGW,c,SigC,Z,ENuc,ET,EV,EJ,E
   write(*,'(2X,A10,I3)')   'Iteration ',nSCF
   write(*,'(2X,A14,F15.5)')'Convergence = ',Conv
   write(*,*)'-------------------------------------------------------------------------------'
-  write(*,'(2X,A60,F15.6,A3)') 'qsRGW HOMO      energy =',eGW(HOMO)*HaToeV,' eV'
-  write(*,'(2X,A60,F15.6,A3)') 'qsRGW LUMO      energy =',eGW(LUMO)*HaToeV,' eV'
-  write(*,'(2X,A60,F15.6,A3)') 'qsRGW HOMO-LUMO gap    =',Gap*HaToeV,' eV'
+  write(*,'(2X,A60,F15.6,A3)') 'qsRGW HOMO      energy = ',eGW(HOMO)*HaToeV,' eV'
+  write(*,'(2X,A60,F15.6,A3)') 'qsRGW LUMO      energy = ',eGW(LUMO)*HaToeV,' eV'
+  write(*,'(2X,A60,F15.6,A3)') 'qsRGW HOMO-LUMO gap    = ',Gap*HaToeV,' eV'
   write(*,*)'-------------------------------------------------------------------------------'
-  write(*,'(2X,A60,F15.6,A3)') '      qsRGW total       energy =',ENuc + EqsGW,' au'
-  write(*,'(2X,A60,F15.6,A3)') '      qsRGW exchange    energy =',EK,' au'
-  write(*,'(2X,A60,F15.6,A3)') '   GM@qsRGW correlation energy =',EcGM,' au'
-  write(*,'(2X,A60,F15.6,A3)') 'phRPA@qsRGW correlation energy =',EcRPA,' au'
+  write(*,'(2X,A60,F15.6,A3)') '      qsRGW total       energy = ',ENuc + EqsGW,' au'
+  write(*,'(2X,A60,F15.6,A3)') '      qsRGW exchange    energy = ',EK,' au'
+  write(*,'(2X,A60,F15.6,A3)') '   GM@qsRGW correlation energy = ',EcGM,' au'
+  write(*,'(2X,A60,F15.6,A3)') 'phRPA@qsRGW correlation energy = ',EcRPA,' au'
   write(*,*)'-------------------------------------------------------------------------------'
   write(*,*)
 

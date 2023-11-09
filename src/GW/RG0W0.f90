@@ -62,9 +62,9 @@ subroutine RG0W0(doACFDT,exchange_kernel,doXBS,dophBSE,dophBSE2,TDA_W,TDA,dBSE,d
 ! Hello world
 
   write(*,*)
-  write(*,*)'************************************************'
-  write(*,*)'|          One-shot G0W0 calculation           |'
-  write(*,*)'************************************************'
+  write(*,*)'*******************************'
+  write(*,*)'* Restricted G0W0 Calculation *'
+  write(*,*)'*******************************'
   write(*,*)
 
 ! Initialization
@@ -104,7 +104,7 @@ subroutine RG0W0(doACFDT,exchange_kernel,doXBS,dophBSE,dophBSE2,TDA_W,TDA,dBSE,d
 
   call phLR(TDA_W,nS,Aph,Bph,EcRPA,Om,XpY,XmY)
 
-  if(print_W) call print_excitation_energies('phRPA@HF',ispin,nS,Om)
+  if(print_W) call print_excitation_energies('phRPA@RHF',ispin,nS,Om)
 
 !--------------------------!
 ! Compute spectral weights !

@@ -41,45 +41,45 @@ subroutine print_RHF(nBas,nO,eHF,cHF,ENuc,ET,EV,EJ,EK,ERHF,dipole)
 ! Dump results
 
   write(*,*)
-  write(*,'(A50)')           '-----------------------------------------'
-  write(*,'(A32)')           ' Summary              '
-  write(*,'(A50)')           '-----------------------------------------'
-  write(*,'(A32,1X,F16.10,A3)') ' One-electron energy: ',ET + EV,' au'
-  write(*,'(A32,1X,F16.10,A3)') ' Kinetic      energy: ',ET,' au'
-  write(*,'(A32,1X,F16.10,A3)') ' Potential    energy: ',EV,' au'
-  write(*,'(A50)')           '-----------------------------------------'
-  write(*,'(A32,1X,F16.10,A3)') ' Two-electron energy: ',EJ + EK,' au'
-  write(*,'(A32,1X,F16.10,A3)') ' Hartree      energy: ',EJ,' au'
-  write(*,'(A32,1X,F16.10,A3)') ' Exchange     energy: ',EK,' au'
-  write(*,'(A50)')           '-----------------------------------------'
-  write(*,'(A32,1X,F16.10,A3)') ' Electronic   energy: ',ERHF,' au'
-  write(*,'(A32,1X,F16.10,A3)') ' Nuclear   repulsion: ',ENuc,' au'
-  write(*,'(A32,1X,F16.10,A3)') ' RHF          energy: ',ERHF + ENuc,' au'
-  write(*,'(A50)')           '-----------------------------------------'
-  write(*,'(A32,1X,F16.6,A3)')  ' HF HOMO      energy: ',eHF(HOMO)*HaToeV,' eV'
-  write(*,'(A32,1X,F16.6,A3)')  ' HF LUMO      energy: ',eHF(LUMO)*HaToeV,' eV'
-  write(*,'(A32,1X,F16.6,A3)')  ' HF HOMO-LUMO gap   : ',Gap*HaToeV,' eV'
-  write(*,'(A50)')           '-----------------------------------------'
-  write(*,'(A32,1X,F16.6)')     '  S                 :',2d0*S+ 1d0
-  write(*,'(A32,1X,F16.6)')     ' <S**2>             :',S2
-  write(*,'(A50)')           '-----------------------------------------'
-  write(*,'(A35)')           ' Dipole moment (Debye)    '
+  write(*,'(A50)')           '---------------------------------------'
+  write(*,'(A33)')           ' Summary               '
+  write(*,'(A50)')           '---------------------------------------'
+  write(*,'(A33,1X,F16.10,A3)') ' One-electron energy = ',ET + EV,' au'
+  write(*,'(A33,1X,F16.10,A3)') ' Kinetic      energy = ',ET,' au'
+  write(*,'(A33,1X,F16.10,A3)') ' Potential    energy = ',EV,' au'
+  write(*,'(A50)')           '---------------------------------------'
+  write(*,'(A33,1X,F16.10,A3)') ' Two-electron energy = ',EJ + EK,' au'
+  write(*,'(A33,1X,F16.10,A3)') ' Hartree      energy = ',EJ,' au'
+  write(*,'(A33,1X,F16.10,A3)') ' Exchange     energy = ',EK,' au'
+  write(*,'(A50)')           '---------------------------------------'
+  write(*,'(A33,1X,F16.10,A3)') ' Electronic   energy = ',ERHF,' au'
+  write(*,'(A33,1X,F16.10,A3)') ' Nuclear   repulsion = ',ENuc,' au'
+  write(*,'(A33,1X,F16.10,A3)') ' RHF          energy = ',ERHF + ENuc,' au'
+  write(*,'(A50)')           '---------------------------------------'
+  write(*,'(A33,1X,F16.6,A3)')  ' HF HOMO      energy = ',eHF(HOMO)*HaToeV,' eV'
+  write(*,'(A33,1X,F16.6,A3)')  ' HF LUMO      energy = ',eHF(LUMO)*HaToeV,' eV'
+  write(*,'(A33,1X,F16.6,A3)')  ' HF HOMO-LUMO gap    = ',Gap*HaToeV,' eV'
+  write(*,'(A50)')           '---------------------------------------'
+  write(*,'(A33,1X,F16.6)')     '  S                 = ',2d0*S+ 1d0
+  write(*,'(A33,1X,F16.6)')     ' <S**2>             = ',S2
+  write(*,'(A50)')           '---------------------------------------'
+  write(*,'(A36)')           ' Dipole moment (Debye)    '
   write(*,'(10X,4A10)')      'X','Y','Z','Tot.'
   write(*,'(10X,4F10.4)')    (dipole(ixyz)*auToD,ixyz=1,ncart),norm2(dipole)*auToD
-  write(*,'(A50)')           '-----------------------------------------'
+  write(*,'(A50)')           '---------------------------------------'
   write(*,*)
 
 ! Print results
 
   if(dump_orb) then 
     write(*,'(A50)') '---------------------------------------'
-    write(*,'(A32)') ' RHF orbital coefficients'
+    write(*,'(A50)') ' RHF orbital coefficients'
     write(*,'(A50)') '---------------------------------------'
     call matout(nBas,nBas,cHF)
     write(*,*)
   end if
   write(*,'(A50)') '---------------------------------------'
-  write(*,'(A32)') ' RHF orbital energies'
+  write(*,'(A50)') ' RHF orbital energies (au) '
   write(*,'(A50)') '---------------------------------------'
   call matout(nBas,1,eHF)
   write(*,*)
