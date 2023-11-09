@@ -1,6 +1,6 @@
-subroutine qsGW(maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,dophBSE,dophBSE2,TDA_W,TDA,dBSE,dTDA,doppBSE, & 
-                singlet,triplet,eta,regularize,nNuc,ZNuc,rNuc,ENuc,nBas,nC,nO,nV,nR,nS,ERHF,S,X,T,V,Hc,ERI_AO,  & 
-                ERI_MO,dipole_int_AO,dipole_int_MO,PHF,cHF,eHF)
+subroutine qsRGW(maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,dophBSE,dophBSE2,TDA_W,TDA,dBSE,dTDA,doppBSE, & 
+                 singlet,triplet,eta,regularize,nNuc,ZNuc,rNuc,ENuc,nBas,nC,nO,nV,nR,nS,ERHF,S,X,T,V,Hc,ERI_AO,     & 
+                 ERI_MO,dipole_int_AO,dipole_int_MO,PHF,cHF,eHF)
 
 ! Perform a quasiparticle self-consistent GW calculation
 
@@ -98,9 +98,9 @@ subroutine qsGW(maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,dophBSE,dop
 ! Hello world
 
   write(*,*)
-  write(*,*)'************************************************'
-  write(*,*)'|       Self-consistent qsGW calculation       |'
-  write(*,*)'************************************************'
+  write(*,*)'*******************************'
+  write(*,*)'| Restricted qsGW Calculation |'
+  write(*,*)'*******************************'
   write(*,*)
 
 ! Warning 
@@ -115,7 +115,7 @@ subroutine qsGW(maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,dophBSE,dop
 ! TDA for W
 
   if(TDA_W) then 
-    write(*,*) 'Tamm-Dancoff approximation for dynamic screening!'
+    write(*,*) 'Tamm-Dancoff approximation for dynamical screening!'
     write(*,*)
   end if
 
@@ -178,7 +178,7 @@ subroutine qsGW(maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,dophBSE,dop
     if(.not.TDA_W) call phLR_B(ispin,dRPA,nBas,nC,nO,nV,nR,nS,1d0,ERI_MO,Bph)
 
     call phLR(TDA_W,nS,Aph,Bph,EcRPA,Om,XpY,XmY)
-    if(print_W) call print_excitation_energies('phRPA@qsGW',ispin,nS,Om)
+    if(print_W) call print_excitation_energies('phRPA@qsRGW',ispin,nS,Om)
 
     ! Compute correlation part of the self-energy 
 
