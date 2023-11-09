@@ -241,15 +241,19 @@ subroutine qsUGW(maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,BSE,TDA_W,
       err(:,:,is) = matmul(F(:,:,is),matmul(P(:,:,is),S(:,:))) - matmul(matmul(S(:,:),P(:,:,is)),F(:,:,is))
     end do
 
-    if(nSCF > 1) Conv = maxval(abs(err(:,:,:)))
+    if(nSCF > 1) Conv = maxval(abs(err))
 
     ! DIIS extrapolation
 
-    n_diis = min(n_diis+1,max_diis)
-    do is=1,nspin
-      if(nO(is) > 1) call DIIS_extrapolation(rcond(is),nBasSq,nBasSq,n_diis,err_diis(:,1:n_diis,is), &
-                                             F_diis(:,1:n_diis,is),err(:,:,is),F(:,:,is))
-    end do
+    if(max_diis > 1) then
+
+      n_diis = min(n_diis+1,max_diis)
+      do is=1,nspin
+        if(nO(is) > 1) call DIIS_extrapolation(rcond(is),nBasSq,nBasSq,n_diis,err_diis(:,1:n_diis,is), &
+                                               F_diis(:,1:n_diis,is),err(:,:,is),F(:,:,is))
+      end do
+
+    end if
 
     ! Transform Fock matrix in orthogonal basis
 

@@ -21,6 +21,7 @@ subroutine MOtoAO_transform(nBas,S,c,B,A)
   double precision,intent(out)  :: A(nBas,nBas)
 
 ! Memory allocation
+
   allocate(Sc(nBas,nBas))
 
   Sc = matmul(S,c)

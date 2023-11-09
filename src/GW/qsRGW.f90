@@ -74,7 +74,7 @@ subroutine qsRGW(maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,dophBSE,do
 
   logical                       :: dRPA = .true.
   logical                       :: print_W = .false.
-  double precision,allocatable  :: error_diis(:,:)
+  double precision,allocatable  :: err_diis(:,:)
   double precision,allocatable  :: F_diis(:,:)
   double precision,allocatable  :: Aph(:,:)
   double precision,allocatable  :: Bph(:,:)
@@ -93,7 +93,7 @@ subroutine qsRGW(maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,dophBSE,do
   double precision,allocatable  :: SigC(:,:)
   double precision,allocatable  :: SigCp(:,:)
   double precision,allocatable  :: Z(:)
-  double precision,allocatable  :: error(:,:)
+  double precision,allocatable  :: err(:,:)
 
 ! Hello world
 
@@ -131,20 +131,20 @@ subroutine qsRGW(maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,dophBSE,do
   allocate(eGW(nBas),c(nBas,nBas),cp(nBas,nBas),P(nBas,nBas),F(nBas,nBas),Fp(nBas,nBas), &
            J(nBas,nBas),K(nBas,nBas),SigC(nBas,nBas),SigCp(nBas,nBas),Z(nBas),           & 
            Aph(nS,nS),Bph(nS,nS),Om(nS),XpY(nS,nS),XmY(nS,nS),rho(nBas,nBas,nS),         &
-           error(nBas,nBas),error_diis(nBasSq,max_diis),F_diis(nBasSq,max_diis))
+           err(nBas,nBas),err_diis(nBasSq,max_diis),F_diis(nBasSq,max_diis))
 
 ! Initialization
   
-  nSCF            = -1
-  n_diis          = 0
-  ispin           = 1
-  Conv            = 1d0
-  P(:,:)          = PHF(:,:)
-  eGW(:)          = eHF(:)
-  c(:,:)          = cHF(:,:)
-  F_diis(:,:)     = 0d0
-  error_diis(:,:) = 0d0
-  rcond           = 0d0
+  nSCF          = -1
+  n_diis        = 0
+  ispin         = 1
+  Conv          = 1d0
+  P(:,:)        = PHF(:,:)
+  eGW(:)        = eHF(:)
+  c(:,:)        = cHF(:,:)
+  F_diis(:,:)   = 0d0
+  err_diis(:,:) = 0d0
+  rcond          = 0d0
 
 !------------------------------------------------------------------------
 ! Main loop
@@ -200,15 +200,15 @@ subroutine qsRGW(maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,dophBSE,do
 
     ! Compute commutator and convergence criteria
 
-    error = matmul(F,matmul(P,S)) - matmul(matmul(S,P),F)
+    err = matmul(F,matmul(P,S)) - matmul(matmul(S,P),F)
 
-    if(nSCF > 1) Conv = maxval(abs(error))
+    if(nSCF > 1) Conv = maxval(abs(err))
 
     ! DIIS extrapolation 
 
     if(max_diis > 1) then
       n_diis = min(n_diis+1,max_diis)
-      call DIIS_extrapolation(rcond,nBasSq,nBasSq,n_diis,error_diis,F_diis,error,F)
+      call DIIS_extrapolation(rcond,nBasSq,nBasSq,n_diis,err_diis,F_diis,err,F)
     end if
 
     ! Diagonalize Hamiltonian in AO basis
@@ -273,7 +273,7 @@ subroutine qsRGW(maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,dophBSE,do
 
 ! Deallocate memory
 
-  deallocate(c,cp,P,F,Fp,J,K,SigC,SigCp,Z,Om,XpY,XmY,rho,error,error_diis,F_diis)
+  deallocate(c,cp,P,F,Fp,J,K,SigC,SigCp,Z,Om,XpY,XmY,rho,err,err_diis,F_diis)
 
 ! Perform BSE calculation
 
