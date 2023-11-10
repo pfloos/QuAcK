@@ -39,10 +39,12 @@ subroutine phUACFDT(exchange_kernel,doXBS,dRPA,TDA_W,TDA,BSE,spin_conserved,spin
   double precision,allocatable  :: Ec(:,:)
 
   double precision              :: EcRPA
-  double precision,allocatable  :: OmRPA(:)
-  double precision,allocatable  :: XpY_RPA(:,:)
-  double precision,allocatable  :: XmY_RPA(:,:)
-  double precision,allocatable  :: rho_RPA(:,:,:,:)
+  double precision,allocatable  :: Aph(:,:)
+  double precision,allocatable  :: Bph(:,:)
+  double precision,allocatable  :: Om(:)
+  double precision,allocatable  :: XpY(:,:)
+  double precision,allocatable  :: XmY(:,:)
+  double precision,allocatable  :: rho(:,:,:,:)
 
   integer                       :: nS_aa,nS_bb,nS_sc
   double precision,allocatable  :: Om_sc(:)
@@ -90,11 +92,16 @@ subroutine phUACFDT(exchange_kernel,doXBS,dRPA,TDA_W,TDA,BSE,spin_conserved,spin
   nS_ba = (nO(2) - nC(2))*(nV(1) - nR(1))
   nS_sf = nS_ab + nS_ba
 
-  allocate(OmRPA(nS_sc),XpY_RPA(nS_sc,nS_sc),XmY_RPA(nS_sc,nS_sc),rho_RPA(nBas,nBas,nS_sc,nspin))
+  allocate(Aph(nS_sc,nS_sc),Bph(nS_sc,nS_sc),Om(nS_sc),XpY(nS_sc,nS_sc),XmY(nS_sc,nS_sc),rho(nBas,nBas,nS_sc,nspin))
 
-  call phULR(isp_W,.true.,TDA_W,.false.,nBas,nC,nO,nV,nR,nS_aa,nS_bb,nS_sc,nS_sc,1d0,eW, &
-             ERI_aaaa,ERI_aabb,ERI_bbbb,OmRPA,rho_RPA,EcRPA,OmRPA,XpY_RPA,XmY_RPA)
-  call UGW_excitation_density(nBas,nC,nO,nR,nS_aa,nS_bb,nS_sc,ERI_aaaa,ERI_aabb,ERI_bbbb,XpY_RPA,rho_RPA)
+  call phULR_A(ispin,.true.,nBas,nC,nO,nV,nR,nS_aa,nS_bb,nS_sc,1d0,eW,ERI_aaaa,ERI_aabb,ERI_bbbb,Aph)
+  if(.not.TDA) call phULR_B(ispin,.true.,nBas,nC,nO,nV,nR,nS_aa,nS_bb,nS_sc,1d0,ERI_aaaa,ERI_aabb,ERI_bbbb,Bph)
+
+  call phULR(TDA,nS_aa,nS_bb,nS_sc,Aph,Bph,EcRPA,Om,XpY,XmY)
+
+  call UGW_excitation_density(nBas,nC,nO,nR,nS_aa,nS_bb,nS_sc,ERI_aaaa,ERI_aabb,ERI_bbbb,XpY,rho)
+
+  deallocate(Aph,Bph)
 
 ! Spin-conserved manifold
 
@@ -102,7 +109,7 @@ subroutine phUACFDT(exchange_kernel,doXBS,dRPA,TDA_W,TDA,BSE,spin_conserved,spin
 
     ispin = 1
 
-    allocate(Om_sc(nS_sc),XpY_sc(nS_sc,nS_sc),XmY_sc(nS_sc,nS_sc))
+    allocate(Aph(nS_sc,nS_sc),Bph(nS_sc,nS_sc),Om_sc(nS_sc),XpY_sc(nS_sc,nS_sc),XmY_sc(nS_sc,nS_sc))
 
     write(*,*) '------------------------'
     write(*,*) 'Spin-conserved manifold '
@@ -119,14 +126,14 @@ subroutine phUACFDT(exchange_kernel,doXBS,dRPA,TDA_W,TDA,BSE,spin_conserved,spin
 
       if(doXBS) then
 
-        call phULR(isp_W,.true.,TDA_W,.false.,nBas,nC,nO,nV,nR,nS_aa,nS_bb,nS_sc,nS_sc,lambda,eW, &
-                   ERI_aaaa,ERI_aabb,ERI_bbbb,OmRPA,rho_RPA,EcRPA,OmRPA,XpY_RPA,XmY_RPA)
-        call UGW_excitation_density(nBas,nC,nO,nR,nS_aa,nS_bb,nS_sc,ERI_aaaa,ERI_aabb,ERI_bbbb,XpY_RPA,rho_RPA)
+!       call phULR(isp_W,.true.,TDA_W,.false.,nBas,nC,nO,nV,nR,nS_aa,nS_bb,nS_sc,nS_sc,lambda,eW, &
+!                  ERI_aaaa,ERI_aabb,ERI_bbbb,Om,rho,EcRPA,Om,XpY,XmY)
+        call UGW_excitation_density(nBas,nC,nO,nR,nS_aa,nS_bb,nS_sc,ERI_aaaa,ERI_aabb,ERI_bbbb,XpY,rho)
 
       end if
 
-      call phULR(ispin,dRPA,TDA,BSE,nBas,nC,nO,nV,nR,nS_aa,nS_bb,nS_sc,nS_sc,lambda,e, &
-                 ERI_aaaa,ERI_aabb,ERI_bbbb,OmRPA,rho_RPA,EcAC(ispin),Om_sc,XpY_sc,XmY_sc)
+!     call phULR(ispin,dRPA,TDA,BSE,nBas,nC,nO,nV,nR,nS_aa,nS_bb,nS_sc,nS_sc,lambda,e, &
+!                ERI_aaaa,ERI_aabb,ERI_bbbb,Om,rho,EcAC(ispin),Om_sc,XpY_sc,XmY_sc)
 
       call phUACFDT_correlation_energy(ispin,exchange_kernel,nBas,nC,nO,nV,nR,nS,nS_aa,nS_bb,nS_sc, &
                                        ERI_aaaa,ERI_aabb,ERI_bbbb,XpY_sc,XmY_sc,Ec(iAC,ispin))
@@ -144,7 +151,7 @@ subroutine phUACFDT(exchange_kernel,doXBS,dRPA,TDA_W,TDA,BSE,spin_conserved,spin
     write(*,*) '-----------------------------------------------------------------------------------'
     write(*,*)
 
-    deallocate(Om_sc,XpY_sc,XmY_sc)
+    deallocate(Aph,Bph,Om_sc,XpY_sc,XmY_sc)
 
   end if
  
@@ -156,7 +163,7 @@ subroutine phUACFDT(exchange_kernel,doXBS,dRPA,TDA_W,TDA,BSE,spin_conserved,spin
 
     ! Memory allocation
 
-    allocate(Om_sf(nS_sf),XpY_sf(nS_sf,nS_sf),XmY_sf(nS_sf,nS_sf))
+    allocate(Aph(nS_sf,nS_sf),Bph(nS_sf,nS_sf),Om_sf(nS_sf),XpY_sf(nS_sf,nS_sf),XmY_sf(nS_sf,nS_sf))
 
     write(*,*) '--------------------'
     write(*,*) ' Spin-flip manifold '
@@ -173,14 +180,14 @@ subroutine phUACFDT(exchange_kernel,doXBS,dRPA,TDA_W,TDA,BSE,spin_conserved,spin
 
       if(doXBS) then
 
-        call phULR(isp_W,.true.,TDA_W,.false.,nBas,nC,nO,nV,nR,nS_aa,nS_bb,nS_sc,nS_sc,lambda,eW, &
-                   ERI_aaaa,ERI_aabb,ERI_bbbb,OmRPA,rho_RPA,EcRPA,OmRPA,XpY_RPA,XmY_RPA)
-        call UGW_excitation_density(nBas,nC,nO,nR,nS_aa,nS_bb,nS_sc,ERI_aaaa,ERI_aabb,ERI_bbbb,XpY_RPA,rho_RPA)
+!       call phULR(isp_W,.true.,TDA_W,.false.,nBas,nC,nO,nV,nR,nS_aa,nS_bb,nS_sc,nS_sc,lambda,eW, &
+!                  ERI_aaaa,ERI_aabb,ERI_bbbb,Om,rho,EcRPA,Om,XpY,XmY)
+        call UGW_excitation_density(nBas,nC,nO,nR,nS_aa,nS_bb,nS_sc,ERI_aaaa,ERI_aabb,ERI_bbbb,XpY,rho)
 
       end if
 
-      call phULR(ispin,dRPA,TDA,BSE,nBas,nC,nO,nV,nR,nS_ab,nS_ba,nS_sf,nS_sc,lambda,e, &
-                 ERI_aaaa,ERI_aabb,ERI_bbbb,OmRPA,rho_RPA,EcAC(ispin),Om_sf,XpY_sf,XmY_sf)
+!     call phULR(ispin,dRPA,TDA,BSE,nBas,nC,nO,nV,nR,nS_ab,nS_ba,nS_sf,nS_sc,lambda,e, &
+!                ERI_aaaa,ERI_aabb,ERI_bbbb,Om,rho,EcAC(ispin),Om_sf,XpY_sf,XmY_sf)
 
       call phUACFDT_correlation_energy(ispin,exchange_kernel,nBas,nC,nO,nV,nR,nS,nS_ab,nS_ba,nS_sf, &
                                        ERI_aaaa,ERI_aabb,ERI_bbbb,XpY_sf,XmY_sf,Ec(iAC,ispin))
@@ -198,7 +205,7 @@ subroutine phUACFDT(exchange_kernel,doXBS,dRPA,TDA_W,TDA,BSE,spin_conserved,spin
     write(*,*) '-----------------------------------------------------------------------------------'
     write(*,*)
 
-    deallocate(Om_sf,XpY_sf,XmY_sf)
+    deallocate(Aph,Bph,Om_sf,XpY_sf,XmY_sf)
 
   end if
 

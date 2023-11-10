@@ -40,9 +40,9 @@ subroutine phRPA(TDA,doACFDT,exchange_kernel,singlet,triplet,nBas,nC,nO,nV,nR,nS
 ! Hello world
 
   write(*,*)
-  write(*,*)'***********************************************'
-  write(*,*)'|  Random-phase approximation calculation     |'
-  write(*,*)'***********************************************'
+  write(*,*)'*********************************'
+  write(*,*)'* Restricted ph-RPA Calculation *'
+  write(*,*)'*********************************'
   write(*,*)
 
 ! TDA 

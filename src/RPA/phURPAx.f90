@@ -33,27 +33,25 @@ subroutine phURPAx(TDA,doACFDT,exchange_kernel,spin_conserved,spin_flip,nBas,nC,
 
 ! Local variables
 
+  logical                       :: dRPA
   integer                       :: ispin
 
-  integer                       :: nS_aa,nS_bb,nS_sc
-  double precision,allocatable  :: Omega_sc(:)
-  double precision,allocatable  :: XpY_sc(:,:)
-  double precision,allocatable  :: XmY_sc(:,:)
+  integer                       :: nSa,nSb,nSt
+  double precision,allocatable  :: Aph(:,:)
+  double precision,allocatable  :: Bph(:,:)
+  double precision,allocatable  :: Om(:)
+  double precision,allocatable  :: XpY(:,:)
+  double precision,allocatable  :: XmY(:,:)
 
-  integer                       :: nS_ab,nS_ba,nS_sf
-  double precision,allocatable  :: Omega_sf(:)
-  double precision,allocatable  :: XpY_sf(:,:)
-  double precision,allocatable  :: XmY_sf(:,:)
-
-  double precision              :: rho_sc,rho_sf
+  double precision              :: rho
   double precision              :: EcRPA(nspin)
 
 ! Hello world
 
   write(*,*)
-  write(*,*)'*********************************************************************'
-  write(*,*)'| Unrestricted random phase approximation calculation with exchange |'
-  write(*,*)'*********************************************************************'
+  write(*,*)'************************************'
+  write(*,*)'* Unrestricted ph-RPAx Calculation *'
+  write(*,*)'************************************'
   write(*,*)
 
 ! TDA 
@@ -66,30 +64,31 @@ subroutine phURPAx(TDA,doACFDT,exchange_kernel,spin_conserved,spin_flip,nBas,nC,
 
 ! Initialization
 
+  dRPA = .false.
   EcRPA(:) = 0d0
-  EcRPA(:)   = 0d0
 
 ! Spin-conserved transitions
 
-  if(spin_conserved) then 
+  if(spin_conserved) then
 
     ispin = 1
 
     ! Memory allocation
 
-    nS_aa = nS(1)
-    nS_bb = nS(2)
-    nS_sc = nS_aa + nS_bb
+    nSa = nS(1)
+    nSb = nS(2)
+    nSt = nSa + nSb
 
-    allocate(Omega_sc(nS_sc),XpY_sc(nS_sc,nS_sc),XmY_sc(nS_sc,nS_sc))
+    allocate(Aph(nSt,nSt),Bph(nSt,nSt),Om(nSt),XpY(nSt,nSt),XmY(nSt,nSt))
 
-    call phULR(ispin,.false.,TDA,.false.,nBas,nC,nO,nV,nR,nS_aa,nS_bb,nS_sc,nS_sc,1d0,e, & 
-               ERI_aaaa,ERI_aabb,ERI_bbbb,Omega_sc,rho_sc,EcRPA(ispin),Omega_sc,XpY_sc,XmY_sc)
-    call print_excitation_energies('phRPAx@UHF',5,nS_sc,Omega_sc)
-    call phULR_transition_vectors(ispin,nBas,nC,nO,nV,nR,nS,nS_aa,nS_bb,nS_sc,dipole_int_aa,dipole_int_bb, & 
-                                  c,S,Omega_sc,XpY_sc,XmY_sc)
+    call phULR_A(ispin,dRPA,nBas,nC,nO,nV,nR,nSa,nSb,nSt,1d0,e,ERI_aaaa,ERI_aabb,ERI_bbbb,Aph)
+    if(.not.TDA) call phULR_B(ispin,dRPA,nBas,nC,nO,nV,nR,nSa,nSb,nSt,1d0,ERI_aaaa,ERI_aabb,ERI_bbbb,Bph)
 
-    deallocate(Omega_sc,XpY_sc,XmY_sc)
+    call phULR(TDA,nSa,nSb,nSt,Aph,Bph,EcRPA(ispin),Om,XpY,XmY)
+    call print_excitation_energies('phRPA@UHF',5,nSt,Om)
+    call phULR_transition_vectors(ispin,nBas,nC,nO,nV,nR,nS,nSa,nSb,nSt,dipole_int_aa,dipole_int_bb,c,S,Om,XpY,XmY)
+
+    deallocate(Aph,Bph,Om,XpY,XmY)
 
   endif
 
@@ -101,21 +100,29 @@ subroutine phURPAx(TDA,doACFDT,exchange_kernel,spin_conserved,spin_flip,nBas,nC,
 
     ! Memory allocation
 
-    nS_ab = (nO(1) - nC(1))*(nV(2) - nR(2))
-    nS_ba = (nO(2) - nC(2))*(nV(1) - nR(1))
-    nS_sf = nS_ab + nS_ba
+    nSa = (nO(1) - nC(1))*(nV(2) - nR(2))
+    nSb = (nO(2) - nC(2))*(nV(1) - nR(1))
+    nSt = nSa + nSb
 
-    allocate(Omega_sf(nS_sf),XpY_sf(nS_sf,nS_sf),XmY_sf(nS_sf,nS_sf))
+    allocate(Om(nSt),XpY(nSt,nSt),XmY(nSt,nSt))
 
-    call phULR(ispin,.false.,TDA,.false.,nBas,nC,nO,nV,nR,nS_ab,nS_ba,nS_sf,nS_sf,1d0,e, &
-               ERI_aaaa,ERI_aabb,ERI_bbbb,Omega_sf,rho_sf,EcRPA(ispin),Omega_sf,XpY_sf,XmY_sf)
-    call print_excitation_energies('phRPAx@UHF',6,nS_sf,Omega_sf)
-    call phULR_transition_vectors(ispin,nBas,nC,nO,nV,nR,nS,nS_ab,nS_ba,nS_sf,dipole_int_aa,dipole_int_bb, &
-                                  c,S,Omega_sf,XpY_sf,XmY_sf)
+    call phULR_A(ispin,dRPA,nBas,nC,nO,nV,nR,nSa,nSb,nSt,1d0,e,ERI_aaaa,ERI_aabb,ERI_bbbb,Aph)
+    if(.not.TDA) call phULR_B(ispin,dRPA,nBas,nC,nO,nV,nR,nSa,nSb,nSt,1d0,ERI_aaaa,ERI_aabb,ERI_bbbb,Bph)
 
-    deallocate(Omega_sf,XpY_sf,XmY_sf)
+    call phULR(TDA,nSa,nSa,nSt,Aph,Bph,EcRPA(ispin),Om,XpY,XmY)
+    call print_excitation_energies('phRPA@UHF',6,nSt,Om)
+    call phULR_transition_vectors(ispin,nBas,nC,nO,nV,nR,nS,nSa,nSb,nSt,dipole_int_aa,dipole_int_bb,c,S,Om,XpY,XmY)
+
+    deallocate(Aph,Bph,Om,XpY,XmY)
 
   endif
+
+  if(exchange_kernel) then
+
+    EcRPA(1) = 0.5d0*EcRPA(1)
+    EcRPA(2) = 1.5d0*EcRPA(2)
+
+  end if
 
   if(exchange_kernel) then
 

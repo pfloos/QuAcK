@@ -63,7 +63,7 @@ subroutine qsUGW(maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,BSE,TDA_W,
   integer                       :: ixyz
   integer                       :: is
   integer                       :: n_diis
-  integer                       :: nS_aa,nS_bb,nS_sc
+  integer                       :: nSa,nSb,nSt
   double precision              :: dipole(ncart)
 
   double precision              :: ET(nspin)
@@ -80,6 +80,9 @@ subroutine qsUGW(maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,BSE,TDA_W,
   double precision,external     :: trace_matrix
   double precision,allocatable  :: err_diis(:,:,:)
   double precision,allocatable  :: F_diis(:,:,:)
+
+  double precision,allocatable  :: Aph(:,:)
+  double precision,allocatable  :: Bph(:,:)
   double precision,allocatable  :: Om(:)
   double precision,allocatable  :: XpY(:,:)
   double precision,allocatable  :: XmY(:,:)
@@ -131,14 +134,14 @@ subroutine qsUGW(maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,BSE,TDA_W,
 
 ! Memory allocation
 
-  nS_aa = nS(1)
-  nS_bb = nS(2)
-  nS_sc = nS_aa + nS_bb
+  nSa = nS(1)
+  nSb = nS(2)
+  nSt = nSa + nSb
 
-  allocate(eGW(nBas,nspin),c(nBas,nBas,nspin),cp(nBas,nBas,nspin),P(nBas,nBas,nspin),F(nBas,nBas,nspin),           &
-           Fp(nBas,nBas,nspin),J(nBas,nBas,nspin),K(nBas,nBas,nspin),SigC(nBas,nBas,nspin),SigCp(nBas,nBas,nspin), &
-           Z(nBas,nspin),Om(nS_sc),XpY(nS_sc,nS_sc),XmY(nS_sc,nS_sc),rho(nBas,nBas,nS_sc,nspin),                   &
-           err(nBas,nBas,nspin),err_diis(nBasSq,max_diis,nspin),F_diis(nBasSq,max_diis,nspin))
+  allocate(Aph(nSt,nSt),Bph(nSt,nSt),eGW(nBas,nspin),c(nBas,nBas,nspin),cp(nBas,nBas,nspin),P(nBas,nBas,nspin), &
+           F(nBas,nBas,nspin),Fp(nBas,nBas,nspin),J(nBas,nBas,nspin),K(nBas,nBas,nspin),                        & 
+           SigC(nBas,nBas,nspin),SigCp(nBas,nBas,nspin),Z(nBas,nspin),Om(nSt),XpY(nSt,nSt),XmY(nSt,nSt),        &  
+           rho(nBas,nBas,nSt,nspin),err(nBas,nBas,nspin),err_diis(nBasSq,max_diis,nspin),F_diis(nBasSq,max_diis,nspin))
 
 ! Initialization
   
@@ -198,14 +201,16 @@ subroutine qsUGW(maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,BSE,TDA_W,
 
     ! Compute linear response
 
-    call phULR(ispin,dRPA,TDA_W,.false.,nBas,nC,nO,nV,nR,nS_aa,nS_bb,nS_sc,nS_sc,1d0, &
-               eGW,ERI_aaaa,ERI_aabb,ERI_bbbb,Om,rho,EcRPA,Om,XpY,XmY)
+    call phULR_A(ispin,dRPA,nBas,nC,nO,nV,nR,nSa,nSb,nSt,1d0,eGW,ERI_aaaa,ERI_aabb,ERI_bbbb,Aph)
+    if(.not.TDA) call phULR_B(ispin,dRPA,nBas,nC,nO,nV,nR,nSa,nSb,nSt,1d0,ERI_aaaa,ERI_aabb,ERI_bbbb,Bph)
+    
+    call phULR(TDA_W,nSa,nSb,nSt,Aph,Bph,EcRPA,Om,XpY,XmY)
 
     !----------------------!
     ! Excitation densities !
     !----------------------!
 
-    call UGW_excitation_density(nBas,nC,nO,nR,nS_aa,nS_bb,nS_sc,ERI_aaaa,ERI_aabb,ERI_bbbb,XpY,rho)
+    call UGW_excitation_density(nBas,nC,nO,nR,nSa,nSb,nSt,ERI_aaaa,ERI_aabb,ERI_bbbb,XpY,rho)
 
     !------------------------------------------------!
     ! Compute self-energy and renormalization factor !
@@ -213,11 +218,11 @@ subroutine qsUGW(maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,BSE,TDA_W,
 
     if(regularize) then
       do is=1,nspin
-        call GW_regularization(nBas,nC(is),nO(is),nV(is),nR(is),nS_sc,eGW(:,is),Om,rho(:,:,:,is))
+        call GW_regularization(nBas,nC(is),nO(is),nV(is),nR(is),nSt,eGW(:,is),Om,rho(:,:,:,is))
       end do
     end if
 
-    call UGW_self_energy(eta,nBas,nC,nO,nV,nR,nS_sc,eGW,Om,rho,SigC,Z,EcGM)
+    call UGW_self_energy(eta,nBas,nC,nO,nV,nR,nSt,eGW,Om,rho,SigC,Z,EcGM)
 
     ! Make correlation self-energy Hermitian and transform it back to AO basis
    
