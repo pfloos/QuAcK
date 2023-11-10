@@ -1,4 +1,4 @@
-subroutine AOtoMO_transform(nBas,c,A,B)
+subroutine AOtoMO(nBas,C,A,B)
 
 ! Perform AO to MO transformation of a matrix A for given coefficients c
 
@@ -7,13 +7,20 @@ subroutine AOtoMO_transform(nBas,c,A,B)
 ! Input variables
 
   integer,intent(in)            :: nBas
-  double precision,intent(in)   :: c(nBas,nBas)
+  double precision,intent(in)   :: C(nBas,nBas)
   double precision,intent(in)   :: A(nBas,nBas)
+
+! Local variables
+
+  double precision,allocatable  :: AC(:,:)
 
 ! Output variables
 
   double precision,intent(out)  :: B(nBas,nBas)
 
-  B = matmul(transpose(c),matmul(A,c))
+  allocate(AC(nBas,nBas))
+
+  AC = matmul(A,C)
+  B  = matmul(transpose(C),AC)
 
 end subroutine 

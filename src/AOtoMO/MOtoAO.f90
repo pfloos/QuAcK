@@ -1,4 +1,4 @@
-subroutine MOtoAO_transform(nBas,S,c,B,A)
+subroutine MOtoAO(nBas,S,C,B,A)
 
 ! Perform MO to AO transformation of a matrix A for a given metric S
 ! and coefficients c
@@ -9,12 +9,12 @@ subroutine MOtoAO_transform(nBas,S,c,B,A)
 
   integer,intent(in)            :: nBas
   double precision,intent(in)   :: S(nBas,nBas)
-  double precision,intent(in)   :: c(nBas,nBas)
+  double precision,intent(in)   :: C(nBas,nBas)
   double precision,intent(in)   :: B(nBas,nBas)
 
 ! Local variables
 
-  double precision,allocatable  :: Sc(:,:)
+  double precision,allocatable  :: SC(:,:),BSC(:,:)
 
 ! Output variables
 
@@ -22,9 +22,10 @@ subroutine MOtoAO_transform(nBas,S,c,B,A)
 
 ! Memory allocation
 
-  allocate(Sc(nBas,nBas))
+  allocate(SC(nBas,nBas),BSC(nBas,nBas))
 
-  Sc = matmul(S,c)
-  A = matmul(Sc,matmul(B,transpose(Sc)))
+  SC  = matmul(S,C)
+  BSC = matmul(B,transpose(SC))
+  A   = matmul(SC,BSC)
 
 end subroutine 

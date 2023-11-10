@@ -1,4 +1,4 @@
-subroutine ROHF_fock_matrix(nBas,nOa,nOb,S,c,Fa,Fb,F)
+subroutine ROHF_fock_matrix(nBas,nOa,nOb,S,c,FaAO,FbAO,FAO)
 
 ! Construct the ROHF Fock matrix in the AO basis
 ! For open shells, the ROHF Fock matrix in the MO basis reads
@@ -23,8 +23,8 @@ subroutine ROHF_fock_matrix(nBas,nOa,nOb,S,c,Fa,Fb,F)
 
   double precision,intent(in)   :: S(nBas,nBas)
   double precision,intent(in)   :: c(nBas,nBas)
-  double precision,intent(inout):: Fa(nBas,nBas)
-  double precision,intent(inout):: Fb(nBas,nBas)
+  double precision,intent(inout):: FaAO(nBas,nBas)
+  double precision,intent(inout):: FbAO(nBas,nBas)
 
 ! Local variables
 
@@ -36,9 +36,17 @@ subroutine ROHF_fock_matrix(nBas,nOa,nOb,S,c,Fa,Fb,F)
   integer                       :: nO
   integer                       :: nV
 
+  double precision,allocatable  :: F(:,:)
+  double precision,allocatable  :: Fa(:,:)
+  double precision,allocatable  :: Fb(:,:)
+
 ! Output variables
 
-  double precision,intent(out)  :: F(nBas,nBas)
+  double precision,intent(out)  :: FAO(nBas,nBas)
+
+! Memory allocation
+
+  allocate(F(nBas,nBas),Fa(nBas,nBas),Fb(nBas,nBas))
 
 ! Roothan canonicalization parameters
 
@@ -59,8 +67,8 @@ subroutine ROHF_fock_matrix(nBas,nOa,nOb,S,c,Fa,Fb,F)
 
 ! Block-by-block Fock matrix 
 
-  Fa = matmul(transpose(c),matmul(Fa,c))
-  Fb = matmul(transpose(c),matmul(Fb,c))
+  call AOtoMO(nBas,c,FaAO,Fa)
+  call AOtoMO(nBas,c,FbAO,Fb)
 
   F(1:nC,      1:nC      ) =    aC*Fa(1:nC,      1:nC      ) +    bC*Fb(1:nC,      1:nC      )
   F(1:nC,   nC+1:nC+nO   ) =                                         Fb(1:nC,   nC+1:nC+nO   )
@@ -74,8 +82,8 @@ subroutine ROHF_fock_matrix(nBas,nOa,nOb,S,c,Fa,Fb,F)
   F(nO+nC+1:nC+nO+nV,   nC+1:nC+nO   ) =       Fa(nO+nC+1:nC+nO+nV,   nC+1:nC+nO   )
   F(nO+nC+1:nC+nO+nV,nO+nC+1:nC+nO+nV) =    aV*Fa(nO+nC+1:nC+nO+nV,nO+nC+1:nC+nO+nV) +    bV*Fb(nO+nC+1:nC+nO+nV,nO+nC+1:nC+nO+nV)
 
-  call MOtoAO_transform(nBas,S,c,F,F) 
-  call MOtoAO_transform(nBas,S,c,Fa,Fa)
-  call MOtoAO_transform(nBas,S,c,Fb,Fb)
+  call MOtoAO(nBas,S,c,F,FAO) 
+  call MOtoAO(nBas,S,c,Fa,FaAO)
+  call MOtoAO(nBas,S,c,Fb,FbAO)
 
 end subroutine

@@ -183,21 +183,21 @@ subroutine qsUGW(maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,BSE,TDA_W,
     !--------------------------------------------------
  
     do ixyz=1,ncart
-        call AOtoMO_transform(nBas,c(:,:,1),dipole_int_AO(:,:,ixyz),dipole_int_aa(:,:,ixyz))
-        call AOtoMO_transform(nBas,c(:,:,2),dipole_int_AO(:,:,ixyz),dipole_int_bb(:,:,ixyz))
+        call AOtoMO(nBas,c(:,:,1),dipole_int_AO(:,:,ixyz),dipole_int_aa(:,:,ixyz))
+        call AOtoMO(nBas,c(:,:,2),dipole_int_AO(:,:,ixyz),dipole_int_bb(:,:,ixyz))
     end do
 
     ! 4-index transform for (aa|aa) block
 
-    call AOtoMO_integral_transform(1,1,1,1,nBas,c,ERI_AO,ERI_aaaa)
+    call AOtoMO_ERI(1,1,1,1,nBas,c,ERI_AO,ERI_aaaa)
 
     ! 4-index transform for (aa|bb) block
 
-    call AOtoMO_integral_transform(1,1,2,2,nBas,c,ERI_AO,ERI_aabb)
+    call AOtoMO_ERI(1,1,2,2,nBas,c,ERI_AO,ERI_aabb)
 
     ! 4-index transform for (bb|bb) block
 
-    call AOtoMO_integral_transform(2,2,2,2,nBas,c,ERI_AO,ERI_bbbb)
+    call AOtoMO_ERI(2,2,2,2,nBas,c,ERI_AO,ERI_bbbb)
 
     ! Compute linear response
 
@@ -231,7 +231,7 @@ subroutine qsUGW(maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,BSE,TDA_W,
     end do
 
     do is=1,nspin
-      call MOtoAO_transform(nBas,S,c(:,:,is),SigC(:,:,is),SigCp(:,:,is))
+      call MOtoAO(nBas,S,c(:,:,is),SigC(:,:,is),SigCp(:,:,is))
     end do
  
     ! Solve the quasi-particle equation
@@ -282,7 +282,7 @@ subroutine qsUGW(maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,BSE,TDA_W,
     ! Back-transform self-energy
 
     do is=1,nspin
-      call AOtoMO_transform(nBas,c(:,:,is),SigCp(:,:,is),SigC(:,:,is))
+      call AOtoMO(nBas,c(:,:,is),SigCp(:,:,is),SigC(:,:,is))
     end do
 
     ! Compute density matrix 

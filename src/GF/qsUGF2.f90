@@ -163,15 +163,15 @@ subroutine qsUGF2(maxSCF,thresh,max_diis,BSE,TDA,dBSE,dTDA,spin_conserved,spin_f
 
     ! 4-index transform for (aa|aa) block
 
-    call AOtoMO_integral_transform(1,1,1,1,nBas,c,ERI_AO,ERI_aaaa)
+    call AOtoMO_ERI(1,1,1,1,nBas,c,ERI_AO,ERI_aaaa)
 
     ! 4-index transform for (aa|bb) block
 
-    call AOtoMO_integral_transform(1,1,2,2,nBas,c,ERI_AO,ERI_aabb)
+    call AOtoMO_ERI(1,1,2,2,nBas,c,ERI_AO,ERI_aabb)
 
     ! 4-index transform for (bb|bb) block
 
-    call AOtoMO_integral_transform(2,2,2,2,nBas,c,ERI_AO,ERI_bbbb)
+    call AOtoMO_ERI(2,2,2,2,nBas,c,ERI_AO,ERI_bbbb)
 
     !------------------------------------------------!
     ! Compute self-energy and renormalization factor !
@@ -194,7 +194,7 @@ subroutine qsUGF2(maxSCF,thresh,max_diis,BSE,TDA,dBSE,dTDA,spin_conserved,spin_f
     end do
 
     do is=1,nspin
-      call MOtoAO_transform(nBas,S,c(:,:,is),SigC(:,:,is),SigCp(:,:,is))
+      call MOtoAO(nBas,S,c(:,:,is),SigC(:,:,is),SigCp(:,:,is))
     end do
  
     ! Solve the quasi-particle equation

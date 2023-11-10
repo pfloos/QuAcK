@@ -158,21 +158,21 @@ subroutine UQuAcK(doUHF,dostab,dosearch,doMP2,doMP3,doCCD,dopCCD,doDCD,doCCSD,do
   ! Read and transform dipole-related integrals
 
   do ixyz=1,ncart
-      call AOtoMO_transform(nBas,cHF(:,:,1),dipole_int_AO(:,:,ixyz),dipole_int_aa(:,:,ixyz))
-      call AOtoMO_transform(nBas,cHF(:,:,2),dipole_int_AO(:,:,ixyz),dipole_int_bb(:,:,ixyz))
+      call AOtoMO(nBas,cHF(:,:,1),dipole_int_AO(:,:,ixyz),dipole_int_aa(:,:,ixyz))
+      call AOtoMO(nBas,cHF(:,:,2),dipole_int_AO(:,:,ixyz),dipole_int_bb(:,:,ixyz))
   end do 
   
   ! 4-index transform for (aa|aa) block
   
-  call AOtoMO_integral_transform(1,1,1,1,nBas,cHF,ERI_AO,ERI_aaaa)
+  call AOtoMO_ERI(1,1,1,1,nBas,cHF,ERI_AO,ERI_aaaa)
   
   ! 4-index transform for (aa|bb) block
   
-  call AOtoMO_integral_transform(1,1,2,2,nBas,cHF,ERI_AO,ERI_aabb)
+  call AOtoMO_ERI(1,1,2,2,nBas,cHF,ERI_AO,ERI_aabb)
   
   ! 4-index transform for (bb|bb) block
   
-  call AOtoMO_integral_transform(2,2,2,2,nBas,cHF,ERI_AO,ERI_bbbb)
+  call AOtoMO_ERI(2,2,2,2,nBas,cHF,ERI_AO,ERI_bbbb)
 
   call wall_time(end_AOtoMO)
 

@@ -232,19 +232,19 @@ subroutine qsGGW(maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,dophBSE,do
     Cb(:,:) = C(nBas+1:nBas2,1:nBas2)
 
     do ixyz=1,ncart
-        call AOtoMO_transform_GHF(nBas,nBas2,Ca,Cb,dipole_int_AO(:,:,ixyz),dipole_int_MO(:,:,ixyz))
+        call AOtoMO_GHF(nBas,nBas2,Ca,Cb,dipole_int_AO(:,:,ixyz),dipole_int_MO(:,:,ixyz))
     end do
 
-    call AOtoMO_integral_transform_GHF(nBas,nBas2,Ca,Ca,Ca,Ca,ERI_AO,ERI_tmp)
+    call AOtoMO_ERI_GHF(nBas,nBas2,Ca,Ca,Ca,Ca,ERI_AO,ERI_tmp)
     ERI_MO(:,:,:,:) = ERI_tmp(:,:,:,:)
 
-    call AOtoMO_integral_transform_GHF(nBas,nBas2,Ca,Cb,Ca,Cb,ERI_AO,ERI_tmp)
+    call AOtoMO_ERI_GHF(nBas,nBas2,Ca,Cb,Ca,Cb,ERI_AO,ERI_tmp)
     ERI_MO(:,:,:,:) = ERI_MO(:,:,:,:) + ERI_tmp(:,:,:,:)
 
-    call AOtoMO_integral_transform_GHF(nBas,nBas2,Cb,Ca,Cb,Ca,ERI_AO,ERI_tmp)
+    call AOtoMO_ERI_GHF(nBas,nBas2,Cb,Ca,Cb,Ca,ERI_AO,ERI_tmp)
     ERI_MO(:,:,:,:) = ERI_MO(:,:,:,:) + ERI_tmp(:,:,:,:)
 
-    call AOtoMO_integral_transform_GHF(nBas,nBas2,Cb,Cb,Cb,Cb,ERI_AO,ERI_tmp)
+    call AOtoMO_ERI_GHF(nBas,nBas2,Cb,Cb,Cb,Cb,ERI_AO,ERI_tmp)
     ERI_MO(:,:,:,:) = ERI_MO(:,:,:,:) + ERI_tmp(:,:,:,:)
 
     deallocate(ERI_tmp)
@@ -269,7 +269,7 @@ subroutine qsGGW(maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,dophBSE,do
    
     SigC = 0.5d0*(SigC + transpose(SigC))
 
-    call MOtoAO_transform_GHF(nBas2,nBas,S,Ca,Cb,SigC,SigCp)
+    call MOtoAO_GHF(nBas2,nBas,S,Ca,Cb,SigC,SigCp)
 
 !   ... and add self-energy 
 
@@ -301,7 +301,7 @@ subroutine qsGGW(maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,dophBSE,do
 
     C(:,:) = matmul(X,Cp)
 
-    call AOtoMO_transform_GHF(nBas,nBas2,Ca,Cb,SigCp,SigC)
+    call AOtoMO_GHF(nBas,nBas2,Ca,Cb,SigCp,SigC)
 
 !   Form super density matrix
 

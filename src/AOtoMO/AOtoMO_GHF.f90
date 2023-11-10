@@ -1,4 +1,4 @@
-subroutine AOtoMO_transform_GHF(nBas,nBas2,Ca,Cb,A,B)
+subroutine AOtoMO_GHF(nBas,nBas2,Ca,Cb,A,B)
 
 ! Perform AO to MO transformation of a matrix A for given coefficients c
 
@@ -12,11 +12,20 @@ subroutine AOtoMO_transform_GHF(nBas,nBas2,Ca,Cb,A,B)
   double precision,intent(in)   :: Cb(nBas,nBas2)
   double precision,intent(in)   :: A(nBas,nBas)
 
+! Local variables
+
+  double precision,allocatable  :: AC(:,:)
+
 ! Output variables
 
   double precision,intent(out)  :: B(nBas2,nBas2)
 
-  B = matmul(transpose(Ca),matmul(A,Ca)) &
-    + matmul(transpose(Cb),matmul(A,Cb))
+  allocate(AC(nBas,nBas2))
+
+  AC = matmul(A,Ca)
+  B  = matmul(transpose(Ca),AC)
+
+  AC = matmul(A,Cb)
+  B  = B + matmul(transpose(Cb),AC)
 
 end subroutine 

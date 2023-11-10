@@ -167,10 +167,10 @@ subroutine qsRGW(maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,dophBSE,do
     ! AO to MO transformation of two-electron integrals
 
     do ixyz=1,ncart
-      call AOtoMO_transform(nBas,c,dipole_int_AO(:,:,ixyz),dipole_int_MO(:,:,ixyz))
+      call AOtoMO(nBas,c,dipole_int_AO(:,:,ixyz),dipole_int_MO(:,:,ixyz))
     end do
 
-    call AOtoMO_integral_transform(1,1,1,1,nBas,c,ERI_AO,ERI_MO)
+    call AOtoMO_ERI(1,1,1,1,nBas,c,ERI_AO,ERI_MO)
 
     ! Compute linear response
 
@@ -192,7 +192,7 @@ subroutine qsRGW(maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,dophBSE,do
    
     SigC = 0.5d0*(SigC + transpose(SigC))
 
-    call MOtoAO_transform(nBas,S,c,SigC,SigCp)
+    call MOtoAO(nBas,S,c,SigC,SigCp)
  
     ! Solve the quasi-particle equation
 
@@ -217,7 +217,7 @@ subroutine qsRGW(maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,dophBSE,do
     cp(:,:) = Fp(:,:)
     call diagonalize_matrix(nBas,cp,eGW)
     c = matmul(X,cp)
-    call AOtoMO_transform(nBas,c,SigCp,SigC)
+    call AOtoMO(nBas,c,SigCp,SigC)
 
     ! Compute new density matrix in the AO basis
 

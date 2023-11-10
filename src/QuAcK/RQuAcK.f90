@@ -151,12 +151,12 @@ subroutine RQuAcK(doRHF,doROHF,dostab,dosearch,doMP2,doMP3,doCCD,dopCCD,doDCD,do
   ! Read and transform dipole-related integrals
   
   do ixyz=1,ncart
-    call AOtoMO_transform(nBas,cHF,dipole_int_AO(:,:,ixyz),dipole_int_MO(:,:,ixyz))
+    call AOtoMO(nBas,cHF,dipole_int_AO(:,:,ixyz),dipole_int_MO(:,:,ixyz))
   end do 
 
   ! 4-index transform 
   
-  call AOtoMO_integral_transform(1,1,1,1,nBas,cHF,ERI_AO,ERI_MO)
+  call AOtoMO_ERI(1,1,1,1,nBas,cHF,ERI_AO,ERI_MO)
 
   call wall_time(end_AOtoMO)
 

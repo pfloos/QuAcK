@@ -1,4 +1,4 @@
-subroutine MOtoAO_transform_GHF(nBas2,nBas,S,Ca,Cb,B,A)
+subroutine MOtoAO_GHF(nBas2,nBas,S,Ca,Cb,B,A)
 
 ! Perform MO to AO transformation of a matrix A for a given metric S
 ! and coefficients c
@@ -16,7 +16,8 @@ subroutine MOtoAO_transform_GHF(nBas2,nBas,S,Ca,Cb,B,A)
 
 ! Local variables
 
-  double precision,allocatable  :: Sc(:,:)
+  double precision,allocatable  :: SC(:,:)
+  double precision,allocatable  :: BSC(:,:)
 
 ! Output variables
 
@@ -24,12 +25,14 @@ subroutine MOtoAO_transform_GHF(nBas2,nBas,S,Ca,Cb,B,A)
 
 ! Memory allocation
 
-  allocate(Sc(nBas,nBas2))
+  allocate(SC(nBas,nBas2),BSC(nBas2,nBas))
 
-  Sc = matmul(S,Ca)
-  A = matmul(Sc,matmul(B,transpose(Sc)))
+  SC  = matmul(S,Ca)
+  BSC = matmul(B,transpose(SC))
+  A   = matmul(SC,BSC)
 
-  Sc = matmul(S,Cb)
-  A = A + matmul(Sc,matmul(B,transpose(Sc)))
+  SC  = matmul(S,Cb)
+  BSC = matmul(B,transpose(SC))
+  A   = A + matmul(SC,BSc)
 
 end subroutine 

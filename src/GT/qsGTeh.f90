@@ -167,7 +167,7 @@ subroutine qsGTeh(maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,dophBSE,d
 
     ! AO to MO transformation of two-electron integrals
 
-    call AOtoMO_integral_transform(1,1,1,1,nBas,c,ERI_AO,ERI_MO)
+    call AOtoMO_ERI(1,1,1,1,nBas,c,ERI_AO,ERI_MO)
 
     ! Compute linear response
 
@@ -190,7 +190,7 @@ subroutine qsGTeh(maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,dophBSE,d
    
     Sig = 0.5d0*(Sig + transpose(Sig))
 
-    call MOtoAO_transform(nBas,S,c,Sig,Sigp)
+    call MOtoAO(nBas,S,c,Sig,Sigp)
  
     ! Solve the quasi-particle equation
 

@@ -1,4 +1,4 @@
-subroutine AOtoMO_integral_transform(bra1,bra2,ket1,ket2,nBas,c,ERI_AO,ERI_MO)
+subroutine AOtoMO_ERI(bra1,bra2,ket1,ket2,nBas,c,ERI_AO,ERI_MO)
 
 ! AO to MO transformation of two-electron integrals via the semi-direct O(N^5) algorithm
 ! bra and ket are the spin of (bra1 bra2|ket1 ket2) = <bra1 ket1|bra2 ket2>

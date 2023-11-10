@@ -140,7 +140,7 @@ subroutine qsGF2(maxSCF,thresh,max_diis,dophBSE,doppBSE,TDA,dBSE,dTDA,singlet,tr
 
     ! AO to MO transformation of two-electron integrals
 
-    call AOtoMO_integral_transform(1,1,1,1,nBas,c,ERI_AO,ERI_MO)
+    call AOtoMO_ERI(1,1,1,1,nBas,c,ERI_AO,ERI_MO)
 
     ! Compute self-energy and renormalization factor
 
@@ -158,7 +158,7 @@ subroutine qsGF2(maxSCF,thresh,max_diis,dophBSE,doppBSE,TDA,dBSE,dTDA,singlet,tr
    
     SigC = 0.5d0*(SigC + transpose(SigC))
 
-    call MOtoAO_transform(nBas,S,c,SigC,SigCp)
+    call MOtoAO(nBas,S,c,SigC,SigCp)
  
     ! Solve the quasi-particle equation
 

@@ -1,4 +1,4 @@
-subroutine AOtoMO_integral_transform_GHF(nBas,nBas2,c1,c2,c3,c4,ERI_AO_basis,ERI_MO_basis)
+subroutine AOtoMO_ERI_GHF(nBas,nBas2,c1,c2,c3,c4,ERI_AO_basis,ERI_MO_basis)
 
 ! AO to MO transformation of two-electron integrals via the semi-direct O(N^5) algorithm
 ! bra and ket are the spin of (bra1 bra2|ket1 ket2)
