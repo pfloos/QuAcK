@@ -204,6 +204,8 @@ subroutine RHF(doRtest,maxSCF,thresh,max_diis,guess_type,level_shift,nNuc,ZNuc,r
 ! Print test values
 
   if(doRtest) then
+ 
+    call dump_test_value('R','RHF energy',EHF)
 
   end if
 

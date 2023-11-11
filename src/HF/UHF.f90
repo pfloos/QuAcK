@@ -258,6 +258,8 @@ subroutine UHF(doUtest,maxSCF,thresh,max_diis,guess_type,mix,level_shift,nNuc,ZN
 
   if(doUtest) then
 
+    call dump_test_value('U','UHF energy',EHF)
+
   end if
 
 end subroutine 

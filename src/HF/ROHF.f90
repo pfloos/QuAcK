@@ -247,6 +247,8 @@ subroutine ROHF(doRtest,maxSCF,thresh,max_diis,guess_type,mix,level_shift,nNuc,Z
 
   if(doRtest) then
 
+    call dump_test_value('R','ROHF energy',EHF)
+
   end if
 
 end subroutine 

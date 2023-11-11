@@ -300,6 +300,8 @@ subroutine GHF(doGtest,maxSCF,thresh,max_diis,guess_type,mix,level_shift,nNuc,ZN
 
   if(doGtest) then
 
+    call dump_test_value('G','GHF energy',EHF)
+
   end if
 
 end subroutine 
