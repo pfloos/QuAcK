@@ -14,18 +14,24 @@ subroutine dump_test_value(branch,description,value)
 ! Output variables
 
   if(branch == 'R') then 
-    open(unit=11,file='test/Rtest.dat')
+
+    write(11,*) trim(description)
+    write(11,'(F20.15)') value
+
   elseif(branch == 'U') then 
-    open(unit=11,file='test/Utest.dat')
+
+    write(12,*) trim(description)
+    write(12,'(F20.15)') value
+
   elseif(branch == 'G') then
-    open(unit=11,file='test/Gtest.dat')
+
+    write(13,*) trim(description)
+    write(13,'(F20.15)') value
+
   else
+
     write(*,*) 'Wrong branch name in dump_test_value'
+
   end if
-
-  write(11,*) '# ',trim(description)
-  write(11,'(F20.15)') value
-
-  close(unit=11)
 
 end subroutine

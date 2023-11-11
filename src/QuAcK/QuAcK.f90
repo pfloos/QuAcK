@@ -66,7 +66,7 @@ program QuAcK
   logical                       :: dophBSE,dophBSE2,doppBSE,dBSE,dTDA
   logical                       :: doACFDT,exchange_kernel,doXBS
 
-  logical                       :: doRtest,doUtest,doGtest
+  logical                       :: dotest,doRtest,doUtest,doGtest
 
 !-------------!
 ! Hello World !
@@ -183,6 +183,14 @@ program QuAcK
   doGQuAcK = .false.
   if(doGHF) doGQuAcK = .true.
 
+!-----------------!
+! Initialize Test !
+!-----------------!
+
+  dotest = doRtest .or. doUtest .or. doGtest
+
+  if(dotest) call init_test(doRtest,doUtest,doGtest)
+
 !-------------------------!
 ! Restricted QuAcK branch !
 !-------------------------!
@@ -225,6 +233,18 @@ program QuAcK
                 TDA,maxSCF_GF,max_diis_GF,thresh_GF,lin_GF,reg_GF,eta_GF,                                 & 
                 maxSCF_GW,max_diis_GW,thresh_GW,TDA_W,lin_GW,reg_GW,eta_GW,                               &
                 dophBSE,dophBSE2,doppBSE,dBSE,dTDA,doACFDT,exchange_kernel,doXBS)
+
+!-----------!
+! Stop Test !
+!-----------!
+
+  if(dotest) call stop_test(doRtest,doUtest,doGtest)
+
+!--------------!
+! Running Test !
+!--------------!
+
+  if(dotest) call run_test(doRtest,doUtest,doGtest)
 
 !--------------!
 ! End of QuAcK !
