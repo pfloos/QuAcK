@@ -1,4 +1,4 @@
-subroutine MP2(regularize,nBas,nC,nO,nV,nR,ERI,ENuc,EHF,e,EcMP2)
+subroutine RMP2(regularize,nBas,nC,nO,nV,nR,ERI,ENuc,ERHF,eHF,EcMP2)
 
 ! Perform second-order Moller-Plesset calculation with and without regularizers
 
@@ -13,8 +13,8 @@ subroutine MP2(regularize,nBas,nC,nO,nV,nR,ERI,ENuc,EHF,e,EcMP2)
   integer,intent(in)            :: nV
   integer,intent(in)            :: nR
   double precision,intent(in)   :: ENuc
-  double precision,intent(in)   :: EHF
-  double precision,intent(in)   :: e(nBas)
+  double precision,intent(in)   :: ERHF
+  double precision,intent(in)   :: eHF(nBas)
   double precision,intent(in)   :: ERI(nBas,nBas,nBas,nBas)
 
 ! Local variables
@@ -69,7 +69,7 @@ subroutine MP2(regularize,nBas,nC,nO,nV,nR,ERI,ENuc,EHF,e,EcMP2)
       do a=nO+1,nBas-nR
         do b=nO+1,nBas-nR
 
-          Dijab = e(a) + e(b) - e(i) - e(j) 
+          Dijab = eHF(a) + eHF(b) - eHF(i) - eHF(j) 
 
           ! Second-order ring diagram
 
@@ -111,8 +111,8 @@ subroutine MP2(regularize,nBas,nC,nO,nV,nR,ERI,ENuc,EHF,e,EcMP2)
   write(*,'(A32,1X,F16.10)') ' Direct part            = ',2d0*E2d
   write(*,'(A32,1X,F16.10)') ' Exchange part          = ',-E2x
   write(*,'(A32)')           '--------------------------'
-  write(*,'(A32,1X,F16.10)') ' MP2 electronic  energy = ',EHF + EcMP2
-  write(*,'(A32,1X,F16.10)') ' MP2 total       energy = ',ENuc + EHF + EcMP2
+  write(*,'(A32,1X,F16.10)') ' MP2 electronic  energy = ',ERHF + EcMP2
+  write(*,'(A32,1X,F16.10)') ' MP2 total       energy = ',ENuc + ERHF + EcMP2
   write(*,'(A32)')           '--------------------------'
   write(*,*)
 
@@ -130,8 +130,8 @@ subroutine MP2(regularize,nBas,nC,nO,nV,nR,ERI,ENuc,EHF,e,EcMP2)
     write(*,'(A32,1X,F16.10)') ' Direct part            = ',2d0*E2ds
     write(*,'(A32,1X,F16.10)') ' Exchange part          = ',-E2xs
     write(*,'(A32)')           '--------------------------'
-    write(*,'(A32,1X,F16.10)') ' MP2 electronic  energy = ',EHF + EcsMP2
-    write(*,'(A32,1X,F16.10)') ' MP2 total       energy = ',ENuc + EHF + EcsMP2
+    write(*,'(A32,1X,F16.10)') ' MP2 electronic  energy = ',ERHF + EcsMP2
+    write(*,'(A32,1X,F16.10)') ' MP2 total       energy = ',ENuc + ERHF + EcsMP2
     write(*,'(A32)')           '--------------------------'
     write(*,*)
 
@@ -147,8 +147,8 @@ subroutine MP2(regularize,nBas,nC,nO,nV,nR,ERI,ENuc,EHF,e,EcMP2)
     write(*,'(A32,1X,F16.10)') ' Direct part            = ',2d0*E2ds2
     write(*,'(A32,1X,F16.10)') ' Exchange part          = ',-E2xs2
     write(*,'(A32)')           '--------------------------'
-    write(*,'(A32,1X,F16.10)') ' MP2 electronic  energy = ',EHF + Ecs2MP2
-    write(*,'(A32,1X,F16.10)') ' MP2 total       energy = ',ENuc + EHF + Ecs2MP2
+    write(*,'(A32,1X,F16.10)') ' MP2 electronic  energy = ',ERHF + Ecs2MP2
+    write(*,'(A32,1X,F16.10)') ' MP2 total       energy = ',ENuc + ERHF + Ecs2MP2
     write(*,'(A32)')           '--------------------------'
     write(*,*)
 
@@ -164,8 +164,8 @@ subroutine MP2(regularize,nBas,nC,nO,nV,nR,ERI,ENuc,EHF,e,EcMP2)
     write(*,'(A32,1X,F16.10)') ' Direct part            = ',2d0*E2dk
     write(*,'(A32,1X,F16.10)') ' Exchange part          = ',-E2xk
     write(*,'(A32)')           '--------------------------'
-    write(*,'(A32,1X,F16.10)') ' MP2 electronic  energy = ',EHF + EckMP2
-    write(*,'(A32,1X,F16.10)') ' MP2 total       energy = ',ENuc + EHF + EckMP2
+    write(*,'(A32,1X,F16.10)') ' MP2 electronic  energy = ',ERHF + EckMP2
+    write(*,'(A32,1X,F16.10)') ' MP2 total       energy = ',ENuc + ERHF + EckMP2
     write(*,'(A32)')           '--------------------------'
     write(*,*)
 

@@ -107,7 +107,7 @@ subroutine evGF2(dophBSE,doppBSE,TDA,dBSE,dTDA,maxSCF,thresh,max_diis,singlet,tr
 
     ! Print results
 
-    call MP2(regularize,nBas,nC,nO,nV,nR,ERI,ENuc,ERHF,eGF,Ec)
+    call RMP2(regularize,nBas,nC,nO,nV,nR,ERI,ENuc,ERHF,eGF,Ec)
     call print_evGF2(nBas,nO,nSCF,Conv,eHF,SigC,Z,eGF,ENuc,ERHF,Ec)
 
     ! DIIS extrapolation

@@ -1,4 +1,4 @@
-subroutine RMP(doMP2,doMP3,regularize,nBas,nC,nO,nV,nR,ERI,ENuc,EHF,epsHF)
+subroutine RMP(doMP2,doMP3,regularize,nBas,nC,nO,nV,nR,ERI,ENuc,ERHF,eHF)
 
 ! Moller-Plesset module
 
@@ -17,8 +17,8 @@ subroutine RMP(doMP2,doMP3,regularize,nBas,nC,nO,nV,nR,ERI,ENuc,EHF,epsHF)
   integer,intent(in)            :: nV(nspin)
   integer,intent(in)            :: nR(nspin)
   double precision,intent(in)   :: ENuc
-  double precision,intent(in)   :: EHF
-  double precision,intent(in)   :: epsHF(nBas)
+  double precision,intent(in)   :: ERHF
+  double precision,intent(in)   :: eHF(nBas)
   double precision,intent(in)   :: ERI(nBas,nBas,nBas,nBas)
 
 ! Local variables
@@ -35,7 +35,7 @@ subroutine RMP(doMP2,doMP3,regularize,nBas,nC,nO,nV,nR,ERI,ENuc,EHF,epsHF)
   if(doMP2) then    
        
     call wall_time(start_MP)
-    call MP2(regularize,nBas,nC,nO,nV,nR,ERI,ENuc,EHF,epsHF,Ec)
+    call RMP2(regularize,nBas,nC,nO,nV,nR,ERI,ENuc,ERHF,eHF,Ec)
     call wall_time(end_MP)
 
     t_MP = end_MP - start_MP
@@ -51,7 +51,7 @@ subroutine RMP(doMP2,doMP3,regularize,nBas,nC,nO,nV,nR,ERI,ENuc,EHF,epsHF)
   if(doMP3) then    
 
     call wall_time(start_MP)
-    write(*,*) 'MP3 NYI for UHF reference'
+    call RMP3(nBas,nC,nO,nV,nR,ERI,ENuc,ERHF,eHF)
     call wall_time(end_MP)
 
     t_MP = end_MP - start_MP
