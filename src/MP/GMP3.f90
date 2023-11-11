@@ -38,9 +38,9 @@ subroutine GMP3(nBas,nC,nO,nV,nR,ERI,ENuc,EHF,e)
 ! Hello world
 
   write(*,*)
-  write(*,*)'************************************************'
-  write(*,*)'|    Moller-Plesset third-order calculation    |'
-  write(*,*)'************************************************'
+  write(*,*)'*******************************'
+  write(*,*)'* Generalized MP3 Calculation *'
+  write(*,*)'*******************************'
   write(*,*)
 
 ! Antysymmetrize ERIs

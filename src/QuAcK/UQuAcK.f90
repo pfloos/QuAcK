@@ -1,4 +1,4 @@
-subroutine UQuAcK(doUtest,doUHF,dostab,dosearch,doMP2,doMP3,doCCD,dopCCD,doDCD,doCCSD,doCCSDT,                     &
+subroutine UQuAcK(dotest,doUHF,dostab,dosearch,doMP2,doMP3,doCCD,dopCCD,doDCD,doCCSD,doCCSDT,                     &
                   dodrCCD,dorCCD,docrCCD,dolCCD,doCIS,doCIS_D,doCID,doCISD,doFCI,dophRPA,dophRPAx,docrRPA,doppRPA, &
                   doG0F2,doevGF2,doqsGF2,doG0F3,doevGF3,doG0W0,doevGW,doqsGW,doufG0W0,doufGW,doSRGqsGW,            &
                   doG0T0pp,doevGTpp,doqsGTpp,doG0T0eh,doevGTeh,doqsGTeh,nNuc,nBas,nC,nO,nV,nR,ENuc,ZNuc,rNuc,      &
@@ -11,7 +11,7 @@ subroutine UQuAcK(doUtest,doUHF,dostab,dosearch,doMP2,doMP3,doCCD,dopCCD,doDCD,d
   implicit none
   include 'parameters.h'
 
-  logical,intent(in)            :: doUtest
+  logical,intent(in)            :: dotest
 
   logical,intent(in)            :: doUHF
   logical,intent(in)            :: dostab
@@ -116,7 +116,7 @@ subroutine UQuAcK(doUtest,doUHF,dostab,dosearch,doMP2,doMP3,doCCD,dopCCD,doDCD,d
   if(doUHF) then
 
     call wall_time(start_HF)
-    call UHF(doUtest,maxSCF_HF,thresh_HF,max_diis_HF,guess_type,mix,level_shift,nNuc,ZNuc,rNuc,ENuc, &
+    call UHF(dotest,maxSCF_HF,thresh_HF,max_diis_HF,guess_type,mix,level_shift,nNuc,ZNuc,rNuc,ENuc, &
              nBas,nO,S,T,V,Hc,ERI_AO,dipole_int_AO,X,EHF,epsHF,cHF,PHF)
     call wall_time(end_HF)
 
@@ -223,7 +223,7 @@ subroutine UQuAcK(doUtest,doUHF,dostab,dosearch,doMP2,doMP3,doCCD,dopCCD,doDCD,d
   if(doMP) then
 
     call wall_time(start_MP)
-    call UMP(doMP2,doMP3,reg_MP,nBas,nC,nO,nV,nR,ERI_aaaa,ERI_aabb,ERI_bbbb,ENuc,EHF,epsHF)
+    call UMP(dotest,doMP2,doMP3,reg_MP,nBas,nC,nO,nV,nR,ERI_aaaa,ERI_aabb,ERI_bbbb,ENuc,EHF,epsHF)
     call wall_time(end_MP)
 
     t_MP = end_MP - start_MP
@@ -278,7 +278,7 @@ subroutine UQuAcK(doUtest,doUHF,dostab,dosearch,doMP2,doMP3,doCCD,dopCCD,doDCD,d
   if(doRPA) then
 
     call wall_time(start_RPA)
-    call URPA(dophRPA,dophRPAx,docrRPA,doppRPA,TDA,doACFDT,exchange_kernel,spin_conserved,spin_flip,    & 
+    call URPA(dotest,dophRPA,dophRPAx,docrRPA,doppRPA,TDA,doACFDT,exchange_kernel,spin_conserved,spin_flip,    & 
               nBas,nC,nO,nV,nR,nS,ENuc,EHF,ERI_aaaa,ERI_aabb,ERI_bbbb,dipole_int_aa,dipole_int_bb,epsHF,cHF,S)
     call wall_time(end_RPA)
 

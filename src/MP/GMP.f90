@@ -1,4 +1,4 @@
-subroutine GMP(doMP2,doMP3,regularize,nBas,nC,nO,nV,nR,ERI,ENuc,EHF,epsHF)
+subroutine GMP(dotest,doMP2,doMP3,regularize,nBas,nC,nO,nV,nR,ERI,ENuc,EHF,epsHF)
 
 ! Moller-Plesset module
 
@@ -6,6 +6,8 @@ subroutine GMP(doMP2,doMP3,regularize,nBas,nC,nO,nV,nR,ERI,ENuc,EHF,epsHF)
   include 'parameters.h'
 
 ! Input variables
+
+  logical,intent(in)            :: dotest
 
   logical,intent(in)            :: doMP2
   logical,intent(in)            :: doMP3
@@ -35,7 +37,7 @@ subroutine GMP(doMP2,doMP3,regularize,nBas,nC,nO,nV,nR,ERI,ENuc,EHF,epsHF)
   if(doMP2) then    
        
     call wall_time(start_MP)
-    call GMP2(regularize,nBas,nC,nO,nV,nR,ERI,ENuc,EHF,epsHF,Ec)
+    call GMP2(dotest,regularize,nBas,nC,nO,nV,nR,ERI,ENuc,EHF,epsHF,Ec)
     call wall_time(end_MP)
 
     t_MP = end_MP - start_MP

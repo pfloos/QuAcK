@@ -1,10 +1,12 @@
-subroutine RMP2(regularize,nBas,nC,nO,nV,nR,ERI,ENuc,ERHF,eHF,EcMP2)
+subroutine RMP2(dotest,regularize,nBas,nC,nO,nV,nR,ERI,ENuc,ERHF,eHF,EcMP2)
 
 ! Perform second-order Moller-Plesset calculation with and without regularizers
 
   implicit none
 
 ! Input variables
+
+  logical,intent(in)            :: dotest
 
   logical,intent(in)            :: regularize
   integer,intent(in)            :: nBas
@@ -37,9 +39,9 @@ subroutine RMP2(regularize,nBas,nC,nO,nV,nR,ERI,ENuc,ERHF,eHF,EcMP2)
 ! Hello world
 
   write(*,*)
-  write(*,*)'************************************************'
-  write(*,*)'|    Moller-Plesset second-order calculation   |'
-  write(*,*)'************************************************'
+  write(*,*)'******************************'
+  write(*,*)'* Restricted MP2 Calculation *'
+  write(*,*)'******************************'
   write(*,*)
 
 !---------------------------------------------!
@@ -168,6 +170,12 @@ subroutine RMP2(regularize,nBas,nC,nO,nV,nR,ERI,ENuc,ERHF,eHF,EcMP2)
     write(*,'(A32,1X,F16.10)') ' MP2 total       energy = ',ENuc + ERHF + EckMP2
     write(*,'(A32)')           '--------------------------'
     write(*,*)
+
+  end if
+
+  if(dotest) then
+
+    call dump_test_value('R','RMP2 correlation energy',EcMP2)
 
   end if
 

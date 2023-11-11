@@ -45,9 +45,9 @@ subroutine RMP3(nBasin,nCin,nOin,nVin,nRin,ERI,ENuc,EHF,e)
 ! Hello world
 
   write(*,*)
-  write(*,*)'************************************************'
-  write(*,*)'|    Moller-Plesset third-order calculation    |'
-  write(*,*)'************************************************'
+  write(*,*)'******************************'
+  write(*,*)'* Restricted MP3 Calculation *'
+  write(*,*)'******************************'
   write(*,*)
 
 ! Spatial to spin orbitals

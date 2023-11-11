@@ -1,4 +1,4 @@
-subroutine GQuAcK(doGtest,doGHF,dostab,dosearch,doMP2,doMP3,dophRPA,dophRPAx,doppRPA,   &
+subroutine GQuAcK(dotest,doGHF,dostab,dosearch,doMP2,doMP3,dophRPA,dophRPAx,doppRPA,   &
                   doG0W0,doevGW,doqsGW,doG0F2,doevGF2,doqsGF2,                          &
                   nNuc,nBas,nC,nO,nV,nR,ENuc,ZNuc,rNuc,S,T,V,Hc,X,dipole_int_AO,ERI_AO, &
                   maxSCF_HF,max_diis_HF,thresh_HF,level_shift,guess_type,mix,reg_MP,    &
@@ -9,7 +9,7 @@ subroutine GQuAcK(doGtest,doGHF,dostab,dosearch,doMP2,doMP3,dophRPA,dophRPAx,dop
   implicit none
   include 'parameters.h'
 
-  logical,intent(in)            :: doGtest
+  logical,intent(in)            :: dotest
 
   logical,intent(in)            :: doGHF
   logical,intent(in)            :: dostab
@@ -103,7 +103,7 @@ subroutine GQuAcK(doGtest,doGHF,dostab,dosearch,doMP2,doMP3,dophRPA,dophRPAx,dop
   if(doGHF) then
 
     call wall_time(start_HF)
-    call GHF(doGtest,maxSCF_HF,thresh_HF,max_diis_HF,guess_type,mix,level_shift,nNuc,ZNuc,rNuc,ENuc, &
+    call GHF(dotest,maxSCF_HF,thresh_HF,max_diis_HF,guess_type,mix,level_shift,nNuc,ZNuc,rNuc,ENuc, &
              nBas,nBas2,nO,S,T,V,Hc,ERI_AO,dipole_int_AO,X,EHF,epsHF,cHF,PHF)
     call wall_time(end_HF)
 
@@ -196,7 +196,7 @@ subroutine GQuAcK(doGtest,doGHF,dostab,dosearch,doMP2,doMP3,dophRPA,dophRPAx,dop
   if(doMP) then
 
     call wall_time(start_MP)
-    call GMP(doMP2,doMP3,reg_MP,nBas2,nC,nO,nV,nR,ERI_MO,ENuc,EHF,epsHF)
+    call GMP(dotest,doMP2,doMP3,reg_MP,nBas2,nC,nO,nV,nR,ERI_MO,ENuc,EHF,epsHF)
     call wall_time(end_MP)
 
     t_MP = end_MP - start_MP
@@ -214,7 +214,7 @@ subroutine GQuAcK(doGtest,doGHF,dostab,dosearch,doMP2,doMP3,dophRPA,dophRPAx,dop
   if(doRPA) then
 
     call wall_time(start_RPA)
-    call GRPA(dophRPA,dophRPAx,doppRPA,TDA,doACFDT,exchange_kernel,nBas2,nC,nO,nV,nR,nS,ENuc,EHF, & 
+    call GRPA(dotest,dophRPA,dophRPAx,doppRPA,TDA,doACFDT,exchange_kernel,nBas2,nC,nO,nV,nR,nS,ENuc,EHF, & 
               ERI_MO,dipole_int_MO,epsHF,cHF,S)
     call wall_time(end_RPA)
 

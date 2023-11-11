@@ -1,4 +1,4 @@
-subroutine ROHF(doRtest,maxSCF,thresh,max_diis,guess_type,mix,level_shift,nNuc,ZNuc,rNuc,ENuc, & 
+subroutine ROHF(dotest,maxSCF,thresh,max_diis,guess_type,mix,level_shift,nNuc,ZNuc,rNuc,ENuc, & 
                 nBas,nO,S,T,V,Hc,ERI,dipole_int,X,EHF,e,c,Ptot)
 
 ! Perform restricted open-shell Hartree-Fock calculation
@@ -8,7 +8,7 @@ subroutine ROHF(doRtest,maxSCF,thresh,max_diis,guess_type,mix,level_shift,nNuc,Z
 
 ! Input variables
 
-  logical,intent(in)            :: doRtest
+  logical,intent(in)            :: dotest
 
   integer,intent(in)            :: maxSCF
   integer,intent(in)            :: max_diis
@@ -245,7 +245,7 @@ subroutine ROHF(doRtest,maxSCF,thresh,max_diis,guess_type,mix,level_shift,nNuc,Z
 
 ! Print test values
 
-  if(doRtest) then
+  if(dotest) then
 
     call dump_test_value('R','ROHF energy',EHF)
 

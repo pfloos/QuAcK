@@ -1,4 +1,4 @@
-subroutine UHF(doUtest,maxSCF,thresh,max_diis,guess_type,mix,level_shift,nNuc,ZNuc,rNuc,ENuc, & 
+subroutine UHF(dotest,maxSCF,thresh,max_diis,guess_type,mix,level_shift,nNuc,ZNuc,rNuc,ENuc, & 
                nBas,nO,S,T,V,Hc,ERI,dipole_int,X,EHF,e,c,P)
 
 ! Perform unrestricted Hartree-Fock calculation
@@ -8,7 +8,7 @@ subroutine UHF(doUtest,maxSCF,thresh,max_diis,guess_type,mix,level_shift,nNuc,ZN
 
 ! Input variables
 
-  logical,intent(in)            :: doUtest
+  logical,intent(in)            :: dotest
 
   integer,intent(in)            :: maxSCF
   integer,intent(in)            :: max_diis
@@ -256,7 +256,7 @@ subroutine UHF(doUtest,maxSCF,thresh,max_diis,guess_type,mix,level_shift,nNuc,ZN
 
 ! Print test values
 
-  if(doUtest) then
+  if(dotest) then
 
     call dump_test_value('U','UHF energy',EHF)
 

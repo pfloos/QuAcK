@@ -1,4 +1,4 @@
-subroutine phURPAx(TDA,doACFDT,exchange_kernel,spin_conserved,spin_flip,nBas,nC,nO,nV,nR,nS,ENuc,EUHF, & 
+subroutine phURPAx(dotest,TDA,doACFDT,exchange_kernel,spin_conserved,spin_flip,nBas,nC,nO,nV,nR,nS,ENuc,EUHF, & 
                    ERI_aaaa,ERI_aabb,ERI_bbbb,dipole_int_aa,dipole_int_bb,e,c,S)
 
 ! Perform random phase approximation calculation with exchange (aka TDHF) in the unrestricted formalism
@@ -8,6 +8,8 @@ subroutine phURPAx(TDA,doACFDT,exchange_kernel,spin_conserved,spin_flip,nBas,nC,
   include 'quadrature.h'
 
 ! Input variables
+
+  logical,intent(in)            :: dotest
 
   logical,intent(in)            :: TDA
   logical,intent(in)            :: doACFDT
@@ -104,7 +106,7 @@ subroutine phURPAx(TDA,doACFDT,exchange_kernel,spin_conserved,spin_flip,nBas,nC,
     nSb = (nO(2) - nC(2))*(nV(1) - nR(1))
     nSt = nSa + nSb
 
-    allocate(Om(nSt),XpY(nSt,nSt),XmY(nSt,nSt))
+    allocate(Aph(nSt,nSt),Bph(nSt,nSt),Om(nSt),XpY(nSt,nSt),XmY(nSt,nSt))
 
     call phULR_A(ispin,dRPA,nBas,nC,nO,nV,nR,nSa,nSb,nSt,1d0,e,ERI_aaaa,ERI_aabb,ERI_bbbb,Aph)
     if(.not.TDA) call phULR_B(ispin,dRPA,nBas,nC,nO,nV,nR,nSa,nSb,nSt,1d0,ERI_aaaa,ERI_aabb,ERI_bbbb,Bph)
@@ -137,10 +139,10 @@ subroutine phURPAx(TDA,doACFDT,exchange_kernel,spin_conserved,spin_flip,nBas,nC,
 
   write(*,*)
   write(*,*)'-------------------------------------------------------------------------------'
-  write(*,'(2X,A50,F20.10)') 'Tr@URPAx correlation energy (spin-conserved) =',EcRPA(1)
-  write(*,'(2X,A50,F20.10)') 'Tr@URPAx correlation energy (spin-flip)      =',EcRPA(2)
-  write(*,'(2X,A50,F20.10)') 'Tr@URPAx correlation energy                  =',EcRPA(1) + EcRPA(2)
-  write(*,'(2X,A50,F20.10)') 'Tr@URPAx total energy                        =',ENuc + EUHF + EcRPA(1) + EcRPA(2)
+  write(*,'(2X,A50,F20.10,A3)') 'Tr@URPAx correlation energy (spin-conserved) = ',EcRPA(1),' au'
+  write(*,'(2X,A50,F20.10,A3)') 'Tr@URPAx correlation energy (spin-flip)      = ',EcRPA(2),' au'
+  write(*,'(2X,A50,F20.10,A3)') 'Tr@URPAx correlation energy                  = ',sum(EcRPA),' au'
+  write(*,'(2X,A50,F20.10,A3)') 'Tr@URPAx total energy                        = ',ENuc + EUHF + sum(EcRPA),' au'
   write(*,*)'-------------------------------------------------------------------------------'
   write(*,*)
 
@@ -158,12 +160,18 @@ subroutine phURPAx(TDA,doACFDT,exchange_kernel,spin_conserved,spin_flip,nBas,nC,
 
     write(*,*)
     write(*,*)'-------------------------------------------------------------------------------'
-    write(*,'(2X,A50,F20.10)') 'AC@URPAx correlation energy (spin-conserved) =',EcRPA(1)
-    write(*,'(2X,A50,F20.10)') 'AC@URPAx correlation energy (spin-flip)      =',EcRPA(2)
-    write(*,'(2X,A50,F20.10)') 'AC@URPAx correlation energy                  =',EcRPA(1) + EcRPA(2)
-    write(*,'(2X,A50,F20.10)') 'AC@URPAx total energy                        =',ENuc + EUHF + EcRPA(1) + EcRPA(2)
+    write(*,'(2X,A50,F20.10,A3)') 'AC@URPAx correlation energy (spin-conserved) =',EcRPA(1),' au'
+    write(*,'(2X,A50,F20.10,A3)') 'AC@URPAx correlation energy (spin-flip)      =',EcRPA(2),' au'
+    write(*,'(2X,A50,F20.10,A3)') 'AC@URPAx correlation energy                  =',sum(EcRPA),' au'
+    write(*,'(2X,A50,F20.10,A3)') 'AC@URPAx total energy                        =',ENuc + EUHF + sum(EcRPA),' au'
     write(*,*)'-------------------------------------------------------------------------------'
     write(*,*)
+
+  end if
+
+  if(dotest) then
+
+    call dump_test_value('U','phURPAx correlation energy',sum(EcRPA))
 
   end if
 

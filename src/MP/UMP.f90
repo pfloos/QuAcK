@@ -1,4 +1,4 @@
-subroutine UMP(doMP2,doMP3,regularize,nBas,nC,nO,nV,nR,ERI_aaaa,ERI_aabb,ERI_bbbb,ENuc,EHF,epsHF)
+subroutine UMP(dotest,doMP2,doMP3,regularize,nBas,nC,nO,nV,nR,ERI_aaaa,ERI_aabb,ERI_bbbb,ENuc,EHF,epsHF)
 
 ! Moller-Plesset module
 
@@ -6,6 +6,8 @@ subroutine UMP(doMP2,doMP3,regularize,nBas,nC,nO,nV,nR,ERI_aaaa,ERI_aabb,ERI_bbb
   include 'parameters.h'
 
 ! Input variables
+
+  logical,intent(in)            :: dotest
 
   logical,intent(in)            :: doMP2
   logical,intent(in)            :: doMP3
@@ -37,7 +39,7 @@ subroutine UMP(doMP2,doMP3,regularize,nBas,nC,nO,nV,nR,ERI_aaaa,ERI_aabb,ERI_bbb
   if(doMP2) then    
        
     call wall_time(start_MP)
-    call UMP2(nBas,nC,nO,nV,nR,ERI_aaaa,ERI_aabb,ERI_bbbb,ENuc,EHF,epsHF,Ec)
+    call UMP2(dotest,nBas,nC,nO,nV,nR,ERI_aaaa,ERI_aabb,ERI_bbbb,ENuc,EHF,epsHF,Ec)
     call wall_time(end_MP)
 
     t_MP = end_MP - start_MP

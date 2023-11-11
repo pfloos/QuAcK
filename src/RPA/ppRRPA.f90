@@ -1,4 +1,4 @@
-subroutine ppRPA(TDA,doACFDT,singlet,triplet,nBas,nC,nO,nV,nR,ENuc,EHF,ERI,dipole_int,e)
+subroutine ppRRPA(dotest,TDA,doACFDT,singlet,triplet,nBas,nC,nO,nV,nR,ENuc,EHF,ERI,dipole_int,e)
 
 ! Perform ppRPA calculation
 
@@ -6,6 +6,8 @@ subroutine ppRPA(TDA,doACFDT,singlet,triplet,nBas,nC,nO,nV,nR,ENuc,EHF,ERI,dipol
   include 'parameters.h'
 
 ! Input variables
+
+  logical,intent(in)            :: dotest
 
   logical,intent(in)            :: TDA
   logical,intent(in)            :: doACFDT
@@ -42,9 +44,9 @@ subroutine ppRPA(TDA,doACFDT,singlet,triplet,nBas,nC,nO,nV,nR,ENuc,EHF,ERI,dipol
 ! Hello world
 
   write(*,*)
-  write(*,*)'****************************************'
-  write(*,*)'|  particle-particle RPA calculation   |'
-  write(*,*)'****************************************'
+  write(*,*)'*********************************'
+  write(*,*)'* Restricted pp-RPA Calculation *'
+  write(*,*)'*********************************'
   write(*,*)
 
 ! Initialization
@@ -115,12 +117,14 @@ subroutine ppRPA(TDA,doACFDT,singlet,triplet,nBas,nC,nO,nV,nR,ENuc,EHF,ERI,dipol
 
   endif
 
+  EcRPA(2) = 3d0*EcRPA(2)
+
   write(*,*)
   write(*,*)'-------------------------------------------------------------------------------'
-  write(*,'(2X,A50,F20.10)') 'Tr@ppRPA correlation energy (singlet) =',EcRPA(1)
-  write(*,'(2X,A50,F20.10)') 'Tr@ppRPA correlation energy (triplet) =',3d0*EcRPA(2)
-  write(*,'(2X,A50,F20.10)') 'Tr@ppRPA correlation energy           =',EcRPA(1) + 3d0*EcRPA(2)
-  write(*,'(2X,A50,F20.10)') 'Tr@ppRPA total energy                 =',ENuc + EHF + EcRPA(1) + 3d0*EcRPA(2)
+  write(*,'(2X,A50,F20.10,A3)') 'Tr@ppRRPA correlation energy (singlet) = ',EcRPA(1),'au'
+  write(*,'(2X,A50,F20.10,A3)') 'Tr@ppRRPA correlation energy (triplet) = ',EcRPA(2),'au'
+  write(*,'(2X,A50,F20.10,A3)') 'Tr@ppRRPA correlation energy           = ',sum(EcRPA),'au'
+  write(*,'(2X,A50,F20.10,A3)') 'Tr@ppRRPA total energy                 = ',ENuc + EHF + sum(EcRPA),'au'
   write(*,*)'-------------------------------------------------------------------------------'
   write(*,*)
 
@@ -137,12 +141,18 @@ subroutine ppRPA(TDA,doACFDT,singlet,triplet,nBas,nC,nO,nV,nR,ENuc,EHF,ERI,dipol
 
     write(*,*)
     write(*,*)'-------------------------------------------------------------------------------'
-    write(*,'(2X,A50,F20.10,A3)') 'AC@ppRPA correlation energy (singlet) =',EcRPA(1),' au'
-    write(*,'(2X,A50,F20.10,A3)') 'AC@ppRPA correlation energy (triplet) =',EcRPA(2),' au'
-    write(*,'(2X,A50,F20.10,A3)') 'AC@ppRPA correlation energy           =',EcRPA(1) + EcRPA(2),' au'
-    write(*,'(2X,A50,F20.10,A3)') 'AC@ppRPA total energy                 =',ENuc + EHF + EcRPA(1) + EcRPA(2),' au'
+    write(*,'(2X,A50,F20.10,A3)') 'AC@ppRRPA correlation energy (singlet) = ',EcRPA(1),' au'
+    write(*,'(2X,A50,F20.10,A3)') 'AC@ppRRPA correlation energy (triplet) = ',EcRPA(2),' au'
+    write(*,'(2X,A50,F20.10,A3)') 'AC@ppRRPA correlation energy           = ',EcRPA(1) + EcRPA(2),' au'
+    write(*,'(2X,A50,F20.10,A3)') 'AC@ppRRPA total energy                 = ',ENuc + EHF + EcRPA(1) + EcRPA(2),' au'
     write(*,*)'-------------------------------------------------------------------------------'
     write(*,*)
+
+  end if
+
+  if(dotest) then
+
+    call dump_test_value('R','ppRRPA correlation energy',sum(EcRPA))
 
   end if
 

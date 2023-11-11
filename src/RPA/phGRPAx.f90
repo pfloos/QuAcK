@@ -1,4 +1,4 @@
-subroutine phGRPAx(TDA,nBas,nC,nO,nV,nR,nS,ENuc,EHF,ERI,dipole_int,e)
+subroutine phGRPAx(dotest,TDA,nBas,nC,nO,nV,nR,nS,ENuc,EHF,ERI,dipole_int,e)
 
 ! Perform random phase approximation calculation with exchange (aka TDHF)
 
@@ -7,6 +7,8 @@ subroutine phGRPAx(TDA,nBas,nC,nO,nV,nR,nS,ENuc,EHF,ERI,dipole_int,e)
   include 'quadrature.h'
 
 ! Input variables
+
+  logical,intent(in)            :: dotest
 
   logical,intent(in)            :: TDA
   integer,intent(in)            :: nBas
@@ -36,9 +38,9 @@ subroutine phGRPAx(TDA,nBas,nC,nO,nV,nR,nS,ENuc,EHF,ERI,dipole_int,e)
 ! Hello world
 
   write(*,*)
-  write(*,*)'***********************************************************'
-  write(*,*)'|  Random phase approximation calculation with exchange   |'
-  write(*,*)'***********************************************************'
+  write(*,*)'************************************'
+  write(*,*)'* Generalized ph-RPAx Calculation  *'
+  write(*,*)'************************************'
   write(*,*)
 
 ! TDA 
@@ -71,9 +73,15 @@ subroutine phGRPAx(TDA,nBas,nC,nO,nV,nR,nS,ENuc,EHF,ERI,dipole_int,e)
 
   write(*,*)
   write(*,*)'-------------------------------------------------------------------------------'
-  write(*,'(2X,A50,F20.10)') 'Tr@phRPAx correlation energy           =',EcRPA
-  write(*,'(2X,A50,F20.10)') 'Tr@phRPAx total energy                 =',ENuc + EHF + EcRPA
+  write(*,'(2X,A50,F20.10,A3)') 'Tr@phRPAx correlation energy           = ',EcRPA,' au'
+  write(*,'(2X,A50,F20.10,A3)') 'Tr@phRPAx total energy                 = ',ENuc + EHF + EcRPA,' au'
   write(*,*)'-------------------------------------------------------------------------------'
   write(*,*)
+
+  if(dotest) then
+
+    call dump_test_value('G','phGRPAx correlation energy',EcRPA)
+
+  end if
 
 end subroutine 

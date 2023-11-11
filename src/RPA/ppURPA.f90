@@ -1,4 +1,4 @@
-subroutine ppURPA(TDA,doACFDT,spin_conserved,spin_flip,nBas,nC,nO,nV,nR,ENuc,EUHF,ERI_aaaa,ERI_aabb,ERI_bbbb,e)
+subroutine ppURPA(dotest,TDA,doACFDT,spin_conserved,spin_flip,nBas,nC,nO,nV,nR,ENuc,EUHF,ERI_aaaa,ERI_aabb,ERI_bbbb,e)
 
 ! Perform unrestricted pp-RPA calculations
 
@@ -6,6 +6,8 @@ subroutine ppURPA(TDA,doACFDT,spin_conserved,spin_flip,nBas,nC,nO,nV,nR,ENuc,EUH
   include 'parameters.h'
 
 ! Input variables
+
+  logical,intent(in)            :: dotest
 
   logical,intent(in)            :: TDA
   logical,intent(in)            :: doACFDT
@@ -35,20 +37,20 @@ subroutine ppURPA(TDA,doACFDT,spin_conserved,spin_flip,nBas,nC,nO,nV,nR,ENuc,EUH
   double precision,allocatable  :: X2sc(:,:),X2sf(:,:)
   double precision,allocatable  :: Y2sc(:,:),Y2sf(:,:)
 
-  double precision              :: Ec_ppURPA(nspin)
+  double precision              :: EcRPA(nspin)
   double precision              :: EcAC(nspin)
 
 ! Hello world
 
   write(*,*)
-  write(*,*)'****************************************'
-  write(*,*)'|  particle-particle URPA calculation  |'
-  write(*,*)'****************************************'
+  write(*,*)'***********************************'
+  write(*,*)'* Unrestricted pp-RPA Calculation *'
+  write(*,*)'***********************************'
   write(*,*)
 
 ! Initialization
 
-  Ec_ppURPA(:) = 0d0
+  EcRPA(:) = 0d0
   EcAC(:)   = 0d0
 
 !alpha-beta block  
@@ -70,7 +72,7 @@ subroutine ppURPA(TDA,doACFDT,spin_conserved,spin_flip,nBas,nC,nO,nV,nR,ENuc,EUH
   call ppULR(iblock,TDA,nBas,nC,nO,nV,nR,nPaa,nPab,nPbb, &
              nP_sc,nHaa,nHab,nHbb,nH_sc,1d0,e,ERI_aaaa, &
              ERI_aabb,ERI_bbbb,Om1sc,X1sc,Y1sc, &
-             Om2sc,X2sc,Y2sc,Ec_ppURPA(ispin))
+             Om2sc,X2sc,Y2sc,EcRPA(ispin))
     
   call print_excitation_energies('ppRPA@UHF (N+2)',iblock,nP_sc,Om1sc)
   call print_excitation_energies('ppRPA@UHF (N-2)',iblock,nH_sc,Om2sc)
@@ -96,7 +98,7 @@ subroutine ppURPA(TDA,doACFDT,spin_conserved,spin_flip,nBas,nC,nO,nV,nR,ENuc,EUH
   call ppULR(iblock,TDA,nBas,nC,nO,nV,nR,nPaa,nPab,nPbb, &
              nP_sf,nHaa,nHab,nHbb,nH_sf,1d0,e,ERI_aaaa, &
              ERI_aabb,ERI_bbbb,Om1sf,X1sf,Y1sf, &
-             Om2sf,X2sf,Y2sf,Ec_ppURPA(ispin))
+             Om2sf,X2sf,Y2sf,EcRPA(ispin))
 
   call print_excitation_energies('ppRPA@UHF (N+2)',iblock,nP_sf,Om1sf)
   call print_excitation_energies('ppRPA@UHF (N-2)',iblock,nH_sf,Om2sf)
@@ -116,17 +118,19 @@ subroutine ppURPA(TDA,doACFDT,spin_conserved,spin_flip,nBas,nC,nO,nV,nR,ENuc,EUH
   call ppULR(iblock,TDA,nBas,nC,nO,nV,nR,nPaa,nPab,nPbb,&
              nP_sf,nHaa,nHab,nHbb,nH_sf,1d0,e,ERI_aaaa,&
              ERI_aabb,ERI_bbbb,Om1sf,X1sf,Y1sf,&
-             Om2sf,X2sf,Y2sf,Ec_ppURPA(ispin))
+             Om2sf,X2sf,Y2sf,EcRPA(ispin))
 
   call print_excitation_energies('ppRPA@UHF (N+2)',iblock,nP_sf,Om1sf)
   call print_excitation_energies('ppRPA@UHF (N-2)',iblock,nH_sf,Om2sf)
 
+  EcRPA(2) = 3d0*EcRPA(2)
+
   write(*,*)
   write(*,*)'-------------------------------------------------------------------------------'
-  write(*,'(2X,A50,F20.10)') 'Tr@ppRPA correlation energy (spin-conserved) =',Ec_ppURPA(1)
-  write(*,'(2X,A50,F20.10)') 'Tr@ppRPA correlation energy (spin-flip)      =',3d0*Ec_ppURPA(2)
-  write(*,'(2X,A50,F20.10)') 'Tr@ppRPA correlation energy                  =',Ec_ppURPA(1) + 3d0*Ec_ppURPA(2)
-  write(*,'(2X,A50,F20.10)') 'Tr@ppRPA total energy                        =',ENuc + EUHF + Ec_ppURPA(1) + 3d0*Ec_ppURPA(2)
+  write(*,'(2X,A50,F20.10,A3)') 'Tr@ppURPA correlation energy (spin-conserved) = ',EcRPA(1),' au'
+  write(*,'(2X,A50,F20.10,A3)') 'Tr@ppURPA correlation energy (spin-flip)      = ',EcRPA(2),' au'
+  write(*,'(2X,A50,F20.10,A3)') 'Tr@ppURPA correlation energy                  = ',sum(EcRPA),' au'
+  write(*,'(2X,A50,F20.10,A3)') 'Tr@ppURPA total energy                        = ',ENuc + EUHF + sum(EcRPA),' au'
   write(*,*)'-------------------------------------------------------------------------------'
   write(*,*)
 
@@ -151,5 +155,11 @@ subroutine ppURPA(TDA,doACFDT,spin_conserved,spin_flip,nBas,nC,nO,nV,nR,ENuc,EUH
 !   write(*,*)
 
 ! end if
+
+  if(dotest) then
+
+    call dump_test_value('U','ppURPA correlation energy',sum(EcRPA))
+
+  end if
 
 end subroutine 

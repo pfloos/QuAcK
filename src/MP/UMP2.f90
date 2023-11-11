@@ -1,12 +1,13 @@
-subroutine UMP2(nBas,nC,nO,nV,nR,ERI_aa,ERI_ab,ERI_bb,ENuc,EHF,e,Ec)
+subroutine UMP2(dotest,nBas,nC,nO,nV,nR,ERI_aa,ERI_ab,ERI_bb,ENuc,EUHF,eHF,Ec)
 
 ! Perform unrestricted second-order Moller-Plesset calculation
 
   implicit none
   include 'parameters.h'
 
-
 ! Input variables
+
+  logical,intent(in)            :: dotest
 
   integer,intent(in)            :: nBas
   integer,intent(in)            :: nC(nspin)
@@ -14,11 +15,11 @@ subroutine UMP2(nBas,nC,nO,nV,nR,ERI_aa,ERI_ab,ERI_bb,ENuc,EHF,e,Ec)
   integer,intent(in)            :: nV(nspin)
   integer,intent(in)            :: nR(nspin)
   double precision,intent(in)   :: ENuc
-  double precision,intent(in)   :: EHF
+  double precision,intent(in)   :: EUHF
   double precision,intent(in)   :: ERI_aa(nBas,nBas,nBas,nBas)
   double precision,intent(in)   :: ERI_ab(nBas,nBas,nBas,nBas)
   double precision,intent(in)   :: ERI_bb(nBas,nBas,nBas,nBas)
-  double precision,intent(in)   :: e(nBas,nspin)
+  double precision,intent(in)   :: eHF(nBas,nspin)
 
 ! Local variables
 
@@ -37,9 +38,9 @@ subroutine UMP2(nBas,nC,nO,nV,nR,ERI_aa,ERI_ab,ERI_bb,ENuc,EHF,e,Ec)
 ! Hello world
 
   write(*,*)
-  write(*,*)'********************************************************'
-  write(*,*)'| Unrestricted second-order Moller-Plesset calculation |'
-  write(*,*)'********************************************************'
+  write(*,*)'********************************'
+  write(*,*)'* Unrestricted MP2 Calculation *'
+  write(*,*)'********************************'
   write(*,*)
 
 !---------------------!
@@ -60,7 +61,7 @@ subroutine UMP2(nBas,nC,nO,nV,nR,ERI_aa,ERI_ab,ERI_bb,ENuc,EHF,e,Ec)
       do j=nC(ket)+1,nO(ket)
         do b=nO(ket)+1,nBas-nR(ket)
 
-          eps = e(i,bra) + e(j,ket) - e(a,bra) - e(b,ket) 
+          eps = eHF(i,bra) + eHF(j,ket) - eHF(a,bra) - eHF(b,ket) 
          
           Edaa = Edaa + 0.5d0*ERI_aa(i,j,a,b)*ERI_aa(i,j,a,b)/eps
           Exaa = Exaa - 0.5d0*ERI_aa(i,j,a,b)*ERI_aa(i,j,b,a)/eps
@@ -88,7 +89,7 @@ subroutine UMP2(nBas,nC,nO,nV,nR,ERI_aa,ERI_ab,ERI_bb,ENuc,EHF,e,Ec)
       do j=nC(ket)+1,nO(ket)
         do b=nO(ket)+1,nBas-nR(ket)
 
-          eps = e(i,bra) + e(j,ket) - e(a,bra) - e(b,ket) 
+          eps = eHF(i,bra) + eHF(j,ket) - eHF(a,bra) - eHF(b,ket) 
          
           Edab = Edab + ERI_ab(i,j,a,b)*ERI_ab(i,j,a,b)/eps
 
@@ -114,7 +115,7 @@ subroutine UMP2(nBas,nC,nO,nV,nR,ERI_aa,ERI_ab,ERI_bb,ENuc,EHF,e,Ec)
       do j=nC(ket)+1,nO(ket)
         do b=nO(ket)+1,nBas-nR(ket)
 
-          eps = e(i,bra) + e(j,ket) - e(a,bra) - e(b,ket) 
+          eps = eHF(i,bra) + eHF(j,ket) - eHF(a,bra) - eHF(b,ket) 
          
           Edbb = Edbb + 0.5d0*ERI_bb(i,j,a,b)*ERI_bb(i,j,a,b)/eps
           Exbb = Exbb - 0.5d0*ERI_bb(i,j,a,b)*ERI_bb(i,j,b,a)/eps
@@ -152,9 +153,15 @@ subroutine UMP2(nBas,nC,nO,nV,nR,ERI_aa,ERI_ab,ERI_bb,ENuc,EHF,e,Ec)
   write(*,'(A32,1X,F16.10)') '   alpha-beta           = ',Exab
   write(*,'(A32,1X,F16.10)') '    beta-beta           = ',Exbb
   write(*,'(A32)')           '--------------------------'
-  write(*,'(A32,1X,F16.10)') ' MP2 electronic  energy = ',       EHF + sum(Ec(:))
-  write(*,'(A32,1X,F16.10)') ' MP2 total       energy = ',ENuc + EHF + sum(Ec(:))
+  write(*,'(A32,1X,F16.10)') ' MP2 electronic  energy = ',       EUHF + sum(Ec(:))
+  write(*,'(A32,1X,F16.10)') ' MP2 total       energy = ',ENuc + EUHF + sum(Ec(:))
   write(*,'(A32)')           '--------------------------'
   write(*,*)
+
+  if(dotest) then
+
+    call dump_test_value('U','UMP2 correlation energy',sum(Ec))
+
+  end if
 
 end subroutine 

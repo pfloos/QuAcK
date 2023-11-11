@@ -1,4 +1,4 @@
-subroutine GRPA(dophRPA,dophRPAx,doppRPA,TDA,doACFDT,exchange_kernel,nBas,nC,nO,nV,nR,nS,ENuc,EHF,ERI,dipole_int,epsHF)
+subroutine GRPA(dotest,dophRPA,dophRPAx,doppRPA,TDA,doACFDT,exchange_kernel,nBas,nC,nO,nV,nR,nS,ENuc,EHF,ERI,dipole_int,epsHF)
 
 ! Random-phase approximation module
 
@@ -7,9 +7,11 @@ subroutine GRPA(dophRPA,dophRPAx,doppRPA,TDA,doACFDT,exchange_kernel,nBas,nC,nO,
 
 ! Input variables
 
-  logical                       :: dophRPA
-  logical                       :: dophRPAx
-  logical                       :: doppRPA
+  logical,intent(in)            :: dotest
+
+  logical,intent(in)            :: dophRPA
+  logical,intent(in)            :: dophRPAx
+  logical,intent(in)            :: doppRPA
 
   logical,intent(in)            :: TDA
   logical,intent(in)            :: doACFDT
@@ -37,7 +39,7 @@ subroutine GRPA(dophRPA,dophRPAx,doppRPA,TDA,doACFDT,exchange_kernel,nBas,nC,nO,
   if(dophRPA) then
 
     call wall_time(start_RPA)
-    call phGRPA(TDA,nBas,nC,nO,nV,nR,nS,ENuc,EHF,ERI,dipole_int,epsHF)
+    call phGRPA(dotest,TDA,nBas,nC,nO,nV,nR,nS,ENuc,EHF,ERI,dipole_int,epsHF)
     call wall_time(end_RPA)
 
     t_RPA = end_RPA - start_RPA
@@ -53,7 +55,7 @@ subroutine GRPA(dophRPA,dophRPAx,doppRPA,TDA,doACFDT,exchange_kernel,nBas,nC,nO,
   if(dophRPAx) then
 
     call wall_time(start_RPA)
-    call phGRPAx(TDA,nBas,nC,nO,nV,nR,nS,ENuc,EHF,ERI,dipole_int,epsHF)
+    call phGRPAx(dotest,TDA,nBas,nC,nO,nV,nR,nS,ENuc,EHF,ERI,dipole_int,epsHF)
 
     call wall_time(end_RPA)
 
@@ -70,7 +72,7 @@ subroutine GRPA(dophRPA,dophRPAx,doppRPA,TDA,doACFDT,exchange_kernel,nBas,nC,nO,
   if(doppRPA) then
 
     call wall_time(start_RPA)
-    call ppGRPA(TDA,doACFDT,nBas,nC,nO,nV,nR,ENuc,EHF,ERI,dipole_int,epsHF)
+    call ppGRPA(dotest,TDA,doACFDT,nBas,nC,nO,nV,nR,ENuc,EHF,ERI,dipole_int,epsHF)
     call wall_time(end_RPA)
 
     t_RPA = end_RPA - start_RPA

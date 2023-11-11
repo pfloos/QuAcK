@@ -2,3 +2,11 @@
  -85.160473883160876
  ROHF energy
  -85.160473714509976
+ RMP2 correlation energy
+  -0.128988144386404
+ phRRPA correlation energy
+  -0.138552809856833
+ phRRPAx correlation energy
+  -0.197284981952336
+ ppRRPA correlation energy
+  -0.092561239071529

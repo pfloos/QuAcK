@@ -1,4 +1,4 @@
-subroutine RQuAcK(doRtest,doRHF,doROHF,dostab,dosearch,doMP2,doMP3,doCCD,dopCCD,doDCD,doCCSD,doCCSDT,              &   
+subroutine RQuAcK(dotest,doRHF,doROHF,dostab,dosearch,doMP2,doMP3,doCCD,dopCCD,doDCD,doCCSD,doCCSDT,              &   
                   dodrCCD,dorCCD,docrCCD,dolCCD,doCIS,doCIS_D,doCID,doCISD,doFCI,dophRPA,dophRPAx,docrRPA,doppRPA, & 
                   doG0F2,doevGF2,doqsGF2,doG0F3,doevGF3,doG0W0,doevGW,doqsGW,doufG0W0,doufGW,doSRGqsGW,            &
                   doG0T0pp,doevGTpp,doqsGTpp,doG0T0eh,doevGTeh,doqsGTeh,nNuc,nBas,nC,nO,nV,nR,ENuc,ZNuc,rNuc,      & 
@@ -13,7 +13,7 @@ subroutine RQuAcK(doRtest,doRHF,doROHF,dostab,dosearch,doMP2,doMP3,doCCD,dopCCD,
   implicit none
   include 'parameters.h'
 
-  logical,intent(in)            :: doRtest
+  logical,intent(in)            :: dotest
 
   logical,intent(in)            :: doRHF,doROHF
   logical,intent(in)            :: dostab
@@ -117,11 +117,12 @@ subroutine RQuAcK(doRtest,doRHF,doROHF,dostab,dosearch,doMP2,doMP3,doCCD,dopCCD,
   if(doRHF) then
 
     call wall_time(start_HF)
-    call RHF(doRtest,maxSCF_HF,thresh_HF,max_diis_HF,guess_type,level_shift,nNuc,ZNuc,rNuc,ENuc, &
+    call RHF(dotest,maxSCF_HF,thresh_HF,max_diis_HF,guess_type,level_shift,nNuc,ZNuc,rNuc,ENuc, &
              nBas,nO,S,T,V,Hc,ERI_AO,dipole_int_AO,X,EHF,epsHF,cHF,PHF)
     call wall_time(end_HF)
 
     t_HF = end_HF - start_HF
+    write(*,*)
     write(*,'(A65,1X,F9.3,A8)') 'Total CPU time for RHF = ',t_HF,' seconds'
     write(*,*)
 
@@ -130,7 +131,7 @@ subroutine RQuAcK(doRtest,doRHF,doROHF,dostab,dosearch,doMP2,doMP3,doCCD,dopCCD,
   if(doROHF) then
 
     call wall_time(start_HF)
-    call ROHF(doRtest,maxSCF_HF,thresh_HF,max_diis_HF,guess_type,mix,level_shift,nNuc,ZNuc,rNuc,ENuc, &
+    call ROHF(dotest,maxSCF_HF,thresh_HF,max_diis_HF,guess_type,mix,level_shift,nNuc,ZNuc,rNuc,ENuc, &
               nBas,nO,S,T,V,Hc,ERI_AO,dipole_int_AO,X,EHF,epsHF,cHF,PHF)
     call wall_time(end_HF)
 
@@ -206,7 +207,7 @@ subroutine RQuAcK(doRtest,doRHF,doROHF,dostab,dosearch,doMP2,doMP3,doCCD,dopCCD,
   if(doMP) then
 
     call wall_time(start_MP)
-    call RMP(doMP2,doMP3,reg_MP,nBas,nC,nO,nV,nR,ERI_MO,ENuc,EHF,epsHF)
+    call RMP(dotest,doMP2,doMP3,reg_MP,nBas,nC,nO,nV,nR,ERI_MO,ENuc,EHF,epsHF)
     call wall_time(end_MP)
 
     t_MP = end_MP - start_MP
@@ -263,7 +264,7 @@ subroutine RQuAcK(doRtest,doRHF,doROHF,dostab,dosearch,doMP2,doMP3,doCCD,dopCCD,
   if(doRPA) then
 
     call wall_time(start_RPA)
-    call RRPA(dophRPA,dophRPAx,docrRPA,doppRPA,TDA,doACFDT,exchange_kernel,singlet,triplet,    & 
+    call RRPA(dotest,dophRPA,dophRPAx,docrRPA,doppRPA,TDA,doACFDT,exchange_kernel,singlet,triplet,    & 
               nBas,nC,nO,nV,nR,nS,ENuc,EHF,ERI_MO,dipole_int_MO,epsHF,cHF,S)
     call wall_time(end_RPA)
 

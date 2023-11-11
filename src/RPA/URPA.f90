@@ -1,4 +1,4 @@
-subroutine URPA(dophRPA,dophRPAx,docrRPA,doppRPA,TDA,doACFDT,exchange_kernel,spin_conserved,spin_flip, &  
+subroutine URPA(dotest,dophRPA,dophRPAx,docrRPA,doppRPA,TDA,doACFDT,exchange_kernel,spin_conserved,spin_flip, &  
                 nBas,nC,nO,nV,nR,nS,ENuc,EHF,ERI_aaaa,ERI_aabb,ERI_bbbb,dipole_int_aa,dipole_int_bb,epsHF,cHF,S)
 
 ! Random-phase approximation module
@@ -8,10 +8,12 @@ subroutine URPA(dophRPA,dophRPAx,docrRPA,doppRPA,TDA,doACFDT,exchange_kernel,spi
 
 ! Input variables
 
-  logical                       :: dophRPA
-  logical                       :: dophRPAx
-  logical                       :: docrRPA
-  logical                       :: doppRPA
+  logical,intent(in)            :: dotest
+
+  logical,intent(in)            :: dophRPA
+  logical,intent(in)            :: dophRPAx
+  logical,intent(in)            :: docrRPA
+  logical,intent(in)            :: doppRPA
 
   logical,intent(in)            :: TDA
   logical,intent(in)            :: doACFDT
@@ -46,7 +48,7 @@ subroutine URPA(dophRPA,dophRPAx,docrRPA,doppRPA,TDA,doACFDT,exchange_kernel,spi
   if(dophRPA) then
 
     call wall_time(start_RPA)
-    call phURPA(TDA,doACFDT,exchange_kernel,spin_conserved,spin_flip,nBas,nC,nO,nV,nR,nS,ENuc,EHF, &
+    call phURPA(dotest,TDA,doACFDT,exchange_kernel,spin_conserved,spin_flip,nBas,nC,nO,nV,nR,nS,ENuc,EHF, &
                 ERI_aaaa,ERI_aabb,ERI_bbbb,dipole_int_aa,dipole_int_bb,epsHF,cHF,S)
     call wall_time(end_RPA)
 
@@ -63,7 +65,7 @@ subroutine URPA(dophRPA,dophRPAx,docrRPA,doppRPA,TDA,doACFDT,exchange_kernel,spi
   if(dophRPAx) then
 
     call wall_time(start_RPA)
-    call phURPAx(TDA,doACFDT,exchange_kernel,spin_conserved,spin_flip,nBas,nC,nO,nV,nR,nS,ENuc,EHF, &
+    call phURPAx(dotest,TDA,doACFDT,exchange_kernel,spin_conserved,spin_flip,nBas,nC,nO,nV,nR,nS,ENuc,EHF, &
                  ERI_aaaa,ERI_aabb,ERI_bbbb,dipole_int_aa,dipole_int_bb,epsHF,cHF,S)
     call wall_time(end_RPA)
 
@@ -96,7 +98,7 @@ subroutine URPA(dophRPA,dophRPAx,docrRPA,doppRPA,TDA,doACFDT,exchange_kernel,spi
   if(doppRPA) then
 
     call wall_time(start_RPA)
-    call ppURPA(TDA,doACFDT,spin_conserved,spin_flip,nBas,nC,nO,nV,nR,ENuc,EHF,ERI_aaaa,ERI_aabb,ERI_bbbb,epsHF)
+    call ppURPA(dotest,TDA,doACFDT,spin_conserved,spin_flip,nBas,nC,nO,nV,nR,ENuc,EHF,ERI_aaaa,ERI_aabb,ERI_bbbb,epsHF)
     call wall_time(end_RPA)
 
     t_RPA = end_RPA - start_RPA

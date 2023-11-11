@@ -1,4 +1,4 @@
-subroutine RMP(doMP2,doMP3,regularize,nBas,nC,nO,nV,nR,ERI,ENuc,ERHF,eHF)
+subroutine RMP(dotest,doMP2,doMP3,regularize,nBas,nC,nO,nV,nR,ERI,ENuc,ERHF,eHF)
 
 ! Moller-Plesset module
 
@@ -6,6 +6,8 @@ subroutine RMP(doMP2,doMP3,regularize,nBas,nC,nO,nV,nR,ERI,ENuc,ERHF,eHF)
   include 'parameters.h'
 
 ! Input variables
+
+  logical,intent(in)            :: dotest
 
   logical,intent(in)            :: doMP2
   logical,intent(in)            :: doMP3
@@ -35,7 +37,7 @@ subroutine RMP(doMP2,doMP3,regularize,nBas,nC,nO,nV,nR,ERI,ENuc,ERHF,eHF)
   if(doMP2) then    
        
     call wall_time(start_MP)
-    call RMP2(regularize,nBas,nC,nO,nV,nR,ERI,ENuc,ERHF,eHF,Ec)
+    call RMP2(dotest,regularize,nBas,nC,nO,nV,nR,ERI,ENuc,ERHF,eHF,Ec)
     call wall_time(end_MP)
 
     t_MP = end_MP - start_MP

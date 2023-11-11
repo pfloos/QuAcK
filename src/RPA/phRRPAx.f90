@@ -1,12 +1,14 @@
-subroutine phRPA(TDA,doACFDT,exchange_kernel,singlet,triplet,nBas,nC,nO,nV,nR,nS,ENuc,EHF,ERI,dipole_int,e)
+subroutine phRRPAx(dotest,TDA,doACFDT,exchange_kernel,singlet,triplet,nBas,nC,nO,nV,nR,nS,ENuc,EHF,ERI,dipole_int,e)
 
-! Perform a direct random phase approximation calculation
+! Perform random phase approximation calculation with exchange (aka TDHF)
 
   implicit none
   include 'parameters.h'
   include 'quadrature.h'
 
 ! Input variables
+
+  logical,intent(in)            :: dotest
 
   logical,intent(in)            :: TDA
   logical,intent(in)            :: doACFDT
@@ -40,21 +42,22 @@ subroutine phRPA(TDA,doACFDT,exchange_kernel,singlet,triplet,nBas,nC,nO,nV,nR,nS
 ! Hello world
 
   write(*,*)
-  write(*,*)'*********************************'
-  write(*,*)'* Restricted ph-RPA Calculation *'
-  write(*,*)'*********************************'
+  write(*,*)'***********************************************************'
+  write(*,*)'|  Random phase approximation calculation with exchange   |'
+  write(*,*)'***********************************************************'
   write(*,*)
 
 ! TDA 
 
   if(TDA) then
     write(*,*) 'Tamm-Dancoff approximation activated!'
+    write(*,*) ' => RPAx + TDA = CIS '
     write(*,*)
   end if
 
 ! Initialization
 
-  dRPA = .true.
+  dRPA = .false.
 
   EcRPA(:) = 0d0
 
@@ -73,7 +76,7 @@ subroutine phRPA(TDA,doACFDT,exchange_kernel,singlet,triplet,nBas,nC,nO,nV,nR,nS
     if(.not.TDA) call phLR_B(ispin,dRPA,nBas,nC,nO,nV,nR,nS,1d0,ERI,Bph)
 
     call phLR(TDA,nS,Aph,Bph,EcRPA(ispin),Om,XpY,XmY)
-    call print_excitation_energies('phRPA@HF',ispin,nS,Om)
+    call print_excitation_energies('phRPAx@HF',ispin,nS,Om)
     call phLR_transition_vectors(.true.,nBas,nC,nO,nV,nR,nS,dipole_int,Om,XpY,XmY)
 
   endif
@@ -86,9 +89,9 @@ subroutine phRPA(TDA,doACFDT,exchange_kernel,singlet,triplet,nBas,nC,nO,nV,nR,nS
 
     call phLR_A(ispin,dRPA,nBas,nC,nO,nV,nR,nS,1d0,e,ERI,Aph)
     if(.not.TDA) call phLR_B(ispin,dRPA,nBas,nC,nO,nV,nR,nS,1d0,ERI,Bph)
-
+  
     call phLR(TDA,nS,Aph,Bph,EcRPA(ispin),Om,XpY,XmY)
-    call print_excitation_energies('phRPA@HF',ispin,nS,Om)
+    call print_excitation_energies('phRPAx@HF',ispin,nS,Om)
     call phLR_transition_vectors(.false.,nBas,nC,nO,nV,nR,nS,dipole_int,Om,XpY,XmY)
 
   endif
@@ -102,12 +105,14 @@ subroutine phRPA(TDA,doACFDT,exchange_kernel,singlet,triplet,nBas,nC,nO,nV,nR,nS
 
   write(*,*)
   write(*,*)'-------------------------------------------------------------------------------'
-  write(*,'(2X,A50,F20.10)') 'Tr@phRPA correlation energy (singlet) =',EcRPA(1)
-  write(*,'(2X,A50,F20.10)') 'Tr@phRPA correlation energy (triplet) =',EcRPA(2)
-  write(*,'(2X,A50,F20.10)') 'Tr@phRPA correlation energy           =',EcRPA(1) + EcRPA(2)
-  write(*,'(2X,A50,F20.10)') 'Tr@phRPA total energy                 =',ENuc + EHF + EcRPA(1) + EcRPA(2)
+  write(*,'(2X,A50,F20.10,A3)') 'Tr@phRRPAx correlation energy (singlet) = ',EcRPA(1),' au'
+  write(*,'(2X,A50,F20.10,A3)') 'Tr@phRRPAx correlation energy (triplet) = ',EcRPA(2),' au'
+  write(*,'(2X,A50,F20.10,A3)') 'Tr@phRRPAx correlation energy           = ',sum(EcRPA),' au'
+  write(*,'(2X,A50,F20.10,A3)') 'Tr@phRRPAx total energy                 = ',ENuc + EHF + sum(EcRPA),' au'
   write(*,*)'-------------------------------------------------------------------------------'
   write(*,*)
+
+! deallocate memory
 
   deallocate(Om,XpY,XmY,Aph,Bph)
 
@@ -115,21 +120,27 @@ subroutine phRPA(TDA,doACFDT,exchange_kernel,singlet,triplet,nBas,nC,nO,nV,nR,nS
 
   if(doACFDT) then
 
-    write(*,*) '--------------------------------------------------------'
-    write(*,*) 'Adiabatic connection version of phRPA correlation energy'
-    write(*,*) '--------------------------------------------------------'
-    write(*,*) 
+    write(*,*) '---------------------------------------------------------'
+    write(*,*) 'Adiabatic connection version of phRPAx correlation energy'
+    write(*,*) '---------------------------------------------------------'
+    write(*,*)
 
     call phACFDT(exchange_kernel,dRPA,TDA,singlet,triplet,nBas,nC,nO,nV,nR,nS,ERI,e,EcRPA)
 
     write(*,*)
     write(*,*)'-------------------------------------------------------------------------------'
-    write(*,'(2X,A50,F20.10)') 'AC@phRPA correlation energy (singlet) =',EcRPA(1)
-    write(*,'(2X,A50,F20.10)') 'AC@phRPA correlation energy (triplet) =',EcRPA(2)
-    write(*,'(2X,A50,F20.10)') 'AC@phRPA correlation energy           =',EcRPA(1) + EcRPA(2)
-    write(*,'(2X,A50,F20.10)') 'AC@phRPA total energy                 =',ENuc + EHF + EcRPA(1) + EcRPA(2)
+    write(*,'(2X,A50,F20.10,A3)') 'AC@phRRPAx correlation energy (singlet) = ',EcRPA(1),' au'
+    write(*,'(2X,A50,F20.10,A3)') 'AC@phRRPAx correlation energy (triplet) = ',EcRPA(2),' au'
+    write(*,'(2X,A50,F20.10,A3)') 'AC@phRRPAx correlation energy           = ',sum(EcRPA),' au'
+    write(*,'(2X,A50,F20.10,A3)') 'AC@phRRPAx total energy                 = ',ENuc + EHF + sum(EcRPA),' au'
     write(*,*)'-------------------------------------------------------------------------------'
     write(*,*)
+
+  end if
+
+  if(dotest) then
+
+    call dump_test_value('R','phRRPAx correlation energy',sum(EcRPA))
 
   end if
 
