@@ -1,4 +1,4 @@
-subroutine GHF(maxSCF,thresh,max_diis,guess_type,mix,level_shift,nNuc,ZNuc,rNuc,ENuc, & 
+subroutine GHF(doGtest,maxSCF,thresh,max_diis,guess_type,mix,level_shift,nNuc,ZNuc,rNuc,ENuc, & 
                nBas,nBas2,nO,Ov,T,V,Hc,ERI,dipole_int,Or,EHF,e,c,P)
 
 ! Perform unrestricted Hartree-Fock calculation
@@ -7,6 +7,8 @@ subroutine GHF(maxSCF,thresh,max_diis,guess_type,mix,level_shift,nNuc,ZNuc,rNuc,
   include 'parameters.h'
 
 ! Input variables
+
+  logical,intent(in)            :: doGtest
 
   integer,intent(in)            :: maxSCF
   integer,intent(in)            :: max_diis
@@ -293,5 +295,11 @@ subroutine GHF(maxSCF,thresh,max_diis,guess_type,mix,level_shift,nNuc,ZNuc,rNuc,
 ! Compute final GHF energy
 
   call print_GHF(nBas,nBas2,nO,e,C,P,ENuc,ET,EV,EJ,EK,EHF,dipole)
+
+! Print test values
+
+  if(doGtest) then
+
+  end if
 
 end subroutine 

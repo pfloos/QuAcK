@@ -1,4 +1,4 @@
-subroutine RQuAcK(doRHF,doROHF,dostab,dosearch,doMP2,doMP3,doCCD,dopCCD,doDCD,doCCSD,doCCSDT,                      &   
+subroutine RQuAcK(doRtest,doRHF,doROHF,dostab,dosearch,doMP2,doMP3,doCCD,dopCCD,doDCD,doCCSD,doCCSDT,              &   
                   dodrCCD,dorCCD,docrCCD,dolCCD,doCIS,doCIS_D,doCID,doCISD,doFCI,dophRPA,dophRPAx,docrRPA,doppRPA, & 
                   doG0F2,doevGF2,doqsGF2,doG0F3,doevGF3,doG0W0,doevGW,doqsGW,doufG0W0,doufGW,doSRGqsGW,            &
                   doG0T0pp,doevGTpp,doqsGTpp,doG0T0eh,doevGTeh,doqsGTeh,nNuc,nBas,nC,nO,nV,nR,ENuc,ZNuc,rNuc,      & 
@@ -12,6 +12,8 @@ subroutine RQuAcK(doRHF,doROHF,dostab,dosearch,doMP2,doMP3,doCCD,dopCCD,doDCD,do
 
   implicit none
   include 'parameters.h'
+
+  logical,intent(in)            :: doRtest
 
   logical,intent(in)            :: doRHF,doROHF
   logical,intent(in)            :: dostab
@@ -115,7 +117,7 @@ subroutine RQuAcK(doRHF,doROHF,dostab,dosearch,doMP2,doMP3,doCCD,dopCCD,doDCD,do
   if(doRHF) then
 
     call wall_time(start_HF)
-    call RHF(maxSCF_HF,thresh_HF,max_diis_HF,guess_type,level_shift,nNuc,ZNuc,rNuc,ENuc, &
+    call RHF(doRtest,maxSCF_HF,thresh_HF,max_diis_HF,guess_type,level_shift,nNuc,ZNuc,rNuc,ENuc, &
              nBas,nO,S,T,V,Hc,ERI_AO,dipole_int_AO,X,EHF,epsHF,cHF,PHF)
     call wall_time(end_HF)
 
@@ -128,7 +130,7 @@ subroutine RQuAcK(doRHF,doROHF,dostab,dosearch,doMP2,doMP3,doCCD,dopCCD,doDCD,do
   if(doROHF) then
 
     call wall_time(start_HF)
-    call ROHF(maxSCF_HF,thresh_HF,max_diis_HF,guess_type,mix,level_shift,nNuc,ZNuc,rNuc,ENuc, &
+    call ROHF(doRtest,maxSCF_HF,thresh_HF,max_diis_HF,guess_type,mix,level_shift,nNuc,ZNuc,rNuc,ENuc, &
               nBas,nO,S,T,V,Hc,ERI_AO,dipole_int_AO,X,EHF,epsHF,cHF,PHF)
     call wall_time(end_HF)
 

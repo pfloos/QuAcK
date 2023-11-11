@@ -66,6 +66,8 @@ program QuAcK
   logical                       :: dophBSE,dophBSE2,doppBSE,dBSE,dTDA
   logical                       :: doACFDT,exchange_kernel,doXBS
 
+  logical                       :: doRtest,doUtest,doGtest
+
 !-------------!
 ! Hello World !
 !-------------!
@@ -101,7 +103,8 @@ program QuAcK
                     doG0W0,doevGW,doqsGW,doSRGqsGW,    &
                     doufG0W0,doufGW,                   &
                     doG0T0pp,doevGTpp,doqsGTpp,        &
-                    doG0T0eh,doevGTeh,doqsGTeh)
+                    doG0T0eh,doevGTeh,doqsGTeh,        &
+                    doRtest,doUtest,doGtest)
 
 !--------------------------!
 ! Read options for methods !
@@ -185,7 +188,7 @@ program QuAcK
 !-------------------------!
 
   if(doRQuAcK) &
-    call RQuAcK(doRHF,doROHF,dostab,dosearch,doMP2,doMP3,doCCD,dopCCD,doDCD,doCCSD,doCCSDT,                      &
+    call RQuAcK(doRtest,doRHF,doROHF,dostab,dosearch,doMP2,doMP3,doCCD,dopCCD,doDCD,doCCSD,doCCSDT,              &
                 dodrCCD,dorCCD,docrCCD,dolCCD,doCIS,doCIS_D,doCID,doCISD,doFCI,dophRPA,dophRPAx,docrRPA,doppRPA, &
                 doG0F2,doevGF2,doqsGF2,doG0F3,doevGF3,doG0W0,doevGW,doqsGW,doufG0W0,doufGW,doSRGqsGW,            &
                 doG0T0pp,doevGTpp,doqsGTpp,doG0T0eh,doevGTeh,doqsGTeh,nNuc,nBas,nC,nO,nV,nR,ENuc,ZNuc,rNuc,      &
@@ -200,7 +203,7 @@ program QuAcK
 !---------------------------!
 
   if(doUQuAcK) &
-    call UQuAcK(doUHF,dostab,dosearch,doMP2,doMP3,doCCD,dopCCD,doDCD,doCCSD,doCCSDT,                             &
+    call UQuAcK(doUtest,doUHF,dostab,dosearch,doMP2,doMP3,doCCD,dopCCD,doDCD,doCCSD,doCCSDT,                     &
                 dodrCCD,dorCCD,docrCCD,dolCCD,doCIS,doCIS_D,doCID,doCISD,doFCI,dophRPA,dophRPAx,docrRPA,doppRPA, &
                 doG0F2,doevGF2,doqsGF2,doG0F3,doevGF3,doG0W0,doevGW,doqsGW,doufG0W0,doufGW,doSRGqsGW,            &
                 doG0T0pp,doevGTpp,doqsGTpp,doG0T0eh,doevGTeh,doqsGTeh,nNuc,nBas,nC,nO,nV,nR,ENuc,ZNuc,rNuc,      &
@@ -215,7 +218,7 @@ program QuAcK
 !--------------------------!
 
   if(doGQuAcK) & 
-    call GQuAcK(doGHF,dostab,dosearch,doMP2,doMP3,dophRPA,dophRPAx,doppRPA,                               &  
+    call GQuAcK(doGtest,doGHF,dostab,dosearch,doMP2,doMP3,dophRPA,dophRPAx,doppRPA,                       &  
                 doG0W0,doevGW,doqsGW,doG0F2,doevGF2,doqsGF2,                                              &
                 nNuc,nBas,sum(nC),sum(nO),sum(nV),sum(nR),ENuc,ZNuc,rNuc,S,T,V,Hc,X,dipole_int_AO,ERI_AO, &
                 maxSCF_HF,max_diis_HF,thresh_HF,level_shift,guess_type,mix,reg_MP,                        & 

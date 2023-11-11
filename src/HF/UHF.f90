@@ -1,4 +1,4 @@
-subroutine UHF(maxSCF,thresh,max_diis,guess_type,mix,level_shift,nNuc,ZNuc,rNuc,ENuc, & 
+subroutine UHF(doUtest,maxSCF,thresh,max_diis,guess_type,mix,level_shift,nNuc,ZNuc,rNuc,ENuc, & 
                nBas,nO,S,T,V,Hc,ERI,dipole_int,X,EHF,e,c,P)
 
 ! Perform unrestricted Hartree-Fock calculation
@@ -7,6 +7,8 @@ subroutine UHF(maxSCF,thresh,max_diis,guess_type,mix,level_shift,nNuc,ZNuc,rNuc,
   include 'parameters.h'
 
 ! Input variables
+
+  logical,intent(in)            :: doUtest
 
   integer,intent(in)            :: maxSCF
   integer,intent(in)            :: max_diis
@@ -250,5 +252,12 @@ subroutine UHF(maxSCF,thresh,max_diis,guess_type,mix,level_shift,nNuc,ZNuc,rNuc,
 
   call dipole_moment(nBas,P(:,:,1)+P(:,:,2),nNuc,ZNuc,rNuc,dipole_int,dipole)
   call print_UHF(nBas,nO,S,e,c,ENuc,ET,EV,EJ,Ex,EHF,dipole)
+
+
+! Print test values
+
+  if(doUtest) then
+
+  end if
 
 end subroutine 

@@ -1,13 +1,15 @@
-subroutine GQuAcK(doGHF,dostab,dosearch,doMP2,doMP3,dophRPA,dophRPAx,doppRPA,                        &
-                  doG0W0,doevGW,doqsGW,doG0F2,doevGF2,doqsGF2,                                       &
-                  nNuc,nBas,nC,nO,nV,nR,ENuc,ZNuc,rNuc,S,T,V,Hc,X,dipole_int_AO,ERI_AO,              &
-                  maxSCF_HF,max_diis_HF,thresh_HF,level_shift,guess_type,mix,reg_MP,                 &
-                  TDA,maxSCF_GF,max_diis_GF,thresh_GF,lin_GF,reg_GF,eta_GF, &
-                  maxSCF_GW,max_diis_GW,thresh_GW,TDA_W,lin_GW,reg_GW,eta_GW,                        &
+subroutine GQuAcK(doGtest,doGHF,dostab,dosearch,doMP2,doMP3,dophRPA,dophRPAx,doppRPA,   &
+                  doG0W0,doevGW,doqsGW,doG0F2,doevGF2,doqsGF2,                          &
+                  nNuc,nBas,nC,nO,nV,nR,ENuc,ZNuc,rNuc,S,T,V,Hc,X,dipole_int_AO,ERI_AO, &
+                  maxSCF_HF,max_diis_HF,thresh_HF,level_shift,guess_type,mix,reg_MP,    &
+                  TDA,maxSCF_GF,max_diis_GF,thresh_GF,lin_GF,reg_GF,eta_GF,             &
+                  maxSCF_GW,max_diis_GW,thresh_GW,TDA_W,lin_GW,reg_GW,eta_GW,           & 
                   dophBSE,dophBSE2,doppBSE,dBSE,dTDA,doACFDT,exchange_kernel,doXBS)
 
   implicit none
   include 'parameters.h'
+
+  logical,intent(in)            :: doGtest
 
   logical,intent(in)            :: doGHF
   logical,intent(in)            :: dostab
@@ -101,7 +103,7 @@ subroutine GQuAcK(doGHF,dostab,dosearch,doMP2,doMP3,dophRPA,dophRPAx,doppRPA,   
   if(doGHF) then
 
     call wall_time(start_HF)
-    call GHF(maxSCF_HF,thresh_HF,max_diis_HF,guess_type,mix,level_shift,nNuc,ZNuc,rNuc,ENuc, &
+    call GHF(doGtest,maxSCF_HF,thresh_HF,max_diis_HF,guess_type,mix,level_shift,nNuc,ZNuc,rNuc,ENuc, &
              nBas,nBas2,nO,S,T,V,Hc,ERI_AO,dipole_int_AO,X,EHF,epsHF,cHF,PHF)
     call wall_time(end_HF)
 

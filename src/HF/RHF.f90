@@ -1,4 +1,4 @@
-subroutine RHF(maxSCF,thresh,max_diis,guess_type,level_shift,nNuc,ZNuc,rNuc,ENuc, & 
+subroutine RHF(doRtest,maxSCF,thresh,max_diis,guess_type,level_shift,nNuc,ZNuc,rNuc,ENuc, & 
                nBas,nO,S,T,V,Hc,ERI,dipole_int,X,EHF,e,c,P)
 
 ! Perform restricted Hartree-Fock calculation
@@ -7,6 +7,8 @@ subroutine RHF(maxSCF,thresh,max_diis,guess_type,level_shift,nNuc,ZNuc,rNuc,ENuc
   include 'parameters.h'
 
 ! Input variables
+
+  logical,intent(in)            :: doRtest
 
   integer,intent(in)            :: maxSCF
   integer,intent(in)            :: max_diis
@@ -198,5 +200,11 @@ subroutine RHF(maxSCF,thresh,max_diis,guess_type,level_shift,nNuc,ZNuc,rNuc,ENuc
 
   call dipole_moment(nBas,P,nNuc,ZNuc,rNuc,dipole_int,dipole)
   call print_RHF(nBas,nO,e,C,ENuc,ET,EV,EJ,EK,EHF,dipole)
+
+! Print test values
+
+  if(doRtest) then
+
+  end if
 
 end subroutine 

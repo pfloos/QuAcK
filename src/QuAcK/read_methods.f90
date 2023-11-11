@@ -9,7 +9,8 @@ subroutine read_methods(doRHF,doUHF,doGHF,doROHF,          &
                         doG0W0,doevGW,doqsGW,doSRGqsGW,    & 
                         doufG0W0,doufGW,                   & 
                         doG0T0pp,doevGTpp,doqsGTpp,        &
-                        doG0T0eh,doevGTeh,doqsGTeh)
+                        doG0T0eh,doevGTeh,doqsGTeh,        &
+                        doRtest,doUtest,doGtest)
 
 ! Read desired methods 
 
@@ -27,6 +28,8 @@ subroutine read_methods(doRHF,doUHF,doGHF,doROHF,          &
   logical,intent(out)           :: doG0W0,doevGW,doqsGW,doSRGqsGW,doufG0W0,doufGW
   logical,intent(out)           :: doG0T0pp,doevGTpp,doqsGTpp
   logical,intent(out)           :: doG0T0eh,doevGTeh,doqsGTeh
+
+  logical,intent(out)           :: doRtest,doUtest,doGtest
 
 ! Local variables
 
@@ -173,7 +176,19 @@ subroutine read_methods(doRHF,doUHF,doGHF,doROHF,          &
   if(ans5 == 'T') doevGTeh   = .true.
   if(ans6 == 'T') doqsGTeh   = .true.
 
-! Close file with geometry specification
+! Read test
+
+  doRtest = .false.
+  doUtest = .false.
+  doGtest = .false.
+
+  read(1,*) 
+  read(1,*) ans1,ans2,ans3
+  if(ans1 == 'T') doRtest = .true.
+  if(ans2 == 'T') doUtest = .true.
+  if(ans3 == 'T') doGtest = .true.
+
+! Close file 
 
   close(unit=1)
 
