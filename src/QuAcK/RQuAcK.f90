@@ -122,7 +122,6 @@ subroutine RQuAcK(dotest,doRHF,doROHF,dostab,dosearch,doMP2,doMP3,doCCD,dopCCD,d
     call wall_time(end_HF)
 
     t_HF = end_HF - start_HF
-    write(*,*)
     write(*,'(A65,1X,F9.3,A8)') 'Total CPU time for RHF = ',t_HF,' seconds'
     write(*,*)
 
