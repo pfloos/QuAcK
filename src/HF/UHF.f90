@@ -1,5 +1,5 @@
 subroutine UHF(dotest,maxSCF,thresh,max_diis,guess_type,mix,level_shift,nNuc,ZNuc,rNuc,ENuc, & 
-               nBas,nO,S,T,V,Hc,ERI,dipole_int,X,EHF,e,c,P)
+               nBas,nO,S,T,V,Hc,ERI,dipole_int,X,EUHF,eHF,c,P)
 
 ! Perform unrestricted Hartree-Fock calculation
 
@@ -59,8 +59,8 @@ subroutine UHF(dotest,maxSCF,thresh,max_diis,guess_type,mix,level_shift,nNuc,ZNu
 
 ! Output variables
 
-  double precision,intent(out)  :: EHF
-  double precision,intent(out)  :: e(nBas,nspin)
+  double precision,intent(out)  :: EUHF
+  double precision,intent(out)  :: eHF(nBas,nspin)
   double precision,intent(inout):: c(nBas,nBas,nspin)
   double precision,intent(out)  :: P(nBas,nBas,nspin)
 
@@ -172,7 +172,7 @@ subroutine UHF(dotest,maxSCF,thresh,max_diis,guess_type,mix,level_shift,nNuc,ZNu
 
     cp(:,:,:) = Fp(:,:,:)
     do ispin=1,nspin
-      call diagonalize_matrix(nBas,cp(:,:,ispin),e(:,ispin))
+      call diagonalize_matrix(nBas,cp(:,:,ispin),eHF(:,ispin))
     end do
     
 !   Back-transform eigenvectors in non-orthogonal basis
@@ -221,12 +221,12 @@ subroutine UHF(dotest,maxSCF,thresh,max_diis,guess_type,mix,level_shift,nNuc,ZNu
 
 !   Total energy
 
-    EHF = sum(ET(:)) + sum(EV(:)) + sum(EJ(:)) + sum(Ex(:))
+    EUHF = sum(ET(:)) + sum(EV(:)) + sum(EJ(:)) + sum(Ex(:))
 
 !   Dump results
 
     write(*,'(1X,A1,1X,I3,1X,A1,1X,F16.10,1X,A1,1X,F16.10,1X,A1,1X,F10.6,1X,A1,1X)') & 
-      '|',nSCF,'|',EHF + ENuc,'|',sum(Ex(:)),'|',Conv,'|'
+      '|',nSCF,'|',EUHF + ENuc,'|',sum(Ex(:)),'|',Conv,'|'
  
   end do
   write(*,*)'----------------------------------------------------------'
@@ -251,14 +251,19 @@ subroutine UHF(dotest,maxSCF,thresh,max_diis,guess_type,mix,level_shift,nNuc,ZNu
 ! Compute final UHF energy
 
   call dipole_moment(nBas,P(:,:,1)+P(:,:,2),nNuc,ZNuc,rNuc,dipole_int,dipole)
-  call print_UHF(nBas,nO,S,e,c,ENuc,ET,EV,EJ,Ex,EHF,dipole)
+  call print_UHF(nBas,nO,S,eHF,c,ENuc,ET,EV,EJ,Ex,EUHF,dipole)
 
 
 ! Print test values
 
   if(dotest) then
 
-    call dump_test_value('U','UHF energy',EHF)
+    call dump_test_value('U','UHF energy',EUHF)
+    call dump_test_value('U','UHF HOMOa energy',eHF(nO(1),1))
+    call dump_test_value('U','UHF HOMOb energy',eHF(nO(2),2))
+    call dump_test_value('U','UHF LUMOa energy',eHF(nO(1)+1,1))
+    call dump_test_value('U','UHF LUMOb energy',eHF(nO(2)+1,2))
+    call dump_test_value('U','UHF dipole moment',norm2(dipole))
 
   end if
 

@@ -1,5 +1,5 @@
 subroutine GHF(dotest,maxSCF,thresh,max_diis,guess_type,mix,level_shift,nNuc,ZNuc,rNuc,ENuc, & 
-               nBas,nBas2,nO,Ov,T,V,Hc,ERI,dipole_int,Or,EHF,e,c,P)
+               nBas,nBas2,nO,Ov,T,V,Hc,ERI,dipole_int,Or,EGHF,eHF,c,P)
 
 ! Perform unrestricted Hartree-Fock calculation
 
@@ -66,8 +66,8 @@ subroutine GHF(dotest,maxSCF,thresh,max_diis,guess_type,mix,level_shift,nNuc,ZNu
 
 ! Output variables
 
-  double precision,intent(out)  :: EHF
-  double precision,intent(out)  :: e(nBas2)
+  double precision,intent(out)  :: EGHF
+  double precision,intent(out)  :: eHF(nBas2)
   double precision,intent(inout):: C(nBas2,nBas2)
   double precision,intent(out)  :: P(nBas2,nBas2)
 
@@ -202,7 +202,7 @@ subroutine GHF(dotest,maxSCF,thresh,max_diis,guess_type,mix,level_shift,nNuc,ZNu
 !  Diagonalize Fock matrix to get eigenvectors and eigenvalues
 
     Cp(:,:) = Fp(:,:)
-    call diagonalize_matrix(nBas2,Cp,e)
+    call diagonalize_matrix(nBas2,Cp,eHF)
     
 !   Back-transform eigenvectors in non-orthogonal basis
 
@@ -261,12 +261,12 @@ subroutine GHF(dotest,maxSCF,thresh,max_diis,guess_type,mix,level_shift,nNuc,ZNu
 
 !   Total energy
 
-    EHF = ET + EV + EJ + EK
+    EGHF = ET + EV + EJ + EK
 
 !   Dump results
 
     write(*,'(1X,A1,1X,I3,1X,A1,1X,F16.10,1X,A1,1X,F16.10,1X,A1,1X,F16.10,1X,A1,1X,F10.6,1X,A1,1X)') & 
-      '|',nSCF,'|',EHF + ENuc,'|',EJ,'|',EK,'|',Conv,'|'
+      '|',nSCF,'|',EGHF + ENuc,'|',EJ,'|',EK,'|',Conv,'|'
  
   end do
   write(*,*)'-----------------------------------------------------------------------------'
@@ -290,17 +290,20 @@ subroutine GHF(dotest,maxSCF,thresh,max_diis,guess_type,mix,level_shift,nNuc,ZNu
 
 ! Compute dipole moments
 
-  call dipole_moment(nBas2,P,nNuc,ZNuc,rNuc,dipole_int,dipole)
+  call dipole_moment(nBas,P,nNuc,ZNuc,rNuc,dipole_int,dipole)
 
 ! Compute final GHF energy
 
-  call print_GHF(nBas,nBas2,nO,e,C,P,ENuc,ET,EV,EJ,EK,EHF,dipole)
+  call print_GHF(nBas,nBas2,nO,eHF,C,P,ENuc,ET,EV,EJ,EK,EGHF,dipole)
 
 ! Print test values
 
   if(dotest) then
 
-    call dump_test_value('G','GHF energy',EHF)
+    call dump_test_value('G','GHF energy',EGHF)
+    call dump_test_value('G','GHF HOMO energy',eHF(nO))
+    call dump_test_value('G','GHF LUMO energy',eHF(nO+1))
+    call dump_test_value('G','GHF dipole moment',norm2(dipole))
 
   end if
 

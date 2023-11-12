@@ -1,5 +1,11 @@
  GHF energy
  -85.160473883160876
+ GHF HOMO energy
+  -0.501365804897696
+ GHF LUMO energy
+   0.203278954950924
+ GHF dipole moment
+   0.714967673390535
  GMP2 correlation energy
   -0.128988144318866
  phGRPA corrlation energy

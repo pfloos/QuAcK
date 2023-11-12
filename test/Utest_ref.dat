@@ -1,5 +1,15 @@
  UHF energy
  -85.160473883160819
+ UHF HOMOa energy
+  -0.501365804897699
+ UHF HOMOb energy
+  -0.501365804897702
+ UHF LUMOa energy
+   0.203278954950949
+ UHF LUMOb energy
+   0.203278954950948
+ UHF dipole moment
+   0.611349538338891
  UMP2 correlation energy
   -0.128988144318865
  phURPA correlation energy

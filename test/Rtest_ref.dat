@@ -1,5 +1,11 @@
  RHF energy
  -85.160473883160876
+ RHF HOMO energy
+  -0.501365804897693
+ RHF LUMO energy
+   0.203278954950938
+ RHF dipole moment
+   0.611349538338893
  ROHF energy
  -85.160473714509976
  RMP2 correlation energy

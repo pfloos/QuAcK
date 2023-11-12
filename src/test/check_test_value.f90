@@ -51,9 +51,9 @@ subroutine check_test_value(branch)
     read(12,'(F20.15)',end=12) reference
 
     if(abs(value-reference) < cutoff) then
-      answer = '..... [SUCCESS]'
+      answer = '.......... :-)'
     else
-      answer = '..... [FAILED] '
+      answer = '.......... :-( '
       failed = .true.
     end if
     write(*,'(1X,A1,1X,A30,1X,A1,1X,3F15.10,1X,A1,1X,A15,1X,A1)') & 

@@ -1,5 +1,5 @@
 subroutine RHF(dotest,maxSCF,thresh,max_diis,guess_type,level_shift,nNuc,ZNuc,rNuc,ENuc, & 
-               nBas,nO,S,T,V,Hc,ERI,dipole_int,X,EHF,e,c,P)
+               nBas,nO,S,T,V,Hc,ERI,dipole_int,X,ERHF,eHF,c,P)
 
 ! Perform restricted Hartree-Fock calculation
 
@@ -56,8 +56,8 @@ subroutine RHF(dotest,maxSCF,thresh,max_diis,guess_type,level_shift,nNuc,ZNuc,rN
 
 ! Output variables
 
-  double precision,intent(out)  :: EHF
-  double precision,intent(out)  :: e(nBas)
+  double precision,intent(out)  :: ERHF
+  double precision,intent(out)  :: eHF(nBas)
   double precision,intent(inout):: c(nBas,nBas)
   double precision,intent(out)  :: P(nBas,nBas)
 
@@ -138,7 +138,7 @@ subroutine RHF(dotest,maxSCF,thresh,max_diis,guess_type,level_shift,nNuc,ZNuc,rN
 
     Fp = matmul(transpose(X),matmul(F,X))
     cp(:,:) = Fp(:,:)
-    call diagonalize_matrix(nBas,cp,e)
+    call diagonalize_matrix(nBas,cp,eHF)
     c = matmul(X,cp)
 
 !   Density matrix
@@ -147,15 +147,15 @@ subroutine RHF(dotest,maxSCF,thresh,max_diis,guess_type,level_shift,nNuc,ZNuc,rN
   
 !   Compute HF energy
 
-    EHF = trace_matrix(nBas,matmul(P,Hc))      &
-        + 0.5d0*trace_matrix(nBas,matmul(P,J)) &
-        + 0.25d0*trace_matrix(nBas,matmul(P,K))
+    ERHF = trace_matrix(nBas,matmul(P,Hc))      &
+         + 0.5d0*trace_matrix(nBas,matmul(P,J)) &
+         + 0.25d0*trace_matrix(nBas,matmul(P,K))
 
 !   Compute HOMO-LUMO gap
 
     if(nBas > nO) then 
 
-      Gap = e(nO+1) - e(nO)
+      Gap = eHF(nO+1) - eHF(nO)
 
     else
 
@@ -166,7 +166,7 @@ subroutine RHF(dotest,maxSCF,thresh,max_diis,guess_type,level_shift,nNuc,ZNuc,rN
 !  Dump results
 
     write(*,'(1X,A1,1X,I3,1X,A1,1X,F16.10,1X,A1,1X,F10.6,1X,A1,1X,F10.6,1X,A1,1X)') & 
-      '|',nSCF,'|',EHF+ENuc,'|',Conv,'|',Gap,'|'
+      '|',nSCF,'|',ERHF+ENuc,'|',Conv,'|',Gap,'|'
 
   end do
   write(*,*)'----------------------------------------------------'
@@ -194,18 +194,21 @@ subroutine RHF(dotest,maxSCF,thresh,max_diis,guess_type,level_shift,nNuc,ZNuc,rN
   EV = trace_matrix(nBas,matmul(P,V))
   EJ = 0.5d0*trace_matrix(nBas,matmul(P,J))
   EK = 0.25d0*trace_matrix(nBas,matmul(P,K))
-  EHF = ET + EV + EJ + EK
+  ERHF = ET + EV + EJ + EK
 
 ! Compute dipole moments
 
   call dipole_moment(nBas,P,nNuc,ZNuc,rNuc,dipole_int,dipole)
-  call print_RHF(nBas,nO,e,C,ENuc,ET,EV,EJ,EK,EHF,dipole)
+  call print_RHF(nBas,nO,eHF,C,ENuc,ET,EV,EJ,EK,ERHF,dipole)
 
 ! Print test values
 
   if(dotest) then
  
-    call dump_test_value('R','RHF energy',EHF)
+    call dump_test_value('R','RHF energy',ERHF)
+    call dump_test_value('R','RHF HOMO energy',eHF(nO))
+    call dump_test_value('R','RHF LUMO energy',eHF(nO+1))
+    call dump_test_value('R','RHF dipole moment',norm2(dipole))
 
   end if
 
