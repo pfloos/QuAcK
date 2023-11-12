@@ -13,6 +13,7 @@ subroutine check_test_value(branch)
   double precision                   :: reference
   character(len=15)                  :: answer
 
+  logical                            :: failed
   double precision,parameter         :: cutoff = 1d-10
 
 ! Output variables
@@ -38,10 +39,12 @@ subroutine check_test_value(branch)
 
   end if
 
+  failed = .false.
+
   write(*,*) '----------------------------------------------------------------------------------------------------'
   do
 
-    read(11,*,end=11) description
+    read(11,'(A30)',end=11) description
     read(11,'(F20.15)',end=11) value
 
     read(12,*,end=12) 
@@ -51,15 +54,22 @@ subroutine check_test_value(branch)
       answer = '..... [SUCCESS]'
     else
       answer = '..... [FAILED] '
+      failed = .true.
     end if
     write(*,'(1X,A1,1X,A30,1X,A1,1X,3F15.10,1X,A1,1X,A15,1X,A1)') & 
       '|',description,'|',value,reference,abs(value-reference),'|',answer,'|'
 
-  enddo
+  end do
 
   11 close(unit=11)
   12 close(unit=12)
 
+  write(*,*) '----------------------------------------------------------------------------------------------------'
+  if(failed) then 
+    write(*,'(3X,A30)') ' :-( Tests have failed    :-( '
+  else 
+    write(*,'(3X,A30)') ' :-) Tests have succeeded :-) '
+  end if
   write(*,*) '----------------------------------------------------------------------------------------------------'
 
 end subroutine
