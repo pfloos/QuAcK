@@ -1,4 +1,4 @@
-subroutine RG0W0(doACFDT,exchange_kernel,doXBS,dophBSE,dophBSE2,TDA_W,TDA,dBSE,dTDA,doppBSE,singlet,triplet, & 
+subroutine RG0W0(dotest,doACFDT,exchange_kernel,doXBS,dophBSE,dophBSE2,TDA_W,TDA,dBSE,dTDA,doppBSE,singlet,triplet, & 
                  linearize,eta,regularize,nBas,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,dipole_int,eHF)
 
 ! Perform G0W0 calculation
@@ -8,6 +8,8 @@ subroutine RG0W0(doACFDT,exchange_kernel,doXBS,dophBSE,dophBSE2,TDA_W,TDA,dBSE,d
   include 'quadrature.h'
 
 ! Input variables
+
+  logical,intent(in)            :: dotest
 
   logical,intent(in)            :: doACFDT
   logical,intent(in)            :: exchange_kernel
@@ -228,6 +230,16 @@ subroutine RG0W0(doACFDT,exchange_kernel,doXBS,dophBSE,dophBSE2,TDA_W,TDA,dBSE,d
     write(*,'(2X,A50,F20.10,A3)') 'Tr@ppBSE@G0W0 total energy                 =',ENuc + ERHF + EcBSE(1) + 3d0*EcBSE(2),' au'
     write(*,*)'-------------------------------------------------------------------------------'
     write(*,*)
+
+  end if
+
+! Testing zone
+
+  if(dotest) then
+
+    call dump_test_value('R','RG0W0 correlation energy',EcRPA)
+    call dump_test_value('R','RG0W0 HOMO energy',eGW(nO))
+    call dump_test_value('R','RG0W0 LUMO energy',eGW(nO+1))
 
   end if
 

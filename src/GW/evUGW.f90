@@ -1,4 +1,4 @@
-subroutine evUGW(maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,BSE,TDA_W,TDA,dBSE,dTDA, & 
+subroutine evUGW(dotest,maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,BSE,TDA_W,TDA,dBSE,dTDA, & 
                  spin_conserved,spin_flip,linearize,eta,regularize,nBas,nC,nO,nV,nR,nS,ENuc,   &
                  EUHF,S,ERI_aaaa,ERI_aabb,ERI_bbbb,dipole_int_aa,dipole_int_bb,cHF,eHF)
 
@@ -8,6 +8,8 @@ subroutine evUGW(maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,BSE,TDA_W,
   include 'parameters.h'
 
 ! Input variables
+
+  logical,intent(in)            :: dotest
 
   integer,intent(in)            :: maxSCF
   integer,intent(in)            :: max_diis
@@ -303,6 +305,18 @@ subroutine evUGW(maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,BSE,TDA_W,
       write(*,*)
 
     end if
+
+  end if
+
+! Testing zone
+  
+  if(dotest) then
+  
+    call dump_test_value('U','evUGW correlation energy',EcRPA)
+    call dump_test_value('U','evUGW HOMOa energy',eGW(nO(1),1))
+    call dump_test_value('U','evUGW LUMOa energy',eGW(nO(1)+1,1))
+    call dump_test_value('U','evUGW HOMOa energy',eGW(nO(2),2))
+    call dump_test_value('U','evUGW LUMOa energy',eGW(nO(2)+1,2))
 
   end if
 

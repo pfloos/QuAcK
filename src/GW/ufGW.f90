@@ -1,4 +1,4 @@
-subroutine ufGW(nBas,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,eHF)
+subroutine ufGW(dotest,nBas,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,eHF)
 
 ! Unfold GW equations
 
@@ -6,6 +6,8 @@ subroutine ufGW(nBas,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,eHF)
   include 'parameters.h'
 
 ! Input variables
+
+  logical,intent(in)            :: dotest
 
   integer,intent(in)            :: nBas
   integer,intent(in)            :: nC

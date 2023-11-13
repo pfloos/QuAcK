@@ -1,4 +1,4 @@
-subroutine UG0W0(doACFDT,exchange_kernel,doXBS,BSE,TDA_W,TDA,dBSE,dTDA,spin_conserved,spin_flip,      &
+subroutine UG0W0(dotest,doACFDT,exchange_kernel,doXBS,BSE,TDA_W,TDA,dBSE,dTDA,spin_conserved,spin_flip,      &
                  linearize,eta,regularize,nBas,nC,nO,nV,nR,nS,ENuc,EUHF,S,ERI_aaaa,ERI_aabb,ERI_bbbb, & 
                  dipole_int_aa,dipole_int_bb,cHF,eHF)
 
@@ -9,6 +9,8 @@ subroutine UG0W0(doACFDT,exchange_kernel,doXBS,BSE,TDA_W,TDA,dBSE,dTDA,spin_cons
   include 'quadrature.h'
 
 ! Input variables
+
+  logical,intent(in)            :: dotest
 
   logical,intent(in)            :: doACFDT
   logical,intent(in)            :: exchange_kernel
@@ -237,6 +239,18 @@ subroutine UG0W0(doACFDT,exchange_kernel,doXBS,BSE,TDA_W,TDA,dBSE,dTDA,spin_cons
       write(*,*)
 
     end if
+
+  end if
+
+! Testing zone
+
+  if(dotest) then
+
+    call dump_test_value('U','UG0W0 correlation energy',EcRPA)
+    call dump_test_value('U','UG0W0 HOMOa energy',eGW(nO(1),1))
+    call dump_test_value('U','UG0W0 LUMOa energy',eGW(nO(1)+1,1))
+    call dump_test_value('U','UG0W0 HOMOa energy',eGW(nO(2),2))
+    call dump_test_value('U','UG0W0 LUMOa energy',eGW(nO(2)+1,2))
 
   end if
 
