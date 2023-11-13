@@ -105,8 +105,10 @@ subroutine UG0F2(dotest,BSE,TDA,dBSE,dTDA,spin_conserved,spin_flip,linearize,eta
   
   ! Find graphical solution of the QP equation
 
-    print*,'!!! Graphical solution NYI for UG0F2 !!!'
-    stop
+    write(*,*) '!!! Graphical solution NYI for UG0F2 !!!'
+    write(*,*) ' *** Quasiparticle energies obtained by linearization *** '
+
+    eGF(:,:) = eGFlin(:,:)      
  
   end if
 
