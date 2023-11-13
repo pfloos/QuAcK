@@ -1,4 +1,4 @@
-subroutine UG0T0pp(doACFDT,exchange_kernel,doXBS,BSE,TDA_T,TDA,dBSE,dTDA, &
+subroutine UG0T0pp(dotest,doACFDT,exchange_kernel,doXBS,BSE,TDA_T,TDA,dBSE,dTDA, &
                    spin_conserved,spin_flip,linearize,eta,regularize,nBas,nC,nO,nV, &
                    nR,nS,ENuc,EUHF,ERI_aaaa,ERI_aabb,ERI_bbbb, &
                    dipole_int_aa,dipole_int_bb,cHF,eHF)
@@ -9,6 +9,8 @@ subroutine UG0T0pp(doACFDT,exchange_kernel,doXBS,BSE,TDA_T,TDA,dBSE,dTDA, &
   include 'parameters.h'
 
 ! Input variables
+
+  logical,intent(in)            :: dotest
 
   logical,intent(in)            :: doACFDT
   logical,intent(in)            :: exchange_kernel
@@ -60,17 +62,16 @@ subroutine UG0T0pp(doACFDT,exchange_kernel,doXBS,BSE,TDA_T,TDA,dBSE,dTDA, &
   double precision,allocatable  :: rho2ab(:,:,:),rho2aa(:,:,:),rho2bb(:,:,:)
   double precision,allocatable  :: SigT(:,:)
   double precision,allocatable  :: Z(:,:)
-  double precision,allocatable  :: eG0T0(:,:)
+  double precision,allocatable  :: eGT(:,:)
 
 ! Output variables
 
 ! Hello world
 
   write(*,*)
-  write(*,*)'************************************************'
-  write(*,*)'|          One-shot G0T0 calculation           |'
-  write(*,*)'|         *** Unrestricted version ***         |'
-  write(*,*)'************************************************'
+  write(*,*)'***********************************'
+  write(*,*)'* Unrestricted G0T0pp Calculation *'
+  write(*,*)'***********************************'
   write(*,*)
 
 ! Dimensions of the pp-URPA linear reponse matrices
@@ -101,7 +102,7 @@ subroutine UG0T0pp(doACFDT,exchange_kernel,doXBS,BSE,TDA_T,TDA,dBSE,dTDA, &
            Om1bb(nPbb),X1bb(nPbb,nPbb),Y1bb(nHbb,nPbb),   &
            Om2bb(nPbb),X2bb(nPbb,nPbb),Y2bb(nHbb,nPbb),   &
            rho1bb(nBas,nBas,nPbb),rho2bb(nBas,nBas,nHbb), &
-           SigT(nBas,nspin),Z(nBas,nspin),eG0T0(nBas,nspin))
+           SigT(nBas,nspin),Z(nBas,nspin),eGT(nBas,nspin))
 
 !----------------------------------------------
 ! alpha-beta block
@@ -183,7 +184,7 @@ subroutine UG0T0pp(doACFDT,exchange_kernel,doXBS,BSE,TDA_T,TDA,dBSE,dTDA, &
 
   if(linearize) then 
 
-    eG0T0(:,:) = eHF(:,:) + Z(:,:)*SigT(:,:)
+    eGT(:,:) = eHF(:,:) + Z(:,:)*SigT(:,:)
 
   else
  
@@ -203,7 +204,7 @@ subroutine UG0T0pp(doACFDT,exchange_kernel,doXBS,BSE,TDA_T,TDA,dBSE,dTDA, &
   ispin  = 1
   iblock = 3 
 
-  call ppULR(iblock,TDA,nBas,nC,nO,nV,nR,nPaa,nPab,nPbb,nPab,nHaa,nHab,nHbb,nHab,1d0,eG0T0,ERI_aaaa, &
+  call ppULR(iblock,TDA,nBas,nC,nO,nV,nR,nPaa,nPab,nPbb,nPab,nHaa,nHab,nHbb,nHab,1d0,eGT,ERI_aaaa, &
              ERI_aabb,ERI_bbbb,Om1ab,X1ab,Y1ab,Om2ab,X2ab,Y2ab,EcRPA(ispin))
 
 !alpha-alpha block
@@ -211,7 +212,7 @@ subroutine UG0T0pp(doACFDT,exchange_kernel,doXBS,BSE,TDA_T,TDA,dBSE,dTDA, &
   ispin  = 2
   iblock = 4 
   
-  call ppULR(iblock,TDA,nBas,nC,nO,nV,nR,nPaa,nPab,nPbb,nPaa,nHaa,nHab,nHbb,nHaa,1d0,eG0T0,ERI_aaaa, &
+  call ppULR(iblock,TDA,nBas,nC,nO,nV,nR,nPaa,nPab,nPbb,nPaa,nHaa,nHab,nHbb,nHaa,1d0,eGT,ERI_aaaa, &
              ERI_aabb,ERI_bbbb,Om1aa,X1aa,Y1aa,Om2aa,X2aa,Y2aa,EcRPA(ispin)) 
  
   Ecaa = EcRPA(2)
@@ -220,7 +221,7 @@ subroutine UG0T0pp(doACFDT,exchange_kernel,doXBS,BSE,TDA_T,TDA,dBSE,dTDA, &
  
   iblock = 7
   
-  call ppULR(iblock,TDA,nBas,nC,nO,nV,nR,nPaa,nPab,nPbb,nPbb,nHaa,nHab,nHbb,nHbb,1d0,eG0T0,ERI_aaaa, &
+  call ppULR(iblock,TDA,nBas,nC,nO,nV,nR,nPaa,nPab,nPbb,nPbb,nHaa,nHab,nHbb,nHbb,1d0,eGT,ERI_aaaa, &
              ERI_aabb,ERI_bbbb,Om1bb,X1bb,Y1bb,Om2bb,X2bb,Y2bb,EcRPA(ispin))
   
   Ecbb = EcRPA(2) 
@@ -228,12 +229,24 @@ subroutine UG0T0pp(doACFDT,exchange_kernel,doXBS,BSE,TDA_T,TDA,dBSE,dTDA, &
   EcRPA(1) = EcRPA(1) - EcRPA(2)
   EcRPA(2) = 3d0*EcRPA(2)
 
-  call print_UG0T0(nBas,nO,eHF,ENuc,EUHF,SigT,Z,eG0T0,EcGM,EcRPA)
+  call print_UG0T0(nBas,nO,eHF,ENuc,EUHF,SigT,Z,eGT,EcGM,EcRPA)
 
 ! Free memory
 
   deallocate(Om1ab,X1ab,Y1ab,Om2ab,X2ab,Y2ab,rho1ab,rho2ab, &
              Om1aa,X1aa,Y1aa,Om2aa,X2aa,Y2aa,rho1aa,rho2aa, &
              Om1bb,X1bb,Y1bb,Om2bb,X2bb,Y2bb,rho1bb,rho2bb)
+
+! Testing zone
+
+  if(dotest) then
+  
+    call dump_test_value('U','UG0T0pp correlation energy',sum(EcRPA))
+    call dump_test_value('U','UG0T0pp HOMOa energy',eGT(nO(1),1))
+    call dump_test_value('U','UG0T0pp LUMOa energy',eGT(nO(1)+1,1))
+    call dump_test_value('U','UG0T0pp HOMOa energy',eGT(nO(2),2))
+    call dump_test_value('U','UG0T0pp LUMOa energy',eGT(nO(2)+1,2))
+
+  end if
 
 end subroutine 

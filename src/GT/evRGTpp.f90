@@ -1,5 +1,5 @@
-subroutine evGTpp(maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,BSE,TDA_T,TDA,dBSE,dTDA,singlet,triplet, & 
-                  linearize,eta,regularize,nBas,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,dipole_int,eHF)
+subroutine evRGTpp(dotest,maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,BSE,TDA_T,TDA,dBSE,dTDA,singlet,triplet, & 
+                   linearize,eta,regularize,nBas,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,dipole_int,eHF)
 
 ! Perform eigenvalue self-consistent calculation with a T-matrix self-energy (evGT)
 
@@ -7,6 +7,8 @@ subroutine evGTpp(maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,BSE,TDA_T
   include 'parameters.h'
 
 ! Input variables
+
+  logical,intent(in)            :: dotest
 
   integer,intent(in)            :: maxSCF
   integer,intent(in)            :: max_diis
@@ -74,9 +76,9 @@ subroutine evGTpp(maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,BSE,TDA_T
 ! Hello world
 
   write(*,*)
-  write(*,*)'************************************************'
-  write(*,*)'|      Self-consistent evGTpp calculation      |'
-  write(*,*)'************************************************'
+  write(*,*)'*********************************'
+  write(*,*)'* Restricted evGTpp Calculation *'
+  write(*,*)'*********************************'
   write(*,*)
 
 ! TDA for T
@@ -265,8 +267,8 @@ subroutine evGTpp(maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,BSE,TDA_T
     write(*,*)'-------------------------------------------------------------------------------'
     write(*,'(2X,A50,F20.10)') 'Tr@phBSE@evGTpp correlation energy (singlet) =',EcBSE(1)
     write(*,'(2X,A50,F20.10)') 'Tr@phBSE@evGTpp correlation energy (triplet) =',EcBSE(2)
-    write(*,'(2X,A50,F20.10)') 'Tr@phBSE@evGTpp correlation energy           =',EcBSE(1) + EcBSE(2)
-    write(*,'(2X,A50,F20.10)') 'Tr@phBSE@evGTpp total energy                 =',ENuc + ERHF + EcBSE(1) + EcBSE(2)
+    write(*,'(2X,A50,F20.10)') 'Tr@phBSE@evGTpp correlation energy           =',sum(EcBSE)
+    write(*,'(2X,A50,F20.10)') 'Tr@phBSE@evGTpp total energy                 =',ENuc + ERHF + sum(EcBSE)
     write(*,*)'-------------------------------------------------------------------------------'
     write(*,*)
 
@@ -301,12 +303,23 @@ subroutine evGTpp(maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,BSE,TDA_T
       write(*,*)'-------------------------------------------------------------------------------'
       write(*,'(2X,A50,F20.10)') 'AC@phBSE@evGTpp correlation energy (singlet) =',EcBSE(1)
       write(*,'(2X,A50,F20.10)') 'AC@phBSE@evGTpp correlation energy (triplet) =',EcBSE(2)
-      write(*,'(2X,A50,F20.10)') 'AC@phBSE@evGTpp correlation energy           =',EcBSE(1) + EcBSE(2)
-      write(*,'(2X,A50,F20.10)') 'AC@phBSE@evGTpp total energy                 =',ENuc + ERHF + EcBSE(1) + EcBSE(2)
+      write(*,'(2X,A50,F20.10)') 'AC@phBSE@evGTpp correlation energy           =',sum(EcBSE)
+      write(*,'(2X,A50,F20.10)') 'AC@phBSE@evGTpp total energy                 =',ENuc + ERHF + sum(EcBSE)
       write(*,*)'-------------------------------------------------------------------------------'
       write(*,*)
 
     end if
+
+  end if
+
+
+! Testing zone
+
+  if(dotest) then
+
+    call dump_test_value('R','evRGTpp correlation energy',sum(EcRPA))
+    call dump_test_value('R','evRGTpp HOMO energy',eGT(nO))
+    call dump_test_value('R','evRGTpp LUMO energy',eGT(nO+1))
 
   end if
 
