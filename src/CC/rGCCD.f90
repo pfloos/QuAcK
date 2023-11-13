@@ -1,6 +1,6 @@
-subroutine rCCD(dotest,maxSCF,thresh,max_diis,nBasin,nCin,nOin,nVin,nRin,ERI,ENuc,ERHF,eHF)
+subroutine rGCCD(dotest,maxSCF,thresh,max_diis,nBas,nC,nO,nV,nR,ERI,ENuc,ERHF,eHF)
 
-! Ring CCD module
+! Generalized ring CCD module
 
   implicit none
 
@@ -12,29 +12,22 @@ subroutine rCCD(dotest,maxSCF,thresh,max_diis,nBasin,nCin,nOin,nVin,nRin,ERI,ENu
   integer,intent(in)            :: max_diis
   double precision,intent(in)   :: thresh
 
-  integer,intent(in)            :: nBasin
-  integer,intent(in)            :: nCin
-  integer,intent(in)            :: nOin
-  integer,intent(in)            :: nVin
-  integer,intent(in)            :: nRin
+  integer,intent(in)            :: nBas
+  integer,intent(in)            :: nC
+  integer,intent(in)            :: nO
+  integer,intent(in)            :: nV
+  integer,intent(in)            :: nR
   double precision,intent(in)   :: ENuc
   double precision,intent(in)   :: ERHF
-  double precision,intent(in)   :: eHF(nBasin)
-  double precision,intent(in)   :: ERI(nBasin,nBasin,nBasin,nBasin)
+  double precision,intent(in)   :: eHF(nBas)
+  double precision,intent(in)   :: ERI(nBas,nBas,nBas,nBas)
 
 ! Local variables
 
-  integer                       :: nBas
-  integer                       :: nC
-  integer                       :: nO
-  integer                       :: nV
-  integer                       :: nR
   integer                       :: nSCF
   double precision              :: Conv
   double precision              :: EcMP2
   double precision              :: ECC,EcCC
-  double precision,allocatable  :: seHF(:)
-  double precision,allocatable  :: sERI(:,:,:,:)
   double precision,allocatable  :: dbERI(:,:,:,:)
 
   double precision,allocatable  :: eO(:)
@@ -57,43 +50,26 @@ subroutine rCCD(dotest,maxSCF,thresh,max_diis,nBasin,nCin,nOin,nVin,nRin,ERI,ENu
 ! Hello world
 
   write(*,*)
-  write(*,*)'**************************************'
-  write(*,*)'|     ring CCD calculation           |'
-  write(*,*)'**************************************'
+  write(*,*)'********************************'
+  write(*,*)'* Generalized rCCD Calculation *'
+  write(*,*)'********************************'
   write(*,*)
-
-! Spatial to spin orbitals
-
-  nBas = 2*nBasin
-  nC   = 2*nCin
-  nO   = 2*nOin
-  nV   = 2*nVin
-  nR   = 2*nRin
-
-  allocate(seHF(nBas),sERI(nBas,nBas,nBas,nBas))
-
-  call spatial_to_spin_MO_energy(nBasin,eHF,nBas,seHF)
-  call spatial_to_spin_ERI(nBasin,ERI,nBas,sERI)
 
 ! Antysymmetrize ERIs
 
   allocate(dbERI(nBas,nBas,nBas,nBas))
 
-  call antisymmetrize_ERI(2,nBas,sERI,dbERI)
-
-  deallocate(sERI)
+  call antisymmetrize_ERI(2,nBas,ERI,dbERI)
 
 ! Form energy denominator
 
   allocate(eO(nO),eV(nV))
   allocate(delta_OOVV(nO,nO,nV,nV))
 
-  eO(:) = seHF(1:nO)
-  eV(:) = seHF(nO+1:nBas)
+  eO(:) = eHF(1:nO)
+  eV(:) = eHF(nO+1:nBas)
 
   call form_delta_OOVV(nC,nO,nV,nR,eO,eV,delta_OOVV)
-
-  deallocate(seHF)
 
 ! Create integral batches
 

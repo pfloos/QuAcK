@@ -90,8 +90,8 @@ subroutine RQuAcK(dotest,doRHF,doROHF,dostab,dosearch,doMP2,doMP3,doCCD,dopCCD,d
   double precision              :: start_GW     ,end_GW       ,t_GW
   double precision              :: start_GT     ,end_GT       ,t_GT
 
-  double precision,allocatable  :: cHF(:,:),epsHF(:),PHF(:,:)
-  double precision              :: EHF
+  double precision,allocatable  :: cHF(:,:),eHF(:),PHF(:,:)
+  double precision              :: ERHF
   double precision,allocatable  :: dipole_int_MO(:,:,:)
   double precision,allocatable  :: ERI_MO(:,:,:,:)
   integer                       :: ixyz
@@ -107,7 +107,7 @@ subroutine RQuAcK(dotest,doRHF,doROHF,dostab,dosearch,doMP2,doMP3,doCCD,dopCCD,d
 ! Memory allocation !
 !-------------------!
 
-  allocate(cHF(nBas,nBas),epsHF(nBas),PHF(nBas,nBas), &
+  allocate(cHF(nBas,nBas),eHF(nBas),PHF(nBas,nBas), &
            dipole_int_MO(nBas,nBas,ncart),ERI_MO(nBas,nBas,nBas,nBas))
 
 !---------------------!
@@ -118,7 +118,7 @@ subroutine RQuAcK(dotest,doRHF,doROHF,dostab,dosearch,doMP2,doMP3,doCCD,dopCCD,d
 
     call wall_time(start_HF)
     call RHF(dotest,maxSCF_HF,thresh_HF,max_diis_HF,guess_type,level_shift,nNuc,ZNuc,rNuc,ENuc, &
-             nBas,nO,S,T,V,Hc,ERI_AO,dipole_int_AO,X,EHF,epsHF,cHF,PHF)
+             nBas,nO,S,T,V,Hc,ERI_AO,dipole_int_AO,X,ERHF,eHF,cHF,PHF)
     call wall_time(end_HF)
 
     t_HF = end_HF - start_HF
@@ -131,7 +131,7 @@ subroutine RQuAcK(dotest,doRHF,doROHF,dostab,dosearch,doMP2,doMP3,doCCD,dopCCD,d
 
     call wall_time(start_HF)
     call ROHF(dotest,maxSCF_HF,thresh_HF,max_diis_HF,guess_type,mix,level_shift,nNuc,ZNuc,rNuc,ENuc, &
-              nBas,nO,S,T,V,Hc,ERI_AO,dipole_int_AO,X,EHF,epsHF,cHF,PHF)
+              nBas,nO,S,T,V,Hc,ERI_AO,dipole_int_AO,X,ERHF,eHF,cHF,PHF)
     call wall_time(end_HF)
 
     t_HF = end_HF - start_HF
@@ -175,7 +175,7 @@ subroutine RQuAcK(dotest,doRHF,doROHF,dostab,dosearch,doMP2,doMP3,doCCD,dopCCD,d
   if(dostab) then
 
     call wall_time(start_stab)
-    call RHF_stability(nBas,nC,nO,nV,nR,nS,epsHF,ERI_MO)
+    call RHF_stability(nBas,nC,nO,nV,nR,nS,eHF,ERI_MO)
     call wall_time(end_stab)
 
     t_stab = end_stab - start_stab
@@ -188,7 +188,7 @@ subroutine RQuAcK(dotest,doRHF,doROHF,dostab,dosearch,doMP2,doMP3,doCCD,dopCCD,d
 
     call wall_time(start_stab)
     call RHF_search(maxSCF_HF,thresh_HF,max_diis_HF,guess_type,level_shift,nNuc,ZNuc,rNuc,ENuc, &
-                    nBas,nC,nO,nV,nR,S,T,V,Hc,ERI_AO,dipole_int_AO,X,EHF,epsHF,cHF,PHF)
+                    nBas,nC,nO,nV,nR,S,T,V,Hc,ERI_AO,dipole_int_AO,X,ERHF,eHF,cHF,PHF)
     call wall_time(end_stab)
 
     t_stab = end_stab - start_stab
@@ -206,7 +206,7 @@ subroutine RQuAcK(dotest,doRHF,doROHF,dostab,dosearch,doMP2,doMP3,doCCD,dopCCD,d
   if(doMP) then
 
     call wall_time(start_MP)
-    call RMP(dotest,doMP2,doMP3,reg_MP,nBas,nC,nO,nV,nR,ERI_MO,ENuc,EHF,epsHF)
+    call RMP(dotest,doMP2,doMP3,reg_MP,nBas,nC,nO,nV,nR,ERI_MO,ENuc,ERHF,eHF)
     call wall_time(end_MP)
 
     t_MP = end_MP - start_MP
@@ -226,7 +226,7 @@ subroutine RQuAcK(dotest,doRHF,doROHF,dostab,dosearch,doMP2,doMP3,doCCD,dopCCD,d
 
     call wall_time(start_CC)
     call RCC(dotest,doCCD,dopCCD,doDCD,doCCSD,doCCSDT,dodrCCD,dorCCD,docrCCD,dolCCD, & 
-             maxSCF_CC,thresh_CC,max_diis_CC,nBas,nC,nO,nV,nR,ERI_MO,ENuc,EHF,epsHF)
+             maxSCF_CC,thresh_CC,max_diis_CC,nBas,nC,nO,nV,nR,ERI_MO,ENuc,ERHF,eHF)
     call wall_time(end_CC)
 
     t_CC = end_CC - start_CC
@@ -245,7 +245,7 @@ subroutine RQuAcK(dotest,doRHF,doROHF,dostab,dosearch,doMP2,doMP3,doCCD,dopCCD,d
 
     call wall_time(start_CI)
     call RCI(dotest,doCIS,doCIS_D,doCID,doCISD,doFCI,singlet,triplet,nBas,nC,nO,nV,nR,nS,ERI_MO,dipole_int_MO, &
-             epsHF,EHF,cHF,S)
+             eHF,ERHF,cHF,S)
     call wall_time(end_CI)
 
     t_CI = end_CI - start_CI
@@ -264,7 +264,7 @@ subroutine RQuAcK(dotest,doRHF,doROHF,dostab,dosearch,doMP2,doMP3,doCCD,dopCCD,d
 
     call wall_time(start_RPA)
     call RRPA(dotest,dophRPA,dophRPAx,docrRPA,doppRPA,TDA,doACFDT,exchange_kernel,singlet,triplet,    & 
-              nBas,nC,nO,nV,nR,nS,ENuc,EHF,ERI_MO,dipole_int_MO,epsHF,cHF,S)
+              nBas,nC,nO,nV,nR,nS,ENuc,ERHF,ERI_MO,dipole_int_MO,eHF,cHF,S)
     call wall_time(end_RPA)
 
     t_RPA = end_RPA - start_RPA
@@ -284,8 +284,8 @@ subroutine RQuAcK(dotest,doRHF,doROHF,dostab,dosearch,doMP2,doMP3,doCCD,dopCCD,d
     call wall_time(start_GF)
     call RGF(dotest,doG0F2,doevGF2,doqsGF2,doG0F3,doevGF3,renorm_GF,maxSCF_GF,thresh_GF,max_diis_GF, & 
              dophBSE,doppBSE,TDA,dBSE,dTDA,singlet,triplet,lin_GF,eta_GF,reg_GF,              &
-             nNuc,ZNuc,rNuc,ENuc,nBas,nC,nO,nV,nR,nS,EHF,S,X,T,V,Hc,ERI_AO,ERI_MO,            &
-             dipole_int_AO,dipole_int_MO,PHF,cHF,epsHF)
+             nNuc,ZNuc,rNuc,ENuc,nBas,nC,nO,nV,nR,nS,ERHF,S,X,T,V,Hc,ERI_AO,ERI_MO,            &
+             dipole_int_AO,dipole_int_MO,PHF,cHF,eHF)
     call wall_time(end_GF)
 
     t_GF = end_GF - start_GF
@@ -305,8 +305,8 @@ subroutine RQuAcK(dotest,doRHF,doROHF,dostab,dosearch,doMP2,doMP3,doCCD,dopCCD,d
     call wall_time(start_GW)
     call RGW(dotest,doG0W0,doevGW,doqsGW,doufG0W0,doufGW,doSRGqsGW,maxSCF_GW,thresh_GW,max_diis_GW,doACFDT, &
              exchange_kernel,doXBS,dophBSE,dophBSE2,doppBSE,TDA_W,TDA,dBSE,dTDA,singlet,triplet,     &
-             lin_GW,eta_GW,reg_GW,nNuc,ZNuc,rNuc,ENuc,nBas,nC,nO,nV,nR,nS,EHF,S,X,T,V,Hc,            &  
-             ERI_AO,ERI_MO,dipole_int_AO,dipole_int_MO,PHF,cHF,epsHF)
+             lin_GW,eta_GW,reg_GW,nNuc,ZNuc,rNuc,ENuc,nBas,nC,nO,nV,nR,nS,ERHF,S,X,T,V,Hc,            &  
+             ERI_AO,ERI_MO,dipole_int_AO,dipole_int_MO,PHF,cHF,eHF)
     call wall_time(end_GW)
   
     t_GW = end_GW - start_GW
@@ -326,8 +326,8 @@ subroutine RQuAcK(dotest,doRHF,doROHF,dostab,dosearch,doMP2,doMP3,doCCD,dopCCD,d
     call wall_time(start_GT)
     call RGT(dotest,doG0T0pp,doevGTpp,doqsGTpp,doG0T0eh,doevGTeh,doqsGTeh,maxSCF_GT,thresh_GT,max_diis_GT,doACFDT,  &
              exchange_kernel,doXBS,dophBSE,dophBSE2,doppBSE,TDA_T,TDA,dBSE,dTDA,singlet,triplet,             &
-             lin_GT,eta_GT,reg_GT,nNuc,ZNuc,rNuc,ENuc,nBas,nC,nO,nV,nR,nS,EHF,S,X,T,V,Hc,                    &
-             ERI_AO,ERI_MO,dipole_int_AO,dipole_int_MO,PHF,cHF,epsHF)
+             lin_GT,eta_GT,reg_GT,nNuc,ZNuc,rNuc,ENuc,nBas,nC,nO,nV,nR,nS,ERHF,S,X,T,V,Hc,                    &
+             ERI_AO,ERI_MO,dipole_int_AO,dipole_int_MO,PHF,cHF,eHF)
     call wall_time(end_GT)
   
     t_GT = end_GT - start_GT

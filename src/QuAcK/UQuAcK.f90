@@ -88,8 +88,8 @@ subroutine UQuAcK(dotest,doUHF,dostab,dosearch,doMP2,doMP3,doCCD,dopCCD,doDCD,do
   double precision              :: start_GW     ,end_GW       ,t_GW
   double precision              :: start_GT     ,end_GT       ,t_GT
 
-  double precision,allocatable  :: cHF(:,:,:),epsHF(:,:),PHF(:,:,:)
-  double precision              :: EHF
+  double precision,allocatable  :: cHF(:,:,:),eHF(:,:),PHF(:,:,:)
+  double precision              :: EUHF
   double precision,allocatable  :: dipole_int_aa(:,:,:),dipole_int_bb(:,:,:)
   double precision,allocatable  :: ERI_aaaa(:,:,:,:),ERI_aabb(:,:,:,:),ERI_bbbb(:,:,:,:)
   integer                       :: ixyz
@@ -105,7 +105,7 @@ subroutine UQuAcK(dotest,doUHF,dostab,dosearch,doMP2,doMP3,doCCD,dopCCD,doDCD,do
 ! Memory allocation !
 !-------------------!
 
-  allocate(cHF(nBas,nBas,nspin),epsHF(nBas,nspin),PHF(nBas,nBas,nspin),   &
+  allocate(cHF(nBas,nBas,nspin),eHF(nBas,nspin),PHF(nBas,nBas,nspin),   &
            dipole_int_aa(nBas,nBas,ncart),dipole_int_bb(nBas,nBas,ncart), &
            ERI_aaaa(nBas,nBas,nBas,nBas),ERI_aabb(nBas,nBas,nBas,nBas),ERI_bbbb(nBas,nBas,nBas,nBas))
 
@@ -117,7 +117,7 @@ subroutine UQuAcK(dotest,doUHF,dostab,dosearch,doMP2,doMP3,doCCD,dopCCD,doDCD,do
 
     call wall_time(start_HF)
     call UHF(dotest,maxSCF_HF,thresh_HF,max_diis_HF,guess_type,mix,level_shift,nNuc,ZNuc,rNuc,ENuc, &
-             nBas,nO,S,T,V,Hc,ERI_AO,dipole_int_AO,X,EHF,epsHF,cHF,PHF)
+             nBas,nO,S,T,V,Hc,ERI_AO,dipole_int_AO,X,EUHF,eHF,cHF,PHF)
     call wall_time(end_HF)
 
     t_HF = end_HF - start_HF
@@ -138,7 +138,7 @@ subroutine UQuAcK(dotest,doUHF,dostab,dosearch,doMP2,doMP3,doCCD,dopCCD,doDCD,do
 !   write(*,*)
 !   call eDFT(maxSCF_HF,thresh_HF,max_diis_HF,guess_type,mix,level_shift,nNuc,ZNuc,rNuc,ENuc,nBas,nC, & 
 !             nO,nV,nR,nShell,TotAngMomShell,CenterShell,KShell,DShell,ExpShell,            &
-!             max_ang_mom,min_exponent,max_exponent,S,T,V,Hc,X,ERI_AO,dipole_int_AO,EHF,epsHF,cHF,PHF,Vxc)
+!             max_ang_mom,min_exponent,max_exponent,S,T,V,Hc,X,ERI_AO,dipole_int_AO,EUHF,eHF,cHF,PHF,Vxc)
 !   call wall_time(end_KS)
 
 !   t_KS = end_KS - start_KS
@@ -191,7 +191,7 @@ subroutine UQuAcK(dotest,doUHF,dostab,dosearch,doMP2,doMP3,doCCD,dopCCD,doDCD,do
   if(dostab) then
 
     call wall_time(start_stab)
-    call UHF_stability(nBas,nC,nO,nV,nR,nS,epsHF,ERI_aaaa,ERI_aabb,ERI_bbbb)
+    call UHF_stability(nBas,nC,nO,nV,nR,nS,eHF,ERI_aaaa,ERI_aabb,ERI_bbbb)
     call wall_time(end_stab)
 
     t_stab = end_stab - start_stab
@@ -204,7 +204,7 @@ subroutine UQuAcK(dotest,doUHF,dostab,dosearch,doMP2,doMP3,doCCD,dopCCD,doDCD,do
 
     call wall_time(start_stab)
     call UHF_search(maxSCF_HF,thresh_HF,max_diis_HF,guess_type,mix,level_shift,nNuc,ZNuc,rNuc,ENuc, &
-                    nBas,nC,nO,nV,nR,S,T,V,Hc,ERI_AO,dipole_int_AO,X,EHF,epsHF,cHF,PHF)
+                    nBas,nC,nO,nV,nR,S,T,V,Hc,ERI_AO,dipole_int_AO,X,EUHF,eHF,cHF,PHF)
 
     call wall_time(end_stab)
 
@@ -223,7 +223,7 @@ subroutine UQuAcK(dotest,doUHF,dostab,dosearch,doMP2,doMP3,doCCD,dopCCD,doDCD,do
   if(doMP) then
 
     call wall_time(start_MP)
-    call UMP(dotest,doMP2,doMP3,reg_MP,nBas,nC,nO,nV,nR,ERI_aaaa,ERI_aabb,ERI_bbbb,ENuc,EHF,epsHF)
+    call UMP(dotest,doMP2,doMP3,reg_MP,nBas,nC,nO,nV,nR,ERI_aaaa,ERI_aabb,ERI_bbbb,ENuc,EUHF,eHF)
     call wall_time(end_MP)
 
     t_MP = end_MP - start_MP
@@ -260,7 +260,7 @@ subroutine UQuAcK(dotest,doUHF,dostab,dosearch,doMP2,doMP3,doCCD,dopCCD,doDCD,do
 
     call wall_time(start_CI)
     call UCI(dotest,doCIS,doCIS_D,doCID,doCISD,doFCI,spin_conserved,spin_flip,nBas,nC,nO,nV,nR,nS, & 
-             ERI_aaaa,ERI_aabb,ERI_bbbb,dipole_int_aa,dipole_int_bb,epsHF,EHF,cHF,S)
+             ERI_aaaa,ERI_aabb,ERI_bbbb,dipole_int_aa,dipole_int_bb,eHF,EUHF,cHF,S)
     call wall_time(end_CI)
 
     t_CI = end_CI - start_CI
@@ -279,7 +279,7 @@ subroutine UQuAcK(dotest,doUHF,dostab,dosearch,doMP2,doMP3,doCCD,dopCCD,doDCD,do
 
     call wall_time(start_RPA)
     call URPA(dotest,dophRPA,dophRPAx,docrRPA,doppRPA,TDA,doACFDT,exchange_kernel,spin_conserved,spin_flip,    & 
-              nBas,nC,nO,nV,nR,nS,ENuc,EHF,ERI_aaaa,ERI_aabb,ERI_bbbb,dipole_int_aa,dipole_int_bb,epsHF,cHF,S)
+              nBas,nC,nO,nV,nR,nS,ENuc,EUHF,ERI_aaaa,ERI_aabb,ERI_bbbb,dipole_int_aa,dipole_int_bb,eHF,cHF,S)
     call wall_time(end_RPA)
 
     t_RPA = end_RPA - start_RPA
@@ -299,8 +299,8 @@ subroutine UQuAcK(dotest,doUHF,dostab,dosearch,doMP2,doMP3,doCCD,dopCCD,doDCD,do
     call wall_time(start_GF)
     call UGF(dotest,doG0F2,doevGF2,doqsGF2,doG0F3,doevGF3,renorm_GF,maxSCF_GF,thresh_GF,max_diis_GF,          &
              dophBSE,doppBSE,TDA,dBSE,dTDA,spin_conserved,spin_flip,lin_GF,eta_GF,reg_GF,              &
-             nNuc,ZNuc,rNuc,ENuc,nBas,nC,nO,nV,nR,nS,EHF,S,X,T,V,Hc,ERI_AO,ERI_aaaa,ERI_aabb,ERI_bbbb, &
-             dipole_int_AO,dipole_int_aa,dipole_int_bb,PHF,cHF,epsHF)
+             nNuc,ZNuc,rNuc,ENuc,nBas,nC,nO,nV,nR,nS,EUHF,S,X,T,V,Hc,ERI_AO,ERI_aaaa,ERI_aabb,ERI_bbbb, &
+             dipole_int_AO,dipole_int_aa,dipole_int_bb,PHF,cHF,eHF)
     call wall_time(end_GF)
 
     t_GF = end_GF - start_GF
@@ -320,8 +320,8 @@ subroutine UQuAcK(dotest,doUHF,dostab,dosearch,doMP2,doMP3,doCCD,dopCCD,doDCD,do
     call wall_time(start_GW)
     call UGW(dotest,doG0W0,doevGW,doqsGW,doufG0W0,doufGW,doSRGqsGW,maxSCF_GW,thresh_GW,max_diis_GW,doACFDT,      &
              exchange_kernel,doXBS,dophBSE,dophBSE2,doppBSE,TDA_W,TDA,dBSE,dTDA,spin_conserved,spin_flip, &
-             lin_GW,eta_GW,reg_GW,nNuc,ZNuc,rNuc,ENuc,nBas,nC,nO,nV,nR,nS,EHF,S,X,T,V,Hc,                 &  
-             ERI_AO,ERI_aaaa,ERI_aabb,ERI_bbbb,dipole_int_AO,dipole_int_aa,dipole_int_bb,PHF,cHF,epsHF)
+             lin_GW,eta_GW,reg_GW,nNuc,ZNuc,rNuc,ENuc,nBas,nC,nO,nV,nR,nS,EUHF,S,X,T,V,Hc,                 &  
+             ERI_AO,ERI_aaaa,ERI_aabb,ERI_bbbb,dipole_int_AO,dipole_int_aa,dipole_int_bb,PHF,cHF,eHF)
     call wall_time(end_GW)
   
     t_GW = end_GW - start_GW
@@ -341,8 +341,8 @@ subroutine UQuAcK(dotest,doUHF,dostab,dosearch,doMP2,doMP3,doCCD,dopCCD,doDCD,do
     call wall_time(start_GT)
     call UGT(dotest,doG0T0pp,doevGTpp,doqsGTpp,doG0T0eh,doevGTeh,doqsGTeh,maxSCF_GT,thresh_GT,max_diis_GT,doACFDT,  &
              exchange_kernel,doXBS,dophBSE,dophBSE2,doppBSE,TDA_T,TDA,dBSE,dTDA,spin_conserved,spin_flip,    &
-             lin_GT,eta_GT,reg_GT,nNuc,ZNuc,rNuc,ENuc,nBas,nC,nO,nV,nR,nS,EHF,S,X,T,V,Hc,                    &
-             ERI_AO,ERI_aaaa,ERI_aabb,ERI_bbbb,dipole_int_AO,dipole_int_aa,dipole_int_bb,PHF,cHF,epsHF)
+             lin_GT,eta_GT,reg_GT,nNuc,ZNuc,rNuc,ENuc,nBas,nC,nO,nV,nR,nS,EUHF,S,X,T,V,Hc,                    &
+             ERI_AO,ERI_aaaa,ERI_aabb,ERI_bbbb,dipole_int_AO,dipole_int_aa,dipole_int_bb,PHF,cHF,eHF)
     call wall_time(end_GT)
   
     t_GT = end_GT - start_GT

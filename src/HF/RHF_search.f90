@@ -91,7 +91,7 @@ subroutine RHF_search(maxSCF,thresh,max_diis,guess_type,level_shift,nNuc,ZNuc,rN
 !---------------------!
 
     call wall_time(start_HF)
-    call RHF(maxSCF,thresh,max_diis,guess,level_shift,nNuc,ZNuc,rNuc,ENuc, &
+    call RHF(.false.,maxSCF,thresh,max_diis,guess,level_shift,nNuc,ZNuc,rNuc,ENuc, &
              nBas,nO,S,T,V,Hc,ERI_AO,dipole_int_AO,X,EHF,e,c,P)
     call wall_time(end_HF)
 

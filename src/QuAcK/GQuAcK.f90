@@ -1,9 +1,11 @@
-subroutine GQuAcK(dotest,doGHF,dostab,dosearch,doMP2,doMP3,dophRPA,dophRPAx,doppRPA,   &
-                  doG0W0,doevGW,doqsGW,doG0F2,doevGF2,doqsGF2,                          &
-                  nNuc,nBas,nC,nO,nV,nR,ENuc,ZNuc,rNuc,S,T,V,Hc,X,dipole_int_AO,ERI_AO, &
-                  maxSCF_HF,max_diis_HF,thresh_HF,level_shift,guess_type,mix,reg_MP,    &
-                  TDA,maxSCF_GF,max_diis_GF,thresh_GF,lin_GF,reg_GF,eta_GF,             &
-                  maxSCF_GW,max_diis_GW,thresh_GW,TDA_W,lin_GW,reg_GW,eta_GW,           & 
+subroutine GQuAcK(dotest,doGHF,dostab,dosearch,doMP2,doMP3,doCCD,dopCCD,doDCD,doCCSD,doCCSDT, &
+                  dodrCCD,dorCCD,docrCCD,dolCCD,dophRPA,dophRPAx,doppRPA,                     &
+                  doG0W0,doevGW,doqsGW,doG0F2,doevGF2,doqsGF2,                                &
+                  nNuc,nBas,nC,nO,nV,nR,ENuc,ZNuc,rNuc,S,T,V,Hc,X,dipole_int_AO,ERI_AO,       &
+                  maxSCF_HF,max_diis_HF,thresh_HF,level_shift,guess_type,mix,reg_MP,          &
+                  maxSCF_CC,max_diis_CC,thresh_CC,                                            &
+                  TDA,maxSCF_GF,max_diis_GF,thresh_GF,lin_GF,reg_GF,eta_GF,                   &
+                  maxSCF_GW,max_diis_GW,thresh_GW,TDA_W,lin_GW,reg_GW,eta_GW,                 & 
                   dophBSE,dophBSE2,doppBSE,dBSE,dTDA,doACFDT,exchange_kernel,doXBS)
 
   implicit none
@@ -16,6 +18,8 @@ subroutine GQuAcK(dotest,doGHF,dostab,dosearch,doMP2,doMP3,dophRPA,dophRPAx,dopp
   logical,intent(in)            :: dosearch
   logical,intent(in)            :: doMP2
   logical,intent(in)            :: doMP3
+  logical,intent(in)            :: doCCD,dopCCD,doDCD,doCCSD,doCCSDT
+  logical,intent(in)            :: dodrCCD,dorCCD,docrCCD,dolCCD
   logical,intent(in)            :: dophRPA,dophRPAx,doppRPA
   logical,intent(in)            :: doG0F2,doevGF2,doqsGF2
   logical,intent(in)            :: doG0W0,doevGW,doqsGW
@@ -43,6 +47,9 @@ subroutine GQuAcK(dotest,doGHF,dostab,dosearch,doMP2,doMP3,dophRPA,dophRPAx,dopp
 
   logical,intent(in)            :: reg_MP
 
+  integer,intent(in)            :: maxSCF_CC,max_diis_CC
+  double precision,intent(in)   :: thresh_CC
+
   logical,intent(in)            :: TDA
 
   integer,intent(in)            :: maxSCF_GF,max_diis_GF
@@ -60,18 +67,19 @@ subroutine GQuAcK(dotest,doGHF,dostab,dosearch,doMP2,doMP3,dophRPA,dophRPAx,dopp
 
 ! Local variables
 
-  logical                       :: doMP,doRPA,doGF,doGW
+  logical                       :: doMP,doCC,doRPA,doGF,doGW
   
   double precision              :: start_HF     ,end_HF       ,t_HF
   double precision              :: start_stab   ,end_stab     ,t_stab
   double precision              :: start_AOtoMO ,end_AOtoMO   ,t_AOtoMO
   double precision              :: start_MP     ,end_MP       ,t_MP
+  double precision              :: start_CC     ,end_CC       ,t_CC
   double precision              :: start_RPA    ,end_RPA      ,t_RPA
   double precision              :: start_GF     ,end_GF       ,t_GF
   double precision              :: start_GW     ,end_GW       ,t_GW
 
-  double precision,allocatable  :: cHF(:,:),epsHF(:),PHF(:,:)
-  double precision              :: EHF
+  double precision,allocatable  :: cHF(:,:),eHF(:),PHF(:,:)
+  double precision              :: EGHF
   double precision,allocatable  :: dipole_int_MO(:,:,:)
   double precision,allocatable  :: ERI_MO(:,:,:,:)
   double precision,allocatable  :: ERI_tmp(:,:,:,:)
@@ -93,7 +101,7 @@ subroutine GQuAcK(dotest,doGHF,dostab,dosearch,doMP2,doMP3,dophRPA,dophRPAx,dopp
 
   nBas2 = 2*nBas
 
-  allocate(cHF(nBas2,nBas2),epsHF(nBas2),PHF(nBas2,nBas2),   &
+  allocate(cHF(nBas2,nBas2),eHF(nBas2),PHF(nBas2,nBas2),   &
            dipole_int_MO(nBas2,nBas2,ncart),ERI_MO(nBas2,nBas2,nBas2,nBas2))
 
 !---------------------!
@@ -104,7 +112,7 @@ subroutine GQuAcK(dotest,doGHF,dostab,dosearch,doMP2,doMP3,dophRPA,dophRPAx,dopp
 
     call wall_time(start_HF)
     call GHF(dotest,maxSCF_HF,thresh_HF,max_diis_HF,guess_type,mix,level_shift,nNuc,ZNuc,rNuc,ENuc, &
-             nBas,nBas2,nO,S,T,V,Hc,ERI_AO,dipole_int_AO,X,EHF,epsHF,cHF,PHF)
+             nBas,nBas2,nO,S,T,V,Hc,ERI_AO,dipole_int_AO,X,EGHF,eHF,cHF,PHF)
     call wall_time(end_HF)
 
     t_HF = end_HF - start_HF
@@ -165,7 +173,7 @@ subroutine GQuAcK(dotest,doGHF,dostab,dosearch,doMP2,doMP3,dophRPA,dophRPAx,dopp
   if(dostab) then
 
     call wall_time(start_stab)
-    call GHF_stability(nBas2,nC,nO,nV,nR,nS,epsHF,ERI_MO)
+    call GHF_stability(nBas2,nC,nO,nV,nR,nS,eHF,ERI_MO)
     call wall_time(end_stab)
 
     t_stab = end_stab - start_stab
@@ -178,7 +186,7 @@ subroutine GQuAcK(dotest,doGHF,dostab,dosearch,doMP2,doMP3,dophRPA,dophRPAx,dopp
 
     call wall_time(start_stab)  
     call GHF_search(maxSCF_HF,thresh_HF,max_diis_HF,guess_type,mix,level_shift,nNuc,ZNuc,rNuc,ENuc, &
-                    nBas,nBas2,nC,nO,nV,nR,S,T,V,Hc,ERI_AO,dipole_int_AO,X,EHF,epsHF,cHF,PHF)
+                    nBas,nBas2,nC,nO,nV,nR,S,T,V,Hc,ERI_AO,dipole_int_AO,X,EGHF,eHF,cHF,PHF)
     call wall_time(end_stab)    
 
     t_stab = end_stab - start_stab
@@ -196,7 +204,7 @@ subroutine GQuAcK(dotest,doGHF,dostab,dosearch,doMP2,doMP3,dophRPA,dophRPAx,dopp
   if(doMP) then
 
     call wall_time(start_MP)
-    call GMP(dotest,doMP2,doMP3,reg_MP,nBas2,nC,nO,nV,nR,ERI_MO,ENuc,EHF,epsHF)
+    call GMP(dotest,doMP2,doMP3,reg_MP,nBas2,nC,nO,nV,nR,ERI_MO,ENuc,EGHF,eHF)
     call wall_time(end_MP)
 
     t_MP = end_MP - start_MP
@@ -204,6 +212,25 @@ subroutine GQuAcK(dotest,doGHF,dostab,dosearch,doMP2,doMP3,dophRPA,dophRPAx,dopp
     write(*,*)
 
   end if
+
+!------------------------!
+! Coupled-cluster module !
+!------------------------!
+    
+  doCC = doCCD .or. doCCSD .or. doCCSDT .or. dodrCCD .or. dorCCD .or. docrCCD .or. dolCCD
+
+  if(doCC) then
+
+    call wall_time(start_CC)
+    call GCC(dotest,doCCD,dopCCD,doDCD,doCCSD,doCCSDT,dodrCCD,dorCCD,docrCCD,dolCCD, &
+             maxSCF_CC,thresh_CC,max_diis_CC,nBas2,nC,nO,nV,nR,ERI_MO,ENuc,EGHF,eHF)
+    call wall_time(end_CC)
+  
+    t_CC = end_CC - start_CC
+    write(*,'(A65,1X,F9.3,A8)') 'Total CPU time for CC = ',t_CC,' seconds'
+    write(*,*)
+    
+  end if 
 
 !-----------------------------------!
 ! Random-phase approximation module !
@@ -214,8 +241,8 @@ subroutine GQuAcK(dotest,doGHF,dostab,dosearch,doMP2,doMP3,dophRPA,dophRPAx,dopp
   if(doRPA) then
 
     call wall_time(start_RPA)
-    call GRPA(dotest,dophRPA,dophRPAx,doppRPA,TDA,doACFDT,exchange_kernel,nBas2,nC,nO,nV,nR,nS,ENuc,EHF, & 
-              ERI_MO,dipole_int_MO,epsHF,cHF,S)
+    call GRPA(dotest,dophRPA,dophRPAx,doppRPA,TDA,doACFDT,exchange_kernel,nBas2,nC,nO,nV,nR,nS,ENuc,EGHF, & 
+              ERI_MO,dipole_int_MO,eHF,cHF,S)
     call wall_time(end_RPA)
 
     t_RPA = end_RPA - start_RPA
@@ -234,7 +261,7 @@ subroutine GQuAcK(dotest,doGHF,dostab,dosearch,doMP2,doMP3,dophRPA,dophRPAx,dopp
 
     call wall_time(start_GF)
     call GGF(dotest,doG0F2,doevGF2,doqsGF2,maxSCF_GF,thresh_GF,max_diis_GF,dophBSE,doppBSE,TDA,dBSE,dTDA,lin_GF,eta_GF,reg_GF, &
-             nNuc,ZNuc,rNuc,ENuc,nBas2,nC,nO,nV,nR,nS,EHF,S,X,T,V,Hc,ERI_AO,ERI_MO,dipole_int_AO,dipole_int_MO,PHF,cHF,epsHF)
+             nNuc,ZNuc,rNuc,ENuc,nBas2,nC,nO,nV,nR,nS,EGHF,S,X,T,V,Hc,ERI_AO,ERI_MO,dipole_int_AO,dipole_int_MO,PHF,cHF,eHF)
     call wall_time(end_GF)
 
     t_GF = end_GF - start_GF
@@ -254,7 +281,7 @@ subroutine GQuAcK(dotest,doGHF,dostab,dosearch,doMP2,doMP3,dophRPA,dophRPAx,dopp
     call wall_time(start_GW)
     call GGW(dotest,doG0W0,doevGW,doqsGW,maxSCF_GW,thresh_GW,max_diis_GW,doACFDT,exchange_kernel,doXBS,    & 
              dophBSE,dophBSE2,doppBSE,TDA_W,TDA,dBSE,dTDA,lin_GW,eta_GW,reg_GW,nNuc,ZNuc,rNuc,ENuc, & 
-             nBas,nBas2,nC,nO,nV,nR,nS,EHF,S,X,T,V,Hc,ERI_AO,ERI_MO,dipole_int_AO,dipole_int_MO,PHF,cHF,epsHF)
+             nBas,nBas2,nC,nO,nV,nR,nS,EGHF,S,X,T,V,Hc,ERI_AO,ERI_MO,dipole_int_AO,dipole_int_MO,PHF,cHF,eHF)
     call wall_time(end_GW)
   
     t_GW = end_GW - start_GW
