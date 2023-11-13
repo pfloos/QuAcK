@@ -1,4 +1,4 @@
-subroutine evGGF2(dophBSE,doppBSE,TDA,dBSE,dTDA,maxSCF,thresh,max_diis, &
+subroutine evGGF2(dotest,dophBSE,doppBSE,TDA,dBSE,dTDA,maxSCF,thresh,max_diis, &
                   linearize,eta,regularize,nBas,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,dipole_int,eHF)
 
 ! Perform eigenvalue self-consistent second-order Green function calculation
@@ -7,6 +7,8 @@ subroutine evGGF2(dophBSE,doppBSE,TDA,dBSE,dTDA,maxSCF,thresh,max_diis, &
   include 'parameters.h'
 
 ! Input variables
+
+  logical,intent(in)            :: dotest
 
   logical,intent(in)            :: dophBSE
   logical,intent(in)            :: doppBSE
@@ -50,9 +52,9 @@ subroutine evGGF2(dophBSE,doppBSE,TDA,dBSE,dTDA,maxSCF,thresh,max_diis, &
 ! Hello world
 
   write(*,*)
-  write(*,*)'************************************************'
-  write(*,*)'|  Second-order Green function calculation     |'
-  write(*,*)'************************************************'
+  write(*,*)'*********************************'
+  write(*,*)'* Generalized evGF2 Calculation *'
+  write(*,*)'*********************************'
   write(*,*)
 
 ! Memory allocation
@@ -105,7 +107,7 @@ subroutine evGGF2(dophBSE,doppBSE,TDA,dBSE,dTDA,maxSCF,thresh,max_diis, &
 
     ! Print results
 
-    call GMP2(regularize,nBas,nC,nO,nV,nR,ERI,ENuc,ERHF,eGF,Ec)
+    call GMP2(.false.,regularize,nBas,nC,nO,nV,nR,ERI,ENuc,ERHF,eGF,Ec)
     call print_evGF2(nBas,nO,nSCF,Conv,eHF,SigC,Z,eGF,ENuc,ERHF,Ec)
 
     ! DIIS extrapolation
@@ -169,5 +171,15 @@ subroutine evGGF2(dophBSE,doppBSE,TDA,dBSE,dTDA,maxSCF,thresh,max_diis, &
 !   write(*,*)
 
 ! end if
+
+! Testing zone
+
+  if(dotest) then
+
+    call dump_test_value('G','evGGF2 correlation energy',Ec)
+    call dump_test_value('G','evGGF2 HOMO energy',eGF(nO))
+    call dump_test_value('G','evGGF2 LUMO energy',eGF(nO+1))
+
+  end if
 
 end subroutine 

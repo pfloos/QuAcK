@@ -1,4 +1,4 @@
-subroutine RCI(doCIS,doCIS_D,doCID,doCISD,doFCI,singlet,triplet,nBas,nC,nO,nV,nR,nS,ERI,dipole_int, &
+subroutine RCI(dotest,doCIS,doCIS_D,doCID,doCISD,doFCI,singlet,triplet,nBas,nC,nO,nV,nR,nS,ERI,dipole_int, &
                epsHF,EHF,cHF,S)
 
 ! Configuration interaction module
@@ -8,11 +8,13 @@ subroutine RCI(doCIS,doCIS_D,doCID,doCISD,doFCI,singlet,triplet,nBas,nC,nO,nV,nR
 
 ! Input variables
 
-  logical                       :: doCIS
-  logical                       :: doCIS_D
-  logical                       :: doCID
-  logical                       :: doCISD
-  logical                       :: doFCI
+  logical,intent(in)            :: dotest
+
+  logical,intent(in)            :: doCIS
+  logical,intent(in)            :: doCIS_D
+  logical,intent(in)            :: doCID
+  logical,intent(in)            :: doCISD
+  logical,intent(in)            :: doFCI
 
   logical,intent(in)            :: singlet
   logical,intent(in)            :: triplet
@@ -40,7 +42,7 @@ subroutine RCI(doCIS,doCIS_D,doCID,doCISD,doFCI,singlet,triplet,nBas,nC,nO,nV,nR
   if(doCIS) then
 
     call wall_time(start_CI)
-    call CIS(singlet,triplet,doCIS_D,nBas,nC,nO,nV,nR,nS,ERI,dipole_int,epsHF)
+    call RCIS(dotest,singlet,triplet,doCIS_D,nBas,nC,nO,nV,nR,nS,ERI,dipole_int,epsHF)
     call wall_time(end_CI)
 
     t_CI = end_CI - start_CI
@@ -56,7 +58,7 @@ subroutine RCI(doCIS,doCIS_D,doCID,doCISD,doFCI,singlet,triplet,nBas,nC,nO,nV,nR
   if(doCID) then
 
     call wall_time(start_CI)
-    call CID(singlet,triplet,nBas,nC,nO,nV,nR,ERI,epsHF,EHF)
+    call CID(dotest,singlet,triplet,nBas,nC,nO,nV,nR,ERI,epsHF,EHF)
     call wall_time(end_CI)
 
     t_CI = end_CI - start_CI
@@ -72,7 +74,7 @@ subroutine RCI(doCIS,doCIS_D,doCID,doCISD,doFCI,singlet,triplet,nBas,nC,nO,nV,nR
   if(doCISD) then
 
     call wall_time(start_CI)
-    call CISD(singlet,triplet,nBas,nC,nO,nV,nR,ERI,epsHF,EHF)
+    call CISD(dotest,singlet,triplet,nBas,nC,nO,nV,nR,ERI,epsHF,EHF)
     call wall_time(end_CI)
 
     t_CI = end_CI - start_CI

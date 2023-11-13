@@ -1,10 +1,12 @@
-subroutine CCSD(maxSCF,thresh,max_diis,doCCSDT,nBasin,nCin,nOin,nVin,nRin,ERI,ENuc,ERHF,eHF)
+subroutine CCSD(dotest,maxSCF,thresh,max_diis,doCCSDT,nBasin,nCin,nOin,nVin,nRin,ERI,ENuc,ERHF,eHF)
 
 ! CCSD module
 
   implicit none
 
 ! Input variables
+
+  logical,intent(in)            :: dotest
 
   integer,intent(in)            :: maxSCF
   integer,intent(in)            :: max_diis
@@ -299,6 +301,14 @@ subroutine CCSD(maxSCF,thresh,max_diis,doCCSDT,nBasin,nCin,nOin,nVin,nRin,ERI,EN
     write(*,'(1X,A20,1X,F10.6)')' Ec(CCSD(T)) = ',EcCCSD + EcCCT
     write(*,*)'----------------------------------------------------'
     write(*,*)
+
+  end if
+
+! Testing zone
+
+  if(dotest) then
+
+    call dump_test_value('R','CCSD correlation energy',EcCCSD)
 
   end if
 

@@ -233,7 +233,7 @@ subroutine GQuAcK(dotest,doGHF,dostab,dosearch,doMP2,doMP3,dophRPA,dophRPAx,dopp
   if(doGF) then
 
     call wall_time(start_GF)
-    call GGF(doG0F2,doevGF2,doqsGF2,maxSCF_GF,thresh_GF,max_diis_GF,dophBSE,doppBSE,TDA,dBSE,dTDA,lin_GF,eta_GF,reg_GF, &
+    call GGF(dotest,doG0F2,doevGF2,doqsGF2,maxSCF_GF,thresh_GF,max_diis_GF,dophBSE,doppBSE,TDA,dBSE,dTDA,lin_GF,eta_GF,reg_GF, &
              nNuc,ZNuc,rNuc,ENuc,nBas2,nC,nO,nV,nR,nS,EHF,S,X,T,V,Hc,ERI_AO,ERI_MO,dipole_int_AO,dipole_int_MO,PHF,cHF,epsHF)
     call wall_time(end_GF)
 
@@ -252,7 +252,7 @@ subroutine GQuAcK(dotest,doGHF,dostab,dosearch,doMP2,doMP3,dophRPA,dophRPAx,dopp
   if(doGW) then
     
     call wall_time(start_GW)
-    call GGW(doG0W0,doevGW,doqsGW,maxSCF_GW,thresh_GW,max_diis_GW,doACFDT,exchange_kernel,doXBS,    & 
+    call GGW(dotest,doG0W0,doevGW,doqsGW,maxSCF_GW,thresh_GW,max_diis_GW,doACFDT,exchange_kernel,doXBS,    & 
              dophBSE,dophBSE2,doppBSE,TDA_W,TDA,dBSE,dTDA,lin_GW,eta_GW,reg_GW,nNuc,ZNuc,rNuc,ENuc, & 
              nBas,nBas2,nC,nO,nV,nR,nS,EHF,S,X,T,V,Hc,ERI_AO,ERI_MO,dipole_int_AO,dipole_int_MO,PHF,cHF,epsHF)
     call wall_time(end_GW)

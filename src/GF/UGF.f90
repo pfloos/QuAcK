@@ -1,4 +1,4 @@
-subroutine UGF(doG0F2,doevGF2,doqsGF2,doG0F3,doevGF3,renorm,maxSCF,thresh,max_diis,                      &
+subroutine UGF(dotest,doG0F2,doevGF2,doqsGF2,doG0F3,doevGF3,renorm,maxSCF,thresh,max_diis,                      &
                dophBSE,doppBSE,TDA,dBSE,dTDA,spin_conserved,spin_flip,linearize,eta,regularize,          & 
                nNuc,ZNuc,rNuc,ENuc,nBas,nC,nO,nV,nR,nS,EHF,S,X,T,V,Hc,ERI_AO,ERI_aaaa,ERI_aabb,ERI_bbbb, & 
                dipole_int_AO,dipole_int_aa,dipole_int_bb,PHF,cHF,epsHF)
@@ -10,11 +10,13 @@ subroutine UGF(doG0F2,doevGF2,doqsGF2,doG0F3,doevGF3,renorm,maxSCF,thresh,max_di
 
 ! Input variables
 
-  logical                       :: doG0F2
-  logical                       :: doevGF2
-  logical                       :: doqsGF2
-  logical                       :: doG0F3
-  logical                       :: doevGF3
+  logical,intent(in)            :: dotest
+
+  logical,intent(in)            :: doG0F2
+  logical,intent(in)            :: doevGF2
+  logical,intent(in)            :: doqsGF2
+  logical,intent(in)            :: doG0F3
+  logical,intent(in)            :: doevGF3
 
   integer                       :: renorm
   integer,intent(in)            :: maxSCF
@@ -71,7 +73,7 @@ subroutine UGF(doG0F2,doevGF2,doqsGF2,doG0F3,doevGF3,renorm,maxSCF,thresh,max_di
   if(doG0F2) then
 
     call wall_time(start_GF)
-    call UG0F2(dophBSE,TDA,dBSE,dTDA,spin_conserved,spin_flip,linearize,eta,regularize, &
+    call UG0F2(dotest,dophBSE,TDA,dBSE,dTDA,spin_conserved,spin_flip,linearize,eta,regularize, &
                nBas,nC,nO,nV,nR,nS,ENuc,EHF,ERI_aaaa,ERI_aabb,ERI_bbbb,  & 
                dipole_int_aa,dipole_int_bb,epsHF)
     call wall_time(end_GF)
@@ -89,7 +91,7 @@ subroutine UGF(doG0F2,doevGF2,doqsGF2,doG0F3,doevGF3,renorm,maxSCF,thresh,max_di
   if(doevGF2) then
 
     call wall_time(start_GF)
-    call evUGF2(maxSCF,thresh,max_diis,dophBSE,TDA,dBSE,dTDA,spin_conserved,spin_flip,  &
+    call evUGF2(dotest,maxSCF,thresh,max_diis,dophBSE,TDA,dBSE,dTDA,spin_conserved,spin_flip,  &
                 eta,regularize,nBas,nC,nO,nV,nR,nS,ENuc,EHF,ERI_aaaa,ERI_aabb,ERI_bbbb, & 
                 dipole_int_aa,dipole_int_bb,cHF,epsHF)
     call wall_time(end_GF)
@@ -107,7 +109,7 @@ subroutine UGF(doG0F2,doevGF2,doqsGF2,doG0F3,doevGF3,renorm,maxSCF,thresh,max_di
   if(doqsGF2) then 
 
     call wall_time(start_GF)
-    call qsUGF2(maxSCF,thresh,max_diis,dophBSE,TDA,dBSE,dTDA,spin_conserved,spin_flip,eta,regularize, &
+    call qsUGF2(dotest,maxSCF,thresh,max_diis,dophBSE,TDA,dBSE,dTDA,spin_conserved,spin_flip,eta,regularize, &
                 nNuc,ZNuc,rNuc,ENuc,nBas,nC,nO,nV,nR,nS,EHF,S,X,T,V,Hc,ERI_AO,                        & 
                 ERI_aaaa,ERI_aabb,ERI_bbbb,dipole_int_AO,dipole_int_aa,dipole_int_bb,PHF,cHF,epsHF)
     call wall_time(end_GF)

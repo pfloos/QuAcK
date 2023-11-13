@@ -1,4 +1,4 @@
-subroutine UCIS(spin_conserved,spin_flip,nBas,nC,nO,nV,nR,nS,ERI_aaaa,ERI_aabb,ERI_bbbb, &
+subroutine UCIS(dotest,spin_conserved,spin_flip,nBas,nC,nO,nV,nR,nS,ERI_aaaa,ERI_aabb,ERI_bbbb, &
                 dipole_int_aa,dipole_int_bb,eHF,cHF,S)
 
 ! Perform configuration interaction single calculation`
@@ -7,6 +7,8 @@ subroutine UCIS(spin_conserved,spin_flip,nBas,nC,nO,nV,nR,nS,ERI_aaaa,ERI_aabb,E
   include 'parameters.h'
 
 ! Input variables
+
+  logical,intent(in)            :: dotest
 
   logical,intent(in)            :: spin_conserved
   logical,intent(in)            :: spin_flip
@@ -88,6 +90,14 @@ subroutine UCIS(spin_conserved,spin_flip,nBas,nC,nO,nV,nR,nS,ERI_aaaa,ERI_aabb,E
       write(*,*)
     endif
 
+    ! Testing zone
+
+    if(dotest) then
+
+      call dump_test_value('U','UCIS singlet excitation energy',Om_sc(1))
+
+    end if
+
     deallocate(A_sc,Om_sc)
 
   endif
@@ -127,6 +137,14 @@ subroutine UCIS(spin_conserved,spin_flip,nBas,nC,nO,nV,nR,nS,ERI_aaaa,ERI_aabb,E
       call matout(nS_sf,nS_sf,A_sf)
       write(*,*)
     endif
+
+    ! Testing zone
+
+    if(dotest) then
+
+      call dump_test_value('U','UCIS triplet excitation energy',Om_sf(1))
+
+    end if
 
     deallocate(A_sf,Om_sf)
 

@@ -4,8 +4,8 @@
       F
 # CC: maxSCF thresh     DIIS
       64     0.0000001  5
-# spin: TDA spin_conserved spin_flip 
-        F   T               T
+# spin: TDA singlet triplet
+        F   T       T
 # GF: maxSCF thresh  DIIS lin eta renorm reg
       256    0.00001 5    F   0.0 0      F
 # GW: maxSCF thresh  DIIS lin eta TDA_W reg

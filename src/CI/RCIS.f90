@@ -1,4 +1,4 @@
-subroutine CIS(singlet,triplet,doCIS_D,nBas,nC,nO,nV,nR,nS,ERI,dipole_int,eHF)
+subroutine RCIS(dotest,singlet,triplet,doCIS_D,nBas,nC,nO,nV,nR,nS,ERI,dipole_int,eHF)
 
 ! Perform configuration interaction single calculation`
 
@@ -6,6 +6,8 @@ subroutine CIS(singlet,triplet,doCIS_D,nBas,nC,nO,nV,nR,nS,ERI,dipole_int,eHF)
   include 'parameters.h'
 
 ! Input variables
+
+  logical,intent(in)            :: dotest
 
   logical,intent(in)            :: singlet
   logical,intent(in)            :: triplet
@@ -69,6 +71,14 @@ subroutine CIS(singlet,triplet,doCIS_D,nBas,nC,nO,nV,nR,nS,ERI,dipole_int,eHF)
     maxS = min(maxS,nS)
     if(doCIS_D) call CIS_D(ispin,nBas,nC,nO,nV,nR,nS,maxS,eHF,ERI,Om(1:maxS),A(:,1:maxS))
 
+    ! Testing zone
+  
+    if(dotest) then
+
+      call dump_test_value('R','RCIS singlet excitation energy',Om(1))
+
+    end if
+
   endif
 
   if(triplet) then
@@ -96,6 +106,14 @@ subroutine CIS(singlet,triplet,doCIS_D,nBas,nC,nO,nV,nR,nS,ERI,dipole_int,eHF)
 
     maxS = min(maxS,nS)
     if(doCIS_D) call CIS_D(ispin,nBas,nC,nO,nV,nR,nS,maxS,eHF,ERI,Om(1:maxS),A(:,1:maxS))
+
+    ! Testing zone
+ 
+    if(dotest) then
+ 
+      call dump_test_value('R','RCIS triplet excitation energy',Om(1))
+ 
+    end if
 
   endif
 

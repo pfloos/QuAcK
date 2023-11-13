@@ -259,7 +259,7 @@ subroutine UQuAcK(dotest,doUHF,dostab,dosearch,doMP2,doMP3,doCCD,dopCCD,doDCD,do
   if(doCI) then
 
     call wall_time(start_CI)
-    call UCI(doCIS,doCIS_D,doCID,doCISD,doFCI,spin_conserved,spin_flip,nBas,nC,nO,nV,nR,nS, & 
+    call UCI(dotest,doCIS,doCIS_D,doCID,doCISD,doFCI,spin_conserved,spin_flip,nBas,nC,nO,nV,nR,nS, & 
              ERI_aaaa,ERI_aabb,ERI_bbbb,dipole_int_aa,dipole_int_bb,epsHF,EHF,cHF,S)
     call wall_time(end_CI)
 
@@ -297,7 +297,7 @@ subroutine UQuAcK(dotest,doUHF,dostab,dosearch,doMP2,doMP3,doCCD,dopCCD,doDCD,do
   if(doGF) then
 
     call wall_time(start_GF)
-    call UGF(doG0F2,doevGF2,doqsGF2,doG0F3,doevGF3,renorm_GF,maxSCF_GF,thresh_GF,max_diis_GF,          &
+    call UGF(dotest,doG0F2,doevGF2,doqsGF2,doG0F3,doevGF3,renorm_GF,maxSCF_GF,thresh_GF,max_diis_GF,          &
              dophBSE,doppBSE,TDA,dBSE,dTDA,spin_conserved,spin_flip,lin_GF,eta_GF,reg_GF,              &
              nNuc,ZNuc,rNuc,ENuc,nBas,nC,nO,nV,nR,nS,EHF,S,X,T,V,Hc,ERI_AO,ERI_aaaa,ERI_aabb,ERI_bbbb, &
              dipole_int_AO,dipole_int_aa,dipole_int_bb,PHF,cHF,epsHF)
@@ -318,7 +318,7 @@ subroutine UQuAcK(dotest,doUHF,dostab,dosearch,doMP2,doMP3,doCCD,dopCCD,doDCD,do
   if(doGW) then
     
     call wall_time(start_GW)
-    call UGW(doG0W0,doevGW,doqsGW,doufG0W0,doufGW,doSRGqsGW,maxSCF_GW,thresh_GW,max_diis_GW,doACFDT,      &
+    call UGW(dotest,doG0W0,doevGW,doqsGW,doufG0W0,doufGW,doSRGqsGW,maxSCF_GW,thresh_GW,max_diis_GW,doACFDT,      &
              exchange_kernel,doXBS,dophBSE,dophBSE2,doppBSE,TDA_W,TDA,dBSE,dTDA,spin_conserved,spin_flip, &
              lin_GW,eta_GW,reg_GW,nNuc,ZNuc,rNuc,ENuc,nBas,nC,nO,nV,nR,nS,EHF,S,X,T,V,Hc,                 &  
              ERI_AO,ERI_aaaa,ERI_aabb,ERI_bbbb,dipole_int_AO,dipole_int_aa,dipole_int_bb,PHF,cHF,epsHF)
@@ -339,7 +339,7 @@ subroutine UQuAcK(dotest,doUHF,dostab,dosearch,doMP2,doMP3,doCCD,dopCCD,doDCD,do
   if(doGT) then
     
     call wall_time(start_GT)
-    call UGT(doG0T0pp,doevGTpp,doqsGTpp,doG0T0eh,doevGTeh,doqsGTeh,maxSCF_GT,thresh_GT,max_diis_GT,doACFDT,  &
+    call UGT(dotest,doG0T0pp,doevGTpp,doqsGTpp,doG0T0eh,doevGTeh,doqsGTeh,maxSCF_GT,thresh_GT,max_diis_GT,doACFDT,  &
              exchange_kernel,doXBS,dophBSE,dophBSE2,doppBSE,TDA_T,TDA,dBSE,dTDA,spin_conserved,spin_flip,    &
              lin_GT,eta_GT,reg_GT,nNuc,ZNuc,rNuc,ENuc,nBas,nC,nO,nV,nR,nS,EHF,S,X,T,V,Hc,                    &
              ERI_AO,ERI_aaaa,ERI_aabb,ERI_bbbb,dipole_int_AO,dipole_int_aa,dipole_int_bb,PHF,cHF,epsHF)

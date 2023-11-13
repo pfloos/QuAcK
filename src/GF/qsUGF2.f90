@@ -1,4 +1,4 @@
-subroutine qsUGF2(maxSCF,thresh,max_diis,BSE,TDA,dBSE,dTDA,spin_conserved,spin_flip,eta,regularize, &
+subroutine qsUGF2(dotest,maxSCF,thresh,max_diis,BSE,TDA,dBSE,dTDA,spin_conserved,spin_flip,eta,regularize, &
                  nNuc,ZNuc,rNuc,ENuc,nBas,nC,nO,nV,nR,nS,EUHF,S,X,T,V,Hc,ERI_AO,               & 
                  ERI_aaaa,ERI_aabb,ERI_bbbb,dipole_int_AO,dipole_int_aa,dipole_int_bb,PHF,cHF,eHF)
 
@@ -8,6 +8,8 @@ subroutine qsUGF2(maxSCF,thresh,max_diis,BSE,TDA,dBSE,dTDA,spin_conserved,spin_f
   include 'parameters.h'
 
 ! Input variables
+
+  logical,intent(in)            :: dotest
 
   integer,intent(in)            :: maxSCF
   integer,intent(in)            :: max_diis
@@ -89,10 +91,11 @@ subroutine qsUGF2(maxSCF,thresh,max_diis,BSE,TDA,dBSE,dTDA,spin_conserved,spin_f
 
 ! Hello world
 
+
   write(*,*)
-  write(*,*)'**************************************************'
-  write(*,*)'| Self-consistent unrestricted qsGF2 calculation |'
-  write(*,*)'**************************************************'
+  write(*,*)'**********************************'
+  write(*,*)'* Unrestricted qsGF2 Calculation *'
+  write(*,*)'**********************************'
   write(*,*)
 
 ! Warning 
@@ -290,7 +293,7 @@ subroutine qsUGF2(maxSCF,thresh,max_diis,BSE,TDA,dBSE,dTDA,spin_conserved,spin_f
 
     ! Correlation energy
 
-    call UMP2(nBas,nC,nO,nV,nR,ERI_aaaa,ERI_aabb,ERI_bbbb,ENuc,EqsGF2,eGF2,Ec)
+    call UMP2(.false.,nBas,nC,nO,nV,nR,ERI_aaaa,ERI_aabb,ERI_bbbb,ENuc,EqsGF2,eGF2,Ec)
 
     ! Total energy
 

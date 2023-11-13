@@ -1,4 +1,4 @@
-subroutine RGF(doG0F2,doevGF2,doqsGF2,doG0F3,doevGF3,renorm,maxSCF,thresh,max_diis,    &
+subroutine RGF(dotest,doG0F2,doevGF2,doqsGF2,doG0F3,doevGF3,renorm,maxSCF,thresh,max_diis,    &
                dophBSE,doppBSE,TDA,dBSE,dTDA,singlet,triplet,linearize,eta,regularize, & 
                nNuc,ZNuc,rNuc,ENuc,nBas,nC,nO,nV,nR,nS,EHF,S,X,T,V,Hc,ERI_AO,ERI,      & 
                dipole_int_AO,dipole_int,PHF,cHF,epsHF)
@@ -10,11 +10,13 @@ subroutine RGF(doG0F2,doevGF2,doqsGF2,doG0F3,doevGF3,renorm,maxSCF,thresh,max_di
 
 ! Input variables
 
-  logical                       :: doG0F2
-  logical                       :: doevGF2
-  logical                       :: doqsGF2
-  logical                       :: doG0F3
-  logical                       :: doevGF3
+  logical,intent(in)            :: dotest
+
+  logical,intent(in)            :: doG0F2
+  logical,intent(in)            :: doevGF2
+  logical,intent(in)            :: doqsGF2
+  logical,intent(in)            :: doG0F3
+  logical,intent(in)            :: doevGF3
 
   integer                       :: renorm
   integer,intent(in)            :: maxSCF
@@ -68,8 +70,8 @@ subroutine RGF(doG0F2,doevGF2,doqsGF2,doG0F3,doevGF3,renorm,maxSCF,thresh,max_di
   if(doG0F2) then
 
     call wall_time(start_GF)
-    call G0F2(dophBSE,doppBSE,TDA,dBSE,dTDA,singlet,triplet,linearize,eta,regularize, & 
-              nBas,nC,nO,nV,nR,nS,ENuc,EHF,ERI,dipole_int,epsHF)
+    call RG0F2(dotest,dophBSE,doppBSE,TDA,dBSE,dTDA,singlet,triplet,linearize,eta,regularize, & 
+               nBas,nC,nO,nV,nR,nS,ENuc,EHF,ERI,dipole_int,epsHF)
     call wall_time(end_GF)
 
     t_GF = end_GF - start_GF
@@ -85,9 +87,9 @@ subroutine RGF(doG0F2,doevGF2,doqsGF2,doG0F3,doevGF3,renorm,maxSCF,thresh,max_di
   if(doevGF2) then
 
     call wall_time(start_GF)
-    call evGF2(dophBSE,doppBSE,TDA,dBSE,dTDA,maxSCF,thresh,max_diis, & 
-               singlet,triplet,linearize,eta,regularize,nBas,nC,nO,nV,nR,nS,ENuc,EHF, & 
-               ERI,dipole_int,epsHF)
+    call evRGF2(dotest,dophBSE,doppBSE,TDA,dBSE,dTDA,maxSCF,thresh,max_diis, & 
+                singlet,triplet,linearize,eta,regularize,nBas,nC,nO,nV,nR,nS,ENuc,EHF, & 
+                ERI,dipole_int,epsHF)
     call wall_time(end_GF)
 
     t_GF = end_GF - start_GF
@@ -103,8 +105,8 @@ subroutine RGF(doG0F2,doevGF2,doqsGF2,doG0F3,doevGF3,renorm,maxSCF,thresh,max_di
   if(doqsGF2) then 
 
     call wall_time(start_GF)
-    call qsGF2(maxSCF,thresh,max_diis,dophBSE,doppBSE,TDA,dBSE,dTDA,singlet,triplet,eta,regularize,nNuc,ZNuc,rNuc,ENuc, & 
-               nBas,nC,nO,nV,nR,nS,EHF,S,X,T,V,Hc,ERI_AO,ERI,dipole_int_AO,dipole_int,PHF,cHF,epsHF)
+    call qsRGF2(dotest,maxSCF,thresh,max_diis,dophBSE,doppBSE,TDA,dBSE,dTDA,singlet,triplet,eta,regularize,nNuc,ZNuc,rNuc,ENuc, & 
+                nBas,nC,nO,nV,nR,nS,EHF,S,X,T,V,Hc,ERI_AO,ERI,dipole_int_AO,dipole_int,PHF,cHF,epsHF)
     call wall_time(end_GF)
 
     t_GF = end_GF - start_GF
@@ -120,7 +122,7 @@ subroutine RGF(doG0F2,doevGF2,doqsGF2,doG0F3,doevGF3,renorm,maxSCF,thresh,max_di
   if(doG0F3) then
 
     call wall_time(start_GF)
-    call G0F3(renorm,nBas,nC,nO,nV,nR,ERI,epsHF)
+    call RG0F3(dotest,renorm,nBas,nC,nO,nV,nR,ERI,epsHF)
     call wall_time(end_GF)
 
     t_GF = end_GF - start_GF
@@ -136,7 +138,7 @@ subroutine RGF(doG0F2,doevGF2,doqsGF2,doG0F3,doevGF3,renorm,maxSCF,thresh,max_di
   if(doevGF3) then
 
     call wall_time(start_GF)
-    call evGF3(maxSCF,thresh,max_diis,renorm,nBas,nC,nO,nV,nR,ERI,epsHF)
+    call evRGF3(dotest,maxSCF,thresh,max_diis,renorm,nBas,nC,nO,nV,nR,ERI,epsHF)
     call wall_time(end_GF)
 
     t_GF = end_GF - start_GF

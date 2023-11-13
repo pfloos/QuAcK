@@ -1,4 +1,4 @@
-subroutine evUGF2(maxSCF,thresh,max_diis,BSE,TDA,dBSE,dTDA,spin_conserved,spin_flip, &
+subroutine evUGF2(dotest,maxSCF,thresh,max_diis,BSE,TDA,dBSE,dTDA,spin_conserved,spin_flip, &
                   eta,regularize,nBas,nC,nO,nV,nR,nS,ENuc,EUHF,ERI_aaaa,ERI_aabb,ERI_bbbb,   & 
                   dipole_int_aa,dipole_int_bb,cHF,eHF)
 
@@ -8,6 +8,8 @@ subroutine evUGF2(maxSCF,thresh,max_diis,BSE,TDA,dBSE,dTDA,spin_conserved,spin_f
   include 'parameters.h'
 
 ! Input variables
+
+  logical,intent(in)            :: dotest
 
   integer,intent(in)            :: maxSCF
   integer,intent(in)            :: max_diis
@@ -61,10 +63,11 @@ subroutine evUGF2(maxSCF,thresh,max_diis,BSE,TDA,dBSE,dTDA,spin_conserved,spin_f
 
 ! Hello world
 
+
   write(*,*)
-  write(*,*)'**************************************************'
-  write(*,*)'| Self-consistent unrestricted evGF2 calculation |'
-  write(*,*)'**************************************************'
+  write(*,*)'*********************************'
+  write(*,*)'* Unrestricted G0F2 Calculation *'
+  write(*,*)'*********************************'
   write(*,*)
 
 ! TDA 
@@ -133,7 +136,7 @@ subroutine evUGF2(maxSCF,thresh,max_diis,BSE,TDA,dBSE,dTDA,spin_conserved,spin_f
 
     ! Compute MP2 correlation energy
 
-    call UMP2(nBas,nC,nO,nV,nR,ERI_aaaa,ERI_aabb,ERI_bbbb,ENuc,EUHF,eGF2,Ec)
+    call UMP2(.false.,nBas,nC,nO,nV,nR,ERI_aaaa,ERI_aabb,ERI_bbbb,ENuc,EUHF,eGF2,Ec)
 
     ! Print results
     

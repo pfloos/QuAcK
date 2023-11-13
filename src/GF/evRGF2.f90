@@ -1,4 +1,4 @@
-subroutine evGF2(dophBSE,doppBSE,TDA,dBSE,dTDA,maxSCF,thresh,max_diis,singlet,triplet, &
+subroutine evRGF2(dotest,dophBSE,doppBSE,TDA,dBSE,dTDA,maxSCF,thresh,max_diis,singlet,triplet, &
                  linearize,eta,regularize,nBas,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,dipole_int,eHF)
 
 ! Perform eigenvalue self-consistent second-order Green function calculation
@@ -7,6 +7,8 @@ subroutine evGF2(dophBSE,doppBSE,TDA,dBSE,dTDA,maxSCF,thresh,max_diis,singlet,tr
   include 'parameters.h'
 
 ! Input variables
+
+  logical,intent(in)            :: dotest
 
   logical,intent(in)            :: dophBSE
   logical,intent(in)            :: doppBSE
@@ -51,10 +53,11 @@ subroutine evGF2(dophBSE,doppBSE,TDA,dBSE,dTDA,maxSCF,thresh,max_diis,singlet,tr
 
 ! Hello world
 
+
   write(*,*)
-  write(*,*)'************************************************'
-  write(*,*)'|  Second-order Green function calculation     |'
-  write(*,*)'************************************************'
+  write(*,*)'********************************'
+  write(*,*)'* Restricted evGF2 Calculation *'
+  write(*,*)'********************************'
   write(*,*)
 
 ! Memory allocation
@@ -107,7 +110,7 @@ subroutine evGF2(dophBSE,doppBSE,TDA,dBSE,dTDA,maxSCF,thresh,max_diis,singlet,tr
 
     ! Print results
 
-    call RMP2(regularize,nBas,nC,nO,nV,nR,ERI,ENuc,ERHF,eGF,Ec)
+    call RMP2(.false.,regularize,nBas,nC,nO,nV,nR,ERI,ENuc,ERHF,eGF,Ec)
     call print_evGF2(nBas,nO,nSCF,Conv,eHF,SigC,Z,eGF,ENuc,ERHF,Ec)
 
     ! DIIS extrapolation
@@ -173,6 +176,16 @@ subroutine evGF2(dophBSE,doppBSE,TDA,dBSE,dTDA,maxSCF,thresh,max_diis,singlet,tr
     write(*,'(2X,A50,F20.10,A3)') 'Tr@ppBSE@evGF2 total energy                 =',ENuc + ERHF + EcBSE(1) + 3d0*EcBSE(2),' au'
     write(*,*)'-------------------------------------------------------------------------------'
     write(*,*)
+
+  end if
+
+! Testing zone
+
+  if(dotest) then
+
+    call dump_test_value('R','evRGF2 correlation energy',Ec)
+    call dump_test_value('R','evRGF2 HOMO energy',eGF(nO))
+    call dump_test_value('R','evRGF2 LUMO energy',eGF(nO+1))
 
   end if
 

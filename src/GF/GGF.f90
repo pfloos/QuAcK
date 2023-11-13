@@ -1,4 +1,4 @@
-subroutine GGF(doG0F2,doevGF2,doqsGF2,maxSCF,thresh,max_diis,dophBSE,doppBSE,TDA,dBSE,dTDA,linearize,eta,regularize, & 
+subroutine GGF(dotest,doG0F2,doevGF2,doqsGF2,maxSCF,thresh,max_diis,dophBSE,doppBSE,TDA,dBSE,dTDA,linearize,eta,regularize, & 
                nNuc,ZNuc,rNuc,ENuc,nBas,nC,nO,nV,nR,nS,EHF,S,X,T,V,Hc,ERI_AO,ERI,dipole_int_AO,dipole_int,PHF,cHF,epsHF)
 
 ! Green's function module
@@ -8,9 +8,11 @@ subroutine GGF(doG0F2,doevGF2,doqsGF2,maxSCF,thresh,max_diis,dophBSE,doppBSE,TDA
 
 ! Input variables
 
-  logical                       :: doG0F2
-  logical                       :: doevGF2
-  logical                       :: doqsGF2
+  logical,intent(in)            :: dotest
+
+  logical,intent(in)            :: doG0F2
+  logical,intent(in)            :: doevGF2
+  logical,intent(in)            :: doqsGF2
 
   integer,intent(in)            :: maxSCF
   integer,intent(in)            :: max_diis
@@ -61,7 +63,7 @@ subroutine GGF(doG0F2,doevGF2,doqsGF2,maxSCF,thresh,max_diis,dophBSE,doppBSE,TDA
   if(doG0F2) then
 
     call wall_time(start_GF)
-    call GG0F2(dophBSE,doppBSE,TDA,dBSE,dTDA,linearize,eta,regularize, & 
+    call GG0F2(dotest,dophBSE,doppBSE,TDA,dBSE,dTDA,linearize,eta,regularize, & 
                nBas,nC,nO,nV,nR,nS,ENuc,EHF,ERI,dipole_int,epsHF)
     call wall_time(end_GF)
 
@@ -78,7 +80,7 @@ subroutine GGF(doG0F2,doevGF2,doqsGF2,maxSCF,thresh,max_diis,dophBSE,doppBSE,TDA
   if(doevGF2) then
 
     call wall_time(start_GF)
-    call evGGF2(dophBSE,doppBSE,TDA,dBSE,dTDA,maxSCF,thresh,max_diis,linearize,eta,regularize, & 
+    call evGGF2(dotest,dophBSE,doppBSE,TDA,dBSE,dTDA,maxSCF,thresh,max_diis,linearize,eta,regularize, & 
                 nBas,nC,nO,nV,nR,nS,ENuc,EHF,ERI,dipole_int,epsHF)
     call wall_time(end_GF)
 
@@ -95,7 +97,7 @@ subroutine GGF(doG0F2,doevGF2,doqsGF2,maxSCF,thresh,max_diis,dophBSE,doppBSE,TDA
   if(doqsGF2) then 
 
     call wall_time(start_GF)
-!   call qsGGF2(maxSCF,thresh,max_diis,dophBSE,doppBSE,TDA,dBSE,dTDA,eta,regularize,nNuc,ZNuc,rNuc,ENuc, & 
+!   call qsGGF2(dotest,maxSCF,thresh,max_diis,dophBSE,doppBSE,TDA,dBSE,dTDA,eta,regularize,nNuc,ZNuc,rNuc,ENuc, & 
 !               nBas,nC,nO,nV,nR,nS,EHF,S,X,T,V,Hc,ERI_AO,ERI,dipole_int_AO,dipole_int,PHF,cHF,epsHF)
     call wall_time(end_GF)
 

@@ -1,10 +1,12 @@
-subroutine CCD(maxSCF,thresh,max_diis,nBasin,nCin,nOin,nVin,nRin,ERI,ENuc,ERHF,eHF)
+subroutine CCD(dotest,maxSCF,thresh,max_diis,nBasin,nCin,nOin,nVin,nRin,ERI,ENuc,ERHF,eHF)
 
 ! CCD module
 
   implicit none
 
 ! Input variables
+
+  logical,intent(in)            :: dotest
 
   integer,intent(in)            :: maxSCF
   integer,intent(in)            :: max_diis
@@ -29,7 +31,7 @@ subroutine CCD(maxSCF,thresh,max_diis,nBasin,nCin,nOin,nVin,nRin,ERI,ENuc,ERHF,e
   integer                       :: nSCF
   double precision              :: Conv
   double precision              :: EcMP2,EcMP3,EcMP4
-  double precision              :: ECCD,EcCCD
+  double precision              :: ECC,EcCC
   double precision,allocatable  :: seHF(:)
   double precision,allocatable  :: sERI(:,:,:,:)
   double precision,allocatable  :: dbERI(:,:,:,:)
@@ -191,13 +193,13 @@ subroutine CCD(maxSCF,thresh,max_diis,nBasin,nCin,nOin,nVin,nRin,ERI,ENuc,ERHF,e
 
 !   Compute correlation energy
 
-    call CCD_correlation_energy(nC,nO,nV,nR,OOVV,t,EcCCD)
+    call CCD_correlation_energy(nC,nO,nV,nR,OOVV,t,EcCC)
 
     if(nSCF == 1) call MP3_correlation_energy(nC,nO,nV,nR,OOVV,t,v,delta_OOVV,EcMP3)
 
 !   Dump results
 
-    ECCD = ERHF + EcCCD
+    ECC = ERHF + EcCC
 
     ! DIIS extrapolation
 
@@ -209,7 +211,7 @@ subroutine CCD(maxSCF,thresh,max_diis,nBasin,nCin,nOin,nVin,nRin,ERI,ENuc,ERHF,e
     if(abs(rcond) < 1d-15) n_diis = 0
 
     write(*,'(1X,A1,1X,I3,1X,A1,1X,F16.10,1X,A1,1X,F10.6,1X,A1,1X,F10.6,1X,A1,1X)') &
-      '|',nSCF,'|',ECCD+ENuc,'|',EcCCD,'|',Conv,'|'
+      '|',nSCF,'|',ECC+ENuc,'|',EcCC,'|',Conv,'|'
 
   enddo
   write(*,*)'----------------------------------------------------'
@@ -235,8 +237,8 @@ subroutine CCD(maxSCF,thresh,max_diis,nBasin,nCin,nOin,nVin,nRin,ERI,ENuc,ERHF,e
   write(*,*)'----------------------------------------------------'
   write(*,*)'              CCD energy                            '
   write(*,*)'----------------------------------------------------'
-  write(*,'(1X,A30,1X,F15.10)')' E(CCD) = ',ECCD
-  write(*,'(1X,A30,1X,F15.10)')' Ec(CCD) = ',EcCCD
+  write(*,'(1X,A30,1X,F15.10)')' E(CCD) = ',ECC
+  write(*,'(1X,A30,1X,F15.10)')' Ec(CCD) = ',EcCC
   write(*,*)'----------------------------------------------------'
   write(*,*)
 
@@ -271,5 +273,13 @@ subroutine CCD(maxSCF,thresh,max_diis,nBasin,nCin,nOin,nVin,nRin,ERI,ENuc,ERHF,e
 ! DIP-EOM-CCD(2h)
 
   if(do_DIP_EOM_CC_2h) call DIP_EOM_CCD_2h(nC,nO,nV,nR,eO,OOVV,OOOO,t)
+
+! Testing zone
+
+  if(dotest) then
+
+    call dump_test_value('R','CCD correlation energy',EcCC)
+
+  end if
 
 end subroutine 

@@ -1,4 +1,4 @@
-subroutine CID(singlet_manifold,triplet_manifold,nBasin,nCin,nOin,nVin,nRin,ERIin,eHFin,E0)
+subroutine CID(dotest,singlet,triplet,nBasin,nCin,nOin,nVin,nRin,ERIin,eHFin,E0)
 
 ! Perform configuration interaction with doubles
 
@@ -7,8 +7,10 @@ subroutine CID(singlet_manifold,triplet_manifold,nBasin,nCin,nOin,nVin,nRin,ERIi
 
 ! Input variables
 
-  logical,intent(in)            :: singlet_manifold
-  logical,intent(in)            :: triplet_manifold
+  logical,intent(in)            :: dotest
+
+  logical,intent(in)            :: singlet
+  logical,intent(in)            :: triplet
   integer,intent(in)            :: nBasin
   integer,intent(in)            :: nCin
   integer,intent(in)            :: nOin

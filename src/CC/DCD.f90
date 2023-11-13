@@ -1,10 +1,12 @@
-subroutine DCD(maxSCF,thresh,max_diis,nBas,nC,nO,nV,nR,ERI,ENuc,ERHF,eHF)
+subroutine DCD(dotest,maxSCF,thresh,max_diis,nBas,nC,nO,nV,nR,ERI,ENuc,ERHF,eHF)
 
 ! DCD module
 
   implicit none
 
 ! Input variables
+
+  logical,intent(in)            :: dotest
 
   integer,intent(in)            :: maxSCF
   integer,intent(in)            :: max_diis
@@ -24,7 +26,7 @@ subroutine DCD(maxSCF,thresh,max_diis,nBas,nC,nO,nV,nR,ERI,ENuc,ERHF,eHF)
   integer                       :: nSCF
   double precision              :: Conv
   double precision              :: EcMP2,EcMP3,EcMP4
-  double precision              :: EDCD,EcDCD
+  double precision              :: ECC,EcCC
 
   double precision,allocatable  :: eO(:)
   double precision,allocatable  :: eV(:)
@@ -123,13 +125,13 @@ subroutine DCD(maxSCF,thresh,max_diis,nBas,nC,nO,nV,nR,ERI,ENuc,ERHF,eHF)
 
     ! Compute correlation energy
 
-    EcDCD = 0d0
+    EcCC = 0d0
     do i=1,nO-nC
       do j=1,nO-nC
         do a=1,nV-nR
           do b=1,nV-nR
  
-            EcDCD = EcDCD + (2d0*OOVV(i,j,a,b) - OOVV(i,j,b,a))*t(i,j,a,b)
+            EcCC = EcCC + (2d0*OOVV(i,j,a,b) - OOVV(i,j,b,a))*t(i,j,a,b)
  
           enddo
         enddo
@@ -138,10 +140,10 @@ subroutine DCD(maxSCF,thresh,max_diis,nBas,nC,nO,nV,nR,ERI,ENuc,ERHF,eHF)
 
     ! Dump results
 
-    EDCD = ERHF + EcDCD
+    ECC = ERHF + EcCC
 
     write(*,'(1X,A1,1X,I3,1X,A1,1X,F16.10,1X,A1,1X,F10.6,1X,A1,1X,F10.6,1X,A1,1X)') &
-      '|',nSCF,'|',EDCD+ENuc,'|',EcDCD,'|',Conv,'|'
+      '|',nSCF,'|',ECC+ENuc,'|',EcCC,'|',Conv,'|'
 
     ! Increment 
 
@@ -279,5 +281,13 @@ subroutine DCD(maxSCF,thresh,max_diis,nBas,nC,nO,nV,nR,ERI,ENuc,ERHF,eHF)
     stop
 
   endif
+
+! Testing zone
+
+  if(dotest) then
+
+    call dump_test_value('R','DCD correlation energy',EcCC)
+
+  end if
 
 end subroutine 

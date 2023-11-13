@@ -1,4 +1,4 @@
-subroutine qsGF2(maxSCF,thresh,max_diis,dophBSE,doppBSE,TDA,dBSE,dTDA,singlet,triplet, & 
+subroutine qsRGF2(dotest,maxSCF,thresh,max_diis,dophBSE,doppBSE,TDA,dBSE,dTDA,singlet,triplet, & 
                 eta,regularize,nNuc,ZNuc,rNuc,ENuc,nBas,nC,nO,nV,nR,nS,ERHF, &
                 S,X,T,V,Hc,ERI_AO,ERI_MO,dipole_int_AO,dipole_int_MO,PHF,cHF,eHF)
 
@@ -8,6 +8,8 @@ subroutine qsGF2(maxSCF,thresh,max_diis,dophBSE,doppBSE,TDA,dBSE,dTDA,singlet,tr
   include 'parameters.h'
 
 ! Input variables
+
+  logical,intent(in)            :: dotest
 
   integer,intent(in)            :: maxSCF
   integer,intent(in)            :: max_diis
@@ -78,10 +80,11 @@ subroutine qsGF2(maxSCF,thresh,max_diis,dophBSE,doppBSE,TDA,dBSE,dTDA,singlet,tr
 
 ! Hello world
 
+
   write(*,*)
-  write(*,*)'************************************************'
-  write(*,*)'|       Self-consistent qsGF2 calculation      |'
-  write(*,*)'************************************************'
+  write(*,*)'********************************'
+  write(*,*)'* Restricted qsGF2 Calculation *'
+  write(*,*)'********************************'
   write(*,*)
 
 ! Warning 
@@ -216,7 +219,7 @@ subroutine qsGF2(maxSCF,thresh,max_diis,dophBSE,doppBSE,TDA,dBSE,dTDA,singlet,tr
 
     ! Correlation energy
 
-    call RMP2(regularize,nBas,nC,nO,nV,nR,ERI_MO,ENuc,EqsGF2,eGF,Ec)
+    call RMP2(.false.,regularize,nBas,nC,nO,nV,nR,ERI_MO,ENuc,EqsGF2,eGF,Ec)
 
     ! Total energy
 
@@ -285,6 +288,16 @@ subroutine qsGF2(maxSCF,thresh,max_diis,dophBSE,doppBSE,TDA,dBSE,dTDA,singlet,tr
     write(*,'(2X,A50,F20.10,A3)') 'Tr@ppBSE@qsGF2 total energy                 =',ENuc + EqsGF2 + EcBSE(1) + 3d0*EcBSE(2),' au'
     write(*,*)'-------------------------------------------------------------------------------'
     write(*,*)
+
+  end if
+
+! Testing zone
+
+  if(dotest) then
+
+    call dump_test_value('R','qsRGF2 correlation energy',Ec)
+    call dump_test_value('R','qsRGF2 HOMO energy',eGF(nO))
+    call dump_test_value('R','qsRGF2 LUMO energy',eGF(nO+1))
 
   end if
 

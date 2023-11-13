@@ -105,10 +105,10 @@ subroutine crRRPA(dotest,TDA,doACFDT,exchange_kernel,singlet,triplet,nBas,nC,nO,
 
   write(*,*)
   write(*,*)'-------------------------------------------------------------------------------'
-  write(*,'(2X,A50,F20.10)') 'Tr@crRPA correlation energy (singlet) =',EcRPA(1)
-  write(*,'(2X,A50,F20.10)') 'Tr@crRPA correlation energy (triplet) =',EcRPA(2)
-  write(*,'(2X,A50,F20.10)') 'Tr@crRPA correlation energy           =',EcRPA(1) + EcRPA(2)
-  write(*,'(2X,A50,F20.10)') 'Tr@crRPA total energy                 =',ENuc + EHF + EcRPA(1) + EcRPA(2)
+  write(*,'(2X,A50,F20.10,A3)') 'Tr@crRRPA correlation energy (singlet) =',EcRPA(1),' au'
+  write(*,'(2X,A50,F20.10,A3)') 'Tr@crRRPA correlation energy (triplet) =',EcRPA(2),' au'
+  write(*,'(2X,A50,F20.10,A3)') 'Tr@crRRPA correlation energy           =',sum(EcRPA),' au'
+  write(*,'(2X,A50,F20.10,A3)') 'Tr@crRRPA total energy                 =',ENuc + EHF + sum(EcRPA),' au'
   write(*,*)'-------------------------------------------------------------------------------'
   write(*,*)
 
@@ -125,13 +125,19 @@ subroutine crRRPA(dotest,TDA,doACFDT,exchange_kernel,singlet,triplet,nBas,nC,nO,
 
     write(*,*)
     write(*,*)'-------------------------------------------------------------------------------'
-    write(*,'(2X,A50,F20.10)') 'AC@crRPA correlation energy (singlet) =',EcRPA(1)
-    write(*,'(2X,A50,F20.10)') 'AC@crRPA correlation energy (triplet) =',EcRPA(2)
-    write(*,'(2X,A50,F20.10)') 'AC@crRPA correlation energy           =',EcRPA(1) + EcRPA(2)
-    write(*,'(2X,A50,F20.10)') 'AC@crRPA total energy                 =',ENuc + EHF + EcRPA(1) + EcRPA(2)
+    write(*,'(2X,A50,F20.10,A3)') 'AC@crRRPA correlation energy (singlet) =',EcRPA(1),' au'
+    write(*,'(2X,A50,F20.10,A3)') 'AC@crRRPA correlation energy (triplet) =',EcRPA(2),' au'
+    write(*,'(2X,A50,F20.10,A3)') 'AC@crRRPA correlation energy           =',sum(EcRPA),' au'
+    write(*,'(2X,A50,F20.10,A3)') 'AC@crRRPA total energy                 =',ENuc + EHF + sum(EcRPA),' au'
     write(*,*)'-------------------------------------------------------------------------------'
     write(*,*)
 
+  end if
+
+  if(dotest) then
+  
+    call dump_test_value('R','crRRPA correlation energy',sum(EcRPA))
+  
   end if
 
 end subroutine 

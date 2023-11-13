@@ -6,13 +6,45 @@
    0.203278954950938
  RHF dipole moment
    0.611349538338893
- ROHF energy
- -85.160473714509976
  RMP2 correlation energy
-  -0.128988144386404
+  -0.128988144318865
+ CCD correlation energy
+  -0.134831644514626
+ DCD correlation energy
+  -0.137864343293459
+ CCSD correlation energy
+  -0.135521483429938
+ drCCD correlation energy
+  -0.138552794834488
+ rCCD correlation energy
+  -0.184028508433731
+ crCCD correlation energy
+   0.116371767570026
+ lCCD correlation energy
+  -0.092561235738883
+ pCCD correlation energy
+  -0.033110922532151
+ RCIS singlet excitation energy
+   0.345631869593838
+ RCIS triplet excitation energy
+   0.310356023571962
  phRRPA correlation energy
-  -0.138552809856833
+  -0.138552809810619
  phRRPAx correlation energy
-  -0.197284981952336
+  -0.197284981858331
+ crRRPA correlation energy
+  -0.161690198064065
  ppRRPA correlation energy
-  -0.092561239071529
+  -0.092561239024299
+ RG0F2 correlation energy
+  -0.139599095383591
+ RG0F2 HOMO energy
+  -0.398113441401301
+ RG0F2 LUMO energy
+   0.189499108558074
+ evRGF2 correlation energy
+  -0.143423802624325
+ evRGF2 HOMO energy
+  -0.374883361361465
+ evRGF2 LUMO energy
+   0.188029526841018
