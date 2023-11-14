@@ -160,7 +160,7 @@ subroutine UMP2(dotest,nBas,nC,nO,nV,nR,ERI_aa,ERI_ab,ERI_bb,ENuc,EUHF,eHF,Ec)
 
   if(dotest) then
 
-    call dump_test_value('U','UMP2 correlation energy',sum(Ec))
+    call dump_test_value('U','MP2 correlation energy',sum(Ec))
 
   end if
 

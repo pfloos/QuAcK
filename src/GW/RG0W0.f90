@@ -237,9 +237,9 @@ subroutine RG0W0(dotest,doACFDT,exchange_kernel,doXBS,dophBSE,dophBSE2,TDA_W,TDA
 
   if(dotest) then
 
-    call dump_test_value('R','RG0W0 correlation energy',EcRPA)
-    call dump_test_value('R','RG0W0 HOMO energy',eGW(nO))
-    call dump_test_value('R','RG0W0 LUMO energy',eGW(nO+1))
+    call dump_test_value('R','G0W0 correlation energy',EcRPA)
+    call dump_test_value('R','G0W0 HOMO energy',eGW(nO))
+    call dump_test_value('R','G0W0 LUMO energy',eGW(nO+1))
 
   end if
 

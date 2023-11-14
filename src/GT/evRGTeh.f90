@@ -302,9 +302,9 @@ subroutine evRGTeh(dotest,maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,d
 
   if(dotest) then
 
-    call dump_test_value('R','evRGTeh correlation energy',EcRPA)
-    call dump_test_value('R','evRGTeh HOMO energy',eGT(nO))
-    call dump_test_value('R','evRGTeh LUMO energy',eGT(nO+1))
+    call dump_test_value('R','evGTeh correlation energy',EcRPA)
+    call dump_test_value('R','evGTeh HOMO energy',eGT(nO))
+    call dump_test_value('R','evGTeh LUMO energy',eGT(nO+1))
 
   end if
 

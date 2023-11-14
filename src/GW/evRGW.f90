@@ -281,9 +281,9 @@ subroutine evRGW(dotest,maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,dop
 
   if(dotest) then
 
-    call dump_test_value('R','evRGW correlation energy',EcRPA)
-    call dump_test_value('R','evRGW HOMO energy',eGW(nO))
-    call dump_test_value('R','evRGW LUMO energy',eGW(nO+1))
+    call dump_test_value('R','evGW correlation energy',EcRPA)
+    call dump_test_value('R','evGW HOMO energy',eGW(nO))
+    call dump_test_value('R','evGW LUMO energy',eGW(nO+1))
 
   end if
 

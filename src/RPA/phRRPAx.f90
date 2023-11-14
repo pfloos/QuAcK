@@ -137,9 +137,11 @@ subroutine phRRPAx(dotest,TDA,doACFDT,exchange_kernel,singlet,triplet,nBas,nC,nO
 
   end if
 
+! Testing zone
+
   if(dotest) then
 
-    call dump_test_value('R','phRRPAx correlation energy',sum(EcRPA))
+    call dump_test_value('R','phRPAx correlation energy',sum(EcRPA))
 
   end if
 

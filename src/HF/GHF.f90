@@ -304,7 +304,7 @@ subroutine GHF(dotest,maxSCF,thresh,max_diis,guess_type,mix,level_shift,nNuc,ZNu
     call dump_test_value('G','GHF HOMO energy',eHF(nO))
     call dump_test_value('G','GHF LUMO energy',eHF(nO+1))
     call dump_test_value('G','GHF dipole moment',norm2(dipole))
-
-  end if
+                                
+  end if                        
 
 end subroutine 

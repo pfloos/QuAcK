@@ -57,7 +57,7 @@ subroutine RCIS(dotest,singlet,triplet,doCIS_D,nBas,nC,nO,nV,nR,nS,ERI,dipole_in
     endif
 
     call diagonalize_matrix(nS,A,Om)
-    call print_excitation_energies('CIS',ispin,nS,Om)
+    call print_excitation_energies('CIS@RHF',ispin,nS,Om)
     call phLR_transition_vectors(.true.,nBas,nC,nO,nV,nR,nS,dipole_int,Om,transpose(A),transpose(A))
  
     if(dump_trans) then
@@ -75,7 +75,7 @@ subroutine RCIS(dotest,singlet,triplet,doCIS_D,nBas,nC,nO,nV,nR,nS,ERI,dipole_in
   
     if(dotest) then
 
-      call dump_test_value('R','RCIS singlet excitation energy',Om(1))
+      call dump_test_value('R','CIS singlet excitation energy',Om(1))
 
     end if
 
@@ -93,7 +93,7 @@ subroutine RCIS(dotest,singlet,triplet,doCIS_D,nBas,nC,nO,nV,nR,nS,ERI,dipole_in
     endif
  
     call diagonalize_matrix(nS,A,Om)
-    call print_excitation_energies('CIS',ispin,nS,Om)
+    call print_excitation_energies('CIS@RHF',ispin,nS,Om)
     call phLR_transition_vectors(.false.,nBas,nC,nO,nV,nR,nS,dipole_int,Om,transpose(A),transpose(A))
 
     if(dump_trans) then
@@ -111,7 +111,7 @@ subroutine RCIS(dotest,singlet,triplet,doCIS_D,nBas,nC,nO,nV,nR,nS,ERI,dipole_in
  
     if(dotest) then
  
-      call dump_test_value('R','RCIS triplet excitation energy',Om(1))
+      call dump_test_value('R','CIS triplet excitation energy',Om(1))
  
     end if
 

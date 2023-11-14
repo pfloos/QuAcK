@@ -443,9 +443,9 @@ subroutine qsGGW(dotest,maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,dop
 
   if(dotest) then
 
-    call dump_test_value('G','qsGGW correlation energy',EcRPA)
-    call dump_test_value('G','qsGGW HOMO energy',eGW(nO))
-    call dump_test_value('G','qsGGW LUMO energy',eGW(nO+1))
+    call dump_test_value('G','qsGW correlation energy',EcRPA)
+    call dump_test_value('G','qsGW HOMO energy',eGW(nO))
+    call dump_test_value('G','qsGW LUMO energy',eGW(nO+1))
 
   end if
 

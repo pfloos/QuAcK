@@ -295,9 +295,9 @@ subroutine qsRGF2(dotest,maxSCF,thresh,max_diis,dophBSE,doppBSE,TDA,dBSE,dTDA,si
 
   if(dotest) then
 
-    call dump_test_value('R','qsRGF2 correlation energy',Ec)
-    call dump_test_value('R','qsRGF2 HOMO energy',eGF(nO))
-    call dump_test_value('R','qsRGF2 LUMO energy',eGF(nO+1))
+    call dump_test_value('R','qsGF2 correlation energy',Ec)
+    call dump_test_value('R','qsGF2 HOMO energy',eGF(nO))
+    call dump_test_value('R','qsGF2 LUMO energy',eGF(nO+1))
 
   end if
 

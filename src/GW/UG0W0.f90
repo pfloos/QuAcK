@@ -246,11 +246,11 @@ subroutine UG0W0(dotest,doACFDT,exchange_kernel,doXBS,BSE,TDA_W,TDA,dBSE,dTDA,sp
 
   if(dotest) then
 
-    call dump_test_value('U','UG0W0 correlation energy',EcRPA)
-    call dump_test_value('U','UG0W0 HOMOa energy',eGW(nO(1),1))
-    call dump_test_value('U','UG0W0 LUMOa energy',eGW(nO(1)+1,1))
-    call dump_test_value('U','UG0W0 HOMOa energy',eGW(nO(2),2))
-    call dump_test_value('U','UG0W0 LUMOa energy',eGW(nO(2)+1,2))
+    call dump_test_value('U','G0W0 correlation energy',EcRPA)
+    call dump_test_value('U','G0W0 HOMOa energy',eGW(nO(1),1))
+    call dump_test_value('U','G0W0 LUMOa energy',eGW(nO(1)+1,1))
+    call dump_test_value('U','G0W0 HOMOa energy',eGW(nO(2),2))
+    call dump_test_value('U','G0W0 LUMOa energy',eGW(nO(2)+1,2))
 
   end if
 

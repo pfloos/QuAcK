@@ -416,11 +416,11 @@ write(*,*) 'EcGM', EcGM(1)
   
   if(dotest) then
   
-    call dump_test_value('U','qsUGTpp correlation energy',sum(EcRPA))
-    call dump_test_value('U','qsUGTpp HOMOa energy',eGT(nO(1),1))
-    call dump_test_value('U','qsUGTpp LUMOa energy',eGT(nO(1)+1,1))
-    call dump_test_value('U','qsUGTpp HOMOa energy',eGT(nO(2),2))
-    call dump_test_value('U','qsUGTpp LUMOa energy',eGT(nO(2)+1,2))
+    call dump_test_value('U','qsGTpp correlation energy',sum(EcRPA))
+    call dump_test_value('U','qsGTpp HOMOa energy',eGT(nO(1),1))
+    call dump_test_value('U','qsGTpp LUMOa energy',eGT(nO(1)+1,1))
+    call dump_test_value('U','qsGTpp HOMOa energy',eGT(nO(2),2))
+    call dump_test_value('U','qsGTpp LUMOa energy',eGT(nO(2)+1,2))
   
   end if
 

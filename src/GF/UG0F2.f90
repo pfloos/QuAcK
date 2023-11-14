@@ -132,11 +132,11 @@ subroutine UG0F2(dotest,BSE,TDA,dBSE,dTDA,spin_conserved,spin_flip,linearize,eta
 
   if(dotest) then
 
-    call dump_test_value('U','UG0F2 correlation energy',Ec)
-    call dump_test_value('U','UG0F2 HOMOa energy',eGF(nO(1),1))
-    call dump_test_value('U','UG0F2 LUMOa energy',eGF(nO(1)+1,1))
-    call dump_test_value('U','UG0F2 HOMOa energy',eGF(nO(2),2))
-    call dump_test_value('U','UG0F2 LUMOa energy',eGF(nO(2)+1,2))
+    call dump_test_value('U','G0F2 correlation energy',Ec)
+    call dump_test_value('U','G0F2 HOMOa energy',eGF(nO(1),1))
+    call dump_test_value('U','G0F2 LUMOa energy',eGF(nO(1)+1,1))
+    call dump_test_value('U','G0F2 HOMOa energy',eGF(nO(2),2))
+    call dump_test_value('U','G0F2 LUMOa energy',eGF(nO(2)+1,2))
 
   end if
 

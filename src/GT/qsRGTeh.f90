@@ -338,9 +338,9 @@ subroutine qsRGTeh(dotest,maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,d
 
   if(dotest) then
 
-    call dump_test_value('R','qsRGTeh correlation energy',EcRPA)
-    call dump_test_value('R','qsRGTeh HOMO energy',eGT(nO))
-    call dump_test_value('R','qsRGTeh LUMO energy',eGT(nO+1))
+    call dump_test_value('R','qsGTeh correlation energy',EcRPA)
+    call dump_test_value('R','qsGTeh HOMO energy',eGT(nO))
+    call dump_test_value('R','qsGTeh LUMO energy',eGT(nO+1))
 
   end if
 

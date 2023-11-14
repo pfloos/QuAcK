@@ -176,9 +176,9 @@ subroutine evGGF2(dotest,dophBSE,doppBSE,TDA,dBSE,dTDA,maxSCF,thresh,max_diis, &
 
   if(dotest) then
 
-    call dump_test_value('G','evGGF2 correlation energy',Ec)
-    call dump_test_value('G','evGGF2 HOMO energy',eGF(nO))
-    call dump_test_value('G','evGGF2 LUMO energy',eGF(nO+1))
+    call dump_test_value('G','evGF2 correlation energy',Ec)
+    call dump_test_value('G','evGF2 HOMO energy',eGF(nO))
+    call dump_test_value('G','evGF2 LUMO energy',eGF(nO+1))
 
   end if
 

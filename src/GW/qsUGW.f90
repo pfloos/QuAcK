@@ -419,11 +419,11 @@ subroutine qsUGW(dotest,maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,BSE
   
   if(dotest) then
   
-    call dump_test_value('U','qsUGW correlation energy',EcRPA)
-    call dump_test_value('U','qsUGW HOMOa energy',eGW(nO(1),1))
-    call dump_test_value('U','qsUGW LUMOa energy',eGW(nO(1)+1,1))
-    call dump_test_value('U','qsUGW HOMOa energy',eGW(nO(2),2))
-    call dump_test_value('U','qsUGW LUMOa energy',eGW(nO(2)+1,2))
+    call dump_test_value('U','qsGW correlation energy',EcRPA)
+    call dump_test_value('U','qsGW HOMOa energy',eGW(nO(1),1))
+    call dump_test_value('U','qsGW LUMOa energy',eGW(nO(1)+1,1))
+    call dump_test_value('U','qsGW HOMOa energy',eGW(nO(2),2))
+    call dump_test_value('U','qsGW LUMOa energy',eGW(nO(2)+1,2))
 
   end if
 

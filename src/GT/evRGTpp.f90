@@ -317,9 +317,9 @@ subroutine evRGTpp(dotest,maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,B
 
   if(dotest) then
 
-    call dump_test_value('R','evRGTpp correlation energy',sum(EcRPA))
-    call dump_test_value('R','evRGTpp HOMO energy',eGT(nO))
-    call dump_test_value('R','evRGTpp LUMO energy',eGT(nO+1))
+    call dump_test_value('R','evGTpp correlation energy',sum(EcRPA))
+    call dump_test_value('R','evGTpp HOMO energy',eGT(nO))
+    call dump_test_value('R','evGTpp LUMO energy',eGT(nO+1))
 
   end if
 

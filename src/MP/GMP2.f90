@@ -178,7 +178,7 @@ subroutine GMP2(dotest,regularize,nBas,nC,nO,nV,nR,ERI,ENuc,EGHF,eHF,EcMP2)
 
   if(dotest) then
 
-    call dump_test_value('G','GMP2 correlation energy',EcMP2)
+    call dump_test_value('G','MP2 correlation energy',EcMP2)
 
   end if
 

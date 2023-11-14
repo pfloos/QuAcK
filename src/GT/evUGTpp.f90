@@ -291,11 +291,11 @@ subroutine evUGTpp(dotest,maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,B
   
   if(dotest) then
   
-    call dump_test_value('U','evUGTpp correlation energy',sum(EcRPA))
-    call dump_test_value('U','evUGTpp HOMOa energy',eGT(nO(1),1))
-    call dump_test_value('U','evUGTpp LUMOa energy',eGT(nO(1)+1,1))
-    call dump_test_value('U','evUGTpp HOMOa energy',eGT(nO(2),2))
-    call dump_test_value('U','evUGTpp LUMOa energy',eGT(nO(2)+1,2))
+    call dump_test_value('U','evGTpp correlation energy',sum(EcRPA))
+    call dump_test_value('U','evGTpp HOMOa energy',eGT(nO(1),1))
+    call dump_test_value('U','evGTpp LUMOa energy',eGT(nO(1)+1,1))
+    call dump_test_value('U','evGTpp HOMOa energy',eGT(nO(2),2))
+    call dump_test_value('U','evGTpp LUMOa energy',eGT(nO(2)+1,2))
   
   end if
 

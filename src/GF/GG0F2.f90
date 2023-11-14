@@ -120,9 +120,9 @@ subroutine GG0F2(dotest,dophBSE,doppBSE,TDA,dBSE,dTDA,linearize,eta,regularize, 
 
   if(dotest) then
 
-    call dump_test_value('G','GG0F2 correlation energy',Ec)
-    call dump_test_value('G','GG0F2 HOMO energy',eGF(nO))
-    call dump_test_value('G','GG0F2 LUMO energy',eGF(nO+1))
+    call dump_test_value('G','G0F2 correlation energy',Ec)
+    call dump_test_value('G','G0F2 HOMO energy',eGF(nO))
+    call dump_test_value('G','G0F2 LUMO energy',eGF(nO+1))
 
   end if
 
