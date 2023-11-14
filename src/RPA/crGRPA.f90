@@ -1,6 +1,6 @@
-subroutine phGRPA(dotest,TDA,nBas,nC,nO,nV,nR,nS,ENuc,EGHF,ERI,dipole_int,eHF)
+subroutine crGRPA(dotest,TDA,nBas,nC,nO,nV,nR,nS,ENuc,EGHF,ERI,dipole_int,eHF)
 
-! Perform a direct random phase approximation calculation
+! Crossed-ring channel of the random phase approximation 
 
   implicit none
   include 'parameters.h'
@@ -39,7 +39,7 @@ subroutine phGRPA(dotest,TDA,nBas,nC,nO,nV,nR,nS,ENuc,EGHF,ERI,dipole_int,eHF)
 
   write(*,*)
   write(*,*)'**********************************'
-  write(*,*)'* Generalized ph-RPA Calculation |'
+  write(*,*)'* Generalized cr-RPA Calculation *'
   write(*,*)'**********************************'
   write(*,*)
 
@@ -52,7 +52,7 @@ subroutine phGRPA(dotest,TDA,nBas,nC,nO,nV,nR,nS,ENuc,EGHF,ERI,dipole_int,eHF)
 
 ! Initialization
 
-  dRPA  = .true.
+  dRPA  = .false.
   EcRPA = 0d0
 
 ! Memory allocation
@@ -62,24 +62,24 @@ subroutine phGRPA(dotest,TDA,nBas,nC,nO,nV,nR,nS,ENuc,EGHF,ERI,dipole_int,eHF)
 
   ispin = 3
 
-  call phLR_A(ispin,dRPA,nBas,nC,nO,nV,nR,nS,1d0,eHF,ERI,Aph)
-  if(.not.TDA) call phLR_B(ispin,dRPA,nBas,nC,nO,nV,nR,nS,1d0,ERI,Bph)
+  call phLR_A(ispin,dRPA,nBas,nC,nO,nV,nR,nS,-1d0,eHF,ERI,Aph)
+  if(.not.TDA) call phLR_B(ispin,dRPA,nBas,nC,nO,nV,nR,nS,-1d0,ERI,Bph)
 
   call phLR(TDA,nS,Aph,Bph,EcRPA,Om,XpY,XmY)
-  call print_excitation_energies('phRPA@GHF',ispin,nS,Om)
+  call print_excitation_energies('crRPA@GHF',ispin,nS,Om)
   call phLR_transition_vectors(.true.,nBas,nC,nO,nV,nR,nS,dipole_int,Om,XpY,XmY)
 
   write(*,*)
   write(*,*)'-------------------------------------------------------------------------------'
-  write(*,'(2X,A50,F20.10,A3)') 'Tr@phGRPA correlation energy           = ',EcRPA,' au'
-  write(*,'(2X,A50,F20.10,A3)') 'Tr@phGRPA total energy                 = ',ENuc + EGHF + EcRPA,' au'
+  write(*,'(2X,A50,F20.10,A3)') 'Tr@crRPA correlation energy           = ',EcRPA,' au'
+  write(*,'(2X,A50,F20.10,A3)') 'Tr@crRPA total energy                 = ',ENuc + EGHF + EcRPA,' au'
   write(*,*)'-------------------------------------------------------------------------------'
   write(*,*)
 
   if(dotest) then
-
-    call dump_test_value('G','phRPA corrlation energy',EcRPA)
-
+  
+    call dump_test_value('G','crRPA correlation energy',EcRPA)
+  
   end if
 
 end subroutine 

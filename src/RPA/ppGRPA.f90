@@ -1,4 +1,4 @@
-subroutine ppGRPA(dotest,TDA,doACFDT,nBas,nC,nO,nV,nR,ENuc,EHF,ERI,dipole_int,e)
+subroutine ppGRPA(dotest,TDA,nBas,nC,nO,nV,nR,ENuc,EGHF,ERI,dipole_int,eHF)
 
 ! Perform ppGRPA calculation
 
@@ -10,15 +10,14 @@ subroutine ppGRPA(dotest,TDA,doACFDT,nBas,nC,nO,nV,nR,ENuc,EHF,ERI,dipole_int,e)
   logical,intent(in)            :: dotest
 
   logical,intent(in)            :: TDA
-  logical,intent(in)            :: doACFDT
   integer,intent(in)            :: nBas
   integer,intent(in)            :: nC
   integer,intent(in)            :: nO
   integer,intent(in)            :: nV
   integer,intent(in)            :: nR
   double precision,intent(in)   :: ENuc
-  double precision,intent(in)   :: EHF
-  double precision,intent(in)   :: e(nBas)
+  double precision,intent(in)   :: EGHF
+  double precision,intent(in)   :: eHF(nBas)
   double precision,intent(in)   :: ERI(nBas,nBas,nBas,nBas)
   double precision,intent(in)   :: dipole_int(nBas,nBas,ncart)
 
@@ -60,8 +59,8 @@ subroutine ppGRPA(dotest,TDA,doACFDT,nBas,nC,nO,nV,nR,ENuc,EHF,ERI,dipole_int,e)
            Bpp(nVV,nOO),Cpp(nVV,nVV),Dpp(nOO,nOO))
 
   if(.not.TDA) call ppLR_B(ispin,nBas,nC,nO,nV,nR,nOO,nVV,1d0,ERI,Bpp)
-               call ppLR_C(ispin,nBas,nC,nO,nV,nR,nVV,1d0,e,ERI,Cpp)
-               call ppLR_D(ispin,nBas,nC,nO,nV,nR,nOO,1d0,e,ERI,Dpp)
+               call ppLR_C(ispin,nBas,nC,nO,nV,nR,nVV,1d0,eHF,ERI,Cpp)
+               call ppLR_D(ispin,nBas,nC,nO,nV,nR,nOO,1d0,eHF,ERI,Dpp)
 
   call ppLR(TDA,nOO,nVV,Bpp,Cpp,Dpp,Om1,X1,Y1,Om2,X2,Y2,EcRPA)
 
@@ -73,33 +72,13 @@ subroutine ppGRPA(dotest,TDA,doACFDT,nBas,nC,nO,nV,nR,ENuc,EHF,ERI,dipole_int,e)
   write(*,*)
   write(*,*)'-------------------------------------------------------------------------------'
   write(*,'(2X,A50,F20.10,A3)') 'Tr@ppGRPA correlation energy           = ',EcRPA,' au'
-  write(*,'(2X,A50,F20.10,A3)') 'Tr@ppGRPA total energy                 = ',ENuc + EHF + EcRPA,' au'
+  write(*,'(2X,A50,F20.10,A3)') 'Tr@ppGRPA total energy                 = ',ENuc + EGHF + EcRPA,' au'
   write(*,*)'-------------------------------------------------------------------------------'
   write(*,*)
 
-! Compute the correlation energy via the adiabatic connection 
-
-! if(doACFDT) then
-
-!   write(*,*) '--------------------------------------------------------'
-!   write(*,*) 'Adiabatic connection version of ppRPA correlation energy'
-!   write(*,*) '--------------------------------------------------------'
-!   write(*,*)
-
-!   call ppACFDT(TDA,singlet,triplet,nBas,nC,nO,nV,nR,ERI,e,EcRPA)
-
-!   write(*,*)
-!   write(*,*)'-------------------------------------------------------------------------------'
-!   write(*,'(2X,A50,F20.10,A3)') 'AC@ppRPA correlation energy           =',EcRPA,' au'
-!   write(*,'(2X,A50,F20.10,A3)') 'AC@ppRPA total energy                 =',ENuc + EHF + EcRPA(1) + EcRPA(2),' au'
-!   write(*,*)'-------------------------------------------------------------------------------'
-!   write(*,*)
-
-! end if
-
   if(dotest) then
   
-    call dump_test_value('G','ppGRPA correlation energy',EcRPA)
+    call dump_test_value('G','ppRPA correlation energy',EcRPA)
 
   end if
 

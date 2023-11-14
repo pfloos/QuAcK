@@ -1,4 +1,4 @@
-subroutine GRPA(dotest,dophRPA,dophRPAx,doppRPA,TDA,doACFDT,exchange_kernel,nBas,nC,nO,nV,nR,nS,ENuc,EHF,ERI,dipole_int,epsHF)
+subroutine GRPA(dotest,dophRPA,dophRPAx,docrRPA,doppRPA,TDA,nBas,nC,nO,nV,nR,nS,ENuc,EGHF,ERI,dipole_int,eHF)
 
 ! Random-phase approximation module
 
@@ -11,11 +11,10 @@ subroutine GRPA(dotest,dophRPA,dophRPAx,doppRPA,TDA,doACFDT,exchange_kernel,nBas
 
   logical,intent(in)            :: dophRPA
   logical,intent(in)            :: dophRPAx
+  logical,intent(in)            :: docrRPA
   logical,intent(in)            :: doppRPA
 
   logical,intent(in)            :: TDA
-  logical,intent(in)            :: doACFDT
-  logical,intent(in)            :: exchange_kernel
   integer,intent(in)            :: nBas
   integer,intent(in)            :: nC
   integer,intent(in)            :: nO
@@ -23,8 +22,8 @@ subroutine GRPA(dotest,dophRPA,dophRPAx,doppRPA,TDA,doACFDT,exchange_kernel,nBas
   integer,intent(in)            :: nR
   integer,intent(in)            :: nS
   double precision,intent(in)   :: ENuc
-  double precision,intent(in)   :: EHF
-  double precision,intent(in)   :: epsHF(nBas)
+  double precision,intent(in)   :: EGHF
+  double precision,intent(in)   :: eHF(nBas)
   double precision,intent(in)   :: ERI(nBas,nBas,nBas,nBas)
   double precision,intent(in)   :: dipole_int(nBas,nBas,ncart)
 
@@ -39,7 +38,7 @@ subroutine GRPA(dotest,dophRPA,dophRPAx,doppRPA,TDA,doACFDT,exchange_kernel,nBas
   if(dophRPA) then
 
     call wall_time(start_RPA)
-    call phGRPA(dotest,TDA,nBas,nC,nO,nV,nR,nS,ENuc,EHF,ERI,dipole_int,epsHF)
+    call phGRPA(dotest,TDA,nBas,nC,nO,nV,nR,nS,ENuc,EGHF,ERI,dipole_int,eHF)
     call wall_time(end_RPA)
 
     t_RPA = end_RPA - start_RPA
@@ -55,12 +54,28 @@ subroutine GRPA(dotest,dophRPA,dophRPAx,doppRPA,TDA,doACFDT,exchange_kernel,nBas
   if(dophRPAx) then
 
     call wall_time(start_RPA)
-    call phGRPAx(dotest,TDA,nBas,nC,nO,nV,nR,nS,ENuc,EHF,ERI,dipole_int,epsHF)
+    call phGRPAx(dotest,TDA,nBas,nC,nO,nV,nR,nS,ENuc,EGHF,ERI,dipole_int,eHF)
 
     call wall_time(end_RPA)
 
     t_RPA = end_RPA - start_RPA
     write(*,'(A65,1X,F9.3,A8)') 'Total CPU time for RPAx = ',t_RPA,' seconds'
+    write(*,*)
+
+  end if
+
+!------------------------------------------------------------------------
+! Compute crRPA excitations
+!------------------------------------------------------------------------
+
+  if(docrRPA) then
+
+    call wall_time(start_RPA)
+    call crGRPA(dotest,TDA,nBas,nC,nO,nV,nR,nS,ENuc,EGHF,ERI,dipole_int,eHF)
+    call wall_time(end_RPA)
+
+    t_RPA = end_RPA - start_RPA
+    write(*,'(A65,1X,F9.3,A8)') 'Total CPU time for cr-RPA = ',t_RPA,' seconds'
     write(*,*)
 
   end if
@@ -72,7 +87,7 @@ subroutine GRPA(dotest,dophRPA,dophRPAx,doppRPA,TDA,doACFDT,exchange_kernel,nBas
   if(doppRPA) then
 
     call wall_time(start_RPA)
-    call ppGRPA(dotest,TDA,doACFDT,nBas,nC,nO,nV,nR,ENuc,EHF,ERI,dipole_int,epsHF)
+    call ppGRPA(dotest,TDA,nBas,nC,nO,nV,nR,nS,ENuc,EGHF,ERI,dipole_int,eHF)
     call wall_time(end_RPA)
 
     t_RPA = end_RPA - start_RPA

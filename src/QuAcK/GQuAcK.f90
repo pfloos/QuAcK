@@ -1,5 +1,5 @@
 subroutine GQuAcK(dotest,doGHF,dostab,dosearch,doMP2,doMP3,doCCD,dopCCD,doDCD,doCCSD,doCCSDT, &
-                  dodrCCD,dorCCD,docrCCD,dolCCD,dophRPA,dophRPAx,doppRPA,                     &
+                  dodrCCD,dorCCD,docrCCD,dolCCD,dophRPA,dophRPAx,docrRPA,doppRPA,             &
                   doG0W0,doevGW,doqsGW,doG0F2,doevGF2,doqsGF2,                                &
                   nNuc,nBas,nC,nO,nV,nR,ENuc,ZNuc,rNuc,S,T,V,Hc,X,dipole_int_AO,ERI_AO,       &
                   maxSCF_HF,max_diis_HF,thresh_HF,level_shift,guess_type,mix,reg_MP,          &
@@ -20,7 +20,7 @@ subroutine GQuAcK(dotest,doGHF,dostab,dosearch,doMP2,doMP3,doCCD,dopCCD,doDCD,do
   logical,intent(in)            :: doMP3
   logical,intent(in)            :: doCCD,dopCCD,doDCD,doCCSD,doCCSDT
   logical,intent(in)            :: dodrCCD,dorCCD,docrCCD,dolCCD
-  logical,intent(in)            :: dophRPA,dophRPAx,doppRPA
+  logical,intent(in)            :: dophRPA,dophRPAx,docrRPA,doppRPA
   logical,intent(in)            :: doG0F2,doevGF2,doqsGF2
   logical,intent(in)            :: doG0W0,doevGW,doqsGW
 
@@ -236,13 +236,12 @@ subroutine GQuAcK(dotest,doGHF,dostab,dosearch,doMP2,doMP3,doCCD,dopCCD,doDCD,do
 ! Random-phase approximation module !
 !-----------------------------------!
 
-  doRPA = dophRPA .or. dophRPAx .or. doppRPA
+  doRPA = dophRPA .or. dophRPAx .or. docrRPA .or. doppRPA
 
   if(doRPA) then
 
     call wall_time(start_RPA)
-    call GRPA(dotest,dophRPA,dophRPAx,doppRPA,TDA,doACFDT,exchange_kernel,nBas2,nC,nO,nV,nR,nS,ENuc,EGHF, & 
-              ERI_MO,dipole_int_MO,eHF,cHF,S)
+    call GRPA(dotest,dophRPA,dophRPAx,docrRPA,doppRPA,TDA,nBas2,nC,nO,nV,nR,nS,ENuc,EGHF,ERI_MO,dipole_int_MO,eHF)
     call wall_time(end_RPA)
 
     t_RPA = end_RPA - start_RPA
