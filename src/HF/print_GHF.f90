@@ -190,7 +190,7 @@ subroutine print_GHF(nBas,nBas2,nO,eHF,C,P,S,ENuc,ET,EV,EJ,EK,EGHF,dipole)
   write(*,'(A50)') '---------------------------------------'
   write(*,'(A50)') ' GHF orbital energies (au) '
   write(*,'(A50)') '---------------------------------------'
-  call matout(nBas2,1,eHF)
+  call vecout(nBas2,eHF)
   write(*,*)
 
 end subroutine 
