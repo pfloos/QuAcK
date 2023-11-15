@@ -24,6 +24,7 @@ subroutine print_GHF(nBas,nBas2,nO,eHF,C,P,S,ENuc,ET,EV,EJ,EK,EGHF,dipole)
 
 ! Local variables
 
+  integer                            :: i,j
   integer                            :: ixyz
   integer                            :: mu,nu
   integer                            :: HOMO
@@ -31,6 +32,7 @@ subroutine print_GHF(nBas,nBas2,nO,eHF,C,P,S,ENuc,ET,EV,EJ,EK,EGHF,dipole)
   double precision                   :: Gap
   double precision                   :: Sx ,Sy ,Sz
   double precision                   :: Sx2,Sy2,Sz2
+  double precision                   :: S2
 
   double precision,allocatable       :: Ca(:,:)
   double precision,allocatable       :: Cb(:,:)
@@ -62,12 +64,7 @@ subroutine print_GHF(nBas,nBas2,nO,eHF,C,P,S,ENuc,ET,EV,EJ,EK,EGHF,dipole)
 
   allocate(Paa(nO,nO),Pab(nO,nO),Pba(nO,nO),Pbb(nO,nO))
 
-! Paa(:,:) = P(     1:nBas ,     1:nBas )
-! Pab(:,:) = P(     1:nBas ,nBas+1:nBas2)
-! Pba(:,:) = P(nBas+1:nBas2,     1:nBas )
-! Pbb(:,:) = P(nBas+1:nBas2,nBas+1:nBas2)
-
-  allocate(Ca(nBas,nBas2),Cb(nBas,nBas2))
+  allocate(Ca(nBas,nO),Cb(nBas,nO))
 
   Ca(:,:) = C(     1:nBas ,1:nO)
   Cb(:,:) = C(nBas+1:nBas2,1:nO)
@@ -77,63 +74,69 @@ subroutine print_GHF(nBas,nBas2,nO,eHF,C,P,S,ENuc,ET,EV,EJ,EK,EGHF,dipole)
   Pba = matmul(transpose(Cb),matmul(S,Ca))
   Pbb = matmul(transpose(Cb),matmul(S,Cb))
 
-! Compute <S>
+! Compute components of S = (Sx,Sy,Sz)
 
   Sx = 0.5d0*(trace_matrix(nO,Pab) + trace_matrix(nO,Pba))
   Sy = 0.5d0*(trace_matrix(nO,Pab) - trace_matrix(nO,Pba))
   Sz = 0.5d0*(trace_matrix(nO,Paa) - trace_matrix(nO,Pbb))
 
-! Compute <S^2>
+! Compute <S^2> = <Sx^2> + <Sy^2> + <Sz^2>
 
   Sx2 = 0.25d0*trace_matrix(nO,Paa+Pbb) + 0.25d0*trace_matrix(nO,Pab+Pba)**2 &
       - 0.5d0*trace_matrix(nO,matmul(Paa,Pbb) + matmul(Pab,Pab))
 
-  Sy2 = 0.25d0*trace_matrix(nO,Paa+Pbb) - 0.25d0*trace_matrix(nO,Pab+Pba)**2 &
+  Sy2 = 0.25d0*trace_matrix(nO,Paa+Pbb) - 0.25d0*trace_matrix(nO,Pab-Pba)**2 &
       - 0.5d0*trace_matrix(nO,matmul(Paa,Pbb) - matmul(Pab,Pab))
 
-  Sz2 = 0.25d0*trace_matrix(nO,Paa+Pbb) + 0.25d0*trace_matrix(nO,Pab-Pba)**2 &
-      - 0.25d0*trace_matrix(nO,matmul(Paa,Paa) - matmul(Pbb,Pbb)) &
-      + 0.25d0*trace_matrix(nO,matmul(Pab,Pba) - matmul(Pba,Pab))
+  Sz2 = 0.25d0*trace_matrix(nO,Paa+Pbb) + 0.25d0*trace_matrix(nO,Paa-Pbb)**2 &
+      - 0.25d0*trace_matrix(nO,matmul(Paa,Paa) + matmul(Pbb,Pbb)) &
+      + 0.25d0*trace_matrix(nO,matmul(Pab,Pba) + matmul(Pba,Pab))
+
+  S2 = Sz*(Sz+1d0) + trace_matrix(nO,Pbb) + 0.25d0*trace_matrix(nO,Paa+Pbb)
+
+  do i=1,nO
+    do j=1,nO
+      S2 = S2 - 0.25d0*(Paa(i,j) - Pbb(i,j))**2 &
+              + (Pba(i,i)*Pab(j,j) - Pba(i,j)*Pab(j,i))
+    end do   
+  end do   
+! print*,'<S^2> = ',S2
 
 ! deallocate(Paa,Pab,Pba,Pbb)
 
 ! Check collinearity and coplanarity 
 
-  allocate(PP(nO,nO),Mx(nO,nO),My(nO,nO),Mz(nO,nO))
+! allocate(PP(nO,nO),Mx(nO,nO),My(nO,nO),Mz(nO,nO))
 
-  PP(:,:) = 0.5d0*(Paa(:,:) + Pbb(:,:))
-  Mx(:,:) = 0.5d0*(Pba(:,:) + Pab(:,:))
-  My(:,:) = 0.5d0*(Pba(:,:) - Pab(:,:))
-  Mz(:,:) = 0.5d0*(Paa(:,:) - Pbb(:,:))
+! PP(:,:) = 0.5d0*(Paa(:,:) + Pbb(:,:))
+! Mx(:,:) = 0.5d0*(Pba(:,:) + Pab(:,:))
+! My(:,:) = 0.5d0*(Pba(:,:) - Pab(:,:))
+! Mz(:,:) = 0.5d0*(Paa(:,:) - Pbb(:,:))
 
-! T(1,1) = trace_matrix(nBas,matmul(Mx,transpose(Mx)))
-! T(1,2) = - trace_matrix(nBas,matmul(Mx,transpose(My)))
-! T(1,3) = trace_matrix(nBas,matmul(Mx,transpose(Mz)))
-! T(2,1) = - trace_matrix(nBas,matmul(My,transpose(Mx)))
-! T(2,2) = + trace_matrix(nBas,matmul(My,transpose(My)))
-! T(2,3) = - trace_matrix(nBas,matmul(My,transpose(Mz)))
-! T(3,1) = trace_matrix(nBas,matmul(Mz,transpose(Mx)))
-! T(3,2) = - trace_matrix(nBas,matmul(Mz,transpose(My)))
-! T(3,3) = trace_matrix(nBas,matmul(Mz,transpose(Mz)))
+! T(1,1) = trace_matrix(nO,matmul(Mx,Mx))
+! T(1,2) = trace_matrix(nO,matmul(Mx,My))
+! T(1,3) = trace_matrix(nO,matmul(Mx,Mz))
+! T(2,1) = trace_matrix(nO,matmul(My,Mx))
+! T(2,2) = trace_matrix(nO,matmul(My,My))
+! T(2,3) = trace_matrix(nO,matmul(My,Mz))
+! T(3,1) = trace_matrix(nO,matmul(Mz,Mx))
+! T(3,2) = trace_matrix(nO,matmul(Mz,My))
+! T(3,3) = trace_matrix(nO,matmul(Mz,Mz))
 
-  print*,2d0*trace_matrix(nO,PP)
-! print*,'Value of Tr(P - P^2)'
-! lambda = trace_matrix(nBas,PP - matmul(PP,transpose(PP)))
-! print*,lambda
+! lambda = trace_matrix(nO,PP - matmul(PP,PP))
+! write(*,'(A,F10.6)') 'Tr(P - P^2) = ',lambda
 
-! print*,'Eigenvalues of T'
 ! vec(:,:) = T(:,:)
 ! call diagonalize_matrix(3,vec,val)
-! print*,val
+! write(*,'(A,3F10.6)') 'Eigenvalues of T = ',val
 
 ! T(1,1) = - T(1,1) + lambda
 ! T(2,2) = - T(2,2) + lambda 
 ! T(3,3) = - T(3,3) + lambda
 
-! print*,'Eigenvalues of A'
 ! vec(:,:) = T(:,:)
 ! call diagonalize_matrix(3,vec,val)
-! print*,val
+! write(*,'(A,3F10.6)') 'Eigenvalues of A = ',val
 
 ! deallocate(PP,Mx,My,Mz)
 
@@ -162,12 +165,12 @@ subroutine print_GHF(nBas,nBas2,nO,eHF,C,P,S,ENuc,ET,EV,EJ,EK,EGHF,dipole)
   write(*,'(A33,1X,F16.6)')     ' <Sx>                = ',Sx
   write(*,'(A33,1X,F16.6)')     ' <Sy>                = ',Sy
   write(*,'(A33,1X,F16.6)')     ' <Sz>                = ',Sz
-  write(*,'(A33,1X,F16.6)')     ' <S>                 = ',Sx+Sy+Sz
   write(*,'(A50)')           '---------------------------------------'
   write(*,'(A33,1X,F16.6)')     ' <Sx**2>             = ',Sx2
   write(*,'(A33,1X,F16.6)')     ' <Sy**2>             = ',Sy2
   write(*,'(A33,1X,F16.6)')     ' <Sz**2>             = ',Sz2
   write(*,'(A33,1X,F16.6)')     ' <S**2>              = ',Sx2+Sy2+Sz2
+  write(*,'(A33,1X,F16.6)')     ' <S**2>              = ',S2
   write(*,'(A50)')           '---------------------------------------'
   write(*,'(A36)')           ' Dipole moment (Debye)    '
   write(*,'(10X,4A10)')      'X','Y','Z','Tot.'
