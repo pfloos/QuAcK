@@ -85,6 +85,8 @@ subroutine print_GHF(nBas,nBas2,nO,eHF,C,P,S,ENuc,ET,EV,EJ,EK,EGHF,dipole)
   Sx2 = 0.25d0*trace_matrix(nO,Paa+Pbb) + 0.25d0*trace_matrix(nO,Pab+Pba)**2 &
       - 0.5d0*trace_matrix(nO,matmul(Paa,Pbb) + matmul(Pab,Pab))
 
+  Sx2 = trace_matrix(
+
   Sy2 = 0.25d0*trace_matrix(nO,Paa+Pbb) - 0.25d0*trace_matrix(nO,Pab-Pba)**2 &
       - 0.5d0*trace_matrix(nO,matmul(Paa,Pbb) - matmul(Pab,Pab))
 
