@@ -84,7 +84,7 @@ subroutine GG0F2(dotest,dophBSE,doppBSE,TDA,dBSE,dTDA,linearize,eta,regularize, 
   ! Print results
 
   call GMP2(.false.,regularize,nBas,nC,nO,nV,nR,ERI,ENuc,EHF,eGF,Ec)
-  call print_G0F2(nBas,nO,eHF,SigC,eGF,Z,ENuc,ERHF,Ec)
+  call print_RG0F2(nBas,nO,eHF,SigC,eGF,Z,ENuc,ERHF,Ec)
 
 ! Perform BSE2 calculation
 

@@ -85,7 +85,7 @@ subroutine RG0F2(dotest,dophBSE,doppBSE,TDA,dBSE,dTDA,singlet,triplet,linearize,
   ! Print results
 
   call RMP2(.false.,regularize,nBas,nC,nO,nV,nR,ERI,ENuc,ERHF,eGF,Ec)
-  call print_G0F2(nBas,nO,eHF,SigC,eGF,Z,ENuc,ERHF,Ec)
+  call print_RG0F2(nBas,nO,eHF,SigC,eGF,Z,ENuc,ERHF,Ec)
 
 ! Perform BSE2 calculation
 
