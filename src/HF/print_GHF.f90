@@ -1,5 +1,6 @@
 subroutine print_GHF(nBas,nBas2,nO,eHF,C,P,S,ENuc,ET,EV,EJ,EK,EGHF,dipole)
 
+
 ! Print one-electron energies and other stuff for GHF
 
   implicit none
@@ -11,6 +12,7 @@ subroutine print_GHF(nBas,nBas2,nO,eHF,C,P,S,ENuc,ET,EV,EJ,EK,EGHF,dipole)
   integer,intent(in)                 :: nBas2
   integer,intent(in)                 :: nO
   double precision,intent(in)        :: eHF(nBas2)
+
   double precision,intent(in)        :: C(nBas2,nBas2)
   double precision,intent(in)        :: P(nBas2,nBas2)
   double precision,intent(in)        :: S(nBas,nBas)
@@ -26,6 +28,7 @@ subroutine print_GHF(nBas,nBas2,nO,eHF,C,P,S,ENuc,ET,EV,EJ,EK,EGHF,dipole)
 
   integer                            :: i,j
   integer                            :: ixyz
+
   integer                            :: mu,nu
   integer                            :: HOMO
   integer                            :: LUMO
@@ -33,13 +36,16 @@ subroutine print_GHF(nBas,nBas2,nO,eHF,C,P,S,ENuc,ET,EV,EJ,EK,EGHF,dipole)
   double precision                   :: Sx ,Sy ,Sz
   double precision                   :: Sx2,Sy2,Sz2
   double precision                   :: S2
+  double precision                   :: na, nb
+  double precision                   :: nonco_z, contam_uhf, xy_perp, contam_ghf
 
   double precision,allocatable       :: Ca(:,:)
   double precision,allocatable       :: Cb(:,:)
-  double precision,allocatable       :: Paa(:,:)
-  double precision,allocatable       :: Pab(:,:)
-  double precision,allocatable       :: Pba(:,:)
-  double precision,allocatable       :: Pbb(:,:)
+  double precision,allocatable       :: Paa(:,:), Saa(:,:)
+  double precision,allocatable       :: Pab(:,:), Sab(:,:)
+  double precision,allocatable       :: Pba(:,:), Sba(:,:)
+  double precision,allocatable       :: Pbb(:,:), Sbb(:,:)
+  double precision,allocatable       :: tmp(:,:)
 
   double precision,allocatable       :: Mx(:,:)
   double precision,allocatable       :: My(:,:)
@@ -82,27 +88,103 @@ subroutine print_GHF(nBas,nBas2,nO,eHF,C,P,S,ENuc,ET,EV,EJ,EK,EGHF,dipole)
 
 ! Compute <S^2> = <Sx^2> + <Sy^2> + <Sz^2>
 
-  Sx2 = 0.25d0*trace_matrix(nO,Paa+Pbb) + 0.25d0*trace_matrix(nO,Pab+Pba)**2 &
-      - 0.5d0*trace_matrix(nO,matmul(Paa,Pbb) + matmul(Pab,Pab))
+!  Sx2 = 0.25d0*trace_matrix(nO,Paa+Pbb) + 0.25d0*trace_matrix(nO,Pab+Pba)**2 &
+!      - 0.5d0*trace_matrix(nO,matmul(Paa,Pbb) + matmul(Pab,Pab))
 
-  Sx2 = trace_matrix(
+!  Sx2 = trace_matrix(
 
-  Sy2 = 0.25d0*trace_matrix(nO,Paa+Pbb) - 0.25d0*trace_matrix(nO,Pab-Pba)**2 &
-      - 0.5d0*trace_matrix(nO,matmul(Paa,Pbb) - matmul(Pab,Pab))
+!  Sy2 = 0.25d0*trace_matrix(nO,Paa+Pbb) - 0.25d0*trace_matrix(nO,Pab-Pba)**2 &
+!      - 0.5d0*trace_matrix(nO,matmul(Paa,Pbb) - matmul(Pab,Pab))
 
-  Sz2 = 0.25d0*trace_matrix(nO,Paa+Pbb) + 0.25d0*trace_matrix(nO,Paa-Pbb)**2 &
-      - 0.25d0*trace_matrix(nO,matmul(Paa,Paa) + matmul(Pbb,Pbb)) &
-      + 0.25d0*trace_matrix(nO,matmul(Pab,Pba) + matmul(Pba,Pab))
 
-  S2 = Sz*(Sz+1d0) + trace_matrix(nO,Pbb) + 0.25d0*trace_matrix(nO,Paa+Pbb)
+!  Sz2 = 0.25d0*trace_matrix(nO,Paa+Pbb) + 0.25d0*trace_matrix(nO,Paa-Pbb)**2 &
+!      - 0.25d0*trace_matrix(nO,matmul(Paa,Paa) + matmul(Pbb,Pbb)) &
+!      + 0.25d0*trace_matrix(nO,matmul(Pab,Pba) + matmul(Pba,Pab))
 
-  do i=1,nO
-    do j=1,nO
-      S2 = S2 - 0.25d0*(Paa(i,j) - Pbb(i,j))**2 &
-              + (Pba(i,i)*Pab(j,j) - Pba(i,j)*Pab(j,i))
-    end do   
-  end do   
+!  S2 = Sz*(Sz+1d0) + trace_matrix(nO,Pbb) + 0.25d0*trace_matrix(nO,Paa+Pbb)
+
+!  do i=1,nO
+!    do j=1,nO
+!      S2 = S2 - 0.25d0*(Paa(i,j) - Pbb(i,j))**2 &
+!              + (Pba(i,i)*Pab(j,j) - Pba(i,j)*Pab(j,i))
+!    end do   
+!  end do   
 ! print*,'<S^2> = ',S2
+
+  ! TODO
+  ! check C size
+  allocate(Ca(nBas,nBas), Cb(nBas,nBas))
+  do i = 1, nBas
+    do j = 1, nBas
+      Ca(j,i) = C(j,     i)
+      Cb(j,i) = C(j,nBas+i)
+    enddo
+  enddo
+
+  allocate(Saa(nBas,nBas),Sab(nBas,nBas),Sba(nBas,nBas),Sbb(nBas,nBas))
+  allocate(tmp(nBas,nBas))
+
+  ! Saa = Ca x Sao x Ca.T
+  call dgemm("N", "N", nBas, nBas, nBas, 1.d0,  Ca,  size(Ca, 1), Sao, size(Sao, 1), 0.d0, tmp, size(tmp, 1))
+  call dgemm("N", "T", nBas, nBas, nBas, 1.d0, tmp, size(tmp, 1),  Ca,  size(Ca, 1), 0.d0, Saa, size(Saa, 1))
+
+  ! Sab = Ca x Sao x Cb.T
+  call dgemm("N", "N", nBas, nBas, nBas, 1.d0,  Ca,  size(Ca, 1), Sao, size(Sao, 1), 0.d0, tmp, size(tmp, 1))
+  call dgemm("N", "T", nBas, nBas, nBas, 1.d0, tmp, size(tmp, 1),  Cb,  size(Cb, 1), 0.d0, Sab, size(Sab, 1))
+
+  ! Sba = Cb x Sao x Ca.T
+  !     = Sab.T
+  Sba = transpose(Sab)
+
+  ! Sbb = Cb x Sao x Cb.T
+  call dgemm("N", "N", nBas, nBas, nBas, 1.d0,  Cb,  size(Cb, 1), Sao, size(Sao, 1), 0.d0, tmp, size(tmp, 1))
+  call dgemm("N", "T", nBas, nBas, nBas, 1.d0, tmp, size(tmp, 1),  Cb,  size(Cb, 1), 0.d0, Sbb, size(Sbb, 1))
+
+  deallocate(tmp)
+
+  ! TODO
+  ! nO = nb of electrons ?
+  na = 0.d0
+  nb = 0.d0
+  do i = 1, nO
+    na = na + Saa(i,i)
+    nb = nb + Sbb(i,i)
+  enddo
+  
+  nonco_z = dble(nO)
+  do j = 1, nO
+    do i = 1, nO
+      nonco_z = nonco_z - (Saa(i,j) - Sbb(i,j))**2
+    enddo
+  enddo
+  nonco_z = 0.25d0 * nonco_z
+
+  Sz  = 0.5d0 * (na - nb)
+  Sz2 = Sz*Sz + nonco_z
+
+  ! If Na > Nb
+  !contam_uhf = nb
+  !do j = 1, nO
+  !  do i = 1, nO
+  !    contam_uhf = contam_uhf - (Sab(i,j) - Sba(j,i))
+  !  enddo
+  !enddo
+  !xy_perp = 0.d0
+  !do i = 1, nO
+  !  xy_perp = xy_perp + (Sba(i,i))**2
+  !enddo
+  !S2 = Sz * (Sz + 1.d0) + nonco_z + contam_uhf + xy_perp
+
+  contam_ghf = 0.d0
+  do j = 1, nO
+    do i = 1, nO
+      contam_ghf = contam_ghf - (Sab(i,i)*Sba(j,j) - Sab(i,j)*Sba(j,i))
+    enddo
+  enddo
+  S2 = Sz * (Sz + 1.d0) + nonco_z + contam_ghf
+  
+
+
 
 ! deallocate(Paa,Pab,Pba,Pbb)
 
@@ -141,6 +223,7 @@ subroutine print_GHF(nBas,nBas2,nO,eHF,C,P,S,ENuc,ET,EV,EJ,EK,EGHF,dipole)
 ! write(*,'(A,3F10.6)') 'Eigenvalues of A = ',val
 
 ! deallocate(PP,Mx,My,Mz)
+
 
 ! Dump results
 
