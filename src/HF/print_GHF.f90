@@ -35,7 +35,7 @@ subroutine print_GHF(nBas,nBas2,nO,eHF,C,P,S,ENuc,ET,EV,EJ,EK,EGHF,dipole)
   double precision                   :: Gap
   double precision                   :: Sx ,Sy ,Sz
   double precision                   :: Sx2,Sy2,Sz2
-  double precision                   :: S2
+  double precision                   :: SmSp,SpSm,S2
   double precision                   :: na, nb
   double precision                   :: nonco_z, contam_uhf, xy_perp, contam_ghf
 
@@ -89,15 +89,41 @@ subroutine print_GHF(nBas,nBas2,nO,eHF,C,P,S,ENuc,ET,EV,EJ,EK,EGHF,dipole)
 
 ! Compute <S^2> = <Sx^2> + <Sy^2> + <Sz^2>
 
-  Sx2 = 0.25d0*trace_matrix(nO,Paa+Pbb) + 0.25d0*trace_matrix(nO,Pab+Pba)**2 &
-      - 0.5d0*trace_matrix(nO,matmul(Paa,Pbb) + matmul(Pab,Pab))
 
-  Sy2 = 0.25d0*trace_matrix(nO,Paa+Pbb) - 0.25d0*trace_matrix(nO,Pab-Pba)**2 &
-      - 0.5d0*trace_matrix(nO,matmul(Paa,Pbb) - matmul(Pab,Pab))
+  SpSm = 0d0
+  do i=1,nO
+    do j=1,nO
+      SpSm = SpSm + Pab(i,i)*Pba(j,j) - Pab(i,j)*Pba(j,i)
+    end do
+  end do
+  SpSm = 0.5d0*(trace_matrix(nO,Paa) + SpSm)
 
-  Sz2 = 0.25d0*trace_matrix(nO,Paa+Pbb) + 0.25d0*trace_matrix(nO,Paa-Pbb)**2 &
-      - 0.25d0*trace_matrix(nO,matmul(Paa,Paa) + matmul(Pbb,Pbb)) &
-      + 0.25d0*trace_matrix(nO,matmul(Pab,Pba) + matmul(Pba,Pab))
+! Sx2 = 0.25d0*trace_matrix(nO,Paa+Pbb) + 0.25d0*trace_matrix(nO,Pab+Pba)**2 &
+!     - 0.5d0*trace_matrix(nO,matmul(Paa,Pbb) + matmul(Pab,Pab))
+
+  SmSp = 0d0
+  do i=1,nO
+    do j=1,nO
+      SmSp = SmSp + Pba(i,i)*Pab(j,j) - Pba(i,j)*Pab(j,i)
+    end do
+  end do
+  SmSp = 0.5d0*(trace_matrix(nO,Pbb) + SmSp)
+
+! Sy2 = 0.25d0*trace_matrix(nO,Paa+Pbb) - 0.25d0*trace_matrix(nO,Pab-Pba)**2 &
+!     - 0.5d0*trace_matrix(nO,matmul(Paa,Pbb) - matmul(Pab,Pab))
+
+  Sz2 = 0d0
+  do i=1,nO
+    do j=1,nO
+      Sz2 = Sz2 + (Paa(i,i) - Pbb(i,i))*(Paa(j,j) - Pbb(j,j)) - (Paa(i,j) - Pbb(i,j))**2
+    end do
+  end do
+  Sz2 = 0.25d0*(dble(nO) + Sz2)
+  print*,'<Sz^2> = ',Sz2
+
+  Sz2 = 0.25d0*trace_matrix(nO,Paa+Pbb)    &
+      - 0.25d0*trace_matrix(nO,Paa-Pbb)**2 &
+      - 0.25d0*trace_matrix(nO,matmul(Paa-Pbb,Paa-Pbb))
 
   S2 = Sz*(Sz+1d0) + trace_matrix(nO,Pbb) + 0.25d0*trace_matrix(nO,Paa+Pbb)
 
@@ -107,7 +133,33 @@ subroutine print_GHF(nBas,nBas2,nO,eHF,C,P,S,ENuc,ET,EV,EJ,EK,EGHF,dipole)
               + (Pba(i,i)*Pab(j,j) - Pba(i,j)*Pab(j,i))
     end do   
   end do   
- print*,'<S^2> = ',S2
+  print*,'<S^2> = ',S2
+
+  Sx2 = 0.5d0*(S2 - Sz2 + 0.5d0*(SmSp + SpSm))
+  print*,'<Sx^2> = ',Sx2
+  Sy2 = 0.5d0*(S2 - Sz2 - 0.5d0*(SmSp + SpSm))
+  print*,'<Sy^2> = ',Sy2
+!  Sx2 = 0.25d0*trace_matrix(nO,Paa+Pbb) + 0.25d0*trace_matrix(nO,Pab+Pba)**2 &
+!      - 0.5d0*trace_matrix(nO,matmul(Paa,Pbb) + matmul(Pab,Pab))
+
+!  Sy2 = 0.25d0*trace_matrix(nO,Paa+Pbb) - 0.25d0*trace_matrix(nO,Pab-Pba)**2 &
+!      - 0.5d0*trace_matrix(nO,matmul(Paa,Pbb) - matmul(Pab,Pab))
+
+!  Sz2 = 0.25d0*trace_matrix(nO,Paa+Pbb) + 0.25d0*trace_matrix(nO,Paa-Pbb)**2 &
+!      - 0.25d0*trace_matrix(nO,matmul(Paa,Paa) + matmul(Pbb,Pbb)) &
+!      + 0.25d0*trace_matrix(nO,matmul(Pab,Pba) + matmul(Pba,Pab))
+
+!  S2 = Sz*(Sz+1d0) + trace_matrix(nO,Pbb) + 0.25d0*trace_matrix(nO,Paa+Pbb)
+
+!  do i=1,nO
+!    do j=1,nO
+!      S2 = S2 - 0.25d0*(Paa(i,j) - Pbb(i,j))**2 &
+!              + (Pba(i,i)*Pab(j,j) - Pba(i,j)*Pab(j,i))
+!    end do   
+!  end do   
+! print*,'<S^2> = ',S2
+
+
 
 !  na = 0.d0
 !  nb = 0.d0
