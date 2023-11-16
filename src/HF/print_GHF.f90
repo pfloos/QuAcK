@@ -33,7 +33,7 @@ subroutine print_GHF(nBas,nBas2,nO,e,Sao,C,P,ENuc,ET,EV,EJ,EK,EHF,dipole)
   double precision                   :: Gap
   double precision                   :: Sz,Sx2,Sy2,Sz2,S2
   double precision                   :: na, nb
-  double precision                   :: nonco_z, contam_uhf, xy_perp
+  double precision                   :: nonco_z, contam_uhf, xy_perp, contam_ghf
 
   double precision,allocatable       :: Ca(:,:)
   double precision,allocatable       :: Cb(:,:)
@@ -113,19 +113,26 @@ subroutine print_GHF(nBas,nBas2,nO,e,Sao,C,P,ENuc,ET,EV,EJ,EK,EHF,dipole)
   Sz  = 0.5d0 * (na - nb)
   Sz2 = Sz*Sz + nonco_z
 
-  contam_uhf = nb
+  ! If Na > Nb
+  !contam_uhf = nb
+  !do j = 1, nO
+  !  do i = 1, nO
+  !    contam_uhf = contam_uhf - (Sab(i,j) - Sba(j,i))
+  !  enddo
+  !enddo
+  !xy_perp = 0.d0
+  !do i = 1, nO
+  !  xy_perp = xy_perp + (Sba(i,i))**2
+  !enddo
+  !S2 = Sz * (Sz + 1.d0) + nonco_z + contam_uhf + xy_perp
+
+  contam_ghf = 0.d0
   do j = 1, nO
     do i = 1, nO
-      contam_uhf = contam_uhf - (Sab(i,j) - Sba(j,i))
+      contam_ghf = contam_ghf - (Sab(i,i)*Sba(j,j) - Sab(i,j)*Sba(j,i))
     enddo
   enddo
-
-  xy_perp = 0.d0
-  do i = 1, nO
-    xy_perp = xy_perp + (Sba(i,i))**2
-  enddo
-
-  S2 = Sz * (Sz + 1.d0) + nonco_z + contam_uhf + xy_perp
+  S2 = Sz * (Sz + 1.d0) + nonco_z + contam_ghf
   
 
 ! Compute expectation values of S^2 (WRONG!)
