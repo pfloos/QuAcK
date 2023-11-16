@@ -1,6 +1,6 @@
-subroutine qsGTpp(maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,dophBSE,TDA_T,TDA,          & 
-                  dBSE,dTDA,singlet,triplet,eta,regularize,nNuc,ZNuc,rNuc,ENuc,nBas,nC,nO,nV,nR,nS,ERHF, &
-                  S,X,T,V,Hc,ERI_AO,ERI_MO,dipole_int_AO,dipole_int_MO,PHF,cHF,eHF)
+subroutine qsRGTpp(dotest,maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,dophBSE,TDA_T,TDA,          & 
+                   dBSE,dTDA,singlet,triplet,eta,regularize,nNuc,ZNuc,rNuc,ENuc,nBas,nC,nO,nV,nR,nS,ERHF, &
+                   S,X,T,V,Hc,ERI_AO,ERI_MO,dipole_int_AO,dipole_int_MO,PHF,cHF,eHF)
 
 ! Perform a quasiparticle self-consistent GT calculation
 
@@ -9,6 +9,7 @@ subroutine qsGTpp(maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,dophBSE,T
 
 ! Input variables
 
+  logical,intent(in)            :: dotest
   integer,intent(in)            :: maxSCF
   integer,intent(in)            :: max_diis
   double precision,intent(in)   :: thresh
@@ -98,9 +99,9 @@ subroutine qsGTpp(maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,dophBSE,T
 ! Hello world
 
   write(*,*)
-  write(*,*)'************************************************'
-  write(*,*)'|       Self-consistent qsGTpp calculation     |'
-  write(*,*)'************************************************'
+  write(*,*)'*********************************'
+  write(*,*)'* Restricted qsGTpp Calculation *'
+  write(*,*)'*********************************'
   write(*,*)
 
 ! Dimensions of the pp-RPA linear reponse matrices
@@ -341,8 +342,8 @@ subroutine qsGTpp(maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,dophBSE,T
     write(*,*)'-------------------------------------------------------------------------------'
     write(*,'(2X,A50,F20.10)') 'Tr@phBSE@qsGTpp correlation energy (singlet) =',EcBSE(1)
     write(*,'(2X,A50,F20.10)') 'Tr@BphSE@qsGTpp correlation energy (triplet) =',EcBSE(2)
-    write(*,'(2X,A50,F20.10)') 'Tr@phBSE@qsGTpp correlation energy           =',EcBSE(1) + EcBSE(2)
-    write(*,'(2X,A50,F20.10)') 'Tr@phBSE@qsGTpp total energy                 =',ENuc + EqsGT + EcBSE(1) + EcBSE(2)
+    write(*,'(2X,A50,F20.10)') 'Tr@phBSE@qsGTpp correlation energy           =',sum(EcBSE)
+    write(*,'(2X,A50,F20.10)') 'Tr@phBSE@qsGTpp total energy                 =',ENuc + EqsGT + sum(EcBSE)
     write(*,*)'-------------------------------------------------------------------------------'
     write(*,*)
 
@@ -370,12 +371,23 @@ subroutine qsGTpp(maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,dophBSE,T
       write(*,*)'-------------------------------------------------------------------------------'
       write(*,'(2X,A50,F20.10)') 'AC@phBSE@qsGTpp correlation energy (singlet) =',EcBSE(1)
       write(*,'(2X,A50,F20.10)') 'AC@phBSE@qsGTpp correlation energy (triplet) =',EcBSE(2)
-      write(*,'(2X,A50,F20.10)') 'AC@phBSE@qsGTpp correlation energy           =',EcBSE(1) + EcBSE(2)
-      write(*,'(2X,A50,F20.10)') 'AC@phBSE@qsGTpp total energy                 =',ENuc + EqsGT + EcBSE(1) + EcBSE(2)
+      write(*,'(2X,A50,F20.10)') 'AC@phBSE@qsGTpp correlation energy           =',sum(EcBSE)
+      write(*,'(2X,A50,F20.10)') 'AC@phBSE@qsGTpp total energy                 =',ENuc + EqsGT + sum(EcBSE)
       write(*,*)'-------------------------------------------------------------------------------'
       write(*,*)
 
     end if
+
+  end if
+
+
+! Testing zone
+
+  if(dotest) then
+
+    call dump_test_value('R','qsGTpp correlation energy',sum(EcRPA))
+    call dump_test_value('R','qsGTpp HOMO energy',eGT(nO))
+    call dump_test_value('R','qsGTpp LUMO energy',eGT(nO+1))
 
   end if
 

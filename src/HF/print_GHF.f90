@@ -1,4 +1,5 @@
-subroutine print_GHF(nBas,nBas2,nO,e,Sao,C,P,ENuc,ET,EV,EJ,EK,EHF,dipole)
+subroutine print_GHF(nBas,nBas2,nO,eHF,C,P,S,ENuc,ET,EV,EJ,EK,EGHF,dipole)
+
 
 ! Print one-electron energies and other stuff for GHF
 
@@ -10,28 +11,31 @@ subroutine print_GHF(nBas,nBas2,nO,e,Sao,C,P,ENuc,ET,EV,EJ,EK,EHF,dipole)
   integer,intent(in)                 :: nBas
   integer,intent(in)                 :: nBas2
   integer,intent(in)                 :: nO
-  double precision,intent(in)        :: e(nBas2)
-  ! TODO
-  ! add AO overlap as input
-  double precision,intent(in)        :: Sao(nBas,nBas)
+  double precision,intent(in)        :: eHF(nBas2)
+
   double precision,intent(in)        :: C(nBas2,nBas2)
   double precision,intent(in)        :: P(nBas2,nBas2)
+  double precision,intent(in)        :: S(nBas,nBas)
   double precision,intent(in)        :: ENuc
   double precision,intent(in)        :: ET
   double precision,intent(in)        :: EV
   double precision,intent(in)        :: EJ
   double precision,intent(in)        :: EK
-  double precision,intent(in)        :: EHF
+  double precision,intent(in)        :: EGHF
   double precision,intent(in)        :: dipole(ncart)
 
 ! Local variables
 
-  integer                            :: i, j, ixyz
+  integer                            :: i,j
+  integer                            :: ixyz
+
   integer                            :: mu,nu
   integer                            :: HOMO
   integer                            :: LUMO
   double precision                   :: Gap
-  double precision                   :: Sz,Sx2,Sy2,Sz2,S2
+  double precision                   :: Sx ,Sy ,Sz
+  double precision                   :: Sx2,Sy2,Sz2
+  double precision                   :: S2
   double precision                   :: na, nb
   double precision                   :: nonco_z, contam_uhf, xy_perp, contam_ghf
 
@@ -43,6 +47,15 @@ subroutine print_GHF(nBas,nBas2,nO,e,Sao,C,P,ENuc,ET,EV,EJ,EK,EHF,dipole)
   double precision,allocatable       :: Pbb(:,:), Sbb(:,:)
   double precision,allocatable       :: tmp(:,:)
 
+  double precision,allocatable       :: Mx(:,:)
+  double precision,allocatable       :: My(:,:)
+  double precision,allocatable       :: Mz(:,:)
+  double precision,allocatable       :: PP(:,:)
+  double precision                   :: T(3,3)
+  double precision                   :: vec(3,3)
+  double precision                   :: val(3)
+  double precision                   :: lambda
+
   double precision,external          :: trace_matrix
 
   logical                            :: dump_orb = .false.
@@ -51,16 +64,52 @@ subroutine print_GHF(nBas,nBas2,nO,e,Sao,C,P,ENuc,ET,EV,EJ,EK,EHF,dipole)
 
   HOMO = nO
   LUMO = HOMO + 1
-  Gap = e(LUMO)-e(HOMO)
+  Gap = eHF(LUMO)-eHF(HOMO)
 
 ! Density matrices
 
-  allocate(Paa(nBas2,nBas2),Pab(nBas2,nBas2),Pba(nBas2,nBas2),Pbb(nBas2,nBas2))
+  allocate(Paa(nO,nO),Pab(nO,nO),Pba(nO,nO),Pbb(nO,nO))
 
-  Paa(:,:) = P(     1:nBas ,     1:nBas )
-  Pab(:,:) = P(     1:nBas ,nBas+1:nBas2)
-  Pba(:,:) = P(nBas+1:nBas2,     1:nBas )
-  Pbb(:,:) = P(nBas+1:nBas2,nBas+1:nBas2)
+  allocate(Ca(nBas,nO),Cb(nBas,nO))
+
+  Ca(:,:) = C(     1:nBas ,1:nO)
+  Cb(:,:) = C(nBas+1:nBas2,1:nO)
+
+  Paa = matmul(transpose(Ca),matmul(S,Ca))
+  Pab = matmul(transpose(Ca),matmul(S,Cb))
+  Pba = matmul(transpose(Cb),matmul(S,Ca))
+  Pbb = matmul(transpose(Cb),matmul(S,Cb))
+
+! Compute components of S = (Sx,Sy,Sz)
+
+  Sx = 0.5d0*(trace_matrix(nO,Pab) + trace_matrix(nO,Pba))
+  Sy = 0.5d0*(trace_matrix(nO,Pab) - trace_matrix(nO,Pba))
+  Sz = 0.5d0*(trace_matrix(nO,Paa) - trace_matrix(nO,Pbb))
+
+! Compute <S^2> = <Sx^2> + <Sy^2> + <Sz^2>
+
+!  Sx2 = 0.25d0*trace_matrix(nO,Paa+Pbb) + 0.25d0*trace_matrix(nO,Pab+Pba)**2 &
+!      - 0.5d0*trace_matrix(nO,matmul(Paa,Pbb) + matmul(Pab,Pab))
+
+!  Sx2 = trace_matrix(
+
+!  Sy2 = 0.25d0*trace_matrix(nO,Paa+Pbb) - 0.25d0*trace_matrix(nO,Pab-Pba)**2 &
+!      - 0.5d0*trace_matrix(nO,matmul(Paa,Pbb) - matmul(Pab,Pab))
+
+
+!  Sz2 = 0.25d0*trace_matrix(nO,Paa+Pbb) + 0.25d0*trace_matrix(nO,Paa-Pbb)**2 &
+!      - 0.25d0*trace_matrix(nO,matmul(Paa,Paa) + matmul(Pbb,Pbb)) &
+!      + 0.25d0*trace_matrix(nO,matmul(Pab,Pba) + matmul(Pba,Pab))
+
+!  S2 = Sz*(Sz+1d0) + trace_matrix(nO,Pbb) + 0.25d0*trace_matrix(nO,Paa+Pbb)
+
+!  do i=1,nO
+!    do j=1,nO
+!      S2 = S2 - 0.25d0*(Paa(i,j) - Pbb(i,j))**2 &
+!              + (Pba(i,i)*Pab(j,j) - Pba(i,j)*Pab(j,i))
+!    end do   
+!  end do   
+! print*,'<S^2> = ',S2
 
   ! TODO
   ! check C size
@@ -135,31 +184,46 @@ subroutine print_GHF(nBas,nBas2,nO,e,Sao,C,P,ENuc,ET,EV,EJ,EK,EHF,dipole)
   S2 = Sz * (Sz + 1.d0) + nonco_z + contam_ghf
   
 
-! Compute expectation values of S^2 (WRONG!)
 
-!  Sx2 = 0.25d0*trace_matrix(nBas,Paa+Pbb) + 0.25d0*trace_matrix(nBas,Pab+Pba)**2
-!  do mu=1,nBas
-!    do nu=1,nBas
-!        Sx2 = Sx2 - 0.5d0*(Paa(mu,nu)*Pbb(nu,mu) + Pab(mu,nu)*Pab(nu,mu))
-!    end do
-!  end do
-!
-!  Sy2 = 0.25d0*trace_matrix(nBas,Paa+Pbb) - 0.25d0*trace_matrix(nBas,Pab+Pba)**2
-!  do mu=1,nBas
-!    do nu=1,nBas
-!        Sy2 = Sy2 - 0.5d0*(Paa(mu,nu)*Pbb(nu,mu) - Pab(mu,nu)*Pab(nu,mu))
-!    end do
-!  end do
-!
-!  Sz2 = 0.25d0*trace_matrix(nBas,Paa+Pbb) + 0.25d0*trace_matrix(nBas,Pab-Pba)**2
-!  do mu=1,nBas
-!    do nu=1,nBas
-!        Sz2 = Sz2 - 0.25d0*(Paa(mu,nu)*Pbb(nu,mu) - Pab(mu,nu)*Pab(nu,mu))
-!        Sz2 = Sz2 + 0.25d0*(Pab(mu,nu)*Pba(nu,mu) - Pba(mu,nu)*Pab(nu,mu))
-!    end do
-!  end do
-!  
-!  S2 = Sx2 + Sy2 + Sz2
+
+! deallocate(Paa,Pab,Pba,Pbb)
+
+! Check collinearity and coplanarity 
+
+! allocate(PP(nO,nO),Mx(nO,nO),My(nO,nO),Mz(nO,nO))
+
+! PP(:,:) = 0.5d0*(Paa(:,:) + Pbb(:,:))
+! Mx(:,:) = 0.5d0*(Pba(:,:) + Pab(:,:))
+! My(:,:) = 0.5d0*(Pba(:,:) - Pab(:,:))
+! Mz(:,:) = 0.5d0*(Paa(:,:) - Pbb(:,:))
+
+! T(1,1) = trace_matrix(nO,matmul(Mx,Mx))
+! T(1,2) = trace_matrix(nO,matmul(Mx,My))
+! T(1,3) = trace_matrix(nO,matmul(Mx,Mz))
+! T(2,1) = trace_matrix(nO,matmul(My,Mx))
+! T(2,2) = trace_matrix(nO,matmul(My,My))
+! T(2,3) = trace_matrix(nO,matmul(My,Mz))
+! T(3,1) = trace_matrix(nO,matmul(Mz,Mx))
+! T(3,2) = trace_matrix(nO,matmul(Mz,My))
+! T(3,3) = trace_matrix(nO,matmul(Mz,Mz))
+
+! lambda = trace_matrix(nO,PP - matmul(PP,PP))
+! write(*,'(A,F10.6)') 'Tr(P - P^2) = ',lambda
+
+! vec(:,:) = T(:,:)
+! call diagonalize_matrix(3,vec,val)
+! write(*,'(A,3F10.6)') 'Eigenvalues of T = ',val
+
+! T(1,1) = - T(1,1) + lambda
+! T(2,2) = - T(2,2) + lambda 
+! T(3,3) = - T(3,3) + lambda
+
+! vec(:,:) = T(:,:)
+! call diagonalize_matrix(3,vec,val)
+! write(*,'(A,3F10.6)') 'Eigenvalues of A = ',val
+
+! deallocate(PP,Mx,My,Mz)
+
 
 ! Dump results
 
@@ -175,16 +239,24 @@ subroutine print_GHF(nBas,nBas2,nO,e,Sao,C,P,ENuc,ET,EV,EJ,EK,EHF,dipole)
   write(*,'(A33,1X,F16.10,A3)') ' Hartree      energy = ',EJ,' au'
   write(*,'(A33,1X,F16.10,A3)') ' Exchange     energy = ',EK,' au'
   write(*,'(A50)')           '---------------------------------------'
-  write(*,'(A33,1X,F16.10,A3)') ' Electronic   energy = ',EHF,' au'
+  write(*,'(A33,1X,F16.10,A3)') ' Electronic   energy = ',EGHF,' au'
   write(*,'(A33,1X,F16.10,A3)') ' Nuclear   repulsion = ',ENuc,' au'
-  write(*,'(A33,1X,F16.10,A3)') ' GHF          energy = ',EHF + ENuc,' au'
+  write(*,'(A33,1X,F16.10,A3)') ' GHF          energy = ',EGHF + ENuc,' au'
   write(*,'(A50)')           '---------------------------------------'
-  write(*,'(A33,1X,F16.6,A3)')  ' GHF HOMO     energy = ',e(HOMO)*HaToeV,' eV'
-  write(*,'(A33,1X,F16.6,A3)')  ' GHF LUMO     energy = ',e(LUMO)*HaToeV,' eV'
+  write(*,'(A33,1X,F16.6,A3)')  ' GHF HOMO     energy = ',eHF(HOMO)*HaToeV,' eV'
+  write(*,'(A33,1X,F16.6,A3)')  ' GHF LUMO     energy = ',eHF(LUMO)*HaToeV,' eV'
   write(*,'(A33,1X,F16.6,A3)')  ' GHF HOMO-LUMO gap   = ',Gap*HaToeV,' eV'
   write(*,'(A50)')           '---------------------------------------'
-! write(*,'(A32,1X,F16.6)')     ' <S**2>             :',S2
-! write(*,'(A50)')           '---------------------------------------'
+  write(*,'(A33,1X,F16.6)')     ' <Sx>                = ',Sx
+  write(*,'(A33,1X,F16.6)')     ' <Sy>                = ',Sy
+  write(*,'(A33,1X,F16.6)')     ' <Sz>                = ',Sz
+  write(*,'(A50)')           '---------------------------------------'
+  write(*,'(A33,1X,F16.6)')     ' <Sx**2>             = ',Sx2
+  write(*,'(A33,1X,F16.6)')     ' <Sy**2>             = ',Sy2
+  write(*,'(A33,1X,F16.6)')     ' <Sz**2>             = ',Sz2
+  write(*,'(A33,1X,F16.6)')     ' <S**2>              = ',Sx2+Sy2+Sz2
+  write(*,'(A33,1X,F16.6)')     ' <S**2>              = ',S2
+  write(*,'(A50)')           '---------------------------------------'
   write(*,'(A36)')           ' Dipole moment (Debye)    '
   write(*,'(10X,4A10)')      'X','Y','Z','Tot.'
   write(*,'(10X,4F10.4)')    (dipole(ixyz)*auToD,ixyz=1,ncart),norm2(dipole)*auToD
@@ -197,13 +269,13 @@ subroutine print_GHF(nBas,nBas2,nO,e,Sao,C,P,ENuc,ET,EV,EJ,EK,EHF,dipole)
     write(*,'(A50)') '---------------------------------------'
     write(*,'(A50)') ' GHF orbital coefficients '
     write(*,'(A50)') '---------------------------------------'
-    call matout(nBas2,nBas2,c)
+    call matout(nBas2,nBas2,C)
     write(*,*)
   end if
   write(*,'(A50)') '---------------------------------------'
   write(*,'(A50)') ' GHF orbital energies (au) '
   write(*,'(A50)') '---------------------------------------'
-  call matout(nBas2,1,e)
+  call vecout(nBas2,eHF)
   write(*,*)
 
 end subroutine 

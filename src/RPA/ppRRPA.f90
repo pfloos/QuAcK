@@ -152,7 +152,7 @@ subroutine ppRRPA(dotest,TDA,doACFDT,singlet,triplet,nBas,nC,nO,nV,nR,ENuc,EHF,E
 
   if(dotest) then
 
-    call dump_test_value('R','ppRRPA correlation energy',sum(EcRPA))
+    call dump_test_value('R','ppRPA correlation energy',sum(EcRPA))
 
   end if
 

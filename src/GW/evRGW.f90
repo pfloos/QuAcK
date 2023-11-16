@@ -1,4 +1,4 @@
-subroutine evRGW(maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,dophBSE,dophBSE2,TDA_W,TDA,dBSE,dTDA,doppBSE, & 
+subroutine evRGW(dotest,maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,dophBSE,dophBSE2,TDA_W,TDA,dBSE,dTDA,doppBSE, & 
                  singlet,triplet,linearize,eta,regularize,nBas,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,dipole_int,eHF)
 
 ! Perform self-consistent eigenvalue-only GW calculation
@@ -7,6 +7,8 @@ subroutine evRGW(maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,dophBSE,do
   include 'parameters.h'
 
 ! Input variables
+
+  logical,intent(in)            :: dotest
 
   integer,intent(in)            :: maxSCF
   integer,intent(in)            :: max_diis
@@ -272,6 +274,16 @@ subroutine evRGW(maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,dophBSE,do
     write(*,'(2X,A50,F20.10)') 'Tr@ppBSE@evGW total energy =',ENuc + ERHF + EcBSE(1) + 3d0*EcBSE(2)
     write(*,*)'-------------------------------------------------------------------------------'
     write(*,*)
+
+  end if
+
+! Testing zone
+
+  if(dotest) then
+
+    call dump_test_value('R','evGW correlation energy',EcRPA)
+    call dump_test_value('R','evGW HOMO energy',eGW(nO))
+    call dump_test_value('R','evGW LUMO energy',eGW(nO+1))
 
   end if
 

@@ -1,4 +1,4 @@
-subroutine UG0F2(BSE,TDA,dBSE,dTDA,spin_conserved,spin_flip,linearize,eta,regularize,nBas,nC,nO,nV,nR,nS,ENuc,EUHF, &
+subroutine UG0F2(dotest,BSE,TDA,dBSE,dTDA,spin_conserved,spin_flip,linearize,eta,regularize,nBas,nC,nO,nV,nR,nS,ENuc,EUHF, &
                  ERI_aaaa,ERI_aabb,ERI_bbbb,dipole_int_aa,dipole_int_bb,eHF)
 
 ! Perform unrestricted G0W0 calculation
@@ -8,6 +8,8 @@ subroutine UG0F2(BSE,TDA,dBSE,dTDA,spin_conserved,spin_flip,linearize,eta,regula
   include 'quadrature.h'
 
 ! Input variables
+
+  logical,intent(in)            :: dotest
 
   logical,intent(in)            :: BSE
   logical,intent(in)            :: TDA
@@ -44,18 +46,17 @@ subroutine UG0F2(BSE,TDA,dBSE,dTDA,spin_conserved,spin_flip,linearize,eta,regula
   double precision,allocatable  :: Z(:,:)
   integer                       :: nS_aa,nS_bb,nS_sc
 
-  double precision,allocatable  :: eGF2lin(:,:)
-  double precision,allocatable  :: eGF2(:,:)
+  double precision,allocatable  :: eGFlin(:,:)
+  double precision,allocatable  :: eGF(:,:)
 
 ! Output variables
 
 ! Hello world
 
   write(*,*)
-  write(*,*)'************************************************'
-  write(*,*)'|          One-shot G0F2 calculation           |'
-  write(*,*)'|         *** Unrestricted version ***         |'
-  write(*,*)'************************************************'
+  write(*,*)'*********************************'
+  write(*,*)'* Unrestricted G0F2 Calculation *'
+  write(*,*)'*********************************'
   write(*,*)
 
 ! TDA 
@@ -71,7 +72,7 @@ subroutine UG0F2(BSE,TDA,dBSE,dTDA,spin_conserved,spin_flip,linearize,eta,regula
   nS_bb = nS(2)
   nS_sc = nS_aa + nS_bb
 
-  allocate(SigC(nBas,nspin),Z(nBas,nspin),eGF2(nBas,nspin),eGF2lin(nBas,nspin))
+  allocate(SigC(nBas,nspin),Z(nBas,nspin),eGF(nBas,nspin),eGFlin(nBas,nspin))
 
 !---------------------!
 ! Compute self-energy !
@@ -91,37 +92,51 @@ subroutine UG0F2(BSE,TDA,dBSE,dTDA,spin_conserved,spin_flip,linearize,eta,regula
 ! Solve the quasi-particle equation !
 !-----------------------------------!
 
-  eGF2lin(:,:) = eHF(:,:) + Z(:,:)*SigC(:,:)
+  eGFlin(:,:) = eHF(:,:) + Z(:,:)*SigC(:,:)
 
   if(linearize) then 
  
     write(*,*) ' *** Quasiparticle energies obtained by linearization *** '
     write(*,*)
 
-    eGF2(:,:) = eGF2lin(:,:)
+    eGF(:,:) = eGFlin(:,:)
 
   else 
   
   ! Find graphical solution of the QP equation
 
-    print*,'!!! Graphical solution NYI for UG0F2 !!!'
-    stop
+    write(*,*) '!!! Graphical solution NYI for UG0F2 !!!'
+    write(*,*) ' *** Quasiparticle energies obtained by linearization *** '
+
+    eGF(:,:) = eGFlin(:,:)      
  
   end if
 
 ! Compute MP2 correlation energy
 
-  call UMP2(nBas,nC,nO,nV,nR,ERI_aaaa,ERI_aabb,ERI_bbbb,ENuc,EUHF,eGF2,Ec)
+  call UMP2(.false.,nBas,nC,nO,nV,nR,ERI_aaaa,ERI_aabb,ERI_bbbb,ENuc,EUHF,eGF,Ec)
 
 ! Dump results
 
-  call print_UG0F2(nBas,nO,eHF,ENuc,EUHF,SigC,Z,eGF2,Ec)
+  call print_UG0F2(nBas,nO,eHF,ENuc,EUHF,SigC,Z,eGF,Ec)
 
 ! Perform BSE calculation
 
   if(BSE) then
 
     print*,'!!! BSE2 NYI for UG0F2 !!!'
+
+  end if
+
+! Testing zone
+
+  if(dotest) then
+
+    call dump_test_value('U','G0F2 correlation energy',Ec)
+    call dump_test_value('U','G0F2 HOMOa energy',eGF(nO(1),1))
+    call dump_test_value('U','G0F2 LUMOa energy',eGF(nO(1)+1,1))
+    call dump_test_value('U','G0F2 HOMOa energy',eGF(nO(2),2))
+    call dump_test_value('U','G0F2 LUMOa energy',eGF(nO(2)+1,2))
 
   end if
 

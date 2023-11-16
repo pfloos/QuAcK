@@ -1,4 +1,4 @@
- subroutine evGF3(maxSCF,thresh,max_diis,renormalization,nBas,nC,nO,nV,nR,V,e0)
+ subroutine evRGF3(dotest,maxSCF,thresh,max_diis,renormalization,nBas,nC,nO,nV,nR,V,e0)
 
 ! Perform third-order Green function calculation in diagonal approximation
 
@@ -6,6 +6,8 @@
   include 'parameters.h'
 
 ! Input variables
+
+  logical,intent(in)            :: dotest
 
   double precision,intent(in)   :: thresh
   integer,intent(in)            :: maxSCF,max_diis,renormalization

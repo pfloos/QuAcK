@@ -1,4 +1,4 @@
-subroutine UCI(doCIS,doCIS_D,doCID,doCISD,doFCI,spin_conserved,spin_flip,nBas,nC,nO,nV,nR,nS, & 
+subroutine UCI(dotest,doCIS,doCIS_D,doCID,doCISD,doFCI,spin_conserved,spin_flip,nBas,nC,nO,nV,nR,nS, & 
                ERI_aaaa,ERI_aabb,ERI_bbbb,dipole_int_aa,dipole_int_bb,epsHF,EHF,cHF,S,F)
 
 ! Configuration interaction module
@@ -8,11 +8,13 @@ subroutine UCI(doCIS,doCIS_D,doCID,doCISD,doFCI,spin_conserved,spin_flip,nBas,nC
 
 ! Input variables
 
-  logical                       :: doCIS
-  logical                       :: doCIS_D
-  logical                       :: doCID
-  logical                       :: doCISD
-  logical                       :: doFCI
+  logical,intent(in)            :: dotest
+
+  logical,intent(in)            :: doCIS
+  logical,intent(in)            :: doCIS_D
+  logical,intent(in)            :: doCID
+  logical,intent(in)            :: doCISD
+  logical,intent(in)            :: doFCI
 
   logical,intent(in)            :: spin_conserved
   logical,intent(in)            :: spin_flip
@@ -44,7 +46,7 @@ subroutine UCI(doCIS,doCIS_D,doCID,doCISD,doFCI,spin_conserved,spin_flip,nBas,nC
   if(doCIS) then
 
     call wall_time(start_CI)
-    call UCIS(spin_conserved,spin_flip,nBas,nC,nO,nV,nR,nS,ERI_aaaa,ERI_aabb, & 
+    call UCIS(dotest,spin_conserved,spin_flip,nBas,nC,nO,nV,nR,nS,ERI_aaaa,ERI_aabb, & 
               ERI_bbbb,dipole_int_aa,dipole_int_bb,epsHF,cHF,S)
     call wall_time(end_CI)
 

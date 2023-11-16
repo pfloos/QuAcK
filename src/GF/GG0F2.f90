@@ -1,4 +1,4 @@
-subroutine GG0F2(dophBSE,doppBSE,TDA,dBSE,dTDA,linearize,eta,regularize, &
+subroutine GG0F2(dotest,dophBSE,doppBSE,TDA,dBSE,dTDA,linearize,eta,regularize, &
                  nBas,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,dipole_int,eHF)
 
 ! Perform a one-shot second-order Green function calculation
@@ -7,6 +7,8 @@ subroutine GG0F2(dophBSE,doppBSE,TDA,dBSE,dTDA,linearize,eta,regularize, &
   include 'parameters.h'
 
 ! Input variables
+
+  logical,intent(in)            :: dotest
 
   logical,intent(in)            :: dophBSE
   logical,intent(in)            :: doppBSE
@@ -39,10 +41,11 @@ subroutine GG0F2(dophBSE,doppBSE,TDA,dBSE,dTDA,linearize,eta,regularize, &
 
 ! Hello world
 
+
   write(*,*)
-  write(*,*)'************************************************'
-  write(*,*)'|     One-shot second-order Green function     |'
-  write(*,*)'************************************************'
+  write(*,*)'********************************'
+  write(*,*)'* Generalized G0F2 Calculation *'
+  write(*,*)'********************************'
   write(*,*)
 
 ! Memory allocation
@@ -80,8 +83,8 @@ subroutine GG0F2(dophBSE,doppBSE,TDA,dBSE,dTDA,linearize,eta,regularize, &
 
   ! Print results
 
-  call GMP2(regularize,nBas,nC,nO,nV,nR,ERI,ENuc,EHF,eGF,Ec)
-  call print_G0F2(nBas,nO,eHF,SigC,eGF,Z,ENuc,ERHF,Ec)
+  call GMP2(.false.,regularize,nBas,nC,nO,nV,nR,ERI,ENuc,EHF,eGF,Ec)
+  call print_RG0F2(nBas,nO,eHF,SigC,eGF,Z,ENuc,ERHF,Ec)
 
 ! Perform BSE2 calculation
 
@@ -112,5 +115,15 @@ subroutine GG0F2(dophBSE,doppBSE,TDA,dBSE,dTDA,linearize,eta,regularize, &
 !   write(*,*)
 
 ! end if
+
+! Testing zone
+
+  if(dotest) then
+
+    call dump_test_value('G','G0F2 correlation energy',Ec)
+    call dump_test_value('G','G0F2 HOMO energy',eGF(nO))
+    call dump_test_value('G','G0F2 LUMO energy',eGF(nO+1))
+
+  end if
 
 end subroutine 

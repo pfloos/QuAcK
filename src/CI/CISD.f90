@@ -1,4 +1,4 @@
-subroutine CISD(singlet_manifold,triplet_manifold,nBasin,nCin,nOin,nVin,nRin,ERIin,eHFin,E0)
+subroutine CISD(dotest,singlet,triplet,nBasin,nCin,nOin,nVin,nRin,ERIin,eHFin,E0)
 
 ! Perform configuration interaction with singles and doubles
 
@@ -7,8 +7,10 @@ subroutine CISD(singlet_manifold,triplet_manifold,nBasin,nCin,nOin,nVin,nRin,ERI
 
 ! Input variables
 
-  logical,intent(in)            :: singlet_manifold
-  logical,intent(in)            :: triplet_manifold
+  logical,intent(in)            :: dotest
+
+  logical,intent(in)            :: singlet
+  logical,intent(in)            :: triplet
   integer,intent(in)            :: nBasin
   integer,intent(in)            :: nCin
   integer,intent(in)            :: nOin

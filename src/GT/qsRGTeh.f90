@@ -1,6 +1,6 @@
-subroutine qsGTeh(maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,dophBSE,dophBSE2,TDA_T,TDA,       & 
-                  dBSE,dTDA,singlet,triplet,eta,regularize,nNuc,ZNuc,rNuc,ENuc,nBas,nC,nO,nV,nR,nS,ERHF, &
-                  S,X,T,V,Hc,ERI_AO,ERI_MO,dipole_int_AO,dipole_int_MO,PHF,cHF,eHF)
+subroutine qsRGTeh(dotest,maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,dophBSE,dophBSE2,TDA_T,TDA, & 
+                   dBSE,dTDA,singlet,triplet,eta,regularize,nNuc,ZNuc,rNuc,ENuc,nBas,nC,nO,nV,nR,nS,ERHF,  &
+                   S,X,T,V,Hc,ERI_AO,ERI_MO,dipole_int_AO,dipole_int_MO,PHF,cHF,eHF)
 
 ! Perform a quasiparticle self-consistent GTeh calculation
 
@@ -8,6 +8,8 @@ subroutine qsGTeh(maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,dophBSE,d
   include 'parameters.h'
 
 ! Input variables
+
+  logical,intent(in)            :: dotest
 
   integer,intent(in)            :: maxSCF
   integer,intent(in)            :: max_diis
@@ -73,7 +75,7 @@ subroutine qsGTeh(maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,dophBSE,d
   double precision              :: dipole(ncart)
 
   logical                       :: print_T = .true.
-  double precision,allocatable  :: error_diis(:,:)
+  double precision,allocatable  :: err_diis(:,:)
   double precision,allocatable  :: F_diis(:,:)
   double precision,allocatable  :: Aph(:,:)
   double precision,allocatable  :: Bph(:,:)
@@ -94,14 +96,14 @@ subroutine qsGTeh(maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,dophBSE,d
   double precision,allocatable  :: Sig(:,:)
   double precision,allocatable  :: Sigp(:,:)
   double precision,allocatable  :: Z(:)
-  double precision,allocatable  :: error(:,:)
+  double precision,allocatable  :: err(:,:)
 
 ! Hello world
 
   write(*,*)
-  write(*,*)'************************************************'
-  write(*,*)'|     Self-consistent qsGTeh calculation       |'
-  write(*,*)'************************************************'
+  write(*,*)'*********************************'
+  write(*,*)'* Restricted qsGTeh Calculation *'
+  write(*,*)'*********************************'
   write(*,*)
 
 ! Warning 
@@ -131,21 +133,21 @@ subroutine qsGTeh(maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,dophBSE,d
 
   allocate(Aph(nS,nS),Bph(nS,nS),eGT(nBas),eOld(nBas),c(nBas,nBas),cp(nBas,nBas),P(nBas,nBas),F(nBas,nBas),Fp(nBas,nBas), &
            J(nBas,nBas),K(nBas,nBas),Sig(nBas,nBas),Sigp(nBas,nBas),Z(nBas),Om(nS),XpY(nS,nS),XmY(nS,nS), & 
-           rhoL(nBas,nBas,nS),rhoR(nBas,nBas,nS),error(nBas,nBas),error_diis(nBasSq,max_diis),F_diis(nBasSq,max_diis))
+           rhoL(nBas,nBas,nS),rhoR(nBas,nBas,nS),err(nBas,nBas),err_diis(nBasSq,max_diis),F_diis(nBasSq,max_diis))
 
 ! Initialization
   
-  nSCF            = -1
-  n_diis          = 0
-  ispin           = 2
-  Conv            = 1d0
-  P(:,:)          = PHF(:,:)
-  eGT(:)          = eHF(:)
-  eOld(:)         = eHF(:)
-  c(:,:)          = cHF(:,:)
-  F_diis(:,:)     = 0d0
-  error_diis(:,:) = 0d0
-  rcond           = 0d0
+  nSCF          = -1
+  n_diis        = 0
+  ispin         = 2
+  Conv          = 1d0
+  P(:,:)        = PHF(:,:)
+  eGT(:)        = eHF(:)
+  eOld(:)       = eHF(:)
+  c(:,:)        = cHF(:,:)
+  F_diis(:,:)   = 0d0
+  err_diis(:,:) = 0d0
+  rcond         = 0d0
 
 !------------------------------------------------------------------------
 ! Main loop
@@ -198,14 +200,14 @@ subroutine qsGTeh(maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,dophBSE,d
 
     ! Compute commutator and convergence criteria
 
-    error = matmul(F,matmul(P,S)) - matmul(matmul(S,P),F)
+    err = matmul(F,matmul(P,S)) - matmul(matmul(S,P),F)
 
     ! DIIS extrapolation 
 
     if(max_diis > 1) then
 
       n_diis = min(n_diis+1,max_diis)
-      call DIIS_extrapolation(rcond,nBasSq,nBasSq,n_diis,error_diis,F_diis,error,F)
+      call DIIS_extrapolation(rcond,nBasSq,nBasSq,n_diis,err_diis,F_diis,err,F)
 
     end if
 
@@ -223,7 +225,7 @@ subroutine qsGTeh(maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,dophBSE,d
 
     ! Save quasiparticles energy for next cycle
 
-    Conv = maxval(abs(error))
+    Conv = maxval(abs(err))
     eOld(:) = eGT(:)
 
     !------------------------------------------------------------------------
@@ -276,7 +278,7 @@ subroutine qsGTeh(maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,dophBSE,d
 
 ! Deallocate memory
 
-  deallocate(c,cp,P,F,Fp,J,K,Sig,Sigp,Z,Om,XpY,XmY,rhoL,rhoR,error,error_diis,F_diis)
+  deallocate(c,cp,P,F,Fp,J,K,Sig,Sigp,Z,Om,XpY,XmY,rhoL,rhoR,err,err_diis,F_diis)
 
 ! Perform BSE calculation
 
@@ -331,5 +333,15 @@ subroutine qsGTeh(maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,dophBSE,d
 !   end if
 
 ! end if
+
+! Testing zone
+
+  if(dotest) then
+
+    call dump_test_value('R','qsGTeh correlation energy',EcRPA)
+    call dump_test_value('R','qsGTeh HOMO energy',eGT(nO))
+    call dump_test_value('R','qsGTeh LUMO energy',eGT(nO+1))
+
+  end if
 
 end subroutine

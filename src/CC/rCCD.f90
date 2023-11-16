@@ -1,10 +1,12 @@
-subroutine rCCD(maxSCF,thresh,max_diis,nBasin,nCin,nOin,nVin,nRin,ERI,ENuc,ERHF,eHF,eGW)
+subroutine rCCD(dotest,maxSCF,thresh,max_diis,nBasin,nCin,nOin,nVin,nRin,ERI,ENuc,ERHF,eHF)
 
 ! Ring CCD module
 
   implicit none
 
 ! Input variables
+
+  logical,intent(in)            :: dotest
 
   integer,intent(in)            :: maxSCF
   integer,intent(in)            :: max_diis
@@ -18,7 +20,6 @@ subroutine rCCD(maxSCF,thresh,max_diis,nBasin,nCin,nOin,nVin,nRin,ERI,ENuc,ERHF,
   double precision,intent(in)   :: ENuc
   double precision,intent(in)   :: ERHF
   double precision,intent(in)   :: eHF(nBasin)
-  double precision,intent(in)   :: eGW(nBasin)
   double precision,intent(in)   :: ERI(nBasin,nBasin,nBasin,nBasin)
 
 ! Local variables
@@ -31,9 +32,8 @@ subroutine rCCD(maxSCF,thresh,max_diis,nBasin,nCin,nOin,nVin,nRin,ERI,ENuc,ERHF,
   integer                       :: nSCF
   double precision              :: Conv
   double precision              :: EcMP2
-  double precision              :: ECCD,EcCCD
+  double precision              :: ECC,EcCC
   double precision,allocatable  :: seHF(:)
-  double precision,allocatable  :: seGW(:)
   double precision,allocatable  :: sERI(:,:,:,:)
   double precision,allocatable  :: dbERI(:,:,:,:)
 
@@ -70,10 +70,9 @@ subroutine rCCD(maxSCF,thresh,max_diis,nBasin,nCin,nOin,nVin,nRin,ERI,ENuc,ERHF,
   nV   = 2*nVin
   nR   = 2*nRin
 
-  allocate(seHF(nBas),seGW(nBas),sERI(nBas,nBas,nBas,nBas))
+  allocate(seHF(nBas),sERI(nBas,nBas,nBas,nBas))
 
   call spatial_to_spin_MO_energy(nBasin,eHF,nBas,seHF)
-  call spatial_to_spin_MO_energy(nBasin,eGW,nBas,seGW)
   call spatial_to_spin_ERI(nBasin,ERI,nBas,sERI)
 
 ! Antysymmetrize ERIs
@@ -89,12 +88,12 @@ subroutine rCCD(maxSCF,thresh,max_diis,nBasin,nCin,nOin,nVin,nRin,ERI,ENuc,ERHF,
   allocate(eO(nO),eV(nV))
   allocate(delta_OOVV(nO,nO,nV,nV))
 
-  eO(:) = seGW(1:nO)
-  eV(:) = seGW(nO+1:nBas)
+  eO(:) = seHF(1:nO)
+  eV(:) = seHF(nO+1:nBas)
 
   call form_delta_OOVV(nC,nO,nV,nR,eO,eV,delta_OOVV)
 
-! deallocate(seHF,seGW)
+  deallocate(seHF)
 
 ! Create integral batches
 
@@ -161,11 +160,11 @@ subroutine rCCD(maxSCF,thresh,max_diis,nBasin,nCin,nOin,nVin,nRin,ERI,ENuc,ERHF,
 
 !   Compute correlation energy
 
-    call CCD_correlation_energy(nC,nO,nV,nR,OOVV,t,EcCCD)
+    call CCD_correlation_energy(nC,nO,nV,nR,OOVV,t,EcCC)
 
 !   Dump results
 
-    ECCD = ERHF + EcCCD
+    ECC = ERHF + EcCC
 
     ! DIIS extrapolation
 
@@ -177,7 +176,7 @@ subroutine rCCD(maxSCF,thresh,max_diis,nBasin,nCin,nOin,nVin,nRin,ERI,ENuc,ERHF,
     if(abs(rcond) < 1d-15) n_diis = 0
 
     write(*,'(1X,A1,1X,I3,1X,A1,1X,F16.10,1X,A1,1X,F10.6,1X,A1,1X,F10.6,1X,A1,1X)') &
-      '|',nSCF,'|',ECCD+ENuc,'|',EcCCD,'|',Conv,'|'
+      '|',nSCF,'|',ECC+ENuc,'|',EcCC,'|',Conv,'|'
 
   enddo
   write(*,*)'----------------------------------------------------'
@@ -203,8 +202,8 @@ subroutine rCCD(maxSCF,thresh,max_diis,nBasin,nCin,nOin,nVin,nRin,ERI,ENuc,ERHF,
   write(*,*)'----------------------------------------------------'
   write(*,*)'              ring CCD energy                       '
   write(*,*)'----------------------------------------------------'
-  write(*,'(1X,A30,1X,F15.10)')' E(rCCD) = ',ECCD  
-  write(*,'(1X,A30,1X,F15.10)')' Ec(rCCD) = ',EcCCD 
+  write(*,'(1X,A30,1X,F15.10)')' E(rCCD) = ',ECC  
+  write(*,'(1X,A30,1X,F15.10)')' Ec(rCCD) = ',EcCC 
   write(*,*)'----------------------------------------------------'
   write(*,*)
 
@@ -222,5 +221,12 @@ subroutine rCCD(maxSCF,thresh,max_diis,nBasin,nCin,nOin,nVin,nRin,ERI,ENuc,ERHF,
 ! EE-EOM-CCD (1h1p)
 
   if(do_EE_EOM_CC_1h1p) call EE_EOM_CCD_1h1p(nC,nO,nV,nR,eO,eV,OOVV,OVVO,t)
+
+
+  if(dotest) then
+
+    call dump_test_value('R','rCCD correlation energy',EcCC)
+
+  end if
 
 end subroutine 

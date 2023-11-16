@@ -1,4 +1,4 @@
-subroutine print_G0F2(nBas,nO,eHF,Sig,eGF,Z,ENuc,ERHF,Ec)
+subroutine print_RG0F2(nBas,nO,eHF,Sig,eGF,Z,ENuc,ERHF,Ec)
 
 ! Print one-electron energies and other stuff for G0F2
 

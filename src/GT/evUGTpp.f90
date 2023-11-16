@@ -1,4 +1,4 @@
-subroutine evUGTpp(maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,BSE, &
+subroutine evUGTpp(dotest,maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,BSE, &
                    TDA_T,TDA,dBSE,dTDA,spin_conserved,spin_flip,&
                    eta,regularize,nBas,nC,nO,nV,nR,nS,ENuc,EUHF,ERI_aaaa, &
                    ERI_aabb,ERI_bbbb,dipole_int_aa,dipole_int_bb,cHF,eHF)
@@ -9,6 +9,9 @@ subroutine evUGTpp(maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,BSE, &
   include 'parameters.h'
 
 ! Input variables
+
+  logical,intent(in)            :: dotest
+
   integer,intent(in)            :: maxSCF
   integer,intent(in)            :: max_diis
   double precision,intent(in)   :: thresh
@@ -73,9 +76,9 @@ subroutine evUGTpp(maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,BSE, &
 ! Hello world
 
   write(*,*)
-  write(*,*)'************************************************'
-  write(*,*)'|      Self-consistent evUGT calculation        |'
-  write(*,*)'************************************************'
+  write(*,*)'***********************************'
+  write(*,*)'* Unrestricted evGTpp Calculation *'
+  write(*,*)'***********************************'
   write(*,*)
 
 ! Dimensions of the pp-URPA linear reponse matrices
@@ -283,5 +286,17 @@ subroutine evUGTpp(maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,BSE, &
     deallocate(Om1ab,X1ab,Y1ab,Om2ab,X2ab,Y2ab,rho1ab,rho2ab, &
                Om1aa,X1aa,Y1aa,Om2aa,X2aa,Y2aa,rho1aa,rho2aa, &
                Om1bb,X1bb,Y1bb,Om2bb,X2bb,Y2bb,rho1bb,rho2bb)
+
+! Testing zone
+  
+  if(dotest) then
+  
+    call dump_test_value('U','evGTpp correlation energy',sum(EcRPA))
+    call dump_test_value('U','evGTpp HOMOa energy',eGT(nO(1),1))
+    call dump_test_value('U','evGTpp LUMOa energy',eGT(nO(1)+1,1))
+    call dump_test_value('U','evGTpp HOMOa energy',eGT(nO(2),2))
+    call dump_test_value('U','evGTpp LUMOa energy',eGT(nO(2)+1,2))
+  
+  end if
 
 end subroutine 

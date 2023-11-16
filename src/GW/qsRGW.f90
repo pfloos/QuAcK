@@ -1,4 +1,4 @@
-subroutine qsRGW(maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,dophBSE,dophBSE2,TDA_W,TDA,dBSE,dTDA,doppBSE, & 
+subroutine qsRGW(dotest,maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,dophBSE,dophBSE2,TDA_W,TDA,dBSE,dTDA,doppBSE, & 
                  singlet,triplet,eta,regularize,nNuc,ZNuc,rNuc,ENuc,nBas,nC,nO,nV,nR,nS,ERHF,S,X,T,V,Hc,ERI_AO,     & 
                  ERI_MO,dipole_int_AO,dipole_int_MO,PHF,cHF,eHF)
 
@@ -8,6 +8,8 @@ subroutine qsRGW(maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,dophBSE,do
   include 'parameters.h'
 
 ! Input variables
+
+  logical,intent(in)            :: dotest
 
   integer,intent(in)            :: maxSCF
   integer,intent(in)            :: max_diis
@@ -340,6 +342,16 @@ subroutine qsRGW(maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,dophBSE,do
     write(*,'(2X,A50,F20.10)') 'Tr@ppBSE@qsGW total energy =',ENuc + ERHF + EcBSE(1) + 3d0*EcBSE(2)
     write(*,*)'-------------------------------------------------------------------------------'
     write(*,*)
+
+  end if
+
+! Testing zone
+
+  if(dotest) then
+
+    call dump_test_value('R','qsGW correlation energy',EcRPA)
+    call dump_test_value('R','qsGW HOMO energy',eGW(nO))
+    call dump_test_value('R','qsGW LUMO energy',eGW(nO+1))
 
   end if
 

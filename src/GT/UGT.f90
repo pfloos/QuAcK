@@ -1,4 +1,4 @@
-subroutine UGT(doG0T0pp,doevGTpp,doqsGTpp,doG0T0eh,doevGTeh,doqsGTeh,maxSCF,thresh,max_diis,doACFDT,        &
+subroutine UGT(dotest,doG0T0pp,doevGTpp,doqsGTpp,doG0T0eh,doevGTeh,doqsGTeh,maxSCF,thresh,max_diis,doACFDT, &
                exchange_kernel,doXBS,dophBSE,dophBSE2,doppBSE,TDA_T,TDA,dBSE,dTDA,spin_conserved,spin_flip, &
                linearize,eta,regularize,nNuc,ZNuc,rNuc,ENuc,nBas,nC,nO,nV,nR,nS,EHF,S,X,T,V,Hc,             &
                ERI_AO,ERI_aaaa,ERI_aabb,ERI_bbbb,dipole_int_AO,dipole_int_aa,dipole_int_bb,PHF,cHF,epsHF)
@@ -10,12 +10,14 @@ subroutine UGT(doG0T0pp,doevGTpp,doqsGTpp,doG0T0eh,doevGTeh,doqsGTeh,maxSCF,thre
 
 ! Input variables
 
-  logical                       :: doG0T0pp
-  logical                       :: doevGTpp
-  logical                       :: doqsGTpp
-  logical                       :: doG0T0eh
-  logical                       :: doevGTeh
-  logical                       :: doqsGTeh
+  logical,intent(in)            :: dotest
+
+  logical,intent(in)            :: doG0T0pp
+  logical,intent(in)            :: doevGTpp
+  logical,intent(in)            :: doqsGTpp
+  logical,intent(in)            :: doG0T0eh
+  logical,intent(in)            :: doevGTeh
+  logical,intent(in)            :: doqsGTeh
 
   integer,intent(in)            :: maxSCF
   integer,intent(in)            :: max_diis
@@ -77,7 +79,7 @@ subroutine UGT(doG0T0pp,doevGTpp,doqsGTpp,doG0T0eh,doevGTeh,doqsGTeh,maxSCF,thre
   if(doG0T0pp) then
     
     call wall_time(start_GT)
-    call UG0T0pp(doACFDT,exchange_kernel,doXBS,dophBSE,TDA_T,TDA,dBSE,dTDA,spin_conserved,spin_flip,      &
+    call UG0T0pp(dotest,doACFDT,exchange_kernel,doXBS,dophBSE,TDA_T,TDA,dBSE,dTDA,spin_conserved,spin_flip,      &
                  linearize,eta,regularize,nBas,nC,nO,nV,nR,nS,ENuc,EHF,ERI_aaaa,ERI_aabb,ERI_bbbb, &
                  dipole_int_aa,dipole_int_bb,cHF,epsHF)
     call wall_time(end_GT)
@@ -95,7 +97,7 @@ subroutine UGT(doG0T0pp,doevGTpp,doqsGTpp,doG0T0eh,doevGTeh,doqsGTeh,maxSCF,thre
   if(doevGTpp) then
     
     call wall_time(start_GT)
-    call evUGTpp(maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,dophBSE,TDA_T,TDA,dBSE,dTDA,spin_conserved,spin_flip,    &
+    call evUGTpp(dotest,maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,dophBSE,TDA_T,TDA,dBSE,dTDA,spin_conserved,spin_flip, &
                  linearize,eta,regularize,nBas,nC,nO,nV,nR,nS,ENuc,EHF,ERI_aaaa,ERI_aabb,ERI_bbbb,dipole_int_aa,dipole_int_bb, & 
                  cHF,epsHF)
     call wall_time(end_GT)
@@ -113,7 +115,7 @@ subroutine UGT(doG0T0pp,doevGTpp,doqsGTpp,doG0T0eh,doevGTeh,doqsGTeh,maxSCF,thre
   if(doqsGTpp) then 
 
     call wall_time(start_GT)
-    call qsUGTpp(maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,dophBSE,TDA_T,TDA,dBSE,dTDA,spin_conserved,spin_flip, & 
+    call qsUGTpp(dotest,maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,dophBSE,TDA_T,TDA,dBSE,dTDA,spin_conserved,spin_flip, & 
                  eta,regularize,nBas,nC,nO,nV,nR,nS,nNuc,ZNuc,rNuc,ENuc,EHF,S,X,T,V,Hc,ERI_AO,ERI_aaaa,ERI_aabb,ERI_bbbb,   &
                  dipole_int_AO,dipole_int_aa,dipole_int_bb,PHF,cHF,epsHF) 
     call wall_time(end_GT)

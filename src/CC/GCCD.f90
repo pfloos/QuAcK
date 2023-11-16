@@ -1,6 +1,6 @@
-subroutine CCD(dotest,maxSCF,thresh,max_diis,nBasin,nCin,nOin,nVin,nRin,ERI,ENuc,ERHF,eHF)
+subroutine GCCD(dotest,maxSCF,thresh,max_diis,nBas,nC,nO,nV,nR,ERI,ENuc,EGHF,eHF)
 
-! CCD module
+! Generalized CCD module
 
   implicit none
 
@@ -12,28 +12,22 @@ subroutine CCD(dotest,maxSCF,thresh,max_diis,nBasin,nCin,nOin,nVin,nRin,ERI,ENuc
   integer,intent(in)            :: max_diis
   double precision,intent(in)   :: thresh
 
-  integer,intent(in)            :: nBasin
-  integer,intent(in)            :: nCin
-  integer,intent(in)            :: nOin
-  integer,intent(in)            :: nVin
-  integer,intent(in)            :: nRin
-  double precision,intent(in)   :: ENuc,ERHF
-  double precision,intent(in)   :: eHF(nBasin)
-  double precision,intent(in)   :: ERI(nBasin,nBasin,nBasin,nBasin)
+  integer,intent(in)            :: nBas
+  integer,intent(in)            :: nC
+  integer,intent(in)            :: nO
+  integer,intent(in)            :: nV
+  integer,intent(in)            :: nR
+  double precision,intent(in)   :: ENuc
+  double precision,intent(in)   :: EGHF
+  double precision,intent(in)   :: eHF(nBas)
+  double precision,intent(in)   :: ERI(nBas,nBas,nBas,nBas)
 
 ! Local variables
 
-  integer                       :: nBas
-  integer                       :: nC
-  integer                       :: nO
-  integer                       :: nV
-  integer                       :: nR
   integer                       :: nSCF
   double precision              :: Conv
   double precision              :: EcMP2,EcMP3,EcMP4
   double precision              :: ECC,EcCC
-  double precision,allocatable  :: seHF(:)
-  double precision,allocatable  :: sERI(:,:,:,:)
   double precision,allocatable  :: dbERI(:,:,:,:)
 
   double precision,allocatable  :: eO(:)
@@ -72,43 +66,26 @@ subroutine CCD(dotest,maxSCF,thresh,max_diis,nBasin,nCin,nOin,nVin,nRin,ERI,ENuc
 ! Hello world
 
   write(*,*)
-  write(*,*)'**************************************'
-  write(*,*)'|          CCD calculation           |'
-  write(*,*)'**************************************'
+  write(*,*)'*******************************'
+  write(*,*)'* Generalized CCD Calculation *'
+  write(*,*)'*******************************'
   write(*,*)
-
-! Spatial to spin orbitals
-
-  nBas = 2*nBasin
-  nC   = 2*nCin
-  nO   = 2*nOin
-  nV   = 2*nVin
-  nR   = 2*nRin
-
-  allocate(seHF(nBas),sERI(nBas,nBas,nBas,nBas))
-
-  call spatial_to_spin_MO_energy(nBasin,eHF,nBas,seHF)
-  call spatial_to_spin_ERI(nBasin,ERI,nBas,sERI)
 
 ! Antysymmetrize ERIs
 
   allocate(dbERI(nBas,nBas,nBas,nBas))
 
-  call antisymmetrize_ERI(2,nBas,sERI,dbERI)
-
-  deallocate(sERI)
+  call antisymmetrize_ERI(2,nBas,ERI,dbERI)
 
 ! Form energy denominator
 
   allocate(eO(nO-nC),eV(nV-nR))
   allocate(delta_OOVV(nO-nC,nO-nC,nV-nR,nV-nR))
 
-  eO(:) = seHF(nC+1:nO)
-  eV(:) = seHF(nO+1:nBas-nR)
+  eO(:) = eHF(nC+1:nO)
+  eV(:) = eHF(nO+1:nBas-nR)
 
   call form_delta_OOVV(nC,nO,nV,nR,eO,eV,delta_OOVV)
-
-  deallocate(seHF)
 
 ! Create integral batches
 
@@ -155,10 +132,10 @@ subroutine CCD(dotest,maxSCF,thresh,max_diis,nBasin,nCin,nOin,nVin,nRin,ERI,ENuc
 !------------------------------------------------------------------------
   write(*,*)
   write(*,*)'----------------------------------------------------'
-  write(*,*)'| CCD calculation                                  |'
+  write(*,*)'| GCCD calculation                                 |'
   write(*,*)'----------------------------------------------------'
   write(*,'(1X,A1,1X,A3,1X,A1,1X,A16,1X,A1,1X,A10,1X,A1,1X,A10,1X,A1,1X)') &
-            '|','#','|','E(CCD)','|','Ec(CCD)','|','Conv','|'
+            '|','#','|','E(GCCD)','|','Ec(GCCD)','|','Conv','|'
   write(*,*)'----------------------------------------------------'
 
   do while(Conv > thresh .and. nSCF < maxSCF)
@@ -199,7 +176,7 @@ subroutine CCD(dotest,maxSCF,thresh,max_diis,nBasin,nCin,nOin,nVin,nRin,ERI,ENuc
 
 !   Dump results
 
-    ECC = ERHF + EcCC
+    ECC = EGHF + EcCC
 
     ! DIIS extrapolation
 
@@ -235,19 +212,19 @@ subroutine CCD(dotest,maxSCF,thresh,max_diis,nBasin,nCin,nOin,nVin,nRin,ERI,ENuc
 
   write(*,*)
   write(*,*)'----------------------------------------------------'
-  write(*,*)'              CCD energy                            '
+  write(*,*)'             GCCD energy                            '
   write(*,*)'----------------------------------------------------'
-  write(*,'(1X,A30,1X,F15.10)')' E(CCD) = ',ECC
-  write(*,'(1X,A30,1X,F15.10)')' Ec(CCD) = ',EcCC
+  write(*,'(1X,A30,1X,F15.10)')' E(GCCD) = ',ECC
+  write(*,'(1X,A30,1X,F15.10)')' Ec(GCCD) = ',EcCC
   write(*,*)'----------------------------------------------------'
   write(*,*)
 
 ! Moller-Plesset energies
 
   write(*,*)
-  write(*,'(1X,A15,1X,F10.6)') 'Ec(MP2)     = ',EcMP2
-  write(*,'(1X,A15,1X,F10.6)') 'Ec(MP3)     = ',EcMP3
-  write(*,'(1X,A15,1X,F10.6)') 'Ec(MP4-SDQ) = ',EcMP4
+  write(*,'(1X,A15,1X,F10.6)') 'Ec(GMP2)     = ',EcMP2
+  write(*,'(1X,A15,1X,F10.6)') 'Ec(GMP3)     = ',EcMP3
+  write(*,'(1X,A15,1X,F10.6)') 'Ec(GMP4-SDQ) = ',EcMP4
   write(*,*)
 
 !------------------------------------------------------------------------
@@ -278,7 +255,7 @@ subroutine CCD(dotest,maxSCF,thresh,max_diis,nBasin,nCin,nOin,nVin,nRin,ERI,ENuc
 
   if(dotest) then
 
-    call dump_test_value('R','CCD correlation energy',EcCC)
+    call dump_test_value('G','GCCD correlation energy',EcCC)
 
   end if
 

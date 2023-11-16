@@ -1,6 +1,5 @@
-subroutine G0T0eh(doACFDT,exchange_kernel,doXBS,dophBSE,dophBSE2,TDA_T,TDA,dBSE,dTDA,doppBSE, & 
-                  singlet,triplet,linearize,eta,regularize,nBas,nC,nO,nV,nR,nS,ENuc,ERHF,     & 
-                  ERI,dipole_int,eHF)
+subroutine RG0T0eh(dotest,doACFDT,exchange_kernel,doXBS,dophBSE,dophBSE2,TDA_T,TDA,dBSE,dTDA,doppBSE, & 
+                   singlet,triplet,linearize,eta,regularize,nBas,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,dipole_int,eHF)
 
 ! Perform ehG0T0 calculation
 
@@ -9,6 +8,8 @@ subroutine G0T0eh(doACFDT,exchange_kernel,doXBS,dophBSE,dophBSE2,TDA_T,TDA,dBSE,
   include 'quadrature.h'
 
 ! Input variables
+
+  logical,intent(in)            :: dotest
 
   logical,intent(in)            :: doACFDT
   logical,intent(in)            :: exchange_kernel
@@ -73,9 +74,9 @@ subroutine G0T0eh(doACFDT,exchange_kernel,doXBS,dophBSE,dophBSE2,TDA_T,TDA,dBSE,
 ! Hello world
 
   write(*,*)
-  write(*,*)'************************************************'
-  write(*,*)'|        One-shot G0T0eh calculation           |'
-  write(*,*)'************************************************'
+  write(*,*)'*********************************'
+  write(*,*)'* Restricted G0T0eh Calculation *'
+  write(*,*)'*********************************'
   write(*,*)
 
 ! Initialization
@@ -166,5 +167,15 @@ subroutine G0T0eh(doACFDT,exchange_kernel,doXBS,dophBSE,dophBSE2,TDA_T,TDA,dBSE,
 !--------------!
 
   call print_G0T0eh(nBas,nO,eHF,ENuc,ERHF,Sig,Z,eGT,EcRPA,EcGM)
+
+! Testing zone
+
+  if(dotest) then
+
+    call dump_test_value('R','G0T0eh correlation energy',EcRPA)
+    call dump_test_value('R','G0T0eh HOMO energy',eGT(nO))
+    call dump_test_value('R','G0T0eh LUMO energy',eGT(nO+1))
+
+  end if
 
 end subroutine 

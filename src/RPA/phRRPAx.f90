@@ -42,16 +42,15 @@ subroutine phRRPAx(dotest,TDA,doACFDT,exchange_kernel,singlet,triplet,nBas,nC,nO
 ! Hello world
 
   write(*,*)
-  write(*,*)'***********************************************************'
-  write(*,*)'|  Random phase approximation calculation with exchange   |'
-  write(*,*)'***********************************************************'
+  write(*,*)'**********************************'
+  write(*,*)'* Restricted ph-RPAx Calculation *'
+  write(*,*)'**********************************'
   write(*,*)
 
 ! TDA 
 
   if(TDA) then
     write(*,*) 'Tamm-Dancoff approximation activated!'
-    write(*,*) ' => RPAx + TDA = CIS '
     write(*,*)
   end if
 
@@ -138,9 +137,11 @@ subroutine phRRPAx(dotest,TDA,doACFDT,exchange_kernel,singlet,triplet,nBas,nC,nO
 
   end if
 
+! Testing zone
+
   if(dotest) then
 
-    call dump_test_value('R','phRRPAx correlation energy',sum(EcRPA))
+    call dump_test_value('R','phRPAx correlation energy',sum(EcRPA))
 
   end if
 

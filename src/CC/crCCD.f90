@@ -1,10 +1,12 @@
-subroutine crCCD(maxSCF,thresh,max_diis,nBasin,nCin,nOin,nVin,nRin,ERI,ENuc,ERHF,eHF)
+subroutine crCCD(dotest,maxSCF,thresh,max_diis,nBasin,nCin,nOin,nVin,nRin,ERI,ENuc,ERHF,eHF)
 
 ! Crossed-ring CCD module
 
   implicit none
 
 ! Input variables
+
+  logical,intent(in)            :: dotest
 
   integer,intent(in)            :: maxSCF
   integer,intent(in)            :: max_diis
@@ -29,7 +31,7 @@ subroutine crCCD(maxSCF,thresh,max_diis,nBasin,nCin,nOin,nVin,nRin,ERI,ENuc,ERHF
   integer                       :: nSCF
   double precision              :: Conv
   double precision              :: EcMP2
-  double precision              :: ECCD,EcCCD
+  double precision              :: ECC,EcCC
   double precision,allocatable  :: seHF(:)
   double precision,allocatable  :: sERI(:,:,:,:)
   double precision,allocatable  :: dbERI(:,:,:,:)
@@ -155,11 +157,11 @@ subroutine crCCD(maxSCF,thresh,max_diis,nBasin,nCin,nOin,nVin,nRin,ERI,ENuc,ERHF
 
 !   Compute correlation energy
 
-    call CCD_correlation_energy(nC,nO,nV,nR,OOVV,t2,EcCCD)
+    call CCD_correlation_energy(nC,nO,nV,nR,OOVV,t2,EcCC)
 
 !   Dump results
 
-    ECCD = ERHF + EcCCD
+    ECC = ERHF + EcCC
 
     ! DIIS extrapolation
 
@@ -171,7 +173,7 @@ subroutine crCCD(maxSCF,thresh,max_diis,nBasin,nCin,nOin,nVin,nRin,ERI,ENuc,ERHF
     if(abs(rcond) < 1d-15) n_diis = 0
 
     write(*,'(1X,A1,1X,I3,1X,A1,1X,F16.10,1X,A1,1X,F10.6,1X,A1,1X,F10.6,1X,A1,1X)') &
-      '|',nSCF,'|',ECCD+ENuc,'|',EcCCD,'|',Conv,'|'
+      '|',nSCF,'|',ECC+ENuc,'|',EcCC,'|',Conv,'|'
 
   enddo
   write(*,*)'----------------------------------------------------'
@@ -197,9 +199,15 @@ subroutine crCCD(maxSCF,thresh,max_diis,nBasin,nCin,nOin,nVin,nRin,ERI,ENuc,ERHF
   write(*,*)'----------------------------------------------------'
   write(*,*)'       crossed-ring CCD energy                      '
   write(*,*)'----------------------------------------------------'
-  write(*,'(1X,A30,1X,F15.10)')' E(crCCD) = ',ECCD  
-  write(*,'(1X,A30,1X,F15.10)')' Ec(crCCD) = ',EcCCD 
+  write(*,'(1X,A30,1X,F15.10)')' E(crCCD) = ',ECC  
+  write(*,'(1X,A30,1X,F15.10)')' Ec(crCCD) = ',EcCC 
   write(*,*)'----------------------------------------------------'
   write(*,*)
+
+  if(dotest) then
+
+    call dump_test_value('R','crCCD correlation energy',EcCC)
+
+  end if
 
 end subroutine 

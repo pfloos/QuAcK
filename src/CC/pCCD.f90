@@ -1,10 +1,12 @@
-subroutine pCCD(maxSCF,thresh,max_diis,nBas,nC,nO,nV,nR,ERI,ENuc,ERHF,eHF)
+subroutine pCCD(dotest,maxSCF,thresh,max_diis,nBas,nC,nO,nV,nR,ERI,ENuc,ERHF,eHF)
 
 ! pair CCD module
 
   implicit none
 
 ! Input variables
+
+  logical,intent(in)            :: dotest
 
   integer,intent(in)            :: maxSCF
   integer,intent(in)            :: max_diis
@@ -21,7 +23,7 @@ subroutine pCCD(maxSCF,thresh,max_diis,nBas,nC,nO,nV,nR,ERI,ENuc,ERHF,eHF)
 
   integer                       :: nSCF
   double precision              :: Conv
-  double precision              :: ECCD,EcCCD
+  double precision              :: ECC,EcCC
 
   double precision,allocatable  :: eO(:)
   double precision,allocatable  :: eV(:)
@@ -91,10 +93,10 @@ subroutine pCCD(maxSCF,thresh,max_diis,nBas,nC,nO,nV,nR,ERI,ENuc,ERHF,eHF)
 
   t(:,:) = -0.5d0*OOVV(:,:)/delta_OV(:,:)
 
-  EcCCD = 0d0
+  EcCC = 0d0
   do i=1,nO-nC
     do a=1,nV-nR
-      EcCCD = EcCCD + OOVV(i,a)*t(i,a)
+      EcCC = EcCC + OOVV(i,a)*t(i,a)
     end do
   end do
 
@@ -170,16 +172,16 @@ subroutine pCCD(maxSCF,thresh,max_diis,nBas,nC,nO,nV,nR,ERI,ENuc,ERHF,eHF)
 
    ! Compute correlation energy
 
-    EcCCD = 0d0
+    EcCC = 0d0
     do i=1,nO-nC    
       do a=1,nV-nR
-        EcCCD = EcCCD + OOVV(i,a)*t(i,a)
+        EcCC = EcCC + OOVV(i,a)*t(i,a)
      end do
    end do
 
    ! Dump results
 
-    ECCD = ERHF + EcCCD
+    ECC = ERHF + EcCC
 
     ! DIIS extrapolation
 
@@ -191,7 +193,7 @@ subroutine pCCD(maxSCF,thresh,max_diis,nBas,nC,nO,nV,nR,ERI,ENuc,ERHF,eHF)
 !   if(abs(rcond) < 1d-15) n_diis = 0
 
     write(*,'(1X,A1,1X,I3,1X,A1,1X,F16.10,1X,A1,1X,F10.6,1X,A1,1X,F10.6,1X,A1,1X)') &
-      '|',nSCF,'|',ECCD+ENuc,'|',EcCCD,'|',Conv,'|'
+      '|',nSCF,'|',ECC+ENuc,'|',EcCC,'|',Conv,'|'
 
   enddo
   write(*,*)'----------------------------------------------------'
@@ -211,5 +213,11 @@ subroutine pCCD(maxSCF,thresh,max_diis,nBas,nC,nO,nV,nR,ERI,ENuc,ERHF,eHF)
     stop
 
   endif
+
+  if(dotest) then
+
+    call dump_test_value('R','pCCD correlation energy',EcCC)
+
+  end if
 
 end subroutine 

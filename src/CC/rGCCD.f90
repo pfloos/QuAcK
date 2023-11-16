@@ -1,6 +1,6 @@
-subroutine drCCD(dotest,maxSCF,thresh,max_diis,nBasin,nCin,nOin,nVin,nRin,ERI,ENuc,ERHF,eHF)
+subroutine rGCCD(dotest,maxSCF,thresh,max_diis,nBas,nC,nO,nV,nR,ERI,ENuc,ERHF,eHF)
 
-! Direct ring CCD module
+! Generalized ring CCD module
 
   implicit none
 
@@ -12,28 +12,23 @@ subroutine drCCD(dotest,maxSCF,thresh,max_diis,nBasin,nCin,nOin,nVin,nRin,ERI,EN
   integer,intent(in)            :: max_diis
   double precision,intent(in)   :: thresh
 
-  integer,intent(in)            :: nBasin
-  integer,intent(in)            :: nCin
-  integer,intent(in)            :: nOin
-  integer,intent(in)            :: nVin
-  integer,intent(in)            :: nRin
-  double precision,intent(in)   :: ENuc,ERHF
-  double precision,intent(in)   :: eHF(nBasin)
-  double precision,intent(in)   :: ERI(nBasin,nBasin,nBasin,nBasin)
+  integer,intent(in)            :: nBas
+  integer,intent(in)            :: nC
+  integer,intent(in)            :: nO
+  integer,intent(in)            :: nV
+  integer,intent(in)            :: nR
+  double precision,intent(in)   :: ENuc
+  double precision,intent(in)   :: ERHF
+  double precision,intent(in)   :: eHF(nBas)
+  double precision,intent(in)   :: ERI(nBas,nBas,nBas,nBas)
 
 ! Local variables
 
-  integer                       :: nBas
-  integer                       :: nC
-  integer                       :: nO
-  integer                       :: nV
-  integer                       :: nR
   integer                       :: nSCF
   double precision              :: Conv
   double precision              :: EcMP2
   double precision              :: ECC,EcCC
-  double precision,allocatable  :: seHF(:)
-  double precision,allocatable  :: sERI(:,:,:,:)
+  double precision,allocatable  :: dbERI(:,:,:,:)
 
   double precision,allocatable  :: eO(:)
   double precision,allocatable  :: eV(:)
@@ -42,64 +37,56 @@ subroutine drCCD(dotest,maxSCF,thresh,max_diis,nBasin,nCin,nOin,nVin,nRin,ERI,EN
   double precision,allocatable  :: OOVV(:,:,:,:)
   double precision,allocatable  :: OVVO(:,:,:,:)
 
-  double precision,allocatable  :: r2(:,:,:,:)
-  double precision,allocatable  :: t2(:,:,:,:)
-
+  double precision,allocatable  :: r(:,:,:,:)
+  double precision,allocatable  :: t(:,:,:,:)
 
   integer                       :: n_diis
   double precision              :: rcond
   double precision,allocatable  :: error_diis(:,:)
   double precision,allocatable  :: t_diis(:,:)
 
+  logical                       :: do_EE_EOM_CC_1h1p = .true.
+
 ! Hello world
 
   write(*,*)
-  write(*,*)'**************************************'
-  write(*,*)'|     direct ring CCD calculation    |'
-  write(*,*)'**************************************'
+  write(*,*)'********************************'
+  write(*,*)'* Generalized rCCD Calculation *'
+  write(*,*)'********************************'
   write(*,*)
 
-! Spatial to spin orbitals
+! Antysymmetrize ERIs
 
-  nBas = 2*nBasin
-  nC   = 2*nCin
-  nO   = 2*nOin
-  nV   = 2*nVin
-  nR   = 2*nRin
+  allocate(dbERI(nBas,nBas,nBas,nBas))
 
-  allocate(seHF(nBas),sERI(nBas,nBas,nBas,nBas))
-
-  call spatial_to_spin_MO_energy(nBasin,eHF,nBas,seHF)
-  call spatial_to_spin_ERI(nBasin,ERI,nBas,sERI)
+  call antisymmetrize_ERI(2,nBas,ERI,dbERI)
 
 ! Form energy denominator
 
   allocate(eO(nO),eV(nV))
   allocate(delta_OOVV(nO,nO,nV,nV))
 
-  eO(:) = seHF(1:nO)
-  eV(:) = seHF(nO+1:nBas)
+  eO(:) = eHF(1:nO)
+  eV(:) = eHF(nO+1:nBas)
 
   call form_delta_OOVV(nC,nO,nV,nR,eO,eV,delta_OOVV)
-
-  deallocate(seHF)
 
 ! Create integral batches
 
   allocate(OOVV(nO,nO,nV,nV),OVVO(nO,nV,nV,nO))
 
-  OOVV(:,:,:,:) = sERI(   1:nO  ,   1:nO  ,nO+1:nBas,nO+1:nBas)
-  OVVO(:,:,:,:) = sERI(   1:nO  ,nO+1:nBas,nO+1:nBas,   1:nO  )
- 
-  deallocate(sERI)
+  OOVV(:,:,:,:) = dbERI(   1:nO   ,   1:nO  ,nO+1:nBas,nO+1:nBas)
+  OVVO(:,:,:,:) = dbERI(   1:nO   ,nO+1:nBas,nO+1:nBas,   1:nO  )
 
+  deallocate(dbERI)
+ 
 ! MP2 guess amplitudes
 
-  allocate(t2(nO,nO,nV,nV))
+  allocate(t(nO,nO,nV,nV))
 
-  t2(:,:,:,:) = -OOVV(:,:,:,:)/delta_OOVV(:,:,:,:)
+  t(:,:,:,:) = -OOVV(:,:,:,:)/delta_OOVV(:,:,:,:)
 
-  call CCD_correlation_energy(nC,nO,nV,nR,OOVV,t2,EcMP2)
+  call CCD_correlation_energy(nC,nO,nV,nR,OOVV,t,EcMP2)
 
 ! Memory allocation for DIIS
 
@@ -107,7 +94,7 @@ subroutine drCCD(dotest,maxSCF,thresh,max_diis,nBasin,nCin,nOin,nVin,nRin,ERI,EN
 
 ! Initialization
 
-  allocate(r2(nO,nO,nV,nV))
+  allocate(r(nO,nO,nV,nV))
 
   Conv = 1d0
   nSCF = 0
@@ -121,7 +108,7 @@ subroutine drCCD(dotest,maxSCF,thresh,max_diis,nBasin,nCin,nOin,nVin,nRin,ERI,EN
 !------------------------------------------------------------------------
   write(*,*)
   write(*,*)'----------------------------------------------------'
-  write(*,*)'| direct ring CCD calculation                      |'
+  write(*,*)'| ring CCD calculation                             |'
   write(*,*)'----------------------------------------------------'
   write(*,'(1X,A1,1X,A3,1X,A1,1X,A16,1X,A1,1X,A10,1X,A1,1X,A10,1X,A1,1X)') &
             '|','#','|','E(CCD)','|','Ec(CCD)','|','Conv','|'
@@ -135,22 +122,21 @@ subroutine drCCD(dotest,maxSCF,thresh,max_diis,nBasin,nCin,nOin,nVin,nRin,ERI,EN
 
 !   Compute residual
 
-    call form_ring_r(nC,nO,nV,nR,OVVO,OOVV,t2,r2)
+    call form_ring_r(nC,nO,nV,nR,OVVO,OOVV,t,r)
 
-    r2(:,:,:,:) = OOVV(:,:,:,:) + delta_OOVV(:,:,:,:)*t2(:,:,:,:) + r2(:,:,:,:) 
+    r(:,:,:,:) = OOVV(:,:,:,:) + delta_OOVV(:,:,:,:)*t(:,:,:,:) + r(:,:,:,:) 
 
 !   Check convergence 
 
-    Conv = maxval(abs(r2(nC+1:nO,nC+1:nO,1:nV-nR,1:nV-nR)))
-
+    Conv = maxval(abs(r(nC+1:nO,nC+1:nO,1:nV-nR,1:nV-nR)))
+  
 !   Update amplitudes
 
-    t2(:,:,:,:) = t2(:,:,:,:) - r2(:,:,:,:)/delta_OOVV(:,:,:,:)
+    t(:,:,:,:) = t(:,:,:,:) - r(:,:,:,:)/delta_OOVV(:,:,:,:)
 
 !   Compute correlation energy
 
-    call CCD_correlation_energy(nC,nO,nV,nR,OOVV,t2,EcCC)
-    EcCC = 2d0*EcCC
+    call CCD_correlation_energy(nC,nO,nV,nR,OOVV,t,EcCC)
 
 !   Dump results
 
@@ -159,7 +145,7 @@ subroutine drCCD(dotest,maxSCF,thresh,max_diis,nBasin,nCin,nOin,nVin,nRin,ERI,EN
     ! DIIS extrapolation
 
     n_diis = min(n_diis+1,max_diis)
-    call DIIS_extrapolation(rcond,nO*nO*nV*nV,nO*nO*nV*nV,n_diis,error_diis,t_diis,-r2/delta_OOVV,t2)
+    call DIIS_extrapolation(rcond,nO*nO*nV*nV,nO*nO*nV*nV,n_diis,error_diis,t_diis,-r/delta_OOVV,t)
 
     !  Reset DIIS if required
 
@@ -190,16 +176,32 @@ subroutine drCCD(dotest,maxSCF,thresh,max_diis,nBasin,nCin,nOin,nVin,nRin,ERI,EN
 
   write(*,*)
   write(*,*)'----------------------------------------------------'
-  write(*,*)'              direct ring CCD energy                '
+  write(*,*)'              ring CCD energy                       '
   write(*,*)'----------------------------------------------------'
-  write(*,'(1X,A30,1X,F15.10)')' E(drCCD) = ',ECC  
-  write(*,'(1X,A30,1X,F15.10)')' Ec(drCCD) = ',EcCC 
+  write(*,'(1X,A30,1X,F15.10)')' E(rCCD) = ',ECC  
+  write(*,'(1X,A30,1X,F15.10)')' Ec(rCCD) = ',EcCC 
   write(*,*)'----------------------------------------------------'
   write(*,*)
 
+! write(*,*)
+! write(*,*)'----------------------------------------------------'
+! write(*,*)'              ring CCD amplitudes                   '
+! write(*,*)'----------------------------------------------------'
+! call matout(nO*nO,nV*nV,t)
+! write(*,*)
+
+!------------------------------------------------------------------------
+! EOM section
+!------------------------------------------------------------------------
+
+! EE-EOM-CCD (1h1p)
+
+  if(do_EE_EOM_CC_1h1p) call EE_EOM_CCD_1h1p(nC,nO,nV,nR,eO,eV,OOVV,OVVO,t)
+
+
   if(dotest) then
 
-    call dump_test_value('R','drCCD correlation energy',EcCC)
+    call dump_test_value('R','rCCD correlation energy',EcCC)
 
   end if
 

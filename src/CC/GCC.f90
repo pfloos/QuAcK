@@ -1,7 +1,7 @@
-subroutine RCC(dotest,doCCD,dopCCD,doDCD,doCCSD,doCCSDT,dodrCCD,dorCCD,docrCCD,dolCCD, & 
-               maxSCF,thresh,max_diis,nBas,nC,nO,nV,nR,ERI,ENuc,ERHF,eHF)
+subroutine GCC(dotest,doCCD,dopCCD,doDCD,doCCSD,doCCSDT,dodrCCD,dorCCD,docrCCD,dolCCD, & 
+               maxSCF,thresh,max_diis,nBas,nC,nO,nV,nR,ERI,ENuc,EGHF,eHF)
 
-! Coupled-cluster module
+! Generalized Coupled-cluster module
 
   implicit none
   include 'parameters.h'
@@ -30,7 +30,7 @@ subroutine RCC(dotest,doCCD,dopCCD,doDCD,doCCSD,doCCSDT,dodrCCD,dorCCD,docrCCD,d
   integer,intent(in)            :: nV(nspin)
   integer,intent(in)            :: nR(nspin)
   double precision,intent(in)   :: ENuc
-  double precision,intent(in)   :: ERHF
+  double precision,intent(in)   :: EGHF
   double precision,intent(in)   :: eHF(nBas)
   double precision,intent(in)   :: ERI(nBas,nBas,nBas,nBas)
 
@@ -45,7 +45,7 @@ subroutine RCC(dotest,doCCD,dopCCD,doDCD,doCCSD,doCCSDT,dodrCCD,dorCCD,docrCCD,d
   if(doCCD) then
 
     call wall_time(start_CC)
-    call CCD(dotest,maxSCF,thresh,max_diis,nBas,nC,nO,nV,nR,ERI,ENuc,ERHF,eHF)
+    call GCCD(dotest,maxSCF,thresh,max_diis,nBas,nC,nO,nV,nR,ERI,ENuc,EGHF,eHF)
     call wall_time(end_CC)
 
     t_CC = end_CC - start_CC
@@ -61,8 +61,8 @@ subroutine RCC(dotest,doCCD,dopCCD,doDCD,doCCSD,doCCSDT,dodrCCD,dorCCD,docrCCD,d
   if(doDCD) then
 
     call wall_time(start_CC)
-    call DCD(dotest,maxSCF,thresh,max_diis,nBas,nC,nO,nV,nR, & 
-             ERI,ENuc,ERHF,eHF)
+!   call DCD(dotest,maxSCF,thresh,max_diis,nBas,nC,nO,nV,nR, & 
+!            ERI,ENuc,EGHF,eHF)
     call wall_time(end_CC)
 
     t_CC = end_CC - start_CC
@@ -80,7 +80,7 @@ subroutine RCC(dotest,doCCD,dopCCD,doDCD,doCCSD,doCCSDT,dodrCCD,dorCCD,docrCCD,d
   if(doCCSD) then
 
     call wall_time(start_CC)
-    call CCSD(dotest,maxSCF,thresh,max_diis,doCCSDT,nBas,nC,nO,nV,nR,ERI,ENuc,ERHF,eHF)
+    call GCCSD(dotest,maxSCF,thresh,max_diis,doCCSDT,nBas,nC,nO,nV,nR,ERI,ENuc,EGHF,eHF)
     call wall_time(end_CC)
 
     t_CC = end_CC - start_CC
@@ -96,7 +96,7 @@ subroutine RCC(dotest,doCCD,dopCCD,doDCD,doCCSD,doCCSDT,dodrCCD,dorCCD,docrCCD,d
   if(dodrCCD) then
 
     call wall_time(start_CC)
-    call drCCD(dotest,maxSCF,thresh,max_diis,nBas,nC,nO,nV,nR,ERI,ENuc,ERHF,eHF)
+    call drGCCD(dotest,maxSCF,thresh,max_diis,nBas,nC,nO,nV,nR,ERI,ENuc,EGHF,eHF)
     call wall_time(end_CC)
 
     t_CC = end_CC - start_CC
@@ -112,7 +112,7 @@ subroutine RCC(dotest,doCCD,dopCCD,doDCD,doCCSD,doCCSDT,dodrCCD,dorCCD,docrCCD,d
   if(dorCCD) then
 
     call wall_time(start_CC)
-    call rCCD(dotest,maxSCF,thresh,max_diis,nBas,nC,nO,nV,nR,ERI,ENuc,ERHF,eHF)
+    call rGCCD(dotest,maxSCF,thresh,max_diis,nBas,nC,nO,nV,nR,ERI,ENuc,EGHF,eHF)
     call wall_time(end_CC)
 
     t_CC = end_CC - start_CC
@@ -128,7 +128,7 @@ subroutine RCC(dotest,doCCD,dopCCD,doDCD,doCCSD,doCCSDT,dodrCCD,dorCCD,docrCCD,d
   if(docrCCD) then
 
     call wall_time(start_CC)
-    call crCCD(dotest,maxSCF,thresh,max_diis,nBas,nC,nO,nV,nR,ERI,ENuc,ERHF,eHF)
+    call crGCCD(dotest,maxSCF,thresh,max_diis,nBas,nC,nO,nV,nR,ERI,ENuc,EGHF,eHF)
     call wall_time(end_CC)
 
     t_CC = end_CC - start_CC
@@ -144,7 +144,7 @@ subroutine RCC(dotest,doCCD,dopCCD,doDCD,doCCSD,doCCSDT,dodrCCD,dorCCD,docrCCD,d
   if(dolCCD) then
 
     call wall_time(start_CC)
-    call lCCD(dotest,maxSCF,thresh,max_diis,nBas,nC,nO,nV,nR,ERI,ENuc,ERHF,eHF)
+    call lGCCD(dotest,maxSCF,thresh,max_diis,nBas,nC,nO,nV,nR,ERI,ENuc,EGHF,eHF)
     call wall_time(end_CC)
 
     t_CC = end_CC - start_CC
@@ -160,7 +160,7 @@ subroutine RCC(dotest,doCCD,dopCCD,doDCD,doCCSD,doCCSDT,dodrCCD,dorCCD,docrCCD,d
   if(dopCCD) then
 
     call wall_time(start_CC)
-    call pCCD(dotest,maxSCF,thresh,max_diis,nBas,nC,nO,nV,nR,ERI,ENuc,ERHF,eHF)
+!   call pCCD(dotest,maxSCF,thresh,max_diis,nBas,nC,nO,nV,nR,ERI,ENuc,EGHF,eHF)
     call wall_time(end_CC)
 
     t_CC = end_CC - start_CC

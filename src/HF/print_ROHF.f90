@@ -1,4 +1,4 @@
-subroutine print_ROHF(nBas,nO,e,c,ENuc,ET,EV,EJ,Ex,EHF,dipole)
+subroutine print_ROHF(nBas,nO,eHF,c,ENuc,ET,EV,EJ,Ex,EROHF,dipole)
 
 ! Print one- and two-electron energies and other stuff for RoHF calculation
 
@@ -7,14 +7,14 @@ subroutine print_ROHF(nBas,nO,e,c,ENuc,ET,EV,EJ,Ex,EHF,dipole)
 
   integer,intent(in)                 :: nBas
   integer,intent(in)                 :: nO(nspin)
-  double precision,intent(in)        :: e(nBas)
+  double precision,intent(in)        :: eHF(nBas)
   double precision,intent(in)        :: c(nBas,nBas)
   double precision,intent(in)        :: ENuc
   double precision,intent(in)        :: ET(nspin)
   double precision,intent(in)        :: EV(nspin)
   double precision,intent(in)        :: EJ(nsp)
   double precision,intent(in)        :: Ex(nspin)
-  double precision,intent(in)        :: EHF
+  double precision,intent(in)        :: EROHF
   double precision,intent(in)        :: dipole(ncart)
 
   integer                            :: ixyz
@@ -28,16 +28,16 @@ subroutine print_ROHF(nBas,nO,e,c,ENuc,ET,EV,EJ,Ex,EHF,dipole)
 
   do ispin=1,nspin
     if(nO(ispin) > 0) then 
-      HOMO(ispin) = e(nO(ispin))
+      HOMO(ispin) = eHF(nO(ispin))
       if(nO(ispin) < nBas) then
-        LUMO(ispin) = e(nO(ispin)+1)
+        LUMO(ispin) = eHF(nO(ispin)+1)
       else
         LUMO(ispin) = 0d0
       end if
       Gap(ispin)  = LUMO(ispin) - HOMO(ispin)
     else
       HOMO(ispin) = 0d0
-      LUMO(ispin) = e(1)
+      LUMO(ispin) = eHF(1)
       Gap(ispin)  = 0d0
     end if
   end do
@@ -73,9 +73,9 @@ subroutine print_ROHF(nBas,nO,e,c,ENuc,ET,EV,EJ,Ex,EHF,dipole)
   write(*,'(A40,1X,F16.10,A3)') ' Exchange     a  energy: ',Ex(1),' au'
   write(*,'(A40,1X,F16.10,A3)') ' Exchange     b  energy: ',Ex(2),' au'
   write(*,'(A60)')              '-------------------------------------------------'
-  write(*,'(A40,1X,F16.10,A3)') ' Electronic      energy: ',EHF,' au'
+  write(*,'(A40,1X,F16.10,A3)') ' Electronic      energy: ',EROHF,' au'
   write(*,'(A40,1X,F16.10,A3)') ' Nuclear      repulsion: ',ENuc,' au'
-  write(*,'(A40,1X,F16.10,A3)') ' ROHF            energy: ',EHF + ENuc,' au'
+  write(*,'(A40,1X,F16.10,A3)') ' ROHF            energy: ',EROHF + ENuc,' au'
   write(*,'(A60)')              '-------------------------------------------------'
   write(*,'(A40,1X,F16.6,A3)')  ' ROHF HOMO a   energy:',HOMO(1)*HatoeV,' eV'
   write(*,'(A40,1X,F16.6,A3)')  ' ROHF LUMO a   energy:',LUMO(1)*HatoeV,' eV'
@@ -104,7 +104,7 @@ subroutine print_ROHF(nBas,nO,e,c,ENuc,ET,EV,EJ,Ex,EHF,dipole)
   write(*,'(A50)') '---------------------------------------'
   write(*,'(A50)') ' ROHF orbital energies (au) '
   write(*,'(A50)') '---------------------------------------'
-  call matout(nBas,1,e)
+  call vecout(nBas,eHF)
   write(*,*)
 
 end subroutine 

@@ -156,9 +156,11 @@ subroutine ppURPA(dotest,TDA,doACFDT,spin_conserved,spin_flip,nBas,nC,nO,nV,nR,E
 
 ! end if
 
+! Testing zone
+
   if(dotest) then
 
-    call dump_test_value('U','ppURPA correlation energy',sum(EcRPA))
+    call dump_test_value('U','ppRPA correlation energy',sum(EcRPA))
 
   end if
 

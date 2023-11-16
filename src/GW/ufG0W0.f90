@@ -1,4 +1,4 @@
-subroutine ufG0W0(nBas,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,eHF,TDA_W)
+subroutine ufG0W0(dotest,nBas,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,eHF,TDA_W)
 
 ! Unfold G0W0 equations
 
@@ -6,6 +6,8 @@ subroutine ufG0W0(nBas,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,eHF,TDA_W)
   include 'parameters.h'
 
 ! Input variables
+
+  logical,intent(in)            :: dotest
 
   integer,intent(in)            :: nBas
   integer,intent(in)            :: nC

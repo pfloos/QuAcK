@@ -1,5 +1,5 @@
-subroutine evGTeh(maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,dophBSE,dophBSE2,TDA_T,TDA,dBSE,dTDA,doppBSE, & 
-                  singlet,triplet,linearize,eta,regularize,nBas,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,dipole_int,eHF)
+subroutine evRGTeh(dotest,maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,dophBSE,dophBSE2,TDA_T,TDA,dBSE,dTDA,doppBSE, & 
+                   singlet,triplet,linearize,eta,regularize,nBas,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,dipole_int,eHF)
 
 ! Perform self-consistent eigenvalue-only ehGT calculation
 
@@ -7,6 +7,8 @@ subroutine evGTeh(maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,dophBSE,d
   include 'parameters.h'
 
 ! Input variables
+
+  logical,intent(in)            :: dotest
 
   integer,intent(in)            :: maxSCF
   integer,intent(in)            :: max_diis
@@ -70,9 +72,9 @@ subroutine evGTeh(maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,dophBSE,d
 ! Hello world
 
   write(*,*)
-  write(*,*)'************************************************'
-  write(*,*)'|    Self-consistent evGTeh calculation        |'
-  write(*,*)'************************************************'
+  write(*,*)'**********************************'
+  write(*,*)'* Restricted evRGTeh Calculation *'
+  write(*,*)'**********************************'
   write(*,*)
 
 ! TDA for T
@@ -295,5 +297,15 @@ subroutine evGTeh(maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,dophBSE,d
 !   call Bethe_Salpeter_pp_so(TDA_W,TDA,singlet,triplet,eta,nBas2,nC2,nO2,nV2,nR2,nS2,sERI,dipole_int,seHF,seGW,EcppBSE)
 
 ! end if
+
+! Testing zone
+
+  if(dotest) then
+
+    call dump_test_value('R','evGTeh correlation energy',EcRPA)
+    call dump_test_value('R','evGTeh HOMO energy',eGT(nO))
+    call dump_test_value('R','evGTeh LUMO energy',eGT(nO+1))
+
+  end if
 
 end subroutine 

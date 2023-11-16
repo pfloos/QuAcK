@@ -1,6 +1,6 @@
-subroutine drCCD(dotest,maxSCF,thresh,max_diis,nBasin,nCin,nOin,nVin,nRin,ERI,ENuc,ERHF,eHF)
+subroutine lGCCD(dotest,maxSCF,thresh,max_diis,nBas,nC,nO,nV,nR,ERI,ENuc,ERHF,eHF)
 
-! Direct ring CCD module
+! Generalized Ladder CCD module
 
   implicit none
 
@@ -12,39 +12,42 @@ subroutine drCCD(dotest,maxSCF,thresh,max_diis,nBasin,nCin,nOin,nVin,nRin,ERI,EN
   integer,intent(in)            :: max_diis
   double precision,intent(in)   :: thresh
 
-  integer,intent(in)            :: nBasin
-  integer,intent(in)            :: nCin
-  integer,intent(in)            :: nOin
-  integer,intent(in)            :: nVin
-  integer,intent(in)            :: nRin
+  integer,intent(in)            :: nBas
+  integer,intent(in)            :: nC
+  integer,intent(in)            :: nO
+  integer,intent(in)            :: nV
+  integer,intent(in)            :: nR
   double precision,intent(in)   :: ENuc,ERHF
-  double precision,intent(in)   :: eHF(nBasin)
-  double precision,intent(in)   :: ERI(nBasin,nBasin,nBasin,nBasin)
+  double precision,intent(in)   :: eHF(nBas)
+  double precision,intent(in)   :: ERI(nBas,nBas,nBas,nBas)
 
 ! Local variables
 
-  integer                       :: nBas
-  integer                       :: nC
-  integer                       :: nO
-  integer                       :: nV
-  integer                       :: nR
   integer                       :: nSCF
   double precision              :: Conv
   double precision              :: EcMP2
   double precision              :: ECC,EcCC
-  double precision,allocatable  :: seHF(:)
-  double precision,allocatable  :: sERI(:,:,:,:)
+  double precision,allocatable  :: dbERI(:,:,:,:)
 
   double precision,allocatable  :: eO(:)
   double precision,allocatable  :: eV(:)
   double precision,allocatable  :: delta_OOVV(:,:,:,:)
 
+  double precision,allocatable  :: OOOO(:,:,:,:)
   double precision,allocatable  :: OOVV(:,:,:,:)
-  double precision,allocatable  :: OVVO(:,:,:,:)
+  double precision,allocatable  :: OVOV(:,:,:,:)
+  double precision,allocatable  :: VVVV(:,:,:,:)
+
+  double precision,allocatable  :: X1(:,:,:,:)
+  double precision,allocatable  :: X2(:,:)
+  double precision,allocatable  :: X3(:,:)
+  double precision,allocatable  :: X4(:,:,:,:)
+
+  double precision,allocatable  :: u(:,:,:,:)
+  double precision,allocatable  :: v(:,:,:,:)
 
   double precision,allocatable  :: r2(:,:,:,:)
   double precision,allocatable  :: t2(:,:,:,:)
-
 
   integer                       :: n_diis
   double precision              :: rcond
@@ -54,45 +57,38 @@ subroutine drCCD(dotest,maxSCF,thresh,max_diis,nBasin,nCin,nOin,nVin,nRin,ERI,EN
 ! Hello world
 
   write(*,*)
-  write(*,*)'**************************************'
-  write(*,*)'|     direct ring CCD calculation    |'
-  write(*,*)'**************************************'
+  write(*,*)'********************************'
+  write(*,*)'* Generalized lCCD Calculation *'
+  write(*,*)'********************************'
   write(*,*)
 
-! Spatial to spin orbitals
+! Antysymmetrize ERIs
 
-  nBas = 2*nBasin
-  nC   = 2*nCin
-  nO   = 2*nOin
-  nV   = 2*nVin
-  nR   = 2*nRin
+  allocate(dbERI(nBas,nBas,nBas,nBas))
 
-  allocate(seHF(nBas),sERI(nBas,nBas,nBas,nBas))
-
-  call spatial_to_spin_MO_energy(nBasin,eHF,nBas,seHF)
-  call spatial_to_spin_ERI(nBasin,ERI,nBas,sERI)
+  call antisymmetrize_ERI(2,nBas,ERI,dbERI)
 
 ! Form energy denominator
 
   allocate(eO(nO),eV(nV))
   allocate(delta_OOVV(nO,nO,nV,nV))
 
-  eO(:) = seHF(1:nO)
-  eV(:) = seHF(nO+1:nBas)
+  eO(:) = eHF(1:nO)
+  eV(:) = eHF(nO+1:nBas)
 
   call form_delta_OOVV(nC,nO,nV,nR,eO,eV,delta_OOVV)
 
-  deallocate(seHF)
-
 ! Create integral batches
 
-  allocate(OOVV(nO,nO,nV,nV),OVVO(nO,nV,nV,nO))
+  allocate(OOOO(nO,nO,nO,nO),OOVV(nO,nO,nV,nV),OVOV(nO,nV,nO,nV),VVVV(nV,nV,nV,nV))
 
-  OOVV(:,:,:,:) = sERI(   1:nO  ,   1:nO  ,nO+1:nBas,nO+1:nBas)
-  OVVO(:,:,:,:) = sERI(   1:nO  ,nO+1:nBas,nO+1:nBas,   1:nO  )
+  OOOO(:,:,:,:) = dbERI(   1:nO  ,   1:nO  ,   1:nO  ,   1:nO  )
+  OOVV(:,:,:,:) = dbERI(   1:nO  ,   1:nO  ,nO+1:nBas,nO+1:nBas)
+  OVOV(:,:,:,:) = dbERI(   1:nO  ,nO+1:nBas,   1:nO  ,nO+1:nBas)
+  VVVV(:,:,:,:) = dbERI(nO+1:nBas,nO+1:nBas,nO+1:nBas,nO+1:nBas)
+
+  deallocate(dbERI)
  
-  deallocate(sERI)
-
 ! MP2 guess amplitudes
 
   allocate(t2(nO,nO,nV,nV))
@@ -107,7 +103,8 @@ subroutine drCCD(dotest,maxSCF,thresh,max_diis,nBasin,nCin,nOin,nVin,nRin,ERI,EN
 
 ! Initialization
 
-  allocate(r2(nO,nO,nV,nV))
+  allocate(r2(nO,nO,nV,nV),u(nO,nO,nV,nV),v(nO,nO,nV,nV))
+  allocate(X1(nO,nO,nO,nO),X2(nV,nV),X3(nO,nO),X4(nO,nO,nV,nV))
 
   Conv = 1d0
   nSCF = 0
@@ -121,7 +118,7 @@ subroutine drCCD(dotest,maxSCF,thresh,max_diis,nBasin,nCin,nOin,nVin,nRin,ERI,EN
 !------------------------------------------------------------------------
   write(*,*)
   write(*,*)'----------------------------------------------------'
-  write(*,*)'| direct ring CCD calculation                      |'
+  write(*,*)'| ladder CCD calculation                           |'
   write(*,*)'----------------------------------------------------'
   write(*,'(1X,A1,1X,A3,1X,A1,1X,A16,1X,A1,1X,A10,1X,A1,1X,A10,1X,A1,1X)') &
             '|','#','|','E(CCD)','|','Ec(CCD)','|','Conv','|'
@@ -135,14 +132,14 @@ subroutine drCCD(dotest,maxSCF,thresh,max_diis,nBasin,nCin,nOin,nVin,nRin,ERI,EN
 
 !   Compute residual
 
-    call form_ring_r(nC,nO,nV,nR,OVVO,OOVV,t2,r2)
+    call form_ladder_r(nC,nO,nV,nR,OOOO,OOVV,VVVV,t2,r2)
 
     r2(:,:,:,:) = OOVV(:,:,:,:) + delta_OOVV(:,:,:,:)*t2(:,:,:,:) + r2(:,:,:,:) 
 
 !   Check convergence 
 
     Conv = maxval(abs(r2(nC+1:nO,nC+1:nO,1:nV-nR,1:nV-nR)))
-
+  
 !   Update amplitudes
 
     t2(:,:,:,:) = t2(:,:,:,:) - r2(:,:,:,:)/delta_OOVV(:,:,:,:)
@@ -150,7 +147,6 @@ subroutine drCCD(dotest,maxSCF,thresh,max_diis,nBasin,nCin,nOin,nVin,nRin,ERI,EN
 !   Compute correlation energy
 
     call CCD_correlation_energy(nC,nO,nV,nR,OOVV,t2,EcCC)
-    EcCC = 2d0*EcCC
 
 !   Dump results
 
@@ -190,16 +186,16 @@ subroutine drCCD(dotest,maxSCF,thresh,max_diis,nBasin,nCin,nOin,nVin,nRin,ERI,EN
 
   write(*,*)
   write(*,*)'----------------------------------------------------'
-  write(*,*)'              direct ring CCD energy                '
+  write(*,*)'              ladder CCD energy                     '
   write(*,*)'----------------------------------------------------'
-  write(*,'(1X,A30,1X,F15.10)')' E(drCCD) = ',ECC  
-  write(*,'(1X,A30,1X,F15.10)')' Ec(drCCD) = ',EcCC 
+  write(*,'(1X,A30,1X,F15.10)')' E(lCCD)  = ',ECC
+  write(*,'(1X,A30,1X,F15.10)')' Ec(lCCD) = ',EcCC
   write(*,*)'----------------------------------------------------'
   write(*,*)
 
   if(dotest) then
 
-    call dump_test_value('R','drCCD correlation energy',EcCC)
+    call dump_test_value('R','lCCD correlation energy',EcCC)
 
   end if
 

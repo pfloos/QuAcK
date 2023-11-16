@@ -201,7 +201,7 @@ subroutine RHF(dotest,maxSCF,thresh,max_diis,guess_type,level_shift,nNuc,ZNuc,rN
   call dipole_moment(nBas,P,nNuc,ZNuc,rNuc,dipole_int,dipole)
   call print_RHF(nBas,nO,eHF,C,ENuc,ET,EV,EJ,EK,ERHF,dipole)
 
-! Print test values
+! Testing zone
 
   if(dotest) then
  

@@ -1,4 +1,4 @@
-subroutine UCIS(spin_conserved,spin_flip,nBas,nC,nO,nV,nR,nS,ERI_aaaa,ERI_aabb,ERI_bbbb, &
+subroutine UCIS(dotest,spin_conserved,spin_flip,nBas,nC,nO,nV,nR,nS,ERI_aaaa,ERI_aabb,ERI_bbbb, &
                 dipole_int_aa,dipole_int_bb,eHF,cHF,S)
 
 ! Perform configuration interaction single calculation`
@@ -7,6 +7,8 @@ subroutine UCIS(spin_conserved,spin_flip,nBas,nC,nO,nV,nR,nS,ERI_aaaa,ERI_aabb,E
   include 'parameters.h'
 
 ! Input variables
+
+  logical,intent(in)            :: dotest
 
   logical,intent(in)            :: spin_conserved
   logical,intent(in)            :: spin_flip
@@ -78,7 +80,7 @@ subroutine UCIS(spin_conserved,spin_flip,nBas,nC,nO,nV,nR,nS,ERI_aaaa,ERI_aabb,E
 
     call diagonalize_matrix(nS_sc,A_sc,Om_sc)
     A_sc(:,:) = transpose(A_sc)
-    call print_excitation_energies('UCIS',5,nS_sc,Om_sc)
+    call print_excitation_energies('CIS@UHF',5,nS_sc,Om_sc)
     call phULR_transition_vectors(ispin,nBas,nC,nO,nV,nR,nS,nS_aa,nS_bb,nS_sc,dipole_int_aa,dipole_int_bb, &
                                   cHF,S,Om_sc,A_sc,A_sc)
  
@@ -87,6 +89,14 @@ subroutine UCIS(spin_conserved,spin_flip,nBas,nC,nO,nV,nR,nS,ERI_aaaa,ERI_aabb,E
       call matout(nS_sc,nS_sc,A_sc)
       write(*,*)
     endif
+
+    ! Testing zone
+
+    if(dotest) then
+
+      call dump_test_value('U','CIS singlet excitation energy',Om_sc(1))
+
+    end if
 
     deallocate(A_sc,Om_sc)
 
@@ -118,7 +128,7 @@ subroutine UCIS(spin_conserved,spin_flip,nBas,nC,nO,nV,nR,nS,ERI_aaaa,ERI_aabb,E
 
     call diagonalize_matrix(nS_sf,A_sf,Om_sf)
     A_sf(:,:) = transpose(A_sf)
-    call print_excitation_energies('UCIS',6,nS_sf,Om_sf)
+    call print_excitation_energies('CIS@UHF',6,nS_sf,Om_sf)
     call phULR_transition_vectors(ispin,nBas,nC,nO,nV,nR,nS,nS_ab,nS_ba,nS_sf,dipole_int_aa,dipole_int_bb, &
                                   cHF,S,Om_sf,A_sf,A_sf)
  
@@ -127,6 +137,14 @@ subroutine UCIS(spin_conserved,spin_flip,nBas,nC,nO,nV,nR,nS,ERI_aaaa,ERI_aabb,E
       call matout(nS_sf,nS_sf,A_sf)
       write(*,*)
     endif
+
+    ! Testing zone
+
+    if(dotest) then
+
+      call dump_test_value('U','CIS triplet excitation energy',Om_sf(1))
+
+    end if
 
     deallocate(A_sf,Om_sf)
 

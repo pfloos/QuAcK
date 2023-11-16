@@ -1,4 +1,4 @@
-subroutine print_qsGF2(nBas,nO,nSCF,Conv,thresh,eHF,eGF,c,SigC,Z,ENuc,ET,EV,EJ,Ex,Ec,EqsGF,dipole)
+subroutine print_qsRGF2(nBas,nO,nSCF,Conv,thresh,eHF,eGF,c,SigC,Z,ENuc,ET,EV,EJ,Ex,Ec,EqsGF,dipole)
 
 ! Print one-electron energies and other stuff for qsGF2
 

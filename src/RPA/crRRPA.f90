@@ -1,4 +1,4 @@
-subroutine crRRPA(dotest,TDA,doACFDT,exchange_kernel,singlet,triplet,nBas,nC,nO,nV,nR,nS,ENuc,EHF,ERI,dipole_int,e)
+subroutine crRRPA(dotest,TDA,doACFDT,exchange_kernel,singlet,triplet,nBas,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,dipole_int,eHF)
 
 ! Crossed-ring channel of the random phase approximation 
 
@@ -22,8 +22,8 @@ subroutine crRRPA(dotest,TDA,doACFDT,exchange_kernel,singlet,triplet,nBas,nC,nO,
   integer,intent(in)            :: nR
   integer,intent(in)            :: nS
   double precision,intent(in)   :: ENuc
-  double precision,intent(in)   :: EHF
-  double precision,intent(in)   :: e(nBas)
+  double precision,intent(in)   :: ERHF
+  double precision,intent(in)   :: eHF(nBas)
   double precision,intent(in)   :: ERI(nBas,nBas,nBas,nBas)
   double precision,intent(in)   :: dipole_int(nBas,nBas,ncart)
 
@@ -42,9 +42,9 @@ subroutine crRRPA(dotest,TDA,doACFDT,exchange_kernel,singlet,triplet,nBas,nC,nO,
 ! Hello world
 
   write(*,*)
-  write(*,*)'***********************************************************'
-  write(*,*)'|  Random phase approximation calculation: cr channel     |'
-  write(*,*)'***********************************************************'
+  write(*,*)'*********************************'
+  write(*,*)'* Restricted cr-RPA Calculation *'
+  write(*,*)'*********************************'
   write(*,*)
 
 ! TDA 
@@ -56,10 +56,8 @@ subroutine crRRPA(dotest,TDA,doACFDT,exchange_kernel,singlet,triplet,nBas,nC,nO,
 
 ! Initialization
 
-  dRPA = .false.
-
+  dRPA     = .false.
   EcRPA(:) = 0d0
-  EcRPA(:)   = 0d0
 
 ! Memory allocation
 
@@ -72,11 +70,11 @@ subroutine crRRPA(dotest,TDA,doACFDT,exchange_kernel,singlet,triplet,nBas,nC,nO,
 
     ispin = 1
 
-    call phLR_A(ispin,dRPA,nBas,nC,nO,nV,nR,nS,-1d0,e,ERI,Aph)
+    call phLR_A(ispin,dRPA,nBas,nC,nO,nV,nR,nS,-1d0,eHF,ERI,Aph)
     if(.not.TDA) call phLR_B(ispin,dRPA,nBas,nC,nO,nV,nR,nS,-1d0,ERI,Bph)
 
     call phLR(TDA,nS,Aph,Bph,EcRPA(ispin),Om,XpY,XmY)
-    call print_excitation_energies('crRPA@HF',ispin,nS,Om)
+    call print_excitation_energies('crRPA@RHF',ispin,nS,Om)
     call phLR_transition_vectors(.true.,nBas,nC,nO,nV,nR,nS,dipole_int,Om,XpY,XmY)
 
   endif
@@ -87,7 +85,7 @@ subroutine crRRPA(dotest,TDA,doACFDT,exchange_kernel,singlet,triplet,nBas,nC,nO,
 
     ispin = 2
 
-    call phLR_A(ispin,dRPA,nBas,nC,nO,nV,nR,nS,-1d0,e,ERI,Aph)
+    call phLR_A(ispin,dRPA,nBas,nC,nO,nV,nR,nS,-1d0,eHF,ERI,Aph)
     if(.not.TDA) call phLR_B(ispin,dRPA,nBas,nC,nO,nV,nR,nS,-1d0,ERI,Bph)
 
     call phLR(TDA,nS,Aph,Bph,EcRPA(ispin),Om,XpY,XmY)
@@ -105,10 +103,10 @@ subroutine crRRPA(dotest,TDA,doACFDT,exchange_kernel,singlet,triplet,nBas,nC,nO,
 
   write(*,*)
   write(*,*)'-------------------------------------------------------------------------------'
-  write(*,'(2X,A50,F20.10)') 'Tr@crRPA correlation energy (singlet) =',EcRPA(1)
-  write(*,'(2X,A50,F20.10)') 'Tr@crRPA correlation energy (triplet) =',EcRPA(2)
-  write(*,'(2X,A50,F20.10)') 'Tr@crRPA correlation energy           =',EcRPA(1) + EcRPA(2)
-  write(*,'(2X,A50,F20.10)') 'Tr@crRPA total energy                 =',ENuc + EHF + EcRPA(1) + EcRPA(2)
+  write(*,'(2X,A50,F20.10,A3)') 'Tr@crRRPA correlation energy (singlet) =',EcRPA(1),' au'
+  write(*,'(2X,A50,F20.10,A3)') 'Tr@crRRPA correlation energy (triplet) =',EcRPA(2),' au'
+  write(*,'(2X,A50,F20.10,A3)') 'Tr@crRRPA correlation energy           =',sum(EcRPA),' au'
+  write(*,'(2X,A50,F20.10,A3)') 'Tr@crRRPA total energy                 =',ENuc + ERHF + sum(EcRPA),' au'
   write(*,*)'-------------------------------------------------------------------------------'
   write(*,*)
 
@@ -121,17 +119,23 @@ subroutine crRRPA(dotest,TDA,doACFDT,exchange_kernel,singlet,triplet,nBas,nC,nO,
     write(*,*) '-------------------------------------------------------'
     write(*,*)
 
-    call crACFDT(exchange_kernel,dRPA,TDA,singlet,triplet,nBas,nC,nO,nV,nR,nS,ERI,e,EcRPA)
+    call crACFDT(exchange_kernel,dRPA,TDA,singlet,triplet,nBas,nC,nO,nV,nR,nS,ERI,eHF,EcRPA)
 
     write(*,*)
     write(*,*)'-------------------------------------------------------------------------------'
-    write(*,'(2X,A50,F20.10)') 'AC@crRPA correlation energy (singlet) =',EcRPA(1)
-    write(*,'(2X,A50,F20.10)') 'AC@crRPA correlation energy (triplet) =',EcRPA(2)
-    write(*,'(2X,A50,F20.10)') 'AC@crRPA correlation energy           =',EcRPA(1) + EcRPA(2)
-    write(*,'(2X,A50,F20.10)') 'AC@crRPA total energy                 =',ENuc + EHF + EcRPA(1) + EcRPA(2)
+    write(*,'(2X,A50,F20.10,A3)') 'AC@crRRPA correlation energy (singlet) =',EcRPA(1),' au'
+    write(*,'(2X,A50,F20.10,A3)') 'AC@crRRPA correlation energy (triplet) =',EcRPA(2),' au'
+    write(*,'(2X,A50,F20.10,A3)') 'AC@crRRPA correlation energy           =',sum(EcRPA),' au'
+    write(*,'(2X,A50,F20.10,A3)') 'AC@crRRPA total energy                 =',ENuc + ERHF + sum(EcRPA),' au'
     write(*,*)'-------------------------------------------------------------------------------'
     write(*,*)
 
+  end if
+
+  if(dotest) then
+  
+    call dump_test_value('R','crRPA correlation energy',sum(EcRPA))
+  
   end if
 
 end subroutine 

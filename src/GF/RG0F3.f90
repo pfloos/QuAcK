@@ -1,4 +1,4 @@
- subroutine G0F3(renormalization,nBas,nC,nO,nV,nR,V,e0)
+ subroutine RG0F3(dotest,renormalization,nBas,nC,nO,nV,nR,V,e0)
 
 ! Perform third-order Green function calculation in diagonal approximation
 
@@ -7,6 +7,7 @@
 
 ! Input variables
 
+  logical,intent(in)            :: dotest
   integer,intent(in)            :: renormalization
   integer,intent(in)            :: nBas,nC,nO,nV,nR
   double precision,intent(in)   :: e0(nBas),V(nBas,nBas,nBas,nBas)

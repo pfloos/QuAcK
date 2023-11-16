@@ -1,6 +1,6 @@
-subroutine CCSD(dotest,maxSCF,thresh,max_diis,doCCSDT,nBasin,nCin,nOin,nVin,nRin,ERI,ENuc,ERHF,eHF)
+subroutine GCCSD(dotest,maxSCF,thresh,max_diis,doCCSDT,nBas,nC,nO,nV,nR,ERI,ENuc,EGHF,eHF)
 
-! CCSD module
+! Generalized CCSD module
 
   implicit none
 
@@ -13,33 +13,26 @@ subroutine CCSD(dotest,maxSCF,thresh,max_diis,doCCSDT,nBasin,nCin,nOin,nVin,nRin
   double precision,intent(in)   :: thresh
 
   logical,intent(in)            :: doCCSDT
-  integer,intent(in)            :: nBasin
-  integer,intent(in)            :: nCin
-  integer,intent(in)            :: nOin
-  integer,intent(in)            :: nVin
-  integer,intent(in)            :: nRin
+  integer,intent(in)            :: nBas
+  integer,intent(in)            :: nC
+  integer,intent(in)            :: nO
+  integer,intent(in)            :: nV
+  integer,intent(in)            :: nR
   double precision,intent(in)   :: ENuc
-  double precision,intent(in)   :: ERHF
-  double precision,intent(in)   :: eHF(nBasin)
-  double precision,intent(in)   :: ERI(nBasin,nBasin,nBasin,nBasin)
+  double precision,intent(in)   :: EGHF
+  double precision,intent(in)   :: eHF(nBas)
+  double precision,intent(in)   :: ERI(nBas,nBas,nBas,nBas)
 
 ! Local variables
 
   double precision              :: start_CCSDT,end_CCSDT,t_CCSDT
-  integer                       :: nBas
-  integer                       :: nC
-  integer                       :: nO
-  integer                       :: nV
-  integer                       :: nR
   integer                       :: nSCF
   double precision              :: Conv
   double precision              :: EcMP2
-  double precision              :: ECCSD
-  double precision              :: EcCCSD
+  double precision              :: ECC
+  double precision              :: EcCC
   double precision              :: EcCCT
 
-  double precision,allocatable  :: seHF(:)
-  double precision,allocatable  :: sERI(:,:,:,:)
   double precision,allocatable  :: dbERI(:,:,:,:)
   double precision,allocatable  :: delta_OV(:,:)
   double precision,allocatable  :: delta_OOVV(:,:,:,:)
@@ -84,44 +77,27 @@ subroutine CCSD(dotest,maxSCF,thresh,max_diis,doCCSDT,nBasin,nCin,nOin,nVin,nRin
 ! Hello world
 
   write(*,*)
-  write(*,*)'**************************************'
-  write(*,*)'|         CCSD calculation           |'
-  write(*,*)'**************************************'
+  write(*,*)'********************************'
+  write(*,*)'* Generalized CCSD Calculation *'
+  write(*,*)'********************************'
   write(*,*)
-
-! Spatial to spin orbitals
-
-  nBas = 2*nBasin
-  nC   = 2*nCin
-  nO   = 2*nOin
-  nV   = 2*nVin
-  nR   = 2*nRin
-
-  allocate(seHF(nBas),sERI(nBas,nBas,nBas,nBas))
-
-  call spatial_to_spin_MO_energy(nBasin,eHF,nBas,seHF)
-  call spatial_to_spin_ERI(nBasin,ERI,nBas,sERI)
 
 ! Antysymmetrize ERIs
 
   allocate(dbERI(nBas,nBas,nBas,nBas))
 
-  call antisymmetrize_ERI(2,nBas,sERI,dbERI)
-
-  deallocate(sERI)
+  call antisymmetrize_ERI(2,nBas,ERI,dbERI)
 
 ! Form energy denominator
 
   allocate(eO(nO),eV(nV))
   allocate(delta_OV(nO,nV),delta_OOVV(nO,nO,nV,nV))
 
-  eO(:) = seHF(1:nO)
-  eV(:) = seHF(nO+1:nBas)
+  eO(:) = eHF(1:nO)
+  eV(:) = eHF(nO+1:nBas)
 
   call form_delta_OV(nC,nO,nV,nR,eO,eV,delta_OV)
   call form_delta_OOVV(nC,nO,nV,nR,eO,eV,delta_OOVV)
-
-  deallocate(seHF)
 
 ! Create integral batches
 
@@ -169,7 +145,7 @@ subroutine CCSD(dotest,maxSCF,thresh,max_diis,doCCSDT,nBasin,nCin,nOin,nVin,nRin
 
   Conv = 1d0
   nSCF = 0
-  ECCSD = ERHF
+  ECC = EGHF
 
   n_diis         = 0
   t1_diis(:,:)   = 0d0
@@ -182,10 +158,10 @@ subroutine CCSD(dotest,maxSCF,thresh,max_diis,doCCSDT,nBasin,nCin,nOin,nVin,nRin
 !------------------------------------------------------------------------
   write(*,*)
   write(*,*)'----------------------------------------------------'
-  write(*,*)'| CCSD calculation                                  |'
+  write(*,*)'| GCCSD calculation                                 |'
   write(*,*)'----------------------------------------------------'
   write(*,'(1X,A1,1X,A3,1X,A1,1X,A16,1X,A1,1X,A10,1X,A1,1X,A10,1X,A1,1X)') &
-            '|','#','|','E(CCSD)','|','Ec(CCSD)','|','Conv','|'
+            '|','#','|','E(GCCSD)','|','Ec(GCCSD)','|','Conv','|'
   write(*,*)'----------------------------------------------------'
 
   do while(Conv > thresh .and. nSCF < maxSCF)
@@ -223,11 +199,11 @@ subroutine CCSD(dotest,maxSCF,thresh,max_diis,doCCSDT,nBasin,nCin,nOin,nVin,nRin
  
 !   Compute correlation energy
 
-    call CCSD_correlation_energy(nC,nO,nV,nR,OOVV,tau,EcCCSD) 
+    call CCSD_correlation_energy(nC,nO,nV,nR,OOVV,tau,EcCC) 
 
 !   Dump results
 
-    ECCSD = ERHF + EcCCSD
+    ECC = EGHF + EcCC
 
     ! DIIS extrapolation
 
@@ -240,7 +216,7 @@ subroutine CCSD(dotest,maxSCF,thresh,max_diis,doCCSDT,nBasin,nCin,nOin,nVin,nRin
 !   if(min(abs(rcond1),abs(rcond2)) < 1d-15) n_diis = 0
 
     write(*,'(1X,A1,1X,I3,1X,A1,1X,F16.10,1X,A1,1X,F10.6,1X,A1,1X,F10.6,1X,A1,1X)') &
-      '|',nSCF,'|',ECCSD+ENuc,'|',EcCCSD,'|',Conv,'|'
+      '|',nSCF,'|',ECC+ENuc,'|',EcCC,'|',Conv,'|'
 
   end do
   write(*,*)'----------------------------------------------------'
@@ -266,8 +242,8 @@ subroutine CCSD(dotest,maxSCF,thresh,max_diis,doCCSDT,nBasin,nCin,nOin,nVin,nRin
   write(*,*)'----------------------------------------------------'
   write(*,*)'                 CCSD energy                        '
   write(*,*)'----------------------------------------------------'
-  write(*,'(1X,A20,1X,F15.10)')' E(CCSD)  = ',ENuc+ECCSD  
-  write(*,'(1X,A20,1X,F10.6)')' Ec(CCSD) = ',EcCCSD 
+  write(*,'(1X,A20,1X,F15.10)')' E(CCSD)  = ',ENuc+ECC  
+  write(*,'(1X,A20,1X,F10.6)')' Ec(CCSD) = ',EcCC 
   write(*,*)'----------------------------------------------------'
   write(*,*)
 
@@ -295,10 +271,10 @@ subroutine CCSD(dotest,maxSCF,thresh,max_diis,doCCSDT,nBasin,nCin,nOin,nVin,nRin
 
     write(*,*)
     write(*,*)'----------------------------------------------------'
-    write(*,*)'                 CCSD(T) energy                     '
+    write(*,*)'                GCCSD(T) energy                     '
     write(*,*)'----------------------------------------------------'
-    write(*,'(1X,A20,1X,F15.10)')' E(CCSD(T))  = ',ENuc + ECCSD + EcCCT
-    write(*,'(1X,A20,1X,F10.6)')' Ec(CCSD(T)) = ',EcCCSD + EcCCT
+    write(*,'(1X,A20,1X,F15.10)')' E(GCCSD(T)) = ',ENuc + ECC + EcCCT
+    write(*,'(1X,A20,1X,F10.6)')' Ec(GCCSD(T)) = ',EcCC + EcCCT
     write(*,*)'----------------------------------------------------'
     write(*,*)
 
@@ -308,7 +284,7 @@ subroutine CCSD(dotest,maxSCF,thresh,max_diis,doCCSDT,nBasin,nCin,nOin,nVin,nRin
 
   if(dotest) then
 
-    call dump_test_value('R','CCSD correlation energy',EcCCSD)
+    call dump_test_value('R','GCCSD correlation energy',EcCC)
 
   end if
 

@@ -1,5 +1,5 @@
-subroutine G0T0pp(doACFDT,exchange_kernel,doXBS,dophBSE,TDA_T,TDA,dBSE,dTDA,doppBSE,singlet,triplet, & 
-                  linearize,eta,regularize,nBas,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,dipole_int,eHF)
+subroutine RG0T0pp(dotest,doACFDT,exchange_kernel,doXBS,dophBSE,TDA_T,TDA,dBSE,dTDA,doppBSE,singlet,triplet, & 
+                   linearize,eta,regularize,nBas,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,dipole_int,eHF)
 
 ! Perform one-shot calculation with a T-matrix self-energy (G0T0)
 
@@ -7,6 +7,8 @@ subroutine G0T0pp(doACFDT,exchange_kernel,doXBS,dophBSE,TDA_T,TDA,dBSE,dTDA,dopp
   include 'parameters.h'
 
 ! Input variables
+
+  logical,intent(in)            :: dotest
 
   logical,intent(in)            :: doACFDT
   logical,intent(in)            :: exchange_kernel
@@ -65,9 +67,9 @@ subroutine G0T0pp(doACFDT,exchange_kernel,doXBS,dophBSE,TDA_T,TDA,dBSE,dTDA,dopp
 ! Hello world
 
   write(*,*)
-  write(*,*)'************************************************'
-  write(*,*)'|          One-shot G0T0pp calculation          |'
-  write(*,*)'************************************************'
+  write(*,*)'*********************************'
+  write(*,*)'* Restricted G0T0pp Calculation *'
+  write(*,*)'*********************************'
   write(*,*)
 
 
@@ -260,8 +262,8 @@ subroutine G0T0pp(doACFDT,exchange_kernel,doXBS,dophBSE,TDA_T,TDA,dBSE,dTDA,dopp
     write(*,*)'-------------------------------------------------------------------------------'
     write(*,'(2X,A50,F20.10,A3)') 'Tr@phBSE@G0T0pp correlation energy (singlet) =',EcBSE(1),' au'
     write(*,'(2X,A50,F20.10,A3)') 'Tr@phBSE@G0T0pp correlation energy (triplet) =',EcBSE(2),' au'
-    write(*,'(2X,A50,F20.10,A3)') 'Tr@phBSE@G0T0pp correlation energy           =',EcBSE(1) + EcBSE(2),' au'
-    write(*,'(2X,A50,F20.10,A3)') 'Tr@phBSE@G0T0pp total energy                 =',ENuc + ERHF + EcBSE(1) + EcBSE(2),' au'
+    write(*,'(2X,A50,F20.10,A3)') 'Tr@phBSE@G0T0pp correlation energy           =',sum(EcBSE),' au'
+    write(*,'(2X,A50,F20.10,A3)') 'Tr@phBSE@G0T0pp total energy                 =',ENuc + ERHF + sum(EcBSE),' au'
     write(*,*)'-------------------------------------------------------------------------------'
     write(*,*)
 
@@ -296,8 +298,8 @@ subroutine G0T0pp(doACFDT,exchange_kernel,doXBS,dophBSE,TDA_T,TDA,dBSE,dTDA,dopp
       write(*,*)'-------------------------------------------------------------------------------'
       write(*,'(2X,A50,F20.10,A3)') 'AC@phBSE@G0T0pp correlation energy (singlet) =',EcBSE(1),' au'
       write(*,'(2X,A50,F20.10,A3)') 'AC@phBSE@G0T0pp correlation energy (triplet) =',EcBSE(2),' au'
-      write(*,'(2X,A50,F20.10,A3)') 'AC@phBSE@G0T0pp correlation energy           =',EcBSE(1) + EcBSE(2),' au'
-      write(*,'(2X,A50,F20.10,A3)') 'AC@phBSE@G0T0pp total energy                 =',ENuc + ERHF + EcBSE(1) + EcBSE(2),' au'
+      write(*,'(2X,A50,F20.10,A3)') 'AC@phBSE@G0T0pp correlation energy           =',sum(EcBSE),' au'
+      write(*,'(2X,A50,F20.10,A3)') 'AC@phBSE@G0T0pp total energy                 =',ENuc + ERHF + sum(EcBSE),' au'
       write(*,*)'-------------------------------------------------------------------------------'
       write(*,*)
 
@@ -315,10 +317,20 @@ subroutine G0T0pp(doACFDT,exchange_kernel,doXBS,dophBSE,TDA_T,TDA,dBSE,dTDA,dopp
     write(*,*)'-------------------------------------------------------------------------------'
     write(*,'(2X,A50,F20.10,A3)') 'Tr@ppBSE@G0T0pp correlation energy (singlet) =',EcBSE(1),' au'
     write(*,'(2X,A50,F20.10,A3)') 'Tr@ppBSE@G0T0pp correlation energy (triplet) =',EcBSE(2),' au'
-    write(*,'(2X,A50,F20.10,A3)') 'Tr@ppBSE@G0T0pp correlation energy =',EcBSE(1) + EcBSE(2),' au'
-    write(*,'(2X,A50,F20.10,A3)') 'Tr@ppBSE@G0T0pp total energy =',ENuc + ERHF + EcBSE(1) + EcBSE(2),' au'
+    write(*,'(2X,A50,F20.10,A3)') 'Tr@ppBSE@G0T0pp correlation energy =',sum(EcBSE),' au'
+    write(*,'(2X,A50,F20.10,A3)') 'Tr@ppBSE@G0T0pp total energy =',ENuc + ERHF + sum(EcBSE),' au'
     write(*,*)'-------------------------------------------------------------------------------'
     write(*,*)
+
+  end if
+
+! Testing zone
+
+  if(dotest) then
+  
+    call dump_test_value('R','G0T0pp correlation energy',sum(EcRPA))
+    call dump_test_value('R','G0T0pp HOMO energy',eGT(nO))
+    call dump_test_value('R','G0T0pp LUMO energy',eGT(nO+1))
 
   end if
 

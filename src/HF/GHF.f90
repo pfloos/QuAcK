@@ -234,14 +234,14 @@ subroutine GHF(dotest,maxSCF,thresh,max_diis,guess_type,mix,level_shift,nNuc,ZNu
 
     ET = ETaa + ETbb
 
-!  Potential energy
+!   Potential energy
 
-   EVaa = trace_matrix(nBas,matmul(Paa,V))
-   EVbb = trace_matrix(nBas,matmul(Pbb,V))
+    EVaa = trace_matrix(nBas,matmul(Paa,V))
+    EVbb = trace_matrix(nBas,matmul(Pbb,V))
 
-   EV = EVaa + EVbb
+    EV = EVaa + EVbb
 
-!  Hartree energy
+!   Hartree energy
 
     EJaaaa = 0.5d0*trace_matrix(nBas,matmul(Paa,Jaa))
     EJaabb = 0.5d0*trace_matrix(nBas,matmul(Paa,Jbb))
@@ -294,7 +294,7 @@ subroutine GHF(dotest,maxSCF,thresh,max_diis,guess_type,mix,level_shift,nNuc,ZNu
 
 ! Compute final GHF energy
 
-  call print_GHF(nBas,nBas2,nO,eHF,C,P,ENuc,ET,EV,EJ,EK,EGHF,dipole)
+  call print_GHF(nBas,nBas2,nO,eHF,C,P,Ov,ENuc,ET,EV,EJ,EK,EGHF,dipole)
 
 ! Print test values
 
@@ -304,7 +304,7 @@ subroutine GHF(dotest,maxSCF,thresh,max_diis,guess_type,mix,level_shift,nNuc,ZNu
     call dump_test_value('G','GHF HOMO energy',eHF(nO))
     call dump_test_value('G','GHF LUMO energy',eHF(nO+1))
     call dump_test_value('G','GHF dipole moment',norm2(dipole))
-
-  end if
+                                
+  end if                        
 
 end subroutine 

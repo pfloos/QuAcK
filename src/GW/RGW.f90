@@ -1,4 +1,4 @@
-subroutine RGW(doG0W0,doevGW,doqsGW,doufG0W0,doufGW,doSRGqsGW,maxSCF,thresh,max_diis,doACFDT,      &
+subroutine RGW(dotest,doG0W0,doevGW,doqsGW,doufG0W0,doufGW,doSRGqsGW,maxSCF,thresh,max_diis,doACFDT,      &
                exchange_kernel,doXBS,dophBSE,dophBSE2,doppBSE,TDA_W,TDA,dBSE,dTDA,singlet,triplet, &
                linearize,eta,regularize,nNuc,ZNuc,rNuc,ENuc,nBas,nC,nO,nV,nR,nS,EHF,S,X,T,V,Hc,    & 
                ERI_AO,ERI,dipole_int_AO,dipole_int,PHF,cHF,epsHF)
@@ -10,12 +10,14 @@ subroutine RGW(doG0W0,doevGW,doqsGW,doufG0W0,doufGW,doSRGqsGW,maxSCF,thresh,max_
 
 ! Input variables
 
-  logical                       :: doG0W0
-  logical                       :: doevGW
-  logical                       :: doqsGW
-  logical                       :: doufG0W0
-  logical                       :: doufGW
-  logical                       :: doSRGqsGW
+  logical,intent(in)            :: dotest
+
+  logical,intent(in)            :: doG0W0
+  logical,intent(in)            :: doevGW
+  logical,intent(in)            :: doqsGW
+  logical,intent(in)            :: doufG0W0
+  logical,intent(in)            :: doufGW
+  logical,intent(in)            :: doSRGqsGW
 
   integer,intent(in)            :: maxSCF
   integer,intent(in)            :: max_diis
@@ -73,7 +75,7 @@ subroutine RGW(doG0W0,doevGW,doqsGW,doufG0W0,doufGW,doSRGqsGW,maxSCF,thresh,max_
   if(doG0W0) then
     
     call wall_time(start_GW)
-    call RG0W0(doACFDT,exchange_kernel,doXBS,dophBSE,dophBSE2,TDA_W,TDA,dBSE,dTDA,doppBSE,singlet,triplet, &
+    call RG0W0(dotest,doACFDT,exchange_kernel,doXBS,dophBSE,dophBSE2,TDA_W,TDA,dBSE,dTDA,doppBSE,singlet,triplet, &
                linearize,eta,regularize,nBas,nC,nO,nV,nR,nS,ENuc,EHF,ERI,dipole_int,epsHF)
     call wall_time(end_GW)
   
@@ -90,7 +92,7 @@ subroutine RGW(doG0W0,doevGW,doqsGW,doufG0W0,doufGW,doSRGqsGW,maxSCF,thresh,max_
   if(doevGW) then
 
     call wall_time(start_GW)
-    call evRGW(maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,dophBSE,dophBSE2,TDA_W,TDA,dBSE,dTDA,doppBSE, &
+    call evRGW(dotest,maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,dophBSE,dophBSE2,TDA_W,TDA,dBSE,dTDA,doppBSE, &
                singlet,triplet,linearize,eta,regularize,nBas,nC,nO,nV,nR,nS,ENuc,EHF,ERI,dipole_int,epsHF)
     call wall_time(end_GW)
 
@@ -107,7 +109,7 @@ subroutine RGW(doG0W0,doevGW,doqsGW,doufG0W0,doufGW,doSRGqsGW,maxSCF,thresh,max_
   if(doqsGW) then 
 
     call wall_time(start_GW)
-    call qsRGW(maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,dophBSE,dophBSE2,TDA_W,TDA,dBSE,dTDA,doppBSE, & 
+    call qsRGW(dotest,maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,dophBSE,dophBSE2,TDA_W,TDA,dBSE,dTDA,doppBSE, & 
                singlet,triplet,eta,regularize,nNuc,ZNuc,rNuc,ENuc,nBas,nC,nO,nV,nR,nS,EHF,S,X,T,V,Hc,ERI_AO,ERI,  & 
                dipole_int_AO,dipole_int,PHF,cHF,epsHF)
     call wall_time(end_GW)
@@ -125,7 +127,7 @@ subroutine RGW(doG0W0,doevGW,doqsGW,doufG0W0,doufGW,doSRGqsGW,maxSCF,thresh,max_
   if(doSRGqsGW) then 
 
     call wall_time(start_GW)
-    call SRG_qsGW(maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,dophBSE,dophBSE2,TDA_W,TDA,dBSE,dTDA, & 
+    call SRG_qsGW(dotest,maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,dophBSE,dophBSE2,TDA_W,TDA,dBSE,dTDA, & 
                   singlet,triplet,eta,nNuc,ZNuc,rNuc,ENuc,nBas,nC,nO,nV,nR,nS,EHF,S,X,T,V,Hc,ERI_AO,ERI,   & 
                   dipole_int_AO,dipole_int,PHF,cHF,epsHF)
     call wall_time(end_GW)
@@ -143,7 +145,7 @@ subroutine RGW(doG0W0,doevGW,doqsGW,doufG0W0,doufGW,doSRGqsGW,maxSCF,thresh,max_
   if(doufG0W0) then
     
     call wall_time(start_GW)
-    call ufG0W0(nBas,nC,nO,nV,nR,nS,ENuc,EHF,ERI,epsHF,TDA_W)
+    call ufG0W0(dotest,nBas,nC,nO,nV,nR,nS,ENuc,EHF,ERI,epsHF,TDA_W)
     call wall_time(end_GW)
   
     t_GW = end_GW - start_GW
@@ -159,7 +161,7 @@ subroutine RGW(doG0W0,doevGW,doqsGW,doufG0W0,doufGW,doSRGqsGW,maxSCF,thresh,max_
   if(doufGW) then
     
     call wall_time(start_GW)
-    call ufGW(nBas,nC,nO,nV,nR,nS,ENuc,EHF,ERI,epsHF)
+    call ufGW(dotest,nBas,nC,nO,nV,nR,nS,ENuc,EHF,ERI,epsHF)
     call wall_time(end_GW)
   
     t_GW = end_GW - start_GW

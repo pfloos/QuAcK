@@ -1,4 +1,4 @@
-subroutine qsGGW(maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,dophBSE,dophBSE2,TDA_W,TDA,dBSE,dTDA,doppBSE, & 
+subroutine qsGGW(dotest,maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,dophBSE,dophBSE2,TDA_W,TDA,dBSE,dTDA,doppBSE, & 
                  eta,regularize,nNuc,ZNuc,rNuc,ENuc,nBas,nBas2,nC,nO,nV,nR,nS,EGHF,Ov,Or,T,V,Hc,ERI_AO,  & 
                  ERI_MO,dipole_int_AO,dipole_int_MO,PHF,cHF,eHF)
 
@@ -8,6 +8,8 @@ subroutine qsGGW(maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,dophBSE,do
   include 'parameters.h'
 
 ! Input variables
+
+  logical,intent(in)            :: dotest
 
   integer,intent(in)            :: maxSCF
   integer,intent(in)            :: max_diis
@@ -436,5 +438,15 @@ subroutine qsGGW(maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,dophBSE,do
 !   write(*,*)
 
 ! end if
+
+! Testing zone
+
+  if(dotest) then
+
+    call dump_test_value('G','qsGW correlation energy',EcRPA)
+    call dump_test_value('G','qsGW HOMO energy',eGW(nO))
+    call dump_test_value('G','qsGW LUMO energy',eGW(nO+1))
+
+  end if
 
 end subroutine 

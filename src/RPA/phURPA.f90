@@ -167,7 +167,7 @@ subroutine phURPA(dotest,TDA,doACFDT,exchange_kernel,spin_conserved,spin_flip,nB
 
   if(dotest) then
 
-    call dump_test_value('U','phURPA correlation energy',sum(EcRPA))
+    call dump_test_value('U','phRPA correlation energy',sum(EcRPA))
 
   end if
 
