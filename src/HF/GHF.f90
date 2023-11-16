@@ -182,52 +182,7 @@ subroutine GHF(dotest,maxSCF,thresh,max_diis,guess_type,mix,level_shift,nNuc,ZNu
 
     if(nSCF > 1) Conv = maxval(abs(err))
     
-!   DIIS extrapolation
-
-    if(max_diis > 1) then
-      n_diis = min(n_diis+1,max_diis)
-      call DIIS_extrapolation(rcond,nBas2Sq,nBas2Sq,n_diis,err_diis(:,1:n_diis),F_diis(:,1:n_diis),err,F)
-    end if
-
-!   Level-shifting
-
-    if(level_shift > 0d0 .and. Conv > thresh) then
-      call level_shifting(level_shift,nBas,nO,S,C,F)
-    end if
-
-!  Transform Fock matrix in orthogonal basis
-
-    Fp(:,:) = matmul(transpose(X),matmul(F,X))
-
-!  Diagonalize Fock matrix to get eigenvectors and eigenvalues
-
-    Cp(:,:) = Fp(:,:)
-    call diagonalize_matrix(nBas2,Cp,eHF)
-    
-!   Back-transform eigenvectors in non-orthogonal basis
-
-    C(:,:) = matmul(X,Cp)
-
-!   Mix guess for UHF solution in singlet states
-
-!   if(nSCF == 1) call mix_guess(nBas,nO,mix,c)
-
-!   Form super density matrix
-
-    P(:,:) = matmul(C(:,1:nO),transpose(C(:,1:nO)))
-
-!   Compute individual density matrices
-
-    Paa(:,:) = P(     1:nBas ,     1:nBas )
-    Pab(:,:) = P(     1:nBas ,nBas+1:nBas2)
-    Pba(:,:) = P(nBas+1:nBas2,     1:nBas )
-    Pbb(:,:) = P(nBas+1:nBas2,nBas+1:nBas2)
-
-!------------------------------------------------------------------------
-!   Compute UHF energy
-!------------------------------------------------------------------------
-
-!  Kinetic energy
+!   Kinetic energy
 
     ETaa = trace_matrix(nBas,matmul(Paa,T))
     ETbb = trace_matrix(nBas,matmul(Pbb,T))
@@ -263,9 +218,48 @@ subroutine GHF(dotest,maxSCF,thresh,max_diis,guess_type,mix,level_shift,nNuc,ZNu
 
     EGHF = ET + EV + EJ + EK
 
+!   DIIS extrapolation
+
+    if(max_diis > 1) then
+      n_diis = min(n_diis+1,max_diis)
+      call DIIS_extrapolation(rcond,nBas2Sq,nBas2Sq,n_diis,err_diis,F_diis,err,F)
+    end if
+
+!   Level-shifting
+
+    if(level_shift > 0d0 .and. Conv > thresh) call level_shifting(level_shift,nBas,nO,S,C,F)
+
+!  Transform Fock matrix in orthogonal basis
+
+    Fp(:,:) = matmul(transpose(X),matmul(F,X))
+
+!  Diagonalize Fock matrix to get eigenvectors and eigenvalues
+
+    Cp(:,:) = Fp(:,:)
+    call diagonalize_matrix(nBas2,Cp,eHF)
+    
+!   Back-transform eigenvectors in non-orthogonal basis
+
+    C(:,:) = matmul(X,Cp)
+
+!   Mix guess for UHF solution in singlet states
+
+!   if(nSCF == 1) call mix_guess(nBas,nO,mix,c)
+
+!   Form super density matrix
+
+    P(:,:) = matmul(C(:,1:nO),transpose(C(:,1:nO)))
+
+!   Compute individual density matrices
+
+    Paa(:,:) = P(     1:nBas ,     1:nBas )
+    Pab(:,:) = P(     1:nBas ,nBas+1:nBas2)
+    Pba(:,:) = P(nBas+1:nBas2,     1:nBas )
+    Pbb(:,:) = P(nBas+1:nBas2,nBas+1:nBas2)
+
 !   Dump results
 
-    write(*,'(1X,A1,1X,I3,1X,A1,1X,F16.10,1X,A1,1X,F16.10,1X,A1,1X,F16.10,1X,A1,1X,F10.6,1X,A1,1X)') & 
+    write(*,'(1X,A1,1X,I3,1X,A1,1X,F16.10,1X,A1,1X,F16.10,1X,A1,1X,F16.10,1X,A1,1X,E10.2,1X,A1,1X)') & 
       '|',nSCF,'|',EGHF + ENuc,'|',EJ,'|',EK,'|',Conv,'|'
  
   end do

@@ -9,11 +9,15 @@ subroutine DIIS_extrapolation(rcond,n_err,n_e,n_diis,error,e,error_in,e_inout)
 ! Input variables
 
   integer,intent(in)            :: n_err,n_e
-  double precision,intent(in)   :: error_in(n_err),error(n_err,n_diis),e(n_e,n_diis)
+  double precision,intent(in)   :: error_in(n_err)
+  double precision,intent(in)   :: error(n_err,n_diis)
+  double precision,intent(in)   :: e(n_e,n_diis)
 
 ! Local variables
 
-  double precision,allocatable  :: A(:,:),b(:),w(:)
+  double precision,allocatable  :: A(:,:)
+  double precision,allocatable  :: b(:)
+  double precision,allocatable  :: w(:)
 
 ! Output variables
 
@@ -45,7 +49,6 @@ subroutine DIIS_extrapolation(rcond,n_err,n_e,n_diis,error,e,error_in,e_inout)
 
 ! Solve linear system
 
-! call easy_linear_solve(n_diis+1,A,b,w)
   call linear_solve(n_diis+1,A,b,w,rcond)
 
 ! Extrapolate

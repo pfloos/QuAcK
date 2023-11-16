@@ -175,7 +175,16 @@ subroutine linear_solve(N,A,b,x,rcond)
   integer,allocatable            :: ipiv(:),iwork(:)
   double precision,allocatable   :: AF(:,:),work(:)
 
-  lwork = 3*N
+  ! Find optimal size for temporary arrays
+
+  allocate(work(1))
+
+  lwork = -1
+  call dsysvx('N','U',N,1,A,N,AF,N,ipiv,b,N,x,N,rcond,ferr,berr,work,lwork,iwork,info)
+  lwork = int(work(1))
+
+  deallocate(work)
+
   allocate(AF(N,N),ipiv(N),work(lwork),iwork(N))
 
   call dsysvx('N','U',N,1,A,N,AF,N,ipiv,b,N,x,N,rcond,ferr,berr,work,lwork,iwork,info)

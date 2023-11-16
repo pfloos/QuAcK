@@ -1,5 +1,5 @@
 subroutine ROHF(dotest,maxSCF,thresh,max_diis,guess_type,mix,level_shift,nNuc,ZNuc,rNuc,ENuc, & 
-                nBas,nO,S,T,V,Hc,ERI,dipole_int,X,EHF,e,c,Ptot)
+                nBas,nO,S,T,V,Hc,ERI,dipole_int,X,EROHF,eHF,c,Ptot)
 
 ! Perform restricted open-shell Hartree-Fock calculation
 
@@ -42,7 +42,7 @@ subroutine ROHF(dotest,maxSCF,thresh,max_diis,guess_type,mix,level_shift,nNuc,ZN
   double precision              :: ET(nspin)
   double precision              :: EV(nspin)
   double precision              :: EJ(nsp)
-  double precision              :: Ex(nspin)
+  double precision              :: EK(nspin)
   double precision              :: dipole(ncart)
 
   double precision,allocatable  :: cp(:,:)
@@ -61,9 +61,9 @@ subroutine ROHF(dotest,maxSCF,thresh,max_diis,guess_type,mix,level_shift,nNuc,ZN
 
 ! Output variables
 
-  double precision,intent(out)  :: EHF
-  double precision,intent(out)  :: e(nBas)
-  double precision,intent(out)  :: c(nBas,nBas)
+  double precision,intent(out)  :: EROHF
+  double precision,intent(out)  :: eHF(nBas)
+  double precision,intent(inout):: c(nBas,nBas)
   double precision,intent(out)  :: Ptot(nBas,nBas)
 
 ! Hello world
@@ -80,8 +80,8 @@ subroutine ROHF(dotest,maxSCF,thresh,max_diis,guess_type,mix,level_shift,nNuc,ZN
 
 ! Memory allocation
 
-  allocate(J(nBas,nBas,nspin),F(nBas,nBas,nspin),Fp(nBas,nBas),Ftot(nBas,nBas),   & 
-           P(nBas,nBas,nspin),K(nBas,nBas,nspin),err(nBas,nBas),cp(nBas,nBas), &
+  allocate(J(nBas,nBas,nspin),F(nBas,nBas,nspin),Fp(nBas,nBas),Ftot(nBas,nBas), & 
+           P(nBas,nBas,nspin),K(nBas,nBas,nspin),err(nBas,nBas),cp(nBas,nBas),  &
            err_diis(nBasSq,max_diis),F_diis(nBasSq,max_diis))
 
 ! Guess coefficients and demsity matrices
@@ -90,6 +90,7 @@ subroutine ROHF(dotest,maxSCF,thresh,max_diis,guess_type,mix,level_shift,nNuc,ZN
   do ispin=1,nspin
     P(:,:,ispin) = matmul(c(:,1:nO(ispin)),transpose(c(:,1:nO(ispin))))
   end do
+  Ptot(:,:) = P(:,:,1) + P(:,:,2)
 
 ! Initialization
 
@@ -106,10 +107,10 @@ subroutine ROHF(dotest,maxSCF,thresh,max_diis,guess_type,mix,level_shift,nNuc,ZN
 !------------------------------------------------------------------------
 
   write(*,*)
-  write(*,*)'----------------------------------------------------------'
-  write(*,'(1X,A1,1X,A3,1X,A1,1X,A16,1X,A1,1X,A16,1X,A1,1X,A10,1X,A1,1X)') & 
-            '|','#','|','E(ROHF)','|','Ex(ROHF)','|','Conv','|'
-  write(*,*)'----------------------------------------------------------'
+  write(*,*)'-----------------------------------------------------------------------------'
+  write(*,'(1X,A1,1X,A3,1X,A1,1X,A16,1X,A1,1X,A16,1X,A1,1X,A16,1X,A1,1X,A10,1X,A1,1X)') &
+            '|','#','|','E(ROHF)','|','EJ(ROHF)','|','EK(ROHF)','|','Conv','|'
+  write(*,*)'-----------------------------------------------------------------------------'
   
   do while(Conv > thresh .and. nSCF < maxSCF)
 
@@ -139,15 +140,43 @@ subroutine ROHF(dotest,maxSCF,thresh,max_diis,guess_type,mix,level_shift,nNuc,ZN
 
 !   Check convergence 
 
-    err(:,:) = matmul(Ftot(:,:),matmul(Ptot(:,:),S(:,:))) - matmul(matmul(S(:,:),Ptot(:,:)),Ftot(:,:))
+    err(:,:) = matmul(Ftot,matmul(Ptot,S)) - matmul(matmul(S,Ptot),Ftot)
     if(nSCF > 1) Conv = maxval(abs(err(:,:)))
     
+!   Kinetic energy
+
+    do ispin=1,nspin
+      ET(ispin) = trace_matrix(nBas,matmul(P(:,:,ispin),T(:,:)))
+    end do
+
+!   Potential energy
+
+    do ispin=1,nspin
+      EV(ispin) = trace_matrix(nBas,matmul(P(:,:,ispin),V(:,:)))
+    end do
+
+!   Hartree energy
+
+    EJ(1) = 0.5d0*trace_matrix(nBas,matmul(P(:,:,1),J(:,:,1)))
+    EJ(2) = trace_matrix(nBas,matmul(P(:,:,1),J(:,:,2)))
+    EJ(3) = 0.5d0*trace_matrix(nBas,matmul(P(:,:,2),J(:,:,2)))
+
+!   Exchange energy
+
+    do ispin=1,nspin
+      EK(ispin) = 0.5d0*trace_matrix(nBas,matmul(P(:,:,ispin),K(:,:,ispin)))
+    end do
+
+!   Total energy
+
+    EROHF = sum(ET) + sum(EV) + sum(EJ) + sum(EK)
+
 !   DIIS extrapolation
 
     if(max_diis > 1) then
 
       n_diis = min(n_diis+1,max_diis)
-      call DIIS_extrapolation(rcond,nBasSq,nBasSq,n_diis,err_diis(:,1:n_diis),F_diis(:,1:n_diis),err,Ftot)
+      call DIIS_extrapolation(rcond,nBasSq,nBasSq,n_diis,err_diis,F_diis,err,Ftot)
 
     end if
 
@@ -168,7 +197,7 @@ subroutine ROHF(dotest,maxSCF,thresh,max_diis,guess_type,mix,level_shift,nNuc,ZN
 !  Diagonalize Fock matrix to get eigenvectors and eigenvalues
 
     cp(:,:) = Fp(:,:)
-    call diagonalize_matrix(nBas,cp,e)
+    call diagonalize_matrix(nBas,cp,eHF)
     
 !   Back-transform eigenvectors in non-orthogonal basis
 
@@ -181,45 +210,13 @@ subroutine ROHF(dotest,maxSCF,thresh,max_diis,guess_type,mix,level_shift,nNuc,ZN
     end do
     Ptot(:,:) = P(:,:,1) + P(:,:,2) 
 
-!------------------------------------------------------------------------
-!   Compute ROHF energy
-!------------------------------------------------------------------------
-
-!  Kinetic energy
-
-    do ispin=1,nspin
-      ET(ispin) = trace_matrix(nBas,matmul(P(:,:,ispin),T(:,:)))
-    end do
-
-!  Potential energy
-
-    do ispin=1,nspin
-      EV(ispin) = trace_matrix(nBas,matmul(P(:,:,ispin),V(:,:)))
-    end do
-
-!  Hartree energy
-
-    EJ(1) = 0.5d0*trace_matrix(nBas,matmul(P(:,:,1),J(:,:,1)))
-    EJ(2) = trace_matrix(nBas,matmul(P(:,:,1),J(:,:,2)))
-    EJ(3) = 0.5d0*trace_matrix(nBas,matmul(P(:,:,2),J(:,:,2)))
-
-!   Exchange energy
-
-    do ispin=1,nspin
-      Ex(ispin) = 0.5d0*trace_matrix(nBas,matmul(P(:,:,ispin),K(:,:,ispin)))
-    end do
-
-!   Total energy
-
-    EHF = sum(ET(:)) + sum(EV(:)) + sum(EJ(:)) + sum(Ex(:))
-
 !   Dump results
 
-    write(*,'(1X,A1,1X,I3,1X,A1,1X,F16.10,1X,A1,1X,F16.10,1X,A1,1X,F10.6,1X,A1,1X)') & 
-      '|',nSCF,'|',EHF + ENuc,'|',sum(Ex(:)),'|',Conv,'|'
+    write(*,'(1X,A1,1X,I3,1X,A1,1X,F16.10,1X,A1,1X,F16.10,1X,A1,1X,F16.10,1X,A1,1X,E10.2,1X,A1,1X)') &
+      '|',nSCF,'|',EROHF + ENuc,'|',sum(EJ),'|',sum(EK),'|',Conv,'|'
  
   end do
-  write(*,*)'----------------------------------------------------------'
+  write(*,*)'-----------------------------------------------------------------------------'
 !------------------------------------------------------------------------
 ! End of SCF loop
 !------------------------------------------------------------------------
@@ -241,13 +238,13 @@ subroutine ROHF(dotest,maxSCF,thresh,max_diis,guess_type,mix,level_shift,nNuc,ZN
 ! Compute final UHF energy
 
   call dipole_moment(nBas,Ptot,nNuc,ZNuc,rNuc,dipole_int,dipole)
-  call print_ROHF(nBas,nO,e,c,ENuc,ET,EV,EJ,Ex,EHF,dipole)
+  call print_ROHF(nBas,nO,eHF,c,ENuc,ET,EV,EJ,EK,EROHF,dipole)
 
 ! Print test values
 
   if(dotest) then
 
-    call dump_test_value('R','ROHF energy',EHF)
+    call dump_test_value('R','ROHF energy',EROHF)
 
   end if
 
