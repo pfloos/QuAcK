@@ -6,6 +6,7 @@
 - [Pierre-Francois Loos](https://pfloos.github.io/WEB_LOOS)
 - [Enzo Monino](https://enzomonino.github.io)
 - [Antoine Marie](https://antoine-marie.github.io)
+- [Abdallah Amar](https://scholar.google.com/citations?user=y437T5sAAAAJ&hl=en)
 - [Anthony Scemama](https://scemama.github.io)
   
 # What is it?
