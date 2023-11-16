@@ -33,11 +33,10 @@ subroutine print_GHF(nBas,nBas2,nO,eHF,C,P,S,ENuc,ET,EV,EJ,EK,EGHF,dipole)
   integer                            :: HOMO
   integer                            :: LUMO
   double precision                   :: Gap
-  double precision                   :: Sx ,Sy ,Sz
-  double precision                   :: Sx2,Sy2,Sz2
-  double precision                   :: SmSp,SpSm,S2
-  double precision                   :: na, nb
-  double precision                   :: nonco_z, contam_uhf, xy_perp, contam_ghf
+  double precision                   :: Sx,Sy,Sz
+  double precision                   :: SmSp,SpSm,Sz2,S2
+! double precision                   :: na, nb
+! double precision                   :: nonco_z, contam_uhf, xy_perp, contam_ghf
 
   double precision,allocatable       :: Ca(:,:)
   double precision,allocatable       :: Cb(:,:)
@@ -95,7 +94,6 @@ subroutine print_GHF(nBas,nBas2,nO,eHF,C,P,S,ENuc,ET,EV,EJ,EK,EGHF,dipole)
     end do
   end do
   SpSm = trace_matrix(nO,Paa) + SpSm
-  print*,'<S^+S^-> = ',SpSm
 
   SmSp = 0d0
   do i=1,nO
@@ -104,7 +102,6 @@ subroutine print_GHF(nBas,nBas2,nO,eHF,C,P,S,ENuc,ET,EV,EJ,EK,EGHF,dipole)
     end do
   end do
   SmSp = trace_matrix(nO,Pbb) + SmSp
-  print*,'<S^-S^+> = ',SmSp
 
   Sz2 = 0d0
   do i=1,nO
@@ -113,19 +110,10 @@ subroutine print_GHF(nBas,nBas2,nO,eHF,C,P,S,ENuc,ET,EV,EJ,EK,EGHF,dipole)
     end do
   end do
   Sz2 = 0.25d0*(dble(nO) + Sz2)
-  print*,'<Sz^2> = ',Sz2
 
 ! Compute <S^2> from Sz^2, S^+S^- and S^-S^+
 
   S2 = Sz2 + 0.5d0*(SpSm + SmSp)
-  print*,'<S^2> = ',S2
-
-! Compute <Sx^2> and <Sy^2> from <S^2>, <Sz^2>, <S^+S^-> and <S^-S^+>
-
-  Sx2 = 0.5d0*(S2 - Sz2 + 0.5d0*(SmSp + SpSm))
-  print*,'<Sx^2> = ',Sx2
-  Sy2 = 0.5d0*(S2 - Sz2 - 0.5d0*(SmSp + SpSm))
-  print*,'<Sy^2> = ',Sy2
 
 !  na = 0.d0
 !  nb = 0.d0
