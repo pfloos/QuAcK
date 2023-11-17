@@ -161,32 +161,6 @@ subroutine print_GHF(nBas,nBas2,nO,eHF,C,P,S,ENuc,ET,EV,EJ,EK,EGHF,dipole)
 
 
 
-!  na = 0.d0
-!  nb = 0.d0
-!  do i = 1, nO
-!    na = na + Paa(i,i)
-!    nb = nb + Pbb(i,i)
-!  enddo
-!  Sz  = 0.5d0 * (na - nb)
-!  
-!  nonco_z = dble(nO)
-!  do j = 1, nO
-!    do i = 1, nO
-!      nonco_z = nonco_z - (Paa(i,j) - Pbb(i,j))**2
-!    enddo
-!  enddo
-!  nonco_z = 0.25d0 * nonco_z
-!
-!  Sz2 = Sz*Sz + nonco_z
-!
-!  contam_ghf = 0.d0
-!  do j = 1, nO
-!    do i = 1, nO
-!      contam_ghf = contam_ghf - (Pab(i,i)*Pba(j,j) - Pab(i,j)*Pba(j,i))
-!    enddo
-!  enddo
-!  S2 = Sz * (Sz + 1.d0) + nonco_z + contam_ghf
-  
 
 
 
@@ -283,3 +257,114 @@ subroutine print_GHF(nBas,nBas2,nO,eHF,C,P,S,ENuc,ET,EV,EJ,EK,EGHF,dipole)
   write(*,*)
 
 end subroutine 
+
+! ---
+
+subroutine print_GHFspin(nBas, nBas2, nO, C, S)
+
+  implicit none
+
+  integer,          intent(in)  :: nBas, nBas2, nO
+  double precision, intent(in)  :: C(nBas2,nBas2), S(nBas,nBas)
+
+  integer                       :: i, j
+  double precision              :: Na, Nb
+  double precision              :: nonco_z, contam_ghf
+  double precision              :: S2, Sz, Sz2
+  double precision, allocatable :: Ca(:,:), Cb(:,:), Stmp(:,:)
+  double precision, allocatable :: Paa(:,:), Pab(:,:), Pba(:,:), Pbb(:,:)
+  double precision, allocatable :: Mc(:,:), Eigc(:)
+
+  ! TODO
+  ! Check Cab and Cba
+  allocate(Ca(nBas2,nBas), Cb(nBas2,nBas))
+
+  do i = 1, nBas
+    do j = 1, nBas2
+      Ca(j,i) = C(j,     i)
+      Cb(j,i) = C(j,nBas+i)
+    enddo
+  enddo
+
+  allocate(Stmp(nBas2,nBas2))
+  do i = 1, nBas
+    do j = 1, nBas
+      Stmp(     j,     i) = S(j,i)
+      Stmp(     j,nBas+i) = S(j,i)
+      Stmp(nBas+j,     i) = S(j,i)
+      Stmp(nBas+j,nBas+i) = S(j,i)
+    enddo
+  enddo
+
+  ! TODO DGEMM
+  allocate(Paa(nBas,nBas), Pab(nBas,nBas), Pba(nBas,nBas), Pbb(nBas,nBas))
+  Paa = matmul(transpose(Ca), matmul(Stmp, Ca))
+  Pab = matmul(transpose(Ca), matmul(Stmp, Cb))
+  Pba = matmul(transpose(Cb), matmul(Stmp, Ca))
+  Pbb = matmul(transpose(Cb), matmul(Stmp, Cb))
+
+  deallocate(Stmp)
+  deallocate(Ca, Cb)
+
+  Na = 0.d0
+  Nb = 0.d0
+  do i = 1, nO
+    Na = Na + Paa(i,i)
+    Nb = Nb + Pbb(i,i)
+  enddo
+
+  nonco_z = dble(nO)
+  do j = 1, nO
+    do i = 1, nO
+      nonco_z = nonco_z - (Paa(i,j) - Pbb(i,j))**2
+    enddo
+  enddo
+  nonco_z = 0.25d0 * nonco_z
+
+  contam_ghf = 0.d0
+  do j = 1, nO
+    do i = 1, nO
+      contam_ghf = contam_ghf - (Pab(i,i)*Pba(j,j) - Pab(i,j)*Pba(j,i))
+    enddo
+  enddo
+
+  Sz  = 0.5d0 * (Na - Nb)
+  Sz2 = Sz*Sz + nonco_z
+  S2  = Sz * (Sz + 1.d0) + nonco_z + contam_ghf
+
+  print *, 'Sz, Sz^2 = ', Sz, Sz2
+  print *, 'S^2      = ', S2
+  
+
+  ! --- --- --- --- --- --- --- --- ---
+  ! calculate the axis of Collinearity
+  ! --- --- --- --- --- --- --- --- ---
+
+  allocate(Mc(3,3), Eigc(3))
+
+  Mc(:,:) = 0.d0
+  Mc(1,1) = 0.25d0 * dble(nO)
+  Mc(2,2) = 0.25d0 * dble(nO)
+  Mc(3,3) = 0.25d0 * dble(nO)
+  do j = 1, nO
+    do i = 1, nO
+      Mc(1,1) = Mc(1,1) - 0.25d0 * (Pba(i,j) + Pab(i,j))**2
+      Mc(2,2) = Mc(2,2) - 0.25d0 * (Pba(i,j) - Pab(i,j))**2
+      Mc(3,3) = Mc(3,3) - 0.25d0 * (Paa(i,j) - Pbb(i,j))**2
+      Mc(1,3) = Mc(1,3) - 0.25d0 * (Pab(i,j) + Pba(i,j))*(Paa(j,i) - Pbb(j,j))
+    enddo
+  enddo
+
+  call diagonalize_matrix(3, Mc, Eigc)
+  print *, ' eigenvalues of Collinearity matrix:', Eigc
+  deallocate(Mc, Eigc)
+
+  ! --- --- --- --- --- --- --- --- ---
+  ! --- --- --- --- --- --- --- --- ---
+
+  deallocate(Paa, Pab, Pba, Pbb)
+
+end
+
+
+
