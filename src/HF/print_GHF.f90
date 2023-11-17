@@ -225,6 +225,10 @@ subroutine print_GHFspin(nBas, nBas2, nO, C, S)
   double precision              :: Na, Nb
   double precision              :: nonco_z, contam_ghf
   double precision              :: S2, Sz, Sz2
+  complex*16                    :: Sc_x, Sc_y, Sc_z
+  complex*16                    :: Sc_xx, Sc_xy, Sc_xz
+  complex*16                    :: Sc_yx, Sc_yy, Sc_yz
+  complex*16                    :: Sc_zx, Sc_zy, Sc_zz
   double precision, allocatable :: Ca(:,:), Cb(:,:)
   double precision, allocatable :: Paa(:,:), Pab(:,:), Pba(:,:), Pbb(:,:)
   double precision, allocatable :: Mc(:,:), Eigc(:)
@@ -276,6 +280,77 @@ subroutine print_GHFspin(nBas, nBas2, nO, C, S)
 
   print *, 'Sz, Sz^2 = ', Sz, Sz2
   print *, 'S^2      = ', S2
+
+  ! --- --- --- --- --- --- --- --- ---
+  ! Compute <Si> & <SiSj> for all i, j
+  ! --- --- --- --- --- --- --- --- ---
+
+  Sc_x = (0.d0,0.d0)
+  Sc_y = (0.d0,0.d0)
+  Sc_z = (0.d0,0.d0)
+  do i = 1, nO
+    Sc_x = Sc_x + (+0.5d0,0.d0) * (Pab(i,i) + Pba(i,i))
+    Sc_y = Sc_y + (0.d0,-0.5d0) * (Pab(i,i) - Pba(i,i))
+    Sc_z = Sc_z + (+0.5d0,0.d0) * (Paa(i,i) - Pbb(i,i))
+  enddo
+  print *, " < Sx > = ", Sc_x
+  print *, " < Sy > = ", Sc_y
+  print *, " < Sz > = ", Sc_z
+
+  Sc_xx = Sc_x * Sc_x + 0.25d0*dble(nO)*(1.d0,0.d0)
+  Sc_yy = Sc_y * Sc_y + 0.25d0*dble(nO)*(1.d0,0.d0)
+  Sc_zz = Sc_z * Sc_z + 0.25d0*dble(nO)*(1.d0,0.d0)
+  do i = 1, nO
+    do j = 1, nO
+      Sc_xx = Sc_xx - zabs((+0.5d0,0.d0) * (Pab(i,j) + Pba(i,j)))**2
+      Sc_yy = Sc_yy - zabs((0.d0,-0.5d0) * (Pab(i,j) - Pba(i,j)))**2
+      Sc_zz = Sc_zz - zabs((+0.5d0,0.d0) * (Paa(i,j) - Pbb(i,j)))**2
+    enddo
+  enddo
+  print *, " < Sx^2 > = ", Sc_xx
+  print *, " < Sy^2 > = ", Sc_yy
+  print *, " < Sz^2 > = ", Sc_zz
+
+  Sc_xy = Sc_x * Sc_y
+  Sc_yx = Sc_x * Sc_y
+  do i = 1, nO
+    Sc_xy = Sc_xy + (0.d0,0.5d0) * (+0.5d0,0.0d0) * (Paa(i,i) - Pbb(i,i))
+    Sc_yx = Sc_yx - (0.d0,0.5d0) * (+0.5d0,0.0d0) * (Paa(i,i) - Pbb(i,i))
+    do j = 1, nO
+      Sc_xy = Sc_xy - (+0.5d0,0.d0) * (Pab(i,j) + Pba(i,j)) * (0.d0,-0.5d0) * (Pab(j,i) - Pba(j,i))
+      Sc_yx = Sc_yx - (+0.5d0,0.d0) * (Pab(j,i) + Pba(j,i)) * (0.d0,-0.5d0) * (Pab(i,j) - Pba(i,j))
+    enddo
+  enddo
+  print *, " < Sx Sy > = ", Sc_xy
+  print *, " < Sy Sx > = ", Sc_yx
+
+  Sc_xz = Sc_x * Sc_z
+  Sc_zx = Sc_x * Sc_z
+  do i = 1, nO
+    Sc_xz = Sc_xz - (0.d0,0.5d0) * (0.d0,-0.5d0) * (Pab(i,i) - Pba(i,i))
+    Sc_zx = Sc_zx + (0.d0,0.5d0) * (0.d0,-0.5d0) * (Pab(i,i) - Pba(i,i))
+    do j = 1, nO
+      Sc_xz = Sc_xz - (+0.5d0,0.d0) * (Pab(i,j) + Pba(i,j)) * (+0.5d0,0.d0) * (Paa(j,i) - Pbb(j,i))
+      Sc_zx = Sc_zx - (+0.5d0,0.d0) * (Pab(j,i) + Pba(j,i)) * (+0.5d0,0.d0) * (Paa(i,j) - Pbb(i,j))
+    enddo
+  enddo
+  print *, " < Sx Sz > = ", Sc_xz
+  print *, " < Sz Sx > = ", Sc_zx
+
+  Sc_yz = Sc_y * Sc_z
+  Sc_zy = Sc_y * Sc_z
+  do i = 1, nO
+    Sc_yz = Sc_yz + (0.d0,0.5d0) * (+0.5d0,0.d0) * (Pab(i,i) + Pba(i,i))
+    Sc_zy = Sc_zy - (0.d0,0.5d0) * (+0.5d0,0.d0) * (Pab(i,i) + Pba(i,i))
+    do j = 1, nO
+      Sc_yz = Sc_yz - (0.d0,-0.5d0) * (Pab(i,j) - Pba(i,j)) * (+0.5d0,0.d0) * (Paa(j,i) - Pbb(j,i))
+      Sc_zy = Sc_zy - (0.d0,-0.5d0) * (Pab(j,i) - Pba(j,i)) * (+0.5d0,0.d0) * (Paa(i,j) - Pbb(i,j))
+    enddo
+  enddo
+  print *, " < Sy Sz > = ", Sc_yz
+  print *, " < Sz Sy > = ", Sc_zy
+
+  ! --- --- --- --- --- --- --- --- ---
   
 
   ! --- --- --- --- --- --- --- --- ---
@@ -297,6 +372,8 @@ subroutine print_GHFspin(nBas, nBas2, nO, C, S)
     enddo
   enddo
   Mc(3,1) = Mc(1,3)
+
+  print *, " The Spin matrix is:", Mc 
 
   call diagonalize_matrix(3, Mc, Eigc)
   print *, ' eigenvalues of Collinearity matrix:', Eigc
