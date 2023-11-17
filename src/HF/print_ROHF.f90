@@ -24,6 +24,8 @@ subroutine print_ROHF(nBas,nO,eHF,c,ENuc,ET,EV,EJ,Ex,EROHF,dipole)
   double precision                   :: Gap(nspin)
   double precision                   :: S,S2
 
+  logical                            :: dump_orb = .false.
+
 ! HOMO and LUMO
 
   do ispin=1,nspin
@@ -96,11 +98,13 @@ subroutine print_ROHF(nBas,nO,eHF,c,ENuc,ET,EV,EJ,Ex,EROHF,dipole)
 
 ! Print results
 
-  write(*,'(A50)') '-----------------------------------------'
-  write(*,'(A50)') 'ROHF orbital coefficients '
-  write(*,'(A50)') '-----------------------------------------'
-  call matout(nBas,nBas,c)
-  write(*,*)
+  if(dump_orb) then
+    write(*,'(A50)') '-----------------------------------------'
+    write(*,'(A50)') 'ROHF orbital coefficients '
+    write(*,'(A50)') '-----------------------------------------'
+    call matout(nBas,nBas,c)
+    write(*,*)
+  end if
   write(*,'(A50)') '---------------------------------------'
   write(*,'(A50)') ' ROHF orbital energies (au) '
   write(*,'(A50)') '---------------------------------------'

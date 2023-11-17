@@ -42,7 +42,6 @@ subroutine RHF(dotest,maxSCF,thresh,max_diis,guess_type,level_shift,nNuc,ZNuc,rN
   double precision              :: dipole(ncart)
 
   double precision              :: Conv
-  double precision              :: Gap 
   double precision              :: rcond
   double precision,external     :: trace_matrix
   double precision,allocatable  :: error(:,:)
@@ -82,26 +81,25 @@ subroutine RHF(dotest,maxSCF,thresh,max_diis,guess_type,level_shift,nNuc,ZNuc,rN
 
   call mo_guess(nBas,guess_type,S,Hc,X,c)
   P(:,:) = 2d0*matmul(c(:,1:nO),transpose(c(:,1:nO)))
-  
+
 ! Initialization
 
   F_diis(:,:)     = 0d0
   error_diis(:,:) = 0d0
-  Conv   = 1d0
-  n_diis = 0
-  nSCF   = 0
   rcond  = 0d0
+
+  Conv   = 1d0
+  nSCF   = 0
 
 !------------------------------------------------------------------------
 ! Main SCF loop
 !------------------------------------------------------------------------
+
   write(*,*)
-  write(*,*)'----------------------------------------------------'
-  write(*,*)'| RHF calculation                                  |'
-  write(*,*)'----------------------------------------------------'
-  write(*,'(1X,A1,1X,A3,1X,A1,1X,A16,1X,A1,1X,A10,1X,A1,1X,A10,1X,A1,1X)') & 
-            '|','#','|','HF energy','|','Conv','|','HL Gap','|'
-  write(*,*)'----------------------------------------------------'
+  write(*,*)'-----------------------------------------------------------------------------'
+  write(*,'(1X,A1,1X,A3,1X,A1,1X,A16,1X,A1,1X,A16,1X,A1,1X,A16,1X,A1,1X,A10,1X,A1,1X)') &
+            '|','#','|','E(RHF)','|','EJ(RHF)','|','EK(RHF)','|','Conv','|'
+  write(*,*)'-----------------------------------------------------------------------------'
 
   do while(Conv > thresh .and. nSCF < maxSCF)
 
@@ -120,6 +118,26 @@ subroutine RHF(dotest,maxSCF,thresh,max_diis,guess_type,level_shift,nNuc,ZNuc,rN
 
     error = matmul(F,matmul(P,S)) - matmul(matmul(S,P),F)
     Conv  = maxval(abs(error))
+
+!   Kinetic energy
+
+    ET = trace_matrix(nBas,matmul(P,T))
+
+!   Potential energy
+
+    EV = trace_matrix(nBas,matmul(P,V))
+
+!   Hartree energy
+
+    EJ = 0.5d0*trace_matrix(nBas,matmul(P,J))
+
+!   Exchange energy
+
+    EK = 0.25d0*trace_matrix(nBas,matmul(P,K))
+
+!   Total energy
+
+    ERHF = ET + EV + EJ + EK
 
 !   DIIS extrapolation
 
@@ -144,32 +162,14 @@ subroutine RHF(dotest,maxSCF,thresh,max_diis,guess_type,level_shift,nNuc,ZNuc,rN
 !   Density matrix
 
     P(:,:) = 2d0*matmul(c(:,1:nO),transpose(c(:,1:nO)))
-  
-!   Compute HF energy
-
-    ERHF = trace_matrix(nBas,matmul(P,Hc))      &
-         + 0.5d0*trace_matrix(nBas,matmul(P,J)) &
-         + 0.25d0*trace_matrix(nBas,matmul(P,K))
-
-!   Compute HOMO-LUMO gap
-
-    if(nBas > nO) then 
-
-      Gap = eHF(nO+1) - eHF(nO)
-
-    else
-
-      Gap = 0d0
-
-    end if
 
 !  Dump results
 
-    write(*,'(1X,A1,1X,I3,1X,A1,1X,F16.10,1X,A1,1X,F10.6,1X,A1,1X,F10.6,1X,A1,1X)') & 
-      '|',nSCF,'|',ERHF+ENuc,'|',Conv,'|',Gap,'|'
+    write(*,'(1X,A1,1X,I3,1X,A1,1X,F16.10,1X,A1,1X,F16.10,1X,A1,1X,F16.10,1X,A1,1X,E10.2,1X,A1,1X)') &
+      '|',nSCF,'|',ERHF + ENuc,'|',EJ,'|',EK,'|',Conv,'|'
 
   end do
-  write(*,*)'----------------------------------------------------'
+  write(*,*)'-----------------------------------------------------------------------------'
 !------------------------------------------------------------------------
 ! End of SCF loop
 !------------------------------------------------------------------------
@@ -187,14 +187,6 @@ subroutine RHF(dotest,maxSCF,thresh,max_diis,guess_type,level_shift,nNuc,ZNuc,rN
     stop
 
   end if
-
-! Compute HF energy
-
-  ET = trace_matrix(nBas,matmul(P,T))
-  EV = trace_matrix(nBas,matmul(P,V))
-  EJ = 0.5d0*trace_matrix(nBas,matmul(P,J))
-  EK = 0.25d0*trace_matrix(nBas,matmul(P,K))
-  ERHF = ET + EV + EJ + EK
 
 ! Compute dipole moments
 

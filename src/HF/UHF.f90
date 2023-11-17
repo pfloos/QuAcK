@@ -42,7 +42,7 @@ subroutine UHF(dotest,maxSCF,thresh,max_diis,guess_type,mix,level_shift,nNuc,ZNu
   double precision              :: ET(nspin)
   double precision              :: EV(nspin)
   double precision              :: EJ(nsp)
-  double precision              :: Ex(nspin)
+  double precision              :: EK(nspin)
   double precision              :: dipole(ncart)
 
   double precision,allocatable  :: cp(:,:,:)
@@ -91,22 +91,22 @@ subroutine UHF(dotest,maxSCF,thresh,max_diis,guess_type,mix,level_shift,nNuc,ZNu
 
 ! Initialization
 
-  nSCF = 0
-  Conv = 1d0
-
   n_diis          = 0
   F_diis(:,:,:)   = 0d0
   err_diis(:,:,:) = 0d0
+
+  nSCF = 0
+  Conv = 1d0
 
 !------------------------------------------------------------------------
 ! Main SCF loop
 !------------------------------------------------------------------------
 
   write(*,*)
-  write(*,*)'----------------------------------------------------------'
-  write(*,'(1X,A1,1X,A3,1X,A1,1X,A16,1X,A1,1X,A16,1X,A1,1X,A10,1X,A1,1X)') & 
-            '|','#','|','E(UHF)','|','Ex(UHF)','|','Conv','|'
-  write(*,*)'----------------------------------------------------------'
+  write(*,*)'-----------------------------------------------------------------------------'
+  write(*,'(1X,A1,1X,A3,1X,A1,1X,A16,1X,A1,1X,A16,1X,A1,1X,A16,1X,A1,1X,A10,1X,A1,1X)') &
+            '|','#','|','E(UHF)','|','EJ(UHF)','|','EK(UHF)','|','Conv','|'
+  write(*,*)'-----------------------------------------------------------------------------'
   
   do while(Conv > thresh .and. nSCF < maxSCF)
 
@@ -139,7 +139,35 @@ subroutine UHF(dotest,maxSCF,thresh,max_diis,guess_type,mix,level_shift,nNuc,ZNu
     end do
 
     if(nSCF > 1) Conv = maxval(abs(err(:,:,:)))
-    
+ 
+!   Kinetic energy
+
+    do ispin=1,nspin
+      ET(ispin) = trace_matrix(nBas,matmul(P(:,:,ispin),T(:,:)))
+    end do
+
+!   Potential energy
+
+    do ispin=1,nspin
+      EV(ispin) = trace_matrix(nBas,matmul(P(:,:,ispin),V(:,:)))
+    end do
+
+!   Hartree energy
+
+    EJ(1) = 0.5d0*trace_matrix(nBas,matmul(P(:,:,1),J(:,:,1)))
+    EJ(2) = trace_matrix(nBas,matmul(P(:,:,1),J(:,:,2)))
+    EJ(3) = 0.5d0*trace_matrix(nBas,matmul(P(:,:,2),J(:,:,2)))
+
+!   Exchange energy
+
+    do ispin=1,nspin
+      EK(ispin) = 0.5d0*trace_matrix(nBas,matmul(P(:,:,ispin),K(:,:,ispin)))
+    end do
+
+!   Total energy
+
+    EUHF = sum(ET) + sum(EV) + sum(EJ) + sum(EK)
+
 !   DIIS extrapolation
 
     if(max_diis > 1) then
@@ -174,7 +202,7 @@ subroutine UHF(dotest,maxSCF,thresh,max_diis,guess_type,mix,level_shift,nNuc,ZNu
     do ispin=1,nspin
       call diagonalize_matrix(nBas,cp(:,:,ispin),eHF(:,ispin))
     end do
-    
+
 !   Back-transform eigenvectors in non-orthogonal basis
 
     do ispin=1,nspin
@@ -191,45 +219,13 @@ subroutine UHF(dotest,maxSCF,thresh,max_diis,guess_type,mix,level_shift,nNuc,ZNu
       P(:,:,ispin) = matmul(c(:,1:nO(ispin),ispin),transpose(c(:,1:nO(ispin),ispin)))
     end do
  
-!------------------------------------------------------------------------
-!   Compute UHF energy
-!------------------------------------------------------------------------
-
-!  Kinetic energy
-
-    do ispin=1,nspin
-      ET(ispin) = trace_matrix(nBas,matmul(P(:,:,ispin),T(:,:)))
-    end do
-
-!  Potential energy
-
-    do ispin=1,nspin
-      EV(ispin) = trace_matrix(nBas,matmul(P(:,:,ispin),V(:,:)))
-    end do
-
-!  Hartree energy
-
-    EJ(1) = 0.5d0*trace_matrix(nBas,matmul(P(:,:,1),J(:,:,1)))
-    EJ(2) = trace_matrix(nBas,matmul(P(:,:,1),J(:,:,2)))
-    EJ(3) = 0.5d0*trace_matrix(nBas,matmul(P(:,:,2),J(:,:,2)))
-
-!   Exchange energy
-
-    do ispin=1,nspin
-      Ex(ispin) = 0.5d0*trace_matrix(nBas,matmul(P(:,:,ispin),K(:,:,ispin)))
-    end do
-
-!   Total energy
-
-    EUHF = sum(ET(:)) + sum(EV(:)) + sum(EJ(:)) + sum(Ex(:))
-
 !   Dump results
 
-    write(*,'(1X,A1,1X,I3,1X,A1,1X,F16.10,1X,A1,1X,F16.10,1X,A1,1X,F10.6,1X,A1,1X)') & 
-      '|',nSCF,'|',EUHF + ENuc,'|',sum(Ex(:)),'|',Conv,'|'
+    write(*,'(1X,A1,1X,I3,1X,A1,1X,F16.10,1X,A1,1X,F16.10,1X,A1,1X,F16.10,1X,A1,1X,E10.2,1X,A1,1X)') &
+      '|',nSCF,'|',EUHF + ENuc,'|',sum(EJ),'|',sum(EK),'|',Conv,'|'
  
   end do
-  write(*,*)'----------------------------------------------------------'
+  write(*,*)'-----------------------------------------------------------------------------'
 !------------------------------------------------------------------------
 ! End of SCF loop
 !------------------------------------------------------------------------
@@ -251,7 +247,7 @@ subroutine UHF(dotest,maxSCF,thresh,max_diis,guess_type,mix,level_shift,nNuc,ZNu
 ! Compute final UHF energy
 
   call dipole_moment(nBas,P(:,:,1)+P(:,:,2),nNuc,ZNuc,rNuc,dipole_int,dipole)
-  call print_UHF(nBas,nO,S,eHF,c,ENuc,ET,EV,EJ,Ex,EUHF,dipole)
+  call print_UHF(nBas,nO,S,eHF,c,ENuc,ET,EV,EJ,EK,EUHF,dipole)
 
 
 ! Print test values

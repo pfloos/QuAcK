@@ -211,6 +211,8 @@ subroutine GHF_search(maxSCF,thresh,max_diis,guess_type,mix,level_shift,nNuc,ZNu
       call matrix_exponential(nBas2,R,ExpR)
       c = matmul(c,ExpR)
 
+!     call matout(nBas2,nBas2,matmul(transpose(ExpR),ExpR))
+
     else
  
       write(*,'(1X,A40,1X)')           'Well done, GHF solution is stable!'
