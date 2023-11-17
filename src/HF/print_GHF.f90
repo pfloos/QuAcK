@@ -272,7 +272,7 @@ subroutine print_GHFspin(nBas, nBas2, nO, C, S)
 
   Sz  = 0.5d0 * (Na - Nb)
   Sz2 = Sz*Sz + nonco_z
-  S2  = 0.5d0 * (Na + Nb) * (Sz + 1.d0) + nonco_z + contam_ghf
+  S2  = Sz2 + 0.5d0 * (Na + Nb) + contam_ghf
 
   print *, 'Sz, Sz^2 = ', Sz, Sz2
   print *, 'S^2      = ', S2
