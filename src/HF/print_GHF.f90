@@ -256,6 +256,8 @@ subroutine print_GHF(nBas,nBas2,nO,eHF,C,P,S,ENuc,ET,EV,EJ,EK,EGHF,dipole)
   call vecout(nBas2,eHF)
   write(*,*)
 
+  call print_GHFspin(nBas, nBas2, nO, C, S)
+
 end subroutine 
 
 ! ---
@@ -271,39 +273,27 @@ subroutine print_GHFspin(nBas, nBas2, nO, C, S)
   double precision              :: Na, Nb
   double precision              :: nonco_z, contam_ghf
   double precision              :: S2, Sz, Sz2
-  double precision, allocatable :: Ca(:,:), Cb(:,:), Stmp(:,:)
+  double precision, allocatable :: Ca(:,:), Cb(:,:)
   double precision, allocatable :: Paa(:,:), Pab(:,:), Pba(:,:), Pbb(:,:)
   double precision, allocatable :: Mc(:,:), Eigc(:)
 
-  ! TODO
-  ! Check Cab and Cba
-  allocate(Ca(nBas2,nBas), Cb(nBas2,nBas))
+  print *, ' Spin properties for GHF WF:'
 
-  do i = 1, nBas
-    do j = 1, nBas2
-      Ca(j,i) = C(j,     i)
-      Cb(j,i) = C(j,nBas+i)
-    enddo
-  enddo
-
-  allocate(Stmp(nBas2,nBas2))
-  do i = 1, nBas
+  allocate(Ca(nBas,nO), Cb(nBas,nO))
+  do i = 1, nO
     do j = 1, nBas
-      Stmp(     j,     i) = S(j,i)
-      Stmp(     j,nBas+i) = S(j,i)
-      Stmp(nBas+j,     i) = S(j,i)
-      Stmp(nBas+j,nBas+i) = S(j,i)
+      Ca(j,i) = C(     j,i)
+      Cb(j,i) = C(nBas+j,i)
     enddo
   enddo
 
   ! TODO DGEMM
-  allocate(Paa(nBas,nBas), Pab(nBas,nBas), Pba(nBas,nBas), Pbb(nBas,nBas))
-  Paa = matmul(transpose(Ca), matmul(Stmp, Ca))
-  Pab = matmul(transpose(Ca), matmul(Stmp, Cb))
-  Pba = matmul(transpose(Cb), matmul(Stmp, Ca))
-  Pbb = matmul(transpose(Cb), matmul(Stmp, Cb))
+  allocate(Paa(nO,nO), Pab(nO,nO), Pba(nO,nO), Pbb(nO,nO))
+  Paa = matmul(transpose(Ca), matmul(S, Ca))
+  Pab = matmul(transpose(Ca), matmul(S, Cb))
+  Pba = matmul(transpose(Cb), matmul(S, Ca))
+  Pbb = matmul(transpose(Cb), matmul(S, Cb))
 
-  deallocate(Stmp)
   deallocate(Ca, Cb)
 
   Na = 0.d0
@@ -354,6 +344,7 @@ subroutine print_GHFspin(nBas, nBas2, nO, C, S)
       Mc(1,3) = Mc(1,3) - 0.25d0 * (Pab(i,j) + Pba(i,j))*(Paa(j,i) - Pbb(j,j))
     enddo
   enddo
+  Mc(3,1) = Mc(1,3)
 
   call diagonalize_matrix(3, Mc, Eigc)
   print *, ' eigenvalues of Collinearity matrix:', Eigc
