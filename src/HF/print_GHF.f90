@@ -266,13 +266,13 @@ subroutine print_GHFspin(nBas, nBas2, nO, C, S)
   contam_ghf = 0.d0
   do j = 1, nO
     do i = 1, nO
-      contam_ghf = contam_ghf - (Pab(i,i)*Pba(j,j) - Pab(i,j)*Pba(j,i))
+      contam_ghf = contam_ghf + (Pab(i,i)*Pba(j,j) - Pab(i,j)*Pba(j,i))
     enddo
   enddo
 
   Sz  = 0.5d0 * (Na - Nb)
   Sz2 = Sz*Sz + nonco_z
-  S2  = Sz * (Sz + 1.d0) + nonco_z + contam_ghf
+  S2  = 0.5d0 * (Na + Nb) * (Sz + 1.d0) + nonco_z + contam_ghf
 
   print *, 'Sz, Sz^2 = ', Sz, Sz2
   print *, 'S^2      = ', S2
@@ -293,7 +293,7 @@ subroutine print_GHFspin(nBas, nBas2, nO, C, S)
       Mc(1,1) = Mc(1,1) - 0.25d0 * (Pba(i,j) + Pab(i,j))**2
       Mc(2,2) = Mc(2,2) - 0.25d0 * (Pba(i,j) - Pab(i,j))**2
       Mc(3,3) = Mc(3,3) - 0.25d0 * (Paa(i,j) - Pbb(i,j))**2
-      Mc(1,3) = Mc(1,3) - 0.25d0 * (Pab(i,j) + Pba(i,j))*(Paa(j,i) - Pbb(j,j))
+      Mc(1,3) = Mc(1,3) - 0.25d0 * (Pab(i,j) + Pba(i,j))*(Paa(j,i) - Pbb(j,i))
     enddo
   enddo
   Mc(3,1) = Mc(1,3)
