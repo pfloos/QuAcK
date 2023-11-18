@@ -35,8 +35,6 @@ subroutine print_GHF(nBas,nBas2,nO,eHF,C,P,S,ENuc,ET,EV,EJ,EK,EGHF,dipole)
   double precision                   :: Gap
   double precision                   :: Sx,Sy,Sz
   double precision                   :: SmSp,SpSm,Sz2,S2
-! double precision                   :: na, nb
-! double precision                   :: nonco_z, contam_uhf, xy_perp, contam_ghf
 
   double precision,allocatable       :: Ca(:,:)
   double precision,allocatable       :: Cb(:,:)
@@ -44,16 +42,6 @@ subroutine print_GHF(nBas,nBas2,nO,eHF,C,P,S,ENuc,ET,EV,EJ,EK,EGHF,dipole)
   double precision,allocatable       :: Pab(:,:)
   double precision,allocatable       :: Pba(:,:)
   double precision,allocatable       :: Pbb(:,:)
-  double precision,allocatable       :: tmp(:,:)
-
-  double precision,allocatable       :: Mx(:,:)
-  double precision,allocatable       :: My(:,:)
-  double precision,allocatable       :: Mz(:,:)
-  double precision,allocatable       :: PP(:,:)
-  double precision                   :: T(3,3)
-  double precision                   :: vec(3,3)
-  double precision                   :: val(3)
-  double precision                   :: lambda
 
   double precision,external          :: trace_matrix
 
@@ -115,47 +103,7 @@ subroutine print_GHF(nBas,nBas2,nO,eHF,C,P,S,ENuc,ET,EV,EJ,EK,EGHF,dipole)
 
   S2 = Sz2 + 0.5d0*(SpSm + SmSp)
 
-
-
-
-! deallocate(Paa,Pab,Pba,Pbb)
-
-! Check collinearity and coplanarity 
-
-! allocate(PP(nO,nO),Mx(nO,nO),My(nO,nO),Mz(nO,nO))
-
-! PP(:,:) = 0.5d0*(Paa(:,:) + Pbb(:,:))
-! Mx(:,:) = 0.5d0*(Pba(:,:) + Pab(:,:))
-! My(:,:) = 0.5d0*(Pba(:,:) - Pab(:,:))
-! Mz(:,:) = 0.5d0*(Paa(:,:) - Pbb(:,:))
-
-! T(1,1) = trace_matrix(nO,matmul(Mx,Mx))
-! T(1,2) = trace_matrix(nO,matmul(Mx,My))
-! T(1,3) = trace_matrix(nO,matmul(Mx,Mz))
-! T(2,1) = trace_matrix(nO,matmul(My,Mx))
-! T(2,2) = trace_matrix(nO,matmul(My,My))
-! T(2,3) = trace_matrix(nO,matmul(My,Mz))
-! T(3,1) = trace_matrix(nO,matmul(Mz,Mx))
-! T(3,2) = trace_matrix(nO,matmul(Mz,My))
-! T(3,3) = trace_matrix(nO,matmul(Mz,Mz))
-
-! lambda = trace_matrix(nO,PP - matmul(PP,PP))
-! write(*,'(A,F10.6)') 'Tr(P - P^2) = ',lambda
-
-! vec(:,:) = T(:,:)
-! call diagonalize_matrix(3,vec,val)
-! write(*,'(A,3F10.6)') 'Eigenvalues of T = ',val
-
-! T(1,1) = - T(1,1) + lambda
-! T(2,2) = - T(2,2) + lambda 
-! T(3,3) = - T(3,3) + lambda
-
-! vec(:,:) = T(:,:)
-! call diagonalize_matrix(3,vec,val)
-! write(*,'(A,3F10.6)') 'Eigenvalues of A = ',val
-
-! deallocate(PP,Mx,My,Mz)
-
+  call print_GHF_spin(nBas, nBas2, nO, C, S)
 
 ! Dump results
 
@@ -208,183 +156,4 @@ subroutine print_GHF(nBas,nBas2,nO,eHF,C,P,S,ENuc,ET,EV,EJ,EK,EGHF,dipole)
   call vecout(nBas2,eHF)
   write(*,*)
 
-  call print_GHFspin(nBas, nBas2, nO, C, S)
-
 end subroutine 
-
-! ---
-
-subroutine print_GHFspin(nBas, nBas2, nO, C, S)
-
-  implicit none
-
-  integer,          intent(in)  :: nBas, nBas2, nO
-  double precision, intent(in)  :: C(nBas2,nBas2), S(nBas,nBas)
-
-  integer                       :: i, j
-  double precision              :: Na, Nb
-  double precision              :: nonco_z, contam_ghf
-  double precision              :: S2, Sz, Sz2
-  complex*16                    :: Sc_x, Sc_y, Sc_z
-  complex*16                    :: Sc_xx, Sc_xy, Sc_xz
-  complex*16                    :: Sc_yx, Sc_yy, Sc_yz
-  complex*16                    :: Sc_zx, Sc_zy, Sc_zz
-  double precision, allocatable :: Ca(:,:), Cb(:,:)
-  double precision, allocatable :: Paa(:,:), Pab(:,:), Pba(:,:), Pbb(:,:)
-  double precision, allocatable :: Mc(:,:), Eigc(:)
-
-  print *, ' Spin properties for GHF WF:'
-
-  allocate(Ca(nBas,nO), Cb(nBas,nO))
-  do i = 1, nO
-    do j = 1, nBas
-      Ca(j,i) = C(     j,i)
-      Cb(j,i) = C(nBas+j,i)
-    enddo
-  enddo
-
-  ! TODO DGEMM
-  allocate(Paa(nO,nO), Pab(nO,nO), Pba(nO,nO), Pbb(nO,nO))
-  Paa = matmul(transpose(Ca), matmul(S, Ca))
-  Pab = matmul(transpose(Ca), matmul(S, Cb))
-  Pba = matmul(transpose(Cb), matmul(S, Ca))
-  Pbb = matmul(transpose(Cb), matmul(S, Cb))
-
-  deallocate(Ca, Cb)
-
-  Na = 0.d0
-  Nb = 0.d0
-  do i = 1, nO
-    Na = Na + Paa(i,i)
-    Nb = Nb + Pbb(i,i)
-  enddo
-
-  nonco_z = dble(nO)
-  do j = 1, nO
-    do i = 1, nO
-      nonco_z = nonco_z - (Paa(i,j) - Pbb(i,j))**2
-    enddo
-  enddo
-  nonco_z = 0.25d0 * nonco_z
-
-  contam_ghf = 0.d0
-  do j = 1, nO
-    do i = 1, nO
-      contam_ghf = contam_ghf + (Pab(i,i)*Pba(j,j) - Pab(i,j)*Pba(j,i))
-    enddo
-  enddo
-
-  Sz  = 0.5d0 * (Na - Nb)
-  Sz2 = Sz*Sz + nonco_z
-  S2  = Sz2 + 0.5d0 * (Na + Nb) + contam_ghf
-
-  print *, 'Sz, Sz^2 = ', Sz, Sz2
-  print *, 'S^2      = ', S2
-
-  ! --- --- --- --- --- --- --- --- ---
-  ! Compute <Si> & <SiSj> for all i, j
-  ! --- --- --- --- --- --- --- --- ---
-
-  Sc_x = (0.d0,0.d0)
-  Sc_y = (0.d0,0.d0)
-  Sc_z = (0.d0,0.d0)
-  do i = 1, nO
-    Sc_x = Sc_x + (+0.5d0,0.d0) * (Pab(i,i) + Pba(i,i))
-    Sc_y = Sc_y + (0.d0,-0.5d0) * (Pab(i,i) - Pba(i,i))
-    Sc_z = Sc_z + (+0.5d0,0.d0) * (Paa(i,i) - Pbb(i,i))
-  enddo
-  print *, " < Sx > = ", Sc_x
-  print *, " < Sy > = ", Sc_y
-  print *, " < Sz > = ", Sc_z
-
-  Sc_xx = Sc_x * Sc_x + 0.25d0*dble(nO)*(1.d0,0.d0)
-  Sc_yy = Sc_y * Sc_y + 0.25d0*dble(nO)*(1.d0,0.d0)
-  Sc_zz = Sc_z * Sc_z + 0.25d0*dble(nO)*(1.d0,0.d0)
-  do i = 1, nO
-    do j = 1, nO
-      Sc_xx = Sc_xx - zabs((+0.5d0,0.d0) * (Pab(i,j) + Pba(i,j)))**2
-      Sc_yy = Sc_yy - zabs((0.d0,-0.5d0) * (Pab(i,j) - Pba(i,j)))**2
-      Sc_zz = Sc_zz - zabs((+0.5d0,0.d0) * (Paa(i,j) - Pbb(i,j)))**2
-    enddo
-  enddo
-  print *, " < Sx^2 > = ", Sc_xx
-  print *, " < Sy^2 > = ", Sc_yy
-  print *, " < Sz^2 > = ", Sc_zz
-
-  Sc_xy = Sc_x * Sc_y
-  Sc_yx = Sc_x * Sc_y
-  do i = 1, nO
-    Sc_xy = Sc_xy + (0.d0,0.5d0) * (+0.5d0,0.0d0) * (Paa(i,i) - Pbb(i,i))
-    Sc_yx = Sc_yx - (0.d0,0.5d0) * (+0.5d0,0.0d0) * (Paa(i,i) - Pbb(i,i))
-    do j = 1, nO
-      Sc_xy = Sc_xy - (+0.5d0,0.d0) * (Pab(i,j) + Pba(i,j)) * (0.d0,-0.5d0) * (Pab(j,i) - Pba(j,i))
-      Sc_yx = Sc_yx - (+0.5d0,0.d0) * (Pab(j,i) + Pba(j,i)) * (0.d0,-0.5d0) * (Pab(i,j) - Pba(i,j))
-    enddo
-  enddo
-  print *, " < Sx Sy > = ", Sc_xy
-  print *, " < Sy Sx > = ", Sc_yx
-
-  Sc_xz = Sc_x * Sc_z
-  Sc_zx = Sc_x * Sc_z
-  do i = 1, nO
-    Sc_xz = Sc_xz - (0.d0,0.5d0) * (0.d0,-0.5d0) * (Pab(i,i) - Pba(i,i))
-    Sc_zx = Sc_zx + (0.d0,0.5d0) * (0.d0,-0.5d0) * (Pab(i,i) - Pba(i,i))
-    do j = 1, nO
-      Sc_xz = Sc_xz - (+0.5d0,0.d0) * (Pab(i,j) + Pba(i,j)) * (+0.5d0,0.d0) * (Paa(j,i) - Pbb(j,i))
-      Sc_zx = Sc_zx - (+0.5d0,0.d0) * (Pab(j,i) + Pba(j,i)) * (+0.5d0,0.d0) * (Paa(i,j) - Pbb(i,j))
-    enddo
-  enddo
-  print *, " < Sx Sz > = ", Sc_xz
-  print *, " < Sz Sx > = ", Sc_zx
-
-  Sc_yz = Sc_y * Sc_z
-  Sc_zy = Sc_y * Sc_z
-  do i = 1, nO
-    Sc_yz = Sc_yz + (0.d0,0.5d0) * (+0.5d0,0.d0) * (Pab(i,i) + Pba(i,i))
-    Sc_zy = Sc_zy - (0.d0,0.5d0) * (+0.5d0,0.d0) * (Pab(i,i) + Pba(i,i))
-    do j = 1, nO
-      Sc_yz = Sc_yz - (0.d0,-0.5d0) * (Pab(i,j) - Pba(i,j)) * (+0.5d0,0.d0) * (Paa(j,i) - Pbb(j,i))
-      Sc_zy = Sc_zy - (0.d0,-0.5d0) * (Pab(j,i) - Pba(j,i)) * (+0.5d0,0.d0) * (Paa(i,j) - Pbb(i,j))
-    enddo
-  enddo
-  print *, " < Sy Sz > = ", Sc_yz
-  print *, " < Sz Sy > = ", Sc_zy
-
-  ! --- --- --- --- --- --- --- --- ---
-  
-
-  ! --- --- --- --- --- --- --- --- ---
-  ! calculate the axis of Collinearity
-  ! --- --- --- --- --- --- --- --- ---
-
-  allocate(Mc(3,3), Eigc(3))
-
-  Mc(:,:) = 0.d0
-  Mc(1,1) = 0.25d0 * dble(nO)
-  Mc(2,2) = 0.25d0 * dble(nO)
-  Mc(3,3) = 0.25d0 * dble(nO)
-  do j = 1, nO
-    do i = 1, nO
-      Mc(1,1) = Mc(1,1) - 0.25d0 * (Pba(i,j) + Pab(i,j))**2
-      Mc(2,2) = Mc(2,2) - 0.25d0 * (Pba(i,j) - Pab(i,j))**2
-      Mc(3,3) = Mc(3,3) - 0.25d0 * (Paa(i,j) - Pbb(i,j))**2
-      Mc(1,3) = Mc(1,3) - 0.25d0 * (Pab(i,j) + Pba(i,j))*(Paa(j,i) - Pbb(j,i))
-    enddo
-  enddo
-  Mc(3,1) = Mc(1,3)
-
-  print *, " The Spin matrix is:", Mc 
-
-  call diagonalize_matrix(3, Mc, Eigc)
-  print *, ' eigenvalues of Collinearity matrix:', Eigc
-  deallocate(Mc, Eigc)
-
-  ! --- --- --- --- --- --- --- --- ---
-  ! --- --- --- --- --- --- --- --- ---
-
-  deallocate(Paa, Pab, Pba, Pbb)
-
-end
-
-
-
