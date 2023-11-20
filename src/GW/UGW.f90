@@ -1,7 +1,7 @@
 subroutine UGW(dotest,doG0W0,doevGW,doqsGW,doufG0W0,doufGW,doSRGqsGW,maxSCF,thresh,max_diis,doACFDT,       &
               exchange_kernel,doXBS,dophBSE,dophBSE2,doppBSE,TDA_W,TDA,dBSE,dTDA,spin_conserved,spin_flip, &
-              linearize,eta,regularize,nNuc,ZNuc,rNuc,ENuc,nBas,nC,nO,nV,nR,nS,EHF,S,X,T,V,Hc,             & 
-              ERI_AO,ERI_aaaa,ERI_aabb,ERI_bbbb,dipole_int_AO,dipole_int_aa,dipole_int_bb,PHF,cHF,epsHF)
+              linearize,eta,regularize,nNuc,ZNuc,rNuc,ENuc,nBas,nC,nO,nV,nR,nS,EUHF,S,X,T,V,Hc,            & 
+              ERI_AO,ERI_aaaa,ERI_aabb,ERI_bbbb,dipole_int_AO,dipole_int_aa,dipole_int_bb,PHF,cHF,eHF)
 
 ! GW module
 
@@ -50,8 +50,8 @@ subroutine UGW(dotest,doG0W0,doevGW,doqsGW,doufG0W0,doufGW,doSRGqsGW,maxSCF,thre
   integer,intent(in)            :: nR(nspin)
   integer,intent(in)            :: nS(nspin)
 
-  double precision,intent(in)   :: EHF
-  double precision,intent(in)   :: epsHF(nBas,nspin)
+  double precision,intent(in)   :: EUHF
+  double precision,intent(in)   :: eHF(nBas,nspin)
   double precision,intent(in)   :: cHF(nBas,nBas,nspin)
   double precision,intent(in)   :: PHF(nBas,nBas,nspin)
   double precision,intent(in)   :: S(nBas,nBas)
@@ -79,8 +79,8 @@ subroutine UGW(dotest,doG0W0,doevGW,doqsGW,doufG0W0,doufGW,doSRGqsGW,maxSCF,thre
     
     call wall_time(start_GW)
     call UG0W0(dotest,doACFDT,exchange_kernel,doXBS,dophBSE,TDA_W,TDA,dBSE,dTDA,spin_conserved,spin_flip, & 
-               linearize,eta,regularize,nBas,nC,nO,nV,nR,nS,ENuc,EHF,S,ERI_aaaa,ERI_aabb,ERI_bbbb, & 
-               dipole_int_aa,dipole_int_bb,cHF,epsHF)
+               linearize,eta,regularize,nBas,nC,nO,nV,nR,nS,ENuc,EUHF,S,ERI_aaaa,ERI_aabb,ERI_bbbb, & 
+               dipole_int_aa,dipole_int_bb,cHF,eHF)
     call wall_time(end_GW)
   
     t_GW = end_GW - start_GW
@@ -97,8 +97,8 @@ subroutine UGW(dotest,doG0W0,doevGW,doqsGW,doufG0W0,doufGW,doSRGqsGW,maxSCF,thre
 
     call wall_time(start_GW)
     call evUGW(dotest,maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,dophBSE,TDA_W,TDA,dBSE,dTDA, & 
-              spin_conserved,spin_flip,linearize,eta,regularize,nBas,nC,nO,nV,nR,nS,ENuc,EHF,S,  & 
-              ERI_aaaa,ERI_aabb,ERI_bbbb,dipole_int_aa,dipole_int_bb,cHF,epsHF)
+              spin_conserved,spin_flip,linearize,eta,regularize,nBas,nC,nO,nV,nR,nS,ENuc,EUHF,S,  & 
+              ERI_aaaa,ERI_aabb,ERI_bbbb,dipole_int_aa,dipole_int_bb,cHF,eHF)
     call wall_time(end_GW)
 
     t_GW = end_GW - start_GW
@@ -115,8 +115,8 @@ subroutine UGW(dotest,doG0W0,doevGW,doqsGW,doufG0W0,doufGW,doSRGqsGW,maxSCF,thre
 
     call wall_time(start_GW)
     call qsUGW(dotest,maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,dophBSE,TDA_W,TDA,dBSE,dTDA,spin_conserved,spin_flip, & 
-               eta,regularize,nNuc,ZNuc,rNuc,ENuc,nBas,nC,nO,nV,nR,nS,EHF,S,X,T,V,Hc,ERI_AO,ERI_aaaa,ERI_aabb,ERI_bbbb,   & 
-               dipole_int_AO,dipole_int_aa,dipole_int_bb,PHF,cHF,epsHF)
+               eta,regularize,nNuc,ZNuc,rNuc,ENuc,nBas,nC,nO,nV,nR,nS,EUHF,S,X,T,V,Hc,ERI_AO,ERI_aaaa,ERI_aabb,ERI_bbbb,   & 
+               dipole_int_AO,dipole_int_aa,dipole_int_bb,PHF,cHF,eHF)
     call wall_time(end_GW)
 
     t_GW = end_GW - start_GW

@@ -61,8 +61,7 @@ subroutine crRRPA(dotest,TDA,doACFDT,exchange_kernel,singlet,triplet,nBas,nC,nO,
 
 ! Memory allocation
 
-  allocate(Om(nS),XpY(nS,nS),XmY(nS,nS),Aph(nS,nS))
-  if(.not.TDA) allocate(Bph(nS,nS))
+  allocate(Om(nS),XpY(nS,nS),XmY(nS,nS),Aph(nS,nS),Bph(nS,nS))
 
 ! Singlet manifold
 

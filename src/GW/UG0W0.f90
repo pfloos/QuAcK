@@ -1,5 +1,5 @@
-subroutine UG0W0(dotest,doACFDT,exchange_kernel,doXBS,BSE,TDA_W,TDA,dBSE,dTDA,spin_conserved,spin_flip,      &
-                 linearize,eta,regularize,nBas,nC,nO,nV,nR,nS,ENuc,EUHF,S,ERI_aaaa,ERI_aabb,ERI_bbbb, & 
+subroutine UG0W0(dotest,doACFDT,exchange_kernel,doXBS,dophBSE,TDA_W,TDA,dBSE,dTDA,spin_conserved,spin_flip, &
+                 linearize,eta,regularize,nBas,nC,nO,nV,nR,nS,ENuc,EUHF,S,ERI_aaaa,ERI_aabb,ERI_bbbb,       & 
                  dipole_int_aa,dipole_int_bb,cHF,eHF)
 
 ! Perform unrestricted G0W0 calculation
@@ -15,7 +15,7 @@ subroutine UG0W0(dotest,doACFDT,exchange_kernel,doXBS,BSE,TDA_W,TDA,dBSE,dTDA,sp
   logical,intent(in)            :: doACFDT
   logical,intent(in)            :: exchange_kernel
   logical,intent(in)            :: doXBS
-  logical,intent(in)            :: BSE
+  logical,intent(in)            :: dophBSE
   logical,intent(in)            :: TDA_W
   logical,intent(in)            :: TDA
   logical,intent(in)            :: dBSE
@@ -52,7 +52,6 @@ subroutine UG0W0(dotest,doACFDT,exchange_kernel,doXBS,BSE,TDA_W,TDA,dBSE,dTDA,sp
   double precision              :: EcRPA
   double precision              :: EcGM(nspin)
   double precision              :: EcBSE(nspin)
-  double precision              :: EcAC(nspin)
   double precision,allocatable  :: SigC(:,:)
   double precision,allocatable  :: Z(:,:)
   integer                       :: nSa,nSb,nSt
@@ -185,7 +184,7 @@ subroutine UG0W0(dotest,doACFDT,exchange_kernel,doXBS,BSE,TDA_W,TDA,dBSE,dTDA,sp
 
 ! Perform BSE calculation
 
-  if(BSE) then
+  if(dophBSE) then
 
     call UGW_phBSE(TDA_W,TDA,dBSE,dTDA,spin_conserved,spin_flip,eta,nBas,nC,nO,nV,nR,nS,S, &
                    ERI_aaaa,ERI_aabb,ERI_bbbb,dipole_int_aa,dipole_int_bb,cHF,eHF,eGW,EcBSE)
@@ -203,10 +202,10 @@ subroutine UG0W0(dotest,doACFDT,exchange_kernel,doXBS,BSE,TDA_W,TDA,dBSE,dTDA,sp
 
     write(*,*)
     write(*,*)'-------------------------------------------------------------------------------'
-    write(*,'(2X,A50,F20.10)') 'Tr@BSE@UG0W0 correlation energy (spin-conserved) =',EcBSE(1)
-    write(*,'(2X,A50,F20.10)') 'Tr@BSE@UG0W0 correlation energy (spin-flip)      =',EcBSE(2)
-    write(*,'(2X,A50,F20.10)') 'Tr@BSE@UG0W0 correlation energy                  =',EcBSE(1) + EcBSE(2)
-    write(*,'(2X,A50,F20.10)') 'Tr@BSE@UG0W0 total energy                        =',ENuc + EUHF + EcBSE(1) + EcBSE(2)
+    write(*,'(2X,A50,F20.10,A3)') 'Tr@BSE@UG0W0 correlation energy (spin-conserved) =',EcBSE(1),' au'
+    write(*,'(2X,A50,F20.10,A3)') 'Tr@BSE@UG0W0 correlation energy (spin-flip)      =',EcBSE(2),' au'
+    write(*,'(2X,A50,F20.10,A3)') 'Tr@BSE@UG0W0 correlation energy                  =',sum(EcBSE),' au'
+    write(*,'(2X,A50,F20.10,A3)') 'Tr@BSE@UG0W0 total energy                        =',ENuc + EUHF + sum(EcBSE),' au'
     write(*,*)'-------------------------------------------------------------------------------'
     write(*,*)
 
@@ -226,15 +225,15 @@ subroutine UG0W0(dotest,doACFDT,exchange_kernel,doXBS,BSE,TDA_W,TDA,dBSE,dTDA,sp
 
       end if
 
-      call UGW_phACFDT(exchange_kernel,doXBS,.true.,TDA_W,TDA,BSE,spin_conserved,spin_flip,eta, & 
-                       nBas,nC,nO,nV,nR,nS,ERI_aaaa,ERI_aabb,ERI_bbbb,eHF,eGW,EcAC)
+      call UGW_phACFDT(exchange_kernel,doXBS,.true.,TDA_W,TDA,dophBSE,spin_conserved,spin_flip,eta, & 
+                       nBas,nC,nO,nV,nR,nS,ERI_aaaa,ERI_aabb,ERI_bbbb,eHF,eGW,EcBSE)
 
       write(*,*)
       write(*,*)'-------------------------------------------------------------------------------'
-      write(*,'(2X,A50,F20.10)') 'AC@BSE@UG0W0 correlation energy (spin-conserved) =',EcAC(1)
-      write(*,'(2X,A50,F20.10)') 'AC@BSE@UG0W0 correlation energy (spin-flip)      =',EcAC(2)
-      write(*,'(2X,A50,F20.10)') 'AC@BSE@UG0W0 correlation energy                  =',EcAC(1) + EcAC(2)
-      write(*,'(2X,A50,F20.10)') 'AC@BSE@UG0W0 total energy                        =',ENuc + EUHF + EcAC(1) + EcAC(2)
+      write(*,'(2X,A50,F20.10,A3)') 'AC@BSE@UG0W0 correlation energy (spin-conserved) =',EcBSE(1),' au'
+      write(*,'(2X,A50,F20.10,A3)') 'AC@BSE@UG0W0 correlation energy (spin-flip)      =',EcBSE(2),' au'
+      write(*,'(2X,A50,F20.10,A3)') 'AC@BSE@UG0W0 correlation energy                  =',sum(EcBSE),' au'
+      write(*,'(2X,A50,F20.10,A3)') 'AC@BSE@UG0W0 total energy                        =',ENuc + EUHF + sum(EcBSE),' au'
       write(*,*)'-------------------------------------------------------------------------------'
       write(*,*)
 

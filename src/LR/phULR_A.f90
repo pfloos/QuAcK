@@ -1,4 +1,4 @@
-subroutine phULR_A(ispin,dRPA,nBas,nC,nO,nV,nR,nSa,nSb,nSt,lambda,e,ERI_aaaa,ERI_aabb,ERI_bbbb,Aph)
+subroutine phULR_A(ispin,dRPA,nBas,nC,nO,nV,nR,nSa,nSb,nSt,lambda,eHF,ERI_aaaa,ERI_aabb,ERI_bbbb,Aph)
 
 ! Compute linear response
 
@@ -18,7 +18,7 @@ subroutine phULR_A(ispin,dRPA,nBas,nC,nO,nV,nR,nSa,nSb,nSt,lambda,e,ERI_aaaa,ERI
   integer,intent(in)            :: nSb
   integer,intent(in)            :: nSt
   double precision,intent(in)   :: lambda
-  double precision,intent(in)   :: e(nBas,nspin)
+  double precision,intent(in)   :: eHF(nBas,nspin)
   double precision,intent(in)   :: ERI_aaaa(nBas,nBas,nBas,nBas) 
   double precision,intent(in)   :: ERI_aabb(nBas,nBas,nBas,nBas) 
   double precision,intent(in)   :: ERI_bbbb(nBas,nBas,nBas,nBas) 
@@ -56,8 +56,8 @@ subroutine phULR_A(ispin,dRPA,nBas,nC,nO,nV,nR,nSa,nSb,nSt,lambda,e,ERI_aaaa,ERI
           do b=nO(1)+1,nBas-nR(1)
             jb = jb + 1
  
-            Aph(ia,jb) = (e(a,1) - e(i,1))*Kronecker_delta(i,j)*Kronecker_delta(a,b) &
-                        + lambda*ERI_aaaa(i,b,a,j) - (1d0 - delta_dRPA)*lambda*ERI_aaaa(i,b,j,a)
+            Aph(ia,jb) = (eHF(a,1) - eHF(i,1))*Kronecker_delta(i,j)*Kronecker_delta(a,b) &
+                       + lambda*ERI_aaaa(i,b,a,j) - (1d0 - delta_dRPA)*lambda*ERI_aaaa(i,b,j,a)
 
           end  do
         end  do
@@ -111,8 +111,8 @@ subroutine phULR_A(ispin,dRPA,nBas,nC,nO,nV,nR,nSa,nSb,nSt,lambda,e,ERI_aaaa,ERI
           do b=nO(2)+1,nBas-nR(2)
             jb = jb + 1
  
-            Aph(nSa+ia,nSa+jb) = (e(a,2) - e(i,2))*Kronecker_delta(i,j)*Kronecker_delta(a,b) &
-                                + lambda*ERI_bbbb(i,b,a,j) - (1d0 - delta_dRPA)*lambda*ERI_bbbb(i,b,j,a)
+            Aph(nSa+ia,nSa+jb) = (eHF(a,2) - eHF(i,2))*Kronecker_delta(i,j)*Kronecker_delta(a,b) &
+                               + lambda*ERI_bbbb(i,b,a,j) - (1d0 - delta_dRPA)*lambda*ERI_bbbb(i,b,j,a)
 
           end  do
         end  do
@@ -139,8 +139,8 @@ subroutine phULR_A(ispin,dRPA,nBas,nC,nO,nV,nR,nSa,nSb,nSt,lambda,e,ERI_aaaa,ERI
         do j=nC(1)+1,nO(1)
           do b=nO(2)+1,nBas-nR(2)
             jb = jb + 1
-            Aph(ia,jb) = (e(a,2) - e(i,1))*Kronecker_delta(i,j)*Kronecker_delta(a,b) &
-                        - (1d0 - delta_dRPA)*lambda*ERI_aabb(i,b,j,a)
+            Aph(ia,jb) = (eHF(a,2) - eHF(i,1))*Kronecker_delta(i,j)*Kronecker_delta(a,b) &
+                       - (1d0 - delta_dRPA)*lambda*ERI_aabb(i,b,j,a)
           end  do
         end  do
       end  do
@@ -157,8 +157,8 @@ subroutine phULR_A(ispin,dRPA,nBas,nC,nO,nV,nR,nSa,nSb,nSt,lambda,e,ERI_aaaa,ERI
           do b=nO(1)+1,nBas-nR(1)
             jb = jb + 1
  
-            Aph(nSa+ia,nSa+jb) = (e(a,1) - e(i,2))*Kronecker_delta(i,j)*Kronecker_delta(a,b) &
-                                - (1d0 - delta_dRPA)*lambda*ERI_aabb(b,i,a,j)
+            Aph(nSa+ia,nSa+jb) = (eHF(a,1) - eHF(i,2))*Kronecker_delta(i,j)*Kronecker_delta(a,b) &
+                               - (1d0 - delta_dRPA)*lambda*ERI_aabb(b,i,a,j)
 
           end  do
         end  do

@@ -55,14 +55,12 @@ subroutine phULR(TDA,nSa,nSb,nSt,Aph,Bph,EcRPA,Om,XpY,XmY)
 !     call UGW_phBSE_static_kernel_B(ispin,nBas,nC,nO,nV,nR,nSa,nSb,nSt,nS_sc,lambda, & 
 !                                    ERI_aaaa,ERI_aabb,ERI_bbbb,Om,rho,Bph)
 
-  ! Build A + B and A - B matrices 
-
     ApB(:,:) = Aph(:,:) + Bph(:,:)
     AmB(:,:) = Aph(:,:) - Bph(:,:)
 
   ! Diagonalize linear response matrix
 
-   call diagonalize_matrix(nSt,AmB,Om)
+    call diagonalize_matrix(nSt,AmB,Om)
 
     if(minval(Om) < 0d0) &
       call print_warning('You may have instabilities in linear response: A-B is not positive definite!!')

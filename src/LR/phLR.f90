@@ -44,8 +44,6 @@ subroutine phLR(TDA,nS,Aph,Bph,EcRPA,Om,XpY,XmY)
 
   else
 
-    ! Build A + B and A - B matrices 
-
     ApB(:,:) = Aph(:,:) + Bph(:,:)
     AmB(:,:) = Aph(:,:) - Bph(:,:)
 
@@ -62,7 +60,7 @@ subroutine phLR(TDA,nS,Aph,Bph,EcRPA,Om,XpY,XmY)
     call dgemm('N','N',nS,nS,nS,1d0,ApB,size(ApB,1),AmBSq,size(AmBSq,1),0d0,tmp,size(tmp,1))
     call dgemm('N','N',nS,nS,nS,1d0,AmBSq,size(AmBSq,1),tmp,size(tmp,1),0d0,Z,size(Z,1))
 
-   call diagonalize_matrix(nS,Z,Om)
+    call diagonalize_matrix(nS,Z,Om)
 
     if(minval(Om) < 0d0) & 
       call print_warning('You may have instabilities in linear response: negative excitations!!')
@@ -79,6 +77,6 @@ subroutine phLR(TDA,nS,Aph,Bph,EcRPA,Om,XpY,XmY)
 
   ! Compute the RPA correlation energy
 
-    EcRPA = 0.5d0*(sum(Om) - trace_matrix(nS,Aph))
+  EcRPA = 0.5d0*(sum(Om) - trace_matrix(nS,Aph))
 
 end subroutine 

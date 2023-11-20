@@ -1,5 +1,5 @@
 subroutine RRPA(dotest,dophRPA,dophRPAx,docrRPA,doppRPA,TDA,doACFDT,exchange_kernel,singlet,triplet, &  
-                nBas,nC,nO,nV,nR,nS,ENuc,EHF,ERI,dipole_int,epsHF,cHF,S)
+                nBas,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,dipole_int,eHF,cHF,S)
 
 ! Random-phase approximation module
 
@@ -27,8 +27,8 @@ subroutine RRPA(dotest,dophRPA,dophRPAx,docrRPA,doppRPA,TDA,doACFDT,exchange_ker
   integer,intent(in)            :: nR(nspin)
   integer,intent(in)            :: nS(nspin)
   double precision,intent(in)   :: ENuc
-  double precision,intent(in)   :: EHF
-  double precision,intent(in)   :: epsHF(nBas)
+  double precision,intent(in)   :: ERHF
+  double precision,intent(in)   :: eHF(nBas)
   double precision,intent(in)   :: cHF(nBas,nBas)
   double precision,intent(in)   :: S(nBas,nBas)
   double precision,intent(in)   :: ERI(nBas,nBas,nBas,nBas)
@@ -45,7 +45,7 @@ subroutine RRPA(dotest,dophRPA,dophRPAx,docrRPA,doppRPA,TDA,doACFDT,exchange_ker
   if(dophRPA) then
 
     call wall_time(start_RPA)
-    call phRRPA(dotest,TDA,doACFDT,exchange_kernel,singlet,triplet,nBas,nC,nO,nV,nR,nS,ENuc,EHF,ERI,dipole_int,epsHF)
+    call phRRPA(dotest,TDA,doACFDT,exchange_kernel,singlet,triplet,nBas,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,dipole_int,eHF)
     call wall_time(end_RPA)
 
     t_RPA = end_RPA - start_RPA
@@ -61,7 +61,7 @@ subroutine RRPA(dotest,dophRPA,dophRPAx,docrRPA,doppRPA,TDA,doACFDT,exchange_ker
   if(dophRPAx) then
 
     call wall_time(start_RPA)
-    call phRRPAx(dotest,TDA,doACFDT,exchange_kernel,singlet,triplet,nBas,nC,nO,nV,nR,nS,ENuc,EHF,ERI,dipole_int,epsHF)
+    call phRRPAx(dotest,TDA,doACFDT,exchange_kernel,singlet,triplet,nBas,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,dipole_int,eHF)
     call wall_time(end_RPA)
 
     t_RPA = end_RPA - start_RPA
@@ -77,7 +77,7 @@ subroutine RRPA(dotest,dophRPA,dophRPAx,docrRPA,doppRPA,TDA,doACFDT,exchange_ker
   if(docrRPA) then
 
     call wall_time(start_RPA)
-    call crRRPA(dotest,TDA,doACFDT,exchange_kernel,singlet,triplet,nBas,nC,nO,nV,nR,nS,ENuc,EHF,ERI,dipole_int,epsHF)
+    call crRRPA(dotest,TDA,doACFDT,exchange_kernel,singlet,triplet,nBas,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,dipole_int,eHF)
     call wall_time(end_RPA)
 
     t_RPA = end_RPA - start_RPA
@@ -93,7 +93,7 @@ subroutine RRPA(dotest,dophRPA,dophRPAx,docrRPA,doppRPA,TDA,doACFDT,exchange_ker
   if(doppRPA) then
 
     call wall_time(start_RPA)
-    call ppRRPA(dotest,TDA,doACFDT,singlet,triplet,nBas,nC,nO,nV,nR,ENuc,EHF,ERI,dipole_int,epsHF)
+    call ppRRPA(dotest,TDA,doACFDT,singlet,triplet,nBas,nC,nO,nV,nR,ENuc,ERHF,ERI,dipole_int,eHF)
     call wall_time(end_RPA)
 
     t_RPA = end_RPA - start_RPA

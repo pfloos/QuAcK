@@ -57,8 +57,7 @@ subroutine phGRPA(dotest,TDA,nBas,nC,nO,nV,nR,nS,ENuc,EGHF,ERI,dipole_int,eHF)
 
 ! Memory allocation
 
-  allocate(Om(nS),XpY(nS,nS),XmY(nS,nS),Aph(nS,nS))
-  if(.not.TDA) allocate(Bph(nS,nS))
+  allocate(Om(nS),XpY(nS,nS),XmY(nS,nS),Aph(nS,nS),Bph(nS,nS))
 
   ispin = 3
 
