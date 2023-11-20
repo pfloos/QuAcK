@@ -44,8 +44,8 @@ subroutine RHF(dotest,maxSCF,thresh,max_diis,guess_type,level_shift,nNuc,ZNuc,rN
   double precision              :: Conv
   double precision              :: rcond
   double precision,external     :: trace_matrix
-  double precision,allocatable  :: error(:,:)
-  double precision,allocatable  :: error_diis(:,:)
+  double precision,allocatable  :: err(:,:)
+  double precision,allocatable  :: err_diis(:,:)
   double precision,allocatable  :: F_diis(:,:)
   double precision,allocatable  :: J(:,:)
   double precision,allocatable  :: K(:,:)
@@ -74,8 +74,8 @@ subroutine RHF(dotest,maxSCF,thresh,max_diis,guess_type,level_shift,nNuc,ZNuc,rN
 
 ! Memory allocation
 
-  allocate(J(nBas,nBas),K(nBas,nBas),error(nBas,nBas),cp(nBas,nBas),F(nBas,nBas), &
-           Fp(nBas,nBas),error_diis(nBasSq,max_diis),F_diis(nBasSq,max_diis))
+  allocate(J(nBas,nBas),K(nBas,nBas),err(nBas,nBas),cp(nBas,nBas),F(nBas,nBas), &
+           Fp(nBas,nBas),err_diis(nBasSq,max_diis),F_diis(nBasSq,max_diis))
 
 ! Guess coefficients and density matrix
 
@@ -84,9 +84,10 @@ subroutine RHF(dotest,maxSCF,thresh,max_diis,guess_type,level_shift,nNuc,ZNuc,rN
 
 ! Initialization
 
-  F_diis(:,:)     = 0d0
-  error_diis(:,:) = 0d0
-  rcond  = 0d0
+  n_diis          = 0
+  F_diis(:,:)   = 0d0
+  err_diis(:,:) = 0d0
+  rcond = 0d0
 
   Conv   = 1d0
   nSCF   = 0
@@ -116,8 +117,8 @@ subroutine RHF(dotest,maxSCF,thresh,max_diis,guess_type,level_shift,nNuc,ZNuc,rN
 
 !   Check convergence 
 
-    error = matmul(F,matmul(P,S)) - matmul(matmul(S,P),F)
-    Conv  = maxval(abs(error))
+    err = matmul(F,matmul(P,S)) - matmul(matmul(S,P),F)
+    if(nSCF > 1) Conv = maxval(abs(err))
 
 !   Kinetic energy
 
@@ -144,7 +145,7 @@ subroutine RHF(dotest,maxSCF,thresh,max_diis,guess_type,level_shift,nNuc,ZNuc,rN
     if(max_diis > 1) then
 
       n_diis = min(n_diis+1,max_diis)
-      call DIIS_extrapolation(rcond,nBasSq,nBasSq,n_diis,error_diis,F_diis,error,F)
+      call DIIS_extrapolation(rcond,nBasSq,nBasSq,n_diis,err_diis,F_diis,err,F)
 
     end if
 

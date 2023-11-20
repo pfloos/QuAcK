@@ -94,6 +94,7 @@ subroutine UHF(dotest,maxSCF,thresh,max_diis,guess_type,mix,level_shift,nNuc,ZNu
   n_diis          = 0
   F_diis(:,:,:)   = 0d0
   err_diis(:,:,:) = 0d0
+  rcond(:)        = 0d0
 
   nSCF = 0
   Conv = 1d0
@@ -138,18 +139,18 @@ subroutine UHF(dotest,maxSCF,thresh,max_diis,guess_type,mix,level_shift,nNuc,ZNu
       err(:,:,ispin) = matmul(F(:,:,ispin),matmul(P(:,:,ispin),S(:,:))) - matmul(matmul(S(:,:),P(:,:,ispin)),F(:,:,ispin))
     end do
 
-    if(nSCF > 1) Conv = maxval(abs(err(:,:,:)))
+    if(nSCF > 1) Conv = maxval(abs(err))
  
 !   Kinetic energy
 
     do ispin=1,nspin
-      ET(ispin) = trace_matrix(nBas,matmul(P(:,:,ispin),T(:,:)))
+      ET(ispin) = trace_matrix(nBas,matmul(P(:,:,ispin),T))
     end do
 
 !   Potential energy
 
     do ispin=1,nspin
-      EV(ispin) = trace_matrix(nBas,matmul(P(:,:,ispin),V(:,:)))
+      EV(ispin) = trace_matrix(nBas,matmul(P(:,:,ispin),V))
     end do
 
 !   Hartree energy
@@ -193,7 +194,7 @@ subroutine UHF(dotest,maxSCF,thresh,max_diis,guess_type,mix,level_shift,nNuc,ZNu
 !  Transform Fock matrix in orthogonal basis
 
     do ispin=1,nspin
-      Fp(:,:,ispin) = matmul(transpose(X(:,:)),matmul(F(:,:,ispin),X(:,:)))
+      Fp(:,:,ispin) = matmul(transpose(X),matmul(F(:,:,ispin),X))
     end do
 
 !  Diagonalize Fock matrix to get eigenvectors and eigenvalues
@@ -206,7 +207,7 @@ subroutine UHF(dotest,maxSCF,thresh,max_diis,guess_type,mix,level_shift,nNuc,ZNu
 !   Back-transform eigenvectors in non-orthogonal basis
 
     do ispin=1,nspin
-      c(:,:,ispin) = matmul(X(:,:),cp(:,:,ispin))
+      c(:,:,ispin) = matmul(X,cp(:,:,ispin))
     end do
 
 !   Mix guess for UHF solution in singlet states
