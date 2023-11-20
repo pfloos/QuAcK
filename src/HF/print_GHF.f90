@@ -1,4 +1,4 @@
-subroutine print_GHF(nBas,nBas2,nO,eHF,C,P,S,ENuc,ET,EV,EJ,EK,EGHF,dipole)
+subroutine print_GHF(nBas,nBas2,nO,eHF,C,S,ENuc,ET,EV,EJ,EK,EGHF,dipole)
 
 
 ! Print one-electron energies and other stuff for GHF
@@ -14,7 +14,6 @@ subroutine print_GHF(nBas,nBas2,nO,eHF,C,P,S,ENuc,ET,EV,EJ,EK,EGHF,dipole)
   double precision,intent(in)        :: eHF(nBas2)
 
   double precision,intent(in)        :: C(nBas2,nBas2)
-  double precision,intent(in)        :: P(nBas2,nBas2)
   double precision,intent(in)        :: S(nBas,nBas)
   double precision,intent(in)        :: ENuc
   double precision,intent(in)        :: ET
@@ -26,10 +25,11 @@ subroutine print_GHF(nBas,nBas2,nO,eHF,C,P,S,ENuc,ET,EV,EJ,EK,EGHF,dipole)
 
 ! Local variables
 
+  logical                            :: dump_orb = .false.
+
   integer                            :: i,j
   integer                            :: ixyz
 
-  integer                            :: mu,nu
   integer                            :: HOMO
   integer                            :: LUMO
   double precision                   :: Gap
@@ -44,8 +44,6 @@ subroutine print_GHF(nBas,nBas2,nO,eHF,C,P,S,ENuc,ET,EV,EJ,EK,EGHF,dipole)
   double precision,allocatable       :: Pbb(:,:)
 
   double precision,external          :: trace_matrix
-
-  logical                            :: dump_orb = .false.
 
 ! HOMO and LUMO
 
@@ -103,7 +101,7 @@ subroutine print_GHF(nBas,nBas2,nO,eHF,C,P,S,ENuc,ET,EV,EJ,EK,EGHF,dipole)
 
   S2 = Sz2 + 0.5d0*(SpSm + SmSp)
 
-  call print_GHF_spin(nBas, nBas2, nO, C, S)
+  call print_GHF_spin(nBas,nBas2,nO,C,S)
 
 ! Dump results
 

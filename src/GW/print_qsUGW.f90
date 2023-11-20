@@ -1,4 +1,4 @@
-subroutine print_qsUGW(nBas,nO,nSCF,Conv,thresh,eHF,eGW,cGW,Ov,ENuc,ET,EV,EJ,Ex,EcGM,EcRPA,EqsGW,SigC,Z,dipole)
+subroutine print_qsUGW(nBas,nO,nSCF,Conv,thresh,eHF,eGW,c,Ov,ENuc,ET,EV,EJ,Ex,EcGM,EcRPA,EqsGW,SigC,Z,dipole)
 
 ! Print one-electron energies and other stuff for qsUGW
 
@@ -22,7 +22,7 @@ subroutine print_qsUGW(nBas,nO,nSCF,Conv,thresh,eHF,eGW,cGW,Ov,ENuc,ET,EV,EJ,Ex,
   double precision,intent(in)        :: thresh
   double precision,intent(in)        :: eHF(nBas,nspin)
   double precision,intent(in)        :: eGW(nBas,nspin)
-  double precision,intent(in)        :: cGW(nBas,nBas,nspin)
+  double precision,intent(in)        :: c(nBas,nBas,nspin)
   double precision,intent(in)        :: Ov(nBas,nBas)
   double precision,intent(in)        :: SigC(nBas,nBas,nspin)
   double precision,intent(in)        :: Z(nBas,nspin)
@@ -36,8 +36,8 @@ subroutine print_qsUGW(nBas,nO,nSCF,Conv,thresh,eHF,eGW,cGW,Ov,ENuc,ET,EV,EJ,Ex,
   double precision                   :: HOMO(nspin)
   double precision                   :: LUMO(nspin)
   double precision                   :: Gap(nspin)
-  double precision                   :: S_exact,S2_exact
-  double precision                   :: S,S2
+  double precision                   :: Sz
+  double precision                   :: Sx2,Sy2,Sz2
   double precision,external          :: trace_matrix
 
 ! HOMO and LUMO
@@ -54,11 +54,10 @@ subroutine print_qsUGW(nBas,nO,nSCF,Conv,thresh,eHF,eGW,cGW,Ov,ENuc,ET,EV,EJ,Ex,
     end if
   end do
 
-  S2_exact = dble(nO(1) - nO(2))/2d0*(dble(nO(1) - nO(2))/2d0 + 1d0)
-  S2 = S2_exact + nO(2) - sum(matmul(transpose(cGW(:,1:nO(1),1)),matmul(Ov,cGW(:,1:nO(2),2)))**2)
-
-  S_exact = 0.5d0*dble(nO(1) - nO(2))
-  S = -0.5d0 + 0.5d0*sqrt(1d0 + 4d0*S2)
+  Sz =  0.5d0*dble(nO(1) - nO(2))
+  Sx2 = 0.25d0*dble(nO(1) - nO(2)) + 0.5d0*nO(2) - 0.5d0*sum(matmul(transpose(c(:,1:nO(1),1)),matmul(Ov,c(:,1:nO(2),2)))**2)
+  Sy2 = 0.25d0*dble(nO(1) - nO(2)) + 0.5d0*nO(2) - 0.5d0*sum(matmul(transpose(c(:,1:nO(1),1)),matmul(Ov,c(:,1:nO(2),2)))**2)
+  Sz2 = 0.25d0*dble(nO(1) - nO(2))**2
 
 ! Dump results
 
@@ -147,10 +146,8 @@ subroutine print_qsUGW(nBas,nO,nSCF,Conv,thresh,eHF,eGW,cGW,Ov,ENuc,ET,EV,EJ,Ex,
     write(*,'(A40,1X,F16.10,A3)') ' Nuclear      repulsion = ',ENuc,' au'
     write(*,'(A40,1X,F16.10,A3)') ' qsUGW           energy = ',ENuc + EqsGW,' au'
     write(*,'(A60)')              '-------------------------------------------------'
-    write(*,'(A40,F13.6)')        '  S (exact)          = ',2d0*S_exact + 1d0
-    write(*,'(A40,F13.6)')        '  S                  = ',2d0*S       + 1d0
-    write(*,'(A40,F13.6)')        ' <S**2> (exact)      = ',S2_exact
-    write(*,'(A40,F13.6)')        ' <S**2>              = ',S2
+    write(*,'(A40,1X,F10.6)')     ' <Sz>                   = ',Sz
+    write(*,'(A40,1X,F10.6)')     ' <S^2>                  = ',Sx2+Sy2+Sz2
     write(*,'(A60)')              '-------------------------------------------------'
     write(*,'(A45)')              ' Dipole moment (Debye)    '
     write(*,'(19X,4A10)')         'X','Y','Z','Tot.'
@@ -164,12 +161,12 @@ subroutine print_qsUGW(nBas,nO,nSCF,Conv,thresh,eHF,eGW,cGW,Ov,ENuc,ET,EV,EJ,Ex,
       write(*,'(A50)') '-----------------------------------------'
       write(*,'(A50)') 'qsUGW spin-up   orbital coefficients '
       write(*,'(A50)') '-----------------------------------------'
-      call matout(nBas,nBas,cGW(:,:,1))
+      call matout(nBas,nBas,c(:,:,1))
       write(*,*)
       write(*,'(A50)') '-----------------------------------------'
       write(*,'(A50)') 'qsUGW spin-down orbital coefficients '
       write(*,'(A50)') '-----------------------------------------'
-      call matout(nBas,nBas,cGW(:,:,2))
+      call matout(nBas,nBas,c(:,:,2))
       write(*,*)
     end if
 

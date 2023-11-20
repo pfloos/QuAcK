@@ -27,7 +27,7 @@ subroutine print_UHF(nBas,nO,Ov,eHF,c,ENuc,ET,EV,EJ,Ex,EUHF,dipole)
   double precision                   :: HOMO(nspin)
   double precision                   :: LUMO(nspin)
   double precision                   :: Gap(nspin)
-  double precision                   :: Sx,Sy,Sz
+  double precision                   :: Sz
   double precision                   :: Sx2,Sy2,Sz2
 
   logical                            :: dump_orb = .false.
@@ -51,7 +51,6 @@ subroutine print_UHF(nBas,nO,Ov,eHF,c,ENuc,ET,EV,EJ,Ex,EUHF,dipole)
   end do
 
   Sz =  0.5d0*dble(nO(1) - nO(2))
-! print*,Sz*(Sz+1d0) + nO(2) - sum(matmul(transpose(c(:,1:nO(1),1)),matmul(Ov,c(:,1:nO(2),2)))**2)
   Sx2 = 0.25d0*dble(nO(1) - nO(2)) + 0.5d0*nO(2) - 0.5d0*sum(matmul(transpose(c(:,1:nO(1),1)),matmul(Ov,c(:,1:nO(2),2)))**2)
   Sy2 = 0.25d0*dble(nO(1) - nO(2)) + 0.5d0*nO(2) - 0.5d0*sum(matmul(transpose(c(:,1:nO(1),1)),matmul(Ov,c(:,1:nO(2),2)))**2)
   Sz2 = 0.25d0*dble(nO(1) - nO(2))**2
@@ -96,12 +95,7 @@ subroutine print_UHF(nBas,nO,Ov,eHF,c,ENuc,ET,EV,EJ,Ex,EUHF,dipole)
   write(*,'(A40,1X,F16.6,A3)')  ' UHF LUMO b    energy   = ',LUMO(2)*HatoeV,' eV'
   write(*,'(A40,1X,F16.6,A3)')  ' UHF HOMOb-LUMOb  gap   = ',Gap(2)*HatoeV,' eV'
   write(*,'(A60)')              '---------------------------------------------'
-  write(*,'(A40,1X,F10.6)')     ' <Sx>                   = ',Sx
-  write(*,'(A40,1X,F10.6)')     ' <Sy>                   = ',Sy
   write(*,'(A40,1X,F10.6)')     ' <Sz>                   = ',Sz
-  write(*,'(A40,1X,F10.6)')     ' <Sx^2>                 = ',Sx2
-  write(*,'(A40,1X,F10.6)')     ' <Sy^2>                 = ',Sy2
-  write(*,'(A40,1X,F10.6)')     ' <Sz^2>                 = ',Sz2
   write(*,'(A40,1X,F10.6)')     ' <S^2>                  = ',Sx2+Sy2+Sz2
   write(*,'(A60)')              '---------------------------------------------'
   write(*,'(A45)')              ' Dipole moment (Debye)    '

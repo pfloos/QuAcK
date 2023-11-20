@@ -1,4 +1,4 @@
-subroutine print_qsGGW(nBas,nO,nSCF,Conv,thresh,eHF,eGW,c,SigC,Z,ENuc,ET,EV,EJ,Ex,EcGM,EcRPA,EqsGW,dipole)
+subroutine print_qsGGW(nBas,nBas2,nO,nSCF,Conv,thresh,eHF,eGW,c,S,SigC,Z,ENuc,ET,EV,EJ,Ex,EcGM,EcRPA,EqsGW,dipole)
 
 ! Print information for the generalized version of qsGW
 
@@ -8,6 +8,7 @@ subroutine print_qsGGW(nBas,nO,nSCF,Conv,thresh,eHF,eGW,c,SigC,Z,ENuc,ET,EV,EJ,E
 ! Input variables
 
   integer,intent(in)                 :: nBas
+  integer,intent(in)                 :: nBas2
   integer,intent(in)                 :: nO
   integer,intent(in)                 :: nSCF
   double precision,intent(in)        :: ENuc
@@ -19,20 +20,33 @@ subroutine print_qsGGW(nBas,nO,nSCF,Conv,thresh,eHF,eGW,c,SigC,Z,ENuc,ET,EV,EJ,E
   double precision,intent(in)        :: EcRPA
   double precision,intent(in)        :: Conv
   double precision,intent(in)        :: thresh
-  double precision,intent(in)        :: eHF(nBas)
-  double precision,intent(in)        :: eGW(nBas)
-  double precision,intent(in)        :: c(nBas)
-  double precision,intent(in)        :: SigC(nBas,nBas)
-  double precision,intent(in)        :: Z(nBas)
+  double precision,intent(in)        :: eHF(nBas2)
+  double precision,intent(in)        :: eGW(nBas2)
+  double precision,intent(in)        :: c(nBas2,nBas2)
+  double precision,intent(in)        :: S(nBas,nBas)
+  double precision,intent(in)        :: SigC(nBas2,nBas2)
+  double precision,intent(in)        :: Z(nBas2)
   double precision,intent(in)        :: EqsGW
   double precision,intent(in)        :: dipole(ncart)
 
 ! Local variables
 
   logical                            :: dump_orb = .false.
+
+  integer                            :: i,j
   integer                            :: p,ixyz,HOMO,LUMO
   double precision                   :: Gap
   double precision,external          :: trace_matrix
+
+  double precision                   :: Sx,Sy,Sz
+  double precision                   :: SmSp,SpSm,Sz2,S2
+
+  double precision,allocatable       :: Ca(:,:)
+  double precision,allocatable       :: Cb(:,:)
+  double precision,allocatable       :: Paa(:,:)
+  double precision,allocatable       :: Pab(:,:)
+  double precision,allocatable       :: Pba(:,:)
+  double precision,allocatable       :: Pbb(:,:)
 
 ! Output variables
 
@@ -42,7 +56,59 @@ subroutine print_qsGGW(nBas,nO,nSCF,Conv,thresh,eHF,eGW,c,SigC,Z,ENuc,ET,EV,EJ,E
   LUMO = HOMO + 1
   Gap = eGW(LUMO)-eGW(HOMO)
 
-! Compute energies
+
+
+! Density matrices
+
+  allocate(Paa(nO,nO),Pab(nO,nO),Pba(nO,nO),Pbb(nO,nO))
+
+  allocate(Ca(nBas,nO),Cb(nBas,nO))
+
+  Ca(:,:) = C(     1:nBas ,1:nO)
+  Cb(:,:) = C(nBas+1:nBas2,1:nO)
+
+  Paa = matmul(transpose(Ca),matmul(S,Ca))
+  Pab = matmul(transpose(Ca),matmul(S,Cb))
+  Pba = matmul(transpose(Cb),matmul(S,Ca))
+  Pbb = matmul(transpose(Cb),matmul(S,Cb))
+
+! Compute components of S = (Sx,Sy,Sz)
+
+  Sx = 0.5d0*(trace_matrix(nO,Pab) + trace_matrix(nO,Pba))
+  Sy = 0.5d0*(trace_matrix(nO,Pab) - trace_matrix(nO,Pba))
+  Sz = 0.5d0*(trace_matrix(nO,Paa) - trace_matrix(nO,Pbb))
+
+! Compute <S^2> = <Sx^2> + <Sy^2> + <Sz^2>
+
+  SpSm = 0d0
+  do i=1,nO
+    do j=1,nO
+      SpSm = SpSm + Pab(i,i)*Pba(j,j) - Pab(i,j)*Pba(j,i)
+    end do
+  end do
+  SpSm = trace_matrix(nO,Paa) + SpSm
+
+  SmSp = 0d0
+  do i=1,nO
+    do j=1,nO
+      SmSp = SmSp + Pba(i,i)*Pab(j,j) - Pba(i,j)*Pab(j,i)
+    end do
+  end do
+  SmSp = trace_matrix(nO,Pbb) + SmSp
+
+  Sz2 = 0d0
+  do i=1,nO
+    do j=1,nO
+      Sz2 = Sz2 + (Paa(i,i) - Pbb(i,i))*(Paa(j,j) - Pbb(j,j)) - (Paa(i,j) - Pbb(i,j))**2
+    end do
+  end do
+  Sz2 = 0.25d0*(dble(nO) + Sz2)
+
+! Compute <S^2> from Sz^2, S^+S^- and S^-S^+
+
+  S2 = Sz2 + 0.5d0*(SpSm + SmSp)
+
+  call print_GHF_spin(nBas,nBas2,nO,C,S)
 
 ! Dump results
 
