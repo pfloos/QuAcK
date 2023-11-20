@@ -224,7 +224,7 @@ subroutine evRGTpp(dotest,maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,B
   ! Dump results
   !----------------------------------------------
 
-    call print_evGTpp(nBas,nO,nSCF,Conv,eHF,ENuc,ERHF,Sig,Z,eGT,EcGM,EcRPA)
+    call print_evRGTpp(nBas,nO,nSCF,Conv,eHF,ENuc,ERHF,Sig,Z,eGT,EcGM,EcRPA)
 
     ! DIIS extrapolation
 

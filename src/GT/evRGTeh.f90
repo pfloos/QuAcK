@@ -165,7 +165,7 @@ subroutine evRGTeh(dotest,maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,d
 
     ! Print results
 
-    call print_evGTeh(nBas,nO,nSCF,Conv,eHF,ENuc,ERHF,Sig,Z,eGT,EcRPA,EcGM)
+    call print_evRGTeh(nBas,nO,nSCF,Conv,eHF,ENuc,ERHF,Sig,Z,eGT,EcRPA,EcGM)
 
     ! Linear mixing or DIIS extrapolation
 

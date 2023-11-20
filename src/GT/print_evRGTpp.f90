@@ -1,4 +1,4 @@
-subroutine print_evGTpp(nBas,nO,nSCF,Conv,eHF,ENuc,ERHF,SigT,Z,eGT,EcGM,EcRPA)
+subroutine print_evRGTpp(nBas,nO,nSCF,Conv,eHF,ENuc,ERHF,SigT,Z,eGT,EcGM,EcRPA)
 
 ! Print one-electron energies and other stuff for evGT
 
@@ -49,16 +49,16 @@ subroutine print_evGTpp(nBas,nO,nSCF,Conv,eHF,ENuc,ERHF,SigT,Z,eGT,EcGM,EcRPA)
   write(*,'(2X,A10,I3)')   'Iteration ',nSCF
   write(*,'(2X,A14,F15.5)')'Convergence = ',Conv
   write(*,*)'-------------------------------------------------------------------------------'
-  write(*,'(2X,A60,F15.6,A3)') 'evGTpp HOMO      energy =',eGT(HOMO)*HaToeV,' eV'
-  write(*,'(2X,A60,F15.6,A3)') 'evGTpp LUMO      energy =',eGT(LUMO)*HaToeV,' eV'
-  write(*,'(2X,A60,F15.6,A3)') 'evGTpp HOMO-LUMO gap    =',Gap*HaToeV,' eV'
+  write(*,'(2X,A60,F15.6,A3)') 'evRGTpp HOMO      energy =',eGT(HOMO)*HaToeV,' eV'
+  write(*,'(2X,A60,F15.6,A3)') 'evRGTpp LUMO      energy =',eGT(LUMO)*HaToeV,' eV'
+  write(*,'(2X,A60,F15.6,A3)') 'evRGTpp HOMO-LUMO gap    =',Gap*HaToeV,' eV'
   write(*,*)'-------------------------------------------------------------------------------'
-  write(*,'(2X,A60,F15.6,A3)') 'ppRPA@evGTpp correlation energy (singlet) =',EcRPA(1),' au'
-  write(*,'(2X,A60,F15.6,A3)') 'ppRPA@evGTpp correlation energy (triplet) =',EcRPA(2),' au'
-  write(*,'(2X,A60,F15.6,A3)') 'ppRPA@evGTpp correlation energy           =',EcRPA(1) + EcRPA(2),' au'
-  write(*,'(2X,A60,F15.6,A3)') 'ppRPA@evGTpp total energy                 =',ENuc + ERHF + EcRPA(1) + EcRPA(2),' au'
-  write(*,'(2X,A60,F15.6,A3)') '   GM@evGTpp correlation energy           =',EcGM,' au'
-  write(*,'(2X,A60,F15.6,A3)') '   GM@evGTpp total energy                 =',ENuc + ERHF + EcGM,' au'
+  write(*,'(2X,A60,F15.6,A3)') 'ppRPA@evRGTpp correlation energy (singlet) =',EcRPA(1),' au'
+  write(*,'(2X,A60,F15.6,A3)') 'ppRPA@evRGTpp correlation energy (triplet) =',EcRPA(2),' au'
+  write(*,'(2X,A60,F15.6,A3)') 'ppRPA@evRGTpp correlation energy           =',sum(EcRPA),' au'
+  write(*,'(2X,A60,F15.6,A3)') 'ppRPA@evRGTpp total energy                 =',ENuc + ERHF + sum(EcRPA),' au'
+  write(*,'(2X,A60,F15.6,A3)') '   GM@evRGTpp correlation energy           =',EcGM,' au'
+  write(*,'(2X,A60,F15.6,A3)') '   GM@evRGTpp total energy                 =',ENuc + ERHF + EcGM,' au'
   write(*,*)'-------------------------------------------------------------------------------'
   write(*,*)
 

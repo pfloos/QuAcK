@@ -1,4 +1,4 @@
-subroutine print_evRGF2(nBas,nO,nSCF,Conv,eHF,Sig,Z,eGF,ENuc,ERHF,Ec)
+subroutine print_evGGF2(nBas,nO,nSCF,Conv,eHF,Sig,Z,eGF,ENuc,ERHF,Ec)
 
 ! Print one-electron energies and other stuff for G0F2
 
@@ -47,12 +47,12 @@ subroutine print_evRGF2(nBas,nO,nSCF,Conv,eHF,Sig,Z,eGF,ENuc,ERHF,Ec)
   write(*,'(2X,A14,F15.5)')'Convergence = ',Conv
 
   write(*,*)'-------------------------------------------------------------------------------'
-  write(*,'(2X,A60,F15.6,A3)') 'evRGF2 HOMO      energy =',eGF(HOMO)*HaToeV,' eV'
-  write(*,'(2X,A60,F15.6,A3)') 'evRGF2 LUMO      energy =',eGF(LUMO)*HaToeV,' eV'
-  write(*,'(2X,A60,F15.6,A3)') 'evRGF2 HOMO-LUMO gap    =',Gap*HaToeV,' eV'
+  write(*,'(2X,A60,F15.6,A3)') 'evGGF2 HOMO      energy =',eGF(HOMO)*HaToeV,' eV'
+  write(*,'(2X,A60,F15.6,A3)') 'evGGF2 LUMO      energy =',eGF(LUMO)*HaToeV,' eV'
+  write(*,'(2X,A60,F15.6,A3)') 'evGGF2 HOMO-LUMO gap    =',Gap*HaToeV,' eV'
   write(*,*)'-------------------------------------------------------------------------------'
-  write(*,'(2X,A60,F15.6,A3)') 'evRGF2 total energy       =',ENuc + ERHF + Ec,' au'
-  write(*,'(2X,A60,F15.6,A3)') 'evRGF2 correlation energy =',Ec,' au'
+  write(*,'(2X,A60,F15.6,A3)') 'evGGF2 total energy       =',ENuc + ERHF + Ec,' au'
+  write(*,'(2X,A60,F15.6,A3)') 'evGGF2 correlation energy =',Ec,' au'
   write(*,*)'-------------------------------------------------------------------------------'
   write(*,*)
 

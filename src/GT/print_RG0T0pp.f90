@@ -1,4 +1,4 @@
-subroutine print_G0T0pp(nBas,nO,eHF,ENuc,ERHF,SigT,Z,eGT,EcGM,EcRPA)
+subroutine print_RG0T0pp(nBas,nO,eHF,ENuc,ERHF,SigT,Z,eGT,EcGM,EcRPA)
 
 ! Print one-electron energies and other stuff for G0T0
 
@@ -48,16 +48,16 @@ subroutine print_G0T0pp(nBas,nO,eHF,ENuc,ERHF,SigT,Z,eGT,EcGM,EcRPA)
   enddo
 
   write(*,*)'-------------------------------------------------------------------------------'
-  write(*,'(2X,A60,F15.6,A3)') 'G0T0pp HOMO      energy                 =',eGT(HOMO)*HaToeV,' eV'
-  write(*,'(2X,A60,F15.6,A3)') 'G0T0pp LUMO      energy                 =',eGT(LUMO)*HaToeV,' eV'
-  write(*,'(2X,A60,F15.6,A3)') 'G0T0pp HOMO-LUMO gap                    =',Gap*HaToeV,' eV'
+  write(*,'(2X,A60,F15.6,A3)') 'RG0T0pp HOMO      energy                 =',eGT(HOMO)*HaToeV,' eV'
+  write(*,'(2X,A60,F15.6,A3)') 'RG0T0pp LUMO      energy                 =',eGT(LUMO)*HaToeV,' eV'
+  write(*,'(2X,A60,F15.6,A3)') 'RG0T0pp HOMO-LUMO gap                    =',Gap*HaToeV,' eV'
   write(*,*)'-------------------------------------------------------------------------------'
-  write(*,'(2X,A60,F15.6,A3)') 'ppRPA@G0T0pp correlation energy (singlet) =',EcRPA(1),' au'
-  write(*,'(2X,A60,F15.6,A3)') 'ppRPA@G0T0pp correlation energy (triplet) =',EcRPA(2),' au'
-  write(*,'(2X,A60,F15.6,A3)') 'ppRPA@G0T0pp correlation energy           =',EcRPA(1) + EcRPA(2),' au'
-  write(*,'(2X,A60,F15.6,A3)') 'ppRPA@G0T0pp total energy                 =',ENuc + ERHF + EcRPA(1) + EcRPA(2),' au'
-  write(*,'(2X,A60,F15.6,A3)') '   GM@G0T0pp correlation energy           =',EcGM,' au'
-  write(*,'(2X,A60,F15.6,A3)') '   GM@G0T0pp total energy                 =',ENuc + ERHF + EcGM,' au'
+  write(*,'(2X,A60,F15.6,A3)') 'ppRPA@RG0T0pp correlation energy (singlet) =',EcRPA(1),' au'
+  write(*,'(2X,A60,F15.6,A3)') 'ppRPA@RG0T0pp correlation energy (triplet) =',EcRPA(2),' au'
+  write(*,'(2X,A60,F15.6,A3)') 'ppRPA@RG0T0pp correlation energy           =',EcRPA(1) + EcRPA(2),' au'
+  write(*,'(2X,A60,F15.6,A3)') 'ppRPA@RG0T0pp total energy                 =',ENuc + ERHF + EcRPA(1) + EcRPA(2),' au'
+  write(*,'(2X,A60,F15.6,A3)') '   GM@RG0T0pp correlation energy           =',EcGM,' au'
+  write(*,'(2X,A60,F15.6,A3)') '   GM@RG0T0pp total energy                 =',ENuc + ERHF + EcGM,' au'
   write(*,*)'-------------------------------------------------------------------------------'
   write(*,*)
 
