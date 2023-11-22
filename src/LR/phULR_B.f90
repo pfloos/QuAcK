@@ -57,10 +57,10 @@ subroutine phULR_B(ispin,dRPA,nBas,nC,nO,nV,nR,nSa,nSb,nSt,lambda,ERI_aaaa,ERI_a
  
             Bph(ia,jb) = lambda*ERI_aaaa(i,j,a,b) - (1d0 - delta_dRPA)*lambda*ERI_aaaa(i,j,b,a)
 
-          end  do
-        end  do
-      end  do
-    end  do
+           end do
+         end do
+       end do
+     end do
 
     ! aabb block
 
@@ -75,10 +75,10 @@ subroutine phULR_B(ispin,dRPA,nBas,nC,nO,nV,nR,nSa,nSb,nSt,lambda,ERI_aaaa,ERI_a
  
             Bph(ia,nSa+jb) = lambda*ERI_aabb(i,j,a,b) 
 
-          end  do
-        end  do
-      end  do
-    end  do
+          end do
+        end do
+      end do
+    end do
 
     ! bbaa block
 
@@ -93,10 +93,10 @@ subroutine phULR_B(ispin,dRPA,nBas,nC,nO,nV,nR,nSa,nSb,nSt,lambda,ERI_aaaa,ERI_a
  
             Bph(nSa+ia,jb) = lambda*ERI_aabb(j,i,b,a)
 
-          end  do
-        end  do
-      end  do
-    end  do
+          end do
+        end do
+      end do
+    end do
 
     ! bbbb block
 
@@ -111,10 +111,10 @@ subroutine phULR_B(ispin,dRPA,nBas,nC,nO,nV,nR,nSa,nSb,nSt,lambda,ERI_aaaa,ERI_a
  
             Bph(nSa+ia,nSa+jb) = lambda*ERI_bbbb(i,j,a,b) - (1d0 - delta_dRPA)*lambda*ERI_bbbb(i,j,b,a)
 
-          end  do
-        end  do
-      end  do
-    end  do
+         end do
+       end do
+     end do
+   end do
 
   end if
 
@@ -139,10 +139,10 @@ subroutine phULR_B(ispin,dRPA,nBas,nC,nO,nV,nR,nSa,nSb,nSt,lambda,ERI_aaaa,ERI_a
  
             Bph(ia,nSa+jb) = - (1d0 - delta_dRPA)*lambda*ERI_aabb(i,j,b,a)
 
-          end  do
-        end  do
-      end  do
-    end  do
+          end do
+        end do
+      end do
+    end do
 
     ! baab block
 
@@ -157,10 +157,10 @@ subroutine phULR_B(ispin,dRPA,nBas,nC,nO,nV,nR,nSa,nSb,nSt,lambda,ERI_aaaa,ERI_a
  
             Bph(nSa+ia,jb) = - (1d0 - delta_dRPA)*lambda*ERI_aabb(j,i,a,b)
 
-          end  do
-        end  do
-      end  do
-    end  do
+          end do
+        end do
+      end do
+    end do
   
   end if
 

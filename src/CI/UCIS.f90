@@ -80,7 +80,7 @@ subroutine UCIS(dotest,spin_conserved,spin_flip,nBas,nC,nO,nV,nR,nS,ERI_aaaa,ERI
 
     call diagonalize_matrix(nS_sc,A_sc,Om_sc)
     A_sc(:,:) = transpose(A_sc)
-    call print_excitation_energies('CIS@UHF',5,nS_sc,Om_sc)
+    call print_excitation_energies('CIS@UHF','spin-conserved',nS_sc,Om_sc)
     call phULR_transition_vectors(ispin,nBas,nC,nO,nV,nR,nS,nS_aa,nS_bb,nS_sc,dipole_int_aa,dipole_int_bb, &
                                   cHF,S,Om_sc,A_sc,A_sc)
  
@@ -128,7 +128,7 @@ subroutine UCIS(dotest,spin_conserved,spin_flip,nBas,nC,nO,nV,nR,nS,ERI_aaaa,ERI
 
     call diagonalize_matrix(nS_sf,A_sf,Om_sf)
     A_sf(:,:) = transpose(A_sf)
-    call print_excitation_energies('CIS@UHF',6,nS_sf,Om_sf)
+    call print_excitation_energies('CIS@UHF','spin-flip',nS_sf,Om_sf)
     call phULR_transition_vectors(ispin,nBas,nC,nO,nV,nR,nS,nS_ab,nS_ba,nS_sf,dipole_int_aa,dipole_int_bb, &
                                   cHF,S,Om_sf,A_sf,A_sf)
  

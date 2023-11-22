@@ -60,7 +60,7 @@ subroutine GGF2_phBSE2(TDA,dBSE,dTDA,eta,nBas,nC,nO,nV,nR,nS,ERI,dipole_int,eGF,
   ! Compute phBSE2@GF2 excitation energies
 
   call phLR(TDA,nS,A_sta,B_sta,EcBSE,OmBSE,XpY,XmY)
-  call print_excitation_energies('phBSE2@GGF2',ispin,nS,OmBSE)
+  call print_excitation_energies('phBSE2@GGF2','spinorbital',nS,OmBSE)
   call phLR_transition_vectors(.true.,nBas,nC,nO,nV,nR,nS,dipole_int,OmBSE,XpY,XmY)
 
   ! Compute dynamic correction for BSE via perturbation theory

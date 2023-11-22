@@ -65,7 +65,7 @@ subroutine phGRPA(dotest,TDA,nBas,nC,nO,nV,nR,nS,ENuc,EGHF,ERI,dipole_int,eHF)
   if(.not.TDA) call phLR_B(ispin,dRPA,nBas,nC,nO,nV,nR,nS,1d0,ERI,Bph)
 
   call phLR(TDA,nS,Aph,Bph,EcRPA,Om,XpY,XmY)
-  call print_excitation_energies('phRPA@GHF',ispin,nS,Om)
+  call print_excitation_energies('phRPA@GHF','spinorbital',nS,Om)
   call phLR_transition_vectors(.true.,nBas,nC,nO,nV,nR,nS,dipole_int,Om,XpY,XmY)
 
   write(*,*)

@@ -39,9 +39,9 @@ subroutine phULR_A(ispin,dRPA,nBas,nC,nO,nV,nR,nSa,nSb,nSt,lambda,eHF,ERI_aaaa,E
   delta_dRPA = 0d0
   if(dRPA) delta_dRPA = 1d0
 
-!-----------------------------------------------
-! Build A matrix for spin-conserving transitions
-!-----------------------------------------------
+!----------------------------------------------
+! Build A matrix for spin-conserved transitions
+!----------------------------------------------
 
   if(ispin == 1) then 
 
@@ -59,10 +59,10 @@ subroutine phULR_A(ispin,dRPA,nBas,nC,nO,nV,nR,nSa,nSb,nSt,lambda,eHF,ERI_aaaa,E
             Aph(ia,jb) = (eHF(a,1) - eHF(i,1))*Kronecker_delta(i,j)*Kronecker_delta(a,b) &
                        + lambda*ERI_aaaa(i,b,a,j) - (1d0 - delta_dRPA)*lambda*ERI_aaaa(i,b,j,a)
 
-          end  do
-        end  do
-      end  do
-    end  do
+          end do
+        end do
+      end do
+    end do
 
     ! aabb block
 
@@ -77,10 +77,10 @@ subroutine phULR_A(ispin,dRPA,nBas,nC,nO,nV,nR,nSa,nSb,nSt,lambda,eHF,ERI_aaaa,E
  
             Aph(ia,nSa+jb) = lambda*ERI_aabb(i,b,a,j) 
 
-          end  do
-        end  do
-      end  do
-    end  do
+          end do
+        end do
+      end do
+    end do
 
     ! bbaa block
 
@@ -95,10 +95,10 @@ subroutine phULR_A(ispin,dRPA,nBas,nC,nO,nV,nR,nSa,nSb,nSt,lambda,eHF,ERI_aaaa,E
  
             Aph(nSa+ia,jb) = lambda*ERI_aabb(b,i,j,a)
 
-          end  do
-        end  do
-      end  do
-    end  do
+          end do
+        end do
+      end do
+    end do
 
     ! bbbb block
 
@@ -114,16 +114,16 @@ subroutine phULR_A(ispin,dRPA,nBas,nC,nO,nV,nR,nSa,nSb,nSt,lambda,eHF,ERI_aaaa,E
             Aph(nSa+ia,nSa+jb) = (eHF(a,2) - eHF(i,2))*Kronecker_delta(i,j)*Kronecker_delta(a,b) &
                                + lambda*ERI_bbbb(i,b,a,j) - (1d0 - delta_dRPA)*lambda*ERI_bbbb(i,b,j,a)
 
-          end  do
-        end  do
-      end  do
-    end  do
+          end do
+        end do
+      end do
+    end do
 
   end if
 
-!-----------------------------------------------
+!-----------------------------------------
 ! Build A matrix for spin-flip transitions
-!-----------------------------------------------
+!-----------------------------------------
 
   if(ispin == 2) then 
 
@@ -141,10 +141,10 @@ subroutine phULR_A(ispin,dRPA,nBas,nC,nO,nV,nR,nSa,nSb,nSt,lambda,eHF,ERI_aaaa,E
             jb = jb + 1
             Aph(ia,jb) = (eHF(a,2) - eHF(i,1))*Kronecker_delta(i,j)*Kronecker_delta(a,b) &
                        - (1d0 - delta_dRPA)*lambda*ERI_aabb(i,b,j,a)
-          end  do
-        end  do
-      end  do
-    end  do
+           end do
+         end do
+       end do
+     end do
 
     ! baba block
 
@@ -160,12 +160,11 @@ subroutine phULR_A(ispin,dRPA,nBas,nC,nO,nV,nR,nSa,nSb,nSt,lambda,eHF,ERI_aaaa,E
             Aph(nSa+ia,nSa+jb) = (eHF(a,1) - eHF(i,2))*Kronecker_delta(i,j)*Kronecker_delta(a,b) &
                                - (1d0 - delta_dRPA)*lambda*ERI_aabb(b,i,a,j)
 
-          end  do
-        end  do
-      end  do
-    end  do
+           end do
+         end do
+       end do
+     end do
 
   end if
-
 
 end subroutine 

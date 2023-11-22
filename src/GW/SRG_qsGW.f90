@@ -195,7 +195,7 @@ subroutine SRG_qsGW(dotest,maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,
 
     tlr = tlr + tlr2 -tlr1
 
-    if(print_W) call print_excitation_energies('phRPA@SRG-qsGW',ispin,nS,Om)
+    if(print_W) call print_excitation_energies('phRPA@RGW','singlet',nS,Om)
 
     ! Compute correlation part of the self-energy 
 

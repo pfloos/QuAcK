@@ -127,7 +127,7 @@ subroutine evRGTeh(dotest,maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,d
 
     call phLR(TDA_T,nS,Aph,Bph,EcRPA,Om,XpY,XmY)
 
-    if(print_T) call print_excitation_energies('phRPA@GTeh',ispin,nS,Om)
+    if(print_T) call print_excitation_energies('phRPA@RHF','triplet',nS,Om)
 
    ! Compute spectral weights
 

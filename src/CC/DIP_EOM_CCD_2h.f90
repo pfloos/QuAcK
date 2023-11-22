@@ -111,6 +111,6 @@ subroutine DIP_EOM_CCD_2h(nC,nO,nV,nR,eO,OOVV,OOOO,t)
 
 ! Dump results
 
-  call print_excitation_energies('DIP-EOM-CCD',3,nOO,Om)
+  call print_excitation_energies('DIP-EOM-CCD','spinorbital',nOO,Om)
 
 end subroutine 

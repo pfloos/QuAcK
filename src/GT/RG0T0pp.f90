@@ -128,8 +128,8 @@ subroutine RG0T0pp(dotest,doACFDT,exchange_kernel,doXBS,dophBSE,TDA_T,TDA,dBSE,d
 
   deallocate(Bpp,Cpp,Dpp)
 
-  call print_excitation_energies('ppRPA@HF (N+2)',iblock,nVVs,Om1s(:))
-  call print_excitation_energies('ppRPA@HF (N-2)',iblock,nOOs,Om2s(:))
+  call print_excitation_energies('ppRPA@RHF','2p (alpha-beta)',nVVs,Om1s(:))
+  call print_excitation_energies('ppRPA@RHF','2h (alpha-beta)',nOOs,Om2s(:))
 
 !----------------------------------------------
 ! alpha-alpha block
@@ -151,8 +151,8 @@ subroutine RG0T0pp(dotest,doACFDT,exchange_kernel,doXBS,dophBSE,TDA_T,TDA,dBSE,d
 
   deallocate(Bpp,Cpp,Dpp)
 
-  call print_excitation_energies('ppRPA (N+2)',iblock,nVVt,Om1t)
-  call print_excitation_energies('ppRPA (N-2)',iblock,nOOt,Om2t)
+  call print_excitation_energies('ppRPA@RHF','2p (alpha-alpha)',nVVt,Om1t)
+  call print_excitation_energies('ppRPA@RHF','2h (alpha-beta)',nOOt,Om2t)
 
 !----------------------------------------------
 ! Compute excitation densities

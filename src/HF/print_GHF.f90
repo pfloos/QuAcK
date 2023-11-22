@@ -130,8 +130,8 @@ subroutine print_GHF(nBas,nBas2,nO,eHF,C,S,ENuc,ET,EV,EJ,EK,EGHF,dipole)
   write(*,'(A33,1X,F16.6)')     ' <Sz>                = ',Sz
   write(*,'(A50)')           '---------------------------------------'
   write(*,'(A33,1X,F16.6)')     ' <Sx^2+Sy^2>         = ',S2 - Sz2
-  write(*,'(A33,1X,F16.6)')     ' <Sz**2>             = ',Sz2
-  write(*,'(A33,1X,F16.6)')     ' <S**2>              = ',S2
+  write(*,'(A33,1X,F16.6)')     ' <Sz^2>              = ',Sz2
+  write(*,'(A33,1X,F16.6)')     ' <S^2>               = ',S2
   write(*,'(A50)')           '---------------------------------------'
   write(*,'(A36)')           ' Dipole moment (Debye)    '
   write(*,'(10X,4A10)')      'X','Y','Z','Tot.'

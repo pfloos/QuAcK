@@ -139,7 +139,7 @@ subroutine GTpp_phBSE(TDA_T,TDA,dBSE,dTDA,singlet,triplet,eta,nBas,nC,nO,nV,nR,n
 
     call phLR(TDA,nS,Aph,Bph,EcBSE(ispin),OmBSE,XpY_BSE,XmY_BSE)
 
-    call print_excitation_energies('phBSE@GTpp',ispin,nS,OmBSE)
+    call print_excitation_energies('phBSE@GTpp','singlet',nS,OmBSE)
     call phLR_transition_vectors(.true.,nBas,nC,nO,nV,nR,nS,dipole_int,OmBSE,XpY_BSE,XmY_BSE)
 
     ! Compute dynamic correction for BSE via renormalized perturbation theory 
@@ -169,7 +169,7 @@ subroutine GTpp_phBSE(TDA_T,TDA,dBSE,dTDA,singlet,triplet,eta,nBas,nC,nO,nV,nR,n
 
     call phLR(TDA,nS,Aph,Bph,EcBSE(ispin),OmBSE,XpY_BSE,XmY_BSE)
 
-    call print_excitation_energies('phBSE@GTpp',ispin,nS,OmBSE)
+    call print_excitation_energies('phBSE@GTpp','triplet',nS,OmBSE)
     call phLR_transition_vectors(.false.,nBas,nC,nO,nV,nR,nS,dipole_int,OmBSE,XpY_BSE,XmY_BSE)
 
     ! Compute dynamic correction for BSE via renormalized perturbation theory 

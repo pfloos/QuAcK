@@ -178,7 +178,7 @@ subroutine qsRGTeh(dotest,maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,d
 
     call phLR(TDA_T,nS,Aph,Bph,EcRPA,Om,XpY,XmY)
 
-    if(print_T) call print_excitation_energies('phRPA@qsGTeh',ispin,nS,Om)
+    if(print_T) call print_excitation_energies('phRPA@RHF','triplet',nS,Om)
 
     ! Compute correlation part of the self-energy 
 

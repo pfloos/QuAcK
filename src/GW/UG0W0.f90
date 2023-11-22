@@ -115,7 +115,7 @@ subroutine UG0W0(dotest,doACFDT,exchange_kernel,doXBS,dophBSE,TDA_W,TDA,dBSE,dTD
 
   call phULR(TDA_W,nSa,nSb,nSt,Aph,Bph,EcRPA,Om,XpY,XmY)
   
-  if(print_W) call print_excitation_energies('phRPA@UHF',5,nSt,Om)
+  if(print_W) call print_excitation_energies('phRPA@UHF','spin-conserved',nSt,Om)
 
 !----------------------!
 ! Excitation densities !

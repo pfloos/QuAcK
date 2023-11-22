@@ -109,7 +109,7 @@ subroutine GGW_phBSE(dophBSE2,TDA_W,TDA,dBSE,dTDA,eta,nBas,nC,nO,nV,nR,nS,ERI,di
 
   call phLR(TDA,nS,Aph,Bph,EcBSE,OmBSE,XpY_BSE,XmY_BSE)
 
-  call print_excitation_energies('phBSE@GGW',ispin,nS,OmBSE)
+  call print_excitation_energies('phBSE@GGW','spinorbital',nS,OmBSE)
   call phLR_transition_vectors(.true.,nBas,nC,nO,nV,nR,nS,dipole_int,OmBSE,XpY_BSE,XmY_BSE)
 
     !----------------------------------------------------!

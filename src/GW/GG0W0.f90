@@ -103,7 +103,7 @@ subroutine GG0W0(dotest,doACFDT,exchange_kernel,doXBS,dophBSE,dophBSE2,TDA_W,TDA
 
   call phLR(TDA_W,nS,Aph,Bph,EcRPA,Om,XpY,XmY)
 
-  if(print_W) call print_excitation_energies('phRPA@GHF',ispin,nS,Om)
+  if(print_W) call print_excitation_energies('phRPA@GHF','spinorbital',nS,Om)
 
 !--------------------------!
 ! Compute spectral weights !
