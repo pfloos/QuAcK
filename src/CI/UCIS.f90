@@ -45,9 +45,9 @@ subroutine UCIS(dotest,spin_conserved,spin_flip,nBas,nC,nO,nV,nR,nS,ERI_aaaa,ERI
 ! Hello world
 
   write(*,*)
-  write(*,*)'************************************************'
-  write(*,*)'|      Configuration Interaction Singles       |'
-  write(*,*)'************************************************'
+  write(*,*)'*******************************'
+  write(*,*)'* Unrestrictd CIS Calculation *'
+  write(*,*)'*******************************'
   write(*,*)
 
 ! Adiabatic connection scaling

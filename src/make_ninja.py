@@ -24,7 +24,7 @@ if not DEBUG:
     compile_gfortran_mac = """
 FC = gfortran
 AR = libtool -static -o
-FFLAGS = -I$IDIR -J$IDIR -fbacktrace -g -Wall -Wno-unused -Wno-unused-dummy-argument -O3
+FFLAGS = -I$IDIR -J$IDIR -fbacktrace -g -Wall -Wno-unused-variable -Wno-unused -Wno-unused-dummy-argument -O3
 CC = gcc
 CXX = g++
 LAPACK=-lblas -llapack
@@ -57,7 +57,7 @@ else:
     compile_gfortran_mac = """
 FC = gfortran
 AR = libtool -static -o
-FFLAGS = -I$IDIR -J$IDIR -fbacktrace -Wall -g -fcheck=all -Waliasing -Wampersand -Wconversion -Wsurprising -Wintrinsics-std -Wno-tabs -Wintrinsic-shadow -Wline-truncation -Wreal-q-constant
+FFLAGS = -I$IDIR -J$IDIR -fbacktrace -Wall -Wno-unused-variable -g -fcheck=all -Waliasing -Wampersand -Wconversion -Wsurprising -Wintrinsics-std -Wno-tabs -Wintrinsic-shadow -Wline-truncation -Wreal-q-constant
 CC = gcc
 CXX = g++
 LAPACK=-lblas -llapack

@@ -1,4 +1,4 @@
-subroutine UQuAcK(dotest,doUHF,dostab,dosearch,doMP2,doMP3,doCCD,dopCCD,doDCD,doCCSD,doCCSDT,                     &
+subroutine UQuAcK(dotest,doUHF,dostab,dosearch,doMP2,doMP3,doCCD,dopCCD,doDCD,doCCSD,doCCSDT,                      &
                   dodrCCD,dorCCD,docrCCD,dolCCD,doCIS,doCIS_D,doCID,doCISD,doFCI,dophRPA,dophRPAx,docrRPA,doppRPA, &
                   doG0F2,doevGF2,doqsGF2,doG0F3,doevGF3,doG0W0,doevGW,doqsGW,doufG0W0,doufGW,doSRGqsGW,            &
                   doG0T0pp,doevGTpp,doqsGTpp,doG0T0eh,doevGTeh,doqsGTeh,nNuc,nBas,nC,nO,nV,nR,ENuc,ZNuc,rNuc,      &
@@ -105,9 +105,10 @@ subroutine UQuAcK(dotest,doUHF,dostab,dosearch,doMP2,doMP3,doCCD,dopCCD,doDCD,do
 ! Memory allocation !
 !-------------------!
 
-  allocate(cHF(nBas,nBas,nspin),eHF(nBas,nspin),PHF(nBas,nBas,nspin),   &
+  allocate(cHF(nBas,nBas,nspin),eHF(nBas,nspin),PHF(nBas,nBas,nspin),     &
            dipole_int_aa(nBas,nBas,ncart),dipole_int_bb(nBas,nBas,ncart), &
-           ERI_aaaa(nBas,nBas,nBas,nBas),ERI_aabb(nBas,nBas,nBas,nBas),ERI_bbbb(nBas,nBas,nBas,nBas))
+           ERI_aaaa(nBas,nBas,nBas,nBas),ERI_aabb(nBas,nBas,nBas,nBas),   & 
+           ERI_bbbb(nBas,nBas,nBas,nBas))
 
 !---------------------!
 ! Hartree-Fock module !
@@ -297,8 +298,8 @@ subroutine UQuAcK(dotest,doUHF,dostab,dosearch,doMP2,doMP3,doCCD,dopCCD,doDCD,do
   if(doGF) then
 
     call wall_time(start_GF)
-    call UGF(dotest,doG0F2,doevGF2,doqsGF2,doG0F3,doevGF3,renorm_GF,maxSCF_GF,thresh_GF,max_diis_GF,          &
-             dophBSE,doppBSE,TDA,dBSE,dTDA,spin_conserved,spin_flip,lin_GF,eta_GF,reg_GF,              &
+    call UGF(dotest,doG0F2,doevGF2,doqsGF2,doG0F3,doevGF3,renorm_GF,maxSCF_GF,thresh_GF,max_diis_GF,    &
+             dophBSE,doppBSE,TDA,dBSE,dTDA,spin_conserved,spin_flip,lin_GF,eta_GF,reg_GF,               &
              nNuc,ZNuc,rNuc,ENuc,nBas,nC,nO,nV,nR,nS,EUHF,S,X,T,V,Hc,ERI_AO,ERI_aaaa,ERI_aabb,ERI_bbbb, &
              dipole_int_AO,dipole_int_aa,dipole_int_bb,PHF,cHF,eHF)
     call wall_time(end_GF)
@@ -318,9 +319,9 @@ subroutine UQuAcK(dotest,doUHF,dostab,dosearch,doMP2,doMP3,doCCD,dopCCD,doDCD,do
   if(doGW) then
     
     call wall_time(start_GW)
-    call UGW(dotest,doG0W0,doevGW,doqsGW,doufG0W0,doufGW,doSRGqsGW,maxSCF_GW,thresh_GW,max_diis_GW,doACFDT,      &
-             exchange_kernel,doXBS,dophBSE,dophBSE2,doppBSE,TDA_W,TDA,dBSE,dTDA,spin_conserved,spin_flip, &
-             lin_GW,eta_GW,reg_GW,nNuc,ZNuc,rNuc,ENuc,nBas,nC,nO,nV,nR,nS,EUHF,S,X,T,V,Hc,                 &  
+    call UGW(dotest,doG0W0,doevGW,doqsGW,doufG0W0,doufGW,doSRGqsGW,maxSCF_GW,thresh_GW,max_diis_GW,               &
+             doACFDT,exchange_kernel,doXBS,dophBSE,dophBSE2,doppBSE,TDA_W,TDA,dBSE,dTDA,spin_conserved,spin_flip, &
+             lin_GW,eta_GW,reg_GW,nNuc,ZNuc,rNuc,ENuc,nBas,nC,nO,nV,nR,nS,EUHF,S,X,T,V,Hc,                        &  
              ERI_AO,ERI_aaaa,ERI_aabb,ERI_bbbb,dipole_int_AO,dipole_int_aa,dipole_int_bb,PHF,cHF,eHF)
     call wall_time(end_GW)
   
@@ -339,9 +340,9 @@ subroutine UQuAcK(dotest,doUHF,dostab,dosearch,doMP2,doMP3,doCCD,dopCCD,doDCD,do
   if(doGT) then
     
     call wall_time(start_GT)
-    call UGT(dotest,doG0T0pp,doevGTpp,doqsGTpp,doG0T0eh,doevGTeh,doqsGTeh,maxSCF_GT,thresh_GT,max_diis_GT,doACFDT,  &
-             exchange_kernel,doXBS,dophBSE,dophBSE2,doppBSE,TDA_T,TDA,dBSE,dTDA,spin_conserved,spin_flip,    &
-             lin_GT,eta_GT,reg_GT,nNuc,ZNuc,rNuc,ENuc,nBas,nC,nO,nV,nR,nS,EUHF,S,X,T,V,Hc,                    &
+    call UGT(dotest,doG0T0pp,doevGTpp,doqsGTpp,doG0T0eh,doevGTeh,doqsGTeh,maxSCF_GT,thresh_GT,max_diis_GT,        &
+             doACFDT,exchange_kernel,doXBS,dophBSE,dophBSE2,doppBSE,TDA_T,TDA,dBSE,dTDA,spin_conserved,spin_flip, &
+             lin_GT,eta_GT,reg_GT,nNuc,ZNuc,rNuc,ENuc,nBas,nC,nO,nV,nR,nS,EUHF,S,X,T,V,Hc,                        &
              ERI_AO,ERI_aaaa,ERI_aabb,ERI_bbbb,dipole_int_AO,dipole_int_aa,dipole_int_bb,PHF,cHF,eHF)
     call wall_time(end_GT)
   

@@ -101,7 +101,7 @@ subroutine GQuAcK(dotest,doGHF,dostab,dosearch,doMP2,doMP3,doCCD,dopCCD,doDCD,do
 
   nBas2 = 2*nBas
 
-  allocate(cHF(nBas2,nBas2),eHF(nBas2),PHF(nBas2,nBas2),   &
+  allocate(cHF(nBas2,nBas2),eHF(nBas2),PHF(nBas2,nBas2), &
            dipole_int_MO(nBas2,nBas2,ncart),ERI_MO(nBas2,nBas2,nBas2,nBas2))
 
 !---------------------!
@@ -278,8 +278,8 @@ subroutine GQuAcK(dotest,doGHF,dostab,dosearch,doMP2,doMP3,doCCD,dopCCD,doDCD,do
   if(doGW) then
     
     call wall_time(start_GW)
-    call GGW(dotest,doG0W0,doevGW,doqsGW,maxSCF_GW,thresh_GW,max_diis_GW,doACFDT,exchange_kernel,doXBS,    & 
-             dophBSE,dophBSE2,doppBSE,TDA_W,TDA,dBSE,dTDA,lin_GW,eta_GW,reg_GW,nNuc,ZNuc,rNuc,ENuc, & 
+    call GGW(dotest,doG0W0,doevGW,doqsGW,maxSCF_GW,thresh_GW,max_diis_GW,doACFDT,exchange_kernel,doXBS, & 
+             dophBSE,dophBSE2,doppBSE,TDA_W,TDA,dBSE,dTDA,lin_GW,eta_GW,reg_GW,nNuc,ZNuc,rNuc,ENuc,     & 
              nBas,nBas2,nC,nO,nV,nR,nS,EGHF,S,X,T,V,Hc,ERI_AO,ERI_MO,dipole_int_AO,dipole_int_MO,PHF,cHF,eHF)
     call wall_time(end_GW)
   

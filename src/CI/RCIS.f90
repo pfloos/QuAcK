@@ -30,9 +30,9 @@ subroutine RCIS(dotest,singlet,triplet,doCIS_D,nBas,nC,nO,nV,nR,nS,ERI,dipole_in
 ! Hello world
 
   write(*,*)
-  write(*,*)'************************************************'
-  write(*,*)'|      Configuration Interaction Singles       |'
-  write(*,*)'************************************************'
+  write(*,*)'******************************'
+  write(*,*)'* Restricted CIS Calculation *'
+  write(*,*)'******************************'
   write(*,*)
 
 ! Adiabatic connection scaling

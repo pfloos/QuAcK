@@ -37,6 +37,7 @@ subroutine phURPA(dotest,TDA,doACFDT,exchange_kernel,spin_conserved,spin_flip,nB
 
   logical                       :: dRPA
   integer                       :: ispin
+  double precision              :: lambda
 
   integer                       :: nSa,nSb,nSt
   double precision,allocatable  :: Aph(:,:)
@@ -68,6 +69,7 @@ subroutine phURPA(dotest,TDA,doACFDT,exchange_kernel,spin_conserved,spin_flip,nB
 
   dRPA = .true.
   EcRPA(:) = 0d0
+  lambda = 1d0
 
 ! Spin-conserved transitions
 
@@ -83,11 +85,11 @@ subroutine phURPA(dotest,TDA,doACFDT,exchange_kernel,spin_conserved,spin_flip,nB
 
     allocate(Aph(nSt,nSt),Bph(nSt,nSt),Om(nSt),XpY(nSt,nSt),XmY(nSt,nSt))
 
-    call phULR_A(ispin,dRPA,nBas,nC,nO,nV,nR,nSa,nSb,nSt,1d0,eHF,ERI_aaaa,ERI_aabb,ERI_bbbb,Aph)
-    if(.not.TDA) call phULR_B(ispin,dRPA,nBas,nC,nO,nV,nR,nSa,nSb,nSt,1d0,ERI_aaaa,ERI_aabb,ERI_bbbb,Bph)
+    call phULR_A(ispin,dRPA,nBas,nC,nO,nV,nR,nSa,nSb,nSt,lambda,eHF,ERI_aaaa,ERI_aabb,ERI_bbbb,Aph)
+    if(.not.TDA) call phULR_B(ispin,dRPA,nBas,nC,nO,nV,nR,nSa,nSb,nSt,lambda,ERI_aaaa,ERI_aabb,ERI_bbbb,Bph)
 
     call phULR(TDA,nSa,nSb,nSt,Aph,Bph,EcRPA(ispin),Om,XpY,XmY)
-    call print_excitation_energies('phRPA@UHF','spin-flip',nSt,Om)
+    call print_excitation_energies('phRPA@UHF','spin-conserved',nSt,Om)
     call phULR_transition_vectors(ispin,nBas,nC,nO,nV,nR,nS,nSa,nSb,nSt,dipole_int_aa,dipole_int_bb,c,S,Om,XpY,XmY)
 
     deallocate(Aph,Bph,Om,XpY,XmY)
@@ -108,11 +110,11 @@ subroutine phURPA(dotest,TDA,doACFDT,exchange_kernel,spin_conserved,spin_flip,nB
 
     allocate(Aph(nSt,nSt),Bph(nSt,nSt),Om(nSt),XpY(nSt,nSt),XmY(nSt,nSt))
 
-    call phULR_A(ispin,dRPA,nBas,nC,nO,nV,nR,nSa,nSb,nSt,1d0,eHF,ERI_aaaa,ERI_aabb,ERI_bbbb,Aph)
-    if(.not.TDA) call phULR_B(ispin,dRPA,nBas,nC,nO,nV,nR,nSa,nSb,nSt,1d0,ERI_aaaa,ERI_aabb,ERI_bbbb,Bph)
+    call phULR_A(ispin,dRPA,nBas,nC,nO,nV,nR,nSa,nSb,nSt,lambda,eHF,ERI_aaaa,ERI_aabb,ERI_bbbb,Aph)
+    if(.not.TDA) call phULR_B(ispin,dRPA,nBas,nC,nO,nV,nR,nSa,nSb,nSt,lambda,ERI_aaaa,ERI_aabb,ERI_bbbb,Bph)
 
     call phULR(TDA,nSa,nSa,nSt,Aph,Bph,EcRPA(ispin),Om,XpY,XmY)
-    call print_excitation_energies('phRPA@UHF','spin-conserved',nSt,Om)
+    call print_excitation_energies('phRPA@UHF','spin-flip',nSt,Om)
     call phULR_transition_vectors(ispin,nBas,nC,nO,nV,nR,nS,nSa,nSb,nSt,dipole_int_aa,dipole_int_bb,c,S,Om,XpY,XmY)
 
     deallocate(Aph,Bph,Om,XpY,XmY)
