@@ -191,15 +191,15 @@ subroutine qsUGW(dotest,maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,BSE
 
     ! 4-index transform for (aa|aa) block
 
-    call AOtoMO_ERI(1,1,1,1,nBas,c,ERI_AO,ERI_aaaa)
+    call AOtoMO_ERI(1,1,nBas,c,ERI_AO,ERI_aaaa)
 
     ! 4-index transform for (aa|bb) block
 
-    call AOtoMO_ERI(1,1,2,2,nBas,c,ERI_AO,ERI_aabb)
+    call AOtoMO_ERI(1,2,nBas,c,ERI_AO,ERI_aabb)
 
     ! 4-index transform for (bb|bb) block
 
-    call AOtoMO_ERI(2,2,2,2,nBas,c,ERI_AO,ERI_bbbb)
+    call AOtoMO_ERI(2,2,nBas,c,ERI_AO,ERI_bbbb)
 
     ! Compute linear response
 
