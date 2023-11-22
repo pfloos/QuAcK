@@ -176,7 +176,7 @@ subroutine SRG_qsGW(dotest,maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,
       call AOtoMO(nBas,cHF,dipole_int_AO(:,:,ixyz),dipole_int_MO(:,:,ixyz))
     end do  
 
-    call AOtoMO_ERI(1,1,nBas,c,ERI_AO,ERI_MO)
+    call AOtoMO_ERI_RHF(nBas,c,ERI_AO,ERI_MO)
 
     call wall_time(tao2)
 

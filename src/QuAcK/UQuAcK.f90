@@ -167,15 +167,15 @@ subroutine UQuAcK(dotest,doUHF,dostab,dosearch,doMP2,doMP3,doCCD,dopCCD,doDCD,do
   
   ! 4-index transform for (aa|aa) block
   
-  call AOtoMO_ERI(1,1,nBas,cHF,ERI_AO,ERI_aaaa)
+  call AOtoMO_ERI_UHF(1,1,nBas,cHF,ERI_AO,ERI_aaaa)
   
   ! 4-index transform for (aa|bb) block
   
-  call AOtoMO_ERI(1,2,nBas,cHF,ERI_AO,ERI_aabb)
+  call AOtoMO_ERI_UHF(1,2,nBas,cHF,ERI_AO,ERI_aabb)
   
   ! 4-index transform for (bb|bb) block
   
-  call AOtoMO_ERI(2,2,nBas,cHF,ERI_AO,ERI_bbbb)
+  call AOtoMO_ERI_UHF(2,2,nBas,cHF,ERI_AO,ERI_bbbb)
 
   call wall_time(end_AOtoMO)
 

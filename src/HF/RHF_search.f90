@@ -107,7 +107,7 @@ subroutine RHF_search(maxSCF,thresh,max_diis,guess_type,level_shift,nNuc,ZNuc,rN
     write(*,*)
     write(*,*) 'AO to MO transformation... Please be patient'
     write(*,*)
-    call AOtoMO_ERI(1,1,nBas,c,ERI_AO,ERI_MO)
+    call AOtoMO_ERI_RHF(nBas,c,ERI_AO,ERI_MO)
     call wall_time(end_AOtoMO)
  
     t_AOtoMO = end_AOtoMO - start_AOtoMO

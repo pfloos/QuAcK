@@ -166,15 +166,15 @@ subroutine qsUGF2(dotest,maxSCF,thresh,max_diis,BSE,TDA,dBSE,dTDA,spin_conserved
 
     ! 4-index transform for (aa|aa) block
 
-    call AOtoMO_ERI(1,1,nBas,c,ERI_AO,ERI_aaaa)
+    call AOtoMO_ERI_UHF(1,1,nBas,c,ERI_AO,ERI_aaaa)
 
     ! 4-index transform for (aa|bb) block
 
-    call AOtoMO_ERI(1,2,nBas,c,ERI_AO,ERI_aabb)
+    call AOtoMO_ERI_UHF(1,2,nBas,c,ERI_AO,ERI_aabb)
 
     ! 4-index transform for (bb|bb) block
 
-    call AOtoMO_ERI(2,2,nBas,c,ERI_AO,ERI_bbbb)
+    call AOtoMO_ERI_UHF(2,2,nBas,c,ERI_AO,ERI_bbbb)
 
     !------------------------------------------------!
     ! Compute self-energy and renormalization factor !

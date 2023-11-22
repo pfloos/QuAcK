@@ -1,4 +1,4 @@
-subroutine AOtoMO_ERI_GHF(nBas,nBas2,c1,c2,c3,c4,ERI_AO_basis,ERI_MO_basis)
+subroutine AOtoMO_ERI_GHF(nBas,nBas2,c1,c2,ERI_AO_basis,ERI_MO_basis)
 
 ! AO to MO transformation of two-electron integrals via the semi-direct O(N^5) algorithm
 ! bra and ket are the spin of (bra1 bra2|ket1 ket2)
@@ -13,8 +13,6 @@ subroutine AOtoMO_ERI_GHF(nBas,nBas2,c1,c2,c3,c4,ERI_AO_basis,ERI_MO_basis)
   double precision,intent(in)   :: ERI_AO_basis(nBas,nBas,nBas,nBas)
   double precision,intent(in)   :: c1(nBas,nBas2)
   double precision,intent(in)   :: c2(nBas,nBas2)
-  double precision,intent(in)   :: c3(nBas,nBas2)
-  double precision,intent(in)   :: c4(nBas,nBas2)
 
 ! Local variables
 
@@ -38,7 +36,7 @@ subroutine AOtoMO_ERI_GHF(nBas,nBas2,c1,c2,c3,c4,ERI_AO_basis,ERI_MO_basis)
       do la=1,nBas
         do nu=1,nBas
           do mu=1,nBas
-            scr(mu,nu,la,l) = scr(mu,nu,la,l) + ERI_AO_basis(mu,nu,la,si)*c4(si,l)
+            scr(mu,nu,la,l) = scr(mu,nu,la,l) + ERI_AO_basis(mu,nu,la,si)*c2(si,l)
           enddo
         enddo
       enddo
@@ -66,7 +64,7 @@ subroutine AOtoMO_ERI_GHF(nBas,nBas2,c1,c2,c3,c4,ERI_AO_basis,ERI_MO_basis)
       do la=1,nBas
         do nu=1,nBas
           do i=1,nBas2
-            scr(i,nu,k,l) = scr(i,nu,k,l) + ERI_MO_basis(i,nu,la,l)*c3(la,k)
+            scr(i,nu,k,l) = scr(i,nu,k,l) + ERI_MO_basis(i,nu,la,l)*c1(la,k)
           enddo
         enddo
       enddo

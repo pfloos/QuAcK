@@ -143,7 +143,7 @@ subroutine qsRGF2(dotest,maxSCF,thresh,max_diis,dophBSE,doppBSE,TDA,dBSE,dTDA,si
 
     ! AO to MO transformation of two-electron integrals
 
-    call AOtoMO_ERI(1,1,nBas,c,ERI_AO,ERI_MO)
+    call AOtoMO_ERI_RHF(nBas,c,ERI_AO,ERI_MO)
 
     ! Compute self-energy and renormalization factor
 

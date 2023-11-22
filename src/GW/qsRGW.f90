@@ -172,7 +172,7 @@ subroutine qsRGW(dotest,maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,dop
       call AOtoMO(nBas,c,dipole_int_AO(:,:,ixyz),dipole_int_MO(:,:,ixyz))
     end do
 
-    call AOtoMO_ERI(1,1,nBas,c,ERI_AO,ERI_MO)
+    call AOtoMO_ERI_RHF(nBas,c,ERI_AO,ERI_MO)
 
     ! Compute linear response
 

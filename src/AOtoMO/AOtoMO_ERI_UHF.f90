@@ -1,4 +1,4 @@
-subroutine AOtoMO_ERI(bra,ket,nBas,c,ERI_AO,ERI_MO)
+subroutine AOtoMO_ERI_UHF(bra,ket,nBas,c,ERI_AO,ERI_MO)
 
 ! AO to MO transformation of two-electron integrals via the semi-direct O(N^5) algorithm
 ! bra and ket are the spin of (bra|ket) = (bra bra|ket ket) = <bra ket|bra ket>
@@ -11,7 +11,8 @@ subroutine AOtoMO_ERI(bra,ket,nBas,c,ERI_AO,ERI_MO)
   integer,intent(in)            :: bra
   integer,intent(in)            :: ket
   integer,intent(in)            :: nBas
-  double precision,intent(in)   :: ERI_AO(nBas,nBas,nBas,nBas),c(nBas,nBas,nspin)
+  double precision,intent(in)   :: ERI_AO(nBas,nBas,nBas,nBas)
+  double precision,intent(in)   :: c(nBas,nBas,nspin)
 
 ! Local variables
 
