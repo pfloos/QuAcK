@@ -17,7 +17,8 @@ subroutine AOtoMO_ERI_UHF(bra,ket,nBas,c,ERI_AO,ERI_MO)
 ! Local variables
 
   double precision,allocatable  :: scr(:,:,:,:)
-  integer                       :: mu,nu,la,si,i,j,k,l
+  integer                       :: mu,nu,la,si
+  integer                       :: i,j,k,l
 
 ! Output variables
 
@@ -29,12 +30,12 @@ subroutine AOtoMO_ERI_UHF(bra,ket,nBas,c,ERI_AO,ERI_MO)
 
 ! Four-index transform via semi-direct O(N^5) algorithm
 
-  call dgemm ('T','N',nBas**3,nBas,nBas,1d0,ERI_AO,nBas,c(1,1,bra),size(c,1),0d0,scr,nBas**3)
+  call dgemm('T','N',nBas**3,nBas,nBas,1d0,ERI_AO,nBas,c(1,1,bra),size(c,1),0d0,scr,nBas**3)
   
-  call dgemm ('T','N',nBas**3,nBas,nBas,1d0,scr,nBas,c(1,1,ket),size(c,1),0d0,ERI_MO,nBas**3)
+  call dgemm('T','N',nBas**3,nBas,nBas,1d0,scr,nBas,c(1,1,ket),size(c,1),0d0,ERI_MO,nBas**3)
 
-  call dgemm ('T','N',nBas**3,nBas,nBas,1d0,ERI_MO,nBas,c(1,1,bra),size(c,1),0d0,scr,nBas**3)
+  call dgemm('T','N',nBas**3,nBas,nBas,1d0,ERI_MO,nBas,c(1,1,bra),size(c,1),0d0,scr,nBas**3)
 
-  call dgemm ('T','N',nBas**3,nBas,nBas,1d0,scr,nBas,c(1,1,ket),size(c,1),0d0,ERI_MO,nBas**3)
+  call dgemm('T','N',nBas**3,nBas,nBas,1d0,scr,nBas,c(1,1,ket),size(c,1),0d0,ERI_MO,nBas**3)
 
 end subroutine 
