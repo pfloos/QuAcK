@@ -109,14 +109,14 @@ subroutine ufG0W0(dotest,TDA_W,nBas,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,eHF)
     ! Block V2h1p !
     !-------------!
 
-    klc = 0
-    do k=nC+1,nO
-      do l=nC+1,nO
-        do c=nO+1,nBas-nR
-          klc = klc + 1
+    ija = 0
+    do i=nC+1,nO
+      do j=nC+1,nO
+        do a=nO+1,nBas-nR
+          ija = ija + 1
              
-          H(1    ,1+klc) = sqrt(2d0)*ERI(p,c,k,l)
-          H(1+klc,1    ) = sqrt(2d0)*ERI(p,c,k,l)
+          H(1    ,1+ija) = sqrt(2d0)*ERI(p,a,i,j)
+          H(1+ija,1    ) = sqrt(2d0)*ERI(p,a,i,j)
 
         end do
       end do
@@ -126,14 +126,14 @@ subroutine ufG0W0(dotest,TDA_W,nBas,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,eHF)
     ! Block V2p1h !
     !-------------!     
 
-    kcd = 0
-    do k=nC+1,nO
-      do c=nO+1,nBas-nR
-        do d=nO+1,nBas-nR
-          kcd = kcd + 1   
+    iab = 0
+    do i=nC+1,nO
+      do a=nO+1,nBas-nR
+        do b=nO+1,nBas-nR
+          iab = iab + 1   
 
-          H(1          ,1+n2h1p+kcd) = sqrt(2d0)*ERI(p,k,d,c)
-          H(1+n2h1p+kcd,1          ) = sqrt(2d0)*ERI(p,k,d,c)
+          H(1          ,1+n2h1p+iab) = sqrt(2d0)*ERI(p,i,b,a)
+          H(1+n2h1p+iab,1          ) = sqrt(2d0)*ERI(p,i,b,a)
              
         end do
       end do
@@ -277,8 +277,8 @@ subroutine ufG0W0(dotest,TDA_W,nBas,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,eHF)
     !-------------!
 
     iab = 0
-    do b=nO+1,nBas-nR
-      do ia=1,nS
+    do ia=1,nS
+      do b=nO+1,nBas-nR
         iab = iab + 1
 
         H(1+n2h1p+iab,1+n2h1p+iab) = eHF(b) + Om(ia)
@@ -291,8 +291,8 @@ subroutine ufG0W0(dotest,TDA_W,nBas,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,eHF)
     !-------------!
 
     iab = 0
-    do b=nO+1,nBas-nR
-      do ia=1,nS
+    do ia=1,nS
+      do b=nO+1,nBas-nR
         iab = iab + 1
 
         H(1          ,1+n2h1p+iab) = sqrt(2d0)*rho(p,b,ia)
@@ -359,36 +359,69 @@ subroutine ufG0W0(dotest,TDA_W,nBas,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,eHF)
         if(p > nO) & 
           write(*,'(1X,A16,I3,A7,1X,F15.6,1X,F15.6)') &
           '               (',p,')      ',H(1,s),H(1,s)**2
-       
-        klc = 0
-        do k=nC+1,nO
-          do l=nC+1,nO
-            do c=nO+1,nBas-nR
-       
-              klc = klc + 1
+  
+        if(TDA_W) then  
 
-              if(abs(H(1+klc,s)) > cutoff2)               &
-              write(*,'(1X,A3,I3,A1,I3,A6,I3,A7,1X,F15.6,1X,F15.6)') &
-              '  (',k,',',l,') -> (',c,')      ',H(1+klc,s),H(1+klc,s)**2
-       
-            end do
-          end do
-        end do
-       
-        kcd = 0
-        do k=nC+1,nO
-          do c=nO+1,nBas-nR
-            do d=nO+1,nBas-nR
-       
-              kcd = kcd + 1
-              if(abs(H(1+n2h1p+kcd,s)) > cutoff2)           &
-                write(*,'(1X,A7,I3,A6,I3,A1,I3,A3,1X,F15.6,1X,F15.6)') &
-                '      (',k,') -> (',c,',',d,')  ',H(1+n2h1p+kcd,s),H(1+n2h1p+kcd,s)**2
-              
-            end do
-          end do
-        end do
+          ! TDA printing format
+
+          ija = 0
+          do i=nC+1,nO
+            do j=nC+1,nO
+              do a=nO+1,nBas-nR
+                ija = ija + 1
  
+                if(abs(H(1+ija,s)) > cutoff2)               &
+                write(*,'(1X,A3,I3,A1,I3,A6,I3,A7,1X,F15.6,1X,F15.6)') &
+                '  (',i,',',j,') -> (',a,')      ',H(1+ija,s),H(1+ija,s)**2
+         
+              end do
+            end do
+          end do
+         
+          iab = 0
+          do i=nC+1,nO
+            do a=nO+1,nBas-nR
+              do b=nO+1,nBas-nR
+                iab = iab + 1
+
+                if(abs(H(1+n2h1p+iab,s)) > cutoff2)           &
+                  write(*,'(1X,A7,I3,A6,I3,A1,I3,A3,1X,F15.6,1X,F15.6)') &
+                  '      (',i,') -> (',a,',',b,')  ',H(1+n2h1p+iab,s),H(1+n2h1p+iab,s)**2
+                
+              end do
+            end do
+          end do
+
+        else 
+ 
+          ! non-TDA printing format
+
+          ija = 0
+          do i=nC+1,nO
+            do ja=nC+1,nO
+              ija = ija + 1
+ 
+              if(abs(H(1+ija,s)) > cutoff2)                     &
+              write(*,'(1X,A7,I3,A1,I3,A12,1X,F15.6,1X,F15.6)') &
+              '      (',i,',',ja,')           ',H(1+ija,s),H(1+ija,s)**2
+         
+            end do
+          end do
+         
+          iab = 0
+          do ia=1,nS
+            do b=nO+1,nBas-nR
+              iab = iab + 1
+
+                if(abs(H(1+n2h1p+iab,s)) > cutoff2)                 &
+                  write(*,'(1X,A7,I3,A1,I3,A12,1X,F15.6,1X,F15.6)') &
+                  '      (',ia,',',b,')           ',H(1+n2h1p+iab,s),H(1+n2h1p+iab,s)**2
+                
+            end do
+          end do
+
+        end if
+
         write(*,*)'-------------------------------------------------------------'
         write(*,*)
 

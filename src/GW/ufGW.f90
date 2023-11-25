@@ -106,14 +106,14 @@ subroutine ufGW(dotest,TDA_W,nBas,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,eHF)
  
     do p=nC+1,nBas-nR
  
-      klc = 0
-      do k=nC+1,nO
-        do l=nC+1,nO
-          do c=nO+1,nBas-nR
-            klc = klc + 1
+      ija = 0
+      do i=nC+1,nO
+        do j=nC+1,nO
+          do a=nO+1,nBas-nR
+            ija = ija + 1
  
-            H(p       ,nBas+klc) = sqrt(2d0)*ERI(p,c,k,l)
-            H(nBas+klc,p       ) = sqrt(2d0)*ERI(p,c,k,l)
+            H(p       ,nBas+ija) = sqrt(2d0)*ERI(p,a,i,j)
+            H(nBas+ija,p       ) = sqrt(2d0)*ERI(p,a,i,j)
  
           end do
         end do
@@ -127,14 +127,14 @@ subroutine ufGW(dotest,TDA_W,nBas,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,eHF)
  
     do p=nC+1,nBas-nR
  
-      kcd = 0
-      do k=nC+1,nO
-        do c=nO+1,nBas-nR
-          do d=nO+1,nBas-nR
-            kcd = kcd + 1
+      iab = 0
+      do i=nC+1,nO
+        do a=nO+1,nBas-nR
+          do b=nO+1,nBas-nR
+            iab = iab + 1
  
-            H(p             ,nBas+n2h1p+kcd) = sqrt(2d0)*ERI(p,k,d,c)
-            H(nBas+n2h1p+kcd,p             ) = sqrt(2d0)*ERI(p,k,d,c)
+            H(p             ,nBas+n2h1p+iab) = sqrt(2d0)*ERI(p,i,b,a)
+            H(nBas+n2h1p+iab,p             ) = sqrt(2d0)*ERI(p,i,b,a)
  
           end do
         end do
@@ -254,13 +254,13 @@ subroutine ufGW(dotest,TDA_W,nBas,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,eHF)
  
     do p=nC+1,nBas-nR
  
-      klc = 0
-      do k=nC+1,nO
-        do lc=1,nS
-          klc = klc + 1
+      ija = 0
+      do i=nC+1,nO
+        do ja=1,nS
+          ija = ija + 1
 
-          H(p       ,nBas+klc) = sqrt(2d0)*rho(p,k,lc)
-          H(nBas+klc,p       ) = sqrt(2d0)*rho(p,k,lc)
+          H(p       ,nBas+ija) = sqrt(2d0)*rho(p,i,ja)
+          H(nBas+ija,p       ) = sqrt(2d0)*rho(p,i,ja)
 
         end do
       end do
@@ -273,13 +273,13 @@ subroutine ufGW(dotest,TDA_W,nBas,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,eHF)
  
     do p=nC+1,nBas-nR
  
-      kcd = 0
-      do kc=1,nS
-        do d=nO+1,nBas-nR
-          kcd = kcd + 1
+      iab = 0
+      do ia=1,nS
+        do b=nO+1,nBas-nR
+          iab = iab + 1
  
-          H(p             ,nBas+n2h1p+kcd) = sqrt(2d0)*rho(p,d,kc)
-          H(nBas+n2h1p+kcd,p             ) = sqrt(2d0)*rho(p,d,kc)
+          H(p             ,nBas+n2h1p+iab) = sqrt(2d0)*rho(p,b,ia)
+          H(nBas+n2h1p+iab,p             ) = sqrt(2d0)*rho(p,b,ia)
  
         end do
       end do
@@ -359,8 +359,8 @@ subroutine ufGW(dotest,TDA_W,nBas,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,eHF)
       if(Z(s) > cutoff1) then
 
         write(*,*)'-------------------------------------------------------------'
-        write(*,'(1X,A10,I5,A1,1X,A7,F12.6,A13,F6.4,1X)') & 
-         'Solution',s,':','e_QP = ',eGW(s)*HaToeV,' eV and Z = ',Z(s)
+        write(*,'(1X,A7,1X,I3,A6,I3,A1,1X,A7,F12.6,A13,F6.4,1X)') & 
+         'Orbital',p,' and #',s,':','e_QP = ',eGW(s)*HaToeV,' eV and Z = ',Z(s)
         write(*,*)'-------------------------------------------------------------'
         write(*,'(1X,A20,1X,A20,1X,A15,1X)') &
                   ' Configuration ',' Coefficient ',' Weight ' 
@@ -372,36 +372,69 @@ subroutine ufGW(dotest,TDA_W,nBas,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,eHF)
         if(p > nO) & 
           write(*,'(1X,A16,I3,A7,1X,F15.6,1X,F15.6)') &
           '               (',p,')      ',H(1,s),H(1,s)**2
-       
-        klc = 0
-        do k=nC+1,nO
-          do l=nC+1,nO
-            do c=nO+1,nBas-nR
-       
-              klc = klc + 1
+  
+        if(TDA_W) then  
 
-              if(abs(H(1+klc,s)) > cutoff2)               &
-              write(*,'(1X,A3,I3,A1,I3,A6,I3,A7,1X,F15.6,1X,F15.6)') &
-              '  (',k,',',l,') -> (',c,')      ',H(1+klc,s),H(1+klc,s)**2
-       
-            end do
-          end do
-        end do
-       
-        kcd = 0
-        do k=nC+1,nO
-          do c=nO+1,nBas-nR
-            do d=nO+1,nBas-nR
-       
-              kcd = kcd + 1
-              if(abs(H(1+n2h1p+kcd,s)) > cutoff2)           &
-                write(*,'(1X,A7,I3,A6,I3,A1,I3,A3,1X,F15.6,1X,F15.6)') &
-                '      (',k,') -> (',c,',',d,')  ',H(1+n2h1p+kcd,s),H(1+n2h1p+kcd,s)**2
-              
-            end do
-          end do
-        end do
+          ! TDA printing format
+
+          ija = 0
+          do i=nC+1,nO
+            do j=nC+1,nO
+              do a=nO+1,nBas-nR
+                ija = ija + 1
  
+                if(abs(H(1+ija,s)) > cutoff2)               &
+                write(*,'(1X,A3,I3,A1,I3,A6,I3,A7,1X,F15.6,1X,F15.6)') &
+                '  (',i,',',j,') -> (',a,')      ',H(1+ija,s),H(1+ija,s)**2
+         
+              end do
+            end do
+          end do
+         
+          iab = 0
+          do i=nC+1,nO
+            do a=nO+1,nBas-nR
+              do b=nO+1,nBas-nR
+                iab = iab + 1
+
+                if(abs(H(1+n2h1p+iab,s)) > cutoff2)           &
+                  write(*,'(1X,A7,I3,A6,I3,A1,I3,A3,1X,F15.6,1X,F15.6)') &
+                  '      (',i,') -> (',a,',',b,')  ',H(1+n2h1p+iab,s),H(1+n2h1p+iab,s)**2
+                
+              end do
+            end do
+          end do
+
+        else 
+ 
+          ! non-TDA printing format
+
+          ija = 0
+          do i=nC+1,nO
+            do ja=nC+1,nO
+              ija = ija + 1
+ 
+              if(abs(H(1+ija,s)) > cutoff2)                     &
+              write(*,'(1X,A7,I3,A1,I3,A12,1X,F15.6,1X,F15.6)') &
+              '      (',i,',',ja,')           ',H(1+ija,s),H(1+ija,s)**2
+         
+            end do
+          end do
+         
+          iab = 0
+          do ia=1,nS
+            do b=nO+1,nBas-nR
+              iab = iab + 1
+
+                if(abs(H(1+n2h1p+iab,s)) > cutoff2)                 &
+                  write(*,'(1X,A7,I3,A1,I3,A12,1X,F15.6,1X,F15.6)') &
+                  '      (',ia,',',b,')           ',H(1+n2h1p+iab,s),H(1+n2h1p+iab,s)**2
+                
+            end do
+          end do
+
+        end if
+
         write(*,*)'-------------------------------------------------------------'
         write(*,*)
 
@@ -410,4 +443,5 @@ subroutine ufGW(dotest,TDA_W,nBas,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,eHF)
     end do
 
   end if
+
 end subroutine 
