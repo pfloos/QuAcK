@@ -104,43 +104,43 @@ subroutine RHF(dotest,maxSCF,thresh,max_diis,guess_type,level_shift,nNuc,ZNuc,rN
 
   do while(Conv > thresh .and. nSCF < maxSCF)
 
-!   Increment 
+    ! Increment 
 
     nSCF = nSCF + 1
 
-!   Build Fock matrix
+    ! Build Fock matrix
     
     call Hartree_matrix_AO_basis(nBas,P,ERI,J)
     call exchange_matrix_AO_basis(nBas,P,ERI,K)
     
     F(:,:) = Hc(:,:) + J(:,:) + 0.5d0*K(:,:)
 
-!   Check convergence 
+    ! Check convergence 
 
     err = matmul(F,matmul(P,S)) - matmul(matmul(S,P),F)
     if(nSCF > 1) Conv = maxval(abs(err))
 
-!   Kinetic energy
+    ! Kinetic energy
 
     ET = trace_matrix(nBas,matmul(P,T))
 
-!   Potential energy
+    ! Potential energy
 
     EV = trace_matrix(nBas,matmul(P,V))
 
-!   Hartree energy
+    ! Hartree energy
 
     EJ = 0.5d0*trace_matrix(nBas,matmul(P,J))
 
-!   Exchange energy
+    ! Exchange energy
 
     EK = 0.25d0*trace_matrix(nBas,matmul(P,K))
 
-!   Total energy
+    ! Total energy
 
     ERHF = ET + EV + EJ + EK
 
-!   DIIS extrapolation
+    ! DIIS extrapolation
 
     if(max_diis > 1) then
 
@@ -149,22 +149,22 @@ subroutine RHF(dotest,maxSCF,thresh,max_diis,guess_type,level_shift,nNuc,ZNuc,rN
 
     end if
 
-!   Level-shifting
+    ! Level shift
 
     if(level_shift > 0d0 .and. Conv > thresh) call level_shifting(level_shift,nBas,nO,S,c,F)
 
-!  Diagonalize Fock matrix
+    ! Diagonalize Fock matrix
 
     Fp = matmul(transpose(X),matmul(F,X))
     cp(:,:) = Fp(:,:)
     call diagonalize_matrix(nBas,cp,eHF)
     c = matmul(X,cp)
 
-!   Density matrix
+    ! Density matrix
 
     P(:,:) = 2d0*matmul(c(:,1:nO),transpose(c(:,1:nO)))
 
-!  Dump results
+    ! Dump results
 
     write(*,'(1X,A1,1X,I3,1X,A1,1X,F16.10,1X,A1,1X,F16.10,1X,A1,1X,F16.10,1X,A1,1X,E10.2,1X,A1,1X)') &
       '|',nSCF,'|',ERHF + ENuc,'|',EJ,'|',EK,'|',Conv,'|'

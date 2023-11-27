@@ -158,12 +158,9 @@ subroutine qsRGW(dotest,maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,dop
 
     nSCF = nSCF + 1
 
-    ! Buid Hartree matrix
+    ! Build Hartree-exchange matrix
 
     call Hartree_matrix_AO_basis(nBas,P,ERI_AO,J)
-
-    ! Compute exchange part of the self-energy 
-
     call exchange_matrix_AO_basis(nBas,P,ERI_AO,K)
 
     ! AO to MO transformation of two-electron integrals
@@ -206,29 +203,6 @@ subroutine qsRGW(dotest,maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,dop
 
     if(nSCF > 1) Conv = maxval(abs(err))
 
-    ! DIIS extrapolation 
-
-    if(max_diis > 1) then
-      n_diis = min(n_diis+1,max_diis)
-      call DIIS_extrapolation(rcond,nBasSq,nBasSq,n_diis,err_diis,F_diis,err,F)
-    end if
-
-    ! Diagonalize Hamiltonian in AO basis
-
-    Fp = matmul(transpose(X),matmul(F,X))
-    cp(:,:) = Fp(:,:)
-    call diagonalize_matrix(nBas,cp,eGW)
-    c = matmul(X,cp)
-    call AOtoMO(nBas,c,SigCp,SigC)
-
-    ! Compute new density matrix in the AO basis
-
-    P(:,:) = 2d0*matmul(c(:,1:nO),transpose(c(:,1:nO)))
-
-    !------------------------------------------------------------------------
-    !   Compute total energy
-    !------------------------------------------------------------------------
-
     ! Kinetic energy
 
     ET = trace_matrix(nBas,matmul(P,T))
@@ -248,6 +222,27 @@ subroutine qsRGW(dotest,maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,dop
     ! Total energy
 
     EqsGW = ET + EV + EJ + EK 
+
+    ! DIIS extrapolation 
+
+    if(max_diis > 1) then
+
+      n_diis = min(n_diis+1,max_diis)
+      call DIIS_extrapolation(rcond,nBasSq,nBasSq,n_diis,err_diis,F_diis,err,F)
+
+    end if
+
+    ! Diagonalize Hamiltonian in AO basis
+
+    Fp = matmul(transpose(X),matmul(F,X))
+    cp(:,:) = Fp(:,:)
+    call diagonalize_matrix(nBas,cp,eGW)
+    c = matmul(X,cp)
+    call AOtoMO(nBas,c,SigCp,SigC)
+
+    ! Density matrix
+
+    P(:,:) = 2d0*matmul(c(:,1:nO),transpose(c(:,1:nO)))
 
     ! Print results
 
