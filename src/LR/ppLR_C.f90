@@ -59,25 +59,29 @@ subroutine ppLR_C(ispin,nBas,nC,nO,nV,nR,nVV,lambda,e,ERI,Cpp)
 ! Build C matrix for the triplet manifold, or alpha-alpha block, or in the spin-orbital basis
 
   if(ispin == 2 .or. ispin == 4) then
-
-    ab = 0
-    do a=nO+1,nBas-nR
-     do b=a+1,nBas-nR
-        ab = ab + 1
-        cd = 0
-        do c=nO+1,nBas-nR
-         do d=c+1,nBas-nR
-            cd = cd + 1
+    !$OMP PARALLEL &
+    !$OMP SHARED(Cpp,lambda,ERI,e,eF,nC,nO,nBas,nR) &
+    !$OMP PRIVATE(c,d,a,b,ab,cd) &
+    !$OMP DEFAULT(NONE)
+    !$OMP DO
+    do c=nO+1,nBas-nR
+      do d=c+1,nBas-nR
+        cd = (c-(nO+1))*(nBas-nR-(nO+1)) - (c-1-(nO+1))*(c-(nO+1))/2 + d - c
+          do a=nO+1,nBas-nR
+            do b=a+1,nBas-nR
+              ab = (a-(nO+1))*(nBas-nR-(nO+1)) - (a-1-(nO+1))*(a-(nO+1))/2 + b - a
  
-            Cpp(ab,cd) = + (e(a) + e(b) - eF)*Kronecker_delta(a,c)*Kronecker_delta(b,d) & 
-                         + lambda*(ERI(a,b,c,d) - ERI(a,b,d,c))
+              Cpp(ab,cd) = + (e(a) + e(b) - eF)*Kronecker_delta(a,c)*Kronecker_delta(b,d) & 
+                   + lambda*(ERI(a,b,c,d) - ERI(a,b,d,c))
  
           end do
         end do
       end do
-    end do
+   end do
+   !$OMP END DO
+   !$OMP END PARALLEL
 
-  end if
+ end if
 
 ! Build the alpha-beta block of the C matrix
 

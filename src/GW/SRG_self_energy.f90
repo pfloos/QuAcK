@@ -48,7 +48,7 @@ subroutine SRG_self_energy(eta,nBas,nC,nO,nV,nR,nS,e,Om,rho,EcGM,SigC,Z)
   !$OMP SHARED(SigC,rho,eta,nS,nC,nO,nBas,nR,e,Om) &
   !$OMP PRIVATE(m,i,q,p,Dpim,Dqim) &
   !$OMP DEFAULT(NONE)
-  !$OMP DO
+  !$OMP DO 
   do q=nC+1,nBas-nR
      do p=nC+1,nBas-nR
         do m=1,nS
