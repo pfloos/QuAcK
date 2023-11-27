@@ -425,7 +425,7 @@ subroutine ufGW(dotest,TDA_W,nBas,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,eHF)
  
                 if(abs(H(nBas+ija,s)) > cutoff2)               &
                 write(*,'(1X,A3,I3,A1,I3,A6,I3,A7,1X,F15.6,1X,F15.6)') &
-                '  (',i,',',j,') -> (',a,')      ',H(1+ija,s),H(1+ija,s)**2
+                '  (',i,',',j,') -> (',a,')      ',H(nBas+ija,s),H(nBas+ija,s)**2
          
               end do
             end do
@@ -439,7 +439,7 @@ subroutine ufGW(dotest,TDA_W,nBas,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,eHF)
 
                 if(abs(H(nBas+n2h1p+iab,s)) > cutoff2)           &
                   write(*,'(1X,A7,I3,A6,I3,A1,I3,A3,1X,F15.6,1X,F15.6)') &
-                  '      (',i,') -> (',a,',',b,')  ',H(1+n2h1p+iab,s),H(1+n2h1p+iab,s)**2
+                  '      (',i,') -> (',a,',',b,')  ',H(nBas+n2h1p+iab,s),H(nBas+n2h1p+iab,s)**2
                 
               end do
             end do
@@ -456,7 +456,7 @@ subroutine ufGW(dotest,TDA_W,nBas,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,eHF)
  
               if(abs(H(nBas+ija,s)) > cutoff2)                     &
               write(*,'(1X,A7,I3,A1,I3,A12,1X,F15.6,1X,F15.6)') &
-              '      (',i,',',ja,')           ',H(1+ija,s),H(1+ija,s)**2
+              '      (',i,',',ja,')           ',H(nBas+ija,s),H(nBas+ija,s)**2
          
             end do
           end do
@@ -468,7 +468,7 @@ subroutine ufGW(dotest,TDA_W,nBas,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,eHF)
 
                 if(abs(H(nBas+n2h1p+iab,s)) > cutoff2)                 &
                   write(*,'(1X,A7,I3,A1,I3,A12,1X,F15.6,1X,F15.6)') &
-                  '      (',ia,',',b,')           ',H(1+n2h1p+iab,s),H(1+n2h1p+iab,s)**2
+                  '      (',ia,',',b,')           ',H(nBas+n2h1p+iab,s),H(nBas+n2h1p+iab,s)**2
                 
             end do
           end do
