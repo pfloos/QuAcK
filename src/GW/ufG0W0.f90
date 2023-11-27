@@ -48,6 +48,8 @@ subroutine ufG0W0(dotest,TDA_W,nBas,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,eHF)
   logical                       :: verbose = .true.
   double precision,parameter    :: cutoff1 = 0.01d0
   double precision,parameter    :: cutoff2 = 0.01d0
+  double precision              :: eF
+  double precision,parameter    :: window = 2d0
 
   double precision              :: start_timing,end_timing,timing
 
@@ -75,6 +77,8 @@ subroutine ufG0W0(dotest,TDA_W,nBas,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,eHF)
 
   dRPA = .true.
   EcRPA = 0d0
+
+  eF = 0.5d0*(eHF(nO+1) + eHF(nO))
 
   H(:,:) = 0d0
 
@@ -361,7 +365,8 @@ subroutine ufG0W0(dotest,TDA_W,nBas,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,eHF)
     write(*,*)'-------------------------------------------'
   
     do s=1,nH
-      if(Z(s) > cutoff1) then
+      if(eGW(s) < eF .and. eGW(s) > eF - window) then
+!     if(Z(s) > cutoff1) then
         write(*,'(1X,A1,1X,I3,1X,A1,1X,F15.6,1X,A1,1X,F15.6,1X,A1,1X)') &
         '|',s,'|',eGW(s)*HaToeV,'|',Z(s),'|'
       end if
@@ -374,7 +379,8 @@ subroutine ufG0W0(dotest,TDA_W,nBas,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,eHF)
  
       do s=1,nH
  
-        if(Z(s) > cutoff1) then
+        if(eGW(s) < eF .and. eGW(s) > eF - window) then
+!       if(Z(s) > cutoff1) then
  
           write(*,*)'-------------------------------------------------------------'
           write(*,'(1X,A7,1X,I3,A6,I3,A1,1X,A7,F12.6,A13,F6.4,1X)') & 
@@ -429,7 +435,7 @@ subroutine ufG0W0(dotest,TDA_W,nBas,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,eHF)
  
             ija = 0
             do i=nC+1,nO
-              do ja=nC+1,nO
+              do ja=1,nS
                 ija = ija + 1
   
                 if(abs(H(1+ija,s)) > cutoff2)                     &

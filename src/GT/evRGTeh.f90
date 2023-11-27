@@ -152,7 +152,7 @@ subroutine evRGTeh(dotest,maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,d
 
     else
 
-       write(*,*) ' *** Quasiparticle energies obtained by root search (experimental) *** '
+       write(*,*) ' *** Quasiparticle energies obtained by root search *** '
        write(*,*)
 
        call GTeh_QP_graph(eta,nBas,nC,nO,nV,nR,nS,eHF,Om,rhoL,rhoR,eOld,eOld,eGT,Z)

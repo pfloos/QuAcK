@@ -208,7 +208,7 @@ subroutine evRGTpp(dotest,maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,B
  
     else
  
-      write(*,*) ' *** Quasiparticle energies obtained by root search (experimental) *** '
+      write(*,*) ' *** Quasiparticle energies obtained by root search *** '
       write(*,*)
  
      call GTpp_QP_graph(eta,nBas,nC,nO,nV,nR,nOOs,nVVs,nOOt,nVVt,eHF,Om1s,rho1s,Om2s,rho2s, & 

@@ -152,7 +152,7 @@ subroutine UG0W0(dotest,doACFDT,exchange_kernel,doXBS,dophBSE,TDA_W,TDA,dBSE,dTD
   
   ! Find graphical solution of the QP equation
 
-    write(*,*) ' *** Quasiparticle energies obtained by root search (experimental) *** '
+    write(*,*) ' *** Quasiparticle energies obtained by root search *** '
     write(*,*)
 
     do is=1,nspin

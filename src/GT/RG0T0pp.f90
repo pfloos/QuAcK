@@ -193,7 +193,7 @@ subroutine RG0T0pp(dotest,doACFDT,exchange_kernel,doXBS,dophBSE,TDA_T,TDA,dBSE,d
 
   else
 
-    write(*,*) ' *** Quasiparticle energies obtained by root search (experimental) *** '
+    write(*,*) ' *** Quasiparticle energies obtained by root search *** '
     write(*,*)
      
    call GTpp_QP_graph(eta,nBas,nC,nO,nV,nR,nOOs,nVVs,nOOt,nVVt,eHF,Om1s,rho1s,Om2s,rho2s, & 
