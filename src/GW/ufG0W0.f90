@@ -72,7 +72,11 @@ subroutine ufG0W0(dotest,TDA_W,nBas,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,eHF)
 ! Memory allocation
 
   allocate(H(nH,nH),eGW(nH),Z(nH))
-
+  
+  if (not(TDA_W)) then
+    allocate(Om(nS),Aph(nS,nS),Bph(nS,nS),XpY(nS,nS),XmY(nS,nS),rho(nBas,nBas,nS))
+  end if
+  
 ! Initialization
 
   dRPA = .true.
@@ -84,7 +88,7 @@ subroutine ufG0W0(dotest,TDA_W,nBas,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,eHF)
 ! Main loop over orbitals !
 !-------------------------!
 
-  do p=nO,nO
+  do p=nO-1,nO
 
     H(:,:) = 0d0
 
@@ -230,10 +234,6 @@ subroutine ufG0W0(dotest,TDA_W,nBas,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,eHF)
       !     | W2p1h   0   D2p1h | ! 
       !                           !
       !---------------------------!
- 
-      ! Memory allocation 
- 
-      allocate(Om(nS),Aph(nS,nS),Bph(nS,nS),XpY(nS,nS),XmY(nS,nS),rho(nBas,nBas,nS))
  
       ! Spin manifold 
  
