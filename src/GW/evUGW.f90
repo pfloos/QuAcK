@@ -175,7 +175,7 @@ subroutine evUGW(dotest,maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,BSE
 
     else
 
-      write(*,*) ' *** Quasiparticle energies obtained by root search (experimental) *** '
+      write(*,*) ' *** Quasiparticle energies obtained by root search *** '
       write(*,*)
 
       do is=1,nspin

@@ -49,6 +49,8 @@ subroutine ufGW(dotest,TDA_W,nBas,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,eHF)
   double precision,parameter    :: cutoff1 = 0.01d0
   double precision,parameter    :: cutoff2 = 0.01d0
 
+  double precision              :: start_timing,end_timing,timing
+
 ! Output variables
 
 ! Hello world
@@ -91,6 +93,8 @@ subroutine ufGW(dotest,TDA_W,nBas,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,eHF)
     !     | V2p1h   0   C2p1h | ! 
     !                           !
     !---------------------------!
+
+    call wall_time(start_timing)
 
     !---------!
     ! Block F !
@@ -198,6 +202,13 @@ subroutine ufGW(dotest,TDA_W,nBas,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,eHF)
       end do
     end do
 
+    call wall_time(end_timing)
+
+    timing = end_timing - start_timing
+    write(*,*)
+    write(*,'(A65,1X,F9.3,A8)') 'Total wall time for construction of supermatrix = ',timing,' seconds'
+    write(*,*)
+
   else
 
      ! RPA for W
@@ -239,6 +250,8 @@ subroutine ufGW(dotest,TDA_W,nBas,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,eHF)
     !--------------------------!
 
     call GW_excitation_density(nBas,nC,nO,nR,nS,ERI,XpY,rho)
+
+    call wall_time(start_timing)
 
     !---------!
     ! Block F !
@@ -314,13 +327,29 @@ subroutine ufGW(dotest,TDA_W,nBas,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,eHF)
       end do
     end do
 
+    call wall_time(end_timing)
+
+    timing = end_timing - start_timing
+    write(*,*)
+    write(*,'(A65,1X,F9.3,A8)') 'Total wall time for construction of supermatrix = ',timing,' seconds'
+    write(*,*)
+
   end if
 
 !-------------------------!
 ! Diagonalize supermatrix !
 !-------------------------!
 
+  call wall_time(start_timing)
+
   call diagonalize_matrix(nH,H,eGW)
+
+  call wall_time(end_timing)
+
+  timing = end_timing - start_timing
+  write(*,*)
+  write(*,'(A65,1X,F9.3,A8)') 'Total wall time for diagonalization of supermatrix = ',timing,' seconds'
+  write(*,*)
 
 !-----------------!
 ! Compute weights !

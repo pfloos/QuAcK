@@ -139,7 +139,7 @@ subroutine RG0W0(dotest,doACFDT,exchange_kernel,doXBS,dophBSE,dophBSE2,TDA_W,TDA
 
   else 
 
-    write(*,*) ' *** Quasiparticle energies obtained by root search (experimental) *** '
+    write(*,*) ' *** Quasiparticle energies obtained by root search *** '
     write(*,*)
   
     call GW_QP_graph(eta,nBas,nC,nO,nV,nR,nS,eHF,Om,rho,eGWlin,eHF,eGW,Z)
