@@ -440,7 +440,7 @@ subroutine ufGW(dotest,TDA_W,nBas,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,eHF)
 
           ija = 0
           do i=nC+1,nO
-            do ja=nC+1,nO
+            do ja=1,nS
               ija = ija + 1
  
               if(abs(H(1+ija,s)) > cutoff2)                     &
