@@ -209,7 +209,7 @@ subroutine ufG0W0(dotest,TDA_W,nBas,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,eHF)
  
       timing = end_timing - start_timing
       write(*,*)
-      write(*,'(A65,1X,F9.3,A8)') 'Total wall time for construction of supermatrix = ',timing,' seconds'
+      write(*,'(A65,1X,F9.3,A8)') 'Total CPU time for construction of supermatrix = ',timing,' seconds'
       write(*,*)
 
     else
@@ -324,7 +324,7 @@ subroutine ufG0W0(dotest,TDA_W,nBas,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,eHF)
  
       timing = end_timing - start_timing
       write(*,*)
-      write(*,'(A65,1X,F9.3,A8)') 'Total wall time for construction of supermatrix = ',timing,' seconds'
+      write(*,'(A65,1X,F9.3,A8)') 'Total CPU time for construction of supermatrix = ',timing,' seconds'
       write(*,*)
        
     end if
@@ -341,7 +341,7 @@ subroutine ufG0W0(dotest,TDA_W,nBas,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,eHF)
 
     timing = end_timing - start_timing
     write(*,*)
-    write(*,'(A65,1X,F9.3,A8)') 'Total wall time for diagonalization of supermatrix = ',timing,' seconds'
+    write(*,'(A65,1X,F9.3,A8)') 'Total CPU time for diagonalization of supermatrix = ',timing,' seconds'
     write(*,*)
 
     !-----------------!
