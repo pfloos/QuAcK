@@ -78,5 +78,7 @@ subroutine GW_QP_graph(eta,nBas,nC,nO,nV,nR,nS,eHF,Om,rho,eGWlin,eOld,eGW,Z)
     end if
           
   end do
+  write(*,*)'-----------------------------------------------------'
+  write(*,*)
 
 end subroutine 

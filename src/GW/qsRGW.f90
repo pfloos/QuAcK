@@ -177,7 +177,7 @@ subroutine qsRGW(dotest,maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,dop
     if(.not.TDA_W) call phLR_B(ispin,dRPA,nBas,nC,nO,nV,nR,nS,1d0,ERI_MO,Bph)
 
     call phLR(TDA_W,nS,Aph,Bph,EcRPA,Om,XpY,XmY)
-    if(print_W) call print_excitation_energies('phRPA@RGW','singlet',nS,Om)
+    if(print_W) call print_excitation_energies('phRPA@GW@RHF','singlet',nS,Om)
 
     ! Compute correlation part of the self-energy 
 
@@ -287,10 +287,10 @@ subroutine qsRGW(dotest,maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,dop
 
     write(*,*)
     write(*,*)'-------------------------------------------------------------------------------'
-    write(*,'(2X,A50,F20.10)') 'Tr@BSE@qsGW correlation energy (singlet) =',EcBSE(1)
-    write(*,'(2X,A50,F20.10)') 'Tr@BSE@qsGW correlation energy (triplet) =',EcBSE(2)
-    write(*,'(2X,A50,F20.10)') 'Tr@BSE@qsGW correlation energy           =',EcBSE(1) + EcBSE(2)
-    write(*,'(2X,A50,F20.10)') 'Tr@BSE@qsGW total energy                 =',ENuc + EqsGW + EcBSE(1) + EcBSE(2)
+    write(*,'(2X,A50,F20.10,A3)') 'Tr@BSE@qsGW@RHF correlation energy (singlet) = ',EcBSE(1),' au'
+    write(*,'(2X,A50,F20.10,A3)') 'Tr@BSE@qsGW@RHF correlation energy (triplet) = ',EcBSE(2),' au'
+    write(*,'(2X,A50,F20.10,A3)') 'Tr@BSE@qsGW@RHF correlation energy           = ',sum(EcBSE),' au'
+    write(*,'(2X,A50,F20.10,A3)') 'Tr@BSE@qsGW@RHF total       energy           = ',ENuc + EqsGW + sum(EcBSE),' au'
     write(*,*)'-------------------------------------------------------------------------------'
     write(*,*)
 
@@ -314,10 +314,10 @@ subroutine qsRGW(dotest,maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,dop
 
       write(*,*)
       write(*,*)'-------------------------------------------------------------------------------'
-      write(*,'(2X,A50,F20.10)') 'AC@BSE@qsGW correlation energy (singlet) =',EcBSE(1)
-      write(*,'(2X,A50,F20.10)') 'AC@BSE@qsGW correlation energy (triplet) =',EcBSE(2)
-      write(*,'(2X,A50,F20.10)') 'AC@BSE@qsGW correlation energy           =',EcBSE(1) + EcBSE(2)
-      write(*,'(2X,A50,F20.10)') 'AC@BSE@qsGW total energy                 =',ENuc + EqsGW + EcBSE(1) + EcBSE(2)
+      write(*,'(2X,A50,F20.10,A3)') 'AC@BSE@qsGW@RHF correlation energy (singlet) = ',EcBSE(1),' au'
+      write(*,'(2X,A50,F20.10,A3)') 'AC@BSE@qsGW@RHF correlation energy (triplet) = ',EcBSE(2),' au'
+      write(*,'(2X,A50,F20.10,A3)') 'AC@BSE@qsGW@RHF correlation energy           = ',sum(EcBSE),' au'
+      write(*,'(2X,A50,F20.10,A3)') 'AC@BSE@qsGW@RHF total       energy           = ',ENuc + EqsGW + sum(EcBSE),' au'
       write(*,*)'-------------------------------------------------------------------------------'
       write(*,*)
 
@@ -328,13 +328,15 @@ subroutine qsRGW(dotest,maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,dop
   if(doppBSE) then
       
     call GW_ppBSE(TDA_W,TDA,dBSE,dTDA,singlet,triplet,eta,nBas,nC,nO,nV,nR,nS,ERI_MO,dipole_int_MO,eHF,eGW,EcBSE)
-    
+ 
+    EcBSE(2) = 3d0*EcBSE(2)
+   
     write(*,*)
     write(*,*)'-------------------------------------------------------------------------------'
-    write(*,'(2X,A50,F20.10)') 'Tr@ppBSE@qsGW correlation energy (singlet) =',EcBSE(1)
-    write(*,'(2X,A50,F20.10)') 'Tr@ppBSE@qsGW correlation energy (triplet) =',3d0*EcBSE(2)
-    write(*,'(2X,A50,F20.10)') 'Tr@ppBSE@qsGW correlation energy =',EcBSE(1) + 3d0*EcBSE(2)
-    write(*,'(2X,A50,F20.10)') 'Tr@ppBSE@qsGW total energy =',ENuc + ERHF + EcBSE(1) + 3d0*EcBSE(2)
+    write(*,'(2X,A50,F20.10,A3)') 'Tr@ppBSE@qsGW@RHF correlation energy (singlet) = ',EcBSE(1),' au'
+    write(*,'(2X,A50,F20.10,A3)') 'Tr@ppBSE@qsGW@RHF correlation energy (triplet) = ',EcBSE(2),' au'
+    write(*,'(2X,A50,F20.10,A3)') 'Tr@ppBSE@qsGW@RHF correlation energy           = ',sum(EcBSE),' au'
+    write(*,'(2X,A50,F20.10,A3)') 'Tr@ppBSE@qsGW@RHF total       energy           = ',ENuc + ERHF + sum(EcBSE),' au'
     write(*,*)'-------------------------------------------------------------------------------'
     write(*,*)
 

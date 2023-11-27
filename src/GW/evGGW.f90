@@ -1,5 +1,5 @@
 subroutine evGGW(dotest,maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,dophBSE,dophBSE2,TDA_W,TDA,dBSE,dTDA,doppBSE, & 
-                 linearize,eta,regularize,nBas,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,dipole_int,eHF)
+                 linearize,eta,regularize,nBas,nC,nO,nV,nR,nS,ENuc,EGHF,ERI,dipole_int,eHF)
 
 ! Perform self-consistent eigenvalue-only GW calculation
 
@@ -14,7 +14,7 @@ subroutine evGGW(dotest,maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,dop
   integer,intent(in)            :: max_diis
   double precision,intent(in)   :: thresh
   double precision,intent(in)   :: ENuc
-  double precision,intent(in)   :: ERHF
+  double precision,intent(in)   :: EGHF
   logical,intent(in)            :: doACFDT
   logical,intent(in)            :: exchange_kernel
   logical,intent(in)            :: doXBS
@@ -157,7 +157,7 @@ subroutine evGGW(dotest,maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,dop
 
     ! Print results
 
-    call print_evGGW(nBas,nO,nSCF,Conv,eHF,ENuc,ERHF,SigC,Z,eGW,EcRPA,EcGM)
+    call print_evGGW(nBas,nO,nSCF,Conv,eHF,ENuc,EGHF,SigC,Z,eGW,EcRPA,EcGM)
 
     ! Linear mixing or DIIS extrapolation
 
@@ -215,8 +215,8 @@ subroutine evGGW(dotest,maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,dop
 
     write(*,*)
     write(*,*)'-------------------------------------------------------------------------------'
-    write(*,'(2X,A50,F20.10)') 'Tr@BSE@evGW correlation energy           =',EcBSE
-    write(*,'(2X,A50,F20.10)') 'Tr@BSE@evGW total energy                 =',ENuc + ERHF + EcBSE
+    write(*,'(2X,A50,F20.10,A3)') 'Tr@BSE@evGW@GHF correlation energy = ',EcBSE,' au'
+    write(*,'(2X,A50,F20.10,A3)') 'Tr@BSE@evGW@GHF total       energy = ',ENuc + EGHF + EcBSE,' au'
     write(*,*)'-------------------------------------------------------------------------------'
     write(*,*)
 
@@ -243,7 +243,7 @@ subroutine evGGW(dotest,maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,dop
 !     write(*,'(2X,A50,F20.10)') 'AC@BSE@evGW correlation energy (singlet) =',EcBSE(1)
 !     write(*,'(2X,A50,F20.10)') 'AC@BSE@evGW correlation energy (triplet) =',EcBSE(2)
 !     write(*,'(2X,A50,F20.10)') 'AC@BSE@evGW correlation energy           =',EcBSE(1) + EcBSE(2)
-!     write(*,'(2X,A50,F20.10)') 'AC@BSE@evGW total energy                 =',ENuc + ERHF + EcBSE(1) + EcBSE(2)
+!     write(*,'(2X,A50,F20.10)') 'AC@BSE@evGW total energy                 =',ENuc + EGHF + EcBSE(1) + EcBSE(2)
 !     write(*,*)'-------------------------------------------------------------------------------'
 !     write(*,*)
 
@@ -260,7 +260,7 @@ subroutine evGGW(dotest,maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,dop
 !   write(*,'(2X,A50,F20.10)') 'Tr@ppBSE@evGW correlation energy (singlet) =',EcBSE(1)
 !   write(*,'(2X,A50,F20.10)') 'Tr@ppBSE@evGW correlation energy (triplet) =',3d0*EcBSE(2)
 !   write(*,'(2X,A50,F20.10)') 'Tr@ppBSE@evGW correlation energy =',EcBSE(1) + 3d0*EcBSE(2)
-!   write(*,'(2X,A50,F20.10)') 'Tr@ppBSE@evGW total energy =',ENuc + ERHF + EcBSE(1) + 3d0*EcBSE(2)
+!   write(*,'(2X,A50,F20.10)') 'Tr@ppBSE@evGW total energy =',ENuc + EGHF + EcBSE(1) + 3d0*EcBSE(2)
 !   write(*,*)'-------------------------------------------------------------------------------'
 !   write(*,*)
 

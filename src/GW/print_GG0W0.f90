@@ -27,7 +27,7 @@ subroutine print_GG0W0(nBas,nO,eHF,ENuc,ERHF,SigC,Z,eGW,EcRPA,EcGM)
 ! Dump results
 
   write(*,*)'-------------------------------------------------------------------------------'
-  write(*,*)'  One-shot GG0W0 calculation'
+  write(*,*)' G0W0@GHF calculation '
   write(*,*)'-------------------------------------------------------------------------------'
   write(*,'(1X,A1,1X,A3,1X,A1,1X,A15,1X,A1,1X,A15,1X,A1,1X,A15,1X,A1,1X,A15,1X,A1,1X)') &
             '|','#','|','e_HF (eV)','|','Sig_GW (eV)','|','Z','|','e_GW (eV)','|'
@@ -39,14 +39,14 @@ subroutine print_GG0W0(nBas,nO,eHF,ENuc,ERHF,SigC,Z,eGW,EcRPA,EcGM)
   enddo
 
   write(*,*)'-------------------------------------------------------------------------------'
-  write(*,'(2X,A60,F15.6,A3)') 'GG0W0 HOMO      energy =',eGW(HOMO)*HaToeV,' eV'
-  write(*,'(2X,A60,F15.6,A3)') 'GG0W0 LUMO      energy =',eGW(LUMO)*HaToeV,' eV'
-  write(*,'(2X,A60,F15.6,A3)') 'GG0W0 HOMO-LUMO gap    =',Gap*HaToeV,' eV'
+  write(*,'(2X,A60,F15.6,A3)') 'G0W0@GHF HOMO      energy =',eGW(HOMO)*HaToeV,' eV'
+  write(*,'(2X,A60,F15.6,A3)') 'G0W0@GHF LUMO      energy =',eGW(LUMO)*HaToeV,' eV'
+  write(*,'(2X,A60,F15.6,A3)') 'G0W0@GHF HOMO-LUMO gap    =',Gap*HaToeV,' eV'
   write(*,*)'-------------------------------------------------------------------------------'
-  write(*,'(2X,A60,F15.6,A3)') 'phRPA@GG0W0 total energy       =',ENuc + ERHF + EcRPA,' au'
-  write(*,'(2X,A60,F15.6,A3)') 'phRPA@GG0W0 correlation energy =',EcRPA,' au'
-  write(*,'(2X,A60,F15.6,A3)') '   GM@GG0W0 total energy       =',ENuc + ERHF + EcGM,' au'
-  write(*,'(2X,A60,F15.6,A3)') '   GM@GG0W0 correlation energy =',EcGM,' au'
+  write(*,'(2X,A60,F15.6,A3)') 'phRPA@G0W0@GHF total energy       =',ENuc + ERHF + EcRPA,' au'
+  write(*,'(2X,A60,F15.6,A3)') 'phRPA@G0W0@GHF correlation energy =',EcRPA,' au'
+  write(*,'(2X,A60,F15.6,A3)') '   GM@G0W0@GHF total energy       =',ENuc + ERHF + EcGM,' au'
+  write(*,'(2X,A60,F15.6,A3)') '   GM@G0W0@GHF correlation energy =',EcGM,' au'
   write(*,*)'-------------------------------------------------------------------------------'
   write(*,*)
 

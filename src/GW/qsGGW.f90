@@ -257,7 +257,7 @@ subroutine qsGGW(dotest,maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,dop
     if(.not.TDA_W) call phLR_B(ispin,dRPA,nBas2,nC,nO,nV,nR,nS,1d0,ERI_MO,Bph)
 
     call phLR(TDA_W,nS,Aph,Bph,EcRPA,Om,XpY,XmY)
-    if(print_W) call print_excitation_energies('phRPA@GGW','spinorbital',nS,Om)
+    if(print_W) call print_excitation_energies('phRPA@GW@GHF','spinorbital',nS,Om)
 
 !   Compute correlation part of the self-energy 
 
@@ -388,8 +388,8 @@ subroutine qsGGW(dotest,maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,dop
 
     write(*,*)
     write(*,*)'-------------------------------------------------------------------------------'
-    write(*,'(2X,A50,F20.10,A3)') 'Tr@BSE@qsGW correlation energy           =',EcBSE,' au'
-    write(*,'(2X,A50,F20.10,A4)') 'Tr@BSE@qsGW total energy                 =',ENuc + EqsGW + EcBSE,' au'
+    write(*,'(2X,A50,F20.10,A3)') 'Tr@BSE@qsGW@GHF correlation energy = ',EcBSE,' au'
+    write(*,'(2X,A50,F20.10,A4)') 'Tr@BSE@qsGW@GHF total       energy = ',ENuc + EqsGW + EcBSE,' au'
     write(*,*)'-------------------------------------------------------------------------------'
     write(*,*)
 

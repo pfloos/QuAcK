@@ -64,16 +64,16 @@ subroutine print_qsUGW(nBas,nO,nSCF,Conv,thresh,eHF,eGW,c,Ov,ENuc,ET,EV,EJ,Ex,Ec
   write(*,*)'----------------------------------------------------------------'// &
             '----------------------------------------------------------------'
   if(nSCF < 10) then
-    write(*,'(1X,A22,I1,A1,I1,A12)')'  Self-consistent qsUG',nSCF,'W',nSCF,' calculation'
+    write(*,'(1X,A20,I1,A1,I1,A16)')' Self-consistent qsG',nSCF,'W',nSCF,'@UHF calculation'
   elseif(nSCF < 100) then
-    write(*,'(1X,A22,I2,A1,I2,A12)')'  Self-consistent qsUG',nSCF,'W',nSCF,' calculation'
+    write(*,'(1X,A20,I2,A1,I2,A16)')' Self-consistent qsG',nSCF,'W',nSCF,'@UHF calculation'
   else
-    write(*,'(1X,A22,I3,A1,I3,A12)')'  Self-consistent qsUG',nSCF,'W',nSCF,' calculation'
+    write(*,'(1X,A20,I3,A1,I3,A16)')' Self-consistent qsG',nSCF,'W',nSCF,'@UHF calculation'
   end if
   write(*,*)'----------------------------------------------------------------'// &
             '----------------------------------------------------------------'
   write(*,'(A1,A3,A1,A30,A1,A30,A1,A30,A1,A30,A1)') &
-            '|',' ','|','e_HF            ','|','Sig_GW           ','|','Z            ','|','e_GW            ','|'
+            '|',' ','|','e_HF (eV)         ','|','Sig_GW (eV)        ','|','Z             ','|','e_GW (eV)         ','|'
   write(*,'(A1,A3,A1,2A15,A1,2A15,A1,2A15,A1,2A15,A1)') &
             '|','#','|','up     ','dw     ','|','up     ','dw     ','|','up     ','dw     ','|','up     ','dw     ','|'
   write(*,*)'----------------------------------------------------------------'// &
@@ -91,15 +91,15 @@ subroutine print_qsUGW(nBas,nO,nSCF,Conv,thresh,eHF,eGW,c,Ov,ENuc,ET,EV,EJ,Ex,Ec
   write(*,'(2X,A14,F15.5)')'Convergence = ',Conv
   write(*,*)'----------------------------------------------------------------'// &
             '----------------------------------------------------------------'
-  write(*,'(2X,A30,F15.6,A3)') 'qsUGW HOMO      energy = ',maxval(HOMO(:))*HaToeV,' eV'
-  write(*,'(2X,A30,F15.6,A3)') 'qsUGW LUMO      energy = ',minval(LUMO(:))*HaToeV,' eV'
-  write(*,'(2X,A30,F15.6,A3)') 'qsUGW HOMO-LUMO gap    = ',(minval(LUMO(:))-maxval(HOMO(:)))*HaToeV,' eV'
+  write(*,'(2X,A60,F15.6,A3)') 'qsGW@UHF HOMO      energy = ',maxval(HOMO)*HaToeV,' eV'
+  write(*,'(2X,A60,F15.6,A3)') 'qsGW@UHF LUMO      energy = ',minval(LUMO)*HaToeV,' eV'
+  write(*,'(2X,A60,F15.6,A3)') 'qsGW@UHF HOMO-LUMO gap    = ',(minval(LUMO)-maxval(HOMO))*HaToeV,' eV'
   write(*,*)'----------------------------------------------------------------'// &
             '----------------------------------------------------------------'
-  write(*,'(2X,A30,F15.6,A3)') '    qsUGW total       energy = ',ENuc + EqsGW,' au'
-  write(*,'(2X,A30,F15.6,A3)') '    qsUGW exchange    energy = ',sum(Ex(:)),' au'
-  write(*,'(2X,A30,F15.6,A3)') ' GM@qsUGW correlation energy = ',sum(EcGM(:)),' au'
-  write(*,'(2X,A30,F15.6,A3)') 'RPA@qsUGW correlation energy = ',EcRPA,' au'
+  write(*,'(2X,A60,F15.6,A3)') '    qsGW@UHF total       energy = ',ENuc + EqsGW,' au'
+  write(*,'(2X,A60,F15.6,A3)') '    qsGW@UHF exchange    energy = ',sum(Ex),' au'
+  write(*,'(2X,A60,F15.6,A3)') ' GM@qsGW@UHF correlation energy = ',sum(EcGM),' au'
+  write(*,'(2X,A60,F15.6,A3)') 'RPA@qsGW@UHF correlation energy = ',EcRPA,' au'
   write(*,*)'----------------------------------------------------------------'// &
             '----------------------------------------------------------------'
   write(*,*)
@@ -112,33 +112,33 @@ subroutine print_qsUGW(nBas,nO,nSCF,Conv,thresh,eHF,eGW,c,Ov,ENuc,ET,EV,EJ,Ex,Ec
     write(*,'(A60)')              '-------------------------------------------------'
     write(*,'(A40)')              ' Summary              '
     write(*,'(A60)')              '-------------------------------------------------'
-    write(*,'(A40,1X,F16.10,A3)') ' One-electron    energy = ',sum(ET(:))  + sum(EV(:)),' au'
+    write(*,'(A40,1X,F16.10,A3)') ' One-electron    energy = ',sum(ET)  + sum(EV),' au'
     write(*,'(A40,1X,F16.10,A3)') ' One-electron a  energy = ',ET(1) + EV(1),' au'
     write(*,'(A40,1X,F16.10,A3)') ' One-electron b  energy = ',ET(2) + EV(2),' au'
     write(*,*)
-    write(*,'(A40,1X,F16.10,A3)') ' Kinetic         energy = ',sum(ET(:)),' au'
+    write(*,'(A40,1X,F16.10,A3)') ' Kinetic         energy = ',sum(ET),' au'
     write(*,'(A40,1X,F16.10,A3)') ' Kinetic      a  energy = ',ET(1),' au'
     write(*,'(A40,1X,F16.10,A3)') ' Kinetic      b  energy = ',ET(2),' au'
     write(*,*)
-    write(*,'(A40,1X,F16.10,A3)') ' Potential       energy = ',sum(EV(:)),' au'
+    write(*,'(A40,1X,F16.10,A3)') ' Potential       energy = ',sum(EV),' au'
     write(*,'(A40,1X,F16.10,A3)') ' Potential    a  energy = ',EV(1),' au'
     write(*,'(A40,1X,F16.10,A3)') ' Potential    b  energy = ',EV(2),' au'
     write(*,'(A60)')              '-------------------------------------------------'
-    write(*,'(A40,1X,F16.10,A3)') ' Two-electron    energy = ',sum(EJ(:)) + sum(Ex(:)),' au'
+    write(*,'(A40,1X,F16.10,A3)') ' Two-electron    energy = ',sum(EJ) + sum(Ex),' au'
     write(*,'(A40,1X,F16.10,A3)') ' Two-electron aa energy = ',EJ(1) + Ex(1),' au'
     write(*,'(A40,1X,F16.10,A3)') ' Two-electron ab energy = ',EJ(2),' au'
     write(*,'(A40,1X,F16.10,A3)') ' Two-electron bb energy = ',EJ(3) + Ex(2),' au'
     write(*,*)
-    write(*,'(A40,1X,F16.10,A3)') ' Hartree         energy = ',sum(EJ(:)),' au'
+    write(*,'(A40,1X,F16.10,A3)') ' Hartree         energy = ',sum(EJ),' au'
     write(*,'(A40,1X,F16.10,A3)') ' Hartree      aa energy = ',EJ(1),' au'
     write(*,'(A40,1X,F16.10,A3)') ' Hartree      ab energy = ',EJ(2),' au'
     write(*,'(A40,1X,F16.10,A3)') ' Hartree      bb energy = ',EJ(3),' au'
     write(*,*)
-    write(*,'(A40,1X,F16.10,A3)') ' Exchange        energy = ',sum(Ex(:)),' au'
+    write(*,'(A40,1X,F16.10,A3)') ' Exchange        energy = ',sum(Ex),' au'
     write(*,'(A40,1X,F16.10,A3)') ' Exchange     a  energy = ',Ex(1),' au'
     write(*,'(A40,1X,F16.10,A3)') ' Exchange     b  energy = ',Ex(2),' au'
     write(*,*)
-    write(*,'(A40,1X,F16.10,A3)') ' Correlation     energy = ',sum(EcGM(:)),' au'
+    write(*,'(A40,1X,F16.10,A3)') ' Correlation     energy = ',sum(EcGM),' au'
     write(*,'(A40,1X,F16.10,A3)') ' Correlation  aa energy = ',EcGM(1),' au'
     write(*,'(A40,1X,F16.10,A3)') ' Correlation  bb energy = ',EcGM(2),' au'
     write(*,'(A60)')              '-------------------------------------------------'

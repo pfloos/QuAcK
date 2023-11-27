@@ -47,12 +47,12 @@ subroutine print_qsRGW(nBas,nO,nSCF,Conv,thresh,eHF,eGW,c,SigC,Z,ENuc,ET,EV,EJ,E
 ! Dump results
 
   write(*,*)'-------------------------------------------------------------------------------'
-  if(nSCF < 10) then 
-    write(*,'(1X,A22,I1,A1,I1,A12)')'  Self-consistent qsRG',nSCF,'W',nSCF,' calculation'
-  elseif(nSCF < 100) then 
-    write(*,'(1X,A22,I2,A1,I2,A12)')'  Self-consistent qsRG',nSCF,'W',nSCF,' calculation'
+  if(nSCF < 10) then
+    write(*,'(1X,A20,I1,A1,I1,A16)')' Self-consistent qsG',nSCF,'W',nSCF,'@RHF calculation'
+  elseif(nSCF < 100) then
+    write(*,'(1X,A20,I2,A1,I2,A16)')' Self-consistent qsG',nSCF,'W',nSCF,'@RHF calculation'
   else
-    write(*,'(1X,A22,I3,A1,I3,A12)')'  Self-consistent qsRG',nSCF,'W',nSCF,' calculation'
+    write(*,'(1X,A20,I3,A1,I3,A16)')' Self-consistent qsG',nSCF,'W',nSCF,'@RHF calculation'
   end if
   write(*,*)'-------------------------------------------------------------------------------'
   write(*,'(1X,A1,1X,A3,1X,A1,1X,A15,1X,A1,1X,A15,1X,A1,1X,A15,1X,A1,1X,A15,1X,A1,1X)') &
@@ -68,14 +68,14 @@ subroutine print_qsRGW(nBas,nO,nSCF,Conv,thresh,eHF,eGW,c,SigC,Z,ENuc,ET,EV,EJ,E
   write(*,'(2X,A10,I3)')   'Iteration ',nSCF
   write(*,'(2X,A14,F15.5)')'Convergence = ',Conv
   write(*,*)'-------------------------------------------------------------------------------'
-  write(*,'(2X,A60,F15.6,A3)') 'qsRGW HOMO      energy = ',eGW(HOMO)*HaToeV,' eV'
-  write(*,'(2X,A60,F15.6,A3)') 'qsRGW LUMO      energy = ',eGW(LUMO)*HaToeV,' eV'
-  write(*,'(2X,A60,F15.6,A3)') 'qsRGW HOMO-LUMO gap    = ',Gap*HaToeV,' eV'
+  write(*,'(2X,A60,F15.6,A3)') 'qsGW@RHF HOMO      energy = ',eGW(HOMO)*HaToeV,' eV'
+  write(*,'(2X,A60,F15.6,A3)') 'qsGW@RHF LUMO      energy = ',eGW(LUMO)*HaToeV,' eV'
+  write(*,'(2X,A60,F15.6,A3)') 'qsGW@RHF HOMO-LUMO gap    = ',Gap*HaToeV,' eV'
   write(*,*)'-------------------------------------------------------------------------------'
-  write(*,'(2X,A60,F15.6,A3)') '      qsRGW total       energy = ',ENuc + EqsGW,' au'
-  write(*,'(2X,A60,F15.6,A3)') '      qsRGW exchange    energy = ',EK,' au'
-  write(*,'(2X,A60,F15.6,A3)') '   GM@qsRGW correlation energy = ',EcGM,' au'
-  write(*,'(2X,A60,F15.6,A3)') 'phRPA@qsRGW correlation energy = ',EcRPA,' au'
+  write(*,'(2X,A60,F15.6,A3)') '      qsGW@RHF total       energy = ',ENuc + EqsGW,' au'
+  write(*,'(2X,A60,F15.6,A3)') '      qsGW@RHF exchange    energy = ',EK,' au'
+  write(*,'(2X,A60,F15.6,A3)') '   GM@qsGW@RHF correlation energy = ',EcGM,' au'
+  write(*,'(2X,A60,F15.6,A3)') 'phRPA@qsGW@RHF correlation energy = ',EcRPA,' au'
   write(*,*)'-------------------------------------------------------------------------------'
   write(*,*)
 

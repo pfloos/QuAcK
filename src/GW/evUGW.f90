@@ -56,10 +56,9 @@ subroutine evUGW(dotest,maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,BSE
   integer                       :: n_diis
   double precision              :: rcond(nspin)
   double precision              :: Conv
-  double precision              :: EcRPA
+  double precision              :: EcRPA(nspin)
   double precision              :: EcGM(nspin)
   double precision              :: EcBSE(nspin)
-  double precision              :: EcAC(nspin)
   double precision              :: alpha
   double precision,allocatable  :: error_diis(:,:,:)
   double precision,allocatable  :: e_diis(:,:,:)
@@ -100,7 +99,7 @@ subroutine evUGW(dotest,maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,BSE
 
 ! Initialization
 
-  EcRPA = 0d0
+  EcRPA(:) = 0d0
   dRPA = .true.
 
 ! Linear mixing
@@ -142,7 +141,7 @@ subroutine evUGW(dotest,maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,BSE
     call phULR_A(ispin,dRPA,nBas,nC,nO,nV,nR,nSa,nSb,nSt,1d0,eGW,ERI_aaaa,ERI_aabb,ERI_bbbb,Aph)
     if(.not.TDA) call phULR_B(ispin,dRPA,nBas,nC,nO,nV,nR,nSa,nSb,nSt,1d0,ERI_aaaa,ERI_aabb,ERI_bbbb,Bph)
     
-    call phULR(TDA_W,nSa,nSb,nSt,Aph,Bph,EcRPA,Om,XpY,XmY)
+    call phULR(TDA_W,nSa,nSb,nSt,Aph,Bph,EcRPA(ispin),Om,XpY,XmY)
 
     !----------------------!
     ! Excitation densities !
@@ -196,7 +195,7 @@ subroutine evUGW(dotest,maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,BSE
 
     ! Print results
 
-    call print_evUGW(nBas,nO,nSCF,Conv,eHF,ENuc,EUHF,SigC,Z,eGW,EcRPA,EcGM)
+    call print_evUGW(nBas,nO,nSCF,Conv,eHF,ENuc,EUHF,SigC,Z,eGW,EcRPA(ispin),EcGM)
 
     ! Linear mixing or DIIS extrapolation
 
@@ -269,10 +268,10 @@ subroutine evUGW(dotest,maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,BSE
 
     write(*,*)
     write(*,*)'-------------------------------------------------------------------------------'
-    write(*,'(2X,A50,F20.10)') 'Tr@BSE@evUGW correlation energy (spin-conserved) =',EcBSE(1)
-    write(*,'(2X,A50,F20.10)') 'Tr@BSE@evUGW correlation energy (spin-flip)      =',EcBSE(2)
-    write(*,'(2X,A50,F20.10)') 'Tr@BSE@evUGW correlation energy                  =',EcBSE(1) + EcBSE(2)
-    write(*,'(2X,A50,F20.10)') 'Tr@BSE@evUGW total energy                        =',ENuc + EUHF + EcBSE(1) + EcBSE(2)
+    write(*,'(2X,A50,F20.10,A3)') 'Tr@BSE@evGW@UHF correlation energy (spin-conserved) =',EcBSE(1),' au'
+    write(*,'(2X,A50,F20.10,A3)') 'Tr@BSE@evGW@UHF correlation energy (spin-flip)      =',EcBSE(2),' au'
+    write(*,'(2X,A50,F20.10,A3)') 'Tr@BSE@evGW@UHF correlation energy                  =',sum(EcBSE),' au'
+    write(*,'(2X,A50,F20.10,A3)') 'Tr@BSE@evGW@UHF total energy                        =',ENuc + EUHF + sum(EcBSE),' au'
     write(*,*)'-------------------------------------------------------------------------------'
     write(*,*)
 
@@ -293,14 +292,14 @@ subroutine evUGW(dotest,maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,BSE
       end if
 
       call UGW_phACFDT(exchange_kernel,doXBS,.true.,TDA_W,TDA,BSE,spin_conserved,spin_flip, &
-                       eta,nBas,nC,nO,nV,nR,nS,ERI_aaaa,ERI_aabb,ERI_bbbb,eGW,eGW,EcAC)
+                       eta,nBas,nC,nO,nV,nR,nS,ERI_aaaa,ERI_aabb,ERI_bbbb,eGW,eGW,EcRPA)
 
       write(*,*)
       write(*,*)'-------------------------------------------------------------------------------'
-      write(*,'(2X,A50,F20.10)') 'AC@BSE@evUGW correlation energy (spin-conserved) =',EcAC(1)
-      write(*,'(2X,A50,F20.10)') 'AC@BSE@evUGW correlation energy (spin-flip)      =',EcAC(2)
-      write(*,'(2X,A50,F20.10)') 'AC@BSE@evUGW correlation energy                  =',EcAC(1) + EcAC(2)
-      write(*,'(2X,A50,F20.10)') 'AC@BSE@evUGW total energy                        =',ENuc + EUHF + EcAC(1) + EcAC(2)
+      write(*,'(2X,A50,F20.10,A3)') 'AC@BSE@evGW@UHF correlation energy (spin-conserved) =',EcRPA(1),' au'
+      write(*,'(2X,A50,F20.10,A3)') 'AC@BSE@evGW@UHF correlation energy (spin-flip)      =',EcRPA(2),' au'
+      write(*,'(2X,A50,F20.10,A3)') 'AC@BSE@evGW@UHF correlation energy                  =',sum(EcRPA),' au'
+      write(*,'(2X,A50,F20.10,A3)') 'AC@BSE@evGW@UHF total energy                        =',ENuc + EUHF + sum(EcRPA),' au'
       write(*,*)'-------------------------------------------------------------------------------'
       write(*,*)
 

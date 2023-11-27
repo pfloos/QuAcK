@@ -170,8 +170,8 @@ subroutine GG0W0(dotest,doACFDT,exchange_kernel,doXBS,dophBSE,dophBSE2,TDA_W,TDA
 
     write(*,*)
     write(*,*)'-------------------------------------------------------------------------------'
-    write(*,'(2X,A50,F20.10,A3)') 'Tr@BSE@G0W0 correlation energy           =',EcBSE,' au'
-    write(*,'(2X,A50,F20.10,A3)') 'Tr@BSE@G0W0 total energy                 =',ENuc + ERHF + EcBSE,' au'
+    write(*,'(2X,A50,F20.10,A3)') 'Tr@BSE@G0W0@GHF correlation energy = ',EcBSE,' au'
+    write(*,'(2X,A50,F20.10,A3)') 'Tr@BSE@G0W0@GHF total energy       = ',ENuc + ERHF + EcBSE,' au'
     write(*,*)'-------------------------------------------------------------------------------'
     write(*,*)
 

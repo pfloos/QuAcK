@@ -104,10 +104,10 @@ subroutine phRRPA(dotest,TDA,doACFDT,exchange_kernel,singlet,triplet,nBas,nC,nO,
 
   write(*,*)
   write(*,*)'-------------------------------------------------------------------------------'
-  write(*,'(2X,A50,F20.10,A3)') 'Tr@phRRPA correlation energy (singlet) = ',EcRPA(1),' au'
-  write(*,'(2X,A50,F20.10,A3)') 'Tr@phRRPA correlation energy (triplet) = ',EcRPA(2),' au'
-  write(*,'(2X,A50,F20.10,A3)') 'Tr@phRRPA correlation energy           = ',sum(EcRPA),' au'
-  write(*,'(2X,A50,F20.10,A3)') 'Tr@phRRPA total energy                 = ',ENuc + ERHF + sum(EcRPA),' au'
+  write(*,'(2X,A50,F20.10,A3)') 'Tr@phRPA@RHF correlation energy (singlet) = ',EcRPA(1),' au'
+  write(*,'(2X,A50,F20.10,A3)') 'Tr@phRPA@RHF correlation energy (triplet) = ',EcRPA(2),' au'
+  write(*,'(2X,A50,F20.10,A3)') 'Tr@phRPA@RHF correlation energy           = ',sum(EcRPA),' au'
+  write(*,'(2X,A50,F20.10,A3)') 'Tr@phRPA@RHF total energy                 = ',ENuc + ERHF + sum(EcRPA),' au'
   write(*,*)'-------------------------------------------------------------------------------'
   write(*,*)
 
@@ -126,10 +126,10 @@ subroutine phRRPA(dotest,TDA,doACFDT,exchange_kernel,singlet,triplet,nBas,nC,nO,
 
     write(*,*)
     write(*,*)'-------------------------------------------------------------------------------'
-    write(*,'(2X,A50,F20.10,A3)') 'AC@phRRPA correlation energy (singlet) = ',EcRPA(1),' au'
-    write(*,'(2X,A50,F20.10,A3)') 'AC@phRRPA correlation energy (triplet) = ',EcRPA(2),' au'
-    write(*,'(2X,A50,F20.10,A3)') 'AC@phRRPA correlation energy           = ',sum(EcRPA),' au'
-    write(*,'(2X,A50,F20.10,A3)') 'AC@phRRPA total energy                 = ',ENuc + ERHF + sum(EcRPA),' au'
+    write(*,'(2X,A50,F20.10,A3)') 'AC@phRPA@RHF correlation energy (singlet) = ',EcRPA(1),' au'
+    write(*,'(2X,A50,F20.10,A3)') 'AC@phRPA@RHF correlation energy (triplet) = ',EcRPA(2),' au'
+    write(*,'(2X,A50,F20.10,A3)') 'AC@phRPA@RHF correlation energy           = ',sum(EcRPA),' au'
+    write(*,'(2X,A50,F20.10,A3)') 'AC@phRPA@RHF total energy                 = ',ENuc + ERHF + sum(EcRPA),' au'
     write(*,*)'-------------------------------------------------------------------------------'
     write(*,*)
 

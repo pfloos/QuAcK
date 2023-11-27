@@ -42,17 +42,17 @@ subroutine print_evUGW(nBas,nO,nSCF,Conv,eHF,ENuc,EUHF,SigC,Z,eGW,EcRPA,EcGM)
 
   write(*,*)'----------------------------------------------------------------'// &
             '----------------------------------------------------------------'
-  if(nSCF < 10) then 
-    write(*,'(1X,A22,I1,A1,I1,A12)')'  Self-consistent evUG',nSCF,'W',nSCF,' calculation'
-  elseif(nSCF < 100) then 
-    write(*,'(1X,A22,I2,A1,I2,A12)')'  Self-consistent evUG',nSCF,'W',nSCF,' calculation'
+  if(nSCF < 10) then
+    write(*,'(1X,A20,I1,A1,I1,A16)')' Self-consistent evG',nSCF,'W',nSCF,'@UHF calculation'
+  elseif(nSCF < 100) then
+    write(*,'(1X,A20,I2,A1,I2,A16)')' Self-consistent evG',nSCF,'W',nSCF,'@UHF calculation'
   else
-    write(*,'(1X,A22,I3,A1,I3,A12)')'  Self-consistent evUG',nSCF,'W',nSCF,' calculation'
+    write(*,'(1X,A20,I3,A1,I3,A16)')' Self-consistent evG',nSCF,'W',nSCF,'@UHF calculation'
   end if
   write(*,*)'----------------------------------------------------------------'// &
             '----------------------------------------------------------------'
   write(*,'(A1,A3,A1,A30,A1,A30,A1,A30,A1,A30,A1)') &
-            '|',' ','|','e_HF            ','|','Sig_GW           ','|','Z            ','|','e_GW            ','|'
+            '|',' ','|','e_HF (eV)         ','|','Sig_GW (eV)        ','|','Z             ','|','e_GW (eV)         ','|'
   write(*,'(A1,A3,A1,2A15,A1,2A15,A1,2A15,A1,2A15,A1)') &
             '|','#','|','up     ','dw     ','|','up     ','dw     ','|','up     ','dw     ','|','up     ','dw     ','|'
   write(*,*)'----------------------------------------------------------------'// &
@@ -70,15 +70,15 @@ subroutine print_evUGW(nBas,nO,nSCF,Conv,eHF,ENuc,EUHF,SigC,Z,eGW,EcRPA,EcGM)
   write(*,'(2X,A14,F15.5)')'Convergence = ',Conv
   write(*,*)'----------------------------------------------------------------'// &
             '----------------------------------------------------------------'
-  write(*,'(2X,A30,F15.6,A3)') 'evUGW HOMO      energy = ',maxval(HOMO(:))*HaToeV,' eV'
-  write(*,'(2X,A30,F15.6,A3)') 'evUGW LUMO      energy = ',minval(LUMO(:))*HaToeV,' eV'
-  write(*,'(2X,A30,F15.6,A3)') 'evUGW HOMO-LUMO gap    = ',(minval(LUMO(:))-maxval(HOMO(:)))*HaToeV,' eV'
+  write(*,'(2X,A60,F15.6,A3)') 'evGW@UHF HOMO      energy = ',maxval(HOMO)*HaToeV,' eV'
+  write(*,'(2X,A60,F15.6,A3)') 'evGW@UHF LUMO      energy = ',minval(LUMO)*HaToeV,' eV'
+  write(*,'(2X,A60,F15.6,A3)') 'evGW@UHF HOMO-LUMO gap    = ',(minval(LUMO)-maxval(HOMO))*HaToeV,' eV'
   write(*,*)'----------------------------------------------------------------'// &
             '----------------------------------------------------------------'
-  write(*,'(2X,A30,F15.6,A3)') 'RPA@evUGW total energy       = ',ENuc + EUHF + EcRPA,' au'
-  write(*,'(2X,A30,F15.6,A3)') 'RPA@evUGW correlation energy = ',EcRPA,' au'
-  write(*,'(2X,A30,F15.6,A3)') ' GM@evUGW total energy       = ',ENuc + EUHF + sum(EcGM(:)),' au'
-  write(*,'(2X,A30,F15.6,A3)') ' GM@evUGW correlation energy = ',sum(EcGM(:)),' au'
+  write(*,'(2X,A60,F15.6,A3)') 'RPA@evG@UHFW total energy       = ',ENuc + EUHF + EcRPA,' au'
+  write(*,'(2X,A60,F15.6,A3)') 'RPA@evG@UHFW correlation energy = ',EcRPA,' au'
+  write(*,'(2X,A60,F15.6,A3)') ' GM@evG@UHFW total energy       = ',ENuc + EUHF + sum(EcGM),' au'
+  write(*,'(2X,A60,F15.6,A3)') ' GM@evG@UHFW correlation energy = ',sum(EcGM),' au'
   write(*,*)'----------------------------------------------------------------'// &
             '----------------------------------------------------------------'
   write(*,*)
