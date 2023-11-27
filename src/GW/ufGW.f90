@@ -218,34 +218,34 @@ subroutine ufGW(dotest,TDA_W,nBas,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,eHF)
 
   else
 
-     ! RPA for W
+    ! RPA for W
 
-     write(*,*) 'Tamm-Dancoff approximation deactivated!'
-     write(*,*)
+    write(*,*) 'Tamm-Dancoff approximation deactivated!'
+    write(*,*)
 
-     !---------------------------!
-     !  Compute GW supermatrix   !
-     !---------------------------!
-     !                           !
-     !     |   F   W2h1p W2p1h | ! 
-     !     |                   | ! 
-     ! H = | W2h1p D2h1p     0 | ! 
-     !     |                   | ! 
-     !     | W2p1h   0   D2p1h | ! 
-     !                           !
-     !---------------------------!
+    !---------------------------!
+    !  Compute GW supermatrix   !
+    !---------------------------!
+    !                           !
+    !     |   F   W2h1p W2p1h | ! 
+    !     |                   | ! 
+    ! H = | W2h1p D2h1p     0 | ! 
+    !     |                   | ! 
+    !     | W2p1h   0   D2p1h | ! 
+    !                           !
+    !---------------------------!
 
-     ! Memory allocation 
+    ! Memory allocation 
 
-     allocate(Om(nS),Aph(nS,nS),Bph(nS,nS),XpY(nS,nS),XmY(nS,nS),rho(nBas,nBas,nS))
+    allocate(Om(nS),Aph(nS,nS),Bph(nS,nS),XpY(nS,nS),XmY(nS,nS),rho(nBas,nBas,nS))
 
-     ! Spin manifold 
+    ! Spin manifold 
 
-     ispin = 1
+    ispin = 1
 
-     !-------------------!
-     ! Compute screening !
-     !-------------------!
+    !-------------------!
+    ! Compute screening !
+    !-------------------!
 
                    call phLR_A(ispin,dRPA,nBas,nC,nO,nV,nR,nS,1d0,eHF,ERI,Aph)
     if(.not.TDA_W) call phLR_B(ispin,dRPA,nBas,nC,nO,nV,nR,nS,1d0,ERI,Bph)
@@ -334,6 +334,10 @@ subroutine ufGW(dotest,TDA_W,nBas,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,eHF)
       end do
     end do
 
+    ! Memory deallocation 
+
+    deallocate(Om,Aph,Bph,XpY,XmY,rho)
+
     call wall_time(end_timing)
 
     timing = end_timing - start_timing
@@ -392,30 +396,33 @@ subroutine ufGW(dotest,TDA_W,nBas,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,eHF)
   write(*,*)
 
   if(verbose) then 
-
-    do s=1,nH
-
-      if(eGW(s) < eF .and. eGW(s) > eF - window) then
-!     if(Z(s) > cutoff1) then
-
-        write(*,*)'-------------------------------------------------------------'
-        write(*,'(1X,A7,1X,I3,A6,I3,A1,1X,A7,F12.6,A13,F6.4,1X)') & 
-         'Orbital',p,' and #',s,':','e_QP = ',eGW(s)*HaToeV,' eV and Z = ',Z(s)
-        write(*,*)'-------------------------------------------------------------'
-        write(*,'(1X,A20,1X,A20,1X,A15,1X)') &
-                  ' Configuration ',' Coefficient ',' Weight ' 
-        write(*,*)'-------------------------------------------------------------'
-       
-        if(p <= nO) & 
-          write(*,'(1X,A7,I3,A16,1X,F15.6,1X,F15.6)') &
-          '      (',p,')               ',H(1,s),H(1,s)**2
-        if(p > nO) & 
-          write(*,'(1X,A16,I3,A7,1X,F15.6,1X,F15.6)') &
-          '               (',p,')      ',H(1,s),H(1,s)**2
   
-        if(TDA_W) then  
+    if(TDA_W) then  
 
-          ! TDA printing format
+      ! TDA printing format
+
+      do s=1,nH
+ 
+        if(eGW(s) < eF .and. eGW(s) > eF - window) then
+ 
+          write(*,*)'-------------------------------------------------------------'
+          write(*,'(1X,A12,1X,I3,A1,1X,A7,F12.6,A13,F6.4,1X)') & 
+           'Eigenvalue #',s,':','e_QP = ',eGW(s)*HaToeV,' eV and Z = ',Z(s)
+          write(*,*)'-------------------------------------------------------------'
+          write(*,'(1X,A20,1X,A20,1X,A15,1X)') &
+                    ' Configuration ',' Coefficient ',' Weight ' 
+          write(*,*)'-------------------------------------------------------------'
+         
+          do p=nC+1,nO 
+            if(abs(H(p,s)) > cutoff2)                   &
+            write(*,'(1X,A7,I3,A16,1X,F15.6,1X,F15.6)') &
+            '      (',p,')               ',H(p,s),H(p,s)**2
+          end do
+          do p=nO+1,nBas-nR
+            if(abs(H(p,s)) > cutoff2)                 &
+          write(*,'(1X,A16,I3,A7,1X,F15.6,1X,F15.6)') &
+          '               (',p,')      ',H(p,s),H(p,s)**2
+          end do
 
           ija = 0
           do i=nC+1,nO
@@ -445,16 +452,46 @@ subroutine ufGW(dotest,TDA_W,nBas,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,eHF)
             end do
           end do
 
-        else 
+          write(*,*)'-------------------------------------------------------------'
+          write(*,*)
+
+        end if
+
+      end do
+
+    else 
  
-          ! non-TDA printing format
+      ! non-TDA printing format
+
+      do s=1,nH
+
+        if(eGW(s) < eF .and. eGW(s) > eF - window) then
+
+          write(*,*)'-------------------------------------------------------------'
+          write(*,'(1X,A12,1X,I3,A1,1X,A7,F12.6,A13,F6.4,1X)') & 
+           'Eigenvalue #',s,':','e_QP = ',eGW(s)*HaToeV,' eV and Z = ',Z(s)
+          write(*,*)'-------------------------------------------------------------'
+          write(*,'(1X,A20,1X,A20,1X,A15,1X)') &
+                    ' Conf. (p,ia)  ',' Coefficient ',' Weight ' 
+          write(*,*)'-------------------------------------------------------------'
+        
+          do p=nC+1,nO 
+            if(abs(H(p,s)) > cutoff2)                     &
+              write(*,'(1X,A7,I3,A16,1X,F15.6,1X,F15.6)') &
+              '      (',p,'    )           ',H(p,s),H(p,s)**2
+          end do
+          do p=nO+1,nBas-nR
+            if(abs(H(p,s)) > cutoff2)                     &
+              write(*,'(1X,A7,I3,A16,1X,F15.6,1X,F15.6)') &
+              '      (',p,'    )           ',H(p,s),H(p,s)**2
+          end do
 
           ija = 0
           do i=nC+1,nO
             do ja=1,nS
               ija = ija + 1
  
-              if(abs(H(nBas+ija,s)) > cutoff2)                     &
+              if(abs(H(nBas+ija,s)) > cutoff2)                  &
               write(*,'(1X,A7,I3,A1,I3,A12,1X,F15.6,1X,F15.6)') &
               '      (',i,',',ja,')           ',H(nBas+ija,s),H(nBas+ija,s)**2
          
@@ -466,21 +503,21 @@ subroutine ufGW(dotest,TDA_W,nBas,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,eHF)
             do b=nO+1,nBas-nR
               iab = iab + 1
 
-                if(abs(H(nBas+n2h1p+iab,s)) > cutoff2)                 &
+                if(abs(H(nBas+n2h1p+iab,s)) > cutoff2)              &
                   write(*,'(1X,A7,I3,A1,I3,A12,1X,F15.6,1X,F15.6)') &
                   '      (',ia,',',b,')           ',H(nBas+n2h1p+iab,s),H(nBas+n2h1p+iab,s)**2
                 
             end do
           end do
 
+          write(*,*)'-------------------------------------------------------------'
+          write(*,*)
+
         end if
 
-        write(*,*)'-------------------------------------------------------------'
-        write(*,*)
+      end do
 
-      end if
-
-    end do
+    end if
 
   end if
 

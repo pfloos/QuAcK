@@ -73,10 +73,6 @@ subroutine ufG0W0(dotest,TDA_W,nBas,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,eHF)
 
   allocate(H(nH,nH),eGW(nH),Z(nH))
   
-  if (not(TDA_W)) then
-    allocate(Om(nS),Aph(nS,nS),Bph(nS,nS),XpY(nS,nS),XmY(nS,nS),rho(nBas,nBas,nS))
-  end if
-  
 ! Initialization
 
   dRPA = .true.
@@ -238,6 +234,10 @@ subroutine ufG0W0(dotest,TDA_W,nBas,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,eHF)
       ! Spin manifold 
  
       ispin = 1
+
+      ! Memory allocation
+
+      allocate(Om(nS),Aph(nS,nS),Bph(nS,nS),XpY(nS,nS),XmY(nS,nS),rho(nBas,nBas,nS))
  
       !-------------------!
       ! Compute screening !
@@ -320,6 +320,10 @@ subroutine ufG0W0(dotest,TDA_W,nBas,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,eHF)
         end do
       end do
        
+      ! Memory deallocation
+
+      deallocate(Om,Aph,Bph,XpY,XmY,rho)
+
       call wall_time(end_timing)
  
       timing = end_timing - start_timing
@@ -376,30 +380,29 @@ subroutine ufG0W0(dotest,TDA_W,nBas,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,eHF)
  
     if(verbose) then 
  
-      do s=1,nH
+      if(TDA_W) then  
  
-        if(eGW(s) < eF .and. eGW(s) > eF - window) then
-!       if(Z(s) > cutoff1) then
+        ! TDA printing format
  
-          write(*,*)'-------------------------------------------------------------'
-          write(*,'(1X,A7,1X,I3,A6,I3,A1,1X,A7,F12.6,A13,F6.4,1X)') & 
-           'Orbital',p,' and #',s,':','e_QP = ',eGW(s)*HaToeV,' eV and Z = ',Z(s)
-          write(*,*)'-------------------------------------------------------------'
-          write(*,'(1X,A20,1X,A20,1X,A15,1X)') &
-                    ' Configuration ',' Coefficient ',' Weight ' 
-          write(*,*)'-------------------------------------------------------------'
-         
-          if(p <= nO) & 
-            write(*,'(1X,A7,I3,A16,1X,F15.6,1X,F15.6)') &
-            '      (',p,')               ',H(1,s),H(1,s)**2
-          if(p > nO) & 
-            write(*,'(1X,A16,I3,A7,1X,F15.6,1X,F15.6)') &
-            '               (',p,')      ',H(1,s),H(1,s)**2
+        do s=1,nH
+       
+          if(eGW(s) < eF .and. eGW(s) > eF - window) then
+       
+            write(*,*)'-------------------------------------------------------------'
+            write(*,'(1X,A7,1X,I3,A6,I3,A1,1X,A7,F12.6,A13,F6.4,1X)') & 
+             'Orbital',p,' and #',s,':','e_QP = ',eGW(s)*HaToeV,' eV and Z = ',Z(s)
+            write(*,*)'-------------------------------------------------------------'
+            write(*,'(1X,A20,1X,A20,1X,A15,1X)') &
+                      ' Configuration ',' Coefficient ',' Weight ' 
+            write(*,*)'-------------------------------------------------------------'
+           
+            if(p <= nO) & 
+              write(*,'(1X,A7,I3,A16,1X,F15.6,1X,F15.6)') &
+              '      (',p,')               ',H(1,s),H(1,s)**2
+            if(p > nO) & 
+              write(*,'(1X,A16,I3,A7,1X,F15.6,1X,F15.6)') &
+              '               (',p,')      ',H(1,s),H(1,s)**2
     
-          if(TDA_W) then  
- 
-            ! TDA printing format
- 
             ija = 0
             do i=nC+1,nO
               do j=nC+1,nO
@@ -427,11 +430,37 @@ subroutine ufG0W0(dotest,TDA_W,nBas,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,eHF)
                 end do
               end do
             end do
+
+            write(*,*)'-------------------------------------------------------------'
+            write(*,*)
+
+          end if
+
+        end do
  
-          else 
+      else 
   
-            ! non-TDA printing format
+        ! non-TDA printing format
  
+        do s=1,nH
+        
+          if(eGW(s) < eF .and. eGW(s) > eF - window) then
+        
+            write(*,*)'-------------------------------------------------------------'
+            write(*,'(1X,A7,1X,I3,A6,I3,A1,1X,A7,F12.6,A13,F6.4,1X)') & 
+             'Orbital',p,' and #',s,':','e_QP = ',eGW(s)*HaToeV,' eV and Z = ',Z(s)
+            write(*,*)'-------------------------------------------------------------'
+            write(*,'(1X,A20,1X,A20,1X,A15,1X)') &
+                      ' Conf. (p,ia)  ',' Coefficient ',' Weight ' 
+            write(*,*)'-------------------------------------------------------------'
+           
+            if(p <= nO) & 
+              write(*,'(1X,A7,I3,A16,1X,F15.6,1X,F15.6)') &
+              '      (',p,')               ',H(1,s),H(1,s)**2
+            if(p > nO) & 
+              write(*,'(1X,A16,I3,A7,1X,F15.6,1X,F15.6)') &
+              '               (',p,')      ',H(1,s),H(1,s)**2
+    
             ija = 0
             do i=nC+1,nO
               do ja=1,nS
@@ -456,14 +485,14 @@ subroutine ufG0W0(dotest,TDA_W,nBas,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,eHF)
               end do
             end do
  
+            write(*,*)'-------------------------------------------------------------'
+            write(*,*)
+
           end if
  
-          write(*,*)'-------------------------------------------------------------'
-          write(*,*)
- 
-        end if
- 
-      end do
+        end do
+
+      end if
  
     end if
 
