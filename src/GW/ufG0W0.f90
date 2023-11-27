@@ -80,13 +80,13 @@ subroutine ufG0W0(dotest,TDA_W,nBas,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,eHF)
 
   eF = 0.5d0*(eHF(nO+1) + eHF(nO))
 
-  H(:,:) = 0d0
-
 !-------------------------!
 ! Main loop over orbitals !
 !-------------------------!
 
   do p=nO,nO
+
+    H(:,:) = 0d0
 
     if (TDA_W) then
  
@@ -335,7 +335,6 @@ subroutine ufG0W0(dotest,TDA_W,nBas,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,eHF)
  
     call wall_time(start_timing)
 
-    H(:,:) = H(:,:)
     call diagonalize_matrix(nH,H,eGW)
  
     call wall_time(end_timing)
