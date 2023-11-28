@@ -1,5 +1,6 @@
 subroutine UHF_search(maxSCF,thresh,max_diis,guess_type,mix,level_shift,nNuc,ZNuc,rNuc,ENuc, &
-                      nBas,nC,nO,nV,nR,S,T,V,Hc,ERI_AO,dipole_int_AO,X,EHF,e,c,P)
+                      nBas,nC,nO,nV,nR,S,T,V,Hc,ERI_AO,ERI_aaaa,ERI_aabb,ERI_bbbb,           &
+                      dipole_int_AO,dipole_int_aa,dipole_int_bb,X,EUHF,e,c,P)
 
 ! Search for UHF solutions
 
@@ -28,7 +29,12 @@ subroutine UHF_search(maxSCF,thresh,max_diis,guess_type,mix,level_shift,nNuc,ZNu
   double precision,intent(in)   :: Hc(nBas,nBas)
   double precision,intent(in)   :: X(nBas,nBas)
   double precision,intent(in)   :: ERI_AO(nBas,nBas,nBas,nBas)
+  double precision,intent(inout):: ERI_aaaa(nBas,nBas,nBas,nBas)
+  double precision,intent(inout):: ERI_aabb(nBas,nBas,nBas,nBas)
+  double precision,intent(inout):: ERI_bbbb(nBas,nBas,nBas,nBas)
   double precision,intent(in)   :: dipole_int_AO(nBas,nBas,ncart)
+  double precision,intent(inout):: dipole_int_aa(nBas,nBas,ncart)
+  double precision,intent(inout):: dipole_int_bb(nBas,nBas,ncart)
 
 ! Local variables
 
@@ -38,9 +44,6 @@ subroutine UHF_search(maxSCF,thresh,max_diis,guess_type,mix,level_shift,nNuc,ZNu
 
   logical                       :: unstab
   integer                       :: guess
-  double precision,allocatable  :: ERI_aaaa(:,:,:,:)
-  double precision,allocatable  :: ERI_aabb(:,:,:,:)
-  double precision,allocatable  :: ERI_bbbb(:,:,:,:)
 
   integer                       :: nS(nspin)
 
@@ -56,12 +59,12 @@ subroutine UHF_search(maxSCF,thresh,max_diis,guess_type,mix,level_shift,nNuc,ZNu
   double precision,allocatable  :: R(:,:)
   double precision,allocatable  :: ExpR(:,:)
   
+  integer                       :: ixyz
   integer                       :: eig
-  double precision              :: kick,step
 
 ! Output variables
 
-  double precision,intent(out)  :: EHF
+  double precision,intent(out)  :: EUHF
   double precision,intent(out)  :: e(nBas,nspin)
   double precision,intent(inout):: c(nBas,nBas,nspin)
   double precision,intent(out)  :: P(nBas,nBas,nspin)
@@ -84,7 +87,6 @@ subroutine UHF_search(maxSCF,thresh,max_diis,guess_type,mix,level_shift,nNuc,ZNu
   nS_bb = nS(2)
   nS_sc = nS_aa + nS_bb
 
-  allocate(ERI_aaaa(nBas,nBas,nBas,nBas),ERI_aabb(nBas,nBas,nBas,nBas),ERI_bbbb(nBas,nBas,nBas,nBas))
   allocate(Om_sc(nS_sc),A_sc(nS_sc,nS_sc),B_sc(nS_sc,nS_sc),AB_sc(nS_sc,nS_sc),R(nBas,nBas),ExpR(nBas,nBas))
 
 !------------------!
@@ -103,7 +105,7 @@ subroutine UHF_search(maxSCF,thresh,max_diis,guess_type,mix,level_shift,nNuc,ZNu
 
     call wall_time(start_HF)
     call UHF(.false.,maxSCF,thresh,max_diis,guess,mix,level_shift,nNuc,ZNuc,rNuc,ENuc, &
-             nBas,nO,S,T,V,Hc,ERI_AO,dipole_int_AO,X,EHF,e,c,P)
+             nBas,nO,S,T,V,Hc,ERI_AO,dipole_int_AO,X,EUHF,e,c,P)
     call wall_time(end_HF)
 
     t_HF = end_HF - start_HF
@@ -118,6 +120,13 @@ subroutine UHF_search(maxSCF,thresh,max_diis,guess_type,mix,level_shift,nNuc,ZNu
     write(*,*)
     write(*,*) 'AO to MO transformation... Please be patient'
     write(*,*)
+
+  ! Transform dipole-related integrals
+
+    do ixyz=1,ncart
+      call AOtoMO(nBas,c(:,:,1),dipole_int_AO(:,:,ixyz),dipole_int_aa(:,:,ixyz))
+      call AOtoMO(nBas,c(:,:,2),dipole_int_AO(:,:,ixyz),dipole_int_bb(:,:,ixyz))
+    end do
 
     ! 4-index transform for (aa|aa) block
     call AOtoMO_ERI_UHF(1,1,nBas,c,ERI_AO,ERI_aaaa)
@@ -164,7 +173,7 @@ subroutine UHF_search(maxSCF,thresh,max_diis,guess_type,mix,level_shift,nNuc,ZNu
  
       write(*,'(1X,A40,1X)')           'Too bad, UHF solution is unstable!'
       write(*,'(1X,A40,1X,F15.10,A3)') 'Largest negative eigenvalue:',Om_sc(1),' au'
-      write(*,'(1X,A40,1X,F15.10,A3)') 'E(UHF) = ',ENuc + EHF,' au'
+      write(*,'(1X,A40,1X,F15.10,A3)') 'E(UHF) = ',ENuc + EUHF,' au'
       write(*,*)
       write(*,'(1X,A40,1X,A10)')       'Which one would you like to follow?','[Exit:0]'
       read(*,*) eig
@@ -177,21 +186,7 @@ subroutine UHF_search(maxSCF,thresh,max_diis,guess_type,mix,level_shift,nNuc,ZNu
 
       if(eig == 0) return
 
-      step = 1d0
-
       ! Spin-up kick
-
-!     do mu=1,nBas
-!       ia = 0
-!       do i=nC(1)+1,nO(1)
-!         kick = 0d0
-!         do a=nO(1)+1,nBas-nR(1)
-!           ia = ia + 1
-!           kick = kick + AB_sc(ia,eig)*c(mu,a,1)
-!         end do
-!         c(mu,i,1) = c(mu,i,1) + step*kick
-!       end do
-!     end do
 
       R(:,:) = 0d0
       ia = 0
@@ -208,18 +203,6 @@ subroutine UHF_search(maxSCF,thresh,max_diis,guess_type,mix,level_shift,nNuc,ZNu
 
       ! Spin-down kick
 
-!     do mu=1,nBas
-!       ia = nS_aa
-!       do i=nC(2)+1,nO(2)
-!         kick = 0d0
-!         do a=nO(2)+1,nBas-nR(2)
-!           ia = ia + 1
-!           kick = kick + AB_sc(ia,eig)*c(mu,a,2)
-!         end do
-!         c(mu,i,2) = c(mu,i,2) + step*kick
-!       end do
-!     end do
- 
       R(:,:) = 0d0
       ia = nS_aa
       do i=nC(2)+1,nO(2)
@@ -237,7 +220,7 @@ subroutine UHF_search(maxSCF,thresh,max_diis,guess_type,mix,level_shift,nNuc,ZNu
  
       write(*,'(1X,A40,1X)')           'Well done, UHF solution is stable!'
       write(*,'(1X,A40,1X,F15.10,A3)') 'Smallest eigenvalue: ',Om_sc(1),' au'
-      write(*,'(1X,A40,1X,F15.10,A3)') 'E(UHF) = ',ENuc + EHF,' au'
+      write(*,'(1X,A40,1X,F15.10,A3)') 'E(UHF) = ',ENuc + EUHF,' au'
  
       unstab = .false.
  

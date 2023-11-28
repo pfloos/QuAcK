@@ -139,7 +139,7 @@ subroutine GQuAcK(dotest,doGHF,dostab,dosearch,doMP2,doMP3,doCCD,dopCCD,doDCD,do
   ! Transform dipole-related integrals
 
   do ixyz=1,ncart
-      call AOtoMO_GHF(nBas,nBas2,Ca,Cb,dipole_int_AO(:,:,ixyz),dipole_int_MO(:,:,ixyz))
+    call AOtoMO_GHF(nBas,nBas2,Ca,Cb,dipole_int_AO(:,:,ixyz),dipole_int_MO(:,:,ixyz))
   end do 
   
   ! 4-index transform 
@@ -186,7 +186,8 @@ subroutine GQuAcK(dotest,doGHF,dostab,dosearch,doMP2,doMP3,doCCD,dopCCD,doDCD,do
 
     call wall_time(start_stab)  
     call GHF_search(maxSCF_HF,thresh_HF,max_diis_HF,guess_type,mix,level_shift,nNuc,ZNuc,rNuc,ENuc, &
-                    nBas,nBas2,nC,nO,nV,nR,S,T,V,Hc,ERI_AO,dipole_int_AO,X,EGHF,eHF,cHF,PHF)
+                    nBas,nBas2,nC,nO,nV,nR,S,T,V,Hc,ERI_AO,ERI_MO,dipole_int_AO,dipole_int_MO,      & 
+                    X,EGHF,eHF,cHF,PHF)
     call wall_time(end_stab)    
 
     t_stab = end_stab - start_stab

@@ -60,6 +60,8 @@ subroutine phLR(TDA,nS,Aph,Bph,EcRPA,Om,XpY,XmY)
     call dgemm('N','N',nS,nS,nS,1d0,ApB,size(ApB,1),AmBSq,size(AmBSq,1),0d0,tmp,size(tmp,1))
     call dgemm('N','N',nS,nS,nS,1d0,AmBSq,size(AmBSq,1),tmp,size(tmp,1),0d0,Z,size(Z,1))
 
+!   Z = matmul(AmBSq,matmul(ApB,AmBSq))
+
     call diagonalize_matrix(nS,Z,Om)
 
     if(minval(Om) < 0d0) & 
@@ -72,6 +74,12 @@ subroutine phLR(TDA,nS,Aph,Bph,EcRPA,Om,XpY,XmY)
 
     call dgemm('T','N',nS,nS,nS,1d0,Z,size(Z,1),AmBIv,size(AmBIv,1),0d0,XmY,size(XmY,1))
     call DA(nS,1d0*dsqrt(Om),XmY)
+
+!   XpY = matmul(transpose(Z),AmBSq)
+!   call DA(nS,1d0/sqrt(Om),XpY)
+
+!   XmY = matmul(transpose(Z),AmBIv)
+!   call DA(nS,1d0*sqrt(Om),XmY)
  
   end if
 

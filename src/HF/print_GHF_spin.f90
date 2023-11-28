@@ -116,8 +116,8 @@ subroutine print_GHF_spin(nBas,nBas2,nO,C,S)
       Sc_yx = Sc_yx - (+0.5d0,0.d0) * (Pab(j,i) + Pba(j,i)) * (0.d0,-0.5d0) * (Pab(i,j) - Pba(i,j))
     enddo
   enddo
-  write(*,'(A15,2F10.6)') ' < Sx Sy > = ',Sc_xy
-  write(*,'(A15,2F10.6)') ' < Sy Sx > = ',Sc_yx
+  write(*,'(A15,2F10.6)') ' < Sx.Sy > = ',Sc_xy
+  write(*,'(A15,2F10.6)') ' < Sy.Sx > = ',Sc_yx
 
   Sc_xz = Sc_x * Sc_z
   Sc_zx = Sc_x * Sc_z
@@ -129,8 +129,8 @@ subroutine print_GHF_spin(nBas,nBas2,nO,C,S)
       Sc_zx = Sc_zx - (+0.5d0,0.d0) * (Pab(j,i) + Pba(j,i)) * (+0.5d0,0.d0) * (Paa(i,j) - Pbb(i,j))
     enddo
   enddo
-  write(*,'(A15,2F10.6)') ' < Sx Sz > = ',Sc_xz
-  write(*,'(A15,2F10.6)') ' < Sz Sx > = ',Sc_zx
+  write(*,'(A15,2F10.6)') ' < Sx.Sz > = ',Sc_xz
+  write(*,'(A15,2F10.6)') ' < Sz.Sx > = ',Sc_zx
 
   Sc_yz = Sc_y * Sc_z
   Sc_zy = Sc_y * Sc_z
@@ -142,8 +142,8 @@ subroutine print_GHF_spin(nBas,nBas2,nO,C,S)
       Sc_zy = Sc_zy - (0.d0,-0.5d0) * (Pab(j,i) - Pba(j,i)) * (+0.5d0,0.d0) * (Paa(i,j) - Pbb(i,j))
     enddo
   enddo
-  write(*,'(A15,2F10.6)') ' < Sy Sz > = ',Sc_yz
-  write(*,'(A15,2F10.6)') ' < Sz Sy > = ', Sc_zy
+  write(*,'(A15,2F10.6)') ' < Sy.Sz > = ',Sc_yz
+  write(*,'(A15,2F10.6)') ' < Sz.Sy > = ', Sc_zy
   write(*,*)  
 
 

@@ -1,5 +1,6 @@
-subroutine GHF_search(maxSCF,thresh,max_diis,guess_type,mix,level_shift,nNuc,ZNuc,rNuc,ENuc, &
-                      nBas,nBas2,nC,nO,nV,nR,S,T,V,Hc,ERI_AO,dipole_int_AO,X,EHF,e,c,P)
+subroutine GHF_search(maxSCF,thresh,max_diis,guess_type,mix,level_shift,nNuc,ZNuc,rNuc,ENuc,     &
+                      nBas,nBas2,nC,nO,nV,nR,S,T,V,Hc,ERI_AO,ERI_MO,dipole_int_AO,dipole_int_MO, &
+                      X,EGHF,e,c,P)
 
 ! Search for GHF solutions
 
@@ -29,7 +30,9 @@ subroutine GHF_search(maxSCF,thresh,max_diis,guess_type,mix,level_shift,nNuc,ZNu
   double precision,intent(in)   :: Hc(nBas,nBas)
   double precision,intent(in)   :: X(nBas,nBas)
   double precision,intent(in)   :: ERI_AO(nBas,nBas,nBas,nBas)
+  double precision,intent(inout):: ERI_MO(nBas2,nBas2,nBas2,nBas2)
   double precision,intent(in)   :: dipole_int_AO(nBas,nBas,ncart)
+  double precision,intent(inout):: dipole_int_MO(nBas2,nBas2,ncart)
 
 ! Local variables
 
@@ -39,7 +42,6 @@ subroutine GHF_search(maxSCF,thresh,max_diis,guess_type,mix,level_shift,nNuc,ZNu
 
   logical                       :: unstab
   integer                       :: guess
-  double precision,allocatable  :: ERI_MO(:,:,:,:)
   double precision,allocatable  :: ERI_tmp(:,:,:,:)
   double precision,allocatable  :: Ca(:,:),Cb(:,:)
   integer                       :: nS
@@ -55,13 +57,12 @@ subroutine GHF_search(maxSCF,thresh,max_diis,guess_type,mix,level_shift,nNuc,ZNu
   double precision,allocatable  :: R(:,:)
   double precision,allocatable  :: ExpR(:,:)
 
-  
   integer                       :: eig
-  double precision              :: kick,step
+  integer                       :: ixyz
 
 ! Output variables
 
-  double precision,intent(out)  :: EHF
+  double precision,intent(out)  :: EGHF
   double precision,intent(out)  :: e(nBas2)
   double precision,intent(inout):: c(nBas2,nBas2)
   double precision,intent(out)  :: P(nBas2,nBas2)
@@ -80,8 +81,7 @@ subroutine GHF_search(maxSCF,thresh,max_diis,guess_type,mix,level_shift,nNuc,ZNu
 
   nS = (nO - nC)*(nV - nR)
 
-  allocate(ERI_MO(nBas2,nBas2,nBas2,nBas2),Aph(nS,nS),Bph(nS,nS),AB(nS,nS),Om(nS), &
-           R(nBas2,nBas2),ExpR(nBas2,nBas2))
+  allocate(Aph(nS,nS),Bph(nS,nS),AB(nS,nS),Om(nS),R(nBas2,nBas2),ExpR(nBas2,nBas2))
 
 !------------------!
 ! Search algorithm !
@@ -99,7 +99,7 @@ subroutine GHF_search(maxSCF,thresh,max_diis,guess_type,mix,level_shift,nNuc,ZNu
 
     call wall_time(start_HF)
     call GHF(.false.,maxSCF,thresh,max_diis,guess,mix,level_shift,nNuc,ZNuc,rNuc,ENuc, &
-             nBas,nBas2,nO,S,T,V,Hc,ERI_AO,dipole_int_AO,X,EHF,e,c,P)
+             nBas,nBas2,nO,S,T,V,Hc,ERI_AO,dipole_int_AO,X,EGHF,e,c,P)
     call wall_time(end_HF)
 
     t_HF = end_HF - start_HF
@@ -119,6 +119,12 @@ subroutine GHF_search(maxSCF,thresh,max_diis,guess_type,mix,level_shift,nNuc,ZNu
 
     Ca(:,:) = c(1:nBas,1:nBas2)
     Cb(:,:) = c(nBas+1:nBas2,1:nBas2)
+
+    ! Transform dipole-related integrals
+
+    do ixyz=1,ncart
+      call AOtoMO_GHF(nBas,nBas2,Ca,Cb,dipole_int_AO(:,:,ixyz),dipole_int_MO(:,:,ixyz))
+    end do
 
     ! 4-index transform 
  
@@ -171,7 +177,7 @@ subroutine GHF_search(maxSCF,thresh,max_diis,guess_type,mix,level_shift,nNuc,ZNu
  
       write(*,'(1X,A40,1X)')           'Too bad, GHF solution is unstable!'
       write(*,'(1X,A40,1X,F15.10,A3)') 'Largest negative eigenvalue:',Om(1),' au'
-      write(*,'(1X,A40,1X,F15.10,A3)') 'E(GHF) = ',ENuc + EHF,' au'
+      write(*,'(1X,A40,1X,F15.10,A3)') 'E(GHF) = ',ENuc + EGHF,' au'
       write(*,*) 
       write(*,'(1X,A40,1X,A10)')       'Which one would you like to follow?','[Exit:0]'
       read(*,*) eig
@@ -183,20 +189,6 @@ subroutine GHF_search(maxSCF,thresh,max_diis,guess_type,mix,level_shift,nNuc,ZNu
       end if
 
       if(eig == 0) return
-
-      step = 1d0
-
-!     do mu=1,nBas2
-!       ia = 0
-!       do i=nC+1,nO
-!         kick = 0d0
-!         do a=nO+1,nBas2-nR
-!           ia = ia + 1
-!           kick = kick + AB(ia,eig)*c(mu,a)
-!         end do
-!         c(mu,i) = c(mu,i) + step*kick
-!       end do
-!     end do
 
       R(:,:) = 0d0
       ia = 0
@@ -211,13 +203,11 @@ subroutine GHF_search(maxSCF,thresh,max_diis,guess_type,mix,level_shift,nNuc,ZNu
       call matrix_exponential(nBas2,R,ExpR)
       c = matmul(c,ExpR)
 
-!     call matout(nBas2,nBas2,matmul(transpose(ExpR),ExpR))
-
     else
  
       write(*,'(1X,A40,1X)')           'Well done, GHF solution is stable!'
       write(*,'(1X,A40,1X,F15.10,A3)') 'Smallest eigenvalue: ',Om(1),' au'
-      write(*,'(1X,A40,1X,F15.10,A3)') 'E(GHF) = ',ENuc + EHF,' au'
+      write(*,'(1X,A40,1X,F15.10,A3)') 'E(GHF) = ',ENuc + EGHF,' au'
  
       unstab = .false.
  
