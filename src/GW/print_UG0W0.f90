@@ -63,9 +63,9 @@ subroutine print_UG0W0(nBas,nO,eHF,ENuc,EUHF,SigC,Z,eGW,EcRPA,EcGM)
   write(*,'(2X,A60,F15.6,A3)') 'G0W0@UHF HOMO-LUMO gap    = ',(minval(LUMO)-maxval(HOMO))*HaToeV,' eV'
   write(*,*)'----------------------------------------------------------------'// &
             '----------------------------------------------------------------'
-  write(*,'(2X,A60,F15.6,A3)') 'phRPA@G0W0@UHF total energy       = ',ENuc + EUHF + EcRPA,' au'
+  write(*,'(2X,A60,F15.6,A3)') 'phRPA@G0W0@UHF total       energy = ',ENuc + EUHF + EcRPA,' au'
   write(*,'(2X,A60,F15.6,A3)') 'phRPA@G0W0@UHF correlation energy = ',EcRPA,' au'
-  write(*,'(2X,A60,F15.6,A3)') '   GM@G0W0@UHF total energy       = ',ENuc + EUHF + sum(EcGM),' au'
+  write(*,'(2X,A60,F15.6,A3)') '   GM@G0W0@UHF total       energy = ',ENuc + EUHF + sum(EcGM),' au'
   write(*,'(2X,A60,F15.6,A3)') '   GM@G0W0@UHF correlation energy = ',sum(EcGM),' au'
   write(*,*)'----------------------------------------------------------------'// &
             '----------------------------------------------------------------'

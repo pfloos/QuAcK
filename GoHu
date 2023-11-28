@@ -2,6 +2,7 @@
 
 cp input/molecule.Hu input/molecule
 cp input/basis.Hu    input/basis
+cp int/nBas.Hu.dat   int/nBas.dat
 cp int/ERI.Hu.dat    int/ERI.dat
 cp int/Kin.Hu.dat    int/Kin.dat
 cp int/Nuc.Hu.dat    int/Nuc.dat
