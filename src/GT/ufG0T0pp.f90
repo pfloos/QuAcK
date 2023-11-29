@@ -34,8 +34,8 @@ subroutine ufG0T0pp(dotest,TDA_T,nBas,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,eHF)
   logical                       :: dRPA
   integer                       :: ispin
   integer                       :: iblock
-  integer                       :: nOO,nOOs,nOOt
-  integer                       :: nVV,nVVs,nVVt
+  integer                       :: nOOs,nOOt
+  integer                       :: nVVs,nVVt
   double precision              :: EcRPA(nspin)
   integer                       :: n2h1p,n2p1h,nH
   double precision,external     :: Kronecker_delta
@@ -62,6 +62,9 @@ subroutine ufG0T0pp(dotest,TDA_T,nBas,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,eHF)
 
   double precision              :: start_timing,end_timing,timing
 
+  double precision              :: alpha = sqrt(1d0)
+  double precision              :: beta  = sqrt(1d0)
+
 ! Output variables
 
 ! Hello world
@@ -74,17 +77,17 @@ subroutine ufG0T0pp(dotest,TDA_T,nBas,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,eHF)
 
 ! Dimensions of the ppRPA linear reponse matrices
 
-! nOOs = nO*(nO + 1)/2
-! nVVs = nV*(nV + 1)/2
+  nOOs = nO*(nO + 1)/2
+  nVVs = nV*(nV + 1)/2
 
-  nOOs = nO*nO
-  nVVs = nV*nV
+! nOOs = nO*nO
+! nVVs = nV*nV
 
   nOOt = nO*(nO - 1)/2
   nVVt = nV*(nV - 1)/2
 
-  nOO = nO*nO
-  nVV = nV*nV
+! nOO = nO*nO
+! nVV = nV*nV
 
 ! Dimension of the supermatrix
 
@@ -107,7 +110,7 @@ subroutine ufG0T0pp(dotest,TDA_T,nBas,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,eHF)
 ! Main loop over orbitals !
 !-------------------------!
 
-  do p=nC+1,nBas-nR
+  do p=nO,nO+1
 
     H(:,:) = 0d0
 
@@ -266,8 +269,8 @@ subroutine ufG0T0pp(dotest,TDA_T,nBas,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,eHF)
       ! alpha-beta block
  
       ispin  = 1
-!     iblock = 1
-      iblock = 3
+      iblock = 1
+!     iblock = 3
 
       ! Compute linear response
 
@@ -287,8 +290,8 @@ subroutine ufG0T0pp(dotest,TDA_T,nBas,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,eHF)
       ! alpha-alpha block
 
       ispin  = 2
-!     iblock = 2
-      iblock = 4
+      iblock = 2
+!     iblock = 4
 
       ! Compute linear response
 
@@ -309,12 +312,12 @@ subroutine ufG0T0pp(dotest,TDA_T,nBas,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,eHF)
       ! Compute excitation densities
       !----------------------------------------------
 
-!     iblock = 1
-      iblock = 3
+      iblock = 1
+!     iblock = 3
       call GTpp_excitation_density(iblock,nBas,nC,nO,nV,nR,nOOs,nVVs,ERI,X1s,Y1s,rho1s,X2s,Y2s,rho2s)
 
-!     iblock = 2
-      iblock = 4
+      iblock = 2
+!     iblock = 4
       call GTpp_excitation_density(iblock,nBas,nC,nO,nV,nR,nOOt,nVVt,ERI,X1t,Y1t,rho1t,X2t,Y2t,rho2t)
 
       call wall_time(start_timing)
@@ -357,8 +360,8 @@ subroutine ufG0T0pp(dotest,TDA_T,nBas,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,eHF)
         do a=nO+1,nBas-nR
           ija = ija + 1
  
-          H(1    ,1+ija) = rho2s(p,a,ij)
-          H(1+ija,1    ) = rho2s(p,a,ij)
+          H(1    ,1+ija) = alpha*rho2s(p,a,ij)
+          H(1+ija,1    ) = alpha*rho2s(p,a,ij)
  
         end do
       end do
@@ -367,8 +370,8 @@ subroutine ufG0T0pp(dotest,TDA_T,nBas,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,eHF)
         do a=nO+1,nBas-nR
           ija = ija + 1
  
-          H(1    ,1+ija) = rho2t(p,a,ij)
-          H(1+ija,1    ) = rho2t(p,a,ij)
+          H(1    ,1+ija) = beta*rho2t(p,a,ij)
+          H(1+ija,1    ) = beta*rho2t(p,a,ij)
  
         end do
       end do
@@ -405,8 +408,8 @@ subroutine ufG0T0pp(dotest,TDA_T,nBas,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,eHF)
         do i=nC+1,nO
           iab = iab + 1
  
-          H(1          ,1+n2h1p+iab) = rho1s(p,i,ab)
-          H(1+n2h1p+iab,1          ) = rho1s(p,i,ab)
+          H(1          ,1+n2h1p+iab) = alpha*rho1s(p,i,ab)
+          H(1+n2h1p+iab,1          ) = alpha*rho1s(p,i,ab)
  
         end do
       end do
@@ -415,8 +418,8 @@ subroutine ufG0T0pp(dotest,TDA_T,nBas,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,eHF)
         do i=nC+1,nO
           iab = iab + 1
  
-          H(1          ,1+n2h1p+iab) = rho1t(p,i,ab)
-          H(1+n2h1p+iab,1          ) = rho1t(p,i,ab)
+          H(1          ,1+n2h1p+iab) = beta*rho1t(p,i,ab)
+          H(1+n2h1p+iab,1          ) = beta*rho1t(p,i,ab)
  
         end do
       end do
@@ -564,7 +567,7 @@ subroutine ufG0T0pp(dotest,TDA_T,nBas,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,eHF)
               '               (',p,')      ',H(1,s),H(1,s)**2
     
             ija = 0
-            do ij=1,nOO
+            do ij=1,nOOs+nOOt
               do a=nO+1,nBas-nR
                 ija = ija + 1
   
@@ -576,7 +579,7 @@ subroutine ufG0T0pp(dotest,TDA_T,nBas,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,eHF)
             end do
            
             iab = 0
-            do ab=1,nVV
+            do ab=1,nVVs+nVVt
               do i=nC+1,nO
                 iab = iab + 1
  
