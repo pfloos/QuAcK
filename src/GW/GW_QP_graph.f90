@@ -58,7 +58,6 @@ subroutine GW_QP_graph(eta,nBas,nC,nO,nV,nR,nS,eHF,Om,rho,eGWlin,eOld,eGW,Z)
       dSigC = GW_dSigC(p,w,eta,nBas,nC,nO,nV,nR,nS,eOld,Om,rho)
       f  = w - eHF(p) - SigC
       df = 1d0/(1d0 - dSigC)
-    
       w = w - df*f
     
     end do
@@ -78,6 +77,7 @@ subroutine GW_QP_graph(eta,nBas,nC,nO,nV,nR,nS,eHF,Om,rho,eGWlin,eOld,eGW,Z)
     end if
           
   end do
+
   write(*,*)'-----------------------------------------------------'
   write(*,*)
 

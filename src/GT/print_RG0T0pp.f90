@@ -36,7 +36,7 @@ subroutine print_RG0T0pp(nBas,nO,eHF,ENuc,ERHF,SigT,Z,eGT,EcGM,EcRPA)
 ! Dump results
 
   write(*,*)'-------------------------------------------------------------------------------'
-  write(*,*)'  One-shot G0T0pp calculation   '
+  write(*,*)' G0T0pp@RHF calculation '
   write(*,*)'-------------------------------------------------------------------------------'
   write(*,'(1X,A1,1X,A3,1X,A1,1X,A15,1X,A1,1X,A15,1X,A1,1X,A15,1X,A1,1X,A15,1X,A1,1X)') &
             '|','#','|','e_HF (eV)','|','Sig_GTpp (eV)','|','Z','|','e_GTpp (eV)','|'
@@ -48,16 +48,16 @@ subroutine print_RG0T0pp(nBas,nO,eHF,ENuc,ERHF,SigT,Z,eGT,EcGM,EcRPA)
   enddo
 
   write(*,*)'-------------------------------------------------------------------------------'
-  write(*,'(2X,A60,F15.6,A3)') 'RG0T0pp HOMO      energy                 =',eGT(HOMO)*HaToeV,' eV'
-  write(*,'(2X,A60,F15.6,A3)') 'RG0T0pp LUMO      energy                 =',eGT(LUMO)*HaToeV,' eV'
-  write(*,'(2X,A60,F15.6,A3)') 'RG0T0pp HOMO-LUMO gap                    =',Gap*HaToeV,' eV'
+  write(*,'(2X,A60,F15.6,A3)') 'G0T0pp@RHF HOMO      energy                 = ',eGT(HOMO)*HaToeV,' eV'
+  write(*,'(2X,A60,F15.6,A3)') 'G0T0pp@RHF LUMO      energy                 = ',eGT(LUMO)*HaToeV,' eV'
+  write(*,'(2X,A60,F15.6,A3)') 'G0T0pp@RHF HOMO-LUMO gap                    = ',Gap*HaToeV,' eV'
   write(*,*)'-------------------------------------------------------------------------------'
-  write(*,'(2X,A60,F15.6,A3)') 'ppRPA@RG0T0pp correlation energy (singlet) =',EcRPA(1),' au'
-  write(*,'(2X,A60,F15.6,A3)') 'ppRPA@RG0T0pp correlation energy (triplet) =',EcRPA(2),' au'
-  write(*,'(2X,A60,F15.6,A3)') 'ppRPA@RG0T0pp correlation energy           =',EcRPA(1) + EcRPA(2),' au'
-  write(*,'(2X,A60,F15.6,A3)') 'ppRPA@RG0T0pp total energy                 =',ENuc + ERHF + EcRPA(1) + EcRPA(2),' au'
-  write(*,'(2X,A60,F15.6,A3)') '   GM@RG0T0pp correlation energy           =',EcGM,' au'
-  write(*,'(2X,A60,F15.6,A3)') '   GM@RG0T0pp total energy                 =',ENuc + ERHF + EcGM,' au'
+  write(*,'(2X,A60,F15.6,A3)') 'ppRPA@G0T0pp@RHF correlation energy (singlet) = ',EcRPA(1),' au'
+  write(*,'(2X,A60,F15.6,A3)') 'ppRPA@G0T0pp@RHF correlation energy (triplet) = ',EcRPA(2),' au'
+  write(*,'(2X,A60,F15.6,A3)') 'ppRPA@G0T0pp@RHF correlation energy           = ',sum(EcRPA),' au'
+  write(*,'(2X,A60,F15.6,A3)') 'ppRPA@G0T0pp@RHF total       energy           = ',ENuc + ERHF + sum(EcRPA),' au'
+  write(*,'(2X,A60,F15.6,A3)') '   GM@G0T0pp@RHF correlation energy           = ',EcGM,' au'
+  write(*,'(2X,A60,F15.6,A3)') '   GM@G0T0pp@RHF total       energy           = ',ENuc + ERHF + EcGM,' au'
   write(*,*)'-------------------------------------------------------------------------------'
   write(*,*)
 

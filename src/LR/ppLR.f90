@@ -1,6 +1,6 @@
 subroutine ppLR(TDA,nOO,nVV,Bpp,Cpp,Dpp,Om1,X1,Y1,Om2,X2,Y2,EcRPA)
 
-! Compute the pp channel of the linear response: see Scuseria et al. JCP 139, 104113 (2013)
+! Solve the pp-RPA linear eigenvalue problem
 
   implicit none
   include 'parameters.h'
@@ -68,6 +68,8 @@ subroutine ppLR(TDA,nOO,nVV,Bpp,Cpp,Dpp,Om1,X1,Y1,Om2,X2,Y2,EcRPA)
 
     M(    1:nVV    ,nVV+1:nOO+nVV) = -           Bpp(1:nVV,1:nOO)
     M(nVV+1:nOO+nVV,    1:nVV)     = + transpose(Bpp(1:nVV,1:nOO))
+
+!   call matout(nOO,nOO,Dpp)
 
   ! Diagonalize the p-p matrix
 

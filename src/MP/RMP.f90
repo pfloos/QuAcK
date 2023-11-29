@@ -14,10 +14,10 @@ subroutine RMP(dotest,doMP2,doMP3,regularize,nBas,nC,nO,nV,nR,ERI,ENuc,ERHF,eHF)
 
   logical,intent(in)            :: regularize
   integer,intent(in)            :: nBas
-  integer,intent(in)            :: nC(nspin)
-  integer,intent(in)            :: nO(nspin)
-  integer,intent(in)            :: nV(nspin)
-  integer,intent(in)            :: nR(nspin)
+  integer,intent(in)            :: nC
+  integer,intent(in)            :: nO
+  integer,intent(in)            :: nV
+  integer,intent(in)            :: nR
   double precision,intent(in)   :: ENuc
   double precision,intent(in)   :: ERHF
   double precision,intent(in)   :: eHF(nBas)

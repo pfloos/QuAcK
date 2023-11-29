@@ -42,9 +42,6 @@ subroutine GTpp_QP_graph(eta,nBas,nC,nO,nV,nR,nOOs,nVVs,nOOt,nVVt,eHF,Om1s,rho1s
   double precision,intent(out)  :: eGT(nBas)
   double precision,intent(out)  :: Z(nBas)
 
-  SigC = 0d0
-  dSigC = 0d0
-
 ! Run Newton's algorithm to find the root
 
   write(*,*)'-----------------------------------------------------'

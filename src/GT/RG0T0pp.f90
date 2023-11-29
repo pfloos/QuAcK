@@ -39,6 +39,8 @@ subroutine RG0T0pp(dotest,doACFDT,exchange_kernel,doXBS,dophBSE,TDA_T,TDA,dBSE,d
 
 ! Local variables
 
+  logical                       :: print_T = .false.
+
   integer                       :: ispin
   integer                       :: iblock
   integer                       :: nOOs,nOOt
@@ -76,7 +78,7 @@ subroutine RG0T0pp(dotest,doACFDT,exchange_kernel,doXBS,dophBSE,TDA_T,TDA,dBSE,d
 ! TDA for T
 
   if(TDA_T) then
-    write(*,*) 'Tamm-Dancoff approximation for pp T-matrix!'
+    write(*,*) 'Tamm-Dancoff approximation activated for pp T-matrix!'
     write(*,*)
   end if
 
@@ -128,8 +130,8 @@ subroutine RG0T0pp(dotest,doACFDT,exchange_kernel,doXBS,dophBSE,TDA_T,TDA,dBSE,d
 
   deallocate(Bpp,Cpp,Dpp)
 
-  call print_excitation_energies('ppRPA@RHF','2p (alpha-beta)',nVVs,Om1s(:))
-  call print_excitation_energies('ppRPA@RHF','2h (alpha-beta)',nOOs,Om2s(:))
+  if(print_T) call print_excitation_energies('ppRPA@RHF','2p (alpha-beta)',nVVs,Om1s)
+  if(print_T) call print_excitation_energies('ppRPA@RHF','2h (alpha-beta)',nOOs,Om2s)
 
 !----------------------------------------------
 ! alpha-alpha block
@@ -151,8 +153,8 @@ subroutine RG0T0pp(dotest,doACFDT,exchange_kernel,doXBS,dophBSE,TDA_T,TDA,dBSE,d
 
   deallocate(Bpp,Cpp,Dpp)
 
-  call print_excitation_energies('ppRPA@RHF','2p (alpha-alpha)',nVVt,Om1t)
-  call print_excitation_energies('ppRPA@RHF','2h (alpha-beta)',nOOt,Om2t)
+  if(print_T) call print_excitation_energies('ppRPA@RHF','2p (alpha-alpha)',nVVt,Om1t)
+  if(print_T) call print_excitation_energies('ppRPA@RHF','2h (alpha-alpha)',nOOt,Om2t)
 
 !----------------------------------------------
 ! Compute excitation densities
@@ -214,32 +216,32 @@ subroutine RG0T0pp(dotest,doACFDT,exchange_kernel,doXBS,dophBSE,TDA_T,TDA,dBSE,d
 ! iblock = 1
   iblock = 3
 
-  allocate(Bpp(nVVs,nOOs),Cpp(nVVs,nVVs),Dpp(nOOs,nOOs))
+! allocate(Bpp(nVVs,nOOs),Cpp(nVVs,nVVs),Dpp(nOOs,nOOs))
 
-  if(.not.TDA_T) call ppLR_B(iblock,nBas,nC,nO,nV,nR,nOOs,nVVs,1d0,ERI,Bpp)
-                 call ppLR_C(iblock,nBas,nC,nO,nV,nR,nVVs,1d0,eGT,ERI,Cpp)
-                 call ppLR_D(iblock,nBas,nC,nO,nV,nR,nOOs,1d0,eGT,ERI,Dpp)
+! if(.not.TDA_T) call ppLR_B(iblock,nBas,nC,nO,nV,nR,nOOs,nVVs,1d0,ERI,Bpp)
+!                call ppLR_C(iblock,nBas,nC,nO,nV,nR,nVVs,1d0,eGT,ERI,Cpp)
+!                call ppLR_D(iblock,nBas,nC,nO,nV,nR,nOOs,1d0,eGT,ERI,Dpp)
 
-  call ppLR(TDA_T,nOOs,nVVs,Bpp,Cpp,Dpp,Om1s,X1s,Y1s,Om2s,X2s,Y2s,EcRPA(ispin))
+! call ppLR(TDA_T,nOOs,nVVs,Bpp,Cpp,Dpp,Om1s,X1s,Y1s,Om2s,X2s,Y2s,EcRPA(ispin))
 
-  deallocate(Bpp,Cpp,Dpp)
+! deallocate(Bpp,Cpp,Dpp)
 
   ispin  = 2
 ! iblock = 2
   iblock = 4
 
-  allocate(Bpp(nVVt,nOOt),Cpp(nVVt,nVVt),Dpp(nOOt,nOOt))
+! allocate(Bpp(nVVt,nOOt),Cpp(nVVt,nVVt),Dpp(nOOt,nOOt))
 
-  if(.not.TDA_T) call ppLR_B(iblock,nBas,nC,nO,nV,nR,nOOt,nVVt,1d0,ERI,Bpp)
-                 call ppLR_C(iblock,nBas,nC,nO,nV,nR,nVVt,1d0,eGT,ERI,Cpp)
-                 call ppLR_D(iblock,nBas,nC,nO,nV,nR,nOOt,1d0,eGT,ERI,Dpp)
+! if(.not.TDA_T) call ppLR_B(iblock,nBas,nC,nO,nV,nR,nOOt,nVVt,1d0,ERI,Bpp)
+!                call ppLR_C(iblock,nBas,nC,nO,nV,nR,nVVt,1d0,eGT,ERI,Cpp)
+!                call ppLR_D(iblock,nBas,nC,nO,nV,nR,nOOt,1d0,eGT,ERI,Dpp)
 
-  call ppLR(TDA_T,nOOt,nVVt,Bpp,Cpp,Dpp,Om1t,X1t,Y1t,Om2t,X2t,Y2t,EcRPA(ispin))
+! call ppLR(TDA_T,nOOt,nVVt,Bpp,Cpp,Dpp,Om1t,X1t,Y1t,Om2t,X2t,Y2t,EcRPA(ispin))
 
-  deallocate(Bpp,Cpp,Dpp)
+! deallocate(Bpp,Cpp,Dpp)
 
-  EcRPA(1) = EcRPA(1) - EcRPA(2)
-  EcRPA(2) = 3d0*EcRPA(2)
+! EcRPA(1) = EcRPA(1) - EcRPA(2)
+! EcRPA(2) = 3d0*EcRPA(2)
 
   call print_RG0T0pp(nBas,nO,eHF,ENuc,ERHF,Sig,Z,eGT,EcGM,EcRPA)
 
@@ -296,10 +298,10 @@ subroutine RG0T0pp(dotest,doACFDT,exchange_kernel,doXBS,dophBSE,TDA_T,TDA,dBSE,d
 
       write(*,*)
       write(*,*)'-------------------------------------------------------------------------------'
-      write(*,'(2X,A50,F20.10,A3)') 'AC@phBSE@G0T0pp correlation energy (singlet) =',EcBSE(1),' au'
-      write(*,'(2X,A50,F20.10,A3)') 'AC@phBSE@G0T0pp correlation energy (triplet) =',EcBSE(2),' au'
-      write(*,'(2X,A50,F20.10,A3)') 'AC@phBSE@G0T0pp correlation energy           =',sum(EcBSE),' au'
-      write(*,'(2X,A50,F20.10,A3)') 'AC@phBSE@G0T0pp total energy                 =',ENuc + ERHF + sum(EcBSE),' au'
+      write(*,'(2X,A50,F20.10,A3)') 'AC@phBSE@G0T0pp@RHF correlation energy (singlet) = ',EcBSE(1),' au'
+      write(*,'(2X,A50,F20.10,A3)') 'AC@phBSE@G0T0pp@RHF correlation energy (triplet) = ',EcBSE(2),' au'
+      write(*,'(2X,A50,F20.10,A3)') 'AC@phBSE@G0T0pp@RHF correlation energy           = ',sum(EcBSE),' au'
+      write(*,'(2X,A50,F20.10,A3)') 'AC@phBSE@G0T0pp@RHF total       energy           = ',ENuc + ERHF + sum(EcBSE),' au'
       write(*,*)'-------------------------------------------------------------------------------'
       write(*,*)
 
@@ -315,10 +317,10 @@ subroutine RG0T0pp(dotest,doACFDT,exchange_kernel,doXBS,dophBSE,TDA_T,TDA,dBSE,d
 
     write(*,*)
     write(*,*)'-------------------------------------------------------------------------------'
-    write(*,'(2X,A50,F20.10,A3)') 'Tr@ppBSE@G0T0pp correlation energy (singlet) =',EcBSE(1),' au'
-    write(*,'(2X,A50,F20.10,A3)') 'Tr@ppBSE@G0T0pp correlation energy (triplet) =',EcBSE(2),' au'
-    write(*,'(2X,A50,F20.10,A3)') 'Tr@ppBSE@G0T0pp correlation energy =',sum(EcBSE),' au'
-    write(*,'(2X,A50,F20.10,A3)') 'Tr@ppBSE@G0T0pp total energy =',ENuc + ERHF + sum(EcBSE),' au'
+    write(*,'(2X,A50,F20.10,A3)') 'Tr@ppBSE@G0T0pp@RHF correlation energy (singlet) = ',EcBSE(1),' au'
+    write(*,'(2X,A50,F20.10,A3)') 'Tr@ppBSE@G0T0pp@RHF correlation energy (triplet) = ',EcBSE(2),' au'
+    write(*,'(2X,A50,F20.10,A3)') 'Tr@ppBSE@G0T0pp@RHF correlation energy           = ',sum(EcBSE),' au'
+    write(*,'(2X,A50,F20.10,A3)') 'Tr@ppBSE@G0T0pp@RHF total       energy           = ',ENuc + ERHF + sum(EcBSE),' au'
     write(*,*)'-------------------------------------------------------------------------------'
     write(*,*)
 

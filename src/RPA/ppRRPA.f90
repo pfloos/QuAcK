@@ -1,4 +1,4 @@
-subroutine ppRRPA(dotest,TDA,doACFDT,singlet,triplet,nBas,nC,nO,nV,nR,ENuc,EHF,ERI,dipole_int,e)
+subroutine ppRRPA(dotest,TDA,doACFDT,singlet,triplet,nBas,nC,nO,nV,nR,ENuc,ERHF,ERI,dipole_int,eHF)
 
 ! Perform ppRPA calculation
 
@@ -19,8 +19,8 @@ subroutine ppRRPA(dotest,TDA,doACFDT,singlet,triplet,nBas,nC,nO,nV,nR,ENuc,EHF,E
   integer,intent(in)            :: nV
   integer,intent(in)            :: nR
   double precision,intent(in)   :: ENuc
-  double precision,intent(in)   :: EHF
-  double precision,intent(in)   :: e(nBas)
+  double precision,intent(in)   :: ERHF
+  double precision,intent(in)   :: eHF(nBas)
   double precision,intent(in)   :: ERI(nBas,nBas,nBas,nBas)
   double precision,intent(in)   :: dipole_int(nBas,nBas,ncart)
 
@@ -71,8 +71,8 @@ subroutine ppRRPA(dotest,TDA,doACFDT,singlet,triplet,nBas,nC,nO,nV,nR,ENuc,EHF,E
              Bpp(nVV,nOO),Cpp(nVV,nVV),Dpp(nOO,nOO))
 
     if(.not.TDA) call ppLR_B(ispin,nBas,nC,nO,nV,nR,nOO,nVV,1d0,ERI,Bpp)
-                 call ppLR_C(ispin,nBas,nC,nO,nV,nR,nVV,1d0,e,ERI,Cpp)
-                 call ppLR_D(ispin,nBas,nC,nO,nV,nR,nOO,1d0,e,ERI,Dpp)
+                 call ppLR_C(ispin,nBas,nC,nO,nV,nR,nVV,1d0,eHF,ERI,Cpp)
+                 call ppLR_D(ispin,nBas,nC,nO,nV,nR,nOO,1d0,eHF,ERI,Dpp)
 
     call ppLR(TDA,nOO,nVV,Bpp,Cpp,Dpp,Om1,X1,Y1,Om2,X2,Y2,EcRPA(ispin))
 
@@ -103,8 +103,8 @@ subroutine ppRRPA(dotest,TDA,doACFDT,singlet,triplet,nBas,nC,nO,nV,nR,ENuc,EHF,E
              Bpp(nVV,nOO),Cpp(nVV,nVV),Dpp(nOO,nOO))
 
     if(.not.TDA) call ppLR_B(ispin,nBas,nC,nO,nV,nR,nOO,nVV,1d0,ERI,Bpp)
-                 call ppLR_C(ispin,nBas,nC,nO,nV,nR,nVV,1d0,e,ERI,Cpp)
-                 call ppLR_D(ispin,nBas,nC,nO,nV,nR,nOO,1d0,e,ERI,Dpp)
+                 call ppLR_C(ispin,nBas,nC,nO,nV,nR,nVV,1d0,eHF,ERI,Cpp)
+                 call ppLR_D(ispin,nBas,nC,nO,nV,nR,nOO,1d0,eHF,ERI,Dpp)
 
     call ppLR(TDA,nOO,nVV,Bpp,Cpp,Dpp,Om1,X1,Y1,Om2,X2,Y2,EcRPA(ispin))
 
@@ -121,10 +121,10 @@ subroutine ppRRPA(dotest,TDA,doACFDT,singlet,triplet,nBas,nC,nO,nV,nR,ENuc,EHF,E
 
   write(*,*)
   write(*,*)'-------------------------------------------------------------------------------'
-  write(*,'(2X,A50,F20.10,A3)') 'Tr@ppRRPA correlation energy (singlet) = ',EcRPA(1),'au'
-  write(*,'(2X,A50,F20.10,A3)') 'Tr@ppRRPA correlation energy (triplet) = ',EcRPA(2),'au'
-  write(*,'(2X,A50,F20.10,A3)') 'Tr@ppRRPA correlation energy           = ',sum(EcRPA),'au'
-  write(*,'(2X,A50,F20.10,A3)') 'Tr@ppRRPA total energy                 = ',ENuc + EHF + sum(EcRPA),'au'
+  write(*,'(2X,A50,F20.10,A3)') 'Tr@ppRPA@RHF correlation energy (singlet) = ',EcRPA(1),'au'
+  write(*,'(2X,A50,F20.10,A3)') 'Tr@ppRPA@RHF correlation energy (triplet) = ',EcRPA(2),'au'
+  write(*,'(2X,A50,F20.10,A3)') 'Tr@ppRPA@RHF correlation energy           = ',sum(EcRPA),'au'
+  write(*,'(2X,A50,F20.10,A3)') 'Tr@ppRPA@RHF total       energy           = ',ENuc + ERHF + sum(EcRPA),'au'
   write(*,*)'-------------------------------------------------------------------------------'
   write(*,*)
 
@@ -137,14 +137,14 @@ subroutine ppRRPA(dotest,TDA,doACFDT,singlet,triplet,nBas,nC,nO,nV,nR,ENuc,EHF,E
     write(*,*) '--------------------------------------------------------'
     write(*,*)
 
-    call ppACFDT(TDA,singlet,triplet,nBas,nC,nO,nV,nR,ERI,e,EcRPA)
+    call ppACFDT(TDA,singlet,triplet,nBas,nC,nO,nV,nR,ERI,eHF,EcRPA)
 
     write(*,*)
     write(*,*)'-------------------------------------------------------------------------------'
-    write(*,'(2X,A50,F20.10,A3)') 'AC@ppRRPA correlation energy (singlet) = ',EcRPA(1),' au'
-    write(*,'(2X,A50,F20.10,A3)') 'AC@ppRRPA correlation energy (triplet) = ',EcRPA(2),' au'
-    write(*,'(2X,A50,F20.10,A3)') 'AC@ppRRPA correlation energy           = ',EcRPA(1) + EcRPA(2),' au'
-    write(*,'(2X,A50,F20.10,A3)') 'AC@ppRRPA total energy                 = ',ENuc + EHF + EcRPA(1) + EcRPA(2),' au'
+    write(*,'(2X,A50,F20.10,A3)') 'AC@ppRPA@RHF correlation energy (singlet) = ',EcRPA(1),' au'
+    write(*,'(2X,A50,F20.10,A3)') 'AC@ppRPA@RHF correlation energy (triplet) = ',EcRPA(2),' au'
+    write(*,'(2X,A50,F20.10,A3)') 'AC@ppRPA@RHF correlation energy           = ',EcRPA(1) + EcRPA(2),' au'
+    write(*,'(2X,A50,F20.10,A3)') 'AC@ppRPA@RHF total       energy           = ',ENuc + ERHF + EcRPA(1) + EcRPA(2),' au'
     write(*,*)'-------------------------------------------------------------------------------'
     write(*,*)
 

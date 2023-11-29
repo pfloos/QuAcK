@@ -41,19 +41,17 @@ subroutine sort_ppRPA(nOO,nVV,Om,Z,Om1,X1,Y1,Om2,X2,Y2)
 
 ! Memory allocation
 
- allocate(M(nOO+nVV,nOO+nVV),              &
-          Z1(nOO+nVV,nVV),Z2(nOO+nVV,nOO), &
-          order1(nVV),order2(nOO))
+ allocate(M(nOO+nVV,nOO+nVV),Z1(nOO+nVV,nVV),Z2(nOO+nVV,nOO),order1(nVV),order2(nOO))
 
 ! Initializatiom
 
-  Om1(:) = 0d0
-  X1(:,:)   = 0d0
-  Y1(:,:)   = 0d0
+  Om1(:)  = 0d0
+  X1(:,:) = 0d0
+  Y1(:,:) = 0d0
 
-  Om2(:) = 0d0
-  X2(:,:)   = 0d0
-  Y2(:,:)   = 0d0
+  Om2(:)  = 0d0
+  X2(:,:) = 0d0
+  Y2(:,:) = 0d0
 
 ! Compute metric 
 
@@ -90,9 +88,8 @@ subroutine sort_ppRPA(nOO,nVV,Om,Z,Om1,X1,Y1,Om2,X2,Y2)
 
  end do
 
-  if(minval(Om1(:)) < 0d0 .or. ab /= nVV) call print_warning('You may have instabilities in pp-RPA!!')
-  if(maxval(Om2(:)) > 0d0 .or. ij /= nOO) call print_warning('You may have instabilities in pp-RPA!!')
-
+  if(minval(Om1) < 0d0 .or. ab /= nVV) call print_warning('You may have instabilities in pp-RPA!!')
+  if(maxval(Om2) > 0d0 .or. ij /= nOO) call print_warning('You may have instabilities in pp-RPA!!')
 
   if(nVV > 0) then 
 
@@ -100,8 +97,8 @@ subroutine sort_ppRPA(nOO,nVV,Om,Z,Om1,X1,Y1,Om2,X2,Y2)
       order1(ab) = ab
     end do
 
-    call quick_sort(Om1(:),order1(:),nVV)
-    call set_order(Z1(:,:),order1(:),nOO+nVV,nVV)
+    call quick_sort(Om1,order1,nVV)
+    call set_order(Z1,order1,nOO+nVV,nVV)
 
   end if
 
@@ -111,8 +108,8 @@ subroutine sort_ppRPA(nOO,nVV,Om,Z,Om1,X1,Y1,Om2,X2,Y2)
       order2(ij) = ij
     end do
 
-    call quick_sort(Om2(:),order2(:),nOO)
-    call set_order(Z2(:,:),order2(:),nOO+nVV,nOO)
+    call quick_sort(Om2,order2,nOO)
+    call set_order(Z2,order2,nOO+nVV,nOO)
 
  end if
 
@@ -205,20 +202,23 @@ subroutine sort_ppRPA(nOO,nVV,Om,Z,Om1,X1,Y1,Om2,X2,Y2)
 
   if(nVV > 0) call dgemm ('N', 'N', nOO+nVV, nVV, nOO+nVV, 1d0,  M, nOO+nVV, Z1, nOO+nVV, 0d0, tmp1, nOO+nVV)
   if(nVV > 0) call dgemm ('T', 'N', nVV    , nVV, nOO+nVV, 1d0, Z1, nOO+nVV, tmp1, nOO+nVV, 0d0, S1, nVV)
-  !S1 = + matmul(transpose(Z1),matmul(M,Z1))
 
   if(nOO > 0) call dgemm ('N', 'N', nOO+nVV, nOO, nOO+nVV, 1d0,  M, nOO+nVV, -1d0*Z2, nOO+nVV, 0d0, tmp2, nOO+nVV)
   if(nOO > 0) call dgemm ('T', 'N', nOO    , nOO, nOO+nVV, 1d0, Z2, nOO+nVV, tmp2, nOO+nVV, 0d0, S2, nOO)
-  ! S2 = - matmul(transpose(Z2),matmul(M,Z2))
 
-  if(nVV > 0) call orthogonalization_matrix(1,nVV,S1,O1)
-  if(nOO > 0) call orthogonalization_matrix(1,nOO,S2,O2)
+! S1 = + matmul(transpose(Z1),matmul(M,Z1))
+! S2 = - matmul(transpose(Z2),matmul(M,Z2))
 
-  !Z1 = matmul(Z1,O1)
+  if(nVV > 0) call orthogonalization_matrix(nVV,S1,O1)
+  if(nOO > 0) call orthogonalization_matrix(nOO,S2,O2)
+
   if(nVV > 0) call dgemm ('N', 'N', nOO+nVV,nVV,nVV, 1d0, Z1, nOO+nVV, O1, nVV,0d0, tmp1, nOO+nVV)
   Z1 = tmp1
   if(nOO > 0) call dgemm ('N', 'N', nOO+nVV,nOO,nOO, 1d0, Z2, nOO+nVV, O2, nOO,0d0, tmp2, nOO+nVV)
   Z2 = tmp2
+
+! Z1 = matmul(Z1,O1)
+! Z2 = matmul(Z2,O2)
 
 ! Define submatrices X1, Y1, X2, & Y2
 

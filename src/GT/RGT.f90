@@ -1,7 +1,7 @@
-subroutine RGT(dotest,doG0T0pp,doevGTpp,doqsGTpp,doG0T0eh,doevGTeh,doqsGTeh,maxSCF,thresh,max_diis,doACFDT, &
-               exchange_kernel,doXBS,dophBSE,dophBSE2,doppBSE,TDA_T,TDA,dBSE,dTDA,singlet,triplet,   &
-               linearize,eta,regularize,nNuc,ZNuc,rNuc,ENuc,nBas,nC,nO,nV,nR,nS,EHF,S,X,T,V,Hc,      &
-               ERI_AO,ERI,dipole_int_AO,dipole_int,PHF,cHF,epsHF)
+subroutine RGT(dotest,doG0T0pp,doevGTpp,doqsGTpp,doG0T0eh,doevGTeh,doqsGTeh,maxSCF,thresh,max_diis,        &
+               doACFDT,exchange_kernel,doXBS,dophBSE,dophBSE2,doppBSE,TDA_T,TDA,dBSE,dTDA,singlet,triplet, &
+               linearize,eta,regularize,nNuc,ZNuc,rNuc,ENuc,nBas,nC,nO,nV,nR,nS,ERHF,S,X,T,V,Hc,      &
+               ERI_AO,ERI_MO,dipole_int_AO,dipole_int,PHF,cHF,eHF)
 
 ! T-matrix module
 
@@ -44,14 +44,14 @@ subroutine RGT(dotest,doG0T0pp,doevGTpp,doqsGTpp,doG0T0eh,doevGTeh,doqsGTeh,maxS
   double precision,intent(in)   :: ENuc
 
   integer,intent(in)            :: nBas
-  integer,intent(in)            :: nC(nspin)
-  integer,intent(in)            :: nO(nspin)
-  integer,intent(in)            :: nV(nspin)
-  integer,intent(in)            :: nR(nspin)
-  integer,intent(in)            :: nS(nspin)
+  integer,intent(in)            :: nC
+  integer,intent(in)            :: nO
+  integer,intent(in)            :: nV
+  integer,intent(in)            :: nR
+  integer,intent(in)            :: nS
 
-  double precision,intent(in)   :: EHF
-  double precision,intent(in)   :: epsHF(nBas)
+  double precision,intent(in)   :: ERHF
+  double precision,intent(in)   :: eHF(nBas)
   double precision,intent(in)   :: cHF(nBas,nBas)
   double precision,intent(in)   :: PHF(nBas,nBas)
   double precision,intent(in)   :: S(nBas,nBas)
@@ -60,7 +60,7 @@ subroutine RGT(dotest,doG0T0pp,doevGTpp,doqsGTpp,doG0T0eh,doevGTeh,doqsGTeh,maxS
   double precision,intent(in)   :: Hc(nBas,nBas)
   double precision,intent(in)   :: X(nBas,nBas)
   double precision,intent(in)   :: ERI_AO(nBas,nBas,nBas,nBas)
-  double precision,intent(in)   :: ERI(nBas,nBas,nBas,nBas)
+  double precision,intent(in)   :: ERI_MO(nBas,nBas,nBas,nBas)
   double precision,intent(in)   :: dipole_int_AO(nBas,nBas,ncart)
   double precision,intent(in)   :: dipole_int(nBas,nBas,ncart)
 
@@ -77,12 +77,20 @@ subroutine RGT(dotest,doG0T0pp,doevGTpp,doqsGTpp,doG0T0eh,doevGTeh,doqsGTeh,maxS
     
     call wall_time(start_GT)
     call RG0T0pp(dotest,doACFDT,exchange_kernel,doXBS,dophBSE,TDA_T,TDA,dBSE,dTDA,doppBSE,singlet,triplet, &
-                linearize,eta,regularize,nBas,nC,nO,nV,nR,nS,ENuc,EHF,ERI,dipole_int,epsHF)
+                linearize,eta,regularize,nBas,nC,nO,nV,nR,nS,ENuc,ERHF,ERI_MO,dipole_int,eHF)
     call wall_time(end_GT)
   
     t_GT = end_GT - start_GT
     write(*,'(A65,1X,F9.3,A8)') 'Total CPU time for G0T0 = ',t_GT,' seconds'
     write(*,*)
+
+!   call wall_time(start_GT)
+!   call ufG0T0pp(dotest,TDA_T,nBas,nC,nO,nV,nR,nS,ENuc,ERHF,ERI_MO,eHF)
+!   call wall_time(end_GT)
+! 
+!   t_GT = end_GT - start_GT
+!   write(*,'(A65,1X,F9.3,A8)') 'Total CPU time for ufG0T0 = ',t_GT,' seconds'
+!   write(*,*)
 
   end if
 
@@ -94,7 +102,7 @@ subroutine RGT(dotest,doG0T0pp,doevGTpp,doqsGTpp,doG0T0eh,doevGTeh,doqsGTeh,maxS
     
     call wall_time(start_GT)
     call evRGTpp(dotest,maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,dophBSE,TDA_T,TDA,dBSE,dTDA,singlet,triplet, &
-                 linearize,eta,regularize,nBas,nC,nO,nV,nR,nS,ENuc,EHF,ERI,dipole_int,epsHF)
+                 linearize,eta,regularize,nBas,nC,nO,nV,nR,nS,ENuc,ERHF,ERI_MO,dipole_int,eHF)
     call wall_time(end_GT)
   
     t_GT = end_GT - start_GT
@@ -110,9 +118,9 @@ subroutine RGT(dotest,doG0T0pp,doevGTpp,doqsGTpp,doG0T0eh,doevGTeh,doqsGTeh,maxS
   if(doqsGTpp) then 
 
     call wall_time(start_GT)
-    call qsRGTpp(dotest,maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,dophBSE,TDA_T,TDA,dBSE,dTDA,singlet,triplet,          &
-                 eta,regularize,nNuc,ZNuc,rNuc,ENuc,nBas,nC,nO,nV,nR,nS,EHF,S,X,T,V,Hc,ERI_AO,ERI,dipole_int_AO,dipole_int, & 
-                 PHF,cHF,epsHF)
+    call qsRGTpp(dotest,maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,dophBSE,TDA_T,TDA,dBSE,dTDA,singlet,triplet,       &
+                 eta,regularize,nNuc,ZNuc,rNuc,ENuc,nBas,nC,nO,nV,nR,nS,ERHF,S,X,T,V,Hc,ERI_AO,ERI_MO,dipole_int_AO,dipole_int, & 
+                 PHF,cHF,eHF)
     call wall_time(end_GT)
 
     t_GT = end_GT - start_GT
@@ -129,7 +137,7 @@ subroutine RGT(dotest,doG0T0pp,doevGTpp,doqsGTpp,doG0T0eh,doevGTeh,doqsGTeh,maxS
     
     call wall_time(start_GT)
     call RG0T0eh(dotest,doACFDT,exchange_kernel,doXBS,dophBSE,dophBSE2,TDA_T,TDA,dBSE,dTDA,doppBSE,singlet,triplet, &
-                 linearize,eta,regularize,nBas,nC,nO,nV,nR,nS,ENuc,EHF,ERI,dipole_int,epsHF)
+                 linearize,eta,regularize,nBas,nC,nO,nV,nR,nS,ENuc,ERHF,ERI_MO,dipole_int,eHF)
     call wall_time(end_GT)
   
     t_GT = end_GT - start_GT
@@ -146,7 +154,7 @@ subroutine RGT(dotest,doG0T0pp,doevGTpp,doqsGTpp,doG0T0eh,doevGTeh,doqsGTeh,maxS
 
     call wall_time(start_GT)
     call evRGTeh(dotest,maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,dophBSE,dophBSE2,TDA_T,TDA,dBSE,dTDA,doppBSE, &
-                 singlet,triplet,linearize,eta,regularize,nBas,nC,nO,nV,nR,nS,ENuc,EHF,ERI,dipole_int,epsHF)
+                 singlet,triplet,linearize,eta,regularize,nBas,nC,nO,nV,nR,nS,ENuc,ERHF,ERI_MO,dipole_int,eHF)
     call wall_time(end_GT)
 
     t_GT = end_GT - start_GT
@@ -163,8 +171,8 @@ subroutine RGT(dotest,doG0T0pp,doevGTpp,doqsGTpp,doG0T0eh,doevGTeh,doqsGTeh,maxS
 
     call wall_time(start_GT)
     call qsRGTeh(dotest,maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,dophBSE,dophBSE2,TDA_T,TDA,dBSE,dTDA,singlet,triplet, &
-                 eta,regularize,nNuc,ZNuc,rNuc,ENuc,nBas,nC,nO,nV,nR,nS,EHF,S,X,T,V,Hc,ERI_AO,ERI,dipole_int_AO,dipole_int, & 
-                 PHF,cHF,epsHF)
+                 eta,regularize,nNuc,ZNuc,rNuc,ENuc,nBas,nC,nO,nV,nR,nS,ERHF,S,X,T,V,Hc,ERI_AO,ERI_MO,dipole_int_AO,dipole_int,    & 
+                 PHF,cHF,eHF)
     call wall_time(end_GT)
 
     t_GT = end_GT - start_GT
