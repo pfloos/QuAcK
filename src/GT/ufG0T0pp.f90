@@ -88,8 +88,8 @@ subroutine ufG0T0pp(dotest,TDA_T,nBas,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,eHF)
 
 ! Dimension of the supermatrix
 
-  n2h1p = nOO*nV
-  n2p1h = nVV*nO
+  n2h1p = (nOOs+nOOt)*nV
+  n2p1h = (nVVs+nVVt)*nO
   nH = 1 + n2h1p + n2p1h
   
 ! Initialization
