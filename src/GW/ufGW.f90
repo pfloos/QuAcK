@@ -30,6 +30,7 @@ subroutine ufGW(dotest,TDA_W,nBas,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,eHF)
   integer                       :: ia,ja,kc,lc
   integer                       :: klc,kcd,ija,iab
 
+  logical                       :: print_W = .false.
   logical                       :: dRPA
   integer                       :: ispin
   double precision              :: EcRPA
@@ -251,6 +252,8 @@ subroutine ufGW(dotest,TDA_W,nBas,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,eHF)
     if(.not.TDA_W) call phLR_B(ispin,dRPA,nBas,nC,nO,nV,nR,nS,1d0,ERI,Bph)
 
     call phLR(TDA_W,nS,Aph,Bph,EcRPA,Om,XpY,XmY)
+
+    if(print_W) call print_excitation_energies('phRPA@RHF','singlet',nS,Om)
 
     !--------------------------!
     ! Compute spectral weights !

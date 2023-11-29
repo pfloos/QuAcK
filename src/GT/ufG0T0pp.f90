@@ -30,6 +30,7 @@ subroutine ufG0T0pp(dotest,TDA_T,nBas,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,eHF)
   integer                       :: ij,ab
   integer                       :: klc,kcd,ija,ijb,iab,jab
 
+  logical                       :: print_T = .false.
   logical                       :: dRPA
   integer                       :: ispin
   integer                       :: iblock
@@ -53,7 +54,7 @@ subroutine ufG0T0pp(dotest,TDA_T,nBas,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,eHF)
   double precision,allocatable  :: Y2s(:,:),Y2t(:,:)
   double precision,allocatable  :: rho2s(:,:,:),rho2t(:,:,:)
 
-  logical                       :: verbose = .true.
+  logical                       :: verbose = .false.
   double precision,parameter    :: cutoff1 = 0.01d0
   double precision,parameter    :: cutoff2 = 0.01d0
   double precision              :: eF
@@ -73,11 +74,11 @@ subroutine ufG0T0pp(dotest,TDA_T,nBas,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,eHF)
 
 ! Dimensions of the ppRPA linear reponse matrices
 
-  nOOs = nO*(nO + 1)/2
-  nVVs = nV*(nV + 1)/2
+! nOOs = nO*(nO + 1)/2
+! nVVs = nV*(nV + 1)/2
 
-! nOOs = nO*nO
-! nVVs = nV*nV
+  nOOs = nO*nO
+  nVVs = nV*nV
 
   nOOt = nO*(nO - 1)/2
   nVVt = nV*(nV - 1)/2
@@ -106,7 +107,7 @@ subroutine ufG0T0pp(dotest,TDA_T,nBas,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,eHF)
 ! Main loop over orbitals !
 !-------------------------!
 
-  do p=nO-1,nO
+  do p=nC+1,nBas-nR
 
     H(:,:) = 0d0
 
@@ -265,8 +266,8 @@ subroutine ufG0T0pp(dotest,TDA_T,nBas,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,eHF)
       ! alpha-beta block
  
       ispin  = 1
-      iblock = 1
-!     iblock = 3
+!     iblock = 1
+      iblock = 3
 
       ! Compute linear response
 
@@ -280,14 +281,14 @@ subroutine ufG0T0pp(dotest,TDA_T,nBas,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,eHF)
 
       deallocate(Bpp,Cpp,Dpp)
 
-      call print_excitation_energies('ppRPA@RHF','2p (alpha-beta)',nVVs,Om1s(:))
-      call print_excitation_energies('ppRPA@RHF','2h (alpha-beta)',nOOs,Om2s(:))
+      if(print_T) call print_excitation_energies('ppRPA@RHF','2p (alpha-beta)',nVVs,Om1s(:))
+      if(print_T) call print_excitation_energies('ppRPA@RHF','2h (alpha-beta)',nOOs,Om2s(:))
 
       ! alpha-alpha block
 
       ispin  = 2
-      iblock = 2
-!     iblock = 4
+!     iblock = 2
+      iblock = 4
 
       ! Compute linear response
 
@@ -301,20 +302,20 @@ subroutine ufG0T0pp(dotest,TDA_T,nBas,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,eHF)
   
       deallocate(Bpp,Cpp,Dpp)
 
-      call print_excitation_energies('ppRPA@RHF','2p (alpha-alpha)',nVVt,Om1t)
-      call print_excitation_energies('ppRPA@RHF','2h (alpha-beta)',nOOt,Om2t)
+      if(print_T) call print_excitation_energies('ppRPA@RHF','2p (alpha-alpha)',nVVt,Om1t)
+      if(print_T) call print_excitation_energies('ppRPA@RHF','2h (alpha-beta)',nOOt,Om2t)
 
       !----------------------------------------------
       ! Compute excitation densities
       !----------------------------------------------
 
+!     iblock = 1
       iblock = 3
       call GTpp_excitation_density(iblock,nBas,nC,nO,nV,nR,nOOs,nVVs,ERI,X1s,Y1s,rho1s,X2s,Y2s,rho2s)
 
+!     iblock = 2
       iblock = 4
       call GTpp_excitation_density(iblock,nBas,nC,nO,nV,nR,nOOt,nVVt,ERI,X1t,Y1t,rho1t,X2t,Y2t,rho2t)
-
-      deallocate(Om1s,X1s,Y1s,Om2s,X2s,Y2s,Om1t,X1t,Y1t,Om2t,X2t,Y2t)
 
       call wall_time(start_timing)
 
@@ -333,7 +334,7 @@ subroutine ufG0T0pp(dotest,TDA_T,nBas,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,eHF)
         do a=nO+1,nBas-nR
           ija = ija + 1
  
-          H(1+ija,1+ija) = - eHF(i) + Om2s(ij) 
+          H(1+ija,1+ija) = - eHF(a) + Om2s(ij) 
  
         end do
       end do
@@ -342,7 +343,7 @@ subroutine ufG0T0pp(dotest,TDA_T,nBas,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,eHF)
         do a=nO+1,nBas-nR
           ija = ija + 1
  
-          H(1+ija,1+ija) = - eHF(i) + Om2t(ij) 
+          H(1+ija,1+ija) = - eHF(a) + Om2t(ij) 
  
         end do
       end do
@@ -390,7 +391,7 @@ subroutine ufG0T0pp(dotest,TDA_T,nBas,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,eHF)
         do i=nC+1,nO
           iab = iab + 1
  
-          H(1+n2h1p+iab,1+n2h1p+iab) = - eHF(i) + Om2s(ab)
+          H(1+n2h1p+iab,1+n2h1p+iab) = - eHF(i) + Om1t(ab)
  
         end do
       end do
@@ -419,10 +420,10 @@ subroutine ufG0T0pp(dotest,TDA_T,nBas,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,eHF)
  
         end do
       end do
-       
-      ! Memory deallocation
 
-      deallocate(rho1s,rho2s,rho1t,rho2t)
+      ! Memory allocation
+
+      deallocate(Om1s,X1s,Y1s,Om2s,X2s,Y2s,rho1s,rho2s,Om1t,X1t,Y1t,Om2t,X2t,Y2t,rho1t,rho2t)
 
       call wall_time(end_timing)
  
@@ -461,15 +462,15 @@ subroutine ufG0T0pp(dotest,TDA_T,nBas,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,eHF)
     !--------------!
  
     write(*,*)'-------------------------------------------'
-    write(*,'(1X,A32,I3,A8)')'| G0T0pp energies (eV) for orbital',p,'      |'
+    write(*,'(1X,A34,I3,A6)')'| G0T0pp energies (eV) for orbital',p,'    |'
     write(*,*)'-------------------------------------------'
     write(*,'(1X,A1,1X,A3,1X,A1,1X,A15,1X,A1,1X,A15,1X,A1,1X,A15,1X)') &
               '|','#','|','e_QP','|','Z','|'
     write(*,*)'-------------------------------------------'
   
     do s=1,nH
-      if(eGT(s) < eF .and. eGT(s) > eF - window) then
-!     if(Z(s) > cutoff1) then
+!     if(eGT(s) < eF .and. eGT(s) > eF - window) then
+      if(Z(s) > cutoff1) then
         write(*,'(1X,A1,1X,I3,1X,A1,1X,F15.6,1X,A1,1X,F15.6,1X,A1,1X)') &
         '|',s,'|',eGT(s)*HaToeV,'|',Z(s),'|'
       end if
@@ -544,13 +545,14 @@ subroutine ufG0T0pp(dotest,TDA_T,nBas,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,eHF)
  
         do s=1,nH
         
-          if(eGT(s) < eF .and. eGT(s) > eF - window) then
+!         if(eGT(s) < eF .and. eGT(s) > eF - window) then
+          if(Z(s) > cutoff2) then
         
             write(*,*)'-------------------------------------------------------------'
             write(*,'(1X,A7,1X,I3,A6,I3,A1,1X,A7,F12.6,A13,F6.4,1X)') & 
              'Orbital',p,' and #',s,':','e_QP = ',eGT(s)*HaToeV,' eV and Z = ',Z(s)
             write(*,*)'-------------------------------------------------------------'
-            write(*,'(1X,A20,1X,A20,1X,A15,1X)') &
+            write(*,'(1X,A24,1X,A20,1X,A15,1X)') &
                       ' Conf. (i,ab) or (a,ij) ',' Coefficient ',' Weight ' 
             write(*,*)'-------------------------------------------------------------'
            
@@ -597,7 +599,5 @@ subroutine ufG0T0pp(dotest,TDA_T,nBas,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,eHF)
     end if
 
   end do
-
-  deallocate(H,eGT,Z)
 
 end subroutine 

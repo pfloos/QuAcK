@@ -84,13 +84,13 @@ subroutine RGT(dotest,doG0T0pp,doevGTpp,doqsGTpp,doG0T0eh,doevGTeh,doqsGTeh,maxS
     write(*,'(A65,1X,F9.3,A8)') 'Total CPU time for G0T0 = ',t_GT,' seconds'
     write(*,*)
 
-!   call wall_time(start_GT)
-!   call ufG0T0pp(dotest,TDA_T,nBas,nC,nO,nV,nR,nS,ENuc,ERHF,ERI_MO,eHF)
-!   call wall_time(end_GT)
-! 
-!   t_GT = end_GT - start_GT
-!   write(*,'(A65,1X,F9.3,A8)') 'Total CPU time for ufG0T0 = ',t_GT,' seconds'
-!   write(*,*)
+    call wall_time(start_GT)
+    call ufG0T0pp(dotest,TDA_T,nBas,nC,nO,nV,nR,nS,ENuc,ERHF,ERI_MO,eHF)
+    call wall_time(end_GT)
+  
+    t_GT = end_GT - start_GT
+    write(*,'(A65,1X,F9.3,A8)') 'Total CPU time for ufG0T0 = ',t_GT,' seconds'
+    write(*,*)
 
   end if
 
