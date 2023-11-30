@@ -81,6 +81,39 @@ subroutine ufGW(dotest,TDA_W,nBas,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,eHF)
 
   eF = 0.5d0*(eHF(nO+1) + eHF(nO))
 
+!-------------------!
+! Compute screening !
+!-------------------!
+
+  if(.not. TDA_W) then
+
+    ! Memory allocation 
+
+    allocate(Om(nS),Aph(nS,nS),Bph(nS,nS),XpY(nS,nS),XmY(nS,nS),rho(nBas,nBas,nS))
+
+    ! Spin manifold 
+
+    ispin = 1
+
+    call phLR_A(ispin,dRPA,nBas,nC,nO,nV,nR,nS,1d0,eHF,ERI,Aph)
+    call phLR_B(ispin,dRPA,nBas,nC,nO,nV,nR,nS,1d0,ERI,Bph)
+
+    call phLR(TDA_W,nS,Aph,Bph,EcRPA,Om,XpY,XmY)
+
+    if(print_W) call print_excitation_energies('phRPA@RHF','singlet',nS,Om)
+
+    !--------------------------!
+    ! Compute spectral weights !
+    !--------------------------!
+
+    call GW_excitation_density(nBas,nC,nO,nR,nS,ERI,XpY,rho)
+
+    deallocate(Aph,Bph,XpY,XmY)
+
+  end if
+
+! Initialization
+
   H(:,:) = 0d0
 
   if (TDA_W) then
@@ -236,31 +269,6 @@ subroutine ufGW(dotest,TDA_W,nBas,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,eHF)
     !                           !
     !---------------------------!
 
-    ! Memory allocation 
-
-    allocate(Om(nS),Aph(nS,nS),Bph(nS,nS),XpY(nS,nS),XmY(nS,nS),rho(nBas,nBas,nS))
-
-    ! Spin manifold 
-
-    ispin = 1
-
-    !-------------------!
-    ! Compute screening !
-    !-------------------!
-
-                   call phLR_A(ispin,dRPA,nBas,nC,nO,nV,nR,nS,1d0,eHF,ERI,Aph)
-    if(.not.TDA_W) call phLR_B(ispin,dRPA,nBas,nC,nO,nV,nR,nS,1d0,ERI,Bph)
-
-    call phLR(TDA_W,nS,Aph,Bph,EcRPA,Om,XpY,XmY)
-
-    if(print_W) call print_excitation_energies('phRPA@RHF','singlet',nS,Om)
-
-    !--------------------------!
-    ! Compute spectral weights !
-    !--------------------------!
-
-    call GW_excitation_density(nBas,nC,nO,nR,nS,ERI,XpY,rho)
-
     call wall_time(start_timing)
 
     !---------!
@@ -337,10 +345,6 @@ subroutine ufGW(dotest,TDA_W,nBas,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,eHF)
       end do
     end do
 
-    ! Memory deallocation 
-
-    deallocate(Om,Aph,Bph,XpY,XmY,rho)
-
     call wall_time(end_timing)
 
     timing = end_timing - start_timing
@@ -393,7 +397,7 @@ subroutine ufGW(dotest,TDA_W,nBas,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,eHF)
       write(*,'(1X,A1,1X,I5,1X,A1,1X,F15.6,1X,A1,1X,F15.6,1X,A1,1X)') &
       '|',s,'|',eGW(s)*HaToeV,'|',Z(s),'|'
     end if
-  enddo
+  end do
 
   write(*,*)'---------------------------------------------'
   write(*,*)

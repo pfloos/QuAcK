@@ -81,6 +81,37 @@ subroutine ufG0W0(dotest,TDA_W,nBas,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,eHF)
 
   eF = 0.5d0*(eHF(nO+1) + eHF(nO))
 
+!-------------------!
+! Compute screening !
+!-------------------!
+
+  if(.not. TDA_W) then
+
+    ! Spin manifold 
+ 
+    ispin = 1
+
+    ! Memory allocation
+
+    allocate(Om(nS),Aph(nS,nS),Bph(nS,nS),XpY(nS,nS),XmY(nS,nS),rho(nBas,nBas,nS))
+ 
+    call phLR_A(ispin,dRPA,nBas,nC,nO,nV,nR,nS,1d0,eHF,ERI,Aph)
+    call phLR_B(ispin,dRPA,nBas,nC,nO,nV,nR,nS,1d0,ERI,Bph)
+ 
+    call phLR(TDA_W,nS,Aph,Bph,EcRPA,Om,XpY,XmY)
+
+    if(print_W) call print_excitation_energies('phRPA@RHF','singlet',nS,Om)
+ 
+    !--------------------------!
+    ! Compute spectral weights !
+    !--------------------------!
+ 
+    call GW_excitation_density(nBas,nC,nO,nR,nS,ERI,XpY,rho)
+
+    deallocate(Aph,Bph,XpY,XmY)
+
+  end if
+
 !-------------------------!
 ! Main loop over orbitals !
 !-------------------------!
@@ -89,7 +120,7 @@ subroutine ufG0W0(dotest,TDA_W,nBas,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,eHF)
 
     H(:,:) = 0d0
 
-    if (TDA_W) then
+    if(TDA_W) then
  
       ! TDA for W
  
@@ -215,8 +246,6 @@ subroutine ufG0W0(dotest,TDA_W,nBas,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,eHF)
 
     else
  
-      ! RPA for W
- 
       write(*,*) 'Tamm-Dancoff approximation deactivated!'
       write(*,*)
  
@@ -231,34 +260,9 @@ subroutine ufG0W0(dotest,TDA_W,nBas,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,eHF)
       !     | W2p1h   0   D2p1h | ! 
       !                           !
       !---------------------------!
- 
-      ! Spin manifold 
- 
-      ispin = 1
 
-      ! Memory allocation
-
-      allocate(Om(nS),Aph(nS,nS),Bph(nS,nS),XpY(nS,nS),XmY(nS,nS),rho(nBas,nBas,nS))
- 
-      !-------------------!
-      ! Compute screening !
-      !-------------------!
- 
-                     call phLR_A(ispin,dRPA,nBas,nC,nO,nV,nR,nS,1d0,eHF,ERI,Aph)
-      if(.not.TDA_W) call phLR_B(ispin,dRPA,nBas,nC,nO,nV,nR,nS,1d0,ERI,Bph)
- 
-      call phLR(TDA_W,nS,Aph,Bph,EcRPA,Om,XpY,XmY)
-
-      if(print_W) call print_excitation_energies('phRPA@RHF','singlet',nS,Om)
- 
-      !--------------------------!
-      ! Compute spectral weights !
-      !--------------------------!
- 
-      call GW_excitation_density(nBas,nC,nO,nR,nS,ERI,XpY,rho)
- 
       call wall_time(start_timing)
-
+ 
       !---------!
       ! Block F !
       !---------!
@@ -322,10 +326,6 @@ subroutine ufG0W0(dotest,TDA_W,nBas,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,eHF)
  
         end do
       end do
-       
-      ! Memory deallocation
-
-      deallocate(Om,Aph,Bph,XpY,XmY,rho)
 
       call wall_time(end_timing)
  

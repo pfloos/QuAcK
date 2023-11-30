@@ -102,6 +102,73 @@ subroutine ufG0T0pp(dotest,TDA_T,nBas,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,eHF)
 
   eF = 0.5d0*(eHF(nO+1) + eHF(nO))
 
+!------------------!
+! Compute T-matrix !
+!------------------!
+ 
+  if(.not. TDA_T) then
+
+    ! Memory allocation
+
+    allocate(Om1s(nVVs),X1s(nVVs,nVVs),Y1s(nOOs,nVVs),    &
+             Om2s(nOOs),X2s(nVVs,nOOs),Y2s(nOOs,nOOs),    &
+             rho1s(nBas,nBas,nVVs),rho2s(nBas,nBas,nOOs), &
+             Om1t(nVVt),X1t(nVVt,nVVt),Y1t(nOOt,nVVt),    &
+             Om2t(nOOt),X2t(nVVt,nOOt),Y2t(nOOt,nOOt),    &
+             rho1t(nBas,nBas,nVVt),rho2t(nBas,nBas,nOOt))
+
+    ! alpha-beta block
+ 
+    ispin  = 1
+    iblock = 1
+!   iblock = 3
+
+    ! Compute linear response
+
+    allocate(Bpp(nVVs,nOOs),Cpp(nVVs,nVVs),Dpp(nOOs,nOOs))
+
+    if(.not.TDA_T) call ppLR_B(iblock,nBas,nC,nO,nV,nR,nOOs,nVVs,1d0,ERI,Bpp)
+                   call ppLR_C(iblock,nBas,nC,nO,nV,nR,nVVs,1d0,eHF,ERI,Cpp)
+                   call ppLR_D(iblock,nBas,nC,nO,nV,nR,nOOs,1d0,eHF,ERI,Dpp)
+
+    call ppLR(TDA_T,nOOs,nVVs,Bpp,Cpp,Dpp,Om1s,X1s,Y1s,Om2s,X2s,Y2s,EcRPA(ispin))
+
+    if(print_T) call print_excitation_energies('ppRPA@RHF','2p (alpha-beta)',nVVs,Om1s(:))
+    if(print_T) call print_excitation_energies('ppRPA@RHF','2h (alpha-beta)',nOOs,Om2s(:))
+
+    ! Compute excitation densities
+
+    call GTpp_excitation_density(iblock,nBas,nC,nO,nV,nR,nOOs,nVVs,ERI,X1s,Y1s,rho1s,X2s,Y2s,rho2s)
+
+    deallocate(Bpp,Cpp,Dpp,X1s,Y1s,X2s,Y2s)
+
+    ! alpha-alpha block
+
+    ispin  = 2
+    iblock = 2
+!   iblock = 4
+
+    ! Compute linear response
+
+    allocate(Bpp(nVVt,nOOt),Cpp(nVVt,nVVt),Dpp(nOOt,nOOt))
+  
+    if(.not.TDA_T) call ppLR_B(iblock,nBas,nC,nO,nV,nR,nOOt,nVVt,1d0,ERI,Bpp)
+                   call ppLR_C(iblock,nBas,nC,nO,nV,nR,nVVt,1d0,eHF,ERI,Cpp)
+                   call ppLR_D(iblock,nBas,nC,nO,nV,nR,nOOt,1d0,eHF,ERI,Dpp)
+  
+    call ppLR(TDA_T,nOOt,nVVt,Bpp,Cpp,Dpp,Om1t,X1t,Y1t,Om2t,X2t,Y2t,EcRPA(ispin))
+  
+    if(print_T) call print_excitation_energies('ppRPA@RHF','2p (alpha-alpha)',nVVt,Om1t)
+    if(print_T) call print_excitation_energies('ppRPA@RHF','2h (alpha-beta)',nOOt,Om2t)
+
+    ! Compute excitation densities
+
+    call GTpp_excitation_density(iblock,nBas,nC,nO,nV,nR,nOOt,nVVt,ERI,X1t,Y1t,rho1t,X2t,Y2t,rho2t)
+
+    deallocate(Bpp,Cpp,Dpp,X1t,Y1t,X2t,Y2t)
+
+  end if
+
 ! Memory allocation
 
   allocate(H(nH,nH),eGT(nH),Z(nH))
@@ -140,10 +207,10 @@ subroutine ufG0T0pp(dotest,TDA_T,nBas,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,eHF)
       !---------!
       
 !     H(1,1) = eHF(p)
-!
-!     !-------------!
-!     ! Block V2h1p !
-!     !-------------!
+ 
+      !-------------!
+      ! Block V2h1p !
+      !-------------!
 
 !     ija = 0
 !     do i=nC+1,nO
@@ -151,8 +218,8 @@ subroutine ufG0T0pp(dotest,TDA_T,nBas,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,eHF)
 !         do a=nO+1,nBas-nR
 !           ija = ija + 1
 !              
-!           H(1    ,1+ija) = sqrt(2d0)*ERI(p,a,i,j)
-!           H(1+ija,1    ) = sqrt(2d0)*ERI(p,a,i,j)
+!           H(1    ,1+ija) = ERI(p,a,i,j)
+!           H(1+ija,1    ) = ERI(p,a,i,j)
 !
 !         end do
 !       end do
@@ -256,69 +323,6 @@ subroutine ufG0T0pp(dotest,TDA_T,nBas,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,eHF)
       !     | W2p1h   0   D2p1h | ! 
       !                           !
       !---------------------------!
- 
-      ! Memory allocation
-
-      allocate(Om1s(nVVs),X1s(nVVs,nVVs),Y1s(nOOs,nVVs),    &
-               Om2s(nOOs),X2s(nVVs,nOOs),Y2s(nOOs,nOOs),    &
-               rho1s(nBas,nBas,nVVs),rho2s(nBas,nBas,nOOs), &
-               Om1t(nVVt),X1t(nVVt,nVVt),Y1t(nOOt,nVVt),    &
-               Om2t(nOOt),X2t(nVVt,nOOt),Y2t(nOOt,nOOt),    &
-               rho1t(nBas,nBas,nVVt),rho2t(nBas,nBas,nOOt))
-
-      ! alpha-beta block
- 
-      ispin  = 1
-      iblock = 1
-!     iblock = 3
-
-      ! Compute linear response
-
-      allocate(Bpp(nVVs,nOOs),Cpp(nVVs,nVVs),Dpp(nOOs,nOOs))
-
-      if(.not.TDA_T) call ppLR_B(iblock,nBas,nC,nO,nV,nR,nOOs,nVVs,1d0,ERI,Bpp)
-                     call ppLR_C(iblock,nBas,nC,nO,nV,nR,nVVs,1d0,eHF,ERI,Cpp)
-                     call ppLR_D(iblock,nBas,nC,nO,nV,nR,nOOs,1d0,eHF,ERI,Dpp)
-
-      call ppLR(TDA_T,nOOs,nVVs,Bpp,Cpp,Dpp,Om1s,X1s,Y1s,Om2s,X2s,Y2s,EcRPA(ispin))
-
-      deallocate(Bpp,Cpp,Dpp)
-
-      if(print_T) call print_excitation_energies('ppRPA@RHF','2p (alpha-beta)',nVVs,Om1s(:))
-      if(print_T) call print_excitation_energies('ppRPA@RHF','2h (alpha-beta)',nOOs,Om2s(:))
-
-      ! alpha-alpha block
-
-      ispin  = 2
-      iblock = 2
-!     iblock = 4
-
-      ! Compute linear response
-
-      allocate(Bpp(nVVt,nOOt),Cpp(nVVt,nVVt),Dpp(nOOt,nOOt))
-  
-      if(.not.TDA_T) call ppLR_B(iblock,nBas,nC,nO,nV,nR,nOOt,nVVt,1d0,ERI,Bpp)
-                     call ppLR_C(iblock,nBas,nC,nO,nV,nR,nVVt,1d0,eHF,ERI,Cpp)
-                     call ppLR_D(iblock,nBas,nC,nO,nV,nR,nOOt,1d0,eHF,ERI,Dpp)
-  
-      call ppLR(TDA_T,nOOt,nVVt,Bpp,Cpp,Dpp,Om1t,X1t,Y1t,Om2t,X2t,Y2t,EcRPA(ispin))
-  
-      deallocate(Bpp,Cpp,Dpp)
-
-      if(print_T) call print_excitation_energies('ppRPA@RHF','2p (alpha-alpha)',nVVt,Om1t)
-      if(print_T) call print_excitation_energies('ppRPA@RHF','2h (alpha-beta)',nOOt,Om2t)
-
-      !----------------------------------------------
-      ! Compute excitation densities
-      !----------------------------------------------
-
-      iblock = 1
-!     iblock = 3
-      call GTpp_excitation_density(iblock,nBas,nC,nO,nV,nR,nOOs,nVVs,ERI,X1s,Y1s,rho1s,X2s,Y2s,rho2s)
-
-      iblock = 2
-!     iblock = 4
-      call GTpp_excitation_density(iblock,nBas,nC,nO,nV,nR,nOOt,nVVt,ERI,X1t,Y1t,rho1t,X2t,Y2t,rho2t)
 
       call wall_time(start_timing)
 
@@ -423,10 +427,6 @@ subroutine ufG0T0pp(dotest,TDA_T,nBas,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,eHF)
  
         end do
       end do
-
-      ! Memory allocation
-
-      deallocate(Om1s,X1s,Y1s,Om2s,X2s,Y2s,rho1s,rho2s,Om1t,X1t,Y1t,Om2t,X2t,Y2t,rho1t,rho2t)
 
       call wall_time(end_timing)
  
