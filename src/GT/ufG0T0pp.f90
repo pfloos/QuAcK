@@ -62,9 +62,6 @@ subroutine ufG0T0pp(dotest,TDA_T,nBas,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,eHF)
 
   double precision              :: start_timing,end_timing,timing
 
-  double precision              :: alpha = sqrt(1d0)
-  double precision              :: beta  = sqrt(1d0)
-
 ! Output variables
 
 ! Hello world
@@ -77,11 +74,11 @@ subroutine ufG0T0pp(dotest,TDA_T,nBas,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,eHF)
 
 ! Dimensions of the ppRPA linear reponse matrices
 
-  nOOs = nO*(nO + 1)/2
-  nVVs = nV*(nV + 1)/2
+! nOOs = nO*(nO + 1)/2
+! nVVs = nV*(nV + 1)/2
 
-! nOOs = nO*nO
-! nVVs = nV*nV
+  nOOs = nO*nO
+  nVVs = nV*nV
 
   nOOt = nO*(nO - 1)/2
   nVVt = nV*(nV - 1)/2
@@ -120,16 +117,16 @@ subroutine ufG0T0pp(dotest,TDA_T,nBas,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,eHF)
     ! alpha-beta block
  
     ispin  = 1
-    iblock = 1
-!   iblock = 3
+!   iblock = 1
+    iblock = 3
 
     ! Compute linear response
 
     allocate(Bpp(nVVs,nOOs),Cpp(nVVs,nVVs),Dpp(nOOs,nOOs))
 
-    if(.not.TDA_T) call ppLR_B(iblock,nBas,nC,nO,nV,nR,nOOs,nVVs,1d0,ERI,Bpp)
-                   call ppLR_C(iblock,nBas,nC,nO,nV,nR,nVVs,1d0,eHF,ERI,Cpp)
-                   call ppLR_D(iblock,nBas,nC,nO,nV,nR,nOOs,1d0,eHF,ERI,Dpp)
+    call ppLR_B(iblock,nBas,nC,nO,nV,nR,nOOs,nVVs,1d0,ERI,Bpp)
+    call ppLR_C(iblock,nBas,nC,nO,nV,nR,nVVs,1d0,eHF,ERI,Cpp)
+    call ppLR_D(iblock,nBas,nC,nO,nV,nR,nOOs,1d0,eHF,ERI,Dpp)
 
     call ppLR(TDA_T,nOOs,nVVs,Bpp,Cpp,Dpp,Om1s,X1s,Y1s,Om2s,X2s,Y2s,EcRPA(ispin))
 
@@ -145,16 +142,16 @@ subroutine ufG0T0pp(dotest,TDA_T,nBas,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,eHF)
     ! alpha-alpha block
 
     ispin  = 2
-    iblock = 2
-!   iblock = 4
+!   iblock = 2
+    iblock = 4
 
     ! Compute linear response
 
     allocate(Bpp(nVVt,nOOt),Cpp(nVVt,nVVt),Dpp(nOOt,nOOt))
   
-    if(.not.TDA_T) call ppLR_B(iblock,nBas,nC,nO,nV,nR,nOOt,nVVt,1d0,ERI,Bpp)
-                   call ppLR_C(iblock,nBas,nC,nO,nV,nR,nVVt,1d0,eHF,ERI,Cpp)
-                   call ppLR_D(iblock,nBas,nC,nO,nV,nR,nOOt,1d0,eHF,ERI,Dpp)
+    call ppLR_B(iblock,nBas,nC,nO,nV,nR,nOOt,nVVt,1d0,ERI,Bpp)
+    call ppLR_C(iblock,nBas,nC,nO,nV,nR,nVVt,1d0,eHF,ERI,Cpp)
+    call ppLR_D(iblock,nBas,nC,nO,nV,nR,nOOt,1d0,eHF,ERI,Dpp)
   
     call ppLR(TDA_T,nOOt,nVVt,Bpp,Cpp,Dpp,Om1t,X1t,Y1t,Om2t,X2t,Y2t,EcRPA(ispin))
   
@@ -364,8 +361,8 @@ subroutine ufG0T0pp(dotest,TDA_T,nBas,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,eHF)
         do a=nO+1,nBas-nR
           ija = ija + 1
  
-          H(1    ,1+ija) = alpha*rho2s(p,a,ij)
-          H(1+ija,1    ) = alpha*rho2s(p,a,ij)
+          H(1    ,1+ija) = rho2s(p,a,ij)
+          H(1+ija,1    ) = rho2s(p,a,ij)
  
         end do
       end do
@@ -374,8 +371,8 @@ subroutine ufG0T0pp(dotest,TDA_T,nBas,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,eHF)
         do a=nO+1,nBas-nR
           ija = ija + 1
  
-          H(1    ,1+ija) = beta*rho2t(p,a,ij)
-          H(1+ija,1    ) = beta*rho2t(p,a,ij)
+          H(1    ,1+ija) = rho2t(p,a,ij)
+          H(1+ija,1    ) = rho2t(p,a,ij)
  
         end do
       end do
@@ -412,8 +409,8 @@ subroutine ufG0T0pp(dotest,TDA_T,nBas,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,eHF)
         do i=nC+1,nO
           iab = iab + 1
  
-          H(1          ,1+n2h1p+iab) = alpha*rho1s(p,i,ab)
-          H(1+n2h1p+iab,1          ) = alpha*rho1s(p,i,ab)
+          H(1          ,1+n2h1p+iab) = rho1s(p,i,ab)
+          H(1+n2h1p+iab,1          ) = rho1s(p,i,ab)
  
         end do
       end do
@@ -422,8 +419,8 @@ subroutine ufG0T0pp(dotest,TDA_T,nBas,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,eHF)
         do i=nC+1,nO
           iab = iab + 1
  
-          H(1          ,1+n2h1p+iab) = beta*rho1t(p,i,ab)
-          H(1+n2h1p+iab,1          ) = beta*rho1t(p,i,ab)
+          H(1          ,1+n2h1p+iab) = rho1t(p,i,ab)
+          H(1+n2h1p+iab,1          ) = rho1t(p,i,ab)
  
         end do
       end do
