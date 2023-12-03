@@ -37,8 +37,8 @@ double precision function GTeh_dSigC(p,w,eta,nBas,nC,nO,nV,nR,nS,e,Om,rhoL,rhoR)
         eps = w - e(i) + Om(m)
         num = rhoL(i,p,m)*rhoR(i,p,m)
         GTeh_dSigC = GTeh_dSigC - num*(eps**2 - eta**2)/(eps**2 + eta**2)**2
-     enddo
-  enddo
+     end do
+  end do
 
 ! Virtual part of the correlation self-energy
 
@@ -47,7 +47,7 @@ double precision function GTeh_dSigC(p,w,eta,nBas,nC,nO,nV,nR,nS,e,Om,rhoL,rhoR)
         eps = w - e(a) - Om(m)
         num = rhoL(p,a,m)*rhoR(p,a,m)
         GTeh_dSigC = GTeh_dSigC - num*(eps**2 - eta**2)/(eps**2 + eta**2)**2
-     enddo
-  enddo
+     end do
+  end do
 
 end function 

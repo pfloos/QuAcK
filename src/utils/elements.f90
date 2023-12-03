@@ -72,9 +72,9 @@ function element_core(zval,zatom)
    else
      write(*,*) '!!! not imlemented in element_core !!!'
      stop
-   endif
+   end if
 
- endif
+ end if
 
 
 end function element_core

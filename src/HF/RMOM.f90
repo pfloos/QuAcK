@@ -149,14 +149,14 @@ subroutine RMOM(maxSCF,thresh,max_diis,nBas,nO,S,T,V,Hc,ERI,X,ENuc,ERHF,c,e,P)
 
       Gap = 0d0
 
-    endif
+    end if
 
 !  Dump results
 
     write(*,'(1X,A1,1X,I3,1X,A1,1X,F16.10,1X,A1,1X,F10.6,1X,A1,1X,F10.6,1X,A1,1X)') & 
       '|',nSCF,'|',ERHF+ENuc,'|',Conv,'|',Gap,'|'
 
-  enddo
+  end do
   write(*,*)'----------------------------------------------------'
 !------------------------------------------------------------------------
 ! End of SCF loop
@@ -174,7 +174,7 @@ subroutine RMOM(maxSCF,thresh,max_diis,nBas,nO,S,T,V,Hc,ERI,X,ENuc,ERHF,c,e,P)
 
     stop
 
-  endif
+  end if
 
   write(*,*) 
   write(*,*) ' --- Final MO occupations --- '

@@ -46,11 +46,11 @@ subroutine GTeh_excitation_density(nBas,nC,nO,nR,nS,ERI,XpY,XmY,rhoL,rhoR)
 
                 rhoR(p,q,m) = rhoR(p,q,m) + (2d0*ERI(p,j,b,q) - ERI(p,j,q,b))*X + (2d0*ERI(p,b,j,q) - ERI(p,b,q,j))*Y
 
-              enddo
-           enddo
-        enddo
-     enddo
-  enddo
+              end do
+           end do
+        end do
+     end do
+  end do
   !$OMP END DO
   !$OMP END PARALLEL
 

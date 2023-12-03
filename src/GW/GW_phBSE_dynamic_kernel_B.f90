@@ -52,13 +52,13 @@ subroutine GW_phBSE_dynamic_kernel_B(eta,nBas,nC,nO,nV,nR,nS,lambda,eGW,OmRPA,rh
             eps =     - OmRPA(kc) - (eGW(a) - eGW(j))
             chi = chi + rho(i,b,kc)*rho(j,a,kc)*eps/(eps**2 + eta**2)
 
-          enddo
+          end do
 
           KB(ia,jb) = KB(ia,jb) - 2d0*lambda*chi
 
-        enddo
-      enddo
-    enddo
-  enddo
+        end do
+      end do
+    end do
+  end do
 
 end subroutine 

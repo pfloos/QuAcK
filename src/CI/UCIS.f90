@@ -76,7 +76,7 @@ subroutine UCIS(dotest,spin_conserved,spin_flip,nBas,nC,nO,nV,nR,nS,ERI_aaaa,ERI
       print*,'CIS matrix (spin-conserved transitions)'
       call matout(nS_sc,nS_sc,A_sc)
       write(*,*)
-    endif
+    end if
 
     call diagonalize_matrix(nS_sc,A_sc,Om_sc)
     A_sc(:,:) = transpose(A_sc)
@@ -88,7 +88,7 @@ subroutine UCIS(dotest,spin_conserved,spin_flip,nBas,nC,nO,nV,nR,nS,ERI_aaaa,ERI
       print*,'Spin-conserved CIS transition vectors'
       call matout(nS_sc,nS_sc,A_sc)
       write(*,*)
-    endif
+    end if
 
     ! Testing zone
 
@@ -100,7 +100,7 @@ subroutine UCIS(dotest,spin_conserved,spin_flip,nBas,nC,nO,nV,nR,nS,ERI_aaaa,ERI
 
     deallocate(A_sc,Om_sc)
 
-  endif
+  end if
 
 !-----------------------!
 ! Spin-flip transitions !
@@ -124,7 +124,7 @@ subroutine UCIS(dotest,spin_conserved,spin_flip,nBas,nC,nO,nV,nR,nS,ERI_aaaa,ERI
       print*,'CIS matrix (spin-conserved transitions)'
       call matout(nS_sf,nS_sf,A_sf)
       write(*,*)
-    endif
+    end if
 
     call diagonalize_matrix(nS_sf,A_sf,Om_sf)
     A_sf(:,:) = transpose(A_sf)
@@ -136,7 +136,7 @@ subroutine UCIS(dotest,spin_conserved,spin_flip,nBas,nC,nO,nV,nR,nS,ERI_aaaa,ERI
       print*,'Spin-flip CIS transition vectors'
       call matout(nS_sf,nS_sf,A_sf)
       write(*,*)
-    endif
+    end if
 
     ! Testing zone
 
@@ -148,6 +148,6 @@ subroutine UCIS(dotest,spin_conserved,spin_flip,nBas,nC,nO,nV,nR,nS,ERI_aaaa,ERI
 
     deallocate(A_sf,Om_sf)
 
-  endif
+  end if
 
 end subroutine 

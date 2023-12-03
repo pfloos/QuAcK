@@ -92,7 +92,7 @@ subroutine phURPAx(dotest,TDA,doACFDT,exchange_kernel,spin_conserved,spin_flip,n
 
     deallocate(Aph,Bph,Om,XpY,XmY)
 
-  endif
+  end if
 
 ! Spin-flip transitions
 
@@ -117,7 +117,7 @@ subroutine phURPAx(dotest,TDA,doACFDT,exchange_kernel,spin_conserved,spin_flip,n
 
     deallocate(Aph,Bph,Om,XpY,XmY)
 
-  endif
+  end if
 
   if(exchange_kernel) then
 

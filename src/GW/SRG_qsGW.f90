@@ -283,7 +283,7 @@ subroutine SRG_qsGW(dotest,maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,
     call dipole_moment(nBas,P,nNuc,ZNuc,rNuc,dipole_int_AO,dipole)
     call print_qsRGW(nBas,nO,nSCF,Conv,thresh,eHF,eGW,c,SigC,Z,ENuc,ET,EV,EJ,Ex,EcGM,EcRPA,EqsGW,dipole)
 
-  enddo
+  end do
 !------------------------------------------------------------------------
 ! End main loop
 !------------------------------------------------------------------------
@@ -300,7 +300,7 @@ subroutine SRG_qsGW(dotest,maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,
 
     stop
 
- endif
+ end if
 
  print *, "Wall time for Fock and exchange build", tt
  print *, "Wall Time for AO to MO", tao

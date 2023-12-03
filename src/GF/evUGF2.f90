@@ -160,7 +160,7 @@ subroutine evUGF2(dotest,maxSCF,thresh,max_diis,BSE,TDA,dBSE,dTDA,spin_conserved
 
       if(minval(rcond(:)) < 1d-15) n_diis = 0
 
-    endif
+    end if
 
     ! Save quasiparticles energy for next cycle
 
@@ -170,7 +170,7 @@ subroutine evUGF2(dotest,maxSCF,thresh,max_diis,BSE,TDA,dBSE,dTDA,spin_conserved
 
     nSCF = nSCF + 1
 
-  enddo
+  end do
 !------------------------------------------------------------------------
 ! End main loop
 !------------------------------------------------------------------------
@@ -187,7 +187,7 @@ subroutine evUGF2(dotest,maxSCF,thresh,max_diis,BSE,TDA,dBSE,dTDA,spin_conserved
 
     stop
 
-  endif
+  end if
 
 ! Deallocate memory
 
@@ -199,6 +199,6 @@ subroutine evUGF2(dotest,maxSCF,thresh,max_diis,BSE,TDA,dBSE,dTDA,spin_conserved
 
     print*,'!!! BSE2 NYI for evUGF2 !!!'
 
-  endif
+  end if
 
 end subroutine 

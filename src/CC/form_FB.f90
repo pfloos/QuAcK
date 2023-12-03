@@ -34,11 +34,11 @@ subroutine form_FB(nC,nO,nV,nR,foo,fvv,fov,OOOV,OOVV,OVVV,t,FooB,FvvB,FovB)
         do a=1,nV-nR
           do b=1,nV-nR
             FooB(i,k) = FooB(i,k) + 0.5d0*OOVV(k,j,a,b)*t(i,j,a,b)
-          enddo
-        enddo
-      enddo
-    enddo
-  enddo
+          end do
+        end do
+      end do
+    end do
+  end do
 
 ! Virtual-virtual block  
 
@@ -49,11 +49,11 @@ subroutine form_FB(nC,nO,nV,nR,foo,fvv,fov,OOOV,OOVV,OVVV,t,FooB,FvvB,FovB)
         do j=1,nO-nC
           do c=1,nV-nR
             FvvB(a,c) = FvvB(a,c) - 0.5d0*OOVV(i,j,c,b)*t(i,j,a,b)
-          enddo
-        enddo
-      enddo
-    enddo
-  enddo
+          end do
+        end do
+      end do
+    end do
+  end do
 
 ! Occupied-virtual block  
 
@@ -64,26 +64,26 @@ subroutine form_FB(nC,nO,nV,nR,foo,fvv,fov,OOOV,OOVV,OVVV,t,FooB,FvvB,FovB)
       do j=1,nO-nC
         do b=1,nV-nR
           FovB(i,a) = FovB(i,a) - fov(j,b)*t(i,j,a,b)
-        enddo
-      enddo
+        end do
+      end do
 
       do j=1,nO-nC
         do b=1,nV-nR
           do c=1,nV-nR
             FovB(i,a) = FovB(i,a) + 0.5d0*OVVV(j,a,b,c)*t(i,j,b,c)
-          enddo
-        enddo
-      enddo
+          end do
+        end do
+      end do
 
       do j=1,nO-nC
         do k=1,nO-nC
           do b=1,nV-nR
             FovB(i,a) = FovB(i,a) - 0.5d0*OOOV(j,k,i,b)*t(j,k,a,b)
-          enddo
-        enddo
-      enddo
+          end do
+        end do
+      end do
 
-    enddo
-  enddo
+    end do
+  end do
 
 end subroutine 

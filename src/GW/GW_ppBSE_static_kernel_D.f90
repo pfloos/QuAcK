@@ -56,7 +56,7 @@ subroutine GW_ppBSE_static_kernel_D(ispin,eta,nBas,nC,nO,nV,nR,nS,nOO,lambda,ERI
               eps = Om(m)**2 + eta**2
               chi = chi - rho(i,k,m)*rho(j,l,m)*Om(m)/eps &
                         + rho(i,l,m)*rho(j,k,m)*Om(m)/eps
-            enddo
+            end do
  
             KD(ij,kl) = 2d0*lambda*chi/sqrt((1d0 + Kronecker_delta(i,j))*(1d0 + Kronecker_delta(k,l)))
 
@@ -87,7 +87,7 @@ subroutine GW_ppBSE_static_kernel_D(ispin,eta,nBas,nC,nO,nV,nR,nS,nOO,lambda,ERI
               eps = Om(m)**2 + eta**2
               chi = chi - rho(i,k,m)*rho(j,l,m)*Om(m)/eps &
                         + rho(i,l,m)*rho(j,k,m)*Om(m)/eps
-            enddo
+            end do
  
             KD(ij,kl) = 2d0*lambda*chi
 
@@ -118,7 +118,7 @@ subroutine GW_ppBSE_static_kernel_D(ispin,eta,nBas,nC,nO,nV,nR,nS,nOO,lambda,ERI
               eps = Om(m)**2 + eta**2
               chi = chi - rho(i,k,m)*rho(j,l,m)*Om(m)/eps &
                         + rho(i,l,m)*rho(j,k,m)*Om(m)/eps
-            enddo
+            end do
  
             KD(ij,kl) = lambda*chi
 

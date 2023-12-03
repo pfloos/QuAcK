@@ -27,11 +27,11 @@ subroutine form_delta_OOOVVV(nC,nO,nV,nR,eO,eV,delta)
 
                 delta(i,j,k,a,b,c) = eV(a) + eV(b) + eV(c) - eO(i) - eO(j) - eO(k)
 
-              enddo
-            enddo
-          enddo
-        enddo
-      enddo
-    enddo
+              end do
+            end do
+          end do
+        end do
+      end do
+    end do
 
 end subroutine 

@@ -133,10 +133,10 @@ subroutine DCD(dotest,maxSCF,thresh,max_diis,nBas,nC,nO,nV,nR,ERI,ENuc,ERHF,eHF)
  
             EcCC = EcCC + (2d0*OOVV(i,j,a,b) - OOVV(i,j,b,a))*t(i,j,a,b)
  
-          enddo
-        enddo
-      enddo
-    enddo
+          end do
+        end do
+      end do
+    end do
 
     ! Dump results
 
@@ -156,10 +156,10 @@ subroutine DCD(dotest,maxSCF,thresh,max_diis,nBas,nC,nO,nV,nR,ERI,ENuc,ERHF,eHF)
         do a=1,nV-nR
           do b=1,nV-nR
             tt(i,j,a,b) = 2d0*t(i,j,a,b) - t(i,j,b,a)
-          enddo
-        enddo
-      enddo
-    enddo
+          end do
+        end do
+      end do
+    end do
 
     xV(:,:) = 0d0
     do a=1,nV-nR
@@ -262,7 +262,7 @@ subroutine DCD(dotest,maxSCF,thresh,max_diis,nBas,nC,nO,nV,nR,ERI,ENuc,ERHF,eHF)
 
     if(abs(rcond) < 1d-15) n_diis = 0
 
-  enddo
+  end do
   write(*,*)'----------------------------------------------------'
 !------------------------------------------------------------------------
 ! End of SCF loop
@@ -280,7 +280,7 @@ subroutine DCD(dotest,maxSCF,thresh,max_diis,nBas,nC,nO,nV,nR,ERI,ENuc,ERHF,eHF)
 
     stop
 
-  endif
+  end if
 
 ! Testing zone
 

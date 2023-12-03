@@ -24,10 +24,10 @@ subroutine antisymmetrize_ERI(ispin,nBas,ERI,db_ERI)
         do k=1,nBas
           do l=1,nBas
             db_ERI(i,j,k,l) = 2d0*ERI(i,j,k,l) - ERI(i,j,l,k)
-          enddo
-        enddo
-      enddo
-    enddo
+          end do
+        end do
+      end do
+    end do
 
   elseif(ispin == 2) then
 
@@ -36,11 +36,11 @@ subroutine antisymmetrize_ERI(ispin,nBas,ERI,db_ERI)
         do k=1,nBas
           do l=1,nBas
             db_ERI(i,j,k,l) = ERI(i,j,k,l) - ERI(i,j,l,k)
-          enddo
-        enddo
-      enddo
-    enddo
+          end do
+        end do
+      end do
+    end do
 
-  endif
+  end if
 
 end subroutine 

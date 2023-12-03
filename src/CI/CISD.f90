@@ -303,6 +303,6 @@ subroutine CISD(dotest,singlet,triplet,nBasin,nCin,nOin,nVin,nRin,ERIin,eHFin,E0
     print*,'Singlet CISD transition vectors'
     call matout(nH,nH,H)
     write(*,*)
-  endif
+  end if
 
 end subroutine 

@@ -21,7 +21,7 @@ subroutine spatial_to_spin_MO_energy(nBas,e,nBas2,se)
 
       se(p) = e((p+1)/2)
 
-    enddo
+    end do
 
 ! print*,'MO energies in spinorbital basis'
 ! call matout(nBas2,1,se)

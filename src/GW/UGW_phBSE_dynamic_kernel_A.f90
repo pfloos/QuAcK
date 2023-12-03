@@ -61,7 +61,7 @@ subroutine UGW_phBSE_dynamic_kernel_A(ispin,eta,nBas,nC,nO,nV,nR,nSa,nSb,nSt,nS_
             chi = 0d0
             do kc=1,nS_sc
               chi = chi + rho_RPA(i,j,kc,1)*rho_RPA(a,b,kc,1)*OmRPA(kc)/(OmRPA(kc)**2 + eta**2)
-            enddo
+            end do
  
             A_dyn(ia,jb) = A_dyn(ia,jb) - 2d0*lambda*chi
 
@@ -74,7 +74,7 @@ subroutine UGW_phBSE_dynamic_kernel_A(ispin,eta,nBas,nC,nO,nV,nR,nSa,nSb,nSt,nS_
               eps = + OmBSE - OmRPA(kc) - (eGW(b,1) - eGW(i,1))
               chi = chi + rho_RPA(i,j,kc,1)*rho_RPA(a,b,kc,1)*eps/(eps**2 + eta**2)
            
-            enddo
+            end do
 
             A_dyn(ia,jb) = A_dyn(ia,jb) - lambda*chi
 
@@ -87,14 +87,14 @@ subroutine UGW_phBSE_dynamic_kernel_A(ispin,eta,nBas,nC,nO,nV,nR,nSa,nSb,nSt,nS_
               eps = + OmBSE - OmRPA(kc) - (eGW(b,1) - eGW(i,1))
               chi = chi + rho_RPA(i,j,kc,1)*rho_RPA(a,b,kc,1)*(eps**2 - eta**2)/(eps**2 + eta**2)**2
   
-            enddo
+            end do
 
             ZA_dyn(ia,jb) = ZA_dyn(ia,jb) + lambda*chi
  
-          enddo
-        enddo
-      enddo
-    enddo
+          end do
+        end do
+      end do
+    end do
 
     ! bbbb block
  
@@ -110,7 +110,7 @@ subroutine UGW_phBSE_dynamic_kernel_A(ispin,eta,nBas,nC,nO,nV,nR,nSa,nSb,nSt,nS_
             chi = 0d0
             do kc=1,nS_sc
               chi = chi + rho_RPA(i,j,kc,2)*rho_RPA(a,b,kc,2)*OmRPA(kc)/(OmRPA(kc)**2 + eta**2)
-            enddo
+            end do
  
             A_dyn(nSa+ia,nSa+jb) = A_dyn(nSa+ia,nSa+jb) - 2d0*lambda*chi
 
@@ -123,7 +123,7 @@ subroutine UGW_phBSE_dynamic_kernel_A(ispin,eta,nBas,nC,nO,nV,nR,nSa,nSb,nSt,nS_
               eps = + OmBSE - OmRPA(kc) - (eGW(b,2) - eGW(i,2))
               chi = chi + rho_RPA(i,j,kc,2)*rho_RPA(a,b,kc,2)*eps/(eps**2 + eta**2)
 
-            enddo
+            end do
 
             A_dyn(nSa+ia,nSa+jb) = A_dyn(nSa+ia,nSa+jb) - lambda*chi
 
@@ -136,14 +136,14 @@ subroutine UGW_phBSE_dynamic_kernel_A(ispin,eta,nBas,nC,nO,nV,nR,nSa,nSb,nSt,nS_
               eps = + OmBSE - OmRPA(kc) - (eGW(b,2) - eGW(i,2))
               chi = chi + rho_RPA(i,j,kc,2)*rho_RPA(a,b,kc,2)*(eps**2 - eta**2)/(eps**2 + eta**2)**2
 
-            enddo
+            end do
 
             ZA_dyn(nSa+ia,nSa+jb) = ZA_dyn(nSa+ia,nSa+jb) + lambda*chi
  
-          enddo
-        enddo
-      enddo
-    enddo
+          end do
+        end do
+      end do
+    end do
 
   end if
 
@@ -167,7 +167,7 @@ subroutine UGW_phBSE_dynamic_kernel_A(ispin,eta,nBas,nC,nO,nV,nR,nSa,nSb,nSt,nS_
             chi = 0d0
             do kc=1,nS_sc
               chi = chi + rho_RPA(i,j,kc,1)*rho_RPA(a,b,kc,2)*OmRPA(kc)/(OmRPA(kc)**2 + eta**2)
-            enddo
+            end do
 
             A_dyn(ia,jb) = A_dyn(ia,jb) - 2d0*lambda*chi
 
@@ -180,7 +180,7 @@ subroutine UGW_phBSE_dynamic_kernel_A(ispin,eta,nBas,nC,nO,nV,nR,nSa,nSb,nSt,nS_
               eps = + OmBSE - OmRPA(kc) - (eGW(b,2) - eGW(i,1))
               chi = chi + rho_RPA(i,j,kc,1)*rho_RPA(a,b,kc,2)*eps/(eps**2 + eta**2)
 
-            enddo
+            end do
 
             A_dyn(ia,jb) = A_dyn(ia,jb) - lambda*chi
 
@@ -193,7 +193,7 @@ subroutine UGW_phBSE_dynamic_kernel_A(ispin,eta,nBas,nC,nO,nV,nR,nSa,nSb,nSt,nS_
               eps = + OmBSE - OmRPA(kc) - (eGW(b,2) - eGW(i,1))
               chi = chi + rho_RPA(i,j,kc,1)*rho_RPA(a,b,kc,2)*(eps**2 - eta**2)/(eps**2 + eta**2)**2
 
-            enddo
+            end do
 
             ZA_dyn(ia,jb) = ZA_dyn(ia,jb) + lambda*chi
 
@@ -216,7 +216,7 @@ subroutine UGW_phBSE_dynamic_kernel_A(ispin,eta,nBas,nC,nO,nV,nR,nSa,nSb,nSt,nS_
             chi = 0d0
             do kc=1,nS_sc
               chi = chi + rho_RPA(i,j,kc,2)*rho_RPA(a,b,kc,1)*OmRPA(kc)/(OmRPA(kc)**2 + eta**2)
-            enddo
+            end do
 
             A_dyn(nSa+ia,nSa+jb) = A_dyn(nSa+ia,nSa+jb) - 2d0*lambda*chi
 
@@ -229,7 +229,7 @@ subroutine UGW_phBSE_dynamic_kernel_A(ispin,eta,nBas,nC,nO,nV,nR,nSa,nSb,nSt,nS_
               eps = + OmBSE - OmRPA(kc) - (eGW(b,1) - eGW(i,2))
               chi = chi + rho_RPA(i,j,kc,2)*rho_RPA(a,b,kc,1)*eps/(eps**2 + eta**2)
 
-            enddo
+            end do
 
             A_dyn(nSa+ia,nSa+jb) = A_dyn(nSa+ia,nSa+jb) - lambda*chi
 
@@ -242,7 +242,7 @@ subroutine UGW_phBSE_dynamic_kernel_A(ispin,eta,nBas,nC,nO,nV,nR,nSa,nSb,nSt,nS_
               eps = + OmBSE - OmRPA(kc) - (eGW(b,1) - eGW(i,2))
               chi = chi + rho_RPA(i,j,kc,2)*rho_RPA(a,b,kc,1)*(eps**2 - eta**2)/(eps**2 + eta**2)**2
 
-            enddo
+            end do
 
             ZA_dyn(nSa+ia,nSa+jb) = ZA_dyn(nSa+ia,nSa+jb) + lambda*chi
 

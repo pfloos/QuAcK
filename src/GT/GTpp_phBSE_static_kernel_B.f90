@@ -48,18 +48,18 @@ subroutine GTpp_phBSE_static_kernel_B(eta,nBas,nC,nO,nV,nR,nS,nOO,nVV,lambda,Ome
           do cd=1,nVV
             eps = + Omega1(cd)
             chi = chi + rho1(i,j,cd)*rho1(a,b,cd)*eps/(eps**2 + eta**2)
-          enddo
+          end do
 
           do kl=1,nOO
             eps = - Omega2(kl)
             chi = chi + rho2(i,j,kl)*rho2(a,b,kl)*eps/(eps**2 + eta**2)
-          enddo
+          end do
 
           KB(ia,jb) = lambda*chi
 
-        enddo
-      enddo
-    enddo
-  enddo
+        end do
+      end do
+    end do
+  end do
 
 end subroutine 

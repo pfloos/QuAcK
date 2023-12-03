@@ -385,7 +385,7 @@ write(*,*) 'EcGM', EcGM(1)
     call dipole_moment(nBas,P,nNuc,ZNuc,rNuc,dipole_int_AO,dipole)
     call print_qsUGT(nBas,nO,nSCF,Conv,thresh,eHF,eGT,c,SigTp,Z,ENuc,ET,EV,EJ,Ex,EcGM,EcRPA,EqsGT,dipole)
 
-  enddo
+  end do
 !------------------------------------------------------------------------
 ! End main loop
 !------------------------------------------------------------------------
@@ -402,7 +402,7 @@ write(*,*) 'EcGM', EcGM(1)
 
     stop
 
-  endif
+  end if
 
 ! Free memory
 

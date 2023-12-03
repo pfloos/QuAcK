@@ -26,10 +26,10 @@ subroutine CCSD_correlation_energy(nC,nO,nV,nR,OOVV,tau,EcCCSD)
 
           EcCCSD = EcCCSD + OOVV(i,j,a,b)*tau(i,j,a,b)
 
-        enddo
-      enddo
-    enddo
-  enddo
+        end do
+      end do
+    end do
+  end do
 
   EcCCSD = 0.5d0*EcCCSD
 

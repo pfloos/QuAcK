@@ -78,7 +78,7 @@ subroutine phRRPA(dotest,TDA,doACFDT,exchange_kernel,singlet,triplet,nBas,nC,nO,
     call print_excitation_energies('phRPA@RHF','singlet',nS,Om)
     call phLR_transition_vectors(.true.,nBas,nC,nO,nV,nR,nS,dipole_int,Om,XpY,XmY)
 
-  endif
+  end if
 
 ! Triplet manifold 
 
@@ -93,7 +93,7 @@ subroutine phRRPA(dotest,TDA,doACFDT,exchange_kernel,singlet,triplet,nBas,nC,nO,
     call print_excitation_energies('phRPA@RHF','triplet',nS,Om)
     call phLR_transition_vectors(.false.,nBas,nC,nO,nV,nR,nS,dipole_int,Om,XpY,XmY)
 
-  endif
+  end if
 
   if(exchange_kernel) then
 

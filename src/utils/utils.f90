@@ -17,7 +17,7 @@ function Kronecker_delta(i,j) result(delta)
     delta = 1d0
   else
     delta = 0d0
-  endif
+  end if
 
 end function 
 
@@ -40,7 +40,7 @@ function KroneckerDelta(i,j) result(delta)
     delta = 1
   else
     delta = 0
-  endif
+  end if
 
 end function 
 
@@ -133,13 +133,13 @@ subroutine matout(m,n,A)
     do i=1,m
       do j=ilower,iupper
         B(j-ilower+1) = A(i,j)
-      enddo
+      end do
       do j=1,num
         if(abs(B(j)) < small) B(j) = 0d0
-      enddo
+      end do
       write(*,'(I7,10F15.8)') i,(B(j),j=1,num)
-    enddo
-  enddo
+    end do
+  end do
 
 end subroutine 
 
@@ -181,7 +181,7 @@ subroutine trace_vector(n,v,Tr)
   Tr = 0d0
   do i=1,n
     Tr = Tr + v(i)
-  enddo
+  end do
 
 end subroutine 
 
@@ -208,7 +208,7 @@ function trace_matrix(n,A) result(Tr)
   Tr = 0d0
   do i=1,n
     Tr = Tr + A(i,i)
-  enddo
+  end do
 
 end function 
 
@@ -255,7 +255,7 @@ subroutine identity_matrix(N,A)
 
   do i=1,N
     A(i,i) = 1d0
-  enddo
+  end do
      
 end subroutine 
 
@@ -286,9 +286,9 @@ subroutine prepend(N,M,A,b)
   do i=1,N
     do j=M-1,1,-1
       A(i,j+1) = A(i,j)
-    enddo
+    end do
     A(i,1) = b(i)
-  enddo
+  end do
 
 end subroutine 
 
@@ -315,9 +315,9 @@ subroutine append(N,M,A,b)
   do i=1,N
     do j=2,M
       A(i,j-1) = A(i,j)
-    enddo
+    end do
     A(i,M) = b(i)
-  enddo
+  end do
 
 end subroutine 
 
@@ -348,9 +348,9 @@ subroutine AtDA(N,A,D,B)
     do j=1,N
       do k=1,N
         B(i,k) = B(i,k) + A(j,i)*D(j)*A(j,k)
-      enddo
-    enddo
-  enddo
+      end do
+    end do
+  end do
 
 end subroutine 
 
@@ -381,9 +381,9 @@ subroutine ADAt(N,A,D,B)
     do j=1,N
       do k=1,N
         B(i,k) = B(i,k) + A(i,j)*D(j)*A(k,j)
-      enddo
-    enddo
-  enddo
+      end do
+    end do
+  end do
 
 end subroutine 
 !------------------------------------------------------------------------
@@ -402,8 +402,8 @@ subroutine DA(N,D,A)
   do i=1,N
     do j=1,N
       A(i,j) = D(i)*A(i,j)
-    enddo
-  enddo
+    end do
+  end do
 
 end subroutine 
 
@@ -423,8 +423,8 @@ subroutine AD(N,A,D)
   do i=1,N
     do j=1,N
       A(i,j) = A(i,j)*D(j)
-    enddo
-  enddo
+    end do
+  end do
 
 end subroutine 
 
@@ -466,8 +466,8 @@ subroutine CalcTrAB(n,A,B,Tr)
   do i=1,n
     do j=1,n
       Tr = Tr + A(i,j)*B(j,i)
-    enddo
-  enddo
+    end do
+  end do
 
 end subroutine 
 
@@ -488,7 +488,7 @@ function EpsilonSwitch(i,j) result(delta)
     delta = 1
   else
     delta = -1
-  endif
+  end if
 
 end function 
 
@@ -534,7 +534,7 @@ subroutine CalcInv3(a,det)
     b(i,1) = a(i,1)
     b(i,2) = a(i,2)
     b(i,3) = a(i,3)
-  enddo
+  end do
 
   a(1,1) = b(2,2)*b(3,3) - b(2,3)*b(3,2)
   a(2,1) = b(2,3)*b(3,1) - b(2,1)*b(3,3)
@@ -551,8 +551,8 @@ subroutine CalcInv3(a,det)
   do i=1,3
     do j=1,3
       a(i,j) = a(i,j)/det
-    enddo
-  enddo
+    end do
+  end do
 
 end subroutine 
 
@@ -584,7 +584,7 @@ subroutine CalcInv4(a,det)
     b(2,i) = a(2,i)
     b(3,i) = a(3,i)
     b(4,i) = a(4,i)
-  enddo
+  end do
 
   a(1,1) =  b(2,2)*(b(3,3)*b(4,4)-b(3,4)*b(4,3))-b(2,3)*(b(3,2)*b(4,4)-b(3,4)*b(4,2))+b(2,4)*(b(3,2)*b(4,3)-b(3,3)*b(4,2))
   a(2,1) = -b(2,1)*(b(3,3)*b(4,4)-b(3,4)*b(4,3))+b(2,3)*(b(3,1)*b(4,4)-b(3,4)*b(4,1))-b(2,4)*(b(3,1)*b(4,3)-b(3,3)*b(4,1))
@@ -609,8 +609,8 @@ subroutine CalcInv4(a,det)
   do i=1,4
     do j=1,4
       a(i,j) = a(i,j)/det
-    enddo
-  enddo
+    end do
+  end do
 
 end subroutine 
 
@@ -621,7 +621,7 @@ subroutine wall_time(t)
   integer*8, save                  :: rate = 0
   if (rate == 0) then
     CALL SYSTEM_CLOCK(count_rate=rate)
-  endif
+  end if
   CALL SYSTEM_CLOCK(count=c)
   t = dble(c)/dble(rate)
 end subroutine 

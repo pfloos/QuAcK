@@ -26,10 +26,10 @@ subroutine CCD_correlation_energy(nC,nO,nV,nR,OOVV,t2,EcCCD)
 
           EcCCD = EcCCD + OOVV(i,j,a,b)*t2(i,j,a,b)
 
-        enddo
-      enddo
-    enddo
-  enddo
+        end do
+      end do
+    end do
+  end do
 
   EcCCD = 0.25d0*EcCCD
 

@@ -300,7 +300,7 @@ subroutine qsRGTpp(dotest,maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,d
     call dipole_moment(nBas,P,nNuc,ZNuc,rNuc,dipole_int_AO,dipole)
     call print_qsRGTpp(nBas,nO,nSCF,Conv,thresh,eHF,eGT,c,Sigp,Z,ENuc,ET,EV,EJ,Ex,EcGM,EcRPA,EqsGT,dipole)
 
-  enddo
+  end do
 !------------------------------------------------------------------------
 ! End main loop
 !------------------------------------------------------------------------
@@ -317,7 +317,7 @@ subroutine qsRGTpp(dotest,maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,d
 
     stop
 
-  endif
+  end if
 
 ! Deallocate memory
 

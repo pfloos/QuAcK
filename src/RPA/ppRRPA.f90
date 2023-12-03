@@ -83,7 +83,7 @@ subroutine ppRRPA(dotest,TDA,doACFDT,singlet,triplet,nBas,nC,nO,nV,nR,ENuc,ERHF,
 
     deallocate(Om1,X1,Y1,Om2,X2,Y2,Bpp,Cpp,Dpp)
 
-  endif
+  end if
 
 ! Triplet manifold 
 
@@ -115,7 +115,7 @@ subroutine ppRRPA(dotest,TDA,doACFDT,singlet,triplet,nBas,nC,nO,nV,nR,ENuc,ERHF,
 
     deallocate(Om1,X1,Y1,Om2,X2,Y2,Bpp,Cpp,Dpp)
 
-  endif
+  end if
 
   EcRPA(2) = 3d0*EcRPA(2)
 

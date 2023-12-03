@@ -170,7 +170,7 @@ subroutine GHF_search(maxSCF,thresh,max_diis,guess_type,mix,level_shift,nNuc,ZNu
     do ia=1,min(nS,maxS)
       write(*,'(1X,A1,1X,I5,1X,A1,1X,F23.6,1X,A1,1X,F23.6,1X,A1,1X)') &
         '|',ia,'|',Om(ia),'|',Om(ia)*HaToeV,'|'
-    enddo
+    end do
     write(*,*)'-------------------------------------------------------------'
  
     if(minval(Om(:)) < 0d0) then

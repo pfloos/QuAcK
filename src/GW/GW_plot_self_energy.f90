@@ -52,7 +52,7 @@ subroutine GW_plot_self_energy(nBas,nC,nO,nV,nR,nS,eHF,eGW,Om,rho)
 
   do g=1,nGrid
     w(g) = wmin + dble(g)*dw
-  enddo
+  end do
 
 ! Occupied part of the self-energy and renormalization factor
  
@@ -72,8 +72,8 @@ subroutine GW_plot_self_energy(nBas,nC,nO,nV,nR,nS,eHF,eGW,Om,rho)
   do g=1,nGrid
     do p=nC+1,nBas-nR
       S(p,g) = eta/((w(g) - eHF(p) - SigC(p,g))**2 + eta**2)
-    enddo
-  enddo
+    end do
+  end do
 
   S(:,:) = S(:,:)/pi
 
@@ -89,7 +89,7 @@ subroutine GW_plot_self_energy(nBas,nC,nO,nV,nR,nS,eHF,eGW,Om,rho)
     write(9 ,*) w(g)*HaToeV,((w(g)-eHF(p))*HaToeV,p=nC+1,nBas-nR)
     write(10,*) w(g)*HaToeV,(Z(p,g),p=nC+1,nBas-nR)
     write(11,*) w(g)*HaToeV,(S(p,g),p=nC+1,nBas-nR)
-  enddo
+  end do
 
 ! Closing files
 

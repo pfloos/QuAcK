@@ -46,13 +46,13 @@ subroutine GW_phBSE_static_kernel(eta,nBas,nC,nO,nV,nR,nS,lambda,ERI,Om,rho,W)
           do m=1,nS
             dem = Om(m)**2 + eta**2
             chi = chi + rho(p,q,m)*rho(r,s,m)*Om(m)/dem
-          enddo
+          end do
 
           W(p,s,q,r) = - lambda*ERI(p,s,q,r) + 4d0*lambda*chi
 
-        enddo
-      enddo
-    enddo
-  enddo
+        end do
+      end do
+    end do
+  end do
 
 end subroutine 

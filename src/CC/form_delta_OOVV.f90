@@ -25,9 +25,9 @@ subroutine form_delta_OOVV(nC,nO,nV,nR,eO,eV,delta)
 
             delta(i,j,a,b) = eV(a) + eV(b) - eO(i) - eO(j)
 
-          enddo
-        enddo
-      enddo
-    enddo
+          end do
+        end do
+      end do
+    end do
 
 end subroutine 

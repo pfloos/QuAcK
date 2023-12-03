@@ -50,7 +50,7 @@ subroutine read_auxiliary_basis(NAtoms,XYZAtoms,nShell,CenterShell, &
       nShell = nShell + 1
       do k=1,3
         CenterShell(nShell,k) = XYZAtoms(iAt,k)
-      enddo
+      end do
 
 ! Shell type and contraction degree
 
@@ -76,7 +76,7 @@ subroutine read_auxiliary_basis(NAtoms,XYZAtoms,nShell,CenterShell, &
         elseif(shelltype == "I") then
           TotAngMomShell(nShell) = 6
           write(*,'(A28,1X,I16)') 'i-type shell with K = ',KShell(nShell)
-        endif
+        end if
 
 ! Read exponents and contraction coefficients
 
@@ -84,10 +84,10 @@ subroutine read_auxiliary_basis(NAtoms,XYZAtoms,nShell,CenterShell, &
         do k=1,Kshell(nShell)
           read(2,*) ExpShell(nShell,k),DShell(nShell,k)
           write(*,'(A28,1X,F16.10,F16.10)') '',ExpShell(nShell,k),DShell(nShell,k)
-        enddo
-    enddo
+        end do
+    end do
     write(*,'(A28)') '------------------'
-  enddo
+  end do
 
 ! Total number of shells
 
@@ -124,7 +124,7 @@ subroutine read_auxiliary_basis(NAtoms,XYZAtoms,nShell,CenterShell, &
       nShell = nShell + 1
       do k=1,3
         CenterShell(nShell,k) = XYZAtoms(iAt,k)
-      enddo
+      end do
 
 ! Shell type and contraction degree
 
@@ -150,7 +150,7 @@ subroutine read_auxiliary_basis(NAtoms,XYZAtoms,nShell,CenterShell, &
         elseif(shelltype == "I") then
           TotAngMomShell(nShell) = 6
           write(*,'(A28,1X,I16)') 'i-type shell with K = ',KShell(nShell)
-        endif
+        end if
 
 ! Read exponents and contraction coefficients
 
@@ -158,10 +158,10 @@ subroutine read_auxiliary_basis(NAtoms,XYZAtoms,nShell,CenterShell, &
         do k=1,Kshell(nShell)
           read(3,*) ExpShell(nShell,k),DShell(nShell,k)
           write(*,'(A28,1X,F16.10,F16.10)') '',ExpShell(nShell,k),DShell(nShell,k)
-        enddo
-    enddo
+        end do
+    end do
     write(*,'(A28)') '------------------'
-  enddo
+  end do
 
 ! Total number of shells
 

@@ -56,6 +56,8 @@ subroutine RG0W0(dotest,doACFDT,exchange_kernel,doXBS,dophBSE,dophBSE2,TDA_W,TDA
   double precision,allocatable  :: XmY(:,:)
   double precision,allocatable  :: rho(:,:,:)
 
+  double precision,allocatable  :: W(:,:,:,:)
+
   double precision,allocatable  :: eGWlin(:)
   double precision,allocatable  :: eGW(:)
 
@@ -161,10 +163,6 @@ subroutine RG0W0(dotest,doACFDT,exchange_kernel,doXBS,dophBSE,dophBSE2,TDA_W,TDA
 
   call print_RG0W0(nBas,nO,eHF,ENuc,ERHF,SigC,Z,eGW,EcRPA,EcGM)
 
-! Deallocate memory
-
-  deallocate(SigC,Z,Om,XpY,XmY,rho)
-
 ! Perform BSE calculation
 
   if(dophBSE) then
@@ -235,6 +233,15 @@ subroutine RG0W0(dotest,doACFDT,exchange_kernel,doXBS,dophBSE,dophBSE2,TDA_W,TDA
 
   end if
 
+! if(.true.) then
+
+!   allocate(W(nBas,nBas,nBas,nBas))
+!   call GW_phBSE_static_kernel(eta,nBas,nC,nO,nV,nR,nS,1d0,ERI,Om,rho,W)
+!   call pCCD(dotest,264,1d-7,5,nBas,nC,nO,nV,nR,ERI,W,ERHF,eGW)
+!   deallocate(W)
+
+! end if
+  
 ! Testing zone
 
   if(dotest) then

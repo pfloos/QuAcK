@@ -27,9 +27,9 @@ subroutine spatial_to_spin_ERI(nBas,ERI,nBas2,sERI)
                           * Kronecker_delta(mod(q,2),mod(s,2)) &
                           * ERI((p+1)/2,(q+1)/2,(r+1)/2,(s+1)/2)
 
-          enddo
-        enddo
-      enddo
-    enddo
+          end do
+        end do
+      end do
+    end do
 
 end subroutine spatial_to_spin_ERI

@@ -94,10 +94,10 @@ subroutine GMP2(dotest,regularize,nBas,nC,nO,nV,nR,ERI,ENuc,EGHF,eHF,EcMP2)
           E2xs2 = E2xs2 + num*fs2
           E2xk  = E2xk  + num*fk
 
-        enddo
-      enddo
-    enddo
-  enddo
+        end do
+      end do
+    end do
+  end do
 
   EcMP2   = E2d   + E2x
   EcsMP2  = E2ds  + E2xs

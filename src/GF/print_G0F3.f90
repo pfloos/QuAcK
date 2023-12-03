@@ -29,7 +29,7 @@ subroutine print_G0F3(nBas,nO,eHF,Z,eGF3)
   do x=1,nBas
     write(*,'(1X,A1,1X,I3,1X,A1,1X,F15.6,1X,A1,1X,F15.6,1X,A1,1X,F15.6,1X,A1,1X)') &
     '|',x,'|',eHF(x)*HaToeV,'|',Z(x),'|',eGF3(x)*HaToeV,'|'
-  enddo
+  end do
 
   write(*,*)'-------------------------------------------------------------'
   write(*,'(2X,A27,F15.6)') 'G0F3  HOMO      energy (eV):',eGF3(HOMO)*HaToeV

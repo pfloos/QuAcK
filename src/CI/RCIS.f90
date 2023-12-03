@@ -54,7 +54,7 @@ subroutine RCIS(dotest,singlet,triplet,doCIS_D,nBas,nC,nO,nV,nR,nS,ERI,dipole_in
       print*,'CIS matrix (singlet state)'
       call matout(nS,nS,A)
       write(*,*)
-    endif
+    end if
 
     call diagonalize_matrix(nS,A,Om)
     call print_excitation_energies('CIS@RHF','singlet',nS,Om)
@@ -64,7 +64,7 @@ subroutine RCIS(dotest,singlet,triplet,doCIS_D,nBas,nC,nO,nV,nR,nS,ERI,dipole_in
       print*,'Singlet CIS transition vectors'
       call matout(nS,nS,A)
       write(*,*)
-    endif
+    end if
 
     ! Compute CIS(D) correction 
 
@@ -79,7 +79,7 @@ subroutine RCIS(dotest,singlet,triplet,doCIS_D,nBas,nC,nO,nV,nR,nS,ERI,dipole_in
 
     end if
 
-  endif
+  end if
 
   if(triplet) then
 
@@ -90,7 +90,7 @@ subroutine RCIS(dotest,singlet,triplet,doCIS_D,nBas,nC,nO,nV,nR,nS,ERI,dipole_in
       print*,'CIS matrix (triplet state)'
       call matout(nS,nS,A)
       write(*,*)
-    endif
+    end if
  
     call diagonalize_matrix(nS,A,Om)
     call print_excitation_energies('CIS@RHF','triplet',nS,Om)
@@ -100,7 +100,7 @@ subroutine RCIS(dotest,singlet,triplet,doCIS_D,nBas,nC,nO,nV,nR,nS,ERI,dipole_in
       print*,'Triplet CIS transition vectors'
       call matout(nS,nS,A)
       write(*,*)
-    endif
+    end if
 
     ! Compute CIS(D) correction 
 
@@ -115,6 +115,6 @@ subroutine RCIS(dotest,singlet,triplet,doCIS_D,nBas,nC,nO,nV,nR,nS,ERI,dipole_in
  
     end if
 
-  endif
+  end if
 
 end subroutine 

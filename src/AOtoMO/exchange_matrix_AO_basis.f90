@@ -25,9 +25,9 @@ subroutine exchange_matrix_AO_basis(nBas,P,ERI,K)
       do la=1,nBas
         do mu=1,nBas
           K(mu,nu) = K(mu,nu) - P(la,si)*ERI(mu,la,si,nu)
-        enddo
-      enddo
-    enddo
-  enddo
+        end do
+      end do
+    end do
+  end do
 
 end subroutine 

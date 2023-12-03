@@ -68,7 +68,7 @@ subroutine UHF_stability(nBas,nC,nO,nV,nR,nS,eHF,ERI_aaaa,ERI_aabb,ERI_bbbb)
   do ia=1,min(nS_sc,maxS)
     write(*,'(1X,A1,1X,I5,1X,A1,1X,F23.6,1X,A1,1X,F23.6,1X,A1,1X)') &
       '|',ia,'|',Om_sc(ia),'|',Om_sc(ia)*HaToeV,'|'
-  enddo
+  end do
   write(*,*)'-------------------------------------------------------------'
 
   if(minval(Om_sc(:)) < 0d0) then
@@ -103,7 +103,7 @@ subroutine UHF_stability(nBas,nC,nO,nV,nR,nS,eHF,ERI_aaaa,ERI_aabb,ERI_bbbb)
   do ia=1,min(nS_sc,maxS)
     write(*,'(1X,A1,1X,I5,1X,A1,1X,F23.6,1X,A1,1X,F23.6,1X,A1,1X)') &
       '|',ia,'|',Om_sc(ia),'|',Om_sc(ia)*HaToeV,'|'
-  enddo
+  end do
   write(*,*)'-------------------------------------------------------------'
 
   if(minval(Om_sc(:)) < 0d0) then
@@ -153,7 +153,7 @@ subroutine UHF_stability(nBas,nC,nO,nV,nR,nS,eHF,ERI_aaaa,ERI_aabb,ERI_bbbb)
   do ia=1,min(nS_sf,maxS)
     write(*,'(1X,A1,1X,I5,1X,A1,1X,F23.6,1X,A1,1X,F23.6,1X,A1,1X)') &
       '|',ia,'|',Om_sf(ia),'|',Om_sf(ia)*HaToeV,'|'
-  enddo
+  end do
   write(*,*)'-------------------------------------------------------------'
 
   if(minval(Om_sf(:)) < 0d0) then

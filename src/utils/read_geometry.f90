@@ -38,7 +38,7 @@ subroutine read_geometry(nNuc,ZNuc,rNuc,ENuc)
     read(10,*) El,rNuc(i,1),rNuc(i,2),rNuc(i,3)
     write(11,'(A3,1X,3F16.10)') El,rNuc(i,1)*BoToAn,rNuc(i,2)*BoToAn,rNuc(i,3)*BoToAn
     ZNuc(i) = dble(element_number(El))
-  enddo
+  end do
 
 ! Compute nuclear repulsion energy
 
@@ -48,8 +48,8 @@ subroutine read_geometry(nNuc,ZNuc,rNuc,ENuc)
     do j=i+1,nNuc
       RAB = (rNuc(i,1)-rNuc(j,1))**2 + (rNuc(i,2)-rNuc(j,2))**2 + (rNuc(i,3)-rNuc(j,3))**2
       ENuc = ENuc + ZNuc(i)*ZNuc(j)/(AntoBo*sqrt(RAB))
-    enddo
-  enddo
+    end do
+  end do
 
 ! Close file with geometry specification
   close(unit=10)
@@ -63,7 +63,7 @@ subroutine read_geometry(nNuc,ZNuc,rNuc,ENuc)
     write(*,'(A28,1X,I16)') 'Atom n. ',i
     write(*,'(A28,1X,F16.10)') 'Z = ',ZNuc(i)
     write(*,'(A28,1X,F16.10,F16.10,F16.10)') 'Atom coordinates:',(rNuc(i,j),j=1,ncart)
-  enddo
+  end do
   write(*,*)
   write(*,'(A28)') '------------------'
   write(*,'(A28,1X,F16.10)') 'Nuclear repulsion energy = ',ENuc

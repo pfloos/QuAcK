@@ -166,7 +166,7 @@ subroutine UHF_search(maxSCF,thresh,max_diis,guess_type,mix,level_shift,nNuc,ZNu
     do ia=1,min(nS_sc,maxS)
       write(*,'(1X,A1,1X,I5,1X,A1,1X,F23.6,1X,A1,1X,F23.6,1X,A1,1X)') &
         '|',ia,'|',Om_sc(ia),'|',Om_sc(ia)*HaToeV,'|'
-    enddo
+    end do
     write(*,*)'-------------------------------------------------------------'
  
     if(minval(Om_sc(:)) < 0d0) then

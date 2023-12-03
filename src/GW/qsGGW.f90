@@ -361,7 +361,7 @@ subroutine qsGGW(dotest,maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,dop
     call dipole_moment(nBas2,P,nNuc,ZNuc,rNuc,dipole_int_AO,dipole)
     call print_qsGGW(nBas,nBas2,nO,nSCF,Conv,thresh,eHF,eGW,c,Ov,SigC,Z,ENuc,ET,EV,EJ,EK,EcGM,EcRPA,EqsGW,dipole)
 
-  enddo
+  end do
 !------------------------------------------------------------------------
 ! End main loop
 !------------------------------------------------------------------------
@@ -378,7 +378,7 @@ subroutine qsGGW(dotest,maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,dop
 
     stop
 
-  endif
+  end if
 
 ! Perform BSE calculation
 

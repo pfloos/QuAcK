@@ -33,7 +33,7 @@ subroutine diagonalize_general_matrix(N,A,WR,VR)
 
   if(info /= 0) then 
     print*,'Problem in diagonalize_general_matrix (dgeev)!!'
-  endif
+  end if
 
 end subroutine 
 
@@ -70,7 +70,7 @@ subroutine diagonalize_matrix(N,A,e)
  
   if(info /= 0) then 
     print*,'Problem in diagonalize_matrix (dsyev)!!'
-  endif
+  end if
   
 end subroutine 
 
@@ -114,7 +114,7 @@ subroutine svd(N,A,U,D,Vt)
   if (info /= 0) then
     print *,  info, ': SVD failed'
     stop
-  endif
+  end if
 
 end
 
@@ -144,7 +144,7 @@ subroutine inverse_matrix(N,A,B)
     print*,info
     stop 'error in inverse (dgetrf)!!'
 
-  endif
+  end if
 
   call dgetri(N,B,N,ipiv,work,lwork,info)
 
@@ -153,7 +153,7 @@ subroutine inverse_matrix(N,A,B)
     print *,  info
     stop 'error in inverse (dgetri)!!'
 
-  endif
+  end if
 
   deallocate(ipiv,work)
 
@@ -195,7 +195,7 @@ subroutine linear_solve(N,A,b,x,rcond)
 !   print *,  info
 !   stop 'error in linear_solve (dsysvx)!!'
 
-! endif
+! end if
 
 end subroutine 
 
@@ -226,7 +226,7 @@ subroutine easy_linear_solve(N,A,b,x)
     print *,  info
     stop 'error in linear_solve (dsysv)!!'
 
-  endif
+  end if
 
 end subroutine 
 

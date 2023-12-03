@@ -207,7 +207,7 @@ subroutine ufBSE(nBas,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,eHF,eGW)
     if(Z(s) > 1d-7) &
       write(*,'(1X,A1,1X,I3,1X,A1,1X,F15.6,1X,A1,1X,F15.6,1X,A1,1X)') &
       '|',s,'|',Om(s)*HaToeV,'|',Z(s),'|'
-  enddo
+  end do
 
   write(*,*)'-------------------------------------------'
   write(*,*)
