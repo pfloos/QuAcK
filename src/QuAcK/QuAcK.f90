@@ -13,7 +13,7 @@ program QuAcK
   logical                       :: dophRPA,dophRPAx,docrRPA,doppRPA
   logical                       :: doG0F2,doevGF2,doqsGF2,doufG0F02,doG0F3,doevGF3
   logical                       :: doG0W0,doevGW,doqsGW,doufG0W0,doufGW,doSRGqsGW
-  logical                       :: doG0T0pp,doevGTpp,doqsGTpp,doG0T0eh,doevGTeh,doqsGTeh
+  logical                       :: doG0T0pp,doevGTpp,doqsGTpp,doufG0T0pp,doG0T0eh,doevGTeh,doqsGTeh
 
   integer                       :: nNuc,nBas
   integer                       :: nC(nspin)
@@ -92,18 +92,18 @@ program QuAcK
 ! Method selection !
 !------------------!
 
-  call read_methods(doRHF,doUHF,doGHF,doROHF,          &
-                    doMP2,doMP3,                       &
-                    doCCD,dopCCD,doDCD,doCCSD,doCCSDT, &
-                    dodrCCD,dorCCD,docrCCD,dolCCD,     &
-                    doCIS,doCIS_D,doCID,doCISD,doFCI,  & 
-                    dophRPA,dophRPAx,docrRPA,doppRPA,  &
-                    doG0F2,doevGF2,doqsGF2,doufG0F02,  & 
-                    doG0F3,doevGF3,                    &
-                    doG0W0,doevGW,doqsGW,doSRGqsGW,    &
-                    doufG0W0,doufGW,                   &
-                    doG0T0pp,doevGTpp,doqsGTpp,        &
-                    doG0T0eh,doevGTeh,doqsGTeh,        &
+  call read_methods(doRHF,doUHF,doGHF,doROHF,              &
+                    doMP2,doMP3,                           &
+                    doCCD,dopCCD,doDCD,doCCSD,doCCSDT,     &
+                    dodrCCD,dorCCD,docrCCD,dolCCD,         &
+                    doCIS,doCIS_D,doCID,doCISD,doFCI,      & 
+                    dophRPA,dophRPAx,docrRPA,doppRPA,      &
+                    doG0F2,doevGF2,doqsGF2,doufG0F02,      & 
+                    doG0F3,doevGF3,                        &
+                    doG0W0,doevGW,doqsGW,doSRGqsGW,        &
+                    doufG0W0,doufGW,                       &
+                    doG0T0pp,doevGTpp,doqsGTpp,doufG0T0pp, &
+                    doG0T0eh,doevGTeh,doqsGTeh,            &
                     doRtest,doUtest,doGtest)
 
 !--------------------------!
@@ -199,7 +199,8 @@ program QuAcK
     call RQuAcK(doRtest,doRHF,doROHF,dostab,dosearch,doMP2,doMP3,doCCD,dopCCD,doDCD,doCCSD,doCCSDT,              &
                 dodrCCD,dorCCD,docrCCD,dolCCD,doCIS,doCIS_D,doCID,doCISD,doFCI,dophRPA,dophRPAx,docrRPA,doppRPA, &
                 doG0F2,doevGF2,doqsGF2,doufG0F02,doG0F3,doevGF3,doG0W0,doevGW,doqsGW,doufG0W0,doufGW,doSRGqsGW,  &
-                doG0T0pp,doevGTpp,doqsGTpp,doG0T0eh,doevGTeh,doqsGTeh,nNuc,nBas,nC,nO,nV,nR,ENuc,ZNuc,rNuc,      &
+                doG0T0pp,doevGTpp,doqsGTpp,doufG0T0pp,doG0T0eh,doevGTeh,doqsGTeh,                                & 
+                nNuc,nBas,nC,nO,nV,nR,ENuc,ZNuc,rNuc,                                                            &
                 S,T,V,Hc,X,dipole_int_AO,ERI_AO,maxSCF_HF,max_diis_HF,thresh_HF,level_shift,                     &
                 guess_type,mix,reg_MP,maxSCF_CC,max_diis_CC,thresh_CC,spin_conserved,spin_flip,TDA,              &
                 maxSCF_GF,max_diis_GF,renorm_GF,thresh_GF,lin_GF,reg_GF,eta_GF,maxSCF_GW,max_diis_GW,thresh_GW,  &
@@ -214,7 +215,8 @@ program QuAcK
     call UQuAcK(doUtest,doUHF,dostab,dosearch,doMP2,doMP3,doCCD,dopCCD,doDCD,doCCSD,doCCSDT,                     &
                 dodrCCD,dorCCD,docrCCD,dolCCD,doCIS,doCIS_D,doCID,doCISD,doFCI,dophRPA,dophRPAx,docrRPA,doppRPA, &
                 doG0F2,doevGF2,doqsGF2,doufG0F02,doG0F3,doevGF3,doG0W0,doevGW,doqsGW,doufG0W0,doufGW,doSRGqsGW,  &
-                doG0T0pp,doevGTpp,doqsGTpp,doG0T0eh,doevGTeh,doqsGTeh,nNuc,nBas,nC,nO,nV,nR,ENuc,ZNuc,rNuc,      &
+                doG0T0pp,doevGTpp,doqsGTpp,doufG0T0pp,doG0T0eh,doevGTeh,doqsGTeh,                                & 
+                nNuc,nBas,nC,nO,nV,nR,ENuc,ZNuc,rNuc,                                                            &
                 S,T,V,Hc,X,dipole_int_AO,ERI_AO,maxSCF_HF,max_diis_HF,thresh_HF,level_shift,                     &
                 guess_type,mix,reg_MP,maxSCF_CC,max_diis_CC,thresh_CC,spin_conserved,spin_flip,TDA,              &
                 maxSCF_GF,max_diis_GF,renorm_GF,thresh_GF,lin_GF,reg_GF,eta_GF,maxSCF_GW,max_diis_GW,thresh_GW,  &

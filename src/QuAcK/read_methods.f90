@@ -1,15 +1,15 @@
-subroutine read_methods(doRHF,doUHF,doGHF,doROHF,          &
-                        doMP2,doMP3,                       & 
-                        doCCD,dopCCD,doDCD,doCCSD,doCCSDT, & 
-                        do_drCCD,do_rCCD,do_crCCD,do_lCCD, &
-                        doCIS,doCIS_D,doCID,doCISD,doFCI,  & 
-                        dophRPA,dophRPAx,docrRPA,doppRPA,  & 
-                        doG0F2,doevGF2,doqsGF2,doufG0F02,  &
-                        doG0F3,doevGF3,                    & 
-                        doG0W0,doevGW,doqsGW,doSRGqsGW,    & 
-                        doufG0W0,doufGW,                   & 
-                        doG0T0pp,doevGTpp,doqsGTpp,        &
-                        doG0T0eh,doevGTeh,doqsGTeh,        &
+subroutine read_methods(doRHF,doUHF,doGHF,doROHF,              &
+                        doMP2,doMP3,                           & 
+                        doCCD,dopCCD,doDCD,doCCSD,doCCSDT,     & 
+                        do_drCCD,do_rCCD,do_crCCD,do_lCCD,     &
+                        doCIS,doCIS_D,doCID,doCISD,doFCI,      & 
+                        dophRPA,dophRPAx,docrRPA,doppRPA,      & 
+                        doG0F2,doevGF2,doqsGF2,doufG0F02,      &
+                        doG0F3,doevGF3,                        & 
+                        doG0W0,doevGW,doqsGW,doSRGqsGW,        & 
+                        doufG0W0,doufGW,                       & 
+                        doG0T0pp,doevGTpp,doqsGTpp,doufG0T0pp, &
+                        doG0T0eh,doevGTeh,doqsGTeh,            &
                         doRtest,doUtest,doGtest)
 
 ! Read desired methods 
@@ -26,7 +26,7 @@ subroutine read_methods(doRHF,doUHF,doGHF,doROHF,          &
   logical,intent(out)           :: dophRPA,dophRPAx,docrRPA,doppRPA
   logical,intent(out)           :: doG0F2,doevGF2,doqsGF2,doufG0F02,doG0F3,doevGF3  
   logical,intent(out)           :: doG0W0,doevGW,doqsGW,doSRGqsGW,doufG0W0,doufGW
-  logical,intent(out)           :: doG0T0pp,doevGTpp,doqsGTpp
+  logical,intent(out)           :: doG0T0pp,doevGTpp,doqsGTpp,doufG0T0pp 
   logical,intent(out)           :: doG0T0eh,doevGTeh,doqsGTeh
 
   logical,intent(out)           :: doRtest,doUtest,doGtest
@@ -160,23 +160,31 @@ subroutine read_methods(doRHF,doUHF,doGHF,doROHF,          &
   if(ans5 == 'T') doufG0W0  = .true.
   if(ans6 == 'T') doufGW    = .true.
 
-! Read GT methods
+! Read GTpp methods
 
-  doG0T0pp = .false.
-  doevGTpp = .false.
-  doqsGTpp = .false.
-  doG0T0eh = .false.
-  doevGTeh = .false.
-  doqsGTeh = .false.
+  doG0T0pp   = .false.
+  doevGTpp   = .false.
+  doqsGTpp   = .false.
+  doufG0T0pp = .false.
 
   read(1,*) 
-  read(1,*) ans1,ans2,ans3,ans4,ans5,ans6
+  read(1,*) ans1,ans2,ans3,ans4
   if(ans1 == 'T') doG0T0pp   = .true.
   if(ans2 == 'T') doevGTpp   = .true.
   if(ans3 == 'T') doqsGTpp   = .true.
-  if(ans4 == 'T') doG0T0eh   = .true.
-  if(ans5 == 'T') doevGTeh   = .true.
-  if(ans6 == 'T') doqsGTeh   = .true.
+  if(ans4 == 'T') doufG0T0pp = .true.
+
+! Read GTeh methods
+
+  doG0T0eh   = .false.
+  doevGTeh   = .false.
+  doqsGTeh   = .false.
+
+  read(1,*) 
+  read(1,*) ans1,ans2,ans3
+  if(ans1 == 'T') doG0T0eh = .true.
+  if(ans2 == 'T') doevGTeh = .true.
+  if(ans3 == 'T') doqsGTeh = .true.
 
 ! Read test
 

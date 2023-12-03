@@ -1,6 +1,6 @@
-subroutine UGT(dotest,doG0T0pp,doevGTpp,doqsGTpp,doG0T0eh,doevGTeh,doqsGTeh,maxSCF,thresh,max_diis,doACFDT, &
-               exchange_kernel,doXBS,dophBSE,dophBSE2,doppBSE,TDA_T,TDA,dBSE,dTDA,spin_conserved,spin_flip, &
-               linearize,eta,regularize,nNuc,ZNuc,rNuc,ENuc,nBas,nC,nO,nV,nR,nS,EHF,S,X,T,V,Hc,             &
+subroutine UGT(dotest,doG0T0pp,doevGTpp,doqsGTpp,doufG0T0pp,doG0T0eh,doevGTeh,doqsGTeh,maxSCF,thresh,max_diis,doACFDT, &
+               exchange_kernel,doXBS,dophBSE,dophBSE2,doppBSE,TDA_T,TDA,dBSE,dTDA,spin_conserved,spin_flip,            &
+               linearize,eta,regularize,nNuc,ZNuc,rNuc,ENuc,nBas,nC,nO,nV,nR,nS,EHF,S,X,T,V,Hc,                        &
                ERI_AO,ERI_aaaa,ERI_aabb,ERI_bbbb,dipole_int_AO,dipole_int_aa,dipole_int_bb,PHF,cHF,epsHF)
 
 ! T-matrix module
@@ -15,6 +15,7 @@ subroutine UGT(dotest,doG0T0pp,doevGTpp,doqsGTpp,doG0T0eh,doevGTeh,doqsGTeh,maxS
   logical,intent(in)            :: doG0T0pp
   logical,intent(in)            :: doevGTpp
   logical,intent(in)            :: doqsGTpp
+  logical,intent(in)            :: doufG0T0pp
   logical,intent(in)            :: doG0T0eh
   logical,intent(in)            :: doevGTeh
   logical,intent(in)            :: doqsGTeh
@@ -85,7 +86,7 @@ subroutine UGT(dotest,doG0T0pp,doevGTpp,doqsGTpp,doG0T0eh,doevGTeh,doqsGTeh,maxS
     call wall_time(end_GT)
   
     t_GT = end_GT - start_GT
-    write(*,'(A65,1X,F9.3,A8)') 'Total CPU time for G0T0 = ',t_GT,' seconds'
+    write(*,'(A65,1X,F9.3,A8)') 'Total CPU time for G0T0pp = ',t_GT,' seconds'
     write(*,*)
 
   end if
@@ -103,7 +104,7 @@ subroutine UGT(dotest,doG0T0pp,doevGTpp,doqsGTpp,doG0T0eh,doevGTeh,doqsGTeh,maxS
     call wall_time(end_GT)
   
     t_GT = end_GT - start_GT
-    write(*,'(A65,1X,F9.3,A8)') 'Total CPU time for evGT = ',t_GT,' seconds'
+    write(*,'(A65,1X,F9.3,A8)') 'Total CPU time for evGTpp = ',t_GT,' seconds'
     write(*,*)
 
   end if
@@ -121,7 +122,23 @@ subroutine UGT(dotest,doG0T0pp,doevGTpp,doqsGTpp,doG0T0eh,doevGTeh,doqsGTeh,maxS
     call wall_time(end_GT)
 
     t_GT = end_GT - start_GT
-    write(*,'(A65,1X,F9.3,A8)') 'Total CPU time for qsGT = ',t_GT,' seconds'
+    write(*,'(A65,1X,F9.3,A8)') 'Total CPU time for qsGTpp = ',t_GT,' seconds'
+    write(*,*)
+
+  end if
+
+!------------------------------------------------------------------------
+! Perform ufG0T0pp calculatiom
+!------------------------------------------------------------------------
+
+  if(doG0T0eh) then
+    
+    call wall_time(start_GT)
+    print*,'Unrestricted version of ufG0T0pp not yet implemented! Sorry.'
+    call wall_time(end_GT)
+  
+    t_GT = end_GT - start_GT
+    write(*,'(A65,1X,F9.3,A8)') 'Total CPU time for G0T0eh = ',t_GT,' seconds'
     write(*,*)
 
   end if
@@ -153,7 +170,7 @@ subroutine UGT(dotest,doG0T0pp,doevGTpp,doqsGTpp,doG0T0eh,doevGTeh,doqsGTeh,maxS
     call wall_time(end_GT)
 
     t_GT = end_GT - start_GT
-    write(*,'(A65,1X,F9.3,A8)') 'Total CPU time for evGT = ',t_GT,' seconds'
+    write(*,'(A65,1X,F9.3,A8)') 'Total CPU time for evGTeh = ',t_GT,' seconds'
     write(*,*)
 
   end if
@@ -169,7 +186,7 @@ subroutine UGT(dotest,doG0T0pp,doevGTpp,doqsGTpp,doG0T0eh,doevGTeh,doqsGTeh,maxS
     call wall_time(end_GT)
 
     t_GT = end_GT - start_GT
-    write(*,'(A65,1X,F9.3,A8)') 'Total CPU time for qsGW = ',t_GT,' seconds'
+    write(*,'(A65,1X,F9.3,A8)') 'Total CPU time for qsGTeh = ',t_GT,' seconds'
     write(*,*)
 
   end if
