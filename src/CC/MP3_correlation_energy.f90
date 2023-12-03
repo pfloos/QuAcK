@@ -28,10 +28,10 @@ subroutine MP3_correlation_energy(nC,nO,nV,nR,OOVV,t2,v,delta_OOVV,EcMP3)
 
           EcMP3 = EcMP3 + OOVV(i,j,a,b)*(t2(i,j,a,b) + v(i,j,a,b)/delta_OOVV(i,j,a,b))
 
-        enddo
-      enddo
-    enddo
-  enddo
+        end do
+      end do
+    end do
+  end do
 
   EcMP3 = 0.25d0*EcMP3
 

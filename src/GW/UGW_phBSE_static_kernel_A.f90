@@ -58,14 +58,14 @@ subroutine UGW_phBSE_static_kernel_A(ispin,eta,nBas,nC,nO,nV,nR,nSa,nSb,nSt,nS_s
             do kc=1,nS_sc
               eps = Omega(kc)**2 + eta**2
               chi = chi + rho(i,j,kc,1)*rho(a,b,kc,1)*Omega(kc)/eps
-            enddo
+            end do
  
             A_lr(ia,jb) = A_lr(ia,jb) - lambda*ERI_aaaa(i,b,j,a) + 2d0*lambda*chi
  
-          enddo
-        enddo
-      enddo
-    enddo
+          end do
+        end do
+      end do
+    end do
 
     ! bbbb block
  
@@ -82,14 +82,14 @@ subroutine UGW_phBSE_static_kernel_A(ispin,eta,nBas,nC,nO,nV,nR,nSa,nSb,nSt,nS_s
             do kc=1,nS_sc
               eps = Omega(kc)**2 + eta**2
               chi = chi + rho(i,j,kc,2)*rho(a,b,kc,2)*Omega(kc)/eps 
-            enddo
+            end do
  
             A_lr(nSa+ia,nSa+jb) = A_lr(nSa+ia,nSa+jb) - lambda*ERI_bbbb(i,b,j,a) + 2d0*lambda*chi
  
-          enddo
-        enddo
-      enddo
-    enddo
+          end do
+        end do
+      end do
+    end do
 
   end if
 
@@ -114,7 +114,7 @@ subroutine UGW_phBSE_static_kernel_A(ispin,eta,nBas,nC,nO,nV,nR,nSa,nSb,nSt,nS_s
             do kc=1,nS_sc
               eps = Omega(kc)**2 + eta**2
               chi = chi + rho(i,j,kc,1)*rho(a,b,kc,2)*Omega(kc)/eps
-            enddo
+            end do
 
             A_lr(ia,jb) = A_lr(ia,jb) - lambda*ERI_aabb(i,b,j,a) + 2d0*lambda*chi
 
@@ -138,7 +138,7 @@ subroutine UGW_phBSE_static_kernel_A(ispin,eta,nBas,nC,nO,nV,nR,nSa,nSb,nSt,nS_s
             do kc=1,nS_sc
               eps = Omega(kc)**2 + eta**2
               chi = chi + rho(i,j,kc,2)*rho(a,b,kc,1)*Omega(kc)/eps
-            enddo
+            end do
 
             A_lr(nSa+ia,nSa+jb) = A_lr(nSa+ia,nSa+jb) - lambda*ERI_aabb(b,i,a,j) + 2d0*lambda*chi
 

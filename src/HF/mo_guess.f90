@@ -43,6 +43,6 @@ subroutine mo_guess(nBas,guess_type,S,Hc,X,c)
     print*,'Wrong guess option'
     stop
 
-  endif
+  end if
 
 end subroutine

@@ -24,7 +24,7 @@ subroutine form_delta_OV(nC,nO,nV,nR,eO,eV,delta)
     do i=1,nO-nC
       do a=1,nV-nR
         delta(i,a) = eV(a) - eO(i)
-      enddo
-    enddo
+      end do
+    end do
 
 end subroutine 

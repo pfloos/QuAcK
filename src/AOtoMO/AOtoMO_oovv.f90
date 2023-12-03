@@ -29,11 +29,11 @@ subroutine AOtoMO_oovv(nBas,nO,nV,cO,cV,O,ooOvv)
         do si=1,nBas
           do b=1,nV
             scr1(mu,nu,la,b) = scr1(mu,nu,la,b) + O(mu,nu,la,si)*cV(si,b)
-          enddo
-        enddo
-      enddo
-    enddo
-  enddo
+          end do
+        end do
+      end do
+    end do
+  end do
  
   scr2 = 0d0   
   do mu=1,nBas
@@ -42,11 +42,11 @@ subroutine AOtoMO_oovv(nBas,nO,nV,cO,cV,O,ooOvv)
         do i=1,nO
           do b=1,nV
             scr2(i,nu,la,b) = scr2(i,nu,la,b) + cO(mu,i)*scr1(mu,nu,la,b)
-          enddo
-        enddo
-      enddo
-    enddo
-  enddo
+          end do
+        end do
+      end do
+    end do
+  end do
 
   scr1 = 0d0
   do nu=1,nBas
@@ -55,11 +55,11 @@ subroutine AOtoMO_oovv(nBas,nO,nV,cO,cV,O,ooOvv)
         do a=1,nV
           do b=1,nV
             scr1(i,nu,a,b) = scr1(i,nu,a,b) + scr2(i,nu,la,b)*cV(la,a)
-          enddo
-        enddo
-      enddo
-    enddo
-  enddo
+          end do
+        end do
+      end do
+    end do
+  end do
 
   ooOvv = 0d0
   do nu=1,nBas
@@ -68,10 +68,10 @@ subroutine AOtoMO_oovv(nBas,nO,nV,cO,cV,O,ooOvv)
         do a=1,nV
           do b=1,nV
             ooOvv(i,j,a,b) = ooOvv(i,j,a,b) + cO(nu,j)*scr1(i,nu,a,b)
-          enddo
-        enddo
-      enddo
-    enddo
-  enddo
+          end do
+        end do
+      end do
+    end do
+  end do
 
 end subroutine 

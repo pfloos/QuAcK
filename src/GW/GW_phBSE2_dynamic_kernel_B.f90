@@ -54,8 +54,8 @@ subroutine GW_phBSE2_dynamic_kernel_B(eta,nBas,nC,nO,nV,nR,nS,eGW,W,KB_dyn)
 
               KB_dyn(ia,jb) = KB_dyn(ia,jb) - num*dem/(dem**2 + eta**2)
 
-            enddo
-          enddo
+            end do
+          end do
 
           do c=nO+1,nBas-nR
             do d=nO+1,nBas-nR 
@@ -65,8 +65,8 @@ subroutine GW_phBSE2_dynamic_kernel_B(eta,nBas,nC,nO,nV,nR,nS,eGW,W,KB_dyn)
 
               KB_dyn(ia,jb) =  KB_dyn(ia,jb) + num*dem/(dem**2 + eta**2)
 
-            enddo
-          enddo
+            end do
+          end do
 
           do k=nC+1,nO
             do l=nC+1,nO
@@ -79,10 +79,10 @@ subroutine GW_phBSE2_dynamic_kernel_B(eta,nBas,nC,nO,nV,nR,nS,eGW,W,KB_dyn)
             end do
           end do 
 
-        enddo
-      enddo
-    enddo
-  enddo
+        end do
+      end do
+    end do
+  end do
 !$omp end parallel do
 
 end subroutine 

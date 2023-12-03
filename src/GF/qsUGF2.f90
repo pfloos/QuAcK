@@ -306,7 +306,7 @@ subroutine qsUGF2(dotest,maxSCF,thresh,max_diis,BSE,TDA,dBSE,dTDA,spin_conserved
     call dipole_moment(nBas,P(:,:,1)+P(:,:,2),nNuc,ZNuc,rNuc,dipole_int_AO,dipole)
     call print_qsUGF2(nBas,nO,nSCF,Conv,thresh,eHF,eGF2,c,P,S,T,V,J,K,ENuc,ET,EV,EJ,Ex,Ec,EqsGF2,SigCp,Z,dipole)
 
-  enddo
+  end do
 !------------------------------------------------------------------------
 ! End main loop
 !------------------------------------------------------------------------
@@ -323,7 +323,7 @@ subroutine qsUGF2(dotest,maxSCF,thresh,max_diis,BSE,TDA,dBSE,dTDA,spin_conserved
 
     stop
 
-  endif
+  end if
 
 ! Deallocate memory
 

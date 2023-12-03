@@ -33,7 +33,7 @@ recursive subroutine rec_quicksort(x,iorder,isize,first,last,level)
     end do                                                       
     if (i >= j) then                                             
  exit                                                            
-  endif                                                          
+  end if                                                          
     tmp  = x(i)                                                  
     x(i) = x(j)                                                  
     x(j) = tmp                                                   
@@ -42,22 +42,22 @@ recursive subroutine rec_quicksort(x,iorder,isize,first,last,level)
     iorder(j) = itmp                                             
     i=i+1                                                        
     j=j-1                                                        
-  enddo
+  end do
   if ( ((i-first <= 10000).and.(last-j <= 10000)).or.(level<=0) ) then
     if (first < i-1) then                                        
       call rec_quicksort(x, iorder, isize, first, i-1,level/2) 
-    endif                                                        
+    end if                                                        
     if (j+1 < last) then                                         
       call rec_quicksort(x, iorder, isize, j+1, last,level/2)  
-    endif                                                        
+    end if                                                        
   else                                                           
     if (first < i-1) then                                        
       call rec_quicksort(x, iorder, isize, first, i-1,level/2) 
-    endif                                                        
+    end if                                                        
     if (j+1 < last) then                                         
       call rec_quicksort(x, iorder, isize, j+1, last,level/2)  
-    endif                                                        
-  endif                                                          
+    end if                                                        
+  end if                                                          
 end subroutine
 
 subroutine set_order(x,iorder,isize,jsize)

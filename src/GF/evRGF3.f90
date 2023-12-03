@@ -62,12 +62,12 @@
           App(p,1) = App(p,1) & 
                    - (2d0*V(p,k,p,j) - V(p,k,j,p))*(2d0*V(j,i,a,b) - V(j,i,b,a))*V(a,b,k,i)/(eps1*eps2)
 
-      enddo
-      enddo
-    enddo
-    enddo
-    enddo
-  enddo
+      end do
+      end do
+    end do
+    end do
+    end do
+  end do
 
   do p=nC+1,nBas-nR
     do i=nC+1,nO
@@ -82,12 +82,12 @@
           App(p,2) = App(p,2) & 
                    + (2d0*V(p,c,p,b) - V(p,c,b,p))*(2d0*V(j,i,a,b) - V(j,i,b,a))*V(j,i,c,a)/(eps1*eps2)
 
-      enddo
-      enddo
-      enddo
-    enddo
-    enddo
-  enddo
+      end do
+      end do
+      end do
+    end do
+    end do
+  end do
   
   do p=nC+1,nBas-nR
     do i=nC+1,nO
@@ -102,12 +102,12 @@
           App(p,3) = App(p,3) & 
                    + (2d0*V(p,c,p,j) - V(p,c,j,p))*(2d0*V(j,i,a,b) - V(j,i,b,a))*V(a,b,c,i)/(eps1*eps2)
 
-      enddo
-      enddo
-      enddo
-    enddo
-    enddo
-  enddo
+      end do
+      end do
+      end do
+    end do
+    end do
+  end do
 
   App(:,4) = App(:,3)
 
@@ -124,12 +124,12 @@
           App(p,5) = App(p,5) & 
                    - (2d0*V(p,b,p,k) - V(p,b,k,p))*(2d0*V(j,i,a,b) - V(j,i,b,a))*V(i,j,k,a)/(eps1*eps2)
 
-      enddo
-      enddo
-    enddo
-    enddo
-    enddo
-  enddo
+      end do
+      end do
+    end do
+    end do
+    end do
+  end do
   
   App(:,6) = App(:,5)
 
@@ -167,10 +167,10 @@
           Bpp(p,1) = Bpp(p,1) & 
                    + (2d0*V(p,a,i,j) - V(p,a,j,i))*V(p,a,i,j)/eps
 
-        enddo
-      enddo
-      enddo
-    enddo
+        end do
+      end do
+      end do
+    end do
  
     do p=nC+1,nBas-nR
       do i=nC+1,nO
@@ -182,10 +182,10 @@
           Bpp(p,2) = Bpp(p,2) &
                    + (2d0*V(p,i,a,b) - V(p,i,b,a))*V(p,i,a,b)/eps
 
-        enddo
-        enddo
-      enddo
-    enddo
+        end do
+        end do
+      end do
+    end do
  
     ! Total second-order Green function
 
@@ -208,12 +208,12 @@
             Cpp(p,1) = Cpp(p,1) & 
                      + (2d0*V(p,i,a,b) - V(p,i,b,a))*V(a,b,c,d)*V(p,i,c,d)/(eps1*eps2)
 
-        enddo
-        enddo
-        enddo
-        enddo
-      enddo
-    enddo
+        end do
+        end do
+        end do
+        end do
+      end do
+    end do
 
     do p=nC+1,nBas-nR
       do i=nC+1,nO
@@ -228,12 +228,12 @@
             Cpp(p,2) = Cpp(p,2) & 
                      + (2d0*V(p,i,a,b) - V(p,i,b,a))*V(a,b,j,k)*V(p,i,j,k)/(eps1*eps2)
 
-        enddo
-        enddo
-      enddo
-      enddo
-      enddo
-    enddo
+        end do
+        end do
+      end do
+      end do
+      end do
+    end do
 
     Cpp(:,3) = Cpp(:,2)
 
@@ -249,12 +249,12 @@
 
             Cpp(p,4) = Cpp(p,4) & 
                      + (2d0*V(p,a,i,j) - V(p,a,j,i))*V(i,j,b,c)*V(p,a,b,c)/(eps1*eps2)
-        enddo
-        enddo
-        enddo
-      enddo
-      enddo
-    enddo
+        end do
+        end do
+        end do
+      end do
+      end do
+    end do
 
     Cpp(:,5) = Cpp(:,4)
 
@@ -270,12 +270,12 @@
 
             Cpp(p,6) = Cpp(p,6) & 
                      - (2d0*V(p,a,k,l) - V(p,a,l,k))*V(k,l,i,j)*V(p,a,i,j)/(eps1*eps2)
-        enddo
-      enddo
-      enddo
-      enddo
-      enddo
-    enddo
+        end do
+      end do
+      end do
+      end do
+      end do
+    end do
 
     ! Frequency-dependent third-order contribution: "D" terms
 
@@ -299,12 +299,12 @@
                      + V(p,i,b,a)*(V(a,j,i,c)*(4d0*V(p,j,b,c) - 2d0*V(p,j,c,b)) &
                                  + V(a,j,c,i)*(    V(p,j,c,b) - 2d0*V(p,j,b,c)))/(eps1*eps2)
 
-        enddo
-        enddo
-        enddo
-      enddo
-      enddo
-    enddo
+        end do
+        end do
+        end do
+      end do
+      end do
+    end do
 
     do p=nC+1,nBas-nR
       do i=nC+1,nO
@@ -324,12 +324,12 @@
                      + V(p,i,a,c)*(V(a,b,i,j)*(    V(p,b,j,c) - 2d0*V(p,b,c,j)) &
                                  + V(a,b,j,i)*(    V(p,b,c,j) - 2d0*V(p,b,j,c)))/(eps1*eps2)
 
-        enddo
-        enddo
-        enddo
-      enddo
-      enddo
-    enddo
+        end do
+        end do
+        end do
+      end do
+      end do
+    end do
 
     Dpp(:,3) = Dpp(:,2)
 
@@ -351,12 +351,12 @@
                      + V(p,a,j,k)*(V(j,i,a,b)*(    V(p,i,b,k) - 2d0*V(p,i,k,b)) &
                                  + V(j,i,b,a)*(    V(p,i,k,b) - 2d0*V(p,i,b,k)))/(eps1*eps2)
 
-        enddo
-        enddo
-      enddo
-      enddo
-      enddo
-    enddo
+        end do
+        end do
+      end do
+      end do
+      end do
+    end do
 
     Dpp(:,5) = Dpp(:,4)
 
@@ -378,12 +378,12 @@
                      - V(p,a,i,k)*(V(i,b,a,j)*(    V(p,b,j,k) - 2d0*V(p,b,k,j)) &
                                  + V(i,b,j,a)*(    V(p,b,k,j) - 2d0*V(p,b,j,k)))/(eps1*eps2)
 
-        enddo
-        enddo
-      enddo
-      enddo
-      enddo
-    enddo
+        end do
+        end do
+      end do
+      end do
+      end do
+    end do
 
 !   Compute renormalization factor (if required)
 
@@ -445,7 +445,7 @@
 
       Sig3(:) = Z(:)*Sig3(:)
 
-    endif
+    end if
 
     ! Total third-order Green function
 
@@ -474,7 +474,7 @@
 
     nSCF = nSCF + 1
 
-  enddo
+  end do
 !------------------------------------------------------------------------
 ! End main SCF loop
 !------------------------------------------------------------------------
@@ -491,6 +491,6 @@
 
     stop
 
-  endif
+  end if
 
 end subroutine 

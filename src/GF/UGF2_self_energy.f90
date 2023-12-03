@@ -58,9 +58,9 @@ subroutine UGF2_self_energy(nBas,nC,nO,nV,nR,eta,ERI_aa,ERI_ab,ERI_bb,eHF,eGF2,S
             SigC(p,q,1) = SigC(p,q,1) + num*eps/(eps**2 + eta**2)  
             if(p == q) Z(p,1) = Z(p,1) - num*(eps**2 - eta**2)/(eps**2 + eta**2)**2
 
-          enddo
-        enddo
-      enddo
+          end do
+        end do
+      end do
 
       ! Addition part: ab
 
@@ -74,9 +74,9 @@ subroutine UGF2_self_energy(nBas,nC,nO,nV,nR,eta,ERI_aa,ERI_ab,ERI_bb,eHF,eGF2,S
             SigC(p,q,1) = SigC(p,q,1) + num*eps/(eps**2 + eta**2)
             if(p == q) Z(p,1) = Z(p,1) - num*(eps**2 - eta**2)/(eps**2 + eta**2)**2
 
-          enddo
-        enddo
-      enddo
+          end do
+        end do
+      end do
 
      ! Removal part: aa
 
@@ -91,9 +91,9 @@ subroutine UGF2_self_energy(nBas,nC,nO,nV,nR,eta,ERI_aa,ERI_ab,ERI_bb,eHF,eGF2,S
             SigC(p,q,1) = SigC(p,q,1) + num*eps/(eps**2 + eta**2)
             if(p == q) Z(p,1) = Z(p,1) - num*(eps**2 - eta**2)/(eps**2 + eta**2)**2
 
-          enddo
-        enddo
-      enddo
+          end do
+        end do
+      end do
 
      ! Removal part: ab
 
@@ -107,12 +107,12 @@ subroutine UGF2_self_energy(nBas,nC,nO,nV,nR,eta,ERI_aa,ERI_ab,ERI_bb,eHF,eGF2,S
             SigC(p,q,1) = SigC(p,q,1) + num*eps/(eps**2 + eta**2)
             if(p == q) Z(p,1) = Z(p,1) - num*(eps**2 - eta**2)/(eps**2 + eta**2)**2
 
-          enddo
-        enddo
-      enddo
+          end do
+        end do
+      end do
 
-    enddo
-  enddo
+    end do
+  end do
 
   !------------------!
   ! Spin-down sector !
@@ -134,9 +134,9 @@ subroutine UGF2_self_energy(nBas,nC,nO,nV,nR,eta,ERI_aa,ERI_ab,ERI_bb,eHF,eGF2,S
             SigC(p,q,2) = SigC(p,q,2) + num*eps/(eps**2 + eta**2)
             if(p == q) Z(p,2) = Z(p,2) - num*(eps**2 - eta**2)/(eps**2 + eta**2)**2
 
-          enddo
-        enddo
-      enddo
+          end do
+        end do
+      end do
 
       ! Addition part: ab
 
@@ -150,9 +150,9 @@ subroutine UGF2_self_energy(nBas,nC,nO,nV,nR,eta,ERI_aa,ERI_ab,ERI_bb,eHF,eGF2,S
             SigC(p,q,2) = SigC(p,q,2) + num*eps/(eps**2 + eta**2)
             if(p == q) Z(p,2) = Z(p,2) - num*(eps**2 - eta**2)/(eps**2 + eta**2)**2
 
-          enddo
-        enddo
-      enddo
+          end do
+        end do
+      end do
 
      ! Removal part: bb
 
@@ -167,9 +167,9 @@ subroutine UGF2_self_energy(nBas,nC,nO,nV,nR,eta,ERI_aa,ERI_ab,ERI_bb,eHF,eGF2,S
             SigC(p,q,2) = SigC(p,q,2) + num*eps/(eps**2 + eta**2)
             if(p == q) Z(p,2) = Z(p,2) - num*(eps**2 - eta**2)/(eps**2 + eta**2)**2
 
-          enddo
-        enddo
-      enddo
+          end do
+        end do
+      end do
 
      ! Removal part: ab
 
@@ -183,12 +183,12 @@ subroutine UGF2_self_energy(nBas,nC,nO,nV,nR,eta,ERI_aa,ERI_ab,ERI_bb,eHF,eGF2,S
             SigC(p,q,2) = SigC(p,q,2) + num*eps/(eps**2 + eta**2)
             if(p == q) Z(p,2) = Z(p,2) - num*(eps**2 - eta**2)/(eps**2 + eta**2)**2
 
-          enddo
-        enddo
-      enddo
+          end do
+        end do
+      end do
 
-    enddo
-  enddo
+    end do
+  end do
 
   Z(:,:) = 1d0/(1d0 - Z(:,:))
 

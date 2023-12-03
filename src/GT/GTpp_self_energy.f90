@@ -51,18 +51,18 @@ subroutine GTpp_self_energy(eta,nBas,nC,nO,nV,nR,nOOs,nVVs,nOOt,nVVt,e,Om1s,rho1
           num = rho1s(p,i,cd)*rho1s(q,i,cd)
           Sig(p,q) = Sig(p,q) + num*eps/(eps**2 + eta**2)
           if(p == q) Z(p) = Z(p) - num*(eps**2 - eta**2)/(eps**2 + eta**2)**2
-        enddo
+        end do
 
         do cd=1,nVVt
           eps = e(p) + e(i) - Om1t(cd)
           num = rho1t(p,i,cd)*rho1t(q,i,cd)
           Sig(p,q) = Sig(p,q) + num*eps/(eps**2 + eta**2)
           if(p == q) Z(p) = Z(p) - num*(eps**2 - eta**2)/(eps**2 + eta**2)**2
-        enddo
+        end do
 
-      enddo
-    enddo
-  enddo
+      end do
+    end do
+  end do
 
 !----------------------------------------------
 ! Virtual part of the T-matrix self-energy
@@ -77,18 +77,18 @@ subroutine GTpp_self_energy(eta,nBas,nC,nO,nV,nR,nOOs,nVVs,nOOt,nVVt,e,Om1s,rho1
           num = rho2s(p,a,kl)*rho2s(q,a,kl)
           Sig(p,q) = Sig(p,q) + num*eps/(eps**2 + eta**2)
           if(p == q) Z(p) = Z(p) - num*(eps**2 - eta**2)/(eps**2 + eta**2)**2
-        enddo
+        end do
 
         do kl=1,nOOt
           eps = e(p) + e(a) - Om2t(kl)
           num = rho2t(p,a,kl)*rho2t(q,a,kl)
           Sig(p,q) = Sig(p,q) + num*eps/(eps**2 + eta**2)
           if(p == q) Z(p) = Z(p) - num*(eps**2 - eta**2)/(eps**2 + eta**2)**2
-        enddo
+        end do
 
-      enddo
-    enddo
-  enddo
+      end do
+    end do
+  end do
 
 !----------------------------------------------
 ! Galitskii-Migdal correlation energy
@@ -101,16 +101,16 @@ subroutine GTpp_self_energy(eta,nBas,nC,nO,nV,nR,nOOs,nVVs,nOOt,nVVt,e,Om1s,rho1
         eps = e(i) + e(j) - Om1s(cd)
         num = rho1s(i,j,cd)*rho1s(i,j,cd)
         EcGM = EcGM + num*eps/(eps**2 + eta**2)
-      enddo
+      end do
 
       do cd=1,nVVt
         eps = e(i) + e(j) - Om1t(cd)
         num = rho1t(i,j,cd)*rho1t(i,j,cd)
         EcGM = EcGM + num*eps/(eps**2 + eta**2)
-      enddo
+      end do
 
-    enddo
-  enddo
+    end do
+  end do
 
   do a=nO+1,nBas-nR
     do b=nO+1,nBas-nR
@@ -119,16 +119,16 @@ subroutine GTpp_self_energy(eta,nBas,nC,nO,nV,nR,nOOs,nVVs,nOOt,nVVt,e,Om1s,rho1
         eps = e(a) + e(b) - Om2s(kl)
         num = rho2s(a,b,kl)*rho2s(a,b,kl)
         EcGM = EcGM - num*eps/(eps**2 + eta**2)
-      enddo
+      end do
 
       do kl=1,nOOt
         eps = e(a) + e(b) - Om2t(kl)
         num = rho2t(a,b,kl)*rho2t(a,b,kl)
         EcGM = EcGM - num*eps/(eps**2 + eta**2)
-      enddo
+      end do
 
-    enddo
-  enddo
+    end do
+  end do
 
   Z(:) = 1d0/(1d0 - Z(:)) 
 

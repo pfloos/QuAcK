@@ -58,7 +58,7 @@ subroutine GW_phBSE_dynamic_kernel_A(eta,nBas,nC,nO,nV,nR,nS,lambda,eGW,OmRPA,rh
             eps = + OmBSE - OmRPA(kc) - (eGW(b) - eGW(i))
             chi = chi + rho_RPA(i,j,kc)*rho_RPA(a,b,kc)*eps/(eps**2 + eta**2)
 
-          enddo
+          end do
 
           KA_dyn(ia,jb) = KA_dyn(ia,jb) - 2d0*lambda*chi
 
@@ -71,14 +71,14 @@ subroutine GW_phBSE_dynamic_kernel_A(eta,nBas,nC,nO,nV,nR,nS,lambda,eGW,OmRPA,rh
             eps = + OmBSE - OmRPA(kc) - (eGW(b) - eGW(i))
             chi = chi + rho_RPA(i,j,kc)*rho_RPA(a,b,kc)*(eps**2 - eta**2)/(eps**2 + eta**2)**2
 
-          enddo
+          end do
 
           ZA_dyn(ia,jb) = ZA_dyn(ia,jb) + 2d0*lambda*chi
 
-        enddo
-      enddo
-    enddo
-  enddo
+        end do
+      end do
+    end do
+  end do
 
 !$omp end parallel do
 

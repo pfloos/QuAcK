@@ -36,11 +36,11 @@ subroutine GW_excitation_density(nBas,nC,nO,nR,nS,ERI,XpY,rho)
               jb = jb + 1
               do ia=1,nS
                  rho(p,q,ia) = rho(p,q,ia) + ERI(p,j,q,b)*XpY(ia,jb)
-              enddo
-           enddo
-        enddo
-     enddo
-  enddo
+              end do
+           end do
+        end do
+     end do
+  end do
   !$OMP END DO
   !$OMP END PARALLEL
 

@@ -67,9 +67,9 @@ subroutine UGF2_reg_self_energy_diag(nBas,nC,nO,nV,nR,eta,ERI_aa,ERI_ab,ERI_bb,e
           SigC(p,1) = SigC(p,1) + num*eps/(eps**2 + eta**2)
           Z(p,1)    = Z(p,1)    - num*(eps**2 - eta**2)/(eps**2 + eta**2)**2
 
-        enddo
-      enddo
-    enddo
+        end do
+      end do
+    end do
 
     ! Addition part: ab
 
@@ -85,9 +85,9 @@ subroutine UGF2_reg_self_energy_diag(nBas,nC,nO,nV,nR,eta,ERI_aa,ERI_ab,ERI_bb,e
           SigC(p,1) = SigC(p,1) + num*eps/(eps**2 + eta**2)
           Z(p,1)    = Z(p,1)    - num*(eps**2 - eta**2)/(eps**2 + eta**2)**2
 
-        enddo
-      enddo
-    enddo
+        end do
+      end do
+    end do
 
    ! Removal part: aa
 
@@ -104,9 +104,9 @@ subroutine UGF2_reg_self_energy_diag(nBas,nC,nO,nV,nR,eta,ERI_aa,ERI_ab,ERI_bb,e
           SigC(p,1) = SigC(p,1) + num*eps/(eps**2 + eta**2)
           Z(p,1)    = Z(p,1)    - num*(eps**2 - eta**2)/(eps**2 + eta**2)**2
 
-        enddo
-      enddo
-    enddo
+        end do
+      end do
+    end do
 
    ! Removal part: ab
 
@@ -122,11 +122,11 @@ subroutine UGF2_reg_self_energy_diag(nBas,nC,nO,nV,nR,eta,ERI_aa,ERI_ab,ERI_bb,e
           SigC(p,1) = SigC(p,1) + num*eps/(eps**2 + eta**2)
           Z(p,1)    = Z(p,1)    - num*(eps**2 - eta**2)/(eps**2 + eta**2)**2
 
-        enddo
-      enddo
-    enddo
+        end do
+      end do
+    end do
 
-  enddo
+  end do
 
   !------------------!
   ! Spin-down sector !
@@ -149,9 +149,9 @@ subroutine UGF2_reg_self_energy_diag(nBas,nC,nO,nV,nR,eta,ERI_aa,ERI_ab,ERI_bb,e
           SigC(p,2) = SigC(p,2) + num*eps/(eps**2 + eta**2)
           Z(p,2)    = Z(p,2)    - num*(eps**2 - eta**2)/(eps**2 + eta**2)**2
 
-        enddo
-      enddo
-    enddo
+        end do
+      end do
+    end do
 
     ! Addition part: ab
 
@@ -167,9 +167,9 @@ subroutine UGF2_reg_self_energy_diag(nBas,nC,nO,nV,nR,eta,ERI_aa,ERI_ab,ERI_bb,e
           SigC(p,2) = SigC(p,2) + num*eps/(eps**2 + eta**2)
           Z(p,2)    = Z(p,2)    - num*(eps**2 - eta**2)/(eps**2 + eta**2)**2
 
-        enddo
-      enddo
-    enddo
+        end do
+      end do
+    end do
 
    ! Removal part: bb
 
@@ -186,9 +186,9 @@ subroutine UGF2_reg_self_energy_diag(nBas,nC,nO,nV,nR,eta,ERI_aa,ERI_ab,ERI_bb,e
           SigC(p,2) = SigC(p,2) + num*eps/(eps**2 + eta**2)
           Z(p,2) = Z(p,2) - num*(eps**2 - eta**2)/(eps**2 + eta**2)**2
 
-        enddo
-      enddo
-    enddo
+        end do
+      end do
+    end do
 
    ! Removal part: ab
 
@@ -204,11 +204,11 @@ subroutine UGF2_reg_self_energy_diag(nBas,nC,nO,nV,nR,eta,ERI_aa,ERI_ab,ERI_bb,e
           SigC(p,2) = SigC(p,2) + num*eps/(eps**2 + eta**2)
           Z(p,2) = Z(p,2) - num*(eps**2 - eta**2)/(eps**2 + eta**2)**2
 
-        enddo
-      enddo
-    enddo
+        end do
+      end do
+    end do
 
-  enddo
+  end do
 
   Z(:,:) = 1d0/(1d0 - Z(:,:))
 

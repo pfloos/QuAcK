@@ -48,7 +48,7 @@ subroutine read_integrals(nBas,S,T,V,Hc,G)
     read(8,*,end=8) mu,nu,Ov
     S(mu,nu) = Ov
     S(nu,mu) = Ov
-  enddo
+  end do
   8 close(unit=8)
 
 ! Read kinetic integrals
@@ -58,7 +58,7 @@ subroutine read_integrals(nBas,S,T,V,Hc,G)
     read(9,*,end=9) mu,nu,Kin
     T(mu,nu) = Kin
     T(nu,mu) = Kin
-  enddo
+  end do
   9 close(unit=9)
 
 ! Read nuclear integrals
@@ -68,7 +68,7 @@ subroutine read_integrals(nBas,S,T,V,Hc,G)
     read(10,*,end=10) mu,nu,Nuc
     V(mu,nu) = Nuc
     V(nu,mu) = Nuc
-  enddo
+  end do
   10 close(unit=10)
 
 ! Define core Hamiltonian
@@ -98,7 +98,7 @@ subroutine read_integrals(nBas,S,T,V,Hc,G)
     G(nu,mu,si,la) = ERI
 !   <43|21>
     G(si,la,nu,mu) = ERI
-  enddo
+  end do
   11 close(unit=11)
 
 
@@ -125,9 +125,9 @@ subroutine read_integrals(nBas,S,T,V,Hc,G)
     do la=1,nBas
       do si=1,nBas
         call matout(nBas,nBas,G(1,1,la,si))
-      enddo
-    enddo
+      end do
+    end do
     write(*,*)
-  endif
+  end if
 
 end subroutine read_integrals

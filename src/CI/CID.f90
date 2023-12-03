@@ -215,6 +215,6 @@ subroutine CID(dotest,singlet,triplet,nBasin,nCin,nOin,nVin,nRin,ERIin,eHFin,E0)
     print*,'Singlet CID transition vectors'
     call matout(nH,nH,H)
     write(*,*)
-  endif
+  end if
 
 end subroutine 

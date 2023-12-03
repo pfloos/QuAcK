@@ -48,7 +48,7 @@ subroutine print_UG0T0(nBas,nO,eHF,ENuc,EUHF,SigT,Z,eGT,EcGM,EcRPA)
     write(*,'(A1,I3,A1,2F15.6,A1,2F15.6,A1,2F15.6,A1,2F15.6,A1)') &
  '|',p,'|',eHF(p,1)*HaToeV,eHF(p,2)*HaToeV,'|',SigT(p,1)*HaToeV,SigT(p,2)*HaToeV,'|', &
  Z(p,1),Z(p,2),'|',eGT(p,1)*HaToeV,eGT(p,2)*HaToeV,'|'
-  enddo
+  end do
 
   write(*,*)'-------------------------------------------------------------------------------'
   write(*,'(2X,A50,F15.6,A3)') 'UG0T0 HOMO      energy (eV)            =',maxval(HOMO(:))*HaToeV,' eV'

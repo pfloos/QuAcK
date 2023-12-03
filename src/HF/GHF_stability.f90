@@ -55,7 +55,7 @@ subroutine GHF_stability(nBas,nC,nO,nV,nR,nS,eHF,ERI)
   do ia=1,min(nS,maxS)
     write(*,'(1X,A1,1X,I5,1X,A1,1X,F23.6,1X,A1,1X,F23.6,1X,A1,1X)') &
       '|',ia,'|',Om(ia),'|',Om(ia)*HaToeV,'|'
-  enddo
+  end do
   write(*,*)'-------------------------------------------------------------'
 
   if(minval(Om(:)) < 0d0) then
@@ -90,7 +90,7 @@ subroutine GHF_stability(nBas,nC,nO,nV,nR,nS,eHF,ERI)
   do ia=1,min(nS,maxS)
     write(*,'(1X,A1,1X,I5,1X,A1,1X,F23.6,1X,A1,1X,F23.6,1X,A1,1X)') &
       '|',ia,'|',Om(ia),'|',Om(ia)*HaToeV,'|'
-  enddo
+  end do
   write(*,*)'-------------------------------------------------------------'
 
   if(minval(Om(:)) < 0d0) then

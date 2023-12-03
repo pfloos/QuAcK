@@ -35,11 +35,11 @@ subroutine AOtoMO_oooa(nBas,nO,nA,cO,cA,O,ooOoa)
         do si=1,nBas
           do x=1,nA
             scr1(mu,nu,la,x) = scr1(mu,nu,la,x) + O(mu,nu,la,si)*cA(si,x)
-          enddo
-        enddo
-      enddo
-    enddo
-  enddo
+          end do
+        end do
+      end do
+    end do
+  end do
  
   scr2 = 0d0   
   do mu=1,nBas
@@ -48,11 +48,11 @@ subroutine AOtoMO_oooa(nBas,nO,nA,cO,cA,O,ooOoa)
         do i=1,nO
           do x=1,nA
             scr2(i,nu,la,x) = scr2(i,nu,la,x) + cO(mu,i)*scr1(mu,nu,la,x)
-          enddo
-        enddo
-      enddo
-    enddo
-  enddo
+          end do
+        end do
+      end do
+    end do
+  end do
 
   scr1 = 0d0
   do nu=1,nBas
@@ -61,11 +61,11 @@ subroutine AOtoMO_oooa(nBas,nO,nA,cO,cA,O,ooOoa)
         do k=1,nO
           do x=1,nA
             scr1(i,nu,k,x) = scr1(i,nu,k,x) + scr2(i,nu,la,x)*cO(la,k)
-          enddo
-        enddo
-      enddo
-    enddo
-  enddo
+          end do
+        end do
+      end do
+    end do
+  end do
 
   ooOoa = 0d0
   do nu=1,nBas
@@ -74,11 +74,11 @@ subroutine AOtoMO_oooa(nBas,nO,nA,cO,cA,O,ooOoa)
         do k=1,nO
           do x=1,nA
             ooOoa(i,j,k,x) = ooOoa(i,j,k,x) + cO(nu,j)*scr1(i,nu,k,x)
-          enddo
-        enddo
-      enddo
-    enddo
-  enddo
+          end do
+        end do
+      end do
+    end do
+  end do
 
   deallocate(scr1,scr2)
 

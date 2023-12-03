@@ -31,8 +31,8 @@ subroutine print_GHF_spin(nBas,nBas2,nO,C,S)
     do j = 1, nBas
       Ca(j,i) = C(     j,i)
       Cb(j,i) = C(nBas+j,i)
-    enddo
-  enddo
+    end do
+  end do
 
   ! TODO DGEMM
   allocate(Paa(nO,nO), Pab(nO,nO), Pba(nO,nO), Pbb(nO,nO))
@@ -48,22 +48,22 @@ subroutine print_GHF_spin(nBas,nBas2,nO,C,S)
   do i = 1, nO
     Na = Na + Paa(i,i)
     Nb = Nb + Pbb(i,i)
-  enddo
+  end do
 
   nonco_z = dble(nO)
   do j = 1, nO
     do i = 1, nO
       nonco_z = nonco_z - (Paa(i,j) - Pbb(i,j))**2
-    enddo
-  enddo
+    end do
+  end do
   nonco_z = 0.25d0 * nonco_z
 
   contam_ghf = 0.d0
   do j = 1, nO
     do i = 1, nO
       contam_ghf = contam_ghf + (Pab(i,i)*Pba(j,j) - Pab(i,j)*Pba(j,i))
-    enddo
-  enddo
+    end do
+  end do
 
   Sz  = 0.5d0 * (Na - Nb)
   Sz2 = Sz*Sz + nonco_z
@@ -85,7 +85,7 @@ subroutine print_GHF_spin(nBas,nBas2,nO,C,S)
     Sc_x = Sc_x + (+0.5d0,0.d0) * (Pab(i,i) + Pba(i,i))
     Sc_y = Sc_y + (0.d0,-0.5d0) * (Pab(i,i) - Pba(i,i))
     Sc_z = Sc_z + (+0.5d0,0.d0) * (Paa(i,i) - Pbb(i,i))
-  enddo
+  end do
   write(*,'(A15,2F10.6)') ' < Sx > = ',Sc_x
   write(*,'(A15,2F10.6)') ' < Sy > = ',Sc_y
   write(*,'(A15,2F10.6)') ' < Sz > = ',Sc_z
@@ -99,8 +99,8 @@ subroutine print_GHF_spin(nBas,nBas2,nO,C,S)
       Sc_xx = Sc_xx - zabs((+0.5d0,0.d0) * (Pab(i,j) + Pba(i,j)))**2
       Sc_yy = Sc_yy - zabs((0.d0,-0.5d0) * (Pab(i,j) - Pba(i,j)))**2
       Sc_zz = Sc_zz - zabs((+0.5d0,0.d0) * (Paa(i,j) - Pbb(i,j)))**2
-    enddo
-  enddo
+    end do
+  end do
   write(*,'(A15,2F10.6)') ' < Sx^2 > = ',Sc_xx
   write(*,'(A15,2F10.6)') ' < Sy^2 > = ',Sc_yy
   write(*,'(A15,2F10.6)') ' < Sz^2 > = ',Sc_zz
@@ -114,8 +114,8 @@ subroutine print_GHF_spin(nBas,nBas2,nO,C,S)
     do j = 1, nO
       Sc_xy = Sc_xy - (+0.5d0,0.d0) * (Pab(i,j) + Pba(i,j)) * (0.d0,-0.5d0) * (Pab(j,i) - Pba(j,i))
       Sc_yx = Sc_yx - (+0.5d0,0.d0) * (Pab(j,i) + Pba(j,i)) * (0.d0,-0.5d0) * (Pab(i,j) - Pba(i,j))
-    enddo
-  enddo
+    end do
+  end do
   write(*,'(A15,2F10.6)') ' < Sx.Sy > = ',Sc_xy
   write(*,'(A15,2F10.6)') ' < Sy.Sx > = ',Sc_yx
 
@@ -127,8 +127,8 @@ subroutine print_GHF_spin(nBas,nBas2,nO,C,S)
     do j = 1, nO
       Sc_xz = Sc_xz - (+0.5d0,0.d0) * (Pab(i,j) + Pba(i,j)) * (+0.5d0,0.d0) * (Paa(j,i) - Pbb(j,i))
       Sc_zx = Sc_zx - (+0.5d0,0.d0) * (Pab(j,i) + Pba(j,i)) * (+0.5d0,0.d0) * (Paa(i,j) - Pbb(i,j))
-    enddo
-  enddo
+    end do
+  end do
   write(*,'(A15,2F10.6)') ' < Sx.Sz > = ',Sc_xz
   write(*,'(A15,2F10.6)') ' < Sz.Sx > = ',Sc_zx
 
@@ -140,8 +140,8 @@ subroutine print_GHF_spin(nBas,nBas2,nO,C,S)
     do j = 1, nO
       Sc_yz = Sc_yz - (0.d0,-0.5d0) * (Pab(i,j) - Pba(i,j)) * (+0.5d0,0.d0) * (Paa(j,i) - Pbb(j,i))
       Sc_zy = Sc_zy - (0.d0,-0.5d0) * (Pab(j,i) - Pba(j,i)) * (+0.5d0,0.d0) * (Paa(i,j) - Pbb(i,j))
-    enddo
-  enddo
+    end do
+  end do
   write(*,'(A15,2F10.6)') ' < Sy.Sz > = ',Sc_yz
   write(*,'(A15,2F10.6)') ' < Sz.Sy > = ', Sc_zy
   write(*,*)  
@@ -163,8 +163,8 @@ subroutine print_GHF_spin(nBas,nBas2,nO,C,S)
       Mc(2,2) = Mc(2,2) - 0.25d0 * (Pba(i,j) - Pab(i,j))**2
       Mc(3,3) = Mc(3,3) - 0.25d0 * (Paa(i,j) - Pbb(i,j))**2
       Mc(1,3) = Mc(1,3) - 0.25d0 * (Pab(i,j) + Pba(i,j))*(Paa(j,i) - Pbb(j,i))
-    enddo
-  enddo
+    end do
+  end do
   Mc(3,1) = Mc(1,3)
 
   write(*,*) 'The collinearity matrix is'

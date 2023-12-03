@@ -51,19 +51,19 @@ subroutine GTpp_phBSE_static_kernel_A(eta,nBas,nC,nO,nV,nR,nS,nOO,nVV,lambda,Ome
             eps = + Omega1(cd)
             chi = chi + rho1(i,b,cd)*rho1(a,j,cd)*eps/(eps**2 + eta**2)
 
-          enddo
+          end do
 
           do kl=1,nOO
             eps = - Omega2(kl)
             chi = chi + rho2(i,b,kl)*rho2(a,j,kl)*eps/(eps**2 + eta**2)
-          enddo
+          end do
 
           KA(ia,jb) = lambda*chi
 
-        enddo
-      enddo
-    enddo
-  enddo
+        end do
+      end do
+    end do
+  end do
 
 !$omp end parallel do
 

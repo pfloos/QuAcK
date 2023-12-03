@@ -233,7 +233,7 @@ subroutine qsRGF2(dotest,maxSCF,thresh,max_diis,dophBSE,doppBSE,TDA,dBSE,dTDA,si
     call dipole_moment(nBas,P,nNuc,ZNuc,rNuc,dipole_int_AO,dipole)
     call print_qsRGF2(nBas,nO,nSCF,Conv,thresh,eHF,eGF,c,SigCp,Z,ENuc,ET,EV,EJ,Ex,Ec,EqsGF2,dipole)
 
-  enddo
+  end do
 !------------------------------------------------------------------------
 ! End main loop
 !------------------------------------------------------------------------
@@ -250,7 +250,7 @@ subroutine qsRGF2(dotest,maxSCF,thresh,max_diis,dophBSE,doppBSE,TDA,dBSE,dTDA,si
 
     stop
 
-  endif
+  end if
 
 ! Deallocate memory
 

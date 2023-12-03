@@ -83,7 +83,7 @@ subroutine print_qsUGW(nBas,nO,nSCF,Conv,thresh,eHF,eGW,c,Ov,ENuc,ET,EV,EJ,Ex,Ec
     write(*,'(A1,I3,A1,2F15.6,A1,2F15.6,A1,2F15.6,A1,2F15.6,A1)') &
     '|',p,'|',eHF(p,1)*HaToeV,eHF(p,2)*HaToeV,'|',SigC(p,p,1)*HaToeV,SigC(p,p,2)*HaToeV,'|', &
               Z(p,1),Z(p,2),'|',eGW(p,1)*HaToeV,eGW(p,2)*HaToeV,'|'
-  enddo
+  end do
 
   write(*,*)'----------------------------------------------------------------'// &
             '----------------------------------------------------------------'

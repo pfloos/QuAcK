@@ -23,7 +23,7 @@ subroutine spatial_to_spin_fock(nBas,F,nBas2,sF)
 
         sF(p,q) = Kronecker_delta(mod(p,2),mod(q,2))*F((p+1)/2,(q+1)/2)
 
-      enddo
-    enddo
+      end do
+    end do
 
 end subroutine spatial_to_spin_fock

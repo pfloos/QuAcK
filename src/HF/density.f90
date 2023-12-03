@@ -28,8 +28,8 @@ subroutine density(nGrid,nBas,P,AO,rho)
 
         rho(iG) = rho(iG) + AO(mu,iG)*P(mu,nu)*AO(nu,iG)
 
-      enddo
-    enddo
-  enddo
+      end do
+    end do
+  end do
 
 end subroutine 

@@ -67,10 +67,10 @@ subroutine UMP2(dotest,nBas,nC,nO,nV,nR,ERI_aa,ERI_ab,ERI_bb,ENuc,EUHF,eHF,Ec)
           Exaa = Exaa - 0.5d0*ERI_aa(i,j,a,b)*ERI_aa(i,j,b,a)/eps
 
 
-        enddo
-      enddo
-    enddo
-  enddo
+        end do
+      end do
+    end do
+  end do
 
   Ecaa = Edaa + Exaa
   Ec(1) = Ecaa
@@ -93,10 +93,10 @@ subroutine UMP2(dotest,nBas,nC,nO,nV,nR,ERI_aa,ERI_ab,ERI_bb,ENuc,EUHF,eHF,Ec)
          
           Edab = Edab + ERI_ab(i,j,a,b)*ERI_ab(i,j,a,b)/eps
 
-        enddo
-      enddo
-    enddo
-  enddo
+        end do
+      end do
+    end do
+  end do
 
   Ecab = Edab + Exab
   Ec(2) = Ecab
@@ -121,10 +121,10 @@ subroutine UMP2(dotest,nBas,nC,nO,nV,nR,ERI_aa,ERI_ab,ERI_bb,ENuc,EUHF,eHF,Ec)
           Exbb = Exbb - 0.5d0*ERI_bb(i,j,a,b)*ERI_bb(i,j,b,a)/eps
 
 
-        enddo
-      enddo
-    enddo
-  enddo
+        end do
+      end do
+    end do
+  end do
 
   Ecbb = Edbb + Exbb
   Ec(3) = Ecbb

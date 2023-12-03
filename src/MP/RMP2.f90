@@ -91,10 +91,10 @@ subroutine RMP2(dotest,regularize,nBas,nC,nO,nV,nR,ERI,ENuc,ERHF,eHF,EcMP2)
           E2xs2 = E2xs2 - ERI(i,j,a,b)*ERI(i,j,b,a)*fs2
           E2xk  = E2xk  - ERI(i,j,a,b)*ERI(i,j,b,a)*fk
 
-        enddo
-      enddo
-    enddo
-  enddo
+        end do
+      end do
+    end do
+  end do
 
   EcMP2   = 2d0*E2d   - E2x
   EcsMP2  = 2d0*E2ds  - E2xs

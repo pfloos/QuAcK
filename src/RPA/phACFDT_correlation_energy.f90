@@ -65,10 +65,10 @@ subroutine phACFDT_correlation_energy(ispin,exchange_kernel,nBas,nC,nO,nV,nR,nS,
 
             Bp(ia,jb) = (1d0 + delta_spin)*ERI(i,j,a,b) - delta_Kx*ERI(i,j,b,a)
 
-        enddo
-      enddo
-    enddo
-  enddo
+        end do
+      end do
+    end do
+  end do
 
 ! Compute Tr(K x P_lambda)
 

@@ -47,9 +47,9 @@ subroutine UGW_excitation_density(nBas,nC,nO,nR,nSa,nSb,nSt,ERI_aaaa,ERI_aabb,ER
 
             rho(p,q,ia,1) = rho(p,q,ia,1) + ERI_aaaa(p,j,q,b)*XpY(ia,jb)
 
-          enddo
-        enddo
-      enddo
+          end do
+        end do
+      end do
 
       ! Opposite-spin contribution
       do ia=1,nSt
@@ -60,12 +60,12 @@ subroutine UGW_excitation_density(nBas,nC,nO,nR,nSa,nSb,nSt,ERI_aaaa,ERI_aabb,ER
 
             rho(p,q,ia,1) = rho(p,q,ia,1) + ERI_aabb(p,j,q,b)*XpY(ia,jb)
 
-          enddo
-        enddo
-      enddo
+          end do
+        end do
+      end do
 
-    enddo
-  enddo
+    end do
+  end do
 
 !------------!
 ! Beta block !
@@ -83,9 +83,9 @@ subroutine UGW_excitation_density(nBas,nC,nO,nR,nSa,nSb,nSt,ERI_aaaa,ERI_aabb,ER
 
             rho(p,q,ia,2) = rho(p,q,ia,2) + ERI_aabb(j,p,b,q)*XpY(ia,jb)
 
-          enddo
-        enddo
-      enddo
+          end do
+        end do
+      end do
 
       ! Same-spin contribution
       do ia=1,nSt
@@ -96,11 +96,11 @@ subroutine UGW_excitation_density(nBas,nC,nO,nR,nSa,nSb,nSt,ERI_aaaa,ERI_aabb,ER
 
             rho(p,q,ia,2) = rho(p,q,ia,2) + ERI_bbbb(p,j,q,b)*XpY(ia,jb)
 
-          enddo
-        enddo
-      enddo
+          end do
+        end do
+      end do
 
-    enddo
-  enddo
+    end do
+  end do
 
 end subroutine 

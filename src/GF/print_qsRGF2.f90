@@ -47,7 +47,7 @@ subroutine print_qsRGF2(nBas,nO,nSCF,Conv,thresh,eHF,eGF,c,SigC,Z,ENuc,ET,EV,EJ,
     write(*,'(1X,A21,I1,A2,A12)')'  Self-consistent qsG',nSCF,'F2',' calculation'
   else
     write(*,'(1X,A21,I2,A2,A12)')'  Self-consistent qsG',nSCF,'F2',' calculation'
-  endif
+  end if
   write(*,*)'-------------------------------------------------------------------------------'
   write(*,'(1X,A1,1X,A3,1X,A1,1X,A15,1X,A1,1X,A15,1X,A1,1X,A15,1X,A1,1X,A15,1X,A1,1X)') &
             '|','#','|','e_HF (eV)','|','Sig_c (eV)','|','Z','|','e_QP (eV)','|'
@@ -56,7 +56,7 @@ subroutine print_qsRGF2(nBas,nO,nSCF,Conv,thresh,eHF,eGF,c,SigC,Z,ENuc,ET,EV,EJ,
   do q=1,nBas
     write(*,'(1X,A1,1X,I3,1X,A1,1X,F15.6,1X,A1,1X,F15.6,1X,A1,1X,F15.6,1X,A1,1X,F15.6,1X,A1,1X)') &
     '|',q,'|',eHF(q)*HaToeV,'|',SigC(q,q)*HaToeV,'|',Z(q),'|',eGF(q)*HaToeV,'|'
-  enddo
+  end do
 
   write(*,*)'-------------------------------------------------------------------------------'
   write(*,'(2X,A10,I3)')   'Iteration ',nSCF
@@ -110,7 +110,7 @@ subroutine print_qsRGF2(nBas,nO,nSCF,Conv,thresh,eHF,eGF,c,SigC,Z,ENuc,ET,EV,EJ,
     call matout(nBas,1,eGF)
     write(*,*)
 
-  endif
+  end if
 
 
 end subroutine 

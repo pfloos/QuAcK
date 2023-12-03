@@ -26,9 +26,9 @@ subroutine form_tau(nC,nO,nV,nR,t1,t2,tau)
 
           tau(i,j,a,b) = 0.5d0*t2(i,j,a,b) + t1(i,a)*t1(j,b)
 
-        enddo
-      enddo
-    enddo
-  enddo
+        end do
+      end do
+    end do
+  end do
 
 end subroutine 

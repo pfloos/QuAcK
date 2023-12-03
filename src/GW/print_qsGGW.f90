@@ -128,7 +128,7 @@ subroutine print_qsGGW(nBas,nBas2,nO,nSCF,Conv,thresh,eHF,eGW,c,S,SigC,Z,ENuc,ET
   do p=1,nBas
     write(*,'(1X,A1,1X,I3,1X,A1,1X,F15.6,1X,A1,1X,F15.6,1X,A1,1X,F15.6,1X,A1,1X,F15.6,1X,A1,1X)') &
     '|',p,'|',eHF(p)*HaToeV,'|',SigC(p,p)*HaToeV,'|',Z(p),'|',eGW(p)*HaToeV,'|'
-  enddo
+  end do
 
   write(*,*)'-------------------------------------------------------------------------------'
   write(*,'(2X,A10,I3)')   'Iteration ',nSCF
@@ -185,7 +185,7 @@ subroutine print_qsGGW(nBas,nBas2,nO,nSCF,Conv,thresh,eHF,eGW,c,S,SigC,Z,ENuc,ET
     call vecout(nBas,eGW)
     write(*,*)
 
-  endif
+  end if
 
 
 end subroutine 

@@ -54,6 +54,6 @@ subroutine GTpp_regularization(nBas,nC,nO,nV,nR,nOO,nVV,e,Om1,rho1,Om2,rho2)
       end do
     end do
 
-  enddo
+  end do
 
 end subroutine 

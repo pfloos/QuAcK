@@ -39,8 +39,8 @@ subroutine huckel_guess(nBas,S,Hc,X,c)
       F(mu,nu) = 0.5d0*a*S(mu,nu)*(Hc(mu,mu) + Hc(nu,nu))
       F(nu,mu) = F(mu,nu)
 
-    enddo
-  enddo
+    end do
+  end do
   
   call core_guess(nBas,F,X,c)
 

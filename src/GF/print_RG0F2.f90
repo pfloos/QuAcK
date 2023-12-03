@@ -38,7 +38,7 @@ subroutine print_RG0F2(nBas,nO,eHF,Sig,eGF,Z,ENuc,ERHF,Ec)
   do p=1,nBas
     write(*,'(1X,A1,1X,I3,1X,A1,1X,F15.6,1X,A1,1X,F15.6,1X,A1,1X,F15.6,1X,A1,1X,F15.6,1X,A1,1X)') &
     '|',p,'|',eHF(p)*HaToeV,'|',Sig(p)*HaToeV,'|',Z(p),'|',eGF(p)*HaToeV,'|'
-  enddo
+  end do
 
   write(*,*)'-------------------------------------------------------------------------------'
   write(*,'(2X,A60,F15.6,A3)') 'G0F2  HOMO      energy =',eGF(HOMO)*HaToeV,' eV'

@@ -70,7 +70,7 @@ subroutine read_basis(nNuc,rNuc,nBas,nO,nV,nShell,TotAngMomShell,CenterShell,KSh
 
       do k=1,ncart
         CenterShell(nShell,k) = rNuc(iNuc,k)
-      enddo
+      end do
 
       ! Shell type and contraction degree
 
@@ -130,14 +130,14 @@ subroutine read_basis(nNuc,rNuc,nBas,nO,nV,nShell,TotAngMomShell,CenterShell,KSh
       do k=1,Kshell(nShell)
         read(2,*) kk,ExpShell(nShell,k),DShell(nShell,k)
         write(*,'(A28,1X,F16.10,F16.10)') '',ExpShell(nShell,k),DShell(nShell,k)
-      enddo
+      end do
 
       min_exponent(iNuc,TotAngMomShell(nShell)+1) & 
         = min(min_exponent(iNuc,TotAngMomShell(nShell)+1),minval(ExpShell(nShell,1:KShell(nShell))))
       max_exponent(iNuc) = max(max_exponent(iNuc),maxval(ExpShell(nShell,:)))
       max_ang_mom(iNuc)  = max(max_ang_mom(iNuc),TotAngMomShell(nShell))
 
-    enddo
+    end do
 !------------------------------------------------------------------------
 !   End loop over shells
 !------------------------------------------------------------------------
@@ -151,7 +151,7 @@ subroutine read_basis(nNuc,rNuc,nBas,nO,nV,nShell,TotAngMomShell,CenterShell,KSh
 !   print*,'minimum exponent for atom n. ',iNuc,' = '
 !   print*,min_exponent(iNuc,1:max_ang_mom(iNuc)+1)
 
-  enddo
+  end do
 !------------------------------------------------------------------------
 ! End loop over atoms
 !------------------------------------------------------------------------
@@ -171,7 +171,7 @@ subroutine read_basis(nNuc,rNuc,nBas,nO,nV,nShell,TotAngMomShell,CenterShell,KSh
   nBas = 0
   do iShell=1,nShell
     nBas = nBas + (TotAngMomShell(iShell)*TotAngMomShell(iShell) + 3*TotAngMomShell(iShell) + 2)/2
-  enddo
+  end do
 
   write(*,'(A28)') '------------------'
   write(*,'(A28,1X,I16)') 'Number of basis functions',NBas

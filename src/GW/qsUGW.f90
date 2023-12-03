@@ -332,7 +332,7 @@ subroutine qsUGW(dotest,maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,BSE
     call dipole_moment(nBas,P(:,:,1)+P(:,:,2),nNuc,ZNuc,rNuc,dipole_int_AO,dipole)
     call print_qsUGW(nBas,nO,nSCF,Conv,thresh,eHF,eGW,c,S,ENuc,ET,EV,EJ,EK,EcGM,EcRPA(ispin),EqsGW,SigCp,Z,dipole)
 
-  enddo
+  end do
 !------------------------------------------------------------------------
 ! End main loop
 !------------------------------------------------------------------------
@@ -349,7 +349,7 @@ subroutine qsUGW(dotest,maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,BSE
 
     stop
 
-  endif
+  end if
 
 ! Deallocate memory
 

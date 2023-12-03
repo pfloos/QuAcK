@@ -316,7 +316,7 @@ subroutine CCGW(maxSCF,thresh,nBas,nC,nO,nV,nR,ERI,ENuc,ERHF,e)
     write(*,'(1X,A1,1X,I3,1X,A1,1X,F10.6,1X,A1,1X,F10.6,1X,A1,1X,F10.6,1X,A1,1X)') &
       '|',nSCF,'|',eGW(nO)*HaToeV,'|',eGW(nO+1)*HaToeV,'|',Conv,'|'
 
-  enddo
+  end do
   write(*,*)'----------------------------------------------'
 !------------------------------------------------------------------------
 ! End of SCF loop
@@ -334,7 +334,7 @@ subroutine CCGW(maxSCF,thresh,nBas,nC,nO,nV,nR,ERI,ENuc,ERHF,e)
 
     stop
 
-  endif
+  end if
 
   write(*,*)'-------------------------------------------------------------------------------'
   write(*,*)'  CCGW calculation  '
@@ -346,7 +346,7 @@ subroutine CCGW(maxSCF,thresh,nBas,nC,nO,nV,nR,ERI,ENuc,ERHF,e)
   do p=1,nBas
     write(*,'(1X,A1,1X,I3,1X,A1,1X,F15.6,1X,A1,1X,F15.6,1X,A1,1X,F15.6,1X,A1,1X,F15.6,1X,A1,1X)') &
     '|',p,'|',e(p)*HaToeV,'|',(eGW(p)-e(p))*HaToeV,'|',Z(p),'|',eGW(p)*HaToeV,'|'
-  enddo
+  end do
   write(*,*)'-------------------------------------------------------------------------------'
 
 end subroutine 

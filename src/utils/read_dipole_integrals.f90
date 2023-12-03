@@ -33,21 +33,21 @@ subroutine read_dipole_integrals(nBas,R)
     read(21,*,end=21) mu,nu,Dip
     R(mu,nu,1) = Dip
     R(nu,mu,1) = Dip
-  enddo
+  end do
   21 close(unit=21)
 
   do
     read(22,*,end=22) mu,nu,Dip
     R(mu,nu,2) = Dip
     R(nu,mu,2) = Dip
-  enddo
+  end do
   22 close(unit=22)
 
   do
     read(23,*,end=23) mu,nu,Dip
     R(mu,nu,3) = Dip
     R(nu,mu,3) = Dip
-  enddo
+  end do
   23 close(unit=23)
 
 ! Print results
@@ -66,6 +66,6 @@ subroutine read_dipole_integrals(nBas,R)
     write(*,'(A28)') '(mu|z|nu) integrals'
     write(*,'(A28)') '----------------------'
     call matout(nBas,nBas,R(:,:,3))
-  endif
+  end if
 
 end subroutine read_dipole_integrals

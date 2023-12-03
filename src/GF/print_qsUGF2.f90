@@ -72,7 +72,7 @@ subroutine print_qsUGF2(nBas,nO,nSCF,Conv,thresh,eHF,eGF2,cGF2,PGF2,Ov,T,V,J,K, 
     write(*,'(1X,A21,I1,A2,A12)')'  Self-consistent qsG',nSCF,'F2',' calculation'
   else
     write(*,'(1X,A21,I2,A2,A12)')'  Self-consistent qsG',nSCF,'F2',' calculation'
-  endif
+  end if
   write(*,*)'----------------------------------------------------------------'// &
             '----------------------------------------------------------------'
   write(*,'(A1,A3,A1,A30,A1,A30,A1,A30,A1,A30,A1)') &
@@ -86,7 +86,7 @@ subroutine print_qsUGF2(nBas,nO,nSCF,Conv,thresh,eHF,eGF2,cGF2,PGF2,Ov,T,V,J,K, 
     write(*,'(A1,I3,A1,2F15.6,A1,2F15.6,A1,2F15.6,A1,2F15.6,A1)') &
     '|',p,'|',eHF(p,1)*HaToeV,eHF(p,2)*HaToeV,'|',SigC(p,p,1)*HaToeV,SigC(p,p,2)*HaToeV,'|', &
               Z(p,1),Z(p,2),'|',eGF2(p,1)*HaToeV,eGF2(p,2)*HaToeV,'|'
-  enddo
+  end do
 
   write(*,*)'----------------------------------------------------------------'// &
             '----------------------------------------------------------------'
@@ -173,6 +173,6 @@ subroutine print_qsUGF2(nBas,nO,nSCF,Conv,thresh,eHF,eGF2,cGF2,PGF2,Ov,T,V,J,K, 
     call matout(nBas,nBas,cGF2(:,:,2))
     write(*,*)
 
-  endif
+  end if
 
 end subroutine 

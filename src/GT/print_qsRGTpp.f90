@@ -52,7 +52,7 @@ subroutine print_qsRGTpp(nBas,nO,nSCF,Conv,thresh,eHF,eGT,c,SigC,Z,ENuc,ET,EV,EJ
     write(*,'(1X,A21,I1,A3,I1,A12)')'  Self-consistent qsG',nSCF,'Tpp',nSCF,' calculation'
   else
     write(*,'(1X,A21,I2,A3,I2,A12)')'  Self-consistent qsG',nSCF,'Tpp',nSCF,' calculation'
-  endif
+  end if
   write(*,*)'-------------------------------------------------------------------------------'
   write(*,'(1X,A1,1X,A3,1X,A1,1X,A15,1X,A1,1X,A15,1X,A1,1X,A15,1X,A1,1X,A15,1X,A1,1X)') &
             '|','#','|','e_HF (eV)','|','Sig_GTpp (eV)','|','Z','|','e_GTpp (eV)','|'
@@ -61,7 +61,7 @@ subroutine print_qsRGTpp(nBas,nO,nSCF,Conv,thresh,eHF,eGT,c,SigC,Z,ENuc,ET,EV,EJ
   do p=1,nBas
     write(*,'(1X,A1,1X,I3,1X,A1,1X,F15.6,1X,A1,1X,F15.6,1X,A1,1X,F15.6,1X,A1,1X,F15.6,1X,A1,1X)') &
     '|',p,'|',eHF(p)*HaToeV,'|',SigC(p,p)*HaToeV,'|',Z(p),'|',eGT(p)*HaToeV,'|'
-  enddo
+  end do
 
   write(*,*)'-------------------------------------------------------------------------------'
   write(*,'(2X,A10,I3)')   'Iteration ',nSCF
@@ -118,6 +118,6 @@ subroutine print_qsRGTpp(nBas,nO,nSCF,Conv,thresh,eHF,eGT,c,SigC,Z,ENuc,ET,EV,EJ
     call vecout(nBas,eGT)
     write(*,*)
 
-  endif
+  end if
 
 end subroutine 

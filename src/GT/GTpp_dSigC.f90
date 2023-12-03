@@ -43,14 +43,14 @@ double precision function GTpp_dSigC(p,w,eta,nBas,nC,nO,nV,nR,nOOs,nVVs,nOOt,nVV
     do cd=1,nVVs
       eps = w + e(i) - Om1s(cd)
       GTpp_dSigC = GTpp_dSigC - rho1s(p,i,cd)**2*(eps**2 - eta**2)/(eps**2 + eta**2)**2
-    enddo
+    end do
 
     do cd=1,nVVt
       eps = w + e(i) - Om1t(cd)
       GTpp_dSigC = GTpp_dSigC - rho1t(p,i,cd)**2*(eps**2 - eta**2)/(eps**2 + eta**2)**2
-    enddo
+    end do
 
-  enddo
+  end do
 
 !----------------------------------------------
 ! Virtual part of the T-matrix self-energy
@@ -62,13 +62,13 @@ double precision function GTpp_dSigC(p,w,eta,nBas,nC,nO,nV,nR,nOOs,nVVs,nOOt,nVV
     do kl=1,nOOs
       eps = w + e(a) - Om2s(kl)
       GTpp_dSigC = GTpp_dSigC - rho2s(p,a,kl)**2*(eps**2 - eta**2)/(eps**2 + eta**2)**2
-    enddo
+    end do
 
     do kl=1,nOOt
       eps = w + e(a) - Om2t(kl)
       GTpp_dSigC = GTpp_dSigC - rho2t(p,a,kl)**2*(eps**2 - eta**2)/(eps**2 + eta**2)**2
-    enddo
+    end do
 
-  enddo
+  end do
      
 end function 

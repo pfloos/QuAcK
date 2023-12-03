@@ -41,16 +41,16 @@ subroutine GTeh_regularization(nBas,nC,nO,nV,nR,nS,e,Om,rhoL,rhoR)
         kappa = 1d0 - exp(-Dpim*Dpim*s)
         rhoL(i,p,m) = kappa*rhoL(i,p,m)
         rhoR(i,p,m) = kappa*rhoR(i,p,m)
-      enddo
+      end do
 
       do a=nO+1,nBas-nR
         Dpam = e(p) - e(a) - Om(m)
         kappa = 1d0 - exp(-Dpam*Dpam*s)
         rhoL(p,a,m) = kappa*rhoL(p,a,m)
         rhoR(p,a,m) = kappa*rhoR(p,a,m)
-      enddo
+      end do
 
-    enddo
-  enddo
+    end do
+  end do
 
 end subroutine 

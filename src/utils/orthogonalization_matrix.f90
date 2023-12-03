@@ -48,11 +48,11 @@ subroutine orthogonalization_matrix(nBas,S,X)
 
         write(*,*) 'Eigenvalue',i,' is very small in Lowdin orthogonalization = ',Uval(i)
 
-      endif
+      end if
 
       Uval(i) = 1d0/sqrt(Uval(i))
 
-    enddo
+    end do
     
     call ADAt(nBas,Uvec,Uval,X)
 
@@ -75,9 +75,9 @@ subroutine orthogonalization_matrix(nBas,S,X)
 
         write(*,*) ' Eigenvalue',i,'too small for canonical orthogonalization'
 
-      endif
+      end if
 
-    enddo
+    end do
     
     call AD(nBas,Uvec,Uval)
     X = Uvec
@@ -96,13 +96,13 @@ subroutine orthogonalization_matrix(nBas,S,X)
 !       Uval(i) = 1d0/sqrt(Uval(i))
 !     else
 !       write(*,*) 'Eigenvalue',i,'too small for canonical orthogonalization'
-!     endif
-!   enddo
+!     end if
+!   end do
 !   
 !   call AD(nBas,Uvec,Uval)
 !   X = Uvec
  
-  endif
+  end if
 
 ! Print results
 
@@ -114,6 +114,6 @@ subroutine orthogonalization_matrix(nBas,S,X)
     call matout(nBas,nBas,X)
     write(*,*)
 
-  endif
+  end if
 
 end subroutine orthogonalization_matrix

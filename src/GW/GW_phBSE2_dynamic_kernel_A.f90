@@ -58,8 +58,8 @@ subroutine GW_phBSE2_dynamic_kernel_A(eta,nBas,nC,nO,nV,nR,nS,eGW,W,OmBSE,KA_dyn
               KA_dyn(ia,jb) = KA_dyn(ia,jb) - num*dem/(dem**2 + eta**2)
               ZA_dyn(ia,jb) = ZA_dyn(ia,jb) + num*(dem**2 - eta**2)/(dem**2 + eta**2)**2
 
-            enddo
-          enddo
+            end do
+          end do
 
           do c=nO+1,nBas-nR
             do d=nO+1,nBas-nR 
@@ -70,8 +70,8 @@ subroutine GW_phBSE2_dynamic_kernel_A(eta,nBas,nC,nO,nV,nR,nS,eGW,W,OmBSE,KA_dyn
               KA_dyn(ia,jb) = KA_dyn(ia,jb) + num*dem/(dem**2 + eta**2)
               ZA_dyn(ia,jb) = ZA_dyn(ia,jb) - num*(dem**2 - eta**2)/(dem**2 + eta**2)**2
 
-            enddo
-          enddo
+            end do
+          end do
 
           do k=nC+1,nO
             do l=nC+1,nO
@@ -85,10 +85,10 @@ subroutine GW_phBSE2_dynamic_kernel_A(eta,nBas,nC,nO,nV,nR,nS,eGW,W,OmBSE,KA_dyn
             end do
           end do 
 
-        enddo
-      enddo
-    enddo
-  enddo
+        end do
+      end do
+    end do
+  end do
 !$omp end parallel do
 
 end subroutine 

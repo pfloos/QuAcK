@@ -257,11 +257,11 @@ subroutine CIS_D(ispin,nBasin,nCin,nOin,nVin,nRin,nSin,maxS,eHF,ERI,w,X)
 
             wD = wD - 0.25d0*u(i,j,a,b)**2/(delta(i,j,a,b) - w(m)) 
 
-          enddo
-        enddo
+          end do
+        end do
         wD = wD + r(i,a)*v(i,a)
-      enddo
-    enddo
+      end do
+    end do
     wD = 0.5d0*wD
 
     ! Flush results

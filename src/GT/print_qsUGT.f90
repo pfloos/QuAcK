@@ -51,7 +51,7 @@ subroutine print_qsUGT(nBas,nO,nSCF,Conv,thresh,eHF,eGT,c,SigT,Z,ENuc,ET,EV,EJ,E
     write(*,'(1X,A21,I1,A1,I1,A12)')'  Self-consistent qsG',nSCF,'T',nSCF,' calculation'
   else
     write(*,'(1X,A21,I2,A1,I2,A12)')'  Self-consistent qsG',nSCF,'T',nSCF,' calculation'
-  endif
+  end if
   write(*,*)'-------------------------------------------------------------------------------'
   write(*,'(1X,A1,1X,A3,1X,A1,1X,A15,1X,A1,1X,A15,1X,A1,1X,A15,1X,A1,1X,A15,1X,A1,1X)') &
             '|','#','|','e_HF (eV)','|','Sigma_T (eV)','|','Z','|','e_QP (eV)','|'
@@ -61,7 +61,7 @@ subroutine print_qsUGT(nBas,nO,nSCF,Conv,thresh,eHF,eGT,c,SigT,Z,ENuc,ET,EV,EJ,E
     write(*,'(A1,I3,A1,2F15.6,A1,2F15.6,A1,2F15.6,A1,2F15.6,A1)') &
  '|',p,'|',eHF(p,1)*HaToeV,eHF(p,2)*HaToeV,'|',SigT(p,p,1)*HaToeV,SigT(p,p,2)*HaToeV,'|', &
  Z(p,1),Z(p,2),'|',eGT(p,1)*HaToeV,eGT(p,2)*HaToeV,'|'
-  enddo
+  end do
 
   write(*,*)'-------------------------------------------------------------------------------'
   write(*,'(2X,A10,I3)')   'Iteration ',nSCF

@@ -45,7 +45,7 @@ subroutine print_evUGF2(nBas,nO,nSCF,Conv,eHF,ENuc,EUHF,SigC,Z,eGF2,Ec)
     write(*,'(1X,A21,I1,A2,A12)')'  Self-consistent evG',nSCF,'F2',' calculation'
   else
     write(*,'(1X,A21,I2,A2,A12)')'  Self-consistent evG',nSCF,'F2',' calculation'
-  endif
+  end if
   write(*,*)'----------------------------------------------------------------'// &
             '----------------------------------------------------------------'
   write(*,'(A1,A3,A1,A30,A1,A30,A1,A30,A1,A30,A1)') &
@@ -59,7 +59,7 @@ subroutine print_evUGF2(nBas,nO,nSCF,Conv,eHF,ENuc,EUHF,SigC,Z,eGF2,Ec)
     write(*,'(A1,I3,A1,2F15.6,A1,2F15.6,A1,2F15.6,A1,2F15.6,A1)') &
     '|',p,'|',eHF(p,1)*HaToeV,eHF(p,2)*HaToeV,'|',SigC(p,1)*HaToeV,SigC(p,2)*HaToeV,'|', &
               Z(p,1),Z(p,2),'|',eGF2(p,1)*HaToeV,eGF2(p,2)*HaToeV,'|'
-  enddo
+  end do
 
   write(*,*)'----------------------------------------------------------------'// &
             '----------------------------------------------------------------'

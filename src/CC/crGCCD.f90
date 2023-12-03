@@ -151,7 +151,7 @@ subroutine crGCCD(dotest,maxSCF,thresh,max_diis,nBas,nC,nO,nV,nR,ERI,ENuc,ERHF,e
     write(*,'(1X,A1,1X,I3,1X,A1,1X,F16.10,1X,A1,1X,F10.6,1X,A1,1X,F10.6,1X,A1,1X)') &
       '|',nSCF,'|',ECC+ENuc,'|',EcCC,'|',Conv,'|'
 
-  enddo
+  end do
   write(*,*)'----------------------------------------------------'
 !------------------------------------------------------------------------
 ! End of SCF loop
@@ -169,7 +169,7 @@ subroutine crGCCD(dotest,maxSCF,thresh,max_diis,nBas,nC,nO,nV,nR,ERI,ENuc,ERHF,e
 
     stop
 
-  endif
+  end if
 
   write(*,*)
   write(*,*)'----------------------------------------------------'

@@ -23,8 +23,8 @@ subroutine density_matrix(nBas,ON,c,P)
     do nu=1,nBas
       do mu=1,nBas
         P(mu,nu) = P(mu,nu) + 2d0*ON(i)*c(mu,i)*c(nu,i)
-      enddo
-    enddo
-  enddo
+      end do
+    end do
+  end do
 
 end subroutine 
