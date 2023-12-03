@@ -1,6 +1,6 @@
-subroutine RGF(dotest,doG0F2,doevGF2,doqsGF2,doG0F3,doevGF3,renorm,maxSCF,thresh,max_diis,    &
-               dophBSE,doppBSE,TDA,dBSE,dTDA,singlet,triplet,linearize,eta,regularize, & 
-               nNuc,ZNuc,rNuc,ENuc,nBas,nC,nO,nV,nR,nS,EHF,S,X,T,V,Hc,ERI_AO,ERI,      & 
+subroutine RGF(dotest,doG0F2,doevGF2,doqsGF2,doufG0F02,doG0F3,doevGF3,renorm,maxSCF,thresh,max_diis, &
+               dophBSE,doppBSE,TDA,dBSE,dTDA,singlet,triplet,linearize,eta,regularize,            & 
+               nNuc,ZNuc,rNuc,ENuc,nBas,nC,nO,nV,nR,nS,EHF,S,X,T,V,Hc,ERI_AO,ERI,                 & 
                dipole_int_AO,dipole_int,PHF,cHF,epsHF)
 
 ! Green's function module
@@ -15,6 +15,7 @@ subroutine RGF(dotest,doG0F2,doevGF2,doqsGF2,doG0F3,doevGF3,renorm,maxSCF,thresh
   logical,intent(in)            :: doG0F2
   logical,intent(in)            :: doevGF2
   logical,intent(in)            :: doqsGF2
+  logical,intent(in)            :: doufG0F02
   logical,intent(in)            :: doG0F3
   logical,intent(in)            :: doevGF3
 
@@ -111,6 +112,22 @@ subroutine RGF(dotest,doG0F2,doevGF2,doqsGF2,doG0F3,doevGF3,renorm,maxSCF,thresh
 
     t_GF = end_GF - start_GF
     write(*,'(A65,1X,F9.3,A8)') 'Total CPU time for qsGF2 = ',t_GF,' seconds'
+    write(*,*)
+
+ end if
+
+!------------------------------------------------------------------------
+! Perform ufG0F02 calculation
+!------------------------------------------------------------------------
+
+  if(doufG0F02) then 
+
+    call wall_time(start_GF)
+    call ufRG0F02(dotest,nBas,nC,nO,nV,nR,nS,ENuc,EHF,ERI,epsHF)
+    call wall_time(end_GF)
+
+    t_GF = end_GF - start_GF
+    write(*,'(A65,1X,F9.3,A8)') 'Total CPU time for ufG0F02 = ',t_GF,' seconds'
     write(*,*)
 
   end if

@@ -491,14 +491,14 @@ subroutine ufG0W0(dotest,TDA_W,nBas,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,eHF)
             write(*,*)'-------------------------------------------------------------'
             write(*,*)
 
-          end if
+          end if ! If state s should be print
  
-        end do
+        end do ! Loop on s
 
-      end if
+      end if ! If TDA
  
-    end if
+    end if ! If verbose
 
-  end do
+  end do ! Loop on the orbital in the e block
 
 end subroutine 
