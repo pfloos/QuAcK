@@ -103,8 +103,8 @@ subroutine ufRG0F02(dotest,nBas,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,epsHF)
         do a=nO+1,nBas-nR
           ija = ija + 1
              
-          H(1    ,1+ija) = (2d0*ERI(p,a,i,j) - ERI(p,a,j,i))/sqrt(2d0)
-          H(1+ija,1    ) = (2d0*ERI(p,a,i,j) - ERI(p,a,j,i))/sqrt(2d0)
+          H(1    ,1+ija) = (2d0*ERI(p,a,i,j) - ERI(p,a,j,i))
+          H(1+ija,1    ) = (ERI(p,a,i,j))
              
         end do
       end do
@@ -120,8 +120,8 @@ subroutine ufRG0F02(dotest,nBas,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,epsHF)
         do b=nO+1,nBas-nR
           iab = iab + 1   
  
-          H(1          ,1+n2h1p+iab) = (2d0*ERI(p,i,a,b) - ERI(p,i,b,a))/sqrt(2d0)
-          H(1+n2h1p+iab,1          ) = (2d0*ERI(p,i,a,b) - ERI(p,i,b,a))/sqrt(2d0)
+          H(1          ,1+n2h1p+iab) = (2d0*ERI(p,i,a,b) - ERI(p,i,b,a))
+          H(1+n2h1p+iab,1          ) = (ERI(p,i,a,b))
                
           end do
         end do
