@@ -50,7 +50,7 @@ subroutine ufG0W0(dotest,TDA_W,nBas,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,eHF)
   double precision,parameter    :: cutoff1 = 0.01d0
   double precision,parameter    :: cutoff2 = 0.01d0
   double precision              :: eF
-  double precision,parameter    :: window = 2d0
+  double precision,parameter    :: window = 1.5d0
 
   double precision              :: start_timing,end_timing,timing
 
@@ -116,7 +116,7 @@ subroutine ufG0W0(dotest,TDA_W,nBas,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,eHF)
 ! Main loop over orbitals !
 !-------------------------!
 
-  do p=nO-1,nO
+  do p=nO-3,nO
 
     H(:,:) = 0d0
 
