@@ -39,7 +39,9 @@ subroutine ufRG0F02(dotest,nBas,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,epsHF)
   double precision,parameter    :: cutoff1 = 0.01d0
   double precision,parameter    :: cutoff2 = 0.01d0
   double precision              :: eFermi
-  double precision,parameter    :: window = 2d0
+  double precision,parameter    :: window = 1.5d0
+  
+  double precision,allocatable  :: Reigv(:,:) ! Right eigenvectors
 
   double precision              :: start_timing,end_timing,timing
 
@@ -61,7 +63,7 @@ subroutine ufRG0F02(dotest,nBas,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,epsHF)
 
 ! Memory allocation
 
-  allocate(H(nH,nH),epsGF2(nH),Z(nH))
+  allocate(H(nH,nH),epsGF2(nH),Z(nH),Reigv(nH,nH))
 
   eFermi = 0.5d0*(epsHF(nO) + epsHF(nO+1))
 
@@ -71,7 +73,8 @@ subroutine ufRG0F02(dotest,nBas,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,epsHF)
 
   do p=nO-1,nO
 
-    H(:,:) = 0d0
+     H(:,:) = 0d0
+     Reigv(:,:) = 0d0
 
     !---------------------------!
     !  Compute GF2 supermatrix  !
@@ -194,7 +197,7 @@ subroutine ufRG0F02(dotest,nBas,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,epsHF)
  
     call wall_time(start_timing)
 
-    call diagonalize_matrix(nH,H,epsGF2)
+    call diagonalize_general_matrix(nH,H,epsGF2,Reigv)
  
     call wall_time(end_timing)
 
@@ -208,7 +211,7 @@ subroutine ufRG0F02(dotest,nBas,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,epsHF)
     !-----------------!
  
     do s=1,nH
-      Z(s) = H(1,s)**2
+      Z(s) = Reigv(1,s)**2
     end do
 
     !--------------!
@@ -249,10 +252,10 @@ subroutine ufRG0F02(dotest,nBas,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,epsHF)
           
           if(p <= nO) & 
                write(*,'(1X,A7,I3,A16,1X,F15.6,1X,F15.6)') &
-               '      (',p,')               ',H(1,s),H(1,s)**2
+               '      (',p,')               ',Reigv(1,s),Reigv(1,s)**2
           if(p > nO) & 
                write(*,'(1X,A16,I3,A7,1X,F15.6,1X,F15.6)') &
-               '               (',p,')      ',H(1,s),H(1,s)**2
+               '               (',p,')      ',Reigv(1,s),Reigv(1,s)**2
     
           ija = 0
           do i=nC+1,nO
@@ -260,9 +263,9 @@ subroutine ufRG0F02(dotest,nBas,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,epsHF)
               do a=nO+1,nBas-nR
                 ija = ija + 1
   
-                if(abs(H(1+ija,s)) > cutoff2)               &
+                if(abs(Reigv(1+ija,s)) > cutoff2)               &
                      write(*,'(1X,A3,I3,A1,I3,A6,I3,A7,1X,F15.6,1X,F15.6)') &
-                     '  (',i,',',j,') -> (',a,')      ',H(1+ija,s),H(1+ija,s)**2
+                     '  (',i,',',j,') -> (',a,')      ',Reigv(1+ija,s),Reigv(1+ija,s)**2
            
               end do
             end do
@@ -274,9 +277,9 @@ subroutine ufRG0F02(dotest,nBas,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,epsHF)
               do b=nO+1,nBas-nR
                 iab = iab + 1
  
-                if(abs(H(1+n2h1p+iab,s)) > cutoff2)           &
+                if(abs(Reigv(1+n2h1p+iab,s)) > cutoff2)           &
                      write(*,'(1X,A7,I3,A6,I3,A1,I3,A3,1X,F15.6,1X,F15.6)') &
-                     '      (',i,') -> (',a,',',b,')  ',H(1+n2h1p+iab,s),H(1+n2h1p+iab,s)**2
+                     '      (',i,') -> (',a,',',b,')  ',Reigv(1+n2h1p+iab,s),Reigv(1+n2h1p+iab,s)**2
                   
               end do
             end do
