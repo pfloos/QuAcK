@@ -1,4 +1,4 @@
-subroutine print_UHF(nBas,nO,Ov,eHF,c,ENuc,ET,EV,EJ,Ex,EUHF,dipole)
+subroutine print_UHF(nBas,nO,S,eHF,c,P,ENuc,ET,EV,EJ,Ex,EUHF,dipole)
 
 ! Print one- and two-electron energies and other stuff for UHF calculation
 
@@ -9,9 +9,10 @@ subroutine print_UHF(nBas,nO,Ov,eHF,c,ENuc,ET,EV,EJ,Ex,EUHF,dipole)
 
   integer,intent(in)                 :: nBas
   integer,intent(in)                 :: nO(nspin)
-  double precision,intent(in)        :: Ov(nBas,nBas)
+  double precision,intent(in)        :: S(nBas,nBas)
   double precision,intent(in)        :: eHF(nBas,nspin)
   double precision,intent(in)        :: c(nBas,nBas,nspin)
+  double precision,intent(in)        :: P(nBas,nBas,nspin)
   double precision,intent(in)        :: ENuc
   double precision,intent(in)        :: ET(nspin)
   double precision,intent(in)        :: EV(nspin)
@@ -29,8 +30,10 @@ subroutine print_UHF(nBas,nO,Ov,eHF,c,ENuc,ET,EV,EJ,Ex,EUHF,dipole)
   double precision                   :: Gap(nspin)
   double precision                   :: Sz
   double precision                   :: Sx2,Sy2,Sz2
+  integer                            :: mu,nu
+  double precision,allocatable       :: qa(:),qb(:)
 
-  logical                            :: dump_orb = .false.
+  logical                            :: dump_orb = .true.
 
 ! HOMO and LUMO
 
@@ -51,8 +54,8 @@ subroutine print_UHF(nBas,nO,Ov,eHF,c,ENuc,ET,EV,EJ,Ex,EUHF,dipole)
   end do
 
   Sz =  0.5d0*dble(nO(1) - nO(2))
-  Sx2 = 0.25d0*dble(nO(1) - nO(2)) + 0.5d0*nO(2) - 0.5d0*sum(matmul(transpose(c(:,1:nO(1),1)),matmul(Ov,c(:,1:nO(2),2)))**2)
-  Sy2 = 0.25d0*dble(nO(1) - nO(2)) + 0.5d0*nO(2) - 0.5d0*sum(matmul(transpose(c(:,1:nO(1),1)),matmul(Ov,c(:,1:nO(2),2)))**2)
+  Sx2 = 0.25d0*dble(nO(1) - nO(2)) + 0.5d0*nO(2) - 0.5d0*sum(matmul(transpose(c(:,1:nO(1),1)),matmul(S,c(:,1:nO(2),2)))**2)
+  Sy2 = 0.25d0*dble(nO(1) - nO(2)) + 0.5d0*nO(2) - 0.5d0*sum(matmul(transpose(c(:,1:nO(1),1)),matmul(S,c(:,1:nO(2),2)))**2)
   Sz2 = 0.25d0*dble(nO(1) - nO(2))**2
 
 ! Dump results
@@ -128,5 +131,19 @@ subroutine print_UHF(nBas,nO,Ov,eHF,c,ENuc,ET,EV,EJ,Ex,EUHF,dipole)
   write(*,'(A40)') '---------------------------------------'
   call vecout(nBas,eHF(:,2))
   write(*,*)
+
+  allocate(qa(nBas),qb(nBas))
+
+  qa(:) = 0d0
+  qb(:) = 0d0
+  do mu=1,nBas
+    do nu=1,nBas
+      qa(mu) = qa(mu) + P(mu,nu,1)*S(nu,mu)
+      qb(mu) = qb(mu) + P(mu,nu,2)*S(nu,mu)
+    end do
+  end do
+
+  call vecout(nBas,qa)
+  call vecout(nBas,qb)
 
 end subroutine 

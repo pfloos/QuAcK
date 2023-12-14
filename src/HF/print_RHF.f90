@@ -27,7 +27,7 @@ subroutine print_RHF(nBas,nO,eHF,cHF,ENuc,ET,EV,EJ,EK,ERHF,dipole)
   double precision                   :: Gap
   double precision                   :: S,S2
 
-  logical                            :: dump_orb = .false.
+  logical                            :: dump_orb = .true.
 
 ! HOMO and LUMO
 

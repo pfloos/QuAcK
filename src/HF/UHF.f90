@@ -248,7 +248,7 @@ subroutine UHF(dotest,maxSCF,thresh,max_diis,guess_type,mix,level_shift,nNuc,ZNu
 ! Compute final UHF energy
 
   call dipole_moment(nBas,P(:,:,1)+P(:,:,2),nNuc,ZNuc,rNuc,dipole_int,dipole)
-  call print_UHF(nBas,nO,S,eHF,c,ENuc,ET,EV,EJ,EK,EUHF,dipole)
+  call print_UHF(nBas,nO,S,eHF,c,P,ENuc,ET,EV,EJ,EK,EUHF,dipole)
 
 
 ! Print test values

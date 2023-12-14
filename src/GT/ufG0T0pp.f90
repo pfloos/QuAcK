@@ -469,8 +469,8 @@ subroutine ufG0T0pp(dotest,TDA_T,nBas,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,eHF)
     write(*,*)'-------------------------------------------'
   
     do s=1,nH
-!     if(eGT(s) < eF .and. eGT(s) > eF - window) then
-      if(Z(s) > cutoff1) then
+      if(eGT(s) < eF .and. eGT(s) > eF - window) then
+!     if(Z(s) > cutoff1) then
         write(*,'(1X,A1,1X,I3,1X,A1,1X,F15.6,1X,A1,1X,F15.6,1X,A1,1X)') &
         '|',s,'|',eGT(s)*HaToeV,'|',Z(s),'|'
       end if
@@ -545,8 +545,8 @@ subroutine ufG0T0pp(dotest,TDA_T,nBas,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,eHF)
  
         do s=1,nH
         
-!         if(eGT(s) < eF .and. eGT(s) > eF - window) then
-          if(Z(s) > cutoff2) then
+          if(eGT(s) < eF .and. eGT(s) > eF - window) then
+!         if(Z(s) > cutoff2) then
         
             write(*,*)'-------------------------------------------------------------'
             write(*,'(1X,A7,1X,I3,A6,I3,A1,1X,A7,F12.6,A13,F6.4,1X)') & 

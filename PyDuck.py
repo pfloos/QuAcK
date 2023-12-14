@@ -79,7 +79,7 @@ f.close()
 #Compute nuclear energy and put it in a file
 subprocess.call(['rm', working_dir + '/int/ENuc.dat'])
 f = open(working_dir+'/int/ENuc.dat','w')
-f.write(mol.energy_nuc())
+f.write(str(mol.energy_nuc()))
 f.write(' ')
 f.close()
 
