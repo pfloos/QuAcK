@@ -76,6 +76,13 @@ for i in range(len(list_pos_atom)):
     f.write(list_pos_atom[i][0]+' '+str(list_pos_atom[i][1][0])+' '+str(list_pos_atom[i][1][1])+' '+str(list_pos_atom[i][1][2])+'\n')
 f.close()
 
+#Compute nuclear energy and put it in a file
+subprocess.call(['rm', working_dir + '/int/ENuc.dat'])
+f = open(working_dir+'/int/ENuc.dat','w')
+f.write(mol.energy_nuc())
+f.write(' ')
+f.close()
+
 #Compute 1e integrals
 ovlp = mol.intor('int1e_ovlp')#Overlap matrix elements
 v1e  = mol.intor('int1e_nuc') #Nuclear repulsion matrix elements
