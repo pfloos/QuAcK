@@ -557,21 +557,24 @@ subroutine ufG0T0pp(dotest,TDA_T,nBas,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,eHF)
             write(*,*)'-------------------------------------------------------------'
            
             if(p <= nO) & 
-              write(*,'(1X,A7,I3,A16,1X,F15.6,1X,F15.6)') &
-              '      (',p,')               ',H(1,s),H(1,s)**2
+              write(*,'(1X,A7,I3,A16,1X,F15.6,1X,F15.6,1X,F12.6)') &
+              '      (',p,')               ',H(1,s),H(1,s)**2,-eHF(p)*HaToeV
             if(p > nO) & 
-              write(*,'(1X,A16,I3,A7,1X,F15.6,1X,F15.6)') &
-              '               (',p,')      ',H(1,s),H(1,s)**2
+              write(*,'(1X,A16,I3,A7,1X,F15.6,1X,F15.6,1X,F12.6)') &
+              '               (',p,')      ',H(1,s),H(1,s)**2,-eHF(p)*HaToeV
     
             ija = 0
             do ij=1,nOOs+nOOt
               do a=nO+1,nBas-nR
                 ija = ija + 1
   
-                if(abs(H(1+ija,s)) > cutoff2)                     &
-                write(*,'(1X,A7,I3,A1,I3,A12,1X,F15.6,1X,F15.6)') &
-                '      (',a,',',ij,')           ',H(1+ija,s),H(1+ija,s)**2
-           
+                if(abs(H(1+ija,s)) > cutoff2 .and. ij<nOOs+1)                     &
+                write(*,'(1X,A7,I3,A1,I3,A12,1X,F15.6,1X,F15.6,1X,F12.6)') &
+                '      (',a,',',ij,')           ',H(1+ija,s),H(1+ija,s)**2,(- eHF(a) + Om2s(ij))*HaToeV
+                if(abs(H(1+ija,s)) > cutoff2 .and. ij>nOOs)                     &
+                write(*,'(1X,A7,I3,A1,I3,A12,1X,F15.6,1X,F15.6,1X,F12.6)') &
+                '      (',a,',',ij,')           ',H(1+ija,s),H(1+ija,s)**2,(- eHF(a) + Om2t(ij-nOOs))*HaToeV
+            
               end do
             end do
            
@@ -580,9 +583,12 @@ subroutine ufG0T0pp(dotest,TDA_T,nBas,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,eHF)
               do i=nC+1,nO
                 iab = iab + 1
  
-                  if(abs(H(1+n2h1p+iab,s)) > cutoff2)                 &
-                    write(*,'(1X,A7,I3,A1,I3,A12,1X,F15.6,1X,F15.6)') &
-                    '      (',i,',',ab,')           ',H(1+n2h1p+iab,s),H(1+n2h1p+iab,s)**2
+                  if(abs(H(1+n2h1p+iab,s)) > cutoff2 .and. ab<nVVs+1)                 &
+                    write(*,'(1X,A7,I3,A1,I3,A12,1X,F15.6,1X,F15.6,1X,F12.6)') &
+                    '      (',i,',',ab,')           ',H(1+n2h1p+iab,s),H(1+n2h1p+iab,s)**2,(-eHF(i) + Om1s(ab))*HaToeV
+                                    if(abs(H(1+n2h1p+iab,s)) > cutoff2 .and. ab>nVVs)                 &
+                    write(*,'(1X,A7,I3,A1,I3,A12,1X,F15.6,1X,F15.6,1X,F12.6)') &
+                    '      (',i,',',ab,')           ',H(1+n2h1p+iab,s),H(1+n2h1p+iab,s)**2,(-eHF(i) + Om1t(ab-nVVs))*HaToeV
                   
               end do
             end do
