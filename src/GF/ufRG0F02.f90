@@ -39,7 +39,7 @@ subroutine ufRG0F02(dotest,nBas,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,epsHF)
   double precision,parameter    :: cutoff1 = 0.01d0
   double precision,parameter    :: cutoff2 = 0.01d0
   double precision              :: eFermi
-  double precision,parameter    :: window = 1.5d0
+  double precision,parameter    :: window = 1.3d0
   
   double precision,allocatable  :: Reigv(:,:) ! Right eigenvectors
 
@@ -242,13 +242,13 @@ subroutine ufRG0F02(dotest,nBas,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,epsHF)
        
         if(epsGF2(s) < eFermi .and. epsGF2(s) > eFermi - window) then
        
-          write(*,*)'------------------------------------------------------------------------'
+          write(*,*)'------------------------------------------------------------------------------'
           write(*,'(1X,A7,1X,I3,A6,I3,A1,1X,A7,F12.6,A13,F6.4,1X)') & 
                'Orbital',p,' and #',s,':','e_QP = ',epsGF2(s)*HaToeV,' eV and Z = ',Z(s)
-          write(*,*)'------------------------------------------------------------------------'
+          write(*,*)'------------------------------------------------------------------------------'
           write(*,'(1X,A20,1X,A20,1X,A15,1X,A20,1X)') &
                ' Configuration ',' Coefficient ',' Weight ',' Zeroth-order ' 
-          write(*,*)'------------------------------------------------------------------------'
+          write(*,*)'------------------------------------------------------------------------------'
           
           if(p <= nO) & 
                write(*,'(1X,A7,I3,A16,1X,F15.6,1X,F15.6,1X,F12.6)') &
@@ -265,7 +265,7 @@ subroutine ufRG0F02(dotest,nBas,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,epsHF)
   
                 if(abs(Reigv(1+ija,s)) > cutoff2)               &
                      write(*,'(1X,A3,I3,A1,I3,A6,I3,A7,1X,F15.6,1X,F15.6,1X,F12.6)') &
-                     '  (',i,',',j,') -> (',a,')      ',Reigv(1+ija,s),Reigv(1+ija,s)**2, (epsHF(a) - epsHF(i) - epsHF(j))*HaToeV
+                     '  (',i,',',j,') -> (',a,')      ',Reigv(1+ija,s),Reigv(1+ija,s)**2, (epsHF(i) + epsHF(j) - epsHF(a))*HaToeV
            
               end do
             end do
@@ -285,7 +285,7 @@ subroutine ufRG0F02(dotest,nBas,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,epsHF)
             end do
           end do
 
-          write(*,*)'------------------------------------------------------------------------'
+          write(*,*)'------------------------------------------------------------------------------'
           write(*,*)
 
         end if ! If state s should be print

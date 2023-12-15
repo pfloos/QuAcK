@@ -449,20 +449,20 @@ subroutine ufG0W0(dotest,TDA_W,nBas,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,eHF)
         
           if(eGW(s) < eF .and. eGW(s) > eF - window) then
         
-            write(*,*)'-------------------------------------------------------------'
+            write(*,*)'------------------------------------------------------------------------------'
             write(*,'(1X,A7,1X,I3,A6,I3,A1,1X,A7,F12.6,A13,F6.4,1X)') & 
              'Orbital',p,' and #',s,':','e_QP = ',eGW(s)*HaToeV,' eV and Z = ',Z(s)
-            write(*,*)'-------------------------------------------------------------'
+            write(*,*)'------------------------------------------------------------------------------'
             write(*,'(1X,A20,1X,A20,1X,A15,1X)') &
                       ' Conf. (p,ia)  ',' Coefficient ',' Weight ' 
-            write(*,*)'-------------------------------------------------------------'
+            write(*,*)'------------------------------------------------------------------------------'
            
             if(p <= nO) & 
-              write(*,'(1X,A7,I3,A16,1X,F15.6,1X,F15.6)') &
-              '      (',p,')               ',H(1,s),H(1,s)**2
+              write(*,'(1X,A7,I3,A16,1X,F15.6,1X,F15.6,1X,F12.6)') &
+              '      (',p,')               ',H(1,s),H(1,s)**2,-eHF(p)*HaToeV
             if(p > nO) & 
-              write(*,'(1X,A16,I3,A7,1X,F15.6,1X,F15.6)') &
-              '               (',p,')      ',H(1,s),H(1,s)**2
+              write(*,'(1X,A16,I3,A7,1X,F15.6,1X,F15.6,1X,F12.6)') &
+              '               (',p,')      ',H(1,s),H(1,s)**2,-eHF(p)*HaToeV
     
             ija = 0
             do i=nC+1,nO
@@ -470,8 +470,8 @@ subroutine ufG0W0(dotest,TDA_W,nBas,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,eHF)
                 ija = ija + 1
   
                 if(abs(H(1+ija,s)) > cutoff2)                     &
-                write(*,'(1X,A7,I3,A1,I3,A12,1X,F15.6,1X,F15.6)') &
-                '      (',i,',',ja,')           ',H(1+ija,s),H(1+ija,s)**2
+                write(*,'(1X,A7,I3,A1,I3,A12,1X,F15.6,1X,F15.6,1X,F12.6)') &
+                '      (',i,',',ja,')           ',H(1+ija,s),H(1+ija,s)**2,(eHF(i) - Om(ja))*HaToeV
            
               end do
             end do
@@ -482,13 +482,13 @@ subroutine ufG0W0(dotest,TDA_W,nBas,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,eHF)
                 iab = iab + 1
  
                   if(abs(H(1+n2h1p+iab,s)) > cutoff2)                 &
-                    write(*,'(1X,A7,I3,A1,I3,A12,1X,F15.6,1X,F15.6)') &
-                    '      (',ia,',',b,')           ',H(1+n2h1p+iab,s),H(1+n2h1p+iab,s)**2
+                    write(*,'(1X,A7,I3,A1,I3,A12,1X,F15.6,1X,F15.6,1X,F12.6)') &
+                    '      (',ia,',',b,')           ',H(1+n2h1p+iab,s),H(1+n2h1p+iab,s)**2,(eHF(b) + Om(ia))*HaToeV
                   
               end do
             end do
  
-            write(*,*)'-------------------------------------------------------------'
+            write(*,*)'------------------------------------------------------------------------------'
             write(*,*)
 
           end if ! If state s should be print
