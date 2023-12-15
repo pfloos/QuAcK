@@ -1,4 +1,4 @@
-subroutine ufRG0F02(dotest,nBas,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,epsHF)
+subroutine ufRG0F02(dotest,nBas,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,eHF)
 
 ! Unfold G0F02
 
@@ -18,7 +18,7 @@ subroutine ufRG0F02(dotest,nBas,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,epsHF)
   double precision,intent(in)   :: ENuc
   double precision,intent(in)   :: ERHF
   double precision,intent(in)   :: ERI(nBas,nBas,nBas,nBas)
-  double precision,intent(in)   :: epsHF(nBas)
+  double precision,intent(in)   :: eHF(nBas)
 
 ! Local variables
 
@@ -32,7 +32,7 @@ subroutine ufRG0F02(dotest,nBas,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,epsHF)
   integer                       :: n2h1p,n2p1h,nH
   double precision,external     :: Kronecker_delta
   double precision,allocatable  :: H(:,:)
-  double precision,allocatable  :: epsGF2(:)
+  double precision,allocatable  :: eGF(:)
   double precision,allocatable  :: Z(:)
 
   logical                       :: verbose = .true.
@@ -63,9 +63,9 @@ subroutine ufRG0F02(dotest,nBas,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,epsHF)
 
 ! Memory allocation
 
-  allocate(H(nH,nH),epsGF2(nH),Z(nH),Reigv(nH,nH))
+  allocate(H(nH,nH),eGF(nH),Z(nH),Reigv(nH,nH))
 
-  eFermi = 0.5d0*(epsHF(nO) + epsHF(nO+1))
+  eFermi = 0.5d0*(eHF(nO) + eHF(nO+1))
 
 !-------------------------!
 ! Main loop over orbitals !
@@ -94,7 +94,7 @@ subroutine ufRG0F02(dotest,nBas,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,epsHF)
     ! "Block" e !
     !-----------!
       
-    H(1,1) = epsHF(p)
+    H(1,1) = eHF(p)
 
     !-------------!
     ! Block V2h1p !
@@ -147,7 +147,7 @@ subroutine ufRG0F02(dotest,nBas,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,epsHF)
                 klc = klc + 1
                      
                 H(1+ija,1+klc) & 
-                = (epsHF(i) + epsHF(j) - epsHF(a))*Kronecker_delta(j,l)*Kronecker_delta(a,c)*Kronecker_delta(i,k)
+                = (eHF(i) + eHF(j) - eHF(a))*Kronecker_delta(j,l)*Kronecker_delta(a,c)*Kronecker_delta(i,k)
                      
               end do
             end do
@@ -174,7 +174,7 @@ subroutine ufRG0F02(dotest,nBas,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,epsHF)
                 kcd = kcd + 1
                    
                  H(1+n2h1p+iab,1+n2h1p+kcd) &
-                 = (epsHF(a) + epsHF(b) - epsHF(i))*Kronecker_delta(i,k)*Kronecker_delta(a,c)*Kronecker_delta(b,d)
+                 = (eHF(a) + eHF(b) - eHF(i))*Kronecker_delta(i,k)*Kronecker_delta(a,c)*Kronecker_delta(b,d)
                      
               end do
             end do
@@ -197,7 +197,7 @@ subroutine ufRG0F02(dotest,nBas,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,epsHF)
  
     call wall_time(start_timing)
 
-    call diagonalize_general_matrix(nH,H,epsGF2,Reigv)
+    call diagonalize_general_matrix(nH,H,eGF,Reigv)
  
     call wall_time(end_timing)
 
@@ -226,10 +226,10 @@ subroutine ufRG0F02(dotest,nBas,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,epsHF)
     write(*,*)'-------------------------------------------'
   
     do s=1,nH
-      if(epsGF2(s) < eFermi .and. epsGF2(s) > eFermi - window) then
+      if(eGF(s) < eFermi .and. eGF(s) > eFermi - window) then
       ! if(Z(s) > cutoff1) then
         write(*,'(1X,A1,1X,I3,1X,A1,1X,F15.6,1X,A1,1X,F15.6,1X,A1,1X)') &
-        '|',s,'|',epsGF2(s)*HaToeV,'|',Z(s),'|'
+        '|',s,'|',eGF(s)*HaToeV,'|',Z(s),'|'
       end if
     end do
   
@@ -240,11 +240,11 @@ subroutine ufRG0F02(dotest,nBas,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,epsHF)
 
       do s=1,nH
        
-        if(epsGF2(s) < eFermi .and. epsGF2(s) > eFermi - window) then
+        if(eGF(s) < eFermi .and. eGF(s) > eFermi - window) then
        
           write(*,*)'------------------------------------------------------------------------------'
           write(*,'(1X,A7,1X,I3,A6,I3,A1,1X,A7,F12.6,A13,F6.4,1X)') & 
-               'Orbital',p,' and #',s,':','e_QP = ',epsGF2(s)*HaToeV,' eV and Z = ',Z(s)
+               'Orbital',p,' and #',s,':','e_QP = ',eGF(s)*HaToeV,' eV and Z = ',Z(s)
           write(*,*)'------------------------------------------------------------------------------'
           write(*,'(1X,A20,1X,A20,1X,A15,1X,A20,1X)') &
                ' Configuration ',' Coefficient ',' Weight ',' Zeroth-order ' 
@@ -252,10 +252,10 @@ subroutine ufRG0F02(dotest,nBas,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,epsHF)
           
           if(p <= nO) & 
                write(*,'(1X,A7,I3,A16,1X,F15.6,1X,F15.6,1X,F12.6)') &
-               '      (',p,')               ',Reigv(1,s),Reigv(1,s)**2,-epsHF(p)*HaToeV
+               '      (',p,')               ',Reigv(1,s),Reigv(1,s)**2,-eHF(p)*HaToeV
           if(p > nO) & 
                write(*,'(1X,A16,I3,A7,1X,F15.6,1X,F15.6)') &
-               '               (',p,')      ',Reigv(1,s),Reigv(1,s)**2,-epsHF(p)*HaToeV
+               '               (',p,')      ',Reigv(1,s),Reigv(1,s)**2,-eHF(p)*HaToeV
     
           ija = 0
           do i=nC+1,nO
@@ -265,7 +265,8 @@ subroutine ufRG0F02(dotest,nBas,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,epsHF)
   
                 if(abs(Reigv(1+ija,s)) > cutoff2)               &
                      write(*,'(1X,A3,I3,A1,I3,A6,I3,A7,1X,F15.6,1X,F15.6,1X,F12.6)') &
-                     '  (',i,',',j,') -> (',a,')      ',Reigv(1+ija,s),Reigv(1+ija,s)**2, (epsHF(i) + epsHF(j) - epsHF(a))*HaToeV
+                     '  (',i,',',j,') -> (',a,')      ',Reigv(1+ija,s),Reigv(1+ija,s)**2, & 
+                                                        (eHF(i) + eHF(j) - eHF(a))*HaToeV
            
               end do
             end do
@@ -279,7 +280,8 @@ subroutine ufRG0F02(dotest,nBas,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,epsHF)
  
                 if(abs(Reigv(1+n2h1p+iab,s)) > cutoff2)           &
                      write(*,'(1X,A7,I3,A6,I3,A1,I3,A3,1X,F15.6,1X,F15.6,1X,F12.6)') &
-                     '      (',i,') -> (',a,',',b,')  ',Reigv(1+n2h1p+iab,s),Reigv(1+n2h1p+iab,s)**2, (epsHF(a) + epsHF(b) - epsHF(i))*HaToeV
+                     '      (',i,') -> (',a,',',b,')  ',Reigv(1+n2h1p+iab,s),Reigv(1+n2h1p+iab,s)**2, & 
+                                                        (eHF(a) + eHF(b) - eHF(i))*HaToeV
                   
               end do
             end do
