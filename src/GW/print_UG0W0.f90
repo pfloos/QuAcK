@@ -18,23 +18,17 @@ subroutine print_UG0W0(nBas,nO,eHF,ENuc,EUHF,SigC,Z,eGW,EcRPA,EcGM)
 
   integer                            :: p
   integer                            :: ispin
-  double precision                   :: HOMO(nspin)
-  double precision                   :: LUMO(nspin)
-  double precision                   :: Gap(nspin)
+  double precision                   :: eHOMO(nspin)
+  double precision                   :: eLUMO(nspin)
+  double precision                   :: Gap
 
 ! HOMO and LUMO
 
   do ispin=1,nspin
-    if(nO(ispin) > 0) then
-      HOMO(ispin) = eGW(nO(ispin),ispin)
-      LUMO(ispin) = eGW(nO(ispin)+1,ispin)
-      Gap(ispin)  = LUMO(ispin) - HOMO(ispin)
-    else
-      HOMO(ispin) = 0d0
-      LUMO(ispin) = eGW(1,ispin)
-      Gap(ispin)  = 0d0
-    end if
+    eHOMO(ispin) = maxval(eGW(1:nO(ispin),ispin))
+    eLUMO(ispin) = minval(eGW(nO(ispin)+1:nBas,ispin))
   end do
+  Gap = minval(eLUMO)  -maxval(eHOMO)
 
 ! Dump results
 
@@ -58,9 +52,9 @@ subroutine print_UG0W0(nBas,nO,eHF,ENuc,EUHF,SigC,Z,eGW,EcRPA,EcGM)
 
   write(*,*)'----------------------------------------------------------------'// &
             '----------------------------------------------------------------'
-  write(*,'(2X,A60,F15.6,A3)') 'G0W0@UHF HOMO      energy = ',maxval(HOMO)*HaToeV,' eV'
-  write(*,'(2X,A60,F15.6,A3)') 'G0W0@UHF LUMO      energy = ',minval(LUMO)*HaToeV,' eV'
-  write(*,'(2X,A60,F15.6,A3)') 'G0W0@UHF HOMO-LUMO gap    = ',(minval(LUMO)-maxval(HOMO))*HaToeV,' eV'
+  write(*,'(2X,A60,F15.6,A3)') 'G0W0@UHF HOMO      energy = ',maxval(eHOMO)*HaToeV,' eV'
+  write(*,'(2X,A60,F15.6,A3)') 'G0W0@UHF LUMO      energy = ',minval(eLUMO)*HaToeV,' eV'
+  write(*,'(2X,A60,F15.6,A3)') 'G0W0@UHF HOMO-LUMO gap    = ',Gap*HaToeV,' eV'
   write(*,*)'----------------------------------------------------------------'// &
             '----------------------------------------------------------------'
   write(*,'(2X,A60,F15.6,A3)') 'phRPA@G0W0@UHF total       energy = ',ENuc + EUHF + EcRPA,' au'

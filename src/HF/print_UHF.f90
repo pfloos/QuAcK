@@ -25,9 +25,9 @@ subroutine print_UHF(nBas,nO,S,eHF,c,P,ENuc,ET,EV,EJ,Ex,EUHF,dipole)
 
   integer                            :: ixyz
   integer                            :: ispin
-  double precision                   :: HOMO(nspin)
-  double precision                   :: LUMO(nspin)
-  double precision                   :: Gap(nspin)
+  double precision                   :: eHOMO(nspin)
+  double precision                   :: eLUMO(nspin)
+  double precision                   :: Gap
   double precision                   :: Sz
   double precision                   :: Sx2,Sy2,Sz2
   integer                            :: mu,nu
@@ -37,21 +37,12 @@ subroutine print_UHF(nBas,nO,S,eHF,c,P,ENuc,ET,EV,EJ,Ex,EUHF,dipole)
 
 ! HOMO and LUMO
 
+      
   do ispin=1,nspin
-    if(nO(ispin) > 0) then 
-      HOMO(ispin) = eHF(nO(ispin),ispin)
-      if(nO(ispin) < nBas) then
-        LUMO(ispin) = eHF(nO(ispin)+1,ispin)
-      else
-        LUMO(ispin) = 0d0
-      end if
-      Gap(ispin)  = LUMO(ispin) - HOMO(ispin)
-    else
-      HOMO(ispin) = 0d0
-      LUMO(ispin) = eHF(1,ispin)
-      Gap(ispin)  = 0d0
-    end if
+    eHOMO(ispin) = maxval(eHF(1:nO(ispin),ispin))
+    eLUMO(ispin) = minval(eHF(nO(ispin)+1:nBas,ispin))
   end do
+  Gap = minval(eLUMO)  -maxval(eHOMO)
 
   Sz =  0.5d0*dble(nO(1) - nO(2))
   Sx2 = 0.25d0*dble(nO(1) - nO(2)) + 0.5d0*nO(2) - 0.5d0*sum(matmul(transpose(c(:,1:nO(1),1)),matmul(S,c(:,1:nO(2),2)))**2)
@@ -90,13 +81,9 @@ subroutine print_UHF(nBas,nO,S,eHF,c,P,ENuc,ET,EV,EJ,Ex,EUHF,dipole)
   write(*,'(A40,1X,F16.10,A3)') ' Nuclear      repulsion = ',ENuc,' au'
   write(*,'(A40,1X,F16.10,A3)') ' UHF             energy = ',EUHF + ENuc,' au'
   write(*,'(A60)')              '---------------------------------------------'
-  write(*,'(A40,1X,F16.6,A3)')  ' UHF HOMO a    energy   = ' ,HOMO(1)*HatoeV,' eV'
-  write(*,'(A40,1X,F16.6,A3)')  ' UHF LUMO a    energy   = ' ,LUMO(1)*HatoeV,' eV'
-  write(*,'(A40,1X,F16.6,A3)')  ' UHF HOMOa-LUMOa  gap   = ' ,Gap(1)*HatoeV,' eV'
-  write(*,'(A60)')              '---------------------------------------------'
-  write(*,'(A40,1X,F16.6,A3)')  ' UHF HOMO b    energy   = ',HOMO(2)*HatoeV,' eV'
-  write(*,'(A40,1X,F16.6,A3)')  ' UHF LUMO b    energy   = ',LUMO(2)*HatoeV,' eV'
-  write(*,'(A40,1X,F16.6,A3)')  ' UHF HOMOb-LUMOb  gap   = ',Gap(2)*HatoeV,' eV'
+  write(*,'(A40,1X,F16.6,A3)')  ' UHF HOMO      energy   = ' ,maxval(eHOMO)*HatoeV,' eV'
+  write(*,'(A40,1X,F16.6,A3)')  ' UHF LUMO      energy   = ' ,minval(eLUMO)*HatoeV,' eV'
+  write(*,'(A40,1X,F16.6,A3)')  ' UHF HOMO-LUMO    gap   = ' ,Gap*HatoeV,' eV'
   write(*,'(A60)')              '---------------------------------------------'
   write(*,'(A40,1X,F10.6)')     ' <Sz>                   = ',Sz
   write(*,'(A40,1X,F10.6)')     ' <S^2>                  = ',Sx2+Sy2+Sz2

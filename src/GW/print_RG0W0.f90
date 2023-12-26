@@ -15,14 +15,14 @@ subroutine print_RG0W0(nBas,nO,eHF,ENuc,ERHF,SigC,Z,eGW,EcRPA,EcGM)
   double precision,intent(in)        :: Z(nBas)
   double precision,intent(in)        :: eGW(nBas)
 
-  integer                            :: p,HOMO,LUMO
-  double precision                   :: Gap
+  integer                            :: p
+  double precision                   :: eHOMO,eLUMO,Gap
 
 ! HOMO and LUMO
 
-  HOMO = nO
-  LUMO = HOMO + 1
-  Gap = eGW(LUMO)-eGW(HOMO)
+  eHOMO = maxval(eGW(1:nO))
+  eLUMO = minval(eGW(nO+1:nBas))
+  Gap = eLUMO-eHOMO
 
 ! Dump results
 
@@ -39,8 +39,8 @@ subroutine print_RG0W0(nBas,nO,eHF,ENuc,ERHF,SigC,Z,eGW,EcRPA,EcGM)
   end do
 
   write(*,*)'-------------------------------------------------------------------------------'
-  write(*,'(2X,A60,F15.6,A3)') 'G0W0@RHF HOMO      energy = ',eGW(HOMO)*HaToeV,' eV'
-  write(*,'(2X,A60,F15.6,A3)') 'G0W0@RHF LUMO      energy = ',eGW(LUMO)*HaToeV,' eV'
+  write(*,'(2X,A60,F15.6,A3)') 'G0W0@RHF HOMO      energy = ',eHOMO*HaToeV,' eV'
+  write(*,'(2X,A60,F15.6,A3)') 'G0W0@RHF LUMO      energy = ',eLUMO*HaToeV,' eV'
   write(*,'(2X,A60,F15.6,A3)') 'G0W0@RHF HOMO-LUMO gap    = ',Gap*HaToeV,' eV'
   write(*,*)'-------------------------------------------------------------------------------'
   write(*,'(2X,A60,F15.6,A3)') 'phRPA@G0W0@RHF total       energy = ',ENuc + ERHF + EcRPA,' au'
