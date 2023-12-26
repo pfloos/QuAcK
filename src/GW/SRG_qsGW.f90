@@ -100,9 +100,9 @@ subroutine SRG_qsGW(dotest,maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,
 ! Hello world
 
   write(*,*)
-  write(*,*)'************************************************'
-  write(*,*)'|   Self-consistent SRG-qsGW calculation       |'
-  write(*,*)'************************************************'
+  write(*,*)'***********************************'
+  write(*,*)'* Restricted SRG-qsGW Calculation *'
+  write(*,*)'***********************************'
   write(*,*)
 
 ! Warning 

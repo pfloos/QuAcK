@@ -33,26 +33,20 @@ subroutine print_qsUGW(nBas,nO,nSCF,Conv,thresh,eHF,eGW,c,Ov,ENuc,ET,EV,EJ,Ex,Ec
   logical                            :: dump_orb = .false.
   integer                            :: p
   integer                            :: ispin,ixyz
-  double precision                   :: HOMO(nspin)
-  double precision                   :: LUMO(nspin)
-  double precision                   :: Gap(nspin)
+  double precision                   :: eHOMO(nspin)
+  double precision                   :: eLUMO(nspin)
+  double precision                   :: Gap
   double precision                   :: Sz
   double precision                   :: Sx2,Sy2,Sz2
   double precision,external          :: trace_matrix
 
 ! HOMO and LUMO
 
-  do ispin=1,nspin
-    if(nO(ispin) > 0) then
-      HOMO(ispin) = eGW(nO(ispin),ispin)
-      LUMO(ispin) = eGW(nO(ispin)+1,ispin)
-      Gap(ispin)  = LUMO(ispin) - HOMO(ispin)
-    else
-      HOMO(ispin) = 0d0
-      LUMO(ispin) = eGW(1,ispin)
-      Gap(ispin)  = 0d0
-    end if
+  do ispin=1,nspin                   
+    eHOMO(ispin) = maxval(eGW(1:nO(ispin),ispin))
+    eLUMO(ispin) = minval(eGW(nO(ispin)+1:nBas,ispin))
   end do
+  Gap = minval(eLUMO)  -maxval(eHOMO)
 
   Sz =  0.5d0*dble(nO(1) - nO(2))
   Sx2 = 0.25d0*dble(nO(1) - nO(2)) + 0.5d0*nO(2) - 0.5d0*sum(matmul(transpose(c(:,1:nO(1),1)),matmul(Ov,c(:,1:nO(2),2)))**2)
@@ -91,9 +85,9 @@ subroutine print_qsUGW(nBas,nO,nSCF,Conv,thresh,eHF,eGW,c,Ov,ENuc,ET,EV,EJ,Ex,Ec
   write(*,'(2X,A14,F15.5)')'Convergence = ',Conv
   write(*,*)'----------------------------------------------------------------'// &
             '----------------------------------------------------------------'
-  write(*,'(2X,A60,F15.6,A3)') 'qsGW@UHF HOMO      energy = ',maxval(HOMO)*HaToeV,' eV'
-  write(*,'(2X,A60,F15.6,A3)') 'qsGW@UHF LUMO      energy = ',minval(LUMO)*HaToeV,' eV'
-  write(*,'(2X,A60,F15.6,A3)') 'qsGW@UHF HOMO-LUMO gap    = ',(minval(LUMO)-maxval(HOMO))*HaToeV,' eV'
+  write(*,'(2X,A60,F15.6,A3)') 'qsGW@UHF HOMO      energy = ',maxval(eHOMO)*HaToeV,' eV'
+  write(*,'(2X,A60,F15.6,A3)') 'qsGW@UHF LUMO      energy = ',minval(eLUMO)*HaToeV,' eV'
+  write(*,'(2X,A60,F15.6,A3)') 'qsGW@UHF HOMO-LUMO gap    = ',(minval(eLUMO)-maxval(eHOMO))*HaToeV,' eV'
   write(*,*)'----------------------------------------------------------------'// &
             '----------------------------------------------------------------'
   write(*,'(2X,A60,F15.6,A3)') '    qsGW@UHF total       energy = ',ENuc + EqsGW,' au'

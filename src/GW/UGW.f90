@@ -114,9 +114,9 @@ subroutine UGW(dotest,doG0W0,doevGW,doqsGW,doufG0W0,doufGW,doSRGqsGW,maxSCF,thre
   if(doqsGW) then 
 
     call wall_time(start_GW)
-    call qsUGW(dotest,maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,dophBSE,TDA_W,TDA,dBSE,dTDA,spin_conserved,spin_flip, & 
-               eta,regularize,nNuc,ZNuc,rNuc,ENuc,nBas,nC,nO,nV,nR,nS,EUHF,S,X,T,V,Hc,ERI_AO,ERI_aaaa,ERI_aabb,ERI_bbbb,   & 
-               dipole_int_AO,dipole_int_aa,dipole_int_bb,PHF,cHF,eHF)
+    call qsUGW(dotest,maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,dophBSE,TDA_W,TDA,dBSE,dTDA, & 
+               spin_conserved,spin_flip,eta,regularize,nNuc,ZNuc,rNuc,ENuc,nBas,nC,nO,nV,nR,nS,EUHF,    & 
+               S,X,T,V,Hc,ERI_AO,ERI_aaaa,ERI_aabb,ERI_bbbb,dipole_int_AO,dipole_int_aa,dipole_int_bb,PHF,cHF,eHF)
     call wall_time(end_GW)
 
     t_GW = end_GW - start_GW
@@ -132,7 +132,9 @@ subroutine UGW(dotest,doG0W0,doevGW,doqsGW,doufG0W0,doufGW,doSRGqsGW,maxSCF,thre
   if(doSRGqsGW) then 
 
     call wall_time(start_GW)
-    print*,'Unrestricted version of SRG-qsGW not yet implemented! Sorry.'
+    call SRG_qsUGW(dotest,maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,dophBSE,TDA_W,TDA,dBSE,dTDA, & 
+                   spin_conserved,spin_flip,eta,regularize,nNuc,ZNuc,rNuc,ENuc,nBas,nC,nO,nV,nR,nS,EUHF,    & 
+                   S,X,T,V,Hc,ERI_AO,ERI_aaaa,ERI_aabb,ERI_bbbb,dipole_int_AO,dipole_int_aa,dipole_int_bb,PHF,cHF,eHF)
     call wall_time(end_GW)
 
     t_GW = end_GW - start_GW
