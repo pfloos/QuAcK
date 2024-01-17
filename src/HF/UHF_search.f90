@@ -169,7 +169,7 @@ subroutine UHF_search(maxSCF,thresh,max_diis,guess_type,mix,level_shift,nNuc,ZNu
     end do
     write(*,*)'-------------------------------------------------------------'
  
-    if(minval(Om_sc(:)) < 0d0) then
+    if(minval(Om_sc(:)) < 1d-7) then
  
       write(*,'(1X,A40,1X)')           'Too bad, UHF solution is unstable!'
       write(*,'(1X,A40,1X,F15.10,A3)') 'Largest negative eigenvalue:',Om_sc(1),' au'

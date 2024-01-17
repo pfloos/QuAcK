@@ -144,7 +144,7 @@ subroutine RHF_search(maxSCF,thresh,max_diis,guess_type,level_shift,nNuc,ZNuc,rN
     end do
     write(*,*)'-------------------------------------------------------------'
  
-    if(minval(Om(:)) < 0d0) then
+    if(minval(Om(:)) < 1d-7) then
  
       write(*,'(1X,A40,1X)')           'Too bad, RHF solution is unstable!'
       write(*,'(1X,A40,1X,F15.10,A3)') 'Largest negative eigenvalue:',Om(1),' au'
