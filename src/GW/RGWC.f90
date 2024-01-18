@@ -24,7 +24,7 @@ subroutine RGWC(dotest,nBas,nC,nO,nR,nS,Om,rho,eGW,Z)
 
   integer                       :: p,q,i,a,m
   integer                       :: iSat
-  double precision,parameter    :: cutoff = 1d-6
+  double precision,parameter    :: cutoff = 0d0
 
   logical,parameter             :: do_hole_branch = .true.
   logical,parameter             :: do_electron_branch = .false.
