@@ -146,6 +146,10 @@ subroutine RG0W0(dotest,doACFDT,exchange_kernel,doXBS,dophBSE,dophBSE2,TDA_W,TDA
 
   end if
 
+! Cumulant expansion
+
+  call RGWC(dotest,nBas,nC,nO,nR,nS,Om,rho,eHF,eGW,Z)
+
 ! call GW_plot_self_energy(nBas,nC,nO,nV,nR,nS,eHF,eHF,Om,rho)
 
 ! Compute the RPA correlation energy
@@ -159,9 +163,7 @@ subroutine RG0W0(dotest,doACFDT,exchange_kernel,doXBS,dophBSE,dophBSE2,TDA_W,TDA
 ! Dump results !
 !--------------!
 
-  call print_RG0W0(nBas,nO,eHF,ENuc,ERHF,SigC,Z,eGW,EcRPA,EcGM)
-
-  call RGWC(dotest,nBas,eGW,Z)
+! call print_RG0W0(nBas,nO,eHF,ENuc,ERHF,SigC,Z,eGW,EcRPA,EcGM)
 
 ! Perform BSE calculation
 
