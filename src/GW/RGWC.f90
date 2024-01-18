@@ -1,4 +1,4 @@
-subroutine RGWC(dotest,nBas,nC,nO,nR,nS,Om,rho,e,eGW,Z)
+subroutine RGWC(dotest,nBas,nC,nO,nR,nS,Om,rho,eGW,Z)
 
 ! Perform GW+C calculation
 
@@ -17,7 +17,6 @@ subroutine RGWC(dotest,nBas,nC,nO,nR,nS,Om,rho,e,eGW,Z)
 
   double precision,intent(in)   :: Om(nS)
   double precision,intent(in)   :: rho(nBas,nBas,nS)
-  double precision,intent(in)   :: e(nBas)
   double precision,intent(in)   :: eGW(nBas)
   double precision,intent(in)   :: Z(nBas)
 
@@ -25,7 +24,10 @@ subroutine RGWC(dotest,nBas,nC,nO,nR,nS,Om,rho,e,eGW,Z)
 
   integer                       :: p,q,i,a,m
   integer                       :: iSat
-  double precision,parameter    :: cutoff = 1d-3
+  double precision,parameter    :: cutoff = 1d-6
+
+  logical,parameter             :: do_hole_branch = .true.
+  logical,parameter             :: do_electron_branch = .false.
 
   double precision,allocatable  :: de(:,:,:)
   double precision,allocatable  :: ZC(:)
@@ -99,61 +101,69 @@ subroutine RGWC(dotest,nBas,nC,nO,nR,nS,Om,rho,e,eGW,Z)
 
 ! GW+C satellites on hole branch
 
-  ZSat(:,:) = 0d0
-  do i=nC+1,nO
-    do m=1,nS
-      eSat(i,m) = eGW(i) - Om(m)
-      do q=nC+1,nBas-nR
-        ZSat(i,m) = ZSat(i,m) + ZC(i)*2d0*rho(i,q,m)**2/de(i,q,m)**2
+  if(do_hole_branch) then
+
+    ZSat(:,:) = 0d0
+    do i=nC+1,nO
+      do m=1,nS
+        eSat(i,m) = eGW(i) - Om(m)
+        do q=nC+1,nBas-nR
+          ZSat(i,m) = ZSat(i,m) + ZC(i)*2d0*rho(i,q,m)**2/de(i,q,m)**2
+        end do
       end do
     end do
-  end do
-
-  write(*,*)'-------------------------------------------------------------------------------'
-  write(*,*)' Satellite series from GW+C on hole branch'
-  write(*,*)'-------------------------------------------------------------------------------'
-  write(*,'(1X,A5,1X,A5,1X,A5,1X,A15,1X,A15,1X)') '#','i','m','e_Sat (eV)','Z_Sat'
-
-  write(*,*)'-------------------------------------------------------------------------------'
-  iSat = 0
-  do i=nC+1,nO
-    do m=1,nS
-      iSat = iSat + 1
-      if(ZSat(i,m) > cutoff) &
-        write(*,'(1X,I5,1X,I5,1X,I5,F15.6,1X,F15.6,1X)') iSat,i,m,eSat(i,m)*HaToeV,ZSat(i,m)
+ 
+    write(*,*)'-------------------------------------------------------------------------------'
+    write(*,*)' Satellite series from GW+C on hole branch'
+    write(*,*)'-------------------------------------------------------------------------------'
+    write(*,'(1X,A5,1X,A5,1X,A5,1X,A15,1X,A15,1X)') '#','i','m','e_Sat (eV)','Z_Sat'
+ 
+    write(*,*)'-------------------------------------------------------------------------------'
+    iSat = 0
+    do i=nC+1,nO
+      do m=1,nS
+        iSat = iSat + 1
+        if(ZSat(i,m) > cutoff) &
+          write(*,'(1X,I5,1X,I5,1X,I5,F15.6,1X,F15.6,1X)') iSat,i,m,eSat(i,m)*HaToeV,ZSat(i,m)
+      end do
     end do
-  end do
-  write(*,*)'-------------------------------------------------------------------------------'
-  write(*,*)
+    write(*,*)'-------------------------------------------------------------------------------'
+    write(*,*)
+
+  end if
 
 ! GW+C satellites on electron branch
 
-  ZSat(:,:) = 0d0
-  do a=nO+1,nBas-nR
-    do m=1,nS
-      eSat(a,m) = eGW(a) + Om(m)
-      do q=nC+1,nBas-nR
-        ZSat(a,m) = ZSat(a,m) + ZC(a)*2d0*rho(a,q,m)**2/de(a,q,m)**2
+  if(do_electron_branch) then
+
+    ZSat(:,:) = 0d0
+    do a=nO+1,nBas-nR
+      do m=1,nS
+        eSat(a,m) = eGW(a) + Om(m)
+        do q=nC+1,nBas-nR
+          ZSat(a,m) = ZSat(a,m) + ZC(a)*2d0*rho(a,q,m)**2/de(a,q,m)**2
+        end do
       end do
     end do
-  end do
-
-  write(*,*)'-------------------------------------------------------------------------------'
-  write(*,*)' Satellite series from GW+C on electron branch'
-  write(*,*)'-------------------------------------------------------------------------------'
-  write(*,'(1X,A5,1X,A5,1X,A5,1X,A15,1X,A15,1X)') '#','a','m','e_Sat (eV)','Z_Sat'
-
-  write(*,*)'-------------------------------------------------------------------------------'
-  iSat = 0
-  do a=nO+1,nBas-nR
-    do m=1,nS
-      iSat = iSat + 1
-      if(ZSat(a,m) > cutoff) &
-        write(*,'(1X,I5,1X,I5,1X,I5,F15.6,1X,F15.6,1X)') iSat,a,m,eSat(a,m)*HaToeV,ZSat(a,m)
+ 
+    write(*,*)'-------------------------------------------------------------------------------'
+    write(*,*)' Satellite series from GW+C on electron branch'
+    write(*,*)'-------------------------------------------------------------------------------'
+    write(*,'(1X,A5,1X,A5,1X,A5,1X,A15,1X,A15,1X)') '#','a','m','e_Sat (eV)','Z_Sat'
+ 
+    write(*,*)'-------------------------------------------------------------------------------'
+    iSat = 0
+    do a=nO+1,nBas-nR
+      do m=1,nS
+        iSat = iSat + 1
+        if(ZSat(a,m) > cutoff) &
+          write(*,'(1X,I5,1X,I5,1X,I5,F15.6,1X,F15.6,1X)') iSat,a,m,eSat(a,m)*HaToeV,ZSat(a,m)
+      end do
     end do
-  end do
-  write(*,*)'-------------------------------------------------------------------------------'
-  write(*,*)
+    write(*,*)'-------------------------------------------------------------------------------'
+    write(*,*)
+
+  end if
 
 ! Testing zone
 

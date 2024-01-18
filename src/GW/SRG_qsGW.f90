@@ -309,6 +309,10 @@ subroutine SRG_qsGW(dotest,maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,
  print *, "Wall Time for SRG", tsrg
  print *, "Wall time MO to AO Sigma", tmo
 
+! Cumulant expansion
+
+  call RGWC(dotest,nBas,nC,nO,nR,nS,Om,rho,eGW,Z)
+
 ! Deallocate memory
 
   deallocate(c,cp,P,F,Fp,J,K,SigC,Z,Om,XpY,XmY,rho,error,error_diis,F_diis)
