@@ -120,6 +120,12 @@ subroutine GW_phBSE(dophBSE2,TDA_W,TDA,dBSE,dTDA,singlet,triplet,eta,nBas,nC,nO,
     call print_excitation_energies('phBSE@GW@RHF','singlet',nS,OmBSE)
     call phLR_transition_vectors(.true.,nBas,nC,nO,nV,nR,nS,dipole_int,OmBSE,XpY_BSE,XmY_BSE)
 
+    !--------------------!
+    ! Cumulant expansion !
+    !--------------------!
+
+    call RGWC(.false.,nBas,nC,nO,nR,nS,OmBSE,rho_RPA,eGW)
+
     !----------------------------------------------------!
     ! Compute the dynamical screening at the phBSE level !
     !----------------------------------------------------!
