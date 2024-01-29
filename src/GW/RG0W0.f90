@@ -146,13 +146,16 @@ subroutine RG0W0(dotest,doACFDT,exchange_kernel,doXBS,dophBSE,dophBSE2,TDA_W,TDA
 
   end if
 
+! Plot self-energy, renormalization factor, and spectral function
+
+  call GW_plot_self_energy(nBas,nC,nO,nV,nR,nS,eHF,eHF,Om,rho)
+
 !--------------------!
 ! Cumulant expansion !
 !--------------------!
 
   call RGWC(dotest,nBas,nC,nO,nR,nS,Om,rho,eGW,Z)
-
-! call GW_plot_self_energy(nBas,nC,nO,nV,nR,nS,eHF,eHF,Om,rho)
+  call GWC_spectral_function(nBas,nC,nO,nV,nR,nS,eHF,eHF,Om,rho)
 
 ! Compute the RPA correlation energy
 

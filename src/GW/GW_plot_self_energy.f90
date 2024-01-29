@@ -24,11 +24,11 @@ subroutine GW_plot_self_energy(nBas,nC,nO,nV,nR,nS,eHF,eGW,Om,rho)
   integer                       :: p,g
   integer                       :: nGrid
   double precision              :: wmin,wmax,dw
-  double precision,external     :: GW_SigC,GW_ImSigC,GW_dSigC
+  double precision,external     :: GW_ReSigC,GW_ImSigC,GW_RedSigC
   double precision,allocatable  :: w(:)
   double precision,allocatable  :: ReSigC(:,:),ImSigC(:,:)
   double precision,allocatable  :: Z(:,:)
-  double precision,allocatable  :: S(:,:)
+  double precision,allocatable  :: A(:,:)
 
 ! Broadening parameter
 
@@ -37,7 +37,7 @@ subroutine GW_plot_self_energy(nBas,nC,nO,nV,nR,nS,eHF,eGW,Om,rho)
 ! Construct grid
 
   nGrid = 5000
-  allocate(w(nGrid),ReSigC(nBas,nGrid),ImSigC(nBas,nGrid),Z(nBas,nGrid),S(nBas,nGrid))
+  allocate(w(nGrid),ReSigC(nBas,nGrid),ImSigC(nBas,nGrid),Z(nBas,nGrid),A(nBas,nGrid))
 
 ! Initialize 
 
@@ -60,9 +60,9 @@ subroutine GW_plot_self_energy(nBas,nC,nO,nV,nR,nS,eHF,eGW,Om,rho)
   do g=1,nGrid
     do p=nC+1,nBas-nR
 
-      ReSigC(p,g) = GW_SigC(p,w(g),eta,nBas,nC,nO,nV,nR,nS,eGW,Om,rho)
+      ReSigC(p,g) = GW_ReSigC(p,w(g),eta,nBas,nC,nO,nV,nR,nS,eGW,Om,rho)
       ImSigC(p,g) = GW_ImSigC(p,w(g),eta,nBas,nC,nO,nV,nR,nS,eGW,Om,rho)
-      Z(p,g)      = GW_dSigC(p,w(g),eta,nBas,nC,nO,nV,nR,nS,eGW,Om,rho)
+      Z(p,g)      = GW_RedSigC(p,w(g),eta,nBas,nC,nO,nV,nR,nS,eGW,Om,rho)
 
     end do
   end do
@@ -73,11 +73,11 @@ subroutine GW_plot_self_energy(nBas,nC,nO,nV,nR,nS,eHF,eGW,Om,rho)
 
   do g=1,nGrid
     do p=nC+1,nBas-nR
-      S(p,g) = abs(ImSigC(p,g))/((w(g) - eHF(p) - ReSigC(p,g))**2 + ImSigC(p,g)**2)
+      A(p,g) = abs(ImSigC(p,g))/((w(g) - eHF(p) - ReSigC(p,g))**2 + ImSigC(p,g)**2)
     end do
   end do
 
-  S(:,:) = S(:,:)/pi
+  A(:,:) = A(:,:)/pi
 
 ! Dump quantities in files as a function of w
 
@@ -90,7 +90,7 @@ subroutine GW_plot_self_energy(nBas,nC,nO,nV,nR,nS,eHF,eGW,Om,rho)
     write(8 ,*) w(g)*HaToeV,(ReSigC(p,g)*HaToeV,p=nC+1,nBas-nR)
     write(9 ,*) w(g)*HaToeV,((w(g)-eHF(p))*HaToeV,p=nC+1,nBas-nR)
     write(10,*) w(g)*HaToeV,(Z(p,g),p=nC+1,nBas-nR)
-    write(11,*) w(g)*HaToeV,(S(p,g),p=nC+1,nBas-nR)
+    write(11,*) w(g)*HaToeV,(A(p,g),p=nC+1,nBas-nR)
   end do
 
 ! Closing files
