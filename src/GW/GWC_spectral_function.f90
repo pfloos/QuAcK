@@ -56,8 +56,8 @@ subroutine GWC_spectral_function(nBas,nC,nO,nV,nR,nS,eHF,eGW,Om,rho)
   do g=1,nGrid
     do p=nC+1,nBas-nR
 
-      ReSigC(p,g) = GW_ReSigC(p,eGW(p),eta,nBas,nC,nO,nV,nR,nS,eGW,Om,rho)
-      ImSigC(p,g) = GW_ImSigC(p,eGW(p),eta,nBas,nC,nO,nV,nR,nS,eGW,Om,rho)
+      ReSigC(p,g) = GW_ReSigC(p,eGW(p),eta,nBas,nC,nO,nV,nR,nS,eHF,Om,rho)
+      ImSigC(p,g) = GW_ImSigC(p,eGW(p),eta,nBas,nC,nO,nV,nR,nS,eHF,Om,rho)
 
     end do
   end do
@@ -91,8 +91,8 @@ subroutine GWC_spectral_function(nBas,nC,nO,nV,nR,nS,eHF,eGW,Om,rho)
   do g=1,nGrid
     do p=nC+1,nBas-nR
 
-      RedSigC(p,g) = GW_RedSigC(p,0d0,eta,nBas,nC,nO,nV,nR,nS,eGW,Om,rho)
-      ImdSigC(p,g) = GW_ImdSigC(p,0d0,eta,nBas,nC,nO,nV,nR,nS,eGW,Om,rho)
+      RedSigC(p,g) = GW_RedSigC(p,eHF(p),eta,nBas,nC,nO,nV,nR,nS,eHF,Om,rho)
+      ImdSigC(p,g) = GW_ImdSigC(p,eHF(p),eta,nBas,nC,nO,nV,nR,nS,eHF,Om,rho)
 
     end do
   end do
@@ -106,7 +106,7 @@ subroutine GWC_spectral_function(nBas,nC,nO,nV,nR,nS,eHF,eGW,Om,rho)
   do g=1,nGrid
     do p=nC+1,nBas-nR
 
-      RedSigC(p,g) = GW_RedSigC(p,eHF(p)-w(g),eta,nBas,nC,nO,nV,nR,nS,eGW,Om,rho)
+      RedSigC(p,g) = GW_RedSigC(p,eHF(p)+w(g),eta,nBas,nC,nO,nV,nR,nS,eHF,Om,rho)
 
     end do
   end do

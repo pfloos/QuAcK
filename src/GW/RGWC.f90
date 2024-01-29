@@ -1,4 +1,4 @@
-subroutine RGWC(dotest,nBas,nC,nO,nR,nS,Om,rho,eGW,Z)
+subroutine RGWC(dotest,nBas,nC,nO,nV,nR,nS,Om,rho,eHF,eGW,Z)
 
 ! Perform GW+C calculation
 
@@ -12,11 +12,13 @@ subroutine RGWC(dotest,nBas,nC,nO,nR,nS,Om,rho,eGW,Z)
   integer,intent(in)            :: nBas
   integer,intent(in)            :: nC
   integer,intent(in)            :: nO
+  integer,intent(in)            :: nV
   integer,intent(in)            :: nR
   integer,intent(in)            :: nS
 
   double precision,intent(in)   :: Om(nS)
   double precision,intent(in)   :: rho(nBas,nBas,nS)
+  double precision,intent(in)   :: eHF(nBas)
   double precision,intent(in)   :: eGW(nBas)
   double precision,intent(in)   :: Z(nBas)
 
@@ -33,6 +35,16 @@ subroutine RGWC(dotest,nBas,nC,nO,nR,nS,Om,rho,eGW,Z)
   double precision,allocatable  :: ZC(:)
   double precision,allocatable  :: ZSat(:,:)
   double precision,allocatable  :: eSat(:,:)
+
+  double precision              :: eta
+  integer                       :: g
+  integer                       :: nGrid
+  double precision              :: wmin,wmax,dw
+  double precision,external     :: GW_ReSigC,GW_ImSigC,GW_RedSigC,GW_ImdSigC
+  double precision,allocatable  :: w(:)
+  double precision,allocatable  :: ReSigC(:,:),ImSigC(:,:)
+  double precision,allocatable  :: RedSigC(:,:),ImdSigC(:,:)
+  double precision,allocatable  :: AGWC(:,:)
 
 ! Output variables
 
@@ -164,6 +176,100 @@ subroutine RGWC(dotest,nBas,nC,nO,nR,nS,Om,rho,eGW,Z)
     write(*,*)
 
   end if
+
+! Broadening parameter
+
+  eta = 0.01d0
+
+! Construct grid
+
+  nGrid = 1000
+  allocate(w(nGrid),AGWC(nBas,nGrid))
+
+! Minimum and maximum frequency values
+
+  wmin = -5d0
+  wmax = +5d0
+  dw = (wmax - wmin)/dble(ngrid)
+
+  do g=1,nGrid
+    w(g) = wmin + dble(g)*dw
+  end do
+
+! Compute QP part of the spectral function
+
+  allocate(ReSigC(nBas,nGrid),ImSigC(nBas,nGrid))
+
+  do g=1,nGrid
+    do p=nC+1,nBas-nR
+
+      ReSigC(p,g) = GW_ReSigC(p,eGW(p),eta,nBas,nC,nO,nV,nR,nS,eHF,Om,rho)
+      ImSigC(p,g) = GW_ImSigC(p,eGW(p),eta,nBas,nC,nO,nV,nR,nS,eHF,Om,rho)
+
+    end do
+  end do
+
+  do g=1,nGrid
+    do p=nC+1,nBas-nR
+      AGWC(p,g) = ZC(p)*abs(ImSigC(p,g))/((w(g) - eGW(p))**2 + ImSigC(p,g)**2)
+    end do
+  end do
+
+  AGWC(:,:) = AGWC(:,:)/pi
+
+! Dump quantities in files as a function of w
+
+  open(unit=11 ,file='GWC_AQP.dat')
+
+  do g=1,nGrid
+    write(11,*) w(g)*HaToeV,(AGWC(p,g),p=nC+1,nBas-nR)
+  end do
+
+! Closing files
+
+  close(unit=11)
+
+! Compute cumulant part of the spectral function 
+
+  AGWC(:,:) = 0d0
+
+  if(do_hole_branch) then
+
+    do g=1,nGrid
+      do i=nC+1,nO
+        do m=1,nS
+          AGWC(i,g) = AGWC(i,g) + ZSat(i,m)*abs(ImSigC(i,g))/((w(g) - eSat(i,m))**2 + ImSigC(i,g)**2)
+        end do
+      end do
+    end do
+
+  end if
+
+  if(do_electron_branch) then
+
+    do g=1,nGrid
+      do a=nO+1,nBas-nR
+        do m=1,nS
+          AGWC(a,g) = AGWC(a,g) + ZSat(a,m)*abs(ImSigC(a,g))/((w(g) - eSat(a,m))**2 + ImSigC(a,g)**2)
+        end do
+      end do
+    end do
+
+  end if
+
+  AGWC(:,:) = AGWC(:,:)/pi
+
+! Dump quantities in files as a function of w
+
+  open(unit=12 ,file='GWC_AC.dat')
+
+  do g=1,nGrid
+    write(12,*) w(g)*HaToeV,(AGWC(p,g),p=nC+1,nBas-nR)
+  end do
+
+! Closing files
+
+  close(unit=12)
 
 ! Testing zone
 
