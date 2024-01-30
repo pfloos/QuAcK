@@ -1,4 +1,4 @@
-subroutine RGWC(dotest,nBas,nC,nO,nV,nR,nS,Om,rho,eHF,eGW,Z)
+subroutine RGWC(dotest,eta,nBas,nC,nO,nV,nR,nS,Om,rho,eHF,eGW,Z)
 
 ! Perform GW+C calculation
 
@@ -9,6 +9,7 @@ subroutine RGWC(dotest,nBas,nC,nO,nV,nR,nS,Om,rho,eHF,eGW,Z)
 
   logical,intent(in)            :: dotest
 
+  double precision,intent(in)   :: eta
   integer,intent(in)            :: nBas
   integer,intent(in)            :: nC
   integer,intent(in)            :: nO
@@ -26,17 +27,17 @@ subroutine RGWC(dotest,nBas,nC,nO,nV,nR,nS,Om,rho,eHF,eGW,Z)
 
   integer                       :: p,q,i,a,m
   integer                       :: iSat
-  double precision,parameter    :: cutoff = 0d0
+  double precision              :: num,eps
+  double precision,parameter    :: cutoff = 1d-2
 
   logical,parameter             :: do_hole_branch = .true.
   logical,parameter             :: do_electron_branch = .false.
 
   double precision,allocatable  :: de(:,:,:)
   double precision,allocatable  :: ZC(:)
-  double precision,allocatable  :: ZSat(:,:)
-  double precision,allocatable  :: eSat(:,:)
+  double precision,allocatable  :: ZSat(:,:,:)
+  double precision,allocatable  :: eSat(:,:,:)
 
-  double precision              :: eta
   integer                       :: g
   integer                       :: nGrid
   double precision              :: wmin,wmax,dw
@@ -58,7 +59,7 @@ subroutine RGWC(dotest,nBas,nC,nO,nV,nR,nS,Om,rho,eHF,eGW,Z)
 
 ! Memory allocation
 
-  allocate(ZC(nBas),eSat(nBas,nS),ZSat(nBas,nS))
+  allocate(ZC(nBas),eSat(nBas,nBas,nS),ZSat(nBas,nBas,nS))
 
 ! Useful quantities
 
@@ -67,7 +68,7 @@ subroutine RGWC(dotest,nBas,nC,nO,nV,nR,nS,Om,rho,eHF,eGW,Z)
   do p=nC+1,nBas-nR
     do i=nC+1,nO  
       do m=1,nS
-        de(p,i,m) = eGW(p) - eGW(i) + Om(m)
+        de(p,i,m) = eHF(p) - eGW(i) + Om(m)
       end do
     end do
   end do
@@ -75,7 +76,7 @@ subroutine RGWC(dotest,nBas,nC,nO,nV,nR,nS,Om,rho,eHF,eGW,Z)
   do p=nC+1,nBas-nR
     do a=nO+1,nBas-nR
       do m=1,nS
-        de(p,a,m) = eGW(p) - eGW(a) - Om(m)
+        de(p,a,m) = eHF(p) - eGW(a) - Om(m)
       end do
     end do
   end do
@@ -87,12 +88,14 @@ subroutine RGWC(dotest,nBas,nC,nO,nV,nR,nS,Om,rho,eHF,eGW,Z)
   do p=nC+1,nBas-nR
     do q=nC+1,nBas-nR
       do m=1,nS
-        ZC(p) = ZC(p) + 2d0*rho(p,q,m)**2/de(p,q,m)**2
+        num = 2d0*rho(p,q,m)**2
+        eps = de(p,q,m)
+        ZC(p) = ZC(p) - num*(eps**2 - eta**2)/(eps**2 + eta**2)**2
       end do
     end do
   end do
 
-  ZC(:) = exp(-ZC(:))
+  ZC(:) = exp(ZC(:))
 
 ! Dump results
 
@@ -115,12 +118,13 @@ subroutine RGWC(dotest,nBas,nC,nO,nV,nR,nS,Om,rho,eHF,eGW,Z)
 
   if(do_hole_branch) then
 
-    ZSat(:,:) = 0d0
     do i=nC+1,nO
-      do m=1,nS
-        eSat(i,m) = eGW(i) - Om(m)
-        do q=nC+1,nBas-nR
-          ZSat(i,m) = ZSat(i,m) + ZC(i)*2d0*rho(i,q,m)**2/de(i,q,m)**2
+      do q=nC+1,nBas-nR
+        do m=1,nS
+          eps = de(i,q,m)
+          num = ZC(i)*2d0*rho(i,q,m)**2
+          eSat(i,q,m) = eGW(i) + eps
+          ZSat(i,q,m) = num*(eps**2 - eta**2)/(eps**2 + eta**2)**2
         end do
       end do
     end do
@@ -133,10 +137,12 @@ subroutine RGWC(dotest,nBas,nC,nO,nV,nR,nS,Om,rho,eHF,eGW,Z)
     write(*,*)'-------------------------------------------------------------------------------'
     iSat = 0
     do i=nC+1,nO
-      do m=1,nS
-        iSat = iSat + 1
-        if(ZSat(i,m) > cutoff) &
-          write(*,'(1X,I5,1X,I5,1X,I5,F15.6,1X,F15.6,1X)') iSat,i,m,eSat(i,m)*HaToeV,ZSat(i,m)
+      do q=nC+1,nBas-nR
+        do m=1,nS
+          iSat = iSat + 1
+          if(ZSat(i,q,m) > cutoff) &
+            write(*,'(1X,I5,1X,I5,1X,I5,1X,I5,F15.6,1X,F15.6,1X)') iSat,i,q,m,eSat(i,q,m)*HaToeV,ZSat(i,q,m)
+        end do
       end do
     end do
     write(*,*)'-------------------------------------------------------------------------------'
@@ -148,12 +154,13 @@ subroutine RGWC(dotest,nBas,nC,nO,nV,nR,nS,Om,rho,eHF,eGW,Z)
 
   if(do_electron_branch) then
 
-    ZSat(:,:) = 0d0
     do a=nO+1,nBas-nR
-      do m=1,nS
-        eSat(a,m) = eGW(a) + Om(m)
-        do q=nC+1,nBas-nR
-          ZSat(a,m) = ZSat(a,m) + ZC(a)*2d0*rho(a,q,m)**2/de(a,q,m)**2
+      do q=nC+1,nBas-nR
+        do m=1,nS
+          eps = de(a,q,m)
+          num = ZC(a)*2d0*rho(a,q,m)**2
+          eSat(a,q,m) = eGW(a) + eps
+          ZSat(a,q,m) = num*(eps**2 - eta**2)/(eps**2 + eta**2)**2
         end do
       end do
     end do
@@ -166,20 +173,18 @@ subroutine RGWC(dotest,nBas,nC,nO,nV,nR,nS,Om,rho,eHF,eGW,Z)
     write(*,*)'-------------------------------------------------------------------------------'
     iSat = 0
     do a=nO+1,nBas-nR
-      do m=1,nS
-        iSat = iSat + 1
-        if(ZSat(a,m) > cutoff) &
-          write(*,'(1X,I5,1X,I5,1X,I5,F15.6,1X,F15.6,1X)') iSat,a,m,eSat(a,m)*HaToeV,ZSat(a,m)
+      do q=nC+1,nBas-nR
+        do m=1,nS
+          iSat = iSat + 1
+          if(ZSat(a,q,m) > cutoff) &
+            write(*,'(1X,I5,1X,I5,I5,1X,1X,I5,F15.6,1X,F15.6,1X)') iSat,a,m,eSat(a,q,m)*HaToeV,ZSat(a,q,m)
+        end do
       end do
     end do
     write(*,*)'-------------------------------------------------------------------------------'
     write(*,*)
 
   end if
-
-! Broadening parameter
-
-  eta = 0.01d0
 
 ! Construct grid
 
@@ -202,10 +207,8 @@ subroutine RGWC(dotest,nBas,nC,nO,nV,nR,nS,Om,rho,eHF,eGW,Z)
 
   do g=1,nGrid
     do p=nC+1,nBas-nR
-
       ReSigC(p,g) = GW_ReSigC(p,eGW(p),eta,nBas,nC,nO,nV,nR,nS,eHF,Om,rho)
       ImSigC(p,g) = GW_ImSigC(p,eGW(p),eta,nBas,nC,nO,nV,nR,nS,eHF,Om,rho)
-
     end do
   end do
 
@@ -237,8 +240,10 @@ subroutine RGWC(dotest,nBas,nC,nO,nV,nR,nS,Om,rho,eHF,eGW,Z)
 
     do g=1,nGrid
       do i=nC+1,nO
-        do m=1,nS
-          AGWC(i,g) = AGWC(i,g) + ZSat(i,m)*abs(ImSigC(i,g))/((w(g) - eSat(i,m))**2 + ImSigC(i,g)**2)
+        do q=nC+1,nBas-nR
+          do m=1,nS
+            AGWC(i,g) = AGWC(i,g) + ZSat(i,q,m)*abs(ImSigC(i,g))/((w(g) - eSat(i,q,m))**2 + ImSigC(i,g)**2)
+          end do
         end do
       end do
     end do
@@ -249,8 +254,10 @@ subroutine RGWC(dotest,nBas,nC,nO,nV,nR,nS,Om,rho,eHF,eGW,Z)
 
     do g=1,nGrid
       do a=nO+1,nBas-nR
-        do m=1,nS
-          AGWC(a,g) = AGWC(a,g) + ZSat(a,m)*abs(ImSigC(a,g))/((w(g) - eSat(a,m))**2 + ImSigC(a,g)**2)
+        do q=nC+1,nBas-nR
+          do m=1,nS
+            AGWC(a,g) = AGWC(a,g) + ZSat(a,q,m)*abs(ImSigC(a,g))/((w(g) - eSat(a,q,m))**2 + ImSigC(a,g)**2)
+          end do
         end do
       end do
     end do

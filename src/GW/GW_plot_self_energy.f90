@@ -1,4 +1,4 @@
-subroutine GW_plot_self_energy(nBas,nC,nO,nV,nR,nS,eHF,eGW,Om,rho)
+subroutine GW_plot_self_energy(nBas,eta,nC,nO,nV,nR,nS,eHF,eGW,Om,rho)
 
 ! Dump several GW quantities for external plotting
 
@@ -7,6 +7,7 @@ subroutine GW_plot_self_energy(nBas,nC,nO,nV,nR,nS,eHF,eGW,Om,rho)
 
 ! Input variables
 
+  double precision,intent(in)   :: eta
   integer,intent(in)            :: nBas
   integer,intent(in)            :: nC
   integer,intent(in)            :: nO
@@ -20,7 +21,6 @@ subroutine GW_plot_self_energy(nBas,nC,nO,nV,nR,nS,eHF,eGW,Om,rho)
 
 ! Local variables
 
-  double precision              :: eta
   integer                       :: p,g
   integer                       :: nGrid
   double precision              :: wmin,wmax,dw
@@ -29,10 +29,6 @@ subroutine GW_plot_self_energy(nBas,nC,nO,nV,nR,nS,eHF,eGW,Om,rho)
   double precision,allocatable  :: ReSigC(:,:),ImSigC(:,:)
   double precision,allocatable  :: Z(:,:)
   double precision,allocatable  :: A(:,:)
-
-! Broadening parameter
-
-  eta = 0.01d0
 
 ! Construct grid
 
