@@ -155,7 +155,6 @@ subroutine RG0W0(dotest,doACFDT,exchange_kernel,doXBS,dophBSE,dophBSE2,TDA_W,TDA
 !--------------------!
 
   call RGWC(dotest,nBas,nC,nO,nV,nR,nS,Om,rho,eHF,eGW,Z)
-! call GWC_spectral_function(nBas,nC,nO,nV,nR,nS,eHF,eGW,Om,rho)
 
 ! Compute the RPA correlation energy
 
