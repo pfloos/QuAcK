@@ -1,4 +1,4 @@
-subroutine RGWC(dotest,eta,nBas,nC,nO,nV,nR,nS,Om,rho,eHF,eGW,Z)
+subroutine RGWC(dotest,eta,nBas,nC,nO,nV,nR,nS,Om,rho,eHF,eW,eGW,Z)
 
 ! Perform GW+C calculation
 
@@ -20,6 +20,7 @@ subroutine RGWC(dotest,eta,nBas,nC,nO,nV,nR,nS,Om,rho,eHF,eGW,Z)
   double precision,intent(in)   :: Om(nS)
   double precision,intent(in)   :: rho(nBas,nBas,nS)
   double precision,intent(in)   :: eHF(nBas)
+  double precision,intent(in)   :: eW(nBas)
   double precision,intent(in)   :: eGW(nBas)
   double precision,intent(in)   :: Z(nBas)
 
@@ -28,15 +29,15 @@ subroutine RGWC(dotest,eta,nBas,nC,nO,nV,nR,nS,Om,rho,eHF,eGW,Z)
   integer                       :: p,q,i,a,m
   integer                       :: iSat
   double precision              :: num,eps
-  double precision,parameter    :: cutoff = 1d-2
+  double precision,parameter    :: cutoff = 0d-2
 
   logical,parameter             :: do_hole_branch = .true.
   logical,parameter             :: do_electron_branch = .false.
 
   double precision,allocatable  :: de(:,:,:)
   double precision,allocatable  :: ZC(:)
-  double precision,allocatable  :: ZSat(:,:,:)
-  double precision,allocatable  :: eSat(:,:,:)
+  double precision,allocatable  :: ZSat(:,:)
+  double precision,allocatable  :: eSat(:,:)
 
   integer                       :: g
   integer                       :: nGrid
@@ -59,7 +60,7 @@ subroutine RGWC(dotest,eta,nBas,nC,nO,nV,nR,nS,Om,rho,eHF,eGW,Z)
 
 ! Memory allocation
 
-  allocate(ZC(nBas),eSat(nBas,nBas,nS),ZSat(nBas,nBas,nS))
+  allocate(ZC(nBas),eSat(nBas,nS),ZSat(nBas,nS))
 
 ! Useful quantities
 
@@ -68,7 +69,7 @@ subroutine RGWC(dotest,eta,nBas,nC,nO,nV,nR,nS,Om,rho,eHF,eGW,Z)
   do p=nC+1,nBas-nR
     do i=nC+1,nO  
       do m=1,nS
-        de(p,i,m) = eHF(p) - eGW(i) + Om(m)
+        de(p,i,m) = eHF(p) - eW(i) + Om(m)
       end do
     end do
   end do
@@ -76,7 +77,7 @@ subroutine RGWC(dotest,eta,nBas,nC,nO,nV,nR,nS,Om,rho,eHF,eGW,Z)
   do p=nC+1,nBas-nR
     do a=nO+1,nBas-nR
       do m=1,nS
-        de(p,a,m) = eHF(p) - eGW(a) - Om(m)
+        de(p,a,m) = eHF(p) - eW(a) - Om(m)
       end do
     end do
   end do
@@ -114,17 +115,21 @@ subroutine RGWC(dotest,eta,nBas,nC,nO,nV,nR,nS,Om,rho,eHF,eGW,Z)
   write(*,*)'-------------------------------------------------------------------------------'
   write(*,*)
 
+! Initializatio
+
+  ZSat(:,:) = 0d0
+
 ! GW+C satellites on hole branch
 
   if(do_hole_branch) then
 
     do i=nC+1,nO
-      do q=nC+1,nBas-nR
-        do m=1,nS
+      do m=1,nS
+        eSat(i,m) = eW(i) - Om(m)
+        do q=nC+1,nBas-nR
           eps = de(i,q,m)
           num = ZC(i)*2d0*rho(i,q,m)**2
-          eSat(i,q,m) = eGW(i) + eps
-          ZSat(i,q,m) = num*(eps**2 - eta**2)/(eps**2 + eta**2)**2
+          ZSat(i,m) = ZSat(i,m) + num*(eps**2 - eta**2)/(eps**2 + eta**2)**2
         end do
       end do
     end do
@@ -137,12 +142,10 @@ subroutine RGWC(dotest,eta,nBas,nC,nO,nV,nR,nS,Om,rho,eHF,eGW,Z)
     write(*,*)'-------------------------------------------------------------------------------'
     iSat = 0
     do i=nC+1,nO
-      do q=nC+1,nBas-nR
-        do m=1,nS
-          iSat = iSat + 1
-          if(ZSat(i,q,m) > cutoff) &
-            write(*,'(1X,I5,1X,I5,1X,I5,1X,I5,F15.6,1X,F15.6,1X)') iSat,i,q,m,eSat(i,q,m)*HaToeV,ZSat(i,q,m)
-        end do
+      do m=1,nS
+        iSat = iSat + 1
+        if(ZSat(i,m) > cutoff) &
+          write(*,'(1X,I5,1X,I5,1X,I5,F15.6,1X,F15.6,1X)') iSat,i,m,eSat(i,m)*HaToeV,ZSat(i,m)
       end do
     end do
     write(*,*)'-------------------------------------------------------------------------------'
@@ -155,12 +158,12 @@ subroutine RGWC(dotest,eta,nBas,nC,nO,nV,nR,nS,Om,rho,eHF,eGW,Z)
   if(do_electron_branch) then
 
     do a=nO+1,nBas-nR
-      do q=nC+1,nBas-nR
-        do m=1,nS
+      do m=1,nS
+        eSat(a,m) = eW(a) + Om(m)
+        do q=nC+1,nBas-nR
           eps = de(a,q,m)
           num = ZC(a)*2d0*rho(a,q,m)**2
-          eSat(a,q,m) = eGW(a) + eps
-          ZSat(a,q,m) = num*(eps**2 - eta**2)/(eps**2 + eta**2)**2
+          ZSat(a,m) = ZSat(a,m) + num*(eps**2 - eta**2)/(eps**2 + eta**2)**2
         end do
       end do
     end do
@@ -173,12 +176,10 @@ subroutine RGWC(dotest,eta,nBas,nC,nO,nV,nR,nS,Om,rho,eHF,eGW,Z)
     write(*,*)'-------------------------------------------------------------------------------'
     iSat = 0
     do a=nO+1,nBas-nR
-      do q=nC+1,nBas-nR
-        do m=1,nS
-          iSat = iSat + 1
-          if(ZSat(a,q,m) > cutoff) &
-            write(*,'(1X,I5,1X,I5,I5,1X,1X,I5,F15.6,1X,F15.6,1X)') iSat,a,m,eSat(a,q,m)*HaToeV,ZSat(a,q,m)
-        end do
+      do m=1,nS
+        iSat = iSat + 1
+        if(ZSat(a,m) > cutoff) &
+          write(*,'(1X,I5,I5,1X,1X,I5,F15.6,1X,F15.6,1X)') iSat,a,m,eSat(a,m)*HaToeV,ZSat(a,m)
       end do
     end do
     write(*,*)'-------------------------------------------------------------------------------'
@@ -193,8 +194,8 @@ subroutine RGWC(dotest,eta,nBas,nC,nO,nV,nR,nS,Om,rho,eHF,eGW,Z)
 
 ! Minimum and maximum frequency values
 
-  wmin = -5d0
-  wmax = +5d0
+  wmin = -10d0
+  wmax = 0d0
   dw = (wmax - wmin)/dble(ngrid)
 
   do g=1,nGrid
@@ -240,10 +241,8 @@ subroutine RGWC(dotest,eta,nBas,nC,nO,nV,nR,nS,Om,rho,eHF,eGW,Z)
 
     do g=1,nGrid
       do i=nC+1,nO
-        do q=nC+1,nBas-nR
-          do m=1,nS
-            AGWC(i,g) = AGWC(i,g) + ZSat(i,q,m)*abs(ImSigC(i,g))/((w(g) - eSat(i,q,m))**2 + ImSigC(i,g)**2)
-          end do
+        do m=1,nS
+          AGWC(i,g) = AGWC(i,g) + ZSat(i,m)*abs(ImSigC(i,g))/((w(g) - eSat(i,m))**2 + ImSigC(i,g)**2)
         end do
       end do
     end do
@@ -254,10 +253,8 @@ subroutine RGWC(dotest,eta,nBas,nC,nO,nV,nR,nS,Om,rho,eHF,eGW,Z)
 
     do g=1,nGrid
       do a=nO+1,nBas-nR
-        do q=nC+1,nBas-nR
-          do m=1,nS
-            AGWC(a,g) = AGWC(a,g) + ZSat(a,q,m)*abs(ImSigC(a,g))/((w(g) - eSat(a,q,m))**2 + ImSigC(a,g)**2)
-          end do
+        do m=1,nS
+          AGWC(a,g) = AGWC(a,g) + ZSat(a,m)*abs(ImSigC(a,g))/((w(g) - eSat(a,m))**2 + ImSigC(a,g)**2)
         end do
       end do
     end do
@@ -283,8 +280,6 @@ subroutine RGWC(dotest,eta,nBas,nC,nO,nV,nR,nS,Om,rho,eHF,eGW,Z)
 ! if(dotest) then
 
 !   call dump_test_value('R','G0W0 correlation energy',EcRPA)
-!   call dump_test_value('R','G0W0 HOMO energy',eGW(nO))
-!   call dump_test_value('R','G0W0 LUMO energy',eGW(nO+1))
 
 ! end if
 
