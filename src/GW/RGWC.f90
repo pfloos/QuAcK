@@ -1,4 +1,4 @@
-subroutine RGWC(dotest,eta,nBas,nC,nO,nV,nR,nS,Om,rho,eHF,eW,eGW,Z)
+subroutine RGWC(dotest,eta,nBas,nC,nO,nV,nR,nS,Om,rho,eHF,e,eGW,Z)
 
 ! Perform GW+C calculation
 
@@ -20,7 +20,7 @@ subroutine RGWC(dotest,eta,nBas,nC,nO,nV,nR,nS,Om,rho,eHF,eW,eGW,Z)
   double precision,intent(in)   :: Om(nS)
   double precision,intent(in)   :: rho(nBas,nBas,nS)
   double precision,intent(in)   :: eHF(nBas)
-  double precision,intent(in)   :: eW(nBas)
+  double precision,intent(in)   :: e(nBas)
   double precision,intent(in)   :: eGW(nBas)
   double precision,intent(in)   :: Z(nBas)
 
@@ -29,15 +29,16 @@ subroutine RGWC(dotest,eta,nBas,nC,nO,nV,nR,nS,Om,rho,eHF,eW,eGW,Z)
   integer                       :: p,q,i,a,m
   integer                       :: iSat
   double precision              :: num,eps
-  double precision,parameter    :: cutoff = 0d-2
+  double precision,parameter    :: cutoff = 1d-2
 
   logical,parameter             :: do_hole_branch = .true.
   logical,parameter             :: do_electron_branch = .false.
 
   double precision,allocatable  :: de(:,:,:)
-  double precision,allocatable  :: ZC(:)
-  double precision,allocatable  :: ZSat(:,:)
-  double precision,allocatable  :: eSat(:,:)
+  double precision,allocatable  :: eQP(:)
+  double precision,allocatable  :: ZQP(:)
+  double precision,allocatable  :: ZSat(:,:,:)
+  double precision,allocatable  :: eSat(:,:,:)
 
   integer                       :: g
   integer                       :: nGrid
@@ -60,7 +61,7 @@ subroutine RGWC(dotest,eta,nBas,nC,nO,nV,nR,nS,Om,rho,eHF,eW,eGW,Z)
 
 ! Memory allocation
 
-  allocate(ZC(nBas),eSat(nBas,nS),ZSat(nBas,nS))
+  allocate(eQP(nBas),ZQP(nBas),eSat(nBas,nBas,nS),ZSat(nBas,nBas,nS))
 
 ! Useful quantities
 
@@ -69,7 +70,7 @@ subroutine RGWC(dotest,eta,nBas,nC,nO,nV,nR,nS,Om,rho,eHF,eW,eGW,Z)
   do p=nC+1,nBas-nR
     do i=nC+1,nO  
       do m=1,nS
-        de(p,i,m) = eHF(p) - eW(i) + Om(m)
+        de(p,i,m) = e(i) - eHF(p) - Om(m)
       end do
     end do
   end do
@@ -77,26 +78,28 @@ subroutine RGWC(dotest,eta,nBas,nC,nO,nV,nR,nS,Om,rho,eHF,eW,eGW,Z)
   do p=nC+1,nBas-nR
     do a=nO+1,nBas-nR
       do m=1,nS
-        de(p,a,m) = eHF(p) - eW(a) - Om(m)
+        de(p,a,m) = e(a) - eHF(p) + Om(m)
       end do
     end do
   end do
 
-! GW+C weights
+! GW+C quasiparticle energies and weights
 
-  ZC(:) = 0d0
+  eQP(:) = eHF(:)
+  ZQP(:) = 0d0
 
   do p=nC+1,nBas-nR
     do q=nC+1,nBas-nR
       do m=1,nS
         num = 2d0*rho(p,q,m)**2
         eps = de(p,q,m)
-        ZC(p) = ZC(p) - num*(eps**2 - eta**2)/(eps**2 + eta**2)**2
+        eQP(p) = eQP(p) - num*eps/(eps**2 + eta**2)
+        ZQP(p) = ZQP(p) - num*(eps**2 - eta**2)/(eps**2 + eta**2)**2
       end do
     end do
   end do
 
-  ZC(:) = exp(ZC(:))
+  ZQP(:) = exp(ZQP(:))
 
 ! Dump results
 
@@ -109,7 +112,7 @@ subroutine RGWC(dotest,eta,nBas,nC,nO,nV,nR,nS,Om,rho,eHF,eW,eGW,Z)
 
   do p=1,nBas
     write(*,'(1X,A1,1X,I3,1X,A1,1X,F15.6,1X,A1,1X,F15.6,1X,A1,1X,F15.6,1X,A1,1X,F15.6,1X,A1,1X)') &
-    '|',p,'|',eGW(p)*HaToeV,'|',eGW(p)*HaToeV,'|',Z(p),'|',ZC(p),'|'
+    '|',p,'|',eGW(p)*HaToeV,'|',eQP(p)*HaToeV,'|',Z(p),'|',ZQP(p),'|'
   end do
 
   write(*,*)'-------------------------------------------------------------------------------'
@@ -117,19 +120,17 @@ subroutine RGWC(dotest,eta,nBas,nC,nO,nV,nR,nS,Om,rho,eHF,eW,eGW,Z)
 
 ! Initializatio
 
-  ZSat(:,:) = 0d0
-
 ! GW+C satellites on hole branch
 
   if(do_hole_branch) then
 
-    do i=nC+1,nO
-      do m=1,nS
-        eSat(i,m) = eW(i) - Om(m)
-        do q=nC+1,nBas-nR
-          eps = de(i,q,m)
-          num = ZC(i)*2d0*rho(i,q,m)**2
-          ZSat(i,m) = ZSat(i,m) + num*(eps**2 - eta**2)/(eps**2 + eta**2)**2
+    do p=nC+1,nBas-nR
+      do i=nC+1,nO
+        do m=1,nS
+          eps = de(p,i,m)
+          num = ZQP(p)*2d0*rho(p,i,m)**2
+          eSat(p,i,m) = eQP(p) + eps
+          ZSat(p,i,m) = num*(eps**2 - eta**2)/(eps**2 + eta**2)**2
         end do
       end do
     end do
@@ -140,12 +141,12 @@ subroutine RGWC(dotest,eta,nBas,nC,nO,nV,nR,nS,Om,rho,eHF,eW,eGW,Z)
     write(*,'(1X,A5,1X,A5,1X,A5,1X,A15,1X,A15,1X)') '#','i','m','e_Sat (eV)','Z_Sat'
  
     write(*,*)'-------------------------------------------------------------------------------'
-    iSat = 0
-    do i=nC+1,nO
-      do m=1,nS
-        iSat = iSat + 1
-        if(ZSat(i,m) > cutoff) &
-          write(*,'(1X,I5,1X,I5,1X,I5,F15.6,1X,F15.6,1X)') iSat,i,m,eSat(i,m)*HaToeV,ZSat(i,m)
+    do p=nC+1,nBas-nR
+      do i=nC+1,nO
+        do m=1,nS
+          if(ZSat(p,i,m) > cutoff) &
+            write(*,'(1X,I5,1X,I5,1X,I5,F15.6,1X,F15.6,1X)') p,i,m,eSat(p,i,m)*HaToeV,ZSat(p,i,m)
+        end do
       end do
     end do
     write(*,*)'-------------------------------------------------------------------------------'
@@ -157,13 +158,13 @@ subroutine RGWC(dotest,eta,nBas,nC,nO,nV,nR,nS,Om,rho,eHF,eW,eGW,Z)
 
   if(do_electron_branch) then
 
-    do a=nO+1,nBas-nR
-      do m=1,nS
-        eSat(a,m) = eW(a) + Om(m)
-        do q=nC+1,nBas-nR
-          eps = de(a,q,m)
-          num = ZC(a)*2d0*rho(a,q,m)**2
-          ZSat(a,m) = ZSat(a,m) + num*(eps**2 - eta**2)/(eps**2 + eta**2)**2
+    do p=nC+1,nBas-nR
+      do a=nO+1,nBas-nR
+        do m=1,nS
+          eps = de(p,a,m)
+          num = ZQP(a)*2d0*rho(p,a,m)**2
+          eSat(p,a,m) = eQP(p) + eps
+          ZSat(p,a,m) = num*(eps**2 - eta**2)/(eps**2 + eta**2)**2
         end do
       end do
     end do
@@ -174,12 +175,12 @@ subroutine RGWC(dotest,eta,nBas,nC,nO,nV,nR,nS,Om,rho,eHF,eW,eGW,Z)
     write(*,'(1X,A5,1X,A5,1X,A5,1X,A15,1X,A15,1X)') '#','a','m','e_Sat (eV)','Z_Sat'
  
     write(*,*)'-------------------------------------------------------------------------------'
-    iSat = 0
-    do a=nO+1,nBas-nR
-      do m=1,nS
-        iSat = iSat + 1
-        if(ZSat(a,m) > cutoff) &
-          write(*,'(1X,I5,I5,1X,1X,I5,F15.6,1X,F15.6,1X)') iSat,a,m,eSat(a,m)*HaToeV,ZSat(a,m)
+    do p=nC+1,nBas-nR
+      do a=nO+1,nBas-nR
+        do m=1,nS
+          if(ZSat(p,a,m) > cutoff) &
+            write(*,'(1X,I5,I5,1X,1X,I5,F15.6,1X,F15.6,1X)') p,a,m,eSat(p,a,m)*HaToeV,ZSat(p,a,m)
+        end do
       end do
     end do
     write(*,*)'-------------------------------------------------------------------------------'
@@ -208,14 +209,14 @@ subroutine RGWC(dotest,eta,nBas,nC,nO,nV,nR,nS,Om,rho,eHF,eW,eGW,Z)
 
   do g=1,nGrid
     do p=nC+1,nBas-nR
-      ReSigC(p,g) = GW_ReSigC(p,eGW(p),eta,nBas,nC,nO,nV,nR,nS,eHF,Om,rho)
-      ImSigC(p,g) = GW_ImSigC(p,eGW(p),eta,nBas,nC,nO,nV,nR,nS,eHF,Om,rho)
+      ReSigC(p,g) = GW_ReSigC(p,eQP(p),eta,nBas,nC,nO,nV,nR,nS,eHF,Om,rho)
+      ImSigC(p,g) = GW_ImSigC(p,eQP(p),eta,nBas,nC,nO,nV,nR,nS,eHF,Om,rho)
     end do
   end do
 
   do g=1,nGrid
     do p=nC+1,nBas-nR
-      AGWC(p,g) = ZC(p)*abs(ImSigC(p,g))/((w(g) - eGW(p))**2 + ImSigC(p,g)**2)
+      AGWC(p,g) = ZQP(p)*abs(ImSigC(p,g))/((w(g) - eQP(p))**2 + ImSigC(p,g)**2)
     end do
   end do
 
@@ -240,9 +241,11 @@ subroutine RGWC(dotest,eta,nBas,nC,nO,nV,nR,nS,Om,rho,eHF,eW,eGW,Z)
   if(do_hole_branch) then
 
     do g=1,nGrid
-      do i=nC+1,nO
-        do m=1,nS
-          AGWC(i,g) = AGWC(i,g) + ZSat(i,m)*abs(ImSigC(i,g))/((w(g) - eSat(i,m))**2 + ImSigC(i,g)**2)
+      do p=nC+1,nBas-nR
+        do i=nC+1,nO
+          do m=1,nS
+            AGWC(p,g) = AGWC(p,g) + ZSat(p,i,m)*abs(ImSigC(p,g))/((w(g) - eSat(p,i,m))**2 + ImSigC(p,g)**2)
+          end do
         end do
       end do
     end do
@@ -252,9 +255,11 @@ subroutine RGWC(dotest,eta,nBas,nC,nO,nV,nR,nS,Om,rho,eHF,eW,eGW,Z)
   if(do_electron_branch) then
 
     do g=1,nGrid
-      do a=nO+1,nBas-nR
-        do m=1,nS
-          AGWC(a,g) = AGWC(a,g) + ZSat(a,m)*abs(ImSigC(a,g))/((w(g) - eSat(a,m))**2 + ImSigC(a,g)**2)
+      do p=nC+1,nBas-nR
+        do a=nO+1,nBas-nR
+          do m=1,nS
+            AGWC(p,g) = AGWC(p,g) + ZSat(p,a,m)*abs(ImSigC(p,g))/((w(g) - eSat(p,a,m))**2 + ImSigC(p,g)**2)
+          end do
         end do
       end do
     end do
