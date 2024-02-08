@@ -212,14 +212,13 @@ subroutine RGWC(dotest,eta,nBas,nC,nO,nV,nR,nS,Om,rho,eHF,e,eGW,Z)
 
   do g=1,nGrid
     do p=nC+1,nBas-nR
-      ReSigC(p,g) = GW_ReSigC(p,eQP(p),eta,nBas,nC,nO,nV,nR,nS,eHF,Om,rho)
       ImSigC(p,g) = GW_ImSigC(p,eQP(p),eta,nBas,nC,nO,nV,nR,nS,eHF,Om,rho)
     end do
   end do
 
   do g=1,nGrid
     do p=nC+1,nBas-nR
-      AGWC(p,g) = ZQP(p)*abs(ImSigC(p,g))/((w(g) - eQP(p))**2 + ImSigC(p,g)**2)
+      AGWC(p,g) = abs(ImSigC(p,g))/((w(g) - eQP(p))**2 + ImSigC(p,g)**2)
     end do
   end do
 
@@ -248,9 +247,8 @@ subroutine RGWC(dotest,eta,nBas,nC,nO,nV,nR,nS,Om,rho,eHF,e,eGW,Z)
 !     do p=nC+1,nBas-nR
         do i=nC+1,nO
           do m=1,maxS
-            ReSigC(p,g) = GW_ReSigC(p,eSat(p,i,m),eta,nBas,nC,nO,nV,nR,nS,eHF,Om,rho)
             ImSigC(p,g) = GW_ImSigC(p,eSat(p,i,m),eta,nBas,nC,nO,nV,nR,nS,eHF,Om,rho)
-            AGWC(p,g) = AGWC(p,g) + ZSat(p,i,m)*abs(ImSigC(p,g))/((w(g) - eSat(p,i,m))**2 + ImSigC(p,g)**2)
+            AGWC(p,g) = AGWC(p,g) + ZSat(p,i,m)/ZQP(p)*abs(ImSigC(p,g))/((w(g) - eSat(p,i,m))**2 + ImSigC(p,g)**2)
           end do
         end do
       end do
@@ -264,7 +262,6 @@ subroutine RGWC(dotest,eta,nBas,nC,nO,nV,nR,nS,Om,rho,eHF,e,eGW,Z)
       do p=nC+1,nBas-nR
         do a=nO+1,nBas-nR
           do m=1,maxS
-            ReSigC(p,g) = GW_ReSigC(p,eSat(p,a,m),eta,nBas,nC,nO,nV,nR,nS,eHF,Om,rho)
             ImSigC(p,g) = GW_ImSigC(p,eSat(p,a,m),eta,nBas,nC,nO,nV,nR,nS,eHF,Om,rho)
             AGWC(p,g) = AGWC(p,g) + ZSat(p,a,m)*abs(ImSigC(p,g))/((w(g) - eSat(p,a,m))**2 + ImSigC(p,g)**2)
           end do
