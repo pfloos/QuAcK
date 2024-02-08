@@ -43,8 +43,8 @@ subroutine GW_plot_self_energy(nBas,eta,nC,nO,nV,nR,nS,eHF,eGW,Om,rho)
 
 ! Minimum and maximum frequency values
 
-  wmin = -5d0
-  wmax = +5d0
+  wmin = -10d0
+  wmax = +0d0
   dw = (wmax - wmin)/dble(ngrid)
 
   do g=1,nGrid

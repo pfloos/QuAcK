@@ -29,7 +29,7 @@ subroutine RGWC(dotest,eta,nBas,nC,nO,nV,nR,nS,Om,rho,eHF,e,eGW,Z)
   integer                       :: p,q,i,a,m
   integer                       :: iSat
   double precision              :: num,eps
-  double precision,parameter    :: cutoff = 1d-2
+  double precision,parameter    :: cutoff = 0d-3
 
   logical,parameter             :: do_hole_branch = .true.
   logical,parameter             :: do_electron_branch = .false.
@@ -190,7 +190,7 @@ subroutine RGWC(dotest,eta,nBas,nC,nO,nV,nR,nS,Om,rho,eHF,e,eGW,Z)
 
 ! Construct grid
 
-  nGrid = 1000
+  nGrid = 5000
   allocate(w(nGrid),AGWC(nBas,nGrid))
 
 ! Minimum and maximum frequency values
