@@ -30,6 +30,7 @@ subroutine RGWC(dotest,eta,nBas,nC,nO,nV,nR,nS,Om,rho,eHF,e,eGW,Z)
   integer                       :: iSat
   double precision              :: num,eps
   double precision,parameter    :: cutoff = 0d-3
+  integer,parameter             :: maxS = 50
 
   logical,parameter             :: do_hole_branch = .true.
   logical,parameter             :: do_electron_branch = .false.
@@ -124,7 +125,8 @@ subroutine RGWC(dotest,eta,nBas,nC,nO,nV,nR,nS,Om,rho,eHF,e,eGW,Z)
 
   if(do_hole_branch) then
 
-    do p=nC+1,nBas-nR
+!   do p=nC+1,nBas-nR
+    do p=nC+1,nO
       do i=nC+1,nO
         do m=1,nS
           eps = de(p,i,m)
@@ -141,9 +143,10 @@ subroutine RGWC(dotest,eta,nBas,nC,nO,nV,nR,nS,Om,rho,eHF,e,eGW,Z)
     write(*,'(1X,A5,1X,A5,1X,A5,1X,A15,1X,A15,1X)') '#','i','m','e_Sat (eV)','Z_Sat'
  
     write(*,*)'-------------------------------------------------------------------------------'
-    do p=nC+1,nBas-nR
+!   do p=nC+1,nBas-nR
+    do p=nC+1,nO
       do i=nC+1,nO
-        do m=1,nS
+        do m=1,maxS
           if(ZSat(p,i,m) > cutoff) &
             write(*,'(1X,I5,1X,I5,1X,I5,F15.6,1X,F15.6,1X)') p,i,m,eSat(p,i,m)*HaToeV,ZSat(p,i,m)
         end do
@@ -177,7 +180,7 @@ subroutine RGWC(dotest,eta,nBas,nC,nO,nV,nR,nS,Om,rho,eHF,e,eGW,Z)
     write(*,*)'-------------------------------------------------------------------------------'
     do p=nC+1,nBas-nR
       do a=nO+1,nBas-nR
-        do m=1,nS
+        do m=1,maxS
           if(ZSat(p,a,m) > cutoff) &
             write(*,'(1X,I5,I5,1X,1X,I5,F15.6,1X,F15.6,1X)') p,a,m,eSat(p,a,m)*HaToeV,ZSat(p,a,m)
         end do
@@ -190,7 +193,7 @@ subroutine RGWC(dotest,eta,nBas,nC,nO,nV,nR,nS,Om,rho,eHF,e,eGW,Z)
 
 ! Construct grid
 
-  nGrid = 5000
+  nGrid = 1000
   allocate(w(nGrid),AGWC(nBas,nGrid))
 
 ! Minimum and maximum frequency values
@@ -241,9 +244,12 @@ subroutine RGWC(dotest,eta,nBas,nC,nO,nV,nR,nS,Om,rho,eHF,e,eGW,Z)
   if(do_hole_branch) then
 
     do g=1,nGrid
-      do p=nC+1,nBas-nR
+      do p=nC+1,nO
+!     do p=nC+1,nBas-nR
         do i=nC+1,nO
-          do m=1,nS
+          do m=1,maxS
+            ReSigC(p,g) = GW_ReSigC(p,eSat(p,i,m),eta,nBas,nC,nO,nV,nR,nS,eHF,Om,rho)
+            ImSigC(p,g) = GW_ImSigC(p,eSat(p,i,m),eta,nBas,nC,nO,nV,nR,nS,eHF,Om,rho)
             AGWC(p,g) = AGWC(p,g) + ZSat(p,i,m)*abs(ImSigC(p,g))/((w(g) - eSat(p,i,m))**2 + ImSigC(p,g)**2)
           end do
         end do
@@ -257,7 +263,9 @@ subroutine RGWC(dotest,eta,nBas,nC,nO,nV,nR,nS,Om,rho,eHF,e,eGW,Z)
     do g=1,nGrid
       do p=nC+1,nBas-nR
         do a=nO+1,nBas-nR
-          do m=1,nS
+          do m=1,maxS
+            ReSigC(p,g) = GW_ReSigC(p,eSat(p,a,m),eta,nBas,nC,nO,nV,nR,nS,eHF,Om,rho)
+            ImSigC(p,g) = GW_ImSigC(p,eSat(p,a,m),eta,nBas,nC,nO,nV,nR,nS,eHF,Om,rho)
             AGWC(p,g) = AGWC(p,g) + ZSat(p,a,m)*abs(ImSigC(p,g))/((w(g) - eSat(p,a,m))**2 + ImSigC(p,g)**2)
           end do
         end do

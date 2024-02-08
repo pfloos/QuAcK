@@ -311,7 +311,7 @@ subroutine SRG_qsGW(dotest,maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,
 
 ! Cumulant expansion
 
-  call RGWC(dotest,0.01d0,nBas,nC,nO,nV,nR,nS,Om,rho,eHF,eHF,eGW,Z)
+  call RGWC(dotest,0.001d0,nBas,nC,nO,nV,nR,nS,Om,rho,eHF,eHF,eGW,Z)
 
 ! Deallocate memory
 
