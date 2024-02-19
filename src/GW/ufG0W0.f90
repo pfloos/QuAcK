@@ -116,7 +116,7 @@ subroutine ufG0W0(dotest,TDA_W,nBas,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,eHF)
 ! Main loop over orbitals !
 !-------------------------!
 
-  do p=nO-3,nO
+  do p=nO,nO
 
     H(:,:) = 0d0
 
