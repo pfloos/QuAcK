@@ -154,7 +154,7 @@ subroutine RG0W0(dotest,doACFDT,exchange_kernel,doXBS,dophBSE,dophBSE2,TDA_W,TDA
 ! Cumulant expansion !
 !--------------------!
 
-  call RGWC(dotest,eta,nBas,nC,nO,nV,nR,nS,Om,rho,eHF,eGW,eGW,Z)
+  call RGWC(dotest,eta,nBas,nC,nO,nV,nR,nS,Om,rho,eHF,eHF,eGW,Z)
 
 ! Compute the RPA correlation energy
 

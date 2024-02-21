@@ -36,18 +36,17 @@ subroutine RGWC(dotest,eta,nBas,nC,nO,nV,nR,nS,Om,rho,eHF,e,eGW,Z)
   logical,parameter             :: do_electron_branch = .false.
 
   double precision,allocatable  :: de(:,:,:)
-  double precision,allocatable  :: eQP(:)
-  double precision,allocatable  :: ZQP(:)
-  double precision,allocatable  :: ZSat(:,:,:)
-  double precision,allocatable  :: eSat(:,:,:)
+  double precision,allocatable  :: Re_eQP(:),Im_eQP(:)
+  double precision,allocatable  :: Re_ZQP(:),Im_ZQP(:)
+  double precision,allocatable  :: Re_ZSat(:,:,:),Im_ZSat(:,:,:)
+  double precision,allocatable  :: Re_eSat(:,:,:),Im_eSat(:,:,:)
+  double precision              :: Re_dSig,Im_dSig
+  double precision              :: Re_zeta,Im_zeta
 
   integer                       :: g
   integer                       :: nGrid
   double precision              :: wmin,wmax,dw
-  double precision,external     :: GW_ReSigC,GW_ImSigC,GW_RedSigC,GW_ImdSigC
   double precision,allocatable  :: w(:)
-  double precision,allocatable  :: ReSigC(:,:),ImSigC(:,:)
-  double precision,allocatable  :: RedSigC(:,:),ImdSigC(:,:)
   double precision,allocatable  :: AGWC(:,:)
 
 ! Output variables
@@ -62,7 +61,9 @@ subroutine RGWC(dotest,eta,nBas,nC,nO,nV,nR,nS,Om,rho,eHF,e,eGW,Z)
 
 ! Memory allocation
 
-  allocate(eQP(nBas),ZQP(nBas),eSat(nBas,nBas,nS),ZSat(nBas,nBas,nS))
+  allocate(Re_eQP(nBas),Im_eQP(nBas),Re_ZQP(nBas),Im_ZQP(nBas), & 
+           Re_eSat(nBas,nBas,nS),Im_eSat(nBas,nBas,nS),         & 
+           Re_ZSat(nBas,nBas,nS),Im_ZSat(nBas,nBas,nS))
 
 ! Useful quantities
 
@@ -86,21 +87,35 @@ subroutine RGWC(dotest,eta,nBas,nC,nO,nV,nR,nS,Om,rho,eHF,e,eGW,Z)
 
 ! GW+C quasiparticle energies and weights
 
-  eQP(:) = eHF(:)
-  ZQP(:) = 0d0
+  Re_eQP(:) = eHF(:)
+  Im_eQP(:) = 0d0
+
+  Re_ZQP(:) = 0d0
+  Im_ZQP(:) = 0d0
 
   do p=nC+1,nBas-nR
+
+    Re_dSig = 0d0
+    Im_dSig = 0d0
+
     do q=nC+1,nBas-nR
       do m=1,nS
         num = 2d0*rho(p,q,m)**2
         eps = de(p,q,m)
-        eQP(p) = eQP(p) - num*eps/(eps**2 + eta**2)
-        ZQP(p) = ZQP(p) - num*(eps**2 - eta**2)/(eps**2 + eta**2)**2
+
+        Re_eQP(p) = Re_eQP(p) - eps*num/(eps**2 + eta**2)
+        Im_eQP(p) = Im_eQP(p) - eta*num/(eps**2 + eta**2)
+
+        Re_dSig = Re_dSig - (eps**2 - eta**2)*num/(eps**2 + eta**2)**2
+        Im_dSig = Im_dSig - 2d0*eta*eps*num/(eps**2 + eta**2)**2
+
       end do
     end do
-  end do
 
-  ZQP(:) = exp(ZQP(:))
+    Re_ZQP(p) = exp(Re_dSig)*cos(Im_dSig)
+    Im_ZQP(p) = exp(Re_dSig)*sin(Im_dSig)
+
+  end do
 
 ! Dump results
 
@@ -113,7 +128,7 @@ subroutine RGWC(dotest,eta,nBas,nC,nO,nV,nR,nS,Om,rho,eHF,e,eGW,Z)
 
   do p=1,nBas
     write(*,'(1X,A1,1X,I3,1X,A1,1X,F15.6,1X,A1,1X,F15.6,1X,A1,1X,F15.6,1X,A1,1X,F15.6,1X,A1,1X)') &
-    '|',p,'|',eGW(p)*HaToeV,'|',eQP(p)*HaToeV,'|',Z(p),'|',ZQP(p),'|'
+    '|',p,'|',eGW(p)*HaToeV,'|',Re_eQP(p)*HaToeV,'|',Z(p),'|',Re_ZQP(p),'|'
   end do
 
   write(*,*)'-------------------------------------------------------------------------------'
@@ -129,10 +144,19 @@ subroutine RGWC(dotest,eta,nBas,nC,nO,nV,nR,nS,Om,rho,eHF,e,eGW,Z)
     do p=nC+1,nO
       do i=nC+1,nO
         do m=1,nS
+
           eps = de(p,i,m)
-          num = ZQP(p)*2d0*rho(p,i,m)**2
-          eSat(p,i,m) = eQP(p) + eps
-          ZSat(p,i,m) = num*(eps**2 - eta**2)/(eps**2 + eta**2)**2
+          num = 2d0*rho(p,i,m)**2
+
+          Re_eSat(p,i,m) = Re_eQP(p) + eps
+          Im_eSat(p,i,m) = Im_eQP(p)
+
+          Re_zeta = (eps**2 - eta**2)*num/(eps**2 + eta**2)**2
+          Im_zeta = 2d0*eta*eps*num/(eps**2 + eta**2)**2
+
+          Re_ZSat(p,i,m) = Re_ZQP(p)*Re_zeta - Im_ZQP(p)*Im_zeta
+          Im_ZSat(p,i,m) = Re_ZQP(p)*Im_zeta + Im_ZQP(p)*Re_zeta
+
         end do
       end do
     end do
@@ -147,8 +171,8 @@ subroutine RGWC(dotest,eta,nBas,nC,nO,nV,nR,nS,Om,rho,eHF,e,eGW,Z)
     do p=nC+1,nO
       do i=nC+1,nO
         do m=1,maxS
-          if(ZSat(p,i,m) > cutoff) &
-            write(*,'(1X,I5,1X,I5,1X,I5,F15.6,1X,F15.6,1X)') p,i,m,eSat(p,i,m)*HaToeV,ZSat(p,i,m)
+          if(Re_ZSat(p,i,m) > cutoff) &
+            write(*,'(1X,I5,1X,I5,1X,I5,F15.6,1X,F15.6,1X)') p,i,m,Re_eSat(p,i,m)*HaToeV,Re_ZSat(p,i,m)
         end do
       end do
     end do
@@ -164,10 +188,19 @@ subroutine RGWC(dotest,eta,nBas,nC,nO,nV,nR,nS,Om,rho,eHF,e,eGW,Z)
     do p=nC+1,nBas-nR
       do a=nO+1,nBas-nR
         do m=1,nS
+
           eps = de(p,a,m)
-          num = ZQP(a)*2d0*rho(p,a,m)**2
-          eSat(p,a,m) = eQP(p) + eps
-          ZSat(p,a,m) = num*(eps**2 - eta**2)/(eps**2 + eta**2)**2
+          num = 2d0*rho(p,a,m)**2
+
+          Re_eSat(p,a,m) = Re_eQP(p) + eps
+          Im_eSat(p,a,m) = Im_eQP(p)
+
+          Re_zeta = (eps**2 - eta**2)*num/(eps**2 + eta**2)**2
+          Im_zeta = 2d0*eta*eps*num/(eps**2 + eta**2)**2
+
+          Re_ZSat(p,a,m) = Re_ZQP(p)*Re_zeta - Im_ZQP(p)*Im_zeta
+          Im_ZSat(p,a,m) = Re_ZQP(p)*Im_zeta + Re_ZQP(p)*Re_zeta
+
         end do
       end do
     end do
@@ -181,8 +214,8 @@ subroutine RGWC(dotest,eta,nBas,nC,nO,nV,nR,nS,Om,rho,eHF,e,eGW,Z)
     do p=nC+1,nBas-nR
       do a=nO+1,nBas-nR
         do m=1,maxS
-          if(ZSat(p,a,m) > cutoff) &
-            write(*,'(1X,I5,I5,1X,1X,I5,F15.6,1X,F15.6,1X)') p,a,m,eSat(p,a,m)*HaToeV,ZSat(p,a,m)
+          if(Re_ZSat(p,a,m) > cutoff) &
+            write(*,'(1X,I5,I5,1X,1X,I5,F15.6,1X,F15.6,1X)') p,a,m,Re_eSat(p,a,m)*HaToeV,Re_ZSat(p,a,m)
         end do
       end do
     end do
@@ -208,21 +241,15 @@ subroutine RGWC(dotest,eta,nBas,nC,nO,nV,nR,nS,Om,rho,eHF,e,eGW,Z)
 
 ! Compute QP part of the spectral function
 
-  allocate(ReSigC(nBas,nGrid),ImSigC(nBas,nGrid))
-
   do g=1,nGrid
     do p=nC+1,nBas-nR
-      ImSigC(p,g) = GW_ImSigC(p,eQP(p),eta,nBas,nC,nO,nV,nR,nS,eHF,Om,rho)
+
+      AGWC(p,g) = (Re_ZQP(p)*Im_eQP(p) + Im_ZQP(p)*(w(g) - Re_eQP(p)))/((w(g) - Re_eQP(p))**2 + Im_eQP(p)**2)
+
     end do
   end do
 
-  do g=1,nGrid
-    do p=nC+1,nBas-nR
-      AGWC(p,g) = abs(ImSigC(p,g))/((w(g) - eQP(p))**2 + ImSigC(p,g)**2)
-    end do
-  end do
-
-  AGWC(:,:) = AGWC(:,:)/pi
+  AGWC(:,:) = - AGWC(:,:)/pi
 
 ! Dump quantities in files as a function of w
 
@@ -247,8 +274,9 @@ subroutine RGWC(dotest,eta,nBas,nC,nO,nV,nR,nS,Om,rho,eHF,e,eGW,Z)
 !     do p=nC+1,nBas-nR
         do i=nC+1,nO
           do m=1,maxS
-            ImSigC(p,g) = GW_ImSigC(p,eSat(p,i,m),eta,nBas,nC,nO,nV,nR,nS,eHF,Om,rho)
-            AGWC(p,g) = AGWC(p,g) + ZSat(p,i,m)/ZQP(p)*abs(ImSigC(p,g))/((w(g) - eSat(p,i,m))**2 + ImSigC(p,g)**2)
+            num = Re_ZSat(p,i,m)*Im_eSat(p,i,m) + Im_ZSat(p,i,m)*(w(g) - Re_eSat(p,i,m))
+            eps = (w(g) - Re_eSat(p,i,m))**2 + (Im_eSat(p,i,m))**2
+            AGWC(p,g) = AGWC(p,g) + num/eps
           end do
         end do
       end do
@@ -262,8 +290,9 @@ subroutine RGWC(dotest,eta,nBas,nC,nO,nV,nR,nS,Om,rho,eHF,e,eGW,Z)
       do p=nC+1,nBas-nR
         do a=nO+1,nBas-nR
           do m=1,maxS
-            ImSigC(p,g) = GW_ImSigC(p,eSat(p,a,m),eta,nBas,nC,nO,nV,nR,nS,eHF,Om,rho)
-            AGWC(p,g) = AGWC(p,g) + ZSat(p,a,m)*abs(ImSigC(p,g))/((w(g) - eSat(p,a,m))**2 + ImSigC(p,g)**2)
+            num = Re_ZSat(p,a,m)*Im_eSat(p,a,m) + Im_ZSat(p,a,m)*(w(g) - Re_eSat(p,a,m))
+            eps = (w(g) - Re_eSat(p,a,m))**2 + Im_eSat(p,a,m)**2
+            AGWC(p,g) = AGWC(p,g) + num/eps
           end do
         end do
       end do
@@ -271,7 +300,7 @@ subroutine RGWC(dotest,eta,nBas,nC,nO,nV,nR,nS,Om,rho,eHF,e,eGW,Z)
 
   end if
 
-  AGWC(:,:) = AGWC(:,:)/pi
+  AGWC(:,:) = - AGWC(:,:)/pi
 
 ! Dump quantities in files as a function of w
 
