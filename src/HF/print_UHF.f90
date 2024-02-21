@@ -33,7 +33,7 @@ subroutine print_UHF(nBas,nO,S,eHF,c,P,ENuc,ET,EV,EJ,Ex,EUHF,dipole)
   integer                            :: mu,nu
   double precision,allocatable       :: qa(:),qb(:)
 
-  logical                            :: dump_orb = .true.
+  logical                            :: dump_orb = .false.
 
 ! HOMO and LUMO
 

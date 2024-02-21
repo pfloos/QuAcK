@@ -97,6 +97,8 @@ subroutine SRG_qsGW(dotest,maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,
   double precision,allocatable  :: Z(:)
   double precision,allocatable  :: error(:,:)
 
+  double precision,parameter    :: flow = 500d0
+
 ! Hello world
 
   write(*,*)
@@ -207,7 +209,7 @@ subroutine SRG_qsGW(dotest,maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,
     tex=tex+tex2-tex1
 
     call wall_time(tsrg1)
-    call SRG_self_energy(eta,nBas,nC,nO,nV,nR,nS,eGW,Om,rho,EcGM,SigC,Z)
+    call SRG_self_energy(flow,nBas,nC,nO,nV,nR,nS,eGW,Om,rho,EcGM,SigC,Z)
 
     call wall_time(tsrg2)
 
@@ -311,7 +313,7 @@ subroutine SRG_qsGW(dotest,maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,
 
 ! Cumulant expansion
 
-  call RGWC(dotest,0.001d0,nBas,nC,nO,nV,nR,nS,Om,rho,eHF,eGW,eGW,Z)
+  call RGWC(dotest,eta,nBas,nC,nO,nV,nR,nS,Om,rho,eHF,eGW,eGW,Z)
 
 ! Deallocate memory
 
