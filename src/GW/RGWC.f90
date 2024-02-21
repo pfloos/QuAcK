@@ -226,7 +226,7 @@ subroutine RGWC(dotest,eta,nBas,nC,nO,nV,nR,nS,Om,rho,eHF,e,eGW,Z)
 
 ! Construct grid
 
-  nGrid = 1000
+  nGrid = 5000
   allocate(w(nGrid),AGWC(nBas,nGrid))
 
 ! Minimum and maximum frequency values
