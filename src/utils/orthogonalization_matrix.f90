@@ -116,4 +116,4 @@ subroutine orthogonalization_matrix(nBas,S,X)
 
   end if
 
-end subroutine orthogonalization_matrix
+end subroutine 

@@ -182,4 +182,4 @@ subroutine read_basis(nNuc,rNuc,nBas,nO,nV,nShell,TotAngMomShell,CenterShell,KSh
 
   nV(:) = nBas - nO(:)
 
-end subroutine read_basis
+end subroutine 

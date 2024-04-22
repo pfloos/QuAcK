@@ -26,4 +26,4 @@ subroutine spatial_to_spin_fock(nBas,F,nBas2,sF)
       end do
     end do
 
-end subroutine spatial_to_spin_fock
+end subroutine 

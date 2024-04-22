@@ -68,4 +68,4 @@ subroutine read_dipole_integrals(nBas,R)
     call matout(nBas,nBas,R(:,:,3))
   end if
 
-end subroutine read_dipole_integrals
+end subroutine 

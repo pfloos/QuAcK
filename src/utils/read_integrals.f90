@@ -130,4 +130,4 @@ subroutine read_integrals(nBas,S,T,V,Hc,G)
     write(*,*)
   end if
 
-end subroutine read_integrals
+end subroutine 

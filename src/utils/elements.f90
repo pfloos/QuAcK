@@ -175,5 +175,4 @@ function element_covalent_radius(zatom)
  element_covalent_radius = element_covalent_radius*pmtoau
 
 
-end function element_covalent_radius
-
+end function 

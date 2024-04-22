@@ -1,5 +1,5 @@
 subroutine cRHF(dotest,maxSCF,thresh,max_diis,guess_type,level_shift,nNuc,ZNuc,rNuc,ENuc, & 
-                nBas,nO,S,T,V,Hc,ERI,dipole_int,X,ERHF,eHF,c,P)
+                nBas,nO,S,T,V,ERI,dipole_int,X,ERHF,eHF,c,P)
 
 ! Perform complex restricted Hartree-Fock calculation
 
@@ -25,7 +25,6 @@ subroutine cRHF(dotest,maxSCF,thresh,max_diis,guess_type,level_shift,nNuc,ZNuc,r
   double precision,intent(in)   :: S(nBas,nBas)
   double precision,intent(in)   :: T(nBas,nBas)
   double precision,intent(in)   :: V(nBas,nBas)
-  double precision,intent(in)   :: Hc(nBas,nBas) 
   double precision,intent(in)   :: X(nBas,nBas)
   double precision,intent(in)   :: ERI(nBas,nBas,nBas,nBas)
   double precision,intent(in)   :: dipole_int(nBas,nBas,ncart)
@@ -44,23 +43,25 @@ subroutine cRHF(dotest,maxSCF,thresh,max_diis,guess_type,level_shift,nNuc,ZNuc,r
   double precision              :: Conv
   double precision              :: rcond
   double precision,external     :: trace_matrix
-  double precision,allocatable  :: err(:,:)
-  double precision,allocatable  :: err_diis(:,:)
-  double precision,allocatable  :: F_diis(:,:)
-  double precision,allocatable  :: J(:,:)
-  double precision,allocatable  :: K(:,:)
-  double precision,allocatable  :: cp(:,:)
-  double precision,allocatable  :: F(:,:)
-  double precision,allocatable  :: Fp(:,:)
 
-  complex*16,allocatable        :: W(:,:)
+  double precision              :: eta
+  double precision,allocatable  :: W(:,:)
+  complex*16,allocatable        :: Hc(:,:)
+  complex*16,allocatable        :: J(:,:)
+  complex*16,allocatable        :: K(:,:)
+  complex*16,allocatable        :: cp(:,:)
+  complex*16,allocatable        :: F(:,:)
+  complex*16,allocatable        :: Fp(:,:)
+  complex*16,allocatable        :: err(:,:)
+  complex*16,allocatable        :: err_diis(:,:)
+  complex*16,allocatable        :: F_diis(:,:)
 
 ! Output variables
 
-  double precision,intent(out)  :: ERHF
-  double precision,intent(out)  :: eHF(nBas)
-  double precision,intent(inout):: c(nBas,nBas)
-  double precision,intent(out)  :: P(nBas,nBas)
+  complex*16,intent(out)        :: ERHF
+  complex*16,intent(out)        :: eHF(nBas)
+  complex*16,intent(out)        :: c(nBas,nBas)
+  complex*16,intent(out)        :: P(nBas,nBas)
 
 ! Hello world
 
@@ -73,16 +74,23 @@ subroutine cRHF(dotest,maxSCF,thresh,max_diis,guess_type,level_shift,nNuc,ZNuc,r
 ! Useful quantities
 
   nBasSq = nBas*nBas
+  eta = 0.01d0
 
 ! Memory allocation
 
   allocate(J(nBas,nBas),K(nBas,nBas),err(nBas,nBas),cp(nBas,nBas),F(nBas,nBas), &
            Fp(nBas,nBas),err_diis(nBasSq,max_diis),F_diis(nBasSq,max_diis),     & 
-           W(nBas,nBas))
+           Hc(nBas,nBas),W(nBas,nBas))
 
 ! Read CAP integrals from file
 
-! call read_CAP_integrals()
+  call read_CAP_integrals(nBas,W)
+
+  W(:,:) = eta*W(:,:)
+
+! Define core Hamiltonian
+
+  Hc(:,:) = dcmplx(T+V,W)
 
 ! Guess coefficients and density matrix
 
@@ -205,10 +213,10 @@ subroutine cRHF(dotest,maxSCF,thresh,max_diis,guess_type,level_shift,nNuc,ZNuc,r
 
   if(dotest) then
  
-    call dump_test_value('R','RHF energy',ERHF)
-    call dump_test_value('R','RHF HOMO energy',eHF(nO))
-    call dump_test_value('R','RHF LUMO energy',eHF(nO+1))
-    call dump_test_value('R','RHF dipole moment',norm2(dipole))
+!   call dump_test_value('R','RHF energy',ERHF)
+!   call dump_test_value('R','RHF HOMO energy',eHF(nO))
+!   call dump_test_value('R','RHF LUMO energy',eHF(nO+1))
+!   call dump_test_value('R','RHF dipole moment',norm2(dipole))
 
   end if
 

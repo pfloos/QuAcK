@@ -32,4 +32,4 @@ subroutine spatial_to_spin_ERI(nBas,ERI,nBas2,sERI)
       end do
     end do
 
-end subroutine spatial_to_spin_ERI
+end subroutine 

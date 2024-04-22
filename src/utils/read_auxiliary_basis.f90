@@ -173,4 +173,4 @@ subroutine read_auxiliary_basis(NAtoms,XYZAtoms,nShell,CenterShell, &
 
   close(unit=3)
 
-end subroutine read_auxiliary_basis
+end subroutine 
