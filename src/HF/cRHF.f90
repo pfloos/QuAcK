@@ -53,8 +53,7 @@ subroutine cRHF(dotest,maxSCF,thresh,max_diis,guess_type,level_shift,nNuc,ZNuc,r
   double precision,allocatable  :: F(:,:)
   double precision,allocatable  :: Fp(:,:)
 
-  complex,allocatable           :: W(:,:)
-  complex,
+  complex*16,allocatable        :: W(:,:)
 
 ! Output variables
 
