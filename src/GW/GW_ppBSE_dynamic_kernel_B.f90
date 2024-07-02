@@ -25,6 +25,7 @@ subroutine GW_ppBSE_dynamic_kernel_B(ispin,eta,nBas,nC,nO,nV,nR,nS,nOO,nVV,lambd
   
 ! Local variables
 
+  double precision,external     :: Kronecker_delta
   double precision              :: dem,num
   integer                       :: m
   integer                       :: a,b,i,j
@@ -62,7 +63,7 @@ subroutine GW_ppBSE_dynamic_kernel_B(ispin,eta,nBas,nC,nO,nV,nR,nS,nOO,nVV,lambd
               dem = eGW(j) - Om(m) - eGW(a)
               num = rho(b,i,m)*rho(a,j,m)
 
-              KB_dyn(ab,ij) = KB_dyn(ab,ij) - num*dem/(dem**2 + eta**2)
+              KB_dyn(ab,ij) = KB_dyn(ab,ij) + num*dem/(dem**2 + eta**2)
 
               dem = eGW(i) - Om(m) - eGW(a)
               num = rho(a,i,m)*rho(b,j,m)
@@ -72,7 +73,9 @@ subroutine GW_ppBSE_dynamic_kernel_B(ispin,eta,nBas,nC,nO,nV,nR,nS,nOO,nVV,lambd
               dem = eGW(i) - Om(m) - eGW(b)
               num = rho(b,i,m)*rho(a,j,m)
 
-              KB_dyn(ab,ij) = KB_dyn(ab,ij) - num*dem/(dem**2 + eta**2)
+              KB_dyn(ab,ij) = KB_dyn(ab,ij) + num*dem/(dem**2 + eta**2)
+
+              KB_dyn(ab,ij) = 2d0*KB_dyn(ab,ij)/sqrt((1d0 + Kronecker_delta(a,b))*(1d0 + Kronecker_delta(i,j)))
 
             end do
 
@@ -117,6 +120,8 @@ subroutine GW_ppBSE_dynamic_kernel_B(ispin,eta,nBas,nC,nO,nV,nR,nS,nOO,nVV,lambd
               num = rho(b,i,m)*rho(a,j,m)
 
               KB_dyn(ab,ij) = KB_dyn(ab,ij) - num*dem/(dem**2 + eta**2)
+
+              KB_dyn(ab,ij) = 2d0*KB_dyn(ab,ij)
 
             end do
 

@@ -55,10 +55,10 @@ subroutine GW_ppBSE_static_kernel_C(ispin,eta,nBas,nC,nO,nV,nR,nS,nVV,lambda,ERI
               do m=1,nS
                 eps = Om(m)**2 + eta**2
                 chi = chi - rho(a,c,m)*rho(b,d,m)*Om(m)/eps &
-                          + rho(a,d,m)*rho(b,c,m)*Om(m)/eps
+                          - rho(a,d,m)*rho(b,c,m)*Om(m)/eps
               end do
 
-              KC(ab,cd) = 2d0*lambda*chi/sqrt((1d0 + Kronecker_delta(a,b))*(1d0 + Kronecker_delta(c,d)))
+              KC(ab,cd) = 4d0*lambda*chi/sqrt((1d0 + Kronecker_delta(a,b))*(1d0 + Kronecker_delta(c,d)))
 
           end do
         end do
@@ -89,7 +89,7 @@ subroutine GW_ppBSE_static_kernel_C(ispin,eta,nBas,nC,nO,nV,nR,nS,nVV,lambda,ERI
                         + rho(a,d,m)*rho(b,c,m)*Om(m)/eps
             end do
            
-            KC(ab,cd) = 2d0*lambda*chi
+            KC(ab,cd) = 4d0*lambda*chi
 
           end do
         end do
@@ -120,7 +120,7 @@ subroutine GW_ppBSE_static_kernel_C(ispin,eta,nBas,nC,nO,nV,nR,nS,nVV,lambda,ERI
                         + rho(a,d,m)*rho(b,c,m)*Om(m)/eps
             end do
            
-            KC(ab,cd) = lambda*chi
+            KC(ab,cd) = 2d0*lambda*chi
 
           end do
         end do

@@ -96,7 +96,7 @@ subroutine GW_ppBSE_dynamic_perturbation(ispin,dTDA,eta,nBas,nC,nO,nV,nR,nS,nOO,
   write(*,'(2X,A5,1X,A20,1X,A20,1X,A20,1X,A20)') '#','Static (eV)','Dynamic (eV)','Correction (eV)','Renorm. (eV)'
   write(*,*) '---------------------------------------------------------------------------------------------------'
 
-  do ij=1,min(nOO,maxOO)
+  do ij=max(1,nOO+1-maxOO),nOO
 
 !   if(.not.dTDA) call GW_ppBSE_dynamic_kernel_B(eta,nBas,nC,nO,nV,nR,nS,nOO,nVV,1d0,eGW,OmRPA,rho_RPA,OmBSE(ab),KB_dyn)
     call GW_ppBSE_dynamic_kernel_D(ispin,eta,nBas,nC,nO,nV,nR,nS,nOO,1d0,eGW,OmRPA,rho_RPA,Om2(ij),KD_dyn,ZD_dyn)

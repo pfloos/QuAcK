@@ -76,7 +76,7 @@ subroutine ppRRPA(dotest,TDA,doACFDT,singlet,triplet,nBas,nC,nO,nV,nR,ENuc,ERHF,
 
     call ppLR(TDA,nOO,nVV,Bpp,Cpp,Dpp,Om1,X1,Y1,Om2,X2,Y2,EcRPA(ispin))
 
-!   call print_transition_vectors_pp(.true.,nBas,nC,nO,nV,nR,nOO,nVV,dipole_int,Om1,X1,Y1,Om2,X2,Y2)
+    call ppLR_transition_vectors(.true.,nBas,nC,nO,nV,nR,nOO,nVV,dipole_int,Om1,X1,Y1,Om2,X2,Y2)
 
     call print_excitation_energies('ppRPA@RHF','2p (singlet)',nVV,Om1)
     call print_excitation_energies('ppRPA@RHF','2h (singlet)',nOO,Om2)
@@ -108,7 +108,7 @@ subroutine ppRRPA(dotest,TDA,doACFDT,singlet,triplet,nBas,nC,nO,nV,nR,ENuc,ERHF,
 
     call ppLR(TDA,nOO,nVV,Bpp,Cpp,Dpp,Om1,X1,Y1,Om2,X2,Y2,EcRPA(ispin))
 
-!   call print_transition_vectors_pp(.false.,nBas,nC,nO,nV,nR,nOO,nVV,dipole_int,Om1,X1,Y1,Om2,X2,Y2)
+    call ppLR_transition_vectors(.false.,nBas,nC,nO,nV,nR,nOO,nVV,dipole_int,Om1,X1,Y1,Om2,X2,Y2)
 
     call print_excitation_energies('ppRPA@RHF','2p (triplet)',nVV,Om1)
     call print_excitation_energies('ppRPA@RHF','2h (triplet)',nOO,Om2)

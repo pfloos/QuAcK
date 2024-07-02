@@ -24,6 +24,7 @@ subroutine GW_ppBSE_dynamic_kernel_C(ispin,eta,nBas,nC,nO,nV,nR,nS,nVV,lambda,eG
   
 ! Local variables
 
+  double precision,external     :: Kronecker_delta
   double precision              :: dem,num
   integer                       :: m
   integer                       :: a,b,c,d
@@ -64,8 +65,8 @@ subroutine GW_ppBSE_dynamic_kernel_C(ispin,eta,nBas,nC,nO,nV,nR,nS,nVV,lambda,eG
               dem = OmBSE - eGW(c) - Om(m) - eGW(a)
               num = rho(b,c,m)*rho(a,d,m)
 
-              KC_dyn(ab,cd) = KC_dyn(ab,cd) - num*dem/(dem**2 + eta**2)
-              ZC_dyn(ab,cd) = ZC_dyn(ab,cd) + num*(dem**2 - eta**2)/(dem**2 + eta**2)**2
+              KC_dyn(ab,cd) = KC_dyn(ab,cd) + num*dem/(dem**2 + eta**2)
+              ZC_dyn(ab,cd) = ZC_dyn(ab,cd) - num*(dem**2 - eta**2)/(dem**2 + eta**2)**2
 
               dem = OmBSE - eGW(d) - Om(m) - eGW(a)
               num = rho(a,c,m)*rho(b,d,m) 
@@ -76,8 +77,11 @@ subroutine GW_ppBSE_dynamic_kernel_C(ispin,eta,nBas,nC,nO,nV,nR,nS,nVV,lambda,eG
               dem = OmBSE - eGW(d) - Om(m) - eGW(b)
               num = rho(b,c,m)*rho(a,d,m)
 
-              KC_dyn(ab,cd) = KC_dyn(ab,cd) - num*dem/(dem**2 + eta**2)
-              ZC_dyn(ab,cd) = ZC_dyn(ab,cd) + num*(dem**2 - eta**2)/(dem**2 + eta**2)**2
+              KC_dyn(ab,cd) = KC_dyn(ab,cd) + num*dem/(dem**2 + eta**2)
+              ZC_dyn(ab,cd) = ZC_dyn(ab,cd) - num*(dem**2 - eta**2)/(dem**2 + eta**2)**2
+
+              KC_dyn(ab,cd) = 2d0*KC_dyn(ab,cd)/sqrt((1d0 + Kronecker_delta(a,b))*(1d0 + Kronecker_delta(c,d)))
+              ZC_dyn(ab,cd) = 2d0*ZC_dyn(ab,cd)/sqrt((1d0 + Kronecker_delta(a,b))*(1d0 + Kronecker_delta(c,d)))
 
             end do
 
@@ -126,6 +130,9 @@ subroutine GW_ppBSE_dynamic_kernel_C(ispin,eta,nBas,nC,nO,nV,nR,nS,nVV,lambda,eG
 
               KC_dyn(ab,cd) = KC_dyn(ab,cd) - num*dem/(dem**2 + eta**2)
               ZC_dyn(ab,cd) = ZC_dyn(ab,cd) + num*(dem**2 - eta**2)/(dem**2 + eta**2)**2
+
+              KC_dyn(ab,cd) = 2d0*KC_dyn(ab,cd)
+              ZC_dyn(ab,cd) = 2d0*ZC_dyn(ab,cd)
 
             end do
 
