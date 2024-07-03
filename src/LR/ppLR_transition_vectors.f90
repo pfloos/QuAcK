@@ -69,7 +69,7 @@ subroutine ppLR_transition_vectors(spin_allowed,nBas,nC,nO,nV,nR,nOO,nVV,dipole_
     end if
 
     print*,'-------------------------------------------------------------'
-    write(*,'(A20,I3,A2,F10.6,A3,A6,F6.4,A11,F6.4)') &
+    write(*,'(A20,I3,A2,F12.6,A3,A6,F6.4,A11,F6.4)') &
             ' p-p excitation n. ',ab,': ',Om1(ab)*HaToeV,' eV','  f = ',os1(ab),'  <S**2> = ',S2
     print*,'-------------------------------------------------------------'
 
@@ -140,7 +140,7 @@ subroutine ppLR_transition_vectors(spin_allowed,nBas,nC,nO,nV,nR,nOO,nVV,dipole_
     end if
 
     print*,'-------------------------------------------------------------'
-    write(*,'(A20,I3,A2,F10.6,A3,A6,F6.4,A11,F6.4)') &
+    write(*,'(A20,I3,A2,F12.6,A3,A6,F6.4,A11,F6.4)') &
             ' h-h excitation n. ',ij,': ',Om2(ij)*HaToeV,' eV','  f = ',os2(ij),'  <S**2> = ',S2
     print*,'-------------------------------------------------------------'
 
