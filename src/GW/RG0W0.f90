@@ -148,7 +148,7 @@ subroutine RG0W0(dotest,doACFDT,exchange_kernel,doXBS,dophBSE,dophBSE2,TDA_W,TDA
 
 ! Plot self-energy, renormalization factor, and spectral function
 
-  call GW_plot_self_energy(nBas,eta,nC,nO,nV,nR,nS,eHF,eHF,Om,rho)
+!  call GW_plot_self_energy(nBas,eta,nC,nO,nV,nR,nS,eHF,eHF,Om,rho)
 
 !--------------------!
 ! Cumulant expansion !
