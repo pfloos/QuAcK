@@ -131,9 +131,9 @@ subroutine GW_ppBSE(TDA_W,TDA,dBSE,dTDA,singlet,triplet,eta,nBas,nC,nO,nV,nR,nS,
     if(dBSE) &
         call GW_ppBSE_dynamic_perturbation(ispin,dTDA,eta,nBas,nC,nO,nV,nR,nS,nOO,nVV,eW,eGW,ERI,dipole_int,OmRPA,rho_RPA, &
                                            Om1,X1,Y1,Om2,X2,Y2,KB_sta,KC_sta,KD_sta)
-
+    write(*,*) "Deallocate not done"
     deallocate(Om1,X1,Y1,Om2,X2,Y2,Bpp,Cpp,Dpp,KB_sta,KC_sta,KD_sta)
-
+    write(*,*) "Deallocate done"
   end if
 
 !-------------------

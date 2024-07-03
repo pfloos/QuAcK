@@ -56,10 +56,15 @@ subroutine GW_ppBSE_dynamic_perturbation(ispin,dTDA,eta,nBas,nC,nO,nV,nR,nS,nOO,
 
 ! Memory allocation
 
-  allocate(Om1Dyn(maxVV),Om2Dyn(maxOO),Z1Dyn(maxVV),Z2Dyn(maxOO), & 
+  allocate(Om1Dyn(nOO),Om2Dyn(nOO),Z1Dyn(nOO),Z2Dyn(nOO), & 
            KB_dyn(nVV,nOO),KC_dyn(nVV,nVV),KD_dyn(nOO,nOO),   & 
            ZC_dyn(nVV,nVV),ZD_dyn(nOO,nOO))
 
+  Om1Dyn(:) = 0d0
+  Om2Dyn(:) = 0d0
+  Z1Dyn(:) = 0d0
+  Z2Dyn(:) = 0d0
+  
   if(dTDA) then 
     write(*,*)
     write(*,*) '*** dynamical TDA activated ***'
@@ -77,8 +82,8 @@ subroutine GW_ppBSE_dynamic_perturbation(ispin,dTDA,eta,nBas,nC,nO,nV,nR,nS,nOO,
 !   if(.not.dTDA) call GW_ppBSE_dynamic_kernel_B(eta,nBas,nC,nO,nV,nR,nS,nOO,nVV,1d0,eGW,OmRPA,rho_RPA,OmBSE(ab),KB_dyn)
     call GW_ppBSE_dynamic_kernel_C(ispin,eta,nBas,nC,nO,nV,nR,nS,nVV,1d0,eGW,OmRPA,rho_RPA,Om1(ab),KC_dyn,ZC_dyn)
 
-    Z1Dyn(ab)  = dot_product(X1(:,ab),matmul(ZC_dyn,X1(:,ab)))
-    Om1Dyn(ab) = dot_product(X1(:,ab),matmul(KC_dyn - KC_sta,X1(:,ab)))
+    Z1Dyn(ab)  = dot_product(X1(ab,:),matmul(ZC_dyn,X1(ab,:)))
+    Om1Dyn(ab) = dot_product(X1(ab,:),matmul(KC_dyn - KC_sta,X1(ab,:)))
 
     Z1Dyn(ab)  = 1d0/(1d0 - Z1Dyn(ab))
     Om1Dyn(ab) = Z1Dyn(ab)*Om1Dyn(ab)
@@ -101,8 +106,8 @@ subroutine GW_ppBSE_dynamic_perturbation(ispin,dTDA,eta,nBas,nC,nO,nV,nR,nS,nOO,
 !   if(.not.dTDA) call GW_ppBSE_dynamic_kernel_B(eta,nBas,nC,nO,nV,nR,nS,nOO,nVV,1d0,eGW,OmRPA,rho_RPA,OmBSE(ab),KB_dyn)
     call GW_ppBSE_dynamic_kernel_D(ispin,eta,nBas,nC,nO,nV,nR,nS,nOO,1d0,eGW,OmRPA,rho_RPA,Om2(ij),KD_dyn,ZD_dyn)
 
-    Z2Dyn(ij)  = dot_product(Y2(:,ij),matmul(ZD_dyn,Y2(:,ij)))
-    Om2Dyn(ij) = dot_product(Y2(:,ij),matmul(KD_dyn - KD_sta,Y2(:,ij)))
+    Z2Dyn(ij)  = dot_product(Y2(ij,:),matmul(ZD_dyn,Y2(ij,:)))
+    Om2Dyn(ij) = dot_product(Y2(ij,:),matmul(KD_dyn - KD_sta,Y2(ij,:)))
 
     Z2Dyn(ij)  = 1d0/(1d0 - Z2Dyn(ij))
     Om2Dyn(ij) = Z2Dyn(ij)*Om2Dyn(ij)
@@ -112,6 +117,6 @@ subroutine GW_ppBSE_dynamic_perturbation(ispin,dTDA,eta,nBas,nC,nO,nV,nR,nS,nOO,
 
   end do
   write(*,*) '---------------------------------------------------------------------------------------------------'
-  write(*,*) 
+  write(*,*)
 
 end subroutine 
