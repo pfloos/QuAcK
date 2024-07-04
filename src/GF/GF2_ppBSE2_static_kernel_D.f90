@@ -55,25 +55,13 @@ subroutine GF2_ppBSE2_static_kernel_D(ispin,eta,nBas,nC,nO,nV,nR,nOO,lambda,ERI,
                 num = 2d0*ERI(i,e,k,m)*ERI(j,m,l,e) -     ERI(i,e,k,m)*ERI(j,m,e,l) & 
                     -     ERI(i,e,m,k)*ERI(j,m,l,e) + 2d0*ERI(i,e,m,k)*ERI(j,m,e,l)
 
-                KD_sta(ij,kl) = KD_sta(ij,kl) + 0.5d0*num*dem/(dem**2 + eta**2)
+                KD_sta(ij,kl) = KD_sta(ij,kl) + num*dem/(dem**2 + eta**2)
             
                 dem = - eGF(e) + eGF(m)
                 num = 2d0*ERI(j,e,k,m)*ERI(i,m,l,e) -     ERI(j,e,k,m)*ERI(i,m,e,l) & 
                     -     ERI(j,e,m,k)*ERI(i,m,l,e) + 2d0*ERI(j,e,m,k)*ERI(i,m,e,l)
 
-                KD_sta(ij,kl) = KD_sta(ij,kl) - 0.5d0*num*dem/(dem**2 + eta**2)
-            
-                dem = - eGF(e) + eGF(m)
-                num = 2d0*ERI(i,m,k,e)*ERI(j,e,l,m) -     ERI(i,m,k,e)*ERI(j,e,m,l) & 
-                    -     ERI(i,m,e,k)*ERI(j,e,l,m) + 2d0*ERI(i,m,e,k)*ERI(j,e,m,l)
-
-                KD_sta(ij,kl) = KD_sta(ij,kl) + 0.5d0*num*dem/(dem**2 + eta**2)
-            
-                dem = - eGF(e) + eGF(m)
-                num = 2d0*ERI(j,m,k,e)*ERI(i,e,l,m) -     ERI(j,m,k,e)*ERI(i,e,m,l) & 
-                    -     ERI(j,m,e,k)*ERI(i,e,l,m) + 2d0*ERI(j,m,e,k)*ERI(i,e,m,l)
-
-                KD_sta(ij,kl) = KD_sta(ij,kl) - 0.5d0*num*dem/(dem**2 + eta**2)
+                KD_sta(ij,kl) = KD_sta(ij,kl) - num*dem/(dem**2 + eta**2)
             
               end do
             end do
@@ -104,25 +92,17 @@ subroutine GF2_ppBSE2_static_kernel_D(ispin,eta,nBas,nC,nO,nV,nR,nOO,lambda,ERI,
               do e=nO+1,nBas-nR
      
                 dem = - eGF(e) + eGF(m)
-                num = 2d0*ERI(i,e,k,m)*ERI(j,m,l,e) - ERI(i,e,k,m)*ERI(j,m,e,l) - ERI(i,e,m,k)*ERI(j,m,l,e) 
+                num = 2d0*ERI(i,e,k,m)*ERI(j,m,l,e) -     ERI(i,e,k,m)*ERI(j,m,e,l) &
+                    -     ERI(i,e,m,k)*ERI(j,m,l,e) +     ERI(i,e,m,k)*ERI(j,m,e,l)
 
-                KD_sta(ij,kl) = KD_sta(ij,kl) + 0.5d0*num*dem/(dem**2 + eta**2)
-            
+                KD_sta(ij,kl) = KD_sta(ij,kl) + 2d0*num*dem/(dem**2 + eta**2)
+
                 dem = - eGF(e) + eGF(m)
-                num = 2d0*ERI(j,e,k,m)*ERI(i,m,l,e) - ERI(j,e,k,m)*ERI(i,m,e,l) - ERI(j,e,m,k)*ERI(i,m,l,e)
+                num = 2d0*ERI(j,e,k,m)*ERI(i,m,l,e) -     ERI(j,e,k,m)*ERI(i,m,e,l) &
+                    -     ERI(j,e,m,k)*ERI(i,m,l,e) +     ERI(j,e,m,k)*ERI(i,m,e,l)
 
-                KD_sta(ij,kl) = KD_sta(ij,kl) - 0.5d0*num*dem/(dem**2 + eta**2)
-            
-                dem = - eGF(e) + eGF(m)
-                num = 2d0*ERI(i,m,k,e)*ERI(j,e,l,m) - ERI(i,m,k,e)*ERI(j,e,m,l) - ERI(i,m,e,k)*ERI(j,e,l,m)
+                KD_sta(ij,kl) = KD_sta(ij,kl) - 2d0*num*dem/(dem**2 + eta**2)
 
-                KD_sta(ij,kl) = KD_sta(ij,kl) + 0.5d0*num*dem/(dem**2 + eta**2)
-            
-                dem = - eGF(e) + eGF(m)
-                num = 2d0*ERI(j,m,k,e)*ERI(i,e,l,m) - ERI(j,m,k,e)*ERI(i,e,m,l) - ERI(j,m,e,k)*ERI(i,e,l,m) 
-
-                KD_sta(ij,kl) = KD_sta(ij,kl) - 0.5d0*num*dem/(dem**2 + eta**2)
-            
               end do
             end do
 
