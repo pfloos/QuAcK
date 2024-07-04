@@ -1,4 +1,4 @@
-subroutine GW_ppBSE_dynamic_kernel_B(ispin,eta,nBas,nC,nO,nV,nR,nS,nOO,nVV,lambda,eGW,Om,rho,OmBSE,KB_dyn)
+subroutine GW_ppBSE_dynamic_kernel_B(ispin,eta,nBas,nC,nO,nV,nR,nS,nOO,nVV,lambda,eGW,Om,rho,KB_dyn)
 
 ! Compute the dynamic part of the Bethe-Salpeter equation matrices
 
@@ -21,7 +21,6 @@ subroutine GW_ppBSE_dynamic_kernel_B(ispin,eta,nBas,nC,nO,nV,nR,nS,nOO,nVV,lambd
   double precision,intent(in)   :: eGW(nBas)
   double precision,intent(in)   :: Om(nS)
   double precision,intent(in)   :: rho(nBas,nBas,nS)
-  double precision,intent(in)   :: OmBSE
   
 ! Local variables
 

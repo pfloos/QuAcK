@@ -56,15 +56,10 @@ subroutine GW_ppBSE_dynamic_perturbation(ispin,dTDA,eta,nBas,nC,nO,nV,nR,nS,nOO,
 
 ! Memory allocation
 
-  allocate(Om1_dyn(nOO),Om2_dyn(nOO),Z1_dyn(nOO),Z2_dyn(nOO), & 
-           KB_dyn(nVV,nOO),KC_dyn(nVV,nVV),KD_dyn(nOO,nOO),   & 
+  allocate(Om1_dyn(maxVV),Om2_dyn(maxOO),Z1_dyn(maxVV),Z2_dyn(maxOO), & 
+           KB_dyn(nVV,nOO),KC_dyn(nVV,nVV),KD_dyn(nOO,nOO),           & 
            ZC_dyn(nVV,nVV),ZD_dyn(nOO,nOO))
 
-  Om1_dyn(:) = 0d0
-  Om2_dyn(:) = 0d0
-  Z1_dyn(:) = 0d0
-  Z2_dyn(:) = 0d0
-  
   if(dTDA) then 
     write(*,*)
     write(*,*) '*** dynamical TDA activated ***'
@@ -88,7 +83,7 @@ subroutine GW_ppBSE_dynamic_perturbation(ispin,dTDA,eta,nBas,nC,nO,nV,nR,nS,nOO,
 
     else 
 
-      call GW_ppBSE_dynamic_kernel_B(ispin,eta,nBas,nC,nO,nV,nR,nS,nOO,nVV,1d0,eGW,OmRPA,rho_RPA,Om1(ab),KB_dyn)
+      call GW_ppBSE_dynamic_kernel_B(ispin,eta,nBas,nC,nO,nV,nR,nS,nOO,nVV,1d0,eGW,OmRPA,rho_RPA,KB_dyn)
       call GW_ppBSE_dynamic_kernel_C(ispin,eta,nBas,nC,nO,nV,nR,nS,nVV,1d0,eGW,OmRPA,rho_RPA,Om1(ab),KC_dyn,ZC_dyn)
       call GW_ppBSE_dynamic_kernel_D(ispin,eta,nBas,nC,nO,nV,nR,nS,nOO,1d0,eGW,OmRPA,rho_RPA,Om1(ab),KD_dyn,ZD_dyn)
 
@@ -131,7 +126,7 @@ subroutine GW_ppBSE_dynamic_perturbation(ispin,dTDA,eta,nBas,nC,nO,nV,nR,nS,nOO,
 
     else
 
-      call GW_ppBSE_dynamic_kernel_B(ispin,eta,nBas,nC,nO,nV,nR,nS,nOO,nVV,1d0,eGW,OmRPA,rho_RPA,-Om2(ij),KB_dyn)
+      call GW_ppBSE_dynamic_kernel_B(ispin,eta,nBas,nC,nO,nV,nR,nS,nOO,nVV,1d0,eGW,OmRPA,rho_RPA,KB_dyn)
       call GW_ppBSE_dynamic_kernel_C(ispin,eta,nBas,nC,nO,nV,nR,nS,nVV,1d0,eGW,OmRPA,rho_RPA,-Om2(ij),KC_dyn,ZC_dyn)
       call GW_ppBSE_dynamic_kernel_D(ispin,eta,nBas,nC,nO,nV,nR,nS,nOO,1d0,eGW,OmRPA,rho_RPA,-Om2(ij),KD_dyn,ZD_dyn)
 
