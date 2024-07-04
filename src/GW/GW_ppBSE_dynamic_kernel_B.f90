@@ -76,6 +76,7 @@ subroutine GW_ppBSE_dynamic_kernel_B(ispin,eta,nBas,nC,nO,nV,nR,nS,nOO,nVV,lambd
               KB_dyn(ab,ij) = KB_dyn(ab,ij) + num*dem/(dem**2 + eta**2)
 
             end do
+
             KB_dyn(ab,ij) = 2d0*KB_dyn(ab,ij)/sqrt((1d0 + Kronecker_delta(a,b))*(1d0 + Kronecker_delta(i,j)))
 
           end do
@@ -121,7 +122,9 @@ subroutine GW_ppBSE_dynamic_kernel_B(ispin,eta,nBas,nC,nO,nV,nR,nS,nOO,nVV,lambd
               KB_dyn(ab,ij) = KB_dyn(ab,ij) - num*dem/(dem**2 + eta**2)
 
             end do
+
             KB_dyn(ab,ij) = 2d0*KB_dyn(ab,ij)
+
           end do
         end do
 

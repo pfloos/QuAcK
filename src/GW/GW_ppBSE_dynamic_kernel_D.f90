@@ -81,8 +81,10 @@ subroutine GW_ppBSE_dynamic_kernel_D(ispin,eta,nBas,nC,nO,nV,nR,nS,nOO,lambda,eG
               ZD_dyn(ij,kl) = ZD_dyn(ij,kl) - num*(dem**2 - eta**2)/(dem**2 + eta**2)**2
 
             end do
+
             KD_dyn(ij,kl) = 2d0*KD_dyn(ij,kl)/sqrt((1d0 + Kronecker_delta(i,j))*(1d0 + Kronecker_delta(k,l)))
             ZD_dyn(ij,kl) = 2d0*ZD_dyn(ij,kl)/sqrt((1d0 + Kronecker_delta(i,j))*(1d0 + Kronecker_delta(k,l)))
+
           end do
         end do
 
@@ -130,8 +132,10 @@ subroutine GW_ppBSE_dynamic_kernel_D(ispin,eta,nBas,nC,nO,nV,nR,nS,nOO,lambda,eG
               ZD_dyn(ij,kl) = ZD_dyn(ij,kl) + num*(dem**2 - eta**2)/(dem**2 + eta**2)**2
 
             end do            
+
             KD_dyn(ij,kl) = 2d0*KD_dyn(ij,kl)
             ZD_dyn(ij,kl) = 2d0*ZD_dyn(ij,kl)
+
           end do
         end do
 

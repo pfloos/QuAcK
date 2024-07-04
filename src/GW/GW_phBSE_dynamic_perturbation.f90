@@ -37,8 +37,8 @@ subroutine GW_phBSE_dynamic_perturbation(dophBSE2,dTDA,eta,nBas,nC,nO,nV,nR,nS,e
   integer                       :: maxS = 10
   double precision              :: gapGW
 
-  double precision,allocatable  :: OmDyn(:)
-  double precision,allocatable  :: ZDyn(:)
+  double precision,allocatable  :: Om_dyn(:)
+  double precision,allocatable  :: Z_dyn(:)
   double precision,allocatable  :: X(:)
   double precision,allocatable  :: Y(:)
 
@@ -53,7 +53,7 @@ subroutine GW_phBSE_dynamic_perturbation(dophBSE2,dTDA,eta,nBas,nC,nO,nV,nR,nS,e
 
 ! Memory allocation
 
-  allocate(OmDyn(maxS),ZDyn(maxS),X(nS),Y(nS),KAp_dyn(nS,nS),ZAp_dyn(nS,nS), &
+  allocate(Om_dyn(maxS),Z_dyn(maxS),X(nS),Y(nS),KAp_dyn(nS,nS),ZAp_dyn(nS,nS), &
            KAm_dyn(nS,nS),ZAm_dyn(nS,nS),KB_dyn(nS,nS))
 
   if(dTDA) then 
@@ -96,8 +96,8 @@ subroutine GW_phBSE_dynamic_perturbation(dophBSE2,dTDA,eta,nBas,nC,nO,nV,nR,nS,e
 
     if(dTDA) then 
 
-      ZDyn(ia)  = dot_product(X,matmul(ZAp_dyn,X))
-      OmDyn(ia) = dot_product(X,matmul(KAp_dyn - KA_sta,X))
+      Z_dyn(ia)  = dot_product(X,matmul(ZAp_dyn,X))
+      Om_dyn(ia) = dot_product(X,matmul(KAp_dyn - KA_sta,X))
 
     else
 
@@ -110,21 +110,21 @@ subroutine GW_phBSE_dynamic_perturbation(dophBSE2,dTDA,eta,nBas,nC,nO,nV,nR,nS,e
 
       ! Renormalization factor of the resonant and anti-resonant parts
 
-      ZDyn(ia)  = dot_product(X,matmul(ZAp_dyn,X)) &
-                + dot_product(Y,matmul(ZAm_dyn,Y))
+      Z_dyn(ia)  = dot_product(X,matmul(ZAp_dyn,X)) &
+                 + dot_product(Y,matmul(ZAm_dyn,Y))
 
-      OmDyn(ia) = dot_product(X,matmul(KAp_dyn - KA_sta,X)) &
-                - dot_product(Y,matmul(KAm_dyn - KA_sta,Y)) &
-                + dot_product(X,matmul(KB_dyn  - KB_sta,Y)) &
-                - dot_product(Y,matmul(KB_dyn  - KB_sta,X))
+      Om_dyn(ia) = dot_product(X,matmul(KAp_dyn - KA_sta,X)) &
+                 - dot_product(Y,matmul(KAm_dyn - KA_sta,Y)) &
+                 + dot_product(X,matmul(KB_dyn  - KB_sta,Y)) &
+                 - dot_product(Y,matmul(KB_dyn  - KB_sta,X))
 
     end if
 
-    ZDyn(ia)  = 1d0/(1d0 - ZDyn(ia))
-    OmDyn(ia) = ZDyn(ia)*OmDyn(ia)
+    Z_dyn(ia)  = 1d0/(1d0 - Z_dyn(ia))
+    Om_dyn(ia) = Z_dyn(ia)*Om_dyn(ia)
 
     write(*,'(2X,I5,5X,F15.6,5X,F15.6,5X,F15.6,5X,F15.6)') & 
-      ia,OmBSE(ia)*HaToeV,(OmBSE(ia)+OmDyn(ia))*HaToeV,OmDyn(ia)*HaToeV,ZDyn(ia)
+      ia,OmBSE(ia)*HaToeV,(OmBSE(ia)+Om_dyn(ia))*HaToeV,Om_dyn(ia)*HaToeV,Z_dyn(ia)
 
   end do
   write(*,*) '---------------------------------------------------------------------------------------------------'
