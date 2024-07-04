@@ -121,7 +121,7 @@ subroutine GW_ppBSE_dynamic_perturbation(ispin,dTDA,eta,nBas,nC,nO,nV,nR,nS,nOO,
 
       call GW_ppBSE_dynamic_kernel_D(ispin,eta,nBas,nC,nO,nV,nR,nS,nOO,1d0,eGW,OmRPA,rho_RPA,Om2(ij),KD_dyn,ZD_dyn)
  
-      Z2_dyn(kl)  = + dot_product(Y2(:,ij),matmul(ZD_dyn,Y2(:,ij)))
+      Z2_dyn(kl)  = dot_product(Y2(:,ij),matmul(ZD_dyn,Y2(:,ij)))
       Om2_dyn(kl) = - dot_product(Y2(:,ij),matmul(KD_dyn - KD_sta,Y2(:,ij)))
 
     else
