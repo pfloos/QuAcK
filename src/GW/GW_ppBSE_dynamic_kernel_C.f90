@@ -55,6 +55,7 @@ subroutine GW_ppBSE_dynamic_kernel_C(ispin,eta,nBas,nC,nO,nV,nR,nS,nVV,lambda,eG
             cd = cd + 1
   
             do m=1,nS
+
               dem = OmBSE - eGW(c) - Om(m) - eGW(b)
               num = rho(a,c,m)*rho(b,d,m)
 
@@ -79,10 +80,10 @@ subroutine GW_ppBSE_dynamic_kernel_C(ispin,eta,nBas,nC,nO,nV,nR,nS,nVV,lambda,eG
               KC_dyn(ab,cd) = KC_dyn(ab,cd) + num*dem/(dem**2 + eta**2)
               ZC_dyn(ab,cd) = ZC_dyn(ab,cd) - num*(dem**2 - eta**2)/(dem**2 + eta**2)**2
 
-           end do
+            end do
 
-           KC_dyn(ab,cd) = 2d0*KC_dyn(ab,cd)/sqrt((1d0 + Kronecker_delta(a,b))*(1d0 + Kronecker_delta(c,d)))
-           ZC_dyn(ab,cd) = 2d0*ZC_dyn(ab,cd)/sqrt((1d0 + Kronecker_delta(a,b))*(1d0 + Kronecker_delta(c,d)))
+            KC_dyn(ab,cd) = 2d0*KC_dyn(ab,cd)/sqrt((1d0 + Kronecker_delta(a,b))*(1d0 + Kronecker_delta(c,d)))
+            ZC_dyn(ab,cd) = 2d0*ZC_dyn(ab,cd)/sqrt((1d0 + Kronecker_delta(a,b))*(1d0 + Kronecker_delta(c,d)))
 
           end do
         end do
