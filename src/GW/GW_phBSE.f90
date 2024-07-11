@@ -124,7 +124,7 @@ subroutine GW_phBSE(dophBSE2,TDA_W,TDA,dBSE,dTDA,singlet,triplet,eta,nBas,nC,nO,
     ! Cumulant expansion !
     !--------------------!
 
-    call RGWC(.false.,nBas,nC,nO,nR,nS,OmBSE,rho_RPA,eGW)
+    ! call RGWC(.false.,nBas,nC,nO,nR,nS,OmBSE,rho_RPA,eGW)
 
     !----------------------------------------------------!
     ! Compute the dynamical screening at the phBSE level !

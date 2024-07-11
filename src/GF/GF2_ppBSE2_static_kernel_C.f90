@@ -21,6 +21,7 @@ subroutine GF2_ppBSE2_static_kernel_C(ispin,eta,nBas,nC,nO,nV,nR,nVV,lambda,ERI,
   
 ! Local variables
 
+  double precision,external     :: Kronecker_delta
   double precision              :: dem,num
   integer                       :: m
   integer                       :: a,b,c,d,e
@@ -53,19 +54,21 @@ subroutine GF2_ppBSE2_static_kernel_C(ispin,eta,nBas,nC,nO,nV,nR,nVV,lambda,ERI,
      
                 dem = eGF(m) - eGF(e)
                 num = 2d0*ERI(a,m,c,e)*ERI(b,e,d,m) -     ERI(a,m,c,e)*ERI(b,e,m,d) & 
-                    -     ERI(a,m,e,c)*ERI(b,e,d,m) + 2d0*ERI(a,m,e,c)*ERI(b,e,m,d)
+                    -     ERI(a,m,e,c)*ERI(b,e,d,m) -     ERI(a,m,e,c)*ERI(b,e,m,d)
 
                 KC_sta(ab,cd) = KC_sta(ab,cd) + num*dem/(dem**2 + eta**2)
             
                 dem = eGF(m) - eGF(e)
                 num = 2d0*ERI(b,m,c,e)*ERI(a,e,d,m) -     ERI(b,m,c,e)*ERI(a,e,m,d) & 
-                    -     ERI(b,m,e,c)*ERI(a,e,d,m) + 2d0*ERI(b,m,e,c)*ERI(a,e,m,d)
+                    -     ERI(b,m,e,c)*ERI(a,e,d,m) -     ERI(b,m,e,c)*ERI(a,e,m,d)
 
-                KC_sta(ab,cd) = KC_sta(ab,cd) - num*dem/(dem**2 + eta**2)
+                KC_sta(ab,cd) = KC_sta(ab,cd) + num*dem/(dem**2 + eta**2)
             
               end do
-            end do
+           end do
 
+           KC_sta(ab,cd) = 2d0*lambda*KC_sta(ab,cd)/sqrt((1d0 + Kronecker_delta(a,b))*(1d0 + Kronecker_delta(c,d)))
+            
           end do
         end do
 
