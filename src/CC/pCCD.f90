@@ -1,4 +1,4 @@
-subroutine pCCD(dotest,maxSCF,thresh,max_diis,nBas,nC,nO,nV,nR,ERI,ENuc,ERHF,eHF)
+subroutine pCCD(dotest,maxSCF,thresh,max_diis,nBas,nC,nO,nV,nR,Hc,ERI,ENuc,ERHF,eHF)
 
 ! pair CCD module
 
@@ -15,10 +15,13 @@ subroutine pCCD(dotest,maxSCF,thresh,max_diis,nBas,nC,nO,nV,nR,ERI,ENuc,ERHF,eHF
   integer,intent(in)            :: nBas,nC,nO,nV,nR
   double precision,intent(in)   :: ENuc,ERHF
   double precision,intent(in)   :: eHF(nBas)
+  double precision,intent(in)   :: Hc(nBas,nBas)
   double precision,intent(in)   :: ERI(nBas,nBas,nBas,nBas)
 
 ! Local variables
 
+  integer                       :: p,q,r,s,t,u
+  integer                       :: pq,rs
   integer                       :: i,j,a,b
 
   integer                       :: nSCF
@@ -35,11 +38,12 @@ subroutine pCCD(dotest,maxSCF,thresh,max_diis,nBas,nC,nO,nV,nR,ERI,ENuc,ERHF,eHF
   double precision,allocatable  :: OVVO(:,:)
   double precision,allocatable  :: VVVV(:,:)
 
-  double precision,allocatable  :: yO(:,:),yV(:,:)
+  double precision,allocatable  :: yO(:,:)
+  double precision,allocatable  :: yV(:,:)
 
-  double precision,allocatable  :: r(:,:)
-  double precision,allocatable  :: t(:,:)
-  double precision,allocatable  :: z(:,:)
+  double precision,allocatable  :: r2(:,:)
+  double precision,allocatable  :: t2(:,:)
+  double precision,allocatable  :: z2(:,:)
 
   double precision,allocatable  :: rdm1(:,:)
   double precision,allocatable  :: rdm2(:,:,:,:)
@@ -49,12 +53,16 @@ subroutine pCCD(dotest,maxSCF,thresh,max_diis,nBas,nC,nO,nV,nR,ERI,ENuc,ERHF,eHF
   double precision              :: tr_1rdm
   double precision              :: tr_2rdm
 
-  integer                       :: O,V
+  double precision              :: E1,E2
+  double precision,allocatable  :: g(:)
+  double precision,allocatable  :: H(:,:)
+
+  integer                       :: O,V,N
   integer                       :: n_diis
   double precision              :: rcond
   double precision,allocatable  :: err_diis(:,:)
-  double precision,allocatable  :: t_diis(:,:)
-  double precision,allocatable  :: z_diis(:,:)
+  double precision,allocatable  :: t2_diis(:,:)
+  double precision,allocatable  :: z2_diis(:,:)
   double precision,external     :: trace_matrix
           
 ! Hello world
@@ -68,7 +76,8 @@ subroutine pCCD(dotest,maxSCF,thresh,max_diis,nBas,nC,nO,nV,nR,ERI,ENuc,ERHF,eHF
 ! Useful quantities
 
   O = nO - nC
-  V = nV - NR
+  V = nV - nR
+  N = O + V
 
 ! Form energy denominator
 
@@ -105,11 +114,11 @@ subroutine pCCD(dotest,maxSCF,thresh,max_diis,nBas,nC,nO,nV,nR,ERI,ENuc,ERHF,eHF
 
 ! Initialization
 
-  allocate(t(O,V),r(O,V),yO(O,O),yV(V,V))
+  allocate(t2(O,V),r2(O,V),yO(O,O),yV(V,V))
 
 ! Memory allocation for DIIS
 
-  allocate(err_diis(O*V,max_diis),t_diis(O*V,max_diis))
+  allocate(err_diis(O*V,max_diis),t2_diis(O*V,max_diis))
 
 !------------------------------------------------------------------------
 ! Compute t ampltiudes
@@ -121,8 +130,8 @@ subroutine pCCD(dotest,maxSCF,thresh,max_diis,nBas,nC,nO,nV,nR,ERI,ENuc,ERHF,eHF
   EcCC = 0d0
 
   n_diis        = 0
-  t(:,:)        = 0d0
-  t_diis(:,:)   = 0d0
+  t2(:,:)       = 0d0
+  t2_diis(:,:)  = 0d0
   err_diis(:,:) = 0d0
 
 !------------------------------------------------------------------------
@@ -144,23 +153,23 @@ subroutine pCCD(dotest,maxSCF,thresh,max_diis,nBas,nC,nO,nV,nR,ERI,ENuc,ERHF,eHF
 
   ! Form intermediate array
     
-   yO(:,:) = matmul(t,transpose(OOVV))
+   yO(:,:) = matmul(t2,transpose(OOVV))
     
    ! Compute residual
 
 
-    r(:,:) = OOVV(:,:) + 2d0*delta_OV(:,:)*t(:,:) & 
-           - 2d0*(2d0*OVOV(:,:) - OVVO(:,:) - OOVV(:,:)*t(:,:))*t(:,:)
+    r2(:,:) = OOVV(:,:) + 2d0*delta_OV(:,:)*t2(:,:) & 
+            - 2d0*(2d0*OVOV(:,:) - OVVO(:,:) - OOVV(:,:)*t2(:,:))*t2(:,:)
 
     do i=1,O
       do a=1,V
 
         do j=1,O
-          r(i,a) = r(i,a) - 2d0*OOVV(j,a)*t(j,a)*t(i,a) + OOOO(j,i)*t(j,a) + yO(i,j)*t(j,a) 
+          r2(i,a) = r2(i,a) - 2d0*OOVV(j,a)*t2(j,a)*t2(i,a) + OOOO(j,i)*t2(j,a) + yO(i,j)*t2(j,a) 
         end do 
 
         do b=1,V
-          r(i,a) = r(i,a) - 2d0*OOVV(i,b)*t(i,b)*t(i,a) + VVVV(a,b)*t(i,b)
+          r2(i,a) = r2(i,a) - 2d0*OOVV(i,b)*t2(i,b)*t2(i,a) + VVVV(a,b)*t2(i,b)
         end do 
 
       end do
@@ -168,15 +177,15 @@ subroutine pCCD(dotest,maxSCF,thresh,max_diis,nBas,nC,nO,nV,nR,ERI,ENuc,ERHF,eHF
 
    ! Check convergence 
 
-    Conv = maxval(abs(r(:,:)))
+    Conv = maxval(abs(r2(:,:)))
   
    ! Update amplitudes
 
-   t(:,:) = t(:,:) - 0.5d0*r(:,:)/delta_OV(:,:)
+   t2(:,:) = t2(:,:) - 0.5d0*r2(:,:)/delta_OV(:,:)
 
    ! Compute correlation energy
 
-    EcCC = trace_matrix(V,matmul(transpose(OOVV),t))
+    EcCC = trace_matrix(V,matmul(transpose(OOVV),t2))
 
    ! Dump results
 
@@ -187,7 +196,7 @@ subroutine pCCD(dotest,maxSCF,thresh,max_diis,nBas,nC,nO,nV,nR,ERI,ENuc,ERHF,eHF
    if(max_diis > 1) then
 
      n_diis = min(n_diis+1,max_diis)
-     call DIIS_extrapolation(rcond,nO*nV,nO*nV,n_diis,err_diis,t_diis,-0.5d0*r/delta_OV,t)
+     call DIIS_extrapolation(rcond,nO*nV,nO*nV,n_diis,err_diis,t2_diis,-0.5d0*r2/delta_OV,t2)
 
     end if
 
@@ -215,15 +224,15 @@ subroutine pCCD(dotest,maxSCF,thresh,max_diis,nBas,nC,nO,nV,nR,ERI,ENuc,ERHF,eHF
 
 ! Deallocate memory
 
-  deallocate(err_diis,t_diis)
+  deallocate(err_diis,t2_diis)
 
 ! Memory allocation 
 
-  allocate(z(O,V))
+  allocate(z2(O,V))
 
 ! Memory allocation for DIIS
 
-  allocate(err_diis(O*V,max_diis),z_diis(O*V,max_diis))
+  allocate(err_diis(O*V,max_diis),z2_diis(O*V,max_diis))
 
 !------------------------------------------------------------------------
 ! Compute z ampltiudes
@@ -232,8 +241,8 @@ subroutine pCCD(dotest,maxSCF,thresh,max_diis,nBas,nC,nO,nV,nR,ERI,ENuc,ERHF,eHF
   Conv = 1d0
   nSCF = 0
 
-  n_diis          = 0
-  z_diis(:,:)     = 0d0
+  n_diis        = 0
+  z2_diis(:,:)  = 0d0
   err_diis(:,:) = 0d0
 
 !------------------------------------------------------------------------
@@ -255,29 +264,25 @@ subroutine pCCD(dotest,maxSCF,thresh,max_diis,nBas,nC,nO,nV,nR,ERI,ENuc,ERHF,eHF
 
   ! Form intermediate array
   
-   yO(:,:) = matmul(OOVV,transpose(t))
-   yV(:,:) = matmul(transpose(OOVV),t)
+   yO(:,:) = matmul(OOVV,transpose(t2))
+   yV(:,:) = matmul(transpose(OOVV),t2)
 
    ! Compute residual
 
-    r(:,:) = OOVV(:,:) + 2d0*delta_OV(:,:)*z(:,:) &
-           - 2d0*(2d0*OVOV(:,:) - OVVO(:,:) - 2d0*OOVV(:,:)*t(:,:))*z(:,:)
+    r2(:,:) = OOVV(:,:) + 2d0*delta_OV(:,:)*z2(:,:) &
+            - 2d0*(2d0*OVOV(:,:) - OVVO(:,:) - 2d0*OOVV(:,:)*t2(:,:))*z2(:,:)
 
     do i=1,O
       do a=1,V
 
         do j=1,O
-          r(i,a) = r(i,a) - 2d0*OOVV(j,a)*t(j,a)*z(i,a) &
-                          - 2d0*OOVV(i,a)*z(j,a)*t(j,a) & 
-                          + OOOO(i,j)*z(j,a)            &
-                          + yO(i,j)*z(j,a)
+          r2(i,a) = r2(i,a) - 2d0*OOVV(j,a)*t2(j,a)*z2(i,a) - 2d0*OOVV(i,a)*z2(j,a)*t2(j,a) & 
+                            + OOOO(i,j)*z2(j,a) + yO(i,j)*z2(j,a)
         end do
 
         do b=1,V
-          r(i,a) = r(i,a) - 2d0*OOVV(i,b)*t(i,b)*z(i,a) & 
-                          - 2d0*OOVV(i,a)*z(i,b)*t(i,b) & 
-                          + VVVV(b,a)*z(i,b)            & 
-                          + yV(a,b)*z(i,b)
+          r2(i,a) = r2(i,a) - 2d0*OOVV(i,b)*t2(i,b)*z2(i,a) - 2d0*OOVV(i,a)*z2(i,b)*t2(i,b) & 
+                            + VVVV(b,a)*z2(i,b) + yV(a,b)*z2(i,b)
         end do
 
       end do
@@ -285,18 +290,18 @@ subroutine pCCD(dotest,maxSCF,thresh,max_diis,nBas,nC,nO,nV,nR,ERI,ENuc,ERHF,eHF
 
    ! Check convergence 
 
-    Conv = maxval(abs(r(:,:)))
+    Conv = maxval(abs(r2(:,:)))
   
    ! Update amplitudes
 
-   z(:,:) = z(:,:) - 0.5d0*r(:,:)/delta_OV(:,:)
+   z2(:,:) = z2(:,:) - 0.5d0*r2(:,:)/delta_OV(:,:)
 
    ! DIIS extrapolation
 
    if(max_diis > 1) then
 
      n_diis = min(n_diis+1,max_diis)
-     call DIIS_extrapolation(rcond,O*V,O*V,n_diis,err_diis,z_diis,-0.5d0*r/delta_OV,z)
+     call DIIS_extrapolation(rcond,O*V,O*V,n_diis,err_diis,z2_diis,-0.5d0*r2/delta_OV,z2)
 
     end if
 
@@ -325,7 +330,7 @@ subroutine pCCD(dotest,maxSCF,thresh,max_diis,nBas,nC,nO,nV,nR,ERI,ENuc,ERHF,eHF
 
 ! Deallocate memory
 
-  deallocate(err_diis,z_diis,r)
+  deallocate(err_diis,z2_diis,r2)
 
 !--------------------------!
 ! Compute density matrices !
@@ -333,13 +338,13 @@ subroutine pCCD(dotest,maxSCF,thresh,max_diis,nBas,nC,nO,nV,nR,ERI,ENuc,ERHF,eHF
 
   allocate(xOO(O,O),xVV(V,V),xOV(O,V))
 
-  xOO(:,:) = matmul(t,transpose(z))
-  xVV(:,:) = matmul(transpose(z),t)
-  xOV(:,:) = matmul(t,matmul(transpose(z),t))
+  xOO(:,:) = matmul(t2,transpose(z2))
+  xVV(:,:) = matmul(transpose(z2),t2)
+  xOV(:,:) = matmul(t2,matmul(transpose(z2),t2))
 
 ! Form 1RDM
 
-  allocate(rdm1(O+V,O+V))
+  allocate(rdm1(N,N))
 
   rdm1(:,:) = 0d0
 
@@ -353,8 +358,8 @@ subroutine pCCD(dotest,maxSCF,thresh,max_diis,nBas,nC,nO,nV,nR,ERI,ENuc,ERHF,eHF
 
 ! Check 1RDM
 
-  tr_1rdm = trace_matrix(O+V,rdm1)
-  write(*,*) ' --> Trace of the 1RDM = ',tr_1rdm
+  tr_1rdm = trace_matrix(N,rdm1)
+  write(*,'(A25,F16.10)') ' --> Trace of the 1RDM = ',tr_1rdm
 
   if( abs(dble(2*O) - tr_1rdm) > thresh ) & 
   write(*,*) ' !!! Your 1RDM seems broken !!! '
@@ -362,7 +367,7 @@ subroutine pCCD(dotest,maxSCF,thresh,max_diis,nBas,nC,nO,nV,nR,ERI,ENuc,ERHF,eHF
 
 ! Form 2RM
 
-  allocate(rdm2(O+V,O+V,O+V,O+V))
+  allocate(rdm2(N,N,N,N))
 
   rdm2(:,:,:,:) = 0d0
 
@@ -378,7 +383,7 @@ subroutine pCCD(dotest,maxSCF,thresh,max_diis,nBas,nC,nO,nV,nR,ERI,ENuc,ERHF,eHF
 
   do i=1,O
     do a=1,V
-      rdm2(i,i,O+a,O+a) = 2d0*(t(i,a) + xOV(i,a) - 2d0*t(i,a)*(xVV(a,a) + xOO(i,i) - t(i,a)*z(i,a)))
+      rdm2(i,i,O+a,O+a) = 2d0*(t2(i,a) + xOV(i,a) - 2d0*t2(i,a)*(xVV(a,a) + xOO(i,i) - t2(i,a)*z2(i,a)))
     end do
   end do
 
@@ -386,7 +391,7 @@ subroutine pCCD(dotest,maxSCF,thresh,max_diis,nBas,nC,nO,nV,nR,ERI,ENuc,ERHF,eHF
 
   do i=1,O
     do a=1,V
-      rdm2(O+a,O+a,i,i) = 2d0*z(a,i)
+      rdm2(O+a,O+a,i,i) = 2d0*z2(i,a)
     end do
   end do
 
@@ -424,7 +429,7 @@ subroutine pCCD(dotest,maxSCF,thresh,max_diis,nBas,nC,nO,nV,nR,ERI,ENuc,ERHF,eHF
 
   do i=1,O
     do a=1,V
-      rdm2(i,O+a,i,O+a) = 4d0*(xVV(a,a) - t(i,a)*z(i,a))
+      rdm2(i,O+a,i,O+a) = 4d0*(xVV(a,a) - t2(i,a)*z2(i,a))
     end do
   end do
 
@@ -432,7 +437,7 @@ subroutine pCCD(dotest,maxSCF,thresh,max_diis,nBas,nC,nO,nV,nR,ERI,ENuc,ERHF,eHF
 
   do i=1,O
     do a=1,V
-      rdm2(i,O+a,O+a,i) = - 2d0*(xVV(a,a) - t(i,a)*z(i,a))
+      rdm2(i,O+a,O+a,i) = - 2d0*(xVV(a,a) - t2(i,a)*z2(i,a))
     end do
   end do
 
@@ -440,7 +445,7 @@ subroutine pCCD(dotest,maxSCF,thresh,max_diis,nBas,nC,nO,nV,nR,ERI,ENuc,ERHF,eHF
 
   do i=1,O
     do a=1,V
-      rdm2(O+a,i,O+a,i) = 4d0*(xVV(a,a) - t(i,a)*z(i,a))
+      rdm2(O+a,i,O+a,i) = 4d0*(xVV(a,a) - t2(i,a)*z2(i,a))
     end do
   end do
 
@@ -448,7 +453,7 @@ subroutine pCCD(dotest,maxSCF,thresh,max_diis,nBas,nC,nO,nV,nR,ERI,ENuc,ERHF,eHF
 
   do i=1,O
     do a=1,V
-      rdm2(O+a,i,i,O+a) = - 2d0*(xVV(a,a) - t(i,a)*z(i,a))
+      rdm2(O+a,i,i,O+a) = - 2d0*(xVV(a,a) - t2(i,a)*z2(i,a))
     end do
   end do
 
@@ -460,12 +465,87 @@ subroutine pCCD(dotest,maxSCF,thresh,max_diis,nBas,nC,nO,nV,nR,ERI,ENuc,ERHF,eHF
 
 ! Check 2RDM
 
-  tr_2rdm = trace_matrix((O+V)**2,rdm2)
-  write(*,*) ' --> Trace of the 2RDM = ',tr_2rdm
+  tr_2rdm = trace_matrix(N**2,rdm2)
+  write(*,'(A25,F16.10)') ' --> Trace of the 2RDM = ',tr_2rdm
 
   if( abs(dble(2*O*(2*O-1)) - tr_2rdm) > thresh ) & 
   write(*,*) ' !!! Your 2RDM seems broken !!! '
   write(*,*)
+
+! Compute electronic energy
+
+  E1 = 0d0
+  E2 = 0d0
+
+  do p=1,N
+    do q=1,N
+      E1 = E1 + rdm1(p,q)*Hc(p,q)
+      do r=1,N
+        do s=1,N
+          E2 = E2 + rdm2(p,q,r,s)*ERI(p,q,r,s)
+        end do
+      end do
+    end do
+  end do
+
+  E2 = 0.5d0*E2
+
+  write(*,'(A25,F16.10)') ' One-electron energy = ',E1
+  write(*,'(A25,F16.10)') ' Two-electron energy = ',E2
+  write(*,'(A25,F16.10)') ' Electronic   energy = ',E1 + E2
+  write(*,'(A25,F16.10)') ' Total        energy = ',E1 + E2 + ENuc
+  write(*,*)
+
+! Compute gradient
+
+  allocate(g(N**2))
+
+  g(:) = 0d0
+
+  pq = 0
+  do p=1,N
+    do q=1,N
+
+      pq = pq + 1
+
+      do r=1,N
+        g(pq) = g(pq) + Hc(r,p)*rdm1(r,q)  - Hc(q,r)*rdm1(p,r)
+      end do
+
+      do r=1,N
+        do s=1,N
+          do t=1,N
+            g(pq) = g(pq) + (ERI(r,s,p,t)*rdm2(r,s,q,t) - ERI(q,t,r,s)*rdm2(p,t,r,s))
+          end do
+        end do
+      end do
+
+    end do
+  end do
+ 
+! Compute Hessian
+
+  allocate(H(N**2,N**2))
+
+  H(:,:) = 0d0
+
+  pq = 0
+  do p=1,N
+    do q=1,N
+
+      pq = pq + 1
+   
+      rs = 0
+      do r=1,N
+        do s=1,N
+
+          rs = rs + 1
+
+        end do
+      end do
+
+    end do
+  end do
 
 ! Testing zone
 
