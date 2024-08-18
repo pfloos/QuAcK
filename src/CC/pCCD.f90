@@ -1,4 +1,4 @@
-subroutine pCCD(dotest,maxSCF,thresh,max_diis,nBas,nC,nO,nV,nR,Hc,ERI,ENuc,ERHF,eHF)
+subroutine pCCD(dotest,maxSCF,thresh,max_diis,nBas,nC,nO,nV,nR,Hc,ERI,ENuc,ERHF,eHF,cHF)
 
 ! pair CCD module
 
@@ -15,6 +15,7 @@ subroutine pCCD(dotest,maxSCF,thresh,max_diis,nBas,nC,nO,nV,nR,Hc,ERI,ENuc,ERHF,
   integer,intent(in)            :: nBas,nC,nO,nV,nR
   double precision,intent(in)   :: ENuc,ERHF
   double precision,intent(in)   :: eHF(nBas)
+  double precision,intent(in)   :: cHF(nBas,nBas)
   double precision,intent(in)   :: Hc(nBas,nBas)
   double precision,intent(in)   :: ERI(nBas,nBas,nBas,nBas)
 
@@ -26,7 +27,8 @@ subroutine pCCD(dotest,maxSCF,thresh,max_diis,nBas,nC,nO,nV,nR,Hc,ERI,ENuc,ERHF,
 
   integer                       :: nSCF
   double precision              :: Conv
-  double precision              :: ECC,EcCC
+  double precision              :: ECC
+  double precision              :: EcCC
 
   double precision,allocatable  :: eO(:)
   double precision,allocatable  :: eV(:)
@@ -54,8 +56,11 @@ subroutine pCCD(dotest,maxSCF,thresh,max_diis,nBas,nC,nO,nV,nR,Hc,ERI,ENuc,ERHF,
   double precision              :: tr_2rdm
 
   double precision              :: E1,E2
-  double precision,allocatable  :: g(:)
-  double precision,allocatable  :: H(:,:)
+  double precision,allocatable  :: h(:,:)
+  double precision,allocatable  :: grad(:)
+  double precision,allocatable  :: tmp(:,:,:,:)
+  double precision,allocatable  :: hess(:,:)
+  double precision,allocatable  :: eig(:)
 
   integer                       :: O,V,N
   integer                       :: n_diis
@@ -64,6 +69,7 @@ subroutine pCCD(dotest,maxSCF,thresh,max_diis,nBas,nC,nO,nV,nR,Hc,ERI,ENuc,ERHF,
   double precision,allocatable  :: t2_diis(:,:)
   double precision,allocatable  :: z2_diis(:,:)
   double precision,external     :: trace_matrix
+  double precision,external     :: Kronecker_delta
           
 ! Hello world
 
@@ -365,6 +371,9 @@ subroutine pCCD(dotest,maxSCF,thresh,max_diis,nBas,nC,nO,nV,nR,Hc,ERI,ENuc,ERHF,
   write(*,*) ' !!! Your 1RDM seems broken !!! '
   write(*,*)
 
+! write(*,*) '1RDM is diagonal at the pCCD level:'
+! call matout(N,N,rdm1)
+
 ! Form 2RM
 
   allocate(rdm2(N,N,N,N))
@@ -472,14 +481,20 @@ subroutine pCCD(dotest,maxSCF,thresh,max_diis,nBas,nC,nO,nV,nR,Hc,ERI,ENuc,ERHF,
   write(*,*) ' !!! Your 2RDM seems broken !!! '
   write(*,*)
 
+! write(*,*) '2RDM is not diagonal at the pCCD level:'
+! call matout(N**2,N**2,rdm2)
+
 ! Compute electronic energy
+
+  allocate(h(N,N))
+  h = matmul(transpose(cHF),matmul(Hc,cHF))
 
   E1 = 0d0
   E2 = 0d0
 
   do p=1,N
     do q=1,N
-      E1 = E1 + rdm1(p,q)*Hc(p,q)
+      E1 = E1 + rdm1(p,q)*h(p,q)
       do r=1,N
         do s=1,N
           E2 = E2 + rdm2(p,q,r,s)*ERI(p,q,r,s)
@@ -498,9 +513,9 @@ subroutine pCCD(dotest,maxSCF,thresh,max_diis,nBas,nC,nO,nV,nR,Hc,ERI,ENuc,ERHF,
 
 ! Compute gradient
 
-  allocate(g(N**2))
+  allocate(grad(N**2))
 
-  g(:) = 0d0
+  grad(:) = 0d0
 
   pq = 0
   do p=1,N
@@ -509,25 +524,83 @@ subroutine pCCD(dotest,maxSCF,thresh,max_diis,nBas,nC,nO,nV,nR,Hc,ERI,ENuc,ERHF,
       pq = pq + 1
 
       do r=1,N
-        g(pq) = g(pq) + Hc(r,p)*rdm1(r,q)  - Hc(q,r)*rdm1(p,r)
+        grad(pq) = grad(pq) + h(r,p)*rdm1(r,q)  - h(q,r)*rdm1(p,r)
       end do
 
       do r=1,N
         do s=1,N
           do t=1,N
-            g(pq) = g(pq) + (ERI(r,s,p,t)*rdm2(r,s,q,t) - ERI(q,t,r,s)*rdm2(p,t,r,s))
+            grad(pq) = grad(pq) + (ERI(r,s,p,t)*rdm2(r,s,q,t) - ERI(q,t,r,s)*rdm2(p,t,r,s))
           end do
         end do
       end do
 
     end do
   end do
+
+  write(*,*) 'Orbital gradient at the pCCD level:'
+  call matout(N,N,grad)
  
 ! Compute Hessian
 
-  allocate(H(N**2,N**2))
+  allocate(hess(N**2,N**2),tmp(N,N,N,N))
 
-  H(:,:) = 0d0
+  tmp(:,:,:,:) = 0d0
+
+  do p=1,N
+    do q=1,N
+
+      rs = 0
+      do r=1,N
+        do s=1,N
+
+          tmp(p,q,r,s) = - h(s,p)*rdm1(r,q) - h(q,r)*rdm1(p,s)
+          
+          do u=1,N
+
+            tmp(p,q,r,s) = tmp(p,q,r,s) + 0.5d0*(                          &
+                Kronecker_delta(q,r)*(h(u,p)*rdm1(u,s) + h(s,u)*rdm1(p,u)) &
+              + Kronecker_delta(p,s)*(h(u,r)*rdm1(u,q) + h(q,u)*rdm1(r,u)) )
+
+          end do
+
+          do u=1,N
+            do v=1,N
+
+            tmp(p,q,r,s) = tmp(p,q,r,s) + ERI(u,v,p,r)*rdm2(u,v,q,s) + ERI(q,s,u,v)*rdm2(p,r,u,v)
+
+            end do
+          end do
+
+          do t=1,N
+            do u=1,N
+
+            tmp(p,q,r,s) = tmp(p,q,r,s) - (                             &
+                ERI(s,t,p,u)*rdm2(r,t,q,u) + ERI(t,s,p,u)*rdm2(t,r,q,u) &
+              + ERI(q,u,r,t)*rdm2(p,u,s,t) + ERI(q,u,t,r)*rdm2(p,u,t,s) )
+
+            end do
+          end do
+
+          do t=1,N
+            do u=1,N
+              do v=1,N
+
+                tmp(p,q,r,s) = tmp(p,q,r,s) + 0.5d0*(                                              &
+                    Kronecker_delta(q,r)*(ERI(u,v,p,t)*rdm2(u,v,s,t) + ERI(s,t,u,v)*rdm2(p,t,u,v)) &
+                  + Kronecker_delta(p,s)*(ERI(q,t,u,v)*rdm2(r,t,u,v) + ERI(u,v,r,t)*rdm2(u,v,q,t)) )
+
+              end do
+            end do
+          end do
+
+        end do
+      end do
+
+    end do
+  end do
+
+! Flatten Hessian matrix and add permutations
 
   pq = 0
   do p=1,N
@@ -541,11 +614,23 @@ subroutine pCCD(dotest,maxSCF,thresh,max_diis,nBas,nC,nO,nV,nR,Hc,ERI,ENuc,ERHF,
 
           rs = rs + 1
 
+          hess(pq,rs) = tmp(p,q,r,s) - tmp(q,p,r,s) - tmp(p,q,s,r) + tmp(q,p,s,r)
+
         end do
       end do
 
     end do
   end do
+
+  call matout(N**2,N**2,hess)
+
+  deallocate(tmp)
+
+  allocate(eig(N**2))
+
+  call diagonalize_matrix(N**2,hess,eig)
+  
+  call vecout(N**2,eig)
 
 ! Testing zone
 
