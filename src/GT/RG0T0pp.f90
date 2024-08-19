@@ -64,10 +64,6 @@ subroutine RG0T0pp(dotest,doACFDT,exchange_kernel,doXBS,dophBSE,TDA_T,TDA,dBSE,d
   double precision,allocatable  :: eGT(:)
   double precision,allocatable  :: eGTlin(:)
 
-  double precision :: t0, t1
-  double precision :: tt0, tt1
-
-  call wall_time(t0)
 
 ! Output variables
 
@@ -127,25 +123,11 @@ subroutine RG0T0pp(dotest,doACFDT,exchange_kernel,doXBS,dophBSE,TDA_T,TDA,dBSE,d
 
   allocate(Bpp(nVVs,nOOs),Cpp(nVVs,nVVs),Dpp(nOOs,nOOs))
 
-  call wall_time(tt0)
   call ppLR_C(iblock,nBas,nC,nO,nV,nR,nVVs,1d0,eHF,ERI,Cpp)
-  call wall_time(tt1)
-  write(*,'(A65,1X,F9.3,A8)') 'Wall time for ppLR_C = ',tt1-tt0,' seconds'
-
-  call wall_time(tt0)
   call ppLR_D(iblock,nBas,nC,nO,nV,nR,nOOs,1d0,eHF,ERI,Dpp)
-  call wall_time(tt1)
-  write(*,'(A65,1X,F9.3,A8)') 'Wall time for ppLR_D = ',tt1-tt0,' seconds'
-
-  call wall_time(tt0)
   if(.not.TDA_T) call ppLR_B(iblock,nBas,nC,nO,nV,nR,nOOs,nVVs,1d0,ERI,Bpp)
-  call wall_time(tt1)
-  write(*,'(A65,1X,F9.3,A8)') 'Wall time for ppLR_B = ',tt1-tt0,' seconds'
 
-  call wall_time(tt0)
   call ppLR(TDA_T,nOOs,nVVs,Bpp,Cpp,Dpp,Om1s,X1s,Y1s,Om2s,X2s,Y2s,EcRPA(ispin))
-  call wall_time(tt1)
-  write(*,'(A65,1X,F9.3,A8)') 'Wall time for ppLR = ',tt1-tt0,' seconds'
 
   deallocate(Bpp,Cpp,Dpp)
 
@@ -164,25 +146,11 @@ subroutine RG0T0pp(dotest,doACFDT,exchange_kernel,doXBS,dophBSE,TDA_T,TDA,dBSE,d
 
   allocate(Bpp(nVVt,nOOt),Cpp(nVVt,nVVt),Dpp(nOOt,nOOt))
 
-  call wall_time(tt0)
   call ppLR_C(iblock,nBas,nC,nO,nV,nR,nVVt,1d0,eHF,ERI,Cpp)
-  call wall_time(tt1)
-  write(*,'(A65,1X,F9.3,A8)') 'Wall time for ppLR_C = ',tt1-tt0,' seconds'
-
-  call wall_time(tt0)
   call ppLR_D(iblock,nBas,nC,nO,nV,nR,nOOt,1d0,eHF,ERI,Dpp)
-  call wall_time(tt1)
-  write(*,'(A65,1X,F9.3,A8)') 'Wall time for ppLR_D = ',tt1-tt0,' seconds'
-
-  call wall_time(tt0)
   if(.not.TDA_T) call ppLR_B(iblock,nBas,nC,nO,nV,nR,nOOt,nVVt,1d0,ERI,Bpp)
-  call wall_time(tt1)
-  write(*,'(A65,1X,F9.3,A8)') 'Wall time for ppLR_B = ',tt1-tt0,' seconds'
 
-  call wall_time(tt0)
   call ppLR(TDA_T,nOOt,nVVt,Bpp,Cpp,Dpp,Om1t,X1t,Y1t,Om2t,X2t,Y2t,EcRPA(ispin))
-  call wall_time(tt1)
-  write(*,'(A65,1X,F9.3,A8)') 'Wall time for ppLR = ',tt1-tt0,' seconds'
 
   deallocate(Bpp,Cpp,Dpp)
 
@@ -196,24 +164,17 @@ subroutine RG0T0pp(dotest,doACFDT,exchange_kernel,doXBS,dophBSE,TDA_T,TDA,dBSE,d
 ! iblock = 1
   iblock = 3
 
-  call wall_time(tt0)
   call GTpp_excitation_density(iblock,nBas,nC,nO,nV,nR,nOOs,nVVs,ERI,X1s,Y1s,rho1s,X2s,Y2s,rho2s)
-  call wall_time(tt1)
-  write(*,'(A65,1X,F9.3,A8)') 'Wall time for GTpp_excitation_density = ',tt1-tt0,' seconds'
 
 ! iblock = 2
   iblock = 4
 
-  call wall_time(tt0)
   call GTpp_excitation_density(iblock,nBas,nC,nO,nV,nR,nOOt,nVVt,ERI,X1t,Y1t,rho1t,X2t,Y2t,rho2t)
-  call wall_time(tt1)
-  write(*,'(A65,1X,F9.3,A8)') 'Wall time for GTpp_excitation_density = ',tt1-tt0,' seconds'
 
 !----------------------------------------------
 ! Compute T-matrix version of the self-energy 
 !----------------------------------------------
 
-  call wall_time(tt0)
   if(regularize) then 
     call GTpp_regularization(nBas,nC,nO,nV,nR,nOOs,nVVs,eHF,Om1s,rho1s,Om2s,rho2s)
     call GTpp_regularization(nBas,nC,nO,nV,nR,nOOt,nVVt,eHF,Om1t,rho1t,Om2t,rho2t)
@@ -221,15 +182,11 @@ subroutine RG0T0pp(dotest,doACFDT,exchange_kernel,doXBS,dophBSE,TDA_T,TDA,dBSE,d
 
   call GTpp_self_energy_diag(eta,nBas,nC,nO,nV,nR,nOOs,nVVs,nOOt,nVVt,eHF,Om1s,rho1s,Om2s,rho2s, & 
                              Om1t,rho1t,Om2t,rho2t,EcGM,Sig,Z)
-  call wall_time(tt1)
-  write(*,'(A65,1X,F9.3,A8)') 'Wall time for self-energy = ',tt1-tt0,' seconds'
 
 !----------------------------------------------
 ! Solve the quasi-particle equation
 !----------------------------------------------
 
-  call wall_time(tt0)
-  
   eGTlin(:) = eHF(:) + Z(:)*Sig(:)
 
   if(linearize) then
@@ -248,9 +205,6 @@ subroutine RG0T0pp(dotest,doACFDT,exchange_kernel,doXBS,dophBSE,TDA_T,TDA,dBSE,d
                       Om1t,rho1t,Om2t,rho2t,eGTlin,eHF,eGT,Z)
 
   end if
-
-  call wall_time(tt1)
-  write(*,'(A65,1X,F9.3,A8)') 'Wall time to solve QP = ',tt1-tt0,' seconds'
 
 ! call GTpp_plot_self_energy(nBas,nC,nO,nV,nR,nOOs,nVVs,nOOt,nVVt,eHF,eGT,Om1s,rho1s,Om2s,rho2s, &
 !                            Om1t,rho1t,Om2t,rho2t)
@@ -281,25 +235,11 @@ subroutine RG0T0pp(dotest,doACFDT,exchange_kernel,doXBS,dophBSE,TDA_T,TDA,dBSE,d
 
   allocate(Bpp(nVVt,nOOt),Cpp(nVVt,nVVt),Dpp(nOOt,nOOt))
 
-  call wall_time(tt0)
   call ppLR_C(iblock,nBas,nC,nO,nV,nR,nVVt,1d0,eGT,ERI,Cpp)
-  call wall_time(tt1)
-  write(*,'(A65,1X,F9.3,A8)') 'Wall time for ppLR_C = ',tt1-tt0,' seconds'
-
-  call wall_time(tt0)
   call ppLR_D(iblock,nBas,nC,nO,nV,nR,nOOt,1d0,eGT,ERI,Dpp)
-  call wall_time(tt1)
-  write(*,'(A65,1X,F9.3,A8)') 'Wall time for ppLR_D = ',tt1-tt0,' seconds'
-
-  call wall_time(tt0)
   if(.not.TDA_T) call ppLR_B(iblock,nBas,nC,nO,nV,nR,nOOt,nVVt,1d0,ERI,Bpp)
-  call wall_time(tt1)
-  write(*,'(A65,1X,F9.3,A8)') 'Wall time for ppLR_B = ',tt1-tt0,' seconds'
 
-  call wall_time(tt0)
   call ppLR(TDA_T,nOOt,nVVt,Bpp,Cpp,Dpp,Om1t,X1t,Y1t,Om2t,X2t,Y2t,EcRPA(ispin))
-  call wall_time(tt1)
-  write(*,'(A65,1X,F9.3,A8)') 'Wall time for ppLR = ',tt1-tt0,' seconds'
 
   deallocate(Bpp,Cpp,Dpp)
 
@@ -398,8 +338,5 @@ subroutine RG0T0pp(dotest,doACFDT,exchange_kernel,doXBS,dophBSE,TDA_T,TDA,dBSE,d
     call dump_test_value('R','G0T0pp LUMO energy',eGT(nO+1))
 
   end if
-
-  call wall_time(t1)
-  write(*,'(A65,1X,F9.3,A8)') 'Total Wall time for RG0T0pp = ',t1-t0,' seconds'
 
 end subroutine 
