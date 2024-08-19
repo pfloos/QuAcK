@@ -2,6 +2,7 @@ subroutine GTpp_excitation_density(ispin,nBas,nC,nO,nV,nR,nOO,nVV,ERI,X1,Y1,rho1
 
 ! Compute excitation densities for T-matrix self-energy
 
+
   implicit none
 
 ! Input variables
@@ -43,6 +44,8 @@ subroutine GTpp_excitation_density(ispin,nBas,nC,nO,nV,nR,nOO,nVV,ERI,X1,Y1,rho1
 !----------------------------------------------
 
   if(ispin == 1) then
+
+    print*, "ispin = ", ispin
 
      !$OMP PARALLEL &
      !$OMP SHARED(nC,nBas,nR,nO,nVV,nOO,rho1,rho2,ERI,X1,Y1,X2,Y2) &
@@ -123,10 +126,11 @@ subroutine GTpp_excitation_density(ispin,nBas,nC,nO,nV,nR,nOO,nVV,ERI,X1,Y1,rho1
 
   if(ispin == 2 .or. ispin == 4) then
 
+    print*, "ispin = ", ispin
+
     do q=nC+1,nBas-nR
       do p=nC+1,nBas-nR
  
-!       do ab=1,nVV
         ab = 0
         do a=nO+1,nBas-nR
           do b=a+1,nBas-nR
@@ -153,7 +157,6 @@ subroutine GTpp_excitation_density(ispin,nBas,nC,nO,nV,nR,nOO,nVV,ERI,X1,Y1,rho1
         end do
         end do
  
-!       do ij=1,nOO
         ij = 0
         do i=nC+1,nO
           do j=i+1,nO
@@ -190,6 +193,8 @@ subroutine GTpp_excitation_density(ispin,nBas,nC,nO,nV,nR,nOO,nVV,ERI,X1,Y1,rho1
 !----------------------------------------------
 
   if(ispin == 3) then
+
+    print*, "ispin = ", ispin
      
      !$OMP PARALLEL &
      !$OMP SHARED(nC,nBas,nR,nO,nVV,nOO,rho1,rho2,ERI,X1,Y1,X2,Y2) &
