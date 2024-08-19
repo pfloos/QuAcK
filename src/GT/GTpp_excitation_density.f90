@@ -47,11 +47,10 @@ subroutine GTpp_excitation_density(ispin,nBas,nC,nO,nV,nR,nOO,nVV,ERI,X1,Y1,rho1
 
     print*, "ispin = ", ispin
 
-     !$OMP PARALLEL &
-     !$OMP SHARED(nC,nBas,nR,nO,nVV,nOO,rho1,rho2,ERI,X1,Y1,X2,Y2) &
-     !$OMP PRIVATE(q,p,ab,cd,kl,ij) &
-     !$OMP DEFAULT(NONE)
-     !$OMP DO
+    !$OMP PARALLEL DEFAULT(NONE)                                         &
+    !$OMP          PRIVATE(p, q, a, b, ab, c, d, cd, i, j, ij, k, l, kl) &
+    !$OMP          SHARED(nC, nBas, nR, nO, rho1, rho2, ERI, X1, Y1, X2, Y2)
+    !$OMP DO COLLAPSE(2)
 
      do q=nC+1,nBas-nR
         do p=nC+1,nBas-nR
@@ -116,8 +115,8 @@ subroutine GTpp_excitation_density(ispin,nBas,nC,nO,nV,nR,nOO,nVV,ERI,X1,Y1,rho1
 
         end do
      end do
-     !$OMP END DO
-     !$OMP END PARALLEL
+    !$OMP END DO
+    !$OMP END PARALLEL
   end if
 
 !----------------------------------------------
@@ -128,63 +127,81 @@ subroutine GTpp_excitation_density(ispin,nBas,nC,nO,nV,nR,nOO,nVV,ERI,X1,Y1,rho1
 
     print*, "ispin = ", ispin
 
-    do q=nC+1,nBas-nR
-      do p=nC+1,nBas-nR
+    !$OMP PARALLEL DEFAULT(NONE)                                         &
+    !$OMP          PRIVATE(p, q, a, b, ab, c, d, cd, i, j, ij, k, l, kl) &
+    !$OMP          SHARED(nC, nBas, nR, nO, rho1, rho2, ERI, X1, Y1, X2, Y2)
+    !$OMP DO COLLAPSE(2)
+    do q = nC+1, nBas-nR
+      do p = nC+1, nBas-nR
  
         ab = 0
-        do a=nO+1,nBas-nR
-          do b=a+1,nBas-nR
+
+        do a = nO+1, nBas-nR
+          do b = a+1, nBas-nR
+
           ab = ab + 1
  
           cd = 0
-          do c=nO+1,nBas-nR
-            do d=c+1,nBas-nR
+          do c = nO+1, nBas-nR
+            do d = c+1, nBas-nR
+
               cd = cd + 1
+
               rho1(p,q,ab) = rho1(p,q,ab) & 
                            + (ERI(p,q,c,d) - ERI(p,q,d,c))*X1(cd,ab) 
-            end do
-          end do
+            end do ! d
+          end do ! c
  
           kl = 0
-          do k=nC+1,nO
-            do l=k+1,nO
+          do k = nC+1, nO
+            do l = k+1, nO
+
               kl = kl + 1
+
               rho1(p,q,ab) = rho1(p,q,ab) & 
                            + (ERI(p,q,k,l) - ERI(p,q,l,k))*Y1(kl,ab) 
-            end do
-          end do
+            end do ! l
+          end do ! k
  
-        end do
-        end do
+        end do ! b
+      end do ! a
  
-        ij = 0
-        do i=nC+1,nO
-          do j=i+1,nO
+      ij = 0
+      do i = nC+1, nO
+        do j = i+1, nO
+
           ij = ij + 1
- 
+          
           cd = 0
-          do c=nO+1,nBas-nR
-            do d=c+1,nBas-nR
+          
+          do c = nO+1, nBas-nR
+            do d = c+1, nBas-nR
+          
               cd = cd + 1
+          
               rho2(p,q,ij) = rho2(p,q,ij) & 
                            + (ERI(p,q,c,d) - ERI(p,q,d,c))*X2(cd,ij) 
-            end do
-          end do
- 
+            end do ! d
+          end do ! c
+          
           kl = 0
-          do k=nC+1,nO
-            do l=k+1,nO
+          do k = nC+1, nO
+            do l = k+1, nO
+          
               kl = kl + 1
+          
               rho2(p,q,ij) = rho2(p,q,ij) & 
                            + (ERI(p,q,k,l) - ERI(p,q,l,k))*Y2(kl,ij) 
-            end do
-          end do
- 
-        end do
-        end do
+            end do ! l
+          end do ! k
 
-      end do
-    end do
+        end do ! j
+      end do ! i
+
+    end do ! p
+  end do ! q
+  !$OMP END DO
+  !$OMP END PARALLEL
 
   end if
 
@@ -196,69 +213,76 @@ subroutine GTpp_excitation_density(ispin,nBas,nC,nO,nV,nR,nOO,nVV,ERI,X1,Y1,rho1
 
     print*, "ispin = ", ispin
      
-     !$OMP PARALLEL &
-     !$OMP SHARED(nC,nBas,nR,nO,nVV,nOO,rho1,rho2,ERI,X1,Y1,X2,Y2) &
-     !$OMP PRIVATE(q,p,ab,cd,kl,ij,c,d,k,l) &
-     !$OMP DEFAULT(NONE)
-     !$OMP DO
+    !$OMP PARALLEL DEFAULT(NONE)                                         &
+    !$OMP          PRIVATE(p, q, a, b, ab, c, d, cd, i, j, ij, k, l, kl) &
+    !$OMP          SHARED(nC, nBas, nR, nO, rho1, rho2, ERI, X1, Y1, X2, Y2)
+    !$OMP DO COLLAPSE(2)
      
-     do q=nC+1,nBas-nR
-        do p=nC+1,nBas-nR
+    do q = nC+1, nBas-nR
+      do p = nC+1, nBas-nR
  
-           ! do ab=1,nVV
-           ab = 0
-           do a=nO+1,nBas-nR
-              do b=nO+1,nBas-nR
-                 ab = ab + 1
+        ab = 0
+        do a = nO+1, nBas-nR
+          do b = nO+1, nBas-nR
+
+            ab = ab + 1
  
-                 cd = 0
-                 do c=nO+1,nBas-nR
-                    do d=nO+1,nBas-nR
-                       cd = cd + 1
-                       rho1(p,q,ab) = rho1(p,q,ab) + ERI(p,q,c,d)*X1(cd,ab) 
-                    end do
-                 end do
- 
-                 kl = 0
-                 do k=nC+1,nO
-                    do l=nC+1,nO
-                       kl = kl + 1
-                       rho1(p,q,ab) = rho1(p,q,ab) + ERI(p,q,k,l)*Y1(kl,ab) 
-                    end do
-                 end do
- 
+            cd = 0
+            do c = nO+1, nBas-nR
+              do d = nO+1, nBas-nR
+
+                cd = cd + 1
+
+                rho1(p,q,ab) = rho1(p,q,ab) + ERI(p,q,c,d)*X1(cd,ab) 
               end do
-           end do
+            end do
  
-        ! do ij=1,nOO
-           ij = 0
-           do i=nC+1,nO
-              do j=nC+1,nO
-                 ij = ij + 1
-             
-                 cd = 0
-                 do c=nO+1,nBas-nR
-                    do d=nO+1,nBas-nR
-                       cd = cd + 1
-                       rho2(p,q,ij) = rho2(p,q,ij) + ERI(p,q,c,d)*X2(cd,ij) 
-                    end do
-                 end do
- 
-                 kl = 0
-                 do k=nC+1,nO
-                    do l=nC+1,nO
-                       kl = kl + 1
-                       rho2(p,q,ij) = rho2(p,q,ij) + ERI(p,q,k,l)*Y2(kl,ij) 
-                    end do
-                 end do
- 
+            kl = 0
+            do k = nC+1, nO
+              do l = nC+1, nO
+
+                kl = kl + 1
+
+                rho1(p,q,ab) = rho1(p,q,ab) + ERI(p,q,k,l)*Y1(kl,ab) 
               end do
-           end do
-       
+            end do
+ 
+          end do
         end do
-     end do
-     !$OMP END DO
-     !$OMP END PARALLEL
+ 
+        ij = 0
+        do i = nC+1, nO
+          do j = nC+1, nO
+
+            ij = ij + 1
+             
+            cd = 0
+            do c = nO+1, nBas-nR
+              do d = nO+1, nBas-nR
+
+                cd = cd + 1
+
+                rho2(p,q,ij) = rho2(p,q,ij) + ERI(p,q,c,d)*X2(cd,ij) 
+              end do
+            end do
+ 
+            kl = 0
+            do k = nC+1, nO
+              do l = nC+1, nO
+
+                kl = kl + 1
+
+                rho2(p,q,ij) = rho2(p,q,ij) + ERI(p,q,k,l)*Y2(kl,ij) 
+              end do
+            end do
+ 
+          end do
+        end do
+       
+      end do
+    end do
+    !$OMP END DO
+    !$OMP END PARALLEL
 
   end if
 
