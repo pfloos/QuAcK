@@ -54,7 +54,7 @@ subroutine orthogonalization_matrix(nBas,S,X)
 
     end do
     
-    call ADAt(nBas,Uvec,Uval,X)
+    call ADAt(nBas, Uvec(1,1), Uval(1), X(1,1))
 
   elseif(ortho_type == 2) then
 
