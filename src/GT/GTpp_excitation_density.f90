@@ -54,8 +54,6 @@ subroutine GTpp_excitation_density(ispin,nBas,nC,nO,nV,nR,nOO,nVV,ERI,X1,Y1,rho1
 
   if(ispin == 1) then
 
-    print*, "ispin = ", ispin
-
     !$OMP PARALLEL DEFAULT(NONE)                                         &
     !$OMP          PRIVATE(p, q, a, b, ab, c, d, cd, i, j, ij, k, l, kl) &
     !$OMP          SHARED(nC, nBas, nR, nO, rho1, rho2, ERI, X1, Y1, X2, Y2)
@@ -268,8 +266,6 @@ subroutine GTpp_excitation_density(ispin,nBas,nC,nO,nV,nR,nOO,nVV,ERI,X1,Y1,rho1
 !----------------------------------------------
 
   if(ispin == 3) then
-
-    print*, "ispin = ", ispin
 
     dim_1 = (nBas - nO) * (nBas - nO)
     dim_2 = nO * nO
