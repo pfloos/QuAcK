@@ -71,7 +71,7 @@ subroutine GW_ppBSE_static_kernel_C(ispin,eta,nBas,nC,nO,nV,nR,nS,nVV,lambda,ERI
         endif
 
         cd = 0
-        do c = nO + 1, nBas-nR
+        do c = nO+1, nBas-nR
           do d = c, nBas-nR
             cd = cd + 1
 
@@ -91,6 +91,8 @@ subroutine GW_ppBSE_static_kernel_C(ispin,eta,nBas,nC,nO,nV,nR,nS,nVV,lambda,ERI
     enddo
     !$OMP END DO
     !$OMP END PARALLEL
+
+    deallocate(Om_tmp)
 
 !    ab = 0
 !    do a=nO+1,nBas-nR
@@ -123,28 +125,72 @@ subroutine GW_ppBSE_static_kernel_C(ispin,eta,nBas,nC,nO,nV,nR,nS,nVV,lambda,ERI
 
   if(ispin == 2) then
 
-    ab = 0
-    do a=nO+1,nBas-nR
-      do b=a+1,nBas-nR
-        ab = ab + 1
+    a0 = nBas - nR - nO - 1
+    lambda4 = 4.d0 * lambda
+    eta2 = eta * eta
+
+    allocate(Om_tmp(nS))
+
+    !$OMP PARALLEL DEFAULT(NONE) PRIVATE(m) SHARED(nS, eta2, Om, Om_tmp)
+    !$OMP DO
+    do m = 1, nS
+      Om_tmp(m) = Om(m) / (Om(m)*Om(m) + eta2)
+    enddo
+    !$OMP END DO
+    !$OMP END PARALLEL
+
+    !$OMP PARALLEL DEFAULT(NONE)                      &
+    !$OMP          PRIVATE(a, b, aa, ab, c, d, cd, m) &
+    !$OMP          SHARED(nO, nBas, nR, nS, a0, lambda4, Om_tmp, rho, KC)
+    !$OMP DO
+    do a = nO+1, nBas-nR
+      aa = a0 * (a - nO - 1) - (a - nO - 1) * (a - nO) / 2 - nO - 1
+      do b = a+1, nBas-nR
+        ab = aa + b
+
         cd = 0
-        do c=nO+1,nBas-nR
-          do d=c+1,nBas-nR
+        do c = nO+1, nBas-nR
+          do d = c+1, nBas-nR
             cd = cd + 1
 
-            chi = 0d0
-            do m=1,nS
-              eps = Om(m)**2 + eta**2
-              chi = chi - rho(a,c,m)*rho(b,d,m)*Om(m)/eps &
-                        + rho(a,d,m)*rho(b,c,m)*Om(m)/eps
+            KC(ab,cd) = 0d0
+            do m = 1, nS
+              KC(ab,cd) = KC(ab,cd) - rho(a,c,m) * rho(b,d,m) * Om_tmp(m) &
+                                    + rho(a,d,m) * rho(b,c,m) * Om_tmp(m)
             end do
-           
-            KC(ab,cd) = 4d0*lambda*chi
 
-          end do
-        end do
-      end do
-    end do
+            KC(ab,cd) = lambda4 * KC(ab,cd)
+          enddo
+        enddo
+      enddo
+    enddo
+    !$OMP END DO
+    !$OMP END PARALLEL
+
+    deallocate(Om_tmp)
+
+!    ab = 0
+!    do a=nO+1,nBas-nR
+!      do b=a+1,nBas-nR
+!        ab = ab + 1
+!        cd = 0
+!        do c=nO+1,nBas-nR
+!          do d=c+1,nBas-nR
+!            cd = cd + 1
+!
+!            chi = 0d0
+!            do m=1,nS
+!              eps = Om(m)**2 + eta**2
+!              chi = chi - rho(a,c,m)*rho(b,d,m)*Om(m)/eps &
+!                        + rho(a,d,m)*rho(b,c,m)*Om(m)/eps
+!            end do
+!           
+!            KC(ab,cd) = 4d0*lambda*chi
+!
+!          end do
+!        end do
+!      end do
+!    end do
 
   end if
 
