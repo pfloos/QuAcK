@@ -51,6 +51,10 @@ subroutine GW_ppBSE_static_kernel_C(ispin,eta,nBas,nC,nO,nV,nR,nS,nVV,lambda,ERI
     allocate(tmp_m(nBas,nBas,nS))
     allocate(tmp(nBas,nBas,nBas,nBas))
 
+    !$OMP PARALLEL DEFAULT(NONE)         &
+    !$OMP          PRIVATE(m, c, a, eps) &
+    !$OMP          SHARED(nS, nBas, eta2, Om, rho, tmp_m)
+    !$OMP DO
     do m = 1, nS
       eps = Om(m) / (Om(m)*Om(m) + eta2)
       do c = 1, nBas
@@ -59,6 +63,8 @@ subroutine GW_ppBSE_static_kernel_C(ispin,eta,nBas,nC,nO,nV,nR,nS,nVV,lambda,ERI
         enddo
       enddo
     enddo
+    !$OMP END DO
+    !$OMP END PARALLEL
 
     call dgemm("N", "T", nBas*nBas, nBas*nBas, nS, 1.d0,       &
                tmp_m(1,1,1), nBas*nBas, rho(1,1,1), nBas*nBas, &
@@ -216,6 +222,10 @@ subroutine GW_ppBSE_static_kernel_C(ispin,eta,nBas,nC,nO,nV,nR,nS,nVV,lambda,ERI
     allocate(tmp_m(nBas,nBas,nS))
     allocate(tmp(nBas,nBas,nBas,nBas))
 
+    !$OMP PARALLEL DEFAULT(NONE)         &
+    !$OMP          PRIVATE(m, c, a, eps) &
+    !$OMP          SHARED(nS, nBas, eta2, Om, rho, tmp_m)
+    !$OMP DO
     do m = 1, nS
       eps = Om(m) / (Om(m)*Om(m) + eta2)
       do c = 1, nBas
@@ -224,6 +234,8 @@ subroutine GW_ppBSE_static_kernel_C(ispin,eta,nBas,nC,nO,nV,nR,nS,nVV,lambda,ERI
         enddo
       enddo
     enddo
+    !$OMP END DO
+    !$OMP END PARALLEL
 
     call dgemm("N", "T", nBas*nBas, nBas*nBas, nS, 1.d0,       &
                tmp_m(1,1,1), nBas*nBas, rho(1,1,1), nBas*nBas, &
