@@ -59,6 +59,11 @@ subroutine RG0W0(dotest,doACFDT,exchange_kernel,doXBS,dophBSE,dophBSE2,TDA_W,TDA
   double precision,allocatable  :: eGWlin(:)
   double precision,allocatable  :: eGW(:)
 
+  double precision :: t0, t1
+  double precision :: tt0, tt1
+
+  call wall_time(t0)
+
 ! Output variables
 
 ! Hello world
@@ -101,26 +106,48 @@ subroutine RG0W0(dotest,doACFDT,exchange_kernel,doXBS,dophBSE,dophBSE2,TDA_W,TDA
 ! Compute screening !
 !-------------------!
 
-                 call phLR_A(ispin,dRPA,nBas,nC,nO,nV,nR,nS,1d0,eHF,ERI,Aph)
+  call wall_time(tt0)
+  call phLR_A(ispin,dRPA,nBas,nC,nO,nV,nR,nS,1d0,eHF,ERI,Aph)
+  call wall_time(tt1)
+  write(*,'(A65,1X,F9.3,A8)') 'Wall time for phLR_A =',tt1-tt0,' seconds'
+
+  call wall_time(tt0)
   if(.not.TDA_W) call phLR_B(ispin,dRPA,nBas,nC,nO,nV,nR,nS,1d0,ERI,Bph)
+  call wall_time(tt1)
+  write(*,'(A65,1X,F9.3,A8)') 'Wall time for phLR_B =',tt1-tt0,' seconds'
 
+  call wall_time(tt0)
   call phLR(TDA_W,nS,Aph,Bph,EcRPA,Om,XpY,XmY)
+  call wall_time(tt1)
+  write(*,'(A65,1X,F9.3,A8)') 'Wall time for phLR =',tt1-tt0,' seconds'
 
+  call wall_time(tt0)
   if(print_W) call print_excitation_energies('phRPA@RHF','singlet',nS,Om)
+  call wall_time(tt1)
+  write(*,'(A65,1X,F9.3,A8)') 'Wall time for print_excitation_energies =',tt1-tt0,' seconds'
 
 !--------------------------!
 ! Compute spectral weights !
 !--------------------------!
 
+  call wall_time(tt0)
   call GW_excitation_density(nBas,nC,nO,nR,nS,ERI,XpY,rho)
+  call wall_time(tt1)
+  write(*,'(A65,1X,F9.3,A8)') 'Wall time for GW_excitation_density =',tt1-tt0,' seconds'
 
 !------------------------!
 ! Compute GW self-energy !
 !------------------------!
 
+  call wall_time(tt0)
   if(regularize) call GW_regularization(nBas,nC,nO,nV,nR,nS,eHF,Om,rho)
+  call wall_time(tt1)
+  write(*,'(A65,1X,F9.3,A8)') 'Wall time for GW_regularization =',tt1-tt0,' seconds'
 
+  call wall_time(tt0)
   call GW_self_energy_diag(eta,nBas,nC,nO,nV,nR,nS,eHF,Om,rho,EcGM,SigC,Z)
+  call wall_time(tt1)
+  write(*,'(A65,1X,F9.3,A8)') 'Wall time for GW_self_energy_diag =',tt1-tt0,' seconds'
 
 !-----------------------------------!
 ! Solve the quasi-particle equation !
@@ -128,6 +155,7 @@ subroutine RG0W0(dotest,doACFDT,exchange_kernel,doXBS,dophBSE,dophBSE2,TDA_W,TDA
 
   ! Linearized or graphical solution?
 
+  call wall_time(tt0)
   eGWlin(:) = eHF(:) + Z(:)*SigC(:)
 
   if(linearize) then 
@@ -145,6 +173,8 @@ subroutine RG0W0(dotest,doACFDT,exchange_kernel,doXBS,dophBSE,dophBSE2,TDA_W,TDA
     call GW_QP_graph(eta,nBas,nC,nO,nV,nR,nS,eHF,Om,rho,eGWlin,eHF,eGW,Z)
 
   end if
+  call wall_time(tt1)
+  write(*,'(A65,1X,F9.3,A8)') 'Wall time for QP =',tt1-tt0,' seconds'
 
 ! Plot self-energy, renormalization factor, and spectral function
 
@@ -158,19 +188,33 @@ subroutine RG0W0(dotest,doACFDT,exchange_kernel,doXBS,dophBSE,dophBSE2,TDA_W,TDA
 
 ! Compute the RPA correlation energy
 
+  call wall_time(tt0)
   call phLR_A(ispin,dRPA,nBas,nC,nO,nV,nR,nS,1d0,eGW,ERI,Aph)
-  if(.not.TDA_W) call phLR_B(ispin,dRPA,nBas,nC,nO,nV,nR,nS,1d0,ERI,Bph)
+  call wall_time(tt1)
+  write(*,'(A65,1X,F9.3,A8)') 'Wall time for phLR_A =',tt1-tt0,' seconds'
 
+  call wall_time(tt0)
+  if(.not.TDA_W) call phLR_B(ispin,dRPA,nBas,nC,nO,nV,nR,nS,1d0,ERI,Bph)
+  call wall_time(tt1)
+  write(*,'(A65,1X,F9.3,A8)') 'Wall time for phLR_B =',tt1-tt0,' seconds'
+
+  call wall_time(tt0)
   call phLR(TDA_W,nS,Aph,Bph,EcRPA,Om,XpY,XmY)
+  call wall_time(tt1)
+  write(*,'(A65,1X,F9.3,A8)') 'Wall time for phLR =',tt1-tt0,' seconds'
 
 !--------------!
 ! Dump results !
 !--------------!
 
+  call wall_time(tt0)
   call print_RG0W0(nBas,nO,eHF,ENuc,ERHF,SigC,Z,eGW,EcRPA,EcGM)
+  call wall_time(tt1)
+  write(*,'(A65,1X,F9.3,A8)') 'Wall time for print_RG0W0 =',tt1-tt0,' seconds'
 
 ! Perform BSE calculation
 
+  call wall_time(tt0)
   if(dophBSE) then
 
     call GW_phBSE(dophBSE2,TDA_W,TDA,dBSE,dTDA,singlet,triplet,eta,nBas,nC,nO,nV,nR,nS,ERI,dipole_int,eHF,eGW,EcBSE)
@@ -221,7 +265,10 @@ subroutine RG0W0(dotest,doACFDT,exchange_kernel,doXBS,dophBSE,dophBSE2,TDA_W,TDA
     end if
 
   end if
+  call wall_time(tt1)
+  write(*,'(A65,1X,F9.3,A8)') 'Wall time for phBSE =',tt1-tt0,' seconds'
 
+  call wall_time(tt0)
   if(doppBSE) then
 
     call GW_ppBSE(TDA_W,TDA,dBSE,dTDA,singlet,triplet,eta,nBas,nC,nO,nV,nR,nS,ERI,dipole_int,eHF,eGW,EcBSE)
@@ -238,6 +285,8 @@ subroutine RG0W0(dotest,doACFDT,exchange_kernel,doXBS,dophBSE,dophBSE2,TDA_W,TDA
     write(*,*)
 
   end if
+  call wall_time(tt1)
+  write(*,'(A65,1X,F9.3,A8)') 'Wall time for ppBSE =',tt1-tt0,' seconds'
 
 ! end if
   
@@ -250,5 +299,8 @@ subroutine RG0W0(dotest,doACFDT,exchange_kernel,doXBS,dophBSE,dophBSE2,TDA_W,TDA
     call dump_test_value('R','G0W0 LUMO energy',eGW(nO+1))
 
   end if
+
+  call wall_time(t1)
+  write(*,'(A65,1X,F9.3,A8)') 'Wall time for RG0W0 =',t1-t0,' seconds'
 
 end subroutine 

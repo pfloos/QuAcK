@@ -26,15 +26,15 @@ subroutine GW_ppBSE_static_kernel_C(ispin,eta,nBas,nC,nO,nV,nR,nS,nVV,lambda,ERI
   double precision,external     :: Kronecker_delta
   double precision              :: chi
   double precision              :: eps
+  double precision              :: tmp_ab, lambda4, eta2
   integer                       :: a,b,c,d,ab,cd,m
+  integer                       :: a0, aa
+
+  double precision, allocatable :: Om_tmp(:)
 
 ! Output variables
 
   double precision,intent(out)  :: KC(nVV,nVV)
-
-! Initialization
-
-  KC(:,:) = 0d0
 
 !---------------!
 ! Singlet block !
@@ -42,28 +42,78 @@ subroutine GW_ppBSE_static_kernel_C(ispin,eta,nBas,nC,nO,nV,nR,nS,nVV,lambda,ERI
 
   if(ispin == 1) then
 
-    ab = 0
-    do a=nO+1,nBas-nR
-      do b=a,nBas-nR
-        ab = ab + 1
+    a0 = nBas - nR - nO
+    lambda4 = 4.d0 * lambda
+    eta2 = eta * eta
+
+    allocate(Om_tmp(nS))
+
+    !$OMP PARALLEL DEFAULT(NONE) PRIVATE(m) SHARED(nS, eta2, Om, Om_tmp)
+    !$OMP DO
+    do m = 1, nS
+      Om_tmp(m) = Om(m) / (Om(m)*Om(m) + eta2)
+    enddo
+    !$OMP END DO
+    !$OMP END PARALLEL
+
+    !$OMP PARALLEL DEFAULT(NONE)                              &
+    !$OMP          PRIVATE(a, b, aa, ab, c, d, cd, m, tmp_ab) &
+    !$OMP          SHARED(nO, nBas, nR, nS, a0, lambda4, Om_tmp, rho, KC)
+    !$OMP DO
+    do a = nO+1, nBas-nR
+      aa = a0 * (a - nO - 1) - (a - nO - 1) * (a - nO) / 2 - nO
+      do b = a, nBas-nR
+        ab = aa + b
+
+        tmp_ab = lambda4
+        if(a .eq. b) then
+          tmp_ab = 0.7071067811865475d0 * lambda4
+        endif
+
         cd = 0
-        do c=nO+1,nBas-nR
-          do d=c,nBas-nR
+        do c = nO + 1, nBas-nR
+          do d = c, nBas-nR
             cd = cd + 1
 
-              chi = 0d0
-              do m=1,nS
-                eps = Om(m)**2 + eta**2
-                chi = chi - rho(a,c,m)*rho(b,d,m)*Om(m)/eps &
-                          - rho(a,d,m)*rho(b,c,m)*Om(m)/eps
-              end do
+            KC(ab,cd) = 0d0
+            do m = 1, nS
+              KC(ab,cd) = KC(ab,cd) - rho(a,c,m) * rho(b,d,m) * Om_tmp(m) &
+                                    - rho(a,d,m) * rho(b,c,m) * Om_tmp(m)
+            end do
 
-              KC(ab,cd) = 4d0*lambda*chi/sqrt((1d0 + Kronecker_delta(a,b))*(1d0 + Kronecker_delta(c,d)))
+            KC(ab,cd) = tmp_ab * KC(ab,cd)
+            if(c .eq. d) then
+              KC(ab,cd) = 0.7071067811865475d0 * KC(ab,cd)
+            endif
+          enddo
+        enddo
+      enddo
+    enddo
+    !$OMP END DO
+    !$OMP END PARALLEL
 
-          end do
-        end do
-      end do
-    end do
+!    ab = 0
+!    do a=nO+1,nBas-nR
+!      do b=a,nBas-nR
+!        ab = ab + 1
+!        cd = 0
+!        do c=nO+1,nBas-nR
+!          do d=c,nBas-nR
+!            cd = cd + 1
+!
+!              chi = 0d0
+!              do m=1,nS
+!                eps = Om(m)**2 + eta**2
+!                chi = chi - rho(a,c,m)*rho(b,d,m)*Om(m)/eps &
+!                          - rho(a,d,m)*rho(b,c,m)*Om(m)/eps
+!              end do
+!
+!              KC(ab,cd) = 4d0*lambda*chi/sqrt((1d0 + Kronecker_delta(a,b))*(1d0 + Kronecker_delta(c,d)))
+!
+!          end do
+!        end do
+!      end do
+!    end do
 
   end if
 
