@@ -375,15 +375,29 @@ subroutine ADAt(N,A,D,B)
 
   double precision,intent(out)  :: B(N,N)
 
-  B = 0d0
+  double precision, allocatable :: tmp(:,:)
 
-  do i=1,N
-    do j=1,N
-      do k=1,N
-        B(i,k) = B(i,k) + A(i,j)*D(j)*A(k,j)
-      end do
-    end do
-  end do
+  allocate(tmp(N,N))
+  !$OMP PARALLEL DEFAULT(NONE) PRIVATE(i, j) SHARED(N, A, D, tmp)
+  !$OMP DO
+  do i = 1, N
+    do j = 1, N
+      tmp(i,j) = D(i) * A(j,i)
+    enddo
+  enddo
+  !$OMP END DO
+  !$OMP END PARALLEL
+  call dgemm("N", "N", N, N, N, 1.d0, A(1,1), N, tmp(1,1), N, 0.d0, B(1,1), N)
+  deallocate(tmp)
+
+!  B = 0d0
+!  do i=1,N
+!    do j=1,N
+!      do k=1,N
+!        B(i,k) = B(i,k) + A(i,j)*D(j)*A(k,j)
+!      end do
+!    end do
+!  end do
 
 end subroutine 
 !------------------------------------------------------------------------

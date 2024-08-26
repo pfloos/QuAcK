@@ -39,9 +39,10 @@ subroutine sort_ppRPA(nOO,nVV,Om,Z,Om1,X1,Y1,Om2,X2,Y2)
   double precision,intent(out)  :: X2(nVV,nOO)
   double precision,intent(out)  :: Y2(nOO,nOO)
 
+
 ! Memory allocation
 
- allocate(M(nOO+nVV,nOO+nVV),Z1(nOO+nVV,nVV),Z2(nOO+nVV,nOO),order1(nVV),order2(nOO))
+  allocate(M(nOO+nVV,nOO+nVV),Z1(nOO+nVV,nVV),Z2(nOO+nVV,nOO),order1(nVV),order2(nOO))
 
 ! Initializatiom
 
@@ -86,7 +87,7 @@ subroutine sort_ppRPA(nOO,nVV,Om,Z,Om1,X1,Y1,Om2,X2,Y2)
 
     end if
 
- end do
+  end do
 
   if(minval(Om1) < 0d0 .or. ab /= nVV) call print_warning('You may have instabilities in pp-RPA!!')
   if(maxval(Om2) > 0d0 .or. ij /= nOO) call print_warning('You may have instabilities in pp-RPA!!')
@@ -111,7 +112,8 @@ subroutine sort_ppRPA(nOO,nVV,Om,Z,Om1,X1,Y1,Om2,X2,Y2)
     call quick_sort(Om2,order2,nOO)
     call set_order(Z2,order2,nOO+nVV,nOO)
 
- end if
+  end if
+
 
 ! Orthogonalize eigenvectors
 
@@ -202,7 +204,6 @@ subroutine sort_ppRPA(nOO,nVV,Om,Z,Om1,X1,Y1,Om2,X2,Y2)
 
   if(nVV > 0) call dgemm ('N', 'N', nOO+nVV, nVV, nOO+nVV, 1d0,  M, nOO+nVV, Z1, nOO+nVV, 0d0, tmp1, nOO+nVV)
   if(nVV > 0) call dgemm ('T', 'N', nVV    , nVV, nOO+nVV, 1d0, Z1, nOO+nVV, tmp1, nOO+nVV, 0d0, S1, nVV)
-
   if(nOO > 0) call dgemm ('N', 'N', nOO+nVV, nOO, nOO+nVV, 1d0,  M, nOO+nVV, -1d0*Z2, nOO+nVV, 0d0, tmp2, nOO+nVV)
   if(nOO > 0) call dgemm ('T', 'N', nOO    , nOO, nOO+nVV, 1d0, Z2, nOO+nVV, tmp2, nOO+nVV, 0d0, S2, nOO)
 
