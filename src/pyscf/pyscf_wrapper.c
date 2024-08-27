@@ -13,6 +13,8 @@ void call_mol_prop(const char *xyz, const char *input_basis, int charge, int mul
     // Initialize the Python interpreter
     Py_Initialize();
 
+    printf("Python version: %s\n", Py_GetVersion());
+
     PyRun_SimpleString("import sys");
     PyRun_SimpleString("sys.path.append('.')");
 

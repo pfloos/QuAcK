@@ -119,6 +119,13 @@ rule fc
 
 """
 
+rule_build_so = """
+rule build_so
+  command = $AR $out $in 
+  description = Linking $out
+
+"""
+
 rule_build_lib = """
 rule build_lib
   command = $AR $out $in 
@@ -149,6 +156,13 @@ rule git_clone
 
 """
 
+build_in_so_dir = "\n".join([
+	header,
+	compiler,
+	rule_fortran,
+	rule_build_so,
+])
+
 build_in_lib_dir = "\n".join([
 	header,
 	compiler,
@@ -170,17 +184,58 @@ build_main = "\n".join([
         rule_git_clone,
 ])
 
-exe_dirs = [ "QuAcK"]
+exe_dirs = ["QuAcK"]
+py_dirs = ["pyscf"]
 lib_dirs = list(filter(lambda x: os.path.isdir(x) and \
-                                 x not in exe_dirs, os.listdir(".")))
+                                 x not in exe_dirs and \
+                                 x not in py_dirs, os.listdir(".")))
+
+
+def create_makefile_in_pydir(directory):
+
+    PYTHON_VERSION = "3.9"
+    CC = "gcc"
+    CCFLAGS = "$(shell python$(PYTHON_VERSION)-config --includes)"
+    LDFLAGS = "-shared -fPIC -L$(LDIR) -Wl,-rpath=$(LDIR) $(shell python$(PYTHON_VERSION)-config --ldflags) -lpython3"
+
+    lib_pydir = "lib{}_wrapper.so".format(directory)
+    c_pydir = "{}_wrapper.c".format(directory)
+
+    with open(os.path.join(directory, "Makefile"), "w") as f:
+        f.write("# This file was automatically generated. Do not modify this file.\n\n")
+
+        f.write("IDIR = {}/include\n".format(QUACK_ROOT))
+        f.write("LDIR = {}/lib\n".format(QUACK_ROOT))
+        f.write("BDIR = {}/bin\n".format(QUACK_ROOT))
+        f.write("SDIR = {}/src\n\n".format(QUACK_ROOT))
+
+        f.write("CC = gcc\n")
+        f.write("PYTHON_VERSION = {}\n".format(PYTHON_VERSION))
+        f.write("CCFLAGS = {}\n".format(CCFLAGS))
+        f.write("LDFLAGS = {}\n\n".format(LDFLAGS))
+
+        f.write("TARGETS = $(LDIR)/{} {}_module.o\n\n".format(lib_pydir, directory))
+
+        f.write("all: $(TARGETS)\n\n")
+
+        f.write("$(LDIR)/{}: {}\n".format(lib_pydir, c_pydir))
+        f.write("\t$(CC) $(CCFLAGS) $(LDFLAGS) {} -o $(LDIR)/{}\n\n".format(c_pydir, lib_pydir))
+
+        f.write("{}_module.o: {}_module.f90\n".format(directory, directory))
+        f.write("\tgfortran -c {}_module.f90 -o {}_module.o -J.\n\n".format(directory, directory))
+
+        f.write(".PHONY: clean\n")
+        f.write("clean:\n")
+        f.write("\trm -f ../../lib/{} *.mod *.o\n\n".format(lib_pydir))
+
 
 def create_ninja_in_libdir(directory):
     def write_rule(f, source_file, replace):
         obj_file = os.path.join("obj", source_file.replace(replace, ".o"))
-        f.write("build {0}: fc {1}\n".format(obj_file,source_file))
+        f.write("build {0}: fc {1}\n".format(obj_file, source_file))
         return obj_file
 
-    with open(os.path.join(directory, "build.ninja"),"w") as f:
+    with open(os.path.join(directory, "build.ninja"), "w") as f:
         f.write(build_in_lib_dir)
         objects = []
         for filename in os.listdir(directory):
@@ -189,8 +244,8 @@ def create_ninja_in_libdir(directory):
                    obj_file = write_rule(f, filename, suffix)
                    objects.append(obj_file)
         objects = " ".join(objects)
-        f.write("build $LDIR/{0}.a: build_lib {1}\n".format(directory,objects))
-        f.write("default $LDIR/{0}.a\n".format(directory))
+        f.write("build $LDIR/lib{}.a: build_lib {}\n".format(directory, objects))
+        f.write("default $LDIR/lib{}.a\n".format(directory))
 
 
 def create_ninja_in_exedir(directory):
@@ -261,6 +316,9 @@ debug:
 """)
 
 def main():
+    for py_dir in py_dirs:
+       create_makefile_in_pydir(py_dir)
+
     for lib_dir in lib_dirs:
        create_ninja_in_libdir(lib_dir)
        create_makefile(lib_dir)

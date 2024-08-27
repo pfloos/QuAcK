@@ -1,4 +1,4 @@
-module pyscf_interface
+module pyscf_module
 
     use, intrinsic :: iso_c_binding
 
@@ -25,5 +25,5 @@ module pyscf_interface
 
     end interface
 
-end module pyscf_interface
+end module pyscf_module
 

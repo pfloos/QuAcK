@@ -1,6 +1,6 @@
 program test_python_call
 
-    use pyscf_interface
+    use pyscf_module
     implicit none
 
     character(len = 100) :: xyz, input_basis, unit_type
