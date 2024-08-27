@@ -1,11 +1,14 @@
 
+import warnings
+warnings.filterwarnings("ignore", category=UserWarning, module="numpy.core.getlimits")
 import numpy as np
 from pyscf import gto
 
 
+
 def read_xyz(xyz):
 
-    f = open(xyz + '.xyz', 'r')
+    f = open(xyz, 'r')
 
     lines = f.read().splitlines()
 

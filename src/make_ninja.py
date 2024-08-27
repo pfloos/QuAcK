@@ -1,6 +1,8 @@
 #!/usr/bin/env python3
 import os
 import sys
+import subprocess
+
 
 DEBUG=False
 try:
@@ -46,7 +48,7 @@ FIX_ORDER_OF_LIBS=-Wl,--start-group
     compile_ifort_linux = """
 FC = ifort -mkl=parallel -qopenmp
 AR = ar crs
-FFLAGS = -I$IDIR -g -Ofast -traceback
+FFLAGS = -I$IDIR -module $IDIR -g -Ofast -traceback
 CC = icc
 CXX = icpc
 LAPACK=
@@ -79,7 +81,7 @@ FIX_ORDER_OF_LIBS=-Wl,--start-group
 compile_olympe = """
 FC = ifort -mkl=parallel -qopenmp
 AR = ar crs
-FFLAGS = -I$IDIR -Ofast -traceback -xCORE-AVX512
+FFLAGS = -I$IDIR -module $IDIR -Ofast -traceback -xCORE-AVX512
 CC = icc
 CXX = icpc
 LAPACK=
@@ -119,12 +121,24 @@ rule fc
 
 """
 
-rule_build_so = """
-rule build_so
-  command = $AR $out $in 
-  description = Linking $out
+rule_cctoso = """
+rule cctoso
+  command = $CC $CFLAGS $PYINC $in -o $out $LDFLAGS $PYLDF
 
 """
+
+def rule_cctoso_flags():
+
+    PYTHON_VERSION = "{}.{}".format(sys.version_info.major, sys.version_info.minor)
+    PYINC = subprocess.run(['python{}-config'.format(PYTHON_VERSION), '--includes'], stdout=subprocess.PIPE, text=True)
+    PYLDF = subprocess.run(['python{}-config'.format(PYTHON_VERSION), '--ldflags'], stdout=subprocess.PIPE, text=True)
+
+    return """
+LDFLAGS = -shared -fPIC -L$LDIR -Wl,-rpath=$LDIR
+PYINC = {}
+PYLDF = {} -lpython{}
+        
+""".format(PYINC.stdout.strip(), PYLDF.stdout.strip(), PYTHON_VERSION)
 
 rule_build_lib = """
 rule build_lib
@@ -137,7 +151,7 @@ rule_build_exe = """
 LIBS = {0} $LAPACK $STDCXX
 
 rule build_exe
-  command = $FC $FIX_ORDER_OF_LIBS $in $LIBS -o $out
+  command = $FC $FFLAGS $FIX_ORDER_OF_LIBS $PYINC $in $LIBS -o $out -L$LDIR -lpyscf_wrapper $PYLDF
   pool = console
   description = Linking $out
 
@@ -156,11 +170,12 @@ rule git_clone
 
 """
 
-build_in_so_dir = "\n".join([
+build_in_py_dir = "\n".join([
 	header,
 	compiler,
+        rule_cctoso_flags(),
+	rule_cctoso,
 	rule_fortran,
-	rule_build_so,
 ])
 
 build_in_lib_dir = "\n".join([
@@ -174,6 +189,7 @@ build_in_lib_dir = "\n".join([
 build_in_exe_dir = "\n".join([
 	header,
 	compiler,
+        rule_cctoso_flags(),
 	rule_fortran,
 	rule_build_exe,
 ])
@@ -193,40 +209,14 @@ lib_dirs = list(filter(lambda x: os.path.isdir(x) and \
 
 def create_makefile_in_pydir(directory):
 
-    PYTHON_VERSION = "{}.{}".format(sys.version_info.major, sys.version_info.minor)
-    CC = "gcc"
-    CCFLAGS = "$(shell python$(PYTHON_VERSION)-config --includes)"
-    LDFLAGS = "-shared -fPIC -L$(LDIR) -Wl,-rpath=$(LDIR) $(shell python$(PYTHON_VERSION)-config --ldflags)"
-
     lib_pydir = "lib{}_wrapper.so".format(directory)
     c_pydir = "{}_wrapper.c".format(directory)
+    with open(os.path.join(directory, "build.ninja"), "w") as f:
+        f.write(build_in_py_dir)
+        f.write("build $LDIR/{}: cctoso {}\n\n".format(lib_pydir, c_pydir))
+        f.write("build {}_module.o: fc {}_module.f90\n".format(directory, directory))
 
-    with open(os.path.join(directory, "Makefile"), "w") as f:
-        f.write("# This file was automatically generated. Do not modify this file.\n\n")
 
-        f.write("IDIR = {}/include\n".format(QUACK_ROOT))
-        f.write("LDIR = {}/lib\n".format(QUACK_ROOT))
-        f.write("BDIR = {}/bin\n".format(QUACK_ROOT))
-        f.write("SDIR = {}/src\n\n".format(QUACK_ROOT))
-
-        f.write("CC = gcc\n")
-        f.write("PYTHON_VERSION = {}\n".format(PYTHON_VERSION))
-        f.write("CCFLAGS = {}\n".format(CCFLAGS))
-        f.write("LDFLAGS = {}\n\n".format(LDFLAGS))
-
-        f.write("TARGETS = $(LDIR)/{} {}_module.o\n\n".format(lib_pydir, directory))
-
-        f.write("all: $(TARGETS)\n\n")
-
-        f.write("$(LDIR)/{}: {}\n".format(lib_pydir, c_pydir))
-        f.write("\t$(CC) $(CCFLAGS) {} -o $(LDIR)/{} $(LDFLAGS)\n\n".format(c_pydir, lib_pydir))
-
-        f.write("{}_module.o: {}_module.f90\n".format(directory, directory))
-        f.write("\tgfortran -c {}_module.f90 -o {}_module.o -J.\n\n".format(directory, directory))
-
-        f.write(".PHONY: clean\n")
-        f.write("clean:\n")
-        f.write("\trm -f ../../lib/{} *.mod *.o\n\n".format(lib_pydir))
 
 
 def create_ninja_in_libdir(directory):
@@ -244,8 +234,8 @@ def create_ninja_in_libdir(directory):
                    obj_file = write_rule(f, filename, suffix)
                    objects.append(obj_file)
         objects = " ".join(objects)
-        f.write("build $LDIR/lib{}.a: build_lib {}\n".format(directory, objects))
-        f.write("default $LDIR/lib{}.a\n".format(directory))
+        f.write("build $LDIR/{}.a: build_lib {}\n".format(directory, objects))
+        f.write("default $LDIR/{}.a\n".format(directory))
 
 
 def create_ninja_in_exedir(directory):
@@ -273,6 +263,8 @@ def create_ninja_in_exedir(directory):
 def create_main_ninja():
 
     libs = " ".join([ "$LDIR/{0}.a".format(x) for x in lib_dirs]) + " "+LIBS
+    for py_dir in py_dirs:
+        libs += "$LDIR/lib{0}_wrapper.so".format(py_dir)
     with open("build.ninja","w") as f:
         f.write(build_main)
         f.write("""
@@ -290,6 +282,8 @@ rule build_lib
             sources = [ "$SDIR/{0}/{1}".format(exe_dir,x) for x in  os.listdir(exe_dir) ]
             sources = filter(lambda x: x.endswith(".f") or x.endswith(".f90"), sources)
             sources = " ".join(sources)
+            for py_dir in py_dirs:
+                sources += " $SDIR/{0}/{0}_wrapper.c $SDIR/{0}/{0}_module.f90".format(py_dir)
             f.write("build $BDIR/{0}: build_exe {1} {2}\n".format(exe_dir,libs,sources))
             f.write("  dir = {0} \n".format(exe_dir) )
 
@@ -298,6 +292,10 @@ rule build_lib
             sources = filter(lambda x: x.endswith(".f") or x.endswith(".f90"), sources)
             sources = " ".join(sources)
             f.write("build $LDIR/{0}.a: build_lib {1} \n  dir = $SDIR/{0}\n".format(libname, sources))
+
+        for py_dir in py_dirs:
+            f.write("build $LDIR/lib{0}_wrapper.so: build_lib $SDIR/{0}/{0}_wrapper.c $SDIR/{0}/{0}_module.f90 \n  dir = $SDIR/{0}\n".format(py_dir))
+
         f.write("build all: phony $BDIR/QuAcK\n")
         f.write("default all\n")
 
@@ -318,6 +316,7 @@ debug:
 def main():
     for py_dir in py_dirs:
        create_makefile_in_pydir(py_dir)
+       create_makefile(py_dir)
 
     for lib_dir in lib_dirs:
        create_ninja_in_libdir(lib_dir)

@@ -1,5 +1,8 @@
 #include <Python.h>
 #include <stdio.h>
+#include <limits.h>
+#include <unistd.h>
+#include <string.h>
 
 
 void call_mol_prop(const char *xyz, const char *input_basis, int charge, int multiplicity, 
@@ -13,12 +16,27 @@ void call_mol_prop(const char *xyz, const char *input_basis, int charge, int mul
     // Initialize the Python interpreter
     Py_Initialize();
 
-    printf("Python version: %s\n", Py_GetVersion());
+    //printf("Python version: %s\n", Py_GetVersion());
+    //printf("xyz: %s\n", xyz);
+    //printf("input_basis: %s\n", input_basis);
+    //printf("charge: %d\n", charge);
+    //printf("multiplicity: %d\n", multiplicity);
+    //printf("unit: %s\n", unit);
+    //printf("cartesian: %d\n", cartesian);
 
-    PyRun_SimpleString("import sys");
-    PyRun_SimpleString("sys.path.append('.')");
-
-    // Import the Python module
+    char exe_path[PATH_MAX];
+    ssize_t len = readlink("/proc/self/exe", exe_path, sizeof(exe_path) - 1);
+    if (len != -1) {
+        exe_path[len] = '\0'; // Null-terminate the string
+        dirname(exe_path); // Get directory part
+        char sys_path_command[PATH_MAX + 30];
+        snprintf(sys_path_command, sizeof(sys_path_command), "sys.path.append('%s')", exe_path);
+        PyRun_SimpleString("import sys");
+        PyRun_SimpleString(sys_path_command);
+    } else {
+        PyRun_SimpleString("import sys");
+        PyRun_SimpleString("sys.path.append('.')");
+    }
     pName = PyUnicode_DecodeFSDefault("pyscf_module");
     pModule = PyImport_Import(pName);
     Py_XDECREF(pName);

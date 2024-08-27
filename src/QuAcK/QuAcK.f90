@@ -1,5 +1,7 @@
 program QuAcK
 
+  use pyscf_module
+
   implicit none
   include 'parameters.h'
 
@@ -68,6 +70,27 @@ program QuAcK
 
   logical                       :: dotest,doRtest,doUtest,doGtest
 
+  ! test pyscf interface
+  character(len = 50) :: xyz, input_basis, unit_type
+  integer :: charge, multiplicity, cartesian
+  integer :: natoms, nalpha, nbeta
+  xyz = '/users/p18005/ammar/tmpdir/QuAcK/mol/H2O.xyz' // c_null_char
+  input_basis = 'sto-3g' // c_null_char
+  unit_type = 'Angstrom' // c_null_char
+  charge = 0
+  multiplicity = 1
+  cartesian = 0
+
+  call call_mol_prop(xyz, input_basis, charge, multiplicity, unit_type, cartesian, &
+                     natoms, nalpha, nbeta, Enuc)
+
+  print *, "Number of atoms:", natoms
+  print *, "Number of alpha electrons:", nalpha
+  print *, "Number of beta electrons:", nbeta
+  print *, "Nuclear energy:", Enuc
+  stop
+
+
 !-------------!
 ! Hello World !
 !-------------!
@@ -130,7 +153,8 @@ program QuAcK
 ! nBas = number of basis functions (see below)   !
 !------------------------------------------------!
 
-  call read_molecule(nNuc,nO,nC,nR)
+  call read_molecule(nNuc, nO, nC, nR)
+
   allocate(ZNuc(nNuc),rNuc(nNuc,ncart))
 
 ! Read geometry

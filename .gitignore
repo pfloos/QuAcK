@@ -1,3 +1,8 @@
 *.o
 *.
 *.so
+*.mod
+*.slurm
+__pycache__
+int/
+.ninja_deps
