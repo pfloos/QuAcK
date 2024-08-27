@@ -5,6 +5,9 @@ import subprocess
 import platform
 from datetime import datetime
 
+from molecule import get_molecules_from_db
+
+
 current_date = datetime.now()
 
 quack_root = os.getenv('QUACK_ROOT')
@@ -62,15 +65,6 @@ gt_opt = "# GT: maxSCF thresh  DIIS lin eta TDA_T reg\n      256    0.00001 5   
 acfdt_opt = "# ACFDT: AC Kx  XBS\n         F  F   T\n"
 bse_opt = "# BSE: phBSE phBSE2 ppBSE dBSE dTDA\n        F     F      F     F    T\n"
 list_opt = [hf_opt, mp_opt, cc_opt, tda_opt, gf_opt, gw_opt, gt_opt, acfdt_opt, bse_opt]
-
-# ---
-
-mol_multip = {
-    "Ne": 1,
-    "H2O": 1,
-}
-
-list_basis = ["cc-pvdz", "cc-pvtz", "cc-pvqz"]
 
 # ---
 
@@ -163,30 +157,36 @@ def main():
         work_path.mkdir(parents=True, exist_ok=True)
         print(f"Directory '{work_path}' created.\n")
 
-    for methd in ["RHF", "UHF", "GHF", "ROHF"]:
+    for mol in molecules:
 
-        work_methd = Path('{}/{}'.format(work_path, methd))
-        if not work_methd.exists():
-            work_methd.mkdir(parents=True, exist_ok=True)
-            print(f"Directory '{work_methd}' created.\n")
+        mol_name = mol.name
+        mol_mult = mol.multiplicity
 
-        class_methd = class_map.get(methd)
 
-        # create input files
-        class_methd.gen_input()
+        for methd in list_methd:
 
-        for mol in mol_multip:
+            if methd not in mol.energies:
+                print(f"Method {methd} does not exist for {mol_name}.")
+                continue
 
-            multip = mol_multip[mol]
+            for bas, _ in mol.energies[methd].items():
 
-            for bas in list_basis:
+                work_methd = Path('{}/{}'.format(work_path, methd))
+                if not work_methd.exists():
+                    work_methd.mkdir(parents=True, exist_ok=True)
+                    print(f"Directory '{work_methd}' created.\n")
+        
+                class_methd = class_map.get(methd)
+        
+                # create input files
+                class_methd.gen_input()
+        
+                file_out = "{}/{}/{}_{}_{}.out".format(work_path, methd, mol_name, mol_mult, bas)
 
-                file_out = "{}/{}/{}_{}_{}.out".format(work_path, methd, mol, multip, bas)
-
-                print(" testing {} for {}@{} (2S+1 = {})".format(methd, mol, bas, multip))
+                print(" testing {} for {}@{} (2S+1 = {})".format(methd, mol_name, bas, mol_mult))
                 print(" file_out: {}".format(file_out))
 
-                class_methd.run_job(file_out, mol, bas, multip)
+                class_methd.run_job(file_out, mol_name, bas, mol_mult)
 
                 print("\n")
             print("\n\n")
@@ -195,10 +195,10 @@ def main():
         print("\n\n\n")
         
 
+db_name = 'molecules.db'
+molecules = get_molecules_from_db(db_name)
+
+list_methd = ["RHF", "UHF", "GHF", "ROHF"]
+
 main()
-
-
-
-
-
 
