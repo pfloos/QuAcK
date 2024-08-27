@@ -193,10 +193,10 @@ lib_dirs = list(filter(lambda x: os.path.isdir(x) and \
 
 def create_makefile_in_pydir(directory):
 
-    PYTHON_VERSION = "3.9"
+    PYTHON_VERSION = "{}.{}".format(sys.version_info.major, sys.version_info.minor)
     CC = "gcc"
     CCFLAGS = "$(shell python$(PYTHON_VERSION)-config --includes)"
-    LDFLAGS = "-shared -fPIC -L$(LDIR) -Wl,-rpath=$(LDIR) $(shell python$(PYTHON_VERSION)-config --ldflags) -lpython3"
+    LDFLAGS = "-shared -fPIC -L$(LDIR) -Wl,-rpath=$(LDIR) $(shell python$(PYTHON_VERSION)-config --ldflags)"
 
     lib_pydir = "lib{}_wrapper.so".format(directory)
     c_pydir = "{}_wrapper.c".format(directory)
@@ -219,7 +219,7 @@ def create_makefile_in_pydir(directory):
         f.write("all: $(TARGETS)\n\n")
 
         f.write("$(LDIR)/{}: {}\n".format(lib_pydir, c_pydir))
-        f.write("\t$(CC) $(CCFLAGS) $(LDFLAGS) {} -o $(LDIR)/{}\n\n".format(c_pydir, lib_pydir))
+        f.write("\t$(CC) $(CCFLAGS) {} -o $(LDIR)/{} $(LDFLAGS)\n\n".format(c_pydir, lib_pydir))
 
         f.write("{}_module.o: {}_module.f90\n".format(directory, directory))
         f.write("\tgfortran -c {}_module.f90 -o {}_module.o -J.\n\n".format(directory, directory))
