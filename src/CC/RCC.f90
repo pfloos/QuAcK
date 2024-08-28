@@ -1,5 +1,8 @@
-subroutine RCC(dotest,doCCD,dopCCD,doDCD,doCCSD,doCCSDT,dodrCCD,dorCCD,docrCCD,dolCCD, & 
-               maxSCF,thresh,max_diis,nBas,nC,nO,nV,nR,Hc,ERI,ENuc,ERHF,eHF,cHF)
+
+! ---
+
+subroutine RCC(dotest, doCCD, dopCCD, doDCD, doCCSD, doCCSDT, dodrCCD, dorCCD, docrCCD, dolCCD, & 
+               maxSCF, thresh, max_diis, nBas_AOs, nBas_MOs, nC, nO, nV, nR, Hc, ERI, ENuc, ERHF, eHF, cHF)
 
 ! Coupled-cluster module
 
@@ -24,17 +27,17 @@ subroutine RCC(dotest,doCCD,dopCCD,doDCD,doCCSD,doCCSDT,dodrCCD,dorCCD,docrCCD,d
   integer,intent(in)            :: max_diis
   double precision,intent(in)   :: thresh
 
-  integer,intent(in)            :: nBas
+  integer,intent(in)            :: nBas_AOs, nBas_MOs
   integer,intent(in)            :: nC
   integer,intent(in)            :: nO
   integer,intent(in)            :: nV
   integer,intent(in)            :: nR
   double precision,intent(in)   :: ENuc
   double precision,intent(in)   :: ERHF
-  double precision,intent(in)   :: eHF(nBas)
-  double precision,intent(in)   :: cHF(nBas,nBas)
-  double precision,intent(in)   :: Hc(nBas,nBas)
-  double precision,intent(in)   :: ERI(nBas,nBas,nBas,nBas)
+  double precision,intent(in)   :: eHF(nBas_MOs)
+  double precision,intent(in)   :: cHF(nBas_AOs,nBas_MOs)
+  double precision,intent(in)   :: Hc(nBas_AOs,nBas_AOs)
+  double precision,intent(in)   :: ERI(nBas_MOs,nBas_MOs,nBas_MOs,nBas_MOs)
 
 ! Local variables
 
@@ -47,11 +50,11 @@ subroutine RCC(dotest,doCCD,dopCCD,doDCD,doCCSD,doCCSDT,dodrCCD,dorCCD,docrCCD,d
   if(doCCD) then
 
     call wall_time(start_CC)
-    call CCD(dotest,maxSCF,thresh,max_diis,nBas,nC,nO,nV,nR,ERI,ENuc,ERHF,eHF)
+    call CCD(dotest,maxSCF,thresh,max_diis,nBas_MOs,nC,nO,nV,nR,ERI,ENuc,ERHF,eHF)
     call wall_time(end_CC)
 
     t_CC = end_CC - start_CC
-    write(*,'(A65,1X,F9.3,A8)') 'Total CPU time for CCD = ',t_CC,' seconds'
+    write(*,'(A65,1X,F9.3,A8)') 'Total wall time for CCD = ',t_CC,' seconds'
     write(*,*)
 
   end if
@@ -63,12 +66,11 @@ subroutine RCC(dotest,doCCD,dopCCD,doDCD,doCCSD,doCCSDT,dodrCCD,dorCCD,docrCCD,d
   if(doDCD) then
 
     call wall_time(start_CC)
-    call DCD(dotest,maxSCF,thresh,max_diis,nBas,nC,nO,nV,nR, & 
-             ERI,ENuc,ERHF,eHF)
+    call DCD(dotest,maxSCF,thresh,max_diis,nBas_MOs,nC,nO,nV,nR,ERI,ENuc,ERHF,eHF)
     call wall_time(end_CC)
 
     t_CC = end_CC - start_CC
-    write(*,'(A65,1X,F9.3,A8)') 'Total CPU time for DCD = ',t_CC,' seconds'
+    write(*,'(A65,1X,F9.3,A8)') 'Total wall time for DCD = ',t_CC,' seconds'
     write(*,*)
 
   end if
@@ -82,11 +84,11 @@ subroutine RCC(dotest,doCCD,dopCCD,doDCD,doCCSD,doCCSDT,dodrCCD,dorCCD,docrCCD,d
   if(doCCSD) then
 
     call wall_time(start_CC)
-    call CCSD(dotest,maxSCF,thresh,max_diis,doCCSDT,nBas,nC,nO,nV,nR,ERI,ENuc,ERHF,eHF)
+    call CCSD(dotest,maxSCF,thresh,max_diis,doCCSDT,nBas_MOs,nC,nO,nV,nR,ERI,ENuc,ERHF,eHF)
     call wall_time(end_CC)
 
     t_CC = end_CC - start_CC
-    write(*,'(A65,1X,F9.3,A8)') 'Total CPU time for CCSD or CCSD(T)= ',t_CC,' seconds'
+    write(*,'(A65,1X,F9.3,A8)') 'Total wall time for CCSD or CCSD(T)= ',t_CC,' seconds'
     write(*,*)
 
   end if
@@ -98,11 +100,11 @@ subroutine RCC(dotest,doCCD,dopCCD,doDCD,doCCSD,doCCSDT,dodrCCD,dorCCD,docrCCD,d
   if(dodrCCD) then
 
     call wall_time(start_CC)
-    call drCCD(dotest,maxSCF,thresh,max_diis,nBas,nC,nO,nV,nR,ERI,ENuc,ERHF,eHF)
+    call drCCD(dotest,maxSCF,thresh,max_diis,nBas_MOs,nC,nO,nV,nR,ERI,ENuc,ERHF,eHF)
     call wall_time(end_CC)
 
     t_CC = end_CC - start_CC
-    write(*,'(A65,1X,F9.3,A8)') 'Total CPU time for direct ring CCD = ',t_CC,' seconds'
+    write(*,'(A65,1X,F9.3,A8)') 'Total wall time for direct ring CCD = ',t_CC,' seconds'
     write(*,*)
 
   end if
@@ -114,11 +116,11 @@ subroutine RCC(dotest,doCCD,dopCCD,doDCD,doCCSD,doCCSDT,dodrCCD,dorCCD,docrCCD,d
   if(dorCCD) then
 
     call wall_time(start_CC)
-    call rCCD(dotest,maxSCF,thresh,max_diis,nBas,nC,nO,nV,nR,ERI,ENuc,ERHF,eHF)
+    call rCCD(dotest,maxSCF,thresh,max_diis,nBas_MOs,nC,nO,nV,nR,ERI,ENuc,ERHF,eHF)
     call wall_time(end_CC)
 
     t_CC = end_CC - start_CC
-    write(*,'(A65,1X,F9.3,A8)') 'Total CPU time for rCCD = ',t_CC,' seconds'
+    write(*,'(A65,1X,F9.3,A8)') 'Total wall time for rCCD = ',t_CC,' seconds'
     write(*,*)
 
   end if
@@ -130,11 +132,11 @@ subroutine RCC(dotest,doCCD,dopCCD,doDCD,doCCSD,doCCSDT,dodrCCD,dorCCD,docrCCD,d
   if(docrCCD) then
 
     call wall_time(start_CC)
-    call crCCD(dotest,maxSCF,thresh,max_diis,nBas,nC,nO,nV,nR,ERI,ENuc,ERHF,eHF)
+    call crCCD(dotest,maxSCF,thresh,max_diis,nBas_MOs,nC,nO,nV,nR,ERI,ENuc,ERHF,eHF)
     call wall_time(end_CC)
 
     t_CC = end_CC - start_CC
-    write(*,'(A65,1X,F9.3,A8)') 'Total CPU time for crossed-ring CCD = ',t_CC,' seconds'
+    write(*,'(A65,1X,F9.3,A8)') 'Total wall time for crossed-ring CCD = ',t_CC,' seconds'
     write(*,*)
 
   end if
@@ -146,11 +148,11 @@ subroutine RCC(dotest,doCCD,dopCCD,doDCD,doCCSD,doCCSDT,dodrCCD,dorCCD,docrCCD,d
   if(dolCCD) then
 
     call wall_time(start_CC)
-    call lCCD(dotest,maxSCF,thresh,max_diis,nBas,nC,nO,nV,nR,ERI,ENuc,ERHF,eHF)
+    call lCCD(dotest,maxSCF,thresh,max_diis,nBas_MOs,nC,nO,nV,nR,ERI,ENuc,ERHF,eHF)
     call wall_time(end_CC)
 
     t_CC = end_CC - start_CC
-    write(*,'(A65,1X,F9.3,A8)') 'Total CPU time for ladder CCD = ',t_CC,' seconds'
+    write(*,'(A65,1X,F9.3,A8)') 'Total wall time for ladder CCD = ',t_CC,' seconds'
     write(*,*)
 
   end if
@@ -162,11 +164,12 @@ subroutine RCC(dotest,doCCD,dopCCD,doDCD,doCCSD,doCCSDT,dodrCCD,dorCCD,docrCCD,d
   if(dopCCD) then
 
     call wall_time(start_CC)
-    call pCCD(dotest,maxSCF,thresh,max_diis,nBas,nC,nO,nV,nR,Hc,ERI,ENuc,ERHF,eHF,cHF)
+    call pCCD(dotest, maxSCF, thresh, max_diis, nBas_AOs, nBas_MOs, &
+              nC, nO, nV, nR, Hc, ERI, ENuc, ERHF, eHF, cHF)
     call wall_time(end_CC)
 
     t_CC = end_CC - start_CC
-    write(*,'(A65,1X,F9.3,A8)') 'Total CPU time for pair CCD = ',t_CC,' seconds'
+    write(*,'(A65,1X,F9.3,A8)') 'Total wall time for pair CCD = ',t_CC,' seconds'
     write(*,*)
 
   end if
