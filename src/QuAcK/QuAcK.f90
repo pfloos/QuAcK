@@ -15,7 +15,7 @@ program QuAcK
   logical                       :: doG0W0,doevGW,doqsGW,doufG0W0,doufGW,doSRGqsGW
   logical                       :: doG0T0pp,doevGTpp,doqsGTpp,doufG0T0pp,doG0T0eh,doevGTeh,doqsGTeh
 
-  integer                       :: nNuc,nBas
+  integer                       :: nNuc,nBas_AOs
   integer                       :: nC(nspin)
   integer                       :: nO(nspin)
   integer                       :: nV(nspin)
@@ -120,15 +120,15 @@ program QuAcK
                     doACFDT,exchange_kernel,doXBS,                                              &
                     dophBSE,dophBSE2,doppBSE,dBSE,dTDA)
 
-!------------------------------------------------!
-! Read input information                         !
-!------------------------------------------------!
-! nC   = number of core orbitals                 !
-! nO   = number of occupied orbitals             !
-! nV   = number of virtual orbitals (see below)  !
-! nR   = number of Rydberg orbitals              !
-! nBas = number of basis functions (see below)   !
-!------------------------------------------------!
+!---------------------------------------------------!
+! Read input information                            !
+!---------------------------------------------------!
+! nC       = number of core orbitals                !
+! nO       = number of occupied orbitals            !
+! nV       = number of virtual orbitals (see below) !
+! nR       = number of Rydberg orbitals             !
+! nBas_AOs = number of basis functions in AOs       !
+!---------------------------------------------------!
 
   call read_molecule(nNuc,nO,nC,nR)
   allocate(ZNuc(nNuc),rNuc(nNuc,ncart))
@@ -141,7 +141,7 @@ program QuAcK
 ! Read basis set information from PySCF !
 !---------------------------------------!
 
-  call read_basis_pyscf(nBas,nO,nV)
+  call read_basis_pyscf(nBas_AOs, nO, nV)
 
 !--------------------------------------!
 ! Read one- and two-electron integrals !
@@ -149,26 +149,31 @@ program QuAcK
 
 ! Memory allocation for one- and two-electron integrals
 
-  allocate(S(nBas,nBas),T(nBas,nBas),V(nBas,nBas),Hc(nBas,nBas),X(nBas,nBas), & 
-           ERI_AO(nBas,nBas,nBas,nBas),dipole_int_AO(nBas,nBas,ncart))
+  allocate(S(nBas_AOs,nBas_AOs))
+  allocate(T(nBas_AOs,nBas_AOs))
+  allocate(V(nBas_AOs,nBas_AOs))
+  allocate(Hc(nBas_AOs,nBas_AOs))
+  allocate(X(nBas_AOs,nBas_AOs))
+  allocate(ERI_AO(nBas_AOs,nBas_AOs,nBas_AOs,nBas_AOs))
+  allocate(dipole_int_AO(nBas_AOs,nBas_AOs,ncart))
 
 ! Read integrals
 
   call wall_time(start_int)
 
-  call read_integrals(nBas,S,T,V,Hc,ERI_AO)
-  call read_dipole_integrals(nBas,dipole_int_AO)
+  call read_integrals(nBas_AOs, S(1,1), T(1,1), V(1,1), Hc(1,1), ERI_AO(1,1,1,1))
+  call read_dipole_integrals(nBas_AOs, dipole_int_AO)
 
   call wall_time(end_int)
 
   t_int = end_int - start_int
   write(*,*)
-  write(*,'(A65,1X,F9.3,A8)') 'Total CPU time for reading integrals = ',t_int,' seconds'
+  write(*,'(A65,1X,F9.3,A8)') 'Total wall time for reading integrals = ',t_int,' seconds'
   write(*,*)
 
 ! Compute orthogonalization matrix
 
-  call orthogonalization_matrix(nBas,S,X)
+  call orthogonalization_matrix(nBas_AOs, S, X)
 
 !---------------------!
 ! Choose QuAcK branch !
@@ -200,7 +205,7 @@ program QuAcK
                 dodrCCD,dorCCD,docrCCD,dolCCD,doCIS,doCIS_D,doCID,doCISD,doFCI,dophRPA,dophRPAx,docrRPA,doppRPA, &
                 doG0F2,doevGF2,doqsGF2,doufG0F02,doG0F3,doevGF3,doG0W0,doevGW,doqsGW,doufG0W0,doufGW,doSRGqsGW,  &
                 doG0T0pp,doevGTpp,doqsGTpp,doufG0T0pp,doG0T0eh,doevGTeh,doqsGTeh,                                & 
-                nNuc,nBas,nC,nO,nV,nR,ENuc,ZNuc,rNuc,                                                            &
+                nNuc,nBas_AOs,nC,nO,nV,nR,ENuc,ZNuc,rNuc,                                                        &
                 S,T,V,Hc,X,dipole_int_AO,ERI_AO,maxSCF_HF,max_diis_HF,thresh_HF,level_shift,                     &
                 guess_type,mix,reg_MP,maxSCF_CC,max_diis_CC,thresh_CC,spin_conserved,spin_flip,TDA,              &
                 maxSCF_GF,max_diis_GF,renorm_GF,thresh_GF,lin_GF,reg_GF,eta_GF,maxSCF_GW,max_diis_GW,thresh_GW,  &
@@ -216,7 +221,7 @@ program QuAcK
                 dodrCCD,dorCCD,docrCCD,dolCCD,doCIS,doCIS_D,doCID,doCISD,doFCI,dophRPA,dophRPAx,docrRPA,doppRPA, &
                 doG0F2,doevGF2,doqsGF2,doufG0F02,doG0F3,doevGF3,doG0W0,doevGW,doqsGW,doufG0W0,doufGW,doSRGqsGW,  &
                 doG0T0pp,doevGTpp,doqsGTpp,doufG0T0pp,doG0T0eh,doevGTeh,doqsGTeh,                                & 
-                nNuc,nBas,nC,nO,nV,nR,ENuc,ZNuc,rNuc,                                                            &
+                nNuc,nBas_AOs,nC,nO,nV,nR,ENuc,ZNuc,rNuc,                                                        &
                 S,T,V,Hc,X,dipole_int_AO,ERI_AO,maxSCF_HF,max_diis_HF,thresh_HF,level_shift,                     &
                 guess_type,mix,reg_MP,maxSCF_CC,max_diis_CC,thresh_CC,spin_conserved,spin_flip,TDA,              &
                 maxSCF_GF,max_diis_GF,renorm_GF,thresh_GF,lin_GF,reg_GF,eta_GF,maxSCF_GW,max_diis_GW,thresh_GW,  &
@@ -228,13 +233,13 @@ program QuAcK
 !--------------------------!
 
   if(doGQuAcK) & 
-    call GQuAcK(doGtest,doGHF,dostab,dosearch,doMP2,doMP3,doCCD,dopCCD,doDCD,doCCSD,doCCSDT,              &
-                dodrCCD,dorCCD,docrCCD,dolCCD,dophRPA,dophRPAx,docrRPA,doppRPA,                           &  
-                doG0W0,doevGW,doqsGW,doG0F2,doevGF2,doqsGF2,                                              &
-                nNuc,nBas,sum(nC),sum(nO),sum(nV),sum(nR),ENuc,ZNuc,rNuc,S,T,V,Hc,X,dipole_int_AO,ERI_AO, &
-                maxSCF_HF,max_diis_HF,thresh_HF,level_shift,guess_type,mix,reg_MP,                        & 
-                maxSCF_CC,max_diis_CC,thresh_CC,TDA,maxSCF_GF,max_diis_GF,thresh_GF,lin_GF,reg_GF,eta_GF, & 
-                maxSCF_GW,max_diis_GW,thresh_GW,TDA_W,lin_GW,reg_GW,eta_GW,                               &
+    call GQuAcK(doGtest,doGHF,dostab,dosearch,doMP2,doMP3,doCCD,dopCCD,doDCD,doCCSD,doCCSDT,                  &
+                dodrCCD,dorCCD,docrCCD,dolCCD,dophRPA,dophRPAx,docrRPA,doppRPA,                               &
+                doG0W0,doevGW,doqsGW,doG0F2,doevGF2,doqsGF2,                                                  &
+                nNuc,nBas_AOs,sum(nC),sum(nO),sum(nV),sum(nR),ENuc,ZNuc,rNuc,S,T,V,Hc,X,dipole_int_AO,ERI_AO, &
+                maxSCF_HF,max_diis_HF,thresh_HF,level_shift,guess_type,mix,reg_MP,                            &
+                maxSCF_CC,max_diis_CC,thresh_CC,TDA,maxSCF_GF,max_diis_GF,thresh_GF,lin_GF,reg_GF,eta_GF,     &
+                maxSCF_GW,max_diis_GW,thresh_GW,TDA_W,lin_GW,reg_GW,eta_GW,                                   &
                 dophBSE,dophBSE2,doppBSE,dBSE,dTDA,doACFDT,exchange_kernel,doXBS)
 
 !-----------!
@@ -256,7 +261,7 @@ program QuAcK
   call wall_time(end_QuAcK)
 
   t_QuAcK = end_QuAcK - start_QuAcK
-  write(*,'(A65,1X,F9.3,A8)') 'Total CPU time for QuAcK = ',t_QuAcK,' seconds'
+  write(*,'(A65,1X,F9.3,A8)') 'Total wall time for QuAcK = ',t_QuAcK,' seconds'
   write(*,*)
 
 end program 

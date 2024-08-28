@@ -1,4 +1,4 @@
-subroutine read_integrals(nBas,S,T,V,Hc,G)
+subroutine read_integrals(nBas_AOs, S, T, V, Hc, G)
 
 ! Read one- and two-electron integrals from files
 
@@ -7,7 +7,7 @@ subroutine read_integrals(nBas,S,T,V,Hc,G)
 
 ! Input variables
 
-  integer,intent(in)            :: nBas
+  integer,intent(in)            :: nBas_AOs
 
 ! Local variables
 
@@ -18,11 +18,11 @@ subroutine read_integrals(nBas,S,T,V,Hc,G)
 
 ! Output variables
 
-  double precision,intent(out)  :: S(nBas,nBas)
-  double precision,intent(out)  :: T(nBas,nBas)
-  double precision,intent(out)  :: V(nBas,nBas)
-  double precision,intent(out)  :: Hc(nBas,nBas)
-  double precision,intent(out)  :: G(nBas,nBas,nBas,nBas)
+  double precision,intent(out)  :: S(nBas_AOs,nBas_AOs)
+  double precision,intent(out)  :: T(nBas_AOs,nBas_AOs)
+  double precision,intent(out)  :: V(nBas_AOs,nBas_AOs)
+  double precision,intent(out)  :: Hc(nBas_AOs,nBas_AOs)
+  double precision,intent(out)  :: G(nBas_AOs,nBas_AOs,nBas_AOs,nBas_AOs)
 
 ! Open file with integrals
 
@@ -35,7 +35,6 @@ subroutine read_integrals(nBas,S,T,V,Hc,G)
   open(unit=8 ,file='int/Ov.dat')
   open(unit=9 ,file='int/Kin.dat')
   open(unit=10,file='int/Nuc.dat')
-  open(unit=11,file='int/ERI.dat')
 
   open(unit=21,file='int/x.dat')
   open(unit=22,file='int/y.dat')
@@ -75,31 +74,29 @@ subroutine read_integrals(nBas,S,T,V,Hc,G)
 
   Hc(:,:) = T(:,:) + V(:,:)
 
-! Read nuclear integrals
+! Read 2e-integrals
 
-  G(:,:,:,:) = 0d0
-  do 
-    read(11,*,end=11) mu,nu,la,si,ERI
+!  ! formatted file
+!  open(unit=11, file='int/ERI.dat')
+!  G(:,:,:,:) = 0d0
+!  do 
+!    read(11,*,end=11) mu, nu, la, si, ERI
+!    ERI = lambda*ERI
+!    G(mu,nu,la,si) = ERI    !   <12|34>
+!    G(la,nu,mu,si) = ERI    !   <32|14>
+!    G(mu,si,la,nu) = ERI    !   <14|32>
+!    G(la,si,mu,nu) = ERI    !   <34|12>
+!    G(si,mu,nu,la) = ERI    !   <41|23>
+!    G(nu,la,si,mu) = ERI    !   <23|41>
+!    G(nu,mu,si,la) = ERI    !   <21|43>
+!    G(si,la,nu,mu) = ERI    !   <43|21>
+!  end do
+!  11 close(unit=11)
 
-    ERI = lambda*ERI
-!   <12|34>
-    G(mu,nu,la,si) = ERI
-!   <32|14>
-    G(la,nu,mu,si) = ERI
-!   <14|32>
-    G(mu,si,la,nu) = ERI
-!   <34|12>
-    G(la,si,mu,nu) = ERI
-!   <41|23>
-    G(si,mu,nu,la) = ERI
-!   <23|41>
-    G(nu,la,si,mu) = ERI
-!   <21|43>
-    G(nu,mu,si,la) = ERI
-!   <43|21>
-    G(si,la,nu,mu) = ERI
-  end do
-  11 close(unit=11)
+  ! binary file
+  open(unit=11, file='int/ERI.bin', form='unformatted', access='stream')
+  read(11) G
+  close(11)
 
 
 ! Print results
@@ -107,24 +104,24 @@ subroutine read_integrals(nBas,S,T,V,Hc,G)
     write(*,'(A28)') '----------------------'
     write(*,'(A28)') 'Overlap integrals'
     write(*,'(A28)') '----------------------'
-    call matout(nBas,nBas,S)
+    call matout(nBas_AOs,nBas_AOs,S)
     write(*,*)
     write(*,'(A28)') '----------------------'
     write(*,'(A28)') 'Kinetic integrals'
     write(*,'(A28)') '----------------------'
-    call matout(nBas,nBas,T)
+    call matout(nBas_AOs,nBas_AOs,T)
     write(*,*)
     write(*,'(A28)') '----------------------'
     write(*,'(A28)') 'Nuclear integrals'
     write(*,'(A28)') '----------------------'
-    call matout(nBas,nBas,V)
+    call matout(nBas_AOs,nBas_AOs,V)
     write(*,*)
     write(*,'(A28)') '----------------------'
     write(*,'(A28)') 'Electron repulsion integrals'
     write(*,'(A28)') '----------------------'
-    do la=1,nBas
-      do si=1,nBas
-        call matout(nBas,nBas,G(1,1,la,si))
+    do la=1,nBas_AOs
+      do si=1,nBas_AOs
+        call matout(nBas_AOs, nBas_AOs, G(1,1,la,si))
       end do
     end do
     write(*,*)
