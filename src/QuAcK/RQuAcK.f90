@@ -112,7 +112,7 @@ subroutine RQuAcK(dotest,doRHF,doROHF,dostab,dosearch,doMP2,doMP3,doCCD,dopCCD,d
   allocate(cHF(nBas_AOs,nBas_MOs))
   allocate(eHF(nBas_MOs))
   allocate(PHF(nBas_AOs,nBas_AOs))
-  allocate(dipole_int_MO(nBas_AOs,nBas_AOs,ncart))
+  allocate(dipole_int_MO(nBas_MOs,nBas_MOs,ncart))
   allocate(ERI_MO(nBas_MOs,nBas_MOs,nBas_MOs,nBas_MOs))
 
 !---------------------!
@@ -122,7 +122,6 @@ subroutine RQuAcK(dotest,doRHF,doROHF,dostab,dosearch,doMP2,doMP3,doCCD,dopCCD,d
   if(doRHF) then
 
     call wall_time(start_HF)
-    ! TODO
     call RHF(dotest, maxSCF_HF, thresh_HF, max_diis_HF, guess_type, level_shift, nNuc, ZNuc, rNuc, ENuc, &
              nBas_AOs, nBas_MOs, nO, S, T, V, Hc, ERI_AO, dipole_int_AO, X, ERHF, eHF, cHF, PHF)
     call wall_time(end_HF)
@@ -137,8 +136,8 @@ subroutine RQuAcK(dotest,doRHF,doROHF,dostab,dosearch,doMP2,doMP3,doCCD,dopCCD,d
 
     call wall_time(start_HF)
     ! TODO
-    call ROHF(dotest,maxSCF_HF,thresh_HF,max_diis_HF,guess_type,mix,level_shift,nNuc,ZNuc,rNuc,ENuc, &
-              nBas_AOs,nO,S,T,V,Hc,ERI_AO,dipole_int_AO,X,ERHF,eHF,cHF,PHF)
+    call ROHF(dotest, maxSCF_HF, thresh_HF, max_diis_HF, guess_type, mix, level_shift, nNuc, ZNuc, rNuc, ENuc, &
+              nBas_AOs, nBas_MOs, nO, S, T, V, Hc, ERI_AO, dipole_int_AO, X, ERHF, eHF, cHF, PHF)
     call wall_time(end_HF)
 
     t_HF = end_HF - start_HF
@@ -161,7 +160,7 @@ subroutine RQuAcK(dotest,doRHF,doROHF,dostab,dosearch,doMP2,doMP3,doCCD,dopCCD,d
   
   do ixyz = 1, ncart
     ! TODO
-    call AOtoMO(nBas_AOs,cHF,dipole_int_AO(:,:,ixyz),dipole_int_MO(:,:,ixyz))
+    call AOtoMO(nBas_AOs,nBas_MOs,cHF,dipole_int_AO(:,:,ixyz),dipole_int_MO(:,:,ixyz))
   end do 
 
   ! 4-index transform 

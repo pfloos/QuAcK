@@ -175,7 +175,7 @@ subroutine SRG_qsGW(dotest,maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,
     call wall_time(tao1)
     
     do ixyz=1,ncart             
-      call AOtoMO(nBas,cHF,dipole_int_AO(:,:,ixyz),dipole_int_MO(:,:,ixyz))
+      call AOtoMO(nBas,nBas,cHF,dipole_int_AO(:,:,ixyz),dipole_int_MO(:,:,ixyz))
     end do  
 
     call AOtoMO_ERI_RHF(nBas,c,ERI_AO,ERI_MO)
@@ -218,7 +218,7 @@ subroutine SRG_qsGW(dotest,maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,
     ! Make correlation self-energy Hermitian and transform it back to AO basis
 
     call wall_time(tmo1)
-    call MOtoAO(nBas,S,c,SigC,SigCp)
+    call MOtoAO(nBas,nBas,S,c,SigC,SigCp)
     call wall_time(tmo2)
     tmo = tmo + tmo2 - tmo1
    ! Solve the quasi-particle equation
@@ -245,7 +245,7 @@ subroutine SRG_qsGW(dotest,maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,
     call diagonalize_matrix(nBas,cp,eGW)
     c = matmul(X,cp)
 
-    call AOtoMO(nBas,c,SigCp,SigC)
+    call AOtoMO(nBas,nBas,c,SigCp,SigC)
 
     ! Compute new density matrix in the AO basis
 

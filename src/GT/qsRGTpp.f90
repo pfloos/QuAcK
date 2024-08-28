@@ -235,7 +235,7 @@ subroutine qsRGTpp(dotest,maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,d
    
     Sig = 0.5d0*(Sig + transpose(Sig))
 
-    call MOtoAO(nBas,S,c,Sig,Sigp)
+    call MOtoAO(nBas,nBas,S,c,Sig,Sigp)
  
     ! Solve the quasi-particle equation
 

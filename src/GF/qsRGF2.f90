@@ -161,7 +161,7 @@ subroutine qsRGF2(dotest,maxSCF,thresh,max_diis,dophBSE,doppBSE,TDA,dBSE,dTDA,si
    
     SigC = 0.5d0*(SigC + transpose(SigC))
 
-    call MOtoAO(nBas,S,c,SigC,SigCp)
+    call MOtoAO(nBas,nBas,S,c,SigC,SigCp)
  
     ! Solve the quasi-particle equation
 

@@ -197,7 +197,7 @@ subroutine qsUGF2(dotest,maxSCF,thresh,max_diis,BSE,TDA,dBSE,dTDA,spin_conserved
     end do
 
     do is=1,nspin
-      call MOtoAO(nBas,S,c(:,:,is),SigC(:,:,is),SigCp(:,:,is))
+      call MOtoAO(nBas,nBas,S,c(:,:,is),SigC(:,:,is),SigCp(:,:,is))
     end do
  
     ! Solve the quasi-particle equation
