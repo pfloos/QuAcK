@@ -180,7 +180,7 @@ subroutine RQuAcK(dotest,doRHF,doROHF,dostab,dosearch,doMP2,doMP3,doCCD,dopCCD,d
   if(dostab) then
 
     call wall_time(start_stab)
-    call RHF_stability(nBas_AOs,nC,nO,nV,nR,nS,eHF,ERI_MO)
+    call RHF_stability(nBas_MOs, nC, nO, nV, nR, nS, eHF, ERI_MO)
     call wall_time(end_stab)
 
     t_stab = end_stab - start_stab
@@ -192,9 +192,9 @@ subroutine RQuAcK(dotest,doRHF,doROHF,dostab,dosearch,doMP2,doMP3,doCCD,dopCCD,d
   if(dosearch) then
 
     call wall_time(start_stab)
-    ! TODO
-    call RHF_search(maxSCF_HF,thresh_HF,max_diis_HF,guess_type,level_shift,nNuc,ZNuc,rNuc,ENuc, &
-                    nBas_AOs,nC,nO,nV,nR,S,T,V,Hc,ERI_AO,ERI_MO,dipole_int_AO,dipole_int_MO,X,ERHF,eHF,cHF,PHF)
+    call RHF_search(maxSCF_HF, thresh_HF, max_diis_HF, guess_type, level_shift, nNuc, ZNuc, rNuc, ENuc, &
+                    nBas_AOs, nBas_MOs, nC, nO, nV, nR, S, T, V, Hc, ERI_AO, ERI_MO, dipole_int_AO,     &
+                    dipole_int_MO, X, ERHF, eHF, cHF, PHF)
     call wall_time(end_stab)
 
     t_stab = end_stab - start_stab
