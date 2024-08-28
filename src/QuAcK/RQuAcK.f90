@@ -309,11 +309,10 @@ subroutine RQuAcK(dotest,doRHF,doROHF,dostab,dosearch,doMP2,doMP3,doCCD,dopCCD,d
   if(doGW) then
     
     call wall_time(start_GW)
-    ! TODO
-    call RGW(dotest,doG0W0,doevGW,doqsGW,doufG0W0,doufGW,doSRGqsGW,maxSCF_GW,thresh_GW,max_diis_GW,      &
-             doACFDT,exchange_kernel,doXBS,dophBSE,dophBSE2,doppBSE,TDA_W,TDA,dBSE,dTDA,singlet,triplet, &
-             lin_GW,eta_GW,reg_GW,nNuc,ZNuc,rNuc,ENuc,nBas_AOs,nC,nO,nV,nR,nS,ERHF,S,X,T,V,Hc,           &
-             ERI_AO,ERI_MO,dipole_int_AO,dipole_int_MO,PHF,cHF,eHF)
+    call RGW(dotest, doG0W0, doevGW, doqsGW, doufG0W0, doufGW, doSRGqsGW, maxSCF_GW, thresh_GW, max_diis_GW,        &
+             doACFDT, exchange_kernel, doXBS, dophBSE, dophBSE2, doppBSE, TDA_W, TDA, dBSE, dTDA, singlet, triplet, &
+             lin_GW, eta_GW, reg_GW, nNuc, ZNuc, rNuc, ENuc, nBas_AOs, nBas_MOs, nC, nO, nV, nR, nS, ERHF, S, X, T, &
+             V, Hc, ERI_AO, ERI_MO, dipole_int_AO, dipole_int_MO, PHF, cHF, eHF)
     call wall_time(end_GW)
   
     t_GW = end_GW - start_GW
