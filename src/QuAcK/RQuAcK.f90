@@ -269,9 +269,8 @@ subroutine RQuAcK(dotest,doRHF,doROHF,dostab,dosearch,doMP2,doMP3,doCCD,dopCCD,d
   if(doRPA) then
 
     call wall_time(start_RPA)
-    ! TODO
-    call RRPA(dotest,dophRPA,dophRPAx,docrRPA,doppRPA,TDA,doACFDT,exchange_kernel,singlet,triplet,    & 
-              nBas_AOs,nC,nO,nV,nR,nS,ENuc,ERHF,ERI_MO,dipole_int_MO,eHF,cHF,S)
+    call RRPA(dotest, dophRPA, dophRPAx, docrRPA, doppRPA, TDA, doACFDT, exchange_kernel, singlet, triplet, & 
+              nBas_MOs, nC, nO, nV, nR, nS, ENuc, ERHF, ERI_MO, dipole_int_MO, eHF)
     call wall_time(end_RPA)
 
     t_RPA = end_RPA - start_RPA
@@ -289,11 +288,10 @@ subroutine RQuAcK(dotest,doRHF,doROHF,dostab,dosearch,doMP2,doMP3,doCCD,dopCCD,d
   if(doGF) then
 
     call wall_time(start_GF)
-    ! TODO
-    call RGF(dotest,doG0F2,doevGF2,doqsGF2,doufG0F02,doG0F3,doevGF3,renorm_GF,maxSCF_GF,thresh_GF,max_diis_GF, & 
-             dophBSE,doppBSE,TDA,dBSE,dTDA,singlet,triplet,lin_GF,eta_GF,reg_GF,                               &
-             nNuc,ZNuc,rNuc,ENuc,nBas_AOs,nC,nO,nV,nR,nS,ERHF,S,X,T,V,Hc,ERI_AO,ERI_MO,                            &
-             dipole_int_AO,dipole_int_MO,PHF,cHF,eHF)
+    call RGF(dotest, doG0F2, doevGF2, doqsGF2, doufG0F02, doG0F3, doevGF3, renorm_GF, maxSCF_GF,   &
+             thresh_GF, max_diis_GF, dophBSE, doppBSE, TDA, dBSE, dTDA, singlet, triplet, lin_GF,  &
+             eta_GF, reg_GF, nNuc, ZNuc, rNuc, ENuc, nBas_AOs, nBas_MOs, nC, nO, nV, nR, nS, ERHF, &
+             S, X, T, V, Hc, ERI_AO, ERI_MO, dipole_int_AO, dipole_int_MO, PHF, cHF, eHF)
     call wall_time(end_GF)
 
     t_GF = end_GF - start_GF
@@ -314,7 +312,7 @@ subroutine RQuAcK(dotest,doRHF,doROHF,dostab,dosearch,doMP2,doMP3,doCCD,dopCCD,d
     ! TODO
     call RGW(dotest,doG0W0,doevGW,doqsGW,doufG0W0,doufGW,doSRGqsGW,maxSCF_GW,thresh_GW,max_diis_GW,      &
              doACFDT,exchange_kernel,doXBS,dophBSE,dophBSE2,doppBSE,TDA_W,TDA,dBSE,dTDA,singlet,triplet, &
-             lin_GW,eta_GW,reg_GW,nNuc,ZNuc,rNuc,ENuc,nBas_AOs,nC,nO,nV,nR,nS,ERHF,S,X,T,V,Hc,               &  
+             lin_GW,eta_GW,reg_GW,nNuc,ZNuc,rNuc,ENuc,nBas_AOs,nC,nO,nV,nR,nS,ERHF,S,X,T,V,Hc,           &
              ERI_AO,ERI_MO,dipole_int_AO,dipole_int_MO,PHF,cHF,eHF)
     call wall_time(end_GW)
   
@@ -334,9 +332,9 @@ subroutine RQuAcK(dotest,doRHF,doROHF,dostab,dosearch,doMP2,doMP3,doCCD,dopCCD,d
     
     call wall_time(start_GT)
     ! TODO
-    call RGT(dotest,doG0T0pp,doevGTpp,doqsGTpp,doufG0T0pp,doG0T0eh,doevGTeh,doqsGTeh,                & 
-             maxSCF_GT,thresh_GT,max_diis_GT,doACFDT,exchange_kernel,doXBS,dophBSE,dophBSE2,doppBSE, & 
-             TDA_T,TDA,dBSE,dTDA,singlet,triplet,lin_GT,eta_GT,reg_GT,nNuc,ZNuc,rNuc,ENuc,           & 
+    call RGT(dotest,doG0T0pp,doevGTpp,doqsGTpp,doufG0T0pp,doG0T0eh,doevGTeh,doqsGTeh,                &
+             maxSCF_GT,thresh_GT,max_diis_GT,doACFDT,exchange_kernel,doXBS,dophBSE,dophBSE2,doppBSE, &
+             TDA_T,TDA,dBSE,dTDA,singlet,triplet,lin_GT,eta_GT,reg_GT,nNuc,ZNuc,rNuc,ENuc,           &
              nBas_AOs,nC,nO,nV,nR,nS,ERHF,S,X,T,V,Hc,ERI_AO,ERI_MO,dipole_int_AO,dipole_int_MO,PHF,cHF,eHF)
     call wall_time(end_GT)
   

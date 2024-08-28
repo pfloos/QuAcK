@@ -51,7 +51,7 @@ subroutine RG0F2(dotest,dophBSE,doppBSE,TDA,dBSE,dTDA,singlet,triplet,linearize,
 
 ! Memory allocation
 
-  allocate(SigC(nBas),Z(nBas),eGFlin(nBas),eGF(nBas))
+  allocate(SigC(nBas), Z(nBas), eGFlin(nBas), eGF(nBas))
 
 ! Frequency-dependent second-order contribution
 
@@ -132,5 +132,7 @@ subroutine RG0F2(dotest,dophBSE,doppBSE,TDA,dBSE,dTDA,singlet,triplet,linearize,
     call dump_test_value('R','G0F2 LUMO energy',eGF(nO+1))
 
   end if
+
+  deallocate(SigC, Z, eGFlin, eGF)
 
 end subroutine 
