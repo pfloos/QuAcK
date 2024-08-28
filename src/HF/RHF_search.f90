@@ -111,7 +111,7 @@ subroutine RHF_search(maxSCF,thresh,max_diis,guess_type,level_shift,nNuc,ZNuc,rN
     do ixyz=1,ncart
       call AOtoMO(nBas,nBas,c,dipole_int_AO(:,:,ixyz),dipole_int_MO(:,:,ixyz))
     end do
-    call AOtoMO_ERI_RHF(nBas,c,ERI_AO,ERI_MO)
+    call AOtoMO_ERI_RHF(nBas,nBas,c,ERI_AO,ERI_MO)
     call wall_time(end_AOtoMO)
  
     t_AOtoMO = end_AOtoMO - start_AOtoMO

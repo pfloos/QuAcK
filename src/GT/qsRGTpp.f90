@@ -182,7 +182,7 @@ subroutine qsRGTpp(dotest,maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,d
 
     ! AO to MO transformation of two-electron integrals
 
-    call AOtoMO_ERI_RHF(nBas,c,ERI_AO,ERI_MO)
+    call AOtoMO_ERI_RHF(nBas,nBas,c,ERI_AO,ERI_MO)
 
     ! Compute linear response
 

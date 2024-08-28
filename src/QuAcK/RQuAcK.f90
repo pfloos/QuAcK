@@ -135,7 +135,6 @@ subroutine RQuAcK(dotest,doRHF,doROHF,dostab,dosearch,doMP2,doMP3,doCCD,dopCCD,d
   if(doROHF) then
 
     call wall_time(start_HF)
-    ! TODO
     call ROHF(dotest, maxSCF_HF, thresh_HF, max_diis_HF, guess_type, mix, level_shift, nNuc, ZNuc, rNuc, ENuc, &
               nBas_AOs, nBas_MOs, nO, S, T, V, Hc, ERI_AO, dipole_int_AO, X, ERHF, eHF, cHF, PHF)
     call wall_time(end_HF)
@@ -159,14 +158,12 @@ subroutine RQuAcK(dotest,doRHF,doROHF,dostab,dosearch,doMP2,doMP3,doCCD,dopCCD,d
   ! Read and transform dipole-related integrals
   
   do ixyz = 1, ncart
-    ! TODO
-    call AOtoMO(nBas_AOs,nBas_MOs,cHF,dipole_int_AO(:,:,ixyz),dipole_int_MO(:,:,ixyz))
+    call AOtoMO(nBas_AOs, nBas_MOs, cHF, dipole_int_AO(1,1,ixyz), dipole_int_MO(1,1,ixyz))
   end do 
 
   ! 4-index transform 
   
-  ! TODO
-  call AOtoMO_ERI_RHF(nBas_AOs,cHF,ERI_AO,ERI_MO)
+  call AOtoMO_ERI_RHF(nBas_AOs, nBas_MOs, cHF, ERI_AO, ERI_MO)
 
   call wall_time(end_AOtoMO)
 
