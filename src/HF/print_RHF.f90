@@ -1,4 +1,7 @@
-subroutine print_RHF(nBas,nO,eHF,cHF,ENuc,ET,EV,EJ,EK,ERHF,dipole)
+
+! ---
+
+subroutine print_RHF(nBas_AOs, nBas_MOs, nO, eHF, cHF, ENuc, ET, EV, EJ, EK, ERHF, dipole)
 
 ! Print one-electron energies and other stuff for G0W0
 
@@ -7,10 +10,10 @@ subroutine print_RHF(nBas,nO,eHF,cHF,ENuc,ET,EV,EJ,EK,ERHF,dipole)
 
 ! Input variables
 
-  integer,intent(in)                 :: nBas
+  integer,intent(in)                 :: nBas_AOs, nBas_MOs
   integer,intent(in)                 :: nO
-  double precision,intent(in)        :: eHF(nBas)
-  double precision,intent(in)        :: cHF(nBas,nBas)
+  double precision,intent(in)        :: eHF(nBas_MOs)
+  double precision,intent(in)        :: cHF(nBas_AOs,nBas_MOs)
   double precision,intent(in)        :: ENuc
   double precision,intent(in)        :: ET
   double precision,intent(in)        :: EV
@@ -75,13 +78,13 @@ subroutine print_RHF(nBas,nO,eHF,cHF,ENuc,ET,EV,EJ,EK,ERHF,dipole)
     write(*,'(A50)') '---------------------------------------'
     write(*,'(A50)') ' RHF orbital coefficients '
     write(*,'(A50)') '---------------------------------------'
-    call matout(nBas,nBas,cHF)
+    call matout(nBas_AOs, nBas_MOs, cHF)
     write(*,*)
   end if
   write(*,'(A50)') '---------------------------------------'
   write(*,'(A50)') ' RHF orbital energies (au) '
   write(*,'(A50)') '---------------------------------------'
-  call vecout(nBas,eHF)
+  call vecout(nBas_MOs, eHF)
   write(*,*)
 
 end subroutine 

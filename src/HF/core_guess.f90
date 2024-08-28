@@ -1,4 +1,4 @@
-subroutine core_guess(nBas,Hc,X,c)
+subroutine core_guess(nBas_AOs, nBas_MOs, Hc, X, c)
 
 !  Core guess of the molecular orbitals for HF calculation
 
@@ -6,9 +6,9 @@ subroutine core_guess(nBas,Hc,X,c)
 
 ! Input variables
 
-  integer,intent(in)            :: nBas
-  double precision,intent(in)   :: Hc(nBas,nBas)
-  double precision,intent(in)   :: X(nBas,nBas)
+  integer,intent(in)            :: nBas_AOs, nBas_MOs
+  double precision,intent(in)   :: Hc(nBas_AOs,nBas_AOs)
+  double precision,intent(in)   :: X(nBas_AOs,nBas_MOs)
 
 ! Local variables
 
@@ -18,16 +18,19 @@ subroutine core_guess(nBas,Hc,X,c)
 
 ! Output variables
 
-  double precision,intent(out)  :: c(nBas,nBas)
+  double precision,intent(out)  :: c(nBas_AOs,nBas_MOs)
 
 ! Memory allocation
 
-  allocate(cp(nBas,nBas),e(nBas))
+  allocate(cp(nBas_MOs,nBas_MOs), e(nBas_MOs))
 
 ! Core guess
 
-  cp(:,:) = matmul(transpose(X(:,:)),matmul(Hc(:,:),X(:,:)))
-  call diagonalize_matrix(nBas,cp,e)
-  c(:,:) = matmul(X(:,:),cp(:,:))
+  cp(:,:) = matmul(transpose(X(:,:)), matmul(Hc(:,:), X(:,:)))
+
+  call diagonalize_matrix(nBas_MOs, cp, e)
+  c(:,:) = matmul(X(:,:), cp(:,:))
+
+  deallocate(cp, e)
 
 end subroutine

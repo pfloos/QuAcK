@@ -86,7 +86,7 @@ subroutine ROHF(dotest,maxSCF,thresh,max_diis,guess_type,mix,level_shift,nNuc,ZN
 
 ! Guess coefficients and demsity matrices
 
-  call mo_guess(nBas,guess_type,S,Hc,X,c)
+  call mo_guess(nBas,nBas,guess_type,S,Hc,X,c)
   do ispin=1,nspin
     P(:,:,ispin) = matmul(c(:,1:nO(ispin)),transpose(c(:,1:nO(ispin))))
   end do
@@ -185,7 +185,7 @@ subroutine ROHF(dotest,maxSCF,thresh,max_diis,guess_type,mix,level_shift,nNuc,ZN
     if(level_shift > 0d0 .and. Conv > thresh) then
 
       do ispin=1,nspin
-        call level_shifting(level_shift,nBas,maxval(nO),S,c,Ftot)
+        call level_shifting(level_shift,nBas,nBas,maxval(nO),S,c,Ftot)
       end do
 
     end if

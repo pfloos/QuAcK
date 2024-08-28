@@ -1,4 +1,4 @@
-subroutine huckel_guess(nBas,S,Hc,X,c)
+subroutine huckel_guess(nBas_AOs, nBas_MOs, S, Hc, X, c)
 
 !  Hickel guess 
 
@@ -6,10 +6,10 @@ subroutine huckel_guess(nBas,S,Hc,X,c)
 
 ! Input variables
 
-  integer,intent(in)            :: nBas
-  double precision,intent(in)   :: S(nBas,nBas)
-  double precision,intent(in)   :: Hc(nBas,nBas)
-  double precision,intent(in)   :: X(nBas,nBas)
+  integer,intent(in)            :: nBas_AOs, nBas_MOs
+  double precision,intent(in)   :: S(nBas_AOs,nBas_AOs)
+  double precision,intent(in)   :: Hc(nBas_AOs,nBas_AOs)
+  double precision,intent(in)   :: X(nBas_AOs,nBas_MOs)
 
 ! Local variables
 
@@ -20,11 +20,11 @@ subroutine huckel_guess(nBas,S,Hc,X,c)
 
 ! Output variables
 
-  double precision,intent(out)  :: c(nBas,nBas)
+  double precision,intent(out)  :: c(nBas_AOs,nBas_MOs)
 
 ! Memory allocation
 
-  allocate(F(nBas,nBas))
+  allocate(F(nBas_AOs,nBas_AOs))
 
 ! Extended Huckel parameter
 
@@ -32,9 +32,9 @@ subroutine huckel_guess(nBas,S,Hc,X,c)
 
 ! GWH approximation
 
-  do mu=1,nBas
+  do mu = 1, nBas_AOs
     F(mu,mu) = Hc(mu,mu)
-    do nu=mu+1,nBas
+    do nu = mu+1, nBas_AOs
 
       F(mu,nu) = 0.5d0*a*S(mu,nu)*(Hc(mu,mu) + Hc(nu,nu))
       F(nu,mu) = F(mu,nu)
@@ -42,6 +42,8 @@ subroutine huckel_guess(nBas,S,Hc,X,c)
     end do
   end do
   
-  call core_guess(nBas,F,X,c)
+  call core_guess(nBas_AOs, nBas_MOs, F, X, c)
+
+  deallocate(F)
 
 end subroutine

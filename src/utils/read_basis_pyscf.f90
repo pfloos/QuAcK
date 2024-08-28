@@ -24,10 +24,10 @@ subroutine read_basis_pyscf(nBas_AOs, nO, nV)
     read(3, *) nBas_AOs
   close(unit=3)
 
-  write(*,'(A38)') '--------------------------------------'
-  write(*,'(A38,1X,I16)') 'Number of basis functions (AOs)', nBas_AOs
-  write(*,'(A38)') '--------------------------------------'
-  write(*,*)
+!  write(*,'(A38)') '--------------------------------------'
+!  write(*,'(A38,1X,I16)') 'Number of basis functions (AOs)', nBas_AOs
+!  write(*,'(A38)') '--------------------------------------'
+!  write(*,*)
 
 ! Number of virtual orbitals
 

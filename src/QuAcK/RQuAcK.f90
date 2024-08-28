@@ -2,7 +2,7 @@ subroutine RQuAcK(dotest,doRHF,doROHF,dostab,dosearch,doMP2,doMP3,doCCD,dopCCD,d
                   dodrCCD,dorCCD,docrCCD,dolCCD,doCIS,doCIS_D,doCID,doCISD,doFCI,dophRPA,dophRPAx,docrRPA,doppRPA, & 
                   doG0F2,doevGF2,doqsGF2,doufG0F02,doG0F3,doevGF3,doG0W0,doevGW,doqsGW,doufG0W0,doufGW,doSRGqsGW,  &
                   doG0T0pp,doevGTpp,doqsGTpp,doufG0T0pp,doG0T0eh,doevGTeh,doqsGTeh,                                & 
-                  nNuc,nBas,nC,nO,nV,nR,ENuc,ZNuc,rNuc,                                                            &  
+                  nNuc,nBas_AOs,nBas_MOs,nC,nO,nV,nR,ENuc,ZNuc,rNuc,                                               &
                   S,T,V,Hc,X,dipole_int_AO,ERI_AO,maxSCF_HF,max_diis_HF,thresh_HF,level_shift,                     &
                   guess_type,mix,reg_MP,maxSCF_CC,max_diis_CC,thresh_CC,singlet,triplet,TDA,                       &
                   maxSCF_GF,max_diis_GF,renorm_GF,thresh_GF,lin_GF,reg_GF,eta_GF,maxSCF_GW,max_diis_GW,thresh_GW,  & 
@@ -29,7 +29,7 @@ subroutine RQuAcK(dotest,doRHF,doROHF,dostab,dosearch,doMP2,doMP3,doCCD,dopCCD,d
   logical,intent(in)            :: doG0T0pp,doevGTpp,doqsGTpp,doufG0T0pp
   logical,intent(in)            :: doG0T0eh,doevGTeh,doqsGTeh
 
-  integer,intent(in)            :: nNuc,nBas
+  integer,intent(in)            :: nNuc,nBas_AOs,nBas_MOs
   integer,intent(in)            :: nC
   integer,intent(in)            :: nO
   integer,intent(in)            :: nV
@@ -38,13 +38,13 @@ subroutine RQuAcK(dotest,doRHF,doROHF,dostab,dosearch,doMP2,doMP3,doCCD,dopCCD,d
 
   double precision,intent(in)   :: ZNuc(nNuc),rNuc(nNuc,ncart)
 
-  double precision,intent(in)   :: S(nBas,nBas)
-  double precision,intent(in)   :: T(nBas,nBas)
-  double precision,intent(in)   :: V(nBas,nBas)
-  double precision,intent(in)   :: Hc(nBas,nBas)
-  double precision,intent(in)   :: X(nBas,nBas)
-  double precision,intent(in)   :: dipole_int_AO(nBas,nBas,ncart)
-  double precision,intent(in)   :: ERI_AO(nBas,nBas,nBas,nBas)
+  double precision,intent(in)   :: S(nBas_AOs,nBas_AOs)
+  double precision,intent(in)   :: T(nBas_AOs,nBas_AOs)
+  double precision,intent(in)   :: V(nBas_AOs,nBas_AOs)
+  double precision,intent(in)   :: Hc(nBas_AOs,nBas_AOs)
+  double precision,intent(in)   :: X(nBas_AOs,nBas_MOs)
+  double precision,intent(in)   :: dipole_int_AO(nBas_AOs,nBas_AOs,ncart)
+  double precision,intent(in)   :: ERI_AO(nBas_AOs,nBas_AOs,nBas_AOs,nBas_AOs)
 
   integer,intent(in)            :: maxSCF_HF,max_diis_HF
   double precision,intent(in)   :: thresh_HF,level_shift,mix
@@ -109,8 +109,11 @@ subroutine RQuAcK(dotest,doRHF,doROHF,dostab,dosearch,doMP2,doMP3,doCCD,dopCCD,d
 ! Memory allocation !
 !-------------------!
 
-  allocate(cHF(nBas,nBas),eHF(nBas),PHF(nBas,nBas), &
-           dipole_int_MO(nBas,nBas,ncart),ERI_MO(nBas,nBas,nBas,nBas))
+  allocate(cHF(nBas_AOs,nBas_MOs))
+  allocate(eHF(nBas_MOs))
+  allocate(PHF(nBas_AOs,nBas_AOs))
+  allocate(dipole_int_MO(nBas_AOs,nBas_AOs,ncart))
+  allocate(ERI_MO(nBas_MOs,nBas_MOs,nBas_MOs,nBas_MOs))
 
 !---------------------!
 ! Hartree-Fock module !
@@ -119,12 +122,13 @@ subroutine RQuAcK(dotest,doRHF,doROHF,dostab,dosearch,doMP2,doMP3,doCCD,dopCCD,d
   if(doRHF) then
 
     call wall_time(start_HF)
-    call RHF(dotest,maxSCF_HF,thresh_HF,max_diis_HF,guess_type,level_shift,nNuc,ZNuc,rNuc,ENuc, &
-             nBas,nO,S,T,V,Hc,ERI_AO,dipole_int_AO,X,ERHF,eHF,cHF,PHF)
+    ! TODO
+    call RHF(dotest, maxSCF_HF, thresh_HF, max_diis_HF, guess_type, level_shift, nNuc, ZNuc, rNuc, ENuc, &
+             nBas_AOs, nBas_MOs, nO, S, T, V, Hc, ERI_AO, dipole_int_AO, X, ERHF, eHF, cHF, PHF)
     call wall_time(end_HF)
 
     t_HF = end_HF - start_HF
-    write(*,'(A65,1X,F9.3,A8)') 'Total CPU time for RHF = ',t_HF,' seconds'
+    write(*,'(A65,1X,F9.3,A8)') 'Total wall time for RHF = ',t_HF,' seconds'
     write(*,*)
 
   end if
@@ -132,12 +136,13 @@ subroutine RQuAcK(dotest,doRHF,doROHF,dostab,dosearch,doMP2,doMP3,doCCD,dopCCD,d
   if(doROHF) then
 
     call wall_time(start_HF)
+    ! TODO
     call ROHF(dotest,maxSCF_HF,thresh_HF,max_diis_HF,guess_type,mix,level_shift,nNuc,ZNuc,rNuc,ENuc, &
-              nBas,nO,S,T,V,Hc,ERI_AO,dipole_int_AO,X,ERHF,eHF,cHF,PHF)
+              nBas_AOs,nO,S,T,V,Hc,ERI_AO,dipole_int_AO,X,ERHF,eHF,cHF,PHF)
     call wall_time(end_HF)
 
     t_HF = end_HF - start_HF
-    write(*,'(A65,1X,F9.3,A8)') 'Total CPU time for ROHF = ',t_HF,' seconds'
+    write(*,'(A65,1X,F9.3,A8)') 'Total wall time for ROHF = ',t_HF,' seconds'
     write(*,*)
 
   end if
@@ -154,18 +159,20 @@ subroutine RQuAcK(dotest,doRHF,doROHF,dostab,dosearch,doMP2,doMP3,doCCD,dopCCD,d
 
   ! Read and transform dipole-related integrals
   
-  do ixyz=1,ncart
-    call AOtoMO(nBas,cHF,dipole_int_AO(:,:,ixyz),dipole_int_MO(:,:,ixyz))
+  do ixyz = 1, ncart
+    ! TODO
+    call AOtoMO(nBas_AOs,cHF,dipole_int_AO(:,:,ixyz),dipole_int_MO(:,:,ixyz))
   end do 
 
   ! 4-index transform 
   
-  call AOtoMO_ERI_RHF(nBas,cHF,ERI_AO,ERI_MO)
+  ! TODO
+  call AOtoMO_ERI_RHF(nBas_AOs,cHF,ERI_AO,ERI_MO)
 
   call wall_time(end_AOtoMO)
 
   t_AOtoMO = end_AOtoMO - start_AOtoMO
-  write(*,'(A65,1X,F9.3,A8)') 'Total CPU time for AO to MO transformation = ',t_AOtoMO,' seconds'
+  write(*,'(A65,1X,F9.3,A8)') 'Total wall time for AO to MO transformation = ',t_AOtoMO,' seconds'
   write(*,*)
 
 !-----------------------------------!
@@ -177,11 +184,11 @@ subroutine RQuAcK(dotest,doRHF,doROHF,dostab,dosearch,doMP2,doMP3,doCCD,dopCCD,d
   if(dostab) then
 
     call wall_time(start_stab)
-    call RHF_stability(nBas,nC,nO,nV,nR,nS,eHF,ERI_MO)
+    call RHF_stability(nBas_AOs,nC,nO,nV,nR,nS,eHF,ERI_MO)
     call wall_time(end_stab)
 
     t_stab = end_stab - start_stab
-    write(*,'(A65,1X,F9.3,A8)') 'Total CPU time for stability analysis = ',t_stab,' seconds'
+    write(*,'(A65,1X,F9.3,A8)') 'Total wall time for stability analysis = ',t_stab,' seconds'
     write(*,*)
 
   end if
@@ -189,12 +196,13 @@ subroutine RQuAcK(dotest,doRHF,doROHF,dostab,dosearch,doMP2,doMP3,doCCD,dopCCD,d
   if(dosearch) then
 
     call wall_time(start_stab)
+    ! TODO
     call RHF_search(maxSCF_HF,thresh_HF,max_diis_HF,guess_type,level_shift,nNuc,ZNuc,rNuc,ENuc, &
-                    nBas,nC,nO,nV,nR,S,T,V,Hc,ERI_AO,ERI_MO,dipole_int_AO,dipole_int_MO,X,ERHF,eHF,cHF,PHF)
+                    nBas_AOs,nC,nO,nV,nR,S,T,V,Hc,ERI_AO,ERI_MO,dipole_int_AO,dipole_int_MO,X,ERHF,eHF,cHF,PHF)
     call wall_time(end_stab)
 
     t_stab = end_stab - start_stab
-    write(*,'(A65,1X,F9.3,A8)') 'Total CPU time for stability analysis = ',t_stab,' seconds'
+    write(*,'(A65,1X,F9.3,A8)') 'Total wall time for stability analysis = ',t_stab,' seconds'
     write(*,*)
 
   end if
@@ -208,11 +216,12 @@ subroutine RQuAcK(dotest,doRHF,doROHF,dostab,dosearch,doMP2,doMP3,doCCD,dopCCD,d
   if(doMP) then
 
     call wall_time(start_MP)
-    call RMP(dotest,doMP2,doMP3,reg_MP,nBas,nC,nO,nV,nR,ERI_MO,ENuc,ERHF,eHF)
+    ! TODO
+    call RMP(dotest,doMP2,doMP3,reg_MP,nBas_AOs,nC,nO,nV,nR,ERI_MO,ENuc,ERHF,eHF)
     call wall_time(end_MP)
 
     t_MP = end_MP - start_MP
-    write(*,'(A65,1X,F9.3,A8)') 'Total CPU time for MP = ',t_MP,' seconds'
+    write(*,'(A65,1X,F9.3,A8)') 'Total wall time for MP = ',t_MP,' seconds'
     write(*,*)
 
   end if
@@ -227,12 +236,13 @@ subroutine RQuAcK(dotest,doRHF,doROHF,dostab,dosearch,doMP2,doMP3,doCCD,dopCCD,d
   if(doCC) then
 
     call wall_time(start_CC)
+    ! TODO
     call RCC(dotest,doCCD,dopCCD,doDCD,doCCSD,doCCSDT,dodrCCD,dorCCD,docrCCD,dolCCD, & 
-             maxSCF_CC,thresh_CC,max_diis_CC,nBas,nC,nO,nV,nR,Hc,ERI_MO,ENuc,ERHF,eHF,cHF)
+             maxSCF_CC,thresh_CC,max_diis_CC,nBas_AOs,nC,nO,nV,nR,Hc,ERI_MO,ENuc,ERHF,eHF,cHF)
     call wall_time(end_CC)
 
     t_CC = end_CC - start_CC
-    write(*,'(A65,1X,F9.3,A8)') 'Total CPU time for CC = ',t_CC,' seconds'
+    write(*,'(A65,1X,F9.3,A8)') 'Total wall time for CC = ',t_CC,' seconds'
     write(*,*)
 
   end if
@@ -246,12 +256,13 @@ subroutine RQuAcK(dotest,doRHF,doROHF,dostab,dosearch,doMP2,doMP3,doCCD,dopCCD,d
   if(doCI) then
 
     call wall_time(start_CI)
-    call RCI(dotest,doCIS,doCIS_D,doCID,doCISD,doFCI,singlet,triplet,nBas,nC,nO,nV,nR,nS,ERI_MO,dipole_int_MO, &
+    ! TODO
+    call RCI(dotest,doCIS,doCIS_D,doCID,doCISD,doFCI,singlet,triplet,nBas_AOs,nC,nO,nV,nR,nS,ERI_MO,dipole_int_MO, &
              eHF,ERHF,cHF,S)
     call wall_time(end_CI)
 
     t_CI = end_CI - start_CI
-    write(*,'(A65,1X,F9.3,A8)') 'Total CPU time for CI = ',t_CI,' seconds'
+    write(*,'(A65,1X,F9.3,A8)') 'Total wall time for CI = ',t_CI,' seconds'
     write(*,*)
 
   end if
@@ -265,12 +276,13 @@ subroutine RQuAcK(dotest,doRHF,doROHF,dostab,dosearch,doMP2,doMP3,doCCD,dopCCD,d
   if(doRPA) then
 
     call wall_time(start_RPA)
+    ! TODO
     call RRPA(dotest,dophRPA,dophRPAx,docrRPA,doppRPA,TDA,doACFDT,exchange_kernel,singlet,triplet,    & 
-              nBas,nC,nO,nV,nR,nS,ENuc,ERHF,ERI_MO,dipole_int_MO,eHF,cHF,S)
+              nBas_AOs,nC,nO,nV,nR,nS,ENuc,ERHF,ERI_MO,dipole_int_MO,eHF,cHF,S)
     call wall_time(end_RPA)
 
     t_RPA = end_RPA - start_RPA
-    write(*,'(A65,1X,F9.3,A8)') 'Total CPU time for RPA = ',t_RPA,' seconds'
+    write(*,'(A65,1X,F9.3,A8)') 'Total wall time for RPA = ',t_RPA,' seconds'
     write(*,*)
 
   end if
@@ -284,14 +296,15 @@ subroutine RQuAcK(dotest,doRHF,doROHF,dostab,dosearch,doMP2,doMP3,doCCD,dopCCD,d
   if(doGF) then
 
     call wall_time(start_GF)
+    ! TODO
     call RGF(dotest,doG0F2,doevGF2,doqsGF2,doufG0F02,doG0F3,doevGF3,renorm_GF,maxSCF_GF,thresh_GF,max_diis_GF, & 
              dophBSE,doppBSE,TDA,dBSE,dTDA,singlet,triplet,lin_GF,eta_GF,reg_GF,                               &
-             nNuc,ZNuc,rNuc,ENuc,nBas,nC,nO,nV,nR,nS,ERHF,S,X,T,V,Hc,ERI_AO,ERI_MO,                            &
+             nNuc,ZNuc,rNuc,ENuc,nBas_AOs,nC,nO,nV,nR,nS,ERHF,S,X,T,V,Hc,ERI_AO,ERI_MO,                            &
              dipole_int_AO,dipole_int_MO,PHF,cHF,eHF)
     call wall_time(end_GF)
 
     t_GF = end_GF - start_GF
-    write(*,'(A65,1X,F9.3,A8)') 'Total CPU time for GF2 = ',t_GF,' seconds'
+    write(*,'(A65,1X,F9.3,A8)') 'Total wall time for GF2 = ',t_GF,' seconds'
     write(*,*)
 
   end if
@@ -305,14 +318,15 @@ subroutine RQuAcK(dotest,doRHF,doROHF,dostab,dosearch,doMP2,doMP3,doCCD,dopCCD,d
   if(doGW) then
     
     call wall_time(start_GW)
+    ! TODO
     call RGW(dotest,doG0W0,doevGW,doqsGW,doufG0W0,doufGW,doSRGqsGW,maxSCF_GW,thresh_GW,max_diis_GW,      &
              doACFDT,exchange_kernel,doXBS,dophBSE,dophBSE2,doppBSE,TDA_W,TDA,dBSE,dTDA,singlet,triplet, &
-             lin_GW,eta_GW,reg_GW,nNuc,ZNuc,rNuc,ENuc,nBas,nC,nO,nV,nR,nS,ERHF,S,X,T,V,Hc,               &  
+             lin_GW,eta_GW,reg_GW,nNuc,ZNuc,rNuc,ENuc,nBas_AOs,nC,nO,nV,nR,nS,ERHF,S,X,T,V,Hc,               &  
              ERI_AO,ERI_MO,dipole_int_AO,dipole_int_MO,PHF,cHF,eHF)
     call wall_time(end_GW)
   
     t_GW = end_GW - start_GW
-    write(*,'(A65,1X,F9.3,A8)') 'Total CPU time for GW = ',t_GW,' seconds'
+    write(*,'(A65,1X,F9.3,A8)') 'Total wall time for GW = ',t_GW,' seconds'
     write(*,*)
 
   end if
@@ -326,14 +340,15 @@ subroutine RQuAcK(dotest,doRHF,doROHF,dostab,dosearch,doMP2,doMP3,doCCD,dopCCD,d
   if(doGT) then
     
     call wall_time(start_GT)
+    ! TODO
     call RGT(dotest,doG0T0pp,doevGTpp,doqsGTpp,doufG0T0pp,doG0T0eh,doevGTeh,doqsGTeh,                & 
              maxSCF_GT,thresh_GT,max_diis_GT,doACFDT,exchange_kernel,doXBS,dophBSE,dophBSE2,doppBSE, & 
              TDA_T,TDA,dBSE,dTDA,singlet,triplet,lin_GT,eta_GT,reg_GT,nNuc,ZNuc,rNuc,ENuc,           & 
-             nBas,nC,nO,nV,nR,nS,ERHF,S,X,T,V,Hc,ERI_AO,ERI_MO,dipole_int_AO,dipole_int_MO,PHF,cHF,eHF)
+             nBas_AOs,nC,nO,nV,nR,nS,ERHF,S,X,T,V,Hc,ERI_AO,ERI_MO,dipole_int_AO,dipole_int_MO,PHF,cHF,eHF)
     call wall_time(end_GT)
   
     t_GT = end_GT - start_GT
-    write(*,'(A65,1X,F9.3,A8)') 'Total CPU time for GT = ',t_GT,' seconds'
+    write(*,'(A65,1X,F9.3,A8)') 'Total wall time for GT = ',t_GT,' seconds'
     write(*,*)
 
   end if

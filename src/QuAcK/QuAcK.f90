@@ -15,7 +15,7 @@ program QuAcK
   logical                       :: doG0W0,doevGW,doqsGW,doufG0W0,doufGW,doSRGqsGW
   logical                       :: doG0T0pp,doevGTpp,doqsGTpp,doufG0T0pp,doG0T0eh,doevGTeh,doqsGTeh
 
-  integer                       :: nNuc,nBas_AOs
+  integer                       :: nNuc, nBas_AOs, nBas_MOs
   integer                       :: nC(nspin)
   integer                       :: nO(nspin)
   integer                       :: nV(nspin)
@@ -31,6 +31,7 @@ program QuAcK
   double precision,allocatable  :: X(:,:)
   double precision,allocatable  :: dipole_int_AO(:,:,:)
   double precision,allocatable  :: ERI_AO(:,:,:,:)
+  double precision,allocatable  :: Uvec(:,:), Uval(:)
 
   double precision              :: start_QuAcK,end_QuAcK,t_QuAcK
   double precision              :: start_int  ,end_int  ,t_int
@@ -67,6 +68,8 @@ program QuAcK
   logical                       :: doACFDT,exchange_kernel,doXBS
 
   logical                       :: dotest,doRtest,doUtest,doGtest
+
+  integer                       :: i, j
 
 !-------------!
 ! Hello World !
@@ -128,6 +131,7 @@ program QuAcK
 ! nV       = number of virtual orbitals (see below) !
 ! nR       = number of Rydberg orbitals             !
 ! nBas_AOs = number of basis functions in AOs       !
+! nBas_MOs = number of basis functions in MOs       !
 !---------------------------------------------------!
 
   call read_molecule(nNuc,nO,nC,nR)
@@ -153,7 +157,6 @@ program QuAcK
   allocate(T(nBas_AOs,nBas_AOs))
   allocate(V(nBas_AOs,nBas_AOs))
   allocate(Hc(nBas_AOs,nBas_AOs))
-  allocate(X(nBas_AOs,nBas_AOs))
   allocate(ERI_AO(nBas_AOs,nBas_AOs,nBas_AOs,nBas_AOs))
   allocate(dipole_int_AO(nBas_AOs,nBas_AOs,ncart))
 
@@ -173,7 +176,39 @@ program QuAcK
 
 ! Compute orthogonalization matrix
 
-  call orthogonalization_matrix(nBas_AOs, S, X)
+  !call orthogonalization_matrix(nBas_AOs, S, X)
+
+  allocate(Uvec(nBas_AOs,nBas_AOs), Uval(nBas_AOs))
+
+  Uvec(1:nBas_AOs,1:nBas_AOs) = S(1:nBas_AOs,1:nBas_AOs)
+  call diagonalize_matrix(nBas_AOs, Uvec, Uval)
+
+  nBas_MOs = 0
+  do i = 1, nBas_AOs
+    if(Uval(i) > 1d-6) then
+        Uval(i) = 1d0 / dsqrt(Uval(i))
+        nBas_MOs = nBas_MOs + 1
+    else
+      write(*,*) ' Eigenvalue',i,'too small for canonical orthogonalization'
+    end if
+  end do
+
+  write(*,'(A38)') '--------------------------------------'
+  write(*,'(A38,1X,I16)') 'Number of basis functions (AOs)', nBas_AOs
+  write(*,'(A38,1X,I16)') 'Number of basis functions (MOs)', nBas_MOs
+  write(*,'(A38,1X,F9.3)') ' % of discarded orbitals = ', 100.d0 * (1.d0 - dble(nBas_MOs)/dble(nBas_AOs))
+  write(*,'(A38)') '--------------------------------------'
+  write(*,*)
+
+  allocate(X(nBas_AOs,nBas_MOs))
+  do j = 1, nBas_MOs
+    do i = 1, nBas_AOs
+      X(i,j) = Uvec(i,j) * Uval(j)
+    enddo
+  enddo
+
+  deallocate(Uvec, Uval)
+
 
 !---------------------!
 ! Choose QuAcK branch !
@@ -205,7 +240,7 @@ program QuAcK
                 dodrCCD,dorCCD,docrCCD,dolCCD,doCIS,doCIS_D,doCID,doCISD,doFCI,dophRPA,dophRPAx,docrRPA,doppRPA, &
                 doG0F2,doevGF2,doqsGF2,doufG0F02,doG0F3,doevGF3,doG0W0,doevGW,doqsGW,doufG0W0,doufGW,doSRGqsGW,  &
                 doG0T0pp,doevGTpp,doqsGTpp,doufG0T0pp,doG0T0eh,doevGTeh,doqsGTeh,                                & 
-                nNuc,nBas_AOs,nC,nO,nV,nR,ENuc,ZNuc,rNuc,                                                        &
+                nNuc,nBas_AOs,nBas_MOs,nC,nO,nV,nR,ENuc,ZNuc,rNuc,                                               &
                 S,T,V,Hc,X,dipole_int_AO,ERI_AO,maxSCF_HF,max_diis_HF,thresh_HF,level_shift,                     &
                 guess_type,mix,reg_MP,maxSCF_CC,max_diis_CC,thresh_CC,spin_conserved,spin_flip,TDA,              &
                 maxSCF_GF,max_diis_GF,renorm_GF,thresh_GF,lin_GF,reg_GF,eta_GF,maxSCF_GW,max_diis_GW,thresh_GW,  &
