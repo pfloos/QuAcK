@@ -330,11 +330,11 @@ subroutine RQuAcK(dotest,doRHF,doROHF,dostab,dosearch,doMP2,doMP3,doCCD,dopCCD,d
   if(doGT) then
     
     call wall_time(start_GT)
-    ! TODO
-    call RGT(dotest,doG0T0pp,doevGTpp,doqsGTpp,doufG0T0pp,doG0T0eh,doevGTeh,doqsGTeh,                &
-             maxSCF_GT,thresh_GT,max_diis_GT,doACFDT,exchange_kernel,doXBS,dophBSE,dophBSE2,doppBSE, &
-             TDA_T,TDA,dBSE,dTDA,singlet,triplet,lin_GT,eta_GT,reg_GT,nNuc,ZNuc,rNuc,ENuc,           &
-             nBas_AOs,nC,nO,nV,nR,nS,ERHF,S,X,T,V,Hc,ERI_AO,ERI_MO,dipole_int_AO,dipole_int_MO,PHF,cHF,eHF)
+    call RGT(dotest, doG0T0pp, doevGTpp, doqsGTpp, doufG0T0pp, doG0T0eh, doevGTeh, doqsGTeh,                 &
+             maxSCF_GT, thresh_GT, max_diis_GT, doACFDT, exchange_kernel, doXBS, dophBSE, dophBSE2, doppBSE, &
+             TDA_T, TDA, dBSE, dTDA, singlet, triplet, lin_GT, eta_GT, reg_GT, nNuc, ZNuc, rNuc, ENuc,       &
+             nBas_AOs, nBas_MOs, nC, nO, nV, nR, nS, ERHF, S, X, T, V, Hc, ERI_AO, ERI_MO, dipole_int_AO,    &
+             dipole_int_MO, PHF, cHF, eHF)
     call wall_time(end_GT)
   
     t_GT = end_GT - start_GT
