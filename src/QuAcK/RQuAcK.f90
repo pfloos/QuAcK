@@ -212,8 +212,7 @@ subroutine RQuAcK(dotest,doRHF,doROHF,dostab,dosearch,doMP2,doMP3,doCCD,dopCCD,d
   if(doMP) then
 
     call wall_time(start_MP)
-    ! TODO
-    call RMP(dotest,doMP2,doMP3,reg_MP,nBas_AOs,nC,nO,nV,nR,ERI_MO,ENuc,ERHF,eHF)
+    call RMP(dotest, doMP2, doMP3, reg_MP, nBas_MOs, nBas_MOs, nC, nO, nV, nR, ERI_MO, ENuc, ERHF, eHF)
     call wall_time(end_MP)
 
     t_MP = end_MP - start_MP
@@ -232,9 +231,8 @@ subroutine RQuAcK(dotest,doRHF,doROHF,dostab,dosearch,doMP2,doMP3,doCCD,dopCCD,d
   if(doCC) then
 
     call wall_time(start_CC)
-    ! TODO
-    call RCC(dotest,doCCD,dopCCD,doDCD,doCCSD,doCCSDT,dodrCCD,dorCCD,docrCCD,dolCCD, & 
-             maxSCF_CC,thresh_CC,max_diis_CC,nBas_AOs,nC,nO,nV,nR,Hc,ERI_MO,ENuc,ERHF,eHF,cHF)
+    call RCC(dotest, doCCD, dopCCD, doDCD, doCCSD, doCCSDT, dodrCCD, dorCCD, docrCCD, dolCCD, & 
+             maxSCF_CC, thresh_CC, max_diis_CC, nBas_AOs, nBas_MOs, nC, nO, nV, nR, Hc, ERI_MO, ENuc, ERHF, eHF, cHF)
     call wall_time(end_CC)
 
     t_CC = end_CC - start_CC
@@ -252,9 +250,8 @@ subroutine RQuAcK(dotest,doRHF,doROHF,dostab,dosearch,doMP2,doMP3,doCCD,dopCCD,d
   if(doCI) then
 
     call wall_time(start_CI)
-    ! TODO
-    call RCI(dotest,doCIS,doCIS_D,doCID,doCISD,doFCI,singlet,triplet,nBas_AOs,nC,nO,nV,nR,nS,ERI_MO,dipole_int_MO, &
-             eHF,ERHF,cHF,S)
+    call RCI(dotest, doCIS, doCIS_D, doCID, doCISD, doFCI, singlet, triplet, nBas_MOs, &
+             nC, nO, nV, nR, nS, ERI_MO, dipole_int_MO, eHF, ERHF)
     call wall_time(end_CI)
 
     t_CI = end_CI - start_CI

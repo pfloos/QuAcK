@@ -41,7 +41,7 @@ subroutine RCIS(dotest,singlet,triplet,doCIS_D,nBas,nC,nO,nV,nR,nS,ERI,dipole_in
 
 ! Memory allocation
 
-  allocate(A(nS,nS),Om(nS))
+  allocate(A(nS,nS), Om(nS))
 
 ! Compute CIS matrix
 
@@ -116,5 +116,7 @@ subroutine RCIS(dotest,singlet,triplet,doCIS_D,nBas,nC,nO,nV,nR,nS,ERI,dipole_in
     end if
 
   end if
+
+  deallocate(A, Om)
 
 end subroutine 
