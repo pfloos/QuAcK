@@ -57,8 +57,20 @@ parser.add_argument(
     default='light',
     help="Specify the type of data set: light (default), medium, or heavy."
 )
+parser.add_argument(
+    '-t', '--thresh',
+    type=float,
+    default=1e-8,
+    help='Threshold for acceptable difference (default: 1e-8)'
+)
+    
+
+
+
 
 args = parser.parse_args()
+
+THRESH = args.thresh
 
 if args.set_type == 'light':
     bench = 'FeatherBench'
@@ -106,11 +118,11 @@ class Quack_Job:
             spinner = ['|', '/', '-', '\\']
             idx = 0
             while not done_event.is_set():
-                stdout_col(f'\r    Testing {self.methd} ({self.basis}) {spinner[idx]}', "yellow")
+                stdout_col(f'\r    Testing {self.methd} ({self.basis}) {spinner[idx]}', "cyan")
                 sys.stdout.flush()
                 idx = (idx + 1) % len(spinner)
-                time.sleep(0.1)
-            stdout_col(f'\r    Testing {self.methd} ({self.basis})    ', "yellow")
+                time.sleep(0.05)
+            stdout_col(f'\r    Testing {self.methd} ({self.basis})    \n', "cyan")
 
         done_event = threading.Event()
         spinner_thread = threading.Thread(target=display_spinner)
@@ -147,7 +159,37 @@ class Quack_Job:
 
             done_event.set()
             spinner_thread.join()
+
+    def check_data(self, data_ref):
+        filepath = '../test/Rtest.dat'
+        data_new = {}
+        try:
+            # read data_new
+            with open(filepath, 'r') as f:
+                lines = f.readlines()
+                for i in range(0, len(lines) - 1, 2):
+                    key = lines[i].strip()
+                    value = lines[i + 1].strip()
+                    data_new[key] = float(value)  # Convert value to float
+            
+            # Compare with data_ref
+            for key in data_ref:
+                if key not in data_new:
+                    print_col(f"        😐 {key} missing ⚠️ ", "yellow")
+                else:
+                    diff = abs(data_new[key] - data_ref[key]) / (1e-15 + abs(data_ref[key]))
+                    if(diff <= THRESH):
+                        print_col(f"        🙂 {key}: ✔️ ", "green")
+                    else:
+                        print_col(f"        ☹️ {key}: ❌ {data_ref[key]} ≠ {data_new[key]}", "red")
+        except FileNotFoundError:
+            print_col(f"Error: The file '{filepath}' does not exist.", "red")
+            sys.exist(1)
+        except Exception as e:
+            print_col(f"An error occurred: {str(e)}", "red")
+            sys.exist(1)
     
+
 # ---
 
 
@@ -169,35 +211,24 @@ def main():
 
         for mol_prop_name, mol_prop_data in mol_data.items():
 
-            #print_col("    Testing {}".format(mol_prop_name), "cyan")
-
             methd = mol_prop_name[len('properties_'):]
 
             if(len(mol_prop_data) == 0):
-                #print_col("    {} is empty. Skipping...".format(mol_prop_name), "cyan")
-                #print()
                 continue
 
             for basis_name, basis_data in mol_prop_data.items():
-                #print_col("      Basis set: {}".format(basis_name), "yellow")
 
                 if(len(basis_data) == 0):
-                    #print_col("      {} is empty. Skipping...".format(basis_name), "yellow")
-                    #print()
                     continue
 
                 work_methd = Path('{}/{}'.format(work_path, methd))
                 if not work_methd.exists():
                     work_methd.mkdir(parents=True, exist_ok=True)
-                    #print(f"Directory '{work_methd}' created.\n")
         
                 New_Quack_Job = Quack_Job(mol_name, mol_mult, basis_name, mol_geom, methd)
                 New_Quack_Job.prep_inp()
                 New_Quack_Job.run(work_path)
-
-#                for name, val in basis_data.items():
-#                    print(f"      name = {name}")
-#                    print(f"      val = {val}")
+                New_Quack_Job.check_data(basis_data)
 
                 print()
             print()

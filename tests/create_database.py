@@ -9,11 +9,11 @@ from feather_bench import FeatherBench
 
 
 # Save molecules to JSON
-save_molecules_to_json(FeatherBench, 'FeatherBench.json')
+#save_molecules_to_json(FeatherBench, 'FeatherBench.json')
 
 # Load molecules from JSON
-loaded_molecules = load_molecules_from_json('FeatherBench.json')
-print(loaded_molecules)
+#loaded_molecules = load_molecules_from_json('FeatherBench.json')
+#print(loaded_molecules)
 
 # Create a database and add molecules
 db_name = 'FeatherBench.db'
