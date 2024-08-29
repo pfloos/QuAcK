@@ -1,2 +1,5 @@
 *.o
 *.
+__pycache__
+
+.ninja_deps
