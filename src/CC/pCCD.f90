@@ -57,10 +57,13 @@ subroutine pCCD(dotest,maxSCF,thresh,max_diis,nBas,nC,nO,nV,nR,Hc,ERI,ENuc,ERHF,
 
   double precision              :: E1,E2
   double precision,allocatable  :: h(:,:)
+  double precision,allocatable  :: c(:,:)
   double precision,allocatable  :: grad(:)
   double precision,allocatable  :: tmp(:,:,:,:)
   double precision,allocatable  :: hess(:,:)
-  double precision,allocatable  :: eig(:)
+  double precision,allocatable  :: hessInv(:,:)
+  double precision,allocatable  :: kappa(:,:)
+  double precision,allocatable  :: ekappa(:,:)
 
   integer                       :: O,V,N
   integer                       :: n_diis
@@ -125,6 +128,13 @@ subroutine pCCD(dotest,maxSCF,thresh,max_diis,nBas,nC,nO,nV,nR,Hc,ERI,ENuc,ERHF,
 ! Memory allocation for DIIS
 
   allocate(err_diis(O*V,max_diis),t2_diis(O*V,max_diis))
+
+!------------------------------------------------------------------------
+! Start orbital optimization
+!------------------------------------------------------------------------
+
+  allocate(c(N,N))
+  c(:,:) = cHF(:,:)
 
 !------------------------------------------------------------------------
 ! Compute t ampltiudes
@@ -540,6 +550,13 @@ subroutine pCCD(dotest,maxSCF,thresh,max_diis,nBas,nC,nO,nV,nR,Hc,ERI,ENuc,ERHF,
 
   write(*,*) 'Orbital gradient at the pCCD level:'
   call matout(N,N,grad)
+  write(*,*)
+
+! Convergence
+
+  Conv = maxval(abs(grad))
+  write(*,*) ' Convergence of orbtial gradient = ',Conv
+  write(*,*)
  
 ! Compute Hessian
 
@@ -550,7 +567,6 @@ subroutine pCCD(dotest,maxSCF,thresh,max_diis,nBas,nC,nO,nV,nR,Hc,ERI,ENuc,ERHF,
   do p=1,N
     do q=1,N
 
-      rs = 0
       do r=1,N
         do s=1,N
 
@@ -614,7 +630,8 @@ subroutine pCCD(dotest,maxSCF,thresh,max_diis,nBas,nC,nO,nV,nR,Hc,ERI,ENuc,ERHF,
 
           rs = rs + 1
 
-          hess(pq,rs) = tmp(p,q,r,s) - tmp(q,p,r,s) - tmp(p,q,s,r) + tmp(q,p,s,r)
+          hess(pq,rs) = tmp(p,r,q,s) - tmp(r,p,q,s) - tmp(p,r,s,q) + tmp(r,p,s,q)
+!         hess(pq,rs) = tmp(p,q,r,s) - tmp(q,p,r,s) - tmp(p,q,s,r) + tmp(q,p,s,r)
 
         end do
       end do
@@ -624,13 +641,59 @@ subroutine pCCD(dotest,maxSCF,thresh,max_diis,nBas,nC,nO,nV,nR,Hc,ERI,ENuc,ERHF,
 
   call matout(N**2,N**2,hess)
 
-  deallocate(tmp)
+! allocate(eig(N**2))
 
-  allocate(eig(N**2))
-
-  call diagonalize_matrix(N**2,hess,eig)
+! call diagonalize_matrix(N**2,hess,eig)
   
-  call vecout(N**2,eig)
+! call vecout(N**2,eig)
+
+  allocate(hessInv(N**2,N**2))
+
+  call inverse_matrix(N**2,hess,hessInv)
+
+  allocate(kappa(N,N),ekappa(N,N))
+
+  kappa(:,:) = 0d0
+
+  pq = 0
+  do p=1,N
+    do q=1,N
+
+      pq = pq + 1
+
+      rs = 0
+      do r=1,N
+        do s=1,N
+
+          rs = rs + 1
+
+            kappa(p,q) = kappa(p,q) + hessInv(pq,rs)*grad(rs)
+
+        end do
+      end do
+
+    end do
+  end do
+
+  write(*,*) 'kappa'
+  call matout(N,N,kappa)
+  write(*,*)
+
+  call matrix_exponential(N,kappa,ekappa)
+
+  write(*,*) 'e^kappa'
+  call matout(N,N,ekappa)
+  write(*,*)
+
+  write(*,*) 'Old orbitals'
+  call matout(N,N,c)
+  write(*,*)
+
+  c = matmul(c,ekappa)
+
+  write(*,*) 'Rotated orbitals'
+  call matout(N,N,c)
+  write(*,*)
 
 ! Testing zone
 
