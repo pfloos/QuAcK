@@ -1,0 +1,22 @@
+# RHF UHF GHF ROHF
+  T   F   F   F
+# MP2 MP3
+  T   T
+# CCD pCCD DCD CCSD CCSD(T)
+  T   T    T   T    F
+# drCCD rCCD crCCD lCCD
+  T     T    T     T
+# CIS CIS(D) CID CISD FCI
+  T   F      F   F    F
+# phRPA phRPAx crRPA ppRPA
+  T     T      T     T 
+# G0F2 evGF2 qsGF2 ufGF2 G0F3 evGF3
+  T    T     F     F    F    F
+# G0W0 evGW qsGW SRG-qsGW ufG0W0 ufGW
+  T    T    F    F        F      F
+# G0T0pp evGTpp qsGTpp ufG0T0pp
+  T      T      F      F
+# G0T0eh evGTeh qsGTeh
+  F      F      F
+# Rtest Utest Gtest
+  T     F     F
