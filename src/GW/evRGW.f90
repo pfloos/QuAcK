@@ -209,7 +209,9 @@ subroutine evRGW(dotest,maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,dop
 ! Cumulant expansion !
 !--------------------!
 
-  call RGWC(dotest,nBas,nC,nO,nR,nS,Om,rho,eGW,Z)
+  ! TODO
+  !call RGWC(dotest, eta, nBas, nC, nO, nV, nR, nS, Om, rho, eHF, eGW, eGW, Z)
+  call RGWC(dotest, eta, nBas, nC, nO, nV, nR, nS, Om, rho, eHF, eHF, eGW, Z)
 
 ! Deallocate memory
 
