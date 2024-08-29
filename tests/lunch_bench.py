@@ -1,4 +1,6 @@
 
+import time
+import threading
 import sys
 import os
 import shutil
@@ -10,7 +12,7 @@ import argparse
 
 from molecule import get_molecules_from_db
 from molecule import generate_xyz
-from utils import print_col
+from utils import print_col, stdout_col
 
 
 current_date = datetime.now()
@@ -98,34 +100,54 @@ class Quack_Job:
                 print_col("File 'inp/{}' does not exist.".format(inp_file), "red")
                 sys.exit(1)
 
-    def run(file_out, mol, bas, multip):
+    def run(self, work_path):
 
-        os.chdir('..')
-        print(f" :$ cd ..")
+        def display_spinner():
+            spinner = ['|', '/', '-', '\\']
+            idx = 0
+            while not done_event.is_set():
+                stdout_col(f'\r    Testing {self.methd} ({self.basis}) {spinner[idx]}', "yellow")
+                sys.stdout.flush()
+                idx = (idx + 1) % len(spinner)
+                time.sleep(0.1)
+            stdout_col(f'\r    Testing {self.methd} ({self.basis})    ', "yellow")
 
-        for file_in in ["methods", "options"]:
-            command = ['cp', 'tests/{}.RHF'.format(file_in), 'input/{}'.format(file_in)]
-            print(f" :$ {' '.join(command)}")
-            result = subprocess.run(command, capture_output=True, text=True)
-            if result.returncode != 0:
-                print("Error moving file: {}".format(result.stderr))
+        done_event = threading.Event()
+        spinner_thread = threading.Thread(target=display_spinner)
+        spinner_thread.start()
 
-        command = [
-            'python{}'.format(PYTHON_VERSION), 'PyDuck.py',
-            '-x', '{}'.format(mol), 
-            '-b', '{}'.format(bas),
-            '-m', '{}'.format(multip)
-        ]
-        print(f" :$ {' '.join(command)}")
-        with open(file_out, 'w') as fobj:
-            result = subprocess.run(command, stdout=fobj, stderr=subprocess.PIPE, text=True)
-        if result.stderr:
-            print("Error output:", result.stderr)
+        try:
+    
+            os.chdir('..')
+            #print_col(f"      Starting QuAck..", "magenta")
+            #print_col(f"      $ cd ..", "magenta")
+    
+            command = [
+                'python{}'.format(PYTHON_VERSION), 'PyDuck.py',
+                '-x', '{}'.format(self.mol), 
+                '-b', '{}'.format(self.basis),
+                '-m', '{}'.format(self.multip)
+            ]
+            #print_col(f"      $ {' '.join(command)}", "magenta")
+    
+            file_out = "{}/{}/{}_{}_{}.out".format(work_path, self.methd, self.mol, self.multip, self.basis)
+            with open(file_out, 'w') as fobj:
+                result = subprocess.run(command, stdout=fobj, stderr=subprocess.PIPE, text=True)
+            if result.stderr:
+                print("Error output:", result.stderr)
+    
+            os.chdir('tests')
+            #print_col(f"      $ cd tests", "magenta")
+    
+        except Exception as e:
 
-        os.chdir('tests')
-        print(f" :$ cd tests")
+            print_col(f"An error occurred: {str(e)}", "red")
 
+        finally:
 
+            done_event.set()
+            spinner_thread.join()
+    
 # ---
 
 
@@ -147,21 +169,21 @@ def main():
 
         for mol_prop_name, mol_prop_data in mol_data.items():
 
-            print_col("    Testing {}".format(mol_prop_name), "cyan")
+            #print_col("    Testing {}".format(mol_prop_name), "cyan")
 
             methd = mol_prop_name[len('properties_'):]
 
             if(len(mol_prop_data) == 0):
-                print_col("    {} is empty. Skipping...".format(mol_prop_name), "cyan")
-                print()
+                #print_col("    {} is empty. Skipping...".format(mol_prop_name), "cyan")
+                #print()
                 continue
 
             for basis_name, basis_data in mol_prop_data.items():
-                print_col("      Basis set = {}".format(basis_name), "yellow")
+                #print_col("      Basis set: {}".format(basis_name), "yellow")
 
                 if(len(basis_data) == 0):
-                    print_col("      {} is empty. Skipping...".format(basis_name), "yellow")
-                    print()
+                    #print_col("      {} is empty. Skipping...".format(basis_name), "yellow")
+                    #print()
                     continue
 
                 work_methd = Path('{}/{}'.format(work_path, methd))
@@ -171,6 +193,7 @@ def main():
         
                 New_Quack_Job = Quack_Job(mol_name, mol_mult, basis_name, mol_geom, methd)
                 New_Quack_Job.prep_inp()
+                New_Quack_Job.run(work_path)
 
 #                for name, val in basis_data.items():
 #                    print(f"      name = {name}")
@@ -183,20 +206,6 @@ def main():
     quit()
 
         
-#                # create input files
-#                class_methd.gen_input()
-#        
-#                file_out = "{}/{}/{}_{}_{}.out".format(work_path, prop, mol_name, mol_mult, bas)
-#
-#                print(" testing {} for {}@{} (2S+1 = {})".format(prop, mol_name, bas, mol_mult))
-#                print(" file_out: {}".format(file_out))
-#
-#                class_methd.run_job(file_out, mol_name, bas, mol_mult)
-
-
-        
-
-
 db_name = '{}.db'.format(bench)
 
 molecules = get_molecules_from_db(db_name)
