@@ -1,4 +1,4 @@
-subroutine dump_test_value(branch,description,value)
+subroutine dump_test_value(branch, description, val)
 
   implicit none
 
@@ -7,7 +7,7 @@ subroutine dump_test_value(branch,description,value)
   character(len=1),intent(in)        :: branch
   character(len=*),intent(in)        :: description
 
-  double precision,intent(in)        :: value
+  double precision,intent(in)        :: val
  
 ! Local variables
 
@@ -15,18 +15,19 @@ subroutine dump_test_value(branch,description,value)
 
   if(branch == 'R') then 
 
-    write(11,*) trim(description)
-    write(11,'(F20.15)') value
+    !write(1231597, '(A, ": ", F20.15)') '"' // trim(description) // '"', val
+    write(1231597, *) trim(description)
+    write(1231597, '(F20.15)') val
 
   elseif(branch == 'U') then 
 
-    write(12,*) trim(description)
-    write(12,'(F20.15)') value
+    write(1232584,*) trim(description)
+    write(1232584,'(F20.15)') val
 
   elseif(branch == 'G') then
 
-    write(13,*) trim(description)
-    write(13,'(F20.15)') value
+    write(1234181,*) trim(description)
+    write(1234181,'(F20.15)') val
 
   else
 
