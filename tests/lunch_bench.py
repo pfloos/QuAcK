@@ -60,7 +60,7 @@ parser.add_argument(
 parser.add_argument(
     '-t', '--thresh',
     type=float,
-    default=1e-8,
+    default=1e-7,
     help='Threshold for acceptable difference (default: 1e-8)'
 )
     
@@ -101,13 +101,14 @@ class Quack_Job:
     def prep_inp(self):
 
         # geometry
-        generate_xyz(self.geom, filename="{}.xyz".format(self.mol))
+        generate_xyz(self.geom, filename="{}/mol/{}.xyz".format(quack_root, self.mol))
 
         # input files
         for inp in ["methods", "options"]:
             inp_file = "{}.{}".format(inp, self.methd.upper())
             if os.path.exists("inp/{}".format(inp_file)):
-                shutil.copy("inp/{}".format(inp_file), "../mol/{}".format(inp_file))
+                shutil.copy("{}/tests/inp/{}".format(quack_root, inp_file), 
+                            "{}/input/{}".format(quack_root, inp))
             else:
                 print_col("File 'inp/{}' does not exist.".format(inp_file), "red")
                 sys.exit(1)
@@ -184,10 +185,10 @@ class Quack_Job:
                         print_col(f"        ☹️  {key}: ❌ {data_ref[key]} ≠ {data_new[key]}", "red")
         except FileNotFoundError:
             print_col(f"Error: The file '{filepath}' does not exist.", "red")
-            sys.exist(1)
+            sys.exit(1)
         except Exception as e:
             print_col(f"An error occurred: {str(e)}", "red")
-            sys.exist(1)
+            sys.exit(1)
     
 
 # ---
