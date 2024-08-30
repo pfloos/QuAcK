@@ -1,6 +1,10 @@
 
+import os
 import json
 import sqlite3
+
+from utils import print_col
+
 
 class Molecule:
     def __init__(self, name, multiplicity, geometry, properties):
@@ -38,22 +42,63 @@ def load_molecules_from_json(filename):
 
 
 def create_database(db_name):
-    conn = sqlite3.connect(db_name)
-    cursor = conn.cursor()
-    cursor.execute('''CREATE TABLE IF NOT EXISTS molecules
-                      (name TEXT, multiplicity INTEGER, geometry TEXT, properties TEXT)''')
-    conn.commit()
-    conn.close()
+    if os.path.exists(db_name):
+        conn = sqlite3.connect(db_name)
+        cursor = conn.cursor()
+        # Check if the table already exists
+        cursor.execute("SELECT name FROM sqlite_master WHERE type='table' AND name='molecules';")
+        table_exists = cursor.fetchone()
+        
+        if table_exists:
+            print_col(f"Database '{db_name}' already exists and table 'molecules' is already created.", "yellow")
+        else:
+            # Create the table if it does not exist
+            cursor.execute('''CREATE TABLE molecules
+                              (name TEXT, multiplicity INTEGER, geometry TEXT, properties TEXT)''')
+            conn.commit()
+            print_col(f"Table 'molecules' created in existing database '{db_name}' successfully.", "green")
+        conn.close()
+    else:
+        # Create the database and table
+        conn = sqlite3.connect(db_name)
+        cursor = conn.cursor()
+        cursor.execute('''CREATE TABLE molecules
+                          (name TEXT, multiplicity INTEGER, geometry TEXT, properties TEXT)''')
+        conn.commit()
+        conn.close()
+        print_col(f"Database '{db_name}' created and table 'molecules' added successfully.", "green")
 
 def add_molecule_to_db(db_name, molecule):
+
     conn = sqlite3.connect(db_name)
     cursor = conn.cursor()
+
+    # Convert geometry and properties to JSON strings
     geometry_str = json.dumps(molecule.geometry)
     energies_str = json.dumps(molecule.properties)
-    cursor.execute("INSERT INTO molecules VALUES (?, ?, ?, ?)",
-                   (molecule.name, molecule.multiplicity, geometry_str, energies_str))
-    conn.commit()
+
+    # Check if the molecule already exists
+    cursor.execute("SELECT COUNT(*) FROM molecules WHERE name = ?", (molecule.name,))
+    count = cursor.fetchone()[0]
+    
+    if count > 0:
+        print_col(f"Molecule '{molecule.name}' already exists in {db_name}.", "yellow")
+    else:
+        # Insert the molecule if it does not exist
+        cursor.execute("INSERT INTO molecules (name, multiplicity, geometry, properties) VALUES (?, ?, ?, ?)",
+                       (molecule.name, molecule.multiplicity, geometry_str, energies_str))
+        conn.commit()
+        print_col(f"'{molecule.name}' added to {db_name} successfully.", "green")
+    
     conn.close()
+
+
+def remove_database(db_name):
+    if os.path.exists(db_name):
+        os.remove(db_name)
+        print_col(f"Database '{db_name}' removed successfully.", "red")
+    else:
+        print_col(f"Database '{db_name}' does not exist.", "red")
 
 def get_molecules_from_db(db_name):
     conn = sqlite3.connect(db_name)

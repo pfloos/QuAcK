@@ -181,7 +181,7 @@ class Quack_Job:
                     if(diff <= THRESH):
                         print_col(f"        🙂 {key}: ✔️ ", "green")
                     else:
-                        print_col(f"        ☹️ {key}: ❌ {data_ref[key]} ≠ {data_new[key]}", "red")
+                        print_col(f"        ☹️  {key}: ❌ {data_ref[key]} ≠ {data_new[key]}", "red")
         except FileNotFoundError:
             print_col(f"Error: The file '{filepath}' does not exist.", "red")
             sys.exist(1)
