@@ -3,7 +3,7 @@
 
 subroutine diagonalize_nonsym_matrix(N, A, L, e_re, thr_d, thr_nd, thr_deg, imp_bio, verbose)
 
-  ! Diagonalize a non-symmetric matrix
+  ! Diagonalize a non-symmetric matrix A
   ! 
   ! Output
   !   right-eigenvectors are saved in A
@@ -278,7 +278,7 @@ subroutine check_biorthog_binormalize(n, m, Vl, Vr, thr_d, thr_nd, stop_ifnot)
 
     do i = 1, m
       if(S(i,i) <= 0.d0) then
-        print *, ' overap negative'
+        print *, ' negative overlap !'
         print *, i, S(i,i)
         exit
       endif

@@ -123,7 +123,7 @@ class Quack_Job:
                 sys.stdout.flush()
                 idx = (idx + 1) % len(spinner)
                 time.sleep(0.05)
-            stdout_col(f'\r    Testing {self.methd} ({self.basis})    \n', "cyan")
+            stdout_col(f'\r    Testing {self.methd} ({self.basis})    \n\n', "cyan")
 
         done_event = threading.Event()
         spinner_thread = threading.Thread(target=display_spinner)
@@ -180,7 +180,7 @@ class Quack_Job:
                 else:
                     diff = abs(data_new[key] - data_ref[key]) / (1e-15 + abs(data_ref[key]))
                     if(diff <= THRESH):
-                        print_col(f"        🙂 {key}: ✔️ ", "green")
+                        print_col(f"        🙂 {key}", "green")
                     else:
                         print_col(f"        ☹️  {key}: ❌ {data_ref[key]} ≠ {data_new[key]}", "red")
         except FileNotFoundError:
