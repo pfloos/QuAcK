@@ -3,7 +3,7 @@
 
 subroutine RGF(dotest, doG0F2, doevGF2, doqsGF2, doufG0F02, doG0F3, doevGF3, renorm, maxSCF,         &
                thresh, max_diis, dophBSE, doppBSE, TDA, dBSE, dTDA, singlet, triplet, linearize,     &
-               eta, regularize, nNuc, ZNuc, rNuc, ENuc, nBas_AOs, nBas_MOs, nC, nO, nV, nR, nS, EHF, &
+               eta, regularize, nNuc, ZNuc, rNuc, ENuc, nBas, nOrb, nC, nO, nV, nR, nS, EHF, &
                S, X, T, V, Hc, ERI_AO, ERI_MO, dipole_int_AO, dipole_int_MO, PHF, cHF, epsHF)
 
 ! Green's function module
@@ -42,7 +42,7 @@ subroutine RGF(dotest, doG0F2, doevGF2, doqsGF2, doufG0F02, doG0F3, doevGF3, ren
   double precision,intent(in)   :: rNuc(nNuc,ncart)
   double precision,intent(in)   :: ENuc
 
-  integer,intent(in)            :: nBas_AOs, nBas_MOs
+  integer,intent(in)            :: nBas, nOrb
   integer,intent(in)            :: nC
   integer,intent(in)            :: nO
   integer,intent(in)            :: nV
@@ -50,18 +50,18 @@ subroutine RGF(dotest, doG0F2, doevGF2, doqsGF2, doufG0F02, doG0F3, doevGF3, ren
   integer,intent(in)            :: nS
 
   double precision,intent(in)   :: EHF
-  double precision,intent(in)   :: epsHF(nBas_MOs)
-  double precision,intent(in)   :: cHF(nBas_AOs,nBas_MOs)
-  double precision,intent(in)   :: PHF(nBas_AOs,nBas_AOs)
-  double precision,intent(in)   :: S(nBas_AOs,nBas_AOs)
-  double precision,intent(in)   :: T(nBas_AOs,nBas_AOs)
-  double precision,intent(in)   :: V(nBas_AOs,nBas_AOs)
-  double precision,intent(in)   :: Hc(nBas_AOs,nBas_AOs)
-  double precision,intent(in)   :: X(nBas_AOs,nBas_MOs)
-  double precision,intent(in)   :: ERI_AO(nBas_AOs,nBas_AOs,nBas_AOs,nBas_AOs)
-  double precision,intent(in)   :: ERI_MO(nBas_MOs,nBas_MOs,nBas_MOs,nBas_MOs)
-  double precision,intent(in)   :: dipole_int_AO(nBas_AOs,nBas_AOs,ncart)
-  double precision,intent(in)   :: dipole_int_MO(nBas_MOs,nBas_MOs,ncart)
+  double precision,intent(in)   :: epsHF(nOrb)
+  double precision,intent(in)   :: cHF(nBas,nOrb)
+  double precision,intent(in)   :: PHF(nBas,nBas)
+  double precision,intent(in)   :: S(nBas,nBas)
+  double precision,intent(in)   :: T(nBas,nBas)
+  double precision,intent(in)   :: V(nBas,nBas)
+  double precision,intent(in)   :: Hc(nBas,nBas)
+  double precision,intent(in)   :: X(nBas,nOrb)
+  double precision,intent(in)   :: ERI_AO(nBas,nBas,nBas,nBas)
+  double precision,intent(in)   :: ERI_MO(nOrb,nOrb,nOrb,nOrb)
+  double precision,intent(in)   :: dipole_int_AO(nBas,nBas,ncart)
+  double precision,intent(in)   :: dipole_int_MO(nOrb,nOrb,ncart)
 
 ! Local variables
 
@@ -75,7 +75,7 @@ subroutine RGF(dotest, doG0F2, doevGF2, doqsGF2, doufG0F02, doG0F3, doevGF3, ren
 
     call wall_time(start_GF)
     call RG0F2(dotest, dophBSE, doppBSE, TDA, dBSE, dTDA, singlet, triplet, &
-               linearize, eta, regularize, nBas_MOs, nC, nO, nV, nR, nS, &
+               linearize, eta, regularize, nOrb, nC, nO, nV, nR, nS, &
                ENuc, EHF, ERI_MO, dipole_int_MO, epsHF)
     call wall_time(end_GF)
 
@@ -93,7 +93,7 @@ subroutine RGF(dotest, doG0F2, doevGF2, doqsGF2, doufG0F02, doG0F3, doevGF3, ren
 
     call wall_time(start_GF)
     call evRGF2(dotest,dophBSE,doppBSE,TDA,dBSE,dTDA,maxSCF,thresh,max_diis, & 
-                singlet,triplet,linearize,eta,regularize,nBas_MOs,nC,nO,nV,nR,nS,ENuc,EHF, & 
+                singlet,triplet,linearize,eta,regularize,nOrb,nC,nO,nV,nR,nS,ENuc,EHF, & 
                 ERI_MO,dipole_int_MO,epsHF)
     call wall_time(end_GF)
 
@@ -112,7 +112,7 @@ subroutine RGF(dotest, doG0F2, doevGF2, doqsGF2, doufG0F02, doG0F3, doevGF3, ren
     call wall_time(start_GF)
     call qsRGF2(dotest, maxSCF, thresh, max_diis, dophBSE, doppBSE, TDA,    &
                 dBSE, dTDA, singlet, triplet, eta, regularize, nNuc, ZNuc,  &
-                rNuc, ENuc, nBas_AOs, nBas_MOs, nC, nO, nV, nR, nS, EHF, S, &
+                rNuc, ENuc, nBas, nOrb, nC, nO, nV, nR, nS, EHF, S, &
                 X, T, V, Hc, ERI_AO, ERI_MO, dipole_int_AO, dipole_int_MO, PHF, cHF, epsHF)
     call wall_time(end_GF)
 
@@ -129,7 +129,7 @@ subroutine RGF(dotest, doG0F2, doevGF2, doqsGF2, doufG0F02, doG0F3, doevGF3, ren
   if(doufG0F02) then 
 
     call wall_time(start_GF)
-    call ufRG0F02(dotest, nBas_MOs, nC, nO, nV, nR, nS, ENuc, EHF, ERI_MO, epsHF)
+    call ufRG0F02(dotest, nOrb, nC, nO, nV, nR, nS, ENuc, EHF, ERI_MO, epsHF)
     call wall_time(end_GF)
 
     t_GF = end_GF - start_GF
@@ -145,7 +145,7 @@ subroutine RGF(dotest, doG0F2, doevGF2, doqsGF2, doufG0F02, doG0F3, doevGF3, ren
   if(doG0F3) then
 
     call wall_time(start_GF)
-    call RG0F3(dotest, renorm, nBas_MOs, nC, nO, nV, nR, ERI_MO, epsHF)
+    call RG0F3(dotest, renorm, nOrb, nC, nO, nV, nR, ERI_MO, epsHF)
     call wall_time(end_GF)
 
     t_GF = end_GF - start_GF
@@ -161,7 +161,7 @@ subroutine RGF(dotest, doG0F2, doevGF2, doqsGF2, doufG0F02, doG0F3, doevGF3, ren
   if(doevGF3) then
 
     call wall_time(start_GF)
-    call evRGF3(dotest, maxSCF, thresh, max_diis, renorm, nBas_MOs, nC, nO, nV, nR, ERI_MO, epsHF)
+    call evRGF3(dotest, maxSCF, thresh, max_diis, renorm, nOrb, nC, nO, nV, nR, ERI_MO, epsHF)
     call wall_time(end_GF)
 
     t_GF = end_GF - start_GF

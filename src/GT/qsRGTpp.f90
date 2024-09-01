@@ -2,7 +2,7 @@
 ! ---
 
 subroutine qsRGTpp(dotest, maxSCF, thresh, max_diis, doACFDT, exchange_kernel, doXBS, dophBSE, TDA_T, TDA,    &
-                   dBSE, dTDA, singlet, triplet, eta, regularize, nNuc, ZNuc, rNuc, ENuc, nBas_AOs, nBas_MOs, &
+                   dBSE, dTDA, singlet, triplet, eta, regularize, nNuc, ZNuc, rNuc, ENuc, nBas, nOrb, &
                    nC, nO, nV, nR, nS, ERHF, S, X, T, V, Hc, ERI_AO, ERI_MO, dipole_int_AO, dipole_int_MO, PHF, cHF, eHF)
 
 ! Perform a quasiparticle self-consistent GT calculation
@@ -34,26 +34,26 @@ subroutine qsRGTpp(dotest, maxSCF, thresh, max_diis, doACFDT, exchange_kernel, d
   double precision,intent(in)   :: rNuc(nNuc,ncart)
   double precision,intent(in)   :: ENuc
 
-  integer,intent(in)            :: nBas_AOs, nBas_MOs
+  integer,intent(in)            :: nBas, nOrb
   integer,intent(in)            :: nC,nO,nV,nR,nS
   double precision,intent(in)   :: ERHF
-  double precision,intent(in)   :: eHF(nBas_MOs)
-  double precision,intent(in)   :: cHF(nBas_AOs,nBas_MOs)
-  double precision,intent(in)   :: PHF(nBas_AOs,nBas_AOs)
-  double precision,intent(in)   :: S(nBas_AOs,nBas_AOs)
-  double precision,intent(in)   :: T(nBas_AOs,nBas_AOs)
-  double precision,intent(in)   :: V(nBas_AOs,nBas_AOs)
-  double precision,intent(in)   :: Hc(nBas_AOs,nBas_AOs)
-  double precision,intent(in)   :: X(nBas_AOs,nBas_MOs)
-  double precision,intent(in)   :: ERI_AO(nBas_AOs,nBas_AOs,nBas_AOs,nBas_AOs)
-  double precision,intent(inout):: ERI_MO(nBas_MOs,nBas_MOs,nBas_MOs,nBas_MOs)
-  double precision,intent(in)   :: dipole_int_AO(nBas_AOs,nBas_AOs,ncart)
-  double precision,intent(in)   :: dipole_int_MO(nBas_MOs,nBas_MOs,ncart)
+  double precision,intent(in)   :: eHF(nOrb)
+  double precision,intent(in)   :: cHF(nBas,nOrb)
+  double precision,intent(in)   :: PHF(nBas,nBas)
+  double precision,intent(in)   :: S(nBas,nBas)
+  double precision,intent(in)   :: T(nBas,nBas)
+  double precision,intent(in)   :: V(nBas,nBas)
+  double precision,intent(in)   :: Hc(nBas,nBas)
+  double precision,intent(in)   :: X(nBas,nOrb)
+  double precision,intent(in)   :: ERI_AO(nBas,nBas,nBas,nBas)
+  double precision,intent(inout):: ERI_MO(nOrb,nOrb,nOrb,nOrb)
+  double precision,intent(in)   :: dipole_int_AO(nBas,nBas,ncart)
+  double precision,intent(in)   :: dipole_int_MO(nOrb,nOrb,ncart)
 
 ! Local variables
 
   integer                       :: nSCF
-  integer                       :: nBas_AOs_Sq
+  integer                       :: nBas_Sq
   integer                       :: ispin
   integer                       :: iblock
   integer                       :: n_diis
@@ -123,7 +123,7 @@ subroutine qsRGTpp(dotest, maxSCF, thresh, max_diis, doACFDT, exchange_kernel, d
 
 ! Stuff 
 
-  nBas_AOs_Sq = nBas_AOs*nBas_AOs
+  nBas_Sq = nBas*nBas
 
 ! TDA for T
 
@@ -141,30 +141,30 @@ subroutine qsRGTpp(dotest, maxSCF, thresh, max_diis, doACFDT, exchange_kernel, d
 
 ! Memory allocation
 
-  allocate(eGT(nBas_MOs))
-  allocate(eOld(nBas_MOs))
-  allocate(Z(nBas_MOs))
+  allocate(eGT(nOrb))
+  allocate(eOld(nOrb))
+  allocate(Z(nOrb))
 
-  allocate(c(nBas_AOs,nBas_MOs))
+  allocate(c(nBas,nOrb))
 
-  allocate(Fp(nBas_MOs,nBas_MOs))
-  allocate(cp(nBas_MOs,nBas_MOs))
-  allocate(Sig(nBas_MOs,nBas_MOs))
+  allocate(Fp(nOrb,nOrb))
+  allocate(cp(nOrb,nOrb))
+  allocate(Sig(nOrb,nOrb))
 
-  allocate(P(nBas_AOs,nBas_AOs))
-  allocate(F(nBas_AOs,nBas_AOs))
-  allocate(J(nBas_AOs,nBas_AOs))
-  allocate(K(nBas_AOs,nBas_AOs))
-  allocate(error(nBas_AOs,nBas_AOs))
-  allocate(Sigp(nBas_AOs,nBas_AOs))
+  allocate(P(nBas,nBas))
+  allocate(F(nBas,nBas))
+  allocate(J(nBas,nBas))
+  allocate(K(nBas,nBas))
+  allocate(error(nBas,nBas))
+  allocate(Sigp(nBas,nBas))
 
-  allocate(error_diis(nBas_AOs_Sq,max_diis))
-  allocate(F_diis(nBas_AOs_Sq,max_diis))
+  allocate(error_diis(nBas_Sq,max_diis))
+  allocate(F_diis(nBas_Sq,max_diis))
 
-  allocate(Om1s(nVVs), X1s(nVVs,nVVs), Y1s(nOOs,nVVs), rho1s(nBas_MOs,nBas_MOs,nVVs))
-  allocate(Om2s(nOOs), X2s(nVVs,nOOs), Y2s(nOOs,nOOs), rho2s(nBas_MOs,nBas_MOs,nOOs))
-  allocate(Om1t(nVVt), X1t(nVVt,nVVt), Y1t(nOOt,nVVt), rho1t(nBas_MOs,nBas_MOs,nVVt))
-  allocate(Om2t(nOOt), X2t(nVVt,nOOt), Y2t(nOOt,nOOt), rho2t(nBas_MOs,nBas_MOs,nOOt))
+  allocate(Om1s(nVVs), X1s(nVVs,nVVs), Y1s(nOOs,nVVs), rho1s(nOrb,nOrb,nVVs))
+  allocate(Om2s(nOOs), X2s(nVVs,nOOs), Y2s(nOOs,nOOs), rho2s(nOrb,nOrb,nOOs))
+  allocate(Om1t(nVVt), X1t(nVVt,nVVt), Y1t(nOOt,nVVt), rho1t(nOrb,nOrb,nVVt))
+  allocate(Om2t(nOOt), X2t(nVVt,nOOt), Y2t(nOOt,nOOt), rho2t(nOrb,nOrb,nOOt))
 
 ! Initialization
   
@@ -192,15 +192,15 @@ subroutine qsRGTpp(dotest, maxSCF, thresh, max_diis, doACFDT, exchange_kernel, d
 
     ! Buid Hartree matrix
 
-    call Hartree_matrix_AO_basis(nBas_AOs,P,ERI_AO,J)
+    call Hartree_matrix_AO_basis(nBas,P,ERI_AO,J)
 
     ! Compute exchange part of the self-energy 
 
-    call exchange_matrix_AO_basis(nBas_AOs,P,ERI_AO,K)
+    call exchange_matrix_AO_basis(nBas,P,ERI_AO,K)
 
     ! AO to MO transformation of two-electron integrals
 
-    call AOtoMO_ERI_RHF(nBas_AOs, nBas_MOs, c, ERI_AO, ERI_MO)
+    call AOtoMO_ERI_RHF(nBas, nOrb, c, ERI_AO, ERI_MO)
 
     ! Compute linear response
 
@@ -209,9 +209,9 @@ subroutine qsRGTpp(dotest, maxSCF, thresh, max_diis, doACFDT, exchange_kernel, d
 
     allocate(Bpp(nVVs,nOOs),Cpp(nVVs,nVVs),Dpp(nOOs,nOOs))
 
-    call ppLR_C(iblock,nBas_MOs,nC,nO,nV,nR,nVVs,1d0,eGT,ERI_MO,Cpp)
-    call ppLR_D(iblock,nBas_MOs,nC,nO,nV,nR,nOOs,1d0,eGT,ERI_MO,Dpp)
-    if(.not.TDA_T) call ppLR_B(iblock,nBas_MOs,nC,nO,nV,nR,nOOs,nVVs,1d0,ERI_MO,Bpp)
+    call ppLR_C(iblock,nOrb,nC,nO,nV,nR,nVVs,1d0,eGT,ERI_MO,Cpp)
+    call ppLR_D(iblock,nOrb,nC,nO,nV,nR,nOOs,1d0,eGT,ERI_MO,Dpp)
+    if(.not.TDA_T) call ppLR_B(iblock,nOrb,nC,nO,nV,nR,nOOs,nVVs,1d0,ERI_MO,Bpp)
 
     call ppLR(TDA_T,nOOs,nVVs,Bpp,Cpp,Dpp,Om1s,X1s,Y1s,Om2s,X2s,Y2s,EcRPA(ispin))
 
@@ -222,9 +222,9 @@ subroutine qsRGTpp(dotest, maxSCF, thresh, max_diis, doACFDT, exchange_kernel, d
 
     allocate(Bpp(nVVt,nOOt),Cpp(nVVt,nVVt),Dpp(nOOt,nOOt))
 
-    call ppLR_C(iblock,nBas_MOs,nC,nO,nV,nR,nVVt,1d0,eGT,ERI_MO,Cpp)
-    call ppLR_D(iblock,nBas_MOs,nC,nO,nV,nR,nOOt,1d0,eGT,ERI_MO,Dpp)
-    if(.not.TDA_T) call ppLR_B(iblock,nBas_MOs,nC,nO,nV,nR,nOOt,nVVt,1d0,ERI_MO,Bpp)
+    call ppLR_C(iblock,nOrb,nC,nO,nV,nR,nVVt,1d0,eGT,ERI_MO,Cpp)
+    call ppLR_D(iblock,nOrb,nC,nO,nV,nR,nOOt,1d0,eGT,ERI_MO,Dpp)
+    if(.not.TDA_T) call ppLR_B(iblock,nOrb,nC,nO,nV,nR,nOOt,nVVt,1d0,ERI_MO,Bpp)
 
     call ppLR(TDA_T,nOOt,nVVt,Bpp,Cpp,Dpp,Om1t,X1t,Y1t,Om2t,X2t,Y2t,EcRPA(ispin))
 
@@ -236,24 +236,24 @@ subroutine qsRGTpp(dotest, maxSCF, thresh, max_diis, doACFDT, exchange_kernel, d
     ! Compute correlation part of the self-energy 
 
     iblock = 3
-    call GTpp_excitation_density(iblock,nBas_MOs,nC,nO,nV,nR,nOOs,nVVs,ERI_MO,X1s,Y1s,rho1s,X2s,Y2s,rho2s)
+    call GTpp_excitation_density(iblock,nOrb,nC,nO,nV,nR,nOOs,nVVs,ERI_MO,X1s,Y1s,rho1s,X2s,Y2s,rho2s)
 
     iblock = 4
-    call GTpp_excitation_density(iblock,nBas_MOs,nC,nO,nV,nR,nOOt,nVVt,ERI_MO,X1t,Y1t,rho1t,X2t,Y2t,rho2t)
+    call GTpp_excitation_density(iblock,nOrb,nC,nO,nV,nR,nOOt,nVVt,ERI_MO,X1t,Y1t,rho1t,X2t,Y2t,rho2t)
 
     if(regularize) then 
-      call GTpp_regularization(eta,nBas_MOs,nC,nO,nV,nR,nOOs,nVVs,eGT,Om1s,rho1s,Om2s,rho2s)
-      call GTpp_regularization(eta,nBas_MOs,nC,nO,nV,nR,nOOt,nVVt,eGT,Om1t,rho1t,Om2t,rho2t)
+      call GTpp_regularization(eta,nOrb,nC,nO,nV,nR,nOOs,nVVs,eGT,Om1s,rho1s,Om2s,rho2s)
+      call GTpp_regularization(eta,nOrb,nC,nO,nV,nR,nOOt,nVVt,eGT,Om1t,rho1t,Om2t,rho2t)
     end if 
 
-    call GTpp_self_energy(eta,nBas_MOs,nC,nO,nV,nR,nOOs,nVVs,nOOt,nVVt,eGT,Om1s,rho1s,Om2s,rho2s, & 
+    call GTpp_self_energy(eta,nOrb,nC,nO,nV,nR,nOOs,nVVs,nOOt,nVVt,eGT,Om1s,rho1s,Om2s,rho2s, & 
                           Om1t,rho1t,Om2t,rho2t,EcGM,Sig,Z)
 
     ! Make correlation self-energy Hermitian and transform it back to AO basis
    
     Sig = 0.5d0*(Sig + transpose(Sig))
 
-    call MOtoAO(nBas_AOs, nBas_MOs, S, c, Sig, Sigp)
+    call MOtoAO(nBas, nOrb, S, c, Sig, Sigp)
  
     ! Solve the quasi-particle equation
 
@@ -267,7 +267,7 @@ subroutine qsRGTpp(dotest, maxSCF, thresh, max_diis, doACFDT, exchange_kernel, d
 
     n_diis = min(n_diis+1,max_diis)
     if(abs(rcond) > 1d-7) then 
-      call DIIS_extrapolation(rcond,nBas_AOs_Sq,nBas_AOs_Sq,n_diis,error_diis,F_diis,error,F)
+      call DIIS_extrapolation(rcond,nBas_Sq,nBas_Sq,n_diis,error_diis,F_diis,error,F)
     else
       n_diis = 0
     end if
@@ -276,7 +276,7 @@ subroutine qsRGTpp(dotest, maxSCF, thresh, max_diis, doACFDT, exchange_kernel, d
 
     Fp = matmul(transpose(X), matmul(F, X))
     cp(:,:) = Fp(:,:)
-    call diagonalize_matrix(nBas_MOs, cp, eGT)
+    call diagonalize_matrix(nOrb, cp, eGT)
     c = matmul(X, cp)
 
     ! Compute new density matrix in the AO basis
@@ -294,19 +294,19 @@ subroutine qsRGTpp(dotest, maxSCF, thresh, max_diis, doACFDT, exchange_kernel, d
 
     ! Kinetic energy
 
-    ET = trace_matrix(nBas_AOs,matmul(P,T))
+    ET = trace_matrix(nBas,matmul(P,T))
 
     ! Potential energy
 
-    EV = trace_matrix(nBas_AOs,matmul(P,V))
+    EV = trace_matrix(nBas,matmul(P,V))
 
     ! Hartree energy
 
-    EJ = 0.5d0*trace_matrix(nBas_AOs,matmul(P,J))
+    EJ = 0.5d0*trace_matrix(nBas,matmul(P,J))
 
     ! Exchange energy
 
-    Ex = 0.25d0*trace_matrix(nBas_AOs,matmul(P,K))
+    Ex = 0.25d0*trace_matrix(nBas,matmul(P,K))
 
     ! Total energy
 
@@ -314,8 +314,8 @@ subroutine qsRGTpp(dotest, maxSCF, thresh, max_diis, doACFDT, exchange_kernel, d
 
     ! Print results
 
-    call dipole_moment(nBas_AOs,P,nNuc,ZNuc,rNuc,dipole_int_AO,dipole)
-    call print_qsRGTpp(nBas_AOs, nBas_MOs, nO, nSCF, Conv, thresh, eHF,   &
+    call dipole_moment(nBas,P,nNuc,ZNuc,rNuc,dipole_int_AO,dipole)
+    call print_qsRGTpp(nBas, nOrb, nO, nSCF, Conv, thresh, eHF,   &
                        eGT, c, Sig, Z, ENuc, ET, EV, EJ, Ex, EcGM, EcRPA, &
                        EqsGT, dipole)
 
@@ -351,7 +351,7 @@ subroutine qsRGTpp(dotest, maxSCF, thresh, max_diis, doACFDT, exchange_kernel, d
 
   if(dophBSE) then
 
-    call GTpp_phBSE(TDA_T,TDA,dBSE,dTDA,singlet,triplet,eta,nBas_MOs,nC,nO,nV,nR,nS,nOOs,nVVs,nOOt,nVVt, &
+    call GTpp_phBSE(TDA_T,TDA,dBSE,dTDA,singlet,triplet,eta,nOrb,nC,nO,nV,nR,nS,nOOs,nVVs,nOOt,nVVt, &
                     Om1s,X1s,Y1s,Om2s,X2s,Y2s,rho1s,rho2s,Om1t,X1t,Y1t,Om2t,X2t,Y2t,rho1t,rho2t, &
                     ERI_MO,dipole_int_MO,eGT,eGT,EcBSE)
 
@@ -387,7 +387,7 @@ subroutine qsRGTpp(dotest, maxSCF, thresh, max_diis, doACFDT, exchange_kernel, d
 
       end if
 
-      call GTpp_phACFDT(exchange_kernel,doXBS,.false.,TDA_T,TDA,dophBSE,singlet,triplet,eta,nBas_MOs,nC,nO,nV,nR,nS, &
+      call GTpp_phACFDT(exchange_kernel,doXBS,.false.,TDA_T,TDA,dophBSE,singlet,triplet,eta,nOrb,nC,nO,nV,nR,nS, &
                         nOOs,nVVs,nOOt,nVVt,Om1s,X1s,Y1s,Om2s,X2s,Y2s,rho1s,rho2s,Om1t,X1t,Y1t,     &
                         Om2t,X2t,Y2t,rho1t,rho2t,ERI_MO,eGT,eGT,EcBSE)
 

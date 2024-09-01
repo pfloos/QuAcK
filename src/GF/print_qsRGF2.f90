@@ -1,7 +1,7 @@
 
 ! ---
 
-subroutine print_qsRGF2(nBas_AOs, nBas_MOs, nO, nSCF, Conv, thresh, eHF, eGF, c, &
+subroutine print_qsRGF2(nBas, nOrb, nO, nSCF, Conv, thresh, eHF, eGF, c, &
                         SigC, Z, ENuc, ET, EV, EJ, Ex, Ec, EqsGF, dipole)
 
 ! Print one-electron energies and other stuff for qsGF2
@@ -11,17 +11,17 @@ subroutine print_qsRGF2(nBas_AOs, nBas_MOs, nO, nSCF, Conv, thresh, eHF, eGF, c,
 
 ! Input variables
 
-  integer,intent(in)                 :: nBas_AOs, nBas_MOs
+  integer,intent(in)                 :: nBas, nOrb
   integer,intent(in)                 :: nO
   integer,intent(in)                 :: nSCF
   double precision,intent(in)        :: ENuc
   double precision,intent(in)        :: Conv
   double precision,intent(in)        :: thresh
-  double precision,intent(in)        :: eHF(nBas_MOs)
-  double precision,intent(in)        :: eGF(nBas_MOs)
-  double precision,intent(in)        :: c(nBas_AOs,nBas_MOs)
-  double precision,intent(in)        :: SigC(nBas_MOs,nBas_MOs)
-  double precision,intent(in)        :: Z(nBas_MOs)
+  double precision,intent(in)        :: eHF(nOrb)
+  double precision,intent(in)        :: eGF(nOrb)
+  double precision,intent(in)        :: c(nBas,nOrb)
+  double precision,intent(in)        :: SigC(nOrb,nOrb)
+  double precision,intent(in)        :: Z(nOrb)
   double precision,intent(in)        :: ET
   double precision,intent(in)        :: EV
   double precision,intent(in)        :: EJ
@@ -57,7 +57,7 @@ subroutine print_qsRGF2(nBas_AOs, nBas_MOs, nO, nSCF, Conv, thresh, eHF, eGF, c,
             '|','#','|','e_HF (eV)','|','Sig_c (eV)','|','Z','|','e_QP (eV)','|'
   write(*,*)'-------------------------------------------------------------------------------'
 
-  do q = 1, nBas_MOs
+  do q = 1, nOrb
     write(*,'(1X,A1,1X,I3,1X,A1,1X,F15.6,1X,A1,1X,F15.6,1X,A1,1X,F15.6,1X,A1,1X,F15.6,1X,A1,1X)') &
     '|',q,'|',eHF(q)*HaToeV,'|',SigC(q,q)*HaToeV,'|',Z(q),'|',eGF(q)*HaToeV,'|'
   end do
@@ -106,12 +106,12 @@ subroutine print_qsRGF2(nBas_AOs, nBas_MOs, nO, nSCF, Conv, thresh, eHF, eGF, c,
     write(*,'(A50)') '---------------------------------------'
     write(*,'(A32)') ' qsGF2 MO coefficients'
     write(*,'(A50)') '---------------------------------------'
-    call matout(nBas_AOs, nBas_MOs, c)
+    call matout(nBas, nOrb, c)
     write(*,*)
     write(*,'(A50)') '---------------------------------------'
     write(*,'(A32)') ' qsGF2 MO energies'
     write(*,'(A50)') '---------------------------------------'
-    call matout(nBas_MOs, 1, eGF)
+    call matout(nOrb, 1, eGF)
     write(*,*)
 
   end if

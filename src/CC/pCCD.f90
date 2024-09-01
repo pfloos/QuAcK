@@ -1,7 +1,7 @@
 
 ! ---
 
-subroutine pCCD(dotest, maxSCF, thresh, max_diis, nBas_AOs, nBas_MOs, &
+subroutine pCCD(dotest, maxSCF, thresh, max_diis, nBas, nOrb, &
                 nC, nO, nV, nR, Hc, ERI, ENuc, ERHF, eHF, cHF)
 
 ! pair CCD module
@@ -16,12 +16,12 @@ subroutine pCCD(dotest, maxSCF, thresh, max_diis, nBas_AOs, nBas_MOs, &
   integer,intent(in)            :: max_diis
   double precision,intent(in)   :: thresh
 
-  integer,intent(in)            :: nBas_AOs, nBas_MOs, nC, nO, nV, nR
+  integer,intent(in)            :: nBas, nOrb, nC, nO, nV, nR
   double precision,intent(in)   :: ENuc,ERHF
-  double precision,intent(in)   :: eHF(nBas_MOs)
-  double precision,intent(in)   :: cHF(nBas_AOs,nBas_MOs)
-  double precision,intent(in)   :: Hc(nBas_AOs,nBas_AOs)
-  double precision,intent(in)   :: ERI(nBas_MOs,nBas_MOs,nBas_MOs,nBas_MOs)
+  double precision,intent(in)   :: eHF(nOrb)
+  double precision,intent(in)   :: cHF(nBas,nOrb)
+  double precision,intent(in)   :: Hc(nBas,nBas)
+  double precision,intent(in)   :: ERI(nOrb,nOrb,nOrb,nOrb)
 
 ! Local variables
 
@@ -94,7 +94,7 @@ subroutine pCCD(dotest, maxSCF, thresh, max_diis, nBas_AOs, nBas_MOs, &
   allocate(eO(O),eV(V),delta_OV(O,V))
 
   eO(:) = eHF(nC+1:nO)
-  eV(:) = eHF(nO+1:nBas_MOs-nR)
+  eV(:) = eHF(nO+1:nOrb-nR)
 
   call form_delta_OV(nC,nO,nV,nR,eO,eV,delta_OV)
 

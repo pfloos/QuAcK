@@ -2,7 +2,7 @@
 ! ---
 
 subroutine RHF(dotest, maxSCF, thresh, max_diis, guess_type, level_shift, nNuc, ZNuc, rNuc, ENuc, & 
-               nBas_AOs, nBas_MOs, nO, S, T, V, Hc, ERI, dipole_int, X, ERHF, eHF, c, P)
+               nBas, nOrb, nO, S, T, V, Hc, ERI, dipole_int, X, ERHF, eHF, c, P)
 
 ! Perform restricted Hartree-Fock calculation
 
@@ -19,24 +19,24 @@ subroutine RHF(dotest, maxSCF, thresh, max_diis, guess_type, level_shift, nNuc, 
   double precision,intent(in)   :: thresh
   double precision,intent(in)   :: level_shift
 
-  integer,intent(in)            :: nBas_AOs, nBas_MOs
+  integer,intent(in)            :: nBas, nOrb
   integer,intent(in)            :: nO
   integer,intent(in)            :: nNuc
   double precision,intent(in)   :: ZNuc(nNuc)
   double precision,intent(in)   :: rNuc(nNuc,ncart)
   double precision,intent(in)   :: ENuc
-  double precision,intent(in)   :: S(nBas_AOs,nBas_AOs)
-  double precision,intent(in)   :: T(nBas_AOs,nBas_AOs)
-  double precision,intent(in)   :: V(nBas_AOs,nBas_AOs)
-  double precision,intent(in)   :: Hc(nBas_AOs,nBas_AOs) 
-  double precision,intent(in)   :: X(nBas_AOs,nBas_MOs)
-  double precision,intent(in)   :: ERI(nBas_AOs,nBas_AOs,nBas_AOs,nBas_AOs)
-  double precision,intent(in)   :: dipole_int(nBas_AOs,nBas_AOs,ncart)
+  double precision,intent(in)   :: S(nBas,nBas)
+  double precision,intent(in)   :: T(nBas,nBas)
+  double precision,intent(in)   :: V(nBas,nBas)
+  double precision,intent(in)   :: Hc(nBas,nBas) 
+  double precision,intent(in)   :: X(nBas,nOrb)
+  double precision,intent(in)   :: ERI(nBas,nBas,nBas,nBas)
+  double precision,intent(in)   :: dipole_int(nBas,nBas,ncart)
 
 ! Local variables
 
   integer                       :: nSCF
-  integer                       :: nBas_AOs_Sq
+  integer                       :: nBas_Sq
   integer                       :: n_diis
   double precision              :: ET
   double precision              :: EV
@@ -59,9 +59,9 @@ subroutine RHF(dotest, maxSCF, thresh, max_diis, guess_type, level_shift, nNuc, 
 ! Output variables
 
   double precision,intent(out)  :: ERHF
-  double precision,intent(out)  :: eHF(nBas_MOs)
-  double precision,intent(inout):: c(nBas_AOs,nBas_MOs)
-  double precision,intent(out)  :: P(nBas_AOs,nBas_AOs)
+  double precision,intent(out)  :: eHF(nOrb)
+  double precision,intent(inout):: c(nBas,nOrb)
+  double precision,intent(out)  :: P(nBas,nBas)
 
 ! Hello world
 
@@ -73,35 +73,37 @@ subroutine RHF(dotest, maxSCF, thresh, max_diis, guess_type, level_shift, nNuc, 
 
 ! Useful quantities
 
-  nBas_AOs_Sq = nBas_AOs*nBas_AOs
+  nBas_Sq = nBas*nBas
 
 ! Memory allocation
 
-  allocate(J(nBas_AOs,nBas_AOs))
-  allocate(K(nBas_AOs,nBas_AOs))
+  allocate(J(nBas,nBas))
+  allocate(K(nBas,nBas))
 
-  allocate(err(nBas_AOs,nBas_AOs))
-  allocate(F(nBas_AOs,nBas_AOs))
+  allocate(err(nBas,nBas))
+  allocate(F(nBas,nBas))
 
-  allocate(cp(nBas_MOs,nBas_MOs))
-  allocate(Fp(nBas_MOs,nBas_MOs))
+  allocate(cp(nOrb,nOrb))
+  allocate(Fp(nOrb,nOrb))
 
-  allocate(err_diis(nBas_AOs_Sq,max_diis))
-  allocate(F_diis(nBas_AOs_Sq,max_diis))
+  allocate(err_diis(nBas_Sq,max_diis))
+  allocate(F_diis(nBas_Sq,max_diis))
 
 ! Guess coefficients and density matrix
 
-  call mo_guess(nBas_AOs, nBas_MOs, guess_type, S, Hc, X, c)
+  call mo_guess(nBas, nOrb, guess_type, S, Hc, X, c)
 
   !P(:,:) = 2d0 * matmul(c(:,1:nO), transpose(c(:,1:nO)))
-  call dgemm('N', 'T', nBas_AOs, nBas_AOs, nO, 2.d0, c, nBas_AOs, c, nBas_AOs, 0.d0, P, nBas_AOs)
+  call dgemm('N', 'T', nBas, nBas, nO, 2.d0, &
+             c(1,1), nBas, c(1,1), nBas,     &
+             0.d0, P(1,1), nBas)
 
 ! Initialization
 
   n_diis        = 0
   F_diis(:,:)   = 0d0
   err_diis(:,:) = 0d0
-  rcond = 0d0
+  rcond         = 0d0
 
   Conv   = 1d0
   nSCF   = 0
@@ -124,10 +126,14 @@ subroutine RHF(dotest, maxSCF, thresh, max_diis, guess_type, level_shift, nNuc, 
 
     ! Build Fock matrix
     
-    call Hartree_matrix_AO_basis(nBas_AOs, P, ERI, J)
-    call exchange_matrix_AO_basis(nBas_AOs, P, ERI, K)
+    call Hartree_matrix_AO_basis(nBas, P, ERI, J)
+    call exchange_matrix_AO_basis(nBas, P, ERI, K)
     
     F(:,:) = Hc(:,:) + J(:,:) + 0.5d0*K(:,:)
+    if(nBas .ne. nOrb) then
+      call AOtoMO(nBas, nOrb, c(1,1), F(1,1), Fp(1,1))
+      call MOtoAO(nBas, nOrb, S(1,1), c(1,1), Fp(1,1), F(1,1))
+    endif
 
     ! Check convergence 
 
@@ -136,19 +142,19 @@ subroutine RHF(dotest, maxSCF, thresh, max_diis, guess_type, level_shift, nNuc, 
 
     ! Kinetic energy
 
-    ET = trace_matrix(nBas_AOs, matmul(P, T))
+    ET = trace_matrix(nBas, matmul(P, T))
 
     ! Potential energy
 
-    EV = trace_matrix(nBas_AOs, matmul(P, V))
+    EV = trace_matrix(nBas, matmul(P, V))
 
     ! Hartree energy
 
-    EJ = 0.5d0*trace_matrix(nBas_AOs, matmul(P, J))
+    EJ = 0.5d0*trace_matrix(nBas, matmul(P, J))
 
     ! Exchange energy
 
-    EK = 0.25d0*trace_matrix(nBas_AOs, matmul(P, K))
+    EK = 0.25d0*trace_matrix(nBas, matmul(P, K))
 
     ! Total energy
 
@@ -159,27 +165,36 @@ subroutine RHF(dotest, maxSCF, thresh, max_diis, guess_type, level_shift, nNuc, 
     if(max_diis > 1) then
 
       n_diis = min(n_diis+1, max_diis)
-      call DIIS_extrapolation(rcond, nBas_AOs_Sq, nBas_AOs_Sq, n_diis, err_diis, F_diis, err, F)
+      call DIIS_extrapolation(rcond, nBas_Sq, nBas_Sq, n_diis, err_diis, F_diis, err, F)
 
     end if
 
     ! Level shift
 
     if(level_shift > 0d0 .and. Conv > thresh) then
-      call level_shifting(level_shift, nBas_AOs, nBas_MOs, nO, S, c, F)
+      call level_shifting(level_shift, nBas, nOrb, nO, S, c, F)
     endif
 
     ! Diagonalize Fock matrix
 
-    Fp = matmul(transpose(X), matmul(F, X))
-    cp(:,:) = Fp(:,:)
-    call diagonalize_matrix(nBas_MOs, cp, eHF)
-    c = matmul(X, cp)
+    if(nBas .eq. nOrb) then
+      Fp = matmul(transpose(X), matmul(F, X))
+      cp(:,:) = Fp(:,:)
+      call diagonalize_matrix(nOrb, cp, eHF)
+      c = matmul(X, cp)
+    else
+      Fp = matmul(transpose(c), matmul(F, c))
+      cp(:,:) = Fp(:,:)
+      call diagonalize_matrix(nOrb, cp, eHF)
+      c = matmul(c, cp)
+    endif
 
     ! Density matrix
 
     !P(:,:) = 2d0*matmul(c(:,1:nO), transpose(c(:,1:nO)))
-    call dgemm('N', 'T', nBas_AOs, nBas_AOs, nO, 2.d0, c, nBas_AOs, c, nBas_AOs, 0.d0, P, nBas_AOs)
+    call dgemm('N', 'T', nBas, nBas, nO, 2.d0, &
+               c(1,1), nBas, c(1,1), nBas,     &
+               0.d0, P(1,1), nBas)
 
     ! Dump results
 
@@ -210,8 +225,8 @@ subroutine RHF(dotest, maxSCF, thresh, max_diis, guess_type, level_shift, nNuc, 
 
 ! Compute dipole moments
 
-  call dipole_moment(nBas_AOs, P, nNuc, ZNuc, rNuc, dipole_int, dipole)
-  call print_RHF(nBas_AOs, nBas_MOs, nO, eHF, c, ENuc, ET, EV, EJ, EK, ERHF, dipole)
+  call dipole_moment(nBas, P, nNuc, ZNuc, rNuc, dipole_int, dipole)
+  call print_RHF(nBas, nOrb, nO, eHF, c, ENuc, ET, EV, EJ, EK, ERHF, dipole)
 
 ! Testing zone
 

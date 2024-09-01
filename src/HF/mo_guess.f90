@@ -1,7 +1,7 @@
 
 ! ---
 
-subroutine mo_guess(nBas_AOs, nBas_MOs, guess_type, S, Hc, X, c)
+subroutine mo_guess(nBas, nOrb, guess_type, S, Hc, X, c)
 
 !  Guess of the molecular orbitals for HF calculation
 
@@ -9,15 +9,15 @@ subroutine mo_guess(nBas_AOs, nBas_MOs, guess_type, S, Hc, X, c)
 
 ! Input variables
 
-  integer,intent(in)            :: nBas_AOs, nBas_MOs
+  integer,intent(in)            :: nBas, nOrb
   integer,intent(in)            :: guess_type
-  double precision,intent(in)   :: S(nBas_AOs,nBas_AOs)
-  double precision,intent(in)   :: Hc(nBas_AOs,nBas_AOs)
-  double precision,intent(in)   :: X(nBas_AOs,nBas_MOs)
+  double precision,intent(in)   :: S(nBas,nBas)
+  double precision,intent(in)   :: Hc(nBas,nBas)
+  double precision,intent(in)   :: X(nBas,nOrb)
 
 ! Output variables
 
-  double precision,intent(inout)  :: c(nBas_AOs,nBas_MOs)
+  double precision,intent(inout)  :: c(nBas,nOrb)
 
   if(guess_type == 0) then
 
@@ -27,12 +27,12 @@ subroutine mo_guess(nBas_AOs, nBas_MOs, guess_type, S, Hc, X, c)
   elseif(guess_type == 1) then
 
     write(*,*) 'Core guess...'
-    call core_guess(nBas_AOs, nBas_MOs, Hc, X, c)
+    call core_guess(nBas, nOrb, Hc, X, c)
 
   elseif(guess_type == 2) then
 
     write(*,*) 'Huckel guess...'
-    call huckel_guess(nBas_AOs, nBas_MOs, S, Hc, X, c)
+    call huckel_guess(nBas, nOrb, S, Hc, X, c)
 
   elseif(guess_type == 3) then
 

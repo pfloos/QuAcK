@@ -1,7 +1,7 @@
 
 ! ---
 
-subroutine RCI(dotest, doCIS, doCIS_D, doCID, doCISD, doFCI, singlet, triplet, nBas_MOs, &
+subroutine RCI(dotest, doCIS, doCIS_D, doCID, doCISD, doFCI, singlet, triplet, nOrb, &
                nC, nO, nV, nR, nS, ERI, dipole_int, epsHF, EHF)
 
 ! Configuration interaction module
@@ -21,16 +21,16 @@ subroutine RCI(dotest, doCIS, doCIS_D, doCID, doCISD, doFCI, singlet, triplet, n
 
   logical,intent(in)            :: singlet
   logical,intent(in)            :: triplet
-  integer,intent(in)            :: nBas_MOs
+  integer,intent(in)            :: nOrb
   integer,intent(in)            :: nC
   integer,intent(in)            :: nO
   integer,intent(in)            :: nV
   integer,intent(in)            :: nR
   integer,intent(in)            :: nS
   double precision,intent(in)   :: EHF
-  double precision,intent(in)   :: epsHF(nBas_MOs)
-  double precision,intent(in)   :: ERI(nBas_MOs,nBas_MOs,nBas_MOs,nBas_MOs)
-  double precision,intent(in)   :: dipole_int(nBas_MOs,nBas_MOs,ncart)
+  double precision,intent(in)   :: epsHF(nOrb)
+  double precision,intent(in)   :: ERI(nOrb,nOrb,nOrb,nOrb)
+  double precision,intent(in)   :: dipole_int(nOrb,nOrb,ncart)
 
 ! Local variables
 
@@ -43,7 +43,7 @@ subroutine RCI(dotest, doCIS, doCIS_D, doCID, doCISD, doFCI, singlet, triplet, n
   if(doCIS) then
 
     call wall_time(start_CI)
-    call RCIS(dotest,singlet,triplet,doCIS_D,nBas_MOs,nC,nO,nV,nR,nS,ERI,dipole_int,epsHF)
+    call RCIS(dotest,singlet,triplet,doCIS_D,nOrb,nC,nO,nV,nR,nS,ERI,dipole_int,epsHF)
     call wall_time(end_CI)
 
     t_CI = end_CI - start_CI
@@ -59,7 +59,7 @@ subroutine RCI(dotest, doCIS, doCIS_D, doCID, doCISD, doFCI, singlet, triplet, n
   if(doCID) then
 
     call wall_time(start_CI)
-    call CID(dotest,singlet,triplet,nBas_MOs,nC,nO,nV,nR,ERI,epsHF,EHF)
+    call CID(dotest,singlet,triplet,nOrb,nC,nO,nV,nR,ERI,epsHF,EHF)
     call wall_time(end_CI)
 
     t_CI = end_CI - start_CI
@@ -75,7 +75,7 @@ subroutine RCI(dotest, doCIS, doCIS_D, doCID, doCISD, doFCI, singlet, triplet, n
   if(doCISD) then
 
     call wall_time(start_CI)
-    call CISD(dotest,singlet,triplet,nBas_MOs,nC,nO,nV,nR,ERI,epsHF,EHF)
+    call CISD(dotest,singlet,triplet,nOrb,nC,nO,nV,nR,ERI,epsHF,EHF)
     call wall_time(end_CI)
 
     t_CI = end_CI - start_CI
@@ -92,7 +92,7 @@ subroutine RCI(dotest, doCIS, doCIS_D, doCID, doCISD, doFCI, singlet, triplet, n
 
     call wall_time(start_CI)
     write(*,*) ' FCI is not yet implemented! Sorry.'
-!   call FCI(nBas_MOs,nC,nO,nV,nR,ERI,epsHF)
+!   call FCI(nOrb,nC,nO,nV,nR,ERI,epsHF)
     call wall_time(end_CI)
 
     t_CI = end_CI - start_CI

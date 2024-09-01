@@ -1,7 +1,7 @@
 
 ! ---
 
-subroutine print_qsRGTeh(nBas_AOs, nBas_MOs, nO, nSCF, Conv, thresh, eHF, eGT, c, SigC, &
+subroutine print_qsRGTeh(nBas, nOrb, nO, nSCF, Conv, thresh, eHF, eGT, c, SigC, &
                          Z, ENuc, ET, EV, EJ, Ex, EcGM, EcRPA, EqsGT, dipole)
 
 ! Print one-electron energies and other stuff for qsGTeh
@@ -11,7 +11,7 @@ subroutine print_qsRGTeh(nBas_AOs, nBas_MOs, nO, nSCF, Conv, thresh, eHF, eGT, c
 
 ! Input variables
 
-  integer,intent(in)                 :: nBas_AOs, nBas_MOs
+  integer,intent(in)                 :: nBas, nOrb
   integer,intent(in)                 :: nO
   integer,intent(in)                 :: nSCF
   double precision,intent(in)        :: ENuc
@@ -23,11 +23,11 @@ subroutine print_qsRGTeh(nBas_AOs, nBas_MOs, nO, nSCF, Conv, thresh, eHF, eGT, c
   double precision,intent(in)        :: EcRPA(nspin)
   double precision,intent(in)        :: Conv
   double precision,intent(in)        :: thresh
-  double precision,intent(in)        :: eHF(nBas_MOs)
-  double precision,intent(in)        :: eGT(nBas_MOs)
-  double precision,intent(in)        :: c(nBas_AOs,nBas_MOs)
-  double precision,intent(in)        :: SigC(nBas_MOs,nBas_MOs)
-  double precision,intent(in)        :: Z(nBas_MOs)
+  double precision,intent(in)        :: eHF(nOrb)
+  double precision,intent(in)        :: eGT(nOrb)
+  double precision,intent(in)        :: c(nBas,nOrb)
+  double precision,intent(in)        :: SigC(nOrb,nOrb)
+  double precision,intent(in)        :: Z(nOrb)
   double precision,intent(in)        :: EqsGT
   double precision,intent(in)        :: dipole(ncart)
 
@@ -62,7 +62,7 @@ subroutine print_qsRGTeh(nBas_AOs, nBas_MOs, nO, nSCF, Conv, thresh, eHF, eGT, c
             '|','#','|','e_HF (eV)','|','Sig_GTeh (eV)','|','Z','|','e_GTeh (eV)','|'
   write(*,*)'-------------------------------------------------------------------------------'
 
-  do p=1,nBas_MOs
+  do p=1,nOrb
     write(*,'(1X,A1,1X,I3,1X,A1,1X,F15.6,1X,A1,1X,F15.6,1X,A1,1X,F15.6,1X,A1,1X,F15.6,1X,A1,1X)') &
     '|',p,'|',eHF(p)*HaToeV,'|',SigC(p,p)*HaToeV,'|',Z(p),'|',eGT(p)*HaToeV,'|'
   end do
@@ -113,13 +113,13 @@ subroutine print_qsRGTeh(nBas_AOs, nBas_MOs, nO, nSCF, Conv, thresh, eHF, eGT, c
       write(*,'(A50)') '---------------------------------------'
       write(*,'(A32)') ' qsGTeh MO coefficients'
       write(*,'(A50)') '---------------------------------------'
-      call matout(nBas_AOs, nBas_MOs, c)
+      call matout(nBas, nOrb, c)
       write(*,*)
     end if
     write(*,'(A50)') '---------------------------------------'
     write(*,'(A32)') ' qsGTeh MO energies'
     write(*,'(A50)') '---------------------------------------'
-    call vecout(nBas_MOs, eGT)
+    call vecout(nOrb, eGT)
     write(*,*)
 
   end if

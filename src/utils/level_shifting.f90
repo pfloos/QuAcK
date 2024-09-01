@@ -1,4 +1,4 @@
-subroutine level_shifting(level_shift, nBas_AOs, nBas_MOs, nO, S, c, F)
+subroutine level_shifting(level_shift, nBas, nOrb, nO, S, c, F)
 
 ! Perform level-shifting on the Fock matrix
 
@@ -7,10 +7,10 @@ subroutine level_shifting(level_shift, nBas_AOs, nBas_MOs, nO, S, c, F)
 ! Input variables
 
   double precision,intent(in)   :: level_shift
-  integer,intent(in)            :: nBas_AOs, nBas_MOs
+  integer,intent(in)            :: nBas, nOrb
   integer,intent(in)            :: nO
-  double precision,intent(in)   :: S(nBas_AOs,nBas_AOs)
-  double precision,intent(in)   :: c(nBas_AOs,nBas_MOs)
+  double precision,intent(in)   :: S(nBas,nBas)
+  double precision,intent(in)   :: c(nBas,nOrb)
 
 ! Local variables
 
@@ -21,13 +21,13 @@ subroutine level_shifting(level_shift, nBas_AOs, nBas_MOs, nO, S, c, F)
 
 ! Output variables
 
-  double precision,intent(inout):: F(nBas_AOs,nBas_AOs)
+  double precision,intent(inout):: F(nBas,nBas)
 
-  allocate(F_MO(nBas_MOs,nBas_MOs), Sc(nBas_AOs,nBas_MOs))
+  allocate(F_MO(nOrb,nOrb), Sc(nBas,nOrb))
 
   F_MO(:,:) = matmul(transpose(c), matmul(F, c))
 
-  do a = nO+1, nBas_MOs
+  do a = nO+1, nOrb
     F_MO(a,a) = F_MO(a,a) + level_shift
   end do
 

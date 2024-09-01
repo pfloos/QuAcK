@@ -1,7 +1,7 @@
 
 ! ---
 
-subroutine ROHF_fock_matrix(nBas_AOs, nBas_MOs, nOa, nOb, S, c, FaAO, FbAO, FAO)
+subroutine ROHF_fock_matrix(nBas, nOrb, nOa, nOb, S, c, FaAO, FbAO, FAO)
 
 ! Construct the ROHF Fock matrix in the AO basis
 ! For open shells, the ROHF Fock matrix in the MO basis reads
@@ -20,14 +20,14 @@ subroutine ROHF_fock_matrix(nBas_AOs, nBas_MOs, nOa, nOb, S, c, FaAO, FbAO, FAO)
 
 ! Input variables
 
-  integer,intent(in)            :: nBas_AOs, nBas_MOs
+  integer,intent(in)            :: nBas, nOrb
   integer,intent(in)            :: nOa
   integer,intent(in)            :: nOb
 
-  double precision,intent(in)   :: S(nBas_AOs,nBas_AOs)
-  double precision,intent(in)   :: c(nBas_AOs,nBas_MOs)
-  double precision,intent(inout):: FaAO(nBas_AOs,nBas_AOs)
-  double precision,intent(inout):: FbAO(nBas_AOs,nBas_AOs)
+  double precision,intent(in)   :: S(nBas,nBas)
+  double precision,intent(in)   :: c(nBas,nOrb)
+  double precision,intent(inout):: FaAO(nBas,nBas)
+  double precision,intent(inout):: FbAO(nBas,nBas)
 
 ! Local variables
 
@@ -45,11 +45,11 @@ subroutine ROHF_fock_matrix(nBas_AOs, nBas_MOs, nOa, nOb, S, c, FaAO, FbAO, FAO)
 
 ! Output variables
 
-  double precision,intent(out)  :: FAO(nBas_AOs,nBas_AOs)
+  double precision,intent(out)  :: FAO(nBas,nBas)
 
 ! Memory allocation
 
-  allocate(F(nBas_MOs,nBas_MOs), Fa(nBas_MOs,nBas_MOs), Fb(nBas_MOs,nBas_MOs))
+  allocate(F(nOrb,nOrb), Fa(nOrb,nOrb), Fb(nOrb,nOrb))
 
 ! Roothan canonicalization parameters
 
@@ -66,12 +66,12 @@ subroutine ROHF_fock_matrix(nBas_AOs, nBas_MOs, nOa, nOb, S, c, FaAO, FbAO, FAO)
 
   nC = min(nOa, nOb)
   nO = abs(nOa - nOb)
-  nV = nBas_AOs - nC - nO
+  nV = nBas - nC - nO
 
 ! Block-by-block Fock matrix 
 
-  call AOtoMO(nBas_AOs, nBas_MOs, c, FaAO, Fa)
-  call AOtoMO(nBas_AOs, nBas_MOs, c, FbAO, Fb)
+  call AOtoMO(nBas, nOrb, c, FaAO, Fa)
+  call AOtoMO(nBas, nOrb, c, FbAO, Fb)
 
   F(1:nC,      1:nC      ) =    aC*Fa(1:nC,      1:nC      ) +    bC*Fb(1:nC,      1:nC      )
   F(1:nC,   nC+1:nC+nO   ) =                                         Fb(1:nC,   nC+1:nC+nO   )
@@ -85,9 +85,9 @@ subroutine ROHF_fock_matrix(nBas_AOs, nBas_MOs, nOa, nOb, S, c, FaAO, FbAO, FAO)
   F(nO+nC+1:nC+nO+nV,   nC+1:nC+nO   ) =       Fa(nO+nC+1:nC+nO+nV,   nC+1:nC+nO   )
   F(nO+nC+1:nC+nO+nV,nO+nC+1:nC+nO+nV) =    aV*Fa(nO+nC+1:nC+nO+nV,nO+nC+1:nC+nO+nV) +    bV*Fb(nO+nC+1:nC+nO+nV,nO+nC+1:nC+nO+nV)
 
-  call MOtoAO(nBas_AOs, nBas_MOs, S, c, F, FAO) 
-  call MOtoAO(nBas_AOs, nBas_MOs, S, c, Fa, FaAO)
-  call MOtoAO(nBas_AOs, nBas_MOs, S, c, Fb, FbAO)
+  call MOtoAO(nBas, nOrb, S, c, F, FAO) 
+  call MOtoAO(nBas, nOrb, S, c, Fa, FaAO)
+  call MOtoAO(nBas, nOrb, S, c, Fb, FbAO)
 
   deallocate(F, Fa, Fb)
 

@@ -1,7 +1,7 @@
 
 ! ---
 
-subroutine print_qsRGW(nBas_AOs, nBas_MOs, nO, nSCF, Conv, thresh, eHF, eGW, c, SigC, &
+subroutine print_qsRGW(nBas, nOrb, nO, nSCF, Conv, thresh, eHF, eGW, c, SigC, &
                        Z, ENuc, ET, EV, EJ, EK, EcGM, EcRPA, EqsGW, dipole)
 
 ! Print useful information about qsRGW calculation
@@ -11,7 +11,7 @@ subroutine print_qsRGW(nBas_AOs, nBas_MOs, nO, nSCF, Conv, thresh, eHF, eGW, c, 
 
 ! Input variables
 
-  integer,intent(in)                 :: nBas_AOs, nBas_MOs
+  integer,intent(in)                 :: nBas, nOrb
   integer,intent(in)                 :: nO
   integer,intent(in)                 :: nSCF
   double precision,intent(in)        :: ENuc
@@ -23,11 +23,11 @@ subroutine print_qsRGW(nBas_AOs, nBas_MOs, nO, nSCF, Conv, thresh, eHF, eGW, c, 
   double precision,intent(in)        :: EcRPA
   double precision,intent(in)        :: Conv
   double precision,intent(in)        :: thresh
-  double precision,intent(in)        :: eHF(nBas_MOs)
-  double precision,intent(in)        :: eGW(nBas_MOs)
-  double precision,intent(in)        :: c(nBas_AOs,nBas_MOs)
-  double precision,intent(in)        :: SigC(nBas_MOs,nBas_MOs)
-  double precision,intent(in)        :: Z(nBas_MOs)
+  double precision,intent(in)        :: eHF(nOrb)
+  double precision,intent(in)        :: eGW(nOrb)
+  double precision,intent(in)        :: c(nBas,nOrb)
+  double precision,intent(in)        :: SigC(nOrb,nOrb)
+  double precision,intent(in)        :: Z(nOrb)
   double precision,intent(in)        :: EqsGW
   double precision,intent(in)        :: dipole(ncart)
 
@@ -63,7 +63,7 @@ subroutine print_qsRGW(nBas_AOs, nBas_MOs, nO, nSCF, Conv, thresh, eHF, eGW, c, 
             '|','#','|','e_HF (eV)','|','Sig_GW (eV)','|','Z','|','e_GW (eV)','|'
   write(*,*)'-------------------------------------------------------------------------------'
 
-  do p=1,nBas_MOs
+  do p=1,nOrb
     write(*,'(1X,A1,1X,I3,1X,A1,1X,F15.6,1X,A1,1X,F15.6,1X,A1,1X,F15.6,1X,A1,1X,F15.6,1X,A1,1X)') &
     '|',p,'|',eHF(p)*HaToeV,'|',SigC(p,p)*HaToeV,'|',Z(p),'|',eGW(p)*HaToeV,'|'
   end do
@@ -114,13 +114,13 @@ subroutine print_qsRGW(nBas_AOs, nBas_MOs, nO, nSCF, Conv, thresh, eHF, eGW, c, 
       write(*,'(A50)') '---------------------------------------'
       write(*,'(A50)') ' Restricted qsGW orbital coefficients'
       write(*,'(A50)') '---------------------------------------'
-      call matout(nBas_AOs, nBas_MOs, c)
+      call matout(nBas, nOrb, c)
       write(*,*)
     end if
     write(*,'(A50)') '---------------------------------------'
     write(*,'(A50)') ' Restricted qsGW orbital energies (au) '
     write(*,'(A50)') '---------------------------------------'
-    call vecout(nBas_MOs, eGW)
+    call vecout(nOrb, eGW)
     write(*,*)
 
   end if

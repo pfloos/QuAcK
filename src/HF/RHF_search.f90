@@ -2,7 +2,7 @@
 ! ---
 
 subroutine RHF_search(maxSCF, thresh, max_diis, guess_type, level_shift, nNuc, ZNuc, rNuc, ENuc,                     &
-                      nBas_AOs, nBas_MOs, nC, nO, nV, nR, S, T, V, Hc, ERI_AO, ERI_MO, dipole_int_AO, dipole_int_MO, & 
+                      nBas, nOrb, nC, nO, nV, nR, S, T, V, Hc, ERI_AO, ERI_MO, dipole_int_AO, dipole_int_MO, & 
                       X, ERHF, e, c, P)
 
 ! Search for RHF solutions
@@ -16,7 +16,7 @@ subroutine RHF_search(maxSCF, thresh, max_diis, guess_type, level_shift, nNuc, Z
   double precision,intent(in)   :: thresh
   double precision,intent(in)   :: level_shift
 
-  integer,intent(in)            :: nBas_AOs, nBas_MOs
+  integer,intent(in)            :: nBas, nOrb
   integer,intent(in)            :: nC
   integer,intent(in)            :: nO
   integer,intent(in)            :: nV
@@ -25,15 +25,15 @@ subroutine RHF_search(maxSCF, thresh, max_diis, guess_type, level_shift, nNuc, Z
   double precision,intent(in)   :: ZNuc(nNuc)
   double precision,intent(in)   :: rNuc(nNuc,ncart)
   double precision,intent(in)   :: ENuc
-  double precision,intent(in)   :: S(nBas_AOs,nBas_AOs)
-  double precision,intent(in)   :: T(nBas_AOs,nBas_AOs)
-  double precision,intent(in)   :: V(nBas_AOs,nBas_AOs)
-  double precision,intent(in)   :: Hc(nBas_AOs,nBas_AOs)
-  double precision,intent(in)   :: X(nBas_AOs,nBas_MOs)
-  double precision,intent(in)   :: ERI_AO(nBas_AOs,nBas_AOs,nBas_AOs,nBas_AOs)
-  double precision,intent(inout):: ERI_MO(nBas_MOs,nBas_MOs,nBas_MOs,nBas_MOs)
-  double precision,intent(in)   :: dipole_int_AO(nBas_AOs,nBas_AOs,ncart)
-  double precision,intent(inout):: dipole_int_MO(nBas_MOs,nBas_MOs,ncart)
+  double precision,intent(in)   :: S(nBas,nBas)
+  double precision,intent(in)   :: T(nBas,nBas)
+  double precision,intent(in)   :: V(nBas,nBas)
+  double precision,intent(in)   :: Hc(nBas,nBas)
+  double precision,intent(in)   :: X(nBas,nOrb)
+  double precision,intent(in)   :: ERI_AO(nBas,nBas,nBas,nBas)
+  double precision,intent(inout):: ERI_MO(nOrb,nOrb,nOrb,nOrb)
+  double precision,intent(in)   :: dipole_int_AO(nBas,nBas,ncart)
+  double precision,intent(inout):: dipole_int_MO(nOrb,nOrb,ncart)
 
 ! Local variables
 
@@ -62,9 +62,9 @@ subroutine RHF_search(maxSCF, thresh, max_diis, guess_type, level_shift, nNuc, Z
 ! Output variables
 
   double precision,intent(out)  :: ERHF
-  double precision,intent(out)  :: e(nBas_MOs)
-  double precision,intent(inout):: c(nBas_AOs,nBas_MOs)
-  double precision,intent(out)  :: P(nBas_AOs,nBas_AOs)
+  double precision,intent(out)  :: e(nOrb)
+  double precision,intent(inout):: c(nBas,nOrb)
+  double precision,intent(out)  :: P(nBas,nBas)
 
 ! Memory allocation
 
@@ -80,7 +80,7 @@ subroutine RHF_search(maxSCF, thresh, max_diis, guess_type, level_shift, nNuc, Z
 
   nS = (nO - nC)*(nV - nR)
   allocate(Aph(nS,nS), Bph(nS,nS), AB(nS,nS), Om(nS))
-  allocate(R(nBas_MOs,nBas_MOs), ExpR(nBas_MOs,nBas_MOs))
+  allocate(R(nOrb,nOrb), ExpR(nOrb,nOrb))
 
 !------------------!
 ! Search algorithm !
@@ -97,7 +97,7 @@ subroutine RHF_search(maxSCF, thresh, max_diis, guess_type, level_shift, nNuc, Z
 
     call wall_time(start_HF)
     call RHF(.false., maxSCF, thresh, max_diis, guess, level_shift, nNuc, ZNuc, rNuc, ENuc, &
-             nBas_AOs, nBas_MOs, nO, S, T, V, Hc, ERI_AO, dipole_int_AO, X, ERHF, e, c, P)
+             nBas, nOrb, nO, S, T, V, Hc, ERI_AO, dipole_int_AO, X, ERHF, e, c, P)
     call wall_time(end_HF)
 
     t_HF = end_HF - start_HF
@@ -113,9 +113,9 @@ subroutine RHF_search(maxSCF, thresh, max_diis, guess_type, level_shift, nNuc, Z
     write(*,*) 'AO to MO transformation... Please be patient'
     write(*,*)
     do ixyz = 1, ncart
-      call AOtoMO(nBas_AOs, nBas_MOs, c, dipole_int_AO(1,1,ixyz), dipole_int_MO(1,1,ixyz))
+      call AOtoMO(nBas, nOrb, c, dipole_int_AO(1,1,ixyz), dipole_int_MO(1,1,ixyz))
     end do
-    call AOtoMO_ERI_RHF(nBas_AOs, nBas_MOs, c, ERI_AO, ERI_MO)
+    call AOtoMO_ERI_RHF(nBas, nOrb, c, ERI_AO, ERI_MO)
     call wall_time(end_AOtoMO)
  
     t_AOtoMO = end_AOtoMO - start_AOtoMO
@@ -128,8 +128,8 @@ subroutine RHF_search(maxSCF, thresh, max_diis, guess_type, level_shift, nNuc, Z
 
     ispin = 1
  
-    call phLR_A(ispin,.false.,nBas_MOs,nC,nO,nV,nR,nS,1d0,e,ERI_MO,Aph)
-    call phLR_B(ispin,.false.,nBas_MOs,nC,nO,nV,nR,nS,1d0,ERI_MO,Bph)
+    call phLR_A(ispin,.false.,nOrb,nC,nO,nV,nR,nS,1d0,e,ERI_MO,Aph)
+    call phLR_B(ispin,.false.,nOrb,nC,nO,nV,nR,nS,1d0,ERI_MO,Bph)
  
     AB(:,:) = Aph(:,:) + Bph(:,:)
  
@@ -169,14 +169,14 @@ subroutine RHF_search(maxSCF, thresh, max_diis, guess_type, level_shift, nNuc, Z
       R(:,:) = 0d0
       ia = 0
       do i=nC+1,nO
-        do a=nO+1,nBas_MOs-nR
+        do a=nO+1,nOrb-nR
           ia = ia + 1
           R(a,i) = +AB(ia,eig)
           R(i,a) = -AB(ia,eig)
         end do
       end do
 
-      call matrix_exponential(nBas_MOs, R, ExpR)
+      call matrix_exponential(nOrb, R, ExpR)
       c = matmul(c, ExpR)
 
     else
