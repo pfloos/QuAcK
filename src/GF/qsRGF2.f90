@@ -188,6 +188,10 @@ subroutine qsRGF2(dotest, maxSCF, thresh, max_diis, dophBSE, doppBSE, TDA,   &
     ! Solve the quasi-particle equation
 
     F(:,:) = Hc(:,:) + J(:,:) + 0.5d0*K(:,:) + SigCp(:,:)
+    if(nBas .ne. nOrb) then
+      call AOtoMO(nBas, nOrb, c(1,1), F(1,1), Fp(1,1))
+      call MOtoAO(nBas, nOrb, S(1,1), c(1,1), Fp(1,1), F(1,1))
+    endif
 
     ! Compute commutator and convergence criteria
 
@@ -204,10 +208,18 @@ subroutine qsRGF2(dotest, maxSCF, thresh, max_diis, dophBSE, doppBSE, TDA,   &
 
     ! Diagonalize Hamiltonian in AO basis
 
-    Fp = matmul(transpose(X), matmul(F, X))
-    cp(:,:) = Fp(:,:)
-    call diagonalize_matrix(nOrb, cp, eGF)
-    c = matmul(X, cp)
+    if(nBas .eq. nOrb) then
+      Fp = matmul(transpose(X), matmul(F, X))
+      cp(:,:) = Fp(:,:)
+      call diagonalize_matrix(nOrb, cp, eGF)
+      c = matmul(X, cp)
+    else
+      Fp = matmul(transpose(c), matmul(F, c))
+      cp(:,:) = Fp(:,:)
+      call diagonalize_matrix(nOrb, cp, eGF)
+      c = matmul(c, cp)
+    endif
+
 
     ! Compute new density matrix in the AO basis
 
