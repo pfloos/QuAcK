@@ -232,7 +232,7 @@ subroutine RQuAcK(dotest,doRHF,doROHF,dostab,dosearch,doMP2,doMP3,doCCD,dopCCD,d
 
     call wall_time(start_CC)
     call RCC(dotest, doCCD, dopCCD, doDCD, doCCSD, doCCSDT, dodrCCD, dorCCD, docrCCD, dolCCD, & 
-             maxSCF_CC, thresh_CC, max_diis_CC, nBas, nOrb, nC, nO, nV, nR, Hc, ERI_MO, ENuc, ERHF, eHF, cHF)
+             maxSCF_CC, thresh_CC, max_diis_CC, nBas, nOrb, nC, nO, nV, nR, Hc, ERI_AO, ERI_MO, ENuc, ERHF, eHF, cHF)
     call wall_time(end_CC)
 
     t_CC = end_CC - start_CC

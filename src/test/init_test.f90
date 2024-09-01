@@ -12,10 +12,10 @@ subroutine init_test(doRtest,doUtest,doGtest)
 
 ! Output variables
 
-  if(doRtest) open(unit=11,file='test/Rtest.dat')
+  if(doRtest) open(unit=1231597, file='test/Rtest.dat')
 
-  if(doUtest) open(unit=12,file='test/Utest.dat')
+  if(doUtest) open(unit=1232584, file='test/Utest.dat')
 
-  if(doGtest) open(unit=13,file='test/Gtest.dat')
+  if(doGtest) open(unit=1234181, file='test/Gtest.dat')
 
 end subroutine
