@@ -212,7 +212,7 @@ subroutine RQuAcK(dotest,doRHF,doROHF,dostab,dosearch,doMP2,doMP3,doCCD,dopCCD,d
   if(doMP) then
 
     call wall_time(start_MP)
-    call RMP(dotest, doMP2, doMP3, reg_MP, nOrb, nOrb, nC, nO, nV, nR, ERI_MO, ENuc, ERHF, eHF)
+    call RMP(dotest, doMP2, doMP3, reg_MP, nOrb, nC, nO, nV, nR, ERI_MO, ENuc, ERHF, eHF)
     call wall_time(end_MP)
 
     t_MP = end_MP - start_MP

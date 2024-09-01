@@ -1,4 +1,4 @@
-subroutine RMP(dotest,doMP2,doMP3,regularize,nBas,nC,nO,nV,nR,ERI,ENuc,ERHF,eHF)
+subroutine RMP(dotest,doMP2,doMP3,regularize,nOrb,nC,nO,nV,nR,ERI,ENuc,ERHF,eHF)
 
 ! Moller-Plesset module
 
@@ -13,15 +13,15 @@ subroutine RMP(dotest,doMP2,doMP3,regularize,nBas,nC,nO,nV,nR,ERI,ENuc,ERHF,eHF)
   logical,intent(in)            :: doMP3
 
   logical,intent(in)            :: regularize
-  integer,intent(in)            :: nBas
+  integer,intent(in)            :: nOrb
   integer,intent(in)            :: nC
   integer,intent(in)            :: nO
   integer,intent(in)            :: nV
   integer,intent(in)            :: nR
   double precision,intent(in)   :: ENuc
   double precision,intent(in)   :: ERHF
-  double precision,intent(in)   :: eHF(nBas)
-  double precision,intent(in)   :: ERI(nBas,nBas,nBas,nBas)
+  double precision,intent(in)   :: eHF(nOrb)
+  double precision,intent(in)   :: ERI(nOrb,nOrb,nOrb,nOrb)
 
 ! Local variables
 
@@ -37,7 +37,7 @@ subroutine RMP(dotest,doMP2,doMP3,regularize,nBas,nC,nO,nV,nR,ERI,ENuc,ERHF,eHF)
   if(doMP2) then    
        
     call wall_time(start_MP)
-    call RMP2(dotest,regularize,nBas,nC,nO,nV,nR,ERI,ENuc,ERHF,eHF,Ec)
+    call RMP2(dotest,regularize,nOrb,nC,nO,nV,nR,ERI,ENuc,ERHF,eHF,Ec)
     call wall_time(end_MP)
 
     t_MP = end_MP - start_MP
@@ -53,7 +53,7 @@ subroutine RMP(dotest,doMP2,doMP3,regularize,nBas,nC,nO,nV,nR,ERI,ENuc,ERHF,eHF)
   if(doMP3) then    
 
     call wall_time(start_MP)
-    call RMP3(nBas,nC,nO,nV,nR,ERI,ENuc,ERHF,eHF)
+    call RMP3(nOrb,nC,nO,nV,nR,ERI,ENuc,ERHF,eHF)
     call wall_time(end_MP)
 
     t_MP = end_MP - start_MP
