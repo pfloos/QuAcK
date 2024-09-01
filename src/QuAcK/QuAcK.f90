@@ -125,16 +125,16 @@ program QuAcK
                     doACFDT,exchange_kernel,doXBS,                                              &
                     dophBSE,dophBSE2,doppBSE,dBSE,dTDA)
 
-!---------------------------------------------------!
-! Read input information                            !
-!---------------------------------------------------!
-! nC       = number of core orbitals                !
-! nO       = number of occupied orbitals            !
-! nV       = number of virtual orbitals (see below) !
-! nR       = number of Rydberg orbitals             !
-! nBas = number of basis functions in AOs       !
-! nOrb = number of basis functions in MOs       !
-!---------------------------------------------------!
+!-----------------------------------------------!
+! Read input information                        !
+!-----------------------------------------------!
+! nC   = number of core orbitals                !
+! nO   = number of occupied orbitals            !
+! nV   = number of virtual orbitals (see below) !
+! nR   = number of Rydberg orbitals             !
+! nBas = number of basis functions              !
+! nOrb = number of orbitals                     !
+!-----------------------------------------------!
 
   call read_molecule(nNuc,nO,nC,nR)
   allocate(ZNuc(nNuc),rNuc(nNuc,ncart))
@@ -147,7 +147,7 @@ program QuAcK
 ! Read basis set information from PySCF !
 !---------------------------------------!
 
-  call read_basis_pyscf(nBas, nO, nV)
+  call read_basis_pyscf(nBas,nO,nV)
 
 !--------------------------------------!
 ! Read one- and two-electron integrals !
