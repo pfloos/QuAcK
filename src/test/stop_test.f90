@@ -12,10 +12,10 @@ subroutine stop_test(doRtest,doUtest,doGtest)
 
 ! Output variables
 
-  if(doRtest) close(unit=11)
+  if(doRtest) close(unit=1231597)
 
-  if(doUtest) close(unit=12)
+  if(doUtest) close(unit=1231597)
 
-  if(doGtest) close(unit=13)
+  if(doGtest) close(unit=1234181)
 
 end subroutine
