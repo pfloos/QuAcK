@@ -190,6 +190,6 @@ subroutine RMOM(maxSCF,thresh,max_diis,nBas,nO,S,T,V,Hc,ERI,X,ENuc,ERHF,c,e,P)
   EK   = 0.5d0*trace_matrix(nBas,matmul(P,K))
   ERHF = ET + EV + EJ + EK
 
-  call print_RHF(nBas,nO,e,c,ENuc,ET,EV,EJ,EK,ERHF)
+  call print_RHF(nBas,nBas,nO,e,c,ENuc,ET,EV,EJ,EK,ERHF)
 
 end subroutine 

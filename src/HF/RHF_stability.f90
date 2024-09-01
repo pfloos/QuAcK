@@ -30,7 +30,7 @@ subroutine RHF_stability(nBas,nC,nO,nV,nR,nS,eHF,ERI)
 
 ! Memory allocation
 
-  allocate(A(nS,nS),B(nS,nS),AB(nS,nS),Om(nS))
+  allocate(A(nS,nS), B(nS,nS), AB(nS,nS), Om(nS))
  
 !-------------------------------------------------------------!
 ! Stability analysis: Real RHF -> Real RHF  
@@ -148,5 +148,7 @@ subroutine RHF_stability(nBas,nC,nO,nV,nR,nS,eHF,ERI)
   end if
   write(*,*)'-------------------------------------------------------------'
   write(*,*)
+
+  deallocate(A, B, AB, Om)
     
 end subroutine 

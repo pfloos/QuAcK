@@ -1,4 +1,4 @@
-subroutine read_basis_pyscf(nBas,nO,nV)
+subroutine read_basis_pyscf(nBas_AOs, nO, nV)
 
 ! Read basis set information from PySCF
 
@@ -14,23 +14,23 @@ subroutine read_basis_pyscf(nBas,nO,nV)
 ! Output variables
 
   integer,intent(out)           :: nV(nspin)
-  integer,intent(out)           :: nBas
+  integer,intent(out)           :: nBas_AOs
 
 !------------------------------------------------------------------------
 ! Primary basis set information
 !------------------------------------------------------------------------
 
   open(unit=3,file='int/nBas.dat')
-  read(3,*) nBas
+    read(3, *) nBas_AOs
   close(unit=3)
 
-  write(*,'(A28)') '------------------'
-  write(*,'(A28,1X,I16)') 'Number of basis functions',nBas
-  write(*,'(A28)') '------------------'
-  write(*,*)
+!  write(*,'(A38)') '--------------------------------------'
+!  write(*,'(A38,1X,I16)') 'Number of basis functions (AOs)', nBas_AOs
+!  write(*,'(A38)') '--------------------------------------'
+!  write(*,*)
 
 ! Number of virtual orbitals
 
-  nV(:) = nBas - nO(:)
+  nV(:) = nBas_AOs - nO(:)
 
 end subroutine 

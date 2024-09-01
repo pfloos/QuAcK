@@ -85,7 +85,7 @@ subroutine UHF(dotest,maxSCF,thresh,max_diis,guess_type,mix,level_shift,nNuc,ZNu
 ! Guess coefficients and demsity matrices
 
   do ispin=1,nspin
-    call mo_guess(nBas,guess_type,S,Hc,X,c(:,:,ispin))
+    call mo_guess(nBas,nBas,guess_type,S,Hc,X,c(:,:,ispin))
     P(:,:,ispin) = matmul(c(:,1:nO(ispin),ispin),transpose(c(:,1:nO(ispin),ispin)))
   end do
 
@@ -186,7 +186,7 @@ subroutine UHF(dotest,maxSCF,thresh,max_diis,guess_type,mix,level_shift,nNuc,ZNu
     if(level_shift > 0d0 .and. Conv > thresh) then
 
       do ispin=1,nspin
-        call level_shifting(level_shift,nBas,nO(ispin),S,c(:,:,ispin),F(:,:,ispin))
+        call level_shifting(level_shift,nBas,nBas,nO(ispin),S,c(:,:,ispin),F(:,:,ispin))
       end do
 
     end if

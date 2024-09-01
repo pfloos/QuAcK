@@ -184,8 +184,8 @@ subroutine qsUGW(dotest,maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,BSE
     !--------------------------------------------------
  
     do ixyz=1,ncart
-        call AOtoMO(nBas,c(:,:,1),dipole_int_AO(:,:,ixyz),dipole_int_aa(:,:,ixyz))
-        call AOtoMO(nBas,c(:,:,2),dipole_int_AO(:,:,ixyz),dipole_int_bb(:,:,ixyz))
+        call AOtoMO(nBas,nBas,c(:,:,1),dipole_int_AO(:,:,ixyz),dipole_int_aa(:,:,ixyz))
+        call AOtoMO(nBas,nBas,c(:,:,2),dipole_int_AO(:,:,ixyz),dipole_int_bb(:,:,ixyz))
     end do
 
     ! 4-index transform for (aa|aa) block
@@ -232,7 +232,7 @@ subroutine qsUGW(dotest,maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,BSE
     end do
 
     do is=1,nspin
-      call MOtoAO(nBas,S,c(:,:,is),SigC(:,:,is),SigCp(:,:,is))
+      call MOtoAO(nBas,nBas,S,c(:,:,is),SigC(:,:,is),SigCp(:,:,is))
     end do
  
     ! Solve the quasi-particle equation
@@ -283,7 +283,7 @@ subroutine qsUGW(dotest,maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,BSE
     ! Back-transform self-energy
 
     do is=1,nspin
-      call AOtoMO(nBas,c(:,:,is),SigCp(:,:,is),SigC(:,:,is))
+      call AOtoMO(nBas,nBas,c(:,:,is),SigCp(:,:,is),SigC(:,:,is))
     end do
 
     ! Compute density matrix 

@@ -280,7 +280,7 @@ subroutine qsUGTpp(dotest,maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,B
     end do
 
     do ispin=1,nspin
-      call MOtoAO(nBas,S,c(:,:,ispin),SigT(:,:,ispin),SigTp(:,:,ispin))
+      call MOtoAO(nBas,nBas,S,c(:,:,ispin),SigT(:,:,ispin),SigTp(:,:,ispin))
     end do
 
 ! Solve the quasi-particle equation

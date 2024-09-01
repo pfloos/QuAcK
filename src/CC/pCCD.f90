@@ -1,4 +1,8 @@
-subroutine pCCD(dotest,maxIt,thresh,max_diis,nBas,nC,nO,nV,nR,Hc,ERI_AO,ENuc,ERHF,eHF,cHF)
+
+! ---
+
+subroutine pCCD(dotest, maxIt, thresh, max_diis, nBas, nOrb, &
+                nC, nO, nV, nR, Hc, ERI_AO, ENuc, ERHF, eHF, cHF)
 
 ! pair CCD module
 
@@ -12,15 +16,10 @@ subroutine pCCD(dotest,maxIt,thresh,max_diis,nBas,nC,nO,nV,nR,Hc,ERI_AO,ENuc,ERH
   integer,intent(in)            :: max_diis
   double precision,intent(in)   :: thresh
 
-  integer,intent(in)            :: nBas
-  integer,intent(in)            :: nC
-  integer,intent(in)            :: nO
-  integer,intent(in)            :: nV
-  integer,intent(in)            :: nR
-  double precision,intent(in)   :: ENuc
-  double precision,intent(in)   :: ERHF
-  double precision,intent(in)   :: eHF(nBas)
-  double precision,intent(in)   :: cHF(nBas,nBas)
+  integer,intent(in)            :: nBas, nOrb, nC, nO, nV, nR
+  double precision,intent(in)   :: ENuc,ERHF
+  double precision,intent(in)   :: eHF(nOrb)
+  double precision,intent(in)   :: cHF(nBas,nOrb)
   double precision,intent(in)   :: Hc(nBas,nBas)
   double precision,intent(in)   :: ERI_AO(nBas,nBas,nBas,nBas)
 
@@ -94,18 +93,20 @@ subroutine pCCD(dotest,maxIt,thresh,max_diis,nBas,nC,nO,nV,nR,Hc,ERI_AO,ENuc,ERH
 
   O = nO - nC
   V = nV - nR
-  N = O + V
+  N = O + V ! nOrb - nC - nR
 
   !------------------------------------!
   ! Star Loop for orbital optimization !
   !------------------------------------!
 
   allocate(ERI_MO(N,N,N,N))
-  allocate(c(N,N),h(N,N))
-  allocate(eO(O),eV(V),delta_OV(O,V))
-  allocate(OOOO(O,O),OOVV(O,V),OVOV(O,V),OVVO(O,V),VVVV(V,V))
+  allocate(c(nBas,N), h(N,N))
+  allocate(eO(O), eV(V), delta_OV(O,V))
+  allocate(OOOO(O,O), OOVV(O,V), OVOV(O,V), OVVO(O,V), VVVV(V,V))
 
-  c(:,:) = cHF(nC+1:nBas-nR,nC+1:nBas-nR)
+  do i = 1, N
+    c(:,i) = cHF(:,nC+i)
+  enddo
 
   CvgOrb = 1d0
   nItOrb = 0
@@ -121,13 +122,14 @@ subroutine pCCD(dotest,maxIt,thresh,max_diis,nBas,nC,nO,nV,nR,Hc,ERI_AO,ENuc,ERH
 
     ! Transform integrals
 
-    h = matmul(transpose(c),matmul(Hc(nC+1:nBas-nR,nC+1:nBas-nR),c))
-    call AOtoMO_ERI_RHF(N,c,ERI_AO(nC+1:nBas-nR,nC+1:nBas-nR,nC+1:nBas-nR,nC+1:nBas-nR),ERI_MO)
+    h = matmul(transpose(c), matmul(Hc, c))
+
+    call AOtoMO_ERI_RHF(nBas, N, c(1,1), ERI_AO(1,1,1,1), ERI_MO(1,1,1,1))
 
     ! Form energy denominator
 
     eO(:) = eHF(nC+1:nO)
-    eV(:) = eHF(nO+1:nBas-nR)
+    eV(:) = eHF(nO+1:nOrb-nR)
 
     do i=1,O
       do a=1,V
@@ -701,18 +703,18 @@ subroutine pCCD(dotest,maxIt,thresh,max_diis,nBas,nC,nO,nV,nR,Hc,ERI_AO,ENuc,ERH
     deallocate(Kap)
  
     write(*,*) 'e^kappa'
-    call matout(N,N,ExpKap)
+    call matout(N, N, ExpKap)
     write(*,*)
  
     write(*,*) 'Old orbitals'
-    call matout(N,N,c)
+    call matout(nBas, N, c)
     write(*,*)
  
-    c = matmul(c,ExpKap)
+    c = matmul(c, ExpKap)
     deallocate(ExpKap)
  
     write(*,*) 'Rotated orbitals'
-    call matout(N,N,c)
+    call matout(nBas, N, c)
     write(*,*)
 
   end do

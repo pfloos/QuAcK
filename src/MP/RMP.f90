@@ -41,7 +41,7 @@ subroutine RMP(dotest,doMP2,doMP3,regularize,nBas,nC,nO,nV,nR,ERI,ENuc,ERHF,eHF)
     call wall_time(end_MP)
 
     t_MP = end_MP - start_MP
-    write(*,'(A65,1X,F9.3,A8)') 'Total CPU time for MP2 = ',t_MP,' seconds'
+    write(*,'(A65,1X,F9.3,A8)') 'Total wall time for MP2 = ',t_MP,' seconds'
     write(*,*)
                     
   end if
@@ -57,7 +57,7 @@ subroutine RMP(dotest,doMP2,doMP3,regularize,nBas,nC,nO,nV,nR,ERI,ENuc,ERHF,eHF)
     call wall_time(end_MP)
 
     t_MP = end_MP - start_MP
-    write(*,'(A65,1X,F9.3,A8)') 'Total CPU time for MP2 = ',t_MP,' seconds'
+    write(*,'(A65,1X,F9.3,A8)') 'Total wall time for MP2 = ',t_MP,' seconds'
     write(*,*)
 
   end if

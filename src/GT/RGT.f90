@@ -1,7 +1,11 @@
-subroutine RGT(dotest,doG0T0pp,doevGTpp,doqsGTpp,doufG0T0pp,doG0T0eh,doevGTeh,doqsGTeh,maxSCF,thresh,max_diis, &
-               doACFDT,exchange_kernel,doXBS,dophBSE,dophBSE2,doppBSE,TDA_T,TDA,dBSE,dTDA,singlet,triplet,     &
-               linearize,eta,regularize,nNuc,ZNuc,rNuc,ENuc,nBas,nC,nO,nV,nR,nS,ERHF,S,X,T,V,Hc,               &
-               ERI_AO,ERI_MO,dipole_int_AO,dipole_int,PHF,cHF,eHF)
+
+! ---
+
+subroutine RGT(dotest, doG0T0pp, doevGTpp, doqsGTpp, doufG0T0pp, doG0T0eh, doevGTeh, doqsGTeh, &
+               maxSCF, thresh, max_diis, doACFDT, exchange_kernel, doXBS, dophBSE, dophBSE2,   &
+               doppBSE, TDA_T, TDA, dBSE, dTDA, singlet, triplet, linearize, eta, regularize,  &
+               nNuc, ZNuc, rNuc, ENuc, nBas, nOrb, nC, nO, nV, nR, nS, ERHF, S, X, T,  &
+               V, Hc, ERI_AO, ERI_MO, dipole_int_AO, dipole_int_MO, PHF, cHF, eHF)
 
 ! T-matrix module
 
@@ -44,7 +48,7 @@ subroutine RGT(dotest,doG0T0pp,doevGTpp,doqsGTpp,doufG0T0pp,doG0T0eh,doevGTeh,do
   double precision,intent(in)   :: rNuc(nNuc,ncart)
   double precision,intent(in)   :: ENuc
 
-  integer,intent(in)            :: nBas
+  integer,intent(in)            :: nBas, nOrb
   integer,intent(in)            :: nC
   integer,intent(in)            :: nO
   integer,intent(in)            :: nV
@@ -52,18 +56,18 @@ subroutine RGT(dotest,doG0T0pp,doevGTpp,doqsGTpp,doufG0T0pp,doG0T0eh,doevGTeh,do
   integer,intent(in)            :: nS
 
   double precision,intent(in)   :: ERHF
-  double precision,intent(in)   :: eHF(nBas)
-  double precision,intent(in)   :: cHF(nBas,nBas)
+  double precision,intent(in)   :: eHF(nOrb)
+  double precision,intent(in)   :: cHF(nBas,nOrb)
   double precision,intent(in)   :: PHF(nBas,nBas)
   double precision,intent(in)   :: S(nBas,nBas)
   double precision,intent(in)   :: T(nBas,nBas)
   double precision,intent(in)   :: V(nBas,nBas)
   double precision,intent(in)   :: Hc(nBas,nBas)
-  double precision,intent(in)   :: X(nBas,nBas)
+  double precision,intent(in)   :: X(nBas,nOrb)
   double precision,intent(in)   :: ERI_AO(nBas,nBas,nBas,nBas)
-  double precision,intent(in)   :: ERI_MO(nBas,nBas,nBas,nBas)
+  double precision,intent(in)   :: ERI_MO(nOrb,nOrb,nOrb,nOrb)
   double precision,intent(in)   :: dipole_int_AO(nBas,nBas,ncart)
-  double precision,intent(in)   :: dipole_int(nBas,nBas,ncart)
+  double precision,intent(in)   :: dipole_int_MO(nOrb,nOrb,ncart)
 
 
 ! Local variables 
@@ -78,11 +82,11 @@ subroutine RGT(dotest,doG0T0pp,doevGTpp,doqsGTpp,doufG0T0pp,doG0T0eh,doevGTeh,do
     
     call wall_time(start_GT)
     call RG0T0pp(dotest,doACFDT,exchange_kernel,doXBS,dophBSE,TDA_T,TDA,dBSE,dTDA,doppBSE,singlet,triplet, &
-                linearize,eta,regularize,nBas,nC,nO,nV,nR,nS,ENuc,ERHF,ERI_MO,dipole_int,eHF)
+                linearize,eta,regularize,nOrb,nC,nO,nV,nR,nS,ENuc,ERHF,ERI_MO,dipole_int_MO,eHF)
     call wall_time(end_GT)
   
     t_GT = end_GT - start_GT
-    write(*,'(A65,1X,F9.3,A8)') 'Total CPU time for G0T0pp = ',t_GT,' seconds'
+    write(*,'(A65,1X,F9.3,A8)') 'Total wall time for G0T0pp = ',t_GT,' seconds'
     write(*,*)
 
   end if
@@ -95,11 +99,11 @@ subroutine RGT(dotest,doG0T0pp,doevGTpp,doqsGTpp,doufG0T0pp,doG0T0eh,doevGTeh,do
     
     call wall_time(start_GT)
     call evRGTpp(dotest,maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,dophBSE,TDA_T,TDA,dBSE,dTDA,singlet,triplet, &
-                 linearize,eta,regularize,nBas,nC,nO,nV,nR,nS,ENuc,ERHF,ERI_MO,dipole_int,eHF)
+                 linearize,eta,regularize,nOrb,nC,nO,nV,nR,nS,ENuc,ERHF,ERI_MO,dipole_int_MO,eHF)
     call wall_time(end_GT)
   
     t_GT = end_GT - start_GT
-    write(*,'(A65,1X,F9.3,A8)') 'Total CPU time for evGTpp = ',t_GT,' seconds'
+    write(*,'(A65,1X,F9.3,A8)') 'Total wall time for evGTpp = ',t_GT,' seconds'
     write(*,*)
 
   end if
@@ -111,13 +115,13 @@ subroutine RGT(dotest,doG0T0pp,doevGTpp,doqsGTpp,doufG0T0pp,doG0T0eh,doevGTeh,do
   if(doqsGTpp) then 
 
     call wall_time(start_GT)
-    call qsRGTpp(dotest,maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,dophBSE,TDA_T,TDA,dBSE,dTDA,singlet,triplet,       &
-                 eta,regularize,nNuc,ZNuc,rNuc,ENuc,nBas,nC,nO,nV,nR,nS,ERHF,S,X,T,V,Hc,ERI_AO,ERI_MO,dipole_int_AO,dipole_int, & 
-                 PHF,cHF,eHF)
+    call qsRGTpp(dotest, maxSCF, thresh, max_diis, doACFDT, exchange_kernel, doXBS, dophBSE, TDA_T, TDA, dBSE, &
+                 dTDA, singlet, triplet, eta, regularize, nNuc, ZNuc, rNuc, ENuc, nBas, nOrb, nC, nO,  &
+                 nV, nR, nS, ERHF, S, X, T, V, Hc, ERI_AO, ERI_MO, dipole_int_AO, dipole_int_MO, PHF, cHF, eHF)
     call wall_time(end_GT)
 
     t_GT = end_GT - start_GT
-    write(*,'(A65,1X,F9.3,A8)') 'Total CPU time for qsGTpp = ',t_GT,' seconds'
+    write(*,'(A65,1X,F9.3,A8)') 'Total wall time for qsGTpp = ',t_GT,' seconds'
     write(*,*)
 
   end if
@@ -129,11 +133,11 @@ subroutine RGT(dotest,doG0T0pp,doevGTpp,doqsGTpp,doufG0T0pp,doG0T0eh,doevGTeh,do
   if(doufG0T0pp) then
     
     call wall_time(start_GT)
-    call ufG0T0pp(dotest,TDA_T,nBas,nC,nO,nV,nR,nS,ENuc,ERHF,ERI_MO,eHF)
+    call ufG0T0pp(dotest,TDA_T,nOrb,nC,nO,nV,nR,nS,ENuc,ERHF,ERI_MO,eHF)
     call wall_time(end_GT)
   
     t_GT = end_GT - start_GT
-    write(*,'(A65,1X,F9.3,A8)') 'Total CPU time for ufG0T0pp = ',t_GT,' seconds'
+    write(*,'(A65,1X,F9.3,A8)') 'Total wall time for ufG0T0pp = ',t_GT,' seconds'
     write(*,*)
 
   end if
@@ -146,11 +150,11 @@ subroutine RGT(dotest,doG0T0pp,doevGTpp,doqsGTpp,doufG0T0pp,doG0T0eh,doevGTeh,do
     
     call wall_time(start_GT)
     call RG0T0eh(dotest,doACFDT,exchange_kernel,doXBS,dophBSE,dophBSE2,TDA_T,TDA,dBSE,dTDA,doppBSE,singlet,triplet, &
-                 linearize,eta,regularize,nBas,nC,nO,nV,nR,nS,ENuc,ERHF,ERI_MO,dipole_int,eHF)
+                 linearize,eta,regularize,nOrb,nC,nO,nV,nR,nS,ENuc,ERHF,ERI_MO,dipole_int_MO,eHF)
     call wall_time(end_GT)
   
     t_GT = end_GT - start_GT
-    write(*,'(A65,1X,F9.3,A8)') 'Total CPU time for G0T0eh = ',t_GT,' seconds'
+    write(*,'(A65,1X,F9.3,A8)') 'Total wall time for G0T0eh = ',t_GT,' seconds'
     write(*,*)
 
   end if
@@ -163,11 +167,11 @@ subroutine RGT(dotest,doG0T0pp,doevGTpp,doqsGTpp,doufG0T0pp,doG0T0eh,doevGTeh,do
 
     call wall_time(start_GT)
     call evRGTeh(dotest,maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,dophBSE,dophBSE2,TDA_T,TDA,dBSE,dTDA,doppBSE, &
-                 singlet,triplet,linearize,eta,regularize,nBas,nC,nO,nV,nR,nS,ENuc,ERHF,ERI_MO,dipole_int,eHF)
+                 singlet,triplet,linearize,eta,regularize,nOrb,nC,nO,nV,nR,nS,ENuc,ERHF,ERI_MO,dipole_int_MO,eHF)
     call wall_time(end_GT)
 
     t_GT = end_GT - start_GT
-    write(*,'(A65,1X,F9.3,A8)') 'Total CPU time for evGTeh = ',t_GT,' seconds'
+    write(*,'(A65,1X,F9.3,A8)') 'Total wall time for evGTeh = ',t_GT,' seconds'
     write(*,*)
 
   end if
@@ -179,13 +183,14 @@ subroutine RGT(dotest,doG0T0pp,doevGTpp,doqsGTpp,doufG0T0pp,doG0T0eh,doevGTeh,do
   if(doqsGTeh) then 
 
     call wall_time(start_GT)
-    call qsRGTeh(dotest,maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,dophBSE,dophBSE2,TDA_T,TDA,dBSE,dTDA,singlet,triplet, &
-                 eta,regularize,nNuc,ZNuc,rNuc,ENuc,nBas,nC,nO,nV,nR,nS,ERHF,S,X,T,V,Hc,ERI_AO,ERI_MO,dipole_int_AO,dipole_int,    & 
-                 PHF,cHF,eHF)
+    call qsRGTeh(dotest, maxSCF, thresh, max_diis, doACFDT, exchange_kernel, doXBS, dophBSE, &
+                 dophBSE2, TDA_T, TDA, dBSE, dTDA, singlet, triplet, eta, regularize, nNuc,  &
+                 ZNuc, rNuc, ENuc, nBas, nOrb, nC, nO, nV, nR, nS, ERHF, S, X, T, V, &
+                 Hc, ERI_AO, ERI_MO, dipole_int_AO, dipole_int_MO, PHF, cHF, eHF)
     call wall_time(end_GT)
 
     t_GT = end_GT - start_GT
-    write(*,'(A65,1X,F9.3,A8)') 'Total CPU time for qsGTeh = ',t_GT,' seconds'
+    write(*,'(A65,1X,F9.3,A8)') 'Total wall time for qsGTeh = ',t_GT,' seconds'
     write(*,*)
 
   end if

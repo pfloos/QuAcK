@@ -1,14 +1,17 @@
-subroutine print_ROHF(nBas,nO,eHF,c,ENuc,ET,EV,EJ,Ex,EROHF,dipole)
+
+! ---
+
+subroutine print_ROHF(nBas, nOrb, nO, eHF, c, ENuc, ET, EV, EJ, Ex, EROHF, dipole)
 
 ! Print one- and two-electron energies and other stuff for RoHF calculation
 
   implicit none
   include 'parameters.h'
 
-  integer,intent(in)                 :: nBas
+  integer,intent(in)                 :: nBas, nOrb
   integer,intent(in)                 :: nO(nspin)
-  double precision,intent(in)        :: eHF(nBas)
-  double precision,intent(in)        :: c(nBas,nBas)
+  double precision,intent(in)        :: eHF(nOrb)
+  double precision,intent(in)        :: c(nBas,nOrb)
   double precision,intent(in)        :: ENuc
   double precision,intent(in)        :: ET(nspin)
   double precision,intent(in)        :: EV(nspin)
@@ -31,7 +34,7 @@ subroutine print_ROHF(nBas,nO,eHF,c,ENuc,ET,EV,EJ,Ex,EROHF,dipole)
   do ispin=1,nspin
     if(nO(ispin) > 0) then 
       HOMO(ispin) = eHF(nO(ispin))
-      if(nO(ispin) < nBas) then
+      if(nO(ispin) < nOrb) then
         LUMO(ispin) = eHF(nO(ispin)+1)
       else
         LUMO(ispin) = 0d0
@@ -102,13 +105,13 @@ subroutine print_ROHF(nBas,nO,eHF,c,ENuc,ET,EV,EJ,Ex,EROHF,dipole)
     write(*,'(A50)') '-----------------------------------------'
     write(*,'(A50)') 'ROHF orbital coefficients '
     write(*,'(A50)') '-----------------------------------------'
-    call matout(nBas,nBas,c)
+    call matout(nBas, nOrb, c)
     write(*,*)
   end if
   write(*,'(A50)') '---------------------------------------'
   write(*,'(A50)') ' ROHF orbital energies (au) '
   write(*,'(A50)') '---------------------------------------'
-  call vecout(nBas,eHF)
+  call vecout(nOrb, eHF)
   write(*,*)
 
 end subroutine 

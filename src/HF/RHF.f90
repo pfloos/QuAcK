@@ -1,5 +1,8 @@
-subroutine RHF(dotest,maxSCF,thresh,max_diis,guess_type,level_shift,nNuc,ZNuc,rNuc,ENuc, & 
-               nBas,nO,S,T,V,Hc,ERI,dipole_int,X,ERHF,eHF,c,P)
+
+! ---
+
+subroutine RHF(dotest, maxSCF, thresh, max_diis, guess_type, level_shift, nNuc, ZNuc, rNuc, ENuc, & 
+               nBas, nOrb, nO, S, T, V, Hc, ERI, dipole_int, X, ERHF, eHF, c, P)
 
 ! Perform restricted Hartree-Fock calculation
 
@@ -16,7 +19,7 @@ subroutine RHF(dotest,maxSCF,thresh,max_diis,guess_type,level_shift,nNuc,ZNuc,rN
   double precision,intent(in)   :: thresh
   double precision,intent(in)   :: level_shift
 
-  integer,intent(in)            :: nBas
+  integer,intent(in)            :: nBas, nOrb
   integer,intent(in)            :: nO
   integer,intent(in)            :: nNuc
   double precision,intent(in)   :: ZNuc(nNuc)
@@ -26,14 +29,14 @@ subroutine RHF(dotest,maxSCF,thresh,max_diis,guess_type,level_shift,nNuc,ZNuc,rN
   double precision,intent(in)   :: T(nBas,nBas)
   double precision,intent(in)   :: V(nBas,nBas)
   double precision,intent(in)   :: Hc(nBas,nBas) 
-  double precision,intent(in)   :: X(nBas,nBas)
+  double precision,intent(in)   :: X(nBas,nOrb)
   double precision,intent(in)   :: ERI(nBas,nBas,nBas,nBas)
   double precision,intent(in)   :: dipole_int(nBas,nBas,ncart)
 
 ! Local variables
 
   integer                       :: nSCF
-  integer                       :: nBasSq
+  integer                       :: nBas_Sq
   integer                       :: n_diis
   double precision              :: ET
   double precision              :: EV
@@ -56,8 +59,8 @@ subroutine RHF(dotest,maxSCF,thresh,max_diis,guess_type,level_shift,nNuc,ZNuc,rN
 ! Output variables
 
   double precision,intent(out)  :: ERHF
-  double precision,intent(out)  :: eHF(nBas)
-  double precision,intent(inout):: c(nBas,nBas)
+  double precision,intent(out)  :: eHF(nOrb)
+  double precision,intent(inout):: c(nBas,nOrb)
   double precision,intent(out)  :: P(nBas,nBas)
 
 ! Hello world
@@ -70,24 +73,37 @@ subroutine RHF(dotest,maxSCF,thresh,max_diis,guess_type,level_shift,nNuc,ZNuc,rN
 
 ! Useful quantities
 
-  nBasSq = nBas*nBas
+  nBas_Sq = nBas*nBas
 
 ! Memory allocation
 
-  allocate(J(nBas,nBas),K(nBas,nBas),err(nBas,nBas),cp(nBas,nBas),F(nBas,nBas), &
-           Fp(nBas,nBas),err_diis(nBasSq,max_diis),F_diis(nBasSq,max_diis))
+  allocate(J(nBas,nBas))
+  allocate(K(nBas,nBas))
+
+  allocate(err(nBas,nBas))
+  allocate(F(nBas,nBas))
+
+  allocate(cp(nOrb,nOrb))
+  allocate(Fp(nOrb,nOrb))
+
+  allocate(err_diis(nBas_Sq,max_diis))
+  allocate(F_diis(nBas_Sq,max_diis))
 
 ! Guess coefficients and density matrix
 
-  call mo_guess(nBas,guess_type,S,Hc,X,c)
-  P(:,:) = 2d0*matmul(c(:,1:nO),transpose(c(:,1:nO)))
+  call mo_guess(nBas, nOrb, guess_type, S, Hc, X, c)
+
+  !P(:,:) = 2d0 * matmul(c(:,1:nO), transpose(c(:,1:nO)))
+  call dgemm('N', 'T', nBas, nBas, nO, 2.d0, &
+             c(1,1), nBas, c(1,1), nBas,     &
+             0.d0, P(1,1), nBas)
 
 ! Initialization
 
-  n_diis          = 0
+  n_diis        = 0
   F_diis(:,:)   = 0d0
   err_diis(:,:) = 0d0
-  rcond = 0d0
+  rcond         = 0d0
 
   Conv   = 1d0
   nSCF   = 0
@@ -110,31 +126,35 @@ subroutine RHF(dotest,maxSCF,thresh,max_diis,guess_type,level_shift,nNuc,ZNuc,rN
 
     ! Build Fock matrix
     
-    call Hartree_matrix_AO_basis(nBas,P,ERI,J)
-    call exchange_matrix_AO_basis(nBas,P,ERI,K)
+    call Hartree_matrix_AO_basis(nBas, P, ERI, J)
+    call exchange_matrix_AO_basis(nBas, P, ERI, K)
     
     F(:,:) = Hc(:,:) + J(:,:) + 0.5d0*K(:,:)
+    if(nBas .ne. nOrb) then
+      call AOtoMO(nBas, nOrb, c(1,1), F(1,1), Fp(1,1))
+      call MOtoAO(nBas, nOrb, S(1,1), c(1,1), Fp(1,1), F(1,1))
+    endif
 
     ! Check convergence 
 
-    err = matmul(F,matmul(P,S)) - matmul(matmul(S,P),F)
+    err = matmul(F, matmul(P, S)) - matmul(matmul(S, P), F)
     if(nSCF > 1) Conv = maxval(abs(err))
 
     ! Kinetic energy
 
-    ET = trace_matrix(nBas,matmul(P,T))
+    ET = trace_matrix(nBas, matmul(P, T))
 
     ! Potential energy
 
-    EV = trace_matrix(nBas,matmul(P,V))
+    EV = trace_matrix(nBas, matmul(P, V))
 
     ! Hartree energy
 
-    EJ = 0.5d0*trace_matrix(nBas,matmul(P,J))
+    EJ = 0.5d0*trace_matrix(nBas, matmul(P, J))
 
     ! Exchange energy
 
-    EK = 0.25d0*trace_matrix(nBas,matmul(P,K))
+    EK = 0.25d0*trace_matrix(nBas, matmul(P, K))
 
     ! Total energy
 
@@ -144,25 +164,37 @@ subroutine RHF(dotest,maxSCF,thresh,max_diis,guess_type,level_shift,nNuc,ZNuc,rN
 
     if(max_diis > 1) then
 
-      n_diis = min(n_diis+1,max_diis)
-      call DIIS_extrapolation(rcond,nBasSq,nBasSq,n_diis,err_diis,F_diis,err,F)
+      n_diis = min(n_diis+1, max_diis)
+      call DIIS_extrapolation(rcond, nBas_Sq, nBas_Sq, n_diis, err_diis, F_diis, err, F)
 
     end if
 
     ! Level shift
 
-    if(level_shift > 0d0 .and. Conv > thresh) call level_shifting(level_shift,nBas,nO,S,c,F)
+    if(level_shift > 0d0 .and. Conv > thresh) then
+      call level_shifting(level_shift, nBas, nOrb, nO, S, c, F)
+    endif
 
     ! Diagonalize Fock matrix
 
-    Fp = matmul(transpose(X),matmul(F,X))
-    cp(:,:) = Fp(:,:)
-    call diagonalize_matrix(nBas,cp,eHF)
-    c = matmul(X,cp)
+    if(nBas .eq. nOrb) then
+      Fp = matmul(transpose(X), matmul(F, X))
+      cp(:,:) = Fp(:,:)
+      call diagonalize_matrix(nOrb, cp, eHF)
+      c = matmul(X, cp)
+    else
+      Fp = matmul(transpose(c), matmul(F, c))
+      cp(:,:) = Fp(:,:)
+      call diagonalize_matrix(nOrb, cp, eHF)
+      c = matmul(c, cp)
+    endif
 
     ! Density matrix
 
-    P(:,:) = 2d0*matmul(c(:,1:nO),transpose(c(:,1:nO)))
+    !P(:,:) = 2d0*matmul(c(:,1:nO), transpose(c(:,1:nO)))
+    call dgemm('N', 'T', nBas, nBas, nO, 2.d0, &
+               c(1,1), nBas, c(1,1), nBas,     &
+               0.d0, P(1,1), nBas)
 
     ! Dump results
 
@@ -185,14 +217,16 @@ subroutine RHF(dotest,maxSCF,thresh,max_diis,guess_type,level_shift,nNuc,ZNuc,rN
     write(*,*)'!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!'
     write(*,*)
 
+    deallocate(J, K, err, F, cp, Fp, err_diis, F_diis)
+
     stop
 
   end if
 
 ! Compute dipole moments
 
-  call dipole_moment(nBas,P,nNuc,ZNuc,rNuc,dipole_int,dipole)
-  call print_RHF(nBas,nO,eHF,C,ENuc,ET,EV,EJ,EK,ERHF,dipole)
+  call dipole_moment(nBas, P, nNuc, ZNuc, rNuc, dipole_int, dipole)
+  call print_RHF(nBas, nOrb, nO, eHF, c, ENuc, ET, EV, EJ, EK, ERHF, dipole)
 
 ! Testing zone
 
@@ -204,5 +238,7 @@ subroutine RHF(dotest,maxSCF,thresh,max_diis,guess_type,level_shift,nNuc,ZNuc,rN
     call dump_test_value('R','RHF dipole moment',norm2(dipole))
 
   end if
+
+  deallocate(J, K, err, F, cp, Fp, err_diis, F_diis)
 
 end subroutine 

@@ -94,7 +94,7 @@ subroutine cRHF(dotest,maxSCF,thresh,max_diis,guess_type,level_shift,nNuc,ZNuc,r
 
 ! Guess coefficients and density matrix
 
-  call mo_guess(nBas,guess_type,S,Hc,X,c)
+  call mo_guess(nBas,nBas,guess_type,S,Hc,X,c)
   P(:,:) = 2d0*matmul(c(:,1:nO),transpose(c(:,1:nO)))
 
 ! Initialization
@@ -166,7 +166,7 @@ subroutine cRHF(dotest,maxSCF,thresh,max_diis,guess_type,level_shift,nNuc,ZNuc,r
 
     ! Level shift
 
-    if(level_shift > 0d0 .and. Conv > thresh) call level_shifting(level_shift,nBas,nO,S,c,F)
+    if(level_shift > 0d0 .and. Conv > thresh) call level_shifting(level_shift,nBas,nBas,nO,S,c,F)
 
     ! Diagonalize Fock matrix
 
@@ -207,7 +207,7 @@ subroutine cRHF(dotest,maxSCF,thresh,max_diis,guess_type,level_shift,nNuc,ZNuc,r
 ! Compute dipole moments
 
   call dipole_moment(nBas,P,nNuc,ZNuc,rNuc,dipole_int,dipole)
-  call print_RHF(nBas,nO,eHF,C,ENuc,ET,EV,EJ,EK,ERHF,dipole)
+  call print_RHF(nBas,nBas,nO,eHF,C,ENuc,ET,EV,EJ,EK,ERHF,dipole)
 
 ! Testing zone
 

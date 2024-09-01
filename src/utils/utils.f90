@@ -65,7 +65,7 @@ subroutine diagonal_matrix(N,D,A)
 end subroutine
 
 !------------------------------------------------------------------------
-subroutine matrix_exponential(N,A,ExpA)
+subroutine matrix_exponential(N, A, ExpA)
 
 ! Compute Exp(A)
 
@@ -81,7 +81,7 @@ subroutine matrix_exponential(N,A,ExpA)
 
 ! Memory allocation
 
-  allocate(W(N,N),tau(N),t(N,N))
+  allocate(W(N,N), tau(N), t(N,N))
 
 ! Initialize
 
@@ -89,8 +89,8 @@ subroutine matrix_exponential(N,A,ExpA)
 
 ! Diagonalize
 
-  W(:,:) = - matmul(A,A)
-  call diagonalize_matrix(N,W,tau)
+  W(:,:) = - matmul(A, A)
+  call diagonalize_matrix(N, W, tau)
 
 ! do i=1,N
 !   tau(i) = max(abs(tau(i)),1d-14)
@@ -99,16 +99,18 @@ subroutine matrix_exponential(N,A,ExpA)
 
 ! Construct cos part
 
-  call diagonal_matrix(N,cos(tau),t)
-  t(:,:) = matmul(t,transpose(W))
-  ExpA(:,:) = ExpA(:,:) + matmul(W,t) 
+  call diagonal_matrix(N, cos(tau), t)
+  t(:,:) = matmul(t, transpose(W))
+  ExpA(:,:) = ExpA(:,:) + matmul(W, t) 
 
 ! Construct sin part
 
-  call diagonal_matrix(N,sin(tau)/tau,t)
-  t(:,:) = matmul(t,transpose(W))
-  t(:,:) = matmul(t,A)
-  ExpA(:,:) = ExpA(:,:) + matmul(W,t)
+  call diagonal_matrix(N, sin(tau)/tau, t)
+  t(:,:) = matmul(t, transpose(W))
+  t(:,:) = matmul(t, A)
+  ExpA(:,:) = ExpA(:,:) + matmul(W, t)
+
+  deallocate(W, tau, t)
 
 end subroutine
 
