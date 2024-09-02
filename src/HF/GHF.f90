@@ -123,7 +123,7 @@ subroutine GHF(dotest,maxSCF,thresh,max_diis,guess_type,mix,level_shift,nNuc,ZNu
 
 ! Guess coefficients and density matrices
 
-  call mo_guess(nBas2,guess_type,S,H,X,C)
+  call mo_guess(nBas2,nBas2,guess_type,S,H,X,C)
 
 ! Construct super density matrix
 
@@ -227,7 +227,7 @@ subroutine GHF(dotest,maxSCF,thresh,max_diis,guess_type,mix,level_shift,nNuc,ZNu
 
 !   Level-shifting
 
-    if(level_shift > 0d0 .and. Conv > thresh) call level_shifting(level_shift,nBas,nO,S,C,F)
+    if(level_shift > 0d0 .and. Conv > thresh) call level_shifting(level_shift,nBas,nBas,nO,S,C,F)
 
 !  Transform Fock matrix in orthogonal basis
 

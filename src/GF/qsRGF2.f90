@@ -1,6 +1,10 @@
-subroutine qsRGF2(dotest,maxSCF,thresh,max_diis,dophBSE,doppBSE,TDA,dBSE,dTDA,singlet,triplet, & 
-                eta,regularize,nNuc,ZNuc,rNuc,ENuc,nBas,nC,nO,nV,nR,nS,ERHF, &
-                S,X,T,V,Hc,ERI_AO,ERI_MO,dipole_int_AO,dipole_int_MO,PHF,cHF,eHF)
+
+! ---
+
+subroutine qsRGF2(dotest, maxSCF, thresh, max_diis, dophBSE, doppBSE, TDA,   &
+                  dBSE, dTDA, singlet, triplet, eta, regularize, nNuc, ZNuc, &
+                  rNuc, ENuc, nBas, nOrb, nC, nO, nV, nR, nS, ERHF,  &
+                  S, X, T, V, Hc, ERI_AO, ERI_MO, dipole_int_AO, dipole_int_MO, PHF, cHF, eHF)
 
 ! Perform a quasiparticle self-consistent GF2 calculation
 
@@ -29,25 +33,25 @@ subroutine qsRGF2(dotest,maxSCF,thresh,max_diis,dophBSE,doppBSE,TDA,dBSE,dTDA,si
   double precision,intent(in)   :: rNuc(nNuc,ncart)
   double precision,intent(in)   :: ENuc
 
-  integer,intent(in)            :: nBas,nC,nO,nV,nR,nS
+  integer,intent(in)            :: nBas,nOrb,nC,nO,nV,nR,nS
   double precision,intent(in)   :: ERHF
-  double precision,intent(in)   :: eHF(nBas)
-  double precision,intent(in)   :: cHF(nBas,nBas)
+  double precision,intent(in)   :: eHF(nOrb)
+  double precision,intent(in)   :: cHF(nBas,nOrb)
   double precision,intent(in)   :: PHF(nBas,nBas)
   double precision,intent(in)   :: S(nBas,nBas)
   double precision,intent(in)   :: T(nBas,nBas)
   double precision,intent(in)   :: V(nBas,nBas)
   double precision,intent(in)   :: Hc(nBas,nBas)
-  double precision,intent(in)   :: X(nBas,nBas)
+  double precision,intent(in)   :: X(nBas,nOrb)
   double precision,intent(in)   :: ERI_AO(nBas,nBas,nBas,nBas)
-  double precision,intent(inout):: ERI_MO(nBas,nBas,nBas,nBas)
+  double precision,intent(inout):: ERI_MO(nOrb,nOrb,nOrb,nOrb)
   double precision,intent(in)   :: dipole_int_AO(nBas,nBas,ncart)
-  double precision,intent(in)   :: dipole_int_MO(nBas,nBas,ncart)
+  double precision,intent(in)   :: dipole_int_MO(nOrb,nOrb,ncart)
 
 ! Local variables
 
   integer                       :: nSCF
-  integer                       :: nBasSq
+  integer                       :: nBas_Sq
   integer                       :: ispin
   integer                       :: n_diis
   double precision              :: EqsGF2
@@ -94,7 +98,7 @@ subroutine qsRGF2(dotest,maxSCF,thresh,max_diis,dophBSE,doppBSE,TDA,dBSE,dTDA,si
 
 ! Stuff 
 
-  nBasSq = nBas*nBas
+  nBas_Sq = nBas*nBas
 
 ! TDA 
 
@@ -105,9 +109,27 @@ subroutine qsRGF2(dotest,maxSCF,thresh,max_diis,dophBSE,doppBSE,TDA,dBSE,dTDA,si
 
 ! Memory allocation
 
-  allocate(eGF(nBas),eOld(nbas),c(nBas,nBas),cp(nBas,nBas),P(nBas,nBas),F(nBas,nBas),Fp(nBas,nBas), &
-           J(nBas,nBas),K(nBas,nBas),SigC(nBas,nBas),SigCp(nBas,nBas),Z(nBas),                      & 
-           error(nBas,nBas),error_diis(nBasSq,max_diis),F_diis(nBasSq,max_diis))
+  allocate(eGF(nOrb))
+  allocate(eOld(nOrb))
+
+  allocate(c(nBas,nOrb))
+
+  allocate(cp(nOrb,nOrb))
+  allocate(Fp(nOrb,nOrb))
+
+  allocate(P(nBas,nBas))
+  allocate(F(nBas,nBas))
+  allocate(J(nBas,nBas))
+  allocate(K(nBas,nBas))
+  allocate(error(nBas,nBas))
+
+  allocate(Z(nOrb))
+  allocate(SigC(nOrb,nOrb))
+
+  allocate(SigCp(nBas,nBas))
+
+  allocate(error_diis(nBas_Sq,max_diis))
+  allocate(F_diis(nBas_Sq,max_diis))
 
 ! Initialization
   
@@ -117,7 +139,7 @@ subroutine qsRGF2(dotest,maxSCF,thresh,max_diis,dophBSE,doppBSE,TDA,dBSE,dTDA,si
   Conv            = 1d0
   P(:,:)          = PHF(:,:)
   eOld(:)         = eHF(:)
-  eGF(:)         = eHF(:)
+  eGF(:)          = eHF(:)
   c(:,:)          = cHF(:,:)
   F_diis(:,:)     = 0d0
   error_diis(:,:) = 0d0
@@ -135,25 +157,25 @@ subroutine qsRGF2(dotest,maxSCF,thresh,max_diis,dophBSE,doppBSE,TDA,dBSE,dTDA,si
 
     ! Buid Hartree matrix
 
-    call Hartree_matrix_AO_basis(nBas,P,ERI_AO,J)
+    call Hartree_matrix_AO_basis(nBas, P, ERI_AO, J)
 
     ! Compute exchange part of the self-energy 
 
-    call exchange_matrix_AO_basis(nBas,P,ERI_AO,K)
+    call exchange_matrix_AO_basis(nBas, P, ERI_AO, K)
 
     ! AO to MO transformation of two-electron integrals
 
-    call AOtoMO_ERI_RHF(nBas,c,ERI_AO,ERI_MO)
+    call AOtoMO_ERI_RHF(nBas, nOrb, c, ERI_AO, ERI_MO)
 
     ! Compute self-energy and renormalization factor
 
     if(regularize) then
 
-      call GF2_reg_self_energy(eta,nBas,nC,nO,nV,nR,eGF,ERI_MO,SigC,Z)
+      call GF2_reg_self_energy(eta, nOrb, nC, nO, nV, nR, eGF, ERI_MO, SigC, Z)
 
     else
 
-      call GF2_self_energy(eta,nBas,nC,nO,nV,nR,eGF,ERI_MO,SigC,Z)
+      call GF2_self_energy(eta, nOrb, nC, nO, nV, nR, eGF, ERI_MO, SigC, Z)
 
     end if
 
@@ -161,36 +183,47 @@ subroutine qsRGF2(dotest,maxSCF,thresh,max_diis,dophBSE,doppBSE,TDA,dBSE,dTDA,si
    
     SigC = 0.5d0*(SigC + transpose(SigC))
 
-    call MOtoAO(nBas,S,c,SigC,SigCp)
+    call MOtoAO(nBas, nOrb, S, c, SigC, SigCp)
  
     ! Solve the quasi-particle equation
 
     F(:,:) = Hc(:,:) + J(:,:) + 0.5d0*K(:,:) + SigCp(:,:)
+    if(nBas .ne. nOrb) then
+      call AOtoMO(nBas, nOrb, c(1,1), F(1,1), Fp(1,1))
+      call MOtoAO(nBas, nOrb, S(1,1), c(1,1), Fp(1,1), F(1,1))
+    endif
 
     ! Compute commutator and convergence criteria
 
-    error = matmul(F,matmul(P,S)) - matmul(matmul(S,P),F)
+    error = matmul(F, matmul(P, S)) - matmul(matmul(S, P), F)
 
     ! DIIS extrapolation 
 
-    n_diis = min(n_diis+1,max_diis)
+    n_diis = min(n_diis+1, max_diis)
     if(abs(rcond) > 1d-7) then
-      call DIIS_extrapolation(rcond,nBasSq,nBasSq,n_diis,error_diis,F_diis,error,F)
+      call DIIS_extrapolation(rcond,nBas_Sq,nBas_Sq,n_diis,error_diis,F_diis,error,F)
     else
       n_diis = 0
     end if
 
     ! Diagonalize Hamiltonian in AO basis
 
-    Fp = matmul(transpose(X),matmul(F,X))
-    cp(:,:) = Fp(:,:)
-    call diagonalize_matrix(nBas,cp,eGF)
-    c = matmul(X,cp)
-    SigCp = matmul(transpose(c),matmul(SigCp,c))
+    if(nBas .eq. nOrb) then
+      Fp = matmul(transpose(X), matmul(F, X))
+      cp(:,:) = Fp(:,:)
+      call diagonalize_matrix(nOrb, cp, eGF)
+      c = matmul(X, cp)
+    else
+      Fp = matmul(transpose(c), matmul(F, c))
+      cp(:,:) = Fp(:,:)
+      call diagonalize_matrix(nOrb, cp, eGF)
+      c = matmul(c, cp)
+    endif
+
 
     ! Compute new density matrix in the AO basis
 
-    P(:,:) = 2d0*matmul(c(:,1:nO),transpose(c(:,1:nO)))
+    P(:,:) = 2d0*matmul(c(:,1:nO), transpose(c(:,1:nO)))
 
     ! Save quasiparticles energy for next cycle
 
@@ -203,23 +236,23 @@ subroutine qsRGF2(dotest,maxSCF,thresh,max_diis,dophBSE,doppBSE,TDA,dBSE,dTDA,si
 
     ! Kinetic energy
 
-    ET = trace_matrix(nBas,matmul(P,T))
+    ET = trace_matrix(nBas, matmul(P, T))
 
     ! Potential energy
 
-    EV = trace_matrix(nBas,matmul(P,V))
+    EV = trace_matrix(nBas, matmul(P, V))
 
     ! Hartree energy
 
-    EJ = 0.5d0*trace_matrix(nBas,matmul(P,J))
+    EJ = 0.5d0*trace_matrix(nBas, matmul(P, J))
 
     ! Exchange energy
 
-    Ex = 0.25d0*trace_matrix(nBas,matmul(P,K))
+    Ex = 0.25d0*trace_matrix(nBas, matmul(P, K))
 
     ! Correlation energy
 
-    call RMP2(.false.,regularize,nBas,nC,nO,nV,nR,ERI_MO,ENuc,EqsGF2,eGF,Ec)
+    call RMP2(.false., regularize, nOrb, nC, nO, nV, nR, ERI_MO, ENuc, EqsGF2, eGF, Ec)
 
     ! Total energy
 
@@ -230,8 +263,9 @@ subroutine qsRGF2(dotest,maxSCF,thresh,max_diis,dophBSE,doppBSE,TDA,dBSE,dTDA,si
     ! Print results
     !------------------------------------------------------------------------
 
-    call dipole_moment(nBas,P,nNuc,ZNuc,rNuc,dipole_int_AO,dipole)
-    call print_qsRGF2(nBas,nO,nSCF,Conv,thresh,eHF,eGF,c,SigCp,Z,ENuc,ET,EV,EJ,Ex,Ec,EqsGF2,dipole)
+    call dipole_moment(nBas, P, nNuc, ZNuc, rNuc, dipole_int_AO, dipole)
+    call print_qsRGF2(nBas, nOrb, nO, nSCF, Conv, thresh, eHF, eGF, &
+                      c, SigC, Z, ENuc, ET, EV, EJ, Ex, Ec, EqsGF2, dipole)
 
   end do
 !------------------------------------------------------------------------
@@ -248,19 +282,21 @@ subroutine qsRGF2(dotest,maxSCF,thresh,max_diis,dophBSE,doppBSE,TDA,dBSE,dTDA,si
     write(*,*)'!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!'
     write(*,*)
 
+    deallocate(c, cp, P, F, Fp, J, K, SigC, SigCp, Z, error, error_diis, F_diis)
     stop
 
   end if
 
 ! Deallocate memory
 
-  deallocate(c,cp,P,F,Fp,J,K,SigC,SigCp,Z,error,error_diis,F_diis)
+  deallocate(c, cp, P, F, Fp, J, K, SigC, SigCp, Z, error, error_diis, F_diis)
 
 ! Perform BSE calculation
 
   if(dophBSE) then
 
-    call GF2_phBSE2(TDA,dBSE,dTDA,singlet,triplet,eta,nBas,nC,nO,nV,nR,nS,ERI_MO,dipole_int_MO,eGF,EcBSE)
+    call GF2_phBSE2(TDA, dBSE, dTDA, singlet, triplet, eta, nOrb, nC, nO, &
+                    nV, nR, nS, ERI_MO, dipole_int_MO, eGF, EcBSE)
 
     write(*,*)
     write(*,*)'-------------------------------------------------------------------------------'
@@ -278,7 +314,8 @@ subroutine qsRGF2(dotest,maxSCF,thresh,max_diis,dophBSE,doppBSE,TDA,dBSE,dTDA,si
 
   if(doppBSE) then
 
-    call GF2_ppBSE2(TDA,dBSE,dTDA,singlet,triplet,eta,nBas,nC,nO,nV,nR,ERI_MO,dipole_int_MO,eGF,EcBSE)
+    call GF2_ppBSE2(TDA, dBSE, dTDA, singlet, triplet, eta, nOrb, &
+                    nC, nO, nV, nR, ERI_MO, dipole_int_MO, eGF, EcBSE)
 
     write(*,*)
     write(*,*)'-------------------------------------------------------------------------------'

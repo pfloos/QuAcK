@@ -1,6 +1,10 @@
-subroutine qsRGW(dotest,maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,dophBSE,dophBSE2,TDA_W,TDA,dBSE,dTDA,doppBSE, & 
-                 singlet,triplet,eta,regularize,nNuc,ZNuc,rNuc,ENuc,nBas,nC,nO,nV,nR,nS,ERHF,S,X,T,V,Hc,ERI_AO,     & 
-                 ERI_MO,dipole_int_AO,dipole_int_MO,PHF,cHF,eHF)
+
+! ---
+
+subroutine qsRGW(dotest, maxSCF, thresh, max_diis, doACFDT, exchange_kernel, doXBS, dophBSE, dophBSE2, &
+                 TDA_W, TDA, dBSE, dTDA, doppBSE, singlet, triplet, eta, regularize, nNuc, ZNuc, rNuc, &
+                 ENuc, nBas, nOrb, nC, nO, nV, nR, nS, ERHF, S, X, T, V, Hc, ERI_AO,           &
+                 ERI_MO, dipole_int_AO, dipole_int_MO, PHF, cHF, eHF)
 
 ! Perform a quasiparticle self-consistent GW calculation
 
@@ -34,15 +38,15 @@ subroutine qsRGW(dotest,maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,dop
   double precision,intent(in)   :: rNuc(nNuc,ncart)
   double precision,intent(in)   :: ENuc
 
-  integer,intent(in)            :: nBas
+  integer,intent(in)            :: nBas, nOrb
   integer,intent(in)            :: nC
   integer,intent(in)            :: nO
   integer,intent(in)            :: nV
   integer,intent(in)            :: nR
   integer,intent(in)            :: nS
   double precision,intent(in)   :: ERHF
-  double precision,intent(in)   :: eHF(nBas)
-  double precision,intent(in)   :: cHF(nBas,nBas)
+  double precision,intent(in)   :: eHF(nOrb)
+  double precision,intent(in)   :: cHF(nBas,nOrb)
   double precision,intent(in)   :: PHF(nBas,nBas)
   double precision,intent(in)   :: S(nBas,nBas)
   double precision,intent(in)   :: T(nBas,nBas)
@@ -50,14 +54,14 @@ subroutine qsRGW(dotest,maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,dop
   double precision,intent(in)   :: Hc(nBas,nBas)
   double precision,intent(in)   :: X(nBas,nBas)
   double precision,intent(in)   :: ERI_AO(nBas,nBas,nBas,nBas)
-  double precision,intent(inout):: ERI_MO(nBas,nBas,nBas,nBas)
+  double precision,intent(inout):: ERI_MO(nOrb,nOrb,nOrb,nOrb)
   double precision,intent(in)   :: dipole_int_AO(nBas,nBas,ncart)
-  double precision,intent(inout):: dipole_int_MO(nBas,nBas,ncart)
+  double precision,intent(inout):: dipole_int_MO(nOrb,nOrb,ncart)
 
 ! Local variables
 
   integer                       :: nSCF
-  integer                       :: nBasSq
+  integer                       :: nBas_Sq
   integer                       :: ispin
   integer                       :: ixyz
   integer                       :: n_diis
@@ -112,7 +116,7 @@ subroutine qsRGW(dotest,maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,dop
 
 ! Stuff 
 
-  nBasSq = nBas*nBas
+  nBas_Sq = nBas*nBas
 
 ! TDA for W
 
@@ -130,10 +134,31 @@ subroutine qsRGW(dotest,maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,dop
 
 ! Memory allocation
 
-  allocate(eGW(nBas),c(nBas,nBas),cp(nBas,nBas),P(nBas,nBas),F(nBas,nBas),Fp(nBas,nBas), &
-           J(nBas,nBas),K(nBas,nBas),SigC(nBas,nBas),SigCp(nBas,nBas),Z(nBas),           & 
-           Aph(nS,nS),Bph(nS,nS),Om(nS),XpY(nS,nS),XmY(nS,nS),rho(nBas,nBas,nS),         &
-           err(nBas,nBas),err_diis(nBasSq,max_diis),F_diis(nBasSq,max_diis))
+  allocate(eGW(nOrb))
+  allocate(Z(nOrb))
+
+  allocate(c(nBas,nOrb))
+
+  allocate(cp(nOrb,nOrb))
+  allocate(Fp(nOrb,nOrb))
+  allocate(SigC(nOrb,nOrb))
+
+  allocate(P(nBas,nBas))
+  allocate(F(nBas,nBas))
+  allocate(J(nBas,nBas))
+  allocate(K(nBas,nBas))
+  allocate(err(nBas,nBas))
+  allocate(SigCp(nBas,nBas))
+
+  allocate(Aph(nS,nS))
+  allocate(Bph(nS,nS))
+  allocate(Om(nS))
+  allocate(XpY(nS,nS))
+  allocate(XmY(nS,nS))
+  allocate(rho(nOrb,nOrb,nS))
+
+  allocate(err_diis(nBas_Sq,max_diis))
+  allocate(F_diis(nBas_Sq,max_diis))
 
 ! Initialization
   
@@ -160,64 +185,68 @@ subroutine qsRGW(dotest,maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,dop
 
     ! Build Hartree-exchange matrix
 
-    call Hartree_matrix_AO_basis(nBas,P,ERI_AO,J)
-    call exchange_matrix_AO_basis(nBas,P,ERI_AO,K)
+    call Hartree_matrix_AO_basis(nBas, P, ERI_AO, J)
+    call exchange_matrix_AO_basis(nBas, P, ERI_AO, K)
 
     ! AO to MO transformation of two-electron integrals
 
-    do ixyz=1,ncart
-      call AOtoMO(nBas,c,dipole_int_AO(:,:,ixyz),dipole_int_MO(:,:,ixyz))
+    do ixyz = 1, ncart
+      call AOtoMO(nBas, nOrb, c, dipole_int_AO(1,1,ixyz), dipole_int_MO(1,1,ixyz))
     end do
 
-    call AOtoMO_ERI_RHF(nBas,c,ERI_AO,ERI_MO)
+    call AOtoMO_ERI_RHF(nBas, nOrb, c, ERI_AO, ERI_MO)
 
     ! Compute linear response
 
-    call phLR_A(ispin,dRPA,nBas,nC,nO,nV,nR,nS,1d0,eGW,ERI_MO,Aph)
-    if(.not.TDA_W) call phLR_B(ispin,dRPA,nBas,nC,nO,nV,nR,nS,1d0,ERI_MO,Bph)
+    call phLR_A(ispin, dRPA, nOrb, nC, nO, nV, nR, nS, 1d0, eGW, ERI_MO, Aph)
+    if(.not.TDA_W) call phLR_B(ispin, dRPA, nOrb, nC, nO, nV, nR, nS, 1d0, ERI_MO, Bph)
 
-    call phLR(TDA_W,nS,Aph,Bph,EcRPA,Om,XpY,XmY)
+    call phLR(TDA_W, nS, Aph, Bph, EcRPA, Om, XpY, XmY)
     if(print_W) call print_excitation_energies('phRPA@GW@RHF','singlet',nS,Om)
 
     ! Compute correlation part of the self-energy 
 
-    call GW_excitation_density(nBas,nC,nO,nR,nS,ERI_MO,XpY,rho)
+    call GW_excitation_density(nOrb, nC, nO, nR, nS, ERI_MO, XpY, rho)
 
-    if(regularize) call GW_regularization(nBas,nC,nO,nV,nR,nS,eGW,Om,rho)
+    if(regularize) call GW_regularization(nOrb, nC, nO, nV, nR, nS, eGW, Om, rho)
 
-    call GW_self_energy(eta,nBas,nC,nO,nV,nR,nS,eGW,Om,rho,EcGM,SigC,Z)
+    call GW_self_energy(eta, nOrb, nC, nO, nV, nR, nS, eGW, Om, rho, EcGM, SigC, Z)
 
     ! Make correlation self-energy Hermitian and transform it back to AO basis
    
     SigC = 0.5d0*(SigC + transpose(SigC))
 
-    call MOtoAO(nBas,S,c,SigC,SigCp)
+    call MOtoAO(nBas, nOrb, S, c, SigC, SigCp)
  
     ! Solve the quasi-particle equation
 
     F(:,:) = Hc(:,:) + J(:,:) + 0.5d0*K(:,:) + SigCp(:,:)
+    if(nBas .ne. nOrb) then
+      call AOtoMO(nBas, nOrb, c(1,1), F(1,1), Fp(1,1))
+      call MOtoAO(nBas, nOrb, S(1,1), c(1,1), Fp(1,1), F(1,1))
+    endif
 
     ! Compute commutator and convergence criteria
 
-    err = matmul(F,matmul(P,S)) - matmul(matmul(S,P),F)
+    err = matmul(F, matmul(P, S)) - matmul(matmul(S, P), F)
 
     if(nSCF > 1) Conv = maxval(abs(err))
 
     ! Kinetic energy
 
-    ET = trace_matrix(nBas,matmul(P,T))
+    ET = trace_matrix(nBas, matmul(P, T))
 
     ! Potential energy
 
-    EV = trace_matrix(nBas,matmul(P,V))
+    EV = trace_matrix(nBas, matmul(P, V))
 
     ! Hartree energy
 
-    EJ = 0.5d0*trace_matrix(nBas,matmul(P,J))
+    EJ = 0.5d0*trace_matrix(nBas, matmul(P, J))
 
     ! Exchange energy
 
-    EK = 0.25d0*trace_matrix(nBas,matmul(P,K))
+    EK = 0.25d0*trace_matrix(nBas, matmul(P, K))
 
     ! Total energy
 
@@ -228,26 +257,36 @@ subroutine qsRGW(dotest,maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,dop
     if(max_diis > 1) then
 
       n_diis = min(n_diis+1,max_diis)
-      call DIIS_extrapolation(rcond,nBasSq,nBasSq,n_diis,err_diis,F_diis,err,F)
+      call DIIS_extrapolation(rcond,nBas_Sq,nBas_Sq,n_diis,err_diis,F_diis,err,F)
 
     end if
 
     ! Diagonalize Hamiltonian in AO basis
 
-    Fp = matmul(transpose(X),matmul(F,X))
-    cp(:,:) = Fp(:,:)
-    call diagonalize_matrix(nBas,cp,eGW)
-    c = matmul(X,cp)
-    call AOtoMO(nBas,c,SigCp,SigC)
+    if(nBas .eq. nOrb) then
+      Fp = matmul(transpose(X), matmul(F, X))
+      cp(:,:) = Fp(:,:)
+      call diagonalize_matrix(nOrb, cp, eGW)
+      c = matmul(X, cp)
+    else
+      Fp = matmul(transpose(c), matmul(F, c))
+      cp(:,:) = Fp(:,:)
+      call diagonalize_matrix(nOrb, cp, eGW)
+      c = matmul(c, cp)
+    endif
+
+
+    call AOtoMO(nBas, nOrb, c, SigCp, SigC)
 
     ! Density matrix
 
-    P(:,:) = 2d0*matmul(c(:,1:nO),transpose(c(:,1:nO)))
+    P(:,:) = 2d0*matmul(c(:,1:nO), transpose(c(:,1:nO)))
 
     ! Print results
 
-    call dipole_moment(nBas,P,nNuc,ZNuc,rNuc,dipole_int_AO,dipole)
-    call print_qsRGW(nBas,nO,nSCF,Conv,thresh,eHF,eGW,c,SigCp,Z,ENuc,ET,EV,EJ,EK,EcGM,EcRPA,EqsGW,dipole)
+    call dipole_moment(nBas, P, nNuc, ZNuc, rNuc, dipole_int_AO, dipole)
+    call print_qsRGW(nBas, nOrb, nO, nSCF, Conv, thresh, eHF, eGW, c, SigC, Z, &
+                     ENuc, ET, EV, EJ, EK, EcGM, EcRPA, EqsGW, dipole)
 
   end do
 !------------------------------------------------------------------------
@@ -264,19 +303,21 @@ subroutine qsRGW(dotest,maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,dop
     write(*,*)'!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!'
     write(*,*)
 
+    deallocate(c, cp, P, F, Fp, J, K, SigC, SigCp, Z, Om, XpY, XmY, rho, err, err_diis, F_diis)
     stop
 
   end if
 
 ! Deallocate memory
 
-  deallocate(c,cp,P,F,Fp,J,K,SigC,SigCp,Z,Om,XpY,XmY,rho,err,err_diis,F_diis)
+  deallocate(c, cp, P, F, Fp, J, K, SigC, SigCp, Z, Om, XpY, XmY, rho, err, err_diis, F_diis)
 
 ! Perform BSE calculation
 
   if(dophBSE) then
 
-    call GW_phBSE(dophBSE2,TDA_W,TDA,dBSE,dTDA,singlet,triplet,eta,nBas,nC,nO,nV,nR,nS,ERI_MO,dipole_int_MO,eGW,eGW,EcBSE)
+    call GW_phBSE(dophBSE2, TDA_W, TDA, dBSE, dTDA, singlet, triplet, eta, &
+                  nOrb, nC, nO, nV, nR, nS, ERI_MO, dipole_int_MO, eGW, eGW, EcBSE)
 
     if(exchange_kernel) then
 
@@ -310,7 +351,8 @@ subroutine qsRGW(dotest,maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,dop
 
       end if
 
-      call GW_phACFDT(exchange_kernel,doXBS,.true.,TDA_W,TDA,dophBSE,singlet,triplet,eta,nBas,nC,nO,nV,nR,nS,ERI_MO,eGW,eGW,EcBSE)
+      call GW_phACFDT(exchange_kernel, doXBS, .true., TDA_W, TDA, dophBSE, singlet, triplet, &
+                      eta, nOrb, nC, nO, nV, nR, nS, ERI_MO, eGW, eGW, EcBSE)
 
       write(*,*)
       write(*,*)'-------------------------------------------------------------------------------'
@@ -327,7 +369,8 @@ subroutine qsRGW(dotest,maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,dop
 
   if(doppBSE) then
       
-    call GW_ppBSE(TDA_W,TDA,dBSE,dTDA,singlet,triplet,eta,nBas,nC,nO,nV,nR,nS,ERI_MO,dipole_int_MO,eHF,eGW,EcBSE)
+    call GW_ppBSE(TDA_W, TDA, dBSE, dTDA, singlet, triplet, eta, nOrb, &
+                  nC, nO, nV, nR, nS, ERI_MO, dipole_int_MO, eHF, eGW, EcBSE)
  
     EcBSE(2) = 3d0*EcBSE(2)
    

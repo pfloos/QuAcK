@@ -1,26 +1,31 @@
-subroutine AOtoMO(nBas,C,A,B)
+subroutine AOtoMO(nBas, nOrb, C, M_AOs, M_MOs)
 
-! Perform AO to MO transformation of a matrix A for given coefficients c
+  ! Perform AO to MO transformation of a matrix M_AOs for given coefficients c
+  ! M_MOs = C.T M_AOs C
 
   implicit none
 
-! Input variables
+  integer,          intent(in)  :: nBas, nOrb
+  double precision, intent(in)  :: C(nBas,nOrb)
+  double precision, intent(in)  :: M_AOs(nBas,nBas)
 
-  integer,intent(in)            :: nBas
-  double precision,intent(in)   :: C(nBas,nBas)
-  double precision,intent(in)   :: A(nBas,nBas)
+  double precision, intent(out) :: M_MOs(nOrb,nOrb)
 
-! Local variables
+  double precision, allocatable :: AC(:,:)
 
-  double precision,allocatable  :: AC(:,:)
+  allocate(AC(nBas,nOrb))
 
-! Output variables
+  !AC = matmul(M_AOs, C)
+  !M_MOs = matmul(transpose(C), AC)
 
-  double precision,intent(out)  :: B(nBas,nBas)
+  call dgemm("N", "N", nBas, nOrb, nBas, 1.d0, &
+             M_AOs(1,1), nBas, C(1,1), nBas,   &
+             0.d0, AC(1,1), nBas)
 
-  allocate(AC(nBas,nBas))
+  call dgemm("T", "N", nOrb, nOrb, nBas, 1.d0, &
+             C(1,1), nBas, AC(1,1), nBas,      &
+             0.d0, M_MOs(1,1), nOrb)
 
-  AC = matmul(A,C)
-  B  = matmul(transpose(C),AC)
+  deallocate(AC)
 
 end subroutine 

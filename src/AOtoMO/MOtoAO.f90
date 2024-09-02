@@ -1,31 +1,39 @@
-subroutine MOtoAO(nBas,S,C,B,A)
+subroutine MOtoAO(nBas, nOrb, S, C, M_MOs, M_AOs)
 
-! Perform MO to AO transformation of a matrix A for a given metric S
-! and coefficients c
+  ! Perform MO to AO transformation of a matrix M_AOs for a given metric S
+  ! and coefficients c
+  ! 
+  ! M_AOs = S C M_MOs (S C).T
 
   implicit none
 
-! Input variables
+  integer,          intent(in)  :: nBas, nOrb
+  double precision, intent(in)  :: S(nBas,nBas)
+  double precision, intent(in)  :: C(nBas,nOrb)
+  double precision, intent(in)  :: M_MOs(nOrb,nOrb)
+  double precision, intent(out) :: M_AOs(nBas,nBas)
 
-  integer,intent(in)            :: nBas
-  double precision,intent(in)   :: S(nBas,nBas)
-  double precision,intent(in)   :: C(nBas,nBas)
-  double precision,intent(in)   :: B(nBas,nBas)
+  double precision, allocatable :: SC(:,:),BSC(:,:)
 
-! Local variables
 
-  double precision,allocatable  :: SC(:,:),BSC(:,:)
+  allocate(SC(nBas,nOrb), BSC(nOrb,nBas))
 
-! Output variables
+  !SC  = matmul(S, C)
+  !BSC = matmul(M_MOs, transpose(SC))
+  !M_AOs = matmul(SC, BSC)
 
-  double precision,intent(out)  :: A(nBas,nBas)
+  call dgemm("N", "N", nBas, nOrb, nBas, 1.d0, &
+             S(1,1), nBas, C(1,1), nBas,       &
+             0.d0, SC(1,1), nBas)
 
-! Memory allocation
+  call dgemm("N", "T", nOrb, nBas, nOrb, 1.d0, &
+             M_MOs(1,1), nOrb, SC(1,1), nBas,  &
+             0.d0, BSC(1,1), nOrb)
 
-  allocate(SC(nBas,nBas),BSC(nBas,nBas))
+  call dgemm("N", "N", nBas, nBas, nOrb, 1.d0, &
+             SC(1,1), nBas, BSC(1,1), nOrb,    &
+             0.d0, M_AOs(1,1), nBas)
 
-  SC  = matmul(S,C)
-  BSC = matmul(B,transpose(SC))
-  A   = matmul(SC,BSC)
+  deallocate(SC, BSC)
 
 end subroutine 

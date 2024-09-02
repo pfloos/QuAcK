@@ -65,7 +65,7 @@ subroutine diagonal_matrix(N,D,A)
 end subroutine
 
 !------------------------------------------------------------------------
-subroutine matrix_exponential(N,A,ExpA)
+subroutine matrix_exponential(N, A, ExpA)
 
 ! Compute Exp(A)
 
@@ -81,7 +81,7 @@ subroutine matrix_exponential(N,A,ExpA)
 
 ! Memory allocation
 
-  allocate(W(N,N),tau(N),t(N,N))
+  allocate(W(N,N), tau(N), t(N,N))
 
 ! Initialize
 
@@ -89,8 +89,8 @@ subroutine matrix_exponential(N,A,ExpA)
 
 ! Diagonalize
 
-  W(:,:) = - matmul(A,A)
-  call diagonalize_matrix(N,W,tau)
+  W(:,:) = - matmul(A, A)
+  call diagonalize_matrix(N, W, tau)
 
 ! do i=1,N
 !   tau(i) = max(abs(tau(i)),1d-14)
@@ -99,16 +99,18 @@ subroutine matrix_exponential(N,A,ExpA)
 
 ! Construct cos part
 
-  call diagonal_matrix(N,cos(tau),t)
-  t(:,:) = matmul(t,transpose(W))
-  ExpA(:,:) = ExpA(:,:) + matmul(W,t) 
+  call diagonal_matrix(N, cos(tau), t)
+  t(:,:) = matmul(t, transpose(W))
+  ExpA(:,:) = ExpA(:,:) + matmul(W, t) 
 
 ! Construct sin part
 
-  call diagonal_matrix(N,sin(tau)/tau,t)
-  t(:,:) = matmul(t,transpose(W))
-  t(:,:) = matmul(t,A)
-  ExpA(:,:) = ExpA(:,:) + matmul(W,t)
+  call diagonal_matrix(N, sin(tau)/tau, t)
+  t(:,:) = matmul(t, transpose(W))
+  t(:,:) = matmul(t, A)
+  ExpA(:,:) = ExpA(:,:) + matmul(W, t)
+
+  deallocate(W, tau, t)
 
 end subroutine
 
@@ -375,15 +377,29 @@ subroutine ADAt(N,A,D,B)
 
   double precision,intent(out)  :: B(N,N)
 
-  B = 0d0
+  double precision, allocatable :: tmp(:,:)
 
-  do i=1,N
-    do j=1,N
-      do k=1,N
-        B(i,k) = B(i,k) + A(i,j)*D(j)*A(k,j)
-      end do
-    end do
-  end do
+  allocate(tmp(N,N))
+  !$OMP PARALLEL DEFAULT(NONE) PRIVATE(i, j) SHARED(N, A, D, tmp)
+  !$OMP DO
+  do i = 1, N
+    do j = 1, N
+      tmp(i,j) = D(i) * A(j,i)
+    enddo
+  enddo
+  !$OMP END DO
+  !$OMP END PARALLEL
+  call dgemm("N", "N", N, N, N, 1.d0, A(1,1), N, tmp(1,1), N, 0.d0, B(1,1), N)
+  deallocate(tmp)
+
+!  B = 0d0
+!  do i=1,N
+!    do j=1,N
+!      do k=1,N
+!        B(i,k) = B(i,k) + A(i,j)*D(j)*A(k,j)
+!      end do
+!    end do
+!  end do
 
 end subroutine 
 !------------------------------------------------------------------------

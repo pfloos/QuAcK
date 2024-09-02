@@ -1,5 +1,5 @@
 subroutine RRPA(dotest,dophRPA,dophRPAx,docrRPA,doppRPA,TDA,doACFDT,exchange_kernel,singlet,triplet, &  
-                nBas,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,dipole_int,eHF,cHF,S)
+                nBas,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,dipole_int,eHF)
 
 ! Random-phase approximation module
 
@@ -29,8 +29,6 @@ subroutine RRPA(dotest,dophRPA,dophRPAx,docrRPA,doppRPA,TDA,doACFDT,exchange_ker
   double precision,intent(in)   :: ENuc
   double precision,intent(in)   :: ERHF
   double precision,intent(in)   :: eHF(nBas)
-  double precision,intent(in)   :: cHF(nBas,nBas)
-  double precision,intent(in)   :: S(nBas,nBas)
   double precision,intent(in)   :: ERI(nBas,nBas,nBas,nBas)
   double precision,intent(in)   :: dipole_int(nBas,nBas,ncart)
 
@@ -49,7 +47,7 @@ subroutine RRPA(dotest,dophRPA,dophRPAx,docrRPA,doppRPA,TDA,doACFDT,exchange_ker
     call wall_time(end_RPA)
 
     t_RPA = end_RPA - start_RPA
-    write(*,'(A65,1X,F9.3,A8)') 'Total CPU time for RPA = ',t_RPA,' seconds'
+    write(*,'(A65,1X,F9.3,A8)') 'Total wall time for RPA = ',t_RPA,' seconds'
     write(*,*)
 
   end if
@@ -65,7 +63,7 @@ subroutine RRPA(dotest,dophRPA,dophRPAx,docrRPA,doppRPA,TDA,doACFDT,exchange_ker
     call wall_time(end_RPA)
 
     t_RPA = end_RPA - start_RPA
-    write(*,'(A65,1X,F9.3,A8)') 'Total CPU time for RPAx = ',t_RPA,' seconds'
+    write(*,'(A65,1X,F9.3,A8)') 'Total wall time for RPAx = ',t_RPA,' seconds'
     write(*,*)
 
   end if
@@ -81,7 +79,7 @@ subroutine RRPA(dotest,dophRPA,dophRPAx,docrRPA,doppRPA,TDA,doACFDT,exchange_ker
     call wall_time(end_RPA)
 
     t_RPA = end_RPA - start_RPA
-    write(*,'(A65,1X,F9.3,A8)') 'Total CPU time for pp-RPA = ',t_RPA,' seconds'
+    write(*,'(A65,1X,F9.3,A8)') 'Total wall time for pp-RPA = ',t_RPA,' seconds'
     write(*,*)
 
   end if
@@ -97,7 +95,7 @@ subroutine RRPA(dotest,dophRPA,dophRPAx,docrRPA,doppRPA,TDA,doACFDT,exchange_ker
     call wall_time(end_RPA)
 
     t_RPA = end_RPA - start_RPA
-    write(*,'(A65,1X,F9.3,A8)') 'Total CPU time for pp-RPA = ',t_RPA,' seconds'
+    write(*,'(A65,1X,F9.3,A8)') 'Total wall time for pp-RPA = ',t_RPA,' seconds'
     write(*,*)
 
   end if

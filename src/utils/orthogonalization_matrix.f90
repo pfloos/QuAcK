@@ -1,4 +1,7 @@
-subroutine orthogonalization_matrix(nBas,S,X)
+
+! ---
+
+subroutine orthogonalization_matrix(nBas, S, X)
 
 ! Compute the orthogonalization matrix X
 
@@ -35,14 +38,32 @@ subroutine orthogonalization_matrix(nBas,S,X)
 
   if(ortho_type == 1) then
 
+    !
+    ! S V = V s   where 
+    !
+    !     V.T V = 1 and s > 0 (S is positive def)
+    !
+    ! S = V s V.T
+    !   = V s^0.5 s^0.5 V.T
+    !   = V s^0.5 V.T V s^0.5 V.T
+    !   = S^0.5 S^0.5 
+    !
+    ! where
+    !
+    !     S^0.5 = V s^0.5 V.T
+    !
+    ! X = S^(-0.5)
+    !   = V s^(-0.5) V.T
+    !
+
 !   write(*,*)
 !   write(*,*) ' Lowdin orthogonalization'
 !   write(*,*)
 
     Uvec = S
-    call diagonalize_matrix(nBas,Uvec,Uval)
+    call diagonalize_matrix(nBas, Uvec, Uval)
 
-    do i=1,nBas
+    do i = 1, nBas
 
       if(Uval(i) < thresh) then 
 
@@ -50,11 +71,11 @@ subroutine orthogonalization_matrix(nBas,S,X)
 
       end if
 
-      Uval(i) = 1d0/sqrt(Uval(i))
+      Uval(i) = 1d0 / dsqrt(Uval(i))
 
     end do
     
-    call ADAt(nBas,Uvec,Uval,X)
+    call ADAt(nBas, Uvec(1,1), Uval(1), X(1,1))
 
   elseif(ortho_type == 2) then
 
@@ -63,13 +84,13 @@ subroutine orthogonalization_matrix(nBas,S,X)
 !   write(*,*)
 
     Uvec = S
-    call diagonalize_matrix(nBas,Uvec,Uval)
+    call diagonalize_matrix(nBas, Uvec, Uval)
 
-    do i=1,nBas
+    do i = 1, nBas
 
       if(Uval(i) > thresh) then 
 
-        Uval(i) = 1d0/sqrt(Uval(i))
+        Uval(i) = 1d0 / dsqrt(Uval(i))
 
       else
 
@@ -79,7 +100,7 @@ subroutine orthogonalization_matrix(nBas,S,X)
 
     end do
     
-    call AD(nBas,Uvec,Uval)
+    call AD(nBas, Uvec, Uval)
     X = Uvec
  
   elseif(ortho_type == 3) then
@@ -117,3 +138,6 @@ subroutine orthogonalization_matrix(nBas,S,X)
   end if
 
 end subroutine 
+
+! ---
+

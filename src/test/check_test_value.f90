@@ -9,12 +9,12 @@ subroutine check_test_value(branch)
 ! Local variables
 
   character(len=30)                  :: description
-  double precision                   :: value
+  double precision                   :: val
   double precision                   :: reference
   character(len=15)                  :: answer
 
   logical                            :: failed
-  double precision,parameter         :: cutoff = 1d-10
+  double precision,parameter         :: thresh = 1d-10
 
 ! Output variables
 
@@ -45,19 +45,19 @@ subroutine check_test_value(branch)
   do
 
     read(11,'(A30)',end=11) description
-    read(11,'(F20.15)',end=11) value
+    read(11,'(F20.15)',end=11) val
 
     read(12,*,end=12) 
     read(12,'(F20.15)',end=12) reference
 
-    if(abs(value-reference) < cutoff) then
+    if(dabs(val-reference)/(1d-15+dabs(reference)) < thresh) then
       answer = '.......... :-)'
     else
       answer = '.......... :-( '
       failed = .true.
     end if
     write(*,'(1X,A1,1X,A30,1X,A1,1X,3F15.10,1X,A1,1X,A15,1X,A1)') & 
-      '|',description,'|',value,reference,abs(value-reference),'|',answer,'|'
+      '|',description,'|',val,reference,abs(val-reference),'|',answer,'|'
 
   end do
 

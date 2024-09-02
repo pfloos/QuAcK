@@ -62,7 +62,7 @@ subroutine evRGF2(dotest,dophBSE,doppBSE,TDA,dBSE,dTDA,maxSCF,thresh,max_diis,si
 
 ! Memory allocation
 
-  allocate(SigC(nBas),Z(nBas),eGF(nBas),eOld(nBas),error_diis(nBas,max_diis),e_diis(nBas,max_diis))
+  allocate(SigC(nBas), Z(nBas), eGF(nBas), eOld(nBas), error_diis(nBas,max_diis), e_diis(nBas,max_diis))
 
 ! Initialization
 
@@ -188,5 +188,7 @@ subroutine evRGF2(dotest,dophBSE,doppBSE,TDA,dBSE,dTDA,maxSCF,thresh,max_diis,si
     call dump_test_value('R','evGF2 LUMO energy',eGF(nO+1))
 
   end if
+
+  deallocate(SigC, Z, eGF, eOld, error_diis, e_diis)
 
 end subroutine 

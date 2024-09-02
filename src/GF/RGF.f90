@@ -1,7 +1,10 @@
-subroutine RGF(dotest,doG0F2,doevGF2,doqsGF2,doufG0F02,doG0F3,doevGF3,renorm,maxSCF,thresh,max_diis, &
-               dophBSE,doppBSE,TDA,dBSE,dTDA,singlet,triplet,linearize,eta,regularize,            & 
-               nNuc,ZNuc,rNuc,ENuc,nBas,nC,nO,nV,nR,nS,EHF,S,X,T,V,Hc,ERI_AO,ERI,                 & 
-               dipole_int_AO,dipole_int,PHF,cHF,epsHF)
+
+! ---
+
+subroutine RGF(dotest, doG0F2, doevGF2, doqsGF2, doufG0F02, doG0F3, doevGF3, renorm, maxSCF,         &
+               thresh, max_diis, dophBSE, doppBSE, TDA, dBSE, dTDA, singlet, triplet, linearize,     &
+               eta, regularize, nNuc, ZNuc, rNuc, ENuc, nBas, nOrb, nC, nO, nV, nR, nS, EHF, &
+               S, X, T, V, Hc, ERI_AO, ERI_MO, dipole_int_AO, dipole_int_MO, PHF, cHF, epsHF)
 
 ! Green's function module
 
@@ -39,7 +42,7 @@ subroutine RGF(dotest,doG0F2,doevGF2,doqsGF2,doufG0F02,doG0F3,doevGF3,renorm,max
   double precision,intent(in)   :: rNuc(nNuc,ncart)
   double precision,intent(in)   :: ENuc
 
-  integer,intent(in)            :: nBas
+  integer,intent(in)            :: nBas, nOrb
   integer,intent(in)            :: nC
   integer,intent(in)            :: nO
   integer,intent(in)            :: nV
@@ -47,18 +50,18 @@ subroutine RGF(dotest,doG0F2,doevGF2,doqsGF2,doufG0F02,doG0F3,doevGF3,renorm,max
   integer,intent(in)            :: nS
 
   double precision,intent(in)   :: EHF
-  double precision,intent(in)   :: epsHF(nBas)
-  double precision,intent(in)   :: cHF(nBas,nBas)
+  double precision,intent(in)   :: epsHF(nOrb)
+  double precision,intent(in)   :: cHF(nBas,nOrb)
   double precision,intent(in)   :: PHF(nBas,nBas)
   double precision,intent(in)   :: S(nBas,nBas)
   double precision,intent(in)   :: T(nBas,nBas)
   double precision,intent(in)   :: V(nBas,nBas)
   double precision,intent(in)   :: Hc(nBas,nBas)
-  double precision,intent(in)   :: X(nBas,nBas)
+  double precision,intent(in)   :: X(nBas,nOrb)
   double precision,intent(in)   :: ERI_AO(nBas,nBas,nBas,nBas)
-  double precision,intent(in)   :: ERI(nBas,nBas,nBas,nBas)
+  double precision,intent(in)   :: ERI_MO(nOrb,nOrb,nOrb,nOrb)
   double precision,intent(in)   :: dipole_int_AO(nBas,nBas,ncart)
-  double precision,intent(in)   :: dipole_int(nBas,nBas,ncart)
+  double precision,intent(in)   :: dipole_int_MO(nOrb,nOrb,ncart)
 
 ! Local variables
 
@@ -71,12 +74,13 @@ subroutine RGF(dotest,doG0F2,doevGF2,doqsGF2,doufG0F02,doG0F3,doevGF3,renorm,max
   if(doG0F2) then
 
     call wall_time(start_GF)
-    call RG0F2(dotest,dophBSE,doppBSE,TDA,dBSE,dTDA,singlet,triplet,linearize,eta,regularize, & 
-               nBas,nC,nO,nV,nR,nS,ENuc,EHF,ERI,dipole_int,epsHF)
+    call RG0F2(dotest, dophBSE, doppBSE, TDA, dBSE, dTDA, singlet, triplet, &
+               linearize, eta, regularize, nOrb, nC, nO, nV, nR, nS, &
+               ENuc, EHF, ERI_MO, dipole_int_MO, epsHF)
     call wall_time(end_GF)
 
     t_GF = end_GF - start_GF
-    write(*,'(A65,1X,F9.3,A8)') 'Total CPU time for GF2 = ',t_GF,' seconds'
+    write(*,'(A65,1X,F9.3,A8)') 'Total wall time for GF2 = ',t_GF,' seconds'
     write(*,*)
 
   end if
@@ -89,12 +93,12 @@ subroutine RGF(dotest,doG0F2,doevGF2,doqsGF2,doufG0F02,doG0F3,doevGF3,renorm,max
 
     call wall_time(start_GF)
     call evRGF2(dotest,dophBSE,doppBSE,TDA,dBSE,dTDA,maxSCF,thresh,max_diis, & 
-                singlet,triplet,linearize,eta,regularize,nBas,nC,nO,nV,nR,nS,ENuc,EHF, & 
-                ERI,dipole_int,epsHF)
+                singlet,triplet,linearize,eta,regularize,nOrb,nC,nO,nV,nR,nS,ENuc,EHF, & 
+                ERI_MO,dipole_int_MO,epsHF)
     call wall_time(end_GF)
 
     t_GF = end_GF - start_GF
-    write(*,'(A65,1X,F9.3,A8)') 'Total CPU time for GF2 = ',t_GF,' seconds'
+    write(*,'(A65,1X,F9.3,A8)') 'Total wall time for GF2 = ',t_GF,' seconds'
     write(*,*)
 
   end if
@@ -106,12 +110,14 @@ subroutine RGF(dotest,doG0F2,doevGF2,doqsGF2,doufG0F02,doG0F3,doevGF3,renorm,max
   if(doqsGF2) then 
 
     call wall_time(start_GF)
-    call qsRGF2(dotest,maxSCF,thresh,max_diis,dophBSE,doppBSE,TDA,dBSE,dTDA,singlet,triplet,eta,regularize,nNuc,ZNuc,rNuc,ENuc, & 
-                nBas,nC,nO,nV,nR,nS,EHF,S,X,T,V,Hc,ERI_AO,ERI,dipole_int_AO,dipole_int,PHF,cHF,epsHF)
+    call qsRGF2(dotest, maxSCF, thresh, max_diis, dophBSE, doppBSE, TDA,    &
+                dBSE, dTDA, singlet, triplet, eta, regularize, nNuc, ZNuc,  &
+                rNuc, ENuc, nBas, nOrb, nC, nO, nV, nR, nS, EHF, S, &
+                X, T, V, Hc, ERI_AO, ERI_MO, dipole_int_AO, dipole_int_MO, PHF, cHF, epsHF)
     call wall_time(end_GF)
 
     t_GF = end_GF - start_GF
-    write(*,'(A65,1X,F9.3,A8)') 'Total CPU time for qsGF2 = ',t_GF,' seconds'
+    write(*,'(A65,1X,F9.3,A8)') 'Total wall time for qsGF2 = ',t_GF,' seconds'
     write(*,*)
 
  end if
@@ -123,11 +129,11 @@ subroutine RGF(dotest,doG0F2,doevGF2,doqsGF2,doufG0F02,doG0F3,doevGF3,renorm,max
   if(doufG0F02) then 
 
     call wall_time(start_GF)
-    call ufRG0F02(dotest,nBas,nC,nO,nV,nR,nS,ENuc,EHF,ERI,epsHF)
+    call ufRG0F02(dotest, nOrb, nC, nO, nV, nR, nS, ENuc, EHF, ERI_MO, epsHF)
     call wall_time(end_GF)
 
     t_GF = end_GF - start_GF
-    write(*,'(A65,1X,F9.3,A8)') 'Total CPU time for ufG0F02 = ',t_GF,' seconds'
+    write(*,'(A65,1X,F9.3,A8)') 'Total wall time for ufG0F02 = ',t_GF,' seconds'
     write(*,*)
 
   end if
@@ -139,11 +145,11 @@ subroutine RGF(dotest,doG0F2,doevGF2,doqsGF2,doufG0F02,doG0F3,doevGF3,renorm,max
   if(doG0F3) then
 
     call wall_time(start_GF)
-    call RG0F3(dotest,renorm,nBas,nC,nO,nV,nR,ERI,epsHF)
+    call RG0F3(dotest, renorm, nOrb, nC, nO, nV, nR, ERI_MO, epsHF)
     call wall_time(end_GF)
 
     t_GF = end_GF - start_GF
-    write(*,'(A65,1X,F9.3,A8)') 'Total CPU time for GF3 = ',t_GF,' seconds'
+    write(*,'(A65,1X,F9.3,A8)') 'Total wall time for GF3 = ',t_GF,' seconds'
     write(*,*)
 
   end if
@@ -155,11 +161,11 @@ subroutine RGF(dotest,doG0F2,doevGF2,doqsGF2,doufG0F02,doG0F3,doevGF3,renorm,max
   if(doevGF3) then
 
     call wall_time(start_GF)
-    call evRGF3(dotest,maxSCF,thresh,max_diis,renorm,nBas,nC,nO,nV,nR,ERI,epsHF)
+    call evRGF3(dotest, maxSCF, thresh, max_diis, renorm, nOrb, nC, nO, nV, nR, ERI_MO, epsHF)
     call wall_time(end_GF)
 
     t_GF = end_GF - start_GF
-    write(*,'(A65,1X,F9.3,A8)') 'Total CPU time for GF3 = ',t_GF,' seconds'
+    write(*,'(A65,1X,F9.3,A8)') 'Total wall time for GF3 = ',t_GF,' seconds'
     write(*,*)
 
   end if

@@ -23,6 +23,8 @@ subroutine ppLR_C(ispin,nBas,nC,nO,nV,nR,nVV,lambda,e,ERI,Cpp)
   double precision,external     :: Kronecker_delta
 
   integer                       :: a,b,c,d,ab,cd
+  integer                       :: a0, aa
+  double precision              :: e_ab, tmp_ab, delta_ac, tmp_cd
 
 ! Output variables
 
@@ -37,22 +39,70 @@ subroutine ppLR_C(ispin,nBas,nC,nO,nV,nR,nVV,lambda,e,ERI,Cpp)
 
   if(ispin == 1) then
 
-    ab = 0
-    do a=nO+1,nBas-nR
-     do b=a,nBas-nR
-        ab = ab + 1
+    a0 = nBas - nR - nO
+
+    !$OMP PARALLEL DEFAULT(NONE)                                                   &
+    !$OMP          PRIVATE(a, b, aa, ab, c, d, cd, e_ab, tmp_ab, delta_ac, tmp_cd) &
+    !$OMP          SHARED(nO, nBas, nR, a0, eF, lambda, e, ERI, Cpp)
+    !$OMP DO
+    do a = nO+1, nBas-nR
+      aa = a0 * (a - nO - 1) - (a - nO - 1) * (a - nO) / 2 - nO
+      do b = a, nBas-nR
+        ab = aa + b
+
+        e_ab = e(a) + e(b) - eF
+
+        tmp_ab = lambda
+        if(a .eq. b) then
+          tmp_ab = 0.7071067811865475d0 * lambda
+        endif
+
         cd = 0
-        do c=nO+1,nBas-nR
-         do d=c,nBas-nR
+        do c = nO+1, nBas-nR
+
+          delta_ac = 0.d0
+          if(a .eq. c) then
+            delta_ac = 1.d0
+          endif
+
+         do d = c, nBas-nR
             cd = cd + 1
+
+            tmp_cd = tmp_ab
+            if(c .eq. d) then
+              tmp_cd = 0.7071067811865475d0 * tmp_ab
+            endif
+
+            Cpp(ab,cd) = 0.d0
+            if(b .eq. d) then
+              Cpp(ab,cd) = e_ab * delta_ac
+            endif
  
-            Cpp(ab,cd) = + (e(a) + e(b) - eF)*Kronecker_delta(a,c)*Kronecker_delta(b,d) &
-                         + lambda*(ERI(a,b,c,d) + ERI(a,b,d,c))/sqrt((1d0 + Kronecker_delta(a,b))*(1d0 + Kronecker_delta(c,d)))
- 
-          end do
-        end do
-      end do
-    end do
+            Cpp(ab,cd) = Cpp(ab,cd) + tmp_cd * (ERI(a,b,c,d) + ERI(a,b,d,c))
+          enddo
+        enddo
+      enddo
+    enddo
+    !$OMP END DO
+    !$OMP END PARALLEL
+
+
+!    ab = 0
+!    do a=nO+1,nBas-nR
+!     do b=a,nBas-nR
+!        ab = ab + 1
+!        cd = 0
+!        do c=nO+1,nBas-nR
+!         do d=c,nBas-nR
+!            cd = cd + 1
+! 
+!            Cpp(ab,cd) = + (e(a) + e(b) - eF)*Kronecker_delta(a,c)*Kronecker_delta(b,d) &
+!                         + lambda*(ERI(a,b,c,d) + ERI(a,b,d,c))/sqrt((1d0 + Kronecker_delta(a,b))*(1d0 + Kronecker_delta(c,d)))
+! 
+!          end do
+!        end do
+!      end do
+!    end do
 
   end if
 

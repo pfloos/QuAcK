@@ -124,8 +124,8 @@ subroutine UHF_search(maxSCF,thresh,max_diis,guess_type,mix,level_shift,nNuc,ZNu
   ! Transform dipole-related integrals
 
     do ixyz=1,ncart
-      call AOtoMO(nBas,c(:,:,1),dipole_int_AO(:,:,ixyz),dipole_int_aa(:,:,ixyz))
-      call AOtoMO(nBas,c(:,:,2),dipole_int_AO(:,:,ixyz),dipole_int_bb(:,:,ixyz))
+      call AOtoMO(nBas,nBas,c(:,:,1),dipole_int_AO(:,:,ixyz),dipole_int_aa(:,:,ixyz))
+      call AOtoMO(nBas,nBas,c(:,:,2),dipole_int_AO(:,:,ixyz),dipole_int_bb(:,:,ixyz))
     end do
 
     ! 4-index transform for (aa|aa) block

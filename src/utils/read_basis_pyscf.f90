@@ -21,13 +21,13 @@ subroutine read_basis_pyscf(nBas,nO,nV)
 !------------------------------------------------------------------------
 
   open(unit=3,file='int/nBas.dat')
-  read(3,*) nBas
+    read(3, *) nBas
   close(unit=3)
 
-  write(*,'(A28)') '------------------'
-  write(*,'(A28,1X,I16)') 'Number of basis functions',nBas
-  write(*,'(A28)') '------------------'
-  write(*,*)
+!  write(*,'(A38)') '--------------------------------------'
+!  write(*,'(A38,1X,I16)') 'Number of basis functions (AOs)', nBas
+!  write(*,'(A38)') '--------------------------------------'
+!  write(*,*)
 
 ! Number of virtual orbitals
 

@@ -31,6 +31,8 @@ subroutine diagonalize_general_matrix(N,A,WR,VR)
 
   call dgeev('V','V',N,A,N,WR,WI,VL,N,VR,N,work,lwork,info)
 
+  deallocate(work, WI, VL)
+
   if(info /= 0) then 
     print*,'Problem in diagonalize_general_matrix (dgeev)!!'
   end if
@@ -67,6 +69,8 @@ subroutine diagonalize_matrix(N,A,e)
   allocate(work(lwork))
 
   call dsyev('V','U',N,A,N,e,work,lwork,info)
+
+  deallocate(work)
  
   if(info /= 0) then 
     print*,'Problem in diagonalize_matrix (dsyev)!!'
