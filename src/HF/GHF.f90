@@ -1,5 +1,5 @@
 subroutine GHF(dotest,maxSCF,thresh,max_diis,guess_type,mix,level_shift,nNuc,ZNuc,rNuc,ENuc, & 
-               nBas,nBas2,nO,Ov,T,V,Hc,ERI,dipole_int,Or,EGHF,eHF,c,P)
+               nBas,nBas2,nO,Ov,T,V,Hc,ERI,dipole_int,Or,EGHF,eHF,c,P,F)
 
 ! Perform unrestricted Hartree-Fock calculation
 
@@ -51,7 +51,6 @@ subroutine GHF(dotest,maxSCF,thresh,max_diis,guess_type,mix,level_shift,nNuc,ZNu
   double precision,allocatable  :: Kaa(:,:),Kab(:,:),Kba(:,:),Kbb(:,:)
   double precision,allocatable  :: Faa(:,:),Fab(:,:),Fba(:,:),Fbb(:,:)
   double precision,allocatable  :: Paa(:,:),Pab(:,:),Pba(:,:),Pbb(:,:)
-  double precision,allocatable  :: F(:,:)
   double precision,allocatable  :: Fp(:,:)
   double precision,allocatable  :: Cp(:,:)
   double precision,allocatable  :: H(:,:)
@@ -70,6 +69,7 @@ subroutine GHF(dotest,maxSCF,thresh,max_diis,guess_type,mix,level_shift,nNuc,ZNu
   double precision,intent(out)  :: eHF(nBas2)
   double precision,intent(inout):: C(nBas2,nBas2)
   double precision,intent(out)  :: P(nBas2,nBas2)
+  double precision,intent(out)  :: F(nBas2,nBas2)
 
 ! Hello world
 
@@ -90,7 +90,7 @@ subroutine GHF(dotest,maxSCF,thresh,max_diis,guess_type,mix,level_shift,nNuc,ZNu
            Kaa(nBas,nBas),Kab(nBas,nBas),Kba(nBas,nBas),Kbb(nBas,nBas),   &
            Faa(nBas,nBas),Fab(nBas,nBas),Fba(nBas,nBas),Fbb(nBas,nBas),   &
            Paa(nBas,nBas),Pab(nBas,nBas),Pba(nBas,nBas),Pbb(nBas,nBas),   &
-           F(nBas2,nBas2),Fp(nBas2,nBas2),Cp(nBas2,nBas2),H(nBas2,nBas2), & 
+           Fp(nBas2,nBas2),Cp(nBas2,nBas2),H(nBas2,nBas2),                & 
            S(nBas2,nBas2),X(nBas2,nBas2),err(nBas2,nBas2),                &
            err_diis(nBas2Sq,max_diis),F_diis(nBas2Sq,max_diis))
 

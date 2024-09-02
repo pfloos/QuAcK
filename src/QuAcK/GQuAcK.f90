@@ -78,7 +78,7 @@ subroutine GQuAcK(dotest,doGHF,dostab,dosearch,doMP2,doMP3,doCCD,dopCCD,doDCD,do
   double precision              :: start_GF     ,end_GF       ,t_GF
   double precision              :: start_GW     ,end_GW       ,t_GW
 
-  double precision,allocatable  :: cHF(:,:),eHF(:),PHF(:,:)
+  double precision,allocatable  :: cHF(:,:),eHF(:),PHF(:,:),FHF(:,:)
   double precision              :: EGHF
   double precision,allocatable  :: dipole_int_MO(:,:,:)
   double precision,allocatable  :: ERI_MO(:,:,:,:)
@@ -101,7 +101,7 @@ subroutine GQuAcK(dotest,doGHF,dostab,dosearch,doMP2,doMP3,doCCD,dopCCD,doDCD,do
 
   nBas2 = 2*nBas
 
-  allocate(cHF(nBas2,nBas2),eHF(nBas2),PHF(nBas2,nBas2), &
+  allocate(cHF(nBas2,nBas2),eHF(nBas2),PHF(nBas2,nBas2),FHF(nBas2,nBas2), &
            dipole_int_MO(nBas2,nBas2,ncart),ERI_MO(nBas2,nBas2,nBas2,nBas2))
 
 !---------------------!
@@ -112,7 +112,7 @@ subroutine GQuAcK(dotest,doGHF,dostab,dosearch,doMP2,doMP3,doCCD,dopCCD,doDCD,do
 
     call wall_time(start_HF)
     call GHF(dotest,maxSCF_HF,thresh_HF,max_diis_HF,guess_type,mix,level_shift,nNuc,ZNuc,rNuc,ENuc, &
-             nBas,nBas2,nO,S,T,V,Hc,ERI_AO,dipole_int_AO,X,EGHF,eHF,cHF,PHF)
+             nBas,nBas2,nO,S,T,V,Hc,ERI_AO,dipole_int_AO,X,EGHF,eHF,cHF,PHF,FHF)
     call wall_time(end_HF)
 
     t_HF = end_HF - start_HF
@@ -187,7 +187,7 @@ subroutine GQuAcK(dotest,doGHF,dostab,dosearch,doMP2,doMP3,doCCD,dopCCD,doDCD,do
     call wall_time(start_stab)  
     call GHF_search(maxSCF_HF,thresh_HF,max_diis_HF,guess_type,mix,level_shift,nNuc,ZNuc,rNuc,ENuc, &
                     nBas,nBas2,nC,nO,nV,nR,S,T,V,Hc,ERI_AO,ERI_MO,dipole_int_AO,dipole_int_MO,      & 
-                    X,EGHF,eHF,cHF,PHF)
+                    X,EGHF,eHF,cHF,PHF,FHF)
     call wall_time(end_stab)    
 
     t_stab = end_stab - start_stab

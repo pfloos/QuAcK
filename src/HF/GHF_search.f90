@@ -1,6 +1,6 @@
 subroutine GHF_search(maxSCF,thresh,max_diis,guess_type,mix,level_shift,nNuc,ZNuc,rNuc,ENuc,     &
                       nBas,nBas2,nC,nO,nV,nR,S,T,V,Hc,ERI_AO,ERI_MO,dipole_int_AO,dipole_int_MO, &
-                      X,EGHF,e,c,P)
+                      X,EGHF,e,c,P,F)
 
 ! Search for GHF solutions
 
@@ -66,6 +66,7 @@ subroutine GHF_search(maxSCF,thresh,max_diis,guess_type,mix,level_shift,nNuc,ZNu
   double precision,intent(out)  :: e(nBas2)
   double precision,intent(inout):: c(nBas2,nBas2)
   double precision,intent(out)  :: P(nBas2,nBas2)
+  double precision,intent(out)  :: F(nBas2,nBas2)
 
 ! Memory allocation
 
@@ -99,7 +100,7 @@ subroutine GHF_search(maxSCF,thresh,max_diis,guess_type,mix,level_shift,nNuc,ZNu
 
     call wall_time(start_HF)
     call GHF(.false.,maxSCF,thresh,max_diis,guess,mix,level_shift,nNuc,ZNuc,rNuc,ENuc, &
-             nBas,nBas2,nO,S,T,V,Hc,ERI_AO,dipole_int_AO,X,EGHF,e,c,P)
+             nBas,nBas2,nO,S,T,V,Hc,ERI_AO,dipole_int_AO,X,EGHF,e,c,P,F)
     call wall_time(end_HF)
 
     t_HF = end_HF - start_HF
