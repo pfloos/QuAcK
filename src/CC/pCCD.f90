@@ -1,8 +1,5 @@
-
-! ---
-
-subroutine pCCD(dotest, maxIt, thresh, max_diis, nBas, nOrb, &
-                nC, nO, nV, nR, Hc, ERI_AO, ENuc, ERHF, eHF, cHF)
+subroutine pCCD(dotest,maxIt,thresh,max_diis,nBas,nOrb,nC,nO,nV,nR, & 
+                Hc,ERI_AO,ENuc,ERHF,eHF,cHF,PHF,FHF)
 
 ! pair CCD module
 
@@ -16,15 +13,23 @@ subroutine pCCD(dotest, maxIt, thresh, max_diis, nBas, nOrb, &
   integer,intent(in)            :: max_diis
   double precision,intent(in)   :: thresh
 
-  integer,intent(in)            :: nBas, nOrb, nC, nO, nV, nR
+  integer,intent(in)            :: nBas
+  integer,intent(in)            :: nOrb
+  integer,intent(in)            :: nC
+  integer,intent(in)            :: nO
+  integer,intent(in)            :: nV
+  integer,intent(in)            :: nR
   double precision,intent(in)   :: ENuc,ERHF
   double precision,intent(in)   :: eHF(nOrb)
   double precision,intent(in)   :: cHF(nBas,nOrb)
+  double precision,intent(in)   :: PHF(nBas,nBas)
+  double precision,intent(in)   :: FHF(nBas,nBas)
   double precision,intent(in)   :: Hc(nBas,nBas)
   double precision,intent(in)   :: ERI_AO(nBas,nBas,nBas,nBas)
 
 ! Local variables
 
+  integer                       :: mu,nu
   integer                       :: p,q,r,s,t,u,w
   integer                       :: pq,rs
   integer                       :: i,j,a,b
@@ -35,6 +40,7 @@ subroutine pCCD(dotest, maxIt, thresh, max_diis, nBas, nOrb, &
   double precision              :: CvgOrb
   double precision              :: ECC
   double precision              :: EcCC
+  double precision              :: dECC
 
   double precision,allocatable  :: eO(:)
   double precision,allocatable  :: eV(:)
@@ -93,18 +99,18 @@ subroutine pCCD(dotest, maxIt, thresh, max_diis, nBas, nOrb, &
 
   O = nO - nC
   V = nV - nR
-  N = O + V ! nOrb - nC - nR
+  N = O + V
 
   !------------------------------------!
   ! Star Loop for orbital optimization !
   !------------------------------------!
 
   allocate(ERI_MO(N,N,N,N))
-  allocate(c(nBas,N), h(N,N))
-  allocate(eO(O), eV(V), delta_OV(O,V))
-  allocate(OOOO(O,O), OOVV(O,V), OVOV(O,V), OVVO(O,V), VVVV(V,V))
+  allocate(c(nBas,N),h(N,N))
+  allocate(eO(O),eV(V),delta_OV(O,V))
+  allocate(OOOO(O,O),OOVV(O,V),OVOV(O,V),OVVO(O,V),VVVV(V,V))
 
-  do i = 1, N
+  do i=1,N
     c(:,i) = cHF(:,nC+i)
   enddo
 
@@ -116,20 +122,34 @@ subroutine pCCD(dotest, maxIt, thresh, max_diis, nBas, nOrb, &
   write(*,*)'| Orbital Optimization for pCCD                     |'
   write(*,*)'----------------------------------------------------'
 
-  do while(CvgOrb > thresh .and. nItOrb < 1)
+  do while(CvgOrb > thresh .and. nItOrb < maxIt)
 
     nItOrb = nItOrb + 1
 
     ! Transform integrals
 
-    h = matmul(transpose(c), matmul(Hc, c))
+    h = matmul(transpose(c),matmul(Hc,c))
 
-    call AOtoMO_ERI_RHF(nBas, N, c(1,1), ERI_AO(1,1,1,1), ERI_MO(1,1,1,1))
+    call AOtoMO_ERI_RHF(nBas,N,c(1,1),ERI_AO(1,1,1,1),ERI_MO(1,1,1,1))
 
     ! Form energy denominator
 
-    eO(:) = eHF(nC+1:nO)
-    eV(:) = eHF(nO+1:nOrb-nR)
+    eO(:) = 0d0
+    eV(:) = 0d0
+
+    do mu=1,nBas
+      do nu=1,nBas
+
+        do i=1,O
+          eO(i) = eO(i) + c(mu,i)*FHF(mu,nu)*c(nu,i)
+        end do
+
+        do a=1,V
+          eV(a) = eV(a) + c(mu,O+a)*FHF(mu,nu)*c(nu,O+a)
+        end do
+
+      end do
+    end do
 
     do i=1,O
       do a=1,V
@@ -170,6 +190,7 @@ subroutine pCCD(dotest, maxIt, thresh, max_diis, nBas, nOrb, &
     nItAmp = 0
     ECC    = ERHF
     EcCC   = 0d0
+    dECC   = ECC
  
     n_diis        = 0
     t2(:,:)       = 0d0
@@ -573,9 +594,13 @@ subroutine pCCD(dotest, maxIt, thresh, max_diis, nBas, nOrb, &
    ! Check convergence of orbital optimization
  
     CvgOrb = maxval(abs(grad))
-    write(*,*) ' Iteration',nItOrb,'for pCCD orbital optimization'
-    write(*,*) ' Convergence of orbital gradient = ',CvgOrb
+    write(*,'(A10,I4,A30)') ' Iteration',nItOrb,'for pCCD orbital optimization'
+    write(*,*) '----------------------------------------------------------'
+    write(*,'(A40,F16.10,A3)') ' Convergence of orbital gradient = ',CvgOrb,' au'
+    write(*,'(A40,F16.10,A3)') ' Energy difference = ',ECC-dECC,' au'
     write(*,*)
+
+    dECC = ECC
   
     !-------------------------!
     ! Compute orbital Hessian !
@@ -703,18 +728,18 @@ subroutine pCCD(dotest, maxIt, thresh, max_diis, nBas, nOrb, &
     deallocate(Kap)
  
     write(*,*) 'e^kappa'
-    call matout(N, N, ExpKap)
+    call matout(N,N,ExpKap)
     write(*,*)
  
     write(*,*) 'Old orbitals'
-    call matout(nBas, N, c)
+    call matout(nBas,N,c)
     write(*,*)
  
-    c = matmul(c, ExpKap)
+    c = matmul(c,ExpKap)
     deallocate(ExpKap)
  
     write(*,*) 'Rotated orbitals'
-    call matout(nBas, N, c)
+    call matout(nBas,N,c)
     write(*,*)
 
   end do

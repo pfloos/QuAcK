@@ -1,8 +1,6 @@
-
-! ---
-
-subroutine RCC(dotest, doCCD, dopCCD, doDCD, doCCSD, doCCSDT, dodrCCD, dorCCD, docrCCD, dolCCD, & 
-               maxSCF, thresh, max_diis, nBas, nOrb, nC, nO, nV, nR, Hc, ERI_AO, ERI_MO, ENuc, ERHF, eHF, cHF)
+subroutine RCC(dotest,doCCD,dopCCD,doDCD,doCCSD,doCCSDT,dodrCCD,dorCCD,docrCCD,dolCCD, & 
+               maxSCF,thresh,max_diis,nBas,nOrb,nC,nO,nV,nR,Hc,ERI_AO,ERI_MO,ENuc,     & 
+               ERHF,eHF,cHF,PHF,FHF)
 
 ! Coupled-cluster module
 
@@ -27,7 +25,8 @@ subroutine RCC(dotest, doCCD, dopCCD, doDCD, doCCSD, doCCSDT, dodrCCD, dorCCD, d
   integer,intent(in)            :: max_diis
   double precision,intent(in)   :: thresh
 
-  integer,intent(in)            :: nBas, nOrb
+  integer,intent(in)            :: nBas
+  integer,intent(in)            :: nOrb
   integer,intent(in)            :: nC
   integer,intent(in)            :: nO
   integer,intent(in)            :: nV
@@ -36,6 +35,8 @@ subroutine RCC(dotest, doCCD, dopCCD, doDCD, doCCSD, doCCSDT, dodrCCD, dorCCD, d
   double precision,intent(in)   :: ERHF
   double precision,intent(in)   :: eHF(nOrb)
   double precision,intent(in)   :: cHF(nBas,nOrb)
+  double precision,intent(in)   :: PHF(nBas,nBas)
+  double precision,intent(in)   :: FHF(nBas,nBas)
   double precision,intent(in)   :: Hc(nBas,nBas)
   double precision,intent(in)   :: ERI_AO(nBas,nBas,nBas,nBas)
   double precision,intent(in)   :: ERI_MO(nOrb,nOrb,nOrb,nOrb)
@@ -166,9 +167,8 @@ subroutine RCC(dotest, doCCD, dopCCD, doDCD, doCCSD, doCCSDT, dodrCCD, dorCCD, d
   if(dopCCD) then
 
     call wall_time(start_CC)
-    call pCCD(dotest, maxSCF, thresh, max_diis, nBas, nOrb, &
-              nC, nO, nV, nR, Hc, ERI_AO, ENuc, ERHF, eHF, cHF)
-
+    call pCCD(dotest,maxSCF,thresh,max_diis,nBas,nOrb,nC,nO,nV,nR, & 
+              Hc,ERI_AO,ENuc,ERHF,eHF,cHF,PHF,FHF)
     call wall_time(end_CC)
 
     t_CC = end_CC - start_CC
