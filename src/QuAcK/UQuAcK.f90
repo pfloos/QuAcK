@@ -90,7 +90,7 @@ subroutine UQuAcK(dotest,doUHF,dostab,dosearch,doMP2,doMP3,doCCD,dopCCD,doDCD,do
   double precision              :: start_GW     ,end_GW       ,t_GW
   double precision              :: start_GT     ,end_GT       ,t_GT
 
-  double precision,allocatable  :: cHF(:,:,:),eHF(:,:),PHF(:,:,:)
+  double precision,allocatable  :: cHF(:,:,:),eHF(:,:),PHF(:,:,:),FHF(:,:,:)
   double precision              :: EUHF
   double precision,allocatable  :: dipole_int_aa(:,:,:),dipole_int_bb(:,:,:)
   double precision,allocatable  :: ERI_aaaa(:,:,:,:),ERI_aabb(:,:,:,:),ERI_bbbb(:,:,:,:)
@@ -107,9 +107,9 @@ subroutine UQuAcK(dotest,doUHF,dostab,dosearch,doMP2,doMP3,doCCD,dopCCD,doDCD,do
 ! Memory allocation !
 !-------------------!
 
-  allocate(cHF(nBas,nBas,nspin),eHF(nBas,nspin),PHF(nBas,nBas,nspin),     &
-           dipole_int_aa(nBas,nBas,ncart),dipole_int_bb(nBas,nBas,ncart), &
-           ERI_aaaa(nBas,nBas,nBas,nBas),ERI_aabb(nBas,nBas,nBas,nBas),   & 
+  allocate(cHF(nBas,nBas,nspin),eHF(nBas,nspin),PHF(nBas,nBas,nspin),FHF(nBas,nBas,nspin), &
+           dipole_int_aa(nBas,nBas,ncart),dipole_int_bb(nBas,nBas,ncart),                  &
+           ERI_aaaa(nBas,nBas,nBas,nBas),ERI_aabb(nBas,nBas,nBas,nBas),                    & 
            ERI_bbbb(nBas,nBas,nBas,nBas))
 
 !---------------------!
@@ -120,7 +120,7 @@ subroutine UQuAcK(dotest,doUHF,dostab,dosearch,doMP2,doMP3,doCCD,dopCCD,doDCD,do
 
     call wall_time(start_HF)
     call UHF(dotest,maxSCF_HF,thresh_HF,max_diis_HF,guess_type,mix,level_shift,nNuc,ZNuc,rNuc,ENuc, &
-             nBas,nO,S,T,V,Hc,ERI_AO,dipole_int_AO,X,EUHF,eHF,cHF,PHF)
+             nBas,nO,S,T,V,Hc,ERI_AO,dipole_int_AO,X,EUHF,eHF,cHF,PHF,FHF)
     call wall_time(end_HF)
 
     t_HF = end_HF - start_HF
@@ -208,7 +208,7 @@ subroutine UQuAcK(dotest,doUHF,dostab,dosearch,doMP2,doMP3,doCCD,dopCCD,doDCD,do
     call wall_time(start_stab)
     call UHF_search(maxSCF_HF,thresh_HF,max_diis_HF,guess_type,mix,level_shift,nNuc,ZNuc,rNuc,ENuc, &
                     nBas,nC,nO,nV,nR,S,T,V,Hc,ERI_AO,ERI_aaaa,ERI_aabb,ERI_bbbb,dipole_int_AO,      &
-                    dipole_int_aa,dipole_int_bb,X,EUHF,eHF,cHF,PHF)
+                    dipole_int_aa,dipole_int_bb,X,EUHF,eHF,cHF,PHF,FHF)
 
     call wall_time(end_stab)
 

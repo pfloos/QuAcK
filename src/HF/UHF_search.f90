@@ -1,6 +1,6 @@
 subroutine UHF_search(maxSCF,thresh,max_diis,guess_type,mix,level_shift,nNuc,ZNuc,rNuc,ENuc, &
                       nBas,nC,nO,nV,nR,S,T,V,Hc,ERI_AO,ERI_aaaa,ERI_aabb,ERI_bbbb,           &
-                      dipole_int_AO,dipole_int_aa,dipole_int_bb,X,EUHF,e,c,P)
+                      dipole_int_AO,dipole_int_aa,dipole_int_bb,X,EUHF,e,c,P,F)
 
 ! Search for UHF solutions
 
@@ -68,6 +68,7 @@ subroutine UHF_search(maxSCF,thresh,max_diis,guess_type,mix,level_shift,nNuc,ZNu
   double precision,intent(out)  :: e(nBas,nspin)
   double precision,intent(inout):: c(nBas,nBas,nspin)
   double precision,intent(out)  :: P(nBas,nBas,nspin)
+  double precision,intent(out)  :: F(nBas,nBas,nspin)
 
 ! Memory allocation
 
@@ -105,7 +106,7 @@ subroutine UHF_search(maxSCF,thresh,max_diis,guess_type,mix,level_shift,nNuc,ZNu
 
     call wall_time(start_HF)
     call UHF(.false.,maxSCF,thresh,max_diis,guess,mix,level_shift,nNuc,ZNuc,rNuc,ENuc, &
-             nBas,nO,S,T,V,Hc,ERI_AO,dipole_int_AO,X,EUHF,e,c,P)
+             nBas,nO,S,T,V,Hc,ERI_AO,dipole_int_AO,X,EUHF,e,c,P,F)
     call wall_time(end_HF)
 
     t_HF = end_HF - start_HF

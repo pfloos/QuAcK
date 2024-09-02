@@ -1,9 +1,6 @@
-
-! ---
-
-subroutine RHF_search(maxSCF, thresh, max_diis, guess_type, level_shift, nNuc, ZNuc, rNuc, ENuc,                     &
-                      nBas, nOrb, nC, nO, nV, nR, S, T, V, Hc, ERI_AO, ERI_MO, dipole_int_AO, dipole_int_MO, & 
-                      X, ERHF, e, c, P)
+subroutine RHF_search(maxSCF,thresh,max_diis,guess_type,level_shift,nNuc,ZNuc,rNuc,ENuc,        &
+                      nBas,nOrb,nC,nO,nV,nR,S,T,V,Hc,ERI_AO,ERI_MO,dipole_int_AO,dipole_int_MO, & 
+                      X,ERHF,e,c,P,F)
 
 ! Search for RHF solutions
 
@@ -65,6 +62,7 @@ subroutine RHF_search(maxSCF, thresh, max_diis, guess_type, level_shift, nNuc, Z
   double precision,intent(out)  :: e(nOrb)
   double precision,intent(inout):: c(nBas,nOrb)
   double precision,intent(out)  :: P(nBas,nBas)
+  double precision,intent(out)  :: F(nBas,nBas)
 
 ! Memory allocation
 
@@ -79,8 +77,8 @@ subroutine RHF_search(maxSCF, thresh, max_diis, guess_type, level_shift, nNuc, Z
 !-------------------!
 
   nS = (nO - nC)*(nV - nR)
-  allocate(Aph(nS,nS), Bph(nS,nS), AB(nS,nS), Om(nS))
-  allocate(R(nOrb,nOrb), ExpR(nOrb,nOrb))
+  allocate(Aph(nS,nS),Bph(nS,nS),AB(nS,nS),Om(nS))
+  allocate(R(nOrb,nOrb),ExpR(nOrb,nOrb))
 
 !------------------!
 ! Search algorithm !
@@ -96,8 +94,8 @@ subroutine RHF_search(maxSCF, thresh, max_diis, guess_type, level_shift, nNuc, Z
 !---------------------!
 
     call wall_time(start_HF)
-    call RHF(.false., maxSCF, thresh, max_diis, guess, level_shift, nNuc, ZNuc, rNuc, ENuc, &
-             nBas, nOrb, nO, S, T, V, Hc, ERI_AO, dipole_int_AO, X, ERHF, e, c, P)
+    call RHF(.false.,maxSCF,thresh,max_diis,guess,level_shift,nNuc,ZNuc,rNuc,ENuc,&
+             nBas,nOrb,nO,S,T,V,Hc,ERI_AO,dipole_int_AO,X,ERHF,e,c,P,F)
     call wall_time(end_HF)
 
     t_HF = end_HF - start_HF
@@ -112,10 +110,10 @@ subroutine RHF_search(maxSCF, thresh, max_diis, guess_type, level_shift, nNuc, Z
     write(*,*)
     write(*,*) 'AO to MO transformation... Please be patient'
     write(*,*)
-    do ixyz = 1, ncart
-      call AOtoMO(nBas, nOrb, c, dipole_int_AO(1,1,ixyz), dipole_int_MO(1,1,ixyz))
+    do ixyz = 1,ncart
+      call AOtoMO(nBas,nOrb,c,dipole_int_AO(1,1,ixyz),dipole_int_MO(1,1,ixyz))
     end do
-    call AOtoMO_ERI_RHF(nBas, nOrb, c, ERI_AO, ERI_MO)
+    call AOtoMO_ERI_RHF(nBas,nOrb,c,ERI_AO,ERI_MO)
     call wall_time(end_AOtoMO)
  
     t_AOtoMO = end_AOtoMO - start_AOtoMO
@@ -133,7 +131,7 @@ subroutine RHF_search(maxSCF, thresh, max_diis, guess_type, level_shift, nNuc, Z
  
     AB(:,:) = Aph(:,:) + Bph(:,:)
  
-    call diagonalize_matrix(nS, AB, Om)
+    call diagonalize_matrix(nS,AB,Om)
     Om(:) = 2d0*Om(:)
 
     write(*,*)'-------------------------------------------------------------'
@@ -160,7 +158,7 @@ subroutine RHF_search(maxSCF, thresh, max_diis, guess_type, level_shift, nNuc, Z
       if(eig < 0 .or. eig > nS)  then
         write(*,'(1X,A40,1X,A10)')     'Invalid option...','Stop...'
         write(*,*)
-        deallocate(Aph, Bph, AB, Om, R, ExpR)
+        deallocate(Aph,Bph,AB,Om,R,ExpR)
         stop
       end if
 
@@ -176,8 +174,8 @@ subroutine RHF_search(maxSCF, thresh, max_diis, guess_type, level_shift, nNuc, Z
         end do
       end do
 
-      call matrix_exponential(nOrb, R, ExpR)
-      c = matmul(c, ExpR)
+      call matrix_exponential(nOrb,R,ExpR)
+      c = matmul(c,ExpR)
 
     else
  
@@ -196,6 +194,6 @@ subroutine RHF_search(maxSCF, thresh, max_diis, guess_type, level_shift, nNuc, Z
 !---------------!
   end do
 
-  deallocate(Aph, Bph, AB, Om, R, ExpR)
+  deallocate(Aph,Bph,AB,Om,R,ExpR)
 
 end subroutine

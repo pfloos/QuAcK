@@ -1,5 +1,5 @@
 subroutine UHF(dotest,maxSCF,thresh,max_diis,guess_type,mix,level_shift,nNuc,ZNuc,rNuc,ENuc, & 
-               nBas,nO,S,T,V,Hc,ERI,dipole_int,X,EUHF,eHF,c,P)
+               nBas,nO,S,T,V,Hc,ERI,dipole_int,X,EUHF,eHF,c,P,F)
 
 ! Perform unrestricted Hartree-Fock calculation
 
@@ -47,7 +47,6 @@ subroutine UHF(dotest,maxSCF,thresh,max_diis,guess_type,mix,level_shift,nNuc,ZNu
 
   double precision,allocatable  :: cp(:,:,:)
   double precision,allocatable  :: J(:,:,:)
-  double precision,allocatable  :: F(:,:,:)
   double precision,allocatable  :: Fp(:,:,:)
   double precision,allocatable  :: K(:,:,:)
   double precision,allocatable  :: err(:,:,:)
@@ -63,6 +62,7 @@ subroutine UHF(dotest,maxSCF,thresh,max_diis,guess_type,mix,level_shift,nNuc,ZNu
   double precision,intent(out)  :: eHF(nBas,nspin)
   double precision,intent(inout):: c(nBas,nBas,nspin)
   double precision,intent(out)  :: P(nBas,nBas,nspin)
+  double precision,intent(out)  :: F(nBas,nBas,nspin)
 
 ! Hello world
 
@@ -78,8 +78,8 @@ subroutine UHF(dotest,maxSCF,thresh,max_diis,guess_type,mix,level_shift,nNuc,ZNu
 
 ! Memory allocation
 
-  allocate(J(nBas,nBas,nspin),F(nBas,nBas,nspin),Fp(nBas,nBas,nspin),   & 
-           K(nBas,nBas,nspin),err(nBas,nBas,nspin),cp(nBas,nBas,nspin), &
+  allocate(J(nBas,nBas,nspin),K(nBas,nBas,nspin),Fp(nBas,nBas,nspin), &
+           err(nBas,nBas,nspin),cp(nBas,nBas,nspin),                  &
            err_diis(nBasSq,max_diis,nspin),F_diis(nBasSq,max_diis,nspin))
 
 ! Guess coefficients and demsity matrices
