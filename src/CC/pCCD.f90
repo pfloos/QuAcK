@@ -182,8 +182,6 @@ subroutine pCCD(dotest,maxIt,thresh,max_diis,nBas,nOrb,nC,nO,nV,nR, &
 
     CvgAmp = 1d0
     nItAmp = 0
-    ECC    = ERHF
-    EcCC   = 0d0
  
     n_diis        = 0
     t2(:,:)       = 0d0
@@ -216,7 +214,7 @@ subroutine pCCD(dotest,maxIt,thresh,max_diis,nBas,nOrb,nC,nO,nV,nR, &
  
       t2(:,:) = t2(:,:) - 0.5d0*r2(:,:)/delta_OV(:,:)
  
-      ! Compute correlation energy
+      ! Compute correlation energy from t amplitudes
  
       EcCC = 0d0
       do i=1,O
@@ -299,6 +297,15 @@ subroutine pCCD(dotest,maxIt,thresh,max_diis,nBas,nOrb,nC,nO,nV,nR, &
      ! Update amplitudes
  
      z2(:,:) = z2(:,:) - 0.5d0*r2(:,:)/delta_OV(:,:)
+
+      ! Compute correlation energy
+
+      EcCC = 0d0
+      do i=1,O
+        do a=1,V
+          EcCC = EcCC + OOVV(i,a)*z2(i,a)
+        end do
+      end do
  
      ! DIIS extrapolation
  
