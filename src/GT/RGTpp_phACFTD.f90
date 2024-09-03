@@ -1,4 +1,4 @@
-subroutine GTpp_phACFDT(exchange_kernel,doXBS,dRPA,TDA_T,TDA,BSE,singlet,triplet,eta,nBas,nC,nO,nV,nR,nS, &
+subroutine RGTpp_phACFDT(exchange_kernel,doXBS,dRPA,TDA_T,TDA,BSE,singlet,triplet,eta,nBas,nC,nO,nV,nR,nS, &
                         nOOs,nVVs,nOOt,nVVt,Om1s,X1s,Y1s,Om2s,X2s,Y2s,rho1s,rho2s,Om1t,X1t,Y1t,           & 
                         Om2t,X2t,Y2t,rho1t,rho2t,ERI,eT,eGT,EcAC)
 
@@ -132,10 +132,10 @@ subroutine GTpp_phACFDT(exchange_kernel,doXBS,dRPA,TDA_T,TDA,BSE,singlet,triplet
 
         deallocate(Bpp,Cpp,Dpp)
 
-        call GTpp_excitation_density(iblock,nBas,nC,nO,nV,nR,nOOs,nVVs,ERI,X1s,Y1s,rho1s,X2s,Y2s,rho2s)
+        call RGTpp_excitation_density(iblock,nBas,nC,nO,nV,nR,nOOs,nVVs,ERI,X1s,Y1s,rho1s,X2s,Y2s,rho2s)
 
-                     call GTpp_phBSE_static_kernel_A(eta,nBas,nC,nO,nV,nR,nS,nOOs,nVVs,lambda,Om1s,rho1s,Om2s,rho2s,TAs)
-        if(.not.TDA) call GTpp_phBSE_static_kernel_B(eta,nBas,nC,nO,nV,nR,nS,nOOs,nVVs,lambda,Om1s,rho1s,Om2s,rho2s,TBs)
+                     call RGTpp_phBSE_static_kernel_A(eta,nBas,nC,nO,nV,nR,nS,nOOs,nVVs,lambda,Om1s,rho1s,Om2s,rho2s,TAs)
+        if(.not.TDA) call RGTpp_phBSE_static_kernel_B(eta,nBas,nC,nO,nV,nR,nS,nOOs,nVVs,lambda,Om1s,rho1s,Om2s,rho2s,TBs)
 
         isp_T  = 2
         iblock = 4
@@ -150,10 +150,10 @@ subroutine GTpp_phACFDT(exchange_kernel,doXBS,dRPA,TDA_T,TDA,BSE,singlet,triplet
 
         deallocate(Bpp,Cpp,Dpp)
 
-        call GTpp_excitation_density(iblock,nBas,nC,nO,nV,nR,nOOt,nVVt,ERI,X1t,Y1t,rho1t,X2t,Y2t,rho2t)
+        call RGTpp_excitation_density(iblock,nBas,nC,nO,nV,nR,nOOt,nVVt,ERI,X1t,Y1t,rho1t,X2t,Y2t,rho2t)
 
-                     call GTpp_phBSE_static_kernel_A(eta,nBas,nC,nO,nV,nR,nS,nOOt,nVVt,lambda,Om1t,rho1t,Om2t,rho2t,TAt)
-        if(.not.TDA) call Gtpp_phBSE_static_kernel_B(eta,nBas,nC,nO,nV,nR,nS,nOOt,nVVt,lambda,Om1t,rho1t,Om2t,rho2t,TBt)
+                     call RGTpp_phBSE_static_kernel_A(eta,nBas,nC,nO,nV,nR,nS,nOOt,nVVt,lambda,Om1t,rho1t,Om2t,rho2t,TAt)
+        if(.not.TDA) call RGtpp_phBSE_static_kernel_B(eta,nBas,nC,nO,nV,nR,nS,nOOt,nVVt,lambda,Om1t,rho1t,Om2t,rho2t,TBt)
 
       end if
 
@@ -216,10 +216,10 @@ subroutine GTpp_phACFDT(exchange_kernel,doXBS,dRPA,TDA_T,TDA,BSE,singlet,triplet
 
         deallocate(Bpp,Cpp,Dpp)
 
-        call GTpp_excitation_density(iblock,nBas,nC,nO,nV,nR,nOOs,nVVs,ERI,X1s,Y1s,rho1s,X2s,Y2s,rho2s)
+        call RGTpp_excitation_density(iblock,nBas,nC,nO,nV,nR,nOOs,nVVs,ERI,X1s,Y1s,rho1s,X2s,Y2s,rho2s)
 
-                     call GTpp_phBSE_static_kernel_A(eta,nBas,nC,nO,nV,nR,nS,nOOs,nVVs,lambda,Om1s,rho1s,Om2s,rho2s,TAs)
-        if(.not.TDA) call GTpp_phBSE_static_kernel_B(eta,nBas,nC,nO,nV,nR,nS,nOOs,nVVs,lambda,Om1s,rho1s,Om2s,rho2s,TBs)
+                     call RGTpp_phBSE_static_kernel_A(eta,nBas,nC,nO,nV,nR,nS,nOOs,nVVs,lambda,Om1s,rho1s,Om2s,rho2s,TAs)
+        if(.not.TDA) call RGTpp_phBSE_static_kernel_B(eta,nBas,nC,nO,nV,nR,nS,nOOs,nVVs,lambda,Om1s,rho1s,Om2s,rho2s,TBs)
 
         isp_T  = 2
         iblock = 4
@@ -234,10 +234,10 @@ subroutine GTpp_phACFDT(exchange_kernel,doXBS,dRPA,TDA_T,TDA,BSE,singlet,triplet
 
         deallocate(Bpp,Cpp,Dpp)
 
-        call GTpp_excitation_density(iblock,nBas,nC,nO,nV,nR,nOOt,nVVt,ERI,X1t,Y1t,rho1t,X2t,Y2t,rho2t)
+        call RGTpp_excitation_density(iblock,nBas,nC,nO,nV,nR,nOOt,nVVt,ERI,X1t,Y1t,rho1t,X2t,Y2t,rho2t)
 
-                     call GTpp_phBSE_static_kernel_A(eta,nBas,nC,nO,nV,nR,nS,nOOt,nVVt,lambda,Om1t,rho1t,Om2t,rho2t,TAt)
-        if(.not.TDA) call GTpp_phBSE_static_kernel_B(eta,nBas,nC,nO,nV,nR,nS,nOOt,nVVt,lambda,Om1t,rho1t,Om2t,rho2t,TBt)
+                     call RGTpp_phBSE_static_kernel_A(eta,nBas,nC,nO,nV,nR,nS,nOOt,nVVt,lambda,Om1t,rho1t,Om2t,rho2t,TAt)
+        if(.not.TDA) call RGTpp_phBSE_static_kernel_B(eta,nBas,nC,nO,nV,nR,nS,nOOt,nVVt,lambda,Om1t,rho1t,Om2t,rho2t,TBt)
 
       end if
 

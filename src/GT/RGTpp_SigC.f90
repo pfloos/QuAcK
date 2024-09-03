@@ -1,4 +1,4 @@
-double precision function GTpp_SigC(p,w,eta,nBas,nC,nO,nV,nR,nOOs,nVVs,nOOt,nVVt,e,Om1s,rho1s,Om2s,rho2s, & 
+double precision function RGTpp_SigC(p,w,eta,nBas,nC,nO,nV,nR,nOOs,nVVs,nOOt,nVVt,e,Om1s,rho1s,Om2s,rho2s, & 
                                     Om1t,rho1t,Om2t,rho2t)
 
 ! Compute diagonal of the correlation part of the self-energy
@@ -32,7 +32,7 @@ double precision function GTpp_SigC(p,w,eta,nBas,nC,nO,nV,nR,nOOs,nVVs,nOOt,nVVt
 
 ! Initialize 
 
-  GTpp_SigC = 0d0
+  RGTpp_SigC = 0d0
 
 !----------------------------------------------
 ! Occupied part of the T-matrix self-energy 
@@ -42,12 +42,12 @@ double precision function GTpp_SigC(p,w,eta,nBas,nC,nO,nV,nR,nOOs,nVVs,nOOt,nVVt
 
     do cd=1,nVVs
       eps = w + e(i) - Om1s(cd)
-      GTpp_SigC = GTpp_SigC + rho1s(p,i,cd)**2*eps/(eps**2 + eta**2)
+      RGTpp_SigC = RGTpp_SigC + rho1s(p,i,cd)**2*eps/(eps**2 + eta**2)
     end do
 
     do cd=1,nVVt
       eps = w + e(i) - Om1t(cd)
-      GTpp_SigC = GTpp_SigC + rho1t(p,i,cd)**2*eps/(eps**2 + eta**2)
+      RGTpp_SigC = RGTpp_SigC + rho1t(p,i,cd)**2*eps/(eps**2 + eta**2)
     end do
 
   end do
@@ -60,12 +60,12 @@ double precision function GTpp_SigC(p,w,eta,nBas,nC,nO,nV,nR,nOOs,nVVs,nOOt,nVVt
 
     do kl=1,nOOs
       eps = w + e(a) - Om2s(kl)
-      GTpp_SigC = GTpp_SigC + rho2s(p,a,kl)**2*eps/(eps**2 + eta**2)
+      RGTpp_SigC = RGTpp_SigC + rho2s(p,a,kl)**2*eps/(eps**2 + eta**2)
     end do
 
     do kl=1,nOOt
       eps = w + e(a) - Om2t(kl)
-      GTpp_SigC = GTpp_SigC + rho2t(p,a,kl)**2*eps/(eps**2 + eta**2)
+      RGTpp_SigC = RGTpp_SigC + rho2t(p,a,kl)**2*eps/(eps**2 + eta**2)
     end do
 
   end do

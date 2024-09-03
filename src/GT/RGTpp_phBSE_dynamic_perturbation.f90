@@ -1,4 +1,4 @@
-subroutine GTpp_phBSE_dynamic_perturbation(ispin,dTDA,eta,nBas,nC,nO,nV,nR,nS,nOOab,nVVab,nOOaa,nVVaa,Om1ab,Om2ab,Om1aa,Om2aa, & 
+subroutine RGTpp_phBSE_dynamic_perturbation(ispin,dTDA,eta,nBas,nC,nO,nV,nR,nS,nOOab,nVVab,nOOaa,nVVaa,Om1ab,Om2ab,Om1aa,Om2aa, & 
                                            rho1ab,rho2ab,rho1aa,rho2aa,eT,eGT,dipole_int,OmBSE,XpY,XmY,TAab,TAaa)
 
 ! Compute dynamical effects via perturbation theory for BSE@GT
@@ -81,11 +81,11 @@ subroutine GTpp_phBSE_dynamic_perturbation(ispin,dTDA,eta,nBas,nC,nO,nV,nR,nS,nO
 
     ! Compute dynamical T-matrix for alpha-beta block  
 
-    call GTpp_phBSE_dynamic_kernel_A(eta,nBas,nC,nO,nV,nR,nS,nOOab,nVVab,1d0,eGT,Om1ab,Om2ab,rho1ab,rho2ab,OmBSE(ia),dTAab,ZAab)
+    call RGTpp_phBSE_dynamic_kernel_A(eta,nBas,nC,nO,nV,nR,nS,nOOab,nVVab,1d0,eGT,Om1ab,Om2ab,rho1ab,rho2ab,OmBSE(ia),dTAab,ZAab)
  
     ! Compute dynamical T-matrix for alpha-beta block  
 
-    call GTpp_phBSE_dynamic_kernel_A(eta,nBas,nC,nO,nV,nR,nS,nOOaa,nVVaa,1d0,eGT,Om1aa,Om2aa,rho1aa,rho2aa,OmBSE(ia),dTAaa,ZAaa)
+    call RGTpp_phBSE_dynamic_kernel_A(eta,nBas,nC,nO,nV,nR,nS,nOOaa,nVVaa,1d0,eGT,Om1aa,Om2aa,rho1aa,rho2aa,OmBSE(ia),dTAaa,ZAaa)
  
     X(:) = 0.5d0*(XpY(ia,:) + XmY(ia,:))
     Y(:) = 0.5d0*(XpY(ia,:) - XmY(ia,:))

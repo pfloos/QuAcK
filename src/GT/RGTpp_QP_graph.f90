@@ -1,4 +1,5 @@
-subroutine GTeh_QP_graph(eta,nBas,nC,nO,nV,nR,nS,eHF,Om,rhoL,rhoR,eGTlin,eOld,eGT,Z)
+subroutine RGTpp_QP_graph(eta,nBas,nC,nO,nV,nR,nOOs,nVVs,nOOt,nVVt,eHF,Om1s,rho1s,Om2s,rho2s, & 
+                         Om1t,rho1t,Om2t,rho2t,eGTlin,eOld,eGT,Z)
 
 ! Compute the graphical solution of the QP equation
 
@@ -12,13 +13,15 @@ subroutine GTeh_QP_graph(eta,nBas,nC,nO,nV,nR,nS,eHF,Om,rhoL,rhoR,eGTlin,eOld,eG
   integer,intent(in)            :: nO
   integer,intent(in)            :: nV
   integer,intent(in)            :: nR
-  integer,intent(in)            :: nS
+  integer,intent(in)            :: nOOs,nOOt
+  integer,intent(in)            :: nVVs,nVVt
   
   double precision,intent(in)   :: eta
   double precision,intent(in)   :: eHF(nBas)
-  double precision,intent(in)   :: Om(nS)
-  double precision,intent(in)   :: rhoL(nBas,nBas,nS)
-  double precision,intent(in)   :: rhoR(nBas,nBas,nS)
+  double precision,intent(in)   :: Om1s(nVVs),Om1t(nVVt)
+  double precision,intent(in)   :: rho1s(nBas,nBas,nVVs),rho1t(nBas,nBas,nVVt)
+  double precision,intent(in)   :: Om2s(nOOs),Om2t(nOOt)
+  double precision,intent(in)   :: rho2s(nBas,nBas,nOOs),rho2t(nBas,nBas,nOOt)
 
   double precision,intent(in)   :: eGTlin(nBas)
   double precision,intent(in)   :: eOld(nBas)
@@ -29,7 +32,7 @@ subroutine GTeh_QP_graph(eta,nBas,nC,nO,nV,nR,nS,eHF,Om,rhoL,rhoR,eGTlin,eOld,eG
   integer                       :: nIt
   integer,parameter             :: maxIt = 64
   double precision,parameter    :: thresh = 1d-6
-  double precision,external     :: GTeh_SigC,GTeh_dSigC
+  double precision,external     :: RGTpp_SigC,RGTpp_dSigC
   double precision              :: SigC,dSigC
   double precision              :: f,df
   double precision              :: w
@@ -42,7 +45,7 @@ subroutine GTeh_QP_graph(eta,nBas,nC,nO,nV,nR,nS,eHF,Om,rhoL,rhoR,eGTlin,eOld,eG
 ! Run Newton's algorithm to find the root
 
   write(*,*)'-----------------------------------------------------'
-  write(*,'(A5,1X,A3,1X,A15,1X,A15,1X,A10)') 'Orb.','It.','e_GTehlin (eV)','e_GTehlin (eV)','Z'
+  write(*,'(A5,1X,A3,1X,A15,1X,A15,1X,A10)') 'Orb.','It.','e_GTpplin (eV)','e_GTpplin (eV)','Z'
   write(*,*)'-----------------------------------------------------'
 
   do p=nC+1,nBas-nR
@@ -55,8 +58,8 @@ subroutine GTeh_QP_graph(eta,nBas,nC,nO,nV,nR,nS,eHF,Om,rhoL,rhoR,eGTlin,eOld,eG
 
       nIt = nIt + 1
 
-      SigC  = GTeh_SigC(p,w,eta,nBas,nC,nO,nV,nR,nS,eOld,Om,rhoL,rhoR)
-      dSigC = GTeh_dSigC(p,w,eta,nBas,nC,nO,nV,nR,nS,eOld,Om,rhoL,rhoR)
+      SigC  = RGTpp_SigC(p,w,eta,nBas,nC,nO,nV,nR,nOOs,nVVs,nOOt,nVVt,eOld,Om1s,rho1s,Om2s,rho2s,Om1t,rho1t,Om2t,rho2t)
+      dSigC = RGTpp_dSigC(p,w,eta,nBas,nC,nO,nV,nR,nOOs,nVVs,nOOt,nVVt,eOld,Om1s,rho1s,Om2s,rho2s,Om1t,rho1t,Om2t,rho2t)
       f  = w - eHF(p) - SigC 
       df = 1d0/(1d0 - dSigC)
       w = w - df*f

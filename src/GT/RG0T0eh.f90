@@ -119,7 +119,7 @@ subroutine RG0T0eh(dotest,doACFDT,exchange_kernel,doXBS,dophBSE,dophBSE2,TDA_T,T
 ! Compute spectral weights !
 !--------------------------!
 
-  call GTeh_excitation_density(nBas,nC,nO,nR,nS,ERI,XpY,XmY,rhoL,rhoR)
+  call RGTeh_excitation_density(nBas,nC,nO,nR,nS,ERI,XpY,XmY,rhoL,rhoR)
 
 !------------------------!
 ! Compute GW self-energy !
@@ -127,7 +127,7 @@ subroutine RG0T0eh(dotest,doACFDT,exchange_kernel,doXBS,dophBSE,dophBSE2,TDA_T,T
 
   if(regularize) call GTeh_regularization(nBas,nC,nO,nV,nR,nS,eHF,Om,rhoL,rhoR)
 
-  call GTeh_self_energy_diag(eta,nBas,nC,nO,nV,nR,nS,eHF,Om,rhoL,rhoR,EcGM,Sig,Z)
+  call RGTeh_self_energy_diag(eta,nBas,nC,nO,nV,nR,nS,eHF,Om,rhoL,rhoR,EcGM,Sig,Z)
 
 !-----------------------------------!
 ! Solve the quasi-particle equation !
@@ -149,11 +149,11 @@ subroutine RG0T0eh(dotest,doACFDT,exchange_kernel,doXBS,dophBSE,dophBSE2,TDA_T,T
     write(*,*) ' *** Quasiparticle energies obtained by root search *** '
     write(*,*)
 
-    call GTeh_QP_graph(eta,nBas,nC,nO,nV,nR,nS,eHF,Om,rhoL,rhoR,eGTlin,eHF,eGT,Z)
+    call RGTeh_QP_graph(eta,nBas,nC,nO,nV,nR,nS,eHF,Om,rhoL,rhoR,eGTlin,eHF,eGT,Z)
 
   end if
 
-! call GTeh_plot_self_energy(nBas,nC,nO,nV,nR,nS,eHF,eHF,Om,rhoL,rhoR)
+! call RGTeh_plot_self_energy(nBas,nC,nO,nV,nR,nS,eHF,eHF,Om,rhoL,rhoR)
 
 ! Compute the RPA correlation energy based on the G0T0eh quasiparticle energies
 

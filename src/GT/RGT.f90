@@ -133,7 +133,7 @@ subroutine RGT(dotest, doG0T0pp, doevGTpp, doqsGTpp, doufG0T0pp, doG0T0eh, doevG
   if(doufG0T0pp) then
     
     call wall_time(start_GT)
-    call ufG0T0pp(dotest,TDA_T,nOrb,nC,nO,nV,nR,nS,ENuc,ERHF,ERI_MO,eHF)
+    call ufRG0T0pp(dotest,TDA_T,nOrb,nC,nO,nV,nR,nS,ENuc,ERHF,ERI_MO,eHF)
     call wall_time(end_GT)
   
     t_GT = end_GT - start_GT

@@ -206,11 +206,11 @@ subroutine qsRGTeh(dotest, maxSCF, thresh, max_diis, doACFDT, exchange_kernel, d
 
     ! Compute correlation part of the self-energy 
 
-    call GTeh_excitation_density(nOrb,nC,nO,nR,nS,ERI_MO,XpY,XmY,rhoL,rhoR)
+    call RGTeh_excitation_density(nOrb,nC,nO,nR,nS,ERI_MO,XpY,XmY,rhoL,rhoR)
 
     if(regularize) call GTeh_regularization(nOrb,nC,nO,nV,nR,nS,eGT,Om,rhoL,rhoR)
 
-    call GTeh_self_energy(eta,nOrb,nC,nO,nV,nR,nS,eGT,Om,rhoL,rhoR,EcGM,Sig,Z)
+    call RGTeh_self_energy(eta,nOrb,nC,nO,nV,nR,nS,eGT,Om,rhoL,rhoR,EcGM,Sig,Z)
 
     ! Make correlation self-energy Hermitian and transform it back to AO basis
    

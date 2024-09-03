@@ -1,4 +1,4 @@
-subroutine GTpp_phBSE_dynamic_kernel_A(eta,nBas,nC,nO,nV,nR,nS,nOO,nVV,lambda,eGT,Om1,Om2,rho1,rho2,OmBSE,TA,ZA)
+subroutine RGTpp_phBSE_dynamic_kernel_A(eta,nBas,nC,nO,nV,nR,nS,nOO,nVV,lambda,eGT,Om1,Om2,rho1,rho2,OmBSE,TA,ZA)
 
 ! Compute the dynamic part of the Bethe-Salpeter equation matrices for GT
 

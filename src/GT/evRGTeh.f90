@@ -131,13 +131,13 @@ subroutine evRGTeh(dotest,maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,d
 
    ! Compute spectral weights
 
-    call GTeh_excitation_density(nBas,nC,nO,nR,nS,ERI,XpY,XmY,rhoL,rhoR)
+    call RGTeh_excitation_density(nBas,nC,nO,nR,nS,ERI,XpY,XmY,rhoL,rhoR)
 
     ! Compute correlation part of the self-energy 
 
     if(regularize) call GTeh_regularization(nBas,nC,nO,nV,nR,nS,eGT,Om,rhoL,rhoR)
 
-    call GTeh_self_energy_diag(eta,nBas,nC,nO,nV,nR,nS,eGT,Om,rhoL,rhoR,EcGM,Sig,Z)
+    call RGTeh_self_energy_diag(eta,nBas,nC,nO,nV,nR,nS,eGT,Om,rhoL,rhoR,EcGM,Sig,Z)
 
     ! Solve the quasi-particle equation
 
@@ -155,7 +155,7 @@ subroutine evRGTeh(dotest,maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,d
        write(*,*) ' *** Quasiparticle energies obtained by root search *** '
        write(*,*)
 
-       call GTeh_QP_graph(eta,nBas,nC,nO,nV,nR,nS,eHF,Om,rhoL,rhoR,eOld,eOld,eGT,Z)
+       call RGTeh_QP_graph(eta,nBas,nC,nO,nV,nR,nS,eHF,Om,rhoL,rhoR,eOld,eOld,eGT,Z)
 
     end if
 

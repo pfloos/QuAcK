@@ -1,4 +1,4 @@
-subroutine GTpp_self_energy_diag(eta,nBas,nC,nO,nV,nR,nOOs,nVVs,nOOt,nVVt,e,Om1s,rho1s,Om2s,rho2s,Om1t,rho1t,Om2t,rho2t, &
+subroutine RGTpp_self_energy_diag(eta,nBas,nC,nO,nV,nR,nOOs,nVVs,nOOt,nVVt,e,Om1s,rho1s,Om2s,rho2s,Om1t,rho1t,Om2t,rho2t, &
                                  EcGM,Sig,Z)
 
 ! Compute diagonal of the correlation part of the T-matrix self-energy

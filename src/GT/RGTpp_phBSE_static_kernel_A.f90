@@ -1,6 +1,6 @@
-subroutine GTpp_phBSE_static_kernel_B(eta,nBas,nC,nO,nV,nR,nS,nOO,nVV,lambda,Omega1,rho1,Omega2,rho2,KB)
+subroutine RGTpp_phBSE_static_kernel_A(eta,nBas,nC,nO,nV,nR,nS,nOO,nVV,lambda,Omega1,rho1,Omega2,rho2,KA)
 
-! Compute the OVVO block of the static T-matrix
+! Compute the OOVV block of the static T-matrix
 
   implicit none
   include 'parameters.h'
@@ -26,40 +26,45 @@ subroutine GTpp_phBSE_static_kernel_B(eta,nBas,nC,nO,nV,nR,nS,nOO,nVV,lambda,Ome
 
   double precision              :: chi
   double precision              :: eps
-  integer                       :: i,j,a,b,ia,jb,kl,cd
+  integer                       :: i,j,a,b,ia,jb,kl,cd,c,d
 
 ! Output variables
 
-  double precision,intent(out)  :: KB(nS,nS)
+  double precision,intent(out)  :: KA(nS,nS)
 
-  KB(:,:) = 0d0
+  KA(:,:) = 0d0
 
-  ia = 0
-  do i=nC+1,nO
-    do a=nO+1,nBas-nR
-      ia = ia + 1
-      jb = 0
-      do j=nC+1,nO
-        do b=nO+1,nBas-nR
-          jb = jb + 1
+  jb = 0
+!$omp parallel do default(private) shared(KA,Omega1,Omega2,rho1,rho2,nO,nBas,nVV,nOO,chi,eps,eta,nC,nR,lambda)
+  do j=nC+1,nO
+    do b=nO+1,nBas-nR
+      jb = (b-nO) + (j-1)*(nBas-nO) 
+
+      ia = 0
+      do i=nC+1,nO
+        do a=nO+1,nBas-nR
+          ia = (a-nO) + (i-1)*(nBas-nO) 
 
           chi = 0d0
 
           do cd=1,nVV
             eps = + Omega1(cd)
-            chi = chi + rho1(i,j,cd)*rho1(a,b,cd)*eps/(eps**2 + eta**2)
+            chi = chi + rho1(i,b,cd)*rho1(a,j,cd)*eps/(eps**2 + eta**2)
+
           end do
 
           do kl=1,nOO
             eps = - Omega2(kl)
-            chi = chi + rho2(i,j,kl)*rho2(a,b,kl)*eps/(eps**2 + eta**2)
+            chi = chi + rho2(i,b,kl)*rho2(a,j,kl)*eps/(eps**2 + eta**2)
           end do
 
-          KB(ia,jb) = lambda*chi
+          KA(ia,jb) = lambda*chi
 
         end do
       end do
     end do
   end do
+
+!$omp end parallel do
 
 end subroutine 

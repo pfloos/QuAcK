@@ -1,4 +1,4 @@
-subroutine GTpp_ppBSE(TDA_T,TDA,dBSE,dTDA,singlet,triplet,eta,nBas,nC,nO,nV,nR,nOOab,nVVab,nOOaa,nVVaa, &
+subroutine RGTpp_ppBSE(TDA_T,TDA,dBSE,dTDA,singlet,triplet,eta,nBas,nC,nO,nV,nR,nOOab,nVVab,nOOaa,nVVaa, &
                       Om1ab,X1ab,Y1ab,Om2ab,X2ab,Y2ab,rho1ab,rho2ab,Om1aa,X1aa,Y1aa,Om2aa,X2aa,Y2aa,rho1aa,rho2aa, & 
                       ERI,dipole_int,eT,eGT,EcBSE)
 
@@ -105,11 +105,11 @@ subroutine GTpp_ppBSE(TDA_T,TDA,dBSE,dTDA,singlet,triplet,eta,nBas,nC,nO,nV,nR,n
     deallocate(Bpp,Cpp,Dpp)
     allocate(TBab(nVVs,nOOs),TCab(nVVs,nVVs),TDab(nOOs,nOOs))
  
-    if(.not.TDA_T) call GTpp_ppBSE_static_kernel_B(ispin,eta,nBas,nC,nO,nV,nR,nOOab,nVVab,nOOs,nVVs,1d0, & 
+    if(.not.TDA_T) call RGTpp_ppBSE_static_kernel_B(ispin,eta,nBas,nC,nO,nV,nR,nOOab,nVVab,nOOs,nVVs,1d0, & 
                                                    Om1ab,rho1ab,Om2ab,rho2ab,TBab)
-                   call GTpp_ppBSE_static_kernel_C(ispin,eta,nBas,nC,nO,nV,nR,nOOab,nVVab,nOOs,nVVs,1d0, & 
+                   call RGTpp_ppBSE_static_kernel_C(ispin,eta,nBas,nC,nO,nV,nR,nOOab,nVVab,nOOs,nVVs,1d0, & 
                                                    Om1ab,rho1ab,Om2ab,rho2ab,TCab)
-                   call GTpp_ppBSE_static_kernel_D(ispin,eta,nBas,nC,nO,nV,nR,nOOab,nVVab,nOOs,nVVs,1d0, & 
+                   call RGTpp_ppBSE_static_kernel_D(ispin,eta,nBas,nC,nO,nV,nR,nOOab,nVVab,nOOs,nVVs,1d0, & 
                                                    Om1ab,rho1ab,Om2ab,rho2ab,TDab)
 
   !----------------------------------------!
@@ -129,11 +129,11 @@ subroutine GTpp_ppBSE(TDA_T,TDA,dBSE,dTDA,singlet,triplet,eta,nBas,nC,nO,nV,nR,n
     deallocate(Bpp,Cpp,Dpp)
     allocate(TBaa(nVVs,nOOs),TCaa(nVVs,nVVs),TDaa(nOOs,nOOs))
  
-    if(.not.TDA_T) call GTpp_ppBSE_static_kernel_B(ispin,eta,nBas,nC,nO,nV,nR,nOOaa,nVVaa,nOOs,nVVs,1d0, & 
+    if(.not.TDA_T) call RGTpp_ppBSE_static_kernel_B(ispin,eta,nBas,nC,nO,nV,nR,nOOaa,nVVaa,nOOs,nVVs,1d0, & 
                                                    Om1aa,rho1aa,Om2aa,rho2aa,TBaa)
-                   call GTpp_ppBSE_static_kernel_C(ispin,eta,nBas,nC,nO,nV,nR,nOOaa,nVVaa,nOOs,nVVs,1d0, & 
+                   call RGTpp_ppBSE_static_kernel_C(ispin,eta,nBas,nC,nO,nV,nR,nOOaa,nVVaa,nOOs,nVVs,1d0, & 
                                                    Om1aa,rho1aa,Om2aa,rho2aa,TCaa)
-                   call GTpp_ppBSE_static_kernel_D(ispin,eta,nBas,nC,nO,nV,nR,nOOaa,nVVaa,nOOs,nVVs,1d0, & 
+                   call RGTpp_ppBSE_static_kernel_D(ispin,eta,nBas,nC,nO,nV,nR,nOOaa,nVVaa,nOOs,nVVs,1d0, & 
                                                    Om1aa,rho1aa,Om2aa,rho2aa,TDaa)
 
   !----------------------------------!
@@ -189,11 +189,11 @@ subroutine GTpp_ppBSE(TDA_T,TDA,dBSE,dTDA,singlet,triplet,eta,nBas,nC,nO,nV,nR,n
     deallocate(Bpp,Cpp,Dpp)
     allocate(TBab(nVVt,nOOt),TCab(nVVt,nVVt),TDab(nOOt,nOOt))
  
-    if(.not.TDA_T) call GTpp_ppBSE_static_kernel_B(ispin,eta,nBas,nC,nO,nV,nR,nOOab,nVVab,nOOt,nVVt,1d0, & 
+    if(.not.TDA_T) call RGTpp_ppBSE_static_kernel_B(ispin,eta,nBas,nC,nO,nV,nR,nOOab,nVVab,nOOt,nVVt,1d0, & 
                                                    Om1ab,rho1ab,Om2ab,rho2ab,TBab)
-                   call GTpp_ppBSE_static_kernel_C(ispin,eta,nBas,nC,nO,nV,nR,nOOab,nVVab,nOOt,nVVt,1d0, & 
+                   call RGTpp_ppBSE_static_kernel_C(ispin,eta,nBas,nC,nO,nV,nR,nOOab,nVVab,nOOt,nVVt,1d0, & 
                                                    Om1ab,rho1ab,Om2ab,rho2ab,TCab)
-                   call GTpp_ppBSE_static_kernel_D(ispin,eta,nBas,nC,nO,nV,nR,nOOab,nVVab,nOOt,nVVt,1d0, & 
+                   call RGTpp_ppBSE_static_kernel_D(ispin,eta,nBas,nC,nO,nV,nR,nOOab,nVVab,nOOt,nVVt,1d0, & 
                                                    Om1ab,rho1ab,Om2ab,rho2ab,TDab)
  
   !----------------------------------------!
@@ -213,11 +213,11 @@ subroutine GTpp_ppBSE(TDA_T,TDA,dBSE,dTDA,singlet,triplet,eta,nBas,nC,nO,nV,nR,n
     deallocate(Bpp,Cpp,Dpp)
     allocate(TBaa(nVVt,nOOt),TCaa(nVVt,nVVt),TDaa(nOOt,nOOt))
  
-    if(.not.TDA_T) call GTpp_ppBSE_static_kernel_B(ispin,eta,nBas,nC,nO,nV,nR,nOOaa,nVVaa,nOOt,nVVt,1d0, & 
+    if(.not.TDA_T) call RGTpp_ppBSE_static_kernel_B(ispin,eta,nBas,nC,nO,nV,nR,nOOaa,nVVaa,nOOt,nVVt,1d0, & 
                                                    Om1aa,rho1aa,Om2aa,rho2aa,TBaa)
-                   call GTpp_ppBSE_static_kernel_C(ispin,eta,nBas,nC,nO,nV,nR,nOOaa,nVVaa,nOOt,nVVt,1d0, & 
+                   call RGTpp_ppBSE_static_kernel_C(ispin,eta,nBas,nC,nO,nV,nR,nOOaa,nVVaa,nOOt,nVVt,1d0, & 
                                                    Om1aa,rho1aa,Om2aa,rho2aa,TCaa)
-                   call GTpp_ppBSE_static_kernel_D(ispin,eta,nBas,nC,nO,nV,nR,nOOaa,nVVaa,nOOt,nVVt,1d0, & 
+                   call RGTpp_ppBSE_static_kernel_D(ispin,eta,nBas,nC,nO,nV,nR,nOOaa,nVVaa,nOOt,nVVt,1d0, & 
                                                    Om1aa,rho1aa,Om2aa,rho2aa,TDaa)
 
   !----------------------------------!

@@ -1,4 +1,4 @@
-subroutine GTeh_self_energy(eta,nBas,nC,nO,nV,nR,nS,e,Om,rhoL,rhoR,EcGM,Sig,Z)
+subroutine RGTeh_self_energy(eta,nBas,nC,nO,nV,nR,nS,e,Om,rhoL,rhoR,EcGM,Sig,Z)
 
 ! Compute correlation part of the self-energy for GTeh and the renormalization factor
 

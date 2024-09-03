@@ -1,6 +1,6 @@
-double precision function GTeh_dSigC(p,w,eta,nBas,nC,nO,nV,nR,nS,e,Om,rhoL,rhoR)
+double precision function RGTeh_SigC(p,w,eta,nBas,nC,nO,nV,nR,nS,e,Om,rhoL,rhoR)
 
-! Compute the derivative of the correlation part of the self-energy
+! Compute diagonal of the correlation part of the self-energy
 
   implicit none
   include 'parameters.h'
@@ -28,7 +28,7 @@ double precision function GTeh_dSigC(p,w,eta,nBas,nC,nO,nV,nR,nS,e,Om,rhoL,rhoR)
 
 ! Initialize 
 
-  GTeh_dSigC = 0d0
+  RGTeh_SigC = 0d0
 
 ! Occupied part of the correlation self-energy
 
@@ -36,7 +36,7 @@ double precision function GTeh_dSigC(p,w,eta,nBas,nC,nO,nV,nR,nS,e,Om,rhoL,rhoR)
      do m=1,nS
         eps = w - e(i) + Om(m)
         num = rhoL(i,p,m)*rhoR(i,p,m)
-        GTeh_dSigC = GTeh_dSigC - num*(eps**2 - eta**2)/(eps**2 + eta**2)**2
+        RGTeh_SigC = RGTeh_SigC + num*eps/(eps**2 + eta**2)
      end do
   end do
 
@@ -46,7 +46,7 @@ double precision function GTeh_dSigC(p,w,eta,nBas,nC,nO,nV,nR,nS,e,Om,rhoL,rhoR)
      do m=1,nS
         eps = w - e(a) - Om(m)
         num = rhoL(p,a,m)*rhoR(p,a,m)
-        GTeh_dSigC = GTeh_dSigC - num*(eps**2 - eta**2)/(eps**2 + eta**2)**2
+        RGTeh_SigC = RGTeh_SigC + num*eps/(eps**2 + eta**2)
      end do
   end do
 

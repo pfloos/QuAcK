@@ -1,4 +1,4 @@
-subroutine GTpp_plot_self_energy(nBas,nC,nO,nV,nR,nOOs,nVVs,nOOt,nVVt,eHF,eGT,Om1s,rho1s,Om2s,rho2s, &
+subroutine RGTpp_plot_self_energy(nBas,nC,nO,nV,nR,nOOs,nVVs,nOOt,nVVt,eHF,eGT,Om1s,rho1s,Om2s,rho2s, &
                                  Om1t,rho1t,Om2t,rho2t)
 
 ! Dump several GTpp quantities for external plotting
@@ -29,7 +29,7 @@ subroutine GTpp_plot_self_energy(nBas,nC,nO,nV,nR,nOOs,nVVs,nOOt,nVVt,eHF,eGT,Om
   integer                       :: p,g
   integer                       :: nGrid
   double precision              :: wmin,wmax,dw
-  double precision,external     :: GTpp_SigC,GTpp_dSigC
+  double precision,external     :: RGTpp_SigC,RGTpp_dSigC
   double precision,allocatable  :: w(:)
   double precision,allocatable  :: SigC(:,:)
   double precision,allocatable  :: Z(:,:)
@@ -64,8 +64,8 @@ subroutine GTpp_plot_self_energy(nBas,nC,nO,nV,nR,nOOs,nVVs,nOOt,nVVt,eHF,eGT,Om
   do g=1,nGrid
     do p=nC+1,nBas-nR
 
-      SigC(p,g) = GTpp_SigC(p,w(g),eta,nBas,nC,nO,nV,nR,nOOs,nVVs,nOOt,nVVt,eGT,Om1s,rho1s,Om2s,rho2s,Om1t,rho1t,Om2t,rho2t)
-      Z(p,g)    = GTpp_dSigC(p,w(g),eta,nBas,nC,nO,nV,nR,nOOs,nVVs,nOOt,nVVt,eGT,Om1s,rho1s,Om2s,rho2s,Om1t,rho1t,Om2t,rho2t)
+      SigC(p,g) = RGTpp_SigC(p,w(g),eta,nBas,nC,nO,nV,nR,nOOs,nVVs,nOOt,nVVt,eGT,Om1s,rho1s,Om2s,rho2s,Om1t,rho1t,Om2t,rho2t)
+      Z(p,g)    = RGTpp_dSigC(p,w(g),eta,nBas,nC,nO,nV,nR,nOOs,nVVs,nOOt,nVVt,eGT,Om1s,rho1s,Om2s,rho2s,Om1t,rho1t,Om2t,rho2t)
 
     end do
   end do
@@ -84,10 +84,10 @@ subroutine GTpp_plot_self_energy(nBas,nC,nO,nV,nR,nOOs,nVVs,nOOt,nVVt,eHF,eGT,Om
 
 ! Dump quantities in files as a function of w
 
-  open(unit=8 ,file='GTpp_SigC.dat')
-  open(unit=9 ,file='GTpp_freq.dat')
-  open(unit=10 ,file='GTpp_Z.dat')
-  open(unit=11 ,file='GTpp_A.dat')
+  open(unit=8 ,file='RGTpp_SigC.dat')
+  open(unit=9 ,file='RGTpp_freq.dat')
+  open(unit=10 ,file='RGTpp_Z.dat')
+  open(unit=11 ,file='RGTpp_A.dat')
 
   do g=1,nGrid
     write(8 ,*) w(g)*HaToeV,(SigC(p,g)*HaToeV,p=nC+1,nBas-nR)

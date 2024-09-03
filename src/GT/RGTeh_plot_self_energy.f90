@@ -1,4 +1,4 @@
-subroutine GTeh_plot_self_energy(nBas,nC,nO,nV,nR,nS,eHF,eGT,Om,rhoL,rhoR)
+subroutine RGTeh_plot_self_energy(nBas,nC,nO,nV,nR,nS,eHF,eGT,Om,rhoL,rhoR)
 
 ! Dump several GTeh quantities for external plotting
 
@@ -25,7 +25,7 @@ subroutine GTeh_plot_self_energy(nBas,nC,nO,nV,nR,nS,eHF,eGT,Om,rhoL,rhoR)
   integer                       :: p,g
   integer                       :: nGrid
   double precision              :: wmin,wmax,dw
-  double precision,external     :: GTeh_SigC,GTeh_dSigC
+  double precision,external     :: RGTeh_SigC,RGTeh_dSigC
   double precision,allocatable  :: w(:)
   double precision,allocatable  :: SigC(:,:)
   double precision,allocatable  :: Z(:,:)
@@ -60,8 +60,8 @@ subroutine GTeh_plot_self_energy(nBas,nC,nO,nV,nR,nS,eHF,eGT,Om,rhoL,rhoR)
   do g=1,nGrid
     do p=nC+1,nBas-nR
 
-      SigC(p,g) = GTeh_SigC(p,w(g),eta,nBas,nC,nO,nV,nR,nS,eGT,Om,rhoL,rhoR)
-      Z(p,g)    = GTeh_dSigC(p,w(g),eta,nBas,nC,nO,nV,nR,nS,eGT,Om,rhoL,rhoR)
+      SigC(p,g) = RGTeh_SigC(p,w(g),eta,nBas,nC,nO,nV,nR,nS,eGT,Om,rhoL,rhoR)
+      Z(p,g)    = RGTeh_dSigC(p,w(g),eta,nBas,nC,nO,nV,nR,nS,eGT,Om,rhoL,rhoR)
 
     end do
   end do
@@ -80,10 +80,10 @@ subroutine GTeh_plot_self_energy(nBas,nC,nO,nV,nR,nS,eHF,eGT,Om,rhoL,rhoR)
 
 ! Dump quantities in files as a function of w
 
-  open(unit=8 ,file='GTeh_SigC.dat')
-  open(unit=9 ,file='GTeh_freq.dat')
-  open(unit=10 ,file='GTeh_Z.dat')
-  open(unit=11 ,file='GTeh_A.dat')
+  open(unit=8 ,file='RGTeh_SigC.dat')
+  open(unit=9 ,file='RGTeh_freq.dat')
+  open(unit=10 ,file='RGTeh_Z.dat')
+  open(unit=11 ,file='RGTeh_A.dat')
 
   do g=1,nGrid
     write(8 ,*) w(g)*HaToeV,(SigC(p,g)*HaToeV,p=nC+1,nBas-nR)
