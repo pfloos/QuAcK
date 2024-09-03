@@ -1,4 +1,4 @@
-subroutine pCCD_orbital_gradient(O,V,N,Np,h,ERI_MO,rdm1,rdm2,grad)
+subroutine pCCD_orbital_gradient(O,V,N,Nsq,h,ERI_MO,rdm1,rdm2,grad)
       
 ! Compute the orbital gradient at the pCCD level
 
@@ -9,7 +9,7 @@ subroutine pCCD_orbital_gradient(O,V,N,Np,h,ERI_MO,rdm1,rdm2,grad)
   integer,intent(in)            :: O
   integer,intent(in)            :: V
   integer,intent(in)            :: N
-  integer,intent(in)            :: Np
+  integer,intent(in)            :: Nsq
   double precision,intent(in)   :: h(N,N)
   double precision,intent(in)   :: ERI_MO(N,N,N,N)
   double precision,intent(in)   :: rdm1(N,N)
@@ -24,7 +24,7 @@ subroutine pCCD_orbital_gradient(O,V,N,Np,h,ERI_MO,rdm1,rdm2,grad)
 
 ! Output variables
 
-  double precision,intent(out)  :: grad(Np)
+  double precision,intent(out)  :: grad(Nsq)
 
 ! Compute gradient
 

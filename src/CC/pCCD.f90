@@ -71,7 +71,7 @@ subroutine pCCD(dotest,maxIt,thresh,max_diis,nBas,nOrb,nC,nO,nV,nR, &
   double precision,allocatable  :: ExpKap(:,:)
 
   integer                       :: O,V,N
-  integer                       :: Np
+  integer                       :: Nsq
   integer                       :: n_diis
   double precision              :: rcond
   double precision,allocatable  :: err_diis(:,:)
@@ -92,7 +92,7 @@ subroutine pCCD(dotest,maxIt,thresh,max_diis,nBas,nOrb,nC,nO,nV,nR, &
   V = nV - nR
   N = O + V
 
-  Np = N*N
+  Nsq = N*N
 
   !------------------------------------!
   ! Star Loop for orbital optimization !
@@ -357,9 +357,9 @@ subroutine pCCD(dotest,maxIt,thresh,max_diis,nBas,nOrb,nC,nO,nV,nR, &
     ! Compute orbital gradient !
     !--------------------------!
  
-    allocate(grad(Np))
+    allocate(grad(Nsq))
  
-    call pCCD_orbital_gradient(O,V,N,Np,h,ERI_MO,rdm1,rdm2,grad)
+    call pCCD_orbital_gradient(O,V,N,Nsq,h,ERI_MO,rdm1,rdm2,grad)
 
    ! Check convergence of orbital optimization
  
@@ -378,15 +378,15 @@ subroutine pCCD(dotest,maxIt,thresh,max_diis,nBas,nOrb,nC,nO,nV,nR, &
     ! Compute orbital Hessian !
     !-------------------------!
  
-    allocate(hess(Np,Np))
+    allocate(hess(Nsq,Nsq))
 
-    call pCCD_orbital_hessian(O,V,N,Np,h,ERI_MO,rdm1,rdm2,hess)
+    call pCCD_orbital_hessian(O,V,N,Nsq,h,ERI_MO,rdm1,rdm2,hess)
 
     deallocate(rdm1,rdm2)
  
-    allocate(hessInv(Np,Np))
+    allocate(hessInv(Nsq,Nsq))
  
-    call inverse_matrix(Np,hess,hessInv)
+    call inverse_matrix(Nsq,hess,hessInv)
 
     deallocate(hess)
  
