@@ -51,8 +51,8 @@ subroutine GGF2_phBSE2(TDA,dBSE,dTDA,eta,nBas,nC,nO,nV,nR,nS,ERI,dipole_int,eGF,
 
   ! Compute static kernel
 
-               call GF2_phBSE2_static_kernel_A(ispin,eta,nBas,nC,nO,nV,nR,nS,1d0,ERI,eGF,KA_sta)
-  if(.not.TDA) call GF2_phBSE2_static_kernel_B(ispin,eta,nBas,nC,nO,nV,nR,nS,1d0,ERI,eGF,KB_sta)
+               call RGF2_phBSE2_static_kernel_A(ispin,eta,nBas,nC,nO,nV,nR,nS,1d0,ERI,eGF,KA_sta)
+  if(.not.TDA) call RGF2_phBSE2_static_kernel_B(ispin,eta,nBas,nC,nO,nV,nR,nS,1d0,ERI,eGF,KB_sta)
 
                A_sta(:,:) = A_sta(:,:) + KA_sta(:,:)
   if(.not.TDA) B_sta(:,:) = B_sta(:,:) + KB_sta(:,:)

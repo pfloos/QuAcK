@@ -1,4 +1,4 @@
-subroutine GF2_ppBSE2_static_kernel_D(ispin,eta,nBas,nC,nO,nV,nR,nOO,lambda,ERI,eGF,KD_sta)
+subroutine RGF2_ppBSE2_static_kernel_D(ispin,eta,nBas,nC,nO,nV,nR,nOO,lambda,ERI,eGF,KD_sta)
 
 ! Compute the resonant part of the static BSE2 matrix
 

@@ -1,4 +1,4 @@
-subroutine GF2_QP_graph(eta,nBas,nC,nO,nV,nR,eHF,ERI,eGFlin,eOld,eGF,Z)
+subroutine RGF2_QP_graph(eta,nBas,nC,nO,nV,nR,eHF,ERI,eGFlin,eOld,eGF,Z)
 
 ! Compute the graphical solution of the GF2 QP equation
 
@@ -24,7 +24,7 @@ subroutine GF2_QP_graph(eta,nBas,nC,nO,nV,nR,eHF,ERI,eGFlin,eOld,eGF,Z)
   integer                       :: nIt
   integer,parameter             :: maxIt = 64
   double precision,parameter    :: thresh = 1d-6
-  double precision,external     :: GF2_SigC,GF2_dSigC
+  double precision,external     :: RGF2_SigC,RGF2_dSigC
   double precision              :: SigC,dSigC
   double precision              :: f,df
   double precision              :: w
@@ -50,8 +50,8 @@ subroutine GF2_QP_graph(eta,nBas,nC,nO,nV,nR,eHF,ERI,eGFlin,eOld,eGF,Z)
     
       nIt = nIt + 1
 
-      SigC  = GF2_SigC(p,w,eta,nBas,nC,nO,nV,nR,eOld,ERI)
-      dSigC = GF2_dSigC(p,w,eta,nBas,nC,nO,nV,nR,eOld,ERI)
+      SigC  = RGF2_SigC(p,w,eta,nBas,nC,nO,nV,nR,eOld,ERI)
+      dSigC = RGF2_dSigC(p,w,eta,nBas,nC,nO,nV,nR,eOld,ERI)
       f  = w - eHF(p) - SigC
       df = 1d0/(1d0 - dSigC)
     

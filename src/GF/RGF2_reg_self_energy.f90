@@ -1,4 +1,4 @@
-subroutine GF2_reg_self_energy(eta,nBas,nC,nO,nV,nR,e,ERI,SigC,Z)
+subroutine RGF2_reg_self_energy(eta,nBas,nC,nO,nV,nR,e,ERI,SigC,Z)
 
 ! Compute GF2 self-energy and its renormalization factor
 

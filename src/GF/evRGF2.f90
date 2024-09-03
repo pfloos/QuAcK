@@ -85,11 +85,11 @@ subroutine evRGF2(dotest,dophBSE,doppBSE,TDA,dBSE,dTDA,maxSCF,thresh,max_diis,si
 
     if(regularize) then 
 
-      call GF2_reg_self_energy_diag(eta,nBas,nC,nO,nV,nR,eGF,ERI,SigC,Z)
+      call RGF2_reg_self_energy_diag(eta,nBas,nC,nO,nV,nR,eGF,ERI,SigC,Z)
 
     else
 
-      call GF2_self_energy_diag(eta,nBas,nC,nO,nV,nR,eGF,ERI,SigC,Z)
+      call RGF2_self_energy_diag(eta,nBas,nC,nO,nV,nR,eGF,ERI,SigC,Z)
 
     end if
 
@@ -102,7 +102,7 @@ subroutine evRGF2(dotest,dophBSE,doppBSE,TDA,dBSE,dTDA,maxSCF,thresh,max_diis,si
       write(*,*) ' *** Quasiparticle energies obtained by root search *** '
       write(*,*)
  
-      call GF2_QP_graph(eta,nBas,nC,nO,nV,nR,eHF,ERI,eOld,eOld,eGF,Z)
+      call RGF2_QP_graph(eta,nBas,nC,nO,nV,nR,eHF,ERI,eOld,eOld,eGF,Z)
  
     end if
 
@@ -149,7 +149,7 @@ subroutine evRGF2(dotest,dophBSE,doppBSE,TDA,dBSE,dTDA,maxSCF,thresh,max_diis,si
 
   if(dophBSE) then 
   
-    call GF2_phBSE2(TDA,dBSE,dTDA,singlet,triplet,eta,nBas,nC,nO,nV,nR,nS,ERI,dipole_int,eGF,EcBSE)
+    call RGF2_phBSE2(TDA,dBSE,dTDA,singlet,triplet,eta,nBas,nC,nO,nV,nR,nS,ERI,dipole_int,eGF,EcBSE)
 
     write(*,*)
     write(*,*)'-------------------------------------------------------------------------------'
@@ -166,7 +166,7 @@ subroutine evRGF2(dotest,dophBSE,doppBSE,TDA,dBSE,dTDA,maxSCF,thresh,max_diis,si
 
   if(doppBSE) then
 
-    call GF2_ppBSE2(TDA,dBSE,dTDA,singlet,triplet,eta,nBas,nC,nO,nV,nR,ERI,dipole_int,eGF,EcBSE)
+    call RGF2_ppBSE2(TDA,dBSE,dTDA,singlet,triplet,eta,nBas,nC,nO,nV,nR,ERI,dipole_int,eGF,EcBSE)
 
     write(*,*)
     write(*,*)'-------------------------------------------------------------------------------'

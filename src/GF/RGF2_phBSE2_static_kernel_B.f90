@@ -1,4 +1,4 @@
-subroutine GF2_phBSE2_static_kernel_B(ispin,eta,nBas,nC,nO,nV,nR,nS,lambda,ERI,eGF,KB_sta)
+subroutine RGF2_phBSE2_static_kernel_B(ispin,eta,nBas,nC,nO,nV,nR,nS,lambda,ERI,eGF,KB_sta)
 
 ! Compute the anti-resonant part of the static BSE2 matrix
 

@@ -171,11 +171,11 @@ subroutine qsRGF2(dotest, maxSCF, thresh, max_diis, dophBSE, doppBSE, TDA,   &
 
     if(regularize) then
 
-      call GF2_reg_self_energy(eta, nOrb, nC, nO, nV, nR, eGF, ERI_MO, SigC, Z)
+      call RGF2_reg_self_energy(eta, nOrb, nC, nO, nV, nR, eGF, ERI_MO, SigC, Z)
 
     else
 
-      call GF2_self_energy(eta, nOrb, nC, nO, nV, nR, eGF, ERI_MO, SigC, Z)
+      call RGF2_self_energy(eta, nOrb, nC, nO, nV, nR, eGF, ERI_MO, SigC, Z)
 
     end if
 
@@ -295,7 +295,7 @@ subroutine qsRGF2(dotest, maxSCF, thresh, max_diis, dophBSE, doppBSE, TDA,   &
 
   if(dophBSE) then
 
-    call GF2_phBSE2(TDA, dBSE, dTDA, singlet, triplet, eta, nOrb, nC, nO, &
+    call RGF2_phBSE2(TDA, dBSE, dTDA, singlet, triplet, eta, nOrb, nC, nO, &
                     nV, nR, nS, ERI_MO, dipole_int_MO, eGF, EcBSE)
 
     write(*,*)
@@ -314,7 +314,7 @@ subroutine qsRGF2(dotest, maxSCF, thresh, max_diis, dophBSE, doppBSE, TDA,   &
 
   if(doppBSE) then
 
-    call GF2_ppBSE2(TDA, dBSE, dTDA, singlet, triplet, eta, nOrb, &
+    call RGF2_ppBSE2(TDA, dBSE, dTDA, singlet, triplet, eta, nOrb, &
                     nC, nO, nV, nR, ERI_MO, dipole_int_MO, eGF, EcBSE)
 
     write(*,*)

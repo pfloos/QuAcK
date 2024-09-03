@@ -1,4 +1,4 @@
-subroutine GF2_phBSE2_dynamic_kernel_A(ispin,eta,nBas,nC,nO,nV,nR,nS,lambda,ERI,eGF,OmBSE,KA_dyn,ZA_dyn)
+subroutine RGF2_phBSE2_dynamic_kernel_A(ispin,eta,nBas,nC,nO,nV,nR,nS,lambda,ERI,eGF,OmBSE,KA_dyn,ZA_dyn)
 
 ! Compute the resonant part of the dynamic BSE2 matrix
 

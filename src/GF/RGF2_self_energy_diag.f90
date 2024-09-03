@@ -1,4 +1,4 @@
-subroutine GF2_reg_self_energy_diag(eta,nBas,nC,nO,nV,nR,e,ERI,SigC,Z)
+subroutine RGF2_self_energy_diag(eta,nBas,nC,nO,nV,nR,e,ERI,SigC,Z)
 
 ! Compute diagonal part of the GF2 self-energy and its renormalization factor
 
@@ -23,9 +23,6 @@ subroutine GF2_reg_self_energy_diag(eta,nBas,nC,nO,nV,nR,e,ERI,SigC,Z)
   double precision              :: eps
   double precision              :: num
 
-  double precision              :: s
-  double precision              :: kappa
-
 ! Output variables
 
   double precision,intent(out)  :: SigC(nBas)
@@ -36,15 +33,7 @@ subroutine GF2_reg_self_energy_diag(eta,nBas,nC,nO,nV,nR,e,ERI,SigC,Z)
   SigC(:) = 0d0
   Z(:)    = 0d0
 
-!-----------------------------------------!
-! Parameters for regularized calculations !
-!-----------------------------------------!
-
-  s = 100d0
-
-!----------------------------------------------------!
-! Compute GF2 self-energy and renormalization factor !
-!----------------------------------------------------!
+! Compute GF2 self-energy
 
   do p=nC+1,nBas-nR
     do i=nC+1,nO
@@ -52,11 +41,10 @@ subroutine GF2_reg_self_energy_diag(eta,nBas,nC,nO,nV,nR,e,ERI,SigC,Z)
         do a=nO+1,nBas-nR
 
           eps = e(p) + e(a) - e(i) - e(j)
-          kappa = 1d0 - exp(-2d0*eps**2*s)
-          num = kappa*(2d0*ERI(p,a,i,j) - ERI(p,a,j,i))*ERI(p,a,i,j)
+          num = (2d0*ERI(p,a,i,j) - ERI(p,a,j,i))*ERI(p,a,i,j)
 
           SigC(p) = SigC(p) + num*eps/(eps**2 + eta**2)
-          Z(p)    = Z(p)    - num*(eps**2 - eta**2)/(eps**2 + eta**2)**2
+          Z(p)    = Z(p)   - num*(eps**2 - eta**2)/(eps**2 + eta**2)**2
 
         end do
       end do
@@ -69,11 +57,10 @@ subroutine GF2_reg_self_energy_diag(eta,nBas,nC,nO,nV,nR,e,ERI,SigC,Z)
         do b=nO+1,nBas-nR
 
           eps = e(p) + e(i) - e(a) - e(b)
-          kappa = 1d0 - exp(-2d0*eps**2*s)
-          num = kappa*(2d0*ERI(p,i,a,b) - ERI(p,i,b,a))*ERI(p,i,a,b)
+          num = (2d0*ERI(p,i,a,b) - ERI(p,i,b,a))*ERI(p,i,a,b)
 
           SigC(p) = SigC(p) + num*eps/(eps**2 + eta**2)
-          Z(p)    = Z(p)    - num*(eps**2 - eta**2)/(eps**2 + eta**2)**2
+          Z(p)    = Z(p)   - num*(eps**2 - eta**2)/(eps**2 + eta**2)**2
 
         end do
       end do
