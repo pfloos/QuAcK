@@ -1,4 +1,4 @@
-subroutine pCCD_rdm(O,V,N,ENuc,h,ERI_MO,t2,z2,rdm1,rdm2)
+subroutine pCCD_rdm(O,V,N,ENuc,h,ERI_MO,t2,z2,rdm1,rdm2,ECC)
       
 ! Compute the 1RDM and 2RDM at the pCCD level
 
@@ -38,6 +38,7 @@ subroutine pCCD_rdm(O,V,N,ENuc,h,ERI_MO,t2,z2,rdm1,rdm2)
 
   double precision,intent(out)  :: rdm1(N,N)
   double precision,intent(out)  :: rdm2(N,N,N,N)
+  double precision,intent(out)  :: ECC
 
 ! Allocate memory
 
@@ -209,10 +210,12 @@ subroutine pCCD_rdm(O,V,N,ENuc,h,ERI_MO,t2,z2,rdm1,rdm2)
 
   E2 = 0.5d0*E2
 
+  ECC = E1 + E2
+
   write(*,'(A25,F16.10)') ' One-electron energy = ',E1
   write(*,'(A25,F16.10)') ' Two-electron energy = ',E2
-  write(*,'(A25,F16.10)') ' Electronic   energy = ',E1 + E2
-  write(*,'(A25,F16.10)') ' Total        energy = ',E1 + E2 + ENuc
+  write(*,'(A25,F16.10)') ' Electronic   energy = ',ECC
+  write(*,'(A25,F16.10)') ' Total pCCD   energy = ',ECC + ENuc
   write(*,*)
 
 end

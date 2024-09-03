@@ -1,4 +1,4 @@
-subroutine pCCD_orbital_hessian(O,V,N,h,ERI_MO,rdm1,rdm2,hess)
+subroutine pCCD_orbital_hessian(O,V,N,Np,h,ERI_MO,rdm1,rdm2,hess)
       
 ! Compute the orbital hessian at the pCCD level
 
@@ -9,6 +9,7 @@ subroutine pCCD_orbital_hessian(O,V,N,h,ERI_MO,rdm1,rdm2,hess)
   integer,intent(in)            :: O
   integer,intent(in)            :: V
   integer,intent(in)            :: N
+  integer,intent(in)            :: Np
   double precision,intent(in)   :: h(N,N)
   double precision,intent(in)   :: ERI_MO(N,N,N,N)
   double precision,intent(in)   :: rdm1(N,N)
@@ -19,7 +20,7 @@ subroutine pCCD_orbital_hessian(O,V,N,h,ERI_MO,rdm1,rdm2,hess)
   integer                       :: p,q,r,s,t,u,w
   integer                       :: pq,rs
 
-  logical,parameter             :: debug = .false.
+  logical,parameter             :: debug = .true.
 
   double precision,allocatable  :: tmp(:,:,:,:)
 
@@ -27,7 +28,7 @@ subroutine pCCD_orbital_hessian(O,V,N,h,ERI_MO,rdm1,rdm2,hess)
 
 ! Output variables
 
-  double precision,intent(out)  :: hess(N**2,N**2)
+  double precision,intent(out)  :: hess(Np,Np)
 
 ! Compute intermediate array
 
@@ -110,10 +111,12 @@ subroutine pCCD_orbital_hessian(O,V,N,h,ERI_MO,rdm1,rdm2,hess)
     end do
   end do
 
+! Dump Hessian
+
   if(debug) then
 
     write(*,*) 'Orbital Hessian at the pCCD level:'
-    call matout(N**2,N**2,hess)
+    call matout(Np,Np,hess)
     write(*,*)
 
   end if
