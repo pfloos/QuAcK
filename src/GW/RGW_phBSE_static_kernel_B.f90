@@ -1,4 +1,4 @@
-subroutine GW_phBSE_static_kernel_B(eta,nBas,nC,nO,nV,nR,nS,lambda,ERI,Om,rho,KB)
+subroutine RGW_phBSE_static_kernel_B(eta,nBas,nC,nO,nV,nR,nS,lambda,ERI,Om,rho,KB)
 
 ! Compute the BSE static kernel for the coupling block
 

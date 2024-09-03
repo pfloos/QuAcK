@@ -261,7 +261,7 @@ subroutine qsGGW(dotest,maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,dop
 
 !   Compute correlation part of the self-energy 
 
-    call GW_excitation_density(nBas2,nC,nO,nR,nS,ERI_MO,XpY,rho)
+    call GGW_excitation_density(nBas2,nC,nO,nR,nS,ERI_MO,XpY,rho)
 
     if(regularize) call GW_regularization(nBas2,nC,nO,nV,nR,nS,eGW,Om,rho)
 

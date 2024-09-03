@@ -1,4 +1,4 @@
-subroutine GW_phBSE2_static_kernel_A(eta,nBas,nC,nO,nV,nR,nS,lambda,eW,W,KA2_sta)
+subroutine RGW_phBSE2_static_kernel_A(eta,nBas,nC,nO,nV,nR,nS,lambda,eW,W,KA2_sta)
 
 ! Compute the second-order static BSE kernel for the resonant block (only for singlets!)
 

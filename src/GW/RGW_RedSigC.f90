@@ -1,4 +1,4 @@
-double precision function GW_RedSigC(p,w,eta,nBas,nC,nO,nV,nR,nS,e,Om,rho)
+double precision function RGW_RedSigC(p,w,eta,nBas,nC,nO,nV,nR,nS,e,Om,rho)
 
 ! Compute the derivative of the correlation part of the self-energy
 
@@ -27,7 +27,7 @@ double precision function GW_RedSigC(p,w,eta,nBas,nC,nO,nV,nR,nS,e,Om,rho)
 
 ! Initialize 
 
-  GW_RedSigC = 0d0
+  RGW_RedSigC = 0d0
 
 ! Occupied part of the correlation self-energy
 
@@ -35,7 +35,7 @@ double precision function GW_RedSigC(p,w,eta,nBas,nC,nO,nV,nR,nS,e,Om,rho)
     do m=1,nS
       eps = w - e(i) + Om(m)
       num = 2d0*rho(p,i,m)**2
-      GW_RedSigC = GW_RedSigC - num*(eps**2 - eta**2)/(eps**2 + eta**2)**2
+      RGW_RedSigC = RGW_RedSigC - num*(eps**2 - eta**2)/(eps**2 + eta**2)**2
     end do
   end do
 
@@ -45,7 +45,7 @@ double precision function GW_RedSigC(p,w,eta,nBas,nC,nO,nV,nR,nS,e,Om,rho)
     do m=1,nS
       eps = w - e(a) - Om(m)
       num = 2d0*rho(p,a,m)**2
-      GW_RedSigC = GW_RedSigC - num*(eps**2 - eta**2)/(eps**2 + eta**2)**2
+      RGW_RedSigC = RGW_RedSigC - num*(eps**2 - eta**2)/(eps**2 + eta**2)**2
     end do
   end do
 

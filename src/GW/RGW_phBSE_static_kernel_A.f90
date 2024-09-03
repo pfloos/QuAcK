@@ -1,4 +1,4 @@
-subroutine GW_phBSE_static_kernel_A(eta,nBas,nC,nO,nV,nR,nS,lambda,ERI,Om,rho,KA)
+subroutine RGW_phBSE_static_kernel_A(eta,nBas,nC,nO,nV,nR,nS,lambda,ERI,Om,rho,KA)
 
 ! Compute the BSE static kernel for the resonant block
 

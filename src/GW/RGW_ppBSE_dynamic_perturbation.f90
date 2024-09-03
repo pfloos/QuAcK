@@ -1,4 +1,4 @@
-subroutine GW_ppBSE_dynamic_perturbation(ispin,dTDA,eta,nBas,nC,nO,nV,nR,nS,nOO,nVV,eW,eGW,ERI,dipole_int, & 
+subroutine RGW_ppBSE_dynamic_perturbation(ispin,dTDA,eta,nBas,nC,nO,nV,nR,nS,nOO,nVV,eW,eGW,ERI,dipole_int, & 
                                          OmRPA,rho_RPA,Om1,X1,Y1,Om2,X2,Y2,KB_sta,KC_sta,KD_sta)
 
 ! Compute dynamical effects via perturbation theory for BSE
@@ -76,16 +76,16 @@ subroutine GW_ppBSE_dynamic_perturbation(ispin,dTDA,eta,nBas,nC,nO,nV,nR,nS,nOO,
 
     if(dTDA) then 
 
-      call GW_ppBSE_dynamic_kernel_C(ispin,eta,nBas,nC,nO,nV,nR,nS,nVV,1d0,eGW,OmRPA,rho_RPA,Om1(ab),KC_dyn,ZC_dyn)
+      call RGW_ppBSE_dynamic_kernel_C(ispin,eta,nBas,nC,nO,nV,nR,nS,nVV,1d0,eGW,OmRPA,rho_RPA,Om1(ab),KC_dyn,ZC_dyn)
      
       Z1_dyn(ab)  = + dot_product(X1(:,ab),matmul(ZC_dyn,X1(:,ab)))
       Om1_dyn(ab) = + dot_product(X1(:,ab),matmul(KC_dyn - KC_sta,X1(:,ab)))
 
     else 
 
-      call GW_ppBSE_dynamic_kernel_B(ispin,eta,nBas,nC,nO,nV,nR,nS,nOO,nVV,1d0,eGW,OmRPA,rho_RPA,KB_dyn)
-      call GW_ppBSE_dynamic_kernel_C(ispin,eta,nBas,nC,nO,nV,nR,nS,nVV,1d0,eGW,OmRPA,rho_RPA,Om1(ab),KC_dyn,ZC_dyn)
-      call GW_ppBSE_dynamic_kernel_D(ispin,eta,nBas,nC,nO,nV,nR,nS,nOO,1d0,eGW,OmRPA,rho_RPA,Om1(ab),KD_dyn,ZD_dyn)
+      call RGW_ppBSE_dynamic_kernel_B(ispin,eta,nBas,nC,nO,nV,nR,nS,nOO,nVV,1d0,eGW,OmRPA,rho_RPA,KB_dyn)
+      call RGW_ppBSE_dynamic_kernel_C(ispin,eta,nBas,nC,nO,nV,nR,nS,nVV,1d0,eGW,OmRPA,rho_RPA,Om1(ab),KC_dyn,ZC_dyn)
+      call RGW_ppBSE_dynamic_kernel_D(ispin,eta,nBas,nC,nO,nV,nR,nS,nOO,1d0,eGW,OmRPA,rho_RPA,Om1(ab),KD_dyn,ZD_dyn)
 
       Z1_dyn(ab)  = dot_product(X1(:,ab),matmul(ZC_dyn,X1(:,ab))) &
                   + dot_product(Y1(:,ab),matmul(ZD_dyn,Y1(:,ab)))
@@ -119,16 +119,16 @@ subroutine GW_ppBSE_dynamic_perturbation(ispin,dTDA,eta,nBas,nC,nO,nV,nR,nS,nOO,
 
     if(dTDA) then
 
-      call GW_ppBSE_dynamic_kernel_D(ispin,eta,nBas,nC,nO,nV,nR,nS,nOO,1d0,eGW,OmRPA,rho_RPA,Om2(ij),KD_dyn,ZD_dyn)
+      call RGW_ppBSE_dynamic_kernel_D(ispin,eta,nBas,nC,nO,nV,nR,nS,nOO,1d0,eGW,OmRPA,rho_RPA,Om2(ij),KD_dyn,ZD_dyn)
  
       Z2_dyn(kl)  = dot_product(Y2(:,ij),matmul(ZD_dyn,Y2(:,ij)))
       Om2_dyn(kl) = - dot_product(Y2(:,ij),matmul(KD_dyn - KD_sta,Y2(:,ij)))
 
     else
 
-      call GW_ppBSE_dynamic_kernel_B(ispin,eta,nBas,nC,nO,nV,nR,nS,nOO,nVV,1d0,eGW,OmRPA,rho_RPA,KB_dyn)
-      call GW_ppBSE_dynamic_kernel_C(ispin,eta,nBas,nC,nO,nV,nR,nS,nVV,1d0,eGW,OmRPA,rho_RPA,Om2(ij),KC_dyn,ZC_dyn)
-      call GW_ppBSE_dynamic_kernel_D(ispin,eta,nBas,nC,nO,nV,nR,nS,nOO,1d0,eGW,OmRPA,rho_RPA,Om2(ij),KD_dyn,ZD_dyn)
+      call RGW_ppBSE_dynamic_kernel_B(ispin,eta,nBas,nC,nO,nV,nR,nS,nOO,nVV,1d0,eGW,OmRPA,rho_RPA,KB_dyn)
+      call RGW_ppBSE_dynamic_kernel_C(ispin,eta,nBas,nC,nO,nV,nR,nS,nVV,1d0,eGW,OmRPA,rho_RPA,Om2(ij),KC_dyn,ZC_dyn)
+      call RGW_ppBSE_dynamic_kernel_D(ispin,eta,nBas,nC,nO,nV,nR,nS,nOO,1d0,eGW,OmRPA,rho_RPA,Om2(ij),KD_dyn,ZD_dyn)
 
       Z2_dyn(kl)  = dot_product(X2(:,ij),matmul(ZC_dyn,X2(:,ij))) &
                   + dot_product(Y2(:,ij),matmul(ZD_dyn,Y2(:,ij)))

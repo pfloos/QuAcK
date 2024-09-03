@@ -125,7 +125,7 @@ subroutine evGGW(dotest,maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,dop
 
     ! Compute spectral weights
 
-    call GW_excitation_density(nBas,nC,nO,nR,nS,ERI,XpY,rho)
+    call GGW_excitation_density(nBas,nC,nO,nR,nS,ERI,XpY,rho)
 
     ! Compute correlation part of the self-energy 
 

@@ -1,4 +1,4 @@
-subroutine GW_phBSE2_dynamic_kernel_A(eta,nBas,nC,nO,nV,nR,nS,eGW,W,OmBSE,KA_dyn,ZA_dyn)
+subroutine RGW_phBSE2_dynamic_kernel_A(eta,nBas,nC,nO,nV,nR,nS,eGW,W,OmBSE,KA_dyn,ZA_dyn)
 
 ! Compute the dynamic part of the Bethe-Salpeter equation matrices
 

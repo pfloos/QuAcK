@@ -1,4 +1,4 @@
-subroutine GW_self_energy_diag(eta,nBas,nC,nO,nV,nR,nS,e,Om,rho,EcGM,Sig,Z)
+subroutine RGW_self_energy_diag(eta,nBas,nC,nO,nV,nR,nS,e,Om,rho,EcGM,Sig,Z)
 
 ! Compute diagonal of the correlation part of the self-energy and the renormalization factor
 

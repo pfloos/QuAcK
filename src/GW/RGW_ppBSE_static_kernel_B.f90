@@ -1,4 +1,4 @@
-subroutine GW_ppBSE_static_kernel_B(ispin,eta,nBas,nC,nO,nV,nR,nS,nOO,nVV,lambda,ERI,Om,rho,KB)
+subroutine RGW_ppBSE_static_kernel_B(ispin,eta,nBas,nC,nO,nV,nR,nS,nOO,nVV,lambda,ERI,Om,rho,KB)
 
 ! Compute the VVOO block of the static screening W for the pp-BSE
 

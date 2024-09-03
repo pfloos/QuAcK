@@ -1,4 +1,4 @@
-subroutine GW_plot_self_energy(nBas,eta,nC,nO,nV,nR,nS,eHF,eGW,Om,rho)
+subroutine RGW_plot_self_energy(nBas,eta,nC,nO,nV,nR,nS,eHF,eGW,Om,rho)
 
 ! Dump several GW quantities for external plotting
 
@@ -24,7 +24,7 @@ subroutine GW_plot_self_energy(nBas,eta,nC,nO,nV,nR,nS,eHF,eGW,Om,rho)
   integer                       :: p,g
   integer                       :: nGrid
   double precision              :: wmin,wmax,dw
-  double precision,external     :: GW_ReSigC,GW_ImSigC,GW_RedSigC
+  double precision,external     :: RGW_ReSigC,RGW_ImSigC,RGW_RedSigC
   double precision,allocatable  :: w(:)
   double precision,allocatable  :: ReSigC(:,:),ImSigC(:,:)
   double precision,allocatable  :: Z(:,:)
@@ -56,9 +56,9 @@ subroutine GW_plot_self_energy(nBas,eta,nC,nO,nV,nR,nS,eHF,eGW,Om,rho)
   do g=1,nGrid
     do p=nC+1,nBas-nR
 
-      ReSigC(p,g) = GW_ReSigC(p,w(g),eta,nBas,nC,nO,nV,nR,nS,eGW,Om,rho)
-      ImSigC(p,g) = GW_ImSigC(p,w(g),eta,nBas,nC,nO,nV,nR,nS,eGW,Om,rho)
-      Z(p,g)      = GW_RedSigC(p,w(g),eta,nBas,nC,nO,nV,nR,nS,eGW,Om,rho)
+      ReSigC(p,g) = RGW_ReSigC(p,w(g),eta,nBas,nC,nO,nV,nR,nS,eGW,Om,rho)
+      ImSigC(p,g) = RGW_ImSigC(p,w(g),eta,nBas,nC,nO,nV,nR,nS,eGW,Om,rho)
+      Z(p,g)      = RGW_RedSigC(p,w(g),eta,nBas,nC,nO,nV,nR,nS,eGW,Om,rho)
 
     end do
   end do
@@ -77,10 +77,10 @@ subroutine GW_plot_self_energy(nBas,eta,nC,nO,nV,nR,nS,eHF,eGW,Om,rho)
 
 ! Dump quantities in files as a function of w
 
-  open(unit=8 ,file='GW_SigC.dat')
-  open(unit=9 ,file='GW_freq.dat')
-  open(unit=10 ,file='GW_Z.dat')
-  open(unit=11 ,file='GW_A.dat')
+  open(unit=8 ,file='RGW_SigC.dat')
+  open(unit=9 ,file='RGW_freq.dat')
+  open(unit=10 ,file='RGW_Z.dat')
+  open(unit=11 ,file='RGW_A.dat')
 
   do g=1,nGrid
     write(8 ,*) w(g)*HaToeV,(ReSigC(p,g)*HaToeV,p=nC+1,nBas-nR)

@@ -1,4 +1,4 @@
-subroutine GW_excitation_density(nBas,nC,nO,nR,nS,ERI,XpY,rho)
+subroutine RGW_excitation_density(nBas,nC,nO,nR,nS,ERI,XpY,rho)
 
 ! Compute excitation densities
 

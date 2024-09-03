@@ -1,10 +1,7 @@
-
-! ---
-
-subroutine RGW(dotest, doG0W0, doevGW, doqsGW, doufG0W0, doufGW, doSRGqsGW, maxSCF, thresh, max_diis, doACFDT,   &
-               exchange_kernel, doXBS, dophBSE, dophBSE2, doppBSE, TDA_W, TDA, dBSE, dTDA, singlet, triplet,     &
-               linearize, eta, regularize, nNuc, ZNuc, rNuc, ENuc, nBas, nOrb, nC, nO, nV, nR, nS, ERHF, &
-               S, X, T, V, Hc, ERI_AO, ERI_MO, dipole_int_AO, dipole_int_MO, PHF, cHF, eHF)
+subroutine RGW(dotest,doG0W0,doevGW,doqsGW,doufG0W0,doufGW,doSRGqsGW,maxSCF,thresh,max_diis,doACFDT, &
+               exchange_kernel,doXBS,dophBSE,dophBSE2,doppBSE,TDA_W,TDA,dBSE,dTDA,singlet,triplet,   &
+               linearize,eta,regularize,nNuc,ZNuc,rNuc,ENuc,nBas,nOrb,nC,nO,nV,nR,nS,ERHF,           &
+               S,X,T,V,Hc,ERI_AO,ERI_MO,dipole_int_AO,dipole_int_MO,PHF,cHF,eHF)
 
 ! Restricted GW module
 
@@ -46,7 +43,8 @@ subroutine RGW(dotest, doG0W0, doevGW, doqsGW, doufG0W0, doufGW, doSRGqsGW, maxS
   double precision,intent(in)   :: rNuc(nNuc,ncart)
   double precision,intent(in)   :: ENuc
 
-  integer,intent(in)            :: nBas, nOrb
+  integer,intent(in)            :: nBas
+  integer,intent(in)            :: nOrb
   integer,intent(in)            :: nC
   integer,intent(in)            :: nO
   integer,intent(in)            :: nV
@@ -112,10 +110,10 @@ subroutine RGW(dotest, doG0W0, doevGW, doqsGW, doufG0W0, doufGW, doSRGqsGW, maxS
   if(doqsGW) then 
 
     call wall_time(start_GW)
-    call qsRGW(dotest, maxSCF, thresh, max_diis, doACFDT, exchange_kernel, doXBS, dophBSE, dophBSE2, &
-               TDA_W, TDA, dBSE, dTDA, doppBSE, singlet, triplet, eta, regularize, nNuc, ZNuc, rNuc, &
-               ENuc, nBas, nOrb, nC, nO, nV, nR, nS, ERHF, S, X, T, V, Hc, ERI_AO, ERI_MO,   &
-               dipole_int_AO, dipole_int_MO, PHF, cHF, eHF)
+    call qsRGW(dotest,maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,dophBSE,dophBSE2, &
+               TDA_W,TDA,dBSE,dTDA,doppBSE,singlet,triplet,eta,regularize,nNuc,ZNuc,rNuc,    &
+               ENuc,nBas,nOrb,nC,nO,nV,nR,nS,ERHF,S,X,T,V,Hc,ERI_AO,ERI_MO,                  &
+               dipole_int_AO,dipole_int_MO,PHF,cHF,eHF)
     call wall_time(end_GW)
 
     t_GW = end_GW - start_GW
@@ -131,11 +129,11 @@ subroutine RGW(dotest, doG0W0, doevGW, doqsGW, doufG0W0, doufGW, doSRGqsGW, maxS
   if(doSRGqsGW) then 
 
     call wall_time(start_GW)
-    call SRG_qsGW(dotest, maxSCF, thresh, max_diis, doACFDT, exchange_kernel, doXBS,  &
-                  dophBSE, dophBSE2, TDA_W, TDA, dBSE, dTDA, singlet, triplet, eta,   &
-                  nNuc, ZNuc, rNuc, ENuc, nBas, nOrb, nC, nO, nV, nR, nS,     &
-                  ERHF, S, X, T, V, Hc, ERI_AO, ERI_MO, dipole_int_AO, dipole_int_MO, &
-                  PHF, cHF, eHF)
+    call SRG_qsRGW(dotest,maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS, &
+                   dophBSE,dophBSE2,TDA_W,TDA,dBSE,dTDA,singlet,triplet,eta,    &
+                   nNuc,ZNuc,rNuc,ENuc,nBas,nOrb,nC,nO,nV,nR,nS,                &
+                   ERHF,S,X,T,V,Hc,ERI_AO,ERI_MO,dipole_int_AO,dipole_int_MO,   &
+                   PHF,cHF,eHF)
     call wall_time(end_GW)
 
     t_GW = end_GW - start_GW
@@ -169,7 +167,7 @@ subroutine RGW(dotest, doG0W0, doevGW, doqsGW, doufG0W0, doufGW, doSRGqsGW, maxS
     
     call wall_time(start_GW)
     ! TODO
-    call ufGW(dotest,TDA_W,nBas,nC,nO,nV,nR,nS,ENuc,ERHF,ERI_MO,eHF)
+    call ufRGW(dotest,TDA_W,nBas,nC,nO,nV,nR,nS,ENuc,ERHF,ERI_MO,eHF)
     call wall_time(end_GW)
   
     t_GW = end_GW - start_GW

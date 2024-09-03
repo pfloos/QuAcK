@@ -1,4 +1,4 @@
-subroutine GW_phBSE2_static_kernel_B(eta,nBas,nC,nO,nV,nR,nS,lambda,eW,W,KB2_sta)
+subroutine RGW_phBSE2_static_kernel_B(eta,nBas,nC,nO,nV,nR,nS,lambda,eW,W,KB2_sta)
 
 ! Compute the second-order static BSE kernel for the coupling block (only for singlets!)
 

@@ -1,10 +1,7 @@
-
-! ---
-
-subroutine SRG_qsGW(dotest, maxSCF, thresh, max_diis, doACFDT, exchange_kernel, doXBS, &
-                    BSE, BSE2, TDA_W, TDA, dBSE, dTDA, singlet, triplet, eta, nNuc,    &
-                    ZNuc, rNuc, ENuc, nBas, nOrb, nC, nO, nV, nR, nS, ERHF, S, &
-                    X, T, V, Hc, ERI_AO, ERI_MO, dipole_int_AO, dipole_int_MO, PHF, cHF, eHF)
+subroutine SRG_qsRGW(dotest,maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS, &
+                     BSE,BSE2,TDA_W,TDA,dBSE,dTDA,singlet,triplet,eta,nNuc,       &
+                     ZNuc,rNuc,ENuc,nBas,nOrb,nC,nO,nV,nR,nS,ERHF,S,              &
+                     X,T,V,Hc,ERI_AO,ERI_MO,dipole_int_AO,dipole_int_MO,PHF,cHF,eHF)
 
 ! Perform a quasiparticle self-consistent GW calculation
 
@@ -230,7 +227,7 @@ subroutine SRG_qsGW(dotest, maxSCF, thresh, max_diis, doACFDT, exchange_kernel, 
 
     call wall_time(tex1)
     
-    call GW_excitation_density(nOrb,nC,nO,nR,nS,ERI_MO,XpY,rho)
+    call RGW_excitation_density(nOrb,nC,nO,nR,nS,ERI_MO,XpY,rho)
 
     call wall_time(tex2)
     tex=tex+tex2-tex1
@@ -353,7 +350,7 @@ subroutine SRG_qsGW(dotest, maxSCF, thresh, max_diis, doACFDT, exchange_kernel, 
 
   if(BSE) then
 
-    call GW_phBSE(BSE2, TDA_W, TDA, dBSE, dTDA, singlet, triplet, eta, nOrb, &
+    call RGW_phBSE(BSE2, TDA_W, TDA, dBSE, dTDA, singlet, triplet, eta, nOrb, &
                   nC, nO, nV, nR, nS, ERI_MO, dipole_int_MO, eGW, eGW, EcBSE)
 
     if(exchange_kernel) then
@@ -388,7 +385,7 @@ subroutine SRG_qsGW(dotest, maxSCF, thresh, max_diis, doACFDT, exchange_kernel, 
 
       end if
 
-      call GW_phACFDT(exchange_kernel, doXBS, .true., TDA_W, TDA, BSE, singlet, triplet, &
+      call RGW_phACFDT(exchange_kernel, doXBS, .true., TDA_W, TDA, BSE, singlet, triplet, &
                       eta, nOrb, nC, nO, nV, nR, nS, ERI_MO, eGW, eGW, EcBSE)
 
       write(*,*)

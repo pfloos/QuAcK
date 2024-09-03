@@ -206,11 +206,11 @@ subroutine qsRGW(dotest, maxSCF, thresh, max_diis, doACFDT, exchange_kernel, doX
 
     ! Compute correlation part of the self-energy 
 
-    call GW_excitation_density(nOrb, nC, nO, nR, nS, ERI_MO, XpY, rho)
+    call RGW_excitation_density(nOrb, nC, nO, nR, nS, ERI_MO, XpY, rho)
 
     if(regularize) call GW_regularization(nOrb, nC, nO, nV, nR, nS, eGW, Om, rho)
 
-    call GW_self_energy(eta, nOrb, nC, nO, nV, nR, nS, eGW, Om, rho, EcGM, SigC, Z)
+    call RGW_self_energy(eta, nOrb, nC, nO, nV, nR, nS, eGW, Om, rho, EcGM, SigC, Z)
 
     ! Make correlation self-energy Hermitian and transform it back to AO basis
    
@@ -316,7 +316,7 @@ subroutine qsRGW(dotest, maxSCF, thresh, max_diis, doACFDT, exchange_kernel, doX
 
   if(dophBSE) then
 
-    call GW_phBSE(dophBSE2, TDA_W, TDA, dBSE, dTDA, singlet, triplet, eta, &
+    call RGW_phBSE(dophBSE2, TDA_W, TDA, dBSE, dTDA, singlet, triplet, eta, &
                   nOrb, nC, nO, nV, nR, nS, ERI_MO, dipole_int_MO, eGW, eGW, EcBSE)
 
     if(exchange_kernel) then
@@ -351,7 +351,7 @@ subroutine qsRGW(dotest, maxSCF, thresh, max_diis, doACFDT, exchange_kernel, doX
 
       end if
 
-      call GW_phACFDT(exchange_kernel, doXBS, .true., TDA_W, TDA, dophBSE, singlet, triplet, &
+      call RGW_phACFDT(exchange_kernel, doXBS, .true., TDA_W, TDA, dophBSE, singlet, triplet, &
                       eta, nOrb, nC, nO, nV, nR, nS, ERI_MO, eGW, eGW, EcBSE)
 
       write(*,*)
@@ -369,7 +369,7 @@ subroutine qsRGW(dotest, maxSCF, thresh, max_diis, doACFDT, exchange_kernel, doX
 
   if(doppBSE) then
       
-    call GW_ppBSE(TDA_W, TDA, dBSE, dTDA, singlet, triplet, eta, nOrb, &
+    call RGW_ppBSE(TDA_W, TDA, dBSE, dTDA, singlet, triplet, eta, nOrb, &
                   nC, nO, nV, nR, nS, ERI_MO, dipole_int_MO, eHF, eGW, EcBSE)
  
     EcBSE(2) = 3d0*EcBSE(2)

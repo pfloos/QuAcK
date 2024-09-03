@@ -1,4 +1,4 @@
-subroutine ufGW(dotest,TDA_W,nBas,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,eHF)
+subroutine ufRGW(dotest,TDA_W,nBas,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,eHF)
 
 ! Unfold GW equations
 
@@ -106,7 +106,7 @@ subroutine ufGW(dotest,TDA_W,nBas,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,eHF)
     ! Compute spectral weights !
     !--------------------------!
 
-    call GW_excitation_density(nBas,nC,nO,nR,nS,ERI,XpY,rho)
+    call RGW_excitation_density(nBas,nC,nO,nR,nS,ERI,XpY,rho)
 
     deallocate(Aph,Bph,XpY,XmY)
 

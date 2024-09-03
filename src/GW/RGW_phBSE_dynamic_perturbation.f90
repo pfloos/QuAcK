@@ -1,4 +1,4 @@
-subroutine GW_phBSE_dynamic_perturbation(dophBSE2,dTDA,eta,nBas,nC,nO,nV,nR,nS,eW,eGW,ERI,dipole_int, & 
+subroutine RGW_phBSE_dynamic_perturbation(dophBSE2,dTDA,eta,nBas,nC,nO,nV,nR,nS,eW,eGW,ERI,dipole_int, & 
                                          OmRPA,rho_RPA,OmBSE,XpY,XmY,KA_sta,KB_sta)
 
 ! Compute dynamical effects via perturbation theory for BSE
@@ -69,7 +69,7 @@ subroutine GW_phBSE_dynamic_perturbation(dophBSE2,dTDA,eta,nBas,nC,nO,nV,nR,nS,e
     write(*,*)
 
     allocate(W(nBas,nBas,nBas,nBas))
-    call GW_phBSE_static_kernel(eta,nBas,nC,nO,nV,nR,nS,1d0,ERI,OmRPA,rho_RPA,W)
+    call RGW_phBSE_static_kernel(eta,nBas,nC,nO,nV,nR,nS,1d0,ERI,OmRPA,rho_RPA,W)
 
   end if
 
@@ -90,9 +90,9 @@ subroutine GW_phBSE_dynamic_perturbation(dophBSE2,dTDA,eta,nBas,nC,nO,nV,nR,nS,e
 
     ! Resonant part of the BSE correction for dynamical TDA
 
-    call GW_phBSE_dynamic_kernel_A(eta,nBas,nC,nO,nV,nR,nS,1d0,eGW,OmRPA,rho_RPA,+OmBSE(ia),KAp_dyn,ZAp_dyn)
+    call RGW_phBSE_dynamic_kernel_A(eta,nBas,nC,nO,nV,nR,nS,1d0,eGW,OmRPA,rho_RPA,+OmBSE(ia),KAp_dyn,ZAp_dyn)
 
-    if(dophBSE2) call GW_phBSE2_dynamic_kernel_A(eta,nBas,nC,nO,nV,nR,nS,eGW,W,OmBSE(ia),KAp_dyn,ZAp_dyn)
+    if(dophBSE2) call RGW_phBSE2_dynamic_kernel_A(eta,nBas,nC,nO,nV,nR,nS,eGW,W,OmBSE(ia),KAp_dyn,ZAp_dyn)
 
     if(dTDA) then 
 
@@ -103,10 +103,10 @@ subroutine GW_phBSE_dynamic_perturbation(dophBSE2,dTDA,eta,nBas,nC,nO,nV,nR,nS,e
 
       ! Resonant and anti-resonant part of the BSE correction
 
-      call GW_phBSE_dynamic_kernel_A(eta,nBas,nC,nO,nV,nR,nS,1d0,eGW,OmRPA,rho_RPA,-OmBSE(ia),KAm_dyn,ZAm_dyn)
-      call GW_phBSE_dynamic_kernel_B(eta,nBas,nC,nO,nV,nR,nS,1d0,eGW,OmRPA,rho_RPA,KB_dyn)
+      call RGW_phBSE_dynamic_kernel_A(eta,nBas,nC,nO,nV,nR,nS,1d0,eGW,OmRPA,rho_RPA,-OmBSE(ia),KAm_dyn,ZAm_dyn)
+      call RGW_phBSE_dynamic_kernel_B(eta,nBas,nC,nO,nV,nR,nS,1d0,eGW,OmRPA,rho_RPA,KB_dyn)
 
-      if(dophBSE2) call GW_phBSE2_dynamic_kernel_B(eta,nBas,nC,nO,nV,nR,nS,eGW,W,KB_dyn)
+      if(dophBSE2) call RGW_phBSE2_dynamic_kernel_B(eta,nBas,nC,nO,nV,nR,nS,eGW,W,KB_dyn)
 
       ! Renormalization factor of the resonant and anti-resonant parts
 
