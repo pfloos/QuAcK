@@ -125,16 +125,16 @@ program QuAcK
                     doACFDT,exchange_kernel,doXBS,                                              &
                     dophBSE,dophBSE2,doppBSE,dBSE,dTDA)
 
-!-----------------------------------------------!
-! Read input information                        !
-!-----------------------------------------------!
-! nC   = number of core orbitals                !
-! nO   = number of occupied orbitals            !
-! nV   = number of virtual orbitals (see below) !
-! nR   = number of Rydberg orbitals             !
-! nBas = number of basis functions              !
-! nOrb = number of orbitals                     !
-!-----------------------------------------------!
+!------------------------------------!
+! Read input information             !
+!------------------------------------!
+! nC   = number of core orbitals     !
+! nO   = number of occupied orbitals !
+! nV   = number of virtual orbitals  !
+! nR   = number of Rydberg orbitals  !
+! nBas = number of basis functions   !
+! nOrb = number of orbitals          !
+!------------------------------------!
 
   call read_molecule(nNuc,nO,nC,nR)
   allocate(ZNuc(nNuc),rNuc(nNuc,ncart))
@@ -264,7 +264,7 @@ program QuAcK
                 dodrCCD,dorCCD,docrCCD,dolCCD,doCIS,doCIS_D,doCID,doCISD,doFCI,dophRPA,dophRPAx,docrRPA,doppRPA, &
                 doG0F2,doevGF2,doqsGF2,doufG0F02,doG0F3,doevGF3,doG0W0,doevGW,doqsGW,doufG0W0,doufGW,doSRGqsGW,  &
                 doG0T0pp,doevGTpp,doqsGTpp,doufG0T0pp,doG0T0eh,doevGTeh,doqsGTeh,                                & 
-                nNuc,nBas,nOrb,nC,nO,nV,nR,ENuc,ZNuc,rNuc,                                               &
+                nNuc,nBas,nOrb,nC,nO,nV,nR,ENuc,ZNuc,rNuc,                                                       &
                 S,T,V,Hc,X,dipole_int_AO,ERI_AO,maxSCF_HF,max_diis_HF,thresh_HF,level_shift,                     &
                 guess_type,mix,reg_MP,maxSCF_CC,max_diis_CC,thresh_CC,spin_conserved,spin_flip,TDA,              &
                 maxSCF_GF,max_diis_GF,renorm_GF,thresh_GF,lin_GF,reg_GF,eta_GF,maxSCF_GW,max_diis_GW,thresh_GW,  &
@@ -280,7 +280,7 @@ program QuAcK
                 dodrCCD,dorCCD,docrCCD,dolCCD,doCIS,doCIS_D,doCID,doCISD,doFCI,dophRPA,dophRPAx,docrRPA,doppRPA, &
                 doG0F2,doevGF2,doqsGF2,doufG0F02,doG0F3,doevGF3,doG0W0,doevGW,doqsGW,doufG0W0,doufGW,doSRGqsGW,  &
                 doG0T0pp,doevGTpp,doqsGTpp,doufG0T0pp,doG0T0eh,doevGTeh,doqsGTeh,                                & 
-                nNuc,nBas,nC,nO,nV,nR,ENuc,ZNuc,rNuc,                                                        &
+                nNuc,nBas,nC,nO,nV,nR,ENuc,ZNuc,rNuc,                                                            &
                 S,T,V,Hc,X,dipole_int_AO,ERI_AO,maxSCF_HF,max_diis_HF,thresh_HF,level_shift,                     &
                 guess_type,mix,reg_MP,maxSCF_CC,max_diis_CC,thresh_CC,spin_conserved,spin_flip,TDA,              &
                 maxSCF_GF,max_diis_GF,renorm_GF,thresh_GF,lin_GF,reg_GF,eta_GF,maxSCF_GW,max_diis_GW,thresh_GW,  &
@@ -295,7 +295,7 @@ program QuAcK
     call GQuAcK(doGtest,doGHF,dostab,dosearch,doMP2,doMP3,doCCD,dopCCD,doDCD,doCCSD,doCCSDT,                  &
                 dodrCCD,dorCCD,docrCCD,dolCCD,dophRPA,dophRPAx,docrRPA,doppRPA,                               &
                 doG0W0,doevGW,doqsGW,doG0F2,doevGF2,doqsGF2,                                                  &
-                nNuc,nBas,sum(nC),sum(nO),sum(nV),sum(nR),ENuc,ZNuc,rNuc,S,T,V,Hc,X,dipole_int_AO,ERI_AO, &
+                nNuc,nBas,sum(nC),sum(nO),sum(nV),sum(nR),ENuc,ZNuc,rNuc,S,T,V,Hc,X,dipole_int_AO,ERI_AO,     &
                 maxSCF_HF,max_diis_HF,thresh_HF,level_shift,guess_type,mix,reg_MP,                            &
                 maxSCF_CC,max_diis_CC,thresh_CC,TDA,maxSCF_GF,max_diis_GF,thresh_GF,lin_GF,reg_GF,eta_GF,     &
                 maxSCF_GW,max_diis_GW,thresh_GW,TDA_W,lin_GW,reg_GW,eta_GW,                                   &

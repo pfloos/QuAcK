@@ -30,7 +30,7 @@ subroutine pCCD(dotest,maxIt,thresh,max_diis,nBas,nOrb,nC,nO,nV,nR, &
 ! Local variables
 
   integer                       :: mu,nu
-  integer                       :: p,q,r,s,t,u,w
+  integer                       :: p,q,r,s
   integer                       :: pq,rs
   integer                       :: i,j,a,b
 
@@ -61,18 +61,12 @@ subroutine pCCD(dotest,maxIt,thresh,max_diis,nBas,nOrb,nC,nO,nV,nR, &
 
   double precision,allocatable  :: rdm1(:,:)
   double precision,allocatable  :: rdm2(:,:,:,:)
-  double precision,allocatable  :: xOO(:,:)
-  double precision,allocatable  :: xVV(:,:)
-  double precision,allocatable  :: xOV(:,:)
-  double precision              :: tr_1rdm
-  double precision              :: tr_2rdm
 
   double precision              :: E1,E2
   double precision,allocatable  :: c(:,:)
   double precision,allocatable  :: h(:,:)
   double precision,allocatable  :: ERI_MO(:,:,:,:)
   double precision,allocatable  :: grad(:)
-  double precision,allocatable  :: tmp(:,:,:,:)
   double precision,allocatable  :: hess(:,:)
   double precision,allocatable  :: hessInv(:,:)
   double precision,allocatable  :: Kap(:,:)
@@ -84,8 +78,6 @@ subroutine pCCD(dotest,maxIt,thresh,max_diis,nBas,nOrb,nC,nO,nV,nR, &
   double precision,allocatable  :: err_diis(:,:)
   double precision,allocatable  :: t2_diis(:,:)
   double precision,allocatable  :: z2_diis(:,:)
-  double precision,external     :: trace_matrix
-  double precision,external     :: Kronecker_delta
           
 ! Hello world
 
@@ -393,170 +385,10 @@ subroutine pCCD(dotest,maxIt,thresh,max_diis,nBas,nOrb,nC,nO,nV,nR, &
     !--------------------------!
  
     allocate(rdm1(N,N),rdm2(N,N,N,N))
-    allocate(xOO(O,O),xVV(V,V),xOV(O,V))
 
-    xOO(:,:) = matmul(t2,transpose(z2))
-    xVV(:,:) = matmul(transpose(z2),t2)
-    xOV(:,:) = matmul(t2,matmul(transpose(z2),t2))
+    call pCCD_rdm(O,V,N,ENuc,h,ERI_MO,t2,z2,rdm1,rdm2)
 
-    ! Form 1RDM
- 
-    rdm1(:,:) = 0d0
- 
-    do i=1,O
-      rdm1(i,i) = 2d0*(1d0 - xOO(i,i))
-    end do
- 
-    do a=1,V
-      rdm1(O+a,O+a) = 2d0*xVV(a,a)
-    end do
- 
-    ! Check 1RDM
- 
-    tr_1rdm = trace_matrix(N,rdm1)
-    write(*,'(A25,F16.10)') ' --> Trace of the 1RDM = ',tr_1rdm
- 
-    if( abs(dble(2*O) - tr_1rdm) > thresh ) & 
-    write(*,*) ' !!! Your 1RDM seems broken !!! '
-    write(*,*)
- 
-    ! write(*,*) '1RDM is diagonal at the pCCD level:'
-    ! call matout(N,N,rdm1)
- 
-    ! Form 2RM
- 
-    rdm2(:,:,:,:) = 0d0
- 
-    ! iijj
- 
-    do i=1,O
-      do j=1,O
-        rdm2(i,i,j,j) = 2d0*xOO(i,j)
-      end do
-    end do
- 
-    ! iiaa
- 
-    do i=1,O
-      do a=1,V
-        rdm2(i,i,O+a,O+a) = 2d0*(t2(i,a) + xOV(i,a) - 2d0*t2(i,a)*(xVV(a,a) + xOO(i,i) - t2(i,a)*z2(i,a)))
-      end do
-    end do
- 
-    ! aaii
- 
-    do i=1,O
-      do a=1,V
-        rdm2(O+a,O+a,i,i) = 2d0*z2(i,a)
-      end do
-    end do
- 
-    ! aabb
- 
-    do a=1,V
-      do b=1,V
-        rdm2(O+a,O+a,O+b,O+b) = 2d0*xVV(a,b)
-      end do
-    end do
- 
-    ! ijij
- 
-    do i=1,O
-      do j=1,O
-        rdm2(i,j,i,j) = 4d0*(1d0 - xOO(i,i) - xOO(j,j))
-      end do
-    end do
- 
-    ! ijji
- 
-    do i=1,O
-      do j=1,O
-        rdm2(i,j,j,i) = - 2d0*(1d0 - xOO(i,i) - xOO(j,j))
-      end do
-    end do
- 
-    ! iiii
- 
-    do i=1,O
-      rdm2(i,i,i,i) = 2d0*(1d0 - xOO(i,i))
-    end do
- 
-    ! iaia
- 
-    do i=1,O
-      do a=1,V
-        rdm2(i,O+a,i,O+a) = 4d0*(xVV(a,a) - t2(i,a)*z2(i,a))
-      end do
-    end do
- 
-    ! iaai
- 
-    do i=1,O
-      do a=1,V
-        rdm2(i,O+a,O+a,i) = - 2d0*(xVV(a,a) - t2(i,a)*z2(i,a))
-      end do
-    end do
- 
-    ! aiai
- 
-    do i=1,O
-      do a=1,V
-        rdm2(O+a,i,O+a,i) = 4d0*(xVV(a,a) - t2(i,a)*z2(i,a))
-      end do
-    end do
- 
-    ! aiia
- 
-    do i=1,O
-      do a=1,V
-        rdm2(O+a,i,i,O+a) = - 2d0*(xVV(a,a) - t2(i,a)*z2(i,a))
-      end do
-    end do
- 
-    ! abab
- 
-    do a=1,V
-      rdm2(O+a,O+a,O+a,O+a) = 2d0*xVV(a,a)
-    end do
- 
-    ! Check 2RDM
- 
-    tr_2rdm = trace_matrix(N**2,rdm2)
-    write(*,'(A25,F16.10)') ' --> Trace of the 2RDM = ',tr_2rdm
- 
-    if( abs(dble(2*O*(2*O-1)) - tr_2rdm) > thresh ) & 
-    write(*,*) ' !!! Your 2RDM seems broken !!! '
-    write(*,*)
- 
-    ! write(*,*) '2RDM is not diagonal at the pCCD level:'
-    ! call matout(N**2,N**2,rdm2)
-
-    deallocate(xOO,xVV,xOV)
     deallocate(t2,z2)
- 
-    ! Compute electronic energy
- 
-    E1 = 0d0
-    E2 = 0d0
- 
-    do p=1,N
-      do q=1,N
-        E1 = E1 + rdm1(p,q)*h(p,q)
-        do r=1,N
-          do s=1,N
-            E2 = E2 + rdm2(p,q,r,s)*ERI_MO(p,q,r,s)
-          end do
-        end do
-      end do
-    end do
- 
-    E2 = 0.5d0*E2
- 
-    write(*,'(A25,F16.10)') ' One-electron energy = ',E1
-    write(*,'(A25,F16.10)') ' Two-electron energy = ',E2
-    write(*,'(A25,F16.10)') ' Electronic   energy = ',E1 + E2
-    write(*,'(A25,F16.10)') ' Total        energy = ',E1 + E2 + ENuc
-    write(*,*)
  
     !--------------------------!
     ! Compute orbital gradient !
@@ -564,33 +396,8 @@ subroutine pCCD(dotest,maxIt,thresh,max_diis,nBas,nOrb,nC,nO,nV,nR, &
  
     allocate(grad(N**2))
  
-    grad(:) = 0d0
- 
-    pq = 0
-    do p=1,N
-      do q=1,N
- 
-        pq = pq + 1
- 
-        do r=1,N
-          grad(pq) = grad(pq) + h(r,p)*rdm1(r,q)  - h(q,r)*rdm1(p,r)
-        end do
- 
-        do r=1,N
-          do s=1,N
-            do t=1,N
-              grad(pq) = grad(pq) + (ERI_MO(r,s,p,t)*rdm2(r,s,q,t) - ERI_MO(q,t,r,s)*rdm2(p,t,r,s))
-            end do
-          end do
-        end do
- 
-      end do
-    end do
- 
-    write(*,*) 'Orbital gradient at the pCCD level:'
-    call matout(N,N,grad)
-    write(*,*)
- 
+    call pCCD_orbital_gradient(O,V,N,h,ERI_MO,rdm1,rdm2,grad)
+
    ! Check convergence of orbital optimization
  
     CvgOrb = maxval(abs(grad))
@@ -606,86 +413,11 @@ subroutine pCCD(dotest,maxIt,thresh,max_diis,nBas,nOrb,nC,nO,nV,nR, &
     ! Compute orbital Hessian !
     !-------------------------!
  
-    allocate(hess(N**2,N**2),tmp(N,N,N,N))
- 
-    tmp(:,:,:,:) = 0d0
- 
-    do p=1,N
-      do q=1,N
- 
-        do r=1,N
-          do s=1,N
- 
-            tmp(p,q,r,s) = - h(s,p)*rdm1(r,q) - h(q,r)*rdm1(p,s)
-            
-            do u=1,N
- 
-              tmp(p,q,r,s) = tmp(p,q,r,s) + 0.5d0*(                          &
-                  Kronecker_delta(q,r)*(h(u,p)*rdm1(u,s) + h(s,u)*rdm1(p,u)) &
-                + Kronecker_delta(p,s)*(h(u,r)*rdm1(u,q) + h(q,u)*rdm1(r,u)) )
- 
-            end do
- 
-            do u=1,N
-              do w=1,N
- 
-              tmp(p,q,r,s) = tmp(p,q,r,s) + ERI_MO(u,w,p,r)*rdm2(u,w,q,s) + ERI_MO(q,s,u,w)*rdm2(p,r,u,w)
- 
-              end do
-            end do
- 
-            do t=1,N
-              do u=1,N
- 
-              tmp(p,q,r,s) = tmp(p,q,r,s) - (                                   &
-                  ERI_MO(s,t,p,u)*rdm2(r,t,q,u) + ERI_MO(t,s,p,u)*rdm2(t,r,q,u) &
-                + ERI_MO(q,u,r,t)*rdm2(p,u,s,t) + ERI_MO(q,u,t,r)*rdm2(p,u,t,s) )
- 
-              end do
-            end do
- 
-            do t=1,N
-              do u=1,N
-                do w=1,N
- 
-                  tmp(p,q,r,s) = tmp(p,q,r,s) + 0.5d0*(                                                    & 
-                      Kronecker_delta(q,r)*(ERI_MO(u,w,p,t)*rdm2(u,w,s,t) + ERI_MO(s,t,u,w)*rdm2(p,t,u,w)) &
-                    + Kronecker_delta(p,s)*(ERI_MO(q,t,u,w)*rdm2(r,t,u,w) + ERI_MO(u,w,r,t)*rdm2(u,w,q,t)) )
- 
-                end do
-              end do
-            end do
- 
-          end do
-        end do
- 
-      end do
-    end do
- 
-    ! Flatten Hessian matrix and add permutations
- 
-    pq = 0
-    do p=1,N
-      do q=1,N
- 
-        pq = pq + 1
-     
-        rs = 0
-        do r=1,N
-          do s=1,N
- 
-            rs = rs + 1
- 
-            hess(pq,rs) = tmp(p,r,q,s) - tmp(r,p,q,s) - tmp(p,r,s,q) + tmp(r,p,s,q)
-!!          hess(pq,rs) = tmp(p,q,r,s) - tmp(q,p,r,s) - tmp(p,q,s,r) + tmp(q,p,s,r)
- 
-          end do
-        end do
- 
-      end do
-    end do
+    allocate(hess(N**2,N**2))
 
-    deallocate(rdm1,rdm2,tmp)
+    call pCCD_orbital_hessian(O,V,N,h,ERI_MO,rdm1,rdm2,hess)
+
+    deallocate(rdm1,rdm2)
  
     allocate(hessInv(N**2,N**2))
  
