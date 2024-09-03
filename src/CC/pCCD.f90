@@ -109,7 +109,7 @@ subroutine pCCD(dotest,maxIt,thresh,max_diis,nBas,nOrb,nC,nO,nV,nR, &
 
   CvgOrb = 1d0
   nItOrb = 0
-  EOld   = ECC
+  EOld   = ERHF
 
   write(*,*)
   write(*,*)'---------------------------------------'

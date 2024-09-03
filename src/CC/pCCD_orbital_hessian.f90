@@ -20,7 +20,7 @@ subroutine pCCD_orbital_hessian(O,V,N,Np,h,ERI_MO,rdm1,rdm2,hess)
   integer                       :: p,q,r,s,t,u,w
   integer                       :: pq,rs
 
-  logical,parameter             :: debug = .true.
+  logical,parameter             :: debug = .false.
 
   double precision,allocatable  :: tmp(:,:,:,:)
 
