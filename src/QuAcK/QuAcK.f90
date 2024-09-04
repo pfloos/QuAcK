@@ -168,8 +168,8 @@ program QuAcK
 
   call wall_time(start_int)
 
-  call read_integrals(nBas, S(1,1), T(1,1), V(1,1), Hc(1,1), ERI_AO(1,1,1,1))
-  call read_dipole_integrals(nBas, dipole_int_AO)
+  call read_integrals(nBas,S,T,V,Hc,ERI_AO)
+  call read_dipole_integrals(nBas,dipole_int_AO)
 
   call wall_time(end_int)
 
