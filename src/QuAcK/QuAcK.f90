@@ -15,7 +15,9 @@ program QuAcK
   logical                       :: doG0W0,doevGW,doqsGW,doufG0W0,doufGW,doSRGqsGW
   logical                       :: doG0T0pp,doevGTpp,doqsGTpp,doufG0T0pp,doG0T0eh,doevGTeh,doqsGTeh
 
-  integer                       :: nNuc, nBas, nOrb
+  integer                       :: nNuc
+  integer                       :: nBas
+  integer                       :: nOrb
   integer                       :: nC(nspin)
   integer                       :: nO(nspin)
   integer                       :: nV(nspin)
