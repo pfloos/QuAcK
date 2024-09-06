@@ -125,21 +125,30 @@ subroutine RGF2_ppBSE_static_kernel_C(ispin,eta,nBas,nC,nO,nV,nR,nVV,lambda,ERI,
               do e=nO+1,nBas-nR
    
                 dem = eGF(m) - eGF(e)
-                num = 2d0*ERI(a,m,c,e)*ERI(b,e,d,m) -     ERI(a,m,c,e)*ERI(b,e,m,d) & 
-                    -     ERI(a,m,e,c)*ERI(b,e,d,m) -     ERI(a,m,e,c)*ERI(b,e,m,d)
- 
+                num = 2d0*ERI(a,m,c,e)*ERI(e,b,m,d) - ERI(a,m,c,e)*ERI(e,b,d,m)  &
+                     -    ERI(a,m,e,c)*ERI(e,b,m,d) - ERI(a,m,e,c)*ERI(e,b,d,m)
+                                                                                 
                 KC_sta(ab,cd) = KC_sta(ab,cd) + num*dem/(dem**2 + eta**2)
-          
-                dem = eGF(m) - eGF(e)
-                num = 2d0*ERI(b,m,c,e)*ERI(a,e,d,m) -     ERI(b,m,c,e)*ERI(a,e,m,d) & 
-                    -     ERI(b,m,e,c)*ERI(a,e,d,m) -     ERI(b,m,e,c)*ERI(a,e,m,d)
- 
+
+                num = 2d0*ERI(a,e,c,m)*ERI(m,b,e,d) - ERI(a,e,c,m)*ERI(m,b,d,e)  &
+                     -    ERI(a,e,m,c)*ERI(m,b,e,d) - ERI(a,e,m,c)*ERI(m,b,d,e)
+                                                                                 
+                KC_sta(ab,cd) = KC_sta(ab,cd) + num*dem/(dem**2 + eta**2) 
+                                                                                 
+                num = 2d0*ERI(b,m,c,e)*ERI(e,a,m,d) - ERI(b,m,c,e)*ERI(e,a,d,m)  &
+                     -    ERI(b,m,e,c)*ERI(e,a,m,d) - ERI(b,m,e,c)*ERI(e,a,d,m)
+                                                                                 
                 KC_sta(ab,cd) = KC_sta(ab,cd) + num*dem/(dem**2 + eta**2)
+
+                num = 2d0*ERI(b,e,c,m)*ERI(m,a,e,d) - ERI(b,e,c,m)*ERI(m,a,d,e)  &
+                     -    ERI(b,e,m,c)*ERI(m,a,e,d) - ERI(b,e,m,c)*ERI(m,a,d,e)
+                                                                                 
+                KC_sta(ab,cd) = KC_sta(ab,cd) + num*dem/(dem**2 + eta**2) 
           
               end do
            end do
  
-           KC_sta(ab,cd) = 2d0*lambda*KC_sta(ab,cd)/sqrt((1d0 + Kronecker_delta(a,b))*(1d0 + Kronecker_delta(c,d)))
+           KC_sta(ab,cd) = lambda*KC_sta(ab,cd)/sqrt((1d0 + Kronecker_delta(a,b))*(1d0 + Kronecker_delta(c,d)))
           
           end do
         end do
@@ -217,17 +226,26 @@ subroutine RGF2_ppBSE_static_kernel_C(ispin,eta,nBas,nC,nO,nV,nR,nVV,lambda,ERI,
            do m=nC+1,nO
              do e=nO+1,nBas-nR
   
-               dem = eGF(m) - eGF(e)
-               num = 2d0*ERI(a,m,c,e)*ERI(b,e,d,m) -     ERI(a,m,c,e)*ERI(b,e,m,d) &
-                   -     ERI(a,m,e,c)*ERI(b,e,d,m) +     ERI(a,m,e,c)*ERI(b,e,m,d)
+                dem = eGF(m) - eGF(e)
+                num = 2d0*ERI(a,m,c,e)*ERI(e,b,m,d) - ERI(a,m,c,e)*ERI(e,b,d,m)  &
+                     -    ERI(a,m,e,c)*ERI(e,b,m,d) + ERI(a,m,e,c)*ERI(e,b,d,m)
+                                                                                 
+                KC_sta(ab,cd) = KC_sta(ab,cd) + num*dem/(dem**2 + eta**2)
 
-               KC_sta(ab,cd) = KC_sta(ab,cd) + 2d0*num*dem/(dem**2 + eta**2)
-         
-               dem = eGF(m) - eGF(e)
-               num = 2d0*ERI(b,m,c,e)*ERI(a,e,d,m) -     ERI(b,m,c,e)*ERI(a,e,m,d) &
-                   -     ERI(b,m,e,c)*ERI(a,e,d,m) +     ERI(b,m,e,c)*ERI(a,e,m,d)
+                num = 2d0*ERI(a,e,c,m)*ERI(m,b,e,d) - ERI(a,e,c,m)*ERI(m,b,d,e)  &
+                     -    ERI(a,e,m,c)*ERI(m,b,e,d) + ERI(a,e,m,c)*ERI(m,b,d,e)
+                                                                                 
+                KC_sta(ab,cd) = KC_sta(ab,cd) + num*dem/(dem**2 + eta**2) 
+                                                                                 
+                num = 2d0*ERI(b,m,c,e)*ERI(e,a,m,d) - ERI(b,m,c,e)*ERI(e,a,d,m)  &
+                     -    ERI(b,m,e,c)*ERI(e,a,m,d) + ERI(b,m,e,c)*ERI(e,a,d,m)
+                                                                                 
+                KC_sta(ab,cd) = KC_sta(ab,cd) - num*dem/(dem**2 + eta**2)
 
-               KC_sta(ab,cd) = KC_sta(ab,cd) - 2d0*num*dem/(dem**2 + eta**2)
+                num = 2d0*ERI(b,e,c,m)*ERI(m,a,e,d) - ERI(b,e,c,m)*ERI(m,a,d,e)  &
+                     -    ERI(b,e,m,c)*ERI(m,a,e,d) + ERI(b,e,m,c)*ERI(m,a,d,e)
+                                                                                 
+                KC_sta(ab,cd) = KC_sta(ab,cd) - num*dem/(dem**2 + eta**2) 
          
              end do
            end do
@@ -256,16 +274,12 @@ subroutine RGF2_ppBSE_static_kernel_C(ispin,eta,nBas,nC,nO,nV,nR,nVV,lambda,ERI,
               do e=nO+1,nBas-nR
    
                 dem = eGF(m) - eGF(e)
-                num =     ERI(a,m,c,e)*ERI(b,e,d,m) -     ERI(a,m,c,e)*ERI(b,e,m,d) &
-                    -     ERI(a,m,e,c)*ERI(b,e,d,m) +     ERI(a,m,e,c)*ERI(b,e,m,d)
- 
-                KC_sta(ab,cd) = KC_sta(ab,cd) + 2d0*num*dem/(dem**2 + eta**2)
-          
-                dem = eGF(m) - eGF(e)
-                num =     ERI(b,m,c,e)*ERI(a,e,d,m) -     ERI(b,m,c,e)*ERI(a,e,m,d) &
-                    -     ERI(b,m,e,c)*ERI(a,e,d,m) +     ERI(b,m,e,c)*ERI(a,e,m,d)
- 
-                KC_sta(ab,cd) = KC_sta(ab,cd) - 2d0*num*dem/(dem**2 + eta**2)
+                num =       (ERI(a,m,c,e) - ERI(a,m,e,c)) * (ERI(e,b,m,d) - ERI(e,b,d,m))
+                num = num + (ERI(a,e,c,m) - ERI(a,e,m,c)) * (ERI(m,b,e,d) - ERI(m,b,d,e))
+                num = num - (ERI(b,m,c,e) - ERI(b,m,e,c)) * (ERI(e,a,m,d) - ERI(e,a,d,m))
+                num = num - (ERI(b,e,c,m) - ERI(b,e,m,c)) * (ERI(m,a,e,d) - ERI(m,a,d,e))
+                                                                              
+                KC_sta(ab,cd) = KC_sta(ab,cd) + num*dem/(dem**2 + eta**2)
           
               end do
             end do
