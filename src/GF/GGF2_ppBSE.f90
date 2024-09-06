@@ -23,8 +23,6 @@ subroutine GGF2_ppBSE(TDA,dBSE,dTDA,eta,nBas,nC,nO,nV,nR,ERI,dipole_int,eGF,EcBS
 
 ! Local variables
 
-  integer                       :: ispin
-
   integer                       :: nOO
   integer                       :: nVV
 
@@ -48,7 +46,8 @@ subroutine GGF2_ppBSE(TDA,dBSE,dTDA,eta,nBas,nC,nO,nV,nR,ERI,dipole_int,eGF,EcBS
 
   double precision,intent(out)  :: EcBSE
 
-  ispin = 4
+! Initialization
+
   EcBSE = 0d0
 
   nOO = nO*(nO-1)/2
@@ -61,13 +60,13 @@ subroutine GGF2_ppBSE(TDA,dBSE,dTDA,eta,nBas,nC,nO,nV,nR,ERI,dipole_int,eGF,EcBS
 
   ! Compute BSE excitation energies
 
-  if(.not.TDA) call RGF2_ppBSE_static_kernel_B(ispin,eta,nBas,nC,nO,nV,nR,nOO,nVV,1d0,ERI,eGF,KB_sta)
-               call RGF2_ppBSE_static_kernel_C(ispin,eta,nBas,nC,nO,nV,nR,nVV,1d0,ERI,eGF,KC_sta)
-               call RGF2_ppBSE_static_kernel_D(ispin,eta,nBas,nC,nO,nV,nR,nOO,1d0,ERI,eGF,KD_sta)
+  if(.not.TDA) call GGF2_ppBSE_static_kernel_B(eta,nBas,nC,nO,nV,nR,nOO,nVV,1d0,ERI,eGF,KB_sta)
+               call GGF2_ppBSE_static_kernel_C(eta,nBas,nC,nO,nV,nR,nVV,1d0,ERI,eGF,KC_sta)
+               call GGF2_ppBSE_static_kernel_D(eta,nBas,nC,nO,nV,nR,nOO,1d0,ERI,eGF,KD_sta)
 
-  if(.not.TDA) call ppLR_B(ispin,nBas,nC,nO,nV,nR,nOO,nVV,1d0,ERI,Bpp)
-               call ppLR_C(ispin,nBas,nC,nO,nV,nR,nVV,1d0,eGF,ERI,Cpp)
-               call ppLR_D(ispin,nBas,nC,nO,nV,nR,nOO,1d0,eGF,ERI,Dpp)
+  if(.not.TDA) call ppGLR_B(nBas,nC,nO,nV,nR,nOO,nVV,1d0,ERI,Bpp)
+               call ppGLR_C(nBas,nC,nO,nV,nR,nVV,1d0,eGF,ERI,Cpp)
+               call ppGLR_D(nBas,nC,nO,nV,nR,nOO,1d0,eGF,ERI,Dpp)
 
   Bpp(:,:) = Bpp(:,:) + KB_sta(:,:)
   Cpp(:,:) = Cpp(:,:) + KC_sta(:,:)
@@ -82,7 +81,7 @@ subroutine GGF2_ppBSE(TDA,dBSE,dTDA,eta,nBas,nC,nO,nV,nR,ERI,dipole_int,eGF,EcBS
   !----------------------------------------------------!
 
 ! if(dBSE) &
-!     call RGF2_ppBSE_dynamic_perturbation(ispin,dTDA,eta,nBas,nC,nO,nV,nR,nOO,nVV,eGF,ERI,dipole_int, &
+!     call GGF2_ppBSE_dynamic_perturbation(dTDA,eta,nBas,nC,nO,nV,nR,nOO,nVV,eGF,ERI,dipole_int, &
 !                                          Om1,X1,Y1,Om2,X2,Y2,KB_sta,KC_sta,KD_sta)
 
   deallocate(Om1,X1,Y1,Om2,X2,Y2,Bpp,Cpp,Dpp,KB_sta,KC_sta,KD_sta)

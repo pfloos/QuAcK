@@ -23,7 +23,6 @@ subroutine ppGRPA(dotest,TDA,nBas,nC,nO,nV,nR,ENuc,EGHF,ERI,dipole_int,eHF)
 
 ! Local variables
 
-  integer                       :: ispin
   integer                       :: nOO
   integer                       :: nVV
   double precision,allocatable  :: Bpp(:,:)
@@ -50,19 +49,17 @@ subroutine ppGRPA(dotest,TDA,nBas,nC,nO,nV,nR,ENuc,EGHF,ERI,dipole_int,eHF)
 
   EcRPA = 0d0
 
-  ispin = 4
-
   nOO = nO*(nO-1)/2
   nVV = nV*(nV-1)/2
 
   allocate(Om1(nVV),X1(nVV,nVV),Y1(nOO,nVV),Om2(nOO),X2(nVV,nOO),Y2(nOO,nOO), &
            Bpp(nVV,nOO),Cpp(nVV,nVV),Dpp(nOO,nOO))
 
-  if(.not.TDA) call ppLR_B(ispin,nBas,nC,nO,nV,nR,nOO,nVV,1d0,ERI,Bpp)
-               call ppLR_C(ispin,nBas,nC,nO,nV,nR,nVV,1d0,eHF,ERI,Cpp)
-               call ppLR_D(ispin,nBas,nC,nO,nV,nR,nOO,1d0,eHF,ERI,Dpp)
+  if(.not.TDA) call ppGLR_B(nBas,nC,nO,nV,nR,nOO,nVV,1d0,ERI,Bpp)
+               call ppGLR_C(nBas,nC,nO,nV,nR,nVV,1d0,eHF,ERI,Cpp)
+               call ppGLR_D(nBas,nC,nO,nV,nR,nOO,1d0,eHF,ERI,Dpp)
 
-  call ppLR(TDA,nOO,nVV,Bpp,Cpp,Dpp,Om1,X1,Y1,Om2,X2,Y2,EcRPA)
+  call ppGLR(TDA,nOO,nVV,Bpp,Cpp,Dpp,Om1,X1,Y1,Om2,X2,Y2,EcRPA)
 
 !   call print_transition_vectors_pp(.true.,nBas,nC,nO,nV,nR,nOO,nVV,dipole_int,Om1,X1,Y1,Om2,X2,Y2)
 

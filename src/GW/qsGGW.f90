@@ -58,7 +58,6 @@ subroutine qsGGW(dotest,maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,dop
   integer                       :: nSCF
   integer                       :: nBasSq
   integer                       :: nBas2Sq
-  integer                       :: ispin
   integer                       :: ixyz
   integer                       :: n_diis
   double precision              :: ET,ETaa,ETbb
@@ -154,7 +153,6 @@ subroutine qsGGW(dotest,maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,dop
   
   nSCF          = -1
   n_diis        = 0
-  ispin         = 3
   Conv          = 1d0
   P(:,:)        = PHF(:,:)
   eGW(:)        = eHF(:)
@@ -253,11 +251,11 @@ subroutine qsGGW(dotest,maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,dop
 
 !   Compute linear response
 
-    call phLR_A(ispin,dRPA,nBas2,nC,nO,nV,nR,nS,1d0,eGW,ERI_MO,Aph)
-    if(.not.TDA_W) call phLR_B(ispin,dRPA,nBas2,nC,nO,nV,nR,nS,1d0,ERI_MO,Bph)
+                   call phGLR_A(dRPA,nBas2,nC,nO,nV,nR,nS,1d0,eGW,ERI_MO,Aph)
+    if(.not.TDA_W) call phGLR_B(dRPA,nBas2,nC,nO,nV,nR,nS,1d0,ERI_MO,Bph)
 
-    call phLR(TDA_W,nS,Aph,Bph,EcRPA,Om,XpY,XmY)
-    if(print_W) call print_excitation_energies('phRPA@GW@GHF','spinorbital',nS,Om)
+    call phGLR(TDA_W,nS,Aph,Bph,EcRPA,Om,XpY,XmY)
+    if(print_W) call print_excitation_energies('phRPA@GW@GHF','generalized',nS,Om)
 
 !   Compute correlation part of the self-energy 
 

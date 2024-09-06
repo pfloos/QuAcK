@@ -1,4 +1,4 @@
-subroutine phGRPA(dotest,TDA,nBas,nC,nO,nV,nR,nS,ENuc,EGHF,ERI,dipole_int,eHF)
+subroutine phGRPA(dotest,TDA,nOrb,nC,nO,nV,nR,nS,ENuc,EGHF,ERI,dipole_int,eHF)
 
 ! Perform a direct random phase approximation calculation
 
@@ -11,7 +11,7 @@ subroutine phGRPA(dotest,TDA,nBas,nC,nO,nV,nR,nS,ENuc,EGHF,ERI,dipole_int,eHF)
   logical,intent(in)            :: dotest
 
   logical,intent(in)            :: TDA
-  integer,intent(in)            :: nBas
+  integer,intent(in)            :: nOrb
   integer,intent(in)            :: nC
   integer,intent(in)            :: nO
   integer,intent(in)            :: nV
@@ -19,13 +19,12 @@ subroutine phGRPA(dotest,TDA,nBas,nC,nO,nV,nR,nS,ENuc,EGHF,ERI,dipole_int,eHF)
   integer,intent(in)            :: nS
   double precision,intent(in)   :: ENuc
   double precision,intent(in)   :: EGHF
-  double precision,intent(in)   :: eHF(nBas)
-  double precision,intent(in)   :: ERI(nBas,nBas,nBas,nBas)
-  double precision,intent(in)   :: dipole_int(nBas,nBas,ncart)
+  double precision,intent(in)   :: eHF(nOrb)
+  double precision,intent(in)   :: ERI(nOrb,nOrb,nOrb,nOrb)
+  double precision,intent(in)   :: dipole_int(nOrb,nOrb,ncart)
 
 ! Local variables
 
-  integer                       :: ispin
   logical                       :: dRPA
   double precision              :: lambda
 
@@ -62,14 +61,12 @@ subroutine phGRPA(dotest,TDA,nBas,nC,nO,nV,nR,nS,ENuc,EGHF,ERI,dipole_int,eHF)
 
   allocate(Om(nS),XpY(nS,nS),XmY(nS,nS),Aph(nS,nS),Bph(nS,nS))
 
-  ispin = 3
+               call phGLR_A(dRPA,nOrb,nC,nO,nV,nR,nS,lambda,eHF,ERI,Aph)
+  if(.not.TDA) call phGLR_B(dRPA,nOrb,nC,nO,nV,nR,nS,lambda,ERI,Bph)
 
-  call phLR_A(ispin,dRPA,nBas,nC,nO,nV,nR,nS,lambda,eHF,ERI,Aph)
-  if(.not.TDA) call phLR_B(ispin,dRPA,nBas,nC,nO,nV,nR,nS,lambda,ERI,Bph)
-
-  call phLR(TDA,nS,Aph,Bph,EcRPA,Om,XpY,XmY)
+  call phGLR(TDA,nS,Aph,Bph,EcRPA,Om,XpY,XmY)
   call print_excitation_energies('phRPA@GHF','spinorbital',nS,Om)
-  call phLR_transition_vectors(.true.,nBas,nC,nO,nV,nR,nS,dipole_int,Om,XpY,XmY)
+  call phLR_transition_vectors(.true.,nOrb,nC,nO,nV,nR,nS,dipole_int,Om,XpY,XmY)
 
   write(*,*)
   write(*,*)'-------------------------------------------------------------------------------'

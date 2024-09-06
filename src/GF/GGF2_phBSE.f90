@@ -25,7 +25,6 @@ subroutine GGF2_phBSE(TDA,dBSE,dTDA,eta,nBas,nC,nO,nV,nR,nS,ERI,dipole_int,eGF,E
 ! Local variables
 
   logical                       :: dRPA = .false.
-  integer                       :: ispin
   double precision,allocatable  :: OmBSE(:)
   double precision,allocatable  :: XpY(:,:)
   double precision,allocatable  :: XmY(:,:)
@@ -43,16 +42,15 @@ subroutine GGF2_phBSE(TDA,dBSE,dTDA,eta,nBas,nC,nO,nV,nR,nS,ERI,dipole_int,eGF,E
   allocate(OmBSE(nS),XpY(nS,nS),XmY(nS,nS),A_sta(nS,nS),KA_sta(nS,nS))
   allocate(B_sta(nS,nS),KB_sta(nS,nS))
 
-  ispin = 3
   EcBSE = 0d0
 
-               call phLR_A(ispin,dRPA,nBas,nC,nO,nV,nR,nS,1d0,eGF,ERI,A_sta)
-  if(.not.TDA) call phLR_B(ispin,dRPA,nBas,nC,nO,nV,nR,nS,1d0,ERI,B_sta)
+               call phGLR_A(dRPA,nBas,nC,nO,nV,nR,nS,1d0,eGF,ERI,A_sta)
+  if(.not.TDA) call phGLR_B(dRPA,nBas,nC,nO,nV,nR,nS,1d0,ERI,B_sta)
 
   ! Compute static kernel
 
-               call RGF2_phBSE_static_kernel_A(ispin,eta,nBas,nC,nO,nV,nR,nS,1d0,ERI,eGF,KA_sta)
-  if(.not.TDA) call RGF2_phBSE_static_kernel_B(ispin,eta,nBas,nC,nO,nV,nR,nS,1d0,ERI,eGF,KB_sta)
+               call GGF2_phBSE_static_kernel_A(eta,nBas,nC,nO,nV,nR,nS,1d0,ERI,eGF,KA_sta)
+  if(.not.TDA) call GGF2_phBSE_static_kernel_B(eta,nBas,nC,nO,nV,nR,nS,1d0,ERI,eGF,KB_sta)
 
                A_sta(:,:) = A_sta(:,:) + KA_sta(:,:)
   if(.not.TDA) B_sta(:,:) = B_sta(:,:) + KB_sta(:,:)
@@ -60,12 +58,12 @@ subroutine GGF2_phBSE(TDA,dBSE,dTDA,eta,nBas,nC,nO,nV,nR,nS,ERI,dipole_int,eGF,E
   ! Compute phBSE@GF2 excitation energies
 
   call phLR(TDA,nS,A_sta,B_sta,EcBSE,OmBSE,XpY,XmY)
-  call print_excitation_energies('phBSE@GGF2','spinorbital',nS,OmBSE)
+  call print_excitation_energies('phBSE@GGF2','generalized',nS,OmBSE)
   call phLR_transition_vectors(.true.,nBas,nC,nO,nV,nR,nS,dipole_int,OmBSE,XpY,XmY)
 
   ! Compute dynamic correction for BSE via perturbation theory
 
 ! if(dBSE) &
-!   call GF2_phBSE_dynamic_perturbation(dTDA,ispin,eta,nBas,nC,nO,nV,nR,nS,ERI,dipole_int,eGF,KA_sta,KB_sta,OmBSE,XpY,XmY)
+!   call GGF2_phBSE_dynamic_perturbation(dTDA,eta,nBas,nC,nO,nV,nR,nS,ERI,dipole_int,eGF,KA_sta,KB_sta,OmBSE,XpY,XmY)
 
 end subroutine 
