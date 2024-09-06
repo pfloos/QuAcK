@@ -291,11 +291,11 @@ subroutine qsRGF2(dotest, maxSCF, thresh, max_diis, dophBSE, doppBSE, TDA,   &
 
   deallocate(c, cp, P, F, Fp, J, K, SigC, SigCp, Z, error, error_diis, F_diis)
 
-! Perform BSE calculation
+! Perform phBSE@GF2 calculation
 
   if(dophBSE) then
 
-    call RGF2_phBSE2(TDA, dBSE, dTDA, singlet, triplet, eta, nOrb, nC, nO, &
+    call RGF2_phBSE(TDA, dBSE, dTDA, singlet, triplet, eta, nOrb, nC, nO, &
                     nV, nR, nS, ERI_MO, dipole_int_MO, eGF, EcBSE)
 
     write(*,*)
@@ -310,11 +310,11 @@ subroutine qsRGF2(dotest, maxSCF, thresh, max_diis, dophBSE, doppBSE, TDA,   &
   end if
 
 
-! Perform ppBSE2 calculation
+! Perform ppBSE@GF2 calculation
 
   if(doppBSE) then
 
-    call RGF2_ppBSE2(TDA, dBSE, dTDA, singlet, triplet, eta, nOrb, &
+    call RGF2_ppBSE(TDA, dBSE, dTDA, singlet, triplet, eta, nOrb, &
                     nC, nO, nV, nR, ERI_MO, dipole_int_MO, eGF, EcBSE)
 
     write(*,*)

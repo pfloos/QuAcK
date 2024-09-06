@@ -197,7 +197,7 @@ subroutine evUGF2(dotest,maxSCF,thresh,max_diis,BSE,TDA,dBSE,dTDA,spin_conserved
 
   if(BSE) then
 
-    print*,'!!! BSE2 NYI for evUGF2 !!!'
+    print*,'!!! BSE@GF2 NYI for evUGF2 !!!'
 
   end if
 

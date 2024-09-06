@@ -1,6 +1,6 @@
-subroutine RGF2_ppBSE2_dynamic_kernel_B(ispin,eta,nBas,nC,nO,nV,nR,nOO,nVV,lambda,ERI,eGF,KB_dyn)
+subroutine RGF2_ppBSE_dynamic_kernel_B(ispin,eta,nBas,nC,nO,nV,nR,nOO,nVV,lambda,ERI,eGF,KB_dyn)
 
-! Compute the resonant part of the dynamic BSE2 matrix
+! Compute the resonant part of the dynamic BSE@GF2 matrix
 
   implicit none
   include 'parameters.h'

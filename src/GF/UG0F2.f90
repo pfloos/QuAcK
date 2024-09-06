@@ -124,7 +124,7 @@ subroutine UG0F2(dotest,BSE,TDA,dBSE,dTDA,spin_conserved,spin_flip,linearize,eta
 
   if(BSE) then
 
-    print*,'!!! BSE2 NYI for UG0F2 !!!'
+    print*,'!!! BSE@GF2 NYI for UG0F2 !!!'
 
   end if
 

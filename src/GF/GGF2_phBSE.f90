@@ -1,4 +1,4 @@
-subroutine GGF2_phBSE2(TDA,dBSE,dTDA,eta,nBas,nC,nO,nV,nR,nS,ERI,dipole_int,eGF,EcBSE)
+subroutine GGF2_phBSE(TDA,dBSE,dTDA,eta,nBas,nC,nO,nV,nR,nS,ERI,dipole_int,eGF,EcBSE)
 
 ! Compute the second-order Bethe-Salpeter excitation energies
 
@@ -51,21 +51,21 @@ subroutine GGF2_phBSE2(TDA,dBSE,dTDA,eta,nBas,nC,nO,nV,nR,nS,ERI,dipole_int,eGF,
 
   ! Compute static kernel
 
-               call RGF2_phBSE2_static_kernel_A(ispin,eta,nBas,nC,nO,nV,nR,nS,1d0,ERI,eGF,KA_sta)
-  if(.not.TDA) call RGF2_phBSE2_static_kernel_B(ispin,eta,nBas,nC,nO,nV,nR,nS,1d0,ERI,eGF,KB_sta)
+               call RGF2_phBSE_static_kernel_A(ispin,eta,nBas,nC,nO,nV,nR,nS,1d0,ERI,eGF,KA_sta)
+  if(.not.TDA) call RGF2_phBSE_static_kernel_B(ispin,eta,nBas,nC,nO,nV,nR,nS,1d0,ERI,eGF,KB_sta)
 
                A_sta(:,:) = A_sta(:,:) + KA_sta(:,:)
   if(.not.TDA) B_sta(:,:) = B_sta(:,:) + KB_sta(:,:)
 
-  ! Compute phBSE2@GF2 excitation energies
+  ! Compute phBSE@GF2 excitation energies
 
   call phLR(TDA,nS,A_sta,B_sta,EcBSE,OmBSE,XpY,XmY)
-  call print_excitation_energies('phBSE2@GGF2','spinorbital',nS,OmBSE)
+  call print_excitation_energies('phBSE@GGF2','spinorbital',nS,OmBSE)
   call phLR_transition_vectors(.true.,nBas,nC,nO,nV,nR,nS,dipole_int,OmBSE,XpY,XmY)
 
   ! Compute dynamic correction for BSE via perturbation theory
 
 ! if(dBSE) &
-!   call GF2_phBSE2_dynamic_perturbation(dTDA,ispin,eta,nBas,nC,nO,nV,nR,nS,ERI,dipole_int,eGF,KA_sta,KB_sta,OmBSE,XpY,XmY)
+!   call GF2_phBSE_dynamic_perturbation(dTDA,ispin,eta,nBas,nC,nO,nV,nR,nS,ERI,dipole_int,eGF,KA_sta,KB_sta,OmBSE,XpY,XmY)
 
 end subroutine 

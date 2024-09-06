@@ -1,6 +1,6 @@
-subroutine RGF2_phBSE2_dynamic_kernel_B(ispin,eta,nBas,nC,nO,nV,nR,nS,lambda,ERI,eGF,KB_dyn)
+subroutine RGF2_phBSE_dynamic_kernel_B(ispin,eta,nBas,nC,nO,nV,nR,nS,lambda,ERI,eGF,KB_dyn)
 
-! Compute the anti-resonant part of the dynamic BSE2 matrix
+! Compute the anti-resonant part of the dynamic BSE@GF2 matrix
 
   implicit none
   include 'parameters.h'

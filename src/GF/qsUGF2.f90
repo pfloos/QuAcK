@@ -333,7 +333,7 @@ subroutine qsUGF2(dotest,maxSCF,thresh,max_diis,BSE,TDA,dBSE,dTDA,spin_conserved
 
   if(BSE) then
 
-    print*,'!!! BSE2 NYI for qsUGF2 !!!'
+    print*,'!!! BSE@GF(2) NYI for qsUGF2 !!!'
 
   end if
 
