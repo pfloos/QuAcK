@@ -39,7 +39,8 @@ subroutine RGF2_ppBSE_static_kernel_C(ispin,eta,nBas,nC,nO,nV,nR,nVV,lambda,ERI,
   KC_sta(:,:) = 0d0
   eta2 = eta * eta
 
-  allocate(Om_tmp(nO,nV))
+  allocate(Om_tmp(nBas,nBas))
+  Om_tmp(:,:) = 0d0
 
   ! Compute the energy differences and denominator once and store them in a temporary array
   !$OMP PARALLEL DEFAULT(NONE) PRIVATE(m,e,dem) SHARED(nC,nO,nBas,nR, eta2, eGF, Om_tmp)
@@ -196,7 +197,46 @@ subroutine RGF2_ppBSE_static_kernel_C(ispin,eta,nBas,nC,nO,nV,nR,nVV,lambda,ERI,
 
   end if
 
+  if(ispin == 4) then
+ 
+    ab = 0
+    do a=nO+1,nBas-nR
+      do b=a+1,nBas-nR
+        ab = ab + 1
+ 
+        cd = 0
+        do c=nO+1,nBas-nR
+          do d=c+1,nBas-nR
+            cd = cd + 1
+ 
+            do m=nC+1,nO
+              do e=nO+1,nBas-nR
+   
+                dem = eGF(m) - eGF(e)
+                num =     ERI(a,m,c,e)*ERI(b,e,d,m) -     ERI(a,m,c,e)*ERI(b,e,m,d) &
+                    -     ERI(a,m,e,c)*ERI(b,e,d,m) +     ERI(a,m,e,c)*ERI(b,e,m,d)
+ 
+                KC_sta(ab,cd) = KC_sta(ab,cd) + 2d0*num*dem/(dem**2 + eta**2)
+          
+                dem = eGF(m) - eGF(e)
+                num =     ERI(b,m,c,e)*ERI(a,e,d,m) -     ERI(b,m,c,e)*ERI(a,e,m,d) &
+                    -     ERI(b,m,e,c)*ERI(a,e,d,m) +     ERI(b,m,e,c)*ERI(a,e,m,d)
+ 
+                KC_sta(ab,cd) = KC_sta(ab,cd) - 2d0*num*dem/(dem**2 + eta**2)
+          
+              end do
+            end do
+ 
+          end do
+        end do
+ 
+      end do
+    end do
+
+  end if
   
+! Second-order correlation kernel for the block C of the spinorbital manifold
+
 !  --- --- ---
 !  Naive implementation
 !  --- --- ---

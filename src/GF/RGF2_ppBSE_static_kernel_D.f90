@@ -116,4 +116,44 @@ subroutine RGF2_ppBSE_static_kernel_D(ispin,eta,nBas,nC,nO,nV,nR,nOO,lambda,ERI,
 
   end if
 
+! Second-order correlation kernel for the block D of the spinorbital manifold
+
+  if(ispin == 4) then
+
+    ij = 0
+    do i=nC+1,nO
+      do j=i+1,nO
+        ij = ij + 1
+
+        kl = 0
+        do k=nC+1,nO
+          do l=k+1,nO
+            kl = kl + 1
+  
+            do m=nC+1,nO
+              do e=nO+1,nBas-nR
+     
+                dem = - eGF(e) + eGF(m)
+                num =     ERI(i,e,k,m)*ERI(j,m,l,e) -     ERI(i,e,k,m)*ERI(j,m,e,l) &
+                    -     ERI(i,e,m,k)*ERI(j,m,l,e) +     ERI(i,e,m,k)*ERI(j,m,e,l)
+
+                KD_sta(ij,kl) = KD_sta(ij,kl) + 2d0*num*dem/(dem**2 + eta**2)
+
+                dem = - eGF(e) + eGF(m)
+                num =     ERI(j,e,k,m)*ERI(i,m,l,e) -     ERI(j,e,k,m)*ERI(i,m,e,l) &
+                    -     ERI(j,e,m,k)*ERI(i,m,l,e) +     ERI(j,e,m,k)*ERI(i,m,e,l)
+
+                KD_sta(ij,kl) = KD_sta(ij,kl) - 2d0*num*dem/(dem**2 + eta**2)
+
+              end do
+            end do
+
+          end do
+        end do
+
+      end do
+    end do
+
+  end if
+
 end subroutine 
