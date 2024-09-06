@@ -52,13 +52,13 @@ subroutine RGF2_ppBSE_static_kernel_D(ispin,eta,nBas,nC,nO,nV,nR,nOO,lambda,ERI,
             do m=nC+1,nO
               do e=nO+1,nBas-nR
      
-                dem = - eGF(e) + eGF(m)
+                dem = eGF(m) - eGF(e) 
                 num = 2d0*ERI(i,e,k,m)*ERI(j,m,l,e) -     ERI(i,e,k,m)*ERI(j,m,e,l) & 
                     -     ERI(i,e,m,k)*ERI(j,m,l,e) -     ERI(i,e,m,k)*ERI(j,m,e,l)
 
                 KD_sta(ij,kl) = KD_sta(ij,kl) + num*dem/(dem**2 + eta**2)
             
-                dem = - eGF(e) + eGF(m)
+                dem = eGF(m) - eGF(e) 
                 num = 2d0*ERI(j,e,k,m)*ERI(i,m,l,e) -     ERI(j,e,k,m)*ERI(i,m,e,l) & 
                     -     ERI(j,e,m,k)*ERI(i,m,l,e) -     ERI(j,e,m,k)*ERI(i,m,e,l)
 
@@ -68,6 +68,7 @@ subroutine RGF2_ppBSE_static_kernel_D(ispin,eta,nBas,nC,nO,nV,nR,nOO,lambda,ERI,
             end do
 
             KD_sta(ij,kl) = 2d0*lambda*KD_sta(ij,kl)/sqrt((1d0 + Kronecker_delta(i,j))*(1d0 + Kronecker_delta(k,l)))
+
           end do
         end do
 

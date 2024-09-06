@@ -68,6 +68,7 @@ subroutine RGF2_ppBSE_static_kernel_B(ispin,eta,nBas,nC,nO,nV,nR,nOO,nVV,lambda,
             end do
 
             KB_sta(ab,ij) = 2d0*lambda*KB_sta(ab,ij)/sqrt((1d0 + Kronecker_delta(a,b))*(1d0 + Kronecker_delta(i,j)))
+
           end do
         end do
 
