@@ -1,4 +1,4 @@
-subroutine ppLR_D(ispin,nBas,nC,nO,nV,nR,nOO,lambda,e,ERI,Dpp)
+subroutine ppLR_D(ispin,nOrb,nC,nO,nV,nR,nOO,lambda,e,ERI,Dpp)
 
 ! Compute the D matrix of the pp channel
 
@@ -8,14 +8,14 @@ subroutine ppLR_D(ispin,nBas,nC,nO,nV,nR,nOO,lambda,e,ERI,Dpp)
 ! Input variables
 
   integer,intent(in)            :: ispin
-  integer,intent(in)            :: nBas
+  integer,intent(in)            :: nOrb
   integer,intent(in)            :: nC
   integer,intent(in)            :: nO
   integer,intent(in)            :: nV
   integer,intent(in)            :: nR
   integer,intent(in)            :: nOO
   double precision,intent(in)   :: lambda
-  double precision,intent(in)   :: e(nBas),ERI(nBas,nBas,nBas,nBas) 
+  double precision,intent(in)   :: e(nOrb),ERI(nOrb,nOrb,nOrb,nOrb) 
   
 ! Local variables
 

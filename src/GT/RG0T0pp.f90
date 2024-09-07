@@ -1,5 +1,5 @@
 subroutine RG0T0pp(dotest,doACFDT,exchange_kernel,doXBS,dophBSE,TDA_T,TDA,dBSE,dTDA,doppBSE,singlet,triplet, & 
-                   linearize,eta,regularize,nBas,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,dipole_int,eHF)
+                   linearize,eta,regularize,nOrb,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,dipole_int,eHF)
 
 ! Perform one-shot calculation with a T-matrix self-energy (G0T0)
 
@@ -25,7 +25,7 @@ subroutine RG0T0pp(dotest,doACFDT,exchange_kernel,doXBS,dophBSE,TDA_T,TDA,dBSE,d
   double precision,intent(in)   :: eta
   logical,intent(in)            :: regularize
 
-  integer,intent(in)            :: nBas
+  integer,intent(in)            :: nOrb
   integer,intent(in)            :: nC
   integer,intent(in)            :: nO
   integer,intent(in)            :: nV
@@ -33,9 +33,9 @@ subroutine RG0T0pp(dotest,doACFDT,exchange_kernel,doXBS,dophBSE,TDA_T,TDA,dBSE,d
   integer,intent(in)            :: nS
   double precision,intent(in)   :: ENuc
   double precision,intent(in)   :: ERHF
-  double precision,intent(in)   :: eHF(nBas)
-  double precision,intent(in)   :: ERI(nBas,nBas,nBas,nBas)
-  double precision,intent(in)   :: dipole_int(nBas,nBas,ncart)
+  double precision,intent(in)   :: eHF(nOrb)
+  double precision,intent(in)   :: ERI(nOrb,nOrb,nOrb,nOrb)
+  double precision,intent(in)   :: dipole_int(nOrb,nOrb,ncart)
 
 ! Local variables
 
@@ -45,6 +45,7 @@ subroutine RG0T0pp(dotest,doACFDT,exchange_kernel,doXBS,dophBSE,TDA_T,TDA,dBSE,d
   integer                       :: iblock
   integer                       :: nOOs,nOOt
   integer                       :: nVVs,nVVt
+  integer                       :: n_states, n_states_diag
   double precision              :: EcRPA(nspin)
   double precision              :: EcBSE(nspin)
   double precision              :: EcGM
@@ -63,6 +64,7 @@ subroutine RG0T0pp(dotest,doACFDT,exchange_kernel,doXBS,dophBSE,TDA_T,TDA,dBSE,d
   double precision,allocatable  :: Z(:)
   double precision,allocatable  :: eGT(:)
   double precision,allocatable  :: eGTlin(:)
+  double precision, allocatable :: Om(:), R(:,:)
 
 
 ! Output variables
@@ -92,8 +94,8 @@ subroutine RG0T0pp(dotest,doACFDT,exchange_kernel,doXBS,dophBSE,TDA_T,TDA,dBSE,d
 
 ! Dimensions of the pp-RPA linear reponse matrices
 
-! nOOs = nO*(nO + 1)/2
-! nVVs = nV*(nV + 1)/2
+  !nOOs = nO*(nO + 1)/2
+  !nVVs = nV*(nV + 1)/2
 
   nOOs = nO*nO
   nVVs = nV*nV
@@ -105,29 +107,38 @@ subroutine RG0T0pp(dotest,doACFDT,exchange_kernel,doXBS,dophBSE,TDA_T,TDA,dBSE,d
 
   allocate(Om1s(nVVs),X1s(nVVs,nVVs),Y1s(nOOs,nVVs),    & 
            Om2s(nOOs),X2s(nVVs,nOOs),Y2s(nOOs,nOOs),    & 
-           rho1s(nBas,nBas,nVVs),rho2s(nBas,nBas,nOOs), & 
+           rho1s(nOrb,nOrb,nVVs),rho2s(nOrb,nOrb,nOOs), & 
            Om1t(nVVt),X1t(nVVt,nVVt),Y1t(nOOt,nVVt),    & 
            Om2t(nOOt),X2t(nVVt,nOOt),Y2t(nOOt,nOOt),    & 
-           rho1t(nBas,nBas,nVVt),rho2t(nBas,nBas,nOOt), & 
-           Sig(nBas),Z(nBas),eGT(nBas),eGTlin(nBas))
+           rho1t(nOrb,nOrb,nVVt),rho2t(nOrb,nOrb,nOOt), & 
+           Sig(nOrb),Z(nOrb),eGT(nOrb),eGTlin(nOrb))
 
 !----------------------------------------------
 ! alpha-beta block
 !----------------------------------------------
 
   ispin  = 1
-! iblock = 1
+  !iblock = 1
   iblock = 3
 
 ! Compute linear response
 
   allocate(Bpp(nVVs,nOOs),Cpp(nVVs,nVVs),Dpp(nOOs,nOOs))
 
-  call ppLR_C(iblock,nBas,nC,nO,nV,nR,nVVs,1d0,eHF,ERI,Cpp)
-  call ppLR_D(iblock,nBas,nC,nO,nV,nR,nOOs,1d0,eHF,ERI,Dpp)
-  if(.not.TDA_T) call ppLR_B(iblock,nBas,nC,nO,nV,nR,nOOs,nVVs,1d0,ERI,Bpp)
+  call ppLR_C(iblock,nOrb,nC,nO,nV,nR,nVVs,1d0,eHF,ERI,Cpp)
+  call ppLR_D(iblock,nOrb,nC,nO,nV,nR,nOOs,1d0,eHF,ERI,Dpp)
+  if(.not.TDA_T) call ppLR_B(iblock,nOrb,nC,nO,nV,nR,nOOs,nVVs,1d0,ERI,Bpp)
 
   call ppLR(TDA_T,nOOs,nVVs,Bpp,Cpp,Dpp,Om1s,X1s,Y1s,Om2s,X2s,Y2s,EcRPA(ispin))
+
+  !n_states = nOOs + 5
+  !n_states_diag = n_states + 4
+  !allocate(Om(nOOs+nVVs), R(nOOs+nVVs,n_states_diag))
+  !call ppLR_RG0T0pp_davidson(iblock, TDA_T, nC, nO, nR, nOrb, nOOs, nVVs, 1.d0, eHF, 0.d0, ERI, Om, R, n_states, n_states_diag)
+  !print*, 'LAPACK:'
+  !print*, Om2s
+  !print*, Om1s
+  !stop
 
   deallocate(Bpp,Cpp,Dpp)
 
@@ -146,11 +157,20 @@ subroutine RG0T0pp(dotest,doACFDT,exchange_kernel,doXBS,dophBSE,TDA_T,TDA,dBSE,d
 
   allocate(Bpp(nVVt,nOOt),Cpp(nVVt,nVVt),Dpp(nOOt,nOOt))
 
-  call ppLR_C(iblock,nBas,nC,nO,nV,nR,nVVt,1d0,eHF,ERI,Cpp)
-  call ppLR_D(iblock,nBas,nC,nO,nV,nR,nOOt,1d0,eHF,ERI,Dpp)
-  if(.not.TDA_T) call ppLR_B(iblock,nBas,nC,nO,nV,nR,nOOt,nVVt,1d0,ERI,Bpp)
+  call ppLR_C(iblock,nOrb,nC,nO,nV,nR,nVVt,1d0,eHF,ERI,Cpp)
+  call ppLR_D(iblock,nOrb,nC,nO,nV,nR,nOOt,1d0,eHF,ERI,Dpp)
+  if(.not.TDA_T) call ppLR_B(iblock,nOrb,nC,nO,nV,nR,nOOt,nVVt,1d0,ERI,Bpp)
 
   call ppLR(TDA_T,nOOt,nVVt,Bpp,Cpp,Dpp,Om1t,X1t,Y1t,Om2t,X2t,Y2t,EcRPA(ispin))
+
+  n_states = nOOt + 5
+  n_states_diag = n_states + 4
+  allocate(Om(nOOt+nVVt), R(nOOt+nVVt,n_states_diag))
+  call ppLR_RG0T0pp_davidson(iblock, TDA_T, nC, nO, nR, nOrb, nOOt, nVVt, 1.d0, eHF, 0.d0, ERI, Om, R, n_states, n_states_diag)
+  print*, 'LAPACK:'
+  print*, Om2t
+  print*, Om1t
+  stop
 
   deallocate(Bpp,Cpp,Dpp)
 
@@ -164,23 +184,23 @@ subroutine RG0T0pp(dotest,doACFDT,exchange_kernel,doXBS,dophBSE,TDA_T,TDA,dBSE,d
 ! iblock = 1
   iblock = 3
 
-  call RGTpp_excitation_density(iblock,nBas,nC,nO,nV,nR,nOOs,nVVs,ERI,X1s,Y1s,rho1s,X2s,Y2s,rho2s)
+  call RGTpp_excitation_density(iblock,nOrb,nC,nO,nV,nR,nOOs,nVVs,ERI,X1s,Y1s,rho1s,X2s,Y2s,rho2s)
 
 ! iblock = 2
   iblock = 4
 
-  call RGTpp_excitation_density(iblock,nBas,nC,nO,nV,nR,nOOt,nVVt,ERI,X1t,Y1t,rho1t,X2t,Y2t,rho2t)
+  call RGTpp_excitation_density(iblock,nOrb,nC,nO,nV,nR,nOOt,nVVt,ERI,X1t,Y1t,rho1t,X2t,Y2t,rho2t)
 
 !----------------------------------------------
 ! Compute T-matrix version of the self-energy 
 !----------------------------------------------
 
   if(regularize) then 
-    call GTpp_regularization(nBas,nC,nO,nV,nR,nOOs,nVVs,eHF,Om1s,rho1s,Om2s,rho2s)
-    call GTpp_regularization(nBas,nC,nO,nV,nR,nOOt,nVVt,eHF,Om1t,rho1t,Om2t,rho2t)
+    call GTpp_regularization(nOrb,nC,nO,nV,nR,nOOs,nVVs,eHF,Om1s,rho1s,Om2s,rho2s)
+    call GTpp_regularization(nOrb,nC,nO,nV,nR,nOOt,nVVt,eHF,Om1t,rho1t,Om2t,rho2t)
   end if
 
-  call RGTpp_self_energy_diag(eta,nBas,nC,nO,nV,nR,nOOs,nVVs,nOOt,nVVt,eHF,Om1s,rho1s,Om2s,rho2s, & 
+  call RGTpp_self_energy_diag(eta,nOrb,nC,nO,nV,nR,nOOs,nVVs,nOOt,nVVt,eHF,Om1s,rho1s,Om2s,rho2s, & 
                              Om1t,rho1t,Om2t,rho2t,EcGM,Sig,Z)
 
 !----------------------------------------------
@@ -201,12 +221,12 @@ subroutine RG0T0pp(dotest,doACFDT,exchange_kernel,doXBS,dophBSE,TDA_T,TDA,dBSE,d
     write(*,*) ' *** Quasiparticle energies obtained by root search *** '
     write(*,*)
      
-   call RGTpp_QP_graph(eta,nBas,nC,nO,nV,nR,nOOs,nVVs,nOOt,nVVt,eHF,Om1s,rho1s,Om2s,rho2s, & 
+   call RGTpp_QP_graph(eta,nOrb,nC,nO,nV,nR,nOOs,nVVs,nOOt,nVVt,eHF,Om1s,rho1s,Om2s,rho2s, & 
                       Om1t,rho1t,Om2t,rho2t,eGTlin,eHF,eGT,Z)
 
   end if
 
-! call RGTpp_plot_self_energy(nBas,nC,nO,nV,nR,nOOs,nVVs,nOOt,nVVt,eHF,eGT,Om1s,rho1s,Om2s,rho2s, &
+! call RGTpp_plot_self_energy(nOrb,nC,nO,nV,nR,nOOs,nVVs,nOOt,nVVt,eHF,eGT,Om1s,rho1s,Om2s,rho2s, &
 !                            Om1t,rho1t,Om2t,rho2t)
 
 !----------------------------------------------
@@ -221,9 +241,9 @@ subroutine RG0T0pp(dotest,doACFDT,exchange_kernel,doXBS,dophBSE,TDA_T,TDA,dBSE,d
 
   allocate(Bpp(nVVs,nOOs),Cpp(nVVs,nVVs),Dpp(nOOs,nOOs))
 
-  call ppLR_C(iblock,nBas,nC,nO,nV,nR,nVVs,1d0,eGT,ERI,Cpp)
-  call ppLR_D(iblock,nBas,nC,nO,nV,nR,nOOs,1d0,eGT,ERI,Dpp)
-  if(.not.TDA_T) call ppLR_B(iblock,nBas,nC,nO,nV,nR,nOOs,nVVs,1d0,ERI,Bpp)
+  call ppLR_C(iblock,nOrb,nC,nO,nV,nR,nVVs,1d0,eGT,ERI,Cpp)
+  call ppLR_D(iblock,nOrb,nC,nO,nV,nR,nOOs,1d0,eGT,ERI,Dpp)
+  if(.not.TDA_T) call ppLR_B(iblock,nOrb,nC,nO,nV,nR,nOOs,nVVs,1d0,ERI,Bpp)
 
   call ppLR(TDA_T,nOOs,nVVs,Bpp,Cpp,Dpp,Om1s,X1s,Y1s,Om2s,X2s,Y2s,EcRPA(ispin))
 
@@ -235,9 +255,9 @@ subroutine RG0T0pp(dotest,doACFDT,exchange_kernel,doXBS,dophBSE,TDA_T,TDA,dBSE,d
 
   allocate(Bpp(nVVt,nOOt),Cpp(nVVt,nVVt),Dpp(nOOt,nOOt))
 
-  call ppLR_C(iblock,nBas,nC,nO,nV,nR,nVVt,1d0,eGT,ERI,Cpp)
-  call ppLR_D(iblock,nBas,nC,nO,nV,nR,nOOt,1d0,eGT,ERI,Dpp)
-  if(.not.TDA_T) call ppLR_B(iblock,nBas,nC,nO,nV,nR,nOOt,nVVt,1d0,ERI,Bpp)
+  call ppLR_C(iblock,nOrb,nC,nO,nV,nR,nVVt,1d0,eGT,ERI,Cpp)
+  call ppLR_D(iblock,nOrb,nC,nO,nV,nR,nOOt,1d0,eGT,ERI,Dpp)
+  if(.not.TDA_T) call ppLR_B(iblock,nOrb,nC,nO,nV,nR,nOOt,nVVt,1d0,ERI,Bpp)
 
   call ppLR(TDA_T,nOOt,nVVt,Bpp,Cpp,Dpp,Om1t,X1t,Y1t,Om2t,X2t,Y2t,EcRPA(ispin))
 
@@ -246,13 +266,13 @@ subroutine RG0T0pp(dotest,doACFDT,exchange_kernel,doXBS,dophBSE,TDA_T,TDA,dBSE,d
   EcRPA(1) = EcRPA(1) - EcRPA(2)
   EcRPA(2) = 3d0*EcRPA(2)
 
-  call print_RG0T0pp(nBas,nO,eHF,ENuc,ERHF,Sig,Z,eGT,EcGM,EcRPA)
+  call print_RG0T0pp(nOrb,nO,eHF,ENuc,ERHF,Sig,Z,eGT,EcGM,EcRPA)
 
 ! Perform BSE calculation
 
   if(dophBSE) then
 
-    call RGTpp_phBSE(TDA_T,TDA,dBSE,dTDA,singlet,triplet,eta,nBas,nC,nO,nV,nR,nS,nOOs,nVVs,nOOt,nVVt,   & 
+    call RGTpp_phBSE(TDA_T,TDA,dBSE,dTDA,singlet,triplet,eta,nOrb,nC,nO,nV,nR,nS,nOOs,nVVs,nOOt,nVVt,   & 
                     Om1s,X1s,Y1s,Om2s,X2s,Y2s,rho1s,rho2s,Om1t,X1t,Y1t,Om2t,X2t,Y2t,rho1t,rho2t, &
                     ERI,dipole_int,eHF,eGT,EcBSE)
 
@@ -288,7 +308,7 @@ subroutine RG0T0pp(dotest,doACFDT,exchange_kernel,doXBS,dophBSE,TDA_T,TDA,dBSE,d
 
       end if
 
-      call RGTpp_phACFDT(exchange_kernel,doXBS,.false.,TDA_T,TDA,dophBSE,singlet,triplet,eta,nBas,nC,nO,nV,nR,nS, &
+      call RGTpp_phACFDT(exchange_kernel,doXBS,.false.,TDA_T,TDA,dophBSE,singlet,triplet,eta,nOrb,nC,nO,nV,nR,nS, &
                         nOOs,nVVs,nOOt,nVVt,Om1s,X1s,Y1s,Om2s,X2s,Y2s,rho1s,rho2s,Om1t,X1t,Y1t,     & 
                         Om2t,X2t,Y2t,rho1t,rho2t,ERI,eHF,eGT,EcBSE)
 
@@ -314,7 +334,7 @@ subroutine RG0T0pp(dotest,doACFDT,exchange_kernel,doXBS,dophBSE,TDA_T,TDA,dBSE,d
 
   if(doppBSE) then
 
-    call RGTpp_ppBSE(TDA_T,TDA,dBSE,dTDA,singlet,triplet,eta,nBas,nC,nO,nV,nR,nOOs,nVVs,nOOt,nVVt,      &
+    call RGTpp_ppBSE(TDA_T,TDA,dBSE,dTDA,singlet,triplet,eta,nOrb,nC,nO,nV,nR,nOOs,nVVs,nOOt,nVVt, &
                     Om1s,X1s,Y1s,Om2s,X2s,Y2s,rho1s,rho2s,Om1t,X1t,Y1t,Om2t,X2t,Y2t,rho1t,rho2t, &
                     ERI,dipole_int,eHF,eGT,EcBSE)
 

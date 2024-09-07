@@ -1,4 +1,4 @@
-subroutine ppLR_B(ispin,nBas,nC,nO,nV,nR,nOO,nVV,lambda,ERI,Bpp)
+subroutine ppLR_B(ispin,nOrb,nC,nO,nV,nR,nOO,nVV,lambda,ERI,Bpp)
 
 ! Compute the B matrix of the pp channel
 
@@ -8,7 +8,7 @@ subroutine ppLR_B(ispin,nBas,nC,nO,nV,nR,nOO,nVV,lambda,ERI,Bpp)
 ! Input variables
 
   integer,intent(in)            :: ispin
-  integer,intent(in)            :: nBas
+  integer,intent(in)            :: nOrb
   integer,intent(in)            :: nC
   integer,intent(in)            :: nO
   integer,intent(in)            :: nV
@@ -16,7 +16,7 @@ subroutine ppLR_B(ispin,nBas,nC,nO,nV,nR,nOO,nVV,lambda,ERI,Bpp)
   integer,intent(in)            :: nOO
   integer,intent(in)            :: nVV
   double precision,intent(in)   :: lambda
-  double precision,intent(in)   :: ERI(nBas,nBas,nBas,nBas) 
+  double precision,intent(in)   :: ERI(nOrb,nOrb,nOrb,nOrb) 
   
 ! Local variables
 
@@ -32,8 +32,8 @@ subroutine ppLR_B(ispin,nBas,nC,nO,nV,nR,nOO,nVV,lambda,ERI,Bpp)
   if(ispin == 1) then
 
     ab = 0
-    do a=nO+1,nBas-nR
-      do b=a,nBas-nR
+    do a=nO+1,nOrb-nR
+      do b=a,nOrb-nR
         ab = ab + 1
         ij = 0
         do i=nC+1,nO
@@ -54,8 +54,8 @@ subroutine ppLR_B(ispin,nBas,nC,nO,nV,nR,nOO,nVV,lambda,ERI,Bpp)
   if(ispin == 2 .or. ispin == 4) then
 
     ab = 0
-    do a=nO+1,nBas-nR
-     do b=a+1,nBas-nR
+    do a=nO+1,nOrb-nR
+     do b=a+1,nOrb-nR
         ab = ab + 1
         ij = 0
         do i=nC+1,nO
@@ -76,8 +76,8 @@ subroutine ppLR_B(ispin,nBas,nC,nO,nV,nR,nOO,nVV,lambda,ERI,Bpp)
   if(ispin == 3) then
 
     ab = 0
-    do a=nO+1,nBas-nR
-     do b=nO+1,nBas-nR
+    do a=nO+1,nOrb-nR
+     do b=nO+1,nOrb-nR
         ab = ab + 1
         ij = 0
         do i=nC+1,nO

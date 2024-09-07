@@ -642,3 +642,113 @@ subroutine wall_time(t)
   t = dble(c)/dble(rate)
 end subroutine 
 
+! ---
+! Compute <u|u>
+double precision function u_dot_u(u, sze)
+
+  implicit none
+
+  integer,          intent(in) :: sze
+  double precision, intent(in) :: u(sze)
+
+  double precision, external   :: ddot
+
+  !DIR$ FORCEINLINE
+  u_dot_u = ddot(sze,u,1,u,1)
+
+end
+
+! ---
+
+! Orthogonalization using Q.R factorization
+subroutine ortho_qr(A, LDA, m, n)
+
+  ! A : matrix to orthogonalize
+  ! LDA : leftmost dimension of A
+  ! m : Number of rows of A
+  ! n : Number of columns of A
+  ! /!\ int(WORK(1)) becomes negative when WORK(1) > 2147483648
+
+  integer,          intent(in)    :: m, n, LDA
+  double precision, intent(inout) :: A(LDA,n)
+
+  integer                        :: LWORK, INFO
+  double precision, allocatable  :: TAU(:), WORK(:)
+
+  allocate(TAU(min(m, n)))
+
+  allocate(WORK(1))
+
+  LWORK = -1
+
+  call dgeqrf(m, n, A(1,1), LDA, TAU, WORK, LWORK, INFO)
+
+  if(INFO .lt. 0) then
+    print*, ' dgeqrf failed !! ', INFO
+    stop
+  endif
+
+  LWORK = max(n, int(WORK(1)))
+
+  deallocate(WORK)
+  allocate(WORK(LWORK))
+
+  call dgeqrf(m, n, A(1,1), LDA, TAU, WORK, LWORK, INFO)
+
+  if(INFO .lt. 0) then
+    print*, ' dgeqrf failed !! ', INFO
+    stop
+  endif
+
+  LWORK = -1
+  call dorgqr(m, n, n, A(1,1), LDA, TAU, WORK, LWORK, INFO)
+
+  if(INFO .lt. 0) then
+    print*, ' dorgqr failed !! ', INFO
+    stop
+  endif
+
+  LWORK = max(n, int(WORK(1)))
+ 
+  deallocate(WORK)
+  allocate(WORK(LWORK))
+
+  call dorgqr(m, n, n, A(1,1), LDA, TAU, WORK, LWORK, INFO)
+
+  if(INFO .lt. 0) then
+    print*, ' dorgqr failed !! ', INFO
+    stop
+  endif
+
+  deallocate(WORK, TAU)
+
+end
+
+! ---
+
+! Normalizes vector u
+subroutine normalize(u, sze)
+
+  implicit none
+
+  integer,          intent(in)    :: sze
+  double precision, intent(inout) :: u(sze)
+
+  integer                         :: i
+  double precision                :: d
+  double precision, external      :: dnrm2
+
+  !DIR$ FORCEINLINE
+  d = dnrm2(sze, u, 1)
+  if (d /= 0.d0) then
+    d = 1.d0/d 
+  endif
+  if (d /= 1.d0) then
+    !DIR$ FORCEINLINE
+    call dscal(sze, d, u, 1)
+  endif
+
+end
+
+! ---
+

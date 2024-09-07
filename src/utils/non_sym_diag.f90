@@ -519,7 +519,7 @@ subroutine impose_biorthog_svd(n, m, L, R)
   threshold               = 1.d-6
   num_linear_dependencies = 0
   do i = 1, m
-    if(abs(D(i)) <= threshold) then
+    if(dabs(D(i)) <= threshold) then
       D(i) = 0.d0
       num_linear_dependencies = num_linear_dependencies + 1
     else
