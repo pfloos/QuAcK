@@ -117,8 +117,8 @@ subroutine ppLR_transition_vectors(spin_allowed,nBas,nC,nO,nV,nR,nOO,nVV,dipole_
 
 ! Thomas-Reiche-Kuhn sum rule
 
-  if(nVV > 0) write(*,'(A50,F10.6)') 'Thomas-Reiche-Kuhn sum rule for p-p sector = ',sum(os1(:))
-  write(*,*)
+!  if(nVV > 0) write(*,'(A50,F10.6)') 'Thomas-Reiche-Kuhn sum rule for p-p sector = ',sum(os1(:))
+!  write(*,*)
 
 !-----------------------------------------------!
 ! Print details about excitations for hh sector !
@@ -188,7 +188,7 @@ subroutine ppLR_transition_vectors(spin_allowed,nBas,nC,nO,nV,nR,nOO,nVV,dipole_
 
 ! Thomas-Reiche-Kuhn sum rule
 
-  if(nOO > 0) write(*,'(A50,F10.6)') 'Thomas-Reiche-Kuhn sum rule for h-h sector = ',sum(os2(:))
-  write(*,*)
+!  if(nOO > 0) write(*,'(A50,F10.6)') 'Thomas-Reiche-Kuhn sum rule for h-h sector = ',sum(os2(:))
+!  write(*,*)
 
 end subroutine 

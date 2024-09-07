@@ -1,5 +1,5 @@
 subroutine GG0F2(dotest,dophBSE,doppBSE,TDA,dBSE,dTDA,linearize,eta,regularize, &
-                 nBas,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,dipole_int,eHF)
+                 nBas,nC,nO,nV,nR,nS,ENuc,EGHF,ERI,dipole_int,eHF)
 
 ! Perform a one-shot second-order Green function calculation
 
@@ -25,7 +25,7 @@ subroutine GG0F2(dotest,dophBSE,doppBSE,TDA,dBSE,dTDA,linearize,eta,regularize, 
   integer,intent(in)            :: nR
   integer,intent(in)            :: nS
   double precision,intent(in)   :: ENuc
-  double precision,intent(in)   :: ERHF
+  double precision,intent(in)   :: EGHF
   double precision,intent(in)   :: eHF(nBas)
   double precision,intent(in)   :: ERI(nBas,nBas,nBas,nBas)
   double precision,intent(in)   :: dipole_int(nBas,nBas,ncart)
@@ -84,13 +84,13 @@ subroutine GG0F2(dotest,dophBSE,doppBSE,TDA,dBSE,dTDA,linearize,eta,regularize, 
   ! Print results
 
   call GMP2(.false.,regularize,nBas,nC,nO,nV,nR,ERI,ENuc,EHF,eGF,Ec)
-  call print_RG0F2(nBas,nO,eHF,SigC,eGF,Z,ENuc,ERHF,Ec)
+  call print_RG0F2(nBas,nO,eHF,SigC,eGF,Z,ENuc,EGHF,Ec)
 
-! Perform BSE2 calculation
+! Perform BSE@GF2 calculation
 
   if(dophBSE) then 
   
-    call GGF2_phBSE2(TDA,dBSE,dTDA,eta,nBas,nC,nO,nV,nR,nS,ERI,dipole_int,eGF,EcBSE)
+    call GGF2_phBSE(TDA,dBSE,dTDA,eta,nBas,nC,nO,nV,nR,nS,ERI,dipole_int,eGF,EcBSE)
 
     write(*,*)
     write(*,*)'-------------------------------------------------------------------------------'
@@ -101,20 +101,20 @@ subroutine GG0F2(dotest,dophBSE,doppBSE,TDA,dBSE,dTDA,linearize,eta,regularize, 
 
   end if
 
-! Perform ppBSE2 calculation
+! Perform ppBSE@GF2 calculation
 
-! if(doppBSE) then 
-!  
-!   call GGF2_ppBSE2(TDA,dBSE,dTDA,eta,nBas,nC,nO,nV,nR,ERI,dipole_int,eGF,EcBSE)
+  if(doppBSE) then 
+   
+    call GGF2_ppBSE(TDA,dBSE,dTDA,eta,nBas,nC,nO,nV,nR,ERI,dipole_int,eGF,EcBSE)
 
-!   write(*,*)
-!   write(*,*)'-------------------------------------------------------------------------------'
-!   write(*,'(2X,A50,F20.10,A3)') 'Tr@ppBSE@GG0F2 correlation energy          =',EcBSE,' au'
-!   write(*,'(2X,A50,F20.10,A3)') 'Tr@ppBSE@GG0F2 total energy                =',ENuc + ERHF + EcBSE,' au'
-!   write(*,*)'-------------------------------------------------------------------------------'
-!   write(*,*)
+    write(*,*)
+    write(*,*)'-------------------------------------------------------------------------------'
+    write(*,'(2X,A50,F20.10,A3)') 'Tr@ppBSE@GG0F2 correlation energy          =',EcBSE,' au'
+    write(*,'(2X,A50,F20.10,A3)') 'Tr@ppBSE@GG0F2 total energy                =',ENuc + EGHF + EcBSE,' au'
+    write(*,*)'-------------------------------------------------------------------------------'
+    write(*,*)
 
-! end if
+  end if
 
 ! Testing zone
 

@@ -1,4 +1,4 @@
-subroutine phLR_oscillator_strength(nBas,nC,nO,nV,nR,nS,maxS,dipole_int,Om,XpY,XmY,os)
+subroutine phLR_oscillator_strength(nOrb,nC,nO,nV,nR,nS,maxS,dipole_int,Om,XpY,XmY,os)
 
 ! Compute linear response
 
@@ -7,14 +7,14 @@ subroutine phLR_oscillator_strength(nBas,nC,nO,nV,nR,nS,maxS,dipole_int,Om,XpY,X
 
 ! Input variables
 
-  integer,intent(in)            :: nBas
+  integer,intent(in)            :: nOrb
   integer,intent(in)            :: nC
   integer,intent(in)            :: nO
   integer,intent(in)            :: nV
   integer,intent(in)            :: nR
   integer,intent(in)            :: nS
   integer,intent(in)            :: maxS
-  double precision              :: dipole_int(nBas,nBas,ncart)
+  double precision              :: dipole_int(nOrb,nOrb,ncart)
   double precision,intent(in)   :: Om(nS)
   double precision,intent(in)   :: XpY(nS,nS)
   double precision,intent(in)   :: XmY(nS,nS)
@@ -44,7 +44,7 @@ subroutine phLR_oscillator_strength(nBas,nC,nO,nV,nR,nS,maxS,dipole_int,Om,XpY,X
     do ixyz=1,ncart
       jb = 0
       do j=nC+1,nO
-        do b=nO+1,nBas-nR
+        do b=nO+1,nOrb-nR
           jb = jb + 1
           f(m,ixyz) = f(m,ixyz) + dipole_int(j,b,ixyz)*XpY(m,jb)
         end do
@@ -67,9 +67,5 @@ subroutine phLR_oscillator_strength(nBas,nC,nO,nV,nR,nS,maxS,dipole_int,Om,XpY,X
   end do
   write(*,*) '---------------------------------------------------------------'
   write(*,*)
-
-! do m=1,maxS
-!   write(*,'(I3,3F12.6)') m,Om(m),os(m)
-! end do
 
 end subroutine 

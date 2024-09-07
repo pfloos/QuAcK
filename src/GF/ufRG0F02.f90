@@ -71,7 +71,7 @@ subroutine ufRG0F02(dotest,nBas,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,eHF)
 ! Main loop over orbitals !
 !-------------------------!
 
-  do p=nO-1,nO
+  do p=nO-3,nO
 
      H(:,:) = 0d0
      Reigv(:,:) = 0d0

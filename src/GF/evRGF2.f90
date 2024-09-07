@@ -145,11 +145,11 @@ subroutine evRGF2(dotest,dophBSE,doppBSE,TDA,dBSE,dTDA,maxSCF,thresh,max_diis,si
 
   end if
 
-! Perform BSE2 calculation
+! Perform BSE@GF2 calculation
 
   if(dophBSE) then 
   
-    call RGF2_phBSE2(TDA,dBSE,dTDA,singlet,triplet,eta,nBas,nC,nO,nV,nR,nS,ERI,dipole_int,eGF,EcBSE)
+    call RGF2_phBSE(TDA,dBSE,dTDA,singlet,triplet,eta,nBas,nC,nO,nV,nR,nS,ERI,dipole_int,eGF,EcBSE)
 
     write(*,*)
     write(*,*)'-------------------------------------------------------------------------------'
@@ -162,11 +162,11 @@ subroutine evRGF2(dotest,dophBSE,doppBSE,TDA,dBSE,dTDA,maxSCF,thresh,max_diis,si
 
   end if
 
-! Perform ppBSE2 calculation
+! Perform ppBSE@GF2 calculation
 
   if(doppBSE) then
 
-    call RGF2_ppBSE2(TDA,dBSE,dTDA,singlet,triplet,eta,nBas,nC,nO,nV,nR,ERI,dipole_int,eGF,EcBSE)
+    call RGF2_ppBSE(TDA,dBSE,dTDA,singlet,triplet,eta,nBas,nC,nO,nV,nR,ERI,dipole_int,eGF,EcBSE)
 
     write(*,*)
     write(*,*)'-------------------------------------------------------------------------------'

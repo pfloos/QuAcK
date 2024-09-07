@@ -1,5 +1,5 @@
 subroutine GG0W0(dotest,doACFDT,exchange_kernel,doXBS,dophBSE,dophBSE2,TDA_W,TDA,dBSE,dTDA,doppBSE, & 
-                 linearize,eta,regularize,nBas,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,dipole_int,eHF)
+                 linearize,eta,regularize,nBas,nC,nO,nV,nR,nS,ENuc,EGHF,ERI,dipole_int,eHF)
 ! Perform G0W0 calculation
 
   implicit none
@@ -31,7 +31,7 @@ subroutine GG0W0(dotest,doACFDT,exchange_kernel,doXBS,dophBSE,dophBSE2,TDA_W,TDA
   integer,intent(in)            :: nR
   integer,intent(in)            :: nS
   double precision,intent(in)   :: ENuc
-  double precision,intent(in)   :: ERHF
+  double precision,intent(in)   :: EGHF
   double precision,intent(in)   :: ERI(nBas,nBas,nBas,nBas)
   double precision,intent(in)   :: dipole_int(nBas,nBas,ncart)
   double precision,intent(in)   :: eHF(nBas)
@@ -40,7 +40,6 @@ subroutine GG0W0(dotest,doACFDT,exchange_kernel,doXBS,dophBSE,dophBSE2,TDA_W,TDA
 
   logical                       :: print_W = .true.
   logical                       :: dRPA
-  integer                       :: ispin
   double precision              :: EcRPA
   double precision              :: EcBSE
   double precision              :: EcGM
@@ -85,10 +84,6 @@ subroutine GG0W0(dotest,doACFDT,exchange_kernel,doXBS,dophBSE,dophBSE2,TDA_W,TDA
     write(*,*)
   end if
 
-! Spin manifold 
-
-  ispin = 3
-
 ! Memory allocation
 
   allocate(Aph(nS,nS),Bph(nS,nS),SigC(nBas),Z(nBas),Om(nS),XpY(nS,nS),XmY(nS,nS),rho(nBas,nBas,nS), & 
@@ -98,12 +93,12 @@ subroutine GG0W0(dotest,doACFDT,exchange_kernel,doXBS,dophBSE,dophBSE2,TDA_W,TDA
 ! Compute screening !
 !-------------------!
 
-                 call phLR_A(ispin,dRPA,nBas,nC,nO,nV,nR,nS,1d0,eHF,ERI,Aph)
-  if(.not.TDA_W) call phLR_B(ispin,dRPA,nBas,nC,nO,nV,nR,nS,1d0,ERI,Bph)
+                 call phGLR_A(dRPA,nBas,nC,nO,nV,nR,nS,1d0,eHF,ERI,Aph)
+  if(.not.TDA_W) call phGLR_B(dRPA,nBas,nC,nO,nV,nR,nS,1d0,ERI,Bph)
 
-  call phLR(TDA_W,nS,Aph,Bph,EcRPA,Om,XpY,XmY)
+  call phGLR(TDA_W,nS,Aph,Bph,EcRPA,Om,XpY,XmY)
 
-  if(print_W) call print_excitation_energies('phRPA@GHF','spinorbital',nS,Om)
+  if(print_W) call print_excitation_energies('phRPA@GHF','generalized',nS,Om)
 
 !--------------------------!
 ! Compute spectral weights !
@@ -147,16 +142,16 @@ subroutine GG0W0(dotest,doACFDT,exchange_kernel,doXBS,dophBSE,dophBSE2,TDA_W,TDA
 
 ! Compute the RPA correlation energy
 
-  call phLR_A(ispin,dRPA,nBas,nC,nO,nV,nR,nS,1d0,eGW,ERI,Aph)
-  if(.not.TDA_W) call phLR_B(ispin,dRPA,nBas,nC,nO,nV,nR,nS,1d0,ERI,Bph)
+                 call phGLR_A(dRPA,nBas,nC,nO,nV,nR,nS,1d0,eGW,ERI,Aph)
+  if(.not.TDA_W) call phGLR_B(dRPA,nBas,nC,nO,nV,nR,nS,1d0,ERI,Bph)
 
-  call phLR(TDA_W,nS,Aph,Bph,EcRPA,Om,XpY,XmY)
+  call phGLR(TDA_W,nS,Aph,Bph,EcRPA,Om,XpY,XmY)
 
 !--------------!
 ! Dump results !
 !--------------!
 
-  call print_GG0W0(nBas,nO,eHF,ENuc,ERHF,SigC,Z,eGW,EcRPA,EcGM)
+  call print_GG0W0(nBas,nO,eHF,ENuc,EGHF,SigC,Z,eGW,EcRPA,EcGM)
 
 ! Deallocate memory
 
@@ -171,7 +166,7 @@ subroutine GG0W0(dotest,doACFDT,exchange_kernel,doXBS,dophBSE,dophBSE2,TDA_W,TDA
     write(*,*)
     write(*,*)'-------------------------------------------------------------------------------'
     write(*,'(2X,A50,F20.10,A3)') 'Tr@BSE@G0W0@GHF correlation energy = ',EcBSE,' au'
-    write(*,'(2X,A50,F20.10,A3)') 'Tr@BSE@G0W0@GHF total energy       = ',ENuc + ERHF + EcBSE,' au'
+    write(*,'(2X,A50,F20.10,A3)') 'Tr@BSE@G0W0@GHF total energy       = ',ENuc + EGHF + EcBSE,' au'
     write(*,*)'-------------------------------------------------------------------------------'
     write(*,*)
 
@@ -198,7 +193,7 @@ subroutine GG0W0(dotest,doACFDT,exchange_kernel,doXBS,dophBSE,dophBSE2,TDA_W,TDA
 !     write(*,'(2X,A50,F20.10,A3)') 'AC@phBSE@G0W0 correlation energy (singlet) =',EcBSE(1),' au'
 !     write(*,'(2X,A50,F20.10,A3)') 'AC@phBSE@G0W0 correlation energy (triplet) =',EcBSE(2),' au'
 !     write(*,'(2X,A50,F20.10,A3)') 'AC@phBSE@G0W0 correlation energy           =',EcBSE(1) + EcBSE(2),' au'
-!     write(*,'(2X,A50,F20.10,A3)') 'AC@phBSE@G0W0 total energy                 =',ENuc + ERHF + EcBSE(1) + EcBSE(2),' au'
+!     write(*,'(2X,A50,F20.10,A3)') 'AC@phBSE@G0W0 total energy                 =',ENuc + EGHF + EcBSE(1) + EcBSE(2),' au'
 !     write(*,*)'-------------------------------------------------------------------------------'
 !     write(*,*)
 
@@ -206,26 +201,25 @@ subroutine GG0W0(dotest,doACFDT,exchange_kernel,doXBS,dophBSE,dophBSE2,TDA_W,TDA
 
   end if
 
-! if(doppBSE) then
+  if(doppBSE) then
 
-!   call GW_ppBSE(TDA_W,TDA,dBSE,dTDA,singlet,triplet,eta,nBas,nC,nO,nV,nR,nS,ERI,dipole_int,eHF,eGW,EcBSE)
+    call GGW_ppBSE(TDA_W,TDA,dBSE,dTDA,eta,nBas,nC,nO,nV,nR,nS,ERI,dipole_int,eHF,eGW,EcBSE)
 
-!   write(*,*)
-!   write(*,*)'-------------------------------------------------------------------------------'
-!   write(*,'(2X,A50,F20.10,A3)') 'Tr@ppBSE@G0W0 correlation energy (singlet) =',EcBSE(1),' au'
-!   write(*,'(2X,A50,F20.10,A3)') 'Tr@ppBSE@G0W0 correlation energy (triplet) =',3d0*EcBSE(2),' au'
-!   write(*,'(2X,A50,F20.10,A3)') 'Tr@ppBSE@G0W0 correlation energy           =',EcBSE(1) + 3d0*EcBSE(2),' au'
-!   write(*,'(2X,A50,F20.10,A3)') 'Tr@ppBSE@G0W0 total energy                 =',ENuc + ERHF + EcBSE(1) + 3d0*EcBSE(2),' au'
-!   write(*,*)'-------------------------------------------------------------------------------'
-!   write(*,*)
+    write(*,*)
+    write(*,*)'-------------------------------------------------------------------------------'
+    write(*,'(2X,A50,F20.10,A3)') 'Tr@ppBSE@GG0W0 correlation energy          =',EcBSE,' au'
+    write(*,'(2X,A50,F20.10,A3)') 'Tr@ppBSE@GG0W0 total energy                =',ENuc + EGHF + EcBSE,' au'
+    write(*,*)'-------------------------------------------------------------------------------'
+    write(*,*)
 
-! end if
+  end if
 
 ! Testing zone
 
   if(dotest) then
 
-    call dump_test_value('G','G0W0 correlation energy',EcRPA)
+    call dump_test_value('G','RPA@G0W0 correlation energy',EcRPA)
+    call dump_test_value('G','Tr@ppBSE@G0W0 correlation energy',EcBSE)
     call dump_test_value('G','G0W0 HOMO energy',eGW(nO))
     call dump_test_value('G','G0W0 LUMO energy',eGW(nO+1))
 

@@ -43,7 +43,6 @@ subroutine evGGW(dotest,maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,dop
 
   logical                       :: linear_mixing
   logical                       :: dRPA = .true.
-  integer                       :: ispin
   integer                       :: nSCF
   integer                       :: n_diis
   double precision              :: rcond
@@ -100,7 +99,6 @@ subroutine evGGW(dotest,maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,dop
 ! Initialization
 
   nSCF            = 0
-  ispin           = 3
   n_diis          = 0
   Conv            = 1d0
   e_diis(:,:)     = 0d0
@@ -118,10 +116,10 @@ subroutine evGGW(dotest,maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,dop
 
    ! Compute screening
 
-    call phLR_A(ispin,dRPA,nBas,nC,nO,nV,nR,nS,1d0,eGW,ERI,Aph)
-    if(.not.TDA_W) call phLR_B(ispin,dRPA,nBas,nC,nO,nV,nR,nS,1d0,ERI,Bph)
+                   call phGLR_A(dRPA,nBas,nC,nO,nV,nR,nS,1d0,eGW,ERI,Aph)
+    if(.not.TDA_W) call phGLR_B(dRPA,nBas,nC,nO,nV,nR,nS,1d0,ERI,Bph)
 
-    call phLR(TDA_W,nS,Aph,Bph,EcRPA,Om,XpY,XmY)
+    call phGLR(TDA_W,nS,Aph,Bph,EcRPA,Om,XpY,XmY)
 
     ! Compute spectral weights
 
