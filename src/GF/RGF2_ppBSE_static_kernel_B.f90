@@ -135,39 +135,4 @@ subroutine RGF2_ppBSE_static_kernel_B(ispin,eta,nBas,nC,nO,nV,nR,nOO,nVV,lambda,
 
   end if
 
-! Second-order correlation kernel for the block B of the spinorbital manifold
-
-  if(ispin == 4) then
-
-    ab = 0
-    do a=nO+1,nBas-nR
-      do b=a+1,nBas-nR
-        ab = ab + 1
-
-        ij = 0
-        do i=nC+1,nO
-          do j=i+1,nO
-            ij = ij + 1
-  
-            do m=nC+1,nO
-              do e=nO+1,nBas-nR
-     
-                dem = eGF(m) - eGF(e)
-                num =       (ERI(a,m,i,e) - ERI(a,m,e,i)) * (ERI(e,b,m,j) - ERI(e,b,j,m))
-                num = num + (ERI(a,e,i,m) - ERI(a,e,m,i)) * (ERI(m,b,e,j) - ERI(m,b,j,e))
-                num = num - (ERI(b,m,i,e) - ERI(b,m,e,i)) * (ERI(e,a,m,j) - ERI(e,a,j,m))
-                num = num - (ERI(b,e,i,m) - ERI(b,e,m,i)) * (ERI(m,a,e,j) - ERI(m,a,j,e))                                                                                
-                KB_sta(ab,ij) = KB_sta(ab,ij) + num*dem/(dem**2 + eta**2)
-                
-              end do
-            end do
-
-          end do
-        end do
-
-      end do
-    end do
-
-  end if
-
 end subroutine 

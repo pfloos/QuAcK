@@ -30,9 +30,6 @@ subroutine GGW_phBSE(dophBSE2,TDA_W,TDA,dBSE,dTDA,eta,nBas,nC,nO,nV,nR,nS,ERI,di
   logical                       :: dRPA   = .false.
   logical                       :: dRPA_W = .true.
 
-  integer                       :: ispin
-  integer                       :: isp_W
-
   double precision              :: EcRPA
   double precision,allocatable  :: OmRPA(:)
   double precision,allocatable  :: XpY_RPA(:,:)
@@ -65,25 +62,23 @@ subroutine GGW_phBSE(dophBSE2,TDA_W,TDA,dBSE,dTDA,eta,nBas,nC,nO,nV,nR,nS,ERI,di
 ! Compute (singlet) RPA screening 
 !---------------------------------
 
-  isp_W = 3
   EcRPA = 0d0
 
-                 call phLR_A(isp_W,dRPA_W,nBas,nC,nO,nV,nR,nS,1d0,eW,ERI,Aph)
-  if(.not.TDA_W) call phLR_B(isp_W,dRPA_W,nBas,nC,nO,nV,nR,nS,1d0,ERI,Bph)
+                 call phGLR_A(dRPA_W,nBas,nC,nO,nV,nR,nS,1d0,eW,ERI,Aph)
+  if(.not.TDA_W) call phGLR_B(dRPA_W,nBas,nC,nO,nV,nR,nS,1d0,ERI,Bph)
 
-  call phLR(TDA_W,nS,Aph,Bph,EcRPA,OmRPA,XpY_RPA,XmY_RPA)
+  call phGLR(TDA_W,nS,Aph,Bph,EcRPA,OmRPA,XpY_RPA,XmY_RPA)
   call GGW_excitation_density(nBas,nC,nO,nR,nS,ERI,XpY_RPA,rho_RPA)
 
   call GGW_phBSE_static_kernel_A(eta,nBas,nC,nO,nV,nR,nS,1d0,ERI,OmRPA,rho_RPA,KA_sta)
   call GGW_phBSE_static_kernel_B(eta,nBas,nC,nO,nV,nR,nS,1d0,ERI,OmRPA,rho_RPA,KB_sta)
 
-  ispin = 3
   EcBSE = 0d0
 
   ! Compute BSE excitation energies
 
-               call phLR_A(ispin,dRPA,nBas,nC,nO,nV,nR,nS,1d0,eGW,ERI,Aph)
-  if(.not.TDA) call phLR_B(ispin,dRPA,nBas,nC,nO,nV,nR,nS,1d0,ERI,Bph)
+               call phGLR_A(dRPA,nBas,nC,nO,nV,nR,nS,1d0,eGW,ERI,Aph)
+  if(.not.TDA) call phGLR_B(dRPA,nBas,nC,nO,nV,nR,nS,1d0,ERI,Bph)
 
   ! Second-order BSE static kernel
  
@@ -107,7 +102,7 @@ subroutine GGW_phBSE(dophBSE2,TDA_W,TDA,dBSE,dTDA,eta,nBas,nC,nO,nV,nR,nS,ERI,di
                Aph(:,:) = Aph(:,:) + KA_sta(:,:)
   if(.not.TDA) Bph(:,:) = Bph(:,:) + KB_sta(:,:)
 
-  call phLR(TDA,nS,Aph,Bph,EcBSE,OmBSE,XpY_BSE,XmY_BSE)
+  call phGLR(TDA,nS,Aph,Bph,EcBSE,OmBSE,XpY_BSE,XmY_BSE)
 
   call print_excitation_energies('phBSE@GW@GHF','spinorbital',nS,OmBSE)
   call phLR_transition_vectors(.true.,nBas,nC,nO,nV,nR,nS,dipole_int,OmBSE,XpY_BSE,XmY_BSE)

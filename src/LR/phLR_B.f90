@@ -71,26 +71,4 @@ subroutine phLR_B(ispin,dRPA,nBas,nC,nO,nV,nR,nS,lambda,ERI,Bph)
 
   end if
 
-! Build B matrix for spin orbitals 
-
-  if(ispin == 3) then
-
-    ia = 0
-    do i=nC+1,nO
-      do a=nO+1,nBas-nR
-        ia = ia + 1
-        jb = 0
-        do j=nC+1,nO
-          do b=nO+1,nBas-nR
-            jb = jb + 1
- 
-            Bph(ia,jb) = lambda*ERI(i,j,a,b) - (1d0 - delta_dRPA)*lambda*ERI(i,j,b,a)
- 
-          end do
-        end do
-      end do
-    end do
-
-  end if
-
 end subroutine 

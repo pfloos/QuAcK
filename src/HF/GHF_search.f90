@@ -48,7 +48,6 @@ subroutine GHF_search(maxSCF,thresh,max_diis,guess_type,mix,level_shift,nNuc,ZNu
 
   integer,parameter             :: maxS = 20
   integer                       :: ia,i,a,mu
-  integer                       :: ispin
 
   double precision,allocatable  :: Aph(:,:)
   double precision,allocatable  :: Bph(:,:)
@@ -152,10 +151,8 @@ subroutine GHF_search(maxSCF,thresh,max_diis,guess_type,mix,level_shift,nNuc,ZNu
 ! Stability analysis: Real GHF -> Real GHF  
 !-------------------------------------------------------------!
 
-    ispin = 3
-
-    call phLR_A(ispin,.false.,nBas2,nC,nO,nV,nR,nS,1d0,e,ERI_MO,Aph)
-    call phLR_B(ispin,.false.,nBas2,nC,nO,nV,nR,nS,1d0,ERI_MO,Bph)
+    call phGLR_A(.false.,nBas2,nC,nO,nV,nR,nS,1d0,e,ERI_MO,Aph)
+    call phGLR_B(.false.,nBas2,nC,nO,nV,nR,nS,1d0,ERI_MO,Bph)
 
     AB(:,:) = Aph(:,:) + Bph(:,:)
  

@@ -26,8 +26,6 @@ subroutine GGW_ppBSE(TDA_W,TDA,dBSE,dTDA,eta,nOrb,nC,nO,nV,nR,nS,ERI,dipole_int,
 
 ! Local variables
 
-  integer                       :: isp_W
-
   logical                       :: dRPA   = .false.
   logical                       :: dRPA_W = .true.
 
@@ -67,15 +65,13 @@ subroutine GGW_ppBSE(TDA_W,TDA,dBSE,dTDA,eta,nOrb,nC,nO,nV,nR,nS,ERI,dipole_int,
 ! Compute RPA screening !
 !-----------------------!
 
-  isp_W = 3
   EcRPA = 0d0
 
   allocate(OmRPA(nS),XpY_RPA(nS,nS),XmY_RPA(nS,nS),rho_RPA(nOrb,nOrb,nS), &
            Aph(nS,nS),Bph(nS,nS))
  
-  call phLR_A(isp_W,dRPA_W,nOrb,nC,nO,nV,nR,nS,1d0,eW,ERI,Aph)
-
-  if(.not.TDA_W) call phLR_B(isp_W,dRPA_W,nOrb,nC,nO,nV,nR,nS,1d0,ERI,Bph)
+                 call phGLR_A(dRPA_W,nOrb,nC,nO,nV,nR,nS,1d0,eW,ERI,Aph)
+  if(.not.TDA_W) call phGLR_B(dRPA_W,nOrb,nC,nO,nV,nR,nS,1d0,ERI,Bph)
 
   call phLR(TDA_W,nS,Aph,Bph,EcRPA,OmRPA,XpY_RPA,XmY_RPA)
 

@@ -348,35 +348,4 @@ subroutine RGW_ppBSE_static_kernel_C(ispin,eta,nBas,nC,nO,nV,nR,nS,nVV,lambda,ER
 
   end if
 
-!---------------!
-! SpinOrb block !
-!---------------!
-
-  if(ispin == 4) then
-
-    ab = 0
-    do a=nO+1,nBas-nR
-      do b=a+1,nBas-nR
-        ab = ab + 1
-        cd = 0
-        do c=nO+1,nBas-nR
-          do d=c+1,nBas-nR
-            cd = cd + 1
-
-            chi = 0d0
-            do m=1,nS
-              eps = Om(m)**2 + eta**2
-              chi = chi - rho(a,c,m)*rho(b,d,m)*Om(m)/eps &
-                        + rho(a,d,m)*rho(b,c,m)*Om(m)/eps
-            end do
-           
-            KC(ab,cd) = 2d0*lambda*chi
-
-          end do
-        end do
-      end do
-    end do
-
-  end if
-
 end subroutine 

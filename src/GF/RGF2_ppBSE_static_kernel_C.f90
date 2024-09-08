@@ -260,45 +260,5 @@ end if
 !    end do
   
 !   end if
-  
-  if(ispin == 4) then
- 
-    ab = 0
-    do a=nO+1,nBas-nR
-      do b=a+1,nBas-nR
-        ab = ab + 1
- 
-        cd = 0
-        do c=nO+1,nBas-nR
-          do d=c+1,nBas-nR
-            cd = cd + 1
- 
-            do m=nC+1,nO
-              do e=nO+1,nBas-nR
-   
-                dem = eGF(m) - eGF(e)
-                num =       (ERI(a,m,c,e) - ERI(a,m,e,c)) * (ERI(e,b,m,d) - ERI(e,b,d,m))
-                num = num + (ERI(a,e,c,m) - ERI(a,e,m,c)) * (ERI(m,b,e,d) - ERI(m,b,d,e))
-                num = num - (ERI(b,m,c,e) - ERI(b,m,e,c)) * (ERI(e,a,m,d) - ERI(e,a,d,m))
-                num = num - (ERI(b,e,c,m) - ERI(b,e,m,c)) * (ERI(m,a,e,d) - ERI(m,a,d,e))
-                                                                              
-                KC_sta(ab,cd) = KC_sta(ab,cd) + num*dem/(dem**2 + eta**2)
-          
-              end do
-            end do
- 
-          end do
-        end do
- 
-      end do
-    end do
-
-  end if
-  
-! Second-order correlation kernel for the block C of the spinorbital manifold
-
-  
-
-! deallocate(Om_tmp)
 
 end subroutine 

@@ -81,27 +81,4 @@ subroutine phLR_A(ispin,dRPA,nBas,nC,nO,nV,nR,nS,lambda,e,ERI,Aph)
 
   end if
 
-! Build A matrix for spin orbitals
-
-  if(ispin == 3) then 
-
-    ia = 0
-    do i=nC+1,nO
-      do a=nO+1,nBas-nR
-        ia = ia + 1
-        jb = 0
-        do j=nC+1,nO
-          do b=nO+1,nBas-nR
-            jb = jb + 1
- 
-            Aph(ia,jb) = (e(a) - e(i))*Kronecker_delta(i,j)*Kronecker_delta(a,b) &
-                       + lambda*ERI(i,b,a,j) - (1d0 - delta_dRPA)*lambda*ERI(i,b,j,a)
-
-          end  do
-        end  do
-      end  do
-    end  do
-
-  end if
-
 end subroutine 

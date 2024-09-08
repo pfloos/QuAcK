@@ -44,9 +44,9 @@ subroutine ppLR_C_od(ispin,nBas,nC,nO,nV,nR,nOO,nVV,lambda,ERI,Cpp)
 
   end if
 
-! Build C matrix for the triplet manifold, or alpha-alpha block, or in the spin-orbital basis
+! Build C matrix for the triplet or alpha-alpha manifold
 
-  if(ispin == 2 .or. ispin == 4) then
+  if(ispin == 2) then
 
     ab = 0
     do a=nO+1,nBas-nR

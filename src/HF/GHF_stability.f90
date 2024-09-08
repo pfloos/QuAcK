@@ -21,7 +21,6 @@ subroutine GHF_stability(nBas,nC,nO,nV,nR,nS,eHF,ERI)
 
   integer,parameter             :: maxS = 20
   integer                       :: ia
-  integer                       :: ispin
 
   double precision,allocatable  :: A(:,:)
   double precision,allocatable  :: B(:,:)
@@ -36,10 +35,8 @@ subroutine GHF_stability(nBas,nC,nO,nV,nR,nS,eHF,ERI)
 ! Stability analysis: Real GHF -> Real GHF  
 !-------------------------------------------------------------!
  
-  ispin = 3
-
-  call phLR_A(ispin,.false.,nBas,nC,nO,nV,nR,nS,1d0,eHF,ERI,A)
-  call phLR_B(ispin,.false.,nBas,nC,nO,nV,nR,nS,1d0,ERI,B)
+  call phGLR_A(.false.,nBas,nC,nO,nV,nR,nS,1d0,eHF,ERI,A)
+  call phGLR_B(.false.,nBas,nC,nO,nV,nR,nS,1d0,ERI,B)
 
   AB(:,:) = A(:,:) + B(:,:)
 

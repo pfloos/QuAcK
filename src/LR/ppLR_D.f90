@@ -56,9 +56,9 @@ subroutine ppLR_D(ispin,nOrb,nC,nO,nV,nR,nOO,lambda,e,ERI,Dpp)
 
   end if
 
-! Build the D matrix for the triplet manifold, the alpha-alpha block, or in the spin-orbital basis 
+! Build the D matrix for the triplet or alpha-alpha manifold
 
-  if(ispin == 2 .or. ispin == 4) then
+  if(ispin == 2) then
 
     ij = 0
     do i=nC+1,nO
