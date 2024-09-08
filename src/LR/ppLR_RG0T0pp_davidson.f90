@@ -177,13 +177,16 @@ subroutine ppLR_RG0T0pp_davidson(ispin, TDA, nC, nO, nR, nOrb, nOO, nVV, lambda,
         !  write(*,'(100(F15.7,2X))') (U(k,i), i = 1, n_states_diag)
         !enddo
         !allocate(S_check(shift2,shift2))
-        !call dgemm("T", "N", shift2, shift2, N, 1.d0, U(1,1), size(U, 1), U(1,1), size(U, 1), 0.d0, S_check(1,1), size(S_check, 1))
+        !call dgemm("T", "N", shift2, shift2, N, 1.d0,      &
+        !           U(1,1), size(U, 1), U(1,1), size(U, 1), &
+        !           0.d0, S_check(1,1), size(S_check, 1))
         !do k = 1, shift2
         !  write(*,'(100(F15.7,2X))') (S_check(k,i), i = 1, shift2)
         !enddo
         !deallocate(S_check)
 
-        call ppLR_HR_calc(ispin, nOrb, nC, nO, nR, nOO, nVV, lambda, e, eF, n_states_diag, ERI(1,1,1,1), U(1,shift1+1), W(1,shift1+1))
+        call ppLR_HR_calc(ispin, nOrb, nC, nO, nR, nOO, nVV, lambda, e, eF, n_states_diag, &
+                          ERI(1,1,1,1), U(1,shift1+1), W(1,shift1+1))
 
       else
 
@@ -701,7 +704,8 @@ subroutine ppLR_H_diag(ispin, nOrb, nC, nO, nR, nOO, nVV, lambda, e, eF, ERI, H_
             if(a .ne. c) cycle
             if(b .ne. d) cycle
             H_diag(ab) = e(a) + e(b) - eF &
-                       + lambda * (ERI(a,b,c,d) + ERI(a,b,d,c)) / dsqrt((1.d0 + Kronecker_delta(a, b)) * (1.d0 + Kronecker_delta(c, d)))
+                       + lambda * (ERI(a,b,c,d) + ERI(a,b,d,c)) / dsqrt( (1.d0 + Kronecker_delta(a, b)) &
+                                                                       * (1.d0 + Kronecker_delta(c, d)))
           enddo
         enddo
       enddo ! b
@@ -717,8 +721,9 @@ subroutine ppLR_H_diag(ispin, nOrb, nC, nO, nR, nOO, nVV, lambda, e, eF, ERI, H_
             kl = kl + 1
             if(i .ne. k) cycle
             if(j .ne. l) cycle
-            H_diag(ij) = (e(i) + e(j) - eF) &
-                       - lambda * (ERI(i,j,k,l) + ERI(i,j,l,k)) / dsqrt((1.d0 + Kronecker_delta(i, j)) * (1.d0 + Kronecker_delta(k, l)))
+            H_diag(ij) = e(i) + e(j) - eF &
+                       - lambda * (ERI(i,j,k,l) + ERI(i,j,l,k)) / dsqrt( (1.d0 + Kronecker_delta(i, j)) &
+                                                                       * (1.d0 + Kronecker_delta(k, l)))
           enddo
         enddo
       enddo ! j
