@@ -76,7 +76,7 @@ subroutine RGTpp_ppBSE_static_kernel_B(ispin,eta,nBas,nC,nO,nV,nR,nOO,nVV,nOOx,n
 ! triplet block !
 !===============!
 
-  if(ispin == 2 .or. ispin == 4) then
+  if(ispin == 2) then
 
     ab = 0
     do a=nO+1,nBas-nR

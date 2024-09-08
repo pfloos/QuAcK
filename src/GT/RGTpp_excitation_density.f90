@@ -130,7 +130,7 @@ subroutine RGTpp_excitation_density(ispin,nBas,nC,nO,nV,nR,nOO,nVV,ERI,X1,Y1,rho
 ! Triplet manifold
 !----------------------------------------------
 
-  if(ispin == 2 .or. ispin == 4) then
+  if(ispin == 2) then
 
     dim_1 = (nBas - nO) * (nBas - nO - 1) / 2
     dim_2 = nO * (nO - 1) / 2
