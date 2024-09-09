@@ -46,6 +46,7 @@ subroutine RGW_phBSE_static_kernel_B(eta,nBas,nC,nO,nV,nR,nS,lambda,ERI,Om,rho,K
             chi = chi + rho(i,b,kc)*rho(a,j,kc)*Om(kc)/eps
           end do
 
+!         KB(ia,jb) = 4d0*chi
           KB(ia,jb) = 4d0*lambda*chi
 
         end do

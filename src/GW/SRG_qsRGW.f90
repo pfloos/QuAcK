@@ -385,8 +385,7 @@ subroutine SRG_qsRGW(dotest,maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS
 
       end if
 
-      call RGW_phACFDT(exchange_kernel, doXBS, .true., TDA_W, TDA, BSE, singlet, triplet, &
-                      eta, nOrb, nC, nO, nV, nR, nS, ERI_MO, eGW, eGW, EcBSE)
+      call RGW_phACFDT(exchange_kernel,doXBS,TDA_W,TDA,singlet,triplet,eta,nOrb,nC,nO,nV,nR,nS,ERI_MO,eGW,eGW,EcBSE)
 
       write(*,*)
       write(*,*)'-------------------------------------------------------------------------------'

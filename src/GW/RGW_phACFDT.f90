@@ -1,4 +1,4 @@
-subroutine RGW_phACFDT(exchange_kernel,doXBS,dRPA,TDA_W,TDA,BSE,singlet,triplet,eta,nBas,nC,nO,nV,nR,nS,ERI,eW,e,EcAC)
+subroutine RGW_phACFDT(exchange_kernel,doXBS,TDA_W,TDA,singlet,triplet,eta,nBas,nC,nO,nV,nR,nS,ERI,eW,eGW,EcAC)
 
 ! Compute the correlation energy via the adiabatic connection fluctuation dissipation theorem
 
@@ -10,10 +10,8 @@ subroutine RGW_phACFDT(exchange_kernel,doXBS,dRPA,TDA_W,TDA,BSE,singlet,triplet,
 
   logical,intent(in)            :: doXBS
   logical,intent(in)            :: exchange_kernel
-  logical,intent(in)            :: dRPA
   logical,intent(in)            :: TDA_W
   logical,intent(in)            :: TDA
-  logical,intent(in)            :: BSE
   logical,intent(in)            :: singlet
   logical,intent(in)            :: triplet
 
@@ -25,11 +23,12 @@ subroutine RGW_phACFDT(exchange_kernel,doXBS,dRPA,TDA_W,TDA,BSE,singlet,triplet,
   integer,intent(in)            :: nR
   integer,intent(in)            :: nS
   double precision,intent(in)   :: eW(nBas)
-  double precision,intent(in)   :: e(nBas)
+  double precision,intent(in)   :: eGW(nBas)
   double precision,intent(in)   :: ERI(nBas,nBas,nBas,nBas)
 
 ! Local variables
 
+  logical                       :: dRPA   = .false.
   logical                       :: dRPA_W = .true.
   integer                       :: ispin
   integer                       :: isp_W
@@ -77,7 +76,6 @@ subroutine RGW_phACFDT(exchange_kernel,doXBS,dRPA,TDA_W,TDA,BSE,singlet,triplet,
 ! Compute (singlet) RPA screening 
 
   isp_W = 1
-  EcRPA = 0d0
 
                  call phLR_A(isp_W,dRPA_W,nBas,nC,nO,nV,nR,nS,1d0,eW,ERI,Aph)
   if(.not.TDA_W) call phLR_B(isp_W,dRPA_W,nBas,nC,nO,nV,nR,nS,1d0,ERI,Bph)
@@ -119,6 +117,9 @@ subroutine RGW_phACFDT(exchange_kernel,doXBS,dRPA,TDA_W,TDA,BSE,singlet,triplet,
         call RGW_phBSE_static_kernel_B(eta,nBas,nC,nO,nV,nR,nS,lambda,ERI,OmRPA,rho_RPA,KB)
 
       end if
+
+                   call phLR_A(ispin,dRPA,nBas,nC,nO,nV,nR,nS,lambda,eGW,ERI,Aph)
+      if(.not.TDA) call phLR_B(ispin,dRPA,nBas,nC,nO,nV,nR,nS,lambda,ERI,Bph)
 
                    Aph(:,:) = Aph(:,:) + KA(:,:)
       if(.not.TDA) Bph(:,:) = Bph(:,:) + KB(:,:)
@@ -173,6 +174,9 @@ subroutine RGW_phACFDT(exchange_kernel,doXBS,dRPA,TDA_W,TDA,BSE,singlet,triplet,
         call RGW_phBSE_static_kernel_B(eta,nBas,nC,nO,nV,nR,nS,lambda,ERI,OmRPA,rho_RPA,KB)
 
       end if  
+
+                   call phLR_A(ispin,dRPA,nBas,nC,nO,nV,nR,nS,lambda,eGW,ERI,Aph)
+      if(.not.TDA) call phLR_B(ispin,dRPA,nBas,nC,nO,nV,nR,nS,lambda,ERI,Bph)
 
                    Aph(:,:) = Aph(:,:) + KA(:,:)
       if(.not.TDA) Bph(:,:) = Bph(:,:) + KB(:,:)
