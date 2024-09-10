@@ -30,7 +30,7 @@ program QuAcK
   double precision,allocatable  :: T(:,:)
   double precision,allocatable  :: V(:,:)
   double precision,allocatable  :: Hc(:,:)
-  double precision,allocatable  :: X(:,:)
+  double precision,allocatable  :: X(:,:),X_tmp(:,:)
   double precision,allocatable  :: dipole_int_AO(:,:,:)
   double precision,allocatable  :: ERI_AO(:,:,:,:)
   double precision,allocatable  :: Uvec(:,:), Uval(:)
@@ -70,10 +70,6 @@ program QuAcK
   logical                       :: doACFDT,exchange_kernel,doXBS
 
   logical                       :: dotest,doRtest,doUtest,doGtest
-
-  integer                       :: i, j, j0
-  double precision              :: acc_d, acc_nd
-  double precision, allocatable :: tmp1(:,:), tmp2(:,:)
 
 !-------------!
 ! Hello World !
@@ -180,61 +176,11 @@ program QuAcK
 
 ! Compute orthogonalization matrix
 
-  !call orthogonalization_matrix(nBas, S, X)
-
-  allocate(Uvec(nBas,nBas), Uval(nBas))
-
-  Uvec(1:nBas,1:nBas) = S(1:nBas,1:nBas)
-  call diagonalize_matrix(nBas, Uvec, Uval)
-
-  nOrb = 0
-  do i = 1, nBas
-    if(Uval(i) > 1d-6) then
-        Uval(i) = 1d0 / dsqrt(Uval(i))
-        nOrb = nOrb + 1
-    else
-      write(*,*) ' Eigenvalue',i,'too small for canonical orthogonalization'
-    end if
-  end do
-
-  write(*,'(A38)') '--------------------------------------'
-  write(*,'(A38,1X,I16)') 'Number of basis functions (AOs)', nBas
-  write(*,'(A38,1X,I16)') 'Number of basis functions (MOs)', nOrb
-  write(*,'(A38,1X,F9.3)') ' % of discarded orbitals = ', 100.d0 * (1.d0 - dble(nOrb)/dble(nBas))
-  write(*,'(A38)') '--------------------------------------'
-  write(*,*)
-
-  j0 = nBas - nOrb
+  allocate(X_tmp(nBas,nBas))
+  call orthogonalization_matrix(nBas,nOrb,S,X_tmp)
   allocate(X(nBas,nOrb))
-  do j = j0+1, nBas
-    do i = 1, nBas
-      X(i,j-j0) = Uvec(i,j) * Uval(j)
-    enddo
-  enddo
-
-  deallocate(Uvec, Uval)
-
-  !! check if X.T S X = 1_(nOrb,nOrb)
-  !allocate(tmp1(nOrb,nBas), tmp2(nOrb,nOrb))
-  !call dgemm("T", "N", nOrb, nBas, nBas, 1.d0, &
-  !           X(1,1), nBas, S(1,1), nBas,       &
-  !           0.d0, tmp1(1,1), nOrb)
-  !call dgemm("N", "N", nOrb, nOrb, nBas, 1.d0, &
-  !           tmp1(1,1), nOrb, X(1,1), nBas,    &
-  !           0.d0, tmp2(1,1), nOrb)
-  !acc_d = 0.d0
-  !acc_nd = 0.d0
-  !do i = 1, nOrb
-  !  !write(*,'(1000(F15.7,2X))') (tmp2(i,j), j = 1, nOrb)
-  !  acc_d = acc_d + tmp2(i,i)
-  !  do j = 1, nOrb
-  !    if(j == i) cycle
-  !    acc_nd = acc_nd + dabs(tmp2(j,i))
-  !  enddo
-  !enddo
-  !print*, '     diag part: ', dabs(acc_d  - dble(nOrb))  / dble(nOrb)
-  !print*, ' non-diag part: ', acc_nd
-  !deallocate(tmp1, tmp2)
+  X(1:nBas,1:nOrb) = X_tmp(1:nBas,1:nOrb)
+  deallocate(X_tmp)
 
 !---------------------!
 ! Choose QuAcK branch !
