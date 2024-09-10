@@ -41,9 +41,11 @@ subroutine RG0W0(dotest,doACFDT,exchange_kernel,doXBS,dophBSE,dophBSE2,TDA_W,TDA
 
 ! Local variables
 
-  logical                       :: print_W = .true.
-  logical                       :: dRPA
-  integer                       :: ispin
+  logical                       :: print_W   = .true.
+  logical                       :: plot_self = .false.
+  logical                       :: dRPA_W
+  integer                       :: isp_W
+  double precision              :: lambda
   double precision              :: EcRPA
   double precision              :: EcBSE(nspin)
   double precision              :: EcGM
@@ -72,26 +74,17 @@ subroutine RG0W0(dotest,doACFDT,exchange_kernel,doXBS,dophBSE,dophBSE2,TDA_W,TDA
 
 ! Initialization
 
-  dRPA = .true.
-  EcRPA = 0d0
+  lambda = 1d0
 
-! TDA for W
+! Spin manifold and TDA for dynamical screening
+
+  isp_W = 1
+  dRPA_W = .true.
 
   if(TDA_W) then 
-    write(*,*) 'Tamm-Dancoff approximation for dynamic screening!'
+    write(*,*) 'Tamm-Dancoff approximation for dynamical screening!'
     write(*,*)
   end if
-
-! TDA 
-
-  if(TDA) then 
-    write(*,*) 'Tamm-Dancoff approximation activated!'
-    write(*,*)
-  end if
-
-! Spin manifold 
-
-  ispin = 1
 
 ! Memory allocation
 
@@ -102,8 +95,8 @@ subroutine RG0W0(dotest,doACFDT,exchange_kernel,doXBS,dophBSE,dophBSE2,TDA_W,TDA
 ! Compute screening !
 !-------------------!
 
-                 call phLR_A(ispin,dRPA,nBas,nC,nO,nV,nR,nS,1d0,eHF,ERI,Aph)
-  if(.not.TDA_W) call phLR_B(ispin,dRPA,nBas,nC,nO,nV,nR,nS,1d0,ERI,Bph)
+                 call phLR_A(isp_W,dRPA_W,nBas,nC,nO,nV,nR,nS,lambda,eHF,ERI,Aph)
+  if(.not.TDA_W) call phLR_B(isp_W,dRPA_W,nBas,nC,nO,nV,nR,nS,lambda,ERI,Bph)
 
   call phLR(TDA_W,nS,Aph,Bph,EcRPA,Om,XpY,XmY)
 
@@ -149,7 +142,7 @@ subroutine RG0W0(dotest,doACFDT,exchange_kernel,doXBS,dophBSE,dophBSE2,TDA_W,TDA
 
 ! Plot self-energy, renormalization factor, and spectral function
 
-!  call RGW_plot_self_energy(nBas,eta,nC,nO,nV,nR,nS,eHF,eHF,Om,rho)
+  if(plot_self) call RGW_plot_self_energy(nBas,eta,nC,nO,nV,nR,nS,eHF,eHF,Om,rho)
 
 !--------------------!
 ! Cumulant expansion !
@@ -159,8 +152,8 @@ subroutine RG0W0(dotest,doACFDT,exchange_kernel,doXBS,dophBSE,dophBSE2,TDA_W,TDA
 
 ! Compute the RPA correlation energy
 
-                 call phLR_A(ispin,dRPA,nBas,nC,nO,nV,nR,nS,1d0,eGW,ERI,Aph)
-  if(.not.TDA_W) call phLR_B(ispin,dRPA,nBas,nC,nO,nV,nR,nS,1d0,ERI,Bph)
+                 call phLR_A(isp_W,dRPA_W,nBas,nC,nO,nV,nR,nS,lambda,eGW,ERI,Aph)
+  if(.not.TDA_W) call phLR_B(isp_W,dRPA_W,nBas,nC,nO,nV,nR,nS,lambda,ERI,Bph)
 
   call phLR(TDA_W,nS,Aph,Bph,EcRPA,Om,XpY,XmY)
 
@@ -174,14 +167,8 @@ subroutine RG0W0(dotest,doACFDT,exchange_kernel,doXBS,dophBSE,dophBSE2,TDA_W,TDA
 
   if(dophBSE) then
 
-    call RGW_phBSE(dophBSE2,TDA_W,TDA,dBSE,dTDA,singlet,triplet,eta,nBas,nC,nO,nV,nR,nS,ERI,dipole_int,eHF,eGW,EcBSE)
-
-    if(exchange_kernel) then
- 
-      EcBSE(1) = 0.5d0*EcBSE(1)
-      EcBSE(2) = 1.5d0*EcBSE(2)
- 
-    end if
+    call RGW_phBSE(dophBSE2,exchange_kernel,TDA_W,TDA,dBSE,dTDA,singlet,triplet,eta, & 
+                   nBas,nC,nO,nV,nR,nS,ERI,dipole_int,eHF,eGW,EcBSE)
 
     write(*,*)
     write(*,*)'-------------------------------------------------------------------------------'
@@ -200,13 +187,6 @@ subroutine RG0W0(dotest,doACFDT,exchange_kernel,doXBS,dophBSE,dophBSE2,TDA_W,TDA
       write(*,*) ' Adiabatic connection version of BSE@G0W0 correlation energy '
       write(*,*) '-------------------------------------------------------------'
       write(*,*) 
-
-      if(doXBS) then 
-
-        write(*,*) '*** scaled screening version (XBS) ***'
-        write(*,*)
-
-      end if
 
       call RGW_phACFDT(exchange_kernel,doXBS,TDA_W,TDA,singlet,triplet,eta,nBas,nC,nO,nV,nR,nS,ERI,eHF,eGW,EcBSE)
 
@@ -227,8 +207,6 @@ subroutine RG0W0(dotest,doACFDT,exchange_kernel,doXBS,dophBSE,dophBSE2,TDA_W,TDA
 
     call RGW_ppBSE(TDA_W,TDA,dBSE,dTDA,singlet,triplet,eta,nBas,nC,nO,nV,nR,nS,ERI,dipole_int,eHF,eGW,EcBSE)
 
-    EcBSE(2) = 3d0*EcBSE(2)
-
     write(*,*)
     write(*,*)'-------------------------------------------------------------------------------'
     write(*,'(2X,A50,F20.10,A3)') 'Tr@ppBSE@G0W0@RHF correlation energy (singlet) = ',EcBSE(1),' au'
@@ -239,8 +217,6 @@ subroutine RG0W0(dotest,doACFDT,exchange_kernel,doXBS,dophBSE,dophBSE2,TDA_W,TDA
     write(*,*)
 
   end if
-
-! end if
   
 ! Testing zone
 

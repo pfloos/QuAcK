@@ -1,4 +1,5 @@
-subroutine RGW_phBSE(dophBSE2,TDA_W,TDA,dBSE,dTDA,singlet,triplet,eta,nBas,nC,nO,nV,nR,nS,ERI,dipole_int,eW,eGW,EcBSE)
+subroutine RGW_phBSE(dophBSE2,exchange_kernel,TDA_W,TDA,dBSE,dTDA,singlet,triplet,eta, & 
+                     nBas,nC,nO,nV,nR,nS,ERI,dipole_int,eW,eGW,EcBSE)
 
 ! Compute the Bethe-Salpeter excitation energies
 
@@ -8,6 +9,7 @@ subroutine RGW_phBSE(dophBSE2,TDA_W,TDA,dBSE,dTDA,singlet,triplet,eta,nBas,nC,nO
 ! Input variables
 
   logical,intent(in)            :: dophBSE2
+  logical,intent(in)            :: exchange_kernel
   logical,intent(in)            :: TDA_W
   logical,intent(in)            :: TDA
   logical,intent(in)            :: dBSE
@@ -63,6 +65,10 @@ subroutine RGW_phBSE(dophBSE2,TDA_W,TDA,dBSE,dTDA,singlet,triplet,eta,nBas,nC,nO
            Aph(nS,nS),Bph(nS,nS),KA_sta(nS,nS),KB_sta(nS,nS), &
            OmBSE(nS),XpY_BSE(nS,nS),XmY_BSE(nS,nS))
 
+! Initialization
+
+  EcBSE(:) = 0d0
+
 !---------------------------------
 ! Compute (singlet) RPA screening 
 !---------------------------------
@@ -79,6 +85,15 @@ subroutine RGW_phBSE(dophBSE2,TDA_W,TDA,dBSE,dTDA,singlet,triplet,eta,nBas,nC,nO
   call RGW_phBSE_static_kernel_A(eta,nBas,nC,nO,nV,nR,nS,1d0,ERI,OmRPA,rho_RPA,KA_sta)
   call RGW_phBSE_static_kernel_B(eta,nBas,nC,nO,nV,nR,nS,1d0,ERI,OmRPA,rho_RPA,KB_sta)
 
+!-----!
+! TDA !
+!-----!
+
+  if(TDA) then
+    write(*,*) 'Tamm-Dancoff approximation activated in phBSE!'
+    write(*,*)
+  end if
+
 !-------------------
 ! Singlet manifold
 !-------------------
@@ -86,7 +101,6 @@ subroutine RGW_phBSE(dophBSE2,TDA_W,TDA,dBSE,dTDA,singlet,triplet,eta,nBas,nC,nO
  if(singlet) then
 
     ispin = 1
-    EcBSE(ispin) = 0d0
 
     ! Compute BSE excitation energies
 
@@ -143,7 +157,6 @@ subroutine RGW_phBSE(dophBSE2,TDA_W,TDA,dBSE,dTDA,singlet,triplet,eta,nBas,nC,nO
  if(triplet) then
 
     ispin = 2
-    EcBSE(ispin) = 0d0
 
     ! Compute BSE excitation energies
 
@@ -167,5 +180,15 @@ subroutine RGW_phBSE(dophBSE2,TDA_W,TDA,dBSE,dTDA,singlet,triplet,eta,nBas,nC,nO
                                            OmBSE,XpY_BSE,XmY_BSE,KA_sta,KB_sta)
 
   end if
+
+! Scale properly correlation energy if exchange is included in interaction kernel
+
+  if(exchange_kernel) then
+
+    EcBSE(1) = 0.5d0*EcBSE(1)
+    EcBSE(2) = 1.5d0*EcBSE(2)
+
+  end if
+
 
 end subroutine 

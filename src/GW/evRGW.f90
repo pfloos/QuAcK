@@ -82,13 +82,6 @@ subroutine evRGW(dotest,maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,dop
     write(*,*)
   end if
 
-! TDA 
-
-  if(TDA) then 
-    write(*,*) 'Tamm-Dancoff approximation activated!'
-    write(*,*)
-  end if
-
 ! Linear mixing
 
   linear_mixing = .false.
@@ -221,14 +214,8 @@ subroutine evRGW(dotest,maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,dop
 
   if(dophBSE) then
 
-    call RGW_phBSE(dophBSE2,TDA_W,TDA,dBSE,dTDA,singlet,triplet,eta,nBas,nC,nO,nV,nR,nS,ERI,dipole_int,eGW,eGW,EcBSE)
-
-    if(exchange_kernel) then
-
-      EcBSE(1) = 0.5d0*EcBSE(1)
-      EcBSE(2) = 1.5d0*EcBSE(2)
-
-    end if
+    call RGW_phBSE(dophBSE2,exchange_kernel,TDA_W,TDA,dBSE,dTDA,singlet,triplet,eta, & 
+                   nBas,nC,nO,nV,nR,nS,ERI,dipole_int,eGW,eGW,EcBSE)
 
     write(*,*)
     write(*,*)'-------------------------------------------------------------------------------'
@@ -243,17 +230,10 @@ subroutine evRGW(dotest,maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,dop
 
     if(doACFDT) then
 
-      write(*,*) '------------------------------------------------------'
-      write(*,*) 'Adiabatic connection version of BSE correlation energy'
-      write(*,*) '------------------------------------------------------'
+      write(*,*) '-----------------------------------------------------------'
+      write(*,*) 'Adiabatic connection version of BSE@evGW correlation energy'
+      write(*,*) '-----------------------------------------------------------'
       write(*,*)
-
-      if(doXBS) then
-
-        write(*,*) '*** scaled screening version (XBS) ***'
-        write(*,*)
-
-      end if
 
       call RGW_phACFDT(exchange_kernel,doXBS,TDA_W,TDA,singlet,triplet,eta,nBas,nC,nO,nV,nR,nS,ERI,eGW,eGW,EcBSE)
 
@@ -273,8 +253,6 @@ subroutine evRGW(dotest,maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,dop
   if(doppBSE) then
 
     call RGW_ppBSE(TDA_W,TDA,dBSE,dTDA,singlet,triplet,eta,nBas,nC,nO,nV,nR,nS,ERI,dipole_int,eHF,eGW,EcBSE)
-
-    EcBSE(2) = 3d0*EcBSE(2)
 
     write(*,*)
     write(*,*)'-------------------------------------------------------------------------------'

@@ -1,10 +1,7 @@
-
-! ---
-
-subroutine qsRGW(dotest, maxSCF, thresh, max_diis, doACFDT, exchange_kernel, doXBS, dophBSE, dophBSE2, &
-                 TDA_W, TDA, dBSE, dTDA, doppBSE, singlet, triplet, eta, regularize, nNuc, ZNuc, rNuc, &
-                 ENuc, nBas, nOrb, nC, nO, nV, nR, nS, ERHF, S, X, T, V, Hc, ERI_AO,           &
-                 ERI_MO, dipole_int_AO, dipole_int_MO, PHF, cHF, eHF)
+subroutine qsRGW(dotest,maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,dophBSE,dophBSE2, &
+                 TDA_W,TDA,dBSE,dTDA,doppBSE,singlet,triplet,eta,regularize,nNuc,ZNuc,rNuc,    &
+                 ENuc,nBas,nOrb,nC,nO,nV,nR,nS,ERHF,S,X,T,V,Hc,ERI_AO,                         &
+                 ERI_MO,dipole_int_AO,dipole_int_MO,PHF,cHF,eHF)
 
 ! Perform a quasiparticle self-consistent GW calculation
 
@@ -38,7 +35,8 @@ subroutine qsRGW(dotest, maxSCF, thresh, max_diis, doACFDT, exchange_kernel, doX
   double precision,intent(in)   :: rNuc(nNuc,ncart)
   double precision,intent(in)   :: ENuc
 
-  integer,intent(in)            :: nBas, nOrb
+  integer,intent(in)            :: nBas
+  integer,intent(in)            :: nOrb
   integer,intent(in)            :: nC
   integer,intent(in)            :: nO
   integer,intent(in)            :: nV
@@ -78,7 +76,7 @@ subroutine qsRGW(dotest, maxSCF, thresh, max_diis, doACFDT, exchange_kernel, doX
   double precision,external     :: trace_matrix
   double precision              :: dipole(ncart)
 
-  logical                       :: dRPA = .true.
+  logical                       :: dRPA_W  = .true.
   logical                       :: print_W = .false.
   double precision,allocatable  :: err_diis(:,:)
   double precision,allocatable  :: F_diis(:,:)
@@ -122,13 +120,6 @@ subroutine qsRGW(dotest, maxSCF, thresh, max_diis, doACFDT, exchange_kernel, doX
 
   if(TDA_W) then 
     write(*,*) 'Tamm-Dancoff approximation for dynamical screening!'
-    write(*,*)
-  end if
-
-! TDA 
-
-  if(TDA) then 
-    write(*,*) 'Tamm-Dancoff approximation activated!'
     write(*,*)
   end if
 
@@ -185,68 +176,68 @@ subroutine qsRGW(dotest, maxSCF, thresh, max_diis, doACFDT, exchange_kernel, doX
 
     ! Build Hartree-exchange matrix
 
-    call Hartree_matrix_AO_basis(nBas, P, ERI_AO, J)
-    call exchange_matrix_AO_basis(nBas, P, ERI_AO, K)
+    call Hartree_matrix_AO_basis(nBas,P,ERI_AO,J)
+    call exchange_matrix_AO_basis(nBas,P,ERI_AO,K)
 
     ! AO to MO transformation of two-electron integrals
 
-    do ixyz = 1, ncart
-      call AOtoMO(nBas, nOrb, c, dipole_int_AO(1,1,ixyz), dipole_int_MO(1,1,ixyz))
+    do ixyz=1,ncart
+      call AOtoMO(nBas,nOrb,c,dipole_int_AO(1,1,ixyz),dipole_int_MO(1,1,ixyz))
     end do
 
-    call AOtoMO_ERI_RHF(nBas, nOrb, c, ERI_AO, ERI_MO)
+    call AOtoMO_ERI_RHF(nBas,nOrb,c,ERI_AO,ERI_MO)
 
     ! Compute linear response
 
-    call phLR_A(ispin, dRPA, nOrb, nC, nO, nV, nR, nS, 1d0, eGW, ERI_MO, Aph)
-    if(.not.TDA_W) call phLR_B(ispin, dRPA, nOrb, nC, nO, nV, nR, nS, 1d0, ERI_MO, Bph)
+    call phLR_A(ispin,dRPA_W,nOrb,nC,nO,nV,nR,nS,1d0,eGW,ERI_MO,Aph)
+    if(.not.TDA_W) call phLR_B(ispin,dRPA_W,nOrb,nC,nO,nV,nR,nS,1d0,ERI_MO,Bph)
 
-    call phLR(TDA_W, nS, Aph, Bph, EcRPA, Om, XpY, XmY)
+    call phLR(TDA_W,nS,Aph,Bph,EcRPA,Om,XpY,XmY)
     if(print_W) call print_excitation_energies('phRPA@GW@RHF','singlet',nS,Om)
 
     ! Compute correlation part of the self-energy 
 
-    call RGW_excitation_density(nOrb, nC, nO, nR, nS, ERI_MO, XpY, rho)
+    call RGW_excitation_density(nOrb,nC,nO,nR,nS,ERI_MO,XpY,rho)
 
-    if(regularize) call GW_regularization(nOrb, nC, nO, nV, nR, nS, eGW, Om, rho)
+    if(regularize) call GW_regularization(nOrb,nC,nO,nV,nR,nS,eGW,Om,rho)
 
-    call RGW_self_energy(eta, nOrb, nC, nO, nV, nR, nS, eGW, Om, rho, EcGM, SigC, Z)
+    call RGW_self_energy(eta,nOrb,nC,nO,nV,nR,nS,eGW,Om,rho,EcGM,SigC,Z)
 
     ! Make correlation self-energy Hermitian and transform it back to AO basis
    
     SigC = 0.5d0*(SigC + transpose(SigC))
 
-    call MOtoAO(nBas, nOrb, S, c, SigC, SigCp)
+    call MOtoAO(nBas,nOrb,S,c,SigC,SigCp)
  
     ! Solve the quasi-particle equation
 
     F(:,:) = Hc(:,:) + J(:,:) + 0.5d0*K(:,:) + SigCp(:,:)
     if(nBas .ne. nOrb) then
-      call AOtoMO(nBas, nOrb, c(1,1), F(1,1), Fp(1,1))
-      call MOtoAO(nBas, nOrb, S(1,1), c(1,1), Fp(1,1), F(1,1))
+      call AOtoMO(nBas,nOrb,c(1,1),F(1,1),Fp(1,1))
+      call MOtoAO(nBas,nOrb,S(1,1),c(1,1),Fp(1,1),F(1,1))
     endif
 
     ! Compute commutator and convergence criteria
 
-    err = matmul(F, matmul(P, S)) - matmul(matmul(S, P), F)
+    err = matmul(F,matmul(P,S)) - matmul(matmul(S,P),F)
 
     if(nSCF > 1) Conv = maxval(abs(err))
 
     ! Kinetic energy
 
-    ET = trace_matrix(nBas, matmul(P, T))
+    ET = trace_matrix(nBas,matmul(P,T))
 
     ! Potential energy
 
-    EV = trace_matrix(nBas, matmul(P, V))
+    EV = trace_matrix(nBas,matmul(P,V))
 
     ! Hartree energy
 
-    EJ = 0.5d0*trace_matrix(nBas, matmul(P, J))
+    EJ = 0.5d0*trace_matrix(nBas,matmul(P,J))
 
     ! Exchange energy
 
-    EK = 0.25d0*trace_matrix(nBas, matmul(P, K))
+    EK = 0.25d0*trace_matrix(nBas,matmul(P,K))
 
     ! Total energy
 
@@ -264,29 +255,29 @@ subroutine qsRGW(dotest, maxSCF, thresh, max_diis, doACFDT, exchange_kernel, doX
     ! Diagonalize Hamiltonian in AO basis
 
     if(nBas .eq. nOrb) then
-      Fp = matmul(transpose(X), matmul(F, X))
+      Fp = matmul(transpose(X),matmul(F,X))
       cp(:,:) = Fp(:,:)
-      call diagonalize_matrix(nOrb, cp, eGW)
-      c = matmul(X, cp)
+      call diagonalize_matrix(nOrb,cp,eGW)
+      c = matmul(X,cp)
     else
-      Fp = matmul(transpose(c), matmul(F, c))
+      Fp = matmul(transpose(c),matmul(F,c))
       cp(:,:) = Fp(:,:)
-      call diagonalize_matrix(nOrb, cp, eGW)
-      c = matmul(c, cp)
+      call diagonalize_matrix(nOrb,cp,eGW)
+      c = matmul(c,cp)
     endif
 
 
-    call AOtoMO(nBas, nOrb, c, SigCp, SigC)
+    call AOtoMO(nBas,nOrb,c,SigCp,SigC)
 
     ! Density matrix
 
-    P(:,:) = 2d0*matmul(c(:,1:nO), transpose(c(:,1:nO)))
+    P(:,:) = 2d0*matmul(c(:,1:nO),transpose(c(:,1:nO)))
 
     ! Print results
 
-    call dipole_moment(nBas, P, nNuc, ZNuc, rNuc, dipole_int_AO, dipole)
-    call print_qsRGW(nBas, nOrb, nO, nSCF, Conv, thresh, eHF, eGW, c, SigC, Z, &
-                     ENuc, ET, EV, EJ, EK, EcGM, EcRPA, EqsGW, dipole)
+    call dipole_moment(nBas,P,nNuc,ZNuc,rNuc,dipole_int_AO,dipole)
+    call print_qsRGW(nBas,nOrb,nO,nSCF,Conv,thresh,eHF,eGW,c,SigC,Z, &
+                     ENuc,ET,EV,EJ,EK,EcGM,EcRPA,EqsGW,dipole)
 
   end do
 !------------------------------------------------------------------------
@@ -303,28 +294,21 @@ subroutine qsRGW(dotest, maxSCF, thresh, max_diis, doACFDT, exchange_kernel, doX
     write(*,*)'!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!'
     write(*,*)
 
-    deallocate(c, cp, P, F, Fp, J, K, SigC, SigCp, Z, Om, XpY, XmY, rho, err, err_diis, F_diis)
+    deallocate(c,cp,P,F,Fp,J,K,SigC,SigCp,Z,Om,XpY,XmY,rho,err,err_diis,F_diis)
     stop
 
   end if
 
 ! Deallocate memory
 
-  deallocate(c, cp, P, F, Fp, J, K, SigC, SigCp, Z, Om, XpY, XmY, rho, err, err_diis, F_diis)
+  deallocate(c,cp,P,F,Fp,J,K,SigC,SigCp,Z,Om,XpY,XmY,rho,err,err_diis,F_diis)
 
 ! Perform BSE calculation
 
   if(dophBSE) then
 
-    call RGW_phBSE(dophBSE2, TDA_W, TDA, dBSE, dTDA, singlet, triplet, eta, &
-                  nOrb, nC, nO, nV, nR, nS, ERI_MO, dipole_int_MO, eGW, eGW, EcBSE)
-
-    if(exchange_kernel) then
-
-      EcBSE(1) = 0.5d0*EcBSE(1)
-      EcBSE(2) = 1.5d0*EcBSE(2)
-
-    end if
+    call RGW_phBSE(dophBSE2,exchange_kernel,TDA_W,TDA,dBSE,dTDA,singlet,triplet,eta, &
+                   nOrb,nC,nO,nV,nR,nS,ERI_MO,dipole_int_MO,eGW,eGW,EcBSE)
 
     write(*,*)
     write(*,*)'-------------------------------------------------------------------------------'
@@ -339,17 +323,10 @@ subroutine qsRGW(dotest, maxSCF, thresh, max_diis, doACFDT, exchange_kernel, doX
 
     if(doACFDT) then
 
-      write(*,*) '------------------------------------------------------'
-      write(*,*) 'Adiabatic connection version of BSE correlation energy'
-      write(*,*) '------------------------------------------------------'
+      write(*,*) '-----------------------------------------------------------'
+      write(*,*) 'Adiabatic connection version of BSE@qsGW correlation energy'
+      write(*,*) '-----------------------------------------------------------'
       write(*,*)
-
-      if(doXBS) then
-
-        write(*,*) '*** scaled screening version (XBS) ***'
-        write(*,*)
-
-      end if
 
       call RGW_phACFDT(exchange_kernel,doXBS,TDA_W,TDA,singlet,triplet,eta,nOrb,nC,nO,nV,nR,nS,ERI_MO,eGW,eGW,EcBSE)
 
@@ -368,10 +345,7 @@ subroutine qsRGW(dotest, maxSCF, thresh, max_diis, doACFDT, exchange_kernel, doX
 
   if(doppBSE) then
       
-    call RGW_ppBSE(TDA_W, TDA, dBSE, dTDA, singlet, triplet, eta, nOrb, &
-                  nC, nO, nV, nR, nS, ERI_MO, dipole_int_MO, eHF, eGW, EcBSE)
- 
-    EcBSE(2) = 3d0*EcBSE(2)
+    call RGW_ppBSE(TDA_W,TDA,dBSE,dTDA,singlet,triplet,eta,nOrb,nC,nO,nV,nR,nS,ERI_MO,dipole_int_MO,eHF,eGW,EcBSE)
    
     write(*,*)
     write(*,*)'-------------------------------------------------------------------------------'
