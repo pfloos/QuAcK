@@ -1,4 +1,4 @@
-subroutine ufG0W0(dotest,TDA_W,nBas,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,eHF)
+subroutine ufG0W0(dotest,TDA_W,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,eHF)
 
 ! Unfold G0W0 equations
 
@@ -11,6 +11,7 @@ subroutine ufG0W0(dotest,TDA_W,nBas,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,eHF)
 
   logical,intent(in)            :: TDA_W
   integer,intent(in)            :: nBas
+  integer,intent(in)            :: nOrb
   integer,intent(in)            :: nC
   integer,intent(in)            :: nO
   integer,intent(in)            :: nV
@@ -18,8 +19,8 @@ subroutine ufG0W0(dotest,TDA_W,nBas,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,eHF)
   integer,intent(in)            :: nS
   double precision,intent(in)   :: ENuc
   double precision,intent(in)   :: ERHF
-  double precision,intent(in)   :: ERI(nBas,nBas,nBas,nBas)
-  double precision,intent(in)   :: eHF(nBas)
+  double precision,intent(in)   :: ERI(nOrb,nOrb,nOrb,nOrb)
+  double precision,intent(in)   :: eHF(nOrb)
 
 ! Local variables
 
@@ -93,10 +94,10 @@ subroutine ufG0W0(dotest,TDA_W,nBas,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,eHF)
 
     ! Memory allocation
 
-    allocate(Om(nS),Aph(nS,nS),Bph(nS,nS),XpY(nS,nS),XmY(nS,nS),rho(nBas,nBas,nS))
+    allocate(Om(nS),Aph(nS,nS),Bph(nS,nS),XpY(nS,nS),XmY(nS,nS),rho(nOrb,nOrb,nS))
  
-    call phLR_A(ispin,dRPA,nBas,nC,nO,nV,nR,nS,1d0,eHF,ERI,Aph)
-    call phLR_B(ispin,dRPA,nBas,nC,nO,nV,nR,nS,1d0,ERI,Bph)
+    call phLR_A(ispin,dRPA,nOrb,nC,nO,nV,nR,nS,1d0,eHF,ERI,Aph)
+    call phLR_B(ispin,dRPA,nOrb,nC,nO,nV,nR,nS,1d0,ERI,Bph)
  
     call phLR(TDA_W,nS,Aph,Bph,EcRPA,Om,XpY,XmY)
 
@@ -106,7 +107,7 @@ subroutine ufG0W0(dotest,TDA_W,nBas,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,eHF)
     ! Compute spectral weights !
     !--------------------------!
  
-    call RGW_excitation_density(nBas,nC,nO,nR,nS,ERI,XpY,rho)
+    call RGW_excitation_density(nOrb,nC,nO,nR,nS,ERI,XpY,rho)
 
     deallocate(Aph,Bph,XpY,XmY)
 
@@ -154,7 +155,7 @@ subroutine ufG0W0(dotest,TDA_W,nBas,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,eHF)
       ija = 0
       do i=nC+1,nO
         do j=nC+1,nO
-          do a=nO+1,nBas-nR
+          do a=nO+1,nOrb-nR
             ija = ija + 1
                
             H(1    ,1+ija) = sqrt(2d0)*ERI(p,a,i,j)
@@ -170,8 +171,8 @@ subroutine ufG0W0(dotest,TDA_W,nBas,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,eHF)
  
       iab = 0
       do i=nC+1,nO
-        do a=nO+1,nBas-nR
-          do b=nO+1,nBas-nR
+        do a=nO+1,nOrb-nR
+          do b=nO+1,nOrb-nR
             iab = iab + 1   
  
             H(1          ,1+n2h1p+iab) = sqrt(2d0)*ERI(p,i,b,a)
@@ -188,13 +189,13 @@ subroutine ufG0W0(dotest,TDA_W,nBas,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,eHF)
       ija = 0
       do i=nC+1,nO
         do j=nC+1,nO
-          do a=nO+1,nBas-nR
+          do a=nO+1,nOrb-nR
             ija = ija + 1
                
             klc = 0
             do k=nC+1,nO
               do l=nC+1,nO
-                do c=nO+1,nBas-nR
+                do c=nO+1,nOrb-nR
                   klc = klc + 1
                      
                   H(1+ija,1+klc) & 
@@ -215,14 +216,14 @@ subroutine ufG0W0(dotest,TDA_W,nBas,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,eHF)
       
       iab = 0
       do i=nC+1,nO
-        do a=nO+1,nBas-nR
-          do b=nO+1,nBas-nR
+        do a=nO+1,nOrb-nR
+          do b=nO+1,nOrb-nR
             iab = iab + 1
                
             kcd = 0
             do k=nC+1,nO
-              do c=nO+1,nBas-nR
-                do d=nO+1,nBas-nR
+              do c=nO+1,nOrb-nR
+                do d=nO+1,nOrb-nR
                   kcd = kcd + 1
                      
                   H(1+n2h1p+iab,1+n2h1p+kcd) &
@@ -304,7 +305,7 @@ subroutine ufG0W0(dotest,TDA_W,nBas,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,eHF)
  
       iab = 0
       do ia=1,nS
-        do b=nO+1,nBas-nR
+        do b=nO+1,nOrb-nR
           iab = iab + 1
  
           H(1+n2h1p+iab,1+n2h1p+iab) = eHF(b) + Om(ia)
@@ -318,7 +319,7 @@ subroutine ufG0W0(dotest,TDA_W,nBas,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,eHF)
  
       iab = 0
       do ia=1,nS
-        do b=nO+1,nBas-nR
+        do b=nO+1,nOrb-nR
           iab = iab + 1
  
           H(1          ,1+n2h1p+iab) = sqrt(2d0)*rho(p,b,ia)
@@ -409,7 +410,7 @@ subroutine ufG0W0(dotest,TDA_W,nBas,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,eHF)
             ija = 0
             do i=nC+1,nO
               do j=nC+1,nO
-                do a=nO+1,nBas-nR
+                do a=nO+1,nOrb-nR
                   ija = ija + 1
   
                   if(abs(H(1+ija,s)) > cutoff2)               &
@@ -422,8 +423,8 @@ subroutine ufG0W0(dotest,TDA_W,nBas,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,eHF)
            
             iab = 0
             do i=nC+1,nO
-              do a=nO+1,nBas-nR
-                do b=nO+1,nBas-nR
+              do a=nO+1,nOrb-nR
+                do b=nO+1,nOrb-nR
                   iab = iab + 1
  
                   if(abs(H(1+n2h1p+iab,s)) > cutoff2)           &
@@ -478,7 +479,7 @@ subroutine ufG0W0(dotest,TDA_W,nBas,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,eHF)
            
             iab = 0
             do ia=1,nS
-              do b=nO+1,nBas-nR
+              do b=nO+1,nOrb-nR
                 iab = iab + 1
  
                   if(abs(H(1+n2h1p+iab,s)) > cutoff2)                 &

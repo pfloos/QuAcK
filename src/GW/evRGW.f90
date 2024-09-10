@@ -1,5 +1,5 @@
 subroutine evRGW(dotest,maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,dophBSE,dophBSE2,TDA_W,TDA,dBSE,dTDA,doppBSE, & 
-                 singlet,triplet,linearize,eta,regularize,nBas,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,dipole_int,eHF)
+                 singlet,triplet,linearize,eta,regularize,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,dipole_int,eHF)
 
 ! Perform self-consistent eigenvalue-only GW calculation
 
@@ -32,14 +32,15 @@ subroutine evRGW(dotest,maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,dop
   logical,intent(in)            :: regularize
 
   integer,intent(in)            :: nBas
+  integer,intent(in)            :: nOrb
   integer,intent(in)            :: nC
   integer,intent(in)            :: nO
   integer,intent(in)            :: nV
   integer,intent(in)            :: nR
   integer,intent(in)            :: nS
-  double precision,intent(in)   :: eHF(nBas)
-  double precision,intent(in)   :: ERI(nBas,nBas,nBas,nBas)
-  double precision,intent(in)   :: dipole_int(nBas,nBas,ncart)
+  double precision,intent(in)   :: eHF(nOrb)
+  double precision,intent(in)   :: ERI(nOrb,nOrb,nOrb,nOrb)
+  double precision,intent(in)   :: dipole_int(nOrb,nOrb,ncart)
 
 ! Local variables
 
@@ -89,8 +90,8 @@ subroutine evRGW(dotest,maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,dop
 
 ! Memory allocation
 
-  allocate(Aph(nS,nS),Bph(nS,nS),eGW(nBas),eOld(nBas),Z(nBas),SigC(nBas), & 
-           Om(nS),XpY(nS,nS),XmY(nS,nS),rho(nBas,nBas,nS),error_diis(nBas,max_diis),e_diis(nBas,max_diis))
+  allocate(Aph(nS,nS),Bph(nS,nS),eGW(nOrb),eOld(nOrb),Z(nOrb),SigC(nOrb), & 
+           Om(nS),XpY(nS,nS),XmY(nS,nS),rho(nOrb,nOrb,nS),error_diis(nOrb,max_diis),e_diis(nOrb,max_diis))
 
 ! Initialization
 
@@ -113,20 +114,20 @@ subroutine evRGW(dotest,maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,dop
 
    ! Compute screening
 
-    call phLR_A(ispin,dRPA,nBas,nC,nO,nV,nR,nS,1d0,eGW,ERI,Aph)
-    if(.not.TDA_W) call phLR_B(ispin,dRPA,nBas,nC,nO,nV,nR,nS,1d0,ERI,Bph)
+    call phLR_A(ispin,dRPA,nOrb,nC,nO,nV,nR,nS,1d0,eGW,ERI,Aph)
+    if(.not.TDA_W) call phLR_B(ispin,dRPA,nOrb,nC,nO,nV,nR,nS,1d0,ERI,Bph)
 
     call phLR(TDA_W,nS,Aph,Bph,EcRPA,Om,XpY,XmY)
 
     ! Compute spectral weights
 
-    call RGW_excitation_density(nBas,nC,nO,nR,nS,ERI,XpY,rho)
+    call RGW_excitation_density(nOrb,nC,nO,nR,nS,ERI,XpY,rho)
 
     ! Compute correlation part of the self-energy 
 
-    if(regularize) call GW_regularization(nBas,nC,nO,nV,nR,nS,eGW,Om,rho)
+    if(regularize) call GW_regularization(nOrb,nC,nO,nV,nR,nS,eGW,Om,rho)
 
-    call RGW_self_energy_diag(eta,nBas,nC,nO,nV,nR,nS,eGW,Om,rho,EcGM,SigC,Z)
+    call RGW_self_energy_diag(eta,nOrb,nC,nO,nV,nR,nS,eGW,Om,rho,EcGM,SigC,Z)
 
     ! Solve the quasi-particle equation
 
@@ -142,7 +143,7 @@ subroutine evRGW(dotest,maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,dop
       write(*,*) ' *** Quasiparticle energies obtained by root search *** '
       write(*,*)
   
-      call RGW_QP_graph(eta,nBas,nC,nO,nV,nR,nS,eHF,Om,rho,eOld,eOld,eGW,Z)
+      call RGW_QP_graph(eta,nOrb,nC,nO,nV,nR,nS,eHF,Om,rho,eOld,eOld,eGW,Z)
  
     end if
 
@@ -152,7 +153,7 @@ subroutine evRGW(dotest,maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,dop
 
     ! Print results
 
-    call print_evRGW(nBas,nO,nSCF,Conv,eHF,ENuc,ERHF,SigC,Z,eGW,EcRPA,EcGM)
+    call print_evRGW(nOrb,nO,nSCF,Conv,eHF,ENuc,ERHF,SigC,Z,eGW,EcRPA,EcGM)
 
     ! Linear mixing or DIIS extrapolation
 
@@ -164,7 +165,7 @@ subroutine evRGW(dotest,maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,dop
 
       n_diis = min(n_diis+1,max_diis)
       if(abs(rcond) > 1d-7) then
-        call DIIS_extrapolation(rcond,nBas,nBas,n_diis,error_diis,e_diis,eGW-eOld,eGW)
+        call DIIS_extrapolation(rcond,nOrb,nOrb,n_diis,error_diis,e_diis,eGW-eOld,eGW)
       else
         n_diis = 0
       end if
@@ -203,8 +204,8 @@ subroutine evRGW(dotest,maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,dop
 !--------------------!
 
   ! TODO
-  !call RGWC(dotest, eta, nBas, nC, nO, nV, nR, nS, Om, rho, eHF, eGW, eGW, Z)
-  call RGWC(dotest, eta, nBas, nC, nO, nV, nR, nS, Om, rho, eHF, eHF, eGW, Z)
+  !call RGWC(dotest, eta, nOrb, nC, nO, nV, nR, nS, Om, rho, eHF, eGW, eGW, Z)
+  call RGWC(dotest, eta, nOrb, nC, nO, nV, nR, nS, Om, rho, eHF, eHF, eGW, Z)
 
 ! Deallocate memory
 
@@ -215,7 +216,7 @@ subroutine evRGW(dotest,maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,dop
   if(dophBSE) then
 
     call RGW_phBSE(dophBSE2,exchange_kernel,TDA_W,TDA,dBSE,dTDA,singlet,triplet,eta, & 
-                   nBas,nC,nO,nV,nR,nS,ERI,dipole_int,eGW,eGW,EcBSE)
+                   nOrb,nC,nO,nV,nR,nS,ERI,dipole_int,eGW,eGW,EcBSE)
 
     write(*,*)
     write(*,*)'-------------------------------------------------------------------------------'
@@ -235,7 +236,7 @@ subroutine evRGW(dotest,maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,dop
       write(*,*) '-----------------------------------------------------------'
       write(*,*)
 
-      call RGW_phACFDT(exchange_kernel,doXBS,TDA_W,TDA,singlet,triplet,eta,nBas,nC,nO,nV,nR,nS,ERI,eGW,eGW,EcBSE)
+      call RGW_phACFDT(exchange_kernel,doXBS,TDA_W,TDA,singlet,triplet,eta,nOrb,nC,nO,nV,nR,nS,ERI,eGW,eGW,EcBSE)
 
       write(*,*)
       write(*,*)'-------------------------------------------------------------------------------'
@@ -252,7 +253,7 @@ subroutine evRGW(dotest,maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,dop
 
   if(doppBSE) then
 
-    call RGW_ppBSE(TDA_W,TDA,dBSE,dTDA,singlet,triplet,eta,nBas,nC,nO,nV,nR,nS,ERI,dipole_int,eHF,eGW,EcBSE)
+    call RGW_ppBSE(TDA_W,TDA,dBSE,dTDA,singlet,triplet,eta,nOrb,nC,nO,nV,nR,nS,ERI,dipole_int,eHF,eGW,EcBSE)
 
     write(*,*)
     write(*,*)'-------------------------------------------------------------------------------'
