@@ -60,6 +60,15 @@ subroutine RGW_phACFDT(exchange_kernel,doXBS,TDA_W,TDA,singlet,triplet,eta,nBas,
   allocate(Aph(nS,nS),Bph(nS,nS),KA(nS,nS),KB(nS,nS),OmRPA(nS),XpY_RPA(nS,nS),XmY_RPA(nS,nS), & 
            rho_RPA(nBas,nBas,nS),Om(nS),XpY(nS,nS),XmY(nS,nS))
 
+! eXtended BSE
+
+  if(doXBS) then
+
+    write(*,*) '*** scaled screening version (XBS) ***'
+    write(*,*)
+
+  end if
+
 ! Antisymmetrized kernel version
 
   if(exchange_kernel) then

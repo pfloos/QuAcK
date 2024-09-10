@@ -1,4 +1,4 @@
-subroutine ufRGW(dotest,TDA_W,nBas,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,eHF)
+subroutine ufRGW(dotest,TDA_W,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,eHF)
 
 ! Unfold GW equations
 
@@ -11,6 +11,7 @@ subroutine ufRGW(dotest,TDA_W,nBas,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,eHF)
 
   logical,intent(in)            :: TDA_W
   integer,intent(in)            :: nBas
+  integer,intent(in)            :: nOrb
   integer,intent(in)            :: nC
   integer,intent(in)            :: nO
   integer,intent(in)            :: nV
@@ -18,8 +19,8 @@ subroutine ufRGW(dotest,TDA_W,nBas,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,eHF)
   integer,intent(in)            :: nS
   double precision,intent(in)   :: ENuc
   double precision,intent(in)   :: ERHF
-  double precision,intent(in)   :: ERI(nBas,nBas,nBas,nBas)
-  double precision,intent(in)   :: eHF(nBas)
+  double precision,intent(in)   :: ERI(nOrb,nOrb,nOrb,nOrb)
+  double precision,intent(in)   :: eHF(nOrb)
 
 ! Local variables
 
@@ -68,7 +69,7 @@ subroutine ufRGW(dotest,TDA_W,nBas,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,eHF)
 
   n2h1p = nO*nO*nV
   n2p1h = nV*nV*nO
-  nH = nBas + n2h1p + n2p1h
+  nH = nOrb + n2h1p + n2p1h
 
 ! Memory allocation
 
@@ -89,14 +90,14 @@ subroutine ufRGW(dotest,TDA_W,nBas,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,eHF)
 
     ! Memory allocation 
 
-    allocate(Om(nS),Aph(nS,nS),Bph(nS,nS),XpY(nS,nS),XmY(nS,nS),rho(nBas,nBas,nS))
+    allocate(Om(nS),Aph(nS,nS),Bph(nS,nS),XpY(nS,nS),XmY(nS,nS),rho(nOrb,nOrb,nS))
 
     ! Spin manifold 
 
     ispin = 1
 
-    call phLR_A(ispin,dRPA,nBas,nC,nO,nV,nR,nS,1d0,eHF,ERI,Aph)
-    call phLR_B(ispin,dRPA,nBas,nC,nO,nV,nR,nS,1d0,ERI,Bph)
+    call phLR_A(ispin,dRPA,nOrb,nC,nO,nV,nR,nS,1d0,eHF,ERI,Aph)
+    call phLR_B(ispin,dRPA,nOrb,nC,nO,nV,nR,nS,1d0,ERI,Bph)
 
     call phLR(TDA_W,nS,Aph,Bph,EcRPA,Om,XpY,XmY)
 
@@ -106,7 +107,7 @@ subroutine ufRGW(dotest,TDA_W,nBas,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,eHF)
     ! Compute spectral weights !
     !--------------------------!
 
-    call RGW_excitation_density(nBas,nC,nO,nR,nS,ERI,XpY,rho)
+    call RGW_excitation_density(nOrb,nC,nO,nR,nS,ERI,XpY,rho)
 
     deallocate(Aph,Bph,XpY,XmY)
 
@@ -141,7 +142,7 @@ subroutine ufRGW(dotest,TDA_W,nBas,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,eHF)
     ! Block F !
     !---------!
  
-    do p=nC+1,nBas-nR
+    do p=nC+1,nOrb-nR
       H(p,p) = eHF(p)
     end do
  
@@ -149,16 +150,16 @@ subroutine ufRGW(dotest,TDA_W,nBas,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,eHF)
     ! Block V2h1p !
     !-------------!
  
-    do p=nC+1,nBas-nR
+    do p=nC+1,nOrb-nR
  
       ija = 0
       do i=nC+1,nO
         do j=nC+1,nO
-          do a=nO+1,nBas-nR
+          do a=nO+1,nOrb-nR
             ija = ija + 1
  
-            H(p       ,nBas+ija) = sqrt(2d0)*ERI(p,a,i,j)
-            H(nBas+ija,p       ) = sqrt(2d0)*ERI(p,a,i,j)
+            H(p       ,nOrb+ija) = sqrt(2d0)*ERI(p,a,i,j)
+            H(nOrb+ija,p       ) = sqrt(2d0)*ERI(p,a,i,j)
  
           end do
         end do
@@ -170,16 +171,16 @@ subroutine ufRGW(dotest,TDA_W,nBas,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,eHF)
     ! Block V2p1h !
     !-------------!
  
-    do p=nC+1,nBas-nR
+    do p=nC+1,nOrb-nR
  
       iab = 0
       do i=nC+1,nO
-        do a=nO+1,nBas-nR
-          do b=nO+1,nBas-nR
+        do a=nO+1,nOrb-nR
+          do b=nO+1,nOrb-nR
             iab = iab + 1
  
-            H(p             ,nBas+n2h1p+iab) = sqrt(2d0)*ERI(p,i,b,a)
-            H(nBas+n2h1p+iab,p             ) = sqrt(2d0)*ERI(p,i,b,a)
+            H(p             ,nOrb+n2h1p+iab) = sqrt(2d0)*ERI(p,i,b,a)
+            H(nOrb+n2h1p+iab,p             ) = sqrt(2d0)*ERI(p,i,b,a)
  
           end do
         end do
@@ -194,16 +195,16 @@ subroutine ufRGW(dotest,TDA_W,nBas,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,eHF)
     ija = 0
     do i=nC+1,nO
       do j=nC+1,nO
-        do a=nO+1,nBas-nR
+        do a=nO+1,nOrb-nR
           ija = ija + 1
  
           klc = 0
           do k=nC+1,nO
             do l=nC+1,nO
-              do c=nO+1,nBas-nR
+              do c=nO+1,nOrb-nR
                 klc = klc + 1
  
-                H(nBas+ija,nBas+klc) & 
+                H(nOrb+ija,nOrb+klc) & 
                   = ((eHF(i) + eHF(j) - eHF(a))*Kronecker_delta(j,l)*Kronecker_delta(a,c) & 
                   - 2d0*ERI(j,c,a,l))*Kronecker_delta(i,k)
  
@@ -221,17 +222,17 @@ subroutine ufRGW(dotest,TDA_W,nBas,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,eHF)
  
     iab = 0
     do i=nC+1,nO
-      do a=nO+1,nBas-nR
-        do b=nO+1,nBas-nR
+      do a=nO+1,nOrb-nR
+        do b=nO+1,nOrb-nR
           iab = iab + 1
  
           kcd = 0
           do k=nC+1,nO
-            do c=nO+1,nBas-nR
-              do d=nO+1,nBas-nR
+            do c=nO+1,nOrb-nR
+              do d=nO+1,nOrb-nR
                 kcd = kcd + 1
  
-                H(nBas+n2h1p+iab,nBas+n2h1p+kcd) &
+                H(nOrb+n2h1p+iab,nOrb+n2h1p+kcd) &
                   = ((eHF(a) + eHF(b) - eHF(i))*Kronecker_delta(i,k)*Kronecker_delta(a,c) & 
                   + 2d0*ERI(a,k,i,c))*Kronecker_delta(b,d)
  
@@ -275,7 +276,7 @@ subroutine ufRGW(dotest,TDA_W,nBas,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,eHF)
     ! Block F !
     !---------!
  
-    do p=nC+1,nBas-nR
+    do p=nC+1,nOrb-nR
       H(p,p) = eHF(p)
     end do
  
@@ -283,15 +284,15 @@ subroutine ufRGW(dotest,TDA_W,nBas,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,eHF)
     ! Block W2h1p !
     !-------------!
  
-    do p=nC+1,nBas-nR
+    do p=nC+1,nOrb-nR
  
       ija = 0
       do i=nC+1,nO
         do ja=1,nS
           ija = ija + 1
 
-          H(p       ,nBas+ija) = sqrt(2d0)*rho(p,i,ja)
-          H(nBas+ija,p       ) = sqrt(2d0)*rho(p,i,ja)
+          H(p       ,nOrb+ija) = sqrt(2d0)*rho(p,i,ja)
+          H(nOrb+ija,p       ) = sqrt(2d0)*rho(p,i,ja)
 
         end do
       end do
@@ -302,15 +303,15 @@ subroutine ufRGW(dotest,TDA_W,nBas,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,eHF)
     ! Block W2p1h !
     !-------------!
  
-    do p=nC+1,nBas-nR
+    do p=nC+1,nOrb-nR
  
       iab = 0
       do ia=1,nS
-        do b=nO+1,nBas-nR
+        do b=nO+1,nOrb-nR
           iab = iab + 1
  
-          H(p             ,nBas+n2h1p+iab) = sqrt(2d0)*rho(p,b,ia)
-          H(nBas+n2h1p+iab,p             ) = sqrt(2d0)*rho(p,b,ia)
+          H(p             ,nOrb+n2h1p+iab) = sqrt(2d0)*rho(p,b,ia)
+          H(nOrb+n2h1p+iab,p             ) = sqrt(2d0)*rho(p,b,ia)
  
         end do
       end do
@@ -326,7 +327,7 @@ subroutine ufRGW(dotest,TDA_W,nBas,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,eHF)
       do ja=1,nS
         ija = ija + 1
  
-        H(nBas+ija,nBas+ija) = eHF(i) - Om(ja) 
+        H(nOrb+ija,nOrb+ija) = eHF(i) - Om(ja) 
  
       end do
     end do
@@ -337,10 +338,10 @@ subroutine ufRGW(dotest,TDA_W,nBas,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,eHF)
  
     iab = 0
     do ia=1,nS
-      do b=nO+1,nBas-nR
+      do b=nO+1,nOrb-nR
         iab = iab + 1
  
-        H(nBas+n2h1p+iab,nBas+n2h1p+iab) = eHF(b) + Om(ia)
+        H(nOrb+n2h1p+iab,nOrb+n2h1p+iab) = eHF(b) + Om(ia)
  
       end do
     end do
@@ -375,7 +376,7 @@ subroutine ufRGW(dotest,TDA_W,nBas,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,eHF)
 
   Z(:) = 0d0
   do s=1,nH
-    do p=nC+1,nBas-nR
+    do p=nC+1,nOrb-nR
       Z(s) = Z(s) + H(p,s)**2
     end do
   end do
@@ -425,7 +426,7 @@ subroutine ufRGW(dotest,TDA_W,nBas,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,eHF)
             write(*,'(1X,A7,I3,A16,1X,F15.6,1X,F15.6)') &
             '      (',p,')               ',H(p,s),H(p,s)**2
           end do
-          do p=nO+1,nBas-nR
+          do p=nO+1,nOrb-nR
             if(abs(H(p,s)) > cutoff2)                 &
           write(*,'(1X,A16,I3,A7,1X,F15.6,1X,F15.6)') &
           '               (',p,')      ',H(p,s),H(p,s)**2
@@ -434,12 +435,12 @@ subroutine ufRGW(dotest,TDA_W,nBas,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,eHF)
           ija = 0
           do i=nC+1,nO
             do j=nC+1,nO
-              do a=nO+1,nBas-nR
+              do a=nO+1,nOrb-nR
                 ija = ija + 1
  
-                if(abs(H(nBas+ija,s)) > cutoff2)               &
+                if(abs(H(nOrb+ija,s)) > cutoff2)               &
                 write(*,'(1X,A3,I3,A1,I3,A6,I3,A7,1X,F15.6,1X,F15.6)') &
-                '  (',i,',',j,') -> (',a,')      ',H(nBas+ija,s),H(nBas+ija,s)**2
+                '  (',i,',',j,') -> (',a,')      ',H(nOrb+ija,s),H(nOrb+ija,s)**2
          
               end do
             end do
@@ -447,13 +448,13 @@ subroutine ufRGW(dotest,TDA_W,nBas,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,eHF)
          
           iab = 0
           do i=nC+1,nO
-            do a=nO+1,nBas-nR
-              do b=nO+1,nBas-nR
+            do a=nO+1,nOrb-nR
+              do b=nO+1,nOrb-nR
                 iab = iab + 1
 
-                if(abs(H(nBas+n2h1p+iab,s)) > cutoff2)           &
+                if(abs(H(nOrb+n2h1p+iab,s)) > cutoff2)           &
                   write(*,'(1X,A7,I3,A6,I3,A1,I3,A3,1X,F15.6,1X,F15.6)') &
-                  '      (',i,') -> (',a,',',b,')  ',H(nBas+n2h1p+iab,s),H(nBas+n2h1p+iab,s)**2
+                  '      (',i,') -> (',a,',',b,')  ',H(nOrb+n2h1p+iab,s),H(nOrb+n2h1p+iab,s)**2
                 
               end do
             end do
@@ -487,7 +488,7 @@ subroutine ufRGW(dotest,TDA_W,nBas,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,eHF)
               write(*,'(1X,A7,I3,A16,1X,F15.6,1X,F15.6)') &
               '      (',p,'    )           ',H(p,s),H(p,s)**2
           end do
-          do p=nO+1,nBas-nR
+          do p=nO+1,nOrb-nR
             if(abs(H(p,s)) > cutoff2)                     &
               write(*,'(1X,A7,I3,A16,1X,F15.6,1X,F15.6)') &
               '      (',p,'    )           ',H(p,s),H(p,s)**2
@@ -498,21 +499,21 @@ subroutine ufRGW(dotest,TDA_W,nBas,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,eHF)
             do ja=1,nS
               ija = ija + 1
  
-              if(abs(H(nBas+ija,s)) > cutoff2)                  &
+              if(abs(H(nOrb+ija,s)) > cutoff2)                  &
               write(*,'(1X,A7,I3,A1,I3,A12,1X,F15.6,1X,F15.6)') &
-              '      (',i,',',ja,')           ',H(nBas+ija,s),H(nBas+ija,s)**2
+              '      (',i,',',ja,')           ',H(nOrb+ija,s),H(nOrb+ija,s)**2
          
             end do
           end do
          
           iab = 0
           do ia=1,nS
-            do b=nO+1,nBas-nR
+            do b=nO+1,nOrb-nR
               iab = iab + 1
 
-                if(abs(H(nBas+n2h1p+iab,s)) > cutoff2)              &
+                if(abs(H(nOrb+n2h1p+iab,s)) > cutoff2)              &
                   write(*,'(1X,A7,I3,A1,I3,A12,1X,F15.6,1X,F15.6)') &
-                  '      (',ia,',',b,')           ',H(nBas+n2h1p+iab,s),H(nBas+n2h1p+iab,s)**2
+                  '      (',ia,',',b,')           ',H(nOrb+n2h1p+iab,s),H(nOrb+n2h1p+iab,s)**2
                 
             end do
           end do

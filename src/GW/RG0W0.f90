@@ -1,5 +1,5 @@
 subroutine RG0W0(dotest,doACFDT,exchange_kernel,doXBS,dophBSE,dophBSE2,TDA_W,TDA,dBSE,dTDA,doppBSE,singlet,triplet, & 
-                 linearize,eta,regularize,nBas,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,dipole_int,eHF)
+                 linearize,eta,regularize,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,dipole_int,eHF)
 
 ! Perform G0W0 calculation
 
@@ -28,6 +28,7 @@ subroutine RG0W0(dotest,doACFDT,exchange_kernel,doXBS,dophBSE,dophBSE2,TDA_W,TDA
   logical,intent(in)            :: regularize
 
   integer,intent(in)            :: nBas
+  integer,intent(in)            :: nOrb
   integer,intent(in)            :: nC
   integer,intent(in)            :: nO
   integer,intent(in)            :: nV
@@ -35,15 +36,17 @@ subroutine RG0W0(dotest,doACFDT,exchange_kernel,doXBS,dophBSE,dophBSE2,TDA_W,TDA
   integer,intent(in)            :: nS
   double precision,intent(in)   :: ENuc
   double precision,intent(in)   :: ERHF
-  double precision,intent(in)   :: ERI(nBas,nBas,nBas,nBas)
-  double precision,intent(in)   :: dipole_int(nBas,nBas,ncart)
-  double precision,intent(in)   :: eHF(nBas)
+  double precision,intent(in)   :: ERI(nOrb,nOrb,nOrb,nOrb)
+  double precision,intent(in)   :: dipole_int(nOrb,nOrb,ncart)
+  double precision,intent(in)   :: eHF(nOrb)
 
 ! Local variables
 
-  logical                       :: print_W = .true.
-  logical                       :: dRPA
-  integer                       :: ispin
+  logical                       :: print_W   = .true.
+  logical                       :: plot_self = .false.
+  logical                       :: dRPA_W
+  integer                       :: isp_W
+  double precision              :: lambda
   double precision              :: EcRPA
   double precision              :: EcBSE(nspin)
   double precision              :: EcGM
@@ -72,38 +75,29 @@ subroutine RG0W0(dotest,doACFDT,exchange_kernel,doXBS,dophBSE,dophBSE2,TDA_W,TDA
 
 ! Initialization
 
-  dRPA = .true.
-  EcRPA = 0d0
+  lambda = 1d0
 
-! TDA for W
+! Spin manifold and TDA for dynamical screening
+
+  isp_W = 1
+  dRPA_W = .true.
 
   if(TDA_W) then 
-    write(*,*) 'Tamm-Dancoff approximation for dynamic screening!'
+    write(*,*) 'Tamm-Dancoff approximation for dynamical screening!'
     write(*,*)
   end if
-
-! TDA 
-
-  if(TDA) then 
-    write(*,*) 'Tamm-Dancoff approximation activated!'
-    write(*,*)
-  end if
-
-! Spin manifold 
-
-  ispin = 1
 
 ! Memory allocation
 
-  allocate(Aph(nS,nS),Bph(nS,nS),SigC(nBas),Z(nBas),Om(nS),XpY(nS,nS),XmY(nS,nS),rho(nBas,nBas,nS), & 
-           eGW(nBas),eGWlin(nBas))
+  allocate(Aph(nS,nS),Bph(nS,nS),SigC(nOrb),Z(nOrb),Om(nS),XpY(nS,nS),XmY(nS,nS),rho(nOrb,nOrb,nS), & 
+           eGW(nOrb),eGWlin(nOrb))
 
 !-------------------!
 ! Compute screening !
 !-------------------!
 
-                 call phLR_A(ispin,dRPA,nBas,nC,nO,nV,nR,nS,1d0,eHF,ERI,Aph)
-  if(.not.TDA_W) call phLR_B(ispin,dRPA,nBas,nC,nO,nV,nR,nS,1d0,ERI,Bph)
+                 call phLR_A(isp_W,dRPA_W,nOrb,nC,nO,nV,nR,nS,lambda,eHF,ERI,Aph)
+  if(.not.TDA_W) call phLR_B(isp_W,dRPA_W,nOrb,nC,nO,nV,nR,nS,lambda,ERI,Bph)
 
   call phLR(TDA_W,nS,Aph,Bph,EcRPA,Om,XpY,XmY)
 
@@ -113,15 +107,15 @@ subroutine RG0W0(dotest,doACFDT,exchange_kernel,doXBS,dophBSE,dophBSE2,TDA_W,TDA
 ! Compute spectral weights !
 !--------------------------!
 
-  call RGW_excitation_density(nBas,nC,nO,nR,nS,ERI,XpY,rho)
+  call RGW_excitation_density(nOrb,nC,nO,nR,nS,ERI,XpY,rho)
 
 !------------------------!
 ! Compute GW self-energy !
 !------------------------!
 
-  if(regularize) call GW_regularization(nBas,nC,nO,nV,nR,nS,eHF,Om,rho)
+  if(regularize) call GW_regularization(nOrb,nC,nO,nV,nR,nS,eHF,Om,rho)
 
-  call RGW_self_energy_diag(eta,nBas,nC,nO,nV,nR,nS,eHF,Om,rho,EcGM,SigC,Z)
+  call RGW_self_energy_diag(eta,nOrb,nC,nO,nV,nR,nS,eHF,Om,rho,EcGM,SigC,Z)
 
 !-----------------------------------!
 ! Solve the quasi-particle equation !
@@ -143,24 +137,24 @@ subroutine RG0W0(dotest,doACFDT,exchange_kernel,doXBS,dophBSE,dophBSE2,TDA_W,TDA
     write(*,*) ' *** Quasiparticle energies obtained by root search *** '
     write(*,*)
   
-    call RGW_QP_graph(eta,nBas,nC,nO,nV,nR,nS,eHF,Om,rho,eGWlin,eHF,eGW,Z)
+    call RGW_QP_graph(eta,nOrb,nC,nO,nV,nR,nS,eHF,Om,rho,eGWlin,eHF,eGW,Z)
 
   end if
 
 ! Plot self-energy, renormalization factor, and spectral function
 
-!  call RGW_plot_self_energy(nBas,eta,nC,nO,nV,nR,nS,eHF,eHF,Om,rho)
+  if(plot_self) call RGW_plot_self_energy(nOrb,eta,nC,nO,nV,nR,nS,eHF,eHF,Om,rho)
 
 !--------------------!
 ! Cumulant expansion !
 !--------------------!
 
-! call RGWC(dotest,eta,nBas,nC,nO,nV,nR,nS,Om,rho,eHF,eHF,eGW,Z)
+! call RGWC(dotest,eta,nOrb,nC,nO,nV,nR,nS,Om,rho,eHF,eHF,eGW,Z)
 
 ! Compute the RPA correlation energy
 
-                 call phLR_A(ispin,dRPA,nBas,nC,nO,nV,nR,nS,1d0,eGW,ERI,Aph)
-  if(.not.TDA_W) call phLR_B(ispin,dRPA,nBas,nC,nO,nV,nR,nS,1d0,ERI,Bph)
+                 call phLR_A(isp_W,dRPA_W,nOrb,nC,nO,nV,nR,nS,lambda,eGW,ERI,Aph)
+  if(.not.TDA_W) call phLR_B(isp_W,dRPA_W,nOrb,nC,nO,nV,nR,nS,lambda,ERI,Bph)
 
   call phLR(TDA_W,nS,Aph,Bph,EcRPA,Om,XpY,XmY)
 
@@ -168,20 +162,14 @@ subroutine RG0W0(dotest,doACFDT,exchange_kernel,doXBS,dophBSE,dophBSE2,TDA_W,TDA
 ! Dump results !
 !--------------!
 
-  call print_RG0W0(nBas,nO,eHF,ENuc,ERHF,SigC,Z,eGW,EcRPA,EcGM)
+  call print_RG0W0(nOrb,nO,eHF,ENuc,ERHF,SigC,Z,eGW,EcRPA,EcGM)
 
 ! Perform BSE calculation
 
   if(dophBSE) then
 
-    call RGW_phBSE(dophBSE2,TDA_W,TDA,dBSE,dTDA,singlet,triplet,eta,nBas,nC,nO,nV,nR,nS,ERI,dipole_int,eHF,eGW,EcBSE)
-
-    if(exchange_kernel) then
- 
-      EcBSE(1) = 0.5d0*EcBSE(1)
-      EcBSE(2) = 1.5d0*EcBSE(2)
- 
-    end if
+    call RGW_phBSE(dophBSE2,exchange_kernel,TDA_W,TDA,dBSE,dTDA,singlet,triplet,eta, & 
+                   nOrb,nC,nO,nV,nR,nS,ERI,dipole_int,eHF,eGW,EcBSE)
 
     write(*,*)
     write(*,*)'-------------------------------------------------------------------------------'
@@ -201,14 +189,7 @@ subroutine RG0W0(dotest,doACFDT,exchange_kernel,doXBS,dophBSE,dophBSE2,TDA_W,TDA
       write(*,*) '-------------------------------------------------------------'
       write(*,*) 
 
-      if(doXBS) then 
-
-        write(*,*) '*** scaled screening version (XBS) ***'
-        write(*,*)
-
-      end if
-
-      call RGW_phACFDT(exchange_kernel,doXBS,TDA_W,TDA,singlet,triplet,eta,nBas,nC,nO,nV,nR,nS,ERI,eHF,eGW,EcBSE)
+      call RGW_phACFDT(exchange_kernel,doXBS,TDA_W,TDA,singlet,triplet,eta,nOrb,nC,nO,nV,nR,nS,ERI,eHF,eGW,EcBSE)
 
       write(*,*)
       write(*,*)'-------------------------------------------------------------------------------'
@@ -225,9 +206,7 @@ subroutine RG0W0(dotest,doACFDT,exchange_kernel,doXBS,dophBSE,dophBSE2,TDA_W,TDA
 
   if(doppBSE) then
 
-    call RGW_ppBSE(TDA_W,TDA,dBSE,dTDA,singlet,triplet,eta,nBas,nC,nO,nV,nR,nS,ERI,dipole_int,eHF,eGW,EcBSE)
-
-    EcBSE(2) = 3d0*EcBSE(2)
+    call RGW_ppBSE(TDA_W,TDA,dBSE,dTDA,singlet,triplet,eta,nOrb,nC,nO,nV,nR,nS,ERI,dipole_int,eHF,eGW,EcBSE)
 
     write(*,*)
     write(*,*)'-------------------------------------------------------------------------------'
@@ -239,8 +218,6 @@ subroutine RG0W0(dotest,doACFDT,exchange_kernel,doXBS,dophBSE,dophBSE2,TDA_W,TDA
     write(*,*)
 
   end if
-
-! end if
   
 ! Testing zone
 

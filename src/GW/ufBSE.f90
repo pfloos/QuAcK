@@ -1,4 +1,4 @@
-subroutine ufBSE(nBas,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,eHF,eGW)
+subroutine ufBSE(nBas,nOrb,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,eHF,eGW)
 
 ! Unfold BSE@GW equations
 
@@ -8,6 +8,7 @@ subroutine ufBSE(nBas,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,eHF,eGW)
 ! Input variables
 
   integer,intent(in)            :: nBas
+  integer,intent(in)            :: nOrb
   integer,intent(in)            :: nC
   integer,intent(in)            :: nO
   integer,intent(in)            :: nV
@@ -15,9 +16,9 @@ subroutine ufBSE(nBas,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,eHF,eGW)
   integer,intent(in)            :: nS
   double precision,intent(in)   :: ENuc
   double precision,intent(in)   :: ERHF
-  double precision,intent(in)   :: ERI(nBas,nBas,nBas,nBas)
-  double precision,intent(in)   :: eHF(nBas)
-  double precision,intent(in)   :: eGW(nBas)
+  double precision,intent(in)   :: ERI(nOrb,nOrb,nOrb,nOrb)
+  double precision,intent(in)   :: eHF(nOrb)
+  double precision,intent(in)   :: eGW(nOrb)
 
 ! Local variables
 
@@ -84,12 +85,12 @@ subroutine ufBSE(nBas,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,eHF,eGW)
 
   ia = 0
   do i=nC+1,nO
-    do a=nO+1,nBas-nR
+    do a=nO+1,nOrb-nR
     ia = ia + 1
 
     jb = 0
     do j=nC+1,nO
-      do b=nO+1,nBas-nR
+      do b=nO+1,nOrb-nR
       jb = jb + 1
 
         H(ia,jb) = (eGW(a) - eGW(i))*Kronecker_delta(i,j)*Kronecker_delta(a,b) &
@@ -107,14 +108,14 @@ subroutine ufBSE(nBas,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,eHF,eGW)
 
   iajb=0
   do i=nC+1,nO
-    do a=nO+1,nBas-nR
+    do a=nO+1,nOrb-nR
       do j=nC+1,nO
-        do b=nO+1,nBas-nR
+        do b=nO+1,nOrb-nR
         iajb = iajb + 1
 
         kc = 0
         do k=nC+1,nO
-          do c=nO+1,nBas-nR
+          do c=nO+1,nOrb-nR
             kc = kc + 1
 
             tmp = sqrt(2d0)*Kronecker_delta(k,j)*ERI(b,a,c,i)
@@ -139,16 +140,16 @@ subroutine ufBSE(nBas,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,eHF,eGW)
 
   iajb = 0
   do i=nC+1,nO
-    do a=nO+1,nBas-nR
+    do a=nO+1,nOrb-nR
       do j=nC+1,nO
-        do b=nO+1,nBas-nR
+        do b=nO+1,nOrb-nR
           iajb = iajb + 1
 
           kcld = 0
           do k=nC+1,nO
-            do c=nO+1,nBas-nR
+            do c=nO+1,nOrb-nR
               do l=nC+1,nO
-                do d=nO+1,nBas-nR
+                do d=nO+1,nOrb-nR
                 kcld = kcld + 1
 
                 tmp = ((eHF(a) + eGW(b) - eHF(i) - eGW(j))*Kronecker_delta(i,k)*Kronecker_delta(a,c) & 

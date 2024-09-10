@@ -33,7 +33,8 @@ subroutine SRG_qsRGW(dotest,maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS
   double precision,intent(in)   :: rNuc(nNuc,ncart)
   double precision,intent(in)   :: ENuc
 
-  integer,intent(in)            :: nBas, nOrb
+  integer,intent(in)            :: nBas
+  integer,intent(in)            :: nOrb
   integer,intent(in)            :: nC
   integer,intent(in)            :: nO
   integer,intent(in)            :: nV
@@ -74,7 +75,7 @@ subroutine SRG_qsRGW(dotest,maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS
   double precision,external     :: trace_matrix
   double precision              :: dipole(ncart)
 
-  logical                       :: dRPA = .true.
+  logical                       :: dRPA_W  = .true.
   logical                       :: print_W = .true.
   double precision,allocatable  :: error_diis(:,:)
   double precision,allocatable  :: F_diis(:,:)
@@ -121,13 +122,6 @@ subroutine SRG_qsRGW(dotest,maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS
 
   if(TDA_W) then 
     write(*,*) 'Tamm-Dancoff approximation for dynamic screening!'
-    write(*,*)
-  end if
-
-! TDA 
-
-  if(TDA) then 
-    write(*,*) 'Tamm-Dancoff approximation activated!'
     write(*,*)
   end if
 
@@ -212,8 +206,8 @@ subroutine SRG_qsRGW(dotest,maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS
 
     call wall_time(tlr1)
 
-    call phLR_A(ispin,dRPA,nOrb,nC,nO,nV,nR,nS,1d0,eGW,ERI_MO,Aph)
-    if(.not.TDA_W) call phLR_B(ispin,dRPA,nOrb,nC,nO,nV,nR,nS,1d0,ERI_MO,Bph)
+    call phLR_A(ispin,dRPA_W,nOrb,nC,nO,nV,nR,nS,1d0,eGW,ERI_MO,Aph)
+    if(.not.TDA_W) call phLR_B(ispin,dRPA_W,nOrb,nC,nO,nV,nR,nS,1d0,ERI_MO,Bph)
 
     call phLR(TDA_W,nS,Aph,Bph,EcRPA,Om,XpY,XmY)
 
@@ -344,21 +338,14 @@ subroutine SRG_qsRGW(dotest,maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS
 
 ! Deallocate memory
 
-  deallocate(c, cp, P, F, Fp, J, K, SigC, Z, Om, XpY, XmY, rho, error, error_diis, F_diis)
+  deallocate(c,cp,P,F,Fp,J,K,SigC,Z,Om,XpY,XmY,rho,error,error_diis,F_diis)
 
 ! Perform BSE calculation
 
   if(BSE) then
 
-    call RGW_phBSE(BSE2, TDA_W, TDA, dBSE, dTDA, singlet, triplet, eta, nOrb, &
-                  nC, nO, nV, nR, nS, ERI_MO, dipole_int_MO, eGW, eGW, EcBSE)
-
-    if(exchange_kernel) then
-
-      EcBSE(1) = 0.5d0*EcBSE(1)
-      EcBSE(2) = 1.5d0*EcBSE(2)
-
-    end if
+    call RGW_phBSE(BSE2,exchange_kernel,TDA_W,TDA,dBSE,dTDA,singlet,triplet,eta,nOrb,&
+                   nC,nO,nV,nR,nS,ERI_MO,dipole_int_MO,eGW,eGW,EcBSE)
 
     write(*,*)
     write(*,*)'-------------------------------------------------------------------------------'
