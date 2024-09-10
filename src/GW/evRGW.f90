@@ -231,11 +231,6 @@ subroutine evRGW(dotest,maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,dop
 
     if(doACFDT) then
 
-      write(*,*) '-----------------------------------------------------------'
-      write(*,*) 'Adiabatic connection version of BSE@evGW correlation energy'
-      write(*,*) '-----------------------------------------------------------'
-      write(*,*)
-
       call RGW_phACFDT(exchange_kernel,doXBS,TDA_W,TDA,singlet,triplet,eta,nOrb,nC,nO,nV,nR,nS,ERI,eGW,eGW,EcBSE)
 
       write(*,*)

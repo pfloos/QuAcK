@@ -121,7 +121,7 @@ subroutine SRG_qsRGW(dotest,maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS
 ! TDA for W
 
   if(TDA_W) then 
-    write(*,*) 'Tamm-Dancoff approximation for dynamic screening!'
+    write(*,*) 'Tamm-Dancoff approximation for dynamical screening!'
     write(*,*)
   end if
 
@@ -359,18 +359,6 @@ subroutine SRG_qsRGW(dotest,maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS
 !   Compute the BSE correlation energy via the adiabatic connection 
 
     if(doACFDT) then
-
-      write(*,*) '------------------------------------------------------'
-      write(*,*) 'Adiabatic connection version of BSE correlation energy'
-      write(*,*) '------------------------------------------------------'
-      write(*,*)
-
-      if(doXBS) then
-
-        write(*,*) '*** scaled screening version (XBS) ***'
-        write(*,*)
-
-      end if
 
       call RGW_phACFDT(exchange_kernel,doXBS,TDA_W,TDA,singlet,triplet,eta,nOrb,nC,nO,nV,nR,nS,ERI_MO,eGW,eGW,EcBSE)
 
