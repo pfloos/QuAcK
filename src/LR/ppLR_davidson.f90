@@ -1,7 +1,10 @@
 
 ! ---
 
-subroutine ppLR_davidson(ispin, TDA, nC, nO, nR, nOrb, nOO, nVV, lambda, e, eF, ERI, Om, R, n_states, n_states_diag, kernel)
+subroutine ppLR_davidson(ispin, TDA, nC, nO, nR, nOrb, nOO, nVV, lambda, e, eF, ERI, &
+                         supp_data_int, supp_data_int_size,                          &
+                         supp_data_dbl, supp_data_dbl_size,                          &
+                         Om, R, n_states, n_states_diag, kernel)
 
   ! 
   ! Extract the low n_states 
@@ -22,17 +25,22 @@ subroutine ppLR_davidson(ispin, TDA, nC, nO, nR, nOrb, nOO, nVV, lambda, e, eF, 
   integer,          intent(in)  :: nC, nO, nR, nOrb, nOO, nVV
   integer,          intent(in)  :: n_states      ! nb of physical states
   integer,          intent(in)  :: n_states_diag ! nb of states used to get n_states
+  integer,          intent(in)  :: supp_data_int_size
+  integer,          intent(in)  :: supp_data_dbl_size
   character(len=*), intent(in)  :: kernel
   double precision, intent(in)  :: lambda, eF
   double precision, intent(in)  :: e(nOrb)
   double precision, intent(in)  :: ERI(nOrb,nOrb,nOrb,nOrb)
+  integer,          intent(in)  :: supp_data_int(supp_data_int_size)
+  double precision, intent(in)  :: supp_data_dbl(supp_data_dbl_size)
   double precision, intent(out) :: Om(n_states)
   double precision, intent(out) :: R(nOO+nVV,n_states_diag)
   
   integer                       :: N, M
   integer                       :: iter, itermax, itertot
   integer                       :: shift1, shift2
-  integer                       :: i, j, ij, k, l, kl, a, b, ab, c, d, cd
+  integer                       :: i, j, k, l, ab
+  integer                       :: p, q, mm, i_data, nS
   integer                       :: i_omax(n_states)
   logical                       :: converged
   character*(16384)             :: write_buffer
@@ -40,6 +48,8 @@ subroutine ppLR_davidson(ispin, TDA, nC, nO, nR, nOrb, nOO, nVV, lambda, e, eF, 
   double precision              :: lambda_tmp
   double precision              :: to_print(2,n_states)
   double precision              :: mem
+  double precision              :: eta
+  character(len=len(kernel))    :: kernel_name
   double precision, allocatable :: H_diag(:)
   double precision, allocatable :: W(:,:)
   double precision, allocatable :: U(:,:)
@@ -47,6 +57,7 @@ subroutine ppLR_davidson(ispin, TDA, nC, nO, nR, nOrb, nOO, nVV, lambda, e, eF, 
   double precision, allocatable :: residual_norm(:)
   double precision, allocatable :: overlap(:)
   double precision, allocatable :: S_check(:,:)
+  double precision, allocatable :: rho_tmp(:,:,:), Om_tmp(:)
                                 
   double precision, external    :: u_dot_u
 
@@ -55,6 +66,8 @@ subroutine ppLR_davidson(ispin, TDA, nC, nO, nR, nOrb, nOO, nVV, lambda, e, eF, 
   N = nOO + nVV
   itermax = 8
   M = n_states_diag * itermax
+
+  call lower_case(trim(kernel), kernel_name)
 
   if(M .ge. N) then
     print*, 'N = ', N
@@ -71,7 +84,7 @@ subroutine ppLR_davidson(ispin, TDA, nC, nO, nR, nOrb, nOO, nVV, lambda, e, eF, 
   write(*,'(A40, I12)') 'Number of states = ', n_states
   write(*,'(A40, I12)') 'Number of states in diagonalization = ', n_states_diag
   write(*,'(A40, I12)') 'Number of basis functions = ', N
-
+  write(*,'(A40, A12)') 'Kernel: ', kernel_name
 
 
 
@@ -82,14 +95,55 @@ subroutine ppLR_davidson(ispin, TDA, nC, nO, nR, nOrb, nOO, nVV, lambda, e, eF, 
   allocate(overlap(n_states_diag))
   allocate(residual_norm(n_states_diag))
 
-  mem = 8.d0 * dble(nOrb + nOrb**4 + N*n_states) / 1d6
-  write(*,'(A40, F12.4)') 'I/O mem (MB) = ', mem
+  mem = 8.d0 * dble(nOrb + nOrb**4 + N*n_states) &
+      + 8.d0 * dble(supp_data_dbl_size) + 4.d0 * dble(supp_data_int_size)
 
-  mem = 8.d0 * dble(N + N*M + N*M + M*M + M*M + M + n_states_diag + n_states_diag) / 1d6
-  write(*,'(A40, F12.4)') 'tmp mem (MB) = ', mem
+  write(*,'(A40, F12.4)') 'I/O mem (MB) = ', mem / (1024.d0*1024.d0)
+
+  mem = 8.d0 * dble(N + N*M + N*M + M*M + M*M + M + n_states_diag + n_states_diag)
+
+  write(*,'(A40, F12.4)') 'tmp mem (MB) = ', mem / (1024.d0*1024.d0)
 
 
-  call ppLR_H_diag(ispin, nOrb, nC, nO, nR, nOO, nVV, lambda, e, eF, ERI, H_diag, kernel)
+  if(kernel_name .eq. "rpa") then
+
+    call ppLR_RPA_H_diag(ispin, nOrb, nC, nO, nR, nOO, nVV, lambda, e(1), eF, &
+                         ERI(1,1,1,1), H_diag(1))
+
+  elseif(kernel_name .eq. "gw") then
+
+    nS = supp_data_int(1)
+
+    allocate(rho_tmp(nOrb,nOrb,nS))
+    allocate(Om_tmp(nS))
+
+    eta = supp_data_dbl(1)
+    i_data = 1
+    do mm = 1, nS
+      do q = 1, nOrb
+        do p = 1, nOrb
+          i_data = i_data + 1
+          rho_tmp(p,q,mm) = supp_data_dbl(i_data)
+        enddo
+      enddo
+    enddo
+    do mm = 1, nS
+      i_data = i_data + 1
+      Om_tmp(mm) = supp_data_dbl(i_data)
+    enddo
+
+    call ppLR_GW_H_diag(ispin, nOrb, nC, nO, nR, nOO, nVV, nS, lambda, e(1), eF, &
+                        ERI(1,1,1,1), eta, rho_tmp(1,1,1), Om_tmp(1), H_diag(1))
+
+  !! TODO
+  !elseif(kernel_name .eq. "gf2") then
+
+  else
+
+    print*, ' kernel not supported', kernel
+    stop
+
+  endif
 
   !print*, "H_diag:"
   !do ab = 1, N
@@ -187,8 +241,22 @@ subroutine ppLR_davidson(ispin, TDA, nC, nO, nR, nOrb, nOO, nVV, lambda, e, eF, 
         !enddo
         !deallocate(S_check)
 
-        call ppLR_HR_calc(ispin, nOrb, nC, nO, nR, nOO, nVV, lambda, e, eF, n_states_diag, &
-                          ERI(1,1,1,1), U(1,shift1+1), W(1,shift1+1), kernel)
+        if(kernel_name .eq. "rpa") then
+      
+          call ppLR_RPA_HR_calc(ispin, nOrb, nC, nO, nR, nOO, nVV, lambda, e(1), eF, n_states_diag, &
+                                ERI(1,1,1,1),                                                       &
+                                U(1,shift1+1), W(1,shift1+1))
+      
+        elseif(kernel_name .eq. "gw") then
+      
+          call ppLR_GW_HR_calc(ispin, nOrb, nC, nO, nR, nOO, nVV, nS, lambda, e(1), eF, n_states_diag, &
+                               ERI(1,1,1,1), eta, rho_tmp(1,1,1), Om_tmp(1),                           &
+                               U(1,shift1+1), W(1,shift1+1))
+      
+        !! TODO
+        !elseif(kernel_name .eq. "gf2") then
+      
+        endif
 
       else
 
@@ -353,92 +421,9 @@ subroutine ppLR_davidson(ispin, TDA, nC, nO, nR, nOrb, nOO, nVV, lambda, e, eF, 
   deallocate(overlap)
   deallocate(residual_norm)
 
-  return
-end
-
-! ---
-
-subroutine ppLR_HR_calc(ispin, nOrb, nC, nO, nR, nOO, nVV, lambda, e, eF, n_states_diag, ERI, U, W, kernel)
-
-  implicit none
-
-  integer,          intent(in)  :: ispin
-  integer,          intent(in)  :: n_states_diag
-  integer,          intent(in)  :: nOO, nVV, nOrb, nC, nO, nR
-  character(len=*), intent(in)  :: kernel
-  double precision, intent(in)  :: lambda, eF
-  double precision, intent(in)  :: e(nOrb)
-  double precision, intent(in)  :: ERI(nOrb,nOrb,nOrb,nOrb)
-  double precision, intent(in)  :: U(nOO+nVV,n_states_diag)
-  double precision, intent(out) :: W(nOO+nVV,n_states_diag)
-
-  character(len=len(kernel))    :: kernel_name
-
-  call lower_case(trim(kernel), kernel_name)
-
-  if(kernel_name .eq. "rpa") then
-
-    call ppLR_RPA_HR_calc(ispin, nOrb, nC, nO, nR, nOO, nVV, lambda, e, eF, n_states_diag, ERI, U, W)
-
-  !! TODO
-  !elseif(kernel_name .eq. "gw") then
-
-  !  call ppLR_GW_HR_calc(ispin, nOrb, nC, nO, nR, nOO, nVV, lambda, e, eF, n_states_diag, ERI, U, W)
-
-  !! TODO
-  !elseif(kernel_name .eq. "gf2") then
-
-  !  call ppLR_GF2_HR_calc(ispin, nOrb, nC, nO, nR, nOO, nVV, lambda, e, eF, n_states_diag, ERI, U, W)
-
-  else 
-
-    print*, ' Error in routine ppLR_HR_calc'
-    print*, ' kernel not supported', kernel
-    stop
-
-  endif
-
-  return
-end
-
-! ---
-
-subroutine ppLR_H_diag(ispin, nOrb, nC, nO, nR, nOO, nVV, lambda, e, eF, ERI, H_diag, kernel)
-
-  implicit none
-
-  integer,          intent(in)  :: ispin
-  integer,          intent(in)  :: nOO, nVV, nOrb, nC, nO, nR
-  character(len=*), intent(in)  :: kernel
-  double precision, intent(in)  :: lambda, eF
-  double precision, intent(in)  :: e(nOrb)
-  double precision, intent(in)  :: ERI(nOrb,nOrb,nOrb,nOrb)
-  double precision, intent(out) :: H_diag(nOO+nVV)
-
-  character(len=len(kernel))    :: kernel_name
-
-  call lower_case(trim(kernel), kernel_name)
-
-  if(kernel_name .eq. "rpa") then
-
-    call ppLR_RPA_H_diag(ispin, nOrb, nC, nO, nR, nOO, nVV, lambda, e, eF, ERI, H_diag)
-
-  !! TODO
-  !elseif(kernel_name .eq. "gw") then
-
-  !  call ppLR_GW_H_diag(ispin, nOrb, nC, nO, nR, nOO, nVV, lambda, e, eF, ERI, H_diag)
-
-  !! TODO
-  !elseif(kernel_name .eq. "gf2") then
-
-  !  call ppLR_GF2_H_diag(ispin, nOrb, nC, nO, nR, nOO, nVV, lambda, e, eF, ERI, H_diag)
-
-  else
-
-    print*, ' Error in routine ppLR_H_diag'
-    print*, ' kernel not supported', kernel
-    stop
-
+  if(kernel_name .eq. "gw") then
+    deallocate(rho_tmp)
+    deallocate(Om_tmp)
   endif
 
   return

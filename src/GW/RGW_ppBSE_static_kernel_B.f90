@@ -1,4 +1,4 @@
-subroutine RGW_ppBSE_static_kernel_B(ispin,eta,nBas,nC,nO,nV,nR,nS,nOO,nVV,lambda,ERI,Om,rho,KB)
+subroutine RGW_ppBSE_static_kernel_B(ispin,eta,nOrb,nC,nO,nV,nR,nS,nOO,nVV,lambda,ERI,Om,rho,KB)
 
 ! Compute the VVOO block of the static screening W for the pp-BSE
 
@@ -8,7 +8,7 @@ subroutine RGW_ppBSE_static_kernel_B(ispin,eta,nBas,nC,nO,nV,nR,nS,nOO,nVV,lambd
 ! Input variables
 
   integer,intent(in)            :: ispin
-  integer,intent(in)            :: nBas
+  integer,intent(in)            :: nOrb
   integer,intent(in)            :: nC
   integer,intent(in)            :: nO
   integer,intent(in)            :: nV
@@ -18,9 +18,9 @@ subroutine RGW_ppBSE_static_kernel_B(ispin,eta,nBas,nC,nO,nV,nR,nS,nOO,nVV,lambd
   integer,intent(in)            :: nVV
   double precision,intent(in)   :: eta
   double precision,intent(in)   :: lambda
-  double precision,intent(in)   :: ERI(nBas,nBas,nBas,nBas)
+  double precision,intent(in)   :: ERI(nOrb,nOrb,nOrb,nOrb)
   double precision,intent(in)   :: Om(nS)
-  double precision,intent(in)   :: rho(nBas,nBas,nS)
+  double precision,intent(in)   :: rho(nOrb,nOrb,nS)
 
 ! Local variables
 
@@ -44,8 +44,8 @@ subroutine RGW_ppBSE_static_kernel_B(ispin,eta,nBas,nC,nO,nV,nR,nS,nOO,nVV,lambd
   if(ispin == 1) then
 
     ab = 0
-    do a=nO+1,nBas-nR
-      do b=a,nBas-nR
+    do a=nO+1,nOrb-nR
+      do b=a,nOrb-nR
         ab = ab + 1
         ij = 0
         do i=nC+1,nO
@@ -75,8 +75,8 @@ subroutine RGW_ppBSE_static_kernel_B(ispin,eta,nBas,nC,nO,nV,nR,nS,nOO,nVV,lambd
   if(ispin == 2) then
 
     ab = 0
-    do a=nO+1,nBas-nR
-     do b=a+1,nBas-nR
+    do a=nO+1,nOrb-nR
+     do b=a+1,nOrb-nR
         ab = ab + 1
         ij = 0
         do i=nC+1,nO

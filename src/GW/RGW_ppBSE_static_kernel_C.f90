@@ -1,4 +1,4 @@
-subroutine RGW_ppBSE_static_kernel_C(ispin,eta,nBas,nC,nO,nV,nR,nS,nVV,lambda,ERI,Om,rho,KC)
+subroutine RGW_ppBSE_static_kernel_C(ispin,eta,nOrb,nC,nO,nV,nR,nS,nVV,lambda,ERI,Om,rho,KC)
 
 ! Compute the VVVV block of the static screening W for the pp-BSE
 
@@ -8,7 +8,7 @@ subroutine RGW_ppBSE_static_kernel_C(ispin,eta,nBas,nC,nO,nV,nR,nS,nVV,lambda,ER
 ! Input variables
 
   integer,intent(in)            :: ispin
-  integer,intent(in)            :: nBas
+  integer,intent(in)            :: nOrb
   integer,intent(in)            :: nC
   integer,intent(in)            :: nO
   integer,intent(in)            :: nV
@@ -17,9 +17,9 @@ subroutine RGW_ppBSE_static_kernel_C(ispin,eta,nBas,nC,nO,nV,nR,nS,nVV,lambda,ER
   integer,intent(in)            :: nVV
   double precision,intent(in)   :: eta
   double precision,intent(in)   :: lambda
-  double precision,intent(in)   :: ERI(nBas,nBas,nBas,nBas)
+  double precision,intent(in)   :: ERI(nOrb,nOrb,nOrb,nOrb)
   double precision,intent(in)   :: Om(nS)
-  double precision,intent(in)   :: rho(nBas,nBas,nS)
+  double precision,intent(in)   :: rho(nOrb,nOrb,nS)
 
 ! Local variables
 
@@ -44,21 +44,21 @@ subroutine RGW_ppBSE_static_kernel_C(ispin,eta,nBas,nC,nO,nV,nR,nS,nVV,lambda,ER
 
   if(ispin == 1) then
 
-    a0 = nBas - nR - nO
+    a0 = nOrb - nR - nO
     lambda4 = 4.d0 * lambda
     eta2 = eta * eta
 
-    allocate(tmp_m(nBas,nBas,nS))
-    allocate(tmp(nBas,nBas,nBas,nBas))
+    allocate(tmp_m(nOrb,nOrb,nS))
+    allocate(tmp(nOrb,nOrb,nOrb,nOrb))
 
     !$OMP PARALLEL DEFAULT(NONE)         &
     !$OMP          PRIVATE(m, c, a, eps) &
-    !$OMP          SHARED(nS, nBas, eta2, Om, rho, tmp_m)
+    !$OMP          SHARED(nS, nOrb, eta2, Om, rho, tmp_m)
     !$OMP DO
     do m = 1, nS
       eps = Om(m) / (Om(m)*Om(m) + eta2)
-      do c = 1, nBas
-        do a = 1, nBas
+      do c = 1, nOrb
+        do a = 1, nOrb
           tmp_m(a,c,m) = eps * rho(a,c,m)
         enddo
       enddo
@@ -66,19 +66,19 @@ subroutine RGW_ppBSE_static_kernel_C(ispin,eta,nBas,nC,nO,nV,nR,nS,nVV,lambda,ER
     !$OMP END DO
     !$OMP END PARALLEL
 
-    call dgemm("N", "T", nBas*nBas, nBas*nBas, nS, 1.d0,       &
-               tmp_m(1,1,1), nBas*nBas, rho(1,1,1), nBas*nBas, &
-               0.d0, tmp(1,1,1,1), nBas*nBas)
+    call dgemm("N", "T", nOrb*nOrb, nOrb*nOrb, nS, 1.d0,       &
+               tmp_m(1,1,1), nOrb*nOrb, rho(1,1,1), nOrb*nOrb, &
+               0.d0, tmp(1,1,1,1), nOrb*nOrb)
 
     deallocate(tmp_m)
 
     !$OMP PARALLEL DEFAULT(NONE)                           &
     !$OMP          PRIVATE(a, b, aa, ab, c, d, cd, tmp_ab) &
-    !$OMP          SHARED(nO, nBas, nR, nS, a0, lambda4, tmp, KC)
+    !$OMP          SHARED(nO, nOrb, nR, nS, a0, lambda4, tmp, KC)
     !$OMP DO
-    do a = nO+1, nBas-nR
+    do a = nO+1, nOrb-nR
       aa = a0 * (a - nO - 1) - (a - nO - 1) * (a - nO) / 2 - nO
-      do b = a, nBas-nR
+      do b = a, nOrb-nR
         ab = aa + b
 
         tmp_ab = lambda4
@@ -87,8 +87,8 @@ subroutine RGW_ppBSE_static_kernel_C(ispin,eta,nBas,nC,nO,nV,nR,nS,nVV,lambda,ER
         endif
 
         cd = 0
-        do c = nO+1, nBas-nR
-          do d = c, nBas-nR
+        do c = nO+1, nOrb-nR
+          do d = c, nOrb-nR
             cd = cd + 1
 
             KC(ab,cd) = -tmp_ab * (tmp(a,c,b,d) + tmp(a,d,b,c))
@@ -105,12 +105,12 @@ subroutine RGW_ppBSE_static_kernel_C(ispin,eta,nBas,nC,nO,nV,nR,nS,nVV,lambda,ER
     deallocate(tmp)
 
 
-!    do a=nO+1,nBas-nR
-!      do b=a,nBas-nR
+!    do a=nO+1,nOrb-nR
+!      do b=a,nOrb-nR
 !        ab = ab + 1
 !        cd = 0
-!        do c=nO+1,nBas-nR
-!          do d=c,nBas-nR
+!        do c=nO+1,nOrb-nR
+!          do d=c,nOrb-nR
 !            cd = cd + 1
 !
 !              chi = 0d0
@@ -125,7 +125,7 @@ subroutine RGW_ppBSE_static_kernel_C(ispin,eta,nBas,nC,nO,nV,nR,nS,nVV,lambda,ER
 !    OpenMP implementation
 !    --- --- ---
 !
-!    a0 = nBas - nR - nO
+!    a0 = nOrb - nR - nO
 !    lambda4 = 4.d0 * lambda
 !    eta2 = eta * eta
 !
@@ -141,11 +141,11 @@ subroutine RGW_ppBSE_static_kernel_C(ispin,eta,nBas,nC,nO,nV,nR,nS,nVV,lambda,ER
 !
 !    !$OMP PARALLEL DEFAULT(NONE)                              &
 !    !$OMP          PRIVATE(a, b, aa, ab, c, d, cd, m, tmp_ab) &
-!    !$OMP          SHARED(nO, nBas, nR, nS, a0, lambda4, Om_tmp, rho, KC)
+!    !$OMP          SHARED(nO, nOrb, nR, nS, a0, lambda4, Om_tmp, rho, KC)
 !    !$OMP DO
-!    do a = nO+1, nBas-nR
+!    do a = nO+1, nOrb-nR
 !      aa = a0 * (a - nO - 1) - (a - nO - 1) * (a - nO) / 2 - nO
-!      do b = a, nBas-nR
+!      do b = a, nOrb-nR
 !        ab = aa + b
 !
 !        tmp_ab = lambda4
@@ -154,8 +154,8 @@ subroutine RGW_ppBSE_static_kernel_C(ispin,eta,nBas,nC,nO,nV,nR,nS,nVV,lambda,ER
 !        endif
 !
 !        cd = 0
-!        do c = nO+1, nBas-nR
-!          do d = c, nBas-nR
+!        do c = nO+1, nOrb-nR
+!          do d = c, nOrb-nR
 !            cd = cd + 1
 !
 !            KC(ab,cd) = 0d0
@@ -184,12 +184,12 @@ subroutine RGW_ppBSE_static_kernel_C(ispin,eta,nBas,nC,nO,nV,nR,nS,nVV,lambda,ER
 !    --- --- ---
 !
 !    ab = 0
-!    do a=nO+1,nBas-nR
-!      do b=a,nBas-nR
+!    do a=nO+1,nOrb-nR
+!      do b=a,nOrb-nR
 !        ab = ab + 1
 !        cd = 0
-!        do c=nO+1,nBas-nR
-!          do d=c,nBas-nR
+!        do c=nO+1,nOrb-nR
+!          do d=c,nOrb-nR
 !            cd = cd + 1
 !
 !              chi = 0d0
@@ -215,21 +215,21 @@ subroutine RGW_ppBSE_static_kernel_C(ispin,eta,nBas,nC,nO,nV,nR,nS,nVV,lambda,ER
 
   if(ispin == 2) then
 
-    a0 = nBas - nR - nO - 1
+    a0 = nOrb - nR - nO - 1
     lambda4 = 4.d0 * lambda
     eta2 = eta * eta
 
-    allocate(tmp_m(nBas,nBas,nS))
-    allocate(tmp(nBas,nBas,nBas,nBas))
+    allocate(tmp_m(nOrb,nOrb,nS))
+    allocate(tmp(nOrb,nOrb,nOrb,nOrb))
 
     !$OMP PARALLEL DEFAULT(NONE)         &
     !$OMP          PRIVATE(m, c, a, eps) &
-    !$OMP          SHARED(nS, nBas, eta2, Om, rho, tmp_m)
+    !$OMP          SHARED(nS, nOrb, eta2, Om, rho, tmp_m)
     !$OMP DO
     do m = 1, nS
       eps = Om(m) / (Om(m)*Om(m) + eta2)
-      do c = 1, nBas
-        do a = 1, nBas
+      do c = 1, nOrb
+        do a = 1, nOrb
           tmp_m(a,c,m) = eps * rho(a,c,m)
         enddo
       enddo
@@ -237,24 +237,24 @@ subroutine RGW_ppBSE_static_kernel_C(ispin,eta,nBas,nC,nO,nV,nR,nS,nVV,lambda,ER
     !$OMP END DO
     !$OMP END PARALLEL
 
-    call dgemm("N", "T", nBas*nBas, nBas*nBas, nS, 1.d0,       &
-               tmp_m(1,1,1), nBas*nBas, rho(1,1,1), nBas*nBas, &
-               0.d0, tmp(1,1,1,1), nBas*nBas)
+    call dgemm("N", "T", nOrb*nOrb, nOrb*nOrb, nS, 1.d0,       &
+               tmp_m(1,1,1), nOrb*nOrb, rho(1,1,1), nOrb*nOrb, &
+               0.d0, tmp(1,1,1,1), nOrb*nOrb)
 
     deallocate(tmp_m)
 
     !$OMP PARALLEL DEFAULT(NONE)                   &
     !$OMP          PRIVATE(a, b, aa, ab, c, d, cd) &
-    !$OMP          SHARED(nO, nBas, nR, nS, a0, lambda4, tmp, KC)
+    !$OMP          SHARED(nO, nOrb, nR, nS, a0, lambda4, tmp, KC)
     !$OMP DO
-    do a = nO+1, nBas-nR
+    do a = nO+1, nOrb-nR
       aa = a0 * (a - nO - 1) - (a - nO - 1) * (a - nO) / 2 - nO - 1
-      do b = a+1, nBas-nR
+      do b = a+1, nOrb-nR
         ab = aa + b
 
         cd = 0
-        do c = nO+1, nBas-nR
-          do d = c+1, nBas-nR
+        do c = nO+1, nOrb-nR
+          do d = c+1, nOrb-nR
             cd = cd + 1
 
             KC(ab,cd) = lambda4 * (-tmp(a,c,b,d) + tmp(a,d,b,c))
@@ -272,7 +272,7 @@ subroutine RGW_ppBSE_static_kernel_C(ispin,eta,nBas,nC,nO,nV,nR,nS,nVV,lambda,ER
 !    OpenMP implementation
 !    --- --- ---
 !
-!    a0 = nBas - nR - nO - 1
+!    a0 = nOrb - nR - nO - 1
 !    lambda4 = 4.d0 * lambda
 !    eta2 = eta * eta
 !
@@ -288,16 +288,16 @@ subroutine RGW_ppBSE_static_kernel_C(ispin,eta,nBas,nC,nO,nV,nR,nS,nVV,lambda,ER
 !
 !    !$OMP PARALLEL DEFAULT(NONE)                      &
 !    !$OMP          PRIVATE(a, b, aa, ab, c, d, cd, m) &
-!    !$OMP          SHARED(nO, nBas, nR, nS, a0, lambda4, Om_tmp, rho, KC)
+!    !$OMP          SHARED(nO, nOrb, nR, nS, a0, lambda4, Om_tmp, rho, KC)
 !    !$OMP DO
-!    do a = nO+1, nBas-nR
+!    do a = nO+1, nOrb-nR
 !      aa = a0 * (a - nO - 1) - (a - nO - 1) * (a - nO) / 2 - nO - 1
-!      do b = a+1, nBas-nR
+!      do b = a+1, nOrb-nR
 !        ab = aa + b
 !
 !        cd = 0
-!        do c = nO+1, nBas-nR
-!          do d = c+1, nBas-nR
+!        do c = nO+1, nOrb-nR
+!          do d = c+1, nOrb-nR
 !            cd = cd + 1
 !
 !            KC(ab,cd) = 0d0
@@ -323,12 +323,12 @@ subroutine RGW_ppBSE_static_kernel_C(ispin,eta,nBas,nC,nO,nV,nR,nS,nVV,lambda,ER
 !    --- --- ---
 !
 !    ab = 0
-!    do a=nO+1,nBas-nR
-!      do b=a+1,nBas-nR
+!    do a=nO+1,nOrb-nR
+!      do b=a+1,nOrb-nR
 !        ab = ab + 1
 !        cd = 0
-!        do c=nO+1,nBas-nR
-!          do d=c+1,nBas-nR
+!        do c=nO+1,nOrb-nR
+!          do d=c+1,nOrb-nR
 !            cd = cd + 1
 !
 !            chi = 0d0
