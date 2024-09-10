@@ -158,6 +158,7 @@ subroutine ppLR_davidson(ispin, TDA, nC, nO, nR, nOrb, nOO, nVV, lambda, e, eF, 
   !  print*, ab, H_diag(ab)
   !enddo
 
+  ! TODO: improve guess
   ! initialize guess
   R = 0.d0
   do k = 1, n_states

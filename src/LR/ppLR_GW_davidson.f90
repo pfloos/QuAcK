@@ -293,6 +293,7 @@ subroutine ppLR_GW_HR_calc_oneshot(ispin, nOrb, nC, nO, nR, nOO, nVV, nS, lambda
     allocate(Om_tmp(nS))
 
     a0 = nOrb - nR - nO
+
     eta2 = eta * eta
     do m = 1, nS
       Om_tmp(m) = Om(m) / (Om(m) * Om(m) + eta2)
@@ -305,8 +306,7 @@ subroutine ppLR_GW_HR_calc_oneshot(ispin, nOrb, nC, nO, nR, nOO, nVV, nS, lambda
     !$OMP PRIVATE(a, b, aa, ab, c, d, cd, i, j, ij, m, state, &
     !$OMP         tmp_e, tmp_ab, chi, mat_tmp)                &
     !$OMP SHARED(nC, nO, nOrb, nR, nS, n_states_diag, nVV,    &
-    !$OMP        nOO, a0, eF, lambda, e, Om_tmp, rho, ERI, U, &
-    !$OMP        H_mat)
+    !$OMP        nOO, a0, eF, lambda, e, Om_tmp, rho, ERI, H_mat)
     !$OMP DO SCHEDULE(GUIDED)
     do a = nO+1, nOrb-nR
       aa = a0 * (a - nO - 1) - (a - nO - 1) * (a - nO) / 2 - nO
@@ -335,7 +335,7 @@ subroutine ppLR_GW_HR_calc_oneshot(ispin, nOrb, nC, nO, nR, nOO, nVV, nS, lambda
               mat_tmp = 0.7071067811865475d0 * mat_tmp
             endif
 
-            mat_tmp = mat_tmp * (4.d0 * chi + ERI(c,d,a,b) + ERI(d,c,a,b))
+            mat_tmp = mat_tmp * (4.d0 * chi + ERI(d,c,b,a) + ERI(d,c,a,b))
             if((a .eq. c) .and. (b .eq. d)) then
               mat_tmp = mat_tmp + tmp_e
             endif
@@ -359,7 +359,7 @@ subroutine ppLR_GW_HR_calc_oneshot(ispin, nOrb, nC, nO, nR, nOO, nVV, nS, lambda
               mat_tmp = 0.7071067811865475d0 * mat_tmp
             endif
 
-            mat_tmp = mat_tmp * (4.d0 * chi + ERI(i,j,a,b) + ERI(j,i,a,b))
+            mat_tmp = mat_tmp * (4.d0 * chi + ERI(j,i,b,a) + ERI(j,i,a,b))
 
             H_mat(ab,ij) = -mat_tmp
           enddo ! j
@@ -416,7 +416,7 @@ subroutine ppLR_GW_HR_calc_oneshot(ispin, nOrb, nC, nO, nR, nOO, nVV, nS, lambda
               mat_tmp = 0.7071067811865475d0 * mat_tmp
             endif
     
-            mat_tmp = mat_tmp * (4.d0 * chi + ERI(a,b,i,j) + ERI(a,b,j,i))
+            mat_tmp = mat_tmp * (4.d0 * chi + ERI(b,a,j,i) + ERI(b,a,i,j))
 
             H_mat(ij,ab) = mat_tmp
           enddo ! b
@@ -437,7 +437,7 @@ subroutine ppLR_GW_HR_calc_oneshot(ispin, nOrb, nC, nO, nR, nOO, nVV, nS, lambda
               mat_tmp = 0.7071067811865475d0 * mat_tmp
             endif
 
-            mat_tmp = mat_tmp * (4.d0 * chi + ERI(i,j,k,l) + ERI(i,j,l,k))
+            mat_tmp = mat_tmp * (4.d0 * chi + ERI(l,k,j,i) + ERI(l,k,i,j))
 
             if((i .eq. k) .and. (j .eq. l)) then
               mat_tmp = mat_tmp - tmp_e
@@ -457,6 +457,154 @@ subroutine ppLR_GW_HR_calc_oneshot(ispin, nOrb, nC, nO, nR, nOO, nVV, nS, lambda
     deallocate(H_mat)
 
     deallocate(Om_tmp)
+
+    ! ---
+
+  elseif(ispin .eq. 2) then
+
+    ! ---
+
+    allocate(Om_tmp(nS))
+
+    a0 = nOrb - nR - nO - 1
+
+    eta2 = eta * eta
+    do m = 1, nS
+      Om_tmp(m) = Om(m) / (Om(m) * Om(m) + eta2)
+    enddo
+
+    allocate(H_mat(nVV,nOO+nVV))
+
+    !$OMP PARALLEL                                            &
+    !$OMP DEFAULT(NONE)                                       &
+    !$OMP PRIVATE(a, b, aa, ab, c, d, cd, i, j, ij, m, state, &
+    !$OMP         tmp_e, tmp_ab, chi, mat_tmp)                &
+    !$OMP SHARED(nC, nO, nOrb, nR, nS, n_states_diag, nVV,    &
+    !$OMP        nOO, a0, eF, lambda, e, Om_tmp, rho, ERI, H_mat)
+    !$OMP DO SCHEDULE(GUIDED)
+    do a = nO+1, nOrb-nR
+      aa = a0 * (a - nO - 1) - (a - nO - 1) * (a - nO) / 2 - nO - 1
+      do b = a+1, nOrb-nR
+        ab = aa + b
+
+        tmp_e = e(a) + e(b) - eF
+
+        cd = 0
+        do c = nO+1, nOrb-nR
+          do d = c+1, nOrb-nR
+            cd = cd + 1
+    
+            mat_tmp = lambda * (ERI(d,c,b,a) - ERI(d,c,a,b))
+
+            chi = 0.d0
+            do m = 1, nS
+              chi = chi - Om_tmp(m) * (rho(m,a,c) * rho(m,b,d) - rho(m,a,d) * rho(m,b,c))
+            enddo
+            mat_tmp = mat_tmp + 4.d0 * lambda * chi
+
+            if((a .eq. c) .and. (b .eq. d)) then
+              mat_tmp = mat_tmp + tmp_e
+            endif
+
+            H_mat(ab,cd) = mat_tmp
+          enddo ! d
+        enddo ! c
+
+        ij = nVV
+        do i = nC+1, nO
+          do j = i+1, nO
+            ij = ij + 1
+
+            mat_tmp = lambda * (ERI(j,i,b,a) - ERI(j,i,a,b))
+
+            chi = 0.d0
+            do m = 1, nS
+              chi = chi - Om_tmp(m) * (rho(m,i,a) * rho(m,j,b) - rho(m,i,b) * rho(m,a,j))
+            end do
+            mat_tmp = mat_tmp + 4.d0 * lambda * chi
+
+            H_mat(ab,ij) = -mat_tmp
+          enddo ! j
+        enddo ! i
+      enddo ! b
+    enddo ! a
+    !$OMP END DO
+    !$OMP END PARALLEL
+
+    call dgemm("N", "N", nVV, n_states_diag, nOO+nVV, 1.d0,    &
+               H_mat(1,1), size(H_mat, 1), U(1,1), size(U, 1), &
+               0.d0, W(1,1), size(W, 1))
+
+    deallocate(H_mat)
+
+    ! ---
+
+    i0 = nO - nC - 1
+    allocate(H_mat(nOO,nOO+nVV))
+
+    !$OMP PARALLEL                                            &
+    !$OMP DEFAULT(NONE)                                       &
+    !$OMP PRIVATE(i, j, ii, ij, a, b, ab, k, l, kl, m, state, &
+    !$OMP         tmp_e, tmp_ij, chi, mat_tmp)                &
+    !$OMP SHARED(nC, nO, nOrb, nR, nS, nVV, i0,               &
+    !$OMP        eF, lambda, e, Om_tmp, rho, ERI, U, H_mat)
+    !$OMP DO SCHEDULE(GUIDED)
+    do i = nC+1, nO
+      ii = i0 * (i - nC - 1) - (i - nC - 1) * (i - nC) / 2 - nC - 1
+      do j = i+1, nO
+        ij = ii + j
+
+        tmp_e = e(i) + e(j) - eF
+  
+        ab = 0
+        do a = nO+1, nOrb-nR
+          do b = a+1, nOrb-nR
+            ab = ab + 1
+    
+            mat_tmp = lambda * (ERI(b,a,j,i) - ERI(b,a,i,j))
+
+            chi = 0.d0
+            do m = 1, nS
+              chi = chi - Om_tmp(m) * (rho(m,i,a) * rho(m,j,b) - rho(m,i,b) * rho(m,a,j))
+            enddo
+            mat_tmp = mat_tmp + 4.d0 * lambda * chi
+
+            H_mat(ij,ab) = mat_tmp
+          enddo ! b
+        enddo ! a
+
+        kl = nVV
+        do k = nC+1, nO
+          do l = k+1, nO
+            kl = kl + 1
+   
+            mat_tmp = lambda * (ERI(l,k,j,i) - ERI(l,k,i,j))
+
+            chi = 0.d0
+            do m = 1, nS
+              chi = chi - Om_tmp(m) * (rho(m,i,k) * rho(m,j,l) - rho(m,i,l) * rho(m,j,k))
+            enddo
+            mat_tmp = mat_tmp + 4.d0 * lambda * chi
+
+            if((i .eq. k) .and. (j .eq. l)) then
+              mat_tmp = mat_tmp - tmp_e
+            endif
+
+            H_mat(ij,kl) = -mat_tmp
+          enddo ! l
+        enddo ! k
+      enddo ! j
+    enddo ! i
+    !$OMP END DO
+    !$OMP END PARALLEL
+
+    call dgemm("N", "N", nOO, n_states_diag, nOO+nVV, 1.d0,    &
+               H_mat(1,1), size(H_mat, 1), U(1,1), size(U, 1), &
+               0.d0, W(nVV+1,1), size(W, 1))
+    deallocate(H_mat)
+
+    deallocate(Om_tmp)
+
 
   else
 
@@ -555,7 +703,7 @@ subroutine ppLR_GW_HR_calc_batches(ispin, nOrb, nC, nO, nR, nOO, nVV, nS, lambda
               mat_tmp = 0.7071067811865475d0 * mat_tmp
             endif
 
-            mat_tmp = mat_tmp * (4.d0 * chi + ERI(c,d,a,b) + ERI(d,c,a,b))
+            mat_tmp = mat_tmp * (4.d0 * chi + ERI(d,c,b,a) + ERI(d,c,a,b))
             if((a .eq. c) .and. (b .eq. d)) then
               mat_tmp = mat_tmp + tmp_e
             endif
@@ -579,7 +727,7 @@ subroutine ppLR_GW_HR_calc_batches(ispin, nOrb, nC, nO, nR, nOO, nVV, nS, lambda
               mat_tmp = 0.7071067811865475d0 * mat_tmp
             endif
 
-            mat_tmp = mat_tmp * (4.d0 * chi + ERI(i,j,a,b) + ERI(j,i,a,b))
+            mat_tmp = mat_tmp * (4.d0 * chi + ERI(j,i,b,a) + ERI(j,i,a,b))
 
             H_mat(ij,bb) = -mat_tmp
           enddo ! j
@@ -636,7 +784,7 @@ subroutine ppLR_GW_HR_calc_batches(ispin, nOrb, nC, nO, nR, nOO, nVV, nS, lambda
               mat_tmp = 0.7071067811865475d0 * mat_tmp
             endif
     
-            mat_tmp = mat_tmp * (4.d0 * chi + ERI(a,b,i,j) + ERI(a,b,j,i))
+            mat_tmp = mat_tmp * (4.d0 * chi + ERI(b,a,j,i) + ERI(b,a,i,j))
 
             H_mat(ij,ab) = mat_tmp
           enddo ! b
@@ -657,7 +805,7 @@ subroutine ppLR_GW_HR_calc_batches(ispin, nOrb, nC, nO, nR, nOO, nVV, nS, lambda
               mat_tmp = 0.7071067811865475d0 * mat_tmp
             endif
 
-            mat_tmp = mat_tmp * (4.d0 * chi + ERI(i,j,k,l) + ERI(i,j,l,k))
+            mat_tmp = mat_tmp * (4.d0 * chi + ERI(l,k,j,i) + ERI(l,k,i,j))
 
             if((i .eq. k) .and. (j .eq. l)) then
               mat_tmp = mat_tmp - tmp_e
@@ -678,117 +826,161 @@ subroutine ppLR_GW_HR_calc_batches(ispin, nOrb, nC, nO, nR, nOO, nVV, nS, lambda
 
     deallocate(Om_tmp)
 
+    ! ---
 
   elseif(ispin .eq. 2) then
 
+    call omp_set_max_active_levels(1)
+
+    allocate(Om_tmp(nS))
+
+    a0 = nOrb - nR - nO - 1
 
     eta2 = eta * eta
-
-    ab = 0
-    do a = nO+1, nOrb-nR
-      do b = a+1, nOrb-nR
-        ab = ab + 1
-  
-        do state = 1, n_states_diag
-  
-          W(ab,state) = 0.d0
-
-          cd = 0
-          do c = nO+1, nOrb-nR
-            do d = c+1, nOrb-nR
-              cd = cd + 1
-    
-              mat_tmp = (e(a) + e(b) - eF) * Kronecker_delta(a, c) * Kronecker_delta(b, d) &
-                      + lambda * (ERI(a,b,c,d) - ERI(a,b,d,c))
-
-              chi = 0.d0
-              do m = 1, nS
-                eps = Om(m)**2 + eta2
-                chi = chi - rho(m,a,c) * rho(m,b,d) * Om(m) / eps &
-                          + rho(m,a,d) * rho(m,b,c) * Om(m) / eps
-              enddo
-              mat_tmp = mat_tmp + 4.d0 * lambda * chi
-
-              W(ab,state) = W(ab,state) + mat_tmp * U(cd,state)
-            enddo
-          enddo
-
-          ij = nVV
-          do i = nC+1, nO
-            do j = i+1, nO
-              ij = ij + 1
-  
-              mat_tmp = lambda * (ERI(a,b,i,j) - ERI(a,b,j,i))
-
-              chi = 0.d0
-              do m = 1, nS
-                eps = Om(m)**2 + eta2
-                chi = chi - rho(m,i,a) * rho(m,j,b) * Om(m) / eps &
-                          + rho(m,i,b) * rho(m,a,j) * Om(m) / eps
-              end do
-              mat_tmp = mat_tmp + 4.d0 * lambda * chi
-  
-              W(ab,state) = W(ab,state) - mat_tmp * U(ij,state)
-            enddo
-          enddo
-
-        enddo ! state
-      enddo ! b
-    enddo ! a
+    do m = 1, nS
+      Om_tmp(m) = Om(m) / (Om(m) * Om(m) + eta2)
+    enddo
 
     ! ---
-  
-    ij = nVV
+
+    !$OMP PARALLEL                                            &
+    !$OMP DEFAULT(NONE)                                       &
+    !$OMP PRIVATE(a, b, aa, ab, c, d, cd, i, j, ij, m, state, &
+    !$OMP         bb, tmp_e, tmp_ab, chi, mat_tmp, H_mat)     &
+    !$OMP SHARED(nC, nO, nOrb, nR, nS, n_states_diag, nVV,    &
+    !$OMP        nOO, a0, eF, lambda, e, Om_tmp, rho, ERI, U, W)
+
+    allocate(H_mat(nOO+nVV,a0))
+
+    !$OMP DO SCHEDULE(GUIDED)
+    do a = nO+1, nOrb-nR
+      aa = a0 * (a - nO - 1) - (a - nO - 1) * (a - nO) / 2 - nO - 1
+      do b = a+1, nOrb-nR
+        ab = aa + b
+
+        bb = b - a
+
+        tmp_e = e(a) + e(b) - eF
+
+        cd = 0
+        do c = nO+1, nOrb-nR
+          do d = c+1, nOrb-nR
+            cd = cd + 1
+    
+            mat_tmp = lambda * (ERI(d,c,b,a) - ERI(d,c,a,b))
+
+            chi = 0.d0
+            do m = 1, nS
+              chi = chi - Om_tmp(m) * (rho(m,a,c) * rho(m,b,d) - rho(m,a,d) * rho(m,b,c))
+            enddo
+            mat_tmp = mat_tmp + 4.d0 * lambda * chi
+
+            if((a .eq. c) .and. (b .eq. d)) then
+              mat_tmp = mat_tmp + tmp_e
+            endif
+
+            H_mat(cd,bb) = mat_tmp
+          enddo ! d
+        enddo ! c
+
+        ij = nVV
+        do i = nC+1, nO
+          do j = i+1, nO
+            ij = ij + 1
+
+            mat_tmp = lambda * (ERI(j,i,b,a) - ERI(j,i,a,b))
+
+            chi = 0.d0
+            do m = 1, nS
+              chi = chi - Om_tmp(m) * (rho(m,i,a) * rho(m,j,b) - rho(m,i,b) * rho(m,a,j))
+            end do
+            mat_tmp = mat_tmp + 4.d0 * lambda * chi
+
+            H_mat(ij,bb) = -mat_tmp
+          enddo ! j
+        enddo ! i
+      enddo ! b
+
+      call dgemm("T", "N", nOrb-nR-a, n_states_diag, nOO+nVV, 1.d0, &
+                 H_mat(1,1), size(H_mat, 1), U(1,1), size(U, 1),    &
+                 0.d0, W(aa+a+1,1), size(W, 1))
+
+    enddo ! a
+    !$OMP END DO
+
+    deallocate(H_mat)
+
+    !$OMP END PARALLEL
+
+    ! ---
+
+    i0 = nO - nC - 1
+    allocate(H_mat(nOO,nOO+nVV))
+
+    !$OMP PARALLEL                                            &
+    !$OMP DEFAULT(NONE)                                       &
+    !$OMP PRIVATE(i, j, ii, ij, a, b, ab, k, l, kl, m, state, &
+    !$OMP         tmp_e, tmp_ij, chi, mat_tmp)                &
+    !$OMP SHARED(nC, nO, nOrb, nR, nS, nVV, i0,               &
+    !$OMP        eF, lambda, e, Om_tmp, rho, ERI, U, H_mat)
+    !$OMP DO SCHEDULE(GUIDED)
     do i = nC+1, nO
+      ii = i0 * (i - nC - 1) - (i - nC - 1) * (i - nC) / 2 - nC - 1
       do j = i+1, nO
-        ij = ij + 1
+        ij = ii + j
+
+        tmp_e = e(i) + e(j) - eF
   
-        do state = 1, n_states_diag
-  
-          W(ij,state) = 0.d0
-  
-          ab = 0
-          do a = nO+1, nOrb-nR
-            do b = a+1, nOrb-nR
-              ab = ab + 1
+        ab = 0
+        do a = nO+1, nOrb-nR
+          do b = a+1, nOrb-nR
+            ab = ab + 1
     
-              mat_tmp = lambda * (ERI(a,b,i,j) - ERI(a,b,j,i))
+            mat_tmp = lambda * (ERI(b,a,j,i) - ERI(b,a,i,j))
 
-              chi = 0.d0
-              do m = 1, nS
-                eps = Om(m)**2 + eta2
-                chi = chi - rho(m,i,a) * rho(m,j,b) * Om(m) / eps &
-                          + rho(m,i,b) * rho(m,a,j) * Om(m) / eps
-              end do
-              mat_tmp = mat_tmp + 4.d0 * lambda * chi
-
-              W(ij,state) = W(ij,state) + mat_tmp * U(ab,state)
+            chi = 0.d0
+            do m = 1, nS
+              chi = chi - Om_tmp(m) * (rho(m,i,a) * rho(m,j,b) - rho(m,i,b) * rho(m,a,j))
             enddo
-          enddo
+            mat_tmp = mat_tmp + 4.d0 * lambda * chi
 
-          kl = nVV
-          do k = nC+1, nO
-            do l = k+1, nO
-              kl = kl + 1
-    
-              mat_tmp = - (e(i) + e(j) - eF) * Kronecker_delta(i, k) * Kronecker_delta(j, l) &
-                      + lambda * (ERI(i,j,k,l) - ERI(i,j,l,k))
+            H_mat(ij,ab) = mat_tmp
+          enddo ! b
+        enddo ! a
 
-              chi = 0.d0
-              do m = 1, nS
-                eps = Om(m)**2 + eta2
-                chi = chi - rho(m,i,k) * rho(m,j,l) * Om(m) / eps &
-                          + rho(m,i,l) * rho(m,j,k) * Om(m) / eps
-              enddo
-              mat_tmp = mat_tmp + 4.d0 * lambda * chi
+        kl = nVV
+        do k = nC+1, nO
+          do l = k+1, nO
+            kl = kl + 1
+   
+            mat_tmp = lambda * (ERI(l,k,j,i) - ERI(l,k,i,j))
 
-              W(ij,state) = W(ij,state) - mat_tmp * U(kl,state)
+            chi = 0.d0
+            do m = 1, nS
+              chi = chi - Om_tmp(m) * (rho(m,i,k) * rho(m,j,l) - rho(m,i,l) * rho(m,j,k))
             enddo
-          enddo
+            mat_tmp = mat_tmp + 4.d0 * lambda * chi
 
-        enddo ! state
+            if((i .eq. k) .and. (j .eq. l)) then
+              mat_tmp = mat_tmp - tmp_e
+            endif
+
+            H_mat(ij,kl) = -mat_tmp
+          enddo ! l
+        enddo ! k
       enddo ! j
     enddo ! i
+    !$OMP END DO
+    !$OMP END PARALLEL
+
+    call dgemm("N", "N", nOO, n_states_diag, nOO+nVV, 1.d0,    &
+               H_mat(1,1), size(H_mat, 1), U(1,1), size(U, 1), &
+               0.d0, W(nVV+1,1), size(W, 1))
+    deallocate(H_mat)
+
+    deallocate(Om_tmp)
+
+    ! ---
 
   else
 
