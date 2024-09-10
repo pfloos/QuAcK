@@ -18,6 +18,8 @@ subroutine ppLR_davidson(ispin, TDA, nC, nO, nR, nOrb, nOO, nVV, lambda, e, eF, 
   !   (-B.T  -D)
   !
 
+  use omp_lib
+
   implicit none
 
   logical,          intent(in)  :: TDA
@@ -36,7 +38,7 @@ subroutine ppLR_davidson(ispin, TDA, nC, nO, nR, nOrb, nOO, nVV, lambda, e, eF, 
   double precision, intent(out) :: Om(n_states)
   double precision, intent(out) :: R(nOO+nVV,n_states_diag)
   
-  integer                       :: N, M
+  integer                       :: N, M, num_threads
   integer                       :: iter, itermax, itertot
   integer                       :: shift1, shift2
   integer                       :: i, j, k, l, ab
@@ -49,6 +51,7 @@ subroutine ppLR_davidson(ispin, TDA, nC, nO, nR, nOrb, nOO, nVV, lambda, e, eF, 
   double precision              :: to_print(2,n_states)
   double precision              :: mem
   double precision              :: eta
+  double precision              :: t1, t2, tt1, tt2
   character(len=len(kernel))    :: kernel_name
   double precision, allocatable :: H_diag(:)
   double precision, allocatable :: W(:,:)
@@ -60,6 +63,8 @@ subroutine ppLR_davidson(ispin, TDA, nC, nO, nR, nOrb, nOO, nVV, lambda, e, eF, 
   double precision, allocatable :: rho_tmp(:,:,:), Om_tmp(:)
                                 
   double precision, external    :: u_dot_u
+
+  call wall_time(t1)
 
   dtwo_pi = 6.283185307179586d0
 
@@ -98,11 +103,14 @@ subroutine ppLR_davidson(ispin, TDA, nC, nO, nR, nOrb, nOO, nVV, lambda, e, eF, 
   mem = 8.d0 * dble(nOrb + nOrb**4 + N*n_states) &
       + 8.d0 * dble(supp_data_dbl_size) + 4.d0 * dble(supp_data_int_size)
 
-  write(*,'(A40, F12.4)') 'I/O mem (MB) = ', mem / (1024.d0*1024.d0)
+  write(*,'(A40, F12.4)') 'I/O mem (GB) = ', mem / (1024.d0*1024.d0*1024.d0)
 
   mem = 8.d0 * dble(N + N*M + N*M + M*M + M*M + M + n_states_diag + n_states_diag)
 
-  write(*,'(A40, F12.4)') 'tmp mem (MB) = ', mem / (1024.d0*1024.d0)
+  write(*,'(A40, F12.4)') 'tmp mem (GB) = ', mem / (1024.d0*1024.d0*1024.d0)
+
+  num_threads = omp_get_max_threads()
+  write(*,'(A40, I12)') 'Number of threads = ', num_threads
 
 
   if(kernel_name .eq. "rpa") then
@@ -114,16 +122,16 @@ subroutine ppLR_davidson(ispin, TDA, nC, nO, nR, nOrb, nOO, nVV, lambda, e, eF, 
 
     nS = supp_data_int(1)
 
-    allocate(rho_tmp(nOrb,nOrb,nS))
+    allocate(rho_tmp(nS,nOrb,nOrb))
     allocate(Om_tmp(nS))
 
     eta = supp_data_dbl(1)
     i_data = 1
-    do mm = 1, nS
-      do q = 1, nOrb
-        do p = 1, nOrb
+    do q = 1, nOrb
+      do p = 1, nOrb
+        do mm = 1, nS
           i_data = i_data + 1
-          rho_tmp(p,q,mm) = supp_data_dbl(i_data)
+          rho_tmp(mm,p,q) = supp_data_dbl(i_data)
         enddo
       enddo
     enddo
@@ -224,6 +232,8 @@ subroutine ppLR_davidson(ispin, TDA, nC, nO, nR, nOrb, nOO, nVV, lambda, e, eF, 
       !print*, iter, shift1, shift2
 
       if((iter > 1) .or. (itertot == 1)) then
+
+        !call wall_time(tt1)
 
         call ortho_qr(U(1,1), size(U, 1), N, shift2)
         !call ortho_qr(U(1,1), size(U, 1), N, shift2)
@@ -340,6 +350,10 @@ subroutine ppLR_davidson(ispin, TDA, nC, nO, nR, nOrb, nOO, nVV, lambda, e, eF, 
         !write(*, '(1X, I3, 1X, 100(1X, F16.10, 1X, F16.10, 1X, F16.10))') iter-1, to_print(1:2,1:n_states)
       endif
 
+      !call wall_time(tt2)
+      !write(*,'(A50, F12.4)') 'wall time for one Davidson iteration (sec): ', tt2-tt1
+      !stop
+
       !print*, 'iter = ', iter
       if(iter > 1) then
         converged = dabs(maxval(residual_norm(1:n_states))) < 1d-15
@@ -425,6 +439,9 @@ subroutine ppLR_davidson(ispin, TDA, nC, nO, nR, nOrb, nOO, nVV, lambda, e, eF, 
     deallocate(rho_tmp)
     deallocate(Om_tmp)
   endif
+
+  call wall_time(t2)
+  write(*,'(A50, F12.4)') 'total wall time for Davidson (sec): ', t2-t1
 
   return
 end

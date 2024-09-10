@@ -139,9 +139,9 @@ subroutine RGW_ppBSE(TDA_W,TDA,dBSE,dTDA,singlet,triplet,eta,nOrb,nC,nO,nV,nR,nS
     call ppLR(TDA,nOO,nVV,Bpp,Cpp,Dpp,Om1,X1,Y1,Om2,X2,Y2,EcBSE(ispin))
     deallocate(Bpp,Cpp,Dpp,KB_sta,KC_sta,KD_sta)
 
-    print*, 'LAPACK:'
-    print*, Om2
-    print*, Om1
+    !print*, 'LAPACK:'
+    !print*, Om2
+    !print*, Om1
 
     ! ---
 
@@ -151,46 +151,46 @@ subroutine RGW_ppBSE(TDA_W,TDA,dBSE,dTDA,singlet,triplet,eta,nOrb,nC,nO,nV,nR,nS
     ! Davidson
     ! ---
 
-    n_states = nOO + 5
-    n_states_diag = n_states + 4
-    allocate(Om(nOO+nVV), R(nOO+nVV,n_states_diag))
+    !n_states = nOO + 5
+    !n_states_diag = n_states + 4
+    !allocate(Om(nOO+nVV), R(nOO+nVV,n_states_diag))
 
-    supp_data_int = 1
-    allocate(supp_data_int(supp_data_int_size))
-    supp_data_int(1) = nS
+    !supp_data_int = 1
+    !allocate(supp_data_int(supp_data_int_size))
+    !supp_data_int(1) = nS
 
-    supp_data_dbl_size = nS + nOrb*nOrb*nS + 1
-    allocate(supp_data_dbl(supp_data_dbl_size))
-    ! scalars
-    supp_data_dbl(1) = eta
-    i_data = 1
-    ! rho_RPA
-    do m = 1, nS
-      do q = 1, nOrb
-        do p = 1, nOrb
-          i_data = i_data + 1
-          supp_data_dbl(i_data) = rho_RPA(p,q,m)
-        enddo
-      enddo
-    enddo
-    ! OmRPA
-    do m = 1, nS
-      i_data = i_data + 1
-      supp_data_dbl(i_data) = OmRPA(m)
-    enddo
+    !supp_data_dbl_size = nS + nOrb*nOrb*nS + 1
+    !allocate(supp_data_dbl(supp_data_dbl_size))
+    !! scalars
+    !supp_data_dbl(1) = eta
+    !i_data = 1
+    !! rho_RPA
+    !do q = 1, nOrb
+    !  do p = 1, nOrb
+    !    do m = 1, nS
+    !      i_data = i_data + 1
+    !      supp_data_dbl(i_data) = rho_RPA(p,q,m)
+    !    enddo
+    !  enddo
+    !enddo
+    !! OmRPA
+    !do m = 1, nS
+    !  i_data = i_data + 1
+    !  supp_data_dbl(i_data) = OmRPA(m)
+    !enddo
 
-    call ppLR_davidson(ispin, TDA, nC, nO, nR, nOrb, nOO, nVV, &
-                       1.d0,                                   & ! lambda
-                       eGW(1),                                 &
-                       0.d0,                                   & ! eF
-                       ERI(1,1,1,1),                           &
-                       supp_data_int(1), supp_data_int_size,   &
-                       supp_data_dbl(1), supp_data_dbl_size,   &
-                       Om(1), R(1,1), n_states, n_states_diag, "GW")
+    !call ppLR_davidson(ispin, TDA, nC, nO, nR, nOrb, nOO, nVV, &
+    !                   1.d0,                                   & ! lambda
+    !                   eGW(1),                                 &
+    !                   0.d0,                                   & ! eF
+    !                   ERI(1,1,1,1),                           &
+    !                   supp_data_int(1), supp_data_int_size,   &
+    !                   supp_data_dbl(1), supp_data_dbl_size,   &
+    !                   Om(1), R(1,1), n_states, n_states_diag, "GW")
 
-    deallocate(Om, R)
-    deallocate(supp_data_dbl, supp_data_int)
-    stop
+    !deallocate(Om, R)
+    !deallocate(supp_data_dbl, supp_data_int)
+    !stop
 
     ! ---
 
@@ -274,9 +274,9 @@ subroutine RGW_ppBSE(TDA_W,TDA,dBSE,dTDA,singlet,triplet,eta,nOrb,nC,nO,nV,nR,nS
     !supp_data_dbl(1) = eta
     !i_data = 1
     !! rho_RPA
-    !do m = 1, nS
-    !  do q = 1, nOrb
-    !    do p = 1, nOrb
+    !do q = 1, nOrb
+    !  do p = 1, nOrb
+    !    do m = 1, nS
     !      i_data = i_data + 1
     !      supp_data_dbl(i_data) = rho_RPA(p,q,m)
     !    enddo
