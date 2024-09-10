@@ -31,7 +31,7 @@ subroutine RMP(dotest,doMP2,doMP3,regularize,nOrb,nC,nO,nV,nR,ERI,ENuc,ERHF,eHF)
 ! Output variables
 
 !------------------------------------------------------------------------
-! Compute MP3 energy
+! Compute MP2 energy
 !------------------------------------------------------------------------                               
 
   if(doMP2) then    
@@ -53,11 +53,12 @@ subroutine RMP(dotest,doMP2,doMP3,regularize,nOrb,nC,nO,nV,nR,ERI,ENuc,ERHF,eHF)
   if(doMP3) then    
 
     call wall_time(start_MP)
-    call RMP3(nOrb,nC,nO,nV,nR,ERI,ENuc,ERHF,eHF)
+    write(*,*) 'Restricted MP3 NYI... Sorry'
+    write(*,*) 
     call wall_time(end_MP)
 
     t_MP = end_MP - start_MP
-    write(*,'(A65,1X,F9.3,A8)') 'Total wall time for MP2 = ',t_MP,' seconds'
+    write(*,'(A65,1X,F9.3,A8)') 'Total wall time for MP3 = ',t_MP,' seconds'
     write(*,*)
 
   end if
