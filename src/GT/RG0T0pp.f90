@@ -94,11 +94,11 @@ subroutine RG0T0pp(dotest,doACFDT,exchange_kernel,doXBS,dophBSE,TDA_T,TDA,dBSE,d
 
 ! Dimensions of the pp-RPA linear reponse matrices
 
-  !nOOs = nO*(nO + 1)/2
-  !nVVs = nV*(nV + 1)/2
+  nOOs = nO*(nO + 1)/2
+  nVVs = nV*(nV + 1)/2
 
-  nOOs = nO*nO
-  nVVs = nV*nV
+  !nOOs = nO*nO
+  !nVVs = nV*nV
 
   nOOt = nO*(nO - 1)/2
   nVVt = nV*(nV - 1)/2
@@ -118,8 +118,8 @@ subroutine RG0T0pp(dotest,doACFDT,exchange_kernel,doXBS,dophBSE,TDA_T,TDA,dBSE,d
 !----------------------------------------------
 
   ispin  = 1
-  !iblock = 1
-  iblock = 3
+  iblock = 1
+  !iblock = 3
 
 ! Compute linear response
 
@@ -130,17 +130,16 @@ subroutine RG0T0pp(dotest,doACFDT,exchange_kernel,doXBS,dophBSE,TDA_T,TDA,dBSE,d
   if(.not.TDA_T) call ppLR_B(iblock,nOrb,nC,nO,nV,nR,nOOs,nVVs,1d0,ERI,Bpp)
 
   call ppLR(TDA_T,nOOs,nVVs,Bpp,Cpp,Dpp,Om1s,X1s,Y1s,Om2s,X2s,Y2s,EcRPA(ispin))
+  deallocate(Bpp,Cpp,Dpp)
+  !print*, 'LAPACK:'
+  !print*, Om2s
+  !print*, Om1s
 
   !n_states = nOOs + 5
   !n_states_diag = n_states + 4
   !allocate(Om(nOOs+nVVs), R(nOOs+nVVs,n_states_diag))
-  !call ppLR_RG0T0pp_davidson(iblock, TDA_T, nC, nO, nR, nOrb, nOOs, nVVs, 1.d0, eHF, 0.d0, ERI, Om, R, n_states, n_states_diag)
-  !print*, 'LAPACK:'
-  !print*, Om2s
-  !print*, Om1s
+  !call ppLR_davidson(iblock, TDA_T, nC, nO, nR, nOrb, nOOs, nVVs, 1.d0, eHF, 0.d0, ERI, Om, R, n_states, n_states_diag, "RPA")
   !stop
-
-  deallocate(Bpp,Cpp,Dpp)
 
   if(print_T) call print_excitation_energies('ppRPA@RHF','2p (alpha-beta)',nVVs,Om1s)
   if(print_T) call print_excitation_energies('ppRPA@RHF','2h (alpha-beta)',nOOs,Om2s)
@@ -162,17 +161,16 @@ subroutine RG0T0pp(dotest,doACFDT,exchange_kernel,doXBS,dophBSE,TDA_T,TDA,dBSE,d
   if(.not.TDA_T) call ppLR_B(iblock,nOrb,nC,nO,nV,nR,nOOt,nVVt,1d0,ERI,Bpp)
 
   call ppLR(TDA_T,nOOt,nVVt,Bpp,Cpp,Dpp,Om1t,X1t,Y1t,Om2t,X2t,Y2t,EcRPA(ispin))
-
-  n_states = nOOt + 5
-  n_states_diag = n_states + 4
-  allocate(Om(nOOt+nVVt), R(nOOt+nVVt,n_states_diag))
-  call ppLR_RG0T0pp_davidson(iblock, TDA_T, nC, nO, nR, nOrb, nOOt, nVVt, 1.d0, eHF, 0.d0, ERI, Om, R, n_states, n_states_diag)
-  print*, 'LAPACK:'
-  print*, Om2t
-  print*, Om1t
-  stop
-
   deallocate(Bpp,Cpp,Dpp)
+  !print*, 'LAPACK:'
+  !print*, Om2t
+  !print*, Om1t
+
+  !n_states = nOOt + 5
+  !n_states_diag = n_states + 4
+  !allocate(Om(nOOt+nVVt), R(nOOt+nVVt,n_states_diag))
+  !call ppLR_davidson(iblock, TDA_T, nC, nO, nR, nOrb, nOOt, nVVt, 1.d0, eHF, 0.d0, ERI, Om, R, n_states, n_states_diag, "RPA")
+  !stop
 
   if(print_T) call print_excitation_energies('ppRPA@RHF','2p (alpha-alpha)',nVVt,Om1t)
   if(print_T) call print_excitation_energies('ppRPA@RHF','2h (alpha-alpha)',nOOt,Om2t)
