@@ -64,6 +64,8 @@ subroutine RG0T0pp(dotest,doACFDT,exchange_kernel,doXBS,dophBSE,TDA_T,TDA,dBSE,d
   double precision,allocatable  :: Z(:)
   double precision,allocatable  :: eGT(:)
   double precision,allocatable  :: eGTlin(:)
+  integer,          allocatable :: supp_data_int(:)
+  double precision, allocatable :: supp_data_dbl(:)
   double precision, allocatable :: Om(:), R(:,:)
 
 
@@ -94,11 +96,11 @@ subroutine RG0T0pp(dotest,doACFDT,exchange_kernel,doXBS,dophBSE,TDA_T,TDA,dBSE,d
 
 ! Dimensions of the pp-RPA linear reponse matrices
 
-  nOOs = nO*(nO + 1)/2
-  nVVs = nV*(nV + 1)/2
+  !nOOs = nO*(nO + 1)/2
+  !nVVs = nV*(nV + 1)/2
 
-  !nOOs = nO*nO
-  !nVVs = nV*nV
+  nOOs = nO*nO
+  nVVs = nV*nV
 
   nOOt = nO*(nO - 1)/2
   nVVt = nV*(nV - 1)/2
@@ -118,8 +120,8 @@ subroutine RG0T0pp(dotest,doACFDT,exchange_kernel,doXBS,dophBSE,TDA_T,TDA,dBSE,d
 !----------------------------------------------
 
   ispin  = 1
-  iblock = 1
-  !iblock = 3
+  !iblock = 1
+  iblock = 3
 
 ! Compute linear response
 
@@ -138,7 +140,19 @@ subroutine RG0T0pp(dotest,doACFDT,exchange_kernel,doXBS,dophBSE,TDA_T,TDA,dBSE,d
   !n_states = nOOs + 5
   !n_states_diag = n_states + 4
   !allocate(Om(nOOs+nVVs), R(nOOs+nVVs,n_states_diag))
-  !call ppLR_davidson(iblock, TDA_T, nC, nO, nR, nOrb, nOOs, nVVs, 1.d0, eHF, 0.d0, ERI, Om, R, n_states, n_states_diag, "RPA")
+  !allocate(supp_data_dbl(1), supp_data_int(1))
+  !supp_data_int(1) = 0
+  !supp_data_dbl(1) = 0.d0
+  !call ppLR_davidson(iblock, TDA_T, nC, nO, nR, nOrb, nOOs, nVVs, &
+  !                   1.d0,                                        & ! lambda
+  !                   eHF(1),                                      &
+  !                   0.d0,                                        & ! eF
+  !                   ERI(1,1,1,1),                                &
+  !                   supp_data_int(1), 1,                         &
+  !                   supp_data_dbl(1), 1,                         &
+  !                   Om(1), R(1,1), n_states, n_states_diag, "RPA")
+  !deallocate(supp_data_dbl, supp_data_int)
+  !deallocate(Om, R)
   !stop
 
   if(print_T) call print_excitation_energies('ppRPA@RHF','2p (alpha-beta)',nVVs,Om1s)
@@ -169,7 +183,19 @@ subroutine RG0T0pp(dotest,doACFDT,exchange_kernel,doXBS,dophBSE,TDA_T,TDA,dBSE,d
   !n_states = nOOt + 5
   !n_states_diag = n_states + 4
   !allocate(Om(nOOt+nVVt), R(nOOt+nVVt,n_states_diag))
-  !call ppLR_davidson(iblock, TDA_T, nC, nO, nR, nOrb, nOOt, nVVt, 1.d0, eHF, 0.d0, ERI, Om, R, n_states, n_states_diag, "RPA")
+  !allocate(supp_data_dbl(1), supp_data_int(1))
+  !supp_data_int(1) = 0
+  !supp_data_dbl(1) = 0.d0
+  !call ppLR_davidson(iblock, TDA_T, nC, nO, nR, nOrb, nOOt, nVVt, &
+  !                   1.d0,                                        & ! lambda
+  !                   eHF(1),                                      &
+  !                   0.d0,                                        & ! eF
+  !                   ERI(1,1,1,1),                                &
+  !                   supp_data_int(1), 1,                         &
+  !                   supp_data_dbl(1), 1,                         &
+  !                   Om(1), R(1,1), n_states, n_states_diag, "RPA")
+  !deallocate(Om, R)
+  !deallocate(supp_data_dbl)
   !stop
 
   if(print_T) call print_excitation_energies('ppRPA@RHF','2p (alpha-alpha)',nVVt,Om1t)

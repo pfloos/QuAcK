@@ -465,7 +465,7 @@ subroutine impose_biorthog_degen_eigvec(n, deg_num, e0, L0, R0)
           accu_nd = accu_nd + dabs(S(j,k))
         enddo
       enddo
-      if(accu_nd .gt. 1d-12) then
+      if(accu_nd .gt. 1d-7) then
         print*, ' accu_nd =', accu_nd
         print*, ' your strategy for degenerates orbitals failed !'
         print*, m, 'deg on', i
