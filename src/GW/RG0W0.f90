@@ -145,9 +145,7 @@ subroutine RG0W0(dotest,doACFDT,exchange_kernel,doXBS,dophBSE,dophBSE2,TDA_W,TDA
 
   if(plot_self) call RGW_plot_self_energy(nOrb,eta,nC,nO,nV,nR,nS,eHF,eHF,Om,rho)
 
-!--------------------!
-! Cumulant expansion !
-!--------------------!
+! Cumulant expansion 
 
 ! call RGWC(dotest,eta,nOrb,nC,nO,nV,nR,nS,Om,rho,eHF,eHF,eGW,Z)
 
@@ -164,7 +162,9 @@ subroutine RG0W0(dotest,doACFDT,exchange_kernel,doXBS,dophBSE,dophBSE2,TDA_W,TDA
 
   call print_RG0W0(nOrb,nO,eHF,ENuc,ERHF,SigC,Z,eGW,EcRPA,EcGM)
 
-! Perform BSE calculation
+!---------------------------!
+! Perform phBSE calculation !
+!---------------------------!
 
   if(dophBSE) then
 
@@ -180,14 +180,9 @@ subroutine RG0W0(dotest,doACFDT,exchange_kernel,doXBS,dophBSE,dophBSE2,TDA_W,TDA
     write(*,*)'-------------------------------------------------------------------------------'
     write(*,*)
 
-!   Compute the BSE correlation energy via the adiabatic connection 
+    ! Compute the BSE correlation energy via the adiabatic connection fluctuation dissipation theorem
 
     if(doACFDT) then
-
-      write(*,*) '-------------------------------------------------------------'
-      write(*,*) ' Adiabatic connection version of BSE@G0W0 correlation energy '
-      write(*,*) '-------------------------------------------------------------'
-      write(*,*) 
 
       call RGW_phACFDT(exchange_kernel,doXBS,TDA_W,TDA,singlet,triplet,eta,nOrb,nC,nO,nV,nR,nS,ERI,eHF,eGW,EcBSE)
 
@@ -203,6 +198,10 @@ subroutine RG0W0(dotest,doACFDT,exchange_kernel,doXBS,dophBSE,dophBSE2,TDA_W,TDA
     end if
 
   end if
+
+!---------------------------!
+! Perform ppBSE calculation !
+!---------------------------!
 
   if(doppBSE) then
 
