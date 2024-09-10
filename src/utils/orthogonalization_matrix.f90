@@ -1,7 +1,4 @@
-
-! ---
-
-subroutine orthogonalization_matrix(nBas, S, X)
+subroutine orthogonalization_matrix(nBas,nOrb,S,X)
 
 ! Compute the orthogonalization matrix X
 
@@ -17,113 +14,47 @@ subroutine orthogonalization_matrix(nBas, S, X)
   logical                       :: debug
   double precision,allocatable  :: UVec(:,:),Uval(:)
   double precision,parameter    :: thresh = 1d-6
-  integer,parameter             :: ortho_type = 1
 
-  integer                       :: i
+  integer                       :: i,j,j0
 
 ! Output variables
 
+  integer                       :: nOrb
   double precision,intent(out)  :: X(nBas,nBas)
 
   debug = .false.
 
-! Type of orthogonalization ortho_type
-!
-!  1 = Lowdin
-!  2 = Canonical
-!  3 = SVD
-!
-
   allocate(Uvec(nBas,nBas),Uval(nBas))
 
-  if(ortho_type == 1) then
+  Uvec(1:nBas,1:nBas) = S(1:nBas,1:nBas)
+  call diagonalize_matrix(nBas,Uvec,Uval)
 
-    !
-    ! S V = V s   where 
-    !
-    !     V.T V = 1 and s > 0 (S is positive def)
-    !
-    ! S = V s V.T
-    !   = V s^0.5 s^0.5 V.T
-    !   = V s^0.5 V.T V s^0.5 V.T
-    !   = S^0.5 S^0.5 
-    !
-    ! where
-    !
-    !     S^0.5 = V s^0.5 V.T
-    !
-    ! X = S^(-0.5)
-    !   = V s^(-0.5) V.T
-    !
-
-!   write(*,*)
-!   write(*,*) ' Lowdin orthogonalization'
-!   write(*,*)
-
-    Uvec = S
-    call diagonalize_matrix(nBas, Uvec, Uval)
-
-    do i = 1, nBas
-
-      if(Uval(i) < thresh) then 
-
-        write(*,*) 'Eigenvalue',i,' is very small in Lowdin orthogonalization = ',Uval(i)
-
-      end if
-
-      Uval(i) = 1d0 / dsqrt(Uval(i))
-
-    end do
-    
-    call ADAt(nBas, Uvec(1,1), Uval(1), X(1,1))
-
-  elseif(ortho_type == 2) then
-
-!   write(*,*)
-!   write(*,*) 'Canonical orthogonalization'
-!   write(*,*)
-
-    Uvec = S
-    call diagonalize_matrix(nBas, Uvec, Uval)
-
-    do i = 1, nBas
-
-      if(Uval(i) > thresh) then 
-
+  nOrb = 0
+  do i = 1,nBas
+    if(Uval(i) > thresh) then
         Uval(i) = 1d0 / dsqrt(Uval(i))
+        nOrb = nOrb + 1
+    else
+      write(*,*) ' Eigenvalue',i,'too small for canonical orthogonalization'
+    end if
+  end do
 
-      else
+  write(*,'(A50)') '------------------------------------------------'
+  write(*,'(A40,1X,I5)') 'Number of basis functions     = ',nBas
+  write(*,'(A40,1X,I5)') 'Number of spatial orbitals    = ',nOrb
+  write(*,'(A40,1X,I5)') 'Number of discarded functions = ',nBas - nOrb
+  write(*,'(A50)') '------------------------------------------------'
+  write(*,*)
 
-        write(*,*) ' Eigenvalue',i,'too small for canonical orthogonalization'
+  j0 = nBas - nOrb
 
-      end if
+  do j = j0+1,nBas
+    do i = 1,nBas
+      X(i,j-j0) = Uvec(i,j) * Uval(j)
+    enddo
+  enddo
 
-    end do
-    
-    call AD(nBas, Uvec, Uval)
-    X = Uvec
- 
-  elseif(ortho_type == 3) then
-
-!   write(*,*)
-!   write(*,*) ' SVD-based orthogonalization NYI'
-!   write(*,*)
-   
-!   Uvec = S
-!   call diagonalize_matrix(nBas,Uvec,Uval)
-
-!   do i=1,nBas
-!     if(Uval(i) > thresh) then 
-!       Uval(i) = 1d0/sqrt(Uval(i))
-!     else
-!       write(*,*) 'Eigenvalue',i,'too small for canonical orthogonalization'
-!     end if
-!   end do
-!   
-!   call AD(nBas,Uvec,Uval)
-!   X = Uvec
- 
-  end if
+  deallocate(Uvec,Uval)
 
 ! Print results
 
