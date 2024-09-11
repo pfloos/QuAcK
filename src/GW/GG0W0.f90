@@ -40,6 +40,7 @@ subroutine GG0W0(dotest,doACFDT,exchange_kernel,doXBS,dophBSE,dophBSE2,TDA_W,TDA
 
   logical                       :: print_W = .true.
   logical                       :: dRPA
+  double precision              :: flow
   double precision              :: EcRPA
   double precision              :: EcBSE
   double precision              :: EcGM
@@ -68,7 +69,6 @@ subroutine GG0W0(dotest,doACFDT,exchange_kernel,doXBS,dophBSE,dophBSE2,TDA_W,TDA
 ! Initialization
 
   dRPA = .true.
-  EcRPA = 0d0
 
 ! TDA for W
 
@@ -78,6 +78,8 @@ subroutine GG0W0(dotest,doACFDT,exchange_kernel,doXBS,dophBSE,dophBSE2,TDA_W,TDA
   end if
 
 ! SRG regularization
+
+  flow = 500d0
 
   if(doSRG) then
 
@@ -113,7 +115,7 @@ subroutine GG0W0(dotest,doACFDT,exchange_kernel,doXBS,dophBSE,dophBSE2,TDA_W,TDA
 !------------------------!
 
   if(doSRG) then 
-    call GGW_SRG_self_energy_diag(nBas,nC,nO,nV,nR,nS,eHF,Om,rho,EcGM,SigC,Z)
+    call GGW_SRG_self_energy_diag(flow,nBas,nC,nO,nV,nR,nS,eHF,Om,rho,EcGM,SigC,Z)
   else
     call GGW_self_energy_diag(eta,nBas,nC,nO,nV,nR,nS,eHF,Om,rho,EcGM,SigC,Z)
   end if
@@ -141,8 +143,6 @@ subroutine GG0W0(dotest,doACFDT,exchange_kernel,doXBS,dophBSE,dophBSE2,TDA_W,TDA
     call GGW_QP_graph(eta,nBas,nC,nO,nV,nR,nS,eHF,Om,rho,eGWlin,eHF,eGW,Z)
 
   end if
-
-! call GW_plot_self_energy(nBas,nC,nO,nV,nR,nS,eHF,eHF,Om,rho)
 
 ! Compute the RPA correlation energy
 
@@ -173,35 +173,6 @@ subroutine GG0W0(dotest,doACFDT,exchange_kernel,doXBS,dophBSE,dophBSE2,TDA_W,TDA
     write(*,'(2X,A50,F20.10,A3)') 'Tr@BSE@G0W0@GHF total energy       = ',ENuc + EGHF + EcBSE,' au'
     write(*,*)'-------------------------------------------------------------------------------'
     write(*,*)
-
-!   Compute the BSE correlation energy via the adiabatic connection 
-
-!   if(doACFDT) then
-
-!     write(*,*) '-------------------------------------------------------------'
-!     write(*,*) ' Adiabatic connection version of BSE@G0W0 correlation energy '
-!     write(*,*) '-------------------------------------------------------------'
-!     write(*,*) 
-
-!     if(doXBS) then 
-
-!       write(*,*) '*** scaled screening version (XBS) ***'
-!       write(*,*)
-
-!     end if
-
-!     call GW_phACFDT(exchange_kernel,doXBS,dRPA,TDA_W,TDA,dophBSE,singlet,triplet,eta,nBas,nC,nO,nV,nR,nS,ERI,eHF,eGW,EcBSE)
-
-!     write(*,*)
-!     write(*,*)'-------------------------------------------------------------------------------'
-!     write(*,'(2X,A50,F20.10,A3)') 'AC@phBSE@G0W0 correlation energy (singlet) =',EcBSE(1),' au'
-!     write(*,'(2X,A50,F20.10,A3)') 'AC@phBSE@G0W0 correlation energy (triplet) =',EcBSE(2),' au'
-!     write(*,'(2X,A50,F20.10,A3)') 'AC@phBSE@G0W0 correlation energy           =',EcBSE(1) + EcBSE(2),' au'
-!     write(*,'(2X,A50,F20.10,A3)') 'AC@phBSE@G0W0 total energy                 =',ENuc + EGHF + EcBSE(1) + EcBSE(2),' au'
-!     write(*,*)'-------------------------------------------------------------------------------'
-!     write(*,*)
-
-!   end if
 
   end if
 

@@ -76,6 +76,8 @@ subroutine qsRGW(dotest,maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,dop
   double precision,external     :: trace_matrix
   double precision              :: dipole(ncart)
 
+  double precision              :: flow
+
   logical                       :: dRPA_W  = .true.
   logical                       :: print_W = .false.
   double precision,allocatable  :: err_diis(:,:)
@@ -124,6 +126,8 @@ subroutine qsRGW(dotest,maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,dop
   end if
 
 ! SRG regularization
+
+  flow = 500d0
 
   if(doSRG) then
 
@@ -207,7 +211,7 @@ subroutine qsRGW(dotest,maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,dop
     call RGW_excitation_density(nOrb,nC,nO,nR,nS,ERI_MO,XpY,rho)
 
     if(doSRG) then 
-      call RGW_SRG_self_energy(nBas,nOrb,nC,nO,nV,nR,nS,eGW,Om,rho,EcGM,SigC,Z)
+      call RGW_SRG_self_energy(flow,nBas,nOrb,nC,nO,nV,nR,nS,eGW,Om,rho,EcGM,SigC,Z)
     else
       call RGW_self_energy(eta,nBas,nOrb,nC,nO,nV,nR,nS,eGW,Om,rho,EcGM,SigC,Z)
     end if

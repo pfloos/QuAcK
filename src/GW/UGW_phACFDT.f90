@@ -63,6 +63,23 @@ subroutine UGW_phACFDT(exchange_kernel,doXBS,dRPA,TDA_W,TDA,BSE,spin_conserved,s
 
   allocate(Ec(nAC,nspin))
 
+
+! Hello World
+
+  write(*,*) '-----------------------------------------------------------'
+  write(*,*) ' Adiabatic connection version of BSE@GW correlation energy '
+  write(*,*) '-----------------------------------------------------------'
+  write(*,*)
+
+! eXtended BSE
+
+  if(doXBS) then
+
+    write(*,*) '*** scaled screening version (XBS) ***'
+    write(*,*)
+
+  end if
+
 ! Antisymmetrized kernel version
 
   if(exchange_kernel) then

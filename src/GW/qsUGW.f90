@@ -1,4 +1,4 @@
-subroutine qsUGW(dotest,maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,BSE,TDA_W,TDA,dBSE,dTDA,spin_conserved,spin_flip, &
+subroutine qsUGW(dotest,maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,dophBSE,TDA_W,TDA,dBSE,dTDA,spin_conserved,spin_flip, &
                 eta,doSRG,nNuc,ZNuc,rNuc,ENuc,nBas,nC,nO,nV,nR,nS,EUHF,S,X,T,V,Hc,ERI_AO,ERI_aaaa,ERI_aabb,ERI_bbbb, & 
                 dipole_int_AO,dipole_int_aa,dipole_int_bb,PHF,cHF,eHF)
 
@@ -17,7 +17,7 @@ subroutine qsUGW(dotest,maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,BSE
   logical,intent(in)            :: doACFDT
   logical,intent(in)            :: exchange_kernel
   logical,intent(in)            :: doXBS
-  logical,intent(in)            :: BSE
+  logical,intent(in)            :: dophBSE
   logical,intent(in)            :: TDA_W
   logical,intent(in)            :: TDA
   logical,intent(in)            :: dBSE
@@ -66,6 +66,7 @@ subroutine qsUGW(dotest,maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,BSE
   integer                       :: is
   integer                       :: n_diis
   integer                       :: nSa,nSb,nSt
+  double precision              :: flow
   double precision              :: dipole(ncart)
 
   double precision              :: ET(nspin)
@@ -127,6 +128,8 @@ subroutine qsUGW(dotest,maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,BSE
   end if
 
 ! SRG regularization
+
+  flow = 500d0
 
   if(doSRG) then
 
@@ -220,7 +223,7 @@ subroutine qsUGW(dotest,maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,BSE
     !------------------------------------------------!
 
     if(doSRG) then
-      call UGW_SRG_self_energy(nBas,nC,nO,nV,nR,nSt,eGW,Om,rho,SigC,Z,EcGM)
+      call UGW_SRG_self_energy(flow,nBas,nC,nO,nV,nR,nSt,eGW,Om,rho,SigC,Z,EcGM)
     else
       call UGW_self_energy(eta,nBas,nC,nO,nV,nR,nSt,eGW,Om,rho,SigC,Z,EcGM)
     end if
@@ -358,21 +361,10 @@ subroutine qsUGW(dotest,maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,BSE
 
 ! Perform BSE calculation
 
-  if(BSE) then
+  if(dophBSE) then
 
-    call UGW_phBSE(TDA_W,TDA,dBSE,dTDA,spin_conserved,spin_flip,eta,nBas,nC,nO,nV,nR,nS, &
+    call UGW_phBSE(exchange_kernel,TDA_W,TDA,dBSE,dTDA,spin_conserved,spin_flip,eta,nBas,nC,nO,nV,nR,nS, &
                    S,ERI_aaaa,ERI_aabb,ERI_bbbb,dipole_int_aa,dipole_int_bb,c,eGW,eGW,EcBSE)
-
-    if(exchange_kernel) then
-
-      EcBSE(1) = 0.5d0*EcBSE(1)
-      EcBSE(2) = 0.5d0*EcBSE(2)
-
-    else
-
-      EcBSE(2) = 0.0d0
-
-    end if
 
     write(*,*)
     write(*,*)'-------------------------------------------------------------------------------'
@@ -387,19 +379,7 @@ subroutine qsUGW(dotest,maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,BSE
 
     if(doACFDT) then
 
-      write(*,*) '--------------------------------------------------------------'
-      write(*,*) ' Adiabatic connection version of BSE@qsUGW correlation energy '
-      write(*,*) '--------------------------------------------------------------'
-      write(*,*)
-
-      if(doXBS) then
-
-        write(*,*) '*** scaled screening version (XBS) ***'
-        write(*,*)
-
-      end if
-
-      call UGW_phACFDT(exchange_kernel,doXBS,.true.,TDA_W,TDA,BSE,spin_conserved,spin_flip, &
+      call UGW_phACFDT(exchange_kernel,doXBS,.true.,TDA_W,TDA,dophBSE,spin_conserved,spin_flip, &
                        eta,nBas,nC,nO,nV,nR,nS,ERI_aaaa,ERI_aabb,ERI_bbbb,eGW,eGW,EcRPA)
 
       write(*,*)

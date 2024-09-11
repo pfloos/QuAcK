@@ -46,7 +46,7 @@ subroutine RG0W0(dotest,doACFDT,exchange_kernel,doXBS,dophBSE,dophBSE2,TDA_W,TDA
   logical                       :: plot_self = .false.
   logical                       :: dRPA_W
   integer                       :: isp_W
-  double precision              :: lambda
+  double precision              :: flow
   double precision              :: EcRPA
   double precision              :: EcBSE(nspin)
   double precision              :: EcGM
@@ -73,10 +73,6 @@ subroutine RG0W0(dotest,doACFDT,exchange_kernel,doXBS,dophBSE,dophBSE2,TDA_W,TDA
   write(*,*)'*******************************'
   write(*,*)
 
-! Initialization
-
-  lambda = 1d0
-
 ! Spin manifold and TDA for dynamical screening
 
   isp_W = 1
@@ -88,6 +84,8 @@ subroutine RG0W0(dotest,doACFDT,exchange_kernel,doXBS,dophBSE,dophBSE2,TDA_W,TDA
   end if
 
 ! SRG regularization
+
+  flow = 500d0
 
   if(doSRG) then
 
@@ -105,8 +103,8 @@ subroutine RG0W0(dotest,doACFDT,exchange_kernel,doXBS,dophBSE,dophBSE2,TDA_W,TDA
 ! Compute screening !
 !-------------------!
 
-                 call phLR_A(isp_W,dRPA_W,nOrb,nC,nO,nV,nR,nS,lambda,eHF,ERI,Aph)
-  if(.not.TDA_W) call phLR_B(isp_W,dRPA_W,nOrb,nC,nO,nV,nR,nS,lambda,ERI,Bph)
+                 call phLR_A(isp_W,dRPA_W,nOrb,nC,nO,nV,nR,nS,1d0,eHF,ERI,Aph)
+  if(.not.TDA_W) call phLR_B(isp_W,dRPA_W,nOrb,nC,nO,nV,nR,nS,1d0,ERI,Bph)
 
   call phLR(TDA_W,nS,Aph,Bph,EcRPA,Om,XpY,XmY)
 
@@ -123,7 +121,7 @@ subroutine RG0W0(dotest,doACFDT,exchange_kernel,doXBS,dophBSE,dophBSE2,TDA_W,TDA
 !------------------------!
 
   if(doSRG) then 
-    call RGW_SRG_self_energy_diag(nBas,nOrb,nC,nO,nV,nR,nS,eHF,Om,rho,EcGM,SigC,Z)
+    call RGW_SRG_self_energy_diag(flow,nBas,nOrb,nC,nO,nV,nR,nS,eHF,Om,rho,EcGM,SigC,Z)
   else
     call RGW_self_energy_diag(eta,nBas,nOrb,nC,nO,nV,nR,nS,eHF,Om,rho,EcGM,SigC,Z)
   end if
@@ -162,8 +160,8 @@ subroutine RG0W0(dotest,doACFDT,exchange_kernel,doXBS,dophBSE,dophBSE2,TDA_W,TDA
 
 ! Compute the RPA correlation energy
 
-                 call phLR_A(isp_W,dRPA_W,nOrb,nC,nO,nV,nR,nS,lambda,eGW,ERI,Aph)
-  if(.not.TDA_W) call phLR_B(isp_W,dRPA_W,nOrb,nC,nO,nV,nR,nS,lambda,ERI,Bph)
+                 call phLR_A(isp_W,dRPA_W,nOrb,nC,nO,nV,nR,nS,1d0,eGW,ERI,Aph)
+  if(.not.TDA_W) call phLR_B(isp_W,dRPA_W,nOrb,nC,nO,nV,nR,nS,1d0,ERI,Bph)
 
   call phLR(TDA_W,nS,Aph,Bph,EcRPA,Om,XpY,XmY)
 

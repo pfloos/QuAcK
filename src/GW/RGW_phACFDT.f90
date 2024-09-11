@@ -62,9 +62,9 @@ subroutine RGW_phACFDT(exchange_kernel,doXBS,TDA_W,TDA,singlet,triplet,eta,nBas,
 
 ! Hello World
 
-  write(*,*) '-------------------------------------------------------------'
-  write(*,*) ' Adiabatic connection version of BSE@G0W0 correlation energy '
-  write(*,*) '-------------------------------------------------------------'
+  write(*,*) '-----------------------------------------------------------'
+  write(*,*) ' Adiabatic connection version of BSE@GW correlation energy '
+  write(*,*) '-----------------------------------------------------------'
   write(*,*)
 
 ! eXtended BSE

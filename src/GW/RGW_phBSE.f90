@@ -190,5 +190,4 @@ subroutine RGW_phBSE(dophBSE2,exchange_kernel,TDA_W,TDA,dBSE,dTDA,singlet,triple
 
   end if
 
-
 end subroutine 

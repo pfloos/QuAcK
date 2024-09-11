@@ -49,11 +49,11 @@ subroutine evUGW(dotest,maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,BSE
 ! Local variables
 
   logical                       :: dRPA
-  logical                       :: linear_mixing
   integer                       :: is
   integer                       :: ispin
   integer                       :: nSCF
   integer                       :: n_diis
+  double precision              :: flow
   double precision              :: rcond(nspin)
   double precision              :: Conv
   double precision              :: EcRPA(nspin)
@@ -92,6 +92,8 @@ subroutine evUGW(dotest,maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,BSE
 
 ! SRG regularization
 
+  flow = 500d0
+
   if(doSRG) then
 
     write(*,*) '*** SRG regularized qsGW scheme ***'
@@ -103,11 +105,6 @@ subroutine evUGW(dotest,maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,BSE
 
   EcRPA(:) = 0d0
   dRPA = .true.
-
-! Linear mixing
-
-  linear_mixing = .false.
-  alpha = 0.2d0
 
 ! Memory allocation
 
@@ -156,7 +153,7 @@ subroutine evUGW(dotest,maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,BSE
     !------------------------------------------------!
 
     if(doSRG) then
-      call UGW_SRG_self_energy_diag(nBas,nC,nO,nV,nR,nSt,eGW,Om,rho,SigC,Z,EcGM)
+      call UGW_SRG_self_energy_diag(flow,nBas,nC,nO,nV,nR,nSt,eGW,Om,rho,SigC,Z,EcGM)
     else
       call UGW_self_energy_diag(eta,nBas,nC,nO,nV,nR,nSt,eGW,Om,rho,SigC,Z,EcGM)
     end if
@@ -200,21 +197,13 @@ subroutine evUGW(dotest,maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,BSE
 
     ! Linear mixing or DIIS extrapolation
 
-    if(linear_mixing) then
- 
-      eGW(:,:) = alpha*eGW(:,:) + (1d0 - alpha)*eOld(:,:)
- 
-    else
+    if(max_diis > 1) then
 
       n_diis = min(n_diis+1,max_diis)
       do is=1,nspin
         call DIIS_extrapolation(rcond(ispin),nBas,nBas,n_diis,error_diis(:,1:n_diis,is), & 
                                 e_diis(:,1:n_diis,is),eGW(:,is)-eOld(:,is),eGW(:,is))
       end do
-
-!    Reset DIIS if required
-
-      if(minval(rcond(:)) < 1d-15) n_diis = 0
 
     end if
 
@@ -253,19 +242,8 @@ subroutine evUGW(dotest,maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,BSE
 
   if(BSE) then
 
-    call UGW_phBSE(TDA_W,TDA,dBSE,dTDA,spin_conserved,spin_flip,eta,nBas,nC,nO,nV,nR,nS, &
+    call UGW_phBSE(exchange_kernel,TDA_W,TDA,dBSE,dTDA,spin_conserved,spin_flip,eta,nBas,nC,nO,nV,nR,nS, &
                    S,ERI_aaaa,ERI_aabb,ERI_bbbb,dipole_int_aa,dipole_int_bb,cHF,eGW,eGW,EcBSE)
-
-    if(exchange_kernel) then
-
-      EcBSE(1) = 0.5d0*EcBSE(1)
-      EcBSE(2) = 0.5d0*EcBSE(2)
-
-    else
-
-      EcBSE(2) = 0.0d0
-
-    end if
 
     write(*,*)
     write(*,*)'-------------------------------------------------------------------------------'
@@ -279,18 +257,6 @@ subroutine evUGW(dotest,maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,BSE
 !   Compute the BSE correlation energy via the adiabatic connection 
 
     if(doACFDT) then
-
-      write(*,*) '--------------------------------------------------------------'
-      write(*,*) ' Adiabatic connection version of BSE@evUGW correlation energy '
-      write(*,*) '--------------------------------------------------------------'
-      write(*,*)
-
-      if(doXBS) then
-
-        write(*,*) '*** scaled screening version (XBS) ***'
-        write(*,*)
-
-      end if
 
       call UGW_phACFDT(exchange_kernel,doXBS,.true.,TDA_W,TDA,BSE,spin_conserved,spin_flip, &
                        eta,nBas,nC,nO,nV,nR,nS,ERI_aaaa,ERI_aabb,ERI_bbbb,eGW,eGW,EcRPA)

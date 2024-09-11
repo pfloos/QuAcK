@@ -60,6 +60,7 @@ subroutine qsGGW(dotest,maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,dop
   integer                       :: nBas2Sq
   integer                       :: ixyz
   integer                       :: n_diis
+  double precision              :: flow
   double precision              :: ET,ETaa,ETbb
   double precision              :: EV,EVaa,EVbb
   double precision              :: EJ,EJaaaa,EJaabb,EJbbaa,EJbbbb
@@ -131,6 +132,8 @@ subroutine qsGGW(dotest,maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,dop
   end if
 
 ! SRG regularization
+
+  flow = 500d0
 
   if(doSRG) then
 
@@ -264,7 +267,7 @@ subroutine qsGGW(dotest,maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,dop
     call GGW_excitation_density(nBas2,nC,nO,nR,nS,ERI_MO,XpY,rho)
 
     if(doSRG) then
-      call GGW_SRG_self_energy(nBas2,nC,nO,nV,nR,nS,eGW,Om,rho,EcGM,SigC,Z)
+      call GGW_SRG_self_energy(flow,nBas2,nC,nO,nV,nR,nS,eGW,Om,rho,EcGM,SigC,Z)
     else
       call GGW_self_energy(eta,nBas2,nC,nO,nV,nR,nS,eGW,Om,rho,EcGM,SigC,Z)
     end if
@@ -395,51 +398,7 @@ subroutine qsGGW(dotest,maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,dop
     write(*,*)'-------------------------------------------------------------------------------'
     write(*,*)
 
-!   Compute the BSE correlation energy via the adiabatic connection 
-
-!   if(doACFDT) then
-
-!     write(*,*) '------------------------------------------------------'
-!     write(*,*) 'Adiabatic connection version of BSE correlation energy'
-!     write(*,*) '------------------------------------------------------'
-!     write(*,*)
-
-!     if(doXBS) then
-
-!       write(*,*) '*** scaled screening version (XBS) ***'
-!       write(*,*)
-
-!     end if
-
-!     call GW_phACFDT(exchange_kernel,doXBS,.true.,TDA_W,TDA,dophBSE,singlet,triplet,eta,nBas,nC,nO,nV,nR,nS,ERI_MO,eGW,eGW,EcBSE)
-
-!     write(*,*)
-!     write(*,*)'-------------------------------------------------------------------------------'
-!     write(*,'(2X,A50,F20.10)') 'AC@BSE@qsGW correlation energy (singlet) =',EcBSE(1)
-!     write(*,'(2X,A50,F20.10)') 'AC@BSE@qsGW correlation energy (triplet) =',EcBSE(2)
-!     write(*,'(2X,A50,F20.10)') 'AC@BSE@qsGW correlation energy           =',EcBSE(1) + EcBSE(2)
-!     write(*,'(2X,A50,F20.10)') 'AC@BSE@qsGW total energy                 =',ENuc + EqsGW + EcBSE(1) + EcBSE(2)
-!     write(*,*)'-------------------------------------------------------------------------------'
-!     write(*,*)
-
-!   end if
-
   end if
-
-! if(doppBSE) then
-!     
-!   call GW_ppBSE(TDA_W,TDA,dBSE,dTDA,singlet,triplet,eta,nBas,nC,nO,nV,nR,nS,ERI_MO,dipole_int_MO,eHF,eGW,EcBSE)
-!   
-!   write(*,*)
-!   write(*,*)'-------------------------------------------------------------------------------'
-!   write(*,'(2X,A50,F20.10)') 'Tr@ppBSE@qsGW correlation energy (singlet) =',EcBSE(1)
-!   write(*,'(2X,A50,F20.10)') 'Tr@ppBSE@qsGW correlation energy (triplet) =',3d0*EcBSE(2)
-!   write(*,'(2X,A50,F20.10)') 'Tr@ppBSE@qsGW correlation energy =',EcBSE(1) + 3d0*EcBSE(2)
-!   write(*,'(2X,A50,F20.10)') 'Tr@ppBSE@qsGW total energy =',ENuc + EGHF + EcBSE(1) + 3d0*EcBSE(2)
-!   write(*,*)'-------------------------------------------------------------------------------'
-!   write(*,*)
-
-! end if
 
 ! Testing zone
 

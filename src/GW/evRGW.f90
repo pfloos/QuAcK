@@ -44,11 +44,11 @@ subroutine evRGW(dotest,maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,dop
 
 ! Local variables
 
-  logical                       :: linear_mixing
   logical                       :: dRPA = .true.
   integer                       :: ispin
   integer                       :: nSCF
   integer                       :: n_diis
+  double precision              :: flow
   double precision              :: rcond
   double precision              :: Conv
   double precision              :: EcRPA
@@ -85,17 +85,14 @@ subroutine evRGW(dotest,maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,dop
 
 ! SRG regularization
 
+  flow = 500d0
+
   if(doSRG) then
 
     write(*,*) '*** SRG regularized qsGW scheme ***'
     write(*,*)
 
   end if
-
-! Linear mixing
-
-  linear_mixing = .false.
-  alpha = 0.2d0
 
 ! Memory allocation
 
@@ -135,7 +132,7 @@ subroutine evRGW(dotest,maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,dop
     ! Compute correlation part of the self-energy 
 
     if(doSRG) then
-      call RGW_SRG_self_energy_diag(nBas,nOrb,nC,nO,nV,nR,nS,eGW,Om,rho,EcGM,SigC,Z)
+      call RGW_SRG_self_energy_diag(flow,nBas,nOrb,nC,nO,nV,nR,nS,eGW,Om,rho,EcGM,SigC,Z)
     else
       call RGW_self_energy_diag(eta,nBas,nOrb,nC,nO,nV,nR,nS,eGW,Om,rho,EcGM,SigC,Z)
     end if
@@ -166,20 +163,12 @@ subroutine evRGW(dotest,maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,dop
 
     call print_evRGW(nOrb,nO,nSCF,Conv,eHF,ENuc,ERHF,SigC,Z,eGW,EcRPA,EcGM)
 
-    ! Linear mixing or DIIS extrapolation
+    ! DIIS extrapolation
 
-    if(linear_mixing) then
- 
-      eGW(:) = alpha*eGW(:) + (1d0 - alpha)*eOld(:)
- 
-    else
+    if(max_diis > 1) then
 
       n_diis = min(n_diis+1,max_diis)
-      if(abs(rcond) > 1d-7) then
-        call DIIS_extrapolation(rcond,nOrb,nOrb,n_diis,error_diis,e_diis,eGW-eOld,eGW)
-      else
-        n_diis = 0
-      end if
+      call DIIS_extrapolation(rcond,nOrb,nOrb,n_diis,error_diis,e_diis,eGW-eOld,eGW)
 
     end if
 

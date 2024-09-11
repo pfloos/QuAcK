@@ -49,6 +49,7 @@ subroutine UG0W0(dotest,doACFDT,exchange_kernel,doXBS,dophBSE,TDA_W,TDA,dBSE,dTD
   logical                       :: dRPA
   integer                       :: is
   integer                       :: ispin
+  double precision              :: flow
   double precision              :: EcRPA
   double precision              :: EcGM(nspin)
   double precision              :: EcBSE(nspin)
@@ -87,6 +88,8 @@ subroutine UG0W0(dotest,doACFDT,exchange_kernel,doXBS,dophBSE,TDA_W,TDA,dBSE,dTD
   end if
 
 ! SRG regularization
+
+  flow = 500d0
 
   if(doSRG) then
 
@@ -130,7 +133,7 @@ subroutine UG0W0(dotest,doACFDT,exchange_kernel,doXBS,dophBSE,TDA_W,TDA,dBSE,dTD
 !------------------------------------------------!
 
   if(doSRG) then
-    call UGW_SRG_self_energy_diag(nBas,nC,nO,nV,nR,nSt,eHF,Om,rho,SigC,Z,EcGM)
+    call UGW_SRG_self_energy_diag(flow,nBas,nC,nO,nV,nR,nSt,eHF,Om,rho,SigC,Z,EcGM)
   else
     call UGW_self_energy_diag(eta,nBas,nC,nO,nV,nR,nSt,eHF,Om,rho,SigC,Z,EcGM)
   end if
@@ -186,19 +189,8 @@ subroutine UG0W0(dotest,doACFDT,exchange_kernel,doXBS,dophBSE,TDA_W,TDA,dBSE,dTD
 
   if(dophBSE) then
 
-    call UGW_phBSE(TDA_W,TDA,dBSE,dTDA,spin_conserved,spin_flip,eta,nBas,nC,nO,nV,nR,nS,S, &
+    call UGW_phBSE(exchange_kernel,TDA_W,TDA,dBSE,dTDA,spin_conserved,spin_flip,eta,nBas,nC,nO,nV,nR,nS,S, &
                    ERI_aaaa,ERI_aabb,ERI_bbbb,dipole_int_aa,dipole_int_bb,cHF,eHF,eGW,EcBSE)
-
-    if(exchange_kernel) then
- 
-      EcBSE(1) = 0.5d0*EcBSE(1)
-      EcBSE(2) = 0.5d0*EcBSE(2)
- 
-    else
- 
-      EcBSE(2) = 0.0d0
-
-    end if
 
     write(*,*)
     write(*,*)'-------------------------------------------------------------------------------'
@@ -212,18 +204,6 @@ subroutine UG0W0(dotest,doACFDT,exchange_kernel,doXBS,dophBSE,TDA_W,TDA,dBSE,dTD
 !   Compute the BSE correlation energy via the adiabatic connection 
 
     if(doACFDT) then
-
-      write(*,*) '------------------------------------------------------------'
-      write(*,*) 'Adiabatic connection version of BSE@UG0W0 correlation energy'
-      write(*,*) '------------------------------------------------------------'
-      write(*,*) 
-
-      if(doXBS) then 
-
-        write(*,*) '*** scaled screening version (XBS) ***'
-        write(*,*)
-
-      end if
 
       call UGW_phACFDT(exchange_kernel,doXBS,.true.,TDA_W,TDA,dophBSE,spin_conserved,spin_flip,eta, & 
                        nBas,nC,nO,nV,nR,nS,ERI_aaaa,ERI_aabb,ERI_bbbb,eHF,eGW,EcBSE)

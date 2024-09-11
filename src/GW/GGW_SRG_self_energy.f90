@@ -1,4 +1,4 @@
-subroutine GGW_SRG_self_energy(nOrb,nC,nO,nV,nR,nS,e,Om,rho,EcGM,SigC,Z)
+subroutine GGW_SRG_self_energy(flow,nOrb,nC,nO,nV,nR,nS,e,Om,rho,EcGM,SigC,Z)
 
 ! Compute correlation part of the self-energy
 
@@ -7,6 +7,7 @@ subroutine GGW_SRG_self_energy(nOrb,nC,nO,nV,nR,nS,e,Om,rho,EcGM,SigC,Z)
 
 ! Input variables
 
+  double precision,intent(in)   :: flow
   integer,intent(in)            :: nOrb
   integer,intent(in)            :: nC
   integer,intent(in)            :: nO
@@ -35,7 +36,7 @@ subroutine GGW_SRG_self_energy(nOrb,nC,nO,nV,nR,nS,e,Om,rho,EcGM,SigC,Z)
 ! SRG flow parameter !
 !--------------------!
 
-  s = 500d0
+  s = flow
 
 !--------------------!
 ! SRG-GW self-energy !

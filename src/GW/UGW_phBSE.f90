@@ -1,4 +1,4 @@
-subroutine UGW_phBSE(TDA_W,TDA,dBSE,dTDA,spin_conserved,spin_flip,eta,nBas,nC,nO,nV,nR,nS, &
+subroutine UGW_phBSE(exchange_kernel,TDA_W,TDA,dBSE,dTDA,spin_conserved,spin_flip,eta,nBas,nC,nO,nV,nR,nS, &
                      S,ERI_aaaa,ERI_aabb,ERI_bbbb,dipole_int_aa,dipole_int_bb,cW,eW,eGW,EcBSE)
 
 ! Compute the Bethe-Salpeter excitation energies
@@ -8,6 +8,7 @@ subroutine UGW_phBSE(TDA_W,TDA,dBSE,dTDA,spin_conserved,spin_flip,eta,nBas,nC,nO
 
 ! Input variables
 
+  logical,intent(in)            :: exchange_kernel
   logical,intent(in)            :: TDA_W
   logical,intent(in)            :: TDA
   logical,intent(in)            :: dBSE
@@ -159,6 +160,20 @@ subroutine UGW_phBSE(TDA_W,TDA,dBSE,dTDA,spin_conserved,spin_flip,eta,nBas,nC,nO
 
     deallocate(OmBSE_sf,XpY_BSE_sf,XmY_BSE_sf)
  
+  end if
+
+  
+! Scale properly correlation energy if exchange is included in interaction kernel
+
+  if(exchange_kernel) then
+
+    EcBSE(1) = 0.5d0*EcBSE(1)
+    EcBSE(2) = 0.5d0*EcBSE(2)
+
+  else
+
+    EcBSE(2) = 0.0d0
+
   end if
 
 end subroutine 
