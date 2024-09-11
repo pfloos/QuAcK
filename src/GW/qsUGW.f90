@@ -223,9 +223,9 @@ subroutine qsUGW(dotest,maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,dop
     !------------------------------------------------!
 
     if(doSRG) then
-      call UGW_SRG_self_energy(flow,nBas,nC,nO,nV,nR,nSt,eGW,Om,rho,SigC,Z,EcGM)
+      call UGW_SRG_self_energy(flow,nBas,nC,nO,nV,nR,nSt,eGW,Om,rho,EcGM,SigC,Z)
     else
-      call UGW_self_energy(eta,nBas,nC,nO,nV,nR,nSt,eGW,Om,rho,SigC,Z,EcGM)
+      call UGW_self_energy(eta,nBas,nC,nO,nV,nR,nSt,eGW,Om,rho,EcGM,SigC,Z)
     end if
 
 

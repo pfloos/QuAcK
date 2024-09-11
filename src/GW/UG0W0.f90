@@ -133,9 +133,9 @@ subroutine UG0W0(dotest,doACFDT,exchange_kernel,doXBS,dophBSE,TDA_W,TDA,dBSE,dTD
 !------------------------------------------------!
 
   if(doSRG) then
-    call UGW_SRG_self_energy_diag(flow,nBas,nC,nO,nV,nR,nSt,eHF,Om,rho,SigC,Z,EcGM)
+    call UGW_SRG_self_energy_diag(flow,nBas,nC,nO,nV,nR,nSt,eHF,Om,rho,EcGM,SigC,Z)
   else
-    call UGW_self_energy_diag(eta,nBas,nC,nO,nV,nR,nSt,eHF,Om,rho,SigC,Z,EcGM)
+    call UGW_self_energy_diag(eta,nBas,nC,nO,nV,nR,nSt,eHF,Om,rho,EcGM,SigC,Z)
   end if
 
 !-----------------------------------!

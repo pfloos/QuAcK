@@ -1,4 +1,4 @@
-subroutine UGW_self_energy_diag(eta,nBas,nC,nO,nV,nR,nSt,e,Om,rho,Sig,Z,EcGM)
+subroutine UGW_self_energy_diag(eta,nBas,nC,nO,nV,nR,nSt,e,Om,rho,EcGM,Sig,Z)
 
 ! Compute diagonal of the correlation part of the self-energy
 
