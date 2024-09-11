@@ -1,4 +1,4 @@
-subroutine ufRG0F02(dotest,nBas,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,eHF)
+subroutine ufRG0F02(dotest,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,eHF)
 
 ! Unfold G0F02
 
@@ -10,6 +10,7 @@ subroutine ufRG0F02(dotest,nBas,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,eHF)
   logical,intent(in)            :: dotest
 
   integer,intent(in)            :: nBas
+  integer,intent(in)            :: nOrb
   integer,intent(in)            :: nC
   integer,intent(in)            :: nO
   integer,intent(in)            :: nV
@@ -17,8 +18,8 @@ subroutine ufRG0F02(dotest,nBas,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,eHF)
   integer,intent(in)            :: nS
   double precision,intent(in)   :: ENuc
   double precision,intent(in)   :: ERHF
-  double precision,intent(in)   :: ERI(nBas,nBas,nBas,nBas)
-  double precision,intent(in)   :: eHF(nBas)
+  double precision,intent(in)   :: ERI(nOrb,nOrb,nOrb,nOrb)
+  double precision,intent(in)   :: eHF(nOrb)
 
 ! Local variables
 
@@ -103,7 +104,7 @@ subroutine ufRG0F02(dotest,nBas,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,eHF)
     ija = 0
     do i=nC+1,nO
       do j=nC+1,nO
-        do a=nO+1,nBas-nR
+        do a=nO+1,nOrb-nR
           ija = ija + 1
              
           H(1    ,1+ija) = (2d0*ERI(p,a,i,j) - ERI(p,a,j,i))
@@ -119,8 +120,8 @@ subroutine ufRG0F02(dotest,nBas,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,eHF)
  
     iab = 0
     do i=nC+1,nO
-      do a=nO+1,nBas-nR
-        do b=nO+1,nBas-nR
+      do a=nO+1,nOrb-nR
+        do b=nO+1,nOrb-nR
           iab = iab + 1   
  
           H(1          ,1+n2h1p+iab) = (2d0*ERI(p,i,a,b) - ERI(p,i,b,a))
@@ -137,13 +138,13 @@ subroutine ufRG0F02(dotest,nBas,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,eHF)
     ija = 0
     do i=nC+1,nO
       do j=nC+1,nO
-        do a=nO+1,nBas-nR
+        do a=nO+1,nOrb-nR
           ija = ija + 1
                
           klc = 0
           do k=nC+1,nO
             do l=nC+1,nO
-              do c=nO+1,nBas-nR
+              do c=nO+1,nOrb-nR
                 klc = klc + 1
                      
                 H(1+ija,1+klc) & 
@@ -163,14 +164,14 @@ subroutine ufRG0F02(dotest,nBas,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,eHF)
       
     iab = 0
     do i=nC+1,nO
-      do a=nO+1,nBas-nR
-        do b=nO+1,nBas-nR
+      do a=nO+1,nOrb-nR
+        do b=nO+1,nOrb-nR
           iab = iab + 1
                
           kcd = 0
           do k=nC+1,nO
-            do c=nO+1,nBas-nR
-              do d=nO+1,nBas-nR
+            do c=nO+1,nOrb-nR
+              do d=nO+1,nOrb-nR
                 kcd = kcd + 1
                    
                  H(1+n2h1p+iab,1+n2h1p+kcd) &
@@ -260,7 +261,7 @@ subroutine ufRG0F02(dotest,nBas,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,eHF)
           ija = 0
           do i=nC+1,nO
             do j=nC+1,nO
-              do a=nO+1,nBas-nR
+              do a=nO+1,nOrb-nR
                 ija = ija + 1
   
                 if(abs(Reigv(1+ija,s)) > cutoff2)               &
@@ -274,8 +275,8 @@ subroutine ufRG0F02(dotest,nBas,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,eHF)
            
           iab = 0
           do i=nC+1,nO
-            do a=nO+1,nBas-nR
-              do b=nO+1,nBas-nR
+            do a=nO+1,nOrb-nR
+              do b=nO+1,nOrb-nR
                 iab = iab + 1
  
                 if(abs(Reigv(1+n2h1p+iab,s)) > cutoff2)           &

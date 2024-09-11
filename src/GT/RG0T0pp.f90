@@ -1,5 +1,5 @@
 subroutine RG0T0pp(dotest,doACFDT,exchange_kernel,doXBS,dophBSE,TDA_T,TDA,dBSE,dTDA,doppBSE,singlet,triplet, & 
-                   linearize,eta,regularize,nOrb,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,dipole_int,eHF)
+                   linearize,eta,regularize,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,dipole_int,eHF)
 
 ! Perform one-shot calculation with a T-matrix self-energy (G0T0)
 
@@ -25,6 +25,7 @@ subroutine RG0T0pp(dotest,doACFDT,exchange_kernel,doXBS,dophBSE,TDA_T,TDA,dBSE,d
   double precision,intent(in)   :: eta
   logical,intent(in)            :: regularize
 
+  integer,intent(in)            :: nBas
   integer,intent(in)            :: nOrb
   integer,intent(in)            :: nC
   integer,intent(in)            :: nO
@@ -40,8 +41,9 @@ subroutine RG0T0pp(dotest,doACFDT,exchange_kernel,doXBS,dophBSE,TDA_T,TDA,dBSE,d
 ! Local variables
 
   logical                       :: print_T = .false.
+  double precision              :: lambda
 
-  integer                       :: ispin
+  integer                       :: isp_T
   integer                       :: iblock
   integer                       :: nOOs,nOOt
   integer                       :: nVVs,nVVt
@@ -79,18 +81,14 @@ subroutine RG0T0pp(dotest,doACFDT,exchange_kernel,doXBS,dophBSE,TDA_T,TDA,dBSE,d
   write(*,*)'*********************************'
   write(*,*)
 
+! Initialization
+
+  lambda = 1d0
 
 ! TDA for T
 
   if(TDA_T) then
     write(*,*) 'Tamm-Dancoff approximation activated for pp T-matrix!'
-    write(*,*)
-  end if
-
-! TDA 
-
-  if(TDA) then
-    write(*,*) 'Tamm-Dancoff approximation activated!'
     write(*,*)
   end if
 
@@ -119,7 +117,7 @@ subroutine RG0T0pp(dotest,doACFDT,exchange_kernel,doXBS,dophBSE,TDA_T,TDA,dBSE,d
 ! alpha-beta block
 !----------------------------------------------
 
-  ispin  = 1
+  isp_T  = 1
   !iblock = 1
   iblock = 3
 
@@ -127,11 +125,11 @@ subroutine RG0T0pp(dotest,doACFDT,exchange_kernel,doXBS,dophBSE,TDA_T,TDA,dBSE,d
 
   allocate(Bpp(nVVs,nOOs),Cpp(nVVs,nVVs),Dpp(nOOs,nOOs))
 
-  call ppLR_C(iblock,nOrb,nC,nO,nV,nR,nVVs,1d0,eHF,ERI,Cpp)
-  call ppLR_D(iblock,nOrb,nC,nO,nV,nR,nOOs,1d0,eHF,ERI,Dpp)
-  if(.not.TDA_T) call ppLR_B(iblock,nOrb,nC,nO,nV,nR,nOOs,nVVs,1d0,ERI,Bpp)
+  call ppLR_C(iblock,nOrb,nC,nO,nV,nR,nVVs,lambda,eHF,ERI,Cpp)
+  call ppLR_D(iblock,nOrb,nC,nO,nV,nR,nOOs,lambda,eHF,ERI,Dpp)
+  if(.not.TDA_T) call ppLR_B(iblock,nOrb,nC,nO,nV,nR,nOOs,nVVs,lambda,ERI,Bpp)
 
-  call ppLR(TDA_T,nOOs,nVVs,Bpp,Cpp,Dpp,Om1s,X1s,Y1s,Om2s,X2s,Y2s,EcRPA(ispin))
+  call ppLR(TDA_T,nOOs,nVVs,Bpp,Cpp,Dpp,Om1s,X1s,Y1s,Om2s,X2s,Y2s,EcRPA(isp_T))
   deallocate(Bpp,Cpp,Dpp)
   !print*, 'LAPACK:'
   !print*, Om2s
@@ -162,7 +160,7 @@ subroutine RG0T0pp(dotest,doACFDT,exchange_kernel,doXBS,dophBSE,TDA_T,TDA,dBSE,d
 ! alpha-alpha block
 !----------------------------------------------
 
-  ispin  = 2
+  isp_T  = 2
 ! iblock = 2
   iblock = 4
 
@@ -170,11 +168,11 @@ subroutine RG0T0pp(dotest,doACFDT,exchange_kernel,doXBS,dophBSE,TDA_T,TDA,dBSE,d
 
   allocate(Bpp(nVVt,nOOt),Cpp(nVVt,nVVt),Dpp(nOOt,nOOt))
 
-  call ppLR_C(iblock,nOrb,nC,nO,nV,nR,nVVt,1d0,eHF,ERI,Cpp)
-  call ppLR_D(iblock,nOrb,nC,nO,nV,nR,nOOt,1d0,eHF,ERI,Dpp)
-  if(.not.TDA_T) call ppLR_B(iblock,nOrb,nC,nO,nV,nR,nOOt,nVVt,1d0,ERI,Bpp)
+  call ppLR_C(iblock,nOrb,nC,nO,nV,nR,nVVt,lambda,eHF,ERI,Cpp)
+  call ppLR_D(iblock,nOrb,nC,nO,nV,nR,nOOt,lambda,eHF,ERI,Dpp)
+  if(.not.TDA_T) call ppLR_B(iblock,nOrb,nC,nO,nV,nR,nOOt,nVVt,lambda,ERI,Bpp)
 
-  call ppLR(TDA_T,nOOt,nVVt,Bpp,Cpp,Dpp,Om1t,X1t,Y1t,Om2t,X2t,Y2t,EcRPA(ispin))
+  call ppLR(TDA_T,nOOt,nVVt,Bpp,Cpp,Dpp,Om1t,X1t,Y1t,Om2t,X2t,Y2t,EcRPA(isp_T))
   deallocate(Bpp,Cpp,Dpp)
   !print*, 'LAPACK:'
   !print*, Om2t
@@ -259,31 +257,31 @@ subroutine RG0T0pp(dotest,doACFDT,exchange_kernel,doXBS,dophBSE,TDA_T,TDA,dBSE,d
 
 ! Compute the ppRPA correlation energy
 
-  ispin  = 1
+  isp_T  = 1
 ! iblock = 1
   iblock = 3
 
   allocate(Bpp(nVVs,nOOs),Cpp(nVVs,nVVs),Dpp(nOOs,nOOs))
 
-  call ppLR_C(iblock,nOrb,nC,nO,nV,nR,nVVs,1d0,eGT,ERI,Cpp)
-  call ppLR_D(iblock,nOrb,nC,nO,nV,nR,nOOs,1d0,eGT,ERI,Dpp)
-  if(.not.TDA_T) call ppLR_B(iblock,nOrb,nC,nO,nV,nR,nOOs,nVVs,1d0,ERI,Bpp)
+  call ppLR_C(iblock,nOrb,nC,nO,nV,nR,nVVs,lambda,eGT,ERI,Cpp)
+  call ppLR_D(iblock,nOrb,nC,nO,nV,nR,nOOs,lambda,eGT,ERI,Dpp)
+  if(.not.TDA_T) call ppLR_B(iblock,nOrb,nC,nO,nV,nR,nOOs,nVVs,lambda,ERI,Bpp)
 
-  call ppLR(TDA_T,nOOs,nVVs,Bpp,Cpp,Dpp,Om1s,X1s,Y1s,Om2s,X2s,Y2s,EcRPA(ispin))
+  call ppLR(TDA_T,nOOs,nVVs,Bpp,Cpp,Dpp,Om1s,X1s,Y1s,Om2s,X2s,Y2s,EcRPA(isp_T))
 
   deallocate(Bpp,Cpp,Dpp)
 
-  ispin  = 2
+  isp_T  = 2
 ! iblock = 2
   iblock = 4
 
   allocate(Bpp(nVVt,nOOt),Cpp(nVVt,nVVt),Dpp(nOOt,nOOt))
 
-  call ppLR_C(iblock,nOrb,nC,nO,nV,nR,nVVt,1d0,eGT,ERI,Cpp)
-  call ppLR_D(iblock,nOrb,nC,nO,nV,nR,nOOt,1d0,eGT,ERI,Dpp)
-  if(.not.TDA_T) call ppLR_B(iblock,nOrb,nC,nO,nV,nR,nOOt,nVVt,1d0,ERI,Bpp)
+  call ppLR_C(iblock,nOrb,nC,nO,nV,nR,nVVt,lambda,eGT,ERI,Cpp)
+  call ppLR_D(iblock,nOrb,nC,nO,nV,nR,nOOt,lambda,eGT,ERI,Dpp)
+  if(.not.TDA_T) call ppLR_B(iblock,nOrb,nC,nO,nV,nR,nOOt,nVVt,lambda,ERI,Bpp)
 
-  call ppLR(TDA_T,nOOt,nVVt,Bpp,Cpp,Dpp,Om1t,X1t,Y1t,Om2t,X2t,Y2t,EcRPA(ispin))
+  call ppLR(TDA_T,nOOt,nVVt,Bpp,Cpp,Dpp,Om1t,X1t,Y1t,Om2t,X2t,Y2t,EcRPA(isp_T))
 
   deallocate(Bpp,Cpp,Dpp)
 

@@ -1,5 +1,5 @@
 subroutine evRGTeh(dotest,maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,dophBSE,dophBSE2,TDA_T,TDA,dBSE,dTDA,doppBSE, & 
-                   singlet,triplet,linearize,eta,regularize,nBas,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,dipole_int,eHF)
+                   singlet,triplet,linearize,eta,regularize,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,dipole_int,eHF)
 
 ! Perform self-consistent eigenvalue-only ehGT calculation
 
@@ -32,14 +32,15 @@ subroutine evRGTeh(dotest,maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,d
   logical,intent(in)            :: regularize
 
   integer,intent(in)            :: nBas
+  integer,intent(in)            :: nOrb
   integer,intent(in)            :: nC
   integer,intent(in)            :: nO
   integer,intent(in)            :: nV
   integer,intent(in)            :: nR
   integer,intent(in)            :: nS
-  double precision,intent(in)   :: eHF(nBas)
-  double precision,intent(in)   :: ERI(nBas,nBas,nBas,nBas)
-  double precision,intent(in)   :: dipole_int(nBas,nBas,ncart)
+  double precision,intent(in)   :: eHF(nOrb)
+  double precision,intent(in)   :: ERI(nOrb,nOrb,nOrb,nOrb)
+  double precision,intent(in)   :: dipole_int(nOrb,nOrb,ncart)
 
 ! Local variables
 
@@ -98,8 +99,8 @@ subroutine evRGTeh(dotest,maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,d
 
 ! Memory allocation
 
-  allocate(Aph(nS,nS),Bph(nS,nS),eGT(nBas),eOld(nBas),Z(nBas),Sig(nBas),Om(nS),XpY(nS,nS),XmY(nS,nS), & 
-           rhoL(nBas,nBas,nS),rhoR(nBas,nBas,nS),error_diis(nBas,max_diis),e_diis(nBas,max_diis))
+  allocate(Aph(nS,nS),Bph(nS,nS),eGT(nOrb),eOld(nOrb),Z(nOrb),Sig(nOrb),Om(nS),XpY(nS,nS),XmY(nS,nS), & 
+           rhoL(nOrb,nOrb,nS),rhoR(nOrb,nOrb,nS),error_diis(nOrb,max_diis),e_diis(nOrb,max_diis))
 
 ! Initialization
 
@@ -122,8 +123,8 @@ subroutine evRGTeh(dotest,maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,d
 
    ! Compute screening
 
-    call phLR_A(ispin,dRPA,nBas,nC,nO,nV,nR,nS,1d0,eGT,ERI,Aph)
-    if(.not.TDA_T) call phLR_B(ispin,dRPA,nBas,nC,nO,nV,nR,nS,1d0,ERI,Bph)
+    call phLR_A(ispin,dRPA,nOrb,nC,nO,nV,nR,nS,1d0,eGT,ERI,Aph)
+    if(.not.TDA_T) call phLR_B(ispin,dRPA,nOrb,nC,nO,nV,nR,nS,1d0,ERI,Bph)
 
     call phLR(TDA_T,nS,Aph,Bph,EcRPA,Om,XpY,XmY)
 
@@ -131,13 +132,13 @@ subroutine evRGTeh(dotest,maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,d
 
    ! Compute spectral weights
 
-    call RGTeh_excitation_density(nBas,nC,nO,nR,nS,ERI,XpY,XmY,rhoL,rhoR)
+    call RGTeh_excitation_density(nOrb,nC,nO,nR,nS,ERI,XpY,XmY,rhoL,rhoR)
 
     ! Compute correlation part of the self-energy 
 
-    if(regularize) call GTeh_regularization(nBas,nC,nO,nV,nR,nS,eGT,Om,rhoL,rhoR)
+    if(regularize) call GTeh_regularization(nOrb,nC,nO,nV,nR,nS,eGT,Om,rhoL,rhoR)
 
-    call RGTeh_self_energy_diag(eta,nBas,nC,nO,nV,nR,nS,eGT,Om,rhoL,rhoR,EcGM,Sig,Z)
+    call RGTeh_self_energy_diag(eta,nOrb,nC,nO,nV,nR,nS,eGT,Om,rhoL,rhoR,EcGM,Sig,Z)
 
     ! Solve the quasi-particle equation
 
@@ -155,7 +156,7 @@ subroutine evRGTeh(dotest,maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,d
        write(*,*) ' *** Quasiparticle energies obtained by root search *** '
        write(*,*)
 
-       call RGTeh_QP_graph(eta,nBas,nC,nO,nV,nR,nS,eHF,Om,rhoL,rhoR,eOld,eOld,eGT,Z)
+       call RGTeh_QP_graph(eta,nOrb,nC,nO,nV,nR,nS,eHF,Om,rhoL,rhoR,eOld,eOld,eGT,Z)
 
     end if
 
@@ -165,7 +166,7 @@ subroutine evRGTeh(dotest,maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,d
 
     ! Print results
 
-    call print_evRGTeh(nBas,nO,nSCF,Conv,eHF,ENuc,ERHF,Sig,Z,eGT,EcRPA,EcGM)
+    call print_evRGTeh(nOrb,nO,nSCF,Conv,eHF,ENuc,ERHF,Sig,Z,eGT,EcRPA,EcGM)
 
     ! Linear mixing or DIIS extrapolation
 
@@ -177,7 +178,7 @@ subroutine evRGTeh(dotest,maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,d
 
       n_diis = min(n_diis+1,max_diis)
       if(abs(rcond) > 1d-7) then
-        call DIIS_extrapolation(rcond,nBas,nBas,n_diis,error_diis,e_diis,eGT-eOld,eGT)
+        call DIIS_extrapolation(rcond,nOrb,nOrb,n_diis,error_diis,e_diis,eGT-eOld,eGT)
       else
         n_diis = 0
       end if
@@ -219,7 +220,7 @@ subroutine evRGTeh(dotest,maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,d
 
 ! if(BSE) then
 
-!   call Bethe_Salpeter(BSE2,TDA_T,TDA,dBSE,dTDA,singlet,triplet,eta,nBas,nC,nO,nV,nR,nS,ERI,dipole_int,eGW,eGW,EcBSE)
+!   call Bethe_Salpeter(BSE2,TDA_T,TDA,dBSE,dTDA,singlet,triplet,eta,nOrb,nC,nO,nV,nR,nS,ERI,dipole_int,eGW,eGW,EcBSE)
 
 !   if(exchange_kernel) then
 
@@ -253,7 +254,7 @@ subroutine evRGTeh(dotest,maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,d
 
 !     end if
 
-!     call ACFDT(exchange_kernel,doXBS,.true.,TDA_W,TDA,BSE,singlet,triplet,eta,nBas,nC,nO,nV,nR,nS,ERI,eGW,eGW,EcBSE)
+!     call ACFDT(exchange_kernel,doXBS,.true.,TDA_W,TDA,BSE,singlet,triplet,eta,nOrb,nC,nO,nV,nR,nS,ERI,eGW,eGW,EcBSE)
 
 !     write(*,*)
 !     write(*,*)'-------------------------------------------------------------------------------'
@@ -270,7 +271,7 @@ subroutine evRGTeh(dotest,maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,d
 
 ! if(ppBSE) then
 
-!   call Bethe_Salpeter_pp(TDA_W,TDA,singlet,triplet,eta,nBas,nC,nO,nV,nR,nS,ERI,dipole_int,eHF,eGW,EcppBSE)
+!   call Bethe_Salpeter_pp(TDA_W,TDA,singlet,triplet,eta,nOrb,nC,nO,nV,nR,nS,ERI,dipole_int,eHF,eGW,EcppBSE)
 
 !   write(*,*)
 !   write(*,*)'-------------------------------------------------------------------------------'
@@ -281,20 +282,20 @@ subroutine evRGTeh(dotest,maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,d
 !   write(*,*)'-------------------------------------------------------------------------------'
 !   write(*,*)
 
-!   nBas2 = 2*nBas
+!   nOrb2 = 2*nOrb
 !   nO2   = 2*nO
 !   nV2   = 2*nV
 !   nC2   = 2*nC
 !   nR2   = 2*nR
 !   nS2   = nO2*nV2
 !
-!   allocate(seHF(nBas2),seGW(nBas2),sERI(nBas2,nBas2,nBas2,nBas2))
+!   allocate(seHF(nOrb2),seGW(nOrb2),sERI(nOrb2,nOrb2,nOrb2,nOrb2))
 !
-!   call spatial_to_spin_MO_energy(nBas,eHF,nBas2,seHF)
-!   call spatial_to_spin_MO_energy(nBas,eGW,nBas2,seGW)
-!   call spatial_to_spin_ERI(nBas,ERI,nBas2,sERI)
+!   call spatial_to_spin_MO_energy(nOrb,eHF,nOrb2,seHF)
+!   call spatial_to_spin_MO_energy(nOrb,eGW,nOrb2,seGW)
+!   call spatial_to_spin_ERI(nOrb,ERI,nOrb2,sERI)
 !
-!   call Bethe_Salpeter_pp_so(TDA_W,TDA,singlet,triplet,eta,nBas2,nC2,nO2,nV2,nR2,nS2,sERI,dipole_int,seHF,seGW,EcppBSE)
+!   call Bethe_Salpeter_pp_so(TDA_W,TDA,singlet,triplet,eta,nOrb2,nC2,nO2,nV2,nR2,nS2,sERI,dipole_int,seHF,seGW,EcppBSE)
 
 ! end if
 
