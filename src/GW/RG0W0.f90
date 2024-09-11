@@ -85,11 +85,11 @@ subroutine RG0W0(dotest,doACFDT,exchange_kernel,doXBS,dophBSE,dophBSE2,TDA_W,TDA
 
 ! SRG regularization
 
-  flow = 500d0
+  flow = 10d0
 
   if(doSRG) then
 
-    write(*,*) '*** SRG regularized qsGW scheme ***'
+    write(*,*) '*** SRG regularized G0W0 scheme ***'
     write(*,*)
 
   end if

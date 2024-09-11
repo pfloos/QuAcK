@@ -93,7 +93,7 @@ subroutine UG0W0(dotest,doACFDT,exchange_kernel,doXBS,dophBSE,TDA_W,TDA,dBSE,dTD
 
   if(doSRG) then
 
-    write(*,*) '*** SRG regularized qsGW scheme ***'
+    write(*,*) '*** SRG regularized G0W0 scheme ***'
     write(*,*)
 
   end if

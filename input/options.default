@@ -5,7 +5,7 @@
 # CC: maxSCF thresh   DIIS
       64     0.00001  5
 # LR: TDA singlet triplet
-        F   T       T
+      F   T       T
 # GF: maxSCF thresh  DIIS lin eta renorm reg
       256    0.00001 5    F   0.0 0      F
 # GW: maxSCF thresh  DIIS lin eta TDA_W reg

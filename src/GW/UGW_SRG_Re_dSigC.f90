@@ -1,4 +1,4 @@
-double precision function UGW_SRG_Re_dSigC(p,w,s,eta,nBas,nC,nO,nV,nR,nS,e,Om,rho)
+double precision function UGW_SRG_Re_dSigC(p,w,s,nBas,nC,nO,nV,nR,nS,e,Om,rho)
 
 ! Compute the derivative of the correlation part of the self-energy
 
@@ -10,7 +10,6 @@ double precision function UGW_SRG_Re_dSigC(p,w,s,eta,nBas,nC,nO,nV,nR,nS,e,Om,rh
   integer,intent(in)            :: p
   double precision,intent(in)   :: w
   double precision,intent(in)   :: s
-  double precision,intent(in)   :: eta
   integer,intent(in)            :: nBas
   integer,intent(in)            :: nC
   integer,intent(in)            :: nO

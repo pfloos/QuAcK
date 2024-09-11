@@ -89,7 +89,7 @@ subroutine evRGW(dotest,maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,dop
 
   if(doSRG) then
 
-    write(*,*) '*** SRG regularized qsGW scheme ***'
+    write(*,*) '*** SRG regularized evGW scheme ***'
     write(*,*)
 
   end if
