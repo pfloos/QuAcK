@@ -29,7 +29,7 @@ subroutine RGW_excitation_density(nOrb,nC,nO,nR,nS,ERI,XpY,rho)
 
     !$OMP PARALLEL DEFAULT(NONE)             &
     !$OMP PRIVATE(p, q, j, b, jb)            &
-    !$OMP SHARED(nOrb, nC, nO, nR, ERI, tmp) &
+    !$OMP SHARED(nOrb, nC, nO, nR, ERI, tmp)
     !$OMP DO COLLAPSE(2)
     do p = 1, nOrb
       do q = 1, nOrb
@@ -43,7 +43,7 @@ subroutine RGW_excitation_density(nOrb,nC,nO,nR,nS,ERI,XpY,rho)
       enddo
     enddo
     !$OMP END DO
-    !$OMP END COLLAPSE
+    !$OMP END PARALLEL
 
     call dgemm("N", "T", nOrb*nOrb, nS, nS, 1.d0,   &
                tmp(1,1,1), nOrb*nOrb, XpY(1,1), nS, &
