@@ -110,7 +110,7 @@ subroutine RGW_SRG_self_energy_diag(flow,nBas,nOrb,nC,nO,nV,nR,nS,e,Om,rho,EcGM,
      do a=nO+1,nOrb-nR
         do m=1,nS
            Dpam = e(p) - e(a) - Om(m)
-           Z(p) = Z(p)  - 2d0*rho(p,a,m)**2*(1d0-exp(-2d0*s*Dpam*Dpam))/Dpam**2
+           Z(p) = Z(p) - 2d0*rho(p,a,m)**2*(1d0-exp(-2d0*s*Dpam*Dpam))/Dpam**2
         end do
      end do
   end do

@@ -151,7 +151,7 @@ subroutine evRGW(dotest,maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,dop
       write(*,*) ' *** Quasiparticle energies obtained by root search *** '
       write(*,*)
   
-      call RGW_QP_graph(eta,nOrb,nC,nO,nV,nR,nS,eHF,Om,rho,eOld,eOld,eGW,Z)
+      call RGW_QP_graph(doSRG,eta,flow,nOrb,nC,nO,nV,nR,nS,eHF,Om,rho,eOld,eOld,eGW,Z)
  
     end if
 

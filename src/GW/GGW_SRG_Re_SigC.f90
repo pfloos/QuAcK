@@ -1,4 +1,4 @@
-double precision function RGW_SRG_ReSigC(p,w,s,nBas,nC,nO,nV,nR,nS,e,Om,rho)
+double precision function GGW_SRG_Re_SigC(p,w,s,nBas,nC,nO,nV,nR,nS,e,Om,rho)
 
 ! Compute diagonal of the correlation part of the self-energy
 
@@ -27,15 +27,15 @@ double precision function RGW_SRG_ReSigC(p,w,s,nBas,nC,nO,nV,nR,nS,e,Om,rho)
 
 ! Initialize 
 
-  RGW_SRG_ReSigC = 0d0
+  GGW_SRG_Re_SigC = 0d0
 
 ! Occupied part of the correlation self-energy
 
   do i=nC+1,nO
     do m=1,nS
       Dpim = w - e(i) + Om(m)
-      RGW_SRG_ReSigC = RGW_SRG_ReSigC &
-                     + 2d0*rho(p,i,m)**2*(1d0-exp(-2d0*s*Dpim*Dpim))/Dpim
+      GGW_SRG_Re_SigC = GGW_SRG_Re_SigC &
+                      + rho(p,i,m)**2*(1d0-exp(-2d0*s*Dpim*Dpim))/Dpim
     end do
   end do
 
@@ -44,8 +44,8 @@ double precision function RGW_SRG_ReSigC(p,w,s,nBas,nC,nO,nV,nR,nS,e,Om,rho)
   do a=nO+1,nBas-nR
     do m=1,nS
       Dpam = w - e(a) - Om(m)
-      RGW_SRG_ReSigC = RGW_SRG_ReSigC & 
-                     + 2d0*rho(p,a,m)**2*(1d0-exp(-2d0*s*Dpam*Dpam))/Dpam
+      GGW_SRG_Re_SigC = GGW_SRG_Re_SigC & 
+                      + rho(p,a,m)**2*(1d0-exp(-2d0*s*Dpam*Dpam))/Dpam
     end do
   end do
 

@@ -1,6 +1,6 @@
-double precision function GGW_SigC(p,w,eta,nBas,nC,nO,nV,nR,nS,e,Om,rho)
+double precision function GGW_Re_dSigC(p,w,eta,nBas,nC,nO,nV,nR,nS,e,Om,rho)
 
-! Compute diagonal of the correlation part of the self-energy
+! Compute the derivative of the correlation part of the self-energy
 
   implicit none
   include 'parameters.h'
@@ -27,7 +27,7 @@ double precision function GGW_SigC(p,w,eta,nBas,nC,nO,nV,nR,nS,e,Om,rho)
 
 ! Initialize 
 
-  GGW_SigC = 0d0
+  GGW_Re_dSigC = 0d0
 
 ! Occupied part of the correlation self-energy
 
@@ -35,7 +35,7 @@ double precision function GGW_SigC(p,w,eta,nBas,nC,nO,nV,nR,nS,e,Om,rho)
     do m=1,nS
       eps = w - e(i) + Om(m)
       num = rho(p,i,m)**2
-      GGW_SigC = GGW_SigC + num*eps/(eps**2 + eta**2)
+      GGW_Re_dSigC = GGW_Re_dSigC - num*(eps**2 - eta**2)/(eps**2 + eta**2)**2
     end do
   end do
 
@@ -45,7 +45,7 @@ double precision function GGW_SigC(p,w,eta,nBas,nC,nO,nV,nR,nS,e,Om,rho)
     do m=1,nS
       eps = w - e(a) - Om(m)
       num = rho(p,a,m)**2
-      GGW_SigC = GGW_SigC + num*eps/(eps**2 + eta**2)
+      GGW_Re_dSigC = GGW_Re_dSigC - num*(eps**2 - eta**2)/(eps**2 + eta**2)**2
     end do
   end do
 
