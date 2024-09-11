@@ -57,7 +57,7 @@ subroutine UGW_phBSE(TDA_W,TDA,dBSE,dTDA,spin_conserved,spin_flip,eta,nBas,nC,nO
 
   double precision,intent(out)  :: EcBSE(nspin)
 
-  ! Memory allocation
+! Memory allocation
 
   nS_aa = nS(1)
   nS_bb = nS(2)
@@ -68,6 +68,15 @@ subroutine UGW_phBSE(TDA_W,TDA,dBSE,dTDA,spin_conserved,spin_flip,eta,nBas,nC,nO
   nS_sf = nS_ab + nS_ba
   
   allocate(OmRPA(nS_sc),XpY_RPA(nS_sc,nS_sc),XmY_RPA(nS_sc,nS_sc),rho_RPA(nBas,nBas,nS_sc,nspin))
+
+!-----!
+! TDA !
+!-----!
+
+  if(TDA) then
+    write(*,*) 'Tamm-Dancoff approximation activated in phBSE!'
+    write(*,*)
+  end if
 
 !--------------------------!
 ! Spin-conserved screening !

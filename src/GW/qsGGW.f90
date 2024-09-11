@@ -1,5 +1,5 @@
 subroutine qsGGW(dotest,maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,dophBSE,dophBSE2,TDA_W,TDA,dBSE,dTDA,doppBSE, & 
-                 eta,regularize,nNuc,ZNuc,rNuc,ENuc,nBas,nBas2,nC,nO,nV,nR,nS,EGHF,Ov,Or,T,V,Hc,ERI_AO,  & 
+                 eta,doSRG,nNuc,ZNuc,rNuc,ENuc,nBas,nBas2,nC,nO,nV,nR,nS,EGHF,Ov,Or,T,V,Hc,ERI_AO,  & 
                  ERI_MO,dipole_int_AO,dipole_int_MO,PHF,cHF,eHF)
 
 ! Generalized version of quasiparticle self-consistent GW 
@@ -25,7 +25,7 @@ subroutine qsGGW(dotest,maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,dop
   logical,intent(in)            :: dTDA
   logical,intent(in)            :: doppBSE
   double precision,intent(in)   :: eta
-  logical,intent(in)            :: regularize
+  logical,intent(in)            :: doSRG
 
   integer,intent(in)            :: nNuc
   double precision,intent(in)   :: ZNuc(nNuc)
@@ -130,11 +130,13 @@ subroutine qsGGW(dotest,maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,dop
     write(*,*)
   end if
 
-! TDA 
+! SRG regularization
 
-  if(TDA) then 
-    write(*,*) 'Tamm-Dancoff approximation activated!'
+  if(doSRG) then
+
+    write(*,*) '*** SRG regularized qsGW scheme ***'
     write(*,*)
+
   end if
 
 ! Memory allocation
@@ -261,9 +263,11 @@ subroutine qsGGW(dotest,maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,dop
 
     call GGW_excitation_density(nBas2,nC,nO,nR,nS,ERI_MO,XpY,rho)
 
-    if(regularize) call GW_regularization(nBas2,nC,nO,nV,nR,nS,eGW,Om,rho)
-
-    call GGW_self_energy(eta,nBas2,nC,nO,nV,nR,nS,eGW,Om,rho,EcGM,SigC,Z)
+    if(doSRG) then
+      call GGW_SRG_self_energy(nBas2,nC,nO,nV,nR,nS,eGW,Om,rho,EcGM,SigC,Z)
+    else
+      call GGW_self_energy(eta,nBas2,nC,nO,nV,nR,nS,eGW,Om,rho,EcGM,SigC,Z)
+    end if
 
 !   Make correlation self-energy Hermitian and transform it back to AO basis
    

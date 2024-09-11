@@ -1,5 +1,5 @@
-subroutine GGW(dotest,doG0W0,doevGW,doqsGW,maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,dophBSE,dophBSE2,doppBSE,  & 
-               TDA_W,TDA,dBSE,dTDA,linearize,eta,regularize,nNuc,ZNuc,rNuc,ENuc,nBas,nBas2,nC,nO,nV,nR,nS,EGHF,S,X,T,V,Hc, & 
+subroutine GGW(dotest,doG0W0,doevGW,doqsGW,maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,dophBSE,dophBSE2,doppBSE, & 
+               TDA_W,TDA,dBSE,dTDA,linearize,eta,doSRG,nNuc,ZNuc,rNuc,ENuc,nBas,nBas2,nC,nO,nV,nR,nS,EGHF,S,X,T,V,Hc,     & 
                ERI_AO,ERI,dipole_int_AO,dipole_int,PHF,cHF,eHF)
 
 ! GW module
@@ -30,7 +30,7 @@ subroutine GGW(dotest,doG0W0,doevGW,doqsGW,maxSCF,thresh,max_diis,doACFDT,exchan
   logical,intent(in)            :: doppBSE
   logical,intent(in)            :: linearize
   double precision,intent(in)   :: eta
-  logical,intent(in)            :: regularize
+  logical,intent(in)            :: doSRG
 
   integer,intent(in)            :: nNuc
   double precision,intent(in)   :: ZNuc(nNuc)
@@ -71,7 +71,7 @@ subroutine GGW(dotest,doG0W0,doevGW,doqsGW,maxSCF,thresh,max_diis,doACFDT,exchan
     
     call wall_time(start_GW)
     call GG0W0(dotest,doACFDT,exchange_kernel,doXBS,dophBSE,dophBSE2,TDA_W,TDA,dBSE,dTDA,doppBSE, &
-              linearize,eta,regularize,nBas2,nC,nO,nV,nR,nS,ENuc,EGHF,ERI,dipole_int,eHF)
+              linearize,eta,doSRG,nBas2,nC,nO,nV,nR,nS,ENuc,EGHF,ERI,dipole_int,eHF)
     call wall_time(end_GW)
   
     t_GW = end_GW - start_GW
@@ -88,7 +88,7 @@ subroutine GGW(dotest,doG0W0,doevGW,doqsGW,maxSCF,thresh,max_diis,doACFDT,exchan
 
     call wall_time(start_GW)
     call evGGW(dotest,maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,dophBSE,dophBSE2,TDA_W,TDA,dBSE,dTDA,doppBSE, &
-               linearize,eta,regularize,nBas2,nC,nO,nV,nR,nS,ENuc,EGHF,ERI,dipole_int,eHF)
+               linearize,eta,doSRG,nBas2,nC,nO,nV,nR,nS,ENuc,EGHF,ERI,dipole_int,eHF)
     call wall_time(end_GW)
 
     t_GW = end_GW - start_GW
@@ -105,7 +105,7 @@ subroutine GGW(dotest,doG0W0,doevGW,doqsGW,maxSCF,thresh,max_diis,doACFDT,exchan
 
     call wall_time(start_GW)
     call qsGGW(dotest,maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,dophBSE,dophBSE2,TDA_W,TDA,dBSE,dTDA,doppBSE, & 
-               eta,regularize,nNuc,ZNuc,rNuc,ENuc,nBas,nBas2,nC,nO,nV,nR,nS,EGHF,S,X,T,V,Hc,ERI_AO,ERI,                  & 
+               eta,doSRG,nNuc,ZNuc,rNuc,ENuc,nBas,nBas2,nC,nO,nV,nR,nS,EGHF,S,X,T,V,Hc,ERI_AO,ERI,                       & 
                dipole_int_AO,dipole_int,PHF,cHF,eHF)
     call wall_time(end_GW)
 

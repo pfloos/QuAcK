@@ -1,5 +1,5 @@
 subroutine evGGW(dotest,maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,dophBSE,dophBSE2,TDA_W,TDA,dBSE,dTDA,doppBSE, & 
-                 linearize,eta,regularize,nBas,nC,nO,nV,nR,nS,ENuc,EGHF,ERI,dipole_int,eHF)
+                 linearize,eta,doSRG,nBas,nC,nO,nV,nR,nS,ENuc,EGHF,ERI,dipole_int,eHF)
 
 ! Perform self-consistent eigenvalue-only GW calculation
 
@@ -27,7 +27,7 @@ subroutine evGGW(dotest,maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,dop
   logical,intent(in)            :: doppBSE
   logical,intent(in)            :: linearize
   double precision,intent(in)   :: eta
-  logical,intent(in)            :: regularize
+  logical,intent(in)            :: doSRG
 
   integer,intent(in)            :: nBas
   integer,intent(in)            :: nC
@@ -79,11 +79,13 @@ subroutine evGGW(dotest,maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,dop
     write(*,*)
   end if
 
-! TDA 
+! SRG regularization
 
-  if(TDA) then 
-    write(*,*) 'Tamm-Dancoff approximation activated!'
+  if(doSRG) then
+
+    write(*,*) '*** SRG regularized qsGW scheme ***'
     write(*,*)
+
   end if
 
 ! Linear mixing
@@ -127,9 +129,11 @@ subroutine evGGW(dotest,maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,dop
 
     ! Compute correlation part of the self-energy 
 
-    if(regularize) call GW_regularization(nBas,nC,nO,nV,nR,nS,eGW,Om,rho)
-
-    call GGW_self_energy_diag(eta,nBas,nC,nO,nV,nR,nS,eGW,Om,rho,EcGM,SigC,Z)
+    if(doSRG) then
+      call GGW_SRG_self_energy_diag(nBas,nC,nO,nV,nR,nS,eGW,Om,rho,EcGM,SigC,Z)
+    else
+      call GGW_self_energy_diag(eta,nBas,nC,nO,nV,nR,nS,eGW,Om,rho,EcGM,SigC,Z)
+    end if
 
     ! Solve the quasi-particle equation
 

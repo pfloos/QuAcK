@@ -86,11 +86,13 @@ subroutine UG0W0(dotest,doACFDT,exchange_kernel,doXBS,dophBSE,TDA_W,TDA,dBSE,dTD
     write(*,*)
   end if
 
-! TDA 
+! SRG regularization
 
-  if(TDA) then 
-    write(*,*) 'Tamm-Dancoff approximation activated!'
+  if(doSRG) then
+
+    write(*,*) '*** SRG regularized qsGW scheme ***'
     write(*,*)
+
   end if
 
 ! Memory allocation

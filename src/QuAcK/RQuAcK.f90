@@ -1,6 +1,6 @@
 subroutine RQuAcK(dotest,doRHF,doROHF,dostab,dosearch,doMP2,doMP3,doCCD,dopCCD,doDCD,doCCSD,doCCSDT,               &   
                   dodrCCD,dorCCD,docrCCD,dolCCD,doCIS,doCIS_D,doCID,doCISD,doFCI,dophRPA,dophRPAx,docrRPA,doppRPA, & 
-                  doG0F2,doevGF2,doqsGF2,doufG0F02,doG0F3,doevGF3,doG0W0,doevGW,doqsGW,doufG0W0,doufGW,doSRGqsGW,  &
+                  doG0F2,doevGF2,doqsGF2,doufG0F02,doG0F3,doevGF3,doG0W0,doevGW,doqsGW,doufG0W0,doufGW,            &
                   doG0T0pp,doevGTpp,doqsGTpp,doufG0T0pp,doG0T0eh,doevGTeh,doqsGTeh,                                & 
                   nNuc,nBas,nOrb,nC,nO,nV,nR,ENuc,ZNuc,rNuc,                                                       &
                   S,T,V,Hc,X,dipole_int_AO,ERI_AO,maxSCF_HF,max_diis_HF,thresh_HF,level_shift,                     &
@@ -25,7 +25,7 @@ subroutine RQuAcK(dotest,doRHF,doROHF,dostab,dosearch,doMP2,doMP3,doCCD,dopCCD,d
   logical,intent(in)            :: doCIS,doCIS_D,doCID,doCISD,doFCI
   logical,intent(in)            :: dophRPA,dophRPAx,docrRPA,doppRPA
   logical,intent(in)            :: doG0F2,doevGF2,doqsGF2,doufG0F02,doG0F3,doevGF3
-  logical,intent(in)            :: doG0W0,doevGW,doqsGW,doufG0W0,doufGW,doSRGqsGW
+  logical,intent(in)            :: doG0W0,doevGW,doqsGW,doufG0W0,doufGW
   logical,intent(in)            :: doG0T0pp,doevGTpp,doqsGTpp,doufG0T0pp
   logical,intent(in)            :: doG0T0eh,doevGTeh,doqsGTeh
 
@@ -309,12 +309,12 @@ subroutine RQuAcK(dotest,doRHF,doROHF,dostab,dosearch,doMP2,doMP3,doCCD,dopCCD,d
 ! GW module !
 !-----------!
 
-  doGW = doG0W0 .or. doevGW .or. doqsGW .or. doufG0W0 .or. doufGW .or. doSRGqsGW
+  doGW = doG0W0 .or. doevGW .or. doqsGW .or. doufG0W0 .or. doufGW 
 
   if(doGW) then
     
     call wall_time(start_GW)
-    call RGW(dotest,doG0W0,doevGW,doqsGW,doufG0W0,doufGW,doSRGqsGW,maxSCF_GW,thresh_GW,max_diis_GW,      &
+    call RGW(dotest,doG0W0,doevGW,doqsGW,doufG0W0,doufGW,maxSCF_GW,thresh_GW,max_diis_GW,                &
              doACFDT,exchange_kernel,doXBS,dophBSE,dophBSE2,doppBSE,TDA_W,TDA,dBSE,dTDA,singlet,triplet, &
              lin_GW,eta_GW,reg_GW,nNuc,ZNuc,rNuc,ENuc,nBas,nOrb,nC,nO,nV,nR,nS,ERHF,S,X,T,               &
              V,Hc,ERI_AO,ERI_MO,dipole_int_AO,dipole_int_MO,PHF,cHF,eHF)

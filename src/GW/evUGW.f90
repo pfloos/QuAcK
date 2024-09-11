@@ -90,11 +90,13 @@ subroutine evUGW(dotest,maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,BSE
     write(*,*)
   end if
 
-! TDA 
+! SRG regularization
 
-  if(TDA) then 
-    write(*,*) 'Tamm-Dancoff approximation activated!'
+  if(doSRG) then
+
+    write(*,*) '*** SRG regularized qsGW scheme ***'
     write(*,*)
+
   end if
 
 ! Initialization

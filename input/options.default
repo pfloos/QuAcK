@@ -4,7 +4,7 @@
       F
 # CC: maxSCF thresh   DIIS
       64     0.00001  5
-# spin: TDA singlet triplet
+# LR: TDA singlet triplet
         F   T       T
 # GF: maxSCF thresh  DIIS lin eta renorm reg
       256    0.00001 5    F   0.0 0      F

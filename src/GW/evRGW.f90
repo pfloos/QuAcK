@@ -83,6 +83,15 @@ subroutine evRGW(dotest,maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,dop
     write(*,*)
   end if
 
+! SRG regularization
+
+  if(doSRG) then
+
+    write(*,*) '*** SRG regularized qsGW scheme ***'
+    write(*,*)
+
+  end if
+
 ! Linear mixing
 
   linear_mixing = .false.
