@@ -1,5 +1,5 @@
 subroutine evRGF2(dotest,dophBSE,doppBSE,TDA,dBSE,dTDA,maxSCF,thresh,max_diis,singlet,triplet, &
-                 linearize,eta,regularize,nBas,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,dipole_int,eHF)
+                 linearize,eta,regularize,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,dipole_int,eHF)
 
 ! Perform eigenvalue self-consistent second-order Green function calculation
 
@@ -25,6 +25,7 @@ subroutine evRGF2(dotest,dophBSE,doppBSE,TDA,dBSE,dTDA,maxSCF,thresh,max_diis,si
   logical,intent(in)            :: regularize
 
   integer,intent(in)            :: nBas
+  integer,intent(in)            :: nOrb
   integer,intent(in)            :: nO
   integer,intent(in)            :: nC
   integer,intent(in)            :: nV
@@ -32,9 +33,9 @@ subroutine evRGF2(dotest,dophBSE,doppBSE,TDA,dBSE,dTDA,maxSCF,thresh,max_diis,si
   integer,intent(in)            :: nS
   double precision,intent(in)   :: ENuc
   double precision,intent(in)   :: ERHF
-  double precision,intent(in)   :: eHF(nBas)
-  double precision,intent(in)   :: ERI(nBas,nBas,nBas,nBas)
-  double precision,intent(in)   :: dipole_int(nBas,nBas,ncart)
+  double precision,intent(in)   :: eHF(nOrb)
+  double precision,intent(in)   :: ERI(nOrb,nOrb,nOrb,nOrb)
+  double precision,intent(in)   :: dipole_int(nOrb,nOrb,ncart)
 
 ! Local variables
 
@@ -62,7 +63,7 @@ subroutine evRGF2(dotest,dophBSE,doppBSE,TDA,dBSE,dTDA,maxSCF,thresh,max_diis,si
 
 ! Memory allocation
 
-  allocate(SigC(nBas), Z(nBas), eGF(nBas), eOld(nBas), error_diis(nBas,max_diis), e_diis(nBas,max_diis))
+  allocate(SigC(nOrb), Z(nOrb), eGF(nOrb), eOld(nOrb), error_diis(nOrb,max_diis), e_diis(nOrb,max_diis))
 
 ! Initialization
 
@@ -85,11 +86,11 @@ subroutine evRGF2(dotest,dophBSE,doppBSE,TDA,dBSE,dTDA,maxSCF,thresh,max_diis,si
 
     if(regularize) then 
 
-      call RGF2_reg_self_energy_diag(eta,nBas,nC,nO,nV,nR,eGF,ERI,SigC,Z)
+      call RGF2_reg_self_energy_diag(eta,nOrb,nC,nO,nV,nR,eGF,ERI,SigC,Z)
 
     else
 
-      call RGF2_self_energy_diag(eta,nBas,nC,nO,nV,nR,eGF,ERI,SigC,Z)
+      call RGF2_self_energy_diag(eta,nOrb,nC,nO,nV,nR,eGF,ERI,SigC,Z)
 
     end if
 
@@ -102,7 +103,7 @@ subroutine evRGF2(dotest,dophBSE,doppBSE,TDA,dBSE,dTDA,maxSCF,thresh,max_diis,si
       write(*,*) ' *** Quasiparticle energies obtained by root search *** '
       write(*,*)
  
-      call RGF2_QP_graph(eta,nBas,nC,nO,nV,nR,eHF,ERI,eOld,eOld,eGF,Z)
+      call RGF2_QP_graph(eta,nOrb,nC,nO,nV,nR,eHF,ERI,eOld,eOld,eGF,Z)
  
     end if
 
@@ -110,13 +111,13 @@ subroutine evRGF2(dotest,dophBSE,doppBSE,TDA,dBSE,dTDA,maxSCF,thresh,max_diis,si
 
     ! Print results
 
-    call RMP2(.false.,regularize,nBas,nC,nO,nV,nR,ERI,ENuc,ERHF,eGF,Ec)
-    call print_evRGF2(nBas,nO,nSCF,Conv,eHF,SigC,Z,eGF,ENuc,ERHF,Ec)
+    call RMP2(.false.,regularize,nOrb,nC,nO,nV,nR,ERI,ENuc,ERHF,eGF,Ec)
+    call print_evRGF2(nOrb,nO,nSCF,Conv,eHF,SigC,Z,eGF,ENuc,ERHF,Ec)
 
     ! DIIS extrapolation
 
     n_diis = min(n_diis+1,max_diis)
-    call DIIS_extrapolation(rcond,nBas,nBas,n_diis,error_diis,e_diis,eGF-eOld,eGF)
+    call DIIS_extrapolation(rcond,nOrb,nOrb,n_diis,error_diis,e_diis,eGF-eOld,eGF)
 
     if(abs(rcond) < 1d-15) n_diis = 0
 
@@ -149,7 +150,7 @@ subroutine evRGF2(dotest,dophBSE,doppBSE,TDA,dBSE,dTDA,maxSCF,thresh,max_diis,si
 
   if(dophBSE) then 
   
-    call RGF2_phBSE(TDA,dBSE,dTDA,singlet,triplet,eta,nBas,nC,nO,nV,nR,nS,ERI,dipole_int,eGF,EcBSE)
+    call RGF2_phBSE(TDA,dBSE,dTDA,singlet,triplet,eta,nOrb,nC,nO,nV,nR,nS,ERI,dipole_int,eGF,EcBSE)
 
     write(*,*)
     write(*,*)'-------------------------------------------------------------------------------'
@@ -166,7 +167,7 @@ subroutine evRGF2(dotest,dophBSE,doppBSE,TDA,dBSE,dTDA,maxSCF,thresh,max_diis,si
 
   if(doppBSE) then
 
-    call RGF2_ppBSE(TDA,dBSE,dTDA,singlet,triplet,eta,nBas,nC,nO,nV,nR,ERI,dipole_int,eGF,EcBSE)
+    call RGF2_ppBSE(TDA,dBSE,dTDA,singlet,triplet,eta,nOrb,nC,nO,nV,nR,ERI,dipole_int,eGF,EcBSE)
 
     write(*,*)
     write(*,*)'-------------------------------------------------------------------------------'

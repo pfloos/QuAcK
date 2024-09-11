@@ -1,5 +1,5 @@
 subroutine RG0T0eh(dotest,doACFDT,exchange_kernel,doXBS,dophBSE,dophBSE2,TDA_T,TDA,dBSE,dTDA,doppBSE, & 
-                   singlet,triplet,linearize,eta,regularize,nBas,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,dipole_int,eHF)
+                   singlet,triplet,linearize,eta,regularize,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,dipole_int,eHF)
 
 ! Perform ehG0T0 calculation
 
@@ -28,6 +28,7 @@ subroutine RG0T0eh(dotest,doACFDT,exchange_kernel,doXBS,dophBSE,dophBSE2,TDA_T,T
   logical,intent(in)            :: regularize
 
   integer,intent(in)            :: nBas
+  integer,intent(in)            :: nOrb
   integer,intent(in)            :: nC
   integer,intent(in)            :: nO
   integer,intent(in)            :: nV
@@ -35,9 +36,9 @@ subroutine RG0T0eh(dotest,doACFDT,exchange_kernel,doXBS,dophBSE,dophBSE2,TDA_T,T
   integer,intent(in)            :: nS
   double precision,intent(in)   :: ENuc
   double precision,intent(in)   :: ERHF
-  double precision,intent(in)   :: ERI(nBas,nBas,nBas,nBas)
-  double precision,intent(in)   :: dipole_int(nBas,nBas,ncart)
-  double precision,intent(in)   :: eHF(nBas)
+  double precision,intent(in)   :: ERI(nOrb,nOrb,nOrb,nOrb)
+  double precision,intent(in)   :: dipole_int(nOrb,nOrb,ncart)
+  double precision,intent(in)   :: eHF(nOrb)
 
 ! Local variables
 
@@ -99,8 +100,8 @@ subroutine RG0T0eh(dotest,doACFDT,exchange_kernel,doXBS,dophBSE,dophBSE2,TDA_T,T
 
 ! Memory allocation
 
-  allocate(Aph(nS,nS),Bph(nS,nS),Sig(nBas),Z(nBas),Om(nS),XpY(nS,nS),XmY(nS,nS), & 
-           rhoL(nBas,nBas,nS),rhoR(nBas,nBas,nS),eGT(nBas),eGTlin(nBas))
+  allocate(Aph(nS,nS),Bph(nS,nS),Sig(nOrb),Z(nOrb),Om(nS),XpY(nS,nS),XmY(nS,nS), & 
+           rhoL(nOrb,nOrb,nS),rhoR(nOrb,nOrb,nS),eGT(nOrb),eGTlin(nOrb))
 
 !---------------------------------
 ! Compute (triplet) RPA screening 
@@ -108,8 +109,8 @@ subroutine RG0T0eh(dotest,doACFDT,exchange_kernel,doXBS,dophBSE,dophBSE2,TDA_T,T
 
   ispin = 2
 
-  call phLR_A(ispin,dRPA,nBas,nC,nO,nV,nR,nS,1d0,eHF,ERI,Aph)
-  if(.not.TDA_T) call phLR_B(ispin,dRPA,nBas,nC,nO,nV,nR,nS,1d0,ERI,Bph)
+  call phLR_A(ispin,dRPA,nOrb,nC,nO,nV,nR,nS,1d0,eHF,ERI,Aph)
+  if(.not.TDA_T) call phLR_B(ispin,dRPA,nOrb,nC,nO,nV,nR,nS,1d0,ERI,Bph)
 
   call phLR(TDA_T,nS,Aph,Bph,EcRPA,Om,XpY,XmY)
 
@@ -119,15 +120,15 @@ subroutine RG0T0eh(dotest,doACFDT,exchange_kernel,doXBS,dophBSE,dophBSE2,TDA_T,T
 ! Compute spectral weights !
 !--------------------------!
 
-  call RGTeh_excitation_density(nBas,nC,nO,nR,nS,ERI,XpY,XmY,rhoL,rhoR)
+  call RGTeh_excitation_density(nOrb,nC,nO,nR,nS,ERI,XpY,XmY,rhoL,rhoR)
 
 !------------------------!
 ! Compute GW self-energy !
 !------------------------!
 
-  if(regularize) call GTeh_regularization(nBas,nC,nO,nV,nR,nS,eHF,Om,rhoL,rhoR)
+  if(regularize) call GTeh_regularization(nOrb,nC,nO,nV,nR,nS,eHF,Om,rhoL,rhoR)
 
-  call RGTeh_self_energy_diag(eta,nBas,nC,nO,nV,nR,nS,eHF,Om,rhoL,rhoR,EcGM,Sig,Z)
+  call RGTeh_self_energy_diag(eta,nOrb,nC,nO,nV,nR,nS,eHF,Om,rhoL,rhoR,EcGM,Sig,Z)
 
 !-----------------------------------!
 ! Solve the quasi-particle equation !
@@ -149,16 +150,16 @@ subroutine RG0T0eh(dotest,doACFDT,exchange_kernel,doXBS,dophBSE,dophBSE2,TDA_T,T
     write(*,*) ' *** Quasiparticle energies obtained by root search *** '
     write(*,*)
 
-    call RGTeh_QP_graph(eta,nBas,nC,nO,nV,nR,nS,eHF,Om,rhoL,rhoR,eGTlin,eHF,eGT,Z)
+    call RGTeh_QP_graph(eta,nOrb,nC,nO,nV,nR,nS,eHF,Om,rhoL,rhoR,eGTlin,eHF,eGT,Z)
 
   end if
 
-! call RGTeh_plot_self_energy(nBas,nC,nO,nV,nR,nS,eHF,eHF,Om,rhoL,rhoR)
+! call RGTeh_plot_self_energy(nOrb,nC,nO,nV,nR,nS,eHF,eHF,Om,rhoL,rhoR)
 
 ! Compute the RPA correlation energy based on the G0T0eh quasiparticle energies
 
-  call phLR_A(ispin,dRPA,nBas,nC,nO,nV,nR,nS,1d0,eGT,ERI,Aph)
-  if(.not.TDA_T) call phLR_B(ispin,dRPA,nBas,nC,nO,nV,nR,nS,1d0,ERI,Bph)
+  call phLR_A(ispin,dRPA,nOrb,nC,nO,nV,nR,nS,1d0,eGT,ERI,Aph)
+  if(.not.TDA_T) call phLR_B(ispin,dRPA,nOrb,nC,nO,nV,nR,nS,1d0,ERI,Bph)
 
   call phLR(TDA_T,nS,Aph,Bph,EcRPA,Om,XpY,XmY)
 
@@ -166,7 +167,7 @@ subroutine RG0T0eh(dotest,doACFDT,exchange_kernel,doXBS,dophBSE,dophBSE2,TDA_T,T
 ! Dump results !
 !--------------!
 
-  call print_RG0T0eh(nBas,nO,eHF,ENuc,ERHF,Sig,Z,eGT,EcRPA,EcGM)
+  call print_RG0T0eh(nOrb,nO,eHF,ENuc,ERHF,Sig,Z,eGT,EcRPA,EcGM)
 
 ! Testing zone
 

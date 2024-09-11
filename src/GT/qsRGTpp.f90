@@ -132,13 +132,6 @@ subroutine qsRGTpp(dotest, maxSCF, thresh, max_diis, doACFDT, exchange_kernel, d
     write(*,*)
   end if
 
-! TDA 
-
-  if(TDA) then 
-    write(*,*) 'Tamm-Dancoff approximation activated!'
-    write(*,*)
-  end if
-
 ! Memory allocation
 
   allocate(eGT(nOrb))

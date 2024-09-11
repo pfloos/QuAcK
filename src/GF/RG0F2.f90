@@ -1,5 +1,5 @@
 subroutine RG0F2(dotest,dophBSE,doppBSE,TDA,dBSE,dTDA,singlet,triplet,linearize,eta,regularize, &
-                 nBas,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,dipole_int,eHF)
+                 nBas,nOrb,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,dipole_int,eHF)
 
 ! Perform a one-shot second-order Green function calculation
 
@@ -20,7 +20,9 @@ subroutine RG0F2(dotest,dophBSE,doppBSE,TDA,dBSE,dTDA,singlet,triplet,linearize,
   logical,intent(in)            :: linearize
   double precision,intent(in)   :: eta
   logical,intent(in)            :: regularize
+
   integer,intent(in)            :: nBas
+  integer,intent(in)            :: nOrb
   integer,intent(in)            :: nO
   integer,intent(in)            :: nC
   integer,intent(in)            :: nV
@@ -28,9 +30,9 @@ subroutine RG0F2(dotest,dophBSE,doppBSE,TDA,dBSE,dTDA,singlet,triplet,linearize,
   integer,intent(in)            :: nS
   double precision,intent(in)   :: ENuc
   double precision,intent(in)   :: ERHF
-  double precision,intent(in)   :: eHF(nBas)
-  double precision,intent(in)   :: ERI(nBas,nBas,nBas,nBas)
-  double precision,intent(in)   :: dipole_int(nBas,nBas,ncart)
+  double precision,intent(in)   :: eHF(nOrb)
+  double precision,intent(in)   :: ERI(nOrb,nOrb,nOrb,nOrb)
+  double precision,intent(in)   :: dipole_int(nOrb,nOrb,ncart)
 
 ! Local variables
 
@@ -51,17 +53,17 @@ subroutine RG0F2(dotest,dophBSE,doppBSE,TDA,dBSE,dTDA,singlet,triplet,linearize,
 
 ! Memory allocation
 
-  allocate(SigC(nBas), Z(nBas), eGFlin(nBas), eGF(nBas))
+  allocate(SigC(nOrb), Z(nOrb), eGFlin(nOrb), eGF(nOrb))
 
 ! Frequency-dependent second-order contribution
 
   if(regularize) then 
 
-    call RGF2_reg_self_energy_diag(eta,nBas,nC,nO,nV,nR,eHF,ERI,SigC,Z)
+    call RGF2_reg_self_energy_diag(eta,nOrb,nC,nO,nV,nR,eHF,ERI,SigC,Z)
 
   else
 
-    call RGF2_self_energy_diag(eta,nBas,nC,nO,nV,nR,eHF,ERI,SigC,Z)
+    call RGF2_self_energy_diag(eta,nOrb,nC,nO,nV,nR,eHF,ERI,SigC,Z)
 
   end if
   
@@ -78,20 +80,20 @@ subroutine RG0F2(dotest,dophBSE,doppBSE,TDA,dBSE,dTDA,singlet,triplet,linearize,
     write(*,*) ' *** Quasiparticle energies obtained by root search *** '
     write(*,*)
 
-    call RGF2_QP_graph(eta,nBas,nC,nO,nV,nR,eHF,ERI,eGFlin,eHF,eGF,Z)
+    call RGF2_QP_graph(eta,nOrb,nC,nO,nV,nR,eHF,ERI,eGFlin,eHF,eGF,Z)
 
   end if
 
   ! Print results
 
-  call RMP2(.false.,regularize,nBas,nC,nO,nV,nR,ERI,ENuc,ERHF,eGF,Ec)
-  call print_RG0F2(nBas,nO,eHF,SigC,eGF,Z,ENuc,ERHF,Ec)
+  call RMP2(.false.,regularize,nOrb,nC,nO,nV,nR,ERI,ENuc,ERHF,eGF,Ec)
+  call print_RG0F2(nOrb,nO,eHF,SigC,eGF,Z,ENuc,ERHF,Ec)
 
 ! Perform BSE@GF2 calculation
 
   if(dophBSE) then 
   
-    call RGF2_phBSE(TDA,dBSE,dTDA,singlet,triplet,eta,nBas,nC,nO,nV,nR,nS,ERI,dipole_int,eGF,EcBSE)
+    call RGF2_phBSE(TDA,dBSE,dTDA,singlet,triplet,eta,nOrb,nC,nO,nV,nR,nS,ERI,dipole_int,eGF,EcBSE)
 
     write(*,*)
     write(*,*)'-------------------------------------------------------------------------------'
@@ -108,7 +110,7 @@ subroutine RG0F2(dotest,dophBSE,doppBSE,TDA,dBSE,dTDA,singlet,triplet,linearize,
 
   if(doppBSE) then 
    
-    call RGF2_ppBSE(TDA,dBSE,dTDA,singlet,triplet,eta,nBas,nC,nO,nV,nR,ERI,dipole_int,eGF,EcBSE)
+    call RGF2_ppBSE(TDA,dBSE,dTDA,singlet,triplet,eta,nOrb,nC,nO,nV,nR,ERI,dipole_int,eGF,EcBSE)
 
     EcBSE(2) = 3d0*EcBSE(2)
 

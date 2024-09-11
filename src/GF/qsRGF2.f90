@@ -1,10 +1,7 @@
-
-! ---
-
-subroutine qsRGF2(dotest, maxSCF, thresh, max_diis, dophBSE, doppBSE, TDA,   &
-                  dBSE, dTDA, singlet, triplet, eta, regularize, nNuc, ZNuc, &
-                  rNuc, ENuc, nBas, nOrb, nC, nO, nV, nR, nS, ERHF,  &
-                  S, X, T, V, Hc, ERI_AO, ERI_MO, dipole_int_AO, dipole_int_MO, PHF, cHF, eHF)
+subroutine qsRGF2(dotest,maxSCF,thresh,max_diis,dophBSE,doppBSE,TDA,  &
+                  dBSE,dTDA,singlet,triplet,eta,regularize,nNuc,ZNuc, &
+                  rNuc,ENuc,nBas,nOrb,nC,nO,nV,nR,nS,ERHF,S,X,T,V,Hc, & 
+                  ERI_AO,ERI_MO,dipole_int_AO,dipole_int_MO,PHF,cHF,eHF)
 
 ! Perform a quasiparticle self-consistent GF2 calculation
 

@@ -1,4 +1,4 @@
- subroutine RG0F3(dotest,renormalization,nBas,nC,nO,nV,nR,V,e0)
+ subroutine RG0F3(dotest,renormalization,nBas,nOrb,nC,nO,nV,nR,V,e0)
 
 ! Perform third-order Green function calculation in diagonal approximation
 
@@ -9,8 +9,8 @@
 
   logical,intent(in)            :: dotest
   integer,intent(in)            :: renormalization
-  integer,intent(in)            :: nBas,nC,nO,nV,nR
-  double precision,intent(in)   :: e0(nBas),V(nBas,nBas,nBas,nBas)
+  integer,intent(in)            :: nBas,nOrb,nC,nO,nV,nR
+  double precision,intent(in)   :: e0(nOrb),V(nOrb,nOrb,nOrb,nOrb)
 
 ! Local variables
 
@@ -31,9 +31,9 @@
 
 ! Memory allocation
 
-  allocate(eGF3(nBas),Sig2(nBas),SigInf(nBas),Sig3(nBas),   &
-           App(nBas,6),Bpp(nBas,2),Cpp(nBas,6),Dpp(nBas,6), &
-           Z(nBas),X2h1p(nBas),X1h2p(nBas),Sig2h1p(nBas),Sig1h2p(nBas))
+  allocate(eGF3(nOrb),Sig2(nOrb),SigInf(nOrb),Sig3(nOrb),   &
+           App(nOrb,6),Bpp(nOrb,2),Cpp(nOrb,6),Dpp(nOrb,6), &
+           Z(nOrb),X2h1p(nOrb),X1h2p(nOrb),Sig2h1p(nOrb),Sig1h2p(nOrb))
 
 !------------------------------------------------------------------------
 ! Compute third-order frequency-independent contribution
@@ -41,12 +41,12 @@
 
   App(:,:) = 0d0
 
-  do p=nC+1,nBas-nR
+  do p=nC+1,nOrb-nR
     do i=nC+1,nO
     do j=nC+1,nO
     do k=nC+1,nO
-      do a=nO+1,nBas-nR
-      do b=nO+1,nBas-nR
+      do a=nO+1,nOrb-nR
+      do b=nO+1,nOrb-nR
 
           eps1 = e0(j) + e0(i) - e0(a) - e0(b)
           eps2 = e0(k) + e0(i) - e0(a) - e0(b)
@@ -61,12 +61,12 @@
     end do
   end do
 
-  do p=nC+1,nBas-nR
+  do p=nC+1,nOrb-nR
     do i=nC+1,nO
     do j=nC+1,nO
-      do a=nO+1,nBas-nR
-      do b=nO+1,nBas-nR
-      do c=nO+1,nBas-nR
+      do a=nO+1,nOrb-nR
+      do b=nO+1,nOrb-nR
+      do c=nO+1,nOrb-nR
 
           eps1 = e0(j) + e0(i) - e0(a) - e0(b)
           eps2 = e0(j) + e0(i) - e0(a) - e0(c)
@@ -81,12 +81,12 @@
     end do
   end do
   
-  do p=nC+1,nBas-nR
+  do p=nC+1,nOrb-nR
     do i=nC+1,nO
     do j=nC+1,nO
-      do a=nO+1,nBas-nR
-      do b=nO+1,nBas-nR
-      do c=nO+1,nBas-nR
+      do a=nO+1,nOrb-nR
+      do b=nO+1,nOrb-nR
+      do c=nO+1,nOrb-nR
 
           eps1 = e0(j) + e0(i) - e0(a) - e0(b)
           eps2 = e0(j)         - e0(c)
@@ -103,12 +103,12 @@
 
   App(:,4) = App(:,3)
 
-  do p=nC+1,nBas-nR
+  do p=nC+1,nOrb-nR
     do i=nC+1,nO
     do j=nC+1,nO
     do k=nC+1,nO
-      do a=nO+1,nBas-nR
-      do b=nO+1,nBas-nR
+      do a=nO+1,nOrb-nR
+      do b=nO+1,nOrb-nR
 
           eps1 = e0(j) + e0(i) - e0(a) - e0(b)
           eps2 = e0(k)         - e0(b)
@@ -133,10 +133,10 @@
 
   Bpp(:,:) = 0d0
 
-  do p=nC+1,nBas-nR
+  do p=nC+1,nOrb-nR
     do i=nC+1,nO
     do j=nC+1,nO
-      do a=nO+1,nBas-nR
+      do a=nO+1,nOrb-nR
 
         eps = eGF3(p) + e0(a) - e0(i) - e0(j)
 
@@ -148,10 +148,10 @@
     end do
   end do
 
-  do p=nC+1,nBas-nR
+  do p=nC+1,nOrb-nR
     do i=nC+1,nO
-      do a=nO+1,nBas-nR
-      do b=nO+1,nBas-nR
+      do a=nO+1,nOrb-nR
+      do b=nO+1,nOrb-nR
 
         eps = eGF3(p) + e0(i) - e0(a) - e0(b)
 
@@ -171,12 +171,12 @@
 
   Cpp(:,:) = 0d0
 
-  do p=nC+1,nBas-nR
+  do p=nC+1,nOrb-nR
     do i=nC+1,nO
-      do a=nO+1,nBas-nR
-      do b=nO+1,nBas-nR
-      do c=nO+1,nBas-nR
-      do d=nO+1,nBas-nR
+      do a=nO+1,nOrb-nR
+      do b=nO+1,nOrb-nR
+      do c=nO+1,nOrb-nR
+      do d=nO+1,nOrb-nR
 
           eps1 = eGF3(p) + e0(i) - e0(a) - e0(b)
           eps2 = eGF3(p) + e0(i) - e0(c) - e0(d)
@@ -191,12 +191,12 @@
     end do
   end do
 
-  do p=nC+1,nBas-nR
+  do p=nC+1,nOrb-nR
     do i=nC+1,nO
     do j=nC+1,nO
     do k=nC+1,nO
-      do a=nO+1,nBas-nR
-      do b=nO+1,nBas-nR
+      do a=nO+1,nOrb-nR
+      do b=nO+1,nOrb-nR
 
           eps1 = eGF3(p) + e0(i) - e0(a) - e0(b)
           eps2 = e0(j)   + e0(k) - e0(a) - e0(b)
@@ -213,12 +213,12 @@
 
   Cpp(:,3) = Cpp(:,2)
 
-  do p=nC+1,nBas-nR
+  do p=nC+1,nOrb-nR
     do i=nC+1,nO
     do j=nC+1,nO
-      do a=nO+1,nBas-nR
-      do b=nO+1,nBas-nR
-      do c=nO+1,nBas-nR
+      do a=nO+1,nOrb-nR
+      do b=nO+1,nOrb-nR
+      do c=nO+1,nOrb-nR
 
           eps1 = eGF3(p) + e0(a) - e0(i) - e0(j)
           eps2 = e0(i)   + e0(j) - e0(b) - e0(c)
@@ -234,12 +234,12 @@
 
   Cpp(:,5) = Cpp(:,4)
 
-  do p=nC+1,nBas-nR
+  do p=nC+1,nOrb-nR
     do i=nC+1,nO
     do j=nC+1,nO
     do k=nC+1,nO
     do l=nC+1,nO
-      do a=nO+1,nBas-nR
+      do a=nO+1,nOrb-nR
 
           eps1 = eGF3(p) + e0(a) - e0(i) - e0(j)
           eps2 = eGF3(p) + e0(a) - e0(k) - e0(l)
@@ -257,12 +257,12 @@
 
   Dpp(:,:) = 0d0
 
-  do p=nC+1,nBas-nR
+  do p=nC+1,nOrb-nR
     do i=nC+1,nO
     do j=nC+1,nO
-      do a=nO+1,nBas-nR
-      do b=nO+1,nBas-nR
-      do c=nO+1,nBas-nR
+      do a=nO+1,nOrb-nR
+      do b=nO+1,nOrb-nR
+      do c=nO+1,nOrb-nR
 
           eps1 = eGF3(p) + e0(i) - e0(a) - e0(b)
           eps2 = eGF3(p) + e0(j) - e0(b) - e0(c)
@@ -282,12 +282,12 @@
     end do
   end do
 
-  do p=nC+1,nBas-nR
+  do p=nC+1,nOrb-nR
     do i=nC+1,nO
     do j=nC+1,nO
-      do a=nO+1,nBas-nR
-      do b=nO+1,nBas-nR
-      do c=nO+1,nBas-nR
+      do a=nO+1,nOrb-nR
+      do b=nO+1,nOrb-nR
+      do c=nO+1,nOrb-nR
 
           eps1 = eGF3(p) + e0(i) - e0(a) - e0(c)
           eps2 = e0(i)   + e0(j) - e0(a) - e0(b)
@@ -309,12 +309,12 @@
 
   Dpp(:,3) = Dpp(:,2)
 
-  do p=nC+1,nBas-nR
+  do p=nC+1,nOrb-nR
     do i=nC+1,nO
     do j=nC+1,nO
     do k=nC+1,nO
-      do a=nO+1,nBas-nR
-      do b=nO+1,nBas-nR
+      do a=nO+1,nOrb-nR
+      do b=nO+1,nOrb-nR
 
           eps1 = eGF3(p) + e0(a) - e0(j) - e0(k)
           eps2 = e0(i)   + e0(j) - e0(a) - e0(b)
@@ -336,12 +336,12 @@
 
   Dpp(:,5) = Dpp(:,4)
 
-  do p=nC+1,nBas-nR
+  do p=nC+1,nOrb-nR
     do i=nC+1,nO
     do j=nC+1,nO
     do k=nC+1,nO
-      do a=nO+1,nBas-nR
-      do b=nO+1,nBas-nR
+      do a=nO+1,nOrb-nR
+      do b=nO+1,nOrb-nR
 
           eps1 = eGF3(p) + e0(a) - e0(i) - e0(k)
           eps2 = eGF3(p) + e0(b) - e0(j) - e0(k)
@@ -380,7 +380,7 @@
     Z(:) = Cpp(:,2) + Cpp(:,3) + Cpp(:,4) + Cpp(:,5) & 
          + Dpp(:,2) + Dpp(:,3) + Dpp(:,4) + Dpp(:,5)
 
-    Z(nC+1:nBas-nR) = Z(nC+1:nBas-nR)/Sig2(nC+1:nBas-nR)
+    Z(nC+1:nOrb-nR) = Z(nC+1:nOrb-nR)/Sig2(nC+1:nOrb-nR)
     Z(:) = 1d0/(1d0 - Z(:))
   
     Sig3(:) = Z(:)*Sig3(:)
@@ -393,8 +393,8 @@
     X2h1p(:) = Cpp(:,4) + Cpp(:,5) + Dpp(:,4) + Dpp(:,5)
     X1h2p(:) = Cpp(:,2) + Cpp(:,3) + Dpp(:,2) + Dpp(:,3)
 
-    X2h1p(nC+1:nBas-nR) = X2h1p(nC+1:nBas-nR)/Bpp(nC+1:nBas-nR,1)
-    X1h2p(nC+1:nBas-nR) = X1h2p(nC+1:nBas-nR)/Bpp(nC+1:nBas-nR,2)
+    X2h1p(nC+1:nOrb-nR) = X2h1p(nC+1:nOrb-nR)/Bpp(nC+1:nOrb-nR,1)
+    X1h2p(nC+1:nOrb-nR) = X1h2p(nC+1:nOrb-nR)/Bpp(nC+1:nOrb-nR,2)
 
     Sig3(:) = SigInf(:) +                     &
             + 1d0/(1d0 - X2h1p(:))*Sig2h1p(:) &
@@ -412,11 +412,11 @@
     X2h1p(:) = Cpp(:,4) + Cpp(:,5) + Dpp(:,4) + Dpp(:,5)
     X1h2p(:) = Cpp(:,2) + Cpp(:,3) + Dpp(:,2) + Dpp(:,3)
 
-    X2h1p(nC+1:nBas-nR) = X2h1p(nC+1:nBas-nR)/Bpp(nC+1:nBas-nR,1)
-    X1h2p(nC+1:nBas-nR) = X1h2p(nC+1:nBas-nR)/Bpp(nC+1:nBas-nR,2)
+    X2h1p(nC+1:nOrb-nR) = X2h1p(nC+1:nOrb-nR)/Bpp(nC+1:nOrb-nR,1)
+    X1h2p(nC+1:nOrb-nR) = X1h2p(nC+1:nOrb-nR)/Bpp(nC+1:nOrb-nR,2)
 
     Z(:) = X2h1p(:)*Sig2h1p(:) + X1h2p(:)*Sig1h2p(:)
-    Z(nC+1:nBas-nR) = Z(nC+1:nBas-nR)/(Sig3(nC+1:nBas-nR) - SigInf(nC+1:nBas-nR))
+    Z(nC+1:nOrb-nR) = Z(nC+1:nOrb-nR)/(Sig3(nC+1:nOrb-nR) - SigInf(nC+1:nOrb-nR))
     Z(:) = 1d0/(1d0 - Z(:))
 
     Sig3(:) = Z(:)*Sig3(:)
@@ -429,6 +429,6 @@
 
   ! Print results
 
-  call print_G0F3(nBas,nO,e0,Z,eGF3)
+  call print_G0F3(nOrb,nO,e0,Z,eGF3)
 
 end subroutine 

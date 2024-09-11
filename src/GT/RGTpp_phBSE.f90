@@ -81,6 +81,15 @@ subroutine RGTpp_phBSE(TDA_T,TDA,dBSE,dTDA,singlet,triplet,eta,nBas,nC,nO,nV,nR,
   allocate(Aph(nS,nS),Bph(nS,nS),TAab(nS,nS),TBab(nS,nS),TAaa(nS,nS),TBaa(nS,nS), & 
            OmBSE(nS),XpY_BSE(nS,nS),XmY_BSE(nS,nS))
 
+!-----!
+! TDA !
+!-----!
+
+  if(TDA) then
+    write(*,*) 'Tamm-Dancoff approximation activated in phBSE!'
+    write(*,*)
+  end if
+
 !---------------------------------------!
 ! Compute T-matrix for alpha-beta block !
 !---------------------------------------!
