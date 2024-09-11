@@ -125,8 +125,6 @@ subroutine evRGW(dotest,maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,dop
 
     ! Compute correlation part of the self-energy 
 
-    call GW_regularization(nOrb,nC,nO,nV,nR,nS,eGW,Om,rho)
-
     if(doSRG) then
       call RGW_SRG_self_energy_diag(nBas,nOrb,nC,nO,nV,nR,nS,eGW,Om,rho,EcGM,SigC,Z)
     else

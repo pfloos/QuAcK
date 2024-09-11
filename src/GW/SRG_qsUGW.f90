@@ -217,13 +217,7 @@ subroutine SRG_qsUGW(dotest,maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS
     ! Compute self-energy and renormalization factor !
     !------------------------------------------------!
 
-    if(regularize) then
-      do is=1,nspin
-        call GW_regularization(nBas,nC(is),nO(is),nV(is),nR(is),nSt,eGW(:,is),Om,rho(:,:,:,is))
-      end do
-    end if
-
-    call USRG_self_energy(nBas,nC,nO,nV,nR,nSt,eGW,Om,rho,EcGM,SigC,Z)
+    call UGW_SRG_self_energy(nBas,nC,nO,nV,nR,nSt,eGW,Om,rho,EcGM,SigC,Z)
 
     ! Make correlation self-energy Hermitian and transform it back to AO basis
    

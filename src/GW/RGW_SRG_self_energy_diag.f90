@@ -23,8 +23,7 @@ subroutine RGW_SRG_self_energy_diag(nBas,nOrb,nC,nO,nV,nR,nS,e,Om,rho,EcGM,SigC,
   integer                       :: i,j,a,b
   integer                       :: p
   integer                       :: m
-  double precision              :: Dpim,Dqim,Dpam,Dqam,Diam
-  double precision              :: renorm
+  double precision              :: Dpim,Dpam,Diam
   double precision              :: s
   
 ! Output variables
@@ -49,7 +48,7 @@ subroutine RGW_SRG_self_energy_diag(nBas,nOrb,nC,nO,nV,nR,nS,e,Om,rho,EcGM,SigC,
 
   !$OMP PARALLEL &
   !$OMP SHARED(SigC,rho,s,nS,nC,nO,nOrb,nR,e,Om) &
-  !$OMP PRIVATE(m,i,p,Dpim,Dqim,renorm) &
+  !$OMP PRIVATE(m,i,p,Dpim) &
   !$OMP DEFAULT(NONE)
   !$OMP DO 
   do p=nC+1,nOrb-nR
@@ -57,8 +56,7 @@ subroutine RGW_SRG_self_energy_diag(nBas,nOrb,nC,nO,nV,nR,nS,e,Om,rho,EcGM,SigC,
       do i=nC+1,nO
 
         Dpim = e(p) - e(i) + Om(m)
-        renorm = (1d0-exp(-2d0*s*Dpim*Dpim))/Dpim
-        SigC(p) = SigC(p) + 2d0*rho(p,i,m)**2*renorm
+        SigC(p) = SigC(p) + 2d0*rho(p,i,m)**2*(1d0-exp(-2d0*s*Dpim*Dpim))/Dpim
 
       end do
     end do
@@ -70,7 +68,7 @@ subroutine RGW_SRG_self_energy_diag(nBas,nOrb,nC,nO,nV,nR,nS,e,Om,rho,EcGM,SigC,
 
   !$OMP PARALLEL &
   !$OMP SHARED(SigC,rho,s,nS,nC,nO,nR,nOrb,e,Om) &
-  !$OMP PRIVATE(m,a,p,Dpam,Dqam,renorm) &
+  !$OMP PRIVATE(m,a,p,Dpam) &
   !$OMP DEFAULT(NONE)
   !$OMP DO
   do p=nC+1,nOrb-nR
@@ -78,8 +76,7 @@ subroutine RGW_SRG_self_energy_diag(nBas,nOrb,nC,nO,nV,nR,nS,e,Om,rho,EcGM,SigC,
       do a=nO+1,nOrb-nR
  
          Dpam = e(p) - e(a) - Om(m)
-         renorm = (1d0-exp(-2d0*s*Dpam*Dpam))/Dpam
-         SigC(p) = SigC(p) + 2d0*rho(p,a,m)**2*renorm
+         SigC(p) = SigC(p) + 2d0*rho(p,a,m)**2*(1d0-exp(-2d0*s*Dpam*Dpam))/Dpam
  
       end do
     end do

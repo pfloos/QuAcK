@@ -1,5 +1,5 @@
 subroutine qsUGW(dotest,maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,BSE,TDA_W,TDA,dBSE,dTDA,spin_conserved,spin_flip, &
-                eta,regularize,nNuc,ZNuc,rNuc,ENuc,nBas,nC,nO,nV,nR,nS,EUHF,S,X,T,V,Hc,ERI_AO,ERI_aaaa,ERI_aabb,ERI_bbbb, & 
+                eta,doSRG,nNuc,ZNuc,rNuc,ENuc,nBas,nC,nO,nV,nR,nS,EUHF,S,X,T,V,Hc,ERI_AO,ERI_aaaa,ERI_aabb,ERI_bbbb, & 
                 dipole_int_AO,dipole_int_aa,dipole_int_bb,PHF,cHF,eHF)
 
 ! Perform a quasiparticle self-consistent GW calculation
@@ -25,7 +25,7 @@ subroutine qsUGW(dotest,maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,BSE
   logical,intent(in)            :: spin_conserved
   logical,intent(in)            :: spin_flip
   double precision,intent(in)   :: eta
-  logical,intent(in)            :: regularize
+  logical,intent(in)            :: doSRG
 
   integer,intent(in)            :: nNuc
   double precision,intent(in)   :: ZNuc(nNuc)
@@ -217,13 +217,12 @@ subroutine qsUGW(dotest,maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,BSE
     ! Compute self-energy and renormalization factor !
     !------------------------------------------------!
 
-    if(regularize) then
-      do is=1,nspin
-        call GW_regularization(nBas,nC(is),nO(is),nV(is),nR(is),nSt,eGW(:,is),Om,rho(:,:,:,is))
-      end do
+    if(doSRG) then
+      call UGW_SRG_self_energy(nBas,nC,nO,nV,nR,nSt,eGW,Om,rho,SigC,Z,EcGM)
+    else
+      call UGW_self_energy(eta,nBas,nC,nO,nV,nR,nSt,eGW,Om,rho,SigC,Z,EcGM)
     end if
 
-    call UGW_self_energy(eta,nBas,nC,nO,nV,nR,nSt,eGW,Om,rho,SigC,Z,EcGM)
 
     ! Make correlation self-energy Hermitian and transform it back to AO basis
    

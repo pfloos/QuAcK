@@ -24,7 +24,6 @@ subroutine RGW_SRG_self_energy(nBas,nOrb,nC,nO,nV,nR,nS,e,Om,rho,EcGM,SigC,Z)
   integer                       :: p,q
   integer                       :: m
   double precision              :: Dpim,Dqim,Dpam,Dqam,Diam
-  double precision              :: renorm
   double precision              :: s
   
 ! Output variables
@@ -49,7 +48,7 @@ subroutine RGW_SRG_self_energy(nBas,nOrb,nC,nO,nV,nR,nS,e,Om,rho,EcGM,SigC,Z)
 
   !$OMP PARALLEL &
   !$OMP SHARED(SigC,rho,s,nS,nC,nO,nOrb,nR,e,Om) &
-  !$OMP PRIVATE(m,i,q,p,Dpim,Dqim,renorm) &
+  !$OMP PRIVATE(m,i,q,p,Dpim,Dqim) &
   !$OMP DEFAULT(NONE)
   !$OMP DO 
   do q=nC+1,nOrb-nR
@@ -59,8 +58,9 @@ subroutine RGW_SRG_self_energy(nBas,nOrb,nC,nO,nV,nR,nS,e,Om,rho,EcGM,SigC,Z)
 
           Dpim = e(p) - e(i) + Om(m)
           Dqim = e(q) - e(i) + Om(m)
-          renorm = (1d0-exp(-s*Dpim*Dpim)*exp(-s*Dqim*Dqim))*(Dpim + Dqim)/(Dpim*Dpim + Dqim*Dqim)
-          SigC(p,q) = SigC(p,q) + 2d0*rho(p,i,m)*rho(q,i,m)*renorm
+          SigC(p,q) = SigC(p,q)                  &
+                    + 2d0*rho(p,i,m)*rho(q,i,m)* &
+                      (1d0-exp(-s*Dpim*Dpim)*exp(-s*Dqim*Dqim))*(Dpim + Dqim)/(Dpim*Dpim + Dqim*Dqim)
 
         end do
       end do
@@ -73,7 +73,7 @@ subroutine RGW_SRG_self_energy(nBas,nOrb,nC,nO,nV,nR,nS,e,Om,rho,EcGM,SigC,Z)
 
   !$OMP PARALLEL &
   !$OMP SHARED(SigC,rho,s,nS,nC,nO,nR,nOrb,e,Om) &
-  !$OMP PRIVATE(m,a,q,p,Dpam,Dqam,renorm) &
+  !$OMP PRIVATE(m,a,q,p,Dpam,Dqam) &
   !$OMP DEFAULT(NONE)
   !$OMP DO
   do q=nC+1,nOrb-nR
@@ -83,8 +83,9 @@ subroutine RGW_SRG_self_energy(nBas,nOrb,nC,nO,nV,nR,nS,e,Om,rho,EcGM,SigC,Z)
  
            Dpam = e(p) - e(a) - Om(m)
            Dqam = e(q) - e(a) - Om(m)
-           renorm = (1d0-exp(-s*Dpam*Dpam)*exp(-s*Dqam*Dqam))*(Dpam + Dqam)/(Dpam*Dpam + Dqam*Dqam)
-           SigC(p,q) = SigC(p,q) + 2d0*rho(p,a,m)*rho(q,a,m)*renorm
+           SigC(p,q) = SigC(p,q)                  & 
+                     + 2d0*rho(p,a,m)*rho(q,a,m)* &
+                       (1d0-exp(-s*Dpam*Dpam)*exp(-s*Dqam*Dqam))*(Dpam + Dqam)/(Dpam*Dpam + Dqam*Dqam)
  
         end do
       end do

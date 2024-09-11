@@ -1,5 +1,5 @@
 subroutine UG0W0(dotest,doACFDT,exchange_kernel,doXBS,dophBSE,TDA_W,TDA,dBSE,dTDA,spin_conserved,spin_flip, &
-                 linearize,eta,regularize,nBas,nC,nO,nV,nR,nS,ENuc,EUHF,S,ERI_aaaa,ERI_aabb,ERI_bbbb,       & 
+                 linearize,eta,doSRG,nBas,nC,nO,nV,nR,nS,ENuc,EUHF,S,ERI_aaaa,ERI_aabb,ERI_bbbb,       & 
                  dipole_int_aa,dipole_int_bb,cHF,eHF)
 
 ! Perform unrestricted G0W0 calculation
@@ -24,7 +24,7 @@ subroutine UG0W0(dotest,doACFDT,exchange_kernel,doXBS,dophBSE,TDA_W,TDA,dBSE,dTD
   logical,intent(in)            :: spin_flip
   logical,intent(in)            :: linearize
   double precision,intent(in)   :: eta
-  logical,intent(in)            :: regularize
+  logical,intent(in)            :: doSRG
 
   integer,intent(in)            :: nBas
   integer,intent(in)            :: nC(nspin)
@@ -127,13 +127,11 @@ subroutine UG0W0(dotest,doACFDT,exchange_kernel,doXBS,dophBSE,TDA_W,TDA,dBSE,dTD
 ! Compute self-energy and renormalization factor !
 !------------------------------------------------!
 
-  if(regularize) then
-    do is=1,nspin
-      call GW_regularization(nBas,nC(is),nO(is),nV(is),nR(is),nSt,eHF(:,is),Om,rho(:,:,:,is))
-    end do
+  if(doSRG) then
+    call UGW_SRG_self_energy_diag(nBas,nC,nO,nV,nR,nSt,eHF,Om,rho,SigC,Z,EcGM)
+  else
+    call UGW_self_energy_diag(eta,nBas,nC,nO,nV,nR,nSt,eHF,Om,rho,SigC,Z,EcGM)
   end if
-
-  call UGW_self_energy_diag(eta,nBas,nC,nO,nV,nR,nSt,eHF,Om,rho,SigC,Z,EcGM)
 
 !-----------------------------------!
 ! Solve the quasi-particle equation !
