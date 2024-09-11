@@ -1,4 +1,4 @@
-subroutine USRG_self_energy(eta,nBas,nC,nO,nV,nR,nS,e,Om,rho,EcGM,SigC,Z)
+subroutine USRG_self_energy(nBas,nC,nO,nV,nR,nS,e,Om,rho,EcGM,SigC,Z)
 
 ! Compute correlation part of the self-energy
 
@@ -7,7 +7,6 @@ subroutine USRG_self_energy(eta,nBas,nC,nO,nV,nR,nS,e,Om,rho,EcGM,SigC,Z)
 
 ! Input variables
 
-  double precision,intent(in)   :: eta
   integer,intent(in)            :: nBas
   integer,intent(in)            :: nC(nspin)
   integer,intent(in)            :: nO(nspin)
@@ -26,12 +25,17 @@ subroutine USRG_self_energy(eta,nBas,nC,nO,nV,nR,nS,e,Om,rho,EcGM,SigC,Z)
   integer                       :: m
   double precision              :: Dpim,Dqim,Dpam,Dqam,Diam
   double precision              :: t1,t2
+  double precision              :: s
   
 ! Output variables
 
   double precision,intent(out)  :: EcGM
   double precision,intent(out)  :: SigC(nBas,nBas,nspin)
   double precision,intent(out)  :: Z(nBas,nspin)
+
+! SRG flow parameter 
+
+  s = 500d0
 
 ! Initialize 
 
@@ -43,10 +47,10 @@ subroutine USRG_self_energy(eta,nBas,nC,nO,nV,nR,nS,e,Om,rho,EcGM,SigC,Z)
 
   ! Occupied part of the correlation self-energy
 
-  call wall_time(t1)
+! call wall_time(t1)
 
   !$OMP PARALLEL &
-  !$OMP SHARED(SigC,rho,eta,nS,nC,nO,nBas,nR,e,Om) &
+  !$OMP SHARED(SigC,rho,s,nS,nC,nO,nBas,nR,e,Om) &
   !$OMP PRIVATE(ispin,m,i,q,p,Dpim,Dqim) &
   !$OMP DEFAULT(NONE)
   !$OMP DO 
@@ -58,7 +62,7 @@ subroutine USRG_self_energy(eta,nBas,nC,nO,nV,nR,nS,e,Om,rho,EcGM,SigC,Z)
               Dpim = e(p,ispin) - e(i,ispin) + Om(m)
               Dqim = e(q,ispin) - e(i,ispin) + Om(m)
               SigC(p,q,ispin) = SigC(p,q,ispin) & 
-                   + rho(p,i,m,ispin)*rho(q,i,m,ispin)*(1d0-dexp(-eta*Dpim*Dpim)*dexp(-eta*Dqim*Dqim)) &
+                   + rho(p,i,m,ispin)*rho(q,i,m,ispin)*(1d0-dexp(-s*Dpim*Dpim)*dexp(-s*Dqim*Dqim)) &
                    *(Dpim + Dqim)/(Dpim*Dpim + Dqim*Dqim)
            end do
         end do
@@ -68,14 +72,14 @@ subroutine USRG_self_energy(eta,nBas,nC,nO,nV,nR,nS,e,Om,rho,EcGM,SigC,Z)
   !$OMP END DO
   !$OMP END PARALLEL
 
- call wall_time(t2)
- print *, "first loop", (t2-t1)
+! call wall_time(t2)
+! print *, "first loop", (t2-t1)
 
 ! Virtual part of the correlation self-energy
 
  call wall_time(t1)
  !$OMP PARALLEL &
- !$OMP SHARED(SigC,rho,eta,nS,nC,nO,nR,nBas,e,Om) &
+ !$OMP SHARED(SigC,rho,s,nS,nC,nO,nR,nBas,e,Om) &
  !$OMP PRIVATE(ispin,m,a,q,p,Dpam,Dqam) &
  !$OMP DEFAULT(NONE)
  !$OMP DO
@@ -87,7 +91,7 @@ subroutine USRG_self_energy(eta,nBas,nC,nO,nV,nR,nS,e,Om,rho,EcGM,SigC,Z)
              Dpam = e(p,ispin) - e(a,ispin) - Om(m)
              Dqam = e(q,ispin) - e(a,ispin) - Om(m)
              SigC(p,q,ispin) = SigC(p,q,ispin) &
-                  + rho(p,a,m,ispin)*rho(q,a,m,ispin)*(1d0-exp(-eta*Dpam*Dpam)*exp(-eta*Dqam*Dqam)) &
+                  + rho(p,a,m,ispin)*rho(q,a,m,ispin)*(1d0-exp(-s*Dpam*Dpam)*exp(-s*Dqam*Dqam)) &
                   *(Dpam + Dqam)/(Dpam*Dpam + Dqam*Dqam)
           end do
        end do
@@ -97,8 +101,8 @@ subroutine USRG_self_energy(eta,nBas,nC,nO,nV,nR,nS,e,Om,rho,EcGM,SigC,Z)
  !$OMP END DO
  !$OMP END PARALLEL
 
- call wall_time(t2)
-  print *, "second loop", (t2-t1)
+! call wall_time(t2)
+! print *, "second loop", (t2-t1)
  
 
 ! Initialize
@@ -110,7 +114,7 @@ subroutine USRG_self_energy(eta,nBas,nC,nO,nV,nR,nS,e,Om,rho,EcGM,SigC,Z)
      do i=nC(ispin)+1,nO(ispin)
         do m=1,nS
            Dpim = e(p,ispin) - e(i,ispin) + Om(m)
-           Z(p,ispin) = Z(p,ispin) - rho(p,i,m,ispin)**2*(1d0-dexp(-2d0*eta*Dpim*Dpim))/Dpim**2
+           Z(p,ispin) = Z(p,ispin) - rho(p,i,m,ispin)**2*(1d0-dexp(-2d0*s*Dpim*Dpim))/Dpim**2
         end do
      end do
   end do
@@ -123,7 +127,7 @@ subroutine USRG_self_energy(eta,nBas,nC,nO,nV,nR,nS,e,Om,rho,EcGM,SigC,Z)
      do a=nO(ispin)+1,nBas-nR(ispin)
         do m=1,nS
            Dpam = e(p,ispin) - e(a,ispin) - Om(m)
-           Z(p,ispin) = Z(p,ispin)  - rho(p,a,m,ispin)**2*(1d0-dexp(-2d0*eta*Dpam*Dpam))/Dpam**2
+           Z(p,ispin) = Z(p,ispin)  - rho(p,a,m,ispin)**2*(1d0-dexp(-2d0*s*Dpam*Dpam))/Dpam**2
         end do
      end do
   end do
@@ -141,7 +145,7 @@ subroutine USRG_self_energy(eta,nBas,nC,nO,nV,nR,nS,e,Om,rho,EcGM,SigC,Z)
     do a=nO(ispin)+1,nBas-nR(ispin)
       do m=1,nS
         Diam = e(a,ispin) - e(i,ispin) + Om(m)
-        EcGM = EcGM - rho(a,i,m,ispin)*rho(a,i,m,ispin)*(1d0-exp(-2d0*eta*Diam*Diam))/Diam 
+        EcGM = EcGM - rho(a,i,m,ispin)*rho(a,i,m,ispin)*(1d0-exp(-2d0*s*Diam*Diam))/Diam 
       end do
     end do
   end do

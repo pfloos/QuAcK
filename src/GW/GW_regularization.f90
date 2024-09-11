@@ -28,7 +28,7 @@ subroutine GW_regularization(nBas,nC,nO,nV,nR,nS,e,Om,rho)
 
 ! SRG flow parameter 
 
-  s = 100d0
+  s = 500d0
 
 ! Regularize excitation densities
 

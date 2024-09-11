@@ -1,4 +1,4 @@
-subroutine SRG_self_energy(eta,nBas,nC,nO,nV,nR,nS,e,Om,rho,EcGM,SigC,Z)
+subroutine SRG_self_energy(nBas,nC,nO,nV,nR,nS,e,Om,rho,EcGM,SigC,Z)
 
 ! Compute correlation part of the self-energy
 
@@ -7,7 +7,6 @@ subroutine SRG_self_energy(eta,nBas,nC,nO,nV,nR,nS,e,Om,rho,EcGM,SigC,Z)
 
 ! Input variables
 
-  double precision,intent(in)   :: eta
   integer,intent(in)            :: nBas
   integer,intent(in)            :: nC
   integer,intent(in)            :: nO
@@ -25,12 +24,17 @@ subroutine SRG_self_energy(eta,nBas,nC,nO,nV,nR,nS,e,Om,rho,EcGM,SigC,Z)
   integer                       :: m
   double precision              :: Dpim,Dqim,Dpam,Dqam,Diam
   double precision              :: t1,t2
+  double precision              :: s
   
 ! Output variables
 
   double precision,intent(out)  :: EcGM
   double precision,intent(out)  :: SigC(nBas,nBas)
   double precision,intent(out)  :: Z(nBas)
+
+! SRG flow parameter 
+
+  s = 500d0
 
 ! Initialize 
 
@@ -45,7 +49,7 @@ subroutine SRG_self_energy(eta,nBas,nC,nO,nV,nR,nS,e,Om,rho,EcGM,SigC,Z)
   call wall_time(t1)
 
   !$OMP PARALLEL &
-  !$OMP SHARED(SigC,rho,eta,nS,nC,nO,nBas,nR,e,Om) &
+  !$OMP SHARED(SigC,rho,s,nS,nC,nO,nBas,nR,e,Om) &
   !$OMP PRIVATE(m,i,q,p,Dpim,Dqim) &
   !$OMP DEFAULT(NONE)
   !$OMP DO 
@@ -55,7 +59,7 @@ subroutine SRG_self_energy(eta,nBas,nC,nO,nV,nR,nS,e,Om,rho,EcGM,SigC,Z)
            do i=nC+1,nO
               Dpim = e(p) - e(i) + Om(m)
               Dqim = e(q) - e(i) + Om(m)
-              SigC(p,q) = SigC(p,q) + 2d0*rho(p,i,m)*rho(q,i,m)*(1d0-dexp(-eta*Dpim*Dpim)*dexp(-eta*Dqim*Dqim)) &
+              SigC(p,q) = SigC(p,q) + 2d0*rho(p,i,m)*rho(q,i,m)*(1d0-dexp(-s*Dpim*Dpim)*dexp(-s*Dqim*Dqim)) &
                    *(Dpim + Dqim)/(Dpim*Dpim + Dqim*Dqim)
            end do
         end do
@@ -64,14 +68,14 @@ subroutine SRG_self_energy(eta,nBas,nC,nO,nV,nR,nS,e,Om,rho,EcGM,SigC,Z)
   !$OMP END DO
   !$OMP END PARALLEL
 
- call wall_time(t2)
- print *, "first loop", (t2-t1)
+! call wall_time(t2)
+! print *, "first loop", (t2-t1)
 
 ! Virtual part of the correlation self-energy
 
  call wall_time(t1)
  !$OMP PARALLEL &
- !$OMP SHARED(SigC,rho,eta,nS,nC,nO,nR,nBas,e,Om) &
+ !$OMP SHARED(SigC,rho,s,nS,nC,nO,nR,nBas,e,Om) &
  !$OMP PRIVATE(m,a,q,p,Dpam,Dqam) &
  !$OMP DEFAULT(NONE)
  !$OMP DO
@@ -81,7 +85,7 @@ subroutine SRG_self_energy(eta,nBas,nC,nO,nV,nR,nS,e,Om,rho,EcGM,SigC,Z)
           do a=nO+1,nBas-nR
              Dpam = e(p) - e(a) - Om(m)
              Dqam = e(q) - e(a) - Om(m)
-             SigC(p,q) = SigC(p,q) + 2d0*rho(p,a,m)*rho(q,a,m)*(1d0-exp(-eta*Dpam*Dpam)*exp(-eta*Dqam*Dqam)) &
+             SigC(p,q) = SigC(p,q) + 2d0*rho(p,a,m)*rho(q,a,m)*(1d0-exp(-s*Dpam*Dpam)*exp(-s*Dqam*Dqam)) &
                   *(Dpam + Dqam)/(Dpam*Dpam + Dqam*Dqam)
           end do
        end do
@@ -90,8 +94,8 @@ subroutine SRG_self_energy(eta,nBas,nC,nO,nV,nR,nS,e,Om,rho,EcGM,SigC,Z)
  !$OMP END DO
  !$OMP END PARALLEL
 
- call wall_time(t2)
-  print *, "second loop", (t2-t1)
+! call wall_time(t2)
+! print *, "second loop", (t2-t1)
  
 
 ! Initialize
@@ -102,7 +106,7 @@ subroutine SRG_self_energy(eta,nBas,nC,nO,nV,nR,nS,e,Om,rho,EcGM,SigC,Z)
      do i=nC+1,nO
         do m=1,nS
            Dpim = e(p) - e(i) + Om(m)
-           Z(p) = Z(p)  - 2d0*rho(p,i,m)**2*(1d0-dexp(-2d0*eta*Dpim*Dpim))/Dpim**2
+           Z(p) = Z(p)  - 2d0*rho(p,i,m)**2*(1d0-dexp(-2d0*s*Dpim*Dpim))/Dpim**2
         end do
      end do
   end do
@@ -113,7 +117,7 @@ subroutine SRG_self_energy(eta,nBas,nC,nO,nV,nR,nS,e,Om,rho,EcGM,SigC,Z)
      do a=nO+1,nBas-nR
         do m=1,nS
            Dpam = e(p) - e(a) - Om(m)
-           Z(p) = Z(p)  - 2d0*rho(p,a,m)**2*(1d0-dexp(-2d0*eta*Dpam*Dpam))/Dpam**2
+           Z(p) = Z(p)  - 2d0*rho(p,a,m)**2*(1d0-dexp(-2d0*s*Dpam*Dpam))/Dpam**2
         end do
      end do
   end do
@@ -129,7 +133,7 @@ subroutine SRG_self_energy(eta,nBas,nC,nO,nV,nR,nS,e,Om,rho,EcGM,SigC,Z)
     do a=nO+1,nBas-nR
       do m=1,nS
         Diam = e(a) - e(i) + Om(m)
-        EcGM = EcGM - 4d0*rho(a,i,m)*rho(a,i,m)*(1d0-exp(-2d0*eta*Diam*Diam))/Diam 
+        EcGM = EcGM - 4d0*rho(a,i,m)*rho(a,i,m)*(1d0-exp(-2d0*s*Diam*Diam))/Diam 
       end do
     end do
   end do

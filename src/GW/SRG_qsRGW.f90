@@ -76,8 +76,8 @@ subroutine SRG_qsRGW(dotest,maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS
   double precision              :: dipole(ncart)
 
   logical                       :: dRPA_W  = .true.
-  logical                       :: print_W = .true.
-  double precision,allocatable  :: error_diis(:,:)
+  logical                       :: print_W = .false.
+  double precision,allocatable  :: err_diis(:,:)
   double precision,allocatable  :: F_diis(:,:)
   double precision,allocatable  :: Aph(:,:)
   double precision,allocatable  :: Bph(:,:)
@@ -97,9 +97,7 @@ subroutine SRG_qsRGW(dotest,maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS
   double precision,allocatable  :: SigC(:,:)
   double precision,allocatable  :: SigCp(:,:)
   double precision,allocatable  :: Z(:)
-  double precision,allocatable  :: error(:,:)
-
-  double precision,parameter    :: flow = 500d0
+  double precision,allocatable  :: err(:,:)
 
 ! Hello world
 
@@ -141,7 +139,7 @@ subroutine SRG_qsRGW(dotest,maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS
   allocate(F(nBas,nBas))
   allocate(J(nBas,nBas))
   allocate(K(nBas,nBas))
-  allocate(error(nBas,nBas))
+  allocate(err(nBas,nBas))
   allocate(SigCp(nBas,nBas))
 
   allocate(Aph(nS,nS))
@@ -151,21 +149,21 @@ subroutine SRG_qsRGW(dotest,maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS
   allocate(XmY(nS,nS))
   allocate(rho(nOrb,nOrb,nS))
 
-  allocate(error_diis(nBas_Sq,max_diis))
+  allocate(err_diis(nBas_Sq,max_diis))
   allocate(F_diis(nBas_Sq,max_diis))
 
 ! Initialization
   
-  nSCF            = -1
-  n_diis          = 0
-  ispin           = 1
-  Conv            = 1d0
-  P(:,:)          = PHF(:,:)
-  eGW(:)          = eHF(:)
-  eOld(:)         = eHF(:)
-  c(:,:)          = cHF(:,:)
-  F_diis(:,:)     = 0d0
-  error_diis(:,:) = 0d0
+  nSCF          = -1
+  n_diis        = 0
+  ispin         = 1
+  Conv          = 1d0
+  P(:,:)        = PHF(:,:)
+  eGW(:)        = eHF(:)
+  eOld(:)       = eHF(:)
+  c(:,:)        = cHF(:,:)
+  F_diis(:,:)   = 0d0
+  err_diis(:,:) = 0d0
   rcond           = 0d0
 
 !------------------------------------------------------------------------
@@ -215,7 +213,7 @@ subroutine SRG_qsRGW(dotest,maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS
 
     tlr = tlr + tlr2 -tlr1
 
-    if(print_W) call print_excitation_energies('phRPA@RGW','singlet',nS,Om)
+    if(print_W) call print_excitation_energies('phRPA@qsGW','singlet',nS,Om)
 
     ! Compute correlation part of the self-energy 
 
@@ -227,7 +225,8 @@ subroutine SRG_qsRGW(dotest,maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS
     tex=tex+tex2-tex1
 
     call wall_time(tsrg1)
-    call SRG_self_energy(flow,nOrb,nC,nO,nV,nR,nS,eGW,Om,rho,EcGM,SigC,Z)
+    call SRG_self_energy(nOrb,nC,nO,nV,nR,nS,eGW,Om,rho,EcGM,SigC,Z)
+
 
     call wall_time(tsrg2)
 
@@ -245,14 +244,16 @@ subroutine SRG_qsRGW(dotest,maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS
 
     ! Compute commutator and convergence criteria
 
-    error = matmul(F,matmul(P,S)) - matmul(matmul(S,P),F)
+    err = matmul(F,matmul(P,S)) - matmul(matmul(S,P),F)
+
+    if(nSCF > 1) Conv = maxval(abs(err))
 
     ! DIIS extrapolation 
 
     if(max_diis > 1) then
 
       n_diis = min(n_diis+1,max_diis)
-      call DIIS_extrapolation(rcond,nBas_Sq,nBas_Sq,n_diis,error_diis,F_diis,error,F)
+      call DIIS_extrapolation(rcond,nBas_Sq,nBas_Sq,n_diis,err_diis,F_diis,err,F)
 
     end if
 
@@ -271,7 +272,7 @@ subroutine SRG_qsRGW(dotest,maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS
 
     ! Save quasiparticles energy for next cycle
 
-    Conv = maxval(abs(error))
+    Conv = maxval(abs(err))
     eOld(:) = eGW(:)
 
     !------------------------------------------------------------------------
@@ -301,8 +302,8 @@ subroutine SRG_qsRGW(dotest,maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS
     ! Print results
 
     call dipole_moment(nBas,P,nNuc,ZNuc,rNuc,dipole_int_AO,dipole)
-    call print_qsRGW(nBas, nOrb, nO, nSCF, Conv, thresh, eHF, eGW, c, &
-                     SigC, Z, ENuc, ET, EV, EJ, Ex, EcGM, EcRPA, EqsGW, dipole)
+    call print_qsRGW(nBas,nOrb,nO,nSCF,Conv,thresh,eHF,eGW,c, &
+                     SigC,Z,ENuc,ET,EV,EJ,Ex,EcGM,EcRPA,EqsGW,dipole)
 
   end do
 !------------------------------------------------------------------------
@@ -319,26 +320,26 @@ subroutine SRG_qsRGW(dotest,maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS
     write(*,*)'!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!'
     write(*,*)
 
-    deallocate(c, cp, P, F, Fp, J, K, SigC, Z, Om, XpY, XmY, rho, error, error_diis, F_diis)
+    deallocate(c,cp,P,F,Fp,J,K,SigC,Z,Om,XpY,XmY,rho,err,err_diis,F_diis)
 
     stop
 
  end if
 
- print *, "Wall time for Fock and exchange build", tt
- print *, "Wall Time for AO to MO", tao
- print *, "Wall Time for LR", tlr
- print *, "Wall Time for excitation density", tex
- print *, "Wall Time for SRG", tsrg
- print *, "Wall time MO to AO Sigma", tmo
+! print *, "Wall time for Fock and exchange build", tt
+! print *, "Wall Time for AO to MO", tao
+! print *, "Wall Time for LR", tlr
+! print *, "Wall Time for excitation density", tex
+! print *, "Wall Time for SRG", tsrg
+! print *, "Wall time MO to AO Sigma", tmo
 
 ! Cumulant expansion
 
-  call RGWC(dotest,eta,nOrb,nC,nO,nV,nR,nS,Om,rho,eHF,eGW,eGW,Z)
+! call RGWC(dotest,eta,nOrb,nC,nO,nV,nR,nS,Om,rho,eHF,eGW,eGW,Z)
 
 ! Deallocate memory
 
-  deallocate(c,cp,P,F,Fp,J,K,SigC,Z,Om,XpY,XmY,rho,error,error_diis,F_diis)
+  deallocate(c,cp,P,F,Fp,J,K,SigC,Z,Om,XpY,XmY,rho,err,err_diis,F_diis)
 
 ! Perform BSE calculation
 

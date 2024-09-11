@@ -223,7 +223,7 @@ subroutine SRG_qsUGW(dotest,maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS
       end do
     end if
 
-    call USRG_self_energy(eta,nBas,nC,nO,nV,nR,nSt,eGW,Om,rho,EcGM,SigC,Z)
+    call USRG_self_energy(nBas,nC,nO,nV,nR,nSt,eGW,Om,rho,EcGM,SigC,Z)
 
     ! Make correlation self-energy Hermitian and transform it back to AO basis
    

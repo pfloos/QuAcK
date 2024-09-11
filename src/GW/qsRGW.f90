@@ -195,7 +195,6 @@ subroutine qsRGW(dotest,maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,dop
     call phLR(TDA_W,nS,Aph,Bph,EcRPA,Om,XpY,XmY)
     if(print_W) call print_excitation_energies('phRPA@GW@RHF','singlet',nS,Om)
 
-    ! Compute correlation part of the self-energy 
 
     call RGW_excitation_density(nOrb,nC,nO,nR,nS,ERI_MO,XpY,rho)
 
@@ -265,7 +264,6 @@ subroutine qsRGW(dotest,maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,dop
       call diagonalize_matrix(nOrb,cp,eGW)
       c = matmul(c,cp)
     endif
-
 
     call AOtoMO(nBas,nOrb,c,SigCp,SigC)
 
