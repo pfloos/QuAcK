@@ -1,5 +1,5 @@
 subroutine RG0W0(dotest,doACFDT,exchange_kernel,doXBS,dophBSE,dophBSE2,TDA_W,TDA,dBSE,dTDA,doppBSE,singlet,triplet, & 
-                 linearize,eta,regularize,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,dipole_int,eHF)
+                 linearize,eta,doSRG,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,dipole_int,eHF)
 
 ! Perform G0W0 calculation
 
@@ -25,7 +25,7 @@ subroutine RG0W0(dotest,doACFDT,exchange_kernel,doXBS,dophBSE,dophBSE2,TDA_W,TDA
   logical,intent(in)            :: triplet
   logical,intent(in)            :: linearize
   double precision,intent(in)   :: eta
-  logical,intent(in)            :: regularize
+  logical,intent(in)            :: doSRG
 
   integer,intent(in)            :: nBas
   integer,intent(in)            :: nOrb
@@ -87,6 +87,15 @@ subroutine RG0W0(dotest,doACFDT,exchange_kernel,doXBS,dophBSE,dophBSE2,TDA_W,TDA
     write(*,*)
   end if
 
+! SRG regularization
+
+  if(doSRG) then
+
+    write(*,*) '*** SRG regularized qsGW scheme ***'
+    write(*,*)
+
+  end if
+
 ! Memory allocation
 
   allocate(Aph(nS,nS),Bph(nS,nS),SigC(nOrb),Z(nOrb),Om(nS),XpY(nS,nS),XmY(nS,nS),rho(nOrb,nOrb,nS), & 
@@ -113,9 +122,11 @@ subroutine RG0W0(dotest,doACFDT,exchange_kernel,doXBS,dophBSE,dophBSE2,TDA_W,TDA
 ! Compute GW self-energy !
 !------------------------!
 
-  if(regularize) call GW_regularization(nOrb,nC,nO,nV,nR,nS,eHF,Om,rho)
-
-  call RGW_self_energy_diag(eta,nOrb,nC,nO,nV,nR,nS,eHF,Om,rho,EcGM,SigC,Z)
+  if(doSRG) then 
+    call RGW_SRG_self_energy_diag(nBas,nOrb,nC,nO,nV,nR,nS,eHF,Om,rho,EcGM,SigC,Z)
+  else
+    call RGW_self_energy_diag(eta,nBas,nOrb,nC,nO,nV,nR,nS,eHF,Om,rho,EcGM,SigC,Z)
+  end if
 
 !-----------------------------------!
 ! Solve the quasi-particle equation !

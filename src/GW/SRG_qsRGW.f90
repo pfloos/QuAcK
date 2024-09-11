@@ -272,7 +272,6 @@ subroutine SRG_qsRGW(dotest,maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS
 
     ! Save quasiparticles energy for next cycle
 
-    Conv = maxval(abs(err))
     eOld(:) = eGW(:)
 
     !------------------------------------------------------------------------

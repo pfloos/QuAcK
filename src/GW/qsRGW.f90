@@ -1,5 +1,5 @@
 subroutine qsRGW(dotest,maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,dophBSE,dophBSE2, &
-                 TDA_W,TDA,dBSE,dTDA,doppBSE,singlet,triplet,eta,regularize,nNuc,ZNuc,rNuc,    &
+                 TDA_W,TDA,dBSE,dTDA,doppBSE,singlet,triplet,eta,doSRG,nNuc,ZNuc,rNuc,         &
                  ENuc,nBas,nOrb,nC,nO,nV,nR,nS,ERHF,S,X,T,V,Hc,ERI_AO,                         &
                  ERI_MO,dipole_int_AO,dipole_int_MO,PHF,cHF,eHF)
 
@@ -28,7 +28,7 @@ subroutine qsRGW(dotest,maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,dop
   logical,intent(in)            :: singlet
   logical,intent(in)            :: triplet
   double precision,intent(in)   :: eta
-  logical,intent(in)            :: regularize
+  logical,intent(in)            :: doSRG
 
   integer,intent(in)            :: nNuc
   double precision,intent(in)   :: ZNuc(nNuc)
@@ -123,6 +123,15 @@ subroutine qsRGW(dotest,maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,dop
     write(*,*)
   end if
 
+! SRG regularization
+
+  if(doSRG) then
+
+    write(*,*) '*** SRG regularized qsGW scheme ***'
+    write(*,*)
+
+  end if
+
 ! Memory allocation
 
   allocate(eGW(nOrb))
@@ -195,12 +204,13 @@ subroutine qsRGW(dotest,maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,dop
     call phLR(TDA_W,nS,Aph,Bph,EcRPA,Om,XpY,XmY)
     if(print_W) call print_excitation_energies('phRPA@GW@RHF','singlet',nS,Om)
 
-
     call RGW_excitation_density(nOrb,nC,nO,nR,nS,ERI_MO,XpY,rho)
 
-    if(regularize) call GW_regularization(nOrb,nC,nO,nV,nR,nS,eGW,Om,rho)
-
-    call RGW_self_energy(eta,nOrb,nC,nO,nV,nR,nS,eGW,Om,rho,EcGM,SigC,Z)
+    if(doSRG) then 
+      call RGW_SRG_self_energy(nBas,nOrb,nC,nO,nV,nR,nS,eGW,Om,rho,EcGM,SigC,Z)
+    else
+      call RGW_self_energy(eta,nBas,nOrb,nC,nO,nV,nR,nS,eGW,Om,rho,EcGM,SigC,Z)
+    end if
 
     ! Make correlation self-energy Hermitian and transform it back to AO basis
    
