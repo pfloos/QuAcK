@@ -33,8 +33,7 @@ subroutine ppLR_GW_HR_calc(ispin, nOrb, nC, nO, nR, nOO, nVV, nS, lambda, e, eF,
 
   call wall_time(t1)
 
-  !if((nOO+nVV) .le. 20000) then
-  if((nOO+nVV) .le. 2) then
+  if((nOO+nVV) .le. 20000) then
 
     call ppLR_GW_HR_calc_oneshot(ispin, nOrb, nC, nO, nR, nOO, nVV, nS, lambda, e(1), eF, n_states_diag, &
                                  ERI(1,1,1,1), eta, rho(1,1,1), Om(1), U(1,1), W(1,1))
