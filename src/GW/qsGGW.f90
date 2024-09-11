@@ -1,5 +1,5 @@
 subroutine qsGGW(dotest,maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,dophBSE,dophBSE2,TDA_W,TDA,dBSE,dTDA,doppBSE, & 
-                 eta,doSRG,nNuc,ZNuc,rNuc,ENuc,nBas,nBas2,nC,nO,nV,nR,nS,EGHF,Ov,Or,T,V,Hc,ERI_AO,  & 
+                 eta,doSRG,nNuc,ZNuc,rNuc,ENuc,nBas,nBas2,nC,nO,nV,nR,nS,EGHF,Ov,Or,T,V,Hc,ERI_AO,                         & 
                  ERI_MO,dipole_int_AO,dipole_int_MO,PHF,cHF,eHF)
 
 ! Generalized version of quasiparticle self-consistent GW 

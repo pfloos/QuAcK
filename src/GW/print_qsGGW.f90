@@ -56,8 +56,6 @@ subroutine print_qsGGW(nBas,nBas2,nO,nSCF,Conv,thresh,eHF,eGW,c,S,SigC,Z,ENuc,ET
   LUMO = HOMO + 1
   Gap = eGW(LUMO)-eGW(HOMO)
 
-
-
 ! Density matrices
 
   allocate(Paa(nO,nO),Pab(nO,nO),Pba(nO,nO),Pbb(nO,nO))

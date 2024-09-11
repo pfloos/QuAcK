@@ -6,8 +6,7 @@ subroutine read_methods(doRHF,doUHF,doGHF,doROHF,              &
                         dophRPA,dophRPAx,docrRPA,doppRPA,      & 
                         doG0F2,doevGF2,doqsGF2,doufG0F02,      &
                         doG0F3,doevGF3,                        & 
-                        doG0W0,doevGW,doqsGW,                  & 
-                        doufG0W0,doufGW,                       & 
+                        doG0W0,doevGW,doqsGW,doufG0W0,doufGW,  & 
                         doG0T0pp,doevGTpp,doqsGTpp,doufG0T0pp, &
                         doG0T0eh,doevGTeh,doqsGTeh,            &
                         doRtest,doUtest,doGtest)
