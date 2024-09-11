@@ -124,24 +124,61 @@ subroutine RGW_ppBSE(TDA_W,TDA,dBSE,dTDA,singlet,triplet,eta,nOrb,nC,nO,nV,nR,nS
     allocate(Bpp(nVV,nOO),Cpp(nVV,nVV),Dpp(nOO,nOO))
     allocate(KB_sta(nVV,nOO),KC_sta(nVV,nVV),KD_sta(nOO,nOO))
 
+    print*, 'RGW_ppBSE_static_kernel_C:'
+    call wall_time(tt1)
     call RGW_ppBSE_static_kernel_C(ispin,eta,nOrb,nC,nO,nV,nR,nS,nVV,1d0,ERI,OmRPA,rho_RPA,KC_sta)
+    call wall_time(tt2)
+    write(*,'(A,1X,F10.3)'), 'wall time for RGW_ppBSE_static_kernel_C (sec)', tt2-tt1
+
+    print*, 'RGW_ppBSE_static_kernel_D:'
+    call wall_time(tt1)
     call RGW_ppBSE_static_kernel_D(ispin,eta,nOrb,nC,nO,nV,nR,nS,nOO,1d0,ERI,OmRPA,rho_RPA,KD_sta)
-    if(.not.TDA) call RGW_ppBSE_static_kernel_B(ispin,eta,nOrb,nC,nO,nV,nR,nS,nOO,nVV,1d0,ERI,OmRPA,rho_RPA,KB_sta)
+    call wall_time(tt2)
+    write(*,'(A,1X,F10.3)'), 'wall time for RGW_ppBSE_static_kernel_D (sec)', tt2-tt1
+
+    if(.not.TDA) then
+      print*, 'RGW_ppBSE_static_kernel_B:'
+      call wall_time(tt1)
+      call RGW_ppBSE_static_kernel_B(ispin,eta,nOrb,nC,nO,nV,nR,nS,nOO,nVV,1d0,ERI,OmRPA,rho_RPA,KB_sta)
+      call wall_time(tt2)
+      write(*,'(A,1X,F10.3)'), 'wall time for RGW_ppBSE_static_kernel_B (sec)', tt2-tt1
+    endif
     
+    print*, 'ppLR_C:'
+    call wall_time(tt1)
     call ppLR_C(ispin,nOrb,nC,nO,nV,nR,nVV,1d0,eGW,ERI,Cpp)
+    call wall_time(tt2)
+    write(*,'(A,1X,F10.3)'), 'wall time for ppLR_C (sec)', tt2-tt1
+
+    print*, 'ppLR_D:'
+    call wall_time(tt1)
     call ppLR_D(ispin,nOrb,nC,nO,nV,nR,nOO,1d0,eGW,ERI,Dpp)
-    if(.not.TDA) call ppLR_B(ispin,nOrb,nC,nO,nV,nR,nOO,nVV,1d0,ERI,Bpp)
+    call wall_time(tt2)
+    write(*,'(A,1X,F10.3)'), 'wall time for ppLR_D (sec)', tt2-tt1
+
+    if(.not.TDA) then
+      print*, 'ppLR_B:'
+      call wall_time(tt1)
+      call ppLR_B(ispin,nOrb,nC,nO,nV,nR,nOO,nVV,1d0,ERI,Bpp)
+      call wall_time(tt2)
+      write(*,'(A,1X,F10.3)'), 'wall time for ppLR_B (sec)', tt2-tt1
+    endif
 
     Bpp(:,:) = Bpp(:,:) + KB_sta(:,:)
     Cpp(:,:) = Cpp(:,:) + KC_sta(:,:)
     Dpp(:,:) = Dpp(:,:) + KD_sta(:,:)
 
+    print*, 'ppLR:'
+    call wall_time(tt1)
     call ppLR(TDA,nOO,nVV,Bpp,Cpp,Dpp,Om1,X1,Y1,Om2,X2,Y2,EcBSE(ispin))
+    call wall_time(tt2)
+    write(*,'(A,1X,F10.3)'), 'wall time for ppLR (sec)', tt2-tt1
+
     deallocate(Bpp,Cpp,Dpp,KB_sta,KC_sta,KD_sta)
 
-    !print*, 'LAPACK:'
-    !print*, Om2
-    !print*, Om1
+    print*, 'LAPACK:'
+    print*, Om2
+    print*, Om1
 
     ! ---
 
@@ -151,46 +188,46 @@ subroutine RGW_ppBSE(TDA_W,TDA,dBSE,dTDA,singlet,triplet,eta,nOrb,nC,nO,nV,nR,nS
     ! Davidson
     ! ---
 
-    !n_states = nOO + 5
-    !n_states_diag = n_states + 4
-    !allocate(Om(nOO+nVV), R(nOO+nVV,n_states_diag))
+    n_states = nOO + 5
+    n_states_diag = n_states + 4
+    allocate(Om(nOO+nVV), R(nOO+nVV,n_states_diag))
 
-    !supp_data_int = 1
-    !allocate(supp_data_int(supp_data_int_size))
-    !supp_data_int(1) = nS
+    supp_data_int = 1
+    allocate(supp_data_int(supp_data_int_size))
+    supp_data_int(1) = nS
 
-    !supp_data_dbl_size = nS + nOrb*nOrb*nS + 1
-    !allocate(supp_data_dbl(supp_data_dbl_size))
-    !! scalars
-    !supp_data_dbl(1) = eta
-    !i_data = 1
-    !! rho_RPA
-    !do q = 1, nOrb
-    !  do p = 1, nOrb
-    !    do m = 1, nS
-    !      i_data = i_data + 1
-    !      supp_data_dbl(i_data) = rho_RPA(p,q,m)
-    !    enddo
-    !  enddo
-    !enddo
-    !! OmRPA
-    !do m = 1, nS
-    !  i_data = i_data + 1
-    !  supp_data_dbl(i_data) = OmRPA(m)
-    !enddo
+    supp_data_dbl_size = nS + nOrb*nOrb*nS + 1
+    allocate(supp_data_dbl(supp_data_dbl_size))
+    ! scalars
+    supp_data_dbl(1) = eta
+    i_data = 1
+    ! rho_RPA
+    do q = 1, nOrb
+      do p = 1, nOrb
+        do m = 1, nS
+          i_data = i_data + 1
+          supp_data_dbl(i_data) = rho_RPA(p,q,m)
+        enddo
+      enddo
+    enddo
+    ! OmRPA
+    do m = 1, nS
+      i_data = i_data + 1
+      supp_data_dbl(i_data) = OmRPA(m)
+    enddo
 
-    !call ppLR_davidson(ispin, TDA, nC, nO, nR, nOrb, nOO, nVV, &
-    !                   1.d0,                                   & ! lambda
-    !                   eGW(1),                                 &
-    !                   0.d0,                                   & ! eF
-    !                   ERI(1,1,1,1),                           &
-    !                   supp_data_int(1), supp_data_int_size,   &
-    !                   supp_data_dbl(1), supp_data_dbl_size,   &
-    !                   Om(1), R(1,1), n_states, n_states_diag, "GW")
+    call ppLR_davidson(ispin, TDA, nC, nO, nR, nOrb, nOO, nVV, &
+                       1.d0,                                   & ! lambda
+                       eGW(1),                                 &
+                       0.d0,                                   & ! eF
+                       ERI(1,1,1,1),                           &
+                       supp_data_int(1), supp_data_int_size,   &
+                       supp_data_dbl(1), supp_data_dbl_size,   &
+                       Om(1), R(1,1), n_states, n_states_diag, "GW")
 
-    !deallocate(Om, R)
-    !deallocate(supp_data_dbl, supp_data_int)
-    !stop
+    deallocate(Om, R)
+    deallocate(supp_data_dbl, supp_data_int)
+    stop
 
     ! ---
 
