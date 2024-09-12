@@ -1,4 +1,4 @@
-# QuAcK: a open-source software for emerging quantum electronic structure methods
+# QuAcK: an open-source software for emerging quantum electronic structure methods
 
 <img src="logo/logo_quack.png"  width="250">
 
