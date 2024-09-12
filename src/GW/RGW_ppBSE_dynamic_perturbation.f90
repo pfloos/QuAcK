@@ -1,5 +1,5 @@
 subroutine RGW_ppBSE_dynamic_perturbation(ispin,dTDA,eta,nBas,nC,nO,nV,nR,nS,nOO,nVV,eW,eGW,ERI,dipole_int, & 
-                                         OmRPA,rho_RPA,Om1,X1,Y1,Om2,X2,Y2,KB_sta,KC_sta,KD_sta)
+                                          OmRPA,rho_RPA,Om1,X1,Y1,Om2,X2,Y2,KB_sta,KC_sta,KD_sta)
 
 ! Compute dynamical effects via perturbation theory for BSE
 
@@ -121,7 +121,7 @@ subroutine RGW_ppBSE_dynamic_perturbation(ispin,dTDA,eta,nBas,nC,nO,nV,nR,nS,nOO
 
       call RGW_ppBSE_dynamic_kernel_D(ispin,eta,nBas,nC,nO,nV,nR,nS,nOO,1d0,eGW,OmRPA,rho_RPA,Om2(ij),KD_dyn,ZD_dyn)
  
-      Z2_dyn(kl)  = dot_product(Y2(:,ij),matmul(ZD_dyn,Y2(:,ij)))
+      Z2_dyn(kl)  = + dot_product(Y2(:,ij),matmul(ZD_dyn,Y2(:,ij)))
       Om2_dyn(kl) = - dot_product(Y2(:,ij),matmul(KD_dyn - KD_sta,Y2(:,ij)))
 
     else

@@ -24,7 +24,7 @@ subroutine RGW_plot_self_energy(nBas,eta,nC,nO,nV,nR,nS,eHF,eGW,Om,rho)
   integer                       :: p,g
   integer                       :: nGrid
   double precision              :: wmin,wmax,dw
-  double precision,external     :: RGW_ReSigC,RGW_ImSigC,RGW_RedSigC
+  double precision,external     :: RGW_Re_SigC,RGW_Im_SigC,RGW_Re_dSigC
   double precision,allocatable  :: w(:)
   double precision,allocatable  :: ReSigC(:,:),ImSigC(:,:)
   double precision,allocatable  :: Z(:,:)
@@ -56,9 +56,9 @@ subroutine RGW_plot_self_energy(nBas,eta,nC,nO,nV,nR,nS,eHF,eGW,Om,rho)
   do g=1,nGrid
     do p=nC+1,nBas-nR
 
-      ReSigC(p,g) = RGW_ReSigC(p,w(g),eta,nBas,nC,nO,nV,nR,nS,eGW,Om,rho)
-      ImSigC(p,g) = RGW_ImSigC(p,w(g),eta,nBas,nC,nO,nV,nR,nS,eGW,Om,rho)
-      Z(p,g)      = RGW_RedSigC(p,w(g),eta,nBas,nC,nO,nV,nR,nS,eGW,Om,rho)
+      ReSigC(p,g) = RGW_Re_SigC(p,w(g),eta,nBas,nC,nO,nV,nR,nS,eGW,Om,rho)
+      ImSigC(p,g) = RGW_Im_SigC(p,w(g),eta,nBas,nC,nO,nV,nR,nS,eGW,Om,rho)
+      Z(p,g)      = RGW_Re_dSigC(p,w(g),eta,nBas,nC,nO,nV,nR,nS,eGW,Om,rho)
 
     end do
   end do

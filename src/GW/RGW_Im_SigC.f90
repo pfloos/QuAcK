@@ -1,4 +1,4 @@
-double precision function RGW_ImSigC(p,w,eta,nBas,nC,nO,nV,nR,nS,e,Om,rho)
+double precision function RGW_Im_SigC(p,w,eta,nBas,nC,nO,nV,nR,nS,e,Om,rho)
 
 ! Compute diagonal of the correlation part of the self-energy
 
@@ -27,7 +27,7 @@ double precision function RGW_ImSigC(p,w,eta,nBas,nC,nO,nV,nR,nS,e,Om,rho)
 
 ! Initialize 
 
-  RGW_ImSigC = 0d0
+  RGW_Im_SigC = 0d0
 
 ! Occupied part of the correlation self-energy
 
@@ -35,7 +35,7 @@ double precision function RGW_ImSigC(p,w,eta,nBas,nC,nO,nV,nR,nS,e,Om,rho)
     do m=1,nS
       eps = w - e(i) + Om(m)
       num = 2d0*rho(p,i,m)**2
-      RGW_ImSigC = RGW_ImSigC + num*eta/(eps**2 + eta**2)
+      RGW_Im_SigC = RGW_Im_SigC + num*eta/(eps**2 + eta**2)
     end do
   end do
 
@@ -45,7 +45,7 @@ double precision function RGW_ImSigC(p,w,eta,nBas,nC,nO,nV,nR,nS,e,Om,rho)
     do m=1,nS
       eps = w - e(a) - Om(m)
       num = 2d0*rho(p,a,m)**2
-      RGW_ImSigC = RGW_ImSigC - num*eta/(eps**2 + eta**2)
+      RGW_Im_SigC = RGW_Im_SigC - num*eta/(eps**2 + eta**2)
     end do
   end do
 

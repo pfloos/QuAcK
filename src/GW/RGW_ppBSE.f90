@@ -176,7 +176,7 @@ subroutine RGW_ppBSE(TDA_W,TDA,dBSE,dTDA,singlet,triplet,eta,nOrb,nC,nO,nV,nR,nS
     !call wall_time(tt2)
     !write(*,'(A,1X,F10.3)'), 'wall time for ppLR (sec)', tt2-tt1
 
-    deallocate(Bpp,Cpp,Dpp,KB_sta,KC_sta,KD_sta)
+    deallocate(Bpp,Cpp,Dpp)
 !
 !    print*, 'LAPACK:'
 !    print*, Om2
@@ -241,10 +241,11 @@ subroutine RGW_ppBSE(TDA_W,TDA,dBSE,dTDA,singlet,triplet,eta,nOrb,nC,nO,nV,nR,nS
 
     if(dBSE) &
         call RGW_ppBSE_dynamic_perturbation(ispin,dTDA,eta,nOrb,nC,nO,nV,nR,nS,nOO,nVV,eW,eGW,ERI,dipole_int,OmRPA,rho_RPA, &
-                                           Om1,X1,Y1,Om2,X2,Y2,KB_sta,KC_sta,KD_sta)
+                                            Om1,X1,Y1,Om2,X2,Y2,KB_sta,KC_sta,KD_sta)
 
-
+    deallocate(KB_sta,KC_sta,KD_sta)
     deallocate(Om1,X1,Y1,Om2,X2,Y2)
+
   end if
 
 !-------------------
@@ -289,7 +290,7 @@ subroutine RGW_ppBSE(TDA_W,TDA,dBSE,dTDA,singlet,triplet,eta,nOrb,nC,nO,nV,nR,nS
     Dpp(:,:) = Dpp(:,:) + KD_sta(:,:)
 
     call ppLR(TDA,nOO,nVV,Bpp,Cpp,Dpp,Om1,X1,Y1,Om2,X2,Y2,EcBSE(ispin))
-    deallocate(Bpp,Cpp,Dpp,KB_sta,KC_sta,KD_sta)
+    deallocate(Bpp,Cpp,Dpp)
 
     !print*, 'LAPACK:'
     !print*, Om2
@@ -351,9 +352,10 @@ subroutine RGW_ppBSE(TDA_W,TDA,dBSE,dTDA,singlet,triplet,eta,nOrb,nC,nO,nV,nR,nS
     !----------------------------------------------------!
 
     if(dBSE) &
-        call RGW_ppBSE_dynamic_perturbation(ispin,dTDA,eta,nOrb,nC,nO,nV,nR,nS,nOO,nVV,eW,eGW,ERI,dipole_int,OmRPA,rho_RPA, &
-                                           Om1,X1,Y1,Om2,X2,Y2,KB_sta,KC_sta,KD_sta)
+      call RGW_ppBSE_dynamic_perturbation(ispin,dTDA,eta,nOrb,nC,nO,nV,nR,nS,nOO,nVV,eW,eGW,ERI,dipole_int,OmRPA,rho_RPA, &
+                                          Om1,X1,Y1,Om2,X2,Y2,KB_sta,KC_sta,KD_sta)
 
+    deallocate(KB_sta,KC_sta,KD_sta)
     deallocate(Om1,X1,Y1,Om2,X2,Y2)
 
   end if
