@@ -45,7 +45,7 @@ subroutine RGTpp_QP_graph(eta,nBas,nC,nO,nV,nR,nOOs,nVVs,nOOt,nVVt,eHF,Om1s,rho1
 ! Run Newton's algorithm to find the root
 
   write(*,*)'-----------------------------------------------------'
-  write(*,'(A5,1X,A3,1X,A15,1X,A15,1X,A10)') 'Orb.','It.','e_GTpplin (eV)','e_GTpplin (eV)','Z'
+  write(*,'(A5,1X,A3,1X,A15,1X,A15,1X,A10)') 'Orb.','It.','e_GTpplin (eV)','e_GTpp (eV)','Z'
   write(*,*)'-----------------------------------------------------'
 
   do p=nC+1,nBas-nR

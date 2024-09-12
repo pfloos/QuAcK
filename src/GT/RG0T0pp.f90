@@ -40,7 +40,7 @@ subroutine RG0T0pp(dotest,doACFDT,exchange_kernel,doXBS,dophBSE,TDA_T,TDA,dBSE,d
 
 ! Local variables
 
-  logical                       :: print_T = .false.
+  logical                       :: print_T = .true.
   double precision              :: lambda
 
   integer                       :: isp_T
@@ -173,6 +173,7 @@ subroutine RG0T0pp(dotest,doACFDT,exchange_kernel,doXBS,dophBSE,TDA_T,TDA,dBSE,d
   if(.not.TDA_T) call ppLR_B(iblock,nOrb,nC,nO,nV,nR,nOOt,nVVt,lambda,ERI,Bpp)
 
   call ppLR(TDA_T,nOOt,nVVt,Bpp,Cpp,Dpp,Om1t,X1t,Y1t,Om2t,X2t,Y2t,EcRPA(isp_T))
+
   deallocate(Bpp,Cpp,Dpp)
   !print*, 'LAPACK:'
   !print*, Om2t
@@ -244,7 +245,7 @@ subroutine RG0T0pp(dotest,doACFDT,exchange_kernel,doXBS,dophBSE,TDA_T,TDA,dBSE,d
     write(*,*)
      
    call RGTpp_QP_graph(eta,nOrb,nC,nO,nV,nR,nOOs,nVVs,nOOt,nVVt,eHF,Om1s,rho1s,Om2s,rho2s, & 
-                      Om1t,rho1t,Om2t,rho2t,eGTlin,eHF,eGT,Z)
+                       Om1t,rho1t,Om2t,rho2t,eGTlin,eHF,eGT,Z)
 
   end if
 

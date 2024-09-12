@@ -42,7 +42,7 @@ subroutine RGTeh_QP_graph(eta,nBas,nC,nO,nV,nR,nS,eHF,Om,rhoL,rhoR,eGTlin,eOld,e
 ! Run Newton's algorithm to find the root
 
   write(*,*)'-----------------------------------------------------'
-  write(*,'(A5,1X,A3,1X,A15,1X,A15,1X,A10)') 'Orb.','It.','e_GTehlin (eV)','e_GTehlin (eV)','Z'
+  write(*,'(A5,1X,A3,1X,A15,1X,A15,1X,A10)') 'Orb.','It.','e_GTehlin (eV)','e_GTeh (eV)','Z'
   write(*,*)'-----------------------------------------------------'
 
   do p=nC+1,nBas-nR

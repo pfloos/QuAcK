@@ -76,7 +76,6 @@ subroutine RGW_ppBSE(TDA_W,TDA,dBSE,dTDA,singlet,triplet,eta,nOrb,nC,nO,nV,nR,nS
 
   double precision,intent(out)  :: EcBSE(nspin)
 
-
 !---------------------------------
 ! Compute (singlet) RPA screening 
 !---------------------------------

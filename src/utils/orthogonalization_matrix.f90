@@ -19,7 +19,7 @@ subroutine orthogonalization_matrix(nBas,nOrb,S,X)
 
 ! Output variables
 
-  integer                       :: nOrb
+  integer,intent(out)           :: nOrb
   double precision,intent(out)  :: X(nBas,nBas)
 
   debug = .false.
