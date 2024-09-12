@@ -51,7 +51,7 @@ subroutine ppLR_B(ispin,nOrb,nC,nO,nV,nR,nOO,nVV,lambda,ERI,Bpp)
 
 ! Build the B matrix for the triplet or alpha-alpha manifold
 
-  if(ispin == 2) then
+  if(ispin == 2 .or. ispin == 4) then
 
     ab = 0
     do a=nO+1,nOrb-nR

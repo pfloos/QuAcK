@@ -111,6 +111,7 @@ subroutine ppLR(TDA,nOO,nVV,Bpp,Cpp,Dpp,Om1,X1,Y1,Om2,X2,Y2,EcRPA)
   end if
 
   ! Compute the RPA correlation energy
+
   EcRPA = 0.5d0 * (sum(Om1) - sum(Om2) - trace_matrix(nVV, Cpp) - trace_matrix(nOO, Dpp))
   EcRPA1 = +sum(Om1) - trace_matrix(nVV, Cpp)
   EcRPA2 = -sum(Om2) - trace_matrix(nOO, Dpp)
@@ -119,7 +120,7 @@ subroutine ppLR(TDA,nOO,nVV,Bpp,Cpp,Dpp,Om1,X1,Y1,Om2,X2,Y2,EcRPA)
     print*,'!!! Issue in pp-RPA linear reponse calculation RPA1 != RPA2 !!!'
   endif
 
-  deallocate(M, Z, Om)
+  deallocate(M,Z,Om)
 
 end subroutine 
 

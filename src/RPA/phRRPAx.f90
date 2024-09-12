@@ -118,11 +118,6 @@ subroutine phRRPAx(dotest,TDA,doACFDT,exchange_kernel,singlet,triplet,nBas,nC,nO
 
   if(doACFDT) then
 
-    write(*,*) '---------------------------------------------------------'
-    write(*,*) 'Adiabatic connection version of phRPAx correlation energy'
-    write(*,*) '---------------------------------------------------------'
-    write(*,*)
-
     call phACFDT(exchange_kernel,dRPA,TDA,singlet,triplet,nBas,nC,nO,nV,nR,nS,ERI,e,EcRPA)
 
     write(*,*)

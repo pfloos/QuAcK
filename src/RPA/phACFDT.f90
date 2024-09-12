@@ -42,6 +42,24 @@ subroutine phACFDT(exchange_kernel,dRPA,TDA,singlet,triplet,nBas,nC,nO,nV,nR,nS,
 
   double precision,intent(out)  :: EcAC(nspin)
 
+! Hello world
+
+  if(dRPA) then
+
+    write(*,*) '--------------------------------------------------------'
+    write(*,*) 'Adiabatic connection version of phRPA correlation energy'
+    write(*,*) '--------------------------------------------------------'
+    write(*,*) 
+
+  else
+
+    write(*,*) '-------------------------------------------------------'
+    write(*,*) 'Adiabatic connection version of crRPA correlation energy'
+    write(*,*) '-------------------------------------------------------'
+    write(*,*)
+
+  end if
+
 ! Memory allocation
 
   allocate(Ec(nAC,nspin))

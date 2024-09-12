@@ -152,8 +152,6 @@ subroutine GG0T0pp(dotest,doACFDT,exchange_kernel,doXBS,dophBSE,TDA_T,TDA,dBSE,d
 
   end if
 
-! call GGTpp_plot_self_energy(nOrb,nC,nO,nV,nR,nOO,nVV,eHF,eGT,Om1,rho1,Om2,rho2)
-
 !----------------------------------------------
 ! Dump results
 !----------------------------------------------
@@ -171,76 +169,6 @@ subroutine GG0T0pp(dotest,doACFDT,exchange_kernel,doXBS,dophBSE,TDA_T,TDA,dBSE,d
   deallocate(Bpp,Cpp,Dpp)
 
   call print_GG0T0pp(nOrb,nO,eHF,ENuc,EGHF,Sig,Z,eGT,EcGM,EcRPA)
-
-! Perform BSE calculation
-
-! if(dophBSE) then
-
-!   call GGTpp_phBSE(TDA_T,TDA,dBSE,dTDA,eta,nOrb,nC,nO,nV,nR,nS,nOO,nVV, &
-!                   Om1,X1,Y1,Om2,X2,Y2,rho1,rho2,ERI,dipole_int,eHF,eGT,EcBSE)
-
-!   if(exchange_kernel) then
-
-!     EcBSE = 0.5d0*EcBSE
-
-!   end if
-
-!   write(*,*)
-!   write(*,*)'-------------------------------------------------------------------------------'
-!   write(*,'(2X,A50,F20.10,A3)') 'Tr@phBSE@G0T0pp@GHF correlation energy       = ',EcBSE,' au'
-!   write(*,'(2X,A50,F20.10,A3)') 'Tr@phBSE@G0T0pp@GHF total energy             = ',ENuc + EGHF + EcBSE,' au'
-!   write(*,*)'-------------------------------------------------------------------------------'
-!   write(*,*)
-
-!   Compute the BSE correlation energy via the adiabatic connection 
-
-!   if(doACFDT) then
-
-!     write(*,*) '--------------------------------------------------------'
-!     write(*,*) 'Adiabatic connection version of phBSE correlation energy'
-!     write(*,*) '--------------------------------------------------------'
-!     write(*,*)
-
-!     if(doXBS) then
-
-!       write(*,*) '*** scaled screening version (XBS) ***'
-!       write(*,*)
-
-!     end if
-
-!     call RGTpp_phACFDT(exchange_kernel,doXBS,.false.,TDA_T,TDA,dophBSE,eta,nOrb,nC,nO,nV,nR,nS, &
-!                       nOO,nVV,Om1,X1,Y1,Om2,X2,Y2,rho1,rho2,ERI,eHF,eGT,EcBSE)
-
-!     if(exchange_kernel) then
-
-!       EcBSE = 0.5d0*EcBSE
-
-!     end if
-
-!     write(*,*)
-!     write(*,*)'-------------------------------------------------------------------------------'
-!     write(*,'(2X,A50,F20.10,A3)') 'AC@phBSE@G0T0pp@GHF correlation energy           = ',EcBSE,' au'
-!     write(*,'(2X,A50,F20.10,A3)') 'AC@phBSE@G0T0pp@GHF total       energy           = ',ENuc + EGHF + EcBSE,' au'
-!     write(*,*)'-------------------------------------------------------------------------------'
-!     write(*,*)
-
-!   end if
-
-! end if
-
-! if(doppBSE) then
-
-!   call GGTpp_ppBSE(TDA_T,TDA,dBSE,dTDA,eta,nOrb,nC,nO,nV,nR,nOO,nVV, &
-!                   Om1,X1,Y1,Om2,X2,Y2,rho1,rho2,ERI,dipole_int,eHF,eGT,EcBSE)
-
-!   write(*,*)
-!   write(*,*)'-------------------------------------------------------------------------------'
-!   write(*,'(2X,A50,F20.10,A3)') 'Tr@ppBSE@G0T0pp@GHF correlation energy           = ',EcBSE,' au'
-!   write(*,'(2X,A50,F20.10,A3)') 'Tr@ppBSE@G0T0pp@GHF total       energy           = ',ENuc + EGHF + EcBSE,' au'
-!   write(*,*)'-------------------------------------------------------------------------------'
-!   write(*,*)
-
-! end if
 
 ! Testing zone
 

@@ -47,6 +47,13 @@ subroutine ppACFDT(TDA,singlet,triplet,nBas,nC,nO,nV,nR,ERI,e,EcAC)
 
   double precision,intent(out)  :: EcAC(nspin)
 
+! Hello world
+
+  write(*,*) '--------------------------------------------------------'
+  write(*,*) 'Adiabatic connection version of ppRPA correlation energy'
+  write(*,*) '--------------------------------------------------------'
+  write(*,*)
+
 ! Memory allocation
 
   allocate(Ec(nAC,nspin))
