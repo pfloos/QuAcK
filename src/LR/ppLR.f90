@@ -43,7 +43,6 @@ subroutine ppLR(TDA,nOO,nVV,Bpp,Cpp,Dpp,Om1,X1,Y1,Om2,X2,Y2,EcRPA)
 
   double precision, external    :: trace_matrix
 
-
   N = nOO + nVV
 
   allocate(M(N,N), Z(N,N), Om(N))
@@ -70,10 +69,13 @@ subroutine ppLR(TDA,nOO,nVV,Bpp,Cpp,Dpp,Om1,X1,Y1,Om2,X2,Y2,EcRPA)
 
 !   if((nOO .eq. 0) .or. (nVV .eq. 0)) then
 
-      ! Diagonalize the p-p matrix
-      if(nOO+nVV > 0) call diagonalize_general_matrix(nOO+nVV, M, Om, Z)
+      ! Diagonalize the pp matrix
+
+      if(nOO+nVV > 0) call diagonalize_general_matrix(nOO+nVV,M,Om,Z)
+
       ! Split the various quantities in p-p and h-h parts
-      call sort_ppRPA(nOO, nVV, Om, Z, Om1, X1, Y1, Om2, X2, Y2)
+
+      call sort_ppRPA(nOO,nVV,Om,Z,Om1,X1,Y1,Om2,X2,Y2)
 
 !   else
 

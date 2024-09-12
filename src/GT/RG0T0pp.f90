@@ -40,8 +40,8 @@ subroutine RG0T0pp(dotest,doACFDT,exchange_kernel,doXBS,dophBSE,TDA_T,TDA,dBSE,d
 
 ! Local variables
 
-  logical                       :: print_T = .true.
-  double precision              :: lambda
+  logical                       :: print_T   = .true.
+  logical                       :: plot_self = .false.
 
   integer                       :: isp_T
   integer                       :: iblock
@@ -80,10 +80,6 @@ subroutine RG0T0pp(dotest,doACFDT,exchange_kernel,doXBS,dophBSE,TDA_T,TDA,dBSE,d
   write(*,*)'* Restricted G0T0pp Calculation *'
   write(*,*)'*********************************'
   write(*,*)
-
-! Initialization
-
-  lambda = 1d0
 
 ! TDA for T
 
@@ -125,33 +121,13 @@ subroutine RG0T0pp(dotest,doACFDT,exchange_kernel,doXBS,dophBSE,TDA_T,TDA,dBSE,d
 
   allocate(Bpp(nVVs,nOOs),Cpp(nVVs,nVVs),Dpp(nOOs,nOOs))
 
-  call ppLR_C(iblock,nOrb,nC,nO,nV,nR,nVVs,lambda,eHF,ERI,Cpp)
-  call ppLR_D(iblock,nOrb,nC,nO,nV,nR,nOOs,lambda,eHF,ERI,Dpp)
-  if(.not.TDA_T) call ppLR_B(iblock,nOrb,nC,nO,nV,nR,nOOs,nVVs,lambda,ERI,Bpp)
+  if(.not.TDA_T) call ppLR_B(iblock,nOrb,nC,nO,nV,nR,nOOs,nVVs,1d0,ERI,Bpp)
+                 call ppLR_C(iblock,nOrb,nC,nO,nV,nR,nVVs,1d0,eHF,ERI,Cpp)
+                 call ppLR_D(iblock,nOrb,nC,nO,nV,nR,nOOs,1d0,eHF,ERI,Dpp)
 
   call ppLR(TDA_T,nOOs,nVVs,Bpp,Cpp,Dpp,Om1s,X1s,Y1s,Om2s,X2s,Y2s,EcRPA(isp_T))
-  deallocate(Bpp,Cpp,Dpp)
-  !print*, 'LAPACK:'
-  !print*, Om2s
-  !print*, Om1s
 
-  !n_states = nOOs + 5
-  !n_states_diag = n_states + 4
-  !allocate(Om(nOOs+nVVs), R(nOOs+nVVs,n_states_diag))
-  !allocate(supp_data_dbl(1), supp_data_int(1))
-  !supp_data_int(1) = 0
-  !supp_data_dbl(1) = 0.d0
-  !call ppLR_davidson(iblock, TDA_T, nC, nO, nR, nOrb, nOOs, nVVs, &
-  !                   1.d0,                                        & ! lambda
-  !                   eHF(1),                                      &
-  !                   0.d0,                                        & ! eF
-  !                   ERI(1,1,1,1),                                &
-  !                   supp_data_int(1), 1,                         &
-  !                   supp_data_dbl(1), 1,                         &
-  !                   Om(1), R(1,1), n_states, n_states_diag, "RPA")
-  !deallocate(supp_data_dbl, supp_data_int)
-  !deallocate(Om, R)
-  !stop
+  deallocate(Bpp,Cpp,Dpp)
 
   if(print_T) call print_excitation_energies('ppRPA@RHF','2p (alpha-beta)',nVVs,Om1s)
   if(print_T) call print_excitation_energies('ppRPA@RHF','2h (alpha-beta)',nOOs,Om2s)
@@ -168,34 +144,13 @@ subroutine RG0T0pp(dotest,doACFDT,exchange_kernel,doXBS,dophBSE,TDA_T,TDA,dBSE,d
 
   allocate(Bpp(nVVt,nOOt),Cpp(nVVt,nVVt),Dpp(nOOt,nOOt))
 
-  call ppLR_C(iblock,nOrb,nC,nO,nV,nR,nVVt,lambda,eHF,ERI,Cpp)
-  call ppLR_D(iblock,nOrb,nC,nO,nV,nR,nOOt,lambda,eHF,ERI,Dpp)
-  if(.not.TDA_T) call ppLR_B(iblock,nOrb,nC,nO,nV,nR,nOOt,nVVt,lambda,ERI,Bpp)
+  if(.not.TDA_T) call ppLR_B(iblock,nOrb,nC,nO,nV,nR,nOOt,nVVt,1d0,ERI,Bpp)
+                 call ppLR_C(iblock,nOrb,nC,nO,nV,nR,nVVt,1d0,eHF,ERI,Cpp)
+                 call ppLR_D(iblock,nOrb,nC,nO,nV,nR,nOOt,1d0,eHF,ERI,Dpp)
 
   call ppLR(TDA_T,nOOt,nVVt,Bpp,Cpp,Dpp,Om1t,X1t,Y1t,Om2t,X2t,Y2t,EcRPA(isp_T))
 
   deallocate(Bpp,Cpp,Dpp)
-  !print*, 'LAPACK:'
-  !print*, Om2t
-  !print*, Om1t
-
-  !n_states = nOOt + 5
-  !n_states_diag = n_states + 4
-  !allocate(Om(nOOt+nVVt), R(nOOt+nVVt,n_states_diag))
-  !allocate(supp_data_dbl(1), supp_data_int(1))
-  !supp_data_int(1) = 0
-  !supp_data_dbl(1) = 0.d0
-  !call ppLR_davidson(iblock, TDA_T, nC, nO, nR, nOrb, nOOt, nVVt, &
-  !                   1.d0,                                        & ! lambda
-  !                   eHF(1),                                      &
-  !                   0.d0,                                        & ! eF
-  !                   ERI(1,1,1,1),                                &
-  !                   supp_data_int(1), 1,                         &
-  !                   supp_data_dbl(1), 1,                         &
-  !                   Om(1), R(1,1), n_states, n_states_diag, "RPA")
-  !deallocate(Om, R)
-  !deallocate(supp_data_dbl)
-  !stop
 
   if(print_T) call print_excitation_energies('ppRPA@RHF','2p (alpha-alpha)',nVVt,Om1t)
   if(print_T) call print_excitation_energies('ppRPA@RHF','2h (alpha-alpha)',nOOt,Om2t)
@@ -224,7 +179,7 @@ subroutine RG0T0pp(dotest,doACFDT,exchange_kernel,doXBS,dophBSE,TDA_T,TDA,dBSE,d
   end if
 
   call RGTpp_self_energy_diag(eta,nOrb,nC,nO,nV,nR,nOOs,nVVs,nOOt,nVVt,eHF,Om1s,rho1s,Om2s,rho2s, & 
-                             Om1t,rho1t,Om2t,rho2t,EcGM,Sig,Z)
+                              Om1t,rho1t,Om2t,rho2t,EcGM,Sig,Z)
 
 !----------------------------------------------
 ! Solve the quasi-particle equation
@@ -249,8 +204,8 @@ subroutine RG0T0pp(dotest,doACFDT,exchange_kernel,doXBS,dophBSE,TDA_T,TDA,dBSE,d
 
   end if
 
-! call RGTpp_plot_self_energy(nOrb,nC,nO,nV,nR,nOOs,nVVs,nOOt,nVVt,eHF,eGT,Om1s,rho1s,Om2s,rho2s, &
-!                            Om1t,rho1t,Om2t,rho2t)
+  if(plot_self) call RGTpp_plot_self_energy(nOrb,nC,nO,nV,nR,nOOs,nVVs,nOOt,nVVt,eHF,eGT,Om1s,rho1s,Om2s,rho2s, &
+                                            Om1t,rho1t,Om2t,rho2t)
 
 !----------------------------------------------
 ! Dump results
@@ -264,9 +219,9 @@ subroutine RG0T0pp(dotest,doACFDT,exchange_kernel,doXBS,dophBSE,TDA_T,TDA,dBSE,d
 
   allocate(Bpp(nVVs,nOOs),Cpp(nVVs,nVVs),Dpp(nOOs,nOOs))
 
-  call ppLR_C(iblock,nOrb,nC,nO,nV,nR,nVVs,lambda,eGT,ERI,Cpp)
-  call ppLR_D(iblock,nOrb,nC,nO,nV,nR,nOOs,lambda,eGT,ERI,Dpp)
-  if(.not.TDA_T) call ppLR_B(iblock,nOrb,nC,nO,nV,nR,nOOs,nVVs,lambda,ERI,Bpp)
+  if(.not.TDA_T) call ppLR_B(iblock,nOrb,nC,nO,nV,nR,nOOs,nVVs,1d0,ERI,Bpp)
+                 call ppLR_C(iblock,nOrb,nC,nO,nV,nR,nVVs,1d0,eGT,ERI,Cpp)
+                 call ppLR_D(iblock,nOrb,nC,nO,nV,nR,nOOs,1d0,eGT,ERI,Dpp)
 
   call ppLR(TDA_T,nOOs,nVVs,Bpp,Cpp,Dpp,Om1s,X1s,Y1s,Om2s,X2s,Y2s,EcRPA(isp_T))
 
@@ -278,9 +233,9 @@ subroutine RG0T0pp(dotest,doACFDT,exchange_kernel,doXBS,dophBSE,TDA_T,TDA,dBSE,d
 
   allocate(Bpp(nVVt,nOOt),Cpp(nVVt,nVVt),Dpp(nOOt,nOOt))
 
-  call ppLR_C(iblock,nOrb,nC,nO,nV,nR,nVVt,lambda,eGT,ERI,Cpp)
-  call ppLR_D(iblock,nOrb,nC,nO,nV,nR,nOOt,lambda,eGT,ERI,Dpp)
-  if(.not.TDA_T) call ppLR_B(iblock,nOrb,nC,nO,nV,nR,nOOt,nVVt,lambda,ERI,Bpp)
+  if(.not.TDA_T) call ppLR_B(iblock,nOrb,nC,nO,nV,nR,nOOt,nVVt,1d0,ERI,Bpp)
+                 call ppLR_C(iblock,nOrb,nC,nO,nV,nR,nVVt,1d0,eGT,ERI,Cpp)
+                 call ppLR_D(iblock,nOrb,nC,nO,nV,nR,nOOt,1d0,eGT,ERI,Dpp)
 
   call ppLR(TDA_T,nOOt,nVVt,Bpp,Cpp,Dpp,Om1t,X1t,Y1t,Om2t,X2t,Y2t,EcRPA(isp_T))
 
@@ -295,16 +250,9 @@ subroutine RG0T0pp(dotest,doACFDT,exchange_kernel,doXBS,dophBSE,TDA_T,TDA,dBSE,d
 
   if(dophBSE) then
 
-    call RGTpp_phBSE(TDA_T,TDA,dBSE,dTDA,singlet,triplet,eta,nOrb,nC,nO,nV,nR,nS,nOOs,nVVs,nOOt,nVVt,   & 
-                    Om1s,X1s,Y1s,Om2s,X2s,Y2s,rho1s,rho2s,Om1t,X1t,Y1t,Om2t,X2t,Y2t,rho1t,rho2t, &
+    call RGTpp_phBSE(exchange_kernel,TDA_T,TDA,dBSE,dTDA,singlet,triplet,eta,nOrb,nC,nO,nV,nR,nS,nOOs,nVVs,nOOt,nVVt, & 
+                    Om1s,X1s,Y1s,Om2s,X2s,Y2s,rho1s,rho2s,Om1t,X1t,Y1t,Om2t,X2t,Y2t,rho1t,rho2t,      &
                     ERI,dipole_int,eHF,eGT,EcBSE)
-
-    if(exchange_kernel) then
-
-      EcBSE(1) = 0.5d0*EcBSE(1)
-      EcBSE(2) = 1.5d0*EcBSE(1)
-
-    end if
 
     write(*,*)
     write(*,*)'-------------------------------------------------------------------------------'
@@ -319,28 +267,9 @@ subroutine RG0T0pp(dotest,doACFDT,exchange_kernel,doXBS,dophBSE,TDA_T,TDA,dBSE,d
 
     if(doACFDT) then
 
-      write(*,*) '--------------------------------------------------------'
-      write(*,*) 'Adiabatic connection version of phBSE correlation energy'
-      write(*,*) '--------------------------------------------------------'
-      write(*,*)
-
-      if(doXBS) then
-
-        write(*,*) '*** scaled screening version (XBS) ***'
-        write(*,*)
-
-      end if
-
       call RGTpp_phACFDT(exchange_kernel,doXBS,.false.,TDA_T,TDA,dophBSE,singlet,triplet,eta,nOrb,nC,nO,nV,nR,nS, &
                         nOOs,nVVs,nOOt,nVVt,Om1s,X1s,Y1s,Om2s,X2s,Y2s,rho1s,rho2s,Om1t,X1t,Y1t,     & 
                         Om2t,X2t,Y2t,rho1t,rho2t,ERI,eHF,eGT,EcBSE)
-
-      if(exchange_kernel) then
-
-        EcBSE(1) = 0.5d0*EcBSE(1)
-        EcBSE(2) = 1.5d0*EcBSE(2)
-
-      end if
 
       write(*,*)
       write(*,*)'-------------------------------------------------------------------------------'

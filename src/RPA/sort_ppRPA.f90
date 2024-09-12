@@ -17,7 +17,6 @@ subroutine sort_ppRPA(nOO,nVV,Om,Z,Om1,X1,Y1,Om2,X2,Y2)
   integer                       :: pq,ab,ij
 ! integer                       :: deg1,ab_start,ab_end
 ! integer                       :: deg2,ij_start,ij_end
-  integer                       :: OO,VV
   double precision,allocatable  :: M(:,:)
   double precision,allocatable  :: Z1(:,:)
   double precision,allocatable  :: Z2(:,:)
@@ -211,8 +210,8 @@ subroutine sort_ppRPA(nOO,nVV,Om,Z,Om1,X1,Y1,Om2,X2,Y2)
 ! S1 = + matmul(transpose(Z1),matmul(M,Z1))
 ! S2 = - matmul(transpose(Z2),matmul(M,Z2))
 
-  if(nVV > 0) call orthogonalization_matrix(nVV,VV,S1,O1)
-  if(nOO > 0) call orthogonalization_matrix(nOO,OO,S2,O2)
+  if(nVV > 0) call orthogonalize_matrix(1,nVV,S1,O1)
+  if(nOO > 0) call orthogonalize_matrix(1,nOO,S2,O2)
 
   if(nVV > 0) call dgemm ('N', 'N', nOO+nVV,nVV,nVV, 1d0, Z1, nOO+nVV, O1, nVV,0d0, tmp1, nOO+nVV)
   Z1 = tmp1

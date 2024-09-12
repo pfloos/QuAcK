@@ -222,12 +222,12 @@ subroutine evRGTpp(dotest,maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,B
 
     ! DIIS extrapolation
 
-    n_diis = min(n_diis+1,max_diis)
-    call DIIS_extrapolation(rcond,nOrb,nOrb,n_diis,error_diis,e_diis,eGT(:)-eOld(:),eGT(:))
+    if(max_diis > 1) then
 
-    ! Reset DIIS if required
+      n_diis = min(n_diis+1,max_diis)
+      call DIIS_extrapolation(rcond,nOrb,nOrb,n_diis,error_diis,e_diis,eGT(:)-eOld(:),eGT(:))
 
-    if(abs(rcond) < 1d-15) n_diis = 0
+    end if
 
     ! Save quasiparticles energy for next cycle
 
@@ -246,16 +246,9 @@ subroutine evRGTpp(dotest,maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,B
 
   if(BSE) then
 
-    call RGTpp_phBSE(TDA_T,TDA,dBSE,dTDA,singlet,triplet,eta,nOrb,nC,nO,nV,nR,nS,nOOs,nVVs,nOOt,nVVt,   &
-                    Om1s,X1s,Y1s,Om2s,X2s,Y2s,rho1s,rho2s,Om1t,X1t,Y1t,Om2t,X2t,Y2t,rho1t,rho2t, &
+    call RGTpp_phBSE(exchange_kernel,TDA_T,TDA,dBSE,dTDA,singlet,triplet,eta,nOrb,nC,nO,nV,nR,nS,nOOs,nVVs,nOOt,nVVt, &
+                    Om1s,X1s,Y1s,Om2s,X2s,Y2s,rho1s,rho2s,Om1t,X1t,Y1t,Om2t,X2t,Y2t,rho1t,rho2t,                      &
                     ERI,dipole_int,eGT,eGT,EcBSE)
-
-    if(exchange_kernel) then
-
-      EcRPA(1) = 0.5d0*EcRPA(1)
-      EcRPA(2) = 1.5d0*EcRPA(1)
-
-    end if
 
     write(*,*)
     write(*,*)'-------------------------------------------------------------------------------'
@@ -270,28 +263,9 @@ subroutine evRGTpp(dotest,maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,B
 
     if(doACFDT) then
 
-      write(*,*) '------------------------------------------------------'
-      write(*,*) 'Adiabatic connection version of BSE correlation energy'
-      write(*,*) '------------------------------------------------------'
-      write(*,*)
-
-      if(doXBS) then
-
-        write(*,*) '*** scaled screening version (XBS) ***'
-        write(*,*)
-
-      end if
-
       call RGTpp_phACFDT(exchange_kernel,doXBS,.false.,TDA_T,TDA,BSE,singlet,triplet,eta,nOrb,nC,nO,nV,nR,nS, &
-                        nOOs,nVVs,nOOt,nVVt,Om1s,X1s,Y1s,Om2s,X2s,Y2s,rho1s,rho2s,Om1t,X1t,Y1t,     &
+                        nOOs,nVVs,nOOt,nVVt,Om1s,X1s,Y1s,Om2s,X2s,Y2s,rho1s,rho2s,Om1t,X1t,Y1t,               &
                         Om2t,X2t,Y2t,rho1t,rho2t,ERI,eGT,eGT,EcBSE)
-
-      if(exchange_kernel) then
-
-        EcBSE(1) = 0.5d0*EcBSE(1)
-        EcBSE(2) = 1.5d0*EcBSE(2)
-
-      end if
 
       write(*,*)
       write(*,*)'-------------------------------------------------------------------------------'
@@ -305,7 +279,6 @@ subroutine evRGTpp(dotest,maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,B
     end if
 
   end if
-
 
 ! Testing zone
 

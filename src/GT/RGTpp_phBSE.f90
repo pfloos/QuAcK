@@ -1,5 +1,5 @@
-subroutine RGTpp_phBSE(TDA_T,TDA,dBSE,dTDA,singlet,triplet,eta,nBas,nC,nO,nV,nR,nS,nOOab,nVVab,nOOaa,nVVaa,   &
-                      Om1ab,X1ab,Y1ab,Om2ab,X2ab,Y2ab,rho1ab,rho2ab,Om1aa,X1aa,Y1aa,Om2aa,X2aa,Y2aa,rho1aa,rho2aa, & 
+subroutine RGTpp_phBSE(exchange_kernel,TDA_T,TDA,dBSE,dTDA,singlet,triplet,eta,nBas,nC,nO,nV,nR,nS,nOOab,nVVab,nOOaa,nVVaa, &
+                      Om1ab,X1ab,Y1ab,Om2ab,X2ab,Y2ab,rho1ab,rho2ab,Om1aa,X1aa,Y1aa,Om2aa,X2aa,Y2aa,rho1aa,rho2aa,         & 
                       ERI,dipole_int,eT,eGT,EcBSE)
 
 ! Compute the Bethe-Salpeter excitation energies with the T-matrix kernel
@@ -9,6 +9,7 @@ subroutine RGTpp_phBSE(TDA_T,TDA,dBSE,dTDA,singlet,triplet,eta,nBas,nC,nO,nV,nR,
 
 ! Input variables
 
+  logical,intent(in)            :: exchange_kernel
   logical,intent(in)            :: TDA_T
   logical,intent(in)            :: TDA
   logical,intent(in)            :: dBSE
@@ -187,6 +188,13 @@ subroutine RGTpp_phBSE(TDA_T,TDA,dBSE,dTDA,singlet,triplet,eta,nBas,nC,nO,nV,nR,
         call RGTpp_phBSE_dynamic_perturbation(ispin,dTDA,eta,nBas,nC,nO,nV,nR,nS,nOOab,nVVab,nOOaa,nVVaa, &
                                              Om1ab,Om2ab,Om1aa,Om2aa,rho1ab,rho2ab,rho1aa,rho2aa,eT,eGT, & 
                                              dipole_int,OmBSE,XpY_BSE,XmY_BSE,TAab,TAaa)
+  end if
+
+  if(exchange_kernel) then
+
+    EcBSE(1) = 0.5d0*EcBSE(1)
+    EcBSE(2) = 1.5d0*EcBSE(1)
+
   end if
 
 end subroutine 

@@ -1,9 +1,6 @@
-
-! ---
-
-subroutine qsRGTpp(dotest, maxSCF, thresh, max_diis, doACFDT, exchange_kernel, doXBS, dophBSE, TDA_T, TDA,    &
-                   dBSE, dTDA, singlet, triplet, eta, regularize, nNuc, ZNuc, rNuc, ENuc, nBas, nOrb, &
-                   nC, nO, nV, nR, nS, ERHF, S, X, T, V, Hc, ERI_AO, ERI_MO, dipole_int_AO, dipole_int_MO, PHF, cHF, eHF)
+subroutine qsRGTpp(dotest,maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,dophBSE,TDA_T,TDA, & 
+                   dBSE,dTDA,singlet,triplet,eta,regularize,nNuc,ZNuc,rNuc,ENuc,nBas,nOrb,        &
+                   nC,nO,nV,nR,nS,ERHF,S,X,T,V,Hc,ERI_AO,ERI_MO,dipole_int_AO,dipole_int_MO,PHF,cHF,eHF)
 
 ! Perform a quasiparticle self-consistent GT calculation
 
@@ -34,7 +31,8 @@ subroutine qsRGTpp(dotest, maxSCF, thresh, max_diis, doACFDT, exchange_kernel, d
   double precision,intent(in)   :: rNuc(nNuc,ncart)
   double precision,intent(in)   :: ENuc
 
-  integer,intent(in)            :: nBas, nOrb
+  integer,intent(in)            :: nBas
+  integer,intent(in)            :: nOrb
   integer,intent(in)            :: nC,nO,nV,nR,nS
   double precision,intent(in)   :: ERHF
   double precision,intent(in)   :: eHF(nOrb)
@@ -154,10 +152,10 @@ subroutine qsRGTpp(dotest, maxSCF, thresh, max_diis, doACFDT, exchange_kernel, d
   allocate(error_diis(nBas_Sq,max_diis))
   allocate(F_diis(nBas_Sq,max_diis))
 
-  allocate(Om1s(nVVs), X1s(nVVs,nVVs), Y1s(nOOs,nVVs), rho1s(nOrb,nOrb,nVVs))
-  allocate(Om2s(nOOs), X2s(nVVs,nOOs), Y2s(nOOs,nOOs), rho2s(nOrb,nOrb,nOOs))
-  allocate(Om1t(nVVt), X1t(nVVt,nVVt), Y1t(nOOt,nVVt), rho1t(nOrb,nOrb,nVVt))
-  allocate(Om2t(nOOt), X2t(nVVt,nOOt), Y2t(nOOt,nOOt), rho2t(nOrb,nOrb,nOOt))
+  allocate(Om1s(nVVs),X1s(nVVs,nVVs),Y1s(nOOs,nVVs),rho1s(nOrb,nOrb,nVVs))
+  allocate(Om2s(nOOs),X2s(nVVs,nOOs),Y2s(nOOs,nOOs),rho2s(nOrb,nOrb,nOOs))
+  allocate(Om1t(nVVt),X1t(nVVt,nVVt),Y1t(nOOt,nVVt),rho1t(nOrb,nOrb,nVVt))
+  allocate(Om2t(nOOt),X2t(nVVt,nOOt),Y2t(nOOt,nOOt),rho2t(nOrb,nOrb,nOOt))
 
 ! Initialization
   
@@ -193,7 +191,7 @@ subroutine qsRGTpp(dotest, maxSCF, thresh, max_diis, doACFDT, exchange_kernel, d
 
     ! AO to MO transformation of two-electron integrals
 
-    call AOtoMO_ERI_RHF(nBas, nOrb, c, ERI_AO, ERI_MO)
+    call AOtoMO_ERI_RHF(nBas,nOrb,c,ERI_AO,ERI_MO)
 
     ! Compute linear response
 
@@ -202,9 +200,9 @@ subroutine qsRGTpp(dotest, maxSCF, thresh, max_diis, doACFDT, exchange_kernel, d
 
     allocate(Bpp(nVVs,nOOs),Cpp(nVVs,nVVs),Dpp(nOOs,nOOs))
 
-    call ppLR_C(iblock,nOrb,nC,nO,nV,nR,nVVs,1d0,eGT,ERI_MO,Cpp)
-    call ppLR_D(iblock,nOrb,nC,nO,nV,nR,nOOs,1d0,eGT,ERI_MO,Dpp)
     if(.not.TDA_T) call ppLR_B(iblock,nOrb,nC,nO,nV,nR,nOOs,nVVs,1d0,ERI_MO,Bpp)
+                   call ppLR_C(iblock,nOrb,nC,nO,nV,nR,nVVs,1d0,eGT,ERI_MO,Cpp)
+                   call ppLR_D(iblock,nOrb,nC,nO,nV,nR,nOOs,1d0,eGT,ERI_MO,Dpp)
 
     call ppLR(TDA_T,nOOs,nVVs,Bpp,Cpp,Dpp,Om1s,X1s,Y1s,Om2s,X2s,Y2s,EcRPA(ispin))
 
@@ -215,9 +213,9 @@ subroutine qsRGTpp(dotest, maxSCF, thresh, max_diis, doACFDT, exchange_kernel, d
 
     allocate(Bpp(nVVt,nOOt),Cpp(nVVt,nVVt),Dpp(nOOt,nOOt))
 
-    call ppLR_C(iblock,nOrb,nC,nO,nV,nR,nVVt,1d0,eGT,ERI_MO,Cpp)
-    call ppLR_D(iblock,nOrb,nC,nO,nV,nR,nOOt,1d0,eGT,ERI_MO,Dpp)
     if(.not.TDA_T) call ppLR_B(iblock,nOrb,nC,nO,nV,nR,nOOt,nVVt,1d0,ERI_MO,Bpp)
+                   call ppLR_C(iblock,nOrb,nC,nO,nV,nR,nVVt,1d0,eGT,ERI_MO,Cpp)
+                   call ppLR_D(iblock,nOrb,nC,nO,nV,nR,nOOt,1d0,eGT,ERI_MO,Dpp)
 
     call ppLR(TDA_T,nOOt,nVVt,Bpp,Cpp,Dpp,Om1t,X1t,Y1t,Om2t,X2t,Y2t,EcRPA(ispin))
 
@@ -246,14 +244,14 @@ subroutine qsRGTpp(dotest, maxSCF, thresh, max_diis, doACFDT, exchange_kernel, d
    
     Sig = 0.5d0*(Sig + transpose(Sig))
 
-    call MOtoAO(nBas, nOrb, S, c, Sig, Sigp)
+    call MOtoAO(nBas,nOrb,S,c,Sig,Sigp)
  
     ! Solve the quasi-particle equation
 
     F(:,:) = Hc(:,:) + J(:,:) + 0.5d0*K(:,:) + Sigp(:,:)
     if(nBas .ne. nOrb) then
-      call AOtoMO(nBas, nOrb, c(1,1), F(1,1), Fp(1,1))
-      call MOtoAO(nBas, nOrb, S(1,1), c(1,1), Fp(1,1), F(1,1))
+      call AOtoMO(nBas,nOrb,c(1,1),F(1,1),Fp(1,1))
+      call MOtoAO(nBas,nOrb,S(1,1),c(1,1),Fp(1,1),F(1,1))
     endif
 
     ! Compute commutator and convergence criteria
@@ -272,20 +270,20 @@ subroutine qsRGTpp(dotest, maxSCF, thresh, max_diis, doACFDT, exchange_kernel, d
     ! Diagonalize Hamiltonian in AO basis
 
     if(nBas .eq. nOrb) then
-      Fp = matmul(transpose(X), matmul(F, X))
+      Fp = matmul(transpose(X),matmul(F,X))
       cp(:,:) = Fp(:,:)
-      call diagonalize_matrix(nOrb, cp, eGT)
-      c = matmul(X, cp)
+      call diagonalize_matrix(nOrb,cp,eGT)
+      c = matmul(X,cp)
     else
-      Fp = matmul(transpose(c), matmul(F, c))
+      Fp = matmul(transpose(c),matmul(F,c))
       cp(:,:) = Fp(:,:)
-      call diagonalize_matrix(nOrb, cp, eGT)
-      c = matmul(c, cp)
+      call diagonalize_matrix(nOrb,cp,eGT)
+      c = matmul(c,cp)
     endif
 
     ! Compute new density matrix in the AO basis
 
-    P(:,:) = 2d0*matmul(c(:,1:nO), transpose(c(:,1:nO)))
+    P(:,:) = 2d0*matmul(c(:,1:nO),transpose(c(:,1:nO)))
 
     ! Save quasiparticles energy for next cycle
 
@@ -319,9 +317,8 @@ subroutine qsRGTpp(dotest, maxSCF, thresh, max_diis, doACFDT, exchange_kernel, d
     ! Print results
 
     call dipole_moment(nBas,P,nNuc,ZNuc,rNuc,dipole_int_AO,dipole)
-    call print_qsRGTpp(nBas, nOrb, nO, nSCF, Conv, thresh, eHF,   &
-                       eGT, c, Sig, Z, ENuc, ET, EV, EJ, Ex, EcGM, EcRPA, &
-                       EqsGT, dipole)
+    call print_qsRGTpp(nBas,nOrb,nO,nSCF,Conv,thresh,eHF,eGT,c,Sig,Z, &
+                       ENuc,ET,EV,EJ,Ex,EcGM,EcRPA,EqsGT,dipole)
 
   end do
 !------------------------------------------------------------------------
@@ -338,33 +335,26 @@ subroutine qsRGTpp(dotest, maxSCF, thresh, max_diis, doACFDT, exchange_kernel, d
     write(*,*)'!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!'
     write(*,*)
 
-    deallocate(c, cp, P, F, Fp, J, K, Sig, Sigp, Z, error, error_diis, F_diis)
-    deallocate(Om1s, X1s, Y1s, rho1s)
-    deallocate(Om2s, X2s, Y2s, rho2s)
-    deallocate(Om1t, X1t, Y1t, rho1t)
-    deallocate(Om2t, X2t, Y2t, rho2t)
+    deallocate(c,cp,P,F,Fp,J,K,Sig,Sigp,Z,error,error_diis,F_diis)
+    deallocate(Om1s,X1s,Y1s,rho1s)
+    deallocate(Om2s,X2s,Y2s,rho2s)
+    deallocate(Om1t,X1t,Y1t,rho1t)
+    deallocate(Om2t,X2t,Y2t,rho2t)
     stop
 
   end if
 
 ! Deallocate memory
 
-  deallocate(c, cp, P, F, Fp, J, K, Sig, Sigp, Z, error, error_diis, F_diis)
+  deallocate(c,cp,P,F,Fp,J,K,Sig,Sigp,Z,error,error_diis,F_diis)
 
 ! Perform BSE calculation
 
   if(dophBSE) then
 
-    call RGTpp_phBSE(TDA_T,TDA,dBSE,dTDA,singlet,triplet,eta,nOrb,nC,nO,nV,nR,nS,nOOs,nVVs,nOOt,nVVt, &
-                    Om1s,X1s,Y1s,Om2s,X2s,Y2s,rho1s,rho2s,Om1t,X1t,Y1t,Om2t,X2t,Y2t,rho1t,rho2t, &
+    call RGTpp_phBSE(exchange_kernel,TDA_T,TDA,dBSE,dTDA,singlet,triplet,eta,nOrb,nC,nO,nV,nR,nS,nOOs,nVVs,nOOt,nVVt, &
+                    Om1s,X1s,Y1s,Om2s,X2s,Y2s,rho1s,rho2s,Om1t,X1t,Y1t,Om2t,X2t,Y2t,rho1t,rho2t,                      &
                     ERI_MO,dipole_int_MO,eGT,eGT,EcBSE)
-
-    if(exchange_kernel) then
-
-      EcBSE(1) = 0.5d0*EcBSE(1)
-      EcBSE(2) = 1.5d0*EcBSE(2)
-
-    end if
 
     write(*,*)
     write(*,*)'-------------------------------------------------------------------------------'
@@ -379,20 +369,8 @@ subroutine qsRGTpp(dotest, maxSCF, thresh, max_diis, doACFDT, exchange_kernel, d
 
     if(doACFDT) then
 
-      write(*,*) '------------------------------------------------------'
-      write(*,*) 'Adiabatic connection version of BSE correlation energy'
-      write(*,*) '------------------------------------------------------'
-      write(*,*)
-
-      if(doXBS) then
-
-        write(*,*) '*** scaled screening version (XBS) ***'
-        write(*,*)
-
-      end if
-
       call RGTpp_phACFDT(exchange_kernel,doXBS,.false.,TDA_T,TDA,dophBSE,singlet,triplet,eta,nOrb,nC,nO,nV,nR,nS, &
-                        nOOs,nVVs,nOOt,nVVt,Om1s,X1s,Y1s,Om2s,X2s,Y2s,rho1s,rho2s,Om1t,X1t,Y1t,     &
+                        nOOs,nVVs,nOOt,nVVt,Om1s,X1s,Y1s,Om2s,X2s,Y2s,rho1s,rho2s,Om1t,X1t,Y1t,                   &
                         Om2t,X2t,Y2t,rho1t,rho2t,ERI_MO,eGT,eGT,EcBSE)
 
       write(*,*)
@@ -408,7 +386,6 @@ subroutine qsRGTpp(dotest, maxSCF, thresh, max_diis, doACFDT, exchange_kernel, d
 
   end if
 
-
 ! Testing zone
 
   if(dotest) then
@@ -419,9 +396,9 @@ subroutine qsRGTpp(dotest, maxSCF, thresh, max_diis, doACFDT, exchange_kernel, d
 
   end if
 
-  deallocate(Om1s, X1s, Y1s, rho1s)
-  deallocate(Om2s, X2s, Y2s, rho2s)
-  deallocate(Om1t, X1t, Y1t, rho1t)
-  deallocate(Om2t, X2t, Y2t, rho2t)
+  deallocate(Om1s,X1s,Y1s,rho1s)
+  deallocate(Om2s,X2s,Y2s,rho2s)
+  deallocate(Om1t,X1t,Y1t,rho1t)
+  deallocate(Om2t,X2t,Y2t,rho2t)
 
 end subroutine 
