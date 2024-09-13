@@ -76,12 +76,24 @@ subroutine RGW_ppBSE(TDA_W,TDA,dBSE,dTDA,singlet,triplet,eta,nOrb,nC,nO,nV,nR,nS
 
   double precision,intent(out)  :: EcBSE(nspin)
 
+!-----!
+! TDA !
+!-----!
+
+  if(TDA) then
+    write(*,*) 'Tamm-Dancoff approximation activated in ppBSE!'
+    write(*,*)
+  end if
+
+! Initialization
+
+  EcBSE(:) = 0d0
+
 !---------------------------------
 ! Compute (singlet) RPA screening 
 !---------------------------------
 
   isp_W = 1
-  EcRPA = 0d0
 
   allocate(OmRPA(nS),XpY_RPA(nS,nS),XmY_RPA(nS,nS),rho_RPA(nOrb,nOrb,nS), &
            Aph(nS,nS),Bph(nS,nS))
@@ -108,7 +120,6 @@ subroutine RGW_ppBSE(TDA_W,TDA,dBSE,dTDA,singlet,triplet,eta,nOrb,nC,nO,nV,nR,nS
     write(*,*) 
 
     ispin = 1
-    EcBSE(ispin) = 0d0
 
     nOO = nO*(nO+1)/2
     nVV = nV*(nV+1)/2
@@ -259,7 +270,6 @@ subroutine RGW_ppBSE(TDA_W,TDA,dBSE,dTDA,singlet,triplet,eta,nOrb,nC,nO,nV,nR,nS
     write(*,*) 
 
     ispin = 2
-    EcBSE(ispin) = 0d0
 
     nOO = nO*(nO-1)/2
     nVV = nV*(nV-1)/2
@@ -353,6 +363,13 @@ subroutine RGW_ppBSE(TDA_W,TDA,dBSE,dTDA,singlet,triplet,eta,nOrb,nC,nO,nV,nR,nS
     if(dBSE) &
       call RGW_ppBSE_dynamic_perturbation(ispin,dTDA,eta,nOrb,nC,nO,nV,nR,nS,nOO,nVV,eW,eGW,ERI,dipole_int,OmRPA,rho_RPA, &
                                           Om1,X1,Y1,Om2,X2,Y2,KB_sta,KC_sta,KD_sta)
+
+ 
+    !----------------!
+    ! Upfolded ppBSE !
+    !----------------!
+
+    call RGW_ppBSE_upfolded(ispin,nOrb,nC,nO,nV,nR,nS,ERI,rho_RPA,OmRPA,eGW)
 
     deallocate(KB_sta,KC_sta,KD_sta)
     deallocate(Om1,X1,Y1,Om2,X2,Y2)
