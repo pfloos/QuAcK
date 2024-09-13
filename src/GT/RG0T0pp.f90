@@ -40,7 +40,7 @@ subroutine RG0T0pp(dotest,doACFDT,exchange_kernel,doXBS,dophBSE,TDA_T,TDA,dBSE,d
 
 ! Local variables
 
-  logical                       :: print_T   = .true.
+  logical                       :: print_T   = .false.
   logical                       :: plot_self = .false.
 
   integer                       :: isp_T
