@@ -28,54 +28,59 @@ subroutine ppLR(TDA,nOO,nVV,Bpp,Cpp,Dpp,Om1,X1,Y1,Om2,X2,Y2,EcRPA)
   implicit none
   include 'parameters.h'
 
-  logical,          intent(in)  :: TDA
-  integer,          intent(in)  :: nOO, nVV
-  double precision, intent(in)  :: Bpp(nVV,nOO), Cpp(nVV,nVV), Dpp(nOO,nOO)
-  double precision, intent(out) :: Om1(nVV), X1(nVV,nVV), Y1(nOO,nVV)
-  double precision, intent(out) :: Om2(nOO), X2(nVV,nOO), Y2(nOO,nOO)
-  double precision, intent(out) :: EcRPA
+  logical,intent(in)           :: TDA
+  integer,intent(in)           :: nOO,nVV
+  double precision,intent(in)  :: Bpp(nVV,nOO),Cpp(nVV,nVV),Dpp(nOO,nOO)
+  double precision,intent(out) :: Om1(nVV),X1(nVV,nVV),Y1(nOO,nVV)
+  double precision,intent(out) :: Om2(nOO),X2(nVV,nOO),Y2(nOO,nOO)
+  double precision,intent(out) :: EcRPA
   
-  logical                       :: imp_bio, verbose
-  integer                       :: i, j, N
-  double precision              :: EcRPA1, EcRPA2
-  double precision              :: thr_d, thr_nd, thr_deg
-  double precision,allocatable  :: M(:,:), Z(:,:), Om(:)
+  logical                       :: imp_bio,verbose
+  integer                       :: i,j
+  integer                       :: Npp
+  double precision              :: EcRPA1,EcRPA2
+  double precision              :: thr_d,thr_nd,thr_deg
+  double precision,allocatable  :: M(:,:),Z(:,:),Om(:)
 
-  double precision, external    :: trace_matrix
+  double precision,external     :: trace_matrix
 
-  N = nOO + nVV
+  nPP = nOO + nVV
 
-  allocate(M(N,N), Z(N,N), Om(N))
+  allocate(M(nPP,nPP),Z(nPP,nPP),Om(nPP))
+
+  ! Hermitian case for TDA
 
   if(TDA) then
 
     X1(:,:) = +Cpp(:,:)
     Y1(:,:) = 0d0
-    if(nVV > 0) call diagonalize_matrix(nVV, X1, Om1)
+    if(nVV > 0) call diagonalize_matrix(nVV,X1,Om1)
 
     X2(:,:) = 0d0
     Y2(:,:) = -Dpp(:,:)
-    if(nOO > 0) call diagonalize_matrix(nOO, Y2, Om2)
+    if(nOO > 0) call diagonalize_matrix(nOO,Y2,Om2)
 
   else
 
     ! Diagonal blocks 
-    M(    1:nVV    ,    1:nVV)     = + Cpp(1:nVV,1:nVV)
-    M(nVV+1:nVV+nOO,nVV+1:nVV+nOO) = - Dpp(1:nOO,1:nOO)
+
+    M(    1:nVV,    1:nVV) = + Cpp(1:nVV,1:nVV)
+    M(nVV+1:nPP,nVV+1:nPP) = - Dpp(1:nOO,1:nOO)
 
     ! Off-diagonal blocks
-    M(    1:nVV    ,nVV+1:nOO+nVV) = -           Bpp(1:nVV,1:nOO)
-    M(nVV+1:nOO+nVV,    1:nVV)     = + transpose(Bpp(1:nVV,1:nOO))
+
+    M(    1:nVV,nVV+1:nPP) = +           Bpp(1:nVV,1:nOO)
+    M(nVV+1:nPP,    1:nVV) = - transpose(Bpp(1:nVV,1:nOO))
 
 !   if((nOO .eq. 0) .or. (nVV .eq. 0)) then
 
       ! Diagonalize the pp matrix
 
-      if(nOO+nVV > 0) call diagonalize_general_matrix(nOO+nVV,M,Om,Z)
+      if(nPP > 0) call diagonalize_general_matrix(nPP,M,Om,Z)
 
-      ! Split the various quantities in p-p and h-h parts
+      ! Split the various quantities in ee and hh parts
 
-      call sort_ppRPA(nOO,nVV,Om,Z,Om1,X1,Y1,Om2,X2,Y2)
+      call sort_ppRPA(nOO,nVV,nPP,Om,Z,Om1,X1,Y1,Om2,X2,Y2)
 
 !   else
 
@@ -112,9 +117,9 @@ subroutine ppLR(TDA,nOO,nVV,Bpp,Cpp,Dpp,Om1,X1,Y1,Om2,X2,Y2,EcRPA)
 
   ! Compute the RPA correlation energy
 
-  EcRPA = 0.5d0 * (sum(Om1) - sum(Om2) - trace_matrix(nVV, Cpp) - trace_matrix(nOO, Dpp))
-  EcRPA1 = +sum(Om1) - trace_matrix(nVV, Cpp)
-  EcRPA2 = -sum(Om2) - trace_matrix(nOO, Dpp)
+  EcRPA = 0.5d0 * (sum(Om1) - sum(Om2) - trace_matrix(nVV,Cpp) - trace_matrix(nOO,Dpp))
+  EcRPA1 = +sum(Om1) - trace_matrix(nVV,Cpp)
+  EcRPA2 = -sum(Om2) - trace_matrix(nOO,Dpp)
 
   if(abs(EcRPA - EcRPA1) > 1d-6 .or. abs(EcRPA - EcRPA2) > 1d-6) then
     print*,'!!! Issue in pp-RPA linear reponse calculation RPA1 != RPA2 !!!'
@@ -123,5 +128,3 @@ subroutine ppLR(TDA,nOO,nVV,Bpp,Cpp,Dpp,Om1,X1,Y1,Om2,X2,Y2,EcRPA)
   deallocate(M,Z,Om)
 
 end subroutine 
-
-

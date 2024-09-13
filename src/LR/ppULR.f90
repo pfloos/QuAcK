@@ -81,8 +81,7 @@ subroutine ppULR(ispin,TDA,nBas,nC,nO,nV,nR,nPaa,nPab,nPbb,nPt,nHaa,nHab,nHbb,nH
 
 ! Split the various quantities in p-p and h-h parts
 
-  call sort_ppRPA(nHt,nPt,Om(:),Z(:,:),Om1(:),X1(:,:),Y1(:,:),Om2(:),X2(:,:),&
-                  Y2(:,:))
+  call sort_ppRPA(nHt,nPt,nHt+nPt,Om,Z,Om1,X1,Y1,Om2,X2,Y2)
  
 ! Compute the RPA correlation energy
 
