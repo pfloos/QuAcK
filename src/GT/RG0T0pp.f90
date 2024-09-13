@@ -256,10 +256,10 @@ subroutine RG0T0pp(dotest,doACFDT,exchange_kernel,doXBS,dophBSE,TDA_T,TDA,dBSE,d
 
     write(*,*)
     write(*,*)'-------------------------------------------------------------------------------'
-    write(*,'(2X,A50,F20.10,A3)') 'Tr@phBSE@G0T0pp correlation energy (singlet) =',EcBSE(1),' au'
-    write(*,'(2X,A50,F20.10,A3)') 'Tr@phBSE@G0T0pp correlation energy (triplet) =',EcBSE(2),' au'
-    write(*,'(2X,A50,F20.10,A3)') 'Tr@phBSE@G0T0pp correlation energy           =',sum(EcBSE),' au'
-    write(*,'(2X,A50,F20.10,A3)') 'Tr@phBSE@G0T0pp total energy                 =',ENuc + ERHF + sum(EcBSE),' au'
+    write(*,'(2X,A50,F20.10,A3)') 'Tr@phBSE@G0T0pp@RHF correlation energy (singlet) = ',EcBSE(1),' au'
+    write(*,'(2X,A50,F20.10,A3)') 'Tr@phBSE@G0T0pp@RHF correlation energy (triplet) = ',EcBSE(2),' au'
+    write(*,'(2X,A50,F20.10,A3)') 'Tr@phBSE@G0T0pp@RHF correlation energy           = ',sum(EcBSE),' au'
+    write(*,'(2X,A50,F20.10,A3)') 'Tr@phBSE@G0T0pp@RHF total energy                 = ',ENuc + ERHF + sum(EcBSE),' au'
     write(*,*)'-------------------------------------------------------------------------------'
     write(*,*)
 

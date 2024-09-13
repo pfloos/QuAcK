@@ -1,6 +1,6 @@
-subroutine ufBSE(nBas,nOrb,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,eHF,eGW)
+subroutine RGW_ppBSE_upfolded(nBas,nOrb,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,eHF,eGW)
 
-! Unfold BSE@GW equations
+! Upfolded ppBSE@GW (TDA triplets only!)
 
   implicit none
   include 'parameters.h'
@@ -44,7 +44,7 @@ subroutine ufBSE(nBas,nOrb,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,eHF,eGW)
 
   write(*,*)
   write(*,*)'**********************************************'
-  write(*,*)'|        Unfolded BSE@GW calculation          |'
+  write(*,*)'|       Unfolded ppBSE@GW calculation        |'
   write(*,*)'**********************************************'
   write(*,*)
 
@@ -67,34 +67,38 @@ subroutine ufBSE(nBas,nOrb,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,eHF,eGW)
 
   H(:,:) = 0d0
 
-!---------------------------!
-!  Compute BSE supermatrix  !
-!---------------------------!
-!                           !
-!     |  A   -Ve   -Vh  |   ! 
-!     |                 |   ! 
-! H = | +Vh C2h2p   0   |   ! 
-!     |                 |   ! 
-!     | +Ve   0   C2p2h |   ! 
-!                           !
-!---------------------------!
+!----------------------------------------!
+!        Compute BSE supermatrix         !
+!----------------------------------------!
+!                                        !
+!     |  D    -M1   -M1   -M2   -M2  |   ! 
+!     |                              |   ! 
+!     | +M1    E1    0     0     0   |   ! 
+!     |                              |   ! 
+! H = | +M1    0     E2    0     0   |   ! 
+!     |                              |   ! 
+!     | +M2    0     0     E3    0   |   ! 
+!     |                              |   ! 
+!     | +M2    0     0     0     E4  |   ! 
+!                                        !
+!----------------------------------------!
 
   !---------!
-  ! Block A !
+  ! Block D !
   !---------!
 
-  ia = 0
+  ij = 0
   do i=nC+1,nO
-    do a=nO+1,nOrb-nR
-    ia = ia + 1
+    do j=i+1,nO
+    ij = ij + 1
 
-    jb = 0
-    do j=nC+1,nO
-      do b=nO+1,nOrb-nR
-      jb = jb + 1
+    kl = 0
+    do k=nC+1,nO
+      do l=k+1,nO
+      kl = kl + 1
 
-        H(ia,jb) = (eGW(a) - eGW(i))*Kronecker_delta(i,j)*Kronecker_delta(a,b) &
-                 + 2d0*ERI(i,b,a,j) - ERI(i,b,j,a)
+          H(ij,kl) = - (eGW(i) + eGW(j))*Kronecker_delta(i,k)*Kronecker_delta(j,l) &
+                   + (ERI(i,j,k,l) - ERI(i,j,l,k))
 
         end do
       end do
@@ -103,27 +107,34 @@ subroutine ufBSE(nBas,nOrb,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,eHF,eGW)
   end do
 
   !----------------!
-  ! Blocks Vp & Ve !
+  ! Blocks M1      !
   !----------------!
 
-  iajb=0
+  ijm = 0
   do i=nC+1,nO
-    do a=nO+1,nOrb-nR
-      do j=nC+1,nO
-        do b=nO+1,nOrb-nR
-        iajb = iajb + 1
+    do j=i+1,nO
+      do m=1,nS
+        ijm = ijm + 1
 
-        kc = 0
+        kl = 0
         do k=nC+1,nO
-          do c=nO+1,nOrb-nR
-            kc = kc + 1
+          do l=k+1,nO
+            kl = kl + 1
 
-            tmp = sqrt(2d0)*Kronecker_delta(k,j)*ERI(b,a,c,i)
-            H(n1h1p+iajb,kc              ) = +tmp
-            H(kc        ,n1h1p+n2h2p+iajb) = -tmp
+            tmp = sqrt(2d0)*Kronecker_delta(k,j)*M(i,k,m)
+            H(n2h+ijm,kl     ) = +tmp
+            H(kl     ,n2h+ijm) = -tmp
            
-            tmp = sqrt(2d0)*Kronecker_delta(b,c)*ERI(a,k,i,j)
-            H(n1h1p+n2h2p+iajb,kc        ) = +tmp
+            tmp = sqrt(2d0)*Kronecker_delta(k,j)*M(i,k,m)
+            H(n2h+1*n3h1p+ijm,kl     ) = +tmp
+            H(kl     ,n2h+n3h1p+ijm) = -tmp
+           
+            tmp = sqrt(2d0)*Kronecker_delta(b,c)*M(j,k,m)
+            H(n2h+2*n3h1p+iajb,kc        ) = +tmp
+            H(kc              ,n1h1p+iajb) = -tmp
+
+            tmp = sqrt(2d0)*Kronecker_delta(b,c)*M(j,k,m)
+            H(n2h+3*n2h2p+iajb,kc        ) = +tmp
             H(kc              ,n1h1p+iajb) = -tmp
 
             end do
