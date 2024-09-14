@@ -41,7 +41,6 @@ subroutine UGW_phBSE_dynamic_perturbation(ispin,dTDA,eta,nBas,nC,nO,nV,nR,nS,nSa
   integer                       :: ia
 
   integer,parameter             :: maxS = 10
-  double precision              :: gapGW
 
   double precision,allocatable  :: OmDyn(:)
   double precision,allocatable  :: ZDyn(:)
@@ -63,12 +62,8 @@ subroutine UGW_phBSE_dynamic_perturbation(ispin,dTDA,eta,nBas,nC,nO,nV,nR,nS,nSa
     write(*,*)
   end if
 
-  gapGW = min(eGW(nO(1)+1,1),eGW(nO(2)+1,2)) - max(eGW(nO(1),1),eGW(nO(2),2))
-
   write(*,*) '---------------------------------------------------------------------------------------------------'
   write(*,*) ' First-order dynamical correction to static Bethe-Salpeter excitation energies                     '
-  write(*,*) '---------------------------------------------------------------------------------------------------'
-  write(*,'(A57,F10.6,A3)') ' BSE neutral excitation must be lower than the GW gap = ',gapGW*HaToeV,' eV'
   write(*,*) '---------------------------------------------------------------------------------------------------'
   write(*,'(2X,A5,1X,A20,1X,A20,1X,A20,1X,A20)') '#','Static (eV)','Dynamic (eV)','Correction (eV)','Renorm. (eV)'
   write(*,*) '---------------------------------------------------------------------------------------------------'

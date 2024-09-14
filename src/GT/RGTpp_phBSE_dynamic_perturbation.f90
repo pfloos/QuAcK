@@ -47,7 +47,6 @@ subroutine RGTpp_phBSE_dynamic_perturbation(ispin,dTDA,eta,nBas,nC,nO,nV,nR,nS,n
   integer                       :: ia
 
   integer                       :: maxS = 10
-  double precision              :: gapGT
 
   double precision,allocatable  :: OmDyn(:)
   double precision,allocatable  :: ZDyn(:)
@@ -111,12 +110,8 @@ subroutine RGTpp_phBSE_dynamic_perturbation(ispin,dTDA,eta,nBas,nC,nO,nV,nR,nS,n
 ! Dump results !
 !--------------!
 
-  gapGT = eGT(nO+1) - eGT(nO) 
-
   write(*,*) '---------------------------------------------------------------------------------------------------'
   write(*,*) ' First-order dynamical correction to static Bethe-Salpeter excitation energies                     '
-  write(*,*) '---------------------------------------------------------------------------------------------------'
-  write(*,'(A57,F10.6,A3)') ' BSE neutral excitation must be lower than the GT gap = ',gapGT*HaToeV,' eV'
   write(*,*) '---------------------------------------------------------------------------------------------------'
   write(*,'(2X,A5,1X,A20,1X,A20,1X,A20,1X,A20)') '#','Static (eV)','Dynamic (eV)','Correction (eV)','Renorm. (eV)'
   write(*,*) '---------------------------------------------------------------------------------------------------'

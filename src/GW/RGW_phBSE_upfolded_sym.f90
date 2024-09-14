@@ -1,4 +1,4 @@
-subroutine RGW_phBSE_upfolded(ispin,nBas,nOrb,nC,nO,nV,nR,nS,ERI,rho,Om,eGW)
+subroutine RGW_phBSE_upfolded_sym(ispin,nBas,nOrb,nC,nO,nV,nR,nS,ERI,rho,Om,eHF)
 
 ! Upfolded phBSE@GW (TDA only!)
 
@@ -18,7 +18,7 @@ subroutine RGW_phBSE_upfolded(ispin,nBas,nOrb,nC,nO,nV,nR,nS,ERI,rho,Om,eGW)
   double precision,intent(in)   :: ERI(nOrb,nOrb,nOrb,nOrb)
   double precision,intent(in)   :: rho(nOrb,nOrb,nS)
   double precision,intent(in)   :: Om(nS)
-  double precision,intent(in)   :: eGW(nOrb)
+  double precision,intent(in)   :: eHF(nOrb)
 
 ! Local variables
 
@@ -34,7 +34,6 @@ subroutine RGW_phBSE_upfolded(ispin,nBas,nOrb,nC,nO,nV,nR,nS,ERI,rho,Om,eGW)
 
   integer,allocatable           :: order(:)
   double precision,allocatable  :: H(:,:)
-  double precision,allocatable  :: X(:,:)
   double precision,allocatable  :: OmBSE(:)
   double precision,allocatable  :: Z(:)
 
@@ -43,9 +42,9 @@ subroutine RGW_phBSE_upfolded(ispin,nBas,nOrb,nC,nO,nV,nR,nS,ERI,rho,Om,eGW)
 ! Hello world
 
   write(*,*)
-  write(*,*)'*********************************'
-  write(*,*)'* Upfolded phBSE@GW Calculation *'
-  write(*,*)'*********************************'
+  write(*,*)'*********************************************'
+  write(*,*)'* Symmetrized Upfolded phBSE@GW Calculation *'
+  write(*,*)'*********************************************'
   write(*,*)
 
 ! TDA for W
@@ -60,27 +59,25 @@ subroutine RGW_phBSE_upfolded(ispin,nBas,nOrb,nC,nO,nV,nR,nS,ERI,rho,Om,eGW)
 
   n1h1p = n1h*n1p
   n2h2p = n1h1p*n1h1p
-     nH = n1h1p + n2h2p + n2h2p
+     nH = n1h1p + n2h2p 
 
 ! Memory allocation
 
-  allocate(order(nH),H(nH,nH),X(nH,nH),OmBSE(nH),Z(nH))
+  allocate(order(nH),H(nH,nH),OmBSE(nH),Z(nH))
 
 ! Initialization
 
   H(:,:) = 0d0
 
-!---------------------------!
-!  Compute BSE supermatrix  !
-!---------------------------!
-!                           !
-!     |  A   Jph   Kph  |   ! 
-!     |                 |   ! 
-! H = | Kph C2h2p   0   |   ! 
-!     |                 |   ! 
-!     | Jph   0   C2p2h |   ! 
-!                           !
-!---------------------------!
+!-------------------------------!
+!  Compute BSE supermatrix      !
+!-------------------------------!
+!                               !
+!     |     A     Jph + Kph |   ! 
+! H = |                     |   ! 
+!     | Jph + Kph   C2h2p   |   ! 
+!                               !
+!-------------------------------!
 
   !----------------------!
   ! Block A for singlets !
@@ -91,16 +88,36 @@ subroutine RGW_phBSE_upfolded(ispin,nBas,nOrb,nC,nO,nV,nR,nS,ERI,rho,Om,eGW)
     ia = 0
     do i=nC+1,nO
       do a=nO+1,nOrb-nR
-      ia = ia + 1
- 
-      jb = 0
-      do j=nC+1,nO
-        do b=nO+1,nOrb-nR
-        jb = jb + 1
- 
-          H(ia,jb) = (eGW(a) - eGW(i))*Kronecker_delta(i,j)*Kronecker_delta(a,b) &
-                   + 2d0*ERI(i,b,a,j) - ERI(i,b,j,a)
- 
+        ia = ia + 1
+       
+        jb = 0
+        do j=nC+1,nO
+          do b=nO+1,nOrb-nR
+          jb = jb + 1
+       
+            H(ia,jb) = (eHF(a) - eHF(i))*Kronecker_delta(i,j)*Kronecker_delta(a,b) &
+                     + 2d0*ERI(i,b,a,j) - ERI(i,b,j,a)
+       
+            do k=nC+1,nO
+              do m=1,nS
+
+                H(ia,jb) = H(ia,jb) & 
+                         + Kronecker_delta(i,j)*rho(a,k,m)*rho(b,k,m)/(eHF(a) - eHF(k) + Om(m)) &
+                         + Kronecker_delta(i,j)*rho(a,k,m)*rho(b,k,m)/(eHF(b) - eHF(k) + Om(m))
+
+              end do
+            end do
+       
+            do c=nO+1,nOrb-nR
+              do m=1,nS
+
+                H(ia,jb) = H(ia,jb) & 
+                         - Kronecker_delta(a,b)*rho(i,c,m)*rho(j,c,m)/(eHF(i) - eHF(c) - Om(m)) &
+                         - Kronecker_delta(a,b)*rho(i,c,m)*rho(j,c,m)/(eHF(j) - eHF(c) - Om(m))
+
+              end do
+            end do
+       
           end do
         end do
  
@@ -118,19 +135,39 @@ subroutine RGW_phBSE_upfolded(ispin,nBas,nOrb,nC,nO,nV,nR,nS,ERI,rho,Om,eGW)
     ia = 0
     do i=nC+1,nO
       do a=nO+1,nOrb-nR
-      ia = ia + 1
+        ia = ia + 1
  
-      jb = 0
-      do j=nC+1,nO
-        do b=nO+1,nOrb-nR
-        jb = jb + 1
- 
-          H(ia,jb) = (eGW(a) - eGW(i))*Kronecker_delta(i,j)*Kronecker_delta(a,b) &
-                   - ERI(i,b,j,a)
- 
+        jb = 0
+        do j=nC+1,nO
+          do b=nO+1,nOrb-nR
+            jb = jb + 1
+       
+            H(ia,jb) = (eHF(a) - eHF(i))*Kronecker_delta(i,j)*Kronecker_delta(a,b) &
+                     - ERI(i,b,j,a)
+
+            do k=nC+1,nO
+              do m=1,nS
+
+                H(ia,jb) = H(ia,jb) & 
+                         + Kronecker_delta(i,j)*rho(a,k,m)*rho(b,k,m)/(eHF(a) - eHF(k) + Om(m)) &
+                         + Kronecker_delta(i,j)*rho(a,k,m)*rho(b,k,m)/(eHF(b) - eHF(k) + Om(m))
+
+              end do
+            end do
+       
+            do c=nO+1,nOrb-nR
+              do m=1,nS
+
+                H(ia,jb) = H(ia,jb) & 
+                         - Kronecker_delta(a,b)*rho(i,c,m)*rho(j,c,m)/(eHF(i) - eHF(c) - Om(m)) &
+                         - Kronecker_delta(a,b)*rho(i,c,m)*rho(j,c,m)/(eHF(j) - eHF(c) - Om(m))
+
+              end do
+            end do
+       
           end do
         end do
- 
+       
       end do
     end do
 
@@ -151,17 +188,12 @@ subroutine RGW_phBSE_upfolded(ispin,nBas,nOrb,nC,nO,nV,nR,nS,ERI,rho,Om,eGW)
           do m=1,nS
             kcm = kcm + 1
 
-            ! Jph
+            ! Jph + Kph
 
             Jph = - sqrt(2d0)*Kronecker_delta(a,c)*rho(i,k,m)
-            H(ia             ,n1h1p+kcm) = Jph
-            H(n1h1p+n2h2p+kcm,ia)        = Jph
-
-            ! Kph
-           
             Kph = + sqrt(2d0)*Kronecker_delta(i,k)*rho(a,c,m)
-            H(ia       ,n1h1p+n2h2p+kcm) = Kph
-            H(n1h1p+kcm,ia)              = Kph
+            H(ia       ,n1h1p+kcm) = Jph + Kph
+            H(n1h1p+kcm,ia)        = Jph + Kph
 
           end do
         end do
@@ -180,9 +212,8 @@ subroutine RGW_phBSE_upfolded(ispin,nBas,nOrb,nC,nO,nV,nR,nS,ERI,rho,Om,eGW)
       do m=1,nS
         iam = iam + 1
 
-        C2h2p = Om(m) + eGW(a) - eGW(i) 
-        H(n1h1p      +iam,n1h1p      +iam) = C2h2p
-        H(n1h1p+n2h2p+iam,n1h1p+n2h2p+iam) = C2h2p
+        C2h2p = Om(m) + eHF(a) - eHF(i) 
+        H(n1h1p+iam,n1h1p+iam) = C2h2p
 
       end do
     end do
@@ -192,14 +223,7 @@ subroutine RGW_phBSE_upfolded(ispin,nBas,nOrb,nC,nO,nV,nR,nS,ERI,rho,Om,eGW)
 ! Diagonalize supermatrix !
 !-------------------------!
 
-  call diagonalize_general_matrix(nH,H,OmBSE,X)
-
-  do s=1,nH
-    order(s) = s
-  end do
-
-  call quick_sort(OmBSE,order,nH)
-  call set_order(X,order,nH,nH)
+  call diagonalize_matrix(nH,H,OmBSE)
 
 !-----------------!
 ! Compute weights !
@@ -208,7 +232,7 @@ subroutine RGW_phBSE_upfolded(ispin,nBas,nOrb,nC,nO,nV,nR,nS,ERI,rho,Om,eGW)
   Z(:) = 0d0
   do s=1,nH
     do ia=1,n1h1p
-      Z(s) = Z(s) + X(ia,s)**2
+      Z(s) = Z(s) + H(ia,s)**2
     end do
   end do
 
