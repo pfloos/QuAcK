@@ -119,7 +119,7 @@ subroutine CCG0W0(maxSCF,thresh,nBas,nOrb,nC,nO,nV,nR,ERI,ENuc,ERHF,eHF)
 !------------------------------------------------------------------------
   write(*,*)
   write(*,*)'----------------------------------------------'
-  write(*,*)'| CCGW calculation                           |'
+  write(*,*)'| CC-based G0W0 calculation                  |'
   write(*,*)'----------------------------------------------'
   write(*,'(1X,A1,1X,A3,1X,A1,1X,A10,1X,A1,1X,A10,1X,A1,1X,A10,1X,A1,1X)') &
             '|','#','|','HOMO','|','LUMO','|','Conv','|'
