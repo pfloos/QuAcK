@@ -68,8 +68,10 @@ subroutine RGW(dotest,doG0W0,doevGW,doqsGW,doufG0W0,doufGW,maxSCF,thresh,max_dii
 
   double precision              :: start_GW     ,end_GW       ,t_GW
 
+  logical                       :: doCCGW
+
 !------------------------------------------------------------------------
-! Perform G0W0 calculatiom
+! Perform G0W0 calculation
 !------------------------------------------------------------------------
 
   if(doG0W0) then
@@ -122,7 +124,7 @@ subroutine RGW(dotest,doG0W0,doevGW,doqsGW,doufG0W0,doufGW,maxSCF,thresh,max_dii
   end if
 
 !------------------------------------------------------------------------
-! Perform ufG0W0 calculatiom
+! Perform ufG0W0 calculation
 !------------------------------------------------------------------------
 
   if(doufG0W0) then
@@ -139,7 +141,7 @@ subroutine RGW(dotest,doG0W0,doevGW,doqsGW,doufG0W0,doufGW,maxSCF,thresh,max_dii
   end if
 
 !------------------------------------------------------------------------
-! Perform ufGW calculatiom
+! Perform ufGW calculation
 !------------------------------------------------------------------------
 
   if(doufGW) then
@@ -147,6 +149,43 @@ subroutine RGW(dotest,doG0W0,doevGW,doqsGW,doufG0W0,doufGW,maxSCF,thresh,max_dii
     call wall_time(start_GW)
     ! TODO
     call ufRGW(dotest,TDA_W,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,ERHF,ERI_MO,eHF)
+    call wall_time(end_GW)
+  
+    t_GW = end_GW - start_GW
+    write(*,'(A65,1X,F9.3,A8)') 'Total wall time for ufGW = ',t_GW,' seconds'
+    write(*,*)
+
+  end if
+
+!------------------------------------------------------------------------
+! Perform CC-based G0W0 calculation
+!------------------------------------------------------------------------
+
+  doCCGW = .false.
+
+  if(doCCGW) then
+    
+    call wall_time(start_GW)
+    call CCG0W0(maxSCF,thresh,nBas,nOrb,nC,nO,nV,nR,ERI_MO,ENuc,ERHF,eHF)
+    call wall_time(end_GW)
+  
+    t_GW = end_GW - start_GW
+    write(*,'(A65,1X,F9.3,A8)') 'Total wall time for ufGW = ',t_GW,' seconds'
+    write(*,*)
+
+  end if
+
+
+!------------------------------------------------------------------------
+! Perform CC-based GW calculation
+!------------------------------------------------------------------------
+
+  doCCGW = .false.
+
+  if(doCCGW) then
+    
+    call wall_time(start_GW)
+    call CCGW(maxSCF,thresh,nBas,nOrb,nC,nO,nV,nR,ERI_MO,ENuc,ERHF,eHF)
     call wall_time(end_GW)
   
     t_GW = end_GW - start_GW

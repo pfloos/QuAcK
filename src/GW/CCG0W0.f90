@@ -1,4 +1,4 @@
-subroutine CCGW(maxSCF,thresh,nBas,nC,nO,nV,nR,ERI,ENuc,ERHF,e)
+subroutine CCG0W0(maxSCF,thresh,nBas,nOrb,nC,nO,nV,nR,ERI,ENuc,ERHF,eHF)
 
 ! CC-based GW module
 
@@ -11,14 +11,15 @@ subroutine CCGW(maxSCF,thresh,nBas,nC,nO,nV,nR,ERI,ENuc,ERHF,e)
   double precision,intent(in)   :: thresh
 
   integer,intent(in)            :: nBas
+  integer,intent(in)            :: nOrb
   integer,intent(in)            :: nC
   integer,intent(in)            :: nO
   integer,intent(in)            :: nV
   integer,intent(in)            :: nR
   double precision,intent(in)   :: ENuc
   double precision,intent(in)   :: ERHF
-  double precision,intent(in)   :: e(nBas)
-  double precision,intent(in)   :: ERI(nBas,nBas,nBas,nBas)
+  double precision,intent(in)   :: eHF(nOrb)
+  double precision,intent(in)   :: ERI(nOrb,nOrb,nOrb,nOrb)
 
 ! Local variables
 
@@ -58,7 +59,7 @@ subroutine CCGW(maxSCF,thresh,nBas,nC,nO,nV,nR,ERI,ENuc,ERHF,e)
 
   write(*,*)
   write(*,*)'*****************************'
-  write(*,*)'|     CCGW calculation      |'
+  write(*,*)'* CC-based G0W0 Calculation *'
   write(*,*)'*****************************'
   write(*,*)
 
@@ -66,34 +67,34 @@ subroutine CCGW(maxSCF,thresh,nBas,nC,nO,nV,nR,ERI,ENuc,ERHF,e)
 
   allocate(OVVO(nO,nV,nV,nO),VOOV(nV,nO,nO,nV))
 
-  OVVO(:,:,:,:) = ERI(   1:nO   ,nO+1:nBas,nO+1:nBas,   1:nO  )
-  VOOV(:,:,:,:) = ERI(nO+1:nBas ,   1:nO  ,   1:nO  ,nO+1:nBas)
+  OVVO(:,:,:,:) = ERI(   1:nO   ,nO+1:nOrb,nO+1:nOrb,   1:nO  )
+  VOOV(:,:,:,:) = ERI(nO+1:nOrb ,   1:nO  ,   1:nO  ,nO+1:nOrb)
  
 ! Form energy denominator and guess amplitudes
 
-  allocate(delta_2h1p(nO,nO,nV,nBas),delta_2p1h(nO,nV,nV,nBas))
-  allocate(V_2h1p(nBas,nO,nO,nV),V_2p1h(nBas,nO,nV,nV))
-  allocate(t_2h1p(nO,nO,nV,nBas),t_2p1h(nO,nV,nV,nBas))
-  allocate(x_2h1p(nBas,nBas),x_2p1h(nBas,nBas))
+  allocate(delta_2h1p(nO,nO,nV,nOrb),delta_2p1h(nO,nV,nV,nOrb))
+  allocate(V_2h1p(nOrb,nO,nO,nV),V_2p1h(nOrb,nO,nV,nV))
+  allocate(t_2h1p(nO,nO,nV,nOrb),t_2p1h(nO,nV,nV,nOrb))
+  allocate(x_2h1p(nOrb,nOrb),x_2p1h(nOrb,nOrb))
 
-  do i=nC+1,nO
-    do j=nC+1,nO
-      do a=1,nV-nR
-        do p=nC+1,nBas-nR
+  do k=nC+1,nO
+    do l=nC+1,nO
+      do c=1,nV-nR
+        do p=nC+1,nOrb-nR
 
-          V_2h1p(p,i,j,a) = sqrt(2d0)*ERI(p,nO+a,i,j)
+          V_2h1p(p,k,l,c) = sqrt(2d0)*ERI(p,nO+c,k,l)
 
         end do
       end do
     end do
   end do
 
-  do i=nC+1,nO
-    do a=1,nV-nR
-      do b=1,nV-nR
-        do p=nC+1,nBas-nR
+  do k=nC+1,nO
+    do c=1,nV-nR
+      do d=1,nV-nR
+        do p=nC+1,nOrb-nR
 
-          V_2p1h(p,i,a,b) = sqrt(2d0)*ERI(p,i,nO+b,nO+a)
+          V_2p1h(p,k,c,d) = sqrt(2d0)*ERI(p,k,nO+d,nO+c)
 
         end do
       end do
@@ -102,13 +103,13 @@ subroutine CCGW(maxSCF,thresh,nBas,nC,nO,nV,nR,ERI,ENuc,ERHF,e)
 
 ! Initialization
 
-  allocate(r_2h1p(nO,nO,nV,nBas),r_2p1h(nO,nV,nV,nBas))
-  allocate(eGW(nBas),SigGW(nBas,nBas),cGW(nBas,nBas),Z(nBas))
-  allocate(order(nBas))
+  allocate(r_2h1p(nO,nO,nV,nOrb),r_2p1h(nO,nV,nV,nOrb))
+  allocate(eGW(nOrb),SigGW(nOrb,nOrb),cGW(nOrb,nOrb),Z(nOrb))
+  allocate(order(nOrb))
 
-  Conv = 1d0
-  nSCF = 0
-  eGW(:) = e(:)
+  Conv   = 1d0
+  nSCF   =  0
+  eGW(:) = eHF(:)
 
   t_2h1p(:,:,:,:) = 0d0
   t_2p1h(:,:,:,:) = 0d0
@@ -135,9 +136,9 @@ subroutine CCGW(maxSCF,thresh,nBas,nC,nO,nV,nR,ERI,ENuc,ERHF,e)
     do i=nC+1,nO
       do j=nC+1,nO
         do a=1,nV-nR
-          do p=nC+1,nBas-nR
+          do p=nC+1,nOrb-nR
  
-            delta_2h1p(i,j,a,p) = eGW(i) + eGW(j) - eGW(nO+a) - e(p)
+            delta_2h1p(i,j,a,p) = eGW(i) + eGW(j) - eGW(nO+a) - eHF(p)
  
           end do
         end do
@@ -147,9 +148,9 @@ subroutine CCGW(maxSCF,thresh,nBas,nC,nO,nV,nR,ERI,ENuc,ERHF,e)
     do i=nC+1,nO
       do a=1,nV-nR
         do b=1,nV-nR
-          do p=nC+1,nBas-nR
+          do p=nC+1,nOrb-nR
  
-            delta_2p1h(i,a,b,p) = eGW(nO+a) + eGW(nO+b) - eGW(i) - e(p)
+            delta_2p1h(i,a,b,p) = eGW(nO+a) + eGW(nO+b) - eGW(i) - eHF(p)
  
           end do
         end do
@@ -160,8 +161,8 @@ subroutine CCGW(maxSCF,thresh,nBas,nC,nO,nV,nR,ERI,ENuc,ERHF,e)
 
     x_2h1p(:,:) = 0d0 
 
-    do p=nC+1,nBas-nR
-      do q=nC+1,nBas-nR
+    do p=nC+1,nOrb-nR
+      do q=nC+1,nOrb-nR
 
         do k=nC+1,nO
           do l=nC+1,nO
@@ -178,8 +179,8 @@ subroutine CCGW(maxSCF,thresh,nBas,nC,nO,nV,nR,ERI,ENuc,ERHF,e)
    
     x_2p1h(:,:) = 0d0 
 
-    do p=nC+1,nBas-nR
-      do q=nC+1,nBas-nR
+    do p=nC+1,nOrb-nR
+      do q=nC+1,nOrb-nR
 
         do k=nC+1,nO
           do c=1,nV-nR
@@ -200,7 +201,7 @@ subroutine CCGW(maxSCF,thresh,nBas,nC,nO,nV,nR,ERI,ENuc,ERHF,e)
       do j=nC+1,nO
         do a=1,nV-nR
 
-          do p=nC+1,nBas-nR
+          do p=nC+1,nOrb-nR
 
             r_2h1p(i,j,a,p) = V_2h1p(p,i,j,a) + delta_2h1p(i,j,a,p)*t_2h1p(i,j,a,p)
 
@@ -212,7 +213,7 @@ subroutine CCGW(maxSCF,thresh,nBas,nC,nO,nV,nR,ERI,ENuc,ERHF,e)
               end do
             end do
 
-            do q=nC+1,nBas-nR
+            do q=nC+1,nOrb-nR
 
               r_2h1p(i,j,a,p) = r_2h1p(i,j,a,p) - t_2h1p(i,j,a,q)*x_2h1p(p,q) - t_2h1p(i,j,a,q)*x_2p1h(p,q)
 
@@ -230,7 +231,7 @@ subroutine CCGW(maxSCF,thresh,nBas,nC,nO,nV,nR,ERI,ENuc,ERHF,e)
       do a=1,nV-nR
         do b=1,nV-nR
 
-          do p=nC+1,nBas-nR
+          do p=nC+1,nOrb-nR
 
             r_2p1h(i,a,b,p) = V_2p1h(p,i,a,b) + delta_2p1h(i,a,b,p)*t_2p1h(i,a,b,p)
 
@@ -242,7 +243,7 @@ subroutine CCGW(maxSCF,thresh,nBas,nC,nO,nV,nR,ERI,ENuc,ERHF,e)
               end do
             end do
 
-            do q=nC+1,nBas-nR
+            do q=nC+1,nOrb-nR
 
               r_2p1h(i,a,b,p) = r_2p1h(i,a,b,p) - t_2p1h(i,a,b,q)*x_2h1p(p,q) - t_2p1h(i,a,b,q)*x_2p1h(p,q)
 
@@ -267,11 +268,11 @@ subroutine CCGW(maxSCF,thresh,nBas,nC,nO,nV,nR,ERI,ENuc,ERHF,e)
 
     SigGW(:,:) = 0d0
 
-    do p=nC+1,nBas-nR
+    do p=nC+1,nOrb-nR
 
-      SigGW(p,p) = SigGW(p,p) + e(p)
+      SigGW(p,p) = SigGW(p,p) + eHF(p)
 
-      do q=nC+1,nBas-nR
+      do q=nC+1,nOrb-nR
 
         do i=nC+1,nO
           do j=nC+1,nO
@@ -298,14 +299,14 @@ subroutine CCGW(maxSCF,thresh,nBas,nC,nO,nV,nR,ERI,ENuc,ERHF,e)
 
     !  Diagonalize non-Hermitian matrix
 
-    call diagonalize_general_matrix(nBas,SigGW,eGW,cGW)
+    call diagonalize_general_matrix(nOrb,SigGW,eGW,cGW)
 
-    do p=1,nBas
+    do p=1,nOrb
       order(p) = p
     end do
 
-    call quick_sort(eGW,order,nBas)
-    call set_order(cGW,order,nBas,nBas)
+    call quick_sort(eGW,order,nOrb)
+    call set_order(cGW,order,nOrb,nOrb)
 
     ! Renormalization factor
 
@@ -343,9 +344,9 @@ subroutine CCGW(maxSCF,thresh,nBas,nC,nO,nV,nR,ERI,ENuc,ERHF,e)
             '|','#','|','e_HF (eV)','|','Sig_c (eV)','|','Z','|','e_QP (eV)','|'
   write(*,*)'-------------------------------------------------------------------------------'
 
-  do p=1,nBas
+  do p=1,nOrb
     write(*,'(1X,A1,1X,I3,1X,A1,1X,F15.6,1X,A1,1X,F15.6,1X,A1,1X,F15.6,1X,A1,1X,F15.6,1X,A1,1X)') &
-    '|',p,'|',e(p)*HaToeV,'|',(eGW(p)-e(p))*HaToeV,'|',Z(p),'|',eGW(p)*HaToeV,'|'
+    '|',p,'|',eHF(p)*HaToeV,'|',(eGW(p)-eHF(p))*HaToeV,'|',Z(p),'|',eGW(p)*HaToeV,'|'
   end do
   write(*,*)'-------------------------------------------------------------------------------'
 
