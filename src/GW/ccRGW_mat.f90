@@ -45,8 +45,10 @@ subroutine ccRGW_mat(maxSCF,thresh,nBas,nOrb,nC,nO,nV,nR,ERI,ENuc,ERHF,eHF)
   double precision,allocatable  :: t_2h1p(:,:)
   double precision,allocatable  :: t_2p1h(:,:)
 
+  integer,allocatable           :: order(:)
   double precision,allocatable  :: SigGW(:,:)
   double precision,allocatable  :: eGW(:)
+  double precision,allocatable  :: cGW(:,:)
   double precision,allocatable  :: F(:,:)
   double precision,allocatable  :: Z(:)
 
@@ -59,9 +61,9 @@ subroutine ccRGW_mat(maxSCF,thresh,nBas,nOrb,nC,nO,nV,nR,ERI,ENuc,ERHF,eHF)
 ! Hello world
 
   write(*,*)
-  write(*,*)'*****************************'
-  write(*,*)'* CC-based G0W0 Calculation *'
-  write(*,*)'*****************************'
+  write(*,*)'***************************'
+  write(*,*)'* CC-based GW Calculation *'
+  write(*,*)'***************************'
   write(*,*)
  
 ! Form energy denominator and guess amplitudes
@@ -77,7 +79,7 @@ subroutine ccRGW_mat(maxSCF,thresh,nBas,nOrb,nC,nO,nV,nR,ERI,ENuc,ERHF,eHF)
   allocate(V_2h1p(nOrb,n2h1p),V_2p1h(nOrb,n2p1h))
   allocate(t_2h1p(n2h1p,nOrb),t_2p1h(n2p1h,nOrb))
   allocate(r_2h1p(n2h1p,nOrb),r_2p1h(n2p1h,nOrb))
-  allocate(F(nOrb,nOrb),eGW(nOrb),SigGW(nOrb,nOrb),Z(nOrb))
+  allocate(F(nOrb,nOrb),eGW(nOrb),SigGW(nOrb,nOrb),cGW(nOrb,nOrb),Z(nOrb),order(nOrb))
 
   F(:,:) = 0d0
   do p=nC+1,nOrb-nR
@@ -142,68 +144,69 @@ subroutine ccRGW_mat(maxSCF,thresh,nBas,nOrb,nC,nO,nV,nR,ERI,ENuc,ERHF,eHF)
 
   ! Compute energy differences
 
-  ija = 0
-  do i=nC+1,nO
-    do j=nC+1,nO
+  do p=nC+1,nOrb-nR
+
+    ija = 0
+    do i=nC+1,nO
+      do j=nC+1,nO
+        do a=nO+1,nOrb-nR
+          ija = ija + 1
+    
+ 
+            delta_2h1p(ija,p) = eHF(i) + eHF(j) - eHF(a) - eHF(p)
+ 
+        end do
+      end do
+    end do
+
+  end do
+
+
+  do p=nC+1,nOrb-nR
+    iab = 0
+    do i=nC+1,nO
       do a=nO+1,nOrb-nR
-        ija = ija + 1
-  
-        do p=nC+1,nOrb-nR
-
-          delta_2h1p(ija,p) = eHF(i) + eHF(j) - eHF(a) - eGW(p)
-
+        do b=nO+1,nOrb-nR
+          iab = iab + 1
+ 
+            delta_2p1h(iab,p) = eHF(a) + eHF(b) - eHF(i) - eHF(p)
+ 
         end do
-
       end do
     end do
   end do
 
-  iab = 0
-  do i=nC+1,nO
-    do a=nO+1,nOrb-nR
-      do b=nO+1,nOrb-nR
-        iab = iab + 1
+  do p=nC+1,nOrb-nR
 
-        do p=nC+1,nOrb-nR
+    ija = 0
+    do i=nC+1,nO
+      do j=nC+1,nO
+        do a=nO+1,nOrb-nR
+          ija = ija + 1
 
-          delta_2p1h(iab,p) = eHF(a) + eHF(b) - eHF(i) - eGW(p)
+          V_2h1p(p,ija) = sqrt(2d0)*ERI(p,a,i,j)
 
         end do
-
       end do
     end do
+
   end do
 
-  klc = 0
-  do k=nC+1,nO
-    do l=nC+1,nO
-      do c=nO+1,nOrb-nR
-        klc = klc + 1
 
-        do p=nC+1,nOrb-nR
+  do p=nC+1,nOrb-nR
 
-          V_2h1p(p,klc) = sqrt(2d0)*ERI(p,c,k,l)
+    iab = 0
+    do i=nC+1,nO
+      do a=nO+1,nOrb-nR
+        do b=nO+1,nOrb-nR
+          iab = iab + 1
 
-        end do
-
-      end do
-    end do
-  end do
-
-  kcd = 0
-  do k=nC+1,nO
-    do c=nO+1,nOrb-nR
-      do d=nO+1,nOrb-nR
-        kcd = kcd + 1
-
-        do p=nC+1,nOrb-nR
-
-          V_2p1h(p,kcd) = sqrt(2d0)*ERI(p,k,d,c)
+          V_2p1h(p,iab) = sqrt(2d0)*ERI(p,i,b,a)
 
         end do
-
       end do
     end do
+
   end do
 
  !----------------------!
@@ -212,10 +215,10 @@ subroutine ccRGW_mat(maxSCF,thresh,nBas,nOrb,nC,nO,nV,nR,ERI,ENuc,ERHF,eHF)
 
   write(*,*)
   write(*,*)'----------------------------------------------'
-  write(*,*)'| CC-based G0W0 calculation                  |'
+  write(*,*)'| CC-based GW calculation                    |'
   write(*,*)'----------------------------------------------'
   write(*,'(1X,A1,1X,A3,1X,A1,1X,A10,1X,A1,1X,A10,1X,A1,1X,A10,1X,A1,1X)') &
-            '|','#','|','HF','|','G0W0','|','Conv','|'
+            '|','#','|','HF','|','GW','|','Conv','|'
   write(*,*)'----------------------------------------------'
 
   do while(Conv > thresh .and. nSCF < maxSCF)
@@ -247,7 +250,14 @@ subroutine ccRGW_mat(maxSCF,thresh,nBas,nOrb,nC,nO,nV,nR,ERI,ENuc,ERHF,eHF)
 
     SigGW(:,:) = F(:,:) + matmul(V_2h1p,t_2h1p) + matmul(V_2p1h,t_2p1h)
 
-    call diagonalize_matrix(nOrb,SigGW,eGW)
+    call diagonalize_general_matrix(nOrb,SigGW,eGW,cGW)
+
+    do p=nC+1,nOrb-nR
+      order(p) = p
+    end do
+ 
+    call quick_sort(eGW,order,nOrb)
+    call set_order(cGW,order,nOrb,nOrb)
 
     ! Renormalization factor
 
@@ -280,7 +290,7 @@ subroutine ccRGW_mat(maxSCF,thresh,nBas,nOrb,nC,nO,nV,nR,ERI,ENuc,ERHF,eHF)
   end if
 
   write(*,*)'-------------------------------------------------------------------------------'
-  write(*,*)' CC-G0W0 calculation '
+  write(*,*)' CC-GW calculation '
   write(*,*)'-------------------------------------------------------------------------------'
   write(*,'(1X,A1,1X,A3,1X,A1,1X,A15,1X,A1,1X,A15,1X,A1,1X,A15,1X,A1,1X,A15,1X,A1,1X)') &
             '|','#','|','e_HF (eV)','|','Sig_c (eV)','|','Z','|','e_QP (eV)','|'
