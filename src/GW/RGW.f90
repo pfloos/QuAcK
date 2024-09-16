@@ -68,7 +68,7 @@ subroutine RGW(dotest,doG0W0,doevGW,doqsGW,doufG0W0,doufGW,maxSCF,thresh,max_dii
 
   double precision              :: start_GW     ,end_GW       ,t_GW
 
-  logical                       :: doCCGW
+  logical                       :: doccG0W0,doccGW
 
 !------------------------------------------------------------------------
 ! Perform G0W0 calculation
@@ -131,7 +131,7 @@ subroutine RGW(dotest,doG0W0,doevGW,doqsGW,doufG0W0,doufGW,maxSCF,thresh,max_dii
     
     call wall_time(start_GW)
     ! TODO
-    call ufG0W0(dotest,TDA_W,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,ERHF,ERI_MO,eHF)
+    call ufRG0W0(dotest,TDA_W,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,ERHF,ERI_MO,eHF)
     call wall_time(end_GW)
   
     t_GW = end_GW - start_GW
@@ -161,12 +161,13 @@ subroutine RGW(dotest,doG0W0,doevGW,doqsGW,doufG0W0,doufGW,maxSCF,thresh,max_dii
 ! Perform CC-based G0W0 calculation
 !------------------------------------------------------------------------
 
-  doCCGW = .false.
+  doccG0W0 = .false.
 
-  if(doCCGW) then
+  if(doccG0W0) then
     
     call wall_time(start_GW)
-    call CCG0W0(maxSCF,thresh,nBas,nOrb,nC,nO,nV,nR,ERI_MO,ENuc,ERHF,eHF)
+!   call ccRG0W0(maxSCF,thresh,nBas,nOrb,nC,nO,nV,nR,ERI_MO,ENuc,ERHF,eHF)
+    call ccRG0W0_mat(maxSCF,thresh,nBas,nOrb,nC,nO,nV,nR,ERI_MO,ENuc,ERHF,eHF)
     call wall_time(end_GW)
   
     t_GW = end_GW - start_GW
@@ -180,12 +181,13 @@ subroutine RGW(dotest,doG0W0,doevGW,doqsGW,doufG0W0,doufGW,maxSCF,thresh,max_dii
 ! Perform CC-based GW calculation
 !------------------------------------------------------------------------
 
-  doCCGW = .false.
+  doccGW = .true.
 
-  if(doCCGW) then
+  if(doccGW) then
     
     call wall_time(start_GW)
-    call CCGW(maxSCF,thresh,nBas,nOrb,nC,nO,nV,nR,ERI_MO,ENuc,ERHF,eHF)
+!   call ccRGW(maxSCF,thresh,nBas,nOrb,nC,nO,nV,nR,ERI_MO,ENuc,ERHF,eHF)
+    call ccRGW_mat(maxSCF,thresh,nBas,nOrb,nC,nO,nV,nR,ERI_MO,ENuc,ERHF,eHF)
     call wall_time(end_GW)
   
     t_GW = end_GW - start_GW

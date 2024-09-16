@@ -1,4 +1,4 @@
-subroutine CCGW(maxSCF,thresh,nBas,nOrb,nC,nO,nV,nR,ERI,ENuc,ERHF,eHF)
+subroutine ccRGW(maxSCF,thresh,nBas,nOrb,nC,nO,nV,nR,ERI,ENuc,ERHF,eHF)
 
 ! CC-based GW module
 
