@@ -146,9 +146,9 @@ subroutine RGW_phBSE(dophBSE2,exchange_kernel,TDA_W,TDA,dBSE,dTDA,singlet,triple
     ! Upfolded phBSE !
     !----------------!
 
-    call RGW_phBSE_upfolded_sym(ispin,nOrb,nOrb,nC,nO,nV,nR,nS,ERI,rho_RPA,OmRPA,eW)
+!   call RGW_phBSE_upfolded_sym(ispin,nOrb,nOrb,nC,nO,nV,nR,nS,ERI,rho_RPA,OmRPA,eW)
 
-    call RGW_phBSE_upfolded(ispin,nOrb,nOrb,nC,nO,nV,nR,nS,ERI,rho_RPA,OmRPA,eGW)
+!   call RGW_phBSE_upfolded(ispin,nOrb,nOrb,nC,nO,nV,nR,nS,ERI,rho_RPA,OmRPA,eGW)
 
   end if
 
@@ -185,7 +185,7 @@ subroutine RGW_phBSE(dophBSE2,exchange_kernel,TDA_W,TDA,dBSE,dTDA,singlet,triple
     ! Upfolded phBSE !
     !----------------!
 
-    call RGW_phBSE_upfolded(ispin,nOrb,nOrb,nC,nO,nV,nR,nS,ERI,rho_RPA,OmRPA,eGW)
+!   call RGW_phBSE_upfolded(ispin,nOrb,nOrb,nC,nO,nV,nR,nS,ERI,rho_RPA,OmRPA,eGW)
 
   end if
 

@@ -25,7 +25,7 @@ subroutine RGW_ppBSE_upfolded(ispin,nOrb,nC,nO,nV,nR,nS,ERI,rho,Om,eGW)
   integer                       :: i,j,k,l
   integer                       :: a,b,c,d
   integer                       :: m,ij,kl,ijm
-  integer,parameter             :: maxH = 20
+  integer,parameter             :: maxH = 100
   double precision              :: tmp,tmp1,tmp2,tmp3,tmp4
 
   integer                       :: n1h,n1p,n2h,n2p,n1h1p,n3h1p,n3p1h,n2h2p,nH
@@ -42,9 +42,9 @@ subroutine RGW_ppBSE_upfolded(ispin,nOrb,nC,nO,nV,nR,nS,ERI,rho,Om,eGW)
 ! Hello world
 
   write(*,*)
-  write(*,*)'**********************************************'
-  write(*,*)'|       Unfolded ppBSE@GW calculation        |'
-  write(*,*)'**********************************************'
+  write(*,*)'*********************************'
+  write(*,*)'* Upfolded ppBSE@GW Calculation *'
+  write(*,*)'*********************************'
   write(*,*)
 
 ! TDA for W
@@ -118,8 +118,8 @@ subroutine RGW_ppBSE_upfolded(ispin,nOrb,nC,nO,nV,nR,nS,ERI,rho,Om,eGW)
         do l=k,nO
         kl = kl + 1
  
-            H(ij,kl) = (eGW(i) + eGW(j))*Kronecker_delta(i,k)*Kronecker_delta(j,l) &
-                     - (ERI(i,j,k,l) + ERI(i,j,l,k))/sqrt((1d0 + Kronecker_delta(i,j))*(1d0 + Kronecker_delta(k,l)))
+            H(ij,kl) = - (eGW(i) + eGW(j))*Kronecker_delta(i,k)*Kronecker_delta(j,l) &
+                       + (ERI(i,j,k,l) + ERI(i,j,l,k))/sqrt((1d0 + Kronecker_delta(i,j))*(1d0 + Kronecker_delta(k,l)))
  
           end do
         end do
@@ -145,8 +145,8 @@ subroutine RGW_ppBSE_upfolded(ispin,nOrb,nC,nO,nV,nR,nS,ERI,rho,Om,eGW)
         do l=k+1,nO
         kl = kl + 1
  
-            H(ij,kl) = (eGW(i) + eGW(j))*Kronecker_delta(i,k)*Kronecker_delta(j,l) &
-                     - (ERI(i,j,k,l) - ERI(i,j,l,k))
+            H(ij,kl) = - (eGW(i) + eGW(j))*Kronecker_delta(i,k)*Kronecker_delta(j,l) &
+                       + (ERI(i,j,k,l) - ERI(i,j,l,k))
  
           end do
         end do
@@ -172,14 +172,14 @@ subroutine RGW_ppBSE_upfolded(ispin,nOrb,nC,nO,nV,nR,nS,ERI,rho,Om,eGW)
             kl = kl + 1
 
             tmp1 = sqrt(2d0)*Kronecker_delta(j,l)*rho(i,k,m)
-            tmp2 = sqrt(2d0)*Kronecker_delta(j,l)*rho(i,l,m)
+            tmp2 = sqrt(2d0)*Kronecker_delta(j,k)*rho(i,l,m)
             tmp3 = sqrt(2d0)*Kronecker_delta(i,l)*rho(j,k,m)
             tmp4 = sqrt(2d0)*Kronecker_delta(i,k)*rho(j,l,m)
 
-            H(n2h+0*n3h1p+ijm,kl             ) = -tmp1
-            H(kl             ,n2h+0*n3h1p+ijm) = +tmp3
+            H(n2h+0*n3h1p+ijm,kl             ) = +tmp1
+            H(kl             ,n2h+0*n3h1p+ijm) = +tmp4
            
-            H(n2h+1*n3h1p+ijm,kl             ) = -tmp1
+            H(n2h+1*n3h1p+ijm,kl             ) = +tmp1
             H(kl             ,n2h+1*n3h1p+ijm) = +tmp4
            
             H(n2h+2*n3h1p+ijm,kl             ) = -tmp2
@@ -254,7 +254,7 @@ subroutine RGW_ppBSE_upfolded(ispin,nOrb,nC,nO,nV,nR,nS,ERI,rho,Om,eGW)
   do s=1,min(nH,maxH)
     if(Z(s) > 1d-7) &
       write(*,'(1X,A1,1X,I3,1X,A1,1X,F15.6,1X,A1,1X,F15.6,1X,A1,1X)') &
-      '|',s,'|',OmBSE(s)*HaToeV,'|',Z(s),'|'
+      '|',s,'|',-OmBSE(s)*HaToeV,'|',Z(s),'|'
   end do
 
   write(*,*)'-------------------------------------------'

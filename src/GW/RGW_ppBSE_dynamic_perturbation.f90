@@ -114,14 +114,14 @@ subroutine RGW_ppBSE_dynamic_perturbation(ispin,dTDA,eta,nOrb,nC,nO,nV,nR,nS,nOO
   write(*,*) '---------------------------------------------------------------------------------------------------'
 
   kl = 0
-  do ij=max(1,nOO+1-maxOO),nOO
+  do ij=nOO,max(1,nOO+1-maxOO),-1
     kl = kl + 1
 
     if(dTDA) then
 
       call RGW_ppBSE_dynamic_kernel_D(ispin,eta,nOrb,nC,nO,nV,nR,nS,nOO,1d0,eGW,OmRPA,rho_RPA,Om2(ij),KD_dyn,ZD_dyn)
  
-      Z2_dyn(kl)  = + dot_product(Y2(:,ij),matmul(ZD_dyn,Y2(:,ij)))
+      Z2_dyn(kl)  = - dot_product(Y2(:,ij),matmul(ZD_dyn,Y2(:,ij)))
       Om2_dyn(kl) = - dot_product(Y2(:,ij),matmul(KD_dyn - KD_sta,Y2(:,ij)))
 
     else
@@ -144,7 +144,7 @@ subroutine RGW_ppBSE_dynamic_perturbation(ispin,dTDA,eta,nOrb,nC,nO,nV,nR,nS,nOO
     Om2_dyn(kl) = Z2_dyn(kl)*Om2_dyn(kl)
 
     write(*,'(2X,I5,5X,F15.6,5X,F15.6,5X,F15.6,5X,F15.6)') & 
-      ij,Om2(ij)*HaToeV,(Om2(ij)+Om2_dyn(kl))*HaToeV,Om2_dyn(kl)*HaToeV,Z2_dyn(kl)
+      kl,Om2(ij)*HaToeV,(Om2(ij)+Om2_dyn(kl))*HaToeV,Om2_dyn(kl)*HaToeV,Z2_dyn(kl)
 
   end do
   write(*,*) '---------------------------------------------------------------------------------------------------'
