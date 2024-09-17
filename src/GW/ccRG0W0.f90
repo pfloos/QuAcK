@@ -254,6 +254,7 @@ subroutine ccRG0W0(maxSCF,thresh,max_diis,nBas,nOrb,nC,nO,nV,nR,ERI,ENuc,ERHF,eH
     write(*,'(1X,A1,1X,I3,1X,A1,1X,F15.10,1X,A1,1X,F15.10,1X,A1,1X,F15.10,1X,A1,1X,F15.10,1X,A1,1X)') &
     '|',p,'|',eHF(p)*HaToeV,'|',Sig(p)*HaToeV,'|',Z(p),'|',(eHF(p)+Sig(p))*HaToeV,'|'
     write(*,*)'-------------------------------------------------------------------------------'
+    write(*,*)
 
   end do
 
