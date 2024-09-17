@@ -31,9 +31,7 @@ subroutine ccRG0W0(maxSCF,thresh,max_diis,nBas,nOrb,nC,nO,nV,nR,ERI,ENuc,ERHF,eH
   integer                       :: nSCF
   double precision              :: Conv
 
-  double precision              :: x
-
-  double precision,allocatable  :: eGW(:)
+  double precision,allocatable  :: Sig(:)
   double precision,allocatable  :: Z(:)
 
   double precision,allocatable  :: del(:,:,:)
@@ -55,50 +53,29 @@ subroutine ccRG0W0(maxSCF,thresh,max_diis,nBas,nOrb,nC,nO,nV,nR,ERI,ENuc,ERHF,eH
   write(*,*)'*****************************'
   write(*,*)
 
-! Form energy denominator and guess amplitudes
+! Memory allocation
 
   allocate(del(nO,nV,nOrb))
   allocate(vec(nO,nV,nOrb))
   allocate(res(nO,nV,nOrb))
   allocate(amp(nO,nV,nOrb))
 
-  allocate(eGW(nOrb),Z(nOrb))
+  allocate(Sig(nOrb))
+  allocate(Z(nOrb))
 
- allocate(r_diis(nO*nV*nOrb,max_diis))
- allocate(t_diis(nO*nV*nOrb,max_diis))
+  allocate(r_diis(nO*nV*nOrb,max_diis))
+  allocate(t_diis(nO*nV*nOrb,max_diis))
 
 ! Initialization
 
-  eGW(:) = eHF(:)
+  Sig(:) = 0d0
   Z(:)   = 1d0
-
-  ! Compute energy differences
- 
-  do i=nC+1,nO
-    do j=nC+1,nO
-      do a=1,nV-nR
-  
-        del(i,a,j) = eHF(i) + eHF(j) - eHF(nO+a)
-  
-      end do
-    end do
-  end do
-  
-  do i=nC+1,nO
-    do a=1,nV-nR
-      do b=1,nV-nR
-  
-        del(i,a,nO+b) = eHF(nO+a) + eHF(nO+b) - eHF(i)
-  
-      end do
-    end do
-  end do
 
 !-------------------------!
 ! Main loop over orbitals !
 !-------------------------!
 
-  do p=nC+1,nO+1
+  do p=nO,nO+1
 
     ! Initialization
  
@@ -114,6 +91,26 @@ subroutine ccRG0W0(maxSCF,thresh,max_diis,nBas,nOrb,nC,nO,nV,nR,ERI,ENuc,ERHF,eH
     res(:,:,:) = 0d0
  
   ! Compute energy differences
+ 
+    do i=nC+1,nO
+      do j=nC+1,nO
+        do a=1,nV-nR
+    
+          del(i,a,j) = eHF(i) + eHF(j) - eHF(nO+a) - eHF(p)
+    
+        end do
+      end do
+    end do
+    
+    do i=nC+1,nO
+      do a=1,nV-nR
+        do b=1,nV-nR
+    
+          del(i,a,nO+b) = eHF(nO+a) + eHF(nO+b) - eHF(i) - eHF(p)
+    
+        end do
+      end do
+    end do
 
     do i=nC+1,nO
       do a=1,nV-nR
@@ -144,7 +141,7 @@ subroutine ccRG0W0(maxSCF,thresh,max_diis,nBas,nOrb,nC,nO,nV,nR,ERI,ENuc,ERHF,eH
     write(*,*)'| CC-based G0W0 calculation                                 |'
     write(*,*)'-------------------------------------------------------------'
     write(*,'(1X,A1,1X,A3,1X,A1,1X,A15,1X,A1,1X,A15,1X,A1,1X,A15,1X,A1,1X)') &
-              '|','#','|','HF','|','G0W0','|','Conv','|'
+              '|','#','|','Sig_c (eV)','|','e_GW (eV)','|','Conv','|'
     write(*,*)'-------------------------------------------------------------'
  
     do while(Conv > thresh .and. nSCF < maxSCF)
@@ -155,7 +152,7 @@ subroutine ccRG0W0(maxSCF,thresh,max_diis,nBas,nOrb,nC,nO,nV,nR,ERI,ENuc,ERHF,eH
  
       ! Compute residual for 2h1p sector
  
-      res(:,:,:) = vec(:,:,:) + (del(:,:,:) - eGW(p))*amp(:,:,:)
+      res(:,:,:) = vec(:,:,:) + (del(:,:,:) - Sig(p))*amp(:,:,:)
  
       do i=nC+1,nO
         do a=1,nV-nR
@@ -197,7 +194,7 @@ subroutine ccRG0W0(maxSCF,thresh,max_diis,nBas,nOrb,nC,nO,nV,nR,ERI,ENuc,ERHF,eH
     
       ! Update amplitudes
 
-      amp(:,:,:) = amp(:,:,:) - res(:,:,:)/(del(:,:,:) - eHF(p))
+      amp(:,:,:) = amp(:,:,:) - res(:,:,:)/del(:,:,:)
  
       ! DIIS extrapolation
 
@@ -210,13 +207,13 @@ subroutine ccRG0W0(maxSCF,thresh,max_diis,nBas,nOrb,nC,nO,nV,nR,ERI,ENuc,ERHF,eH
 
       ! Compute quasiparticle energy
  
-      eGW(p) = eHF(p)
+      Sig(p) = 0d0
 
       do i=nC+1,nO
         do a=1,nV-nR
           do q=nC+1,nOrb-nR
  
-            eGW(p) = eGW(p) + vec(i,a,q)*amp(i,a,q)
+            Sig(p) = Sig(p) + vec(i,a,q)*amp(i,a,q)
   
           end do
         end do
@@ -225,11 +222,12 @@ subroutine ccRG0W0(maxSCF,thresh,max_diis,nBas,nOrb,nC,nO,nV,nR,ERI,ENuc,ERHF,eH
       ! Dump results
  
       write(*,'(1X,A1,1X,I3,1X,A1,1X,F15.10,1X,A1,1X,F15.10,1X,A1,1X,F15.10,1X,A1,1X)') &
-        '|',nSCF,'|',eHF(p)*HaToeV,'|',eGW(p)*HaToeV,'|',Conv,'|'
+        '|',nSCF,'|',Sig(p)*HaToeV,'|',(eHF(p)+Sig(p))*HaToeV,'|',Conv,'|'
  
     end do
 
     write(*,*)'-------------------------------------------------------------'
+    write(*,*)
     !------------------------------------------------------------------------
     ! End of SCF loop
     !------------------------------------------------------------------------
@@ -244,19 +242,17 @@ subroutine ccRG0W0(maxSCF,thresh,max_diis,nBas,nOrb,nC,nO,nV,nR,ERI,ENuc,ERHF,eH
       write(*,*)'!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!'
       write(*,*)
  
-      stop
- 
     end if
 
     write(*,*)'-------------------------------------------------------------------------------'
-    write(*,*)' CC-G0W0 calculation '
+    write(*,*)'| CC-based G0W0 calculation                                                   |'
     write(*,*)'-------------------------------------------------------------------------------'
     write(*,'(1X,A1,1X,A3,1X,A1,1X,A15,1X,A1,1X,A15,1X,A1,1X,A15,1X,A1,1X,A15,1X,A1,1X)') &
-              '|','#','|','e_HF (eV)','|','Sig_c (eV)','|','Z','|','e_QP (eV)','|'
+              '|','Orb','|','e_HF (eV)','|','Sig_c (eV)','|','Z','|','e_QP (eV)','|'
     write(*,*)'-------------------------------------------------------------------------------'
  
     write(*,'(1X,A1,1X,I3,1X,A1,1X,F15.10,1X,A1,1X,F15.10,1X,A1,1X,F15.10,1X,A1,1X,F15.10,1X,A1,1X)') &
-    '|',p,'|',eHF(p)*HaToeV,'|',(eGW(p)-eHF(p))*HaToeV,'|',Z(p),'|',eGW(p)*HaToeV,'|'
+    '|',p,'|',eHF(p)*HaToeV,'|',Sig(p)*HaToeV,'|',Z(p),'|',(eHF(p)+Sig(p))*HaToeV,'|'
     write(*,*)'-------------------------------------------------------------------------------'
 
   end do
