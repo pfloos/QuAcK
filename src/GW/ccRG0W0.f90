@@ -31,10 +31,13 @@ subroutine ccRG0W0(maxSCF,thresh,max_diis,nBas,nOrb,nC,nO,nV,nR,ERI,ENuc,ERHF,eH
   integer                       :: nSCF
   double precision              :: Conv
 
+  double precision              :: x
+
   double precision,allocatable  :: eGW(:)
   double precision,allocatable  :: Z(:)
 
   double precision,allocatable  :: del(:,:,:)
+  double precision,allocatable  :: vec(:,:,:)
   double precision,allocatable  :: res(:,:,:)
   double precision,allocatable  :: amp(:,:,:)
 
@@ -54,25 +57,48 @@ subroutine ccRG0W0(maxSCF,thresh,max_diis,nBas,nOrb,nC,nO,nV,nR,ERI,ENuc,ERHF,eH
 
 ! Form energy denominator and guess amplitudes
 
-  allocate(del(nOrb,nOrb,nOrb))
-  allocate(res(nOrb,nOrb,nOrb))
-  allocate(amp(nOrb,nOrb,nOrb))
+  allocate(del(nO,nV,nOrb))
+  allocate(vec(nO,nV,nOrb))
+  allocate(res(nO,nV,nOrb))
+  allocate(amp(nO,nV,nOrb))
 
   allocate(eGW(nOrb),Z(nOrb))
 
- allocate(r_diis(nOrb**3,max_diis))
- allocate(t_diis(nOrb**3,max_diis))
+ allocate(r_diis(nO*nV*nOrb,max_diis))
+ allocate(t_diis(nO*nV*nOrb,max_diis))
 
 ! Initialization
 
   eGW(:) = eHF(:)
-  Z(:) = 1d0
+  Z(:)   = 1d0
+
+  ! Compute energy differences
+ 
+  do i=nC+1,nO
+    do j=nC+1,nO
+      do a=1,nV-nR
+  
+        del(i,a,j) = eHF(i) + eHF(j) - eHF(nO+a)
+  
+      end do
+    end do
+  end do
+  
+  do i=nC+1,nO
+    do a=1,nV-nR
+      do b=1,nV-nR
+  
+        del(i,a,nO+b) = eHF(nO+a) + eHF(nO+b) - eHF(i)
+  
+      end do
+    end do
+  end do
 
 !-------------------------!
 ! Main loop over orbitals !
 !-------------------------!
 
-  do p=nO,nO
+  do p=nC+1,nO+1
 
     ! Initialization
  
@@ -86,26 +112,25 @@ subroutine ccRG0W0(maxSCF,thresh,max_diis,nBas,nOrb,nC,nO,nV,nR,ERI,ENuc,ERHF,eH
 
     amp(:,:,:) = 0d0
     res(:,:,:) = 0d0
-    del(:,:,:) = huge(1d0)
  
-    ! Compute energy differences
- 
+  ! Compute energy differences
+
     do i=nC+1,nO
-      do j=nC+1,nO
-        do a=nO+1,nOrb-nR
-  
-          del(i,j,a) = eHF(i) + eHF(j) - eHF(a) 
-  
+      do a=1,nV-nR
+        do j=nC+1,nO
+ 
+          vec(i,a,j) = sqrt(2d0)*ERI(p,nO+a,i,j)
+ 
         end do
       end do
     end do
-  
+ 
     do i=nC+1,nO
-      do a=nO+1,nOrb-nR
-        do b=nO+1,nOrb-nR
-  
-          del(b,a,i) = eHF(a) + eHF(b) - eHF(i)
-  
+      do a=1,nV-nR
+        do b=1,nV-nR
+ 
+          vec(i,a,nO+b) = sqrt(2d0)*ERI(p,i,nO+b,nO+a)
+ 
         end do
       end do
     end do
@@ -130,16 +155,16 @@ subroutine ccRG0W0(maxSCF,thresh,max_diis,nBas,nOrb,nC,nO,nV,nR,ERI,ENuc,ERHF,eH
  
       ! Compute residual for 2h1p sector
  
-      do i=nC+1,nO
-        do j=nC+1,nO
-          do a=nO+1,nOrb-nR
+      res(:,:,:) = vec(:,:,:) + (del(:,:,:) - eGW(p))*amp(:,:,:)
  
-            res(i,j,a) = sqrt(2d0)*ERI(p,a,i,j) + (del(i,j,a) - eGW(p))*amp(i,j,a)
+      do i=nC+1,nO
+        do a=1,nV-nR
+          do j=nC+1,nO
  
             do k=nC+1,nO
-              do c=nO+1,nOrb-nR
+              do c=1,nV-nR
  
-                res(i,j,a) = res(i,j,a) - 2d0*ERI(j,c,a,k)*amp(i,k,c)
+                res(i,a,j) = res(i,a,j) - 2d0*ERI(j,nO+c,nO+a,k)*amp(i,c,k)
  
               end do
             end do
@@ -151,15 +176,13 @@ subroutine ccRG0W0(maxSCF,thresh,max_diis,nBas,nOrb,nC,nO,nV,nR,ERI,ENuc,ERHF,eH
       ! Compute residual for 2p1h sector
  
       do i=nC+1,nO
-        do a=nO+1,nOrb-nR
-          do b=nO+1,nOrb-nR
- 
-            res(b,a,i) = sqrt(2d0)*ERI(p,i,b,a) + (del(b,a,i) - eGW(p))*amp(b,a,i)
+        do a=1,nV-nR
+          do b=1,nV-nR
  
             do k=nC+1,nO
-              do c=nO+1,nOrb-nR
+              do c=1,nV-nR
  
-                res(b,a,i) = res(b,a,i) + 2d0*ERI(a,k,i,c)*amp(b,c,k) 
+                res(i,a,nO+b) = res(i,a,nO+b) + 2d0*ERI(nO+a,k,i,nO+c)*amp(k,c,nO+b) 
  
               end do
             end do
@@ -168,20 +191,20 @@ subroutine ccRG0W0(maxSCF,thresh,max_diis,nBas,nOrb,nC,nO,nV,nR,ERI,ENuc,ERHF,eH
         end do
       end do
   
-      !  Check convergence 
+      ! Check convergence 
  
       Conv = maxval(abs(res))
     
       ! Update amplitudes
 
-      amp(:,:,:) = amp(:,:,:) - res(:,:,:)/del(:,:,:)
+      amp(:,:,:) = amp(:,:,:) - res(:,:,:)/(del(:,:,:) - eHF(p))
  
       ! DIIS extrapolation
 
       if(max_diis > 1) then
      
         n_diis = min(n_diis+1,max_diis)
-        call DIIS_extrapolation(rcond,nOrb**3,nOrb**3,n_diis,r_diis,t_diis,res,amp)
+        call DIIS_extrapolation(rcond,nO*nV*nOrb,nO*nV*nOrb,n_diis,r_diis,t_diis,res,amp)
      
       end if
 
@@ -189,11 +212,11 @@ subroutine ccRG0W0(maxSCF,thresh,max_diis,nBas,nOrb,nC,nO,nV,nR,ERI,ENuc,ERHF,eH
  
       eGW(p) = eHF(p)
 
-      do q=nC+1,nOrb-nR
-        do r=nC+1,nOrb-nR
-          do s=nC+1,nOrb-nR
+      do i=nC+1,nO
+        do a=1,nV-nR
+          do q=nC+1,nOrb-nR
  
-            eGW(p) = eGW(p) + sqrt(2d0)*ERI(p,s,q,r)*amp(q,r,s)
+            eGW(p) = eGW(p) + vec(i,a,q)*amp(i,a,q)
   
           end do
         end do
