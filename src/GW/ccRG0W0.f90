@@ -93,6 +93,30 @@ subroutine ccRG0W0(maxSCF,thresh,nBas,nOrb,nC,nO,nV,nR,ERI,ENuc,ERHF,eHF)
     t_2h1p(:,:,:) = 0d0
     t_2p1h(:,:,:) = 0d0
  
+    ! Compute energy differences
+  
+    do i=nC+1,nO
+      do j=nC+1,nO
+        do a=1,nV-nR
+  
+          delta_2h1p(i,j,a) = eHF(i) + eHF(j) - eHF(nO+a) - eHF(p)
+  
+        end do
+      end do
+    end do
+  
+    do i=nC+1,nO
+      do a=1,nV-nR
+        do b=1,nV-nR
+  
+          delta_2p1h(i,a,b) = eHF(nO+a) + eHF(nO+b) - eHF(i) - eHF(p)
+  
+        end do
+      end do
+    end do
+
+    ! Compute V2h1p and V2p1h
+
     do k=nC+1,nO
       do l=nC+1,nO
         do c=1,nV-nR
@@ -131,28 +155,6 @@ subroutine ccRG0W0(maxSCF,thresh,nBas,nOrb,nC,nO,nV,nR,ERI,ENuc,ERHF,eHF)
  
       nSCF = nSCF + 1
  
-      ! Compute energy differences
-  
-      do i=nC+1,nO
-        do j=nC+1,nO
-          do a=1,nV-nR
-  
-            delta_2h1p(i,j,a) = eHF(i) + eHF(j) - eHF(nO+a) - eGW(p)
-  
-          end do
-        end do
-      end do
-  
-      do i=nC+1,nO
-        do a=1,nV-nR
-          do b=1,nV-nR
-  
-            delta_2p1h(i,a,b) = eHF(nO+a) + eHF(nO+b) - eHF(i) - eGW(p)
-  
-          end do
-        end do
-      end do
-
       !  Compute intermediates
  
       x_2h1p = 0d0 
