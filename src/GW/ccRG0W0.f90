@@ -30,9 +30,6 @@ subroutine ccRG0W0(maxSCF,thresh,nBas,nOrb,nC,nO,nV,nR,ERI,ENuc,ERHF,eHF)
   integer                       :: nSCF
   double precision              :: Conv
 
-  double precision,allocatable  :: OVVO(:,:,:,:)
-  double precision,allocatable  :: VOOV(:,:,:,:)
-
   double precision,allocatable  :: delta_2h1p(:,:,:)
   double precision,allocatable  :: delta_2p1h(:,:,:)
 
@@ -60,13 +57,6 @@ subroutine ccRG0W0(maxSCF,thresh,nBas,nOrb,nC,nO,nV,nR,ERI,ENuc,ERHF,eHF)
   write(*,*)'*****************************'
   write(*,*)
 
-! Create integral batches
-
-  allocate(OVVO(nO,nV,nV,nO),VOOV(nV,nO,nO,nV))
-
-  OVVO(:,:,:,:) = ERI(   1:nO   ,nO+1:nOrb,nO+1:nOrb,   1:nO  )
-  VOOV(:,:,:,:) = ERI(nO+1:nOrb ,   1:nO  ,   1:nO  ,nO+1:nOrb)
- 
 ! Form energy denominator and guess amplitudes
 
   allocate(delta_2h1p(nO,nO,nV),delta_2p1h(nO,nV,nV))
@@ -155,7 +145,7 @@ subroutine ccRG0W0(maxSCF,thresh,nBas,nOrb,nC,nO,nV,nR,ERI,ENuc,ERHF,eHF)
  
       nSCF = nSCF + 1
  
-      !  Compute intermediates
+      !  Compute intermediates x_2h1p and x_2p1h
  
       x_2h1p = 0d0 
  
@@ -192,7 +182,7 @@ subroutine ccRG0W0(maxSCF,thresh,nBas,nOrb,nC,nO,nV,nR,ERI,ENuc,ERHF,eHF)
             do k=nC+1,nO
               do c=1,nV-nR
  
-                r_2h1p(i,j,a) = r_2h1p(i,j,a) - 2d0*OVVO(j,c,a,k)*t_2h1p(i,k,c)
+                r_2h1p(i,j,a) = r_2h1p(i,j,a) - 2d0*ERI(j,nO+c,nO+a,k)*t_2h1p(i,k,c)
  
               end do
             end do
@@ -214,7 +204,7 @@ subroutine ccRG0W0(maxSCF,thresh,nBas,nOrb,nC,nO,nV,nR,ERI,ENuc,ERHF,eHF)
             do k=nC+1,nO
               do c=1,nV-nR
  
-                r_2p1h(i,a,b) = r_2p1h(i,a,b) + 2d0*VOOV(a,k,i,c)*t_2p1h(k,c,b)
+                r_2p1h(i,a,b) = r_2p1h(i,a,b) + 2d0*ERI(nO+a,k,i,nO+c)*t_2p1h(k,c,b) 
  
               end do
             end do
