@@ -1,4 +1,4 @@
-subroutine ccRG0W0(maxSCF,thresh,nBas,nOrb,nC,nO,nV,nR,ERI,ENuc,ERHF,eHF)
+subroutine ccRG0W0(maxSCF,thresh,max_diis,nBas,nOrb,nC,nO,nV,nR,ERI,ENuc,ERHF,eHF)
 
 ! CC-based GW module
 
@@ -9,6 +9,7 @@ subroutine ccRG0W0(maxSCF,thresh,nBas,nOrb,nC,nO,nV,nR,ERI,ENuc,ERHF,eHF)
 
   integer,intent(in)            :: maxSCF
   double precision,intent(in)   :: thresh
+  integer,intent(in)            :: max_diis
 
   integer,intent(in)            :: nBas
   integer,intent(in)            :: nOrb
@@ -23,30 +24,26 @@ subroutine ccRG0W0(maxSCF,thresh,nBas,nOrb,nC,nO,nV,nR,ERI,ENuc,ERHF,eHF)
 
 ! Local variables
 
-  integer                       :: p,q
+  integer                       :: p,q,r,s
   integer                       :: i,j,k,l
   integer                       :: a,b,c,d
 
   integer                       :: nSCF
   double precision              :: Conv
 
-  double precision,allocatable  :: delta_2h1p(:,:,:)
-  double precision,allocatable  :: delta_2p1h(:,:,:)
-
-  double precision,allocatable  :: V_2h1p(:,:,:)
-  double precision,allocatable  :: V_2p1h(:,:,:)
-
-  double precision,allocatable  :: r_2h1p(:,:,:)
-  double precision,allocatable  :: r_2p1h(:,:,:)
-
-  double precision,allocatable  :: t_2h1p(:,:,:)
-  double precision,allocatable  :: t_2p1h(:,:,:)
-
-  double precision              :: x_2h1p
-  double precision              :: x_2p1h
+  double precision              :: x
 
   double precision,allocatable  :: eGW(:)
   double precision,allocatable  :: Z(:)
+
+  double precision,allocatable  :: del(:,:,:)
+  double precision,allocatable  :: res(:,:,:)
+  double precision,allocatable  :: amp(:,:,:)
+
+  integer                       :: n_diis
+  double precision              :: rcond
+  double precision,allocatable  :: r_diis(:,:)
+  double precision,allocatable  :: t_diis(:,:)
 
 
 ! Hello world
@@ -59,15 +56,19 @@ subroutine ccRG0W0(maxSCF,thresh,nBas,nOrb,nC,nO,nV,nR,ERI,ENuc,ERHF,eHF)
 
 ! Form energy denominator and guess amplitudes
 
-  allocate(delta_2h1p(nO,nO,nV),delta_2p1h(nO,nV,nV))
-  allocate(V_2h1p(nO,nO,nV),V_2p1h(nO,nV,nV))
-  allocate(t_2h1p(nO,nO,nV),t_2p1h(nO,nV,nV))
-  allocate(r_2h1p(nO,nO,nV),r_2p1h(nO,nV,nV))
+  allocate(del(nOrb,nOrb,nOrb))
+  allocate(res(nOrb,nOrb,nOrb))
+  allocate(amp(nOrb,nOrb,nOrb))
+
   allocate(eGW(nOrb),Z(nOrb))
+
+ allocate(r_diis(nOrb**3,max_diis))
+ allocate(t_diis(nOrb**3,max_diis))
 
 ! Initialization
 
   eGW(:) = eHF(:)
+  Z(:) = 1d0
 
 !-------------------------!
 ! Main loop over orbitals !
@@ -79,50 +80,34 @@ subroutine ccRG0W0(maxSCF,thresh,nBas,nOrb,nC,nO,nV,nR,ERI,ENuc,ERHF,eHF)
  
     Conv = 1d0
     nSCF =  0
- 
-    t_2h1p(:,:,:) = 0d0
-    t_2p1h(:,:,:) = 0d0
+
+    n_diis      = 0
+    t_diis(:,:) = 0d0
+    r_diis(:,:) = 0d0
+    rcond       = 0d0
+
+    amp(:,:,:) = 0d0
+    res(:,:,:) = 0d0
+    del(:,:,:) = huge(1d0)
  
     ! Compute energy differences
-  
+ 
     do i=nC+1,nO
       do j=nC+1,nO
-        do a=1,nV-nR
+        do a=nO+1,nOrb-nR
   
-          delta_2h1p(i,j,a) = eHF(i) + eHF(j) - eHF(nO+a) - eHF(p)
+          del(i,j,a) = eHF(i) + eHF(j) - eHF(a) - eHF(p)
   
         end do
       end do
     end do
   
     do i=nC+1,nO
-      do a=1,nV-nR
-        do b=1,nV-nR
+      do a=nO+1,nOrb-nR
+        do b=nO+1,nOrb-nR
   
-          delta_2p1h(i,a,b) = eHF(nO+a) + eHF(nO+b) - eHF(i) - eHF(p)
+          del(b,a,i) = eHF(a) + eHF(b) - eHF(i) - eHF(p)
   
-        end do
-      end do
-    end do
-
-    ! Compute V2h1p and V2p1h
-
-    do k=nC+1,nO
-      do l=nC+1,nO
-        do c=1,nV-nR
- 
-          V_2h1p(k,l,c) = sqrt(2d0)*ERI(p,nO+c,k,l)
- 
-        end do
-      end do
-    end do
- 
-    do k=nC+1,nO
-      do c=1,nV-nR
-        do d=1,nV-nR
- 
-          V_2p1h(k,c,d) = sqrt(2d0)*ERI(p,k,nO+d,nO+c)
- 
         end do
       end do
     end do
@@ -132,12 +117,12 @@ subroutine ccRG0W0(maxSCF,thresh,nBas,nOrb,nC,nO,nV,nR,ERI,ENuc,ERHF,eHF)
    !----------------------!
 
     write(*,*)
-    write(*,*)'----------------------------------------------'
-    write(*,*)'| CC-based G0W0 calculation                  |'
-    write(*,*)'----------------------------------------------'
-    write(*,'(1X,A1,1X,A3,1X,A1,1X,A10,1X,A1,1X,A10,1X,A1,1X,A10,1X,A1,1X)') &
+    write(*,*)'-------------------------------------------------------------'
+    write(*,*)'| CC-based G0W0 calculation                                 |'
+    write(*,*)'-------------------------------------------------------------'
+    write(*,'(1X,A1,1X,A3,1X,A1,1X,A15,1X,A1,1X,A15,1X,A1,1X,A15,1X,A1,1X)') &
               '|','#','|','HF','|','G0W0','|','Conv','|'
-    write(*,*)'----------------------------------------------'
+    write(*,*)'-------------------------------------------------------------'
  
     do while(Conv > thresh .and. nSCF < maxSCF)
  
@@ -147,47 +132,33 @@ subroutine ccRG0W0(maxSCF,thresh,nBas,nOrb,nC,nO,nV,nR,ERI,ENuc,ERHF,eHF)
  
       !  Compute intermediates x_2h1p and x_2p1h
  
-      x_2h1p = 0d0 
+      x = 0d0 
  
-      do k=nC+1,nO
-        do l=nC+1,nO
-          do c=1,nV-nR
-      
-            x_2h1p = x_2h1p + V_2h1p(k,l,c)*t_2h1p(k,l,c)
-      
-          end do
-        end do
-      end do
-     
-      x_2p1h = 0d0 
- 
-      do k=nC+1,nO
-        do c=1,nV-nR
-          do d=1,nV-nR
-      
-            x_2p1h = x_2p1h + V_2p1h(k,c,d)*t_2p1h(k,c,d)
+      do q=nC+1,nOrb-nR
+        do r=nC+1,nOrb-nR
+          do s=nC+1,nOrb-nR
+
+            x = x + sqrt(2d0)*ERI(p,s,q,r)*amp(q,r,s)
      
           end do
         end do
       end do
-     
+
       ! Compute residual for 2h1p sector
  
       do i=nC+1,nO
         do j=nC+1,nO
-          do a=1,nV-nR
+          do a=nO+1,nOrb-nR
  
-            r_2h1p(i,j,a) = V_2h1p(i,j,a) + delta_2h1p(i,j,a)*t_2h1p(i,j,a)
+            res(i,j,a) = sqrt(2d0)*ERI(p,a,i,j) + (del(i,j,a) - x)*amp(i,j,a)
  
             do k=nC+1,nO
-              do c=1,nV-nR
+              do c=nO+1,nOrb-nR
  
-                r_2h1p(i,j,a) = r_2h1p(i,j,a) - 2d0*ERI(j,nO+c,nO+a,k)*t_2h1p(i,k,c)
+                res(i,j,a) = res(i,j,a) - 2d0*ERI(j,c,a,k)*amp(i,k,c)
  
               end do
             end do
-
-            r_2h1p(i,j,a) = r_2h1p(i,j,a) - t_2h1p(i,j,a)*x_2h1p - t_2h1p(i,j,a)*x_2p1h
  
           end do
         end do
@@ -196,20 +167,18 @@ subroutine ccRG0W0(maxSCF,thresh,nBas,nOrb,nC,nO,nV,nR,ERI,ENuc,ERHF,eHF)
       ! Compute residual for 2p1h sector
  
       do i=nC+1,nO
-        do a=1,nV-nR
-          do b=1,nV-nR
+        do a=nO+1,nOrb-nR
+          do b=nO+1,nOrb-nR
  
-            r_2p1h(i,a,b) = V_2p1h(i,a,b) + delta_2p1h(i,a,b)*t_2p1h(i,a,b)
+            res(b,a,i) = sqrt(2d0)*ERI(p,i,b,a) + (del(b,a,i) - x)*amp(b,a,i)
  
             do k=nC+1,nO
-              do c=1,nV-nR
+              do c=nO+1,nOrb-nR
  
-                r_2p1h(i,a,b) = r_2p1h(i,a,b) + 2d0*ERI(nO+a,k,i,nO+c)*t_2p1h(k,c,b) 
+                res(b,a,i) = res(b,a,i) + 2d0*ERI(a,k,i,c)*amp(b,c,k) 
  
               end do
             end do
- 
-            r_2p1h(i,a,b) = r_2p1h(i,a,b) - t_2p1h(i,a,b)*x_2h1p - t_2p1h(i,a,b)*x_2p1h
  
           end do
         end do
@@ -217,49 +186,43 @@ subroutine ccRG0W0(maxSCF,thresh,nBas,nOrb,nC,nO,nV,nR,ERI,ENuc,ERHF,eHF)
   
       !  Check convergence 
  
-      Conv = max(maxval(abs(r_2h1p)),maxval(abs(r_2p1h)))
+      Conv = maxval(abs(res))
     
       ! Update amplitudes
+
+      amp(:,:,:) = amp(:,:,:) - res(:,:,:)/del(:,:,:)
  
-      t_2h1p(:,:,:) = t_2h1p(:,:,:) - r_2h1p(:,:,:)/delta_2h1p(:,:,:)
-      t_2p1h(:,:,:) = t_2p1h(:,:,:) - r_2p1h(:,:,:)/delta_2p1h(:,:,:)
- 
-      ! Compute self-energy
+      ! DIIS extrapolation
+
+      if(max_diis > 1) then
+     
+        n_diis = min(n_diis+1,max_diis)
+        call DIIS_extrapolation(rcond,nOrb**3,nOrb**3,n_diis,r_diis,t_diis,res,amp)
+     
+      end if
+
+      ! Compute quasiparticle energy
  
       eGW(p) = eHF(p)
+
+      do q=nC+1,nOrb-nR
+        do r=nC+1,nOrb-nR
+          do s=nC+1,nOrb-nR
  
-      do i=nC+1,nO
-        do j=nC+1,nO
-          do a=1,nV-nR
- 
-            eGW(p) = eGW(p) + V_2h1p(i,j,a)*t_2h1p(i,j,a)
+            eGW(p) = eGW(p) + sqrt(2d0)*ERI(p,s,q,r)*amp(q,r,s)
   
           end do
         end do
       end do
- 
-      do i=nC+1,nO
-        do a=1,nV-nR
-          do b=1,nV-nR
- 
-            eGW(p) = eGW(p) + V_2p1h(i,a,b)*t_2p1h(i,a,b)
-  
-          end do
-        end do
-      end do
- 
-      ! Renormalization factor
- 
-      Z(:) = 1d0
- 
+
       ! Dump results
  
-      write(*,'(1X,A1,1X,I3,1X,A1,1X,F10.6,1X,A1,1X,F10.6,1X,A1,1X,F10.6,1X,A1,1X)') &
+      write(*,'(1X,A1,1X,I3,1X,A1,1X,F15.10,1X,A1,1X,F15.10,1X,A1,1X,F15.10,1X,A1,1X)') &
         '|',nSCF,'|',eHF(p)*HaToeV,'|',eGW(p)*HaToeV,'|',Conv,'|'
  
     end do
 
-    write(*,*)'----------------------------------------------'
+    write(*,*)'-------------------------------------------------------------'
     !------------------------------------------------------------------------
     ! End of SCF loop
     !------------------------------------------------------------------------
@@ -285,7 +248,7 @@ subroutine ccRG0W0(maxSCF,thresh,nBas,nOrb,nC,nO,nV,nR,ERI,ENuc,ERHF,eHF)
               '|','#','|','e_HF (eV)','|','Sig_c (eV)','|','Z','|','e_QP (eV)','|'
     write(*,*)'-------------------------------------------------------------------------------'
  
-    write(*,'(1X,A1,1X,I3,1X,A1,1X,F15.6,1X,A1,1X,F15.6,1X,A1,1X,F15.6,1X,A1,1X,F15.6,1X,A1,1X)') &
+    write(*,'(1X,A1,1X,I3,1X,A1,1X,F15.10,1X,A1,1X,F15.10,1X,A1,1X,F15.10,1X,A1,1X,F15.10,1X,A1,1X)') &
     '|',p,'|',eHF(p)*HaToeV,'|',(eGW(p)-eHF(p))*HaToeV,'|',Z(p),'|',eGW(p)*HaToeV,'|'
     write(*,*)'-------------------------------------------------------------------------------'
 
