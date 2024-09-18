@@ -33,7 +33,7 @@ subroutine ufRG0W0(dotest,TDA_W,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,eHF)
 
   logical                       :: print_W = .false.
   logical                       :: dRPA
-  integer                       :: ispin
+  integer                       :: isp_W
   double precision              :: EcRPA
   integer                       :: n2h1p,n2p1h,nH
   double precision,external     :: Kronecker_delta
@@ -90,14 +90,14 @@ subroutine ufRG0W0(dotest,TDA_W,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,eHF)
 
     ! Spin manifold 
  
-    ispin = 1
+    isp_W = 1
 
     ! Memory allocation
 
     allocate(Om(nS),Aph(nS,nS),Bph(nS,nS),XpY(nS,nS),XmY(nS,nS),rho(nOrb,nOrb,nS))
  
-    call phLR_A(ispin,dRPA,nOrb,nC,nO,nV,nR,nS,1d0,eHF,ERI,Aph)
-    call phLR_B(ispin,dRPA,nOrb,nC,nO,nV,nR,nS,1d0,ERI,Bph)
+    call phLR_A(isp_W,dRPA,nOrb,nC,nO,nV,nR,nS,1d0,eHF,ERI,Aph)
+    call phLR_B(isp_W,dRPA,nOrb,nC,nO,nV,nR,nS,1d0,ERI,Bph)
  
     call phLR(TDA_W,nS,Aph,Bph,EcRPA,Om,XpY,XmY)
 

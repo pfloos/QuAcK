@@ -161,7 +161,8 @@ subroutine ccRG0W0(maxSCF,thresh,max_diis,nBas,nOrb,nC,nO,nV,nR,ERI,ENuc,ERHF,eH
             do k=nC+1,nO
               do c=1,nV-nR
  
-                res(i,a,j) = res(i,a,j) - 2d0*ERI(j,nO+c,nO+a,k)*amp(i,c,k)
+                res(i,a,j) = res(i,a,j) - 2d0*ERI(j,nO+c,nO+a,k)*amp(i,c,k) &
+                                        - 2d0*ERI(i,nO+c,nO+a,k)*amp(k,c,j)
  
               end do
             end do
@@ -179,7 +180,8 @@ subroutine ccRG0W0(maxSCF,thresh,max_diis,nBas,nOrb,nC,nO,nV,nR,ERI,ENuc,ERHF,eH
             do k=nC+1,nO
               do c=1,nV-nR
  
-                res(i,a,nO+b) = res(i,a,nO+b) + 2d0*ERI(nO+a,k,i,nO+c)*amp(k,c,nO+b) 
+                res(i,a,nO+b) = res(i,a,nO+b) + 2d0*ERI(nO+a,k,i,nO+c)*amp(k,c,nO+b) &
+                                              + 2d0*ERI(nO+b,k,i,nO+c)*amp(k,a,nO+c) 
  
               end do
             end do

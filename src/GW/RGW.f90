@@ -132,6 +132,7 @@ subroutine RGW(dotest,doG0W0,doevGW,doqsGW,doufG0W0,doufGW,maxSCF,thresh,max_dii
     call wall_time(start_GW)
     ! TODO
     call ufRG0W0(dotest,TDA_W,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,ERHF,ERI_MO,eHF)
+    call eomRG0W0(dotest,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,ERHF,ERI_MO,eHF)
     call wall_time(end_GW)
   
     t_GW = end_GW - start_GW
@@ -161,7 +162,7 @@ subroutine RGW(dotest,doG0W0,doevGW,doqsGW,doufG0W0,doufGW,maxSCF,thresh,max_dii
 ! Perform CC-based G0W0 calculation
 !------------------------------------------------------------------------
 
-  doccG0W0 = .true.
+  doccG0W0 = .false.
 
   if(doccG0W0) then
     
