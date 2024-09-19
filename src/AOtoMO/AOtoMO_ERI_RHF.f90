@@ -1,6 +1,3 @@
-
-! ---
-
 subroutine AOtoMO_ERI_RHF(nBas, nOrb, c, ERI_AO, ERI_MO)
 
 ! AO to MO transformation of two-electron integrals via the semi-direct O(N^5) algorithm

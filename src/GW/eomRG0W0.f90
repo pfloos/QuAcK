@@ -81,7 +81,7 @@ subroutine eomRG0W0(dotest,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,eHF)
 ! Main loop over orbitals !
 !-------------------------!
 
-  do p=nO,nO
+  do p=nO,nO+1
 
     H(:,:) = 0d0
  
@@ -165,7 +165,7 @@ subroutine eomRG0W0(dotest,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,eHF)
                    
                 H(1+ija,1+klc) & 
                      = ((eHF(i) + eHF(j) - eHF(a))*Kronecker_delta(j,l)*Kronecker_delta(a,c) & 
-                     - 2d0*ERI(j,c,a,l))*Kronecker_delta(i,k)
+                     - 2d0*ERI(j,c,a,l) - 2d0*ERI(j,l,a,c))*Kronecker_delta(i,k)
                    
 !               H(1+n2h1p+n2p1h+ija,1+n2h1p+n2p1h+klc) & 
 !                    = ((eHF(i) + eHF(j) - eHF(a))*Kronecker_delta(j,l)*Kronecker_delta(a,c) & 
@@ -197,7 +197,7 @@ subroutine eomRG0W0(dotest,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,eHF)
                    
                 H(1+n2h1p+iab,1+n2h1p+kcd) &
                      = ((eHF(a) + eHF(b) - eHF(i))*Kronecker_delta(i,k)*Kronecker_delta(a,c) & 
-                     + 2d0*ERI(a,k,i,c))*Kronecker_delta(b,d)
+                     + 2d0*ERI(a,k,i,c) + 2d0*ERI(a,c,i,k))*Kronecker_delta(b,d)
 !               H(1+2*n2h1p+n2p1h+iab,1+2*n2h1p+n2p1h+kcd) &
 !                    = ((eHF(a) + eHF(b) - eHF(i))*Kronecker_delta(i,k)*Kronecker_delta(a,c) & 
 !                    + 2d0*ERI(a,k,i,c))*Kronecker_delta(b,d)
@@ -214,53 +214,53 @@ subroutine eomRG0W0(dotest,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,eHF)
     ! Block B2h1p !
     !-------------!
  
-    ija = 0
-    do i=nC+1,nO
-      do j=nC+1,nO
-        do a=nO+1,nOrb-nR
-          ija = ija + 1
+!   ija = 0
+!   do i=nC+1,nO
+!     do j=nC+1,nO
+!       do a=nO+1,nOrb-nR
+!         ija = ija + 1
 
-          kcd = 0
-          do k=nC+1,nO
-            do c=nO+1,nOrb-nR
-              do d=nO+1,nOrb-nR
-                kcd = kcd + 1
-                   
-                H(1+ija,1+n2h1p+kcd) = - 2d0*ERI(j,k,a,c)
-                   
-              end do
-            end do
-          end do
- 
-        end do
-      end do
-    end do
+!         kcd = 0
+!         do k=nC+1,nO
+!           do c=nO+1,nOrb-nR
+!             do d=nO+1,nOrb-nR
+!               kcd = kcd + 1
+!                  
+!               H(1+ija,1+n2h1p+kcd) = - 2d0*ERI(j,k,a,c)
+!                  
+!             end do
+!           end do
+!         end do
+!
+!       end do
+!     end do
+!   end do
  
     !-------------!
     ! Block B2p1h !
     !-------------!
     
-    iab = 0
-    do i=nC+1,nO
-      do a=nO+1,nOrb-nR
-        do b=nO+1,nOrb-nR
-          iab = iab + 1
+!   iab = 0
+!   do i=nC+1,nO
+!     do a=nO+1,nOrb-nR
+!       do b=nO+1,nOrb-nR
+!         iab = iab + 1
 
-          klc = 0
-          do k=nC+1,nO
-            do l=nC+1,nO
-              do c=nO+1,nOrb-nR
-                klc = klc + 1            
+!         klc = 0
+!         do k=nC+1,nO
+!           do l=nC+1,nO
+!             do c=nO+1,nOrb-nR
+!               klc = klc + 1            
 
-                H(1+n2h1p+iab,1+klc) = - 2d0*ERI(a,c,i,l)
-                   
-              end do
-            end do
-          end do
-      
-        end do
-      end do
-    end do
+!               H(1+n2h1p+iab,1+klc) = - 2d0*ERI(a,c,i,l)
+!                  
+!             end do
+!           end do
+!         end do
+!     
+!       end do
+!     end do
+!   end do
      
     !-------------------------!
     ! Diagonalize supermatrix !
