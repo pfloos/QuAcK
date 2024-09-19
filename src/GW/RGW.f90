@@ -132,7 +132,7 @@ subroutine RGW(dotest,doG0W0,doevGW,doqsGW,doufG0W0,doufGW,maxSCF,thresh,max_dii
     call wall_time(start_GW)
     ! TODO
     call ufRG0W0(dotest,TDA_W,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,ERHF,ERI_MO,eHF)
-    call eomRG0W0(dotest,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,ERHF,ERI_MO,eHF)
+!   call eomRG0W0(dotest,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,ERHF,ERI_MO,eHF)
     call wall_time(end_GW)
   
     t_GW = end_GW - start_GW
@@ -187,7 +187,7 @@ subroutine RGW(dotest,doG0W0,doevGW,doqsGW,doufG0W0,doufGW,maxSCF,thresh,max_dii
     
     call wall_time(start_GW)
 !   call ccRGW(maxSCF,thresh,nBas,nOrb,nC,nO,nV,nR,ERI_MO,ENuc,ERHF,eHF)
-    call ccRGW_mat(maxSCF,thresh,nBas,nOrb,nC,nO,nV,nR,ERI_MO,ENuc,ERHF,eHF)
+!   call ccRGW_mat(maxSCF,thresh,nBas,nOrb,nC,nO,nV,nR,ERI_MO,ENuc,ERHF,eHF)
     call wall_time(end_GW)
   
     t_GW = end_GW - start_GW
