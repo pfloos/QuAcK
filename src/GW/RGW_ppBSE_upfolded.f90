@@ -182,10 +182,10 @@ subroutine RGW_ppBSE_upfolded(ispin,nOrb,nC,nO,nV,nR,nS,ERI,rho,Om,eGW)
             H(n2h+1*n3h1p+ijm,kl             ) = +tmp1
             H(kl             ,n2h+1*n3h1p+ijm) = +tmp4
            
-            H(n2h+2*n3h1p+ijm,kl             ) = -tmp2
+            H(n2h+2*n3h1p+ijm,kl             ) = +tmp2
             H(kl             ,n2h+2*n3h1p+ijm) = +tmp3
 
-            H(n2h+3*n3h1p+ijm,kl             ) = -tmp2
+            H(n2h+3*n3h1p+ijm,kl             ) = +tmp2
             H(kl             ,n2h+3*n3h1p+ijm) = +tmp4
 
           end do
@@ -219,6 +219,8 @@ subroutine RGW_ppBSE_upfolded(ispin,nOrb,nC,nO,nV,nR,nS,ERI,rho,Om,eGW)
 !-------------------------!
 ! Diagonalize supermatrix !
 !-------------------------!
+
+  call matout(nH,nH,H)
 
   call diagonalize_general_matrix(nH,H,OmBSE,X)
 
