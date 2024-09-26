@@ -71,8 +71,6 @@ subroutine GGW_ppBSE_dynamic_perturbation(dTDA,eta,nOrb,nC,nO,nV,nR,nS,nOO,nVV,e
   write(*,'(2X,A5,1X,A20,1X,A20,1X,A20,1X,A20)') '#','Static (eV)','Dynamic (eV)','Correction (eV)','Renorm. (eV)'
   write(*,*) '---------------------------------------------------------------------------------------------------'
 
-  print*,nVV,maxVV
-
   do ab=1,min(nVV,maxVV)
 
     if(dTDA) then 

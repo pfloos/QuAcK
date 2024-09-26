@@ -37,14 +37,11 @@ subroutine GGW_ppBSE_static_kernel_C(eta,nBas,nC,nO,nV,nR,nS,nVV,lambda,ERI,Om,r
 
   double precision,intent(out)  :: KC(nVV,nVV)
 
-!---------------!
-! SpinOrb block !
-!---------------!
-
   ab = 0
   do a=nO+1,nBas-nR
     do b=a+1,nBas-nR
       ab = ab + 1
+
       cd = 0
       do c=nO+1,nBas-nR
         do d=c+1,nBas-nR

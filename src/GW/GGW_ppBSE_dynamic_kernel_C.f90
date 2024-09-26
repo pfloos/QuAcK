@@ -53,29 +53,33 @@ subroutine GGW_ppBSE_dynamic_kernel_C(eta,nBas,nC,nO,nV,nR,nS,nVV,lambda,eGW,Om,
 
           do m=1,nS
 
-            dem = OmBSE - eGW(c) - Om(m) - eGW(b)
+            dem = OmBSE - (eGW(a) + eGW(c) + Om(m))
+!           num = 0.5d0*(rho(a,c,m)*rho(b,d,m) - rho(b,c,m)*rho(a,d,m))
+            num = - rho(b,c,m)*rho(a,d,m)
+
+            KC_dyn(ab,cd) = KC_dyn(ab,cd) + num*dem/(dem**2 + eta**2)
+            ZC_dyn(ab,cd) = ZC_dyn(ab,cd) - num*(dem**2 - eta**2)/(dem**2 + eta**2)**2
+
+            dem = OmBSE - (eGW(b) + eGW(d) + Om(m))
+!           num = 0.5d0*(rho(a,c,m)*rho(b,d,m) - rho(b,c,m)*rho(a,d,m))
+            num = - rho(b,c,m)*rho(a,d,m)
+
+            KC_dyn(ab,cd) = KC_dyn(ab,cd) + num*dem/(dem**2 + eta**2)
+            ZC_dyn(ab,cd) = ZC_dyn(ab,cd) - num*(dem**2 - eta**2)/(dem**2 + eta**2)**2
+
+            dem = OmBSE - (eGW(b) + eGW(c) + Om(m))
             num = rho(a,c,m)*rho(b,d,m)
+!           num = 0.5d0*(rho(a,c,m)*rho(b,d,m) - rho(b,c,m)*rho(a,d,m))
 
             KC_dyn(ab,cd) = KC_dyn(ab,cd) + num*dem/(dem**2 + eta**2)
             ZC_dyn(ab,cd) = ZC_dyn(ab,cd) - num*(dem**2 - eta**2)/(dem**2 + eta**2)**2
 
-            dem = OmBSE - eGW(c) - Om(m) - eGW(a)
-            num = rho(b,c,m)*rho(a,d,m)
-
-            KC_dyn(ab,cd) = KC_dyn(ab,cd) - num*dem/(dem**2 + eta**2)
-            ZC_dyn(ab,cd) = ZC_dyn(ab,cd) + num*(dem**2 - eta**2)/(dem**2 + eta**2)**2
-
-            dem = OmBSE - eGW(d) - Om(m) - eGW(a)
-            num = rho(a,c,m)*rho(b,d,m) 
+            dem = OmBSE - (eGW(a) + eGW(d) + Om(m))
+            num = rho(a,c,m)*rho(b,d,m)
+!           num = 0.5d0*(rho(a,c,m)*rho(b,d,m) - rho(b,c,m)*rho(a,d,m))
 
             KC_dyn(ab,cd) = KC_dyn(ab,cd) + num*dem/(dem**2 + eta**2)
             ZC_dyn(ab,cd) = ZC_dyn(ab,cd) - num*(dem**2 - eta**2)/(dem**2 + eta**2)**2
-
-            dem = OmBSE - eGW(d) - Om(m) - eGW(b)
-            num = rho(b,c,m)*rho(a,d,m)
-
-            KC_dyn(ab,cd) = KC_dyn(ab,cd) - num*dem/(dem**2 + eta**2)
-            ZC_dyn(ab,cd) = ZC_dyn(ab,cd) + num*(dem**2 - eta**2)/(dem**2 + eta**2)**2
 
           end do
 
