@@ -115,6 +115,11 @@ subroutine GGW_ppBSE(TDA_W,TDA,dBSE,dTDA,eta,nOrb,nC,nO,nV,nR,nS,ERI,dipole_int,
       call GGW_ppBSE_dynamic_perturbation(dTDA,eta,nOrb,nC,nO,nV,nR,nS,nOO,nVV,eW,eGW,ERI,dipole_int,OmRPA,rho_RPA, &
                                           Om1,X1,Y1,Om2,X2,Y2,KB_sta,KC_sta,KD_sta)
 
+  !----------------!
+  ! Upfolded ppBSE !
+  !----------------!
+
+  call GGW_ppBSE_upfolded(nOrb,nC,nO,nV,nR,nS,ERI,rho_RPA,OmRPA,eGW)
 
   deallocate(Om1,X1,Y1,Om2,X2,Y2,Bpp,Cpp,Dpp,KB_sta,KC_sta,KD_sta)
 

@@ -76,7 +76,7 @@ subroutine RGW_ppBSE_upfolded(ispin,nOrb,nC,nO,nV,nR,nS,ERI,rho,Om,eGW)
   n3h1p = n2h*n1h1p
   n3p1h = n2p*n1h1p
 
-  nH = n1h1p + 4*n3h1p 
+  nH = n2h + 4*n3h1p 
 
 ! Memory allocation
 
@@ -219,8 +219,6 @@ subroutine RGW_ppBSE_upfolded(ispin,nOrb,nC,nO,nV,nR,nS,ERI,rho,Om,eGW)
 !-------------------------!
 ! Diagonalize supermatrix !
 !-------------------------!
-
-  call matout(nH,nH,H)
 
   call diagonalize_general_matrix(nH,H,OmBSE,X)
 

@@ -53,25 +53,25 @@ subroutine GGW_ppBSE_dynamic_kernel_D(eta,nBas,nC,nO,nV,nR,nS,nOO,lambda,eGW,Om,
   
           do m=1,nS
 
-            dem = OmBSE - eGW(k) + Om(m) - eGW(i)
+            dem = OmBSE - eGW(k) + Om(m) - eGW(j)
             num = rho(i,k,m)*rho(j,l,m)
 
-            KD_dyn(ij,kl) = KD_dyn(ij,kl) - num*dem/(dem**2 + eta**2)
-            ZD_dyn(ij,kl) = ZD_dyn(ij,kl) + num*(dem**2 - eta**2)/(dem**2 + eta**2)**2
+            KD_dyn(ij,kl) = KD_dyn(ij,kl) + num*dem/(dem**2 + eta**2)
+            ZD_dyn(ij,kl) = ZD_dyn(ij,kl) - num*(dem**2 - eta**2)/(dem**2 + eta**2)**2
 
-            dem = OmBSE - eGW(k) + Om(m) - eGW(j)
+            dem = OmBSE - eGW(k) + Om(m) - eGW(i)
             num = rho(j,k,m)*rho(i,l,m)
 
             KD_dyn(ij,kl) = KD_dyn(ij,kl) + num*dem/(dem**2 + eta**2)
             ZD_dyn(ij,kl) = ZD_dyn(ij,kl) - num*(dem**2 - eta**2)/(dem**2 + eta**2)**2
 
-            dem = OmBSE - eGW(l) + Om(m) - eGW(j)
+            dem = OmBSE - eGW(l) + Om(m) - eGW(i)
             num = rho(i,k,m)*rho(j,l,m)
 
-            KD_dyn(ij,kl) = KD_dyn(ij,kl) - num*dem/(dem**2 + eta**2)
-            ZD_dyn(ij,kl) = ZD_dyn(ij,kl) + num*(dem**2 - eta**2)/(dem**2 + eta**2)**2
+            KD_dyn(ij,kl) = KD_dyn(ij,kl) + num*dem/(dem**2 + eta**2)
+            ZD_dyn(ij,kl) = ZD_dyn(ij,kl) - num*(dem**2 - eta**2)/(dem**2 + eta**2)**2
 
-            dem = OmBSE - eGW(l) + Om(m) - eGW(i)
+            dem = OmBSE - eGW(l) + Om(m) - eGW(j)
             num = rho(j,k,m)*rho(i,l,m)
 
             KD_dyn(ij,kl) = KD_dyn(ij,kl) + num*dem/(dem**2 + eta**2)
