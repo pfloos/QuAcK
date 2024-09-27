@@ -85,7 +85,7 @@ subroutine RG0W0(dotest,doACFDT,exchange_kernel,doXBS,dophBSE,dophBSE2,TDA_W,TDA
 
 ! SRG regularization
 
-  flow = 10d0
+  flow = 500d0
 
   if(doSRG) then
 

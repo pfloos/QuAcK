@@ -25,7 +25,7 @@ subroutine GGW_ppBSE_upfolded(nOrb,nC,nO,nV,nR,nS,ERI,rho,Om,eGW)
   integer                       :: a,b,c,d
   integer                       :: m,ij,kl,ijm
   integer                       :: ab,cd,abm
-  integer,parameter             :: maxH = 100
+  integer,parameter             :: maxH = 1000
   double precision              :: tmp,tmp1,tmp2,tmp3,tmp4
 
   integer                       :: n1h,n1p,n2h,n2p,n1h1p,n3h1p,n3p1h,n2h2p,nH
@@ -65,7 +65,7 @@ subroutine GGW_ppBSE_upfolded(nOrb,nC,nO,nV,nR,nS,ERI,rho,Om,eGW)
   n3h1p = n2h*n1h1p
   n3p1h = n2p*n1h1p
 
-  nH = n2p + n3p1h 
+  nH = n2p + 4*n3p1h 
 ! nH = n2h + n3h1p 
 
 ! Memory allocation
@@ -156,19 +156,19 @@ subroutine GGW_ppBSE_upfolded(nOrb,nC,nO,nV,nR,nS,ERI,rho,Om,eGW)
             tmp1 = Kronecker_delta(b,d)*rho(a,c,m)
             tmp2 = Kronecker_delta(b,c)*rho(a,d,m)
             tmp3 = Kronecker_delta(a,d)*rho(b,c,m)
-            tmp4 = Kronecker_delta(a,c)*rho(b,d,m)
+            tmp4 = - Kronecker_delta(a,c)*rho(b,d,m)
 
-            H(n2p+0*n3p1h+abm,cd             ) = tmp1 + tmp2
-            H(cd             ,n2p+0*n3p1h+abm) = tmp3 + tmp4
+            H(n2p+0*n3p1h+abm,cd             ) = tmp1
+            H(cd             ,n2p+0*n3p1h+abm) = tmp3
 
-!           H(n2h+1*n3h1p+ijm,kl             ) = +tmp4
-!           H(kl             ,n2h+1*n3h1p+ijm) = +tmp2
-!          
-!           H(n2h+2*n3h1p+ijm,kl             ) = +tmp1
-!           H(kl             ,n2h+2*n3h1p+ijm) = +tmp4
+            H(n2p+1*n3p1h+abm,cd             ) = tmp1
+            H(cd             ,n2p+1*n3p1h+abm) = tmp4
+           
+            H(n2p+2*n3p1h+abm,cd             ) = tmp2
+            H(cd             ,n2p+2*n3p1h+abm) = tmp3
 
-!           H(n2h+3*n3h1p+ijm,kl             ) = +tmp3
-!           H(kl             ,n2h+3*n3h1p+ijm) = +tmp1
+            H(n2p+3*n3p1h+abm,cd             ) = tmp2
+            H(cd             ,n2p+3*n3p1h+abm) = tmp4
 
           end do
         end do
@@ -225,6 +225,9 @@ subroutine GGW_ppBSE_upfolded(nOrb,nC,nO,nV,nR,nS,ERI,rho,Om,eGW)
         tmp = eGW(a) + eGW(b) + Om(m)
 
         H(n2p+0*n3p1h+abm,n2p+0*n3p1h+abm) = tmp
+        H(n2p+1*n3p1h+abm,n2p+1*n3p1h+abm) = tmp
+        H(n2p+2*n3p1h+abm,n2p+2*n3p1h+abm) = tmp
+        H(n2p+3*n3p1h+abm,n2p+3*n3p1h+abm) = tmp
 
       end do
     end do
