@@ -1,6 +1,6 @@
-subroutine ccRG0W0(maxSCF,thresh,max_diis,nBas,nOrb,nC,nO,nV,nR,nS,ERI,ENuc,ERHF,eHF)
+subroutine ccRG0W0_TDA(maxSCF,thresh,max_diis,nBas,nOrb,nC,nO,nV,nR,ERI,ENuc,ERHF,eHF)
 
-! CC-based GW module
+! CC-based GW module (TDA screening)
 
   implicit none
   include 'parameters.h'
@@ -17,7 +17,6 @@ subroutine ccRG0W0(maxSCF,thresh,max_diis,nBas,nOrb,nC,nO,nV,nR,nS,ERI,ENuc,ERHF
   integer,intent(in)            :: nO
   integer,intent(in)            :: nV
   integer,intent(in)            :: nR
-  integer,intent(in)            :: nS
   double precision,intent(in)   :: ENuc
   double precision,intent(in)   :: ERHF
   double precision,intent(in)   :: eHF(nOrb)
@@ -28,29 +27,17 @@ subroutine ccRG0W0(maxSCF,thresh,max_diis,nBas,nOrb,nC,nO,nV,nR,nS,ERI,ENuc,ERHF
   integer                       :: p,q,r,s
   integer                       :: i,j,k,l
   integer                       :: a,b,c,d
-  integer                       :: m
 
-  integer                       :: isp_W
-  logical                       :: TDA_W
-  logical                       :: dRPA
   integer                       :: nSCF
   double precision              :: Conv
-  double precision              :: EcRPA
 
   double precision,allocatable  :: Sig(:)
   double precision,allocatable  :: Z(:)
 
-  double precision,allocatable  :: del(:,:)
-  double precision,allocatable  :: vec(:,:)
-  double precision,allocatable  :: res(:,:)
-  double precision,allocatable  :: amp(:,:)
-
-  double precision,allocatable  :: Aph(:,:)
-  double precision,allocatable  :: Bph(:,:)
-  double precision,allocatable  :: Om(:)
-  double precision,allocatable  :: XpY(:,:)
-  double precision,allocatable  :: XmY(:,:)
-  double precision,allocatable  :: rho(:,:,:)
+  double precision,allocatable  :: del(:,:,:)
+  double precision,allocatable  :: vec(:,:,:)
+  double precision,allocatable  :: res(:,:,:)
+  double precision,allocatable  :: amp(:,:,:)
 
   integer                       :: n_diis
   double precision              :: rcond
@@ -68,39 +55,16 @@ subroutine ccRG0W0(maxSCF,thresh,max_diis,nBas,nOrb,nC,nO,nV,nR,nS,ERI,ENuc,ERHF
 
 ! Memory allocation
 
-  allocate(del(nS,nOrb))
-  allocate(vec(nS,nOrb))
-  allocate(res(nS,nOrb))
-  allocate(amp(nS,nOrb))
+  allocate(del(nO,nV,nOrb))
+  allocate(vec(nO,nV,nOrb))
+  allocate(res(nO,nV,nOrb))
+  allocate(amp(nO,nV,nOrb))
 
   allocate(Sig(nOrb))
   allocate(Z(nOrb))
 
-  allocate(r_diis(nS*nOrb,max_diis))
-  allocate(t_diis(nS*nOrb,max_diis))
-
-!-------------------!
-! Compute screening !
-!-------------------!
-
-  ! Spin manifold 
-
-  isp_W = 1
-  TDA_W = .false.
-  dRPA  = .true.
-
-  ! Memory allocation
-
-  allocate(Om(nS),Aph(nS,nS),Bph(nS,nS),XpY(nS,nS),XmY(nS,nS),rho(nOrb,nOrb,nS))
-
-  call phLR_A(isp_W,dRPA,nOrb,nC,nO,nV,nR,nS,1d0,eHF,ERI,Aph)
-  call phLR_B(isp_W,dRPA,nOrb,nC,nO,nV,nR,nS,1d0,ERI,Bph)
-
-  call phLR(TDA_W,nS,Aph,Bph,EcRPA,Om,XpY,XmY)
-
-  call RGW_excitation_density(nOrb,nC,nO,nR,nS,ERI,XpY,rho)
-
-  deallocate(Aph,Bph,XpY,XmY)
+  allocate(r_diis(nO*nV*nOrb,max_diis))
+  allocate(t_diis(nO*nV*nOrb,max_diis))
 
 ! Initialization
 
@@ -123,26 +87,48 @@ subroutine ccRG0W0(maxSCF,thresh,max_diis,nBas,nOrb,nC,nO,nV,nR,nS,ERI,ENuc,ERHF
     r_diis(:,:) = 0d0
     rcond       = 0d0
 
-    amp(:,:) = 0d0
-    res(:,:) = 0d0
+    amp(:,:,:) = 0d0
+    res(:,:,:) = 0d0
  
-  ! Compute energy differences and coupling blocks
+  ! Compute energy differences
  
-    do m=1,nS
+    do i=nC+1,nO
       do j=nC+1,nO
+        do a=1,nV-nR
     
-        del(m,j) = Om(m) + eHF(j) - eHF(p)
-        vec(m,j) = sqrt(2d0)*rho(p,j,m)
+          del(i,a,j) = eHF(i) + eHF(j) - eHF(nO+a) - eHF(p)
     
+        end do
       end do
     end do
     
-    do m=1,nS
-      do b=1,nV-nR
+    do i=nC+1,nO
+      do a=1,nV-nR
+        do b=1,nV-nR
     
-        del(m,nO+b) = Om(m) + eHF(nO+b) - eHF(p)
-        vec(m,nO+b) = sqrt(2d0)*rho(p,nO+b,m)
+          del(i,a,nO+b) = eHF(nO+a) + eHF(nO+b) - eHF(i) - eHF(p)
     
+        end do
+      end do
+    end do
+
+    do i=nC+1,nO
+      do a=1,nV-nR
+        do j=nC+1,nO
+ 
+          vec(i,a,j) = sqrt(2d0)*ERI(p,nO+a,i,j)
+ 
+        end do
+      end do
+    end do
+ 
+    do i=nC+1,nO
+      do a=1,nV-nR
+        do b=1,nV-nR
+ 
+          vec(i,a,nO+b) = sqrt(2d0)*ERI(p,i,nO+b,nO+a)
+ 
+        end do
       end do
     end do
 
@@ -166,23 +152,41 @@ subroutine ccRG0W0(maxSCF,thresh,max_diis,nBas,nOrb,nC,nO,nV,nR,nS,ERI,ENuc,ERHF
  
       ! Compute residual for 2h1p sector
  
-      res(:,:) = vec(:,:) + (del(:,:) - Sig(p))*amp(:,:)
+      res(:,:,:) = vec(:,:,:) + (del(:,:,:) - Sig(p))*amp(:,:,:)
  
-      do m=1,nS
-        do j=nC+1,nO
+      do i=nC+1,nO
+        do a=1,nV-nR
+          do j=nC+1,nO
  
-          res(m,j) = res(m,j) - Om(m)*amp(m,j) 
+            do k=nC+1,nO
+              do c=1,nV-nR
  
+                res(i,a,j) = res(i,a,j) - 2d0*ERI(j,nO+c,nO+a,k)*amp(i,c,k)  
+!                                       - 2d0*ERI(i,nO+c,nO+a,k)*amp(k,c,j)
+ 
+              end do
+            end do
+ 
+          end do
         end do
       end do
  
       ! Compute residual for 2p1h sector
  
-      do m=nC+1,nO
-        do b=1,nV-nR
+      do i=nC+1,nO
+        do a=1,nV-nR
+          do b=1,nV-nR
  
-          res(m,nO+b) = res(m,nO+b) + Om(m)*amp(m,nO+b) 
-
+            do k=nC+1,nO
+              do c=1,nV-nR
+ 
+                res(i,a,nO+b) = res(i,a,nO+b) + 2d0*ERI(nO+a,k,i,nO+c)*amp(k,c,nO+b) 
+!                                             + 2d0*ERI(nO+b,k,i,nO+c)*amp(k,a,nO+c) 
+ 
+              end do
+            end do
+ 
+          end do
         end do
       end do
   
@@ -192,14 +196,14 @@ subroutine ccRG0W0(maxSCF,thresh,max_diis,nBas,nOrb,nC,nO,nV,nR,nS,ERI,ENuc,ERHF
     
       ! Update amplitudes
 
-      amp(:,:) = amp(:,:) - res(:,:)/del(:,:)
+      amp(:,:,:) = amp(:,:,:) - res(:,:,:)/del(:,:,:)
  
       ! DIIS extrapolation
 
       if(max_diis > 1) then
      
         n_diis = min(n_diis+1,max_diis)
-        call DIIS_extrapolation(rcond,nS*nOrb,nS*nOrb,n_diis,r_diis,t_diis,res,amp)
+        call DIIS_extrapolation(rcond,nO*nV*nOrb,nO*nV*nOrb,n_diis,r_diis,t_diis,res,amp)
      
       end if
 
@@ -207,11 +211,13 @@ subroutine ccRG0W0(maxSCF,thresh,max_diis,nBas,nOrb,nC,nO,nV,nR,nS,ERI,ENuc,ERHF
  
       Sig(p) = 0d0
 
-      do m=1,nS
-        do q=nC+1,nOrb-nR
+      do i=nC+1,nO
+        do a=1,nV-nR
+          do q=nC+1,nOrb-nR
  
-          Sig(p) = Sig(p) + vec(m,q)*amp(m,q)
+            Sig(p) = Sig(p) + vec(i,a,q)*amp(i,a,q)
   
+          end do
         end do
       end do
 
