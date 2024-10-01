@@ -126,23 +126,19 @@ subroutine ccRG0W0(maxSCF,thresh,max_diis,nBas,nOrb,nC,nO,nV,nR,nS,ERI,ENuc,ERHF
     amp(:,:) = 0d0
     res(:,:) = 0d0
  
-  ! Compute energy differences and coupling blocks
+    ! Compute approximate hessians and coupling blocks
  
     do m=1,nS
       do j=nC+1,nO
-    
         del(m,j) = Om(m) + eHF(j) - eHF(p)
         vec(m,j) = sqrt(2d0)*rho(p,j,m)
-    
       end do
     end do
     
     do m=1,nS
       do b=1,nV-nR
-    
         del(m,nO+b) = Om(m) + eHF(nO+b) - eHF(p)
         vec(m,nO+b) = sqrt(2d0)*rho(p,nO+b,m)
-    
       end do
     end do
 
@@ -166,13 +162,11 @@ subroutine ccRG0W0(maxSCF,thresh,max_diis,nBas,nOrb,nC,nO,nV,nR,nS,ERI,ENuc,ERHF
  
       ! Compute residual for 2h1p sector
  
-      res(:,:) = vec(:,:) + (del(:,:) - Sig(p))*amp(:,:)
+!     res(:,:) = vec(:,:) + (del(:,:) - Sig(p))*amp(:,:)
  
       do m=1,nS
         do j=nC+1,nO
- 
-          res(m,j) = res(m,j) - Om(m)*amp(m,j) 
- 
+          res(m,j) = vec(m,j) + (eHF(j) - Om(m) - eHF(p) - Sig(p))*amp(m,j) 
         end do
       end do
  
@@ -180,9 +174,7 @@ subroutine ccRG0W0(maxSCF,thresh,max_diis,nBas,nOrb,nC,nO,nV,nR,nS,ERI,ENuc,ERHF
  
       do m=nC+1,nO
         do b=1,nV-nR
- 
-          res(m,nO+b) = res(m,nO+b) + Om(m)*amp(m,nO+b) 
-
+          res(m,nO+b) = vec(m,nO+b) + (eHF(nO+b) + Om(m) - eHF(p) - Sig(p))*amp(m,nO+b) 
         end do
       end do
   
@@ -197,10 +189,8 @@ subroutine ccRG0W0(maxSCF,thresh,max_diis,nBas,nOrb,nC,nO,nV,nR,nS,ERI,ENuc,ERHF
       ! DIIS extrapolation
 
       if(max_diis > 1) then
-     
         n_diis = min(n_diis+1,max_diis)
         call DIIS_extrapolation(rcond,nS*nOrb,nS*nOrb,n_diis,r_diis,t_diis,res,amp)
-     
       end if
 
       ! Compute quasiparticle energy
@@ -209,9 +199,7 @@ subroutine ccRG0W0(maxSCF,thresh,max_diis,nBas,nOrb,nC,nO,nV,nR,nS,ERI,ENuc,ERHF
 
       do m=1,nS
         do q=nC+1,nOrb-nR
- 
           Sig(p) = Sig(p) + vec(m,q)*amp(m,q)
-  
         end do
       end do
 
