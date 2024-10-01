@@ -273,8 +273,7 @@ subroutine RG0T0pp(dotest,doACFDT,exchange_kernel,doXBS,dophBSE,TDA_T,TDA,dBSE,d
   if(doppBSE) then
 
     call RGTpp_ppBSE(TDA_T,TDA,dBSE,dTDA,singlet,triplet,eta,nOrb,nC,nO,nV,nR,nOOs,nVVs,nOOt,nVVt, &
-                    Om1s,X1s,Y1s,Om2s,X2s,Y2s,rho1s,rho2s,Om1t,X1t,Y1t,Om2t,X2t,Y2t,rho1t,rho2t, &
-                    ERI,dipole_int,eHF,eGT,EcBSE)
+                     ERI,dipole_int,eHF,eGT,EcBSE)
 
     write(*,*)
     write(*,*)'-------------------------------------------------------------------------------'
