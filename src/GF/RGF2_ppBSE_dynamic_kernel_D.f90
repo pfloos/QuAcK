@@ -22,6 +22,7 @@ subroutine RGF2_ppBSE_dynamic_kernel_D(ispin,eta,nBas,nC,nO,nV,nR,nOO,lambda,ERI
   
 ! Local variables
 
+  double precision,external     :: Kronecker_delta
   double precision              :: dem,num
   integer                       :: i,j,k,l,m
   integer                       :: e
@@ -55,36 +56,38 @@ subroutine RGF2_ppBSE_dynamic_kernel_D(ispin,eta,nBas,nC,nO,nV,nR,nOO,lambda,ERI
               do e=nO+1,nBas-nR
      
                 dem = - OmBSE + eGF(k) - eGF(e) + eGF(m) + eGF(j)
-                num = 2d0*ERI(i,e,k,m)*ERI(j,m,l,e) -     ERI(i,e,k,m)*ERI(j,m,e,l) & 
-                    -     ERI(i,e,m,k)*ERI(j,m,l,e) + 2d0*ERI(i,e,m,k)*ERI(j,m,e,l)
+                num = 2d0*ERI(i,m,k,e)*ERI(e,j,m,l) - ERI(i,m,k,e)*ERI(e,j,l,m)  &
+                     -    ERI(i,m,e,k)*ERI(e,j,m,l) - ERI(i,m,e,k)*ERI(e,j,l,m)
 
-                KD_dyn(ij,kl) = KD_dyn(ij,kl) + 0.5d0*num*dem/(dem**2 + eta**2)
-                ZD_dyn(ij,kl) = ZD_dyn(ij,kl) - 0.5d0*num*(dem**2 - eta**2)/(dem**2 + eta**2)**2
+                KD_dyn(ij,kl) = KD_dyn(ij,kl) + num*dem/(dem**2 + eta**2)
+                ZD_dyn(ij,kl) = ZD_dyn(ij,kl) - num*(dem**2 - eta**2)/(dem**2 + eta**2)**2
             
                 dem = - OmBSE + eGF(k) - eGF(e) + eGF(m) + eGF(i)
-                num = 2d0*ERI(j,e,k,m)*ERI(i,m,l,e) -     ERI(j,e,k,m)*ERI(i,m,e,l) & 
-                    -     ERI(j,e,m,k)*ERI(i,m,l,e) + 2d0*ERI(j,e,m,k)*ERI(i,m,e,l)
+                num = 2d0*ERI(j,m,k,e)*ERI(e,i,m,l) - ERI(j,m,k,e)*ERI(e,i,l,m)  &
+                     -    ERI(j,m,e,k)*ERI(e,i,m,l) - ERI(j,m,e,k)*ERI(e,i,l,m)
 
-                KD_dyn(ij,kl) = KD_dyn(ij,kl) - 0.5d0*num*dem/(dem**2 + eta**2)
-                ZD_dyn(ij,kl) = ZD_dyn(ij,kl) + 0.5d0*num*(dem**2 - eta**2)/(dem**2 + eta**2)**2
+                KD_dyn(ij,kl) = KD_dyn(ij,kl) + num*dem/(dem**2 + eta**2)
+                ZD_dyn(ij,kl) = ZD_dyn(ij,kl) - num*(dem**2 - eta**2)/(dem**2 + eta**2)**2
             
                 dem = - OmBSE + eGF(l) - eGF(e) + eGF(m) + eGF(i)
-                num = 2d0*ERI(i,m,k,e)*ERI(j,e,l,m) -     ERI(i,m,k,e)*ERI(j,e,m,l) & 
-                    -     ERI(i,m,e,k)*ERI(j,e,l,m) + 2d0*ERI(i,m,e,k)*ERI(j,e,m,l)
+                num = 2d0*ERI(i,e,k,m)*ERI(m,j,e,l) - ERI(i,e,k,m)*ERI(m,j,l,e)  &
+                     -    ERI(i,e,m,k)*ERI(m,j,e,l) - ERI(i,e,m,k)*ERI(m,j,l,e)
 
-                KD_dyn(ij,kl) = KD_dyn(ij,kl) + 0.5d0*num*dem/(dem**2 + eta**2)
-                ZD_dyn(ij,kl) = ZD_dyn(ij,kl) - 0.5d0*num*(dem**2 - eta**2)/(dem**2 + eta**2)**2
+                KD_dyn(ij,kl) = KD_dyn(ij,kl) + num*dem/(dem**2 + eta**2)
+                ZD_dyn(ij,kl) = ZD_dyn(ij,kl) - num*(dem**2 - eta**2)/(dem**2 + eta**2)**2
             
                 dem = - OmBSE + eGF(l) - eGF(e) + eGF(m) + eGF(j)
-                num = 2d0*ERI(j,m,k,e)*ERI(i,e,l,m) -     ERI(j,m,k,e)*ERI(i,e,m,l) & 
-                    -     ERI(j,m,e,k)*ERI(i,e,l,m) + 2d0*ERI(j,m,e,k)*ERI(i,e,m,l)
+                num = 2d0*ERI(j,e,k,m)*ERI(m,i,e,l) - ERI(j,e,k,m)*ERI(m,i,l,e)  &
+                     -    ERI(j,e,m,k)*ERI(m,i,e,l) - ERI(j,e,m,k)*ERI(m,i,l,e)
 
-                KD_dyn(ij,kl) = KD_dyn(ij,kl) - 0.5d0*num*dem/(dem**2 + eta**2)
-                ZD_dyn(ij,kl) = ZD_dyn(ij,kl) + 0.5d0*num*(dem**2 - eta**2)/(dem**2 + eta**2)**2
+                KD_dyn(ij,kl) = KD_dyn(ij,kl) + num*dem/(dem**2 + eta**2)
+                ZD_dyn(ij,kl) = ZD_dyn(ij,kl) - num*(dem**2 - eta**2)/(dem**2 + eta**2)**2
             
               end do
             end do
 
+            KD_dyn(ij,kl) = lambda*KD_dyn(ij,kl)/sqrt((1d0 + Kronecker_delta(i,j))*(1d0 + Kronecker_delta(k,l)))
+            
           end do
         end do
 
@@ -111,28 +114,32 @@ subroutine RGF2_ppBSE_dynamic_kernel_D(ispin,eta,nBas,nC,nO,nV,nR,nOO,lambda,ERI
               do e=nO+1,nBas-nR
      
                 dem = - OmBSE + eGF(k) - eGF(e) + eGF(m) + eGF(j)
-                num = 2d0*ERI(i,e,k,m)*ERI(j,m,l,e) - ERI(i,e,k,m)*ERI(j,m,e,l) - ERI(i,e,m,k)*ERI(j,m,l,e) 
+                num = 2d0*ERI(i,m,k,e)*ERI(e,j,m,l) - ERI(i,m,k,e)*ERI(e,j,l,m)  &
+                     -    ERI(i,m,e,k)*ERI(e,j,m,l) - ERI(i,m,e,k)*ERI(e,j,l,m)
 
-                KD_dyn(ij,kl) = KD_dyn(ij,kl) + 0.5d0*num*dem/(dem**2 + eta**2)
-                ZD_dyn(ij,kl) = ZD_dyn(ij,kl) - 0.5d0*num*(dem**2 - eta**2)/(dem**2 + eta**2)**2
+                KD_dyn(ij,kl) = KD_dyn(ij,kl) + num*dem/(dem**2 + eta**2)
+                ZD_dyn(ij,kl) = ZD_dyn(ij,kl) - num*(dem**2 - eta**2)/(dem**2 + eta**2)**2
             
                 dem = - OmBSE + eGF(k) - eGF(e) + eGF(m) + eGF(i)
-                num = 2d0*ERI(j,e,k,m)*ERI(i,m,l,e) - ERI(j,e,k,m)*ERI(i,m,e,l) - ERI(j,e,m,k)*ERI(i,m,l,e)
+                num = 2d0*ERI(j,m,k,e)*ERI(e,i,m,l) - ERI(j,m,k,e)*ERI(e,i,l,m)  &
+                     -    ERI(j,m,e,k)*ERI(e,i,m,l) - ERI(j,m,e,k)*ERI(e,i,l,m)
 
-                KD_dyn(ij,kl) = KD_dyn(ij,kl) - 0.5d0*num*dem/(dem**2 + eta**2)
-                ZD_dyn(ij,kl) = ZD_dyn(ij,kl) + 0.5d0*num*(dem**2 - eta**2)/(dem**2 + eta**2)**2
+                KD_dyn(ij,kl) = KD_dyn(ij,kl) - num*dem/(dem**2 + eta**2)
+                ZD_dyn(ij,kl) = ZD_dyn(ij,kl) + num*(dem**2 - eta**2)/(dem**2 + eta**2)**2
             
                 dem = - OmBSE + eGF(l) - eGF(e) + eGF(m) + eGF(i)
-                num = 2d0*ERI(i,m,k,e)*ERI(j,e,l,m) - ERI(i,m,k,e)*ERI(j,e,m,l) - ERI(i,m,e,k)*ERI(j,e,l,m)
+                num = 2d0*ERI(i,e,k,m)*ERI(m,j,e,l) - ERI(i,e,k,m)*ERI(m,j,l,e)  &
+                     -    ERI(i,e,m,k)*ERI(m,j,e,l) - ERI(i,e,m,k)*ERI(m,j,l,e)
 
-                KD_dyn(ij,kl) = KD_dyn(ij,kl) + 0.5d0*num*dem/(dem**2 + eta**2)
-                ZD_dyn(ij,kl) = ZD_dyn(ij,kl) - 0.5d0*num*(dem**2 - eta**2)/(dem**2 + eta**2)**2
+                KD_dyn(ij,kl) = KD_dyn(ij,kl) + num*dem/(dem**2 + eta**2)
+                ZD_dyn(ij,kl) = ZD_dyn(ij,kl) - num*(dem**2 - eta**2)/(dem**2 + eta**2)**2
             
                 dem = - OmBSE + eGF(l) - eGF(e) + eGF(m) + eGF(j)
-                num = 2d0*ERI(j,m,k,e)*ERI(i,e,l,m) - ERI(j,m,k,e)*ERI(i,e,m,l) - ERI(j,m,e,k)*ERI(i,e,l,m) 
+                num = 2d0*ERI(j,e,k,m)*ERI(m,i,e,l) - ERI(j,e,k,m)*ERI(m,i,l,e)  &
+                     -    ERI(j,e,m,k)*ERI(m,i,e,l) - ERI(j,e,m,k)*ERI(m,i,l,e)
 
-                KD_dyn(ij,kl) = KD_dyn(ij,kl) - 0.5d0*num*dem/(dem**2 + eta**2)
-                ZD_dyn(ij,kl) = ZD_dyn(ij,kl) + 0.5d0*num*(dem**2 - eta**2)/(dem**2 + eta**2)**2
+                KD_dyn(ij,kl) = KD_dyn(ij,kl) - num*dem/(dem**2 + eta**2)
+                ZD_dyn(ij,kl) = ZD_dyn(ij,kl) + num*(dem**2 - eta**2)/(dem**2 + eta**2)**2
             
               end do
             end do

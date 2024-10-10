@@ -155,7 +155,7 @@ subroutine RGTpp_ppBSE(TDA_T,TDA,dBSE,dTDA,singlet,triplet,eta,nBas,nC,nO,nV,nR,
     Cpp(:,:) = Cpp(:,:) + TCs(:,:) - TCt(:,:)
     Dpp(:,:) = Dpp(:,:) + TDs(:,:) - TDt(:,:)
 
-    call ppLR(TDA,nOOs,nVVs,Bpp,Cpp,Dpp,Om1s,X1s,Y1s,Om2s,X2s,Y2s,EcBSE(ispin))
+    call ppLR(TDA,nOOs,nVVs,Bpp,Cpp,Dpp,Om1t,X1t,Y1t,Om2t,X2t,Y2t,EcBSE(ispin))
 
     call ppLR_transition_vectors(.false.,nBas,nC,nO,nV,nR,nOOt,nVVt,dipole_int,Om1t,X1t,Y1t,Om2t,X2t,Y2t)
 
