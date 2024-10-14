@@ -115,8 +115,8 @@ subroutine UG0W0(dotest,doACFDT,exchange_kernel,doXBS,dophBSE,TDA_W,TDA,dBSE,dTD
 
   isp_W = 1
 
-               call phULR_A(isp_W,dRPA_W,nBas,nC,nO,nV,nR,nSa,nSb,nSt,1d0,eHF,ERI_aaaa,ERI_aabb,ERI_bbbb,Aph)
-  if(.not.TDA) call phULR_B(isp_W,dRPA_W,nBas,nC,nO,nV,nR,nSa,nSb,nSt,1d0,ERI_aaaa,ERI_aabb,ERI_bbbb,Bph)
+                 call phULR_A(isp_W,dRPA_W,nBas,nC,nO,nV,nR,nSa,nSb,nSt,1d0,eHF,ERI_aaaa,ERI_aabb,ERI_bbbb,Aph)
+  if(.not.TDA_W) call phULR_B(isp_W,dRPA_W,nBas,nC,nO,nV,nR,nSa,nSb,nSt,1d0,ERI_aaaa,ERI_aabb,ERI_bbbb,Bph)
 
   call phULR(TDA_W,nSa,nSb,nSt,Aph,Bph,EcRPA,Om,XpY,XmY)
   
@@ -172,8 +172,8 @@ subroutine UG0W0(dotest,doACFDT,exchange_kernel,doXBS,dophBSE,TDA_W,TDA,dBSE,dTD
 
 ! Compute RPA correlation energy
 
-               call phULR_A(isp_W,dRPA_W,nBas,nC,nO,nV,nR,nSa,nSb,nSt,1d0,eGW,ERI_aaaa,ERI_aabb,ERI_bbbb,Aph)
-  if(.not.TDA) call phULR_B(isp_W,dRPA_W,nBas,nC,nO,nV,nR,nSa,nSb,nSt,1d0,ERI_aaaa,ERI_aabb,ERI_bbbb,Bph)
+                 call phULR_A(isp_W,dRPA_W,nBas,nC,nO,nV,nR,nSa,nSb,nSt,1d0,eGW,ERI_aaaa,ERI_aabb,ERI_bbbb,Aph)
+  if(.not.TDA_W) call phULR_B(isp_W,dRPA_W,nBas,nC,nO,nV,nR,nSa,nSb,nSt,1d0,ERI_aaaa,ERI_aabb,ERI_bbbb,Bph)
     
   call phULR(TDA_W,nSa,nSb,nSt,Aph,Bph,EcRPA,Om,XpY,XmY)
 

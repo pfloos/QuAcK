@@ -118,10 +118,8 @@ subroutine UGW_phACFDT(exchange_kernel,doXBS,TDA_W,TDA,spin_conserved,spin_flip,
   call phULR(TDA_W,nS_aa,nS_bb,nS_sc,Aph,Bph,EcRPA,OmRPA,XpY_RPA,XmY_RPA)
   call UGW_excitation_density(nBas,nC,nO,nR,nS_aa,nS_bb,nS_sc,ERI_aaaa,ERI_aabb,ERI_bbbb,XpY_RPA,rho_RPA)
 
-  call UGW_phBSE_static_kernel_A(ispin,eta,nBas,nC,nO,nV,nR,nS_aa,nS_bb,nS_sc,nS_sc,1d0, & 
-                                 ERI_aaaa,ERI_aabb,ERI_bbbb,OmRPA,rho_RPA,KA)
-  call UGW_phBSE_static_kernel_B(ispin,eta,nBas,nC,nO,nV,nR,nS_aa,nS_bb,nS_sc,nS_sc,1d0, & 
-                                 ERI_aaaa,ERI_aabb,ERI_bbbb,OmRPA,rho_RPA,KB)
+  call UGW_phBSE_static_kernel_A(ispin,eta,nBas,nC,nO,nV,nR,nS_aa,nS_bb,nS_sc,nS_sc,1d0,OmRPA,rho_RPA,KA)
+  call UGW_phBSE_static_kernel_B(ispin,eta,nBas,nC,nO,nV,nR,nS_aa,nS_bb,nS_sc,nS_sc,1d0,OmRPA,rho_RPA,KB)
 
 ! Spin-conserved manifold
 
@@ -152,10 +150,8 @@ subroutine UGW_phACFDT(exchange_kernel,doXBS,TDA_W,TDA,spin_conserved,spin_flip,
         call phULR(TDA_W,nS_aa,nS_bb,nS_sc,Aph,Bph,EcRPA,OmRPA,XpY_RPA,XmY_RPA)
         call UGW_excitation_density(nBas,nC,nO,nR,nS_aa,nS_bb,nS_sc,ERI_aaaa,ERI_aabb,ERI_bbbb,XpY_RPA,rho_RPA)
 
-        call UGW_phBSE_static_kernel_A(ispin,eta,nBas,nC,nO,nV,nR,nS_aa,nS_bb,nS_sc,nS_sc,lambda, & 
-                                       ERI_aaaa,ERI_aabb,ERI_bbbb,OmRPA,rho_RPA,KA)
-        call UGW_phBSE_static_kernel_B(ispin,eta,nBas,nC,nO,nV,nR,nS_aa,nS_bb,nS_sc,nS_sc,lambda, & 
-                                       ERI_aaaa,ERI_aabb,ERI_bbbb,OmRPA,rho_RPA,KB)
+        call UGW_phBSE_static_kernel_A(ispin,eta,nBas,nC,nO,nV,nR,nS_aa,nS_bb,nS_sc,nS_sc,lambda,OmRPA,rho_RPA,KA)
+        call UGW_phBSE_static_kernel_B(ispin,eta,nBas,nC,nO,nV,nR,nS_aa,nS_bb,nS_sc,nS_sc,lambda,OmRPA,rho_RPA,KB)
 
       end if
 
@@ -217,6 +213,9 @@ subroutine UGW_phACFDT(exchange_kernel,doXBS,TDA_W,TDA,spin_conserved,spin_flip,
 
         call phULR(TDA_W,nS_aa,nS_bb,nS_sc,Aph,Bph,EcRPA,OmRPA,XpY_RPA,XmY_RPA)
         call UGW_excitation_density(nBas,nC,nO,nR,nS_aa,nS_bb,nS_sc,ERI_aaaa,ERI_aabb,ERI_bbbb,XpY_RPA,rho_RPA)
+
+        call UGW_phBSE_static_kernel_A(ispin,eta,nBas,nC,nO,nV,nR,nS_aa,nS_bb,nS_sc,nS_sc,lambda,OmRPA,rho_RPA,KA)
+        call UGW_phBSE_static_kernel_B(ispin,eta,nBas,nC,nO,nV,nR,nS_aa,nS_bb,nS_sc,nS_sc,lambda,OmRPA,rho_RPA,KB)
 
       end if
 

@@ -37,6 +37,13 @@ subroutine UGW_phBSE(exchange_kernel,TDA_W,TDA,dBSE,dTDA,spin_conserved,spin_fli
 
   integer                       :: ispin
   integer                       :: isp_W
+  logical                       :: dRPA   = .false.
+  logical                       :: dRPA_W = .true.
+
+  double precision,allocatable  :: Aph(:,:)
+  double precision,allocatable  :: Bph(:,:)
+  double precision,allocatable  :: KA(:,:)
+  double precision,allocatable  :: KB(:,:)
 
   double precision              :: EcRPA
   double precision,allocatable  :: OmRPA(:)
@@ -64,30 +71,35 @@ subroutine UGW_phBSE(exchange_kernel,TDA_W,TDA,dBSE,dTDA,spin_conserved,spin_fli
   nS_ba = (nO(2) - nC(2))*(nV(1) - nR(1))
   nS_sf = nS_ab + nS_ba
   
-  allocate(OmRPA(nS_sc),XpY_RPA(nS_sc,nS_sc),XmY_RPA(nS_sc,nS_sc),rho_RPA(nBas,nBas,nS_sc,nspin))
-
-!-----!
-! TDA !
-!-----!
+! TDA 
 
   if(TDA) then
     write(*,*) 'Tamm-Dancoff approximation activated in phBSE!'
     write(*,*)
   end if
 
+! Initialization
+
+  EcBSE(:) = 0d0
+
 !--------------------------!
 ! Spin-conserved screening !
 !--------------------------!
 
   isp_W = 1
-  EcRPA = 0d0
 
   ! Compute spin-conserved RPA screening 
 
-  call phULR(isp_W,.true.,TDA_W,.false.,eta,nBas,nC,nO,nV,nR,nS_aa,nS_bb,nS_sc,nS_sc,1d0, &
-             eW,ERI_aaaa,ERI_aabb,ERI_bbbb,OmRPA,rho_RPA,EcRPA,OmRPA,XpY_RPA,XmY_RPA)
+  allocate(Aph(nS_sc,nS_sc),Bph(nS_sc,nS_sc))
+  allocate(OmRPA(nS_sc),XpY_RPA(nS_sc,nS_sc),XmY_RPA(nS_sc,nS_sc),rho_RPA(nBas,nBas,nS_sc,nspin))
 
+                 call phULR_A(isp_W,dRPA_W,nBas,nC,nO,nV,nR,nS_aa,nS_bb,nS_sc,1d0,eW,ERI_aaaa,ERI_aabb,ERI_bbbb,Aph)
+  if(.not.TDA_W) call phULR_B(isp_W,dRPA_W,nBas,nC,nO,nV,nR,nS_aa,nS_bb,nS_sc,1d0,ERI_aaaa,ERI_aabb,ERI_bbbb,Bph)
+
+  call phULR(TDA_W,nS_aa,nS_bb,nS_sc,Aph,Bph,EcRPA,OmRPA,XpY_RPA,XmY_RPA)
   call UGW_excitation_density(nBas,nC,nO,nR,nS_aa,nS_bb,nS_sc,ERI_aaaa,ERI_aabb,ERI_bbbb,XpY_RPA,rho_RPA)
+  
+  deallocate(Aph,Bph)
 
 !----------------------------!
 ! Spin-conserved excitations !
@@ -96,14 +108,23 @@ subroutine UGW_phBSE(exchange_kernel,TDA_W,TDA,dBSE,dTDA,spin_conserved,spin_fli
   if(spin_conserved) then
 
     ispin = 1
-    EcBSE(ispin) = 0d0
 
+    allocate(Aph(nS_sc,nS_sc),Bph(nS_sc,nS_sc),KA(nS_sc,nS_sc),KB(nS_sc,nS_sc))
     allocate(OmBSE(nS_sc),XpY_BSE(nS_sc,nS_sc),XmY_BSE(nS_sc,nS_sc))
 
     ! Compute spin-conserved BSE excitation energies
 
-    call phULR(ispin,.true.,TDA,.true.,eta,nBas,nC,nO,nV,nR,nS_aa,nS_bb,nS_sc,nS_sc,1d0, &
-               eGW,ERI_aaaa,ERI_aabb,ERI_bbbb,OmRPA,rho_RPA,EcBSE(ispin),OmBSE,XpY_BSE,XmY_BSE)
+                 call phULR_A(ispin,dRPA,nBas,nC,nO,nV,nR,nS_aa,nS_bb,nS_sc,1d0,eGW,ERI_aaaa,ERI_aabb,ERI_bbbb,Aph)
+    if(.not.TDA) call phULR_B(ispin,dRPA,nBas,nC,nO,nV,nR,nS_aa,nS_bb,nS_sc,1d0,ERI_aaaa,ERI_aabb,ERI_bbbb,Bph)
+
+    call UGW_phBSE_static_kernel_A(ispin,eta,nBas,nC,nO,nV,nR,nS_aa,nS_bb,nS_sc,nS_sc,1d0,OmRPA,rho_RPA,KA)
+    if(.not.TDA) call UGW_phBSE_static_kernel_B(ispin,eta,nBas,nC,nO,nV,nR,nS_aa,nS_bb,nS_sc,nS_sc,1d0,OmRPA,rho_RPA,KB)
+
+                 Aph(:,:) = Aph(:,:) + KA(:,:)
+!   if(.not.TDA) Bph(:,:) = Bph(:,:) + KB(:,:)
+
+    call phULR(TDA,nS_aa,nS_bb,nS_sc,Aph,Bph,EcBSE(ispin),OmBSE,XpY_BSE,XmY_BSE)
+
     call print_excitation_energies('phBSE@GW@UHF','spin-conserved',nS_sc,OmBSE)
     call phULR_transition_vectors(ispin,nBas,nC,nO,nV,nR,nS,nS_aa,nS_bb,nS_sc,dipole_int_aa,dipole_int_bb, &
                                   cW,S,OmBSE,XpY_BSE,XmY_BSE)
@@ -117,6 +138,7 @@ subroutine UGW_phBSE(exchange_kernel,TDA_W,TDA,dBSE,dTDA,spin_conserved,spin_fli
                                           eW,eGW,ERI_aaaa,ERI_aabb,ERI_bbbb,dipole_int_aa,dipole_int_bb, &
                                           OmRPA,rho_RPA,OmBSE,XpY_BSE,XmY_BSE)
 
+    deallocate(Aph,Bph,KA,KB)
     deallocate(OmBSE,XpY_BSE,XmY_BSE)
 
   end if
@@ -128,17 +150,21 @@ subroutine UGW_phBSE(exchange_kernel,TDA_W,TDA,dBSE,dTDA,spin_conserved,spin_fli
  if(spin_flip) then
 
     ispin = 2
-    EcBSE(ispin) = 0d0
 
-    ! Memory allocation
-  
+    allocate(Aph(nS_sf,nS_sf),Bph(nS_sf,nS_sf),KA(nS_sf,nS_sf),KB(nS_sf,nS_sf))
     allocate(OmBSE(nS_sf),XpY_BSE(nS_sf,nS_sf),XmY_BSE(nS_sf,nS_sf))
 
-    ! Compute spin-flip BSE excitation energies
+    ! Compute spin-conserved BSE excitation energies
+                 call phULR_A(ispin,dRPA,nBas,nC,nO,nV,nR,nS_aa,nS_bb,nS_sf,1d0,eGW,ERI_aaaa,ERI_aabb,ERI_bbbb,Aph)
+    if(.not.TDA) call phULR_B(ispin,dRPA,nBas,nC,nO,nV,nR,nS_aa,nS_bb,nS_sf,1d0,ERI_aaaa,ERI_aabb,ERI_bbbb,Bph)
 
-    call phULR(ispin,.true.,TDA,.true.,eta,nBas,nC,nO,nV,nR,nS_ab,nS_ba,nS_sf,nS_sc,1d0, &
-               eGW,ERI_aaaa,ERI_aabb,ERI_bbbb,OmRPA,rho_RPA,EcBSE(ispin),       & 
-               OmBSE,XpY_BSE,XmY_BSE)
+    call UGW_phBSE_static_kernel_A(ispin,eta,nBas,nC,nO,nV,nR,nS_aa,nS_bb,nS_sc,nS_sf,1d0,OmRPA,rho_RPA,KA)
+    if(.not.TDA) call UGW_phBSE_static_kernel_B(ispin,eta,nBas,nC,nO,nV,nR,nS_aa,nS_bb,nS_sc,nS_sf,1d0,OmRPA,rho_RPA,KB)
+
+                 Aph(:,:) = Aph(:,:) + KA(:,:)
+    if(.not.TDA) Bph(:,:) = Bph(:,:) + KB(:,:)
+
+    call phULR(TDA,nS_aa,nS_bb,nS_sc,Aph,Bph,EcBSE(ispin),OmBSE,XpY_BSE,XmY_BSE)
 
     call print_excitation_energies('phBSE@GW@UHF','spin-flip',nS_sf,OmBSE)
     call phULR_transition_vectors(ispin,nBas,nC,nO,nV,nR,nS,nS_ab,nS_ba,nS_sf,dipole_int_aa,dipole_int_bb, &
@@ -153,17 +179,16 @@ subroutine UGW_phBSE(exchange_kernel,TDA_W,TDA,dBSE,dTDA,spin_conserved,spin_fli
                                           eW,eGW,ERI_aaaa,ERI_aabb,ERI_bbbb,dipole_int_aa,dipole_int_bb, &
                                           OmRPA,rho_RPA,OmBSE,XpY_BSE,XmY_BSE)
 
+    deallocate(Aph,Bph,KA,KB)
     deallocate(OmBSE,XpY_BSE,XmY_BSE)
  
   end if
-
   
 ! Scale properly correlation energy if exchange is included in interaction kernel
 
   if(exchange_kernel) then
 
-    EcBSE(1) = 0.5d0*EcBSE(1)
-    EcBSE(2) = 0.5d0*EcBSE(2)
+    EcBSE(:) = 0.5d0*EcBSE(:)
 
   else
 
