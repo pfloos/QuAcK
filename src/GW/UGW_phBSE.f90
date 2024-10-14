@@ -38,21 +38,17 @@ subroutine UGW_phBSE(exchange_kernel,TDA_W,TDA,dBSE,dTDA,spin_conserved,spin_fli
   integer                       :: ispin
   integer                       :: isp_W
 
-  integer                       :: nS_aa,nS_bb,nS_sc
   double precision              :: EcRPA
   double precision,allocatable  :: OmRPA(:)
   double precision,allocatable  :: XpY_RPA(:,:)
   double precision,allocatable  :: XmY_RPA(:,:)
   double precision,allocatable  :: rho_RPA(:,:,:,:)
 
-  double precision,allocatable  :: OmBSE_sc(:)
-  double precision,allocatable  :: XpY_BSE_sc(:,:)
-  double precision,allocatable  :: XmY_BSE_sc(:,:)
-
+  integer                       :: nS_aa,nS_bb,nS_sc
   integer                       :: nS_ab,nS_ba,nS_sf
-  double precision,allocatable  :: OmBSE_sf(:)
-  double precision,allocatable  :: XpY_BSE_sf(:,:)
-  double precision,allocatable  :: XmY_BSE_sf(:,:)
+  double precision,allocatable  :: OmBSE(:)
+  double precision,allocatable  :: XpY_BSE(:,:)
+  double precision,allocatable  :: XmY_BSE(:,:)
 
 ! Output variables
 
@@ -93,7 +89,6 @@ subroutine UGW_phBSE(exchange_kernel,TDA_W,TDA,dBSE,dTDA,spin_conserved,spin_fli
 
   call UGW_excitation_density(nBas,nC,nO,nR,nS_aa,nS_bb,nS_sc,ERI_aaaa,ERI_aabb,ERI_bbbb,XpY_RPA,rho_RPA)
 
-
 !----------------------------!
 ! Spin-conserved excitations !
 !----------------------------!
@@ -103,15 +98,15 @@ subroutine UGW_phBSE(exchange_kernel,TDA_W,TDA,dBSE,dTDA,spin_conserved,spin_fli
     ispin = 1
     EcBSE(ispin) = 0d0
 
-    allocate(OmBSE_sc(nS_sc),XpY_BSE_sc(nS_sc,nS_sc),XmY_BSE_sc(nS_sc,nS_sc))
+    allocate(OmBSE(nS_sc),XpY_BSE(nS_sc,nS_sc),XmY_BSE(nS_sc,nS_sc))
 
     ! Compute spin-conserved BSE excitation energies
 
     call phULR(ispin,.true.,TDA,.true.,eta,nBas,nC,nO,nV,nR,nS_aa,nS_bb,nS_sc,nS_sc,1d0, &
-               eGW,ERI_aaaa,ERI_aabb,ERI_bbbb,OmRPA,rho_RPA,EcBSE(ispin),OmBSE_sc,XpY_BSE_sc,XmY_BSE_sc)
-    call print_excitation_energies('phBSE@GW@UHF','spin-conserved',nS_sc,OmBSE_sc)
+               eGW,ERI_aaaa,ERI_aabb,ERI_bbbb,OmRPA,rho_RPA,EcBSE(ispin),OmBSE,XpY_BSE,XmY_BSE)
+    call print_excitation_energies('phBSE@GW@UHF','spin-conserved',nS_sc,OmBSE)
     call phULR_transition_vectors(ispin,nBas,nC,nO,nV,nR,nS,nS_aa,nS_bb,nS_sc,dipole_int_aa,dipole_int_bb, &
-                                  cW,S,OmBSE_sc,XpY_BSE_sc,XmY_BSE_sc)
+                                  cW,S,OmBSE,XpY_BSE,XmY_BSE)
 
     !-------------------------------------------------
     ! Compute the dynamical screening at the BSE level
@@ -120,9 +115,9 @@ subroutine UGW_phBSE(exchange_kernel,TDA_W,TDA,dBSE,dTDA,spin_conserved,spin_fli
     if(dBSE) &
       call UGW_phBSE_dynamic_perturbation(ispin,dTDA,eta,nBas,nC,nO,nV,nR,nS,nS_aa,nS_bb,nS_sc,nS_sc,    &
                                           eW,eGW,ERI_aaaa,ERI_aabb,ERI_bbbb,dipole_int_aa,dipole_int_bb, &
-                                          OmRPA,rho_RPA,OmBSE_sc,XpY_BSE_sc,XmY_BSE_sc)
+                                          OmRPA,rho_RPA,OmBSE,XpY_BSE,XmY_BSE)
 
-    deallocate(OmBSE_sc,XpY_BSE_sc,XmY_BSE_sc)
+    deallocate(OmBSE,XpY_BSE,XmY_BSE)
 
   end if
 
@@ -137,17 +132,17 @@ subroutine UGW_phBSE(exchange_kernel,TDA_W,TDA,dBSE,dTDA,spin_conserved,spin_fli
 
     ! Memory allocation
   
-    allocate(OmBSE_sf(nS_sf),XpY_BSE_sf(nS_sf,nS_sf),XmY_BSE_sf(nS_sf,nS_sf))
+    allocate(OmBSE(nS_sf),XpY_BSE(nS_sf,nS_sf),XmY_BSE(nS_sf,nS_sf))
 
     ! Compute spin-flip BSE excitation energies
 
     call phULR(ispin,.true.,TDA,.true.,eta,nBas,nC,nO,nV,nR,nS_ab,nS_ba,nS_sf,nS_sc,1d0, &
                eGW,ERI_aaaa,ERI_aabb,ERI_bbbb,OmRPA,rho_RPA,EcBSE(ispin),       & 
-               OmBSE_sf,XpY_BSE_sf,XmY_BSE_sf)
+               OmBSE,XpY_BSE,XmY_BSE)
 
-    call print_excitation_energies('phBSE@GW@UHF','spin-flip',nS_sf,OmBSE_sf)
+    call print_excitation_energies('phBSE@GW@UHF','spin-flip',nS_sf,OmBSE)
     call phULR_transition_vectors(ispin,nBas,nC,nO,nV,nR,nS,nS_ab,nS_ba,nS_sf,dipole_int_aa,dipole_int_bb, &
-                                  cW,S,OmBSE_sf,XpY_BSE_sf,XmY_BSE_sf)
+                                  cW,S,OmBSE,XpY_BSE,XmY_BSE)
 
     !-------------------------------------------------
     ! Compute the dynamical screening at the BSE level
@@ -156,9 +151,9 @@ subroutine UGW_phBSE(exchange_kernel,TDA_W,TDA,dBSE,dTDA,spin_conserved,spin_fli
     if(dBSE) &
       call UGW_phBSE_dynamic_perturbation(ispin,dTDA,eta,nBas,nC,nO,nV,nR,nS,nS_ab,nS_ba,nS_sf,nS_sc,    &
                                           eW,eGW,ERI_aaaa,ERI_aabb,ERI_bbbb,dipole_int_aa,dipole_int_bb, &
-                                          OmRPA,rho_RPA,OmBSE_sf,XpY_BSE_sf,XmY_BSE_sf)
+                                          OmRPA,rho_RPA,OmBSE,XpY_BSE,XmY_BSE)
 
-    deallocate(OmBSE_sf,XpY_BSE_sf,XmY_BSE_sf)
+    deallocate(OmBSE,XpY_BSE,XmY_BSE)
  
   end if
 
