@@ -65,9 +65,7 @@ subroutine RGW_phBSE(dophBSE2,exchange_kernel,TDA_W,TDA,dBSE,dTDA,singlet,triple
            Aph(nS,nS),Bph(nS,nS),KA_sta(nS,nS),KB_sta(nS,nS), &
            OmBSE(nS),XpY_BSE(nS,nS),XmY_BSE(nS,nS))
 
-!-----!
-! TDA !
-!-----!
+! TDA 
 
   if(TDA) then
     write(*,*) 'Tamm-Dancoff approximation activated in phBSE!'

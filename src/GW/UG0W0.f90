@@ -46,9 +46,9 @@ subroutine UG0W0(dotest,doACFDT,exchange_kernel,doXBS,dophBSE,TDA_W,TDA,dBSE,dTD
 ! Local variables
 
   logical                       :: print_W = .true.
-  logical                       :: dRPA
+  logical                       :: dRPA_W 
   integer                       :: is
-  integer                       :: ispin
+  integer                       :: isp_W
   double precision              :: flow
   double precision              :: EcRPA
   double precision              :: EcGM(nspin)
@@ -78,7 +78,7 @@ subroutine UG0W0(dotest,doACFDT,exchange_kernel,doXBS,dophBSE,TDA_W,TDA,dBSE,dTD
 ! Initialization
 
   EcRPA = 0d0
-  dRPA = .true.
+  dRPA_W = .true.
 
 ! TDA for W
 
@@ -113,10 +113,10 @@ subroutine UG0W0(dotest,doACFDT,exchange_kernel,doXBS,dophBSE,TDA_W,TDA,dBSE,dTD
 
 ! Spin-conserving transitions
 
-  ispin = 1
+  isp_W = 1
 
-  call phULR_A(ispin,dRPA,nBas,nC,nO,nV,nR,nSa,nSb,nSt,1d0,eHF,ERI_aaaa,ERI_aabb,ERI_bbbb,Aph)
-  if(.not.TDA) call phULR_B(ispin,dRPA,nBas,nC,nO,nV,nR,nSa,nSb,nSt,1d0,ERI_aaaa,ERI_aabb,ERI_bbbb,Bph)
+                 call phULR_A(isp_W,dRPA_W,nBas,nC,nO,nV,nR,nSa,nSb,nSt,1d0,eHF,ERI_aaaa,ERI_aabb,ERI_bbbb,Aph)
+  if(.not.TDA_W) call phULR_B(isp_W,dRPA_W,nBas,nC,nO,nV,nR,nSa,nSb,nSt,1d0,ERI_aaaa,ERI_aabb,ERI_bbbb,Bph)
 
   call phULR(TDA_W,nSa,nSb,nSt,Aph,Bph,EcRPA,Om,XpY,XmY)
   
@@ -172,8 +172,8 @@ subroutine UG0W0(dotest,doACFDT,exchange_kernel,doXBS,dophBSE,TDA_W,TDA,dBSE,dTD
 
 ! Compute RPA correlation energy
 
-  call phULR_A(ispin,dRPA,nBas,nC,nO,nV,nR,nSa,nSb,nSt,1d0,eGW,ERI_aaaa,ERI_aabb,ERI_bbbb,Aph)
-  if(.not.TDA) call phULR_B(ispin,dRPA,nBas,nC,nO,nV,nR,nSa,nSb,nSt,1d0,ERI_aaaa,ERI_aabb,ERI_bbbb,Bph)
+                 call phULR_A(isp_W,dRPA_W,nBas,nC,nO,nV,nR,nSa,nSb,nSt,1d0,eGW,ERI_aaaa,ERI_aabb,ERI_bbbb,Aph)
+  if(.not.TDA_W) call phULR_B(isp_W,dRPA_W,nBas,nC,nO,nV,nR,nSa,nSb,nSt,1d0,ERI_aaaa,ERI_aabb,ERI_bbbb,Bph)
     
   call phULR(TDA_W,nSa,nSb,nSt,Aph,Bph,EcRPA,Om,XpY,XmY)
 
@@ -205,7 +205,7 @@ subroutine UG0W0(dotest,doACFDT,exchange_kernel,doXBS,dophBSE,TDA_W,TDA,dBSE,dTD
 
     if(doACFDT) then
 
-      call UGW_phACFDT(exchange_kernel,doXBS,.true.,TDA_W,TDA,dophBSE,spin_conserved,spin_flip,eta, & 
+      call UGW_phACFDT(exchange_kernel,doXBS,TDA_W,TDA,spin_conserved,spin_flip,eta, & 
                        nBas,nC,nO,nV,nR,nS,ERI_aaaa,ERI_aabb,ERI_bbbb,eHF,eGW,EcBSE)
 
       write(*,*)

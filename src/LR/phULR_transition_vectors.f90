@@ -1,4 +1,4 @@
-subroutine phULR_transition_vectors(ispin,nBas,nC,nO,nV,nR,nS,nSa,nSb,nSt,dipole_int_aa,dipole_int_bb,c,S,Omega,XpY,XmY)
+subroutine phULR_transition_vectors(ispin,nBas,nC,nO,nV,nR,nS,nSa,nSb,nSt,dipole_int_aa,dipole_int_bb,c,S,Om,XpY,XmY)
 
 ! Print transition vectors for linear response calculation
 
@@ -21,14 +21,14 @@ subroutine phULR_transition_vectors(ispin,nBas,nC,nO,nV,nR,nS,nSa,nSb,nSt,dipole
   double precision              :: dipole_int_bb(nBas,nBas,ncart)
   double precision,intent(in)   :: c(nBas,nBas,nspin)
   double precision,intent(in)   :: S(nBas,nBas)
-  double precision,intent(in)   :: Omega(nSt)
+  double precision,intent(in)   :: Om(nSt)
   double precision,intent(in)   :: XpY(nSt,nSt)
   double precision,intent(in)   :: XmY(nSt,nSt)
 
 ! Local variables
 
   integer                       :: ia,jb,j,b
-  integer                       :: maxS = 20
+  integer                       :: maxS = 10
   double precision,parameter    :: thres_vec = 0.1d0
   double precision,allocatable  :: X(:)
   double precision,allocatable  :: Y(:)
@@ -44,11 +44,11 @@ subroutine phULR_transition_vectors(ispin,nBas,nC,nO,nV,nR,nS,nSa,nSb,nSt,dipole
 
   os(:) = 0d0
   if(ispin == 1) call phULR_oscillator_strength(nBas,nC,nO,nV,nR,nS,nSa,nSb,nSt,maxS, & 
-                                                dipole_int_aa,dipole_int_bb,Omega,XpY,XmY,os)
+                                                dipole_int_aa,dipole_int_bb,Om,XpY,XmY,os)
 
 ! Compute <S**2>
 
-  call S2_expval(ispin,nBas,nC,nO,nV,nR,nS,nSa,nSb,nSt,maxS,c,S,Omega,XpY,XmY,S2)
+  call S2_expval(ispin,nBas,nC,nO,nV,nR,nS,nSa,nSb,nSt,maxS,c,S,Om,XpY,XmY,S2)
 
 ! Print details about spin-conserved excitations
 
@@ -61,7 +61,7 @@ subroutine phULR_transition_vectors(ispin,nBas,nC,nO,nV,nR,nS,nSa,nSb,nSt,dipole
 
       print*,'-------------------------------------------------------------'
       write(*,'(A15,I3,A2,F10.6,A3,A6,F6.4,A11,F6.4)') & 
-              ' Excitation n. ',ia,': ',Omega(ia)*HaToeV,' eV','  f = ',os(ia),'  <S**2> = ',S2(ia)
+              ' Excitation n. ',ia,': ',Om(ia)*HaToeV,' eV','  f = ',os(ia),'  <S**2> = ',S2(ia)
       print*,'-------------------------------------------------------------'
 
       ! Spin-up transitions
@@ -117,7 +117,7 @@ subroutine phULR_transition_vectors(ispin,nBas,nC,nO,nV,nR,nS,nSa,nSb,nSt,dipole
 
       print*,'-------------------------------------------------------------'
       write(*,'(A15,I3,A2,F10.6,A3,A6,F6.4,A11,F6.4)') & 
-              ' Excitation n. ',ia,': ',Omega(ia)*HaToeV,' eV','  f = ',os(ia),'  <S**2> = ',S2(ia)
+              ' Excitation n. ',ia,': ',Om(ia)*HaToeV,' eV','  f = ',os(ia),'  <S**2> = ',S2(ia)
       print*,'-------------------------------------------------------------'
 
       ! Spin-up transitions
