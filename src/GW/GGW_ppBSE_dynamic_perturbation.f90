@@ -39,8 +39,8 @@ subroutine GGW_ppBSE_dynamic_perturbation(dTDA,eta,nOrb,nC,nO,nV,nR,nS,nOO,nVV,e
 
   integer                       :: ab,ij,kl
 
-  integer                       :: maxOO = 0
-  integer                       :: maxVV = 10
+  integer                       :: maxOO = 20
+  integer                       :: maxVV = 0
 
   double precision,allocatable  :: Om1_dyn(:)
   double precision,allocatable  :: Om2_dyn(:)

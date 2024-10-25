@@ -103,6 +103,7 @@ subroutine RGW_ppBSE(TDA_W,TDA,dBSE,dTDA,singlet,triplet,eta,nOrb,nC,nO,nV,nR,nS
   if(.not.TDA_W) call phLR_B(isp_W,dRPA_W,nOrb,nC,nO,nV,nR,nS,1d0,ERI,Bph)
 
   call phLR(TDA_W,nS,Aph,Bph,EcRPA,OmRPA,XpY_RPA,XmY_RPA)
+!  call phLR_transition_vectors(.true.,nOrb,nC,nO,nV,nR,nS,dipole_int,OmRPA,XpY_RPA,XmY_RPA)
 
   call RGW_excitation_density(nOrb,nC,nO,nR,nS,ERI,XpY_RPA,rho_RPA)
 
@@ -257,7 +258,7 @@ subroutine RGW_ppBSE(TDA_W,TDA,dBSE,dTDA,singlet,triplet,eta,nOrb,nC,nO,nV,nR,nS
     ! Upfolded ppBSE !
     !----------------!
     
-    call RGW_ppBSE_upfolded(ispin,nOrb,nC,nO,nV,nR,nS,ERI,rho_RPA,OmRPA,eGW)
+    ! call RGW_ppBSE_upfolded(ispin,nOrb,nC,nO,nV,nR,nS,ERI,rho_RPA,OmRPA,eGW)
 
     deallocate(KB_sta,KC_sta,KD_sta)
     deallocate(Om1,X1,Y1,Om2,X2,Y2)
@@ -375,7 +376,7 @@ subroutine RGW_ppBSE(TDA_W,TDA,dBSE,dTDA,singlet,triplet,eta,nOrb,nC,nO,nV,nR,nS
     ! Upfolded ppBSE !
     !----------------!
 
-    call RGW_ppBSE_upfolded(ispin,nOrb,nC,nO,nV,nR,nS,ERI,rho_RPA,OmRPA,eGW)
+    ! call RGW_ppBSE_upfolded(ispin,nOrb,nC,nO,nV,nR,nS,ERI,rho_RPA,OmRPA,eGW)
 
     deallocate(KB_sta,KC_sta,KD_sta)
     deallocate(Om1,X1,Y1,Om2,X2,Y2)

@@ -55,7 +55,7 @@ subroutine GGW_ppBSE_static_kernel_D(eta,nBas,nC,nO,nV,nR,nS,nOO,lambda,ERI,Om,r
                       + rho(i,l,m)*rho(j,k,m)*Om(m)/eps
           end do
 
-          KD(ij,kl) = lambda*chi
+          KD(ij,kl) = 2d0*lambda*chi
 
         end do
       end do
