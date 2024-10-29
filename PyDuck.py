@@ -37,7 +37,7 @@ print_2e=args.print_2e
 working_dir=args.working_dir
 
 #Read molecule
-f = open(QuAcK_dir + '/mol/' + xyz,'r')
+f = open(working_dir+'/mol/'+xyz,'r')
 lines = f.read().splitlines()
 nbAt = int(lines.pop(0))
 lines.pop(0)
