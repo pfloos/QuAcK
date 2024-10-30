@@ -176,13 +176,12 @@ subroutine GG0T0pp(dotest,doACFDT,exchange_kernel,doXBS,dophBSE,dophBSE2,TDA_T,T
   
   if(doppBSE) then
 
-     call GGTpp_ppBSE(TDA_T,TDA,dBSE,dTDA,eta,nOrb,nC,nO,nV,nR,nOO,nVV, &
-                     ERI,dipole_int,eHF,eGT,EcBSE)
+     call GGTpp_ppBSE(TDA_T,TDA,dBSE,dTDA,eta,nOrb,nC,nO,nV,nR,nOO,nVV,ERI,dipole_int,eHF,eGT,EcBSE)
 
     write(*,*)
     write(*,*)'-------------------------------------------------------------------------------'
-    write(*,'(2X,A50,F20.10,A3)') 'Tr@ppBSE@G0T0pp@RHF correlation energy           = ',EcBSE,' au'
-    write(*,'(2X,A50,F20.10,A3)') 'Tr@ppBSE@G0T0pp@RHF total       energy           = ',ENuc + EGHF + EcBSE,' au'
+    write(*,'(2X,A50,F20.10,A3)') 'Tr@ppBSE@G0T0pp@GHF correlation energy           = ',EcBSE,' au'
+    write(*,'(2X,A50,F20.10,A3)') 'Tr@ppBSE@G0T0pp@GHF total       energy           = ',ENuc + EGHF + EcBSE,' au'
     write(*,*)'-------------------------------------------------------------------------------'
     write(*,*)
 

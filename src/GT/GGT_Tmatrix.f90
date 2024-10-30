@@ -46,21 +46,26 @@ subroutine GGT_Tmatrix(nOrb,nC,nO,nV,nR,nOO,nVV,lambda,ERI,eGF,Om1,rho1,Om2,rho2
     do r=nC+1,nOrb-nR
       do q=nC+1,nOrb-nR
         do p=nC+1,nOrb-nR
+
           T(p,q,r,s) = ERI(p,q,r,s) - ERI(p,q,s,r)
            
           cd = 0
-          do c = nO+1, nOrb-nR
-            do d = c+1, nOrb-nR
+          do c=nO+1,nOrb-nR
+            do d=c+1,nOrb-nR
               cd = cd + 1
-              T(p,q,r,s) = T(p,q,r,s) - rho1(p,q,cd) * rho1(r,s,cd) / Om1(cd)
+
+              T(p,q,r,s) = T(p,q,r,s) - rho1(p,q,cd)*rho1(r,s,cd)/Om1(cd)
+
             end do ! d
           end do ! c
 
           kl = 0
-          do k = nC+1, nO
-            do l = k+1, nO
+          do k=nC+1,nO
+            do l=k+1,nO
               kl = kl + 1
-              T(p,q,r,s) = T(p,q,r,s) + rho2(p,q,kl) * rho2(r,s,kl) / Om2(kl)
+
+              T(p,q,r,s) = T(p,q,r,s) + rho2(p,q,kl)*rho2(r,s,kl)/Om2(kl)
+
             enddo
           enddo
            
