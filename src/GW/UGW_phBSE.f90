@@ -117,11 +117,11 @@ subroutine UGW_phBSE(exchange_kernel,TDA_W,TDA,dBSE,dTDA,spin_conserved,spin_fli
                  call phULR_A(ispin,dRPA,nBas,nC,nO,nV,nR,nS_aa,nS_bb,nS_sc,1d0,eGW,ERI_aaaa,ERI_aabb,ERI_bbbb,Aph)
     if(.not.TDA) call phULR_B(ispin,dRPA,nBas,nC,nO,nV,nR,nS_aa,nS_bb,nS_sc,1d0,ERI_aaaa,ERI_aabb,ERI_bbbb,Bph)
 
-    call UGW_phBSE_static_kernel_A(ispin,eta,nBas,nC,nO,nV,nR,nS_aa,nS_bb,nS_sc,nS_sc,1d0,OmRPA,rho_RPA,KA)
+                 call UGW_phBSE_static_kernel_A(ispin,eta,nBas,nC,nO,nV,nR,nS_aa,nS_bb,nS_sc,nS_sc,1d0,OmRPA,rho_RPA,KA)
     if(.not.TDA) call UGW_phBSE_static_kernel_B(ispin,eta,nBas,nC,nO,nV,nR,nS_aa,nS_bb,nS_sc,nS_sc,1d0,OmRPA,rho_RPA,KB)
 
                  Aph(:,:) = Aph(:,:) + KA(:,:)
-!   if(.not.TDA) Bph(:,:) = Bph(:,:) + KB(:,:)
+    if(.not.TDA) Bph(:,:) = Bph(:,:) + KB(:,:)
 
     call phULR(TDA,nS_aa,nS_bb,nS_sc,Aph,Bph,EcBSE(ispin),OmBSE,XpY_BSE,XmY_BSE)
 
@@ -155,10 +155,11 @@ subroutine UGW_phBSE(exchange_kernel,TDA_W,TDA,dBSE,dTDA,spin_conserved,spin_fli
     allocate(OmBSE(nS_sf),XpY_BSE(nS_sf,nS_sf),XmY_BSE(nS_sf,nS_sf))
 
     ! Compute spin-conserved BSE excitation energies
+
                  call phULR_A(ispin,dRPA,nBas,nC,nO,nV,nR,nS_aa,nS_bb,nS_sf,1d0,eGW,ERI_aaaa,ERI_aabb,ERI_bbbb,Aph)
     if(.not.TDA) call phULR_B(ispin,dRPA,nBas,nC,nO,nV,nR,nS_aa,nS_bb,nS_sf,1d0,ERI_aaaa,ERI_aabb,ERI_bbbb,Bph)
 
-    call UGW_phBSE_static_kernel_A(ispin,eta,nBas,nC,nO,nV,nR,nS_aa,nS_bb,nS_sc,nS_sf,1d0,OmRPA,rho_RPA,KA)
+                 call UGW_phBSE_static_kernel_A(ispin,eta,nBas,nC,nO,nV,nR,nS_aa,nS_bb,nS_sc,nS_sf,1d0,OmRPA,rho_RPA,KA)
     if(.not.TDA) call UGW_phBSE_static_kernel_B(ispin,eta,nBas,nC,nO,nV,nR,nS_aa,nS_bb,nS_sc,nS_sf,1d0,OmRPA,rho_RPA,KB)
 
                  Aph(:,:) = Aph(:,:) + KA(:,:)
