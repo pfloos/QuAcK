@@ -1,4 +1,4 @@
-subroutine RGTpp_ppBSE_static_kernel_B(ispin,eta,nBas,nC,nO,nV,nR,nOO,nVV,nOOx,nVVx,lambda,Om1,rho1,Om2,rho2,TB)
+subroutine RGTpp_ppBSE_static_kernel_B(ispin,eta,nBas,nC,nO,nV,nR,nOO,nVV,lambda,eGF,Taaaa,Tabab,Tbaab,KB_sta)
 
 ! Compute the VVOO block of the static T-matrix
 
@@ -16,13 +16,11 @@ subroutine RGTpp_ppBSE_static_kernel_B(ispin,eta,nBas,nC,nO,nV,nR,nOO,nVV,nOOx,n
   integer,intent(in)            :: nR
   integer,intent(in)            :: nOO
   integer,intent(in)            :: nVV
-  integer,intent(in)            :: nOOx
-  integer,intent(in)            :: nVVx
   double precision,intent(in)   :: lambda
-  double precision,intent(in)   :: Om1(nVV)
-  double precision,intent(in)   :: rho1(nBas,nBas,nVV)
-  double precision,intent(in)   :: Om2(nOO)
-  double precision,intent(in)   :: rho2(nBas,nBas,nOO)
+  double precision,intent(in)   :: eGF(nBas)
+  double precision,intent(in)   :: Taaaa(nBas,nBas,nBas,nBas)
+  double precision,intent(in)   :: Tabab(nBas,nBas,nBas,nBas)
+  double precision,intent(in)   :: Tbaab(nBas,nBas,nBas,nBas)
 
 ! Local variables
 
@@ -32,8 +30,12 @@ subroutine RGTpp_ppBSE_static_kernel_B(ispin,eta,nBas,nC,nO,nV,nR,nOO,nVV,nOOx,n
 
 ! Output variables
 
-  double precision,intent(out)  :: TB(nVVx,nOOx)
+  double precision,intent(out)  :: KB_sta(nVV,nOO)
 
+! Initialization
+
+  KB_sta(:,:) = 0d0
+  
 !===============!
 ! singlet block !
 !===============!
@@ -53,16 +55,16 @@ subroutine RGTpp_ppBSE_static_kernel_B(ispin,eta,nBas,nC,nO,nV,nR,nOO,nVV,nOOx,n
             chi = 0d0
  
             do cd=1,nVV
-              eps = + Om1(cd)
-              chi = chi + rho1(a,b,cd)*rho1(i,j,cd)*eps/(eps**2 + eta**2)
+              eps = 0d0
+              chi = chi + 0d0
             end do
  
             do kl=1,nOO
-              eps = - Om2(kl)
-              chi = chi + rho2(a,b,kl)*rho2(i,j,kl)*eps/(eps**2 + eta**2)
+              eps = 0d0
+              chi = chi + 0d0
             end do
  
-            TB(ab,ij) = lambda*chi
+            KB_sta(ab,ij) = lambda*chi
  
           end do
         end do
@@ -91,54 +93,16 @@ subroutine RGTpp_ppBSE_static_kernel_B(ispin,eta,nBas,nC,nO,nV,nR,nOO,nVV,nOOx,n
             chi = 0d0
  
             do cd=1,nVV
-              eps = + Om1(cd)
-              chi = chi + rho1(a,b,cd)*rho1(i,j,cd)*eps/(eps**2 + eta**2)
+              eps = 0d0
+              chi = chi + 0d0
             end do
  
             do kl=1,nOO
-              eps = - Om2(kl)
-              chi = chi + rho2(a,b,kl)*rho2(i,j,kl)*eps/(eps**2 + eta**2)
+              eps = 0d0
+              chi = chi + 0d0
             end do
  
-            TB(ab,ij) = lambda*chi
- 
-          end do
-        end do
-
-      end do
-    end do
-
-  end if
-
-!==================!
-! alpha-beta block !
-!==================!
-
-  if(ispin == 3) then
-
-    ab = 0
-    do a=nO+1,nBas-nR
-      do b=nO+1,nBas-nR
-        ab = ab + 1
-
-        ij = 0
-        do i=nC+1,nO
-          do j=nC+1,nO
-            ij = ij + 1
- 
-            chi = 0d0
- 
-            do cd=1,nVV
-              eps = + Om1(cd)
-              chi = chi + rho1(a,b,cd)*rho1(i,j,cd)*eps/(eps**2 + eta**2)
-            end do
- 
-            do kl=1,nOO
-              eps = - Om2(kl)
-              chi = chi + rho2(a,b,kl)*rho2(i,j,kl)*eps/(eps**2 + eta**2)
-            end do
- 
-            TB(ab,ij) = lambda*chi
+            KB_sta(ab,ij) = lambda*chi
  
           end do
         end do

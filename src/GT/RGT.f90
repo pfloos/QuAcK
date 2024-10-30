@@ -1,6 +1,3 @@
-
-! ---
-
 subroutine RGT(dotest, doG0T0pp, doevGTpp, doqsGTpp, doufG0T0pp, doG0T0eh, doevGTeh, doqsGTeh, &
                maxSCF, thresh, max_diis, doACFDT, exchange_kernel, doXBS, dophBSE, dophBSE2,   &
                doppBSE, TDA_T, TDA, dBSE, dTDA, singlet, triplet, linearize, eta, regularize,  &

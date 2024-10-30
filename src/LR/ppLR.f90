@@ -82,36 +82,36 @@ subroutine ppLR(TDA,nOO,nVV,Bpp,Cpp,Dpp,Om1,X1,Y1,Om2,X2,Y2,EcRPA)
 
       call sort_ppRPA(nOO,nVV,nPP,Om,Z,Om1,X1,Y1,Om2,X2,Y2)
 
-!   else
+   ! else
 
-!       thr_d   = 1d-6   ! to determine if     diagonal elements of L.T x R are close enouph to 1
-!       thr_nd  = 1d-6   ! to determine if non-diagonal elements of L.T x R are close enouph to 1
-!       thr_deg = 1d-8   ! to determine if two eigenvectors are degenerate or not
-!       imp_bio = .True. ! impose bi-orthogonality
-!       verbose = .False.
-!       call diagonalize_nonsym_matrix(N, M, Z, Om, thr_d, thr_nd, thr_deg, imp_bio, verbose)
-!   
-!       do i = 1, nOO
-!         Om2(i) = Om(i)
-!         do j = 1, nVV
-!           X2(j,i) = Z(j,i)
-!         enddo
-!         do j = 1, nOO
-!           Y2(j,i) = Z(nVV+j,i)
-!         enddo
-!       enddo
-!   
-!       do i = 1, nVV
-!         Om1(i) = Om(nOO+i)
-!         do j = 1, nVV
-!           X1(j,i) = M(j,nOO+i)
-!         enddo
-!         do j = 1, nOO
-!           Y1(j,i) = M(nVV+j,nOO+i)
-!         enddo
-!       enddo
+   !     thr_d   = 1d-6   ! to determine if     diagonal elements of L.T x R are close enouph to 1
+   !     thr_nd  = 1d-6   ! to determine if non-diagonal elements of L.T x R are close enouph to 1
+   !     thr_deg = 1d-8   ! to determine if two eigenvectors are degenerate or not
+   !     imp_bio = .True. ! impose bi-orthogonality
+   !     verbose = .False.
+   !     call diagonalize_nonsym_matrix(Npp, M, Z, Om, thr_d, thr_nd, thr_deg, imp_bio, verbose)
+   
+   !     do i = 1, nOO
+   !       Om2(i) = Om(i)
+   !       do j = 1, nVV
+   !         X2(j,i) = Z(j,i)
+   !       enddo
+   !       do j = 1, nOO
+   !         Y2(j,i) = Z(nVV+j,i)
+   !       enddo
+   !     enddo
+   
+   !     do i = 1, nVV
+   !       Om1(i) = Om(nOO+i)
+   !       do j = 1, nVV
+   !         X1(j,i) = M(j,nOO+i)
+   !       enddo
+   !       do j = 1, nOO
+   !         Y1(j,i) = M(nVV+j,nOO+i)
+   !       enddo
+   !     enddo
 
-!   endif
+   ! endif
 
   end if
 
