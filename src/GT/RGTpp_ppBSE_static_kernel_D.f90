@@ -104,22 +104,19 @@ subroutine RGTpp_ppBSE_static_kernel_D(ispin,eta,nBas,nC,nO,nV,nR,nOO,nVV,lambda
             do m=nC+1,nO
               do e=nO+1,nBas-nR
                  dem = eGF(m) - eGF(e)
+
                  num = Taaaa(i,m,k,e)*Taaaa(e,j,m,l) + Tabab(i,m,k,e)*Tabab(e,j,m,l)
-                           
                  KD_sta(ij,kl) = KD_sta(ij,kl) + num*dem/(dem**2 + eta**2)
 
                  num = Taaaa(i,e,k,m)*Taaaa(m,j,e,l) + Tabab(i,e,k,m)*Tabab(m,j,e,l)
-                           
                  KD_sta(ij,kl) = KD_sta(ij,kl) + num*dem/(dem**2 + eta**2)
                  
                  num = Taaaa(j,m,k,e)*Taaaa(e,i,m,l) + Tabab(j,m,k,e)*Tabab(e,i,m,l)
-                           
                  KD_sta(ij,kl) = KD_sta(ij,kl) - num*dem/(dem**2 + eta**2)
 
                  num = Taaaa(j,e,k,m)*Taaaa(m,i,e,l) + Tabab(j,e,k,m)*Tabab(m,i,e,l)
-                           
                  KD_sta(ij,kl) = KD_sta(ij,kl) - num*dem/(dem**2 + eta**2)
-                 
+
               end do
             end do
 

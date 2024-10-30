@@ -38,10 +38,12 @@ subroutine RGT_Tmatrix(isp_T,nBas,nC,nO,nV,nR,nOOs,nVVs,nOOt,nVVt,lambda,ERI,Om1
   double precision,intent(out)  :: T(nBas,nBas,nBas,nBas)
 
   ! Initialization
+
   T(:,:,:,:) = 0d0
 
-  ! This corresponds to the alpha alpha alpha alpha elements of T
-  if (isp_T == 1) then
+  ! Elements aaaa
+
+  if(isp_T == 1) then
      
      !$OMP PARALLEL &
      !$OMP SHARED(nC,nO,nBas,nR,T,ERI,rho1t,rho2t,Om1t,Om2t) &
@@ -52,18 +54,20 @@ subroutine RGT_Tmatrix(isp_T,nBas,nC,nO,nV,nR,nOOs,nVVs,nOOt,nVVt,lambda,ERI,Om1
         do r=nC+1,nBas-nR
            do q=nC+1,nBas-nR
               do p=nC+1,nBas-nR
+
                  T(p,q,r,s) = ERI(p,q,r,s) - ERI(p,q,s,r)
 
                  cd = 0
-                 do c = nO+1, nBas-nR
-                    do d = c+1, nBas-nR
+                 do c=nO+1,nBas-nR
+                    do d=c+1,nBas-nR
                        cd = cd + 1
                        T(p,q,r,s) = T(p,q,r,s) - rho1t(p,q,cd) * rho1t(r,s,cd) / Om1t(cd)
                     end do ! d
                  end do ! c
+
                  kl = 0
-                 do k = nC+1, nO
-                    do l = k+1, nO
+                 do k=nC+1,nO
+                    do l=k+1,nO
                        kl = kl + 1
                        T(p,q,r,s) = T(p,q,r,s) + rho2t(p,q,kl) * rho2t(r,s,kl) / Om2t(kl)
                     enddo ! l
@@ -78,8 +82,9 @@ subroutine RGT_Tmatrix(isp_T,nBas,nC,nO,nV,nR,nOOs,nVVs,nOOt,nVVt,lambda,ERI,Om1
 
   endif 
 
-  ! This corresponds to the alpha beta alpha beta elements of T
-  if (isp_T == 2) then 
+  ! Elements abab 
+
+  if(isp_T == 2) then 
      !$OMP PARALLEL &
      !$OMP SHARED(nC,nO,nBas,nR,T,ERI,rho1s,rho2s,Om1s,Om2s,rho1t,rho2t,Om1t,Om2t) &
      !$OMP PRIVATE(p,q,r,s,c,d,cd,k,l,kl) &
@@ -89,35 +94,36 @@ subroutine RGT_Tmatrix(isp_T,nBas,nC,nO,nV,nR,nOOs,nVVs,nOOt,nVVt,lambda,ERI,Om1
         do r=nC+1,nBas-nR
            do q=nC+1,nBas-nR
               do p=nC+1,nBas-nR
+
                  T(p,q,r,s) = ERI(p,q,r,s)
                  
                  cd = 0
-                 do c = nO+1, nBas-nR
-                    do d = c, nBas-nR
+                 do c=nO+1,nBas-nR
+                    do d=c,nBas-nR
                        cd = cd + 1
                        T(p,q,r,s) = T(p,q,r,s) - 0.5d0 * rho1s(p,q,cd) * rho1s(r,s,cd) / Om1s(cd)
                     end do ! d
                  end do ! c
 
                  cd = 0
-                 do c = nO+1, nBas-nR
-                    do d = c+1, nBas-nR
+                 do c=nO+1,nBas-nR
+                    do d=c+1,nBas-nR
                        cd = cd + 1
                        T(p,q,r,s) = T(p,q,r,s) - 0.5d0 * rho1t(p,q,cd) * rho1t(r,s,cd) / Om1t(cd)
                     end do ! d
                  end do ! c
                  
                  kl = 0
-                 do k = nC+1, nO
-                    do l = k, nO
+                 do k=nC+1,nO
+                    do l=k,nO
                        kl = kl + 1
                        T(p,q,r,s) = T(p,q,r,s) + 0.5d0 * rho2s(p,q,kl) * rho2s(r,s,kl) / Om2s(kl)
                     enddo ! l
                  enddo ! k
 
                  kl = 0
-                 do k = nC+1, nO
-                    do l = k+1, nO
+                 do k=nC+1,nO
+                    do l=k+1,nO
                        kl = kl + 1
                        T(p,q,r,s) = T(p,q,r,s) + 0.5d0 * rho2t(p,q,kl) * rho2t(r,s,kl) / Om2t(kl)
                     enddo ! l
@@ -132,8 +138,10 @@ subroutine RGT_Tmatrix(isp_T,nBas,nC,nO,nV,nR,nOOs,nVVs,nOOt,nVVt,lambda,ERI,Om1
 
   endif
 
-  ! This corresponds to the beta alpha alpha beta elements of T
-  if (isp_T == 3) then 
+  ! Elements baab
+
+  if(isp_T == 3) then 
+
      !$OMP PARALLEL &
      !$OMP SHARED(nC,nO,nBas,nR,T,ERI,rho1s,rho2s,Om1s,Om2s,rho1t,rho2t,Om1t,Om2t) &
      !$OMP PRIVATE(p,q,r,s,c,d,cd,k,l,kl) &
@@ -143,33 +151,36 @@ subroutine RGT_Tmatrix(isp_T,nBas,nC,nO,nV,nR,nOOs,nVVs,nOOt,nVVt,lambda,ERI,Om1
         do r=nC+1,nBas-nR
            do q=nC+1,nBas-nR
               do p=nC+1,nBas-nR
+
                  T(p,q,r,s) = - ERI(p,q,s,r)
                  
                  cd = 0
-                 do c = nO+1, nBas-nR
-                    do d = c+1, nBas-nR
+                 do c=nO+1,nBas-nR
+                    do d=c+1,nBas-nR
                        cd = cd + 1
                        T(p,q,r,s) = T(p,q,r,s) + 0.5d0 * rho1t(p,q,cd) * rho1s(r,s,cd) / Om1t(cd)
                     end do ! d
                  end do ! c
+
                  cd = 0
-                 do c = nO+1, nBas-nR
-                    do d = c, nBas-nR
+                 do c=nO+1,nBas-nR
+                    do d=c,nBas-nR
                        cd = cd + 1
                        T(p,q,r,s) = T(p,q,r,s) - (1d0 - Kronecker_delta(c,d)) * 0.5d0 * rho1s(p,q,cd) * rho1t(r,s,cd) / Om1s(cd)
                     end do ! d
                  end do ! c
                  
                  kl = 0
-                 do k = nC+1, nO
-                    do l = k+1, nO
+                 do k=nC+1,nO
+                    do l=k+1,nO
                        kl = kl + 1
                        T(p,q,r,s) = T(p,q,r,s) - 0.5d0 * rho2t(p,q,kl) * rho2s(r,s,kl) / Om2t(kl)
                     enddo ! l
                  enddo ! k
+
                  kl = 0
-                 do k = nC+1, nO
-                    do l = k, nO
+                 do k=nC+1,nO
+                    do l=k,nO
                        kl = kl + 1
                        T(p,q,r,s) = T(p,q,r,s) + (1d0 - Kronecker_delta(k,l)) * 0.5d0 * rho2s(p,q,kl) * rho2t(r,s,kl) / Om2s(kl)
                     enddo ! l

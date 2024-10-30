@@ -58,6 +58,7 @@ subroutine GGTpp_ppBSE_static_kernel_D(eta,nOrb,nC,nO,nV,nR,nOO,nVV,lambda,ERI,e
               num = num - T(j,m,k,e) * T(e,i,m,l) - T(j,e,k,m) * T(m,i,e,l)
                                                                                
               KD_sta(ij,kl) = KD_sta(ij,kl) + num*dem/(dem**2 + eta**2)
+
             end do
           end do
         
