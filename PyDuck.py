@@ -70,6 +70,7 @@ nelec=mol.nelec #Access the number of electrons
 nalpha=nelec[0]
 nbeta=nelec[1]
 
+subprocess.call(['mkdir', '-p', 'input'])
 f = open(working_dir+'/input/molecule','w')
 f.write('# nAt nEla nElb nCore nRyd\n')
 f.write(str(mol.natm)+' '+str(nalpha)+' '+str(nbeta)+' '+str(0)+' '+str(0)+'\n')
@@ -79,7 +80,8 @@ for i in range(len(list_pos_atom)):
 f.close()
 
 #Compute nuclear energy and put it in a file
-subprocess.call(['rm', working_dir + '/int/ENuc.dat'])
+subprocess.call(['mkdir', '-p', 'int'])
+subprocess.call(['rm', '-f', working_dir + '/int/ENuc.dat'])
 f = open(working_dir+'/int/ENuc.dat','w')
 f.write(str(mol.energy_nuc()))
 f.write(' ')
@@ -100,7 +102,7 @@ f.close()
 
 
 def write_matrix_to_file(matrix,size,file,cutoff=1e-15):
-    f = open(file, 'a')
+    f = open(file, 'w')
     for i in range(size):
         for j in range(i,size):
             if abs(matrix[i][j]) > cutoff:
@@ -110,23 +112,23 @@ def write_matrix_to_file(matrix,size,file,cutoff=1e-15):
     
 #Write all 1 electron quantities in files
 #Ov,Nuc,Kin,x,y,z
-subprocess.call(['rm', working_dir + '/int/Ov.dat'])
+subprocess.call(['rm', '-f', working_dir + '/int/Ov.dat'])
 write_matrix_to_file(ovlp,norb,working_dir+'/int/Ov.dat')
-subprocess.call(['rm', working_dir + '/int/Nuc.dat'])
+subprocess.call(['rm', '-f', working_dir + '/int/Nuc.dat'])
 write_matrix_to_file(v1e,norb,working_dir+'/int/Nuc.dat')
-subprocess.call(['rm', working_dir + '/int/Kin.dat'])
+subprocess.call(['rm', '-f', working_dir + '/int/Kin.dat'])
 write_matrix_to_file(t1e,norb,working_dir+'/int/Kin.dat')
-subprocess.call(['rm', working_dir + '/int/x.dat'])
+subprocess.call(['rm', '-f', working_dir + '/int/x.dat'])
 write_matrix_to_file(x,norb,working_dir+'/int/x.dat')
-subprocess.call(['rm', working_dir + '/int/y.dat'])
+subprocess.call(['rm', '-f', working_dir + '/int/y.dat'])
 write_matrix_to_file(y,norb,working_dir+'/int/y.dat')
-subprocess.call(['rm', working_dir + '/int/z.dat'])
+subprocess.call(['rm', '-f', working_dir + '/int/z.dat'])
 write_matrix_to_file(z,norb,working_dir+'/int/z.dat')
 
 eri_ao = mol.intor('int2e')
 
 def write_tensor_to_file(tensor,size,file,cutoff=1e-15):
-    f = open(file, 'a')
+    f = open(file, 'w')
     for i in range(size):
         for j in range(i,size):
             for k in range(i,size):
@@ -140,15 +142,18 @@ def write_tensor_to_file(tensor,size,file,cutoff=1e-15):
 # Write two-electron integrals
 if print_2e:
     # (formatted)
-    subprocess.call(['rm', working_dir + '/int/ERI.dat'])
-    write_tensor_to_file(eri_ao,norb,working_dir+'/int/ERI.dat')
+    subprocess.call(['rm', '-f', working_dir + '/int/ERI.dat'])
+    write_tensor_to_file(eri_ao, norb, working_dir + '/int/ERI.dat')
 else:
     # (binary)
-    subprocess.call(['rm', working_dir + '/int/ERI.bin'])
+    subprocess.call(['rm', '-f', working_dir + '/int/ERI.bin'])
     # chem -> phys notation
     eri_ao = eri_ao.transpose(0, 2, 1, 3)
-    eri_ao.tofile('int/ERI.bin')
+    f = open(working_dir + '/int/ERI.bin', 'w')
+    eri_ao.tofile(working_dir + '/int/ERI.bin')
+    f.close()
 
 
 #Execute the QuAcK fortran program
+print(QuAcK_dir)
 subprocess.call(QuAcK_dir+'/bin/QuAcK')
