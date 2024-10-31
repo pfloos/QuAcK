@@ -95,7 +95,7 @@ dipole = mol.intor('int1e_r') #Matrix elements of the x, y, z operators
 x,y,z = dipole[0],dipole[1],dipole[2]
 
 norb = len(ovlp) # nBAS_AOs
-subprocess.call(['rm', working_dir + '/int/nBas.dat'])
+subprocess.call(['rm', '-f', working_dir + '/int/nBas.dat'])
 f = open(working_dir+'/int/nBas.dat','w')
 f.write(" {} ".format(str(norb)))
 f.close()
