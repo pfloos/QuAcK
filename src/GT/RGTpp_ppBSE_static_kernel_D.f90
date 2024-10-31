@@ -24,8 +24,6 @@ subroutine RGTpp_ppBSE_static_kernel_D(ispin,eta,nBas,nC,nO,nV,nR,nOO,nVV,lambda
 
   double precision,external     :: Kronecker_delta
   double precision              :: dem,num
-  double precision              :: chi
-  double precision              :: eps
   integer                       :: i,j,k,l,ij,kl,ef,mn,m,e
 
 ! Output variables

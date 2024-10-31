@@ -54,13 +54,10 @@ subroutine GGTpp_ppBSE_static_kernel_C(eta,nOrb,nC,nO,nV,nR,nOO,nVV,lambda,ERI,e
           do m=nC+1,nO
             do e=nO+1,nOrb-nR
   
-              dem = eGF(m) - eGF(e)
-              num =       (T(a,m,c,e) - T(a,m,e,c)) * (T(e,b,m,d) - T(e,b,d,m))
-              num = num + (T(a,e,c,m) - T(a,e,m,c)) * (T(m,b,e,d) - T(m,b,d,e))
-              num = num - (T(b,m,c,e) - T(b,m,e,c)) * (T(e,a,m,d) - T(e,a,d,m))
-              num = num - (T(b,e,c,m) - T(b,e,m,c)) * (T(m,a,e,d) - T(m,a,d,e))
-                                                                            
-              KC_sta(ab,cd) = KC_sta(ab,cd) + num*dem/(dem**2 + eta**2)
+               dem = eGF(m) - eGF(e)
+               num =       T(a,m,c,e) * T(e,b,m,d) + T(a,e,c,m) * T(m,b,e,d)
+               num = num - T(b,m,c,e) * T(e,a,m,d) - T(b,e,c,m) * T(m,a,e,d)
+               KC_sta(ab,cd) = KC_sta(ab,cd) + num*dem/(dem**2 + eta**2)
         
             end do
           end do

@@ -26,8 +26,6 @@ subroutine RGTpp_ppBSE_static_kernel_C(ispin,eta,nBas,nC,nO,nV,nR,nOO,nVV,lambda
 
   double precision,external     :: Kronecker_delta
   double precision              :: dem,num
-  double precision              :: chi
-  double precision              :: eps
   integer                       :: a,b,c,d,ab,cd,ef,mn,m,e
 
 ! Output variables
@@ -54,19 +52,31 @@ subroutine RGTpp_ppBSE_static_kernel_C(ispin,eta,nBas,nC,nO,nV,nR,nOO,nVV,lambda
           do d=c,nBas-nR
             cd = cd + 1
  
-            chi = 0d0
- 
-            do ef=1,nVV
-              eps = 0d0
-              chi = chi + 0d0
+            do m=nC+1,nO
+              do e=nO+1,nBas-nR
+                 dem = eGF(m) - eGF(e)
+                 ! Wabab_{ijkl}
+                 num = Taaaa(a,m,c,e)*Tabab(e,b,m,d) + Tabab(a,m,c,e)*Taaaa(e,b,m,d)
+                 KC_sta(ab,cd) = KC_sta(ab,cd) + num*dem/(dem**2 + eta**2)
+
+                 num = Taaaa(a,e,c,m)*Tabab(m,b,e,d) + Tabab(a,e,c,m)*Taaaa(m,b,e,d)
+                 KC_sta(ab,cd) = KC_sta(ab,cd) + num*dem/(dem**2 + eta**2)
+                 
+                 num = Taaaa(b,m,c,e)*Tabab(e,a,m,d) + Tabab(b,m,c,e)*Taaaa(e,a,m,d)
+                 KC_sta(ab,cd) = KC_sta(ab,cd) + num*dem/(dem**2 + eta**2)
+
+                 num = Taaaa(b,e,c,m)*Tabab(m,a,e,d) + Tabab(b,e,c,m)*Taaaa(m,a,e,d)
+                 KC_sta(ab,cd) = KC_sta(ab,cd) + num*dem/(dem**2 + eta**2)
+
+                 num = Tbaab(a,m,c,e)*Tbaab(e,b,m,d) + Tbaab(a,e,c,m)*Tbaab(m,b,e,d)
+                 KC_sta(ab,cd) = KC_sta(ab,cd) - num*dem/(dem**2 + eta**2)
+        
+                 num = Tbaab(b,m,c,e)*Tbaab(e,a,m,d) + Tbaab(b,e,c,m)*Tbaab(m,a,e,d)
+                 KC_sta(ab,cd) = KC_sta(ab,cd) - num*dem/(dem**2 + eta**2)
+              end do
             end do
  
-            do mn=1,nOO
-              eps = 0d0
-              chi = chi + 0d0
-            end do
- 
-            KC_sta(ab,cd) = 0.5d0*lambda*chi/sqrt((1d0 + Kronecker_delta(a,b))*(1d0 + Kronecker_delta(c,d)))
+            KC_sta(ab,cd) = KC_sta(ab,cd) / sqrt((1d0 + Kronecker_delta(a,b))*(1d0 + Kronecker_delta(c,d)))
  
           end do
         end do
@@ -95,9 +105,19 @@ subroutine RGTpp_ppBSE_static_kernel_C(ispin,eta,nBas,nC,nO,nV,nR,nOO,nVV,lambda
             do m=nC+1,nO
               do e=nO+1,nBas-nR
                  dem = eGF(m) - eGF(e)
-                 num = 2d0*(Taaaa(a,m,c,e)*Taaaa(e,b,m,d) + Tabab(a,m,c,e)*Tabab(e,b,m,d))
-                           
+
+                 num = Taaaa(a,m,c,e)*Taaaa(e,b,m,d) + Tabab(a,m,c,e)*Tabab(e,b,m,d)
                  KC_sta(ab,cd) = KC_sta(ab,cd) + num*dem/(dem**2 + eta**2)
+
+                 num = Taaaa(a,e,c,m)*Taaaa(m,b,e,d) + Tabab(a,e,c,m)*Tabab(m,b,e,d)
+                 KC_sta(ab,cd) = KC_sta(ab,cd) + num*dem/(dem**2 + eta**2)
+                 
+                 num = Taaaa(b,m,c,e)*Taaaa(e,a,m,d) + Tabab(b,m,c,e)*Tabab(e,a,m,d)
+                 KC_sta(ab,cd) = KC_sta(ab,cd) - num*dem/(dem**2 + eta**2)
+
+                 num = Taaaa(b,e,c,m)*Taaaa(m,a,e,d) + Tabab(b,e,c,m)*Tabab(m,a,e,d)
+                 KC_sta(ab,cd) = KC_sta(ab,cd) - num*dem/(dem**2 + eta**2)
+
               end do
             end do
  
