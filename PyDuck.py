@@ -70,7 +70,7 @@ nelec=mol.nelec #Access the number of electrons
 nalpha=nelec[0]
 nbeta=nelec[1]
 
-subprocess.call(['mkdir', '-p', 'input'])
+subprocess.call(['mkdir', '-p', working_dir+'/input'])
 f = open(working_dir+'/input/molecule','w')
 f.write('# nAt nEla nElb nCore nRyd\n')
 f.write(str(mol.natm)+' '+str(nalpha)+' '+str(nbeta)+' '+str(0)+' '+str(0)+'\n')
@@ -80,7 +80,7 @@ for i in range(len(list_pos_atom)):
 f.close()
 
 #Compute nuclear energy and put it in a file
-subprocess.call(['mkdir', '-p', 'int'])
+subprocess.call(['mkdir', '-p', working_dir+'/int'])
 subprocess.call(['rm', '-f', working_dir + '/int/ENuc.dat'])
 f = open(working_dir+'/int/ENuc.dat','w')
 f.write(str(mol.energy_nuc()))
