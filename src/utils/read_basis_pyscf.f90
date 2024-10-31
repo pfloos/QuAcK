@@ -1,4 +1,4 @@
-subroutine read_basis_pyscf(nBas,nO,nV)
+subroutine read_basis_pyscf(working_dir,nBas,nO,nV)
 
 ! Read basis set information from PySCF
 
@@ -7,21 +7,37 @@ subroutine read_basis_pyscf(nBas,nO,nV)
 
 ! Input variables
 
-  integer,intent(in)           :: nO(nspin)
-
-! Local variables
+  integer,intent(in)            :: nO(nspin)
+  character(len=256),intent(in) :: working_dir
 
 ! Output variables
 
-  integer,intent(out)           :: nV(nspin)
-  integer,intent(out)           :: nBas
+  integer,intent(out)            :: nV(nspin)
+  integer,intent(out)            :: nBas
+
+! Local variables
+
+  integer                       :: status
+  character(len=256)            :: file_path
 
 !------------------------------------------------------------------------
 ! Primary basis set information
 !------------------------------------------------------------------------
 
-  open(unit=3,file='int/nBas.dat')
-    read(3, *) nBas
+  file_path = trim(working_dir) // '/int/nBas.dat'
+  open(unit=3, file=file_path, status='old', action='read', iostat=status)
+
+    if(status /= 0) then
+
+      print *, "Error opening file: ", file_path
+      stop
+
+    else
+
+      read(3, *) nBas
+
+    endif
+
   close(unit=3)
 
 !  write(*,'(A38)') '--------------------------------------'

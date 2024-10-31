@@ -1,9 +1,13 @@
-subroutine read_geometry(nNuc,ZNuc,rNuc,ENuc)
+subroutine read_geometry(working_dir,nNuc,ZNuc,rNuc,ENuc)
 
 ! Read molecular geometry
 
   implicit none
   include 'parameters.h'
+
+! Input variables
+
+  character(len=256),intent(in) :: working_dir
 
 ! Ouput variables
 
@@ -20,43 +24,70 @@ subroutine read_geometry(nNuc,ZNuc,rNuc,ENuc)
 
   double precision,intent(out)  :: ZNuc(nNuc),rNuc(nNuc,ncart),ENuc
 
+  integer                       :: status
+  character(len=256)            :: file_path
+
 ! Open file with geometry specification
 
-  open(unit=10,file='input/molecule')
-  open(unit=11,file='input/molecule.xyz')
+  file_path = trim(working_dir) // '/input/molecule'
+  open(unit=10, file=file_path, status='old', action='read', iostat=status)
 
-! Read geometry and create xyz file for integrals
+    if(status /= 0) then
 
-  read(10,*) 
-  read(10,*) 
-  read(10,*) 
+      print *, "Error opening file: ", file_path
+      stop
 
-  write(11,'(I3)') nNuc
-  write(11,*) 
+    else
 
-  do i=1,nNuc
-    read(10,*) El,rNuc(i,1),rNuc(i,2),rNuc(i,3)
-    write(11,'(A3,1X,3F16.10)') El,rNuc(i,1)*BoToAn,rNuc(i,2)*BoToAn,rNuc(i,3)*BoToAn
-    ZNuc(i) = dble(element_number(El))
-  end do
+      ! Read geometry and create xyz file for integrals
+      open(unit=11,file=trim(working_dir) // '/input/molecule.xyz')
+      
+      read(10,*) 
+      read(10,*) 
+      read(10,*) 
+      
+      write(11,'(I3)') nNuc
+      write(11,*) 
+      
+      do i=1,nNuc
+        read(10,*) El,rNuc(i,1),rNuc(i,2),rNuc(i,3)
+        write(11,'(A3,1X,3F16.10)') El,rNuc(i,1)*BoToAn,rNuc(i,2)*BoToAn,rNuc(i,3)*BoToAn
+        ZNuc(i) = dble(element_number(El))
+      end do
 
-! Compute nuclear repulsion energy
+      close(unit=11)
 
-  ENuc = 0
-  open(unit=3,file='int/ENuc.dat')
-  read(3,*) ENuc
-  close(unit=3)
+    endif
 
-  ! do i=1,nNuc-1
-  !   do j=i+1,nNuc
-  !     RAB = (rNuc(i,1)-rNuc(j,1))**2 + (rNuc(i,2)-rNuc(j,2))**2 + (rNuc(i,3)-rNuc(j,3))**2
-  !     ENuc = ENuc + ZNuc(i)*ZNuc(j)/(AntoBo*sqrt(RAB))
-  !   end do
-  ! end do
-
-! Close file with geometry specification
   close(unit=10)
-  close(unit=11)
+
+  ! ---
+
+  file_path = trim(working_dir) // '/int/ENuc.dat'
+  open(unit=3, file=file_path, status='old', action='read', iostat=status)
+
+    if(status /= 0) then
+
+      print *, "Error opening file: ", file_path
+      stop
+
+    else
+
+      read(3,*) ENuc
+
+    endif
+
+  close(unit=3)
+      
+  ! Compute nuclear repulsion energy
+  !ENuc = 0.d0
+  !do i=1,nNuc-1
+  !  do j=i+1,nNuc
+  !    RAB = (rNuc(i,1)-rNuc(j,1))**2 + (rNuc(i,2)-rNuc(j,2))**2 + (rNuc(i,3)-rNuc(j,3))**2
+  !    ENuc = ENuc + ZNuc(i)*ZNuc(j)/(AntoBo*sqrt(RAB))
+  !  end do
+  !end do
+
 
 ! Print geometry
   write(*,'(A28)') '------------------'

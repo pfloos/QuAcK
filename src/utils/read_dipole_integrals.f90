@@ -1,4 +1,4 @@
-subroutine read_dipole_integrals(nBas,R)
+subroutine read_dipole_integrals(working_dir,nBas,R)
 
 ! Read one-electron integrals related to dipole moment from files
 
@@ -8,6 +8,7 @@ subroutine read_dipole_integrals(nBas,R)
 ! Input variables
 
   integer,intent(in)            :: nBas
+  character(len=256),intent(in) :: working_dir
 
 ! Local variables
 
@@ -19,36 +20,83 @@ subroutine read_dipole_integrals(nBas,R)
 
   double precision,intent(out)  :: R(nBas,nBas,ncart)
 
+  integer                       :: status, ios
+  character(len=256)            :: file_path
+
+
 ! Open file with integrals
-
-  open(unit=21,file='int/x.dat')
-  open(unit=22,file='int/y.dat')
-  open(unit=23,file='int/z.dat')
-
-! Read (x,y,z) integrals
 
   R(:,:,:) = 0d0
 
-  do
-    read(21,*,end=21) mu,nu,Dip
-    R(mu,nu,1) = Dip
-    R(nu,mu,1) = Dip
-  end do
-  21 close(unit=21)
+  file_path = trim(working_dir) // '/int/x.dat'
+  open(unit=21, file=file_path, status='old', action='read', iostat=status)
 
-  do
-    read(22,*,end=22) mu,nu,Dip
-    R(mu,nu,2) = Dip
-    R(nu,mu,2) = Dip
-  end do
-  22 close(unit=22)
+    if(status /= 0) then
 
-  do
-    read(23,*,end=23) mu,nu,Dip
-    R(mu,nu,3) = Dip
-    R(nu,mu,3) = Dip
-  end do
-  23 close(unit=23)
+      print *, "Error opening file: ", file_path
+      stop
+  
+    else
+
+      do
+        read(21,*,iostat=ios) mu,nu,Dip
+        if(ios /= 0) exit
+        R(mu,nu,1) = Dip
+        R(nu,mu,1) = Dip
+      end do
+
+    endif
+
+  close(unit=21)
+
+  ! ---
+
+  file_path = trim(working_dir) // '/int/y.dat'
+  open(unit=22, file=file_path, status='old', action='read', iostat=status)
+
+    if(status /= 0) then
+
+      print *, "Error opening file: ", file_path
+      stop
+  
+    else
+
+      do
+        read(22,*,iostat=ios) mu,nu,Dip
+        if(ios /= 0) exit
+        R(mu,nu,2) = Dip
+        R(nu,mu,2) = Dip
+      end do
+
+    endif
+
+  close(unit=22)
+
+  ! ---
+
+  file_path = trim(working_dir) // '/int/z.dat'
+  open(unit=23, file=file_path, status='old', action='read', iostat=status)
+
+    if(status /= 0) then
+
+      print *, "Error opening file: ", file_path
+      stop
+  
+    else
+
+      do
+        read(23,*,iostat=ios) mu,nu,Dip
+        if(ios /= 0) exit
+        R(mu,nu,3) = Dip
+        R(nu,mu,3) = Dip
+      end do
+
+    endif
+
+  close(unit=23)
+
+  ! ---
+
 
 ! Print results
   if(debug) then

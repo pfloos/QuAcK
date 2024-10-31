@@ -1,4 +1,4 @@
-subroutine read_molecule(nNuc,nO,nC,nR)
+subroutine read_molecule(working_dir,nNuc,nO,nC,nR)
 
 ! Read number of atoms and number of electrons 
 
@@ -11,6 +11,10 @@ subroutine read_molecule(nNuc,nO,nC,nR)
   integer                       :: nCore
   integer                       :: nRyd
 
+! Input variables
+
+  character(len=256),intent(in) :: working_dir
+
 ! Output variables
 
   integer,intent(out)           :: nNuc
@@ -18,45 +22,57 @@ subroutine read_molecule(nNuc,nO,nC,nR)
   integer,intent(out)           :: nC(nspin)
   integer,intent(out)           :: nR(nspin)
 
+  integer                       :: status
+  character(len=256)            :: file_path
+
 ! Open file with geometry specification
 
-  open(unit=1,file='input/molecule')
+  file_path = trim(working_dir) // '/input/molecule'
+  open(unit=1, file=file_path, status='old', action='read', iostat=status)
 
-! Read number of atoms and number of electrons
+    if(status /= 0) then
 
-  read(1,*) 
-  read(1,*) nNuc,nO(1),nO(2),nCore,nRyd
+      print *, "Error opening file: ", file_path
+      stop
 
-  if(mod(nCore,2) /= 0 .or. mod(nRyd,2) /= 0) then
+    else
 
-    print*, 'The number of core and Rydberg electrons must be even!'
-    stop
+      ! Read number of atoms and number of electrons
+    
+      read(1,*) 
+      read(1,*) nNuc,nO(1),nO(2),nCore,nRyd
+    
+      if(mod(nCore,2) /= 0 .or. mod(nRyd,2) /= 0) then
+    
+        print*, 'The number of core and Rydberg electrons must be even!'
+        stop
+    
+      end if
+    
+      nC(:) = nCore/2
+      nR(:) = nRyd/2
+    
+      ! Print results
+    
+      write(*,'(A28)') '----------------------'
+      write(*,'(A28,1X,I16)') 'Number of atoms',nNuc
+      write(*,'(A28)') '----------------------'
+      write(*,*)
+      write(*,'(A28)') '----------------------'
+      write(*,'(A28,1X,I16)') 'Number of spin-up   electrons',nO(1)
+      write(*,'(A28,1X,I16)') 'Number of spin-down electrons',nO(2)
+      write(*,'(A28,1X,I16)') '    Total number of electrons',sum(nO(:))
+      write(*,'(A28)') '----------------------'
+      write(*,*)
+      write(*,'(A28)') '----------------------'
+      write(*,'(A28,1X,I16)') 'Number of core      electrons',sum(nC(:))
+      write(*,'(A28,1X,I16)') 'Number of Rydberg   electrons',sum(nR(:))
+      write(*,'(A28)') '----------------------'
+      write(*,*)
 
-  end if
+    endif
 
-  nC(:) = nCore/2
-  nR(:) = nRyd/2
-
-! Print results
-
-  write(*,'(A28)') '----------------------'
-  write(*,'(A28,1X,I16)') 'Number of atoms',nNuc
-  write(*,'(A28)') '----------------------'
-  write(*,*)
-  write(*,'(A28)') '----------------------'
-  write(*,'(A28,1X,I16)') 'Number of spin-up   electrons',nO(1)
-  write(*,'(A28,1X,I16)') 'Number of spin-down electrons',nO(2)
-  write(*,'(A28,1X,I16)') '    Total number of electrons',sum(nO(:))
-  write(*,'(A28)') '----------------------'
-  write(*,*)
-  write(*,'(A28)') '----------------------'
-  write(*,'(A28,1X,I16)') 'Number of core      electrons',sum(nC(:))
-  write(*,'(A28,1X,I16)') 'Number of Rydberg   electrons',sum(nR(:))
-  write(*,'(A28)') '----------------------'
-  write(*,*)
-
-! Close file with geometry specification
-
+  ! Close file with geometry specification
   close(unit=1)
 
 end subroutine 

@@ -155,5 +155,5 @@ else:
 
 
 #Execute the QuAcK fortran program
-print(QuAcK_dir)
-subprocess.call(QuAcK_dir+'/bin/QuAcK')
+subprocess.call([QuAcK_dir + '/bin/QuAcK', working_dir])
+
