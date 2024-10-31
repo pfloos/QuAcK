@@ -68,10 +68,10 @@ subroutine RGTpp_ppBSE_static_kernel_D(ispin,eta,nBas,nC,nO,nV,nR,nOO,nVV,lambda
                  num = Taaaa(j,e,k,m)*Tabab(m,i,e,l) + Tabab(j,e,k,m)*Taaaa(m,i,e,l)
                  KD_sta(ij,kl) = KD_sta(ij,kl) + num*dem/(dem**2 + eta**2)
 
-                 num = Tabab(i,m,k,e)*Tbaab(e,j,m,l) + Tbaab(i,e,k,m)*Tabab(m,j,e,l)
+                 num = Tbaab(i,m,k,e)*Tbaab(e,j,m,l) + Tbaab(i,e,k,m)*Tbaab(m,j,e,l)
                  KD_sta(ij,kl) = KD_sta(ij,kl) - num*dem/(dem**2 + eta**2)
         
-                 num = Tabab(j,m,k,e)*Tbaab(e,i,m,l) + Tbaab(j,e,k,m)*Tabab(m,i,e,l)
+                 num = Tbaab(j,m,k,e)*Tbaab(e,i,m,l) + Tbaab(j,e,k,m)*Tbaab(m,i,e,l)
                  KD_sta(ij,kl) = KD_sta(ij,kl) - num*dem/(dem**2 + eta**2)
               end do
             end do

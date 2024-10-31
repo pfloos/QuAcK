@@ -46,8 +46,8 @@ subroutine RGT_Tmatrix(isp_T,nBas,nC,nO,nV,nR,nOOs,nVVs,nOOt,nVVt,lambda,ERI,Om1
   if(isp_T == 1) then
      
      !$OMP PARALLEL &
-     !$OMP SHARED(nC,nO,nBas,nR,T,ERI,rho1t,rho2t,Om1t,Om2t) &
-     !$OMP PRIVATE(p,q,r,s,c,d,cd,k,l,kl) &
+     !$OMP SHARED(nC,nO,nBas,nR,T,ERI,nOOt,nVVt,rho1t,rho2t,Om1t,Om2t) &
+     !$OMP PRIVATE(p,q,r,s,cd,kl) &
      !$OMP DEFAULT(NONE)
      !$OMP DO
      do s=nC+1,nBas-nR
@@ -57,21 +57,13 @@ subroutine RGT_Tmatrix(isp_T,nBas,nC,nO,nV,nR,nOOs,nVVs,nOOt,nVVt,lambda,ERI,Om1
 
                  T(p,q,r,s) = ERI(p,q,r,s) - ERI(p,q,s,r)
 
-                 cd = 0
-                 do c=nO+1,nBas-nR
-                    do d=c+1,nBas-nR
-                       cd = cd + 1
-                       T(p,q,r,s) = T(p,q,r,s) - rho1t(p,q,cd) * rho1t(r,s,cd) / Om1t(cd)
-                    end do ! d
-                 end do ! c
+                 do cd=1,nVVt
+                    T(p,q,r,s) = T(p,q,r,s) - rho1t(p,q,cd) * rho1t(r,s,cd) / Om1t(cd)
+                 end do ! cd
 
-                 kl = 0
-                 do k=nC+1,nO
-                    do l=k+1,nO
-                       kl = kl + 1
-                       T(p,q,r,s) = T(p,q,r,s) + rho2t(p,q,kl) * rho2t(r,s,kl) / Om2t(kl)
-                    enddo ! l
-                 enddo ! k
+                 do kl=1,nOOt
+                    T(p,q,r,s) = T(p,q,r,s) + rho2t(p,q,kl) * rho2t(r,s,kl) / Om2t(kl)
+                 enddo ! kl
            
               enddo ! p 
            enddo ! q
@@ -86,8 +78,8 @@ subroutine RGT_Tmatrix(isp_T,nBas,nC,nO,nV,nR,nOOs,nVVs,nOOt,nVVt,lambda,ERI,Om1
 
   if(isp_T == 2) then 
      !$OMP PARALLEL &
-     !$OMP SHARED(nC,nO,nBas,nR,T,ERI,rho1s,rho2s,Om1s,Om2s,rho1t,rho2t,Om1t,Om2t) &
-     !$OMP PRIVATE(p,q,r,s,c,d,cd,k,l,kl) &
+     !$OMP SHARED(nC,nO,nBas,nR,T,ERI,nOOs,nOOt,nVVs,nVVt,rho1s,rho2s,Om1s,Om2s,rho1t,rho2t,Om1t,Om2t) &
+     !$OMP PRIVATE(p,q,r,s,cd,kl) &
      !$OMP DEFAULT(NONE)
      !$OMP DO
      do s=nC+1,nBas-nR
@@ -97,37 +89,21 @@ subroutine RGT_Tmatrix(isp_T,nBas,nC,nO,nV,nR,nOOs,nVVs,nOOt,nVVt,lambda,ERI,Om1
 
                  T(p,q,r,s) = ERI(p,q,r,s)
                  
-                 cd = 0
-                 do c=nO+1,nBas-nR
-                    do d=c,nBas-nR
-                       cd = cd + 1
-                       T(p,q,r,s) = T(p,q,r,s) - 0.5d0 * rho1s(p,q,cd) * rho1s(r,s,cd) / Om1s(cd)
-                    end do ! d
-                 end do ! c
+                 do cd=1,nVVs
+                    T(p,q,r,s) = T(p,q,r,s) - 0.5d0 * rho1s(p,q,cd) * rho1s(r,s,cd) / Om1s(cd)
+                 end do ! cd
 
-                 cd = 0
-                 do c=nO+1,nBas-nR
-                    do d=c+1,nBas-nR
-                       cd = cd + 1
-                       T(p,q,r,s) = T(p,q,r,s) - 0.5d0 * rho1t(p,q,cd) * rho1t(r,s,cd) / Om1t(cd)
-                    end do ! d
-                 end do ! c
+                 do cd=1,nVVt
+                    T(p,q,r,s) = T(p,q,r,s) - 0.5d0 * rho1t(p,q,cd) * rho1t(r,s,cd) / Om1t(cd)
+                 end do ! cd
                  
-                 kl = 0
-                 do k=nC+1,nO
-                    do l=k,nO
-                       kl = kl + 1
-                       T(p,q,r,s) = T(p,q,r,s) + 0.5d0 * rho2s(p,q,kl) * rho2s(r,s,kl) / Om2s(kl)
-                    enddo ! l
-                 enddo ! k
+                 do kl=1,nOOs
+                    T(p,q,r,s) = T(p,q,r,s) + 0.5d0 * rho2s(p,q,kl) * rho2s(r,s,kl) / Om2s(kl)
+                 enddo ! kl
 
-                 kl = 0
-                 do k=nC+1,nO
-                    do l=k+1,nO
-                       kl = kl + 1
-                       T(p,q,r,s) = T(p,q,r,s) + 0.5d0 * rho2t(p,q,kl) * rho2t(r,s,kl) / Om2t(kl)
-                    enddo ! l
-                 enddo ! k
+                 do kl=1,nOOt
+                    T(p,q,r,s) = T(p,q,r,s) + 0.5d0 * rho2t(p,q,kl) * rho2t(r,s,kl) / Om2t(kl)
+                 enddo ! kl
            
               enddo ! p 
            enddo ! q
@@ -141,10 +117,9 @@ subroutine RGT_Tmatrix(isp_T,nBas,nC,nO,nV,nR,nOOs,nVVs,nOOt,nVVt,lambda,ERI,Om1
   ! Elements baab
 
   if(isp_T == 3) then 
-
      !$OMP PARALLEL &
-     !$OMP SHARED(nC,nO,nBas,nR,T,ERI,rho1s,rho2s,Om1s,Om2s,rho1t,rho2t,Om1t,Om2t) &
-     !$OMP PRIVATE(p,q,r,s,c,d,cd,k,l,kl) &
+     !$OMP SHARED(nC,nO,nBas,nR,T,ERI,nOOs,nOOt,nVVs,nVVt,rho1s,rho2s,Om1s,Om2s,rho1t,rho2t,Om1t,Om2t) &
+     !$OMP PRIVATE(p,q,r,s,cd,kl) &
      !$OMP DEFAULT(NONE)
      !$OMP DO
      do s=nC+1,nBas-nR
@@ -154,37 +129,21 @@ subroutine RGT_Tmatrix(isp_T,nBas,nC,nO,nV,nR,nOOs,nVVs,nOOt,nVVt,lambda,ERI,Om1
 
                  T(p,q,r,s) = - ERI(p,q,s,r)
                  
-                 cd = 0
-                 do c=nO+1,nBas-nR
-                    do d=c+1,nBas-nR
-                       cd = cd + 1
-                       T(p,q,r,s) = T(p,q,r,s) + 0.5d0 * rho1t(p,q,cd) * rho1s(r,s,cd) / Om1t(cd)
-                    end do ! d
-                 end do ! c
+                 do cd=1,nVVs
+                    T(p,q,r,s) = T(p,q,r,s) + 0.5d0 * rho1s(p,q,cd) * rho1s(r,s,cd) / Om1s(cd)
+                 end do ! cd
 
-                 cd = 0
-                 do c=nO+1,nBas-nR
-                    do d=c,nBas-nR
-                       cd = cd + 1
-                       T(p,q,r,s) = T(p,q,r,s) - (1d0 - Kronecker_delta(c,d)) * 0.5d0 * rho1s(p,q,cd) * rho1t(r,s,cd) / Om1s(cd)
-                    end do ! d
-                 end do ! c
+                 do cd=1,nVVt
+                    T(p,q,r,s) = T(p,q,r,s) - 0.5d0 * rho1t(p,q,cd) * rho1t(r,s,cd) / Om1t(cd)
+                 end do ! cd
                  
-                 kl = 0
-                 do k=nC+1,nO
-                    do l=k+1,nO
-                       kl = kl + 1
-                       T(p,q,r,s) = T(p,q,r,s) - 0.5d0 * rho2t(p,q,kl) * rho2s(r,s,kl) / Om2t(kl)
-                    enddo ! l
-                 enddo ! k
+                 do kl=1,nOOs
+                    T(p,q,r,s) = T(p,q,r,s) - 0.5d0 * rho2s(p,q,kl) * rho2s(r,s,kl) / Om2s(kl)
+                 enddo ! kl
 
-                 kl = 0
-                 do k=nC+1,nO
-                    do l=k,nO
-                       kl = kl + 1
-                       T(p,q,r,s) = T(p,q,r,s) + (1d0 - Kronecker_delta(k,l)) * 0.5d0 * rho2s(p,q,kl) * rho2t(r,s,kl) / Om2s(kl)
-                    enddo ! l
-                 enddo ! k
+                 do kl=1,nOOt
+                    T(p,q,r,s) = T(p,q,r,s) + 0.5d0 * rho2t(p,q,kl) * rho2t(r,s,kl) / Om2t(kl)
+                 enddo ! kl
            
               enddo ! p 
            enddo ! q

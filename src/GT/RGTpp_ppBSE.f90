@@ -66,8 +66,8 @@ subroutine RGTpp_ppBSE(TDA_T,TDA,dBSE,dTDA,singlet,triplet,eta,nBas,nC,nO,nV,nR,
   allocate(Bpp(nVVs,nOOs),Cpp(nVVs,nVVs),Dpp(nOOs,nOOs))
 
   if(.not.TDA_T) call ppLR_B(isp_T,nBas,nC,nO,nV,nR,nOOs,nVVs,1d0,ERI,Bpp)
-                 call ppLR_C(isp_T,nBas,nC,nO,nV,nR,nVVs,1d0,eGT,ERI,Cpp)
-                 call ppLR_D(isp_T,nBas,nC,nO,nV,nR,nOOs,1d0,eGT,ERI,Dpp)
+                 call ppLR_C(isp_T,nBas,nC,nO,nV,nR,nVVs,1d0,eT,ERI,Cpp)
+                 call ppLR_D(isp_T,nBas,nC,nO,nV,nR,nOOs,1d0,eT,ERI,Dpp)
 
   allocate(Om1s(nVVs),X1s(nVVs,nVVs),Y1s(nOOs,nVVs))
   allocate(Om2s(nOOs),X2s(nVVs,nOOs),Y2s(nOOs,nOOs))
@@ -88,8 +88,8 @@ subroutine RGTpp_ppBSE(TDA_T,TDA,dBSE,dTDA,singlet,triplet,eta,nBas,nC,nO,nV,nR,
   allocate(Bpp(nVVt,nOOt),Cpp(nVVt,nVVt),Dpp(nOOt,nOOt))
 
   if(.not.TDA_T) call ppLR_B(isp_T,nBas,nC,nO,nV,nR,nOOt,nVVt,1d0,ERI,Bpp)
-                 call ppLR_C(isp_T,nBas,nC,nO,nV,nR,nVVt,1d0,eGT,ERI,Cpp)
-                 call ppLR_D(isp_T,nBas,nC,nO,nV,nR,nOOt,1d0,eGT,ERI,Dpp)
+                 call ppLR_C(isp_T,nBas,nC,nO,nV,nR,nVVt,1d0,eT,ERI,Cpp)
+                 call ppLR_D(isp_T,nBas,nC,nO,nV,nR,nOOt,1d0,eT,ERI,Dpp)
 
   allocate(Om1t(nVVt),X1t(nVVt,nVVt),Y1t(nOOt,nVVt))
   allocate(Om2t(nOOt),X2t(nVVt,nOOt),Y2t(nOOt,nOOt))
