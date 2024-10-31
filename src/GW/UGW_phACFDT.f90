@@ -112,14 +112,14 @@ subroutine UGW_phACFDT(exchange_kernel,doXBS,TDA_W,TDA,spin_conserved,spin_flip,
   allocate(OmRPA(nS_sc),XpY_RPA(nS_sc,nS_sc),XmY_RPA(nS_sc,nS_sc),rho_RPA(nBas,nBas,nS_sc,nspin))
   allocate(Aph(nS_sc,nS_sc),Bph(nS_sc,nS_sc),KA(nS_sc,nS_sc),KB(nS_sc,nS_sc))
 
-               call phULR_A(isp_W,dRPA_W,nBas,nC,nO,nV,nR,nS_aa,nS_bb,nS_sc,1d0,eW,ERI_aaaa,ERI_aabb,ERI_bbbb,Aph)
-  if(.not.TDA) call phULR_B(isp_W,dRPA_W,nBas,nC,nO,nV,nR,nS_aa,nS_bb,nS_sc,1d0,ERI_aaaa,ERI_aabb,ERI_bbbb,Bph)
+                 call phULR_A(isp_W,dRPA_W,nBas,nC,nO,nV,nR,nS_aa,nS_bb,nS_sc,1d0,eW,ERI_aaaa,ERI_aabb,ERI_bbbb,Aph)
+  if(.not.TDA_W) call phULR_B(isp_W,dRPA_W,nBas,nC,nO,nV,nR,nS_aa,nS_bb,nS_sc,1d0,ERI_aaaa,ERI_aabb,ERI_bbbb,Bph)
 
   call phULR(TDA_W,nS_aa,nS_bb,nS_sc,Aph,Bph,EcRPA,OmRPA,XpY_RPA,XmY_RPA)
   call UGW_excitation_density(nBas,nC,nO,nR,nS_aa,nS_bb,nS_sc,ERI_aaaa,ERI_aabb,ERI_bbbb,XpY_RPA,rho_RPA)
 
-  call UGW_phBSE_static_kernel_A(ispin,eta,nBas,nC,nO,nV,nR,nS_aa,nS_bb,nS_sc,nS_sc,1d0,OmRPA,rho_RPA,KA)
-  call UGW_phBSE_static_kernel_B(ispin,eta,nBas,nC,nO,nV,nR,nS_aa,nS_bb,nS_sc,nS_sc,1d0,OmRPA,rho_RPA,KB)
+               call UGW_phBSE_static_kernel_A(ispin,eta,nBas,nC,nO,nV,nR,nS_aa,nS_bb,nS_sc,nS_sc,1d0,OmRPA,rho_RPA,KA)
+  if(.not.TDA) call UGW_phBSE_static_kernel_B(ispin,eta,nBas,nC,nO,nV,nR,nS_aa,nS_bb,nS_sc,nS_sc,1d0,OmRPA,rho_RPA,KB)
 
 ! Spin-conserved manifold
 
@@ -144,24 +144,24 @@ subroutine UGW_phACFDT(exchange_kernel,doXBS,TDA_W,TDA,spin_conserved,spin_flip,
 
       if(doXBS) then
 
-                     call phULR_A(isp_W,dRPA_W,nBas,nC,nO,nV,nR,nS_aa,nS_bb,nS_sc,lambda,eW,ERI_aaaa,ERI_aabb,ERI_bbbb,Aph)
-        if(.not.TDA) call phULR_B(isp_W,dRPA_W,nBas,nC,nO,nV,nR,nS_aa,nS_bb,nS_sc,lambda,ERI_aaaa,ERI_aabb,ERI_bbbb,Bph)
+                       call phULR_A(isp_W,dRPA_W,nBas,nC,nO,nV,nR,nS_aa,nS_bb,nS_sc,lambda,eW,ERI_aaaa,ERI_aabb,ERI_bbbb,Aph)
+        if(.not.TDA_W) call phULR_B(isp_W,dRPA_W,nBas,nC,nO,nV,nR,nS_aa,nS_bb,nS_sc,lambda,ERI_aaaa,ERI_aabb,ERI_bbbb,Bph)
    
         call phULR(TDA_W,nS_aa,nS_bb,nS_sc,Aph,Bph,EcRPA,OmRPA,XpY_RPA,XmY_RPA)
         call UGW_excitation_density(nBas,nC,nO,nR,nS_aa,nS_bb,nS_sc,ERI_aaaa,ERI_aabb,ERI_bbbb,XpY_RPA,rho_RPA)
 
-        call UGW_phBSE_static_kernel_A(ispin,eta,nBas,nC,nO,nV,nR,nS_aa,nS_bb,nS_sc,nS_sc,lambda,OmRPA,rho_RPA,KA)
-        call UGW_phBSE_static_kernel_B(ispin,eta,nBas,nC,nO,nV,nR,nS_aa,nS_bb,nS_sc,nS_sc,lambda,OmRPA,rho_RPA,KB)
+                     call UGW_phBSE_static_kernel_A(ispin,eta,nBas,nC,nO,nV,nR,nS_aa,nS_bb,nS_sc,nS_sc,lambda,OmRPA,rho_RPA,KA)
+        if(.not.TDA) call UGW_phBSE_static_kernel_B(ispin,eta,nBas,nC,nO,nV,nR,nS_aa,nS_bb,nS_sc,nS_sc,lambda,OmRPA,rho_RPA,KB)
 
       end if
 
-                   call phULR_A(isp_W,dRPA,nBas,nC,nO,nV,nR,nS_aa,nS_bb,nS_sc,lambda,eW,ERI_aaaa,ERI_aabb,ERI_bbbb,Aph)
-      if(.not.TDA) call phULR_B(isp_W,dRPA,nBas,nC,nO,nV,nR,nS_aa,nS_bb,nS_sc,lambda,ERI_aaaa,ERI_aabb,ERI_bbbb,Bph)
+                   call phULR_A(ispin,dRPA,nBas,nC,nO,nV,nR,nS_aa,nS_bb,nS_sc,lambda,eW,ERI_aaaa,ERI_aabb,ERI_bbbb,Aph)
+      if(.not.TDA) call phULR_B(ispin,dRPA,nBas,nC,nO,nV,nR,nS_aa,nS_bb,nS_sc,lambda,ERI_aaaa,ERI_aabb,ERI_bbbb,Bph)
 
                    Aph(:,:) = Aph(:,:) + KA(:,:)
       if(.not.TDA) Bph(:,:) = Bph(:,:) + KB(:,:)
 
-      call phULR(TDA_W,nS_aa,nS_bb,nS_sc,Aph,Bph,EcAC(ispin),OmRPA,XpY_RPA,XmY_RPA)
+      call phULR(TDA,nS_aa,nS_bb,nS_sc,Aph,Bph,EcAC(ispin),Om,XpY,XmY)
 
       call phUACFDT_correlation_energy(ispin,exchange_kernel,nBas,nC,nO,nV,nR,nS,nS_aa,nS_bb,nS_sc, &
                                        ERI_aaaa,ERI_aabb,ERI_bbbb,XpY,XmY,Ec(iAC,ispin))
@@ -208,24 +208,24 @@ subroutine UGW_phACFDT(exchange_kernel,doXBS,TDA_W,TDA,spin_conserved,spin_flip,
 
       if(doXBS) then
 
-                     call phULR_A(isp_W,dRPA_W,nBas,nC,nO,nV,nR,nS_aa,nS_bb,nS_sc,lambda,eW,ERI_aaaa,ERI_aabb,ERI_bbbb,Aph)
-        if(.not.TDA) call phULR_B(isp_W,dRPA_W,nBas,nC,nO,nV,nR,nS_aa,nS_bb,nS_sc,lambda,ERI_aaaa,ERI_aabb,ERI_bbbb,Bph)
+                       call phULR_A(isp_W,dRPA_W,nBas,nC,nO,nV,nR,nS_aa,nS_bb,nS_sc,lambda,eW,ERI_aaaa,ERI_aabb,ERI_bbbb,Aph)
+        if(.not.TDA_W) call phULR_B(isp_W,dRPA_W,nBas,nC,nO,nV,nR,nS_aa,nS_bb,nS_sc,lambda,ERI_aaaa,ERI_aabb,ERI_bbbb,Bph)
 
         call phULR(TDA_W,nS_aa,nS_bb,nS_sc,Aph,Bph,EcRPA,OmRPA,XpY_RPA,XmY_RPA)
         call UGW_excitation_density(nBas,nC,nO,nR,nS_aa,nS_bb,nS_sc,ERI_aaaa,ERI_aabb,ERI_bbbb,XpY_RPA,rho_RPA)
 
-        call UGW_phBSE_static_kernel_A(ispin,eta,nBas,nC,nO,nV,nR,nS_aa,nS_bb,nS_sc,nS_sc,lambda,OmRPA,rho_RPA,KA)
-        call UGW_phBSE_static_kernel_B(ispin,eta,nBas,nC,nO,nV,nR,nS_aa,nS_bb,nS_sc,nS_sc,lambda,OmRPA,rho_RPA,KB)
+                     call UGW_phBSE_static_kernel_A(ispin,eta,nBas,nC,nO,nV,nR,nS_aa,nS_bb,nS_sc,nS_sc,lambda,OmRPA,rho_RPA,KA)
+        if(.not.TDA) call UGW_phBSE_static_kernel_B(ispin,eta,nBas,nC,nO,nV,nR,nS_aa,nS_bb,nS_sc,nS_sc,lambda,OmRPA,rho_RPA,KB)
 
       end if
 
-                   call phULR_A(isp_W,dRPA,nBas,nC,nO,nV,nR,nS_aa,nS_bb,nS_sf,lambda,eW,ERI_aaaa,ERI_aabb,ERI_bbbb,Aph)
-      if(.not.TDA) call phULR_B(isp_W,dRPA,nBas,nC,nO,nV,nR,nS_aa,nS_bb,nS_sf,lambda,ERI_aaaa,ERI_aabb,ERI_bbbb,Bph)
+                   call phULR_A(ispin,dRPA,nBas,nC,nO,nV,nR,nS_aa,nS_bb,nS_sf,lambda,eW,ERI_aaaa,ERI_aabb,ERI_bbbb,Aph)
+      if(.not.TDA) call phULR_B(ispin,dRPA,nBas,nC,nO,nV,nR,nS_aa,nS_bb,nS_sf,lambda,ERI_aaaa,ERI_aabb,ERI_bbbb,Bph)
 
                    Aph(:,:) = Aph(:,:) + KA(:,:)
       if(.not.TDA) Bph(:,:) = Bph(:,:) + KB(:,:)
 
-      call phULR(TDA_W,nS_aa,nS_bb,nS_sf,Aph,Bph,EcAC(ispin),OmRPA,XpY_RPA,XmY_RPA)
+      call phULR(TDA,nS_aa,nS_bb,nS_sf,Aph,Bph,EcAC(ispin),Om,XpY,XmY)
 
       call phUACFDT_correlation_energy(ispin,exchange_kernel,nBas,nC,nO,nV,nR,nS,nS_ab,nS_ba,nS_sf, &
                                        ERI_aaaa,ERI_aabb,ERI_bbbb,XpY,XmY,Ec(iAC,ispin))

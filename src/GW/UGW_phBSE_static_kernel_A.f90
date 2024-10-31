@@ -57,7 +57,7 @@ subroutine UGW_phBSE_static_kernel_A(ispin,eta,nBas,nC,nO,nV,nR,nSa,nSb,nSt,nS_s
               chi = chi + rho(i,j,kc,1)*rho(a,b,kc,1)*Om(kc)/eps
             end do
  
-            KA(ia,jb) = KA(ia,jb) + 2d0*lambda*chi
+            KA(ia,jb) = 2d0*lambda**2*chi
  
           end do
         end do
@@ -81,7 +81,7 @@ subroutine UGW_phBSE_static_kernel_A(ispin,eta,nBas,nC,nO,nV,nR,nSa,nSb,nSt,nS_s
               chi = chi + rho(i,j,kc,2)*rho(a,b,kc,2)*Om(kc)/eps 
             end do
  
-            KA(nSa+ia,nSa+jb) = KA(nSa+ia,nSa+jb) + 2d0*lambda*chi
+            KA(nSa+ia,nSa+jb) = 2d0*lambda**2*chi
  
           end do
         end do
@@ -113,7 +113,7 @@ subroutine UGW_phBSE_static_kernel_A(ispin,eta,nBas,nC,nO,nV,nR,nSa,nSb,nSt,nS_s
               chi = chi + rho(i,j,kc,1)*rho(a,b,kc,2)*Om(kc)/eps
             end do
 
-            KA(ia,jb) = KA(ia,jb) + 2d0*lambda*chi
+            KA(ia,jb) = 2d0*lambda**2*chi
 
           end  do
         end  do
@@ -137,7 +137,7 @@ subroutine UGW_phBSE_static_kernel_A(ispin,eta,nBas,nC,nO,nV,nR,nSa,nSb,nSt,nS_s
               chi = chi + rho(i,j,kc,2)*rho(a,b,kc,1)*Om(kc)/eps
             end do
 
-            KA(nSa+ia,nSa+jb) = KA(nSa+ia,nSa+jb) + 2d0*lambda*chi
+            KA(nSa+ia,nSa+jb) = 2d0*lambda**2*chi
 
           end  do
         end  do
