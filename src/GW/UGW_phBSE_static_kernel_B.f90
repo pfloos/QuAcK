@@ -32,11 +32,13 @@ subroutine UGW_phBSE_static_kernel_B(ispin,eta,nBas,nC,nO,nV,nR,nSa,nSb,nSt,nS_s
 
   double precision,intent(out)  :: KB(nSt,nSt)
 
+! Initialization
+
+  KB(:,:) = 0d0
+
 !--------------------------------------------------!
 ! Build BSE matrix for spin-conserving transitions !
 !--------------------------------------------------!
-
-  KB(:,:) = 0d0
 
   if(ispin == 1) then
 
