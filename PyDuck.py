@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-import os
+import os, sys
 import argparse
 import pyscf
 from pyscf import gto
@@ -8,6 +8,10 @@ import numpy as np
 import subprocess
 
 #Find the value of the environnement variable QUACK_ROOT. If not present we use the current repository
+if "QUACK_ROOT" not in os.environ:
+   print("Please set the QUACK_ROOT environment variable, for example:\n")
+   print("$ export QUACK_ROOT={0}".format(os.getcwd()))
+   sys.exit(1)
 QuAcK_dir=os.environ.get('QUACK_ROOT','./')
 
 #Create the argument parser object and gives a description of the script
