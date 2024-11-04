@@ -335,15 +335,9 @@ subroutine RGW_ppBSE(TDA_W,TDA,dBSE,dTDA,singlet,triplet,eta,nOrb,nC,nO,nV,nR,nS
       call RGW_ppBSE_dynamic_perturbation(ispin,dTDA,eta,nOrb,nC,nO,nV,nR,nS,nOO,nVV,eW,eGW,ERI,dipole_int,OmRPA,rho_RPA, &
                                           Om1,X1,Y1,Om2,X2,Y2,KB_sta,KC_sta,KD_sta)
 
- 
-    !----------------!
-    ! Upfolded ppBSE !
-    !----------------!
-
-    ! call RGW_ppBSE_upfolded(ispin,nOrb,nC,nO,nV,nR,nS,ERI,rho_RPA,OmRPA,eGW)
-
     deallocate(KB_sta,KC_sta,KD_sta)
     deallocate(Om1,X1,Y1,Om2,X2,Y2)
+
   end if
 
 end subroutine 

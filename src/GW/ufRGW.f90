@@ -111,6 +111,10 @@ subroutine ufRGW(dotest,TDA_W,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,eHF)
 
     deallocate(Aph,Bph,XpY,XmY)
 
+  else 
+
+    allocate(rho(0,0,0))
+
   end if
 
 ! Initialization
