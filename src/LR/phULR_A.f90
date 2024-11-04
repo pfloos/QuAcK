@@ -39,6 +39,10 @@ subroutine phULR_A(ispin,dRPA,nBas,nC,nO,nV,nR,nSa,nSb,nSt,lambda,eHF,ERI_aaaa,E
   delta_dRPA = 0d0
   if(dRPA) delta_dRPA = 1d0
 
+! Initialization
+
+  Aph(:,:) = 0d0
+
 !----------------------------------------------
 ! Build A matrix for spin-conserved transitions
 !----------------------------------------------
@@ -126,8 +130,6 @@ subroutine phULR_A(ispin,dRPA,nBas,nC,nO,nV,nR,nSa,nSb,nSt,lambda,eHF,ERI_aaaa,E
 !-----------------------------------------
 
   if(ispin == 2) then 
-
-    Aph(:,:) = 0d0
 
     ! abab block
 
