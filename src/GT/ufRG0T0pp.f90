@@ -33,7 +33,6 @@ subroutine ufRG0T0pp(dotest,TDA_T,nBas,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,eHF)
   logical                       :: print_T = .false.
   logical                       :: dRPA
   integer                       :: ispin
-  integer                       :: iblock
   integer                       :: nOOs,nOOt
   integer                       :: nVVs,nVVt
   double precision              :: EcRPA(nspin)
@@ -74,17 +73,11 @@ subroutine ufRG0T0pp(dotest,TDA_T,nBas,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,eHF)
 
 ! Dimensions of the ppRPA linear reponse matrices
 
-! nOOs = nO*(nO + 1)/2
-! nVVs = nV*(nV + 1)/2
-
-  nOOs = nO*nO
-  nVVs = nV*nV
+  nOOs = nO*(nO + 1)/2
+  nVVs = nV*(nV + 1)/2
 
   nOOt = nO*(nO - 1)/2
   nVVt = nV*(nV - 1)/2
-
-! nOO = nO*nO
-! nVV = nV*nV
 
 ! Dimension of the supermatrix
 
@@ -117,16 +110,14 @@ subroutine ufRG0T0pp(dotest,TDA_T,nBas,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,eHF)
     ! alpha-beta block
  
     ispin  = 1
-!   iblock = 1
-    iblock = 3
 
     ! Compute linear response
 
     allocate(Bpp(nVVs,nOOs),Cpp(nVVs,nVVs),Dpp(nOOs,nOOs))
 
-    call ppLR_B(iblock,nBas,nC,nO,nV,nR,nOOs,nVVs,1d0,ERI,Bpp)
-    call ppLR_C(iblock,nBas,nC,nO,nV,nR,nVVs,1d0,eHF,ERI,Cpp)
-    call ppLR_D(iblock,nBas,nC,nO,nV,nR,nOOs,1d0,eHF,ERI,Dpp)
+    call ppLR_B(ispin,nBas,nC,nO,nV,nR,nOOs,nVVs,1d0,ERI,Bpp)
+    call ppLR_C(ispin,nBas,nC,nO,nV,nR,nVVs,1d0,eHF,ERI,Cpp)
+    call ppLR_D(ispin,nBas,nC,nO,nV,nR,nOOs,1d0,eHF,ERI,Dpp)
 
     call ppLR(TDA_T,nOOs,nVVs,Bpp,Cpp,Dpp,Om1s,X1s,Y1s,Om2s,X2s,Y2s,EcRPA(ispin))
 
@@ -135,23 +126,21 @@ subroutine ufRG0T0pp(dotest,TDA_T,nBas,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,eHF)
 
     ! Compute excitation densities
 
-    call RGTpp_excitation_density(iblock,nBas,nC,nO,nV,nR,nOOs,nVVs,ERI,X1s,Y1s,rho1s,X2s,Y2s,rho2s)
+    call RGTpp_excitation_density(ispin,nBas,nC,nO,nV,nR,nOOs,nVVs,ERI,X1s,Y1s,rho1s,X2s,Y2s,rho2s)
 
     deallocate(Bpp,Cpp,Dpp,X1s,Y1s,X2s,Y2s)
 
     ! alpha-alpha block
 
     ispin  = 2
-!   iblock = 2
-    iblock = 4
 
     ! Compute linear response
 
     allocate(Bpp(nVVt,nOOt),Cpp(nVVt,nVVt),Dpp(nOOt,nOOt))
   
-    call ppLR_B(iblock,nBas,nC,nO,nV,nR,nOOt,nVVt,1d0,ERI,Bpp)
-    call ppLR_C(iblock,nBas,nC,nO,nV,nR,nVVt,1d0,eHF,ERI,Cpp)
-    call ppLR_D(iblock,nBas,nC,nO,nV,nR,nOOt,1d0,eHF,ERI,Dpp)
+    call ppLR_B(ispin,nBas,nC,nO,nV,nR,nOOt,nVVt,1d0,ERI,Bpp)
+    call ppLR_C(ispin,nBas,nC,nO,nV,nR,nVVt,1d0,eHF,ERI,Cpp)
+    call ppLR_D(ispin,nBas,nC,nO,nV,nR,nOOt,1d0,eHF,ERI,Dpp)
   
     call ppLR(TDA_T,nOOt,nVVt,Bpp,Cpp,Dpp,Om1t,X1t,Y1t,Om2t,X2t,Y2t,EcRPA(ispin))
   
@@ -160,9 +149,13 @@ subroutine ufRG0T0pp(dotest,TDA_T,nBas,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,eHF)
 
     ! Compute excitation densities
 
-    call RGTpp_excitation_density(iblock,nBas,nC,nO,nV,nR,nOOt,nVVt,ERI,X1t,Y1t,rho1t,X2t,Y2t,rho2t)
+    call RGTpp_excitation_density(ispin,nBas,nC,nO,nV,nR,nOOt,nVVt,ERI,X1t,Y1t,rho1t,X2t,Y2t,rho2t)
 
     deallocate(Bpp,Cpp,Dpp,X1t,Y1t,X2t,Y2t)
+
+  else
+
+    allocate(rho1s(0,0,0),rho1t(0,0,0),rho2s(0,0,0),rho2t(0,0,0))
 
   end if
 
