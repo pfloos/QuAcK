@@ -36,7 +36,7 @@ def check_compiler_exists(compiler):
 compile_gfortran_mac = """
 FC = gfortran
 AR = libtool -static -o
-FFLAGS = -I$IDIR -J$IDIR -fbacktrace -g -Wall -Wno-unused-variable -Wno-unused -Wno-unused-dummy-argument -O3
+FFLAGS = -I$IDIR -J$IDIR -fbacktrace -g -Wall -Wno-unused-variable -Wno-unused -Wno-unused-dummy-argument -Wuninitialized -Wmaybe-uninitialized -O3 -march=native
 CC = gcc
 CXX = g++
 LAPACK=-lblas -llapack
@@ -81,7 +81,7 @@ elif sys.platform == "Linux" or os.path.exists('/proc/version'):
         compiler = compile_gfortran_linux_debug
 
     else:
-        if check_compiler_exists('ifort'):
+        if check_compiler_exists('ifortt'):
             compiler = """
 FC = ifort -qmkl=parallel -qopenmp
 AR = ar crs
@@ -96,7 +96,7 @@ FIX_ORDER_OF_LIBS=-Wl,--start-group
             compiler = """
 FC = gfortran -fopenmp
 AR = ar crs
-FFLAGS = -I$IDIR -J$IDIR -fbacktrace -g -Wall -Wno-unused-variable -Wno-unused -Wno-unused-dummy-argument -O3 -march=native
+FFLAGS = -I$IDIR -J$IDIR -fbacktrace -g -Wall -Wno-unused-variable -Wno-unused -Wno-unused-dummy-argument -Wuninitialized -Wmaybe-uninitialized -O3 -march=native
 CC = gcc
 CXX = g++
 LAPACK=-lblas -llapack
