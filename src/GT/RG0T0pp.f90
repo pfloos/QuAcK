@@ -212,6 +212,7 @@ subroutine RG0T0pp(dotest,doACFDT,exchange_kernel,doXBS,dophBSE,TDA_T,TDA,dBSE,d
                  call ppLR_D(isp_T,nOrb,nC,nO,nV,nR,nOOs,1d0,eGT,ERI,Dpp)
 
   call ppLR(TDA_T,nOOs,nVVs,Bpp,Cpp,Dpp,Om1s,X1s,Y1s,Om2s,X2s,Y2s,EcRPA(isp_T))
+!  call ppLR_transition_vectors(.true.,nBas,nC,nO,nV,nR,nOOs,nVVs,dipole_int,Om1s,X1s,Y1s,Om2s,X2s,Y2s)
 
   deallocate(Bpp,Cpp,Dpp)
 
@@ -224,6 +225,7 @@ subroutine RG0T0pp(dotest,doACFDT,exchange_kernel,doXBS,dophBSE,TDA_T,TDA,dBSE,d
                  call ppLR_D(isp_T,nOrb,nC,nO,nV,nR,nOOt,1d0,eGT,ERI,Dpp)
 
   call ppLR(TDA_T,nOOt,nVVt,Bpp,Cpp,Dpp,Om1t,X1t,Y1t,Om2t,X2t,Y2t,EcRPA(isp_T))
+!  call ppLR_transition_vectors(.false.,nBas,nC,nO,nV,nR,nOOt,nVVt,dipole_int,Om1t,X1t,Y1t,Om2t,X2t,Y2t)
 
   deallocate(Bpp,Cpp,Dpp)
 

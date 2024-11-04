@@ -42,31 +42,30 @@ double precision function RGTpp_dSigC(p,w,eta,nBas,nC,nO,nV,nR,nOOs,nVVs,nOOt,nV
 
     do cd=1,nVVs
       eps = w + e(i) - Om1s(cd)
-      RGTpp_dSigC = RGTpp_dSigC - rho1s(p,i,cd)**2*(eps**2 - eta**2)/(eps**2 + eta**2)**2
+      RGTpp_dSigC = RGTpp_dSigC - (1d0/2d0)*rho1s(p,i,cd)**2*(eps**2 - eta**2)/(eps**2 + eta**2)**2
     end do
 
     do cd=1,nVVt
       eps = w + e(i) - Om1t(cd)
-      RGTpp_dSigC = RGTpp_dSigC - rho1t(p,i,cd)**2*(eps**2 - eta**2)/(eps**2 + eta**2)**2
+      RGTpp_dSigC = RGTpp_dSigC - (3d0/2d0)*rho1t(p,i,cd)**2*(eps**2 - eta**2)/(eps**2 + eta**2)**2
     end do
 
   end do
 
 !----------------------------------------------
 ! Virtual part of the T-matrix self-energy
-!
 !----------------------------------------------
 
   do a=nO+1,nBas-nR
 
     do kl=1,nOOs
       eps = w + e(a) - Om2s(kl)
-      RGTpp_dSigC = RGTpp_dSigC - rho2s(p,a,kl)**2*(eps**2 - eta**2)/(eps**2 + eta**2)**2
+      RGTpp_dSigC = RGTpp_dSigC - (1d0/2d0)*rho2s(p,a,kl)**2*(eps**2 - eta**2)/(eps**2 + eta**2)**2
     end do
 
     do kl=1,nOOt
       eps = w + e(a) - Om2t(kl)
-      RGTpp_dSigC = RGTpp_dSigC - rho2t(p,a,kl)**2*(eps**2 - eta**2)/(eps**2 + eta**2)**2
+      RGTpp_dSigC = RGTpp_dSigC - (3d0/2d0)*rho2t(p,a,kl)**2*(eps**2 - eta**2)/(eps**2 + eta**2)**2
     end do
 
   end do

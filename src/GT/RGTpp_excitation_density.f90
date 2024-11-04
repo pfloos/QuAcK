@@ -66,7 +66,7 @@ subroutine RGTpp_excitation_density(ispin,nBas,nC,nO,nV,nR,nOO,nVV,ERI,X1,Y1,rho
                     cd = cd + 1
                     rho1(p,q,ab) = rho1(p,q,ab) & 
                                  + (ERI(p,q,c,d) + ERI(p,q,d,c))*X1(cd,ab)/ & 
-                                   sqrt(1d0 + Kronecker_delta(c,d))/sqrt(2d0)
+                                   sqrt(1d0 + Kronecker_delta(c,d))
                  end do
               end do
           
@@ -76,7 +76,7 @@ subroutine RGTpp_excitation_density(ispin,nBas,nC,nO,nV,nR,nOO,nVV,ERI,X1,Y1,rho
                     kl = kl + 1
                     rho1(p,q,ab) = rho1(p,q,ab) & 
                                  + (ERI(p,q,k,l) + ERI(p,q,l,k))*Y1(kl,ab)/ & 
-                                   sqrt(1d0 + Kronecker_delta(k,l))/sqrt(2d0)
+                                   sqrt(1d0 + Kronecker_delta(k,l))
                  end do
               end do
               
@@ -93,7 +93,7 @@ subroutine RGTpp_excitation_density(ispin,nBas,nC,nO,nV,nR,nOO,nVV,ERI,X1,Y1,rho
                     cd = cd + 1
                     rho2(p,q,ij) = rho2(p,q,ij) &
                                  + (ERI(p,q,c,d) + ERI(p,q,d,c))*X2(cd,ij)/ & 
-                                   sqrt(1d0 + Kronecker_delta(c,d))/sqrt(2d0)
+                                   sqrt(1d0 + Kronecker_delta(c,d))
                  end do
               end do
               
@@ -103,7 +103,7 @@ subroutine RGTpp_excitation_density(ispin,nBas,nC,nO,nV,nR,nOO,nVV,ERI,X1,Y1,rho
                     kl = kl + 1
                     rho2(p,q,ij) = rho2(p,q,ij) &
                                  + (ERI(p,q,k,l) + ERI(p,q,l,k))*Y2(kl,ij)/ & 
-                                   sqrt(1d0 + Kronecker_delta(k,l))/sqrt(2d0)
+                                   sqrt(1d0 + Kronecker_delta(k,l))
                  end do
               end do
  
@@ -148,7 +148,7 @@ subroutine RGTpp_excitation_density(ispin,nBas,nC,nO,nV,nR,nOO,nVV,ERI,X1,Y1,rho
                 cd = cd + 1
   
                 rho1(p,q,ab) = rho1(p,q,ab) & 
-                             + sqrt(3d0/2d0)*(ERI(p,q,c,d) - ERI(p,q,d,c))*X1(cd,ab) 
+                             + (ERI(p,q,c,d) - ERI(p,q,d,c))*X1(cd,ab) 
               end do ! d
             end do ! c
    
@@ -159,7 +159,7 @@ subroutine RGTpp_excitation_density(ispin,nBas,nC,nO,nV,nR,nOO,nVV,ERI,X1,Y1,rho
                 kl = kl + 1
   
                 rho1(p,q,ab) = rho1(p,q,ab) & 
-                             + sqrt(3d0/2d0)*(ERI(p,q,k,l) - ERI(p,q,l,k))*Y1(kl,ab) 
+                             + (ERI(p,q,k,l) - ERI(p,q,l,k))*Y1(kl,ab) 
               end do ! l
             end do ! k 
           end do ! b
@@ -179,7 +179,7 @@ subroutine RGTpp_excitation_density(ispin,nBas,nC,nO,nV,nR,nOO,nVV,ERI,X1,Y1,rho
                 cd = cd + 1
             
                 rho2(p,q,ij) = rho2(p,q,ij) & 
-                             + sqrt(3d0/2d0)*(ERI(p,q,c,d) - ERI(p,q,d,c))*X2(cd,ij) 
+                             + (ERI(p,q,c,d) - ERI(p,q,d,c))*X2(cd,ij) 
               end do ! d
             end do ! c
             
@@ -190,7 +190,7 @@ subroutine RGTpp_excitation_density(ispin,nBas,nC,nO,nV,nR,nOO,nVV,ERI,X1,Y1,rho
                 kl = kl + 1
             
                 rho2(p,q,ij) = rho2(p,q,ij) & 
-                             + sqrt(3d0/2d0)*(ERI(p,q,k,l) - ERI(p,q,l,k))*Y2(kl,ij) 
+                             + (ERI(p,q,k,l) - ERI(p,q,l,k))*Y2(kl,ij) 
               end do ! l
             end do ! k
           end do ! j
@@ -249,8 +249,8 @@ subroutine RGTpp_excitation_density(ispin,nBas,nC,nO,nV,nR,nOO,nVV,ERI,X1,Y1,rho
   
       deallocate(ERI_1, ERI_2)
   
-      rho1 = rho1*sqrt(3d0/2d0)
-      rho2 = rho2*sqrt(3d0/2d0)
+      rho1 = rho1
+      rho2 = rho2
 
     endif
   endif

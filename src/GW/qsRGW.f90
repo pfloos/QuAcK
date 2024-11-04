@@ -314,7 +314,7 @@ subroutine qsRGW(dotest,maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,dop
 ! Deallocate memory
 
   deallocate(c,cp,P,F,Fp,J,K,SigC,SigCp,Z,Om,XpY,XmY,rho,err,err_diis,F_diis)
-
+  
 ! Perform BSE calculation
 
   if(dophBSE) then

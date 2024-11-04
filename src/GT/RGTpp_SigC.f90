@@ -42,12 +42,12 @@ double precision function RGTpp_SigC(p,w,eta,nBas,nC,nO,nV,nR,nOOs,nVVs,nOOt,nVV
 
     do cd=1,nVVs
       eps = w + e(i) - Om1s(cd)
-      RGTpp_SigC = RGTpp_SigC + rho1s(p,i,cd)**2*eps/(eps**2 + eta**2)
+      RGTpp_SigC = RGTpp_SigC + (1d0/2d0)*rho1s(p,i,cd)**2*eps/(eps**2 + eta**2)
     end do
 
     do cd=1,nVVt
       eps = w + e(i) - Om1t(cd)
-      RGTpp_SigC = RGTpp_SigC + rho1t(p,i,cd)**2*eps/(eps**2 + eta**2)
+      RGTpp_SigC = RGTpp_SigC + (3d0/2d0)*rho1t(p,i,cd)**2*eps/(eps**2 + eta**2)
     end do
 
   end do
@@ -60,12 +60,12 @@ double precision function RGTpp_SigC(p,w,eta,nBas,nC,nO,nV,nR,nOOs,nVVs,nOOt,nVV
 
     do kl=1,nOOs
       eps = w + e(a) - Om2s(kl)
-      RGTpp_SigC = RGTpp_SigC + rho2s(p,a,kl)**2*eps/(eps**2 + eta**2)
+      RGTpp_SigC = RGTpp_SigC + (1d0/2d0)*rho2s(p,a,kl)**2*eps/(eps**2 + eta**2)
     end do
 
     do kl=1,nOOt
       eps = w + e(a) - Om2t(kl)
-      RGTpp_SigC = RGTpp_SigC + rho2t(p,a,kl)**2*eps/(eps**2 + eta**2)
+      RGTpp_SigC = RGTpp_SigC + (3d0/2d0)*rho2t(p,a,kl)**2*eps/(eps**2 + eta**2)
     end do
 
   end do
