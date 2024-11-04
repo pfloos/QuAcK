@@ -616,6 +616,9 @@ subroutine ppLR_davidson_2(ispin, TDA, nC, nO, nR, nOrb, nOO, nVV, lambda, e, eF
 
   if(kernel_name .eq. "rpa") then
 
+    allocate(rho_tmp(0,0,0))
+    allocate(Om_tmp(0))
+
     call ppLR_RPA_H_diag(ispin, nOrb, nC, nO, nR, nOO, nVV, lambda, e(1), eF, &
                          ERI(1,1,1,1), H_diag(1))
 
