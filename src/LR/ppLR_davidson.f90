@@ -167,6 +167,10 @@ subroutine ppLR_davidson_1(ispin, TDA, nC, nO, nR, nOrb, nOO, nVV, lambda, e, eF
     call ppLR_RPA_H_diag(ispin, nOrb, nC, nO, nR, nOO, nVV, lambda, e(1), eF, &
                          ERI(1,1,1,1), H_diag(1))
 
+    ! to avoid compiler warnings
+    allocate(rho_tmp(0,0,0))
+    allocate(Om_tmp(0))
+
   elseif(kernel_name .eq. "gw") then
 
     nS = supp_data_int(1)
@@ -263,6 +267,7 @@ subroutine ppLR_davidson_1(ispin, TDA, nC, nO, nR, nOrb, nOO, nVV, lambda, e, eF
   write(6,'(A)') write_buffer(1:6+41*n_states)
 
 
+  W = 0.d0
   converged = .False.
   itertot = 0
 
