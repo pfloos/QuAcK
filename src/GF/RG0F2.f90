@@ -110,7 +110,7 @@ subroutine RG0F2(dotest,dophBSE,doppBSE,TDA,dBSE,dTDA,singlet,triplet,linearize,
 
   if(doppBSE) then 
    
-    call RGF2_ppBSE(TDA,dBSE,dTDA,singlet,triplet,eta,nOrb,nC,nO,nV,nR,ERI,dipole_int,eGF,EcBSE)
+     call RGF2_ppBSE(TDA,dBSE,dTDA,singlet,triplet,eta,nOrb,nC,nO,nV,nR,ERI,dipole_int,eGF,EcBSE)
 
     EcBSE(2) = 3d0*EcBSE(2)
 

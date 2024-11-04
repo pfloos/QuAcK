@@ -50,28 +50,23 @@ subroutine GGW_ppBSE_dynamic_kernel_B(eta,nBas,nC,nO,nV,nR,nS,nOO,nVV,lambda,eGW
           ij = ij + 1
   
           do m=1,nS
+             
+               num = (rho(a,i,m)*rho(b,j,m) - rho(b,i,m)*rho(a,j,m))/2
+               dem = - Om(m) - eGW(b) + eGW(j)
+               KB_dyn(ab,ij) = KB_dyn(ab,ij) + num*dem/(dem**2 + eta**2)
 
-            dem = eGW(j) - Om(m) - eGW(b)
-            num = rho(a,i,m)*rho(b,j,m)
+               dem = - Om(m) - eGW(a) + eGW(i)
+               KB_dyn(ab,ij) = KB_dyn(ab,ij) + num*dem/(dem**2 + eta**2)
 
-            KB_dyn(ab,ij) = KB_dyn(ab,ij) + num*dem/(dem**2 + eta**2)
+               dem = - Om(m) - eGW(a) + eGW(j)
+               KB_dyn(ab,ij) = KB_dyn(ab,ij) + num*dem/(dem**2 + eta**2)
+       
+               dem = - Om(m) - eGW(b) + eGW(i)
+               KB_dyn(ab,ij) = KB_dyn(ab,ij) + num*dem/(dem**2 + eta**2)
 
-            dem = eGW(j) - Om(m) - eGW(a)
-            num = rho(b,i,m)*rho(a,j,m)
+          end do            
 
-            KB_dyn(ab,ij) = KB_dyn(ab,ij) - num*dem/(dem**2 + eta**2)
-
-            dem = eGW(i) - Om(m) - eGW(a)
-            num = rho(a,i,m)*rho(b,j,m)
-
-            KB_dyn(ab,ij) = KB_dyn(ab,ij) + num*dem/(dem**2 + eta**2)
-
-            dem = eGW(i) - Om(m) - eGW(b)
-            num = rho(b,i,m)*rho(a,j,m)
-
-            KB_dyn(ab,ij) = KB_dyn(ab,ij) - num*dem/(dem**2 + eta**2)
-
-          end do
+          KB_dyn(ab,ij) = 0.5d0*KB_dyn(ab,ij)
 
         end do
       end do
