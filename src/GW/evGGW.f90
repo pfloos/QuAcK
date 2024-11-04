@@ -1,5 +1,5 @@
 subroutine evGGW(dotest,maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,dophBSE,dophBSE2,TDA_W,TDA,dBSE,dTDA,doppBSE, & 
-                 linearize,eta,regularize,nBas,nC,nO,nV,nR,nS,ENuc,EGHF,ERI,dipole_int,eHF)
+                 linearize,eta,doSRG,nBas,nC,nO,nV,nR,nS,ENuc,EGHF,ERI,dipole_int,eHF)
 
 ! Perform self-consistent eigenvalue-only GW calculation
 
@@ -27,7 +27,7 @@ subroutine evGGW(dotest,maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,dop
   logical,intent(in)            :: doppBSE
   logical,intent(in)            :: linearize
   double precision,intent(in)   :: eta
-  logical,intent(in)            :: regularize
+  logical,intent(in)            :: doSRG
 
   integer,intent(in)            :: nBas
   integer,intent(in)            :: nC
@@ -41,10 +41,10 @@ subroutine evGGW(dotest,maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,dop
 
 ! Local variables
 
-  logical                       :: linear_mixing
   logical                       :: dRPA = .true.
   integer                       :: nSCF
   integer                       :: n_diis
+  double precision              :: flow
   double precision              :: rcond
   double precision              :: Conv
   double precision              :: EcRPA
@@ -79,17 +79,16 @@ subroutine evGGW(dotest,maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,dop
     write(*,*)
   end if
 
-! TDA 
+! SRG regularization
 
-  if(TDA) then 
-    write(*,*) 'Tamm-Dancoff approximation activated!'
+  flow = 500d0
+
+  if(doSRG) then
+
+    write(*,*) '*** SRG regularized evGW scheme ***'
     write(*,*)
+
   end if
-
-! Linear mixing
-
-  linear_mixing = .false.
-  alpha = 0.2d0
 
 ! Memory allocation
 
@@ -127,9 +126,11 @@ subroutine evGGW(dotest,maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,dop
 
     ! Compute correlation part of the self-energy 
 
-    if(regularize) call GW_regularization(nBas,nC,nO,nV,nR,nS,eGW,Om,rho)
-
-    call GGW_self_energy_diag(eta,nBas,nC,nO,nV,nR,nS,eGW,Om,rho,EcGM,SigC,Z)
+    if(doSRG) then
+      call GGW_SRG_self_energy_diag(flow,nBas,nC,nO,nV,nR,nS,eGW,Om,rho,EcGM,SigC,Z)
+    else
+      call GGW_self_energy_diag(eta,nBas,nC,nO,nV,nR,nS,eGW,Om,rho,EcGM,SigC,Z)
+    end if
 
     ! Solve the quasi-particle equation
 
@@ -145,7 +146,7 @@ subroutine evGGW(dotest,maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,dop
       write(*,*) ' *** Quasiparticle energies obtained by root search *** '
       write(*,*)
   
-      call GGW_QP_graph(eta,nBas,nC,nO,nV,nR,nS,eHF,Om,rho,eOld,eOld,eGW,Z)
+      call GGW_QP_graph(doSRG,eta,flow,nBas,nC,nO,nV,nR,nS,eHF,Om,rho,eOld,eOld,eGW,Z)
  
     end if
 
@@ -159,18 +160,10 @@ subroutine evGGW(dotest,maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,dop
 
     ! Linear mixing or DIIS extrapolation
 
-    if(linear_mixing) then
+    if(max_diis > 1) then
  
-      eGW(:) = alpha*eGW(:) + (1d0 - alpha)*eOld(:)
- 
-    else
-
       n_diis = min(n_diis+1,max_diis)
-      if(abs(rcond) > 1d-7) then
-        call DIIS_extrapolation(rcond,nBas,nBas,n_diis,error_diis,e_diis,eGW-eOld,eGW)
-      else
-        n_diis = 0
-      end if
+      call DIIS_extrapolation(rcond,nBas,nBas,n_diis,error_diis,e_diis,eGW-eOld,eGW)
 
     end if
 
@@ -218,51 +211,7 @@ subroutine evGGW(dotest,maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,dop
     write(*,*)'-------------------------------------------------------------------------------'
     write(*,*)
 
-!   Compute the BSE correlation energy via the adiabatic connection 
-
-!   if(doACFDT) then
-
-!     write(*,*) '------------------------------------------------------'
-!     write(*,*) 'Adiabatic connection version of BSE correlation energy'
-!     write(*,*) '------------------------------------------------------'
-!     write(*,*)
-
-!     if(doXBS) then
-
-!       write(*,*) '*** scaled screening version (XBS) ***'
-!       write(*,*)
-
-!     end if
-
-!     call GW_phACFDT(exchange_kernel,doXBS,dRPA,TDA_W,TDA,dophBSE,singlet,triplet,eta,nBas,nC,nO,nV,nR,nS,ERI,eGW,eGW,EcBSE)
-
-!     write(*,*)
-!     write(*,*)'-------------------------------------------------------------------------------'
-!     write(*,'(2X,A50,F20.10)') 'AC@BSE@evGW correlation energy (singlet) =',EcBSE(1)
-!     write(*,'(2X,A50,F20.10)') 'AC@BSE@evGW correlation energy (triplet) =',EcBSE(2)
-!     write(*,'(2X,A50,F20.10)') 'AC@BSE@evGW correlation energy           =',EcBSE(1) + EcBSE(2)
-!     write(*,'(2X,A50,F20.10)') 'AC@BSE@evGW total energy                 =',ENuc + EGHF + EcBSE(1) + EcBSE(2)
-!     write(*,*)'-------------------------------------------------------------------------------'
-!     write(*,*)
-
-!   end if
-
   end if
-
-! if(doppBSE) then
-
-!   call GW_ppBSE(TDA_W,TDA,dBSE,dTDA,singlet,triplet,eta,nBas,nC,nO,nV,nR,nS,ERI,dipole_int,eHF,eGW,EcBSE)
-
-!   write(*,*)
-!   write(*,*)'-------------------------------------------------------------------------------'
-!   write(*,'(2X,A50,F20.10)') 'Tr@ppBSE@evGW correlation energy (singlet) =',EcBSE(1)
-!   write(*,'(2X,A50,F20.10)') 'Tr@ppBSE@evGW correlation energy (triplet) =',3d0*EcBSE(2)
-!   write(*,'(2X,A50,F20.10)') 'Tr@ppBSE@evGW correlation energy =',EcBSE(1) + 3d0*EcBSE(2)
-!   write(*,'(2X,A50,F20.10)') 'Tr@ppBSE@evGW total energy =',ENuc + EGHF + EcBSE(1) + 3d0*EcBSE(2)
-!   write(*,*)'-------------------------------------------------------------------------------'
-!   write(*,*)
-
-! end if
 
 ! Testing zone
 

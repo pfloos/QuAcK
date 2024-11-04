@@ -73,9 +73,21 @@ subroutine GGW_phBSE(dophBSE2,TDA_W,TDA,dBSE,dTDA,eta,nBas,nC,nO,nV,nR,nS,ERI,di
   call GGW_phBSE_static_kernel_A(eta,nBas,nC,nO,nV,nR,nS,1d0,ERI,OmRPA,rho_RPA,KA_sta)
   call GGW_phBSE_static_kernel_B(eta,nBas,nC,nO,nV,nR,nS,1d0,ERI,OmRPA,rho_RPA,KB_sta)
 
-  EcBSE = 0d0
 
-  ! Compute BSE excitation energies
+!-----!
+! TDA !
+!-----!
+
+  if(TDA) then
+    write(*,*) 'Tamm-Dancoff approximation activated in phBSE!'
+    write(*,*)
+  end if
+
+!---------------------------------!
+! Compute BSE excitation energies !
+!---------------------------------!
+
+  EcBSE = 0d0
 
                call phGLR_A(dRPA,nBas,nC,nO,nV,nR,nS,1d0,eGW,ERI,Aph)
   if(.not.TDA) call phGLR_B(dRPA,nBas,nC,nO,nV,nR,nS,1d0,ERI,Bph)

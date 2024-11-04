@@ -1,5 +1,4 @@
-subroutine UGW_phBSE_static_kernel_A(ispin,eta,nBas,nC,nO,nV,nR,nSa,nSb,nSt,nS_sc,lambda,eGW, & 
-                                     ERI_aaaa,ERI_aabb,ERI_bbbb,Omega,rho,A_lr)
+subroutine UGW_phBSE_static_kernel_A(ispin,eta,nBas,nC,nO,nV,nR,nSa,nSb,nSt,nS_sc,lambda,Om,rho,KA)
 
 ! Compute the extra term for Bethe-Salpeter equation for linear response in the unrestricted formalism
 
@@ -20,11 +19,7 @@ subroutine UGW_phBSE_static_kernel_A(ispin,eta,nBas,nC,nO,nV,nR,nSa,nSb,nSt,nS_s
   integer,intent(in)            :: nS_sc
   double precision,intent(in)   :: eta
   double precision,intent(in)   :: lambda
-  double precision,intent(in)   :: eGW(nBas,nspin)
-  double precision,intent(in)   :: ERI_aaaa(nBas,nBas,nBas,nBas)
-  double precision,intent(in)   :: ERI_aabb(nBas,nBas,nBas,nBas)
-  double precision,intent(in)   :: ERI_bbbb(nBas,nBas,nBas,nBas)
-  double precision,intent(in)   :: Omega(nS_sc)
+  double precision,intent(in)   :: Om(nS_sc)
   double precision,intent(in)   :: rho(nBas,nBas,nS_sc,nspin)
   
 ! Local variables
@@ -35,7 +30,11 @@ subroutine UGW_phBSE_static_kernel_A(ispin,eta,nBas,nC,nO,nV,nR,nSa,nSb,nSt,nS_s
 
 ! Output variables
 
-  double precision,intent(out)  :: A_lr(nSt,nSt)
+  double precision,intent(out)  :: KA(nSt,nSt)
+
+! Initialization
+
+  KA(:,:) = 0d0
 
 !--------------------------------------------------!
 ! Build BSE matrix for spin-conserving transitions !
@@ -56,11 +55,11 @@ subroutine UGW_phBSE_static_kernel_A(ispin,eta,nBas,nC,nO,nV,nR,nSa,nSb,nSt,nS_s
   
             chi = 0d0
             do kc=1,nS_sc
-              eps = Omega(kc)**2 + eta**2
-              chi = chi + rho(i,j,kc,1)*rho(a,b,kc,1)*Omega(kc)/eps
+              eps = Om(kc)**2 + eta**2
+              chi = chi + rho(i,j,kc,1)*rho(a,b,kc,1)*Om(kc)/eps
             end do
  
-            A_lr(ia,jb) = A_lr(ia,jb) - lambda*ERI_aaaa(i,b,j,a) + 2d0*lambda*chi
+            KA(ia,jb) = 2d0*lambda**2*chi
  
           end do
         end do
@@ -80,11 +79,11 @@ subroutine UGW_phBSE_static_kernel_A(ispin,eta,nBas,nC,nO,nV,nR,nSa,nSb,nSt,nS_s
   
             chi = 0d0
             do kc=1,nS_sc
-              eps = Omega(kc)**2 + eta**2
-              chi = chi + rho(i,j,kc,2)*rho(a,b,kc,2)*Omega(kc)/eps 
+              eps = Om(kc)**2 + eta**2
+              chi = chi + rho(i,j,kc,2)*rho(a,b,kc,2)*Om(kc)/eps 
             end do
  
-            A_lr(nSa+ia,nSa+jb) = A_lr(nSa+ia,nSa+jb) - lambda*ERI_bbbb(i,b,j,a) + 2d0*lambda*chi
+            KA(nSa+ia,nSa+jb) = 2d0*lambda**2*chi
  
           end do
         end do
@@ -112,11 +111,11 @@ subroutine UGW_phBSE_static_kernel_A(ispin,eta,nBas,nC,nO,nV,nR,nSa,nSb,nSt,nS_s
 
             chi = 0d0
             do kc=1,nS_sc
-              eps = Omega(kc)**2 + eta**2
-              chi = chi + rho(i,j,kc,1)*rho(a,b,kc,2)*Omega(kc)/eps
+              eps = Om(kc)**2 + eta**2
+              chi = chi + rho(i,j,kc,1)*rho(a,b,kc,2)*Om(kc)/eps
             end do
 
-            A_lr(ia,jb) = A_lr(ia,jb) - lambda*ERI_aabb(i,b,j,a) + 2d0*lambda*chi
+            KA(ia,jb) = 2d0*lambda**2*chi
 
           end  do
         end  do
@@ -136,11 +135,11 @@ subroutine UGW_phBSE_static_kernel_A(ispin,eta,nBas,nC,nO,nV,nR,nSa,nSb,nSt,nS_s
 
             chi = 0d0
             do kc=1,nS_sc
-              eps = Omega(kc)**2 + eta**2
-              chi = chi + rho(i,j,kc,2)*rho(a,b,kc,1)*Omega(kc)/eps
+              eps = Om(kc)**2 + eta**2
+              chi = chi + rho(i,j,kc,2)*rho(a,b,kc,1)*Om(kc)/eps
             end do
 
-            A_lr(nSa+ia,nSa+jb) = A_lr(nSa+ia,nSa+jb) - lambda*ERI_aabb(b,i,a,j) + 2d0*lambda*chi
+            KA(nSa+ia,nSa+jb) = 2d0*lambda**2*chi
 
           end  do
         end  do

@@ -1,6 +1,6 @@
-subroutine ufG0W0(dotest,TDA_W,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,eHF)
+subroutine ufRG0W0(dotest,TDA_W,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,eHF)
 
-! Unfold G0W0 equations
+! Upfolded G0W0 equations
 
   implicit none
   include 'parameters.h'
@@ -33,7 +33,7 @@ subroutine ufG0W0(dotest,TDA_W,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,eHF)
 
   logical                       :: print_W = .false.
   logical                       :: dRPA
-  integer                       :: ispin
+  integer                       :: isp_W
   double precision              :: EcRPA
   integer                       :: n2h1p,n2p1h,nH
   double precision,external     :: Kronecker_delta
@@ -47,7 +47,7 @@ subroutine ufG0W0(dotest,TDA_W,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,eHF)
   double precision,allocatable  :: XmY(:,:)
   double precision,allocatable  :: rho(:,:,:)
 
-  logical                       :: verbose = .true.
+  logical                       :: verbose = .false.
   double precision,parameter    :: cutoff1 = 0.01d0
   double precision,parameter    :: cutoff2 = 0.01d0
   double precision              :: eF
@@ -90,14 +90,14 @@ subroutine ufG0W0(dotest,TDA_W,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,eHF)
 
     ! Spin manifold 
  
-    ispin = 1
+    isp_W = 1
 
     ! Memory allocation
 
     allocate(Om(nS),Aph(nS,nS),Bph(nS,nS),XpY(nS,nS),XmY(nS,nS),rho(nOrb,nOrb,nS))
  
-    call phLR_A(ispin,dRPA,nOrb,nC,nO,nV,nR,nS,1d0,eHF,ERI,Aph)
-    call phLR_B(ispin,dRPA,nOrb,nC,nO,nV,nR,nS,1d0,ERI,Bph)
+    call phLR_A(isp_W,dRPA,nOrb,nC,nO,nV,nR,nS,1d0,eHF,ERI,Aph)
+    call phLR_B(isp_W,dRPA,nOrb,nC,nO,nV,nR,nS,1d0,ERI,Bph)
  
     call phLR(TDA_W,nS,Aph,Bph,EcRPA,Om,XpY,XmY)
 
@@ -372,8 +372,8 @@ subroutine ufG0W0(dotest,TDA_W,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,eHF)
     write(*,*)'-------------------------------------------'
   
     do s=1,nH
-      if(eGW(s) < eF .and. eGW(s) > eF - window) then
-!     if(Z(s) > cutoff1) then
+!     if(eGW(s) < eF .and. eGW(s) > eF - window) then
+      if(Z(s) > cutoff1) then
         write(*,'(1X,A1,1X,I3,1X,A1,1X,F15.6,1X,A1,1X,F15.6,1X,A1,1X)') &
         '|',s,'|',eGW(s)*HaToeV,'|',Z(s),'|'
       end if

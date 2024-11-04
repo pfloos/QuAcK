@@ -31,7 +31,6 @@ subroutine print_UHF(nBas,nO,S,eHF,c,P,ENuc,ET,EV,EJ,Ex,EUHF,dipole)
   double precision                   :: Sz
   double precision                   :: Sx2,Sy2,Sz2
   integer                            :: mu,nu
-  double precision,allocatable       :: qa(:),qb(:)
 
   logical                            :: dump_orb = .false.
 
@@ -118,19 +117,5 @@ subroutine print_UHF(nBas,nO,S,eHF,c,P,ENuc,ET,EV,EJ,Ex,EUHF,dipole)
   write(*,'(A40)') '---------------------------------------'
   call vecout(nBas,eHF(:,2))
   write(*,*)
-
-  allocate(qa(nBas),qb(nBas))
-
-  qa(:) = 0d0
-  qb(:) = 0d0
-  do mu=1,nBas
-    do nu=1,nBas
-      qa(mu) = qa(mu) + P(mu,nu,1)*S(nu,mu)
-      qb(mu) = qb(mu) + P(mu,nu,2)*S(nu,mu)
-    end do
-  end do
-
-  call vecout(nBas,qa)
-  call vecout(nBas,qb)
 
 end subroutine 

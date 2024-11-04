@@ -62,9 +62,9 @@ subroutine RGW_phACFDT(exchange_kernel,doXBS,TDA_W,TDA,singlet,triplet,eta,nBas,
 
 ! Hello World
 
-  write(*,*) '-------------------------------------------------------------'
-  write(*,*) ' Adiabatic connection version of BSE@G0W0 correlation energy '
-  write(*,*) '-------------------------------------------------------------'
+  write(*,*) '-----------------------------------------------------------'
+  write(*,*) ' Adiabatic connection version of BSE@GW correlation energy '
+  write(*,*) '-----------------------------------------------------------'
   write(*,*)
 
 ! eXtended BSE
@@ -99,8 +99,8 @@ subroutine RGW_phACFDT(exchange_kernel,doXBS,TDA_W,TDA,singlet,triplet,eta,nBas,
   call phLR(TDA_W,nS,Aph,Bph,EcRPA,OmRPA,XpY_RPA,XmY_RPA)
   call RGW_excitation_density(nBas,nC,nO,nR,nS,ERI,XpY_RPA,rho_RPA)
 
-  call RGW_phBSE_static_kernel_A(eta,nBas,nC,nO,nV,nR,nS,1d0,ERI,OmRPA,rho_RPA,KA)
-  call RGW_phBSE_static_kernel_B(eta,nBas,nC,nO,nV,nR,nS,1d0,ERI,OmRPA,rho_RPA,KB)
+               call RGW_phBSE_static_kernel_A(eta,nBas,nC,nO,nV,nR,nS,1d0,ERI,OmRPA,rho_RPA,KA)
+  if(.not.TDA) call RGW_phBSE_static_kernel_B(eta,nBas,nC,nO,nV,nR,nS,1d0,ERI,OmRPA,rho_RPA,KB)
 
 ! Singlet manifold
 
@@ -129,8 +129,8 @@ subroutine RGW_phACFDT(exchange_kernel,doXBS,TDA_W,TDA,singlet,triplet,eta,nBas,
         call phLR(TDA_W,nS,Aph,Bph,EcRPA,OmRPA,XpY_RPA,XmY_RPA)
         call RGW_excitation_density(nBas,nC,nO,nR,nS,ERI,XpY_RPA,rho_RPA)
    
-        call RGW_phBSE_static_kernel_A(eta,nBas,nC,nO,nV,nR,nS,lambda,ERI,OmRPA,rho_RPA,KA)
-        call RGW_phBSE_static_kernel_B(eta,nBas,nC,nO,nV,nR,nS,lambda,ERI,OmRPA,rho_RPA,KB)
+                     call RGW_phBSE_static_kernel_A(eta,nBas,nC,nO,nV,nR,nS,lambda,ERI,OmRPA,rho_RPA,KA)
+        if(.not.TDA) call RGW_phBSE_static_kernel_B(eta,nBas,nC,nO,nV,nR,nS,lambda,ERI,OmRPA,rho_RPA,KB)
 
       end if
 
@@ -186,8 +186,8 @@ subroutine RGW_phACFDT(exchange_kernel,doXBS,TDA_W,TDA,singlet,triplet,eta,nBas,
         call phLR(TDA_W,nS,Aph,Bph,EcRPA,OmRPA,XpY_RPA,XmY_RPA)
         call RGW_excitation_density(nBas,nC,nO,nR,nS,ERI,XpY_RPA,rho_RPA)
   
-        call RGW_phBSE_static_kernel_A(eta,nBas,nC,nO,nV,nR,nS,lambda,ERI,OmRPA,rho_RPA,KA)
-        call RGW_phBSE_static_kernel_B(eta,nBas,nC,nO,nV,nR,nS,lambda,ERI,OmRPA,rho_RPA,KB)
+                     call RGW_phBSE_static_kernel_A(eta,nBas,nC,nO,nV,nR,nS,lambda,ERI,OmRPA,rho_RPA,KA)
+        if(.not.TDA) call RGW_phBSE_static_kernel_B(eta,nBas,nC,nO,nV,nR,nS,lambda,ERI,OmRPA,rho_RPA,KB)
 
       end if  
 

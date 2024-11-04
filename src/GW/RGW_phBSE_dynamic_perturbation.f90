@@ -35,7 +35,6 @@ subroutine RGW_phBSE_dynamic_perturbation(dophBSE2,dTDA,eta,nBas,nC,nO,nV,nR,nS,
   integer                       :: ia
 
   integer                       :: maxS = 10
-  double precision              :: gapGW
 
   double precision,allocatable  :: Om_dyn(:)
   double precision,allocatable  :: Z_dyn(:)
@@ -73,12 +72,8 @@ subroutine RGW_phBSE_dynamic_perturbation(dophBSE2,dTDA,eta,nBas,nC,nO,nV,nR,nS,
 
   end if
 
-  gapGW = eGW(nO+1) - eGW(nO) 
-
   write(*,*) '---------------------------------------------------------------------------------------------------'
   write(*,*) ' First-order dynamical correction to static Bethe-Salpeter excitation energies                     '
-  write(*,*) '---------------------------------------------------------------------------------------------------'
-  write(*,'(A57,F10.6,A3)') ' BSE neutral excitation must be lower than the GW gap = ',gapGW*HaToeV,' eV'
   write(*,*) '---------------------------------------------------------------------------------------------------'
   write(*,'(2X,A5,1X,A20,1X,A20,1X,A20,1X,A20)') '#','Static (eV)','Dynamic (eV)','Correction (eV)','Renorm. (eV)'
   write(*,*) '---------------------------------------------------------------------------------------------------'

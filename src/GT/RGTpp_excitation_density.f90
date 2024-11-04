@@ -2,12 +2,6 @@ subroutine RGTpp_excitation_density(ispin,nBas,nC,nO,nV,nR,nOO,nVV,ERI,X1,Y1,rho
 
 ! Compute excitation densities for T-matrix self-energy
 
-  ! TODO
-  ! debug DGEMM for nC != 0
-  !             and nR != 0
-
-
-
   implicit none
 
 ! Input variables
@@ -72,8 +66,7 @@ subroutine RGTpp_excitation_density(ispin,nBas,nC,nO,nV,nR,nOO,nVV,ERI,X1,Y1,rho
                     cd = cd + 1
                     rho1(p,q,ab) = rho1(p,q,ab) & 
                                  + (ERI(p,q,c,d) + ERI(p,q,d,c))*X1(cd,ab)/ & 
-                                   (1d0 + Kronecker_delta(c,d))
-!                                  sqrt((1d0 + Kronecker_delta(p,q))*(1d0 + Kronecker_delta(c,d)))
+                                   sqrt(1d0 + Kronecker_delta(c,d))
                  end do
               end do
           
@@ -83,8 +76,7 @@ subroutine RGTpp_excitation_density(ispin,nBas,nC,nO,nV,nR,nOO,nVV,ERI,X1,Y1,rho
                     kl = kl + 1
                     rho1(p,q,ab) = rho1(p,q,ab) & 
                                  + (ERI(p,q,k,l) + ERI(p,q,l,k))*Y1(kl,ab)/ & 
-                                   (1d0 + Kronecker_delta(k,l))
-!                                  sqrt((1d0 + Kronecker_delta(p,q))*(1d0 + Kronecker_delta(k,l)))
+                                   sqrt(1d0 + Kronecker_delta(k,l))
                  end do
               end do
               
@@ -101,8 +93,7 @@ subroutine RGTpp_excitation_density(ispin,nBas,nC,nO,nV,nR,nOO,nVV,ERI,X1,Y1,rho
                     cd = cd + 1
                     rho2(p,q,ij) = rho2(p,q,ij) &
                                  + (ERI(p,q,c,d) + ERI(p,q,d,c))*X2(cd,ij)/ & 
-                                   (1d0 + Kronecker_delta(c,d))
-!                                  sqrt((1d0 + Kronecker_delta(p,q))*(1d0 + Kronecker_delta(c,d)))
+                                   sqrt(1d0 + Kronecker_delta(c,d))
                  end do
               end do
               
@@ -112,8 +103,7 @@ subroutine RGTpp_excitation_density(ispin,nBas,nC,nO,nV,nR,nOO,nVV,ERI,X1,Y1,rho
                     kl = kl + 1
                     rho2(p,q,ij) = rho2(p,q,ij) &
                                  + (ERI(p,q,k,l) + ERI(p,q,l,k))*Y2(kl,ij)/ & 
-                                   (1d0 + Kronecker_delta(k,l))
-!                                  sqrt((1d0 + Kronecker_delta(p,q))*(1d0 + Kronecker_delta(k,l)))
+                                   sqrt(1d0 + Kronecker_delta(k,l))
                  end do
               end do
  
@@ -130,7 +120,7 @@ subroutine RGTpp_excitation_density(ispin,nBas,nC,nO,nV,nR,nOO,nVV,ERI,X1,Y1,rho
 ! Triplet manifold
 !----------------------------------------------
 
-  if(ispin == 2) then
+  if(ispin == 2 .or. ispin == 4) then
 
     dim_1 = (nBas - nO) * (nBas - nO - 1) / 2
     dim_2 = nO * (nO - 1) / 2
@@ -240,7 +230,7 @@ subroutine RGTpp_excitation_density(ispin,nBas,nC,nO,nV,nR,nOO,nVV,ERI,X1,Y1,rho
       enddo
       !$OMP END DO
       !$OMP END PARALLEL
-  
+
       call dgemm("N", "N", nBas*nBas, dim_1, dim_1, 1.d0, &
                  ERI_1(1,1,1), nBas*nBas, X1(1,1), dim_1, &
                  0.d0, rho1(1,1,1), nBas*nBas)
@@ -258,6 +248,9 @@ subroutine RGTpp_excitation_density(ispin,nBas,nC,nO,nV,nR,nOO,nVV,ERI,X1,Y1,rho
                  1.d0, rho2(1,1,1), nBas*nBas)
   
       deallocate(ERI_1, ERI_2)
+  
+      rho1 = rho1
+      rho2 = rho2
 
     endif
   endif

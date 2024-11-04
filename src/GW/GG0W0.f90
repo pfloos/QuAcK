@@ -1,5 +1,5 @@
 subroutine GG0W0(dotest,doACFDT,exchange_kernel,doXBS,dophBSE,dophBSE2,TDA_W,TDA,dBSE,dTDA,doppBSE, & 
-                 linearize,eta,regularize,nBas,nC,nO,nV,nR,nS,ENuc,EGHF,ERI,dipole_int,eHF)
+                 linearize,eta,doSRG,nBas,nC,nO,nV,nR,nS,ENuc,EGHF,ERI,dipole_int,eHF)
 ! Perform G0W0 calculation
 
   implicit none
@@ -22,7 +22,7 @@ subroutine GG0W0(dotest,doACFDT,exchange_kernel,doXBS,dophBSE,dophBSE2,TDA_W,TDA
   logical,intent(in)            :: dTDA
   logical,intent(in)            :: linearize
   double precision,intent(in)   :: eta
-  logical,intent(in)            :: regularize
+  logical,intent(in)            :: doSRG
 
   integer,intent(in)            :: nBas
   integer,intent(in)            :: nC
@@ -40,6 +40,7 @@ subroutine GG0W0(dotest,doACFDT,exchange_kernel,doXBS,dophBSE,dophBSE2,TDA_W,TDA
 
   logical                       :: print_W = .true.
   logical                       :: dRPA
+  double precision              :: flow
   double precision              :: EcRPA
   double precision              :: EcBSE
   double precision              :: EcGM
@@ -68,7 +69,6 @@ subroutine GG0W0(dotest,doACFDT,exchange_kernel,doXBS,dophBSE,dophBSE2,TDA_W,TDA
 ! Initialization
 
   dRPA = .true.
-  EcRPA = 0d0
 
 ! TDA for W
 
@@ -77,11 +77,15 @@ subroutine GG0W0(dotest,doACFDT,exchange_kernel,doXBS,dophBSE,dophBSE2,TDA_W,TDA
     write(*,*)
   end if
 
-! TDA 
+! SRG regularization
 
-  if(TDA) then 
-    write(*,*) 'Tamm-Dancoff approximation activated!'
+  flow = 500d0
+
+  if(doSRG) then
+
+    write(*,*) '*** SRG regularized G0W0 scheme ***'
     write(*,*)
+
   end if
 
 ! Memory allocation
@@ -110,9 +114,11 @@ subroutine GG0W0(dotest,doACFDT,exchange_kernel,doXBS,dophBSE,dophBSE2,TDA_W,TDA
 ! Compute GW self-energy !
 !------------------------!
 
-  if(regularize) call GW_regularization(nBas,nC,nO,nV,nR,nS,eHF,Om,rho)
-
-  call GGW_self_energy_diag(eta,nBas,nC,nO,nV,nR,nS,eHF,Om,rho,EcGM,SigC,Z)
+  if(doSRG) then 
+    call GGW_SRG_self_energy_diag(flow,nBas,nC,nO,nV,nR,nS,eHF,Om,rho,EcGM,SigC,Z)
+  else
+    call GGW_self_energy_diag(eta,nBas,nC,nO,nV,nR,nS,eHF,Om,rho,EcGM,SigC,Z)
+  end if
 
 !-----------------------------------!
 ! Solve the quasi-particle equation !
@@ -134,11 +140,9 @@ subroutine GG0W0(dotest,doACFDT,exchange_kernel,doXBS,dophBSE,dophBSE2,TDA_W,TDA
     write(*,*) ' *** Quasiparticle energies obtained by root search *** '
     write(*,*)
   
-    call GGW_QP_graph(eta,nBas,nC,nO,nV,nR,nS,eHF,Om,rho,eGWlin,eHF,eGW,Z)
+    call GGW_QP_graph(doSRG,eta,flow,nBas,nC,nO,nV,nR,nS,eHF,Om,rho,eGWlin,eHF,eGW,Z)
 
   end if
-
-! call GW_plot_self_energy(nBas,nC,nO,nV,nR,nS,eHF,eHF,Om,rho)
 
 ! Compute the RPA correlation energy
 
@@ -169,35 +173,6 @@ subroutine GG0W0(dotest,doACFDT,exchange_kernel,doXBS,dophBSE,dophBSE2,TDA_W,TDA
     write(*,'(2X,A50,F20.10,A3)') 'Tr@BSE@G0W0@GHF total energy       = ',ENuc + EGHF + EcBSE,' au'
     write(*,*)'-------------------------------------------------------------------------------'
     write(*,*)
-
-!   Compute the BSE correlation energy via the adiabatic connection 
-
-!   if(doACFDT) then
-
-!     write(*,*) '-------------------------------------------------------------'
-!     write(*,*) ' Adiabatic connection version of BSE@G0W0 correlation energy '
-!     write(*,*) '-------------------------------------------------------------'
-!     write(*,*) 
-
-!     if(doXBS) then 
-
-!       write(*,*) '*** scaled screening version (XBS) ***'
-!       write(*,*)
-
-!     end if
-
-!     call GW_phACFDT(exchange_kernel,doXBS,dRPA,TDA_W,TDA,dophBSE,singlet,triplet,eta,nBas,nC,nO,nV,nR,nS,ERI,eHF,eGW,EcBSE)
-
-!     write(*,*)
-!     write(*,*)'-------------------------------------------------------------------------------'
-!     write(*,'(2X,A50,F20.10,A3)') 'AC@phBSE@G0W0 correlation energy (singlet) =',EcBSE(1),' au'
-!     write(*,'(2X,A50,F20.10,A3)') 'AC@phBSE@G0W0 correlation energy (triplet) =',EcBSE(2),' au'
-!     write(*,'(2X,A50,F20.10,A3)') 'AC@phBSE@G0W0 correlation energy           =',EcBSE(1) + EcBSE(2),' au'
-!     write(*,'(2X,A50,F20.10,A3)') 'AC@phBSE@G0W0 total energy                 =',ENuc + EGHF + EcBSE(1) + EcBSE(2),' au'
-!     write(*,*)'-------------------------------------------------------------------------------'
-!     write(*,*)
-
-!   end if
 
   end if
 

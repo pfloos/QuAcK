@@ -1,5 +1,5 @@
 subroutine qsRGW(dotest,maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,dophBSE,dophBSE2, &
-                 TDA_W,TDA,dBSE,dTDA,doppBSE,singlet,triplet,eta,regularize,nNuc,ZNuc,rNuc,    &
+                 TDA_W,TDA,dBSE,dTDA,doppBSE,singlet,triplet,eta,doSRG,nNuc,ZNuc,rNuc,         &
                  ENuc,nBas,nOrb,nC,nO,nV,nR,nS,ERHF,S,X,T,V,Hc,ERI_AO,                         &
                  ERI_MO,dipole_int_AO,dipole_int_MO,PHF,cHF,eHF)
 
@@ -28,7 +28,7 @@ subroutine qsRGW(dotest,maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,dop
   logical,intent(in)            :: singlet
   logical,intent(in)            :: triplet
   double precision,intent(in)   :: eta
-  logical,intent(in)            :: regularize
+  logical,intent(in)            :: doSRG
 
   integer,intent(in)            :: nNuc
   double precision,intent(in)   :: ZNuc(nNuc)
@@ -76,6 +76,8 @@ subroutine qsRGW(dotest,maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,dop
   double precision,external     :: trace_matrix
   double precision              :: dipole(ncart)
 
+  double precision              :: flow
+
   logical                       :: dRPA_W  = .true.
   logical                       :: print_W = .false.
   double precision,allocatable  :: err_diis(:,:)
@@ -121,6 +123,17 @@ subroutine qsRGW(dotest,maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,dop
   if(TDA_W) then 
     write(*,*) 'Tamm-Dancoff approximation for dynamical screening!'
     write(*,*)
+  end if
+
+! SRG regularization
+
+  flow = 500d0
+
+  if(doSRG) then
+
+    write(*,*) '*** SRG regularized qsGW scheme ***'
+    write(*,*)
+
   end if
 
 ! Memory allocation
@@ -195,13 +208,13 @@ subroutine qsRGW(dotest,maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,dop
     call phLR(TDA_W,nS,Aph,Bph,EcRPA,Om,XpY,XmY)
     if(print_W) call print_excitation_energies('phRPA@GW@RHF','singlet',nS,Om)
 
-    ! Compute correlation part of the self-energy 
-
     call RGW_excitation_density(nOrb,nC,nO,nR,nS,ERI_MO,XpY,rho)
 
-    if(regularize) call GW_regularization(nOrb,nC,nO,nV,nR,nS,eGW,Om,rho)
-
-    call RGW_self_energy(eta,nOrb,nC,nO,nV,nR,nS,eGW,Om,rho,EcGM,SigC,Z)
+    if(doSRG) then 
+      call RGW_SRG_self_energy(flow,nBas,nOrb,nC,nO,nV,nR,nS,eGW,Om,rho,EcGM,SigC,Z)
+    else
+      call RGW_self_energy(eta,nBas,nOrb,nC,nO,nV,nR,nS,eGW,Om,rho,EcGM,SigC,Z)
+    end if
 
     ! Make correlation self-energy Hermitian and transform it back to AO basis
    
@@ -266,7 +279,6 @@ subroutine qsRGW(dotest,maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,dop
       c = matmul(c,cp)
     endif
 
-
     call AOtoMO(nBas,nOrb,c,SigCp,SigC)
 
     ! Density matrix
@@ -302,7 +314,7 @@ subroutine qsRGW(dotest,maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,dop
 ! Deallocate memory
 
   deallocate(c,cp,P,F,Fp,J,K,SigC,SigCp,Z,Om,XpY,XmY,rho,err,err_diis,F_diis)
-
+  
 ! Perform BSE calculation
 
   if(dophBSE) then

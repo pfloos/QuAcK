@@ -1,5 +1,5 @@
-subroutine UGW_phACFDT(exchange_kernel,doXBS,dRPA,TDA_W,TDA,BSE,spin_conserved,spin_flip,eta, &
-                       nBas,nC,nO,nV,nR,nS,ERI_aaaa,ERI_aabb,ERI_bbbb,eW,e,EcAC)
+subroutine UGW_phACFDT(exchange_kernel,doXBS,TDA_W,TDA,spin_conserved,spin_flip,eta, &
+                       nBas,nC,nO,nV,nR,nS,ERI_aaaa,ERI_aabb,ERI_bbbb,eW,eGW,EcAC)
 
 ! Compute the correlation energy via the adiabatic connection fluctuation dissipation theorem
 
@@ -10,10 +10,8 @@ subroutine UGW_phACFDT(exchange_kernel,doXBS,dRPA,TDA_W,TDA,BSE,spin_conserved,s
 ! Input variables
 
   logical,intent(in)            :: doXBS
-  logical,intent(in)            :: dRPA
   logical,intent(in)            :: TDA_W
   logical,intent(in)            :: TDA
-  logical,intent(in)            :: BSE
   logical,intent(in)            :: exchange_kernel
   logical,intent(in)            :: spin_conserved
   logical,intent(in)            :: spin_flip
@@ -26,18 +24,26 @@ subroutine UGW_phACFDT(exchange_kernel,doXBS,dRPA,TDA_W,TDA,BSE,spin_conserved,s
   integer,intent(in)            :: nR(nspin)
   integer,intent(in)            :: nS(nspin)
   double precision,intent(in)   :: eW(nBas,nspin)
-  double precision,intent(in)   :: e(nBas,nspin)
+  double precision,intent(in)   :: eGW(nBas,nspin)
   double precision,intent(in)   :: ERI_aaaa(nBas,nBas,nBas,nBas)
   double precision,intent(in)   :: ERI_aabb(nBas,nBas,nBas,nBas)
   double precision,intent(in)   :: ERI_bbbb(nBas,nBas,nBas,nBas)
 
 ! Local variables
 
+  logical                       :: dRPA   = .false.
+  logical                       :: dRPA_W = .true.
+
   integer                       :: ispin
   integer                       :: isp_W
   integer                       :: iAC
   double precision              :: lambda
   double precision,allocatable  :: Ec(:,:)
+
+  double precision,allocatable  :: Aph(:,:)
+  double precision,allocatable  :: Bph(:,:)
+  double precision,allocatable  :: KA(:,:)
+  double precision,allocatable  :: KB(:,:)
 
   double precision              :: EcRPA
   double precision,allocatable  :: OmRPA(:)
@@ -46,14 +52,10 @@ subroutine UGW_phACFDT(exchange_kernel,doXBS,dRPA,TDA_W,TDA,BSE,spin_conserved,s
   double precision,allocatable  :: rho_RPA(:,:,:,:)
 
   integer                       :: nS_aa,nS_bb,nS_sc
-  double precision,allocatable  :: Om_sc(:)
-  double precision,allocatable  :: XpY_sc(:,:)
-  double precision,allocatable  :: XmY_sc(:,:)
-
   integer                       :: nS_ab,nS_ba,nS_sf
-  double precision,allocatable  :: Om_sf(:)
-  double precision,allocatable  :: XpY_sf(:,:)
-  double precision,allocatable  :: XmY_sf(:,:)
+  double precision,allocatable  :: Om(:)
+  double precision,allocatable  :: XpY(:,:)
+  double precision,allocatable  :: XmY(:,:)
 
 ! Output variables
 
@@ -62,6 +64,22 @@ subroutine UGW_phACFDT(exchange_kernel,doXBS,dRPA,TDA_W,TDA,BSE,spin_conserved,s
 ! Memory allocation
 
   allocate(Ec(nAC,nspin))
+
+! Hello World
+
+  write(*,*) '-----------------------------------------------------------'
+  write(*,*) ' Adiabatic connection version of BSE@GW correlation energy '
+  write(*,*) '-----------------------------------------------------------'
+  write(*,*)
+
+! eXtended BSE
+
+  if(doXBS) then
+
+    write(*,*) '*** scaled screening version (XBS) ***'
+    write(*,*)
+
+  end if
 
 ! Antisymmetrized kernel version
 
@@ -92,10 +110,16 @@ subroutine UGW_phACFDT(exchange_kernel,doXBS,dRPA,TDA_W,TDA,BSE,spin_conserved,s
   nS_sf = nS_ab + nS_ba
 
   allocate(OmRPA(nS_sc),XpY_RPA(nS_sc,nS_sc),XmY_RPA(nS_sc,nS_sc),rho_RPA(nBas,nBas,nS_sc,nspin))
+  allocate(Aph(nS_sc,nS_sc),Bph(nS_sc,nS_sc),KA(nS_sc,nS_sc),KB(nS_sc,nS_sc))
 
-  call phULR(isp_W,.true.,TDA_W,.false.,nBas,nC,nO,nV,nR,nS_aa,nS_bb,nS_sc,nS_sc,1d0,eW, &
-             ERI_aaaa,ERI_aabb,ERI_bbbb,OmRPA,rho_RPA,EcRPA,OmRPA,XpY_RPA,XmY_RPA)
+                 call phULR_A(isp_W,dRPA_W,nBas,nC,nO,nV,nR,nS_aa,nS_bb,nS_sc,1d0,eW,ERI_aaaa,ERI_aabb,ERI_bbbb,Aph)
+  if(.not.TDA_W) call phULR_B(isp_W,dRPA_W,nBas,nC,nO,nV,nR,nS_aa,nS_bb,nS_sc,1d0,ERI_aaaa,ERI_aabb,ERI_bbbb,Bph)
+
+  call phULR(TDA_W,nS_aa,nS_bb,nS_sc,Aph,Bph,EcRPA,OmRPA,XpY_RPA,XmY_RPA)
   call UGW_excitation_density(nBas,nC,nO,nR,nS_aa,nS_bb,nS_sc,ERI_aaaa,ERI_aabb,ERI_bbbb,XpY_RPA,rho_RPA)
+
+               call UGW_phBSE_static_kernel_A(ispin,eta,nBas,nC,nO,nV,nR,nS_aa,nS_bb,nS_sc,nS_sc,1d0,OmRPA,rho_RPA,KA)
+  if(.not.TDA) call UGW_phBSE_static_kernel_B(ispin,eta,nBas,nC,nO,nV,nR,nS_aa,nS_bb,nS_sc,nS_sc,1d0,OmRPA,rho_RPA,KB)
 
 ! Spin-conserved manifold
 
@@ -103,7 +127,7 @@ subroutine UGW_phACFDT(exchange_kernel,doXBS,dRPA,TDA_W,TDA,BSE,spin_conserved,s
 
     ispin = 1
 
-    allocate(Om_sc(nS_sc),XpY_sc(nS_sc,nS_sc),XmY_sc(nS_sc,nS_sc))
+    allocate(Om(nS_sc),XpY(nS_sc,nS_sc),XmY(nS_sc,nS_sc))
 
     write(*,*) '------------------------'
     write(*,*) 'Spin-conserved manifold '
@@ -120,17 +144,27 @@ subroutine UGW_phACFDT(exchange_kernel,doXBS,dRPA,TDA_W,TDA,BSE,spin_conserved,s
 
       if(doXBS) then
 
-        call phULR(isp_W,.true.,TDA_W,.false.,nBas,nC,nO,nV,nR,nS_aa,nS_bb,nS_sc,nS_sc,lambda,eW, &
-                   ERI_aaaa,ERI_aabb,ERI_bbbb,OmRPA,rho_RPA,EcRPA,OmRPA,XpY_RPA,XmY_RPA)
+                       call phULR_A(isp_W,dRPA_W,nBas,nC,nO,nV,nR,nS_aa,nS_bb,nS_sc,lambda,eW,ERI_aaaa,ERI_aabb,ERI_bbbb,Aph)
+        if(.not.TDA_W) call phULR_B(isp_W,dRPA_W,nBas,nC,nO,nV,nR,nS_aa,nS_bb,nS_sc,lambda,ERI_aaaa,ERI_aabb,ERI_bbbb,Bph)
+   
+        call phULR(TDA_W,nS_aa,nS_bb,nS_sc,Aph,Bph,EcRPA,OmRPA,XpY_RPA,XmY_RPA)
         call UGW_excitation_density(nBas,nC,nO,nR,nS_aa,nS_bb,nS_sc,ERI_aaaa,ERI_aabb,ERI_bbbb,XpY_RPA,rho_RPA)
+
+                     call UGW_phBSE_static_kernel_A(ispin,eta,nBas,nC,nO,nV,nR,nS_aa,nS_bb,nS_sc,nS_sc,lambda,OmRPA,rho_RPA,KA)
+        if(.not.TDA) call UGW_phBSE_static_kernel_B(ispin,eta,nBas,nC,nO,nV,nR,nS_aa,nS_bb,nS_sc,nS_sc,lambda,OmRPA,rho_RPA,KB)
 
       end if
 
-      call phULR(ispin,dRPA,TDA,BSE,nBas,nC,nO,nV,nR,nS_aa,nS_bb,nS_sc,nS_sc,lambda,e, &
-                 ERI_aaaa,ERI_aabb,ERI_bbbb,OmRPA,rho_RPA,EcAC(ispin),Om_sc,XpY_sc,XmY_sc)
+                   call phULR_A(ispin,dRPA,nBas,nC,nO,nV,nR,nS_aa,nS_bb,nS_sc,lambda,eW,ERI_aaaa,ERI_aabb,ERI_bbbb,Aph)
+      if(.not.TDA) call phULR_B(ispin,dRPA,nBas,nC,nO,nV,nR,nS_aa,nS_bb,nS_sc,lambda,ERI_aaaa,ERI_aabb,ERI_bbbb,Bph)
+
+                   Aph(:,:) = Aph(:,:) + KA(:,:)
+      if(.not.TDA) Bph(:,:) = Bph(:,:) + KB(:,:)
+
+      call phULR(TDA,nS_aa,nS_bb,nS_sc,Aph,Bph,EcAC(ispin),Om,XpY,XmY)
 
       call phUACFDT_correlation_energy(ispin,exchange_kernel,nBas,nC,nO,nV,nR,nS,nS_aa,nS_bb,nS_sc, &
-                                       ERI_aaaa,ERI_aabb,ERI_bbbb,XpY_sc,XmY_sc,Ec(iAC,ispin))
+                                       ERI_aaaa,ERI_aabb,ERI_bbbb,XpY,XmY,Ec(iAC,ispin))
 
       write(*,'(2X,F15.6,1X,F30.15,1X,F30.15)') lambda,EcAC(ispin),Ec(iAC,ispin)
 
@@ -145,7 +179,7 @@ subroutine UGW_phACFDT(exchange_kernel,doXBS,dRPA,TDA_W,TDA,BSE,spin_conserved,s
     write(*,*) '-----------------------------------------------------------------------------------'
     write(*,*)
 
-    deallocate(Om_sc,XpY_sc,XmY_sc)
+    deallocate(Om,XpY,XmY)
 
   end if
  
@@ -157,7 +191,7 @@ subroutine UGW_phACFDT(exchange_kernel,doXBS,dRPA,TDA_W,TDA,BSE,spin_conserved,s
 
     ! Memory allocation
 
-    allocate(Om_sf(nS_sf),XpY_sf(nS_sf,nS_sf),XmY_sf(nS_sf,nS_sf))
+    allocate(Om(nS_sf),XpY(nS_sf,nS_sf),XmY(nS_sf,nS_sf))
 
     write(*,*) '--------------------'
     write(*,*) ' Spin-flip manifold '
@@ -174,17 +208,27 @@ subroutine UGW_phACFDT(exchange_kernel,doXBS,dRPA,TDA_W,TDA,BSE,spin_conserved,s
 
       if(doXBS) then
 
-        call phULR(isp_W,.true.,TDA_W,.false.,nBas,nC,nO,nV,nR,nS_aa,nS_bb,nS_sc,nS_sc,lambda,eW, &
-                   ERI_aaaa,ERI_aabb,ERI_bbbb,OmRPA,rho_RPA,EcRPA,OmRPA,XpY_RPA,XmY_RPA)
+                       call phULR_A(isp_W,dRPA_W,nBas,nC,nO,nV,nR,nS_aa,nS_bb,nS_sc,lambda,eW,ERI_aaaa,ERI_aabb,ERI_bbbb,Aph)
+        if(.not.TDA_W) call phULR_B(isp_W,dRPA_W,nBas,nC,nO,nV,nR,nS_aa,nS_bb,nS_sc,lambda,ERI_aaaa,ERI_aabb,ERI_bbbb,Bph)
+
+        call phULR(TDA_W,nS_aa,nS_bb,nS_sc,Aph,Bph,EcRPA,OmRPA,XpY_RPA,XmY_RPA)
         call UGW_excitation_density(nBas,nC,nO,nR,nS_aa,nS_bb,nS_sc,ERI_aaaa,ERI_aabb,ERI_bbbb,XpY_RPA,rho_RPA)
+
+                     call UGW_phBSE_static_kernel_A(ispin,eta,nBas,nC,nO,nV,nR,nS_aa,nS_bb,nS_sc,nS_sc,lambda,OmRPA,rho_RPA,KA)
+        if(.not.TDA) call UGW_phBSE_static_kernel_B(ispin,eta,nBas,nC,nO,nV,nR,nS_aa,nS_bb,nS_sc,nS_sc,lambda,OmRPA,rho_RPA,KB)
 
       end if
 
-      call phULR(ispin,dRPA,TDA,BSE,nBas,nC,nO,nV,nR,nS_ab,nS_ba,nS_sf,nS_sc,lambda,e, &
-                 ERI_aaaa,ERI_aabb,ERI_bbbb,OmRPA,rho_RPA,EcAC(ispin),Om_sf,XpY_sf,XmY_sf)
+                   call phULR_A(ispin,dRPA,nBas,nC,nO,nV,nR,nS_aa,nS_bb,nS_sf,lambda,eW,ERI_aaaa,ERI_aabb,ERI_bbbb,Aph)
+      if(.not.TDA) call phULR_B(ispin,dRPA,nBas,nC,nO,nV,nR,nS_aa,nS_bb,nS_sf,lambda,ERI_aaaa,ERI_aabb,ERI_bbbb,Bph)
+
+                   Aph(:,:) = Aph(:,:) + KA(:,:)
+      if(.not.TDA) Bph(:,:) = Bph(:,:) + KB(:,:)
+
+      call phULR(TDA,nS_aa,nS_bb,nS_sf,Aph,Bph,EcAC(ispin),Om,XpY,XmY)
 
       call phUACFDT_correlation_energy(ispin,exchange_kernel,nBas,nC,nO,nV,nR,nS,nS_ab,nS_ba,nS_sf, &
-                                       ERI_aaaa,ERI_aabb,ERI_bbbb,XpY_sf,XmY_sf,Ec(iAC,ispin))
+                                       ERI_aaaa,ERI_aabb,ERI_bbbb,XpY,XmY,Ec(iAC,ispin))
 
       write(*,'(2X,F15.6,1X,F30.15,1X,F30.15)') lambda,EcAC(ispin),Ec(iAC,ispin)
 
@@ -199,7 +243,7 @@ subroutine UGW_phACFDT(exchange_kernel,doXBS,dRPA,TDA_W,TDA,BSE,spin_conserved,s
     write(*,*) '-----------------------------------------------------------------------------------'
     write(*,*)
 
-    deallocate(Om_sf,XpY_sf,XmY_sf)
+    deallocate(Om,XpY,XmY)
 
   end if
 

@@ -1,5 +1,5 @@
 subroutine UG0W0(dotest,doACFDT,exchange_kernel,doXBS,dophBSE,TDA_W,TDA,dBSE,dTDA,spin_conserved,spin_flip, &
-                 linearize,eta,regularize,nBas,nC,nO,nV,nR,nS,ENuc,EUHF,S,ERI_aaaa,ERI_aabb,ERI_bbbb,       & 
+                 linearize,eta,doSRG,nBas,nC,nO,nV,nR,nS,ENuc,EUHF,S,ERI_aaaa,ERI_aabb,ERI_bbbb,       & 
                  dipole_int_aa,dipole_int_bb,cHF,eHF)
 
 ! Perform unrestricted G0W0 calculation
@@ -24,7 +24,7 @@ subroutine UG0W0(dotest,doACFDT,exchange_kernel,doXBS,dophBSE,TDA_W,TDA,dBSE,dTD
   logical,intent(in)            :: spin_flip
   logical,intent(in)            :: linearize
   double precision,intent(in)   :: eta
-  logical,intent(in)            :: regularize
+  logical,intent(in)            :: doSRG
 
   integer,intent(in)            :: nBas
   integer,intent(in)            :: nC(nspin)
@@ -46,9 +46,10 @@ subroutine UG0W0(dotest,doACFDT,exchange_kernel,doXBS,dophBSE,TDA_W,TDA,dBSE,dTD
 ! Local variables
 
   logical                       :: print_W = .true.
-  logical                       :: dRPA
+  logical                       :: dRPA_W 
   integer                       :: is
-  integer                       :: ispin
+  integer                       :: isp_W
+  double precision              :: flow
   double precision              :: EcRPA
   double precision              :: EcGM(nspin)
   double precision              :: EcBSE(nspin)
@@ -77,7 +78,7 @@ subroutine UG0W0(dotest,doACFDT,exchange_kernel,doXBS,dophBSE,TDA_W,TDA,dBSE,dTD
 ! Initialization
 
   EcRPA = 0d0
-  dRPA = .true.
+  dRPA_W = .true.
 
 ! TDA for W
 
@@ -86,11 +87,15 @@ subroutine UG0W0(dotest,doACFDT,exchange_kernel,doXBS,dophBSE,TDA_W,TDA,dBSE,dTD
     write(*,*)
   end if
 
-! TDA 
+! SRG regularization
 
-  if(TDA) then 
-    write(*,*) 'Tamm-Dancoff approximation activated!'
+  flow = 500d0
+
+  if(doSRG) then
+
+    write(*,*) '*** SRG regularized G0W0 scheme ***'
     write(*,*)
+
   end if
 
 ! Memory allocation
@@ -108,10 +113,10 @@ subroutine UG0W0(dotest,doACFDT,exchange_kernel,doXBS,dophBSE,TDA_W,TDA,dBSE,dTD
 
 ! Spin-conserving transitions
 
-  ispin = 1
+  isp_W = 1
 
-  call phULR_A(ispin,dRPA,nBas,nC,nO,nV,nR,nSa,nSb,nSt,1d0,eHF,ERI_aaaa,ERI_aabb,ERI_bbbb,Aph)
-  if(.not.TDA) call phULR_B(ispin,dRPA,nBas,nC,nO,nV,nR,nSa,nSb,nSt,1d0,ERI_aaaa,ERI_aabb,ERI_bbbb,Bph)
+                 call phULR_A(isp_W,dRPA_W,nBas,nC,nO,nV,nR,nSa,nSb,nSt,1d0,eHF,ERI_aaaa,ERI_aabb,ERI_bbbb,Aph)
+  if(.not.TDA_W) call phULR_B(isp_W,dRPA_W,nBas,nC,nO,nV,nR,nSa,nSb,nSt,1d0,ERI_aaaa,ERI_aabb,ERI_bbbb,Bph)
 
   call phULR(TDA_W,nSa,nSb,nSt,Aph,Bph,EcRPA,Om,XpY,XmY)
   
@@ -127,13 +132,11 @@ subroutine UG0W0(dotest,doACFDT,exchange_kernel,doXBS,dophBSE,TDA_W,TDA,dBSE,dTD
 ! Compute self-energy and renormalization factor !
 !------------------------------------------------!
 
-  if(regularize) then
-    do is=1,nspin
-      call GW_regularization(nBas,nC(is),nO(is),nV(is),nR(is),nSt,eHF(:,is),Om,rho(:,:,:,is))
-    end do
+  if(doSRG) then
+    call UGW_SRG_self_energy_diag(flow,nBas,nC,nO,nV,nR,nSt,eHF,Om,rho,EcGM,SigC,Z)
+  else
+    call UGW_self_energy_diag(eta,nBas,nC,nO,nV,nR,nSt,eHF,Om,rho,EcGM,SigC,Z)
   end if
-
-  call UGW_self_energy_diag(eta,nBas,nC,nO,nV,nR,nSt,eHF,Om,rho,SigC,Z,EcGM)
 
 !-----------------------------------!
 ! Solve the quasi-particle equation !
@@ -161,7 +164,7 @@ subroutine UG0W0(dotest,doACFDT,exchange_kernel,doXBS,dophBSE,TDA_W,TDA,dBSE,dTD
       if(is==1) write(*,*)'    Spin-up   orbitals    '
       if(is==2) write(*,*)'    Spin-down orbitals    '
 
-      call UGW_QP_graph(eta,nBas,nC(is),nO(is),nV(is),nR(is),nSt,eHF(:,is), & 
+      call UGW_QP_graph(doSRG,eta,flow,nBas,nC(is),nO(is),nV(is),nR(is),nSt,eHF(:,is), & 
                         Om,rho(:,:,:,is),eGWlin(:,is),eHF(:,is),eGW(:,is),Z(:,is))
     end do
  
@@ -169,8 +172,8 @@ subroutine UG0W0(dotest,doACFDT,exchange_kernel,doXBS,dophBSE,TDA_W,TDA,dBSE,dTD
 
 ! Compute RPA correlation energy
 
-  call phULR_A(ispin,dRPA,nBas,nC,nO,nV,nR,nSa,nSb,nSt,1d0,eGW,ERI_aaaa,ERI_aabb,ERI_bbbb,Aph)
-  if(.not.TDA) call phULR_B(ispin,dRPA,nBas,nC,nO,nV,nR,nSa,nSb,nSt,1d0,ERI_aaaa,ERI_aabb,ERI_bbbb,Bph)
+                 call phULR_A(isp_W,dRPA_W,nBas,nC,nO,nV,nR,nSa,nSb,nSt,1d0,eGW,ERI_aaaa,ERI_aabb,ERI_bbbb,Aph)
+  if(.not.TDA_W) call phULR_B(isp_W,dRPA_W,nBas,nC,nO,nV,nR,nSa,nSb,nSt,1d0,ERI_aaaa,ERI_aabb,ERI_bbbb,Bph)
     
   call phULR(TDA_W,nSa,nSb,nSt,Aph,Bph,EcRPA,Om,XpY,XmY)
 
@@ -186,26 +189,15 @@ subroutine UG0W0(dotest,doACFDT,exchange_kernel,doXBS,dophBSE,TDA_W,TDA,dBSE,dTD
 
   if(dophBSE) then
 
-    call UGW_phBSE(TDA_W,TDA,dBSE,dTDA,spin_conserved,spin_flip,eta,nBas,nC,nO,nV,nR,nS,S, &
+    call UGW_phBSE(exchange_kernel,TDA_W,TDA,dBSE,dTDA,spin_conserved,spin_flip,eta,nBas,nC,nO,nV,nR,nS,S, &
                    ERI_aaaa,ERI_aabb,ERI_bbbb,dipole_int_aa,dipole_int_bb,cHF,eHF,eGW,EcBSE)
-
-    if(exchange_kernel) then
- 
-      EcBSE(1) = 0.5d0*EcBSE(1)
-      EcBSE(2) = 0.5d0*EcBSE(2)
- 
-    else
- 
-      EcBSE(2) = 0.0d0
-
-    end if
 
     write(*,*)
     write(*,*)'-------------------------------------------------------------------------------'
-    write(*,'(2X,A50,F20.10,A3)') 'Tr@BSE@G0W0@UHF correlation energy (spin-conserved) = ',EcBSE(1),' au'
-    write(*,'(2X,A50,F20.10,A3)') 'Tr@BSE@G0W0@UHF correlation energy (spin-flip)      = ',EcBSE(2),' au'
-    write(*,'(2X,A50,F20.10,A3)') 'Tr@BSE@G0W0@UHF correlation energy                  = ',sum(EcBSE),' au'
-    write(*,'(2X,A50,F20.10,A3)') 'Tr@BSE@G0W0@UHF total       energy                  = ',ENuc + EUHF + sum(EcBSE),' au'
+    write(*,'(2X,A60,F20.10,A3)') 'Tr@BSE@G0W0@UHF correlation energy (spin-conserved) = ',EcBSE(1),' au'
+    write(*,'(2X,A60,F20.10,A3)') 'Tr@BSE@G0W0@UHF correlation energy (spin-flip)      = ',EcBSE(2),' au'
+    write(*,'(2X,A60,F20.10,A3)') 'Tr@BSE@G0W0@UHF correlation energy                  = ',sum(EcBSE),' au'
+    write(*,'(2X,A60,F20.10,A3)') 'Tr@BSE@G0W0@UHF total       energy                  = ',ENuc + EUHF + sum(EcBSE),' au'
     write(*,*)'-------------------------------------------------------------------------------'
     write(*,*)
 
@@ -213,27 +205,15 @@ subroutine UG0W0(dotest,doACFDT,exchange_kernel,doXBS,dophBSE,TDA_W,TDA,dBSE,dTD
 
     if(doACFDT) then
 
-      write(*,*) '------------------------------------------------------------'
-      write(*,*) 'Adiabatic connection version of BSE@UG0W0 correlation energy'
-      write(*,*) '------------------------------------------------------------'
-      write(*,*) 
-
-      if(doXBS) then 
-
-        write(*,*) '*** scaled screening version (XBS) ***'
-        write(*,*)
-
-      end if
-
-      call UGW_phACFDT(exchange_kernel,doXBS,.true.,TDA_W,TDA,dophBSE,spin_conserved,spin_flip,eta, & 
+      call UGW_phACFDT(exchange_kernel,doXBS,TDA_W,TDA,spin_conserved,spin_flip,eta, & 
                        nBas,nC,nO,nV,nR,nS,ERI_aaaa,ERI_aabb,ERI_bbbb,eHF,eGW,EcBSE)
 
       write(*,*)
       write(*,*)'-------------------------------------------------------------------------------'
-      write(*,'(2X,A50,F20.10,A3)') 'AC@BSE@G0W0@UHF correlation energy (spin-conserved) = ',EcBSE(1),' au'
-      write(*,'(2X,A50,F20.10,A3)') 'AC@BSE@G0W0@UHF correlation energy (spin-flip)      = ',EcBSE(2),' au'
-      write(*,'(2X,A50,F20.10,A3)') 'AC@BSE@G0W0@UHF correlation energy                  = ',sum(EcBSE),' au'
-      write(*,'(2X,A50,F20.10,A3)') 'AC@BSE@G0W0@UHF total       energy                  = ',ENuc + EUHF + sum(EcBSE),' au'
+      write(*,'(2X,A60,F20.10,A3)') 'AC@BSE@G0W0@UHF correlation energy (spin-conserved) = ',EcBSE(1),' au'
+      write(*,'(2X,A60,F20.10,A3)') 'AC@BSE@G0W0@UHF correlation energy (spin-flip)      = ',EcBSE(2),' au'
+      write(*,'(2X,A60,F20.10,A3)') 'AC@BSE@G0W0@UHF correlation energy                  = ',sum(EcBSE),' au'
+      write(*,'(2X,A60,F20.10,A3)') 'AC@BSE@G0W0@UHF total       energy                  = ',ENuc + EUHF + sum(EcBSE),' au'
       write(*,*)'-------------------------------------------------------------------------------'
       write(*,*)
 

@@ -108,7 +108,7 @@ subroutine ppLR_C(ispin,nOrb,nC,nO,nV,nR,nVV,lambda,e,ERI,Cpp)
 
 ! Build C matrix for the triplet or alpha-alpha manifold
 
-  if(ispin == 2) then
+  if(ispin == 2 .or. ispin == 4) then
     !$OMP PARALLEL &
     !$OMP SHARED(Cpp,lambda,ERI,e,eF,nC,nO,nOrb,nR) &
     !$OMP PRIVATE(c,d,a,b,ab,cd) &

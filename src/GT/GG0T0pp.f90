@@ -1,4 +1,4 @@
-subroutine GG0T0pp(dotest,doACFDT,exchange_kernel,doXBS,dophBSE,TDA_T,TDA,dBSE,dTDA,doppBSE, & 
+subroutine GG0T0pp(dotest,doACFDT,exchange_kernel,doXBS,dophBSE,dophBSE2,TDA_T,TDA,dBSE,dTDA,doppBSE, & 
                    linearize,eta,regularize,nOrb,nC,nO,nV,nR,nS,ENuc,EGHF,ERI,dipole_int,eHF)
 
 ! Perform one-shot calculation with a T-matrix self-energy (G0T0)
@@ -13,7 +13,7 @@ subroutine GG0T0pp(dotest,doACFDT,exchange_kernel,doXBS,dophBSE,TDA_T,TDA,dBSE,d
   logical,intent(in)            :: doACFDT
   logical,intent(in)            :: exchange_kernel
   logical,intent(in)            :: doXBS
-  logical,intent(in)            :: dophBSE
+  logical,intent(in)            :: dophBSE,dophBSE2
   logical,intent(in)            :: doppBSE
   logical,intent(in)            :: TDA_T
   logical,intent(in)            :: TDA
@@ -37,7 +37,7 @@ subroutine GG0T0pp(dotest,doACFDT,exchange_kernel,doXBS,dophBSE,TDA_T,TDA,dBSE,d
 
 ! Local variables
 
-  logical                       :: print_T = .false.
+  logical                       :: print_T = .true.
 
   integer                       :: nOO
   integer                       :: nVV
@@ -71,8 +71,7 @@ subroutine GG0T0pp(dotest,doACFDT,exchange_kernel,doXBS,dophBSE,TDA_T,TDA,dBSE,d
   write(*,*)'* Generalized G0T0pp Calculation *'
   write(*,*)'**********************************'
   write(*,*)
-
-
+  
 ! TDA for T
 
   if(TDA_T) then
@@ -104,22 +103,23 @@ subroutine GG0T0pp(dotest,doACFDT,exchange_kernel,doXBS,dophBSE,TDA_T,TDA,dBSE,d
 ! Compute linear response
 
   allocate(Bpp(nVV,nOO),Cpp(nVV,nVV),Dpp(nOO,nOO))
-
+  Bpp(:,:) = 0d0
+  Cpp(:,:) = 0d0
+  Dpp(:,:) = 0d0
                  call ppGLR_C(nOrb,nC,nO,nV,nR,nVV,1d0,eHF,ERI,Cpp)
                  call ppGLR_D(nOrb,nC,nO,nV,nR,nOO,1d0,eHF,ERI,Dpp)
   if(.not.TDA_T) call ppGLR_B(nOrb,nC,nO,nV,nR,nOO,nVV,1d0,ERI,Bpp)
-
+  
   call ppGLR(TDA_T,nOO,nVV,Bpp,Cpp,Dpp,Om1,X1,Y1,Om2,X2,Y2,EcRPA)
 
   deallocate(Bpp,Cpp,Dpp)
 
   if(print_T) call print_excitation_energies('ppRPA@GHF','2p',nVV,Om1)
-  if(print_T) call print_excitation_energies('ppRPA@FHF','2h',nOO,Om2)
+  if(print_T) call print_excitation_energies('ppRPA@GHF','2h',nOO,Om2)
 
 !----------------------------------------------
 ! Compute excitation densities
 !----------------------------------------------
-
   call GGTpp_excitation_density(nOrb,nC,nO,nV,nR,nOO,nVV,ERI,X1,Y1,rho1,X2,Y2,rho2)
 
 !----------------------------------------------
@@ -152,8 +152,6 @@ subroutine GG0T0pp(dotest,doACFDT,exchange_kernel,doXBS,dophBSE,TDA_T,TDA,dBSE,d
 
   end if
 
-! call GGTpp_plot_self_energy(nOrb,nC,nO,nV,nR,nOO,nVV,eHF,eGT,Om1,rho1,Om2,rho2)
-
 !----------------------------------------------
 ! Dump results
 !----------------------------------------------
@@ -172,76 +170,23 @@ subroutine GG0T0pp(dotest,doACFDT,exchange_kernel,doXBS,dophBSE,TDA_T,TDA,dBSE,d
 
   call print_GG0T0pp(nOrb,nO,eHF,ENuc,EGHF,Sig,Z,eGT,EcGM,EcRPA)
 
-! Perform BSE calculation
+!----------------------------------------------
+! ppBSE calculation
+!----------------------------------------------
+  
+  if(doppBSE) then
 
-! if(dophBSE) then
+     call GGTpp_ppBSE(TDA_T,TDA,dBSE,dTDA,eta,nOrb,nC,nO,nV,nR,nOO,nVV,ERI,dipole_int,eHF,eGT,EcBSE)
 
-!   call GGTpp_phBSE(TDA_T,TDA,dBSE,dTDA,eta,nOrb,nC,nO,nV,nR,nS,nOO,nVV, &
-!                   Om1,X1,Y1,Om2,X2,Y2,rho1,rho2,ERI,dipole_int,eHF,eGT,EcBSE)
+    write(*,*)
+    write(*,*)'-------------------------------------------------------------------------------'
+    write(*,'(2X,A50,F20.10,A3)') 'Tr@ppBSE@G0T0pp@GHF correlation energy           = ',EcBSE,' au'
+    write(*,'(2X,A50,F20.10,A3)') 'Tr@ppBSE@G0T0pp@GHF total       energy           = ',ENuc + EGHF + EcBSE,' au'
+    write(*,*)'-------------------------------------------------------------------------------'
+    write(*,*)
 
-!   if(exchange_kernel) then
-
-!     EcBSE = 0.5d0*EcBSE
-
-!   end if
-
-!   write(*,*)
-!   write(*,*)'-------------------------------------------------------------------------------'
-!   write(*,'(2X,A50,F20.10,A3)') 'Tr@phBSE@G0T0pp@GHF correlation energy       = ',EcBSE,' au'
-!   write(*,'(2X,A50,F20.10,A3)') 'Tr@phBSE@G0T0pp@GHF total energy             = ',ENuc + EGHF + EcBSE,' au'
-!   write(*,*)'-------------------------------------------------------------------------------'
-!   write(*,*)
-
-!   Compute the BSE correlation energy via the adiabatic connection 
-
-!   if(doACFDT) then
-
-!     write(*,*) '--------------------------------------------------------'
-!     write(*,*) 'Adiabatic connection version of phBSE correlation energy'
-!     write(*,*) '--------------------------------------------------------'
-!     write(*,*)
-
-!     if(doXBS) then
-
-!       write(*,*) '*** scaled screening version (XBS) ***'
-!       write(*,*)
-
-!     end if
-
-!     call RGTpp_phACFDT(exchange_kernel,doXBS,.false.,TDA_T,TDA,dophBSE,eta,nOrb,nC,nO,nV,nR,nS, &
-!                       nOO,nVV,Om1,X1,Y1,Om2,X2,Y2,rho1,rho2,ERI,eHF,eGT,EcBSE)
-
-!     if(exchange_kernel) then
-
-!       EcBSE = 0.5d0*EcBSE
-
-!     end if
-
-!     write(*,*)
-!     write(*,*)'-------------------------------------------------------------------------------'
-!     write(*,'(2X,A50,F20.10,A3)') 'AC@phBSE@G0T0pp@GHF correlation energy           = ',EcBSE,' au'
-!     write(*,'(2X,A50,F20.10,A3)') 'AC@phBSE@G0T0pp@GHF total       energy           = ',ENuc + EGHF + EcBSE,' au'
-!     write(*,*)'-------------------------------------------------------------------------------'
-!     write(*,*)
-
-!   end if
-
-! end if
-
-! if(doppBSE) then
-
-!   call GGTpp_ppBSE(TDA_T,TDA,dBSE,dTDA,eta,nOrb,nC,nO,nV,nR,nOO,nVV, &
-!                   Om1,X1,Y1,Om2,X2,Y2,rho1,rho2,ERI,dipole_int,eHF,eGT,EcBSE)
-
-!   write(*,*)
-!   write(*,*)'-------------------------------------------------------------------------------'
-!   write(*,'(2X,A50,F20.10,A3)') 'Tr@ppBSE@G0T0pp@GHF correlation energy           = ',EcBSE,' au'
-!   write(*,'(2X,A50,F20.10,A3)') 'Tr@ppBSE@G0T0pp@GHF total       energy           = ',ENuc + EGHF + EcBSE,' au'
-!   write(*,*)'-------------------------------------------------------------------------------'
-!   write(*,*)
-
-! end if
-
+  end if
+  
 ! Testing zone
 
   if(dotest) then

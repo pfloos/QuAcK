@@ -1,4 +1,4 @@
-subroutine sort_ppRPA(nOO,nVV,Om,Z,Om1,X1,Y1,Om2,X2,Y2)
+subroutine sort_ppRPA(nOO,nVV,nPP,Om,Z,Om1,X1,Y1,Om2,X2,Y2)
 
 ! Compute the metric matrix for pp-RPA
 
@@ -9,14 +9,13 @@ subroutine sort_ppRPA(nOO,nVV,Om,Z,Om1,X1,Y1,Om2,X2,Y2)
 
   integer,intent(in)            :: nOO
   integer,intent(in)            :: nVV
-  double precision,intent(in)   :: Om(nOO+nVV)
-  double precision,intent(in)   :: Z(nOO+nVV,nOO+nVV)
+  integer,intent(in)            :: nPP
+  double precision,intent(in)   :: Om(nPP)
+  double precision,intent(in)   :: Z(nPP,nPP)
   
 ! Local variables
 
   integer                       :: pq,ab,ij
-! integer                       :: deg1,ab_start,ab_end
-! integer                       :: deg2,ij_start,ij_end
   double precision,allocatable  :: M(:,:)
   double precision,allocatable  :: Z1(:,:)
   double precision,allocatable  :: Z2(:,:)
@@ -42,7 +41,7 @@ subroutine sort_ppRPA(nOO,nVV,Om,Z,Om1,X1,Y1,Om2,X2,Y2)
 
 ! Memory allocation
 
-  allocate(M(nOO+nVV,nOO+nVV),Z1(nOO+nVV,nVV),Z2(nOO+nVV,nOO),order1(nVV),order2(nOO))
+  allocate(M(nPP,nPP),Z1(nPP,nVV),Z2(nPP,nOO),order1(nVV),order2(nOO))
 
 ! Initializatiom
 
@@ -71,19 +70,19 @@ subroutine sort_ppRPA(nOO,nVV,Om,Z,Om1,X1,Y1,Om2,X2,Y2)
   ab = 0
   ij = 0
 
-  do pq=1,nOO+nVV
+  do pq=1,nPP
 
     if(Om(pq) > 0d0) then 
 
       ab = ab + 1
       Om1(ab) = Om(pq)
-      Z1(1:nOO+nVV,ab) = Z(1:nOO+nVV,pq)
+      Z1(1:nPP,ab) = Z(1:nPP,pq)
 
     else
 
       ij = ij + 1
       Om2(ij) = Om(pq)
-      Z2(1:nOO+nVV,ij) = Z(1:nOO+nVV,pq)
+      Z2(1:nPP,ij) = Z(1:nPP,pq)
 
     end if
 
@@ -99,7 +98,7 @@ subroutine sort_ppRPA(nOO,nVV,Om,Z,Om1,X1,Y1,Om2,X2,Y2)
     end do
 
     call quick_sort(Om1,order1,nVV)
-    call set_order(Z1,order1,nOO+nVV,nVV)
+    call set_order(Z1,order1,nPP,nVV)
 
   end if
 
@@ -110,112 +109,27 @@ subroutine sort_ppRPA(nOO,nVV,Om,Z,Om1,X1,Y1,Om2,X2,Y2)
     end do
 
     call quick_sort(Om2,order2,nOO)
-    call set_order(Z2,order2,nOO+nVV,nOO)
+    call set_order(Z2,order2,nPP,nOO)
 
   end if
-
-
-! Orthogonalize eigenvectors
-
-! deg1 = 1
-! ab_start = 1
-
-! do ab=2,nVV
-
-!   if(abs(Om1(ab-1) - Om1(ab)) < 1d-6) then 
-
-!     deg1 = deg1 + 1
-
-!     if(ab == nVV) then
-
-!       ab_end = ab 
-
-!       allocate(S1(deg1,deg1),O1(deg1,deg1))
-
-!       S1 = matmul(transpose(Z1(:,ab_start:ab_end)),matmul(M,Z1(:,ab_start:ab_end)))
-!       call orthogonalization_matrix(1,deg1,S1,O1)
-!       Z1(:,ab_start:ab_end) = matmul(Z1(:,ab_start:ab_end),O1)
-
-!       deallocate(S1,O1)
-
-!     end if
-
-!   else
-
-!     ab_end = ab - 1
-
-!     allocate(S1(deg1,deg1),O1(deg1,deg1))
-
-!     S1 = matmul(transpose(Z1(:,ab_start:ab_end)),matmul(M,Z1(:,ab_start:ab_end)))
-!     call orthogonalization_matrix(1,deg1,S1,O1)
-!     Z1(:,ab_start:ab_end) = matmul(Z1(:,ab_start:ab_end),O1)
-
-!     deallocate(S1,O1)
-
-!     deg1 = 1
-!     ab_start = ab 
-
-!   end if
-! end do
-
-! deg2 = 1
-! ij_start = 1
-
-! do ij=2,nOO
-
-!   if(abs(Om2(ij-1) - Om2(ij)) < 1d-6) then 
-
-!     deg2 = deg2 + 1
-
-!     if(ij == nOO) then
-
-!       ij_end = ij 
-!
-!       allocate(S2(deg2,deg2),O2(deg2,deg2))
-!
-!       S2 = - matmul(transpose(Z2(:,ij_start:ij_end)),matmul(M,Z2(:,ij_start:ij_end)))
-!       call orthogonalization_matrix(1,deg2,S2,O2)
-!       Z2(:,ij_start:ij_end) = matmul(Z2(:,ij_start:ij_end),O2)
-!
-!       deallocate(S2,O2)
-
-!     end if
-
-!   else
-
-!     ij_end = ij - 1
-
-!     allocate(S2(deg2,deg2),O2(deg2,deg2))
-
-!     S2 = - matmul(transpose(Z2(:,ij_start:ij_end)),matmul(M,Z2(:,ij_start:ij_end)))
-!     call orthogonalization_matrix(1,deg2,S2,O2)
-!     Z2(:,ij_start:ij_end) = matmul(Z2(:,ij_start:ij_end),O2)
-
-!     deallocate(S2,O2)
-
-!     deg2 = 1
-!     ij_start = ij 
-
-!   end if
-! end do 
  
   allocate(S1(nVV,nVV),S2(nOO,nOO),O1(nVV,nVV),O2(nOO,nOO))
-  allocate(tmp1(nOO+nVV,nVV),tmp2(nOO+nVV,nOO))
+  allocate(tmp1(nPP,nVV),tmp2(nPP,nOO))
 
-  if(nVV > 0) call dgemm ('N', 'N', nOO+nVV, nVV, nOO+nVV, 1d0,  M, nOO+nVV, Z1, nOO+nVV, 0d0, tmp1, nOO+nVV)
-  if(nVV > 0) call dgemm ('T', 'N', nVV    , nVV, nOO+nVV, 1d0, Z1, nOO+nVV, tmp1, nOO+nVV, 0d0, S1, nVV)
-  if(nOO > 0) call dgemm ('N', 'N', nOO+nVV, nOO, nOO+nVV, 1d0,  M, nOO+nVV, -1d0*Z2, nOO+nVV, 0d0, tmp2, nOO+nVV)
-  if(nOO > 0) call dgemm ('T', 'N', nOO    , nOO, nOO+nVV, 1d0, Z2, nOO+nVV, tmp2, nOO+nVV, 0d0, S2, nOO)
+  if(nVV > 0) call dgemm ('N','N',nPP,nVV,nPP,1d0, M,nPP,Z1,nPP,0d0,tmp1,nPP)
+  if(nVV > 0) call dgemm ('T','N',nVV,nVV,nPP,1d0,Z1,nPP,tmp1,nPP,0d0,S1,nVV)
+  if(nOO > 0) call dgemm ('N','N',nPP,nOO,nPP,1d0, M,nPP,-1d0*Z2,nPP,0d0,tmp2, nPP)
+  if(nOO > 0) call dgemm ('T','N',nOO,nOO,nPP,1d0,Z2,nPP,tmp2,nPP,0d0,S2,nOO)
 
 ! S1 = + matmul(transpose(Z1),matmul(M,Z1))
 ! S2 = - matmul(transpose(Z2),matmul(M,Z2))
 
-  if(nVV > 0) call orthogonalization_matrix(nVV,S1,O1)
-  if(nOO > 0) call orthogonalization_matrix(nOO,S2,O2)
+  if(nVV > 0) call orthogonalize_matrix(1,nVV,S1,O1)
+  if(nOO > 0) call orthogonalize_matrix(1,nOO,S2,O2)
 
-  if(nVV > 0) call dgemm ('N', 'N', nOO+nVV,nVV,nVV, 1d0, Z1, nOO+nVV, O1, nVV,0d0, tmp1, nOO+nVV)
+  if(nVV > 0) call dgemm ('N','N',nPP,nVV,nVV,1d0,Z1,nPP,O1,nVV,0d0,tmp1,nPP)
   Z1 = tmp1
-  if(nOO > 0) call dgemm ('N', 'N', nOO+nVV,nOO,nOO, 1d0, Z2, nOO+nVV, O2, nOO,0d0, tmp2, nOO+nVV)
+  if(nOO > 0) call dgemm ('N','N',nPP,nOO,nOO,1d0,Z2,nPP,O2,nOO,0d0,tmp2,nPP)
   Z2 = tmp2
 
 ! Z1 = matmul(Z1,O1)
@@ -223,16 +137,23 @@ subroutine sort_ppRPA(nOO,nVV,Om,Z,Om1,X1,Y1,Om2,X2,Y2)
 
 ! Define submatrices X1, Y1, X2, & Y2
 
-  X1(1:nVV,1:nVV) = + Z1(    1:    nVV,1:nVV)
-  Y1(1:nOO,1:nVV) = - Z1(nVV+1:nOO+nVV,1:nVV)
+  X1(1:nVV,1:nVV) = Z1(    1:    nVV,1:nVV)
+  Y1(1:nOO,1:nVV) = Z1(nVV+1:nPP,1:nVV)
 
-  X2(1:nVV,1:nOO) = + Z2(    1:    nVV,1:nOO)
-  Y2(1:nOO,1:nOO) = - Z2(nVV+1:nOO+nVV,1:nOO)
+  X2(1:nVV,1:nOO) = Z2(    1:    nVV,1:nOO)
+  Y2(1:nOO,1:nOO) = Z2(nVV+1:nPP,1:nOO)
 
 ! call matout(nVV,nVV,X1)
 ! call matout(nOO,nVV,Y1)
 
 ! call matout(nVV,nOO,X2)
 ! call matout(nOO,nOO,Y2)
+
+! Check orthonormality
+
+! call matout(nVV,nVV,matmul(transpose(X1),X1) - matmul(transpose(Y1),Y1))
+! call matout(nOO,nOO,matmul(transpose(X2),X2) - matmul(transpose(Y2),Y2))
+! call matout(nVV,nOO,matmul(transpose(X1),X2) - matmul(transpose(Y1),Y2))
+! call matout(nOO,nVV,matmul(transpose(X2),X1) - matmul(transpose(Y2),Y1))
 
 end subroutine 

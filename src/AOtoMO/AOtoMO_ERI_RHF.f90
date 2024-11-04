@@ -1,7 +1,4 @@
-
-! ---
-
-subroutine AOtoMO_ERI_RHF(nBas, nOrb, c, ERI_AO, ERI_MO)
+subroutine AOtoMO_ERI_RHF(nBas,nOrb,c,ERI_AO,ERI_MO)
 
 ! AO to MO transformation of two-electron integrals via the semi-direct O(N^5) algorithm
 
@@ -10,7 +7,8 @@ subroutine AOtoMO_ERI_RHF(nBas, nOrb, c, ERI_AO, ERI_MO)
 
 ! Input variables
 
-  integer,intent(in)            :: nBas, nOrb
+  integer,intent(in)            :: nBas
+  integer,intent(in)            :: nOrb
   double precision,intent(in)   :: ERI_AO(nBas,nBas,nBas,nBas)
   double precision,intent(in)   :: c(nBas,nOrb)
 
@@ -54,7 +52,3 @@ subroutine AOtoMO_ERI_RHF(nBas, nOrb, c, ERI_AO, ERI_MO)
   deallocate(a2)
 
 end subroutine 
-
-
-
-

@@ -85,6 +85,22 @@ subroutine RGTpp_phACFDT(exchange_kernel,doXBS,dRPA,TDA_T,TDA,BSE,singlet,triple
   allocate(Aph(nS,nS),Bph(nS,nS),TAs(nS,nS),TBs(nS,nS),TAt(nS,nS),TBt(nS,nS),Om(nS),XpY(nS,nS),XmY(nS,nS))
   allocate(Ec(nAC,nspin))
 
+! Hello World
+
+  write(*,*) '-------------------------------------------------------------'
+  write(*,*) ' Adiabatic connection version of BSE@GTpp correlation energy '
+  write(*,*) '-------------------------------------------------------------'
+  write(*,*)
+
+! eXtended BSE
+
+  if(doXBS) then
+
+    write(*,*) '*** scaled screening version (XBS) ***'
+    write(*,*)
+
+  end if
+
 ! Antisymmetrized kernel version
 
   if(exchange_kernel) then

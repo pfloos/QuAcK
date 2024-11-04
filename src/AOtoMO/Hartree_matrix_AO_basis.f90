@@ -21,10 +21,10 @@ subroutine Hartree_matrix_AO_basis(nBas,P,G,H)
 
   H(:,:) = 0d0
 
-  do mu=1,nBas
+  do si=1,nBas
     do nu=1,nBas
       do la=1,nBas
-        do si=1,nBas
+        do mu=1,nBas
           H(mu,nu) = H(mu,nu) + P(la,si)*G(mu,la,nu,si)
         end do
       end do

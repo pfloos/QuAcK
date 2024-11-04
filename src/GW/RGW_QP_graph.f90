@@ -1,4 +1,4 @@
-subroutine RGW_QP_graph(eta,nBas,nC,nO,nV,nR,nS,eHF,Om,rho,eGWlin,eOld,eGW,Z)
+subroutine RGW_QP_graph(doSRG,eta,flow,nBas,nC,nO,nV,nR,nS,eHF,Om,rho,eGWlin,eOld,eGW,Z)
 
 ! Compute the graphical solution of the QP equation
 
@@ -14,7 +14,9 @@ subroutine RGW_QP_graph(eta,nBas,nC,nO,nV,nR,nS,eHF,Om,rho,eGWlin,eOld,eGW,Z)
   integer,intent(in)            :: nR
   integer,intent(in)            :: nS
 
+  logical,intent(in)            :: doSRG
   double precision,intent(in)   :: eta
+  double precision,intent(in)   :: flow
   double precision,intent(in)   :: eHF(nBas)
   double precision,intent(in)   :: Om(nS)
   double precision,intent(in)   :: rho(nBas,nBas,nS)
@@ -28,7 +30,8 @@ subroutine RGW_QP_graph(eta,nBas,nC,nO,nV,nR,nS,eHF,Om,rho,eGWlin,eOld,eGW,Z)
   integer                       :: nIt
   integer,parameter             :: maxIt = 64
   double precision,parameter    :: thresh = 1d-6
-  double precision,external     :: RGW_ReSigC,RGW_RedSigC
+  double precision,external     :: RGW_Re_SigC,RGW_Re_dSigC
+  double precision,external     :: RGW_SRG_Re_SigC,RGW_SRG_Re_dSigC
   double precision              :: SigC,dSigC
   double precision              :: f,df
   double precision              :: w
@@ -54,8 +57,18 @@ subroutine RGW_QP_graph(eta,nBas,nC,nO,nV,nR,nS,eHF,Om,rho,eGWlin,eOld,eGW,Z)
     
       nIt = nIt + 1
 
-      SigC  = RGW_ReSigC(p,w,eta,nBas,nC,nO,nV,nR,nS,eOld,Om,rho)
-      dSigC = RGW_RedSigC(p,w,eta,nBas,nC,nO,nV,nR,nS,eOld,Om,rho)
+      if(doSRG) then
+
+        SigC  = RGW_SRG_Re_SigC(p,w,flow,nBas,nC,nO,nV,nR,nS,eOld,Om,rho)
+        dSigC = RGW_SRG_Re_dSigC(p,w,flow,nBas,nC,nO,nV,nR,nS,eOld,Om,rho)
+
+        else
+
+        SigC  = RGW_Re_SigC(p,w,eta,nBas,nC,nO,nV,nR,nS,eOld,Om,rho)
+        dSigC = RGW_Re_dSigC(p,w,eta,nBas,nC,nO,nV,nR,nS,eOld,Om,rho)
+
+      end if
+
       f  = w - eHF(p) - SigC
       df = 1d0/(1d0 - dSigC)
       w = w - df*f

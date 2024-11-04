@@ -48,6 +48,13 @@ subroutine crACFDT(exchange_kernel,dRPA,TDA,singlet,triplet,nBas,nC,nO,nV,nR,nS,
   allocate(Ec(nAC,nspin))
   allocate(Aph(nS,nS),Bph(nS,nS),Om(nS),XpY(nS,nS),XmY(nS,nS))
 
+! Hello world
+
+  write(*,*) '-------------------------------------------------------'
+  write(*,*) 'Adiabatic connection version of crRPA correlation energy'
+  write(*,*) '-------------------------------------------------------'
+  write(*,*)
+
 ! Antisymmetrized kernel version
 
   if(exchange_kernel) then

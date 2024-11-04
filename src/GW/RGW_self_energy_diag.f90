@@ -1,4 +1,4 @@
-subroutine RGW_self_energy_diag(eta,nBas,nC,nO,nV,nR,nS,e,Om,rho,EcGM,Sig,Z)
+subroutine RGW_self_energy_diag(eta,nBas,nOrb,nC,nO,nV,nR,nS,e,Om,rho,EcGM,Sig,Z)
 
 ! Compute diagonal of the correlation part of the self-energy and the renormalization factor
 
@@ -9,6 +9,7 @@ subroutine RGW_self_energy_diag(eta,nBas,nC,nO,nV,nR,nS,e,Om,rho,EcGM,Sig,Z)
 
   double precision,intent(in)   :: eta
   integer,intent(in)            :: nBas
+  integer,intent(in)            :: nOrb
   integer,intent(in)            :: nC
   integer,intent(in)            :: nO
   integer,intent(in)            :: nV

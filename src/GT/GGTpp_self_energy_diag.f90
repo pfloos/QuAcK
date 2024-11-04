@@ -81,7 +81,7 @@ subroutine GGTpp_self_energy_diag(eta,nBas,nC,nO,nV,nR,nOO,nVV,e,Om1,rho1,Om2,rh
 
       do cd=1,nVV
         eps = e(i) + e(j) - Om1(cd)
-        num = rho1(i,j,cd)**2
+        num = 0.5d0*rho1(i,j,cd)**2
         EcGM = EcGM + num*eps/(eps**2 + eta**2)
       end do
 
@@ -93,7 +93,7 @@ subroutine GGTpp_self_energy_diag(eta,nBas,nC,nO,nV,nR,nOO,nVV,e,Om1,rho1,Om2,rh
 
       do kl=1,nOO
         eps = e(a) + e(b) - Om2(kl)
-        num = rho2(a,b,kl)**2
+        num = 0.5d0*rho2(a,b,kl)**2
         EcGM = EcGM - num*eps/(eps**2 + eta**2)
       end do
 

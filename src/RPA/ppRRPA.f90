@@ -132,11 +132,6 @@ subroutine ppRRPA(dotest,TDA,doACFDT,singlet,triplet,nBas,nC,nO,nV,nR,ENuc,ERHF,
 
   if(doACFDT) then
 
-    write(*,*) '--------------------------------------------------------'
-    write(*,*) 'Adiabatic connection version of ppRPA correlation energy'
-    write(*,*) '--------------------------------------------------------'
-    write(*,*)
-
     call ppACFDT(TDA,singlet,triplet,nBas,nC,nO,nV,nR,ERI,eHF,EcRPA)
 
     write(*,*)

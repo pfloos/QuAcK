@@ -90,10 +90,10 @@ subroutine RHF(dotest,maxSCF,thresh,max_diis,guess_type,level_shift,nNuc,ZNuc,rN
 
   call mo_guess(nBas,nOrb,guess_type,S,Hc,X,c)
 
-  !P(:,:) = 2d0 * matmul(c(:,1:nO), transpose(c(:,1:nO)))
-  call dgemm('N', 'T', nBas, nBas, nO, 2.d0, &
-             c(1,1), nBas, c(1,1), nBas,     &
-             0.d0, P(1,1), nBas)
+  P(:,:) = 2d0 * matmul(c(:,1:nO), transpose(c(:,1:nO)))
+! call dgemm('N', 'T', nBas, nBas, nO, 2.d0, &
+!            c(1,1), nBas, c(1,1), nBas,     &
+!            0.d0, P(1,1), nBas)
 
 ! Initialization
 
@@ -127,10 +127,10 @@ subroutine RHF(dotest,maxSCF,thresh,max_diis,guess_type,level_shift,nNuc,ZNuc,rN
     call exchange_matrix_AO_basis(nBas,P,ERI,K)
     
     F(:,:) = Hc(:,:) + J(:,:) + 0.5d0*K(:,:)
-    if(nBas .ne. nOrb) then
-      call AOtoMO(nBas, nOrb, c(1,1), F(1,1), Fp(1,1))
-      call MOtoAO(nBas, nOrb, S(1,1), c(1,1), Fp(1,1), F(1,1))
-    endif
+!   if(nBas .ne. nOrb) then
+!     call AOtoMO(nBas, nOrb, c(1,1), F(1,1), Fp(1,1))
+!     call MOtoAO(nBas, nOrb, S(1,1), c(1,1), Fp(1,1), F(1,1))
+!   endif
 
     ! Check convergence 
 
@@ -174,24 +174,24 @@ subroutine RHF(dotest,maxSCF,thresh,max_diis,guess_type,level_shift,nNuc,ZNuc,rN
 
     ! Diagonalize Fock matrix
 
-    if(nBas .eq. nOrb) then
+!   if(nBas .eq. nOrb) then
       Fp = matmul(transpose(X),matmul(F,X))
       cp(:,:) = Fp(:,:)
       call diagonalize_matrix(nOrb,cp,eHF)
       c = matmul(X,cp)
-    else
-      Fp = matmul(transpose(c),matmul(F,c))
-      cp(:,:) = Fp(:,:)
-      call diagonalize_matrix(nOrb,cp,eHF)
-      c = matmul(c,cp)
-    endif
+!   else
+!     Fp = matmul(transpose(c),matmul(F,c))
+!     cp(:,:) = Fp(:,:)
+!     call diagonalize_matrix(nOrb,cp,eHF)
+!     c = matmul(c,cp)
+!   endif
 
     ! Density matrix
 
-    !P(:,:) = 2d0*matmul(c(:,1:nO), transpose(c(:,1:nO)))
-    call dgemm('N', 'T', nBas, nBas, nO, 2.d0, &
-               c(1,1), nBas, c(1,1), nBas,     &
-               0.d0, P(1,1), nBas)
+    P(:,:) = 2d0*matmul(c(:,1:nO), transpose(c(:,1:nO)))
+!   call dgemm('N', 'T', nBas, nBas, nO, 2.d0, &
+!              c(1,1), nBas, c(1,1), nBas,     &
+!              0.d0, P(1,1), nBas)
 
     ! Dump results
 

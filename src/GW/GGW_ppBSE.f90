@@ -65,21 +65,18 @@ subroutine GGW_ppBSE(TDA_W,TDA,dBSE,dTDA,eta,nOrb,nC,nO,nV,nR,nS,ERI,dipole_int,
 ! Compute RPA screening !
 !-----------------------!
 
-  EcRPA = 0d0
-
   allocate(OmRPA(nS),XpY_RPA(nS,nS),XmY_RPA(nS,nS),rho_RPA(nOrb,nOrb,nS), &
            Aph(nS,nS),Bph(nS,nS))
  
                  call phGLR_A(dRPA_W,nOrb,nC,nO,nV,nR,nS,1d0,eW,ERI,Aph)
   if(.not.TDA_W) call phGLR_B(dRPA_W,nOrb,nC,nO,nV,nR,nS,1d0,ERI,Bph)
 
-  call phLR(TDA_W,nS,Aph,Bph,EcRPA,OmRPA,XpY_RPA,XmY_RPA)
-
-  call RGW_excitation_density(nOrb,nC,nO,nR,nS,ERI,XpY_RPA,rho_RPA)
+  call phGLR(TDA_W,nS,Aph,Bph,EcRPA,OmRPA,XpY_RPA,XmY_RPA)
+!  call phLR_transition_vectors(.true.,nOrb,nC,nO,nV,nR,nS,dipole_int,OmRPA,XpY_RPA,XmY_RPA)
+  
+  call GGW_excitation_density(nOrb,nC,nO,nR,nS,ERI,XpY_RPA,rho_RPA)
 
   deallocate(XpY_RPA,XmY_RPA,Aph,Bph)
-
-  EcBSE = 0d0
 
   nOO = nO*(nO-1)/2
   nVV = nV*(nV-1)/2
@@ -103,7 +100,7 @@ subroutine GGW_ppBSE(TDA_W,TDA,dBSE,dTDA,eta,nOrb,nC,nO,nV,nR,nS,ERI,dipole_int,
   Cpp(:,:) = Cpp(:,:) + KC_sta(:,:)
   Dpp(:,:) = Dpp(:,:) + KD_sta(:,:)
 
-  call ppLR(TDA,nOO,nVV,Bpp,Cpp,Dpp,Om1,X1,Y1,Om2,X2,Y2,EcBSE)
+  call ppGLR(TDA,nOO,nVV,Bpp,Cpp,Dpp,Om1,X1,Y1,Om2,X2,Y2,EcBSE)
 
   call ppLR_transition_vectors(.true.,nOrb,nC,nO,nV,nR,nOO,nVV,dipole_int,Om1,X1,Y1,Om2,X2,Y2)
 
@@ -111,10 +108,15 @@ subroutine GGW_ppBSE(TDA_W,TDA,dBSE,dTDA,eta,nOrb,nC,nO,nV,nR,nS,ERI,dipole_int,
   ! Compute the dynamical screening at the ppBSE level !
   !----------------------------------------------------!
 
-! if(dBSE) &
-!     call GGW_ppBSE_dynamic_perturbation(dTDA,eta,nOrb,nC,nO,nV,nR,nS,nOO,nVV,eW,eGW,ERI,dipole_int,OmRPA,rho_RPA, &
-!                                        Om1,X1,Y1,Om2,X2,Y2,KB_sta,KC_sta,KD_sta)
+  if(dBSE) &
+      call GGW_ppBSE_dynamic_perturbation(dTDA,eta,nOrb,nC,nO,nV,nR,nS,nOO,nVV,eW,eGW,ERI,dipole_int,OmRPA,rho_RPA, &
+                                          Om1,X1,Y1,Om2,X2,Y2,KB_sta,KC_sta,KD_sta)
 
+  !----------------!
+  ! Upfolded ppBSE !
+  !----------------!
+
+!  call GGW_ppBSE_upfolded(nOrb,nC,nO,nV,nR,nS,ERI,rho_RPA,OmRPA,eGW)
 
   deallocate(Om1,X1,Y1,Om2,X2,Y2,Bpp,Cpp,Dpp,KB_sta,KC_sta,KD_sta)
 

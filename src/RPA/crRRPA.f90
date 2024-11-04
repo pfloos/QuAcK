@@ -113,11 +113,6 @@ subroutine crRRPA(dotest,TDA,doACFDT,exchange_kernel,singlet,triplet,nBas,nC,nO,
 
   if(doACFDT) then
 
-    write(*,*) '-------------------------------------------------------'
-    write(*,*) 'Adiabatic connection version of crRPA correlation energy'
-    write(*,*) '-------------------------------------------------------'
-    write(*,*)
-
     call crACFDT(exchange_kernel,dRPA,TDA,singlet,triplet,nBas,nC,nO,nV,nR,nS,ERI,eHF,EcRPA)
 
     write(*,*)

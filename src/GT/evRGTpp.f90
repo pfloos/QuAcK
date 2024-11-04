@@ -48,7 +48,6 @@ subroutine evRGTpp(dotest,maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,B
   double precision              :: rcond
   double precision              :: Conv
   integer                       :: ispin
-  integer                       :: iblock
   integer                       :: nOOs,nOOt
   integer                       :: nVVs,nVVt
   double precision              :: EcGM
@@ -91,11 +90,11 @@ subroutine evRGTpp(dotest,maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,B
 
 ! Dimensions of the pp-RPA linear reponse matrices
 
-  nOOs = nO*nO
-  nVVs = nV*nV
+  nOOs = nO*(nO+1)/2
+  nVVs = nV*(nV+1)/2
 
-  nOOt = nO*(nO - 1)/2
-  nVVt = nV*(nV - 1)/2
+  nOOt = nO*(nO-1)/2
+  nVVt = nV*(nV-1)/2
 
 ! Memory allocation
 
@@ -131,15 +130,14 @@ subroutine evRGTpp(dotest,maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,B
   !----------------------------------------------
 
     ispin  = 1
-    iblock = 3
  
     ! Compute linear response
  
     allocate(Bpp(nVVs,nOOs),Cpp(nVVs,nVVs),Dpp(nOOs,nOOs))
 
-    if(.not.TDA_T) call ppLR_B(iblock,nOrb,nC,nO,nV,nR,nOOs,nVVs,1d0,ERI,Bpp)
-                   call ppLR_C(iblock,nOrb,nC,nO,nV,nR,nVVs,1d0,eGT,ERI,Cpp)
-                   call ppLR_D(iblock,nOrb,nC,nO,nV,nR,nOOs,1d0,eGT,ERI,Dpp)
+    if(.not.TDA_T) call ppLR_B(ispin,nOrb,nC,nO,nV,nR,nOOs,nVVs,1d0,ERI,Bpp)
+                   call ppLR_C(ispin,nOrb,nC,nO,nV,nR,nVVs,1d0,eGT,ERI,Cpp)
+                   call ppLR_D(ispin,nOrb,nC,nO,nV,nR,nOOs,1d0,eGT,ERI,Dpp)
 
     call ppLR(TDA_T,nOOs,nVVs,Bpp,Cpp,Dpp,Om1s,X1s,Y1s,Om2s,X2s,Y2s,EcRPA(ispin))
 
@@ -150,32 +148,31 @@ subroutine evRGTpp(dotest,maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,B
   !----------------------------------------------
 
     ispin  = 2
-    iblock = 4
 
   ! Compute linear response
 
     allocate(Bpp(nVVt,nOOt),Cpp(nVVt,nVVt),Dpp(nOOt,nOOt))
 
-    if(.not.TDA_T) call ppLR_B(iblock,nOrb,nC,nO,nV,nR,nOOt,nVVt,1d0,ERI,Bpp)
-                   call ppLR_C(iblock,nOrb,nC,nO,nV,nR,nVVt,1d0,eGT,ERI,Cpp)
-                   call ppLR_D(iblock,nOrb,nC,nO,nV,nR,nOOt,1d0,eGT,ERI,Dpp)
+    if(.not.TDA_T) call ppLR_B(ispin,nOrb,nC,nO,nV,nR,nOOt,nVVt,1d0,ERI,Bpp)
+                   call ppLR_C(ispin,nOrb,nC,nO,nV,nR,nVVt,1d0,eGT,ERI,Cpp)
+                   call ppLR_D(ispin,nOrb,nC,nO,nV,nR,nOOt,1d0,eGT,ERI,Dpp)
 
     call ppLR(TDA_T,nOOt,nVVt,Bpp,Cpp,Dpp,Om1t,X1t,Y1t,Om2t,X2t,Y2t,EcRPA(ispin))
 
     deallocate(Bpp,Cpp,Dpp)
 
-    EcRPA(1) = EcRPA(1) - EcRPA(2)
+    EcRPA(1) = 1d0*EcRPA(1)
     EcRPA(2) = 3d0*EcRPA(2)
 
   !----------------------------------------------
   ! Compute T-matrix version of the self-energy 
   !----------------------------------------------
  
-    iblock = 3
-    call RGTpp_excitation_density(iblock,nOrb,nC,nO,nV,nR,nOOs,nVVs,ERI,X1s,Y1s,rho1s,X2s,Y2s,rho2s)
+    ispin = 3
+    call RGTpp_excitation_density(ispin,nOrb,nC,nO,nV,nR,nOOs,nVVs,ERI,X1s,Y1s,rho1s,X2s,Y2s,rho2s)
  
-    iblock = 4
-    call RGTpp_excitation_density(iblock,nOrb,nC,nO,nV,nR,nOOt,nVVt,ERI,X1t,Y1t,rho1t,X2t,Y2t,rho2t)
+    ispin = 4
+    call RGTpp_excitation_density(ispin,nOrb,nC,nO,nV,nR,nOOt,nVVt,ERI,X1t,Y1t,rho1t,X2t,Y2t,rho2t)
  
   !----------------------------------------------
   ! Compute T-matrix version of the self-energy 
@@ -222,12 +219,12 @@ subroutine evRGTpp(dotest,maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,B
 
     ! DIIS extrapolation
 
-    n_diis = min(n_diis+1,max_diis)
-    call DIIS_extrapolation(rcond,nOrb,nOrb,n_diis,error_diis,e_diis,eGT(:)-eOld(:),eGT(:))
+    if(max_diis > 1) then
 
-    ! Reset DIIS if required
+      n_diis = min(n_diis+1,max_diis)
+      call DIIS_extrapolation(rcond,nOrb,nOrb,n_diis,error_diis,e_diis,eGT(:)-eOld(:),eGT(:))
 
-    if(abs(rcond) < 1d-15) n_diis = 0
+    end if
 
     ! Save quasiparticles energy for next cycle
 
@@ -246,16 +243,9 @@ subroutine evRGTpp(dotest,maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,B
 
   if(BSE) then
 
-    call RGTpp_phBSE(TDA_T,TDA,dBSE,dTDA,singlet,triplet,eta,nOrb,nC,nO,nV,nR,nS,nOOs,nVVs,nOOt,nVVt,   &
-                    Om1s,X1s,Y1s,Om2s,X2s,Y2s,rho1s,rho2s,Om1t,X1t,Y1t,Om2t,X2t,Y2t,rho1t,rho2t, &
+    call RGTpp_phBSE(exchange_kernel,TDA_T,TDA,dBSE,dTDA,singlet,triplet,eta,nOrb,nC,nO,nV,nR,nS,nOOs,nVVs,nOOt,nVVt, &
+                    Om1s,X1s,Y1s,Om2s,X2s,Y2s,rho1s,rho2s,Om1t,X1t,Y1t,Om2t,X2t,Y2t,rho1t,rho2t,                      &
                     ERI,dipole_int,eGT,eGT,EcBSE)
-
-    if(exchange_kernel) then
-
-      EcRPA(1) = 0.5d0*EcRPA(1)
-      EcRPA(2) = 1.5d0*EcRPA(1)
-
-    end if
 
     write(*,*)
     write(*,*)'-------------------------------------------------------------------------------'
@@ -270,28 +260,9 @@ subroutine evRGTpp(dotest,maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,B
 
     if(doACFDT) then
 
-      write(*,*) '------------------------------------------------------'
-      write(*,*) 'Adiabatic connection version of BSE correlation energy'
-      write(*,*) '------------------------------------------------------'
-      write(*,*)
-
-      if(doXBS) then
-
-        write(*,*) '*** scaled screening version (XBS) ***'
-        write(*,*)
-
-      end if
-
       call RGTpp_phACFDT(exchange_kernel,doXBS,.false.,TDA_T,TDA,BSE,singlet,triplet,eta,nOrb,nC,nO,nV,nR,nS, &
-                        nOOs,nVVs,nOOt,nVVt,Om1s,X1s,Y1s,Om2s,X2s,Y2s,rho1s,rho2s,Om1t,X1t,Y1t,     &
+                        nOOs,nVVs,nOOt,nVVt,Om1s,X1s,Y1s,Om2s,X2s,Y2s,rho1s,rho2s,Om1t,X1t,Y1t,               &
                         Om2t,X2t,Y2t,rho1t,rho2t,ERI,eGT,eGT,EcBSE)
-
-      if(exchange_kernel) then
-
-        EcBSE(1) = 0.5d0*EcBSE(1)
-        EcBSE(2) = 1.5d0*EcBSE(2)
-
-      end if
 
       write(*,*)
       write(*,*)'-------------------------------------------------------------------------------'
@@ -305,7 +276,6 @@ subroutine evRGTpp(dotest,maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,B
     end if
 
   end if
-
 
 ! Testing zone
 
