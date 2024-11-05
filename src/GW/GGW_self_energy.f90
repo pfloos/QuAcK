@@ -92,7 +92,7 @@ subroutine GGW_self_energy(eta,nOrb,nC,nO,nV,nR,nS,e,Om,rho,EcGM,Sig,Z)
 
 !$OMP PARALLEL &
 !$OMP SHARED(Sig,Z,rho,eta,nS,nC,nO,nOrb,nR,e,Om) &
-!$OMP PRIVATE(m,i,q,p,eps,num) &
+!$OMP PRIVATE(m,i,p,eps,num) &
 !$OMP DEFAULT(NONE)
 !$OMP DO
   do p=nC+1,nOrb-nR
@@ -100,7 +100,7 @@ subroutine GGW_self_energy(eta,nOrb,nC,nO,nV,nR,nS,e,Om,rho,EcGM,Sig,Z)
         do i=nC+1,nO
  
            eps = e(p) - e(i) + Om(m)
-           num = rho(p,i,m)*rho(q,i,m)
+           num = rho(p,i,m)*rho(p,i,m)
            Z(p) = Z(p) - num*(eps**2 - eta**2)/(eps**2 + eta**2)**2
  
         end do
@@ -113,7 +113,7 @@ subroutine GGW_self_energy(eta,nOrb,nC,nO,nV,nR,nS,e,Om,rho,EcGM,Sig,Z)
 
   !$OMP PARALLEL &
   !$OMP SHARED(Sig,Z,rho,eta,nS,nC,nO,nOrb,nR,e,Om) &
-  !$OMP PRIVATE(m,a,q,p,eps,num) &
+  !$OMP PRIVATE(m,a,p,eps,num) &
   !$OMP DEFAULT(NONE)
   !$OMP DO  
   do p=nC+1,nOrb-nR
@@ -121,7 +121,7 @@ subroutine GGW_self_energy(eta,nOrb,nC,nO,nV,nR,nS,e,Om,rho,EcGM,Sig,Z)
       do a=nO+1,nOrb-nR
  
         eps = e(p) - e(a) - Om(m)
-        num = rho(p,a,m)*rho(q,a,m)
+        num = rho(p,a,m)*rho(p,a,m)
         Z(p) = Z(p) - num*(eps**2 - eta**2)/(eps**2 + eta**2)**2
  
       end do
