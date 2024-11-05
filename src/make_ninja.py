@@ -81,7 +81,7 @@ elif sys.platform == "Linux" or os.path.exists('/proc/version'):
         compiler = compile_gfortran_linux_debug
 
     else:
-        if check_compiler_exists('ifortt'):
+        if check_compiler_exists('ifort'):
             compiler = """
 FC = ifort -qmkl=parallel -qopenmp
 AR = ar crs
