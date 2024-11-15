@@ -14,10 +14,6 @@ jobs:
     runs-on: ubuntu-20.04
     name: Run Tests
 
-    - name: Print message
-      run: echo "Triggered by completion of QuAcK Compilation workflow"
-
-    steps:
     - name: Checkout repository
       uses: actions/checkout@v3
 
@@ -40,4 +36,3 @@ jobs:
     - name: Run tests
       run: |
         bash -c "source quack.rc ; cd tests ; python lunch_bench.py -s light -t 1e-1"
-
