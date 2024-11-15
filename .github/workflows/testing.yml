@@ -1,12 +1,15 @@
 name: QuAcK Testing
 
+
 on:
   workflow_run:
     workflows: ["QuAcK Compilation"]
     types:
       - completed
 
+
 jobs:
+
   test:
     runs-on: ubuntu-20.04
     name: Run Tests
