@@ -20,7 +20,8 @@ current_date = datetime.now()
 quack_root = os.getenv('QUACK_ROOT')
 
 # User Name
-user_name = os.getlogin()
+# Fallback to 'default_user' if USER is not set
+user_name = os.getenv('USER', 'default_user')
 
 # Operating System
 os_name = platform.system()
