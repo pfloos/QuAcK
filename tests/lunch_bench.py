@@ -119,6 +119,32 @@ class Quack_Job:
                 print_col("File 'inp/{}' does not exist.".format(inp_file), "red")
                 sys.exit(1)
 
+    def run_ci(self):
+
+        try:
+    
+            os.chdir('..')
+    
+            command = [
+                'python{}'.format(PYTHON_VERSION), 'PyDuck.py',
+                '--working_dir', '{}'.format(self.workdir),
+                '-x', '{}'.format(self.mol), 
+                '-b', '{}'.format(self.basis),
+                '-m', '{}'.format(self.multip)
+            ]
+    
+            file_out = "{}/{}/{}_{}_{}.out".format(self.workdir, self.methd, self.mol, self.multip, self.basis)
+            with open(file_out, 'w') as fobj:
+                result = subprocess.run(command, stdout=fobj, stderr=subprocess.PIPE, text=True)
+            if result.stderr:
+                print("Error output:", result.stderr)
+    
+            os.chdir('tests')
+    
+        except Exception as e:
+
+            print_col(f"An error occurred: {str(e)}", "red")
+
     def run(self):
 
         def display_spinner():
@@ -216,6 +242,7 @@ def main():
     if not os.path.exists("{}/input".format(work_path)):
         os.makedirs("{}/input".format(work_path))
 
+    is_ci = os.getenv('CI')
     test_failed = False
     for mol in molecules:
 
@@ -244,7 +271,10 @@ def main():
 
                 New_Quack_Job = Quack_Job(mol_name, mol_mult, basis_name, mol_geom, methd, work_path)
                 New_Quack_Job.prep_inp()
-                New_Quack_Job.run()
+                if is_ci:
+                    New_Quack_Job.run_ci()
+                else:
+                    New_Quack_Job.run()
 
                 test_failed_ = False
                 New_Quack_Job.check_data(basis_data, test_failed_)
