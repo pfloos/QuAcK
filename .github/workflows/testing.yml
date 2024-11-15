@@ -10,6 +10,10 @@ jobs:
 
   test:
     runs-on: ubuntu-20.04
+    name: Run Tests
+
+    - name: Print message
+      run: echo "Triggered by completion of QuAcK Compilation workflow"
 
     steps:
     - name: Checkout repository
