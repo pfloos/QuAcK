@@ -1,3 +1,3 @@
-[submodule "external/qp2-dependencies"]
-	path = external/qp2-dependencies
+[submodule "external/dependencies"]
+	path = external/dependencies
 	url = https://github.com/QuantumPackage/qp2-dependencies.git
