@@ -47,4 +47,4 @@ jobs:
 
     - name: Run tests
       run: |
-        bash -c "source quack.rc ; cd tests ; python lunch_bench.py -s light -t 1e-1"
+        bash -c "source quack.rc ; cd tests ; python create_database.py ; python lunch_bench.py -s light -t 1e-1"
