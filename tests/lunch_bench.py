@@ -210,9 +210,11 @@ def main():
         work_path.mkdir(parents=True, exist_ok=True)
         print(f"Directory '{work_path}' created.\n")
 
-    # to save QuAcK output
+    # for I/O
     if not os.path.exists("{}/test".format(work_path)):
         os.makedirs("{}/test".format(work_path))
+    if not os.path.exists("{}/input".format(work_path)):
+        os.makedirs("{}/input".format(work_path))
 
     test_failed = False
     for mol in molecules:
