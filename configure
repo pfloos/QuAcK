@@ -141,7 +141,7 @@ EOF
 
 done
 
-source ${QP_ROOT}/quack.rc
+source ${QUACK_ROOT}/quack.rc
 
 NINJA=$(find_exe ninja)
 if [[ ${NINJA} = $(not_found) ]] ; then
