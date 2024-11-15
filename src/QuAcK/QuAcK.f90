@@ -212,7 +212,7 @@ program QuAcK
 
   dotest = doRtest .or. doUtest .or. doGtest
 
-  if(dotest) call init_test(doRtest,doUtest,doGtest)
+  if(dotest) call init_test(working_dir,doRtest,doUtest,doGtest)
 
 !-------------------------!
 ! Restricted QuAcK branch !

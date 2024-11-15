@@ -11,27 +11,30 @@ on:
 
 jobs:
 
-  configuration:
+  build:
     runs-on: ubuntu-20.04
     name: Dependencies
 
     steps:
-       - name: install dependencies
-         run: |
-           sudo apt install gfortran gcc liblapack-dev libblas-dev wget python3 make m4 pkg-config
+    - name: Checkout repository
+      uses: actions/checkout@v3
 
-  compilation:
-    name: Compilation
-    runs-on: ubuntu-20.04
+    - name: Install dependencies
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y gfortran gcc liblapack-dev libblas-dev wget python3 make m4 pkg-config
+ 
+    - name: Configuration
+      run: |
+        ./configure -i ninja || :
 
-    steps:
-       - uses: actions/checkout@v3
-       - name: Configuration
-         run: |
-              ./configure -i ninja || :
-       - name: Compilation
-         run: |
-              bash -c "source quack.rc ; cd src ; exec make"
+    - name: Compilation
+      run: |
+        bash -c "source quack.rc ; cd src ; make"
 
-
+    - name: Upload compiled binary
+      uses: actions/upload-artifact@v3
+      with:
+        name: fortran-binary
+        path: ./bin/QuAcK
 

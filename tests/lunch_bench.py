@@ -57,11 +57,13 @@ parser.add_argument(
     default='light',
     help="Specify the type of data set: light (default), medium, or heavy."
 )
+
+thresh_default = 1e-7
 parser.add_argument(
     '-t', '--thresh',
     type=float,
-    default=1e-7,
-    help='Threshold for acceptable difference (default: 1e-8)'
+    default=thresh_default,
+    help='Threshold for acceptable difference, default = {}'.format(thresh_default)
 )
     
 
@@ -91,29 +93,32 @@ print("\n\n")
 
 class Quack_Job:
 
-    def __init__(self, mol, multip, basis, geom, methd):
+    def __init__(self, mol, multip, basis, geom, methd, workdir):
         self.mol = mol
         self.multip = multip
         self.basis = basis
         self.geom = geom
         self.methd = methd
+        self.workdir = workdir
 
     def prep_inp(self):
 
         # geometry
-        generate_xyz(self.geom, filename="{}/mol/{}.xyz".format(quack_root, self.mol))
+        if not os.path.exists("{}/mol".format(self.workdir)):
+            os.makedirs("{}/mol".format(self.workdir))
+        generate_xyz(self.geom, filename="{}/mol/{}.xyz".format(self.workdir, self.mol))
 
         # input files
         for inp in ["methods", "options"]:
             inp_file = "{}.{}".format(inp, self.methd.upper())
             if os.path.exists("inp/{}".format(inp_file)):
                 shutil.copy("{}/tests/inp/{}".format(quack_root, inp_file), 
-                            "{}/input/{}".format(quack_root, inp))
+                            "{}/input/{}".format(self.workdir, inp))
             else:
                 print_col("File 'inp/{}' does not exist.".format(inp_file), "red")
                 sys.exit(1)
 
-    def run(self, work_path):
+    def run(self):
 
         def display_spinner():
             spinner = ['|', '/', '-', '\\']
@@ -137,13 +142,14 @@ class Quack_Job:
     
             command = [
                 'python{}'.format(PYTHON_VERSION), 'PyDuck.py',
+                '--working_dir', '{}'.format(self.workdir),
                 '-x', '{}'.format(self.mol), 
                 '-b', '{}'.format(self.basis),
                 '-m', '{}'.format(self.multip)
             ]
             #print_col(f"      $ {' '.join(command)}", "magenta")
     
-            file_out = "{}/{}/{}_{}_{}.out".format(work_path, self.methd, self.mol, self.multip, self.basis)
+            file_out = "{}/{}/{}_{}_{}.out".format(self.workdir, self.methd, self.mol, self.multip, self.basis)
             with open(file_out, 'w') as fobj:
                 result = subprocess.run(command, stdout=fobj, stderr=subprocess.PIPE, text=True)
             if result.stderr:
@@ -161,8 +167,8 @@ class Quack_Job:
             done_event.set()
             spinner_thread.join()
 
-    def check_data(self, data_ref):
-        filepath = '../test/Rtest.dat'
+    def check_data(self, data_ref, test_failed_):
+        filepath = '{}/test/Rtest.dat'.format(self.workdir)
         data_new = {}
         try:
             # read data_new
@@ -177,12 +183,14 @@ class Quack_Job:
             for key in data_ref:
                 if key not in data_new:
                     print_col(f"        😐 {key} missing ⚠️ ", "yellow")
+                    test_failed_ = True
                 else:
                     diff = abs(data_new[key] - data_ref[key]) / (1e-15 + abs(data_ref[key]))
                     if(diff <= THRESH):
                         print_col(f"        🙂 {key}", "green")
                     else:
                         print_col(f"        ☹️  {key}: ❌ {data_ref[key]} ≠ {data_new[key]}", "red")
+                        test_failed_ = True
         except FileNotFoundError:
             print_col(f"Error: The file '{filepath}' does not exist.", "red")
             sys.exit(1)
@@ -201,6 +209,11 @@ def main():
         work_path.mkdir(parents=True, exist_ok=True)
         print(f"Directory '{work_path}' created.\n")
 
+    # to save QuAcK output
+    if not os.path.exists("{}/test".format(work_path)):
+        os.makedirs("{}/test".format(work_path))
+
+    test_failed = False
     for mol in molecules:
 
         mol_name = mol.name
@@ -225,19 +238,26 @@ def main():
                 work_methd = Path('{}/{}'.format(work_path, methd))
                 if not work_methd.exists():
                     work_methd.mkdir(parents=True, exist_ok=True)
-        
-                New_Quack_Job = Quack_Job(mol_name, mol_mult, basis_name, mol_geom, methd)
+
+                New_Quack_Job = Quack_Job(mol_name, mol_mult, basis_name, mol_geom, methd, work_path)
                 New_Quack_Job.prep_inp()
-                New_Quack_Job.run(work_path)
-                New_Quack_Job.check_data(basis_data)
+                New_Quack_Job.run()
+
+                test_failed_ = False
+                New_Quack_Job.check_data(basis_data, test_failed_)
+                if (test_failed_):
+                    test_failed = True
 
                 print()
             print()
         print()
 
-    quit()
+    if test_failed:
+        sys.exit(1)
 
-        
+    sys.exit(0)
+
+
 db_name = '{}.db'.format(bench)
 
 molecules = get_molecules_from_db(db_name)
