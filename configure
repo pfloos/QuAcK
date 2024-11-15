@@ -1,0 +1,153 @@
+#!/bin/bash
+
+export QUACK_ROOT="$( cd "$(dirname "$0")" ; pwd -P )"
+echo "QUACK_ROOT="$QUACK_ROOT
+
+# Force GCC for dependencies
+unset CC
+unset CCXX
+export CC=gcc
+
+# Download submodules
+git submodule init  # Initialize submodules configuration
+git submodule update  # Fetch submodule content
+cd ${QUACK_ROOT}/external/dependencies
+git checkout master
+git pull
+cd ${QUACK_ROOT}
+
+# Update ARM or x86 dependencies
+SYSTEM=$(uname -s)
+if [[ $SYSTEM = "Linux" ]] ; then
+  SYSTEM=""
+fi
+ARCHITECTURE=$(uname -m)$SYSTEM
+echo "Architecture: $ARCHITECTURE"
+
+
+
+function help()
+{
+    cat <<EOF
+QuAcK configuration script.
+
+Usage:
+  $(basename $0) -h           
+  $(basename $0) -i <package> 
+
+Options:
+  -h                Print the HELP message
+  -i <package>      INSTALL <package>.
+Example:
+  ./$(basename $0) -i ninja
+
+EOF
+    exit
+}
+
+function error() {
+    >&2 echo "$(basename $0): $@"
+    exit 2
+}
+
+function execute () {
+    local _command
+    echo "Executing:"
+    while read -r line; do
+      echo "  " $line
+      _command+="${line} ;"
+    done
+    sleep 1
+    echo ""
+    printf "\e[0;94m"
+    ( eval "set -x ; $_command set +x" ) || exit -1
+    printf "\e[m"
+    echo ""
+}
+
+function fail() {
+    echo "You can try to install it using the -i option."
+    exit -1
+}
+
+function not_found() {
+    echo 'not_found'
+}
+
+function find_exe() {
+    which $1 2> /dev/null || not_found
+}
+
+
+
+
+PACKAGES=""
+
+while getopts "i:h" c ; do
+    case "$c" in
+        i)
+            case "$OPTARG" in
+                "") help ; break;;
+                *) PACKAGES="${PACKAGE} $OPTARG"
+            esac;;
+        h)
+            help
+            exit 0;;
+        *)
+            error $(basename $0)": unknown option $c, try -h for help"
+            exit 2;;
+    esac
+done
+
+source ${QUACK_ROOT}/quack.rc
+
+# Trim leading and trailing spaces
+PACKAGES=$(echo $PACKAGES | xargs)
+
+if [[ "${PACKAGES}.x" != ".x" ]] ; then
+      printf "\e[0;31m"
+      echo ""
+      echo "#########################################################"
+      echo "#                                                       #"
+      echo "#       Automatic installation of dependencies          #"
+      echo "#                                                       #"
+      echo "#   Quantum-Package dependencies will be used:          #" 
+      echo "#  https://github.com/QuantumPackage/qp2-dependencies   #"
+      echo "#                                                       #"
+      echo "#########################################################"
+      printf "\e[m"
+      echo ""
+      sleep 1
+fi
+
+if [[ ${PACKAGES} = all ]] ; then
+    PACKAGES="ninja"
+fi
+
+for PACKAGE in ${PACKAGES} ; do
+
+    if [[ ${PACKAGE} = ninja ]] ; then
+
+        execute << EOF
+            rm -f "\${QUACK_ROOT}"/bin/ninja
+            tar -zxvf "\${QUACK_ROOT}"/external/dependencies/${ARCHITECTURE}/ninja.tar.gz 
+            mv ninja "\${QUACK_ROOT}"/bin/
+EOF
+
+    else
+        error "${PACKAGE} unknown."
+        fail
+    fi
+
+done
+
+source ${QP_ROOT}/quack.rc
+
+NINJA=$(find_exe ninja)
+if [[ ${NINJA} = $(not_found) ]] ; then
+    error "Ninja (ninja) is not installed."
+    fail
+fi
+
+exit 0
+
