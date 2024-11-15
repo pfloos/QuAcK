@@ -9,9 +9,13 @@ on:
 
 
 jobs:
+
   test:
     runs-on: ubuntu-20.04
     name: Run Tests
+
+
+    steps:
 
     - name: Checkout repository
       uses: actions/checkout@v3
