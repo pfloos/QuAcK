@@ -71,6 +71,16 @@ program QuAcK
 
   logical                       :: dotest,doRtest,doUtest,doGtest
 
+  character(len=256)            :: working_dir
+
+  ! Check if the right number of arguments is provided
+  if(command_argument_count() < 1) then
+    print *, "No working directory provided."
+    stop
+  else
+    call get_command_argument(1, working_dir)
+  endif
+
 !-------------!
 ! Hello World !
 !-------------!
@@ -95,7 +105,8 @@ program QuAcK
 ! Method selection !
 !------------------!
 
-  call read_methods(doRHF,doUHF,doGHF,doROHF,              &
+  call read_methods(working_dir,                           &
+                    doRHF,doUHF,doGHF,doROHF,              &
                     doMP2,doMP3,                           &
                     doCCD,dopCCD,doDCD,doCCSD,doCCSDT,     &
                     dodrCCD,dorCCD,docrCCD,dolCCD,         &
@@ -112,7 +123,8 @@ program QuAcK
 ! Read options for methods !
 !--------------------------!
 
-  call read_options(maxSCF_HF,thresh_HF,max_diis_HF,guess_type,mix,level_shift,dostab,dosearch, &
+  call read_options(working_dir,                                                                &
+                    maxSCF_HF,thresh_HF,max_diis_HF,guess_type,mix,level_shift,dostab,dosearch, &
                     reg_MP,                                                                     &
                     maxSCF_CC,thresh_CC,max_diis_CC,                                            &
                     TDA,spin_conserved,spin_flip,                                               &
@@ -133,18 +145,18 @@ program QuAcK
 ! nOrb = number of orbitals          !
 !------------------------------------!
 
-  call read_molecule(nNuc,nO,nC,nR)
+  call read_molecule(working_dir,nNuc,nO,nC,nR)
   allocate(ZNuc(nNuc),rNuc(nNuc,ncart))
 
 ! Read geometry
 
-  call read_geometry(nNuc,ZNuc,rNuc,ENuc)
+  call read_geometry(working_dir,nNuc,ZNuc,rNuc,ENuc)
 
 !---------------------------------------!
 ! Read basis set information from PySCF !
 !---------------------------------------!
 
-  call read_basis_pyscf(nBas,nO,nV)
+  call read_basis_pyscf(working_dir,nBas,nO,nV)
 
 !--------------------------------------!
 ! Read one- and two-electron integrals !
@@ -163,8 +175,8 @@ program QuAcK
 
   call wall_time(start_int)
 
-  call read_integrals(nBas,S,T,V,Hc,ERI_AO)
-  call read_dipole_integrals(nBas,dipole_int_AO)
+  call read_integrals(working_dir,nBas,S,T,V,Hc,ERI_AO)
+  call read_dipole_integrals(working_dir,nBas,dipole_int_AO)
 
   call wall_time(end_int)
 

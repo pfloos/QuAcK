@@ -1,4 +1,4 @@
-subroutine read_integrals(nBas_AOs, S, T, V, Hc, G)
+subroutine read_integrals(working_dir,nBas_AOs,S,T,V,Hc,G)
 
 ! Read one- and two-electron integrals from files
 
@@ -8,6 +8,7 @@ subroutine read_integrals(nBas_AOs, S, T, V, Hc, G)
 ! Input variables
 
   integer,intent(in)            :: nBas_AOs
+  character(len=256),intent(in) :: working_dir
 
 ! Local variables
 
@@ -24,6 +25,9 @@ subroutine read_integrals(nBas_AOs, S, T, V, Hc, G)
   double precision,intent(out)  :: Hc(nBas_AOs,nBas_AOs)
   double precision,intent(out)  :: G(nBas_AOs,nBas_AOs,nBas_AOs,nBas_AOs)
 
+  integer                       :: status, ios
+  character(len=256)            :: file_path
+
 ! Open file with integrals
 
   debug = .false.
@@ -32,46 +36,67 @@ subroutine read_integrals(nBas_AOs, S, T, V, Hc, G)
 
   print*, 'Scaling integrals by ',lambda
 
-  open(unit=8 ,file='int/Ov.dat')
-  open(unit=9 ,file='int/Kin.dat')
-  open(unit=10,file='int/Nuc.dat')
 
-  open(unit=21,file='int/x.dat')
-  open(unit=22,file='int/y.dat')
-  open(unit=23,file='int/z.dat')
+  ! ---
 
-! Read overlap integrals
+  ! Read overlap integrals
+  file_path = trim(working_dir) // '/int/Ov.dat'
+  open(unit=8, file=file_path, status='old', action='read', iostat=status)
+    if(status /= 0) then
+      print *, "Error opening file: ", file_path
+      stop
+    else
+      S(:,:) = 0d0
+      do 
+        read(8,*,iostat=ios) mu,nu,Ov
+        if(ios /= 0) exit
+        S(mu,nu) = Ov
+        S(nu,mu) = Ov
+      end do
+    endif
+  close(unit=8)
 
-  S(:,:) = 0d0
-  do 
-    read(8,*,end=8) mu,nu,Ov
-    S(mu,nu) = Ov
-    S(nu,mu) = Ov
-  end do
-  8 close(unit=8)
+  ! ---
 
-! Read kinetic integrals
+  ! Read kinetic integrals
+  file_path = trim(working_dir) // '/int/Kin.dat'
+  open(unit=9, file=file_path, status='old', action='read', iostat=status)
+    if(status /= 0) then
+      print *, "Error opening file: ", file_path
+      stop
+    else
+      T(:,:) = 0d0
+      do 
+        read(9,*,iostat=ios) mu,nu,Kin
+        if(ios /= 0) exit
+        T(mu,nu) = Kin
+        T(nu,mu) = Kin
+      end do
+    endif
+  close(unit=9)
 
-  T(:,:) = 0d0
-  do 
-    read(9,*,end=9) mu,nu,Kin
-    T(mu,nu) = Kin
-    T(nu,mu) = Kin
-  end do
-  9 close(unit=9)
+  ! ---
 
-! Read nuclear integrals
+  ! Read nuclear integrals
+  file_path = trim(working_dir) // '/int/Nuc.dat'
+  open(unit=10, file=file_path, status='old', action='read', iostat=status)
+    if(status /= 0) then
+      print *, "Error opening file: ", file_path
+      stop
+    else
+      V(:,:) = 0d0
+      do 
+        read(10,*,iostat=ios) mu,nu,Nuc
+        if(ios /= 0) exit
+        V(mu,nu) = Nuc
+        V(nu,mu) = Nuc
+      end do
+    endif
+  close(unit=10)
 
-  V(:,:) = 0d0
-  do 
-    read(10,*,end=10) mu,nu,Nuc
-    V(mu,nu) = Nuc
-    V(nu,mu) = Nuc
-  end do
-  10 close(unit=10)
+  ! ---
 
-! Define core Hamiltonian
-
+  ! Define core Hamiltonian
   Hc(:,:) = T(:,:) + V(:,:)
 
 ! Read 2e-integrals
@@ -94,9 +119,16 @@ subroutine read_integrals(nBas_AOs, S, T, V, Hc, G)
 !  11 close(unit=11)
 
   ! binary file
-  open(unit=11, file='int/ERI.bin', form='unformatted', access='stream')
-  read(11) G
-  close(11)
+  file_path = trim(working_dir) // '/int/ERI.bin'
+  open(unit=11, file=file_path, status='old', action='read', form='unformatted', access='stream', iostat=status)
+    if(status /= 0) then
+      print *, "Error opening file: ", file_path
+      stop
+    else
+      read(11) G
+    endif
+  close(unit=11)
+
 
 
 ! Print results

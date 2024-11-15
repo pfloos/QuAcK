@@ -1,6 +1,9 @@
 #!/usr/bin/env python3
 import os
 import sys
+import subprocess
+
+
 
 DEBUG=False
 try:
@@ -20,41 +23,28 @@ if "QUACK_ROOT" not in os.environ:
 
 QUACK_ROOT=os.environ["QUACK_ROOT"]
 
-if not DEBUG:
-    compile_gfortran_mac = """
+
+def check_compiler_exists(compiler):
+    """Check if a compiler exists on the system."""
+    try:
+        # Try to run the compiler with the --version flag to check its existence
+        subprocess.run([compiler, '--version'], check=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        return True
+    except (subprocess.CalledProcessError, FileNotFoundError):
+        return False
+ 
+compile_gfortran_mac = """
 FC = gfortran
 AR = libtool -static -o
-FFLAGS = -I$IDIR -J$IDIR -fbacktrace -g -Wall -Wno-unused-variable -Wno-unused -Wno-unused-dummy-argument -O3
+FFLAGS = -I$IDIR -J$IDIR -fbacktrace -g -Wall -Wno-unused-variable -Wno-unused -Wno-unused-dummy-argument -Wuninitialized -Wmaybe-uninitialized -O3 -march=native
 CC = gcc
 CXX = g++
 LAPACK=-lblas -llapack
 STDCXX=-lc++
-FIX_ORDER_OF_LIBS=
+FIX_ORDER_OF_LIBS=-Wl,--start-group 
 """
 
-    compile_gfortran_linux = """
-FC = gfortran
-AR = ar crs
-FFLAGS = -I$IDIR -J$IDIR -fbacktrace -g -Wall -Wno-unused -Wno-unused-dummy-argument -O3
-CC = gcc
-CXX = g++
-LAPACK=-lblas -llapack
-STDCXX=-lstdc++
-FIX_ORDER_OF_LIBS=-Wl,--start-group 
-"""
-    
-    compile_ifort_linux = """
-FC = ifort -mkl=parallel -qopenmp
-AR = ar crs
-FFLAGS = -I$IDIR -g -Ofast -traceback
-CC = icc
-CXX = icpc
-LAPACK=
-STDCXX=-lstdc++
-FIX_ORDER_OF_LIBS=-Wl,--start-group 
-"""
-else:
-    compile_gfortran_mac = """
+compile_gfortran_mac_debug = """
 FC = gfortran
 AR = libtool -static -o
 FFLAGS = -I$IDIR -J$IDIR -fbacktrace -Wall -Wno-unused-variable -g -fcheck=all -Waliasing -Wampersand -Wconversion -Wsurprising -Wintrinsics-std -Wno-tabs -Wintrinsic-shadow -Wline-truncation -Wreal-q-constant
@@ -65,7 +55,7 @@ STDCXX=-lc++
 FIX_ORDER_OF_LIBS=
 """
 
-    compile_gfortran_linux = """
+compile_gfortran_linux_debug = """
 FC = gfortran
 AR = ar crs
 FFLAGS = -I$IDIR -J$IDIR -fbacktrace -Wall -g -fcheck=all -Waliasing -Wampersand -Wconversion -Wsurprising -Wintrinsics-std -Wno-tabs -Wintrinsic-shadow -Wline-truncation -Wreal-q-constant
@@ -76,26 +66,50 @@ STDCXX=-lstdc++
 FIX_ORDER_OF_LIBS=-Wl,--start-group 
 """
 
-compile_olympe = """
-FC = ifort -mkl=parallel -qopenmp
+
+
+if sys.platform == "Darwin":
+
+    if DEBUG:
+        compiler = compile_gfortran_mac_debug
+    else:
+        compiler = compile_gfortran_mac
+
+elif sys.platform == "Linux" or os.path.exists('/proc/version'):
+
+    if DEBUG:
+        compiler = compile_gfortran_linux_debug
+
+    else:
+        if check_compiler_exists('ifort'):
+            compiler = """
+FC = ifort -qmkl=parallel -qopenmp
 AR = ar crs
-FFLAGS = -I$IDIR -Ofast -traceback -xCORE-AVX512
+FFLAGS = -I$IDIR -module $IDIR -traceback -g -Ofast -xHost
 CC = icc
 CXX = icpc
 LAPACK=
 STDCXX=-lstdc++
-FIX_ORDER_OF_LIBS=-Wl,--start-group 
+FIX_ORDER_OF_LIBS=-Wl,--start-group
 """
+        elif check_compiler_exists('gfortran'):
+            compiler = """
+FC = gfortran -fopenmp
+AR = ar crs
+FFLAGS = -I$IDIR -J$IDIR -fbacktrace -g -Wall -Wno-unused-variable -Wno-unused -Wno-unused-dummy-argument -Wuninitialized -Wmaybe-uninitialized -O3 -march=native
+CC = gcc
+CXX = g++
+LAPACK=-lblas -llapack
+STDCXX=-lstdc++
+FIX_ORDER_OF_LIBS=-Wl,--start-group
+"""
+        else:
+            raise RuntimeError("Neither ifort nor gfortran compilers were found on this system.")
 
-if sys.platform in ["linux", "linux2"]:
-#   compiler = compile_gfortran_linux
-   compiler = compile_ifort_linux 
-#    compiler = compile_olympe
-elif sys.platform == "darwin":
-  compiler = compile_gfortran_mac
 else:
-  print("Unknown platform. Only Linux and Darwin are supported.")
-  sys.exit(-1)
+
+    print("Unknown platform. Only Linux and Darwin are supported.")
+    sys.exit(-1)
 
 header = """#
 # This file was automatically generated. Do not modify this file.
