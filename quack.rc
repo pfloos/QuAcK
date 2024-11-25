@@ -3,7 +3,7 @@
 QUACK_ROOT="/NOT/FOUND"
     case "$(ps -p $$ -ocomm=)" in
     "zsh")
-        QUACK_ROOT=$(dirname $0)
+	QUACK_ROOT=$(dirname "$0")
     ;;
     *)
         QUACK_ROOT=$(dirname "${BASH_SOURCE[0]}")
@@ -12,5 +12,4 @@ esac
 
 export QUACK_ROOT="$( cd $QUACK_ROOT; pwd -P )"
 
-export PATH=${QUACK_ROOT}/bin:$PATH
-
+export PATH="${QUACK_ROOT}/bin:$PATH"
