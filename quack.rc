@@ -6,7 +6,7 @@ QUACK_ROOT="/NOT/FOUND"
         QUACK_ROOT=$(dirname $0)
     ;;
     *)
-        QUACK_ROOT=$(dirname ${BASH_SOURCE})[0]
+        QUACK_ROOT=$(dirname "${BASH_SOURCE[0]}")
     ;;
 esac
 
