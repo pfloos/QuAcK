@@ -41,7 +41,7 @@ CC = gcc
 CXX = g++
 LAPACK=-lblas -llapack
 STDCXX=-lc++
-FIX_ORDER_OF_LIBS=-Wl,--start-group 
+FIX_ORDER_OF_LIBS=
 """
 
 compile_gfortran_mac_debug = """
@@ -66,16 +66,14 @@ STDCXX=-lstdc++
 FIX_ORDER_OF_LIBS=-Wl,--start-group 
 """
 
-
-
-if sys.platform == "Darwin":
+if sys.platform.lower() == "darwin":
 
     if DEBUG:
         compiler = compile_gfortran_mac_debug
     else:
         compiler = compile_gfortran_mac
 
-elif sys.platform == "Linux" or os.path.exists('/proc/version'):
+elif sys.platform.lower() == "linux" or os.path.exists('/proc/version'):
 
     if DEBUG:
         compiler = compile_gfortran_linux_debug
