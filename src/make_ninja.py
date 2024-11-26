@@ -3,14 +3,14 @@ import os
 import sys
 import subprocess
 
+import argparse
+parser = argparse.ArgumentParser(description='This script generate the compilation files for QuAcK.')
+parser.add_argument('-d', '--debug', action='store_true', help='Debug mode. Default is false.')
+parser.add_argument('-u', '--use-gpu', action='store_true', help='Use GPU. Default is false.')
+args = parser.parse_args()
+DEBUG = args.debug
+USE_GPU = args.use_gpu
 
-
-DEBUG=False
-try:
-  DEBUG = sys.argv[1] == "debug"
-except:
-  pass
- 	
 
 if "QUACK_ROOT" not in os.environ:
    os.chdir("..")
@@ -120,6 +120,7 @@ IDIR=$QUACK_ROOT/include
 LDIR=$QUACK_ROOT/lib
 BDIR=$QUACK_ROOT/bin
 SDIR=$QUACK_ROOT/src
+CUDA_DIR=$QUACK_ROOT/src/cuda/build
 
 LIBXC_VERSION=5.0.0
 
@@ -248,7 +249,10 @@ rule build_lib
             sources = [ "$SDIR/{0}/{1}".format(exe_dir,x) for x in  os.listdir(exe_dir) ]
             sources = filter(lambda x: x.endswith(".f") or x.endswith(".f90"), sources)
             sources = " ".join(sources)
-            f.write("build $BDIR/{0}: build_exe {1} {2}\n".format(exe_dir,libs,sources))
+            if USE_GPU:
+                f.write("build $BDIR/{0}: build_exe $CUDA_DIR/cuda.a {1} {2}\n".format(exe_dir,libs,sources))
+            else:
+                f.write("build $BDIR/{0}: build_exe {1} {2}\n".format(exe_dir,libs,sources))
             f.write("  dir = {0} \n".format(exe_dir) )
 
         for libname in lib_dirs:
