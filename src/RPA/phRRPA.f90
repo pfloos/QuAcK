@@ -1,5 +1,7 @@
 subroutine phRRPA(dotest,TDA,doACFDT,exchange_kernel,singlet,triplet,nBas,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,dipole_int,eHF)
 
+  use cu_quack_module
+
 ! Perform a direct random phase approximation calculation
 
   implicit none
@@ -37,6 +39,8 @@ subroutine phRRPA(dotest,TDA,doACFDT,exchange_kernel,singlet,triplet,nBas,nC,nO,
   double precision,allocatable  :: Om(:)
   double precision,allocatable  :: XpY(:,:)
   double precision,allocatable  :: XmY(:,:)
+  ! DEBUG
+  double precision, allocatable :: XpY_gpu(:,:), XmY_gpu(:,:), Om_gpu(:)
 
   double precision              :: EcRPA(nspin)
 
@@ -73,6 +77,13 @@ subroutine phRRPA(dotest,TDA,doACFDT,exchange_kernel,singlet,triplet,nBas,nC,nO,
 
     call phLR_A(ispin,dRPA,nBas,nC,nO,nV,nR,nS,lambda,eHF,ERI,Aph)
     if(.not.TDA) call phLR_B(ispin,dRPA,nBas,nC,nO,nV,nR,nS,lambda,ERI,Bph)
+
+    ! DEBUG
+    allocate(Om_gpu(nS), XpY_gpu(nS,nS), XmY_gpu(nS,nS))
+    call ph_drpa(nO, nBas, eHF(1), ERI(1,1,1,1), Om_gpu(1), XpY_gpu(1,1), XmY_gpu(1,1))
+    print *, ' CPU:', Aph(1,1)
+    print *, ' GPU:', XpY_gpu(1,1)
+    stop
 
     call phLR(TDA,nS,Aph,Bph,EcRPA(ispin),Om,XpY,XmY)
     call print_excitation_energies('phRPA@RHF','singlet',nS,Om)

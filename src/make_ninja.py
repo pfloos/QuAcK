@@ -109,6 +109,15 @@ else:
     print("Unknown platform. Only Linux and Darwin are supported.")
     sys.exit(-1)
 
+if USE_GPU:
+    compiler_tmp = compiler.strip().split('\n')
+    compiler_tmp[0] += " -L{}/src/cuda/build -lcuquack -lcudart -lcublas".format(QUACK_ROOT)
+    compiler_exe = '\n'.join(compiler_tmp)
+else:
+    compiler_exe = compiler
+
+
+
 header = """#
 # This file was automatically generated. Do not modify this file.
 # To change compiling options, make the modifications in 
@@ -171,7 +180,7 @@ build_in_lib_dir = "\n".join([
   
 build_in_exe_dir = "\n".join([
 	header,
-	compiler,
+	compiler_exe,
 	rule_fortran,
 	rule_build_exe,
 ])
@@ -191,7 +200,6 @@ if USE_GPU:
     lib_dirs[0], lib_dirs[i] = lib_dirs[i], lib_dirs[0]
 else:
     lib_dirs.remove("mod")
-print(lib_dirs)
 
 def create_ninja_in_libdir(directory):
     def write_rule(f, source_file, replace):
