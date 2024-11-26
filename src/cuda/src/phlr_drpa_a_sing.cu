@@ -4,39 +4,46 @@ __global__ void phLR_dRPA_A_sing_kernel(int nO, int nBas, double *eps, double *E
 
 
     int i, j, a, b;
-    int ia, jb, jb_off;
+    int aa, bb;
+    int nV, nS, nVS;
+    int nBas2, nBas3;
+    int i_A0, i_A1, i_A2;
+    int i_I0, i_I1, i_I2;
 
-    int ij_off0, ij_off;
+    nV = nBas - nO;
+    nS = nO * nV;
+    nVS = nV * nS;
 
-    int aa_max = nBas - nO;
-    int ia_max = aa_max * nO;
+    nBas2 = nBas * nBas;
+    nBas3 = nBas2 * nBas;
 
-    int nBas2 = nBas * nBas;
-    int nBas3 = nBas2 * nBas;
+    aa = blockIdx.x * blockDim.x + threadIdx.x;
+    bb = blockIdx.y * blockDim.y + threadIdx.y;
 
-    int aa = blockIdx.x * blockDim.x + threadIdx.x;
-    int bb = blockIdx.y * blockDim.y + threadIdx.y;
-
-    while(aa < aa_max) {
+    while(aa < nV) {
         a = aa + nO;
 
-        ij_off0 = a * nBas2;
+        i_A0 = aa * nS;
+        i_I0 = a * nBas2;
 
-        while(bb < aa_max) {
+        while(bb < nV) {
             b = bb + nO;
 
-            ij_off = ij_off0 + b * nBas;
+            i_A1 = i_A0 + bb;
+            i_I1 = i_I0 + b * nBas;
 
+            i = 0;
             while(i < nO) {
-                ia = i * aa_max + aa;
-                jb_off = ia * ia_max;
- 
-                while(j < nO) {
-                    jb = j * aa_max + bb;
 
-                    A[jb + jb_off] = 2.0 * ERI[i + j * nBas3 + ij_off];
-                    if(a==b && i==j) {
-                        A[jb + jb_off] += eps[a] - eps[i];
+                i_A2 = i_A1 + i * nVS;
+                i_I2 = i_I1 + i;
+ 
+                j = 0;
+                while(j < nO) {
+
+                    A[i_A2 + j * nV] = 2.0 * ERI[i_I2 + j * nBas3];
+                    if((a==b) && (i==j)) {
+                        A[i_A2 + j * nV] += eps[a] - eps[i];
                     }
 
                     j ++;

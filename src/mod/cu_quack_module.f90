@@ -8,16 +8,16 @@ module cu_quack_module
 
   interface
 
-    subroutine ph_drpa(nO, nBas, eps, ERI, &
+    subroutine ph_drpa(nO, nBas, nS, eps, ERI, &
                        Omega, XpY, XmY) bind(C, name = "ph_drpa")
 
       import c_int, c_double
-      integer(c_int), intent(in), value :: nO, nBas
+      integer(c_int), intent(in), value :: nO, nBas, nS
       real(c_double), intent(in)        :: eps(nBas)
       real(c_double), intent(in)        :: ERI(nBas,nBas,nBas,nBas)
-      real(c_double), intent(out)       :: Omega(nO*nBas)
-      real(c_double), intent(out)       :: XpY(nO*nBas,nO*nBas)
-      real(c_double), intent(out)       :: XmY(nO*nBas,nO*nBas)
+      real(c_double), intent(out)       :: Omega(nS)
+      real(c_double), intent(out)       :: XpY(nS,nS)
+      real(c_double), intent(out)       :: XmY(nS,nS)
 
     end subroutine ph_drpa
 

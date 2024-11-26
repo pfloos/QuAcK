@@ -80,9 +80,10 @@ subroutine phRRPA(dotest,TDA,doACFDT,exchange_kernel,singlet,triplet,nBas,nC,nO,
 
     ! DEBUG
     allocate(Om_gpu(nS), XpY_gpu(nS,nS), XmY_gpu(nS,nS))
-    call ph_drpa(nO, nBas, eHF(1), ERI(1,1,1,1), Om_gpu(1), XpY_gpu(1,1), XmY_gpu(1,1))
+    call ph_drpa(nO, nBas, nS, eHF(1), ERI(1,1,1,1), Om_gpu(1), XpY_gpu(1,1), XmY_gpu(1,1))
     print *, ' CPU:', Aph(1,1)
     print *, ' GPU:', XpY_gpu(1,1)
+    print *, ' GPU:', XmY_gpu(1,1)
     stop
 
     call phLR(TDA,nS,Aph,Bph,EcRPA(ispin),Om,XpY,XmY)
