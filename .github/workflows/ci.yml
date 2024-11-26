@@ -4,10 +4,10 @@ name: QuAcK CI
 on:
   push:
     branches:
-    - ci
+    - master
   pull_request:
     branches:
-    - master
+    - '**'
   schedule:
   - cron: "42 19 * * 6"
 
