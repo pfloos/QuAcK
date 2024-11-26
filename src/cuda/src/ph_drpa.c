@@ -9,8 +9,6 @@
 
 int ph_drpa(int nO, int nBas, double *h_eps, double *h_ERI) {
 
-
-
     double *d_eps;
     double *d_ERI;
 

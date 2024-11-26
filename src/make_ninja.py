@@ -81,7 +81,7 @@ elif sys.platform.lower() == "linux" or os.path.exists('/proc/version'):
     else:
         if check_compiler_exists('ifort'):
             compiler = """
-FC = ifort -qmkl=parallel -qopenmp
+FC = ifort -mkl=parallel -qopenmp
 AR = ar crs
 FFLAGS = -I$IDIR -module $IDIR -traceback -g -Ofast -xHost
 CC = icc
@@ -182,9 +182,10 @@ build_main = "\n".join([
         rule_git_clone,
 ])
 
-exe_dirs = [ "QuAcK"]
+exe_dirs = ["QuAcK"]
 lib_dirs = list(filter(lambda x: os.path.isdir(x) and \
-                                 x not in exe_dirs, os.listdir(".")))
+                                x not in ["cuda"] and \
+                                x not in exe_dirs, os.listdir(".")))
 
 def create_ninja_in_libdir(directory):
     def write_rule(f, source_file, replace):
