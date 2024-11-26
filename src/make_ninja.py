@@ -120,7 +120,6 @@ IDIR=$QUACK_ROOT/include
 LDIR=$QUACK_ROOT/lib
 BDIR=$QUACK_ROOT/bin
 SDIR=$QUACK_ROOT/src
-CUDA_DIR=$QUACK_ROOT/src/cuda/build
 
 LIBXC_VERSION=5.0.0
 
@@ -187,6 +186,12 @@ exe_dirs = ["QuAcK"]
 lib_dirs = list(filter(lambda x: os.path.isdir(x) and \
                                 x not in ["cuda"] and \
                                 x not in exe_dirs, os.listdir(".")))
+if USE_GPU:
+    i = lib_dirs.index("mod")
+    lib_dirs[0], lib_dirs[i] = lib_dirs[i], lib_dirs[0]
+else:
+    lib_dirs.remove("mod")
+print(lib_dirs)
 
 def create_ninja_in_libdir(directory):
     def write_rule(f, source_file, replace):
@@ -249,10 +254,7 @@ rule build_lib
             sources = [ "$SDIR/{0}/{1}".format(exe_dir,x) for x in  os.listdir(exe_dir) ]
             sources = filter(lambda x: x.endswith(".f") or x.endswith(".f90"), sources)
             sources = " ".join(sources)
-            if USE_GPU:
-                f.write("build $BDIR/{0}: build_exe $CUDA_DIR/cuda.a {1} {2}\n".format(exe_dir,libs,sources))
-            else:
-                f.write("build $BDIR/{0}: build_exe {1} {2}\n".format(exe_dir,libs,sources))
+            f.write("build $BDIR/{0}: build_exe {1} {2}\n".format(exe_dir,libs,sources))
             f.write("  dir = {0} \n".format(exe_dir) )
 
         for libname in lib_dirs:

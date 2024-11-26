@@ -2,6 +2,8 @@
 #include <cuda.h>
 #include <stdio.h>
 #include <cublas_v2.h>
+#include <cstring>
+
 
 
 extern "C" void check_Cuda_Errors(cudaError_t err, const char* msg, const char* file, int line) {
@@ -13,7 +15,7 @@ extern "C" void check_Cuda_Errors(cudaError_t err, const char* msg, const char* 
 }
 
 
-const char* cublasGetErrorString(cublasStatus_t status) {
+const char* cublas_Get_Error_String(cublasStatus_t status) {
     switch (status) {
         case CUBLAS_STATUS_SUCCESS:
             return "CUBLAS_STATUS_SUCCESS";
@@ -41,9 +43,9 @@ const char* cublasGetErrorString(cublasStatus_t status) {
 
 extern "C" void check_Cublas_Errors(cublasStatus_t status, const char* msg, const char* file, int line) {
 
-    const char* err = cublasGetErrorString(status);
+    const char* err = cublas_Get_Error_String(status);
 
-    if (err != "CUBLAS_STATUS_SUCCESS") {
+    if (strcmp(err, "CUBLAS_STATUS_SUCCESS") != 0) {
         printf("CUBLAS Error in %s at line %d\n", file, line);
         printf("%s - %s\n", msg, err);
         exit(0);
