@@ -39,6 +39,6 @@ $(F_OBJ): $(F_SRC)
 
 .PHONY: clean
 clean:
-	rm -f $(BLD_DIR)/*
+	rm $(BLD_DIR)/*
 
 

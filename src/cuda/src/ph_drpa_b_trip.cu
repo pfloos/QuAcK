@@ -1,12 +1,12 @@
 #include <stdio.h>
 
-__global__ void ph_dRPA_A_trip_kernel(int nO, int nV, int nBas, int nS, double *eps, double *A) {
+__global__ void ph_dRPA_B_trip_kernel(int nO, int nV, int nBas, int nS, double *B) {
 
 
-    int i, j, a, b;
+    int i, j;
     int aa, bb;
     int nVS;
-    int i_A0, i_A1, i_A2;
+    int i_B0, i_B1, i_B2;
 
     nVS = nV * nS;
 
@@ -14,27 +14,22 @@ __global__ void ph_dRPA_A_trip_kernel(int nO, int nV, int nBas, int nS, double *
     bb = blockIdx.y * blockDim.y + threadIdx.y;
 
     while(aa < nV) {
-        a = aa + nO;
 
-        i_A0 = aa * nS;
+        i_B0 = aa * nS;
 
         while(bb < nV) {
-            b = bb + nO;
 
-            i_A1 = i_A0 + bb;
+            i_B1 = i_B0 + bb;
 
             i = 0;
             while(i < nO) {
 
-                i_A2 = i_A1 + i * nVS;
+                i_B2 = i_B1 + i * nVS;
  
                 j = 0;
                 while(j < nO) {
 
-                    A[i_A2 + j * nV] = 0.0;
-                    if((a==b) && (i==j)) {
-                        A[i_A2 + j * nV] += eps[a] - eps[i];
-                    }
+                    B[i_B2 + j * nV] = 0.0;
 
                     j ++;
 	        } // j
@@ -54,7 +49,7 @@ __global__ void ph_dRPA_A_trip_kernel(int nO, int nV, int nBas, int nS, double *
 
 
 
-extern "C" void ph_dRPA_A_trip(int nO, int nV, int nBas, int nS, double *eps, double *A) {
+extern "C" void ph_dRPA_B_trip(int nO, int nV, int nBas, int nS, double *B) {
 
 
     int sBlocks = 32;
@@ -64,11 +59,11 @@ extern "C" void ph_dRPA_A_trip(int nO, int nV, int nBas, int nS, double *eps, do
     dim3 dimBlock(sBlocks, sBlocks, 1);
 
 
-    printf("lunching ph_dRPA_A_trip_kernel with %dx%d blocks and %dx%d threads/block\n",
+    printf("lunching ph_dRPA_B_trip_kernel with %dx%d blocks and %dx%d threads/block\n",
         nBlocks, nBlocks, sBlocks, sBlocks);
 
 
-    ph_dRPA_A_trip_kernel<<<dimGrid, dimBlock>>>(nO, nV, nBas, nS, eps, A);
+    ph_dRPA_B_trip_kernel<<<dimGrid, dimBlock>>>(nO, nV, nBas, nS, B);
 
 }
 

@@ -13,6 +13,8 @@ int ph_drpa(int nO, int nBas, int nS, double *h_eps, double *h_ERI,
     double *d_eps;
     double *d_ERI;
 
+    int nV = nBas - nO;
+
     int nBas2 = nBas * nBas;
     int nBas4 = nBas2 * nBas2;
 
@@ -40,7 +42,7 @@ int ph_drpa(int nO, int nBas, int nS, double *h_eps, double *h_ERI,
     // construct A matrix
     double *d_A;
     check_Cuda_Errors(cudaMalloc((void**)&d_A, nS * nS * sizeof(double)), "cudaMalloc", __FILE__, __LINE__);
-    ph_dRPA_A_sing(nO, nBas, d_eps, d_ERI, d_A);
+    ph_dRPA_A_sing(nO, nV, nBas, nS, d_eps, d_ERI, d_A);
     check_Cuda_Errors(cudaGetLastError(), "cudaGetLastError", __FILE__, __LINE__);
 
 

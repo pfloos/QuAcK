@@ -1,17 +1,15 @@
 #include <stdio.h>
 
-__global__ void ph_dRPA_A_sing_kernel(int nO, int nBas, double *eps, double *ERI, double *A) {
+__global__ void ph_dRPA_A_sing_kernel(int nO, int nV, int nBas, int nS, double *eps, double *ERI, double *A) {
 
 
     int i, j, a, b;
     int aa, bb;
-    int nV, nS, nVS;
+    int nVS;
     int nBas2, nBas3;
     int i_A0, i_A1, i_A2;
     int i_I0, i_I1, i_I2;
 
-    nV = nBas - nO;
-    nS = nO * nV;
     nVS = nV * nS;
 
     nBas2 = nBas * nBas;
@@ -64,13 +62,11 @@ __global__ void ph_dRPA_A_sing_kernel(int nO, int nBas, double *eps, double *ERI
 
 
 
-extern "C" void ph_dRPA_A_sing(int nO, int nBas, double *eps, double *ERI, double *A) {
+extern "C" void ph_dRPA_A_sing(int nO, int nV, int nBas, int nS, double *eps, double *ERI, double *A) {
 
-
-    int size = nBas - nO;
 
     int sBlocks = 32;
-    int nBlocks = (size + sBlocks - 1) / sBlocks;
+    int nBlocks = (nV + sBlocks - 1) / sBlocks;
 
     dim3 dimGrid(nBlocks, nBlocks, 1);
     dim3 dimBlock(sBlocks, sBlocks, 1);
@@ -80,7 +76,7 @@ extern "C" void ph_dRPA_A_sing(int nO, int nBas, double *eps, double *ERI, doubl
         nBlocks, nBlocks, sBlocks, sBlocks);
 
 
-    ph_dRPA_A_sing_kernel<<<dimGrid, dimBlock>>>(nO, nBas, eps, ERI, A);
+    ph_dRPA_A_sing_kernel<<<dimGrid, dimBlock>>>(nO, nV, nBas, nS, eps, ERI, A);
 
 }
 
