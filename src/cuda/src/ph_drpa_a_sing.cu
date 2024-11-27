@@ -1,6 +1,6 @@
 #include <stdio.h>
 
-__global__ void phLR_dRPA_A_sing_kernel(int nO, int nBas, double *eps, double *ERI, double *A) {
+__global__ void ph_dRPA_A_sing_kernel(int nO, int nBas, double *eps, double *ERI, double *A) {
 
 
     int i, j, a, b;
@@ -64,7 +64,7 @@ __global__ void phLR_dRPA_A_sing_kernel(int nO, int nBas, double *eps, double *E
 
 
 
-extern "C" void phLR_dRPA_A_sing(int nO, int nBas, double *eps, double *ERI, double *A) {
+extern "C" void ph_dRPA_A_sing(int nO, int nBas, double *eps, double *ERI, double *A) {
 
 
     int size = nBas - nO;
@@ -76,11 +76,11 @@ extern "C" void phLR_dRPA_A_sing(int nO, int nBas, double *eps, double *ERI, dou
     dim3 dimBlock(sBlocks, sBlocks, 1);
 
 
-    printf("lunching phLR_dRPA_A_sing_kernel with %dx%d blocks and %dx%d threads/block\n",
+    printf("lunching ph_dRPA_A_sing_kernel with %dx%d blocks and %dx%d threads/block\n",
         nBlocks, nBlocks, sBlocks, sBlocks);
 
 
-    phLR_dRPA_A_sing_kernel<<<dimGrid, dimBlock>>>(nO, nBas, eps, ERI, A);
+    ph_dRPA_A_sing_kernel<<<dimGrid, dimBlock>>>(nO, nBas, eps, ERI, A);
 
 }
 
