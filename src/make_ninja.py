@@ -111,7 +111,7 @@ else:
 
 if USE_GPU:
     compiler_tmp = compiler.strip().split('\n')
-    compiler_tmp[0] += " -L{}/src/cuda/build -lcuquack -lcudart -lcublas".format(QUACK_ROOT)
+    compiler_tmp[0] += " -L{}/src/cuda/build -lcuquack -lcudart -lcublas -lcusolver".format(QUACK_ROOT)
     compiler_exe = '\n'.join(compiler_tmp)
 else:
     compiler_exe = compiler

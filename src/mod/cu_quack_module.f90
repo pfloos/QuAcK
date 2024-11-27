@@ -8,18 +8,17 @@ module cu_quack_module
 
   interface
 
-    subroutine ph_drpa(nO, nBas, nS, eps, ERI, &
-                       Omega, XpY, XmY) bind(C, name = "ph_drpa")
+    subroutine ph_drpa_tda(nO, nBas, nS, eps, ERI, &
+                           Omega, X) bind(C, name = "ph_drpa_tda")
 
       import c_int, c_double
       integer(c_int), intent(in), value :: nO, nBas, nS
       real(c_double), intent(in)        :: eps(nBas)
       real(c_double), intent(in)        :: ERI(nBas,nBas,nBas,nBas)
       real(c_double), intent(out)       :: Omega(nS)
-      real(c_double), intent(out)       :: XpY(nS,nS)
-      real(c_double), intent(out)       :: XmY(nS,nS)
+      real(c_double), intent(out)       :: X(nS,nS)
 
-    end subroutine ph_drpa
+    end subroutine ph_drpa_tda
 
   end interface
 
@@ -29,7 +28,7 @@ module cu_quack_module
 
     subroutine cu_quack_module_test()
         implicit none
-        print*, ' hello from mod_test'
+        print*, ' hello from cu_quack_module'
     end subroutine cu_quack_module_test
 
   ! ---

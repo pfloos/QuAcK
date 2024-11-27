@@ -31,6 +31,7 @@ subroutine phRRPA(dotest,TDA,doACFDT,exchange_kernel,singlet,triplet,nBas,nC,nO,
 
 ! Local variables
 
+  integer                       :: i
   integer                       :: ispin
   logical                       :: dRPA
   double precision              :: lambda
@@ -40,7 +41,7 @@ subroutine phRRPA(dotest,TDA,doACFDT,exchange_kernel,singlet,triplet,nBas,nC,nO,
   double precision,allocatable  :: XpY(:,:)
   double precision,allocatable  :: XmY(:,:)
   ! DEBUG
-  double precision, allocatable :: XpY_gpu(:,:), XmY_gpu(:,:), Om_gpu(:)
+  !double precision, allocatable :: XpY_gpu(:,:), XmY_gpu(:,:), Om_gpu(:)
 
   double precision              :: EcRPA(nspin)
 
@@ -78,15 +79,21 @@ subroutine phRRPA(dotest,TDA,doACFDT,exchange_kernel,singlet,triplet,nBas,nC,nO,
     call phLR_A(ispin,dRPA,nBas,nC,nO,nV,nR,nS,lambda,eHF,ERI,Aph)
     if(.not.TDA) call phLR_B(ispin,dRPA,nBas,nC,nO,nV,nR,nS,lambda,ERI,Bph)
 
-    ! DEBUG
-    allocate(Om_gpu(nS), XpY_gpu(nS,nS), XmY_gpu(nS,nS))
-    call ph_drpa(nO, nBas, nS, eHF(1), ERI(1,1,1,1), Om_gpu(1), XpY_gpu(1,1), XmY_gpu(1,1))
-    print *, ' CPU:', Aph(1,1)
-    print *, ' GPU:', XpY_gpu(1,1)
-    print *, ' GPU:', XmY_gpu(1,1)
-    stop
-
     call phLR(TDA,nS,Aph,Bph,EcRPA(ispin),Om,XpY,XmY)
+
+    !! DEBUG
+    !allocate(Om_gpu(nS), XpY_gpu(nS,nS), XmY_gpu(nS,nS))
+    !call ph_drpa_tda(nO, nBas, nS, eHF(1), ERI(1,1,1,1), Om_gpu(1), XpY_gpu(1,1))
+    !do i = 1, nS
+    !  print *, i, Om(i), Om_gpu(i)
+    !  if(dabs(Om(i) - Om_gpu(i)) .gt. 1d-13) then
+    !    print *, 'GPU FAILED!'
+    !    stop
+    !  endif
+    !enddo
+    !print *, 'GPU DONE!'
+    !stop
+
     call print_excitation_energies('phRPA@RHF','singlet',nS,Om)
     call phLR_transition_vectors(.true.,nBas,nC,nO,nV,nR,nS,dipole_int,Om,XpY,XmY)
 
