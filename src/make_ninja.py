@@ -197,6 +197,8 @@ lib_dirs = list(filter(lambda x: os.path.isdir(x) and \
                                 x not in exe_dirs, os.listdir(".")))
 i = lib_dirs.index("mod")
 lib_dirs[0], lib_dirs[i] = lib_dirs[i], lib_dirs[0]
+if not USE_GPU:
+    lib_dirs.remove("GPU")
 
 def create_ninja_in_libdir(directory):
     def write_rule(f, source_file, replace):

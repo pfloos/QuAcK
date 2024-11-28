@@ -8,8 +8,8 @@ module cu_quack_module
 
   interface
 
-    subroutine ph_drpa_tda(nO, nBas, nS, eps, ERI, &
-                           Omega, X) bind(C, name = "ph_drpa_tda")
+    subroutine ph_drpa_tda_sing(nO, nBas, nS, eps, ERI, &
+        Omega, X) bind(C, name = "ph_drpa_tda_sing")
 
       import c_int, c_double
       integer(c_int), intent(in), value :: nO, nBas, nS
@@ -18,7 +18,51 @@ module cu_quack_module
       real(c_double), intent(out)       :: Omega(nS)
       real(c_double), intent(out)       :: X(nS,nS)
 
-    end subroutine ph_drpa_tda
+    end subroutine ph_drpa_tda_sing
+
+    ! ---
+
+    subroutine ph_drpa_tda_trip(nO, nBas, nS, eps, ERI, &
+        Omega, X) bind(C, name = "ph_drpa_tda_trip")
+
+      import c_int, c_double
+      integer(c_int), intent(in), value :: nO, nBas, nS
+      real(c_double), intent(in)        :: eps(nBas)
+      real(c_double), intent(in)        :: ERI(nBas,nBas,nBas,nBas)
+      real(c_double), intent(out)       :: Omega(nS)
+      real(c_double), intent(out)       :: X(nS,nS)
+
+    end subroutine ph_drpa_tda_trip
+
+    ! ---
+
+    subroutine ph_drpa_sing(nO, nBas, nS, eps, ERI, &
+        Omega, X) bind(C, name = "ph_drpa_sing")
+
+      import c_int, c_double
+      integer(c_int), intent(in), value :: nO, nBas, nS
+      real(c_double), intent(in)        :: eps(nBas)
+      real(c_double), intent(in)        :: ERI(nBas,nBas,nBas,nBas)
+      real(c_double), intent(out)       :: Omega(nS)
+      real(c_double), intent(out)       :: X(nS,nS)
+
+    end subroutine ph_drpa_sing
+
+    ! ---
+
+    subroutine ph_drpa_trip(nO, nBas, nS, eps, ERI, &
+        Omega, X) bind(C, name = "ph_drpa_trip")
+
+      import c_int, c_double
+      integer(c_int), intent(in), value :: nO, nBas, nS
+      real(c_double), intent(in)        :: eps(nBas)
+      real(c_double), intent(in)        :: ERI(nBas,nBas,nBas,nBas)
+      real(c_double), intent(out)       :: Omega(nS)
+      real(c_double), intent(out)       :: X(nS,nS)
+
+    end subroutine ph_drpa_trip
+
+    ! ---
 
   end interface
 

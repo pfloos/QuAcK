@@ -15,6 +15,7 @@ subroutine phLR(TDA,nS,Aph,Bph,EcRPA,Om,XpY,XmY)
   ! Local variables
 
   double precision              :: trace_matrix
+  double precision              :: t1, t2
   double precision,allocatable  :: ApB(:,:)
   double precision,allocatable  :: AmB(:,:)
   double precision,allocatable  :: AmBSq(:,:)
@@ -38,7 +39,10 @@ subroutine phLR(TDA,nS,Aph,Bph,EcRPA,Om,XpY,XmY)
   if(TDA) then
  
     XpY(:,:) = Aph(:,:)
+    !call wall_time(t1)
     call diagonalize_matrix(nS,XpY,Om)
+    !call wall_time(t2)
+    !print*, 'diag time on CPU (sec):', t2 - t1
     XpY(:,:) = transpose(XpY(:,:))
     XmY(:,:) = XpY(:,:)
 

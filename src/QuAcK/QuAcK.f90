@@ -177,7 +177,6 @@ program QuAcK
 
   call read_integrals(working_dir,nBas,S,T,V,Hc,ERI_AO)
   call read_dipole_integrals(working_dir,nBas,dipole_int_AO)
-
   call wall_time(end_int)
 
   t_int = end_int - start_int

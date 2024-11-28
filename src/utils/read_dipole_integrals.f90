@@ -39,7 +39,7 @@ subroutine read_dipole_integrals(working_dir,nBas,R)
     else
 
       do
-        read(21,*,iostat=ios) mu,nu,Dip
+        read(21, '(I5, I5, E25.17)', iostat=ios) mu, nu, Dip
         if(ios /= 0) exit
         R(mu,nu,1) = Dip
         R(nu,mu,1) = Dip
@@ -62,7 +62,7 @@ subroutine read_dipole_integrals(working_dir,nBas,R)
     else
 
       do
-        read(22,*,iostat=ios) mu,nu,Dip
+        read(22, '(I5, I5, E25.17)', iostat=ios) mu, nu, Dip
         if(ios /= 0) exit
         R(mu,nu,2) = Dip
         R(nu,mu,2) = Dip
@@ -85,7 +85,7 @@ subroutine read_dipole_integrals(working_dir,nBas,R)
     else
 
       do
-        read(23,*,iostat=ios) mu,nu,Dip
+        read(23, '(I5, I5, E25.17)', iostat=ios) mu, nu, Dip
         if(ios /= 0) exit
         R(mu,nu,3) = Dip
         R(nu,mu,3) = Dip

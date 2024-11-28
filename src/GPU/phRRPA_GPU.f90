@@ -1,4 +1,6 @@
-subroutine phRRPA(dotest,TDA,doACFDT,exchange_kernel,singlet,triplet,nBas,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,dipole_int,eHF)
+subroutine phRRPA_GPU(dotest,TDA,doACFDT,exchange_kernel,singlet,triplet,nBas,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,dipole_int,eHF)
+
+ use cu_quack_module
 
 ! Perform a direct random phase approximation calculation
 
@@ -32,12 +34,15 @@ subroutine phRRPA(dotest,TDA,doACFDT,exchange_kernel,singlet,triplet,nBas,nC,nO,
   integer                       :: i
   integer                       :: ispin
   logical                       :: dRPA
+  double precision              :: t1, t2
   double precision              :: lambda
   double precision,allocatable  :: Aph(:,:)
   double precision,allocatable  :: Bph(:,:)
   double precision,allocatable  :: Om(:)
   double precision,allocatable  :: XpY(:,:)
   double precision,allocatable  :: XmY(:,:)
+  ! DEBUG
+  !double precision, allocatable :: XpY_gpu(:,:), XmY_gpu(:,:), Om_gpu(:)
 
   double precision              :: EcRPA(nspin)
 
@@ -70,12 +75,23 @@ subroutine phRRPA(dotest,TDA,doACFDT,exchange_kernel,singlet,triplet,nBas,nC,nO,
 
   if(singlet) then 
 
-    ispin = 1
+    if(TDA) then
 
-    call phLR_A(ispin,dRPA,nBas,nC,nO,nV,nR,nS,lambda,eHF,ERI,Aph)
-    if(.not.TDA) call phLR_B(ispin,dRPA,nBas,nC,nO,nV,nR,nS,lambda,ERI,Bph)
+      call wall_time(t1)
+      call ph_drpa_tda_sing(nO, nBas, nS, eHF(1), ERI(1,1,1,1), Om(1), XpY(1,1))
+      call wall_time(t2)
+      print*, 'diag time on GPU (sec):', t2 - t1
+      stop
+      XmY(:,:) = XpY(:,:)
 
-    call phLR(TDA,nS,Aph,Bph,EcRPA(ispin),Om,XpY,XmY)
+    else
+
+      ! TODO
+      !call ph_drpa_sing(nO, nBas, nS, eHF(1), ERI(1,1,1,1), Om(1), XpY(1,1))
+      !XmY(:,:) = XpY(:,:)
+
+    endif
+
     call print_excitation_energies('phRPA@RHF','singlet',nS,Om)
     call phLR_transition_vectors(.true.,nBas,nC,nO,nV,nR,nS,dipole_int,Om,XpY,XmY)
 

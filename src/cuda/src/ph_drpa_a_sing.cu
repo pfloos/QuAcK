@@ -10,6 +10,8 @@ __global__ void ph_dRPA_A_sing_kernel(int nO, int nV, int nBas, int nS, double *
     int i_A0, i_A1, i_A2;
     int i_I0, i_I1, i_I2;
 
+    bool a_eq_b;
+
     nVS = nV * nS;
 
     nBas2 = nBas * nBas;
@@ -27,6 +29,8 @@ __global__ void ph_dRPA_A_sing_kernel(int nO, int nV, int nBas, int nS, double *
         while(bb < nV) {
             b = bb + nO;
 
+            a_eq_b = a == b;
+
             i_A1 = i_A0 + bb;
             i_I1 = i_I0 + b * nBas;
 
@@ -40,7 +44,7 @@ __global__ void ph_dRPA_A_sing_kernel(int nO, int nV, int nBas, int nS, double *
                 while(j < nO) {
 
                     A[i_A2 + j * nV] = 2.0 * ERI[i_I2 + j * nBas3];
-                    if((a==b) && (i==j)) {
+                    if(a_eq_b && (i==j)) {
                         A[i_A2 + j * nV] += eps[a] - eps[i];
                     }
 
