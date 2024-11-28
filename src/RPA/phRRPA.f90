@@ -32,6 +32,7 @@ subroutine phRRPA(dotest,TDA,doACFDT,exchange_kernel,singlet,triplet,nBas,nC,nO,
   integer                       :: i
   integer                       :: ispin
   logical                       :: dRPA
+  double precision              :: t1, t2
   double precision              :: lambda
   double precision,allocatable  :: Aph(:,:)
   double precision,allocatable  :: Bph(:,:)
@@ -72,10 +73,16 @@ subroutine phRRPA(dotest,TDA,doACFDT,exchange_kernel,singlet,triplet,nBas,nC,nO,
 
     ispin = 1
 
+    !call wall_time(t1)
     call phLR_A(ispin,dRPA,nBas,nC,nO,nV,nR,nS,lambda,eHF,ERI,Aph)
+    !call wall_time(t2)
+    !print *, "wall time for A on CPU (sec) = ", t2 - t1
     if(.not.TDA) call phLR_B(ispin,dRPA,nBas,nC,nO,nV,nR,nS,lambda,ERI,Bph)
 
+    !call wall_time(t1)
     call phLR(TDA,nS,Aph,Bph,EcRPA(ispin),Om,XpY,XmY)
+    !call wall_time(t2)
+    !print *, "wall time diag A on CPU (sec) = ", t2 - t1
     call print_excitation_energies('phRPA@RHF','singlet',nS,Om)
     call phLR_transition_vectors(.true.,nBas,nC,nO,nV,nR,nS,dipole_int,Om,XpY,XmY)
 

@@ -83,10 +83,6 @@ void ph_drpa_tda_sing(int nO, int nBas, int nS, double *h_eps, double *h_ERI,
         "cudaMemcpy", __FILE__, __LINE__);
     check_Cuda_Errors(cudaMemcpy(h_Omega, d_Omega, nS * sizeof(double), cudaMemcpyDeviceToHost), 
         "cudaMemcpy", __FILE__, __LINE__);
-
-    cudaEventRecord(start, 0);
-    diag_dn_dsyevd(nS, d_info, d_Omega, d_A);
-    check_Cuda_Errors(cudaGetLastError(), "cudaGetLastError", __FILE__, __LINE__);
     cudaEventRecord(stop, 0);
     cudaEventSynchronize(stop);
     cudaEventElapsedTime(&elapsedTime, start, stop);

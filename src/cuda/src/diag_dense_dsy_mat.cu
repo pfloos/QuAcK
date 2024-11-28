@@ -10,6 +10,7 @@ extern "C" void diag_dn_dsyevd(int n, int *info, double *W, double *A) {
     cusolverDnHandle_t cusolverH = NULL;
     cusolverEigMode_t jobz = CUSOLVER_EIG_MODE_VECTOR; // Compute eigenvalues and eigenvectors
     cublasFillMode_t uplo = CUBLAS_FILL_MODE_UPPER; // Upper triangular part of the matrix is stored
+    //cublasFillMode_t uplo = CUBLAS_FILL_MODE_LOWER; // Upper triangular part of the matrix is stored
 
     int lwork = 0;
     double *work = NULL;
