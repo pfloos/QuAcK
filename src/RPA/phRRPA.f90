@@ -1,6 +1,6 @@
 subroutine phRRPA(dotest,TDA,doACFDT,exchange_kernel,singlet,triplet,nBas,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,dipole_int,eHF)
 
-  use cu_quack_module
+! use cu_quack_module
 
 ! Perform a direct random phase approximation calculation
 

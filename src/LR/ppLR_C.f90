@@ -32,8 +32,8 @@ subroutine ppLR_C(ispin,nOrb,nC,nO,nV,nR,nVV,lambda,e,ERI,Cpp)
 
 ! Define the chemical potential
  
-! eF = e(nO) + e(nO+1)
-  eF = 0d0
+  eF = e(nO) + e(nO+1)
+! eF = 0d0
 
 ! Build C matrix for the singlet manifold
 
