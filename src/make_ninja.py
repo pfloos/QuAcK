@@ -195,11 +195,8 @@ exe_dirs = ["QuAcK"]
 lib_dirs = list(filter(lambda x: os.path.isdir(x) and \
                                 x not in ["cuda"] and \
                                 x not in exe_dirs, os.listdir(".")))
-if USE_GPU:
-    i = lib_dirs.index("mod")
-    lib_dirs[0], lib_dirs[i] = lib_dirs[i], lib_dirs[0]
-else:
-    lib_dirs.remove("mod")
+i = lib_dirs.index("mod")
+lib_dirs[0], lib_dirs[i] = lib_dirs[i], lib_dirs[0]
 
 def create_ninja_in_libdir(directory):
     def write_rule(f, source_file, replace):
