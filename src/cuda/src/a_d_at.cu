@@ -25,7 +25,7 @@ __global__ void A_D_At_kernel(int n, double *A, double *D, double *R) {
             while(k < n) {
 
                 kn = k * n;
-                R[ij] += D[k] * U[i + kn] * U[j + kn];
+                R[ij] += D[k] * A[i + kn] * A[j + kn];
 
                 k ++;
             } // k

@@ -8,6 +8,9 @@
 
 #include "utils.h"
 #include "ph_rpa.h"
+#include "my_linalg.h"
+
+
 
 /*
  *
@@ -42,7 +45,6 @@ void ph_drpa_tda_sing(int nO, int nBas, int nS, double *h_eps, double *h_ERI,
     check_Cuda_Errors(cudaMalloc((void**)&d_ERI, nBas4 * sizeof(double)),
         "cudaMalloc", __FILE__, __LINE__);
 
-    printf("CPU->GPU transfer..\n");
     cudaEventRecord(start, 0);
     check_Cuda_Errors(cudaMemcpy(d_eps, h_eps, nBas * sizeof(double), cudaMemcpyHostToDevice), 
         "cudaMemcpy", __FILE__, __LINE__);
