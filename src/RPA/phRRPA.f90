@@ -83,7 +83,6 @@ subroutine phRRPA(dotest,TDA,doACFDT,exchange_kernel,singlet,triplet,nBas,nC,nO,
     call phLR(TDA,nS,Aph,Bph,EcRPA(ispin),Om,XpY,XmY)
     !call wall_time(t2)
     !print *, "wall time diag A on CPU (sec) = ", t2 - t1
-    !stop
     call print_excitation_energies('phRPA@RHF','singlet',nS,Om)
     call phLR_transition_vectors(.true.,nBas,nC,nO,nV,nR,nS,dipole_int,Om,XpY,XmY)
 
