@@ -2,14 +2,14 @@
 #include <math.h>
 
 
-__global__ void elementwise_dsqrt_inplace_kernel(int nS, double *A) {
+__global__ void elementwise_dsqrt_inplace_kernel(int n, double *A) {
 
 
     int i;
 
     i = blockIdx.x * blockDim.x + threadIdx.x;
 
-    while(i < nS) {
+    while(i < n) {
 
         if(A[i] > 0.0) {
 
@@ -30,10 +30,10 @@ __global__ void elementwise_dsqrt_inplace_kernel(int nS, double *A) {
 
 
 
-extern "C" void elementwise_dsqrt_inplace(int nS, double *A) {
+extern "C" void elementwise_dsqrt_inplace(int n, double *A) {
 
     int sBlocks = 32;
-    int nBlocks = (nS + sBlocks - 1) / sBlocks;
+    int nBlocks = (n + sBlocks - 1) / sBlocks;
 
     dim3 dimGrid(nBlocks, 1, 1);
     dim3 dimBlock(sBlocks, 1, 1);
@@ -42,7 +42,7 @@ extern "C" void elementwise_dsqrt_inplace(int nS, double *A) {
         nBlocks, sBlocks);
 
 
-    elementwise_dsqrt_inplace_kernel<<<dimGrid, dimBlock>>>(nS, A);
+    elementwise_dsqrt_inplace_kernel<<<dimGrid, dimBlock>>>(n, A);
 
 }
 

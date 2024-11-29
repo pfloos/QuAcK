@@ -9,6 +9,7 @@ __global__ void ph_dRPA_AmB_sing_kernel(int nO, int nV, int nBas, int nS, double
     int nBas2, nBas3;
     int i_A0, i_A1, i_A2;
     int i_I0, i_I1, i_I2;
+    int i_J1, i_J2;
 
     bool a_eq_b;
 
@@ -33,17 +34,19 @@ __global__ void ph_dRPA_AmB_sing_kernel(int nO, int nV, int nBas, int nS, double
 
             i_A1 = i_A0 + bb;
             i_I1 = i_I0 + b * nBas;
+            i_J1 = i_I0 + b * nBas3;
 
             i = 0;
             while(i < nO) {
 
                 i_A2 = i_A1 + i * nVS;
                 i_I2 = i_I1 + i;
+                i_J2 = i_J1 + i;
  
                 j = 0;
                 while(j < nO) {
 
-                    AmB[i_A2 + j * nV] = 2.0 * (ERI[i_I2 + j * nBas3] - ERI[i_I2 + j * nBas]);
+                    AmB[i_A2 + j * nV] = 2.0 * (ERI[i_I2 + j * nBas3] - ERI[i_J2 + j * nBas]);
                     if(a_eq_b && (i==j)) {
                         AmB[i_A2 + j * nV] += eps[a] - eps[i];
                     }

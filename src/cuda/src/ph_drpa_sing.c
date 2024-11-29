@@ -80,8 +80,10 @@ void ph_drpa_sing(int nO, int nBas, int nS, double *h_eps, double *h_ERI,
     // diagonalize A-B
     int *d_info1 = NULL;
     check_Cuda_Errors(cudaMalloc((void**)&d_info1, sizeof(int)), "cudaMalloc", __FILE__, __LINE__);
+
     double *d_Omega = NULL;
     check_Cuda_Errors(cudaMalloc((void**)&d_Omega, nS * sizeof(double)), "cudaMalloc", __FILE__, __LINE__);
+
     cudaEventRecord(start, 0);
     diag_dn_dsyevd(nS, d_info1, d_Omega, d_AmB);
     check_Cuda_Errors(cudaGetLastError(), "cudaGetLastError", __FILE__, __LINE__);
@@ -89,6 +91,7 @@ void ph_drpa_sing(int nO, int nBas, int nS, double *h_eps, double *h_ERI,
     cudaEventSynchronize(stop);
     cudaEventElapsedTime(&elapsedTime, start, stop);
     printf("Time elapsed on diag AmB = %f msec\n", elapsedTime);
+
 
 
     // d_Omega <-- d_Omega^{0.5}
@@ -101,15 +104,17 @@ void ph_drpa_sing(int nO, int nBas, int nS, double *h_eps, double *h_ERI,
     printf("Time elapsed on elementwise_dsqrt_inplace %f msec\n", elapsedTime);
 
 
-    // d_AmBSq    = d_AmB (d_Omega)^{+0.5} (d_AmB)^T
-    // d_AmBSqInv = d_AmB (d_Omega)^{-0.5} (d_AmB)^T
-    cudaEventRecord(start, 0);
+    // d_AmBSq = d_AmB (d_Omega)^{+0.5} (d_AmB)^T
     double *d_AmBSq = NULL;
-    check_Cuda_Errors(cudaMalloc((void**)&d_AmBSq, nS * sizeof(double)),
+    check_Cuda_Errors(cudaMalloc((void**)&d_AmBSq, nS2 * sizeof(double)),
         "cudaMalloc", __FILE__, __LINE__);
+
+    // d_AmBSqInv = d_AmB (d_Omega)^{-0.5} (d_AmB)^T
     double *d_AmBSqInv = NULL;
-    check_Cuda_Errors(cudaMalloc((void**)&d_AmBSqInv, nS * sizeof(double)),
+    check_Cuda_Errors(cudaMalloc((void**)&d_AmBSqInv, nS2 * sizeof(double)),
         "cudaMalloc", __FILE__, __LINE__);
+
+    cudaEventRecord(start, 0);
     A_D_At(nS, d_AmB, d_Omega, d_AmBSq);
     A_Dinv_At(nS, d_AmB, d_Omega, d_AmBSqInv);
     check_Cuda_Errors(cudaGetLastError(), "cudaGetLastError", __FILE__, __LINE__);

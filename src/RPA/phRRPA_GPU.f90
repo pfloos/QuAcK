@@ -29,7 +29,7 @@ subroutine phRRPA_GPU(dotest,TDA,doACFDT,exchange_kernel,singlet,triplet,nBas,nC
   double precision,intent(in)  :: dipole_int(nBas,nBas,ncart)
 
 
-  integer                      :: i
+  integer                      :: i, a, ia
   integer                      :: ispin
   logical                      :: dRPA
   double precision             :: t1, t2
@@ -78,6 +78,10 @@ subroutine phRRPA_GPU(dotest,TDA,doACFDT,exchange_kernel,singlet,triplet,nBas,nC
       call ph_drpa_sing(nO, nBas, nS, eHF(1), ERI(1,1,1,1), Om(1), XpY(1,1), XmY(1,1))
       !call wall_time(t2)
       !print*, 'diag time on GPU (sec):', t2 - t1
+      !do ia = 1, nS
+      !  write(111, *) Om(ia)
+      !enddo
+      !stop
 
     endif
 
@@ -98,7 +102,7 @@ subroutine phRRPA_GPU(dotest,TDA,doACFDT,exchange_kernel,singlet,triplet,nBas,nC
       do a = nO+1, nBas-nR
         ia = ia + 1
         iorder(ia) = ia
-        Om(ia) = e(a) - e(i)
+        Om(ia) = eHF(a) - eHF(i)
         XpY(ia,ia) = 1.d0
       enddo
     enddo
