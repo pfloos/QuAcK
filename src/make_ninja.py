@@ -120,7 +120,7 @@ if USE_GPU:
     compiler_tmp[2] += " -DUSE_GPU"
     compiler_lib = '\n'.join(compiler_tmp)
 
-    compiler_main = compiler_tmp
+    compiler_main = compiler_lib
 else:
     compiler_exe = compiler
     compiler_lib = compiler
