@@ -1,22 +1,29 @@
 #include <stdio.h>
 
-__global__ void ph_dRPA_ApB_sing_kernel(int nO, int nV, int nBas, int nS, double *eps, double *ERI, double *ApB) {
+
+__global__ void ph_dRPA_ApB_sing_kernel(int nO, int nV, int nBas, int nS, 
+                                        double *eps, double *ERI, double *ApB) {
 
 
-    int i, j, a, b;
-    int aa, bb;
-    int nVS;
-    int nBas2, nBas3;
-    int i_A0, i_A1, i_A2;
+    long i, j, a, b;
+    long aa, bb;
+
+    int i_A0, i_A1, i_A2, i_A3;
     int i_I0, i_I1, i_I2;
     int i_J1, i_J2;
+
+    int nVS;
+    int nBas2;
+
+    long long i_I3, i_J3;
+    long long nBas3;
 
     bool a_eq_b;
 
     nVS = nV * nS;
 
     nBas2 = nBas * nBas;
-    nBas3 = nBas2 * nBas;
+    nBas3 = (long long) nBas2 * (long long) nBas;
 
     aa = blockIdx.x * blockDim.x + threadIdx.x;
     bb = blockIdx.y * blockDim.y + threadIdx.y;
@@ -34,21 +41,25 @@ __global__ void ph_dRPA_ApB_sing_kernel(int nO, int nV, int nBas, int nS, double
 
             i_A1 = i_A0 + bb;
             i_I1 = i_I0 + b * nBas;
-            i_J1 = i_I0 + b * nBas3;
+            i_J1 = a + b * nBas;
 
             i = 0;
             while(i < nO) {
 
                 i_A2 = i_A1 + i * nVS;
                 i_I2 = i_I1 + i;
-                i_J2 = i_J1 + i;
+                i_J2 = i_J1 + i * nBas2;
  
                 j = 0;
                 while(j < nO) {
 
-                    ApB[i_A2 + j * nV] = 2.0 * (ERI[i_I2 + j * nBas3] + ERI[i_J2 + j * nBas]);
+                    i_A3 = i_A2 + j * nV;
+                    i_I3 = i_I2 + (long long) j * nBas3;
+                    i_J3 = i_J2 + (long long) j * nBas3;
+
+                    ApB[i_A3] = 2.0 * (ERI[i_I3] + ERI[i_J3]);
                     if(a_eq_b && (i==j)) {
-                        ApB[i_A2 + j * nV] += eps[a] - eps[i];
+                        ApB[i_A3] += eps[a] - eps[i];
                     }
 
                     j ++;

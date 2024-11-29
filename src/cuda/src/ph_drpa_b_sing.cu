@@ -5,15 +5,17 @@ __global__ void ph_dRPA_B_sing_kernel(int nO, int nV, int nBas, int nS, double *
 
     int i, j, a, b;
     int aa, bb;
-    int nVS;
-    int nBas2, nBas3;
-    int i_B0, i_B1, i_B2;
-    int i_I0, i_I1, i_I2;
 
-    nVS = nV * nS;
+    long long nVS;
+    long long nBas2, nBas3;
+    long long i_B0, i_B1, i_B2, i_B3;
+    long long i_I0, i_I1, i_I2, i_I3;
 
-    nBas2 = nBas * nBas;
-    nBas3 = nBas2 * nBas;
+
+    nVS = (long long) nV * (long long) nS;
+
+    nBas2 = (long long) nBas * (long long) nBas;
+    nBas3 = nBas2 * (long long) nBas;
 
     aa = blockIdx.x * blockDim.x + threadIdx.x;
     bb = blockIdx.y * blockDim.y + threadIdx.y;
@@ -21,25 +23,28 @@ __global__ void ph_dRPA_B_sing_kernel(int nO, int nV, int nBas, int nS, double *
     while(aa < nV) {
         a = aa + nO;
 
-        i_B0 = aa * nS;
-        i_I0 = a * nBas2;
+        i_B0 = (long long) aa * (long long) nS;
+        i_I0 = (long long) a * nBas2;
 
         while(bb < nV) {
             b = bb + nO;
 
-            i_B1 = i_B0 + bb;
-            i_I1 = i_I0 + b * nBas3;
+            i_B1 = i_B0 + (long long) bb;
+            i_I1 = i_I0 + (long long) b * nBas3;
 
             i = 0;
             while(i < nO) {
 
-                i_B2 = i_B1 + i * nVS;
-                i_I2 = i_I1 + i;
+                i_B2 = i_B1 + (long long) i * nVS;
+                i_I2 = i_I1 + (long long) i;
  
                 j = 0;
                 while(j < nO) {
 
-                    B[i_B2 + j * nV] = 2.0 * ERI[i_I2 + j * nBas];
+                    i_B3 = i_B2 + (long long) j * (long long) nV;
+                    i_I3 = i_I2 + (long long) j * (long long) nBas;
+
+                    B[i_B3] = 2.0 * ERI[i_I3];
 
                     j ++;
 	        } // j

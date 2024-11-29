@@ -65,6 +65,12 @@ void ph_drpa_sing(int nO, int nBas, int nS, double *h_eps, double *h_ERI,
     cudaEventRecord(start, 0);
     ph_dRPA_ApB_sing(nO, nV, nBas, nS, d_eps, d_ERI, d_ApB);
     ph_dRPA_AmB_sing(nO, nV, nBas, nS, d_eps, d_ERI, d_AmB);
+    //ph_dRPA_A_sing(nO, nV, nBas, nS, d_eps, d_ERI, d_ApB);
+    //ph_dRPA_B_sing(nO, nV, nBas, nS, d_ERI, d_AmB);
+    //check_Cuda_Errors(cudaDeviceSynchronize(), "cudaDeviceSynchronize", __FILE__, __LINE__);
+    //A_plus_B_in_A(nS, d_ApB, d_AmB);
+    //check_Cuda_Errors(cudaDeviceSynchronize(), "cudaDeviceSynchronize", __FILE__, __LINE__);
+    //A_minus_twoB_in_B(nS, d_ApB, d_AmB);
     check_Cuda_Errors(cudaGetLastError(), "cudaGetLastError", __FILE__, __LINE__);
     cudaEventRecord(stop, 0);
     cudaEventSynchronize(stop);
@@ -73,6 +79,7 @@ void ph_drpa_sing(int nO, int nBas, int nS, double *h_eps, double *h_ERI,
 
 
     // free memory
+    check_Cuda_Errors(cudaDeviceSynchronize(), "cudaDeviceSynchronize", __FILE__, __LINE__);
     check_Cuda_Errors(cudaFree(d_eps), "cudaFree", __FILE__, __LINE__);
     check_Cuda_Errors(cudaFree(d_ERI), "cudaFree", __FILE__, __LINE__);
 
@@ -105,30 +112,62 @@ void ph_drpa_sing(int nO, int nBas, int nS, double *h_eps, double *h_ERI,
 
 
     // d_AmBSq = d_AmB (d_Omega)^{+0.5} (d_AmB)^T
-    double *d_AmBSq = NULL;
-    check_Cuda_Errors(cudaMalloc((void**)&d_AmBSq, nS2 * sizeof(double)),
-        "cudaMalloc", __FILE__, __LINE__);
-
     // d_AmBSqInv = d_AmB (d_Omega)^{-0.5} (d_AmB)^T
+    double *d_AmBSq = NULL;
     double *d_AmBSqInv = NULL;
-    check_Cuda_Errors(cudaMalloc((void**)&d_AmBSqInv, nS2 * sizeof(double)),
-        "cudaMalloc", __FILE__, __LINE__);
+    double *d_tmp1 = NULL;
+    double *d_tmp2 = NULL;
+    check_Cuda_Errors(cudaMalloc((void**)&d_AmBSq,    nS2 * sizeof(double)), "cudaMalloc", __FILE__, __LINE__);
+    check_Cuda_Errors(cudaMalloc((void**)&d_AmBSqInv, nS2 * sizeof(double)), "cudaMalloc", __FILE__, __LINE__);
+    check_Cuda_Errors(cudaMalloc((void**)&d_tmp1,     nS2 * sizeof(double)), "cudaMalloc", __FILE__, __LINE__);
+    check_Cuda_Errors(cudaMalloc((void**)&d_tmp2,     nS2 * sizeof(double)), "cudaMalloc", __FILE__, __LINE__);
+
+    check_Cublas_Errors(cublasCreate(&handle), "cublasCreate", __FILE__, __LINE__);
 
     cudaEventRecord(start, 0);
-    A_D_At(nS, d_AmB, d_Omega, d_AmBSq);
-    A_Dinv_At(nS, d_AmB, d_Omega, d_AmBSqInv);
+    // naive way
+    //A_D_At(nS, d_AmB, d_Omega, d_AmBSq);
+    //A_Dinv_At(nS, d_AmB, d_Omega, d_AmBSqInv);
+
+    A_D_in_B(nS, d_AmB, d_Omega, d_tmp1);
+    A_Dinv_in_B(nS, d_AmB, d_Omega, d_tmp2);
+
+    check_Cuda_Errors(cudaDeviceSynchronize(), "cudaDeviceSynchronize", __FILE__, __LINE__);
+
+    check_Cublas_Errors(cublasDgemm(handle,
+                                    CUBLAS_OP_N, CUBLAS_OP_T,
+                                    nS, nS, nS,
+                                    &alpha,
+                                    d_tmp1, nS,
+                                    d_AmB, nS,
+                                    &beta,
+                                    d_AmBSq, nS),
+        "cublasDgemm", __FILE__, __LINE__);
+
+    check_Cublas_Errors(cublasDgemm(handle,
+                                    CUBLAS_OP_N, CUBLAS_OP_T,
+                                    nS, nS, nS,
+                                    &alpha,
+                                    d_tmp2, nS,
+                                    d_AmB, nS,
+                                    &beta,
+                                    d_AmBSqInv, nS),
+        "cublasDgemm", __FILE__, __LINE__);
+
     check_Cuda_Errors(cudaGetLastError(), "cudaGetLastError", __FILE__, __LINE__);
+
     cudaEventRecord(stop, 0);
     cudaEventSynchronize(stop);
     cudaEventElapsedTime(&elapsedTime, start, stop);
     printf("Time elapsed on d_AmBSq & d_AmBSqInv = %f msec\n", elapsedTime);
 
-
+    check_Cuda_Errors(cudaDeviceSynchronize(), "cudaDeviceSynchronize", __FILE__, __LINE__);
+    check_Cuda_Errors(cudaFree(d_tmp1), "cudaFree", __FILE__, __LINE__);
+    check_Cuda_Errors(cudaFree(d_tmp2), "cudaFree", __FILE__, __LINE__);
 
 
     // Dgemm
     cudaEventRecord(start, 0);
-    check_Cublas_Errors(cublasCreate(&handle), "cublasCreate", __FILE__, __LINE__);
 
     // X + Y
     check_Cublas_Errors(cublasDgemm(handle,
