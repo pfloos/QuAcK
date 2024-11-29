@@ -36,7 +36,7 @@ def check_compiler_exists(compiler):
 compile_gfortran_mac = """
 FC = gfortran
 AR = libtool -static -o
-FFLAGS = -I$IDIR -J$IDIR -fbacktrace -g -Wall -Wno-unused-variable -Wno-unused -Wno-unused-dummy-argument -Wuninitialized -Wmaybe-uninitialized -O3 -march=native
+FFLAGS = -I$IDIR -J$IDIR -cpp -fbacktrace -g -Wall -Wno-unused-variable -Wno-unused -Wno-unused-dummy-argument -Wuninitialized -Wmaybe-uninitialized -O3 -march=native
 CC = gcc
 CXX = g++
 LAPACK=-lblas -llapack
@@ -47,7 +47,7 @@ FIX_ORDER_OF_LIBS=
 compile_gfortran_mac_debug = """
 FC = gfortran
 AR = libtool -static -o
-FFLAGS = -I$IDIR -J$IDIR -fbacktrace -Wall -Wno-unused-variable -g -fcheck=all -Waliasing -Wampersand -Wconversion -Wsurprising -Wintrinsics-std -Wno-tabs -Wintrinsic-shadow -Wline-truncation -Wreal-q-constant
+FFLAGS = -I$IDIR -J$IDIR -cpp -fbacktrace -Wall -Wno-unused-variable -g -fcheck=all -Waliasing -Wampersand -Wconversion -Wsurprising -Wintrinsics-std -Wno-tabs -Wintrinsic-shadow -Wline-truncation -Wreal-q-constant
 CC = gcc
 CXX = g++
 LAPACK=-lblas -llapack
@@ -58,7 +58,7 @@ FIX_ORDER_OF_LIBS=
 compile_gfortran_linux_debug = """
 FC = gfortran
 AR = ar crs
-FFLAGS = -I$IDIR -J$IDIR -fbacktrace -Wall -g -fcheck=all -Waliasing -Wampersand -Wconversion -Wsurprising -Wintrinsics-std -Wno-tabs -Wintrinsic-shadow -Wline-truncation -Wreal-q-constant
+FFLAGS = -I$IDIR -J$IDIR -cpp -fbacktrace -Wall -g -fcheck=all -Waliasing -Wampersand -Wconversion -Wsurprising -Wintrinsics-std -Wno-tabs -Wintrinsic-shadow -Wline-truncation -Wreal-q-constant
 CC = gcc
 CXX = g++
 LAPACK=-lblas -llapack
@@ -83,7 +83,7 @@ elif sys.platform.lower() == "linux" or os.path.exists('/proc/version'):
             compiler = """
 FC = ifort -mkl=parallel -qopenmp
 AR = ar crs
-FFLAGS = -I$IDIR -module $IDIR -traceback -g -Ofast -xHost
+FFLAGS = -I$IDIR -module $IDIR -fpp -traceback -g -Ofast -xHost
 CC = icc
 CXX = icpc
 LAPACK=
@@ -94,10 +94,12 @@ FIX_ORDER_OF_LIBS=-Wl,--start-group
             compiler = """
 FC = gfortran -fopenmp
 AR = ar crs
-FFLAGS = -I$IDIR -J$IDIR -fbacktrace -g -Wall -Wno-unused-variable -Wno-unused -Wno-unused-dummy-argument -Wuninitialized -Wmaybe-uninitialized -O3 -march=native
+FFLAGS = -I$IDIR -J$IDIR -cpp -fbacktrace -g -Wall -Wno-unused-variable -Wno-unused -Wno-unused-dummy-argument -Wuninitialized -Wmaybe-uninitialized -O3 -march=native
 CC = gcc
 CXX = g++
 LAPACK=-lblas -llapack
+# uncomment for TURPAN
+#LAPACK=-larmpl_lp64_mp
 STDCXX=-lstdc++
 FIX_ORDER_OF_LIBS=-Wl,--start-group
 """
@@ -113,8 +115,16 @@ if USE_GPU:
     compiler_tmp = compiler.strip().split('\n')
     compiler_tmp[0] += " -L{}/src/cuda/build -lcuquack -lcudart -lcublas -lcusolver".format(QUACK_ROOT)
     compiler_exe = '\n'.join(compiler_tmp)
+
+    compiler_tmp = compiler.strip().split('\n')
+    compiler_tmp[2] += " -DUSE_GPU"
+    compiler_lib = '\n'.join(compiler_tmp)
+
+    compiler_main = compiler_tmp
 else:
     compiler_exe = compiler
+    compiler_lib = compiler
+    compiler_main = compiler
 
 
 
@@ -172,7 +182,7 @@ rule git_clone
 
 build_in_lib_dir = "\n".join([
 	header,
-	compiler,
+	compiler_lib,
 	rule_fortran,
 	rule_build_lib,
 ])
@@ -187,7 +197,7 @@ build_in_exe_dir = "\n".join([
 
 build_main = "\n".join([
 	header,
-        compiler,
+        compiler_main,
         rule_git_clone,
 ])
 
@@ -195,9 +205,10 @@ exe_dirs = ["QuAcK"]
 lib_dirs = list(filter(lambda x: os.path.isdir(x) and \
                                 x not in ["cuda"] and \
                                 x not in exe_dirs, os.listdir(".")))
-i = lib_dirs.index("mod")
-lib_dirs[0], lib_dirs[i] = lib_dirs[i], lib_dirs[0]
-if not USE_GPU:
+if(USE_GPU):
+    i = lib_dirs.index("GPU")
+    lib_dirs[0], lib_dirs[i] = lib_dirs[i], lib_dirs[0]
+else:
     lib_dirs.remove("GPU")
 
 def create_ninja_in_libdir(directory):

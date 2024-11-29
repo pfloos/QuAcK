@@ -75,6 +75,8 @@ extern "C" void ph_dRPA_A_sing(int nO, int nV, int nBas, int nS, double *eps, do
     dim3 dimGrid(nBlocks, nBlocks, 1);
     dim3 dimBlock(sBlocks, sBlocks, 1);
 
+    //dim3 dimGrid(nBlocks, 1, 1);
+    //dim3 dimBlock(sBlocks, 1, 1);
 
     printf("lunching ph_dRPA_A_sing_kernel with %dx%d blocks and %dx%d threads/block\n",
         nBlocks, nBlocks, sBlocks, sBlocks);

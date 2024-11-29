@@ -1,3 +1,5 @@
+#ifdef USE_GPU
+
 subroutine phRRPA_GPU(dotest,TDA,doACFDT,exchange_kernel,singlet,triplet,nBas,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,dipole_int,eHF)
 
  use cu_quack_module
@@ -69,7 +71,8 @@ subroutine phRRPA_GPU(dotest,TDA,doACFDT,exchange_kernel,singlet,triplet,nBas,nC
 
 ! Memory allocation
 
-  allocate(Om(nS),XpY(nS,nS),XmY(nS,nS),Aph(nS,nS),Bph(nS,nS))
+  allocate(Om(nS),XpY(nS,nS),XmY(nS,nS))
+  !allocate(Aph(nS,nS),Bph(nS,nS))
 
 ! Singlet manifold
 
@@ -77,6 +80,7 @@ subroutine phRRPA_GPU(dotest,TDA,doACFDT,exchange_kernel,singlet,triplet,nBas,nC
 
     if(TDA) then
 
+      print*, 'start diag on GPU:'
       call wall_time(t1)
       call ph_drpa_tda_sing(nO, nBas, nS, eHF(1), ERI(1,1,1,1), Om(1), XpY(1,1))
       call wall_time(t2)
@@ -154,3 +158,34 @@ subroutine phRRPA_GPU(dotest,TDA,doACFDT,exchange_kernel,singlet,triplet,nBas,nC
   end if
 
 end subroutine 
+
+#else
+
+subroutine phRRPA_GPU(dotest,TDA,doACFDT,exchange_kernel,singlet,triplet,nBas,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,dipole_int,eHF)
+
+  implicit none
+  include 'parameters.h'
+  include 'quadrature.h'
+
+  logical,intent(in)            :: dotest
+  logical,intent(in)            :: TDA
+  logical,intent(in)            :: doACFDT
+  logical,intent(in)            :: exchange_kernel
+  logical,intent(in)            :: singlet
+  logical,intent(in)            :: triplet
+  integer,intent(in)            :: nBas
+  integer,intent(in)            :: nC
+  integer,intent(in)            :: nO
+  integer,intent(in)            :: nV
+  integer,intent(in)            :: nR
+  integer,intent(in)            :: nS
+  double precision,intent(in)   :: ENuc
+  double precision,intent(in)   :: ERHF
+  double precision,intent(in)   :: eHF(nBas)
+  double precision,intent(in)   :: ERI(nBas,nBas,nBas,nBas)
+  double precision,intent(in)   :: dipole_int(nBas,nBas,ncart)
+  print*, "compile with USE_GPU FLAG!"
+  stop
+end
+
+#endif

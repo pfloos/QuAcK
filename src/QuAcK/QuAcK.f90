@@ -44,6 +44,8 @@ program QuAcK
 
   logical                       :: reg_MP
 
+  logical                       :: use_gpu
+
   integer                       :: maxSCF_CC,max_diis_CC
   double precision              :: thresh_CC
 
@@ -134,6 +136,12 @@ program QuAcK
                     doACFDT,exchange_kernel,doXBS,                                              &
                     dophBSE,dophBSE2,doppBSE,dBSE,dTDA)
 
+!------------------!
+! Hardware         !
+!------------------!
+
+  call read_hardware(working_dir,use_gpu)
+
 !------------------------------------!
 ! Read input information             !
 !------------------------------------!
@@ -218,7 +226,7 @@ program QuAcK
 !-------------------------!
 
   if(doRQuAcK) &
-    call RQuAcK(doRtest,doRHF,doROHF,dostab,dosearch,doMP2,doMP3,doCCD,dopCCD,doDCD,doCCSD,doCCSDT,              &
+    call RQuAcK(use_gpu,doRtest,doRHF,doROHF,dostab,dosearch,doMP2,doMP3,doCCD,dopCCD,doDCD,doCCSD,doCCSDT,      &
                 dodrCCD,dorCCD,docrCCD,dolCCD,doCIS,doCIS_D,doCID,doCISD,doFCI,dophRPA,dophRPAx,docrRPA,doppRPA, &
                 doG0F2,doevGF2,doqsGF2,doufG0F02,doG0F3,doevGF3,doG0W0,doevGW,doqsGW,doufG0W0,doufGW,            &
                 doG0T0pp,doevGTpp,doqsGTpp,doufG0T0pp,doG0T0eh,doevGTeh,doqsGTeh,                                & 

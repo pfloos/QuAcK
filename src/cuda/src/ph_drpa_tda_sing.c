@@ -17,14 +17,16 @@ void ph_drpa_tda_sing(int nO, int nBas, int nS, double *h_eps, double *h_ERI,
 
     int nV = nBas - nO;
 
-    int nBas2 = nBas * nBas;
-    int nBas4 = nBas2 * nBas2;
+    long long nBas_long = (long long) nBas;
+    long long nBas4 = nBas_long * nBas_long * nBas_long * nBas_long;
 
     float elapsedTime;
     cudaEvent_t start, stop;
     cudaEventCreate(&start);
     cudaEventCreate(&stop);
 
+    //printf("nO = %d, nBas = %d, nS = %d\n", nO, nBas, nS);
+    //printf("nBas4 = %lld\n", nBas4);
 
 
     check_Cuda_Errors(cudaMalloc((void**)&d_eps, nBas * sizeof(double)),
@@ -32,6 +34,7 @@ void ph_drpa_tda_sing(int nO, int nBas, int nS, double *h_eps, double *h_ERI,
     check_Cuda_Errors(cudaMalloc((void**)&d_ERI, nBas4 * sizeof(double)),
         "cudaMalloc", __FILE__, __LINE__);
 
+    printf("CPU->GPU transfer..\n");
     cudaEventRecord(start, 0);
     check_Cuda_Errors(cudaMemcpy(d_eps, h_eps, nBas * sizeof(double), cudaMemcpyHostToDevice), 
         "cudaMemcpy", __FILE__, __LINE__);
@@ -53,6 +56,10 @@ void ph_drpa_tda_sing(int nO, int nBas, int nS, double *h_eps, double *h_ERI,
     cudaEventSynchronize(stop);
     cudaEventElapsedTime(&elapsedTime, start, stop);
     printf("Time elapsed on A kernel = %f msec\n", elapsedTime);
+
+
+    check_Cuda_Errors(cudaFree(d_eps), "cudaFree", __FILE__, __LINE__);
+    check_Cuda_Errors(cudaFree(d_ERI), "cudaFree", __FILE__, __LINE__);
 
 
     // diagonalize A
@@ -89,8 +96,6 @@ void ph_drpa_tda_sing(int nO, int nBas, int nS, double *h_eps, double *h_ERI,
     printf("Time elapsed on GPU -> CPU transfer = %f msec\n", elapsedTime);
 
     check_Cuda_Errors(cudaFree(d_info), "cudaFree", __FILE__, __LINE__);
-    check_Cuda_Errors(cudaFree(d_eps), "cudaFree", __FILE__, __LINE__);
-    check_Cuda_Errors(cudaFree(d_ERI), "cudaFree", __FILE__, __LINE__);
     check_Cuda_Errors(cudaFree(d_A), "cudaFree", __FILE__, __LINE__);
     check_Cuda_Errors(cudaFree(d_Omega), "cudaFree", __FILE__, __LINE__);
 
