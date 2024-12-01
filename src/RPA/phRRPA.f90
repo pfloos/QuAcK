@@ -8,39 +8,39 @@ subroutine phRRPA(dotest,TDA,doACFDT,exchange_kernel,singlet,triplet,nBas,nC,nO,
 
 ! Input variables
 
-  logical,intent(in)            :: dotest
+  logical,intent(in)           :: dotest
 
-  logical,intent(in)            :: TDA
-  logical,intent(in)            :: doACFDT
-  logical,intent(in)            :: exchange_kernel
-  logical,intent(in)            :: singlet
-  logical,intent(in)            :: triplet
-  integer,intent(in)            :: nBas
-  integer,intent(in)            :: nC
-  integer,intent(in)            :: nO
-  integer,intent(in)            :: nV
-  integer,intent(in)            :: nR
-  integer,intent(in)            :: nS
-  double precision,intent(in)   :: ENuc
-  double precision,intent(in)   :: ERHF
-  double precision,intent(in)   :: eHF(nBas)
-  double precision,intent(in)   :: ERI(nBas,nBas,nBas,nBas)
-  double precision,intent(in)   :: dipole_int(nBas,nBas,ncart)
+  logical,intent(in)           :: TDA
+  logical,intent(in)           :: doACFDT
+  logical,intent(in)           :: exchange_kernel
+  logical,intent(in)           :: singlet
+  logical,intent(in)           :: triplet
+  integer,intent(in)           :: nBas
+  integer,intent(in)           :: nC
+  integer,intent(in)           :: nO
+  integer,intent(in)           :: nV
+  integer,intent(in)           :: nR
+  integer,intent(in)           :: nS
+  double precision,intent(in)  :: ENuc
+  double precision,intent(in)  :: ERHF
+  double precision,intent(in)  :: eHF(nBas)
+  double precision,intent(in)  :: ERI(nBas,nBas,nBas,nBas)
+  double precision,intent(in)  :: dipole_int(nBas,nBas,ncart)
 
 ! Local variables
 
-  integer                       :: ia
-  integer                       :: ispin
-  logical                       :: dRPA
-  double precision              :: t1, t2
-  double precision              :: lambda
-  double precision,allocatable  :: Aph(:,:)
-  double precision,allocatable  :: Bph(:,:)
-  double precision,allocatable  :: Om(:)
-  double precision,allocatable  :: XpY(:,:)
-  double precision,allocatable  :: XmY(:,:)
+  integer                      :: ia
+  integer                      :: ispin
+  logical                      :: dRPA
+  double precision             :: t1, t2
+  double precision             :: lambda
+  double precision,allocatable :: Aph(:,:)
+  double precision,allocatable :: Bph(:,:)
+  double precision,allocatable :: Om(:)
+  double precision,allocatable :: XpY(:,:)
+  double precision,allocatable :: XmY(:,:)
 
-  double precision              :: EcRPA(nspin)
+  double precision             :: EcRPA(nspin)
 
 ! Hello world
 
@@ -75,14 +75,11 @@ subroutine phRRPA(dotest,TDA,doACFDT,exchange_kernel,singlet,triplet,nBas,nC,nO,
 
     !call wall_time(t1)
     call phLR_A(ispin,dRPA,nBas,nC,nO,nV,nR,nS,lambda,eHF,ERI,Aph)
-    !call wall_time(t2)
-    !print *, "wall time for A on CPU (sec) = ", t2 - t1
     if(.not.TDA) call phLR_B(ispin,dRPA,nBas,nC,nO,nV,nR,nS,lambda,ERI,Bph)
 
-    !call wall_time(t1)
     call phLR(TDA,nS,Aph,Bph,EcRPA(ispin),Om,XpY,XmY)
-    call wall_time(t2)
-    !print *, "wall time diag A on CPU (sec) = ", t2 - t1
+    !call wall_time(t2)
+    !print *, "wall time for dRPA on CPU (sec) = ", t2 - t1
     !do ia = 1, nS
     !  write(112, *) Om(ia) 
     !enddo
