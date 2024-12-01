@@ -75,8 +75,8 @@ subroutine phRRPA_GPU(dotest,TDA,doACFDT,exchange_kernel,singlet,triplet,nBas,nC
 
       !call wall_time(t1)
       call ph_drpa_sing(nO, nBas, nS, eHF(1), ERI(1,1,1,1), Om(1), XpY(1,1), XmY(1,1))
-      call wall_time(t2)
-      print *, "wall time for dRPA on GPU (sec) = ", t2 - t1
+      !call wall_time(t2)
+      !print *, "wall time for dRPA on GPU (sec) = ", t2 - t1
       !do ia = 1, nS
       !  write(111, *) Om(ia)
       !enddo
