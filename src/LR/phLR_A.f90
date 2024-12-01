@@ -7,31 +7,31 @@ subroutine phLR_A(ispin,dRPA,nBas,nC,nO,nV,nR,nS,lambda,e,ERI,Aph)
 
 ! Input variables
 
-  logical,intent(in)            :: dRPA
-  integer,intent(in)            :: ispin
-  integer,intent(in)            :: nBas
-  integer,intent(in)            :: nC
-  integer,intent(in)            :: nO
-  integer,intent(in)            :: nV
-  integer,intent(in)            :: nR
-  integer,intent(in)            :: nS
-  double precision,intent(in)   :: lambda
-  double precision,intent(in)   :: e(nBas)
-  double precision,intent(in)   :: ERI(nBas,nBas,nBas,nBas) 
+  logical,intent(in)           :: dRPA
+  integer,intent(in)           :: ispin
+  integer,intent(in)           :: nBas
+  integer,intent(in)           :: nC
+  integer,intent(in)           :: nO
+  integer,intent(in)           :: nV
+  integer,intent(in)           :: nR
+  integer,intent(in)           :: nS
+  double precision,intent(in)  :: lambda
+  double precision,intent(in)  :: e(nBas)
+  double precision,intent(in)  :: ERI(nBas,nBas,nBas,nBas) 
   
 ! Local variables
 
-  double precision              :: delta_dRPA
-  double precision,external     :: Kronecker_delta
+  double precision             :: delta_dRPA
+  double precision,external    :: Kronecker_delta
 
-  integer                       :: i,j,a,b,ia,jb
-  integer                       :: nn,jb0
-  logical                       :: i_eq_j
-  double precision              :: ct1,ct2
+  integer                      :: i,j,a,b,ia,jb
+  integer                      :: nn,jb0
+  logical                      :: i_eq_j
+  double precision             :: ct1,ct2
 
 ! Output variables
 
-  double precision,intent(out)  :: Aph(nS,nS)
+  double precision,intent(out) :: Aph(nS,nS)
 
 ! Direct RPA
 
@@ -60,7 +60,7 @@ subroutine phLR_A(ispin,dRPA,nBas,nC,nO,nV,nR,nS,lambda,e,ERI,Aph)
           do b = nO+1, nBas-nR
             jb = b + jb0
 
-            Aph(ia,jb) = ct1 * ERI(i,b,a,j) + ct2 * ERI(i,b,j,a)
+            Aph(ia,jb) = ct1 * ERI(b,i,j,a) + ct2 * ERI(b,j,a,i)
             if(i_eq_j) then
               if(a == b) Aph(ia,jb) = Aph(ia,jb) + e(a) - e(i)
             endif
@@ -109,7 +109,7 @@ subroutine phLR_A(ispin,dRPA,nBas,nC,nO,nV,nR,nS,lambda,e,ERI,Aph)
           do b = nO+1, nBas-nR
             jb = b + jb0
 
-            Aph(ia,jb) = ct2 * ERI(i,b,j,a)
+            Aph(ia,jb) = ct2 * ERI(b,j,a,i)
             if(i_eq_j) then
               if(a == b) Aph(ia,jb) = Aph(ia,jb) + e(a) - e(i)
             endif

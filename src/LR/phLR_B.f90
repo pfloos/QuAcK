@@ -7,22 +7,22 @@ subroutine phLR_B(ispin,dRPA,nBas,nC,nO,nV,nR,nS,lambda,ERI,Bph)
 
 ! Input variables
 
-  logical,intent(in)            :: dRPA
-  integer,intent(in)            :: ispin,nBas,nC,nO,nV,nR,nS
-  double precision,intent(in)   :: lambda
-  double precision,intent(in)   :: ERI(nBas,nBas,nBas,nBas)
+  logical,intent(in)           :: dRPA
+  integer,intent(in)           :: ispin,nBas,nC,nO,nV,nR,nS
+  double precision,intent(in)  :: lambda
+  double precision,intent(in)  :: ERI(nBas,nBas,nBas,nBas)
   
 ! Local variables
 
-  double precision              :: delta_dRPA
+  double precision             :: delta_dRPA
 
-  integer                       :: i,j,a,b,ia,jb
-  integer                       :: nn,jb0
-  double precision              :: ct1,ct2
+  integer                      :: i,j,a,b,ia,jb
+  integer                      :: nn,jb0
+  double precision             :: ct1,ct2
 
 ! Output variables
 
-  double precision,intent(out)  :: Bph(nS,nS)
+  double precision,intent(out) :: Bph(nS,nS)
 
 ! Direct RPA
 
@@ -50,7 +50,7 @@ subroutine phLR_B(ispin,dRPA,nBas,nC,nO,nV,nR,nS,lambda,ERI,Bph)
           do b = nO+1, nBas-nR
             jb = b + jb0
 
-            Bph(ia,jb) = ct1 * ERI(i,j,a,b) + ct2 * ERI(i,j,b,a)
+            Bph(ia,jb) = ct1 * ERI(b,i,j,a) + ct2 * ERI(b,j,i,a)
           enddo
         enddo
       enddo
@@ -94,7 +94,7 @@ subroutine phLR_B(ispin,dRPA,nBas,nC,nO,nV,nR,nS,lambda,ERI,Bph)
           do b = nO+1, nBas-nR
             jb = b + jb0
 
-            Bph(ia,jb) = ct2 * ERI(i,j,b,a)
+            Bph(ia,jb) = ct2 * ERI(b,j,i,a)
           enddo
         enddo
       enddo
