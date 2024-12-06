@@ -162,8 +162,7 @@ else:
         eri_mmap = np.memmap(output_file_path, dtype='float64', mode='w+', shape=eri_shape)
         mol.intor('int2e', out=eri_mmap)
         for i in range(norb):
-            transposed_chunk = eri_mmap[i, :, :, :].transpose(1, 0, 2)
-            eri_mmap[i, :, :, :] = transposed_chunk
+            eri_mmap[i, :, :, :] = eri_mmap[i, :, :, :].transpose(1, 0, 2)
         eri_mmap.flush()
         del eri_mmap
     else:
