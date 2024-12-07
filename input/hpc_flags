@@ -1,0 +1,4 @@
+# if True (T), switch to HPC mode
+  F
+# if True (T), use GPU
+  F

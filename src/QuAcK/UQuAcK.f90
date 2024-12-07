@@ -1,9 +1,9 @@
-subroutine UQuAcK(dotest,doUHF,dostab,dosearch,doMP2,doMP3,doCCD,dopCCD,doDCD,doCCSD,doCCSDT,                      &
+subroutine UQuAcK(working_dir,dotest,doUHF,dostab,dosearch,doMP2,doMP3,doCCD,dopCCD,doDCD,doCCSD,doCCSDT,          &
                   dodrCCD,dorCCD,docrCCD,dolCCD,doCIS,doCIS_D,doCID,doCISD,doFCI,dophRPA,dophRPAx,docrRPA,doppRPA, &
                   doG0F2,doevGF2,doqsGF2,doufG0F02,doG0F3,doevGF3,doG0W0,doevGW,doqsGW,doufG0W0,doufGW,            &
                   doG0T0pp,doevGTpp,doqsGTpp,doufG0T0pp,doG0T0eh,doevGTeh,doqsGTeh,                                & 
                   nNuc,nBas,nC,nO,nV,nR,ENuc,ZNuc,rNuc,                                                            &
-                  S,T,V,Hc,X,dipole_int_AO,ERI_AO,maxSCF_HF,max_diis_HF,thresh_HF,level_shift,                     &
+                  S,T,V,Hc,X,dipole_int_AO,maxSCF_HF,max_diis_HF,thresh_HF,level_shift,                            &
                   guess_type,mix,reg_MP,maxSCF_CC,max_diis_CC,thresh_CC,spin_conserved,spin_flip,TDA,              &
                   maxSCF_GF,max_diis_GF,renorm_GF,thresh_GF,lin_GF,reg_GF,eta_GF,maxSCF_GW,max_diis_GW,thresh_GW,  &
                   TDA_W,lin_GW,reg_GW,eta_GW,maxSCF_GT,max_diis_GT,thresh_GT,TDA_T,lin_GT,reg_GT,eta_GT,           &
@@ -11,6 +11,8 @@ subroutine UQuAcK(dotest,doUHF,dostab,dosearch,doMP2,doMP3,doCCD,dopCCD,doDCD,do
 
   implicit none
   include 'parameters.h'
+
+  character(len=256),intent(in) :: working_dir
 
   logical,intent(in)            :: dotest
 
@@ -42,7 +44,6 @@ subroutine UQuAcK(dotest,doUHF,dostab,dosearch,doMP2,doMP3,doCCD,dopCCD,doDCD,do
   double precision,intent(in)   :: Hc(nBas,nBas)
   double precision,intent(in)   :: X(nBas,nBas)
   double precision,intent(in)   :: dipole_int_AO(nBas,nBas,ncart)
-  double precision,intent(in)   :: ERI_AO(nBas,nBas,nBas,nBas)
 
   integer,intent(in)            :: maxSCF_HF,max_diis_HF
   double precision,intent(in)   :: thresh_HF,level_shift,mix
@@ -90,10 +91,12 @@ subroutine UQuAcK(dotest,doUHF,dostab,dosearch,doMP2,doMP3,doCCD,dopCCD,doDCD,do
   double precision              :: start_GW     ,end_GW       ,t_GW
   double precision              :: start_GT     ,end_GT       ,t_GT
 
+  double precision              :: start_int, end_int, t_int
   double precision,allocatable  :: cHF(:,:,:),eHF(:,:),PHF(:,:,:),FHF(:,:,:)
   double precision              :: EUHF
   double precision,allocatable  :: dipole_int_aa(:,:,:),dipole_int_bb(:,:,:)
   double precision,allocatable  :: ERI_aaaa(:,:,:,:),ERI_aabb(:,:,:,:),ERI_bbbb(:,:,:,:)
+  double precision,allocatable  :: ERI_AO(:,:,:,:)
   integer                       :: ixyz
   integer                       :: nS(nspin)
 
@@ -111,6 +114,15 @@ subroutine UQuAcK(dotest,doUHF,dostab,dosearch,doMP2,doMP3,doCCD,dopCCD,doDCD,do
            dipole_int_aa(nBas,nBas,ncart),dipole_int_bb(nBas,nBas,ncart),                  &
            ERI_aaaa(nBas,nBas,nBas,nBas),ERI_aabb(nBas,nBas,nBas,nBas),                    & 
            ERI_bbbb(nBas,nBas,nBas,nBas))
+
+  allocate(ERI_AO(nBas,nBas,nBas,nBas))
+  call wall_time(start_int)
+  call read_2e_integrals(working_dir,nBas,ERI_AO)
+  call wall_time(end_int)
+  t_int = end_int - start_int
+  write(*,*)
+  write(*,'(A65,1X,F9.3,A8)') 'Total wall time for reading 2e-integrals =',t_int,' seconds'
+  write(*,*)
 
 !---------------------!
 ! Hartree-Fock module !

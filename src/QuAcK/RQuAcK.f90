@@ -1,18 +1,20 @@
-subroutine RQuAcK(use_gpu,dotest,doRHF,doROHF,dostab,dosearch,doMP2,doMP3,doCCD,dopCCD,doDCD,doCCSD,doCCSDT,       &
-                  dodrCCD,dorCCD,docrCCD,dolCCD,doCIS,doCIS_D,doCID,doCISD,doFCI,dophRPA,dophRPAx,docrRPA,doppRPA, & 
-                  doG0F2,doevGF2,doqsGF2,doufG0F02,doG0F3,doevGF3,doG0W0,doevGW,doqsGW,doufG0W0,doufGW,            &
-                  doG0T0pp,doevGTpp,doqsGTpp,doufG0T0pp,doG0T0eh,doevGTeh,doqsGTeh,                                & 
-                  nNuc,nBas,nOrb,nC,nO,nV,nR,ENuc,ZNuc,rNuc,                                                       &
-                  S,T,V,Hc,X,dipole_int_AO,ERI_AO,maxSCF_HF,max_diis_HF,thresh_HF,level_shift,                     &
-                  guess_type,mix,reg_MP,maxSCF_CC,max_diis_CC,thresh_CC,singlet,triplet,TDA,                       &
-                  maxSCF_GF,max_diis_GF,renorm_GF,thresh_GF,lin_GF,reg_GF,eta_GF,maxSCF_GW,max_diis_GW,thresh_GW,  & 
-                  TDA_W,lin_GW,reg_GW,eta_GW,maxSCF_GT,max_diis_GT,thresh_GT,TDA_T,lin_GT,reg_GT,eta_GT,           & 
+subroutine RQuAcK(working_dir,use_gpu,dotest,doRHF,doROHF,dostab,dosearch,doMP2,doMP3,doCCD,dopCCD,doDCD,doCCSD,doCCSDT, &
+                  dodrCCD,dorCCD,docrCCD,dolCCD,doCIS,doCIS_D,doCID,doCISD,doFCI,dophRPA,dophRPAx,docrRPA,doppRPA,       & 
+                  doG0F2,doevGF2,doqsGF2,doufG0F02,doG0F3,doevGF3,doG0W0,doevGW,doqsGW,doufG0W0,doufGW,                  &
+                  doG0T0pp,doevGTpp,doqsGTpp,doufG0T0pp,doG0T0eh,doevGTeh,doqsGTeh,                                      & 
+                  nNuc,nBas,nOrb,nC,nO,nV,nR,ENuc,ZNuc,rNuc,                                                             &
+                  S,T,V,Hc,X,dipole_int_AO,maxSCF_HF,max_diis_HF,thresh_HF,level_shift,                                  &
+                  guess_type,mix,reg_MP,maxSCF_CC,max_diis_CC,thresh_CC,singlet,triplet,TDA,                             &
+                  maxSCF_GF,max_diis_GF,renorm_GF,thresh_GF,lin_GF,reg_GF,eta_GF,maxSCF_GW,max_diis_GW,thresh_GW,        & 
+                  TDA_W,lin_GW,reg_GW,eta_GW,maxSCF_GT,max_diis_GT,thresh_GT,TDA_T,lin_GT,reg_GT,eta_GT,                 & 
                   dophBSE,dophBSE2,doppBSE,dBSE,dTDA,doACFDT,exchange_kernel,doXBS)
 
 ! Restricted branch of QuAcK
 
   implicit none
   include 'parameters.h'
+
+  character(len=256),intent(in) :: working_dir
 
   logical,intent(in)            :: use_gpu
 
@@ -46,7 +48,6 @@ subroutine RQuAcK(use_gpu,dotest,doRHF,doROHF,dostab,dosearch,doMP2,doMP3,doCCD,
   double precision,intent(in)   :: Hc(nBas,nBas)
   double precision,intent(in)   :: X(nBas,nOrb)
   double precision,intent(in)   :: dipole_int_AO(nBas,nBas,ncart)
-  double precision,intent(in)   :: ERI_AO(nBas,nBas,nBas,nBas)
 
   integer,intent(in)            :: maxSCF_HF,max_diis_HF
   double precision,intent(in)   :: thresh_HF,level_shift,mix
@@ -94,12 +95,14 @@ subroutine RQuAcK(use_gpu,dotest,doRHF,doROHF,dostab,dosearch,doMP2,doMP3,doCCD,
   double precision              :: start_GW     ,end_GW       ,t_GW
   double precision              :: start_GT     ,end_GT       ,t_GT
 
+  double precision              :: start_int, end_int, t_int
   double precision,allocatable  :: eHF(:)
   double precision,allocatable  :: cHF(:,:)
   double precision,allocatable  :: PHF(:,:)
   double precision,allocatable  :: FHF(:,:)
   double precision              :: ERHF
   double precision,allocatable  :: dipole_int_MO(:,:,:)
+  double precision,allocatable  :: ERI_AO(:,:,:,:)
   double precision,allocatable  :: ERI_MO(:,:,:,:)
   integer                       :: ixyz
   integer                       :: nS
@@ -120,6 +123,15 @@ subroutine RQuAcK(use_gpu,dotest,doRHF,doROHF,dostab,dosearch,doMP2,doMP3,doCCD,
   allocate(FHF(nBas,nBas))
   allocate(dipole_int_MO(nOrb,nOrb,ncart))
   allocate(ERI_MO(nOrb,nOrb,nOrb,nOrb))
+
+  allocate(ERI_AO(nBas,nBas,nBas,nBas))
+  call wall_time(start_int)
+  call read_2e_integrals(working_dir,nBas,ERI_AO)
+  call wall_time(end_int)
+  t_int = end_int - start_int
+  write(*,*)
+  write(*,'(A65,1X,F9.3,A8)') 'Total wall time for reading 2e-integrals =',t_int,' seconds'
+  write(*,*)
 
 !---------------------!
 ! Hartree-Fock module !
@@ -349,5 +361,14 @@ subroutine RQuAcK(use_gpu,dotest,doRHF,doROHF,dostab,dosearch,doMP2,doMP3,doCCD,
     write(*,*)
 
   end if
+
+
+  deallocate(eHF)
+  deallocate(cHF)
+  deallocate(PHF)
+  deallocate(FHF)
+  deallocate(dipole_int_MO)
+  deallocate(ERI_MO)
+  deallocate(ERI_AO)
 
 end subroutine
