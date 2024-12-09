@@ -46,92 +46,111 @@ subroutine Hartree_matrix_AO_basis_hpc(nBas, ERI_size, P, ERI_chem, H)
   double precision, intent(out) :: H(nBas,nBas)
 
   integer                       :: mu, nu, la, si
+  integer                       :: nunu, lala, nula, lasi
+  integer*8                     :: nunununu, nunulala, nununula, nunulasi, lalanunu, lasinunu
   integer*8                     :: munu0, munu
   integer*8                     :: sila0, sila
   integer*8                     :: munulasi0, munulasi
 
-  integer*8, external           :: Yoshimine_ind
+  integer*8, external           :: Yoshimine_4ind
+
+!  do nu = 1, nBas
+!    do mu = 1, nBas
+!      H(mu,nu) = 0.d0
+!      do si = 1, nBas
+!        do la = 1, nBas
+!          munulasi = Yoshimine_4ind(mu, nu, la, si)
+!          H(mu,nu) = H(mu,nu) + P(la,si) * ERI_chem(munulasi)
+!        enddo
+!      enddo
+!    enddo
+!  enddo
+
+!  do nu = 1, nBas
+!    do mu = 1, nu
+!      H(mu,nu) = 0.d0
+!      do si = 1, nBas
+!        munulasi = Yoshimine_4ind(mu, nu, si, si)
+!        H(mu,nu) = H(mu,nu) + P(si,si) * ERI_chem(munulasi)
+!        do la = 1, si-1
+!          munulasi = Yoshimine_4ind(mu, nu, la, si)
+!          H(mu,nu) = H(mu,nu) + 2.d0 * P(la,si) * ERI_chem(munulasi)
+!        enddo
+!      enddo
+!    enddo
+!  enddo
+
+
 
   do nu = 1, nBas
-    do mu = 1, nBas
+
+    nunu = (nu * (nu - 1)) / 2 + nu
+    nunununu = (nunu * (nunu - 1)) / 2 + nunu
+    !nunununu = Yoshimine_4ind(nu, nu, nu, nu)
+    H(nu,nu) = P(nu,nu) * ERI_chem(nunununu)
+
+    do la = 1, nu-1
+
+      ! la < nu
+      lala = (la * (la - 1)) / 2 + la
+      nunulala = (nunu * (nunu - 1)) / 2 + lala
+      !nunulala = Yoshimine_4ind(nu, nu, la, la)
+      H(nu,nu) = H(nu,nu) + P(la,la) * ERI_chem(nunulala)
+
+      ! la < nu
+      nula = (nu * (nu - 1)) / 2 + la
+      nununula = (nunu * (nunu - 1)) / 2 + nula
+      !nununula = Yoshimine_4ind(nu, nu, la, nu)
+      H(nu,nu) = H(nu,nu) + 2.d0 * P(la,nu) * ERI_chem(nununula)
+
+      do si = 1, la - 1
+        ! lasi < nunu
+        lasi = (la * (la - 1)) / 2 + si
+        nunulasi = (nunu * (nunu - 1)) / 2 + lasi
+        !nunulasi = Yoshimine_4ind(nu, nu, si, la)
+        H(nu,nu) = H(nu,nu) + 2.d0 * P(si,la) * ERI_chem(nunulasi)
+      enddo
+    enddo
+
+    do la = nu+1, nBas
+
+      ! nu < la
+      lala = (la * (la - 1)) / 2 + la
+      lalanunu = (lala * (lala - 1)) / 2 + nunu
+      !lalanunu = Yoshimine_4ind(nu, nu, la, la)
+      H(nu,nu) = H(nu,nu) + P(la,la) * ERI_chem(lalanunu)
+
+      do si = 1, la - 1
+        ! nunu < lasi
+        lasi = (la * (la - 1)) / 2 + si
+        lasinunu = (lasi * (lasi - 1)) / 2 + nunu
+        !lasinunu = Yoshimine_4ind(nu, nu, si, la)
+        H(nu,nu) = H(nu,nu) + 2.d0 * P(si,la) * ERI_chem(lasinunu)
+      enddo
+    enddo
+
+    do mu = 1, nu-1
       H(mu,nu) = 0.d0
       do si = 1, nBas
-        do la = 1, nBas
-          munulasi = Yoshimine_ind(mu, nu, la, si)
-          H(mu,nu) = H(mu,nu) + P(la,si) * ERI_chem(munulasi)
+        munulasi = Yoshimine_4ind(mu, nu, si, si)
+        H(mu,nu) = H(mu,nu) + P(si,si) * ERI_chem(munulasi)
+        do la = 1, si-1
+          munulasi = Yoshimine_4ind(mu, nu, la, si)
+          H(mu,nu) = H(mu,nu) + 2.d0 * P(la,si) * ERI_chem(munulasi)
         enddo
       enddo
     enddo
   enddo
 
 
-!  do nu = 1, nBas
-!    munu0 = (nu * (nu + 1)) / 2
-!
-!    do mu = 1, nu
-!      munu = munu0 + mu
-!      munulasi0 = (munu * (munu + 1)) / 2
-!
-!      H(mu,nu) = 0.d0
-!
-!      do si = 1, nu
-!        sila0 = (si * (si + 1)) / 2
-!
-!        do la = 1, si
-!          sila = sila0 + la
-!
-!          if(nu == si .and. mu < la) cycle
-!
-!          munulasi = munulasi0 + sila
-!
-!          H(mu,nu) = H(mu,nu) + 4.d0 * P(la,si) * ERI_chem(munulasi)
-!        enddo
-!      enddo
-!    enddo
-!  enddo
-!
-!
-!  do nu = 1, nBas
-!    do mu = nu+1, nBas
-!      H(mu,nu) = H(nu,mu)
-!    enddo
-!  enddo
+  do nu = 1, nBas
+    do mu = nu+1, nBas
+      H(mu,nu) = H(nu,mu)
+    enddo
+  enddo
 
   return
 end subroutine 
-
-! ---
-
-integer*8 function Yoshimine_ind(a, b, c, d)
-
-  implicit none
-
-  integer, intent(in) :: a, b, c, d
-
-  integer*8           :: ab, cd, abcd
-
-  if(a > b) then
-    ab = (a * (a - 1)) / 2 + b
-  else
-    ab = (b * (b - 1)) / 2 + a
-  endif
-
-  if(c > d) then
-    cd = (c * (c - 1)) / 2 + d
-  else
-    cd = (d * (d - 1)) / 2 + c
-  endif
-
-  if(ab > cd) then
-    abcd = (ab * (ab - 1)) / 2 + cd
-  else
-    abcd = (cd * (cd - 1)) / 2 + ab
-  endif
-
-  Yoshimine_ind = abcd
-
-  return
-end 
 
 ! ---
 
