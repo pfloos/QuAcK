@@ -912,7 +912,7 @@ end
 integer*8 function Yoshimine_4ind(a, b, c, d)
 
   implicit none
-  integer, intent(in) :: a, b, c, d
+  integer*8, intent(in) :: a, b, c, d
   integer*8, external :: Yoshimine_2ind
 
   Yoshimine_4ind = Yoshimine_2ind(Yoshimine_2ind(a, b), &
