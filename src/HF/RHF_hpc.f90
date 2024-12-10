@@ -39,6 +39,7 @@ subroutine RHF_hpc(working_dir,dotest,maxSCF,thresh,max_diis,guess_type,level_sh
   integer                       :: nBas_Sq
   integer                       :: n_diis
   integer*8                     :: ERI_size
+  double precision              :: t1, t2
   double precision              :: diff, diff_loc
   double precision              :: ET
   double precision              :: EV
@@ -104,14 +105,42 @@ subroutine RHF_hpc(working_dir,dotest,maxSCF,thresh,max_diis,guess_type,level_sh
   ERI_size = (ERI_size * (ERI_size + 1)) / 2
   allocate(ERI_chem(ERI_size))
   call read_2e_integrals_hpc(working_dir, ERI_size, ERI_chem)
-  call Hartree_matrix_AO_basis_hpc(nBas, ERI_size, P, ERI_chem, J)
+
+  call wall_time(t1)
+  do ii = 1, 5
+    call Hartree_matrix_AO_basis_hpc(nBas, ERI_size, P, ERI_chem, J)
+  enddo
+  call wall_time(t2)
+  print*, " J built in (sec):", (t2-t1) / 5.d0
+
+  call wall_time(t1)
+  do ii = 1, 5
+    call exchange_matrix_AO_basis_hpc(nBas, ERI_size, P, ERI_chem, K)
+  enddo
+  call wall_time(t2)
+  print*, " K built in (sec):", (t2-t1) / 5.d0
   
+
   allocate(ERI_phys(nBas,nBas,nBas,nBas))
   allocate(J_deb(nBas,nBas))
   allocate(K_deb(nBas,nBas))
 
   call read_2e_integrals(working_dir, nBas, ERI_phys)
-  call Hartree_matrix_AO_basis(nBas, P, ERI_phys, J_deb)
+
+  call wall_time(t1)
+  do ii = 1, 5
+    call Hartree_matrix_AO_basis(nBas, P, ERI_phys, J_deb)
+  enddo
+  call wall_time(t2)
+  print*, " J_deb built in (sec):", (t2-t1) / 5.d0
+
+  call wall_time(t1)
+  do ii = 1, 5
+    call exchange_matrix_AO_basis(nBas, P, ERI_phys, K_deb)
+  enddo
+  call wall_time(t2)
+  print*, " K_deb built in (sec):", (t2-t1) / 5.d0
+
   print*, "max error on J = ", maxval(dabs(J - J_deb))
   diff = 0.d0
   do ii = 1, nBas
@@ -127,8 +156,6 @@ subroutine RHF_hpc(working_dir,dotest,maxSCF,thresh,max_diis,guess_type,level_sh
   enddo
   print*, 'total diff on J = ', diff
 
-  call exchange_matrix_AO_basis_hpc(nBas, ERI_size, P, ERI_chem, K)
-  call exchange_matrix_AO_basis(nBas, P, ERI_phys, K_deb)
   print*, "max error on K = ", maxval(dabs(K - K_deb))
   diff = 0.d0
   do ii = 1, nBas

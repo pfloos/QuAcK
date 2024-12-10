@@ -929,9 +929,11 @@ integer*8 function Yoshimine_2ind(a, b)
   integer*8, intent(in) :: a, b
 
   if(a > b) then
-    Yoshimine_2ind = (a * (a - 1)) / 2 + b
+    !Yoshimine_2ind = (a * (a - 1)) / 2 + b
+    Yoshimine_2ind = shiftr(a * (a - 1), 1) + b
   else
-    Yoshimine_2ind = (b * (b - 1)) / 2 + a
+    !Yoshimine_2ind = (b * (b - 1)) / 2 + a
+    Yoshimine_2ind = shiftr(b * (b - 1), 1) + a
   endif
 
   return
