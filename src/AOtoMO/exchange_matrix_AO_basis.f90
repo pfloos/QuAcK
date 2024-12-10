@@ -45,126 +45,164 @@ subroutine exchange_matrix_AO_basis_hpc(nBas, ERI_size, P, ERI_chem, K)
   double precision, intent(out) :: K(nBas,nBas)
 
   integer                       :: mu, nu, la, si
-  integer                       :: nunu, lala, nula, lasi, numu
-  integer*8                     :: nunununu, nunulala, nununula, nunulasi
-  integer*8                     :: lalanunu, lasinunu, numulala, lalanumu
-  integer*8                     :: numunula, numulasi, lasinumu, nununumu
-  integer*8                     :: munu0, munu
-  integer*8                     :: sila0, sila
-  integer*8                     :: munulasi0, munulasi
+  integer                       :: nunu, nula, lanu, lasi, nusi, sinu
+  integer                       :: numu, mumu, mula, lamu, musi, simu
+  integer*8                     :: nunununu, nulanula, lanulanu, nulanusi
+  integer*8                     :: munulasi, lanunusi, lanusinu, numumumu 
+  integer*8                     :: nulamula, nulalamu, lanulamu, nulamusi
+  integer*8                     :: nulasimu, lanumusi, lanusimu
+
 
   integer*8, external           :: Yoshimine_4ind
 
 
   do nu = 1, nBas
 
-    munulasi = Yoshimine_4ind(nu, nu, nu, nu)
-    K(nu,nu) = -P(nu,nu) * ERI_chem(munulasi)
+    nunu = (nu * (nu - 1)) / 2 + nu
+    nunununu = (nunu * (nunu - 1)) / 2 + nunu
+    K(nu,nu) = -P(nu,nu) * ERI_chem(nunununu)
 
     do la = 1, nu - 1
-      munulasi = Yoshimine_4ind(nu, la, nu, la)
-      K(nu,nu) = K(nu,nu) - P(la,la) * ERI_chem(munulasi)
+      nula = (nu * (nu - 1)) / 2 + la
+      nulanula = (nula * (nula - 1)) / 2 + nula
+      K(nu,nu) = K(nu,nu) - P(la,la) * ERI_chem(nulanula)
     enddo
 
     do la = nu + 1, nBas
-      munulasi = Yoshimine_4ind(nu, la, nu, la)
-      K(nu,nu) = K(nu,nu) - P(la,la) * ERI_chem(munulasi)
+      lanu = (la * (la - 1)) / 2 + nu
+      lanulanu = (lanu * (lanu - 1)) / 2 + lanu
+      K(nu,nu) = K(nu,nu) - P(la,la) * ERI_chem(lanulanu)
     enddo
 
     do la = 1, nu
+      nula = (nu * (nu - 1)) / 2 + la
       do si = 1, la - 1
-        munulasi = Yoshimine_4ind(nu, la, nu, si)
-        K(nu,nu) = K(nu,nu) - 2.d0 * P(si,la) * ERI_chem(munulasi)
+        nusi = (nu * (nu - 1)) / 2 + si
+        nulanusi = (nula * (nula - 1)) / 2 + nusi
+        K(nu,nu) = K(nu,nu) - 2.d0 * P(si,la) * ERI_chem(nulanusi)
       enddo
     enddo
 
     do la = nu + 1, nBas
+      lanu = (la * (la - 1)) / 2 + nu
       do si = 1, nu
-        munulasi = Yoshimine_4ind(nu, la, nu, si)
-        K(nu,nu) = K(nu,nu) - 2.d0 * P(si,la) * ERI_chem(munulasi)
+        nusi = (nu * (nu - 1)) / 2 + si
+        lanunusi = (lanu * (lanu - 1)) / 2 + nusi
+        K(nu,nu) = K(nu,nu) - 2.d0 * P(si,la) * ERI_chem(lanunusi)
       enddo
-    enddo
-
-    do la = nu + 1, nBas
       do si = nu + 1, la - 1
-        munulasi = Yoshimine_4ind(nu, la, nu, si)
-        K(nu,nu) = K(nu,nu) - 2.d0 * P(si,la) * ERI_chem(munulasi)
+        sinu = (si * (si - 1)) / 2 + nu
+        lanusinu = (lanu * (lanu - 1)) / 2 + sinu
+        K(nu,nu) = K(nu,nu) - 2.d0 * P(si,la) * ERI_chem(lanusinu)
       enddo
     enddo
 
 
     do mu = 1, nu - 1
 
-      K(mu,nu) = 0.d0
-      do la = 1, mu
-        munulasi = Yoshimine_4ind(nu, la, mu, la)
-        K(mu,nu) = K(mu,nu) - P(la,la) * ERI_chem(munulasi)
+      numu = (nu * (nu - 1)) / 2 + mu
+      mumu = (mu * (mu - 1)) / 2 + mu
+      numumumu = (numu * (numu - 1)) / 2 + mumu
+      K(mu,nu) = - P(mu,mu) * ERI_chem(numumumu)
+
+      do la = 1, mu - 1
+        mula = (mu * (mu - 1)) / 2 + la
+        nula = (nu * (nu - 1)) / 2 + la
+        nulamula = (nula * (nula - 1)) / 2 + mula
+        K(mu,nu) = K(mu,nu) - P(la,la) * ERI_chem(nulamula)
       enddo
       do la = mu + 1, nu
-        munulasi = Yoshimine_4ind(nu, la, mu, la)
-        K(mu,nu) = K(mu,nu) - P(la,la) * ERI_chem(munulasi)
+        lamu = (la * (la - 1)) / 2 + mu
+        nula = (nu * (nu - 1)) / 2 + la
+        nulalamu = (nula * (nula - 1)) / 2 + lamu
+        K(mu,nu) = K(mu,nu) - P(la,la) * ERI_chem(nulalamu)
       enddo
       do la = nu + 1, nBas
-        munulasi = Yoshimine_4ind(nu, la, mu, la)
-        K(mu,nu) = K(mu,nu) - P(la,la) * ERI_chem(munulasi)
+        lamu = (la * (la - 1)) / 2 + mu
+        lanu = (la * (la - 1)) / 2 + nu
+        lanulamu = (lanu * (lanu - 1)) / 2 + lamu
+        K(mu,nu) = K(mu,nu) - P(la,la) * ERI_chem(lanulamu)
       enddo
 
       do la = 1, mu
+        nula = (nu * (nu - 1)) / 2 + la
         do si = 1, la - 1
-          munulasi = Yoshimine_4ind(nu, la, si, mu)
-          K(mu,nu) = K(mu,nu) - P(si,la) * ERI_chem(munulasi)
-        enddo
-      enddo
-      do la = mu+1, nu
-        do si = 1, mu
-          munulasi = Yoshimine_4ind(nu, la, si, mu)
-          K(mu,nu) = K(mu,nu) - P(si,la) * ERI_chem(munulasi)
-        enddo
-        do si = mu + 1, la - 1
-          munulasi = Yoshimine_4ind(nu, la, si, mu)
-          K(mu,nu) = K(mu,nu) - P(si,la) * ERI_chem(munulasi)
-        enddo
-      enddo
-      do la = nu + 1, nBas
-        do si = 1, mu
-          munulasi = Yoshimine_4ind(nu, la, si, mu)
-          K(mu,nu) = K(mu,nu) - P(si,la) * ERI_chem(munulasi)
-        enddo
-        do si = mu + 1, la - 1
-          munulasi = Yoshimine_4ind(nu, la, si, mu)
-          K(mu,nu) = K(mu,nu) - P(si,la) * ERI_chem(munulasi)
-        enddo
-      enddo
-
-      do la = 1, mu
-        do si = la + 1, mu
-          munulasi = Yoshimine_4ind(nu, la, si, mu)
-          K(mu,nu) = K(mu,nu) - P(si,la) * ERI_chem(munulasi)
-        enddo
-        do si = mu + 1, nBas
-          munulasi = Yoshimine_4ind(nu, la, si, mu)
-          K(mu,nu) = K(mu,nu) - P(si,la) * ERI_chem(munulasi)
+          musi = (mu * (mu - 1)) / 2 + si
+          nulamusi = (nula * (nula - 1)) / 2 + musi
+          K(mu,nu) = K(mu,nu) - P(si,la) * ERI_chem(nulamusi)
         enddo
       enddo
       do la = mu + 1, nu
-        do si = la + 1, nBas
-          munulasi = Yoshimine_4ind(nu, la, si, mu)
-          K(mu,nu) = K(mu,nu) - P(si,la) * ERI_chem(munulasi)
+        nula = (nu * (nu - 1)) / 2 + la
+        do si = 1, mu
+          musi = (mu * (mu - 1)) / 2 + si
+          nulamusi = (nula * (nula - 1)) / 2 + musi
+          K(mu,nu) = K(mu,nu) - P(si,la) * ERI_chem(nulamusi)
+        enddo
+        do si = mu + 1, la - 1
+          simu = (si * (si - 1)) / 2 + mu
+          nulasimu = (nula * (nula - 1)) / 2 + simu
+          K(mu,nu) = K(mu,nu) - P(si,la) * ERI_chem(nulasimu)
         enddo
       enddo
       do la = nu + 1, nBas
-        do si = la + 1, nBas
-          munulasi = Yoshimine_4ind(nu, la, si, mu)
-          K(mu,nu) = K(mu,nu) - P(si,la) * ERI_chem(munulasi)
+        lanu = (la * (la - 1)) / 2 + nu
+        do si = 1, mu
+          musi = (mu * (mu - 1)) / 2 + si
+          lanumusi = (lanu * (lanu - 1)) / 2 + musi
+          K(mu,nu) = K(mu,nu) - P(si,la) * ERI_chem(lanumusi)
+        enddo
+        do si = mu + 1, la - 1
+          simu = (si * (si - 1)) / 2 + mu
+          lanusimu = (lanu * (lanu - 1)) / 2 + simu
+          K(mu,nu) = K(mu,nu) - P(si,la) * ERI_chem(lanusimu)
         enddo
       enddo
 
-      !do la = 1, nBas
-      !  do si = la + 1, nBas
-      !    munulasi = Yoshimine_4ind(nu, la, mu, si)
-      !    K(mu,nu) = K(mu,nu) - P(si,la) * ERI_chem(munulasi)
-      !  enddo
-      !enddo
+!TODO
+!      do la = 1, mu
+!        nula = (nu * (nu - 1)) / 2 + la
+!        do si = la + 1, mu
+!          musi = (mu * (mu - 1)) / 2 + si
+!          nulamusi = (nula * (nula - 1)) / 2 + musi
+!          !nulamusi = Yoshimine_4ind(nu, la, si, mu)
+!          K(mu,nu) = K(mu,nu) - P(si,la) * ERI_chem(nulamusi)
+!        enddo
+!        do si = mu + 1, nBas
+!          simu = (si * (si - 1)) / 2 + mu
+!          nulasimu = (nula * (nula - 1)) / 2 + simu
+!          !nulasimu = Yoshimine_4ind(nu, la, si, mu)
+!          K(mu,nu) = K(mu,nu) - P(si,la) * ERI_chem(nulasimu)
+!        enddo
+!      enddo
+!      do la = mu + 1, nu
+!        nula = (nu * (nu - 1)) / 2 + la
+!        do si = la + 1, nu
+!          simu = (si * (si - 1)) / 2 + mu
+!          nulasimu = (nula * (nula - 1)) / 2 + simu
+!          !nulasimu = Yoshimine_4ind(nu, la, si, mu)
+!          K(mu,nu) = K(mu,nu) - P(si,la) * ERI_chem(nulasimu)
+!        enddo
+!        do si = nu + 1, nBas
+!          simu = (si * (si - 1)) / 2 + mu
+!          munulasi = Yoshimine_4ind(nu, la, si, mu)
+!          K(mu,nu) = K(mu,nu) - P(si,la) * ERI_chem(munulasi)
+!        enddo
+!      enddo
+!      do la = nu + 1, nBas
+!        lanu = (la * (la - 1)) / 2 + nu
+!        do si = la + 1, mu
+!          simu = (si * (si - 1)) / 2 + mu
+!          munulasi = Yoshimine_4ind(nu, la, si, mu)
+!          K(mu,nu) = K(mu,nu) - P(si,la) * ERI_chem(munulasi)
+!        enddo
+!        do si = mu + 1, nBas
+!          musi = (mu * (mu - 1)) / 2 + si
+!          munulasi = Yoshimine_4ind(nu, la, si, mu)
+!          K(mu,nu) = K(mu,nu) - P(si,la) * ERI_chem(munulasi)
+!        enddo
+!      enddo
+
     enddo ! mu
   enddo ! nu
 

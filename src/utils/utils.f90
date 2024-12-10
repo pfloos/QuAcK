@@ -914,11 +914,9 @@ integer*8 function Yoshimine_4ind(a, b, c, d)
   implicit none
   integer, intent(in) :: a, b, c, d
   integer*8, external :: Yoshimine_2ind
-  integer*8           :: ab, cd
 
-  ab = Yoshimine_2ind(a, b)
-  cd = Yoshimine_2ind(c, d)
-  Yoshimine_4ind = Yoshimine_2ind(ab, cd)
+  Yoshimine_4ind = Yoshimine_2ind(Yoshimine_2ind(a, b), &
+                                  Yoshimine_2ind(c, d))
 
   return
 end
@@ -928,7 +926,7 @@ end
 integer*8 function Yoshimine_2ind(a, b)
 
   implicit none
-  integer, intent(in) :: a, b
+  integer*8, intent(in) :: a, b
 
   if(a > b) then
     Yoshimine_2ind = (a * (a - 1)) / 2 + b
