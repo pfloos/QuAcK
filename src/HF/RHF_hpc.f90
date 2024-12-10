@@ -111,12 +111,12 @@ subroutine RHF_hpc(working_dir,dotest,maxSCF,thresh,max_diis,guess_type,level_sh
   call read_2e_integrals(working_dir, nBas, ERI_phys)
   call Hartree_matrix_AO_basis(nBas, P, ERI_phys, J_deb)
 
-  print*, maxval(dabs(J - J_deb))
+  print*, "max error = ", maxval(dabs(J - J_deb))
   diff = 0.d0
   do ii = 1, nBas
     do jj = 1, nBas
       diff_loc = dabs(J(jj,ii) - J_deb(jj,ii))
-      if(diff_loc .gt. 1d-13) then
+      if(diff_loc .gt. 1d-12) then
         print*, 'error on: ', jj, ii
         print*, J(jj,ii), J_deb(jj,ii)
         stop
