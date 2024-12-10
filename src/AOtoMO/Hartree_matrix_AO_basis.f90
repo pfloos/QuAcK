@@ -49,12 +49,10 @@ subroutine Hartree_matrix_AO_basis_hpc(nBas, ERI_size, P, ERI_chem, H)
   integer                       :: nunu, lala, nula, lasi, numu
   integer*8                     :: nunununu, nunulala, nununula, nunulasi
   integer*8                     :: lalanunu, lasinunu, numulala, lalanumu
-  integer*8                     :: numunula, numulasi, lasinumu
+  integer*8                     :: numunula, numulasi, lasinumu, nununumu
   integer*8                     :: munu0, munu
   integer*8                     :: sila0, sila
   integer*8                     :: munulasi0, munulasi
-
-  integer*8, external           :: Yoshimine_4ind
 
 
   do nu = 1, nBas
@@ -80,7 +78,7 @@ subroutine Hartree_matrix_AO_basis_hpc(nBas, ERI_size, P, ERI_chem, H)
       enddo
     enddo
 
-    do la = nu+1, nBas
+    do la = nu + 1, nBas
 
       lala = (la * (la - 1)) / 2 + la
       lalanunu = (lala * (lala - 1)) / 2 + nunu
@@ -96,15 +94,16 @@ subroutine Hartree_matrix_AO_basis_hpc(nBas, ERI_size, P, ERI_chem, H)
     do mu = 1, nu - 1
 
       numu = (nu * (nu - 1)) / 2 + mu
-
-      H(mu,nu) = 0.d0
+      nununumu = (nunu * (nunu - 1)) / 2 + numu
+      H(mu,nu) = p(nu,nu) * ERI_chem(nununumu)
 
       do la = 1, nu - 1
         lala = (la * (la - 1)) / 2 + la
         numulala = (numu * (numu - 1)) / 2 + lala
         H(mu,nu) = H(mu,nu) + p(la,la) * ERI_chem(numulala)
       enddo
-      do la = nu, nBas
+
+      do la = nu + 1, nBas
         lala = (la * (la - 1)) / 2 + la
         lalanumu = (lala * (lala - 1)) / 2 + numu
         H(mu,nu) = H(mu,nu) + p(la,la) * ERI_chem(lalanumu)
@@ -115,11 +114,13 @@ subroutine Hartree_matrix_AO_basis_hpc(nBas, ERI_size, P, ERI_chem, H)
         numunula = (numu * (numu - 1)) / 2 + nula
         H(mu,nu) = H(mu,nu) + 2.d0 * P(la,nu) * ERI_chem(numunula)
       enddo
+
       do la = mu + 1, nu - 1
         nula = (nu * (nu - 1)) / 2 + la
         numunula = (nula * (nula - 1)) / 2 + numu
         H(mu,nu) = H(mu,nu) + 2.d0 * P(la,nu) * ERI_chem(numunula)
       enddo
+
       do la = 2, nu - 1
         do si = 1, la - 1
           lasi = (la * (la - 1)) / 2 + si
@@ -127,6 +128,7 @@ subroutine Hartree_matrix_AO_basis_hpc(nBas, ERI_size, P, ERI_chem, H)
           H(mu,nu) = H(mu,nu) + 2.d0 * P(si,la) * ERI_chem(numulasi)
         enddo
       enddo
+
       do la = nu + 1, nBas
         do si = 1, la - 1
           lasi = (la * (la - 1)) / 2 + si

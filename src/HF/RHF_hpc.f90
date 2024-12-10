@@ -56,7 +56,7 @@ subroutine RHF_hpc(working_dir,dotest,maxSCF,thresh,max_diis,guess_type,level_sh
   double precision,allocatable  :: cp(:,:)
   double precision,allocatable  :: Fp(:,:)
   double precision,allocatable  :: ERI_chem(:)
-  double precision,allocatable  :: ERI_phys(:,:,:,:), J_deb(:,:)
+  double precision,allocatable  :: ERI_phys(:,:,:,:), J_deb(:,:), K_deb(:,:)
 
 
 ! Output variables
@@ -106,25 +106,43 @@ subroutine RHF_hpc(working_dir,dotest,maxSCF,thresh,max_diis,guess_type,level_sh
   call read_2e_integrals_hpc(working_dir, ERI_size, ERI_chem)
   call Hartree_matrix_AO_basis_hpc(nBas, ERI_size, P, ERI_chem, J)
   
-  allocate(J_deb(nBas,nBas))
   allocate(ERI_phys(nBas,nBas,nBas,nBas))
+  allocate(J_deb(nBas,nBas))
+  allocate(K_deb(nBas,nBas))
+
   call read_2e_integrals(working_dir, nBas, ERI_phys)
   call Hartree_matrix_AO_basis(nBas, P, ERI_phys, J_deb)
-
-  print*, "max error = ", maxval(dabs(J - J_deb))
+  print*, "max error on J = ", maxval(dabs(J - J_deb))
   diff = 0.d0
   do ii = 1, nBas
     do jj = 1, nBas
       diff_loc = dabs(J(jj,ii) - J_deb(jj,ii))
       if(diff_loc .gt. 1d-12) then
-        print*, 'error on: ', jj, ii
+        print*, 'error in J on: ', jj, ii
         print*, J(jj,ii), J_deb(jj,ii)
         stop
       endif
       diff = diff + diff_loc
     enddo
   enddo
-  print*, 'total diff = ', diff
+  print*, 'total diff on J = ', diff
+
+  call exchange_matrix_AO_basis_hpc(nBas, ERI_size, P, ERI_chem, K)
+  call exchange_matrix_AO_basis(nBas, P, ERI_phys, K_deb)
+  print*, "max error on K = ", maxval(dabs(K - K_deb))
+  diff = 0.d0
+  do ii = 1, nBas
+    do jj = 1, nBas
+      diff_loc = dabs(K(jj,ii) - K_deb(jj,ii))
+      if(diff_loc .gt. 1d-12) then
+        print*, 'error in K on: ', jj, ii
+        print*, K(jj,ii), K_deb(jj,ii)
+        stop
+      endif
+      diff = diff + diff_loc
+    enddo
+  enddo
+  print*, 'total diff on K = ', diff
 
   stop
 
