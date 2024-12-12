@@ -44,34 +44,19 @@ subroutine exchange_matrix_AO_basis_hpc(nBas, ERI_size, P, ERI_chem, K)
   double precision, intent(in)  :: ERI_chem(ERI_size)
   double precision, intent(out) :: K(nBas,nBas)
 
-  integer                       :: mu, nu, la, si
-  integer                       :: nunu, nula, lanu, lasi, nusi, sinu
-  integer                       :: numu, mumu, mula, lamu, musi, simu
-  integer                       :: nunu0, lala0, mumu0
+  integer*8                     :: mu, nu, la, si, nBas8
+  integer*8                     :: nunu, nula, lanu, lasi, nusi, sinu
+  integer*8                     :: numu, mumu, mula, lamu, musi, simu
+  integer*8                     :: nunu0, lala0, mumu0
   integer*8                     :: nunununu, nulanula, lanulanu, nulanusi
   integer*8                     :: munulasi, lanunusi, lanusinu, numumumu 
   integer*8                     :: nulamula, nulalamu, lanulamu, nulamusi
   integer*8                     :: nulasimu, lanumusi, lanusimu, simunula
   integer*8                     :: simulanu, nulanula0, lanulanu0
 
-!  integer*8                     :: munusila
-!  integer*8, external           :: Yoshimine_4ind
-!
-!  do nu = 1, nBas
-!    do mu = 1, nu
-!      K(mu,nu) = 0.d0
-!      do la = 1, nBas
-!        do si = 1, nBas
-!          munusila = Yoshimine_4ind(int(mu, kind=8), &
-!                                    int(si, kind=8), &
-!                                    int(la, kind=8), &
-!                                    int(nu, kind=8))
-!          K(mu,nu) = K(mu,nu) - P(si,la) * ERI_chem(munusila)
-!        enddo
-!      enddo
-!    enddo
-!  enddo
 
+
+  nBas8 = int(nBas, kind=8)
 
 
   !$OMP PARALLEL DEFAULT (NONE)                                           &
@@ -81,9 +66,9 @@ subroutine exchange_matrix_AO_basis_hpc(nBas, ERI_size, P, ERI_chem, K)
   !$OMP          nulanusi, lanulamu, lanunusi, lanusinu , numumumu,       &
   !$OMP          nulamula, nulalamu, lanumusi, lanusimu, nulamusi,        &
   !$OMP          nulasimu, simunula, simulanu) &
-  !$OMP SHARED (nBas, P, ERI_chem, K)
+  !$OMP SHARED (nBas8, P, ERI_chem, K)
   !$OMP DO
-  do nu = 1, nBas
+  do nu = 1, nBas8
 
     nunu0 = shiftr(nu * (nu - 1), 1)
     nunu = nunu0 + nu
@@ -97,7 +82,7 @@ subroutine exchange_matrix_AO_basis_hpc(nBas, ERI_size, P, ERI_chem, K)
       K(nu,nu) = K(nu,nu) - P(la,la) * ERI_chem(nulanula)
     enddo
 
-    do la = nu + 1, nBas
+    do la = nu + 1, nBas8
       lanu = shiftr(la * (la - 1), 1) + nu
       lanulanu = shiftr(lanu * (lanu - 1), 1) + lanu
       K(nu,nu) = K(nu,nu) - P(la,la) * ERI_chem(lanulanu)
@@ -112,7 +97,7 @@ subroutine exchange_matrix_AO_basis_hpc(nBas, ERI_size, P, ERI_chem, K)
       enddo
     enddo
 
-    do la = nu + 1, nBas
+    do la = nu + 1, nBas8
       lanu = shiftr(la * (la - 1), 1) + nu
       lanulanu0 = shiftr(lanu * (lanu - 1), 1)
       do si = 1, nu
@@ -144,7 +129,7 @@ subroutine exchange_matrix_AO_basis_hpc(nBas, ERI_size, P, ERI_chem, K)
         nulalamu = shiftr(nula * (nula - 1), 1) + shiftr(la * (la - 1), 1) + mu
         K(mu,nu) = K(mu,nu) - P(la,la) * ERI_chem(nulalamu)
       enddo
-      do la = nu + 1, nBas
+      do la = nu + 1, nBas8
         lala0 = shiftr(la * (la - 1), 1)
         lanu = lala0 + nu
         lanulamu = shiftr(lanu * (lanu - 1), 1) + lala0 + mu
@@ -171,7 +156,7 @@ subroutine exchange_matrix_AO_basis_hpc(nBas, ERI_size, P, ERI_chem, K)
           K(mu,nu) = K(mu,nu) - P(si,la) * ERI_chem(nulasimu)
         enddo
       enddo
-      do la = nu + 1, nBas
+      do la = nu + 1, nBas8
         lanu = shiftr(la * (la - 1), 1) + nu
         lanulanu0 = shiftr(lanu * (lanu - 1), 1)
         do si = 1, mu
@@ -195,7 +180,7 @@ subroutine exchange_matrix_AO_basis_hpc(nBas, ERI_size, P, ERI_chem, K)
           nulasimu = nulanula0 + shiftr(si * (si - 1), 1) + mu
           K(mu,nu) = K(mu,nu) - P(si,la) * ERI_chem(nulasimu)
         enddo
-        do si = nu, nBas
+        do si = nu, nBas8
           simu = shiftr(si * (si - 1), 1) + mu
           simunula = shiftr(simu * (simu - 1), 1) + nula
           K(mu,nu) = K(mu,nu) - P(si,la) * ERI_chem(simunula)
@@ -208,15 +193,15 @@ subroutine exchange_matrix_AO_basis_hpc(nBas, ERI_size, P, ERI_chem, K)
           nulasimu = nulanula0 + shiftr(si * (si - 1), 1) + mu
           K(mu,nu) = K(mu,nu) - P(si,la) * ERI_chem(nulasimu)
         enddo
-        do si = nu + 1, nBas
+        do si = nu + 1, nBas8
           simu = shiftr(si * (si - 1), 1) + mu
           simunula = shiftr(simu * (simu - 1), 1) + nula
           K(mu,nu) = K(mu,nu) - P(si,la) * ERI_chem(simunula)
         enddo
       enddo
-      do la = nu + 1, nBas
+      do la = nu + 1, nBas8
         lanu = shiftr(la * (la - 1), 1) + nu
-        do si = la + 1, nBas
+        do si = la + 1, nBas8
           simu = shiftr(si * (si - 1), 1) + mu
           simulanu = shiftr(simu * (simu - 1), 1) + lanu
           K(mu,nu) = K(mu,nu) - P(si,la) * ERI_chem(simulanu)
@@ -229,8 +214,8 @@ subroutine exchange_matrix_AO_basis_hpc(nBas, ERI_size, P, ERI_chem, K)
   !$OMP END PARALLEL
 
 
-  do nu = 1, nBas
-    do mu = nu+1, nBas
+  do nu = 1, nBas8
+    do mu = nu+1, nBas8
       K(mu,nu) = K(nu,mu)
     enddo
   enddo

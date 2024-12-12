@@ -45,31 +45,17 @@ subroutine Hartree_matrix_AO_basis_hpc(nBas, ERI_size, P, ERI_chem, H)
   double precision, intent(in)  :: ERI_chem(ERI_size)
   double precision, intent(out) :: H(nBas,nBas)
 
-  integer                       :: mu, nu, la, si
-  integer                       :: nunu, lala, nula, lasi, numu
-  integer                       :: nunu0, lala0
+  integer*8                     :: mu, nu, la, si, nBas8
+  integer*8                     :: nunu, lala, nula, lasi, numu
+  integer*8                     :: nunu0, lala0
   integer*8                     :: nunununu, nunulala, nununula, nunulasi
   integer*8                     :: lalanunu, lasinunu, numulala, lalanumu
   integer*8                     :: numunula, numulasi, lasinumu, nununumu
   integer*8                     :: nunununu0, numunumu0
 
-!  integer*8                     :: munusila
-!  integer*8, external           :: Yoshimine_4ind
-!
-!  do nu = 1, nBas
-!    do mu = 1, nu
-!      H(mu,nu) = 0.d0
-!      do la = 1, nBas
-!        do si = 1, nBas
-!          munusila = Yoshimine_4ind(int(mu, kind=8), &
-!                                    int(nu, kind=8), &
-!                                    int(si, kind=8), &
-!                                    int(la, kind=8))
-!          H(mu,nu) = H(mu,nu) + P(si,la) * ERI_chem(munusila)
-!        enddo
-!      enddo
-!    enddo
-!  enddo
+
+
+  nBas8 = int(nBas, kind=8)
 
   !$OMP PARALLEL DEFAULT(NONE)                                      &
   !$OMP PRIVATE (nu, la, si, mu,                                    &
@@ -77,9 +63,9 @@ subroutine Hartree_matrix_AO_basis_hpc(nBas, ERI_size, P, ERI_chem, H)
   !$OMP          nunununu0, nunununu, nununula, numulala, numunula, &
   !$OMP          nunulala, lalanunu, lalanumu, nunulasi, lasinunu,  &
   !$OMP          numunumu0, nununumu, numulasi, lasinumu)           &
-  !$OMP SHARED (nBas, H, P, ERI_chem)
+  !$OMP SHARED (nBas8, H, P, ERI_chem)
   !$OMP DO
-  do nu = 1, nBas
+  do nu = 1, nBas8
 
     nunu0 = shiftr(nu * (nu - 1), 1)
     nunu = nunu0 + nu
@@ -107,7 +93,7 @@ subroutine Hartree_matrix_AO_basis_hpc(nBas, ERI_size, P, ERI_chem, H)
       enddo
     enddo
 
-    do la = nu + 1, nBas
+    do la = nu + 1, nBas8
 
       lala0 = shiftr(la * (la - 1), 1)
 
@@ -137,7 +123,7 @@ subroutine Hartree_matrix_AO_basis_hpc(nBas, ERI_size, P, ERI_chem, H)
         H(mu,nu) = H(mu,nu) + p(la,la) * ERI_chem(numulala)
       enddo
 
-      do la = nu + 1, nBas
+      do la = nu + 1, nBas8
         lala = shiftr(la * (la - 1), 1) + la
         lalanumu = shiftr(lala * (lala - 1), 1) + numu
         H(mu,nu) = H(mu,nu) + p(la,la) * ERI_chem(lalanumu)
@@ -164,7 +150,7 @@ subroutine Hartree_matrix_AO_basis_hpc(nBas, ERI_size, P, ERI_chem, H)
         enddo
       enddo
 
-      do la = nu + 1, nBas
+      do la = nu + 1, nBas8
         lala0 = shiftr(la * (la - 1), 1)
         do si = 1, la - 1
           lasi = lala0 + si
@@ -178,8 +164,8 @@ subroutine Hartree_matrix_AO_basis_hpc(nBas, ERI_size, P, ERI_chem, H)
   !$OMP END DO
   !$OMP END PARALLEL
 
-  do nu = 1, nBas
-    do mu = nu+1, nBas
+  do nu = 1, nBas8
+    do mu = nu+1, nBas8
       H(mu,nu) = H(nu,mu)
     enddo
   enddo
