@@ -74,14 +74,20 @@ subroutine exchange_matrix_AO_basis_hpc(nBas, ERI_size, P, ERI_chem, K)
 
 
 
-!  !$OMP PARALLEL SHARED (NONE)
-!  !$OMP PRIVATE ()
-!  !$OMP SHARED ()
-!  !$OMP DO
+  !$OMP PARALLEL DEFAULT (NONE)                                           &
+  !$OMP PRIVATE (nu, si, la, mu,                                          &
+  !$OMP          nunu0, nunu, lanu, numu, mumu0, mumu, simu, lala0, nula, &
+  !$OMP          nunununu, nulanula, lanulanu, lanulanu0, nulanula0,      &
+  !$OMP          nulanusi, lanulamu, lanunusi, lanusinu , numumumu,       &
+  !$OMP          nulamula, nulalamu, lanumusi, lanusimu, nulamusi,        &
+  !$OMP          nulasimu, simunula, simulanu) &
+  !$OMP SHARED (nBas, P, ERI_chem, K)
+  !$OMP DO
   do nu = 1, nBas
 
     nunu0 = shiftr(nu * (nu - 1), 1)
     nunu = nunu0 + nu
+
     nunununu = shiftr(nunu * (nunu - 1), 1) + nunu
     K(nu,nu) = -P(nu,nu) * ERI_chem(nunununu)
 
@@ -219,8 +225,8 @@ subroutine exchange_matrix_AO_basis_hpc(nBas, ERI_size, P, ERI_chem, K)
 
     enddo ! mu
   enddo ! nu
-!  !$OMP END DO
-!  !$OMP END PARALLEL
+  !$OMP END DO
+  !$OMP END PARALLEL
 
 
   do nu = 1, nBas
@@ -233,4 +239,7 @@ subroutine exchange_matrix_AO_basis_hpc(nBas, ERI_size, P, ERI_chem, K)
 end subroutine 
 
 ! ---
+
+
+
 
