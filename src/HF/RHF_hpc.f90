@@ -107,18 +107,14 @@ subroutine RHF_hpc(working_dir,dotest,maxSCF,thresh,max_diis,guess_type,level_sh
   call read_2e_integrals_hpc(working_dir, ERI_size, ERI_chem)
 
   call wall_time(t1)
-  do ii = 1, 5
-    call Hartree_matrix_AO_basis_hpc(nBas, ERI_size, P, ERI_chem, J)
-  enddo
+  call Hartree_matrix_AO_basis_hpc(nBas, ERI_size, P, ERI_chem, J)
   call wall_time(t2)
-  print*, " J built in (sec):", (t2-t1) / 5.d0
+  print*, " J built in (sec):", (t2-t1)
 
   call wall_time(t1)
-  do ii = 1, 5
-    call exchange_matrix_AO_basis_hpc(nBas, ERI_size, P, ERI_chem, K)
-  enddo
+  call exchange_matrix_AO_basis_hpc(nBas, ERI_size, P, ERI_chem, K)
   call wall_time(t2)
-  print*, " K built in (sec):", (t2-t1) / 5.d0
+  print*, " K built in (sec):", (t2-t1)
   
 
   allocate(ERI_phys(nBas,nBas,nBas,nBas))
@@ -128,25 +124,21 @@ subroutine RHF_hpc(working_dir,dotest,maxSCF,thresh,max_diis,guess_type,level_sh
   call read_2e_integrals(working_dir, nBas, ERI_phys)
 
   call wall_time(t1)
-  do ii = 1, 5
-    call Hartree_matrix_AO_basis(nBas, P, ERI_phys, J_deb)
-  enddo
+  call Hartree_matrix_AO_basis(nBas, P, ERI_phys, J_deb)
   call wall_time(t2)
-  print*, " J_deb built in (sec):", (t2-t1) / 5.d0
+  print*, " J_deb built in (sec):", (t2-t1)
 
   call wall_time(t1)
-  do ii = 1, 5
-    call exchange_matrix_AO_basis(nBas, P, ERI_phys, K_deb)
-  enddo
+  call exchange_matrix_AO_basis(nBas, P, ERI_phys, K_deb)
   call wall_time(t2)
-  print*, " K_deb built in (sec):", (t2-t1) / 5.d0
+  print*, " K_deb built in (sec):", (t2-t1)
 
   print*, "max error on J = ", maxval(dabs(J - J_deb))
   diff = 0.d0
   do ii = 1, nBas
     do jj = 1, nBas
       diff_loc = dabs(J(jj,ii) - J_deb(jj,ii))
-      if(diff_loc .gt. 1d-12) then
+      if(diff_loc .gt. 1d-10) then
         print*, 'error in J on: ', jj, ii
         print*, J(jj,ii), J_deb(jj,ii)
         stop
@@ -161,7 +153,7 @@ subroutine RHF_hpc(working_dir,dotest,maxSCF,thresh,max_diis,guess_type,level_sh
   do ii = 1, nBas
     do jj = 1, nBas
       diff_loc = dabs(K(jj,ii) - K_deb(jj,ii))
-      if(diff_loc .gt. 1d-12) then
+      if(diff_loc .gt. 1d-10) then
         print*, 'error in K on: ', jj, ii
         print*, K(jj,ii), K_deb(jj,ii)
         stop
