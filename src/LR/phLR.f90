@@ -15,6 +15,7 @@ subroutine phLR(TDA,nS,Aph,Bph,EcRPA,Om,XpY,XmY)
   ! Local variables
 
   double precision              :: trace_matrix
+  double precision              :: t1, t2
   double precision,allocatable  :: ApB(:,:)
   double precision,allocatable  :: AmB(:,:)
   double precision,allocatable  :: AmBSq(:,:)
@@ -29,20 +30,20 @@ subroutine phLR(TDA,nS,Aph,Bph,EcRPA,Om,XpY,XmY)
   double precision,intent(out)  :: XpY(nS,nS)
   double precision,intent(out)  :: XmY(nS,nS)
 
-! Memory allocation
 
-  allocate(ApB(nS,nS),AmB(nS,nS),AmBSq(nS,nS),AmBIv(nS,nS),Z(nS,nS),tmp(nS,nS))
 
 ! Tamm-Dancoff approximation
 
   if(TDA) then
- 
+
     XpY(:,:) = Aph(:,:)
     call diagonalize_matrix(nS,XpY,Om)
     XpY(:,:) = transpose(XpY(:,:))
     XmY(:,:) = XpY(:,:)
 
   else
+
+    allocate(ApB(nS,nS),AmB(nS,nS),AmBSq(nS,nS),AmBIv(nS,nS),Z(nS,nS),tmp(nS,nS))
 
     ApB(:,:) = Aph(:,:) + Bph(:,:)
     AmB(:,:) = Aph(:,:) - Bph(:,:)
@@ -80,6 +81,8 @@ subroutine phLR(TDA,nS,Aph,Bph,EcRPA,Om,XpY,XmY)
 
 !   XmY = matmul(transpose(Z),AmBIv)
 !   call DA(nS,1d0*sqrt(Om),XmY)
+
+    deallocate(ApB,AmB,AmBSq,AmBIv,Z,tmp)
  
   end if
 

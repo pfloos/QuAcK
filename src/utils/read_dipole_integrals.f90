@@ -20,7 +20,7 @@ subroutine read_dipole_integrals(working_dir,nBas,R)
 
   double precision,intent(out)  :: R(nBas,nBas,ncart)
 
-  integer                       :: status, ios
+  integer                       :: ios
   character(len=256)            :: file_path
 
 
@@ -29,9 +29,9 @@ subroutine read_dipole_integrals(working_dir,nBas,R)
   R(:,:,:) = 0d0
 
   file_path = trim(working_dir) // '/int/x.dat'
-  open(unit=21, file=file_path, status='old', action='read', iostat=status)
+  open(unit=21, file=file_path, status='old', action='read', iostat=ios)
 
-    if(status /= 0) then
+    if(ios /= 0) then
 
       print *, "Error opening file: ", file_path
       stop
@@ -39,7 +39,7 @@ subroutine read_dipole_integrals(working_dir,nBas,R)
     else
 
       do
-        read(21,*,iostat=ios) mu,nu,Dip
+        read(21, '(I7, I7, E25.17)', iostat=ios) mu, nu, Dip
         if(ios /= 0) exit
         R(mu,nu,1) = Dip
         R(nu,mu,1) = Dip
@@ -52,9 +52,9 @@ subroutine read_dipole_integrals(working_dir,nBas,R)
   ! ---
 
   file_path = trim(working_dir) // '/int/y.dat'
-  open(unit=22, file=file_path, status='old', action='read', iostat=status)
+  open(unit=22, file=file_path, status='old', action='read', iostat=ios)
 
-    if(status /= 0) then
+    if(ios /= 0) then
 
       print *, "Error opening file: ", file_path
       stop
@@ -62,7 +62,7 @@ subroutine read_dipole_integrals(working_dir,nBas,R)
     else
 
       do
-        read(22,*,iostat=ios) mu,nu,Dip
+        read(22, '(I7, I7, E25.17)', iostat=ios) mu, nu, Dip
         if(ios /= 0) exit
         R(mu,nu,2) = Dip
         R(nu,mu,2) = Dip
@@ -75,9 +75,9 @@ subroutine read_dipole_integrals(working_dir,nBas,R)
   ! ---
 
   file_path = trim(working_dir) // '/int/z.dat'
-  open(unit=23, file=file_path, status='old', action='read', iostat=status)
+  open(unit=23, file=file_path, status='old', action='read', iostat=ios)
 
-    if(status /= 0) then
+    if(ios /= 0) then
 
       print *, "Error opening file: ", file_path
       stop
@@ -85,7 +85,7 @@ subroutine read_dipole_integrals(working_dir,nBas,R)
     else
 
       do
-        read(23,*,iostat=ios) mu,nu,Dip
+        read(23, '(I7, I7, E25.17)', iostat=ios) mu, nu, Dip
         if(ios /= 0) exit
         R(mu,nu,3) = Dip
         R(nu,mu,3) = Dip

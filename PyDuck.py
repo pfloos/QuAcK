@@ -6,6 +6,8 @@ import pyscf
 from pyscf import gto
 import numpy as np
 import subprocess
+import time
+
 
 #Find the value of the environnement variable QUACK_ROOT. If not present we use the current repository
 if "QUACK_ROOT" not in os.environ:
@@ -22,7 +24,10 @@ parser.add_argument('-b', '--basis', type=str, required=True, help='Name of the 
 parser.add_argument('--bohr', default='Angstrom', action='store_const', const='Bohr', help='By default QuAcK assumes that the xyz files are in Angstrom. Add this argument if your xyz file is in Bohr.')
 parser.add_argument('-c', '--charge', type=int, default=0, help='Total charge of the molecule. Specify negative charges with "m" instead of the minus sign, for example m1 instead of -1. Default is 0')
 parser.add_argument('--cartesian', default=False, action='store_true', help='Add this option if you want to use cartesian basis functions.')
-parser.add_argument('--print_2e', default=False, action='store_true', help='Add this option if you want to print 2e-integrals.')
+parser.add_argument('--print_2e', default=True, action='store_true', help='If True, print 2e-integrals to disk.')
+parser.add_argument('--formatted_2e', default=False, action='store_true', help='Add this option if you want to print formatted 2e-integrals.')
+parser.add_argument('--mmap_2e', default=False, action='store_true', help='If True, avoid using DRAM when generating 2e-integrals.')
+parser.add_argument('--aosym_2e', default=False, action='store_true', help='If True, use 8-fold symmetry 2e-integrals.')
 parser.add_argument('-fc', '--frozen_core', type=bool, default=False, help='Freeze core MOs. Default is false')
 parser.add_argument('-m', '--multiplicity', type=int, default=1, help='Spin multiplicity. Default is 1 therefore singlet')
 parser.add_argument('--working_dir', type=str, default=QuAcK_dir, help='Set a working directory to run the calculation.')
@@ -38,6 +43,9 @@ multiplicity=args.multiplicity
 xyz=args.xyz + '.xyz'
 cartesian=args.cartesian
 print_2e=args.print_2e
+formatted_2e=args.formatted_2e
+mmap_2e=args.mmap_2e
+aosym_2e=args.aosym_2e
 working_dir=args.working_dir
 
 #Read molecule
@@ -59,6 +67,7 @@ mol = gto.M(
     basis = input_basis,
     charge = charge,
     spin = multiplicity - 1
+#    symmetry = True  # Enable symmetry
 )
 
 #Fix the unit for the lengths
@@ -129,33 +138,57 @@ write_matrix_to_file(y,norb,working_dir+'/int/y.dat')
 subprocess.call(['rm', '-f', working_dir + '/int/z.dat'])
 write_matrix_to_file(z,norb,working_dir+'/int/z.dat')
 
-eri_ao = mol.intor('int2e')
-
-def write_tensor_to_file(tensor,size,file,cutoff=1e-15):
-    f = open(file, 'w')
+def write_tensor_to_file(tensor,size,file_name,cutoff=1e-15):
+    f = open(file_name, 'w')
     for i in range(size):
         for j in range(i,size):
             for k in range(i,size):
                 for l in range(j,size):
                     if abs(tensor[i][k][j][l]) > cutoff:
-                        #f.write(str(i+1)+' '+str(j+1)+' '+str(k+1)+' '+str(l+1)+' '+"{:.16E}".format(tensor[i][k][j][l]))
                         f.write(str(i+1)+' '+str(j+1)+' '+str(k+1)+' '+str(l+1)+' '+"{:.16E}".format(tensor[i][k][j][l]))
                         f.write('\n')
     f.close()
 
-# Write two-electron integrals
 if print_2e:
-    # (formatted)
-    subprocess.call(['rm', '-f', working_dir + '/int/ERI.dat'])
-    write_tensor_to_file(eri_ao, norb, working_dir + '/int/ERI.dat')
-else:
-    # (binary)
-    subprocess.call(['rm', '-f', working_dir + '/int/ERI.bin'])
-    # chem -> phys notation
-    eri_ao = eri_ao.transpose(0, 2, 1, 3)
-    f = open(working_dir + '/int/ERI.bin', 'w')
-    eri_ao.tofile(working_dir + '/int/ERI.bin')
-    f.close()
+    # Write two-electron integrals to HD
+    ti_2e = time.time()
+
+    if formatted_2e:
+        output_file_path = working_dir + '/int/ERI.dat'
+        subprocess.call(['rm', '-f', output_file_path])
+        eri_ao = mol.intor('int2e')
+        write_tensor_to_file(eri_ao, norb, output_file_path)
+    
+    if aosym_2e:
+        output_file_path = working_dir + '/int/ERI_chem.bin'
+        subprocess.call(['rm', '-f', output_file_path])
+        eri_ao = mol.intor('int2e', aosym='s8')
+        f = open(output_file_path, 'w')
+        eri_ao.tofile(output_file_path)
+        f.close()
+    else:
+        output_file_path = working_dir + '/int/ERI.bin'
+        subprocess.call(['rm', '-f', output_file_path])
+        if(mmap_2e):
+            # avoid using DRAM
+            eri_shape = (norb, norb, norb, norb)
+            eri_mmap = np.memmap(output_file_path, dtype='float64', mode='w+', shape=eri_shape)
+            mol.intor('int2e', out=eri_mmap)
+            for i in range(norb):
+                eri_mmap[i, :, :, :] = eri_mmap[i, :, :, :].transpose(1, 0, 2)
+            eri_mmap.flush()
+            del eri_mmap
+        else:
+            eri_ao = mol.intor('int2e').transpose(0, 2, 1, 3) # chem -> phys
+            f = open(output_file_path, 'w')
+            eri_ao.tofile(output_file_path)
+            f.close()
+
+    te_2e = time.time()
+    print("Wall time for writing 2e-integrals to disk: {:.3f} seconds".format(te_2e - ti_2e))
+    sys.stdout.flush()
+
+
 
 
 #Execute the QuAcK fortran program

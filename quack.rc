@@ -13,3 +13,5 @@ esac
 export QUACK_ROOT="$( cd $QUACK_ROOT; pwd -P )"
 
 export PATH="${QUACK_ROOT}/bin:$PATH"
+export LD_LIBRARY_PATH="${QUACK_ROOT}/src/cuda/build:$LD_LIBRARY_PATH"
+

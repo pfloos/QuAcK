@@ -3,14 +3,14 @@ import os
 import sys
 import subprocess
 
+import argparse
+parser = argparse.ArgumentParser(description='This script generate the compilation files for QuAcK.')
+parser.add_argument('-d', '--debug', action='store_true', help='Debug mode. Default is false.')
+parser.add_argument('-u', '--use-gpu', action='store_true', help='Use GPU. Default is false.')
+args = parser.parse_args()
+DEBUG = args.debug
+USE_GPU = args.use_gpu
 
-
-DEBUG=False
-try:
-  DEBUG = sys.argv[1] == "debug"
-except:
-  pass
- 	
 
 if "QUACK_ROOT" not in os.environ:
    os.chdir("..")
@@ -36,7 +36,7 @@ def check_compiler_exists(compiler):
 compile_gfortran_mac = """
 FC = gfortran
 AR = libtool -static -o
-FFLAGS = -I$IDIR -J$IDIR -fbacktrace -g -Wall -Wno-unused-variable -Wno-unused -Wno-unused-dummy-argument -Wuninitialized -Wmaybe-uninitialized -O3 -march=native
+FFLAGS = -I$IDIR -J$IDIR -cpp -fbacktrace -g -Wall -Wno-unused-variable -Wno-unused -Wno-unused-dummy-argument -Wuninitialized -Wmaybe-uninitialized -O3 -march=native
 CC = gcc
 CXX = g++
 LAPACK=-lblas -llapack
@@ -47,7 +47,7 @@ FIX_ORDER_OF_LIBS=
 compile_gfortran_mac_debug = """
 FC = gfortran
 AR = libtool -static -o
-FFLAGS = -I$IDIR -J$IDIR -fbacktrace -Wall -Wno-unused-variable -g -fcheck=all -Waliasing -Wampersand -Wconversion -Wsurprising -Wintrinsics-std -Wno-tabs -Wintrinsic-shadow -Wline-truncation -Wreal-q-constant
+FFLAGS = -I$IDIR -J$IDIR -cpp -fbacktrace -Wall -Wno-unused-variable -g -fcheck=all -Waliasing -Wampersand -Wconversion -Wsurprising -Wintrinsics-std -Wno-tabs -Wintrinsic-shadow -Wline-truncation -Wreal-q-constant
 CC = gcc
 CXX = g++
 LAPACK=-lblas -llapack
@@ -58,7 +58,7 @@ FIX_ORDER_OF_LIBS=
 compile_gfortran_linux_debug = """
 FC = gfortran
 AR = ar crs
-FFLAGS = -I$IDIR -J$IDIR -fbacktrace -Wall -g -fcheck=all -Waliasing -Wampersand -Wconversion -Wsurprising -Wintrinsics-std -Wno-tabs -Wintrinsic-shadow -Wline-truncation -Wreal-q-constant
+FFLAGS = -I$IDIR -J$IDIR -cpp -fbacktrace -Wall -g -fcheck=all -Waliasing -Wampersand -Wconversion -Wsurprising -Wintrinsics-std -Wno-tabs -Wintrinsic-shadow -Wline-truncation -Wreal-q-constant
 CC = gcc
 CXX = g++
 LAPACK=-lblas -llapack
@@ -81,9 +81,9 @@ elif sys.platform.lower() == "linux" or os.path.exists('/proc/version'):
     else:
         if check_compiler_exists('ifort'):
             compiler = """
-FC = ifort -qmkl=parallel -qopenmp
+FC = ifort -mkl=parallel -qopenmp
 AR = ar crs
-FFLAGS = -I$IDIR -module $IDIR -traceback -g -Ofast -xHost
+FFLAGS = -I$IDIR -module $IDIR -fpp -traceback -g -Ofast -xHost
 CC = icc
 CXX = icpc
 LAPACK=
@@ -94,10 +94,12 @@ FIX_ORDER_OF_LIBS=-Wl,--start-group
             compiler = """
 FC = gfortran -fopenmp
 AR = ar crs
-FFLAGS = -I$IDIR -J$IDIR -fbacktrace -g -Wall -Wno-unused-variable -Wno-unused -Wno-unused-dummy-argument -Wuninitialized -Wmaybe-uninitialized -O3 -march=native
+FFLAGS = -I$IDIR -J$IDIR -cpp -fbacktrace -g -Wall -Wno-unused-variable -Wno-unused -Wno-unused-dummy-argument -Wuninitialized -Wmaybe-uninitialized -O3 -march=native
 CC = gcc
 CXX = g++
 LAPACK=-lblas -llapack
+# uncomment for TURPAN
+#LAPACK=-larmpl_lp64_mp
 STDCXX=-lstdc++
 FIX_ORDER_OF_LIBS=-Wl,--start-group
 """
@@ -108,6 +110,23 @@ else:
 
     print("Unknown platform. Only Linux and Darwin are supported.")
     sys.exit(-1)
+
+if USE_GPU:
+    compiler_tmp = compiler.strip().split('\n')
+    compiler_tmp[0] += " -L{}/src/cuda/build -lcuquack -lcudart -lcublas -lcusolver".format(QUACK_ROOT)
+    compiler_exe = '\n'.join(compiler_tmp)
+
+    compiler_tmp = compiler.strip().split('\n')
+    compiler_tmp[2] += " -DUSE_GPU"
+    compiler_lib = '\n'.join(compiler_tmp)
+
+    compiler_main = compiler_lib
+else:
+    compiler_exe = compiler
+    compiler_lib = compiler
+    compiler_main = compiler
+
+
 
 header = """#
 # This file was automatically generated. Do not modify this file.
@@ -163,7 +182,7 @@ rule git_clone
 
 build_in_lib_dir = "\n".join([
 	header,
-	compiler,
+	compiler_lib,
 	rule_fortran,
 	rule_build_lib,
 ])
@@ -171,20 +190,26 @@ build_in_lib_dir = "\n".join([
   
 build_in_exe_dir = "\n".join([
 	header,
-	compiler,
+	compiler_exe,
 	rule_fortran,
 	rule_build_exe,
 ])
 
 build_main = "\n".join([
 	header,
-        compiler,
+        compiler_main,
         rule_git_clone,
 ])
 
-exe_dirs = [ "QuAcK"]
+exe_dirs = ["QuAcK"]
 lib_dirs = list(filter(lambda x: os.path.isdir(x) and \
-                                 x not in exe_dirs, os.listdir(".")))
+                                x not in ["cuda"] and \
+                                x not in exe_dirs, os.listdir(".")))
+if(USE_GPU):
+    i = lib_dirs.index("GPU")
+    lib_dirs[0], lib_dirs[i] = lib_dirs[i], lib_dirs[0]
+else:
+    lib_dirs.remove("GPU")
 
 def create_ninja_in_libdir(directory):
     def write_rule(f, source_file, replace):

@@ -1,15 +1,16 @@
-subroutine phRRPA(dotest,TDA,doACFDT,exchange_kernel,singlet,triplet,nBas,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,dipole_int,eHF)
+#ifdef USE_GPU
 
-! Perform a direct random phase approximation calculation
+subroutine phRRPA_GPU(dotest,TDA,doACFDT,exchange_kernel,singlet,triplet,nBas,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,dipole_int,eHF)
+
+  use cu_quack_module
+
 
   implicit none
   include 'parameters.h'
   include 'quadrature.h'
 
-! Input variables
 
   logical,intent(in)           :: dotest
-
   logical,intent(in)           :: TDA
   logical,intent(in)           :: doACFDT
   logical,intent(in)           :: exchange_kernel
@@ -27,30 +28,24 @@ subroutine phRRPA(dotest,TDA,doACFDT,exchange_kernel,singlet,triplet,nBas,nC,nO,
   double precision,intent(in)  :: ERI(nBas,nBas,nBas,nBas)
   double precision,intent(in)  :: dipole_int(nBas,nBas,ncart)
 
-! Local variables
 
-  integer                      :: ia
+  integer                      :: i, a, ia
   integer                      :: ispin
   logical                      :: dRPA
   double precision             :: t1, t2
-  double precision             :: lambda
-  double precision,allocatable :: Aph(:,:)
-  double precision,allocatable :: Bph(:,:)
+  integer,         allocatable :: iorder(:)
   double precision,allocatable :: Om(:)
   double precision,allocatable :: XpY(:,:)
   double precision,allocatable :: XmY(:,:)
 
   double precision             :: EcRPA(nspin)
 
-! Hello world
 
   write(*,*)
-  write(*,*)'*********************************'
-  write(*,*)'* Restricted ph-RPA Calculation *'
-  write(*,*)'*********************************'
+  write(*,*)'******************************************'
+  write(*,*)'* Restricted ph-RPA Calculation (on GPU) *'
+  write(*,*)'******************************************'
   write(*,*)
-
-! TDA 
 
   if(TDA) then
     write(*,*) 'Tamm-Dancoff approximation activated!'
@@ -61,55 +56,74 @@ subroutine phRRPA(dotest,TDA,doACFDT,exchange_kernel,singlet,triplet,nBas,nC,nO,
 
   dRPA = .true.
   EcRPA(:) = 0d0
-  lambda = 1d0
 
-! Memory allocation
 
-  allocate(Om(nS),XpY(nS,nS),XmY(nS,nS),Aph(nS,nS),Bph(nS,nS))
-
-! Singlet manifold
+  allocate(Om(nS), XpY(nS,nS), XmY(nS,nS))
 
   if(singlet) then 
 
-    ispin = 1
+    if(TDA) then
 
-    !call wall_time(t1)
-    call phLR_A(ispin,dRPA,nBas,nC,nO,nV,nR,nS,lambda,eHF,ERI,Aph)
-    if(.not.TDA) call phLR_B(ispin,dRPA,nBas,nC,nO,nV,nR,nS,lambda,ERI,Bph)
+      !print*, 'start diag on GPU:'
+      !call wall_time(t1)
+      call ph_drpa_tda_sing(nO, nBas, nS, eHF(1), ERI(1,1,1,1), Om(1), XpY(1,1))
+      !call wall_time(t2)
+      !print*, 'diag time on GPU (sec):', t2 - t1
+      XmY(:,:) = XpY(:,:)
 
-    call phLR(TDA,nS,Aph,Bph,EcRPA(ispin),Om,XpY,XmY)
-    !call wall_time(t2)
-    !print *, "wall time for dRPA on CPU (sec) = ", t2 - t1
-    !do ia = 1, nS
-    !  write(112, *) Om(ia) 
-    !enddo
-    !stop
+    else
+
+      !call wall_time(t1)
+      call ph_drpa_sing(nO, nBas, nS, eHF(1), ERI(1,1,1,1), Om(1), XpY(1,1), XmY(1,1))
+      !call wall_time(t2)
+      !print *, "wall time for dRPA on GPU (sec) = ", t2 - t1
+      !do ia = 1, nS
+      !  write(111, *) Om(ia)
+      !enddo
+      !stop
+
+    endif
+
+    ! TODO
+    XpY(:,:) = transpose(XpY(:,:))
+    XmY(:,:) = transpose(XmY(:,:))
+
     call print_excitation_energies('phRPA@RHF','singlet',nS,Om)
     call phLR_transition_vectors(.true.,nBas,nC,nO,nV,nR,nS,dipole_int,Om,XpY,XmY)
-
-  end if
-
-! Triplet manifold 
+  endif
 
   if(triplet) then 
 
-    ispin = 2
+    XpY(:,:) = 0.d0
+    allocate(iorder(nS))
+    ia = 0
+    do i = nC+1, nO
+      do a = nO+1, nBas-nR
+        ia = ia + 1
+        iorder(ia) = ia
+        Om(ia) = eHF(a) - eHF(i)
+        XpY(ia,ia) = 1.d0
+      enddo
+    enddo
 
-    call phLR_A(ispin,dRPA,nBas,nC,nO,nV,nR,nS,lambda,eHF,ERI,Aph)
-    if(.not.TDA) call phLR_B(ispin,dRPA,nBas,nC,nO,nV,nR,nS,lambda,ERI,Bph)
+    call quick_sort(Om(1), iorder(1), nS)
+    deallocate(iorder)
 
-    call phLR(TDA,nS,Aph,Bph,EcRPA(ispin),Om,XpY,XmY)
+    XmY(:,:) = XpY(:,:)
+
     call print_excitation_energies('phRPA@RHF','triplet',nS,Om)
     call phLR_transition_vectors(.false.,nBas,nC,nO,nV,nR,nS,dipole_int,Om,XpY,XmY)
+  endif
 
-  end if
+  deallocate(Om, XpY, XmY)
 
+
+  ! TODO
+  ! init EcRPA
   if(exchange_kernel) then
-
     EcRPA(1) = 0.5d0*EcRPA(1)
     EcRPA(2) = 1.5d0*EcRPA(2)
-
-  end if
+  endif
 
   write(*,*)
   write(*,*)'-------------------------------------------------------------------------------'
@@ -120,12 +134,11 @@ subroutine phRRPA(dotest,TDA,doACFDT,exchange_kernel,singlet,triplet,nBas,nC,nO,
   write(*,*)'-------------------------------------------------------------------------------'
   write(*,*)
 
-  deallocate(Om,XpY,XmY,Aph,Bph)
-
 ! Compute the correlation energy via the adiabatic connection 
 
   if(doACFDT) then
 
+    ! TODO
     call phACFDT(exchange_kernel,dRPA,TDA,singlet,triplet,nBas,nC,nO,nV,nR,nS,ERI,eHF,EcRPA)
 
     write(*,*)
@@ -137,12 +150,41 @@ subroutine phRRPA(dotest,TDA,doACFDT,exchange_kernel,singlet,triplet,nBas,nC,nO,
     write(*,*)'-------------------------------------------------------------------------------'
     write(*,*)
 
-  end if
+  endif
 
   if(dotest) then
-
-    call dump_test_value('R','phRPA correlation energy',sum(EcRPA))
-
-  end if
+    call dump_test_value('R','phRPA correlation energy (on GPU)',sum(EcRPA))
+  endif
 
 end subroutine 
+
+#else
+
+subroutine phRRPA_GPU(dotest,TDA,doACFDT,exchange_kernel,singlet,triplet,nBas,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,dipole_int,eHF)
+
+  implicit none
+  include 'parameters.h'
+  include 'quadrature.h'
+
+  logical,intent(in)            :: dotest
+  logical,intent(in)            :: TDA
+  logical,intent(in)            :: doACFDT
+  logical,intent(in)            :: exchange_kernel
+  logical,intent(in)            :: singlet
+  logical,intent(in)            :: triplet
+  integer,intent(in)            :: nBas
+  integer,intent(in)            :: nC
+  integer,intent(in)            :: nO
+  integer,intent(in)            :: nV
+  integer,intent(in)            :: nR
+  integer,intent(in)            :: nS
+  double precision,intent(in)   :: ENuc
+  double precision,intent(in)   :: ERHF
+  double precision,intent(in)   :: eHF(nBas)
+  double precision,intent(in)   :: ERI(nBas,nBas,nBas,nBas)
+  double precision,intent(in)   :: dipole_int(nBas,nBas,ncart)
+  print*, "compile with USE_GPU FLAG!"
+  stop
+end
+
+#endif
