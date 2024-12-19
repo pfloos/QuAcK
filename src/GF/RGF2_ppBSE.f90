@@ -78,15 +78,15 @@ subroutine RGF2_ppBSE(TDA,dBSE,dTDA,singlet,triplet,eta,nBas,nC,nO,nV,nR,ERI,dip
                  call RGF2_ppBSE_static_kernel_C(ispin,eta,nBas,nC,nO,nV,nR,nVV,1d0,ERI,eGF,KC_sta)
                  call RGF2_ppBSE_static_kernel_D(ispin,eta,nBas,nC,nO,nV,nR,nOO,1d0,ERI,eGF,KD_sta)
 
-    if(.not.TDA) call ppLR_B(ispin,nBas,nC,nO,nV,nR,nOO,nVV,1d0,ERI,Bpp)
-                 call ppLR_C(ispin,nBas,nC,nO,nV,nR,nVV,1d0,eGF,ERI,Cpp)
-                 call ppLR_D(ispin,nBas,nC,nO,nV,nR,nOO,1d0,eGF,ERI,Dpp)
+    if(.not.TDA) call ppRLR_B(ispin,nBas,nC,nO,nV,nR,nOO,nVV,1d0,ERI,Bpp)
+                 call ppRLR_C(ispin,nBas,nC,nO,nV,nR,nVV,1d0,eGF,ERI,Cpp)
+                 call ppRLR_D(ispin,nBas,nC,nO,nV,nR,nOO,1d0,eGF,ERI,Dpp)
 
     Bpp(:,:) = Bpp(:,:) + KB_sta(:,:)
     Cpp(:,:) = Cpp(:,:) + KC_sta(:,:)
     Dpp(:,:) = Dpp(:,:) + KD_sta(:,:)
 
-    call ppLR(TDA,nOO,nVV,Bpp,Cpp,Dpp,Om1,X1,Y1,Om2,X2,Y2,EcBSE(ispin))
+    call ppRLR(TDA,nOO,nVV,Bpp,Cpp,Dpp,Om1,X1,Y1,Om2,X2,Y2,EcBSE(ispin))
 
     call ppLR_transition_vectors(.true.,nBas,nC,nO,nV,nR,nOO,nVV,dipole_int,Om1,X1,Y1,Om2,X2,Y2)
 
@@ -131,15 +131,15 @@ subroutine RGF2_ppBSE(TDA,dBSE,dTDA,singlet,triplet,eta,nBas,nC,nO,nV,nR,ERI,dip
                  call RGF2_ppBSE_static_kernel_D(ispin,eta,nBas,nC,nO,nV,nR,nOO,1d0,ERI,eGF,KD_sta)
 
 
-    if(.not.TDA) call ppLR_B(ispin,nBas,nC,nO,nV,nR,nOO,nVV,1d0,ERI,Bpp)
-                 call ppLR_C(ispin,nBas,nC,nO,nV,nR,nVV,1d0,eGF,ERI,Cpp)
-                 call ppLR_D(ispin,nBas,nC,nO,nV,nR,nOO,1d0,eGF,ERI,Dpp)
+    if(.not.TDA) call ppRLR_B(ispin,nBas,nC,nO,nV,nR,nOO,nVV,1d0,ERI,Bpp)
+                 call ppRLR_C(ispin,nBas,nC,nO,nV,nR,nVV,1d0,eGF,ERI,Cpp)
+                 call ppRLR_D(ispin,nBas,nC,nO,nV,nR,nOO,1d0,eGF,ERI,Dpp)
 
     Bpp(:,:) = Bpp(:,:) + KB_sta(:,:)
     Cpp(:,:) = Cpp(:,:) + KC_sta(:,:)
     Dpp(:,:) = Dpp(:,:) + KD_sta(:,:)
 
-    call ppLR(TDA,nOO,nVV,Bpp,Cpp,Dpp,Om1,X1,Y1,Om2,X2,Y2,EcBSE(ispin))
+    call ppRLR(TDA,nOO,nVV,Bpp,Cpp,Dpp,Om1,X1,Y1,Om2,X2,Y2,EcBSE(ispin))
 
     call ppLR_transition_vectors(.false.,nBas,nC,nO,nV,nR,nOO,nVV,dipole_int,Om1,X1,Y1,Om2,X2,Y2)
 

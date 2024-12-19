@@ -115,11 +115,11 @@ subroutine ufRG0T0pp(dotest,TDA_T,nBas,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,eHF)
 
     allocate(Bpp(nVVs,nOOs),Cpp(nVVs,nVVs),Dpp(nOOs,nOOs))
 
-    call ppLR_B(ispin,nBas,nC,nO,nV,nR,nOOs,nVVs,1d0,ERI,Bpp)
-    call ppLR_C(ispin,nBas,nC,nO,nV,nR,nVVs,1d0,eHF,ERI,Cpp)
-    call ppLR_D(ispin,nBas,nC,nO,nV,nR,nOOs,1d0,eHF,ERI,Dpp)
+    call ppRLR_B(ispin,nBas,nC,nO,nV,nR,nOOs,nVVs,1d0,ERI,Bpp)
+    call ppRLR_C(ispin,nBas,nC,nO,nV,nR,nVVs,1d0,eHF,ERI,Cpp)
+    call ppRLR_D(ispin,nBas,nC,nO,nV,nR,nOOs,1d0,eHF,ERI,Dpp)
 
-    call ppLR(TDA_T,nOOs,nVVs,Bpp,Cpp,Dpp,Om1s,X1s,Y1s,Om2s,X2s,Y2s,EcRPA(ispin))
+    call ppRLR(TDA_T,nOOs,nVVs,Bpp,Cpp,Dpp,Om1s,X1s,Y1s,Om2s,X2s,Y2s,EcRPA(ispin))
 
     if(print_T) call print_excitation_energies('ppRPA@RHF','2p (alpha-beta)',nVVs,Om1s(:))
     if(print_T) call print_excitation_energies('ppRPA@RHF','2h (alpha-beta)',nOOs,Om2s(:))
@@ -138,11 +138,11 @@ subroutine ufRG0T0pp(dotest,TDA_T,nBas,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,eHF)
 
     allocate(Bpp(nVVt,nOOt),Cpp(nVVt,nVVt),Dpp(nOOt,nOOt))
   
-    call ppLR_B(ispin,nBas,nC,nO,nV,nR,nOOt,nVVt,1d0,ERI,Bpp)
-    call ppLR_C(ispin,nBas,nC,nO,nV,nR,nVVt,1d0,eHF,ERI,Cpp)
-    call ppLR_D(ispin,nBas,nC,nO,nV,nR,nOOt,1d0,eHF,ERI,Dpp)
+    call ppRLR_B(ispin,nBas,nC,nO,nV,nR,nOOt,nVVt,1d0,ERI,Bpp)
+    call ppRLR_C(ispin,nBas,nC,nO,nV,nR,nVVt,1d0,eHF,ERI,Cpp)
+    call ppRLR_D(ispin,nBas,nC,nO,nV,nR,nOOt,1d0,eHF,ERI,Dpp)
   
-    call ppLR(TDA_T,nOOt,nVVt,Bpp,Cpp,Dpp,Om1t,X1t,Y1t,Om2t,X2t,Y2t,EcRPA(ispin))
+    call ppRLR(TDA_T,nOOt,nVVt,Bpp,Cpp,Dpp,Om1t,X1t,Y1t,Om2t,X2t,Y2t,EcRPA(ispin))
   
     if(print_T) call print_excitation_energies('ppRPA@RHF','2p (alpha-alpha)',nVVt,Om1t)
     if(print_T) call print_excitation_energies('ppRPA@RHF','2h (alpha-beta)',nOOt,Om2t)

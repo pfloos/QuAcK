@@ -303,10 +303,9 @@ program QuAcK
   write(*,'(A65,1X,F9.3,A8)') 'Total wall time for QuAcK = ',t_QuAcK,' seconds'
   write(*,*)
 
-  deallocate(S)
-  deallocate(T)
-  deallocate(V)
-  deallocate(Hc)
-  deallocate(dipole_int_AO)
+! Memory deallocation
+
+  deallocate(ZNuc,rNuc)
+  deallocate(S,T,V,Hc,dipole_int_AO)
 
 end program 

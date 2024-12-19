@@ -1,6 +1,6 @@
-subroutine ppLR_D(ispin,nOrb,nC,nO,nV,nR,nOO,lambda,e,ERI,Dpp)
+subroutine ppRLR_D_od(ispin,nBas,nC,nO,nV,nR,nOO,nVV,lambda,ERI,Dpp)
 
-! Compute the D matrix of the pp channel
+! Compute the D matrix of the pp channel (without the diagonal term)
 
   implicit none
   include 'parameters.h'
@@ -8,18 +8,12 @@ subroutine ppLR_D(ispin,nOrb,nC,nO,nV,nR,nOO,lambda,e,ERI,Dpp)
 ! Input variables
 
   integer,intent(in)            :: ispin
-  integer,intent(in)            :: nOrb
-  integer,intent(in)            :: nC
-  integer,intent(in)            :: nO
-  integer,intent(in)            :: nV
-  integer,intent(in)            :: nR
-  integer,intent(in)            :: nOO
+  integer,intent(in)            :: nBas,nC,nO,nV,nR,nOO,nVV
   double precision,intent(in)   :: lambda
-  double precision,intent(in)   :: e(nOrb),ERI(nOrb,nOrb,nOrb,nOrb) 
+  double precision,intent(in)   :: ERI(nBas,nBas,nBas,nBas) 
   
 ! Local variables
 
-  double precision              :: eF
   double precision,external     :: Kronecker_delta
 
   integer                       :: i,j,k,l,ij,kl
@@ -28,11 +22,6 @@ subroutine ppLR_D(ispin,nOrb,nC,nO,nV,nR,nOO,lambda,e,ERI,Dpp)
 
   double precision,intent(out)  :: Dpp(nOO,nOO)
 
-! Define the chemical potential
-
-  eF = e(nO) + e(nO+1)
-! eF = 0d0
- 
 ! Build the D matrix for the singlet manifold
 
   if(ispin == 1) then
@@ -46,8 +35,7 @@ subroutine ppLR_D(ispin,nOrb,nC,nO,nV,nR,nOO,lambda,e,ERI,Dpp)
          do l=k,nO
             kl = kl + 1
  
-            Dpp(ij,kl) = - (e(i) + e(j) - eF)*Kronecker_delta(i,k)*Kronecker_delta(j,l) & 
-                         + lambda*(ERI(i,j,k,l) + ERI(i,j,l,k))/sqrt((1d0 + Kronecker_delta(i,j))*(1d0 + Kronecker_delta(k,l)))
+            Dpp(ij,kl) = lambda*(ERI(i,j,k,l) + ERI(i,j,l,k))/sqrt((1d0 + Kronecker_delta(i,j))*(1d0 + Kronecker_delta(k,l)))
  
           end do
         end do
@@ -58,7 +46,7 @@ subroutine ppLR_D(ispin,nOrb,nC,nO,nV,nR,nOO,lambda,e,ERI,Dpp)
 
 ! Build the D matrix for the triplet or alpha-alpha manifold
 
-  if(ispin == 2 .or. ispin == 4) then
+  if(ispin == 2) then
 
     ij = 0
     do i=nC+1,nO
@@ -69,8 +57,7 @@ subroutine ppLR_D(ispin,nOrb,nC,nO,nV,nR,nOO,lambda,e,ERI,Dpp)
          do l=k+1,nO
             kl = kl + 1
  
-            Dpp(ij,kl) = - (e(i) + e(j) - eF)*Kronecker_delta(i,k)*Kronecker_delta(j,l) & 
-                         + lambda*(ERI(i,j,k,l) - ERI(i,j,l,k))
+            Dpp(ij,kl) = lambda*(ERI(i,j,k,l) - ERI(i,j,l,k))
  
           end do
         end do
@@ -92,8 +79,7 @@ subroutine ppLR_D(ispin,nOrb,nC,nO,nV,nR,nOO,lambda,e,ERI,Dpp)
          do l=nC+1,nO
             kl = kl + 1
  
-            Dpp(ij,kl) = - (e(i) + e(j) - eF)*Kronecker_delta(i,k)*Kronecker_delta(j,l) & 
-                         + lambda*ERI(i,j,k,l)
+            Dpp(ij,kl) = lambda*ERI(i,j,k,l)
  
           end do
         end do

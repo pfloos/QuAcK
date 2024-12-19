@@ -94,8 +94,12 @@ subroutine phRRPAx(dotest,TDA,doACFDT,exchange_kernel,singlet,triplet,nBas,nC,nO
 
   end if
 
-  EcRPA(1) = 0.5d0*EcRPA(1)
-  EcRPA(2) = 1.5d0*EcRPA(2)
+  if(exchange_kernel) then
+
+    EcRPA(1) = 0.5d0*EcRPA(1)
+    EcRPA(2) = 1.5d0*EcRPA(2)
+
+  endif
 
   write(*,*)
   write(*,*)'-------------------------------------------------------------------------------'

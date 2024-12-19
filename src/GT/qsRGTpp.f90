@@ -198,11 +198,11 @@ subroutine qsRGTpp(dotest,maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,d
 
     allocate(Bpp(nVVs,nOOs),Cpp(nVVs,nVVs),Dpp(nOOs,nOOs))
 
-    if(.not.TDA_T) call ppLR_B(ispin,nOrb,nC,nO,nV,nR,nOOs,nVVs,1d0,ERI_MO,Bpp)
-                   call ppLR_C(ispin,nOrb,nC,nO,nV,nR,nVVs,1d0,eGT,ERI_MO,Cpp)
-                   call ppLR_D(ispin,nOrb,nC,nO,nV,nR,nOOs,1d0,eGT,ERI_MO,Dpp)
+    if(.not.TDA_T) call ppRLR_B(ispin,nOrb,nC,nO,nV,nR,nOOs,nVVs,1d0,ERI_MO,Bpp)
+                   call ppRLR_C(ispin,nOrb,nC,nO,nV,nR,nVVs,1d0,eGT,ERI_MO,Cpp)
+                   call ppRLR_D(ispin,nOrb,nC,nO,nV,nR,nOOs,1d0,eGT,ERI_MO,Dpp)
 
-    call ppLR(TDA_T,nOOs,nVVs,Bpp,Cpp,Dpp,Om1s,X1s,Y1s,Om2s,X2s,Y2s,EcRPA(ispin))
+    call ppRLR(TDA_T,nOOs,nVVs,Bpp,Cpp,Dpp,Om1s,X1s,Y1s,Om2s,X2s,Y2s,EcRPA(ispin))
 
     deallocate(Bpp,Cpp,Dpp)
 
@@ -210,11 +210,11 @@ subroutine qsRGTpp(dotest,maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,d
 
     allocate(Bpp(nVVt,nOOt),Cpp(nVVt,nVVt),Dpp(nOOt,nOOt))
 
-    if(.not.TDA_T) call ppLR_B(ispin,nOrb,nC,nO,nV,nR,nOOt,nVVt,1d0,ERI_MO,Bpp)
-                   call ppLR_C(ispin,nOrb,nC,nO,nV,nR,nVVt,1d0,eGT,ERI_MO,Cpp)
-                   call ppLR_D(ispin,nOrb,nC,nO,nV,nR,nOOt,1d0,eGT,ERI_MO,Dpp)
+    if(.not.TDA_T) call ppRLR_B(ispin,nOrb,nC,nO,nV,nR,nOOt,nVVt,1d0,ERI_MO,Bpp)
+                   call ppRLR_C(ispin,nOrb,nC,nO,nV,nR,nVVt,1d0,eGT,ERI_MO,Cpp)
+                   call ppRLR_D(ispin,nOrb,nC,nO,nV,nR,nOOt,1d0,eGT,ERI_MO,Dpp)
 
-    call ppLR(TDA_T,nOOt,nVVt,Bpp,Cpp,Dpp,Om1t,X1t,Y1t,Om2t,X2t,Y2t,EcRPA(ispin))
+    call ppRLR(TDA_T,nOOt,nVVt,Bpp,Cpp,Dpp,Om1t,X1t,Y1t,Om2t,X2t,Y2t,EcRPA(ispin))
 
     deallocate(Bpp,Cpp,Dpp)
 

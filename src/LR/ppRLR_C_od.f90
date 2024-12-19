@@ -1,4 +1,4 @@
-subroutine ppLR_C_od(ispin,nBas,nC,nO,nV,nR,nOO,nVV,lambda,ERI,Cpp)
+subroutine ppRLR_C_od(ispin,nBas,nC,nO,nV,nR,nOO,nVV,lambda,ERI,Cpp)
 
 ! Compute the C matrix of the pp channel (without diagonal term)
 

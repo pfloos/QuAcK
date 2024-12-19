@@ -143,17 +143,15 @@ subroutine RGW_ppBSE(TDA_W,TDA,dBSE,dTDA,singlet,triplet,eta,nOrb,nC,nO,nV,nR,nS
       call RGW_ppBSE_static_kernel_B(ispin,eta,nOrb,nC,nO,nV,nR,nS,nOO,nVV,1d0,ERI,OmRPA,rho_RPA,KB_sta)
     endif
     
-    call ppLR_C(ispin,nOrb,nC,nO,nV,nR,nVV,1d0,eGW,ERI,Cpp)
-    call ppLR_D(ispin,nOrb,nC,nO,nV,nR,nOO,1d0,eGW,ERI,Dpp)
-    if(.not.TDA) then
-      call ppLR_B(ispin,nOrb,nC,nO,nV,nR,nOO,nVV,1d0,ERI,Bpp)
-    endif
+                 call ppRLR_C(ispin,nOrb,nC,nO,nV,nR,nVV,1d0,eGW,ERI,Cpp)
+                 call ppRLR_D(ispin,nOrb,nC,nO,nV,nR,nOO,1d0,eGW,ERI,Dpp)
+    if(.not.TDA) call ppRLR_B(ispin,nOrb,nC,nO,nV,nR,nOO,nVV,1d0,ERI,Bpp)
 
     Bpp(:,:) = Bpp(:,:) + KB_sta(:,:)
     Cpp(:,:) = Cpp(:,:) + KC_sta(:,:)
     Dpp(:,:) = Dpp(:,:) + KD_sta(:,:)
 
-    call ppLR(TDA,nOO,nVV,Bpp,Cpp,Dpp,Om1,X1,Y1,Om2,X2,Y2,EcBSE(ispin))
+    call ppRLR(TDA,nOO,nVV,Bpp,Cpp,Dpp,Om1,X1,Y1,Om2,X2,Y2,EcBSE(ispin))
 
     deallocate(Bpp,Cpp,Dpp)
 !
@@ -265,15 +263,15 @@ subroutine RGW_ppBSE(TDA_W,TDA,dBSE,dTDA,singlet,triplet,eta,nOrb,nC,nO,nV,nR,nS
     call RGW_ppBSE_static_kernel_D(ispin,eta,nOrb,nC,nO,nV,nR,nS,nOO,1d0,ERI,OmRPA,rho_RPA,KD_sta)
     if(.not.TDA) call RGW_ppBSE_static_kernel_B(ispin,eta,nOrb,nC,nO,nV,nR,nS,nOO,nVV,1d0,ERI,OmRPA,rho_RPA,KB_sta)
 
-    call ppLR_C(ispin,nOrb,nC,nO,nV,nR,nVV,1d0,eGW,ERI,Cpp)
-    call ppLR_D(ispin,nOrb,nC,nO,nV,nR,nOO,1d0,eGW,ERI,Dpp)
-    if(.not.TDA) call ppLR_B(ispin,nOrb,nC,nO,nV,nR,nOO,nVV,1d0,ERI,Bpp)
+                 call ppRLR_C(ispin,nOrb,nC,nO,nV,nR,nVV,1d0,eGW,ERI,Cpp)
+                 call ppRLR_D(ispin,nOrb,nC,nO,nV,nR,nOO,1d0,eGW,ERI,Dpp)
+    if(.not.TDA) call ppRLR_B(ispin,nOrb,nC,nO,nV,nR,nOO,nVV,1d0,ERI,Bpp)
 
     Bpp(:,:) = Bpp(:,:) + KB_sta(:,:)
     Cpp(:,:) = Cpp(:,:) + KC_sta(:,:)
     Dpp(:,:) = Dpp(:,:) + KD_sta(:,:)
 
-    call ppLR(TDA,nOO,nVV,Bpp,Cpp,Dpp,Om1,X1,Y1,Om2,X2,Y2,EcBSE(ispin))
+    call ppRLR(TDA,nOO,nVV,Bpp,Cpp,Dpp,Om1,X1,Y1,Om2,X2,Y2,EcBSE(ispin))
     deallocate(Bpp,Cpp,Dpp)
 
     ! ---

@@ -1,4 +1,4 @@
-subroutine ppLR_B(ispin,nOrb,nC,nO,nV,nR,nOO,nVV,lambda,ERI,Bpp)
+subroutine ppRLR_B(ispin,nOrb,nC,nO,nV,nR,nOO,nVV,lambda,ERI,Bpp)
 
 ! Compute the B matrix of the pp channel
 

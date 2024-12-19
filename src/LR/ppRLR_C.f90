@@ -1,4 +1,4 @@
-subroutine ppLR_C(ispin,nOrb,nC,nO,nV,nR,nVV,lambda,e,ERI,Cpp)
+subroutine ppRLR_C(ispin,nOrb,nC,nO,nV,nR,nVV,lambda,e,ERI,Cpp)
 
 ! Compute the C matrix of the pp channel
 
