@@ -48,7 +48,7 @@ subroutine RCIS(dotest,singlet,triplet,doCIS_D,nBas,nC,nO,nV,nR,nS,ERI,dipole_in
   if(singlet) then
 
     ispin = 1
-    call phLR_A(ispin,dRPA,nBas,nC,nO,nV,nR,nS,lambda,eHF,ERI,A)
+    call phRLR_A(ispin,dRPA,nBas,nC,nO,nV,nR,nS,lambda,eHF,ERI,A)
  
     if(dump_matrix) then
       print*,'CIS matrix (singlet state)'
@@ -84,7 +84,7 @@ subroutine RCIS(dotest,singlet,triplet,doCIS_D,nBas,nC,nO,nV,nR,nS,ERI,dipole_in
   if(triplet) then
 
     ispin = 2
-    call phLR_A(ispin,dRPA,nBas,nC,nO,nV,nR,nS,lambda,eHF,ERI,A)
+    call phRLR_A(ispin,dRPA,nBas,nC,nO,nV,nR,nS,lambda,eHF,ERI,A)
  
     if(dump_matrix) then
       print*,'CIS matrix (triplet state)'

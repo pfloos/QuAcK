@@ -1,4 +1,4 @@
-subroutine phLR_B(ispin,dRPA,nBas,nC,nO,nV,nR,nS,lambda,ERI,Bph)
+subroutine phRLR_B(ispin,dRPA,nBas,nC,nO,nV,nR,nS,lambda,ERI,Bph)
 
 ! Compute the coupling block of the ph channel
 

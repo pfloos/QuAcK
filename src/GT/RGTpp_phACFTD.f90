@@ -173,13 +173,13 @@ subroutine RGTpp_phACFDT(exchange_kernel,doXBS,dRPA,TDA_T,TDA,BSE,singlet,triple
 
       end if
 
-                   call phLR_A(ispin,dRPA,nBas,nC,nO,nV,nR,nS,lambda,eGT,ERI,Aph)
-      if(.not.TDA) call phLR_B(ispin,dRPA,nBas,nC,nO,nV,nR,nS,lambda,ERI,Bph)
+                   call phRLR_A(ispin,dRPA,nBas,nC,nO,nV,nR,nS,lambda,eGT,ERI,Aph)
+      if(.not.TDA) call phRLR_B(ispin,dRPA,nBas,nC,nO,nV,nR,nS,lambda,ERI,Bph)
  
                    Aph(:,:) = Aph(:,:) - TAt(:,:) - TAs(:,:)
       if(.not.TDA) Bph(:,:) = Bph(:,:) - TBt(:,:) - TBs(:,:)
  
-      call phLR(TDA,nS,Aph,Bph,EcAc(ispin),Om,XpY,XmY)
+      call phRLR(TDA,nS,Aph,Bph,EcAc(ispin),Om,XpY,XmY)
 
       call phACFDT_correlation_energy(ispin,exchange_kernel,nBas,nC,nO,nV,nR,nS,ERI,XpY,XmY,Ec(iAC,ispin))
 
@@ -257,13 +257,13 @@ subroutine RGTpp_phACFDT(exchange_kernel,doXBS,dRPA,TDA_T,TDA,BSE,singlet,triple
 
       end if
 
-                   call phLR_A(ispin,dRPA,nBas,nC,nO,nV,nR,nS,lambda,eGT,ERI,Aph)
-      if(.not.TDA) call phLR_B(ispin,dRPA,nBas,nC,nO,nV,nR,nS,lambda,ERI,Bph)
+                   call phRLR_A(ispin,dRPA,nBas,nC,nO,nV,nR,nS,lambda,eGT,ERI,Aph)
+      if(.not.TDA) call phRLR_B(ispin,dRPA,nBas,nC,nO,nV,nR,nS,lambda,ERI,Bph)
 
                    Aph(:,:) = Aph(:,:) + TAs(:,:) - TAt(:,:)
       if(.not.TDA) Bph(:,:) = Bph(:,:) + TBs(:,:) - TBt(:,:)
 
-      call phLR(TDA,nS,Aph,Bph,EcAc(ispin),Om,XpY,XmY)
+      call phRLR(TDA,nS,Aph,Bph,EcAc(ispin),Om,XpY,XmY)
 
       call phACFDT_correlation_energy(ispin,exchange_kernel,nBas,nC,nO,nV,nR,nS,ERI,XpY,XmY,Ec(iAC,ispin))
 

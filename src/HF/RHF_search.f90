@@ -126,8 +126,8 @@ subroutine RHF_search(maxSCF,thresh,max_diis,guess_type,level_shift,nNuc,ZNuc,rN
 
     ispin = 1
  
-    call phLR_A(ispin,.false.,nOrb,nC,nO,nV,nR,nS,1d0,e,ERI_MO,Aph)
-    call phLR_B(ispin,.false.,nOrb,nC,nO,nV,nR,nS,1d0,ERI_MO,Bph)
+    call phRLR_A(ispin,.false.,nOrb,nC,nO,nV,nR,nS,1d0,e,ERI_MO,Aph)
+    call phRLR_B(ispin,.false.,nOrb,nC,nO,nV,nR,nS,1d0,ERI_MO,Bph)
  
     AB(:,:) = Aph(:,:) + Bph(:,:)
  

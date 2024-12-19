@@ -54,8 +54,8 @@ subroutine RGF2_phBSE(TDA,dBSE,dTDA,singlet,triplet,eta,nBas,nC,nO,nV,nR,nS,ERI,
     ispin = 1
     EcBSE(ispin) = 0d0
 
-                 call phLR_A(ispin,dRPA,nBas,nC,nO,nV,nR,nS,1d0,eGF,ERI,A_sta)
-    if(.not.TDA) call phLR_B(ispin,dRPA,nBas,nC,nO,nV,nR,nS,1d0,ERI,B_sta)
+                 call phRLR_A(ispin,dRPA,nBas,nC,nO,nV,nR,nS,1d0,eGF,ERI,A_sta)
+    if(.not.TDA) call phRLR_B(ispin,dRPA,nBas,nC,nO,nV,nR,nS,1d0,ERI,B_sta)
 
     ! Compute static kernel
 
@@ -67,7 +67,7 @@ subroutine RGF2_phBSE(TDA,dBSE,dTDA,singlet,triplet,eta,nBas,nC,nO,nV,nR,nS,ERI,
 
     ! Compute phBSE@GF2 excitation energies
 
-    call phLR(TDA,nS,A_sta,B_sta,EcBSE(ispin),OmBSE,XpY,XmY)
+    call phRLR(TDA,nS,A_sta,B_sta,EcBSE(ispin),OmBSE,XpY,XmY)
     call print_excitation_energies('phBSE@GF2','singlet',nS,OmBSE)
     call phLR_transition_vectors(.true.,nBas,nC,nO,nV,nR,nS,dipole_int,OmBSE,XpY,XmY)
 
@@ -87,8 +87,8 @@ subroutine RGF2_phBSE(TDA,dBSE,dTDA,singlet,triplet,eta,nBas,nC,nO,nV,nR,nS,ERI,
     ispin = 2
     EcBSE(ispin) = 0d0
 
-                 call phLR_A(ispin,dRPA,nBas,nC,nO,nV,nR,nS,1d0,eGF,ERI,A_sta)
-    if(.not.TDA) call phLR_B(ispin,dRPA,nBas,nC,nO,nV,nR,nS,1d0,ERI,B_sta)
+                 call phRLR_A(ispin,dRPA,nBas,nC,nO,nV,nR,nS,1d0,eGF,ERI,A_sta)
+    if(.not.TDA) call phRLR_B(ispin,dRPA,nBas,nC,nO,nV,nR,nS,1d0,ERI,B_sta)
 
     ! Compute static kernel
 
@@ -100,7 +100,7 @@ subroutine RGF2_phBSE(TDA,dBSE,dTDA,singlet,triplet,eta,nBas,nC,nO,nV,nR,nS,ERI,
 
     ! Compute phBSE@GF2 excitation energies
 
-    call phLR(TDA,nS,A_sta,B_sta,EcBSE(ispin),OmBSE,XpY,XmY)
+    call phRLR(TDA,nS,A_sta,B_sta,EcBSE(ispin),OmBSE,XpY,XmY)
     call print_excitation_energies('phBSE@GF2','triplet',nS,OmBSE)
     call phLR_transition_vectors(.false.,nBas,nC,nO,nV,nR,nS,dipole_int,OmBSE,XpY,XmY)
 

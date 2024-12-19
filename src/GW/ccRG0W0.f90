@@ -93,10 +93,10 @@ subroutine ccRG0W0(maxSCF,thresh,max_diis,nBas,nOrb,nC,nO,nV,nR,nS,ERI,ENuc,ERHF
 
   allocate(Om(nS),Aph(nS,nS),Bph(nS,nS),XpY(nS,nS),XmY(nS,nS),rho(nOrb,nOrb,nS))
 
-  call phLR_A(isp_W,dRPA,nOrb,nC,nO,nV,nR,nS,1d0,eHF,ERI,Aph)
-  call phLR_B(isp_W,dRPA,nOrb,nC,nO,nV,nR,nS,1d0,ERI,Bph)
+  call phRLR_A(isp_W,dRPA,nOrb,nC,nO,nV,nR,nS,1d0,eHF,ERI,Aph)
+  call phRLR_B(isp_W,dRPA,nOrb,nC,nO,nV,nR,nS,1d0,ERI,Bph)
 
-  call phLR(TDA_W,nS,Aph,Bph,EcRPA,Om,XpY,XmY)
+  call phRLR(TDA_W,nS,Aph,Bph,EcRPA,Om,XpY,XmY)
 
   call RGW_excitation_density(nOrb,nC,nO,nR,nS,ERI,XpY,rho)
 

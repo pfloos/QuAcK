@@ -59,7 +59,7 @@ subroutine phGRPAx(dotest,TDA,nOrb,nC,nO,nV,nR,nS,ENuc,EGHF,ERI,dipole_int,eHF)
   allocate(Om(nS),XpY(nS,nS),XmY(nS,nS),Aph(nS,nS),Bph(nS,nS))
 
                call phGLR_A(dRPA,nOrb,nC,nO,nV,nR,nS,1d0,eHF,ERI,Aph)
-  if(.not.TDA) call phLR_B(dRPA,nOrb,nC,nO,nV,nR,nS,1d0,ERI,Bph)
+  if(.not.TDA) call phGLR_B(dRPA,nOrb,nC,nO,nV,nR,nS,1d0,ERI,Bph)
 
   call phGLR(TDA,nS,Aph,Bph,EcRPA,Om,XpY,XmY)
   call print_excitation_energies('phRPAx@GHF','spinorbital',nS,Om)
