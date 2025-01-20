@@ -3,8 +3,8 @@ program QuAcK
   implicit none
   include 'parameters.h'
 
-  logical                       :: doRQuAcK,doUQuAcK,doGQuAcK
-  logical                       :: doRHF,doUHF,doGHF,doROHF
+  logical                       :: doRQuAcK,doUQuAcK,doGQuAcK,doBQuAcK
+  logical                       :: doRHF,doUHF,doGHF,doROHF,doHFB
   logical                       :: dostab,dosearch
   logical                       :: doMP2,doMP3
   logical                       :: doCCD,dopCCD,doDCD,doCCSD,doCCSDT
@@ -212,6 +212,9 @@ program QuAcK
   doGQuAcK = .false.
   if(doGHF) doGQuAcK = .true.
 
+  doBQuAcK = .false.
+  if(doHFB) doBQuAcK = .true.
+
 !-----------------!
 ! Initialize Test !
 !-----------------!
@@ -280,6 +283,13 @@ program QuAcK
                 maxSCF_GW,max_diis_GW,thresh_GW,TDA_W,lin_GW,reg_GW,eta_GW,                                   &
                 maxSCF_GT,max_diis_GT,thresh_GT,TDA_T,lin_GT,reg_GT,eta_GT,                                   &
                 dophBSE,dophBSE2,doppBSE,dBSE,dTDA,doACFDT,exchange_kernel,doXBS)
+
+
+!--------------------------!
+! Bogoliubov QuAcK branch !
+!--------------------------!
+  if(doBQuAcK) & 
+    call BQuAcK(working_dir,doGtest,doHFB)
 
 !-----------!
 ! Stop Test !
