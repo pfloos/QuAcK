@@ -28,7 +28,8 @@ subroutine EE_EOM_CCD_1h1p(nC,nO,nV,nR,eO,eV,OOVV,OVVO,t)
   double precision,allocatable  :: Wovvo(:,:,:,:)
   double precision,allocatable  :: H(:,:)
   double precision,allocatable  :: Om(:)
-  double precision,allocatable  :: Z(:,:)
+  double precision,allocatable  :: VL(:,:)
+  double precision,allocatable  :: VR(:,:)
 
   integer,allocatable           :: order(:)
 
@@ -46,7 +47,7 @@ subroutine EE_EOM_CCD_1h1p(nC,nO,nV,nR,eO,eV,OOVV,OVVO,t)
 
 ! Memory allocation
 
-  allocate(Foo(nO,nO),Fvv(nV,nV),Wovvo(nO,nV,nV,nO),H(nS,nS),Om(nS),Z(nS,nS))
+  allocate(Foo(nO,nO),Fvv(nV,nV),Wovvo(nO,nV,nV,nO),H(nS,nS),Om(nS),VL(nS,nS),VR(nS,nS))
   allocate(order(nS))
 
 
@@ -134,16 +135,21 @@ subroutine EE_EOM_CCD_1h1p(nC,nO,nV,nR,eO,eV,OOVV,OVVO,t)
 
   if(nS > 0) then 
 
-    call diagonalize_general_matrix(nS,H,Om,Z)
+    call diagonalize_general_matrix_LR(nS,H,Om,VL,VR)
 
     do ia=1,nS
       order(ia) = ia
     end do
 
     call quick_sort(Om,order,nS)
-    call set_order(Z,order,nS,nS)
+    call set_order_LR(VL,VR,order,nS,nS)
 
     call print_excitation_energies('EE-EOM-CCD','spinorbital',nS,Om)
+
+    write(*,*) 'Right Eigenvectors'
+    call matout(nS,nS,VR)
+
+    call matout(nS,3,VR(:,1:3))
 
   end if
 
