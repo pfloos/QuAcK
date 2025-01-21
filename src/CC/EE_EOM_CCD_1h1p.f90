@@ -30,8 +30,19 @@ subroutine EE_EOM_CCD_1h1p(nC,nO,nV,nR,eO,eV,OOVV,OVVO,t)
   double precision,allocatable  :: Om(:)
   double precision,allocatable  :: VL(:,:)
   double precision,allocatable  :: VR(:,:)
+  double precision,allocatable  :: Leom(:,:,:)
+  double precision,allocatable  :: Reom(:,:,:)
+
+  integer                       :: nstate,m
+  double precision              :: Ex,tmp
 
   integer,allocatable           :: order(:)
+
+  double precision,allocatable  :: rdm1_oo(:,:)
+  double precision,allocatable  :: rdm1_vv(:,:)
+
+  double precision,allocatable  :: rdm2_oovv(:,:,:,:)
+  double precision,allocatable  :: rdm2_ovvo(:,:,:,:)
 
 ! Hello world
 
@@ -47,9 +58,8 @@ subroutine EE_EOM_CCD_1h1p(nC,nO,nV,nR,eO,eV,OOVV,OVVO,t)
 
 ! Memory allocation
 
-  allocate(Foo(nO,nO),Fvv(nV,nV),Wovvo(nO,nV,nV,nO),H(nS,nS),Om(nS),VL(nS,nS),VR(nS,nS))
+  allocate(Foo(nO,nO),Fvv(nV,nV),Wovvo(nO,nV,nV,nO),H(nS,nS),Om(nS))
   allocate(order(nS))
-
 
 ! Form one-body terms
 
@@ -133,6 +143,8 @@ subroutine EE_EOM_CCD_1h1p(nC,nO,nV,nR,eO,eV,OOVV,OVVO,t)
 
 ! Diagonalize EOM Hamiltonian
 
+  allocate(VL(nS,nS),VR(nS,nS))
+
   if(nS > 0) then 
 
     call diagonalize_general_matrix_LR(nS,H,Om,VL,VR)
@@ -146,11 +158,127 @@ subroutine EE_EOM_CCD_1h1p(nC,nO,nV,nR,eO,eV,OOVV,OVVO,t)
 
     call print_excitation_energies('EE-EOM-CCD','spinorbital',nS,Om)
 
-    write(*,*) 'Right Eigenvectors'
-    call matout(nS,nS,VR)
+!   write(*,*) 'Right Eigenvectors'
+!   call matout(nS,nS,VR)
 
-    call matout(nS,3,VR(:,1:3))
+!   call matout(nS,3,VR(:,1:3))
 
   end if
+
+  allocate(Leom(nO,nV,nS),Reom(nO,nV,nS))
+
+  do m=1,nS
+    ia = 0
+    do i=1,nO
+      do a=1,nV
+        ia = ia + 1
+        Leom(i,a,m) = VL(ia,m)
+        Reom(i,a,m) = VR(ia,m)
+      end do
+    end do
+  end do
+
+  deallocate(VL,VR)
+
+!------------------------------------------------------------------------
+! EOM section
+!------------------------------------------------------------------------
+
+  allocate(rdm1_oo(nO,nO),rdm1_vv(nV,nV))
+  allocate(rdm2_oovv(nO,nO,nV,nV),rdm2_ovvo(nO,nV,nV,nO))
+
+  nstate = 1
+
+  tmp = 0d0
+  do i=1,nO
+    do a=1,nV
+      tmp = tmp + Leom(i,a,nstate)*Reom(i,a,nstate)
+    end do
+  end do
+  print*,tmp
+
+  rdm1_oo(:,:) = 0d0
+  do i=1,nO
+    do j=1,nO
+      do c=1,nV
+
+        rdm1_oo(i,j) = rdm1_oo(i,j) - Reom(i,c,nstate)*Leom(j,c,nstate)
+
+      end do
+    end do
+  end do
+
+  rdm1_vv(:,:) = 0d0
+  do a=1,nV
+    do b=1,nV
+      do k=1,nO
+
+        rdm1_vv(a,b) = rdm1_vv(a,b) + Reom(k,b,nstate)*Leom(k,a,nstate)
+
+      end do
+    end do
+  end do
+
+  rdm2_ovvo(:,:,:,:) = 0d0
+  do i=1,nO
+    do a=1,nV
+      do b=1,nV
+        do j=1,nO
+  
+          rdm2_ovvo(i,a,b,j) = Reom(i,b,nstate)*Leom(j,a,nstate)
+
+        end do
+      end do
+    end do
+  end do
+
+  rdm2_oovv(:,:,:,:) = 0d0
+  do i=1,nO
+    do j=1,nO
+      do a=1,nV
+        do b=1,nV
+
+          do k=1,nO
+            do c=1,nV
+  
+              rdm2_oovv(i,j,a,b) = rdm2_oovv(i,j,a,b) & 
+                                 + Reom(j,b,nstate)*t(k,i,c,a)*Leom(k,c,nstate) &
+                                 - Reom(i,b,nstate)*t(k,j,c,a)*Leom(k,c,nstate) &
+                                 - Reom(j,a,nstate)*t(k,i,c,b)*Leom(k,c,nstate) &
+                                 + Reom(i,a,nstate)*t(k,j,c,b)*Leom(k,c,nstate)
+
+            end do
+          end do
+
+        end do
+      end do
+    end do
+  end do
+
+  Ex = 0d0
+
+  do i=1,nO
+    Ex = Ex + rdm1_oo(i,i)*eO(i)
+  end do
+
+  do a=1,nV
+    Ex = Ex + rdm1_vv(a,a)*eV(a)
+  end do
+
+  do i=1,nO
+    do a=1,nV
+      do b=1,nV
+        do j=1,nO
+  
+          Ex = Ex + rdm2_ovvo(i,a,b,j)*OVVO(i,a,b,j) + 0.25d0*rdm2_oovv(i,j,a,b)*OOVV(i,j,a,b)
+      
+        end do                  
+      end do                    
+    end do                      
+  end do
+
+  print*,'Ex = ',Ex
+  print*,'Om = ',Om(nstate)
+
 
 end subroutine 
