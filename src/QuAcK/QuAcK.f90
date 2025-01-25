@@ -108,7 +108,7 @@ program QuAcK
 !------------------!
 
   call read_methods(working_dir,                           &
-                    doRHF,doUHF,doGHF,doROHF,              &
+                    doRHF,doUHF,doGHF,doROHF,doHFB,        &
                     doMP2,doMP3,                           &
                     doCCD,dopCCD,doDCD,doCCSD,doCCSDT,     &
                     dodrCCD,dorCCD,docrCCD,dolCCD,         &
