@@ -1,4 +1,4 @@
-subroutine Hartree_matrix_AO_basis(nBas,P,G,H)
+subroutine Hartree_matrix_AO_basis(nBas,P,ERI,H)
 
 ! Compute Hartree matrix in the AO basis
 
@@ -9,7 +9,7 @@ subroutine Hartree_matrix_AO_basis(nBas,P,G,H)
 
   integer,intent(in)            :: nBas
   double precision,intent(in)   :: P(nBas,nBas)
-  double precision,intent(in)   :: G(nBas,nBas,nBas,nBas)
+  double precision,intent(in)   :: ERI(nBas,nBas,nBas,nBas)
 
 ! Local variables
 
@@ -25,7 +25,7 @@ subroutine Hartree_matrix_AO_basis(nBas,P,G,H)
     do nu=1,nBas
       do la=1,nBas
         do mu=1,nBas
-          H(mu,nu) = H(mu,nu) + P(la,si)*G(mu,la,nu,si)
+          H(mu,nu) = H(mu,nu) + P(la,si)*ERI(mu,la,nu,si)
         end do
       end do
     end do

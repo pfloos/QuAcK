@@ -1,5 +1,5 @@
 subroutine HFB(dotest,maxSCF,thresh,max_diis,level_shift,nNuc,ZNuc,rNuc,ENuc, & 
-               nBas,nOrb,nO,S,T,V,Hc,ERI,dipole_int,X,EHFB,eHF,c,P,F)
+               nBas,nOrb,nO,S,T,V,Hc,ERI,dipole_int,X,EHFB,eHF,c,P,Panom,F)
 
 ! Perform Hartree-Fock Bogoliubov calculation
 
@@ -39,6 +39,7 @@ subroutine HFB(dotest,maxSCF,thresh,max_diis,level_shift,nNuc,ZNuc,rNuc,ENuc, &
   double precision              :: EV
   double precision              :: EJ
   double precision              :: EK
+  double precision              :: EL
   double precision              :: dipole(ncart)
 
   double precision              :: Conv
@@ -49,6 +50,7 @@ subroutine HFB(dotest,maxSCF,thresh,max_diis,level_shift,nNuc,ZNuc,rNuc,ENuc, &
   double precision,allocatable  :: F_diis(:,:)
   double precision,allocatable  :: J(:,:)
   double precision,allocatable  :: K(:,:)
+  double precision,allocatable  :: L(:,:)
   double precision,allocatable  :: cp(:,:)
   double precision,allocatable  :: Fp(:,:)
 
@@ -58,6 +60,7 @@ subroutine HFB(dotest,maxSCF,thresh,max_diis,level_shift,nNuc,ZNuc,rNuc,ENuc, &
   double precision,intent(out)  :: eHF(nOrb)
   double precision,intent(inout):: c(nBas,nOrb)
   double precision,intent(out)  :: P(nBas,nBas)
+  double precision,intent(out)  :: Panom(nBas,nBas)
   double precision,intent(out)  :: F(nBas,nBas)
 
 ! Hello world
@@ -76,6 +79,7 @@ subroutine HFB(dotest,maxSCF,thresh,max_diis,level_shift,nNuc,ZNuc,rNuc,ENuc, &
 
   allocate(J(nBas,nBas))
   allocate(K(nBas,nBas))
+  allocate(L(nBas,nBas))
 
   allocate(err(nBas,nBas))
 
@@ -88,9 +92,7 @@ subroutine HFB(dotest,maxSCF,thresh,max_diis,level_shift,nNuc,ZNuc,rNuc,ENuc, &
 ! Guess coefficients and density matrix
 
   P(:,:) = 2d0 * matmul(c(:,1:nO), transpose(c(:,1:nO)))
-! call dgemm('N', 'T', nBas, nBas, nO, 2.d0, &
-!            c(1,1), nBas, c(1,1), nBas,     &
-!            0.d0, P(1,1), nBas)
+  Panom(:,:) = -P(:,:)
 
 ! Initialization
 
@@ -107,10 +109,10 @@ subroutine HFB(dotest,maxSCF,thresh,max_diis,level_shift,nNuc,ZNuc,rNuc,ENuc, &
 !------------------------------------------------------------------------
 
   write(*,*)
-  write(*,*)'-----------------------------------------------------------------------------'
-  write(*,'(1X,A1,1X,A3,1X,A1,1X,A16,1X,A1,1X,A16,1X,A1,1X,A16,1X,A1,1X,A10,1X,A1,1X)') &
-            '|','#','|','E(HFB)','|','EJ(HFB)','|','EK(HFB)','|','Conv','|'
-  write(*,*)'-----------------------------------------------------------------------------'
+  write(*,*)'-----------------------------------------------------------------------------------------------'
+  write(*,'(1X,A1,1X,A3,1X,A1,1X,A16,1X,A1,1X,A16,1X,A1,1X,A16,1X,A1A16,1X,A1,1X,A10,2X,A1,1X)') &
+            '|','#','|','E(HFB)','|','EJ(HFB)','|','EK(HFB)','|','EL(HFB)','|','Conv','|'
+  write(*,*)'-----------------------------------------------------------------------------------------------'
 
   do while(Conv > thresh .and. nSCF < maxSCF)
 
@@ -122,6 +124,7 @@ subroutine HFB(dotest,maxSCF,thresh,max_diis,level_shift,nNuc,ZNuc,rNuc,ENuc, &
     
     call Hartree_matrix_AO_basis(nBas,P,ERI,J)
     call exchange_matrix_AO_basis(nBas,P,ERI,K)
+    call anomalous_matrix_AO_basis(nBas,Panom,ERI,L)
     
     F(:,:) = Hc(:,:) + J(:,:) + 0.5d0*K(:,:)
 
@@ -145,6 +148,10 @@ subroutine HFB(dotest,maxSCF,thresh,max_diis,level_shift,nNuc,ZNuc,rNuc,ENuc, &
     ! Exchange energy
 
     EK = 0.25d0*trace_matrix(nBas,matmul(P,K))
+
+    ! Anomalous energy
+
+    EL = 0.25d0*trace_matrix(nBas,matmul(-Panom,L))
 
     ! Total energy
 
@@ -175,17 +182,14 @@ subroutine HFB(dotest,maxSCF,thresh,max_diis,level_shift,nNuc,ZNuc,rNuc,ENuc, &
     ! Density matrix
 
     P(:,:) = 2d0*matmul(c(:,1:nO),transpose(c(:,1:nO)))
-!   call dgemm('N', 'T', nBas, nBas, nO, 2.d0, &
-!              c(1,1), nBas, c(1,1), nBas,     &
-!              0.d0, P(1,1), nBas)
 
     ! Dump results
 
-    write(*,'(1X,A1,1X,I3,1X,A1,1X,F16.10,1X,A1,1X,F16.10,1X,A1,1X,F16.10,1X,A1,1X,E10.2,1X,A1,1X)') &
-      '|',nSCF,'|',EHFB + ENuc,'|',EJ,'|',EK,'|',Conv,'|'
+    write(*,'(1X,A1,1X,I3,1X,A1,1X,F16.10,1X,A1,1X,F16.10,1X,A1,1X,F16.10,1X,A1,1XF16.10,1X,A1,1X,E10.2,1X,A1,1X)') &
+      '|',nSCF,'|',EHFB + ENuc,'|',EJ,'|',EK,'|',EL,'|',Conv,'|'
 
   end do
-  write(*,*)'-----------------------------------------------------------------------------'
+  write(*,*)'-----------------------------------------------------------------------------------------------'
 !------------------------------------------------------------------------
 ! End of SCF loop
 !------------------------------------------------------------------------
@@ -200,7 +204,7 @@ subroutine HFB(dotest,maxSCF,thresh,max_diis,level_shift,nNuc,ZNuc,rNuc,ENuc, &
     write(*,*)'!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!'
     write(*,*)
 
-    deallocate(J,K,err,cp,Fp,err_diis,F_diis)
+    deallocate(J,K,L,err,cp,Fp,err_diis,F_diis)
 
     stop
 
@@ -209,7 +213,7 @@ subroutine HFB(dotest,maxSCF,thresh,max_diis,level_shift,nNuc,ZNuc,rNuc,ENuc, &
 ! Compute dipole moments
 
   call dipole_moment(nBas,P,nNuc,ZNuc,rNuc,dipole_int,dipole)
-  call print_HFB(nBas,nOrb,nO,eHF,c,ENuc,ET,EV,EJ,EK,EHFB,dipole)
+  call print_HFB(nBas,nOrb,nO,eHF,c,ENuc,ET,EV,EJ,EK,EL,EHFB,dipole)
 
 ! Testing zone
 
@@ -224,6 +228,6 @@ subroutine HFB(dotest,maxSCF,thresh,max_diis,level_shift,nNuc,ZNuc,rNuc,ENuc, &
 
 ! Memory deallocation
 
-  deallocate(J,K,err,cp,Fp,err_diis,F_diis)
+  deallocate(J,K,L,err,cp,Fp,err_diis,F_diis)
 
 end subroutine 

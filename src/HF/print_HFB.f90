@@ -1,7 +1,7 @@
 
 ! ---
 
-subroutine print_HFB(nBas, nOrb, nO, eHF, cHF, ENuc, ET, EV, EJ, EK, ERHF, dipole)
+subroutine print_HFB(nBas, nOrb, nO, eHF, cHF, ENuc, ET, EV, EJ, EK, EL, ERHF, dipole)
 
 ! Print one-electron energies and other stuff for G0W0
 
@@ -19,6 +19,7 @@ subroutine print_HFB(nBas, nOrb, nO, eHF, cHF, ENuc, ET, EV, EJ, EK, ERHF, dipol
   double precision,intent(in)        :: EV
   double precision,intent(in)        :: EJ
   double precision,intent(in)        :: EK
+  double precision,intent(in)        :: EL
   double precision,intent(in)        :: ERHF
   double precision,intent(in)        :: dipole(ncart)
 
@@ -28,7 +29,6 @@ subroutine print_HFB(nBas, nOrb, nO, eHF, cHF, ENuc, ET, EV, EJ, EK, ERHF, dipol
   integer                            :: HOMO
   integer                            :: LUMO
   double precision                   :: Gap
-  double precision                   :: S,S2
 
   logical                            :: dump_orb = .false.
 
@@ -37,9 +37,6 @@ subroutine print_HFB(nBas, nOrb, nO, eHF, cHF, ENuc, ET, EV, EJ, EK, ERHF, dipol
   HOMO = nO
   LUMO = HOMO + 1
   Gap = eHF(LUMO)-eHF(HOMO)
-
-  S2 = 0d0
-  S  = 0d0
 
 ! Dump results
 
@@ -54,6 +51,7 @@ subroutine print_HFB(nBas, nOrb, nO, eHF, cHF, ENuc, ET, EV, EJ, EK, ERHF, dipol
   write(*,'(A33,1X,F16.10,A3)') ' Two-electron energy = ',EJ + EK,' au'
   write(*,'(A33,1X,F16.10,A3)') ' Hartree      energy = ',EJ,' au'
   write(*,'(A33,1X,F16.10,A3)') ' Exchange     energy = ',EK,' au'
+  write(*,'(A33,1X,F16.10,A3)') ' Anomalous    energy = ',EL,' au'
   write(*,'(A50)')           '---------------------------------------'
   write(*,'(A33,1X,F16.10,A3)') ' Electronic   energy = ',ERHF,' au'
   write(*,'(A33,1X,F16.10,A3)') ' Nuclear   repulsion = ',ENuc,' au'
@@ -62,9 +60,6 @@ subroutine print_HFB(nBas, nOrb, nO, eHF, cHF, ENuc, ET, EV, EJ, EK, ERHF, dipol
   write(*,'(A33,1X,F16.6,A3)')  ' HFB HOMO     energy = ',eHF(HOMO)*HaToeV,' eV'
   write(*,'(A33,1X,F16.6,A3)')  ' HFB LUMO     energy = ',eHF(LUMO)*HaToeV,' eV'
   write(*,'(A33,1X,F16.6,A3)')  ' HFB HOMO-LUMO gap   = ',Gap*HaToeV,' eV'
-  write(*,'(A50)')           '---------------------------------------'
-  write(*,'(A33,1X,F16.6)')     ' <Sz>                = ',S
-  write(*,'(A33,1X,F16.6)')     ' <S^2>               = ',S2
   write(*,'(A50)')           '---------------------------------------'
   write(*,'(A36)')           ' Dipole moment (Debye)    '
   write(*,'(10X,4A10)')      'X','Y','Z','Tot.'
