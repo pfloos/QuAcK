@@ -1,5 +1,5 @@
 subroutine HFB(dotest,maxSCF,thresh,max_diis,level_shift,nNuc,ZNuc,rNuc,ENuc, & 
-               nBas,nOrb,nO,S,T,V,Hc,ERI,dipole_int,X,EHFB,eHF,c,P,Panom,F)
+               nBas,nOrb,nO,S,T,V,Hc,ERI,dipole_int,X,EHFB,eHF,c,P,Panom,F,Delta)
 
 ! Perform Hartree-Fock Bogoliubov calculation
 
@@ -40,6 +40,7 @@ subroutine HFB(dotest,maxSCF,thresh,max_diis,level_shift,nNuc,ZNuc,rNuc,ENuc, &
   double precision              :: EJ
   double precision              :: EK
   double precision              :: EL
+  double precision              :: chem_pot
   double precision              :: dipole(ncart)
 
   double precision              :: Conv
@@ -62,6 +63,7 @@ subroutine HFB(dotest,maxSCF,thresh,max_diis,level_shift,nNuc,ZNuc,rNuc,ENuc, &
   double precision,intent(out)  :: P(nBas,nBas)
   double precision,intent(out)  :: Panom(nBas,nBas)
   double precision,intent(out)  :: F(nBas,nBas)
+  double precision,intent(out)  :: Delta(nBas,nBas)
 
 ! Hello world
 
@@ -89,10 +91,11 @@ subroutine HFB(dotest,maxSCF,thresh,max_diis,level_shift,nNuc,ZNuc,rNuc,ENuc, &
   allocate(err_diis(nBas_Sq,max_diis))
   allocate(F_diis(nBas_Sq,max_diis))
 
-! Guess coefficients and density matrix
+! Guess coefficients, density matrix, and chem. pot
 
+  chem_pot = 0d0
   P(:,:) = 2d0 * matmul(c(:,1:nO), transpose(c(:,1:nO)))
-  Panom(:,:) = -P(:,:)
+  Panom(:,:) = -P(:,:) ! Do sth TODO
 
 ! Initialization
 
@@ -127,6 +130,7 @@ subroutine HFB(dotest,maxSCF,thresh,max_diis,level_shift,nNuc,ZNuc,rNuc,ENuc, &
     call anomalous_matrix_AO_basis(nBas,Panom,ERI,L)
     
     F(:,:) = Hc(:,:) + J(:,:) + 0.5d0*K(:,:)
+    Delta(:,:) = L(:,:)
 
     ! Check convergence 
 
@@ -151,11 +155,11 @@ subroutine HFB(dotest,maxSCF,thresh,max_diis,level_shift,nNuc,ZNuc,rNuc,ENuc, &
 
     ! Anomalous energy
 
-    EL = 0.25d0*trace_matrix(nBas,matmul(-Panom,L))
+    EL = -0.25d0*trace_matrix(nBas,matmul(Panom,L))
 
     ! Total energy
 
-    EHFB = ET + EV + EJ + EK
+    EHFB = ET + EV + EJ + EK + EL
 
     ! DIIS extrapolation
 
@@ -182,6 +186,7 @@ subroutine HFB(dotest,maxSCF,thresh,max_diis,level_shift,nNuc,ZNuc,rNuc,ENuc, &
     ! Density matrix
 
     P(:,:) = 2d0*matmul(c(:,1:nO),transpose(c(:,1:nO)))
+    Panom(:,:) = -P(:,:) ! Do sth TODO
 
     ! Dump results
 
@@ -213,7 +218,7 @@ subroutine HFB(dotest,maxSCF,thresh,max_diis,level_shift,nNuc,ZNuc,rNuc,ENuc, &
 ! Compute dipole moments
 
   call dipole_moment(nBas,P,nNuc,ZNuc,rNuc,dipole_int,dipole)
-  call print_HFB(nBas,nOrb,nO,eHF,c,ENuc,ET,EV,EJ,EK,EL,EHFB,dipole)
+  call print_HFB(nBas,nOrb,nO,eHF,c,ENuc,ET,EV,EJ,EK,EL,EHFB,chem_pot,dipole)
 
 ! Testing zone
 

@@ -43,10 +43,9 @@ subroutine BQuAcK(working_dir,dotest,doHFB,nNuc,nBas,nOrb,nC,nO,nV,nR,ENuc,ZNuc,
   double precision,allocatable  :: PHF(:,:)
   double precision,allocatable  :: PanomHF(:,:)
   double precision,allocatable  :: FHF(:,:)
+  double precision,allocatable  :: Delta(:,:)
   double precision              :: ERHF,EHFB
-!  double precision,allocatable  :: dipole_int_MO(:,:,:)
   double precision,allocatable  :: ERI_AO(:,:,:,:)
-!  double precision,allocatable  :: ERI_MO(:,:,:,:)
 
   write(*,*)
   write(*,*) '******************************'
@@ -63,8 +62,7 @@ subroutine BQuAcK(working_dir,dotest,doHFB,nNuc,nBas,nOrb,nC,nO,nV,nR,ENuc,ZNuc,
   allocate(PHF(nBas,nBas))
   allocate(PanomHF(nBas,nBas))
   allocate(FHF(nBas,nBas))
-!  allocate(dipole_int_MO(nOrb,nOrb,ncart))
-!  allocate(ERI_MO(nOrb,nOrb,nOrb,nOrb))
+  allocate(Delta(nBas,nBas))
 
   allocate(ERI_AO(nBas,nBas,nBas,nBas))
   call wall_time(start_int)
@@ -94,7 +92,8 @@ subroutine BQuAcK(working_dir,dotest,doHFB,nNuc,nBas,nOrb,nC,nO,nV,nR,ENuc,ZNuc,
     ! Continue with a HFB calculation
     call wall_time(start_HF)
     call HFB(dotest,maxSCF_HF,thresh_HF,max_diis_HF,level_shift,nNuc,ZNuc,rNuc,ENuc, &
-             nBas,nOrb,nO,S,T,V,Hc,ERI_AO,dipole_int_AO,X,EHFB,eHF,cHF,PHF,PanomHF,FHF)
+             nBas,nOrb,nO,S,T,V,Hc,ERI_AO,dipole_int_AO,X,EHFB,eHF,cHF,PHF,PanomHF,  &
+             FHF,Delta)
     call wall_time(end_HF)
 
     t_HF = end_HF - start_HF
@@ -110,8 +109,7 @@ subroutine BQuAcK(working_dir,dotest,doHFB,nNuc,nBas,nOrb,nC,nO,nV,nR,ENuc,ZNuc,
   deallocate(PHF)
   deallocate(PanomHF)
   deallocate(FHF)
-!  deallocate(dipole_int_MO)
-!  deallocate(ERI_MO)
+  deallocate(Delta)
   deallocate(ERI_AO)
 
 end subroutine

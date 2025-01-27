@@ -1,7 +1,7 @@
 
 ! ---
 
-subroutine print_HFB(nBas, nOrb, nO, eHF, cHF, ENuc, ET, EV, EJ, EK, EL, ERHF, dipole)
+subroutine print_HFB(nBas, nOrb, nO, eHF, cHF, ENuc, ET, EV, EJ, EK, EL, ERHF, chem_pot, dipole)
 
 ! Print one-electron energies and other stuff for G0W0
 
@@ -21,6 +21,7 @@ subroutine print_HFB(nBas, nOrb, nO, eHF, cHF, ENuc, ET, EV, EJ, EK, EL, ERHF, d
   double precision,intent(in)        :: EK
   double precision,intent(in)        :: EL
   double precision,intent(in)        :: ERHF
+  double precision,intent(in)        :: chem_pot
   double precision,intent(in)        :: dipole(ncart)
 
 ! Local variables
@@ -60,6 +61,8 @@ subroutine print_HFB(nBas, nOrb, nO, eHF, cHF, ENuc, ET, EV, EJ, EK, EL, ERHF, d
   write(*,'(A33,1X,F16.6,A3)')  ' HFB HOMO     energy = ',eHF(HOMO)*HaToeV,' eV'
   write(*,'(A33,1X,F16.6,A3)')  ' HFB LUMO     energy = ',eHF(LUMO)*HaToeV,' eV'
   write(*,'(A33,1X,F16.6,A3)')  ' HFB HOMO-LUMO gap   = ',Gap*HaToeV,' eV'
+  write(*,'(A50)')           '---------------------------------------'
+  write(*,'(A33,1X,F16.10,A3)') ' Chemical potential  = ',chem_pot,' au'
   write(*,'(A50)')           '---------------------------------------'
   write(*,'(A36)')           ' Dipole moment (Debye)    '
   write(*,'(10X,4A10)')      'X','Y','Z','Tot.'
