@@ -289,7 +289,8 @@ program QuAcK
 ! Bogoliubov QuAcK branch !
 !--------------------------!
   if(doBQuAcK) & 
-    call BQuAcK(working_dir,doGtest,doHFB)
+    call BQuAcK(working_dir,dotest,doHFB,nNuc,nBas,nOrb,nC,nO,nV,nR,ENuc,ZNuc,rNuc,                           &
+                S,T,V,Hc,X,dipole_int_AO,maxSCF_HF,max_diis_HF,thresh_HF,level_shift,guess_type,mix)
 
 !-----------!
 ! Stop Test !
