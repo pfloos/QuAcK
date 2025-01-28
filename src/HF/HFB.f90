@@ -215,6 +215,7 @@ subroutine HFB(dotest,maxSCF,thresh,max_diis,level_shift,nNuc,ZNuc,rNuc,ENuc, &
       c_hfb = matmul(X_hfb,cp)
 
     ! Compute MOM and reshufle the states
+
       mom=matmul(cOld_T,matmul(S_hfb,c_hfb))
       do iorb=1,nOrb2
        project(iorb)=sqrt(dot_product(mom(:,iorb),mom(:,iorb)))
