@@ -11,10 +11,15 @@ subroutine fix_chem_pot(nO,nOrb,nOrb2,thrs_N,trace_1rdm,chem_pot,H_hfb,cp,R,eHFB
 
 ! Local variables
 
+  logical                       :: is_up
   integer                       :: iorb
+  integer                       :: isteps
   double precision              :: trace_curr,trace_down,trace_up
   double precision              :: chem_pot_curr,chem_pot_down,chem_pot_up
   double precision              :: delta_chem_pot
+  double precision              :: golden_ratio
+  double precision              :: a
+  double precision              :: c
 
 ! Output variables
 
@@ -27,7 +32,10 @@ subroutine fix_chem_pot(nO,nOrb,nOrb2,thrs_N,trace_1rdm,chem_pot,H_hfb,cp,R,eHFB
 
   !  Initialize delta_chem_pot
 
-  delta_chem_pot = 1d0
+  is_up=.false.
+  isteps=0
+  golden_ratio = 1.618033988
+  delta_chem_pot = 5d-1
   trace_down = 0d0
   trace_up   = 0d0
   chem_pot_down = 0d0 
@@ -46,52 +54,87 @@ subroutine fix_chem_pot(nO,nOrb,nOrb2,thrs_N,trace_1rdm,chem_pot,H_hfb,cp,R,eHFB
           '|','Tr[1D]','|','Chem. Pot.','|'
   write(*,*)'-------------------------------------'
 
-  ! Set interval to search
+  ! Set interval to search (the good chem_pot is in [chem_pot_down,chem_pot_up])
   call diag_H_hfb(nOrb,nOrb2,chem_pot,trace_curr,H_hfb,cp,R,eHFB_)
+  write(*,'(1X,A1,F16.10,1X,A1,F16.10,1X,A1)') &
+  '|',trace_curr,'|',chem_pot,'|'
   chem_pot_curr=chem_pot
   if(trace_curr<nO) then
    ! Increase chem_pot to occupy more orbs.
+   is_up=.true.
    do
+    isteps = isteps+1
     chem_pot = chem_pot + delta_chem_pot
     call diag_H_hfb(nOrb,nOrb2,chem_pot,trace_up,H_hfb,cp,R,eHFB_)
-    if(trace_up>=nO+1) exit
+    write(*,'(1X,A1,F16.10,1X,A1,F16.10,1X,A1)') &
+    '|',trace_up,'|',chem_pot,'|'
+    if(trace_up>=nO+1 .or. isteps>100) exit ! max 50 au steps for mu (is a lot)
    enddo
    chem_pot_up=chem_pot
   else
    ! Decrease chem_pot to occupy less orbs.
    do
+    isteps = isteps+1
     chem_pot = chem_pot - delta_chem_pot
     call diag_H_hfb(nOrb,nOrb2,chem_pot,trace_down,H_hfb,cp,R,eHFB_)
-    if(trace_down<=nO-1) exit
+    write(*,'(1X,A1,F16.10,1X,A1,F16.10,1X,A1)') &
+    '|',trace_down,'|',chem_pot,'|'
+    if(trace_down<=nO-1 .or. isteps>100) exit ! max 50 au steps for mu (is a lot)
    enddo
    chem_pot_down=chem_pot
   endif
-
-  if(abs(chem_pot_up)>1e-4) then
-   
+  if(is_up) then
    write(*,'(1X,A1,F16.10,1X,A1,F16.10,1X,A1)') &
     '|',trace_curr,'|',chem_pot_curr,'|'
    write(*,'(1X,A1,F16.10,1X,A1,F16.10,1X,A1)') &
     '|',trace_up  ,'|',chem_pot_up  ,'|'
-
-
-   write(*,*)'-------------------------------------'
-   write(*,*)
-
-  endif
-
-  if(abs(chem_pot_down)>1e-4) then
-   
+   trace_down=trace_curr
+   chem_pot_down=chem_pot_curr
+  else
    write(*,'(1X,A1,F16.10,1X,A1,F16.10,1X,A1)') &
     '|',trace_curr,'|',chem_pot_curr,'|'
    write(*,'(1X,A1,F16.10,1X,A1,F16.10,1X,A1)') &
     '|',trace_down,'|',chem_pot_down,'|'
-
-
-   write(*,*)'-------------------------------------'
-   write(*,*)
-
+   trace_up=trace_curr
+   chem_pot_up=chem_pot_curr
   endif
+
+  ! Use Golden-section search algorithm to find chem_pot
+  isteps=0
+  do
+    isteps = isteps+1
+    a=(chem_pot_up-chem_pot_down)/(1d0+golden_ratio)
+    c=a/golden_ratio
+    chem_pot_curr=chem_pot_down+a
+    chem_pot=chem_pot_curr+c
+    call diag_H_hfb(nOrb,nOrb2,chem_pot_curr,trace_curr,H_hfb,cp,R,eHFB_)
+    write(*,'(1X,A1,F16.10,1X,A1,F16.10,1X,A1)') &
+     '|',trace_curr,'|',chem_pot_curr,'|'
+    call diag_H_hfb(nOrb,nOrb2,chem_pot,trace_1rdm,H_hfb,cp,R,eHFB_)
+    write(*,'(1X,A1,F16.10,1X,A1,F16.10,1X,A1)') &
+     '|',trace_1rdm,'|',chem_pot,'|'
+    if(abs(trace_1rdm-nO)<thrs_N .or. isteps>1000) exit ! 1000 steps for finding mu
+    if(is_up) then
+     if(trace_1rdm>=trace_curr .or. abs(trace_1rdm-trace_curr)<1d-8 ) then
+      chem_pot_down=chem_pot_curr
+      trace_down=trace_curr
+     else
+      chem_pot_up=chem_pot
+      trace_up=trace_1rdm
+     endif
+    else
+     if(trace_1rdm>=trace_curr .or. abs(trace_1rdm-trace_curr)<1d-8 ) then
+      chem_pot_up=chem_pot
+      trace_up=trace_1rdm
+     else
+      chem_pot_down=chem_pot_curr
+      trace_down=trace_curr
+     endif
+    endif
+  enddo
+
+  write(*,*)'-------------------------------------'
+  write(*,*)
   
   ! Reset H_HFB to its chemical potential version
  

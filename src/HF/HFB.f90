@@ -127,15 +127,11 @@ subroutine HFB(dotest,maxSCF,thresh,max_diis,level_shift,nNuc,ZNuc,rNuc,ENuc, &
 ! Main SCF loop
 !------------------------------------------------------------------------
   
-  !!do while(Conv > thresh .and. nSCF < maxSCF)
-do while(Conv > 1e-7 .and. nSCF < maxSCF) ! TODO
+  do while(Conv > thresh .and. nSCF < maxSCF)
 
     ! Increment 
 
     nSCF = nSCF + 1
-
-! TODO remove
-chem_pot=-10 
 
     ! Build Fock and Delta matrices
     
