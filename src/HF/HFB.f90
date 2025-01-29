@@ -1,5 +1,6 @@
-subroutine HFB(dotest,maxSCF,thresh,max_diis,level_shift,nNuc,ZNuc,rNuc,ENuc, & 
-               nBas,nOrb,nO,S,T,V,Hc,ERI,dipole_int,X,EHFB,eHF,c,P,Panom,F,Delta)
+subroutine HFB(dotest,maxSCF,thresh,max_diis,level_shift,nNuc,ZNuc,rNuc,ENuc,     & 
+               nBas,nOrb,nO,S,T,V,Hc,ERI,dipole_int,X,EHFB,eHF,c,P,Panom,F,Delta, &
+               temperature)
 
 ! Perform Hartree-Fock Bogoliubov calculation
 
@@ -22,6 +23,7 @@ subroutine HFB(dotest,maxSCF,thresh,max_diis,level_shift,nNuc,ZNuc,rNuc,ENuc, &
   double precision,intent(in)   :: ZNuc(nNuc)
   double precision,intent(in)   :: rNuc(nNuc,ncart)
   double precision,intent(in)   :: ENuc
+  double precision,intent(in)   :: temperature
   double precision,intent(in)   :: S(nBas,nBas)
   double precision,intent(in)   :: T(nBas,nBas)
   double precision,intent(in)   :: V(nBas,nBas)
@@ -51,6 +53,7 @@ subroutine HFB(dotest,maxSCF,thresh,max_diis,level_shift,nNuc,ZNuc,rNuc,ENuc, &
   double precision              :: thrs_N
   double precision,external     :: trace_matrix
   double precision,allocatable  :: eHFB_(:)
+  double precision,allocatable  :: Occ(:)
   double precision,allocatable  :: err(:,:)
   double precision,allocatable  :: err_diis(:,:)
   double precision,allocatable  :: F_diis(:,:)
@@ -102,7 +105,7 @@ subroutine HFB(dotest,maxSCF,thresh,max_diis,level_shift,nNuc,ZNuc,rNuc,ENuc, &
   allocate(err_diis(nBas_Sq,max_diis))
   allocate(F_diis(nBas_Sq,max_diis))
 
-! Guess coefficients chem. pot
+! Guess chem. pot.
 
   chem_pot = 0.5d0*(eHF(nO)+eHF(nO+1))
 
@@ -115,7 +118,26 @@ subroutine HFB(dotest,maxSCF,thresh,max_diis,level_shift,nNuc,ZNuc,rNuc,ENuc, &
   rcond           = 0d0
 
   P(:,:)         = matmul(c(:,1:nO), transpose(c(:,1:nO)))
-  Panom(:,:)     = 0d0 ! Do sth TODO
+  Panom(:,:)     = 0d0
+
+  ! Use Fermi-Dirac occupancies to compute P, Panom, and chem_pot
+  
+  if(abs(temperature)>1e-4) then ! TODO
+   allocate(Occ(nOrb))
+   Occ(:)     = 0d0
+   Occ(1:nO)  = 1d0
+!   call fermi_dirac_occ(nOrb,chem_pot,Occ,eHF)
+   P(:,:)      = 0d0
+   Panom(:,:)  = 0d0
+   do iorb=1,nOrb
+    P(:,:)     = P(:,:)     + Occ(iorb)                        * &
+                matmul(c(:,iorb:iorb),transpose(c(:,iorb:iorb))) 
+    Panom(:,:) = Panom(:,:) + sqrt(Occ(iorb)*(1d0-Occ(iorb)))  * &
+                matmul(c(:,iorb:iorb),transpose(c(:,iorb:iorb))) 
+   enddo
+   deallocate(Occ)
+  endif
+
   P_old(:,:)     = P(:,:)
   Panom_old(:,:) = Panom(:,:)
   P(:,:)         = 2d0*P(:,:)
@@ -166,9 +188,7 @@ subroutine HFB(dotest,maxSCF,thresh,max_diis,level_shift,nNuc,ZNuc,rNuc,ENuc, &
     ! Adjust the chemical potential 
 
     if( abs(trace_1rdm-nO) > thrs_N ) then 
-
      call fix_chem_pot(nO,nOrb,nOrb2,thrs_N,trace_1rdm,chem_pot,H_hfb,cp,R,eHFB_)
-
     endif
 
     ! Extract P and Panom from R
@@ -289,15 +309,3 @@ end subroutine
    ! if(level_shift > 0d0 .and. Conv > thresh) then
    !   call level_shifting(level_shift,nBas,nOrb,nO,S,c,F)
    ! endif
-
-!block
-!integer::iorb1
-!write(*,*) 'Tr[1D] and chem_pot',trace_1rdm,chem_pot
-!write(*,*) 'iter',nSCF
-!do iorb1=1,nOrb2
-! write(*,*) eHFB_(iorb1)
-!enddo
-!do iorb1=1,nOrb
-! write(*,'(7f10.5)') P(iorb1,:)
-!enddo
-!end block

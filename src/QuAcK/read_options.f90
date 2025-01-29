@@ -7,7 +7,7 @@ subroutine read_options(working_dir,                                            
                         maxSCF_GW,thresh_GW,max_diis_GW,lin_GW,eta_GW,reg_GW,TDA_W,                 &
                         maxSCF_GT,thresh_GT,max_diis_GT,lin_GT,eta_GT,reg_GT,TDA_T,                 &
                         doACFDT,exchange_kernel,doXBS,                                              &
-                        dophBSE,dophBSE2,doppBSE,dBSE,dTDA)
+                        dophBSE,dophBSE2,doppBSE,dBSE,dTDA,temperature)
 
 ! Read desired methods 
 
@@ -71,6 +71,8 @@ subroutine read_options(working_dir,                                            
   logical,intent(out)           :: doppBSE
   logical,intent(out)           :: dBSE
   logical,intent(out)           :: dTDA
+
+  double precision,intent(out)  :: temperature
 
 ! Local variables
 
@@ -217,6 +219,13 @@ subroutine read_options(working_dir,                                            
       if(ans4 == 'T') dBSE     = .true.
       if(ans5 == 'F') dTDA     = .false.
 
+      ! Options for dynamical Fermi-Dirac occupancies
+    
+      temperature  = 0d0
+    
+      read(1,*) 
+      read(1,*) temperature
+    
     endif
 
   ! Close file with options
