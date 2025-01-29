@@ -134,6 +134,8 @@ do while(Conv > 1e-7 .and. nSCF < maxSCF) ! TODO
 
     nSCF = nSCF + 1
 
+! TODO remove
+chem_pot=-10 
 
     ! Build Fock and Delta matrices
     
@@ -169,7 +171,7 @@ do while(Conv > 1e-7 .and. nSCF < maxSCF) ! TODO
 
     if( abs(trace_1rdm-nO) > thrs_N ) then 
 
-!     call fix_chem_pot(nO,nOrb,nOrb2,nBas,thrs_N,chem_pot,F,Hc,J,K,Delta,X,H_hfb,cp,R,eHFB_)
+     call fix_chem_pot(nO,nOrb,nOrb2,thrs_N,trace_1rdm,chem_pot,H_hfb,cp,R,eHFB_)
 
     endif
 
@@ -179,18 +181,6 @@ do while(Conv > 1e-7 .and. nSCF < maxSCF) ! TODO
     Panom(:,:) = 0d0
     P(:,:)     = 2d0*matmul(X,matmul(R(1:nOrb,1:nOrb),transpose(X)))
     Panom(:,:) = matmul(X,matmul(R(1:nOrb,nOrb+1:nOrb2),transpose(X)))
-
-block
-integer::iorb1
-write(*,*) 'Tr[1D] and chem_pot',trace_1rdm,chem_pot
-write(*,*) 'iter',nSCF
-do iorb1=1,nOrb2
- write(*,*) eHFB_(iorb1)
-enddo
-do iorb1=1,nOrb
- write(*,'(7f10.5)') P(iorb1,:)
-enddo
-end block
 
 
     ! Kinetic energy
@@ -304,12 +294,14 @@ end subroutine
    !   call level_shifting(level_shift,nBas,nOrb,nO,S,c,F)
    ! endif
 
-!    write(*,*)
-!    write(*,*)'-------------------------------------'
-!    write(*,'(1X,A1,1X,A15,1X,A1,1X,A15,1X,A1)') &
-!            '|','Tr[1D]','|','Chem. Pot.','|'
-!    write(*,*)'-------------------------------------'
-
-!    write(*,'(1X,A1,F16.10,1X,A1,F16.10,1X,A1)') &
-!     '|',trace_1rdm,'|',chem_pot,'|'
-
+!block
+!integer::iorb1
+!write(*,*) 'Tr[1D] and chem_pot',trace_1rdm,chem_pot
+!write(*,*) 'iter',nSCF
+!do iorb1=1,nOrb2
+! write(*,*) eHFB_(iorb1)
+!enddo
+!do iorb1=1,nOrb
+! write(*,'(7f10.5)') P(iorb1,:)
+!enddo
+!end block
