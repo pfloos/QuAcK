@@ -32,12 +32,9 @@ subroutine HFB(dotest,maxSCF,thresh,max_diis,level_shift,nNuc,ZNuc,rNuc,ENuc, &
 
 ! Local variables
 
-  integer                       :: maxSCF_chem_pot
   integer                       :: iorb
   integer                       :: nSCF
-  integer                       :: nSCF_chem_pot
   integer                       :: nOrb2
-  integer                       :: nBas2
   integer                       :: nBas_Sq
   integer                       :: n_diis
   double precision              :: ET
@@ -50,7 +47,6 @@ subroutine HFB(dotest,maxSCF,thresh,max_diis,level_shift,nNuc,ZNuc,rNuc,ENuc, &
 
   double precision              :: Conv
   double precision              :: rcond
-  double precision              :: delta_chem_pot
   double precision              :: trace_1rdm
   double precision              :: thrs_N
   double precision,external     :: trace_matrix
@@ -63,6 +59,8 @@ subroutine HFB(dotest,maxSCF,thresh,max_diis,level_shift,nNuc,ZNuc,rNuc,ENuc, &
   double precision,allocatable  :: cp(:,:)
   double precision,allocatable  :: H_hfb(:,:)
   double precision,allocatable  :: R(:,:)
+  double precision,allocatable  :: P_old(:,:)
+  double precision,allocatable  :: Panom_old(:,:)
 
 ! Output variables
 
@@ -85,7 +83,6 @@ subroutine HFB(dotest,maxSCF,thresh,max_diis,level_shift,nNuc,ZNuc,rNuc,ENuc, &
 ! Useful quantities
 
   nBas_Sq = nBas*nBas
-  nBas2 = nBas+nBas
   nOrb2 = nOrb+nOrb
 
 ! Memory allocation
@@ -98,6 +95,8 @@ subroutine HFB(dotest,maxSCF,thresh,max_diis,level_shift,nNuc,ZNuc,rNuc,ENuc, &
   allocate(cp(nOrb2,nOrb2))
   allocate(H_hfb(nOrb2,nOrb2))
   allocate(R(nOrb2,nOrb2))
+  allocate(P_old(nBas,nBas))
+  allocate(Panom_old(nBas,nBas))
   allocate(eHFB_(nOrb2))
 
   allocate(err_diis(nBas_Sq,max_diis))
@@ -110,14 +109,16 @@ subroutine HFB(dotest,maxSCF,thresh,max_diis,level_shift,nNuc,ZNuc,rNuc,ENuc, &
 ! Initialization
 
   thrs_N          = 1d-6
-  maxSCF_chem_pot = 1000
   n_diis          = 0
   F_diis(:,:)     = 0d0
   err_diis(:,:)   = 0d0
   rcond           = 0d0
 
-  P(:,:)     = 2d0 * matmul(c(:,1:nO), transpose(c(:,1:nO)))
-  Panom(:,:) = 0d0 ! Do sth TODO
+  P(:,:)         = matmul(c(:,1:nO), transpose(c(:,1:nO)))
+  Panom(:,:)     = 0d0 ! Do sth TODO
+  P_old(:,:)     = P(:,:)
+  Panom_old(:,:) = Panom(:,:)
+  P(:,:)         = 2d0*P(:,:)
 
   Conv = 1d0
   nSCF = 0
@@ -125,63 +126,52 @@ subroutine HFB(dotest,maxSCF,thresh,max_diis,level_shift,nNuc,ZNuc,rNuc,ENuc, &
 !------------------------------------------------------------------------
 ! Main SCF loop
 !------------------------------------------------------------------------
-
-
-  do while(Conv > thresh .and. nSCF < maxSCF)
+  
+  !!do while(Conv > thresh .and. nSCF < maxSCF)
+do while(Conv > 1e-7 .and. nSCF < maxSCF) ! TODO
 
     ! Increment 
 
     nSCF = nSCF + 1
 
-    write(*,*)
-    write(*,*)'-------------------------------------'
-    write(*,'(1X,A1,1X,A15,1X,A1,1X,A15,1X,A1)') &
-            '|','Tr[1D]','|','Chem. Pot.','|'
-    write(*,*)'-------------------------------------'
 
-    ! Loop to adjust chem_pot
-    delta_chem_pot=1d0
-    nSCF_chem_pot=0
-    do
-
-     ! Build Fock matrix
-     
-     call Hartree_matrix_AO_basis(nBas,P,ERI,J)
-     call exchange_matrix_AO_basis(nBas,P,ERI,K)
-     call anomalous_matrix_AO_basis(nBas,Panom,ERI,Delta)
-     
-     F(:,:) = Hc(:,:) + J(:,:) + 0.5d0*K(:,:) - chem_pot*S(:,:)
-     
-     ! Diagonalize H_HFB matrix
-     
-     H_hfb(:,:) = 0d0
-     H_hfb(1:nOrb      ,1:nOrb      ) = matmul(transpose(X),matmul(F,X))
-     H_hfb(nOrb+1:nOrb2,nOrb+1:nOrb2) = -H_hfb(1:nOrb,1:nOrb)
-     H_hfb(1:nOrb      ,nOrb+1:nOrb2) = matmul(transpose(X),matmul(Delta,X))
-     H_hfb(nOrb+1:nOrb2,1:nOrb      ) = transpose(H_hfb(1:nOrb,nOrb+1:nOrb2))
-     
-     cp(:,:) = H_hfb(:,:)
-     call diagonalize_matrix(nOrb2,cp,eHFB_)
-     
-     ! Build R and extract P and Panom
-       
-     trace_1rdm = 0d0 
-     R(:,:)     = 0d0
-     do iorb=1,nOrb
-      R(:,:) = R(:,:) + matmul(cp(:,iorb:iorb),transpose(cp(:,iorb:iorb))) 
-     enddo
-     do iorb=1,nOrb
-      trace_1rdm = trace_1rdm + R(iorb,iorb) 
-     enddo
-     write(*,'(1X,A1,F16.10,1X,A1,F16.10,1X,A1)') &
-      '|',trace_1rdm,'|',chem_pot,'|'
-
-     nSCF_chem_pot = nSCF_chem_pot + 1
-     if( abs(trace_1rdm-nO) < thrs_N .or. nSCF_chem_pot > maxSCF_chem_pot ) exit
-
-     
-     
+    ! Build Fock and Delta matrices
+    
+    call Hartree_matrix_AO_basis(nBas,P,ERI,J)
+    call exchange_matrix_AO_basis(nBas,P,ERI,K)
+    call anomalous_matrix_AO_basis(nBas,Panom,ERI,Delta)
+    
+    F(:,:) = Hc(:,:) + J(:,:) + 0.5d0*K(:,:) - chem_pot*S(:,:)
+    
+    ! Diagonalize H_HFB matrix
+    
+    H_hfb(:,:) = 0d0
+    H_hfb(1:nOrb      ,1:nOrb      ) = matmul(transpose(X),matmul(F,X))
+    H_hfb(nOrb+1:nOrb2,nOrb+1:nOrb2) = -H_hfb(1:nOrb,1:nOrb)
+    H_hfb(1:nOrb      ,nOrb+1:nOrb2) = matmul(transpose(X),matmul(Delta,X))
+    H_hfb(nOrb+1:nOrb2,1:nOrb      ) = transpose(H_hfb(1:nOrb,nOrb+1:nOrb2))
+    
+    cp(:,:) = H_hfb(:,:)
+    call diagonalize_matrix(nOrb2,cp,eHFB_)
+    
+    ! Build R and extract P and Panom
+      
+    trace_1rdm = 0d0 
+    R(:,:)     = 0d0
+    do iorb=1,nOrb
+     R(:,:) = R(:,:) + matmul(cp(:,iorb:iorb),transpose(cp(:,iorb:iorb))) 
     enddo
+    do iorb=1,nOrb
+     trace_1rdm = trace_1rdm + R(iorb,iorb) 
+    enddo
+
+    ! Adjust the chemical potential 
+
+    if( abs(trace_1rdm-nO) > thrs_N ) then 
+
+!     call fix_chem_pot(nO,nOrb,nOrb2,nBas,thrs_N,chem_pot,F,Hc,J,K,Delta,X,H_hfb,cp,R,eHFB_)
+
+    endif
 
     ! Extract P and Panom from R
     
@@ -189,6 +179,18 @@ subroutine HFB(dotest,maxSCF,thresh,max_diis,level_shift,nNuc,ZNuc,rNuc,ENuc, &
     Panom(:,:) = 0d0
     P(:,:)     = 2d0*matmul(X,matmul(R(1:nOrb,1:nOrb),transpose(X)))
     Panom(:,:) = matmul(X,matmul(R(1:nOrb,nOrb+1:nOrb2),transpose(X)))
+
+block
+integer::iorb1
+write(*,*) 'Tr[1D] and chem_pot',trace_1rdm,chem_pot
+write(*,*) 'iter',nSCF
+do iorb1=1,nOrb2
+ write(*,*) eHFB_(iorb1)
+enddo
+do iorb1=1,nOrb
+ write(*,'(7f10.5)') P(iorb1,:)
+enddo
+end block
 
 
     ! Kinetic energy
@@ -213,7 +215,20 @@ subroutine HFB(dotest,maxSCF,thresh,max_diis,level_shift,nNuc,ZNuc,rNuc,ENuc, &
 
     ! Total energy
 
-    EHFB = ET + EV + EJ + EK !+ EL
+    EHFB = ET + EV + EJ + EK + EL
+
+    ! Check convergence
+
+    if(nSCF > 1) then
+
+     err   = P_old - P
+     Conv  = maxval(abs(err))
+     err   = Panom_old - Panom
+     Conv  = Conv + maxval(abs(err))
+     P_old(:,:) = P(:,:)
+     Panom_old(:,:) = Panom(:,:)
+
+    endif
 
     ! Dump results
     write(*,*)'-----------------------------------------------------------------------------------------------'
@@ -226,10 +241,6 @@ subroutine HFB(dotest,maxSCF,thresh,max_diis,level_shift,nNuc,ZNuc,rNuc,ENuc, &
 
     write(*,*)'-----------------------------------------------------------------------------------------------'
     write(*,*)
-    ! Check convergence TODO HFB does not fulfill [F,1D]=0 ... 
-
-    err = matmul(F,matmul(P,S)) - matmul(matmul(S,P),F)
-    if(nSCF > 1) Conv = maxval(abs(err))
 
   end do
 !------------------------------------------------------------------------
@@ -246,7 +257,7 @@ subroutine HFB(dotest,maxSCF,thresh,max_diis,level_shift,nNuc,ZNuc,rNuc,ENuc, &
     write(*,*)'!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!'
     write(*,*)
 
-    deallocate(J,K,err,cp,H_hfb,R,eHFB_,err_diis,F_diis)
+    deallocate(J,K,err,cp,H_hfb,R,P_old,Panom_old,eHFB_,err_diis,F_diis)
 
     stop
 
@@ -254,7 +265,7 @@ subroutine HFB(dotest,maxSCF,thresh,max_diis,level_shift,nNuc,ZNuc,rNuc,ENuc, &
 
 ! Compute dipole moments
 
-eHF(:)=eHF(:)-chem_pot!TODO remove
+  eHF(1:nOrb)=eHF(1:nOrb)-chem_pot ! TODO fix it
 
   call dipole_moment(nBas,P,nNuc,ZNuc,rNuc,dipole_int,dipole)
   call print_HFB(nBas,nOrb,nO,eHF,c,ENuc,ET,EV,EJ,EK,EL,EHFB,chem_pot,dipole)
@@ -272,7 +283,7 @@ eHF(:)=eHF(:)-chem_pot!TODO remove
 
 ! Memory deallocation
 
-  deallocate(J,K,err,cp,H_hfb,R,eHFB_,err_diis,F_diis)
+  deallocate(J,K,err,cp,H_hfb,R,P_old,Panom_old,eHFB_,err_diis,F_diis)
 
 end subroutine 
 
@@ -292,4 +303,13 @@ end subroutine
    ! if(level_shift > 0d0 .and. Conv > thresh) then
    !   call level_shifting(level_shift,nBas,nOrb,nO,S,c,F)
    ! endif
+
+!    write(*,*)
+!    write(*,*)'-------------------------------------'
+!    write(*,'(1X,A1,1X,A15,1X,A1,1X,A15,1X,A1)') &
+!            '|','Tr[1D]','|','Chem. Pot.','|'
+!    write(*,*)'-------------------------------------'
+
+!    write(*,'(1X,A1,F16.10,1X,A1,F16.10,1X,A1)') &
+!     '|',trace_1rdm,'|',chem_pot,'|'
 
