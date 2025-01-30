@@ -165,7 +165,7 @@ subroutine HFB(dotest,maxSCF,thresh,max_diis,level_shift,nNuc,ZNuc,rNuc,ENuc,   
     call anomalous_matrix_AO_basis(nBas,Panom,ERI,Delta)
     
     F(:,:) = Hc(:,:) + J(:,:) + 0.5d0*K(:,:) - chem_pot*S(:,:)
-    
+
     ! Diagonalize H_HFB matrix
     
     H_hfb(:,:) = 0d0
@@ -220,7 +220,7 @@ subroutine HFB(dotest,maxSCF,thresh,max_diis,level_shift,nNuc,ZNuc,rNuc,ENuc,   
 
     ! Anomalous energy
 
-    EL = 0.25d0*trace_matrix(nBas,matmul(Panom,Delta))
+    EL = trace_matrix(nBas,matmul(Panom,Delta))
 
     ! Total energy
 
