@@ -1,7 +1,7 @@
 
 ! ---
 
-subroutine print_HFB(nBas, nOrb, nO, Occ, ENuc, ET, EV, EJ, EK, EL, ERHF, chem_pot, dipole)
+subroutine print_HFB(nBas, nOrb, nO, N_anom, Occ, ENuc, ET, EV, EJ, EK, EL, ERHF, chem_pot, dipole)
 
 ! Print one-electron energies and other stuff for G0W0
 
@@ -21,11 +21,14 @@ subroutine print_HFB(nBas, nOrb, nO, Occ, ENuc, ET, EV, EJ, EK, EL, ERHF, chem_p
   double precision,intent(in)        :: EL
   double precision,intent(in)        :: ERHF
   double precision,intent(in)        :: chem_pot
+  double precision,intent(in)        :: N_anom
   double precision,intent(in)        :: dipole(ncart)
 
 ! Local variables
 
+  integer                            :: iorb
   integer                            :: ixyz
+  double precision                   :: trace_occ
 
   logical                            :: dump_orb = .false.
 
@@ -49,6 +52,7 @@ subroutine print_HFB(nBas, nOrb, nO, Occ, ENuc, ET, EV, EJ, EK, EL, ERHF, chem_p
   write(*,'(A33,1X,F16.10,A3)') ' HFB          energy = ',ERHF + ENuc,' au'
   write(*,'(A50)')           '---------------------------------------'
   write(*,'(A33,1X,F16.10,A3)') ' Chemical potential  = ',chem_pot,' au'
+  write(*,'(A33,1X,F16.10,A3)') ' | Anomalous dens |  = ',N_anom,'   '
   write(*,'(A50)')           '---------------------------------------'
   write(*,'(A36)')           ' Dipole moment (Debye)    '
   write(*,'(10X,4A10)')      'X','Y','Z','Tot.'
@@ -61,7 +65,15 @@ subroutine print_HFB(nBas, nOrb, nO, Occ, ENuc, ET, EV, EJ, EK, EL, ERHF, chem_p
   write(*,'(A50)') '---------------------------------------'
   write(*,'(A50)') ' HFB occupation numbers '
   write(*,'(A50)') '---------------------------------------'
-  call vecout(2*nOrb, Occ)
+  trace_occ=0d0
+  do iorb=1,2*nOrb
+   if(abs(Occ(2*nOrb-iorb))>1d-8) then
+    write(*,'(I7,10F15.8)') iorb,Occ(2*nOrb-iorb)
+   endif
+   trace_occ=trace_occ+Occ(iorb)
+  enddo
+  write(*,*)
+  write(*,'(A33,1X,F16.10,A3)') ' Trace [ 1D ]        = ',trace_occ,'   '
   write(*,*)
 
 end subroutine 

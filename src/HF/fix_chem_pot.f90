@@ -20,6 +20,8 @@ subroutine fix_chem_pot(nO,nOrb,nOrb2,thrs_N,trace_1rdm,chem_pot,H_hfb,cp,R,eHFB
   double precision              :: trace_up
   double precision              :: trace_down
   double precision              :: trace_old
+  double precision,allocatable  :: R_tmp(:,:) 
+  double precision,allocatable  :: cp_tmp(:,:) 
 
 ! Output variables
 
@@ -38,6 +40,8 @@ subroutine fix_chem_pot(nO,nOrb,nOrb2,thrs_N,trace_1rdm,chem_pot,H_hfb,cp,R,eHFB
   chem_pot_change = 0d0
   grad_electrons  = 1d0
   trace_1rdm      = -1d0
+  allocate(R_tmp(nOrb2,nOrb2))
+  allocate(cp_tmp(nOrb2,nOrb2))
 
   ! Set H_HFB to its non-chemical potential dependent contribution
  
@@ -79,8 +83,8 @@ subroutine fix_chem_pot(nO,nOrb,nOrb2,thrs_N,trace_1rdm,chem_pot,H_hfb,cp,R,eHFB
    isteps = isteps + 1
    chem_pot = chem_pot + chem_pot_change
    call diag_H_hfb(nOrb,nOrb2,chem_pot,trace_1rdm,H_hfb,cp,R,eHFB_)
-   call diag_H_hfb(nOrb,nOrb2,chem_pot+delta_chem_pot,trace_up,H_hfb,cp,R,eHFB_)
-   call diag_H_hfb(nOrb,nOrb2,chem_pot-delta_chem_pot,trace_down,H_hfb,cp,R,eHFB_)
+   call diag_H_hfb(nOrb,nOrb2,chem_pot+delta_chem_pot,trace_up,H_hfb,cp_tmp,R_tmp,eHFB_)
+   call diag_H_hfb(nOrb,nOrb2,chem_pot-delta_chem_pot,trace_down,H_hfb,cp_tmp,R_tmp,eHFB_)
    grad_electrons = (trace_up-trace_down)/(2.0d0*delta_chem_pot)
    chem_pot_change = -(trace_1rdm-nO)/(grad_electrons+1d-10)
    write(*,'(1X,A1,F16.10,1X,A1,F16.10,1X,A1F16.10,1X,A1)') &
@@ -95,6 +99,8 @@ subroutine fix_chem_pot(nO,nOrb,nOrb2,thrs_N,trace_1rdm,chem_pot,H_hfb,cp,R,eHFB
    H_hfb(iorb,iorb)=H_hfb(iorb,iorb)-chem_pot
    H_hfb(iorb+nOrb,iorb+nOrb)=H_hfb(iorb+nOrb,iorb+nOrb)+chem_pot
   enddo
+  
+  deallocate(R_tmp,cp_tmp)
 
 end subroutine 
 

@@ -51,6 +51,7 @@ subroutine HFB(dotest,maxSCF,thresh,max_diis,level_shift,nNuc,ZNuc,rNuc,ENuc,   
   double precision              :: rcond
   double precision              :: trace_1rdm
   double precision              :: thrs_N
+  double precision              :: norm_anom
   double precision,external     :: trace_matrix
   double precision,allocatable  :: eigVAL(:)
   double precision,allocatable  :: Occ(:)
@@ -122,7 +123,7 @@ subroutine HFB(dotest,maxSCF,thresh,max_diis,level_shift,nNuc,ZNuc,rNuc,ENuc,   
 
   ! Use Fermi-Dirac occupancies to compute P, Panom, and chem_pot
   
-  if(abs(temperature)>1e-4) then
+  if(abs(temperature)>1d-4) then
    allocate(Occ(nOrb))
    Occ(:)     = 0d0
    Occ(1:nO)  = 1d0
@@ -190,9 +191,8 @@ subroutine HFB(dotest,maxSCF,thresh,max_diis,level_shift,nNuc,ZNuc,rNuc,ENuc,   
 
     ! Adjust the chemical potential 
 
-    if( abs(trace_1rdm-nO) > thrs_N ) then 
+    if( abs(trace_1rdm-nO) > thrs_N ) & 
      call fix_chem_pot(nO,nOrb,nOrb2,thrs_N,trace_1rdm,chem_pot,H_hfb,eigVEC,R,eigVAL)
-    endif
 
     ! Extract P and Panom from R
     
@@ -272,14 +272,21 @@ subroutine HFB(dotest,maxSCF,thresh,max_diis,level_shift,nNuc,ZNuc,rNuc,ENuc,   
 
   end if
 
-! Compute dipole moments and occupation numbers
+! Compute dipole moments, occupation numbers and || Anomalous density||
 
   eigVEC(:,:) = 0d0
-  eigVEC(:,:) = R(1:nOrb,1:nOrb)
+  eigVEC(1:nOrb,1:nOrb) = R(1:nOrb,1:nOrb)
   call diagonalize_matrix(nOrb2,eigVEC,eigVAL)
   eigVAL(:)   = 2d0*eigVAL(:)
+  Panom_old(:,:)           = 0d0
+  Panom_old(1:nOrb,1:nOrb) = R(1:nOrb,nOrb+1:nOrb2)
+  Panom_old = matmul(transpose(Panom_old),Panom_old)
+  norm_anom   = 0d0
+  do iorb=1,nBas
+   norm_anom = norm_anom + Panom_old(iorb,iorb)
+  enddo 
   call dipole_moment(nBas,P,nNuc,ZNuc,rNuc,dipole_int,dipole)
-  call print_HFB(nBas,nOrb,nO,eigVAL,ENuc,ET,EV,EJ,EK,EL,EHFB,chem_pot,dipole)
+  call print_HFB(nBas,nOrb,nO,norm_anom,eigVAL,ENuc,ET,EV,EJ,EK,EL,EHFB,chem_pot,dipole)
 
 ! Testing zone
 
