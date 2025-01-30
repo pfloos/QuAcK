@@ -126,7 +126,7 @@ subroutine HFB(dotest,maxSCF,thresh,max_diis,level_shift,nNuc,ZNuc,rNuc,ENuc,   
    allocate(Occ(nOrb))
    Occ(:)     = 0d0
    Occ(1:nO)  = 1d0
-!   call fermi_dirac_occ(nOrb,chem_pot,Occ,eHF)
+   call fermi_dirac_occ(nO,nOrb,thrs_N,temperature,chem_pot,Occ,eHF)
    P(:,:)      = 0d0
    Panom(:,:)  = 0d0
    do iorb=1,nOrb
@@ -148,8 +148,12 @@ subroutine HFB(dotest,maxSCF,thresh,max_diis,level_shift,nNuc,ZNuc,rNuc,ENuc,   
 !------------------------------------------------------------------------
 ! Main SCF loop
 !------------------------------------------------------------------------
-  
-  do while(Conv > thresh .and. nSCF < maxSCF)
+
+  write(*,*)
+  write(*,*) 'Enterning HFB SCF procedure'  
+  write(*,*)
+  do while(Conv > thresh .and. nSCF < 2)
+  !do while(Conv > thresh .and. nSCF < maxSCF)
 
     ! Increment 
 
@@ -217,7 +221,7 @@ subroutine HFB(dotest,maxSCF,thresh,max_diis,level_shift,nNuc,ZNuc,rNuc,ENuc,   
 
     ! Anomalous energy
 
-    EL = -0.25d0*trace_matrix(nBas,matmul(Panom,Delta))
+    EL = 0.25d0*trace_matrix(nBas,matmul(Panom,Delta))
 
     ! Total energy
 
