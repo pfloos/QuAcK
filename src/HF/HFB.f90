@@ -111,7 +111,7 @@ subroutine HFB(dotest,maxSCF,thresh,max_diis,level_shift,nNuc,ZNuc,rNuc,ENuc,   
 
 ! Initialization
 
-  thrs_N          = 1d-6
+  thrs_N          = 1d-8
   n_diis          = 0
   F_diis(:,:)     = 0d0
   err_diis(:,:)   = 0d0
@@ -122,7 +122,7 @@ subroutine HFB(dotest,maxSCF,thresh,max_diis,level_shift,nNuc,ZNuc,rNuc,ENuc,   
 
   ! Use Fermi-Dirac occupancies to compute P, Panom, and chem_pot
   
-  if(abs(temperature)>1e-4) then ! TODO
+  if(abs(temperature)>1e-4) then
    allocate(Occ(nOrb))
    Occ(:)     = 0d0
    Occ(1:nO)  = 1d0
@@ -152,8 +152,7 @@ subroutine HFB(dotest,maxSCF,thresh,max_diis,level_shift,nNuc,ZNuc,rNuc,ENuc,   
   write(*,*)
   write(*,*) 'Enterning HFB SCF procedure'  
   write(*,*)
-  do while(Conv > thresh .and. nSCF < 2)
-  !do while(Conv > thresh .and. nSCF < maxSCF)
+  do while(Conv > thresh .and. nSCF < maxSCF)
 
     ! Increment 
 
