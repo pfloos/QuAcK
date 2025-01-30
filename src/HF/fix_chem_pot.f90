@@ -17,13 +17,13 @@ subroutine fix_chem_pot(nO,nOrb,nOrb2,thrs_N,trace_1rdm,chem_pot,H_hfb,cp,R,eHFB
   double precision              :: delta_chem_pot
   double precision              :: chem_pot_change
   double precision              :: grad_electrons
+  double precision              :: trace_up
+  double precision              :: trace_down
+  double precision              :: trace_old
 
 ! Output variables
 
   double precision              :: trace_1rdm
-  double precision              :: trace_up
-  double precision              :: trace_down
-  double precision              :: trace_old
   double precision,intent(inout):: chem_pot
   double precision,intent(inout):: cp(nOrb2,nOrb2) 
   double precision,intent(inout):: R(nOrb2,nOrb2) 
@@ -72,6 +72,7 @@ subroutine fix_chem_pot(nO,nOrb,nOrb2,thrs_N,trace_1rdm,chem_pot,H_hfb,cp,R,eHFB
 
   ! Do  final search
 
+  write(*,*)'------------------------------------------------------'
   isteps = 0
   delta_chem_pot  = 1.0d-3
   do while( abs(trace_1rdm-nO) > thrs_N .and. isteps <= 100 )
