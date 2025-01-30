@@ -52,14 +52,14 @@ subroutine HFB(dotest,maxSCF,thresh,max_diis,level_shift,nNuc,ZNuc,rNuc,ENuc,   
   double precision              :: trace_1rdm
   double precision              :: thrs_N
   double precision,external     :: trace_matrix
-  double precision,allocatable  :: eHFB_(:)
+  double precision,allocatable  :: eigVAL(:)
   double precision,allocatable  :: Occ(:)
   double precision,allocatable  :: err(:,:)
   double precision,allocatable  :: err_diis(:,:)
   double precision,allocatable  :: F_diis(:,:)
   double precision,allocatable  :: J(:,:)
   double precision,allocatable  :: K(:,:)
-  double precision,allocatable  :: cp(:,:)
+  double precision,allocatable  :: eigVEC(:,:)
   double precision,allocatable  :: H_hfb(:,:)
   double precision,allocatable  :: R(:,:)
   double precision,allocatable  :: P_old(:,:)
@@ -95,12 +95,12 @@ subroutine HFB(dotest,maxSCF,thresh,max_diis,level_shift,nNuc,ZNuc,rNuc,ENuc,   
 
   allocate(err(nBas,nBas))
 
-  allocate(cp(nOrb2,nOrb2))
+  allocate(eigVEC(nOrb2,nOrb2))
   allocate(H_hfb(nOrb2,nOrb2))
   allocate(R(nOrb2,nOrb2))
   allocate(P_old(nBas,nBas))
   allocate(Panom_old(nBas,nBas))
-  allocate(eHFB_(nOrb2))
+  allocate(eigVAL(nOrb2))
 
   allocate(err_diis(nBas_Sq,max_diis))
   allocate(F_diis(nBas_Sq,max_diis))
@@ -174,15 +174,15 @@ subroutine HFB(dotest,maxSCF,thresh,max_diis,level_shift,nNuc,ZNuc,rNuc,ENuc,   
     H_hfb(1:nOrb      ,nOrb+1:nOrb2) = matmul(transpose(X),matmul(Delta,X))
     H_hfb(nOrb+1:nOrb2,1:nOrb      ) = transpose(H_hfb(1:nOrb,nOrb+1:nOrb2))
     
-    cp(:,:) = H_hfb(:,:)
-    call diagonalize_matrix(nOrb2,cp,eHFB_)
+    eigVEC(:,:) = H_hfb(:,:)
+    call diagonalize_matrix(nOrb2,eigVEC,eigVAL)
     
     ! Build R and extract P and Panom
       
     trace_1rdm = 0d0 
     R(:,:)     = 0d0
     do iorb=1,nOrb
-     R(:,:) = R(:,:) + matmul(cp(:,iorb:iorb),transpose(cp(:,iorb:iorb))) 
+     R(:,:) = R(:,:) + matmul(eigVEC(:,iorb:iorb),transpose(eigVEC(:,iorb:iorb))) 
     enddo
     do iorb=1,nOrb
      trace_1rdm = trace_1rdm + R(iorb,iorb) 
@@ -191,7 +191,7 @@ subroutine HFB(dotest,maxSCF,thresh,max_diis,level_shift,nNuc,ZNuc,rNuc,ENuc,   
     ! Adjust the chemical potential 
 
     if( abs(trace_1rdm-nO) > thrs_N ) then 
-     call fix_chem_pot(nO,nOrb,nOrb2,thrs_N,trace_1rdm,chem_pot,H_hfb,cp,R,eHFB_)
+     call fix_chem_pot(nO,nOrb,nOrb2,thrs_N,trace_1rdm,chem_pot,H_hfb,eigVEC,R,eigVAL)
     endif
 
     ! Extract P and Panom from R
@@ -266,18 +266,20 @@ subroutine HFB(dotest,maxSCF,thresh,max_diis,level_shift,nNuc,ZNuc,rNuc,ENuc,   
     write(*,*)'!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!'
     write(*,*)
 
-    deallocate(J,K,err,cp,H_hfb,R,P_old,Panom_old,eHFB_,err_diis,F_diis)
+    deallocate(J,K,err,eigVEC,H_hfb,R,P_old,Panom_old,eigVAL,err_diis,F_diis)
 
     stop
 
   end if
 
-! Compute dipole moments
+! Compute dipole moments and occupation numbers
 
-  eHF(1:nOrb)=eHF(1:nOrb)-chem_pot ! TODO fix it
-
+  eigVEC(:,:) = 0d0
+  eigVEC(:,:) = R(1:nOrb,1:nOrb)
+  call diagonalize_matrix(nOrb2,eigVEC,eigVAL)
+  eigVAL(:)   = 2d0*eigVAL(:)
   call dipole_moment(nBas,P,nNuc,ZNuc,rNuc,dipole_int,dipole)
-  call print_HFB(nBas,nOrb,nO,eHF,c,ENuc,ET,EV,EJ,EK,EL,EHFB,chem_pot,dipole)
+  call print_HFB(nBas,nOrb,nO,eigVAL,ENuc,ET,EV,EJ,EK,EL,EHFB,chem_pot,dipole)
 
 ! Testing zone
 
@@ -292,7 +294,7 @@ subroutine HFB(dotest,maxSCF,thresh,max_diis,level_shift,nNuc,ZNuc,rNuc,ENuc,   
 
 ! Memory deallocation
 
-  deallocate(J,K,err,cp,H_hfb,R,P_old,Panom_old,eHFB_,err_diis,F_diis)
+  deallocate(J,K,err,eigVEC,H_hfb,R,P_old,Panom_old,eigVAL,err_diis,F_diis)
 
 end subroutine 
 

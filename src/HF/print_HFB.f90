@@ -1,7 +1,7 @@
 
 ! ---
 
-subroutine print_HFB(nBas, nOrb, nO, eHF, cHF, ENuc, ET, EV, EJ, EK, EL, ERHF, chem_pot, dipole)
+subroutine print_HFB(nBas, nOrb, nO, Occ, ENuc, ET, EV, EJ, EK, EL, ERHF, chem_pot, dipole)
 
 ! Print one-electron energies and other stuff for G0W0
 
@@ -12,8 +12,7 @@ subroutine print_HFB(nBas, nOrb, nO, eHF, cHF, ENuc, ET, EV, EJ, EK, EL, ERHF, c
 
   integer,intent(in)                 :: nBas, nOrb
   integer,intent(in)                 :: nO
-  double precision,intent(in)        :: eHF(nOrb)
-  double precision,intent(in)        :: cHF(nBas,nOrb)
+  double precision,intent(in)        :: Occ(2*nOrb)
   double precision,intent(in)        :: ENuc
   double precision,intent(in)        :: ET
   double precision,intent(in)        :: EV
@@ -27,17 +26,8 @@ subroutine print_HFB(nBas, nOrb, nO, eHF, cHF, ENuc, ET, EV, EJ, EK, EL, ERHF, c
 ! Local variables
 
   integer                            :: ixyz
-  integer                            :: HOMO
-  integer                            :: LUMO
-  double precision                   :: Gap
 
   logical                            :: dump_orb = .false.
-
-! HOMO and LUMO
-
-  HOMO = nO
-  LUMO = HOMO + 1
-  Gap = eHF(LUMO)-eHF(HOMO)
 
 ! Dump results
 
@@ -58,10 +48,6 @@ subroutine print_HFB(nBas, nOrb, nO, eHF, cHF, ENuc, ET, EV, EJ, EK, EL, ERHF, c
   write(*,'(A33,1X,F16.10,A3)') ' Nuclear   repulsion = ',ENuc,' au'
   write(*,'(A33,1X,F16.10,A3)') ' HFB          energy = ',ERHF + ENuc,' au'
   write(*,'(A50)')           '---------------------------------------'
-  write(*,'(A33,1X,F16.6,A3)')  ' HFB HOMO     energy = ',eHF(HOMO)*HaToeV,' eV'
-  write(*,'(A33,1X,F16.6,A3)')  ' HFB LUMO     energy = ',eHF(LUMO)*HaToeV,' eV'
-  write(*,'(A33,1X,F16.6,A3)')  ' HFB HOMO-LUMO gap   = ',Gap*HaToeV,' eV'
-  write(*,'(A50)')           '---------------------------------------'
   write(*,'(A33,1X,F16.10,A3)') ' Chemical potential  = ',chem_pot,' au'
   write(*,'(A50)')           '---------------------------------------'
   write(*,'(A36)')           ' Dipole moment (Debye)    '
@@ -72,17 +58,10 @@ subroutine print_HFB(nBas, nOrb, nO, eHF, cHF, ENuc, ET, EV, EJ, EK, EL, ERHF, c
 
 ! Print results
 
-  if(dump_orb) then 
-    write(*,'(A50)') '---------------------------------------'
-    write(*,'(A50)') ' HFB orbital coefficients '
-    write(*,'(A50)') '---------------------------------------'
-    call matout(nBas, nOrb, cHF)
-    write(*,*)
-  end if
   write(*,'(A50)') '---------------------------------------'
-  write(*,'(A50)') ' HFB orbital energies (au) '
+  write(*,'(A50)') ' HFB occupation numbers '
   write(*,'(A50)') '---------------------------------------'
-  call vecout(nOrb, eHF)
+  call vecout(2*nOrb, Occ)
   write(*,*)
 
 end subroutine 
