@@ -34,6 +34,7 @@ subroutine HFB(dotest,maxSCF,thresh,max_diis,level_shift,nNuc,ZNuc,rNuc,ENuc,   
 
 ! Local variables
 
+  integer                       :: nBas2
   integer                       :: iorb
   integer                       :: nSCF
   integer                       :: nOrb2
@@ -65,6 +66,11 @@ subroutine HFB(dotest,maxSCF,thresh,max_diis,level_shift,nNuc,ZNuc,rNuc,ENuc,   
   double precision,allocatable  :: R(:,:)
   double precision,allocatable  :: R_old(:,:)
 
+  double precision,allocatable  :: err_ao(:,:)
+  double precision,allocatable  :: S_ao(:,:)
+  double precision,allocatable  :: R_ao_old(:,:)
+  double precision,allocatable  :: H_HFB_ao(:,:)
+
 ! Output variables
 
   double precision,intent(out)  :: EHFB
@@ -87,6 +93,7 @@ subroutine HFB(dotest,maxSCF,thresh,max_diis,level_shift,nNuc,ZNuc,rNuc,ENuc,   
 
   nOrb_Sq = nOrb*nOrb
   nOrb2 = nOrb+nOrb
+  nBas2 = nBas+nBas
 
 ! Memory allocation
 
@@ -94,12 +101,16 @@ subroutine HFB(dotest,maxSCF,thresh,max_diis,level_shift,nNuc,ZNuc,rNuc,ENuc,   
   allocate(K(nBas,nBas))
 
   allocate(err(nOrb2,nOrb2))
-
   allocate(eigVEC(nOrb2,nOrb2))
   allocate(H_HFB(nOrb2,nOrb2))
   allocate(R(nOrb2,nOrb2))
   allocate(R_old(nOrb2,nOrb2))
   allocate(eigVAL(nOrb2))
+
+  allocate(err_ao(nBas2,nBas2))
+  allocate(S_ao(nBas2,nBas2))
+  allocate(R_ao_old(nBas2,nBas2))
+  allocate(H_HFB_ao(nBas2,nBas2))
 
   allocate(err_diis(nOrb_Sq,max_diis))
   allocate(H_HFB_diis(nOrb_Sq,max_diis))
@@ -138,6 +149,9 @@ subroutine HFB(dotest,maxSCF,thresh,max_diis,level_shift,nNuc,ZNuc,rNuc,ENuc,   
   endif
 
   P(:,:)       = 2d0*P(:,:)
+  S_ao(:,:)    = 0d0
+  S_ao(1:nBas      ,1:nBas      ) = S(1:nBas,1:nBas)
+  S_ao(nBas+1:nBas2,nBas+1:nBas2) = S(1:nBas,1:nBas)
 
   Conv = 1d0
   nSCF = 0
@@ -160,7 +174,7 @@ subroutine HFB(dotest,maxSCF,thresh,max_diis,level_shift,nNuc,ZNuc,rNuc,ENuc,   
     
     call Hartree_matrix_AO_basis(nBas,P,ERI,J)
     call exchange_matrix_AO_basis(nBas,P,ERI,K)
-    call anomalous_matrix_AO_basis(nBas,Panom,ERI,Delta)
+    call anomalous_matrix_AO_basis(nBas,-2d0*Panom,ERI,Delta) ! TODO recover usual Panom
     
     F(:,:) = Hc(:,:) + J(:,:) + 0.5d0*K(:,:) - chem_pot*S(:,:)
 
@@ -170,7 +184,7 @@ subroutine HFB(dotest,maxSCF,thresh,max_diis,level_shift,nNuc,ZNuc,rNuc,ENuc,   
     H_HFB(1:nOrb      ,1:nOrb      ) = matmul(transpose(X),matmul(F,X))
     H_HFB(nOrb+1:nOrb2,nOrb+1:nOrb2) = -H_HFB(1:nOrb,1:nOrb)
     H_HFB(1:nOrb      ,nOrb+1:nOrb2) = matmul(transpose(X),matmul(Delta,X))
-    H_HFB(nOrb+1:nOrb2,1:nOrb      ) = transpose(H_HFB(1:nOrb,nOrb+1:nOrb2))
+    H_HFB(nOrb+1:nOrb2,1:nOrb      ) = H_HFB(1:nOrb,nOrb+1:nOrb2)
     
     eigVEC(:,:) = H_HFB(:,:)
     call diagonalize_matrix(nOrb2,eigVEC,eigVAL)
@@ -193,8 +207,8 @@ subroutine HFB(dotest,maxSCF,thresh,max_diis,level_shift,nNuc,ZNuc,rNuc,ENuc,   
 
    ! DIIS extrapolation TODO
 
-    !if(max_diis > 1 .and. .false.) then
-    if(max_diis > 1 .and. nSCF>1) then
+    if(max_diis > 1 .and. .false.) then
+    !if(max_diis > 1 .and. nSCF>1) then
 
      write(*,*) ' Doing DIIS'
 
@@ -250,11 +264,36 @@ subroutine HFB(dotest,maxSCF,thresh,max_diis,level_shift,nNuc,ZNuc,rNuc,ENuc,   
      err   = matmul(H_HFB,R_old) - matmul(R_old,H_HFB)
      Conv  = maxval(abs(err))
 
+write(*,*) 'Err MO  ',maxval(abs(err))
+do iorb=1,nOrb2
+ write(*,'(*(F10.5))') err(iorb,:)
+enddo
+
+     F(:,:) = Hc(:,:) + J(:,:) + 0.5d0*K(:,:) - chem_pot*S(:,:)
+     H_HFB_ao(:,:)    = 0d0
+     H_HFB_ao(1:nBas      ,1:nBas      ) =  F(1:nBas,1:nBas)
+     H_HFB_ao(nBas+1:nBas2,nBas+1:nBas2) = -F(1:nBas,1:nBas)
+     H_HFB_ao(1:nBas      ,nBas+1:nBas2) = Delta(1:nBas,1:nBas)
+     H_HFB_ao(nBas+1:nBas2,1:nBas      ) = Delta(1:nBas,1:nBas)
+     err_ao = matmul(H_HFB_ao,matmul(R_ao_old,S_ao)) - matmul(matmul(S_ao,R_ao_old),H_HFB_ao)
+
+write(*,*) 'Err AO  ',maxval(abs(err))
+do iorb=1,nBas2
+ write(*,'(*(F10.5))') err(iorb,:)
+enddo
+
     endif
 
     ! Update R_old
 
     R_old(:,:) = R(:,:)
+
+    R_ao_old(:,:)    = 0d0
+    R_ao_old(1:nBas      ,1:nBas      ) = P(1:nBas,1:nBas)
+    R_ao_old(nBas+1:nBas2,nBas+1:nBas2) = matmul(X(1:nBas,1:nOrb), transpose(X(1:nBas,1:nOrb)))-P(1:nBas,1:nBas)
+    R_ao_old(1:nBas      ,nBas+1:nBas2) = Panom(1:nBas,1:nBas)
+    R_ao_old(nBas+1:nBas2,1:nBas      ) = Panom(1:nBas,1:nBas)
+
 
     ! Dump results
     write(*,*)'-----------------------------------------------------------------------------------------------'
@@ -284,6 +323,7 @@ subroutine HFB(dotest,maxSCF,thresh,max_diis,level_shift,nNuc,ZNuc,rNuc,ENuc,   
     write(*,*)
 
     deallocate(J,K,err,eigVEC,H_HFB,R,R_old,eigVAL,err_diis,H_HFB_diis)
+    deallocate(err_ao,S_ao,R_ao_old,H_HFB_ao)
 
     stop
 
@@ -313,6 +353,7 @@ subroutine HFB(dotest,maxSCF,thresh,max_diis,level_shift,nNuc,ZNuc,rNuc,ENuc,   
 ! Memory deallocation
 
   deallocate(J,K,err,eigVEC,H_HFB,R,R_old,eigVAL,err_diis,H_HFB_diis)
+  deallocate(err_ao,S_ao,R_ao_old,H_HFB_ao)
 
 end subroutine 
 
