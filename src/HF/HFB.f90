@@ -133,10 +133,6 @@ subroutine HFB(dotest,maxSCF,thresh,max_diis,level_shift,nNuc,ZNuc,rNuc,ENuc,   
                 matmul(c(:,iorb:iorb),transpose(c(:,iorb:iorb))) 
     Panom(:,:) = Panom(:,:) + sqrt(Occ(iorb)*(1d0-Occ(iorb)))  * &
                 matmul(c(:,iorb:iorb),transpose(c(:,iorb:iorb))) 
-    R_old(iorb,iorb)           = Occ(iorb)
-    R_old(iorb+nOrb,iorb+nOrb) = 1d0-Occ(iorb)
-    R_old(iorb     ,iorb+nOrb) = sqrt(Occ(iorb)*(1d0-Occ(iorb)))
-    R_old(iorb+nOrb,iorb     ) = sqrt(Occ(iorb)*(1d0-Occ(iorb))) 
    enddo
    deallocate(Occ)
   endif
@@ -154,7 +150,8 @@ subroutine HFB(dotest,maxSCF,thresh,max_diis,level_shift,nNuc,ZNuc,rNuc,ENuc,   
   write(*,*) 'Enterning HFB SCF procedure'  
   write(*,*)
   do while(Conv > thresh .and. nSCF < maxSCF)
-
+   
+ 
     ! Increment 
 
     nSCF = nSCF + 1
@@ -197,11 +194,11 @@ subroutine HFB(dotest,maxSCF,thresh,max_diis,level_shift,nNuc,ZNuc,rNuc,ENuc,   
    ! DIIS extrapolation TODO
 
     !if(max_diis > 1 .and. .false.) then
-    if(max_diis > 1) then
+    if(max_diis > 1 .and. nSCF>1) then
 
      write(*,*) ' Doing DIIS'
 
-     err   = R_old - R
+     err   = matmul(H_HFB,R_old) - matmul(R_old,H_HFB)
      n_diis = min(n_diis+1,max_diis)
      call DIIS_extrapolation(rcond,nOrb_Sq,nOrb_Sq,n_diis,err_diis,H_hfb_diis,err,H_HFB)
 
@@ -233,40 +230,31 @@ subroutine HFB(dotest,maxSCF,thresh,max_diis,level_shift,nNuc,ZNuc,rNuc,ENuc,   
     P(:,:)     = 2d0*matmul(X,matmul(R(1:nOrb,1:nOrb),transpose(X)))
     Panom(:,:) = matmul(X,matmul(R(1:nOrb,nOrb+1:nOrb2),transpose(X)))
 
-
     ! Kinetic energy
-
     ET = trace_matrix(nBas,matmul(P,T))
-
     ! Potential energy
-
     EV = trace_matrix(nBas,matmul(P,V))
-
     ! Hartree energy
-
     EJ = 0.5d0*trace_matrix(nBas,matmul(P,J))
-
     ! Exchange energy
-
     EK = 0.25d0*trace_matrix(nBas,matmul(P,K))
-
     ! Anomalous energy
-
     EL = trace_matrix(nBas,matmul(Panom,Delta))
-
     ! Total energy
-
     EHFB = ET + EV + EJ + EK + EL
 
     ! Check convergence
 
     if(nSCF > 1) then
 
-     err   = R_old - R
+     err   = matmul(H_HFB,R_old) - matmul(R_old,H_HFB)
      Conv  = maxval(abs(err))
-     R_old(:,:) = R(:,:)
 
     endif
+
+    ! Update R_old
+
+    R_old(:,:) = R(:,:)
 
     ! Dump results
     write(*,*)'-----------------------------------------------------------------------------------------------'
@@ -328,9 +316,3 @@ subroutine HFB(dotest,maxSCF,thresh,max_diis,level_shift,nNuc,ZNuc,rNuc,ENuc,   
 
 end subroutine 
 
-
-   ! ! Level shift TODO check and adapt
-   !
-   ! if(level_shift > 0d0 .and. Conv > thresh) then
-   !   call level_shifting(level_shift,nBas,nOrb,nO,S,c,F)
-   ! endif
