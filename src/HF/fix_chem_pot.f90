@@ -1,4 +1,4 @@
-subroutine fix_chem_pot(nO,nOrb,nOrb2,thrs_N,trace_1rdm,chem_pot,H_hfb,cp,R,eHFB_)
+subroutine fix_chem_pot(nO,nOrb,nOrb2,nSCF,thrs_N,trace_1rdm,chem_pot,H_hfb,cp,R,eHFB_)
 
 ! Fix the chemical potential to integrate to the N for 2N electron systems
 
@@ -6,7 +6,7 @@ subroutine fix_chem_pot(nO,nOrb,nOrb2,thrs_N,trace_1rdm,chem_pot,H_hfb,cp,R,eHFB
 
 ! Input variables
 
-  integer,intent(in)            :: nO,nOrb,nOrb2
+  integer,intent(in)            :: nO,nOrb,nOrb2,nSCF
   double precision,intent(in)   :: thrs_N
 
 ! Local variables
@@ -17,8 +17,10 @@ subroutine fix_chem_pot(nO,nOrb,nOrb2,thrs_N,trace_1rdm,chem_pot,H_hfb,cp,R,eHFB
   double precision              :: delta_chem_pot
   double precision              :: chem_pot_change
   double precision              :: grad_electrons
+  double precision              :: trace_2up
   double precision              :: trace_up
   double precision              :: trace_down
+  double precision              :: trace_2down
   double precision              :: trace_old
   double precision,allocatable  :: R_tmp(:,:) 
   double precision,allocatable  :: cp_tmp(:,:) 
@@ -50,6 +52,8 @@ subroutine fix_chem_pot(nO,nOrb,nOrb2,thrs_N,trace_1rdm,chem_pot,H_hfb,cp,R,eHFB
    H_hfb(iorb+nOrb,iorb+nOrb)=H_hfb(iorb+nOrb,iorb+nOrb)-chem_pot
   enddo
 
+  write(*,*)
+  write(*,'(a,I5)') ' Fixing the Tr[1D] at iteration ',nSCF
   write(*,*)
   write(*,*)'------------------------------------------------------'
   write(*,'(1X,A1,1X,A15,1X,A1,1X,A15,1X,A1A15,2X,A1)') &
@@ -83,9 +87,12 @@ subroutine fix_chem_pot(nO,nOrb,nOrb2,thrs_N,trace_1rdm,chem_pot,H_hfb,cp,R,eHFB
    isteps = isteps + 1
    chem_pot = chem_pot + chem_pot_change
    call diag_H_hfb(nOrb,nOrb2,chem_pot,trace_1rdm,H_hfb,cp,R,eHFB_)
+   call diag_H_hfb(nOrb,nOrb2,chem_pot+2d0*delta_chem_pot,trace_2up,H_hfb,cp_tmp,R_tmp,eHFB_)
    call diag_H_hfb(nOrb,nOrb2,chem_pot+delta_chem_pot,trace_up,H_hfb,cp_tmp,R_tmp,eHFB_)
    call diag_H_hfb(nOrb,nOrb2,chem_pot-delta_chem_pot,trace_down,H_hfb,cp_tmp,R_tmp,eHFB_)
-   grad_electrons = (trace_up-trace_down)/(2.0d0*delta_chem_pot)
+   call diag_H_hfb(nOrb,nOrb2,chem_pot-2d0*delta_chem_pot,trace_2down,H_hfb,cp_tmp,R_tmp,eHFB_)
+!   grad_electrons = (trace_up-trace_down)/(2d0*delta_chem_pot)
+   grad_electrons = (-trace_2up+8d0*trace_up-8d0*trace_down+trace_2down)/(12d0*delta_chem_pot)
    chem_pot_change = -(trace_1rdm-nO)/(grad_electrons+1d-10)
    write(*,'(1X,A1,F16.10,1X,A1,F16.10,1X,A1F16.10,1X,A1)') &
    '|',trace_1rdm,'|',chem_pot,'|',grad_electrons,'|'
