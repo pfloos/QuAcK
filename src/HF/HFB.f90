@@ -112,7 +112,7 @@ subroutine HFB(dotest,maxSCF,thresh,max_diis,level_shift,nNuc,ZNuc,rNuc,ENuc,   
 
   thrs_N          = 1d-8
   n_diis          = 0
-  H_HFB_diis(:,:)     = 0d0
+  H_HFB_diis(:,:) = 0d0
   err_diis(:,:)   = 0d0
   rcond           = 0d0
 
