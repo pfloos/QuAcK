@@ -1,4 +1,4 @@
-subroutine anomalous_matrix_AO_basis(nBas,Pa,ERI,L)
+subroutine anomalous_matrix_AO_basis(nBas,sigma,Pa,ERI,L)
 
 ! Compute anomalous L matrix in the AO basis
 
@@ -8,6 +8,7 @@ subroutine anomalous_matrix_AO_basis(nBas,Pa,ERI,L)
 ! Input variables
 
   integer,intent(in)            :: nBas
+  double precision,intent(in)   :: sigma
   double precision,intent(in)   :: Pa(nBas,nBas)
   double precision,intent(in)   :: ERI(nBas,nBas,nBas,nBas)
 
@@ -25,7 +26,7 @@ subroutine anomalous_matrix_AO_basis(nBas,Pa,ERI,L)
     do si=1,nBas
       do la=1,nBas
         do mu=1,nBas
-          L(mu,nu) = L(mu,nu) + Pa(la,si)*ERI(la,si,mu,nu)
+          L(mu,nu) = L(mu,nu) + sigma*Pa(la,si)*ERI(la,si,mu,nu)
         end do
       end do
     end do

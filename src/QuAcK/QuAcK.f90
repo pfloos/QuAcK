@@ -73,7 +73,7 @@ program QuAcK
 
   logical                       :: dotest,doRtest,doUtest,doGtest
 
-  double precision              :: temperature
+  double precision              :: temperature,sigma
 
   character(len=256)            :: working_dir
 
@@ -136,7 +136,8 @@ program QuAcK
                     maxSCF_GW,thresh_GW,max_diis_GW,lin_GW,eta_GW,reg_GW,TDA_W,                 &  
                     maxSCF_GT,thresh_GT,max_diis_GT,lin_GT,eta_GT,reg_GT,TDA_T,                 & 
                     doACFDT,exchange_kernel,doXBS,                                              &
-                    dophBSE,dophBSE2,doppBSE,dBSE,dTDA,temperature)
+                    dophBSE,dophBSE2,doppBSE,dBSE,dTDA,                                         &
+                    temperature,sigma)
 
 !------------------!
 ! Hardware         !
@@ -293,7 +294,7 @@ program QuAcK
   if(doBQuAcK) & 
     call BQuAcK(working_dir,dotest,doHFB,nNuc,nBas,nOrb,nC,nO,nV,nR,ENuc,ZNuc,rNuc,                           &
                 S,T,V,Hc,X,dipole_int_AO,maxSCF_HF,max_diis_HF,thresh_HF,level_shift,guess_type,mix,          &
-                temperature)
+                temperature,sigma)
 
 !-----------!
 ! Stop Test !
