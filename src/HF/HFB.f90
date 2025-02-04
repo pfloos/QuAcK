@@ -38,7 +38,7 @@ subroutine HFB(dotest,maxSCF,thresh,max_diis,level_shift,nNuc,ZNuc,rNuc,ENuc,   
   integer                       :: iorb
   integer                       :: nSCF
   integer                       :: nOrb2
-  integer                       :: nOrb_Sq
+  integer                       :: nBas2_Sq
   integer                       :: n_diis
   double precision              :: ET
   double precision              :: EV
@@ -56,7 +56,6 @@ subroutine HFB(dotest,maxSCF,thresh,max_diis,level_shift,nNuc,ZNuc,rNuc,ENuc,   
   double precision,external     :: trace_matrix
   double precision,allocatable  :: eigVAL(:)
   double precision,allocatable  :: Occ(:)
-  double precision,allocatable  :: err(:,:)
   double precision,allocatable  :: err_diis(:,:)
   double precision,allocatable  :: H_HFB_diis(:,:)
   double precision,allocatable  :: J(:,:)
@@ -64,10 +63,10 @@ subroutine HFB(dotest,maxSCF,thresh,max_diis,level_shift,nNuc,ZNuc,rNuc,ENuc,   
   double precision,allocatable  :: eigVEC(:,:)
   double precision,allocatable  :: H_HFB(:,:)
   double precision,allocatable  :: R(:,:)
-  double precision,allocatable  :: R_old(:,:)
 
   double precision,allocatable  :: err_ao(:,:)
   double precision,allocatable  :: S_ao(:,:)
+  double precision,allocatable  :: X_ao(:,:)
   double precision,allocatable  :: R_ao_old(:,:)
   double precision,allocatable  :: H_HFB_ao(:,:)
 
@@ -91,29 +90,28 @@ subroutine HFB(dotest,maxSCF,thresh,max_diis,level_shift,nNuc,ZNuc,rNuc,ENuc,   
 
 ! Useful quantities
 
-  nOrb_Sq = nOrb*nOrb
   nOrb2 = nOrb+nOrb
   nBas2 = nBas+nBas
+  nBas2_Sq = nBas2*nBas2
 
 ! Memory allocation
 
   allocate(J(nBas,nBas))
   allocate(K(nBas,nBas))
 
-  allocate(err(nOrb2,nOrb2))
   allocate(eigVEC(nOrb2,nOrb2))
   allocate(H_HFB(nOrb2,nOrb2))
   allocate(R(nOrb2,nOrb2))
-  allocate(R_old(nOrb2,nOrb2))
   allocate(eigVAL(nOrb2))
 
   allocate(err_ao(nBas2,nBas2))
   allocate(S_ao(nBas2,nBas2))
+  allocate(X_ao(nBas2,nOrb2))
   allocate(R_ao_old(nBas2,nBas2))
   allocate(H_HFB_ao(nBas2,nBas2))
 
-  allocate(err_diis(nOrb_Sq,max_diis))
-  allocate(H_HFB_diis(nOrb_Sq,max_diis))
+  allocate(err_diis(nBas2_Sq,max_diis))
+  allocate(H_HFB_diis(nBas2_Sq,max_diis))
 
 ! Guess chem. pot.
 
@@ -152,6 +150,9 @@ subroutine HFB(dotest,maxSCF,thresh,max_diis,level_shift,nNuc,ZNuc,rNuc,ENuc,   
   S_ao(:,:)    = 0d0
   S_ao(1:nBas      ,1:nBas      ) = S(1:nBas,1:nBas)
   S_ao(nBas+1:nBas2,nBas+1:nBas2) = S(1:nBas,1:nBas)
+  X_ao(:,:)    = 0d0
+  X_ao(1:nBas      ,1:nOrb      ) = X(1:nBas,1:nOrb)
+  X_ao(nBas+1:nBas2,nOrb+1:nOrb2) = X(1:nBas,1:nOrb)
 
   Conv = 1d0
   nSCF = 0
@@ -174,7 +175,7 @@ subroutine HFB(dotest,maxSCF,thresh,max_diis,level_shift,nNuc,ZNuc,rNuc,ENuc,   
     
     call Hartree_matrix_AO_basis(nBas,P,ERI,J)
     call exchange_matrix_AO_basis(nBas,P,ERI,K)
-    call anomalous_matrix_AO_basis(nBas,-2d0*Panom,ERI,Delta) ! TODO recover usual Panom
+    call anomalous_matrix_AO_basis(nBas,Panom,ERI,Delta)
     
     F(:,:) = Hc(:,:) + J(:,:) + 0.5d0*K(:,:) - chem_pot*S(:,:)
 
@@ -205,17 +206,24 @@ subroutine HFB(dotest,maxSCF,thresh,max_diis,level_shift,nNuc,ZNuc,rNuc,ENuc,   
     if( abs(trace_1rdm-nO) > thrs_N ) & 
      call fix_chem_pot(nO,nOrb,nOrb2,nSCF,thrs_N,trace_1rdm,chem_pot,H_HFB,eigVEC,R,eigVAL)
 
-   ! DIIS extrapolation TODO
+    ! DIIS extrapolation
 
-    if(max_diis > 1 .and. .false.) then
-    !if(max_diis > 1 .and. nSCF>1) then
+    if(max_diis > 1 .and. nSCF>1) then
 
      write(*,*) ' Doing DIIS'
 
-     err   = matmul(H_HFB,R_old) - matmul(R_old,H_HFB)
-     n_diis = min(n_diis+1,max_diis)
-     call DIIS_extrapolation(rcond,nOrb_Sq,nOrb_Sq,n_diis,err_diis,H_HFB_diis,err,H_HFB)
+     F(:,:) = Hc(:,:) + J(:,:) + 0.5d0*K(:,:) - chem_pot*S(:,:)
+     H_HFB_ao(:,:)    = 0d0
+     H_HFB_ao(1:nBas      ,1:nBas      ) =  F(1:nBas,1:nBas)
+     H_HFB_ao(nBas+1:nBas2,nBas+1:nBas2) = -F(1:nBas,1:nBas)
+     H_HFB_ao(1:nBas      ,nBas+1:nBas2) = Delta(1:nBas,1:nBas)
+     H_HFB_ao(nBas+1:nBas2,1:nBas      ) = Delta(1:nBas,1:nBas)
+     err_ao = matmul(H_HFB_ao,matmul(R_ao_old,S_ao)) - matmul(matmul(S_ao,R_ao_old),H_HFB_ao)
 
+     n_diis = min(n_diis+1,max_diis)
+     call DIIS_extrapolation(rcond,nBas2_Sq,nBas2_Sq,n_diis,err_diis,H_HFB_diis,err_ao,H_HFB_ao)
+
+     H_HFB = matmul(transpose(X_ao),matmul(H_HFB_ao,X_ao))
      eigVEC(:,:) = H_HFB(:,:)
      call diagonalize_matrix(nOrb2,eigVEC,eigVAL)
      
@@ -261,14 +269,6 @@ subroutine HFB(dotest,maxSCF,thresh,max_diis,level_shift,nNuc,ZNuc,rNuc,ENuc,   
 
     if(nSCF > 1) then
 
-     err   = matmul(H_HFB,R_old) - matmul(R_old,H_HFB)
-     Conv  = maxval(abs(err))
-
-write(*,*) 'Err MO  ',maxval(abs(err))
-do iorb=1,nOrb2
- write(*,'(*(F10.5))') err(iorb,:)
-enddo
-
      F(:,:) = Hc(:,:) + J(:,:) + 0.5d0*K(:,:) - chem_pot*S(:,:)
      H_HFB_ao(:,:)    = 0d0
      H_HFB_ao(1:nBas      ,1:nBas      ) =  F(1:nBas,1:nBas)
@@ -276,21 +276,15 @@ enddo
      H_HFB_ao(1:nBas      ,nBas+1:nBas2) = Delta(1:nBas,1:nBas)
      H_HFB_ao(nBas+1:nBas2,1:nBas      ) = Delta(1:nBas,1:nBas)
      err_ao = matmul(H_HFB_ao,matmul(R_ao_old,S_ao)) - matmul(matmul(S_ao,R_ao_old),H_HFB_ao)
-
-write(*,*) 'Err AO  ',maxval(abs(err))
-do iorb=1,nBas2
- write(*,'(*(F10.5))') err(iorb,:)
-enddo
+     Conv  = maxval(abs(err_ao))
 
     endif
 
     ! Update R_old
 
-    R_old(:,:) = R(:,:)
-
     R_ao_old(:,:)    = 0d0
-    R_ao_old(1:nBas      ,1:nBas      ) = P(1:nBas,1:nBas)
-    R_ao_old(nBas+1:nBas2,nBas+1:nBas2) = matmul(X(1:nBas,1:nOrb), transpose(X(1:nBas,1:nOrb)))-P(1:nBas,1:nBas)
+    R_ao_old(1:nBas      ,1:nBas      ) = 0.5d0*P(1:nBas,1:nBas)
+    R_ao_old(nBas+1:nBas2,nBas+1:nBas2) = matmul(X(1:nBas,1:nOrb), transpose(X(1:nBas,1:nOrb)))-0.5d0*P(1:nBas,1:nBas)
     R_ao_old(1:nBas      ,nBas+1:nBas2) = Panom(1:nBas,1:nBas)
     R_ao_old(nBas+1:nBas2,1:nBas      ) = Panom(1:nBas,1:nBas)
 
@@ -322,8 +316,8 @@ enddo
     write(*,*)'!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!'
     write(*,*)
 
-    deallocate(J,K,err,eigVEC,H_HFB,R,R_old,eigVAL,err_diis,H_HFB_diis)
-    deallocate(err_ao,S_ao,R_ao_old,H_HFB_ao)
+    deallocate(J,K,eigVEC,H_HFB,R,eigVAL,err_diis,H_HFB_diis)
+    deallocate(err_ao,S_ao,X_ao,R_ao_old,H_HFB_ao)
 
     stop
 
@@ -352,8 +346,8 @@ enddo
 
 ! Memory deallocation
 
-  deallocate(J,K,err,eigVEC,H_HFB,R,R_old,eigVAL,err_diis,H_HFB_diis)
-  deallocate(err_ao,S_ao,R_ao_old,H_HFB_ao)
+  deallocate(J,K,eigVEC,H_HFB,R,eigVAL,err_diis,H_HFB_diis)
+  deallocate(err_ao,S_ao,X_ao,R_ao_old,H_HFB_ao)
 
 end subroutine 
 
