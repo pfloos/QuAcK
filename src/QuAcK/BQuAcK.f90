@@ -1,6 +1,6 @@
 subroutine BQuAcK(working_dir,dotest,doHFB,nNuc,nBas,nOrb,nC,nO,nV,nR,ENuc,ZNuc,rNuc,                                    &
                   S,T,V,Hc,X,dipole_int_AO,maxSCF_HF,max_diis_HF,thresh_HF,level_shift,                                  &
-                  guess_type,mix,temperature,sigma)
+                  guess_type,mix,temperature,sigma,chem_pot_hf)
 
 ! Restricted branch of QuAcK
 
@@ -13,6 +13,7 @@ subroutine BQuAcK(working_dir,dotest,doHFB,nNuc,nBas,nOrb,nC,nO,nV,nR,ENuc,ZNuc,
 
   logical,intent(in)            :: doHFB
 
+  logical,intent(in)            :: chem_pot_hf
   integer,intent(in)            :: nNuc,nBas,nOrb
   integer,intent(in)            :: nC
   integer,intent(in)            :: nO
@@ -94,7 +95,7 @@ subroutine BQuAcK(working_dir,dotest,doHFB,nNuc,nBas,nOrb,nC,nO,nV,nR,ENuc,ZNuc,
     call wall_time(start_HF)
     call HFB(dotest,maxSCF_HF,thresh_HF,max_diis_HF,level_shift,nNuc,ZNuc,rNuc,ENuc, &
              nBas,nOrb,nO,S,T,V,Hc,ERI_AO,dipole_int_AO,X,EHFB,eHF,cHF,PHF,PanomHF,  &
-             FHF,Delta,temperature,sigma)
+             FHF,Delta,temperature,sigma,chem_pot_hf)
     call wall_time(end_HF)
 
     t_HF = end_HF - start_HF

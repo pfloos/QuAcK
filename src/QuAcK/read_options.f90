@@ -8,7 +8,7 @@ subroutine read_options(working_dir,                                            
                         maxSCF_GT,thresh_GT,max_diis_GT,lin_GT,eta_GT,reg_GT,TDA_T,                 &
                         doACFDT,exchange_kernel,doXBS,                                              &
                         dophBSE,dophBSE2,doppBSE,dBSE,dTDA,                                         &
-                        temperature,sigma)
+                        temperature,sigma,chem_pot_hf)
 
 ! Read desired methods 
 
@@ -73,6 +73,7 @@ subroutine read_options(working_dir,                                            
   logical,intent(out)           :: dBSE
   logical,intent(out)           :: dTDA
 
+  logical,intent(out)           :: chem_pot_hf
   double precision,intent(out)  :: temperature
   double precision,intent(out)  :: sigma
 
@@ -224,9 +225,13 @@ subroutine read_options(working_dir,                                            
       ! Options for Hartree-Fock Bogoliubov
     
       temperature  = 0d0
+      sigma        = 1d0
+      chem_pot_hf  = .false.
     
       read(1,*) 
-      read(1,*) temperature,sigma
+      read(1,*) temperature,sigma,ans1
+
+      if(ans1 == 'T') chem_pot_hf  = .true.
     
     endif
 

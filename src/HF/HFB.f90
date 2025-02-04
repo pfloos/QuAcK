@@ -1,6 +1,6 @@
 subroutine HFB(dotest,maxSCF,thresh,max_diis,level_shift,nNuc,ZNuc,rNuc,ENuc,     & 
                nBas,nOrb,nO,S,T,V,Hc,ERI,dipole_int,X,EHFB,eHF,c,P,Panom,F,Delta, &
-               temperature,sigma)
+               temperature,sigma,chem_pot_hf)
 
 ! Perform Hartree-Fock Bogoliubov calculation
 
@@ -34,6 +34,7 @@ subroutine HFB(dotest,maxSCF,thresh,max_diis,level_shift,nNuc,ZNuc,rNuc,ENuc,   
 
 ! Local variables
 
+  logical                       :: chem_pot_hf
   integer                       :: nBas2
   integer                       :: iorb
   integer                       :: nSCF
@@ -135,6 +136,7 @@ subroutine HFB(dotest,maxSCF,thresh,max_diis,level_shift,nNuc,ZNuc,rNuc,ENuc,   
    Occ(:)     = 0d0
    Occ(1:nO)  = 1d0
    call fermi_dirac_occ(nO,nOrb,thrs_N,temperature,chem_pot,Occ,eHF)
+   if(chem_pot_hf) chem_pot = 0.5d0*(eHF(nO)+eHF(nO+1))
    P(:,:)      = 0d0
    Panom(:,:)  = 0d0
    do iorb=1,nOrb
