@@ -3,7 +3,7 @@
 
 subroutine print_HFB(nBas, nOrb, nO, N_anom, Occ, ENuc, ET, EV, EJ, EK, EL, ERHF, chem_pot, dipole)
 
-! Print one-electron energies and other stuff for G0W0
+! Print one-electron energies and other stuff
 
   implicit none
   include 'parameters.h'
@@ -12,7 +12,7 @@ subroutine print_HFB(nBas, nOrb, nO, N_anom, Occ, ENuc, ET, EV, EJ, EK, EL, ERHF
 
   integer,intent(in)                 :: nBas, nOrb
   integer,intent(in)                 :: nO
-  double precision,intent(in)        :: Occ(2*nOrb)
+  double precision,intent(in)        :: Occ(nOrb)
   double precision,intent(in)        :: ENuc
   double precision,intent(in)        :: ET
   double precision,intent(in)        :: EV
@@ -66,11 +66,11 @@ subroutine print_HFB(nBas, nOrb, nO, N_anom, Occ, ENuc, ET, EV, EJ, EK, EL, ERHF
   write(*,'(A50)') ' HFB occupation numbers '
   write(*,'(A50)') '---------------------------------------'
   trace_occ=0d0
-  do iorb=1,2*nOrb
-   if(abs(Occ(2*nOrb-iorb))>1d-8) then
-    write(*,'(I7,10F15.8)') iorb,Occ(2*nOrb-iorb)
+  do iorb=1,nOrb
+   if(abs(Occ(nOrb+1-iorb))>1d-8) then
+    write(*,'(I7,10F15.8)') iorb,2d0*Occ(nOrb+1-iorb)
    endif
-   trace_occ=trace_occ+Occ(iorb)
+   trace_occ=trace_occ+2d0*Occ(iorb)
   enddo
   write(*,*)
   write(*,'(A33,1X,F16.10,A3)') ' Trace [ 1D ]        = ',trace_occ,'   '

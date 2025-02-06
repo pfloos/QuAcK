@@ -1,6 +1,6 @@
 subroutine HFB(dotest,maxSCF,thresh,max_diis,level_shift,nNuc,ZNuc,rNuc,ENuc,     & 
                nBas,nOrb,nO,S,T,V,Hc,ERI,dipole_int,X,EHFB,eHF,c,P,Panom,F,Delta, &
-               temperature,sigma,chem_pot_hf)
+               temperature,sigma,chem_pot_hf,restart_hfb)
 
 ! Perform Hartree-Fock Bogoliubov calculation
 
@@ -35,6 +35,7 @@ subroutine HFB(dotest,maxSCF,thresh,max_diis,level_shift,nNuc,ZNuc,rNuc,ENuc,   
 ! Local variables
 
   logical                       :: chem_pot_hf
+  logical                       :: restart_hfb
   integer                       :: nBas2
   integer                       :: iorb
   integer                       :: nSCF
@@ -97,6 +98,8 @@ subroutine HFB(dotest,maxSCF,thresh,max_diis,level_shift,nNuc,ZNuc,rNuc,ENuc,   
 
 ! Memory allocation
 
+  allocate(Occ(nOrb))
+
   allocate(J(nBas,nBas))
   allocate(K(nBas,nBas))
 
@@ -132,7 +135,6 @@ subroutine HFB(dotest,maxSCF,thresh,max_diis,level_shift,nNuc,ZNuc,rNuc,ENuc,   
   ! Use Fermi-Dirac occupancies to compute P, Panom, and chem_pot
   
   if(abs(temperature)>1d-4) then
-   allocate(Occ(nOrb))
    Occ(:)     = 0d0
    Occ(1:nO)  = 1d0
    call fermi_dirac_occ(nO,nOrb,thrs_N,temperature,chem_pot,Occ,eHF)
@@ -145,7 +147,20 @@ subroutine HFB(dotest,maxSCF,thresh,max_diis,level_shift,nNuc,ZNuc,rNuc,ENuc,   
     Panom(:,:) = Panom(:,:) + sqrt(Occ(iorb)*(1d0-Occ(iorb)))  * &
                 matmul(c(:,iorb:iorb),transpose(c(:,iorb:iorb))) 
    enddo
-   deallocate(Occ)
+  endif
+
+  ! Read restart file
+
+  if(restart_hfb) then
+   call read_restart_HFB(nBas, nOrb, Occ, c, S, chem_pot)
+   P(:,:)      = 0d0
+   Panom(:,:)  = 0d0
+   do iorb=1,nOrb
+    P(:,:)     = P(:,:)     + Occ(iorb)                        * &
+                matmul(c(:,iorb:iorb),transpose(c(:,iorb:iorb))) 
+    Panom(:,:) = Panom(:,:) + sqrt(Occ(iorb)*(1d0-Occ(iorb)))  * &
+                matmul(c(:,iorb:iorb),transpose(c(:,iorb:iorb))) 
+   enddo
   endif
 
   P(:,:)       = 2d0*P(:,:)
@@ -318,7 +333,7 @@ subroutine HFB(dotest,maxSCF,thresh,max_diis,level_shift,nNuc,ZNuc,rNuc,ENuc,   
     write(*,*)'!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!'
     write(*,*)
 
-    deallocate(J,K,eigVEC,H_HFB,R,eigVAL,err_diis,H_HFB_diis)
+    deallocate(J,K,eigVEC,H_HFB,R,eigVAL,err_diis,H_HFB_diis,Occ)
     deallocate(err_ao,S_ao,X_ao,R_ao_old,H_HFB_ao)
 
     stop
@@ -326,14 +341,17 @@ subroutine HFB(dotest,maxSCF,thresh,max_diis,level_shift,nNuc,ZNuc,rNuc,ENuc,   
   end if
 
 ! Compute dipole moments, occupation numbers and || Anomalous density||
+! also print the restart file
 
   eigVEC(:,:) = 0d0
   eigVEC(1:nOrb,1:nOrb) = R(1:nOrb,1:nOrb)
   call diagonalize_matrix(nOrb2,eigVEC,eigVAL)
-  eigVAL(:)   = 2d0*eigVAL(:)
+  Occ(1:nOrb)   = eigVAL(nOrb+1:nOrb2)
+  c(1:nBas,1:nOrb) = matmul(X(1:nBas,1:nOrb),eigVEC(1:nOrb,nOrb+1:nOrb2))
   norm_anom = trace_matrix(nOrb,matmul(transpose(R(1:nOrb,nOrb+1:nOrb2)),R(1:nOrb,nOrb+1:nOrb2)))
   call dipole_moment(nBas,P,nNuc,ZNuc,rNuc,dipole_int,dipole)
-  call print_HFB(nBas,nOrb,nO,norm_anom,eigVAL,ENuc,ET,EV,EJ,EK,EL,EHFB,chem_pot,dipole)
+  call write_restart_HFB(nBas,nOrb,Occ,c,chem_pot)
+  call print_HFB(nBas,nOrb,nO,norm_anom,Occ,ENuc,ET,EV,EJ,EK,EL,EHFB,chem_pot,dipole)
 
 ! Testing zone
 
@@ -348,7 +366,7 @@ subroutine HFB(dotest,maxSCF,thresh,max_diis,level_shift,nNuc,ZNuc,rNuc,ENuc,   
 
 ! Memory deallocation
 
-  deallocate(J,K,eigVEC,H_HFB,R,eigVAL,err_diis,H_HFB_diis)
+  deallocate(J,K,eigVEC,H_HFB,R,eigVAL,err_diis,H_HFB_diis,Occ)
   deallocate(err_ao,S_ao,X_ao,R_ao_old,H_HFB_ao)
 
 end subroutine 
