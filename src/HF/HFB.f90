@@ -144,7 +144,7 @@ subroutine HFB(dotest,maxSCF,thresh,max_diis,level_shift,nNuc,ZNuc,rNuc,ENuc,   
    do iorb=1,nOrb
     P(:,:)     = P(:,:)     + Occ(iorb)                        * &
                 matmul(c(:,iorb:iorb),transpose(c(:,iorb:iorb))) 
-    Panom(:,:) = Panom(:,:) + sqrt(Occ(iorb)*(1d0-Occ(iorb)))  * &
+    Panom(:,:) = Panom(:,:) + sqrt(abs(Occ(iorb)*(1d0-Occ(iorb))))  * &
                 matmul(c(:,iorb:iorb),transpose(c(:,iorb:iorb))) 
    enddo
   endif
@@ -158,7 +158,7 @@ subroutine HFB(dotest,maxSCF,thresh,max_diis,level_shift,nNuc,ZNuc,rNuc,ENuc,   
    do iorb=1,nOrb
     P(:,:)     = P(:,:)     + Occ(iorb)                        * &
                 matmul(c(:,iorb:iorb),transpose(c(:,iorb:iorb))) 
-    Panom(:,:) = Panom(:,:) + sqrt(Occ(iorb)*(1d0-Occ(iorb)))  * &
+    Panom(:,:) = Panom(:,:) + sqrt(abs(Occ(iorb)*(1d0-Occ(iorb))))  * &
                 matmul(c(:,iorb:iorb),transpose(c(:,iorb:iorb))) 
    enddo
   endif
@@ -343,11 +343,13 @@ subroutine HFB(dotest,maxSCF,thresh,max_diis,level_shift,nNuc,ZNuc,rNuc,ENuc,   
 ! Compute dipole moments, occupation numbers and || Anomalous density||
 ! also print the restart file
 
-  eigVEC(:,:) = 0d0
+  deallocate(eigVEC,eigVAL)
+  allocate(eigVEC(nOrb,nOrb),eigVAL(nOrb))
+  eigVEC(1:nOrb,1:nOrb) = 0d0
   eigVEC(1:nOrb,1:nOrb) = R(1:nOrb,1:nOrb)
-  call diagonalize_matrix(nOrb2,eigVEC,eigVAL)
-  Occ(1:nOrb)   = eigVAL(nOrb+1:nOrb2)
-  c(1:nBas,1:nOrb) = matmul(X(1:nBas,1:nOrb),eigVEC(1:nOrb,nOrb+1:nOrb2))
+  call diagonalize_matrix(nOrb,eigVEC,eigVAL)
+  Occ(1:nOrb)   = eigVAL(1:nOrb)
+  c = matmul(X,eigVEC)
   norm_anom = trace_matrix(nOrb,matmul(transpose(R(1:nOrb,nOrb+1:nOrb2)),R(1:nOrb,nOrb+1:nOrb2)))
   call dipole_moment(nBas,P,nNuc,ZNuc,rNuc,dipole_int,dipole)
   call write_restart_HFB(nBas,nOrb,Occ,c,chem_pot)

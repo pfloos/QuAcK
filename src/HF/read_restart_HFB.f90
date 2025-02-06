@@ -22,6 +22,7 @@ subroutine read_restart_HFB(nBas, nOrb, Occ, c, S, chem_pot)
   integer                           :: nOrb_
   double precision                  :: chem_pot_
   double precision                  :: max_diff
+  double precision                  :: val_read
   double precision,allocatable      :: eigVAL(:)
   double precision,allocatable      :: c_tmp(:,:)
   double precision,allocatable      :: S_mol(:,:)
@@ -37,11 +38,18 @@ subroutine read_restart_HFB(nBas, nOrb, Occ, c, S, chem_pot)
 
   allocate(eigVAL(nOrb),c_tmp(nBas,nOrb),S_mol(nOrb,nOrb),X_mol(nOrb,nOrb))
 
+  c_tmp=0d0
+  S_mol=0d0
+  X_mol=0d0
+
   open(unit=iunit,form='unformatted',file='hfb_bin',status='old')
   read(iunit) nBas_,nOrb_ 
   read(iunit) chem_pot_
   do iorb=1,nOrb 
-   read(iunit) c_tmp(:,iorb) 
+   do ibas=1,nBas
+    read(iunit) val_read 
+    c_tmp(ibas,iorb) = val_read
+   enddo
   enddo
   do iorb=1,nOrb 
    read(iunit) eigVAL(iorb) 

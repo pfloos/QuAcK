@@ -19,6 +19,7 @@ subroutine write_restart_HFB(nBas, nOrb, Occ, c, chem_pot)
 ! Local variables
 
   integer                            :: ibas,iorb,iunit=666
+  double precision                   :: val_print
 
 ! Dump results
 
@@ -26,10 +27,16 @@ subroutine write_restart_HFB(nBas, nOrb, Occ, c, chem_pot)
   write(iunit) nBas,nOrb 
   write(iunit) chem_pot
   do iorb=1,nOrb 
-   write(iunit) c(:,nOrb+1-iorb) 
+   do ibas=1,nBas
+    val_print = c(ibas,nOrb+1-iorb)
+    if(abs(val_print)<1d-8) val_print=0d0
+    write(iunit) val_print
+   enddo
   enddo
   do iorb=1,nOrb 
-   write(iunit) Occ(nOrb+1-iorb) 
+   val_print = Occ(nOrb+1-iorb)
+   if(abs(val_print)<1d-8) val_print=0d0
+   write(iunit) val_print
   enddo
   write(iunit) iunit 
   close(iunit)
