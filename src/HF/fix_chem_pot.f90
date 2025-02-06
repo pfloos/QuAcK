@@ -73,7 +73,7 @@ subroutine fix_chem_pot(nO,nOrb,nOrb2,nSCF,thrs_N,trace_1rdm,chem_pot,H_hfb,cp,R
    '|',trace_1rdm,'|',chem_pot,'|',grad_electrons,'|'
    if( abs(trace_1rdm-nO) > abs(trace_old-nO) .and. .not.backward ) then
     backward=.true.
-    chem_pot = chem_pot - 2d0*delta_chem_pot
+    chem_pot = chem_pot - delta_chem_pot
     delta_chem_pot=-delta_chem_pot
    endif
   enddo

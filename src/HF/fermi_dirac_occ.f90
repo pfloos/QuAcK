@@ -62,7 +62,7 @@ subroutine fermi_dirac_occ(nO,nOrb,thrs_N,temperature,chem_pot,Occ,eHF)
    '|',trace_1rdm,'|',chem_pot,'|'
    if( abs(trace_1rdm-nO) > abs(trace_old-nO) .and. .not.backward ) then
     backward=.true.
-    chem_pot = chem_pot - 2d0*delta_chem_pot
+    chem_pot = chem_pot - delta_chem_pot
     delta_chem_pot=-delta_chem_pot
    endif
   enddo
