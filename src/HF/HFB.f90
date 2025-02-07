@@ -360,8 +360,6 @@ subroutine HFB(dotest,maxSCF,thresh,max_diis,level_shift,nNuc,ZNuc,rNuc,ENuc,   
   if(dotest) then
  
     call dump_test_value('R','HFB energy',EHFB)
-    call dump_test_value('R','HFB HOMO energy',eHF(nO))
-    call dump_test_value('R','HFB LUMO energy',eHF(nO+1))
     call dump_test_value('R','HFB dipole moment',norm2(dipole))
 
   end if
