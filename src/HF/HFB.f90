@@ -24,6 +24,7 @@ subroutine HFB(dotest,maxSCF,thresh,max_diis,level_shift,nNuc,ZNuc,rNuc,ENuc,   
   double precision,intent(in)   :: rNuc(nNuc,ncart)
   double precision,intent(in)   :: ENuc
   double precision,intent(in)   :: temperature,sigma
+  double precision,intent(in)   :: eHF(nOrb)
   double precision,intent(in)   :: S(nBas,nBas)
   double precision,intent(in)   :: T(nBas,nBas)
   double precision,intent(in)   :: V(nBas,nBas)
@@ -75,7 +76,6 @@ subroutine HFB(dotest,maxSCF,thresh,max_diis,level_shift,nNuc,ZNuc,rNuc,ENuc,   
 ! Output variables
 
   double precision,intent(out)  :: EHFB
-  double precision,intent(inout):: eHF(nOrb)
   double precision,intent(inout):: c(nBas,nOrb)
   double precision,intent(out)  :: P(nBas,nBas)
   double precision,intent(out)  :: Panom(nBas,nBas)

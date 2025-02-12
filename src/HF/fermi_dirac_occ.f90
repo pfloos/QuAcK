@@ -9,6 +9,7 @@ subroutine fermi_dirac_occ(nO,nOrb,thrs_N,temperature,chem_pot,Occ,eHF)
   integer,intent(in)            :: nO,nOrb
   double precision,intent(in)   :: thrs_N
   double precision,intent(in)   :: temperature
+  double precision,intent(in)   :: eHF(nOrb) 
 
 ! Local variables
 
@@ -24,7 +25,6 @@ subroutine fermi_dirac_occ(nO,nOrb,thrs_N,temperature,chem_pot,Occ,eHF)
 ! Output variables
 
   double precision,intent(inout):: chem_pot
-  double precision,intent(inout):: eHF(nOrb) 
   double precision,intent(inout):: Occ(nOrb) 
 
   !  Initialize variables
