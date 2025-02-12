@@ -73,6 +73,10 @@ program QuAcK
 
   logical                       :: dotest,doRtest,doUtest,doGtest
 
+  logical                       :: chem_pot_hf
+  logical                       :: restart_hfb
+  double precision              :: temperature,sigma
+
   character(len=256)            :: working_dir
 
   ! Check if the right number of arguments is provided
@@ -108,7 +112,7 @@ program QuAcK
 !------------------!
 
   call read_methods(working_dir,                           &
-                    doRHF,doUHF,doGHF,doROHF,              &
+                    doRHF,doUHF,doGHF,doROHF,doHFB,        &
                     doMP2,doMP3,                           &
                     doCCD,dopCCD,doDCD,doCCSD,doCCSDT,     &
                     dodrCCD,dorCCD,docrCCD,dolCCD,         &
@@ -134,7 +138,8 @@ program QuAcK
                     maxSCF_GW,thresh_GW,max_diis_GW,lin_GW,eta_GW,reg_GW,TDA_W,                 &  
                     maxSCF_GT,thresh_GT,max_diis_GT,lin_GT,eta_GT,reg_GT,TDA_T,                 & 
                     doACFDT,exchange_kernel,doXBS,                                              &
-                    dophBSE,dophBSE2,doppBSE,dBSE,dTDA)
+                    dophBSE,dophBSE2,doppBSE,dBSE,dTDA,                                         &
+                    temperature,sigma,chem_pot_hf,restart_hfb)
 
 !------------------!
 ! Hardware         !
@@ -289,7 +294,9 @@ program QuAcK
 ! Bogoliubov QuAcK branch !
 !--------------------------!
   if(doBQuAcK) & 
-    call BQuAcK(working_dir,doGtest,doHFB)
+    call BQuAcK(working_dir,dotest,doHFB,nNuc,nBas,nOrb,nC,nO,nV,nR,ENuc,ZNuc,rNuc,                           &
+                S,T,V,Hc,X,dipole_int_AO,maxSCF_HF,max_diis_HF,thresh_HF,level_shift,guess_type,mix,          &
+                temperature,sigma,chem_pot_hf,restart_hfb)
 
 !-----------!
 ! Stop Test !

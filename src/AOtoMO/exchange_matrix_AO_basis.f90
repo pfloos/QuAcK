@@ -19,7 +19,8 @@ subroutine exchange_matrix_AO_basis(nBas,P,ERI,K)
 
   double precision,intent(out)  :: K(nBas,nBas)
 
-  K = 0d0
+  K(:,:) = 0d0
+
   do nu=1,nBas
     do si=1,nBas
       do la=1,nBas

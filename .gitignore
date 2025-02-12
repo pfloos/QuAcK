@@ -6,3 +6,8 @@
 __pycache__
 
 .ninja_deps
+calcs/
+calcs/input
+calcs/int
+calcs/mol
+calcs/water.out
