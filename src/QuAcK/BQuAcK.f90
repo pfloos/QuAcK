@@ -128,5 +128,8 @@ subroutine BQuAcK(working_dir,dotest,doHFB,nNuc,nBas,nOrb,nC,nO,nV,nR,ENuc,ZNuc,
   deallocate(FHF)
   deallocate(Delta)
   deallocate(ERI_AO)
+  deallocate(eHFB_state)
+  deallocate(W_vec)
+  deallocate(V_vec)
 
 end subroutine
