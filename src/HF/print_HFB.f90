@@ -67,8 +67,8 @@ subroutine print_HFB(nBas, nOrb, nO, N_anom, Occ, ENuc, ET, EV, EJ, EK, EL, ERHF
   write(*,'(A50)') '---------------------------------------'
   trace_occ=0d0
   do iorb=1,nOrb
-   if(abs(Occ(nOrb+1-iorb))>1d-8) then
-    write(*,'(I7,10F15.8)') iorb,2d0*Occ(nOrb+1-iorb)
+   if(abs(Occ(iorb))>1d-8) then
+    write(*,'(I7,10F15.8)') iorb,2d0*Occ(iorb)
    endif
    trace_occ=trace_occ+2d0*Occ(iorb)
   enddo

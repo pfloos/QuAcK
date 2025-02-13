@@ -1,6 +1,6 @@
 subroutine HFB(dotest,maxSCF,thresh,max_diis,level_shift,nNuc,ZNuc,rNuc,ENuc,     & 
-               nBas,nOrb,nO,S,T,V,Hc,ERI,dipole_int,X,EHFB,eHF,c,P,Panom,F,Delta, &
-               temperature,sigma,chem_pot_hf,restart_hfb)
+               nBas,nOrb,nOrb2,nO,S,T,V,Hc,ERI,dipole_int,X,EHFB,eHF,c,P,Panom,F,Delta, &
+               temperature,sigma,chem_pot_hf,restart_hfb,W_vec,V_vec,eHFB_state)
 
 ! Perform Hartree-Fock Bogoliubov calculation
 
@@ -18,6 +18,7 @@ subroutine HFB(dotest,maxSCF,thresh,max_diis,level_shift,nNuc,ZNuc,rNuc,ENuc,   
 
   integer,intent(in)            :: nBas
   integer,intent(in)            :: nOrb
+  integer,intent(in)            :: nOrb2
   integer,intent(in)            :: nO
   integer,intent(in)            :: nNuc
   double precision,intent(in)   :: ZNuc(nNuc)
@@ -40,7 +41,6 @@ subroutine HFB(dotest,maxSCF,thresh,max_diis,level_shift,nNuc,ZNuc,rNuc,ENuc,   
   integer                       :: nBas2
   integer                       :: iorb
   integer                       :: nSCF
-  integer                       :: nOrb2
   integer                       :: nBas2_Sq
   integer                       :: n_diis
   double precision              :: ET
@@ -70,6 +70,7 @@ subroutine HFB(dotest,maxSCF,thresh,max_diis,level_shift,nNuc,ZNuc,rNuc,ENuc,   
   double precision,allocatable  :: err_ao(:,:)
   double precision,allocatable  :: S_ao(:,:)
   double precision,allocatable  :: X_ao(:,:)
+  double precision,allocatable  :: c_ao(:,:)
   double precision,allocatable  :: R_ao_old(:,:)
   double precision,allocatable  :: H_HFB_ao(:,:)
 
@@ -81,6 +82,9 @@ subroutine HFB(dotest,maxSCF,thresh,max_diis,level_shift,nNuc,ZNuc,rNuc,ENuc,   
   double precision,intent(out)  :: Panom(nBas,nBas)
   double precision,intent(out)  :: F(nBas,nBas)
   double precision,intent(out)  :: Delta(nBas,nBas)
+  double precision,intent(out)  :: eHFB_state(nOrb2)
+  double precision,intent(out)  :: W_vec(nOrb2,nOrb)
+  double precision,intent(out)  :: V_vec(nOrb2,nOrb)
 
 ! Hello world
 
@@ -92,7 +96,6 @@ subroutine HFB(dotest,maxSCF,thresh,max_diis,level_shift,nNuc,ZNuc,rNuc,ENuc,   
 
 ! Useful quantities
 
-  nOrb2 = nOrb+nOrb
   nBas2 = nBas+nBas
   nBas2_Sq = nBas2*nBas2
 
@@ -305,8 +308,8 @@ subroutine HFB(dotest,maxSCF,thresh,max_diis,level_shift,nNuc,ZNuc,rNuc,ENuc,   
     R_ao_old(1:nBas      ,nBas+1:nBas2) = Panom(1:nBas,1:nBas)
     R_ao_old(nBas+1:nBas2,1:nBas      ) = Panom(1:nBas,1:nBas)
 
-
     ! Dump results
+    !write(*,'(*(f10.5))') eigVAL(:) 
     write(*,*)'-----------------------------------------------------------------------------------------------'
     write(*,'(1X,A1,1X,A3,1X,A1,1X,A16,1X,A1,1X,A16,1X,A1,1X,A16,1X,A1A16,1X,A1,1X,A10,2X,A1,1X)') &
             '|','#','|','E(HFB)','|','EJ(HFB)','|','EK(HFB)','|','EL(HFB)','|','Conv','|'
@@ -340,7 +343,8 @@ subroutine HFB(dotest,maxSCF,thresh,max_diis,level_shift,nNuc,ZNuc,rNuc,ENuc,   
 
   end if
 
-! Compute dipole moments, occupation numbers and || Anomalous density||
+! Compute dipole moments, occupation numbers, || Anomalous density||,
+! organize the coefs c with natural orbitals (descending occ numbers), and
 ! also print the restart file
 
   deallocate(eigVEC,eigVAL)
@@ -352,14 +356,45 @@ subroutine HFB(dotest,maxSCF,thresh,max_diis,level_shift,nNuc,ZNuc,rNuc,ENuc,   
   c = matmul(X,eigVEC)
   norm_anom = trace_matrix(nOrb,matmul(transpose(R(1:nOrb,nOrb+1:nOrb2)),R(1:nOrb,nOrb+1:nOrb2)))
   call dipole_moment(nBas,P,nNuc,ZNuc,rNuc,dipole_int,dipole)
-  call write_restart_HFB(nBas,nOrb,Occ,c,chem_pot)
+  call write_restart_HFB(nBas,nOrb,Occ,c,chem_pot) ! orders Occ and their c in descending order w.r.t. occupation numbers.
   call print_HFB(nBas,nOrb,nO,norm_anom,Occ,ENuc,ET,EV,EJ,EK,EL,EHFB,chem_pot,dipole)
+
+! We write eigVEC -> (W_vec, V_vec) and eigVAL (eHFB_state) in NO basis
+
+  deallocate(eigVEC,eigVAL)
+  allocate(eigVEC(nOrb2,nOrb2),eigVAL(nOrb2),c_ao(nBas2,nOrb2))
+  c_ao(:,:)    = 0d0
+  c_ao(1:nBas      ,1:nOrb      ) = c(1:nBas,1:nOrb)
+  c_ao(nBas+1:nBas2,nOrb+1:nOrb2) = c(1:nBas,1:nOrb)
+  H_HFB = matmul(transpose(c_ao),matmul(H_HFB_ao,c_ao))
+  eigVEC(:,:) = H_HFB(:,:)
+  call diagonalize_matrix(nOrb2,eigVEC,eigVAL)
+  
+  ! Build R and check trace
+    
+  trace_1rdm = 0d0 
+  eHFB_state(:) = eigVAL(:)
+  R(:,:)        = 0d0
+  do iorb=1,nOrb
+   R(:,:) = R(:,:) + matmul(eigVEC(:,iorb:iorb),transpose(eigVEC(:,iorb:iorb))) 
+   W_vec(:,iorb) = eigVEC(:,iorb)
+   V_vec(:,iorb) = eigVEC(:,nOrb+iorb)
+  enddo
+  do iorb=1,nOrb
+   trace_1rdm = trace_1rdm + R(iorb,iorb) 
+  enddo
+  trace_1rdm = 2d0*trace_1rdm
+  write(*,*)
+  write(*,'(A33,1X,F16.10,A3)') ' Trace [ 1D^NO ]     = ',trace_1rdm,'   '
+  write(*,*)
+  deallocate(c_ao)
 
 ! Testing zone
 
   if(dotest) then
  
     call dump_test_value('R','HFB energy',EHFB)
+    call dump_test_value('R','Trace 1D',trace_1rdm)
     call dump_test_value('R','HFB dipole moment',norm2(dipole))
 
   end if

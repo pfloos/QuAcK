@@ -38,15 +38,20 @@ subroutine BQuAcK(working_dir,dotest,doHFB,nNuc,nBas,nOrb,nC,nO,nV,nR,ENuc,ZNuc,
 
 ! Local variables
 
+  integer                       :: nOrb2
+
   double precision              :: start_HF     ,end_HF       ,t_HF
 
   double precision              :: start_int, end_int, t_int
   double precision,allocatable  :: eHF(:)
+  double precision,allocatable  :: eHFB_state(:)
   double precision,allocatable  :: cHF(:,:)
   double precision,allocatable  :: PHF(:,:)
   double precision,allocatable  :: PanomHF(:,:)
   double precision,allocatable  :: FHF(:,:)
   double precision,allocatable  :: Delta(:,:)
+  double precision,allocatable  :: W_vec(:,:)
+  double precision,allocatable  :: V_vec(:,:)
   double precision              :: ERHF,EHFB
   double precision,allocatable  :: ERI_AO(:,:,:,:)
 
@@ -60,12 +65,21 @@ subroutine BQuAcK(working_dir,dotest,doHFB,nNuc,nBas,nOrb,nC,nO,nV,nR,ENuc,ZNuc,
 ! Memory allocation !
 !-------------------!
 
+  nOrb2=nOrb+nOrb
+
   allocate(eHF(nOrb))
+
   allocate(cHF(nBas,nOrb))
+
   allocate(PHF(nBas,nBas))
   allocate(PanomHF(nBas,nBas))
   allocate(FHF(nBas,nBas))
   allocate(Delta(nBas,nBas))
+
+  allocate(eHFB_state(nOrb2))
+
+  allocate(W_vec(nOrb2,nOrb))
+  allocate(V_vec(nOrb2,nOrb))
 
   allocate(ERI_AO(nBas,nBas,nBas,nBas))
   call wall_time(start_int)
@@ -94,9 +108,9 @@ subroutine BQuAcK(working_dir,dotest,doHFB,nNuc,nBas,nOrb,nC,nO,nV,nR,ENuc,ZNuc,
 
     ! Continue with a HFB calculation
     call wall_time(start_HF)
-    call HFB(dotest,maxSCF_HF,thresh_HF,max_diis_HF,level_shift,nNuc,ZNuc,rNuc,ENuc, &
-             nBas,nOrb,nO,S,T,V,Hc,ERI_AO,dipole_int_AO,X,EHFB,eHF,cHF,PHF,PanomHF,  &
-             FHF,Delta,temperature,sigma,chem_pot_hf,restart_hfb)
+    call HFB(dotest,maxSCF_HF,thresh_HF,max_diis_HF,level_shift,nNuc,ZNuc,rNuc,ENuc,       &
+             nBas,nOrb,nOrb2,nO,S,T,V,Hc,ERI_AO,dipole_int_AO,X,EHFB,eHF,cHF,PHF,PanomHF,  &
+             FHF,Delta,temperature,sigma,chem_pot_hf,restart_hfb,W_vec,V_vec,eHFB_state)
     call wall_time(end_HF)
 
     t_HF = end_HF - start_HF
