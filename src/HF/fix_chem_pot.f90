@@ -94,6 +94,8 @@ subroutine fix_chem_pot(nO,nOrb,nOrb2,nSCF,thrs_N,trace_1rdm,chem_pot,H_hfb,cp,R
 !   grad_electrons = (trace_up-trace_down)/(2d0*delta_chem_pot)
    grad_electrons = (-trace_2up+8d0*trace_up-8d0*trace_down+trace_2down)/(12d0*delta_chem_pot)
    chem_pot_change = -(trace_1rdm-nO)/(grad_electrons+1d-10)
+   ! Maximum change is bounded within +/- 0.10
+   chem_pot_change = max( min( chem_pot_change , 0.1d0 / real(isteps) ), -0.1d0 / real(isteps) )
    write(*,'(1X,A1,F16.10,1X,A1,F16.10,1X,A1F16.10,1X,A1)') &
    '|',trace_1rdm,'|',chem_pot,'|',grad_electrons,'|'
   enddo
