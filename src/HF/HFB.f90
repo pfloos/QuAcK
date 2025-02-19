@@ -1,6 +1,6 @@
-subroutine HFB(dotest,maxSCF,thresh,max_diis,level_shift,nNuc,ZNuc,rNuc,ENuc,     & 
+subroutine HFB(dotest,maxSCF,thresh,max_diis,level_shift,nNuc,ZNuc,rNuc,ENuc,           & 
                nBas,nOrb,nOrb2,nO,S,T,V,Hc,ERI,dipole_int,X,EHFB,eHF,c,P,Panom,F,Delta, &
-               temperature,sigma,chem_pot_hf,restart_hfb,W_vec,V_vec,eHFB_state)
+               temperature,sigma,chem_pot_hf,restart_hfb,U_qp,eHFB_state)
 
 ! Perform Hartree-Fock Bogoliubov calculation
 
@@ -66,7 +66,6 @@ subroutine HFB(dotest,maxSCF,thresh,max_diis,level_shift,nNuc,ZNuc,rNuc,ENuc,   
   double precision,allocatable  :: eigVEC(:,:)
   double precision,allocatable  :: H_HFB(:,:)
   double precision,allocatable  :: R(:,:)
-  double precision,allocatable  :: U_qp(:,:)
   double precision,allocatable  :: WV_hand(:,:)
 
   double precision,allocatable  :: err_ao(:,:)
@@ -84,9 +83,8 @@ subroutine HFB(dotest,maxSCF,thresh,max_diis,level_shift,nNuc,ZNuc,rNuc,ENuc,   
   double precision,intent(out)  :: Panom(nBas,nBas)
   double precision,intent(out)  :: F(nBas,nBas)
   double precision,intent(out)  :: Delta(nBas,nBas)
+  double precision,intent(out)  :: U_qp(nOrb2,nOrb2)
   double precision,intent(out)  :: eHFB_state(nOrb2)
-  double precision,intent(out)  :: W_vec(nOrb2,nOrb)
-  double precision,intent(out)  :: V_vec(nOrb2,nOrb)
 
 ! Hello world
 
@@ -111,7 +109,6 @@ subroutine HFB(dotest,maxSCF,thresh,max_diis,level_shift,nNuc,ZNuc,rNuc,ENuc,   
   allocate(eigVEC(nOrb2,nOrb2))
   allocate(H_HFB(nOrb2,nOrb2))
   allocate(R(nOrb2,nOrb2))
-  allocate(U_qp(nOrb2,nOrb2))
   allocate(WV_hand(nOrb2,nOrb2))
   allocate(eigVAL(nOrb2))
 
@@ -340,7 +337,7 @@ subroutine HFB(dotest,maxSCF,thresh,max_diis,level_shift,nNuc,ZNuc,rNuc,ENuc,   
     write(*,*)'!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!'
     write(*,*)
 
-    deallocate(J,K,eigVEC,H_HFB,R,eigVAL,err_diis,H_HFB_diis,Occ)
+    deallocate(J,K,eigVEC,H_HFB,R,eigVAL,err_diis,H_HFB_diis,Occ,WV_hand)
     deallocate(err_ao,S_ao,X_ao,R_ao_old,H_HFB_ao)
 
     stop
@@ -407,14 +404,15 @@ subroutine HFB(dotest,maxSCF,thresh,max_diis,level_shift,nNuc,ZNuc,rNuc,ENuc,   
   write(*,*)
 
 ! Canonical representation (for testing) 
-!   R -> r  with r = (WV_hand)^T R (WV_hand)  
+!   R -> r  with r = (WV_hand)^T R^no (WV_hand) = U_qp R^no (U_qp)^T
 
   if(.false.) then
-   R = matmul(matmul(transpose(WV_hand),R),WV_hand)   ! Should be ( I_MxM  0 )
-                                                      !           (    0   0 )
+   R = matmul(U_qp,matmul(R,transpose(U_qp)))   ! Should be ( I_MxM  0 )
+                                                !           (    0   0 )
    H_HFB = matmul(U_qp,matmul(H_HFB,transpose(U_qp))) ! H_HFB is diagonal ( -e_I  0   )
                                                       !                   (   0   e_I )
   endif
+  U_qp = transpose(U_qp) ! Storing the eigenvectors to transform the QP basis as columns
 
 ! Testing zone
 
@@ -428,7 +426,7 @@ subroutine HFB(dotest,maxSCF,thresh,max_diis,level_shift,nNuc,ZNuc,rNuc,ENuc,   
 
 ! Memory deallocation
 
-  deallocate(J,K,eigVEC,H_HFB,R,eigVAL,err_diis,H_HFB_diis,Occ,U_qp,WV_hand)
+  deallocate(J,K,eigVEC,H_HFB,R,eigVAL,err_diis,H_HFB_diis,Occ,WV_hand)
   deallocate(err_ao,S_ao,X_ao,R_ao_old,H_HFB_ao)
 
 end subroutine 
