@@ -66,6 +66,8 @@ subroutine HFB(dotest,maxSCF,thresh,max_diis,level_shift,nNuc,ZNuc,rNuc,ENuc,   
   double precision,allocatable  :: eigVEC(:,:)
   double precision,allocatable  :: H_HFB(:,:)
   double precision,allocatable  :: R(:,:)
+  double precision,allocatable  :: U_qp(:,:)
+  double precision,allocatable  :: WV_hand(:,:)
 
   double precision,allocatable  :: err_ao(:,:)
   double precision,allocatable  :: S_ao(:,:)
@@ -109,6 +111,8 @@ subroutine HFB(dotest,maxSCF,thresh,max_diis,level_shift,nNuc,ZNuc,rNuc,ENuc,   
   allocate(eigVEC(nOrb2,nOrb2))
   allocate(H_HFB(nOrb2,nOrb2))
   allocate(R(nOrb2,nOrb2))
+  allocate(U_qp(nOrb2,nOrb2))
+  allocate(WV_hand(nOrb2,nOrb2))
   allocate(eigVAL(nOrb2))
 
   allocate(err_ao(nBas2,nBas2))
@@ -347,6 +351,7 @@ subroutine HFB(dotest,maxSCF,thresh,max_diis,level_shift,nNuc,ZNuc,rNuc,ENuc,   
 ! organize the coefs c with natural orbitals (descending occ numbers), and
 ! also print the restart file
 
+  eHFB_state(:) = eigVAL(:)
   deallocate(eigVEC,eigVAL)
   allocate(eigVEC(nOrb,nOrb),eigVAL(nOrb))
   eigVEC(1:nOrb,1:nOrb) = 0d0
@@ -357,29 +362,42 @@ subroutine HFB(dotest,maxSCF,thresh,max_diis,level_shift,nNuc,ZNuc,rNuc,ENuc,   
   norm_anom = trace_matrix(nOrb,matmul(transpose(R(1:nOrb,nOrb+1:nOrb2)),R(1:nOrb,nOrb+1:nOrb2)))
   call dipole_moment(nBas,P,nNuc,ZNuc,rNuc,dipole_int,dipole)
   call write_restart_HFB(nBas,nOrb,Occ,c,chem_pot) ! orders Occ and their c in descending order w.r.t. occupation numbers.
-  call print_HFB(nBas,nOrb,nO,norm_anom,Occ,ENuc,ET,EV,EJ,EK,EL,EHFB,chem_pot,dipole)
+  call print_HFB(nBas,nOrb,nOrb2,nO,norm_anom,Occ,eHFB_state,ENuc,ET,EV,EJ,EK,EL,EHFB,chem_pot,dipole)
 
-! We write eigVEC -> (W_vec, V_vec) and eigVAL (eHFB_state) in NO basis
+! Compute W_no and V_no (i.e. diag[H_HFB] built in NO basis and get W and V).
+! Build the U_qp matrix as U_qp = (WV_hand) (WV_hand) (W_no V_no)^T
+! Then, set H_HFB_can = U_qp H_HFB^no (U_qp)^T that is diagonal ( -e_I  0  )
+! 								(   0  e_I ) 
 
   deallocate(eigVEC,eigVAL)
   allocate(eigVEC(nOrb2,nOrb2),eigVAL(nOrb2),c_ao(nBas2,nOrb2))
   c_ao(:,:)    = 0d0
   c_ao(1:nBas      ,1:nOrb      ) = c(1:nBas,1:nOrb)
   c_ao(nBas+1:nBas2,nOrb+1:nOrb2) = c(1:nBas,1:nOrb)
-  H_HFB = matmul(transpose(c_ao),matmul(H_HFB_ao,c_ao))
+  H_HFB = matmul(transpose(c_ao),matmul(H_HFB_ao,c_ao)) ! H_HFB is in the NO basis
   eigVEC(:,:) = H_HFB(:,:)
   call diagonalize_matrix(nOrb2,eigVEC,eigVAL)
+  deallocate(c_ao)
   
-  ! Build R and check trace
+  ! Build R (as R^no), WV_hand, and U_qp
     
   trace_1rdm = 0d0 
-  eHFB_state(:) = eigVAL(:)
   R(:,:)        = 0d0
   do iorb=1,nOrb
    R(:,:) = R(:,:) + matmul(eigVEC(:,iorb:iorb),transpose(eigVEC(:,iorb:iorb))) 
-   W_vec(:,iorb) = eigVEC(:,iorb)
-   V_vec(:,iorb) = eigVEC(:,nOrb+iorb)
+   U_qp(iorb,iorb)      =  sqrt(abs(Occ(iorb)))
+   U_qp(iorb+nOrb,iorb) =  sqrt(abs(1.0d0-Occ(iorb)))
+   U_qp(iorb,iorb+nOrb) = -sqrt(abs(1.0d0-Occ(iorb)))
+   U_qp(iorb+nOrb,iorb+nOrb) = sqrt(abs(Occ(iorb)))
   enddo
+  WV_hand = U_qp
+  U_qp = matmul(WV_hand,transpose(eigVEC))  ! So  U_qp H_HFB_no (U_qp)^T = H_HFB_hand ->  H_HFB_hand (WV_hand) = (WV_hand) e_I
+                                            !   the R of H_HFB_hand is still R^no
+  U_qp = matmul(transpose(WV_hand),U_qp)    ! new U_qp H_HFB_no (U_qp)^T = H_HFB_can  ->  H_HFB_can is diag and R -> r 
+                                            !   the R of H_HFB_can is r, that is ( I_MxM  0 )
+                                            !                                    (    0   0 )
+
+  ! Check trace of R
   do iorb=1,nOrb
    trace_1rdm = trace_1rdm + R(iorb,iorb) 
   enddo
@@ -387,7 +405,16 @@ subroutine HFB(dotest,maxSCF,thresh,max_diis,level_shift,nNuc,ZNuc,rNuc,ENuc,   
   write(*,*)
   write(*,'(A33,1X,F16.10,A3)') ' Trace [ 1D^NO ]     = ',trace_1rdm,'   '
   write(*,*)
-  deallocate(c_ao)
+
+! Canonical representation (for testing) 
+!   R -> r  with r = (WV_hand)^T R (WV_hand)  
+
+  if(.false.) then
+   R = matmul(matmul(transpose(WV_hand),R),WV_hand)   ! Should be ( I_MxM  0 )
+                                                      !           (    0   0 )
+   H_HFB = matmul(U_qp,matmul(H_HFB,transpose(U_qp))) ! H_HFB is diagonal ( -e_I  0   )
+                                                      !                   (   0   e_I )
+  endif
 
 ! Testing zone
 
@@ -401,7 +428,7 @@ subroutine HFB(dotest,maxSCF,thresh,max_diis,level_shift,nNuc,ZNuc,rNuc,ENuc,   
 
 ! Memory deallocation
 
-  deallocate(J,K,eigVEC,H_HFB,R,eigVAL,err_diis,H_HFB_diis,Occ)
+  deallocate(J,K,eigVEC,H_HFB,R,eigVAL,err_diis,H_HFB_diis,Occ,U_qp,WV_hand)
   deallocate(err_ao,S_ao,X_ao,R_ao_old,H_HFB_ao)
 
 end subroutine 
