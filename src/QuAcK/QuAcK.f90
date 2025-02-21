@@ -14,6 +14,7 @@ program QuAcK
   logical                       :: doG0F2,doevGF2,doqsGF2,doufG0F02,doG0F3,doevGF3
   logical                       :: doG0W0,doevGW,doqsGW,doufG0W0,doufGW
   logical                       :: doG0T0pp,doevGTpp,doqsGTpp,doufG0T0pp,doG0T0eh,doevGTeh,doqsGTeh
+  logical                       :: doParquet
 
   integer                       :: nNuc
   integer                       :: nBas
@@ -119,6 +120,7 @@ program QuAcK
                     doG0W0,doevGW,doqsGW,doufG0W0,doufGW,  &
                     doG0T0pp,doevGTpp,doqsGTpp,doufG0T0pp, &
                     doG0T0eh,doevGTeh,doqsGTeh,            &
+                    doParquet,                             &
                     doRtest,doUtest,doGtest)
 
 !--------------------------!
@@ -241,7 +243,7 @@ program QuAcK
       call RQuAcK(working_dir,use_gpu,doRtest,doRHF,doROHF,dostab,dosearch,doMP2,doMP3,doCCD,dopCCD,doDCD,doCCSD,doCCSDT, &
                   dodrCCD,dorCCD,docrCCD,dolCCD,doCIS,doCIS_D,doCID,doCISD,doFCI,dophRPA,dophRPAx,docrRPA,doppRPA,        &
                   doG0F2,doevGF2,doqsGF2,doufG0F02,doG0F3,doevGF3,doG0W0,doevGW,doqsGW,doufG0W0,doufGW,                   &
-                  doG0T0pp,doevGTpp,doqsGTpp,doufG0T0pp,doG0T0eh,doevGTeh,doqsGTeh,                                       &
+                  doG0T0pp,doevGTpp,doqsGTpp,doufG0T0pp,doG0T0eh,doevGTeh,doqsGTeh,doParquet,                      &
                   nNuc,nBas,nOrb,nC,nO,nV,nR,ENuc,ZNuc,rNuc,                                                              &
                   S,T,V,Hc,X,dipole_int_AO,maxSCF_HF,max_diis_HF,thresh_HF,level_shift,                                   &
                   guess_type,mix,reg_MP,maxSCF_CC,max_diis_CC,thresh_CC,spin_conserved,spin_flip,TDA,                     &
@@ -273,7 +275,7 @@ program QuAcK
   if(doGQuAcK) & 
     call GQuAcK(working_dir,doGtest,doGHF,dostab,dosearch,doMP2,doMP3,doCCD,dopCCD,doDCD,doCCSD,doCCSDT,      &
                 dodrCCD,dorCCD,docrCCD,dolCCD,dophRPA,dophRPAx,docrRPA,doppRPA,                               &
-                doG0W0,doevGW,doqsGW,doG0F2,doevGF2,doqsGF2,doG0T0pp,doevGTpp,doqsGTpp,                       &
+                doG0W0,doevGW,doqsGW,doG0F2,doevGF2,doqsGF2,doG0T0pp,doevGTpp,doqsGTpp,doParquet,      &
                 nNuc,nBas,sum(nC),sum(nO),sum(nV),sum(nR),ENuc,ZNuc,rNuc,S,T,V,Hc,X,dipole_int_AO,            &
                 maxSCF_HF,max_diis_HF,thresh_HF,level_shift,guess_type,mix,reg_MP,                            &
                 maxSCF_CC,max_diis_CC,thresh_CC,TDA,maxSCF_GF,max_diis_GF,thresh_GF,lin_GF,reg_GF,eta_GF,     &
