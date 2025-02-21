@@ -1,6 +1,6 @@
 subroutine GQuAcK(working_dir,dotest,doGHF,dostab,dosearch,doMP2,doMP3,doCCD,dopCCD,doDCD,doCCSD,doCCSDT, &
                   dodrCCD,dorCCD,docrCCD,dolCCD,dophRPA,dophRPAx,docrRPA,doppRPA,                         &
-                  doG0W0,doevGW,doqsGW,doG0F2,doevGF2,doqsGF2,doG0T0pp,doevGTpp,doqsGTpp,                 &
+                  doG0W0,doevGW,doqsGW,doG0F2,doevGF2,doqsGF2,doG0T0pp,doevGTpp,doqsGTpp,doParquet,&
                   nNuc,nBas,nC,nO,nV,nR,ENuc,ZNuc,rNuc,S,T,V,Hc,X,dipole_int_AO,                          &
                   maxSCF_HF,max_diis_HF,thresh_HF,level_shift,guess_type,mix,reg_MP,                      &
                   maxSCF_CC,max_diis_CC,thresh_CC,                                                        &
@@ -27,6 +27,7 @@ subroutine GQuAcK(working_dir,dotest,doGHF,dostab,dosearch,doMP2,doMP3,doCCD,dop
   logical,intent(in)            :: doG0F2,doevGF2,doqsGF2
   logical,intent(in)            :: doG0W0,doevGW,doqsGW
   logical,intent(in)            :: doG0T0pp,doevGTpp,doqsGTpp
+  logical,intent(in)            :: doParquet
 
   integer,intent(in)            :: nNuc,nBas
   integer,intent(in)            :: nC
@@ -86,6 +87,7 @@ subroutine GQuAcK(working_dir,dotest,doGHF,dostab,dosearch,doMP2,doMP3,doCCD,dop
   double precision              :: start_GF     ,end_GF       ,t_GF
   double precision              :: start_GW     ,end_GW       ,t_GW
   double precision              :: start_GT     ,end_GT       ,t_GT
+  double precision              :: start_Parquet,end_Parquet  ,t_Parquet
 
   double precision              :: start_int, end_int, t_int 
   double precision,allocatable  :: cHF(:,:),eHF(:),PHF(:,:),FHF(:,:)
@@ -331,6 +333,22 @@ subroutine GQuAcK(working_dir,dotest,doGHF,dostab,dosearch,doMP2,doMP3,doCCD,dop
     write(*,'(A65,1X,F9.3,A8)') 'Total wall time for GT = ',t_GT,' seconds'
     write(*,*)
 
+ end if
+
+!------------------------!
+!     Parquet module     !
+!------------------------!
+
+  if(doParquet) then
+    call wall_time(start_Parquet)
+    
+    call wall_time(end_Parquet)
+  
+    t_Parquet = end_Parquet - start_Parquet
+    write(*,'(A65,1X,F9.3,A8)') 'Total wall time for Parquet module = ',t_Parquet,' seconds'
+    write(*,*)
+
   end if
+  
 
 end subroutine
