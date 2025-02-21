@@ -222,7 +222,6 @@ subroutine rCCD(dotest,maxSCF,thresh,max_diis,nBasin,nCin,nOin,nVin,nRin,ERI,ENu
 
   if(do_EE_EOM_CC_1h1p) call EE_EOM_CCD_1h1p(nC,nO,nV,nR,eO,eV,OOVV,OVVO,t)
 
-
   if(dotest) then
 
     call dump_test_value('R','rCCD correlation energy',EcCC)

@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 
 import os, sys
 import argparse
@@ -163,7 +163,6 @@ if print_2e:
         output_file_path = working_dir + '/int/ERI_chem.bin'
         subprocess.call(['rm', '-f', output_file_path])
         eri_ao = mol.intor('int2e', aosym='s8')
-        print(eri_ao.shape)
         f = open(output_file_path, 'w')
         eri_ao.tofile(output_file_path)
         f.close()

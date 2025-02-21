@@ -1,4 +1,4 @@
-subroutine ppLR(TDA,nOO,nVV,Bpp,Cpp,Dpp,Om1,X1,Y1,Om2,X2,Y2,EcRPA)
+subroutine ppRLR(TDA,nOO,nVV,Bpp,Cpp,Dpp,Om1,X1,Y1,Om2,X2,Y2,EcRPA)
 
   ! 
   ! Solve the pp-RPA linear eigenvalue problem

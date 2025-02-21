@@ -73,17 +73,10 @@ subroutine phRRPA(dotest,TDA,doACFDT,exchange_kernel,singlet,triplet,nBas,nC,nO,
 
     ispin = 1
 
-    !call wall_time(t1)
-    call phLR_A(ispin,dRPA,nBas,nC,nO,nV,nR,nS,lambda,eHF,ERI,Aph)
-    if(.not.TDA) call phLR_B(ispin,dRPA,nBas,nC,nO,nV,nR,nS,lambda,ERI,Bph)
+                 call phRLR_A(ispin,dRPA,nBas,nC,nO,nV,nR,nS,lambda,eHF,ERI,Aph)
+    if(.not.TDA) call phRLR_B(ispin,dRPA,nBas,nC,nO,nV,nR,nS,lambda,ERI,Bph)
 
-    call phLR(TDA,nS,Aph,Bph,EcRPA(ispin),Om,XpY,XmY)
-    !call wall_time(t2)
-    !print *, "wall time for dRPA on CPU (sec) = ", t2 - t1
-    !do ia = 1, nS
-    !  write(112, *) Om(ia) 
-    !enddo
-    !stop
+    call phRLR(TDA,nS,Aph,Bph,EcRPA(ispin),Om,XpY,XmY)
     call print_excitation_energies('phRPA@RHF','singlet',nS,Om)
     call phLR_transition_vectors(.true.,nBas,nC,nO,nV,nR,nS,dipole_int,Om,XpY,XmY)
 
@@ -95,10 +88,10 @@ subroutine phRRPA(dotest,TDA,doACFDT,exchange_kernel,singlet,triplet,nBas,nC,nO,
 
     ispin = 2
 
-    call phLR_A(ispin,dRPA,nBas,nC,nO,nV,nR,nS,lambda,eHF,ERI,Aph)
-    if(.not.TDA) call phLR_B(ispin,dRPA,nBas,nC,nO,nV,nR,nS,lambda,ERI,Bph)
+                 call phRLR_A(ispin,dRPA,nBas,nC,nO,nV,nR,nS,lambda,eHF,ERI,Aph)
+    if(.not.TDA) call phRLR_B(ispin,dRPA,nBas,nC,nO,nV,nR,nS,lambda,ERI,Bph)
 
-    call phLR(TDA,nS,Aph,Bph,EcRPA(ispin),Om,XpY,XmY)
+    call phRLR(TDA,nS,Aph,Bph,EcRPA(ispin),Om,XpY,XmY)
     call print_excitation_energies('phRPA@RHF','triplet',nS,Om)
     call phLR_transition_vectors(.false.,nBas,nC,nO,nV,nR,nS,dipole_int,Om,XpY,XmY)
 

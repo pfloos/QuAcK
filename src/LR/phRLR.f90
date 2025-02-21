@@ -1,4 +1,4 @@
-subroutine phLR(TDA,nS,Aph,Bph,EcRPA,Om,XpY,XmY)
+subroutine phRLR(TDA,nS,Aph,Bph,EcRPA,Om,XpY,XmY)
 
 ! Compute linear response
 

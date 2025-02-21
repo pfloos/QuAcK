@@ -96,10 +96,10 @@ subroutine ufRG0W0(dotest,TDA_W,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,eHF)
 
     allocate(Om(nS),Aph(nS,nS),Bph(nS,nS),XpY(nS,nS),XmY(nS,nS),rho(nOrb,nOrb,nS))
  
-    call phLR_A(isp_W,dRPA,nOrb,nC,nO,nV,nR,nS,1d0,eHF,ERI,Aph)
-    call phLR_B(isp_W,dRPA,nOrb,nC,nO,nV,nR,nS,1d0,ERI,Bph)
+    call phRLR_A(isp_W,dRPA,nOrb,nC,nO,nV,nR,nS,1d0,eHF,ERI,Aph)
+    call phRLR_B(isp_W,dRPA,nOrb,nC,nO,nV,nR,nS,1d0,ERI,Bph)
  
-    call phLR(TDA_W,nS,Aph,Bph,EcRPA,Om,XpY,XmY)
+    call phRLR(TDA_W,nS,Aph,Bph,EcRPA,Om,XpY,XmY)
 
     if(print_W) call print_excitation_energies('phRPA@RHF','singlet',nS,Om)
  

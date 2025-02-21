@@ -39,9 +39,9 @@ subroutine ppACFDT_correlation_energy(ispin,nBas,nC,nO,nV,nR,ERI,nOO,nVV,X1,Y1,X
 
 ! Build pp matrices
 
-  call ppLR_B   (ispin,nBas,nC,nO,nV,nR,nOO,nVV,1d0,ERI,B)
-  call ppLR_C_od(ispin,nBas,nC,nO,nV,nR,nOO,nVV,1d0,ERI,C)
-  call ppLR_D_od(ispin,nBas,nC,nO,nV,nR,nOO,nVV,1d0,ERI,D)
+  call ppRLR_B   (ispin,nBas,nC,nO,nV,nR,nOO,nVV,1d0,ERI,B)
+  call ppRLR_C_od(ispin,nBas,nC,nO,nV,nR,nOO,nVV,1d0,ERI,C)
+  call ppRLR_D_od(ispin,nBas,nC,nO,nV,nR,nOO,nVV,1d0,ERI,D)
 
 ! Compute Tr(K x P_lambda)
 

@@ -38,8 +38,8 @@ subroutine RHF_stability(nBas,nC,nO,nV,nR,nS,eHF,ERI)
  
   ispin = 1
 
-  call phLR_A(ispin,.false.,nBas,nC,nO,nV,nR,nS,1d0,eHF,ERI,A)
-  call phLR_B(ispin,.false.,nBas,nC,nO,nV,nR,nS,1d0,ERI,B)
+  call phRLR_A(ispin,.false.,nBas,nC,nO,nV,nR,nS,1d0,eHF,ERI,A)
+  call phRLR_B(ispin,.false.,nBas,nC,nO,nV,nR,nS,1d0,ERI,B)
 
   AB(:,:) = A(:,:) + B(:,:)
 
@@ -115,8 +115,8 @@ subroutine RHF_stability(nBas,nC,nO,nV,nR,nS,eHF,ERI)
  
   ispin = 2
 
-  call phLR_A(ispin,.false.,nBas,nC,nO,nV,nR,nS,1d0,eHF,ERI,A)
-  call phLR_B(ispin,.false.,nBas,nC,nO,nV,nR,nS,1d0,ERI,B)
+  call phRLR_A(ispin,.false.,nBas,nC,nO,nV,nR,nS,1d0,eHF,ERI,A)
+  call phRLR_B(ispin,.false.,nBas,nC,nO,nV,nR,nS,1d0,ERI,B)
 
   AB(:,:) = A(:,:) + B(:,:)
 

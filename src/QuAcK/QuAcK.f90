@@ -3,8 +3,8 @@ program QuAcK
   implicit none
   include 'parameters.h'
 
-  logical                       :: doRQuAcK,doUQuAcK,doGQuAcK
-  logical                       :: doRHF,doUHF,doGHF,doROHF
+  logical                       :: doRQuAcK,doUQuAcK,doGQuAcK,doBQuAcK
+  logical                       :: doRHF,doUHF,doGHF,doROHF,doHFB
   logical                       :: dostab,dosearch
   logical                       :: doMP2,doMP3
   logical                       :: doCCD,dopCCD,doDCD,doCCSD,doCCSDT
@@ -74,6 +74,10 @@ program QuAcK
 
   logical                       :: dotest,doRtest,doUtest,doGtest
 
+  logical                       :: chem_pot_hf
+  logical                       :: restart_hfb
+  double precision              :: temperature,sigma
+
   character(len=256)            :: working_dir
 
   ! Check if the right number of arguments is provided
@@ -109,7 +113,7 @@ program QuAcK
 !------------------!
 
   call read_methods(working_dir,                           &
-                    doRHF,doUHF,doGHF,doROHF,              &
+                    doRHF,doUHF,doGHF,doROHF,doHFB,        &
                     doMP2,doMP3,                           &
                     doCCD,dopCCD,doDCD,doCCSD,doCCSDT,     &
                     dodrCCD,dorCCD,docrCCD,dolCCD,         &
@@ -136,7 +140,8 @@ program QuAcK
                     maxSCF_GW,thresh_GW,max_diis_GW,lin_GW,eta_GW,reg_GW,TDA_W,                 &  
                     maxSCF_GT,thresh_GT,max_diis_GT,lin_GT,eta_GT,reg_GT,TDA_T,                 & 
                     doACFDT,exchange_kernel,doXBS,                                              &
-                    dophBSE,dophBSE2,doppBSE,dBSE,dTDA)
+                    dophBSE,dophBSE2,doppBSE,dBSE,dTDA,                                         &
+                    temperature,sigma,chem_pot_hf,restart_hfb)
 
 !------------------!
 ! Hardware         !
@@ -214,6 +219,9 @@ program QuAcK
   doGQuAcK = .false.
   if(doGHF) doGQuAcK = .true.
 
+  doBQuAcK = .false.
+  if(doHFB) doBQuAcK = .true.
+
 !-----------------!
 ! Initialize Test !
 !-----------------!
@@ -283,6 +291,15 @@ program QuAcK
                 maxSCF_GT,max_diis_GT,thresh_GT,TDA_T,lin_GT,reg_GT,eta_GT,                                   &
                 dophBSE,dophBSE2,doppBSE,dBSE,dTDA,doACFDT,exchange_kernel,doXBS)
 
+
+!--------------------------!
+! Bogoliubov QuAcK branch !
+!--------------------------!
+  if(doBQuAcK) & 
+    call BQuAcK(working_dir,dotest,doHFB,nNuc,nBas,nOrb,nC,nO,nV,nR,ENuc,ZNuc,rNuc,                           &
+                S,T,V,Hc,X,dipole_int_AO,maxSCF_HF,max_diis_HF,thresh_HF,level_shift,guess_type,mix,          &
+                temperature,sigma,chem_pot_hf,restart_hfb)
+
 !-----------!
 ! Stop Test !
 !-----------!
@@ -305,10 +322,9 @@ program QuAcK
   write(*,'(A65,1X,F9.3,A8)') 'Total wall time for QuAcK = ',t_QuAcK,' seconds'
   write(*,*)
 
-  deallocate(S)
-  deallocate(T)
-  deallocate(V)
-  deallocate(Hc)
-  deallocate(dipole_int_AO)
+! Memory deallocation
+
+  deallocate(ZNuc,rNuc)
+  deallocate(S,T,V,Hc,dipole_int_AO)
 
 end program 

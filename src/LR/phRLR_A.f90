@@ -1,4 +1,4 @@
-subroutine phLR_A(ispin,dRPA,nBas,nC,nO,nV,nR,nS,lambda,e,ERI,Aph)
+subroutine phRLR_A(ispin,dRPA,nBas,nC,nO,nV,nR,nS,lambda,e,ERI,Aph)
 
 ! Compute resonant block of the ph channel
 

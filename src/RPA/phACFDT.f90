@@ -97,10 +97,10 @@ subroutine phACFDT(exchange_kernel,dRPA,TDA,singlet,triplet,nBas,nC,nO,nV,nR,nS,
  
       lambda = rAC(iAC)
 
-      call phLR_A(ispin,dRPA,nBas,nC,nO,nV,nR,nS,lambda,e,ERI,Aph)
-      if(.not.TDA) call phLR_B(ispin,dRPA,nBas,nC,nO,nV,nR,nS,lambda,ERI,Bph)
+                   call phRLR_A(ispin,dRPA,nBas,nC,nO,nV,nR,nS,lambda,e,ERI,Aph)
+      if(.not.TDA) call phRLR_B(ispin,dRPA,nBas,nC,nO,nV,nR,nS,lambda,ERI,Bph)
 
-      call phLR(TDA,nS,Aph,Bph,EcAc(ispin),Om,XpY,XmY)
+      call phRLR(TDA,nS,Aph,Bph,EcAc(ispin),Om,XpY,XmY)
 
       call phACFDT_correlation_energy(ispin,exchange_kernel,nBas,nC,nO,nV,nR,nS,ERI,XpY,XmY,Ec(iAC,ispin))
 
@@ -138,10 +138,10 @@ subroutine phACFDT(exchange_kernel,dRPA,TDA,singlet,triplet,nBas,nC,nO,nV,nR,nS,
  
       lambda = rAC(iAC)
 
-      call phLR_A(ispin,dRPA,nBas,nC,nO,nV,nR,nS,lambda,e,ERI,Aph)
-      if(.not.TDA) call phLR_B(ispin,dRPA,nBas,nC,nO,nV,nR,nS,lambda,ERI,Bph)
+                   call phRLR_A(ispin,dRPA,nBas,nC,nO,nV,nR,nS,lambda,e,ERI,Aph)
+      if(.not.TDA) call phRLR_B(ispin,dRPA,nBas,nC,nO,nV,nR,nS,lambda,ERI,Bph)
 
-      call phLR(TDA,nS,Aph,Bph,EcAc(ispin),Om,XpY,XmY)
+      call phRLR(TDA,nS,Aph,Bph,EcAc(ispin),Om,XpY,XmY)
 
       call phACFDT_correlation_energy(ispin,exchange_kernel,nBas,nC,nO,nV,nR,nS,ERI,XpY,XmY,Ec(iAC,ispin))
 

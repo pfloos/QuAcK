@@ -96,10 +96,10 @@ subroutine ufRGW(dotest,TDA_W,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,eHF)
 
     ispin = 1
 
-    call phLR_A(ispin,dRPA,nOrb,nC,nO,nV,nR,nS,1d0,eHF,ERI,Aph)
-    call phLR_B(ispin,dRPA,nOrb,nC,nO,nV,nR,nS,1d0,ERI,Bph)
+    call phRLR_A(ispin,dRPA,nOrb,nC,nO,nV,nR,nS,1d0,eHF,ERI,Aph)
+    call phRLR_B(ispin,dRPA,nOrb,nC,nO,nV,nR,nS,1d0,ERI,Bph)
 
-    call phLR(TDA_W,nS,Aph,Bph,EcRPA,Om,XpY,XmY)
+    call phRLR(TDA_W,nS,Aph,Bph,EcRPA,Om,XpY,XmY)
 
     if(print_W) call print_excitation_energies('phRPA@RHF','singlet',nS,Om)
 

@@ -202,10 +202,10 @@ subroutine qsRGW(dotest,maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,dop
 
     ! Compute linear response
 
-    call phLR_A(ispin,dRPA_W,nOrb,nC,nO,nV,nR,nS,1d0,eGW,ERI_MO,Aph)
-    if(.not.TDA_W) call phLR_B(ispin,dRPA_W,nOrb,nC,nO,nV,nR,nS,1d0,ERI_MO,Bph)
+                   call phRLR_A(ispin,dRPA_W,nOrb,nC,nO,nV,nR,nS,1d0,eGW,ERI_MO,Aph)
+    if(.not.TDA_W) call phRLR_B(ispin,dRPA_W,nOrb,nC,nO,nV,nR,nS,1d0,ERI_MO,Bph)
 
-    call phLR(TDA_W,nS,Aph,Bph,EcRPA,Om,XpY,XmY)
+    call phRLR(TDA_W,nS,Aph,Bph,EcRPA,Om,XpY,XmY)
     if(print_W) call print_excitation_energies('phRPA@GW@RHF','singlet',nS,Om)
 
     call RGW_excitation_density(nOrb,nC,nO,nR,nS,ERI_MO,XpY,rho)

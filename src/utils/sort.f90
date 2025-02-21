@@ -60,6 +60,38 @@ recursive subroutine rec_quicksort(x,iorder,isize,first,last,level)
   end if                                                          
 end subroutine
 
+subroutine set_order_LR(x,y,iorder,isize,jsize)
+
+  implicit none                                                  
+  
+  integer                        :: isize,jsize
+  double precision               :: x(isize,jsize)              
+  double precision               :: y(isize,jsize)              
+  double precision,allocatable   :: xtmp(:,:)           
+  double precision,allocatable   :: ytmp(:,:)           
+  integer                        :: iorder(*)                    
+  integer                        :: i,j
+
+  allocate(xtmp(isize,jsize),ytmp(isize,jsize)) 
+
+  do i=1,isize                                                   
+    do j=1,jsize                                                   
+      xtmp(i,j) = x(i,iorder(j)) 
+      ytmp(i,j) = y(i,iorder(j)) 
+    end do                                                          
+  end do
+
+  do i=1,isize                                                   
+    do j=1,jsize                                                   
+      x(i,j) = xtmp(i,j)
+      y(i,j) = ytmp(i,j)
+    end do                                                          
+  end do                                                          
+
+  deallocate(xtmp,ytmp)                                               
+
+end subroutine 
+
 subroutine set_order(x,iorder,isize,jsize)
 
   implicit none                                                  

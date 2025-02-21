@@ -70,11 +70,11 @@ subroutine ppRRPA(dotest,TDA,doACFDT,singlet,triplet,nBas,nC,nO,nV,nR,ENuc,ERHF,
     allocate(Om1(nVV),X1(nVV,nVV),Y1(nOO,nVV),Om2(nOO),X2(nVV,nOO),Y2(nOO,nOO), &
              Bpp(nVV,nOO),Cpp(nVV,nVV),Dpp(nOO,nOO))
 
-    if(.not.TDA) call ppLR_B(ispin,nBas,nC,nO,nV,nR,nOO,nVV,1d0,ERI,Bpp)
-                 call ppLR_C(ispin,nBas,nC,nO,nV,nR,nVV,1d0,eHF,ERI,Cpp)
-                 call ppLR_D(ispin,nBas,nC,nO,nV,nR,nOO,1d0,eHF,ERI,Dpp)
+    if(.not.TDA) call ppRLR_B(ispin,nBas,nC,nO,nV,nR,nOO,nVV,1d0,ERI,Bpp)
+                 call ppRLR_C(ispin,nBas,nC,nO,nV,nR,nVV,1d0,eHF,ERI,Cpp)
+                 call ppRLR_D(ispin,nBas,nC,nO,nV,nR,nOO,1d0,eHF,ERI,Dpp)
 
-    call ppLR(TDA,nOO,nVV,Bpp,Cpp,Dpp,Om1,X1,Y1,Om2,X2,Y2,EcRPA(ispin))
+    call ppRLR(TDA,nOO,nVV,Bpp,Cpp,Dpp,Om1,X1,Y1,Om2,X2,Y2,EcRPA(ispin))
 
     call ppLR_transition_vectors(.true.,nBas,nC,nO,nV,nR,nOO,nVV,dipole_int,Om1,X1,Y1,Om2,X2,Y2)
 
@@ -102,11 +102,11 @@ subroutine ppRRPA(dotest,TDA,doACFDT,singlet,triplet,nBas,nC,nO,nV,nR,ENuc,ERHF,
     allocate(Om1(nVV),X1(nVV,nVV),Y1(nOO,nVV),Om2(nOO),X2(nVV,nOO),Y2(nOO,nOO), &
              Bpp(nVV,nOO),Cpp(nVV,nVV),Dpp(nOO,nOO))
 
-    if(.not.TDA) call ppLR_B(ispin,nBas,nC,nO,nV,nR,nOO,nVV,1d0,ERI,Bpp)
-                 call ppLR_C(ispin,nBas,nC,nO,nV,nR,nVV,1d0,eHF,ERI,Cpp)
-                 call ppLR_D(ispin,nBas,nC,nO,nV,nR,nOO,1d0,eHF,ERI,Dpp)
+    if(.not.TDA) call ppRLR_B(ispin,nBas,nC,nO,nV,nR,nOO,nVV,1d0,ERI,Bpp)
+                 call ppRLR_C(ispin,nBas,nC,nO,nV,nR,nVV,1d0,eHF,ERI,Cpp)
+                 call ppRLR_D(ispin,nBas,nC,nO,nV,nR,nOO,1d0,eHF,ERI,Dpp)
 
-    call ppLR(TDA,nOO,nVV,Bpp,Cpp,Dpp,Om1,X1,Y1,Om2,X2,Y2,EcRPA(ispin))
+    call ppRLR(TDA,nOO,nVV,Bpp,Cpp,Dpp,Om1,X1,Y1,Om2,X2,Y2,EcRPA(ispin))
 
     call ppLR_transition_vectors(.false.,nBas,nC,nO,nV,nR,nOO,nVV,dipole_int,Om1,X1,Y1,Om2,X2,Y2)
 

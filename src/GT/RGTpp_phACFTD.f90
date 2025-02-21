@@ -140,11 +140,11 @@ subroutine RGTpp_phACFDT(exchange_kernel,doXBS,dRPA,TDA_T,TDA,BSE,singlet,triple
 
         allocate(Bpp(nVVs,nOOs),Cpp(nVVs,nVVs),Dpp(nOOs,nOOs))
 
-        if(.not.TDA_T) call ppLR_B(iblock,nBas,nC,nO,nV,nR,nOOs,nVVs,lambda,ERI,Bpp)
-                       call ppLR_C(iblock,nBas,nC,nO,nV,nR,nVVs,lambda,eT,ERI,Cpp)
-                       call ppLR_D(iblock,nBas,nC,nO,nV,nR,nOOs,lambda,eT,ERI,Dpp)
+        if(.not.TDA_T) call ppRLR_B(iblock,nBas,nC,nO,nV,nR,nOOs,nVVs,lambda,ERI,Bpp)
+                       call ppRLR_C(iblock,nBas,nC,nO,nV,nR,nVVs,lambda,eT,ERI,Cpp)
+                       call ppRLR_D(iblock,nBas,nC,nO,nV,nR,nOOs,lambda,eT,ERI,Dpp)
 
-        call ppLR(TDA_T,nOOs,nVVs,Bpp,Cpp,Dpp,Om1s,X1s,Y1s,Om2s,X2s,Y2s,EcRPA(isp_T))
+        call ppRLR(TDA_T,nOOs,nVVs,Bpp,Cpp,Dpp,Om1s,X1s,Y1s,Om2s,X2s,Y2s,EcRPA(isp_T))
 
         deallocate(Bpp,Cpp,Dpp)
 
@@ -158,11 +158,11 @@ subroutine RGTpp_phACFDT(exchange_kernel,doXBS,dRPA,TDA_T,TDA,BSE,singlet,triple
 
         allocate(Bpp(nVVt,nOOt),Cpp(nVVt,nVVt),Dpp(nOOt,nOOt))
 
-        if(.not.TDA_T) call ppLR_B(iblock,nBas,nC,nO,nV,nR,nOOt,nVVt,lambda,ERI,Bpp)
-                       call ppLR_C(iblock,nBas,nC,nO,nV,nR,nVVt,lambda,eT,ERI,Cpp)
-                       call ppLR_D(iblock,nBas,nC,nO,nV,nR,nOOt,lambda,eT,ERI,Dpp)
+        if(.not.TDA_T) call ppRLR_B(iblock,nBas,nC,nO,nV,nR,nOOt,nVVt,lambda,ERI,Bpp)
+                       call ppRLR_C(iblock,nBas,nC,nO,nV,nR,nVVt,lambda,eT,ERI,Cpp)
+                       call ppRLR_D(iblock,nBas,nC,nO,nV,nR,nOOt,lambda,eT,ERI,Dpp)
 
-        call ppLR(TDA_T,nOOt,nVVt,Bpp,Cpp,Dpp,Om1t,X1t,Y1t,Om2t,X2t,Y2t,EcRPA(isp_T))
+        call ppRLR(TDA_T,nOOt,nVVt,Bpp,Cpp,Dpp,Om1t,X1t,Y1t,Om2t,X2t,Y2t,EcRPA(isp_T))
 
         deallocate(Bpp,Cpp,Dpp)
 
@@ -173,13 +173,13 @@ subroutine RGTpp_phACFDT(exchange_kernel,doXBS,dRPA,TDA_T,TDA,BSE,singlet,triple
 
       end if
 
-                   call phLR_A(ispin,dRPA,nBas,nC,nO,nV,nR,nS,lambda,eGT,ERI,Aph)
-      if(.not.TDA) call phLR_B(ispin,dRPA,nBas,nC,nO,nV,nR,nS,lambda,ERI,Bph)
+                   call phRLR_A(ispin,dRPA,nBas,nC,nO,nV,nR,nS,lambda,eGT,ERI,Aph)
+      if(.not.TDA) call phRLR_B(ispin,dRPA,nBas,nC,nO,nV,nR,nS,lambda,ERI,Bph)
  
                    Aph(:,:) = Aph(:,:) - TAt(:,:) - TAs(:,:)
       if(.not.TDA) Bph(:,:) = Bph(:,:) - TBt(:,:) - TBs(:,:)
  
-      call phLR(TDA,nS,Aph,Bph,EcAc(ispin),Om,XpY,XmY)
+      call phRLR(TDA,nS,Aph,Bph,EcAc(ispin),Om,XpY,XmY)
 
       call phACFDT_correlation_energy(ispin,exchange_kernel,nBas,nC,nO,nV,nR,nS,ERI,XpY,XmY,Ec(iAC,ispin))
 
@@ -224,11 +224,11 @@ subroutine RGTpp_phACFDT(exchange_kernel,doXBS,dRPA,TDA_T,TDA,BSE,singlet,triple
 
         allocate(Bpp(nVVs,nOOs),Cpp(nVVs,nVVs),Dpp(nOOs,nOOs))
 
-        if(.not.TDA_T) call ppLR_B(iblock,nBas,nC,nO,nV,nR,nOOs,nVVs,lambda,ERI,Bpp)
-                       call ppLR_C(iblock,nBas,nC,nO,nV,nR,nVVs,lambda,eT,ERI,Cpp)
-                       call ppLR_D(iblock,nBas,nC,nO,nV,nR,nOOs,lambda,eT,ERI,Dpp)
+        if(.not.TDA_T) call ppRLR_B(iblock,nBas,nC,nO,nV,nR,nOOs,nVVs,lambda,ERI,Bpp)
+                       call ppRLR_C(iblock,nBas,nC,nO,nV,nR,nVVs,lambda,eT,ERI,Cpp)
+                       call ppRLR_D(iblock,nBas,nC,nO,nV,nR,nOOs,lambda,eT,ERI,Dpp)
 
-        call ppLR(TDA_T,nOOs,nVVs,Bpp,Cpp,Dpp,Om1s,X1s,Y1s,Om2s,X2s,Y2s,EcRPA(isp_T))
+        call ppRLR(TDA_T,nOOs,nVVs,Bpp,Cpp,Dpp,Om1s,X1s,Y1s,Om2s,X2s,Y2s,EcRPA(isp_T))
 
         deallocate(Bpp,Cpp,Dpp)
 
@@ -242,11 +242,11 @@ subroutine RGTpp_phACFDT(exchange_kernel,doXBS,dRPA,TDA_T,TDA,BSE,singlet,triple
 
         allocate(Bpp(nVVt,nOOt),Cpp(nVVt,nVVt),Dpp(nOOt,nOOt))
 
-        if(.not.TDA_T) call ppLR_B(iblock,nBas,nC,nO,nV,nR,nOOt,nVVt,lambda,ERI,Bpp)
-                       call ppLR_C(iblock,nBas,nC,nO,nV,nR,nVVt,lambda,eT,ERI,Cpp)
-                       call ppLR_D(iblock,nBas,nC,nO,nV,nR,nOOt,lambda,eT,ERI,Dpp)
+        if(.not.TDA_T) call ppRLR_B(iblock,nBas,nC,nO,nV,nR,nOOt,nVVt,lambda,ERI,Bpp)
+                       call ppRLR_C(iblock,nBas,nC,nO,nV,nR,nVVt,lambda,eT,ERI,Cpp)
+                       call ppRLR_D(iblock,nBas,nC,nO,nV,nR,nOOt,lambda,eT,ERI,Dpp)
 
-        call ppLR(TDA_T,nOOt,nVVt,Bpp,Cpp,Dpp,Om1t,X1t,Y1t,Om2t,X2t,Y2t,EcRPA(isp_T))
+        call ppRLR(TDA_T,nOOt,nVVt,Bpp,Cpp,Dpp,Om1t,X1t,Y1t,Om2t,X2t,Y2t,EcRPA(isp_T))
 
         deallocate(Bpp,Cpp,Dpp)
 
@@ -257,13 +257,13 @@ subroutine RGTpp_phACFDT(exchange_kernel,doXBS,dRPA,TDA_T,TDA,BSE,singlet,triple
 
       end if
 
-                   call phLR_A(ispin,dRPA,nBas,nC,nO,nV,nR,nS,lambda,eGT,ERI,Aph)
-      if(.not.TDA) call phLR_B(ispin,dRPA,nBas,nC,nO,nV,nR,nS,lambda,ERI,Bph)
+                   call phRLR_A(ispin,dRPA,nBas,nC,nO,nV,nR,nS,lambda,eGT,ERI,Aph)
+      if(.not.TDA) call phRLR_B(ispin,dRPA,nBas,nC,nO,nV,nR,nS,lambda,ERI,Bph)
 
                    Aph(:,:) = Aph(:,:) + TAs(:,:) - TAt(:,:)
       if(.not.TDA) Bph(:,:) = Bph(:,:) + TBs(:,:) - TBt(:,:)
 
-      call phLR(TDA,nS,Aph,Bph,EcAc(ispin),Om,XpY,XmY)
+      call phRLR(TDA,nS,Aph,Bph,EcAc(ispin),Om,XpY,XmY)
 
       call phACFDT_correlation_energy(ispin,exchange_kernel,nBas,nC,nO,nV,nR,nS,ERI,XpY,XmY,Ec(iAC,ispin))
 

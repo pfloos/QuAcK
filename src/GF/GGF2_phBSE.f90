@@ -57,7 +57,7 @@ subroutine GGF2_phBSE(TDA,dBSE,dTDA,eta,nBas,nC,nO,nV,nR,nS,ERI,dipole_int,eGF,E
 
   ! Compute phBSE@GF2 excitation energies
 
-  call phLR(TDA,nS,A_sta,B_sta,EcBSE,OmBSE,XpY,XmY)
+  call phGLR(TDA,nS,A_sta,B_sta,EcBSE,OmBSE,XpY,XmY)
   call print_excitation_energies('phBSE@GGF2','generalized',nS,OmBSE)
   call phLR_transition_vectors(.true.,nBas,nC,nO,nV,nR,nS,dipole_int,OmBSE,XpY,XmY)
 

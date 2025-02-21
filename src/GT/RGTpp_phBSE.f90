@@ -97,11 +97,11 @@ subroutine RGTpp_phBSE(exchange_kernel,TDA_T,TDA,dBSE,dTDA,singlet,triplet,eta,n
 
   allocate(Bpp(nVVs,nOOs),Cpp(nVVs,nVVs),Dpp(nOOs,nOOs))
 
-  if(.not.TDA_T) call ppLR_B(ispin,nOrb,nC,nO,nV,nR,nOOs,nVVs,1d0,ERI,Bpp)
-                 call ppLR_C(ispin,nOrb,nC,nO,nV,nR,nVVs,1d0,eT,ERI,Cpp)
-                 call ppLR_D(ispin,nOrb,nC,nO,nV,nR,nOOs,1d0,eT,ERI,Dpp)
+  if(.not.TDA_T) call ppRLR_B(ispin,nOrb,nC,nO,nV,nR,nOOs,nVVs,1d0,ERI,Bpp)
+                 call ppRLR_C(ispin,nOrb,nC,nO,nV,nR,nVVs,1d0,eT,ERI,Cpp)
+                 call ppRLR_D(ispin,nOrb,nC,nO,nV,nR,nOOs,1d0,eT,ERI,Dpp)
 
-  call ppLR(TDA_T,nOOs,nVVs,Bpp,Cpp,Dpp,Om1s,X1s,Y1s,Om2s,X2s,Y2s,EcRPA(ispin))
+  call ppRLR(TDA_T,nOOs,nVVs,Bpp,Cpp,Dpp,Om1s,X1s,Y1s,Om2s,X2s,Y2s,EcRPA(ispin))
 
   deallocate(Bpp,Cpp,Dpp)
 
@@ -116,11 +116,11 @@ subroutine RGTpp_phBSE(exchange_kernel,TDA_T,TDA,dBSE,dTDA,singlet,triplet,eta,n
 
   allocate(Bpp(nVVt,nOOt),Cpp(nVVt,nVVt),Dpp(nOOt,nOOt))
 
-  if(.not.TDA_T) call ppLR_B(ispin,nOrb,nC,nO,nV,nR,nOOt,nVVt,1d0,ERI,Bpp)
-                 call ppLR_C(ispin,nOrb,nC,nO,nV,nR,nVVt,1d0,eT,ERI,Cpp)
-                 call ppLR_D(ispin,nOrb,nC,nO,nV,nR,nOOt,1d0,eT,ERI,Dpp)
+  if(.not.TDA_T) call ppRLR_B(ispin,nOrb,nC,nO,nV,nR,nOOt,nVVt,1d0,ERI,Bpp)
+                 call ppRLR_C(ispin,nOrb,nC,nO,nV,nR,nVVt,1d0,eT,ERI,Cpp)
+                 call ppRLR_D(ispin,nOrb,nC,nO,nV,nR,nOOt,1d0,eT,ERI,Dpp)
 
-  call ppLR(TDA_T,nOOt,nVVt,Bpp,Cpp,Dpp,Om1t,X1t,Y1t,Om2t,X2t,Y2t,EcRPA(ispin))
+  call ppRLR(TDA_T,nOOt,nVVt,Bpp,Cpp,Dpp,Om1t,X1t,Y1t,Om2t,X2t,Y2t,EcRPA(ispin))
 
   deallocate(Bpp,Cpp,Dpp)
 
@@ -137,13 +137,13 @@ subroutine RGTpp_phBSE(exchange_kernel,TDA_T,TDA,dBSE,dTDA,singlet,triplet,eta,n
 
     ! Compute BSE singlet excitation energies
 
-                 call phLR_A(ispin,dRPA,nOrb,nC,nO,nV,nR,nS,1d0,eGT,ERI,Aph)
-    if(.not.TDA) call phLR_B(ispin,dRPA,nOrb,nC,nO,nV,nR,nS,1d0,ERI,Bph)
+                 call phRLR_A(ispin,dRPA,nOrb,nC,nO,nV,nR,nS,1d0,eGT,ERI,Aph)
+    if(.not.TDA) call phRLR_B(ispin,dRPA,nOrb,nC,nO,nV,nR,nS,1d0,ERI,Bph)
 
                  Aph(:,:) = Aph(:,:) + TAt(:,:) ! TAt(:,:)
     if(.not.TDA) Bph(:,:) = Bph(:,:) + TBt(:,:) ! TBt(:,:)
 
-    call phLR(TDA,nS,Aph,Bph,EcBSE(ispin),OmBSE,XpY_BSE,XmY_BSE)
+    call phRLR(TDA,nS,Aph,Bph,EcBSE(ispin),OmBSE,XpY_BSE,XmY_BSE)
 
     call print_excitation_energies('phBSE@GTpp','singlet',nS,OmBSE)
     call phLR_transition_vectors(.true.,nOrb,nC,nO,nV,nR,nS,dipole_int,OmBSE,XpY_BSE,XmY_BSE)
@@ -167,13 +167,13 @@ subroutine RGTpp_phBSE(exchange_kernel,TDA_T,TDA,dBSE,dTDA,singlet,triplet,eta,n
 
     ! Compute BSE triplet excitation energies
 
-                 call phLR_A(ispin,dRPA,nOrb,nC,nO,nV,nR,nS,1d0,eGT,ERI,Aph)
-    if(.not.TDA) call phLR_B(ispin,dRPA,nOrb,nC,nO,nV,nR,nS,1d0,ERI,Bph)
+                 call phRLR_A(ispin,dRPA,nOrb,nC,nO,nV,nR,nS,1d0,eGT,ERI,Aph)
+    if(.not.TDA) call phRLR_B(ispin,dRPA,nOrb,nC,nO,nV,nR,nS,1d0,ERI,Bph)
 
                  Aph(:,:) = Aph(:,:) + 1d0*TAt(:,:) - TAs(:,:)
     if(.not.TDA) Bph(:,:) = Bph(:,:) + 1d0*TBt(:,:) - TBs(:,:)
 
-    call phLR(TDA,nS,Aph,Bph,EcBSE(ispin),OmBSE,XpY_BSE,XmY_BSE)
+    call phRLR(TDA,nS,Aph,Bph,EcBSE(ispin),OmBSE,XpY_BSE,XmY_BSE)
 
     call print_excitation_energies('phBSE@GTpp','triplet',nS,OmBSE)
     call phLR_transition_vectors(.false.,nOrb,nC,nO,nV,nR,nS,dipole_int,OmBSE,XpY_BSE,XmY_BSE)

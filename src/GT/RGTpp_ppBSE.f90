@@ -65,14 +65,14 @@ subroutine RGTpp_ppBSE(TDA_T,TDA,dBSE,dTDA,singlet,triplet,eta,nBas,nC,nO,nV,nR,
 
   allocate(Bpp(nVVs,nOOs),Cpp(nVVs,nVVs),Dpp(nOOs,nOOs))
 
-  if(.not.TDA_T) call ppLR_B(isp_T,nBas,nC,nO,nV,nR,nOOs,nVVs,1d0,ERI,Bpp)
-                 call ppLR_C(isp_T,nBas,nC,nO,nV,nR,nVVs,1d0,eT,ERI,Cpp)
-                 call ppLR_D(isp_T,nBas,nC,nO,nV,nR,nOOs,1d0,eT,ERI,Dpp)
+  if(.not.TDA_T) call ppRLR_B(isp_T,nBas,nC,nO,nV,nR,nOOs,nVVs,1d0,ERI,Bpp)
+                 call ppRLR_C(isp_T,nBas,nC,nO,nV,nR,nVVs,1d0,eT,ERI,Cpp)
+                 call ppRLR_D(isp_T,nBas,nC,nO,nV,nR,nOOs,1d0,eT,ERI,Dpp)
 
   allocate(Om1s(nVVs),X1s(nVVs,nVVs),Y1s(nOOs,nVVs))
   allocate(Om2s(nOOs),X2s(nVVs,nOOs),Y2s(nOOs,nOOs))
 
-  call ppLR(TDA_T,nOOs,nVVs,Bpp,Cpp,Dpp,Om1s,X1s,Y1s,Om2s,X2s,Y2s,EcRPA(isp_T))
+  call ppRLR(TDA_T,nOOs,nVVs,Bpp,Cpp,Dpp,Om1s,X1s,Y1s,Om2s,X2s,Y2s,EcRPA(isp_T))
 !  call ppLR_transition_vectors(.true.,nBas,nC,nO,nV,nR,nOOs,nVVs,dipole_int,Om1s,X1s,Y1s,Om2s,X2s,Y2s)
   
   allocate(rho1s(nBas,nBas,nVVs),rho2s(nBas,nBas,nOOs))
@@ -87,14 +87,14 @@ subroutine RGTpp_ppBSE(TDA_T,TDA,dBSE,dTDA,singlet,triplet,eta,nBas,nC,nO,nV,nR,
 
   allocate(Bpp(nVVt,nOOt),Cpp(nVVt,nVVt),Dpp(nOOt,nOOt))
 
-  if(.not.TDA_T) call ppLR_B(isp_T,nBas,nC,nO,nV,nR,nOOt,nVVt,1d0,ERI,Bpp)
-                 call ppLR_C(isp_T,nBas,nC,nO,nV,nR,nVVt,1d0,eT,ERI,Cpp)
-                 call ppLR_D(isp_T,nBas,nC,nO,nV,nR,nOOt,1d0,eT,ERI,Dpp)
+  if(.not.TDA_T) call ppRLR_B(isp_T,nBas,nC,nO,nV,nR,nOOt,nVVt,1d0,ERI,Bpp)
+                 call ppRLR_C(isp_T,nBas,nC,nO,nV,nR,nVVt,1d0,eT,ERI,Cpp)
+                 call ppRLR_D(isp_T,nBas,nC,nO,nV,nR,nOOt,1d0,eT,ERI,Dpp)
 
   allocate(Om1t(nVVt),X1t(nVVt,nVVt),Y1t(nOOt,nVVt))
   allocate(Om2t(nOOt),X2t(nVVt,nOOt),Y2t(nOOt,nOOt))
 
-  call ppLR(TDA_T,nOOt,nVVt,Bpp,Cpp,Dpp,Om1t,X1t,Y1t,Om2t,X2t,Y2t,EcRPA(isp_T))
+  call ppRLR(TDA_T,nOOt,nVVt,Bpp,Cpp,Dpp,Om1t,X1t,Y1t,Om2t,X2t,Y2t,EcRPA(isp_T))
 !  call ppLR_transition_vectors(.false.,nBas,nC,nO,nV,nR,nOOt,nVVt,dipole_int,Om1t,X1t,Y1t,Om2t,X2t,Y2t)
 
   allocate(rho1t(nBas,nBas,nVVt),rho2t(nBas,nBas,nOOt))
@@ -146,9 +146,9 @@ subroutine RGTpp_ppBSE(TDA_T,TDA,dBSE,dTDA,singlet,triplet,eta,nBas,nC,nO,nV,nR,
     allocate(Bpp(nVVs,nOOs),Cpp(nVVs,nVVs),Dpp(nOOs,nOOs))
     allocate(KB_sta(nVVs,nOOs),KC_sta(nVVs,nVVs),KD_sta(nOOs,nOOs))
 
-    if(.not.TDA) call ppLR_B(ispin,nBas,nC,nO,nV,nR,nOOs,nVVs,1d0,ERI,Bpp)
-                 call ppLR_C(ispin,nBas,nC,nO,nV,nR,nVVs,1d0,eGT,ERI,Cpp)
-                 call ppLR_D(ispin,nBas,nC,nO,nV,nR,nOOs,1d0,eGT,ERI,Dpp)
+    if(.not.TDA) call ppRLR_B(ispin,nBas,nC,nO,nV,nR,nOOs,nVVs,1d0,ERI,Bpp)
+                 call ppRLR_C(ispin,nBas,nC,nO,nV,nR,nVVs,1d0,eGT,ERI,Cpp)
+                 call ppRLR_D(ispin,nBas,nC,nO,nV,nR,nOOs,1d0,eGT,ERI,Dpp)
 
     if(.not.TDA) call RGTpp_ppBSE_static_kernel_B(ispin,eta,nBas,nC,nO,nV,nR,nOOs,nVVs,1d0,eGT,Taaaa,Tabab,Tbaab,KB_sta)
                  call RGTpp_ppBSE_static_kernel_C(ispin,eta,nBas,nC,nO,nV,nR,nOOs,nVVs,1d0,eGT,Taaaa,Tabab,Tbaab,KC_sta)
@@ -158,7 +158,7 @@ subroutine RGTpp_ppBSE(TDA_T,TDA,dBSE,dTDA,singlet,triplet,eta,nBas,nC,nO,nV,nR,
     Cpp(:,:) = Cpp(:,:) + KC_sta(:,:)
     Dpp(:,:) = Dpp(:,:) + KD_sta(:,:)
 
-    call ppLR(TDA,nOOs,nVVs,Bpp,Cpp,Dpp,Om1s,X1s,Y1s,Om2s,X2s,Y2s,EcBSE(ispin))
+    call ppRLR(TDA,nOOs,nVVs,Bpp,Cpp,Dpp,Om1s,X1s,Y1s,Om2s,X2s,Y2s,EcBSE(ispin))
 
     call ppLR_transition_vectors(.true.,nBas,nC,nO,nV,nR,nOOs,nVVs,dipole_int,Om1s,X1s,Y1s,Om2s,X2s,Y2s)
 
@@ -184,9 +184,9 @@ subroutine RGTpp_ppBSE(TDA_T,TDA,dBSE,dTDA,singlet,triplet,eta,nBas,nC,nO,nV,nR,
     allocate(Bpp(nVVt,nOOt),Cpp(nVVt,nVVt),Dpp(nOOt,nOOt))
     allocate(KB_sta(nVVt,nOOt),KC_sta(nVVt,nVVt),KD_sta(nOOt,nOOt))
   
-    if(.not.TDA) call ppLR_B(ispin,nBas,nC,nO,nV,nR,nOOt,nVVt,1d0,ERI,Bpp)
-                 call ppLR_C(ispin,nBas,nC,nO,nV,nR,nVVt,1d0,eGT,ERI,Cpp)
-                 call ppLR_D(ispin,nBas,nC,nO,nV,nR,nOOt,1d0,eGT,ERI,Dpp)
+    if(.not.TDA) call ppRLR_B(ispin,nBas,nC,nO,nV,nR,nOOt,nVVt,1d0,ERI,Bpp)
+                 call ppRLR_C(ispin,nBas,nC,nO,nV,nR,nVVt,1d0,eGT,ERI,Cpp)
+                 call ppRLR_D(ispin,nBas,nC,nO,nV,nR,nOOt,1d0,eGT,ERI,Dpp)
 
     if(.not.TDA) call RGTpp_ppBSE_static_kernel_B(ispin,eta,nBas,nC,nO,nV,nR,nOOt,nVVt,1d0,eGT,Taaaa,Tabab,Tbaab,KB_sta)
                  call RGTpp_ppBSE_static_kernel_C(ispin,eta,nBas,nC,nO,nV,nR,nOOt,nVVt,1d0,eGT,Taaaa,Tabab,Tbaab,KC_sta)
@@ -196,7 +196,7 @@ subroutine RGTpp_ppBSE(TDA_T,TDA,dBSE,dTDA,singlet,triplet,eta,nBas,nC,nO,nV,nR,
     Cpp(:,:) = Cpp(:,:) + KC_sta(:,:)
     Dpp(:,:) = Dpp(:,:) + KD_sta(:,:)
 
-    call ppLR(TDA,nOOt,nVVt,Bpp,Cpp,Dpp,Om1t,X1t,Y1t,Om2t,X2t,Y2t,EcBSE(ispin))
+    call ppRLR(TDA,nOOt,nVVt,Bpp,Cpp,Dpp,Om1t,X1t,Y1t,Om2t,X2t,Y2t,EcBSE(ispin))
 
     call ppLR_transition_vectors(.false.,nBas,nC,nO,nV,nR,nOOt,nVVt,dipole_int,Om1t,X1t,Y1t,Om2t,X2t,Y2t)
 

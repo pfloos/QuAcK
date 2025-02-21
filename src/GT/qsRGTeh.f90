@@ -197,10 +197,10 @@ subroutine qsRGTeh(dotest, maxSCF, thresh, max_diis, doACFDT, exchange_kernel, d
 
     ! Compute linear response
 
-    call phLR_A(ispin,dRPA,nOrb,nC,nO,nV,nR,nS,1d0,eGT,ERI_MO,Aph)
-    if(.not.TDA_T) call phLR_B(ispin,dRPA,nOrb,nC,nO,nV,nR,nS,1d0,ERI_MO,Bph)
+                   call phRLR_A(ispin,dRPA,nOrb,nC,nO,nV,nR,nS,1d0,eGT,ERI_MO,Aph)
+    if(.not.TDA_T) call phRLR_B(ispin,dRPA,nOrb,nC,nO,nV,nR,nS,1d0,ERI_MO,Bph)
 
-    call phLR(TDA_T,nS,Aph,Bph,EcRPA,Om,XpY,XmY)
+    call phRLR(TDA_T,nS,Aph,Bph,EcRPA,Om,XpY,XmY)
 
     if(print_T) call print_excitation_energies('phRPA@RHF','triplet',nS,Om)
 
@@ -221,10 +221,6 @@ subroutine qsRGTeh(dotest, maxSCF, thresh, max_diis, doACFDT, exchange_kernel, d
     ! Solve the quasi-particle equation
 
     F(:,:) = Hc(:,:) + J(:,:) + 0.5d0*K(:,:) + Sigp(:,:)
-    if(nBas .ne. nOrb) then
-      call AOtoMO(nBas, nOrb, c(1,1), F(1,1), Fp(1,1))
-      call MOtoAO(nBas, nOrb, S(1,1), c(1,1), Fp(1,1), F(1,1))
-    endif
 
     ! Compute commutator and convergence criteria
 
@@ -241,17 +237,10 @@ subroutine qsRGTeh(dotest, maxSCF, thresh, max_diis, doACFDT, exchange_kernel, d
 
     ! Diagonalize Hamiltonian in AO basis
 
-    if(nBas .eq. nOrb) then
-      Fp = matmul(transpose(X), matmul(F, X))
-      cp(:,:) = Fp(:,:)
-      call diagonalize_matrix(nOrb, cp, eGT)
-      c = matmul(X, cp)
-    else
-      Fp = matmul(transpose(c), matmul(F, c))
-      cp(:,:) = Fp(:,:)
-      call diagonalize_matrix(nOrb, cp, eGT)
-      c = matmul(c, cp)
-    endif
+    Fp = matmul(transpose(X), matmul(F, X))
+    cp(:,:) = Fp(:,:)
+    call diagonalize_matrix(nOrb, cp, eGT)
+    c = matmul(X, cp)
 
     ! Compute new density matrix in the AO basis
 

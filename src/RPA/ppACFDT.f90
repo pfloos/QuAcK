@@ -89,11 +89,11 @@ subroutine ppACFDT(TDA,singlet,triplet,nBas,nC,nO,nV,nR,ERI,e,EcAC)
  
       lambda = rAC(iAC)
 
-      if(.not.TDA) call ppLR_B(ispin,nBas,nC,nO,nV,nR,nOO,nVV,lambda,ERI,Bpp)
-                   call ppLR_C(ispin,nBas,nC,nO,nV,nR,nVV,lambda,e,ERI,Cpp)
-                   call ppLR_D(ispin,nBas,nC,nO,nV,nR,nOO,lambda,e,ERI,Dpp)
+      if(.not.TDA) call ppRLR_B(ispin,nBas,nC,nO,nV,nR,nOO,nVV,lambda,ERI,Bpp)
+                   call ppRLR_C(ispin,nBas,nC,nO,nV,nR,nVV,lambda,e,ERI,Cpp)
+                   call ppRLR_D(ispin,nBas,nC,nO,nV,nR,nOO,lambda,e,ERI,Dpp)
 
-      call ppLR(TDA,nOO,nVV,Bpp,Cpp,Dpp,Om1,X1,Y1,Om2,X2,Y2,EcAC(ispin))
+      call ppRLR(TDA,nOO,nVV,Bpp,Cpp,Dpp,Om1,X1,Y1,Om2,X2,Y2,EcAC(ispin))
 
       call ppACFDT_correlation_energy(ispin,nBas,nC,nO,nV,nR,ERI,nOO,nVV,X1,Y1,X2,Y2,Ec(iAC,ispin))
 
@@ -138,11 +138,11 @@ subroutine ppACFDT(TDA,singlet,triplet,nBas,nC,nO,nV,nR,ERI,e,EcAC)
  
       lambda = rAC(iAC)
 
-      if(.not.TDA) call ppLR_B(ispin,nBas,nC,nO,nV,nR,nOO,nVV,lambda,ERI,Bpp)
-                   call ppLR_C(ispin,nBas,nC,nO,nV,nR,nVV,lambda,e,ERI,Cpp)
-                   call ppLR_D(ispin,nBas,nC,nO,nV,nR,nOO,lambda,e,ERI,Dpp)
+      if(.not.TDA) call ppRLR_B(ispin,nBas,nC,nO,nV,nR,nOO,nVV,lambda,ERI,Bpp)
+                   call ppRLR_C(ispin,nBas,nC,nO,nV,nR,nVV,lambda,e,ERI,Cpp)
+                   call ppRLR_D(ispin,nBas,nC,nO,nV,nR,nOO,lambda,e,ERI,Dpp)
 
-      call ppLR(TDA,nOO,nVV,Bpp,Cpp,Dpp,Om1,X1,Y1,Om2,X2,Y2,EcAC(ispin))
+      call ppRLR(TDA,nOO,nVV,Bpp,Cpp,Dpp,Om1,X1,Y1,Om2,X2,Y2,EcAC(ispin))
 
       call ppACFDT_correlation_energy(ispin,nBas,nC,nO,nV,nR,ERI,nOO,nVV,X1,Y1,X2,Y2,Ec(iAC,ispin))
 

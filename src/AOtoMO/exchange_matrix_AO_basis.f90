@@ -19,7 +19,8 @@ subroutine exchange_matrix_AO_basis(nBas,P,ERI,K)
 
   double precision,intent(out)  :: K(nBas,nBas)
 
-  K = 0d0
+  K(:,:) = 0d0
+
   do nu=1,nBas
     do si=1,nBas
       do la=1,nBas
@@ -44,55 +45,68 @@ subroutine exchange_matrix_AO_basis_hpc(nBas, ERI_size, P, ERI_chem, K)
   double precision, intent(in)  :: ERI_chem(ERI_size)
   double precision, intent(out) :: K(nBas,nBas)
 
-  integer                       :: mu, nu, la, si
-  integer                       :: nunu, nula, lanu, lasi, nusi, sinu
-  integer                       :: numu, mumu, mula, lamu, musi, simu
+  integer*8                     :: mu, nu, la, si, nBas8
+  integer*8                     :: nunu, nula, lanu, lasi, nusi, sinu
+  integer*8                     :: numu, mumu, mula, lamu, musi, simu
+  integer*8                     :: nunu0, lala0, mumu0
   integer*8                     :: nunununu, nulanula, lanulanu, nulanusi
   integer*8                     :: munulasi, lanunusi, lanusinu, numumumu 
   integer*8                     :: nulamula, nulalamu, lanulamu, nulamusi
-  integer*8                     :: nulasimu, lanumusi, lanusimu
+  integer*8                     :: nulasimu, lanumusi, lanusimu, simunula
+  integer*8                     :: simulanu, nulanula0, lanulanu0
 
 
-  integer*8, external           :: Yoshimine_4ind
+
+  nBas8 = int(nBas, kind=8)
 
 
-  do nu = 1, nBas
+  !$OMP PARALLEL DEFAULT (NONE)                                           &
+  !$OMP PRIVATE (nu, si, la, mu,                                          &
+  !$OMP          nunu0, nunu, lanu, numu, mumu0, mumu, simu, lala0, nula, &
+  !$OMP          nunununu, nulanula, lanulanu, lanulanu0, nulanula0,      &
+  !$OMP          nulanusi, lanulamu, lanunusi, lanusinu , numumumu,       &
+  !$OMP          nulamula, nulalamu, lanumusi, lanusimu, nulamusi,        &
+  !$OMP          nulasimu, simunula, simulanu) &
+  !$OMP SHARED (nBas8, P, ERI_chem, K)
+  !$OMP DO
+  do nu = 1, nBas8
 
-    nunu = (nu * (nu - 1)) / 2 + nu
-    nunununu = (nunu * (nunu - 1)) / 2 + nunu
+    nunu0 = shiftr(nu * (nu - 1), 1)
+    nunu = nunu0 + nu
+
+    nunununu = shiftr(nunu * (nunu - 1), 1) + nunu
     K(nu,nu) = -P(nu,nu) * ERI_chem(nunununu)
 
     do la = 1, nu - 1
-      nula = (nu * (nu - 1)) / 2 + la
-      nulanula = (nula * (nula - 1)) / 2 + nula
+      nula = nunu0 + la
+      nulanula = shiftr(nula * (nula - 1), 1) + nula
       K(nu,nu) = K(nu,nu) - P(la,la) * ERI_chem(nulanula)
     enddo
 
-    do la = nu + 1, nBas
-      lanu = (la * (la - 1)) / 2 + nu
-      lanulanu = (lanu * (lanu - 1)) / 2 + lanu
+    do la = nu + 1, nBas8
+      lanu = shiftr(la * (la - 1), 1) + nu
+      lanulanu = shiftr(lanu * (lanu - 1), 1) + lanu
       K(nu,nu) = K(nu,nu) - P(la,la) * ERI_chem(lanulanu)
     enddo
 
     do la = 1, nu
-      nula = (nu * (nu - 1)) / 2 + la
+      nula = nunu0 + la
+      nulanula0 = shiftr(nula * (nula - 1), 1)
       do si = 1, la - 1
-        nusi = (nu * (nu - 1)) / 2 + si
-        nulanusi = (nula * (nula - 1)) / 2 + nusi
+        nulanusi = nulanula0 + nunu0 + si
         K(nu,nu) = K(nu,nu) - 2.d0 * P(si,la) * ERI_chem(nulanusi)
       enddo
     enddo
 
-    do la = nu + 1, nBas
-      lanu = (la * (la - 1)) / 2 + nu
+    do la = nu + 1, nBas8
+      lanu = shiftr(la * (la - 1), 1) + nu
+      lanulanu0 = shiftr(lanu * (lanu - 1), 1)
       do si = 1, nu
-        nusi = (nu * (nu - 1)) / 2 + si
-        lanunusi = (lanu * (lanu - 1)) / 2 + nusi
+        lanunusi = lanulanu0 + nunu0 + si
         K(nu,nu) = K(nu,nu) - 2.d0 * P(si,la) * ERI_chem(lanunusi)
       enddo
       do si = nu + 1, la - 1
-        sinu = (si * (si - 1)) / 2 + nu
-        lanusinu = (lanu * (lanu - 1)) / 2 + sinu
+        lanusinu = lanulanu0 + shiftr(si * (si - 1), 1) + nu
         K(nu,nu) = K(nu,nu) - 2.d0 * P(si,la) * ERI_chem(lanusinu)
       enddo
     enddo
@@ -100,115 +114,109 @@ subroutine exchange_matrix_AO_basis_hpc(nBas, ERI_size, P, ERI_chem, K)
 
     do mu = 1, nu - 1
 
-      numu = (nu * (nu - 1)) / 2 + mu
-      mumu = (mu * (mu - 1)) / 2 + mu
-      numumumu = (numu * (numu - 1)) / 2 + mumu
+      numu = nunu0 + mu
+      mumu0 = shiftr(mu * (mu - 1), 1)
+      mumu = mumu0 + mu
+      numumumu = shiftr(numu * (numu - 1), 1) + mumu
       K(mu,nu) = - P(mu,mu) * ERI_chem(numumumu)
 
       do la = 1, mu - 1
-        mula = (mu * (mu - 1)) / 2 + la
-        nula = (nu * (nu - 1)) / 2 + la
-        nulamula = (nula * (nula - 1)) / 2 + mula
+        nula = nunu0 + la
+        nulamula = shiftr(nula * (nula - 1), 1) + mumu0 + la
         K(mu,nu) = K(mu,nu) - P(la,la) * ERI_chem(nulamula)
       enddo
       do la = mu + 1, nu
-        lamu = (la * (la - 1)) / 2 + mu
-        nula = (nu * (nu - 1)) / 2 + la
-        nulalamu = (nula * (nula - 1)) / 2 + lamu
+        nula = nunu0 + la
+        nulalamu = shiftr(nula * (nula - 1), 1) + shiftr(la * (la - 1), 1) + mu
         K(mu,nu) = K(mu,nu) - P(la,la) * ERI_chem(nulalamu)
       enddo
-      do la = nu + 1, nBas
-        lamu = (la * (la - 1)) / 2 + mu
-        lanu = (la * (la - 1)) / 2 + nu
-        lanulamu = (lanu * (lanu - 1)) / 2 + lamu
+      do la = nu + 1, nBas8
+        lala0 = shiftr(la * (la - 1), 1)
+        lanu = lala0 + nu
+        lanulamu = shiftr(lanu * (lanu - 1), 1) + lala0 + mu
         K(mu,nu) = K(mu,nu) - P(la,la) * ERI_chem(lanulamu)
       enddo
 
       do la = 1, mu
-        nula = (nu * (nu - 1)) / 2 + la
+        nula = nunu0 + la
+        nulanula0 = shiftr(nula * (nula - 1), 1)
         do si = 1, la - 1
-          musi = (mu * (mu - 1)) / 2 + si
-          nulamusi = (nula * (nula - 1)) / 2 + musi
+          nulamusi = nulanula0 + mumu0 + si
           K(mu,nu) = K(mu,nu) - P(si,la) * ERI_chem(nulamusi)
         enddo
       enddo
       do la = mu + 1, nu
-        nula = (nu * (nu - 1)) / 2 + la
+        nula = nunu0 + la
+        nulanula0 = shiftr(nula * (nula - 1), 1)
         do si = 1, mu
-          musi = (mu * (mu - 1)) / 2 + si
-          nulamusi = (nula * (nula - 1)) / 2 + musi
+          nulamusi = nulanula0 + mumu0 + si
           K(mu,nu) = K(mu,nu) - P(si,la) * ERI_chem(nulamusi)
         enddo
         do si = mu + 1, la - 1
-          simu = (si * (si - 1)) / 2 + mu
-          nulasimu = (nula * (nula - 1)) / 2 + simu
+          nulasimu = nulanula0 + shiftr(si * (si - 1), 1) + mu
           K(mu,nu) = K(mu,nu) - P(si,la) * ERI_chem(nulasimu)
         enddo
       enddo
-      do la = nu + 1, nBas
-        lanu = (la * (la - 1)) / 2 + nu
+      do la = nu + 1, nBas8
+        lanu = shiftr(la * (la - 1), 1) + nu
+        lanulanu0 = shiftr(lanu * (lanu - 1), 1)
         do si = 1, mu
-          musi = (mu * (mu - 1)) / 2 + si
-          lanumusi = (lanu * (lanu - 1)) / 2 + musi
+          lanumusi = lanulanu0 + mumu0 + si
           K(mu,nu) = K(mu,nu) - P(si,la) * ERI_chem(lanumusi)
         enddo
         do si = mu + 1, la - 1
-          simu = (si * (si - 1)) / 2 + mu
-          lanusimu = (lanu * (lanu - 1)) / 2 + simu
+          lanusimu = lanulanu0 + shiftr(si * (si - 1), 1) + mu
           K(mu,nu) = K(mu,nu) - P(si,la) * ERI_chem(lanusimu)
         enddo
       enddo
 
-!TODO
-!      do la = 1, mu
-!        nula = (nu * (nu - 1)) / 2 + la
-!        do si = la + 1, mu
-!          musi = (mu * (mu - 1)) / 2 + si
-!          nulamusi = (nula * (nula - 1)) / 2 + musi
-!          !nulamusi = Yoshimine_4ind(nu, la, si, mu)
-!          K(mu,nu) = K(mu,nu) - P(si,la) * ERI_chem(nulamusi)
-!        enddo
-!        do si = mu + 1, nBas
-!          simu = (si * (si - 1)) / 2 + mu
-!          nulasimu = (nula * (nula - 1)) / 2 + simu
-!          !nulasimu = Yoshimine_4ind(nu, la, si, mu)
-!          K(mu,nu) = K(mu,nu) - P(si,la) * ERI_chem(nulasimu)
-!        enddo
-!      enddo
-!      do la = mu + 1, nu
-!        nula = (nu * (nu - 1)) / 2 + la
-!        do si = la + 1, nu
-!          simu = (si * (si - 1)) / 2 + mu
-!          nulasimu = (nula * (nula - 1)) / 2 + simu
-!          !nulasimu = Yoshimine_4ind(nu, la, si, mu)
-!          K(mu,nu) = K(mu,nu) - P(si,la) * ERI_chem(nulasimu)
-!        enddo
-!        do si = nu + 1, nBas
-!          simu = (si * (si - 1)) / 2 + mu
-!          munulasi = Yoshimine_4ind(nu, la, si, mu)
-!          K(mu,nu) = K(mu,nu) - P(si,la) * ERI_chem(munulasi)
-!        enddo
-!      enddo
-!      do la = nu + 1, nBas
-!        lanu = (la * (la - 1)) / 2 + nu
-!        do si = la + 1, mu
-!          simu = (si * (si - 1)) / 2 + mu
-!          munulasi = Yoshimine_4ind(nu, la, si, mu)
-!          K(mu,nu) = K(mu,nu) - P(si,la) * ERI_chem(munulasi)
-!        enddo
-!        do si = mu + 1, nBas
-!          musi = (mu * (mu - 1)) / 2 + si
-!          munulasi = Yoshimine_4ind(nu, la, si, mu)
-!          K(mu,nu) = K(mu,nu) - P(si,la) * ERI_chem(munulasi)
-!        enddo
-!      enddo
+      do la = 1, mu
+        nula = nunu0 + la
+        nulanula0 = shiftr(nula * (nula - 1), 1)
+        do si = la + 1, mu
+          nulamusi = nulanula0 + mumu0 + si
+          K(mu,nu) = K(mu,nu) - P(si,la) * ERI_chem(nulamusi)
+        enddo
+        do si = mu + 1, nu - 1
+          nulasimu = nulanula0 + shiftr(si * (si - 1), 1) + mu
+          K(mu,nu) = K(mu,nu) - P(si,la) * ERI_chem(nulasimu)
+        enddo
+        do si = nu, nBas8
+          simu = shiftr(si * (si - 1), 1) + mu
+          simunula = shiftr(simu * (simu - 1), 1) + nula
+          K(mu,nu) = K(mu,nu) - P(si,la) * ERI_chem(simunula)
+        enddo
+      enddo
+      do la = mu + 1, nu
+        nula = nunu0 + la
+        nulanula0 = shiftr(nula * (nula - 1), 1)
+        do si = la + 1, nu
+          nulasimu = nulanula0 + shiftr(si * (si - 1), 1) + mu
+          K(mu,nu) = K(mu,nu) - P(si,la) * ERI_chem(nulasimu)
+        enddo
+        do si = nu + 1, nBas8
+          simu = shiftr(si * (si - 1), 1) + mu
+          simunula = shiftr(simu * (simu - 1), 1) + nula
+          K(mu,nu) = K(mu,nu) - P(si,la) * ERI_chem(simunula)
+        enddo
+      enddo
+      do la = nu + 1, nBas8
+        lanu = shiftr(la * (la - 1), 1) + nu
+        do si = la + 1, nBas8
+          simu = shiftr(si * (si - 1), 1) + mu
+          simulanu = shiftr(simu * (simu - 1), 1) + lanu
+          K(mu,nu) = K(mu,nu) - P(si,la) * ERI_chem(simulanu)
+        enddo
+      enddo
 
     enddo ! mu
   enddo ! nu
+  !$OMP END DO
+  !$OMP END PARALLEL
 
 
-  do nu = 1, nBas
-    do mu = nu+1, nBas
+  do nu = 1, nBas8
+    do mu = nu+1, nBas8
       K(mu,nu) = K(nu,mu)
     enddo
   enddo
@@ -217,4 +225,7 @@ subroutine exchange_matrix_AO_basis_hpc(nBas, ERI_size, P, ERI_chem, K)
 end subroutine 
 
 ! ---
+
+
+
 

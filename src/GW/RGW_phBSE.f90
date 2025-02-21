@@ -83,10 +83,10 @@ subroutine RGW_phBSE(dophBSE2,exchange_kernel,TDA_W,TDA,dBSE,dTDA,singlet,triple
   isp_W = 1
   EcRPA = 0d0
 
-                 call phLR_A(isp_W,dRPA_W,nOrb,nC,nO,nV,nR,nS,1d0,eW,ERI,Aph)
-  if(.not.TDA_W) call phLR_B(isp_W,dRPA_W,nOrb,nC,nO,nV,nR,nS,1d0,ERI,Bph)
+                 call phRLR_A(isp_W,dRPA_W,nOrb,nC,nO,nV,nR,nS,1d0,eW,ERI,Aph)
+  if(.not.TDA_W) call phRLR_B(isp_W,dRPA_W,nOrb,nC,nO,nV,nR,nS,1d0,ERI,Bph)
 
-  call phLR(TDA_W,nS,Aph,Bph,EcRPA,OmRPA,XpY_RPA,XmY_RPA)
+  call phRLR(TDA_W,nS,Aph,Bph,EcRPA,OmRPA,XpY_RPA,XmY_RPA)
   call RGW_excitation_density(nOrb,nC,nO,nR,nS,ERI,XpY_RPA,rho_RPA)
 
                call RGW_phBSE_static_kernel_A(eta,nOrb,nC,nO,nV,nR,nS,1d0,ERI,OmRPA,rho_RPA,KA_sta)
@@ -102,8 +102,8 @@ subroutine RGW_phBSE(dophBSE2,exchange_kernel,TDA_W,TDA,dBSE,dTDA,singlet,triple
 
     ! Compute BSE excitation energies
 
-                 call phLR_A(ispin,dRPA,nOrb,nC,nO,nV,nR,nS,1d0,eGW,ERI,Aph)
-    if(.not.TDA) call phLR_B(ispin,dRPA,nOrb,nC,nO,nV,nR,nS,1d0,ERI,Bph)
+                 call phRLR_A(ispin,dRPA,nOrb,nC,nO,nV,nR,nS,1d0,eGW,ERI,Aph)
+    if(.not.TDA) call phRLR_B(ispin,dRPA,nOrb,nC,nO,nV,nR,nS,1d0,ERI,Bph)
 
     ! Second-order BSE static kernel
   
@@ -127,7 +127,7 @@ subroutine RGW_phBSE(dophBSE2,exchange_kernel,TDA_W,TDA,dBSE,dTDA,singlet,triple
                  Aph(:,:) = Aph(:,:) + KA_sta(:,:)
     if(.not.TDA) Bph(:,:) = Bph(:,:) + KB_sta(:,:)
 
-    call phLR(TDA,nS,Aph,Bph,EcBSE(ispin),OmBSE,XpY_BSE,XmY_BSE)
+    call phRLR(TDA,nS,Aph,Bph,EcBSE(ispin),OmBSE,XpY_BSE,XmY_BSE)
 
     call print_excitation_energies('phBSE@GW@RHF','singlet',nS,OmBSE)
     call phLR_transition_vectors(.true.,nOrb,nC,nO,nV,nR,nS,dipole_int,OmBSE,XpY_BSE,XmY_BSE)
@@ -160,13 +160,13 @@ subroutine RGW_phBSE(dophBSE2,exchange_kernel,TDA_W,TDA,dBSE,dTDA,singlet,triple
 
     ! Compute BSE excitation energies
 
-                 call phLR_A(ispin,dRPA,nOrb,nC,nO,nV,nR,nS,1d0,eGW,ERI,Aph)
-    if(.not.TDA) call phLR_B(ispin,dRPA,nOrb,nC,nO,nV,nR,nS,1d0,ERI,Bph)
+                 call phRLR_A(ispin,dRPA,nOrb,nC,nO,nV,nR,nS,1d0,eGW,ERI,Aph)
+    if(.not.TDA) call phRLR_B(ispin,dRPA,nOrb,nC,nO,nV,nR,nS,1d0,ERI,Bph)
 
                  Aph(:,:) = Aph(:,:) + KA_sta(:,:)
     if(.not.TDA) Bph(:,:) = Bph(:,:) + KB_sta(:,:)
 
-    call phLR(TDA,nS,Aph,Bph,EcBSE(ispin),OmBSE,XpY_BSE,XmY_BSE)
+    call phRLR(TDA,nS,Aph,Bph,EcBSE(ispin),OmBSE,XpY_BSE,XmY_BSE)
 
     call print_excitation_energies('phBSE@GW@RHF','triplet',nS,OmBSE)
     call phLR_transition_vectors(.false.,nOrb,nC,nO,nV,nR,nS,dipole_int,OmBSE,XpY_BSE,XmY_BSE)

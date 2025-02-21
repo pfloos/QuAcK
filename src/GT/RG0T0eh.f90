@@ -109,10 +109,10 @@ subroutine RG0T0eh(dotest,doACFDT,exchange_kernel,doXBS,dophBSE,dophBSE2,TDA_T,T
 
   ispin = 2
 
-  call phLR_A(ispin,dRPA,nOrb,nC,nO,nV,nR,nS,1d0,eHF,ERI,Aph)
-  if(.not.TDA_T) call phLR_B(ispin,dRPA,nOrb,nC,nO,nV,nR,nS,1d0,ERI,Bph)
+                 call phRLR_A(ispin,dRPA,nOrb,nC,nO,nV,nR,nS,1d0,eHF,ERI,Aph)
+  if(.not.TDA_T) call phRLR_B(ispin,dRPA,nOrb,nC,nO,nV,nR,nS,1d0,ERI,Bph)
 
-  call phLR(TDA_T,nS,Aph,Bph,EcRPA,Om,XpY,XmY)
+  call phRLR(TDA_T,nS,Aph,Bph,EcRPA,Om,XpY,XmY)
 
   if(print_T) call print_excitation_energies('phRPA@RHF','triplet',nS,Om)
 
@@ -158,10 +158,10 @@ subroutine RG0T0eh(dotest,doACFDT,exchange_kernel,doXBS,dophBSE,dophBSE2,TDA_T,T
 
 ! Compute the RPA correlation energy based on the G0T0eh quasiparticle energies
 
-  call phLR_A(ispin,dRPA,nOrb,nC,nO,nV,nR,nS,1d0,eGT,ERI,Aph)
-  if(.not.TDA_T) call phLR_B(ispin,dRPA,nOrb,nC,nO,nV,nR,nS,1d0,ERI,Bph)
+                 call phRLR_A(ispin,dRPA,nOrb,nC,nO,nV,nR,nS,1d0,eGT,ERI,Aph)
+  if(.not.TDA_T) call phRLR_B(ispin,dRPA,nOrb,nC,nO,nV,nR,nS,1d0,ERI,Bph)
 
-  call phLR(TDA_T,nS,Aph,Bph,EcRPA,Om,XpY,XmY)
+  call phRLR(TDA_T,nS,Aph,Bph,EcRPA,Om,XpY,XmY)
 
 !--------------!
 ! Dump results !

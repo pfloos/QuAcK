@@ -120,10 +120,10 @@ subroutine evRGW(dotest,maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,dop
 
    ! Compute screening
 
-    call phLR_A(ispin,dRPA,nOrb,nC,nO,nV,nR,nS,1d0,eGW,ERI,Aph)
-    if(.not.TDA_W) call phLR_B(ispin,dRPA,nOrb,nC,nO,nV,nR,nS,1d0,ERI,Bph)
+                   call phRLR_A(ispin,dRPA,nOrb,nC,nO,nV,nR,nS,1d0,eGW,ERI,Aph)
+    if(.not.TDA_W) call phRLR_B(ispin,dRPA,nOrb,nC,nO,nV,nR,nS,1d0,ERI,Bph)
 
-    call phLR(TDA_W,nS,Aph,Bph,EcRPA,Om,XpY,XmY)
+    call phRLR(TDA_W,nS,Aph,Bph,EcRPA,Om,XpY,XmY)
 
     ! Compute spectral weights
 

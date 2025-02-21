@@ -93,10 +93,10 @@ subroutine RGW_phACFDT(exchange_kernel,doXBS,TDA_W,TDA,singlet,triplet,eta,nBas,
 
   isp_W = 1
 
-                 call phLR_A(isp_W,dRPA_W,nBas,nC,nO,nV,nR,nS,1d0,eW,ERI,Aph)
-  if(.not.TDA_W) call phLR_B(isp_W,dRPA_W,nBas,nC,nO,nV,nR,nS,1d0,ERI,Bph)
+                 call phRLR_A(isp_W,dRPA_W,nBas,nC,nO,nV,nR,nS,1d0,eW,ERI,Aph)
+  if(.not.TDA_W) call phRLR_B(isp_W,dRPA_W,nBas,nC,nO,nV,nR,nS,1d0,ERI,Bph)
 
-  call phLR(TDA_W,nS,Aph,Bph,EcRPA,OmRPA,XpY_RPA,XmY_RPA)
+  call phRLR(TDA_W,nS,Aph,Bph,EcRPA,OmRPA,XpY_RPA,XmY_RPA)
   call RGW_excitation_density(nBas,nC,nO,nR,nS,ERI,XpY_RPA,rho_RPA)
 
                call RGW_phBSE_static_kernel_A(eta,nBas,nC,nO,nV,nR,nS,1d0,ERI,OmRPA,rho_RPA,KA)
@@ -123,10 +123,10 @@ subroutine RGW_phACFDT(exchange_kernel,doXBS,TDA_W,TDA,singlet,triplet,eta,nBas,
 
       if(doXBS) then
 
-                       call phLR_A(isp_W,dRPA_W,nBas,nC,nO,nV,nR,nS,lambda,eW,ERI,Aph)
-        if(.not.TDA_W) call phLR_B(isp_W,dRPA_W,nBas,nC,nO,nV,nR,nS,lambda,ERI,Bph)
+                       call phRLR_A(isp_W,dRPA_W,nBas,nC,nO,nV,nR,nS,lambda,eW,ERI,Aph)
+        if(.not.TDA_W) call phRLR_B(isp_W,dRPA_W,nBas,nC,nO,nV,nR,nS,lambda,ERI,Bph)
    
-        call phLR(TDA_W,nS,Aph,Bph,EcRPA,OmRPA,XpY_RPA,XmY_RPA)
+        call phRLR(TDA_W,nS,Aph,Bph,EcRPA,OmRPA,XpY_RPA,XmY_RPA)
         call RGW_excitation_density(nBas,nC,nO,nR,nS,ERI,XpY_RPA,rho_RPA)
    
                      call RGW_phBSE_static_kernel_A(eta,nBas,nC,nO,nV,nR,nS,lambda,ERI,OmRPA,rho_RPA,KA)
@@ -134,13 +134,13 @@ subroutine RGW_phACFDT(exchange_kernel,doXBS,TDA_W,TDA,singlet,triplet,eta,nBas,
 
       end if
 
-                   call phLR_A(ispin,dRPA,nBas,nC,nO,nV,nR,nS,lambda,eGW,ERI,Aph)
-      if(.not.TDA) call phLR_B(ispin,dRPA,nBas,nC,nO,nV,nR,nS,lambda,ERI,Bph)
+                   call phRLR_A(ispin,dRPA,nBas,nC,nO,nV,nR,nS,lambda,eGW,ERI,Aph)
+      if(.not.TDA) call phRLR_B(ispin,dRPA,nBas,nC,nO,nV,nR,nS,lambda,ERI,Bph)
 
                    Aph(:,:) = Aph(:,:) + KA(:,:)
       if(.not.TDA) Bph(:,:) = Bph(:,:) + KB(:,:)
 
-      call phLR(TDA,nS,Aph,Bph,EcAC(ispin),Om,XpY,XmY)
+      call phRLR(TDA,nS,Aph,Bph,EcAC(ispin),Om,XpY,XmY)
 
       call phACFDT_correlation_energy(ispin,exchange_kernel,nBas,nC,nO,nV,nR,nS,ERI,XpY,XmY,Ec(iAC,ispin))
 
@@ -180,10 +180,10 @@ subroutine RGW_phACFDT(exchange_kernel,doXBS,TDA_W,TDA,singlet,triplet,eta,nBas,
 
       if(doXBS) then
 
-                       call phLR_A(isp_W,dRPA_W,nBas,nC,nO,nV,nR,nS,lambda,eW,ERI,Aph)
-        if(.not.TDA_W) call phLR_B(isp_W,dRPA_W,nBas,nC,nO,nV,nR,nS,lambda,ERI,Bph)
+                       call phRLR_A(isp_W,dRPA_W,nBas,nC,nO,nV,nR,nS,lambda,eW,ERI,Aph)
+        if(.not.TDA_W) call phRLR_B(isp_W,dRPA_W,nBas,nC,nO,nV,nR,nS,lambda,ERI,Bph)
   
-        call phLR(TDA_W,nS,Aph,Bph,EcRPA,OmRPA,XpY_RPA,XmY_RPA)
+        call phRLR(TDA_W,nS,Aph,Bph,EcRPA,OmRPA,XpY_RPA,XmY_RPA)
         call RGW_excitation_density(nBas,nC,nO,nR,nS,ERI,XpY_RPA,rho_RPA)
   
                      call RGW_phBSE_static_kernel_A(eta,nBas,nC,nO,nV,nR,nS,lambda,ERI,OmRPA,rho_RPA,KA)
@@ -191,13 +191,13 @@ subroutine RGW_phACFDT(exchange_kernel,doXBS,TDA_W,TDA,singlet,triplet,eta,nBas,
 
       end if  
 
-                   call phLR_A(ispin,dRPA,nBas,nC,nO,nV,nR,nS,lambda,eGW,ERI,Aph)
-      if(.not.TDA) call phLR_B(ispin,dRPA,nBas,nC,nO,nV,nR,nS,lambda,ERI,Bph)
+                   call phRLR_A(ispin,dRPA,nBas,nC,nO,nV,nR,nS,lambda,eGW,ERI,Aph)
+      if(.not.TDA) call phRLR_B(ispin,dRPA,nBas,nC,nO,nV,nR,nS,lambda,ERI,Bph)
 
                    Aph(:,:) = Aph(:,:) + KA(:,:)
       if(.not.TDA) Bph(:,:) = Bph(:,:) + KB(:,:)
 
-      call phLR(TDA,nS,Aph,Bph,EcAC(ispin),Om,XpY,XmY)
+      call phRLR(TDA,nS,Aph,Bph,EcAC(ispin),Om,XpY,XmY)
 
       call phACFDT_correlation_energy(ispin,exchange_kernel,nBas,nC,nO,nV,nR,nS,ERI,XpY,XmY,Ec(iAC,ispin))
 

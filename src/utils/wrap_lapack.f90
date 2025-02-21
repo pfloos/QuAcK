@@ -1,3 +1,53 @@
+subroutine diagonalize_general_matrix_LR(N,A,WR,VL,VR)
+
+! Diagonalize a non-symmetric square matrix
+
+  implicit none
+
+! Input variables
+
+  integer,intent(in)            :: N
+  double precision,intent(inout):: A(N,N)
+  double precision,intent(out)  :: VL(N,N)
+  double precision,intent(out)  :: VR(N,N)
+  double precision,intent(out)  :: WR(N)
+
+! Local variables
+
+  integer                       :: i
+  double precision              :: tmp
+  integer                       :: lwork,info
+  double precision,allocatable  :: work(:),WI(:)
+
+! Memory allocation
+
+  allocate(work(1),WI(N))
+  
+  lwork = -1
+  call dgeev('V','V',N,A,N,WR,WI,VL,N,VR,N,work,lwork,info)
+  lwork = int(work(1))
+
+  deallocate(work)
+
+  allocate(work(lwork))
+
+  call dgeev('V','V',N,A,N,WR,WI,VL,N,VR,N,work,lwork,info)
+
+  do i=1,N
+    tmp = dot_product(vl(:,i),vr(:,i))
+    vl(:,i) = vl(:,i)/tmp
+  end do
+
+  call matout(N,N,matmul(transpose(VL),VR))
+
+  deallocate(work,WI)
+
+  if(info /= 0) then 
+    print*,'Problem in diagonalize_general_matrix (dgeev)!!'
+  end if
+
+end subroutine 
+
 subroutine diagonalize_general_matrix(N,A,WR,VR)
 
 ! Diagonalize a non-symmetric square matrix
@@ -31,7 +81,7 @@ subroutine diagonalize_general_matrix(N,A,WR,VR)
 
   call dgeev('V','V',N,A,N,WR,WI,VL,N,VR,N,work,lwork,info)
 
-  deallocate(work, WI, VL)
+  deallocate(work,WI,VL)
 
   if(info /= 0) then 
     print*,'Problem in diagonalize_general_matrix (dgeev)!!'

@@ -15,4 +15,6 @@
 # ACFDT: AC Kx  XBS
          F  F   T
 # BSE: phBSE phBSE2 ppBSE dBSE dTDA
-       F     F      F     F    T     
+       F     F      F     F    T    
+# HFB: temperature  sigma chem_pot_HF restart_HFB
+          0.05      1.00  T           F
