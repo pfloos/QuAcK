@@ -4,10 +4,11 @@
 
 **Contributors:**
 - [Pierre-Francois Loos](https://pfloos.github.io/WEB_LOOS)
+- [Anthony Scemama](https://scemama.github.io)
 - [Enzo Monino](https://enzomonino.github.io)
 - [Antoine Marie](https://antoine-marie.github.io)
 - [Abdallah Ammar](https://scholar.google.com/citations?user=y437T5sAAAAJ&hl=en)
-- [Anthony Scemama](https://scemama.github.io)
+- [Mauricio Rodriguez-Mayorga](https://scholar.google.com/citations?user=OLGOgQgAAAAJ&hl=es)
   
 # What is it?
 
@@ -67,6 +68,12 @@ The two most important files are:
 - `$QUACK_ROOT/input/methods` that gathers the methods you want to use.
 - `$QUACK_ROOT/input/options` that gathers the different options associated these methods.
 
+Copy the files `methods.default` and `options.default` to `methods.default` `options.default`
+```
+cp $QUACK_ROOT/input/methods.default $QUACK_ROOT/input/methods
+cp $QUACK_ROOT/input/options.default $QUACK_ROOT/input/options
+```
+You can then edit these files to run the methods you'd like with the specific options.
 These files look like this
 ```
 QuAcK 💩 % cat input/methods 
