@@ -73,7 +73,7 @@ Copy the files `methods.default` and `options.default` to `methods.default` `opt
 cp $QUACK_ROOT/input/methods.default $QUACK_ROOT/input/methods
 cp $QUACK_ROOT/input/options.default $QUACK_ROOT/input/options
 ```
-You can then edit these files to run the methods you'd like with the specific options.
+You can then edit these files to run the methods you'd like with specific options.
 These files look like this
 ```
 QuAcK 💩 % cat input/methods 
