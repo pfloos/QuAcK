@@ -361,10 +361,11 @@ subroutine HFB(dotest,maxSCF,thresh,max_diis,level_shift,nNuc,ZNuc,rNuc,ENuc,   
   call write_restart_HFB(nBas,nOrb,Occ,c,chem_pot) ! orders Occ and their c in descending order w.r.t. occupation numbers.
   call print_HFB(nBas,nOrb,nOrb2,nO,norm_anom,Occ,eHFB_state,ENuc,ET,EV,EJ,EK,EL,EHFB,chem_pot,dipole)
 
-! Compute W_no and V_no (i.e. diag[H_HFB] built in NO basis and get W and V).
-! Build the U_qp matrix as U_qp = (WV_hand) (WV_hand) (W_no V_no)^T
-! Then, set H_HFB_can = U_qp H_HFB^no (U_qp)^T that is diagonal ( -e_I  0  )
-! 								(   0  e_I ) 
+! Compute W_no and V_no (i.e. diag[H_HFB^no] built in NO basis and get W and V).
+! Build the U_qp matrix as U_qp = (WV_hand) (W_no V_no)^T
+! Then, set H_HFB_hand = U_qp H_HFB^no (U_qp)^T the eigenvectors of H_HFB_hand are (WV_hand)
+! with eigenvalues     ->      ( -e_I  0  )
+! 		               (   0  e_I ) 
 
   deallocate(eigVEC,eigVAL)
   allocate(eigVEC(nOrb2,nOrb2),eigVAL(nOrb2),c_ao(nBas2,nOrb2))
@@ -388,11 +389,18 @@ subroutine HFB(dotest,maxSCF,thresh,max_diis,level_shift,nNuc,ZNuc,rNuc,ENuc,   
    U_qp(iorb+nOrb,iorb+nOrb) = sqrt(abs(Occ(iorb)))
   enddo
   WV_hand = U_qp
-  U_qp = matmul(WV_hand,transpose(eigVEC))  ! So  U_qp H_HFB_no (U_qp)^T = H_HFB_hand ->  H_HFB_hand (WV_hand) = (WV_hand) e_I
-                                            !   the R of H_HFB_hand is still R^no
-  U_qp = matmul(transpose(WV_hand),U_qp)    ! new U_qp H_HFB_no (U_qp)^T = H_HFB_can  ->  H_HFB_can is diag and R -> r 
-                                            !   the R of H_HFB_can is r, that is ( I_MxM  0 )
-                                            !                                    (    0   0 )
+  U_qp = matmul(WV_hand,transpose(eigVEC))  ! U_qp H_HFB_no (U_qp)^T = H_HFB_hand ->  H_HFB_hand (WV_hand) = (WV_hand) ( -e_I  0  )
+                                            !                                                                          (   0  e_I )
+
+  if(.false.) then ! debug tests
+
+   R = matmul(U_qp,matmul(R,transpose(U_qp)))         ! Should still be R^no
+   H_HFB = matmul(U_qp,matmul(H_HFB,transpose(U_qp))) ! This is H_HFB_hand whose eigenvectors are (WV_hand) with eigenvalues ( -e_I  0   )
+                                                      !                                                                      (   0   e_I )  
+   eigVEC=matmul(H_HFB,R)-matmul(R,H_HFB)             ! This should still be 0
+   eigVEC=matmul(H_HFB,WV_hand)                       ! Printing this and (WV_hand) we can check the eigenvalues by inspection
+
+  endif
 
   ! Check trace of R
   do iorb=1,nOrb
@@ -403,16 +411,9 @@ subroutine HFB(dotest,maxSCF,thresh,max_diis,level_shift,nNuc,ZNuc,rNuc,ENuc,   
   write(*,'(A33,1X,F16.10,A3)') ' Trace [ 1D^NO ]     = ',trace_1rdm,'   '
   write(*,*)
 
-! Canonical representation (for testing) 
-!   R -> r  with r = (WV_hand)^T R^no (WV_hand) = U_qp R^no (U_qp)^T
+! Storing the eigenvectors to transform the QP basis as columns
 
-  if(.false.) then
-   R = matmul(U_qp,matmul(R,transpose(U_qp)))   ! Should be ( I_MxM  0 )
-                                                !           (    0   0 )
-   H_HFB = matmul(U_qp,matmul(H_HFB,transpose(U_qp))) ! H_HFB is diagonal ( -e_I  0   )
-                                                      !                   (   0   e_I )
-  endif
-  U_qp = transpose(U_qp) ! Storing the eigenvectors to transform the QP basis as columns
+  U_qp = transpose(U_qp) 
 
 ! Testing zone
 
