@@ -39,20 +39,24 @@ subroutine BQuAcK(working_dir,dotest,doHFB,nNuc,nBas,nOrb,nC,nO,nV,nR,ENuc,ZNuc,
 ! Local variables
 
   integer                       :: nOrb2
+  integer                       :: ixyz
 
   double precision              :: start_HF     ,end_HF       ,t_HF
-
   double precision              :: start_int, end_int, t_int
+  double precision              :: start_AOtoMO ,end_AOtoMO   ,t_AOtoMO
+
   double precision,allocatable  :: eHF(:)
   double precision,allocatable  :: eHFB_state(:)
   double precision,allocatable  :: U_qp(:,:)
-  double precision,allocatable  :: cHF(:,:)
+  double precision,allocatable  :: cHFB(:,:)
   double precision,allocatable  :: PHF(:,:)
   double precision,allocatable  :: PanomHF(:,:)
   double precision,allocatable  :: FHF(:,:)
   double precision,allocatable  :: Delta(:,:)
   double precision              :: ERHF,EHFB
   double precision,allocatable  :: ERI_AO(:,:,:,:)
+  double precision,allocatable  :: dipole_int_MO(:,:,:)
+  double precision,allocatable  :: ERI_MO(:,:,:,:)
 
   write(*,*)
   write(*,*) '******************************'
@@ -68,7 +72,7 @@ subroutine BQuAcK(working_dir,dotest,doHFB,nNuc,nBas,nOrb,nC,nO,nV,nR,ENuc,ZNuc,
 
   allocate(eHF(nOrb))
 
-  allocate(cHF(nBas,nOrb))
+  allocate(cHFB(nBas,nOrb))
 
   allocate(PHF(nBas,nBas))
   allocate(PanomHF(nBas,nBas))
@@ -77,6 +81,9 @@ subroutine BQuAcK(working_dir,dotest,doHFB,nNuc,nBas,nOrb,nC,nO,nV,nR,ENuc,ZNuc,
 
   allocate(eHFB_state(nOrb2))
   allocate(U_qp(nOrb2,nOrb2))
+
+  allocate(dipole_int_MO(nOrb,nOrb,ncart))
+  allocate(ERI_MO(nOrb,nOrb,nOrb,nOrb))
 
   allocate(ERI_AO(nBas,nBas,nBas,nBas))
   call wall_time(start_int)
@@ -96,7 +103,7 @@ subroutine BQuAcK(working_dir,dotest,doHFB,nNuc,nBas,nOrb,nC,nO,nV,nR,ENuc,ZNuc,
     ! Run first a RHF calculation 
     call wall_time(start_HF)
     call RHF(dotest,maxSCF_HF,thresh_HF,max_diis_HF,guess_type,level_shift,nNuc,ZNuc,rNuc,ENuc, &
-             nBas,nOrb,nO,S,T,V,Hc,ERI_AO,dipole_int_AO,X,ERHF,eHF,cHF,PHF,FHF)
+             nBas,nOrb,nO,S,T,V,Hc,ERI_AO,dipole_int_AO,X,ERHF,eHF,cHFB,PHF,FHF)
     call wall_time(end_HF)
 
     t_HF = end_HF - start_HF
@@ -106,7 +113,7 @@ subroutine BQuAcK(working_dir,dotest,doHFB,nNuc,nBas,nOrb,nC,nO,nV,nR,ENuc,ZNuc,
     ! Continue with a HFB calculation
     call wall_time(start_HF)
     call HFB(dotest,maxSCF_HF,thresh_HF,max_diis_HF,level_shift,nNuc,ZNuc,rNuc,ENuc,       &
-             nBas,nOrb,nOrb2,nO,S,T,V,Hc,ERI_AO,dipole_int_AO,X,EHFB,eHF,cHF,PHF,PanomHF,  &
+             nBas,nOrb,nOrb2,nO,S,T,V,Hc,ERI_AO,dipole_int_AO,X,EHFB,eHF,cHFB,PHF,PanomHF,  &
              FHF,Delta,temperature,sigma,chem_pot_hf,restart_hfb,U_qp,eHFB_state)
     call wall_time(end_HF)
 
@@ -116,15 +123,44 @@ subroutine BQuAcK(working_dir,dotest,doHFB,nNuc,nBas,nOrb,nC,nO,nV,nR,ENuc,ZNuc,
 
   end if
 
+!----------------------------------!
+! AO to MO integral transformation !
+!----------------------------------!
+
+  call wall_time(start_AOtoMO)
+  
+  write(*,*)
+  write(*,*) 'AO to MO transformation... Please be patient'
+  write(*,*)
+
+  ! Read and transform dipole-related integrals
+  
+  do ixyz=1,ncart
+    call AOtoMO(nBas,nOrb,cHFB,dipole_int_AO(1,1,ixyz),dipole_int_MO(1,1,ixyz))
+  end do 
+  
+  ! 4-index transform 
+  
+  call AOtoMO_ERI_RHF(nBas,nOrb,cHFB,ERI_AO,ERI_MO)
+
+  call wall_time(end_AOtoMO)
+  
+  t_AOtoMO = end_AOtoMO - start_AOtoMO
+  write(*,'(A65,1X,F9.3,A8)') 'Total wall time for AO to MO transformation = ',t_AOtoMO,' seconds'
+  write(*,*)
+
+
 ! Memory deallocation
     
   deallocate(eHF)
-  deallocate(cHF)
+  deallocate(cHFB)
   deallocate(PHF)
   deallocate(PanomHF)
   deallocate(FHF)
   deallocate(Delta)
   deallocate(ERI_AO)
+  deallocate(dipole_int_MO)
+  deallocate(ERI_MO)
   deallocate(eHFB_state)
   deallocate(U_qp)
 
