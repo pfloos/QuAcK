@@ -47,7 +47,7 @@ subroutine BQuAcK(working_dir,dotest,doHFB,nNuc,nBas,nOrb,nC,nO,nV,nR,ENuc,ZNuc,
 
   double precision,allocatable  :: eHF(:)
   double precision,allocatable  :: eHFB_state(:)
-  double precision,allocatable  :: U_qp(:,:)
+  double precision,allocatable  :: U_QP(:,:)
   double precision,allocatable  :: cHFB(:,:)
   double precision,allocatable  :: PHF(:,:)
   double precision,allocatable  :: PanomHF(:,:)
@@ -56,7 +56,9 @@ subroutine BQuAcK(working_dir,dotest,doHFB,nNuc,nBas,nOrb,nC,nO,nV,nR,ENuc,ZNuc,
   double precision              :: ERHF,EHFB
   double precision,allocatable  :: ERI_AO(:,:,:,:)
   double precision,allocatable  :: dipole_int_MO(:,:,:)
+  double precision,allocatable  :: dipole_int_QP(:,:,:)
   double precision,allocatable  :: ERI_MO(:,:,:,:)
+  double precision,allocatable  :: ERI_QP(:,:,:,:)
 
   write(*,*)
   write(*,*) '******************************'
@@ -80,10 +82,11 @@ subroutine BQuAcK(working_dir,dotest,doHFB,nNuc,nBas,nOrb,nC,nO,nV,nR,ENuc,ZNuc,
   allocate(Delta(nBas,nBas))
 
   allocate(eHFB_state(nOrb2))
-  allocate(U_qp(nOrb2,nOrb2))
+  allocate(U_QP(nOrb2,nOrb2))
 
-  allocate(dipole_int_MO(nOrb,nOrb,ncart))
-  allocate(ERI_MO(nOrb,nOrb,nOrb,nOrb))
+
+  allocate(ERI_QP(nOrb2,nOrb2,nOrb2,nOrb2))
+  allocate(dipole_int_QP(nOrb2,nOrb2,ncart))
 
   allocate(ERI_AO(nBas,nBas,nBas,nBas))
   call wall_time(start_int)
@@ -114,7 +117,7 @@ subroutine BQuAcK(working_dir,dotest,doHFB,nNuc,nBas,nOrb,nC,nO,nV,nR,ENuc,ZNuc,
     call wall_time(start_HF)
     call HFB(dotest,maxSCF_HF,thresh_HF,max_diis_HF,level_shift,nNuc,ZNuc,rNuc,ENuc,       &
              nBas,nOrb,nOrb2,nO,S,T,V,Hc,ERI_AO,dipole_int_AO,X,EHFB,eHF,cHFB,PHF,PanomHF,  &
-             FHF,Delta,temperature,sigma,chem_pot_hf,restart_hfb,U_qp,eHFB_state)
+             FHF,Delta,temperature,sigma,chem_pot_hf,restart_hfb,U_QP,eHFB_state)
     call wall_time(end_HF)
 
     t_HF = end_HF - start_HF
@@ -135,13 +138,19 @@ subroutine BQuAcK(working_dir,dotest,doHFB,nNuc,nBas,nOrb,nC,nO,nV,nR,ENuc,ZNuc,
 
   ! Read and transform dipole-related integrals
   
+  allocate(dipole_int_MO(nOrb,nOrb,ncart))
   do ixyz=1,ncart
     call AOtoMO(nBas,nOrb,cHFB,dipole_int_AO(1,1,ixyz),dipole_int_MO(1,1,ixyz))
+    call AOtoMO(nOrb,nOrb2,U_QP,dipole_int_MO(1,1,ixyz),dipole_int_QP(1,1,ixyz))
   end do 
+  deallocate(dipole_int_MO)
   
   ! 4-index transform 
   
+  allocate(ERI_MO(nOrb,nOrb,nOrb,nOrb))
   call AOtoMO_ERI_RHF(nBas,nOrb,cHFB,ERI_AO,ERI_MO)
+  call AOtoMO_ERI_RHF(nOrb,nOrb2,U_QP,ERI_MO,ERI_QP)
+  deallocate(ERI_MO)
 
   call wall_time(end_AOtoMO)
   
@@ -159,9 +168,9 @@ subroutine BQuAcK(working_dir,dotest,doHFB,nNuc,nBas,nOrb,nC,nO,nV,nR,ENuc,ZNuc,
   deallocate(FHF)
   deallocate(Delta)
   deallocate(ERI_AO)
-  deallocate(dipole_int_MO)
-  deallocate(ERI_MO)
+  deallocate(ERI_QP)
+  deallocate(dipole_int_QP)
   deallocate(eHFB_state)
-  deallocate(U_qp)
+  deallocate(U_QP)
 
 end subroutine
