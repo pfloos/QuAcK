@@ -39,14 +39,18 @@ subroutine BQuAcK(working_dir,dotest,doHFB,nNuc,nBas,nOrb,nC,nO,nV,nR,ENuc,ZNuc,
 ! Local variables
 
   integer                       :: nOrb2
+  integer                       :: nS
   integer                       :: ixyz
 
   double precision              :: start_HF     ,end_HF       ,t_HF
   double precision              :: start_int, end_int, t_int
   double precision              :: start_AOtoMO ,end_AOtoMO   ,t_AOtoMO
+  double precision              :: start_RPA, end_RPA, t_RPA
 
   double precision,allocatable  :: eHF(:)
   double precision,allocatable  :: eHFB_state(:)
+  double precision,allocatable  :: Cu(:,:)
+  double precision,allocatable  :: Cd(:,:)
   double precision,allocatable  :: U_QP(:,:)
   double precision,allocatable  :: cHFB(:,:)
   double precision,allocatable  :: PHF(:,:)
@@ -58,6 +62,7 @@ subroutine BQuAcK(working_dir,dotest,doHFB,nNuc,nBas,nOrb,nC,nO,nV,nR,ENuc,ZNuc,
   double precision,allocatable  :: dipole_int_MO(:,:,:)
   double precision,allocatable  :: dipole_int_QP(:,:,:)
   double precision,allocatable  :: ERI_MO(:,:,:,:)
+  double precision,allocatable  :: ERI_tmp(:,:,:,:)
   double precision,allocatable  :: ERI_QP(:,:,:,:)
 
   write(*,*)
@@ -138,10 +143,16 @@ subroutine BQuAcK(working_dir,dotest,doHFB,nNuc,nBas,nOrb,nC,nO,nV,nR,ENuc,ZNuc,
 
   ! Read and transform dipole-related integrals
   
+  allocate(Cu(nOrb,nOrb2),Cd(nOrb,nOrb2))
+  Cu(:,:) = U_QP(1:nOrb,1:nOrb2)
+  Cd(:,:) = U_QP(nOrb+1:nOrb2,1:nOrb2)
+
+  ! Transform dipole-related integrals
+
   allocate(dipole_int_MO(nOrb,nOrb,ncart))
   do ixyz=1,ncart
     call AOtoMO(nBas,nOrb,cHFB,dipole_int_AO(1,1,ixyz),dipole_int_MO(1,1,ixyz))
-    call AOtoMO(nOrb,nOrb2,U_QP,dipole_int_MO(1,1,ixyz),dipole_int_QP(1,1,ixyz))
+    call AOtoMO_GHF(nOrb,nOrb2,Cu,Cd,dipole_int_MO(1,1,ixyz),dipole_int_QP(1,1,ixyz)) ! Used as MO to QP
   end do 
   deallocate(dipole_int_MO)
   
@@ -149,7 +160,22 @@ subroutine BQuAcK(working_dir,dotest,doHFB,nNuc,nBas,nOrb,nC,nO,nV,nR,ENuc,ZNuc,
   
   allocate(ERI_MO(nOrb,nOrb,nOrb,nOrb))
   call AOtoMO_ERI_RHF(nBas,nOrb,cHFB,ERI_AO,ERI_MO)
-  call AOtoMO_ERI_RHF(nOrb,nOrb2,U_QP,ERI_MO,ERI_QP)
+  deallocate(ERI_AO)
+
+  allocate(ERI_tmp(nOrb2,nOrb2,nOrb2,nOrb2))
+  call AOtoMO_ERI_GHF(nOrb,nOrb2,Cu,Cu,ERI_MO,ERI_tmp)  ! Used as MO to QP
+  ERI_QP(:,:,:,:) = ERI_tmp(:,:,:,:)
+
+  call AOtoMO_ERI_GHF(nOrb,nOrb2,Cu,Cd,ERI_MO,ERI_tmp)  ! Used as MO to QP
+  ERI_QP(:,:,:,:) = ERI_QP(:,:,:,:) + ERI_tmp(:,:,:,:)
+
+  call AOtoMO_ERI_GHF(nOrb,nOrb2,Cd,Cu,ERI_MO,ERI_tmp)  ! Used as MO to QP
+  ERI_QP(:,:,:,:) = ERI_QP(:,:,:,:) + ERI_tmp(:,:,:,:)
+
+  call AOtoMO_ERI_GHF(nOrb,nOrb2,Cd,Cd,ERI_MO,ERI_tmp)  ! Used as MO to QP
+  ERI_QP(:,:,:,:) = ERI_QP(:,:,:,:) + ERI_tmp(:,:,:,:)
+
+  deallocate(Cu,Cd,ERI_tmp)
   deallocate(ERI_MO)
 
   call wall_time(end_AOtoMO)
@@ -158,6 +184,28 @@ subroutine BQuAcK(working_dir,dotest,doHFB,nNuc,nBas,nOrb,nC,nO,nV,nR,ENuc,ZNuc,
   write(*,'(A65,1X,F9.3,A8)') 'Total wall time for AO to MO transformation = ',t_AOtoMO,' seconds'
   write(*,*)
 
+!-----------------------------------!
+! Random-phase approximation module !
+!-----------------------------------!
+  
+  !doRPA = dophRPA .or. dophRPAx .or. docrRPA .or. doppRPA
+             
+  !if(doRPA) then
+  if(.true.) then
+     
+    nS = nOrb*nOrb
+    call wall_time(start_RPA)
+    !call RRPA(use_gpu,dotest,dophRPA,dophRPAx,docrRPA,doppRPA,TDA,doACFDT,exchange_kernel,singlet,triplet, &
+    !          nOrb,nC,nO,nV,nR,nS,ENuc,EHFB,ERI_QP,dipole_int_QP,eHFB_state)
+    call RRPA(.false.,dotest,.true.,.false.,.false.,.false.,.false.,.false.,.false.,.true.,.false., &
+              nOrb2,0,nOrb,nOrb,0,nS,ENuc,EHFB,ERI_QP,dipole_int_QP,eHFB_state)
+    call wall_time(end_RPA)
+  
+    t_RPA = end_RPA - start_RPA
+    write(*,'(A65,1X,F9.3,A8)') 'Total wall time for RPA = ',t_RPA,' seconds'
+    write(*,*)
+
+  end if
 
 ! Memory deallocation
     
@@ -167,7 +215,6 @@ subroutine BQuAcK(working_dir,dotest,doHFB,nNuc,nBas,nOrb,nC,nO,nV,nR,ENuc,ZNuc,
   deallocate(PanomHF)
   deallocate(FHF)
   deallocate(Delta)
-  deallocate(ERI_AO)
   deallocate(ERI_QP)
   deallocate(dipole_int_QP)
   deallocate(eHFB_state)

@@ -17,8 +17,6 @@ subroutine AOtoMO_ERI_GHF(nBas,nBas2,c1,c2,ERI_AO,ERI_MO)
 ! Local variables
 
   double precision,allocatable  :: scr(:,:,:,:)
-  integer                       :: mu,nu,la,si
-  integer                       :: i,j,k,l
 
 ! Output variables
 
@@ -35,5 +33,7 @@ subroutine AOtoMO_ERI_GHF(nBas,nBas2,c1,c2,ERI_AO,ERI_MO)
   call dgemm('T','N',nBas*nBas2**2,nBas2,nBas,1d0,ERI_MO,nBas,c1(1,1),nBas,0d0,scr,nBas*nBas2**2)
 
   call dgemm('T','N',nBas2**3,nBas2,nBas,1d0,scr,nBas,c2(1,1),nBas,0d0,ERI_MO,nBas2**3)
+
+  deallocate(scr)
 
 end subroutine 
