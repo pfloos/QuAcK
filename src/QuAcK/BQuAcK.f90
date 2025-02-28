@@ -1,4 +1,4 @@
-subroutine BQuAcK(working_dir,dotest,doHFB,nNuc,nBas,nOrb,nC,nO,nV,nR,ENuc,ZNuc,rNuc,                                    &
+subroutine BQuAcK(working_dir,dotest,doHFB,dophRPA,doG0W0,nNuc,nBas,nOrb,nC,nO,nV,nR,ENuc,ZNuc,rNuc,                     &
                   S,T,V,Hc,X,dipole_int_AO,maxSCF_HF,max_diis_HF,thresh_HF,level_shift,                                  &
                   guess_type,mix,temperature,sigma,chem_pot_hf,restart_hfb)
 
@@ -12,6 +12,8 @@ subroutine BQuAcK(working_dir,dotest,doHFB,nNuc,nBas,nOrb,nC,nO,nV,nR,ENuc,ZNuc,
   logical,intent(in)            :: dotest
 
   logical,intent(in)            :: doHFB
+  logical,intent(in)            :: dophRPA
+  logical,intent(in)            :: doG0W0
 
   logical,intent(in)            :: restart_hfb
   logical,intent(in)            :: chem_pot_hf
@@ -46,6 +48,7 @@ subroutine BQuAcK(working_dir,dotest,doHFB,nNuc,nBas,nOrb,nC,nO,nV,nR,ENuc,ZNuc,
   double precision              :: start_int, end_int, t_int
   double precision              :: start_AOtoMO ,end_AOtoMO   ,t_AOtoMO
   double precision              :: start_RPA, end_RPA, t_RPA
+  double precision              :: start_GW, end_GW, t_GW
 
   double precision,allocatable  :: eHF(:)
   double precision,allocatable  :: eHFB_state(:)
@@ -188,15 +191,11 @@ subroutine BQuAcK(working_dir,dotest,doHFB,nNuc,nBas,nOrb,nC,nO,nV,nR,ENuc,ZNuc,
 ! Random-phase approximation module !
 !-----------------------------------!
   
-  !doRPA = dophRPA .or. dophRPAx .or. docrRPA .or. doppRPA
              
-  !if(doRPA) then
-  if(.true.) then
+  if(dophRPA) then
      
     nS = nOrb*nOrb
     call wall_time(start_RPA)
-    !call RRPA(use_gpu,dotest,dophRPA,dophRPAx,docrRPA,doppRPA,TDA,doACFDT,exchange_kernel,singlet,triplet, &
-    !          nOrb,nC,nO,nV,nR,nS,ENuc,EHFB,ERI_QP,dipole_int_QP,eHFB_state)
     call RRPA(.false.,dotest,.true.,.false.,.false.,.false.,.false.,.false.,.false.,.true.,.false., &
               nOrb2,0,nOrb,nOrb,0,nS,ENuc,EHFB,ERI_QP,dipole_int_QP,eHFB_state)
     call wall_time(end_RPA)
@@ -205,6 +204,26 @@ subroutine BQuAcK(working_dir,dotest,doHFB,nNuc,nBas,nOrb,nC,nO,nV,nR,ENuc,ZNuc,
     write(*,'(A65,1X,F9.3,A8)') 'Total wall time for RPA = ',t_RPA,' seconds'
     write(*,*)
 
+  end if
+
+!-----------!
+! GW module !
+!-----------!
+    
+    
+  if(doG0W0) then
+    
+    call wall_time(start_GW)
+    !call RGW(dotest,doG0W0,doevGW,doqsGW,doufG0W0,doufGW,maxSCF_GW,thresh_GW,max_diis_GW,                &
+    !         doACFDT,exchange_kernel,doXBS,dophBSE,dophBSE2,doppBSE,TDA_W,TDA,dBSE,dTDA,singlet,triplet, &
+    !         lin_GW,eta_GW,reg_GW,nNuc,ZNuc,rNuc,ENuc,nBas,nOrb,nC,nO,nV,nR,nS,ERHF,S,X,T,               &
+    !         V,Hc,ERI_AO,ERI_MO,dipole_int_AO,dipole_int_MO,PHF,cHF,eHF)
+    call wall_time(end_GW)
+  
+    t_GW = end_GW - start_GW
+    write(*,'(A65,1X,F9.3,A8)') 'Total wall time for GW = ',t_GW,' seconds'
+    write(*,*)
+  
   end if
 
 ! Memory deallocation

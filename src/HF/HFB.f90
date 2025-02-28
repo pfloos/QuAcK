@@ -49,6 +49,7 @@ subroutine HFB(dotest,maxSCF,thresh,max_diis,level_shift,nNuc,ZNuc,rNuc,ENuc,   
   double precision              :: EK
   double precision              :: EL
   double precision              :: chem_pot
+  double precision              :: Delta_HL
   double precision              :: dipole(ncart)
 
   double precision              :: Conv
@@ -347,6 +348,7 @@ subroutine HFB(dotest,maxSCF,thresh,max_diis,level_shift,nNuc,ZNuc,rNuc,ENuc,   
 ! also print the restart file
 
   eHFB_state(:) = eigVAL(:)
+  Delta_HL=eHFB_state(nOrb+1)-eHFB_state(nOrb)
   deallocate(eigVEC,eigVAL)
   allocate(eigVEC(nOrb,nOrb),eigVAL(nOrb))
   eigVEC(1:nOrb,1:nOrb) = 0d0
@@ -357,7 +359,7 @@ subroutine HFB(dotest,maxSCF,thresh,max_diis,level_shift,nNuc,ZNuc,rNuc,ENuc,   
   norm_anom = trace_matrix(nOrb,matmul(transpose(R(1:nOrb,nOrb+1:nOrb2)),R(1:nOrb,nOrb+1:nOrb2)))
   call dipole_moment(nBas,P,nNuc,ZNuc,rNuc,dipole_int,dipole)
   call write_restart_HFB(nBas,nOrb,Occ,c,chem_pot) ! orders Occ and their c in descending order w.r.t. occupation numbers.
-  call print_HFB(nBas,nOrb,nOrb2,nO,norm_anom,Occ,eHFB_state,ENuc,ET,EV,EJ,EK,EL,EHFB,chem_pot,dipole)
+  call print_HFB(nBas,nOrb,nOrb2,nO,norm_anom,Occ,eHFB_state,ENuc,ET,EV,EJ,EK,EL,EHFB,chem_pot,dipole,Delta_HL)
 
 ! Compute W_no and V_no (i.e. diag[H_HFB^no] built in NO basis and get W and V).
 

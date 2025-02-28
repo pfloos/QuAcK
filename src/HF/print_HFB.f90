@@ -1,7 +1,7 @@
 
 ! ---
 
-subroutine print_HFB(nBas, nOrb, nOrb2, nO, N_anom, Occ, eHFB_state, ENuc, ET, EV, EJ, EK, EL, ERHF, chem_pot, dipole)
+subroutine print_HFB(nBas, nOrb, nOrb2, nO, N_anom, Occ, eHFB_state, ENuc, ET, EV, EJ, EK, EL, ERHF, chem_pot, dipole, Delta_HL)
 
 ! Print one-electron energies and other stuff
 
@@ -23,6 +23,7 @@ subroutine print_HFB(nBas, nOrb, nOrb2, nO, N_anom, Occ, eHFB_state, ENuc, ET, E
   double precision,intent(in)        :: ERHF
   double precision,intent(in)        :: chem_pot
   double precision,intent(in)        :: N_anom
+  double precision,intent(in)        :: Delta_HL
   double precision,intent(in)        :: dipole(ncart)
 
 ! Local variables
@@ -54,6 +55,7 @@ subroutine print_HFB(nBas, nOrb, nOrb2, nO, N_anom, Occ, eHFB_state, ENuc, ET, E
   write(*,'(A50)')           '---------------------------------------'
   write(*,'(A33,1X,F16.10,A3)') ' Chemical potential  = ',chem_pot,' au'
   write(*,'(A33,1X,F16.10,A3)') ' | Anomalous dens |  = ',N_anom,'   '
+  write(*,'(A33,1X,F16.10,A3)') ' Delta QP HOMO-LUMO  = ',Delta_HL,' au'
   write(*,'(A50)')           '---------------------------------------'
   write(*,'(A36)')           ' Dipole moment (Debye)    '
   write(*,'(10X,4A10)')      'X','Y','Z','Tot.'
