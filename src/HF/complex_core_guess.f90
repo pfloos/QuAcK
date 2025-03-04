@@ -15,7 +15,6 @@ subroutine complex_core_guess(nBas, nOrb, Hc, X, c)
   complex*16,allocatable  :: cp(:,:)
   complex*16,allocatable  :: e(:)
 
-
 ! Output variables
 
   complex*16,intent(out)  :: c(nBas,nOrb)

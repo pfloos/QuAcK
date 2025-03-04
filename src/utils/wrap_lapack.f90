@@ -296,6 +296,29 @@ subroutine linear_solve(N,A,b,x,rcond)
 
 end subroutine 
 
+subroutine complex_linear_solve(N,A,b,x,rcond)
+
+! Solve the linear system A.x = b where A is a NxN matrix
+! and x and b are vectors of size N
+
+  implicit none
+
+  integer,intent(in)             :: N
+  complex*16,intent(out)         :: A(N,N),b(N)
+  double precision               :: rcond
+  complex*16,intent(out)         :: x(N)
+
+  integer                        :: info
+  double precision               :: ferr,berr
+  integer,allocatable            :: ipiv(:)
+
+  ! Find optimal size for temporary arrays
+
+  allocate(ipiv(N))
+
+  call zgesv(N,1,A,N,ipiv,b,N,info)
+end subroutine
+
 subroutine easy_linear_solve(N,A,b,x)
 
 ! Solve the linear system A.x = b where A is a NxN matrix

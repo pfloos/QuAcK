@@ -9,7 +9,7 @@ subroutine complex_Hartree_matrix_AO_basis(nBas,P,ERI,H)
 
   integer,intent(in)            :: nBas
   complex*16,intent(in)         :: P(nBas,nBas)
-  complex*16,intent(in)         :: ERI(nBas,nBas,nBas,nBas)
+  double precision,intent(in)   :: ERI(nBas,nBas,nBas,nBas)
 
 ! Local variables
 
@@ -25,7 +25,6 @@ subroutine complex_Hartree_matrix_AO_basis(nBas,P,ERI,H)
     do nu=1,nBas
       do la=1,nBas
         do mu=1,nBas
-           write(*,*) mu,la,nu,si,ERI(mu,la,nu,si)
            H(mu,nu) = H(mu,nu) + P(la,si)*ERI(mu,la,nu,si)
         end do
       end do

@@ -294,6 +294,39 @@ subroutine prepend(N,M,A,b)
 
 end subroutine 
 
+subroutine complex_prepend(N,M,A,b)
+
+! Prepend the vector b of size N into the matrix A of size NxM
+
+  implicit none
+
+! Input variables
+
+  integer,intent(in)            :: N,M
+  complex*16,intent(in)         :: b(N)
+
+! Local viaruabkes
+
+  integer                       :: i,j
+
+! Output variables
+
+  complex*16,intent(out)        :: A(N,M)
+
+
+! print*,'b in append'
+! call matout(N,1,b)
+
+  do i=1,N
+    do j=M-1,1,-1
+      A(i,j+1) = A(i,j)
+    end do
+    A(i,1) = b(i)
+  end do
+
+end subroutine
+
+
 !------------------------------------------------------------------------
 subroutine append(N,M,A,b)
 
