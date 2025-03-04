@@ -93,7 +93,7 @@ subroutine cRHF(dotest,maxSCF,thresh,max_diis,guess_type,level_shift,nNuc,ZNuc,r
 ! Guess coefficients and density matrix
 
   call complex_mo_guess(nBas,nBas,guess_type,S,Hc,X,c)
-  P(:,:) = 2d0*matmul(c(:,1:nO),conjg(transpose(c(:,1:nO))))
+  P(:,:) = 2d0*matmul(c(:,1:nO),transpose(c(:,1:nO)))
 ! Initialization
 
   n_diis          = 0
@@ -166,13 +166,13 @@ subroutine cRHF(dotest,maxSCF,thresh,max_diis,guess_type,level_shift,nNuc,ZNuc,r
 
     ! Diagonalize Fock matrix
 
-    Fp = matmul(conjg(transpose(X)),matmul(F,X))
+    Fp = matmul(transpose(X),matmul(F,X))
     cp(:,:) = Fp(:,:)
     call diagonalize_matrix(nBas,cp,eHF)
     c = matmul(X,cp)
     ! Density matrix
 
-    P(:,:) = 2d0*matmul(c(:,1:nO),conjg(transpose(c(:,1:nO))))
+    P(:,:) = 2d0*matmul(c(:,1:nO),transpose(c(:,1:nO)))
 
     ! Dump results
 

@@ -28,9 +28,8 @@ subroutine complex_core_guess(nBas, nOrb, Hc, X, c)
 
   cp(:,:) = matmul(transpose(X(:,:)), matmul(Hc(:,:), X(:,:)))
 
-  call diagonalize_complex_matrix(nOrb, cp, e)
+  call complex_diagonalize_matrix(nOrb, cp, e)
   c(:,:) = matmul(X(:,:), cp(:,:))
-  write(*,*) c
   deallocate(cp, e)
 
 end subroutine

@@ -25,7 +25,7 @@ subroutine complex_Hartree_matrix_AO_basis(nBas,P,ERI,H)
     do nu=1,nBas
       do la=1,nBas
         do mu=1,nBas
-          H(mu,nu) = H(mu,nu) + P(la,si)*ERI(mu,la,nu,si)
+           H(mu,nu) = H(mu,nu) + P(la,si)*ERI(mu,la,nu,si)
         end do
       end do
     end do

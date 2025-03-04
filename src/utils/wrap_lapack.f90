@@ -128,7 +128,7 @@ subroutine diagonalize_matrix(N,A,e)
   
 end subroutine 
 
-subroutine diagonalize_complex_matrix(N,A,e)
+subroutine complex_diagonalize_matrix(N,A,e)
 
 ! Diagonalize a general complex matrix
 
@@ -143,28 +143,27 @@ subroutine diagonalize_complex_matrix(N,A,e)
 ! Local variables
 
   integer                       :: lwork,info
-  integer                       :: sdim
-  double precision              :: rwork(N)
-  logical                       :: bwork(N)
-  double precision,allocatable  :: work(:)
-  complex*16                    :: VS(N,N)
+  double precision              :: rwork(2*N)
+  complex*16,allocatable        :: work(:)
+  complex*16                    :: VL(N,N)
+  complex*16                    :: VR(N,N)
 
 ! Memory allocation
 
   allocate(work(1))
   
   lwork = -1
-  call zgees('V','N',N,A,N,sdim,e,VS,N,work,lwork,rwork,bwork,info)
+  call zgeev('N','V',N,A,N,e,VL,N,VR,N,work,lwork,rwork,info)
   lwork = int(work(1))
 
   deallocate(work)
 
   allocate(work(lwork))
 
-  call zgees('V','N',N,A,N,sdim,e,VS,N,work,lwork,rwork,bwork,info)
+  call zgeev('N','V',N,A,N,e,VL,N,VR,N,work,lwork,rwork,info)
 
   deallocate(work)
-  A = VS
+  A = VR
 
   if(info /= 0) then 
     print*,'Problem in diagonalize_matrix (zgees)!!'
