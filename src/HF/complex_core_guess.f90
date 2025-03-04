@@ -7,7 +7,7 @@ subroutine complex_core_guess(nBas, nOrb, Hc, X, c)
 ! Input variables
 
   integer,intent(in)            :: nBas, nOrb
-  double precision,intent(in)   :: Hc(nBas,nBas)
+  complex*16,intent(in)         :: Hc(nBas,nBas)
   double precision,intent(in)   :: X(nBas,nOrb)
 
 ! Local variables
@@ -28,9 +28,9 @@ subroutine complex_core_guess(nBas, nOrb, Hc, X, c)
 
   cp(:,:) = matmul(transpose(X(:,:)), matmul(Hc(:,:), X(:,:)))
 
-  call diagonalize_matrix(nOrb, cp, e)
+  call diagonalize_complex_matrix(nOrb, cp, e)
   c(:,:) = matmul(X(:,:), cp(:,:))
-
+  write(*,*) c
   deallocate(cp, e)
 
 end subroutine

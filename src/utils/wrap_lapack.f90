@@ -128,6 +128,50 @@ subroutine diagonalize_matrix(N,A,e)
   
 end subroutine 
 
+subroutine diagonalize_complex_matrix(N,A,e)
+
+! Diagonalize a general complex matrix
+
+  implicit none
+
+! Input variables
+
+  integer,intent(in)            :: N
+  complex*16,intent(inout)      :: A(N,N)
+  complex*16,intent(out)        :: e(N)
+
+! Local variables
+
+  integer                       :: lwork,info
+  integer                       :: sdim
+  double precision              :: rwork(N)
+  logical                       :: bwork(N)
+  double precision,allocatable  :: work(:)
+  complex*16                    :: VS(N,N)
+
+! Memory allocation
+
+  allocate(work(1))
+  
+  lwork = -1
+  call zgees('V','N',N,A,N,sdim,e,VS,N,work,lwork,rwork,bwork,info)
+  lwork = int(work(1))
+
+  deallocate(work)
+
+  allocate(work(lwork))
+
+  call zgees('V','N',N,A,N,sdim,e,VS,N,work,lwork,rwork,bwork,info)
+
+  deallocate(work)
+  A = VS
+
+  if(info /= 0) then 
+    print*,'Problem in diagonalize_matrix (zgees)!!'
+  end if
+  
+end subroutine 
+
 subroutine svd(N,A,U,D,Vt)
 
   ! Compute A = U.D.Vt

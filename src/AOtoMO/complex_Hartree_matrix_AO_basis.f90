@@ -14,7 +14,7 @@ subroutine complex_Hartree_matrix_AO_basis(nBas,P,ERI,H)
 ! Local variables
 
   integer                       :: mu,nu,la,si
-
+ 
 ! Output variables
 
   complex*16,intent(out)  :: H(nBas,nBas)
