@@ -168,7 +168,7 @@ subroutine cRHF(dotest,maxSCF,thresh,max_diis,guess_type,level_shift,nNuc,ZNuc,r
 
     Fp = matmul(transpose(X),matmul(F,X))
     cp(:,:) = Fp(:,:)
-    call diagonalize_matrix(nBas,cp,eHF)
+    call complex_diagonalize_matrix(nBas,cp,eHF)
     c = matmul(X,cp)
     ! Density matrix
 
