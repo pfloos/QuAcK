@@ -4,7 +4,7 @@ program QuAcK
   include 'parameters.h'
 
   logical                       :: doRQuAcK,doUQuAcK,doGQuAcK,doBQuAcK
-  logical                       :: doRHF,doUHF,doGHF,doROHF,doHFB
+  logical                       :: doRHF,doUHF,doGHF,doROHF,doHFB,docRHF
   logical                       :: dostab,dosearch
   logical                       :: doMP2,doMP3
   logical                       :: doCCD,dopCCD,doDCD,doCCSD,doCCSDT
@@ -112,7 +112,7 @@ program QuAcK
 !------------------!
 
   call read_methods(working_dir,                           &
-                    doRHF,doUHF,doGHF,doROHF,doHFB,        &
+                    doRHF,doUHF,doGHF,doROHF,doHFB,docRHF, &
                     doMP2,doMP3,                           &
                     doCCD,dopCCD,doDCD,doCCSD,doCCSDT,     &
                     dodrCCD,dorCCD,docrCCD,dolCCD,         &
@@ -209,7 +209,7 @@ program QuAcK
 !---------------------!
 
   doRQuAcK = .false.
-  if(doRHF .or. doROHF) doRQuAcK = .true.
+  if(doRHF .or. doROHF .or. docRHF) doRQuAcK = .true.
 
   doUQuAcK = .false.
   if(doUHF) doUQuAcK = .true.
@@ -246,7 +246,7 @@ program QuAcK
                       TDA_W,lin_GW,reg_GW,eta_GW,maxSCF_GT,max_diis_GT,thresh_GT,TDA_T,lin_GT,reg_GT,eta_GT,                  &
                       dophBSE,dophBSE2,doppBSE,dBSE,dTDA,doACFDT,exchange_kernel,doXBS)
     else
-      call RQuAcK(working_dir,use_gpu,doRtest,doRHF,doROHF,dostab,dosearch,doMP2,doMP3,doCCD,dopCCD,doDCD,doCCSD,doCCSDT, &
+      call RQuAcK(working_dir,use_gpu,doRtest,doRHF,doROHF,docRHF,dostab,dosearch,doMP2,doMP3,doCCD,dopCCD,doDCD,doCCSD,doCCSDT, &
                   dodrCCD,dorCCD,docrCCD,dolCCD,doCIS,doCIS_D,doCID,doCISD,doFCI,dophRPA,dophRPAx,docrRPA,doppRPA,        &
                   doG0F2,doevGF2,doqsGF2,doufG0F02,doG0F3,doevGF3,doG0W0,doevGW,doqsGW,doufG0W0,doufGW,                   &
                   doG0T0pp,doevGTpp,doqsGTpp,doufG0T0pp,doG0T0eh,doevGTeh,doqsGTeh,                                       &

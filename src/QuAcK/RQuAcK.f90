@@ -1,4 +1,5 @@
-subroutine RQuAcK(working_dir,use_gpu,dotest,doRHF,doROHF,dostab,dosearch,doMP2,doMP3,doCCD,dopCCD,doDCD,doCCSD,doCCSDT, &
+subroutine RQuAcK(working_dir,use_gpu,dotest,doRHF,doROHF,docRHF,                                                        &
+                  dostab,dosearch,doMP2,doMP3,doCCD,dopCCD,doDCD,doCCSD,doCCSDT,                                         &
                   dodrCCD,dorCCD,docrCCD,dolCCD,doCIS,doCIS_D,doCID,doCISD,doFCI,dophRPA,dophRPAx,docrRPA,doppRPA,       & 
                   doG0F2,doevGF2,doqsGF2,doufG0F02,doG0F3,doevGF3,doG0W0,doevGW,doqsGW,doufG0W0,doufGW,                  &
                   doG0T0pp,doevGTpp,doqsGTpp,doufG0T0pp,doG0T0eh,doevGTeh,doqsGTeh,                                      & 
@@ -20,7 +21,7 @@ subroutine RQuAcK(working_dir,use_gpu,dotest,doRHF,doROHF,dostab,dosearch,doMP2,
 
   logical,intent(in)            :: dotest
 
-  logical,intent(in)            :: doRHF,doROHF
+  logical,intent(in)            :: doRHF,doROHF,docRHF
   logical,intent(in)            :: dostab
   logical,intent(in)            :: dosearch
   logical,intent(in)            :: doMP2,doMP3
@@ -159,6 +160,19 @@ subroutine RQuAcK(working_dir,use_gpu,dotest,doRHF,doROHF,dostab,dosearch,doMP2,
 
     t_HF = end_HF - start_HF
     write(*,'(A65,1X,F9.3,A8)') 'Total wall time for ROHF = ',t_HF,' seconds'
+    write(*,*)
+
+  end if
+
+  if(docRHF) then
+    
+    call wall_time(start_HF)
+    call cRHF(dotest,maxSCF_HF,thresh_HF,max_diis_HF,guess_type,level_shift,nNuc,ZNuc,rNuc,ENuc, &
+             nBas,nO,S,T,V,ERI_AO,dipole_int_AO,X,ERHF,eHF,cHF,PHF)
+    call wall_time(end_HF)
+
+    t_HF = end_HF - start_HF
+    write(*,'(A65,1X,F9.3,A8)') 'Total wall time for cRHF = ',t_HF,' seconds'
     write(*,*)
 
   end if

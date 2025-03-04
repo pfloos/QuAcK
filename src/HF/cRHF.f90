@@ -60,7 +60,7 @@ subroutine cRHF(dotest,maxSCF,thresh,max_diis,guess_type,level_shift,nNuc,ZNuc,r
 
   complex*16,intent(out)        :: ERHF
   complex*16,intent(out)        :: eHF(nBas)
-  complex*16,intent(out)        :: c(nBas,nBas)
+  complex*16,intent(inout)      :: c(nBas,nBas)
   complex*16,intent(out)        :: P(nBas,nBas)
 
 ! Hello world
@@ -83,20 +83,17 @@ subroutine cRHF(dotest,maxSCF,thresh,max_diis,guess_type,level_shift,nNuc,ZNuc,r
            Hc(nBas,nBas),W(nBas,nBas))
 
 ! Read CAP integrals from file
-
   call read_CAP_integrals(nBas,W)
+  W(:,:) = -eta*W(:,:)
 
-  W(:,:) = eta*W(:,:)
+! Define core Hamiltonian with CAP part
 
-! Define core Hamiltonian
-
-  Hc(:,:) = dcmplx(T+V,W)
+  Hc(:,:) = cmplx(T+V,W,kind=8)
 
 ! Guess coefficients and density matrix
 
-  call mo_guess(nBas,nBas,guess_type,S,Hc,X,c)
+  call complex_mo_guess(nBas,nBas,guess_type,S,Hc,X,c)
   P(:,:) = 2d0*matmul(c(:,1:nO),transpose(c(:,1:nO)))
-
 ! Initialization
 
   n_diis          = 0
@@ -112,10 +109,10 @@ subroutine cRHF(dotest,maxSCF,thresh,max_diis,guess_type,level_shift,nNuc,ZNuc,r
 !------------------------------------------------------------------------
 
   write(*,*)
-  write(*,*)'-----------------------------------------------------------------------------'
-  write(*,'(1X,A1,1X,A3,1X,A1,1X,A16,1X,A1,1X,A16,1X,A1,1X,A16,1X,A1,1X,A10,1X,A1,1X)') &
+  write(*,*)'--------------------------------------------------------------------------------------------------'
+  write(*,'(1X,A1,1X,A3,1X,A1,1X,A36,1X,A1,1X,A16,1X,A1,1X,A16,1X,A1,1X,A10,1X,A1,1X)') &
             '|','#','|','E(RHF)','|','EJ(RHF)','|','EK(RHF)','|','Conv','|'
-  write(*,*)'-----------------------------------------------------------------------------'
+  write(*,*)'--------------------------------------------------------------------------------------------------'
 
   do while(Conv > thresh .and. nSCF < maxSCF)
 
@@ -129,6 +126,9 @@ subroutine cRHF(dotest,maxSCF,thresh,max_diis,guess_type,level_shift,nNuc,ZNuc,r
     call exchange_matrix_AO_basis(nBas,P,ERI,K)
     
     F(:,:) = Hc(:,:) + J(:,:) + 0.5d0*K(:,:)
+    write(*,*) "F"
+    write(*,*) F(1,2)
+    write(*,*) F(2,1)
 
     ! Check convergence 
 
@@ -174,18 +174,17 @@ subroutine cRHF(dotest,maxSCF,thresh,max_diis,guess_type,level_shift,nNuc,ZNuc,r
     cp(:,:) = Fp(:,:)
     call diagonalize_matrix(nBas,cp,eHF)
     c = matmul(X,cp)
-
     ! Density matrix
 
     P(:,:) = 2d0*matmul(c(:,1:nO),transpose(c(:,1:nO)))
 
     ! Dump results
 
-    write(*,'(1X,A1,1X,I3,1X,A1,1X,F16.10,1X,A1,1X,F16.10,1X,A1,1X,F16.10,1X,A1,1X,E10.2,1X,A1,1X)') &
-      '|',nSCF,'|',ERHF + ENuc,'|',EJ,'|',EK,'|',Conv,'|'
-
+    write(*,'(1X,A1,1X,I3,1X,A1,1X,F32.10,1X,A1,1X,F32.10,A1,1X,A1,1X,F32.10,1X,A1,1X,F32.10,1X,A1,1X,E10.2,1X,A1,1X)') &
+      '|',nSCF,'|',real(ERHF),'+',aimag(ERHF),'i','|',EJ,'|',EK,'|',Conv,'|'
+    write(*,*) real(ERHF),'+',aimag(ERHF),'i'
   end do
-  write(*,*)'-----------------------------------------------------------------------------'
+  write(*,*)'--------------------------------------------------------------------------------------------------'
 !------------------------------------------------------------------------
 ! End of SCF loop
 !------------------------------------------------------------------------
@@ -207,8 +206,7 @@ subroutine cRHF(dotest,maxSCF,thresh,max_diis,guess_type,level_shift,nNuc,ZNuc,r
 ! Compute dipole moments
 
   call dipole_moment(nBas,P,nNuc,ZNuc,rNuc,dipole_int,dipole)
-  call print_RHF(nBas,nBas,nO,eHF,C,ENuc,ET,EV,EJ,EK,ERHF,dipole)
-
+  call print_cRHF(nBas,nBas,nO,eHF,C,ENuc,ET,EV,EJ,EK,ERHF,dipole)
 ! Testing zone
 
   if(dotest) then

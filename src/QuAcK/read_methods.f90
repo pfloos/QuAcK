@@ -1,5 +1,5 @@
 subroutine read_methods(working_dir,                           &
-                        doRHF,doUHF,doGHF,doROHF,doHFB,        &
+                        doRHF,doUHF,doGHF,doROHF,doHFB,docRHF,  &
                         doMP2,doMP3,                           & 
                         doCCD,dopCCD,doDCD,doCCSD,doCCSDT,     & 
                         do_drCCD,do_rCCD,do_crCCD,do_lCCD,     &
@@ -22,7 +22,7 @@ subroutine read_methods(working_dir,                           &
 
 ! Output variables
 
-  logical,intent(out)           :: doRHF,doUHF,doGHF,doROHF,doHFB
+  logical,intent(out)           :: doRHF,doUHF,doGHF,doROHF,doHFB,docRHF
   logical,intent(out)           :: doMP2,doMP3
   logical,intent(out)           :: doCCD,dopCCD,doDCD,doCCSD,doCCSDT
   logical,intent(out)           :: do_drCCD,do_rCCD,do_crCCD,do_lCCD
@@ -59,14 +59,16 @@ subroutine read_methods(working_dir,                           &
       doGHF  = .false.
       doROHF = .false.
       doHFB  = .false.
+      docRHF = .false.
       
       read(1,*) 
-      read(1,*) ans1,ans2,ans3,ans4,ans5
+      read(1,*) ans1,ans2,ans3,ans4,ans5,ans6
       if(ans1 == 'T') doRHF  = .true.
       if(ans2 == 'T') doUHF  = .true.
       if(ans3 == 'T') doGHF  = .true.
       if(ans4 == 'T') doROHF = .true.
       if(ans5 == 'T') doHFB  = .true.
+      if(ans6 == 'T') docRHF = .true.
       
       ! Read MPn methods
       
