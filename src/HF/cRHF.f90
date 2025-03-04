@@ -122,13 +122,10 @@ subroutine cRHF(dotest,maxSCF,thresh,max_diis,guess_type,level_shift,nNuc,ZNuc,r
 
     ! Build Fock matrix
     
-    call Hartree_matrix_AO_basis(nBas,P,ERI,J)
-    call exchange_matrix_AO_basis(nBas,P,ERI,K)
+    call complex_Hartree_matrix_AO_basis(nBas,P,ERI,J)
+    call complex_exchange_matrix_AO_basis(nBas,P,ERI,K)
     
     F(:,:) = Hc(:,:) + J(:,:) + 0.5d0*K(:,:)
-    write(*,*) "F"
-    write(*,*) F(1,2)
-    write(*,*) F(2,1)
 
     ! Check convergence 
 
