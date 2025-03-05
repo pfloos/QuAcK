@@ -149,23 +149,22 @@ subroutine complex_diagonalize_matrix(N,A,e)
   complex*16                    :: VR(N,N)
 
 ! Memory allocation
-
   allocate(work(1))
-  
   lwork = -1
   call zgeev('N','V',N,A,N,e,VL,N,VR,N,work,lwork,rwork,info)
-  lwork = int(work(1))
+  lwork = max(1,int(real(work(1))))
+  
   deallocate(work)
-
   allocate(work(lwork))
 
   call zgeev('N','V',N,A,N,e,VL,N,VR,N,work,lwork,rwork,info)
+  call complex_sort_eigenvalues(N,e,VR)
 
   deallocate(work)
   A = VR
 
   if(info /= 0) then 
-    print*,'Problem in diagonalize_matrix (zgees)!!'
+    print*,'Problem in diagonalize_matrix (zgeev)!!'
   end if
   
 end subroutine 

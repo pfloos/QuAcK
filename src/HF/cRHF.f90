@@ -34,11 +34,11 @@ subroutine cRHF(dotest,maxSCF,thresh,max_diis,guess_type,level_shift,nNuc,ZNuc,r
   integer                       :: nSCF
   integer                       :: nBasSq
   integer                       :: n_diis
-  double precision              :: ET
-  double precision              :: EV
-  double precision              :: EJ
-  double precision              :: EK
-  double precision              :: dipole(ncart)
+  complex*16                    :: ET
+  complex*16                    :: EV
+  complex*16                    :: EJ
+  complex*16                    :: EK
+  complex*16                    :: dipole(ncart)
 
   double precision              :: Conv
   double precision              :: rcond
@@ -91,10 +91,10 @@ subroutine cRHF(dotest,maxSCF,thresh,max_diis,guess_type,level_shift,nNuc,ZNuc,r
   Hc(:,:) = cmplx(T+V,W,kind=8)
 
 ! Guess coefficients and density matrix
+  
 
   call complex_mo_guess(nBas,nBas,guess_type,S,Hc,X,c)
   P(:,:) = 2d0*matmul(c(:,1:nO),transpose(c(:,1:nO)))
-
 ! Initialization
 
   n_diis          = 0
@@ -135,18 +135,21 @@ subroutine cRHF(dotest,maxSCF,thresh,max_diis,guess_type,level_shift,nNuc,ZNuc,r
 
     ! Kinetic energy
 
-    ET = trace_matrix(nBas,matmul(P,T))
+    ET = cmplx(trace_matrix(nBas,real(matmul(P,T))),trace_matrix(nBas,aimag(matmul(P,T))),kind=8)
     ! Potential energy
 
-    EV = trace_matrix(nBas,matmul(P,V))
+    EV = cmplx(trace_matrix(nBas,real(matmul(P,V))),trace_matrix(nBas,aimag(matmul(P,V))),kind=8)
+
 
     ! Hartree energy
 
-    EJ = 0.5d0*trace_matrix(nBas,matmul(P,J))
+    EJ = 0.5d0*cmplx(trace_matrix(nBas,real(matmul(P,J))),trace_matrix(nBas,aimag(matmul(P,J))),kind=8)
+
 
     ! Exchange energy
 
-    EK = 0.25d0*trace_matrix(nBas,matmul(P,K))
+    EK = 0.25d0*cmplx(trace_matrix(nBas,real(matmul(P,K))),trace_matrix(nBas,aimag(matmul(P,K))),kind=8)
+
 
     ! Total energy
 
@@ -160,16 +163,15 @@ subroutine cRHF(dotest,maxSCF,thresh,max_diis,guess_type,level_shift,nNuc,ZNuc,r
 !      call complex_DIIS_extrapolation(rcond,nBasSq,nBasSq,n_diis,err_diis,F_diis,err,F)
 !
 !    end if
-!
+
     ! Level shift
-    if(level_shift > 0d0 .and. Conv > thresh) call level_shifting(level_shift,nBas,nBas,nO,S,c,F)
+    if(level_shift > 0d0 .and. Conv > thresh) call complex_level_shifting(level_shift,nBas,nBas,nO,S,c,F)
     
     ! Diagonalize Fock matrix
 
     Fp = matmul(transpose(X),matmul(F,X))
     cp(:,:) = Fp(:,:)
-    write(*,*) nBas
-    call complex_diagonalize_matrix(nBas,cp,eHF)
+    call complex_diagonalize_matrix(nBas,Fp,eHF)
     c = matmul(X,cp)
     ! Density matrix
 
@@ -178,7 +180,7 @@ subroutine cRHF(dotest,maxSCF,thresh,max_diis,guess_type,level_shift,nNuc,ZNuc,r
     ! Dump results
 
     write(*,'(1X,A1,1X,I3,1X,A1,1X,F32.10,1X,A1,1X,F32.10,A1,1X,A1,1X,F32.10,1X,A1,1X,F32.10,1X,A1,1X,E10.2,1X,A1,1X)') &
-      '|',nSCF,'|',real(ERHF),'+',aimag(ERHF),'i','|',EJ,'|',EK,'|',Conv,'|'
+      '|',nSCF,'|',real(ERHF),'+',aimag(ERHF),'i','|',real(EJ),'|',real(EK),'|',Conv,'|'
     write(*,*) real(ERHF),'+',aimag(ERHF),'i'
   end do
   write(*,*)'--------------------------------------------------------------------------------------------------'

@@ -12,12 +12,12 @@ subroutine complex_core_guess(nBas, nOrb, Hc, X, c)
 
 ! Local variables
 
-  complex*16,allocatable  :: cp(:,:)
-  complex*16,allocatable  :: e(:)
+  complex*16,allocatable        :: cp(:,:)
+  complex*16,allocatable        :: e(:)
 
 ! Output variables
 
-  complex*16,intent(out)  :: c(nBas,nOrb)
+  complex*16,intent(inout)  :: c(nBas,nOrb)
 
 ! Memory allocation
 

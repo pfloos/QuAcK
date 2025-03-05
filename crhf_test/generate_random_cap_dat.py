@@ -34,7 +34,7 @@ if __name__ == "__main__":
     with open("../int/nBas.dat", 'r') as f:
         size = int(f.readline().strip())
     print("nBas: ", size)
-    width = 5
+    width = 0
     generate_cap_file("../int/CAP.dat", size, width)
     W = read_and_construct_matrix("../int/CAP.dat", size)
     print("W matrix:")

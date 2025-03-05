@@ -28,9 +28,7 @@ subroutine complex_mo_guess(nBas, nOrb, guess_type, S, Hc, X, c)
 
     write(*,*) 'Core guess...'
     call complex_core_guess(nBas, nOrb, Hc, X, c)
-     
   else
-
     print*,'Wrong guess option'
     stop
 

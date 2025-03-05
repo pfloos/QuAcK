@@ -1,4 +1,4 @@
-subroutine level_shifting(level_shift, nBas, nOrb, nO, S, c, F)
+subroutine complex_level_shifting(level_shift, nBas, nOrb, nO, S, c, F)
 
 ! Perform level-shifting on the Fock matrix
 
@@ -21,7 +21,7 @@ subroutine level_shifting(level_shift, nBas, nOrb, nO, S, c, F)
 
 ! Output variables
 
-  double precision,intent(inout):: F(nBas,nBas)
+  complex*16,intent(inout)      :: F(nBas,nBas)
 
   allocate(F_MO(nOrb,nOrb), Sc(nBas,nOrb))
   complex_level_shift = cmplx(level_shift, 0.0,kind=8)
