@@ -1,17 +1,17 @@
 import numpy as np
 
 
-def generate_cap_file(filename, size):
+def generate_cap_file(filename, size, width, seed=42):
     """
     Generates a file with random CAP integral values in the format:
     mu nu wx wy wz
     """
-    np.random.seed(42)  # For reproducibility
+    np.random.seed(seed)  # For reproducibility
     with open(filename, 'w') as f:
         for mu in range(1, size + 1):
             for nu in range(mu, size + 1):  # Only upper triangle to avoid duplicate entries
                 # Generate three random values
-                wx, wy, wz = np.random.rand(3)*10
+                wx, wy, wz = np.random.rand(3)*width
                 f.write(f"{mu} {nu} {wx:.6f} {wy:.6f} {wz:.6f}\n")
 
 
@@ -31,9 +31,11 @@ def read_and_construct_matrix(filename, size):
 
 
 if __name__ == "__main__":
-    with open("nBas.dat", 'r') as f:
+    with open("../int/nBas.dat", 'r') as f:
         size = int(f.readline().strip())
-    print(size)
-    generate_cap_file("CAP.dat", size)
-    W = read_and_construct_matrix("CAP.dat", size)
+    print("nBas: ", size)
+    width = 5
+    generate_cap_file("../int/CAP.dat", size, width)
+    W = read_and_construct_matrix("../int/CAP.dat", size)
+    print("W matrix:")
     print(W)

@@ -94,11 +94,12 @@ subroutine cRHF(dotest,maxSCF,thresh,max_diis,guess_type,level_shift,nNuc,ZNuc,r
 
   call complex_mo_guess(nBas,nBas,guess_type,S,Hc,X,c)
   P(:,:) = 2d0*matmul(c(:,1:nO),transpose(c(:,1:nO)))
+
 ! Initialization
 
   n_diis          = 0
-  F_diis(:,:)   = 0d0
-  err_diis(:,:) = 0d0
+  F_diis(:,:)   = cmplx(0d0,0d0,kind=8)
+  err_diis(:,:) = cmplx(0d0,0d0,kind=8)
   rcond = 0d0
 
   Conv   = 1d0
@@ -124,9 +125,9 @@ subroutine cRHF(dotest,maxSCF,thresh,max_diis,guess_type,level_shift,nNuc,ZNuc,r
     
     call complex_Hartree_matrix_AO_basis(nBas,P,ERI,J)
     call complex_exchange_matrix_AO_basis(nBas,P,ERI,K)
-    
-    F(:,:) = Hc(:,:) + J(:,:) + 0.5d0*K(:,:)
 
+    F(:,:) = Hc(:,:) + J(:,:) + 0.5d0*K(:,:)
+    
     ! Check convergence 
 
     err = matmul(F,matmul(P,S)) - matmul(matmul(S,P),F)
@@ -151,23 +152,23 @@ subroutine cRHF(dotest,maxSCF,thresh,max_diis,guess_type,level_shift,nNuc,ZNuc,r
 
     ERHF = ET + EV + EJ + EK
 
-    ! DIIS extrapolation
-
-    if(max_diis > 1) then
-
-      n_diis = min(n_diis+1,max_diis)
-      call complex_DIIS_extrapolation(rcond,nBasSq,nBasSq,n_diis,err_diis,F_diis,err,F)
-
-    end if
-
+!    ! DIIS extrapolation (fix later) !
+!
+!    if(max_diis > 1) then
+!
+!      n_diis = min(n_diis+1,max_diis)
+!      call complex_DIIS_extrapolation(rcond,nBasSq,nBasSq,n_diis,err_diis,F_diis,err,F)
+!
+!    end if
+!
     ! Level shift
-
     if(level_shift > 0d0 .and. Conv > thresh) call level_shifting(level_shift,nBas,nBas,nO,S,c,F)
-
+    
     ! Diagonalize Fock matrix
 
     Fp = matmul(transpose(X),matmul(F,X))
     cp(:,:) = Fp(:,:)
+    write(*,*) nBas
     call complex_diagonalize_matrix(nBas,cp,eHF)
     c = matmul(X,cp)
     ! Density matrix

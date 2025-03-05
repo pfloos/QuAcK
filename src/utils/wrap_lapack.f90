@@ -155,7 +155,6 @@ subroutine complex_diagonalize_matrix(N,A,e)
   lwork = -1
   call zgeev('N','V',N,A,N,e,VL,N,VR,N,work,lwork,rwork,info)
   lwork = int(work(1))
-
   deallocate(work)
 
   allocate(work(lwork))
