@@ -45,7 +45,7 @@ subroutine complex_orthogonalize_matrix(nBas,S,X)
 
     enddo
     call diag(nBas,Uval, D)
-    X = matmul(Uvec,matmul(D,conjg(transpose(Uvec))))
+    X = matmul(Uvec,matmul(D,transpose(Uvec)))
     deallocate(Uvec,Uval,D)
 end subroutine 
 

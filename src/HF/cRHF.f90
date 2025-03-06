@@ -99,11 +99,12 @@ subroutine cRHF(dotest,maxSCF,thresh,max_diis,guess_type,level_shift,nNuc,ZNuc,r
   call complex_matout(nBas,nBas,c)
   write(*,*) "Check if c orthonormal"
   call complex_matout(nBas,nBas,matmul(transpose(c),matmul(S,c)))
-  c = matmul(c,Z)
   call complex_orthogonalize_matrix(nBas,matmul(transpose(c),matmul(S,c)),Z)
+  c = matmul(c,Z)
   write(*,*) "Check if c tilde orthonormal"
+  call complex_matout(nBas,nBas,matmul(transpose(c),matmul(S,c)))
 
-  call complex_matout(nBas,nBas,matmul(transpose(Z),matmul(S,Z)))
+
   P(:,:) = 2d0*matmul(c(:,1:nO),transpose(c(:,1:nO)))
 
 ! Initialization
