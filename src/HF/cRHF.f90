@@ -55,6 +55,7 @@ subroutine cRHF(dotest,maxSCF,thresh,max_diis,guess_type,level_shift,nNuc,ZNuc,r
   complex*16,allocatable        :: err(:,:)
   complex*16,allocatable        :: err_diis(:,:)
   complex*16,allocatable        :: F_diis(:,:)
+  complex*16,allocatable        :: Z(:,:)
 
 ! Output variables
 
@@ -80,7 +81,7 @@ subroutine cRHF(dotest,maxSCF,thresh,max_diis,guess_type,level_shift,nNuc,ZNuc,r
 
   allocate(J(nBas,nBas),K(nBas,nBas),err(nBas,nBas),cp(nBas,nBas),F(nBas,nBas), &
            Fp(nBas,nBas),err_diis(nBasSq,max_diis),F_diis(nBasSq,max_diis),     & 
-           Hc(nBas,nBas),W(nBas,nBas))
+           Hc(nBas,nBas),W(nBas,nBas),Z(nBas,nBas))
 
 ! Read CAP integrals from file
   call read_CAP_integrals(nBas,W)
@@ -94,7 +95,17 @@ subroutine cRHF(dotest,maxSCF,thresh,max_diis,guess_type,level_shift,nNuc,ZNuc,r
   
 
   call complex_mo_guess(nBas,nBas,guess_type,S,Hc,X,c)
+  write(*,*) "Guess coefficients c"
+  call complex_matout(nBas,nBas,c)
+  write(*,*) "Check if c orthonormal"
+  call complex_matout(nBas,nBas,matmul(transpose(c),matmul(S,c)))
+  c = matmul(c,Z)
+  call complex_orthogonalize_matrix(nBas,matmul(transpose(c),matmul(S,c)),Z)
+  write(*,*) "Check if c tilde orthonormal"
+
+  call complex_matout(nBas,nBas,matmul(transpose(Z),matmul(S,Z)))
   P(:,:) = 2d0*matmul(c(:,1:nO),transpose(c(:,1:nO)))
+
 ! Initialization
 
   n_diis          = 0
@@ -108,7 +119,6 @@ subroutine cRHF(dotest,maxSCF,thresh,max_diis,guess_type,level_shift,nNuc,ZNuc,r
 !------------------------------------------------------------------------
 ! Main SCF loop
 !------------------------------------------------------------------------
-
   write(*,*)
   write(*,*)'--------------------------------------------------------------------------------------------------'
   write(*,'(1X,A1,1X,A3,1X,A1,1X,A36,1X,A1,1X,A16,1X,A1,1X,A16,1X,A1,1X,A10,1X,A1,1X)') &
@@ -125,9 +135,10 @@ subroutine cRHF(dotest,maxSCF,thresh,max_diis,guess_type,level_shift,nNuc,ZNuc,r
     
     call complex_Hartree_matrix_AO_basis(nBas,P,ERI,J)
     call complex_exchange_matrix_AO_basis(nBas,P,ERI,K)
-
-    F(:,:) = Hc(:,:) + J(:,:) + 0.5d0*K(:,:)
     
+    F(:,:) = Hc(:,:) + J(:,:) + 0.5d0*K(:,:)
+    write(*,*) "Fock matrix"
+    call complex_matout(nBas,nBas,F)
     ! Check convergence 
 
     err = matmul(F,matmul(P,S)) - matmul(matmul(S,P),F)
@@ -171,6 +182,7 @@ subroutine cRHF(dotest,maxSCF,thresh,max_diis,guess_type,level_shift,nNuc,ZNuc,r
 
     Fp = matmul(transpose(X),matmul(F,X))
     cp(:,:) = Fp(:,:)
+    write(*,*)'t1'
     call complex_diagonalize_matrix(nBas,Fp,eHF)
     c = matmul(X,cp)
     ! Density matrix

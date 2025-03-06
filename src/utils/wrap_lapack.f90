@@ -143,15 +143,15 @@ subroutine complex_diagonalize_matrix(N,A,e)
 ! Local variables
 
   integer                       :: lwork,info
-  double precision              :: rwork(2*N)
+  double precision,allocatable  :: rwork(:)
   complex*16,allocatable        :: work(:)
-  complex*16                    :: VL(N,N)
-  complex*16                    :: VR(N,N)
+  complex*16,allocatable        :: VL(:,:)
+  complex*16,allocatable        :: VR(:,:)
 
 ! Memory allocation
-  allocate(work(1))
+  allocate(work(1),rwork(2*N),VL(1,1),VR(N,N))
   lwork = -1
-  call zgeev('N','V',N,A,N,e,VL,N,VR,N,work,lwork,rwork,info)
+  call zgeev('N','V',N,A,N,e,VL,1,VR,N,work,lwork,rwork,info)
   lwork = max(1,int(real(work(1))))
   
   deallocate(work)
