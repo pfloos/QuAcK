@@ -159,7 +159,8 @@ subroutine complex_diagonalize_matrix(N,A,e)
 
   call zgeev('N','V',N,A,N,e,VL,N,VR,N,work,lwork,rwork,info)
   call complex_sort_eigenvalues(N,e,VR)
-  call complex_gram_schmidt(N,VR)
+  
+
   deallocate(work)
   A = VR
 
@@ -256,6 +257,46 @@ subroutine inverse_matrix(N,A,B)
 
 end subroutine 
 
+subroutine complex_inverse_matrix(N,A,B)
+
+! Returns the inverse of the complex square matrix A in B
+
+  implicit none
+
+  integer,intent(in)             :: N
+  complex*16, intent(in)         :: A(N,N)
+  complex*16, intent(out)        :: B(N,N)
+
+  integer                        :: info,lwork
+  integer, allocatable           :: ipiv(:)
+  complex*16,allocatable         :: work(:)
+  
+  allocate (ipiv(N),work(N*N))
+  lwork = size(work)
+
+  B(1:N,1:N) = A(1:N,1:N)
+
+  call zgetrf(N,N,B,N,ipiv,info)
+
+  if (info /= 0) then
+
+    print*,info
+    stop 'error in inverse (zgetri)!!'
+
+  end if
+
+  call zgetri(N,B,N,ipiv,work,lwork,info)
+
+  if (info /= 0) then
+
+    print *,  info
+    stop 'error in inverse (zgetri)!!'
+
+  end if
+
+  deallocate(ipiv,work)
+
+end subroutine 
 subroutine linear_solve(N,A,b,x,rcond)
 
 ! Solve the linear system A.x = b where A is a NxN matrix
@@ -315,8 +356,8 @@ subroutine complex_linear_solve(N,A,b,x,rcond)
   ! Find optimal size for temporary arrays
 
   allocate(ipiv(N))
-
   call zgesv(N,1,A,N,ipiv,b,N,info)
+
 end subroutine
 
 subroutine easy_linear_solve(N,A,b,x)

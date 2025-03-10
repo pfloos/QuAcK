@@ -1,7 +1,7 @@
 
 ! ---
 
-subroutine print_cRHF(nBas, nOrb, nO, eHF, cHF, ENuc, ET, EV, EJ, EK, ERHF, dipole)
+subroutine print_cRHF(nBas, nOrb, nO, eHF, cHF, ENuc, ET, EV, EJ, EK, ERHF)
 
 ! Print one-electron energies and other stuff for G0W0
 
@@ -20,7 +20,6 @@ subroutine print_cRHF(nBas, nOrb, nO, eHF, cHF, ENuc, ET, EV, EJ, EK, ERHF, dipo
   complex*16,intent(in)              :: EK
   complex*16,intent(in)              :: EV
   complex*16,intent(in)              :: ERHF
-  double precision,intent(in)        :: dipole(ncart)
 
 ! Local variables
 
@@ -65,12 +64,6 @@ subroutine print_cRHF(nBas, nOrb, nO, eHF, cHF, ENuc, ET, EV, EJ, EK, ERHF, dipo
   write(*,'(A50)')           '------------------------------------------------------------'
   write(*,'(A33,1X,F16.6)')     ' <Sz>                = ',S
   write(*,'(A33,1X,F16.6)')     ' <S^2>               = ',S2
-  write(*,'(A50)')           '------------------------------------------------------------'
-  write(*,'(A36)')           ' Dipole moment (Debye)    '
-  write(*,'(10X,4A10)')      'X','Y','Z','Tot.'
-  write(*,'(10X,4F10.4)')    (real(dipole(ixyz))*auToD,ixyz=1,ncart),norm2(real(dipole))*auToD
-  write(*,'(A50)')           '---------------------------------------------'
-  write(*,*)
 
 ! Print results
 

@@ -18,7 +18,6 @@ subroutine complex_DIIS_extrapolation(rcond,n_err,n_e,n_diis,error,e,error_in,e_
   complex*16,allocatable        :: A(:,:)
   complex*16,allocatable        :: b(:)
   complex*16,allocatable        :: w(:)
-  double precision,allocatable  :: b2(:)
 
 ! Output variables
 
@@ -27,8 +26,6 @@ subroutine complex_DIIS_extrapolation(rcond,n_err,n_e,n_diis,error,e,error_in,e_
   complex*16,intent(inout)      :: e_inout(n_e)
 
 ! Memory allocation
-  allocate(b2(n_diis+1))
-  print *, "Allocated b2"
   allocate(A(n_diis+1,n_diis+1),b(n_diis+1),w(n_diis+1))
 
 ! Update DIIS "history"
@@ -50,7 +47,8 @@ subroutine complex_DIIS_extrapolation(rcond,n_err,n_e,n_diis,error,e,error_in,e_
   b(n_diis+1) = cmplx(-1d0,0d0,kind=8)
 
 ! Solve linear system
-
+  call complex_vecout(b)
+  call complex_matout(A)
   call complex_linear_solve(n_diis+1,A,b,w,rcond)
 
 ! Extrapolate

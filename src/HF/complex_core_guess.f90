@@ -27,6 +27,7 @@ subroutine complex_core_guess(nBas, nOrb, Hc, X, c)
 
   cp(:,:) = matmul(transpose(X(:,:)), matmul(Hc(:,:), X(:,:)))
   call complex_diagonalize_matrix(nOrb, cp, e)
+  call complex_orthogonalize_matrix(nOrb,cp)
   c(:,:) = matmul(X(:,:), cp(:,:))
   deallocate(cp, e)
 

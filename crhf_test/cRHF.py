@@ -98,7 +98,7 @@ def sort_eigenpairs(eigenvalues, eigenvectors):
     return sorted_eigenvalues, sorted_eigenvectors
 
 
-def diagonalize(M):
+def diagonalize_gram_schmidt(M):
     # Diagonalize the matrix
     vals, vecs = np.linalg.eig(M)
     # Sort the eigenvalues and eigenvectors
@@ -106,6 +106,25 @@ def diagonalize(M):
     # Orthonormalize them wrt cTc inner product
     vecs = gram_schmidt(vecs)
     return vals, vecs
+
+
+def diagonalize(M):
+    # Diagonalize the matrix
+    vals, vecs = np.linalg.eig(M)
+    # Sort the eigenvalues and eigenvectors
+    vals, vecs = sort_eigenpairs(vals, vecs)
+    # Orthonormalize them wrt cTc inner product
+    vecs = orthonormalize(vecs)
+    return vals, vecs
+
+
+def orthonormalize(vecs):
+    # Orthonormalize them wrt cTc inner product
+    R = vecs.T@vecs
+    L = cholesky_decomposition(R)
+    Linv = np.linalg.inv(L)
+    vecs = vecs@Linv.T
+    return vecs
 
 
 def Hartree_matrix_AO_basis(P, ERI):
@@ -151,13 +170,71 @@ def gram_schmidt(vectors):
     return np.column_stack(orthonormal_basis)
 
 
+def DIIS_extrapolation(rcond, n_diis, error, e, error_in, e_inout):
+    """
+    Perform DIIS extrapolation.
+
+    """
+
+    # Update DIIS history by prepending new error and solution vectors
+    error = np.column_stack((error_in, error[:, :-1]))  # Shift history
+    e = np.column_stack((e_inout, e[:, :-1]))          # Shift history
+
+    # Build A matrix
+    A = np.zeros((n_diis + 1, n_diis + 1), dtype=np.complex128)
+    print(np.shape(error))
+    A[:n_diis, :n_diis] = error@error.T
+    A[:n_diis, n_diis] = -1.0
+    A[n_diis, :n_diis] = -1.0
+    A[n_diis, n_diis] = 0.0
+
+    # Build b vector
+    b = np.zeros(n_diis + 1, dtype=np.complex128)
+    b[n_diis] = -1.0
+
+    # Solve the linear system A * w = b
+    try:
+        w = np.linalg.solve(A, b)
+        rcond = np.linalg.cond(A)
+    except np.linalg.LinAlgError:
+        raise ValueError("DIIS linear system is singular or ill-conditioned.")
+
+    # Extrapolate new solution
+    e_inout[:] = w[:n_diis]@e[:, :n_diis].T
+
+    return rcond, n_diis, e_inout
+
+
+def cholesky_decomposition(A):
+    """
+    Performs Cholesky-Decomposition wrt the c product. Returns L such that A = LTL
+    """
+
+    L = np.zeros_like(A)
+    n = np.shape(L)[0]
+    for i in range(n):
+        for j in range(i + 1):
+            s = A[i, j]
+
+            for k in range(j):
+                s -= L[i, k] * L[j, k]
+
+            if i > j:  # Off-diagonal elements
+                L[i, j] = s / L[j, j]
+            else:  # Diagonal elements
+                L[i, i] = s**0.5
+
+    return L
+
+
 if __name__ == "__main__":
-    # Constants
+    # Inputs
     workdir = "../"
     eta = 0.01
     thresh = 0.00001
     maxSCF = 256
     nO = read_nO(workdir)
+    maxDiis = 5
 
     # Read integrals
     T = read_matrix("../int/Kin.dat")
@@ -165,11 +242,17 @@ if __name__ == "__main__":
     V = read_matrix("../int/Nuc.dat")
     ENuc = read_ENuc("../int/ENuc.dat")
     nBas = np.shape(T)[0]
+    nBasSq = nBas*nBas
     W = read_CAP_integrals("../int/CAP.dat", nBas)
     ERI = read_2e_integrals("../int/ERI.bin", nBas)
     X = get_X(S)
     W = -eta*W
     Hc = T + V + W*1j
+
+    # Initialization
+    F_diis = np.zeros((nBasSq, maxDiis))
+    error_diis = np.zeros((nBasSq, maxDiis))
+    rcond = 0
 
     # core guess
     _, c = diagonalize(X.T @ Hc @ X)
@@ -183,6 +266,8 @@ if __name__ == "__main__":
 
     nSCF = 0
     Conv = 1
+    n_diis = 0
+
     while(Conv > thresh and nSCF < maxSCF):
         nSCF += 1
         J = Hartree_matrix_AO_basis(P, ERI)
@@ -196,6 +281,11 @@ if __name__ == "__main__":
         EJ = 0.5*np.trace(P@J)
         EK = 0.25*np.trace(P@K)
         ERHF = ET + EV + EJ + EK
+
+      #  # DIIS
+      #  n_diis = np.min([n_diis+1, maxDiis])
+      #  rcond, n_diis, F = DIIS_extrapolation(
+      #      rcond, n_diis, error_diis, F_diis, err, F)
 
         Fp = X.T @ F @ X
         eHF, c = diagonalize(Fp)

@@ -167,6 +167,7 @@ subroutine cRHF(dotest,maxSCF,thresh,max_diis,guess_type,level_shift,nNuc,ZNuc,r
     Fp = matmul(transpose(X(:,:)),matmul(F(:,:),X(:,:)))
     cp(:,:) = Fp(:,:)
     call complex_diagonalize_matrix(nBas,cp,eHF)
+    call complex_orthogonalize_matrix(nBas,cp)
     c = matmul(X,cp)
     ! Density matrix
     P(:,:) = 2d0*matmul(c(:,1:nO),transpose(c(:,1:nO)))
@@ -196,9 +197,7 @@ subroutine cRHF(dotest,maxSCF,thresh,max_diis,guess_type,level_shift,nNuc,ZNuc,r
   end if
 
 ! Compute dipole moments
-
-  call complex_dipole_moment(nBas,P,nNuc,ZNuc,rNuc,dipole_int,dipole)
-  call print_cRHF(nBas,nBas,nO,eHF,C,ENuc,ET,EV,EJ,EK,ERHF,dipole)
+  call print_cRHF(nBas,nBas,nO,eHF,C,ENuc,ET,EV,EJ,EK,ERHF)
 ! Testing zone
 
   if(dotest) then
