@@ -89,10 +89,6 @@ subroutine RHF(dotest,maxSCF,thresh,max_diis,guess_type,level_shift,nNuc,ZNuc,rN
 ! Guess coefficients and density matrix
 
   call mo_guess(nBas,nOrb,guess_type,S,Hc,X,c)
-  write(*,*)'Initial guess c'
-  call matout(nBas,nBas,c)
-  write(*,*) "verify orthonormalization"
-  call matout(nBas,nBas,matmul(transpose(c),matmul(S,c)))
 
   P(:,:) = 2d0 * matmul(c(:,1:nO), transpose(c(:,1:nO)))
 ! call dgemm('N', 'T', nBas, nBas, nO, 2.d0, &
@@ -131,8 +127,7 @@ subroutine RHF(dotest,maxSCF,thresh,max_diis,guess_type,level_shift,nNuc,ZNuc,rN
     call exchange_matrix_AO_basis(nBas,P,ERI,K)
     
     F(:,:) = Hc(:,:) + J(:,:) + 0.5d0*K(:,:)
-    write(*,*)'Fock matrix'
-    call matout(nBas,nBas,F)
+
     ! Check convergence 
 
     err = matmul(F,matmul(P,S)) - matmul(matmul(S,P),F)

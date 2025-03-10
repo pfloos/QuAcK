@@ -29,7 +29,7 @@ subroutine cRHF(dotest,maxSCF,thresh,max_diis,guess_type,level_shift,nNuc,ZNuc,r
   double precision,intent(in)   :: ERI(nBas,nBas,nBas,nBas)
   double precision,intent(in)   :: dipole_int(nBas,nBas,ncart)
 
-! Local variables
+  ! Local variables
 
   integer                       :: nSCF
   integer                       :: nBasSq
@@ -82,33 +82,18 @@ subroutine cRHF(dotest,maxSCF,thresh,max_diis,guess_type,level_shift,nNuc,ZNuc,r
   allocate(J(nBas,nBas),K(nBas,nBas),err(nBas,nBas),cp(nBas,nBas),F(nBas,nBas), &
            Fp(nBas,nBas),err_diis(nBasSq,max_diis),F_diis(nBasSq,max_diis),     & 
            Hc(nBas,nBas),W(nBas,nBas),Z(nBas,nBas))
-
 ! Read CAP integrals from file
   call read_CAP_integrals(nBas,W)
   W(:,:) = -eta*W(:,:)
-
 ! Define core Hamiltonian with CAP part
-
   Hc(:,:) = cmplx(T+V,W,kind=8)
 
 ! Guess coefficients and density matrix
-  
-
   call complex_mo_guess(nBas,nBas,guess_type,S,Hc,X,c)
-  write(*,*) "Guess coefficients c"
-  call complex_matout(nBas,nBas,c)
-  write(*,*) "Check if c orthonormal"
-  call complex_matout(nBas,nBas,matmul(transpose(c),matmul(S,c)))
-  call complex_orthogonalize_matrix(nBas,matmul(transpose(c),matmul(S,c)),Z)
-  c = matmul(c,Z)
-  write(*,*) "Check if c tilde orthonormal"
-  call complex_matout(nBas,nBas,matmul(transpose(c),matmul(S,c)))
-
-
   P(:,:) = 2d0*matmul(c(:,1:nO),transpose(c(:,1:nO)))
 
-! Initialization
 
+  ! Initialization
   n_diis          = 0
   F_diis(:,:)   = cmplx(0d0,0d0,kind=8)
   err_diis(:,:) = cmplx(0d0,0d0,kind=8)
@@ -116,7 +101,6 @@ subroutine cRHF(dotest,maxSCF,thresh,max_diis,guess_type,level_shift,nNuc,ZNuc,r
 
   Conv   = 1d0
   nSCF   = 0
-
 !------------------------------------------------------------------------
 ! Main SCF loop
 !------------------------------------------------------------------------
@@ -133,13 +117,12 @@ subroutine cRHF(dotest,maxSCF,thresh,max_diis,guess_type,level_shift,nNuc,ZNuc,r
     nSCF = nSCF + 1
 
     ! Build Fock matrix
-    
+     
     call complex_Hartree_matrix_AO_basis(nBas,P,ERI,J)
     call complex_exchange_matrix_AO_basis(nBas,P,ERI,K)
     
     F(:,:) = Hc(:,:) + J(:,:) + 0.5d0*K(:,:)
-    write(*,*) "Fock matrix"
-    call complex_matout(nBas,nBas,F)
+
     ! Check convergence 
 
     err = matmul(F,matmul(P,S)) - matmul(matmul(S,P),F)
@@ -167,34 +150,31 @@ subroutine cRHF(dotest,maxSCF,thresh,max_diis,guess_type,level_shift,nNuc,ZNuc,r
 
     ERHF = ET + EV + EJ + EK
 
-!    ! DIIS extrapolation (fix later) !
-!
+    ! DIIS extrapolation (fix later) !
+
 !    if(max_diis > 1) then
 !
 !      n_diis = min(n_diis+1,max_diis)
 !      call complex_DIIS_extrapolation(rcond,nBasSq,nBasSq,n_diis,err_diis,F_diis,err,F)
 !
 !    end if
-
-    ! Level shift
-    if(level_shift > 0d0 .and. Conv > thresh) call complex_level_shifting(level_shift,nBas,nBas,nO,S,c,F)
-    
+!
+!    ! Level shift
+!    if(level_shift > 0d0 .and. Conv > thresh) call complex_level_shifting(level_shift,nBas,nBas,nO,S,c,F)
+!    
     ! Diagonalize Fock matrix
 
-    Fp = matmul(transpose(X),matmul(F,X))
+    Fp = matmul(transpose(X(:,:)),matmul(F(:,:),X(:,:)))
     cp(:,:) = Fp(:,:)
-    write(*,*)'t1'
-    call complex_diagonalize_matrix(nBas,Fp,eHF)
+    call complex_diagonalize_matrix(nBas,cp,eHF)
     c = matmul(X,cp)
     ! Density matrix
-
     P(:,:) = 2d0*matmul(c(:,1:nO),transpose(c(:,1:nO)))
 
     ! Dump results
 
-    write(*,'(1X,A1,1X,I3,1X,A1,1X,F32.10,1X,A1,1X,F32.10,A1,1X,A1,1X,F32.10,1X,A1,1X,F32.10,1X,A1,1X,E10.2,1X,A1,1X)') &
-      '|',nSCF,'|',real(ERHF),'+',aimag(ERHF),'i','|',real(EJ),'|',real(EK),'|',Conv,'|'
-    write(*,*) real(ERHF),'+',aimag(ERHF),'i'
+    write(*,'(1X,A1,1X,I3,1X,A1,1X,F16.10,1X,A1,1X,F16.10,A1,1X,A1,1X,F16.10,1X,A1,1X,F16.10,1X,A1,1X,E10.2,1X,A1,1X)') &
+      '|',nSCF,'|',real(ERHF + ENuc),'+',aimag(ERHF),'i','|',real(EJ),'|',real(EK),'|',Conv,'|'
   end do
   write(*,*)'--------------------------------------------------------------------------------------------------'
 !------------------------------------------------------------------------
@@ -217,7 +197,7 @@ subroutine cRHF(dotest,maxSCF,thresh,max_diis,guess_type,level_shift,nNuc,ZNuc,r
 
 ! Compute dipole moments
 
-  call dipole_moment(nBas,P,nNuc,ZNuc,rNuc,dipole_int,dipole)
+  call complex_dipole_moment(nBas,P,nNuc,ZNuc,rNuc,dipole_int,dipole)
   call print_cRHF(nBas,nBas,nO,eHF,C,ENuc,ET,EV,EJ,EK,ERHF,dipole)
 ! Testing zone
 

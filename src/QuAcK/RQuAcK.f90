@@ -98,10 +98,14 @@ subroutine RQuAcK(working_dir,use_gpu,dotest,doRHF,doROHF,docRHF,               
 
   double precision              :: start_int, end_int, t_int
   double precision,allocatable  :: eHF(:)
+  complex*16,allocatable        :: complex_eHF(:)
   double precision,allocatable  :: cHF(:,:)
+  complex*16,allocatable        :: complex_cHF(:,:)
   double precision,allocatable  :: PHF(:,:)
+  complex*16,allocatable        :: complex_PHF(:,:)
   double precision,allocatable  :: FHF(:,:)
   double precision              :: ERHF
+  complex*16                    :: complex_ERHF
   double precision,allocatable  :: dipole_int_MO(:,:,:)
   double precision,allocatable  :: ERI_AO(:,:,:,:)
   double precision,allocatable  :: ERI_MO(:,:,:,:)
@@ -117,15 +121,16 @@ subroutine RQuAcK(working_dir,use_gpu,dotest,doRHF,doROHF,docRHF,               
 !-------------------!
 ! Memory allocation !
 !-------------------!
-
   allocate(eHF(nOrb))
   allocate(cHF(nBas,nOrb))
   allocate(PHF(nBas,nBas))
+  allocate(complex_eHF(nOrb))
+  allocate(complex_cHF(nBas,nOrb))
+  allocate(complex_PHF(nBas,nBas))
+  allocate(ERI_AO(nBas,nBas,nBas,nBas))
   allocate(FHF(nBas,nBas))
   allocate(dipole_int_MO(nOrb,nOrb,ncart))
   allocate(ERI_MO(nOrb,nOrb,nOrb,nOrb))
-
-  allocate(ERI_AO(nBas,nBas,nBas,nBas))
   call wall_time(start_int)
   call read_2e_integrals(working_dir,nBas,ERI_AO)
   call wall_time(end_int)
@@ -165,10 +170,9 @@ subroutine RQuAcK(working_dir,use_gpu,dotest,doRHF,doROHF,docRHF,               
   end if
 
   if(docRHF) then
-    
     call wall_time(start_HF)
     call cRHF(dotest,maxSCF_HF,thresh_HF,max_diis_HF,guess_type,level_shift,nNuc,ZNuc,rNuc,ENuc, &
-             nBas,nO,S,T,V,ERI_AO,dipole_int_AO,X,ERHF,eHF,cHF,PHF)
+             nBas,nO,S,T,V,ERI_AO,dipole_int_AO,X,ERHF,complex_eHF,complex_cHF,complex_PHF)
     call wall_time(end_HF)
 
     t_HF = end_HF - start_HF

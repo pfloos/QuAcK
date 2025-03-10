@@ -26,23 +26,11 @@ subroutine complex_orthogonalize_matrix(nBas,S,X)
 
   allocate(Uvec(nBas,nBas),Uval(nBas),D(nBas,nBas))
 
-
-!   write(*,*)
-!   write(*,*) ' Lowdin orthogonalization'
-!   write(*,*)
-
     Uvec = S
     call complex_diagonalize_matrix(nBas,Uvec,Uval)
-
+    call complex_matout(nBas,nBas,matmul(Uvec,transpose(Uvec)))
     do i=1,nBas
-
-      if(abs(Uval(i)) < thresh) then 
-
-        write(*,*) 'Eigenvalue',i,' is very small in Lowdin orthogonalization = ',Uval(i)
-
-      endif
       Uval(i) = 1d0/sqrt(Uval(i))
-
     enddo
     call diag(nBas,Uval, D)
     X = matmul(Uvec,matmul(D,transpose(Uvec)))

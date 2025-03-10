@@ -25,8 +25,7 @@ subroutine complex_exchange_matrix_AO_basis(nBas,P,ERI,K)
     do si=1,nBas
       do la=1,nBas
         do mu=1,nBas
-          K(mu,nu) = K(mu,nu) - P(la,si)
-          !K(mu,nu) = K(mu,nu) - P(la,si)*ERI(mu,la,si,nu)
+          K(mu,nu) = K(mu,nu) - P(la,si)*ERI(mu,la,si,nu)
         end do
       end do
     end do

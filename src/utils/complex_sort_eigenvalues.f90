@@ -1,4 +1,5 @@
 subroutine complex_sort_eigenvalues(N, eigvals, eigvecs)
+  ! Sort eigenvalues and corresponding eigenvectors wrt the real part of the eigenvalue
   implicit none
   integer, intent(in) :: N
   complex*16, intent(inout) :: eigvals(N)

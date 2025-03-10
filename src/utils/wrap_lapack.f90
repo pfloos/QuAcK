@@ -159,7 +159,7 @@ subroutine complex_diagonalize_matrix(N,A,e)
 
   call zgeev('N','V',N,A,N,e,VL,N,VR,N,work,lwork,rwork,info)
   call complex_sort_eigenvalues(N,e,VR)
-
+  call complex_gram_schmidt(N,VR)
   deallocate(work)
   A = VR
 
@@ -168,6 +168,8 @@ subroutine complex_diagonalize_matrix(N,A,e)
   end if
   
 end subroutine 
+
+
 
 subroutine svd(N,A,U,D,Vt)
 
