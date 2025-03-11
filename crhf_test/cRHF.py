@@ -11,7 +11,7 @@ def print_matrix(matrix):
 
 def read_nO(working_dir):
     file_path = os.path.join(working_dir, "input/molecule")
-
+    print(file_path)
     with open(file_path, "r") as f:
         next(f)  # Skip the first line
         line = f.readline().split()
@@ -237,14 +237,14 @@ if __name__ == "__main__":
     maxDiis = 5
 
     # Read integrals
-    T = read_matrix("../int/Kin.dat")
-    S = read_matrix("../int/Ov.dat")
-    V = read_matrix("../int/Nuc.dat")
-    ENuc = read_ENuc("../int/ENuc.dat")
+    T = read_matrix(f"{workdir}/int/Kin.dat")
+    S = read_matrix(f"{workdir}/int/Ov.dat")
+    V = read_matrix(f"{workdir}/int/Nuc.dat")
+    ENuc = read_ENuc(f"{workdir}/int/ENuc.dat")
     nBas = np.shape(T)[0]
     nBasSq = nBas*nBas
-    W = read_CAP_integrals("../int/CAP.dat", nBas)
-    ERI = read_2e_integrals("../int/ERI.bin", nBas)
+    W = read_CAP_integrals(f"{workdir}/int/CAP.dat", nBas)
+    ERI = read_2e_integrals(f"{workdir}/int/ERI.bin", nBas)
     X = get_X(S)
     W = -eta*W
     Hc = T + V + W*1j
