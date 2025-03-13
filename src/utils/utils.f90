@@ -305,7 +305,7 @@ subroutine complex_prepend(N,M,A,b)
   integer,intent(in)            :: N,M
   complex*16,intent(in)         :: b(N)
 
-! Local viaruabkes
+! Local variables
 
   integer                       :: i,j
 
@@ -315,7 +315,7 @@ subroutine complex_prepend(N,M,A,b)
 
 
 ! print*,'b in append'
-! call matout(N,1,b)
+! call complex_matout(N,1,b)
 
   do i=1,N
     do j=M-1,1,-1

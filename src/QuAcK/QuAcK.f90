@@ -321,8 +321,11 @@ program QuAcK
   write(*,*)
 
 ! Memory deallocation
-
-  deallocate(ZNuc,rNuc)
-  deallocate(S,T,V,Hc,dipole_int_AO)
-
+  if (allocated(rNuc)) deallocate(rNuc)
+  if (allocated(Znuc)) deallocate(Znuc)
+  if (allocated(T)) deallocate(T)
+  if (allocated(V)) deallocate(V)
+  if (allocated(Hc)) deallocate(Hc)
+  if (allocated(dipole_int_AO)) deallocate(dipole_int_AO)
+  !if (allocated(S)) deallocate(S)
 end program 

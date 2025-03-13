@@ -23,7 +23,6 @@ subroutine print_cRHF(nBas, nOrb, nO, eHF, cHF, ENuc, ET, EV, EJ, EK, ERHF)
 
 ! Local variables
 
-  integer                            :: ixyz
   integer                            :: HOMO
   integer                            :: LUMO
   complex*16                         :: Gap
@@ -43,40 +42,41 @@ subroutine print_cRHF(nBas, nOrb, nO, eHF, cHF, ENuc, ET, EV, EJ, EK, ERHF)
 ! Dump results
 
   write(*,*)
-  write(*,'(A50)')           '------------------------------------------------------------'
+  write(*,'(A69)')           '---------------------------------------------------------'
   write(*,'(A33)')           ' Summary               '
-  write(*,'(A50)')           '------------------------------------------------------------'
-  write(*,'(A33,1X,F16.10,A1,F16.10,A1,A3)') ' One-electron energy = ',real(ET + EV),'+',aimag(ET+EV),' au'
-  write(*,'(A33,1X,F16.10,A1,F16.10,A1,A3)') ' Kinetic      energy = ',real(ET),'+',aimag(ET),' au'
-  write(*,'(A33,1X,F16.10,A1,F16.10,A1,A3)') ' Potential    energy = ',real(EV),'+',aimag(Ev),'i',' au'
-  write(*,'(A50)')           '------------------------------------------------------'
-  write(*,'(A33,1X,F16.10,A1,F16.10,A1,A3)') ' Two-electron energy = ',real(EJ + EK),'+',aimag(EJ+EK),'i',' au'
-  write(*,'(A33,1X,F16.10,A1,F16.10,A1,A3)') ' Hartree      energy = ',real(EJ),'+',aimag(EJ),'i',' au'
-  write(*,'(A33,1X,F16.10,A1,F16.10,A1,A3)') ' Exchange     energy = ',real(EK),'+',aimag(EK),'i',' au'
-  write(*,'(A50)')           '------------------------------------------------------------'
-  write(*,'(A33,1X,F16.10,A1,F16.10,A1,A3)') ' Electronic   energy = ',real(ERHF),'+',aimag(ERHF),'i',' au'
-  write(*,'(A33,1X,F16.10,A3)') ' Nuclear   repulsion = ',ENuc,' au'
-  write(*,'(A33,1X,F16.10,A1,F16.10,A1,A3)') ' cRHF          energy = ',real(ERHF + ENuc),'+',aimag(ERHF+ENuc),'i',' au'
-  write(*,'(A50)')           '------------------------------------------------------------'
+  write(*,'(A69)')           '---------------------------------------------------------'
+  write(*,'(A33,1X,F16.10,1X,A1,F16.10,A1,A3)') ' One-electron energy = ',real(ET + EV),'+',aimag(ET+EV),'i',' au'
+  write(*,'(A33,1X,F16.10,1X,A1,F16.10,A1,A3)') ' Kinetic      energy = ',real(ET),'+',aimag(ET),'i',' au'
+  write(*,'(A33,1X,F16.10,1X,A1,F16.10,A1,A3)') ' Potential    energy = ',real(EV),'+',aimag(Ev),'i',' au'
+  write(*,'(A69)')           '---------------------------------------------------'
+  write(*,'(A33,1X,F16.10,1X,A1,F16.10,A1,A3)') ' Two-electron energy = ',real(EJ + EK),'+',aimag(EJ+EK),'i',' au'
+  write(*,'(A33,1X,F16.10,1X,A1,F16.10,A1,A3)') ' Hartree      energy = ',real(EJ),'+',aimag(EJ),'i',' au'
+  write(*,'(A33,1X,F16.10,1X,A1,F16.10,A1,A3)') ' Exchange     energy = ',real(EK),'+',aimag(EK),'i',' au'
+  write(*,'(A69)')           '---------------------------------------------------------'
+  write(*,'(A33,1X,F16.10,1X,A1,F16.10,A1,A3)') ' Electronic   energy = ',real(ERHF),'+',aimag(ERHF),'i',' au'
+  write(*,'(A33,1X,F16.10,19X,A3)') ' Nuclear   repulsion = ',ENuc,' au'
+  write(*,'(A33,1X,F16.10,1X,A1,F16.10,A1,A3)') ' cRHF         energy = ',real(ERHF + ENuc),'+',aimag(ERHF+ENuc),'i',' au'
+  write(*,'(A69)')           '---------------------------------------------------------'
   write(*,'(A33,1X,F16.6,A3)')  ' HF HOMO      energy = ',real(eHF(HOMO))*HaToeV,' eV'
   write(*,'(A33,1X,F16.6,A3)')  ' HF LUMO      energy = ',real(eHF(LUMO))*HaToeV,' eV'
   write(*,'(A33,1X,F16.6,A3)')  ' HF HOMO-LUMO gap    = ',real(Gap)*HaToeV,' eV'
-  write(*,'(A50)')           '------------------------------------------------------------'
+  write(*,'(A69)')           '---------------------------------------------------------'
   write(*,'(A33,1X,F16.6)')     ' <Sz>                = ',S
   write(*,'(A33,1X,F16.6)')     ' <S^2>               = ',S2
+  write(*,*)
 
 ! Print results
 
   if(dump_orb) then 
-    write(*,'(A50)') '---------------------------------------'
-    write(*,'(A50)') ' cRHF orbital coefficients '
-    write(*,'(A50)') '---------------------------------------'
+    write(*,'(A69)') '---------------------------------------'
+    write(*,'(A69)') ' cRHF orbital coefficients '
+    write(*,'(A69)') '---------------------------------------'
     call complex_matout(nBas, nOrb, cHF)
     write(*,*)
   end if
-  write(*,'(A50)') '---------------------------------------'
-  write(*,'(A50)') ' cRHF orbital energies (au) '
-  write(*,'(A50)') '---------------------------------------'
+  write(*,'(A37)') '-------------------------------'
+  write(*,'(A37)') ' cRHF orbital energies (au) '
+  write(*,'(A37)') '-------------------------------'
   call complex_vecout(nOrb, eHF)
   write(*,*)
 

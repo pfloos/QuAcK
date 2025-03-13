@@ -9,7 +9,7 @@ subroutine complex_vecout(n,v)
   double precision,allocatable        :: v2(:,:)
 
   allocate(v2(n,2))
-  write(*,*) 'First column real part, second imaginary part'
+  write(*,'(17X,A2,13X,A2)') 'Re','Im'
   v2(:,1) = real(v)
   v2(:,2) = aimag(v)
   call matout(n,2,v2)

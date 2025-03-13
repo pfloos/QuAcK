@@ -29,10 +29,9 @@ subroutine complex_DIIS_extrapolation(rcond,n_err,n_e,n_diis,error,e,error_in,e_
   allocate(A(n_diis+1,n_diis+1),b(n_diis+1),w(n_diis+1))
 
 ! Update DIIS "history"
-
   call complex_prepend(n_err,n_diis,error,error_in)
   call complex_prepend(n_e,n_diis,e,e_inout)
-
+  
 !  Build A matrix
 
   A(1:n_diis,1:n_diis) = matmul(transpose(error),error)
@@ -47,12 +46,10 @@ subroutine complex_DIIS_extrapolation(rcond,n_err,n_e,n_diis,error,e,error_in,e_
   b(n_diis+1) = cmplx(-1d0,0d0,kind=8)
 
 ! Solve linear system
-  call complex_vecout(b)
-  call complex_matout(A)
   call complex_linear_solve(n_diis+1,A,b,w,rcond)
 
 ! Extrapolate
 
   e_inout(:) = matmul(w(1:n_diis),transpose(e(:,1:n_diis)))
-
+  deallocate(A,b,w)
 end subroutine 

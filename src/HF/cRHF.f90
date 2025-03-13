@@ -1,5 +1,5 @@
-subroutine cRHF(dotest,maxSCF,thresh,max_diis,guess_type,level_shift,nNuc,ZNuc,rNuc,ENuc, & 
-                nBas,nO,S,T,V,ERI,dipole_int,X,ERHF,eHF,c,P)
+subroutine cRHF(dotest,maxSCF,thresh,max_diis,guess_type,level_shift,ENuc, & 
+                nBas,nO,S,T,V,ERI,X,ERHF,eHF,c,P,F)
 
 ! Perform complex restricted Hartree-Fock calculation
 
@@ -18,17 +18,12 @@ subroutine cRHF(dotest,maxSCF,thresh,max_diis,guess_type,level_shift,nNuc,ZNuc,r
 
   integer,intent(in)            :: nBas
   integer,intent(in)            :: nO
-  integer,intent(in)            :: nNuc
-  double precision,intent(in)   :: ZNuc(nNuc)
-  double precision,intent(in)   :: rNuc(nNuc,ncart)
   double precision,intent(in)   :: ENuc
   double precision,intent(in)   :: S(nBas,nBas)
   double precision,intent(in)   :: T(nBas,nBas)
   double precision,intent(in)   :: V(nBas,nBas)
   double precision,intent(in)   :: X(nBas,nBas)
   double precision,intent(in)   :: ERI(nBas,nBas,nBas,nBas)
-  double precision,intent(in)   :: dipole_int(nBas,nBas,ncart)
-
   ! Local variables
 
   integer                       :: nSCF
@@ -38,7 +33,6 @@ subroutine cRHF(dotest,maxSCF,thresh,max_diis,guess_type,level_shift,nNuc,ZNuc,r
   complex*16                    :: EV
   complex*16                    :: EJ
   complex*16                    :: EK
-  complex*16                    :: dipole(ncart)
 
   double precision              :: Conv
   double precision              :: rcond
@@ -46,16 +40,15 @@ subroutine cRHF(dotest,maxSCF,thresh,max_diis,guess_type,level_shift,nNuc,ZNuc,r
 
   double precision              :: eta
   double precision,allocatable  :: W(:,:)
-  complex*16,allocatable        :: Hc(:,:)
   complex*16,allocatable        :: J(:,:)
   complex*16,allocatable        :: K(:,:)
   complex*16,allocatable        :: cp(:,:)
-  complex*16,allocatable        :: F(:,:)
   complex*16,allocatable        :: Fp(:,:)
   complex*16,allocatable        :: err(:,:)
   complex*16,allocatable        :: err_diis(:,:)
   complex*16,allocatable        :: F_diis(:,:)
-  complex*16,allocatable        :: Z(:,:)
+  complex*16,allocatable        :: Hc(:,:)
+
 
 ! Output variables
 
@@ -63,6 +56,7 @@ subroutine cRHF(dotest,maxSCF,thresh,max_diis,guess_type,level_shift,nNuc,ZNuc,r
   complex*16,intent(out)        :: eHF(nBas)
   complex*16,intent(inout)      :: c(nBas,nBas)
   complex*16,intent(out)        :: P(nBas,nBas)
+  complex*16,intent(inout)      :: F(nBas,nBas)
 
 ! Hello world
 
@@ -79,9 +73,16 @@ subroutine cRHF(dotest,maxSCF,thresh,max_diis,guess_type,level_shift,nNuc,ZNuc,r
 
 ! Memory allocation
 
-  allocate(J(nBas,nBas),K(nBas,nBas),err(nBas,nBas),cp(nBas,nBas),F(nBas,nBas), &
-           Fp(nBas,nBas),err_diis(nBasSq,max_diis),F_diis(nBasSq,max_diis),     & 
-           Hc(nBas,nBas),W(nBas,nBas),Z(nBas,nBas))
+ allocate(err_diis(nBasSq,max_diis))
+ allocate(F_diis(nBasSq,max_diis))
+ allocate(Hc(nBas,nBas))
+ allocate(W(nBas,nBas))
+ allocate(J(nBas,nBas))
+ allocate(K(nBas,nBas))
+ allocate(err(nBas,nBas))
+ allocate(cp(nBas,nBas))
+ allocate(Fp(nBas,nBas))
+
 ! Read CAP integrals from file
   call read_CAP_integrals(nBas,W)
   W(:,:) = -eta*W(:,:)
@@ -97,25 +98,23 @@ subroutine cRHF(dotest,maxSCF,thresh,max_diis,guess_type,level_shift,nNuc,ZNuc,r
   n_diis          = 0
   F_diis(:,:)   = cmplx(0d0,0d0,kind=8)
   err_diis(:,:) = cmplx(0d0,0d0,kind=8)
-  rcond = 0d0
-
+  rcond = 0d0 
   Conv   = 1d0
   nSCF   = 0
 !------------------------------------------------------------------------
 ! Main SCF loop
 !------------------------------------------------------------------------
   write(*,*)
-  write(*,*)'--------------------------------------------------------------------------------------------------'
+  write(*,*)'-------------------------------------------------------------------------------------------------'
   write(*,'(1X,A1,1X,A3,1X,A1,1X,A36,1X,A1,1X,A16,1X,A1,1X,A16,1X,A1,1X,A10,1X,A1,1X)') &
             '|','#','|','E(RHF)','|','EJ(RHF)','|','EK(RHF)','|','Conv','|'
-  write(*,*)'--------------------------------------------------------------------------------------------------'
+  write(*,*)'-------------------------------------------------------------------------------------------------'
 
   do while(Conv > thresh .and. nSCF < maxSCF)
 
     ! Increment 
 
     nSCF = nSCF + 1
-
     ! Build Fock matrix
      
     call complex_Hartree_matrix_AO_basis(nBas,P,ERI,J)
@@ -150,18 +149,17 @@ subroutine cRHF(dotest,maxSCF,thresh,max_diis,guess_type,level_shift,nNuc,ZNuc,r
 
     ERHF = ET + EV + EJ + EK
 
-    ! DIIS extrapolation (fix later) !
+    ! DIIS extrapolation  !
 
-!    if(max_diis > 1) then
-!
-!      n_diis = min(n_diis+1,max_diis)
-!      call complex_DIIS_extrapolation(rcond,nBasSq,nBasSq,n_diis,err_diis,F_diis,err,F)
-!
-!    end if
-!
-!    ! Level shift
-!    if(level_shift > 0d0 .and. Conv > thresh) call complex_level_shifting(level_shift,nBas,nBas,nO,S,c,F)
-!    
+    if(max_diis > 1) then
+
+      n_diis = min(n_diis+1,max_diis)
+      call complex_DIIS_extrapolation(rcond,nBasSq,nBasSq,n_diis,err_diis,F_diis,err,F)
+      if (rcond<1.0d-10) write(*,*) "!!! DIIS system ill conditioned: rcond = ", rcond," !!!"
+    end if
+    ! Level shift
+    if(level_shift > 0d0 .and. Conv > thresh) call complex_level_shifting(level_shift,nBas,nBas,nO,S,c,F)
+    
     ! Diagonalize Fock matrix
 
     Fp = matmul(transpose(X(:,:)),matmul(F(:,:),X(:,:)))
@@ -175,9 +173,9 @@ subroutine cRHF(dotest,maxSCF,thresh,max_diis,guess_type,level_shift,nNuc,ZNuc,r
     ! Dump results
 
     write(*,'(1X,A1,1X,I3,1X,A1,1X,F16.10,1X,A1,1X,F16.10,A1,1X,A1,1X,F16.10,1X,A1,1X,F16.10,1X,A1,1X,E10.2,1X,A1,1X)') &
-      '|',nSCF,'|',real(ERHF + ENuc),'+',aimag(ERHF),'i','|',real(EJ),'|',real(EK),'|',Conv,'|'
+     '|',nSCF,'|',real(ERHF + ENuc),'+',aimag(ERHF),'i','|',real(EJ),'|',real(EK),'|',Conv,'|'
   end do
-  write(*,*)'--------------------------------------------------------------------------------------------------'
+  write(*,*)'-------------------------------------------------------------------------------------------------'
 !------------------------------------------------------------------------
 ! End of SCF loop
 !------------------------------------------------------------------------
@@ -196,9 +194,9 @@ subroutine cRHF(dotest,maxSCF,thresh,max_diis,guess_type,level_shift,nNuc,ZNuc,r
 
   end if
 
-! Compute dipole moments
   call print_cRHF(nBas,nBas,nO,eHF,C,ENuc,ET,EV,EJ,EK,ERHF)
-! Testing zone
+
+  ! Testing zone
 
   if(dotest) then
  
@@ -208,5 +206,5 @@ subroutine cRHF(dotest,maxSCF,thresh,max_diis,guess_type,level_shift,nNuc,ZNuc,r
 !   call dump_test_value('R','RHF dipole moment',norm2(dipole))
 
   end if
-
+  deallocate(J,K,err,cp,Fp,err_diis,F_diis,Hc)
 end subroutine 

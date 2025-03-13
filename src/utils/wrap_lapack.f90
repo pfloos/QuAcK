@@ -334,31 +334,50 @@ subroutine linear_solve(N,A,b,x,rcond)
 !   stop 'error in linear_solve (dsysvx)!!'
 
 ! end if
-
+deallocate(work,ipiv,iwork,AF)
 end subroutine 
 
 subroutine complex_linear_solve(N,A,b,x,rcond)
 
 ! Solve the linear system A.x = b where A is a NxN matrix
-! and x and b are vectors of size N
+! and x and x are vectors of size N
 
   implicit none
 
   integer,intent(in)             :: N
   complex*16,intent(out)         :: A(N,N),b(N)
-  double precision               :: rcond
   complex*16,intent(out)         :: x(N)
+  double precision,intent(out)   :: rcond
 
-  integer                        :: info
+  integer                        :: info,lwork
   double precision               :: ferr,berr
   integer,allocatable            :: ipiv(:)
+  double precision,allocatable   :: rwork(:)
+  complex*16,allocatable         :: AF(:,:),work(:)
 
   ! Find optimal size for temporary arrays
 
-  allocate(ipiv(N))
-  call zgesv(N,1,A,N,ipiv,b,N,info)
+  allocate(work(1))
+  allocate(AF(N,N),ipiv(N),rwork(N))
 
-end subroutine
+  lwork = -1
+  call zsysvx('N','U',N,1,A,N,AF,N,ipiv,b,N,x,N,rcond,ferr,berr,work,lwork,rwork,info)
+  lwork = max(1,int(real(work(1))))
+
+  deallocate(work)
+
+  allocate(work(lwork))
+
+  call zsysvx('N','U',N,1,A,N,AF,N,ipiv,b,N,x,N,rcond,ferr,berr,work,lwork,rwork,info)
+
+ if (info /= 0) then
+
+   print *,  info
+   stop 'error in linear_solve (zsysv)!!'
+
+ end if
+deallocate(work,ipiv,rwork,AF)
+end subroutine 
 
 subroutine easy_linear_solve(N,A,b,x)
 

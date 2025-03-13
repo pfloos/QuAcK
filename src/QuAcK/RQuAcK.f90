@@ -104,6 +104,7 @@ subroutine RQuAcK(working_dir,use_gpu,dotest,doRHF,doROHF,docRHF,               
   double precision,allocatable  :: PHF(:,:)
   complex*16,allocatable        :: complex_PHF(:,:)
   double precision,allocatable  :: FHF(:,:)
+  complex*16,allocatable        :: complex_FHF(:,:)
   double precision              :: ERHF
   complex*16                    :: complex_ERHF
   double precision,allocatable  :: dipole_int_MO(:,:,:)
@@ -127,6 +128,7 @@ subroutine RQuAcK(working_dir,use_gpu,dotest,doRHF,doROHF,docRHF,               
   allocate(complex_eHF(nOrb))
   allocate(complex_cHF(nBas,nOrb))
   allocate(complex_PHF(nBas,nBas))
+  allocate(complex_FHF(nBas,nBas))
   allocate(ERI_AO(nBas,nBas,nBas,nBas))
   allocate(FHF(nBas,nBas))
   allocate(dipole_int_MO(nOrb,nOrb,ncart))
@@ -171,8 +173,8 @@ subroutine RQuAcK(working_dir,use_gpu,dotest,doRHF,doROHF,docRHF,               
 
   if(docRHF) then
     call wall_time(start_HF)
-    call cRHF(dotest,maxSCF_HF,thresh_HF,max_diis_HF,guess_type,level_shift,nNuc,ZNuc,rNuc,ENuc, &
-             nBas,nO,S,T,V,ERI_AO,dipole_int_AO,X,ERHF,complex_eHF,complex_cHF,complex_PHF)
+    call cRHF(dotest,maxSCF_HF,thresh_HF,max_diis_HF,guess_type,level_shift,ENuc, &
+             nBas,nO,S,T,V,ERI_AO,X,complex_ERHF,complex_eHF,complex_cHF,complex_PHF,complex_FHF)
     call wall_time(end_HF)
 
     t_HF = end_HF - start_HF
@@ -390,4 +392,7 @@ subroutine RQuAcK(working_dir,use_gpu,dotest,doRHF,doROHF,docRHF,               
   deallocate(ERI_MO)
   deallocate(ERI_AO)
 
+  deallocate(complex_eHF)
+  deallocate(complex_cHF)
+  deallocate(complex_PHF)
 end subroutine

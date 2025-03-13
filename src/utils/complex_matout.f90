@@ -7,9 +7,9 @@ subroutine complex_matout(n,m,A)
   integer,intent(in)            :: n,m
   complex*16,intent(in)         :: A(n,m)
 
-  write( *,*) 'Real part:'
+  write( *,*) 'Re'
   call matout(n,m,real(A))
-  write (*,*) 'Imaginary part:'
+  write (*,*) 'Im'
   call matout(n,m,aimag(A))
 
 end subroutine
