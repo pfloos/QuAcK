@@ -1,5 +1,5 @@
 # HF: maxSCF thresh  DIIS guess mix shift stab search
-      256    0.00001 5    1     0.0 0.0   F    F
+      1000    0.00001 5    1     0.0 0.0   F    F
 # MP: reg
       F
 # CC: maxSCF thresh   DIIS
@@ -9,7 +9,7 @@
 # GF: maxSCF thresh  DIIS lin eta renorm reg
       256    0.00001 5    F   0.0 0      F
 # GW: maxSCF thresh  DIIS lin eta TDA_W reg
-      256    0.00001 5    F   0.0 F     F 
+      256    0.00001 5    T   0.0 F     F 
 # GT: maxSCF thresh  DIIS lin eta TDA_T reg
       256    0.00001 5    F   0.0 F     F  
 # ACFDT: AC Kx  XBS

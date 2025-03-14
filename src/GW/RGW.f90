@@ -1,4 +1,4 @@
-subroutine RGW(dotest,doG0W0,doevGW,doqsGW,doufG0W0,doufGW,maxSCF,thresh,max_diis,doACFDT,         &
+subroutine RGW(dotest,doG0W0,doevGW,doqsGW,doufG0W0,doufGW,docG0W0,maxSCF,thresh,max_diis,doACFDT, &
                exchange_kernel,doXBS,dophBSE,dophBSE2,doppBSE,TDA_W,TDA,dBSE,dTDA,singlet,triplet, &
                linearize,eta,doSRG,nNuc,ZNuc,rNuc,ENuc,nBas,nOrb,nC,nO,nV,nR,nS,ERHF,              &
                S,X,T,V,Hc,ERI_AO,ERI_MO,dipole_int_AO,dipole_int_MO,PHF,cHF,eHF)
@@ -17,6 +17,7 @@ subroutine RGW(dotest,doG0W0,doevGW,doqsGW,doufG0W0,doufGW,maxSCF,thresh,max_dii
   logical,intent(in)            :: doqsGW
   logical,intent(in)            :: doufG0W0
   logical,intent(in)            :: doufGW
+  logical,intent(in)            :: docG0W0
 
   integer,intent(in)            :: maxSCF
   integer,intent(in)            :: max_diis
@@ -78,6 +79,22 @@ subroutine RGW(dotest,doG0W0,doevGW,doqsGW,doufG0W0,doufGW,maxSCF,thresh,max_dii
     
     call wall_time(start_GW)
     call RG0W0(dotest,doACFDT,exchange_kernel,doXBS,dophBSE,dophBSE2,TDA_W,TDA,dBSE,dTDA,doppBSE,singlet,triplet, &
+               linearize,eta,doSRG,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,ERHF,ERI_MO,dipole_int_MO,eHF)
+    call wall_time(end_GW)
+  
+    t_GW = end_GW - start_GW
+    write(*,'(A65,1X,F9.3,A8)') 'Total wall time for G0W0 = ',t_GW,' seconds'
+    write(*,*)
+
+  end if
+
+!------------------------------------------------------------------------
+! Perform cG0W0 calculation
+!------------------------------------------------------------------------
+
+  if(docG0W0) then 
+    call wall_time(start_GW)
+    call cRG0W0(dotest,doACFDT,exchange_kernel,doXBS,dophBSE,dophBSE2,TDA_W,TDA,dBSE,dTDA,doppBSE,singlet,triplet, &
                linearize,eta,doSRG,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,ERHF,ERI_MO,dipole_int_MO,eHF)
     call wall_time(end_GW)
   

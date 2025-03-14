@@ -22,7 +22,6 @@ subroutine read_CAP_integrals(nBas,W)
 ! Open file with integrals
 
   debug = .false.
-
   open(unit=31,file='int/CAP.dat')
 
 ! Read CAP integrals
