@@ -341,7 +341,9 @@ subroutine GQuAcK(working_dir,dotest,doGHF,dostab,dosearch,doMP2,doMP3,doCCD,dop
 
   if(doParquet) then
     call wall_time(start_Parquet)
-    
+    write(*,'(A65,1X,F9.3,A8)') 'The Parquet method is not implemented in spin-orbital yet :('
+    write(*,'(A65,1X,F9.3,A8)') 'Try running the RHF version!'
+    write(*,*)
     call wall_time(end_Parquet)
   
     t_Parquet = end_Parquet - start_Parquet

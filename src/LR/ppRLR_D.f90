@@ -30,8 +30,8 @@ subroutine ppRLR_D(ispin,nOrb,nC,nO,nV,nR,nOO,lambda,e,ERI,Dpp)
 
 ! Define the chemical potential
 
-  eF = e(nO) + e(nO+1)
-! eF = 0d0
+! eF = e(nO) + e(nO+1)
+  eF = 0d0
  
 ! Build the D matrix for the singlet manifold
 

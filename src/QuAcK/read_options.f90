@@ -8,7 +8,8 @@ subroutine read_options(working_dir,                                            
                         maxSCF_GT,thresh_GT,max_diis_GT,lin_GT,eta_GT,reg_GT,TDA_T,                 &
                         doACFDT,exchange_kernel,doXBS,                                              &
                         dophBSE,dophBSE2,doppBSE,dBSE,dTDA,                                         &
-                        temperature,sigma,chem_pot_hf,restart_hfb)
+                        temperature,sigma,chem_pot_hf,restart_hfb,                                  &
+                        max_it_macro,conv_one_body,max_it_micro,conv_two_body)
 
 ! Read desired methods 
 
@@ -77,6 +78,9 @@ subroutine read_options(working_dir,                                            
   logical,intent(out)           :: restart_hfb
   double precision,intent(out)  :: temperature
   double precision,intent(out)  :: sigma
+
+  integer,intent(out)           :: max_it_macro,max_it_micro
+  double precision,intent(out)  :: conv_one_body,conv_two_body
 
 ! Local variables
 
@@ -235,7 +239,17 @@ subroutine read_options(working_dir,                                            
 
       if(ans1 == 'T') chem_pot_hf  = .true.
       if(ans2 == 'T') restart_hfb  = .true.
+
+      ! Options for Parquet module
     
+      max_it_macro  = 1
+      conv_one_body = 0.01
+      max_it_micro  = 1
+      conv_two_body = 0.01
+    
+      read(1,*) 
+      read(1,*) max_it_macro,conv_one_body,max_it_micro,conv_two_body
+      
     endif
 
   ! Close file with options

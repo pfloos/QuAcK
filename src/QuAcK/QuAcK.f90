@@ -78,6 +78,10 @@ program QuAcK
   logical                       :: restart_hfb
   double precision              :: temperature,sigma
 
+  
+  integer                       :: max_it_macro,max_it_micro
+  double precision              :: conv_one_body,conv_two_body
+
   character(len=256)            :: working_dir
 
   ! Check if the right number of arguments is provided
@@ -141,7 +145,8 @@ program QuAcK
                     maxSCF_GT,thresh_GT,max_diis_GT,lin_GT,eta_GT,reg_GT,TDA_T,                 & 
                     doACFDT,exchange_kernel,doXBS,                                              &
                     dophBSE,dophBSE2,doppBSE,dBSE,dTDA,                                         &
-                    temperature,sigma,chem_pot_hf,restart_hfb)
+                    temperature,sigma,chem_pot_hf,restart_hfb,                                  &
+                    max_it_macro,conv_one_body,max_it_micro,conv_two_body)
 
 !------------------!
 ! Hardware         !
@@ -257,7 +262,8 @@ program QuAcK
                   guess_type,mix,reg_MP,maxSCF_CC,max_diis_CC,thresh_CC,spin_conserved,spin_flip,TDA,                     &
                   maxSCF_GF,max_diis_GF,renorm_GF,thresh_GF,lin_GF,reg_GF,eta_GF,maxSCF_GW,max_diis_GW,thresh_GW,         &
                   TDA_W,lin_GW,reg_GW,eta_GW,maxSCF_GT,max_diis_GT,thresh_GT,TDA_T,lin_GT,reg_GT,eta_GT,                  &
-                  dophBSE,dophBSE2,doppBSE,dBSE,dTDA,doACFDT,exchange_kernel,doXBS)
+                  dophBSE,dophBSE2,doppBSE,dBSE,dTDA,doACFDT,exchange_kernel,doXBS,                                       &
+                  max_it_macro,conv_one_body,max_it_micro,conv_two_body)
     endif
   endif
 
