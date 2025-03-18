@@ -161,9 +161,9 @@ if args.use_cap:
     print(cap_system.get_overlap_mat("pyscf"))
     print("pyscf")
     print(ovlp)
-    if not(cap_system.check_overlap_mat(ovlp, "pyscf")):
-        raise Exception(
-            "Provided cap basis does not match to the pyscf basis.")
+    # if not(cap_system.check_overlap_mat(ovlp, "pyscf")):
+    #    raise Exception(
+    #        "Provided cap basis does not match to the pyscf basis.")
     cap_dict = {"cap_type": "box",
                 "cap_x": onset_x,
                 "cap_y": onset_y,
@@ -172,7 +172,12 @@ if args.use_cap:
                 "angular_points": "590",
                 "thresh": 10}
     pc = pyopencap.CAP(cap_system, cap_dict, norb)
+    pc.get_ao_cap(ordering="pyscf")
+    pc.renormalize_cap(ovlp, "pyscf")
     cap_ao = pc.get_ao_cap(ordering="pyscf")
+    print(cap_ao)
+    print("S after normalizing")
+    print(cap_system.get_overlap_mat("pyscf"))
 
 
 def write_matrix_to_file(matrix, size, file, cutoff=1e-15):
