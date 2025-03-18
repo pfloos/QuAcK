@@ -8,6 +8,7 @@ from pyscf import gto
 import numpy as np
 import subprocess
 import time
+import pyopencap
 
 
 # Find the value of the environnement variable QUACK_ROOT. If not present we use the current repository
@@ -23,7 +24,9 @@ parser = argparse.ArgumentParser(
 
 # Initialize all the options for the script
 parser.add_argument('-b', '--basis', type=str, required=True,
-                    help='Name of the file containing the basis set in the $QUACK_ROOT/basis/ directory')
+                    help='Name of the file containing the basis set in the $QUACK_ROOT/basis/ directory. If cap is used the basis in psi4 style has to be provided in the directory cap_data/basis directory.')
+parser.add_argument('--use_local_basis', default=False, action='store_true',
+                    help='If True, basis is loaded from local storage. Needed for CAP.')
 parser.add_argument('--bohr', default='Angstrom', action='store_const', const='Bohr',
                     help='By default QuAcK assumes that the xyz files are in Angstrom. Add this argument if your xyz file is in Bohr.')
 parser.add_argument('-c', '--charge', type=int, default=0,
@@ -46,10 +49,15 @@ parser.add_argument('--working_dir', type=str, default=QuAcK_dir,
                     help='Set a working directory to run the calculation.')
 parser.add_argument('-x', '--xyz', type=str, required=True,
                     help='Name of the file containing the nuclear coordinates in xyz format in the $QUACK_ROOT/mol/ directory without the .xyz extension')
+parser.add_argument("--use_cap", action="store_true", default=False,
+                    help="If true cap integrals are calculated by opencap and written to a file. The basis has to be provided in the cap_data/basis dir in psi4 style and the onsets in the cap_data/onsets dir.")
 
 # Parse the arguments
 args = parser.parse_args()
 input_basis = args.basis
+# Basisset path
+pyscf_path = os.path.dirname(pyscf.__file__)
+basis_path = os.path.join(pyscf_path, "gto", "basis", input_basis + ".dat")
 unit = args.bohr
 charge = args.charge
 frozen_core = args.frozen_core
@@ -61,7 +69,6 @@ formatted_2e = args.formatted_2e
 mmap_2e = args.mmap_2e
 aosym_2e = args.aosym_2e
 working_dir = args.working_dir
-
 # Read molecule
 f = open(working_dir+'/mol/'+xyz, 'r')
 lines = f.read().splitlines()
@@ -122,13 +129,50 @@ v1e = mol.intor('int1e_nuc')  # Nuclear repulsion matrix elements
 t1e = mol.intor('int1e_kin')  # Kinetic energy matrix elements
 dipole = mol.intor('int1e_r')  # Matrix elements of the x, y, z operators
 x, y, z = dipole[0], dipole[1], dipole[2]
-print(mol.nao)
 
 norb = len(ovlp)  # nBAS_AOs
 subprocess.call(['rm', '-f', working_dir + '/int/nBas.dat'])
 f = open(working_dir+'/int/nBas.dat', 'w')
 f.write(" {} ".format(str(norb)))
 f.close()
+
+# CAP definition
+if args.use_cap:
+    f = open(working_dir+'/cap_data/onsets/'+args.xyz, 'r')
+    lines = f.read().splitlines()
+    for line in lines:
+        tmp = line.split()
+        onset_x = float(tmp[0])
+        onset_y = float(tmp[1])
+        onset_z = float(tmp[2])
+    # xyz file
+    with open(working_dir + "/mol/" + xyz, "r") as f:
+        lines = f.readlines()
+    num_atoms = int(lines[0].strip())
+    atoms = [line.strip() for line in lines[2:2+num_atoms]]
+    sys_dict = {
+        "molecule": "inline",
+        "geometry": "\n".join(atoms),  # XYZ format as a string
+        "basis_file": working_dir + "/cap_data/basis/" + input_basis,
+        "bohr_coordinates": unit == 'Bohr'
+    }
+    cap_system = pyopencap.System(sys_dict)
+    print("opencap")
+    print(cap_system.get_overlap_mat("pyscf"))
+    print("pyscf")
+    print(ovlp)
+    if not(cap_system.check_overlap_mat(ovlp, "pyscf")):
+        raise Exception(
+            "Provided cap basis does not match to the pyscf basis.")
+    cap_dict = {"cap_type": "box",
+                "cap_x": onset_x,
+                "cap_y": onset_y,
+                "cap_z": onset_z,
+                "Radial_precision": "16",
+                "angular_points": "590",
+                "thresh": 10}
+    pc = pyopencap.CAP(cap_system, cap_dict, norb)
+    cap_ao = pc.get_ao_cap(ordering="pyscf")
 
 
 def write_matrix_to_file(matrix, size, file, cutoff=1e-15):
@@ -143,7 +187,7 @@ def write_matrix_to_file(matrix, size, file, cutoff=1e-15):
 
 
 # Write all 1 electron quantities in files
-# Ov,Nuc,Kin,x,y,z
+# Ov,Nuc,Kin,x,y,z,CAP
 subprocess.call(['rm', '-f', working_dir + '/int/Ov.dat'])
 write_matrix_to_file(ovlp, norb, working_dir+'/int/Ov.dat')
 subprocess.call(['rm', '-f', working_dir + '/int/Nuc.dat'])
@@ -156,8 +200,8 @@ subprocess.call(['rm', '-f', working_dir + '/int/y.dat'])
 write_matrix_to_file(y, norb, working_dir+'/int/y.dat')
 subprocess.call(['rm', '-f', working_dir + '/int/z.dat'])
 write_matrix_to_file(z, norb, working_dir+'/int/z.dat')
-subprocess.call(['cp', '-r', working_dir +
-                f'/int/cap/{args.xyz}/{input_basis}/CAP.dat', working_dir + f'/int/CAP.dat'])
+subprocess.call(['rm', '-f', working_dir + '/int/CAP.dat'])
+write_matrix_to_file(cap_ao, norb, working_dir+'/int/CAP.dat')
 
 
 def write_tensor_to_file(tensor, size, file_name, cutoff=1e-15):

@@ -1,5 +1,6 @@
 subroutine read_options(working_dir,                                                                &
                         maxSCF_HF,thresh_HF,max_diis_HF,guess_type,mix,level_shift,dostab,dosearch, &
+                        eta_cap,                                                                    &
                         reg_MP,                                                                     &
                         maxSCF_CC,thresh_CC,max_diis_CC,                                            &
                         TDA,spin_conserved,spin_flip,                                               &
@@ -28,6 +29,8 @@ subroutine read_options(working_dir,                                            
   double precision,intent(out)  :: level_shift
   logical,intent(out)           :: dostab
   logical,intent(out)           :: dosearch
+
+  double precision,intent(out)  :: eta_cap
 
   logical,intent(out)           :: reg_MP
 
@@ -113,6 +116,11 @@ subroutine read_options(working_dir,                                            
       if(ans1 == 'T') dostab   = .true.
       if(ans2 == 'T') dosearch = .true.
     
+      ! Read cap options
+
+      read(1,*) 
+      read(1,*) eta_cap
+      
       ! Read MPn options
     
       reg_MP = .false.

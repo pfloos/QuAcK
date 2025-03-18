@@ -1,5 +1,5 @@
 subroutine cRHF(dotest,maxSCF,thresh,max_diis,guess_type,level_shift,ENuc, & 
-                nBas,nO,S,T,V,ERI,X,ERHF,eHF,c,P,F)
+                nBas,nO,S,T,V,ERI,CAP,X,ERHF,eHF,c,P,F)
 
 ! Perform complex restricted Hartree-Fock calculation
 
@@ -23,6 +23,7 @@ subroutine cRHF(dotest,maxSCF,thresh,max_diis,guess_type,level_shift,ENuc, &
   double precision,intent(in)   :: T(nBas,nBas)
   double precision,intent(in)   :: V(nBas,nBas)
   double precision,intent(in)   :: X(nBas,nBas)
+  double precision,intent(in)   :: CAP(nBas,nBas)
   double precision,intent(in)   :: ERI(nBas,nBas,nBas,nBas)
   ! Local variables
 
@@ -38,8 +39,6 @@ subroutine cRHF(dotest,maxSCF,thresh,max_diis,guess_type,level_shift,ENuc, &
   double precision              :: rcond
   double precision,external     :: trace_matrix
 
-  double precision              :: eta
-  double precision,allocatable  :: W(:,:)
   complex*16,allocatable        :: J(:,:)
   complex*16,allocatable        :: K(:,:)
   complex*16,allocatable        :: cp(:,:)
@@ -69,25 +68,20 @@ subroutine cRHF(dotest,maxSCF,thresh,max_diis,guess_type,level_shift,ENuc, &
 ! Useful quantities
 
   nBasSq = nBas*nBas
-  eta = 0.01d0
 
 ! Memory allocation
 
  allocate(err_diis(nBasSq,max_diis))
  allocate(F_diis(nBasSq,max_diis))
  allocate(Hc(nBas,nBas))
- allocate(W(nBas,nBas))
  allocate(J(nBas,nBas))
  allocate(K(nBas,nBas))
  allocate(err(nBas,nBas))
  allocate(cp(nBas,nBas))
  allocate(Fp(nBas,nBas))
 
-! Read CAP integrals from file
-  call read_CAP_integrals(nBas,W)
-  W(:,:) = -eta*W(:,:)
 ! Define core Hamiltonian with CAP part
-  Hc(:,:) = cmplx(T+V,W,kind=8)
+  Hc(:,:) = cmplx(T+V,CAP,kind=8)
 
 ! Guess coefficients and density matrix
   call complex_mo_guess(nBas,nBas,guess_type,S,Hc,X,c)

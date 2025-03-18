@@ -13,7 +13,7 @@ subroutine read_CAP_integrals(nBas,W)
 
   logical                       :: debug
   integer                       :: mu,nu
-  double precision              :: wx,wy,wz
+  double precision              :: wxyz
 
 ! Output variables
 
@@ -28,9 +28,9 @@ subroutine read_CAP_integrals(nBas,W)
 
   W(:,:) = 0d0
   do 
-    read(31,*,end=31) mu,nu,wx,wy,wz
-    W(mu,nu) = wx + wy + wz
-    W(nu,mu) = wx + wy + wz
+    read(31,*,end=31) mu,nu,wxyz
+    W(mu,nu) = wxyz
+    W(nu,mu) = wxyz
   end do
   31 close(unit=31)
 

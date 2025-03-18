@@ -3,8 +3,9 @@ subroutine RQuAcK(working_dir,use_gpu,dotest,doRHF,doROHF,docRHF,               
                   dodrCCD,dorCCD,docrCCD,dolCCD,doCIS,doCIS_D,doCID,doCISD,doFCI,dophRPA,dophRPAx,docrRPA,doppRPA,       & 
                   doG0F2,doevGF2,doqsGF2,doufG0F02,doG0F3,doevGF3,doG0W0,doevGW,doqsGW,doufG0W0,doufGW,                  &
                   doG0T0pp,doevGTpp,doqsGTpp,doufG0T0pp,doG0T0eh,doevGTeh,doqsGTeh,                                      & 
+                  docG0W0,                                                                                               & 
                   nNuc,nBas,nOrb,nC,nO,nV,nR,ENuc,ZNuc,rNuc,                                                             &
-                  S,T,V,Hc,X,dipole_int_AO,maxSCF_HF,max_diis_HF,thresh_HF,level_shift,                                  &
+                  S,T,V,Hc,CAP_AO,X,dipole_int_AO,maxSCF_HF,max_diis_HF,thresh_HF,level_shift,                   &
                   guess_type,mix,reg_MP,maxSCF_CC,max_diis_CC,thresh_CC,singlet,triplet,TDA,                             &
                   maxSCF_GF,max_diis_GF,renorm_GF,thresh_GF,lin_GF,reg_GF,eta_GF,maxSCF_GW,max_diis_GW,thresh_GW,        & 
                   TDA_W,lin_GW,reg_GW,eta_GW,maxSCF_GT,max_diis_GT,thresh_GT,TDA_T,lin_GT,reg_GT,eta_GT,                 & 
@@ -33,6 +34,7 @@ subroutine RQuAcK(working_dir,use_gpu,dotest,doRHF,doROHF,docRHF,               
   logical,intent(in)            :: doG0W0,doevGW,doqsGW,doufG0W0,doufGW
   logical,intent(in)            :: doG0T0pp,doevGTpp,doqsGTpp,doufG0T0pp
   logical,intent(in)            :: doG0T0eh,doevGTeh,doqsGTeh
+  logical,intent(in)            :: docG0W0
 
   integer,intent(in)            :: nNuc,nBas,nOrb
   integer,intent(in)            :: nC
@@ -47,6 +49,7 @@ subroutine RQuAcK(working_dir,use_gpu,dotest,doRHF,doROHF,docRHF,               
   double precision,intent(in)   :: T(nBas,nBas)
   double precision,intent(in)   :: V(nBas,nBas)
   double precision,intent(in)   :: Hc(nBas,nBas)
+  double precision,intent(in)   :: CAP_AO(nBas,nBas)
   double precision,intent(in)   :: X(nBas,nOrb)
   double precision,intent(in)   :: dipole_int_AO(nBas,nBas,ncart)
 
@@ -107,6 +110,7 @@ subroutine RQuAcK(working_dir,use_gpu,dotest,doRHF,doROHF,docRHF,               
   complex*16,allocatable        :: complex_FHF(:,:)
   double precision              :: ERHF
   complex*16                    :: complex_ERHF
+  double precision,allocatable  :: CAP_MO(:,:)
   double precision,allocatable  :: dipole_int_MO(:,:,:)
   double precision,allocatable  :: ERI_AO(:,:,:,:)
   double precision,allocatable  :: ERI_MO(:,:,:,:)
@@ -131,6 +135,7 @@ subroutine RQuAcK(working_dir,use_gpu,dotest,doRHF,doROHF,docRHF,               
   allocate(complex_FHF(nBas,nBas))
   allocate(ERI_AO(nBas,nBas,nBas,nBas))
   allocate(FHF(nBas,nBas))
+  allocate(CAP_MO(nOrb,nOrb))
   allocate(dipole_int_MO(nOrb,nOrb,ncart))
   allocate(ERI_MO(nOrb,nOrb,nOrb,nOrb))
   call wall_time(start_int)
@@ -174,7 +179,7 @@ subroutine RQuAcK(working_dir,use_gpu,dotest,doRHF,doROHF,docRHF,               
   if(docRHF) then
     call wall_time(start_HF)
     call cRHF(dotest,maxSCF_HF,thresh_HF,max_diis_HF,guess_type,level_shift,ENuc, &
-             nBas,nO,S,T,V,ERI_AO,X,complex_ERHF,complex_eHF,complex_cHF,complex_PHF,complex_FHF)
+             nBas,nO,S,T,V,ERI_AO,CAP_AO,X,complex_ERHF,complex_eHF,complex_cHF,complex_PHF,complex_FHF)
     call wall_time(end_HF)
 
     t_HF = end_HF - start_HF
@@ -202,7 +207,7 @@ subroutine RQuAcK(working_dir,use_gpu,dotest,doRHF,doROHF,docRHF,               
   ! 4-index transform 
   
   call AOtoMO_ERI_RHF(nBas,nOrb,cHF,ERI_AO,ERI_MO)
-
+  if (docG0W0) call AOtoMO(nBas,nOrb,cHF,CAP_AO,CAP_MO) ! Add the different cases for cGW methods when implemented
   call wall_time(end_AOtoMO)
 
   t_AOtoMO = end_AOtoMO - start_AOtoMO
@@ -343,15 +348,14 @@ subroutine RQuAcK(working_dir,use_gpu,dotest,doRHF,doROHF,docRHF,               
 ! GW module !
 !-----------!
 
-  doGW = doG0W0 .or. doevGW .or. doqsGW .or. doufG0W0 .or. doufGW 
-
+  doGW = doG0W0 .or. doevGW .or. doqsGW .or. doufG0W0 .or. doufGW .or. docG0W0
   if(doGW) then
     
     call wall_time(start_GW)
-    call RGW(dotest,doG0W0,doevGW,doqsGW,doufG0W0,doufGW,maxSCF_GW,thresh_GW,max_diis_GW,                &
+    call RGW(dotest,doG0W0,doevGW,doqsGW,doufG0W0,doufGW,docG0W0,maxSCF_GW,thresh_GW,max_diis_GW,        & 
              doACFDT,exchange_kernel,doXBS,dophBSE,dophBSE2,doppBSE,TDA_W,TDA,dBSE,dTDA,singlet,triplet, &
              lin_GW,eta_GW,reg_GW,nNuc,ZNuc,rNuc,ENuc,nBas,nOrb,nC,nO,nV,nR,nS,ERHF,S,X,T,               &
-             V,Hc,ERI_AO,ERI_MO,dipole_int_AO,dipole_int_MO,PHF,cHF,eHF)
+             V,Hc,ERI_AO,ERI_MO,CAP_MO,dipole_int_AO,dipole_int_MO,PHF,cHF,eHF)
     call wall_time(end_GW)
   
     t_GW = end_GW - start_GW
@@ -359,6 +363,13 @@ subroutine RQuAcK(working_dir,use_gpu,dotest,doRHF,doROHF,docRHF,               
     write(*,*)
 
   end if
+
+
+!------------!
+! cGW module !
+!------------!
+
+! IMPLEMENT LATER TO TREAT EVERYTHING COMPLEX, i.e. start from complex HF orbitals
 
 !-----------------!
 ! T-matrix module !
@@ -391,7 +402,7 @@ subroutine RQuAcK(working_dir,use_gpu,dotest,doRHF,doROHF,docRHF,               
   deallocate(dipole_int_MO)
   deallocate(ERI_MO)
   deallocate(ERI_AO)
-
+  deallocate(CAP_MO)
   deallocate(complex_eHF)
   deallocate(complex_cHF)
   deallocate(complex_PHF)
