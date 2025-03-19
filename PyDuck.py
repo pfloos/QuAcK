@@ -24,9 +24,9 @@ parser = argparse.ArgumentParser(
 
 # Initialize all the options for the script
 parser.add_argument('-b', '--basis', type=str, required=True,
-                    help='Name of the file containing the basis set in the $QUACK_ROOT/basis/ directory. If cap is used the basis in psi4 style has to be provided in the directory data/basis_psi4 directory and same basis in nwchem format in data/basis_nwchem.')
+                    help='Name of the file containing the basis set in the $QUACK_ROOT/basis/ directory (if local basis is use) otherwise name of basis set for pyscf.')
 parser.add_argument('--use_local_basis', default=False, action='store_true',
-                    help='If True, basis is loaded from local storage. Needed for CAP. From file in data/basis_nwchem/$basis')
+                    help='If True, basis is loaded from local storage. Needed for CAP. From file in $QUACK_ROOT/basis/ in nwchem formatting')
 parser.add_argument('--bohr', default='Angstrom', action='store_const', const='Bohr',
                     help='By default QuAcK assumes that the xyz files are in Angstrom. Add this argument if your xyz file is in Bohr.')
 parser.add_argument('-c', '--charge', type=int, default=0,
@@ -50,7 +50,7 @@ parser.add_argument('--working_dir', type=str, default=QuAcK_dir,
 parser.add_argument('-x', '--xyz', type=str, required=True,
                     help='Name of the file containing the nuclear coordinates in xyz format in the $QUACK_ROOT/mol/ directory without the .xyz extension')
 parser.add_argument("--use_cap", action="store_true", default=False,
-                    help="If true cap integrals are calculated by opencap and written to a file. The basis has to be provided in the data/basis_psi4 dir in psi4 style  and in nwchem format in the data/basis_nwchem format and the onsets in the data/onsets dir.")
+                    help="If true cap integrals are calculated by opencap and written to a file. The basis has to be provided in the basis/ dir in nwchem style cap_onsets dir.")
 
 # Parse the arguments
 args = parser.parse_args()
@@ -80,10 +80,9 @@ for line in lines:
 f.close()
 # Create PySCF molecule
 if args.use_local_basis:
-    print("blub")
     atoms = list(set(atom[0] for atom in list_pos_atom))
     basis_dict = {atom: gto.basis.parse_nwchem.load(
-        working_dir + "/data/basis_nwchem/" + input_basis, atom) for atom in atoms}
+        working_dir + "/basis/" + input_basis, atom) for atom in atoms}
     basis = basis_dict
     mol = gto.M(
         atom=list_pos_atom,
@@ -100,10 +99,6 @@ else:
         spin=multiplicity - 1
         #    symmetry = True  # Enable symmetry
     )
-
-
-# Example usage:
-print(basis_dict)
 # Fix the unit for the lengths
 mol.unit = unit
 #
@@ -148,7 +143,6 @@ subprocess.call(['rm', '-f', working_dir + '/int/nBas.dat'])
 f = open(working_dir+'/int/nBas.dat', 'w')
 f.write(" {} ".format(str(norb)))
 f.close()
-print("before cap")
 
 
 def create_psi4_basis(basis_dict):
@@ -160,7 +154,7 @@ def create_psi4_basis(basis_dict):
                            Each primitive is represented as [angular momentum, [exponent, coefficient(s)]].
 
     Returns:
-        str: The Psi4-formatted basis set string.
+        str: filepath to the create file containing the psi4 formatted basis
     """
     l_mapping = {0: 'S', 1: 'P', 2: 'D', 3: 'F', 4: 'G', 5: 'H'}
     basis_str = "****\n"
@@ -184,7 +178,7 @@ def create_psi4_basis(basis_dict):
                         primitive) > (1 + contraction_idx) else 0.0
                     basis_str += f"     {exponent: .6E} {coefficient: .6E}\n"
         basis_str += "****\n"
-    basis_filename_psi4 = working_dir + "input/basis_psi4"
+    basis_filename_psi4 = working_dir + "/input/basis_psi4"
     with open(basis_filename_psi4, "w") as file:
         file.write(basis_str.strip())
     return basis_filename_psi4
@@ -192,7 +186,7 @@ def create_psi4_basis(basis_dict):
 
 # CAP definition
 if args.use_cap:
-    f = open(working_dir+'/data/onsets/'+args.xyz, 'r')
+    f = open(working_dir+'/cap_onsets/'+args.xyz, 'r')
     lines = f.read().splitlines()
     for line in lines:
         tmp = line.split()
@@ -200,12 +194,10 @@ if args.use_cap:
         onset_y = float(tmp[1])
         onset_z = float(tmp[2])
     f.close()
-    print("onsets read")
     # xyz file
     with open(working_dir + "/mol/" + xyz, "r") as f:
         lines = f.readlines()
         f.close()
-    print("xyz read")
     num_atoms = int(lines[0].strip())
     atoms = [line.strip() for line in lines[2:2+num_atoms]]
     sys_dict = {
@@ -214,10 +206,7 @@ if args.use_cap:
         "basis_file": create_psi4_basis(basis_dict),
         "bohr_coordinates": unit == 'Bohr'
     }
-    print("sys dict constructed")
     cap_system = pyopencap.System(sys_dict)
-    print("cap system created")
-    print("Before overlap check")
     if not(cap_system.check_overlap_mat(ovlp, "pyscf")):
         raise Exception(
             "Provided cap basis does not match to the pyscf basis.")
@@ -228,7 +217,6 @@ if args.use_cap:
                 "Radial_precision": "16",
                 "angular_points": "590",
                 "thresh": 10}
-    print("Before cap system")
     pc = pyopencap.CAP(cap_system, cap_dict, norb)
     cap_ao = pc.get_ao_cap(ordering="pyscf")
 
