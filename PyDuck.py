@@ -184,7 +184,7 @@ def create_psi4_basis(basis_dict):
                         primitive) > (1 + contraction_idx) else 0.0
                     basis_str += f"     {exponent: .6E} {coefficient: .6E}\n"
         basis_str += "****\n"
-    basis_filename_psi4 = working_dir + "data/basis_psi4/" + input_basis
+    basis_filename_psi4 = working_dir + "input/basis_psi4"
     with open(basis_filename_psi4, "w") as file:
         file.write(basis_str.strip())
     return basis_filename_psi4
