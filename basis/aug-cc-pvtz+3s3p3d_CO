@@ -4762,7 +4762,7 @@ Kr    F
       6.622000E-01           1.0000000
 Kr    F
       0.3280000              1.0000000
-#Basis set on ghost atom X for CO: +3s3p3d
+#BASIS SET for ghost atom X: +3s3p3d
 X    S
       0.029445E+00           1.000000E+00
 X    S

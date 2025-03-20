@@ -73,9 +73,9 @@ subroutine cRG0W0(dotest,doACFDT,exchange_kernel,doXBS,dophBSE,dophBSE2,TDA_W,TD
 ! Hello world
 
   write(*,*)
-  write(*,*)'*******************************'
-  write(*,*)'* Restricted G0W0 Calculation *'
-  write(*,*)'*******************************'
+  write(*,*)'***************************************'
+  write(*,*)'* Restricted complex G0W0 Calculation *'
+  write(*,*)'***************************************'
   write(*,*)
 
 ! Spin manifold and TDA for dynamical screening

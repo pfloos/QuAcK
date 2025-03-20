@@ -8,10 +8,9 @@ default:
 	ninja
 
 debug:
-	python3 make_ninja.py debug
+	python3 make_ninja.py -d
 	ninja
 
 clean: 
 	python3 make_ninja.py
 	for i in */ ; do cd $$i ; ninja -t clean ; cd .. ; done
-

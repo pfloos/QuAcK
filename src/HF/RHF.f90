@@ -70,7 +70,6 @@ subroutine RHF(dotest,maxSCF,thresh,max_diis,guess_type,level_shift,nNuc,ZNuc,rN
   write(*,*)
 
 ! Useful quantities
-
   nBas_Sq = nBas*nBas
 
 ! Memory allocation
@@ -125,7 +124,6 @@ subroutine RHF(dotest,maxSCF,thresh,max_diis,guess_type,level_shift,nNuc,ZNuc,rN
     
     call Hartree_matrix_AO_basis(nBas,P,ERI,J)
     call exchange_matrix_AO_basis(nBas,P,ERI,K)
-    
     F(:,:) = Hc(:,:) + J(:,:) + 0.5d0*K(:,:)
 
     ! Check convergence 

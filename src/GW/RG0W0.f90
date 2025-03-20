@@ -131,7 +131,6 @@ subroutine RG0W0(dotest,doACFDT,exchange_kernel,doXBS,dophBSE,dophBSE2,TDA_W,TDA
 !-----------------------------------!
 
   ! Linearized or graphical solution?
-
   eGWlin(:) = eHF(:) + Z(:)*SigC(:)
 
   if(linearize) then 

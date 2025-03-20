@@ -136,7 +136,6 @@ program QuAcK
 
   call read_options(working_dir,                                                                &
                     maxSCF_HF,thresh_HF,max_diis_HF,guess_type,mix,level_shift,dostab,dosearch, &
-                    eta_cap,                                                                     &
                     reg_MP,                                                                     &
                     maxSCF_CC,thresh_CC,max_diis_CC,                                            &
                     TDA,spin_conserved,spin_flip,                                               &
@@ -194,8 +193,9 @@ program QuAcK
   call wall_time(start_int)
 
   call read_1e_integrals(working_dir,nBas,S,T,V,Hc)
+  call read_eta_cap(working_dir,eta_cap)
   if (docRHF .or. docG0W0) call read_CAP_integrals(nBas,CAP) ! Add different cases if needed
-  CAP(:,:) = -eta_cap * CAP(:,:)
+  CAP(:,:) = -eta_cap*CAP(:,:)
   call read_dipole_integrals(working_dir,nBas,dipole_int_AO)
   call wall_time(end_int)
 
