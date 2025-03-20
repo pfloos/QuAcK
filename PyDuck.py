@@ -225,7 +225,8 @@ if args.use_cap:
                 "angular_points": "590",
                 "thresh": 10}
     pc = pyopencap.CAP(cap_system, cap_dict, norb)
-    cap_ao = pc.get_ao_cap(ordering="pyscf")
+    # Get AO and convert from eV to Hartree
+    cap_ao = pc.get_ao_cap(ordering="pyscf")/27.211386245981
 
 
 def write_matrix_to_file(matrix, size, file, cutoff=1e-15):
