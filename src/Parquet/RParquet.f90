@@ -103,7 +103,7 @@ subroutine RParquet(max_it_macro,conv_one_body,max_it_micro,conv_two_body,nOrb,n
   write(*,*)
   write(*,*)'************ Solving initial linear-response problems ************'
   write(*,*)'------------------------------------------------------------------'
-
+  
   !-------------------
   ! Density channel
   !-------------------
@@ -118,8 +118,7 @@ subroutine RParquet(max_it_macro,conv_one_body,max_it_micro,conv_two_body,nOrb,n
   t = end_t - start_t
   write(*,*)
   write(*,'(A51,1X,F9.3,A8)') 'Total wall time for initial singlet phRPA problem =',t,' seconds'
-  !if (print_phLR) call print_excitation_energies('phRPA@RHF','singlet',nS,eh_sing_Om)
-  call print_excitation_energies('phRPA@RHF','singlet',nS,eh_sing_Om)
+  if (print_phLR) call print_excitation_energies('phRPA@RHF','singlet',nS,eh_sing_Om)
   
   deallocate(Aph,Bph)
   
@@ -137,8 +136,7 @@ subroutine RParquet(max_it_macro,conv_one_body,max_it_micro,conv_two_body,nOrb,n
   t = end_t - start_t
   write(*,*)
   write(*,'(A51,1X,F9.3,A8)') 'Total wall time for initial triplet phRPA problem =',t,' seconds'
-  !if (print_phLR) call print_excitation_energies('phRPA@RHF','triplet',nS,eh_trip_Om)
-  call print_excitation_energies('phRPA@RHF','triplet',nS,eh_trip_Om)
+  if (print_phLR) call print_excitation_energies('phRPA@RHF','triplet',nS,eh_trip_Om)
   
   deallocate(Aph,Bph)
 
@@ -202,24 +200,50 @@ subroutine RParquet(max_it_macro,conv_one_body,max_it_micro,conv_two_body,nOrb,n
   deallocate(eh_sing_Om,eh_trip_Om,ee_sing_Om,hh_sing_Om,ee_trip_Om,hh_trip_Om)
 
   allocate(eh_sing_rho(nOrb,nOrb,nS))
-  call R_eh_singlet_screened_integral(nOrb,nC,nO,nR,nS,ERI,sing_XpY,eh_sing_rho)
+  allocate(eh_sing_Gam(nOrb,nOrb,nOrb,nOrb))
+  eh_sing_Gam(:,:,:,:) = 0d0
+  call wall_time(start_t)
+  call R_eh_singlet_screened_integral(nOrb,nC,nO,nR,nS,ERI,eh_sing_Gam,sing_XpY,eh_sing_rho)
+  call wall_time(end_t)
+  t = end_t - start_t
+  write(*,'(A51,1X,F9.3,A8)') 'Total wall time for building singlet eh screened integrals =',t,' seconds'
+  write(*,*)
   deallocate(sing_XpY,sing_XmY)
+  deallocate(eh_sing_Gam)
 
   allocate(eh_trip_rho(nOrb,nOrb,nS))
-  call R_eh_triplet_screened_integral(nOrb,nC,nO,nR,nS,ERI,trip_XpY,eh_trip_rho)
+  allocate(eh_trip_Gam(nOrb,nOrb,nOrb,nOrb))
+  eh_trip_Gam(:,:,:,:) = 0d0
+  call wall_time(start_t)
+  call R_eh_triplet_screened_integral(nOrb,nC,nO,nR,nS,ERI,eh_trip_Gam,trip_XpY,eh_trip_rho)
+  call wall_time(end_t)
+  t = end_t - start_t
+  write(*,'(A51,1X,F9.3,A8)') 'Total wall time for building triplet eh screened integrals =',t,' seconds'
+  write(*,*)
   deallocate(trip_XpY,trip_XmY)
+  deallocate(eh_trip_Gam)
   
   allocate(ee_sing_rho(nOrb,nOrb,nVVs),hh_sing_rho(nOrb,nOrb,nOOs))
   allocate(pp_sing_Gam(nOrb,nOrb,nOrb,nOrb))
   pp_sing_Gam(:,:,:,:) = 0d0
+  call wall_time(start_t)
   call R_pp_singlet_screened_integral(nOrb,nC,nO,nV,nR,nOOs,nVVs,ERI,pp_sing_Gam,X1s,Y1s,ee_sing_rho,X2s,Y2s,hh_sing_rho)
+  call wall_time(end_t)
+  t = end_t - start_t
+  write(*,'(A51,1X,F9.3,A8)') 'Total wall time for building singlet pp screened integrals =',t,' seconds'
+  write(*,*)
   deallocate(X1s,Y1s,X2s,Y2s)
   deallocate(pp_sing_Gam)
   
   allocate(ee_trip_rho(nOrb,nOrb,nVVt),hh_trip_rho(nOrb,nOrb,nOOt))
   allocate(pp_trip_Gam(nOrb,nOrb,nOrb,nOrb))
   pp_trip_Gam(:,:,:,:) = 0d0
+  call wall_time(start_t)
   call R_pp_triplet_screened_integral(nOrb,nC,nO,nV,nR,nOOt,nVVt,ERI,pp_trip_Gam,X1t,Y1t,ee_trip_rho,X2t,Y2t,hh_trip_rho)
+  call wall_time(end_t)
+  t = end_t - start_t
+  write(*,'(A51,1X,F9.3,A8)') 'Total wall time for building triplet pp screened integrals =',t,' seconds'
+  write(*,*)
   deallocate(X1t,Y1t,X2t,Y2t)
   deallocate(pp_trip_Gam)
   
@@ -398,6 +422,29 @@ subroutine RParquet(max_it_macro,conv_one_body,max_it_micro,conv_two_body,nOrb,n
         old_ee_trip_Om(:) = ee_trip_Om(:)
         old_hh_trip_Om(:) = hh_trip_Om(:)
 
+        !-------------------
+        !    Compute effective interactions
+        !-------------------
+        allocate(eh_sing_Gam(nOrb,nOrb,nOrb,nOrb))
+        call wall_time(start_t)
+        call R_eh_singlet_Gamma(nOrb,nC,nO,nV,nR,nS,nOOs,nVVs,nOOt,nVVt, &
+                    old_eh_sing_Om,eh_sing_rho,old_eh_trip_Om,eh_trip_rho, &
+                    old_ee_sing_Om,ee_sing_rho,old_ee_trip_Om,ee_trip_rho, &
+                    old_hh_sing_Om,hh_sing_rho,old_hh_trip_Om,hh_trip_rho, eh_sing_Gam)
+        call wall_time(end_t)
+        t = end_t - start_t
+        write(*,'(A52,1X,F9.3,A8)') 'Total wall time for building eh singlet Gamma =',t,' seconds'
+        write(*,*)
+        allocate(eh_trip_Gam(nOrb,nOrb,nOrb,nOrb))
+        call wall_time(start_t)
+        call R_eh_triplet_Gamma(nOrb,nC,nO,nV,nR,nS,nOOs,nVVs,nOOt,nVVt, &
+                    old_eh_sing_Om,eh_sing_rho,old_eh_trip_Om,eh_trip_rho, &
+                    old_ee_sing_Om,ee_sing_rho,old_ee_trip_Om,ee_trip_rho, &
+                    old_hh_sing_Om,hh_sing_rho,old_hh_trip_Om,hh_trip_rho, eh_trip_Gam)
+        call wall_time(end_t)
+        t = end_t - start_t
+        write(*,'(A52,1X,F9.3,A8)') 'Total wall time for building eh triplet Gamma =',t,' seconds'
+        write(*,*)
         allocate(pp_trip_Gam(nOrb,nOrb,nOrb,nOrb))
         call wall_time(start_t)
         call R_pp_triplet_Gamma(nOrb,nC,nR,nS,eh_sing_Om,eh_sing_rho,eh_trip_Om,eh_trip_rho,pp_trip_Gam)
@@ -412,24 +459,50 @@ subroutine RParquet(max_it_macro,conv_one_body,max_it_micro,conv_two_body,nOrb,n
         t = end_t - start_t
         write(*,'(A52,1X,F9.3,A8)') 'Total wall time for building pp singlet Gamma =',t,' seconds'
         write(*,*)
-        
+
+        !-------------------
+        !    Deallocate
+        !-------------------
         deallocate(eh_sing_Om,eh_trip_Om,ee_sing_Om,hh_sing_Om,ee_trip_Om,hh_trip_Om)
         deallocate(eh_sing_rho,eh_trip_rho,ee_sing_rho,ee_trip_rho,hh_sing_rho,hh_trip_rho)
-        
+
+        !-------------------
+        !    Compute screened integrals
+        !-------------------
         allocate(eh_sing_rho(nOrb,nOrb,nS))
-        call R_eh_singlet_screened_integral(nOrb,nC,nO,nR,nS,ERI,sing_XpY,eh_sing_rho)
-        deallocate(sing_XpY,sing_XmY)
+        call wall_time(start_t)
+        call R_eh_singlet_screened_integral(nOrb,nC,nO,nR,nS,ERI,eh_sing_Gam,sing_XpY,eh_sing_rho)
+        call wall_time(end_t)
+        t = end_t - start_t
+        write(*,'(A51,1X,F9.3,A8)') 'Total wall time for building singlet eh screened integrals =',t,' seconds'
+        write(*,*)
+        deallocate(sing_XpY,sing_XmY,eh_sing_Gam)
   
         allocate(eh_trip_rho(nOrb,nOrb,nS))
-        call R_eh_triplet_screened_integral(nOrb,nC,nO,nR,nS,ERI,trip_XpY,eh_trip_rho)
-        deallocate(trip_XpY,trip_XmY)
+        call wall_time(start_t)
+        call R_eh_triplet_screened_integral(nOrb,nC,nO,nR,nS,ERI,eh_trip_Gam,trip_XpY,eh_trip_rho)
+        call wall_time(end_t)
+        t = end_t - start_t
+        write(*,'(A51,1X,F9.3,A8)') 'Total wall time for building triplet eh screened integrals =',t,' seconds'
+        write(*,*)
+        deallocate(trip_XpY,trip_XmY,eh_trip_Gam)
         
         allocate(ee_sing_rho(nOrb,nOrb,nVVs),hh_sing_rho(nOrb,nOrb,nOOs))
+        call wall_time(start_t)
         call R_pp_singlet_screened_integral(nOrb,nC,nO,nV,nR,nOOs,nVVs,ERI,pp_sing_Gam,X1s,Y1s,ee_sing_rho,X2s,Y2s,hh_sing_rho)
+        call wall_time(end_t)
+        t = end_t - start_t
+        write(*,'(A51,1X,F9.3,A8)') 'Total wall time for building singlet pp screened integrals =',t,' seconds'
+        write(*,*)
         deallocate(X1s,Y1s,X2s,Y2s,pp_sing_Gam)
 
         allocate(ee_trip_rho(nOrb,nOrb,nVVt),hh_trip_rho(nOrb,nOrb,nOOt))
+        call wall_time(start_t)
         call R_pp_triplet_screened_integral(nOrb,nC,nO,nV,nR,nOOt,nVVt,ERI,pp_trip_Gam,X1t,Y1t,ee_trip_rho,X2t,Y2t,hh_trip_rho)
+        call wall_time(end_t)
+        t = end_t - start_t
+        write(*,'(A51,1X,F9.3,A8)') 'Total wall time for building triplet pp screened integrals =',t,' seconds'
+        write(*,*)
         deallocate(X1t,Y1t,X2t,Y2t,pp_trip_Gam)
         
         ! Convergence criteria

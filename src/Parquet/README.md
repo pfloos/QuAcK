@@ -21,6 +21,7 @@ The hard-coded parameters are:
 ## TODO list
 
 ### Check
+- [x] Initial ppRPA@HF eigenvalues checked with Ne DIP in Table 1 of ppBSE paper
 - [ ] Comment m,s,t channels and perform ehBSE@$GW$ and ppBSE@$GW$
 - [ ] Comment d,m channels and perform ehBSE@$GT$ and ppBSE@$GT$
  
