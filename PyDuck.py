@@ -8,7 +8,6 @@ from pyscf import gto
 import numpy as np
 import subprocess
 import time
-import pyopencap
 
 
 # Find the value of the environnement variable QUACK_ROOT. If not present we use the current repository
@@ -50,10 +49,14 @@ parser.add_argument('--working_dir', type=str, default=QuAcK_dir,
 parser.add_argument('-x', '--xyz', type=str, required=True,
                     help='Name of the file containing the nuclear coordinates in xyz format in the $QUACK_ROOT/mol/ directory without the .xyz extension')
 parser.add_argument("--use_cap", action="store_true", default=False,
-                    help="If true cap integrals are calculated by opencap and written to a file. The basis has to be provided in the basis/ dir in nwchem style cap_onsets dir.")
-
+                    help="If true cap integrals are calculated by opencap and written to a file. The basis has to be provided in the basis/ dir in nwchem style cap_data dir.")
 # Parse the arguments
 args = parser.parse_args()
+if args.use_cap:
+    try:
+        import pyopencap
+    except ImportError:
+        print("Module pyopencap is not installed.")
 working_dir = args.working_dir
 input_basis = args.basis
 unit = args.bohr
@@ -186,13 +189,17 @@ def create_psi4_basis(basis_dict):
 
 # CAP definition
 if args.use_cap:
-    f = open(working_dir+'/cap_onsets/'+args.xyz, 'r')
+    f = open(working_dir+'/cap_data/'+args.xyz, 'r')
     lines = f.read().splitlines()
-    for line in lines:
-        tmp = line.split()
-        onset_x = float(tmp[0])
-        onset_y = float(tmp[1])
-        onset_z = float(tmp[2])
+    line = lines[1]
+    tmp = line.split()
+    onset_x = float(tmp[0])
+    onset_y = float(tmp[1])
+    onset_z = float(tmp[2])
+    eta_opt = float(tmp[3])
+    f.close()
+    f = open(working_dir+'/input/eta_opt.dat', 'w')
+    f.write(" {} ".format(str(eta_opt)))
     f.close()
     # xyz file
     with open(working_dir + "/mol/" + xyz, "r") as f:
