@@ -27,7 +27,7 @@ subroutine print_cRG0W0(nBas,nO,eHF,ENuc,ERHF,Re_SigC,Im_SigC,Re_Z,Im_Z,Re_eGW,I
   index_homo = maxloc(Re_eGW(1:nO),1)
   Re_eHOMO = Re_eGW(index_homo)
   Im_eHOMO = Im_eGW(index_homo)
-  index_lumo = minloc(Re_eGW(1:nO),1)
+  index_lumo = minloc(Re_eGW(nO+1:nBas),1)
   Re_eLUMO = Re_eGW(index_lumo)
   Im_eLUMO = Im_eGW(index_lumo)
   Re_Gap = Re_eLUMO-Re_eHOMO
@@ -56,8 +56,8 @@ subroutine print_cRG0W0(nBas,nO,eHF,ENuc,ERHF,Re_SigC,Im_SigC,Re_Z,Im_Z,Re_eGW,I
   end do
   write(*,*)'---------------------------------------------------------------------------------------------------'
   write(*,'(2X,A60,F15.6,A5,F15.6,A3)') 'cG0W0@RHF HOMO      energy = ',Re_eHOMO*HaToeV,' + i*',Im_eHOMO*HaToeV,' eV'
-  write(*,'(2X,A60,F15.6,A5,F15.6,A3)') 'cG0W0@RHF LUMO      energy = ',Re_eLUMO*HaToeV,' + i*',Im_eHOMO*HaToeV,' eV'
-  write(*,'(2X,A60,F15.6,A5,F15.6,A3)') 'cG0W0@RHF HOMO-LUMO gap    = ',Re_Gap*HaToeV,' + i*',Im_eHOMO*HaToeV,' eV'
+  write(*,'(2X,A60,F15.6,A5,F15.6,A3)') 'cG0W0@RHF LUMO      energy = ',Re_eLUMO*HaToeV,' + i*',Im_eLUMO*HaToeV,' eV'
+  write(*,'(2X,A60,F15.6,A5,F15.6,A3)') 'cG0W0@RHF HOMO-LUMO gap    = ',Re_Gap*HaToeV,' + i*',Im_Gap*HaToeV,' eV'
   write(*,*)'---------------------------------------------------------------------------------------------------'
   write(*,'(2X,A60,F15.6,A3)') 'phRPA@cG0W0@RHF total       energy = ',ENuc + ERHF + EcRPA,' au'
   write(*,'(2X,A60,F15.6,A3)') 'phRPA@cG0W0@RHF correlation energy = ',EcRPA,' au'

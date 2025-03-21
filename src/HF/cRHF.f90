@@ -34,6 +34,7 @@ subroutine cRHF(dotest,maxSCF,thresh,max_diis,guess_type,level_shift,ENuc, &
   complex*16                    :: EV
   complex*16                    :: EJ
   complex*16                    :: EK
+  complex*16                    :: EW
 
   double precision              :: Conv
   double precision              :: rcond
@@ -101,7 +102,7 @@ subroutine cRHF(dotest,maxSCF,thresh,max_diis,guess_type,level_shift,ENuc, &
   write(*,*)
   write(*,*)'-------------------------------------------------------------------------------------------------'
   write(*,'(1X,A1,1X,A3,1X,A1,1X,A36,1X,A1,1X,A16,1X,A1,1X,A16,1X,A1,1X,A10,1X,A1,1X)') &
-            '|','#','|','E(RHF)','|','EJ(RHF)','|','EK(RHF)','|','Conv','|'
+            '|','#','|','E(RHF)','|','RE(EJ(RHF))','|','Re(EK(RHF))','|','Conv','|'
   write(*,*)'-------------------------------------------------------------------------------------------------'
 
   do while(Conv > thresh .and. nSCF < maxSCF)
@@ -124,10 +125,14 @@ subroutine cRHF(dotest,maxSCF,thresh,max_diis,guess_type,level_shift,ENuc, &
     ! Kinetic energy
 
     ET = cmplx(trace_matrix(nBas,real(matmul(P,T))),trace_matrix(nBas,aimag(matmul(P,T))),kind=8)
+    
     ! Potential energy
 
     EV = cmplx(trace_matrix(nBas,real(matmul(P,V))),trace_matrix(nBas,aimag(matmul(P,V))),kind=8)
 
+    ! CAP energy
+
+    EW = cmplx(trace_matrix(nBas,real(matmul(P,CAP))),trace_matrix(nBas,aimag(matmul(P,CAP))),kind=8)
 
     ! Hartree energy
 
@@ -141,7 +146,7 @@ subroutine cRHF(dotest,maxSCF,thresh,max_diis,guess_type,level_shift,ENuc, &
 
     ! Total energy
 
-    ERHF = ET + EV + EJ + EK
+    ERHF = ET + EV+ EW + EJ + EK
 
     ! DIIS extrapolation  !
 
@@ -188,7 +193,7 @@ subroutine cRHF(dotest,maxSCF,thresh,max_diis,guess_type,level_shift,ENuc, &
 
   end if
 
-  call print_cRHF(nBas,nBas,nO,eHF,C,ENuc,ET,EV,EJ,EK,ERHF)
+  call print_cRHF(nBas,nBas,nO,eHF,C,ENuc,ET,EV,EW,EJ,EK,ERHF)
 
   ! Testing zone
 

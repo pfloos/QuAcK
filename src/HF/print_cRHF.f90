@@ -1,7 +1,7 @@
 
 ! ---
 
-subroutine print_cRHF(nBas, nOrb, nO, eHF, cHF, ENuc, ET, EV, EJ, EK, ERHF)
+subroutine print_cRHF(nBas, nOrb, nO, eHF, cHF, ENuc, ET, EV, EW,EJ, EK, ERHF)
 
 ! Print one-electron energies and other stuff for G0W0
 
@@ -19,6 +19,7 @@ subroutine print_cRHF(nBas, nOrb, nO, eHF, cHF, ENuc, ET, EV, EJ, EK, ERHF)
   complex*16,intent(in)              :: EJ
   complex*16,intent(in)              :: EK
   complex*16,intent(in)              :: EV
+  complex*16,intent(in)              :: EW
   complex*16,intent(in)              :: ERHF
 
 ! Local variables
@@ -47,7 +48,8 @@ subroutine print_cRHF(nBas, nOrb, nO, eHF, cHF, ENuc, ET, EV, EJ, EK, ERHF)
   write(*,'(A69)')           '---------------------------------------------------------'
   write(*,'(A33,1X,F16.10,1X,A1,F16.10,A1,A3)') ' One-electron energy = ',real(ET + EV),'+',aimag(ET+EV),'i',' au'
   write(*,'(A33,1X,F16.10,1X,A1,F16.10,A1,A3)') ' Kinetic      energy = ',real(ET),'+',aimag(ET),'i',' au'
-  write(*,'(A33,1X,F16.10,1X,A1,F16.10,A1,A3)') ' Potential    energy = ',real(EV),'+',aimag(Ev),'i',' au'
+  write(*,'(A33,1X,F16.10,1X,A1,F16.10,A1,A3)') ' Potential    energy = ',real(EV),'+',aimag(EV),'i',' au'
+  write(*,'(A33,1X,F16.10,1X,A1,F16.10,A1,A3)') ' CAP          energy = ',real(EW),'+',aimag(EW),'i',' au'
   write(*,'(A69)')           '---------------------------------------------------'
   write(*,'(A33,1X,F16.10,1X,A1,F16.10,A1,A3)') ' Two-electron energy = ',real(EJ + EK),'+',aimag(EJ+EK),'i',' au'
   write(*,'(A33,1X,F16.10,1X,A1,F16.10,A1,A3)') ' Hartree      energy = ',real(EJ),'+',aimag(EJ),'i',' au'
