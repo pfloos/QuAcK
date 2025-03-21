@@ -172,6 +172,66 @@ subroutine RParquet(max_it_1b,conv_1b,max_it_2b,conv_2b,nOrb,nC,nO,nV,nR,nS,eHF,
       write(*,*)' ***********************************'
       write(*,*)
 
+      !--------------------------------!
+      ! Compute effective interactions !
+      !--------------------------------!
+
+      ! Memory allocation
+      allocate(eh_sing_Gam(nOrb,nOrb,nOrb,nOrb))
+      allocate(eh_trip_Gam(nOrb,nOrb,nOrb,nOrb))
+      allocate(pp_sing_Gam(nOrb,nOrb,nOrb,nOrb))
+      allocate(pp_trip_Gam(nOrb,nOrb,nOrb,nOrb))
+      
+      ! Build singlet eh effective interaction
+      write(*,*) 'Computing singlet eh effective interaction...'
+
+      call wall_time(start_t)
+      call R_eh_singlet_Gamma(nOrb,nC,nO,nV,nR,nS,nOOs,nVVs,nOOt,nVVt, &
+                  old_eh_sing_Om,eh_sing_rho,old_eh_trip_Om,eh_trip_rho, &
+                  old_ee_sing_Om,ee_sing_rho,old_ee_trip_Om,ee_trip_rho, &
+                  old_hh_sing_Om,hh_sing_rho,old_hh_trip_Om,hh_trip_rho, eh_sing_Gam)
+      call wall_time(end_t)
+      t = end_t - start_t
+
+      write(*,'(A50,1X,F9.3,A8)') 'Wall time for eh singlet Gamma =',t,' seconds'
+      write(*,*)
+
+     ! Build triplet eh effective interaction
+      write(*,*) 'Computing triplet eh effective interaction...'
+
+      call wall_time(start_t)
+      call R_eh_triplet_Gamma(nOrb,nC,nO,nV,nR,nS,nOOs,nVVs,nOOt,nVVt, &
+                  old_eh_sing_Om,eh_sing_rho,old_eh_trip_Om,eh_trip_rho, &
+                  old_ee_sing_Om,ee_sing_rho,old_ee_trip_Om,ee_trip_rho, &
+                  old_hh_sing_Om,hh_sing_rho,old_hh_trip_Om,hh_trip_rho, eh_trip_Gam)
+      call wall_time(end_t)
+      t = end_t - start_t
+
+      write(*,'(A50,1X,F9.3,A8)') 'Wall time for eh triplet Gamma =',t,' seconds'
+      write(*,*)
+
+     ! Build singlet pp effective interaction
+      write(*,*) 'Computing singlet pp effective interaction...'
+
+      call wall_time(start_t)
+      call R_pp_singlet_Gamma(nOrb,nC,nR,nS,old_eh_sing_Om,eh_sing_rho,old_eh_trip_Om,eh_trip_rho,pp_sing_Gam)
+      call wall_time(end_t)
+      t = end_t - start_t
+
+      write(*,'(A50,1X,F9.3,A8)') 'Wall time for pp singlet Gamma =',t,' seconds'
+      write(*,*)
+
+     ! Build triplet pp effective interaction
+      write(*,*) 'Computing triplet pp effective interaction...'
+
+      call wall_time(start_t)
+      call R_pp_triplet_Gamma(nOrb,nC,nR,nS,old_eh_sing_Om,eh_sing_rho,old_eh_trip_Om,eh_trip_rho,pp_trip_Gam)
+      call wall_time(end_t)
+      t = end_t - start_t
+
+      write(*,'(A50,1X,F9.3,A8)') 'Wall time for pp triplet Gamma =',t,' seconds'
+      write(*,*)
+
       !-----------------!
       ! Density channel !
       !-----------------!
@@ -425,144 +485,71 @@ subroutine RParquet(max_it_1b,conv_1b,max_it_2b,conv_2b,nOrb,nC,nO,nV,nR,nS,eHF,
       old_hh_sing_Om(:) = hh_sing_Om(:)
       old_ee_trip_Om(:) = ee_trip_Om(:)
       old_hh_trip_Om(:) = hh_trip_Om(:)
-
+      deallocate(eh_sing_Om,eh_trip_Om,ee_sing_Om,hh_sing_Om,ee_trip_Om,hh_trip_Om)
+      
       !----------------------------!
       ! Compute screened integrals !
       !----------------------------!
 
+      ! Free memory
+      deallocate(eh_sing_rho,eh_trip_rho,ee_sing_rho,ee_trip_rho,hh_sing_rho,hh_trip_rho)
+      ! TODO Once we will compute the blocks of kernel starting from the 4-tensors we can move the freeing up
+      ! Memory allocation
+      allocate(eh_sing_rho(nOrb,nOrb,nS))
+      allocate(eh_trip_rho(nOrb,nOrb,nS))
+      allocate(ee_sing_rho(nOrb,nOrb,nVVs),hh_sing_rho(nOrb,nOrb,nOOs))
+      allocate(ee_trip_rho(nOrb,nOrb,nVVt),hh_trip_rho(nOrb,nOrb,nOOt))
+      
+      
       ! Build singlet eh screened integrals
-
       write(*,*) 'Computing singlet eh screened integrals...'
-
-!     allocate(eh_sing_rho(nOrb,nOrb,nS))
 
       call wall_time(start_t)
       call R_eh_singlet_screened_integral(nOrb,nC,nO,nR,nS,ERI,eh_sing_Gam,sing_XpY,eh_sing_rho)
       call wall_time(end_t)
       t = end_t - start_t
-
       write(*,'(1X,A50,1X,F9.3,A8)') 'Wall time for singlet eh integrals =',t,' seconds'
       write(*,*)
-
+      ! Done with eigenvectors and kernel
       deallocate(sing_XpY,sing_XmY,eh_sing_Gam)
   
       ! Build triplet eh screened integrals
-
       write(*,*) 'Computing triplet eh screened integrals...'
-
-!     allocate(eh_trip_rho(nOrb,nOrb,nS))
 
       call wall_time(start_t)
       call R_eh_triplet_screened_integral(nOrb,nC,nO,nR,nS,ERI,eh_trip_Gam,trip_XpY,eh_trip_rho)
       call wall_time(end_t)
       t = end_t - start_t
-
       write(*,'(1X,A50,1X,F9.3,A8)') 'Wall time for triplet eh integrals =',t,' seconds'
       write(*,*)
-
+      ! Done with eigenvectors and kernel
       deallocate(trip_XpY,trip_XmY,eh_trip_Gam)
       
       ! Build singlet pp screened integrals
-
       write(*,*) 'Computing singlet pp screened integrals...'
-
-      allocate(ee_sing_rho(nOrb,nOrb,nVVs),hh_sing_rho(nOrb,nOrb,nOOs))
 
       call wall_time(start_t)
       call R_pp_singlet_screened_integral(nOrb,nC,nO,nV,nR,nOOs,nVVs,ERI,pp_sing_Gam,X1s,Y1s,ee_sing_rho,X2s,Y2s,hh_sing_rho)
       call wall_time(end_t)
       t = end_t - start_t
-
+      ! Done with eigenvectors and kernel
       write(*,'(1X,A50,1X,F9.3,A8)') 'Wall time for singlet pp integrals =',t,' seconds'
       write(*,*)
 
       deallocate(X1s,Y1s,X2s,Y2s,pp_sing_Gam)
 
       ! Build triplet pp screened integrals
-
       write(*,*) 'Computing triplet pp screened integrals...'
-
-!     allocate(ee_trip_rho(nOrb,nOrb,nVVt),hh_trip_rho(nOrb,nOrb,nOOt))
 
       call wall_time(start_t)
       call R_pp_triplet_screened_integral(nOrb,nC,nO,nV,nR,nOOt,nVVt,ERI,pp_trip_Gam,X1t,Y1t,ee_trip_rho,X2t,Y2t,hh_trip_rho)
       call wall_time(end_t)
       t = end_t - start_t
-
       write(*,'(1X,A50,1X,F9.3,A8)') 'Wall time for triplet pp integrals =',t,' seconds'
       write(*,*)
-
+      ! Done with eigenvectors and kernel
       deallocate(X1t,Y1t,X2t,Y2t,pp_trip_Gam)
- 
-      !--------------------------------!
-      ! Compute effective interactions !
-      !--------------------------------!
 
-     ! Build singlet eh effective interaction
-
-      write(*,*) 'Computing singlet eh effective interaction...'
-
-      allocate(eh_sing_Gam(nOrb,nOrb,nOrb,nOrb))
-
-      call wall_time(start_t)
-      call R_eh_singlet_Gamma(nOrb,nC,nO,nV,nR,nS,nOOs,nVVs,nOOt,nVVt, &
-                  old_eh_sing_Om,eh_sing_rho,old_eh_trip_Om,eh_trip_rho, &
-                  old_ee_sing_Om,ee_sing_rho,old_ee_trip_Om,ee_trip_rho, &
-                  old_hh_sing_Om,hh_sing_rho,old_hh_trip_Om,hh_trip_rho, eh_sing_Gam)
-      call wall_time(end_t)
-      t = end_t - start_t
-
-      write(*,'(A50,1X,F9.3,A8)') 'Wall time for eh singlet Gamma =',t,' seconds'
-      write(*,*)
-
-     ! Build triplet eh effective interaction
-
-      write(*,*) 'Computing triplet eh effective interaction...'
-
-      allocate(eh_trip_Gam(nOrb,nOrb,nOrb,nOrb))
-
-      call wall_time(start_t)
-      call R_eh_triplet_Gamma(nOrb,nC,nO,nV,nR,nS,nOOs,nVVs,nOOt,nVVt, &
-                  old_eh_sing_Om,eh_sing_rho,old_eh_trip_Om,eh_trip_rho, &
-                  old_ee_sing_Om,ee_sing_rho,old_ee_trip_Om,ee_trip_rho, &
-                  old_hh_sing_Om,hh_sing_rho,old_hh_trip_Om,hh_trip_rho, eh_trip_Gam)
-      call wall_time(end_t)
-      t = end_t - start_t
-
-      write(*,'(A50,1X,F9.3,A8)') 'Wall time for eh triplet Gamma =',t,' seconds'
-      write(*,*)
-
-     ! Build singlet pp effective interaction
-
-      write(*,*) 'Computing singlet pp effective interaction...'
-
-      allocate(pp_sing_Gam(nOrb,nOrb,nOrb,nOrb))
-      call wall_time(start_t)
-      call R_pp_singlet_Gamma(nOrb,nC,nR,nS,eh_sing_Om,eh_sing_rho,eh_trip_Om,eh_trip_rho,pp_sing_Gam)
-      call wall_time(end_t)
-      t = end_t - start_t
-
-      write(*,'(A50,1X,F9.3,A8)') 'Wall time for pp singlet Gamma =',t,' seconds'
-      write(*,*)
-
-     ! Build triplet pp effective interaction
-
-      write(*,*) 'Computing triplet pp effective interaction...'
-
-      allocate(pp_trip_Gam(nOrb,nOrb,nOrb,nOrb))
-
-      call wall_time(start_t)
-      call R_pp_triplet_Gamma(nOrb,nC,nR,nS,eh_sing_Om,eh_sing_rho,eh_trip_Om,eh_trip_rho,pp_trip_Gam)
-      call wall_time(end_t)
-      t = end_t - start_t
-
-      write(*,'(A50,1X,F9.3,A8)') 'Wall time for pp triplet Gamma =',t,' seconds'
-      write(*,*)
-
-      ! Free memory
-
-      deallocate(eh_sing_Om,eh_trip_Om,ee_sing_Om,hh_sing_Om,ee_trip_Om,hh_trip_Om)
-      deallocate(eh_sing_rho,eh_trip_rho,ee_sing_rho,ee_trip_rho,hh_sing_rho,hh_trip_rho)
      
       ! Convergence criteria
 
