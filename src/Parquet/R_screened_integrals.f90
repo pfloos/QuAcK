@@ -28,8 +28,9 @@ subroutine R_eh_singlet_screened_integral(nOrb,nC,nO,nR,nS,ERI,eh_sing_Gam,XpY,r
            do b=nO+1,nOrb-nR
               jb = jb + 1
               do ia=1,nS
-                 rho(p,q,ia) = rho(p,q,ia) + (2d0*ERI(p,j,q,b) - ERI(p,j,b,q))*XpY(ia,jb) &
-                      + 0d0*eh_sing_Gam(p,j,q,b) * XpY(ia,jb)
+                 rho(p,q,ia) = rho(p,q,ia)                                  & 
+                             + (2d0*ERI(p,j,q,b) - ERI(p,j,b,q))*XpY(ia,jb) &
+                             + 1d0*eh_sing_Gam(p,j,q,b)*XpY(ia,jb)
               end do
            end do
         end do
@@ -70,7 +71,9 @@ subroutine R_eh_triplet_screened_integral(nOrb,nC,nO,nR,nS,ERI,eh_trip_Gam,XpY,r
            do b=nO+1,nOrb-nR
               jb = jb + 1
               do ia=1,nS
-                 rho(p,q,ia) = rho(p,q,ia) - ERI(p,j,b,q)*XpY(ia,jb) + 0d0*eh_trip_Gam(p,j,q,b) * XpY(ia,jb)
+                 rho(p,q,ia) = rho(p,q,ia)             &
+                             - ERI(p,j,b,q)*XpY(ia,jb) &
+                             + 1d0*eh_trip_Gam(p,j,q,b)*XpY(ia,jb)
               end do
            end do
         end do
@@ -138,7 +141,7 @@ subroutine R_pp_singlet_screened_integral(nOrb,nC,nO,nV,nR,nOO,nVV,ERI,pp_sing_G
                  do d=c,nOrb-nR
                     cd = cd + 1
                     rho1(p,q,ab) = rho1(p,q,ab) & 
-                         + (ERI(p,q,c,d) + ERI(p,q,d,c) + 0d0*pp_sing_Gam(p,q,c,d))*X1(cd,ab) &
+                         + (ERI(p,q,c,d) + ERI(p,q,d,c) + 1d0*pp_sing_Gam(p,q,c,d))*X1(cd,ab) &
                          /sqrt(1d0 + Kronecker_delta(c,d))
                  end do
               end do
@@ -148,7 +151,7 @@ subroutine R_pp_singlet_screened_integral(nOrb,nC,nO,nV,nR,nOO,nVV,ERI,pp_sing_G
                  do l=k,nO
                     kl = kl + 1
                     rho1(p,q,ab) = rho1(p,q,ab) & 
-                         + (ERI(p,q,k,l) + ERI(p,q,l,k) + 0d0*pp_sing_Gam(p,q,k,l))*Y1(kl,ab) &
+                         + (ERI(p,q,k,l) + ERI(p,q,l,k) + 1d0*pp_sing_Gam(p,q,k,l))*Y1(kl,ab) &
                          /sqrt(1d0 + Kronecker_delta(k,l))
                  end do
               end do
@@ -165,7 +168,7 @@ subroutine R_pp_singlet_screened_integral(nOrb,nC,nO,nV,nR,nOO,nVV,ERI,pp_sing_G
                  do d=c,nOrb-nR
                     cd = cd + 1
                     rho2(p,q,ij) = rho2(p,q,ij) &
-                         + (ERI(p,q,c,d) + ERI(p,q,d,c) + 0d0*pp_sing_Gam(p,q,c,d))*X2(cd,ij) &
+                         + (ERI(p,q,c,d) + ERI(p,q,d,c) + 1d0*pp_sing_Gam(p,q,c,d))*X2(cd,ij) &
                          /sqrt(1d0 + Kronecker_delta(c,d))
                  end do
               end do
@@ -175,7 +178,7 @@ subroutine R_pp_singlet_screened_integral(nOrb,nC,nO,nV,nR,nOO,nVV,ERI,pp_sing_G
                  do l=k,nO
                     kl = kl + 1
                     rho2(p,q,ij) = rho2(p,q,ij) &
-                         + (ERI(p,q,k,l) + ERI(p,q,l,k) + 0d0*pp_sing_Gam(p,q,k,l))*Y2(kl,ij) &
+                         + (ERI(p,q,k,l) + ERI(p,q,l,k) + 1d0*pp_sing_Gam(p,q,k,l))*Y2(kl,ij) &
                          /sqrt(1d0 + Kronecker_delta(k,l))
                  end do
               end do
@@ -244,7 +247,7 @@ subroutine R_pp_triplet_screened_integral(nOrb,nC,nO,nV,nR,nOO,nVV,ERI,pp_trip_G
                     cd = cd + 1
                     
                     rho1(p,q,ab) = rho1(p,q,ab) & 
-                                 + (ERI(p,q,c,d) - ERI(p,q,d,c) + 0d0*pp_trip_Gam(p,q,c,d))*X1(cd,ab) 
+                                 + (ERI(p,q,c,d) - ERI(p,q,d,c) + 1d0*pp_trip_Gam(p,q,c,d))*X1(cd,ab) 
                  end do ! d
               end do ! c
    
@@ -255,7 +258,7 @@ subroutine R_pp_triplet_screened_integral(nOrb,nC,nO,nV,nR,nOO,nVV,ERI,pp_trip_G
                     kl = kl + 1
   
                     rho1(p,q,ab) = rho1(p,q,ab) & 
-                                 + (ERI(p,q,k,l) - ERI(p,q,l,k) + 0d0*pp_trip_Gam(p,q,k,l))*Y1(kl,ab) 
+                                 + (ERI(p,q,k,l) - ERI(p,q,l,k) + 1d0*pp_trip_Gam(p,q,k,l))*Y1(kl,ab) 
                  end do ! l
               end do ! k 
            end do ! b
@@ -272,7 +275,7 @@ subroutine R_pp_triplet_screened_integral(nOrb,nC,nO,nV,nR,nOO,nVV,ERI,pp_trip_G
                     cd = cd + 1
                    
                     rho2(p,q,ij) = rho2(p,q,ij) & 
-                                 + (ERI(p,q,c,d) - ERI(p,q,d,c) + 0d0*pp_trip_Gam(p,q,c,d))*X2(cd,ij) 
+                                 + (ERI(p,q,c,d) - ERI(p,q,d,c) + 1d0*pp_trip_Gam(p,q,c,d))*X2(cd,ij) 
                  end do ! d
               end do ! c
              
@@ -282,7 +285,7 @@ subroutine R_pp_triplet_screened_integral(nOrb,nC,nO,nV,nR,nOO,nVV,ERI,pp_trip_G
                     kl = kl + 1
                    
                     rho2(p,q,ij) = rho2(p,q,ij) & 
-                                 + (ERI(p,q,k,l) - ERI(p,q,l,k) + 0d0*pp_trip_Gam(p,q,k,l))*Y2(kl,ij) 
+                                 + (ERI(p,q,k,l) - ERI(p,q,l,k) + 1d0*pp_trip_Gam(p,q,k,l))*Y2(kl,ij) 
                  end do ! l
               end do ! k
            end do ! j
