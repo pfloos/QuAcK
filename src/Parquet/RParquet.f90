@@ -152,9 +152,9 @@ subroutine RParquet(max_it_1b,conv_1b,max_it_2b,conv_2b,nOrb,nC,nO,nV,nR,nS,eHF,
     call wall_time(start_1b)
 
     write(*,*)
-    write(*,*)'-------------------------------------'
-    write(*,'(1X,A30,1X,I4)') 'One-body iteration number ',n_it_1b
-    write(*,*)'-------------------------------------'
+    write(*,*)'====================================='
+    write(*,'(1X,A30,1X,I4)') 'One-body iteration #',n_it_1b
+    write(*,*)'====================================='
     write(*,*)
 
     !-----------------------------------------!
@@ -167,18 +167,18 @@ subroutine RParquet(max_it_1b,conv_1b,max_it_2b,conv_2b,nOrb,nC,nO,nV,nR,nS,eHF,
       call wall_time(start_2b)
 
       !TODO add some timers everywhere
-      write(*,*)' -----------------------------------'
-      write(*,*)'  Two-Body iteration number ',n_it_2b
-      write(*,*)' -----------------------------------'
+      write(*,*)' ***********************************'
+      write(*,'(1X,A30,1X,I4)') 'Two-body iteration #',n_it_2b
+      write(*,*)' ***********************************'
       write(*,*)
 
       !-----------------!
       ! Density channel !
       !-----------------!
 
-      write(*,*)'    -------------------------------'
-      write(*,*)'    | Diagonalizing singlet ehBSE |'
-      write(*,*)'    -------------------------------'
+      write(*,*)'   -------------------------------'
+      write(*,*)'   | Diagonalizing singlet ehBSE |'
+      write(*,*)'   -------------------------------'
       write(*,*)
 
       allocate(Aph(nS,nS),Bph(nS,nS),eh_sing_Om(nS),sing_XpY(nS,nS),sing_XmY(nS,nS),eh_sing_Gam_A(nS,nS),eh_sing_Gam_B(nS,nS))
@@ -221,7 +221,7 @@ subroutine RParquet(max_it_1b,conv_1b,max_it_2b,conv_2b,nOrb,nC,nO,nV,nR,nS,eHF,
       call wall_time(end_t)
 
       t = end_t - start_t
-      write(*,'(A50,1X,F9.3,A8)') 'Wall time for singlet phBSE problem =',t,' seconds'
+      write(*,'(A50,1X,F9.3,A8)') 'Wall time for singlet phBSE =',t,' seconds'
       write(*,*)
 
       if(print_phLR) call print_excitation_energies('phBSE@Parquet','singlet',nS,eh_sing_Om)
@@ -234,9 +234,9 @@ subroutine RParquet(max_it_1b,conv_1b,max_it_2b,conv_2b,nOrb,nC,nO,nV,nR,nS,eHF,
       ! Magnetic channel !
       !------------------!
 
-      write(*,*)'    -------------------------------'
-      write(*,*)'    | Diagonalizing triplet ehBSE |'
-      write(*,*)'    -------------------------------'
+      write(*,*)'   -------------------------------'
+      write(*,*)'   | Diagonalizing triplet ehBSE |'
+      write(*,*)'   -------------------------------'
       write(*,*)
 
       allocate(Aph(nS,nS),Bph(nS,nS),eh_trip_Om(nS),trip_XpY(nS,nS),trip_XmY(nS,nS),eh_trip_Gam_A(nS,nS),eh_trip_Gam_B(nS,nS))
@@ -279,7 +279,7 @@ subroutine RParquet(max_it_1b,conv_1b,max_it_2b,conv_2b,nOrb,nC,nO,nV,nR,nS,eHF,
       call wall_time(end_t)
       t = end_t - start_t
 
-      write(*,'(A50,1X,F9.3,A8)') 'Wall time for triplet phBSE problem =',t,' seconds'
+      write(*,'(A50,1X,F9.3,A8)') 'Wall time for triplet phBSE =',t,' seconds'
       write(*,*)
 
       if(print_phLR) call print_excitation_energies('phBSE@Parquet','triplet',nS,eh_trip_Om)
@@ -292,9 +292,9 @@ subroutine RParquet(max_it_1b,conv_1b,max_it_2b,conv_2b,nOrb,nC,nO,nV,nR,nS,eHF,
       ! Singlet channel !
       !-----------------!
 
-      write(*,*)'    -------------------------------'
-      write(*,*)'    | Diagonalizing singlet ppBSE |'
-      write(*,*)'    -------------------------------'
+      write(*,*)'   -------------------------------'
+      write(*,*)'   | Diagonalizing singlet ppBSE |'
+      write(*,*)'   -------------------------------'
       write(*,*)
 
       allocate(Bpp(nVVs,nOOs),Cpp(nVVs,nVVs),Dpp(nOOs,nOOs),   &
@@ -335,7 +335,7 @@ subroutine RParquet(max_it_1b,conv_1b,max_it_2b,conv_2b,nOrb,nC,nO,nV,nR,nS,eHF,
       call wall_time(end_t)
       t = end_t - start_t
 
-      write(*,'(A50,1X,F9.3,A8)') 'Wall time for singlet ppBSE problem =',t,' seconds'
+      write(*,'(A50,1X,F9.3,A8)') 'Wall time for singlet ppBSE =',t,' seconds'
       write(*,*)
 
       if(print_ppLR) call print_excitation_energies('ppBSE@Parquet','2p (singlets)',nVVs,ee_sing_Om)
@@ -350,9 +350,9 @@ subroutine RParquet(max_it_1b,conv_1b,max_it_2b,conv_2b,nOrb,nC,nO,nV,nR,nS,eHF,
       ! Triplet channel !
       !-----------------!
 
-      write(*,*)'    |-----------------------------|'
-      write(*,*)'    | Diagonalizing triplet ppBSE |'
-      write(*,*)'    |-----------------------------|'
+      write(*,*)'   -------------------------------'
+      write(*,*)'   | Diagonalizing triplet ppBSE |'
+      write(*,*)'   -------------------------------'
       write(*,*)
 
       allocate(Bpp(nVVt,nOOt),Cpp(nVVt,nVVt),Dpp(nOOt,nOOt),   &
@@ -394,7 +394,8 @@ subroutine RParquet(max_it_1b,conv_1b,max_it_2b,conv_2b,nOrb,nC,nO,nV,nR,nS,eHF,
       call wall_time(end_t)
       t = end_t - start_t
 
-      write(*,'(A50,1X,F9.3,A8)') 'Wall time for triplet ppBSE problem =',t,' seconds'
+      write(*,'(A50,1X,F9.3,A8)') 'Wall time for triplet ppBSE =',t,' seconds'
+      write(*,*)
 
       if(print_ppLR) call print_excitation_energies('ppBSE@Parquet','2p (triplets)',nVVt,ee_trip_Om)
       if(print_ppLR) call print_excitation_energies('ppBSE@Parquet','2h (triplets)',nOOt,hh_trip_Om)
@@ -404,11 +405,14 @@ subroutine RParquet(max_it_1b,conv_1b,max_it_2b,conv_2b,nOrb,nC,nO,nV,nR,nS,eHF,
 
       deallocate(Bpp,Cpp,Dpp,pp_trip_Gam_B,pp_trip_Gam_C,pp_trip_Gam_D)
       
-      write(*,*)
+      write(*,*) '----------------------------------------'
+      write(*,*) ' Two-body convergence '
+      write(*,*) '----------------------------------------'
       write(*,'(1X,A30,F10.6)')'Error for density  channel = ', err_eh_sing
       write(*,'(1X,A30,F10.6)')'Error for magnetic channel = ',err_eh_trip
-      write(*,'(1X,A30,F10.6)')'Error for singlet  channel = ', max(err_ee_sing,err_hh_sing)
-      write(*,'(1X,A30,F10.6)')'Error for triplet  channel = ', max(err_ee_trip,err_hh_trip)
+      write(*,'(1X,A30,F10.6)')'Error for singlet  channel = ',max(err_ee_sing,err_hh_sing)
+      write(*,'(1X,A30,F10.6)')'Error for triplet  channel = ',max(err_ee_trip,err_hh_trip)
+      write(*,*) '----------------------------------------'
       write(*,*)
 
       !----------!
@@ -422,6 +426,74 @@ subroutine RParquet(max_it_1b,conv_1b,max_it_2b,conv_2b,nOrb,nC,nO,nV,nR,nS,eHF,
       old_ee_trip_Om(:) = ee_trip_Om(:)
       old_hh_trip_Om(:) = hh_trip_Om(:)
 
+      !----------------------------!
+      ! Compute screened integrals !
+      !----------------------------!
+
+      ! Build singlet eh screened integrals
+
+      write(*,*) 'Computing singlet eh screened integrals...'
+
+!     allocate(eh_sing_rho(nOrb,nOrb,nS))
+
+      call wall_time(start_t)
+      call R_eh_singlet_screened_integral(nOrb,nC,nO,nR,nS,ERI,eh_sing_Gam,sing_XpY,eh_sing_rho)
+      call wall_time(end_t)
+      t = end_t - start_t
+
+      write(*,'(1X,A50,1X,F9.3,A8)') 'Wall time for singlet eh integrals =',t,' seconds'
+      write(*,*)
+
+      deallocate(sing_XpY,sing_XmY,eh_sing_Gam)
+  
+      ! Build triplet eh screened integrals
+
+      write(*,*) 'Computing triplet eh screened integrals...'
+
+!     allocate(eh_trip_rho(nOrb,nOrb,nS))
+
+      call wall_time(start_t)
+      call R_eh_triplet_screened_integral(nOrb,nC,nO,nR,nS,ERI,eh_trip_Gam,trip_XpY,eh_trip_rho)
+      call wall_time(end_t)
+      t = end_t - start_t
+
+      write(*,'(1X,A50,1X,F9.3,A8)') 'Wall time for triplet eh integrals =',t,' seconds'
+      write(*,*)
+
+      deallocate(trip_XpY,trip_XmY,eh_trip_Gam)
+      
+      ! Build singlet pp screened integrals
+
+      write(*,*) 'Computing singlet pp screened integrals...'
+
+      allocate(ee_sing_rho(nOrb,nOrb,nVVs),hh_sing_rho(nOrb,nOrb,nOOs))
+
+      call wall_time(start_t)
+      call R_pp_singlet_screened_integral(nOrb,nC,nO,nV,nR,nOOs,nVVs,ERI,pp_sing_Gam,X1s,Y1s,ee_sing_rho,X2s,Y2s,hh_sing_rho)
+      call wall_time(end_t)
+      t = end_t - start_t
+
+      write(*,'(1X,A50,1X,F9.3,A8)') 'Wall time for singlet pp integrals =',t,' seconds'
+      write(*,*)
+
+      deallocate(X1s,Y1s,X2s,Y2s,pp_sing_Gam)
+
+      ! Build triplet pp screened integrals
+
+      write(*,*) 'Computing triplet pp screened integrals...'
+
+!     allocate(ee_trip_rho(nOrb,nOrb,nVVt),hh_trip_rho(nOrb,nOrb,nOOt))
+
+      call wall_time(start_t)
+      call R_pp_triplet_screened_integral(nOrb,nC,nO,nV,nR,nOOt,nVVt,ERI,pp_trip_Gam,X1t,Y1t,ee_trip_rho,X2t,Y2t,hh_trip_rho)
+      call wall_time(end_t)
+      t = end_t - start_t
+
+      write(*,'(1X,A50,1X,F9.3,A8)') 'Wall time for triplet pp integrals =',t,' seconds'
+      write(*,*)
+
+      deallocate(X1t,Y1t,X2t,Y2t,pp_trip_Gam)
+ 
       !--------------------------------!
       ! Compute effective interactions !
       !--------------------------------!
@@ -491,75 +563,7 @@ subroutine RParquet(max_it_1b,conv_1b,max_it_2b,conv_2b,nOrb,nC,nO,nV,nR,nS,eHF,
 
       deallocate(eh_sing_Om,eh_trip_Om,ee_sing_Om,hh_sing_Om,ee_trip_Om,hh_trip_Om)
       deallocate(eh_sing_rho,eh_trip_rho,ee_sing_rho,ee_trip_rho,hh_sing_rho,hh_trip_rho)
-
-      !----------------------------!
-      ! Compute screened integrals !
-      !----------------------------!
-
-      ! Build singlet eh screened integrals
-
-      write(*,*) 'Computing singlet eh screened integrals...'
-
-      allocate(eh_sing_rho(nOrb,nOrb,nS))
-
-      call wall_time(start_t)
-      call R_eh_singlet_screened_integral(nOrb,nC,nO,nR,nS,ERI,eh_sing_Gam,sing_XpY,eh_sing_rho)
-      call wall_time(end_t)
-      t = end_t - start_t
-
-      write(*,'(1X,A50,1X,F9.3,A8)') 'Wall time for singlet eh integrals =',t,' seconds'
-      write(*,*)
-
-      deallocate(sing_XpY,sing_XmY,eh_sing_Gam)
-  
-      ! Build triplet eh screened integrals
-
-      write(*,*) 'Computing triplet eh screened integrals...'
-
-      allocate(eh_trip_rho(nOrb,nOrb,nS))
-
-      call wall_time(start_t)
-      call R_eh_triplet_screened_integral(nOrb,nC,nO,nR,nS,ERI,eh_trip_Gam,trip_XpY,eh_trip_rho)
-      call wall_time(end_t)
-      t = end_t - start_t
-
-      write(*,'(1X,A50,1X,F9.3,A8)') 'Wall time for triplet eh integrals =',t,' seconds'
-      write(*,*)
-
-      deallocate(trip_XpY,trip_XmY,eh_trip_Gam)
-      
-      ! Build singlet pp screened integrals
-
-      write(*,*) 'Computing singlet pp screened integrals...'
-
-      allocate(ee_sing_rho(nOrb,nOrb,nVVs),hh_sing_rho(nOrb,nOrb,nOOs))
-
-      call wall_time(start_t)
-      call R_pp_singlet_screened_integral(nOrb,nC,nO,nV,nR,nOOs,nVVs,ERI,pp_sing_Gam,X1s,Y1s,ee_sing_rho,X2s,Y2s,hh_sing_rho)
-      call wall_time(end_t)
-      t = end_t - start_t
-
-      write(*,'(1X,A50,1X,F9.3,A8)') 'Wall time for singlet pp integrals =',t,' seconds'
-      write(*,*)
-
-      deallocate(X1s,Y1s,X2s,Y2s,pp_sing_Gam)
-
-      ! Build triplet pp screened integrals
-
-      write(*,*) 'Computing triplet pp screened integrals...'
-
-      allocate(ee_trip_rho(nOrb,nOrb,nVVt),hh_trip_rho(nOrb,nOrb,nOOt))
-
-      call wall_time(start_t)
-      call R_pp_triplet_screened_integral(nOrb,nC,nO,nV,nR,nOOt,nVVt,ERI,pp_trip_Gam,X1t,Y1t,ee_trip_rho,X2t,Y2t,hh_trip_rho)
-      call wall_time(end_t)
-      t = end_t - start_t
-
-      write(*,'(1X,A50,1X,F9.3,A8)') 'Wall time for triplet pp integrals =',t,' seconds'
-      write(*,*)
-
-      deallocate(X1t,Y1t,X2t,Y2t,pp_trip_Gam)
-      
+     
       ! Convergence criteria
 
       err_2b = max(err_eh_sing,err_eh_trip,err_ee_sing,err_ee_trip,err_hh_sing,err_hh_trip)
@@ -567,6 +571,7 @@ subroutine RParquet(max_it_1b,conv_1b,max_it_2b,conv_2b,nOrb,nC,nO,nV,nR,nS,eHF,
       call wall_time(end_2b)
       t_2b = end_2b - start_2b
       write(*,'(A50,1X,F9.3,A8)') 'Wall time for two-body iteration =',t_2b,' seconds'
+      write(*,*)
 
     end do
     !---------------------------------------------!
