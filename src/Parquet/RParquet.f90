@@ -468,7 +468,7 @@ subroutine RParquet(max_it_1b,conv_1b,max_it_2b,conv_2b,nOrb,nC,nO,nV,nR,nS,eHF,
       write(*,*) '----------------------------------------'
       write(*,*) ' Two-body convergence '
       write(*,*) '----------------------------------------'
-      write(*,'(1X,A30,F10.6)')'Error for density  channel = ', err_eh_sing
+      write(*,'(1X,A30,F10.6)')'Error for density  channel = ',err_eh_sing
       write(*,'(1X,A30,F10.6)')'Error for magnetic channel = ',err_eh_trip
       write(*,'(1X,A30,F10.6)')'Error for singlet  channel = ',max(err_ee_sing,err_hh_sing)
       write(*,'(1X,A30,F10.6)')'Error for triplet  channel = ',max(err_ee_trip,err_hh_trip)
@@ -485,6 +485,7 @@ subroutine RParquet(max_it_1b,conv_1b,max_it_2b,conv_2b,nOrb,nC,nO,nV,nR,nS,eHF,
       old_hh_sing_Om(:) = hh_sing_Om(:)
       old_ee_trip_Om(:) = ee_trip_Om(:)
       old_hh_trip_Om(:) = hh_trip_Om(:)
+
       deallocate(eh_sing_Om,eh_trip_Om,ee_sing_Om,hh_sing_Om,ee_trip_Om,hh_trip_Om)
       
       !----------------------------!
@@ -550,7 +551,6 @@ subroutine RParquet(max_it_1b,conv_1b,max_it_2b,conv_2b,nOrb,nC,nO,nV,nR,nS,eHF,
       ! Done with eigenvectors and kernel
       deallocate(X1t,Y1t,X2t,Y2t,pp_trip_Gam)
 
-     
       ! Convergence criteria
 
       err_2b = max(err_eh_sing,err_eh_trip,err_ee_sing,err_ee_trip,err_hh_sing,err_hh_trip)
