@@ -1,5 +1,5 @@
 subroutine RG0W0(dotest,doACFDT,exchange_kernel,doXBS,dophBSE,dophBSE2,TDA_W,TDA,dBSE,dTDA,doppBSE,singlet,triplet, & 
-                 linearize,eta,doSRG,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,dipole_int,eHF)
+                 linearize,eta,doSRG,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,dipole_int,eHF,eGW_out)
 
 ! Perform G0W0 calculation
 
@@ -61,6 +61,7 @@ subroutine RG0W0(dotest,doACFDT,exchange_kernel,doXBS,dophBSE,dophBSE2,TDA_W,TDA
 
   double precision,allocatable  :: eGWlin(:)
   double precision,allocatable  :: eGW(:)
+  double precision,intent(inout):: eGW_out(nOrb)
 
 
 ! Output variables
@@ -171,6 +172,8 @@ subroutine RG0W0(dotest,doACFDT,exchange_kernel,doXBS,dophBSE,dophBSE2,TDA_W,TDA
 
   call print_RG0W0(nOrb,nO,eHF,ENuc,ERHF,SigC,Z,eGW,EcRPA,EcGM)
 
+  eGW_out(:) = eGW(:)
+  
 !---------------------------!
 ! Perform phBSE calculation !
 !---------------------------!

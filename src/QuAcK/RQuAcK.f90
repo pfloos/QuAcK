@@ -112,6 +112,7 @@ subroutine RQuAcK(working_dir,use_gpu,dotest,doRHF,doROHF,dostab,dosearch,doMP2,
   double precision,allocatable  :: ERI_MO(:,:,:,:)
   integer                       :: ixyz
   integer                       :: nS
+  double precision,allocatable  :: eGW(:)
 
   write(*,*)
   write(*,*) '******************************'
@@ -130,6 +131,8 @@ subroutine RQuAcK(working_dir,use_gpu,dotest,doRHF,doROHF,dostab,dosearch,doMP2,
   allocate(dipole_int_MO(nOrb,nOrb,ncart))
   allocate(ERI_MO(nOrb,nOrb,nOrb,nOrb))
 
+  allocate(eGW(nOrb))
+  
   allocate(ERI_AO(nBas,nBas,nBas,nBas))
   call wall_time(start_int)
   call read_2e_integrals(working_dir,nBas,ERI_AO)
@@ -337,7 +340,7 @@ subroutine RQuAcK(working_dir,use_gpu,dotest,doRHF,doROHF,dostab,dosearch,doMP2,
     call RGW(dotest,doG0W0,doevGW,doqsGW,doufG0W0,doufGW,maxSCF_GW,thresh_GW,max_diis_GW,                &
              doACFDT,exchange_kernel,doXBS,dophBSE,dophBSE2,doppBSE,TDA_W,TDA,dBSE,dTDA,singlet,triplet, &
              lin_GW,eta_GW,reg_GW,nNuc,ZNuc,rNuc,ENuc,nBas,nOrb,nC,nO,nV,nR,nS,ERHF,S,X,T,               &
-             V,Hc,ERI_AO,ERI_MO,dipole_int_AO,dipole_int_MO,PHF,cHF,eHF)
+             V,Hc,ERI_AO,ERI_MO,dipole_int_AO,dipole_int_MO,PHF,cHF,eHF,eGW)
     call wall_time(end_GW)
   
     t_GW = end_GW - start_GW

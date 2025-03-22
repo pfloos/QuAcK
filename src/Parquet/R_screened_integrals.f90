@@ -31,6 +31,7 @@ subroutine R_eh_singlet_screened_integral(nOrb,nC,nO,nR,nS,ERI,eh_sing_Gam,XpY,r
                  rho(p,q,ia) = rho(p,q,ia)                                  & 
                              + (2d0*ERI(p,j,q,b) - ERI(p,j,b,q))*XpY(ia,jb) &
                              + 1d0*eh_sing_Gam(p,j,q,b)*XpY(ia,jb)
+
               end do
            end do
         end do

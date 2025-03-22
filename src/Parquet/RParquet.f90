@@ -37,16 +37,13 @@ subroutine RParquet(max_it_1b,conv_1b,max_it_2b,conv_2b,nOrb,nC,nO,nV,nR,nS,eHF,
   integer                       :: nVVs,nVVt
   
   double precision              :: EcRPA
-  double precision,allocatable  :: Aph(:,:)
-  double precision,allocatable  :: Bph(:,:)
+  double precision,allocatable  :: Aph(:,:), Bph(:,:)
   double precision,allocatable  :: sing_XpY(:,:),trip_XpY(:,:)
   double precision,allocatable  :: sing_XmY(:,:),trip_XmY(:,:)
   double precision,allocatable  :: eh_sing_Om(:), old_eh_sing_Om(:)
   double precision,allocatable  :: eh_trip_Om(:), old_eh_trip_Om(:)
 
-  double precision,allocatable  :: Bpp(:,:)
-  double precision,allocatable  :: Cpp(:,:)
-  double precision,allocatable  :: Dpp(:,:)
+  double precision,allocatable  :: Bpp(:,:), Cpp(:,:), Dpp(:,:)
   double precision,allocatable  :: X1s(:,:),X1t(:,:)
   double precision,allocatable  :: Y1s(:,:),Y1t(:,:)
   double precision,allocatable  :: ee_sing_Om(:), old_ee_sing_Om(:)
@@ -73,7 +70,8 @@ subroutine RParquet(max_it_1b,conv_1b,max_it_2b,conv_2b,nOrb,nC,nO,nV,nR,nS,eHF,
   double precision              :: EcGM
   
 ! Output variables
-
+! None
+  
   nOOs = nO*(nO + 1)/2
   nVVs = nV*(nV + 1)/2
   nOOt = nO*(nO - 1)/2
@@ -166,7 +164,6 @@ subroutine RParquet(max_it_1b,conv_1b,max_it_2b,conv_2b,nOrb,nC,nO,nV,nR,nS,eHF,
       n_it_2b = n_it_2b + 1
       call wall_time(start_2b)
 
-      !TODO add some timers everywhere
       write(*,*)' ***********************************'
       write(*,'(1X,A30,1X,I4)') 'Two-body iteration #',n_it_2b
       write(*,*)' ***********************************'
@@ -659,4 +656,4 @@ subroutine RParquet(max_it_1b,conv_1b,max_it_2b,conv_2b,nOrb,nC,nO,nV,nR,nS,eHF,
 
   end if
      
-end subroutine
+end subroutine RParquet

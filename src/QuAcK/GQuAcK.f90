@@ -7,7 +7,8 @@ subroutine GQuAcK(working_dir,dotest,doGHF,dostab,dosearch,doMP2,doMP3,doCCD,dop
                   TDA,maxSCF_GF,max_diis_GF,thresh_GF,lin_GF,reg_GF,eta_GF,                               &
                   maxSCF_GW,max_diis_GW,thresh_GW,TDA_W,lin_GW,reg_GW,eta_GW,                             &
                   maxSCF_GT,max_diis_GT,thresh_GT,TDA_T,lin_GT,reg_GT,eta_GT,                             &
-                  dophBSE,dophBSE2,doppBSE,dBSE,dTDA,doACFDT,exchange_kernel,doXBS)
+                  dophBSE,dophBSE2,doppBSE,dBSE,dTDA,doACFDT,exchange_kernel,doXBS,                       &
+                  max_it_macro,conv_one_body,max_it_micro,conv_two_body)
 
   implicit none
   include 'parameters.h'
@@ -73,6 +74,9 @@ subroutine GQuAcK(working_dir,dotest,doGHF,dostab,dosearch,doMP2,doMP3,doCCD,dop
 
   logical,intent(in)            :: dophBSE,dophBSE2,doppBSE,dBSE,dTDA
   logical,intent(in)            :: doACFDT,exchange_kernel,doXBS
+
+  integer,intent(in)            :: max_it_macro,max_it_micro
+  double precision,intent(in)   :: conv_one_body,conv_two_body
 
 ! Local variables
 
@@ -341,9 +345,9 @@ subroutine GQuAcK(working_dir,dotest,doGHF,dostab,dosearch,doMP2,doMP3,doCCD,dop
 
   if(doParquet) then
     call wall_time(start_Parquet)
-    write(*,'(A65,1X,F9.3,A8)') 'The Parquet method is not implemented in spin-orbital yet :('
-    write(*,'(A65,1X,F9.3,A8)') 'Try running the RHF version!'
-    write(*,*)
+    call GParquet(max_it_macro,conv_one_body,max_it_micro,conv_two_body,   &
+         nBas,nC,nO,nV,nR,nS, &
+         eHF,ERI_MO)
     call wall_time(end_Parquet)
   
     t_Parquet = end_Parquet - start_Parquet
