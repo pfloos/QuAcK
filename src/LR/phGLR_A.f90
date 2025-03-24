@@ -52,5 +52,5 @@ subroutine phGLR_A(dRPA,nOrb,nC,nO,nV,nR,nS,lambda,e,ERI,Aph)
       end  do
     end  do
   end  do
-
+  
 end subroutine 

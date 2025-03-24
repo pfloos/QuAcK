@@ -35,7 +35,7 @@ double precision function RGTeh_SigC(p,w,eta,nBas,nC,nO,nV,nR,nS,e,Om,rhoL,rhoR)
   do i=nC+1,nO
      do m=1,nS
         eps = w - e(i) + Om(m)
-        num = rhoL(i,p,m)*rhoR(i,p,m)
+        num = rhoL(i,p,m)*rhoL(i,p,m)
         RGTeh_SigC = RGTeh_SigC + num*eps/(eps**2 + eta**2)
      end do
   end do
@@ -45,7 +45,7 @@ double precision function RGTeh_SigC(p,w,eta,nBas,nC,nO,nV,nR,nS,e,Om,rhoL,rhoR)
   do a=nO+1,nBas-nR
      do m=1,nS
         eps = w - e(a) - Om(m)
-        num = rhoL(p,a,m)*rhoR(p,a,m)
+        num = rhoL(p,a,m)*rhoL(p,a,m)
         RGTeh_SigC = RGTeh_SigC + num*eps/(eps**2 + eta**2)
      end do
   end do

@@ -32,11 +32,16 @@ subroutine R_pp_triplet_Gamma(nOrb,nC,nR,nS,eh_sing_Om,eh_sing_rho,eh_trip_Om,eh
            do p = nC+1, nOrb-nR
               
               do n=1,nS
+                 
                  pp_trip_Gam(p,q,r,s) = pp_trip_Gam(p,q,r,s) &
-                      - eh_sing_rho(r,p,n)*eh_sing_rho(q,s,n)/eh_sing_Om(n) & 
-                      - eh_trip_rho(r,p,n)*eh_trip_rho(q,s,n)/eh_trip_Om(n) &
-                      + eh_sing_rho(s,p,n)*eh_sing_rho(q,r,n)/eh_sing_Om(n) &
-                      + eh_trip_rho(s,p,n)*eh_trip_rho(q,r,n)/eh_trip_Om(n)               
+                      - 0.5d0 * eh_sing_rho(r,p,n)*eh_sing_rho(q,s,n)/eh_sing_Om(n) &
+                      - 0.5d0 * eh_sing_rho(p,r,n)*eh_sing_rho(s,q,n)/eh_sing_Om(n) & 
+                      - 0.5d0 * eh_trip_rho(r,p,n)*eh_trip_rho(q,s,n)/eh_trip_Om(n) & 
+                      - 0.5d0 * eh_trip_rho(p,r,n)*eh_trip_rho(s,q,n)/eh_trip_Om(n) &
+                      + 0.5d0 * eh_sing_rho(s,p,n)*eh_sing_rho(q,r,n)/eh_sing_Om(n) &
+                      + 0.5d0 * eh_sing_rho(p,s,n)*eh_sing_rho(r,q,n)/eh_sing_Om(n) &
+                      + 0.5d0 * eh_trip_rho(s,p,n)*eh_trip_rho(q,r,n)/eh_trip_Om(n) &
+                      + 0.5d0 * eh_trip_rho(p,s,n)*eh_trip_rho(r,q,n)/eh_trip_Om(n)               
               end do
               
            end do
@@ -88,11 +93,16 @@ subroutine R_pp_triplet_Gamma_D(nOrb,nC,nO,nV,nR,nS,nOOt,eh_sing_Om,eh_sing_rho,
               kl = kl +1
               
               do n=1,nS
+                 
                  pp_trip_Gam_D(ij,kl) = pp_trip_Gam_D(ij,kl) &
-                      - eh_sing_rho(k,i,n)*eh_sing_rho(j,l,n)/eh_sing_Om(n) & 
-                      - eh_trip_rho(k,i,n)*eh_trip_rho(j,l,n)/eh_trip_Om(n) &
-                      + eh_sing_rho(l,i,n)*eh_sing_rho(j,k,n)/eh_sing_Om(n) &
-                      + eh_trip_rho(l,i,n)*eh_trip_rho(j,k,n)/eh_trip_Om(n)               
+                      - 0.5d0 * eh_sing_rho(k,i,n)*eh_sing_rho(j,l,n)/eh_sing_Om(n) &
+                      - 0.5d0 * eh_sing_rho(i,k,n)*eh_sing_rho(l,j,n)/eh_sing_Om(n) & 
+                      - 0.5d0 * eh_trip_rho(k,i,n)*eh_trip_rho(j,l,n)/eh_trip_Om(n) & 
+                      - 0.5d0 * eh_trip_rho(i,k,n)*eh_trip_rho(l,j,n)/eh_trip_Om(n) &
+                      + 0.5d0 * eh_sing_rho(l,i,n)*eh_sing_rho(j,k,n)/eh_sing_Om(n) &
+                      + 0.5d0 * eh_sing_rho(i,l,n)*eh_sing_rho(k,j,n)/eh_sing_Om(n) &
+                      + 0.5d0 * eh_trip_rho(l,i,n)*eh_trip_rho(j,k,n)/eh_trip_Om(n) &
+                      + 0.5d0 * eh_trip_rho(i,l,n)*eh_trip_rho(k,j,n)/eh_trip_Om(n)                
               end do
               
            end do
@@ -144,11 +154,16 @@ subroutine R_pp_triplet_Gamma_C(nOrb,nC,nO,nV,nR,nS,nVVt,eh_sing_Om,eh_sing_rho,
               cd = cd +1
               
               do n=1,nS
+                 
                  pp_trip_Gam_C(ab,cd) = pp_trip_Gam_C(ab,cd) &
-                      - eh_sing_rho(c,a,n)*eh_sing_rho(b,d,n)/eh_sing_Om(n) & 
-                      - eh_trip_rho(c,a,n)*eh_trip_rho(b,d,n)/eh_trip_Om(n) &
-                      + eh_sing_rho(d,a,n)*eh_sing_rho(b,c,n)/eh_sing_Om(n) &
-                      + eh_trip_rho(d,a,n)*eh_trip_rho(b,c,n)/eh_trip_Om(n)               
+                      - 0.5d0 * eh_sing_rho(c,a,n)*eh_sing_rho(b,d,n)/eh_sing_Om(n) &
+                      - 0.5d0 * eh_sing_rho(a,c,n)*eh_sing_rho(d,b,n)/eh_sing_Om(n) &  
+                      - 0.5d0 * eh_trip_rho(c,a,n)*eh_trip_rho(b,d,n)/eh_trip_Om(n) &
+                      - 0.5d0 * eh_trip_rho(a,c,n)*eh_trip_rho(d,b,n)/eh_trip_Om(n) &
+                      + 0.5d0 * eh_sing_rho(d,a,n)*eh_sing_rho(b,c,n)/eh_sing_Om(n) &
+                      + 0.5d0 * eh_sing_rho(a,d,n)*eh_sing_rho(c,b,n)/eh_sing_Om(n) &
+                      + 0.5d0 * eh_trip_rho(d,a,n)*eh_trip_rho(b,c,n)/eh_trip_Om(n) &
+                      + 0.5d0 * eh_trip_rho(a,d,n)*eh_trip_rho(c,b,n)/eh_trip_Om(n)               
               end do
               
            end do
@@ -200,11 +215,16 @@ subroutine R_pp_triplet_Gamma_B(nOrb,nC,nO,nV,nR,nS,nOOt,nVVt,eh_sing_Om,eh_sing
               ij = ij +1
               
               do n=1,nS
+                 
                  pp_trip_Gam_B(ab,ij) = pp_trip_Gam_B(ab,ij) &
-                      - eh_sing_rho(i,a,n)*eh_sing_rho(b,j,n)/eh_sing_Om(n) & 
-                      - eh_trip_rho(i,a,n)*eh_trip_rho(b,j,n)/eh_trip_Om(n) &
-                      + eh_sing_rho(j,a,n)*eh_sing_rho(b,i,n)/eh_sing_Om(n) &
-                      + eh_trip_rho(j,a,n)*eh_trip_rho(b,i,n)/eh_trip_Om(n)               
+                      - 0.5d0 * eh_sing_rho(i,a,n)*eh_sing_rho(b,j,n)/eh_sing_Om(n) &
+                      - 0.5d0 * eh_sing_rho(a,i,n)*eh_sing_rho(j,b,n)/eh_sing_Om(n) & 
+                      - 0.5d0 * eh_trip_rho(i,a,n)*eh_trip_rho(b,j,n)/eh_trip_Om(n) & 
+                      - 0.5d0 * eh_trip_rho(a,i,n)*eh_trip_rho(j,b,n)/eh_trip_Om(n) &
+                      + 0.5d0 * eh_sing_rho(j,a,n)*eh_sing_rho(b,i,n)/eh_sing_Om(n) &
+                      + 0.5d0 * eh_sing_rho(a,j,n)*eh_sing_rho(i,b,n)/eh_sing_Om(n) &
+                      + 0.5d0 * eh_trip_rho(j,a,n)*eh_trip_rho(b,i,n)/eh_trip_Om(n) &
+                      + 0.5d0 * eh_trip_rho(a,j,n)*eh_trip_rho(i,b,n)/eh_trip_Om(n)               
               end do
               
            end do

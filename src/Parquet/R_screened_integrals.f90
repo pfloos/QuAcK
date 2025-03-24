@@ -1,4 +1,4 @@
-subroutine R_eh_singlet_screened_integral(nOrb,nC,nO,nR,nS,ERI,eh_sing_Gam,XpY,rho)
+subroutine R_eh_singlet_screened_integral(nOrb,nC,nO,nR,nS,ERI,eh_sing_Gam,XpY,XmY,rho)
 
 ! Compute excitation densities
   implicit none
@@ -7,10 +7,11 @@ subroutine R_eh_singlet_screened_integral(nOrb,nC,nO,nR,nS,ERI,eh_sing_Gam,XpY,r
   integer,intent(in)            :: nOrb,nC,nO,nR,nS
   double precision,intent(in)   :: ERI(nOrb,nOrb,nOrb,nOrb)
   double precision,intent(in)   :: eh_sing_Gam(nOrb,nOrb,nOrb,nOrb)
-  double precision,intent(in)   :: XpY(nS,nS)
+  double precision,intent(in)   :: XpY(nS,nS),XmY(nS,nS)
 
 ! Local variables
   integer                       :: ia,jb,p,q,j,b
+  double precision              :: X,Y
 
 ! Output variables
   double precision,intent(out)  :: rho(nOrb,nOrb,nS)
@@ -28,9 +29,14 @@ subroutine R_eh_singlet_screened_integral(nOrb,nC,nO,nR,nS,ERI,eh_sing_Gam,XpY,r
            do b=nO+1,nOrb-nR
               jb = jb + 1
               do ia=1,nS
-                 rho(p,q,ia) = rho(p,q,ia)                                  & 
-                             + (2d0*ERI(p,j,q,b) - ERI(p,j,b,q))*XpY(ia,jb) &
-                             + 1d0*eh_sing_Gam(p,j,q,b)*XpY(ia,jb)
+
+                 X = 0.5d0*(XpY(ia,jb) + XmY(ia,jb))
+                 Y = 0.5d0*(XpY(ia,jb) - XmY(ia,jb))
+                 
+                 rho(p,q,ia) = rho(p,q,ia)                         & 
+                             + (2d0*ERI(p,j,q,b) - ERI(p,j,b,q))*X & 
+                             + (2d0*ERI(p,b,q,j) - ERI(p,b,j,q))*Y &
+                             + 0d0*eh_sing_Gam(p,j,q,b)*XpY(ia,jb)
 
               end do
            end do
@@ -42,7 +48,7 @@ subroutine R_eh_singlet_screened_integral(nOrb,nC,nO,nR,nS,ERI,eh_sing_Gam,XpY,r
   
 end subroutine R_eh_singlet_screened_integral
 
-subroutine R_eh_triplet_screened_integral(nOrb,nC,nO,nR,nS,ERI,eh_trip_Gam,XpY,rho)
+subroutine R_eh_triplet_screened_integral(nOrb,nC,nO,nR,nS,ERI,eh_trip_Gam,XpY,XmY,rho)
 
 ! Compute excitation densities
   implicit none
@@ -51,11 +57,12 @@ subroutine R_eh_triplet_screened_integral(nOrb,nC,nO,nR,nS,ERI,eh_trip_Gam,XpY,r
   integer,intent(in)            :: nOrb,nC,nO,nR,nS
   double precision,intent(in)   :: ERI(nOrb,nOrb,nOrb,nOrb)
   double precision,intent(in)   :: eh_trip_Gam(nOrb,nOrb,nOrb,nOrb)
-  double precision,intent(in)   :: XpY(nS,nS)
+  double precision,intent(in)   :: XpY(nS,nS),XmY(nS,nS)
 
 ! Local variables
   integer                       :: ia,jb,p,q,j,b
-
+  double precision              :: X,Y
+  
 ! Output variables
   double precision,intent(out)  :: rho(nOrb,nOrb,nS)
   
@@ -72,9 +79,14 @@ subroutine R_eh_triplet_screened_integral(nOrb,nC,nO,nR,nS,ERI,eh_trip_Gam,XpY,r
            do b=nO+1,nOrb-nR
               jb = jb + 1
               do ia=1,nS
-                 rho(p,q,ia) = rho(p,q,ia)             &
-                             - ERI(p,j,b,q)*XpY(ia,jb) &
-                             + 1d0*eh_trip_Gam(p,j,q,b)*XpY(ia,jb)
+
+                 X = 0.5d0*(XpY(ia,jb) + XmY(ia,jb))
+                 Y = 0.5d0*(XpY(ia,jb) - XmY(ia,jb))
+                 
+                 rho(p,q,ia) = rho(p,q,ia)    &
+                             - ERI(p,j,b,q)*X &
+                             - ERI(p,b,j,q)*Y &
+                             + 0d0*eh_trip_Gam(p,j,q,b)*XpY(ia,jb)
               end do
            end do
         end do

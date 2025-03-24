@@ -9,8 +9,8 @@ subroutine RParquet(max_it_1b,conv_1b,max_it_2b,conv_2b,nOrb,nC,nO,nV,nR,nS,eHF,
 
   logical                       :: linearize = .true.
   logical                       :: TDA = .true.
-  logical                       :: print_phLR = .false.
-  logical                       :: print_ppLR = .false.
+  logical                       :: print_phLR = .true.
+  logical                       :: print_ppLR = .true.
   
 ! Input variables
 
@@ -262,14 +262,13 @@ subroutine RParquet(max_it_1b,conv_1b,max_it_2b,conv_2b,nOrb,nC,nO,nV,nR,nS,eHF,
                     old_hh_sing_Om,hh_sing_rho,old_hh_trip_Om,hh_trip_rho, & 
                     eh_sing_Gam_A)
        
-        call R_eh_singlet_Gamma_B(nOrb,nC,nO,nV,nR,nS,nOOs,nVVs,nOOt,nVVt, &
-                    old_eh_sing_Om,eh_sing_rho,old_eh_trip_Om,eh_trip_rho, &
-                    old_ee_sing_Om,ee_sing_rho,old_ee_trip_Om,ee_trip_rho, &
-                    old_hh_sing_Om,hh_sing_rho,old_hh_trip_Om,hh_trip_rho, & 
-                    eh_sing_Gam_B)
+        if(.not.TDA) call R_eh_singlet_Gamma_B(nOrb,nC,nO,nV,nR,nS,nOOs,nVVs,nOOt,nVVt, &
+                                 old_eh_sing_Om,eh_sing_rho,old_eh_trip_Om,eh_trip_rho, &
+                                 old_ee_sing_Om,ee_sing_rho,old_ee_trip_Om,ee_trip_rho, &
+                                 old_hh_sing_Om,hh_sing_rho,old_hh_trip_Om,hh_trip_rho, & 
+                                 eh_sing_Gam_B)
 
-      end if
-      
+      end if      
       Aph(:,:) = Aph(:,:) + eh_sing_Gam_A(:,:)
       Bph(:,:) = Bph(:,:) + eh_sing_Gam_B(:,:)             
 
@@ -320,11 +319,11 @@ subroutine RParquet(max_it_1b,conv_1b,max_it_2b,conv_2b,nOrb,nC,nO,nV,nR,nS,eHF,
                     old_hh_sing_Om,hh_sing_rho,old_hh_trip_Om,hh_trip_rho, & 
                     eh_trip_Gam_A)
        
-        call R_eh_triplet_Gamma_B(nOrb,nC,nO,nV,nR,nS,nOOs,nVVs,nOOt,nVVt, &
-                    old_eh_sing_Om,eh_sing_rho,old_eh_trip_Om,eh_trip_rho, &
-                    old_ee_sing_Om,ee_sing_rho,old_ee_trip_Om,ee_trip_rho, &
-                    old_hh_sing_Om,hh_sing_rho,old_hh_trip_Om,hh_trip_rho, & 
-                    eh_trip_Gam_B)
+        if(.not.TDA) call R_eh_triplet_Gamma_B(nOrb,nC,nO,nV,nR,nS,nOOs,nVVs,nOOt,nVVt, &
+                                 old_eh_sing_Om,eh_sing_rho,old_eh_trip_Om,eh_trip_rho, &
+                                 old_ee_sing_Om,ee_sing_rho,old_ee_trip_Om,ee_trip_rho, &
+                                 old_hh_sing_Om,hh_sing_rho,old_hh_trip_Om,hh_trip_rho, & 
+                                 eh_trip_Gam_B)
 
       end if
       
@@ -377,7 +376,7 @@ subroutine RParquet(max_it_1b,conv_1b,max_it_2b,conv_2b,nOrb,nC,nO,nV,nR,nS,eHF,
 
       else
 
-        call R_pp_singlet_Gamma_B(nOrb,nC,nO,nV,nR,nS,nOOs,nVVs,&
+        if(.not.TDA) call R_pp_singlet_Gamma_B(nOrb,nC,nO,nV,nR,nS,nOOs,nVVs,&
                                                            old_eh_sing_Om,eh_sing_rho,old_eh_trip_Om,eh_trip_rho,pp_sing_Gam_B)
         call R_pp_singlet_Gamma_C(nOrb,nC,nO,nV,nR,nS,nVVs,old_eh_sing_Om,eh_sing_rho,old_eh_trip_Om,eh_trip_rho,pp_sing_Gam_C)
         call R_pp_singlet_Gamma_D(nOrb,nC,nO,nV,nR,nS,nOOs,old_eh_sing_Om,eh_sing_rho,old_eh_trip_Om,eh_trip_rho,pp_sing_Gam_D)
@@ -435,7 +434,7 @@ subroutine RParquet(max_it_1b,conv_1b,max_it_2b,conv_2b,nOrb,nC,nO,nV,nR,nS,eHF,
 
       else
 
-        call R_pp_triplet_Gamma_B(nOrb,nC,nO,nV,nR,nS,nOOt,nVVt,&
+        if(.not.TDA) call R_pp_triplet_Gamma_B(nOrb,nC,nO,nV,nR,nS,nOOt,nVVt,&
                                                            old_eh_sing_Om,eh_sing_rho,old_eh_trip_Om,eh_trip_rho, pp_trip_Gam_B)
         call R_pp_triplet_Gamma_C(nOrb,nC,nO,nV,nR,nS,nVVt,old_eh_sing_Om,eh_sing_rho,old_eh_trip_Om,eh_trip_rho, pp_trip_Gam_C)
         call R_pp_triplet_Gamma_D(nOrb,nC,nO,nV,nR,nS,nOOt,old_eh_sing_Om,eh_sing_rho,old_eh_trip_Om,eh_trip_rho, pp_trip_Gam_D)
@@ -503,7 +502,7 @@ subroutine RParquet(max_it_1b,conv_1b,max_it_2b,conv_2b,nOrb,nC,nO,nV,nR,nS,eHF,
       write(*,*) 'Computing singlet eh screened integrals...'
 
       call wall_time(start_t)
-      call R_eh_singlet_screened_integral(nOrb,nC,nO,nR,nS,ERI,eh_sing_Gam,sing_XpY,eh_sing_rho)
+      call R_eh_singlet_screened_integral(nOrb,nC,nO,nR,nS,ERI,eh_sing_Gam,sing_XpY,sing_XmY,eh_sing_rho)
       call wall_time(end_t)
       t = end_t - start_t
       write(*,'(1X,A50,1X,F9.3,A8)') 'Wall time for singlet eh integrals =',t,' seconds'
@@ -515,7 +514,7 @@ subroutine RParquet(max_it_1b,conv_1b,max_it_2b,conv_2b,nOrb,nC,nO,nV,nR,nS,eHF,
       write(*,*) 'Computing triplet eh screened integrals...'
 
       call wall_time(start_t)
-      call R_eh_triplet_screened_integral(nOrb,nC,nO,nR,nS,ERI,eh_trip_Gam,trip_XpY,eh_trip_rho)
+      call R_eh_triplet_screened_integral(nOrb,nC,nO,nR,nS,ERI,eh_trip_Gam,trip_XpY,trip_XmY,eh_trip_rho)
       call wall_time(end_t)
       t = end_t - start_t
       write(*,'(1X,A50,1X,F9.3,A8)') 'Wall time for triplet eh integrals =',t,' seconds'
@@ -549,7 +548,6 @@ subroutine RParquet(max_it_1b,conv_1b,max_it_2b,conv_2b,nOrb,nC,nO,nV,nR,nS,eHF,
       deallocate(X1t,Y1t,X2t,Y2t,pp_trip_Gam)
 
       ! Convergence criteria
-
       err_2b = max(err_eh_sing,err_eh_trip,err_ee_sing,err_ee_trip,err_hh_sing,err_hh_trip)
        
       call wall_time(end_2b)

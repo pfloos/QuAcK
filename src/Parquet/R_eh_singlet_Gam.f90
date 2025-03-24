@@ -3,7 +3,6 @@ subroutine R_eh_singlet_Gamma(nOrb,nC,nO,nV,nR,nS,nOOs,nVVs,nOOt,nVVt, &
                           ee_sing_Om,ee_sing_rho,ee_trip_Om,ee_trip_rho, &
                           hh_sing_Om,hh_sing_rho,hh_trip_Om,hh_trip_rho, eh_sing_Gam)
 
-
 ! Compute irreducible vertex in the triplet pp channel
   implicit none
 
@@ -40,8 +39,10 @@ subroutine R_eh_singlet_Gamma(nOrb,nC,nO,nV,nR,nS,nOOs,nVVs,nOOt,nVVt, &
               
               do n=1,nS
                  eh_sing_Gam(p,q,r,s) = eh_sing_Gam(p,q,r,s) &
-                      + eh_sing_rho(s,p,n)*eh_sing_rho(q,r,n)/eh_sing_Om(n) &
-                      + 3d0 * eh_trip_rho(s,p,n)*eh_trip_rho(q,r,n)/eh_trip_Om(n)     
+                      + 0.5d0 * eh_sing_rho(s,p,n)*eh_sing_rho(q,r,n)/eh_sing_Om(n) &
+                      + 0.5d0 * eh_sing_rho(p,s,n)*eh_sing_rho(r,q,n)/eh_sing_Om(n) &
+                      + 1.5d0 * eh_trip_rho(s,p,n)*eh_trip_rho(q,r,n)/eh_trip_Om(n) &
+                      + 1.5d0 * eh_trip_rho(p,s,n)*eh_trip_rho(r,q,n)/eh_trip_Om(n)  
               end do
 
               do n=1,nVVs
@@ -118,8 +119,10 @@ subroutine R_eh_singlet_Gamma_A(nOrb,nC,nO,nV,nR,nS,nOOs,nVVs,nOOt,nVVt, &
               
               do n=1,nS
                  eh_sing_Gam_A(ia,jb) = eh_sing_Gam_A(ia,jb) &
-                      + eh_sing_rho(b,a,n)*eh_sing_rho(j,i,n)/eh_sing_Om(n) &
-                      + 3d0 * eh_trip_rho(b,a,n)*eh_trip_rho(j,i,n)/eh_trip_Om(n)     
+                      + 0.5d0 * eh_sing_rho(b,a,n)*eh_sing_rho(j,i,n)/eh_sing_Om(n) &
+                      + 0.5d0 * eh_sing_rho(a,b,n)*eh_sing_rho(i,j,n)/eh_sing_Om(n) &
+                      + 1.5d0 * eh_trip_rho(b,a,n)*eh_trip_rho(j,i,n)/eh_trip_Om(n) &
+                      + 1.5d0 * eh_trip_rho(a,b,n)*eh_trip_rho(i,j,n)/eh_trip_Om(n)     
               end do
 
               do n=1,nVVs
@@ -196,8 +199,10 @@ subroutine R_eh_singlet_Gamma_B(nOrb,nC,nO,nV,nR,nS,nOOs,nVVs,nOOt,nVVt, &
               
               do n=1,nS
                  eh_sing_Gam_B(ia,jb) = eh_sing_Gam_B(ia,jb) &
-                      + eh_sing_rho(j,a,n)*eh_sing_rho(b,i,n)/eh_sing_Om(n) &
-                      + 3d0 * eh_trip_rho(j,a,n)*eh_trip_rho(b,i,n)/eh_trip_Om(n)     
+                      + 0.5d0 * eh_sing_rho(j,a,n)*eh_sing_rho(b,i,n)/eh_sing_Om(n) &
+                      + 0.5d0 * eh_sing_rho(a,j,n)*eh_sing_rho(i,b,n)/eh_sing_Om(n) &
+                      + 1.5d0 * eh_trip_rho(j,a,n)*eh_trip_rho(b,i,n)/eh_trip_Om(n) &
+                      + 1.5d0 * eh_trip_rho(a,j,n)*eh_trip_rho(i,b,n)/eh_trip_Om(n)     
               end do
 
               do n=1,nVVs
