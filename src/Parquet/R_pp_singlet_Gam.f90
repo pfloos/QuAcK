@@ -43,7 +43,7 @@ subroutine R_pp_singlet_Gamma(nOrb,nC,nR,nS,eh_sing_Om,eh_sing_rho,eh_trip_Om,eh
                       + 1.5d0 * eh_trip_rho(p,s,n)*eh_trip_rho(r,q,n)/eh_trip_Om(n)
               end do
               
-              pp_sing_Gam(p,q,r,s) = pp_sing_Gam(p,q,r,s)/sqrt((1d0 + Kronecker_delta(p,q))*(1d0 + Kronecker_delta(r,s)))
+              ! pp_sing_Gam(p,q,r,s) = pp_sing_Gam(p,q,r,s)/sqrt((1d0 + Kronecker_delta(p,q))*(1d0 + Kronecker_delta(r,s)))
               
            end do
         end do

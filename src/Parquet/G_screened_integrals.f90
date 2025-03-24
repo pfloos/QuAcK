@@ -39,7 +39,9 @@ subroutine G_eh_screened_integral(nOrb,nC,nO,nR,nS,ERI,eh_Gam,XpY,XmY,rho)
                              !+ (ERI(p,j,q,b) - ERI(p,j,b,q))*XpY(ia,jb) &
                              + (ERI(p,j,q,b) - ERI(p,j,b,q))*X &
                              + (ERI(p,b,q,j) - ERI(p,b,j,q))*Y &
-                             + 0d0*eh_Gam(p,j,q,b)*XpY(ia,jb)
+                             + 1d0*eh_Gam(p,j,q,b)*X &
+                             + 1d0*eh_Gam(p,b,q,j)*Y
+                 
 
               end do
            end do
@@ -58,7 +60,6 @@ subroutine G_pp_screened_integral(nOrb,nC,nO,nV,nR,nOO,nVV,ERI,pp_Gam,X1,Y1,rho1
   implicit none
 
 ! Input variables
-
 
   integer,intent(in)            :: nOrb,nC,nO,nV,nR
   double precision,intent(in)   :: ERI(nOrb,nOrb,nOrb,nOrb)

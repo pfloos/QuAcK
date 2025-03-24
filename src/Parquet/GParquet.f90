@@ -153,9 +153,9 @@ subroutine GParquet(max_it_1b,conv_1b,max_it_2b,conv_2b,nOrb,nC,nO,nV,nR,nS,eHF,
       write(*,*) 'Computing eh effective interaction...'
 
       call wall_time(start_t)
-      !call R_eh_Gamma(nOrb,nC,nO,nV,nR,nS,nOO,nVV, &
-      !     old_eh_Om,eh_rho,old_ee_Om,ee_rho,old_hh_Om,hh_rho, &
-      !     eh_Gam)
+      call G_eh_Gamma(nOrb,nC,nO,nV,nR,nS,nOO,nVV, &
+           old_eh_Om,eh_rho,old_ee_Om,ee_rho,old_hh_Om,hh_rho, &
+           eh_Gam)
       call wall_time(end_t)
       t = end_t - start_t
 

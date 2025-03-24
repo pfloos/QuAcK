@@ -36,7 +36,8 @@ subroutine R_eh_singlet_screened_integral(nOrb,nC,nO,nR,nS,ERI,eh_sing_Gam,XpY,X
                  rho(p,q,ia) = rho(p,q,ia)                         & 
                              + (2d0*ERI(p,j,q,b) - ERI(p,j,b,q))*X & 
                              + (2d0*ERI(p,b,q,j) - ERI(p,b,j,q))*Y &
-                             + 0d0*eh_sing_Gam(p,j,q,b)*XpY(ia,jb)
+                             + 1d0*eh_sing_Gam(p,j,q,b)*X          &
+                             + 1d0*eh_sing_Gam(p,b,q,j)*Y
 
               end do
            end do
@@ -86,7 +87,8 @@ subroutine R_eh_triplet_screened_integral(nOrb,nC,nO,nR,nS,ERI,eh_trip_Gam,XpY,X
                  rho(p,q,ia) = rho(p,q,ia)    &
                              - ERI(p,j,b,q)*X &
                              - ERI(p,b,j,q)*Y &
-                             + 0d0*eh_trip_Gam(p,j,q,b)*XpY(ia,jb)
+                             + 1d0*eh_trip_Gam(p,j,q,b)*X &
+                             + 1d0*eh_trip_Gam(p,b,q,j)*Y
               end do
            end do
         end do

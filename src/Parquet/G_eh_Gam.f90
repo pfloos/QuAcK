@@ -30,31 +30,21 @@ subroutine G_eh_Gamma(nOrb,nC,nO,nV,nR,nS,nOO,nVV, &
         do q = nC+1, nOrb-nR
            do p = nC+1, nOrb-nR
               
-              ! do n=1,nS
-              !    eh_sing_Gam(p,q,r,s) = eh_sing_Gam(p,q,r,s) &
-              !         + eh_sing_rho(s,p,n)*eh_sing_rho(q,r,n)/eh_sing_Om(n) &
-              !         + 3d0 * eh_trip_rho(s,p,n)*eh_trip_rho(q,r,n)/eh_trip_Om(n)     
-              ! end do
+              do n=1,nS
+                 eh_Gam(p,q,r,s) = eh_Gam(p,q,r,s) &
+                      + eh_rho(s,p,n)*eh_rho(q,r,n)/eh_Om(n) &
+                      + eh_rho(p,s,n)*eh_rho(r,q,n)/eh_Om(n)     
+              end do
 
-              ! do n=1,nVVs
-              !    eh_sing_Gam(p,q,r,s) = eh_sing_Gam(p,q,r,s) &
-              !         + ee_sing_rho(p,q,n)*ee_sing_rho(r,s,n)/ee_sing_Om(n)            
-              ! end do
+              do n=1,nVV
+                 eh_Gam(p,q,r,s) = eh_Gam(p,q,r,s) &
+                      + 2d0 * ee_rho(p,q,n)*ee_rho(r,s,n)/ee_Om(n)            
+              end do
 
-              ! do n=1,nOOs
-              !    eh_sing_Gam(p,q,r,s) = eh_sing_Gam(p,q,r,s) &
-              !         - hh_sing_rho(p,q,n)*hh_sing_rho(r,s,n)/hh_sing_Om(n)           
-              ! end do
-
-              ! do n=1,nVVt
-              !    eh_sing_Gam(p,q,r,s) = eh_sing_Gam(p,q,r,s) &
-              !         + 3d0 * ee_trip_rho(p,q,n)*ee_trip_rho(r,s,n)/ee_trip_Om(n)            
-              ! end do
-
-              ! do n=1,nOOt
-              !    eh_sing_Gam(p,q,r,s) = eh_sing_Gam(p,q,r,s) &
-              !         - 3d0 * hh_trip_rho(p,q,n)*hh_trip_rho(r,s,n)/hh_trip_Om(n)             
-              ! end do
+              do n=1,nOO
+                 eh_Gam(p,q,r,s) = eh_Gam(p,q,r,s) &
+                      - 2d0 * hh_rho(p,q,n)*hh_rho(r,s,n)/hh_Om(n)           
+              end do
               
            enddo
         enddo
