@@ -3,7 +3,7 @@ subroutine RQuAcK(working_dir,use_gpu,dotest,doRHF,doROHF,docRHF,               
                   dodrCCD,dorCCD,docrCCD,dolCCD,doCIS,doCIS_D,doCID,doCISD,doFCI,dophRPA,dophRPAx,docrRPA,doppRPA,       & 
                   doG0F2,doevGF2,doqsGF2,doufG0F02,doG0F3,doevGF3,doG0W0,doevGW,doqsGW,doufG0W0,doufGW,                  &
                   doG0T0pp,doevGTpp,doqsGTpp,doufG0T0pp,doG0T0eh,doevGTeh,doqsGTeh,                                      & 
-                  docG0W0,                                                                                               & 
+                  docG0W0,docG0F2,                                                                                       & 
                   nNuc,nBas,nOrb,nC,nO,nV,nR,ENuc,ZNuc,rNuc,                                                             &
                   S,T,V,Hc,CAP_AO,X,dipole_int_AO,maxSCF_HF,max_diis_HF,thresh_HF,level_shift,                   &
                   guess_type,mix,reg_MP,maxSCF_CC,max_diis_CC,thresh_CC,singlet,triplet,TDA,                             &
@@ -34,7 +34,7 @@ subroutine RQuAcK(working_dir,use_gpu,dotest,doRHF,doROHF,docRHF,               
   logical,intent(in)            :: doG0W0,doevGW,doqsGW,doufG0W0,doufGW
   logical,intent(in)            :: doG0T0pp,doevGTpp,doqsGTpp,doufG0T0pp
   logical,intent(in)            :: doG0T0eh,doevGTeh,doqsGTeh
-  logical,intent(in)            :: docG0W0
+  logical,intent(in)            :: docG0W0,docG0F2
 
   integer,intent(in)            :: nNuc,nBas,nOrb
   integer,intent(in)            :: nC
@@ -207,7 +207,7 @@ subroutine RQuAcK(working_dir,use_gpu,dotest,doRHF,doROHF,docRHF,               
   ! 4-index transform 
   
   call AOtoMO_ERI_RHF(nBas,nOrb,cHF,ERI_AO,ERI_MO)
-  if (docG0W0) call AOtoMO(nBas,nOrb,cHF,CAP_AO,CAP_MO) ! Add the different cases for cGW methods when implemented
+  if (docG0W0 .or. docG0F2) call AOtoMO(nBas,nOrb,cHF,CAP_AO,CAP_MO) ! Add the different cases for cGW methods when implemented
   call wall_time(end_AOtoMO)
 
   t_AOtoMO = end_AOtoMO - start_AOtoMO
@@ -327,15 +327,15 @@ subroutine RQuAcK(working_dir,use_gpu,dotest,doRHF,doROHF,docRHF,               
 ! Green's function module !
 !-------------------------!
 
-  doGF = doG0F2 .or. doevGF2 .or. doqsGF2 .or. doufG0F02 .or. doG0F3 .or. doevGF3
+doGF = doG0F2 .or. doevGF2 .or. doqsGF2 .or. doufG0F02 .or. doG0F3 .or. doevGF3 .or. docG0F2
 
   if(doGF) then
 
     call wall_time(start_GF)
-    call RGF(dotest,doG0F2,doevGF2,doqsGF2,doufG0F02,doG0F3,doevGF3,renorm_GF,maxSCF_GF, &
+    call RGF(dotest,doG0F2,doevGF2,doqsGF2,doufG0F02,doG0F3,doevGF3,docG0F2,renorm_GF,maxSCF_GF, &
              thresh_GF,max_diis_GF,dophBSE,doppBSE,TDA,dBSE,dTDA,singlet,triplet,lin_GF, &
              eta_GF,reg_GF,nNuc,ZNuc,rNuc,ENuc,nBas,nOrb,nC,nO,nV,nR,nS,ERHF,            &
-             S,X,T,V,Hc,ERI_AO,ERI_MO,dipole_int_AO,dipole_int_MO,PHF,cHF,eHF)
+             S,X,T,V,Hc,ERI_AO,ERI_MO,CAP_MO,dipole_int_AO,dipole_int_MO,PHF,cHF,eHF)
     call wall_time(end_GF)
 
     t_GF = end_GF - start_GF

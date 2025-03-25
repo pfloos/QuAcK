@@ -13,7 +13,7 @@ program QuAcK
   logical                       :: dophRPA,dophRPAx,docrRPA,doppRPA
   logical                       :: doG0F2,doevGF2,doqsGF2,doufG0F02,doG0F3,doevGF3
   logical                       :: doG0W0,doevGW,doqsGW,doufG0W0,doufGW
-  logical                       :: docG0W0
+  logical                       :: docG0W0,docG0F2
   logical                       :: doG0T0pp,doevGTpp,doqsGTpp,doufG0T0pp,doG0T0eh,doevGTeh,doqsGTeh
 
   integer                       :: nNuc
@@ -127,7 +127,7 @@ program QuAcK
                     doG0W0,doevGW,doqsGW,doufG0W0,doufGW,  &
                     doG0T0pp,doevGTpp,doqsGTpp,doufG0T0pp, &
                     doG0T0eh,doevGTeh,doqsGTeh,            &
-                    docG0W0,                               &
+                    docG0W0,docG0F2,                       &
                     doRtest,doUtest,doGtest)
 
 !--------------------------!
@@ -258,7 +258,7 @@ program QuAcK
                   dodrCCD,dorCCD,docrCCD,dolCCD,doCIS,doCIS_D,doCID,doCISD,doFCI,dophRPA,dophRPAx,docrRPA,doppRPA,        &
                   doG0F2,doevGF2,doqsGF2,doufG0F02,doG0F3,doevGF3,doG0W0,doevGW,doqsGW,doufG0W0,doufGW,                   &
                   doG0T0pp,doevGTpp,doqsGTpp,doufG0T0pp,doG0T0eh,doevGTeh,doqsGTeh,                                       &
-                  docG0W0,                                                                                                &
+                  docG0W0,docG0F2,                                                                                        &
                   nNuc,nBas,nOrb,nC,nO,nV,nR,ENuc,ZNuc,rNuc,                                                              &
                   S,T,V,Hc,CAP,X,dipole_int_AO,maxSCF_HF,max_diis_HF,thresh_HF,level_shift,                       &
                   guess_type,mix,reg_MP,maxSCF_CC,max_diis_CC,thresh_CC,spin_conserved,spin_flip,TDA,                     &

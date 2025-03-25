@@ -25,8 +25,8 @@ subroutine cRGW_self_energy_diag(eta,nBas,nOrb,nC,nO,nV,nR,nS,e,Om,rho,EcGM,Re_S
   integer                       :: i,a,p,m
   double precision              :: num,eps
   double precision              :: eta_tilde
-  double precision              :: Re_DS(nBas)
-  double precision              :: Im_DS(nBas)
+  double precision,allocatable  :: Re_DS(:)
+  double precision,allocatable  :: Im_DS(:)
   
 ! Output variables
 
@@ -37,6 +37,7 @@ subroutine cRGW_self_energy_diag(eta,nBas,nOrb,nC,nO,nV,nR,nS,e,Om,rho,EcGM,Re_S
   double precision,intent(out)  :: EcGM
 
 ! Initialize 
+  allocate(Re_DS(nBas),Im_DS(nBas))
   Re_Sig(:) = 0d0
   Im_Sig(:) = 0d0
   Re_DS(:)   = 0d0
@@ -97,5 +98,5 @@ subroutine cRGW_self_energy_diag(eta,nBas,nOrb,nC,nO,nV,nR,nS,e,Om,rho,EcGM,Re_S
 ! Compute renormalization factor from derivative 
   Re_Z(:) = (1d0-Re_DS(:))/((1d0 - Re_DS(:))**2 + Im_DS(:)**2)
   Im_Z(:) = Im_DS(:)/((1d0 - Re_DS(:))**2 + Im_DS(:)**2)
-
+  deallocate(Re_DS,Im_DS)
 end subroutine 

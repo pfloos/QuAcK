@@ -46,7 +46,7 @@ subroutine print_cRHF(nBas, nOrb, nO, eHF, cHF, ENuc, ET, EV, EW,EJ, EK, ERHF)
   write(*,'(A69)')           '---------------------------------------------------------'
   write(*,'(A33)')           ' Summary               '
   write(*,'(A69)')           '---------------------------------------------------------'
-  write(*,'(A33,1X,F16.10,1X,A1,F16.10,A1,A3)') ' One-electron energy = ',real(ET + EV),'+',aimag(ET+EV),'i',' au'
+  write(*,'(A33,1X,F16.10,1X,A1,F16.10,A1,A3)') ' One-electron energy = ',real(ET + EV +EW),'+',aimag(ET+EV+EW),'i',' au'
   write(*,'(A33,1X,F16.10,1X,A1,F16.10,A1,A3)') ' Kinetic      energy = ',real(ET),'+',aimag(ET),'i',' au'
   write(*,'(A33,1X,F16.10,1X,A1,F16.10,A1,A3)') ' Potential    energy = ',real(EV),'+',aimag(EV),'i',' au'
   write(*,'(A33,1X,F16.10,1X,A1,F16.10,A1,A3)') ' CAP          energy = ',real(EW),'+',aimag(EW),'i',' au'
@@ -80,6 +80,11 @@ subroutine print_cRHF(nBas, nOrb, nO, eHF, cHF, ENuc, ET, EV, EW,EJ, EK, ERHF)
   write(*,'(A37)') ' cRHF orbital energies (au) '
   write(*,'(A37)') '-------------------------------'
   call complex_vecout(nOrb, eHF)
+  write(*,*)
+  write(*,'(A37)') '-------------------------------'
+  write(*,'(A37)') ' cRHF orbital energies (eV) '
+  write(*,'(A37)') '-------------------------------'
+  call complex_vecout(nOrb, eHF*HaToeV)
   write(*,*)
 
 end subroutine 

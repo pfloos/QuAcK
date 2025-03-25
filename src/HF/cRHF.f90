@@ -146,7 +146,7 @@ subroutine cRHF(dotest,maxSCF,thresh,max_diis,guess_type,level_shift,ENuc, &
 
     ! Total energy
 
-    ERHF = ET + EV+ EW + EJ + EK
+    ERHF = ET + EV + EW + EJ + EK
 
     ! DIIS extrapolation  !
 
@@ -154,7 +154,6 @@ subroutine cRHF(dotest,maxSCF,thresh,max_diis,guess_type,level_shift,ENuc, &
 
       n_diis = min(n_diis+1,max_diis)
       call complex_DIIS_extrapolation(rcond,nBasSq,nBasSq,n_diis,err_diis,F_diis,err,F)
-      if (rcond<1.0d-10) write(*,*) "!!! DIIS system ill conditioned: rcond = ", rcond," !!!"
     end if
     ! Level shift
     if(level_shift > 0d0 .and. Conv > thresh) call complex_level_shifting(level_shift,nBas,nBas,nO,S,c,F)

@@ -135,10 +135,7 @@ subroutine cRG0W0(dotest,doACFDT,exchange_kernel,doXBS,dophBSE,dophBSE2,TDA_W,TD
 
   ! Linearized or graphical solution?
   Re_eGWlin(:) = eHF(:) + Re_Z(:)*Re_SigC(:) - Im_Z(:)*Im_SigC(:)
-  Im_eGWlin(:) = Re_Z(:)*Im_SigC(:) + Im_Z(:)*Re_SigC(:)
-  do p = 1, nOrb
-        Im_eGWlin(p) = Im_eGWlin(p) + CAP(p,p)  
-  end do
+  Im_eGWlin(:) = e_cap(:) + Re_Z(:)*Im_SigC(:) + Im_Z(:)*Re_SigC(:)
 
   if(linearize) then 
  

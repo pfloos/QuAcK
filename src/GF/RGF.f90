@@ -1,7 +1,8 @@
-subroutine RGF(dotest,doG0F2,doevGF2,doqsGF2,doufG0F02,doG0F3,doevGF3,renorm,maxSCF,    &
+subroutine RGF(dotest,doG0F2,doevGF2,doqsGF2,doufG0F02,doG0F3,doevGF3,docG0F2,          &
+               renorm,maxSCF,                                                           &
                thresh,max_diis,dophBSE,doppBSE,TDA,dBSE,dTDA,singlet,triplet,linearize, &
                eta,regularize,nNuc,ZNuc,rNuc,ENuc,nBas,nOrb,nC,nO,nV,nR,nS,ERHF,        &
-               S,X,T,V,Hc,ERI_AO,ERI_MO,dipole_int_AO,dipole_int_MO,PHF,cHF,eHF)
+               S,X,T,V,Hc,ERI_AO,ERI_MO,CAP,dipole_int_AO,dipole_int_MO,PHF,cHF,eHF)
 
 ! Green's function module
 
@@ -13,6 +14,7 @@ subroutine RGF(dotest,doG0F2,doevGF2,doqsGF2,doufG0F02,doG0F3,doevGF3,renorm,max
   logical,intent(in)            :: dotest
 
   logical,intent(in)            :: doG0F2
+  logical,intent(in)            :: docG0F2
   logical,intent(in)            :: doevGF2
   logical,intent(in)            :: doqsGF2
   logical,intent(in)            :: doufG0F02
@@ -52,6 +54,7 @@ subroutine RGF(dotest,doG0F2,doevGF2,doqsGF2,doufG0F02,doG0F3,doevGF3,renorm,max
   double precision,intent(in)   :: cHF(nBas,nOrb)
   double precision,intent(in)   :: PHF(nBas,nBas)
   double precision,intent(in)   :: S(nBas,nBas)
+  double precision,intent(in)   :: CAP(nBas,nBas)
   double precision,intent(in)   :: T(nBas,nBas)
   double precision,intent(in)   :: V(nBas,nBas)
   double precision,intent(in)   :: Hc(nBas,nBas)
@@ -168,4 +171,21 @@ subroutine RGF(dotest,doG0F2,doevGF2,doqsGF2,doufG0F02,doG0F3,doevGF3,renorm,max
 
   end if
 
+!------------------------------------------------------------------------
+! Compute complex G0F2 electronic binding energies
+!------------------------------------------------------------------------
+
+  if(doG0F2) then
+
+    call wall_time(start_GF)
+    call cRG0F2(dotest,dophBSE,doppBSE,TDA,dBSE,dTDA,singlet,triplet, &
+               linearize,eta,regularize,nBas,nOrb,nC,nO,nV,nR,nS,    &
+               ENuc,ERHF,ERI_MO,CAP,dipole_int_MO,eHF)
+    call wall_time(end_GF)
+
+    t_GF = end_GF - start_GF
+    write(*,'(A65,1X,F9.3,A8)') 'Total wall time for GF2 = ',t_GF,' seconds'
+    write(*,*)
+
+  end if
 end subroutine
