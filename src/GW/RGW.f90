@@ -166,7 +166,7 @@ subroutine RGW(dotest,doG0W0,doevGW,doqsGW,doufG0W0,doufGW,maxSCF,thresh,max_dii
 ! Perform CC-based G0W0 calculation
 !------------------------------------------------------------------------
 
-  doccG0W0 = .true.
+  doccG0W0 = .false.
 
   if(doccG0W0) then
     
