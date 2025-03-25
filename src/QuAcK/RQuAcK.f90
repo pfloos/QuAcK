@@ -183,7 +183,7 @@ subroutine RQuAcK(working_dir,use_gpu,dotest,doRHF,doROHF,dostab,dosearch,doMP2,
   write(*,*)
 
   ! Read and transform dipole-related integrals
-  
+
   do ixyz=1,ncart
     call AOtoMO(nBas,nOrb,cHF,dipole_int_AO(1,1,ixyz),dipole_int_MO(1,1,ixyz))
   end do 
