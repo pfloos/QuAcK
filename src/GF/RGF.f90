@@ -175,7 +175,7 @@ subroutine RGF(dotest,doG0F2,doevGF2,doqsGF2,doufG0F02,doG0F3,doevGF3,docG0F2,  
 ! Compute complex G0F2 electronic binding energies
 !------------------------------------------------------------------------
 
-  if(doG0F2) then
+  if(docG0F2) then
 
     call wall_time(start_GF)
     call cRG0F2(dotest,dophBSE,doppBSE,TDA,dBSE,dTDA,singlet,triplet, &

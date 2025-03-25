@@ -194,7 +194,7 @@ program QuAcK
 
   call read_1e_integrals(working_dir,nBas,S,T,V,Hc)
   call read_eta_cap(working_dir,eta_cap)
-  if (docRHF .or. docG0W0) call read_CAP_integrals(nBas,CAP) ! Add different cases if needed
+  if (docRHF .or. docG0W0 .or. docG0F2) call read_CAP_integrals(nBas,CAP) ! Add different cases if needed
   CAP(:,:) = -eta_cap*CAP(:,:)
   call read_dipole_integrals(working_dir,nBas,dipole_int_AO)
   call wall_time(end_int)

@@ -63,7 +63,8 @@ subroutine cRG0F2(dotest,dophBSE,doppBSE,TDA,dBSE,dTDA,singlet,triplet,linearize
   allocate(Re_SigC(nOrb),Im_SigC(nOrb), Re_Z(nOrb),Im_Z(nOrb),&
           Re_eGFlin(nOrb),Im_eGFlin(nOrb), Re_eGF(nOrb),Im_eGF(nOrb),e_CAP(nOrb))
   do p = 1, nOrb
-        e_CAP(p) = CAP(p,p)  
+        e_CAP(p) = CAP(p,p)
+        write(*,*) p, e_CAP(p)
   end do
   
 ! Frequency-dependent second-order contribution
@@ -74,7 +75,7 @@ subroutine cRG0F2(dotest,dophBSE,doppBSE,TDA,dBSE,dTDA,singlet,triplet,linearize
 
   else
 
-    call RGF2_self_energy_diag(eta,nOrb,nC,nO,nV,nR,eHF,ERI,Re_SigC,Im_SigC,Re_Z,Im_Z,e_CAP)
+    call cRGF2_self_energy_diag(eta,nOrb,nC,nO,nV,nR,eHF,ERI,Re_SigC,Im_SigC,Re_Z,Im_Z,e_CAP)
 
   end if
   

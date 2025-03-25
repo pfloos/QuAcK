@@ -207,7 +207,10 @@ subroutine RQuAcK(working_dir,use_gpu,dotest,doRHF,doROHF,docRHF,               
   ! 4-index transform 
   
   call AOtoMO_ERI_RHF(nBas,nOrb,cHF,ERI_AO,ERI_MO)
-  if (docG0W0 .or. docG0F2) call AOtoMO(nBas,nOrb,cHF,CAP_AO,CAP_MO) ! Add the different cases for cGW methods when implemented
+  write(*,*) docG0F2
+  if (docG0W0 .or. docG0F2) then
+    call AOtoMO(nBas,nOrb,cHF,CAP_AO,CAP_MO) ! Add the different cases for cGW methods when implemented
+  end if
   call wall_time(end_AOtoMO)
 
   t_AOtoMO = end_AOtoMO - start_AOtoMO
@@ -330,7 +333,6 @@ subroutine RQuAcK(working_dir,use_gpu,dotest,doRHF,doROHF,docRHF,               
 doGF = doG0F2 .or. doevGF2 .or. doqsGF2 .or. doufG0F02 .or. doG0F3 .or. doevGF3 .or. docG0F2
 
   if(doGF) then
-
     call wall_time(start_GF)
     call RGF(dotest,doG0F2,doevGF2,doqsGF2,doufG0F02,doG0F3,doevGF3,docG0F2,renorm_GF,maxSCF_GF, &
              thresh_GF,max_diis_GF,dophBSE,doppBSE,TDA,dBSE,dTDA,singlet,triplet,lin_GF, &

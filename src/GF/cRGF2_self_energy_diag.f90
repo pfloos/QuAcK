@@ -54,7 +54,7 @@ subroutine cRGF2_self_energy_diag(eta,nBas,nC,nO,nV,nR,e,ERI,Re_SigC,Im_SigC,Re_
           num = (2d0*ERI(p,a,i,j) - ERI(p,a,j,i))*ERI(p,a,i,j)
 
           Re_SigC(p) = Re_SigC(p) + num*eps/(eps**2 + eta_tilde**2)
-          Im_SigC(p) = Im_SigC(p) - num*eta_tilde/(eps**2 + eta_tilde**2)
+          Im_SigC(p) = Im_SigC(p) + num*eta_tilde/(eps**2 + eta_tilde**2)
           Re_DS(p)    = Re_DS(p)   - num*(eps**2 - eta_tilde**2)/(eps**2 + eta_tilde**2)**2
           Im_DS(p)   = Im_DS(p)    + 2*num*eta_tilde*eps/(eps**2 + eta_tilde**2)**2
 
@@ -81,7 +81,6 @@ subroutine cRGF2_self_energy_diag(eta,nBas,nC,nO,nV,nR,e,ERI,Re_SigC,Im_SigC,Re_
       end do
     end do
   end do
-
   Re_Z(:) = (1d0-Re_DS(:))/((1d0 - Re_DS(:))**2 + Im_DS(:)**2)
   Im_Z(:) = Im_DS(:)/((1d0 - Re_DS(:))**2 + Im_DS(:)**2)
   deallocate(Re_DS,Im_DS)

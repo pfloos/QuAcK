@@ -208,7 +208,7 @@ subroutine read_methods(working_dir,                           &
       ! Read Complex methods
 
       docG0W0 = .false.
-      doG0F2    = .false.
+      docG0F2    = .false.
 
       read(1,*)
       read(1,*) ans1,ans2
