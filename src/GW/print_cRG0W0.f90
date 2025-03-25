@@ -27,7 +27,7 @@ subroutine print_cRG0W0(nBas,nO,eHF,ENuc,ERHF,Re_SigC,Im_SigC,Re_Z,Im_Z,Re_eGW,I
   index_homo = maxloc(Re_eGW(1:nO),1)
   Re_eHOMO = Re_eGW(index_homo)
   Im_eHOMO = Im_eGW(index_homo)
-  index_lumo = minloc(Re_eGW(nO+1:nBas),1)
+  index_lumo = minloc(Re_eGW(nO+1:nBas),1) + nO
   Re_eLUMO = Re_eGW(index_lumo)
   Im_eLUMO = Im_eGW(index_lumo)
   Re_Gap = Re_eLUMO-Re_eHOMO

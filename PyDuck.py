@@ -207,11 +207,15 @@ if args.use_cap:
         f.close()
     num_atoms = int(lines[0].strip())
     atoms = [line.strip() for line in lines[2:2+num_atoms]]
+    if unit == 'Bohr':
+        bohr_coordinates = 'true'
+    else:
+        bohr_coordinates = 'false'
     sys_dict = {
         "molecule": "inline",
         "geometry": "\n".join(atoms),  # XYZ format as a string
         "basis_file": create_psi4_basis(basis_dict),
-        "bohr_coordinates": unit == 'Bohr'
+        "bohr_coordinates": bohr_coordinates
     }
     cap_system = pyopencap.System(sys_dict)
     if not(cap_system.check_overlap_mat(ovlp, "pyscf")):
@@ -223,10 +227,9 @@ if args.use_cap:
                 "cap_z": onset_z,
                 "Radial_precision": "16",
                 "angular_points": "590",
-                "thresh": 10}
+                "thresh": 15}
     pc = pyopencap.CAP(cap_system, cap_dict, norb)
-    # Get AO and convert from eV to Hartree
-    cap_ao = pc.get_ao_cap(ordering="pyscf")/27.211386245981
+    cap_ao = pc.get_ao_cap(ordering="pyscf")
 
 
 def write_matrix_to_file(matrix, size, file, cutoff=1e-15):
