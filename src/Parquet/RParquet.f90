@@ -26,23 +26,28 @@ subroutine RParquet(max_it_1b,conv_1b,max_it_2b,conv_2b,nOrb,nC,nO,nV,nR,nS,eHF,
 
   integer                       :: n_it_1b,n_it_2b
   double precision              :: err_1b,err_2b
-  double precision              :: err_eh_sing,err_eh_trip
-  double precision              :: err_hh_sing,err_hh_trip
-  double precision              :: err_ee_sing,err_ee_trip
+  double precision              :: err_eig_eh_sing,err_eig_eh_trip
+  double precision              :: err_eig_hh_sing,err_eig_hh_trip
+  double precision              :: err_eig_ee_sing,err_eig_ee_trip
+  double precision              :: err_eh_sing, err_eh_trip
+  double precision              :: err_pp_sing, err_pp_trip
   double precision              :: start_t, end_t, t
   double precision              :: start_1b, end_1b, t_1b
   double precision              :: start_2b, end_2b, t_2b
 
   integer                       :: nOOs,nOOt
   integer                       :: nVVs,nVVt
-  
+
+  ! eh BSE
   double precision              :: EcRPA
   double precision,allocatable  :: Aph(:,:), Bph(:,:)
   double precision,allocatable  :: sing_XpY(:,:),trip_XpY(:,:)
   double precision,allocatable  :: sing_XmY(:,:),trip_XmY(:,:)
   double precision,allocatable  :: eh_sing_Om(:), old_eh_sing_Om(:)
   double precision,allocatable  :: eh_trip_Om(:), old_eh_trip_Om(:)
-
+  double precision,allocatable  :: eh_sing_Gam_A(:,:),eh_sing_Gam_B(:,:)
+  double precision,allocatable  :: eh_trip_Gam_A(:,:),eh_trip_Gam_B(:,:)
+  ! pp BSE
   double precision,allocatable  :: Bpp(:,:), Cpp(:,:), Dpp(:,:)
   double precision,allocatable  :: X1s(:,:),X1t(:,:)
   double precision,allocatable  :: Y1s(:,:),Y1t(:,:)
@@ -52,18 +57,18 @@ subroutine RParquet(max_it_1b,conv_1b,max_it_2b,conv_2b,nOrb,nC,nO,nV,nR,nS,eHF,
   double precision,allocatable  :: Y2s(:,:),Y2t(:,:)
   double precision,allocatable  :: hh_sing_Om(:), old_hh_sing_Om(:)
   double precision,allocatable  :: hh_trip_Om(:), old_hh_trip_Om(:)
-
+  double precision,allocatable  :: pp_sing_Gam_B(:,:),pp_sing_Gam_C(:,:),pp_sing_Gam_D(:,:)
+  double precision,allocatable  :: pp_trip_Gam_B(:,:),pp_trip_Gam_C(:,:),pp_trip_Gam_D(:,:)
+  ! Effective integrals
   double precision,allocatable  :: eh_sing_rho(:,:,:),eh_trip_rho(:,:,:)
   double precision,allocatable  :: ee_sing_rho(:,:,:),hh_sing_rho(:,:,:)
   double precision,allocatable  :: ee_trip_rho(:,:,:),hh_trip_rho(:,:,:)
-
-  double precision,allocatable  :: eh_sing_Gam_A(:,:),eh_sing_Gam_B(:,:)
-  double precision,allocatable  :: eh_trip_Gam_A(:,:),eh_trip_Gam_B(:,:)
-  double precision,allocatable  :: pp_sing_Gam_B(:,:),pp_sing_Gam_C(:,:),pp_sing_Gam_D(:,:)
-  double precision,allocatable  :: pp_trip_Gam_B(:,:),pp_trip_Gam_C(:,:),pp_trip_Gam_D(:,:)
-  double precision,allocatable  :: eh_sing_Gam(:,:,:,:),eh_trip_Gam(:,:,:,:)
-  double precision,allocatable  :: pp_sing_Gam(:,:,:,:),pp_trip_Gam(:,:,:,:)
-
+  ! Reducible kernels
+  double precision,allocatable  :: eh_sing_Phi(:,:,:,:), eh_trip_Phi(:,:,:,:)
+  double precision,allocatable  :: old_eh_sing_Phi(:,:,:,:), old_eh_trip_Phi(:,:,:,:)
+  double precision,allocatable  :: pp_sing_Phi(:,:,:,:), pp_trip_Phi(:,:,:,:)
+  double precision,allocatable  :: old_pp_sing_Phi(:,:,:,:), old_pp_trip_Phi(:,:,:,:)
+  ! One-body quantities
   double precision,allocatable  :: eQPlin(:),eQP(:),eOld(:)
   double precision,allocatable  :: SigC(:)
   double precision,allocatable  :: Z(:)
@@ -71,7 +76,8 @@ subroutine RParquet(max_it_1b,conv_1b,max_it_2b,conv_2b,nOrb,nC,nO,nV,nR,nS,eHF,
   
 ! Output variables
 ! None
-  
+    
+! Useful parameters
   nOOs = nO*(nO + 1)/2
   nVVs = nV*(nV + 1)/2
   nOOt = nO*(nO - 1)/2
@@ -114,6 +120,8 @@ subroutine RParquet(max_it_1b,conv_1b,max_it_2b,conv_2b,nOrb,nC,nO,nV,nR,nS,eHF,
   allocate(eh_sing_rho(nOrb,nOrb,nS),eh_trip_rho(nOrb,nOrb,nS))
   allocate(ee_sing_rho(nOrb,nOrb,nVVs),hh_sing_rho(nOrb,nOrb,nOOs))
   allocate(ee_trip_rho(nOrb,nOrb,nVVt),hh_trip_rho(nOrb,nOrb,nOOt))
+  allocate(old_eh_sing_Phi(nOrb,nOrb,nOrb,nOrb),old_eh_trip_Phi(nOrb,nOrb,nOrb,nOrb))
+  allocate(old_pp_sing_Phi(nOrb,nOrb,nOrb,nOrb),old_pp_trip_Phi(nOrb,nOrb,nOrb,nOrb))
 
 ! Initialization
 
@@ -139,6 +147,11 @@ subroutine RParquet(max_it_1b,conv_1b,max_it_2b,conv_2b,nOrb,nC,nO,nV,nR,nS,eHF,
   old_ee_trip_Om(:) = 1d0
   old_hh_sing_Om(:) = 1d0
   old_hh_trip_Om(:) = 1d0
+  
+  old_eh_sing_Phi(:,:,:,:) = 0d0
+  old_eh_trip_Phi(:,:,:,:) = 0d0
+  old_pp_sing_Phi(:,:,:,:) = 0d0
+  old_pp_trip_Phi(:,:,:,:) = 0d0
 
   !-----------------------------------------!
   ! Main loop for one-body self-consistency !
@@ -169,66 +182,6 @@ subroutine RParquet(max_it_1b,conv_1b,max_it_2b,conv_2b,nOrb,nC,nO,nV,nR,nS,eHF,
       write(*,*)' ***********************************'
       write(*,*)
 
-      !--------------------------------!
-      ! Compute effective interactions !
-      !--------------------------------!
-
-      ! Memory allocation
-      allocate(eh_sing_Gam(nOrb,nOrb,nOrb,nOrb))
-      allocate(eh_trip_Gam(nOrb,nOrb,nOrb,nOrb))
-      allocate(pp_sing_Gam(nOrb,nOrb,nOrb,nOrb))
-      allocate(pp_trip_Gam(nOrb,nOrb,nOrb,nOrb))
-      
-      ! Build singlet eh effective interaction
-      write(*,*) 'Computing singlet eh effective interaction...'
-
-      call wall_time(start_t)
-      call R_eh_singlet_Gamma(nOrb,nC,nO,nV,nR,nS,nOOs,nVVs,nOOt,nVVt, &
-                  old_eh_sing_Om,eh_sing_rho,old_eh_trip_Om,eh_trip_rho, &
-                  old_ee_sing_Om,ee_sing_rho,old_ee_trip_Om,ee_trip_rho, &
-                  old_hh_sing_Om,hh_sing_rho,old_hh_trip_Om,hh_trip_rho, eh_sing_Gam)
-      call wall_time(end_t)
-      t = end_t - start_t
-
-      write(*,'(A50,1X,F9.3,A8)') 'Wall time for eh singlet Gamma =',t,' seconds'
-      write(*,*)
-
-     ! Build triplet eh effective interaction
-      write(*,*) 'Computing triplet eh effective interaction...'
-
-      call wall_time(start_t)
-      call R_eh_triplet_Gamma(nOrb,nC,nO,nV,nR,nS,nOOs,nVVs,nOOt,nVVt, &
-                  old_eh_sing_Om,eh_sing_rho,old_eh_trip_Om,eh_trip_rho, &
-                  old_ee_sing_Om,ee_sing_rho,old_ee_trip_Om,ee_trip_rho, &
-                  old_hh_sing_Om,hh_sing_rho,old_hh_trip_Om,hh_trip_rho, eh_trip_Gam)
-      call wall_time(end_t)
-      t = end_t - start_t
-
-      write(*,'(A50,1X,F9.3,A8)') 'Wall time for eh triplet Gamma =',t,' seconds'
-      write(*,*)
-
-     ! Build singlet pp effective interaction
-      write(*,*) 'Computing singlet pp effective interaction...'
-
-      call wall_time(start_t)
-      call R_pp_singlet_Gamma(nOrb,nC,nR,nS,old_eh_sing_Om,eh_sing_rho,old_eh_trip_Om,eh_trip_rho,pp_sing_Gam)
-      call wall_time(end_t)
-      t = end_t - start_t
-
-      write(*,'(A50,1X,F9.3,A8)') 'Wall time for pp singlet Gamma =',t,' seconds'
-      write(*,*)
-
-     ! Build triplet pp effective interaction
-      write(*,*) 'Computing triplet pp effective interaction...'
-
-      call wall_time(start_t)
-      call R_pp_triplet_Gamma(nOrb,nC,nR,nS,old_eh_sing_Om,eh_sing_rho,old_eh_trip_Om,eh_trip_rho,pp_trip_Gam)
-      call wall_time(end_t)
-      t = end_t - start_t
-
-      write(*,'(A50,1X,F9.3,A8)') 'Wall time for pp triplet Gamma =',t,' seconds'
-      write(*,*)
-
       !-----------------!
       ! Density channel !
       !-----------------!
@@ -256,17 +209,13 @@ subroutine RParquet(max_it_1b,conv_1b,max_it_2b,conv_2b,nOrb,nC,nO,nV,nR,nS,eHF,
 
       else
 
-        call R_eh_singlet_Gamma_A(nOrb,nC,nO,nV,nR,nS,nOOs,nVVs,nOOt,nVVt, &
-                    old_eh_sing_Om,eh_sing_rho,old_eh_trip_Om,eh_trip_rho, &
-                    old_ee_sing_Om,ee_sing_rho,old_ee_trip_Om,ee_trip_rho, &
-                    old_hh_sing_Om,hh_sing_rho,old_hh_trip_Om,hh_trip_rho, & 
-                    eh_sing_Gam_A)
+        call R_eh_singlet_Gamma_A(nOrb,nC,nO,nR,nS,                        &
+             old_eh_sing_Phi,old_eh_trip_Phi,old_pp_sing_Phi,old_pp_trip_Phi, &
+             eh_sing_Gam_A)
        
-        if(.not.TDA) call R_eh_singlet_Gamma_B(nOrb,nC,nO,nV,nR,nS,nOOs,nVVs,nOOt,nVVt, &
-                                 old_eh_sing_Om,eh_sing_rho,old_eh_trip_Om,eh_trip_rho, &
-                                 old_ee_sing_Om,ee_sing_rho,old_ee_trip_Om,ee_trip_rho, &
-                                 old_hh_sing_Om,hh_sing_rho,old_hh_trip_Om,hh_trip_rho, & 
-                                 eh_sing_Gam_B)
+        if(.not.TDA) call R_eh_singlet_Gamma_B(nOrb,nC,nO,nR,nS,                        &
+                          old_eh_sing_Phi,old_eh_trip_Phi,old_pp_sing_Phi,old_pp_trip_Phi, & 
+                          eh_sing_Gam_B)
 
       end if      
       Aph(:,:) = Aph(:,:) + eh_sing_Gam_A(:,:)
@@ -282,7 +231,7 @@ subroutine RParquet(max_it_1b,conv_1b,max_it_2b,conv_2b,nOrb,nC,nO,nV,nR,nS,eHF,
 
       if(print_phLR) call print_excitation_energies('phBSE@Parquet','singlet',nS,eh_sing_Om)
 
-      err_eh_sing = maxval(abs(old_eh_sing_Om - eh_sing_Om))
+      err_eig_eh_sing = maxval(abs(old_eh_sing_Om - eh_sing_Om))
 
       deallocate(Aph,Bph,eh_sing_Gam_A,eh_sing_Gam_B)
 
@@ -313,17 +262,13 @@ subroutine RParquet(max_it_1b,conv_1b,max_it_2b,conv_2b,nOrb,nC,nO,nV,nR,nS,eHF,
 
       else
 
-        call R_eh_triplet_Gamma_A(nOrb,nC,nO,nV,nR,nS,nOOs,nVVs,nOOt,nVVt, &
-                    old_eh_sing_Om,eh_sing_rho,old_eh_trip_Om,eh_trip_rho, &
-                    old_ee_sing_Om,ee_sing_rho,old_ee_trip_Om,ee_trip_rho, &
-                    old_hh_sing_Om,hh_sing_rho,old_hh_trip_Om,hh_trip_rho, & 
-                    eh_trip_Gam_A)
+        call R_eh_triplet_Gamma_A(nOrb,nC,nO,nV,nR,nS,                        &
+             old_eh_sing_Phi,old_eh_trip_Phi,old_pp_sing_Phi,old_pp_trip_Phi, &
+             eh_trip_Gam_A)
        
-        if(.not.TDA) call R_eh_triplet_Gamma_B(nOrb,nC,nO,nV,nR,nS,nOOs,nVVs,nOOt,nVVt, &
-                                 old_eh_sing_Om,eh_sing_rho,old_eh_trip_Om,eh_trip_rho, &
-                                 old_ee_sing_Om,ee_sing_rho,old_ee_trip_Om,ee_trip_rho, &
-                                 old_hh_sing_Om,hh_sing_rho,old_hh_trip_Om,hh_trip_rho, & 
-                                 eh_trip_Gam_B)
+        if(.not.TDA) call R_eh_triplet_Gamma_B(nOrb,nC,nO,nV,nR,nS,                        &
+                          old_eh_sing_Phi,old_eh_trip_Phi,old_pp_sing_Phi,old_pp_trip_Phi, & 
+                          eh_trip_Gam_B)
 
       end if
       
@@ -340,7 +285,7 @@ subroutine RParquet(max_it_1b,conv_1b,max_it_2b,conv_2b,nOrb,nC,nO,nV,nR,nS,eHF,
 
       if(print_phLR) call print_excitation_energies('phBSE@Parquet','triplet',nS,eh_trip_Om)
 
-      err_eh_trip = maxval(abs(old_eh_trip_Om - eh_trip_Om))
+      err_eig_eh_trip = maxval(abs(old_eh_trip_Om - eh_trip_Om))
 
       deallocate(Aph,Bph,eh_trip_Gam_A,eh_trip_Gam_B)
       
@@ -376,10 +321,10 @@ subroutine RParquet(max_it_1b,conv_1b,max_it_2b,conv_2b,nOrb,nC,nO,nV,nR,nS,eHF,
 
       else
 
-        if(.not.TDA) call R_pp_singlet_Gamma_B(nOrb,nC,nO,nV,nR,nS,nOOs,nVVs,&
-                                                           old_eh_sing_Om,eh_sing_rho,old_eh_trip_Om,eh_trip_rho,pp_sing_Gam_B)
-        call R_pp_singlet_Gamma_C(nOrb,nC,nO,nV,nR,nS,nVVs,old_eh_sing_Om,eh_sing_rho,old_eh_trip_Om,eh_trip_rho,pp_sing_Gam_C)
-        call R_pp_singlet_Gamma_D(nOrb,nC,nO,nV,nR,nS,nOOs,old_eh_sing_Om,eh_sing_rho,old_eh_trip_Om,eh_trip_rho,pp_sing_Gam_D)
+        if(.not.TDA) call R_pp_singlet_Gamma_B(nOrb,nC,nO,nR,nOOs,nVVs,&
+                                                           old_eh_sing_Phi,old_eh_trip_Phi,pp_sing_Gam_B)
+        call R_pp_singlet_Gamma_C(nOrb,nO,nR,nVVs,old_eh_sing_Phi,old_eh_trip_Phi,pp_sing_Gam_C)
+        call R_pp_singlet_Gamma_D(nOrb,nC,nO,nOOs,old_eh_sing_Phi,old_eh_trip_Phi,pp_sing_Gam_D)
 
       end if
                    
@@ -397,8 +342,8 @@ subroutine RParquet(max_it_1b,conv_1b,max_it_2b,conv_2b,nOrb,nC,nO,nV,nR,nS,eHF,
       if(print_ppLR) call print_excitation_energies('ppBSE@Parquet','2p (singlets)',nVVs,ee_sing_Om)
       if(print_ppLR) call print_excitation_energies('ppBSE@Parquet','2h (singlets)',nOOs,hh_sing_Om)
 
-      err_ee_sing = maxval(abs(old_ee_sing_Om - ee_sing_Om))
-      err_hh_sing = maxval(abs(old_hh_sing_Om - hh_sing_Om))
+      err_eig_ee_sing = maxval(abs(old_ee_sing_Om - ee_sing_Om))
+      err_eig_hh_sing = maxval(abs(old_hh_sing_Om - hh_sing_Om))
 
       deallocate(Bpp,Cpp,Dpp,pp_sing_Gam_B,pp_sing_Gam_C,pp_sing_Gam_D)
       
@@ -434,10 +379,10 @@ subroutine RParquet(max_it_1b,conv_1b,max_it_2b,conv_2b,nOrb,nC,nO,nV,nR,nS,eHF,
 
       else
 
-        if(.not.TDA) call R_pp_triplet_Gamma_B(nOrb,nC,nO,nV,nR,nS,nOOt,nVVt,&
-                                                           old_eh_sing_Om,eh_sing_rho,old_eh_trip_Om,eh_trip_rho, pp_trip_Gam_B)
-        call R_pp_triplet_Gamma_C(nOrb,nC,nO,nV,nR,nS,nVVt,old_eh_sing_Om,eh_sing_rho,old_eh_trip_Om,eh_trip_rho, pp_trip_Gam_C)
-        call R_pp_triplet_Gamma_D(nOrb,nC,nO,nV,nR,nS,nOOt,old_eh_sing_Om,eh_sing_rho,old_eh_trip_Om,eh_trip_rho, pp_trip_Gam_D)
+        if(.not.TDA) call R_pp_triplet_Gamma_B(nOrb,nC,nO,nR,nS,nOOt,nVVt,&
+                                                           old_eh_sing_Phi,old_eh_trip_Phi,pp_trip_Gam_B)
+        call R_pp_triplet_Gamma_C(nOrb,nO,nR,nS,nVVt,old_eh_sing_Phi,old_eh_trip_Phi,pp_trip_Gam_C)
+        call R_pp_triplet_Gamma_D(nOrb,nC,nO,nS,nOOt,old_eh_sing_Phi,old_eh_trip_Phi,pp_trip_Gam_D)
 
       end if
                    
@@ -456,18 +401,18 @@ subroutine RParquet(max_it_1b,conv_1b,max_it_2b,conv_2b,nOrb,nC,nO,nV,nR,nS,eHF,
       if(print_ppLR) call print_excitation_energies('ppBSE@Parquet','2p (triplets)',nVVt,ee_trip_Om)
       if(print_ppLR) call print_excitation_energies('ppBSE@Parquet','2h (triplets)',nOOt,hh_trip_Om)
 
-      err_ee_trip = maxval(abs(old_ee_trip_Om - ee_trip_Om))
-      err_hh_trip = maxval(abs(old_hh_trip_Om - hh_trip_Om))
+      err_eig_ee_trip = maxval(abs(old_ee_trip_Om - ee_trip_Om))
+      err_eig_hh_trip = maxval(abs(old_hh_trip_Om - hh_trip_Om))
 
       deallocate(Bpp,Cpp,Dpp,pp_trip_Gam_B,pp_trip_Gam_C,pp_trip_Gam_D)
       
       write(*,*) '----------------------------------------'
       write(*,*) ' Two-body convergence '
       write(*,*) '----------------------------------------'
-      write(*,'(1X,A30,F10.6)')'Error for density  channel = ',err_eh_sing
-      write(*,'(1X,A30,F10.6)')'Error for magnetic channel = ',err_eh_trip
-      write(*,'(1X,A30,F10.6)')'Error for singlet  channel = ',max(err_ee_sing,err_hh_sing)
-      write(*,'(1X,A30,F10.6)')'Error for triplet  channel = ',max(err_ee_trip,err_hh_trip)
+      write(*,'(1X,A30,F10.6)')'Error for density  channel = ',err_eig_eh_sing
+      write(*,'(1X,A30,F10.6)')'Error for magnetic channel = ',err_eig_eh_trip
+      write(*,'(1X,A30,F10.6)')'Error for singlet  channel = ',max(err_eig_ee_sing,err_eig_hh_sing)
+      write(*,'(1X,A30,F10.6)')'Error for triplet  channel = ',max(err_eig_ee_trip,err_eig_hh_trip)
       write(*,*) '----------------------------------------'
       write(*,*)
 
@@ -502,53 +447,135 @@ subroutine RParquet(max_it_1b,conv_1b,max_it_2b,conv_2b,nOrb,nC,nO,nV,nR,nS,eHF,
       write(*,*) 'Computing singlet eh screened integrals...'
 
       call wall_time(start_t)
-      call R_eh_singlet_screened_integral(nOrb,nC,nO,nR,nS,ERI,eh_sing_Gam,sing_XpY,sing_XmY,eh_sing_rho)
+      call R_eh_singlet_screened_integral(nOrb,nC,nO,nR,nS,ERI,old_eh_sing_Phi,old_eh_trip_Phi,old_pp_sing_Phi,old_pp_trip_Phi, &
+                                          sing_XpY,sing_XmY,eh_sing_rho)
       call wall_time(end_t)
       t = end_t - start_t
       write(*,'(1X,A50,1X,F9.3,A8)') 'Wall time for singlet eh integrals =',t,' seconds'
       write(*,*)
       ! Done with eigenvectors and kernel
-      deallocate(sing_XpY,sing_XmY,eh_sing_Gam)
+      deallocate(sing_XpY,sing_XmY)
   
       ! Build triplet eh screened integrals
       write(*,*) 'Computing triplet eh screened integrals...'
 
       call wall_time(start_t)
-      call R_eh_triplet_screened_integral(nOrb,nC,nO,nR,nS,ERI,eh_trip_Gam,trip_XpY,trip_XmY,eh_trip_rho)
+      call R_eh_triplet_screened_integral(nOrb,nC,nO,nR,nS,ERI,old_eh_sing_Phi,old_eh_trip_Phi,old_pp_sing_Phi,old_pp_trip_Phi, &
+                                          trip_XpY,trip_XmY,eh_trip_rho)
       call wall_time(end_t)
       t = end_t - start_t
       write(*,'(1X,A50,1X,F9.3,A8)') 'Wall time for triplet eh integrals =',t,' seconds'
       write(*,*)
       ! Done with eigenvectors and kernel
-      deallocate(trip_XpY,trip_XmY,eh_trip_Gam)
+      deallocate(trip_XpY,trip_XmY)
       
       ! Build singlet pp screened integrals
       write(*,*) 'Computing singlet pp screened integrals...'
 
       call wall_time(start_t)
-      call R_pp_singlet_screened_integral(nOrb,nC,nO,nV,nR,nOOs,nVVs,ERI,pp_sing_Gam,X1s,Y1s,ee_sing_rho,X2s,Y2s,hh_sing_rho)
+      call R_pp_singlet_screened_integral(nOrb,nC,nO,nR,nOOs,nVVs,ERI,old_eh_sing_Phi,old_eh_trip_Phi, &
+                                          X1s,Y1s,ee_sing_rho,X2s,Y2s,hh_sing_rho)
       call wall_time(end_t)
       t = end_t - start_t
       ! Done with eigenvectors and kernel
       write(*,'(1X,A50,1X,F9.3,A8)') 'Wall time for singlet pp integrals =',t,' seconds'
       write(*,*)
 
-      deallocate(X1s,Y1s,X2s,Y2s,pp_sing_Gam)
+      deallocate(X1s,Y1s,X2s,Y2s)
 
       ! Build triplet pp screened integrals
       write(*,*) 'Computing triplet pp screened integrals...'
 
       call wall_time(start_t)
-      call R_pp_triplet_screened_integral(nOrb,nC,nO,nV,nR,nOOt,nVVt,ERI,pp_trip_Gam,X1t,Y1t,ee_trip_rho,X2t,Y2t,hh_trip_rho)
+      call R_pp_triplet_screened_integral(nOrb,nC,nO,nR,nOOt,nVVt,ERI,old_eh_sing_Phi,old_eh_trip_Phi, &
+                                          X1t,Y1t,ee_trip_rho,X2t,Y2t,hh_trip_rho)
       call wall_time(end_t)
       t = end_t - start_t
       write(*,'(1X,A50,1X,F9.3,A8)') 'Wall time for triplet pp integrals =',t,' seconds'
       write(*,*)
       ! Done with eigenvectors and kernel
-      deallocate(X1t,Y1t,X2t,Y2t,pp_trip_Gam)
+      deallocate(X1t,Y1t,X2t,Y2t)
 
+      !----------------------------!
+      ! Compute reducible kernels  !
+      !----------------------------!
+
+      ! Memory allocation
+      allocate(eh_sing_Phi(nOrb,nOrb,nOrb,nOrb))
+      allocate(eh_trip_Phi(nOrb,nOrb,nOrb,nOrb))
+      allocate(pp_sing_Phi(nOrb,nOrb,nOrb,nOrb))
+      allocate(pp_trip_Phi(nOrb,nOrb,nOrb,nOrb))
+
+      ! Build singlet eh reducible kernels
+      write(*,*) 'Computing singlet eh reducible kernel ...'
+
+      call wall_time(start_t)
+      call R_eh_singlet_Phi(nOrb,nC,nR,nS,old_eh_sing_Om,eh_sing_rho,eh_sing_Phi)
+      call wall_time(end_t)
+      t = end_t - start_t
+      write(*,'(1X,A50,1X,F9.3,A8)') 'Wall time for singlet eh reducible kernel =',t,' seconds'
+      write(*,*)
+      
+      ! Build triplet eh reducible kernels
+      write(*,*) 'Computing triplet eh reducible kernel ...'
+
+      call wall_time(start_t)
+      call R_eh_triplet_Phi(nOrb,nC,nR,nS,old_eh_trip_Om,eh_trip_rho,eh_trip_Phi)
+      call wall_time(end_t)
+      t = end_t - start_t
+      write(*,'(1X,A50,1X,F9.3,A8)') 'Wall time for triplet eh reducible kernel =',t,' seconds'
+      write(*,*)
+      
+      ! Build singlet pp reducible kernels
+      write(*,*) 'Computing singlet pp reducible kernel ...'
+
+      call wall_time(start_t)
+      call R_pp_singlet_Phi(nOrb,nC,nR,nOOs,nVVs,old_ee_sing_Om,ee_sing_rho,old_hh_sing_Om,hh_sing_rho,pp_sing_Phi)
+      call wall_time(end_t)
+      t = end_t - start_t
+      write(*,'(1X,A50,1X,F9.3,A8)') 'Wall time for singlet pp reducible kernel =',t,' seconds'
+      write(*,*)
+      
+      ! Build triplet pp reducible kernels
+      write(*,*) 'Computing triplet pp reducible kernel ...'
+      
+      call wall_time(start_t)
+      call R_pp_triplet_Phi(nOrb,nC,nR,nOOt,nVVt,old_ee_trip_Om,ee_trip_rho,old_hh_trip_Om,hh_trip_rho,pp_trip_Phi)
+      call wall_time(end_t)
+      t = end_t - start_t
+      write(*,'(1X,A50,1X,F9.3,A8)') 'Wall time for triplet pp reducible kernel =',t,' seconds'
+      write(*,*)
+
+      err_eh_sing = maxval(abs(old_eh_sing_Phi - eh_sing_Phi))
+      err_eh_trip = maxval(abs(old_eh_trip_Phi - eh_trip_Phi))
+      err_pp_sing = maxval(abs(old_pp_sing_Phi - pp_sing_Phi))
+      err_pp_trip = maxval(abs(old_pp_trip_Phi - pp_trip_Phi))
+
+      old_eh_sing_Phi(:,:,:,:) = eh_sing_Phi(:,:,:,:)
+      old_eh_trip_Phi(:,:,:,:) = eh_trip_Phi(:,:,:,:)
+      old_pp_sing_Phi(:,:,:,:) = pp_sing_Phi(:,:,:,:)
+      old_pp_trip_Phi(:,:,:,:) = pp_trip_Phi(:,:,:,:)
+
+      ! Free memory
+      deallocate(eh_sing_Phi,eh_trip_Phi,pp_sing_Phi,pp_trip_Phi)
+
+      !--------------------!
+      ! DIIS extrapolation !
+      !--------------------!
+
+
+      write(*,*) '----------------------------------------'
+      write(*,*) ' Two-body (kernel) convergence '
+      write(*,*) '----------------------------------------'
+      write(*,'(1X,A30,F10.6)')'Error for singlet eh channel = ',err_eh_sing
+      write(*,'(1X,A30,F10.6)')'Error for triplet eh channel = ',err_eh_trip
+      write(*,'(1X,A30,F10.6)')'Error for singlet pp channel = ',err_pp_sing
+      write(*,'(1X,A30,F10.6)')'Error for triplet pp channel = ',err_pp_trip
+      write(*,*) '----------------------------------------'
+      write(*,*)
+      
       ! Convergence criteria
-      err_2b = max(err_eh_sing,err_eh_trip,err_ee_sing,err_ee_trip,err_hh_sing,err_hh_trip)
+      err_2b = max(err_eh_sing,err_eh_trip,err_pp_sing,err_pp_trip)
        
       call wall_time(end_2b)
       t_2b = end_2b - start_2b

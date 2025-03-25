@@ -9,8 +9,8 @@ subroutine GParquet(max_it_1b,conv_1b,max_it_2b,conv_2b,nOrb,nC,nO,nV,nR,nS,eHF,
 
   logical                       :: linearize = .true.
   logical                       :: TDA = .true.
-  logical                       :: print_phLR = .true.
-  logical                       :: print_ppLR = .true.
+  logical                       :: print_phLR = .false.
+  logical                       :: print_ppLR = .false.
 
 ! Input variables
 
@@ -24,47 +24,50 @@ subroutine GParquet(max_it_1b,conv_1b,max_it_2b,conv_2b,nOrb,nC,nO,nV,nR,nS,eHF,
 
   integer                       :: n_it_1b,n_it_2b
   double precision              :: err_1b,err_2b
-  double precision              :: err_eh, err_hh, err_ee
+  double precision              :: err_eh, err_pp
+  double precision              :: err_eig_eh, err_eig_hh, err_eig_ee
   double precision              :: start_t, end_t, t
   double precision              :: start_1b, end_1b, t_1b
   double precision              :: start_2b, end_2b, t_2b
 
   integer                       :: nOO,nVV
 
+  ! eh BSE
   double precision              :: EcRPA
   double precision,allocatable  :: Aph(:,:), Bph(:,:)
-  double precision,allocatable  :: XpY(:,:),XmY(:,:)
+  double precision,allocatable  :: XpY(:,:), XmY(:,:)
   double precision,allocatable  :: eh_Om(:), old_eh_Om(:)
-
+  double precision,allocatable  :: eh_Gam_A(:,:),eh_Gam_B(:,:)
+  ! pp BSE
   double precision,allocatable  :: Bpp(:,:), Cpp(:,:), Dpp(:,:)
   double precision,allocatable  :: X1(:,:),Y1(:,:)
   double precision,allocatable  :: ee_Om(:), old_ee_Om(:)
   double precision,allocatable  :: X2(:,:),Y2(:,:)
   double precision,allocatable  :: hh_Om(:), old_hh_Om(:)
-
-  double precision,allocatable  :: eh_rho(:,:,:), ee_rho(:,:,:), hh_rho(:,:,:)
-
-  double precision,allocatable  :: eh_Gam_A(:,:),eh_Gam_B(:,:)
   double precision,allocatable  :: pp_Gam_B(:,:),pp_Gam_C(:,:),pp_Gam_D(:,:)
-  double precision,allocatable  :: eh_Gam(:,:,:,:),pp_Gam(:,:,:,:)
-
+  ! Effective integrals
+  double precision,allocatable  :: eh_rho(:,:,:), ee_rho(:,:,:), hh_rho(:,:,:)
+  ! Reducible kernels
+  double precision,allocatable  :: eh_Phi(:,:,:,:), pp_Phi(:,:,:,:)
+  double precision,allocatable  :: old_eh_Phi(:,:,:,:), old_pp_Phi(:,:,:,:)
+  ! One-body quantities
   double precision,allocatable  :: eQPlin(:),eQP(:),eOld(:)
   double precision,allocatable  :: SigC(:)
   double precision,allocatable  :: Z(:)
   double precision              :: EcGM
- 
+  ! DIIS
   integer                       :: max_diis,n_diis
   double precision              :: rcond
   double precision,allocatable  :: err_diis(:,:)
   double precision,allocatable  :: Om_diis(:,:)
   double precision,allocatable  :: err(:)
   double precision,allocatable  :: Om(:)
+  double precision              :: alpha
 
 ! Output variables
 ! None
   
 ! Useful parameters
-
   nOO = nO*(nO - 1)/2
   nVV = nV*(nV - 1)/2
 
@@ -72,15 +75,15 @@ subroutine GParquet(max_it_1b,conv_1b,max_it_2b,conv_2b,nOrb,nC,nO,nV,nR,nS,eHF,
     
 ! DIIS parameters
 
-  max_diis = 10
-  n_diis   = 0
-  rcond    = 0d0
+  ! max_diis = 10
+  ! n_diis   = 0
+  ! rcond    = 0d0
 
-  allocate(err_diis(nS+nOO+nVV,max_diis),Om_diis(nS+nOO+nVV,max_diis))
-  allocate(err(nS+nOO+nVV),Om(nS+nOO+nVV))
+  ! allocate(err_diis(nS+nOO+nVV,max_diis),Om_diis(nS+nOO+nVV,max_diis))
+  ! allocate(err(nS+nOO+nVV),Om(nS+nOO+nVV))
 
-  err_diis(:,:) = 0d0
-  Om_diis(:,:)  = 0d0
+  ! err_diis(:,:) = 0d0
+  ! Om_diis(:,:)  = 0d0
 
 ! Start
  
@@ -115,6 +118,7 @@ subroutine GParquet(max_it_1b,conv_1b,max_it_2b,conv_2b,nOrb,nC,nO,nV,nR,nS,eHF,
 
   allocate(old_eh_Om(nS),old_ee_Om(nVV),old_hh_Om(nOO))
   allocate(eh_rho(nOrb,nOrb,nS),ee_rho(nOrb,nOrb,nVV),hh_rho(nOrb,nOrb,nOO))
+  allocate(old_eh_Phi(nOrb,nOrb,nOrb,nOrb),old_pp_Phi(nOrb,nOrb,nOrb,nOrb))
 
 ! Initialization
 
@@ -135,6 +139,9 @@ subroutine GParquet(max_it_1b,conv_1b,max_it_2b,conv_2b,nOrb,nC,nO,nV,nR,nS,eHF,
   old_ee_Om(:) = 0d0
   old_hh_Om(:) = 0d0
 
+  old_eh_Phi(:,:,:,:) = 0d0
+  old_pp_Phi(:,:,:,:) = 0d0
+    
   !-----------------------------------------!
   ! Main loop for one-body self-consistency !
   !-----------------------------------------!
@@ -164,54 +171,6 @@ subroutine GParquet(max_it_1b,conv_1b,max_it_2b,conv_2b,nOrb,nC,nO,nV,nR,nS,eHF,
       write(*,*)' ***********************************'
       write(*,*)
 
-      !--------------------------------!
-      ! Compute effective interactions !
-      !--------------------------------!
-
-      ! Memory allocation
-      allocate(eh_Gam(nOrb,nOrb,nOrb,nOrb))
-      allocate(pp_Gam(nOrb,nOrb,nOrb,nOrb))
-
-      ! Build eh effective interaction
-      write(*,*) 'Computing eh effective interaction...'
-
-      if(n_it_2b == 1) then
- 
-        eh_Gam(:,:,:,:) = 0d0
-
-      else
-
-        call wall_time(start_t)
-        call G_eh_Gamma(nOrb,nC,nO,nV,nR,nS,nOO,nVV, &
-             old_eh_Om,eh_rho,old_ee_Om,ee_rho,old_hh_Om,hh_rho, &
-             eh_Gam)
-        call wall_time(end_t)
-        t = end_t - start_t
-
-        write(*,'(A50,1X,F9.3,A8)') 'Wall time for eh Gamma =',t,' seconds'
-        write(*,*)
-
-      end if
-
-     ! Build singlet pp effective interaction
-      write(*,*) 'Computing pp effective interaction...'
-
-      if(n_it_2b == 1) then
-
-        pp_Gam(:,:,:,:) = 0d0
-
-      else
-
-        call wall_time(start_t)
-        call G_pp_Gamma(nOrb,nC,nO,nV,nR,nS,old_eh_Om,eh_rho,pp_Gam)
-        call wall_time(end_t)
-        t = end_t - start_t
-
-        write(*,'(A50,1X,F9.3,A8)') 'Wall time for pp Gamma =',t,' seconds'
-        write(*,*)
-
-       end if
-
       !-----------------!
       !    eh channel   !
       !-----------------!
@@ -239,18 +198,14 @@ subroutine GParquet(max_it_1b,conv_1b,max_it_2b,conv_2b,nOrb,nC,nO,nV,nR,nS,eHF,
 
       else
 
-        call G_eh_Gamma_A(nOrb,nC,nO,nV,nR,nS,nOO,nVV,           &
-             old_eh_Om,eh_rho,old_ee_Om,ee_rho,old_hh_Om,hh_rho, & 
-             eh_Gam_A)
-       
-        if(.not.TDA) call G_eh_Gamma_B(nOrb,nC,nO,nV,nR,nS,nOO,nVV,       &
-                      old_eh_Om,eh_rho,old_ee_Om,ee_rho,old_hh_Om,hh_rho, & 
-                      eh_Gam_B)
-
+                     call G_eh_Gamma_A(nOrb,nC,nO,nR,nS,old_eh_Phi,old_pp_Phi,eh_Gam_A)
+        if(.not.TDA) call G_eh_Gamma_B(nOrb,nC,nO,nR,nS,old_eh_Phi,old_pp_Phi,eh_Gam_B)
+        
       end if
       
-      Aph(:,:) = Aph(:,:) + eh_Gam_A(:,:)
-      Bph(:,:) = Bph(:,:) + eh_Gam_B(:,:)             
+       Aph(:,:) = Aph(:,:) + eh_Gam_A(:,:)
+       Bph(:,:) = Bph(:,:) + eh_Gam_B(:,:)    
+      
 
       call phGLR(TDA,nS,Aph,Bph,EcRPA,eh_Om,XpY,XmY)
 
@@ -262,7 +217,7 @@ subroutine GParquet(max_it_1b,conv_1b,max_it_2b,conv_2b,nOrb,nC,nO,nV,nR,nS,eHF,
 
       if(print_phLR) call print_excitation_energies('phBSE@Parquet','eh generalized',nS,eh_Om)
 
-      err_eh = maxval(abs(old_eh_Om - eh_Om))
+      err_eig_eh = maxval(abs(old_eh_Om - eh_Om))
 
       deallocate(Aph,Bph,eh_Gam_A,eh_Gam_B)
 
@@ -297,9 +252,9 @@ subroutine GParquet(max_it_1b,conv_1b,max_it_2b,conv_2b,nOrb,nC,nO,nV,nR,nS,eHF,
 
       else
 
-        if(.not.TDA) call G_pp_Gamma_B(nOrb,nC,nO,nV,nR,nS,nOO,nVV,old_eh_Om,eh_rho,pp_Gam_B)
-        call G_pp_Gamma_C(nOrb,nC,nO,nV,nR,nS,nVV,old_eh_Om,eh_rho,pp_Gam_C)
-        call G_pp_Gamma_D(nOrb,nC,nO,nV,nR,nS,nOO,old_eh_Om,eh_rho,pp_Gam_D)
+        if(.not.TDA) call G_pp_Gamma_B(nOrb,nC,nO,nR,nOO,nVV,old_eh_Phi,pp_Gam_B)
+        call G_pp_Gamma_C(nOrb,nO,nR,nVV,old_eh_Phi,pp_Gam_C)
+        call G_pp_Gamma_D(nOrb,nC,nO,nOO,old_eh_Phi,pp_Gam_D)
 
       end if
                    
@@ -317,17 +272,17 @@ subroutine GParquet(max_it_1b,conv_1b,max_it_2b,conv_2b,nOrb,nC,nO,nV,nR,nS,eHF,
       if(print_ppLR) call print_excitation_energies('ppBSE@Parquet','2p generalized',nVV,ee_Om)
       if(print_ppLR) call print_excitation_energies('ppBSE@Parquet','2h generalized',nOO,hh_Om)
 
-      err_ee = maxval(abs(old_ee_Om - ee_Om))
-      err_hh = maxval(abs(old_hh_Om - hh_Om))
+      err_eig_ee = maxval(abs(old_ee_Om - ee_Om))
+      err_eig_hh = maxval(abs(old_hh_Om - hh_Om))
 
       deallocate(Bpp,Cpp,Dpp,pp_Gam_B,pp_Gam_C,pp_Gam_D)
 
             
       write(*,*) '----------------------------------------'
-      write(*,*) ' Two-body convergence '
+      write(*,*) ' Two-body (eigenvalue) convergence '
       write(*,*) '----------------------------------------'
-      write(*,'(1X,A30,F10.6)')'Error for eh channel = ',err_eh
-      write(*,'(1X,A30,F10.6)')'Error for pp channel = ',max(err_ee,err_hh)
+      write(*,'(1X,A30,F10.6)')'Error for eh channel = ',err_eig_eh
+      write(*,'(1X,A30,F10.6)')'Error for pp channel = ',max(err_eig_ee,err_eig_hh)
       write(*,*) '----------------------------------------'
       write(*,*)
 
@@ -335,24 +290,24 @@ subroutine GParquet(max_it_1b,conv_1b,max_it_2b,conv_2b,nOrb,nC,nO,nV,nR,nS,eHF,
       ! DIIS extrapolation !
       !--------------------!
 
-      err(       1:nS        ) = eh_Om(:) - old_eh_Om(:)
-      err(    nS+1:nS+nVV    ) = ee_Om(:) - old_ee_Om(:)
-      err(nVV+nS+1:nS+nVV+nOO) = hh_Om(:) - old_hh_Om(:) 
+      ! err(       1:nS        ) = eh_Om(:) - old_eh_Om(:)
+      ! err(    nS+1:nS+nVV    ) = ee_Om(:) - old_ee_Om(:)
+      ! err(nVV+nS+1:nS+nVV+nOO) = hh_Om(:) - old_hh_Om(:) 
 
-      Om(       1:nS        ) = eh_Om(:)
-      Om(    nS+1:nS+nVV    ) = ee_Om(:)
-      Om(nVV+nS+1:nS+nVV+nOO) = hh_Om(:)
+      ! Om(       1:nS        ) = eh_Om(:)
+      ! Om(    nS+1:nS+nVV    ) = ee_Om(:)
+      ! Om(nVV+nS+1:nS+nVV+nOO) = hh_Om(:)
 
-      if(max_diis > 1) then
+      ! if(max_diis > 1) then
      
-        n_diis = min(n_diis+1,max_diis)
-        call DIIS_extrapolation(rcond,nS+nOO+nVV,nS+nOO+nVV,n_diis,err_diis,Om_diis,err,Om)
+      !   n_diis = min(n_diis+1,max_diis)
+      !   call DIIS_extrapolation(rcond,nS+nOO+nVV,nS+nOO+nVV,n_diis,err_diis,Om_diis,err,Om)
      
-      end if
+      ! end if
 
-      eh_Om(:) = Om(       1:nS        )
-      ee_Om(:) = Om(    nS+1:nS+nVV    )
-      hh_Om(:) = Om(nVV+nS+1:nS+nVV+nOO)
+      ! eh_Om(:) = Om(       1:nS        )
+      ! ee_Om(:) = Om(    nS+1:nS+nVV    )
+      ! hh_Om(:) = Om(nVV+nS+1:nS+nVV+nOO)
 
       !----------!
       ! Updating !
@@ -379,35 +334,90 @@ subroutine GParquet(max_it_1b,conv_1b,max_it_2b,conv_2b,nOrb,nC,nO,nV,nR,nS,eHF,
       write(*,*) 'Computing eh screened integrals...'
 
       call wall_time(start_t)
-      call G_eh_screened_integral(nOrb,nC,nO,nR,nS,ERI,eh_Gam,XpY,XmY,eh_rho)
+      call G_eh_screened_integral(nOrb,nC,nO,nR,nS,ERI,old_eh_Phi,old_pp_Phi,XpY,XmY,eh_rho)
       call wall_time(end_t)
       t = end_t - start_t
       write(*,'(1X,A50,1X,F9.3,A8)') 'Wall time for eh integrals =',t,' seconds'
       write(*,*)
       ! Done with eigenvectors and kernel
-      deallocate(XpY,XmY,eh_Gam)
+      deallocate(XpY,XmY)
 
       ! Build singlet pp integrals
       write(*,*) 'Computing pp screened integrals...'
 
       call wall_time(start_t)
-      call G_pp_screened_integral(nOrb,nC,nO,nV,nR,nOO,nVV,ERI,pp_Gam,X1,Y1,ee_rho,X2,Y2,hh_rho)
+      call G_pp_screened_integral(nOrb,nC,nO,nR,nOO,nVV,ERI,old_eh_Phi,X1,Y1,ee_rho,X2,Y2,hh_rho)
       call wall_time(end_t)
       t = end_t - start_t
       ! Done with eigenvectors and kernel
       write(*,'(1X,A50,1X,F9.3,A8)') 'Wall time for pp integrals =',t,' seconds'
       write(*,*)
 
-      deallocate(X1,Y1,X2,Y2,pp_Gam)
+      deallocate(X1,Y1,X2,Y2)
 
+      !----------------------------!
+      ! Compute reducible kernels  !
+      !----------------------------!
+
+      ! Memory allocation
+      allocate(eh_Phi(nOrb,nOrb,nOrb,nOrb))
+      allocate(pp_Phi(nOrb,nOrb,nOrb,nOrb))
+
+      ! Build eh reducible kernels
+      write(*,*) 'Computing eh reducible kernel ...'
+
+      call wall_time(start_t)
+      call G_eh_Phi(nOrb,nC,nR,nS,old_eh_Om,eh_rho,eh_Phi)
+      call wall_time(end_t)
+      t = end_t - start_t
+      write(*,'(1X,A50,1X,F9.3,A8)') 'Wall time for eh reducible kernel =',t,' seconds'
+      write(*,*)
+
+      ! Build pp reducible kernels
+      write(*,*) 'Computing pp reducible kernel ...'
+
+      call wall_time(start_t)
+      call G_pp_Phi(nOrb,nC,nR,nOO,nVV,old_ee_Om,ee_rho,old_hh_Om,hh_rho,pp_Phi)
+      call wall_time(end_t)
+      t = end_t - start_t
+      write(*,'(1X,A50,1X,F9.3,A8)') 'Wall time for pp reducible kernel =',t,' seconds'
+      write(*,*)
+
+      ! alpha = 0.01d0
+      ! eh_Phi(:,:,:,:) = alpha * eh_Phi(:,:,:,:) + (1d0 - alpha) * old_eh_Phi(:,:,:,:)
+      ! pp_Phi(:,:,:,:) = alpha * pp_Phi(:,:,:,:) + (1d0 - alpha) * old_pp_Phi(:,:,:,:)
+
+      err_eh = maxval(abs(old_eh_Phi - eh_Phi))
+      err_pp = maxval(abs(old_pp_Phi - pp_Phi))
+
+      old_eh_Phi(:,:,:,:) = eh_Phi(:,:,:,:)
+      old_pp_Phi(:,:,:,:) = pp_Phi(:,:,:,:)
+      
+      ! Free memory
+      deallocate(eh_Phi,pp_Phi)
+      
+      !--------------------!
+      ! DIIS extrapolation !
+      !--------------------!
+
+
+      write(*,*) '----------------------------------------'
+      write(*,*) ' Two-body (kernel) convergence '
+      write(*,*) '----------------------------------------'
+      write(*,'(1X,A30,F10.6)')'Error for eh channel = ',err_eh
+      write(*,'(1X,A30,F10.6)')'Error for pp channel = ',err_pp
+      write(*,*) '----------------------------------------'
+      write(*,*)
+
+      
       ! Convergence criteria
-      err_2b = max(err_eh,err_ee,err_hh)
+      err_2b = max(err_eh,err_pp)
       
       call wall_time(end_2b)
       t_2b = end_2b - start_2b
       write(*,'(A50,1X,F9.3,A8)') 'Wall time for two-body iteration =',t_2b,' seconds'
       write(*,*)
-      
+
     end do
     !---------------------------------------------!
     ! End main loop for two-body self-consistency !

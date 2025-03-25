@@ -1,79 +1,16 @@
-subroutine G_eh_Gamma(nOrb,nC,nO,nV,nR,nS,nOO,nVV, &
-           eh_Om,eh_rho,ee_Om,ee_rho,hh_Om,hh_rho, &
-           eh_Gam)
+subroutine G_eh_Gamma_A(nOrb,nC,nO,nR,nS,eh_Phi,pp_Phi,eh_Gam_A)
 
 ! Compute irreducible vertex in the triplet pp channel
   implicit none
 
 ! Input variables
-  integer,intent(in)            :: nOrb,nC,nO,nV,nR,nS,nOO,nVV
-  double precision,intent(in)   :: eh_Om(nS)
-  double precision,intent(in)   :: eh_rho(nOrb,nOrb,nS)
-  double precision,intent(in)   :: ee_Om(nVV)
-  double precision,intent(in)   :: ee_rho(nOrb,nOrb,nVV)
-  double precision,intent(in)   :: hh_Om(nOO)
-  double precision,intent(in)   :: hh_rho(nOrb,nOrb,nOO)
-
-! Local variables
-  integer                       :: p,q,r,s
-  integer                       :: n
-  double precision,external     :: Kronecker_delta
-
-! Output variables
-  double precision, intent(out) :: eh_Gam(nOrb,nOrb,nOrb,nOrb)
-  
-! Initialization
-  eh_Gam(:,:,:,:) = 0d0
-
-  do s = nC+1, nOrb-nR
-     do r = nC+1, nOrb-nR
-        do q = nC+1, nOrb-nR
-           do p = nC+1, nOrb-nR
-              
-              do n=1,nS
-                 eh_Gam(p,q,r,s) = eh_Gam(p,q,r,s) &
-                      + eh_rho(s,p,n)*eh_rho(q,r,n)/eh_Om(n) &
-                      + eh_rho(p,s,n)*eh_rho(r,q,n)/eh_Om(n)     
-              end do
-
-              do n=1,nVV
-                 eh_Gam(p,q,r,s) = eh_Gam(p,q,r,s) &
-                      + 2d0 * ee_rho(p,q,n)*ee_rho(r,s,n)/ee_Om(n)            
-              end do
-
-              do n=1,nOO
-                 eh_Gam(p,q,r,s) = eh_Gam(p,q,r,s) &
-                      - 2d0 * hh_rho(p,q,n)*hh_rho(r,s,n)/hh_Om(n)           
-              end do
-              
-           enddo
-        enddo
-     enddo
-  enddo
-  
-end subroutine G_eh_Gamma
-
-subroutine G_eh_Gamma_A(nOrb,nC,nO,nV,nR,nS,nOO,nVV, &
-           eh_Om,eh_rho,ee_Om,ee_rho,hh_Om,hh_rho, &
-           eh_Gam_A)
-
-! Compute irreducible vertex in the triplet pp channel
-  implicit none
-
-! Input variables
-  integer,intent(in)            :: nOrb,nC,nO,nV,nR,nS,nOO,nVV
-  double precision,intent(in)   :: eh_Om(nS)
-  double precision,intent(in)   :: eh_rho(nOrb,nOrb,nS)
-  double precision,intent(in)   :: ee_Om(nVV)
-  double precision,intent(in)   :: ee_rho(nOrb,nOrb,nVV)
-  double precision,intent(in)   :: hh_Om(nOO)
-  double precision,intent(in)   :: hh_rho(nOrb,nOrb,nOO)
+  integer,intent(in)            :: nOrb,nC,nO,nR,nS
+  double precision,intent(in)   :: eh_Phi(nOrb,nOrb,nOrb,nOrb)
+  double precision,intent(in)   :: pp_Phi(nOrb,nOrb,nOrb,nOrb)
 
 ! Local variables
   integer                       :: i,a,j,b
   integer                       :: ia,jb
-  integer                       :: n
-  double precision,external     :: Kronecker_delta
 
 ! Output variables
   double precision, intent(out) :: eh_Gam_A(nS,nS)
@@ -91,21 +28,7 @@ subroutine G_eh_Gamma_A(nOrb,nC,nO,nV,nR,nS,nOO,nVV, &
            do b=nO+1,norb-nR
               jb = jb + 1
               
-              do n=1,nS
-                 eh_Gam_A(ia,jb) = eh_Gam_A(ia,jb) &
-                      +  eh_rho(b,a,n)*eh_rho(j,i,n)/eh_Om(n) &
-                      +  eh_rho(a,b,n)*eh_rho(i,j,n)/eh_Om(n)     
-              end do
-
-              do n=1,nVV
-                 eh_Gam_A(ia,jb) = eh_Gam_A(ia,jb) &
-                      + 2d0 * ee_rho(a,j,n)*ee_rho(i,b,n)/ee_Om(n)            
-              end do
-
-              do n=1,nOO
-                 eh_Gam_A(ia,jb) = eh_Gam_A(ia,jb) &
-                      - 2d0 * hh_rho(a,j,n)*hh_rho(i,b,n)/hh_Om(n)           
-              end do
+              eh_Gam_A(ia,jb) = - eh_Phi(a,j,b,i) + pp_Phi(a,j,i,b)
               
            enddo
         enddo
@@ -114,27 +37,19 @@ subroutine G_eh_Gamma_A(nOrb,nC,nO,nV,nR,nS,nOO,nVV, &
   
 end subroutine G_eh_Gamma_A
 
-subroutine G_eh_Gamma_B(nOrb,nC,nO,nV,nR,nS,nOO,nVV, &
-           eh_Om,eh_rho,ee_Om,ee_rho,hh_Om,hh_rho, &
-           eh_Gam_B)
+subroutine G_eh_Gamma_B(nOrb,nC,nO,nR,nS,eh_Phi,pp_Phi,eh_Gam_B)
 
 ! Compute irreducible vertex in the triplet pp channel
   implicit none
 
 ! Input variables
-  integer,intent(in)            :: nOrb,nC,nO,nV,nR,nS,nOO,nVV
-  double precision,intent(in)   :: eh_Om(nS)
-  double precision,intent(in)   :: eh_rho(nOrb,nOrb,nS)
-  double precision,intent(in)   :: ee_Om(nVV)
-  double precision,intent(in)   :: ee_rho(nOrb,nOrb,nVV)
-  double precision,intent(in)   :: hh_Om(nOO)
-  double precision,intent(in)   :: hh_rho(nOrb,nOrb,nOO)
-
+  integer,intent(in)            :: nOrb,nC,nO,nR,nS
+  double precision,intent(in)   :: eh_Phi(nOrb,nOrb,nOrb,nOrb)
+  double precision,intent(in)   :: pp_Phi(nOrb,nOrb,nOrb,nOrb)
+  
 ! Local variables
   integer                       :: i,a,j,b
   integer                       :: ia,jb
-  integer                       :: n
-  double precision,external     :: Kronecker_delta
 
 ! Output variables
   double precision, intent(out) :: eh_Gam_B(nS,nS)
@@ -152,21 +67,7 @@ subroutine G_eh_Gamma_B(nOrb,nC,nO,nV,nR,nS,nOO,nVV, &
            do b=nO+1,norb-nR
               jb = jb + 1
               
-              do n=1,nS
-                 eh_Gam_B(ia,jb) = eh_Gam_B(ia,jb) &
-                      +  eh_rho(j,a,n)*eh_rho(b,i,n)/eh_Om(n) &
-                      +  eh_rho(a,j,n)*eh_rho(i,b,n)/eh_Om(n)     
-              end do
-
-              do n=1,nVV
-                 eh_Gam_B(ia,jb) = eh_Gam_B(ia,jb) &
-                      + 2d0 * ee_rho(a,b,n)*ee_rho(i,j,n)/ee_Om(n)            
-              end do
-
-              do n=1,nOO
-                 eh_Gam_B(ia,jb) = eh_Gam_B(ia,jb) &
-                      - 2d0 * hh_rho(a,b,n)*hh_rho(i,j,n)/hh_Om(n)           
-              end do
+              eh_Gam_B(ia,jb) = - eh_Phi(a,b,j,i) + pp_Phi(a,b,i,j)
               
            enddo
         enddo
