@@ -106,6 +106,8 @@ subroutine GQuAcK(working_dir,dotest,doGHF,dostab,dosearch,doMP2,doMP3,doCCD,dop
   integer                       :: nBas2
   integer                       :: nS
 
+  double precision,allocatable  :: eGW(:)
+
   write(*,*)
   write(*,*) '*******************************'
   write(*,*) '* Generalized Branch of QuAcK *'
@@ -121,6 +123,7 @@ subroutine GQuAcK(working_dir,dotest,doGHF,dostab,dosearch,doMP2,doMP3,doCCD,dop
   allocate(cHF(nBas2,nBas2),eHF(nBas2),PHF(nBas2,nBas2),FHF(nBas2,nBas2), &
            dipole_int_MO(nBas2,nBas2,ncart),ERI_MO(nBas2,nBas2,nBas2,nBas2))
 
+  allocate(eGW(nBas2))
 
   allocate(ERI_AO(nBas,nBas,nBas,nBas))
   call wall_time(start_int)
@@ -307,9 +310,10 @@ subroutine GQuAcK(working_dir,dotest,doGHF,dostab,dosearch,doMP2,doMP3,doCCD,dop
   if(doGW) then
     
     call wall_time(start_GW)
-    call GGW(dotest,doG0W0,doevGW,doqsGW,maxSCF_GW,thresh_GW,max_diis_GW,doACFDT,exchange_kernel,doXBS, & 
-             dophBSE,dophBSE2,doppBSE,TDA_W,TDA,dBSE,dTDA,lin_GW,eta_GW,reg_GW,nNuc,ZNuc,rNuc,ENuc,     & 
-             nBas,nBas2,nC,nO,nV,nR,nS,EGHF,S,X,T,V,Hc,ERI_AO,ERI_MO,dipole_int_AO,dipole_int_MO,PHF,cHF,eHF)
+    call GGW(dotest,doG0W0,doevGW,doqsGW,maxSCF_GW,thresh_GW,max_diis_GW,doACFDT,exchange_kernel,doXBS,       & 
+             dophBSE,dophBSE2,doppBSE,TDA_W,TDA,dBSE,dTDA,lin_GW,eta_GW,reg_GW,nNuc,ZNuc,rNuc,ENuc,           & 
+             nBas,nBas2,nC,nO,nV,nR,nS,EGHF,S,X,T,V,Hc,ERI_AO,ERI_MO,dipole_int_AO,dipole_int_MO,PHF,cHF,eHF, &
+             eGW)
     call wall_time(end_GW)
   
     t_GW = end_GW - start_GW

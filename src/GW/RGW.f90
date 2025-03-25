@@ -70,8 +70,9 @@ subroutine RGW(dotest,doG0W0,doevGW,doqsGW,doufG0W0,doufGW,maxSCF,thresh,max_dii
 
   logical                       :: doccG0W0,doccGW
 
+! Output variables
   
-  double precision,intent(inout)   :: eGW(nOrb)
+  double precision,intent(out)  :: eGW(nOrb)
 
 !------------------------------------------------------------------------
 ! Perform G0W0 calculation

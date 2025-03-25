@@ -1,5 +1,5 @@
 subroutine GG0W0(dotest,doACFDT,exchange_kernel,doXBS,dophBSE,dophBSE2,TDA_W,TDA,dBSE,dTDA,doppBSE, & 
-                 linearize,eta,doSRG,nBas,nC,nO,nV,nR,nS,ENuc,EGHF,ERI,dipole_int,eHF)
+                 linearize,eta,doSRG,nBas,nC,nO,nV,nR,nS,ENuc,EGHF,ERI,dipole_int,eHF,eGW_out)
 ! Perform G0W0 calculation
 
   implicit none
@@ -57,6 +57,8 @@ subroutine GG0W0(dotest,doACFDT,exchange_kernel,doXBS,dophBSE,dophBSE2,TDA_W,TDA
   double precision,allocatable  :: eGW(:)
 
 ! Output variables
+
+  double precision,intent(out)  :: eGW_out(nBas)
 
 ! Hello world
 
@@ -156,6 +158,8 @@ subroutine GG0W0(dotest,doACFDT,exchange_kernel,doXBS,dophBSE,dophBSE2,TDA_W,TDA
 !--------------!
 
   call print_GG0W0(nBas,nO,eHF,ENuc,EGHF,SigC,Z,eGW,EcRPA,EcGM)
+
+  eGW_out(:) = eGW(:)
 
 ! Deallocate memory
 

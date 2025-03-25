@@ -61,8 +61,10 @@ subroutine RG0W0(dotest,doACFDT,exchange_kernel,doXBS,dophBSE,dophBSE2,TDA_W,TDA
 
   double precision,allocatable  :: eGWlin(:)
   double precision,allocatable  :: eGW(:)
-  double precision,intent(inout):: eGW_out(nOrb)
 
+! Output variables
+
+  double precision,intent(out)  :: eGW_out(nOrb)
 
 ! Output variables
 

@@ -52,15 +52,38 @@ subroutine GParquet(max_it_1b,conv_1b,max_it_2b,conv_2b,nOrb,nC,nO,nV,nR,nS,eHF,
   double precision,allocatable  :: SigC(:)
   double precision,allocatable  :: Z(:)
   double precision              :: EcGM
-  
+ 
+  integer                       :: max_diis,n_diis
+  double precision              :: rcond
+  double precision,allocatable  :: err_diis(:,:)
+  double precision,allocatable  :: Om_diis(:,:)
+  double precision,allocatable  :: err(:)
+  double precision,allocatable  :: Om(:)
+
 ! Output variables
 ! None
   
+! Useful parameters
+
   nOO = nO*(nO - 1)/2
   nVV = nV*(nV - 1)/2
 
   allocate(eQP(nOrb),eOld(nOrb))
     
+! DIIS parameters
+
+  max_diis = 10
+  n_diis   = 0
+  rcond    = 0d0
+
+  allocate(err_diis(nS+nOO+nVV,max_diis),Om_diis(nS+nOO+nVV,max_diis))
+  allocate(err(nS+nOO+nVV),Om(nS+nOO+nVV))
+
+  err_diis(:,:) = 0d0
+  Om_diis(:,:)  = 0d0
+
+! Start
+ 
   write(*,*)
   write(*,*)'***********************************'
   write(*,*)'* Generalized Parquet Calculation *'
@@ -108,9 +131,9 @@ subroutine GParquet(max_it_1b,conv_1b,max_it_2b,conv_2b,nOrb,nC,nO,nV,nR,nS,eHF,
   ee_rho(:,:,:) = 0d0
   hh_rho(:,:,:) = 0d0
 
-  old_eh_Om(:) = 1d0
-  old_ee_Om(:) = 1d0
-  old_hh_Om(:) = 1d0
+  old_eh_Om(:) = 0d0
+  old_ee_Om(:) = 0d0
+  old_hh_Om(:) = 0d0
 
   !-----------------------------------------!
   ! Main loop for one-body self-consistency !
@@ -152,26 +175,42 @@ subroutine GParquet(max_it_1b,conv_1b,max_it_2b,conv_2b,nOrb,nC,nO,nV,nR,nS,eHF,
       ! Build eh effective interaction
       write(*,*) 'Computing eh effective interaction...'
 
-      call wall_time(start_t)
-      call G_eh_Gamma(nOrb,nC,nO,nV,nR,nS,nOO,nVV, &
-           old_eh_Om,eh_rho,old_ee_Om,ee_rho,old_hh_Om,hh_rho, &
-           eh_Gam)
-      call wall_time(end_t)
-      t = end_t - start_t
+      if(n_it_2b == 1) then
+ 
+        eh_Gam(:,:,:,:) = 0d0
 
-      write(*,'(A50,1X,F9.3,A8)') 'Wall time for eh Gamma =',t,' seconds'
-      write(*,*)
+      else
+
+        call wall_time(start_t)
+        call G_eh_Gamma(nOrb,nC,nO,nV,nR,nS,nOO,nVV, &
+             old_eh_Om,eh_rho,old_ee_Om,ee_rho,old_hh_Om,hh_rho, &
+             eh_Gam)
+        call wall_time(end_t)
+        t = end_t - start_t
+
+        write(*,'(A50,1X,F9.3,A8)') 'Wall time for eh Gamma =',t,' seconds'
+        write(*,*)
+
+      end if
 
      ! Build singlet pp effective interaction
       write(*,*) 'Computing pp effective interaction...'
 
-      call wall_time(start_t)
-      call G_pp_Gamma(nOrb,nC,nO,nV,nR,nS,old_eh_Om,eh_rho,pp_Gam)
-      call wall_time(end_t)
-      t = end_t - start_t
+      if(n_it_2b == 1) then
 
-      write(*,'(A50,1X,F9.3,A8)') 'Wall time for pp Gamma =',t,' seconds'
-      write(*,*)
+        pp_Gam(:,:,:,:) = 0d0
+
+      else
+
+        call wall_time(start_t)
+        call G_pp_Gamma(nOrb,nC,nO,nV,nR,nS,old_eh_Om,eh_rho,pp_Gam)
+        call wall_time(end_t)
+        t = end_t - start_t
+
+        write(*,'(A50,1X,F9.3,A8)') 'Wall time for pp Gamma =',t,' seconds'
+        write(*,*)
+
+       end if
 
       !-----------------!
       !    eh channel   !
@@ -291,6 +330,29 @@ subroutine GParquet(max_it_1b,conv_1b,max_it_2b,conv_2b,nOrb,nC,nO,nV,nR,nS,eHF,
       write(*,'(1X,A30,F10.6)')'Error for pp channel = ',max(err_ee,err_hh)
       write(*,*) '----------------------------------------'
       write(*,*)
+
+      !--------------------!
+      ! DIIS extrapolation !
+      !--------------------!
+
+      err(       1:nS        ) = eh_Om(:) - old_eh_Om(:)
+      err(    nS+1:nS+nVV    ) = ee_Om(:) - old_ee_Om(:)
+      err(nVV+nS+1:nS+nVV+nOO) = hh_Om(:) - old_hh_Om(:) 
+
+      Om(       1:nS        ) = eh_Om(:)
+      Om(    nS+1:nS+nVV    ) = ee_Om(:)
+      Om(nVV+nS+1:nS+nVV+nOO) = hh_Om(:)
+
+      if(max_diis > 1) then
+     
+        n_diis = min(n_diis+1,max_diis)
+        call DIIS_extrapolation(rcond,nS+nOO+nVV,nS+nOO+nVV,n_diis,err_diis,Om_diis,err,Om)
+     
+      end if
+
+      eh_Om(:) = Om(       1:nS        )
+      ee_Om(:) = Om(    nS+1:nS+nVV    )
+      hh_Om(:) = Om(nVV+nS+1:nS+nVV+nOO)
 
       !----------!
       ! Updating !
