@@ -1,11 +1,11 @@
-# HF: maxSCF thresh  DIIS guess mix   shift stab search
-      10000  0.0000001  5 1     0.0   0.0   F    F
+# HF: maxSCF thresh  DIIS guess mix shift stab search
+      10000  0.0000001  5 1     0.0 0.0   F    F
 # MP: reg
       F
 # CC: maxSCF thresh     DIIS
       64     0.0000001  5
-# spin: TDA singlet triplet
-        F   T       T
+# LR: TDA singlet triplet
+      F   T       T
 # GF: maxSCF thresh  DIIS lin eta renorm reg
       256    0.00001 5    F   0.0 0      F
 # GW: maxSCF thresh  DIIS lin eta TDA_W reg
@@ -16,3 +16,7 @@
          F  F   T
 # BSE: phBSE phBSE2 ppBSE dBSE dTDA
        F     F      F     F    T     
+# HFB: temperature  sigma chem_pot_HF restart_HFB
+          0.05      1.00  T           F
+# Parquet: max_it_macro conv_one_body max_it_micro conv_two_body
+               1           0.00001        1 0           0.00001
