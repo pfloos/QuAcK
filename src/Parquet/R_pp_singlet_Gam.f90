@@ -35,7 +35,7 @@ subroutine R_pp_singlet_Gamma_D(nOrb,nC,nO,nOOs,eh_sing_Phi,eh_trip_Phi,pp_sing_
               kl = kl +1
               
               pp_sing_Gam_D(ij,kl) = 0.5d0*eh_sing_Phi(i,j,k,l) - 1.5d0*eh_trip_Phi(i,j,k,l) &
-                                   - 1.5d0*eh_sing_Phi(i,j,l,k) + 0.5d0*eh_trip_Phi(i,j,l,k)
+                                   + 0.5d0*eh_sing_Phi(i,j,l,k) - 1.5d0*eh_trip_Phi(i,j,l,k)
 
               pp_sing_Gam_D(ij,kl) = pp_sing_Gam_D(ij,kl)/sqrt((1d0 + Kronecker_delta(i,j))*(1d0 + Kronecker_delta(k,l)))
               
@@ -86,7 +86,7 @@ subroutine R_pp_singlet_Gamma_C(nOrb,nO,nR,nVVs,eh_sing_Phi,eh_trip_Phi,pp_sing_
               
 
               pp_sing_Gam_C(ab,cd) = 0.5d0*eh_sing_Phi(a,b,c,d) - 1.5d0*eh_trip_Phi(a,b,c,d) &
-                                   - 1.5d0*eh_sing_Phi(a,b,d,c) + 0.5d0*eh_trip_Phi(a,b,d,c)
+                                   + 0.5d0*eh_sing_Phi(a,b,d,c) - 1.5d0*eh_trip_Phi(a,b,d,c)
 
               pp_sing_Gam_C(ab,cd) = pp_sing_Gam_C(ab,cd)/sqrt((1d0 + Kronecker_delta(a,b))*(1d0 + Kronecker_delta(c,d)))
               
@@ -136,7 +136,7 @@ subroutine R_pp_singlet_Gamma_B(nOrb,nC,nO,nR,nOOs,nVVs,eh_sing_Phi,eh_trip_Phi,
               ij = ij +1
               
               pp_sing_Gam_B(ab,ij) = 0.5d0*eh_sing_Phi(a,b,i,j) - 1.5d0*eh_trip_Phi(a,b,i,j) &
-                                   - 1.5d0*eh_sing_Phi(a,b,j,i) + 0.5d0*eh_trip_Phi(a,b,j,i)
+                                   + 0.5d0*eh_sing_Phi(a,b,j,i) - 1.5d0*eh_trip_Phi(a,b,j,i)
 
               pp_sing_Gam_B(ab,ij) = pp_sing_Gam_B(ab,ij)/sqrt((1d0 + Kronecker_delta(a,b))*(1d0 + Kronecker_delta(i,j)))
               

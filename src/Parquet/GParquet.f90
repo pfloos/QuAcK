@@ -117,7 +117,7 @@ subroutine GParquet(max_it_1b,conv_1b,max_it_2b,conv_2b,nOrb,nC,nO,nV,nR,nS,eHF,
    ! Memory allocation 
 
   allocate(old_eh_Om(nS),old_ee_Om(nVV),old_hh_Om(nOO))
-  allocate(eh_rho(nOrb,nOrb,nS+nS),ee_rho(nOrb,nOrb,nVV),hh_rho(nOrb,nOrb,nOO))
+  allocate(eh_rho(nOrb,nOrb,nS),ee_rho(nOrb,nOrb,nVV),hh_rho(nOrb,nOrb,nOO))
   allocate(old_eh_Phi(nOrb,nOrb,nOrb,nOrb),old_pp_Phi(nOrb,nOrb,nOrb,nOrb))
 
 ! Initialization
@@ -259,9 +259,9 @@ subroutine GParquet(max_it_1b,conv_1b,max_it_2b,conv_2b,nOrb,nC,nO,nV,nR,nS,eHF,
 
       end if
                    
-      ! Bpp(:,:) = Bpp(:,:) + pp_Gam_B(:,:)
-      ! Cpp(:,:) = Cpp(:,:) + pp_Gam_C(:,:)
-      ! Dpp(:,:) = Dpp(:,:) + pp_Gam_D(:,:)
+      Bpp(:,:) = Bpp(:,:) + pp_Gam_B(:,:)
+      Cpp(:,:) = Cpp(:,:) + pp_Gam_C(:,:)
+      Dpp(:,:) = Dpp(:,:) + pp_Gam_D(:,:)
       
       call ppGLR(TDA,nOO,nVV,Bpp,Cpp,Dpp,ee_Om,X1,Y1,hh_Om,X2,Y2,EcRPA)
       call wall_time(end_t)
@@ -328,7 +328,7 @@ subroutine GParquet(max_it_1b,conv_1b,max_it_2b,conv_2b,nOrb,nC,nO,nV,nR,nS,eHF,
       deallocate(eh_rho,ee_rho,hh_rho)
       ! TODO Once we will compute the blocks of kernel starting from the 4-tensors we can move the freeing up
       ! Memory allocation
-      allocate(eh_rho(nOrb,nOrb,nS+nS))
+      allocate(eh_rho(nOrb,nOrb,nS))
       allocate(ee_rho(nOrb,nOrb,nVV),hh_rho(nOrb,nOrb,nOO))
 
       ! Build singlet eh integrals
@@ -384,7 +384,7 @@ subroutine GParquet(max_it_1b,conv_1b,max_it_2b,conv_2b,nOrb,nC,nO,nV,nR,nS,eHF,
       write(*,'(1X,A50,1X,F9.3,A8)') 'Wall time for pp reducible kernel =',t,' seconds'
       write(*,*)
 
-      ! alpha = 0.01d0
+      ! alpha = 0.1d0
       ! eh_Phi(:,:,:,:) = alpha * eh_Phi(:,:,:,:) + (1d0 - alpha) * old_eh_Phi(:,:,:,:)
       ! pp_Phi(:,:,:,:) = alpha * pp_Phi(:,:,:,:) + (1d0 - alpha) * old_pp_Phi(:,:,:,:)
 

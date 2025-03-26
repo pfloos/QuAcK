@@ -117,7 +117,7 @@ subroutine RParquet(max_it_1b,conv_1b,max_it_2b,conv_2b,nOrb,nC,nO,nV,nR,nS,eHF,
   allocate(old_eh_sing_Om(nS),old_eh_trip_Om(nS))
   allocate(old_ee_sing_Om(nVVs),old_hh_sing_Om(nOOs))
   allocate(old_ee_trip_Om(nVVt),old_hh_trip_Om(nOOt))
-  allocate(eh_sing_rho(nOrb,nOrb,nS+nS),eh_trip_rho(nOrb,nOrb,nS+nS))
+  allocate(eh_sing_rho(nOrb,nOrb,nS),eh_trip_rho(nOrb,nOrb,nS))
   allocate(ee_sing_rho(nOrb,nOrb,nVVs),hh_sing_rho(nOrb,nOrb,nOOs))
   allocate(ee_trip_rho(nOrb,nOrb,nVVt),hh_trip_rho(nOrb,nOrb,nOOt))
   allocate(old_eh_sing_Phi(nOrb,nOrb,nOrb,nOrb),old_eh_trip_Phi(nOrb,nOrb,nOrb,nOrb))
@@ -330,9 +330,9 @@ subroutine RParquet(max_it_1b,conv_1b,max_it_2b,conv_2b,nOrb,nC,nO,nV,nR,nS,eHF,
 
       end if
                    
-      ! Bpp(:,:) = Bpp(:,:) + pp_sing_Gam_B(:,:)
-      ! Cpp(:,:) = Cpp(:,:) + pp_sing_Gam_C(:,:)
-      ! Dpp(:,:) = Dpp(:,:) + pp_sing_Gam_D(:,:)
+      Bpp(:,:) = Bpp(:,:) + pp_sing_Gam_B(:,:)
+      Cpp(:,:) = Cpp(:,:) + pp_sing_Gam_C(:,:)
+      Dpp(:,:) = Dpp(:,:) + pp_sing_Gam_D(:,:)
       
       call ppRLR(TDA,nOOs,nVVs,Bpp,Cpp,Dpp,ee_sing_Om,X1s,Y1s,hh_sing_Om,X2s,Y2s,EcRPA)
       call wall_time(end_t)
@@ -388,9 +388,9 @@ subroutine RParquet(max_it_1b,conv_1b,max_it_2b,conv_2b,nOrb,nC,nO,nV,nR,nS,eHF,
 
       end if
                    
-      ! Bpp(:,:) = Bpp(:,:) + pp_trip_Gam_B(:,:)
-      ! Cpp(:,:) = Cpp(:,:) + pp_trip_Gam_C(:,:)
-      ! Dpp(:,:) = Dpp(:,:) + pp_trip_Gam_D(:,:)
+      Bpp(:,:) = Bpp(:,:) + pp_trip_Gam_B(:,:)
+      Cpp(:,:) = Cpp(:,:) + pp_trip_Gam_C(:,:)
+      Dpp(:,:) = Dpp(:,:) + pp_trip_Gam_D(:,:)
       
       call ppRLR(TDA,nOOt,nVVt,Bpp,Cpp,Dpp,ee_trip_Om,X1t,Y1t,hh_trip_Om,X2t,Y2t,EcRPA)
 
@@ -439,7 +439,7 @@ subroutine RParquet(max_it_1b,conv_1b,max_it_2b,conv_2b,nOrb,nC,nO,nV,nR,nS,eHF,
       deallocate(eh_sing_rho,eh_trip_rho,ee_sing_rho,ee_trip_rho,hh_sing_rho,hh_trip_rho)
       ! TODO Once we will compute the blocks of kernel starting from the 4-tensors we can move the freeing up
       ! Memory allocation
-      allocate(eh_sing_rho(nOrb,nOrb,nS+nS),eh_trip_rho(nOrb,nOrb,nS+nS))
+      allocate(eh_sing_rho(nOrb,nOrb,nS),eh_trip_rho(nOrb,nOrb,nS))
       allocate(ee_sing_rho(nOrb,nOrb,nVVs),hh_sing_rho(nOrb,nOrb,nOOs))
       allocate(ee_trip_rho(nOrb,nOrb,nVVt),hh_trip_rho(nOrb,nOrb,nOOt))
       
