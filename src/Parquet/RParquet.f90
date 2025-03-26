@@ -407,7 +407,7 @@ subroutine RParquet(max_it_1b,conv_1b,max_it_2b,conv_2b,nOrb,nC,nO,nV,nR,nS,eHF,
       deallocate(Bpp,Cpp,Dpp,pp_trip_Gam_B,pp_trip_Gam_C,pp_trip_Gam_D)
       
       write(*,*) '----------------------------------------'
-      write(*,*) ' Two-body convergence '
+      write(*,*) ' Two-body (eigenvalue) convergence '
       write(*,*) '----------------------------------------'
       write(*,'(1X,A30,F10.6)')'Error for density  channel = ',err_eig_eh_sing
       write(*,'(1X,A30,F10.6)')'Error for magnetic channel = ',err_eig_eh_trip

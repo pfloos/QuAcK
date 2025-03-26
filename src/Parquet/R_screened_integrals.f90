@@ -33,18 +33,18 @@ subroutine R_eh_singlet_screened_integral(nOrb,nC,nO,nR,nS,ERI,eh_sing_Phi,eh_tr
            do b=nO+1,nOrb-nR
               jb = jb + 1
               
-              do ia=1,nS
+              ! do ia=1,nS
 
-                 ! X = 0.5d0*(XpY(ia,jb) + XmY(ia,jb))
-                 ! Y = 0.5d0*(XpY(ia,jb) - XmY(ia,jb))
+              !    X = 0.5d0*(XpY(ia,jb) + XmY(ia,jb))
+              !    Y = 0.5d0*(XpY(ia,jb) - XmY(ia,jb))
                  
-                 ! rho(p,q,ia) = rho(p,q,ia)                         & 
-                 !             + (2d0*ERI(p,j,q,b) - ERI(p,j,b,q))*X & 
-                 !             + (2d0*ERI(p,b,q,j) - ERI(p,b,j,q))*Y &
-                 !             + 1d0*eh_sing_Gam(p,j,q,b)*X          &
-                 !             + 1d0*eh_sing_Gam(p,b,q,j)*Y
+              !    rho(p,q,ia) = rho(p,q,ia)                         & 
+              !                + (2d0*ERI(p,j,q,b) - ERI(p,j,b,q))*X & 
+              !                + (2d0*ERI(p,b,q,j) - ERI(p,b,j,q))*Y &
+              !                + 1d0*eh_sing_Gam(p,j,q,b)*X          &
+              !                + 1d0*eh_sing_Gam(p,b,q,j)*Y
 
-              end do
+              ! end do
 
            end do
         end do

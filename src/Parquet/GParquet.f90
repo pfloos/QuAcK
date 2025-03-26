@@ -117,7 +117,7 @@ subroutine GParquet(max_it_1b,conv_1b,max_it_2b,conv_2b,nOrb,nC,nO,nV,nR,nS,eHF,
    ! Memory allocation 
 
   allocate(old_eh_Om(nS),old_ee_Om(nVV),old_hh_Om(nOO))
-  allocate(eh_rho(nOrb,nOrb,nS),ee_rho(nOrb,nOrb,nVV),hh_rho(nOrb,nOrb,nOO))
+  allocate(eh_rho(nOrb,nOrb,nS+nS),ee_rho(nOrb,nOrb,nVV),hh_rho(nOrb,nOrb,nOO))
   allocate(old_eh_Phi(nOrb,nOrb,nOrb,nOrb),old_pp_Phi(nOrb,nOrb,nOrb,nOrb))
 
 ! Initialization
@@ -327,7 +327,7 @@ subroutine GParquet(max_it_1b,conv_1b,max_it_2b,conv_2b,nOrb,nC,nO,nV,nR,nS,eHF,
       deallocate(eh_rho,ee_rho,hh_rho)
       ! TODO Once we will compute the blocks of kernel starting from the 4-tensors we can move the freeing up
       ! Memory allocation
-      allocate(eh_rho(nOrb,nOrb,nS))
+      allocate(eh_rho(nOrb,nOrb,nS+nS))
       allocate(ee_rho(nOrb,nOrb,nVV),hh_rho(nOrb,nOrb,nOO))
 
       ! Build singlet eh integrals
