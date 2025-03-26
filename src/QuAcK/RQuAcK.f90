@@ -4,8 +4,9 @@ subroutine RQuAcK(working_dir,use_gpu,dotest,doRHF,doROHF,docRHF,               
                   doG0F2,doevGF2,doqsGF2,doufG0F02,doG0F3,doevGF3,doG0W0,doevGW,doqsGW,doufG0W0,doufGW,                  &
                   doG0T0pp,doevGTpp,doqsGTpp,doufG0T0pp,doG0T0eh,doevGTeh,doqsGTeh,                                      & 
                   docG0W0,docG0F2,                                                                                       & 
+                  doCAP,                                                                                                 & 
                   nNuc,nBas,nOrb,nC,nO,nV,nR,ENuc,ZNuc,rNuc,                                                             &
-                  S,T,V,Hc,CAP_AO,X,dipole_int_AO,maxSCF_HF,max_diis_HF,thresh_HF,level_shift,                   &
+                  S,T,V,Hc,CAP_AO,X,dipole_int_AO,maxSCF_HF,max_diis_HF,thresh_HF,level_shift,                           &
                   guess_type,mix,reg_MP,maxSCF_CC,max_diis_CC,thresh_CC,singlet,triplet,TDA,                             &
                   maxSCF_GF,max_diis_GF,renorm_GF,thresh_GF,lin_GF,reg_GF,eta_GF,maxSCF_GW,max_diis_GW,thresh_GW,        & 
                   TDA_W,lin_GW,reg_GW,eta_GW,maxSCF_GT,max_diis_GT,thresh_GT,TDA_T,lin_GT,reg_GT,eta_GT,                 & 
@@ -35,6 +36,7 @@ subroutine RQuAcK(working_dir,use_gpu,dotest,doRHF,doROHF,docRHF,               
   logical,intent(in)            :: doG0T0pp,doevGTpp,doqsGTpp,doufG0T0pp
   logical,intent(in)            :: doG0T0eh,doevGTeh,doqsGTeh
   logical,intent(in)            :: docG0W0,docG0F2
+  logical,intent(in)            :: doCAP
 
   integer,intent(in)            :: nNuc,nBas,nOrb
   integer,intent(in)            :: nC
@@ -126,18 +128,21 @@ subroutine RQuAcK(working_dir,use_gpu,dotest,doRHF,doROHF,docRHF,               
 !-------------------!
 ! Memory allocation !
 !-------------------!
-  allocate(eHF(nOrb))
-  allocate(cHF(nBas,nOrb))
-  allocate(PHF(nBas,nBas))
-  allocate(complex_eHF(nOrb))
-  allocate(complex_cHF(nBas,nOrb))
-  allocate(complex_PHF(nBas,nBas))
-  allocate(complex_FHF(nBas,nBas))
+  if (docRHF) then
+    allocate(complex_PHF(nBas,nBas))
+    allocate(complex_eHF(nOrb))
+    allocate(complex_cHF(nBas,nOrb))
+    allocate(complex_FHF(nBas,nBas))
+  else 
+    allocate(PHF(nBas,nBas))
+    allocate(eHF(nOrb))
+    allocate(cHF(nBas,nOrb))
+    allocate(FHF(nBas,nBas))
+  end if
   allocate(ERI_AO(nBas,nBas,nBas,nBas))
-  allocate(FHF(nBas,nBas))
-  allocate(CAP_MO(nOrb,nOrb))
   allocate(dipole_int_MO(nOrb,nOrb,ncart))
   allocate(ERI_MO(nOrb,nOrb,nOrb,nOrb))
+  if (doCAP) allocate(CAP_MO(nOrb,nOrb))
   call wall_time(start_int)
   call read_2e_integrals(working_dir,nBas,ERI_AO)
   call wall_time(end_int)
@@ -198,21 +203,38 @@ subroutine RQuAcK(working_dir,use_gpu,dotest,doRHF,doROHF,docRHF,               
   write(*,*) 'AO to MO transformation... Please be patient'
   write(*,*)
 
-  ! Read and transform dipole-related integrals
-  
-  do ixyz=1,ncart
-    call AOtoMO(nBas,nOrb,cHF,dipole_int_AO(1,1,ixyz),dipole_int_MO(1,1,ixyz))
-  end do 
+  if (docRHF) then 
 
-  ! 4-index transform 
-  
-  call AOtoMO_ERI_RHF(nBas,nOrb,cHF,ERI_AO,ERI_MO)
-  write(*,*) docG0F2
-  if (docG0W0 .or. docG0F2) then
-    call AOtoMO(nBas,nOrb,cHF,CAP_AO,CAP_MO) ! Add the different cases for cGW methods when implemented
+!    ! Transform from to complex MOs
+!
+!    ! Read and transform dipole-related integrals
+!    do ixyz=1,ncart
+!      call AOtoMO(nBas,nOrb,complex_cHF,dipole_int_AO(1,1,ixyz),dipole_int_MO(1,1,ixyz))
+!    end do
+!    ! 4-index transform 
+!    call AOtoMO_ERI_RHF(nBas,nOrb,complex_cHF,ERI_AO,ERI_MO)
+!    ! Transform CAP integrals
+!    if (doCAP) call AOtoMO(nBas,nOrb,complex_cHF,CAP_AO,CAP_MO)
+  else
+
+    ! Transform to real MOs
+
+    ! Read and transform dipole-related integrals
+    do ixyz=1,ncart
+      call AOtoMO(nBas,nOrb,cHF,dipole_int_AO(1,1,ixyz),dipole_int_MO(1,1,ixyz))
+    end do
+    ! 4-index transform 
+    call AOtoMO_ERI_RHF(nBas,nOrb,cHF,ERI_AO,ERI_MO)
+    ! Transform CAP integrals
+    if (doCAP) call AOtoMO(nBas,nOrb,cHF,CAP_AO,CAP_MO)
   end if
   call wall_time(end_AOtoMO)
 
+  ! Transform CAP integrals
+
+  if (doCAP .and. (.not. docRHF)) then
+     write(*,*) "blub 1"
+  end if
   t_AOtoMO = end_AOtoMO - start_AOtoMO
   write(*,'(A65,1X,F9.3,A8)') 'Total wall time for AO to MO transformation = ',t_AOtoMO,' seconds'
   write(*,*)
@@ -397,15 +419,15 @@ doGF = doG0F2 .or. doevGF2 .or. doqsGF2 .or. doufG0F02 .or. doG0F3 .or. doevGF3 
 
 ! Memory deallocation
 
-  deallocate(eHF)
-  deallocate(cHF)
-  deallocate(PHF)
-  deallocate(FHF)
+  if (allocated(eHF)) deallocate(eHF)
+  if (allocated(cHF)) deallocate(cHF)
+  if (allocated(PHF)) deallocate(PHF)
+  if (allocated(FHF)) deallocate(FHF)
   deallocate(dipole_int_MO)
   deallocate(ERI_MO)
   deallocate(ERI_AO)
-  deallocate(CAP_MO)
-  deallocate(complex_eHF)
-  deallocate(complex_cHF)
-  deallocate(complex_PHF)
+  if (allocated(CAP_MO)) deallocate(CAP_MO)
+  if (allocated(complex_eHF)) deallocate(complex_eHF)
+  if (allocated(complex_cHF)) deallocate(complex_cHF)
+  if (allocated(complex_PHF)) deallocate(complex_PHF)
 end subroutine

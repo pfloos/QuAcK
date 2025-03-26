@@ -99,9 +99,8 @@ subroutine cRGW_QP_graph(doSRG,eta,flow,nBas,nC,nO,nV,nR,nS,eHF,e_cap,Om,rho,Re_
 
     end if
           
-  end do
-
   write(*,*)'-----------------------------------------------------'
+  end do
   write(*,*)
 
 end subroutine 

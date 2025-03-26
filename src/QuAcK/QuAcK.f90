@@ -15,6 +15,7 @@ program QuAcK
   logical                       :: doG0W0,doevGW,doqsGW,doufG0W0,doufGW
   logical                       :: docG0W0,docG0F2
   logical                       :: doG0T0pp,doevGTpp,doqsGTpp,doufG0T0pp,doG0T0eh,doevGTeh,doqsGTeh
+  logical                       :: doCAP
 
   integer                       :: nNuc
   integer                       :: nBas
@@ -129,6 +130,7 @@ program QuAcK
                     doG0T0eh,doevGTeh,doqsGTeh,            &
                     docG0W0,docG0F2,                       &
                     doRtest,doUtest,doGtest)
+  doCAP = docG0W0 .or. docG0F2 .or. docRHF ! Add different cases if they need CAP
 
 !--------------------------!
 ! Read options for methods !
@@ -187,15 +189,17 @@ program QuAcK
   allocate(V(nBas,nBas))
   allocate(Hc(nBas,nBas))
   allocate(dipole_int_AO(nBas,nBas,ncart))
-  allocate(CAP(nBas,nBas))
+  if (doCAP) allocate(CAP(nBas,nBas))
 ! Read integrals
 
   call wall_time(start_int)
 
   call read_1e_integrals(working_dir,nBas,S,T,V,Hc)
   call read_eta_cap(working_dir,eta_cap)
-  if (docRHF .or. docG0W0 .or. docG0F2) call read_CAP_integrals(nBas,CAP) ! Add different cases if needed
-  CAP(:,:) = -eta_cap*CAP(:,:)
+  if (doCAP) then
+    call read_CAP_integrals(nBas,CAP)
+    CAP(:,:) = -eta_cap*CAP(:,:)
+  end if
   call read_dipole_integrals(working_dir,nBas,dipole_int_AO)
   call wall_time(end_int)
 
@@ -259,8 +263,9 @@ program QuAcK
                   doG0F2,doevGF2,doqsGF2,doufG0F02,doG0F3,doevGF3,doG0W0,doevGW,doqsGW,doufG0W0,doufGW,                   &
                   doG0T0pp,doevGTpp,doqsGTpp,doufG0T0pp,doG0T0eh,doevGTeh,doqsGTeh,                                       &
                   docG0W0,docG0F2,                                                                                        &
+                  doCAP,                                                                                                  &
                   nNuc,nBas,nOrb,nC,nO,nV,nR,ENuc,ZNuc,rNuc,                                                              &
-                  S,T,V,Hc,CAP,X,dipole_int_AO,maxSCF_HF,max_diis_HF,thresh_HF,level_shift,                       &
+                  S,T,V,Hc,CAP,X,dipole_int_AO,maxSCF_HF,max_diis_HF,thresh_HF,level_shift,                               &
                   guess_type,mix,reg_MP,maxSCF_CC,max_diis_CC,thresh_CC,spin_conserved,spin_flip,TDA,                     &
                   maxSCF_GF,max_diis_GF,renorm_GF,thresh_GF,lin_GF,reg_GF,eta_GF,maxSCF_GW,max_diis_GW,thresh_GW,         &
                   TDA_W,lin_GW,reg_GW,eta_GW,maxSCF_GT,max_diis_GT,thresh_GT,TDA_T,lin_GT,reg_GT,eta_GT,                  &

@@ -40,20 +40,17 @@ subroutine print_cRG0W0(nBas,nO,eHF,ENuc,ERHF,Re_SigC,Im_SigC,Re_Z,Im_Z,Re_eGW,I
   write(*,*)'-------------------------------------------------------------------------------'
   write(*,'(1X,A1,1X,A3,1X,A1,1X,A15,1X,A1,1X,A15,1X,A1,1X,A15,1X,A1,1X,A15,1X,A1,1X)') &
             '|','#','|','e_HF (eV)','|','Re(Sig_GW) (eV)','|','Re(Z)','|','Re(e_GW) (eV)','|'
-  write(*,*)'-------------------------------------------------------------------------------'
-  do p=1,nBas
-    write(*,'(1X,A1,1X,I3,1X,A1,1X,F15.6,1X,A1,1X,F15.6,1X,A1,1X,F15.6,1X,A1,1X,F15.6,1X,A1,1X)') &
-    '|',p,'|',eHF(p)*HaToeV,'|',Re_SigC(p)*HaToeV,'|',Re_Z(p),'|',Re_eGW(p)*HaToeV,'|'
-  end do
-  write(*,*)
-  write(*,*)'-------------------------------------------------------------------------------'
   write(*,'(1X,A1,1X,A3,1X,A1,1X,A15,1X,A1,1X,A15,1X,A1,1X,A15,1X,A1,1X,A15,1X,A1,1X)') &
             '|','#','|','CAP (eV)','|','Im(Sig_GW) (eV)','|','Im(Z)','|','Im(e_GW) (eV)','|'
   write(*,*)'-------------------------------------------------------------------------------'
   do p=1,nBas
     write(*,'(1X,A1,1X,I3,1X,A1,1X,F15.6,1X,A1,1X,F15.6,1X,A1,1X,F15.6,1X,A1,1X,F15.6,1X,A1,1X)') &
+    '|',p,'|',eHF(p)*HaToeV,'|',Re_SigC(p)*HaToeV,'|',Re_Z(p),'|',Re_eGW(p)*HaToeV,'|'
+    write(*,'(1X,A1,1X,I3,1X,A1,1X,F15.6,1X,A1,1X,F15.6,1X,A1,1X,F15.6,1X,A1,1X,F15.6,1X,A1,1X)') &
     '|',p,'|',CAP(p,p)*HaToeV,'|',Im_SigC(p)*HaToeV,'|',Im_Z(p),'|',Im_eGW(p)*HaToeV,'|'
+  write(*,*)'-------------------------------------------------------------------------------'
   end do
+  write(*,*)
   write(*,*)'---------------------------------------------------------------------------------------------------'
   write(*,'(2X,A60,F15.6,A5,F15.6,A3)') 'cG0W0@RHF HOMO      energy = ',Re_eHOMO*HaToeV,' + i*',Im_eHOMO*HaToeV,' eV'
   write(*,'(2X,A60,F15.6,A5,F15.6,A3)') 'cG0W0@RHF LUMO      energy = ',Re_eLUMO*HaToeV,' + i*',Im_eLUMO*HaToeV,' eV'

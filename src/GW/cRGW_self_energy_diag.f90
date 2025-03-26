@@ -1,4 +1,4 @@
-subroutine cRGW_self_energy_diag(eta,nBas,nOrb,nC,nO,nV,nR,nS,e,Om,rho,EcGM,Re_Sig,Im_Sig,Re_Z,Im_Z,CAP)
+subroutine cRGW_self_energy_diag(eta,nBas,nOrb,nC,nO,nV,nR,nS,e,Om,rho,EcGM,Re_Sig,Im_Sig,Re_Z,Im_Z,e_cap)
 
 ! Compute diagonal of the correlation part of the self-energy and the renormalization factor
 
@@ -18,7 +18,7 @@ subroutine cRGW_self_energy_diag(eta,nBas,nOrb,nC,nO,nV,nR,nS,e,Om,rho,EcGM,Re_S
   double precision,intent(in)   :: e(nBas)
   double precision,intent(in)   :: Om(nS)
   double precision,intent(in)   :: rho(nBas,nBas,nS)
-  double precision,intent(in)   :: CAP(nOrb,nOrb)
+  double precision,intent(in)   :: e_cap(nBas)
 
 ! Local variables
 
@@ -52,7 +52,7 @@ subroutine cRGW_self_energy_diag(eta,nBas,nOrb,nC,nO,nV,nR,nS,e,Om,rho,EcGM,Re_S
     do i=nC+1,nO
       do m=1,nS
         eps = e(p) - e(i) + Om(m)
-        eta_tilde = eta  - CAP(p,p) + CAP(i,i) 
+        eta_tilde = eta  - e_cap(p) + e_cap(i) 
         num = 2d0*rho(p,i,m)**2
         Re_Sig(p) = Re_Sig(p) + num*eps/(eps**2 + eta_tilde**2)
         Im_Sig(p) = Im_Sig(p) + num*eta_tilde/(eps**2 + eta_tilde**2)
@@ -70,7 +70,7 @@ subroutine cRGW_self_energy_diag(eta,nBas,nOrb,nC,nO,nV,nR,nS,e,Om,rho,EcGM,Re_S
       do m=1,nS
 
         eps = e(p) - e(a) - Om(m)
-        eta_tilde = eta  + CAP(p,p) - CAP(a,a)
+        eta_tilde = eta  + e_cap(p) - e_cap(a)
         num = 2d0*rho(p,a,m)**2
         Re_Sig(p) = Re_Sig(p) + num*eps/(eps**2 + eta_tilde**2)
         Im_Sig(p) = Im_Sig(p) - num*eta_tilde/(eps**2 + eta_tilde**2)

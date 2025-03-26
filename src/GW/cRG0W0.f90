@@ -127,7 +127,7 @@ subroutine cRG0W0(dotest,doACFDT,exchange_kernel,doXBS,dophBSE,dophBSE2,TDA_W,TD
 !------------------------!
 ! Compute GW self-energy !
 !------------------------!
-  call cRGW_self_energy_diag(eta,nBas,nOrb,nC,nO,nV,nR,nS,eHF,Om,rho,EcGM,Re_SigC,Im_SigC,Re_Z,Im_Z,CAP)
+  call cRGW_self_energy_diag(eta,nBas,nOrb,nC,nO,nV,nR,nS,eHF,Om,rho,EcGM,Re_SigC,Im_SigC,Re_Z,Im_Z,e_cap)
 
 !-----------------------------------!
 ! Solve the quasi-particle equation !

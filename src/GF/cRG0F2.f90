@@ -64,7 +64,6 @@ subroutine cRG0F2(dotest,dophBSE,doppBSE,TDA,dBSE,dTDA,singlet,triplet,linearize
           Re_eGFlin(nOrb),Im_eGFlin(nOrb), Re_eGF(nOrb),Im_eGF(nOrb),e_CAP(nOrb))
   do p = 1, nOrb
         e_CAP(p) = CAP(p,p)
-        write(*,*) p, e_CAP(p)
   end do
   
 ! Frequency-dependent second-order contribution
