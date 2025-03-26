@@ -400,7 +400,6 @@ subroutine GParquet(max_it_1b,conv_1b,max_it_2b,conv_2b,nOrb,nC,nO,nV,nR,nS,eHF,
       ! DIIS extrapolation !
       !--------------------!
 
-
       write(*,*) '----------------------------------------'
       write(*,*) ' Two-body (kernel) convergence '
       write(*,*) '----------------------------------------'
