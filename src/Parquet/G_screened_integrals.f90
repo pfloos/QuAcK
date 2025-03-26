@@ -146,6 +146,7 @@ subroutine G_pp_screened_integral(nOrb,nC,nO,nR,nOO,nVV,ERI,eh_Phi,X1,Y1,rho1,X2
               end do
            end do
         end do
+        
      end do
   end do
 !  !$OMP END DO

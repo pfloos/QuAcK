@@ -9,8 +9,8 @@ subroutine GParquet(max_it_1b,conv_1b,max_it_2b,conv_2b,nOrb,nC,nO,nV,nR,nS,eHF,
 
   logical                       :: linearize = .true.
   logical                       :: TDA = .true.
-  logical                       :: print_phLR = .false.
-  logical                       :: print_ppLR = .false.
+  logical                       :: print_phLR = .true.
+  logical                       :: print_ppLR = .true.
 
 ! Input variables
 
@@ -203,8 +203,9 @@ subroutine GParquet(max_it_1b,conv_1b,max_it_2b,conv_2b,nOrb,nC,nO,nV,nR,nS,eHF,
         
       end if
       
-       Aph(:,:) = Aph(:,:) + eh_Gam_A(:,:)
-       Bph(:,:) = Bph(:,:) + eh_Gam_B(:,:)    
+      Aph(:,:) = Aph(:,:) + eh_Gam_A(:,:)
+      Bph(:,:) = Bph(:,:) + eh_Gam_B(:,:) 
+      
       
 
       call phGLR(TDA,nS,Aph,Bph,EcRPA,eh_Om,XpY,XmY)
@@ -258,9 +259,9 @@ subroutine GParquet(max_it_1b,conv_1b,max_it_2b,conv_2b,nOrb,nC,nO,nV,nR,nS,eHF,
 
       end if
                    
-      Bpp(:,:) = Bpp(:,:) + pp_Gam_B(:,:)
-      Cpp(:,:) = Cpp(:,:) + pp_Gam_C(:,:)
-      Dpp(:,:) = Dpp(:,:) + pp_Gam_D(:,:)
+      ! Bpp(:,:) = Bpp(:,:) + pp_Gam_B(:,:)
+      ! Cpp(:,:) = Cpp(:,:) + pp_Gam_C(:,:)
+      ! Dpp(:,:) = Dpp(:,:) + pp_Gam_D(:,:)
       
       call ppGLR(TDA,nOO,nVV,Bpp,Cpp,Dpp,ee_Om,X1,Y1,hh_Om,X2,Y2,EcRPA)
       call wall_time(end_t)

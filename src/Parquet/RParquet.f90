@@ -141,12 +141,12 @@ subroutine RParquet(max_it_1b,conv_1b,max_it_2b,conv_2b,nOrb,nC,nO,nV,nR,nS,eHF,
   hh_sing_rho(:,:,:) = 0d0
   hh_trip_rho(:,:,:) = 0d0
 
-  old_eh_sing_Om(:) = 1d0
-  old_eh_trip_Om(:) = 1d0
-  old_ee_sing_Om(:) = 1d0
-  old_ee_trip_Om(:) = 1d0
-  old_hh_sing_Om(:) = 1d0
-  old_hh_trip_Om(:) = 1d0
+  old_eh_sing_Om(:) = 0d0
+  old_eh_trip_Om(:) = 0d0
+  old_ee_sing_Om(:) = 0d0
+  old_ee_trip_Om(:) = 0d0
+  old_hh_sing_Om(:) = 0d0
+  old_hh_trip_Om(:) = 0d0
   
   old_eh_sing_Phi(:,:,:,:) = 0d0
   old_eh_trip_Phi(:,:,:,:) = 0d0
@@ -217,9 +217,11 @@ subroutine RParquet(max_it_1b,conv_1b,max_it_2b,conv_2b,nOrb,nC,nO,nV,nR,nS,eHF,
                           old_eh_sing_Phi,old_eh_trip_Phi,old_pp_sing_Phi,old_pp_trip_Phi, & 
                           eh_sing_Gam_B)
 
-      end if      
+      end if
+     
       Aph(:,:) = Aph(:,:) + eh_sing_Gam_A(:,:)
-      Bph(:,:) = Bph(:,:) + eh_sing_Gam_B(:,:)             
+      Bph(:,:) = Bph(:,:) + eh_sing_Gam_B(:,:)  
+      
 
       call phRLR(TDA,nS,Aph,Bph,EcRPA,eh_sing_Om,sing_XpY,sing_XmY)
 
@@ -262,11 +264,11 @@ subroutine RParquet(max_it_1b,conv_1b,max_it_2b,conv_2b,nOrb,nC,nO,nV,nR,nS,eHF,
 
       else
 
-        call R_eh_triplet_Gamma_A(nOrb,nC,nO,nV,nR,nS,                        &
+        call R_eh_triplet_Gamma_A(nOrb,nC,nO,nR,nS,                        &
              old_eh_sing_Phi,old_eh_trip_Phi,old_pp_sing_Phi,old_pp_trip_Phi, &
              eh_trip_Gam_A)
        
-        if(.not.TDA) call R_eh_triplet_Gamma_B(nOrb,nC,nO,nV,nR,nS,                        &
+        if(.not.TDA) call R_eh_triplet_Gamma_B(nOrb,nC,nO,nR,nS,                        &
                           old_eh_sing_Phi,old_eh_trip_Phi,old_pp_sing_Phi,old_pp_trip_Phi, & 
                           eh_trip_Gam_B)
 
@@ -328,9 +330,9 @@ subroutine RParquet(max_it_1b,conv_1b,max_it_2b,conv_2b,nOrb,nC,nO,nV,nR,nS,eHF,
 
       end if
                    
-      Bpp(:,:) = Bpp(:,:) + pp_sing_Gam_B(:,:)
-      Cpp(:,:) = Cpp(:,:) + pp_sing_Gam_C(:,:)
-      Dpp(:,:) = Dpp(:,:) + pp_sing_Gam_D(:,:)
+      ! Bpp(:,:) = Bpp(:,:) + pp_sing_Gam_B(:,:)
+      ! Cpp(:,:) = Cpp(:,:) + pp_sing_Gam_C(:,:)
+      ! Dpp(:,:) = Dpp(:,:) + pp_sing_Gam_D(:,:)
       
       call ppRLR(TDA,nOOs,nVVs,Bpp,Cpp,Dpp,ee_sing_Om,X1s,Y1s,hh_sing_Om,X2s,Y2s,EcRPA)
       call wall_time(end_t)
@@ -379,16 +381,16 @@ subroutine RParquet(max_it_1b,conv_1b,max_it_2b,conv_2b,nOrb,nC,nO,nV,nR,nS,eHF,
 
       else
 
-        if(.not.TDA) call R_pp_triplet_Gamma_B(nOrb,nC,nO,nR,nS,nOOt,nVVt,&
+        if(.not.TDA) call R_pp_triplet_Gamma_B(nOrb,nC,nO,nR,nOOt,nVVt,&
                                                            old_eh_sing_Phi,old_eh_trip_Phi,pp_trip_Gam_B)
-        call R_pp_triplet_Gamma_C(nOrb,nO,nR,nS,nVVt,old_eh_sing_Phi,old_eh_trip_Phi,pp_trip_Gam_C)
-        call R_pp_triplet_Gamma_D(nOrb,nC,nO,nS,nOOt,old_eh_sing_Phi,old_eh_trip_Phi,pp_trip_Gam_D)
+        call R_pp_triplet_Gamma_C(nOrb,nO,nR,nVVt,old_eh_sing_Phi,old_eh_trip_Phi,pp_trip_Gam_C)
+        call R_pp_triplet_Gamma_D(nOrb,nC,nO,nOOt,old_eh_sing_Phi,old_eh_trip_Phi,pp_trip_Gam_D)
 
       end if
                    
-      Bpp(:,:) = Bpp(:,:) + pp_trip_Gam_B(:,:)
-      Cpp(:,:) = Cpp(:,:) + pp_trip_Gam_C(:,:)
-      Dpp(:,:) = Dpp(:,:) + pp_trip_Gam_D(:,:)
+      ! Bpp(:,:) = Bpp(:,:) + pp_trip_Gam_B(:,:)
+      ! Cpp(:,:) = Cpp(:,:) + pp_trip_Gam_C(:,:)
+      ! Dpp(:,:) = Dpp(:,:) + pp_trip_Gam_D(:,:)
       
       call ppRLR(TDA,nOOt,nVVt,Bpp,Cpp,Dpp,ee_trip_Om,X1t,Y1t,hh_trip_Om,X2t,Y2t,EcRPA)
 

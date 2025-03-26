@@ -1,10 +1,10 @@
-subroutine R_pp_triplet_Gamma_D(nOrb,nC,nO,nS,nOOt,eh_sing_Phi,eh_trip_Phi,pp_trip_Gam_D)
+subroutine R_pp_triplet_Gamma_D(nOrb,nC,nO,nOOt,eh_sing_Phi,eh_trip_Phi,pp_trip_Gam_D)
 
 ! Compute irreducible vertex in the triplet pp channel
   implicit none
 
 ! Input variables
-  integer,intent(in)            :: nOrb,nC,nO,nS,nOOt
+  integer,intent(in)            :: nOrb,nC,nO,nOOt
   double precision,intent(in)   :: eh_sing_Phi(nOrb,nOrb,nOrb,nOrb)
   double precision,intent(in)   :: eh_trip_Phi(nOrb,nOrb,nOrb,nOrb)
 
@@ -34,20 +34,9 @@ subroutine R_pp_triplet_Gamma_D(nOrb,nC,nO,nS,nOOt,eh_sing_Phi,eh_trip_Phi,pp_tr
            do l=k+1,nO
               kl = kl +1
               
-              do n=1,nS
-                 
-                 ! pp_trip_Gam_D(ij,kl) = pp_trip_Gam_D(ij,kl) &
-                 !      - 0.5d0 * eh_sing_rho(k,i,n)*eh_sing_rho(j,l,n)/eh_sing_Om(n) &
-                 !      - 0.5d0 * eh_sing_rho(i,k,n)*eh_sing_rho(l,j,n)/eh_sing_Om(n) & 
-                 !      - 0.5d0 * eh_trip_rho(k,i,n)*eh_trip_rho(j,l,n)/eh_trip_Om(n) & 
-                 !      - 0.5d0 * eh_trip_rho(i,k,n)*eh_trip_rho(l,j,n)/eh_trip_Om(n) &
-                 !      + 0.5d0 * eh_sing_rho(l,i,n)*eh_sing_rho(j,k,n)/eh_sing_Om(n) &
-                 !      + 0.5d0 * eh_sing_rho(i,l,n)*eh_sing_rho(k,j,n)/eh_sing_Om(n) &
-                 !      + 0.5d0 * eh_trip_rho(l,i,n)*eh_trip_rho(j,k,n)/eh_trip_Om(n) &
-                 !      + 0.5d0 * eh_trip_rho(i,l,n)*eh_trip_rho(k,j,n)/eh_trip_Om(n) 
-                 
-              end do
-              
+              pp_trip_Gam_D(ij,kl) = 0.5d0*eh_sing_Phi(i,j,k,l) + 0.5d0*eh_trip_Phi(i,j,k,l) &
+                                   - 0.5d0*eh_sing_Phi(i,j,l,k) - 0.5d0*eh_trip_Phi(i,j,l,k)
+
            end do
         end do
      end do
@@ -57,13 +46,13 @@ subroutine R_pp_triplet_Gamma_D(nOrb,nC,nO,nS,nOOt,eh_sing_Phi,eh_trip_Phi,pp_tr
 
 end subroutine 
 
-subroutine R_pp_triplet_Gamma_C(nOrb,nO,nR,nS,nVVt,eh_sing_Phi,eh_trip_Phi,pp_trip_Gam_C)
+subroutine R_pp_triplet_Gamma_C(nOrb,nO,nR,nVVt,eh_sing_Phi,eh_trip_Phi,pp_trip_Gam_C)
 
 ! Compute irreducible vertex in the triplet pp channel
   implicit none
 
 ! Input variables
-  integer,intent(in)            :: nOrb,nO,nR,nS,nVVt
+  integer,intent(in)            :: nOrb,nO,nR,nVVt
   double precision,intent(in)   :: eh_sing_Phi(nOrb,nOrb,nOrb,nOrb)
   double precision,intent(in)   :: eh_trip_Phi(nOrb,nOrb,nOrb,nOrb)
 
@@ -92,23 +81,13 @@ subroutine R_pp_triplet_Gamma_C(nOrb,nO,nR,nS,nVVt,eh_sing_Phi,eh_trip_Phi,pp_tr
         do c=nO+1,nOrb - nR
            do d=c+1,nOrb - nR
               cd = cd +1
-              
-              do n=1,nS
-                 
-                 ! pp_trip_Gam_C(ab,cd) = pp_trip_Gam_C(ab,cd) &
-                 !      - 0.5d0 * eh_sing_rho(c,a,n)*eh_sing_rho(b,d,n)/eh_sing_Om(n) &
-                 !      - 0.5d0 * eh_sing_rho(a,c,n)*eh_sing_rho(d,b,n)/eh_sing_Om(n) &  
-                 !      - 0.5d0 * eh_trip_rho(c,a,n)*eh_trip_rho(b,d,n)/eh_trip_Om(n) &
-                 !      - 0.5d0 * eh_trip_rho(a,c,n)*eh_trip_rho(d,b,n)/eh_trip_Om(n) &
-                 !      + 0.5d0 * eh_sing_rho(d,a,n)*eh_sing_rho(b,c,n)/eh_sing_Om(n) &
-                 !      + 0.5d0 * eh_sing_rho(a,d,n)*eh_sing_rho(c,b,n)/eh_sing_Om(n) &
-                 !      + 0.5d0 * eh_trip_rho(d,a,n)*eh_trip_rho(b,c,n)/eh_trip_Om(n) &
-                 !      + 0.5d0 * eh_trip_rho(a,d,n)*eh_trip_rho(c,b,n)/eh_trip_Om(n)
-                 
-              end do
+
+              pp_trip_Gam_C(ab,cd) = 0.5d0*eh_sing_Phi(a,b,c,d) + 0.5d0*eh_trip_Phi(a,b,c,d) &
+                                   - 0.5d0*eh_sing_Phi(a,b,d,c) - 0.5d0*eh_trip_Phi(a,b,d,c)
               
            end do
         end do
+        
      end do
   end do
 !  !$OMP END DO
@@ -116,13 +95,13 @@ subroutine R_pp_triplet_Gamma_C(nOrb,nO,nR,nS,nVVt,eh_sing_Phi,eh_trip_Phi,pp_tr
 
 end subroutine
 
-subroutine R_pp_triplet_Gamma_B(nOrb,nC,nO,nR,nS,nOOt,nVVt,eh_sing_Phi,eh_trip_Phi,pp_trip_Gam_B)
+subroutine R_pp_triplet_Gamma_B(nOrb,nC,nO,nR,nOOt,nVVt,eh_sing_Phi,eh_trip_Phi,pp_trip_Gam_B)
 
 ! Compute irreducible vertex in the triplet pp channel
   implicit none
 
 ! Input variables
-  integer,intent(in)            :: nOrb,nC,nO,nR,nS,nOOt,nVVt
+  integer,intent(in)            :: nOrb,nC,nO,nR,nOOt,nVVt
   double precision,intent(in)   :: eh_sing_Phi(nOrb,nOrb,nOrb,nOrb)
   double precision,intent(in)   :: eh_trip_Phi(nOrb,nOrb,nOrb,nOrb)
 
@@ -152,19 +131,8 @@ subroutine R_pp_triplet_Gamma_B(nOrb,nC,nO,nR,nS,nOOt,nVVt,eh_sing_Phi,eh_trip_P
            do j=i+1,nO
               ij = ij +1
               
-              do n=1,nS
-                 
-                 ! pp_trip_Gam_B(ab,ij) = pp_trip_Gam_B(ab,ij) &
-                 !      - 0.5d0 * eh_sing_rho(i,a,n)*eh_sing_rho(b,j,n)/eh_sing_Om(n) &
-                 !      - 0.5d0 * eh_sing_rho(a,i,n)*eh_sing_rho(j,b,n)/eh_sing_Om(n) & 
-                 !      - 0.5d0 * eh_trip_rho(i,a,n)*eh_trip_rho(b,j,n)/eh_trip_Om(n) & 
-                 !      - 0.5d0 * eh_trip_rho(a,i,n)*eh_trip_rho(j,b,n)/eh_trip_Om(n) &
-                 !      + 0.5d0 * eh_sing_rho(j,a,n)*eh_sing_rho(b,i,n)/eh_sing_Om(n) &
-                 !      + 0.5d0 * eh_sing_rho(a,j,n)*eh_sing_rho(i,b,n)/eh_sing_Om(n) &
-                 !      + 0.5d0 * eh_trip_rho(j,a,n)*eh_trip_rho(b,i,n)/eh_trip_Om(n) &
-                 !      + 0.5d0 * eh_trip_rho(a,j,n)*eh_trip_rho(i,b,n)/eh_trip_Om(n)
-                 
-              end do
+              pp_trip_Gam_B(ab,ij) = 0.5d0*eh_sing_Phi(a,b,i,j) + 0.5d0*eh_trip_Phi(a,b,i,j) &
+                                   - 0.5d0*eh_sing_Phi(a,b,j,i) - 0.5d0*eh_trip_Phi(a,b,j,i)
               
            end do
         end do

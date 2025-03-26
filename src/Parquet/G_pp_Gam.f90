@@ -100,8 +100,6 @@ subroutine G_pp_Gamma_B(nOrb,nC,nO,nR,nOO,nVV,eh_Phi,pp_Gam_B)
 ! Local variables
   integer                       :: a,b,i,j
   integer                       :: ab,ij
-  integer                       :: n
-  double precision,external     :: Kronecker_delta
 
 ! Output variables
   double precision, intent(out) :: pp_Gam_B(nVV,nOO)

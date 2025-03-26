@@ -1,17 +1,17 @@
-subroutine R_pp_singlet_Gamma_D(nOrb,nC,nO,nS,nOOs,eh_sing_Phi,eh_trip_Phi,pp_sing_Gam_D)
+subroutine R_pp_singlet_Gamma_D(nOrb,nC,nO,nOOs,eh_sing_Phi,eh_trip_Phi,pp_sing_Gam_D)
 
 ! Compute irreducible vertex in the triplet pp channel
   implicit none
 
 ! Input variables
-  integer,intent(in)            :: nOrb,nC,nO,nS,nOOs
+  integer,intent(in)            :: nOrb,nC,nO,nOOs
   double precision,intent(in)   :: eh_sing_Phi(nOrb,nOrb,nOrb,nOrb)
   double precision,intent(in)   :: eh_trip_Phi(nOrb,nOrb,nOrb,nOrb)
 
 ! Local variables
   integer                       :: i,j,k,l
   integer                       :: ij,kl
-  integer                       :: n
+  double precision,external     :: Kronecker_delta
 
 ! Output variables
   double precision, intent(out) :: pp_sing_Gam_D(nOOs,nOOs)
@@ -34,19 +34,10 @@ subroutine R_pp_singlet_Gamma_D(nOrb,nC,nO,nS,nOOs,eh_sing_Phi,eh_trip_Phi,pp_si
            do l=k,nO
               kl = kl +1
               
-              ! do n=1,nS
-              !    pp_sing_Gam_D(ij,kl) = pp_sing_Gam_D(ij,kl) &
-              !         - 0.5d0 * eh_sing_rho(k,i,n)*eh_sing_rho(j,l,n)/eh_sing_Om(n) &
-              !         - 0.5d0 * eh_sing_rho(i,k,n)*eh_sing_rho(l,j,n)/eh_sing_Om(n) & 
-              !         + 1.5d0 * eh_trip_rho(k,i,n)*eh_trip_rho(j,l,n)/eh_trip_Om(n) &
-              !         + 1.5d0 * eh_trip_rho(i,k,n)*eh_trip_rho(l,j,n)/eh_trip_Om(n) &
-              !         - 0.5d0 * eh_sing_rho(l,i,n)*eh_sing_rho(j,k,n)/eh_sing_Om(n) &
-              !         - 0.5d0 * eh_sing_rho(i,l,n)*eh_sing_rho(k,j,n)/eh_sing_Om(n) &
-              !         + 1.5d0 * eh_trip_rho(l,i,n)*eh_trip_rho(j,k,n)/eh_trip_Om(n) &
-              !         + 1.5d0 * eh_trip_rho(i,l,n)*eh_trip_rho(k,j,n)/eh_trip_Om(n)               
-              ! end do
+              pp_sing_Gam_D(ij,kl) = 0.5d0*eh_sing_Phi(i,j,k,l) - 1.5d0*eh_trip_Phi(i,j,k,l) &
+                                   - 1.5d0*eh_sing_Phi(i,j,l,k) + 0.5d0*eh_trip_Phi(i,j,l,k)
 
-              ! pp_sing_Gam_D(ij,kl) = pp_sing_Gam_D(ij,kl)/sqrt((1d0 + Kronecker_delta(i,j))*(1d0 + Kronecker_delta(k,l)))
+              pp_sing_Gam_D(ij,kl) = pp_sing_Gam_D(ij,kl)/sqrt((1d0 + Kronecker_delta(i,j))*(1d0 + Kronecker_delta(k,l)))
               
            end do
         end do
@@ -57,20 +48,20 @@ subroutine R_pp_singlet_Gamma_D(nOrb,nC,nO,nS,nOOs,eh_sing_Phi,eh_trip_Phi,pp_si
 
 end subroutine 
 
-subroutine R_pp_singlet_Gamma_C(nOrb,nO,nR,nS,nVVs,eh_sing_Phi,eh_trip_Phi,pp_sing_Gam_C)
+subroutine R_pp_singlet_Gamma_C(nOrb,nO,nR,nVVs,eh_sing_Phi,eh_trip_Phi,pp_sing_Gam_C)
 
 ! Compute irreducible vertex in the triplet pp channel
   implicit none
 
 ! Input variables
-  integer,intent(in)            :: nOrb,nO,nR,nS,nVVs
+  integer,intent(in)            :: nOrb,nO,nR,nVVs
   double precision,intent(in)   :: eh_sing_Phi(nOrb,nOrb,nOrb,nOrb)
   double precision,intent(in)   :: eh_trip_Phi(nOrb,nOrb,nOrb,nOrb)
 
 ! Local variables
   integer                       :: a,b,c,d
   integer                       :: ab,cd
-  integer                       :: n
+  double precision,external     :: Kronecker_delta
 
 ! Output variables
   double precision, intent(out) :: pp_sing_Gam_C(nVVs,nVVs)
@@ -93,19 +84,11 @@ subroutine R_pp_singlet_Gamma_C(nOrb,nO,nR,nS,nVVs,eh_sing_Phi,eh_trip_Phi,pp_si
            do d=c,nOrb - nR
               cd = cd +1
               
-              ! do n=1,nS
-              !    pp_sing_Gam_C(ab,cd) = pp_sing_Gam_C(ab,cd) &
-              !         - 0.5d0 * eh_sing_rho(c,a,n)*eh_sing_rho(b,d,n)/eh_sing_Om(n) &
-              !         - 0.5d0 * eh_sing_rho(a,c,n)*eh_sing_rho(d,b,n)/eh_sing_Om(n) & 
-              !         + 1.5d0 * eh_trip_rho(c,a,n)*eh_trip_rho(b,d,n)/eh_trip_Om(n) & 
-              !         + 1.5d0 * eh_trip_rho(a,c,n)*eh_trip_rho(d,b,n)/eh_trip_Om(n) &
-              !         - 0.5d0 * eh_sing_rho(d,a,n)*eh_sing_rho(b,c,n)/eh_sing_Om(n) &
-              !         - 0.5d0 * eh_sing_rho(a,d,n)*eh_sing_rho(c,b,n)/eh_sing_Om(n) &
-              !         + 1.5d0 * eh_trip_rho(d,a,n)*eh_trip_rho(b,c,n)/eh_trip_Om(n) &
-              !         + 1.5d0 * eh_trip_rho(a,d,n)*eh_trip_rho(c,b,n)/eh_trip_Om(n)              
-              ! end do
 
-              ! pp_sing_Gam_C(ab,cd) = pp_sing_Gam_C(ab,cd)/sqrt((1d0 + Kronecker_delta(a,b))*(1d0 + Kronecker_delta(c,d)))
+              pp_sing_Gam_C(ab,cd) = 0.5d0*eh_sing_Phi(a,b,c,d) - 1.5d0*eh_trip_Phi(a,b,c,d) &
+                                   - 1.5d0*eh_sing_Phi(a,b,d,c) + 0.5d0*eh_trip_Phi(a,b,d,c)
+
+              pp_sing_Gam_C(ab,cd) = pp_sing_Gam_C(ab,cd)/sqrt((1d0 + Kronecker_delta(a,b))*(1d0 + Kronecker_delta(c,d)))
               
            end do
         end do
@@ -116,20 +99,20 @@ subroutine R_pp_singlet_Gamma_C(nOrb,nO,nR,nS,nVVs,eh_sing_Phi,eh_trip_Phi,pp_si
 
 end subroutine
 
-subroutine R_pp_singlet_Gamma_B(nOrb,nC,nO,nR,nS,nOOs,nVVs,eh_sing_Phi,eh_trip_Phi,pp_sing_Gam_B)
+subroutine R_pp_singlet_Gamma_B(nOrb,nC,nO,nR,nOOs,nVVs,eh_sing_Phi,eh_trip_Phi,pp_sing_Gam_B)
 
 ! Compute irreducible vertex in the triplet pp channel
   implicit none
 
 ! Input variables
-  integer,intent(in)            :: nOrb,nC,nO,nR,nS,nOOs,nVVs
+  integer,intent(in)            :: nOrb,nC,nO,nR,nOOs,nVVs
   double precision,intent(in)   :: eh_sing_Phi(nOrb,nOrb,nOrb,nOrb)
   double precision,intent(in)   :: eh_trip_Phi(nOrb,nOrb,nOrb,nOrb)
 
 ! Local variables
   integer                       :: a,b,i,j
   integer                       :: ab,ij
-  integer                       :: n
+  double precision,external     :: Kronecker_delta
 
 ! Output variables
   double precision, intent(out) :: pp_sing_Gam_B(nVVs,nOOs)
@@ -152,19 +135,10 @@ subroutine R_pp_singlet_Gamma_B(nOrb,nC,nO,nR,nS,nOOs,nVVs,eh_sing_Phi,eh_trip_P
            do j=i,nO
               ij = ij +1
               
-              ! do n=1,nS
-              !    pp_sing_Gam_B(ab,ij) = pp_sing_Gam_B(ab,ij) &
-              !         - 0.5d0 * eh_sing_rho(i,a,n)*eh_sing_rho(b,j,n)/eh_sing_Om(n) &
-              !         - 0.5d0 * eh_sing_rho(a,i,n)*eh_sing_rho(j,b,n)/eh_sing_Om(n) & 
-              !         + 1.5d0 * eh_trip_rho(i,a,n)*eh_trip_rho(b,j,n)/eh_trip_Om(n) & 
-              !         + 1.5d0 * eh_trip_rho(a,i,n)*eh_trip_rho(j,b,n)/eh_trip_Om(n) &
-              !         - 0.5d0 * eh_sing_rho(j,a,n)*eh_sing_rho(b,i,n)/eh_sing_Om(n) &
-              !         - 0.5d0 * eh_sing_rho(a,j,n)*eh_sing_rho(i,b,n)/eh_sing_Om(n) &
-              !         + 1.5d0 * eh_trip_rho(j,a,n)*eh_trip_rho(b,i,n)/eh_trip_Om(n) &
-              !         + 1.5d0 * eh_trip_rho(a,j,n)*eh_trip_rho(i,b,n)/eh_trip_Om(n)                              
-              ! end do
+              pp_sing_Gam_B(ab,ij) = 0.5d0*eh_sing_Phi(a,b,i,j) - 1.5d0*eh_trip_Phi(a,b,i,j) &
+                                   - 1.5d0*eh_sing_Phi(a,b,j,i) + 0.5d0*eh_trip_Phi(a,b,j,i)
 
-              ! pp_sing_Gam_B(ab,ij) = pp_sing_Gam_B(ab,ij)/sqrt((1d0 + Kronecker_delta(a,b))*(1d0 + Kronecker_delta(i,j)))
+              pp_sing_Gam_B(ab,ij) = pp_sing_Gam_B(ab,ij)/sqrt((1d0 + Kronecker_delta(a,b))*(1d0 + Kronecker_delta(i,j)))
               
            end do
         end do
