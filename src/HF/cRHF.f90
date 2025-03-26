@@ -134,7 +134,6 @@ subroutine cRHF(dotest,maxSCF,thresh,max_diis,guess_type,level_shift,ENuc, &
     ! CAP energy
 
     EW = complex_trace_matrix(nBas,matmul(P,(0d0,1d0)*CAP))
-    write(*,*) "EW", EW
     
     ! Hartree energy
 
