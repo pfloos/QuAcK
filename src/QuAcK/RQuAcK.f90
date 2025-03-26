@@ -113,9 +113,12 @@ subroutine RQuAcK(working_dir,use_gpu,dotest,doRHF,doROHF,docRHF,               
   double precision              :: ERHF
   complex*16                    :: complex_ERHF
   double precision,allocatable  :: CAP_MO(:,:)
+  complex*16,allocatable        :: complex_CAP_MO(:,:)
   double precision,allocatable  :: dipole_int_MO(:,:,:)
+  complex*16,allocatable        :: complex_dipole_int_MO(:,:,:)
   double precision,allocatable  :: ERI_AO(:,:,:,:)
   double precision,allocatable  :: ERI_MO(:,:,:,:)
+  complex*16,allocatable        :: complex_ERI_MO(:,:,:,:)
   integer                       :: ixyz
   integer                       :: nS
 
@@ -133,16 +136,20 @@ subroutine RQuAcK(working_dir,use_gpu,dotest,doRHF,doROHF,docRHF,               
     allocate(complex_eHF(nOrb))
     allocate(complex_cHF(nBas,nOrb))
     allocate(complex_FHF(nBas,nBas))
+    allocate(complex_dipole_int_MO(nOrb,nOrb,ncart))
+    allocate(complex_ERI_MO(nOrb,nOrb,nOrb,nOrb))
+    if (doCAP) allocate(complex_CAP_MO(nOrb,nOrb))
   else 
     allocate(PHF(nBas,nBas))
     allocate(eHF(nOrb))
     allocate(cHF(nBas,nOrb))
     allocate(FHF(nBas,nBas))
+    allocate(dipole_int_MO(nOrb,nOrb,ncart))
+    allocate(ERI_MO(nOrb,nOrb,nOrb,nOrb))
+    if (doCAP) allocate(CAP_MO(nOrb,nOrb))
   end if
+
   allocate(ERI_AO(nBas,nBas,nBas,nBas))
-  allocate(dipole_int_MO(nOrb,nOrb,ncart))
-  allocate(ERI_MO(nOrb,nOrb,nOrb,nOrb))
-  if (doCAP) allocate(CAP_MO(nOrb,nOrb))
   call wall_time(start_int)
   call read_2e_integrals(working_dir,nBas,ERI_AO)
   call wall_time(end_int)
@@ -205,16 +212,20 @@ subroutine RQuAcK(working_dir,use_gpu,dotest,doRHF,doROHF,docRHF,               
 
   if (docRHF) then 
 
-!    ! Transform from to complex MOs
-!
-!    ! Read and transform dipole-related integrals
-!    do ixyz=1,ncart
-!      call AOtoMO(nBas,nOrb,complex_cHF,dipole_int_AO(1,1,ixyz),dipole_int_MO(1,1,ixyz))
-!    end do
-!    ! 4-index transform 
-!    call AOtoMO_ERI_RHF(nBas,nOrb,complex_cHF,ERI_AO,ERI_MO)
-!    ! Transform CAP integrals
-!    if (doCAP) call AOtoMO(nBas,nOrb,complex_cHF,CAP_AO,CAP_MO)
+    ! Transform from to complex MOs
+
+    ! Read and transform dipole-related integrals
+    do ixyz=1,ncart
+      call complex_AOtoMO(nBas,nOrb,complex_cHF,dipole_int_AO(1,1,ixyz),complex_dipole_int_MO(1,1,ixyz))
+    end do
+    ! 4-index transform 
+    call complex_AOtoMO_ERI_RHF(nBas,nOrb,complex_cHF,ERI_AO,complex_ERI_MO)
+    ! Transform CAP integrals
+    if (doCAP) then
+            call complex_AOtoMO(nBas,nOrb,complex_cHF,CAP_AO,complex_CAP_MO)
+            complex_CAP_MO = (0d0,1d0)*complex_CAP_MO
+            call complex_matout(nBas,nOrb,complex_CAP_MO)
+    end if
   else
 
     ! Transform to real MOs
@@ -423,10 +434,12 @@ doGF = doG0F2 .or. doevGF2 .or. doqsGF2 .or. doufG0F02 .or. doG0F3 .or. doevGF3 
   if (allocated(cHF)) deallocate(cHF)
   if (allocated(PHF)) deallocate(PHF)
   if (allocated(FHF)) deallocate(FHF)
-  deallocate(dipole_int_MO)
-  deallocate(ERI_MO)
-  deallocate(ERI_AO)
+  if (allocated(dipole_int_MO)) deallocate(dipole_int_MO)
+  if (allocated(ERI_MO)) deallocate(ERI_MO)
+  if (allocated(complex_ERI_MO)) deallocate(complex_ERI_MO)
+  if (allocated(ERI_AO)) deallocate(ERI_AO)
   if (allocated(CAP_MO)) deallocate(CAP_MO)
+  if (allocated(complex_CAP_MO)) deallocate(complex_CAP_MO)
   if (allocated(complex_eHF)) deallocate(complex_eHF)
   if (allocated(complex_cHF)) deallocate(complex_cHF)
   if (allocated(complex_PHF)) deallocate(complex_PHF)

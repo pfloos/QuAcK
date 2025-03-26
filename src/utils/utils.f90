@@ -214,6 +214,31 @@ function trace_matrix(n,A) result(Tr)
 
 end function 
 
+function complex_trace_matrix(n,A) result(Tr)
+
+! Calculate the trace of the square matrix A
+
+  implicit none
+
+! Input variables
+
+  integer,intent(in)            :: n
+  complex*16,intent(in)         :: A(n,n)
+
+! Local variables
+
+  integer                       :: i
+
+! Output variables
+
+  complex*16                    :: Tr
+
+  Tr = (0d0,0d0)
+  do i=1,n
+    Tr = Tr + A(i,i)
+  end do
+
+end function 
 !------------------------------------------------------------------------
 subroutine compute_error(nData,Mean,Var,Error)
 

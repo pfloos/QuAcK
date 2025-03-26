@@ -39,6 +39,7 @@ subroutine cRHF(dotest,maxSCF,thresh,max_diis,guess_type,level_shift,ENuc, &
   double precision              :: Conv
   double precision              :: rcond
   double precision,external     :: trace_matrix
+  complex*16,external           :: complex_trace_matrix
 
   complex*16,allocatable        :: J(:,:)
   complex*16,allocatable        :: K(:,:)
@@ -132,17 +133,17 @@ subroutine cRHF(dotest,maxSCF,thresh,max_diis,guess_type,level_shift,ENuc, &
 
     ! CAP energy
 
-    EW = cmplx(trace_matrix(nBas,real(matmul(P,CAP))),trace_matrix(nBas,aimag(matmul(P,CAP))),kind=8)
-
+    EW = complex_trace_matrix(nBas,matmul(P,(0d0,1d0)*CAP))
+    write(*,*) "EW", EW
+    
     ! Hartree energy
 
     EJ = 0.5d0*cmplx(trace_matrix(nBas,real(matmul(P,J))),trace_matrix(nBas,aimag(matmul(P,J))),kind=8)
-
+    
 
     ! Exchange energy
 
     EK = 0.25d0*cmplx(trace_matrix(nBas,real(matmul(P,K))),trace_matrix(nBas,aimag(matmul(P,K))),kind=8)
-
 
     ! Total energy
 
