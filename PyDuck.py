@@ -8,7 +8,7 @@ from pyscf import gto
 import numpy as np
 import subprocess
 import time
-
+import gc
 
 # Find the value of the environnement variable QUACK_ROOT. If not present we use the current repository
 if "QUACK_ROOT" not in os.environ:
@@ -316,6 +316,11 @@ if print_2e:
         "Wall time for writing 2e-integrals to disk: {:.3f} seconds".format(te_2e - ti_2e))
     sys.stdout.flush()
 
+# Free memory
+del ovlp, v1e, t1e, x, y, z, mol
+if args.use_cap:
+    del cap_ao, pc
+gc.collect()
 
 # Execute the QuAcK fortran program
 subprocess.call([QuAcK_dir + '/bin/QuAcK', working_dir])
