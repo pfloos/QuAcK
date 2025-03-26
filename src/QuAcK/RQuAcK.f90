@@ -387,9 +387,9 @@ subroutine RQuAcK(working_dir,use_gpu,dotest,doRHF,doROHF,dostab,dosearch,doMP2,
     write(*,*)
 
   end if
-  
 
 ! Memory deallocation
+
   deallocate(eHF)
   deallocate(cHF)
   deallocate(PHF)

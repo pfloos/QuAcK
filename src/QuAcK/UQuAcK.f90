@@ -1,7 +1,7 @@
 subroutine UQuAcK(working_dir,dotest,doUHF,dostab,dosearch,doMP2,doMP3,doCCD,dopCCD,doDCD,doCCSD,doCCSDT,          &
                   dodrCCD,dorCCD,docrCCD,dolCCD,doCIS,doCIS_D,doCID,doCISD,doFCI,dophRPA,dophRPAx,docrRPA,doppRPA, &
                   doG0F2,doevGF2,doqsGF2,doufG0F02,doG0F3,doevGF3,doG0W0,doevGW,doqsGW,doufG0W0,doufGW,            &
-                  doG0T0pp,doevGTpp,doqsGTpp,doufG0T0pp,doG0T0eh,doevGTeh,doqsGTeh,                                & 
+                  doG0T0pp,doevGTpp,doqsGTpp,doufG0T0pp,doG0T0eh,doevGTeh,doqsGTeh,doParquet,                      & 
                   nNuc,nBas,nC,nO,nV,nR,ENuc,ZNuc,rNuc,                                                            &
                   S,T,V,Hc,X,dipole_int_AO,maxSCF_HF,max_diis_HF,thresh_HF,level_shift,                            &
                   guess_type,mix,reg_MP,maxSCF_CC,max_diis_CC,thresh_CC,spin_conserved,spin_flip,TDA,              &
@@ -28,6 +28,7 @@ subroutine UQuAcK(working_dir,dotest,doUHF,dostab,dosearch,doMP2,doMP3,doCCD,dop
   logical,intent(in)            :: doG0W0,doevGW,doqsGW,doufG0W0,doufGW
   logical,intent(in)            :: doG0T0pp,doevGTpp,doqsGTpp,doufG0T0pp
   logical,intent(in)            :: doG0T0eh,doevGTeh,doqsGTeh
+  logical,intent(in)            :: doParquet
 
   integer,intent(in)            :: nNuc,nBas
   integer,intent(in)            :: nC(nspin)
@@ -90,6 +91,7 @@ subroutine UQuAcK(working_dir,dotest,doUHF,dostab,dosearch,doMP2,doMP3,doCCD,dop
   double precision              :: start_GF     ,end_GF       ,t_GF
   double precision              :: start_GW     ,end_GW       ,t_GW
   double precision              :: start_GT     ,end_GT       ,t_GT
+  double precision              :: start_Parquet,end_Parquet  ,t_Parquet
 
   double precision              :: start_int, end_int, t_int
   double precision,allocatable  :: cHF(:,:,:),eHF(:,:),PHF(:,:,:),FHF(:,:,:)
@@ -363,6 +365,24 @@ subroutine UQuAcK(working_dir,dotest,doUHF,dostab,dosearch,doMP2,doMP3,doCCD,dop
   
     t_GT = end_GT - start_GT
     write(*,'(A65,1X,F9.3,A8)') 'Total CPU time for GT = ',t_GT,' seconds'
+    write(*,*)
+
+  end if
+
+!------------------------!
+!     Parquet module     !
+!------------------------!
+
+  if(doParquet) then
+    call wall_time(start_Parquet)
+!   call RParquet(max_it_macro,conv_one_body,max_it_micro,conv_two_body,   &
+!        nOrb,nC,nO,nV,nR,nS, &
+!        eHF,ERI_MO)            
+    write(*,*) 'Unrestricted version of parquet not yet implemented. Sorry.'
+    call wall_time(end_Parquet)
+  
+    t_Parquet = end_Parquet - start_Parquet
+    write(*,'(A65,1X,F9.3,A8)') 'Total wall time for Parquet module = ', t_Parquet, ' seconds'
     write(*,*)
 
   end if
