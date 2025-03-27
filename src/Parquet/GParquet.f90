@@ -59,10 +59,12 @@ subroutine GParquet(max_it_1b,conv_1b,max_it_2b,conv_2b,nOrb,nC,nO,nV,nR,nS,eHF,
   integer                       :: max_diis,n_diis
   double precision              :: rcond
   double precision,allocatable  :: err_diis(:,:)
-  double precision,allocatable  :: Om_diis(:,:)
+  double precision,allocatable  :: Phi_diis(:,:)
   double precision,allocatable  :: err(:)
-  double precision,allocatable  :: Om(:)
+  double precision,allocatable  :: Phi(:)
   double precision              :: alpha
+
+  integer                       ::p,q,r,s,pqrs
 
 ! Output variables
 ! None
@@ -75,15 +77,15 @@ subroutine GParquet(max_it_1b,conv_1b,max_it_2b,conv_2b,nOrb,nC,nO,nV,nR,nS,eHF,
     
 ! DIIS parameters
 
-  ! max_diis = 10
-  ! n_diis   = 0
-  ! rcond    = 0d0
+  max_diis = 1
+  n_diis   = 0
+  rcond    = 1d0
 
-  ! allocate(err_diis(nS+nOO+nVV,max_diis),Om_diis(nS+nOO+nVV,max_diis))
-  ! allocate(err(nS+nOO+nVV),Om(nS+nOO+nVV))
+  allocate(err_diis(2*nOrb**4,max_diis),Phi_diis(2*nOrb**4,max_diis))
+  allocate(err(2*nOrb**4),Phi(2*nOrb**4))
 
-  ! err_diis(:,:) = 0d0
-  ! Om_diis(:,:)  = 0d0
+  err_diis(:,:) = 0d0
+  Phi_diis(:,:) = 0d0
 
 ! Start
  
@@ -365,38 +367,64 @@ subroutine GParquet(max_it_1b,conv_1b,max_it_2b,conv_2b,nOrb,nC,nO,nV,nR,nS,eHF,
       ! eh_Phi(:,:,:,:) = alpha * eh_Phi(:,:,:,:) + (1d0 - alpha) * old_eh_Phi(:,:,:,:)
       ! pp_Phi(:,:,:,:) = alpha * pp_Phi(:,:,:,:) + (1d0 - alpha) * old_pp_Phi(:,:,:,:)
 
-      err_eh = maxval(abs(old_eh_Phi - eh_Phi))
-      err_pp = maxval(abs(old_pp_Phi - pp_Phi))
+      err_eh = maxval(abs(eh_Phi - old_eh_Phi))
+      err_pp = maxval(abs(pp_Phi - old_pp_Phi))
+
+      call matout(nOrb**2,nOrb**2,eh_Phi - old_eh_Phi)
+      call matout(nOrb**2,nOrb**2,pp_Phi - old_pp_Phi)
+
+      !--------------------!
+      ! DIIS extrapolation !
+      !--------------------!
+
+      pqrs = 0
+      do p=1,nOrb
+        do q=1,nOrb
+          do r=1,nOrb
+            do s=1,nOrb
+              pqrs = pqrs + 1
+
+              err(        pqrs) = eh_Phi(p,q,r,s) - old_eh_Phi(p,q,r,s)
+              err(nOrb**4+pqrs) = pp_Phi(p,q,r,s) - old_pp_Phi(p,q,r,s)
+
+              Phi(        pqrs) = eh_Phi(p,q,r,s)
+              Phi(nOrb**4+pqrs) = pp_Phi(p,q,r,s)
+
+            end do
+          end do
+        end do
+      end do
+
+      if(max_diis > 1) then
+     
+        n_diis = min(n_diis+1,max_diis)
+        call DIIS_extrapolation(rcond,2*nOrb**4,2*nOrb**4,n_diis,err_diis,Phi_diis,err,Phi)
+        print*,rcond
+     
+      end if
+
+      pqrs = 0
+      do p=1,nOrb
+        do q=1,nOrb
+          do r=1,nOrb
+            do s=1,nOrb
+              pqrs = pqrs + 1
+
+              eh_Phi(p,q,r,s) = Phi(        pqrs)
+              pp_Phi(p,q,r,s) = Phi(nOrb**4+pqrs) 
+
+            end do
+          end do
+        end do
+      end do
 
       old_eh_Phi(:,:,:,:) = eh_Phi(:,:,:,:)
       old_pp_Phi(:,:,:,:) = pp_Phi(:,:,:,:)
       
       ! Free memory
+
       deallocate(eh_Phi,pp_Phi)
       
-      !--------------------!
-      ! DIIS extrapolation !
-      !--------------------!
-
-      ! err(       1:nS        ) = eh_Om(:) - old_eh_Om(:)
-      ! err(    nS+1:nS+nVV    ) = ee_Om(:) - old_ee_Om(:)
-      ! err(nVV+nS+1:nS+nVV+nOO) = hh_Om(:) - old_hh_Om(:) 
-
-      ! Om(       1:nS        ) = eh_Om(:)
-      ! Om(    nS+1:nS+nVV    ) = ee_Om(:)
-      ! Om(nVV+nS+1:nS+nVV+nOO) = hh_Om(:)
-
-      ! if(max_diis > 1) then
-     
-      !   n_diis = min(n_diis+1,max_diis)
-      !   call DIIS_extrapolation(rcond,nS+nOO+nVV,nS+nOO+nVV,n_diis,err_diis,Om_diis,err,Om)
-     
-      ! end if
-
-      ! eh_Om(:) = Om(       1:nS        )
-      ! ee_Om(:) = Om(    nS+1:nS+nVV    )
-      ! hh_Om(:) = Om(nVV+nS+1:nS+nVV+nOO)
-
       write(*,*) '----------------------------------------'
       write(*,*) ' Two-body (kernel) convergence '
       write(*,*) '----------------------------------------'
@@ -404,7 +432,6 @@ subroutine GParquet(max_it_1b,conv_1b,max_it_2b,conv_2b,nOrb,nC,nO,nV,nR,nS,eHF,
       write(*,'(1X,A30,F10.6)')'Error for pp channel = ',err_pp
       write(*,*) '----------------------------------------'
       write(*,*)
-
       
       ! Convergence criteria
       err_2b = max(err_eh,err_pp)

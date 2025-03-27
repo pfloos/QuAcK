@@ -198,8 +198,6 @@ program QuAcK
   call read_dipole_integrals(working_dir,nBas,dipole_int_AO)
   call wall_time(end_int)
 
-  call matout(nBas,nBas,dipole_int_AO(:,:,1))
-
   t_int = end_int - start_int
   write(*,*)
   write(*,'(A65,1X,F9.3,A8)') 'Total wall time for reading 1e-integrals = ',t_int,' seconds'
