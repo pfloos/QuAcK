@@ -90,7 +90,7 @@ subroutine cRG0F2(dotest,dophBSE,doppBSE,TDA,dBSE,dTDA,singlet,triplet,linearize
 
   else
 
-    write(*,*) ' *** Quasiparticle energies obtained by root search *** NOT IMPLEMEMTED YET'
+    write(*,*) ' *** Quasiparticle energies obtained by root search *** '
     write(*,*)
     
     call cRGF2_QP_graph(eta,nOrb,nC,nO,nV,nR,eHF,e_cap,ERI,Re_eGFlin,Im_eGFlin,eHF,e_cap,Re_eGF,Im_eGF,Re_Z,Im_Z)

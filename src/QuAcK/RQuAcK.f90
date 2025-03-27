@@ -224,7 +224,6 @@ subroutine RQuAcK(working_dir,use_gpu,dotest,doRHF,doROHF,docRHF,               
     if (doCAP) then
             call complex_AOtoMO(nBas,nOrb,complex_cHF,CAP_AO,complex_CAP_MO)
             complex_CAP_MO = (0d0,1d0)*complex_CAP_MO
-            call complex_matout(nBas,nOrb,complex_CAP_MO)
     end if
   else
 
@@ -241,11 +240,6 @@ subroutine RQuAcK(working_dir,use_gpu,dotest,doRHF,doROHF,docRHF,               
   end if
   call wall_time(end_AOtoMO)
 
-  ! Transform CAP integrals
-
-  if (doCAP .and. (.not. docRHF)) then
-     write(*,*) "blub 1"
-  end if
   t_AOtoMO = end_AOtoMO - start_AOtoMO
   write(*,'(A65,1X,F9.3,A8)') 'Total wall time for AO to MO transformation = ',t_AOtoMO,' seconds'
   write(*,*)
@@ -365,11 +359,11 @@ subroutine RQuAcK(working_dir,use_gpu,dotest,doRHF,doROHF,docRHF,               
 
 doGF = doG0F2 .or. doevGF2 .or. doqsGF2 .or. doufG0F02 .or. doG0F3 .or. doevGF3 .or. docG0F2
 
-  if(doGF) then
+  if(doGF .and. .not. docRHF) then
     call wall_time(start_GF)
     call RGF(dotest,doG0F2,doevGF2,doqsGF2,doufG0F02,doG0F3,doevGF3,docG0F2,renorm_GF,maxSCF_GF, &
-             thresh_GF,max_diis_GF,dophBSE,doppBSE,TDA,dBSE,dTDA,singlet,triplet,lin_GF, &
-             eta_GF,reg_GF,nNuc,ZNuc,rNuc,ENuc,nBas,nOrb,nC,nO,nV,nR,nS,ERHF,            &
+             thresh_GF,max_diis_GF,dophBSE,doppBSE,TDA,dBSE,dTDA,singlet,triplet,lin_GF,         &
+             eta_GF,reg_GF,nNuc,ZNuc,rNuc,ENuc,nBas,nOrb,nC,nO,nV,nR,nS,ERHF,                    &
              S,X,T,V,Hc,ERI_AO,ERI_MO,CAP_MO,dipole_int_AO,dipole_int_MO,PHF,cHF,eHF)
     call wall_time(end_GF)
 
@@ -377,6 +371,24 @@ doGF = doG0F2 .or. doevGF2 .or. doqsGF2 .or. doufG0F02 .or. doG0F3 .or. doevGF3 
     write(*,'(A65,1X,F9.3,A8)') 'Total wall time for GF2 = ',t_GF,' seconds'
     write(*,*)
 
+  end if
+
+!---------------------------------!
+! complex Green's function module !
+!---------------------------------!
+
+  if(doGF .and. docRHF) then
+    call wall_time(start_GF)
+    call complex_RGF(dotest,docG0F2,maxSCF_GF,                                                   &
+             thresh_GF,max_diis_GF,dophBSE,doppBSE,TDA,dBSE,dTDA,singlet,triplet,lin_GF,         &
+             eta_GF,reg_GF,nNuc,ZNuc,rNuc,ENuc,nBas,nOrb,nC,nO,nV,nR,nS,complex_ERHF,            &
+             S,X,T,V,Hc,ERI_AO,complex_ERI_MO,complex_CAP_MO,dipole_int_AO,complex_dipole_int_MO,&
+             complex_PHF,complex_cHF,complex_eHF)
+    call wall_time(end_GF)
+
+    t_GF = end_GF - start_GF
+    write(*,'(A65,1X,F9.3,A8)') 'Total wall time for GF2 = ',t_GF,' seconds'
+    write(*,*)
   end if
 
 !-----------!
@@ -400,9 +412,9 @@ doGF = doG0F2 .or. doevGF2 .or. doqsGF2 .or. doufG0F02 .or. doG0F3 .or. doevGF3 
   end if
 
 
-!------------!
-! cGW module !
-!------------!
+!-------------------!
+! complex GW module !
+!-------------------!
 
 ! IMPLEMENT LATER TO TREAT EVERYTHING COMPLEX, i.e. start from complex HF orbitals
 
