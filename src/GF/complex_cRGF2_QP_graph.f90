@@ -62,7 +62,7 @@ subroutine complex_cRGF2_QP_graph(eta,nBas,nC,nO,nV,nR,Re_eHF,Im_eHF,&
       nIt = nIt + 1
       
       call complex_cRGF_SigC_dSigC(p,eta,nBas,nC,nO,nV,nR,Re_w,Im_w,Re_eOld,Im_eOld,ERI,&
-              Re_SigC,Im_SigC,Re_Z,Im_Z)
+              Re_SigC,Im_SigC,Re_dSigC,Im_dSigC)
 
       Re_f  = Re_w - Re_eHF(p) - Re_SigC 
       Im_f  = Im_w - Im_eHF(p) - Im_SigC
