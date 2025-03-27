@@ -28,12 +28,12 @@ subroutine R_pp_triplet_Phi(nOrb,nC,nR,nOO,nVV,ee_trip_Om,ee_trip_rho,hh_trip_Om
               
               do n=1,nVV
                  pp_trip_Phi(p,q,r,s) = pp_trip_Phi(p,q,r,s) &
-                      + ee_trip_rho(p,q,n)*ee_trip_rho(r,s,n)/ee_trip_Om(n)            
+                      + 2d0 *  ee_trip_rho(p,q,n)*ee_trip_rho(r,s,n)/ee_trip_Om(n)            
               end do
 
               do n=1,nOO
                  pp_trip_Phi(p,q,r,s) = pp_trip_Phi(p,q,r,s) &
-                      - hh_trip_rho(p,q,n)*hh_trip_rho(r,s,n)/hh_trip_Om(n)           
+                      - 2d0 * hh_trip_rho(p,q,n)*hh_trip_rho(r,s,n)/hh_trip_Om(n)           
               end do
               
            enddo

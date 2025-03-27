@@ -24,7 +24,7 @@ subroutine G_eh_Phi(nOrb,nC,nR,nS,eh_Om,eh_rho,eh_Phi)
            do p = nC+1, nOrb-nR
               
               do n=1,nS
-                 eh_Phi(p,q,r,s) = eh_Phi(p,q,r,s)          &
+                 eh_Phi(p,q,r,s) = eh_Phi(p,q,r,s)           &
                       - eh_rho(r,p,n)*eh_rho(q,s,n)/eh_Om(n) &
                       - eh_rho(p,r,n)*eh_rho(s,q,n)/eh_Om(n)     
               end do

@@ -39,11 +39,11 @@ subroutine R_eh_singlet_screened_integral(nOrb,nC,nO,nR,nS,ERI,eh_sing_Phi,eh_tr
                  Y = 0.5d0*(XpY(ia,jb) - XmY(ia,jb))
                  
                  rho(p,q,ia) = rho(p,q,ia)    + (2d0*ERI(q,j,p,b) - ERI(q,j,b,p)       & 
-                             - 0d0*0.5d0*eh_sing_Phi(q,j,b,p) - 0d0*1.5d0*eh_trip_Phi(q,j,b,p) & 
-                             + 0d0*0.5d0*pp_sing_Phi(q,j,p,b) + 0d0*1.5d0*pp_trip_Phi(q,j,p,b)) * X &
+                             - 0.5d0*eh_sing_Phi(q,j,b,p) - 1.5d0*eh_trip_Phi(q,j,b,p) & 
+                             + 0.5d0*pp_sing_Phi(q,j,p,b) + 1.5d0*pp_trip_Phi(q,j,p,b)) * X &
                              + (2d0*ERI(q,b,p,j) - ERI(q,b,j,p)                        & 
-                             - 0d0*0.5d0*eh_sing_Phi(q,b,j,p) - 0d0*1.5d0*eh_trip_Phi(q,b,j,p) & 
-                             + 0d0*0.5d0*pp_sing_Phi(q,b,p,j) + 0d0*1.5d0*pp_trip_Phi(q,b,p,j)) * Y  
+                             - 0.5d0*eh_sing_Phi(q,b,j,p) - 1.5d0*eh_trip_Phi(q,b,j,p) & 
+                             + 0.5d0*pp_sing_Phi(q,b,p,j) + 1.5d0*pp_trip_Phi(q,b,p,j)) * Y  
                  
               end do
 
@@ -98,11 +98,11 @@ subroutine R_eh_triplet_screened_integral(nOrb,nC,nO,nR,nS,ERI,eh_sing_Phi,eh_tr
                  Y = 0.5d0*(XpY(ia,jb) - XmY(ia,jb))
                  
                  rho(p,q,ia)  = rho(p,q,ia) + (- ERI(q,j,b,p)                           &
-                              - 0d0*0.5d0*eh_sing_Phi(q,j,b,p) + 0d0*0.5d0*eh_trip_Phi(q,j,b,p) & 
-                              - 0d0*0.5d0*pp_sing_Phi(q,j,p,b) + 0d0*0.5d0*pp_trip_Phi(q,j,p,b)) * X &
+                              - 0.5d0*eh_sing_Phi(q,j,b,p) + 0.5d0*eh_trip_Phi(q,j,b,p) & 
+                              - 0.5d0*pp_sing_Phi(q,j,p,b) + 0.5d0*pp_trip_Phi(q,j,p,b)) * X &
                               + (- ERI(q,b,j,p)                                         & 
-                              - 0d0*0.5d0*eh_sing_Phi(q,b,j,p) + 0d0*0.5d0*eh_trip_Phi(q,b,j,p) & 
-                              - 0d0*0.5d0*pp_sing_Phi(q,b,p,j) + 0d0*0.5d0*pp_trip_Phi(q,b,p,j)) * Y  
+                              - 0.5d0*eh_sing_Phi(q,b,j,p) + 0.5d0*eh_trip_Phi(q,b,j,p) & 
+                              - 0.5d0*pp_sing_Phi(q,b,p,j) + 0.5d0*pp_trip_Phi(q,b,p,j)) * Y  
                  
               end do
            end do
@@ -174,8 +174,8 @@ subroutine R_pp_singlet_screened_integral(nOrb,nC,nO,nR,nOO,nVV,ERI,eh_sing_Phi,
                     cd = cd + 1
                     
                     rho1(p,q,ab) = rho1(p,q,ab) + (ERI(p,q,c,d) + ERI(p,q,d,c)             &
-                                 + 0d0*0.5d0*eh_sing_Phi(p,q,c,d) - 0d0*1.5d0*eh_trip_Phi(p,q,c,d) &
-                                 + 0d0*0.5d0*eh_sing_Phi(p,q,d,c) - 0d0*1.5d0*eh_trip_Phi(p,q,d,c))&
+                                 + 0.5d0*eh_sing_Phi(p,q,c,d) - 1.5d0*eh_trip_Phi(p,q,c,d) &
+                                 + 0.5d0*eh_sing_Phi(p,q,d,c) - 1.5d0*eh_trip_Phi(p,q,d,c))&
                                  *X1(cd,ab)/sqrt(1d0 + Kronecker_delta(c,d))
                     
                  end do ! d
@@ -188,8 +188,8 @@ subroutine R_pp_singlet_screened_integral(nOrb,nC,nO,nR,nOO,nVV,ERI,eh_sing_Phi,
                     kl = kl + 1
   
                     rho1(p,q,ab) = rho1(p,q,ab) + (ERI(p,q,k,l) + ERI(p,q,l,k)             &
-                                 + 0d0*0.5d0*eh_sing_Phi(p,q,k,l) - 0d0*1.5d0*eh_trip_Phi(p,q,k,l) &
-                                 + 0d0*0.5d0*eh_sing_Phi(p,q,l,k) - 0d0*1.5d0*eh_trip_Phi(p,q,l,k))&
+                                 + 0.5d0*eh_sing_Phi(p,q,k,l) - 1.5d0*eh_trip_Phi(p,q,k,l) &
+                                 + 0.5d0*eh_sing_Phi(p,q,l,k) - 1.5d0*eh_trip_Phi(p,q,l,k))&
                                  *Y1(kl,ab)/sqrt(1d0 + Kronecker_delta(k,l))
                  end do ! l
               end do ! k 
@@ -207,8 +207,8 @@ subroutine R_pp_singlet_screened_integral(nOrb,nC,nO,nR,nOO,nVV,ERI,eh_sing_Phi,
                     cd = cd + 1
                    
                     rho2(p,q,ij) = rho2(p,q,ij) + (ERI(p,q,c,d) + ERI(p,q,d,c)                            &
-                                 + 0d0*0.5d0*eh_sing_Phi(p,q,c,d) - 0d0*1.5d0*eh_trip_Phi(p,q,c,d) &
-                                 + 0d0*0.5d0*eh_sing_Phi(p,q,d,c) - 0d0*1.5d0*eh_trip_Phi(p,q,d,c))&
+                                 + 0.5d0*eh_sing_Phi(p,q,c,d) - 1.5d0*eh_trip_Phi(p,q,c,d) &
+                                 + 0.5d0*eh_sing_Phi(p,q,d,c) - 1.5d0*eh_trip_Phi(p,q,d,c))&
                                  *X2(cd,ij)/sqrt(1d0 + Kronecker_delta(c,d))
                  end do ! d
               end do ! c
@@ -219,8 +219,8 @@ subroutine R_pp_singlet_screened_integral(nOrb,nC,nO,nR,nOO,nVV,ERI,eh_sing_Phi,
                     kl = kl + 1
                    
                     rho2(p,q,ij) = rho2(p,q,ij) + (ERI(p,q,k,l) + ERI(p,q,l,k)                            &
-                                 + 0d0*0.5d0*eh_sing_Phi(p,q,k,l) - 0d0*1.5d0*eh_trip_Phi(p,q,k,l) &
-                                 + 0d0*0.5d0*eh_sing_Phi(p,q,l,k) - 0d0*1.5d0*eh_trip_Phi(p,q,l,k))&
+                                 + 0.5d0*eh_sing_Phi(p,q,k,l) - 1.5d0*eh_trip_Phi(p,q,k,l) &
+                                 + 0.5d0*eh_sing_Phi(p,q,l,k) - 1.5d0*eh_trip_Phi(p,q,l,k))&
                                  *Y2(kl,ij)/sqrt(1d0 + Kronecker_delta(k,l))
                  end do ! l
               end do ! k
@@ -291,8 +291,8 @@ subroutine R_pp_triplet_screened_integral(nOrb,nC,nO,nR,nOO,nVV,ERI,eh_sing_Phi,
                     cd = cd + 1
                     
                     rho1(p,q,ab) = rho1(p,q,ab) + (ERI(p,q,c,d) - ERI(p,q,d,c)                            &
-                                 + 0d0*0.5d0*eh_sing_Phi(p,q,c,d) + 0d0*0.5d0*eh_trip_Phi(p,q,c,d) &
-                                 - 0d0*0.5d0*eh_sing_Phi(p,q,d,c) - 0d0*0.5d0*eh_trip_Phi(p,q,d,c) )*X1(cd,ab)
+                                 + 0.5d0*eh_sing_Phi(p,q,c,d) + 0.5d0*eh_trip_Phi(p,q,c,d) &
+                                 - 0.5d0*eh_sing_Phi(p,q,d,c) - 0.5d0*eh_trip_Phi(p,q,d,c) )*X1(cd,ab)
                     
                  end do ! d
               end do ! c
@@ -304,8 +304,8 @@ subroutine R_pp_triplet_screened_integral(nOrb,nC,nO,nR,nOO,nVV,ERI,eh_sing_Phi,
                     kl = kl + 1
   
                     rho1(p,q,ab) = rho1(p,q,ab) + (ERI(p,q,k,l) - ERI(p,q,l,k)                            &
-                                 + 0d0*0.5d0*eh_sing_Phi(p,q,k,l) + 0d0*0.5d0*eh_trip_Phi(p,q,k,l) &
-                                 - 0d0*0.5d0*eh_sing_Phi(p,q,l,k) - 0d0*0.5d0*eh_trip_Phi(p,q,l,k) )*Y1(kl,ab)
+                                 + 0.5d0*eh_sing_Phi(p,q,k,l) + 0.5d0*eh_trip_Phi(p,q,k,l) &
+                                 - 0.5d0*eh_sing_Phi(p,q,l,k) - 0.5d0*eh_trip_Phi(p,q,l,k) )*Y1(kl,ab)
                  end do ! l
               end do ! k 
            end do ! b
@@ -322,8 +322,8 @@ subroutine R_pp_triplet_screened_integral(nOrb,nC,nO,nR,nOO,nVV,ERI,eh_sing_Phi,
                     cd = cd + 1
                    
                     rho2(p,q,ij) = rho2(p,q,ij) + (ERI(p,q,c,d) - ERI(p,q,d,c)                            &
-                                 + 0d0*0.5d0*eh_sing_Phi(p,q,c,d) + 0d0*0.5d0*eh_trip_Phi(p,q,c,d) &
-                                 - 0d0*0.5d0*eh_sing_Phi(p,q,d,c) - 0d0*0.5d0*eh_trip_Phi(p,q,d,c) )*X2(cd,ij)
+                                 + 0.5d0*eh_sing_Phi(p,q,c,d) + 0.5d0*eh_trip_Phi(p,q,c,d) &
+                                 - 0.5d0*eh_sing_Phi(p,q,d,c) - 0.5d0*eh_trip_Phi(p,q,d,c) )*X2(cd,ij)
                  end do ! d
               end do ! c
              
@@ -333,8 +333,8 @@ subroutine R_pp_triplet_screened_integral(nOrb,nC,nO,nR,nOO,nVV,ERI,eh_sing_Phi,
                     kl = kl + 1
                    
                     rho2(p,q,ij) = rho2(p,q,ij) + (ERI(p,q,k,l) - ERI(p,q,l,k)                            &
-                                 + 0d0*0.5d0*eh_sing_Phi(p,q,k,l) + 0d0*0.5d0*eh_trip_Phi(p,q,k,l) &
-                                 - 0d0*0.5d0*eh_sing_Phi(p,q,l,k) - 0d0*0.5d0*eh_trip_Phi(p,q,l,k) )*Y2(kl,ij)
+                                 + 0.5d0*eh_sing_Phi(p,q,k,l) + 0.5d0*eh_trip_Phi(p,q,k,l) &
+                                 - 0.5d0*eh_sing_Phi(p,q,l,k) - 0.5d0*eh_trip_Phi(p,q,l,k) )*Y2(kl,ij)
                  end do ! l
               end do ! k
               

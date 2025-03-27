@@ -28,12 +28,12 @@ subroutine R_pp_singlet_Phi(nOrb,nC,nR,nOO,nVV,ee_sing_Om,ee_sing_rho,hh_sing_Om
 
               do n=1,nVV
                  pp_sing_Phi(p,q,r,s) = pp_sing_Phi(p,q,r,s) &
-                      + ee_sing_rho(p,q,n)*ee_sing_rho(r,s,n)/ee_sing_Om(n)            
+                      + 2d0 * ee_sing_rho(p,q,n)*ee_sing_rho(r,s,n)/ee_sing_Om(n)            
               end do
 
               do n=1,nOO
                  pp_sing_Phi(p,q,r,s) = pp_sing_Phi(p,q,r,s) &
-                      - hh_sing_rho(p,q,n)*hh_sing_rho(r,s,n)/hh_sing_Om(n)           
+                      - 2d0 * hh_sing_rho(p,q,n)*hh_sing_rho(r,s,n)/hh_sing_Om(n)           
               end do
               
            enddo

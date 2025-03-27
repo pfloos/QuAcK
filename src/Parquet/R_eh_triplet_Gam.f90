@@ -25,6 +25,7 @@ subroutine R_eh_triplet_Gamma_A(nOrb,nC,nO,nR,nS,eh_sing_Phi,eh_trip_Phi,pp_sing
   do i=nC+1,nO
      do a=nO+1,nOrb-nR
         ia = ia + 1
+        
         jb = 0
         do j=nC+1,nO
            do b=nO+1,norb-nR
@@ -35,6 +36,7 @@ subroutine R_eh_triplet_Gamma_A(nOrb,nC,nO,nR,nS,eh_sing_Phi,eh_trip_Phi,pp_sing
               
            enddo
         enddo
+        
      enddo
   enddo
 
@@ -66,6 +68,7 @@ subroutine R_eh_triplet_Gamma_B(nOrb,nC,nO,nR,nS,eh_sing_Phi,eh_trip_Phi,pp_sing
   do i=nC+1,nO
      do a=nO+1,nOrb-nR
         ia = ia + 1
+        
         jb = 0
         do j=nC+1,nO
            do b=nO+1,norb-nR
@@ -76,6 +79,7 @@ subroutine R_eh_triplet_Gamma_B(nOrb,nC,nO,nR,nS,eh_sing_Phi,eh_trip_Phi,pp_sing
               
            enddo
         enddo
+        
      enddo
   enddo
 
