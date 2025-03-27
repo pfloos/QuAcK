@@ -68,7 +68,7 @@ subroutine complex_cRG0F2(dotest,dophBSE,doppBSE,TDA,dBSE,dTDA,singlet,triplet,l
 
 ! Frequency-dependent second-order contribution
 
-  call cRGF2_self_energy_diag(eta,nOrb,nC,nO,nV,nR,real(eHF),aimag(eHF),ERI,Re_SigC,Im_SigC,Re_Z,Im_Z)
+  call complex_cRGF2_self_energy_diag(eta,nOrb,nC,nO,nV,nR,real(eHF),aimag(eHF),ERI,Re_SigC,Im_SigC,Re_Z,Im_Z)
   
   Re_eGFlin(:) = Re_eHF(:) + Re_Z(:)*Re_SigC(:) - Im_Z(:)*Im_SigC(:)
   Im_eGFlin(:) = Im_eHF(:) + Re_Z(:)*Im_SigC(:) + Im_Z(:)*Re_SigC(:)
