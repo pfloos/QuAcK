@@ -9,8 +9,8 @@ subroutine GParquet(max_it_1b,conv_1b,max_it_2b,conv_2b,nOrb,nC,nO,nV,nR,nS,eHF,
 
   logical                       :: linearize = .true.
   logical                       :: TDA = .true.
-  logical                       :: print_phLR = .true.
-  logical                       :: print_ppLR = .true.
+  logical                       :: print_phLR = .false.
+  logical                       :: print_ppLR = .false.
 
 ! Input variables
 
@@ -287,29 +287,6 @@ subroutine GParquet(max_it_1b,conv_1b,max_it_2b,conv_2b,nOrb,nC,nO,nV,nR,nS,eHF,
       write(*,*) '----------------------------------------'
       write(*,*)
 
-      !--------------------!
-      ! DIIS extrapolation !
-      !--------------------!
-
-      ! err(       1:nS        ) = eh_Om(:) - old_eh_Om(:)
-      ! err(    nS+1:nS+nVV    ) = ee_Om(:) - old_ee_Om(:)
-      ! err(nVV+nS+1:nS+nVV+nOO) = hh_Om(:) - old_hh_Om(:) 
-
-      ! Om(       1:nS        ) = eh_Om(:)
-      ! Om(    nS+1:nS+nVV    ) = ee_Om(:)
-      ! Om(nVV+nS+1:nS+nVV+nOO) = hh_Om(:)
-
-      ! if(max_diis > 1) then
-     
-      !   n_diis = min(n_diis+1,max_diis)
-      !   call DIIS_extrapolation(rcond,nS+nOO+nVV,nS+nOO+nVV,n_diis,err_diis,Om_diis,err,Om)
-     
-      ! end if
-
-      ! eh_Om(:) = Om(       1:nS        )
-      ! ee_Om(:) = Om(    nS+1:nS+nVV    )
-      ! hh_Om(:) = Om(nVV+nS+1:nS+nVV+nOO)
-
       !----------!
       ! Updating !
       !----------!
@@ -384,7 +361,7 @@ subroutine GParquet(max_it_1b,conv_1b,max_it_2b,conv_2b,nOrb,nC,nO,nV,nR,nS,eHF,
       write(*,'(1X,A50,1X,F9.3,A8)') 'Wall time for pp reducible kernel =',t,' seconds'
       write(*,*)
 
-      ! alpha = 0.1d0
+      ! alpha = 0.05d0
       ! eh_Phi(:,:,:,:) = alpha * eh_Phi(:,:,:,:) + (1d0 - alpha) * old_eh_Phi(:,:,:,:)
       ! pp_Phi(:,:,:,:) = alpha * pp_Phi(:,:,:,:) + (1d0 - alpha) * old_pp_Phi(:,:,:,:)
 
@@ -400,6 +377,25 @@ subroutine GParquet(max_it_1b,conv_1b,max_it_2b,conv_2b,nOrb,nC,nO,nV,nR,nS,eHF,
       !--------------------!
       ! DIIS extrapolation !
       !--------------------!
+
+      ! err(       1:nS        ) = eh_Om(:) - old_eh_Om(:)
+      ! err(    nS+1:nS+nVV    ) = ee_Om(:) - old_ee_Om(:)
+      ! err(nVV+nS+1:nS+nVV+nOO) = hh_Om(:) - old_hh_Om(:) 
+
+      ! Om(       1:nS        ) = eh_Om(:)
+      ! Om(    nS+1:nS+nVV    ) = ee_Om(:)
+      ! Om(nVV+nS+1:nS+nVV+nOO) = hh_Om(:)
+
+      ! if(max_diis > 1) then
+     
+      !   n_diis = min(n_diis+1,max_diis)
+      !   call DIIS_extrapolation(rcond,nS+nOO+nVV,nS+nOO+nVV,n_diis,err_diis,Om_diis,err,Om)
+     
+      ! end if
+
+      ! eh_Om(:) = Om(       1:nS        )
+      ! ee_Om(:) = Om(    nS+1:nS+nVV    )
+      ! hh_Om(:) = Om(nVV+nS+1:nS+nVV+nOO)
 
       write(*,*) '----------------------------------------'
       write(*,*) ' Two-body (kernel) convergence '
