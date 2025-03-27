@@ -82,6 +82,6 @@ subroutine cRGF2_self_energy_diag(eta,nBas,nC,nO,nV,nR,e,ERI,Re_SigC,Im_SigC,Re_
     end do
   end do
   Re_Z(:) = (1d0-Re_DS(:))/((1d0 - Re_DS(:))**2 + Im_DS(:)**2)
-  Im_Z(:) = -Im_DS(:)/((1d0 - Re_DS(:))**2 + Im_DS(:)**2)
+  Im_Z(:) = Im_DS(:)/((1d0 - Re_DS(:))**2 + Im_DS(:)**2)
   deallocate(Re_DS,Im_DS)
 end subroutine 

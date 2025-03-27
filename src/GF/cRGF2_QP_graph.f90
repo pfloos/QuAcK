@@ -65,7 +65,7 @@ subroutine cRGF2_QP_graph(eta,nBas,nC,nO,nV,nR,eHF,e_cap,ERI,Re_eGFlin,Im_eGFlin
       Re_f  = Re_w - eHF(p) - Re_SigC 
       Im_f  = Im_w - e_cap(p) - Im_SigC
       Re_df = (1d0 - Re_dSigC)/((1d0 - Re_dSigC)**2 + Im_dSigC**2)
-      Im_df = -Im_dSigC/((1d0 - Re_dSigC)**2 + Im_dSigC**2)
+      Im_df = Im_dSigC/((1d0 - Re_dSigC)**2 + Im_dSigC**2)
     
       Re_w = Re_w - Re_df*Re_f + Im_df*Im_f
       Im_w = Im_w - Re_f*Im_df - Re_df*Im_f
