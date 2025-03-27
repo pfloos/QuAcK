@@ -318,6 +318,8 @@ if print_2e:
 
 # Free memory
 del ovlp, v1e, t1e, x, y, z, mol
+if print_2e and not(mmap_2e):
+    del eri_ao
 if args.use_cap:
     del cap_ao, pc
 gc.collect()
