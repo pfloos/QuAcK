@@ -56,8 +56,6 @@ subroutine complex_cRGF2_self_energy_diag(eta,nBas,nC,nO,nV,nR,Re_e,Im_e,ERI,Re_
           z_dummy = num*cmplx(eps/(eps**2 + eta_tilde**2),eta_tilde/(eps**2 + eta_tilde**2),kind=8)
           Re_SigC(p) = Re_SigC(p) + real(z_dummy)
           Im_SigC(p) = Im_SigC(p) + aimag(z_dummy)
-          write(*,*) "Numerator"
-          write(*,*) num
           z_dummy = num*cmplx(-(eps**2 - eta_tilde**2)/(eps**2 + eta_tilde**2)**2,&
                   -2*eta_tilde*eps/(eps**2 + eta_tilde**2)**2,kind=8)
           Re_DS(p)    = Re_DS(p)   + real(z_dummy)
@@ -80,8 +78,6 @@ subroutine complex_cRGF2_self_energy_diag(eta,nBas,nC,nO,nV,nR,Re_e,Im_e,ERI,Re_
           z_dummy = num*cmplx(eps/(eps**2 + eta_tilde**2),-eta_tilde/(eps**2 + eta_tilde**2),kind=8)
           Re_SigC(p) = Re_SigC(p) + real(z_dummy)
           Im_SigC(p) = Im_SigC(p) + aimag(z_dummy)
-          write(*,*) "Numerator"
-          write(*,*) num
           z_dummy = num*cmplx(-(eps**2 - eta_tilde**2)/(eps**2 + eta_tilde**2)**2,&
                   2*eta_tilde*eps/(eps**2 + eta_tilde**2)**2,kind=8)
           Re_DS(p)    = Re_DS(p)   + real(z_dummy)
