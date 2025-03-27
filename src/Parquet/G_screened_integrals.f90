@@ -37,9 +37,9 @@ subroutine G_eh_screened_integral(nOrb,nC,nO,nR,nS,ERI,eh_Phi,pp_Phi,XpY,XmY,rho
                  Y = 0.5d0*(XpY(ia,jb) - XmY(ia,jb))
 
                  rho(p,q,ia) = rho(p,q,ia) &
-                             + (ERI(q,j,p,b) - ERI(q,j,b,p) &
+                             + (1d0*ERI(q,j,p,b) - 1d0*ERI(q,j,b,p) &
                              - 1d0*eh_Phi(q,j,b,p) + 1d0*pp_Phi(q,j,p,b)) * X &
-                             + (ERI(q,b,p,j) - ERI(q,b,j,p) &
+                             + (1d0*ERI(q,b,p,j) - 1d0*ERI(q,b,j,p) &
                              - 1d0*eh_Phi(q,b,j,p) + 1d0*pp_Phi(q,b,p,j)) * Y  
 
               end do
@@ -107,7 +107,7 @@ subroutine G_pp_screened_integral(nOrb,nC,nO,nR,nOO,nVV,ERI,eh_Phi,X1,Y1,rho1,X2
               do c=nO+1,nOrb-nR
                  do d=c+1,nOrb-nR
                     cd = cd + 1
-                    rho1(p,q,ab) = rho1(p,q,ab) + ( ERI(p,q,c,d) - ERI(p,q,d,c) & 
+                    rho1(p,q,ab) = rho1(p,q,ab) + ( 1d0*ERI(p,q,c,d) - 1d0*ERI(p,q,d,c) & 
                                    + 1d0*eh_Phi(p,q,c,d) - 1d0*eh_Phi(p,q,d,c) ) * X1(cd,ab)
                  end do
               end do
@@ -116,7 +116,7 @@ subroutine G_pp_screened_integral(nOrb,nC,nO,nR,nOO,nVV,ERI,eh_Phi,X1,Y1,rho1,X2
               do k=nC+1,nO
                  do l=k+1,nO
                     kl = kl + 1
-                    rho1(p,q,ab) = rho1(p,q,ab) + ( ERI(p,q,k,l) - ERI(p,q,l,k) & 
+                    rho1(p,q,ab) = rho1(p,q,ab) + ( 1d0*ERI(p,q,k,l) - 1d0*ERI(p,q,l,k) & 
                                    + 1d0*eh_Phi(p,q,k,l) - 1d0*eh_Phi(p,q,l,k) ) * Y1(kl,ab)
                  end do
               end do
@@ -132,7 +132,7 @@ subroutine G_pp_screened_integral(nOrb,nC,nO,nR,nOO,nVV,ERI,eh_Phi,X1,Y1,rho1,X2
               do c=nO+1,nOrb-nR
                  do d=c+1,nOrb-nR
                     cd = cd + 1
-                    rho2(p,q,ij) = rho2(p,q,ij) + ( ERI(p,q,c,d) - ERI(p,q,d,c) &
+                    rho2(p,q,ij) = rho2(p,q,ij) + ( 1d0*ERI(p,q,c,d) - 1d0*ERI(p,q,d,c) &
                                    + 1d0*eh_Phi(p,q,c,d) - 1d0*eh_Phi(p,q,d,c) ) * X2(cd,ij)
                  end do
               end do
@@ -141,7 +141,7 @@ subroutine G_pp_screened_integral(nOrb,nC,nO,nR,nOO,nVV,ERI,eh_Phi,X1,Y1,rho1,X2
               do k=nC+1,nO
                  do l=k+1,nO
                     kl = kl + 1
-                    rho2(p,q,ij) = rho2(p,q,ij) + ( ERI(p,q,k,l) - ERI(p,q,l,k) &
+                    rho2(p,q,ij) = rho2(p,q,ij) + ( 1d0*ERI(p,q,k,l) - 1d0*ERI(p,q,l,k) &
                                    + 1d0*eh_Phi(p,q,k,l) - 1d0*eh_Phi(p,q,l,k) ) * Y2(kl,ij)  
                  end do
               end do
