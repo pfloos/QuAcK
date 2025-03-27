@@ -1,7 +1,7 @@
 subroutine complex_cRGF2_QP_graph(eta,nBas,nC,nO,nV,nR,Re_eHF,Im_eHF,&
                 ERI,Re_eGFlin,Im_eGFlin,Re_eOld,Im_eold,Re_eGF,Im_eGF,Re_Z,Im_Z)
 
-! Compute the graphical solution of the GF2 QP equation
+! Compute the graphical solution of the complex GF2 QP equation
 
   implicit none
   include 'parameters.h'
@@ -61,7 +61,7 @@ subroutine complex_cRGF2_QP_graph(eta,nBas,nC,nO,nV,nR,Re_eHF,Im_eHF,&
     
       nIt = nIt + 1
       
-      call complex_cRGF_SigC_dSigC(p,eta,nBas,nO,nV,nR,Re_w,Im_w,Re_eOld,Im_eOld,ERI,&
+      call complex_cRGF_SigC_dSigC(p,eta,nBas,nC,nO,nV,nR,Re_w,Im_w,Re_eOld,Im_eOld,ERI,&
               Re_SigC,Im_SigC,Re_Z,Im_Z)
 
       Re_f  = Re_w - Re_eHF(p) - Re_SigC 
