@@ -90,7 +90,7 @@ subroutine complex_cRGF2_QP_graph(eta,nBas,nC,nO,nV,nR,Re_eHF,Im_eHF,&
 
       write(*,'(I5,1X,I3,1X,F15.9,1X,F15.9,1X,F10.6)') p,nIt,Re_eGFlin(p)*HaToeV,Re_eGF(p)*HaToeV,Re_Z(p)
       write(*,'(I5,1X,I3,1X,F15.9,1X,F15.9,1X,F10.6)') p,nIt,Im_eGFlin(p)*HaToeV,Im_eGF(p)*HaToeV,Im_Z(p)
-      write(*,*) "e_GF - e_HF - \Sigma(e_GF) = ", sqrt(Re_f**2 + Im_f**2)
+      !write(*,*) "e_GF - e_HF - \Sigma(e_GF) = ", sqrt(Re_f**2 + Im_f**2)
     write(*,*)'-----------------------------------------------------'
     end if
 
