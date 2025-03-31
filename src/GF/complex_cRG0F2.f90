@@ -86,7 +86,6 @@ subroutine complex_cRG0F2(dotest,dophBSE,doppBSE,TDA,dBSE,dTDA,singlet,triplet,l
     write(*,*)
     call complex_cRGF2_QP_graph(eta,nOrb,nC,nO,nV,nR,Re_eHF,Im_eHF,ERI,Re_eGFlin,Im_eGFlin,&
             Re_eHF,Im_eHF,Re_eGF,Im_eGF,Re_Z,Im_Z)
-    call complex_cRGF2_self_energy_diag(eta,nOrb,nC,nO,nV,nR,Re_eGF,Im_eGF,ERI,Re_SigC,Im_SigC,Re_Z,Im_Z)
   end if
 
   ! Print results
