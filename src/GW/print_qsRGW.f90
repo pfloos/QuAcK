@@ -1,8 +1,5 @@
-
-! ---
-
-subroutine print_qsRGW(nBas, nOrb, nO, nSCF, Conv, thresh, eHF, eGW, c, SigC, &
-                       Z, ENuc, ET, EV, EJ, EK, EcGM, EcRPA, EqsGW, dipole)
+subroutine print_qsRGW(nBas,nOrb,nO,nSCF,Conv,thresh,eHF,eGW,c,SigC, & 
+                       Z,ENuc,ET,EV,EJ,EK,EcGM,EcRPA,EqsGW,dipole)
 
 ! Print useful information about qsRGW calculation
 

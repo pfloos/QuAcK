@@ -411,12 +411,12 @@ subroutine GParquet(max_it_1b,conv_1b,max_it_2b,conv_2b,nOrb,nC,nO,nV,nR,nS,eHF,
 
       deallocate(eh_Phi,pp_Phi)
       
-      write(*,*) '----------------------------------------------'
-      write(*,*) '   Two-body (frequency/kernel) convergence    '
-      write(*,*) '----------------------------------------------'
-      write(*,'(1X,A24,F10.6,1X,F10.6)')'Error for eh channel = ',err_eig_eh,err_eh
-      write(*,'(1X,A24,F10.6,1X,F10.6)')'Error for pp channel = ',err_eig_pp,err_pp
-      write(*,*) '----------------------------------------------'
+      write(*,*) '------------------------------------------------'
+      write(*,*) '    Two-body (frequency/kernel) convergence     '
+      write(*,*) '------------------------------------------------'
+      write(*,'(1X,A24,F10.6,1X,A1,1X,F10.6)')'Error for eh channel = ',err_eig_eh,'/',err_eh
+      write(*,'(1X,A24,F10.6,1X,A1,1X,F10.6)')'Error for pp channel = ',err_eig_pp,'/',err_pp
+      write(*,*) '------------------------------------------------'
       write(*,*)
       
       ! Convergence criteria
@@ -459,8 +459,7 @@ subroutine GParquet(max_it_1b,conv_1b,max_it_2b,conv_2b,nOrb,nC,nO,nV,nR,nS,eHF,
 
     allocate(eQPlin(nOrb),Z(nOrb),SigC(nOrb)) 
 
-    write(*,*) 'Building self-energy'
-
+    write(*,*) 'Building self-energy...'
     
     call wall_time(start_t)
     call G_Parquet_self_energy(eta,nOrb,nC,nO,nV,nR,nS,nOO,nVV,eOld,ERI, &
@@ -471,8 +470,6 @@ subroutine GParquet(max_it_1b,conv_1b,max_it_2b,conv_2b,nOrb,nC,nO,nV,nR,nS,eHF,
     write(*,*)
 
     eQPlin(:) = eHF(:) + Z(:)*SigC(:)
-
-    call print_RG0F2(nOrb,nO,eHF,SigC,eQPlin,Z,0d0,0d0,0d0)
     
     ! Solve the quasi-particle equation
 
@@ -491,13 +488,17 @@ subroutine GParquet(max_it_1b,conv_1b,max_it_2b,conv_2b,nOrb,nC,nO,nV,nR,nS,eHF,
 
     end if
 
-    deallocate(eQPlin,Z,SigC)
-
     ! Check one-body converge
 
     err_1b =  maxval(abs(eOld - eQP))
     eOld(:) = eQP(:)
-    write(*,'(A50,1X,F9.5,A8)') 'Error for one-body iteration =', err_1b
+
+    ! Print for one-body part
+
+    call print_parquet_1b(nOrb,nO,eHF,SigC,eQP,Z,n_it_1b,err_1b,0d0,0d0,0d0)
+
+    deallocate(eQPlin,Z,SigC)
+
     call wall_time(end_1b)
     t_1b = end_1b - start_1b
     write(*,'(A50,1X,F9.3,A8)') 'Wall time for one-body iteration =',t_1b,' seconds'
