@@ -7,7 +7,8 @@ subroutine GParquet(ENuc,max_it_1b,conv_1b,max_it_2b,conv_2b,nOrb,nC,nO,nV,nR,nS
 
 ! Hard-coded parameters
 
-  logical                       :: TDA        = .true.
+  logical                       :: TDAeh      = .true.
+  logical                       :: TDApp      = .true.
   logical                       :: linearize  = .true.
   logical                       :: print_phLR = .false.
   logical                       :: print_ppLR = .false.
@@ -192,8 +193,8 @@ subroutine GParquet(ENuc,max_it_1b,conv_1b,max_it_2b,conv_2b,nOrb,nC,nO,nV,nR,nS
 
       call wall_time(start_t)
 
-                   call phGLR_A(.false.,nOrb,nC,nO,nV,nR,nS,1d0,eOld,ERI,Aph)
-      if(.not.TDA) call phGLR_B(.false.,nOrb,nC,nO,nV,nR,nS,1d0,ERI,Bph)
+                     call phGLR_A(.false.,nOrb,nC,nO,nV,nR,nS,1d0,eOld,ERI,Aph)
+      if(.not.TDAeh) call phGLR_B(.false.,nOrb,nC,nO,nV,nR,nS,1d0,ERI,Bph)
       
       if(n_it_2b == 1) then
 
@@ -202,15 +203,15 @@ subroutine GParquet(ENuc,max_it_1b,conv_1b,max_it_2b,conv_2b,nOrb,nC,nO,nV,nR,nS
 
       else
 
-                     call G_eh_Gamma_A(nOrb,nC,nO,nR,nS,old_eh_Phi,old_pp_Phi,eh_Gam_A)
-        if(.not.TDA) call G_eh_Gamma_B(nOrb,nC,nO,nR,nS,old_eh_Phi,old_pp_Phi,eh_Gam_B)
+                       call G_eh_Gamma_A(nOrb,nC,nO,nR,nS,old_eh_Phi,old_pp_Phi,eh_Gam_A)
+        if(.not.TDAeh) call G_eh_Gamma_B(nOrb,nC,nO,nR,nS,old_eh_Phi,old_pp_Phi,eh_Gam_B)
         
       end if
       
       Aph(:,:) = Aph(:,:) + eh_Gam_A(:,:)
       Bph(:,:) = Bph(:,:) + eh_Gam_B(:,:) 
       
-      call phGLR(TDA,nS,Aph,Bph,Ec_eh,eh_Om,XpY,XmY)
+      call phGLR(TDAeh,nS,Aph,Bph,Ec_eh,eh_Om,XpY,XmY)
 
       call wall_time(end_t)
 
@@ -241,9 +242,9 @@ subroutine GParquet(ENuc,max_it_1b,conv_1b,max_it_2b,conv_2b,nOrb,nC,nO,nV,nR,nS
       Dpp(:,:) = 0d0
 
       call wall_time(start_t)
-      if(.not.TDA) call ppGLR_B(nOrb,nC,nO,nV,nR,nOO,nVV,1d0,ERI,Bpp)
-                   call ppGLR_C(nOrb,nC,nO,nV,nR,nVV,1d0,eOld,ERI,Cpp)
-                   call ppGLR_D(nOrb,nC,nO,nV,nR,nOO,1d0,eOld,ERI,Dpp)
+      if(.not.TDApp) call ppGLR_B(nOrb,nC,nO,nV,nR,nOO,nVV,1d0,ERI,Bpp)
+                     call ppGLR_C(nOrb,nC,nO,nV,nR,nVV,1d0,eOld,ERI,Cpp)
+                     call ppGLR_D(nOrb,nC,nO,nV,nR,nOO,1d0,eOld,ERI,Dpp)
 
       if(n_it_2b == 1) then
 
@@ -253,9 +254,9 @@ subroutine GParquet(ENuc,max_it_1b,conv_1b,max_it_2b,conv_2b,nOrb,nC,nO,nV,nR,nS
 
       else
 
-        if(.not.TDA) call G_pp_Gamma_B(nOrb,nC,nO,nR,nOO,nVV,old_eh_Phi,pp_Gam_B)
-                     call G_pp_Gamma_C(nOrb,nO,nR,nVV,old_eh_Phi,pp_Gam_C)
-                     call G_pp_Gamma_D(nOrb,nC,nO,nOO,old_eh_Phi,pp_Gam_D)
+        if(.not.TDApp) call G_pp_Gamma_B(nOrb,nC,nO,nR,nOO,nVV,old_eh_Phi,pp_Gam_B)
+                       call G_pp_Gamma_C(nOrb,nO,nR,nVV,old_eh_Phi,pp_Gam_C)
+                       call G_pp_Gamma_D(nOrb,nC,nO,nOO,old_eh_Phi,pp_Gam_D)
 
       end if
                    
@@ -263,7 +264,7 @@ subroutine GParquet(ENuc,max_it_1b,conv_1b,max_it_2b,conv_2b,nOrb,nC,nO,nV,nR,nS
       Cpp(:,:) = Cpp(:,:) + pp_Gam_C(:,:)
       Dpp(:,:) = Dpp(:,:) + pp_Gam_D(:,:)
       
-      call ppGLR(TDA,nOO,nVV,Bpp,Cpp,Dpp,ee_Om,X1,Y1,hh_Om,X2,Y2,Ec_pp)
+      call ppGLR(TDApp,nOO,nVV,Bpp,Cpp,Dpp,ee_Om,X1,Y1,hh_Om,X2,Y2,Ec_pp)
       call wall_time(end_t)
       t = end_t - start_t
 

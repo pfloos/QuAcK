@@ -349,8 +349,7 @@ subroutine GQuAcK(working_dir,dotest,doGHF,dostab,dosearch,doMP2,doMP3,doCCD,dop
 
   if(doParquet) then
     call wall_time(start_Parquet)
-    call GParquet(ENuc,max_it_1b,conv_1b,max_it_2b,conv_2b,   &
-         nBas2,nC,nO,nV,nR,nS,EGHF,eHF,ERI_MO)
+    call GParquet(ENuc,max_it_1b,conv_1b,max_it_2b,conv_2b,nBas2,nC,nO,nV,nR,nS,EGHF,eHF,ERI_MO)
     call wall_time(end_Parquet)
   
     t_Parquet = end_Parquet - start_Parquet

@@ -1,4 +1,4 @@
-subroutine RParquet(max_it_1b,conv_1b,max_it_2b,conv_2b,nOrb,nC,nO,nV,nR,nS,eHF,ERI)
+subroutine RParquet(ENuc,max_it_1b,conv_1b,max_it_2b,conv_2b,nOrb,nC,nO,nV,nR,nS,ERHF,eHF,ERI)
 
 ! Parquet approximation based on restricted orbitals
 
@@ -7,13 +7,16 @@ subroutine RParquet(max_it_1b,conv_1b,max_it_2b,conv_2b,nOrb,nC,nO,nV,nR,nS,eHF,
 
 ! Hard-coded parameters
 
-  logical                       :: linearize = .true.
-  logical                       :: TDA = .true.
+  logical                       :: TDAeh      = .true.
+  logical                       :: TDApp      = .true.
+  logical                       :: linearize  = .true.
   logical                       :: print_phLR = .true.
   logical                       :: print_ppLR = .true.
   
 ! Input variables
 
+  double precision,intent(in)   :: ENuc
+  double precision,intent(in)   :: ERHF
   integer,intent(in)            :: max_it_1b,max_it_2b
   double precision,intent(in)   :: conv_1b,conv_2b
   integer,intent(in)            :: nOrb,nC,nO,nV,nR,nS
@@ -39,7 +42,7 @@ subroutine RParquet(max_it_1b,conv_1b,max_it_2b,conv_2b,nOrb,nC,nO,nV,nR,nS,eHF,
   integer                       :: nVVs,nVVt
 
   ! eh BSE
-  double precision              :: EcRPA
+  double precision              :: Ec_eh(nspin)
   double precision,allocatable  :: Aph(:,:), Bph(:,:)
   double precision,allocatable  :: sing_XpY(:,:),trip_XpY(:,:)
   double precision,allocatable  :: sing_XmY(:,:),trip_XmY(:,:)
@@ -47,7 +50,9 @@ subroutine RParquet(max_it_1b,conv_1b,max_it_2b,conv_2b,nOrb,nC,nO,nV,nR,nS,eHF,
   double precision,allocatable  :: eh_trip_Om(:), old_eh_trip_Om(:)
   double precision,allocatable  :: eh_sing_Gam_A(:,:),eh_sing_Gam_B(:,:)
   double precision,allocatable  :: eh_trip_Gam_A(:,:),eh_trip_Gam_B(:,:)
+
   ! pp BSE
+  double precision              :: Ec_pp(nspin)
   double precision,allocatable  :: Bpp(:,:), Cpp(:,:), Dpp(:,:)
   double precision,allocatable  :: X1s(:,:),X1t(:,:)
   double precision,allocatable  :: Y1s(:,:),Y1t(:,:)
@@ -199,8 +204,8 @@ subroutine RParquet(max_it_1b,conv_1b,max_it_2b,conv_2b,nOrb,nC,nO,nV,nR,nS,eHF,
 
       call wall_time(start_t)
 
-                   call phRLR_A(ispin,.false.,nOrb,nC,nO,nV,nR,nS,1d0,eHF,ERI,Aph)
-      if(.not.TDA) call phRLR_B(ispin,.false.,nOrb,nC,nO,nV,nR,nS,1d0,ERI,Bph)
+                     call phRLR_A(ispin,.false.,nOrb,nC,nO,nV,nR,nS,1d0,eHF,ERI,Aph)
+      if(.not.TDAeh) call phRLR_B(ispin,.false.,nOrb,nC,nO,nV,nR,nS,1d0,ERI,Bph)
 
       if(n_it_2b == 1) then
 
@@ -213,9 +218,9 @@ subroutine RParquet(max_it_1b,conv_1b,max_it_2b,conv_2b,nOrb,nC,nO,nV,nR,nS,eHF,
              old_eh_sing_Phi,old_eh_trip_Phi,old_pp_sing_Phi,old_pp_trip_Phi, &
              eh_sing_Gam_A)
        
-        if(.not.TDA) call R_eh_singlet_Gamma_B(nOrb,nC,nO,nR,nS,                        &
-                          old_eh_sing_Phi,old_eh_trip_Phi,old_pp_sing_Phi,old_pp_trip_Phi, & 
-                          eh_sing_Gam_B)
+        if(.not.TDAeh) call R_eh_singlet_Gamma_B(nOrb,nC,nO,nR,nS,                        &
+                            old_eh_sing_Phi,old_eh_trip_Phi,old_pp_sing_Phi,old_pp_trip_Phi, & 
+                            eh_sing_Gam_B)
 
       end if
      
@@ -223,7 +228,7 @@ subroutine RParquet(max_it_1b,conv_1b,max_it_2b,conv_2b,nOrb,nC,nO,nV,nR,nS,eHF,
       Bph(:,:) = Bph(:,:) + eh_sing_Gam_B(:,:)  
       
 
-      call phRLR(TDA,nS,Aph,Bph,EcRPA,eh_sing_Om,sing_XpY,sing_XmY)
+      call phRLR(TDAeh,nS,Aph,Bph,Ec_eh(ispin),eh_sing_Om,sing_XpY,sing_XmY)
 
       call wall_time(end_t)
 
@@ -254,8 +259,8 @@ subroutine RParquet(max_it_1b,conv_1b,max_it_2b,conv_2b,nOrb,nC,nO,nV,nR,nS,eHF,
 
       call wall_time(start_t)
 
-                   call phRLR_A(ispin,.false.,nOrb,nC,nO,nV,nR,nS,1d0,eHF,ERI,Aph)
-      if(.not.TDA) call phRLR_B(ispin,.false.,nOrb,nC,nO,nV,nR,nS,1d0,ERI,Bph)
+                     call phRLR_A(ispin,.false.,nOrb,nC,nO,nV,nR,nS,1d0,eHF,ERI,Aph)
+      if(.not.TDAeh) call phRLR_B(ispin,.false.,nOrb,nC,nO,nV,nR,nS,1d0,ERI,Bph)
 
       if(n_it_2b == 1) then
 
@@ -268,16 +273,16 @@ subroutine RParquet(max_it_1b,conv_1b,max_it_2b,conv_2b,nOrb,nC,nO,nV,nR,nS,eHF,
              old_eh_sing_Phi,old_eh_trip_Phi,old_pp_sing_Phi,old_pp_trip_Phi, &
              eh_trip_Gam_A)
        
-        if(.not.TDA) call R_eh_triplet_Gamma_B(nOrb,nC,nO,nR,nS,                        &
-                          old_eh_sing_Phi,old_eh_trip_Phi,old_pp_sing_Phi,old_pp_trip_Phi, & 
-                          eh_trip_Gam_B)
+        if(.not.TDAeh) call R_eh_triplet_Gamma_B(nOrb,nC,nO,nR,nS,                        &
+                            old_eh_sing_Phi,old_eh_trip_Phi,old_pp_sing_Phi,old_pp_trip_Phi, & 
+                            eh_trip_Gam_B)
 
       end if
       
       Aph(:,:) = Aph(:,:) + eh_trip_Gam_A(:,:)
       Bph(:,:) = Bph(:,:) + eh_trip_Gam_B(:,:)
 
-      call phRLR(TDA,nS,Aph,Bph,EcRPA,eh_trip_Om,trip_XpY,trip_XmY)
+      call phRLR(TDAeh,nS,Aph,Bph,Ec_eh(ispin),eh_trip_Om,trip_XpY,trip_XmY)
 
       call wall_time(end_t)
       t = end_t - start_t
@@ -311,9 +316,9 @@ subroutine RParquet(max_it_1b,conv_1b,max_it_2b,conv_2b,nOrb,nC,nO,nV,nR,nS,eHF,
       Dpp(:,:) = 0d0
 
       call wall_time(start_t)
-      if(.not.TDA) call ppRLR_B(ispin,nOrb,nC,nO,nV,nR,nOOs,nVVs,1d0,ERI,Bpp)
-                   call ppRLR_C(ispin,nOrb,nC,nO,nV,nR,nVVs,1d0,eHF,ERI,Cpp)
-                   call ppRLR_D(ispin,nOrb,nC,nO,nV,nR,nOOs,1d0,eHF,ERI,Dpp)
+      if(.not.TDApp) call ppRLR_B(ispin,nOrb,nC,nO,nV,nR,nOOs,nVVs,1d0,ERI,Bpp)
+                     call ppRLR_C(ispin,nOrb,nC,nO,nV,nR,nVVs,1d0,eHF,ERI,Cpp)
+                     call ppRLR_D(ispin,nOrb,nC,nO,nV,nR,nOOs,1d0,eHF,ERI,Dpp)
 
       if(n_it_2b == 1) then
 
@@ -323,10 +328,9 @@ subroutine RParquet(max_it_1b,conv_1b,max_it_2b,conv_2b,nOrb,nC,nO,nV,nR,nS,eHF,
 
       else
 
-        if(.not.TDA) call R_pp_singlet_Gamma_B(nOrb,nC,nO,nR,nOOs,nVVs,&
-                                                           old_eh_sing_Phi,old_eh_trip_Phi,pp_sing_Gam_B)
-        call R_pp_singlet_Gamma_C(nOrb,nO,nR,nVVs,old_eh_sing_Phi,old_eh_trip_Phi,pp_sing_Gam_C)
-        call R_pp_singlet_Gamma_D(nOrb,nC,nO,nOOs,old_eh_sing_Phi,old_eh_trip_Phi,pp_sing_Gam_D)
+        if(.not.TDApp) call R_pp_singlet_Gamma_B(nOrb,nC,nO,nR,nOOs,nVVs,old_eh_sing_Phi,old_eh_trip_Phi,pp_sing_Gam_B)
+                       call R_pp_singlet_Gamma_C(nOrb,nO,nR,nVVs,old_eh_sing_Phi,old_eh_trip_Phi,pp_sing_Gam_C)
+                       call R_pp_singlet_Gamma_D(nOrb,nC,nO,nOOs,old_eh_sing_Phi,old_eh_trip_Phi,pp_sing_Gam_D)
 
       end if
                    
@@ -334,7 +338,7 @@ subroutine RParquet(max_it_1b,conv_1b,max_it_2b,conv_2b,nOrb,nC,nO,nV,nR,nS,eHF,
       Cpp(:,:) = Cpp(:,:) + pp_sing_Gam_C(:,:)
       Dpp(:,:) = Dpp(:,:) + pp_sing_Gam_D(:,:)
       
-      call ppRLR(TDA,nOOs,nVVs,Bpp,Cpp,Dpp,ee_sing_Om,X1s,Y1s,hh_sing_Om,X2s,Y2s,EcRPA)
+      call ppRLR(TDApp,nOOs,nVVs,Bpp,Cpp,Dpp,ee_sing_Om,X1s,Y1s,hh_sing_Om,X2s,Y2s,Ec_pp(ispin))
       call wall_time(end_t)
       t = end_t - start_t
 
@@ -369,9 +373,9 @@ subroutine RParquet(max_it_1b,conv_1b,max_it_2b,conv_2b,nOrb,nC,nO,nV,nR,nS,eHF,
       Dpp(:,:) = 0d0
 
       call wall_time(start_t)
-      if(.not.TDA) call ppRLR_B(ispin,nOrb,nC,nO,nV,nR,nOOt,nVVt,1d0,ERI,Bpp)
-                   call ppRLR_C(ispin,nOrb,nC,nO,nV,nR,nVVt,1d0,eHF,ERI,Cpp)
-                   call ppRLR_D(ispin,nOrb,nC,nO,nV,nR,nOOt,1d0,eHF,ERI,Dpp)
+      if(.not.TDApp) call ppRLR_B(ispin,nOrb,nC,nO,nV,nR,nOOt,nVVt,1d0,ERI,Bpp)
+                     call ppRLR_C(ispin,nOrb,nC,nO,nV,nR,nVVt,1d0,eHF,ERI,Cpp)
+                     call ppRLR_D(ispin,nOrb,nC,nO,nV,nR,nOOt,1d0,eHF,ERI,Dpp)
 
       if(n_it_2b == 1) then
 
@@ -381,10 +385,9 @@ subroutine RParquet(max_it_1b,conv_1b,max_it_2b,conv_2b,nOrb,nC,nO,nV,nR,nS,eHF,
 
       else
 
-        if(.not.TDA) call R_pp_triplet_Gamma_B(nOrb,nC,nO,nR,nOOt,nVVt,&
-                                                           old_eh_sing_Phi,old_eh_trip_Phi,pp_trip_Gam_B)
-        call R_pp_triplet_Gamma_C(nOrb,nO,nR,nVVt,old_eh_sing_Phi,old_eh_trip_Phi,pp_trip_Gam_C)
-        call R_pp_triplet_Gamma_D(nOrb,nC,nO,nOOt,old_eh_sing_Phi,old_eh_trip_Phi,pp_trip_Gam_D)
+        if(.not.TDApp) call R_pp_triplet_Gamma_B(nOrb,nC,nO,nR,nOOt,nVVt,old_eh_sing_Phi,old_eh_trip_Phi,pp_trip_Gam_B)
+                       call R_pp_triplet_Gamma_C(nOrb,nO,nR,nVVt,old_eh_sing_Phi,old_eh_trip_Phi,pp_trip_Gam_C)
+                       call R_pp_triplet_Gamma_D(nOrb,nC,nO,nOOt,old_eh_sing_Phi,old_eh_trip_Phi,pp_trip_Gam_D)
 
       end if
                    
@@ -392,7 +395,7 @@ subroutine RParquet(max_it_1b,conv_1b,max_it_2b,conv_2b,nOrb,nC,nO,nV,nR,nS,eHF,
       Cpp(:,:) = Cpp(:,:) + pp_trip_Gam_C(:,:)
       Dpp(:,:) = Dpp(:,:) + pp_trip_Gam_D(:,:)
       
-      call ppRLR(TDA,nOOt,nVVt,Bpp,Cpp,Dpp,ee_trip_Om,X1t,Y1t,hh_trip_Om,X2t,Y2t,EcRPA)
+      call ppRLR(TDApp,nOOt,nVVt,Bpp,Cpp,Dpp,ee_trip_Om,X1t,Y1t,hh_trip_Om,X2t,Y2t,Ec_pp(ispin))
 
       call wall_time(end_t)
       t = end_t - start_t
