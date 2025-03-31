@@ -1,4 +1,4 @@
-subroutine GParquet(max_it_1b,conv_1b,max_it_2b,conv_2b,nOrb,nC,nO,nV,nR,nS,eHF,ERI)
+subroutine GParquet(ENuc,max_it_1b,conv_1b,max_it_2b,conv_2b,nOrb,nC,nO,nV,nR,nS,eGHF,eHF,ERI)
 
 ! Parquet approximation based on restricted orbitals
 
@@ -15,6 +15,8 @@ subroutine GParquet(max_it_1b,conv_1b,max_it_2b,conv_2b,nOrb,nC,nO,nV,nR,nS,eHF,
   
 ! Input variables
 
+  double precision,intent(in)   :: ENuc
+  double precision,intent(in)   :: EGHF
   integer,intent(in)            :: max_it_1b,max_it_2b
   double precision,intent(in)   :: conv_1b,conv_2b
   integer,intent(in)            :: nOrb,nC,nO,nV,nR,nS
@@ -34,12 +36,13 @@ subroutine GParquet(max_it_1b,conv_1b,max_it_2b,conv_2b,nOrb,nC,nO,nV,nR,nS,eHF,
   integer                       :: nOO,nVV
 
   ! eh BSE
-  double precision              :: EcRPA
+  double precision              :: Ec_eh
   double precision,allocatable  :: Aph(:,:), Bph(:,:)
   double precision,allocatable  :: XpY(:,:), XmY(:,:)
   double precision,allocatable  :: eh_Om(:), old_eh_Om(:)
   double precision,allocatable  :: eh_Gam_A(:,:),eh_Gam_B(:,:)
   ! pp BSE
+  double precision              :: Ec_pp
   double precision,allocatable  :: Bpp(:,:), Cpp(:,:), Dpp(:,:)
   double precision,allocatable  :: X1(:,:),Y1(:,:)
   double precision,allocatable  :: ee_Om(:), old_ee_Om(:)
@@ -207,7 +210,7 @@ subroutine GParquet(max_it_1b,conv_1b,max_it_2b,conv_2b,nOrb,nC,nO,nV,nR,nS,eHF,
       Aph(:,:) = Aph(:,:) + eh_Gam_A(:,:)
       Bph(:,:) = Bph(:,:) + eh_Gam_B(:,:) 
       
-      call phGLR(TDA,nS,Aph,Bph,EcRPA,eh_Om,XpY,XmY)
+      call phGLR(TDA,nS,Aph,Bph,Ec_eh,eh_Om,XpY,XmY)
 
       call wall_time(end_t)
 
@@ -260,7 +263,7 @@ subroutine GParquet(max_it_1b,conv_1b,max_it_2b,conv_2b,nOrb,nC,nO,nV,nR,nS,eHF,
       Cpp(:,:) = Cpp(:,:) + pp_Gam_C(:,:)
       Dpp(:,:) = Dpp(:,:) + pp_Gam_D(:,:)
       
-      call ppGLR(TDA,nOO,nVV,Bpp,Cpp,Dpp,ee_Om,X1,Y1,hh_Om,X2,Y2,EcRPA)
+      call ppGLR(TDA,nOO,nVV,Bpp,Cpp,Dpp,ee_Om,X1,Y1,hh_Om,X2,Y2,Ec_pp)
       call wall_time(end_t)
       t = end_t - start_t
 
@@ -495,7 +498,7 @@ subroutine GParquet(max_it_1b,conv_1b,max_it_2b,conv_2b,nOrb,nC,nO,nV,nR,nS,eHF,
 
     ! Print for one-body part
 
-    call print_parquet_1b(nOrb,nO,eHF,SigC,eQP,Z,n_it_1b,err_1b,0d0,0d0,0d0)
+    call print_parquet_1b(nOrb,nO,eHF,SigC,eQP,Z,n_it_1b,err_1b,ENuc,EGHF,EcGM,Ec_eh,Ec_pp)
 
     deallocate(eQPlin,Z,SigC)
 

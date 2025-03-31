@@ -1,4 +1,4 @@
-subroutine print_parquet_1b(nOrb,nO,eHF,SigC,eQP,Z,n_it_1b,err_1b,ENuc,ERHF,Ec)
+subroutine print_parquet_1b(nOrb,nO,eHF,SigC,eQP,Z,n_it_1b,err_1b,ENuc,EGHF,EcGM,Ec_eh,Ec_pp)
 
 ! Print one-electron energies and other stuff for G0F2
 
@@ -14,8 +14,10 @@ subroutine print_parquet_1b(nOrb,nO,eHF,SigC,eQP,Z,n_it_1b,err_1b,ENuc,ERHF,Ec)
   integer,intent(in)                 :: n_it_1b
   double precision,intent(in)        :: err_1b
   double precision,intent(in)        :: ENuc
-  double precision,intent(in)        :: ERHF
-  double precision,intent(in)        :: Ec
+  double precision,intent(in)        :: EGHF
+  double precision,intent(in)        :: EcGM
+  double precision,intent(in)        :: Ec_eh
+  double precision,intent(in)        :: Ec_pp
 
   integer                            :: p
   integer                            :: HOMO
@@ -50,8 +52,12 @@ subroutine print_parquet_1b(nOrb,nO,eHF,SigC,eQP,Z,n_it_1b,err_1b,ENuc,ERHF,Ec)
   write(*,'(2X,A60,F15.6,A3)') 'Parquet LUMO    energy = ',eQP(LUMO)*HaToeV,' eV'
   write(*,'(2X,A60,F15.6,A3)') 'Parquet HOMO-LUMO gap  = ',Gap*HaToeV,' eV'
   write(*,*)'-------------------------------------------------------------------------------'
-  write(*,'(2X,A60,F15.6,A3)') 'Parquet total       energy = ',ENuc + ERHF + Ec,' au'
-  write(*,'(2X,A60,F15.6,A3)') 'Parquet correlation energy = ',Ec,' au'
+  write(*,'(2X,A60,F15.6,A3)') '     Parquet total       energy = ',ENuc + EGHF + EcGM,' au'
+  write(*,'(2X,A60,F15.6,A3)') '     Parquet correlation energy = ',EcGM,' au'
+  write(*,*)'-------------------------------------------------------------------------------'
+  write(*,'(2X,A60,F15.6,A3)') '     eh-RPA  correlation energy = ',Ec_eh,' au'
+  write(*,'(2X,A60,F15.6,A3)') '     pp-RPA  correlation energy = ',Ec_pp,' au'
+  write(*,'(2X,A60,F15.6,A3)') '(eh+pp)-RPA  correlation energy = ',Ec_pp,' au'
   write(*,*)'-------------------------------------------------------------------------------'
   write(*,*)
 
