@@ -47,7 +47,7 @@ subroutine G_Parquet_self_energy(eta,nOrb,nC,nO,nV,nR,nS,nOO,nVV,eQP,ERI,&
 
               eps = eQP(p) + eQP(a) - eQP(i) - eQP(j)
               reg = (1d0 - exp(- 2d0 * eta * eps * eps))
-              num = 0.5d0*(ERI(p,a,i,j) - ERI(p,a,j,i))**2
+              num = 0.5d0*(ERI(p,a,j,i) - ERI(p,a,i,j))**2
 
               SigC(p) = SigC(p) + num*reg/eps
               Z(p)    = Z(p)    - num*reg/eps**2
@@ -62,7 +62,7 @@ subroutine G_Parquet_self_energy(eta,nOrb,nC,nO,nV,nR,nS,nOO,nVV,eQP,ERI,&
 
               eps = eQP(p) + eQP(i) - eQP(a) - eQP(b)
               reg = (1d0 - exp(- 2d0 * eta * eps * eps))
-              num = 0.5d0*(ERI(p,i,a,b) - ERI(p,i,b,a))**2
+              num = 0.5d0*(ERI(p,i,b,a) - ERI(p,i,a,b))**2
 
               SigC(p) = SigC(p) + num*reg/eps
               Z(p)    = Z(p)    - num*reg/eps**2
@@ -93,6 +93,7 @@ subroutine G_Parquet_self_energy(eta,nOrb,nC,nO,nV,nR,nS,nOO,nVV,eQP,ERI,&
                  reg2 = (1d0 - exp(- 2d0 * eta * dem2 * dem2))
 
                  SigC(p) = SigC(p) - num * (reg1/dem1) * (reg2/dem2)
+                 Z(p)    = Z(p)    + num * (reg1/dem1) * (reg2/dem2/dem2)
                  
                  num  = ERI(p,a,j,i) * &
                  (eh_rho(j,p,n) * eh_rho(i,a,n) - eh_rho(j,a,n) * eh_rho(i,p,n))
@@ -103,6 +104,7 @@ subroutine G_Parquet_self_energy(eta,nOrb,nC,nO,nV,nR,nS,nOO,nVV,eQP,ERI,&
                  reg2 = (1d0 - exp(- 2d0 * eta * dem2 * dem2))
 
                  SigC(p) = SigC(p) + num * (reg1/dem1) * (reg2/dem2)
+                 Z(p)    = Z(p)    - num * (reg1/dem1) * (reg2/dem2/dem2)
                  
                  num  = ERI(p,i,j,a) * &
                  (eh_rho(j,p,n) * eh_rho(a,i,n) - eh_rho(j,i,n) * eh_rho(a,p,n))
@@ -113,6 +115,7 @@ subroutine G_Parquet_self_energy(eta,nOrb,nC,nO,nV,nR,nS,nOO,nVV,eQP,ERI,&
                  reg2 = (1d0 - exp(- 2d0 * eta * dem2 * dem2))
 
                  SigC(p) = SigC(p) - num * (reg1/dem1) * (reg2/dem2)
+                 Z(p)    = Z(p)    + num * (reg1/dem1) * (reg2/dem2/dem2)
                  
                  num  = ERI(p,a,j,i) * &
                  (eh_rho(j,p,n) * eh_rho(i,a,n) - eh_rho(j,a,n) * eh_rho(i,p,n))
@@ -123,6 +126,7 @@ subroutine G_Parquet_self_energy(eta,nOrb,nC,nO,nV,nR,nS,nOO,nVV,eQP,ERI,&
                  reg2 = (1d0 - exp(- 2d0 * eta * dem2 * dem2))
 
                  SigC(p) = SigC(p) - num * (reg1/dem1) * (reg2/dem2)
+                 Z(p)    = Z(p)    + num * (reg1/dem1) * (reg2/dem2/dem2)
                  
               end do ! j
               !3p2h
@@ -136,6 +140,7 @@ subroutine G_Parquet_self_energy(eta,nOrb,nC,nO,nV,nR,nS,nOO,nVV,eQP,ERI,&
                  reg2 = (1d0 - exp(- 2d0 * eta * dem2 * dem2))
 
                  SigC(p) = SigC(p) - num * (reg1/dem1) * (reg2/dem2)
+                 Z(p)    = Z(p)    + num * (reg1/dem1) * (reg2/dem2/dem2)
                  
                  num  = ERI(p,i,b,a) * &
                  (eh_rho(b,p,n) * eh_rho(a,i,n) - eh_rho(b,i,n) * eh_rho(a,p,n))
@@ -145,6 +150,7 @@ subroutine G_Parquet_self_energy(eta,nOrb,nC,nO,nV,nR,nS,nOO,nVV,eQP,ERI,&
                  reg2 = (1d0 - exp(- 2d0 * eta * dem2 * dem2))
 
                  SigC(p) = SigC(p) - num * (reg1/dem1) * (reg2/dem2)
+                 Z(p)    = Z(p)    + num * (reg1/dem1) * (reg2/dem2/dem2)
 
                  num  = ERI(p,i,b,a) * &
                  (eh_rho(b,p,n) * eh_rho(a,i,n) - eh_rho(b,i,n) * eh_rho(a,p,n))
@@ -155,6 +161,7 @@ subroutine G_Parquet_self_energy(eta,nOrb,nC,nO,nV,nR,nS,nOO,nVV,eQP,ERI,&
                  reg2 = (1d0 - exp(- 2d0 * eta * dem2 * dem2))
 
                  SigC(p) = SigC(p) - num * (reg1/dem1) * (reg2/dem2)
+                 Z(p)    = Z(p)    + num * (reg1/dem1) * (reg2/dem2/dem2)
                  
                  num  = ERI(p,i,b,a) * &
                  (eh_rho(b,p,n) * eh_rho(a,i,n) - eh_rho(b,i,n) * eh_rho(a,p,n))
@@ -165,6 +172,7 @@ subroutine G_Parquet_self_energy(eta,nOrb,nC,nO,nV,nR,nS,nOO,nVV,eQP,ERI,&
                  reg2 = (1d0 - exp(- 2d0 * eta * dem2 * dem2))
 
                  SigC(p) = SigC(p) + num * (reg1/dem1) * (reg2/dem2)
+                 Z(p)    = Z(p)    - num * (reg1/dem1) * (reg2/dem2/dem2)
                  
               end do ! b
               
@@ -193,6 +201,7 @@ subroutine G_Parquet_self_energy(eta,nOrb,nC,nO,nV,nR,nS,nOO,nVV,eQP,ERI,&
                  reg2 = (1d0 - exp(- 2d0 * eta * dem2 * dem2))
 
                  SigC(p) = SigC(p) - num * (reg1/dem1) * (reg2/dem2)
+                 Z(p)    = Z(p)    + num * (reg1/dem1) * (reg2/dem2/dem2)
 
               end do ! k
               ! 3h2p
@@ -205,6 +214,7 @@ subroutine G_Parquet_self_energy(eta,nOrb,nC,nO,nV,nR,nS,nOO,nVV,eQP,ERI,&
                  reg2 = (1d0 - exp(- 2d0 * eta * dem2 * dem2))
 
                  SigC(p) = SigC(p) - num * (reg1/dem1) * (reg2/dem2)
+                 Z(p)    = Z(p)    + num * (reg1/dem1) * (reg2/dem2/dem2)
                  
               end do ! a
            end do ! n
@@ -219,6 +229,7 @@ subroutine G_Parquet_self_energy(eta,nOrb,nC,nO,nV,nR,nS,nOO,nVV,eQP,ERI,&
                  reg2 = (1d0 - exp(- 2d0 * eta * dem2 * dem2))
 
                  SigC(p) = SigC(p) - num * (reg1/dem1) * (reg2/dem2)
+                 Z(p)    = Z(p)    + num * (reg1/dem1) * (reg2/dem2/dem2)
 
                  num  = ERI(p,c,i,j) * hh_rho(i,j,n) * hh_rho(p,c,n)
                  dem1 = hh_Om(n) - eQP(i) - eQP(j)
@@ -227,6 +238,7 @@ subroutine G_Parquet_self_energy(eta,nOrb,nC,nO,nV,nR,nS,nOO,nVV,eQP,ERI,&
                  reg2 = (1d0 - exp(- 2d0 * eta * dem2 * dem2))
 
                  SigC(p) = SigC(p) + num * (reg1/dem1) * (reg2/dem2)
+                 Z(p)    = Z(p)    - num * (reg1/dem1) * (reg2/dem2/dem2)
                  
               end do ! c
            end do ! n
@@ -246,6 +258,7 @@ subroutine G_Parquet_self_energy(eta,nOrb,nC,nO,nV,nR,nS,nOO,nVV,eQP,ERI,&
                  reg2 = (1d0 - exp(- 2d0 * eta * dem2 * dem2))
 
                  SigC(p) = SigC(p) - num * (reg1/dem1) * (reg2/dem2)
+                 Z(p)    = Z(p)    + num * (reg1/dem1) * (reg2/dem2/dem2)
 
               end do ! c
               ! 3p2h
@@ -258,6 +271,7 @@ subroutine G_Parquet_self_energy(eta,nOrb,nC,nO,nV,nR,nS,nOO,nVV,eQP,ERI,&
                  reg2 = (1d0 - exp(- 2d0 * eta * dem2 * dem2))
 
                  SigC(p) = SigC(p) - num * (reg1/dem1) * (reg2/dem2)
+                 Z(p)    = Z(p)    + num * (reg1/dem1) * (reg2/dem2/dem2)
                  
               end do ! k
            end do ! n
@@ -272,6 +286,7 @@ subroutine G_Parquet_self_energy(eta,nOrb,nC,nO,nV,nR,nS,nOO,nVV,eQP,ERI,&
                  reg2 = (1d0 - exp(- 2d0 * eta * dem2 * dem2))
 
                  SigC(p) = SigC(p) - num * (reg1/dem1) * (reg2/dem2)
+                 Z(p)    = Z(p)    + num * (reg1/dem1) * (reg2/dem2/dem2)
 
                  num  = ERI(p,k,a,b) * ee_rho(a,b,n) * ee_rho(p,k,n)
                  dem1 = ee_Om(n) - eQP(a) - eQP(b)
@@ -280,6 +295,7 @@ subroutine G_Parquet_self_energy(eta,nOrb,nC,nO,nV,nR,nS,nOO,nVV,eQP,ERI,&
                  reg2 = (1d0 - exp(- 2d0 * eta * dem2 * dem2))
 
                  SigC(p) = SigC(p) + num * (reg1/dem1) * (reg2/dem2)
+                 Z(p)    = Z(p)    - num * (reg1/dem1) * (reg2/dem2/dem2)
                  
               end do ! c
            end do ! n

@@ -497,7 +497,7 @@ subroutine GParquet(max_it_1b,conv_1b,max_it_2b,conv_2b,nOrb,nC,nO,nV,nR,nS,eHF,
 
     err_1b =  maxval(abs(eOld - eQP))
     eOld(:) = eQP(:)
- 
+    write(*,'(A50,1X,F9.5,A8)') 'Error for one-body iteration =', err_1b
     call wall_time(end_1b)
     t_1b = end_1b - start_1b
     write(*,'(A50,1X,F9.3,A8)') 'Wall time for one-body iteration =',t_1b,' seconds'
