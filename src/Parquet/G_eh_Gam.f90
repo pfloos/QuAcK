@@ -35,7 +35,7 @@ subroutine G_eh_Gamma_A(nOrb,nC,nO,nR,nS,eh_Phi,pp_Phi,eh_Gam_A)
      enddo
   enddo
   
-end subroutine G_eh_Gamma_A
+end subroutine 
 
 subroutine G_eh_Gamma_B(nOrb,nC,nO,nR,nS,eh_Phi,pp_Phi,eh_Gam_B)
 
@@ -74,4 +74,4 @@ subroutine G_eh_Gamma_B(nOrb,nC,nO,nR,nS,eh_Phi,pp_Phi,eh_Gam_B)
      enddo
   enddo
   
-end subroutine G_eh_Gamma_B
+end subroutine 

@@ -41,4 +41,4 @@ subroutine R_pp_singlet_Phi(nOrb,nC,nR,nOO,nVV,ee_sing_Om,ee_sing_rho,hh_sing_Om
      enddo
   enddo
 
-end subroutine R_pp_singlet_Phi
+end subroutine 

@@ -35,4 +35,4 @@ subroutine R_eh_singlet_Phi(nOrb,nC,nR,nS,eh_sing_Om,eh_sing_rho,eh_sing_Phi)
      enddo
   enddo
 
-end subroutine R_eh_singlet_Phi
+end subroutine 

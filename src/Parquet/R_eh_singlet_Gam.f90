@@ -39,7 +39,7 @@ subroutine R_eh_singlet_Gamma_A(nOrb,nC,nO,nR,nS,eh_sing_Phi,eh_trip_Phi,pp_sing
      enddo
   enddo
 
-end subroutine R_eh_singlet_Gamma_A
+end subroutine 
 
 subroutine R_eh_singlet_Gamma_B(nOrb,nC,nO,nR,nS,eh_sing_Phi,eh_trip_Phi,pp_sing_Phi,pp_trip_Phi,eh_sing_Gam_B)
 
@@ -83,4 +83,4 @@ subroutine R_eh_singlet_Gamma_B(nOrb,nC,nO,nR,nS,eh_sing_Phi,eh_trip_Phi,pp_sing
      enddo
   enddo
 
-end subroutine R_eh_singlet_Gamma_B
+end subroutine 

@@ -91,4 +91,4 @@ subroutine R_irred_Parquet_self_energy(nOrb,nC,nO,nV,nR,e,EcGM,SigC,Z)
   !   end do
   ! end do
 
-end subroutine R_irred_Parquet_self_energy
+end subroutine 

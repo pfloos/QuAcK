@@ -55,7 +55,7 @@ subroutine R_eh_singlet_screened_integral(nOrb,nC,nO,nR,nS,ERI,eh_sing_Phi,eh_tr
 !  !$OMP END DO
 !  !$OMP END PARALLEL
   
-end subroutine R_eh_singlet_screened_integral
+end subroutine 
 
 subroutine R_eh_triplet_screened_integral(nOrb,nC,nO,nR,nS,ERI,eh_sing_Phi,eh_trip_Phi,pp_sing_Phi,pp_trip_Phi,XpY,XmY,rho)
 
@@ -114,7 +114,7 @@ subroutine R_eh_triplet_screened_integral(nOrb,nC,nO,nR,nS,ERI,eh_sing_Phi,eh_tr
 !  !$OMP END DO
 !  !$OMP END PARALLEL
   
-end subroutine R_eh_triplet_screened_integral
+end subroutine 
 
 
 subroutine R_pp_singlet_screened_integral(nOrb,nC,nO,nR,nOO,nVV,ERI,eh_sing_Phi,eh_trip_Phi,X1,Y1,rho1,X2,Y2,rho2)
@@ -233,7 +233,7 @@ subroutine R_pp_singlet_screened_integral(nOrb,nC,nO,nR,nOO,nVV,ERI,eh_sing_Phi,
 !  !$OMP END DO
 !  !$OMP END PARALLEL
 
-end subroutine R_pp_singlet_screened_integral
+end subroutine 
 
 
 
@@ -346,4 +346,4 @@ subroutine R_pp_triplet_screened_integral(nOrb,nC,nO,nR,nOO,nVV,ERI,eh_sing_Phi,
 !  !$OMP END DO
 !  !$OMP END PARALLEL
 
-end subroutine R_pp_triplet_screened_integral
+end subroutine 

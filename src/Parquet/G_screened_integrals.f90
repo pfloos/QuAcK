@@ -54,7 +54,7 @@ subroutine G_eh_screened_integral(nOrb,nC,nO,nR,nS,ERI,eh_Phi,pp_Phi,XpY,XmY,rho
 !  !$OMP END DO
 !  !$OMP END PARALLEL
   
-end subroutine G_eh_screened_integral
+end subroutine 
 
 subroutine G_pp_screened_integral(nOrb,nC,nO,nR,nOO,nVV,ERI,eh_Phi,X1,Y1,rho1,X2,Y2,rho2)
 
@@ -163,4 +163,4 @@ subroutine G_pp_screened_integral(nOrb,nC,nO,nR,nOO,nVV,ERI,eh_Phi,X1,Y1,rho1,X2
 !  !$OMP END DO
 !  !$OMP END PARALLEL
 
-end subroutine G_pp_screened_integral
+end subroutine 

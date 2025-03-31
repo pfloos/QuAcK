@@ -310,4 +310,4 @@ subroutine G_Parquet_self_energy(eta,nOrb,nC,nO,nV,nR,nS,nOO,nVV,eQP,ERI,&
  
   Z(:) = 1d0/(1d0 - Z(:))
   
-end subroutine G_Parquet_self_energy
+end subroutine 

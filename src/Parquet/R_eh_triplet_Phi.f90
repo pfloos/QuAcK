@@ -35,4 +35,4 @@ subroutine R_eh_triplet_Phi(nOrb,nC,nR,nS,eh_trip_Om,eh_trip_rho,eh_trip_Phi)
      enddo
   enddo
 
-end subroutine R_eh_triplet_Phi
+end subroutine 

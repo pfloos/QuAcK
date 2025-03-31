@@ -40,4 +40,4 @@ subroutine G_pp_Phi(nOrb,nC,nR,nOO,nVV,ee_Om,ee_rho,hh_Om,hh_rho,pp_Phi)
      enddo
   enddo
   
-end subroutine G_pp_Phi
+end subroutine 

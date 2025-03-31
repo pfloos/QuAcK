@@ -685,4 +685,4 @@ subroutine RParquet(ENuc,max_it_1b,conv_1b,max_it_2b,conv_2b,nOrb,nC,nO,nV,nR,nS
 
   end if
      
-end subroutine RParquet
+end subroutine 

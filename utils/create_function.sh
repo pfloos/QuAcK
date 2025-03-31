@@ -34,7 +34,7 @@ echo "function ${NAME}() result(${RES})
 
 ! Initalization
 
-end function ${NAME}" > ${NAME}.f90
+end function " > ${NAME}.f90
 
 fi
 

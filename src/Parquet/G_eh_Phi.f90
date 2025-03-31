@@ -34,4 +34,4 @@ subroutine G_eh_Phi(nOrb,nC,nR,nS,eh_Om,eh_rho,eh_Phi)
      enddo
   enddo
   
-end subroutine G_eh_Phi
+end subroutine 

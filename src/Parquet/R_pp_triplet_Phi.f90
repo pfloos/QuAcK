@@ -41,4 +41,4 @@ subroutine R_pp_triplet_Phi(nOrb,nC,nR,nOO,nVV,ee_trip_Om,ee_trip_rho,hh_trip_Om
      enddo
   enddo
 
-end subroutine R_pp_triplet_Phi
+end subroutine 
