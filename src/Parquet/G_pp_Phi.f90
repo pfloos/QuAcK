@@ -30,7 +30,7 @@ subroutine G_pp_Phi(nOrb,nC,nR,nOO,nVV,ee_Om,ee_rho,hh_Om,hh_rho,pp_Phi)
                       + 2d0 * ee_rho(p,q,n)*ee_rho(r,s,n)/ee_Om(n)            
               end do
 
-              do n=1,nOO
+              do n=1,nOO                 
                  pp_Phi(p,q,r,s) = pp_Phi(p,q,r,s) &
                       - 2d0 * hh_rho(p,q,n)*hh_rho(r,s,n)/hh_Om(n)           
               end do

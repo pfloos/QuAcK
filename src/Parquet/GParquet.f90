@@ -11,7 +11,8 @@ subroutine GParquet(max_it_1b,conv_1b,max_it_2b,conv_2b,nOrb,nC,nO,nV,nR,nS,eHF,
   logical                       :: linearize  = .true.
   logical                       :: print_phLR = .false.
   logical                       :: print_ppLR = .false.
-
+  double precision              :: eta        = 100d0
+  
 ! Input variables
 
   integer,intent(in)            :: max_it_1b,max_it_2b
@@ -77,7 +78,7 @@ subroutine GParquet(max_it_1b,conv_1b,max_it_2b,conv_2b,nOrb,nC,nO,nV,nR,nS,eHF,
     
 ! DIIS parameters
 
-  max_diis = 1
+  max_diis = 2
   n_diis   = 0
   rcond    = 1d0
 
@@ -126,21 +127,18 @@ subroutine GParquet(max_it_1b,conv_1b,max_it_2b,conv_2b,nOrb,nC,nO,nV,nR,nS,eHF,
 
   n_it_1b = 0
   err_1b  = 1d0
-
-  n_it_2b = 0 
-  err_2b  = 1d0
-
+    
   eQP(:)  = eHF(:)
   eOld(:) = eHF(:)
-
+  
   eh_rho(:,:,:) = 0d0
   ee_rho(:,:,:) = 0d0
   hh_rho(:,:,:) = 0d0
-
+  
   old_eh_Om(:) = 0d0
   old_ee_Om(:) = 0d0
   old_hh_Om(:) = 0d0
-
+    
   old_eh_Phi(:,:,:,:) = 0d0
   old_pp_Phi(:,:,:,:) = 0d0
     
@@ -158,6 +156,11 @@ subroutine GParquet(max_it_1b,conv_1b,max_it_2b,conv_2b,nOrb,nC,nO,nV,nR,nS,eHF,
     write(*,'(1X,A30,1X,I4)') 'One-body iteration #',n_it_1b
     write(*,*)'====================================='
     write(*,*)
+
+! Initialization
+    
+    n_it_2b = 0 
+    err_2b  = 1d0
 
     !-----------------------------------------!
     ! Main loop for two-body self-consistency !
@@ -186,7 +189,7 @@ subroutine GParquet(max_it_1b,conv_1b,max_it_2b,conv_2b,nOrb,nC,nO,nV,nR,nS,eHF,
 
       call wall_time(start_t)
 
-                   call phGLR_A(.false.,nOrb,nC,nO,nV,nR,nS,1d0,eHF,ERI,Aph)
+                   call phGLR_A(.false.,nOrb,nC,nO,nV,nR,nS,1d0,eOld,ERI,Aph)
       if(.not.TDA) call phGLR_B(.false.,nOrb,nC,nO,nV,nR,nS,1d0,ERI,Bph)
       
       if(n_it_2b == 1) then
@@ -236,8 +239,8 @@ subroutine GParquet(max_it_1b,conv_1b,max_it_2b,conv_2b,nOrb,nC,nO,nV,nR,nS,eHF,
 
       call wall_time(start_t)
       if(.not.TDA) call ppGLR_B(nOrb,nC,nO,nV,nR,nOO,nVV,1d0,ERI,Bpp)
-                   call ppGLR_C(nOrb,nC,nO,nV,nR,nVV,1d0,eHF,ERI,Cpp)
-                   call ppGLR_D(nOrb,nC,nO,nV,nR,nOO,1d0,eHF,ERI,Dpp)
+                   call ppGLR_C(nOrb,nC,nO,nV,nR,nVV,1d0,eOld,ERI,Cpp)
+                   call ppGLR_D(nOrb,nC,nO,nV,nR,nOO,1d0,eOld,ERI,Dpp)
 
       if(n_it_2b == 1) then
 
@@ -383,7 +386,6 @@ subroutine GParquet(max_it_1b,conv_1b,max_it_2b,conv_2b,nOrb,nC,nO,nV,nR,nS,eHF,
      
         n_diis = min(n_diis+1,max_diis)
         call DIIS_extrapolation(rcond,2*nOrb**4,2*nOrb**4,n_diis,err_diis,Phi_diis,err,Phi)
-        print*,rcond
      
       end if
 
@@ -439,7 +441,7 @@ subroutine GParquet(max_it_1b,conv_1b,max_it_2b,conv_2b,nOrb,nC,nO,nV,nR,nS,eHF,
       write(*,*)'             Two-body convergence failed            '
       write(*,*)'!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!'
       write(*,*)
-      stop
+      !stop
 
     else
 
@@ -459,15 +461,19 @@ subroutine GParquet(max_it_1b,conv_1b,max_it_2b,conv_2b,nOrb,nC,nO,nV,nR,nS,eHF,
 
     write(*,*) 'Building self-energy'
 
+    
     call wall_time(start_t)
-    !call G_irred_Parquet_self_energy(nOrb,nC,nO,nV,nR,eOld,EcGM,SigC,Z)
+    call G_Parquet_self_energy(eta,nOrb,nC,nO,nV,nR,nS,nOO,nVV,eOld,ERI, &
+                               eh_rho,old_eh_Om,ee_rho,old_ee_Om,hh_rho,old_hh_Om,EcGM,SigC,Z)
     call wall_time(end_t)
     t = end_t - start_t
     write(*,'(A50,1X,F9.3,A8)') 'Wall time for self energy =',t,' seconds'
     write(*,*)
-       
-    eQPlin(:) = eHF(:) !+ Z(:)*SigC(:)
 
+    eQPlin(:) = eHF(:) + Z(:)*SigC(:)
+
+    call print_RG0F2(nOrb,nO,eHF,SigC,eQPlin,Z,0d0,0d0,0d0)
+    
     ! Solve the quasi-particle equation
 
     if(linearize) then

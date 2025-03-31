@@ -379,7 +379,7 @@ subroutine RQuAcK(working_dir,use_gpu,dotest,doRHF,doROHF,dostab,dosearch,doMP2,
     call wall_time(start_Parquet)
     call RParquet(max_it_macro,conv_one_body,max_it_micro,conv_two_body,   &
          nOrb,nC,nO,nV,nR,nS, &
-         eHF,ERI_MO)
+         eGW,ERI_MO)
     call wall_time(end_Parquet)
   
     t_Parquet = end_Parquet - start_Parquet
