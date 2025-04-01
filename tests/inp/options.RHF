@@ -18,5 +18,5 @@
        F     F      F     F    T     
 # HFB: temperature  sigma chem_pot_HF restart_HFB
           0.05      1.00  T           F
-# Parquet: max_it_macro conv_one_body max_it_micro conv_two_body
-               1           0.00001        1 0           0.00001
+# Parquet: TDAeh TDApp max_it_1b conv_1b max_it_2b conv_2b lin reg
+           F     F     1         0.00001 1         0.00001 F   0.0
