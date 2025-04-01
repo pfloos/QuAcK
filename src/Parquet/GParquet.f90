@@ -1,4 +1,4 @@
-subroutine GParquet(ENuc,max_it_1b,conv_1b,max_it_2b,conv_2b,nOrb,nC,nO,nV,nR,nS,eGHF,eHF,ERI)
+subroutine GParquet(TDAeh,TDApp,linearize,eta,ENuc,max_it_1b,conv_1b,max_it_2b,conv_2b,nOrb,nC,nO,nV,nR,nS,eGHF,eHF,ERI)
 
 ! Parquet approximation based on restricted orbitals
 
@@ -7,15 +7,15 @@ subroutine GParquet(ENuc,max_it_1b,conv_1b,max_it_2b,conv_2b,nOrb,nC,nO,nV,nR,nS
 
 ! Hard-coded parameters
 
-  logical                       :: TDAeh      = .true.
-  logical                       :: TDApp      = .true.
-  logical                       :: linearize  = .true.
   logical                       :: print_phLR = .false.
   logical                       :: print_ppLR = .false.
-  double precision              :: eta        = 100d0
   
 ! Input variables
 
+  logical,intent(in)            :: TDAeh      
+  logical,intent(in)            :: TDApp      
+  logical,intent(in)            :: linearize  
+  double precision,intent(in)   :: eta        
   double precision,intent(in)   :: ENuc
   double precision,intent(in)   :: EGHF
   integer,intent(in)            :: max_it_1b,max_it_2b

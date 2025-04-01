@@ -8,7 +8,7 @@ subroutine GQuAcK(working_dir,dotest,doGHF,dostab,dosearch,doMP2,doMP3,doCCD,dop
                   maxSCF_GW,max_diis_GW,thresh_GW,TDA_W,lin_GW,reg_GW,eta_GW,                             &
                   maxSCF_GT,max_diis_GT,thresh_GT,TDA_T,lin_GT,reg_GT,eta_GT,                             &
                   dophBSE,dophBSE2,doppBSE,dBSE,dTDA,doACFDT,exchange_kernel,doXBS,                       &
-                  max_it_1b,conv_1b,max_it_2b,conv_2b)
+                  TDAeh,TDApp,max_it_1b,conv_1b,max_it_2b,conv_2b,lin_parquet,reg_parquet)
 
   implicit none
   include 'parameters.h'
@@ -77,6 +77,9 @@ subroutine GQuAcK(working_dir,dotest,doGHF,dostab,dosearch,doMP2,doMP3,doCCD,dop
 
   integer,intent(in)            :: max_it_1b,max_it_2b
   double precision,intent(in)   :: conv_1b,conv_2b
+  logical,intent(in)            :: TDAeh,TDApp
+  double precision,intent(in)   :: reg_parquet
+  logical,intent(in)            :: lin_parquet
 
 ! Local variables
 
@@ -349,7 +352,7 @@ subroutine GQuAcK(working_dir,dotest,doGHF,dostab,dosearch,doMP2,doMP3,doCCD,dop
 
   if(doParquet) then
     call wall_time(start_Parquet)
-    call GParquet(ENuc,max_it_1b,conv_1b,max_it_2b,conv_2b,nBas2,nC,nO,nV,nR,nS,EGHF,eHF,ERI_MO)
+    call GParquet(TDAeh,TDApp,lin_parquet,reg_parquet,ENuc,max_it_1b,conv_1b,max_it_2b,conv_2b,nBas2,nC,nO,nV,nR,nS,EGHF,eHF,ERI_MO)
     call wall_time(end_Parquet)
   
     t_Parquet = end_Parquet - start_Parquet
@@ -357,6 +360,5 @@ subroutine GQuAcK(working_dir,dotest,doGHF,dostab,dosearch,doMP2,doMP3,doCCD,dop
     write(*,*)
 
   end if
-  
 
 end subroutine

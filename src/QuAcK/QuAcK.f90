@@ -78,18 +78,21 @@ program QuAcK
   logical                       :: restart_hfb
   double precision              :: temperature,sigma
 
-  
-  integer                       :: max_it_macro,max_it_micro
-  double precision              :: conv_one_body,conv_two_body
+  integer                       :: max_it_1b,max_it_2b
+  double precision              :: conv_1b,conv_2b
+  logical                       :: TDAeh,TDApp
+  double precision              :: reg_parquet 
+  logical                       :: lin_parquet
 
   character(len=256)            :: working_dir
 
   ! Check if the right number of arguments is provided
+
   if(command_argument_count() < 1) then
     print *, "No working directory provided."
     stop
   else
-    call get_command_argument(1, working_dir)
+    call get_command_argument(1,working_dir)
   endif
 
 !-------------!
@@ -146,7 +149,7 @@ program QuAcK
                     doACFDT,exchange_kernel,doXBS,                                              &
                     dophBSE,dophBSE2,doppBSE,dBSE,dTDA,                                         &
                     temperature,sigma,chem_pot_hf,restart_hfb,                                  &
-                    max_it_macro,conv_one_body,max_it_micro,conv_two_body)
+                    TDAeh,TDApp,max_it_1b,conv_1b,max_it_2b,conv_2b,lin_parquet,reg_parquet)
 
 !------------------!
 ! Hardware         !
@@ -263,7 +266,7 @@ program QuAcK
                   maxSCF_GF,max_diis_GF,renorm_GF,thresh_GF,lin_GF,reg_GF,eta_GF,maxSCF_GW,max_diis_GW,thresh_GW,         &
                   TDA_W,lin_GW,reg_GW,eta_GW,maxSCF_GT,max_diis_GT,thresh_GT,TDA_T,lin_GT,reg_GT,eta_GT,                  &
                   dophBSE,dophBSE2,doppBSE,dBSE,dTDA,doACFDT,exchange_kernel,doXBS,                                       &
-                  max_it_macro,conv_one_body,max_it_micro,conv_two_body)
+                  max_it_1b,conv_1b,max_it_2b,conv_2b)
     endif
   endif
 
@@ -296,7 +299,7 @@ program QuAcK
                 maxSCF_GW,max_diis_GW,thresh_GW,TDA_W,lin_GW,reg_GW,eta_GW,                                   &
                 maxSCF_GT,max_diis_GT,thresh_GT,TDA_T,lin_GT,reg_GT,eta_GT,                                   &
                 dophBSE,dophBSE2,doppBSE,dBSE,dTDA,doACFDT,exchange_kernel,doXBS,                             &
-                max_it_macro,conv_one_body,max_it_micro,conv_two_body)
+                TDAeh,TDApp,max_it_1b,conv_1b,max_it_2b,conv_2b,lin_parquet,reg_parquet)
 
 !--------------------------!
 ! Bogoliubov QuAcK branch !

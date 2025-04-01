@@ -9,7 +9,7 @@ subroutine read_options(working_dir,                                            
                         doACFDT,exchange_kernel,doXBS,                                              &
                         dophBSE,dophBSE2,doppBSE,dBSE,dTDA,                                         &
                         temperature,sigma,chem_pot_hf,restart_hfb,                                  &
-                        max_it_macro,conv_one_body,max_it_micro,conv_two_body)
+                        TDAeh,TDApp,max_it_1b,conv_1b,max_it_2b,conv_2b,lin_parquet,reg_parquet)
 
 ! Read desired methods 
 
@@ -79,8 +79,11 @@ subroutine read_options(working_dir,                                            
   double precision,intent(out)  :: temperature
   double precision,intent(out)  :: sigma
 
-  integer,intent(out)           :: max_it_macro,max_it_micro
-  double precision,intent(out)  :: conv_one_body,conv_two_body
+  integer                       :: max_it_1b,max_it_2b
+  double precision              :: conv_1b,conv_2b
+  logical                       :: TDAeh,TDApp
+  double precision              :: reg_parquet
+  logical                       :: lin_parquet
 
 ! Local variables
 
@@ -241,18 +244,27 @@ subroutine read_options(working_dir,                                            
       if(ans2 == 'T') restart_hfb  = .true.
 
       ! Options for Parquet module
-    
-      max_it_macro  = 1
-      conv_one_body = 0.01
-      max_it_micro  = 1
-      conv_two_body = 0.01
+
+      TDAeh       = .false.
+      TDApp       = .false.
+      max_it_1b   = 1
+      conv_1b     = 1d-2
+      max_it_2b   = 1
+      conv_2b     = 1d-2
+      lin_parquet = .false.
+      reg_parquet = 0d0
     
       read(1,*) 
-      read(1,*) max_it_macro,conv_one_body,max_it_micro,conv_two_body
-      
+      read(1,*) ans1,ans2,max_it_1b,conv_1b,max_it_2b,conv_2b,ans3,reg_parquet
+
+      if(ans1 == 'T') TDAeh = .true.
+      if(ans2 == 'T') TDApp = .true.
+      if(ans3 == 'T') lin_parquet = .true.
+ 
     endif
 
   ! Close file with options
+
   close(unit=1)
 
 end subroutine 
