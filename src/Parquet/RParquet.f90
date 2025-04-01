@@ -1,4 +1,4 @@
-subroutine RParquet(ENuc,max_it_1b,conv_1b,max_it_2b,conv_2b,nOrb,nC,nO,nV,nR,nS,ERHF,eHF,ERI)
+subroutine RParquet(TDAeh,TDApp,linearize,eta,ENuc,max_it_1b,conv_1b,max_it_2b,conv_2b,nOrb,nC,nO,nV,nR,nS,ERHF,eHF,ERI)
 
 ! Parquet approximation based on restricted orbitals
 
@@ -7,14 +7,15 @@ subroutine RParquet(ENuc,max_it_1b,conv_1b,max_it_2b,conv_2b,nOrb,nC,nO,nV,nR,nS
 
 ! Hard-coded parameters
 
-  logical                       :: TDAeh      = .true.
-  logical                       :: TDApp      = .true.
-  logical                       :: linearize  = .true.
-  logical                       :: print_phLR = .true.
-  logical                       :: print_ppLR = .true.
+  logical                       :: print_phLR = .false.
+  logical                       :: print_ppLR = .false.
   
 ! Input variables
 
+  logical,intent(in)            :: TDAeh     
+  logical,intent(in)            :: TDApp     
+  logical,intent(in)            :: linearize 
+  double precision,intent(in)   :: eta
   double precision,intent(in)   :: ENuc
   double precision,intent(in)   :: ERHF
   integer,intent(in)            :: max_it_1b,max_it_2b
@@ -101,21 +102,17 @@ subroutine RParquet(ENuc,max_it_1b,conv_1b,max_it_2b,conv_2b,nOrb,nC,nO,nV,nR,nS
   write(*,*)'---------------------------------------------------------------'
   write(*,*)' Parquet parameters for one-body and two-body self-consistency '
   write(*,*)'---------------------------------------------------------------'
-  write(*,'(1X,A50,1X,I5)')    'Maximum number for one-body self-consistency:', max_it_1b
-  write(*,'(1X,A50,1X,E10.5)') 'Convergence threshold for one-body energies:', conv_1b
+  write(*,'(1X,A50,1X,I5)')    'Maximum number of one-body iteration:',max_it_1b
+  write(*,'(1X,A50,1X,E10.5)') 'Convergence threshold for one-body energies:',conv_1b
+  write(*,'(1X,A50,1X,L5)')    'Linearization of quasiparticle equation?',conv_1b
+  write(*,'(1X,A50,1X,E10.5)') 'Strenght of SRG regularization:',eta
   write(*,*)'---------------------------------------------------------------'
-  write(*,'(1X,A50,1X,I5)')    'Maximum number for two-body self-consistency:', max_it_2b
-  write(*,'(1X,A50,1X,E10.5)') 'Convergence threshold for two-body energies:', conv_2b
+  write(*,'(1X,A50,1X,I5)')    'Maximum number of two-body iteration:',max_it_2b
+  write(*,'(1X,A50,1X,E10.5)') 'Convergence threshold for two-body energies:',conv_2b
+  write(*,'(1X,A50,1X,L5)')    'TDA for eh excitation energies?',TDAeh
+  write(*,'(1X,A50,1X,L5)')    'TDA for pp excitation energies?',TDApp
   write(*,*)'---------------------------------------------------------------'
   write(*,*)
-  
-  if(linearize) then 
-      write(*,*) ' *** Quasiparticle energies obtained by linearization *** '
-      write(*,*)
-   else 
-      write(*,*) ' *** Quasiparticle energies obtained by root search *** '
-      write(*,*)
-  endif
   
 ! Memory allocation 
 

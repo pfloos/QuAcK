@@ -1,4 +1,4 @@
-subroutine GParquet(TDAeh,TDApp,linearize,eta,ENuc,max_it_1b,conv_1b,max_it_2b,conv_2b,nOrb,nC,nO,nV,nR,nS,eGHF,eHF,ERI)
+subroutine GParquet(TDAeh,TDApp,linearize,eta,ENuc,max_it_1b,conv_1b,max_it_2b,conv_2b,nOrb,nC,nO,nV,nR,nS,EGHF,eHF,ERI)
 
 ! Parquet approximation based on restricted orbitals
 
@@ -107,21 +107,17 @@ subroutine GParquet(TDAeh,TDApp,linearize,eta,ENuc,max_it_1b,conv_1b,max_it_2b,c
   write(*,*)'---------------------------------------------------------------'
   write(*,'(1X,A50,1X,I5)')    'Maximum number of one-body iteration:',max_it_1b
   write(*,'(1X,A50,1X,E10.5)') 'Convergence threshold for one-body energies:',conv_1b
+  write(*,'(1X,A50,1X,L5)')    'Linearization of quasiparticle equation?',conv_1b
+  write(*,'(1X,A50,1X,E10.5)') 'Strenght of SRG regularization:',eta
   write(*,*)'---------------------------------------------------------------'
   write(*,'(1X,A50,1X,I5)')    'Maximum number of two-body iteration:',max_it_2b
   write(*,'(1X,A50,1X,E10.5)') 'Convergence threshold for two-body energies:',conv_2b
+  write(*,'(1X,A50,1X,L5)')    'TDA for eh excitation energies?',TDAeh
+  write(*,'(1X,A50,1X,L5)')    'TDA for pp excitation energies?',TDApp
   write(*,*)'---------------------------------------------------------------'
   write(*,*)
   
-  if(linearize) then 
-      write(*,*) ' *** Quasiparticle energies obtained by linearization *** '
-      write(*,*)
-   else 
-      write(*,*) ' *** Quasiparticle energies obtained by root search *** '
-      write(*,*)
-   endif
-
-   ! Memory allocation 
+  ! Memory allocation 
 
   allocate(old_eh_Om(nS),old_ee_Om(nVV),old_hh_Om(nOO))
   allocate(eh_rho(nOrb,nOrb,nS),ee_rho(nOrb,nOrb,nVV),hh_rho(nOrb,nOrb,nOO))
@@ -494,7 +490,7 @@ subroutine GParquet(TDAeh,TDApp,linearize,eta,ENuc,max_it_1b,conv_1b,max_it_2b,c
 
     ! Check one-body converge
 
-    err_1b =  maxval(abs(eOld - eQP))
+    err_1b  = maxval(abs(eOld - eQP))
     eOld(:) = eQP(:)
 
     ! Print for one-body part

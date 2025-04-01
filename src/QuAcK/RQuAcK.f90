@@ -8,7 +8,7 @@ subroutine RQuAcK(working_dir,use_gpu,dotest,doRHF,doROHF,dostab,dosearch,doMP2,
                   maxSCF_GF,max_diis_GF,renorm_GF,thresh_GF,lin_GF,reg_GF,eta_GF,maxSCF_GW,max_diis_GW,thresh_GW,        & 
                   TDA_W,lin_GW,reg_GW,eta_GW,maxSCF_GT,max_diis_GT,thresh_GT,TDA_T,lin_GT,reg_GT,eta_GT,                 & 
                   dophBSE,dophBSE2,doppBSE,dBSE,dTDA,doACFDT,exchange_kernel,doXBS,                                      &
-                  max_it_1b,conv_1b,max_it_2b,conv_2b)
+                  TDAeh,TDApp,max_it_1b,conv_1b,max_it_2b,conv_2b,lin_parquet,reg_parquet)
 
 ! Restricted branch of QuAcK
 
@@ -84,6 +84,9 @@ subroutine RQuAcK(working_dir,use_gpu,dotest,doRHF,doROHF,dostab,dosearch,doMP2,
 
   integer,intent(in)            :: max_it_1b,max_it_2b
   double precision,intent(in)   :: conv_1b,conv_2b
+  logical,intent(in)            :: TDAeh,TDApp
+  double precision,intent(in)   :: reg_parquet
+  logical,intent(in)            :: lin_parquet
 
 ! Local variables
 
@@ -377,7 +380,7 @@ subroutine RQuAcK(working_dir,use_gpu,dotest,doRHF,doROHF,dostab,dosearch,doMP2,
 
   if(doParquet) then
     call wall_time(start_Parquet)
-    call RParquet(ENuc,max_it_1b,conv_1b,max_it_2b,conv_2b,nOrb,nC,nO,nV,nR,nS,ERHF,eGW,ERI_MO)
+    call RParquet(TDAeh,TDApp,lin_parquet,reg_parquet,ENuc,max_it_1b,conv_1b,max_it_2b,conv_2b,nOrb,nC,nO,nV,nR,nS,ERHF,eGW,ERI_MO)
     call wall_time(end_Parquet)
   
     t_Parquet = end_Parquet - start_Parquet
