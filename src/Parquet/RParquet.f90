@@ -600,7 +600,7 @@ subroutine RParquet(TDAeh,TDApp,max_diis_1b,max_diis_2b,linearize,eta,ENuc,max_i
       write(*,*)'             Two-body convergence failed            '
       write(*,*)'!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!'
       write(*,*)
-      stop
+      !stop
 
     else
 
@@ -624,13 +624,17 @@ subroutine RParquet(TDAeh,TDApp,max_diis_1b,max_diis_2b,linearize,eta,ENuc,max_i
     write(*,*) 'Building self-energy'
 
     call wall_time(start_t)
-    call R_irred_Parquet_self_energy(nOrb,nC,nO,nV,nR,eOld,EcGM,SigC,Z)
+    call R_Parquet_self_energy(eta,nOrb,nC,nO,nV,nR,nS,nOOs,nVVs,nOOt,nVVt,eOld,ERI,  &
+                               eh_sing_rho,old_eh_sing_Om,eh_trip_rho,old_eh_trip_Om, &
+                               ee_sing_rho,old_ee_sing_Om,ee_trip_rho,old_ee_trip_Om, &
+                               hh_sing_rho,old_hh_sing_Om,hh_trip_rho,old_hh_trip_Om, &
+                               EcGM,SigC,Z)
     call wall_time(end_t)
     t = end_t - start_t
     write(*,'(A50,1X,F9.3,A8)') 'Wall time for self energy =',t,' seconds'
     write(*,*)
 
-    eQPlin(:) = eHF(:) !+ Z(:)*SigC(:)
+    eQPlin(:) = eHF(:) + Z(:)*SigC(:)
 
     ! Solve the quasi-particle equation
 
@@ -647,15 +651,19 @@ subroutine RParquet(TDAeh,TDApp,max_diis_1b,max_diis_2b,linearize,eta,ENuc,max_i
       write(*,*)
       stop
 
-    end if
-
-    deallocate(eQPlin,Z,SigC)
-
+   end if
+   
     ! Check one-body converge
 
     err_1b =  maxval(abs(eOld - eQP))
     eOld(:) = eQP(:)
- 
+
+    ! Print for one-body part
+
+    call R_print_parquet_1b(nOrb,nO,eHF,SigC,eQP,Z,n_it_1b,err_1b,ENuc,ERHF,EcGM,Ec_eh,Ec_pp)
+
+    deallocate(eQPlin,Z,SigC)
+    
     call wall_time(end_1b)
     t_1b = end_1b - start_1b
     write(*,'(A50,1X,F9.3,A8)') 'Wall time for one-body iteration =',t_1b,' seconds'
