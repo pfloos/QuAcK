@@ -200,7 +200,6 @@ subroutine complex_diagonalize_matrix_without_sort(N,A,e)
   allocate(work(lwork))
 
   call zgeev('N','V',N,A,N,e,VL,N,VR,N,work,lwork,rwork,info)
-  call complex_sort_eigenvalues(N,e,VR)
   
 
   deallocate(work)
