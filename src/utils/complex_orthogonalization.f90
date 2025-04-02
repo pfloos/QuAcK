@@ -7,17 +7,18 @@ subroutine complex_orthogonalize_matrix(N, vectors)
 
   ! Local variables
   integer :: i, j
-  complex*16,allocatable :: L(:,:),Linv(:,:)
+  complex*16,allocatable :: L(:,:),Linv(:,:),tmp(:,:)
   complex*16 :: proj
   complex*16 :: norm
 
   ! Copy the input matrix to a temporary matrix
-  allocate(L(N,N),Linv(N,N))
-  L = matmul(transpose(vectors) ,vectors)
+  allocate(L(N,N),Linv(N,N),tmp(N,N))
+  tmp = transpose(vectors)
+  L = matmul(tmp ,vectors)
   call complex_cholesky_decomp(N,L)
   call complex_inverse_matrix(N,L,Linv)
   vectors = matmul(vectors,transpose(Linv))
-  deallocate(L,Linv)
+  deallocate(L,Linv,tmp)
 end subroutine
 subroutine complex_orthonormalize(N,vectors,A)
  
