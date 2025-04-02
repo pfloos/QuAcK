@@ -345,7 +345,6 @@ subroutine G_Parquet_self_energy(eta,nOrb,nC,nO,nV,nR,nS,nOO,nVV,eQP,ERI,&
 !   Renormalization factor    !
 !-----------------------------!
 
-  call vecout(nOrb,Z) 
   Z(:) = 1d0/(1d0 - Z(:))
   
 !-------------------------------------!
