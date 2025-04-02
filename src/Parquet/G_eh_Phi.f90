@@ -18,6 +18,10 @@ subroutine G_eh_Phi(nOrb,nC,nR,nS,eh_Om,eh_rho,eh_Phi)
 ! Initialization
   eh_Phi(:,:,:,:) = 0d0
 
+  !$OMP PARALLEL DEFAULT(NONE) &
+  !$OMP PRIVATE(p, q, r, s, n) &
+  !$OMP SHARED(nC, nOrb, nR, nS, eh_Phi, eh_rho, eh_Om)
+  !$OMP DO COLLAPSE(2)
   do s = nC+1, nOrb-nR
      do r = nC+1, nOrb-nR
         do q = nC+1, nOrb-nR
@@ -33,5 +37,7 @@ subroutine G_eh_Phi(nOrb,nC,nR,nS,eh_Om,eh_rho,eh_Phi)
         enddo
      enddo
   enddo
+  !$OMP END DO
+  !$OMP END PARALLEL
   
 end subroutine 

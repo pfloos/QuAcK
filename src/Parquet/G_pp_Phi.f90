@@ -20,6 +20,10 @@ subroutine G_pp_Phi(nOrb,nC,nR,nOO,nVV,ee_Om,ee_rho,hh_Om,hh_rho,pp_Phi)
 ! Initialization
   pp_Phi(:,:,:,:) = 0d0
 
+  !$OMP PARALLEL DEFAULT(NONE) &
+  !$OMP PRIVATE(p, q, r, s, n) &
+  !$OMP SHARED(nC, nOrb, nR, nVV, nOO, pp_Phi, ee_rho, ee_Om, hh_rho, hh_Om)
+  !$OMP DO COLLAPSE(2)
   do s = nC+1, nOrb-nR
      do r = nC+1, nOrb-nR
         do q = nC+1, nOrb-nR
@@ -39,5 +43,7 @@ subroutine G_pp_Phi(nOrb,nC,nR,nOO,nVV,ee_Om,ee_rho,hh_Om,hh_rho,pp_Phi)
         enddo
      enddo
   enddo
+  !$OMP END DO
+  !$OMP END PARALLEL
   
 end subroutine 
