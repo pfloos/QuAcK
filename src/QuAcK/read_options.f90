@@ -9,7 +9,7 @@ subroutine read_options(working_dir,                                            
                         doACFDT,exchange_kernel,doXBS,                                              &
                         dophBSE,dophBSE2,doppBSE,dBSE,dTDA,                                         &
                         temperature,sigma,chem_pot_hf,restart_hfb,                                  &
-                        TDAeh,TDApp,max_it_1b,conv_1b,max_it_2b,conv_2b,lin_parquet,reg_parquet)
+                        TDAeh,TDApp,max_diis_1b,max_diis_2b,max_it_1b,conv_1b,max_it_2b,conv_2b,lin_parquet,reg_parquet)
 
 ! Read desired methods 
 
@@ -79,11 +79,12 @@ subroutine read_options(working_dir,                                            
   double precision,intent(out)  :: temperature
   double precision,intent(out)  :: sigma
 
-  integer                       :: max_it_1b,max_it_2b
-  double precision              :: conv_1b,conv_2b
-  logical                       :: TDAeh,TDApp
-  double precision              :: reg_parquet
-  logical                       :: lin_parquet
+  integer,intent(out)           :: max_it_1b,max_it_2b
+  double precision,intent(out)  :: conv_1b,conv_2b
+  integer,intent(out)           :: max_diis_1b,max_diis_2b
+  logical,intent(out)           :: TDAeh,TDApp
+  double precision,intent(out)  :: reg_parquet
+  logical,intent(out)           :: lin_parquet
 
 ! Local variables
 
@@ -247,6 +248,8 @@ subroutine read_options(working_dir,                                            
 
       TDAeh       = .false.
       TDApp       = .false.
+      max_diis_1b = 1
+      max_diis_2b = 1
       max_it_1b   = 1
       conv_1b     = 1d-2
       max_it_2b   = 1
@@ -255,7 +258,7 @@ subroutine read_options(working_dir,                                            
       reg_parquet = 0d0
     
       read(1,*) 
-      read(1,*) ans1,ans2,max_it_1b,conv_1b,max_it_2b,conv_2b,ans3,reg_parquet
+      read(1,*) ans1,ans2,max_it_1b,conv_1b,max_it_2b,conv_2b,max_diis_1b,max_diis_2b,ans3,reg_parquet
 
       if(ans1 == 'T') TDAeh = .true.
       if(ans2 == 'T') TDApp = .true.

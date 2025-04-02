@@ -1,4 +1,5 @@
-subroutine RParquet(TDAeh,TDApp,linearize,eta,ENuc,max_it_1b,conv_1b,max_it_2b,conv_2b,nOrb,nC,nO,nV,nR,nS,ERHF,eHF,ERI)
+subroutine RParquet(TDAeh,TDApp,max_diis_1b,max_diis_2b,linearize,eta,ENuc,max_it_1b,conv_1b,max_it_2b,conv_2b, & 
+                    nOrb,nC,nO,nV,nR,nS,ERHF,eHF,ERI)
 
 ! Parquet approximation based on restricted orbitals
 
@@ -14,6 +15,8 @@ subroutine RParquet(TDAeh,TDApp,linearize,eta,ENuc,max_it_1b,conv_1b,max_it_2b,c
 
   logical,intent(in)            :: TDAeh     
   logical,intent(in)            :: TDApp     
+  integer,intent(in)            :: max_diis_1b
+  integer,intent(in)            :: max_diis_2b
   logical,intent(in)            :: linearize 
   double precision,intent(in)   :: eta
   double precision,intent(in)   :: ENuc

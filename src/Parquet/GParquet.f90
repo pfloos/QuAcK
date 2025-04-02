@@ -1,6 +1,7 @@
-subroutine GParquet(TDAeh,TDApp,linearize,eta,ENuc,max_it_1b,conv_1b,max_it_2b,conv_2b,nOrb,nC,nO,nV,nR,nS,EGHF,eHF,ERI)
+subroutine GParquet(TDAeh,TDApp,max_diis_1b,max_diis_2b,linearize,eta,ENuc,max_it_1b,conv_1b,max_it_2b,conv_2b, & 
+                    nOrb,nC,nO,nV,nR,nS,EGHF,eHF,ERI)
 
-! Parquet approximation based on restricted orbitals
+! Parquet approximation based on spin orbitals
 
   implicit none
   include 'parameters.h'
@@ -14,6 +15,8 @@ subroutine GParquet(TDAeh,TDApp,linearize,eta,ENuc,max_it_1b,conv_1b,max_it_2b,c
 
   logical,intent(in)            :: TDAeh      
   logical,intent(in)            :: TDApp      
+  integer,intent(in)            :: max_diis_1b
+  integer,intent(in)            :: max_diis_2b
   logical,intent(in)            :: linearize  
   double precision,intent(in)   :: eta        
   double precision,intent(in)   :: ENuc
@@ -61,9 +64,9 @@ subroutine GParquet(TDAeh,TDApp,linearize,eta,ENuc,max_it_1b,conv_1b,max_it_2b,c
   double precision,allocatable  :: Z(:)
   double precision              :: EcGM
   ! DIIS
-  integer                       :: max_diis,n_diis
+  integer                       :: n_diis_2b
   double precision              :: rcond
-  double precision,allocatable  :: err_diis(:,:)
+  double precision,allocatable  :: err_diis_2b(:,:)
   double precision,allocatable  :: Phi_diis(:,:)
   double precision,allocatable  :: err(:)
   double precision,allocatable  :: Phi(:)
@@ -82,14 +85,12 @@ subroutine GParquet(TDAeh,TDApp,linearize,eta,ENuc,max_it_1b,conv_1b,max_it_2b,c
     
 ! DIIS parameters
 
-  max_diis = 1
-  n_diis   = 0
   rcond    = 1d0
 
-  allocate(err_diis(2*nOrb**4,max_diis),Phi_diis(2*nOrb**4,max_diis))
+  allocate(err_diis_2b(2*nOrb**4,max_diis_2b),Phi_diis(2*nOrb**4,max_diis_2b))
   allocate(err(2*nOrb**4),Phi(2*nOrb**4))
 
-  err_diis(:,:) = 0d0
+  err_diis_2b(:,:) = 0d0
   Phi_diis(:,:) = 0d0
 
 ! Start
@@ -109,11 +110,13 @@ subroutine GParquet(TDAeh,TDApp,linearize,eta,ENuc,max_it_1b,conv_1b,max_it_2b,c
   write(*,'(1X,A50,1X,E10.5)') 'Convergence threshold for one-body energies:',conv_1b
   write(*,'(1X,A50,1X,L5)')    'Linearization of quasiparticle equation?',conv_1b
   write(*,'(1X,A50,1X,E10.5)') 'Strenght of SRG regularization:',eta
+  write(*,'(1X,A50,1X,I5)')    'Maximum length of DIIS expansion:',max_diis_1b
   write(*,*)'---------------------------------------------------------------'
   write(*,'(1X,A50,1X,I5)')    'Maximum number of two-body iteration:',max_it_2b
   write(*,'(1X,A50,1X,E10.5)') 'Convergence threshold for two-body energies:',conv_2b
   write(*,'(1X,A50,1X,L5)')    'TDA for eh excitation energies?',TDAeh
   write(*,'(1X,A50,1X,L5)')    'TDA for pp excitation energies?',TDApp
+  write(*,'(1X,A50,1X,I5)')    'Maximum length of DIIS expansion:',max_diis_2b
   write(*,*)'---------------------------------------------------------------'
   write(*,*)
   
@@ -382,10 +385,10 @@ subroutine GParquet(TDAeh,TDApp,linearize,eta,ENuc,max_it_1b,conv_1b,max_it_2b,c
         end do
       end do
 
-      if(max_diis > 1) then
+      if(max_diis_2b > 1) then
      
-        n_diis = min(n_diis+1,max_diis)
-        call DIIS_extrapolation(rcond,2*nOrb**4,2*nOrb**4,n_diis,err_diis,Phi_diis,err,Phi)
+        n_diis_2b = min(n_diis_2b+1,max_diis_2b)
+        call DIIS_extrapolation(rcond,2*nOrb**4,2*nOrb**4,n_diis_2b,err_diis_2b,Phi_diis,err,Phi)
      
       end if
 
