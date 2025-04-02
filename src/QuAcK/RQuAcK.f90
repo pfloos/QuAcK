@@ -363,7 +363,7 @@ doGF = doG0F2 .or. doevGF2 .or. doqsGF2 .or. doufG0F02 .or. doG0F3 .or. doevGF3 
     call wall_time(start_GF)
     call RGF(dotest,doG0F2,doevGF2,doqsGF2,doufG0F02,doG0F3,doevGF3,docG0F2,renorm_GF,maxSCF_GF, &
              thresh_GF,max_diis_GF,dophBSE,doppBSE,TDA,dBSE,dTDA,singlet,triplet,lin_GF,         &
-             eta_GF,reg_GF,nNuc,ZNuc,rNuc,ENuc,nBas,nOrb,nC,nO,nV,nR,nS,ERHF,                    &
+             eta_GF,reg_GF,nNuc,ZNuc,rNuc,ENuc,nBas,nOrb,nC,nO,nV,nR,nS,complex_ERHF,                    &
              S,X,T,V,Hc,ERI_AO,ERI_MO,CAP_MO,dipole_int_AO,dipole_int_MO,PHF,cHF,eHF)
     call wall_time(end_GF)
 
@@ -396,7 +396,7 @@ doGF = doG0F2 .or. doevGF2 .or. doqsGF2 .or. doufG0F02 .or. doG0F3 .or. doevGF3 
 !-----------!
 
   doGW = doG0W0 .or. doevGW .or. doqsGW .or. doufG0W0 .or. doufGW .or. docG0W0
-  if(doGW) then
+  if(doGW .and. .not. docRHF) then
     
     call wall_time(start_GW)
     call RGW(dotest,doG0W0,doevGW,doqsGW,doufG0W0,doufGW,docG0W0,maxSCF_GW,thresh_GW,max_diis_GW,        & 
@@ -416,8 +416,18 @@ doGF = doG0F2 .or. doevGF2 .or. doqsGF2 .or. doufG0F02 .or. doG0F3 .or. doevGF3 
 ! complex GW module !
 !-------------------!
 
-! IMPLEMENT LATER TO TREAT EVERYTHING COMPLEX, i.e. start from complex HF orbitals
+  if(doGW .and. docRHF) then
+    call wall_time(start_GW)
+    call complex_RGW(dotest,docG0W0,maxSCF_GW,thresh_GW,max_diis_GW,        & 
+             doACFDT,exchange_kernel,doXBS,dophBSE,dophBSE2,doppBSE,TDA_W,TDA,dBSE,dTDA,singlet,triplet, &
+             lin_GW,eta_GW,reg_GW,nNuc,ZNuc,rNuc,ENuc,nBas,nOrb,nC,nO,nV,nR,nS,ERHF,S,X,T,               &
+             V,Hc,ERI_AO,complex_ERI_MO,complex_CAP_MO,dipole_int_AO,complex_dipole_int_MO,complex_PHF,complex_cHF,complex_eHF)
+    call wall_time(end_GW)
 
+    t_GW = end_GW - start_GW
+    write(*,'(A65,1X,F9.3,A8)') 'Total wall time for GW = ',t_GW,' seconds'
+    write(*,*)
+  end if
 !-----------------!
 ! T-matrix module !
 !-----------------!

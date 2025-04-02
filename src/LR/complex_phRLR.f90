@@ -1,4 +1,4 @@
-subroutine phRLR(TDA,nS,Aph,Bph,EcRPA,Om,XpY,XmY)
+subroutine complex_phRLR(TDA,nS,Aph,Bph,EcRPA,Om,XpY,XmY)
 
 ! Compute linear response
 
@@ -14,7 +14,7 @@ subroutine phRLR(TDA,nS,Aph,Bph,EcRPA,Om,XpY,XmY)
 
   ! Local variables
 
-  complex*16                    :: complex_trace_matrix
+  complex*16,external           :: complex_trace_matrix
   complex*16                    :: t1, t2
   complex*16,allocatable        :: RPA_matrix(:,:)
   complex*16,allocatable        :: Z(:,:)
@@ -42,20 +42,22 @@ subroutine phRLR(TDA,nS,Aph,Bph,EcRPA,Om,XpY,XmY)
   else
 
     allocate(RPA_matrix(2*nS,2*nS),OmOmminus(2*nS))
-
-    call complex_diagonalize_matrix(2*nS,RPA_matrix,Om)
+    RPA_matrix(1:nS,1:nS) = Aph(:,:)
+    RPA_matrix(1:nS,nS+1:2*nS) = Bph(:,:)
+    RPA_matrix(nS+1:2*nS,1:nS) = -Bph(:,:)
+    RPA_matrix(nS+1:2*nS,nS+1:2*nS) = -Aph(:,:)
+    call complex_diagonalize_matrix_without_sort(2*nS,RPA_matrix,OmOmminus)
+    call complex_sort_eigenvalues_RPA(2*nS,OmOmminus,RPA_matrix)
+    call complex_normalize_RPA(nS,RPA_matrix)
     Om(:) = OmOmminus(1:nS)
-    call complex_vecout(nS,Om)
-    call complex_vecout(nS,Om(nS+1:2*nS))
-    if (maxval(abs(Om(:)+Om(nS+1:2*nS))) > 1e10) &
+    if(maxval(abs(OmOmminus(1:nS)+OmOmminus(nS+1:2*nS))) > 1e-12) &
       call print_warning('We dont find a Om and -Om structure as solution of the RPA. There might be a problem somewhere.')
     if(minval(abs(Om(:))) < 0d0) &
       call print_warning('You may have instabilities in linear response: A-B is not positive definite!!')
-    XpY(:,:) = RPA_matrix(1:nS,1:nS) + RPA_matrix(nS+1:2*nS,nS+1:2*nS) 
-    XmY(:,:) = RPA_matrix(1:nS,1:nS) - RPA_matrix(nS+1:2*nS,nS+1:2*nS) 
-
-    deallocate(RPA_matrix)
- 
+    XpY(:,:) = RPA_matrix(1:nS,1:nS) + RPA_matrix(1:nS,nS+1:2*nS) 
+    XmY(:,:) = RPA_matrix(1:nS,1:nS) - RPA_matrix(1:nS,nS+1:2*nS) 
+    call complex_matout(nS,nS,XpY)
+    deallocate(RPA_matrix,OmOmminus) 
   end if
 
   ! Compute the RPA correlation energy

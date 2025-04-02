@@ -19,6 +19,53 @@ subroutine complex_orthogonalize_matrix(N, vectors)
   vectors = matmul(vectors,transpose(Linv))
   deallocate(L,Linv)
 end subroutine
+subroutine complex_orthonormalize(N,vectors,A)
+ 
+  ! Orthonormalize vectors matrix, such that vectors^T A vectors = Identity
+  ! A and vectors are assumed quadratic NxN matrices
+
+  ! Input variables
+  implicit none
+  integer, intent(in) :: N
+  complex*16, intent(inout) :: vectors(N, N)
+  complex*16, intent(inout) :: A(N, N)
+
+  ! Local variables
+  integer :: i, j
+  complex*16,allocatable :: L(:,:),Linv(:,:)
+  complex*16 :: proj
+  complex*16 :: norm
+
+  ! Copy the input matrix to a temporary matrix
+  allocate(L(N,N),Linv(N,N))
+  L = matmul(matmul(transpose(vectors),A),vectors)
+  call complex_cholesky_decomp(N,L)
+  call complex_inverse_matrix(N,L,Linv)
+  vectors = matmul(vectors,transpose(Linv))
+  deallocate(L,Linv)
+end subroutine
+subroutine complex_normalize_RPA(nS,XYYX)
+ 
+  ! Orthonormalize vectors matrix, such that RPA^T (1 0; 0 -1) RPA = Identity
+
+  ! Input variables
+  implicit none
+  integer, intent(in) :: nS
+  complex*16, intent(inout) :: XYYX(2*nS, 2*nS)
+
+  ! Local variables
+  integer :: i
+  complex*16,allocatable :: A(:,:)
+  
+  allocate(A(2*nS,2*nS))
+  A(:,:) = (0d0,0d0)
+  do i=1,nS
+    A(i,i) = 1
+    A(i+nS,i+nS) = -1
+  end do
+  call complex_orthonormalize(2*nS,XYYX,A)
+  deallocate(A)
+end subroutine
 subroutine complex_gram_schmidt(N, vectors)
   
   ! Input variables

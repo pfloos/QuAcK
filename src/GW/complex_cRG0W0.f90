@@ -35,11 +35,11 @@ subroutine complex_cRG0W0(dotest,doACFDT,exchange_kernel,doXBS,dophBSE,dophBSE2,
   integer,intent(in)            :: nR
   integer,intent(in)            :: nS
   double precision,intent(in)   :: ENuc
-  double precision,intent(in)   :: ERHF
-  double precision,intent(in)   :: ERI(nOrb,nOrb,nOrb,nOrb)
-  double precision,intent(in)   :: CAP(nOrb,nOrb)
-  double precision,intent(in)   :: dipole_int(nOrb,nOrb,ncart)
-  double precision,intent(in)   :: eHF(nOrb)
+  complex*16,intent(in)         :: ERHF
+  complex*16,intent(in)         :: ERI(nOrb,nOrb,nOrb,nOrb)
+  complex*16,intent(in)         :: CAP(nOrb,nOrb)
+  complex*16,intent(in)         :: dipole_int(nOrb,nOrb,ncart)
+  complex*16,intent(in)         :: eHF(nOrb)
 
 ! Local variables
 
@@ -49,26 +49,29 @@ subroutine complex_cRG0W0(dotest,doACFDT,exchange_kernel,doXBS,dophBSE,dophBSE2,
   integer                       :: isp_W
   integer                       :: p
   double precision              :: flow
-  double precision              :: EcRPA
-  double precision              :: EcBSE(nspin)
-  double precision              :: EcGM
-  double precision,allocatable  :: Aph(:,:)
-  double precision,allocatable  :: Bph(:,:)
+  complex*16                    :: EcRPA
+  complex*16                    :: EcBSE(nspin)
+  complex*16                    :: EcGM
+  complex*16,allocatable        :: Aph(:,:)
+  complex*16,allocatable        :: Bph(:,:)
   double precision,allocatable  :: Re_SigC(:)
   double precision,allocatable  :: Im_SigC(:)
   double precision,allocatable  :: Re_Z(:)
   double precision,allocatable  :: Im_Z(:)
-  double precision,allocatable  :: Om(:)
-  double precision,allocatable  :: XpY(:,:)
-  double precision,allocatable  :: XmY(:,:)
-  double precision,allocatable  :: rho(:,:,:)
+  complex*16,allocatable        :: Om(:)
+  double precision,allocatable  :: Re_Om(:)
+  double precision,allocatable  :: Im_Om(:)
+  complex*16,allocatable        :: XpY(:,:)
+  complex*16,allocatable        :: XmY(:,:)
+  complex*16,allocatable        :: rho(:,:,:)
 
 
   double precision,allocatable  :: Re_eGWlin(:)
   double precision, allocatable :: Im_eGWlin(:)
   double precision,allocatable  :: Re_eGW(:)
   double precision,allocatable  :: Im_eGW(:)
-  double precision, allocatable :: e_cap(:)
+  double precision, allocatable :: Re_eHF(:)
+  double precision, allocatable :: Im_eHF(:)
 
 ! Hello world
 
@@ -103,10 +106,9 @@ subroutine complex_cRG0W0(dotest,doACFDT,exchange_kernel,doXBS,dophBSE,dophBSE2,
 ! Memory allocation
 
   allocate(Aph(nS,nS),Bph(nS,nS),Re_SigC(nOrb),Im_SigC(nOrb),Re_Z(nOrb),Im_Z(nOrb),Om(nS),XpY(nS,nS),XmY(nS,nS),rho(nOrb,nOrb,nS), & 
-           Re_eGW(nOrb),Im_eGW(nOrb),Re_eGWlin(nOrb),Im_eGWlin(nOrb),e_cap(nOrb))
-  do p = 1, nOrb
-        e_cap(p) = CAP(p,p)  
-  end do
+           Re_eGW(nOrb),Im_eGW(nOrb),Re_eGWlin(nOrb),Im_eGWlin(nOrb),Re_eHF(nOrb),Im_eHF(nOrb),Re_Om(nS),Im_Om(nS))
+  Re_eHF(:) = real(eHF(:))
+  Im_eHF(:) = aimag(eHF(:))
 !-------------------!
 ! Compute screening !
 !-------------------!
@@ -115,6 +117,9 @@ subroutine complex_cRG0W0(dotest,doACFDT,exchange_kernel,doXBS,dophBSE,dophBSE2,
   if(.not.TDA_W) call complex_phRLR_B(isp_W,dRPA_W,nOrb,nC,nO,nV,nR,nS,1d0,ERI,Bph)
 
   call complex_phRLR(TDA_W,nS,Aph,Bph,EcRPA,Om,XpY,XmY)
+  Re_Om(:) = real(Om(:))
+  Im_Om(:) = aimag(Om(:))
+  call complex_vecout(nS,Om)
 
   !if(print_W) call print_excitation_energies('phRPA@RHF','singlet',nS,Om)
 
@@ -123,22 +128,19 @@ subroutine complex_cRG0W0(dotest,doACFDT,exchange_kernel,doXBS,dophBSE,dophBSE2,
 !--------------------------!
 
   call complex_RGW_excitation_density(nOrb,nC,nO,nR,nS,ERI,XpY,rho)
-
+  write(*,*) rho(1,1,1)
 !------------------------!
 ! Compute GW self-energy !
 !------------------------!
-
-!!!! STOPPED HERE PROCEED WITH IMPLEMENTING COMPLEX_CRGW_SELF_ENERGY_DIAG
-!!!!
-  call complex_cRGW_self_energy_diag(eta,nBas,nOrb,nC,nO,nV,nR,nS,eHF,Om,rho,EcGM,Re_SigC,Im_SigC,Re_Z,Im_Z,e_cap)
-
+  call complex_RGW_self_energy_diag(eta,nBas,nOrb,nC,nO,nV,nR,nS,Re_eHF,Im_eHF,Om,rho,EcGM,Re_SigC,Im_SigC,Re_Z,Im_Z)
+  
 !-----------------------------------!
 ! Solve the quasi-particle equation !
 !-----------------------------------!
 
   ! Linearized or graphical solution?
-  Re_eGWlin(:) = eHF(:) + Re_Z(:)*Re_SigC(:) - Im_Z(:)*Im_SigC(:)
-  Im_eGWlin(:) = e_cap(:) + Re_Z(:)*Im_SigC(:) + Im_Z(:)*Re_SigC(:)
+  Re_eGWlin(:) = Re_eHF(:) + Re_Z(:)*Re_SigC(:) - Im_Z(:)*Im_SigC(:)
+  Im_eGWlin(:) = Im_eHF(:) + Re_Z(:)*Im_SigC(:) + Im_Z(:)*Re_SigC(:)
 
   if(linearize) then 
  
@@ -152,94 +154,96 @@ subroutine complex_cRG0W0(dotest,doACFDT,exchange_kernel,doXBS,dophBSE,dophBSE2,
 
     write(*,*) ' *** Quasiparticle energies obtained by root search *** '
     write(*,*)
-  
-    call cRGW_QP_graph(doSRG,eta,flow,nOrb,nC,nO,nV,nR,nS,eHF,e_cap,Om,rho,Re_eGWlin,Im_eGWlin,eHF,e_cap,Re_eGW,Im_eGW,Re_Z,Im_Z)
+    write(*,*) "ROOT SEARCH NOT IMPLEMENTED YET" 
+!    call complex_RGW_QP_graph(doSRG,eta,flow,nOrb,nC,nO,nV,nR,nS,       &
+!            Re_eHF,Im_eHF,Om,rho,Re_eGWlin,Im_eGWlin,Re_eHF,Im_eHF,     &
+!            Re_eGW,Im_eGW,Re_Z,Im_Z)
   end if
 
 ! Plot self-energy, renormalization factor, and spectral function
-
-  if(plot_self) call RGW_plot_self_energy(nOrb,eta,nC,nO,nV,nR,nS,eHF,eHF,Om,rho)
-
-! Cumulant expansion 
-
-! call RGWC(dotest,eta,nOrb,nC,nO,nV,nR,nS,Om,rho,eHF,eHF,eGW,Z)
-
-! Compute the RPA correlation energy
-
-                 call phRLR_A(isp_W,dRPA_W,nOrb,nC,nO,nV,nR,nS,1d0,Re_eGW,ERI,Aph)
-  if(.not.TDA_W) call phRLR_B(isp_W,dRPA_W,nOrb,nC,nO,nV,nR,nS,1d0,ERI,Bph)
-
-  call phRLR(TDA_W,nS,Aph,Bph,EcRPA,Om,XpY,XmY)
-
-!--------------!
-! Dump results !
-!--------------!
-
-  call print_cRG0W0(nOrb,nO,eHF,ENuc,ERHF,Re_SigC,Im_SigC,Re_Z,Im_Z,Re_eGW,Im_eGW,EcRPA,EcGM,CAP)
-!---------------------------!
-! Perform phBSE calculation !
-!---------------------------!
 !
-!  if(dophBSE) then
+!  if(plot_self) call RGW_plot_self_energy(nOrb,eta,nC,nO,nV,nR,nS,eHF,eHF,Om,rho)
 !
-!    call RGW_phBSE(dophBSE2,exchange_kernel,TDA_W,TDA,dBSE,dTDA,singlet,triplet,eta, & 
-!                   nOrb,nC,nO,nV,nR,nS,ERI,dipole_int,eHF,Re_eGW,EcBSE)
+!! Cumulant expansion 
 !
-!    write(*,*)
-!    write(*,*)'-------------------------------------------------------------------------------'
-!    write(*,'(2X,A50,F20.10,A3)') 'Tr@BSE@G0W0@RHF correlation energy (singlet) = ',EcBSE(1),' au'
-!    write(*,'(2X,A50,F20.10,A3)') 'Tr@BSE@G0W0@RHF correlation energy (triplet) = ',EcBSE(2),' au'
-!    write(*,'(2X,A50,F20.10,A3)') 'Tr@BSE@G0W0@RHF correlation energy           = ',sum(EcBSE),' au'
-!    write(*,'(2X,A50,F20.10,A3)') 'Tr@BSE@G0W0@RHF total       energy           = ',ENuc + ERHF + sum(EcBSE),' au'
-!    write(*,*)'-------------------------------------------------------------------------------'
-!    write(*,*)
+!! call RGWC(dotest,eta,nOrb,nC,nO,nV,nR,nS,Om,rho,eHF,eHF,eGW,Z)
 !
-!    ! Compute the BSE correlation energy via the adiabatic connection fluctuation dissipation theorem
+!! Compute the RPA correlation energy
 !
-!    if(doACFDT) then
+!                 call phRLR_A(isp_W,dRPA_W,nOrb,nC,nO,nV,nR,nS,1d0,Re_eGW,ERI,Aph)
+!  if(.not.TDA_W) call phRLR_B(isp_W,dRPA_W,nOrb,nC,nO,nV,nR,nS,1d0,ERI,Bph)
 !
-!      call RGW_phACFDT(exchange_kernel,doXBS,TDA_W,TDA,singlet,triplet,eta,nOrb,nC,nO,nV,nR,nS,ERI,eHF,Re_eGW,EcBSE)
+!  call phRLR(TDA_W,nS,Aph,Bph,EcRPA,Om,XpY,XmY)
 !
-!      write(*,*)
-!      write(*,*)'-------------------------------------------------------------------------------'
-!      write(*,'(2X,A50,F20.10,A3)') 'AC@phBSE@G0W0@RHF correlation energy (singlet) = ',EcBSE(1),' au'
-!      write(*,'(2X,A50,F20.10,A3)') 'AC@phBSE@G0W0@RHF correlation energy (triplet) = ',EcBSE(2),' au'
-!      write(*,'(2X,A50,F20.10,A3)') 'AC@phBSE@G0W0@RHF correlation energy           = ',sum(EcBSE),' au'
-!      write(*,'(2X,A50,F20.10,A3)') 'AC@phBSE@G0W0@RHF total       energy           = ',ENuc + ERHF + sum(EcBSE),' au'
-!      write(*,*)'-------------------------------------------------------------------------------'
-!      write(*,*)
+!!--------------!
+!! Dump results !
+!!--------------!
 !
-!    end if
-!
-!  end if
-!
+  call print_complex_cRG0W0(nOrb,nO,Re_eHF,Im_eHF,ENuc,ERHF,Re_SigC,Im_SigC,Re_Z,Im_Z,Re_eGW,Im_eGW,EcRPA,EcGM)
 !!---------------------------!
-!! Perform ppBSE calculation !
+!! Perform phBSE calculation !
 !!---------------------------!
-!
-!  if(doppBSE) then
-!
-!    call RGW_ppBSE(TDA_W,TDA,dBSE,dTDA,singlet,triplet,eta,nOrb,nC,nO,nV,nR,nS,ERI,dipole_int,eHF,Re_eGW,EcBSE)
-!
-!    write(*,*)
-!    write(*,*)'-------------------------------------------------------------------------------'
-!    write(*,'(2X,A50,F20.10,A3)') 'Tr@ppBSE@G0W0@RHF correlation energy (singlet) = ',EcBSE(1),' au'
-!    write(*,'(2X,A50,F20.10,A3)') 'Tr@ppBSE@G0W0@RHF correlation energy (triplet) = ',EcBSE(2),' au'
-!    write(*,'(2X,A50,F20.10,A3)') 'Tr@ppBSE@G0W0@RHF correlation energy           = ',sum(EcBSE),' au'
-!    write(*,'(2X,A50,F20.10,A3)') 'Tr@ppBSE@G0W0@RHF total       energy           = ',ENuc + ERHF + sum(EcBSE),' au'
-!    write(*,*)'-------------------------------------------------------------------------------'
-!    write(*,*)
-!
-!  end if
-!  
-!! Testing zone
-!
-!  if(dotest) then
-!
-!    call dump_test_value('R','G0W0 correlation energy',EcRPA)
-!    call dump_test_value('R','G0W0 HOMO energy',Re_eGW(nO))
-!    call dump_test_value('R','G0W0 LUMO energy',Re_eGW(nO+1))
-!
-!  end if
-!
+!!
+!!  if(dophBSE) then
+!!
+!!    call RGW_phBSE(dophBSE2,exchange_kernel,TDA_W,TDA,dBSE,dTDA,singlet,triplet,eta, & 
+!!                   nOrb,nC,nO,nV,nR,nS,ERI,dipole_int,eHF,Re_eGW,EcBSE)
+!!
+!!    write(*,*)
+!!    write(*,*)'-------------------------------------------------------------------------------'
+!!    write(*,'(2X,A50,F20.10,A3)') 'Tr@BSE@G0W0@RHF correlation energy (singlet) = ',EcBSE(1),' au'
+!!    write(*,'(2X,A50,F20.10,A3)') 'Tr@BSE@G0W0@RHF correlation energy (triplet) = ',EcBSE(2),' au'
+!!    write(*,'(2X,A50,F20.10,A3)') 'Tr@BSE@G0W0@RHF correlation energy           = ',sum(EcBSE),' au'
+!!    write(*,'(2X,A50,F20.10,A3)') 'Tr@BSE@G0W0@RHF total       energy           = ',ENuc + ERHF + sum(EcBSE),' au'
+!!    write(*,*)'-------------------------------------------------------------------------------'
+!!    write(*,*)
+!!
+!!    ! Compute the BSE correlation energy via the adiabatic connection fluctuation dissipation theorem
+!!
+!!    if(doACFDT) then
+!!
+!!      call RGW_phACFDT(exchange_kernel,doXBS,TDA_W,TDA,singlet,triplet,eta,nOrb,nC,nO,nV,nR,nS,ERI,eHF,Re_eGW,EcBSE)
+!!
+!!      write(*,*)
+!!      write(*,*)'-------------------------------------------------------------------------------'
+!!      write(*,'(2X,A50,F20.10,A3)') 'AC@phBSE@G0W0@RHF correlation energy (singlet) = ',EcBSE(1),' au'
+!!      write(*,'(2X,A50,F20.10,A3)') 'AC@phBSE@G0W0@RHF correlation energy (triplet) = ',EcBSE(2),' au'
+!!      write(*,'(2X,A50,F20.10,A3)') 'AC@phBSE@G0W0@RHF correlation energy           = ',sum(EcBSE),' au'
+!!      write(*,'(2X,A50,F20.10,A3)') 'AC@phBSE@G0W0@RHF total       energy           = ',ENuc + ERHF + sum(EcBSE),' au'
+!!      write(*,*)'-------------------------------------------------------------------------------'
+!!      write(*,*)
+!!
+!!    end if
+!!
+!!  end if
+!!
+!!!---------------------------!
+!!! Perform ppBSE calculation !
+!!!---------------------------!
+!!
+!!  if(doppBSE) then
+!!
+!!    call RGW_ppBSE(TDA_W,TDA,dBSE,dTDA,singlet,triplet,eta,nOrb,nC,nO,nV,nR,nS,ERI,dipole_int,eHF,Re_eGW,EcBSE)
+!!
+!!    write(*,*)
+!!    write(*,*)'-------------------------------------------------------------------------------'
+!!    write(*,'(2X,A50,F20.10,A3)') 'Tr@ppBSE@G0W0@RHF correlation energy (singlet) = ',EcBSE(1),' au'
+!!    write(*,'(2X,A50,F20.10,A3)') 'Tr@ppBSE@G0W0@RHF correlation energy (triplet) = ',EcBSE(2),' au'
+!!    write(*,'(2X,A50,F20.10,A3)') 'Tr@ppBSE@G0W0@RHF correlation energy           = ',sum(EcBSE),' au'
+!!    write(*,'(2X,A50,F20.10,A3)') 'Tr@ppBSE@G0W0@RHF total       energy           = ',ENuc + ERHF + sum(EcBSE),' au'
+!!    write(*,*)'-------------------------------------------------------------------------------'
+!!    write(*,*)
+!!
+!!  end if
+!!  
+!!! Testing zone
+!!
+!!  if(dotest) then
+!!
+!!    call dump_test_value('R','G0W0 correlation energy',EcRPA)
+!!    call dump_test_value('R','G0W0 HOMO energy',Re_eGW(nO))
+!!    call dump_test_value('R','G0W0 LUMO energy',Re_eGW(nO+1))
+!!
+!!  end if
+!!
 end subroutine 

@@ -170,6 +170,47 @@ subroutine complex_diagonalize_matrix(N,A,e)
   
 end subroutine 
 
+subroutine complex_diagonalize_matrix_without_sort(N,A,e)
+
+! Diagonalize a general complex matrix
+
+  implicit none
+
+! Input variables
+
+  integer,intent(in)            :: N
+  complex*16,intent(inout)      :: A(N,N)
+  complex*16,intent(out)        :: e(N)
+
+! Local variables
+
+  integer                       :: lwork,info
+  double precision,allocatable  :: rwork(:)
+  complex*16,allocatable        :: work(:)
+  complex*16,allocatable        :: VL(:,:)
+  complex*16,allocatable        :: VR(:,:)
+
+! Memory allocation
+  allocate(work(1),rwork(2*N),VL(1,1),VR(N,N))
+  lwork = -1
+  call zgeev('N','V',N,A,N,e,VL,1,VR,N,work,lwork,rwork,info)
+  lwork = max(1,int(real(work(1))))
+  
+  deallocate(work)
+  allocate(work(lwork))
+
+  call zgeev('N','V',N,A,N,e,VL,N,VR,N,work,lwork,rwork,info)
+  call complex_sort_eigenvalues(N,e,VR)
+  
+
+  deallocate(work)
+  A = VR
+
+  if(info /= 0) then 
+    print*,'Problem in diagonalize_matrix (zgeev)!!'
+  end if
+  
+end subroutine 
 
 
 subroutine svd(N,A,U,D,Vt)
