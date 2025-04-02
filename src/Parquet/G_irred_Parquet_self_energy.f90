@@ -24,6 +24,7 @@ subroutine G_Parquet_self_energy(eta,nOrb,nC,nO,nV,nR,nS,nOO,nVV,eQP,ERI,&
   integer                       :: p,n
   double precision              :: eps,dem1,dem2,reg,reg1,reg2
   double precision              :: num
+  double precision              :: start_t,end_t,t
 
 ! Output variables
   double precision,intent(out)  :: SigC(nOrb)
@@ -39,6 +40,7 @@ subroutine G_Parquet_self_energy(eta,nOrb,nC,nO,nV,nR,nS,nOO,nVV,eQP,ERI,&
 !-----------------------------!
 ! GF2 part of the self-energy !
 !-----------------------------!
+  call wall_time(start_t)
   do p=nC+1,nOrb-nR
      ! 2h1p sum
      do i=nC+1,nO
@@ -71,11 +73,15 @@ subroutine G_Parquet_self_energy(eta,nOrb,nC,nO,nV,nR,nS,nOO,nVV,eQP,ERI,&
         end do
      end do
   end do
+  call wall_time(end_t)
+  t = end_t - start_t
 
+  write(*,'(1X,A50,1X,F9.3,A8)') 'Wall time for building GF(2) self-energy =',t,' seconds'
+  write(*,*)
 !-----------------------------!
 !  eh part of the self-energy !
 !-----------------------------!
-
+  call wall_time(start_t)
   do p=nC+1,nOrb-nR
      
      do i=nC+1,nO
@@ -182,11 +188,15 @@ subroutine G_Parquet_self_energy(eta,nOrb,nC,nO,nV,nR,nS,nOO,nVV,eQP,ERI,&
      end do ! i
      
   end do ! p
- 
+  call wall_time(end_t)
+  t = end_t - start_t
+
+  write(*,'(1X,A50,1X,F9.3,A8)') 'Wall time for building eh self-energy =',t,' seconds'
+  write(*,*) 
 !-----------------------------!
 !  pp part of the self-energy !
 !-----------------------------!
-
+  call wall_time(start_t)
   do p=nC+1,nOrb-nR
      
      do i=nC+1,nO
@@ -303,7 +313,11 @@ subroutine G_Parquet_self_energy(eta,nOrb,nC,nO,nV,nR,nS,nOO,nVV,eQP,ERI,&
      end do ! a
      
   end do ! p
- 
+  call wall_time(end_t)
+  t = end_t - start_t
+
+  write(*,'(1X,A50,1X,F9.3,A8)') 'Wall time for building pp self-energy =',t,' seconds'
+  write(*,*)
 !-----------------------------!
 !   Renormalization factor    !
 !-----------------------------!

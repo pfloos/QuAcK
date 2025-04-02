@@ -7,8 +7,8 @@ subroutine GParquet(TDAeh,TDApp,linearize,eta,ENuc,max_it_1b,conv_1b,max_it_2b,c
 
 ! Hard-coded parameters
 
-  logical                       :: print_phLR = .false.
-  logical                       :: print_ppLR = .false.
+  logical                       :: print_phLR = .true.
+  logical                       :: print_ppLR = .true.
   
 ! Input variables
 

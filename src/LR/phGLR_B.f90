@@ -22,7 +22,9 @@ subroutine phGLR_B(dRPA,nOrb,nC,nO,nV,nR,nS,lambda,ERI,Bph)
   double precision              :: delta_dRPA
 
   integer                       :: i,j,a,b,ia,jb
-
+  integer                       :: nn,jb0
+  double precision              :: ct1,ct2
+  
 ! Output variables
 
   double precision,intent(out)  :: Bph(nS,nS)
@@ -33,7 +35,32 @@ subroutine phGLR_B(dRPA,nOrb,nC,nO,nV,nR,nS,lambda,ERI,Bph)
   if(dRPA) delta_dRPA = 1d0
 
 ! Build B matrix for spin orbitals 
+  ! nn = nOrb - nR - nO
+  ! ct1 = lambda
+  ! ct2 = - (1d0 - delta_dRPA) * lambda
+  
+  ! !$OMP PARALLEL DEFAULT(NONE)                    &
+  ! !$OMP PRIVATE (i, a, j, b, ia, jb0, jb) &
+  ! !$OMP SHARED (nC, nO, nR, nOrb, nn, ct1, ct2, ERI, Bph)
+  ! !$OMP DO COLLAPSE(2)
+  ! do i = nC+1, nO
+  !    do a = nO+1, nOrb-nR
+  !       ia = a - nO + (i - nC - 1) * nn
 
+  !       do j = nC+1, nO
+  !          jb0 = (j - nC - 1) * nn - nO
+  !          do b = nO+1, nOrb-nR
+  !             jb = b + jb0
+
+  !             Bph(ia,jb) = ct1 * ERI(i,j,a,b) + ct2 * ERI(i,j,b,a)
+              
+  !          enddo 
+  !       enddo
+       
+  !    enddo
+  ! enddo
+  ! !$OMP END DO
+  ! !$OMP END PARALLEL
   ia = 0
   do i=nC+1,nO
     do a=nO+1,nOrb-nR

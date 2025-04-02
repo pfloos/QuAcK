@@ -380,7 +380,7 @@ subroutine RQuAcK(working_dir,use_gpu,dotest,doRHF,doROHF,dostab,dosearch,doMP2,
 
   if(doParquet) then
     call wall_time(start_Parquet)
-    call RParquet(TDAeh,TDApp,lin_parquet,reg_parquet,ENuc,max_it_1b,conv_1b,max_it_2b,conv_2b,nOrb,nC,nO,nV,nR,nS,ERHF,eGW,ERI_MO)
+    call RParquet(TDAeh,TDApp,lin_parquet,reg_parquet,ENuc,max_it_1b,conv_1b,max_it_2b,conv_2b,nOrb,nC,nO,nV,nR,nS,ERHF,eHF,ERI_MO)
     call wall_time(end_Parquet)
   
     t_Parquet = end_Parquet - start_Parquet
