@@ -38,7 +38,12 @@ subroutine complex_orthonormalize(N,vectors,A)
 
   ! Copy the input matrix to a temporary matrix
   allocate(L(N,N),Linv(N,N))
-
+  write(*,*) "Size A"
+  write(*,*) size(A,1)
+  write(*,*) size(A,2)
+  write(*,*) "Size VECTORS"
+  write(*,*) size(vectors,1)
+  write(*,*) size(vectors,2)
   L = matmul(matmul(transpose(vectors),A),vectors)
   call complex_cholesky_decomp(N,L)
   call complex_inverse_matrix(N,L,Linv)
