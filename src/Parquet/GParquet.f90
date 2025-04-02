@@ -82,7 +82,7 @@ subroutine GParquet(TDAeh,TDApp,linearize,eta,ENuc,max_it_1b,conv_1b,max_it_2b,c
     
 ! DIIS parameters
 
-  max_diis = 2
+  max_diis = 1
   n_diis   = 0
   rcond    = 1d0
 
