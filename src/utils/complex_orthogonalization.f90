@@ -38,6 +38,7 @@ subroutine complex_orthonormalize(N,vectors,A)
 
   ! Copy the input matrix to a temporary matrix
   allocate(L(N,N),Linv(N,N))
+
   L = matmul(matmul(transpose(vectors),A),vectors)
   call complex_cholesky_decomp(N,L)
   call complex_inverse_matrix(N,L,Linv)
@@ -58,7 +59,7 @@ subroutine complex_normalize_RPA(nS,XYYX)
   complex*16,allocatable :: A(:,:)
   
   allocate(A(2*nS,2*nS))
-  A(:,:) = (0d0,0d0)
+  A(:,:) = cmplx(0d0,0d0,kind=8)
   do i=1,nS
     A(i,i) = 1
     A(i+nS,i+nS) = -1
