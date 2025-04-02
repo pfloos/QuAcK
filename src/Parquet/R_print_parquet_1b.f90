@@ -1,4 +1,4 @@
-subroutine print_parquet_1b(nOrb,nO,eHF,SigC,eQP,Z,n_it_1b,err_1b,ENuc,EGHF,EcGM,Ec_eh,Ec_pp)
+subroutine R_print_parquet_1b(nOrb,nO,eHF,SigC,eQP,Z,n_it_1b,err_1b,ENuc,EGHF,EcGM,Ec_eh,Ec_pp)
 
 ! Print one-electron energies and other stuff for G0F2
 
@@ -16,8 +16,8 @@ subroutine print_parquet_1b(nOrb,nO,eHF,SigC,eQP,Z,n_it_1b,err_1b,ENuc,EGHF,EcGM
   double precision,intent(in)        :: ENuc
   double precision,intent(in)        :: EGHF
   double precision,intent(in)        :: EcGM
-  double precision,intent(in)        :: Ec_eh
-  double precision,intent(in)        :: Ec_pp
+  double precision,intent(in)        :: Ec_eh(nspin)
+  double precision,intent(in)        :: Ec_pp(nspin)
 
   integer                            :: p
   integer                            :: HOMO
@@ -29,7 +29,7 @@ subroutine print_parquet_1b(nOrb,nO,eHF,SigC,eQP,Z,n_it_1b,err_1b,ENuc,EGHF,EcGM
   HOMO = nO
   LUMO = HOMO + 1
   Gap = eQP(LUMO) - eQP(HOMO)
-
+  
 ! Dump results
 
   write(*,*)'-------------------------------------------------------------------------------'
@@ -55,9 +55,9 @@ subroutine print_parquet_1b(nOrb,nO,eHF,SigC,eQP,Z,n_it_1b,err_1b,ENuc,EGHF,EcGM
   write(*,'(2X,A60,F15.6,A3)') '     Parquet total       energy = ',ENuc + EGHF + EcGM,' au'
   write(*,'(2X,A60,F15.6,A3)') '     Parquet correlation energy = ',EcGM,' au'
   write(*,*)'-------------------------------------------------------------------------------'
-  write(*,'(2X,A60,F15.6,A3)') '     eh-RPA  correlation energy = ',Ec_eh,' au'
-  write(*,'(2X,A60,F15.6,A3)') '     pp-RPA  correlation energy = ',Ec_pp,' au'
-  write(*,'(2X,A60,F15.6,A3)') '(eh+pp)-RPA  correlation energy = ',Ec_pp,' au'
+  write(*,'(2X,A60,F15.6,A3)') '     eh-RPA  correlation energy = ',Ec_eh(1)+3d0*Ec_eh(2),' au'
+  write(*,'(2X,A60,F15.6,A3)') '     pp-RPA  correlation energy = ',Ec_pp(1)+3d0*Ec_pp(2),' au'
+  !write(*,'(2X,A60,F15.6,A3)') '(eh+pp)-RPA  correlation energy = ',Ec_pp,' au'
   write(*,*)'-------------------------------------------------------------------------------'
   write(*,*)
 
