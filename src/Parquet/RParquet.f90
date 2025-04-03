@@ -85,6 +85,12 @@ subroutine RParquet(TDAeh,TDApp,max_diis_1b,max_diis_2b,linearize,eta,ENuc,max_i
 
   double precision              :: mem = 0d0
   double precision              :: dp_in_GB = 8d0/(1024d0**3)
+
+! DIIS
+  integer                       :: n_diis_1b,n_diis_2b
+  double precision              :: rcond_1b
+  double precision,allocatable  :: err_diis_1b(:,:)
+  double precision,allocatable  :: eQP_diis(:,:)
   
 ! Output variables
 ! None
@@ -149,6 +155,15 @@ subroutine RParquet(TDAeh,TDApp,max_diis_1b,max_diis_2b,linearize,eta,ENuc,max_i
             + size(old_pp_sing_Phi) + size(old_pp_trip_Phi)
 
   write(*,'(1X,A50,4X,F6.3,A3)') 'Memory usage in RParquet = ',mem*dp_in_GB,' GB'
+
+! DIIS for one-body part
+
+  allocate(err_diis_1b(nOrb,max_diis_1b),eQP_diis(nOrb,max_diis_1b))
+
+  rcond_1b  = 1d0
+  n_diis_1b = 0
+  err_diis_1b(:,:) = 0d0
+  eQP_diis(:,:)    = 0d0
 
 ! Initialization
 
@@ -701,8 +716,17 @@ subroutine RParquet(TDAeh,TDApp,max_diis_1b,max_diis_2b,linearize,eta,ENuc,max_i
       write(*,*)
       stop
 
-   end if
+    end if
    
+    ! DIIS for one-body part
+   
+    if(max_diis_1b > 1) then
+
+      n_diis_1b = min(n_diis_1b+1,max_diis_1b)
+      call DIIS_extrapolation(rcond_1b,nOrb,nOrb,n_diis_1b,err_diis_1b,eQP_diis,eQP-eOld,eQP)
+  
+    end if 
+
     ! Check one-body converge
 
     err_1b =  maxval(abs(eOld - eQP))
