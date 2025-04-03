@@ -68,7 +68,7 @@ subroutine complex_RGW_QP_graph(doSRG,eta,flow,nBas,nC,nO,nV,nR,nS,Re_eHF,Im_eHF
       call complex_RGW_SigC_dSigC(p,eta,nBas,nC,nO,nV,nR,nS,&
               Re_w,Im_w,Re_eOld,Im_eOld,Om,rho,&
               Re_SigC,Im_SigC,Re_dSigC,Im_dSigC)
-
+      
       Re_f  = Re_w - Re_eHF(p) - Re_SigC
       Im_f  = Im_w - Im_eHF(p) - Im_SigC
       Re_df = (1d0 - Re_dSigC)/((1d0 - Re_dSigC)**2 + Im_dSigC**2)

@@ -54,7 +54,8 @@ subroutine complex_RGW_SigC_dSigC(p,eta,nBas,nC,nO,nV,nR,nS,Re_w,Im_w,Re_e,Im_e,
       eta_tilde = eta - Im_w + Im_e(i)  - aimag(Om(m))
       num = 2d0*rho(p,i,m)**2
 
-      tmp = num*cmplx(eps/(eps**2 + eta_tilde**2),eta_tilde/(eps**2 + eta_tilde**2),kind=8)
+      tmp = num*cmplx(eps/(eps**2 + eta_tilde**2),&
+              eta_tilde/(eps**2 + eta_tilde**2),kind=8)
       Re_SigC = Re_SigC + real(tmp)
       Im_SigC = Im_SigC + aimag(tmp)
 
@@ -69,7 +70,7 @@ subroutine complex_RGW_SigC_dSigC(p,eta,nBas,nC,nO,nV,nR,nS,Re_w,Im_w,Re_e,Im_e,
 
   do a=nO+1,nBas-nR
     do m=1,nS
-      eps = Re_w + Re_e(a) - real(Om(m))
+      eps = Re_w - Re_e(a) - real(Om(m))
       eta_tilde = eta + Im_w  - Im_e(a) - aimag(Om(m))
       num = 2d0*rho(p,a,m)**2
 
