@@ -86,7 +86,284 @@ subroutine R_Parquet_self_energy(eta,nOrb,nC,nO,nV,nR,nS,nOOs,nVVs,nOOt,nVVt,eQP
 
   write(*,'(1X,A50,1X,F9.3,A8)') 'Wall time for building GF(2) self-energy =',t,' seconds'
   write(*,*)
-  
+!-------------------------------------!
+!  singlet pp part of the self-energy !
+!-------------------------------------!
+  call wall_time(start_t)
+  !$OMP PARALLEL DEFAULT(NONE)    &
+  !$OMP PRIVATE(p,i,j,k,c,n,num,dem1,dem2,reg1,reg2) &
+  !$OMP SHARED(nC,nO,nOrb,nR,nOOs,nVVs,eta,ERI,eQP,ee_sing_rho,ee_sing_Om,hh_sing_rho,hh_sing_Om,SigC,Z)
+  !$OMP DO COLLAPSE(2)
+  do p=nC+1,nOrb-nR
+     
+     do i=nC+1,nO
+        do j=nC+1,nO
+           do n=1,nVVs
+              ! 4h1p
+              do k=nC+1,nO
+                 num  = 0.5d0*ERI(p,k,i,j) * ee_sing_rho(i,j,n) * ee_sing_rho(p,k,n)
+                 dem1 = ee_sing_Om(n) - eQP(i) - eQP(j)
+                 dem2 = eQP(p) + eQP(k) - ee_sing_Om(n)
+                 reg1 = (1d0 - exp(- 2d0 * eta * dem1 * dem1))
+                 reg2 = (1d0 - exp(- 2d0 * eta * dem2 * dem2))
+
+                 SigC(p) = SigC(p) - num * (reg1/dem1) * (reg2/dem2)
+                 Z(p)    = Z(p)    + num * (reg1/dem1) * (reg2/dem2/dem2)
+
+              end do ! k
+              ! 3h2p
+              do c=nO+1,nOrb-nR
+
+                 num  = 0.5d0*ERI(p,c,i,j) * ee_sing_rho(i,j,n) * ee_sing_rho(p,c,n)
+                 !dem1 = ee_Om(n) - eQP(i) - eQP(j)
+                 dem2 = eQP(p) + eQP(c) - eQP(i) - eQP(j)
+                 !reg1 = (1d0 - exp(- 2d0 * eta * dem1 * dem1))
+                 reg2 = (1d0 - exp(- 2d0 * eta * dem2 * dem2))
+
+                 SigC(p) = SigC(p) - num * (reg1/dem1) * (reg2/dem2)
+                 Z(p)    = Z(p)    + num * (reg1/dem1) * (reg2/dem2/dem2)
+                 
+              end do ! a
+           end do ! n
+           do n=1,nOOs
+              ! 3h2p
+              do c=nO+1,nOrb-nR
+
+                 num  = 0.5d0*ERI(p,c,i,j) * hh_sing_rho(i,j,n) * hh_sing_rho(p,c,n)
+                 dem1 = hh_sing_Om(n) - eQP(i) - eQP(j)
+                 dem2 = eQP(p) + eQP(c) - hh_sing_Om(n)
+                 reg1 = (1d0 - exp(- 2d0 * eta * dem1 * dem1))
+                 reg2 = (1d0 - exp(- 2d0 * eta * dem2 * dem2))
+
+                 SigC(p) = SigC(p) - num * (reg1/dem1) * (reg2/dem2)
+                 Z(p)    = Z(p)    + num * (reg1/dem1) * (reg2/dem2/dem2)
+
+                 num  = 0.5d0*ERI(p,c,i,j) * hh_sing_rho(i,j,n) * hh_sing_rho(p,c,n)
+                 !dem1 = hh_Om(n) - eQP(i) - eQP(j)
+                 dem2 = eQP(p) + eQP(c) - eQP(i) - eQP(j)
+                 !reg1 = (1d0 - exp(- 2d0 * eta * dem1 * dem1))
+                 reg2 = (1d0 - exp(- 2d0 * eta * dem2 * dem2))
+
+                 SigC(p) = SigC(p) + num * (reg1/dem1) * (reg2/dem2)
+                 Z(p)    = Z(p)    - num * (reg1/dem1) * (reg2/dem2/dem2)
+                 
+              end do ! c
+           end do ! n
+        end do ! j
+     end do ! i
+     
+  end do ! p
+  !$OMP END DO
+  !$OMP END PARALLEL
+  !$OMP PARALLEL DEFAULT(NONE)    &
+  !$OMP PRIVATE(p,k,a,b,c,n,num,dem1,dem2,reg1,reg2) &
+  !$OMP SHARED(nC,nO,nOrb,nR,nOOs,nVVs,eta,ERI,eQP,ee_sing_rho,ee_sing_Om,hh_sing_rho,hh_sing_Om,SigC,Z)
+  !$OMP DO COLLAPSE(2)
+  do p=nC+1,nOrb-nR
+     do a=nO+1,nOrb-nR
+        do b=nO+1,nOrb-nR
+           do n=1,nOOs
+              ! 4p1h
+              do c=nO+1,nOrb-nR
+
+                 num  = 0.5d0*ERI(p,c,a,b) * hh_sing_rho(a,b,n) * hh_sing_rho(p,c,n)
+                 dem1 = hh_sing_Om(n) - eQP(a) - eQP(b)
+                 dem2 = eQP(p) + eQP(c) - hh_sing_Om(n)
+                 reg1 = (1d0 - exp(- 2d0 * eta * dem1 * dem1))
+                 reg2 = (1d0 - exp(- 2d0 * eta * dem2 * dem2))
+
+                 SigC(p) = SigC(p) - num * (reg1/dem1) * (reg2/dem2)
+                 Z(p)    = Z(p)    + num * (reg1/dem1) * (reg2/dem2/dem2)
+
+              end do ! c
+              ! 3p2h
+              do k=nC+1,nO
+
+                 num  = 0.5d0*ERI(p,k,a,b) * hh_sing_rho(a,b,n) * hh_sing_rho(p,k,n)
+                 !dem1 = hh_Om(n) - eQP(a) - eQP(b)
+                 dem2 = eQP(p) + eQP(k) - eQP(a) - eQP(b)
+                 !reg1 = (1d0 - exp(- 2d0 * eta * dem1 * dem1))
+                 reg2 = (1d0 - exp(- 2d0 * eta * dem2 * dem2))
+
+                 SigC(p) = SigC(p) - num * (reg1/dem1) * (reg2/dem2)
+                 Z(p)    = Z(p)    + num * (reg1/dem1) * (reg2/dem2/dem2)
+
+              end do ! k
+           end do ! n
+           do n=1,nVVs
+              ! 3p2h
+              do k=nC+1,nO
+
+                 num  = 0.5d0*ERI(p,k,a,b) * ee_sing_rho(a,b,n) * ee_sing_rho(p,k,n)
+                 dem1 = ee_sing_Om(n) - eQP(a) - eQP(b)
+                 dem2 = eQP(p) + eQP(k) - ee_sing_Om(n)
+                 reg1 = (1d0 - exp(- 2d0 * eta * dem1 * dem1))
+                 reg2 = (1d0 - exp(- 2d0 * eta * dem2 * dem2))
+
+                 SigC(p) = SigC(p) - num * (reg1/dem1) * (reg2/dem2)
+                 Z(p)    = Z(p)    + num * (reg1/dem1) * (reg2/dem2/dem2)
+
+                 num  = 0.5d0*ERI(p,k,a,b) * ee_sing_rho(a,b,n) * ee_sing_rho(p,k,n)
+                 !dem1 = ee_Om(n) - eQP(a) - eQP(b)
+                 dem2 = eQP(p) + eQP(k) - eQP(a) - eQP(b)
+                 !reg1 = (1d0 - exp(- 2d0 * eta * dem1 * dem1))
+                 reg2 = (1d0 - exp(- 2d0 * eta * dem2 * dem2))
+
+                 SigC(p) = SigC(p) + num * (reg1/dem1) * (reg2/dem2)
+                 Z(p)    = Z(p)    - num * (reg1/dem1) * (reg2/dem2/dem2)
+                 
+              end do ! c
+           end do ! n
+        end do ! b
+     end do ! a
+     
+  end do ! p
+  !$OMP END DO
+  !$OMP END PARALLEL
+  call wall_time(end_t)
+  t = end_t - start_t
+
+  write(*,'(1X,A50,1X,F9.3,A8)') 'Wall time for building singlet pp self-energy =',t,' seconds'
+  write(*,*)
+!-------------------------------------!
+!  triplet pp part of the self-energy !
+!-------------------------------------!
+  call wall_time(start_t)
+  !$OMP PARALLEL DEFAULT(NONE)    &
+  !$OMP PRIVATE(p,i,j,k,c,n,num,dem1,dem2,reg1,reg2) &
+  !$OMP SHARED(nC,nO,nOrb,nR,nOOt,nVVt,eta,ERI,eQP,ee_trip_rho,ee_trip_Om,hh_trip_rho,hh_trip_Om,SigC,Z)
+  !$OMP DO COLLAPSE(2)
+  do p=nC+1,nOrb-nR
+     
+     do i=nC+1,nO
+        do j=nC+1,nO
+           do n=1,nVVt
+              ! 4h1p
+              do k=nC+1,nO
+                 num  = 1.5d0*ERI(p,k,i,j) * ee_trip_rho(i,j,n) * ee_trip_rho(p,k,n)
+                 dem1 = ee_trip_Om(n) - eQP(i) - eQP(j)
+                 dem2 = eQP(p) + eQP(k) - ee_trip_Om(n)
+                 reg1 = (1d0 - exp(- 2d0 * eta * dem1 * dem1))
+                 reg2 = (1d0 - exp(- 2d0 * eta * dem2 * dem2))
+
+                 SigC(p) = SigC(p) - num * (reg1/dem1) * (reg2/dem2)
+                 Z(p)    = Z(p)    + num * (reg1/dem1) * (reg2/dem2/dem2)
+
+              end do ! k
+              ! 3h2p
+              do c=nO+1,nOrb-nR
+
+                 num  = 1.5d0*ERI(p,c,i,j) * ee_trip_rho(i,j,n) * ee_trip_rho(p,c,n)
+                 !dem1 = ee_Om(n) - eQP(i) - eQP(j)
+                 dem2 = eQP(p) + eQP(c) - eQP(i) - eQP(j)
+                 !reg1 = (1d0 - exp(- 2d0 * eta * dem1 * dem1))
+                 reg2 = (1d0 - exp(- 2d0 * eta * dem2 * dem2))
+
+                 SigC(p) = SigC(p) - num * (reg1/dem1) * (reg2/dem2)
+                 Z(p)    = Z(p)    + num * (reg1/dem1) * (reg2/dem2/dem2)
+                 
+              end do ! a
+           end do ! n
+           do n=1,nOOt
+              ! 3h2p
+              do c=nO+1,nOrb-nR
+
+                 num  = 1.5d0*ERI(p,c,i,j) * hh_trip_rho(i,j,n) * hh_trip_rho(p,c,n)
+                 dem1 = hh_trip_Om(n) - eQP(i) - eQP(j)
+                 dem2 = eQP(p) + eQP(c) - hh_trip_Om(n)
+                 reg1 = (1d0 - exp(- 2d0 * eta * dem1 * dem1))
+                 reg2 = (1d0 - exp(- 2d0 * eta * dem2 * dem2))
+
+                 SigC(p) = SigC(p) - num * (reg1/dem1) * (reg2/dem2)
+                 Z(p)    = Z(p)    + num * (reg1/dem1) * (reg2/dem2/dem2)
+
+                 num  = 1.5d0*ERI(p,c,i,j) * hh_trip_rho(i,j,n) * hh_trip_rho(p,c,n)
+                 !dem1 = hh_Om(n) - eQP(i) - eQP(j)
+                 dem2 = eQP(p) + eQP(c) - eQP(i) - eQP(j)
+                 !reg1 = (1d0 - exp(- 2d0 * eta * dem1 * dem1))
+                 reg2 = (1d0 - exp(- 2d0 * eta * dem2 * dem2))
+
+                 SigC(p) = SigC(p) + num * (reg1/dem1) * (reg2/dem2)
+                 Z(p)    = Z(p)    - num * (reg1/dem1) * (reg2/dem2/dem2)
+                 
+              end do ! c
+           end do ! n
+        end do ! j
+     end do ! i
+     
+  end do ! p
+  !$OMP END DO
+  !$OMP END PARALLEL
+  !$OMP PARALLEL DEFAULT(NONE)    &
+  !$OMP PRIVATE(p,k,a,b,c,n,num,dem1,dem2,reg1,reg2) &
+  !$OMP SHARED(nC,nO,nOrb,nR,nOOt,nVVt,eta,ERI,eQP,ee_trip_rho,ee_trip_Om,hh_trip_rho,hh_trip_Om,SigC,Z)
+  !$OMP DO COLLAPSE(2)
+  do p=nC+1,nOrb-nR
+     do a=nO+1,nOrb-nR
+        do b=nO+1,nOrb-nR
+           do n=1,nOOt
+              ! 4p1h
+              do c=nO+1,nOrb-nR
+
+                 num  = 1.5d0*ERI(p,c,a,b) * hh_trip_rho(a,b,n) * hh_trip_rho(p,c,n)
+                 dem1 = hh_trip_Om(n) - eQP(a) - eQP(b)
+                 dem2 = eQP(p) + eQP(c) - hh_trip_Om(n)
+                 reg1 = (1d0 - exp(- 2d0 * eta * dem1 * dem1))
+                 reg2 = (1d0 - exp(- 2d0 * eta * dem2 * dem2))
+
+                 SigC(p) = SigC(p) - num * (reg1/dem1) * (reg2/dem2)
+                 Z(p)    = Z(p)    + num * (reg1/dem1) * (reg2/dem2/dem2)
+
+              end do ! c
+              ! 3p2h
+              do k=nC+1,nO
+
+                 num  = 1.5d0*ERI(p,k,a,b) * hh_trip_rho(a,b,n) * hh_trip_rho(p,k,n)
+                 !dem1 = hh_Om(n) - eQP(a) - eQP(b)
+                 dem2 = eQP(p) + eQP(k) - eQP(a) - eQP(b)
+                 !reg1 = (1d0 - exp(- 2d0 * eta * dem1 * dem1))
+                 reg2 = (1d0 - exp(- 2d0 * eta * dem2 * dem2))
+
+                 SigC(p) = SigC(p) - num * (reg1/dem1) * (reg2/dem2)
+                 Z(p)    = Z(p)    + num * (reg1/dem1) * (reg2/dem2/dem2)
+
+              end do ! k
+           end do ! n
+           do n=1,nVVt
+              ! 3p2h
+              do k=nC+1,nO
+
+                 num  = 1.5d0*ERI(p,k,a,b) * ee_trip_rho(a,b,n) * ee_trip_rho(p,k,n)
+                 dem1 = ee_trip_Om(n) - eQP(a) - eQP(b)
+                 dem2 = eQP(p) + eQP(k) - ee_trip_Om(n)
+                 reg1 = (1d0 - exp(- 2d0 * eta * dem1 * dem1))
+                 reg2 = (1d0 - exp(- 2d0 * eta * dem2 * dem2))
+
+                 SigC(p) = SigC(p) - num * (reg1/dem1) * (reg2/dem2)
+                 Z(p)    = Z(p)    + num * (reg1/dem1) * (reg2/dem2/dem2)
+
+                 num  = 1.5d0*ERI(p,k,a,b) * ee_trip_rho(a,b,n) * ee_trip_rho(p,k,n)
+                 !dem1 = ee_Om(n) - eQP(a) - eQP(b)
+                 dem2 = eQP(p) + eQP(k) - eQP(a) - eQP(b)
+                 !reg1 = (1d0 - exp(- 2d0 * eta * dem1 * dem1))
+                 reg2 = (1d0 - exp(- 2d0 * eta * dem2 * dem2))
+
+                 SigC(p) = SigC(p) + num * (reg1/dem1) * (reg2/dem2)
+                 Z(p)    = Z(p)    - num * (reg1/dem1) * (reg2/dem2/dem2)
+                 
+              end do ! c
+           end do ! n
+        end do ! b
+     end do ! a
+     
+  end do ! p
+  !$OMP END DO
+  !$OMP END PARALLEL 
+  call wall_time(end_t)
+  t = end_t - start_t
+
+  write(*,'(1X,A50,1X,F9.3,A8)') 'Wall time for building triplet pp self-energy =',t,' seconds'
+  write(*,*) 
 !-----------------------------!
 !   Renormalization factor    !
 !-----------------------------!
