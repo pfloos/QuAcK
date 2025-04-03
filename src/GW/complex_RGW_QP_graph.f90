@@ -1,6 +1,5 @@
-subroutine complex_RGW_QP_graph(doSRG,eta,flow,nBas,nC,nO,nV,nR,nS,Re_eHF,Im_eHF,&
-                Om,rho,Re_eGWlin,Im_eGWlin,                                      &
-                Re_eOld,Im_eOld,Re_eGW,Im_eGW,Re_Z,Im_Z)
+subroutine complex_RGW_QP_graph(doSRG,eta,flow,nBas,nC,nO,nV,nR,nS,Re_eHF,Im_eHF,Om,rho,Re_eGWlin,Im_eGWlin, &
+        Re_eOld,Im_eOld,Re_eGW,Im_eGW,Re_Z,Im_Z)
 
 ! Compute the graphical solution of the QP equation
 
@@ -22,12 +21,10 @@ subroutine complex_RGW_QP_graph(doSRG,eta,flow,nBas,nC,nO,nV,nR,nS,Re_eHF,Im_eHF
   double precision,intent(in)   :: Re_eHF(nBas)
   double precision,intent(in)   :: Im_eHF(nBas)
   complex*16,intent(in)         :: Om(nS)
-  complex*16,intent(in)         :: rho(nBas,nBas,nS)
+  double precision,intent(in)   :: rho(nBas,nBas,nS)
 
   double precision,intent(in)   :: Re_eGWlin(nBas)
   double precision,intent(in)   :: Im_eGWlin(nBas)
-  double precision,external     :: cRGW_Re_SigC,cRGW_Re_dSigC
-  double precision,external     :: cRGW_Im_SigC,cRGW_Im_dSigC
   double precision,intent(in)   :: Re_eOld(nBas)
   double precision,intent(in)   :: Im_eOld(nBas)
 
@@ -68,11 +65,9 @@ subroutine complex_RGW_QP_graph(doSRG,eta,flow,nBas,nC,nO,nV,nR,nS,Re_eHF,Im_eHF
       nIt = nIt + 1
 
 
-!      Re_SigC  = cRGW_Re_SigC(p,Re_w,Im_w,eta,nBas,nC,nO,nV,nR,nS,Re_eOld,Im_eold,Om,rho)
-!      Im_SigC  = cRGW_Im_SigC(p,Re_w,Im_w,eta,nBas,nC,nO,nV,nR,nS,Re_eOld,Im_eold,Om,rho)
-!      Re_dSigC = cRGW_Re_dSigC(p,Re_w,Im_w,eta,nBas,nC,nO,nV,nR,nS,Re_eOld,Im_eold,Om,rho)
-!      Im_dSigC = cRGW_Im_dSigC(p,Re_w,Im_w,eta,nBas,nC,nO,nV,nR,nS,Re_eOld,Im_eold,Om,rho)
-!
+      call complex_RGW_SigC_dSigC(p,eta,nBas,nC,nO,nV,nR,nS,&
+              Re_w,Im_w,Re_eOld,Im_eOld,Om,rho,&
+              Re_SigC,Im_SigC,Re_dSigC,Im_dSigC)
 
       Re_f  = Re_w - Re_eHF(p) - Re_SigC
       Im_f  = Im_w - Im_eHF(p) - Im_SigC

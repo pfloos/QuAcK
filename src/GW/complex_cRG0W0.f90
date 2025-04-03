@@ -153,9 +153,9 @@ subroutine complex_cRG0W0(dotest,doACFDT,exchange_kernel,doXBS,dophBSE,dophBSE2,
     write(*,*) ' *** Quasiparticle energies obtained by root search *** '
     write(*,*)
     write(*,*) "ROOT SEARCH NOT IMPLEMENTED YET" 
-!    call complex_RGW_QP_graph(doSRG,eta,flow,nOrb,nC,nO,nV,nR,nS,       &
-!            Re_eHF,Im_eHF,Om,rho,Re_eGWlin,Im_eGWlin,Re_eHF,Im_eHF,     &
-!            Re_eGW,Im_eGW,Re_Z,Im_Z)
+    call complex_RGW_QP_graph(doSRG,eta,flow,nOrb,nC,nO,nV,nR,nS,       &
+            Re_eHF,Im_eHF,Om,rho,Re_eGWlin,Im_eGWlin,Re_eHF,Im_eHF,     &
+            Re_eGW,Im_eGW,Re_Z,Im_Z)
   end if
 
 ! Plot self-energy, renormalization factor, and spectral function
