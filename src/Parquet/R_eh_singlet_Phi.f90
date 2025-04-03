@@ -19,6 +19,10 @@ subroutine R_eh_singlet_Phi(nOrb,nC,nR,nS,eh_sing_Om,eh_sing_rho,eh_sing_Phi)
 ! Initialization
   eh_sing_Phi(:,:,:,:) = 0d0
 
+  !$OMP PARALLEL DEFAULT(NONE) &
+  !$OMP PRIVATE(p, q, r, s, n) &
+  !$OMP SHARED(nC, nOrb, nR, nS, eh_sing_Phi, eh_sing_rho, eh_sing_Om)
+  !$OMP DO COLLAPSE(2)
   do s = nC+1, nOrb-nR
      do r = nC+1, nOrb-nR
         do q = nC+1, nOrb-nR
@@ -34,5 +38,7 @@ subroutine R_eh_singlet_Phi(nOrb,nC,nR,nS,eh_sing_Om,eh_sing_rho,eh_sing_Phi)
         enddo
      enddo
   enddo
+  !$OMP END DO
+  !$OMP END PARALLEL
 
 end subroutine 

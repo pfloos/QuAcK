@@ -19,6 +19,10 @@ subroutine R_eh_triplet_Phi(nOrb,nC,nR,nS,eh_trip_Om,eh_trip_rho,eh_trip_Phi)
 ! Initialization
   eh_trip_Phi(:,:,:,:) = 0d0
 
+  !$OMP PARALLEL DEFAULT(NONE) &
+  !$OMP PRIVATE(p, q, r, s, n) &
+  !$OMP SHARED(nC, nOrb, nR, nS, eh_trip_Phi, eh_trip_rho, eh_trip_Om)
+  !$OMP DO COLLAPSE(2)
   do s = nC+1, nOrb-nR
      do r = nC+1, nOrb-nR
         do q = nC+1, nOrb-nR
@@ -34,5 +38,7 @@ subroutine R_eh_triplet_Phi(nOrb,nC,nR,nS,eh_trip_Om,eh_trip_rho,eh_trip_Phi)
         enddo
      enddo
   enddo
+  !$OMP END DO
+  !$OMP END PARALLEL
 
 end subroutine 

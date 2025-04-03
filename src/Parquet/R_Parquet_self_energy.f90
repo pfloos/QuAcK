@@ -207,7 +207,7 @@ subroutine R_Parquet_self_energy(eta,nOrb,nC,nO,nV,nR,nS,nOOs,nVVs,nOOt,nVVt,eQP
   call wall_time(end_t)
   t = end_t - start_t
 
-  write(*,'(1X,A50,1X,F9.3,A8)') 'Wall time for building eh self-energy =',t,' seconds'
+  write(*,'(1X,A50,1X,F9.3,A8)') 'Wall time for building singlet eh self-energy =',t,' seconds'
   write(*,*)
 !-------------------------------------!
 !  triplet eh part of the self-energy !
@@ -330,7 +330,7 @@ subroutine R_Parquet_self_energy(eta,nOrb,nC,nO,nV,nR,nS,nOOs,nVVs,nOOt,nVVt,eQP
   call wall_time(end_t)
   t = end_t - start_t
 
-  write(*,'(1X,A50,1X,F9.3,A8)') 'Wall time for building eh self-energy =',t,' seconds'
+  write(*,'(1X,A50,1X,F9.3,A8)') 'Wall time for building triplet eh self-energy =',t,' seconds'
   write(*,*) 
 !-------------------------------------!
 !  singlet pp part of the self-energy !

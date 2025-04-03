@@ -157,10 +157,10 @@ subroutine R_pp_singlet_screened_integral(nOrb,nC,nO,nR,nOO,nVV,ERI,eh_sing_Phi,
   rho1(:,:,:) = 0d0
   rho2(:,:,:) = 0d0
 
-!  !$OMP PARALLEL DEFAULT(NONE)                                         &
-!  !$OMP          PRIVATE(p, q, a, b, ab, c, d, cd, i, j, ij, k, l, kl) &
-!  !$OMP          SHARED(nC, nOrb, nR, nO, rho1, rho2, ERI, pp_sing_Gam, X1, Y1, X2, Y2)
-!  !$OMP DO COLLAPSE(2)
+  !$OMP PARALLEL DEFAULT(NONE)                                &
+  !$OMP PRIVATE(p, q, a, b, ab, c, d, cd, i, j, ij, k, l, kl) &
+  !$OMP SHARED(nC, nOrb, nR, nO, rho1, rho2, ERI, eh_sing_Phi, eh_trip_Phi, X1, Y1, X2, Y2)
+  !$OMP DO COLLAPSE(2)
   do q=nC+1,nOrb-nR
      do p=nC+1,nOrb-nR
 
@@ -231,8 +231,8 @@ subroutine R_pp_singlet_screened_integral(nOrb,nC,nO,nR,nOO,nVV,ERI,eh_sing_Phi,
         
      end do
   end do
-!  !$OMP END DO
-!  !$OMP END PARALLEL
+  !$OMP END DO
+  !$OMP END PARALLEL
 
 end subroutine 
 
@@ -274,10 +274,10 @@ subroutine R_pp_triplet_screened_integral(nOrb,nC,nO,nR,nOO,nVV,ERI,eh_sing_Phi,
   dim_1 = (nOrb - nO) * (nOrb - nO - 1) / 2
   dim_2 = nO * (nO - 1) / 2
 
-!  !$OMP PARALLEL DEFAULT(NONE)                                         &
-!  !$OMP          PRIVATE(p, q, a, b, ab, c, d, cd, i, j, ij, k, l, kl) &
-!  !$OMP          SHARED(nC, nOrb, nR, nO, rho1, rho2, ERI, pp_trip_Gam, X1, Y1, X2, Y2)
-!  !$OMP DO COLLAPSE(2)
+  !$OMP PARALLEL DEFAULT(NONE)                                &
+  !$OMP PRIVATE(p, q, a, b, ab, c, d, cd, i, j, ij, k, l, kl) &
+  !$OMP SHARED(nC, nOrb, nR, nO, rho1, rho2, ERI, eh_sing_Phi, eh_trip_Phi, X1, Y1, X2, Y2)
+  !$OMP DO COLLAPSE(2)
   do q = nC+1, nOrb-nR
      do p = nC+1, nOrb-nR
 
@@ -344,7 +344,7 @@ subroutine R_pp_triplet_screened_integral(nOrb,nC,nO,nR,nOO,nVV,ERI,eh_sing_Phi,
         
      end do ! p
   end do ! q
-!  !$OMP END DO
-!  !$OMP END PARALLEL
+  !$OMP END DO
+  !$OMP END PARALLEL
 
 end subroutine 

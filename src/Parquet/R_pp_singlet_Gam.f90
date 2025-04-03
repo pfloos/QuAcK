@@ -60,7 +60,7 @@ subroutine R_pp_singlet_Gamma_C(nOrb,nO,nR,nVVs,eh_sing_Phi,eh_trip_Phi,pp_sing_
 
 ! Local variables
   integer                       :: a,b,c,d
-  integer                       :: ab,cd
+  integer                       :: ab,cd,aa,a0
   double precision,external     :: Kronecker_delta
 
 ! Output variables
@@ -69,21 +69,20 @@ subroutine R_pp_singlet_Gamma_C(nOrb,nO,nR,nVVs,eh_sing_Phi,eh_trip_Phi,pp_sing_
 ! Initialization
   pp_sing_Gam_C(:,:) = 0d0
 
-!  !$OMP PARALLEL DEFAULT(NONE)         &
-!  !$OMP PRIVATE(a, b, ab, c, d, cd, n) &
-!  !$OMP SHARED(nC, nOrb, nO, nS, pp_sing_Gam_C, eh_sing_rho, eh_sing_Om, eh_trip_rho, eh_trip_Om)
-!  !$OMP DO COLLAPSE(2)
-
-  ab = 0
-  do a=nO+1,nOrb - nR
-     do b=a,nOrb - nR
-        ab = ab + 1
-
+  a0 = nOrb - nR - nO
+  !$OMP PARALLEL DEFAULT(NONE)          &
+  !$OMP PRIVATE(a, b, aa, ab, c, d, cd) &
+  !$OMP SHARED(nO, nOrb, nR, a0, pp_sing_Gam_C, eh_sing_Phi, eh_trip_Phi)
+  !$OMP DO
+  do a = nO+1, nOrb-nR
+     aa = a0 * (a - nO - 1) - (a - nO - 1) * (a - nO) / 2 - nO
+     do b = a, nOrb-nR
+        ab = aa + b
+        
         cd = 0
         do c=nO+1,nOrb - nR
            do d=c,nOrb - nR
               cd = cd +1
-              
 
               pp_sing_Gam_C(ab,cd) = 0.5d0*eh_sing_Phi(a,b,c,d) - 1.5d0*eh_trip_Phi(a,b,c,d) &
                                    + 0.5d0*eh_sing_Phi(a,b,d,c) - 1.5d0*eh_trip_Phi(a,b,d,c)
@@ -94,8 +93,8 @@ subroutine R_pp_singlet_Gamma_C(nOrb,nO,nR,nVVs,eh_sing_Phi,eh_trip_Phi,pp_sing_
         end do
      end do
   end do
-!  !$OMP END DO
-!  !$OMP END PARALLEL
+  !$OMP END DO
+  !$OMP END PARALLEL
 
 end subroutine
 

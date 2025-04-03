@@ -206,7 +206,7 @@ subroutine RParquet(TDAeh,TDApp,max_diis_1b,max_diis_2b,linearize,eta,ENuc,max_i
 
       call wall_time(start_t)
 
-                     call phRLR_A(ispin,.false.,nOrb,nC,nO,nV,nR,nS,1d0,eHF,ERI,Aph)
+                     call phRLR_A(ispin,.false.,nOrb,nC,nO,nV,nR,nS,1d0,eOld,ERI,Aph)
       if(.not.TDAeh) call phRLR_B(ispin,.false.,nOrb,nC,nO,nV,nR,nS,1d0,ERI,Bph)
 
       if(n_it_2b == 1) then
@@ -261,7 +261,7 @@ subroutine RParquet(TDAeh,TDApp,max_diis_1b,max_diis_2b,linearize,eta,ENuc,max_i
 
       call wall_time(start_t)
 
-                     call phRLR_A(ispin,.false.,nOrb,nC,nO,nV,nR,nS,1d0,eHF,ERI,Aph)
+                     call phRLR_A(ispin,.false.,nOrb,nC,nO,nV,nR,nS,1d0,eOld,ERI,Aph)
       if(.not.TDAeh) call phRLR_B(ispin,.false.,nOrb,nC,nO,nV,nR,nS,1d0,ERI,Bph)
 
       if(n_it_2b == 1) then
@@ -319,8 +319,8 @@ subroutine RParquet(TDAeh,TDApp,max_diis_1b,max_diis_2b,linearize,eta,ENuc,max_i
 
       call wall_time(start_t)
       if(.not.TDApp) call ppRLR_B(ispin,nOrb,nC,nO,nV,nR,nOOs,nVVs,1d0,ERI,Bpp)
-                     call ppRLR_C(ispin,nOrb,nC,nO,nV,nR,nVVs,1d0,eHF,ERI,Cpp)
-                     call ppRLR_D(ispin,nOrb,nC,nO,nV,nR,nOOs,1d0,eHF,ERI,Dpp)
+                     call ppRLR_C(ispin,nOrb,nC,nO,nV,nR,nVVs,1d0,eOld,ERI,Cpp)
+                     call ppRLR_D(ispin,nOrb,nC,nO,nV,nR,nOOs,1d0,eOld,ERI,Dpp)
 
       if(n_it_2b == 1) then
 
@@ -340,11 +340,17 @@ subroutine RParquet(TDAeh,TDApp,max_diis_1b,max_diis_2b,linearize,eta,ENuc,max_i
       Cpp(:,:) = Cpp(:,:) + pp_sing_Gam_C(:,:)
       Dpp(:,:) = Dpp(:,:) + pp_sing_Gam_D(:,:)
       
+      call wall_time(end_t)
+      t = end_t - start_t
+
+      write(*,'(A50,1X,F9.3,A8)') 'Wall time for building singlet ppBSE =',t,' seconds'
+      call wall_time(start_t)
+      
       call ppRLR(TDApp,nOOs,nVVs,Bpp,Cpp,Dpp,ee_sing_Om,X1s,Y1s,hh_sing_Om,X2s,Y2s,Ec_pp(ispin))
       call wall_time(end_t)
       t = end_t - start_t
 
-      write(*,'(A50,1X,F9.3,A8)') 'Wall time for singlet ppBSE =',t,' seconds'
+      write(*,'(A50,1X,F9.3,A8)') 'Wall time for diagonalizing singlet ppBSE =',t,' seconds'
       write(*,*)
 
       if(print_ppLR) call print_excitation_energies('ppBSE@Parquet','2p (singlets)',nVVs,ee_sing_Om)
@@ -376,8 +382,8 @@ subroutine RParquet(TDAeh,TDApp,max_diis_1b,max_diis_2b,linearize,eta,ENuc,max_i
 
       call wall_time(start_t)
       if(.not.TDApp) call ppRLR_B(ispin,nOrb,nC,nO,nV,nR,nOOt,nVVt,1d0,ERI,Bpp)
-                     call ppRLR_C(ispin,nOrb,nC,nO,nV,nR,nVVt,1d0,eHF,ERI,Cpp)
-                     call ppRLR_D(ispin,nOrb,nC,nO,nV,nR,nOOt,1d0,eHF,ERI,Dpp)
+                     call ppRLR_C(ispin,nOrb,nC,nO,nV,nR,nVVt,1d0,eOld,ERI,Cpp)
+                     call ppRLR_D(ispin,nOrb,nC,nO,nV,nR,nOOt,1d0,eOld,ERI,Dpp)
 
       if(n_it_2b == 1) then
 
