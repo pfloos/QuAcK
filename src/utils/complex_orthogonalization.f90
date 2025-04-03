@@ -32,15 +32,12 @@ subroutine complex_orthonormalize(N,vectors,A)
   complex*16, intent(inout) :: A(N, N)
 
   ! Local variables
-  integer :: i, j
   complex*16,allocatable :: L(:,:),Linv(:,:),tmp(:,:)
-  complex*16 :: proj
-  complex*16 :: norm
 
   ! Copy the input matrix to a temporary matrix
   allocate(L(N,N),Linv(N,N),tmp(N,N))
   tmp = matmul(transpose(vectors),A)
-  L = matmul(L,vectors)
+  L = matmul(tmp,vectors)
   call complex_cholesky_decomp(N,L)
   call complex_inverse_matrix(N,L,Linv)
   vectors = matmul(vectors,transpose(Linv))
@@ -62,8 +59,8 @@ subroutine complex_normalize_RPA(nS,XYYX)
   allocate(A(2*nS,2*nS))
   A(:,:) = cmplx(0d0,0d0,kind=8)
   do i=1,nS
-    A(i,i) = 1
-    A(i+nS,i+nS) = -1
+    A(i,i) = cmplx(1d0,0d0,kind=8)
+    A(i+nS,i+nS) = cmplx(-1d0,0d0,kind=8)
   end do
   call complex_orthonormalize(2*nS,XYYX,A)
   deallocate(A)
@@ -142,6 +139,9 @@ subroutine complex_cholesky_decomp(n,A)
             end do
 
             if (i > j) then
+                if(abs(A(j,j))<1e-8) then
+                  call print_warning('Diagonalelement in Cholesky Element is smaller than 1e-8.')
+                end if
                 A(i, j) = s / A(j, j)  ! Compute lower triangular elements
             else
                 A(i, i) = sqrt(s)

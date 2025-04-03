@@ -56,7 +56,8 @@ subroutine complex_RGW_self_energy_diag(eta,nBas,nOrb,nC,nO,nV,nR,nS,Re_e,Im_e,O
         eps = Re_e(p) - Re_e(i) + real(Om(m))
         eta_tilde = eta  - Im_e(p) + Im_e(i) - aimag(Om(m)) 
         num = 2d0*rho(p,i,m)**2
-        tmp = num*cmplx(eps/(eps**2 + eta_tilde**2),eta_tilde/(eps**2+eta_tilde**2),kind=8)
+        tmp = num*cmplx(eps/(eps**2 + eta_tilde**2),&
+                eta_tilde/(eps**2+eta_tilde**2),kind=8)
         Re_Sig(p) = Re_Sig(p) + real(tmp)
         Im_Sig(p) = Im_Sig(p) + aimag(tmp)
         tmp = num*cmplx(-(eps**2-eta_tilde**2)/(eps**2 + eta_tilde**2)**2,&
@@ -77,8 +78,8 @@ subroutine complex_RGW_self_energy_diag(eta,nBas,nOrb,nC,nO,nV,nR,nS,Re_e,Im_e,O
         eps = Re_e(p) - Re_e(a) - real(Om(m))
         eta_tilde = eta  + Im_e(p) - Im_e(a) - aimag(Om(m))
         num = 2d0*rho(p,a,m)**2
-        tmp = num*cmplx(eps/(eps**2 + eta_tilde**2)**2,&
-                -eta_tilde/(eps**2 + eta_tilde**2)**2,kind=8)
+        tmp = num*cmplx(eps/(eps**2 + eta_tilde**2),&
+                -eta_tilde/(eps**2 + eta_tilde**2),kind=8)
         Re_Sig(p) = Re_Sig(p) + real(tmp)
         Im_Sig(p) = Im_Sig(p) + aimag(tmp)
         tmp = num*cmplx(-(eps**2 - eta_tilde**2)/(eps**2 + eta_tilde**2)**2,&

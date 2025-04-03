@@ -119,7 +119,6 @@ subroutine complex_cRG0W0(dotest,doACFDT,exchange_kernel,doXBS,dophBSE,dophBSE2,
   call complex_phRLR(TDA_W,nS,Aph,Bph,EcRPA,Om,XpY,XmY)
   Re_Om(:) = real(Om(:))
   Im_Om(:) = aimag(Om(:))
-  call complex_vecout(nS,Om)
 
   !if(print_W) call print_excitation_energies('phRPA@RHF','singlet',nS,Om)
 
@@ -128,7 +127,6 @@ subroutine complex_cRG0W0(dotest,doACFDT,exchange_kernel,doXBS,dophBSE,dophBSE2,
 !--------------------------!
 
   call complex_RGW_excitation_density(nOrb,nC,nO,nR,nS,ERI,XpY,rho)
-  write(*,*) rho(1,1,1)
 !------------------------!
 ! Compute GW self-energy !
 !------------------------!
