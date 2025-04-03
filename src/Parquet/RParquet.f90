@@ -208,7 +208,7 @@ subroutine RParquet(TDAeh,TDApp,max_diis_1b,max_diis_2b,linearize,eta,ENuc,max_i
                      call phRLR_A(ispin,.false.,nOrb,nC,nO,nV,nR,nS,1d0,eOld,ERI,Aph)
       if(.not.TDAeh) call phRLR_B(ispin,.false.,nOrb,nC,nO,nV,nR,nS,1d0,ERI,Bph)
 
-      if(n_it_2b == 1) then
+      if(n_it_1b == 1 .and. n_it_2b == 1) then
 
         eh_sing_Gam_A(:,:) = 0d0
         eh_sing_Gam_B(:,:) = 0d0
@@ -260,7 +260,7 @@ subroutine RParquet(TDAeh,TDApp,max_diis_1b,max_diis_2b,linearize,eta,ENuc,max_i
                      call phRLR_A(ispin,.false.,nOrb,nC,nO,nV,nR,nS,1d0,eOld,ERI,Aph)
       if(.not.TDAeh) call phRLR_B(ispin,.false.,nOrb,nC,nO,nV,nR,nS,1d0,ERI,Bph)
 
-      if(n_it_2b == 1) then
+      if(n_it_1b == 1 .and. n_it_2b == 1) then
 
         eh_trip_Gam_A(:,:) = 0d0
         eh_trip_Gam_B(:,:) = 0d0
@@ -315,7 +315,7 @@ subroutine RParquet(TDAeh,TDApp,max_diis_1b,max_diis_2b,linearize,eta,ENuc,max_i
                      call ppRLR_C(ispin,nOrb,nC,nO,nV,nR,nVVs,1d0,eOld,ERI,Cpp)
                      call ppRLR_D(ispin,nOrb,nC,nO,nV,nR,nOOs,1d0,eOld,ERI,Dpp)
 
-      if(n_it_2b == 1) then
+      if(n_it_1b == 1 .and. n_it_2b == 1) then
 
         pp_sing_Gam_B(:,:) = 0d0
         pp_sing_Gam_C(:,:) = 0d0
@@ -375,7 +375,7 @@ subroutine RParquet(TDAeh,TDApp,max_diis_1b,max_diis_2b,linearize,eta,ENuc,max_i
                      call ppRLR_C(ispin,nOrb,nC,nO,nV,nR,nVVt,1d0,eOld,ERI,Cpp)
                      call ppRLR_D(ispin,nOrb,nC,nO,nV,nR,nOOt,1d0,eOld,ERI,Dpp)
 
-      if(n_it_2b == 1) then
+      if(n_it_1b == 1 .and. n_it_2b == 1) then
 
         pp_trip_Gam_B(:,:) = 0d0
         pp_trip_Gam_C(:,:) = 0d0
@@ -409,16 +409,6 @@ subroutine RParquet(TDAeh,TDApp,max_diis_1b,max_diis_2b,linearize,eta,ENuc,max_i
 
       deallocate(Bpp,Cpp,Dpp,pp_trip_Gam_B,pp_trip_Gam_C,pp_trip_Gam_D)
       
-!     write(*,*) '----------------------------------------'
-!     write(*,*) ' Two-body (eigenvalue) convergence '
-!     write(*,*) '----------------------------------------'
-!     write(*,'(1X,A30,F10.6)')'Error for density  channel = ',err_eig_eh_sing
-!     write(*,'(1X,A30,F10.6)')'Error for magnetic channel = ',err_eig_eh_trip
-!     write(*,'(1X,A30,F10.6)')'Error for singlet  channel = ',max(err_eig_ee_sing,err_eig_hh_sing)
-!     write(*,'(1X,A30,F10.6)')'Error for triplet  channel = ',max(err_eig_ee_trip,err_eig_hh_trip)
-!     write(*,*) '----------------------------------------'
-!     write(*,*)
-
       !----------!
       ! Updating !
       !----------!
@@ -564,17 +554,6 @@ subroutine RParquet(TDAeh,TDApp,max_diis_1b,max_diis_2b,linearize,eta,ENuc,max_i
       !--------------------!
       ! DIIS extrapolation !
       !--------------------!
-
-
-!     write(*,*) '----------------------------------------'
-!     write(*,*) ' Two-body (kernel) convergence '
-!     write(*,*) '----------------------------------------'
-!     write(*,'(1X,A30,F10.6)')'Error for singlet eh channel = ',err_eh_sing
-!     write(*,'(1X,A30,F10.6)')'Error for triplet eh channel = ',err_eh_trip
-!     write(*,'(1X,A30,F10.6)')'Error for singlet pp channel = ',err_pp_sing
-!     write(*,'(1X,A30,F10.6)')'Error for triplet pp channel = ',err_pp_trip
-!     write(*,*) '----------------------------------------'
-!     write(*,*)
 
       write(*,*) '------------------------------------------------------'
       write(*,*) '       Two-body (frequency/kernel) convergence        '

@@ -211,7 +211,7 @@ subroutine GParquet(TDAeh,TDApp,max_diis_1b,max_diis_2b,linearize,eta,ENuc,max_i
                      call phGLR_A(.false.,nOrb,nC,nO,nV,nR,nS,1d0,eOld,ERI,Aph)
       if(.not.TDAeh) call phGLR_B(.false.,nOrb,nC,nO,nV,nR,nS,1d0,ERI,Bph)
       
-      if(n_it_2b == 1) then
+      if(n_it_1b == 1 .and. n_it_2b == 1) then
 
         eh_Gam_A(:,:) = 0d0
         eh_Gam_B(:,:) = 0d0
@@ -270,7 +270,7 @@ subroutine GParquet(TDAeh,TDApp,max_diis_1b,max_diis_2b,linearize,eta,ENuc,max_i
                      call ppGLR_C(nOrb,nC,nO,nV,nR,nVV,1d0,eOld,ERI,Cpp)
                      call ppGLR_D(nOrb,nC,nO,nV,nR,nOO,1d0,eOld,ERI,Dpp)
 
-      if(n_it_2b == 1) then
+      if(n_it_1b == 1 .and. n_it_2b == 1) then
 
         pp_Gam_B(:,:) = 0d0
         pp_Gam_C(:,:) = 0d0
