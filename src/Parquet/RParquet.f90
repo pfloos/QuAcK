@@ -88,7 +88,7 @@ subroutine RParquet(TDAeh,TDApp,max_diis_1b,max_diis_2b,linearize,eta,ENuc,max_i
 
 ! DIIS
   integer                       :: n_diis_1b,n_diis_2b
-  double precision              :: rcond_1b
+  double precision              :: rcond_1b,rcond_2b
   double precision,allocatable  :: err_diis_1b(:,:)
   double precision,allocatable  :: eQP_diis(:,:)
   
@@ -160,6 +160,9 @@ subroutine RParquet(TDAeh,TDApp,max_diis_1b,max_diis_2b,linearize,eta,ENuc,max_i
 
   allocate(err_diis_1b(nOrb,max_diis_1b),eQP_diis(nOrb,max_diis_1b))
 
+  mem = mem + size(err_diis_1b) + size(eQP_diis)
+  write(*,'(1X,A50,4X,F6.3,A3)') 'Memory usage in RParquet = ',mem*dp_in_GB,' GB'
+
   rcond_1b  = 1d0
   n_diis_1b = 0
   err_diis_1b(:,:) = 0d0
@@ -207,7 +210,12 @@ subroutine RParquet(TDAeh,TDApp,max_diis_1b,max_diis_2b,linearize,eta,ENuc,max_i
     write(*,*)'====================================='
     write(*,*)
 
-! Initialization
+    ! DIIS for two-body part
+
+    rcond_2b  = 0d0
+    n_diis_2b = 0
+
+    ! Initialization
     
     n_it_2b = 0 
     err_2b  = 1d0
