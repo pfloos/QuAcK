@@ -96,7 +96,7 @@ subroutine GParquet(TDAeh,TDApp,max_diis_1b,max_diis_2b,linearize,eta,ENuc,max_i
   allocate(err(2*nOrb**4),Phi(2*nOrb**4))
 
   mem = mem + size(err_diis_2b) + size(Phi_diis) + size(err) + size(Phi)
-  write(*,'(1X,A50,1X,F6.3,A3)') 'Memory usage in GParquet:',mem*dp_in_GB,' GB'
+  write(*,'(1X,A50,4X,F6.3,A3)') 'Memory usage in GParquet =',mem*dp_in_GB,' GB'
 
   err_diis_2b(:,:) = 0d0
   Phi_diis(:,:) = 0d0
@@ -137,7 +137,7 @@ subroutine GParquet(TDAeh,TDApp,max_diis_1b,max_diis_2b,linearize,eta,ENuc,max_i
   mem = mem + size(old_eh_Om) + size(old_ee_Om) + size(old_hh_Om)
   mem = mem + size(eh_rho) + size(ee_rho) + size(hh_rho)
   mem = mem + size(old_eh_Phi) + size(old_pp_Phi)
-  write(*,'(1X,A50,1X,F6.3,A3)') 'Memory usage in GParquet:',mem*dp_in_GB,' GB'
+  write(*,'(1X,A50,4X,F6.3,A3)') 'Memory usage in GParquet =',mem*dp_in_GB,' GB'
 
 ! Initialization
 
@@ -201,7 +201,7 @@ subroutine GParquet(TDAeh,TDApp,max_diis_1b,max_diis_2b,linearize,eta,ENuc,max_i
       allocate(Aph(nS,nS),Bph(nS,nS),eh_Om(nS),XpY(nS,nS),XmY(nS,nS),eh_Gam_A(nS,nS),eh_Gam_B(nS,nS))
 
       mem = mem + size(Aph) + size(Bph) + size(eh_Om) + size(XpY) + size(XmY) + size(eh_Gam_A) + size(eh_Gam_B)
-      write(*,'(1X,A50,1X,F6.3,A3)') 'Memory usage in GParquet:',mem*dp_in_GB,' GB'
+      write(*,'(1X,A50,4X,F6.3,A3)') 'Memory usage in GParquet =',mem*dp_in_GB,' GB'
 
       Aph(:,:) = 0d0
       Bph(:,:) = 0d0
@@ -241,7 +241,7 @@ subroutine GParquet(TDAeh,TDApp,max_diis_1b,max_diis_2b,linearize,eta,ENuc,max_i
       deallocate(Aph,Bph,eh_Gam_A,eh_Gam_B)
 
       mem = mem - size(Aph) - size(Bph) - size(eh_Gam_A) - size(eh_Gam_B)
-      write(*,'(1X,A50,1X,F6.3,A3)') 'Memory usage in GParquet:',mem*dp_in_GB,' GB'
+      write(*,'(1X,A50,4X,F6.3,A3)') 'Memory usage in GParquet =',mem*dp_in_GB,' GB'
 
       !-----------------!
       !    pp channel   !
@@ -258,7 +258,7 @@ subroutine GParquet(TDAeh,TDApp,max_diis_1b,max_diis_2b,linearize,eta,ENuc,max_i
                 + size(ee_Om) + size(X1) + size(Y1) &
                 + size(hh_Om) + size(X2) + size(Y2) &
                 + size(pp_Gam_B) + size(pp_Gam_C) + size(pp_Gam_D)
-      write(*,'(1X,A50,1X,F6.3,A3)') 'Memory usage in GParquet:',mem*dp_in_GB,' GB'
+      write(*,'(1X,A50,4X,F6.3,A3)') 'Memory usage in GParquet =',mem*dp_in_GB,' GB'
 
 
       Bpp(:,:) = 0d0
@@ -306,8 +306,8 @@ subroutine GParquet(TDAeh,TDApp,max_diis_1b,max_diis_2b,linearize,eta,ENuc,max_i
 
       mem = mem - size(Bpp) - size(Cpp) - size(Dpp) &
                 - size(pp_Gam_B) - size(pp_Gam_C) - size(pp_Gam_D)
-      write(*,'(1X,A50,1X,F6.3,A3)') 'Memory usage in GParquet:',mem*dp_in_GB,' GB'
-            
+      write(*,'(1X,A50,4X,F6.3,A3)') 'Memory usage in GParquet =',mem*dp_in_GB,' GB'
+
       !----------!
       ! Updating !
       !----------!
@@ -319,7 +319,7 @@ subroutine GParquet(TDAeh,TDApp,max_diis_1b,max_diis_2b,linearize,eta,ENuc,max_i
       deallocate(eh_Om,ee_Om,hh_Om)
 
       mem = mem - size(eh_Om) - size(ee_Om) - size(hh_Om)
-      write(*,'(1X,A50,1X,F6.3,A3)') 'Memory usage in GParquet:',mem*dp_in_GB,' GB'
+      write(*,'(1X,A50,4X,F6.3,A3)') 'Memory usage in GParquet =',mem*dp_in_GB,' GB'
       
       !----------------------------!
       ! Compute screened integrals !
@@ -329,7 +329,7 @@ subroutine GParquet(TDAeh,TDApp,max_diis_1b,max_diis_2b,linearize,eta,ENuc,max_i
       deallocate(eh_rho,ee_rho,hh_rho)
 
       mem = mem - size(eh_rho) - size(ee_rho) - size(hh_rho)
-      write(*,'(1X,A50,1X,F6.3,A3)') 'Memory usage in GParquet:',mem*dp_in_GB,' GB'
+      write(*,'(1X,A50,4X,F6.3,A3)') 'Memory usage in GParquet =',mem*dp_in_GB,' GB'
 
       ! TODO Once we will compute the blocks of kernel starting from the 4-tensors we can move the freeing up
       ! Memory allocation
@@ -337,7 +337,7 @@ subroutine GParquet(TDAeh,TDApp,max_diis_1b,max_diis_2b,linearize,eta,ENuc,max_i
       allocate(ee_rho(nOrb,nOrb,nVV),hh_rho(nOrb,nOrb,nOO))
 
       mem = mem + size(eh_rho) + size(ee_rho) + size(hh_rho)
-      write(*,'(1X,A50,1X,F6.3,A3)') 'Memory usage in GParquet:',mem*dp_in_GB,' GB'
+      write(*,'(1X,A50,4X,F6.3,A3)') 'Memory usage in GParquet =',mem*dp_in_GB,' GB'
 
       ! Build singlet eh integrals
       write(*,*) 'Computing eh screened integrals...'
@@ -354,7 +354,7 @@ subroutine GParquet(TDAeh,TDApp,max_diis_1b,max_diis_2b,linearize,eta,ENuc,max_i
       deallocate(XpY,XmY)
 
       mem = mem - size(XpY) - size(XmY)
-      write(*,'(1X,A50,1X,F6.3,A3)') 'Memory usage in GParquet:',mem*dp_in_GB,' GB'
+      write(*,'(1X,A50,4X,F6.3,A3)') 'Memory usage in GParquet =',mem*dp_in_GB,' GB'
 
       ! Build singlet pp integrals
       write(*,*) 'Computing pp screened integrals...'
@@ -368,7 +368,7 @@ subroutine GParquet(TDAeh,TDApp,max_diis_1b,max_diis_2b,linearize,eta,ENuc,max_i
       deallocate(X1,Y1,X2,Y2)
 
       mem = mem - size(X1) - size(Y1) - size(X2) - size(Y2)
-      write(*,'(1X,A50,1X,F6.3,A3)') 'Memory usage in GParquet:',mem*dp_in_GB,' GB'
+      write(*,'(1X,A50,4X,F6.3,A3)') 'Memory usage in GParquet =',mem*dp_in_GB,' GB'
 
       write(*,'(1X,A50,1X,F9.3,A8)') 'Wall time for pp integrals =',t,' seconds'
       write(*,*)
@@ -382,7 +382,7 @@ subroutine GParquet(TDAeh,TDApp,max_diis_1b,max_diis_2b,linearize,eta,ENuc,max_i
       allocate(pp_Phi(nOrb,nOrb,nOrb,nOrb))
 
       mem = mem + size(eh_Phi) + size(pp_Phi)
-      write(*,'(1X,A50,1X,F6.3,A3)') 'Memory usage in GParquet:',mem*dp_in_GB,' GB'
+      write(*,'(1X,A50,4X,F6.3,A3)') 'Memory usage in GParquet =',mem*dp_in_GB,' GB'
 
       ! Build eh reducible kernels
       write(*,*) 'Computing eh reducible kernel...'
@@ -466,7 +466,7 @@ subroutine GParquet(TDAeh,TDApp,max_diis_1b,max_diis_2b,linearize,eta,ENuc,max_i
       deallocate(eh_Phi,pp_Phi)
 
       mem = mem - size(eh_Phi) - size(pp_Phi)
-      write(*,'(1X,A50,1X,F6.3,A3)') 'Memory usage in GParquet:',mem*dp_in_GB,' GB'
+      write(*,'(1X,A50,4X,F6.3,A3)') 'Memory usage in GParquet =',mem*dp_in_GB,' GB'
       
       write(*,*) '------------------------------------------------'
       write(*,*) '    Two-body (frequency/kernel) convergence     '
@@ -517,7 +517,7 @@ subroutine GParquet(TDAeh,TDApp,max_diis_1b,max_diis_2b,linearize,eta,ENuc,max_i
     allocate(eQPlin(nOrb),Z(nOrb),SigC(nOrb)) 
 
     mem = mem + size(eQPlin) + size(Z) + size(SigC)
-    write(*,'(1X,A50,1X,F6.3,A3)') 'Memory usage in GParquet:',mem*dp_in_GB,' GB'
+    write(*,'(1X,A50,4X,F6.3,A3)') 'Memory usage in GParquet =',mem*dp_in_GB,' GB'
 
     write(*,*) 'Computing self-energy...'
     write(*,*) 
@@ -561,7 +561,7 @@ subroutine GParquet(TDAeh,TDApp,max_diis_1b,max_diis_2b,linearize,eta,ENuc,max_i
     deallocate(eQPlin,Z,SigC)
 
     mem = mem - size(eQPlin) - size(Z) - size(SigC)
-    write(*,'(1X,A50,1X,F6.3,A3)') 'Memory usage in GParquet:',mem*dp_in_GB,' GB'
+    write(*,'(1X,A50,4X,F6.3,A3)') 'Memory usage in GParquet =',mem*dp_in_GB,' GB'
 
     call wall_time(end_1b)
     t_1b = end_1b - start_1b
