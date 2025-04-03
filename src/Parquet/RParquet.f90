@@ -133,9 +133,6 @@ subroutine RParquet(TDAeh,TDApp,max_diis_1b,max_diis_2b,linearize,eta,ENuc,max_i
   n_it_1b = 0
   err_1b  = 1d0
 
-  n_it_2b = 0 
-  err_2b  = 1d0
-
   eQP(:)  = eHF(:)
   eOld(:) = eHF(:)
 
@@ -173,6 +170,11 @@ subroutine RParquet(TDAeh,TDApp,max_diis_1b,max_diis_2b,linearize,eta,ENuc,max_i
     write(*,*)'====================================='
     write(*,*)
 
+! Initialization
+    
+    n_it_2b = 0 
+    err_2b  = 1d0
+    
     !-----------------------------------------!
     ! Main loop for two-body self-consistency !
     !-----------------------------------------!
