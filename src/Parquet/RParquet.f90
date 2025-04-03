@@ -8,8 +8,8 @@ subroutine RParquet(TDAeh,TDApp,max_diis_1b,max_diis_2b,linearize,eta,ENuc,max_i
 
 ! Hard-coded parameters
 
-  logical                       :: print_phLR = .true.
-  logical                       :: print_ppLR = .true.
+  logical                       :: print_phLR = .false.
+  logical                       :: print_ppLR = .false.
   
 ! Input variables
 
@@ -109,11 +109,13 @@ subroutine RParquet(TDAeh,TDApp,max_diis_1b,max_diis_2b,linearize,eta,ENuc,max_i
   write(*,'(1X,A50,1X,E10.5)') 'Convergence threshold for one-body energies:',conv_1b
   write(*,'(1X,A50,1X,L5)')    'Linearization of quasiparticle equation?',conv_1b
   write(*,'(1X,A50,1X,E10.5)') 'Strenght of SRG regularization:',eta
+  write(*,'(1X,A50,1X,I5)')    'Maximum length of DIIS expansion:',max_diis_1b
   write(*,*)'---------------------------------------------------------------'
   write(*,'(1X,A50,1X,I5)')    'Maximum number of two-body iteration:',max_it_2b
   write(*,'(1X,A50,1X,E10.5)') 'Convergence threshold for two-body energies:',conv_2b
   write(*,'(1X,A50,1X,L5)')    'TDA for eh excitation energies?',TDAeh
   write(*,'(1X,A50,1X,L5)')    'TDA for pp excitation energies?',TDApp
+  write(*,'(1X,A50,1X,I5)')    'Maximum length of DIIS expansion:',max_diis_2b
   write(*,*)'---------------------------------------------------------------'
   write(*,*)
   
@@ -193,10 +195,7 @@ subroutine RParquet(TDAeh,TDApp,max_diis_1b,max_diis_2b,linearize,eta,ENuc,max_i
       ! Density channel !
       !-----------------!
 
-      write(*,*)'   -------------------------------'
-      write(*,*)'   | Diagonalizing singlet ehBSE |'
-      write(*,*)'   -------------------------------'
-      write(*,*)
+      write(*,*) 'Diagonalizing singlet ehBSE problem (density channel)...'
 
       allocate(Aph(nS,nS),Bph(nS,nS),eh_sing_Om(nS),sing_XpY(nS,nS),sing_XmY(nS,nS),eh_sing_Gam_A(nS,nS),eh_sing_Gam_B(nS,nS))
 
@@ -235,7 +234,7 @@ subroutine RParquet(TDAeh,TDApp,max_diis_1b,max_diis_2b,linearize,eta,ENuc,max_i
       call wall_time(end_t)
 
       t = end_t - start_t
-      write(*,'(A50,1X,F9.3,A8)') 'Wall time for singlet phBSE =',t,' seconds'
+      write(*,'(1X,A50,1X,F9.3,A8)') 'Wall time for singlet phBSE problem =',t,' seconds'
       write(*,*)
 
       if(print_phLR) call print_excitation_energies('phBSE@Parquet','singlet',nS,eh_sing_Om)
@@ -248,10 +247,7 @@ subroutine RParquet(TDAeh,TDApp,max_diis_1b,max_diis_2b,linearize,eta,ENuc,max_i
       ! Magnetic channel !
       !------------------!
 
-      write(*,*)'   -------------------------------'
-      write(*,*)'   | Diagonalizing triplet ehBSE |'
-      write(*,*)'   -------------------------------'
-      write(*,*)
+      write(*,*) 'Diagonalizing triplet ehBSE problem (magnetic channel)...'
 
       allocate(Aph(nS,nS),Bph(nS,nS),eh_trip_Om(nS),trip_XpY(nS,nS),trip_XmY(nS,nS),eh_trip_Gam_A(nS,nS),eh_trip_Gam_B(nS,nS))
 
@@ -289,7 +285,7 @@ subroutine RParquet(TDAeh,TDApp,max_diis_1b,max_diis_2b,linearize,eta,ENuc,max_i
       call wall_time(end_t)
       t = end_t - start_t
 
-      write(*,'(A50,1X,F9.3,A8)') 'Wall time for triplet phBSE =',t,' seconds'
+      write(*,'(1X,A50,1X,F9.3,A8)') 'Wall time for triplet phBSE problem =',t,' seconds'
       write(*,*)
 
       if(print_phLR) call print_excitation_energies('phBSE@Parquet','triplet',nS,eh_trip_Om)
@@ -302,10 +298,7 @@ subroutine RParquet(TDAeh,TDApp,max_diis_1b,max_diis_2b,linearize,eta,ENuc,max_i
       ! Singlet channel !
       !-----------------!
 
-      write(*,*)'   -------------------------------'
-      write(*,*)'   | Diagonalizing singlet ppBSE |'
-      write(*,*)'   -------------------------------'
-      write(*,*)
+      write(*,*) 'Diagonalizing singlet ppBSE problem (singlet channel)...'
 
       allocate(Bpp(nVVs,nOOs),Cpp(nVVs,nVVs),Dpp(nOOs,nOOs),   &
                ee_sing_Om(nVVs),X1s(nVVs,nVVs),Y1s(nOOs,nVVs), & 
@@ -365,10 +358,7 @@ subroutine RParquet(TDAeh,TDApp,max_diis_1b,max_diis_2b,linearize,eta,ENuc,max_i
       ! Triplet channel !
       !-----------------!
 
-      write(*,*)'   -------------------------------'
-      write(*,*)'   | Diagonalizing triplet ppBSE |'
-      write(*,*)'   -------------------------------'
-      write(*,*)
+      write(*,*) 'Diagonalizing triplet ppBSE problem (triplet channel)...'
 
       allocate(Bpp(nVVt,nOOt),Cpp(nVVt,nVVt),Dpp(nOOt,nOOt),   &
                ee_trip_Om(nVVt),X1t(nVVt,nVVt),Y1t(nOOt,nVVt), & 
@@ -408,7 +398,7 @@ subroutine RParquet(TDAeh,TDApp,max_diis_1b,max_diis_2b,linearize,eta,ENuc,max_i
       call wall_time(end_t)
       t = end_t - start_t
 
-      write(*,'(A50,1X,F9.3,A8)') 'Wall time for triplet ppBSE =',t,' seconds'
+      write(*,'(1X,A50,1X,F9.3,A8)') 'Wall time for triplet ppBSE problem =',t,' seconds'
       write(*,*)
 
       if(print_ppLR) call print_excitation_energies('ppBSE@Parquet','2p (triplets)',nVVt,ee_trip_Om)
@@ -419,15 +409,15 @@ subroutine RParquet(TDAeh,TDApp,max_diis_1b,max_diis_2b,linearize,eta,ENuc,max_i
 
       deallocate(Bpp,Cpp,Dpp,pp_trip_Gam_B,pp_trip_Gam_C,pp_trip_Gam_D)
       
-      write(*,*) '----------------------------------------'
-      write(*,*) ' Two-body (eigenvalue) convergence '
-      write(*,*) '----------------------------------------'
-      write(*,'(1X,A30,F10.6)')'Error for density  channel = ',err_eig_eh_sing
-      write(*,'(1X,A30,F10.6)')'Error for magnetic channel = ',err_eig_eh_trip
-      write(*,'(1X,A30,F10.6)')'Error for singlet  channel = ',max(err_eig_ee_sing,err_eig_hh_sing)
-      write(*,'(1X,A30,F10.6)')'Error for triplet  channel = ',max(err_eig_ee_trip,err_eig_hh_trip)
-      write(*,*) '----------------------------------------'
-      write(*,*)
+!     write(*,*) '----------------------------------------'
+!     write(*,*) ' Two-body (eigenvalue) convergence '
+!     write(*,*) '----------------------------------------'
+!     write(*,'(1X,A30,F10.6)')'Error for density  channel = ',err_eig_eh_sing
+!     write(*,'(1X,A30,F10.6)')'Error for magnetic channel = ',err_eig_eh_trip
+!     write(*,'(1X,A30,F10.6)')'Error for singlet  channel = ',max(err_eig_ee_sing,err_eig_hh_sing)
+!     write(*,'(1X,A30,F10.6)')'Error for triplet  channel = ',max(err_eig_ee_trip,err_eig_hh_trip)
+!     write(*,*) '----------------------------------------'
+!     write(*,*)
 
       !----------!
       ! Updating !
@@ -519,7 +509,7 @@ subroutine RParquet(TDAeh,TDApp,max_diis_1b,max_diis_2b,linearize,eta,ENuc,max_i
       allocate(pp_trip_Phi(nOrb,nOrb,nOrb,nOrb))
 
       ! Build singlet eh reducible kernels
-      write(*,*) 'Computing singlet eh reducible kernel ...'
+      write(*,*) 'Computing singlet eh reducible kernel...'
 
       call wall_time(start_t)
       call R_eh_singlet_Phi(nOrb,nC,nR,nS,old_eh_sing_Om,eh_sing_rho,eh_sing_Phi)
@@ -529,7 +519,7 @@ subroutine RParquet(TDAeh,TDApp,max_diis_1b,max_diis_2b,linearize,eta,ENuc,max_i
       write(*,*)
       
       ! Build triplet eh reducible kernels
-      write(*,*) 'Computing triplet eh reducible kernel ...'
+      write(*,*) 'Computing triplet eh reducible kernel...'
 
       call wall_time(start_t)
       call R_eh_triplet_Phi(nOrb,nC,nR,nS,old_eh_trip_Om,eh_trip_rho,eh_trip_Phi)
@@ -539,7 +529,7 @@ subroutine RParquet(TDAeh,TDApp,max_diis_1b,max_diis_2b,linearize,eta,ENuc,max_i
       write(*,*)
       
       ! Build singlet pp reducible kernels
-      write(*,*) 'Computing singlet pp reducible kernel ...'
+      write(*,*) 'Computing singlet pp reducible kernel...'
 
       call wall_time(start_t)
       call R_pp_singlet_Phi(nOrb,nC,nR,nOOs,nVVs,old_ee_sing_Om,ee_sing_rho,old_hh_sing_Om,hh_sing_rho,pp_sing_Phi)
@@ -549,7 +539,7 @@ subroutine RParquet(TDAeh,TDApp,max_diis_1b,max_diis_2b,linearize,eta,ENuc,max_i
       write(*,*)
       
       ! Build triplet pp reducible kernels
-      write(*,*) 'Computing triplet pp reducible kernel ...'
+      write(*,*) 'Computing triplet pp reducible kernel...'
       
       call wall_time(start_t)
       call R_pp_triplet_Phi(nOrb,nC,nR,nOOt,nVVt,old_ee_trip_Om,ee_trip_rho,old_hh_trip_Om,hh_trip_rho,pp_trip_Phi)
@@ -576,22 +566,32 @@ subroutine RParquet(TDAeh,TDApp,max_diis_1b,max_diis_2b,linearize,eta,ENuc,max_i
       !--------------------!
 
 
-      write(*,*) '----------------------------------------'
-      write(*,*) ' Two-body (kernel) convergence '
-      write(*,*) '----------------------------------------'
-      write(*,'(1X,A30,F10.6)')'Error for singlet eh channel = ',err_eh_sing
-      write(*,'(1X,A30,F10.6)')'Error for triplet eh channel = ',err_eh_trip
-      write(*,'(1X,A30,F10.6)')'Error for singlet pp channel = ',err_pp_sing
-      write(*,'(1X,A30,F10.6)')'Error for triplet pp channel = ',err_pp_trip
-      write(*,*) '----------------------------------------'
+!     write(*,*) '----------------------------------------'
+!     write(*,*) ' Two-body (kernel) convergence '
+!     write(*,*) '----------------------------------------'
+!     write(*,'(1X,A30,F10.6)')'Error for singlet eh channel = ',err_eh_sing
+!     write(*,'(1X,A30,F10.6)')'Error for triplet eh channel = ',err_eh_trip
+!     write(*,'(1X,A30,F10.6)')'Error for singlet pp channel = ',err_pp_sing
+!     write(*,'(1X,A30,F10.6)')'Error for triplet pp channel = ',err_pp_trip
+!     write(*,*) '----------------------------------------'
+!     write(*,*)
+
+      write(*,*) '------------------------------------------------------'
+      write(*,*) '       Two-body (frequency/kernel) convergence        '
+      write(*,*) '------------------------------------------------------'
+      write(*,'(1X,A30,F10.6,1X,A1,1X,F10.6)')'Error for density  channel = ',err_eig_eh_sing,'/',err_eh_sing
+      write(*,'(1X,A30,F10.6,1X,A1,1X,F10.6)')'Error for magnetic channel = ',err_eig_eh_trip,'/',err_eh_trip
+      write(*,'(1X,A30,F10.6,1X,A1,1X,F10.6)')'Error for singlet  channel = ',max(err_eig_ee_sing,err_eig_hh_sing),'/',err_pp_sing
+      write(*,'(1X,A30,F10.6,1X,A1,1X,F10.6)')'Error for triplet  channel = ',max(err_eig_ee_trip,err_eig_hh_trip),'/',err_pp_sing
+      write(*,*) '------------------------------------------------------'
       write(*,*)
-      
+
       ! Convergence criteria
       err_2b = max(err_eh_sing,err_eh_trip,err_pp_sing,err_pp_trip)
        
       call wall_time(end_2b)
       t_2b = end_2b - start_2b
-      write(*,'(A50,1X,F9.3,A8)') 'Wall time for two-body iteration =',t_2b,' seconds'
+      write(*,'(1X,A44,1X,I4,A2,F9.3,A8)') 'Wall time for two-body iteration #',n_it_2b,' =',t_2b,' seconds'
       write(*,*)
 
     end do
@@ -629,7 +629,8 @@ subroutine RParquet(TDAeh,TDApp,max_diis_1b,max_diis_2b,linearize,eta,ENuc,max_i
 
     allocate(eQPlin(nOrb),Z(nOrb),SigC(nOrb)) 
 
-    write(*,*) 'Building self-energy'
+    write(*,*) 'Computing self-energy...'
+    write(*,*)
 
     call wall_time(start_t)
     call R_Parquet_self_energy(eta,nOrb,nC,nO,nV,nR,nS,nOOs,nVVs,nOOt,nVVt,eOld,ERI,  &
@@ -639,7 +640,7 @@ subroutine RParquet(TDAeh,TDApp,max_diis_1b,max_diis_2b,linearize,eta,ENuc,max_i
                                EcGM,SigC,Z)
     call wall_time(end_t)
     t = end_t - start_t
-    write(*,'(A50,1X,F9.3,A8)') 'Wall time for self energy =',t,' seconds'
+    write(*,'(1X,A50,1X,F9.3,A8)') 'Wall time for self energy =',t,' seconds'
     write(*,*)
 
     eQPlin(:) = eHF(:) + Z(:)*SigC(:)
@@ -674,7 +675,7 @@ subroutine RParquet(TDAeh,TDApp,max_diis_1b,max_diis_2b,linearize,eta,ENuc,max_i
     
     call wall_time(end_1b)
     t_1b = end_1b - start_1b
-    write(*,'(A50,1X,F9.3,A8)') 'Wall time for one-body iteration =',t_1b,' seconds'
+    write(*,'(1X,A44,1X,I4,A2,F9.3,A8)') 'Wall time for one-body iteration #',n_it_1b,' =',t_1b,' seconds'
     
   end do 
   !---------------------------------------------!

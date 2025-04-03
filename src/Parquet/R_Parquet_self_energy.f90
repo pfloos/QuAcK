@@ -45,9 +45,9 @@ subroutine R_Parquet_self_energy(eta,nOrb,nC,nO,nV,nR,nS,nOOs,nVVs,nOOt,nVVt,eQP
   Z(:)    = 0d0
   EcGM    = 0d0
   
-!-----------------------------!
-! GF2 part of the self-energy !
-!-----------------------------!
+!-----------------------------------!
+! 2nd-order part of the self-energy !
+!-----------------------------------!
   call wall_time(start_t)
   do p=nC+1,nOrb-nR
      ! 2h1p sum
@@ -84,7 +84,7 @@ subroutine R_Parquet_self_energy(eta,nOrb,nC,nO,nV,nR,nS,nOOs,nVVs,nOOt,nVVt,eQP
   call wall_time(end_t)
   t = end_t - start_t
 
-  write(*,'(1X,A50,1X,F9.3,A8)') 'Wall time for building GF(2) self-energy =',t,' seconds'
+  write(*,'(1X,A50,1X,F9.3,A8)') 'Wall time for 2nd-order self-energy =',t,' seconds'
   write(*,*)
 !-------------------------------------!
 !  singlet eh part of the self-energy !
@@ -207,7 +207,7 @@ subroutine R_Parquet_self_energy(eta,nOrb,nC,nO,nV,nR,nS,nOOs,nVVs,nOOt,nVVt,eQP
   call wall_time(end_t)
   t = end_t - start_t
 
-  write(*,'(1X,A50,1X,F9.3,A8)') 'Wall time for building singlet eh self-energy =',t,' seconds'
+  write(*,'(1X,A50,1X,F9.3,A8)') 'Wall time for singlet eh self-energy =',t,' seconds'
   write(*,*)
 !-------------------------------------!
 !  triplet eh part of the self-energy !
@@ -330,7 +330,7 @@ subroutine R_Parquet_self_energy(eta,nOrb,nC,nO,nV,nR,nS,nOOs,nVVs,nOOt,nVVt,eQP
   call wall_time(end_t)
   t = end_t - start_t
 
-  write(*,'(1X,A50,1X,F9.3,A8)') 'Wall time for building triplet eh self-energy =',t,' seconds'
+  write(*,'(1X,A50,1X,F9.3,A8)') 'Wall time for triplet eh self-energy =',t,' seconds'
   write(*,*) 
 !-------------------------------------!
 !  singlet pp part of the self-energy !
@@ -469,7 +469,7 @@ subroutine R_Parquet_self_energy(eta,nOrb,nC,nO,nV,nR,nS,nOOs,nVVs,nOOt,nVVt,eQP
   call wall_time(end_t)
   t = end_t - start_t
 
-  write(*,'(1X,A50,1X,F9.3,A8)') 'Wall time for building singlet pp self-energy =',t,' seconds'
+  write(*,'(1X,A50,1X,F9.3,A8)') 'Wall time for singlet pp self-energy =',t,' seconds'
   write(*,*)
 !-------------------------------------!
 !  triplet pp part of the self-energy !
@@ -607,8 +607,7 @@ subroutine R_Parquet_self_energy(eta,nOrb,nC,nO,nV,nR,nS,nOOs,nVVs,nOOt,nVVt,eQP
   !$OMP END PARALLEL 
   call wall_time(end_t)
   t = end_t - start_t
-
-  write(*,'(1X,A50,1X,F9.3,A8)') 'Wall time for building triplet pp self-energy =',t,' seconds'
+  write(*,'(1X,A50,1X,F9.3,A8)') 'Wall time for triplet pp self-energy =',t,' seconds'
   write(*,*) 
 !-----------------------------!
 !   Renormalization factor    !

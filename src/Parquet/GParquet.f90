@@ -481,7 +481,7 @@ subroutine GParquet(TDAeh,TDApp,max_diis_1b,max_diis_2b,linearize,eta,ENuc,max_i
       
       call wall_time(end_2b)
       t_2b = end_2b - start_2b
-      write(*,'(A50,1X,I4,A2,F9.3,A8)') 'Wall time for two-body iteration #',n_it_2b,' =',t_2b,' seconds'
+      write(*,'(1X,A44,1X,I4,A2,F9.3,A8)') 'Wall time for two-body iteration #',n_it_2b,' =',t_2b,' seconds'
       write(*,*)
 
     end do
@@ -519,14 +519,15 @@ subroutine GParquet(TDAeh,TDApp,max_diis_1b,max_diis_2b,linearize,eta,ENuc,max_i
     mem = mem + size(eQPlin) + size(Z) + size(SigC)
     write(*,'(1X,A50,1X,F6.3,A3)') 'Memory usage in GParquet:',mem*dp_in_GB,' GB'
 
-    write(*,*) 'Building self-energy...'
+    write(*,*) 'Computing self-energy...'
+    write(*,*) 
     
     call wall_time(start_t)
     call G_Parquet_self_energy(eta,nOrb,nC,nO,nV,nR,nS,nOO,nVV,eOld,ERI, &
                                eh_rho,old_eh_Om,ee_rho,old_ee_Om,hh_rho,old_hh_Om,EcGM,SigC,Z)
     call wall_time(end_t)
     t = end_t - start_t
-    write(*,'(A50,1X,F9.3,A8)') 'Wall time for self energy =',t,' seconds'
+    write(*,'(1X,A50,1X,F9.3,A8)') 'Wall time for self energy =',t,' seconds'
     write(*,*)
 
     eQPlin(:) = eHF(:) + Z(:)*SigC(:)
@@ -564,7 +565,7 @@ subroutine GParquet(TDAeh,TDApp,max_diis_1b,max_diis_2b,linearize,eta,ENuc,max_i
 
     call wall_time(end_1b)
     t_1b = end_1b - start_1b
-    write(*,'(A50,1X,F9.3,A8)') 'Wall time for one-body iteration =',t_1b,' seconds'
+    write(*,'(1X,A44,1X,I4,A2,F9.3,A8)') 'Wall time for one-body iteration #',n_it_1b,' =',t_1b,' seconds'
 
   end do 
   !---------------------------------------------!
