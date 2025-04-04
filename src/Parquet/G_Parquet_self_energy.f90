@@ -40,9 +40,9 @@ subroutine G_Parquet_self_energy(eta,nOrb,nC,nO,nV,nR,nS,nOO,nVV,eQP,ERI,&
   Z(:)    = 0d0
   EcGM    = 0d0
   
-!-----------------------!
-! 2nd-order self-energy !
-!-----------------------!
+!-----------------------------------!
+! 2nd-order part of the self-energy !
+!-----------------------------------!
 
   call wall_time(start_t)
 
@@ -115,7 +115,7 @@ subroutine G_Parquet_self_energy(eta,nOrb,nC,nO,nV,nR,nS,nOO,nVV,eQP,ERI,&
                  Z(p)    = Z(p)    + num * (reg1/dem1) * (reg2/dem2/dem2)
                  
                  !num  = ERI(p,a,j,i) * &
-                 !(eh_rho(j,p,n) * eh_rho(i,a,n) - eh_rho(j,a,n) * eh_rho(i,p,n))
+                 !(eh_rho(j,p,n) * eh_rho(i,a,n) - eh_rho(a,p,n) * eh_rho(i,j,n))
 
                  !dem1 = eQP(a) - eQP(i) - eh_Om(n) 
                  dem2 = eQP(p) + eQP(a) - eQP(i) - eQP(j)
@@ -126,7 +126,7 @@ subroutine G_Parquet_self_energy(eta,nOrb,nC,nO,nV,nR,nS,nOO,nVV,eQP,ERI,&
                  Z(p)    = Z(p)    - num * (reg1/dem1) * (reg2/dem2/dem2)
                                   
                  !num  = ERI(p,a,j,i) * &
-                 !(eh_rho(j,p,n) * eh_rho(i,a,n) - eh_rho(j,a,n) * eh_rho(i,p,n))
+                 !(eh_rho(j,p,n) * eh_rho(i,a,n) - eh_rho(a,p,n) * eh_rho(i,j,n))
 
                  dem1 = eQP(a) - eQP(i) + eh_Om(n) 
                  !dem2 = eQP(p) + eQP(a) - eQP(i) - eQP(j)
@@ -235,8 +235,8 @@ subroutine G_Parquet_self_energy(eta,nOrb,nC,nO,nV,nR,nS,nOO,nVV,eQP,ERI,&
                  reg1 = (1d0 - exp(- 2d0 * eta * dem1 * dem1))
                  reg2 = (1d0 - exp(- 2d0 * eta * dem2 * dem2))
 
-                 SigC(p) = SigC(p) - num * (reg1/dem1) * (reg2/dem2)
-                 Z(p)    = Z(p)    + num * (reg1/dem1) * (reg2/dem2/dem2)
+                 SigC(p) = SigC(p) + num * (reg1/dem1) * (reg2/dem2)
+                 Z(p)    = Z(p)    - num * (reg1/dem1) * (reg2/dem2/dem2)
 
               end do ! k
               ! 3h2p
@@ -248,8 +248,8 @@ subroutine G_Parquet_self_energy(eta,nOrb,nC,nO,nV,nR,nS,nOO,nVV,eQP,ERI,&
                  !reg1 = (1d0 - exp(- 2d0 * eta * dem1 * dem1))
                  reg2 = (1d0 - exp(- 2d0 * eta * dem2 * dem2))
 
-                 SigC(p) = SigC(p) - num * (reg1/dem1) * (reg2/dem2)
-                 Z(p)    = Z(p)    + num * (reg1/dem1) * (reg2/dem2/dem2)
+                 SigC(p) = SigC(p) + num * (reg1/dem1) * (reg2/dem2)
+                 Z(p)    = Z(p)    - num * (reg1/dem1) * (reg2/dem2/dem2)
                  
               end do ! a
            end do ! n
@@ -263,17 +263,17 @@ subroutine G_Parquet_self_energy(eta,nOrb,nC,nO,nV,nR,nS,nOO,nVV,eQP,ERI,&
                  reg1 = (1d0 - exp(- 2d0 * eta * dem1 * dem1))
                  reg2 = (1d0 - exp(- 2d0 * eta * dem2 * dem2))
 
-                 SigC(p) = SigC(p) - num * (reg1/dem1) * (reg2/dem2)
-                 Z(p)    = Z(p)    + num * (reg1/dem1) * (reg2/dem2/dem2)
+                 SigC(p) = SigC(p) + num * (reg1/dem1) * (reg2/dem2)
+                 Z(p)    = Z(p)    - num * (reg1/dem1) * (reg2/dem2/dem2)
 
-                 num  = ERI(p,c,i,j) * hh_rho(i,j,n) * hh_rho(p,c,n)
+!                num  = ERI(p,c,i,j) * hh_rho(i,j,n) * hh_rho(p,c,n)
                  !dem1 = hh_Om(n) - eQP(i) - eQP(j)
                  dem2 = eQP(p) + eQP(c) - eQP(i) - eQP(j)
                  !reg1 = (1d0 - exp(- 2d0 * eta * dem1 * dem1))
                  reg2 = (1d0 - exp(- 2d0 * eta * dem2 * dem2))
 
-                 SigC(p) = SigC(p) + num * (reg1/dem1) * (reg2/dem2)
-                 Z(p)    = Z(p)    - num * (reg1/dem1) * (reg2/dem2/dem2)
+                 SigC(p) = SigC(p) - num * (reg1/dem1) * (reg2/dem2)
+                 Z(p)    = Z(p)    + num * (reg1/dem1) * (reg2/dem2/dem2)
                  
               end do ! c
            end do ! n
@@ -331,7 +331,7 @@ subroutine G_Parquet_self_energy(eta,nOrb,nC,nO,nV,nR,nS,nOO,nVV,eQP,ERI,&
                  SigC(p) = SigC(p) - num * (reg1/dem1) * (reg2/dem2)
                  Z(p)    = Z(p)    + num * (reg1/dem1) * (reg2/dem2/dem2)
 
-                 num  = ERI(p,k,a,b) * ee_rho(a,b,n) * ee_rho(p,k,n)
+!                num  = ERI(p,k,a,b) * ee_rho(a,b,n) * ee_rho(p,k,n)
                  !dem1 = ee_Om(n) - eQP(a) - eQP(b)
                  dem2 = eQP(p) + eQP(k) - eQP(a) - eQP(b)
                  !reg1 = (1d0 - exp(- 2d0 * eta * dem1 * dem1))
