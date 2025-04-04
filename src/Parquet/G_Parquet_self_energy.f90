@@ -2,10 +2,12 @@ subroutine G_Parquet_self_energy(eta,nOrb,nC,nO,nV,nR,nS,nOO,nVV,eQP,ERI,&
                                  eh_rho,eh_Om,ee_rho,ee_Om,hh_rho,hh_Om,EcGM,SigC,Z)
 
 ! Compute correlation part of the self-energy coming from irreducible vertices contribution
+
   implicit none
   include 'parameters.h'
 
 ! Input variables
+
   double precision,intent(in)   :: eta
   integer,intent(in)            :: nOrb
   integer,intent(in)            :: nC, nO, nV, nR
@@ -27,20 +29,23 @@ subroutine G_Parquet_self_energy(eta,nOrb,nC,nO,nV,nR,nS,nOO,nVV,eQP,ERI,&
   double precision              :: start_t,end_t,t
 
 ! Output variables
+
   double precision,intent(out)  :: SigC(nOrb)
   double precision,intent(out)  :: Z(nOrb)
   double precision,intent(out)  :: EcGM
 
-  ! Initialize 
+! Initialize 
 
   SigC(:) = 0d0
   Z(:)    = 0d0
   EcGM    = 0d0
   
-!-----------------------------!
-! GF2 part of the self-energy !
-!-----------------------------!
+!-----------------------!
+! 2nd-order self-energy !
+!-----------------------!
+
   call wall_time(start_t)
+
   do p=nC+1,nOrb-nR
      ! 2h1p sum
      do i=nC+1,nO
@@ -73,15 +78,19 @@ subroutine G_Parquet_self_energy(eta,nOrb,nC,nO,nV,nR,nS,nOO,nVV,eQP,ERI,&
         end do
      end do
   end do
+
   call wall_time(end_t)
   t = end_t - start_t
 
   write(*,'(1X,A50,1X,F9.3,A8)') 'Wall time for building GF(2) self-energy =',t,' seconds'
   write(*,*)
+
 !-----------------------------!
 !  eh part of the self-energy !
 !-----------------------------!
+
   call wall_time(start_t)
+
   !$OMP PARALLEL DEFAULT(NONE)    &
   !$OMP PRIVATE(p,i,a,j,b,n,num,dem1,dem2,reg1,reg2) &
   !$OMP SHARED(nC,nO,nOrb,nR,nS,eta,ERI,eQP,eh_rho,eh_Om,SigC,Z)
@@ -196,15 +205,19 @@ subroutine G_Parquet_self_energy(eta,nOrb,nC,nO,nV,nR,nS,nOO,nVV,eQP,ERI,&
   end do ! p
   !$OMP END DO
   !$OMP END PARALLEL
+
   call wall_time(end_t)
   t = end_t - start_t
 
   write(*,'(1X,A50,1X,F9.3,A8)') 'Wall time for building eh self-energy =',t,' seconds'
   write(*,*) 
+
 !-----------------------------!
 !  pp part of the self-energy !
 !-----------------------------!
+
   call wall_time(start_t)
+
   !$OMP PARALLEL DEFAULT(NONE)    &
   !$OMP PRIVATE(p,i,j,k,c,n,num,dem1,dem2,reg1,reg2) &
   !$OMP SHARED(nC,nO,nOrb,nR,nOO,nVV,eta,ERI,eQP,ee_rho,ee_Om,hh_rho,hh_Om,SigC,Z)
@@ -335,6 +348,7 @@ subroutine G_Parquet_self_energy(eta,nOrb,nC,nO,nV,nR,nS,nOO,nVV,eQP,ERI,&
   end do ! p
   !$OMP END DO
   !$OMP END PARALLEL
+
   call wall_time(end_t)
   t = end_t - start_t
 

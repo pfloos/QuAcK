@@ -242,7 +242,9 @@ subroutine RParquet(TDAeh,TDApp,max_diis_1b,max_diis_2b,linearize,eta,ENuc,max_i
 
       allocate(Aph(nS,nS),Bph(nS,nS),eh_sing_Om(nS),sing_XpY(nS,nS),sing_XmY(nS,nS),eh_sing_Gam_A(nS,nS),eh_sing_Gam_B(nS,nS))
 
-      mem = mem + size(Aph) + size(Bph) + size(eh_sing_Om) + size(sing_XpY) + size(sing_XmY) + size(eh_sing_Gam_A) + size(eh_sing_Gam_B)
+      mem = mem + size(Aph) + size(Bph) & 
+                + size(eh_sing_Om) + size(sing_XpY) & 
+                + size(sing_XmY) + size(eh_sing_Gam_A) + size(eh_sing_Gam_B)
       write(*,'(1X,A50,4X,F6.3,A3)') 'Memory usage in RParquet =',mem*dp_in_GB,' GB'
 
       ispin = 1
@@ -299,7 +301,9 @@ subroutine RParquet(TDAeh,TDApp,max_diis_1b,max_diis_2b,linearize,eta,ENuc,max_i
 
       allocate(Aph(nS,nS),Bph(nS,nS),eh_trip_Om(nS),trip_XpY(nS,nS),trip_XmY(nS,nS),eh_trip_Gam_A(nS,nS),eh_trip_Gam_B(nS,nS))
 
-      mem = mem + size(Aph) + size(Bph) + size(eh_trip_Om) + size(trip_XpY) + size(trip_XmY) + size(eh_trip_Gam_A) + size(eh_trip_Gam_B)
+      mem = mem + size(Aph) + size(Bph) & 
+                + size(eh_trip_Om) + size(trip_XpY) + size(trip_XmY) & 
+                + size(eh_trip_Gam_A) + size(eh_trip_Gam_B)
       write(*,'(1X,A50,4X,F6.3,A3)') 'Memory usage in RParquet =',mem*dp_in_GB,' GB'
 
       ispin = 2
@@ -489,7 +493,9 @@ subroutine RParquet(TDAeh,TDApp,max_diis_1b,max_diis_2b,linearize,eta,ENuc,max_i
 
       deallocate(eh_sing_Om,eh_trip_Om,ee_sing_Om,hh_sing_Om,ee_trip_Om,hh_trip_Om)
 
-      mem = mem - size(eh_sing_Om) - size(eh_trip_Om) - size(ee_sing_Om) - size(hh_sing_Om) - size(ee_trip_Om) - size(hh_trip_Om)
+      mem = mem - size(eh_sing_Om) - size(eh_trip_Om) & 
+                - size(ee_sing_Om) - size(hh_sing_Om) & 
+                - size(ee_trip_Om) - size(hh_trip_Om)
       
       !----------------------------!
       ! Compute screened integrals !
