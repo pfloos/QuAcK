@@ -43,7 +43,7 @@ subroutine RG0W0(dotest,doACFDT,exchange_kernel,doXBS,dophBSE,dophBSE2,TDA_W,TDA
 ! Local variables
 
   logical                       :: print_W   = .false.
-  logical                       :: plot_self = .false.
+  logical                       :: plot_self = .true.
   logical                       :: dRPA_W
   integer                       :: isp_W
   double precision              :: flow
@@ -151,7 +151,7 @@ subroutine RG0W0(dotest,doACFDT,exchange_kernel,doXBS,dophBSE,dophBSE2,TDA_W,TDA
 
 ! Plot self-energy, renormalization factor, and spectral function
 
-  if(plot_self) call RGW_plot_self_energy(nOrb,eta,nC,nO,nV,nR,nS,eHF,eHF,Om,rho)
+  if(plot_self) call RGW_plot_self_energy(nOrb,eta,nC,nO,nV,nR,nS,eHF,eGW,Om,rho)
 
 ! Cumulant expansion 
 
