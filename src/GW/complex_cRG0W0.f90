@@ -113,9 +113,8 @@ subroutine complex_cRG0W0(dotest,doACFDT,exchange_kernel,doXBS,dophBSE,dophBSE2,
 ! Compute screening !
 !-------------------!
 
-                 write(*,*) "DEBUGGING CHANGE CODE BACK"
-                 call complex_phRLR_A(isp_W,dRPA_W,nOrb,nC,nO,nV,nR,nS,0d0,eHF,ERI,Aph)
-  if(.not.TDA_W) call complex_phRLR_B(isp_W,dRPA_W,nOrb,nC,nO,nV,nR,nS,0d0,ERI,Bph)
+                 call complex_phRLR_A(isp_W,dRPA_W,nOrb,nC,nO,nV,nR,nS,1d0,eHF,ERI,Aph)
+  if(.not.TDA_W) call complex_phRLR_B(isp_W,dRPA_W,nOrb,nC,nO,nV,nR,nS,1d0,ERI,Bph)
 
   call complex_phRLR(TDA_W,nS,Aph,Bph,EcRPA,Om,XpY,XmY)
   Re_Om(:) = real(Om(:))
