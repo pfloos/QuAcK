@@ -50,7 +50,7 @@ subroutine cRGF2_self_energy_diag(eta,nBas,nC,nO,nV,nR,e,ERI,Re_SigC,Im_SigC,Re_
         do a=nO+1,nBas-nR
 
           eps = e(p) + e(a) - e(i) - e(j)
-          eta_tilde = eta - e_cap(p) + e_cap(i) + e_cap(a) - e_cap(j)
+          eta_tilde = eta - e_cap(p) + e_cap(i) - (e_cap(a) - e_cap(j))
           num = (2d0*ERI(p,a,i,j) - ERI(p,a,j,i))*ERI(p,a,i,j)
 
           Re_SigC(p) = Re_SigC(p) + num*eps/(eps**2 + eta_tilde**2)

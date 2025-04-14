@@ -49,7 +49,7 @@ write(*,*) "DEbugging change back"
         do a=nO+1,nBas-nR
 
           eps = Re_w + Re_e(a) - Re_e(i) - Re_e(j)
-          eta_tilde = eta - Im_w + Im_e(i) + Im_e(a) - Im_e(j)
+          eta_tilde = eta - Im_w + Im_e(i) - (Im_e(a) - Im_e(j))
           num = (2d0*ERI(p,a,i,j) - 0*ERI(p,a,j,i))*ERI(p,a,i,j)
           z_dummy = num*cmplx(eps/(eps**2 + eta_tilde**2),eta_tilde/(eps**2 + eta_tilde**2),kind=8)
           Re_SigC = Re_SigC + real(z_dummy)

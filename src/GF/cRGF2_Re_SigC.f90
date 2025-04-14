@@ -34,7 +34,7 @@ double precision function cRGF2_Re_SigC(p,Re_w,Im_w,eta,nBas,nC,nO,nV,nR,eHF,e_c
       do a=nO+1,nBas-nR
 
         eps = Re_w + eHF(a) - eHF(i) - eHF(j)
-        eta_tilde = eta - Im_w + e_cap(i) + e_cap(a) - e_cap(j)
+        eta_tilde = eta - Im_w + e_cap(i) -(e_cap(a) - e_cap(j))
         num = (2d0*ERI(p,a,i,j) - ERI(p,a,j,i))*ERI(p,a,i,j)
         cRGF2_Re_SigC = cRGF2_Re_SigC + num*eps/(eps**2 + eta_tilde**2)
       end do
