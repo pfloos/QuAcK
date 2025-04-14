@@ -9,6 +9,7 @@
 - [Antoine Marie](https://antoine-marie.github.io)
 - [Abdallah Ammar](https://scholar.google.com/citations?user=y437T5sAAAAJ&hl=en)
 - [Mauricio Rodriguez-Mayorga](https://scholar.google.com/citations?user=OLGOgQgAAAAJ&hl=es)
+- [Loris Burth](https://github.com/lburth)
   
 # What is it?
 
@@ -76,7 +77,7 @@ The two most important files are:
 - `$QUACK_ROOT/input/methods` that gathers the methods you want to use.
 - `$QUACK_ROOT/input/options` that gathers the different options associated these methods.
 
-Copy the files `methods.default` and `options.default` to `methods.default` `options.default`
+Copy the files `methods.default` and `options.default` to `methods.default` and `options.default`, respectively.
 ```
 cp $QUACK_ROOT/input/methods.default $QUACK_ROOT/input/methods
 cp $QUACK_ROOT/input/options.default $QUACK_ROOT/input/options
