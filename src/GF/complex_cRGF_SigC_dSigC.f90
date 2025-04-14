@@ -42,6 +42,7 @@ subroutine complex_cRGF_SigC_dSigC(p,eta,nBas,nC,nO,nV,nR,Re_w,Im_w,Re_e,Im_e,ER
  
 
 ! Compute GF2 self-energy
+write(*,*) "DEbugging change back"
 
     do i=nC+1,nO
       do j=nC+1,nO
@@ -49,7 +50,7 @@ subroutine complex_cRGF_SigC_dSigC(p,eta,nBas,nC,nO,nV,nR,Re_w,Im_w,Re_e,Im_e,ER
 
           eps = Re_w + Re_e(a) - Re_e(i) - Re_e(j)
           eta_tilde = eta - Im_w + Im_e(i) + Im_e(a) - Im_e(j)
-          num = (2d0*ERI(p,a,i,j) - ERI(p,a,j,i))*ERI(p,a,i,j)
+          num = (2d0*ERI(p,a,i,j) - 0*ERI(p,a,j,i))*ERI(p,a,i,j)
           z_dummy = num*cmplx(eps/(eps**2 + eta_tilde**2),eta_tilde/(eps**2 + eta_tilde**2),kind=8)
           Re_SigC = Re_SigC + real(z_dummy)
           Im_SigC = Im_SigC + aimag(z_dummy)
@@ -68,7 +69,7 @@ subroutine complex_cRGF_SigC_dSigC(p,eta,nBas,nC,nO,nV,nR,Re_w,Im_w,Re_e,Im_e,ER
 
           eps = Re_w + Re_e(i) - Re_e(a) - Re_e(b)
           eta_tilde = eta + Im_w  - Im_e(a)  - Im_e(b) + Im_e(i)
-          num = (2d0*ERI(p,i,a,b) - ERI(p,i,b,a))*ERI(p,i,a,b)
+          num = (2d0*ERI(p,i,a,b) - 0*ERI(p,i,b,a))*ERI(p,i,a,b)
 
           z_dummy = num*cmplx(eps/(eps**2 + eta_tilde**2),-eta_tilde/(eps**2 + eta_tilde**2),kind=8)
           Re_SigC = Re_SigC + real(z_dummy)
