@@ -48,6 +48,9 @@ subroutine print_complex_cRG0W0(nBas,nO,Re_eHF,Im_eHF,ENuc,ERHF,Re_SigC,Im_SigC,
     '|',p,'|',Re_eHF(p)*HaToeV,'|',Re_SigC(p)*HaToeV,'|',Re_Z(p),'|',Re_eGW(p)*HaToeV,'|'
     write(*,'(1X,A1,1X,I3,1X,A1,1X,F15.6,1X,A1,1X,F15.6,1X,A1,1X,F15.6,1X,A1,1X,F15.6,1X,A1,1X)') &
     '|',p,'|',Im_eHF(p)*HaToeV,'|',Im_SigC(p)*HaToeV,'|',Im_Z(p),'|',Im_eGW(p)*HaToeV,'|'
+    if(p==nO) then
+      write(*,*)'-------------------------------------------------------------------------------'
+    end if
   write(*,*)'-------------------------------------------------------------------------------'
   end do
   write(*,*)
