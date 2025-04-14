@@ -87,7 +87,7 @@ These files look like this
 ```
 QuAcK 💩 % cat input/methods 
 # RHF UHF GHF ROHF HFB 
-  T   F   F   F    F
+  F   F   F   F    F
 # MP2 MP3 
   F   F   
 # CCD pCCD DCD CCSD CCSD(T) 
@@ -107,7 +107,7 @@ QuAcK 💩 % cat input/methods
 # G0T0eh evGTeh qsGTeh
   F      F      F
 # Parquet
-  T
+  F
 # Rtest Utest Gtest
   F     F     F
 ```
@@ -115,7 +115,7 @@ and
 ```
 QuAcK 💩 % cat input/options 
 # HF: maxSCF thresh  DIIS guess mix shift stab search
-      256    0.0000001 5    1     0.0 0.0   F    F
+      256    0.00001 5    1     0.0 0.0   F    F
 # MP: reg
       F
 # CC: maxSCF thresh   DIIS
@@ -135,7 +135,7 @@ QuAcK 💩 % cat input/options
 # HFB: temperature  sigma chem_pot_HF restart_HFB
           0.05      1.00  T           F
 # Parquet: TDAeh TDApp max_it_1b conv_1b max_it_2b conv_2b DIIS_1b DIIS_2b lin reg
-           T     T     20        0.0001  3         0.0001  10      1       T   500.0
+           T     T     10        0.00001 10        0.00001 2       2       T   100.0
 ```
 
 For example, if you want to run a calculation on water using the cc-pvdz basis set:
