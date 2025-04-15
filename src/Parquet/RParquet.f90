@@ -8,8 +8,8 @@ subroutine RParquet(TDAeh,TDApp,max_diis_1b,max_diis_2b,linearize,eta,ENuc,max_i
 
 ! Hard-coded parameters
 
-  logical                       :: print_phLR = .false.
-  logical                       :: print_ppLR = .false.
+  logical                       :: print_phLR = .true.
+  logical                       :: print_ppLR = .true.
   
 ! Input variables
 
