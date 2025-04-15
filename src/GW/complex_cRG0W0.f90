@@ -59,8 +59,6 @@ subroutine complex_cRG0W0(dotest,doACFDT,exchange_kernel,doXBS,dophBSE,dophBSE2,
   double precision,allocatable  :: Re_Z(:)
   double precision,allocatable  :: Im_Z(:)
   complex*16,allocatable        :: Om(:)
-  double precision,allocatable  :: Re_Om(:)
-  double precision,allocatable  :: Im_Om(:)
   complex*16,allocatable        :: XpY(:,:)
   complex*16,allocatable        :: XmY(:,:)
   complex*16,allocatable        :: rho(:,:,:)
@@ -106,7 +104,7 @@ subroutine complex_cRG0W0(dotest,doACFDT,exchange_kernel,doXBS,dophBSE,dophBSE2,
 ! Memory allocation
 
   allocate(Aph(nS,nS),Bph(nS,nS),Re_SigC(nOrb),Im_SigC(nOrb),Re_Z(nOrb),Im_Z(nOrb),Om(nS),XpY(nS,nS),XmY(nS,nS),rho(nOrb,nOrb,nS), & 
-           Re_eGW(nOrb),Im_eGW(nOrb),Re_eGWlin(nOrb),Im_eGWlin(nOrb),Re_eHF(nOrb),Im_eHF(nOrb),Re_Om(nS),Im_Om(nS))
+           Re_eGW(nOrb),Im_eGW(nOrb),Re_eGWlin(nOrb),Im_eGWlin(nOrb),Re_eHF(nOrb),Im_eHF(nOrb),)
   Re_eHF(:) = real(eHF(:))
   Im_eHF(:) = aimag(eHF(:))
 !-------------------!
@@ -117,8 +115,6 @@ subroutine complex_cRG0W0(dotest,doACFDT,exchange_kernel,doXBS,dophBSE,dophBSE2,
   if(.not.TDA_W) call complex_phRLR_B(isp_W,dRPA_W,nOrb,nC,nO,nV,nR,nS,1d0,ERI,Bph)
 
   call complex_phRLR(TDA_W,nS,Aph,Bph,EcRPA,Om,XpY,XmY)
-  Re_Om(:) = real(Om(:))
-  Im_Om(:) = aimag(Om(:))
 
   !if(print_W) call print_excitation_energies('phRPA@RHF','singlet',nS,Om)
 
@@ -152,7 +148,6 @@ subroutine complex_cRG0W0(dotest,doACFDT,exchange_kernel,doXBS,dophBSE,dophBSE2,
 
     write(*,*) ' *** Quasiparticle energies obtained by root search *** '
     write(*,*)
-    write(*,*) "ROOT SEARCH NOT IMPLEMENTED YET" 
     call complex_RGW_QP_graph(doSRG,eta,flow,nOrb,nC,nO,nV,nR,nS,       &
             Re_eHF,Im_eHF,Om,rho,Re_eGWlin,Im_eGWlin,Re_eHF,Im_eHF,     &
             Re_eGW,Im_eGW,Re_Z,Im_Z)
@@ -160,7 +155,7 @@ subroutine complex_cRG0W0(dotest,doACFDT,exchange_kernel,doXBS,dophBSE,dophBSE2,
 
 ! Plot self-energy, renormalization factor, and spectral function
 !
-!  if(plot_self) call RGW_plot_self_energy(nOrb,eta,nC,nO,nV,nR,nS,eHF,eHF,Om,rho)
+  if(plot_self) call complex_RGW_plot_self_energy(nOrb,eta,nC,nO,nV,nR,nS,eHF,eHF,Om,rho)
 !
 !! Cumulant expansion 
 !

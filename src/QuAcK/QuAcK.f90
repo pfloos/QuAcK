@@ -131,7 +131,8 @@ program QuAcK
                     docG0W0,docG0F2,                       &
                     doRtest,doUtest,doGtest)
   doCAP = docG0W0 .or. docG0F2 .or. docRHF ! Add different cases if they need CAP
-
+  docG0W0 = docG0W0 .or. (doG0W0 .and. docRHF)
+  docG0F2 = docG0F2 .or. (doG0F2 .and. docRHF)
 !--------------------------!
 ! Read options for methods !
 !--------------------------!

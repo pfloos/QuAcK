@@ -418,7 +418,7 @@ doGF = doG0F2 .or. doevGF2 .or. doqsGF2 .or. doufG0F02 .or. doG0F3 .or. doevGF3 
 
   if(doGW .and. docRHF) then
     call wall_time(start_GW)
-    call complex_RGW(dotest,docG0W0,maxSCF_GW,thresh_GW,max_diis_GW,        & 
+    call complex_RGW(dotest,docG0W0,doevGW,maxSCF_GW,thresh_GW,max_diis_GW,        & 
              doACFDT,exchange_kernel,doXBS,dophBSE,dophBSE2,doppBSE,TDA_W,TDA,dBSE,dTDA,singlet,triplet, &
              lin_GW,eta_GW,reg_GW,nNuc,ZNuc,rNuc,ENuc,nBas,nOrb,nC,nO,nV,nR,nS,ERHF,S,X,T,               &
              V,Hc,ERI_AO,complex_ERI_MO,complex_CAP_MO,dipole_int_AO,complex_dipole_int_MO,complex_PHF,complex_cHF,complex_eHF)
