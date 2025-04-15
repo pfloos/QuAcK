@@ -104,7 +104,7 @@ subroutine complex_cRG0W0(dotest,doACFDT,exchange_kernel,doXBS,dophBSE,dophBSE2,
 ! Memory allocation
 
   allocate(Aph(nS,nS),Bph(nS,nS),Re_SigC(nOrb),Im_SigC(nOrb),Re_Z(nOrb),Im_Z(nOrb),Om(nS),XpY(nS,nS),XmY(nS,nS),rho(nOrb,nOrb,nS), & 
-           Re_eGW(nOrb),Im_eGW(nOrb),Re_eGWlin(nOrb),Im_eGWlin(nOrb),Re_eHF(nOrb),Im_eHF(nOrb),)
+           Re_eGW(nOrb),Im_eGW(nOrb),Re_eGWlin(nOrb),Im_eGWlin(nOrb),Re_eHF(nOrb),Im_eHF(nOrb))
   Re_eHF(:) = real(eHF(:))
   Im_eHF(:) = aimag(eHF(:))
 !-------------------!
