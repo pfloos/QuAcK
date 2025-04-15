@@ -147,10 +147,10 @@ subroutine complex_evRGW(dotest,maxSCF,thresh,max_diis,doACFDT,exchange_kernel,d
     call complex_RGW_excitation_density(nOrb,nC,nO,nR,nS,ERI,XpY,rho)
 
     ! Compute correlation part of the self-energy 
-
+    ! Implement here the srg version if(doSRG) .. complex_RGW_SRG_self_energy_diag
     call complex_RGW_self_energy_diag(eta,nBas,nOrb,nC,nO,nV,nR,nS,Re_eGW,Im_eGW,Om,rho,&
             EcGM,Re_SigC,Im_SigC,Re_Z,Im_Z)
-
+      
     ! Solve the quasi-particle equation
 
     if(linearize) then 
@@ -160,7 +160,7 @@ subroutine complex_evRGW(dotest,maxSCF,thresh,max_diis,doACFDT,exchange_kernel,d
 
       Re_eGW(:) = Re_eHF(:) + Re_SigC(:)
       Im_eGW(:) = Im_eHF(:) + Im_SigC(:)
-      eGW = cmplx(Re_eGW + Im_eGW,kind=8)
+      eGW = cmplx(Re_eGW,Im_eGW,kind=8)
     else 
 
       write(*,*) ' *** Quasiparticle energies obtained by root search *** '
@@ -169,7 +169,7 @@ subroutine complex_evRGW(dotest,maxSCF,thresh,max_diis,doACFDT,exchange_kernel,d
       call complex_RGW_QP_graph(doSRG,eta,flow,nOrb,nC,nO,nV,nR,nS,Re_eHF,Im_eHF,Om,&
               rho,Re_eOld,Im_eOld,Re_eOld,Im_eOld,Re_eGW,Im_eGW,Re_Z,Im_Z)
  
-      eGW = cmplx(Re_eGW + Im_eGW,kind=8)
+      eGW = cmplx(Re_eGW,Im_eGW,kind=8)
     end if
 
     ! Convergence criteria
