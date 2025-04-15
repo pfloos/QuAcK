@@ -167,7 +167,7 @@ subroutine complex_evRGW(dotest,maxSCF,thresh,max_diis,doACFDT,exchange_kernel,d
       write(*,*)
   
       call complex_RGW_QP_graph(doSRG,eta,flow,nOrb,nC,nO,nV,nR,nS,Re_eHF,Im_eHF,Om,&
-              rho,Re_eOld,Im_eOld,Re_eGW,Im_eGW,Re_Z,Im_Z)
+              rho,Re_eOld,Im_eOld,Re_eOld,Im_eOld,Re_eGW,Im_eGW,Re_Z,Im_Z)
  
       eGW = cmplx(Re_eGW + Im_eGW,kind=8)
     end if
