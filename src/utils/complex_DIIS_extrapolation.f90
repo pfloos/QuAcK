@@ -45,15 +45,10 @@ subroutine complex_DIIS_extrapolation(rcond,n_err,n_e,n_diis,error,e,error_in,e_
   b(1:n_diis) = cmplx(+0d0,0d0,kind=8)
   b(n_diis+1) = cmplx(-1d0,0d0,kind=8)
 
-! Solve linear system
+  ! Solve linear system
   call complex_linear_solve(n_diis+1,A,b,w,rcond)
-! Check condition number
-  if (rcond < 1.0d-10) then
-    !write(*,*) "!!! DIIS system ill-conditioned: rcond = ", rcond, " - Skipping DIIS update !!!"
-  else
-    ! Perform extrapolation only if the system is well-conditioned
-    e_inout(:) = matmul(w(1:n_diis),transpose(e(:,1:n_diis)))
-  end if
+  ! Perform extrapolation only if the system is well-conditioned
+  e_inout(:) = matmul(w(1:n_diis),transpose(e(:,1:n_diis)))
 
 ! Extrapolate
 
