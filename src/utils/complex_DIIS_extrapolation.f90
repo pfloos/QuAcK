@@ -47,8 +47,6 @@ subroutine complex_DIIS_extrapolation(rcond,n_err,n_e,n_diis,error,e,error_in,e_
 
   ! Solve linear system
   call complex_linear_solve(n_diis+1,A,b,w,rcond)
-  ! Perform extrapolation only if the system is well-conditioned
-  e_inout(:) = matmul(w(1:n_diis),transpose(e(:,1:n_diis)))
 
 ! Extrapolate
 
