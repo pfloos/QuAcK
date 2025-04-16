@@ -50,10 +50,11 @@ subroutine complex_phRLR(TDA,nS,Aph,Bph,EcRPA,Om,XpY,XmY)
     call complex_sort_eigenvalues_RPA(2*nS,OmOmminus,RPA_matrix)
     call complex_normalize_RPA(nS,RPA_matrix)
     Om(:) = OmOmminus(1:nS)
-    if(maxval(abs(OmOmminus(1:nS)+OmOmminus(nS+1:2*nS))) > 1e-12) &
+    if(maxval(abs(OmOmminus(1:nS)+OmOmminus(nS+1:2*nS))) > 1e-12) then
       call print_warning('We dont find a Om and -Om structure as solution of the RPA. There might be a problem somewhere.')
       write(*,*) "Maximal difference :", maxval(abs(OmOmminus(1:nS)+OmOmminus(nS+1:2*nS)))
-    if(minval(abs(Om(:))) < 0d0) &
+    end if
+    if(minval(real(Om(:))) < 0d0) &
       call print_warning('You may have instabilities in linear response: A-B is not positive definite!!')
     XpY(:,:) = transpose(RPA_matrix(1:nS,1:nS) + RPA_matrix(nS+1:2*nS,1:nS)) 
     XmY(:,:) = transpose(RPA_matrix(1:nS,1:nS) - RPA_matrix(nS+1:2*nS,1:nS))
