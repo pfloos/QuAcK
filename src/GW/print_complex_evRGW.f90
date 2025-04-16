@@ -62,6 +62,6 @@ subroutine print_complex_evRGW(nBas,nO,nSCF,Conv,Re_eHF,Im_eHF,ENuc,ERHF,Re_SigC
   write(*,*)
   write(*,*)'-------------------------------------------------------------------------------'
   write(*,'(2X,A10,I3)')   'Iteration ',nSCF
-  write(*,'(2X,A14,F15.5)')'Convergence = ',Conv
+  write(*,'(2X,A14,F15.9)')'Convergence = ',Conv
   write(*,*)
 end subroutine 
