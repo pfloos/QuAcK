@@ -137,16 +137,28 @@ subroutine RQuAcK(working_dir,use_gpu,dotest,doRHF,doROHF,docRHF,               
     allocate(complex_cHF(nBas,nOrb))
     allocate(complex_FHF(nBas,nBas))
     allocate(complex_dipole_int_MO(nOrb,nOrb,ncart))
+    allocate(dipole_int_MO(0,0,0))
     allocate(complex_ERI_MO(nOrb,nOrb,nOrb,nOrb))
-    if (doCAP) allocate(complex_CAP_MO(nOrb,nOrb))
+    allocate(CAP_MO(0,0))
+    if (doCAP) then 
+      allocate(complex_CAP_MO(nOrb,nOrb))
+    else
+      allocate(complex_CAP_MO(0,0))
+    end if
   else 
     allocate(PHF(nBas,nBas))
     allocate(eHF(nOrb))
     allocate(cHF(nBas,nOrb))
     allocate(FHF(nBas,nBas))
     allocate(dipole_int_MO(nOrb,nOrb,ncart))
+    allocate(complex_dipole_int_MO(0,0,0))
     allocate(ERI_MO(nOrb,nOrb,nOrb,nOrb))
-    if (doCAP) allocate(CAP_MO(nOrb,nOrb))
+    allocate(complex_CAP_MO(0,0))
+    if (doCAP) then
+        allocate(CAP_MO(nOrb,nOrb))
+    else
+        allocate(CAP_MO(0,0))
+    end if
   end if
 
   allocate(ERI_AO(nBas,nBas,nBas,nBas))
@@ -418,10 +430,11 @@ doGF = doG0F2 .or. doevGF2 .or. doqsGF2 .or. doufG0F02 .or. doG0F3 .or. doevGF3 
 
   if(doGW .and. docRHF) then
     call wall_time(start_GW)
-    call complex_RGW(dotest,docG0W0,doevGW,maxSCF_GW,thresh_GW,max_diis_GW,        & 
+    call complex_RGW(dotest,docG0W0,doevGW,doqsGW,maxSCF_GW,thresh_GW,max_diis_GW,        & 
              doACFDT,exchange_kernel,doXBS,dophBSE,dophBSE2,doppBSE,TDA_W,TDA,dBSE,dTDA,singlet,triplet, &
              lin_GW,eta_GW,reg_GW,nNuc,ZNuc,rNuc,ENuc,nBas,nOrb,nC,nO,nV,nR,nS,ERHF,S,X,T,               &
-             V,Hc,ERI_AO,complex_ERI_MO,complex_CAP_MO,dipole_int_AO,complex_dipole_int_MO,complex_PHF,complex_cHF,complex_eHF)
+             V,Hc,ERI_AO,complex_ERI_MO,CAP_AO,complex_CAP_MO,dipole_int_AO,&
+             complex_dipole_int_MO,complex_PHF,complex_cHF,complex_eHF)
     call wall_time(end_GW)
 
     t_GW = end_GW - start_GW

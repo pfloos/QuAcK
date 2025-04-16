@@ -14,7 +14,7 @@ subroutine complex_evRGW(dotest,maxSCF,thresh,max_diis,doACFDT,exchange_kernel,d
   integer,intent(in)            :: max_diis
   double precision,intent(in)   :: thresh
   double precision,intent(in)   :: ENuc
-  double precision,intent(in)   :: ERHF
+  complex*16,intent(in)         :: ERHF
   logical,intent(in)            :: doACFDT
   logical,intent(in)            :: exchange_kernel
   logical,intent(in)            :: doXBS

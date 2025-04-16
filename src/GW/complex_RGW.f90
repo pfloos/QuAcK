@@ -1,7 +1,7 @@
-subroutine complex_RGW(dotest,docG0W0,doevGW,maxSCF,thresh,max_diis,doACFDT,                    &
+subroutine complex_RGW(dotest,docG0W0,doevGW,doqsGW,maxSCF,thresh,max_diis,doACFDT,                &
                exchange_kernel,doXBS,dophBSE,dophBSE2,doppBSE,TDA_W,TDA,dBSE,dTDA,singlet,triplet, &
                linearize,eta,doSRG,nNuc,ZNuc,rNuc,ENuc,nBas,nOrb,nC,nO,nV,nR,nS,ERHF,              &
-               S,X,T,V,Hc,ERI_AO,ERI_MO,CAP_MO,dipole_int_AO,dipole_int_MO,PHF,cHF,eHF)
+               S,X,T,V,Hc,ERI_AO,ERI_MO,CAP_AO,CAP_MO,dipole_int_AO,dipole_int_MO,PHF,cHF,eHF)
 
 ! Restricted GW module
 
@@ -12,7 +12,7 @@ subroutine complex_RGW(dotest,docG0W0,doevGW,maxSCF,thresh,max_diis,doACFDT,    
 
   logical,intent(in)            :: dotest
 
-  logical,intent(in)            :: docG0W0,doevGW
+  logical,intent(in)            :: docG0W0,doevGW,doqsGW
 
   integer,intent(in)            :: maxSCF
   integer,intent(in)            :: max_diis
@@ -57,6 +57,7 @@ subroutine complex_RGW(dotest,docG0W0,doevGW,maxSCF,thresh,max_diis,doACFDT,    
   double precision,intent(in)   :: X(nBas,nOrb)
   double precision,intent(in)   :: ERI_AO(nBas,nBas,nBas,nBas)
   complex*16,intent(in)         :: ERI_MO(nOrb,nOrb,nOrb,nOrb)
+  double precision,intent(in)   :: CAP_AO(nOrb,nOrb)
   complex*16,intent(in)         :: CAP_MO(nOrb,nOrb)
   double precision,intent(in)   :: dipole_int_AO(nBas,nBas,ncart)
   complex*16,intent(in)         :: dipole_int_MO(nOrb,nOrb,ncart)
@@ -96,6 +97,26 @@ subroutine complex_RGW(dotest,docG0W0,doevGW,maxSCF,thresh,max_diis,doACFDT,    
 
     t_GW = end_GW - start_GW
     write(*,'(A65,1X,F9.3,A8)') 'Total wall time for evGW = ',t_GW,' seconds'
+    write(*,*)
+
+  end if
+
+!------------------------------------------------------------------------
+! Perform qsGW calculation
+!------------------------------------------------------------------------
+
+  if(doqsGW) then 
+
+    call wall_time(start_GW)
+    call complex_qsRGW(dotest,maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,dophBSE,dophBSE2, &
+               TDA_W,TDA,dBSE,dTDA,doppBSE,singlet,triplet,eta,doSRG,nNuc,ZNuc,rNuc,         &
+               ENuc,nBas,nOrb,nC,nO,nV,nR,nS,ERHF,S,X,T,V,Hc,ERI_AO,ERI_MO,                  &
+               dipole_int_AO,dipole_int_MO,PHF,cHF,eHF,                                      &
+               CAP_AO,CAP_MO)
+    call wall_time(end_GW)
+
+    t_GW = end_GW - start_GW
+    write(*,'(A65,1X,F9.3,A8)') 'Total wall time for qsGW = ',t_GW,' seconds'
     write(*,*)
 
   end if
