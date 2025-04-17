@@ -6,7 +6,7 @@ subroutine G_eh_Phi(nOrb,nC,nR,nS,eh_Om,eh_rho,eh_Phi)
 ! Input variables
   integer,intent(in)            :: nOrb,nC,nR,nS
   double precision,intent(in)   :: eh_Om(nS)
-  double precision,intent(in)   :: eh_rho(nOrb,nOrb,nS)
+  double precision,intent(in)   :: eh_rho(nOrb,nOrb,nS+nS)
 
 ! Local variables
   integer                       :: p,q,r,s
@@ -30,7 +30,7 @@ subroutine G_eh_Phi(nOrb,nC,nR,nS,eh_Om,eh_rho,eh_Phi)
               do n=1,nS                 
                  eh_Phi(p,q,r,s) = eh_Phi(p,q,r,s)           &
                       - eh_rho(r,p,n)*eh_rho(q,s,n)/eh_Om(n) &
-                      - eh_rho(p,r,n)*eh_rho(s,q,n)/eh_Om(n)     
+                      - eh_rho(r,p,nS+n)*eh_rho(q,s,nS+n)/eh_Om(n)     
               end do
               
            enddo
