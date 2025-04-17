@@ -242,7 +242,7 @@ subroutine complex_qsRGW(dotest,maxSCF,thresh,max_diis,doACFDT,exchange_kernel,d
     if(nSCF > 1) Conv = maxval(abs(err))
 
     ! Kinetic energy
-    write(*,*) complex_trace_matrix(nBas,P)
+    
     ET = complex_trace_matrix(nBas,matmul(P,T))
 
     ! Potential energy
