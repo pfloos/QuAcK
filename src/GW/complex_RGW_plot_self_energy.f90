@@ -1,4 +1,4 @@
-subroutine RGW_plot_self_energy(nBas,eta,nC,nO,nV,nR,nS,eHF,eGW,Om,rho)
+subroutine complex_RGW_plot_self_energy(nBas,eta,nC,nO,nV,nR,nS,eHF,eGW,Om,rho)
 
 ! Dump several GW quantities for external plotting
 
