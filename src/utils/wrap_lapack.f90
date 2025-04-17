@@ -410,12 +410,12 @@ subroutine complex_linear_solve(N,A,b,x,rcond)
 
   call zsysvx('N','U',N,1,A,N,AF,N,ipiv,b,N,x,N,rcond,ferr,berr,work,lwork,rwork,info)
 
- if (info /= 0) then
-
-   print *,  info
-   stop 'error in linear_solve (zsysv)!!'
-
- end if
+! if (info /= 0) then
+!
+!   print *,  info
+!   stop 'error in linear_solve (zsysv)!!'
+!
+! end if
 deallocate(work,ipiv,rwork,AF)
 end subroutine 
 

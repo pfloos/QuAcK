@@ -53,7 +53,7 @@ subroutine complex_qsRGW(dotest,maxSCF,thresh,max_diis,doACFDT,exchange_kernel,d
   double precision,intent(in)   :: Hc(nBas,nBas)
   double precision,intent(in)   :: X(nBas,nBas)
   double precision,intent(in)   :: CAP_AO(nBas,nBas)
-  double precision,intent(inout):: CAP_MO(nBas,nBas)
+  complex*16,intent(inout)      :: CAP_MO(nBas,nBas)
   double precision,intent(in)   :: ERI_AO(nBas,nBas,nBas,nBas)
   complex*16,intent(inout)      :: ERI_MO(nOrb,nOrb,nOrb,nOrb)
   double precision,intent(in)   :: dipole_int_AO(nBas,nBas,ncart)
@@ -218,10 +218,9 @@ subroutine complex_qsRGW(dotest,maxSCF,thresh,max_diis,doACFDT,exchange_kernel,d
       write(*,*) "SRG not implemented"
       !call complex_RGW_SRG_self_energy(flow,nBas,nOrb,nC,nO,nV,nR,nS,eGW,Om,rho,EcGM,SigC,Z)
     else
-      call complex_RGW_self_energy(eta,nBas,nOrb,nC,nO,nV,nR,nS,real(eGW),aimag(eGW),Om,rho,&
-                                   EcGM,real(SigC),aimag(SigC),real(Z),aimag(Z))
+      call complex_RGW_self_energy(eta,nBas,nOrb,nC,nO,nV,nR,nS,eGW,Om,rho,&
+                                   EcGM,SigC,Z)
     end if
-
     ! Make correlation self-energy Hermitian and transform it back to AO basis
    
     SigC = 0.5d0*(SigC + transpose(SigC))
@@ -235,7 +234,7 @@ subroutine complex_qsRGW(dotest,maxSCF,thresh,max_diis,doACFDT,exchange_kernel,d
       call complex_complex_AOtoMO(nBas,nOrb,c(1,1),F(1,1),Fp(1,1))
       call complex_MOtoAO(nBas,nOrb,S(1,1),c(1,1),Fp(1,1),F(1,1))
     endif
-
+    
     ! Compute commutator and convergence criteria
 
     err = matmul(F,matmul(P,S)) - matmul(matmul(S,P),F)
@@ -281,16 +280,17 @@ subroutine complex_qsRGW(dotest,maxSCF,thresh,max_diis,doACFDT,exchange_kernel,d
       Fp = matmul(transpose(X),matmul(F,X))
       cp(:,:) = Fp(:,:)
       call complex_diagonalize_matrix(nOrb,cp,eGW)
+      call complex_orthogonalize_matrix(nBas,cp)
       c = matmul(X,cp)
     else
       Fp = matmul(transpose(c),matmul(F,c))
       cp(:,:) = Fp(:,:)
       call complex_diagonalize_matrix(nOrb,cp,eGW)
+      call complex_orthogonalize_matrix(nBas,cp)
       c = matmul(c,cp)
     endif
 
     call complex_complex_AOtoMO(nBas,nOrb,c,SigCp,SigC)
-
     ! Density matrix
 
     P(:,:) = 2d0*matmul(c(:,1:nO),transpose(c(:,1:nO)))

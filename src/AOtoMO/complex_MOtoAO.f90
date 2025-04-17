@@ -17,7 +17,7 @@ subroutine complex_MOtoAO(nBas, nOrb, S, C, M_MOs, M_AOs)
 
 
   allocate(SC(nBas,nOrb), BSC(nOrb,nBas),cS(nBas,nBas))
-  cS(:,:) = (0d0,1d0)*S(:,:)
+  cS(:,:) = (1d0,0d0)*S(:,:)
   !SC  = matmul(S, C)
   !BSC = matmul(M_MOs, transpose(SC))
   !M_AOs = matmul(SC, BSC)
