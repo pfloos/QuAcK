@@ -198,7 +198,7 @@ program QuAcK
   call read_1e_integrals(working_dir,nBas,S,T,V,Hc)
   call read_eta_cap(working_dir,eta_cap)
   if (doCAP) then
-    call read_CAP_integrals(nBas,CAP)
+    call read_CAP_integrals(working_dir,nBas,CAP)
     CAP(:,:) = -eta_cap*CAP(:,:)
   end if
   call read_dipole_integrals(working_dir,nBas,dipole_int_AO)

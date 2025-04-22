@@ -1,4 +1,4 @@
-subroutine read_CAP_integrals(nBas,W)
+subroutine read_CAP_integrals(working_dir,nBas,W)
 
 ! Read one- and two-electron integrals from files
 
@@ -8,12 +8,14 @@ subroutine read_CAP_integrals(nBas,W)
 ! Input variables
 
   integer,intent(in)            :: nBas
+  character(len=256),intent(in) :: working_dir
 
 ! Local variables
 
   logical                       :: debug
   integer                       :: mu,nu
   double precision              :: wxyz
+  character(len=256)            :: file_path
 
 ! Output variables
 
@@ -22,7 +24,8 @@ subroutine read_CAP_integrals(nBas,W)
 ! Open file with integrals
 
   debug = .false.
-  open(unit=31,file='int/CAP.dat')
+  file_path = trim(working_dir) // '/int/CAP.dat'
+  open(unit=31,file=file_path)
 
 ! Read CAP integrals
 
