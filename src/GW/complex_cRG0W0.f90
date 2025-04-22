@@ -94,9 +94,7 @@ subroutine complex_cRG0W0(dotest,doACFDT,exchange_kernel,doXBS,dophBSE,dophBSE2,
   flow = 500d0
 
   if(doSRG) then
-    ! Not implemented
     write(*,*) '*** SRG regularized G0W0 scheme ***'
-    write(*,*) '!!! No SRG with cRG0W0 !!!'
     write(*,*)
 
   end if
@@ -126,8 +124,11 @@ subroutine complex_cRG0W0(dotest,doACFDT,exchange_kernel,doXBS,dophBSE,dophBSE2,
 !------------------------!
 ! Compute GW self-energy !
 !------------------------!
+if(doSRG) then
+  call complex_RGW_SRG_self_energy_diag(flow,eta,nBas,nOrb,nC,nO,nV,nR,nS,Re_eHF,Im_eHF,Om,rho,EcGM,Re_SigC,Im_SigC,Re_Z,Im_Z)
+else
   call complex_RGW_self_energy_diag(eta,nBas,nOrb,nC,nO,nV,nR,nS,Re_eHF,Im_eHF,Om,rho,EcGM,Re_SigC,Im_SigC,Re_Z,Im_Z)
-  
+end if 
 !-----------------------------------!
 ! Solve the quasi-particle equation !
 !-----------------------------------!

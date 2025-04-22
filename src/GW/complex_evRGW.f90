@@ -146,11 +146,14 @@ subroutine complex_evRGW(dotest,maxSCF,thresh,max_diis,doACFDT,exchange_kernel,d
 
     call complex_RGW_excitation_density(nOrb,nC,nO,nR,nS,ERI,XpY,rho)
 
-    ! Compute correlation part of the self-energy 
-    ! Implement here the srg version if(doSRG) .. complex_RGW_SRG_self_energy_diag
-    call complex_RGW_self_energy_diag(eta,nBas,nOrb,nC,nO,nV,nR,nS,Re_eGW,Im_eGW,Om,rho,&
+    if(doSRG) then
+      call complex_RGW_SRG_self_energy_diag(flow,eta,nBas,nOrb,nC,nO,nV,nR,nS,Re_eGW,Im_eGW,Om,rho,&
             EcGM,Re_SigC,Im_SigC,Re_Z,Im_Z)
-      
+    else
+      call complex_RGW_self_energy_diag(eta,nBas,nOrb,nC,nO,nV,nR,nS,Re_eGW,Im_eGW,Om,rho,&
+            EcGM,Re_SigC,Im_SigC,Re_Z,Im_Z)
+    end if
+
     ! Solve the quasi-particle equation
 
     if(linearize) then 

@@ -24,7 +24,7 @@ subroutine complex_RGW_SRG_self_energy_diag(flow,eta,nBas,nOrb,nC,nO,nV,nR,nS,Re
 ! Local variables
 
   integer                       :: i,a,p,m
-  double precision              :: eps
+  double precision              :: eps,s
   complex*16                    :: num
   double precision              :: eta_tilde
   double precision,allocatable  :: Re_DS(:)
@@ -46,6 +46,8 @@ subroutine complex_RGW_SRG_self_energy_diag(flow,eta,nBas,nOrb,nC,nO,nV,nR,nS,Re
   Re_DS(:)   = 0d0
   Im_DS(:)   = 0d0
 
+  s = flow
+
 !----------------!
 ! GW self-energy !
 !----------------!
@@ -56,7 +58,7 @@ subroutine complex_RGW_SRG_self_energy_diag(flow,eta,nBas,nOrb,nC,nO,nV,nR,nS,Re
       do m=1,nS
         eps = Re_e(p) - Re_e(i) + real(Om(m))
         eta_tilde = eta  - Im_e(p) + Im_e(i) - aimag(Om(m)) 
-        num = 2d0*rho(p,i,m)**2
+        num = 2d0*rho(p,i,m)**2*(1d0 - exp(-2d0*s*(eps**2 + eta_tilde**2)))
         tmp = num*cmplx(eps/(eps**2 + eta_tilde**2),&
                 eta_tilde/(eps**2+eta_tilde**2),kind=8)
         Re_Sig(p) = Re_Sig(p) + real(tmp)
@@ -78,7 +80,7 @@ subroutine complex_RGW_SRG_self_energy_diag(flow,eta,nBas,nOrb,nC,nO,nV,nR,nS,Re
 
         eps = Re_e(p) - Re_e(a) - real(Om(m))
         eta_tilde = eta  + Im_e(p) - Im_e(a) - aimag(Om(m))
-        num = 2d0*rho(p,a,m)**2
+        num = 2d0*rho(p,a,m)**2*(1d0 - exp(-2d0*s*(eps**2 + eta_tilde**2)))
         tmp = num*cmplx(eps/(eps**2 + eta_tilde**2),&
                 -eta_tilde/(eps**2 + eta_tilde**2),kind=8)
         Re_Sig(p) = Re_Sig(p) + real(tmp)

@@ -130,7 +130,7 @@ subroutine RGW_self_energy(eta,nBas,nOrb,nC,nO,nV,nR,nS,e,Om,rho,EcGM,Sig,Z)
   end do
   !$OMP END DO
   !$OMP END PARALLEL
-
+  
   Z(:) = 1d0/(1d0 - Z(:))
 
 !-------------------------------------!
@@ -149,5 +149,4 @@ subroutine RGW_self_energy(eta,nBas,nOrb,nC,nO,nV,nR,nS,e,Om,rho,EcGM,Sig,Z)
       end do
     end do
   end do
-
 end subroutine 

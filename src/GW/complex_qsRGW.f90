@@ -213,10 +213,10 @@ subroutine complex_qsRGW(dotest,maxSCF,thresh,max_diis,doACFDT,exchange_kernel,d
     if(print_W) call print_excitation_energies('phRPA@GW@RHF','singlet',nS,Om)
 
     call complex_RGW_excitation_density(nOrb,nC,nO,nR,nS,ERI_MO,XpY,rho)
-
+    
     if(doSRG) then 
-      write(*,*) "SRG not implemented"
-      !call complex_RGW_SRG_self_energy(flow,nBas,nOrb,nC,nO,nV,nR,nS,eGW,Om,rho,EcGM,SigC,Z)
+      call complex_RGW_SRG_self_energy(flow,eta,nBas,nOrb,nC,nO,nV,nR,nS,eGW,Om,&
+                                   rho,EcGM,SigC,Z)
     else
       call complex_RGW_self_energy(eta,nBas,nOrb,nC,nO,nV,nR,nS,eGW,Om,rho,&
                                    EcGM,SigC,Z)
