@@ -6,7 +6,14 @@ eta_end=0.007
 eta_step=0.00005
 
 # Job script name
-job_script="$QUACK_ROOT/submission_scripts/submit_script_eta_scan.sh"
+job_script="./parallel_submit_script_eta_scan.sh"
+cp -r $QUACK_ROOT/cap_integrals .
+cp -r $QUACK_ROOT/cap_data .
+cp -r $QUACK_ROOT/basis .
+cp -r $QUACK_ROOT/input .
+cp -r $QUACK_ROOT/mol .
+cp methods.test input/methods
+cp options.test input/options
 
 # Number format for eta
 format="%.6f"
@@ -20,16 +27,13 @@ while float_ge "$eta_end" "$eta"; do
     echo "Running with eta = $eta"
 
     # Write eta to eta_opt.dat (adjust if more complex format is needed)
-    echo "$eta" > "$QUACK_ROOT/input/eta_opt.dat"
+    echo "$eta" > "./input/eta_opt.dat"
 
     # Submit job and capture job ID
     job_id=$(sbatch --parsable "$job_script")
     echo "Submitted job $job_id"
 
-    # Wait for job to finish
-    while squeue -j "$job_id" > /dev/null 2>&1 && squeue -j "$job_id" | grep -q "$job_id"; do
-        sleep 10  # Check every 10 seconds
-    done
+    sleep 10
 
     # Increase eta
     eta=$(awk -v a="$eta" -v s="$eta_step" 'BEGIN {printf "%.6f", a + s}')
