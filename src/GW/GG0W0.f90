@@ -119,7 +119,7 @@ subroutine GG0W0(dotest,doACFDT,exchange_kernel,doXBS,dophBSE,dophBSE2,TDA_W,TDA
   if(doSRG) then 
     call GGW_SRG_self_energy_diag(flow,nBas,nC,nO,nV,nR,nS,eHF,Om,rho,EcGM,SigC,Z)
   else
-    call GGW_self_energy_diag(eta,nBas,nC,nO,nV,nR,nS,eHF,Om,rho,EcGM,SigC,Z)
+    call GGW_self_energy_diag(eta,nBas,nC,nO,nV,nR,nS,eHF,Om,rho,EcGM,SigC,Z,ERI)
   end if
 
 !-----------------------------------!

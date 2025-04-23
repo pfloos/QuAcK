@@ -43,129 +43,129 @@ subroutine GGTpp_self_energy_diag(eta,nBas,nC,nO,nV,nR,nOO,nVV,e,Om1,rho1,Om2,rh
 ! Occupied part of the Tpp self-energy !
 !--------------------------------------!
 
-  do p=nC+1,nBas-nR
-    do i=nC+1,nO
+!   do p=nC+1,nBas-nR
+!     do i=nC+1,nO
 
-      do cd=1,nVV
-        eps = e(p) + e(i) - Om1(cd)
-        num = rho1(p,i,cd)**2
-        Sig(p) = Sig(p) + num*eps/(eps**2 + eta**2)
-        Z(p)   = Z(p)   - num*(eps**2 - eta**2)/(eps**2 + eta**2)**2
-      end do
+!       do cd=1,nVV
+!         eps = e(p) + e(i) - Om1(cd)
+!         num = rho1(p,i,cd)**2
+!         Sig(p) = Sig(p) + num*eps/(eps**2 + eta**2)
+!         Z(p)   = Z(p)   - num*(eps**2 - eta**2)/(eps**2 + eta**2)**2
+!       end do
 
-    end do
-  end do
+!     end do
+!   end do
 
-!------------------------------------------!
-! Virtual part of the T-matrix self-energy !
-!------------------------------------------!
+! !------------------------------------------!
+! ! Virtual part of the T-matrix self-energy !
+! !------------------------------------------!
 
-  do p=nC+1,nBas-nR
-    do a=nO+1,nBas-nR
+!   do p=nC+1,nBas-nR
+!     do a=nO+1,nBas-nR
 
-      do kl=1,nOO
-        eps = e(p) + e(a) - Om2(kl)
-        num = rho2(p,a,kl)**2
-        Sig(p) = Sig(p) + num*eps/(eps**2 + eta**2)
-        Z(p)   = Z(p)   - num*(eps**2 - eta**2)/(eps**2 + eta**2)**2
-      end do
+!       do kl=1,nOO
+!         eps = e(p) + e(a) - Om2(kl)
+!         num = rho2(p,a,kl)**2
+!         Sig(p) = Sig(p) + num*eps/(eps**2 + eta**2)
+!         Z(p)   = Z(p)   - num*(eps**2 - eta**2)/(eps**2 + eta**2)**2
+!       end do
 
-    end do
-  end do
+!     end do
+!   end do
 
 !-----------------------------------------------!
 ! Testing another way to compute GT self-energy !
 !-----------------------------------------------!
 
-  ! do p=nC+1,nBas-nR
-  !    do i=nC+1,nO
-  !       do j=nC+1,nO
-  !          do a=nO+1,nBas-nR
+  do p=nC+1,nBas-nR
+     do i=nC+1,nO
+        do j=nC+1,nO
+           do a=nO+1,nBas-nR
 
-  !             eps = e(p) + e(a) - e(i) - e(j)
-  !             num = 0.5d0*(ERI(p,a,i,j) - ERI(p,a,j,i))**2
+              eps = e(p) + e(a) - e(i) - e(j)
+              num = 0.5d0*(ERI(p,a,i,j) - ERI(p,a,j,i))**2
 
-  !             Sig(p) = Sig(p) + num*eps/(eps**2 + eta**2)
-  !             Z(p)    = Z(p)   - num*(eps**2 - eta**2)/(eps**2 + eta**2)**2
+              Sig(p) = Sig(p) + num*eps/(eps**2 + eta**2)
+              Z(p)    = Z(p)   - num*(eps**2 - eta**2)/(eps**2 + eta**2)**2
 
-  !          end do
-  !          do a=nO+1,nBas-nR
+           end do
+           do a=nO+1,nBas-nR
 
-  !             do m=1,nVV
-  !                num = - ERI(p,a,i,j) * rho1(p,a,m) * rho1(i,j,m)
-  !                dem1 = e(p) + e(a) - e(i) - e(j)
-  !                dem2 = Om1(m) - e(i) - e(j)
-  !                Sig(p) = Sig(p) + num/dem1/dem2
-  !                Z(p)   = Z(p)   - num/dem1/dem1/dem2
-  !             end do
+              do m=1,nVV
+                 num = - ERI(p,a,i,j) * rho1(p,a,m) * rho1(i,j,m)
+                 dem1 = e(p) + e(a) - e(i) - e(j)
+                 dem2 = Om1(m) - e(i) - e(j)
+                 Sig(p) = Sig(p) + num/dem1/dem2
+                 Z(p)   = Z(p)   - num/dem1/dem1/dem2
+              end do
               
-  !             do m=1,nOO
-  !                num = - ERI(p,a,i,j) * rho2(p,a,m) * rho2(i,j,m)
-  !                dem1 = e(p) + e(a) - e(i) - e(j)
-  !                dem2 = e(p) + e(a) - Om2(m)
-  !                Sig(p) = Sig(p) + num/dem1/dem2
-  !                Z(p)   = Z(p)   - num/dem1/dem1/dem2 - num/dem1/dem2/dem2
-  !             end do
+              do m=1,nOO
+                 num = - ERI(p,a,i,j) * rho2(p,a,m) * rho2(i,j,m)
+                 dem1 = e(p) + e(a) - e(i) - e(j)
+                 dem2 = e(p) + e(a) - Om2(m)
+                 Sig(p) = Sig(p) + num/dem1/dem2
+                 Z(p)   = Z(p)   - num/dem1/dem1/dem2 - num/dem1/dem2/dem2
+              end do
 
-  !          end do
-  !          do k=nC+1,nO
+           end do
+           ! do k=nC+1,nO
 
-  !             do m=1,nVV
-  !                num = - ERI(p,i,j,k) * rho1(p,i,m) * rho1(j,k,m)
-  !                dem1 = e(p) + e(i) - Om1(m)
-  !                dem2 = Om1(m) - e(j) - e(k)
-  !                Sig(p) = Sig(p) + num/dem1/dem2
-  !                Z(p)   = Z(p)   - num/dem1/dem1/dem2
-  !             end do
+           !    do m=1,nVV
+           !       num = - ERI(p,i,j,k) * rho1(p,i,m) * rho1(j,k,m)
+           !       dem1 = e(p) + e(i) - Om1(m)
+           !       dem2 = Om1(m) - e(j) - e(k)
+           !       Sig(p) = Sig(p) + num/dem1/dem2
+           !       Z(p)   = Z(p)   - num/dem1/dem1/dem2
+           !    end do
 
-  !          end do
-  !       end do
-  !    end do
-  ! end do
-  ! do p=nC+1,nBas-nR
-  !    do a=nO+1,nBas-nR
-  !       do b=nO+1,nBas-nR
-  !          do i=nC+1,nO
+           ! end do
+        end do
+     end do
+  end do
+  do p=nC+1,nBas-nR
+     do a=nO+1,nBas-nR
+        do b=nO+1,nBas-nR
+           do i=nC+1,nO
               
-  !             eps = e(p) + e(i) - e(a) - e(b)
-  !             num = 0.5d0*(ERI(p,i,a,b) - ERI(p,i,b,a))**2
+              eps = e(p) + e(i) - e(a) - e(b)
+              num = 0.5d0*(ERI(p,i,a,b) - ERI(p,i,b,a))**2
               
-  !             Sig(p) = Sig(p) + num*eps/(eps**2 + eta**2)
-  !             Z(p)    = Z(p)   - num*(eps**2 - eta**2)/(eps**2 + eta**2)**2
+              Sig(p) = Sig(p) + num*eps/(eps**2 + eta**2)
+              Z(p)    = Z(p)   - num*(eps**2 - eta**2)/(eps**2 + eta**2)**2
               
-  !          end do
-  !          do i=nC+1,nO
+           end do
+           do i=nC+1,nO
               
-  !             do m=1,nVV
-  !                num = ERI(p,i,a,b) * rho1(p,i,m) * rho1(a,b,m)
-  !                dem1 = e(p) + e(i) - e(a) - e(b)
-  !                dem2 = e(p) + e(i) - Om1(m)
-  !                Sig(p) = Sig(p) + num/dem1/dem2
-  !                Z(p)   = Z(p)   - num/dem1/dem1/dem2 - num/dem1/dem2/dem2
-  !             end do
+              do m=1,nVV
+                 num = ERI(p,i,a,b) * rho1(p,i,m) * rho1(a,b,m)
+                 dem1 = e(p) + e(i) - e(a) - e(b)
+                 dem2 = e(p) + e(i) - Om1(m)
+                 Sig(p) = Sig(p) + num/dem1/dem2
+                 Z(p)   = Z(p)   - num/dem1/dem1/dem2 - num/dem1/dem2/dem2
+              end do
               
-  !             do m=1,nOO
-  !                num = ERI(p,i,a,b) * rho2(p,i,m) * rho2(a,b,m)
-  !                dem1 = e(p) + e(i) - e(a) - e(b)
-  !                dem2 = Om2(m) - e(a) - e(b)
-  !                Sig(p) = Sig(p) + num/dem1/dem2
-  !                Z(p)   = Z(p)   - num/dem1/dem1/dem2
-  !             end do
+              do m=1,nOO
+                 num = ERI(p,i,a,b) * rho2(p,i,m) * rho2(a,b,m)
+                 dem1 = e(p) + e(i) - e(a) - e(b)
+                 dem2 = Om2(m) - e(a) - e(b)
+                 Sig(p) = Sig(p) + num/dem1/dem2
+                 Z(p)   = Z(p)   - num/dem1/dem1/dem2
+              end do
 
-  !          end do
-  !          do c=nO+1,nBas-nR
-  !             do m=1,nOO
-  !                num = ERI(p,a,b,c) * rho2(p,a,m) * rho2(b,c,m)
-  !                dem1 = e(p) + e(a) - Om2(m)
-  !                dem2 = Om2(m) - e(b) - e(c)
-  !                Sig(p) = Sig(p) + num/dem1/dem2
-  !                Z(p)   = Z(p)   - num/dem1/dem1/dem2
-  !             end do
+           end do
+           ! do c=nO+1,nBas-nR
+           !    do m=1,nOO
+           !       num = ERI(p,a,b,c) * rho2(p,a,m) * rho2(b,c,m)
+           !       dem1 = e(p) + e(a) - Om2(m)
+           !       dem2 = Om2(m) - e(b) - e(c)
+           !       Sig(p) = Sig(p) + num/dem1/dem2
+           !       Z(p)   = Z(p)   - num/dem1/dem1/dem2
+           !    end do
 
-  !          end do
-  !       end do
-  !    end do
-  ! end do
+           ! end do
+        end do
+     end do
+  end do
   
 !-------------------------------------!
 ! Galitskii-Migdal correlation energy !
