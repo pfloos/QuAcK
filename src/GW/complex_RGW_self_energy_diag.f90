@@ -50,6 +50,11 @@ subroutine complex_RGW_self_energy_diag(eta,nBas,nOrb,nC,nO,nV,nR,nS,Re_e,Im_e,O
 !----------------!
  
 ! Occupied part of the correlation self-energy
+  !$OMP PARALLEL &
+  !$OMP SHARED(nBas,Re_Sig,Im_Sig,rho,eta,nS,nC,nO,nOrb,nR,Re_e,Im_e,Om,Re_DS,Im_DS) &
+  !$OMP PRIVATE(m,i,p,eps,num,eta_tilde,tmp) &
+  !$OMP DEFAULT(NONE)
+  !$OMP DO
   do p=nC+1,nBas-nR
     do i=nC+1,nO
       do m=1,nS
@@ -68,9 +73,15 @@ subroutine complex_RGW_self_energy_diag(eta,nBas,nOrb,nC,nO,nV,nR,nS,Re_e,Im_e,O
       end do
     end do
   end do
-
+  !$OMP END DO
+  !$OMP END PARALLEL
 ! Virtual part of the correlation self-energy
 
+  !$OMP PARALLEL &
+  !$OMP SHARED(nBas,Re_Sig,Im_Sig,rho,eta,nS,nC,nO,nOrb,nR,Re_e,Im_e,Om,Re_DS,Im_DS) &
+  !$OMP PRIVATE(m,a,p,eps,num,eta_tilde,tmp) &
+  !$OMP DEFAULT(NONE)
+  !$OMP DO
   do p=nC+1,nBas-nR
     do a=nO+1,nBas-nR
       do m=1,nS
@@ -83,13 +94,14 @@ subroutine complex_RGW_self_energy_diag(eta,nBas,nOrb,nC,nO,nV,nR,nS,Re_e,Im_e,O
         Re_Sig(p) = Re_Sig(p) + real(tmp)
         Im_Sig(p) = Im_Sig(p) + aimag(tmp)
         tmp = num*cmplx(-(eps**2 - eta_tilde**2)/(eps**2 + eta_tilde**2)**2,&
-                2*eta_tilde*eps/eps/(eps**2 + eta_tilde**2)**2,kind=8)
+                2*eta_tilde*eps/(eps**2 + eta_tilde**2)**2,kind=8)
         Re_DS(p)   = Re_DS(p)    + real(tmp)
         Im_DS(p)   = Im_DS(p)    + aimag(tmp)
       end do
     end do
   end do
-
+  !$OMP END DO
+  !$OMP END PARALLEL
 
 ! Compute renormalization factor from derivative 
   Re_Z(:) = (1d0-Re_DS(:))/((1d0 - Re_DS(:))**2 + Im_DS(:)**2)

@@ -47,7 +47,12 @@ subroutine complex_RGW_SigC_dSigC(p,eta,nBas,nC,nO,nV,nR,nS,Re_w,Im_w,Re_e,Im_e,
 ! Compute self energy and its derivative
 
 ! Occupied part
-
+ !$OMP PARALLEL &
+ !$OMP SHARED(p,rho,eta,nS,nC,nO,nR,Re_w,Im_w,Re_e,Im_e,Om), &
+ !$OMP PRIVATE(m,i,eps,num,eta_tilde,tmp) &
+ !$OMP REDUCTION(+:Re_SigC,Im_SigC,Re_DS,Im_DS)&
+ !$OMP DEFAULT(NONE)
+ !$OMP DO
   do i=nC+1,nO
     do m=1,nS
       eps = Re_w - Re_e(i) + real(Om(m))
@@ -65,9 +70,16 @@ subroutine complex_RGW_SigC_dSigC(p,eta,nBas,nC,nO,nV,nR,nS,Re_w,Im_w,Re_e,Im_e,
       Im_DS   = Im_DS    + aimag(tmp) 
     end do
   end do
+  !$OMP END DO
+  !$OMP END PARALLEL
 
 ! Virtual part
-
+  !$OMP PARALLEL &
+  !$OMP SHARED(p,nBas,rho,eta,nS,nC,nO,nR,Re_w,Im_w,Re_e,Im_e,Om) &
+  !$OMP PRIVATE(m,a,eps,tmp,eta_tilde,num) &
+  !$OMP REDUCTION(+:Re_SigC,Im_SigC,Re_DS,Im_DS) &
+  !$OMP DEFAULT(NONE)
+  !$OMP DO  
   do a=nO+1,nBas-nR
     do m=1,nS
       eps = Re_w - Re_e(a) - real(Om(m))
@@ -84,4 +96,6 @@ subroutine complex_RGW_SigC_dSigC(p,eta,nBas,nC,nO,nV,nR,nS,Re_w,Im_w,Re_e,Im_e,
       Im_DS   = Im_DS    + aimag(tmp) 
     end do
   end do
+  !$OMP END DO
+  !$OMP END PARALLEL
 end subroutine 

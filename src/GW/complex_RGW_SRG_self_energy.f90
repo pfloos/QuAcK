@@ -150,7 +150,7 @@ subroutine complex_RGW_SRG_self_energy(flow,eta,nBas,nOrb,nC,nO,nV,nR,nS,e,Om,rh
         eta_tilde = eta  + aimag(e(p)) - aimag(e(a)) - aimag(Om(m))
         num = 2d0*rho(p,a,m)*rho(p,a,m)*(1d0-exp(-2d0*s*(eps**2+eta_tilde**2)))
         tmp = num*cmplx(-(eps**2 - eta_tilde**2)/(eps**2 + eta_tilde**2)**2,&
-                2*eta_tilde*eps/eps/(eps**2 + eta_tilde**2)**2,kind=8)
+                2*eta_tilde*eps/(eps**2 + eta_tilde**2)**2,kind=8)
         Re_DS(p)   = Re_DS(p)    + real(tmp)
         Im_DS(p)   = Im_DS(p)    + aimag(tmp)
       end do
