@@ -1,4 +1,4 @@
-subroutine complex_RGF(dotest,docG0F2,maxSCF,                                           &
+subroutine complex_RGF(dotest,docG0F2,doevGF2,maxSCF,                                           &
                thresh,max_diis,dophBSE,doppBSE,TDA,dBSE,dTDA,singlet,triplet,linearize, &
                eta,regularize,nNuc,ZNuc,rNuc,ENuc,nBas,nOrb,nC,nO,nV,nR,nS,ERHF,        &
                S,X,T,V,Hc,ERI_AO,ERI_MO,CAP,dipole_int_AO,dipole_int_MO,PHF,cHF,eHF)
@@ -11,7 +11,7 @@ subroutine complex_RGF(dotest,docG0F2,maxSCF,                                   
 ! Input variables
 
   logical,intent(in)            :: dotest
-  logical,intent(in)            :: docG0F2
+  logical,intent(in)            :: docG0F2,doevGF2
 
   integer,intent(in)            :: maxSCF
   double precision,intent(in)   :: thresh
@@ -71,6 +71,18 @@ subroutine complex_RGF(dotest,docG0F2,maxSCF,                                   
     call complex_cRG0F2(dotest,dophBSE,doppBSE,TDA,dBSE,dTDA,singlet,triplet, &
                linearize,eta,regularize,nBas,nOrb,nC,nO,nV,nR,nS,    &
                ENuc,ERHF,ERI_MO,CAP,dipole_int_MO,eHF)
+    call wall_time(end_GF)
+
+    t_GF = end_GF - start_GF
+    write(*,'(A65,1X,F9.3,A8)') 'Total wall time for GF2 = ',t_GF,' seconds'
+    write(*,*)
+
+  end if
+  if(doevGF2) then
+
+    call wall_time(start_GF)
+    call complex_evRGF2(dotest,dophBSE,doppBSE,TDA,dBSE,dTDA,maxSCF,thresh,max_diis,singlet,triplet, &
+                 linearize,eta,regularize,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,ERHF,ERI_MO,dipole_int_MO,eHF)
     call wall_time(end_GF)
 
     t_GF = end_GF - start_GF
