@@ -391,11 +391,11 @@ doGF = doG0F2 .or. doevGF2 .or. doqsGF2 .or. doufG0F02 .or. doG0F3 .or. doevGF3 
 
   if(doGF .and. docRHF) then
     call wall_time(start_GF)
-    call complex_RGF(dotest,docG0F2,doevGF2,maxSCF_GF,                                                   &
+    call complex_RGF(dotest,docG0F2,doevGF2,doqsGF2,maxSCF_GF,                                   &
              thresh_GF,max_diis_GF,dophBSE,doppBSE,TDA,dBSE,dTDA,singlet,triplet,lin_GF,         &
              eta_GF,reg_GF,nNuc,ZNuc,rNuc,ENuc,nBas,nOrb,nC,nO,nV,nR,nS,complex_ERHF,            &
-             S,X,T,V,Hc,ERI_AO,complex_ERI_MO,complex_CAP_MO,dipole_int_AO,complex_dipole_int_MO,&
-             complex_PHF,complex_cHF,complex_eHF)
+             S,X,T,V,Hc,ERI_AO,complex_ERI_MO,dipole_int_AO,complex_dipole_int_MO,&
+             complex_PHF,complex_cHF,complex_eHF,CAP_AO, complex_CAP_MO)
     call wall_time(end_GF)
 
     t_GF = end_GF - start_GF

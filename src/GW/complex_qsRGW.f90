@@ -297,7 +297,7 @@ subroutine complex_qsRGW(dotest,maxSCF,thresh,max_diis,doACFDT,exchange_kernel,d
 
     ! Print results
 
-    call dipole_moment(nBas,P,nNuc,ZNuc,rNuc,dipole_int_AO,dipole)
+    !call dipole_moment(nBas,P,nNuc,ZNuc,rNuc,dipole_int_AO,dipole)
     call print_complex_qsRGW(nBas,nOrb,nO,nSCF,Conv,thresh,eHF,eGW,c,SigC,Z, &
                      ENuc,ET,EV,EW,EJ,EK,EcGM,EcRPA,EqsGW,dipole)
 
