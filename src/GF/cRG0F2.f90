@@ -51,7 +51,6 @@ subroutine cRG0F2(dotest,dophBSE,doppBSE,TDA,dBSE,dTDA,singlet,triplet,linearize
   double precision, allocatable :: e_CAP(:)
 
   ! Hello world
-
   write(*,*)
   write(*,*)'*******************************'
   write(*,*)'* Restricted G0F2 Calculation *'
@@ -70,7 +69,7 @@ subroutine cRG0F2(dotest,dophBSE,doppBSE,TDA,dBSE,dTDA,singlet,triplet,linearize
 
   if(regularize) then 
    write(*,*) "Regularisation not implemented (yet)"
-   ! call RGF2_reg_self_energy_diag(eta,nOrb,nC,nO,nV,nR,eHF,ERI,SigC,Z)
+    !call RGF2_reg_self_energy_diag(eta,nOrb,nC,nO,nV,nR,eHF,ERI,SigC,Z)
 
   else
 

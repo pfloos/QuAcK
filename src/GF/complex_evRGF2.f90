@@ -42,6 +42,7 @@ subroutine complex_evRGF2(dotest,dophBSE,doppBSE,TDA,dBSE,dTDA,maxSCF,thresh,max
   integer                       :: nSCF
   integer                       :: n_diis
   double precision              :: Ec
+  double precision              :: flow
   double precision              :: EcBSE(nspin)
   double precision              :: Conv
   double precision              :: rcond
@@ -93,6 +94,7 @@ subroutine complex_evRGF2(dotest,dophBSE,doppBSE,TDA,dBSE,dTDA,maxSCF,thresh,max
   rcond           = 0d0
   Re_Z(:)       = 0d0
   Im_Z(:)       = 0d0
+  flow = 100d0 
 
 !------------------------------------------------------------------------
 ! Main SCF loop
@@ -103,9 +105,9 @@ subroutine complex_evRGF2(dotest,dophBSE,doppBSE,TDA,dBSE,dTDA,maxSCF,thresh,max
     ! Frequency-dependent second-order contribution
 
     if(regularize) then 
-      write(*,*) "Implement regularization !!"
-      !call RGF2_reg_self_energy_diag(eta,nOrb,nC,nO,nV,nR,eGF,ERI,SigC,Z)
-
+      
+      call complex_cRGF2_reg_self_energy_diag(flow,eta,nOrb,nC,nO,nV,nR,Re_eGF,Im_eGF,ERI,Re_SigC,Im_SigC,Re_Z,Im_Z)
+      
     else
 
       call complex_cRGF2_self_energy_diag(eta,nOrb,nC,nO,nV,nR,Re_eGF,Im_eGF,ERI,Re_SigC,Im_SigC,Re_Z,Im_Z)
@@ -123,7 +125,7 @@ subroutine complex_evRGF2(dotest,dophBSE,doppBSE,TDA,dBSE,dTDA,maxSCF,thresh,max
       write(*,*) ' *** Quasiparticle energies obtained by root search *** '
       write(*,*)
  
-      call complex_cRGF2_QP_graph(eta,nOrb,nC,nO,nV,nR,Re_eHF,Im_eHF,&
+      call complex_cRGF2_QP_graph(flow,regularize,eta,nOrb,nC,nO,nV,nR,Re_eHF,Im_eHF,&
               ERI,Re_eOld,Im_eOld,Re_eOld,Im_eOld,Re_eGF,Im_eGF,Re_Z,Im_Z)
       eGF = cmplx(Re_eGF,Im_eGF,kind=8)
     end if

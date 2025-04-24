@@ -1,4 +1,4 @@
-subroutine complex_cRGF2_QP_graph(eta,nBas,nC,nO,nV,nR,Re_eHF,Im_eHF,&
+subroutine complex_cRGF2_QP_graph(flow,reg,eta,nBas,nC,nO,nV,nR,Re_eHF,Im_eHF,&
                 ERI,Re_eGFlin,Im_eGFlin,Re_eOld,Im_eold,Re_eGF,Im_eGF,Re_Z,Im_Z)
 
 ! Compute the graphical solution of the complex GF2 QP equation
@@ -9,6 +9,8 @@ subroutine complex_cRGF2_QP_graph(eta,nBas,nC,nO,nV,nR,Re_eHF,Im_eHF,&
 ! Input variables
 
   double precision,intent(in)   :: eta
+  double precision,intent(in)   :: flow
+  logical, intent(in)           :: reg
   integer,intent(in)            :: nBas
   integer,intent(in)            :: nC
   integer,intent(in)            :: nO
@@ -60,10 +62,13 @@ subroutine complex_cRGF2_QP_graph(eta,nBas,nC,nO,nV,nR,Re_eHF,Im_eHF,&
     do while (abs(cmplx(Re_f,Im_f,kind=8)) > thresh .and. nIt < maxIt)
     
       nIt = nIt + 1
-      
-      call complex_cRGF_SigC_dSigC(p,eta,nBas,nC,nO,nV,nR,Re_w,Im_w,Re_eOld,Im_eOld,ERI,&
+      if(reg) then
+        call complex_cRGF_reg_SigC_dSigC(flow,p,eta,nBas,nC,nO,nV,nR,Re_w,Im_w,Re_eOld,Im_eOld,ERI,&
               Re_SigC,Im_SigC,Re_dSigC,Im_dSigC)
-
+      else 
+        call complex_cRGF_SigC_dSigC(p,eta,nBas,nC,nO,nV,nR,Re_w,Im_w,Re_eOld,Im_eOld,ERI,&
+              Re_SigC,Im_SigC,Re_dSigC,Im_dSigC)
+      end if
       Re_f  = Re_w - Re_eHF(p) - Re_SigC 
       Im_f  = Im_w - Im_eHF(p) - Im_SigC
       Re_df = (1d0 - Re_dSigC)/((1d0 - Re_dSigC)**2 + Im_dSigC**2)

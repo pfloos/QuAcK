@@ -81,5 +81,4 @@ subroutine RGF2_reg_self_energy_diag(eta,nBas,nC,nO,nV,nR,e,ERI,SigC,Z)
   end do
 
   Z(:) = 1d0/(1d0 - Z(:))
-
 end subroutine 
