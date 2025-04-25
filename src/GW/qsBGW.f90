@@ -1,8 +1,8 @@
-subroutine HFB(dotest,maxSCF,thresh,max_diis,level_shift,nNuc,ZNuc,rNuc,ENuc,           & 
-               nBas,nOrb,nOrb2,nO,S,T,V,Hc,ERI,dipole_int,X,EHFB,eHF,c,P,Panom,F,Delta, &
-               temperature,sigma,chem_pot_hf,chem_pot,restart_hfb,U_QP,eHFB_state)
+subroutine qsGWB(dotest,maxSCF,thresh,max_diis,level_shift,nNuc,ZNuc,rNuc,ENuc,           & 
+               nBas,nOrb,nOrb2,nO,S,T,V,Hc,ERI,dipole_int,X,EqsGWB,eqsGW,c,P,Panom,F,Delta, &
+               sigma,chem_pot,restart_hfb,U_QP,eqsGWB_state)
 
-! Perform Hartree-Fock Bogoliubov calculation
+! Perform qsGW Bogoliubov calculation
 
   implicit none
   include 'parameters.h'
@@ -24,8 +24,8 @@ subroutine HFB(dotest,maxSCF,thresh,max_diis,level_shift,nNuc,ZNuc,rNuc,ENuc,   
   double precision,intent(in)   :: ZNuc(nNuc)
   double precision,intent(in)   :: rNuc(nNuc,ncart)
   double precision,intent(in)   :: ENuc
-  double precision,intent(in)   :: temperature,sigma
-  double precision,intent(in)   :: eHF(nOrb)
+  double precision,intent(in)   :: sigma
+  double precision,intent(in)   :: eqsGW(nOrb)
   double precision,intent(in)   :: S(nBas,nBas)
   double precision,intent(in)   :: T(nBas,nBas)
   double precision,intent(in)   :: V(nBas,nBas)
@@ -36,7 +36,6 @@ subroutine HFB(dotest,maxSCF,thresh,max_diis,level_shift,nNuc,ZNuc,rNuc,ENuc,   
 
 ! Local variables
 
-  logical                       :: chem_pot_hf
   logical                       :: restart_hfb
   integer                       :: nBas2
   integer                       :: iorb
@@ -48,6 +47,7 @@ subroutine HFB(dotest,maxSCF,thresh,max_diis,level_shift,nNuc,ZNuc,rNuc,ENuc,   
   double precision              :: EJ
   double precision              :: EK
   double precision              :: EL
+  double precision              :: Ec
   double precision              :: Delta_HL
   double precision              :: dipole(ncart)
 
@@ -60,11 +60,12 @@ subroutine HFB(dotest,maxSCF,thresh,max_diis,level_shift,nNuc,ZNuc,rNuc,ENuc,   
   double precision,allocatable  :: eigVAL(:)
   double precision,allocatable  :: Occ(:)
   double precision,allocatable  :: err_diis(:,:)
-  double precision,allocatable  :: H_HFB_diis(:,:)
+  double precision,allocatable  :: H_qsGWB_diis(:,:)
   double precision,allocatable  :: J(:,:)
   double precision,allocatable  :: K(:,:)
+  double precision,allocatable  :: Sigc(:,:)
   double precision,allocatable  :: eigVEC(:,:)
-  double precision,allocatable  :: H_HFB(:,:)
+  double precision,allocatable  :: H_qsGWB(:,:)
   double precision,allocatable  :: R(:,:)
 
   double precision,allocatable  :: err_ao(:,:)
@@ -72,25 +73,26 @@ subroutine HFB(dotest,maxSCF,thresh,max_diis,level_shift,nNuc,ZNuc,rNuc,ENuc,   
   double precision,allocatable  :: X_ao(:,:)
   double precision,allocatable  :: c_ao(:,:)
   double precision,allocatable  :: R_ao_old(:,:)
-  double precision,allocatable  :: H_HFB_ao(:,:)
+  double precision,allocatable  :: H_qsGWB_ao(:,:)
 
 ! Output variables
 
-  double precision,intent(out)  :: EHFB,chem_pot
+  double precision,intent(inout):: chem_pot
+  double precision,intent(out)  :: EqsGWB
   double precision,intent(inout):: c(nBas,nOrb)
   double precision,intent(out)  :: P(nBas,nBas)
   double precision,intent(out)  :: Panom(nBas,nBas)
   double precision,intent(out)  :: F(nBas,nBas)
   double precision,intent(out)  :: Delta(nBas,nBas)
   double precision,intent(out)  :: U_QP(nOrb2,nOrb2)
-  double precision,intent(out)  :: eHFB_state(nOrb2)
+  double precision,intent(out)  :: eqsGWB_state(nOrb2)
 
 ! Hello world
 
   write(*,*)
-  write(*,*)'*****************************'
-  write(*,*)'* HF Bogoliubov Calculation *'
-  write(*,*)'*****************************'
+  write(*,*)'*******************************'
+  write(*,*)'* qsGW Bogoliubov Calculation *'
+  write(*,*)'*******************************'
   write(*,*)
 
 ! Useful quantities
@@ -104,9 +106,10 @@ subroutine HFB(dotest,maxSCF,thresh,max_diis,level_shift,nNuc,ZNuc,rNuc,ENuc,   
 
   allocate(J(nBas,nBas))
   allocate(K(nBas,nBas))
+  allocate(Sigc(nBas,nBas))
 
   allocate(eigVEC(nOrb2,nOrb2))
-  allocate(H_HFB(nOrb2,nOrb2))
+  allocate(H_qsGWB(nOrb2,nOrb2))
   allocate(R(nOrb2,nOrb2))
   allocate(eigVAL(nOrb2))
 
@@ -114,42 +117,19 @@ subroutine HFB(dotest,maxSCF,thresh,max_diis,level_shift,nNuc,ZNuc,rNuc,ENuc,   
   allocate(S_ao(nBas2,nBas2))
   allocate(X_ao(nBas2,nOrb2))
   allocate(R_ao_old(nBas2,nBas2))
-  allocate(H_HFB_ao(nBas2,nBas2))
+  allocate(H_qsGWB_ao(nBas2,nBas2))
 
   allocate(err_diis(nBas2_Sq,max_diis))
-  allocate(H_HFB_diis(nBas2_Sq,max_diis))
+  allocate(H_qsGWB_diis(nBas2_Sq,max_diis))
 
-! Guess chem. pot.
-
-  chem_pot = 0.5d0*(eHF(nO)+eHF(nO+1))
 
 ! Initialization
 
   thrs_N          = 1d-8
   n_diis          = 0
-  H_HFB_diis(:,:) = 0d0
+  H_qsGWB_diis(:,:) = 0d0
   err_diis(:,:)   = 0d0
   rcond           = 0d0
-
-  P(:,:)         = matmul(c(:,1:nO), transpose(c(:,1:nO)))
-  Panom(:,:)     = 0d0
-
-  ! Use Fermi-Dirac occupancies to compute P, Panom, and chem_pot
-  
-  if(abs(temperature)>1d-4) then
-   Occ(:)     = 0d0
-   Occ(1:nO)  = 1d0
-   call fermi_dirac_occ(nO,nOrb,thrs_N,temperature,chem_pot,Occ,eHF)
-   if(chem_pot_hf) chem_pot = 0.5d0*(eHF(nO)+eHF(nO+1))
-   P(:,:)      = 0d0
-   Panom(:,:)  = 0d0
-   do iorb=1,nOrb
-    P(:,:)     = P(:,:)     + Occ(iorb)                        * &
-                matmul(c(:,iorb:iorb),transpose(c(:,iorb:iorb))) 
-    Panom(:,:) = Panom(:,:) + sqrt(abs(Occ(iorb)*(1d0-Occ(iorb))))  * &
-                matmul(c(:,iorb:iorb),transpose(c(:,iorb:iorb))) 
-   enddo
-  endif
 
   ! Read restart file
 
@@ -165,7 +145,6 @@ subroutine HFB(dotest,maxSCF,thresh,max_diis,level_shift,nNuc,ZNuc,rNuc,ENuc,   
    enddo
   endif
 
-  P(:,:)       = 2d0*P(:,:)
   S_ao(:,:)    = 0d0
   S_ao(1:nBas      ,1:nBas      ) = S(1:nBas,1:nBas)
   S_ao(nBas+1:nBas2,nBas+1:nBas2) = S(1:nBas,1:nBas)
@@ -181,7 +160,7 @@ subroutine HFB(dotest,maxSCF,thresh,max_diis,level_shift,nNuc,ZNuc,rNuc,ENuc,   
 !------------------------------------------------------------------------
 
   write(*,*)
-  write(*,*) 'Enterning HFB SCF procedure'  
+  write(*,*) 'Enterning qsGWB SCF procedure'  
   write(*,*)
   do while(Conv > thresh .and. nSCF < maxSCF)
    
@@ -195,18 +174,19 @@ subroutine HFB(dotest,maxSCF,thresh,max_diis,level_shift,nNuc,ZNuc,rNuc,ENuc,   
     call Hartree_matrix_AO_basis(nBas,P,ERI,J)
     call exchange_matrix_AO_basis(nBas,P,ERI,K)
     call anomalous_matrix_AO_basis(nBas,sigma,Panom,ERI,Delta)
+    Sigc=0.0d0
     
-    F(:,:) = Hc(:,:) + J(:,:) + 0.5d0*K(:,:) - chem_pot*S(:,:)
+    F(:,:) = Hc(:,:) + J(:,:) + 0.5d0*K(:,:) + Sigc(:,:) - chem_pot*S(:,:)
 
-    ! Diagonalize H_HFB matrix
+    ! Diagonalize H_qsGWB matrix
     
-    H_HFB(:,:) = 0d0
-    H_HFB(1:nOrb      ,1:nOrb      ) = matmul(transpose(X),matmul(F,X))
-    H_HFB(nOrb+1:nOrb2,nOrb+1:nOrb2) = -H_HFB(1:nOrb,1:nOrb)
-    H_HFB(1:nOrb      ,nOrb+1:nOrb2) = matmul(transpose(X),matmul(Delta,X))
-    H_HFB(nOrb+1:nOrb2,1:nOrb      ) = H_HFB(1:nOrb,nOrb+1:nOrb2)
+    H_qsGWB(:,:) = 0d0
+    H_qsGWB(1:nOrb      ,1:nOrb      ) = matmul(transpose(X),matmul(F,X))
+    H_qsGWB(nOrb+1:nOrb2,nOrb+1:nOrb2) = -H_qsGWB(1:nOrb,1:nOrb)
+    H_qsGWB(1:nOrb      ,nOrb+1:nOrb2) = matmul(transpose(X),matmul(Delta,X))
+    H_qsGWB(nOrb+1:nOrb2,1:nOrb      ) = H_qsGWB(1:nOrb,nOrb+1:nOrb2)
     
-    eigVEC(:,:) = H_HFB(:,:)
+    eigVEC(:,:) = H_qsGWB(:,:)
     call diagonalize_matrix(nOrb2,eigVEC,eigVAL)
     
     ! Build R 
@@ -223,7 +203,7 @@ subroutine HFB(dotest,maxSCF,thresh,max_diis,level_shift,nNuc,ZNuc,rNuc,ENuc,   
     ! Adjust the chemical potential 
 
     if( abs(trace_1rdm-nO) > thrs_N ) & 
-     call fix_chem_pot(nO,nOrb,nOrb2,nSCF,thrs_N,trace_1rdm,chem_pot,H_HFB,eigVEC,R,eigVAL)
+     call fix_chem_pot(nO,nOrb,nOrb2,nSCF,thrs_N,trace_1rdm,chem_pot,H_qsGWB,eigVEC,R,eigVAL)
 
     ! DIIS extrapolation
 
@@ -231,19 +211,19 @@ subroutine HFB(dotest,maxSCF,thresh,max_diis,level_shift,nNuc,ZNuc,rNuc,ENuc,   
 
      write(*,*) ' Doing DIIS'
 
-     F(:,:) = Hc(:,:) + J(:,:) + 0.5d0*K(:,:) - chem_pot*S(:,:)
-     H_HFB_ao(:,:)    = 0d0
-     H_HFB_ao(1:nBas      ,1:nBas      ) =  F(1:nBas,1:nBas)
-     H_HFB_ao(nBas+1:nBas2,nBas+1:nBas2) = -F(1:nBas,1:nBas)
-     H_HFB_ao(1:nBas      ,nBas+1:nBas2) = Delta(1:nBas,1:nBas)
-     H_HFB_ao(nBas+1:nBas2,1:nBas      ) = Delta(1:nBas,1:nBas)
-     err_ao = matmul(H_HFB_ao,matmul(R_ao_old,S_ao)) - matmul(matmul(S_ao,R_ao_old),H_HFB_ao)
+     F(:,:) = Hc(:,:) + J(:,:) + 0.5d0*K(:,:) + Sigc(:,:) - chem_pot*S(:,:)
+     H_qsGWB_ao(:,:)    = 0d0
+     H_qsGWB_ao(1:nBas      ,1:nBas      ) =  F(1:nBas,1:nBas)
+     H_qsGWB_ao(nBas+1:nBas2,nBas+1:nBas2) = -F(1:nBas,1:nBas)
+     H_qsGWB_ao(1:nBas      ,nBas+1:nBas2) = Delta(1:nBas,1:nBas)
+     H_qsGWB_ao(nBas+1:nBas2,1:nBas      ) = Delta(1:nBas,1:nBas)
+     err_ao = matmul(H_qsGWB_ao,matmul(R_ao_old,S_ao)) - matmul(matmul(S_ao,R_ao_old),H_qsGWB_ao)
 
      n_diis = min(n_diis+1,max_diis)
-     call DIIS_extrapolation(rcond,nBas2_Sq,nBas2_Sq,n_diis,err_diis,H_HFB_diis,err_ao,H_HFB_ao)
+     call DIIS_extrapolation(rcond,nBas2_Sq,nBas2_Sq,n_diis,err_diis,H_qsGWB_diis,err_ao,H_qsGWB_ao)
 
-     H_HFB = matmul(transpose(X_ao),matmul(H_HFB_ao,X_ao))
-     eigVEC(:,:) = H_HFB(:,:)
+     H_qsGWB = matmul(transpose(X_ao),matmul(H_qsGWB_ao,X_ao))
+     eigVEC(:,:) = H_qsGWB(:,:)
      call diagonalize_matrix(nOrb2,eigVEC,eigVAL)
      
      ! Build R and check trace
@@ -260,7 +240,7 @@ subroutine HFB(dotest,maxSCF,thresh,max_diis,level_shift,nNuc,ZNuc,rNuc,ENuc,   
      ! Adjust the chemical potential 
      
      if( abs(trace_1rdm-nO) > thrs_N ) & 
-      call fix_chem_pot(nO,nOrb,nOrb2,nSCF,thrs_N,trace_1rdm,chem_pot,H_HFB,eigVEC,R,eigVAL)
+      call fix_chem_pot(nO,nOrb,nOrb2,nSCF,thrs_N,trace_1rdm,chem_pot,H_qsGWB,eigVEC,R,eigVAL)
    
     end if
 
@@ -281,20 +261,22 @@ subroutine HFB(dotest,maxSCF,thresh,max_diis,level_shift,nNuc,ZNuc,rNuc,ENuc,   
     EK = 0.25d0*trace_matrix(nBas,matmul(P,K))
     ! Anomalous energy
     EL = trace_matrix(nBas,matmul(Panom,Delta))
+    ! Correlation energy
+    Ec = 0.0d0  ! TODO MAU
     ! Total energy
-    EHFB = ET + EV + EJ + EK + EL
+    EqsGWB = ET + EV + EJ + EK + EL
 
     ! Check convergence
 
     if(nSCF > 1) then
 
-     F(:,:) = Hc(:,:) + J(:,:) + 0.5d0*K(:,:) - chem_pot*S(:,:)
-     H_HFB_ao(:,:)    = 0d0
-     H_HFB_ao(1:nBas      ,1:nBas      ) =  F(1:nBas,1:nBas)
-     H_HFB_ao(nBas+1:nBas2,nBas+1:nBas2) = -F(1:nBas,1:nBas)
-     H_HFB_ao(1:nBas      ,nBas+1:nBas2) = Delta(1:nBas,1:nBas)
-     H_HFB_ao(nBas+1:nBas2,1:nBas      ) = Delta(1:nBas,1:nBas)
-     err_ao = matmul(H_HFB_ao,matmul(R_ao_old,S_ao)) - matmul(matmul(S_ao,R_ao_old),H_HFB_ao)
+     F(:,:) = Hc(:,:) + J(:,:) + 0.5d0*K(:,:) + Sigc(:,:) - chem_pot*S(:,:)
+     H_qsGWB_ao(:,:)    = 0d0
+     H_qsGWB_ao(1:nBas      ,1:nBas      ) =  F(1:nBas,1:nBas)
+     H_qsGWB_ao(nBas+1:nBas2,nBas+1:nBas2) = -F(1:nBas,1:nBas)
+     H_qsGWB_ao(1:nBas      ,nBas+1:nBas2) = Delta(1:nBas,1:nBas)
+     H_qsGWB_ao(nBas+1:nBas2,1:nBas      ) = Delta(1:nBas,1:nBas)
+     err_ao = matmul(H_qsGWB_ao,matmul(R_ao_old,S_ao)) - matmul(matmul(S_ao,R_ao_old),H_qsGWB_ao)
      Conv  = maxval(abs(err_ao))
 
     endif
@@ -308,16 +290,19 @@ subroutine HFB(dotest,maxSCF,thresh,max_diis,level_shift,nNuc,ZNuc,rNuc,ENuc,   
     R_ao_old(nBas+1:nBas2,1:nBas      ) = Panom(1:nBas,1:nBas)
 
     ! Dump results
-    !write(*,'(*(f10.5))') eigVAL(:) 
-    write(*,*)'-----------------------------------------------------------------------------------------------'
-    write(*,'(1X,A1,1X,A3,1X,A1,1X,A16,1X,A1,1X,A16,1X,A1,1X,A16,1X,A1A16,1X,A1,1X,A10,2X,A1,1X)') &
-            '|','#','|','E(HFB)','|','EJ(HFB)','|','EK(HFB)','|','EL(HFB)','|','Conv','|'
-    write(*,*)'-----------------------------------------------------------------------------------------------'
+    write(*,*)'------------------------------------------------------------------------------------------&
+    &-------------------------'
+    write(*,'(1X,A1,1X,A3,1X,A1,1X,A16,1X,A1,1X,A16,1X,A1,1X,A16,1X,A1,1X,A16,1X,A1,A16,1X,A1,1X,A10,2X,A1,1X)') &
+            '|','#','|','E(qsGWB)','|','EJ(qsGWB)','|','EK(qsGWB)','|','EL(qsGWB)','|','Ec(qsGWB)','|','Conv','|'
+    write(*,*)'------------------------------------------------------------------------------------------&
+    &-------------------------'
 
-    write(*,'(1X,A1,1X,I3,1X,A1,1X,F16.10,1X,A1,1X,F16.10,1X,A1,1X,F16.10,1X,A1,1XF16.10,1X,A1,1X,E10.2,1X,A1,1X)') &
-      '|',nSCF,'|',EHFB + ENuc,'|',EJ,'|',EK,'|',EL,'|',Conv,'|'
+    write(*,'(1X,A1,1X,I3,1X,A1,1X,F16.10,1X,A1,1X,F16.10,1X,A1,1X,F16.10,1X,A1,1X,F16.10,1X,A1,1X,F16.10,1X,A1,&
+     &  1X,E10.2,1X,A1,1X)') &
+      '|',nSCF,'|',EqsGWB + ENuc,'|',EJ,'|',EK,'|',EL,'|',Ec,'|',Conv,'|'
 
-    write(*,*)'-----------------------------------------------------------------------------------------------'
+    write(*,*)'------------------------------------------------------------------------------------------&
+    &-------------------------'
     write(*,*)
 
   end do
@@ -335,8 +320,8 @@ subroutine HFB(dotest,maxSCF,thresh,max_diis,level_shift,nNuc,ZNuc,rNuc,ENuc,   
     write(*,*)'!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!'
     write(*,*)
 
-    deallocate(J,K,eigVEC,H_HFB,R,eigVAL,err_diis,H_HFB_diis,Occ)
-    deallocate(err_ao,S_ao,X_ao,R_ao_old,H_HFB_ao)
+    deallocate(J,K,Sigc,eigVEC,H_qsGWB,R,eigVAL,err_diis,H_qsGWB_diis,Occ)
+    deallocate(err_ao,S_ao,X_ao,R_ao_old,H_qsGWB_ao)
 
     stop
 
@@ -346,8 +331,8 @@ subroutine HFB(dotest,maxSCF,thresh,max_diis,level_shift,nNuc,ZNuc,rNuc,ENuc,   
 ! organize the coefs c with natural orbitals (descending occ numbers), and
 ! also print the restart file
 
-  eHFB_state(:) = eigVAL(:)
-  Delta_HL=eHFB_state(nOrb+1)-eHFB_state(nOrb)
+  eqsGWB_state(:) = eigVAL(:)
+  Delta_HL=eqsGWB_state(nOrb+1)-eqsGWB_state(nOrb)
   deallocate(eigVEC,eigVAL)
   allocate(eigVEC(nOrb,nOrb),eigVAL(nOrb))
   eigVEC(1:nOrb,1:nOrb) = 0d0
@@ -358,17 +343,17 @@ subroutine HFB(dotest,maxSCF,thresh,max_diis,level_shift,nNuc,ZNuc,rNuc,ENuc,   
   norm_anom = trace_matrix(nOrb,matmul(transpose(R(1:nOrb,nOrb+1:nOrb2)),R(1:nOrb,nOrb+1:nOrb2)))
   call dipole_moment(nBas,P,nNuc,ZNuc,rNuc,dipole_int,dipole)
   call write_restart_HFB(nBas,nOrb,Occ,c,chem_pot) ! orders Occ and their c in descending order w.r.t. occupation numbers.
-  call print_HFB(nBas,nOrb,nOrb2,nO,norm_anom,Occ,eHFB_state,ENuc,ET,EV,EJ,EK,EL,EHFB,chem_pot,dipole,Delta_HL)
+  call print_HFB(nBas,nOrb,nOrb2,nO,norm_anom,Occ,eqsGWB_state,ENuc,ET,EV,EJ,EK,EL,EqsGWB,chem_pot,dipole,Delta_HL)
 
-! Compute W_no and V_no (i.e. diag[H_HFB^no] built in NO basis and get W and V).
+! Compute W_no and V_no (i.e. diag[H_qsGWB^no] built in NO basis and get W and V).
 
   deallocate(eigVEC,eigVAL)
   allocate(eigVEC(nOrb2,nOrb2),eigVAL(nOrb2),c_ao(nBas2,nOrb2))
   c_ao(:,:)    = 0d0
   c_ao(1:nBas      ,1:nOrb      ) = c(1:nBas,1:nOrb)
   c_ao(nBas+1:nBas2,nOrb+1:nOrb2) = c(1:nBas,1:nOrb)
-  H_HFB = matmul(transpose(c_ao),matmul(H_HFB_ao,c_ao)) ! H_HFB is in the NO basis
-  eigVEC(:,:) = H_HFB(:,:)
+  H_qsGWB = matmul(transpose(c_ao),matmul(H_qsGWB_ao,c_ao)) ! H_qsGWB is in the NO basis
+  eigVEC(:,:) = H_qsGWB(:,:)
   call diagonalize_matrix(nOrb2,eigVEC,eigVAL)
   deallocate(c_ao)
   
@@ -394,16 +379,16 @@ subroutine HFB(dotest,maxSCF,thresh,max_diis,level_shift,nNuc,ZNuc,rNuc,ENuc,   
 
   if(dotest) then
  
-    call dump_test_value('R','HFB energy',EHFB)
+    call dump_test_value('R','qsGWB energy',EqsGWB)
     call dump_test_value('R','Trace 1D',trace_1rdm)
-    call dump_test_value('R','HFB dipole moment',norm2(dipole))
+    call dump_test_value('R','qsGWB dipole moment',norm2(dipole))
 
   end if
 
 ! Memory deallocation
 
-  deallocate(J,K,eigVEC,H_HFB,R,eigVAL,err_diis,H_HFB_diis,Occ)
-  deallocate(err_ao,S_ao,X_ao,R_ao_old,H_HFB_ao)
+  deallocate(J,K,Sigc,eigVEC,H_qsGWB,R,eigVAL,err_diis,H_qsGWB_diis,Occ)
+  deallocate(err_ao,S_ao,X_ao,R_ao_old,H_qsGWB_ao)
 
 end subroutine 
 

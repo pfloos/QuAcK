@@ -1,4 +1,4 @@
-subroutine BQuAcK(working_dir,dotest,doHFB,dophRPA,doG0W0,nNuc,nBas,nOrb,nC,nO,nV,nR,ENuc,ZNuc,rNuc,                     &
+subroutine BQuAcK(working_dir,dotest,doHFB,doqsGW,nNuc,nBas,nOrb,nC,nO,nV,nR,ENuc,ZNuc,rNuc,                     &
                   S,T,V,Hc,X,dipole_int_AO,maxSCF_HF,max_diis_HF,thresh_HF,level_shift,                                  &
                   guess_type,mix,temperature,sigma,chem_pot_hf,restart_hfb)
 
@@ -12,8 +12,7 @@ subroutine BQuAcK(working_dir,dotest,doHFB,dophRPA,doG0W0,nNuc,nBas,nOrb,nC,nO,n
   logical,intent(in)            :: dotest
 
   logical,intent(in)            :: doHFB
-  logical,intent(in)            :: dophRPA
-  logical,intent(in)            :: doG0W0
+  logical,intent(in)            :: doqsGW
 
   logical,intent(in)            :: restart_hfb
   logical,intent(in)            :: chem_pot_hf
@@ -44,11 +43,11 @@ subroutine BQuAcK(working_dir,dotest,doHFB,dophRPA,doG0W0,nNuc,nBas,nOrb,nC,nO,n
   integer                       :: nS
   integer                       :: ixyz
 
+  double precision              :: chem_pot 
   double precision              :: start_HF     ,end_HF       ,t_HF
+  double precision              :: start_qsGWB  ,end_qsGWB    ,t_qsGWB
   double precision              :: start_int, end_int, t_int
   double precision              :: start_AOtoMO ,end_AOtoMO   ,t_AOtoMO
-  double precision              :: start_RPA, end_RPA, t_RPA
-  double precision              :: start_GW, end_GW, t_GW
 
   double precision,allocatable  :: eHF(:)
   double precision,allocatable  :: eHFB_state(:)
@@ -125,11 +124,30 @@ subroutine BQuAcK(working_dir,dotest,doHFB,dophRPA,doG0W0,nNuc,nBas,nOrb,nC,nO,n
     call wall_time(start_HF)
     call HFB(dotest,maxSCF_HF,thresh_HF,max_diis_HF,level_shift,nNuc,ZNuc,rNuc,ENuc,        &
              nBas,nOrb,nOrb2,nO,S,T,V,Hc,ERI_AO,dipole_int_AO,X,EHFB,eHF,cHFB,PHF,PanomHF,  &
-             FHF,Delta,temperature,sigma,chem_pot_hf,restart_hfb,U_QP,eHFB_state)
+             FHF,Delta,temperature,sigma,chem_pot_hf,chem_pot,restart_hfb,U_QP,eHFB_state)
     call wall_time(end_HF)
 
     t_HF = end_HF - start_HF
     write(*,'(A65,1X,F9.3,A8)') 'Total wall time for HFB = ',t_HF,' seconds'
+    write(*,*)
+
+  end if
+
+!------------------------!
+! qsGW Bogoliubov module !
+!------------------------!
+
+  if(doqsGW) then
+
+    ! Continue with a HFB calculation
+    call wall_time(start_qsGWB)
+    call qsGWB(dotest,maxSCF_HF,thresh_HF,max_diis_HF,level_shift,nNuc,ZNuc,rNuc,ENuc,        &
+               nBas,nOrb,nOrb2,nO,S,T,V,Hc,ERI_AO,dipole_int_AO,X,EHFB,eHF,cHFB,PHF,PanomHF,  &
+               FHF,Delta,sigma,chem_pot,restart_hfb,U_QP,eHFB_state)
+    call wall_time(end_qsGWB)
+
+    t_qsGWB = end_qsGWB - start_qsGWB
+    write(*,'(A65,1X,F9.3,A8)') 'Total wall time for qsGWB = ',t_qsGWB,' seconds'
     write(*,*)
 
   end if
@@ -186,45 +204,6 @@ subroutine BQuAcK(working_dir,dotest,doHFB,dophRPA,doG0W0,nNuc,nBas,nOrb,nC,nO,n
   t_AOtoMO = end_AOtoMO - start_AOtoMO
   write(*,'(A65,1X,F9.3,A8)') 'Total wall time for AO to MO transformation = ',t_AOtoMO,' seconds'
   write(*,*)
-
-!-----------------------------------!
-! Random-phase approximation module !
-!-----------------------------------!
-  
-             
-  if(dophRPA) then
-     
-    nS = nOrb*nOrb
-    call wall_time(start_RPA)
-    call RRPA(.false.,dotest,.true.,.false.,.false.,.false.,.false.,.false.,.false.,.true.,.false., &
-              nOrb2,0,nOrb,nOrb,0,nS,ENuc,EHFB,ERI_QP,dipole_int_QP,eHFB_state)
-    call wall_time(end_RPA)
-  
-    t_RPA = end_RPA - start_RPA
-    write(*,'(A65,1X,F9.3,A8)') 'Total wall time for RPA = ',t_RPA,' seconds'
-    write(*,*)
-
-  end if
-
-!-----------!
-! GW module !
-!-----------!
-    
-    
-  if(doG0W0) then
-    
-    call wall_time(start_GW)
-    !call RGW(dotest,doG0W0,doevGW,doqsGW,doufG0W0,doufGW,maxSCF_GW,thresh_GW,max_diis_GW,                &
-    !         doACFDT,exchange_kernel,doXBS,dophBSE,dophBSE2,doppBSE,TDA_W,TDA,dBSE,dTDA,singlet,triplet, &
-    !         lin_GW,eta_GW,reg_GW,nNuc,ZNuc,rNuc,ENuc,nBas,nOrb,nC,nO,nV,nR,nS,ERHF,S,X,T,               &
-    !         V,Hc,ERI_AO,ERI_MO,dipole_int_AO,dipole_int_MO,PHF,cHF,eHF)
-    call wall_time(end_GW)
-  
-    t_GW = end_GW - start_GW
-    write(*,'(A65,1X,F9.3,A8)') 'Total wall time for GW = ',t_GW,' seconds'
-    write(*,*)
-  
-  end if
 
 ! Memory deallocation
     
