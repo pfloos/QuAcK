@@ -123,7 +123,7 @@ subroutine BQuAcK(working_dir,dotest,doHFB,dophRPA,doG0W0,nNuc,nBas,nOrb,nC,nO,n
 
     ! Continue with a HFB calculation
     call wall_time(start_HF)
-    call HFB(dotest,maxSCF_HF,thresh_HF,max_diis_HF,level_shift,nNuc,ZNuc,rNuc,ENuc,       &
+    call HFB(dotest,maxSCF_HF,thresh_HF,max_diis_HF,level_shift,nNuc,ZNuc,rNuc,ENuc,        &
              nBas,nOrb,nOrb2,nO,S,T,V,Hc,ERI_AO,dipole_int_AO,X,EHFB,eHF,cHFB,PHF,PanomHF,  &
              FHF,Delta,temperature,sigma,chem_pot_hf,restart_hfb,U_QP,eHFB_state)
     call wall_time(end_HF)

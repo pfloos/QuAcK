@@ -373,80 +373,23 @@ subroutine HFB(dotest,maxSCF,thresh,max_diis,level_shift,nNuc,ZNuc,rNuc,ENuc,   
   call diagonalize_matrix(nOrb2,eigVEC,eigVAL)
   deallocate(c_ao)
   
-  ! Build R (as R^no)
+  ! Build R (as R^no) and save the eigenvectors
     
   trace_1rdm = 0d0 
-  R(:,:)        = 0d0
+  R(:,:)     = 0d0
   do iorb=1,nOrb
    R(:,:) = R(:,:) + matmul(eigVEC(:,iorb:iorb),transpose(eigVEC(:,iorb:iorb))) 
   enddo
+  U_QP = eigVEC
 
   ! Check trace of R
   do iorb=1,nOrb
-   trace_1rdm = trace_1rdm + R(iorb,iorb) 
+   trace_1rdm = trace_1rdm + R(iorb,iorb)
   enddo
   trace_1rdm = 2d0*trace_1rdm
   write(*,*)
   write(*,'(A33,1X,F16.10,A3)') ' Trace [ 1D^NO ]     = ',trace_1rdm,'   '
   write(*,*)
-
-! Build the U_QP that transforms NO basis to QP basis where the generalized density matrix is ( I_MxM  0 )
-!                                                                                             (   0    0 )
-! keeping the eigenvalues     ->      ( -e_I  0  )
-! 	                              (   0  e_I ) 
-
-  ! Build U_QP that transforms NO basis to QP basis (QP in the canonical density matrix)
-  U_QP = R
-  call diagonalize_matrix(nOrb2,U_QP,eigVAL)
-  eigVEC = matmul(transpose(U_QP),matmul(H_HFB,U_QP))
-  call diagonalize_matrix(nOrb2,eigVEC,eigVAL)
-  U_QP = matmul(U_QP,eigVEC)
-
-  if(.false.) then ! debug tests
-  
-   eigVEC = matmul(transpose(U_QP),matmul(R,U_QP))     ! Should be ( I_MxM  0 )
-                                                       !           (  0     0 )
-   write(*,*) ' r(can)'
-   do iorb=1,nOrb2
-   write(*,'(*(f10.5))') eigVEC(iorb,:)
-   enddo
-   write(*,*)
-   
-   eigVEC = matmul(transpose(U_QP),matmul(H_HFB,U_QP)) ! Should be H_HFB as eigenvalues ( -e_I  0   )
-                                                       !                                (   0   e_I )  
-   write(*,*) ' H_HFB(can)'
-   do iorb=1,nOrb2
-   write(*,'(*(f10.5))') eigVEC(iorb,:)
-   enddo
-   write(*,*)
-   
-   eigVEC=matmul(H_HFB,R)-matmul(R,H_HFB)             ! This should still be 0
-   write(*,*) ' H_HFB(can) r(can) - r(can) H_HFB(can)'
-   do iorb=1,nOrb2
-   write(*,'(*(f10.5))') eigVEC(iorb,:)
-   enddo
-   write(*,*)
-   
-   write(*,*) ' U_QP'
-   do iorb=1,nOrb2
-   write(*,'(*(f10.5))') U_QP(iorb,:)
-   enddo
-   write(*,*)
-
-   eigVEC=0d0
-   do iorb=1,nOrb
-    eigVEC(iorb,iorb)=1d0
-    eigVEC(iorb+nOrb,iorb+nOrb)=-1d0
-   enddo
-   eigVEC=matmul(transpose(U_QP),matmul(eigVEC,U_QP))
-   write(*,*) ' U_QP^T (1  0) U_QP'
-   write(*,*) '        (0 -1)'
-   do iorb=1,nOrb2
-   write(*,'(*(f10.5))') eigVEC(iorb,:)
-   enddo
-   write(*,*)
-
-  endif
 
 ! Testing zone
 
