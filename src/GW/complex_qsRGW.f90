@@ -131,7 +131,7 @@ subroutine complex_qsRGW(dotest,maxSCF,thresh,max_diis,doACFDT,exchange_kernel,d
 
 ! SRG regularization
 
-  flow = 500d0
+  flow = 100d0 ! Check good values
 
   if(doSRG) then
 
