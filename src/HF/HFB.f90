@@ -61,6 +61,8 @@ subroutine HFB(dotest,maxSCF,thresh,max_diis,level_shift,nNuc,ZNuc,rNuc,ENuc,   
   double precision,allocatable  :: Occ(:)
   double precision,allocatable  :: err_diis(:,:)
   double precision,allocatable  :: H_HFB_diis(:,:)
+  double precision,allocatable  :: cHF(:,:)
+  double precision,allocatable  :: c_tmp(:,:)
   double precision,allocatable  :: J(:,:)
   double precision,allocatable  :: K(:,:)
   double precision,allocatable  :: eigVEC(:,:)
@@ -105,6 +107,8 @@ subroutine HFB(dotest,maxSCF,thresh,max_diis,level_shift,nNuc,ZNuc,rNuc,ENuc,   
   allocate(J(nBas,nBas))
   allocate(K(nBas,nBas))
 
+  allocate(cHF(nBas,nOrb))
+
   allocate(eigVEC(nOrb2,nOrb2))
   allocate(H_HFB(nOrb2,nOrb2))
   allocate(R(nOrb2,nOrb2))
@@ -133,6 +137,7 @@ subroutine HFB(dotest,maxSCF,thresh,max_diis,level_shift,nNuc,ZNuc,rNuc,ENuc,   
 
   P(:,:)         = matmul(c(:,1:nO), transpose(c(:,1:nO)))
   Panom(:,:)     = 0d0
+  cHF(:,:)       = c(:,:)
 
   ! Use Fermi-Dirac occupancies to compute P, Panom, and chem_pot
   
@@ -336,59 +341,121 @@ subroutine HFB(dotest,maxSCF,thresh,max_diis,level_shift,nNuc,ZNuc,rNuc,ENuc,   
     write(*,*)
 
     deallocate(J,K,eigVEC,H_HFB,R,eigVAL,err_diis,H_HFB_diis,Occ)
-    deallocate(err_ao,S_ao,X_ao,R_ao_old,H_HFB_ao)
+    deallocate(err_ao,S_ao,X_ao,R_ao_old,H_HFB_ao,cHF)
 
     stop
 
   end if
 
+
 ! Compute dipole moments, occupation numbers, || Anomalous density||,
 ! organize the coefs c with natural orbitals (descending occ numbers), and
 ! also print the restart file
 
+  call dipole_moment(nBas,P,nNuc,ZNuc,rNuc,dipole_int,dipole)
   eHFB_state(:) = eigVAL(:)
   Delta_HL=eHFB_state(nOrb+1)-eHFB_state(nOrb)
+  norm_anom = trace_matrix(nOrb,matmul(transpose(R(1:nOrb,nOrb+1:nOrb2)),R(1:nOrb,nOrb+1:nOrb2)))
   deallocate(eigVEC,eigVAL)
   allocate(eigVEC(nOrb,nOrb),eigVAL(nOrb))
-  eigVEC(1:nOrb,1:nOrb) = 0d0
+  eigVEC(:,:) = 0d0
   eigVEC(1:nOrb,1:nOrb) = R(1:nOrb,1:nOrb)
   call diagonalize_matrix(nOrb,eigVEC,eigVAL)
   Occ(1:nOrb)   = eigVAL(1:nOrb)
   c = matmul(X,eigVEC)
-  norm_anom = trace_matrix(nOrb,matmul(transpose(R(1:nOrb,nOrb+1:nOrb2)),R(1:nOrb,nOrb+1:nOrb2)))
-  call dipole_moment(nBas,P,nNuc,ZNuc,rNuc,dipole_int,dipole)
-  call write_restart_HFB(nBas,nOrb,Occ,c,chem_pot) ! orders Occ and their c in descending order w.r.t. occupation numbers.
+  call write_restart_HFB(nBas,nOrb,Occ,c,chem_pot) ! Warning: orders Occ and their c in descending order w.r.t. occupation numbers.
   call print_HFB(nBas,nOrb,nOrb2,nO,norm_anom,Occ,eHFB_state,ENuc,ET,EV,EJ,EK,EL,EHFB,chem_pot,dipole,Delta_HL)
 
-! Compute W_no and V_no (i.e. diag[H_HFB^no] built in NO basis and get W and V).
+! Choose the NO representation where the 1-RDM is diag. or the canonical where F is diag
 
-  deallocate(eigVEC,eigVAL)
-  allocate(eigVEC(nOrb2,nOrb2),eigVAL(nOrb2),c_ao(nBas2,nOrb2))
-  c_ao(:,:)    = 0d0
-  c_ao(1:nBas      ,1:nOrb      ) = c(1:nBas,1:nOrb)
-  c_ao(nBas+1:nBas2,nOrb+1:nOrb2) = c(1:nBas,1:nOrb)
-  H_HFB = matmul(transpose(c_ao),matmul(H_HFB_ao,c_ao)) ! H_HFB is in the NO basis
-  eigVEC(:,:) = H_HFB(:,:)
-  call diagonalize_matrix(nOrb2,eigVEC,eigVAL)
+  allocate(c_ao(nBas2,nOrb2))
+
+  if(.true.) then ! NO basis
+
+! Compute W_no and V_no (i.e. diag[H_HFB^no] built in NO basis and get W and V) and
+! compute c_ao = c^no U_QP that correspond to QP 'states'.
+
+   deallocate(eigVEC,eigVAL)
+   allocate(eigVEC(nOrb2,nOrb2),eigVAL(nOrb2))
+
+   c_ao(:,:)    = 0d0
+   c_ao(1:nBas      ,1:nOrb      ) = c(1:nBas,1:nOrb)
+   c_ao(nBas+1:nBas2,nOrb+1:nOrb2) = c(1:nBas,1:nOrb)
+   H_HFB = matmul(transpose(c_ao),matmul(H_HFB_ao,c_ao)) ! H_HFB is in the NO basis
+   eigVEC(:,:) = H_HFB(:,:)
+   call diagonalize_matrix(nOrb2,eigVEC,eigVAL)
+   
+   ! Build R (as R^no) and save the eigenvectors
+     
+   trace_1rdm = 0d0 
+   R(:,:)     = 0d0
+   do iorb=1,nOrb
+    R(:,:) = R(:,:) + matmul(eigVEC(:,iorb:iorb),transpose(eigVEC(:,iorb:iorb))) 
+   enddo
+   U_QP(:,:) = eigVEC(:,:)
+   c_ao = matmul(c_ao,U_QP) ! c_ao to build 'real-space' QP states
+
+   ! Check trace of R
+   do iorb=1,nOrb
+    trace_1rdm = trace_1rdm + R(iorb,iorb)
+   enddo
+   trace_1rdm = 2d0*trace_1rdm
+   write(*,*)
+   write(*,'(A33,1X,F16.10,A3)') ' Trace [ 1D^NO ]     = ',trace_1rdm,'   '
+   write(*,*)
+ 
+  endif 
+
+  if(.false.) then ! Canonical basis
+
+! Compute W_can and V_can (i.e. diag[H_HFB^can] built in CAN basis and get W and V) and
+! compute c_ao = c^can U_QP that correspond to QP 'states'.
+
+   deallocate(eigVEC,eigVAL)
+   allocate(eigVEC(nOrb,nOrb),eigVAL(nOrb))
+   allocate(c_tmp(nBas,nOrb))
+   F(:,:) = Hc(:,:) + J(:,:) + 0.5d0*K(:,:) - chem_pot*S(:,:)
+   !eigVEC = matmul(transpose(X),matmul(F,X)) ! can be done in the Lowdin basis
+   eigVEC = matmul(transpose(c),matmul(F,c)) ! can be done in the NO basis
+
+   call diagonalize_matrix(nOrb,eigVEC,eigVAL)
+   !c_tmp = matmul(X,eigVEC)                  ! can be done in the Lowdin basis
+   c_tmp = matmul(c,eigVEC)                  ! can be done in the NO basis
+
+   deallocate(eigVEC,eigVAL)
+   allocate(eigVEC(nOrb2,nOrb2),eigVAL(nOrb2))
+
+   c_ao(:,:)    = 0d0
+   c_ao(1:nBas      ,1:nOrb      ) = c_tmp(1:nBas,1:nOrb)
+   c_ao(nBas+1:nBas2,nOrb+1:nOrb2) = c_tmp(1:nBas,1:nOrb)
+   H_HFB = matmul(transpose(c_ao),matmul(H_HFB_ao,c_ao)) ! H_HFB is in the NO basis
+   eigVEC(:,:) = H_HFB(:,:)
+   call diagonalize_matrix(nOrb2,eigVEC,eigVAL)
+   
+   ! Build R (as R^can)
+     
+   trace_1rdm = 0d0 
+   R(:,:)     = 0d0
+   do iorb=1,nOrb
+    R(:,:) = R(:,:) + matmul(eigVEC(:,iorb:iorb),transpose(eigVEC(:,iorb:iorb))) 
+   enddo
+   c_ao = matmul(c_ao,eigVEC) ! c_ao to build 'real-space' QP states
+
+   ! Check trace of R
+   do iorb=1,nOrb
+    trace_1rdm = trace_1rdm + R(iorb,iorb)
+   enddo
+   trace_1rdm = 2d0*trace_1rdm
+   write(*,*)
+   write(*,'(A33,1X,F16.10,A3)') ' Trace [ 1D^CAN ]     = ',trace_1rdm,'   '
+   write(*,*)
+ 
+   deallocate(c_tmp)
+
+  endif
+
   deallocate(c_ao)
-  
-  ! Build R (as R^no) and save the eigenvectors
-    
-  trace_1rdm = 0d0 
-  R(:,:)     = 0d0
-  do iorb=1,nOrb
-   R(:,:) = R(:,:) + matmul(eigVEC(:,iorb:iorb),transpose(eigVEC(:,iorb:iorb))) 
-  enddo
-  U_QP = eigVEC
 
-  ! Check trace of R
-  do iorb=1,nOrb
-   trace_1rdm = trace_1rdm + R(iorb,iorb)
-  enddo
-  trace_1rdm = 2d0*trace_1rdm
-  write(*,*)
-  write(*,'(A33,1X,F16.10,A3)') ' Trace [ 1D^NO ]     = ',trace_1rdm,'   '
-  write(*,*)
 
 ! Testing zone
 
@@ -403,7 +470,7 @@ subroutine HFB(dotest,maxSCF,thresh,max_diis,level_shift,nNuc,ZNuc,rNuc,ENuc,   
 ! Memory deallocation
 
   deallocate(J,K,eigVEC,H_HFB,R,eigVAL,err_diis,H_HFB_diis,Occ)
-  deallocate(err_ao,S_ao,X_ao,R_ao_old,H_HFB_ao)
+  deallocate(err_ao,S_ao,X_ao,R_ao_old,H_HFB_ao,cHF)
 
 end subroutine 
 

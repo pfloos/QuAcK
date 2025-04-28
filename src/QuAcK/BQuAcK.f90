@@ -62,10 +62,7 @@ subroutine BQuAcK(working_dir,dotest,doHFB,doqsGW,nNuc,nBas,nOrb,nC,nO,nV,nR,ENu
   double precision              :: ERHF,EHFB
   double precision,allocatable  :: ERI_AO(:,:,:,:)
   double precision,allocatable  :: dipole_int_MO(:,:,:)
-  double precision,allocatable  :: dipole_int_QP(:,:,:)
   double precision,allocatable  :: ERI_MO(:,:,:,:)
-  double precision,allocatable  :: ERI_tmp(:,:,:,:)
-  double precision,allocatable  :: ERI_QP(:,:,:,:)
 
   write(*,*)
   write(*,*) '******************************'
@@ -91,9 +88,6 @@ subroutine BQuAcK(working_dir,dotest,doHFB,doqsGW,nNuc,nBas,nOrb,nC,nO,nV,nR,ENu
   allocate(eHFB_state(nOrb2))
   allocate(U_QP(nOrb2,nOrb2))
 
-
-  allocate(ERI_QP(nOrb2,nOrb2,nOrb2,nOrb2))
-  allocate(dipole_int_QP(nOrb2,nOrb2,ncart))
 
   allocate(ERI_AO(nBas,nBas,nBas,nBas))
   call wall_time(start_int)
@@ -162,18 +156,11 @@ subroutine BQuAcK(working_dir,dotest,doHFB,doqsGW,nNuc,nBas,nOrb,nC,nO,nV,nR,ENu
   write(*,*) 'AO to MO transformation... Please be patient'
   write(*,*)
 
-  ! Read and transform dipole-related integrals
-  
-  allocate(Cu(nOrb,nOrb2),Cd(nOrb,nOrb2))
-  Cu(:,:) = U_QP(1:nOrb,1:nOrb2)
-  Cd(:,:) = U_QP(nOrb+1:nOrb2,1:nOrb2)
-
   ! Transform dipole-related integrals
 
   allocate(dipole_int_MO(nOrb,nOrb,ncart))
   do ixyz=1,ncart
     call AOtoMO(nBas,nOrb,cHFB,dipole_int_AO(1,1,ixyz),dipole_int_MO(1,1,ixyz))
-    call AOtoMO_GHF(nOrb,nOrb2,Cu,Cd,dipole_int_MO(1,1,ixyz),dipole_int_QP(1,1,ixyz)) ! Used as MO to QP
   end do 
   deallocate(dipole_int_MO)
   
@@ -181,23 +168,6 @@ subroutine BQuAcK(working_dir,dotest,doHFB,doqsGW,nNuc,nBas,nOrb,nC,nO,nV,nR,ENu
   
   allocate(ERI_MO(nOrb,nOrb,nOrb,nOrb))
   call AOtoMO_ERI_RHF(nBas,nOrb,cHFB,ERI_AO,ERI_MO)
-  deallocate(ERI_AO)
-
-  allocate(ERI_tmp(nOrb2,nOrb2,nOrb2,nOrb2))
-  call AOtoMO_ERI_GHF(nOrb,nOrb2,Cu,Cu,ERI_MO,ERI_tmp)  ! Used as MO to QP
-  ERI_QP(:,:,:,:) = ERI_tmp(:,:,:,:)
-
-  call AOtoMO_ERI_GHF(nOrb,nOrb2,Cu,Cd,ERI_MO,ERI_tmp)  ! Used as MO to QP
-  ERI_QP(:,:,:,:) = ERI_QP(:,:,:,:) + ERI_tmp(:,:,:,:)
-
-  call AOtoMO_ERI_GHF(nOrb,nOrb2,Cd,Cu,ERI_MO,ERI_tmp)  ! Used as MO to QP
-  ERI_QP(:,:,:,:) = ERI_QP(:,:,:,:) + ERI_tmp(:,:,:,:)
-
-  call AOtoMO_ERI_GHF(nOrb,nOrb2,Cd,Cd,ERI_MO,ERI_tmp)  ! Used as MO to QP
-  ERI_QP(:,:,:,:) = ERI_QP(:,:,:,:) + ERI_tmp(:,:,:,:)
-
-  deallocate(Cu,Cd,ERI_tmp)
-  deallocate(ERI_MO)
 
   call wall_time(end_AOtoMO)
   
@@ -213,9 +183,9 @@ subroutine BQuAcK(working_dir,dotest,doHFB,doqsGW,nNuc,nBas,nOrb,nC,nO,nV,nR,ENu
   deallocate(PanomHF)
   deallocate(FHF)
   deallocate(Delta)
-  deallocate(ERI_QP)
-  deallocate(dipole_int_QP)
   deallocate(eHFB_state)
   deallocate(U_QP)
+  deallocate(ERI_MO)
+  deallocate(ERI_AO)
 
 end subroutine

@@ -1,4 +1,4 @@
-subroutine qsGWB(dotest,maxSCF,thresh,max_diis,level_shift,nNuc,ZNuc,rNuc,ENuc,           & 
+subroutine qsGWB(dotest,maxSCF,thresh,max_diis,level_shift,nNuc,ZNuc,rNuc,ENuc,             & 
                nBas,nOrb,nOrb2,nO,S,T,V,Hc,ERI,dipole_int,X,EqsGWB,eqsGW,c,P,Panom,F,Delta, &
                sigma,chem_pot,restart_hfb,U_QP,eqsGWB_state)
 
@@ -77,15 +77,15 @@ subroutine qsGWB(dotest,maxSCF,thresh,max_diis,level_shift,nNuc,ZNuc,rNuc,ENuc, 
 
 ! Output variables
 
-  double precision,intent(inout):: chem_pot
-  double precision,intent(out)  :: EqsGWB
-  double precision,intent(inout):: c(nBas,nOrb)
-  double precision,intent(out)  :: P(nBas,nBas)
-  double precision,intent(out)  :: Panom(nBas,nBas)
-  double precision,intent(out)  :: F(nBas,nBas)
-  double precision,intent(out)  :: Delta(nBas,nBas)
-  double precision,intent(out)  :: U_QP(nOrb2,nOrb2)
-  double precision,intent(out)  :: eqsGWB_state(nOrb2)
+  double precision,intent(inout) :: chem_pot
+  double precision,intent(out)   :: EqsGWB
+  double precision,intent(inout) :: c(nBas,nOrb)
+  double precision,intent(inout) :: P(nBas,nBas)
+  double precision,intent(inout) :: Panom(nBas,nBas)
+  double precision,intent(inout) :: F(nBas,nBas)
+  double precision,intent(inout) :: Delta(nBas,nBas)
+  double precision,intent(inout) :: U_QP(nOrb2,nOrb2)
+  double precision,intent(inout) :: eqsGWB_state(nOrb2)
 
 ! Hello world
 
@@ -174,7 +174,7 @@ subroutine qsGWB(dotest,maxSCF,thresh,max_diis,level_shift,nNuc,ZNuc,rNuc,ENuc, 
     call Hartree_matrix_AO_basis(nBas,P,ERI,J)
     call exchange_matrix_AO_basis(nBas,P,ERI,K)
     call anomalous_matrix_AO_basis(nBas,sigma,Panom,ERI,Delta)
-    Sigc=0.0d0
+    call sigc_AO_basis(nBas,nOrb,c,U_QP,eqsGWB_state,ERI,Sigc)
     
     F(:,:) = Hc(:,:) + J(:,:) + 0.5d0*K(:,:) + Sigc(:,:) - chem_pot*S(:,:)
 
@@ -246,6 +246,8 @@ subroutine qsGWB(dotest,maxSCF,thresh,max_diis,level_shift,nNuc,ZNuc,rNuc,ENuc, 
 
     ! Extract P and Panom from R
     
+    eqsGWB_state(:) = eigVAL(:)
+    U_QP(:,:)  = eigVEC(:,:)
     P(:,:)     = 0d0
     Panom(:,:) = 0d0
     P(:,:)     = 2d0*matmul(X,matmul(R(1:nOrb,1:nOrb),transpose(X)))
@@ -343,7 +345,7 @@ subroutine qsGWB(dotest,maxSCF,thresh,max_diis,level_shift,nNuc,ZNuc,rNuc,ENuc, 
   norm_anom = trace_matrix(nOrb,matmul(transpose(R(1:nOrb,nOrb+1:nOrb2)),R(1:nOrb,nOrb+1:nOrb2)))
   call dipole_moment(nBas,P,nNuc,ZNuc,rNuc,dipole_int,dipole)
   call write_restart_HFB(nBas,nOrb,Occ,c,chem_pot) ! orders Occ and their c in descending order w.r.t. occupation numbers.
-  call print_HFB(nBas,nOrb,nOrb2,nO,norm_anom,Occ,eqsGWB_state,ENuc,ET,EV,EJ,EK,EL,EqsGWB,chem_pot,dipole,Delta_HL)
+  call print_qsBGW(nBas,nOrb,nOrb2,nO,norm_anom,Occ,eqsGWB_state,ENuc,ET,EV,EJ,EK,EL,EqsGWB,chem_pot,dipole,Delta_HL)
 
 ! Compute W_no and V_no (i.e. diag[H_qsGWB^no] built in NO basis and get W and V).
 
@@ -364,7 +366,7 @@ subroutine qsGWB(dotest,maxSCF,thresh,max_diis,level_shift,nNuc,ZNuc,rNuc,ENuc, 
   do iorb=1,nOrb
    R(:,:) = R(:,:) + matmul(eigVEC(:,iorb:iorb),transpose(eigVEC(:,iorb:iorb))) 
   enddo
-  U_QP = eigVEC
+  U_QP(:,:) = eigVEC(:,:)
 
   ! Check trace of R
   do iorb=1,nOrb
