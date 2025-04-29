@@ -1,11 +1,7 @@
 subroutine RGW(dotest,doG0W0,doevGW,doqsGW,doufG0W0,doufGW,docG0W0,maxSCF,thresh,max_diis,doACFDT, &
                exchange_kernel,doXBS,dophBSE,dophBSE2,doppBSE,TDA_W,TDA,dBSE,dTDA,singlet,triplet, &
                linearize,eta,doSRG,nNuc,ZNuc,rNuc,ENuc,nBas,nOrb,nC,nO,nV,nR,nS,ERHF,              &
-<<<<<<< HEAD
                S,X,T,V,Hc,ERI_AO,ERI_MO,CAP_MO,dipole_int_AO,dipole_int_MO,PHF,cHF,eHF,eGW)
-=======
-               S,X,T,V,Hc,ERI_AO,ERI_MO,dipole_int_AO,dipole_int_MO,PHF,cHF,eHF,eGW)
->>>>>>> upstream/master
 
 ! Restricted GW module
 

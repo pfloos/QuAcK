@@ -9,6 +9,12 @@ import numpy as np
 import subprocess
 import time
 import gc
+try:
+    import pyopencap
+    use_cap = True
+except ImportError:
+    print("Module pyopencap is not installed.")
+    use_cap = False
 
 # Find the value of the environnement variable QUACK_ROOT. If not present we use the current repository
 if "QUACK_ROOT" not in os.environ:
@@ -46,15 +52,9 @@ parser.add_argument('--working_dir', type=str, default=QuAcK_dir,
                     help='Set a working directory to run the calculation.')
 parser.add_argument('-x', '--xyz', type=str, required=True,
                     help='Name of the file containing the nuclear coordinates in xyz format in the $QUACK_ROOT/mol/ directory without the .xyz extension')
-parser.add_argument("--use_cap", action="store_true", default=False,
-                    help="If true cap integrals are calculated by opencap and written to a file. The basis has to be provided in the basis/ dir in nwchem style cap_data dir.")
+
 # Parse the arguments
 args = parser.parse_args()
-if args.use_cap:
-    try:
-        import pyopencap
-    except ImportError:
-        print("Module pyopencap is not installed.")
 working_dir = args.working_dir
 input_basis = args.basis
 unit = args.bohr
@@ -80,10 +80,14 @@ for line in lines:
     list_pos_atom.append([atom, pos])
 f.close()
 # Create PySCF molecule
-if use_local_basis:
+if use_cap:
     atoms = list(set(atom[0] for atom in list_pos_atom))
-    basis_dict = {atom: gto.basis.parse_nwchem.load(
-        working_dir + "/basis/" + input_basis, atom) for atom in atoms}
+    if os.path.exists(input_basis):
+        basis_dict = {atom: gto.basis.parse_nwchem.load(
+            input_basis, atom) for atom in atoms}
+    else:
+        basis_dict = {atom: gto.basis.parse_nwchem.load(
+            working_dir + "/basis/" + input_basis, atom) for atom in atoms}
     basis = basis_dict
     mol = gto.M(
         atom=list_pos_atom,
@@ -186,7 +190,7 @@ def create_psi4_basis(basis_dict):
 
 
 # CAP definition
-if args.use_cap:
+if use_cap:
     f = open(working_dir+'/cap_data/'+args.xyz, 'r')
     lines = f.read().splitlines()
     line = lines[1]
@@ -255,7 +259,7 @@ subprocess.call(['rm', '-f', working_dir + '/int/y.dat'])
 write_matrix_to_file(y, norb, working_dir+'/int/y.dat')
 subprocess.call(['rm', '-f', working_dir + '/int/z.dat'])
 write_matrix_to_file(z, norb, working_dir+'/int/z.dat')
-if args.use_cap:
+if use_cap:
     subprocess.call(['rm', '-f', working_dir + '/int/CAP.dat'])
     write_matrix_to_file(cap_ao, norb, working_dir+'/int/CAP.dat')
 
@@ -318,7 +322,7 @@ if print_2e:
 del ovlp, v1e, t1e, x, y, z, mol
 if print_2e and not(mmap_2e):
     del eri_ao
-if args.use_cap:
+if use_cap:
     del cap_ao, pc
 gc.collect()
 
