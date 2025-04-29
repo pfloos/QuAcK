@@ -11,6 +11,7 @@ subroutine read_methods(working_dir,                           &
                         doG0T0pp,doevGTpp,doqsGTpp,doufG0T0pp, &
                         doG0T0eh,doevGTeh,doqsGTeh,            &
                         docG0W0,docG0F2,                       &
+                        doParquet,                             &
                         doRtest,doUtest,doGtest)
 
 ! Read desired methods 
@@ -34,6 +35,7 @@ subroutine read_methods(working_dir,                           &
   logical,intent(out)           :: doG0T0pp,doevGTpp,doqsGTpp,doufG0T0pp 
   logical,intent(out)           :: doG0T0eh,doevGTeh,doqsGTeh
   logical,intent(out)           :: docG0W0,docG0F2
+  logical,intent(out)           :: doParquet
 
   logical,intent(out)           :: doRtest,doUtest,doGtest
 
@@ -204,6 +206,7 @@ subroutine read_methods(working_dir,                           &
       if(ans1 == 'T') doG0T0eh = .true.
       if(ans2 == 'T') doevGTeh = .true.
       if(ans3 == 'T') doqsGTeh = .true.
+
       
       ! Read Complex methods
 
@@ -214,6 +217,14 @@ subroutine read_methods(working_dir,                           &
       read(1,*) ans1,ans2
       if(ans1 == 'T') docG0W0    = .true.
       if(ans2 == 'T') docG0F2    = .true.
+      
+      ! Read coupled channels methods
+
+      doParquet = .false.
+
+      read(1,*)
+      read(1,*) ans1
+      if(ans1 == 'T') doParquet = .true.
       
       ! Read test
       

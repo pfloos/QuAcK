@@ -23,27 +23,25 @@ parser = argparse.ArgumentParser(
 
 # Initialize all the options for the script
 parser.add_argument('-b', '--basis', type=str, required=True,
-                    help='Name of the file containing the basis set in the $QUACK_ROOT/basis/ directory (if local basis is use) otherwise name of basis set for pyscf.')
-parser.add_argument('--use_local_basis', default=False, action='store_true',
-                    help='If True, basis is loaded from local storage. Needed for CAP. From file in $QUACK_ROOT/basis/ in nwchem formatting')
+                    help='Name of the file containing the basis set information in the $QUACK_ROOT/basis/ directory')
 parser.add_argument('--bohr', default='Angstrom', action='store_const', const='Bohr',
                     help='By default QuAcK assumes that the xyz files are in Angstrom. Add this argument if your xyz file is in Bohr.')
 parser.add_argument('-c', '--charge', type=int, default=0,
                     help='Total charge of the molecule. Specify negative charges with "m" instead of the minus sign, for example m1 instead of -1. Default is 0')
 parser.add_argument('--cartesian', default=False, action='store_true',
                     help='Add this option if you want to use cartesian basis functions.')
-parser.add_argument('--print_2e', default=True, action='store_true',
-                    help='If True, print 2e-integrals to disk.')
+parser.add_argument('--print_2e', default=True,
+                    action='store_true', help='If True, print ERIs to disk.')
 parser.add_argument('--formatted_2e', default=False, action='store_true',
-                    help='Add this option if you want to print formatted 2e-integrals.')
+                    help='Add this option if you want to print formatted ERIs.')
 parser.add_argument('--mmap_2e', default=False, action='store_true',
-                    help='If True, avoid using DRAM when generating 2e-integrals.')
+                    help='If True, avoid using DRAM when generating ERIs.')
 parser.add_argument('--aosym_2e', default=False, action='store_true',
-                    help='If True, use 8-fold symmetry 2e-integrals.')
+                    help='If True, use 8-fold symmetry in ERIs.')
 parser.add_argument('-fc', '--frozen_core', type=bool,
-                    default=False, help='Freeze core MOs. Default is false')
+                    default=False, help='Freeze core orbitals. Default is false')
 parser.add_argument('-m', '--multiplicity', type=int, default=1,
-                    help='Spin multiplicity. Default is 1 therefore singlet')
+                    help='Spin multiplicity. Default is 1 (singlet)')
 parser.add_argument('--working_dir', type=str, default=QuAcK_dir,
                     help='Set a working directory to run the calculation.')
 parser.add_argument('-x', '--xyz', type=str, required=True,
@@ -82,7 +80,7 @@ for line in lines:
     list_pos_atom.append([atom, pos])
 f.close()
 # Create PySCF molecule
-if args.use_local_basis:
+if use_local_basis:
     atoms = list(set(atom[0] for atom in list_pos_atom))
     basis_dict = {atom: gto.basis.parse_nwchem.load(
         working_dir + "/basis/" + input_basis, atom) for atom in atoms}

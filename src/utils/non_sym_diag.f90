@@ -1,6 +1,3 @@
-
-! ---
-
 subroutine diagonalize_nonsym_matrix(N, A, L, e_re, thr_d, thr_nd, thr_deg, imp_bio, verbose)
 
   ! Diagonalize a non-symmetric matrix A
@@ -626,5 +623,3 @@ subroutine svd_local(A, LDA, U, LDU, D, Vt, LDVt, m, n)
   enddo
 
 end
-
-

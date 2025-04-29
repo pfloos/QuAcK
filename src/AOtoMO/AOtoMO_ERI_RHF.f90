@@ -32,6 +32,7 @@ subroutine AOtoMO_ERI_RHF(nBas,nOrb,c,ERI_AO,ERI_MO)
             , ERI_AO(1,1,1,1), nBas, c(1,1), nBas        &
             , 0.d0, a2(1,1,1,1), nBas*nBas*nBas)
 
+
   call dgemm( 'T', 'N', nBas*nBas*nOrb, nOrb, nBas, 1.d0 &
             , a2(1,1,1,1), nBas, c(1,1), nBas            &
             , 0.d0, a1(1,1,1,1), nBas*nBas*nOrb)
@@ -50,5 +51,5 @@ subroutine AOtoMO_ERI_RHF(nBas,nOrb,c,ERI_AO,ERI_MO)
             , 0.d0, ERI_MO(1,1,1,1), nOrb*nOrb*nOrb)
 
   deallocate(a2)
-
+  
 end subroutine 

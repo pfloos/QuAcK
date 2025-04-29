@@ -2,7 +2,7 @@ subroutine RQuAcK(working_dir,use_gpu,dotest,doRHF,doROHF,docRHF,               
                   dostab,dosearch,doMP2,doMP3,doCCD,dopCCD,doDCD,doCCSD,doCCSDT,                                         &
                   dodrCCD,dorCCD,docrCCD,dolCCD,doCIS,doCIS_D,doCID,doCISD,doFCI,dophRPA,dophRPAx,docrRPA,doppRPA,       & 
                   doG0F2,doevGF2,doqsGF2,doufG0F02,doG0F3,doevGF3,doG0W0,doevGW,doqsGW,doufG0W0,doufGW,                  &
-                  doG0T0pp,doevGTpp,doqsGTpp,doufG0T0pp,doG0T0eh,doevGTeh,doqsGTeh,                                      & 
+                  doG0T0pp,doevGTpp,doqsGTpp,doufG0T0pp,doG0T0eh,doevGTeh,doqsGTeh,doParquet                             & 
                   docG0W0,docG0F2,                                                                                       & 
                   doCAP,                                                                                                 & 
                   nNuc,nBas,nOrb,nC,nO,nV,nR,ENuc,ZNuc,rNuc,                                                             &
@@ -10,7 +10,8 @@ subroutine RQuAcK(working_dir,use_gpu,dotest,doRHF,doROHF,docRHF,               
                   guess_type,mix,reg_MP,maxSCF_CC,max_diis_CC,thresh_CC,singlet,triplet,TDA,                             &
                   maxSCF_GF,max_diis_GF,renorm_GF,thresh_GF,lin_GF,reg_GF,eta_GF,maxSCF_GW,max_diis_GW,thresh_GW,        & 
                   TDA_W,lin_GW,reg_GW,eta_GW,maxSCF_GT,max_diis_GT,thresh_GT,TDA_T,lin_GT,reg_GT,eta_GT,                 & 
-                  dophBSE,dophBSE2,doppBSE,dBSE,dTDA,doACFDT,exchange_kernel,doXBS)
+                  dophBSE,dophBSE2,doppBSE,dBSE,dTDA,doACFDT,exchange_kernel,doXBS,                                      &
+                  TDAeh,TDApp,max_diis_1b,max_diis_2b,max_it_1b,conv_1b,max_it_2b,conv_2b,lin_parquet,reg_parquet)
 
 ! Restricted branch of QuAcK
 
@@ -37,6 +38,7 @@ subroutine RQuAcK(working_dir,use_gpu,dotest,doRHF,doROHF,docRHF,               
   logical,intent(in)            :: doG0T0eh,doevGTeh,doqsGTeh
   logical,intent(in)            :: docG0W0,docG0F2
   logical,intent(in)            :: doCAP
+  logical,intent(in)            :: doParquet
 
   integer,intent(in)            :: nNuc,nBas,nOrb
   integer,intent(in)            :: nC
@@ -86,6 +88,13 @@ subroutine RQuAcK(working_dir,use_gpu,dotest,doRHF,doROHF,docRHF,               
   logical,intent(in)            :: dophBSE,dophBSE2,doppBSE,dBSE,dTDA
   logical,intent(in)            :: doACFDT,exchange_kernel,doXBS
 
+  integer,intent(in)            :: max_it_1b,max_it_2b
+  double precision,intent(in)   :: conv_1b,conv_2b
+  integer,intent(in)            :: max_diis_1b,max_diis_2b
+  logical,intent(in)            :: TDAeh,TDApp
+  double precision,intent(in)   :: reg_parquet
+  logical,intent(in)            :: lin_parquet
+
 ! Local variables
 
   logical                       :: doMP,doCC,doCI,doRPA,doGF,doGW,doGT
@@ -100,6 +109,7 @@ subroutine RQuAcK(working_dir,use_gpu,dotest,doRHF,doROHF,docRHF,               
   double precision              :: start_GF     ,end_GF       ,t_GF
   double precision              :: start_GW     ,end_GW       ,t_GW
   double precision              :: start_GT     ,end_GT       ,t_GT
+  double precision              :: start_Parquet,end_Parquet  ,t_Parquet
 
   double precision              :: start_int, end_int, t_int
   double precision,allocatable  :: eHF(:)
@@ -121,6 +131,7 @@ subroutine RQuAcK(working_dir,use_gpu,dotest,doRHF,doROHF,docRHF,               
   complex*16,allocatable        :: complex_ERI_MO(:,:,:,:)
   integer                       :: ixyz
   integer                       :: nS
+  double precision,allocatable  :: eGW(:)
 
   write(*,*)
   write(*,*) '******************************'
@@ -161,6 +172,8 @@ subroutine RQuAcK(working_dir,use_gpu,dotest,doRHF,doROHF,docRHF,               
     end if
   end if
 
+  allocate(eGW(nOrb))
+  
   allocate(ERI_AO(nBas,nBas,nBas,nBas))
   call wall_time(start_int)
   call read_2e_integrals(working_dir,nBas,ERI_AO)
@@ -223,6 +236,11 @@ subroutine RQuAcK(working_dir,use_gpu,dotest,doRHF,doROHF,docRHF,               
   write(*,*)
 
   if (docRHF) then 
+  ! Read and transform dipole-related integrals
+
+  do ixyz=1,ncart
+    call AOtoMO(nBas,nOrb,cHF,dipole_int_AO(1,1,ixyz),dipole_int_MO(1,1,ixyz))
+  end do 
 
     ! Transform from to complex MOs
 
@@ -414,7 +432,7 @@ doGF = doG0F2 .or. doevGF2 .or. doqsGF2 .or. doufG0F02 .or. doG0F3 .or. doevGF3 
     call RGW(dotest,doG0W0,doevGW,doqsGW,doufG0W0,doufGW,docG0W0,maxSCF_GW,thresh_GW,max_diis_GW,        & 
              doACFDT,exchange_kernel,doXBS,dophBSE,dophBSE2,doppBSE,TDA_W,TDA,dBSE,dTDA,singlet,triplet, &
              lin_GW,eta_GW,reg_GW,nNuc,ZNuc,rNuc,ENuc,nBas,nOrb,nC,nO,nV,nR,nS,ERHF,S,X,T,               &
-             V,Hc,ERI_AO,ERI_MO,CAP_MO,dipole_int_AO,dipole_int_MO,PHF,cHF,eHF)
+             V,Hc,ERI_AO,ERI_MO,CAP_MO,dipole_int_AO,dipole_int_MO,PHF,cHF,eHF,eGW)
     call wall_time(end_GW)
   
     t_GW = end_GW - start_GW
@@ -459,6 +477,22 @@ doGF = doG0F2 .or. doevGF2 .or. doqsGF2 .or. doufG0F02 .or. doG0F3 .or. doevGF3 
   
     t_GT = end_GT - start_GT
     write(*,'(A65,1X,F9.3,A8)') 'Total wall time for GT = ',t_GT,' seconds'
+    write(*,*)
+
+  end if
+
+!------------------------!
+!     Parquet module     !
+!------------------------!
+
+  if(doParquet) then
+    call wall_time(start_Parquet)
+    call RParquet(TDAeh,TDApp,max_diis_1b,max_diis_2b,lin_parquet,reg_parquet,ENuc,max_it_1b,conv_1b,max_it_2b,conv_2b, & 
+                  nOrb,nC,nO,nV,nR,nS,ERHF,eHF,ERI_MO)
+    call wall_time(end_Parquet)
+  
+    t_Parquet = end_Parquet - start_Parquet
+    write(*,'(A65,1X,F9.3,A8)') 'Total wall time for Parquet module = ', t_Parquet, ' seconds'
     write(*,*)
 
   end if

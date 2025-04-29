@@ -1,5 +1,5 @@
 # RHF UHF GHF ROHF HFB cRHF
-  F   F   F   F    F   T
+  F   F   F   F    F   F
 # MP2 MP3 
   F   F   
 # CCD pCCD DCD CCSD CCSD(T) 
@@ -19,6 +19,8 @@
 # G0T0eh evGTeh qsGTeh
   F      F      F
 # cG0W0 cG0F2
-  F     F
+  F	F
+# Parquet
+  F
 # Rtest Utest Gtest
   F     F     F

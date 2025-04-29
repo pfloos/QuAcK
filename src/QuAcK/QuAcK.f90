@@ -16,6 +16,7 @@ program QuAcK
   logical                       :: docG0W0,docG0F2
   logical                       :: doG0T0pp,doevGTpp,doqsGTpp,doufG0T0pp,doG0T0eh,doevGTeh,doqsGTeh
   logical                       :: doCAP
+  logical                       :: doParquet
 
   integer                       :: nNuc
   integer                       :: nBas
@@ -82,14 +83,22 @@ program QuAcK
   logical                       :: restart_hfb
   double precision              :: temperature,sigma
 
+  integer                       :: max_it_1b,max_it_2b
+  double precision              :: conv_1b,conv_2b
+  integer                       :: max_diis_1b,max_diis_2b
+  logical                       :: TDAeh,TDApp
+  double precision              :: reg_parquet 
+  logical                       :: lin_parquet
+
   character(len=256)            :: working_dir
 
   ! Check if the right number of arguments is provided
+
   if(command_argument_count() < 1) then
     print *, "No working directory provided."
     stop
   else
-    call get_command_argument(1, working_dir)
+    call get_command_argument(1,working_dir)
   endif
 
 !-------------!
@@ -129,6 +138,7 @@ program QuAcK
                     doG0T0pp,doevGTpp,doqsGTpp,doufG0T0pp, &
                     doG0T0eh,doevGTeh,doqsGTeh,            &
                     docG0W0,docG0F2,                       &
+                    doParquet,                             &
                     doRtest,doUtest,doGtest)
   doCAP = docG0W0 .or. docG0F2 .or. docRHF ! Add different cases if they need CAP
   docG0W0 = docG0W0 .or. (doG0W0 .and. docRHF)
@@ -147,7 +157,8 @@ program QuAcK
                     maxSCF_GT,thresh_GT,max_diis_GT,lin_GT,eta_GT,reg_GT,TDA_T,                 & 
                     doACFDT,exchange_kernel,doXBS,                                              &
                     dophBSE,dophBSE2,doppBSE,dBSE,dTDA,                                         &
-                    temperature,sigma,chem_pot_hf,restart_hfb)
+                    temperature,sigma,chem_pot_hf,restart_hfb,                                  &
+                    TDAeh,TDApp,max_diis_1b,max_diis_2b,max_it_1b,conv_1b,max_it_2b,conv_2b,lin_parquet,reg_parquet)
 
 !------------------!
 ! Hardware         !
@@ -262,7 +273,7 @@ program QuAcK
       call RQuAcK(working_dir,use_gpu,doRtest,doRHF,doROHF,docRHF,dostab,dosearch,doMP2,doMP3,doCCD,dopCCD,doDCD,doCCSD,doCCSDT, &
                   dodrCCD,dorCCD,docrCCD,dolCCD,doCIS,doCIS_D,doCID,doCISD,doFCI,dophRPA,dophRPAx,docrRPA,doppRPA,        &
                   doG0F2,doevGF2,doqsGF2,doufG0F02,doG0F3,doevGF3,doG0W0,doevGW,doqsGW,doufG0W0,doufGW,                   &
-                  doG0T0pp,doevGTpp,doqsGTpp,doufG0T0pp,doG0T0eh,doevGTeh,doqsGTeh,                                       &
+                  doG0T0pp,doevGTpp,doqsGTpp,doufG0T0pp,doG0T0eh,doevGTeh,doqsGTeh,doParquet                              &
                   docG0W0,docG0F2,                                                                                        &
                   doCAP,                                                                                                  &
                   nNuc,nBas,nOrb,nC,nO,nV,nR,ENuc,ZNuc,rNuc,                                                              &
@@ -270,7 +281,8 @@ program QuAcK
                   guess_type,mix,reg_MP,maxSCF_CC,max_diis_CC,thresh_CC,spin_conserved,spin_flip,TDA,                     &
                   maxSCF_GF,max_diis_GF,renorm_GF,thresh_GF,lin_GF,reg_GF,eta_GF,maxSCF_GW,max_diis_GW,thresh_GW,         &
                   TDA_W,lin_GW,reg_GW,eta_GW,maxSCF_GT,max_diis_GT,thresh_GT,TDA_T,lin_GT,reg_GT,eta_GT,                  &
-                  dophBSE,dophBSE2,doppBSE,dBSE,dTDA,doACFDT,exchange_kernel,doXBS)
+                  dophBSE,dophBSE2,doppBSE,dBSE,dTDA,doACFDT,exchange_kernel,doXBS,                                       &
+                  TDAeh,TDApp,max_diis_1b,max_diis_2b,max_it_1b,conv_1b,max_it_2b,conv_2b,lin_parquet,reg_parquet)
     endif
   endif
 
@@ -282,7 +294,7 @@ program QuAcK
     call UQuAcK(working_dir,doUtest,doUHF,dostab,dosearch,doMP2,doMP3,doCCD,dopCCD,doDCD,doCCSD,doCCSDT,         &
                 dodrCCD,dorCCD,docrCCD,dolCCD,doCIS,doCIS_D,doCID,doCISD,doFCI,dophRPA,dophRPAx,docrRPA,doppRPA, &
                 doG0F2,doevGF2,doqsGF2,doufG0F02,doG0F3,doevGF3,doG0W0,doevGW,doqsGW,doufG0W0,doufGW,            &
-                doG0T0pp,doevGTpp,doqsGTpp,doufG0T0pp,doG0T0eh,doevGTeh,doqsGTeh,                                & 
+                doG0T0pp,doevGTpp,doqsGTpp,doufG0T0pp,doG0T0eh,doevGTeh,doqsGTeh,doParquet,                      & 
                 nNuc,nBas,nC,nO,nV,nR,ENuc,ZNuc,rNuc,                                                            &
                 S,T,V,Hc,X,dipole_int_AO,maxSCF_HF,max_diis_HF,thresh_HF,level_shift,                            &
                 guess_type,mix,reg_MP,maxSCF_CC,max_diis_CC,thresh_CC,spin_conserved,spin_flip,TDA,              &
@@ -296,14 +308,14 @@ program QuAcK
   if(doGQuAcK) & 
     call GQuAcK(working_dir,doGtest,doGHF,dostab,dosearch,doMP2,doMP3,doCCD,dopCCD,doDCD,doCCSD,doCCSDT,      &
                 dodrCCD,dorCCD,docrCCD,dolCCD,dophRPA,dophRPAx,docrRPA,doppRPA,                               &
-                doG0W0,doevGW,doqsGW,doG0F2,doevGF2,doqsGF2,doG0T0pp,doevGTpp,doqsGTpp,                       &
+                doG0W0,doevGW,doqsGW,doG0F2,doevGF2,doqsGF2,doG0T0pp,doevGTpp,doqsGTpp,doParquet,             &
                 nNuc,nBas,sum(nC),sum(nO),sum(nV),sum(nR),ENuc,ZNuc,rNuc,S,T,V,Hc,X,dipole_int_AO,            &
                 maxSCF_HF,max_diis_HF,thresh_HF,level_shift,guess_type,mix,reg_MP,                            &
                 maxSCF_CC,max_diis_CC,thresh_CC,TDA,maxSCF_GF,max_diis_GF,thresh_GF,lin_GF,reg_GF,eta_GF,     &
                 maxSCF_GW,max_diis_GW,thresh_GW,TDA_W,lin_GW,reg_GW,eta_GW,                                   &
                 maxSCF_GT,max_diis_GT,thresh_GT,TDA_T,lin_GT,reg_GT,eta_GT,                                   &
-                dophBSE,dophBSE2,doppBSE,dBSE,dTDA,doACFDT,exchange_kernel,doXBS)
-
+                dophBSE,dophBSE2,doppBSE,dBSE,dTDA,doACFDT,exchange_kernel,doXBS,                             &
+                TDAeh,TDApp,max_diis_1b,max_diis_2b,max_it_1b,conv_1b,max_it_2b,conv_2b,lin_parquet,reg_parquet)
 
 !--------------------------!
 ! Bogoliubov QuAcK branch !

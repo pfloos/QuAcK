@@ -14,7 +14,7 @@ subroutine print_excitation_energies(method,manifold,nS,Om)
 
 ! Local variables
 
-  integer,parameter                  :: maxS = 10
+  integer,parameter                  :: maxS = 50
   integer                            :: m
 
   write(*,*)
