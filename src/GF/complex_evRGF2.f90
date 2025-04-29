@@ -94,7 +94,7 @@ subroutine complex_evRGF2(dotest,dophBSE,doppBSE,TDA,dBSE,dTDA,maxSCF,thresh,max
   rcond           = 0d0
   Re_Z(:)       = 0d0
   Im_Z(:)       = 0d0
-  flow = 100d0 
+  flow = 500d0 
 
 !------------------------------------------------------------------------
 ! Main SCF loop

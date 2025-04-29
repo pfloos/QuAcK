@@ -93,7 +93,7 @@ subroutine complex_evRGW(dotest,maxSCF,thresh,max_diis,doACFDT,exchange_kernel,d
 
 ! SRG regularization
 
-  flow = 100d0
+  flow = 500d0
 
   if(doSRG) then
 
