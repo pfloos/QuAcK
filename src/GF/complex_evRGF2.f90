@@ -106,7 +106,7 @@ subroutine complex_evRGF2(dotest,dophBSE,doppBSE,TDA,dBSE,dTDA,maxSCF,thresh,max
 
     if(regularize) then 
       
-      call complex_cRGF2_reg_self_energy_diag(flow,eta,nOrb,nC,nO,nV,nR,Re_eGF,Im_eGF,ERI,Re_SigC,Im_SigC,Re_Z,Im_Z)
+      call complex_cRGF2_SRG_self_energy_diag(flow,eta,nOrb,nC,nO,nV,nR,Re_eGF,Im_eGF,ERI,Re_SigC,Im_SigC,Re_Z,Im_Z)
       
     else
 

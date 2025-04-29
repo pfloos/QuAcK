@@ -63,10 +63,10 @@ subroutine complex_cRGF2_QP_graph(flow,reg,eta,nBas,nC,nO,nV,nR,Re_eHF,Im_eHF,&
     
       nIt = nIt + 1
       if(reg) then
-        call complex_cRGF_reg_SigC_dSigC(flow,p,eta,nBas,nC,nO,nV,nR,Re_w,Im_w,Re_eOld,Im_eOld,ERI,&
+        call complex_cRGF2_SRG_SigC_dSigC(flow,p,eta,nBas,nC,nO,nV,nR,Re_w,Im_w,Re_eOld,Im_eOld,ERI,&
               Re_SigC,Im_SigC,Re_dSigC,Im_dSigC)
       else 
-        call complex_cRGF_SigC_dSigC(p,eta,nBas,nC,nO,nV,nR,Re_w,Im_w,Re_eOld,Im_eOld,ERI,&
+        call complex_cRGF2_SigC_dSigC(p,eta,nBas,nC,nO,nV,nR,Re_w,Im_w,Re_eOld,Im_eOld,ERI,&
               Re_SigC,Im_SigC,Re_dSigC,Im_dSigC)
       end if
       Re_f  = Re_w - Re_eHF(p) - Re_SigC 

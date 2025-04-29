@@ -1,4 +1,4 @@
-subroutine complex_cRGF2_reg_self_energy(flow,eta,nBas,nC,nO,nV,nR,e,ERI,SigC,Z)
+subroutine complex_cRGF2_SRG_self_energy(flow,eta,nBas,nC,nO,nV,nR,e,ERI,SigC,Z)
 
 ! Compute diagonal part of the GF2 self-energy and its renormalization factor
 

@@ -70,7 +70,7 @@ subroutine complex_cRG0F2(dotest,dophBSE,doppBSE,TDA,dBSE,dTDA,singlet,triplet,l
 
 ! Frequency-dependent second-order contribution
   if(regularize) then
-    call complex_cRGF2_reg_self_energy_diag(flow,eta,nOrb,nC,nO,nV,nR,Re_eHF,Im_eHF,ERI,Re_SigC,Im_SigC,Re_Z,Im_Z)
+    call complex_cRGF2_SRG_self_energy_diag(flow,eta,nOrb,nC,nO,nV,nR,Re_eHF,Im_eHF,ERI,Re_SigC,Im_SigC,Re_Z,Im_Z)
   else
     call complex_cRGF2_self_energy_diag(eta,nOrb,nC,nO,nV,nR,Re_eHF,Im_eHF,ERI,Re_SigC,Im_SigC,Re_Z,Im_Z)
   end if 

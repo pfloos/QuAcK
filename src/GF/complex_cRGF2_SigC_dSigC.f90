@@ -1,4 +1,4 @@
-subroutine complex_cRGF_SigC_dSigC(p,eta,nBas,nC,nO,nV,nR,Re_w,Im_w,Re_e,Im_e,ERI,Re_SigC,Im_SigC,Re_DS,Im_DS)
+subroutine complex_cRGF2_SigC_dSigC(p,eta,nBas,nC,nO,nV,nR,Re_w,Im_w,Re_e,Im_e,ERI,Re_SigC,Im_SigC,Re_DS,Im_DS)
 
 
   implicit none

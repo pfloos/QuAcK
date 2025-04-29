@@ -1,4 +1,4 @@
-subroutine RGF2_reg_self_energy_diag(eta,nBas,nC,nO,nV,nR,e,ERI,SigC,Z)
+subroutine RGF2_SRG_self_energy_diag(flow,eta,nBas,nC,nO,nV,nR,e,ERI,SigC,Z)
 
 ! Compute diagonal part of the GF2 self-energy and its renormalization factor
 
@@ -7,7 +7,7 @@ subroutine RGF2_reg_self_energy_diag(eta,nBas,nC,nO,nV,nR,e,ERI,SigC,Z)
 
 ! Input variables
 
-  double precision,intent(in)   :: eta
+  double precision,intent(in)   :: eta,flow
   integer,intent(in)            :: nBas
   integer,intent(in)            :: nC
   integer,intent(in)            :: nO
@@ -40,7 +40,7 @@ subroutine RGF2_reg_self_energy_diag(eta,nBas,nC,nO,nV,nR,e,ERI,SigC,Z)
 ! Parameters for regularized calculations !
 !-----------------------------------------!
 
-  s = 100d0
+  s = flow
 
 !----------------------------------------------------!
 ! Compute GF2 self-energy and renormalization factor !

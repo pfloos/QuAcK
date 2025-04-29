@@ -37,6 +37,7 @@ subroutine RG0F2(dotest,dophBSE,doppBSE,TDA,dBSE,dTDA,singlet,triplet,linearize,
 ! Local variables
 
   double precision              :: Ec
+  double precision              :: flow
   double precision              :: EcBSE(nspin)
   double precision,allocatable  :: eGFlin(:)
   double precision,allocatable  :: eGF(:)
@@ -51,6 +52,8 @@ subroutine RG0F2(dotest,dophBSE,doppBSE,TDA,dBSE,dTDA,singlet,triplet,linearize,
   write(*,*)'*******************************'
   write(*,*)
 
+  flow =  500d0
+
 ! Memory allocation
 
   allocate(SigC(nOrb), Z(nOrb), eGFlin(nOrb), eGF(nOrb))
@@ -59,7 +62,7 @@ subroutine RG0F2(dotest,dophBSE,doppBSE,TDA,dBSE,dTDA,singlet,triplet,linearize,
 
   if(regularize) then 
 
-    call RGF2_reg_self_energy_diag(eta,nOrb,nC,nO,nV,nR,eHF,ERI,SigC,Z)
+    call RGF2_SRG_self_energy_diag(flow,eta,nOrb,nC,nO,nV,nR,eHF,ERI,SigC,Z)
 
   else
 
@@ -80,7 +83,7 @@ subroutine RG0F2(dotest,dophBSE,doppBSE,TDA,dBSE,dTDA,singlet,triplet,linearize,
     write(*,*) ' *** Quasiparticle energies obtained by root search *** '
     write(*,*)
 
-    call RGF2_QP_graph(eta,nOrb,nC,nO,nV,nR,eHF,ERI,eGFlin,eHF,eGF,Z)
+    call RGF2_QP_graph(flow,regularize,eta,nOrb,nC,nO,nV,nR,eHF,ERI,eGFlin,eHF,eGF,Z)
 
   end if
 

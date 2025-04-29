@@ -45,6 +45,7 @@ subroutine evRGF2(dotest,dophBSE,doppBSE,TDA,dBSE,dTDA,maxSCF,thresh,max_diis,si
   double precision              :: EcBSE(nspin)
   double precision              :: Conv
   double precision              :: rcond
+  double precision              :: flow
   double precision,allocatable  :: eGF(:)
   double precision,allocatable  :: eOld(:)
   double precision,allocatable  :: SigC(:)
@@ -75,7 +76,7 @@ subroutine evRGF2(dotest,dophBSE,doppBSE,TDA,dBSE,dTDA,maxSCF,thresh,max_diis,si
   eGF(:)         = eHF(:)
   eOld(:)         = eHF(:)
   rcond           = 0d0
-
+  flow            = 500d0
 !------------------------------------------------------------------------
 ! Main SCF loop
 !------------------------------------------------------------------------
@@ -86,7 +87,7 @@ subroutine evRGF2(dotest,dophBSE,doppBSE,TDA,dBSE,dTDA,maxSCF,thresh,max_diis,si
 
     if(regularize) then 
 
-      call RGF2_reg_self_energy_diag(eta,nOrb,nC,nO,nV,nR,eGF,ERI,SigC,Z)
+      call RGF2_SRG_self_energy_diag(flow,eta,nOrb,nC,nO,nV,nR,eGF,ERI,SigC,Z)
 
     else
 
@@ -103,7 +104,7 @@ subroutine evRGF2(dotest,dophBSE,doppBSE,TDA,dBSE,dTDA,maxSCF,thresh,max_diis,si
       write(*,*) ' *** Quasiparticle energies obtained by root search *** '
       write(*,*)
  
-      call RGF2_QP_graph(eta,nOrb,nC,nO,nV,nR,eHF,ERI,eOld,eOld,eGF,Z)
+      call RGF2_QP_graph(flow,regularize,eta,nOrb,nC,nO,nV,nR,eHF,ERI,eOld,eOld,eGF,Z)
  
     end if
 

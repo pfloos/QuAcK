@@ -1,4 +1,4 @@
-subroutine RGF2_reg_self_energy(eta,nBas,nC,nO,nV,nR,e,ERI,SigC,Z)
+subroutine RGF2_SRG_self_energy(flow, eta,nBas,nC,nO,nV,nR,e,ERI,SigC,Z)
 
 ! Compute GF2 self-energy and its renormalization factor
 
@@ -8,6 +8,7 @@ subroutine RGF2_reg_self_energy(eta,nBas,nC,nO,nV,nR,e,ERI,SigC,Z)
 ! Input variables
 
   double precision,intent(in)   :: eta
+  double precision,intent(in)   :: flow
   integer,intent(in)            :: nBas
   integer,intent(in)            :: nC
   integer,intent(in)            :: nO
@@ -20,7 +21,7 @@ subroutine RGF2_reg_self_energy(eta,nBas,nC,nO,nV,nR,e,ERI,SigC,Z)
 
   integer                       :: i,j,a,b
   integer                       :: p,q
-  double precision              :: eps
+  double precision              :: eps_p,eps_q
   double precision              :: num
 
   double precision              :: s
@@ -40,7 +41,7 @@ subroutine RGF2_reg_self_energy(eta,nBas,nC,nO,nV,nR,e,ERI,SigC,Z)
 ! Parameters for regularized calculations !
 !-----------------------------------------!
 
-  s = 500d0
+  s = flow
 
 !----------------------------------------------------!
 ! Compute GF2 self-energy and renormalization factor !
@@ -52,12 +53,14 @@ subroutine RGF2_reg_self_energy(eta,nBas,nC,nO,nV,nR,e,ERI,SigC,Z)
         do j=nC+1,nO
           do a=nO+1,nBas-nR
 
-            eps = e(p) + e(a) - e(i) - e(j)
-            kappa = 1d0 - exp(-2d0*eps**2*s)
+            eps_p = e(p) + e(a) - e(i) - e(j)
+            eps_q = e(q) + e(a) - e(i) - e(j)
+            kappa = 1d0 - exp(-s*(eps_p**2 + eps_q**2 + 2*eta**2))
             num = kappa*(2d0*ERI(p,a,i,j) - ERI(p,a,j,i))*ERI(q,a,i,j)
 
-            SigC(p,q) = SigC(p,q) + num*eps/(eps**2 + eta**2)
-            if(p == q) Z(p) = Z(p) - num*(eps**2 - eta**2)/(eps**2 + eta**2)**2
+            SigC(p,q) = SigC(p,q) + num*(eps_p + eps_q)&
+                         /(eps_p**2 + eps_q**2 + 2*eta**2)
+            if(p == q) Z(p) = Z(p) - num*(eps_p**2 - eta**2)/(eps_p**2 + eta**2)**2
 
           end do
         end do
@@ -71,12 +74,14 @@ subroutine RGF2_reg_self_energy(eta,nBas,nC,nO,nV,nR,e,ERI,SigC,Z)
         do a=nO+1,nBas-nR
           do b=nO+1,nBas-nR
 
-            eps = e(p) + e(i) - e(a) - e(b)
-            kappa = 1d0 - exp(-2d0*eps**2*s)
+            eps_p = e(p) + e(i) - e(a) - e(b)
+            eps_q = e(q) + e(i) - e(a) - e(b)
+            kappa = 1d0 - exp(-s*(eps_p**2 + eps_q**2 + 2*eta**2))
             num = kappa*(2d0*ERI(p,i,a,b) - ERI(p,i,b,a))*ERI(q,i,a,b)
 
-            SigC(p,q) = SigC(p,q) + num*eps/(eps**2 + eta**2)
-            if(p == q) Z(p) = Z(p) - num*(eps**2 - eta**2)/(eps**2 + eta**2)**2
+            SigC(p,q) = SigC(p,q) + num*(eps_p + eps_q)&
+                        /(eps_p**2 + eps_q**2 + 2*eta**2)
+            if(p == q) Z(p) = Z(p) - num*(eps_p**2 - eta**2)/(eps_p**2 + eta**2)**2
 
           end do
         end do

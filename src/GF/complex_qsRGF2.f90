@@ -101,7 +101,6 @@ subroutine complex_qsRGF2(dotest,maxSCF,thresh,max_diis,dophBSE,doppBSE,TDA,  &
 ! Stuff 
 
   nBas_Sq = nBas*nBas
-  flow = 500d0
 ! TDA 
 
   if(TDA) then 
@@ -146,6 +145,7 @@ subroutine complex_qsRGF2(dotest,maxSCF,thresh,max_diis,dophBSE,doppBSE,TDA,  &
   F_diis(:,:)     = 0d0
   error_diis(:,:) = 0d0
   rcond           = 0d0
+  flow = 500d0
 
 !------------------------------------------------------------------------
 ! Main loop
@@ -173,7 +173,7 @@ subroutine complex_qsRGF2(dotest,maxSCF,thresh,max_diis,dophBSE,doppBSE,TDA,  &
 
     if(regularize) then
 
-      call complex_cRGF2_reg_self_energy(flow,eta, nOrb, nC, nO, nV, nR, eGF, ERI_MO, SigC, Z)
+      call complex_cRGF2_SRG_self_energy(flow,eta, nOrb, nC, nO, nV, nR, eGF, ERI_MO, SigC, Z)
 
     else
 

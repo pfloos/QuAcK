@@ -54,6 +54,7 @@ subroutine qsRGF2(dotest,maxSCF,thresh,max_diis,dophBSE,doppBSE,TDA,  &
   double precision              :: EqsGF2
   double precision              :: Conv
   double precision              :: rcond
+  double precision              :: flow
   double precision,external     :: trace_matrix
   double precision              :: dipole(ncart)
   double precision              :: ET
@@ -141,6 +142,7 @@ subroutine qsRGF2(dotest,maxSCF,thresh,max_diis,dophBSE,doppBSE,TDA,  &
   F_diis(:,:)     = 0d0
   error_diis(:,:) = 0d0
   rcond           = 0d0
+  flow = 500d0
 
 !------------------------------------------------------------------------
 ! Main loop
@@ -168,7 +170,7 @@ subroutine qsRGF2(dotest,maxSCF,thresh,max_diis,dophBSE,doppBSE,TDA,  &
 
     if(regularize) then
 
-      call RGF2_reg_self_energy(eta, nOrb, nC, nO, nV, nR, eGF, ERI_MO, SigC, Z)
+      call RGF2_SRG_self_energy(flow,eta, nOrb, nC, nO, nV, nR, eGF, ERI_MO, SigC, Z)
 
     else
 
