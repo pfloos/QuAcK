@@ -71,7 +71,7 @@ subroutine RGW_SRG_self_energy(flow,nBas,nOrb,nC,nO,nV,nR,nS,e,Om,rho,EcGM,SigC,
   !$OMP END PARALLEL
 
   ! Virtual part of the correlation self-energy
-
+  
   !$OMP PARALLEL &
   !$OMP SHARED(SigC,rho,s,nS,nC,nO,nR,nOrb,e,Om) &
   !$OMP PRIVATE(m,a,q,p,Dpam,Dqam) &

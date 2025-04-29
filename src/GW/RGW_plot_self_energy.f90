@@ -81,12 +81,12 @@ subroutine RGW_plot_self_energy(nBas,eta,nC,nO,nV,nR,nS,eHF,eGW,Om,rho)
   open(unit=9 ,file='RGW_freq.dat')
   open(unit=10 ,file='RGW_Z.dat')
   open(unit=11 ,file='RGW_A.dat')
-
+  
   do g=1,nGrid
-    write(8 ,*) w(g)*HaToeV,(ReSigC(p,g)*HaToeV,p=nC+1,nBas-nR)
-    write(9 ,*) w(g)*HaToeV,((w(g)-eHF(p))*HaToeV,p=nC+1,nBas-nR)
-    write(10,*) w(g)*HaToeV,(Z(p,g),p=nC+1,nBas-nR)
-    write(11,*) w(g)*HaToeV,(A(p,g),p=nC+1,nBas-nR)
+    write(8 ,'(F12.6,1X,150(F12.6,1X))') w(g)*HaToeV,(ReSigC(p,g)*HaToeV,p=nC+1,nBas-nR)
+    write(9 ,'(F12.6,1X,150(F12.6,1X))') w(g)*HaToeV,((w(g)-eHF(p))*HaToeV,p=nC+1,nBas-nR)
+    write(10,'(F12.6,1X,150(F12.6,1X))') w(g)*HaToeV,(Z(p,g),p=nC+1,nBas-nR)
+    write(11,'(F12.6,1X,150(F12.6,1X))') w(g)*HaToeV,(A(p,g),p=nC+1,nBas-nR)
   end do
 
 ! Closing files

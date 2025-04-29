@@ -214,6 +214,31 @@ function trace_matrix(n,A) result(Tr)
 
 end function 
 
+function complex_trace_matrix(n,A) result(Tr)
+
+! Calculate the trace of the square matrix A
+
+  implicit none
+
+! Input variables
+
+  integer,intent(in)            :: n
+  complex*16,intent(in)         :: A(n,n)
+
+! Local variables
+
+  integer                       :: i
+
+! Output variables
+
+  complex*16                    :: Tr
+
+  Tr = (0d0,0d0)
+  do i=1,n
+    Tr = Tr + A(i,i)
+  end do
+
+end function 
 !------------------------------------------------------------------------
 subroutine compute_error(nData,Mean,Var,Error)
 
@@ -293,6 +318,39 @@ subroutine prepend(N,M,A,b)
   end do
 
 end subroutine 
+
+subroutine complex_prepend(N,M,A,b)
+
+! Prepend the vector b of size N into the matrix A of size NxM
+
+  implicit none
+
+! Input variables
+
+  integer,intent(in)            :: N,M
+  complex*16,intent(in)         :: b(N)
+
+! Local variables
+
+  integer                       :: i,j
+
+! Output variables
+
+  complex*16,intent(out)        :: A(N,M)
+
+
+! print*,'b in append'
+! call complex_matout(N,1,b)
+
+  do i=1,N
+    do j=M-1,1,-1
+      A(i,j+1) = A(i,j)
+    end do
+    A(i,1) = b(i)
+  end do
+
+end subroutine
+
 
 !------------------------------------------------------------------------
 subroutine append(N,M,A,b)

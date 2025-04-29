@@ -40,7 +40,7 @@ subroutine RGF2_reg_self_energy(eta,nBas,nC,nO,nV,nR,e,ERI,SigC,Z)
 ! Parameters for regularized calculations !
 !-----------------------------------------!
 
-  s = 100d0
+  s = 500d0
 
 !----------------------------------------------------!
 ! Compute GF2 self-energy and renormalization factor !
