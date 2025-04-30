@@ -203,6 +203,7 @@ if use_cap:
     f = open(working_dir+'/input/eta_opt.dat', 'w')
     f.write(" {} ".format(str(eta_opt)))
     f.close()
+    print(f"CAP eta = {eta_opt}")
     # xyz file
     with open(working_dir + "/mol/" + xyz, "r") as f:
         lines = f.readlines()
