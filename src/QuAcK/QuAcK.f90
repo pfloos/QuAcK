@@ -207,8 +207,8 @@ program QuAcK
   call wall_time(start_int)
 
   call read_1e_integrals(working_dir,nBas,S,T,V,Hc)
-  call read_eta_cap(working_dir,eta_cap)
   if (doCAP) then
+    call read_eta_cap(working_dir,eta_cap)
     call read_CAP_integrals(working_dir,nBas,CAP)
     CAP(:,:) = -eta_cap*CAP(:,:)
   end if
