@@ -214,11 +214,13 @@ subroutine complex_qsRGF2(dotest,maxSCF,thresh,max_diis,dophBSE,doppBSE,TDA,  &
       Fp = matmul(transpose(X), matmul(F, X))
       cp(:,:) = Fp(:,:)
       call complex_diagonalize_matrix(nOrb, cp, eGF)
+      call complex_orthogonalize_matrix(nBas,cp)
       c = matmul(X, cp)
     else
       Fp = matmul(transpose(c), matmul(F, c))
       cp(:,:) = Fp(:,:)
       call complex_diagonalize_matrix(nOrb, cp, eGF)
+      call complex_orthogonalize_matrix(nBas,cp)
       c = matmul(c, cp)
     endif
 
