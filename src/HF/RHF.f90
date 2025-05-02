@@ -203,9 +203,9 @@ subroutine RHF(dotest,maxSCF,thresh,max_diis,guess_type,level_shift,nNuc,ZNuc,rN
     write(*,*)'!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!'
     write(*,*)
 
-    deallocate(J,K,err,cp,Fp,err_diis,F_diis)
+    !deallocate(J,K,err,cp,Fp,err_diis,F_diis)
 
-    stop
+    write(*,*) ' Warning! Convergence failed at Hartree-Fock level.'
 
   end if
 

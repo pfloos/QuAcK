@@ -65,7 +65,7 @@ subroutine fix_chem_pot(nO,nOrb,nOrb2,nSCF,thrs_N,trace_1rdm,chem_pot,H_hfb,cp,R
   call diag_H_hfb(nOrb,nOrb2,chem_pot,trace_old,H_hfb,cp,R,eHFB_)
   write(*,'(1X,A1,F16.10,1X,A1,F16.10,1X,A1F16.10,1X,A1)') &
   '|',trace_old,'|',chem_pot,'|',grad_electrons,'|'
-  do while( abs(trace_1rdm-nO) > 1.0d0 .and. isteps <= 100 )
+  do while( abs(trace_1rdm-nO) > 1.0d0 .and. isteps <= 100 .and. abs(trace_old-nO) > 1.0d0 )
    isteps = isteps + 1
    chem_pot = chem_pot + delta_chem_pot
    call diag_H_hfb(nOrb,nOrb2,chem_pot,trace_1rdm,H_hfb,cp,R,eHFB_)

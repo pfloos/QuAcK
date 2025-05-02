@@ -21,17 +21,17 @@ subroutine BQuAcK(working_dir,dotest,doHFB,doqsGW,nNuc,nBas,nOrb,nC,nO,nV,nR,ENu
   integer,intent(in)            :: nO
   integer,intent(in)            :: nV
   integer,intent(in)            :: nR
-  double precision,intent(in)   :: ENuc
+  double precision,intent(inout):: ENuc
   double precision,intent(in)   :: temperature,sigma
 
   double precision,intent(in)   :: ZNuc(nNuc),rNuc(nNuc,ncart)
 
-  double precision,intent(in)   :: S(nBas,nBas)
-  double precision,intent(in)   :: T(nBas,nBas)
-  double precision,intent(in)   :: V(nBas,nBas)
-  double precision,intent(in)   :: Hc(nBas,nBas)
-  double precision,intent(in)   :: X(nBas,nOrb)
-  double precision,intent(in)   :: dipole_int_AO(nBas,nBas,ncart)
+  double precision,intent(inout)   :: S(nBas,nBas)
+  double precision,intent(inout)   :: T(nBas,nBas)
+  double precision,intent(inout)   :: V(nBas,nBas)
+  double precision,intent(inout)   :: Hc(nBas,nBas)
+  double precision,intent(inout)   :: X(nBas,nOrb)
+  double precision,intent(inout)   :: dipole_int_AO(nBas,nBas,ncart)
 
   integer,intent(in)            :: maxSCF_HF,max_diis_HF
   double precision,intent(in)   :: thresh_HF,level_shift,mix
@@ -39,11 +39,13 @@ subroutine BQuAcK(working_dir,dotest,doHFB,doqsGW,nNuc,nBas,nOrb,nC,nO,nV,nR,ENu
 
 ! Local variables
 
+  logical                       :: file_exists
   integer                       :: nOrb2
-  integer                       :: nS
+  integer                       :: nO_
   integer                       :: ixyz
+  integer                       :: iorb,jorb,korb,lorb
 
-  double precision              :: chem_pot 
+  double precision              :: chem_pot,Val
   double precision              :: start_HF     ,end_HF       ,t_HF
   double precision              :: start_qsGWB  ,end_qsGWB    ,t_qsGWB
   double precision              :: start_int, end_int, t_int
@@ -74,6 +76,7 @@ subroutine BQuAcK(working_dir,dotest,doHFB,doqsGW,nNuc,nBas,nOrb,nC,nO,nV,nR,ENu
 ! Memory allocation !
 !-------------------!
 
+  nO_=nO
   nOrb2=nOrb+nOrb
 
   allocate(eHF(nOrb))
@@ -94,6 +97,41 @@ subroutine BQuAcK(working_dir,dotest,doHFB,doqsGW,nNuc,nBas,nOrb,nC,nO,nV,nR,ENu
   call read_2e_integrals(working_dir,nBas,ERI_AO)
   call wall_time(end_int)
   t_int = end_int - start_int
+
+  inquire(file='hubbard', exist=file_exists)
+  if(file_exists) then
+   write(*,*)
+   write(*,*) 'Reading Hubbard model parameters'
+   write(*,*)
+   ERI_AO=0d0; S=0d0; T=0d0; V=0d0; Hc=0d0; X=0d0;
+   dipole_int_AO=0d0; Enuc=0d0;
+   do iorb=1,nBas
+    S(iorb,iorb) = 1d0
+    X(iorb,iorb) = 1d0
+   enddo
+   open(unit=314, form='formatted', file='hubbard', status='old')
+   do
+    read(314,*) iorb,jorb,korb,lorb,Val
+    if(iorb==jorb .and. jorb==korb .and. korb==lorb .and. iorb==-1) then
+     nO_ = int(Val)
+     cycle
+    endif
+    if(korb==lorb .and. lorb==0) then
+     if(iorb==jorb .and. iorb==0) then
+      exit
+     else
+      T(iorb,jorb)=Val
+      Hc(iorb,jorb)=T(iorb,jorb)
+      T(jorb,iorb)=T(iorb,jorb)
+      Hc(jorb,iorb)=T(iorb,jorb)
+     endif
+    else
+     ERI_AO(iorb,jorb,korb,lorb)=Val
+    endif
+   enddo
+  endif
+  
+
   write(*,*)
   write(*,'(A65,1X,F9.3,A8)') 'Total wall time for reading 2e-integrals =',t_int,' seconds'
   write(*,*)
@@ -107,7 +145,7 @@ subroutine BQuAcK(working_dir,dotest,doHFB,doqsGW,nNuc,nBas,nOrb,nC,nO,nV,nR,ENu
     ! Run first a RHF calculation 
     call wall_time(start_HF)
     call RHF(dotest,maxSCF_HF,thresh_HF,max_diis_HF,guess_type,level_shift,nNuc,ZNuc,rNuc,ENuc, &
-             nBas,nOrb,nO,S,T,V,Hc,ERI_AO,dipole_int_AO,X,ERHF,eHF,cHFB,PHF,FHF)
+             nBas,nOrb,nO_,S,T,V,Hc,ERI_AO,dipole_int_AO,X,ERHF,eHF,cHFB,PHF,FHF)
     call wall_time(end_HF)
 
     t_HF = end_HF - start_HF
@@ -117,7 +155,7 @@ subroutine BQuAcK(working_dir,dotest,doHFB,doqsGW,nNuc,nBas,nOrb,nC,nO,nV,nR,ENu
     ! Continue with a HFB calculation
     call wall_time(start_HF)
     call HFB(dotest,maxSCF_HF,thresh_HF,max_diis_HF,level_shift,nNuc,ZNuc,rNuc,ENuc,        &
-             nBas,nOrb,nOrb2,nO,S,T,V,Hc,ERI_AO,dipole_int_AO,X,EHFB,eHF,cHFB,PHF,PanomHF,  &
+             nBas,nOrb,nOrb2,nO_,S,T,V,Hc,ERI_AO,dipole_int_AO,X,EHFB,eHF,cHFB,PHF,PanomHF,  &
              FHF,Delta,temperature,sigma,chem_pot_hf,chem_pot,restart_hfb,U_QP,eHFB_state)
     call wall_time(end_HF)
 
@@ -136,7 +174,7 @@ subroutine BQuAcK(working_dir,dotest,doHFB,doqsGW,nNuc,nBas,nOrb,nC,nO,nV,nR,ENu
     ! Continue with a HFB calculation
     call wall_time(start_qsGWB)
     call qsGWB(dotest,maxSCF_HF,thresh_HF,max_diis_HF,level_shift,nNuc,ZNuc,rNuc,ENuc,        &
-               nBas,nOrb,nOrb2,nO,S,T,V,Hc,ERI_AO,dipole_int_AO,X,EHFB,eHF,cHFB,PHF,PanomHF,  &
+               nBas,nOrb,nOrb2,nO_,S,T,V,Hc,ERI_AO,dipole_int_AO,X,EHFB,eHF,cHFB,PHF,PanomHF,  &
                FHF,Delta,sigma,chem_pot,restart_hfb,U_QP,eHFB_state)
     call wall_time(end_qsGWB)
 
