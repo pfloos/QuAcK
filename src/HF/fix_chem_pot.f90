@@ -16,6 +16,7 @@ subroutine fix_chem_pot(nO,nOrb,nOrb2,nSCF,thrs_N,trace_1rdm,chem_pot,H_hfb,cp,R
   integer                       :: isteps
   double precision              :: delta_chem_pot
   double precision              :: chem_pot_change
+  double precision              :: chem_pot_old
   double precision              :: grad_electrons
   double precision              :: trace_2up
   double precision              :: trace_up
@@ -65,12 +66,18 @@ subroutine fix_chem_pot(nO,nOrb,nOrb2,nSCF,thrs_N,trace_1rdm,chem_pot,H_hfb,cp,R
   call diag_H_hfb(nOrb,nOrb2,chem_pot,trace_old,H_hfb,cp,R,eHFB_)
   write(*,'(1X,A1,F16.10,1X,A1,F16.10,1X,A1F16.10,1X,A1)') &
   '|',trace_old,'|',chem_pot,'|',grad_electrons,'|'
-  do while( abs(trace_1rdm-nO) > 1.0d0 .and. isteps <= 100 .and. abs(trace_old-nO) > 1.0d0 )
+  do while( abs(trace_1rdm-nO) > 1.0d0 .and. isteps <= 100 )
    isteps = isteps + 1
+   chem_pot_old = chem_pot
    chem_pot = chem_pot + delta_chem_pot
    call diag_H_hfb(nOrb,nOrb2,chem_pot,trace_1rdm,H_hfb,cp,R,eHFB_)
    write(*,'(1X,A1,F16.10,1X,A1,F16.10,1X,A1F16.10,1X,A1)') &
    '|',trace_1rdm,'|',chem_pot,'|',grad_electrons,'|'
+   if( (trace_1rdm-nO) > 1e-4 .and. (trace_old-nO) < -1e-4 ) then
+    chem_pot = 0.5d0 * ( chem_pot + chem_pot_old )
+    call diag_H_hfb(nOrb,nOrb2,chem_pot,trace_old,H_hfb,cp,R,eHFB_)
+    cycle
+   endif
    if( abs(trace_1rdm-nO) > abs(trace_old-nO) .and. .not.backward ) then
     backward=.true.
     chem_pot = chem_pot - delta_chem_pot
