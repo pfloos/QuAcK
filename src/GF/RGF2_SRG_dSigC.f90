@@ -32,8 +32,7 @@ double precision function RGF2_SRG_dSigC(p,w,flow,nBas,nC,nO,nV,nR,eHF,ERI)
 
         eps = w + eHF(a) - eHF(i) - eHF(j)
         kappa = 1d0 - exp(-2d0*eps**2*s)
-        RGF2_SRG_dSigC = RGF2_SRG_dSigC - kappa*(2d0*ERI(p,a,i,j) - ERI(p,a,j,i))*ERI(p,a,i,j)&
-                *(eps**2)/(eps**2)**2
+        RGF2_SRG_dSigC = RGF2_SRG_dSigC - kappa*(2d0*ERI(p,a,i,j) - ERI(p,a,j,i))*ERI(p,a,i,j)/eps**2
 
       end do
     end do
@@ -47,8 +46,7 @@ double precision function RGF2_SRG_dSigC(p,w,flow,nBas,nC,nO,nV,nR,eHF,ERI)
 
         eps = w + eHF(i) - eHF(a) - eHF(b)
         kappa = 1d0 - exp(-2d0*eps**2*s)
-        RGF2_SRG_dSigC = RGF2_SRG_dSigC - kappa*(2d0*ERI(p,i,a,b) - ERI(p,i,b,a))*ERI(p,i,a,b)&
-                *(eps**2)/(eps**2)**2
+        RGF2_SRG_dSigC = RGF2_SRG_dSigC - kappa*(2d0*ERI(p,i,a,b) - ERI(p,i,b,a))*ERI(p,i,a,b)/eps**2
 
       end do
     end do
