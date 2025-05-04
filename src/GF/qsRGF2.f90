@@ -177,13 +177,15 @@ subroutine qsRGF2(dotest,maxSCF,thresh,max_diis,dophBSE,doppBSE,TDA,  &
 
     if(doSRG) then
 
-      call RGF2_SRG_self_energy(flow,nOrb,nC,nO,nV,nR,eGF,ERI_MO,SigC,Z)
+      call RGF2_SRG_self_energy(flow,nOrb,nC,nO,nV,nR,eGF,ERI_MO,Ec,SigC,Z)
 
     else
 
-      call RGF2_self_energy(eta,nOrb,nC,nO,nV,nR,eGF,ERI_MO,SigC,Z)
+      call RGF2_self_energy(eta,nOrb,nC,nO,nV,nR,eGF,ERI_MO,Ec,SigC,Z)
 
     end if
+
+    print*,Ec
 
     ! Make correlation self-energy Hermitian and transform it back to AO basis
    
@@ -220,10 +222,6 @@ subroutine qsRGF2(dotest,maxSCF,thresh,max_diis,dophBSE,doppBSE,TDA,  &
     ! Exchange energy
 
     Ex = 0.25d0*trace_matrix(nBas,matmul(P,K))
-
-    ! Correlation energy
-
-    call RMP2(.false.,doSRG,nOrb,nC,nO,nV,nR,ERI_MO,ENuc,EqsGF2,eGF,Ec)
 
     ! Total energy
 

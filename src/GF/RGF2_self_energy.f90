@@ -1,4 +1,4 @@
-subroutine RGF2_self_energy(eta,nBas,nC,nO,nV,nR,e,ERI,SigC,Z)
+subroutine RGF2_self_energy(eta,nBas,nC,nO,nV,nR,e,ERI,Ec,SigC,Z)
 
 ! Compute GF2 self-energy and its renormalization factor
 
@@ -25,6 +25,7 @@ subroutine RGF2_self_energy(eta,nBas,nC,nO,nV,nR,e,ERI,SigC,Z)
 
 ! Output variables
 
+  double precision,intent(out)  :: Ec
   double precision,intent(out)  :: SigC(nBas,nBas)
   double precision,intent(out)  :: Z(nBas)
 
@@ -73,4 +74,23 @@ subroutine RGF2_self_energy(eta,nBas,nC,nO,nV,nR,e,ERI,SigC,Z)
 
   Z(:) = 1d0/(1d0 - Z(:))
 
+! Compute MP2 correlation energy
+
+  Ec = 0d0
+
+  do i=nC+1,nO
+    do j=nC+1,nO
+      do a=nO+1,nBas-nR
+        do b=nO+1,nBas-nR
+
+          eps = e(i) + e(j) - e(a) - e(b)
+          num = (2d0*ERI(i,j,a,b) - ERI(i,j,b,a))*ERI(i,j,a,b)
+
+          Ec = Ec + num/eps
+
+        end do
+      end do
+    end do
+  end do
+  
 end subroutine 

@@ -96,11 +96,11 @@ subroutine evRGF2(dotest,dophBSE,doppBSE,TDA,dBSE,dTDA,maxSCF,thresh,max_diis,si
 
     if(doSRG) then 
 
-      call RGF2_SRG_self_energy_diag(flow,nOrb,nC,nO,nV,nR,eGF,ERI,SigC,Z)
+      call RGF2_SRG_self_energy_diag(flow,nOrb,nC,nO,nV,nR,eGF,ERI,Ec,SigC,Z)
 
     else
 
-      call RGF2_self_energy_diag(eta,nOrb,nC,nO,nV,nR,eGF,ERI,SigC,Z)
+      call RGF2_self_energy_diag(eta,nOrb,nC,nO,nV,nR,eGF,ERI,Ec,SigC,Z)
 
     end if
 
@@ -121,7 +121,6 @@ subroutine evRGF2(dotest,dophBSE,doppBSE,TDA,dBSE,dTDA,maxSCF,thresh,max_diis,si
 
     ! Print results
 
-    call RMP2(.false.,doSRG,nOrb,nC,nO,nV,nR,ERI,ENuc,ERHF,eGF,Ec)
     call print_evRGF2(nOrb,nO,nSCF,Conv,eHF,SigC,Z,eGF,ENuc,ERHF,Ec)
 
     ! DIIS extrapolation
