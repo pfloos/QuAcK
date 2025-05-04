@@ -64,6 +64,11 @@ pip install pyscf
 PySCF is used for the computation of one- and two-electron integrals (mainly) which are dumped in files and read by QuAcK.
 Therefore, it is very easy to use other software to compute the integrals or to add other types of integrals.
 
+Then, go to the `src` directory and compile
+```
+make
+```
+
 ## ⚡ Quick Start
 
 ```
