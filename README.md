@@ -12,7 +12,7 @@
 
 ---
 
-QuAcK is an open-source, lightweight electronic structure program written in **Fortran 90**, developed at the [Laboratoire de Chimie et Physique Quantiques (LCPQ)](https://www.lcpq.ups-tlse.fr/) in Toulouse, France. Designed primarily for rapid prototyping of new ideas in quantum chemistry, QuAcK provides a flexible environment for testing novel methods before integrating them into larger-scale projects like the [Quantum Package](https://github.com/QuantumPackage/qp2).
+QuAcK is an open-source, lightweight electronic structure program written in **Fortran 90**, developed at the [Laboratoire de Chimie et Physique Quantiques (LCPQ)](https://www.lcpq.ups-tlse.fr/) in Toulouse, France. Designed primarily for rapid prototyping of new ideas in quantum chemistry, QuAcK provides a flexible environment for testing novel methods before integrating them into larger-scale projects like [Quantum Package](https://github.com/QuantumPackage/qp2).
 
 > ⚠️ **Note:** QuAcK is under active development. Users should be cautious and validate results, as the code may allow unconventional inputs to facilitate flexibility during prototyping.
 
