@@ -1,4 +1,4 @@
-subroutine RGF2_SRG_self_energy(flow, eta,nBas,nC,nO,nV,nR,e,ERI,SigC,Z)
+subroutine RGF2_SRG_self_energy(flow,nBas,nC,nO,nV,nR,e,ERI,SigC,Z)
 
 ! Compute GF2 self-energy and its renormalization factor
 
@@ -7,7 +7,6 @@ subroutine RGF2_SRG_self_energy(flow, eta,nBas,nC,nO,nV,nR,e,ERI,SigC,Z)
 
 ! Input variables
 
-  double precision,intent(in)   :: eta
   double precision,intent(in)   :: flow
   integer,intent(in)            :: nBas
   integer,intent(in)            :: nC
@@ -32,20 +31,17 @@ subroutine RGF2_SRG_self_energy(flow, eta,nBas,nC,nO,nV,nR,e,ERI,SigC,Z)
   double precision,intent(out)  :: SigC(nBas,nBas)
   double precision,intent(out)  :: Z(nBas)
 
-! Initialize 
-
-  SigC(:,:) = 0d0
-  Z(:)      = 0d0
-
 !-----------------------------------------!
 ! Parameters for regularized calculations !
 !-----------------------------------------!
 
   s = flow
 
-!----------------------------------------------------!
-! Compute GF2 self-energy and renormalization factor !
-!----------------------------------------------------!
+!-------------------------!
+! Compute GF2 self-energy !
+!-------------------------!
+
+  SigC(:,:) = 0d0
 
   do p=nC+1,nBas-nR
     do q=nC+1,nBas-nR
@@ -55,12 +51,10 @@ subroutine RGF2_SRG_self_energy(flow, eta,nBas,nC,nO,nV,nR,e,ERI,SigC,Z)
 
             eps_p = e(p) + e(a) - e(i) - e(j)
             eps_q = e(q) + e(a) - e(i) - e(j)
-            kappa = 1d0 - exp(-s*(eps_p**2 + eps_q**2 + 2*eta**2))
+            kappa = 1d0 - exp(-s*(eps_p**2 + eps_q**2))
             num = kappa*(2d0*ERI(p,a,i,j) - ERI(p,a,j,i))*ERI(q,a,i,j)
 
-            SigC(p,q) = SigC(p,q) + num*(eps_p + eps_q)&
-                         /(eps_p**2 + eps_q**2 + 2*eta**2)
-            if(p == q) Z(p) = Z(p) - num*(eps_p**2 - eta**2)/(eps_p**2 + eta**2)**2
+            SigC(p,q) = SigC(p,q) + num*(eps_p + eps_q)/(eps_p**2 + eps_q**2)
 
           end do
         end do
@@ -76,14 +70,50 @@ subroutine RGF2_SRG_self_energy(flow, eta,nBas,nC,nO,nV,nR,e,ERI,SigC,Z)
 
             eps_p = e(p) + e(i) - e(a) - e(b)
             eps_q = e(q) + e(i) - e(a) - e(b)
-            kappa = 1d0 - exp(-s*(eps_p**2 + eps_q**2 + 2*eta**2))
+            kappa = 1d0 - exp(-s*(eps_p**2 + eps_q**2))
             num = kappa*(2d0*ERI(p,i,a,b) - ERI(p,i,b,a))*ERI(q,i,a,b)
 
-            SigC(p,q) = SigC(p,q) + num*(eps_p + eps_q)&
-                        /(eps_p**2 + eps_q**2 + 2*eta**2)
-            if(p == q) Z(p) = Z(p) - num*(eps_p**2 - eta**2)/(eps_p**2 + eta**2)**2
+            SigC(p,q) = SigC(p,q) + num*(eps_p + eps_q)/(eps_p**2 + eps_q**2)
 
           end do
+        end do
+      end do
+    end do
+  end do
+
+!------------------------------------!
+! Compute GF2 renormalization factor !
+!------------------------------------!
+
+  Z(:) = 0d0
+
+  do p=nC+1,nBas-nR
+    do i=nC+1,nO
+      do j=nC+1,nO
+        do a=nO+1,nBas-nR
+
+          eps_p = e(p) + e(a) - e(i) - e(j)
+          kappa = 1d0 - exp(-2d0*s*eps_p**2)
+          num = kappa*(2d0*ERI(p,a,i,j) - ERI(p,a,j,i))*ERI(p,a,i,j)
+
+          Z(p) = Z(p) - num/eps_p**2
+
+        end do
+      end do
+    end do
+  end do
+
+  do p=nC+1,nBas-nR
+    do i=nC+1,nO
+      do a=nO+1,nBas-nR
+        do b=nO+1,nBas-nR
+
+          eps_p = e(p) + e(i) - e(a) - e(b)
+          kappa = 1d0 - exp(-2d0*s*eps_p**2)
+          num = kappa*(2d0*ERI(p,i,a,b) - ERI(p,i,b,a))*ERI(p,i,a,b)
+
+          Z(p) = Z(p) - num/eps_p**2
+
         end do
       end do
     end do

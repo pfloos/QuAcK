@@ -1,4 +1,4 @@
-subroutine RGF2_SRG_self_energy_diag(flow,eta,nBas,nC,nO,nV,nR,e,ERI,SigC,Z)
+subroutine RGF2_SRG_self_energy_diag(flow,nBas,nC,nO,nV,nR,e,ERI,SigC,Z)
 
 ! Compute diagonal part of the GF2 self-energy and its renormalization factor
 
@@ -7,7 +7,7 @@ subroutine RGF2_SRG_self_energy_diag(flow,eta,nBas,nC,nO,nV,nR,e,ERI,SigC,Z)
 
 ! Input variables
 
-  double precision,intent(in)   :: eta,flow
+  double precision,intent(in)   :: flow
   integer,intent(in)            :: nBas
   integer,intent(in)            :: nC
   integer,intent(in)            :: nO
@@ -55,8 +55,8 @@ subroutine RGF2_SRG_self_energy_diag(flow,eta,nBas,nC,nO,nV,nR,e,ERI,SigC,Z)
           kappa = 1d0 - exp(-2d0*eps**2*s)
           num = kappa*(2d0*ERI(p,a,i,j) - ERI(p,a,j,i))*ERI(p,a,i,j)
 
-          SigC(p) = SigC(p) + num*eps/(eps**2 + eta**2)
-          Z(p)    = Z(p)    - num*(eps**2 - eta**2)/(eps**2 + eta**2)**2
+          SigC(p) = SigC(p) + num*eps/(eps**2)
+          Z(p)    = Z(p)    - num*(eps**2)/(eps**2)**2
 
         end do
       end do
@@ -72,8 +72,8 @@ subroutine RGF2_SRG_self_energy_diag(flow,eta,nBas,nC,nO,nV,nR,e,ERI,SigC,Z)
           kappa = 1d0 - exp(-2d0*eps**2*s)
           num = kappa*(2d0*ERI(p,i,a,b) - ERI(p,i,b,a))*ERI(p,i,a,b)
 
-          SigC(p) = SigC(p) + num*eps/(eps**2 + eta**2)
-          Z(p)    = Z(p)    - num*(eps**2 - eta**2)/(eps**2 + eta**2)**2
+          SigC(p) = SigC(p) + num*eps/(eps**2)
+          Z(p)    = Z(p)    - num*(eps**2)/(eps**2)**2
 
         end do
       end do
