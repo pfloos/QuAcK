@@ -66,7 +66,7 @@ Therefore, it is very easy to use other software to compute the integrals or to 
 
 Then, go to the `src` directory and compile
 ```
-make
+cd src; make
 ```
 
 ## ⚡ Quick Start
