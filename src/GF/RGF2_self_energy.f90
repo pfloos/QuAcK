@@ -74,7 +74,7 @@ subroutine RGF2_self_energy(eta,nBas,nC,nO,nV,nR,e,ERI,Ec,SigC,Z)
 
   Z(:) = 1d0/(1d0 - Z(:))
 
-! Compute MP2 correlation energy
+! Compute correlation energy
 
   Ec = 0d0
 
