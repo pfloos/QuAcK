@@ -1,4 +1,4 @@
-subroutine complex_cRG0F2(dotest,dophBSE,doppBSE,TDA,dBSE,dTDA,singlet,triplet,linearize,eta,regularize, &
+subroutine complex_cRG0F2(dotest,dophBSE,doppBSE,TDA,dBSE,dTDA,singlet,triplet,linearize,eta,doSRG, &
                  nBas,nOrb,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,CAP,dipole_int,eHF)
 
 ! Perform a one-shot second-order Green function calculation
@@ -19,7 +19,7 @@ subroutine complex_cRG0F2(dotest,dophBSE,doppBSE,TDA,dBSE,dTDA,singlet,triplet,l
   logical,intent(in)            :: triplet
   logical,intent(in)            :: linearize
   double precision,intent(in)   :: eta
-  logical,intent(in)            :: regularize
+  logical,intent(in)            :: doSRG
 
   integer,intent(in)            :: nBas
   integer,intent(in)            :: nOrb
@@ -66,10 +66,10 @@ subroutine complex_cRG0F2(dotest,dophBSE,doppBSE,TDA,dBSE,dTDA,singlet,triplet,l
           Re_eGFlin(nOrb),Im_eGFlin(nOrb), Re_eGF(nOrb),Im_eGF(nOrb),Re_eHF(nOrb),Im_eHF(nOrb))
   Re_eHF(:) = real(eHF(:))
   Im_eHF(:) = aimag(eHF(:))
-  flow = 100d0
+  flow = 500d0
 
 ! Frequency-dependent second-order contribution
-  if(regularize) then
+  if(doSRG) then
     call complex_cRGF2_SRG_self_energy_diag(flow,eta,nOrb,nC,nO,nV,nR,Re_eHF,Im_eHF,ERI,Re_SigC,Im_SigC,Re_Z,Im_Z)
   else
     call complex_cRGF2_self_energy_diag(eta,nOrb,nC,nO,nV,nR,Re_eHF,Im_eHF,ERI,Re_SigC,Im_SigC,Re_Z,Im_Z)
@@ -88,7 +88,7 @@ subroutine complex_cRG0F2(dotest,dophBSE,doppBSE,TDA,dBSE,dTDA,singlet,triplet,l
 
     write(*,*) ' *** Quasiparticle energies obtained by root search *** '
     write(*,*)
-    call complex_cRGF2_QP_graph(flow,regularize,eta,nOrb,nC,nO,nV,nR,Re_eHF,Im_eHF,ERI,Re_eGFlin,Im_eGFlin,&
+    call complex_cRGF2_QP_graph(doSRG,eta,flow,nOrb,nC,nO,nV,nR,Re_eHF,Im_eHF,ERI,Re_eGFlin,Im_eGFlin,&
             Re_eHF,Im_eHF,Re_eGF,Im_eGF,Re_Z,Im_Z)
   end if
 
