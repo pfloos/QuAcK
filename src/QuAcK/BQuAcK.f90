@@ -53,8 +53,6 @@ subroutine BQuAcK(working_dir,dotest,doHFB,doqsGW,nNuc,nBas,nOrb,nC,nO,nV,nR,ENu
 
   double precision,allocatable  :: eHF(:)
   double precision,allocatable  :: eHFB_state(:)
-  double precision,allocatable  :: Cu(:,:)
-  double precision,allocatable  :: Cd(:,:)
   double precision,allocatable  :: U_QP(:,:)
   double precision,allocatable  :: cHFB(:,:)
   double precision,allocatable  :: PHF(:,:)
@@ -95,20 +93,15 @@ subroutine BQuAcK(working_dir,dotest,doHFB,doqsGW,nNuc,nBas,nOrb,nC,nO,nV,nR,ENu
   allocate(ERI_AO(nBas,nBas,nBas,nBas))
   call wall_time(start_int)
   call read_2e_integrals(working_dir,nBas,ERI_AO)
-  call wall_time(end_int)
-  t_int = end_int - start_int
+
+! For the Hubbard model read two-body parameters (U, J, etc from hubbard file)
 
   inquire(file='hubbard', exist=file_exists)
   if(file_exists) then
    write(*,*)
-   write(*,*) 'Reading Hubbard model parameters'
+   write(*,*) 'Reading Hubbard model two-body parameters'
    write(*,*)
-   ERI_AO=0d0; S=0d0; T=0d0; V=0d0; Hc=0d0; X=0d0;
-   dipole_int_AO=0d0; Enuc=0d0;
-   do iorb=1,nBas
-    S(iorb,iorb) = 1d0
-    X(iorb,iorb) = 1d0
-   enddo
+   ERI_AO=0d0; ENuc=0d0;
    open(unit=314, form='formatted', file='hubbard', status='old')
    do
     read(314,*) iorb,jorb,korb,lorb,Val
@@ -119,18 +112,16 @@ subroutine BQuAcK(working_dir,dotest,doHFB,doqsGW,nNuc,nBas,nOrb,nC,nO,nV,nR,ENu
     if(korb==lorb .and. lorb==0) then
      if(iorb==jorb .and. iorb==0) then
       exit
-     else
-      T(iorb,jorb)=Val
-      Hc(iorb,jorb)=T(iorb,jorb)
-      T(jorb,iorb)=T(iorb,jorb)
-      Hc(jorb,iorb)=T(iorb,jorb)
      endif
     else
      ERI_AO(iorb,jorb,korb,lorb)=Val
     endif
    enddo
   endif
+  close(314)
   
+  call wall_time(end_int)
+  t_int = end_int - start_int
 
   write(*,*)
   write(*,'(A65,1X,F9.3,A8)') 'Total wall time for reading 2e-integrals =',t_int,' seconds'
@@ -154,7 +145,7 @@ subroutine BQuAcK(working_dir,dotest,doHFB,doqsGW,nNuc,nBas,nOrb,nC,nO,nV,nR,ENu
 
     ! Continue with a HFB calculation
     call wall_time(start_HF)
-    call HFB(dotest,maxSCF_HF,thresh_HF,max_diis_HF,level_shift,nNuc,ZNuc,rNuc,ENuc,        &
+    call HFB(dotest,maxSCF_HF,thresh_HF,max_diis_HF,level_shift,nNuc,ZNuc,rNuc,ENuc,         &
              nBas,nOrb,nOrb2,nO_,S,T,V,Hc,ERI_AO,dipole_int_AO,X,EHFB,eHF,cHFB,PHF,PanomHF,  &
              FHF,Delta,temperature,sigma,chem_pot_hf,chem_pot,restart_hfb,U_QP,eHFB_state)
     call wall_time(end_HF)

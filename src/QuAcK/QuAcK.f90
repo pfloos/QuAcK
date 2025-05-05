@@ -15,7 +15,9 @@ program QuAcK
   logical                       :: doG0W0,doevGW,doqsGW,doufG0W0,doufGW
   logical                       :: doG0T0pp,doevGTpp,doqsGTpp,doufG0T0pp,doG0T0eh,doevGTeh,doqsGTeh
   logical                       :: doParquet
+  logical                       :: file_exists
 
+  integer                       :: iorb,jorb,korb,lorb
   integer                       :: nNuc
   integer                       :: nBas
   integer                       :: nOrb
@@ -24,6 +26,7 @@ program QuAcK
   integer                       :: nV(nspin)
   integer                       :: nR(nspin)
   double precision              :: ENuc
+  double precision              :: Val
 
   double precision,allocatable  :: ZNuc(:),rNuc(:,:)
 
@@ -173,9 +176,9 @@ program QuAcK
 
   call read_basis_pyscf(working_dir,nBas,nO,nV)
 
-!--------------------------------------!
-! Read one- and two-electron integrals !
-!--------------------------------------!
+!-----------------------------!
+! Read one-electron integrals !
+!-----------------------------!
 
 ! Memory allocation for one- and two-electron integrals
 
@@ -191,12 +194,6 @@ program QuAcK
 
   call read_1e_integrals(working_dir,nBas,S,T,V,Hc)
   call read_dipole_integrals(working_dir,nBas,dipole_int_AO)
-  call wall_time(end_int)
-
-  t_int = end_int - start_int
-  write(*,*)
-  write(*,'(A65,1X,F9.3,A8)') 'Total wall time for reading 1e-integrals = ',t_int,' seconds'
-  write(*,*)
 
 ! Compute orthogonalization matrix
 
@@ -205,6 +202,43 @@ program QuAcK
   allocate(X(nBas,nOrb))
   X(1:nBas,1:nOrb) = X_tmp(1:nBas,1:nOrb)
   deallocate(X_tmp)
+
+! For the Hubbard model read one-body parameters (t, v_loc, etc from hubbard file)
+
+  inquire(file='hubbard', exist=file_exists)
+  if(file_exists) then
+   write(*,*)
+   write(*,*) 'Reading Hubbard model one-body parameters'
+   write(*,*)
+   S=0d0; T=0d0; V=0d0; Hc=0d0; X=0d0;
+   dipole_int_AO=0d0;
+   do iorb=1,nBas
+    S(iorb,iorb) = 1d0
+    X(iorb,iorb) = 1d0
+   enddo
+   open(unit=314, form='formatted', file='hubbard', status='old')
+   do
+    read(314,*) iorb,jorb,korb,lorb,Val
+    if(korb==lorb .and. lorb==0) then
+     if(iorb==jorb .and. iorb==0) then
+      exit
+     else
+      T(iorb,jorb) =Val
+      T(jorb,iorb) =T(iorb,jorb)
+      Hc(iorb,jorb)=T(iorb,jorb)
+      Hc(jorb,iorb)=T(iorb,jorb)
+     endif
+    endif
+   enddo
+  endif
+  close(314)
+
+  call wall_time(end_int)
+
+  t_int = end_int - start_int
+  write(*,*)
+  write(*,'(A65,1X,F9.3,A8)') 'Total wall time for reading 1e-integrals = ',t_int,' seconds'
+  write(*,*)
 
 !---------------------!
 ! Choose QuAcK branch !

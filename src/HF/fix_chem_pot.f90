@@ -14,6 +14,7 @@ subroutine fix_chem_pot(nO,nOrb,nOrb2,nSCF,thrs_N,trace_1rdm,chem_pot,H_hfb,cp,R
   logical                       :: backward
   integer                       :: iorb
   integer                       :: isteps
+  double precision              :: thrs_closer
   double precision              :: delta_chem_pot
   double precision              :: chem_pot_change
   double precision              :: chem_pot_old
@@ -39,7 +40,8 @@ subroutine fix_chem_pot(nO,nOrb,nOrb2,nSCF,thrs_N,trace_1rdm,chem_pot,H_hfb,cp,R
 
   backward = .false.
   isteps = 0
-  delta_chem_pot  = 1.0d-1
+  delta_chem_pot  = 2d-1
+  thrs_closer     = 2d-1
   chem_pot_change = 0d0
   grad_electrons  = 1d0
   trace_1rdm      = -1d0
@@ -63,25 +65,31 @@ subroutine fix_chem_pot(nO,nOrb,nOrb2,nSCF,thrs_N,trace_1rdm,chem_pot,H_hfb,cp,R
 
   ! First approach close the value with an error lower than 1
 
-  call diag_H_hfb(nOrb,nOrb2,chem_pot,trace_old,H_hfb,cp,R,eHFB_)
-  write(*,'(1X,A1,F16.10,1X,A1,F16.10,1X,A1F16.10,1X,A1)') &
-  '|',trace_old,'|',chem_pot,'|',grad_electrons,'|'
-  do while( abs(trace_1rdm-nO) > 1.0d0 .and. isteps <= 100 )
+  trace_old = 1d2
+  do while( abs(trace_old-nO) > thrs_closer .and. isteps <= 100 )
    isteps = isteps + 1
-   chem_pot_old = chem_pot
-   chem_pot = chem_pot + delta_chem_pot
-   call diag_H_hfb(nOrb,nOrb2,chem_pot,trace_1rdm,H_hfb,cp,R,eHFB_)
-   write(*,'(1X,A1,F16.10,1X,A1,F16.10,1X,A1F16.10,1X,A1)') &
-   '|',trace_1rdm,'|',chem_pot,'|',grad_electrons,'|'
-   if( (trace_1rdm-nO) > 1e-4 .and. (trace_old-nO) < -1e-4 ) then
-    chem_pot = 0.5d0 * ( chem_pot + chem_pot_old )
-    call diag_H_hfb(nOrb,nOrb2,chem_pot,trace_old,H_hfb,cp,R,eHFB_)
-    cycle
-   endif
-   if( abs(trace_1rdm-nO) > abs(trace_old-nO) .and. .not.backward ) then
-    backward=.true.
-    chem_pot = chem_pot - delta_chem_pot
-    delta_chem_pot=-delta_chem_pot
+   call diag_H_hfb(nOrb,nOrb2,chem_pot,trace_old,H_hfb,cp,R,eHFB_)
+   call diag_H_hfb(nOrb,nOrb2,chem_pot-delta_chem_pot,trace_down,H_hfb,cp,R,eHFB_)
+   call diag_H_hfb(nOrb,nOrb2,chem_pot+delta_chem_pot,trace_up,H_hfb,cp,R,eHFB_)
+   if( abs(trace_up-nO) > abs(trace_old-nO) .and. abs(trace_down-nO) > abs(trace_old-nO) ) then
+     write(*,'(1X,A1,F16.10,1X,A1,F16.10,1X,A1F16.10,1X,A1)') &
+     '|',trace_old,'|',chem_pot,'|',grad_electrons,'|'
+     delta_chem_pot = 0.75d0*delta_chem_pot
+     thrs_closer = 0.5d0*thrs_closer
+     write(*,*) "| contracting ...                                     |"  
+     if(delta_chem_pot<1d-2) exit
+   else
+     if( abs(trace_up-nO) < abs(trace_old-nO) ) then
+      chem_pot=chem_pot+delta_chem_pot 
+      write(*,'(1X,A1,F16.10,1X,A1,F16.10,1X,A1F16.10,1X,A1)') &
+      '|',trace_up,'|',chem_pot,'|',grad_electrons,'|'
+     else
+      if( abs(trace_down-nO) < abs(trace_old-nO) ) then
+       chem_pot=chem_pot-delta_chem_pot
+       write(*,'(1X,A1,F16.10,1X,A1,F16.10,1X,A1F16.10,1X,A1)') &
+       '|',trace_down,'|',chem_pot,'|',grad_electrons,'|'
+      endif
+     endif
    endif
   enddo
 
