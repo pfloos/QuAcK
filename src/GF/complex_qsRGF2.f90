@@ -1,5 +1,5 @@
 subroutine complex_qsRGF2(dotest,maxSCF,thresh,max_diis,dophBSE,doppBSE,TDA,  &
-                  dBSE,dTDA,singlet,triplet,eta,regularize,nNuc,ZNuc, &
+                  dBSE,dTDA,singlet,triplet,eta,doSRG,nNuc,ZNuc, &
                   rNuc,ENuc,nBas,nOrb,nC,nO,nV,nR,nS,ERHF,S,X,T,V,Hc, & 
                   ERI_AO,ERI_MO,dipole_int_AO,dipole_int_MO,PHF,cHF,eHF, &
                   CAP_AO,CAP_MO)
@@ -24,7 +24,7 @@ subroutine complex_qsRGF2(dotest,maxSCF,thresh,max_diis,dophBSE,doppBSE,TDA,  &
   logical,intent(in)            :: singlet
   logical,intent(in)            :: triplet
   double precision,intent(in)   :: eta
-  logical,intent(in)            :: regularize
+  logical,intent(in)            :: doSRG
 
   integer,intent(in)            :: nNuc
   double precision,intent(in)   :: ZNuc(nNuc)
@@ -68,12 +68,11 @@ subroutine complex_qsRGF2(dotest,maxSCF,thresh,max_diis,dophBSE,doppBSE,TDA,  &
   complex*16                    :: Ec
   complex*16                    :: EcBSE(nspin)
 
-  complex*16,allocatable         :: error_diis(:,:)
+  complex*16,allocatable         :: err_diis(:,:)
   complex*16,allocatable         :: F_diis(:,:)
   complex*16,allocatable         :: c(:,:)
   complex*16,allocatable         :: cp(:,:)
   complex*16,allocatable         :: eGF(:)
-  complex*16,allocatable         :: eOld(:)
   complex*16,allocatable         :: P(:,:)
   complex*16,allocatable         :: F(:,:)
   complex*16,allocatable         :: Fp(:,:)
@@ -82,7 +81,7 @@ subroutine complex_qsRGF2(dotest,maxSCF,thresh,max_diis,dophBSE,doppBSE,TDA,  &
   complex*16,allocatable         :: SigC(:,:)
   complex*16,allocatable         :: SigCp(:,:)
   complex*16,allocatable         :: Z(:)
-  complex*16,allocatable         :: error(:,:)
+  complex*16,allocatable         :: err(:,:)
 
 ! Hello world
 
@@ -93,6 +92,17 @@ subroutine complex_qsRGF2(dotest,maxSCF,thresh,max_diis,dophBSE,doppBSE,TDA,  &
   write(*,*)'********************************'
   write(*,*)
 
+! SRG regularization
+  
+  flow = 500d0
+  
+  if(doSRG) then
+
+    write(*,*) '*** SRG regularized qsGF2 scheme ***'
+    write(*,*)
+
+  end if
+
 ! Warning 
 
   write(*,*) '!! ERIs in MO basis will be overwritten in qsGF2 !!'
@@ -101,6 +111,7 @@ subroutine complex_qsRGF2(dotest,maxSCF,thresh,max_diis,dophBSE,doppBSE,TDA,  &
 ! Stuff 
 
   nBas_Sq = nBas*nBas
+
 ! TDA 
 
   if(TDA) then 
@@ -111,8 +122,6 @@ subroutine complex_qsRGF2(dotest,maxSCF,thresh,max_diis,dophBSE,doppBSE,TDA,  &
 ! Memory allocation
 
   allocate(eGF(nOrb))
-  allocate(eOld(nOrb))
-
   allocate(c(nBas,nOrb))
 
   allocate(cp(nOrb,nOrb))
@@ -122,14 +131,14 @@ subroutine complex_qsRGF2(dotest,maxSCF,thresh,max_diis,dophBSE,doppBSE,TDA,  &
   allocate(F(nBas,nBas))
   allocate(J(nBas,nBas))
   allocate(K(nBas,nBas))
-  allocate(error(nBas,nBas))
+  allocate(err(nBas,nBas))
 
   allocate(Z(nOrb))
   allocate(SigC(nOrb,nOrb))
 
   allocate(SigCp(nBas,nBas))
 
-  allocate(error_diis(nBas_Sq,max_diis))
+  allocate(err_diis(nBas_Sq,max_diis))
   allocate(F_diis(nBas_Sq,max_diis))
 
 ! Initialization
@@ -139,13 +148,13 @@ subroutine complex_qsRGF2(dotest,maxSCF,thresh,max_diis,dophBSE,doppBSE,TDA,  &
   ispin           = 1
   Conv            = 1d0
   P(:,:)          = PHF(:,:)
-  eOld(:)         = eHF(:)
   eGF(:)          = eHF(:)
   c(:,:)          = cHF(:,:)
   F_diis(:,:)     = 0d0
-  error_diis(:,:) = 0d0
+  err_diis(:,:)   = 0d0
   rcond           = 0d0
-  flow = 500d0
+  
+
 
 !------------------------------------------------------------------------
 ! Main loop
@@ -171,7 +180,7 @@ subroutine complex_qsRGF2(dotest,maxSCF,thresh,max_diis,dophBSE,doppBSE,TDA,  &
 
     ! Compute self-energy and renormalization factor
 
-    if(regularize) then
+    if(doSRG) then
 
       call complex_cRGF2_SRG_self_energy(flow,eta, nOrb, nC, nO, nV, nR, eGF, ERI_MO, SigC, Z)
 
@@ -191,53 +200,16 @@ subroutine complex_qsRGF2(dotest,maxSCF,thresh,max_diis,dophBSE,doppBSE,TDA,  &
 
     F(:,:) = cmplx(Hc(:,:),CAP_AO(:,:),kind=8) + J(:,:) + 0.5d0*K(:,:) + SigCp(:,:)
     if(nBas .ne. nOrb) then
-      call complex_complex_AOtoMO(nBas, nOrb, c(1,1), F(1,1), Fp(1,1))
-      call complex_MOtoAO(nBas, nOrb, S(1,1), c(1,1), Fp(1,1), F(1,1))
+      call complex_complex_AOtoMO(nBas, nOrb, c, F, Fp)
+      call complex_MOtoAO(nBas, nOrb, S, c, Fp, F)
     endif
 
     ! Compute commutator and convergence criteria
 
-    error = matmul(F, matmul(P, S)) - matmul(matmul(S, P), F)
+    err = matmul(F, matmul(P, S)) - matmul(matmul(S, P), F)
 
-    ! DIIS extrapolation 
-
-    n_diis = min(n_diis+1, max_diis)
-    if(abs(rcond) > 1d-7) then
-      call complex_DIIS_extrapolation(rcond,nBas_Sq,nBas_Sq,n_diis,error_diis,F_diis,error,F)
-    else
-      n_diis = 0
-    end if
-
-    ! Diagonalize Hamiltonian in AO basis
-
-    if(nBas .eq. nOrb) then
-      Fp = matmul(transpose(X), matmul(F, X))
-      cp(:,:) = Fp(:,:)
-      call complex_diagonalize_matrix(nOrb, cp, eGF)
-      call complex_orthogonalize_matrix(nBas,cp)
-      c = matmul(X, cp)
-    else
-      Fp = matmul(transpose(c), matmul(F, c))
-      cp(:,:) = Fp(:,:)
-      call complex_diagonalize_matrix(nOrb, cp, eGF)
-      call complex_orthogonalize_matrix(nBas,cp)
-      c = matmul(c, cp)
-    endif
-
-
-    ! Compute new density matrix in the AO basis
-
-    P(:,:) = 2d0*matmul(c(:,1:nO), transpose(c(:,1:nO)))
-
-    ! Save quasiparticles energy for next cycle
-
-    Conv = maxval(abs(eGF - eOld))
-    eOld(:) = eGF(:)
-
-    !------------------------------------------------------------------------
-    !   Compute total energy
-    !------------------------------------------------------------------------
-
+    Conv = maxval(abs(err))
+    
     ! Kinetic energy
 
     ET = complex_trace_matrix(nBas, matmul(P, T))
@@ -258,14 +230,41 @@ subroutine complex_qsRGF2(dotest,maxSCF,thresh,max_diis,dophBSE,doppBSE,TDA,  &
 
     Ex = 0.25d0*complex_trace_matrix(nBas, matmul(P, K))
 
-    ! Correlation energy
-
-    !call RMP2(.false., regularize, nOrb, nC, nO, nV, nR, ERI_MO, ENuc, EqsGF2, eGF, Ec)
 
     ! Total energy
 
-    EqsGF2 = ET + EV + EJ + Ex + Ec
+    EqsGF2 = ET + EV + EJ + Ex + Ec + EW
 
+    ! DIIS extrapolation
+
+    if(max_diis>1) then
+      
+      n_diis = min(n_diis+1,max_diis)
+      call complex_DIIS_extrapolation(rcond,nBas_Sq,nBas_Sq,n_diis,err_diis,F_diis,err,F)
+
+    end if
+
+    ! Diagonalize Hamiltonian in AO basis
+
+    if(nBas == nOrb) then
+      Fp = matmul(transpose(X), matmul(F, X))
+      cp(:,:) = Fp(:,:)
+      call complex_diagonalize_matrix(nOrb, cp, eGF)
+      call complex_orthogonalize_matrix(nBas,cp)
+      c = matmul(X, cp)
+    else
+      Fp = matmul(transpose(c), matmul(F, c))
+      cp(:,:) = Fp(:,:)
+      call complex_diagonalize_matrix(nOrb, cp, eGF)
+      call complex_orthogonalize_matrix(nBas,cp)
+      c = matmul(c, cp)
+    endif
+    
+    call complex_complex_AOtoMO(nBas,nOrb,c,SigCp,SigC)
+
+    ! Compute new density matrix in the AO basis
+
+    P(:,:) = 2d0*matmul(c(:,1:nO), transpose(c(:,1:nO)))
 
     !------------------------------------------------------------------------
     ! Print results
@@ -289,14 +288,14 @@ subroutine complex_qsRGF2(dotest,maxSCF,thresh,max_diis,dophBSE,doppBSE,TDA,  &
     write(*,*)'!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!'
     write(*,*)
 
-    deallocate(c, cp, P, F, Fp, J, K, SigC, SigCp, Z, error, error_diis, F_diis)
+    deallocate(c, cp, P, F, Fp, J, K, SigC, SigCp, Z, err, err_diis, F_diis)
     stop
 
   end if
 
 ! Deallocate memory
 
-  deallocate(c, cp, P, F, Fp, J, K, SigC, SigCp, Z, error, error_diis, F_diis)
+  deallocate(c, cp, P, F, Fp, J, K, SigC, SigCp, Z, err, err_diis, F_diis)
 
 !! Perform phBSE@GF2 calculation
 !
@@ -318,31 +317,31 @@ subroutine complex_qsRGF2(dotest,maxSCF,thresh,max_diis,dophBSE,doppBSE,TDA,  &
 
 
 ! Perform ppBSE@GF2 calculation
-
-  if(doppBSE) then
-
-    call RGF2_ppBSE(TDA, dBSE, dTDA, singlet, triplet, eta, nOrb, &
-                    nC, nO, nV, nR, ERI_MO, dipole_int_MO, eGF, EcBSE)
-
-    write(*,*)
-    write(*,*)'-------------------------------------------------------------------------------'
-    write(*,'(2X,A50,F20.10,A3)') 'Tr@ppBSE@qsGF2 correlation energy (singlet) =',EcBSE(1),' au'
-    write(*,'(2X,A50,F20.10,A3)') 'Tr@ppBSE@qsGF2 correlation energy (triplet) =',3d0*EcBSE(2),' au'
-    write(*,'(2X,A50,F20.10,A3)') 'Tr@ppBSE@qsGF2 correlation energy           =',EcBSE(1) + 3d0*EcBSE(2),' au'
-    write(*,'(2X,A50,F20.10,A3)') 'Tr@ppBSE@qsGF2 total energy                 =',ENuc + EqsGF2 + EcBSE(1) + 3d0*EcBSE(2),' au'
-    write(*,*)'-------------------------------------------------------------------------------'
-    write(*,*)
-
-  end if
-
-! Testing zone
-
-  if(dotest) then
-
-    call dump_test_value('R','qsGF2 correlation energy',Ec)
-    call dump_test_value('R','qsGF2 HOMO energy',eGF(nO))
-    call dump_test_value('R','qsGF2 LUMO energy',eGF(nO+1))
-
-  end if
+!
+!  if(doppBSE) then
+!
+!    call RGF2_ppBSE(TDA, dBSE, dTDA, singlet, triplet, eta, nOrb, &
+!                    nC, nO, nV, nR, ERI_MO, dipole_int_MO, eGF, EcBSE)
+!
+!    write(*,*)
+!    write(*,*)'-------------------------------------------------------------------------------'
+!    write(*,'(2X,A50,F20.10,A3)') 'Tr@ppBSE@qsGF2 correlation energy (singlet) =',EcBSE(1),' au'
+!    write(*,'(2X,A50,F20.10,A3)') 'Tr@ppBSE@qsGF2 correlation energy (triplet) =',3d0*EcBSE(2),' au'
+!    write(*,'(2X,A50,F20.10,A3)') 'Tr@ppBSE@qsGF2 correlation energy           =',EcBSE(1) + 3d0*EcBSE(2),' au'
+!    write(*,'(2X,A50,F20.10,A3)') 'Tr@ppBSE@qsGF2 total energy                 =',ENuc + EqsGF2 + EcBSE(1) + 3d0*EcBSE(2),' au'
+!    write(*,*)'-------------------------------------------------------------------------------'
+!    write(*,*)
+!
+!  end if
+!
+!! Testing zone
+!
+!  if(dotest) then
+!
+!    call dump_test_value('R','qsGF2 correlation energy',Ec)
+!    call dump_test_value('R','qsGF2 HOMO energy',eGF(nO))
+!    call dump_test_value('R','qsGF2 LUMO energy',eGF(nO+1))
+!
+!  end if
 
 end subroutine 

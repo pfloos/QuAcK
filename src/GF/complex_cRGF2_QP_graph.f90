@@ -1,4 +1,4 @@
-subroutine complex_cRGF2_QP_graph(flow,reg,eta,nBas,nC,nO,nV,nR,Re_eHF,Im_eHF,&
+subroutine complex_cRGF2_QP_graph(doSRG,eta,flow,nBas,nC,nO,nV,nR,Re_eHF,Im_eHF,&
                 ERI,Re_eGFlin,Im_eGFlin,Re_eOld,Im_eold,Re_eGF,Im_eGF,Re_Z,Im_Z)
 
 ! Compute the graphical solution of the complex GF2 QP equation
@@ -10,7 +10,7 @@ subroutine complex_cRGF2_QP_graph(flow,reg,eta,nBas,nC,nO,nV,nR,Re_eHF,Im_eHF,&
 
   double precision,intent(in)   :: eta
   double precision,intent(in)   :: flow
-  logical, intent(in)           :: reg
+  logical, intent(in)           :: doSRG
   integer,intent(in)            :: nBas
   integer,intent(in)            :: nC
   integer,intent(in)            :: nO
@@ -62,7 +62,7 @@ subroutine complex_cRGF2_QP_graph(flow,reg,eta,nBas,nC,nO,nV,nR,Re_eHF,Im_eHF,&
     do while (abs(cmplx(Re_f,Im_f,kind=8)) > thresh .and. nIt < maxIt)
     
       nIt = nIt + 1
-      if(reg) then
+      if(doSRG) then
         call complex_cRGF2_SRG_SigC_dSigC(flow,p,eta,nBas,nC,nO,nV,nR,Re_w,Im_w,Re_eOld,Im_eOld,ERI,&
               Re_SigC,Im_SigC,Re_dSigC,Im_dSigC)
       else 

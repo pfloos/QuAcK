@@ -1,5 +1,5 @@
 subroutine complex_evRGF2(dotest,dophBSE,doppBSE,TDA,dBSE,dTDA,maxSCF,thresh,max_diis,singlet,triplet, &
-                 linearize,eta,regularize,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,dipole_int,eHF)
+                 linearize,eta,doSRG,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,dipole_int,eHF)
 
 ! Perform eigenvalue self-consistent second-order Green function calculation
 
@@ -22,7 +22,7 @@ subroutine complex_evRGF2(dotest,dophBSE,doppBSE,TDA,dBSE,dTDA,maxSCF,thresh,max
   logical,intent(in)            :: triplet
   logical,intent(in)            :: linearize
   double precision,intent(in)   :: eta
-  logical,intent(in)            :: regularize
+  logical,intent(in)            :: doSRG
 
   integer,intent(in)            :: nBas
   integer,intent(in)            :: nOrb
@@ -104,7 +104,7 @@ subroutine complex_evRGF2(dotest,dophBSE,doppBSE,TDA,dBSE,dTDA,maxSCF,thresh,max
 
     ! Frequency-dependent second-order contribution
 
-    if(regularize) then 
+    if(doSRG) then 
       
       call complex_cRGF2_SRG_self_energy_diag(flow,eta,nOrb,nC,nO,nV,nR,Re_eGF,Im_eGF,ERI,Re_SigC,Im_SigC,Re_Z,Im_Z)
       
@@ -125,7 +125,7 @@ subroutine complex_evRGF2(dotest,dophBSE,doppBSE,TDA,dBSE,dTDA,maxSCF,thresh,max
       write(*,*) ' *** Quasiparticle energies obtained by root search *** '
       write(*,*)
  
-      call complex_cRGF2_QP_graph(flow,regularize,eta,nOrb,nC,nO,nV,nR,Re_eHF,Im_eHF,&
+      call complex_cRGF2_QP_graph(doSRG,eta,flow,nOrb,nC,nO,nV,nR,Re_eHF,Im_eHF,&
               ERI,Re_eOld,Im_eOld,Re_eOld,Im_eOld,Re_eGF,Im_eGF,Re_Z,Im_Z)
       eGF = cmplx(Re_eGF,Im_eGF,kind=8)
     end if
@@ -134,7 +134,7 @@ subroutine complex_evRGF2(dotest,dophBSE,doppBSE,TDA,dBSE,dTDA,maxSCF,thresh,max
 
     ! Print results
 
-    !call RMP2(.false.,regularize,nOrb,nC,nO,nV,nR,ERI,ENuc,ERHF,eGF,Ec)
+    !call RMP2(.false.,doSRG,nOrb,nC,nO,nV,nR,ERI,ENuc,ERHF,eGF,Ec)
     call print_complex_evRGF2(nOrb,nO,nSCF,Conv,Re_eHF,Im_eHF,ENuc,ERHF,Re_SigC,Im_SigC,Re_Z,Im_Z,Re_eGF,Im_eGF)
 
     ! DIIS extrapolation
