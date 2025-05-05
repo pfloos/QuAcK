@@ -1,4 +1,4 @@
-subroutine RG0F2(dotest,dophBSE,doppBSE,TDA,dBSE,dTDA,singlet,triplet,linearize,eta,regularize, &
+subroutine RG0F2(dotest,dophBSE,doppBSE,TDA,dBSE,dTDA,singlet,triplet,linearize,eta,doSRG, &
                  nBas,nOrb,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,dipole_int,eHF)
 
 ! Perform a one-shot second-order Green function calculation
@@ -19,7 +19,7 @@ subroutine RG0F2(dotest,dophBSE,doppBSE,TDA,dBSE,dTDA,singlet,triplet,linearize,
   logical,intent(in)            :: triplet
   logical,intent(in)            :: linearize
   double precision,intent(in)   :: eta
-  logical,intent(in)            :: regularize
+  logical,intent(in)            :: doSRG
 
   integer,intent(in)            :: nBas
   integer,intent(in)            :: nOrb
@@ -52,7 +52,16 @@ subroutine RG0F2(dotest,dophBSE,doppBSE,TDA,dBSE,dTDA,singlet,triplet,linearize,
   write(*,*)'*******************************'
   write(*,*)
 
-  flow =  500d0
+! SRG regularization
+
+  flow = 500d0
+
+  if(doSRG) then
+
+    write(*,*) '*** SRG regularized G0F2 scheme ***'
+    write(*,*)
+
+  end if
 
 ! Memory allocation
 
@@ -60,15 +69,17 @@ subroutine RG0F2(dotest,dophBSE,doppBSE,TDA,dBSE,dTDA,singlet,triplet,linearize,
 
 ! Frequency-dependent second-order contribution
 
-  if(regularize) then 
+  if(doSRG) then 
 
-    call RGF2_SRG_self_energy_diag(flow,eta,nOrb,nC,nO,nV,nR,eHF,ERI,SigC,Z)
+    call RGF2_SRG_self_energy_diag(flow,nOrb,nC,nO,nV,nR,eHF,ERI,Ec,SigC,Z)
 
   else
 
-    call RGF2_self_energy_diag(eta,nOrb,nC,nO,nV,nR,eHF,ERI,SigC,Z)
+    call RGF2_self_energy_diag(eta,nOrb,nC,nO,nV,nR,eHF,ERI,Ec,SigC,Z)
 
   end if
+
+  print*,Ec
   
   eGFlin(:) = eHF(:) + Z(:)*SigC(:)
 
@@ -83,13 +94,12 @@ subroutine RG0F2(dotest,dophBSE,doppBSE,TDA,dBSE,dTDA,singlet,triplet,linearize,
     write(*,*) ' *** Quasiparticle energies obtained by root search *** '
     write(*,*)
 
-    call RGF2_QP_graph(flow,regularize,eta,nOrb,nC,nO,nV,nR,eHF,ERI,eGFlin,eHF,eGF,Z)
+    call RGF2_QP_graph(doSRG,eta,flow,nOrb,nC,nO,nV,nR,eHF,ERI,eGFlin,eHF,eGF,Z)
 
   end if
 
   ! Print results
 
-  call RMP2(.false.,regularize,nOrb,nC,nO,nV,nR,ERI,ENuc,ERHF,eGF,Ec)
   call print_RG0F2(nOrb,nO,eHF,SigC,eGF,Z,ENuc,ERHF,Ec)
 
 ! Perform BSE@GF2 calculation

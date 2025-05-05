@@ -1,4 +1,4 @@
-subroutine RGF2_SRG_self_energy_diag(flow,eta,nBas,nC,nO,nV,nR,e,ERI,SigC,Z)
+subroutine RGF2_SRG_self_energy_diag(flow,nBas,nC,nO,nV,nR,e,ERI,Ec,SigC,Z)
 
 ! Compute diagonal part of the GF2 self-energy and its renormalization factor
 
@@ -7,7 +7,7 @@ subroutine RGF2_SRG_self_energy_diag(flow,eta,nBas,nC,nO,nV,nR,e,ERI,SigC,Z)
 
 ! Input variables
 
-  double precision,intent(in)   :: eta,flow
+  double precision,intent(in)   :: flow
   integer,intent(in)            :: nBas
   integer,intent(in)            :: nC
   integer,intent(in)            :: nO
@@ -28,6 +28,7 @@ subroutine RGF2_SRG_self_energy_diag(flow,eta,nBas,nC,nO,nV,nR,e,ERI,SigC,Z)
 
 ! Output variables
 
+  double precision,intent(out)  :: Ec
   double precision,intent(out)  :: SigC(nBas)
   double precision,intent(out)  :: Z(nBas)
 
@@ -55,8 +56,8 @@ subroutine RGF2_SRG_self_energy_diag(flow,eta,nBas,nC,nO,nV,nR,e,ERI,SigC,Z)
           kappa = 1d0 - exp(-2d0*eps**2*s)
           num = kappa*(2d0*ERI(p,a,i,j) - ERI(p,a,j,i))*ERI(p,a,i,j)
 
-          SigC(p) = SigC(p) + num*eps/(eps**2 + eta**2)
-          Z(p)    = Z(p)    - num*(eps**2 - eta**2)/(eps**2 + eta**2)**2
+          SigC(p) = SigC(p) + num/eps
+          Z(p)    = Z(p)    - num/eps**2
 
         end do
       end do
@@ -72,8 +73,8 @@ subroutine RGF2_SRG_self_energy_diag(flow,eta,nBas,nC,nO,nV,nR,e,ERI,SigC,Z)
           kappa = 1d0 - exp(-2d0*eps**2*s)
           num = kappa*(2d0*ERI(p,i,a,b) - ERI(p,i,b,a))*ERI(p,i,a,b)
 
-          SigC(p) = SigC(p) + num*eps/(eps**2 + eta**2)
-          Z(p)    = Z(p)    - num*(eps**2 - eta**2)/(eps**2 + eta**2)**2
+          SigC(p) = SigC(p) + num/eps
+          Z(p)    = Z(p)    - num/eps**2
 
         end do
       end do
@@ -81,4 +82,27 @@ subroutine RGF2_SRG_self_energy_diag(flow,eta,nBas,nC,nO,nV,nR,e,ERI,SigC,Z)
   end do
 
   Z(:) = 1d0/(1d0 - Z(:))
+
+!----------------------------!  
+! Compute correlation energy !  
+!----------------------------!  
+
+  Ec = 0d0
+
+  do i=nC+1,nO
+    do j=nC+1,nO
+      do a=nO+1,nBas-nR
+        do b=nO+1,nBas-nR
+
+          eps = e(i) + e(j) - e(a) - e(b)
+          kappa = 1d0 - exp(-2d0*s*eps**2)
+          num = kappa*(2d0*ERI(i,j,a,b) - ERI(i,j,b,a))*ERI(i,j,a,b)
+
+          Ec = Ec + num/eps
+
+        end do
+      end do
+    end do
+  end do
+
 end subroutine 

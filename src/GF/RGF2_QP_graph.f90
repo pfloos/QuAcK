@@ -1,4 +1,4 @@
-subroutine RGF2_QP_graph(flow,reg,eta,nBas,nC,nO,nV,nR,eHF,ERI,eGFlin,eOld,eGF,Z)
+subroutine RGF2_QP_graph(doSRG,eta,flow,nBas,nC,nO,nV,nR,eHF,ERI,eGFlin,eOld,eGF,Z)
 
 ! Compute the graphical solution of the GF2 QP equation
 
@@ -7,8 +7,9 @@ subroutine RGF2_QP_graph(flow,reg,eta,nBas,nC,nO,nV,nR,eHF,ERI,eGFlin,eOld,eGF,Z
 
 ! Input variables
 
-  double precision,intent(in)   :: eta,flow
-  logical,intent(in)            :: reg
+  double precision,intent(in)   :: eta
+  double precision,intent(in)   :: flow
+  logical,intent(in)            :: doSRG
   integer,intent(in)            :: nBas
   integer,intent(in)            :: nC
   integer,intent(in)            :: nO
@@ -51,9 +52,9 @@ subroutine RGF2_QP_graph(flow,reg,eta,nBas,nC,nO,nV,nR,eHF,ERI,eGFlin,eOld,eGF,Z
     
       nIt = nIt + 1
 
-      if(reg) then
-        SigC  = RGF2_SRG_SigC(flow,p,w,eta,nBas,nC,nO,nV,nR,eOld,ERI)
-        dSigC = RGF2_SRG_dSigC(flow,p,w,eta,nBas,nC,nO,nV,nR,eOld,ERI)
+      if(doSRG) then
+        SigC  = RGF2_SRG_SigC(p,w,flow,nBas,nC,nO,nV,nR,eOld,ERI)
+        dSigC = RGF2_SRG_dSigC(p,w,flow,nBas,nC,nO,nV,nR,eOld,ERI)
       else
         SigC  = RGF2_SigC(p,w,eta,nBas,nC,nO,nV,nR,eOld,ERI)
         dSigC = RGF2_dSigC(p,w,eta,nBas,nC,nO,nV,nR,eOld,ERI)

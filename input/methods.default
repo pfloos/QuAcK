@@ -13,7 +13,7 @@
 # G0F2 evGF2 qsGF2 ufGF2 G0F3 evGF3
   F    F     F     F    F    F
 # G0W0 evGW qsGW ufG0W0 ufGW 
-  T    F    F    F      F    
+  F    F    F    F      F    
 # G0T0pp evGTpp qsGTpp ufG0T0pp
   F      F      F      F
 # G0T0eh evGTeh qsGTeh

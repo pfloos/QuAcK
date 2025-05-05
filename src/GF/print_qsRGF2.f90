@@ -97,10 +97,10 @@ subroutine print_qsRGF2(nBas, nOrb, nO, nSCF, Conv, thresh, eHF, eGF, c, &
     write(*,'(A32,1X,F16.10,A3)') ' Nuclear   repulsion: ',ENuc,' au'
     write(*,'(A32,1X,F16.10,A3)') ' qsGF2        energy: ',ENuc + EqsGF,' au'
     write(*,'(A50)')           '---------------------------------------'
-    write(*,'(A35)')           ' Dipole moment (Debye)    '
+    write(*,'(A32)')           ' Dipole moment (Debye)'
     write(*,'(10X,4A10)')      'X','Y','Z','Tot.'
     write(*,'(10X,4F10.6)')    (dipole(ixyz)*auToD,ixyz=1,ncart),norm2(dipole)*auToD
-    write(*,'(A50)')           '-----------------------------------------'
+    write(*,'(A50)')           '---------------------------------------'
     write(*,*)
  
     write(*,'(A50)') '---------------------------------------'
@@ -109,7 +109,7 @@ subroutine print_qsRGF2(nBas, nOrb, nO, nSCF, Conv, thresh, eHF, eGF, c, &
     call matout(nBas, nOrb, c)
     write(*,*)
     write(*,'(A50)') '---------------------------------------'
-    write(*,'(A32)') ' qsGF2 MO energies'
+    write(*,'(A32)') ' qsGF2 MO energies    '
     write(*,'(A50)') '---------------------------------------'
     call matout(nOrb, 1, eGF)
     write(*,*)
