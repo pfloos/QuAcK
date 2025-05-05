@@ -280,17 +280,18 @@ subroutine complex_qsRGW(dotest,maxSCF,thresh,max_diis,doACFDT,exchange_kernel,d
       Fp = matmul(transpose(X),matmul(F,X))
       cp(:,:) = Fp(:,:)
       call complex_diagonalize_matrix(nOrb,cp,eGW)
-      call complex_orthogonalize_matrix(nBas,cp)
+      call complex_orthogonalize_matrix(nOrb,cp)
       c = matmul(X,cp)
     else
       Fp = matmul(transpose(c),matmul(F,c))
       cp(:,:) = Fp(:,:)
       call complex_diagonalize_matrix(nOrb,cp,eGW)
-      call complex_orthogonalize_matrix(nBas,cp)
+      call complex_orthogonalize_matrix(nOrb,cp)
       c = matmul(c,cp)
     endif
 
     call complex_complex_AOtoMO(nBas,nOrb,c,SigCp,SigC)
+    
     ! Density matrix
 
     P(:,:) = 2d0*matmul(c(:,1:nO),transpose(c(:,1:nO)))
