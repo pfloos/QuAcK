@@ -44,7 +44,7 @@ subroutine complex_cRG0W0(dotest,doACFDT,exchange_kernel,doXBS,dophBSE,dophBSE2,
 ! Local variables
 
   logical                       :: print_W   = .false.
-  logical                       :: plot_self = .true.
+  logical                       :: plot_self = .false.
   logical                       :: dRPA_W
   integer                       :: isp_W
   integer                       :: p
