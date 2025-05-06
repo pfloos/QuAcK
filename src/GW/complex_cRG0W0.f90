@@ -44,7 +44,7 @@ subroutine complex_cRG0W0(dotest,doACFDT,exchange_kernel,doXBS,dophBSE,dophBSE2,
 ! Local variables
 
   logical                       :: print_W   = .false.
-  logical                       :: plot_self = .false.
+  logical                       :: plot_self = .true.
   logical                       :: dRPA_W
   integer                       :: isp_W
   integer                       :: p
@@ -156,7 +156,7 @@ end if
 
 ! Plot self-energy, renormalization factor, and spectral function
 !
-  if(plot_self) call complex_RGW_plot_self_energy(nOrb,eta,nC,nO,nV,nR,nS,eHF,eHF,Om,rho)
+  if(plot_self) call complex_RGW_plot_self_energy(nOrb,eta,nC,nO,nV,nR,nS,Re_eHF,Im_eHF,Re_eGW,Im_eGW,Om,rho)
 !
 !! Cumulant expansion 
 !
