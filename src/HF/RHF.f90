@@ -211,15 +211,13 @@ subroutine RHF(dotest,maxSCF,thresh,max_diis,guess_type,level_shift,nNuc,ZNuc,rN
 
 ! Compute dipole moments
 
-  if (n_diis < max_diis ) then ! Fix possible error in orb. energies when the number of iterations < n_diis
-   call Hartree_matrix_AO_basis(nBas,P,ERI,J)
-   call exchange_matrix_AO_basis(nBas,P,ERI,K)
-   F(:,:) = Hc(:,:) + J(:,:) + 0.5d0*K(:,:)
-   Fp = matmul(transpose(X),matmul(F,X))
-   cp(:,:) = Fp(:,:)
-   call diagonalize_matrix(nOrb,cp,eHF)
-   c = matmul(X,cp)
-  endif
+  call Hartree_matrix_AO_basis(nBas,P,ERI,J)
+  call exchange_matrix_AO_basis(nBas,P,ERI,K)
+  F(:,:) = Hc(:,:) + J(:,:) + 0.5d0*K(:,:)
+  Fp = matmul(transpose(X),matmul(F,X))
+  cp(:,:) = Fp(:,:)
+  call diagonalize_matrix(nOrb,cp,eHF)
+  c = matmul(X,cp)
 
   call dipole_moment(nBas,P,nNuc,ZNuc,rNuc,dipole_int,dipole)
   call print_RHF(nBas,nOrb,nO,eHF,c,ENuc,ET,EV,EJ,EK,ERHF,dipole)
