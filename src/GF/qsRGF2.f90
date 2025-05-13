@@ -185,8 +185,6 @@ subroutine qsRGF2(dotest,maxSCF,thresh,max_diis,dophBSE,doppBSE,TDA,  &
 
     end if
 
-    print*,Ec
-
     ! Make correlation self-energy Hermitian and transform it back to AO basis
    
     SigC = 0.5d0*(SigC + transpose(SigC))
@@ -259,7 +257,7 @@ subroutine qsRGF2(dotest,maxSCF,thresh,max_diis,dophBSE,doppBSE,TDA,  &
     ! Print results
 
     call dipole_moment(nBas,P,nNuc,ZNuc,rNuc,dipole_int_AO,dipole)
-    call print_qsRGF2(nBas,nOrb,nO,nSCF,Conv,thresh,eHF,eGF,&
+    call print_qsRGF2(nBas,nOrb,nC,nO,nV,nR,nSCF,Conv,thresh,eHF,eGF,&
                       c,SigC,Z,ENuc,ET,EV,EJ,Ex,Ec,EqsGF2,dipole)
 
   end do
@@ -269,7 +267,7 @@ subroutine qsRGF2(dotest,maxSCF,thresh,max_diis,dophBSE,doppBSE,TDA,  &
 
 ! Did it actually converge?
 
-  if(nSCF == maxSCF+1) then
+  if(nSCF == maxSCF) then
 
     write(*,*)
     write(*,*)'!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!'

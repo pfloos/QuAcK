@@ -161,7 +161,7 @@ subroutine evRGW(dotest,maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,dop
 
     ! Print results
 
-    call print_evRGW(nOrb,nO,nSCF,Conv,eHF,ENuc,ERHF,SigC,Z,eGW,EcRPA,EcGM)
+    call print_evRGW(nBas,nOrb,nC,nO,nV,nR,nSCF,Conv,eHF,ENuc,ERHF,SigC,Z,eGW,EcRPA,EcGM)
 
     ! DIIS extrapolation
 

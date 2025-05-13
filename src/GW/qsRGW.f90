@@ -181,7 +181,7 @@ subroutine qsRGW(dotest,maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,dop
 ! Main loop
 !------------------------------------------------------------------------
 
-  do while(Conv > thresh .and. nSCF <= maxSCF)
+  do while(Conv > thresh .and. nSCF < maxSCF)
 
     ! Increment
 
@@ -292,7 +292,7 @@ subroutine qsRGW(dotest,maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,dop
     ! Print results
 
     call dipole_moment(nBas,P,nNuc,ZNuc,rNuc,dipole_int_AO,dipole)
-    call print_qsRGW(nBas,nOrb,nO,nSCF,Conv,thresh,eHF,eGW,c,SigC,Z, &
+    call print_qsRGW(nBas,nOrb,nC,nO,nV,nR,nSCF,Conv,thresh,eHF,eGW,c,SigC,Z, &
                      ENuc,ET,EV,EJ,EK,EcGM,EcRPA,EqsGW,dipole)
 
   end do
@@ -302,7 +302,7 @@ subroutine qsRGW(dotest,maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,dop
 
 ! Did it actually converge?
 
-  if(nSCF == maxSCF+1) then
+  if(nSCF == maxSCF) then
 
     write(*,*)
     write(*,*)'!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!'

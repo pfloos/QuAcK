@@ -1,8 +1,4 @@
-
-! ---
-
-subroutine print_qsRGF2(nBas, nOrb, nO, nSCF, Conv, thresh, eHF, eGF, c, &
-                        SigC, Z, ENuc, ET, EV, EJ, Ex, Ec, EqsGF, dipole)
+subroutine print_qsRGF2(nBas,nOrb,nC,nO,nV,nR,nSCF,Conv,thresh,eHF,eGF,c,SigC,Z,ENuc,ET,EV,EJ,Ex,Ec,EqsGF,dipole)
 
 ! Print one-electron energies and other stuff for qsGF2
 
@@ -11,30 +7,35 @@ subroutine print_qsRGF2(nBas, nOrb, nO, nSCF, Conv, thresh, eHF, eGF, c, &
 
 ! Input variables
 
-  integer,intent(in)                 :: nBas, nOrb
-  integer,intent(in)                 :: nO
-  integer,intent(in)                 :: nSCF
-  double precision,intent(in)        :: ENuc
-  double precision,intent(in)        :: Conv
-  double precision,intent(in)        :: thresh
-  double precision,intent(in)        :: eHF(nOrb)
-  double precision,intent(in)        :: eGF(nOrb)
-  double precision,intent(in)        :: c(nBas,nOrb)
-  double precision,intent(in)        :: SigC(nOrb,nOrb)
-  double precision,intent(in)        :: Z(nOrb)
-  double precision,intent(in)        :: ET
-  double precision,intent(in)        :: EV
-  double precision,intent(in)        :: EJ
-  double precision,intent(in)        :: Ex
-  double precision,intent(in)        :: Ec
-  double precision,intent(in)        :: EqsGF
-  double precision,intent(in)        :: dipole(ncart)
+  integer,intent(in)            :: nBas
+  integer,intent(in)            :: nOrb
+  integer,intent(in)            :: nC
+  integer,intent(in)            :: nO
+  integer,intent(in)            :: nV
+  integer,intent(in)            :: nR
+  integer,intent(in)            :: nSCF
+  double precision,intent(in)   :: ENuc
+  double precision,intent(in)   :: Conv
+  double precision,intent(in)   :: thresh
+  double precision,intent(in)   :: eHF(nOrb)
+  double precision,intent(in)   :: eGF(nOrb)
+  double precision,intent(in)   :: c(nBas,nOrb)
+  double precision,intent(in)   :: SigC(nOrb,nOrb)
+  double precision,intent(in)   :: Z(nOrb)
+  double precision,intent(in)   :: ET
+  double precision,intent(in)   :: EV
+  double precision,intent(in)   :: EJ
+  double precision,intent(in)   :: Ex
+  double precision,intent(in)   :: Ec
+  double precision,intent(in)   :: EqsGF
+  double precision,intent(in)   :: dipole(ncart)
 
 ! Local variables
 
-  integer                            :: q,ixyz,HOMO,LUMO
-  double precision                   :: Gap
-  double precision,external          :: trace_matrix
+  integer                       :: i,a
+  integer                       :: ixyz,HOMO,LUMO
+  double precision              :: Gap
+  double precision,external     :: trace_matrix
 
 ! Output variables
 
@@ -42,7 +43,7 @@ subroutine print_qsRGF2(nBas, nOrb, nO, nSCF, Conv, thresh, eHF, eGF, c, &
 
   HOMO = nO
   LUMO = HOMO + 1
-  Gap = eGF(LUMO)-eGF(HOMO)
+  Gap  = eGF(LUMO) - eGF(HOMO)
 
 ! Dump results
 
@@ -57,9 +58,24 @@ subroutine print_qsRGF2(nBas, nOrb, nO, nSCF, Conv, thresh, eHF, eGF, c, &
             '|','#','|','e_HF (eV)','|','Sig_c (eV)','|','Z','|','e_QP (eV)','|'
   write(*,*)'-------------------------------------------------------------------------------'
 
-  do q = 1, nOrb
+
+  ! Occupied states
+
+  do i=nC+1,nO
     write(*,'(1X,A1,1X,I3,1X,A1,1X,F15.6,1X,A1,1X,F15.6,1X,A1,1X,F15.6,1X,A1,1X,F15.6,1X,A1,1X)') &
-    '|',q,'|',eHF(q)*HaToeV,'|',SigC(q,q)*HaToeV,'|',Z(q),'|',eGF(q)*HaToeV,'|'
+    '|',i,'|',eHF(i)*HaToeV,'|',SigC(i,i)*HaToeV,'|',Z(i),'|',eGF(i)*HaToeV,'|'
+  end do
+
+  ! Fermi level
+
+  write(*,*)'-------------------------------------------------------------------------------'
+  write(*,*)'-------------------------------------------------------------------------------'
+
+  ! Vacant states
+
+  do a=nO+1,nOrb-nR
+    write(*,'(1X,A1,1X,I3,1X,A1,1X,F15.6,1X,A1,1X,F15.6,1X,A1,1X,F15.6,1X,A1,1X,F15.6,1X,A1,1X)') &
+    '|',a,'|',eHF(a)*HaToeV,'|',SigC(a,a)*HaToeV,'|',Z(a),'|',eGF(a)*HaToeV,'|'
   end do
 
   write(*,*)'-------------------------------------------------------------------------------'
@@ -106,12 +122,12 @@ subroutine print_qsRGF2(nBas, nOrb, nO, nSCF, Conv, thresh, eHF, eGF, c, &
     write(*,'(A50)') '---------------------------------------'
     write(*,'(A32)') ' qsGF2 MO coefficients'
     write(*,'(A50)') '---------------------------------------'
-    call matout(nBas, nOrb, c)
+    call matout(nBas,nOrb,c)
     write(*,*)
     write(*,'(A50)') '---------------------------------------'
     write(*,'(A32)') ' qsGF2 MO energies    '
     write(*,'(A50)') '---------------------------------------'
-    call matout(nOrb, 1, eGF)
+    call matout(nOrb,1,eGF)
     write(*,*)
 
   end if
