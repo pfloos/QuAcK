@@ -33,6 +33,14 @@ subroutine R_Parquet_self_energy(eta,nOrb,nC,nO,nV,nR,nS,nOOs,nVVs,nOOt,nVVt,eQP
   double precision              :: eps,dem1,dem2,reg,reg1,reg2
   double precision              :: num
   double precision              :: start_t,end_t,t
+
+  logical                       :: print_self_energy
+  double precision,allocatable  :: Sig2d(:)
+  double precision,allocatable  :: Sig2x(:)
+  double precision,allocatable  :: Sig1eh(:)
+  double precision,allocatable  :: Sig3eh(:)
+  double precision,allocatable  :: Sig1pp(:)
+  double precision,allocatable  :: Sig3pp(:)
   
 ! Output variables
   double precision,intent(out)  :: EcGM
@@ -44,7 +52,19 @@ subroutine R_Parquet_self_energy(eta,nOrb,nC,nO,nV,nR,nS,nOOs,nVVs,nOOt,nVVt,eQP
   SigC(:) = 0d0
   Z(:)    = 0d0
   EcGM    = 0d0
+
+! Memory allocation for self-energy decomposition
+
+  allocate(Sig2d(nOrb))
+  allocate(Sig2x(nOrb))
+  allocate(Sig1eh(nOrb))
+  allocate(Sig3eh(nOrb))
+  allocate(Sig1pp(nOrb))
+  allocate(Sig3pp(nOrb))
   
+  Sig2x(:) = 0d0
+  Sig2d(:) = 0d0
+
 !-----------------------------------!
 ! 2nd-order part of the self-energy !
 !-----------------------------------!
@@ -57,10 +77,15 @@ subroutine R_Parquet_self_energy(eta,nOrb,nC,nO,nV,nR,nS,nOOs,nVVs,nOOt,nVVt,eQP
 
               eps = eQP(p) + eQP(a) - eQP(i) - eQP(j)
               reg = (1d0 - exp(- 2d0 * eta * eps * eps))
-              num = ERI(p,a,j,i)*(2d0*ERI(j,i,p,a) - ERI(j,i,a,p))
+              num = 2d0*ERI(p,a,j,i)*ERI(j,i,p,a)
 
-              SigC(p) = SigC(p) + num*reg/eps
-              Z(p)    = Z(p)    - num*reg/eps**2
+              Sig2d(p) = Sig2d(p) + num*reg/eps
+              Z(p)     = Z(p)     - num*reg/eps**2
+
+              num = - ERI(p,a,j,i)*ERI(j,i,a,p)
+
+              Sig2x(p) = Sig2x(p) + num*reg/eps
+              Z(p)     = Z(p)     - num*reg/eps**2
 
            end do
         end do
@@ -72,9 +97,14 @@ subroutine R_Parquet_self_energy(eta,nOrb,nC,nO,nV,nR,nS,nOOs,nVVs,nOOt,nVVt,eQP
 
               eps = eQP(p) + eQP(i) - eQP(a) - eQP(b)
               reg = (1d0 - exp(- 2d0 * eta * eps * eps))
-              num = ERI(p,i,b,a)*(2d0*ERI(b,a,p,i) - ERI(b,a,i,p))
+              num = 2d0*ERI(p,i,b,a)*ERI(b,a,p,i)
 
-              SigC(p) = SigC(p) + num*reg/eps
+              Sig2d(p) = Sig2d(p) + num*reg/eps
+              Z(p)     = Z(p)    - num*reg/eps**2
+
+              num = - ERI(p,i,b,a)*ERI(b,a,i,p)
+
+              Sig2x(p) = Sig2x(p) + num*reg/eps
               Z(p)    = Z(p)    - num*reg/eps**2
 
            end do
@@ -86,6 +116,10 @@ subroutine R_Parquet_self_energy(eta,nOrb,nC,nO,nV,nR,nS,nOOs,nVVs,nOOt,nVVt,eQP
 
   write(*,'(1X,A50,1X,F9.3,A8)') 'Wall time for 2nd-order self-energy =',t,' seconds'
   write(*,*)
+
+! Self-energy decomposition
+
+  SigC(:) = Sig2d(:) + Sig2x(:)
 
 !-------------------------------------!
 !  singlet eh part of the self-energy !
@@ -191,6 +225,10 @@ subroutine R_Parquet_self_energy(eta,nOrb,nC,nO,nV,nR,nS,nOOs,nVVs,nOOt,nVVt,eQP
   write(*,'(1X,A50,1X,F9.3,A8)') 'Wall time for singlet eh self-energy =',t,' seconds'
   write(*,*)
 
+! Self-energy decomposition
+
+  Sig1eh(:) = SigC(:) - Sig2d(:) - Sig2x(:)
+
 !-------------------------------------!
 !  triplet eh part of the self-energy !
 !-------------------------------------!
@@ -294,6 +332,10 @@ subroutine R_Parquet_self_energy(eta,nOrb,nC,nO,nV,nR,nS,nOOs,nVVs,nOOt,nVVt,eQP
 
    write(*,'(1X,A50,1X,F9.3,A8)') 'Wall time for triplet eh self-energy =',t,' seconds'
    write(*,*)
+
+! Self-energy decomposition
+
+  Sig3eh(:) = SigC(:) - Sig2d(:) - Sig2x(:) - Sig1eh(:)
   
 !-------------------------------------!
 !  singlet pp part of the self-energy !
@@ -419,6 +461,10 @@ subroutine R_Parquet_self_energy(eta,nOrb,nC,nO,nV,nR,nS,nOOs,nVVs,nOOt,nVVt,eQP
   write(*,'(1X,A50,1X,F9.3,A8)') 'Wall time for singlet pp self-energy =',t,' seconds'
   write(*,*)
 
+! Self-energy decomposition
+
+  Sig1pp(:) = SigC(:) - Sig2d(:) - Sig2x(:) - Sig1eh(:) - Sig3eh(:)
+
 !-------------------------------------!
 !  triplet pp part of the self-energy !
 !-------------------------------------!
@@ -542,7 +588,11 @@ subroutine R_Parquet_self_energy(eta,nOrb,nC,nO,nV,nR,nS,nOOs,nVVs,nOOt,nVVt,eQP
 
   write(*,'(1X,A50,1X,F9.3,A8)') 'Wall time for triplet pp self-energy =',t,' seconds'
   write(*,*)
-  
+ 
+! Self-energy decomposition
+
+  Sig3pp(:) = SigC(:) - Sig2d(:) - Sig2x(:) - Sig1eh(:) - Sig3eh(:) - Sig1pp(:)
+ 
 !-----------------------------!
 !   Renormalization factor    !
 !-----------------------------!
@@ -554,5 +604,12 @@ subroutine R_Parquet_self_energy(eta,nOrb,nC,nO,nV,nR,nS,nOOs,nVVs,nOOt,nVVt,eQP
 !-------------------------------------!
 
   EcGM = 0d0
+  
+!---------------------------------!
+! Print self-energy decomposition !
+!---------------------------------!
+
+  print_self_energy = .true.
+  call dump_self_energy(nOrb,nC,nO,nV,nR,Sig2d,Sig2x,Sig1eh,Sig3eh,Sig1pp,Sig3pp,SigC)
 
 end subroutine 
