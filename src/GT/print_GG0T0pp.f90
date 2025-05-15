@@ -37,7 +37,6 @@ subroutine print_GG0T0pp(nOrb,nC,nO,nV,nR,eHF,ENuc,EGHF,SigC,Z,eGT,EcGM,EcRPA)
             '|','#','|','e_HF (eV)','|','Sig_GTpp (eV)','|','Z','|','e_GTpp (eV)','|'
   write(*,*)'-------------------------------------------------------------------------------'
 
-
   ! Occupied states
 
   do i=nC+1,nO
