@@ -98,7 +98,7 @@ subroutine RG0F2(dotest,dophBSE,doppBSE,TDA,dBSE,dTDA,singlet,triplet,linearize,
 
   ! Print results
 
-  call print_RG0F2(nBas,nOrb,nC,nO,nV,nR,eHF,SigC,eGF,Z,ENuc,ERHF,Ec)
+  call print_RG0F2(nOrb,nC,nO,nV,nR,eHF,SigC,eGF,Z,ENuc,ERHF,Ec)
 
 ! Perform BSE@GF2 calculation
 

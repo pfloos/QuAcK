@@ -168,7 +168,7 @@ subroutine GG0T0pp(dotest,doACFDT,exchange_kernel,doXBS,dophBSE,dophBSE2,TDA_T,T
 
   deallocate(Bpp,Cpp,Dpp)
 
-  call print_GG0T0pp(nOrb,nO,eHF,ENuc,EGHF,Sig,Z,eGT,EcGM,EcRPA)
+  call print_GG0T0pp(nOrb,nC,nO,nV,nR,eHF,ENuc,EGHF,Sig,Z,eGT,EcGM,EcRPA)
 
 !----------------------------------------------
 ! ppBSE calculation

@@ -121,7 +121,7 @@ subroutine evRGF2(dotest,dophBSE,doppBSE,TDA,dBSE,dTDA,maxSCF,thresh,max_diis,si
 
     ! Print results
 
-    call print_evRGF2(nBas,nOrb,nC,nO,nV,nR,nSCF,Conv,eHF,SigC,Z,eGF,ENuc,ERHF,Ec)
+    call print_evRGF2(nOrb,nC,nO,nV,nR,nSCF,Conv,eHF,SigC,Z,eGF,ENuc,ERHF,Ec)
 
     ! DIIS extrapolation
 

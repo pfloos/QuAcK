@@ -1,11 +1,10 @@
-subroutine print_evRGF2(nBas,nOrb,nC,nO,nV,nR,nSCF,Conv,eHF,SigC,Z,eGF,ENuc,ERHF,Ec)
+subroutine print_evRGF2(nOrb,nC,nO,nV,nR,nSCF,Conv,eHF,SigC,Z,eGF,ENuc,ERHF,Ec)
 
 ! Print one-electron energies and other stuff for G0F2
 
   implicit none
   include 'parameters.h'
 
-  integer,intent(in)            :: nBas
   integer,intent(in)            :: nOrb
   integer,intent(in)            :: nC
   integer,intent(in)            :: nO

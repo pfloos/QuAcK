@@ -1,11 +1,10 @@
-subroutine print_RG0F2(nBas,nOrb,nC,nO,nV,nR,eHF,SigC,eGF,Z,ENuc,ERHF,Ec)
+subroutine print_RG0F2(nOrb,nC,nO,nV,nR,eHF,SigC,eGF,Z,ENuc,ERHF,Ec)
 
 ! Print one-electron energies and other stuff for G0F2
 
   implicit none
   include 'parameters.h'
 
-  integer,intent(in)            :: nBas
   integer,intent(in)            :: nOrb
   integer,intent(in)            :: nC
   integer,intent(in)            :: nO
@@ -31,7 +30,7 @@ subroutine print_RG0F2(nBas,nOrb,nC,nO,nV,nR,eHF,SigC,eGF,Z,ENuc,ERHF,Ec)
 ! Dump results
 
   write(*,*)'-------------------------------------------------------------------------------'
-  write(*,*)' One-shot G0F2 calculation'
+  write(*,*)' G0F2@RHF calculation'
   write(*,*)'-------------------------------------------------------------------------------'
   write(*,'(1X,A1,1X,A3,1X,A1,1X,A15,1X,A1,1X,A15,1X,A1,1X,A15,1X,A1,1X,A15,1X,A1,1X)') &
             '|','#','|','e_HF (eV)','|','Sig_GF2 (eV)','|','Z','|','e_GF2 (eV)','|'
