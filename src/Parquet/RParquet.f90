@@ -748,7 +748,7 @@ subroutine RParquet(TDAeh,TDApp,max_diis_1b,max_diis_2b,linearize,eta,ENuc,max_i
 
     ! Print for one-body part
 
-    call R_print_parquet_1b(nOrb,nO,eHF,SigC,eQP,Z,n_it_1b,err_1b,ENuc,ERHF,EcGM,Ec_eh,Ec_pp)
+    call R_print_parquet_1b(nOrb,nC,nO,nV,nR,eHF,SigC,eQP,Z,n_it_1b,err_1b,ENuc,ERHF,EcGM,Ec_eh,Ec_pp)
 
     deallocate(eQPlin,Z,SigC)
 
