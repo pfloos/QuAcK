@@ -1,11 +1,10 @@
-subroutine print_evRGW(nBas,nOrb,nC,nO,nV,nR,nSCF,Conv,eHF,ENuc,ERHF,SigC,Z,eGW,EcRPA,EcGM)
+subroutine print_evRGW(nOrb,nC,nO,nV,nR,nSCF,Conv,eHF,ENuc,ERHF,SigC,Z,eGW,EcRPA,EcGM)
 
 ! Print one-electron energies and other stuff for evGW
 
   implicit none
   include 'parameters.h'
 
-  integer,intent(in)            :: nBas
   integer,intent(in)            :: nOrb
   integer,intent(in)            :: nC
   integer,intent(in)            :: nO

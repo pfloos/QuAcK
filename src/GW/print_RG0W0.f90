@@ -1,11 +1,10 @@
-subroutine print_RG0W0(nBas,nOrb,nC,nO,nV,nR,eHF,ENuc,ERHF,SigC,Z,eGW,EcRPA,EcGM)
+subroutine print_RG0W0(nOrb,nC,nO,nV,nR,eHF,ENuc,ERHF,SigC,Z,eGW,EcRPA,EcGM)
 
 ! Print one-electron energies and other stuff for G0W0
 
   implicit none
   include 'parameters.h'
 
-  integer,intent(in)            :: nBas
   integer,intent(in)            :: nOrb
   integer,intent(in)            :: nC
   integer,intent(in)            :: nO
