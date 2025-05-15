@@ -17,7 +17,7 @@ subroutine R_eh_singlet_screened_integral(nOrb,nC,nO,nR,nS,ERI,eh_sing_Phi,eh_tr
   double precision              :: X,Y
 
 ! Output variables
-  double precision,intent(out)  :: rho(nOrb,nOrb,nS)
+  double precision,intent(out)  :: rho(nOrb,nOrb,nS+nS)
   
   rho(:,:,:) = 0d0   
 !  !$OMP PARALLEL &
@@ -38,12 +38,18 @@ subroutine R_eh_singlet_screened_integral(nOrb,nC,nO,nR,nS,ERI,eh_sing_Phi,eh_tr
                  X = 0.5d0*(XpY(ia,jb) + XmY(ia,jb))
                  Y = 0.5d0*(XpY(ia,jb) - XmY(ia,jb))
                  
-                 rho(p,q,ia) = rho(p,q,ia) + (2d0*ERI(q,j,p,b) - ERI(q,j,b,p))*X      ! & 
+                 rho(p,q,ia) = rho(p,q,ia) &
+                             + (2d0*ERI(p,j,q,b) - ERI(p,j,b,q)) * X       & 
                              !(- 0d0*0.5d0*eh_sing_Phi(q,j,b,p) - 0d0*1.5d0*eh_trip_Phi(q,j,b,p) & 
                              !+ 0d0*0.5d0*pp_sing_Phi(q,j,p,b) + 0d0*1.5d0*pp_trip_Phi(q,j,p,b)) * X &
-                             !+ (2d0*ERI(q,b,p,j) - ERI(q,b,j,p))*Y                        & 
+                             + (2d0*ERI(p,b,q,j) - ERI(p,b,j,q)) * Y             ! & 
                              !(- 0d0*0.5d0*eh_sing_Phi(q,b,j,p) - 0d0*1.5d0*eh_trip_Phi(q,b,j,p) & 
-                             !+ 0d0*0.5d0*pp_sing_Phi(q,b,p,j) + 0d0*1.5d0*pp_trip_Phi(q,b,p,j)) * Y  
+                 !+ 0d0*0.5d0*pp_sing_Phi(q,b,p,j) + 0d0*1.5d0*pp_trip_Phi(q,b,p,j)) * Y
+
+                 
+                 rho(p,q,nS+ia) = rho(p,q,nS+ia) &
+                                + (2d0*ERI(p,b,q,j) - ERI(p,b,j,q))*X       & 
+                                + (2d0*ERI(p,j,q,b) - ERI(p,j,b,q))*Y
                  
               end do
 
@@ -76,7 +82,7 @@ subroutine R_eh_triplet_screened_integral(nOrb,nC,nO,nR,nS,ERI,eh_sing_Phi,eh_tr
   double precision              :: X,Y
   
 ! Output variables
-  double precision,intent(out)  :: rho(nOrb,nOrb,nS)
+  double precision,intent(out)  :: rho(nOrb,nOrb,nS+nS)
   
   rho(:,:,:) = 0d0   
 !  !$OMP PARALLEL &
@@ -97,13 +103,11 @@ subroutine R_eh_triplet_screened_integral(nOrb,nC,nO,nR,nS,ERI,eh_sing_Phi,eh_tr
                  X = 0.5d0*(XpY(ia,jb) + XmY(ia,jb))
                  Y = 0.5d0*(XpY(ia,jb) - XmY(ia,jb))
                  
-                 rho(p,q,ia)  = rho(p,q,ia) - ERI(q,j,b,p) * X !                         &
-                              ! (- 0d0*0.5d0*eh_sing_Phi(q,j,b,p) + 0d0*0.5d0*eh_trip_Phi(q,j,b,p) & 
-                              ! - 0d0*0.5d0*pp_sing_Phi(q,j,p,b) + 0d0*0.5d0*pp_trip_Phi(q,j,p,b)) * X &
-                              ! + (- ERI(q,b,j,p)                                         & 
-                              ! - 0d0*0.5d0*eh_sing_Phi(q,b,j,p) + 0d0*0.5d0*eh_trip_Phi(q,b,j,p) & 
-                              ! - 0d0*0.5d0*pp_sing_Phi(q,b,p,j) + 0d0*0.5d0*pp_trip_Phi(q,b,p,j)) * Y
-                              
+                 rho(p,q,ia) = rho(p,q,ia) - ERI(p,j,b,q)*X       & 
+                                           - ERI(p,b,j,q)*Y                    
+                 
+                 rho(p,q,nS+ia) = rho(p,q,nS+ia) - ERI(p,b,j,q)*X & 
+                                                 - ERI(p,j,b,q)*Y
                  
               end do
            end do

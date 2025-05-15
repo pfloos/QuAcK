@@ -575,21 +575,27 @@ subroutine GParquet(TDAeh,TDApp,max_diis_1b,max_diis_2b,linearize,eta,ENuc,max_i
   ! Did it actually converge?
   if(n_it_1b == max_it_1b) then
 
-    write(*,*)
-    write(*,*)'!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!'
-    write(*,*)'             One-body convergence failed            '
-    write(*,*)'!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!'
-    write(*,*)
-    stop
-
+     write(*,*)
+     write(*,*)'!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!'
+     write(*,*)'             One-body convergence failed            '
+     write(*,*)'!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!'
+     write(*,*)
+     ! stop
+     
   else
-
-    write(*,*)
-    write(*,*)'****************************************************'
-    write(*,*)'             One-body convergence success           '
-    write(*,*)'****************************************************'
-    write(*,*)
-
+     
+     write(*,*)
+     write(*,*)'****************************************************'
+     write(*,*)'             One-body convergence success           '
+     write(*,*)'****************************************************'
+     write(*,*)
+     
   end if
+
+  call G_Parquet_Galitskii_Migdal(eta,nOrb,nC,nO,nV,nR,nS,nOO,nVV,eOld,ERI, &
+                               eh_rho,old_eh_Om,ee_rho,old_ee_Om,hh_rho,old_hh_Om,EcGM)
+    
+
+ 
   
 end subroutine 

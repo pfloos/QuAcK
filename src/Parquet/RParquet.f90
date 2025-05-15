@@ -137,7 +137,7 @@ subroutine RParquet(TDAeh,TDApp,max_diis_1b,max_diis_2b,linearize,eta,ENuc,max_i
   allocate(old_eh_sing_Om(nS),old_eh_trip_Om(nS))
   allocate(old_ee_sing_Om(nVVs),old_hh_sing_Om(nOOs))
   allocate(old_ee_trip_Om(nVVt),old_hh_trip_Om(nOOt))
-  allocate(eh_sing_rho(nOrb,nOrb,nS),eh_trip_rho(nOrb,nOrb,nS))
+  allocate(eh_sing_rho(nOrb,nOrb,nS+nS),eh_trip_rho(nOrb,nOrb,nS+nS))
   allocate(ee_sing_rho(nOrb,nOrb,nVVs),hh_sing_rho(nOrb,nOrb,nOOs))
   allocate(ee_trip_rho(nOrb,nOrb,nVVt),hh_trip_rho(nOrb,nOrb,nOOt))
   allocate(old_eh_sing_Phi(nOrb,nOrb,nOrb,nOrb),old_eh_trip_Phi(nOrb,nOrb,nOrb,nOrb))
@@ -505,7 +505,7 @@ subroutine RParquet(TDAeh,TDApp,max_diis_1b,max_diis_2b,linearize,eta,ENuc,max_i
       deallocate(eh_sing_rho,eh_trip_rho,ee_sing_rho,ee_trip_rho,hh_sing_rho,hh_trip_rho)
       ! TODO Once we will compute the blocks of kernel starting from the 4-tensors we can move the freeing up
       ! Memory allocation
-      allocate(eh_sing_rho(nOrb,nOrb,nS),eh_trip_rho(nOrb,nOrb,nS))
+      allocate(eh_sing_rho(nOrb,nOrb,nS+nS),eh_trip_rho(nOrb,nOrb,nS+nS))
       allocate(ee_sing_rho(nOrb,nOrb,nVVs),hh_sing_rho(nOrb,nOrb,nOOs))
       allocate(ee_trip_rho(nOrb,nOrb,nVVt),hh_trip_rho(nOrb,nOrb,nOOt))
       
