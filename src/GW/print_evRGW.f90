@@ -1,29 +1,36 @@
-subroutine print_evRGW(nBas,nO,nSCF,Conv,eHF,ENuc,ERHF,SigC,Z,eGW,EcRPA,EcGM)
+subroutine print_evRGW(nBas,nOrb,nC,nO,nV,nR,nSCF,Conv,eHF,ENuc,ERHF,SigC,Z,eGW,EcRPA,EcGM)
 
 ! Print one-electron energies and other stuff for evGW
 
   implicit none
   include 'parameters.h'
 
-  integer,intent(in)                 :: nBas,nO,nSCF
-  double precision,intent(in)        :: ENuc
-  double precision,intent(in)        :: ERHF
-  double precision,intent(in)        :: Conv
-  double precision,intent(in)        :: eHF(nBas)
-  double precision,intent(in)        :: SigC(nBas)
-  double precision,intent(in)        :: Z(nBas)
-  double precision,intent(in)        :: eGW(nBas)
-  double precision,intent(in)        :: EcRPA
-  double precision,intent(in)        :: EcGM
+  integer,intent(in)            :: nBas
+  integer,intent(in)            :: nOrb
+  integer,intent(in)            :: nC
+  integer,intent(in)            :: nO
+  integer,intent(in)            :: nV
+  integer,intent(in)            :: nR
+  integer,intent(in)            :: nSCF
+  double precision,intent(in)   :: ENuc
+  double precision,intent(in)   :: ERHF
+  double precision,intent(in)   :: Conv
+  double precision,intent(in)   :: eHF(nOrb)
+  double precision,intent(in)   :: SigC(nOrb)
+  double precision,intent(in)   :: Z(nOrb)
+  double precision,intent(in)   :: eGW(nOrb)
+  double precision,intent(in)   :: EcRPA
+  double precision,intent(in)   :: EcGM
 
-  integer                            :: p,HOMO,LUMO
-  double precision                   :: Gap
+  integer                       :: i,a
+  integer                       :: HOMO,LUMO
+  double precision              :: Gap
 
 ! HOMO and LUMO
 
   HOMO = nO
   LUMO = HOMO + 1
-  Gap = eGW(LUMO)-eGW(HOMO)
+  Gap  = eGW(LUMO) - eGW(HOMO)
 
 ! Dump results
 
@@ -40,9 +47,23 @@ subroutine print_evRGW(nBas,nO,nSCF,Conv,eHF,ENuc,ERHF,SigC,Z,eGW,EcRPA,EcGM)
             '|','#','|','e_HF (eV)','|','Sig_GW (eV)','|','Z','|','e_GW (eV)','|'
   write(*,*)'-------------------------------------------------------------------------------'
 
-  do p=1,nBas
+  ! Occupied states
+
+  do i=nC+1,nO
     write(*,'(1X,A1,1X,I3,1X,A1,1X,F15.6,1X,A1,1X,F15.6,1X,A1,1X,F15.6,1X,A1,1X,F15.6,1X,A1,1X)') &
-    '|',p,'|',eHF(p)*HaToeV,'|',SigC(p)*HaToeV,'|',Z(p),'|',eGW(p)*HaToeV,'|'
+    '|',i,'|',eHF(i)*HaToeV,'|',SigC(i)*HaToeV,'|',Z(i),'|',eGW(i)*HaToeV,'|'
+  end do
+
+  ! Fermi level
+
+  write(*,*)'-------------------------------------------------------------------------------'
+  write(*,*)'-------------------------------------------------------------------------------'
+
+  ! Vacant states
+
+  do a=nO+1,nOrb-nR
+    write(*,'(1X,A1,1X,I3,1X,A1,1X,F15.6,1X,A1,1X,F15.6,1X,A1,1X,F15.6,1X,A1,1X,F15.6,1X,A1,1X)') &
+    '|',a,'|',eHF(a)*HaToeV,'|',SigC(a)*HaToeV,'|',Z(a),'|',eGW(a)*HaToeV,'|'
   end do
 
   write(*,*)'-------------------------------------------------------------------------------'

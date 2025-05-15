@@ -8,8 +8,8 @@ subroutine GParquet(TDAeh,TDApp,max_diis_1b,max_diis_2b,linearize,eta,ENuc,max_i
 
 ! Hard-coded parameters
 
-  logical                       :: print_phLR = .true.
-  logical                       :: print_ppLR = .true.
+  logical                       :: print_phLR = .false.
+  logical                       :: print_ppLR = .false.
   
 ! Input variables
 
@@ -556,7 +556,7 @@ subroutine GParquet(TDAeh,TDApp,max_diis_1b,max_diis_2b,linearize,eta,ENuc,max_i
 
     ! Print for one-body part
     
-    call G_print_parquet_1b(nOrb,nO,eHF,SigC,eQP,Z,n_it_1b,err_1b,ENuc,EGHF,EcGM,Ec_eh,Ec_pp)
+    call G_print_parquet_1b(nOrb,nC,nO,nV,nR,eHF,SigC,eQP,Z,n_it_1b,err_1b,ENuc,EGHF,EcGM,Ec_eh,Ec_pp)
 
     deallocate(eQPlin,Z,SigC)
 

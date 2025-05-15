@@ -191,49 +191,53 @@ def create_psi4_basis(basis_dict):
 
 # CAP definition
 if use_cap:
-    f = open(working_dir+'/cap_data/'+args.xyz, 'r')
-    lines = f.read().splitlines()
-    line = lines[1]
-    tmp = line.split()
-    onset_x = float(tmp[0])
-    onset_y = float(tmp[1])
-    onset_z = float(tmp[2])
-    eta_opt = float(tmp[3])
-    f.close()
-    f = open(working_dir+'/input/eta_opt.dat', 'w')
-    f.write(" {} ".format(str(eta_opt)))
-    f.close()
-    print(f"CAP eta = {eta_opt}")
-    # xyz file
-    with open(working_dir + "/mol/" + xyz, "r") as f:
-        lines = f.readlines()
+    try:
+        f = open(working_dir+'/cap_data/'+args.xyz, 'r')
+        lines = f.read().splitlines()
+        line = lines[1]
+        tmp = line.split()
+        onset_x = float(tmp[0])
+        onset_y = float(tmp[1])
+        onset_z = float(tmp[2])
+        eta_opt = float(tmp[3])
         f.close()
-    num_atoms = int(lines[0].strip())
-    atoms = [line.strip() for line in lines[2:2+num_atoms]]
-    if unit == 'Bohr':
-        bohr_coordinates = 'true'
-    else:
-        bohr_coordinates = 'false'
-    sys_dict = {
-        "molecule": "inline",
-        "geometry": "\n".join(atoms),  # XYZ format as a string
-        "basis_file": create_psi4_basis(basis_dict),
-        "bohr_coordinates": bohr_coordinates
-    }
-    cap_system = pyopencap.System(sys_dict)
-    if not(cap_system.check_overlap_mat(ovlp, "pyscf")):
-        raise Exception(
-            "Provided cap basis does not match to the pyscf basis.")
-    cap_dict = {"cap_type": "box",
-                "cap_x": onset_x,
-                "cap_y": onset_y,
-                "cap_z": onset_z,
-                "Radial_precision": "16",
-                "angular_points": "590",
-                "thresh": 15}
-    pc = pyopencap.CAP(cap_system, cap_dict, norb)
-    cap_ao = pc.get_ao_cap(ordering="pyscf")
-
+        f = open(working_dir+'/input/eta_opt.dat', 'w')
+        f.write(" {} ".format(str(eta_opt)))
+        f.close()
+        print(f"CAP eta = {eta_opt}")
+    
+        # xyz file
+        with open(working_dir + "/mol/" + xyz, "r") as f:
+            lines = f.readlines()
+            f.close()
+        num_atoms = int(lines[0].strip())
+        atoms = [line.strip() for line in lines[2:2+num_atoms]]
+        if unit == 'Bohr':
+            bohr_coordinates = 'true'
+        else:
+            bohr_coordinates = 'false'
+        sys_dict = {
+            "molecule": "inline",
+            "geometry": "\n".join(atoms),  # XYZ format as a string
+            "basis_file": create_psi4_basis(basis_dict),
+            "bohr_coordinates": bohr_coordinates
+        }
+        cap_system = pyopencap.System(sys_dict)
+        if not(cap_system.check_overlap_mat(ovlp, "pyscf")):
+            raise Exception(
+                "Provided cap basis does not match to the pyscf basis.")
+        cap_dict = {"cap_type": "box",
+                    "cap_x": onset_x,
+                    "cap_y": onset_y,
+                    "cap_z": onset_z,
+                    "Radial_precision": "16",
+                    "angular_points": "590",
+                    "thresh": 15}
+        pc = pyopencap.CAP(cap_system, cap_dict, norb)
+        cap_ao = pc.get_ao_cap(ordering="pyscf")
+    except Exception:
+        print("No CAP-data provided for this molecule. Skipping CAP calculation...")
+        use_cap = False
 
 def write_matrix_to_file(matrix, size, file, cutoff=1e-15):
     f = open(file, 'w')

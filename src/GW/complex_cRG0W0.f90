@@ -156,7 +156,7 @@ end if
 
 ! Plot self-energy, renormalization factor, and spectral function
 !
-  if(plot_self) call complex_RGW_plot_self_energy(nOrb,eta,nC,nO,nV,nR,nS,eHF,eHF,Om,rho)
+  if(plot_self) call complex_RGW_plot_self_energy(nOrb,eta,nC,nO,nV,nR,nS,Re_eHF,Im_eHF,Re_eGW,Im_eGW,Om,rho)
 !
 !! Cumulant expansion 
 !

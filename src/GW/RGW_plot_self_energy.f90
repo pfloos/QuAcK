@@ -22,6 +22,8 @@ subroutine RGW_plot_self_energy(nBas,eta,nC,nO,nV,nR,nS,eHF,eGW,Om,rho)
 ! Local variables
 
   integer                       :: p,g
+  integer                       :: nP
+  character(len=256)            :: fmtP
   integer                       :: nGrid
   double precision              :: wmin,wmax,dw
   double precision,external     :: RGW_Re_SigC,RGW_Im_SigC,RGW_Re_dSigC
@@ -82,11 +84,13 @@ subroutine RGW_plot_self_energy(nBas,eta,nC,nO,nV,nR,nS,eHF,eGW,Om,rho)
   open(unit=10 ,file='RGW_Z.dat')
   open(unit=11 ,file='RGW_A.dat')
   
+  nP = nBas - nR - nC
+  write(fmtP, '(A,I0,A)') '(F12.6,1X,', nP, '(F12.6,1X))'
   do g=1,nGrid
-    write(8 ,'(F12.6,1X,150(F12.6,1X))') w(g)*HaToeV,(ReSigC(p,g)*HaToeV,p=nC+1,nBas-nR)
-    write(9 ,'(F12.6,1X,150(F12.6,1X))') w(g)*HaToeV,((w(g)-eHF(p))*HaToeV,p=nC+1,nBas-nR)
-    write(10,'(F12.6,1X,150(F12.6,1X))') w(g)*HaToeV,(Z(p,g),p=nC+1,nBas-nR)
-    write(11,'(F12.6,1X,150(F12.6,1X))') w(g)*HaToeV,(A(p,g),p=nC+1,nBas-nR)
+    write(8 ,fmtP) w(g)*HaToeV,(ReSigC(p,g)*HaToeV,p=nC+1,nBas-nR)
+    write(9 ,fmtP) w(g)*HaToeV,((w(g)-eHF(p))*HaToeV,p=nC+1,nBas-nR)
+    write(10,fmtP) w(g)*HaToeV,(Z(p,g),p=nC+1,nBas-nR)
+    write(11,fmtP) w(g)*HaToeV,(A(p,g),p=nC+1,nBas-nR)
   end do
 
 ! Closing files

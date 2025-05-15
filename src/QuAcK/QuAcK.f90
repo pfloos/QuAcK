@@ -137,12 +137,14 @@ program QuAcK
                     doG0W0,doevGW,doqsGW,doufG0W0,doufGW,  &
                     doG0T0pp,doevGTpp,doqsGTpp,doufG0T0pp, &
                     doG0T0eh,doevGTeh,doqsGTeh,            &
-                    docG0W0,docG0F2,                       &
                     doParquet,                             &
                     doRtest,doUtest,doGtest)
-  doCAP = docG0W0 .or. docG0F2 .or. docRHF ! Add different cases if they need CAP
-  docG0W0 = docG0W0 .or. (doG0W0 .and. docRHF)
-  docG0F2 = docG0F2 .or. (doG0F2 .and. docRHF)
+! Determine complex function calls  
+
+  doCAP = docRHF
+  docG0W0 = doG0W0 .and. docRHF
+  docG0F2 = doG0F2 .and. docRHF
+
 !--------------------------!
 ! Read options for methods !
 !--------------------------!

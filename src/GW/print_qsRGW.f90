@@ -1,5 +1,4 @@
-subroutine print_qsRGW(nBas,nOrb,nO,nSCF,Conv,thresh,eHF,eGW,c,SigC, & 
-                       Z,ENuc,ET,EV,EJ,EK,EcGM,EcRPA,EqsGW,dipole)
+subroutine print_qsRGW(nBas,nOrb,nC,nO,nV,nR,nSCF,Conv,thresh,eHF,eGW,c,SigC,Z,ENuc,ET,EV,EJ,EK,EcGM,EcRPA,EqsGW,dipole)
 
 ! Print useful information about qsRGW calculation
 
@@ -8,30 +7,35 @@ subroutine print_qsRGW(nBas,nOrb,nO,nSCF,Conv,thresh,eHF,eGW,c,SigC, &
 
 ! Input variables
 
-  integer,intent(in)                 :: nBas, nOrb
-  integer,intent(in)                 :: nO
-  integer,intent(in)                 :: nSCF
-  double precision,intent(in)        :: ENuc
-  double precision,intent(in)        :: ET
-  double precision,intent(in)        :: EV
-  double precision,intent(in)        :: EJ
-  double precision,intent(in)        :: EK
-  double precision,intent(in)        :: EcGM
-  double precision,intent(in)        :: EcRPA
-  double precision,intent(in)        :: Conv
-  double precision,intent(in)        :: thresh
-  double precision,intent(in)        :: eHF(nOrb)
-  double precision,intent(in)        :: eGW(nOrb)
-  double precision,intent(in)        :: c(nBas,nOrb)
-  double precision,intent(in)        :: SigC(nOrb,nOrb)
-  double precision,intent(in)        :: Z(nOrb)
-  double precision,intent(in)        :: EqsGW
-  double precision,intent(in)        :: dipole(ncart)
+  integer,intent(in)            :: nBas
+  integer,intent(in)            :: nOrb
+  integer,intent(in)            :: nC
+  integer,intent(in)            :: nO
+  integer,intent(in)            :: nV
+  integer,intent(in)            :: nR
+  integer,intent(in)            :: nSCF
+  double precision,intent(in)   :: ENuc
+  double precision,intent(in)   :: ET
+  double precision,intent(in)   :: EV
+  double precision,intent(in)   :: EJ
+  double precision,intent(in)   :: EK
+  double precision,intent(in)   :: EcGM
+  double precision,intent(in)   :: EcRPA
+  double precision,intent(in)   :: Conv
+  double precision,intent(in)   :: thresh
+  double precision,intent(in)   :: eHF(nOrb)
+  double precision,intent(in)   :: eGW(nOrb)
+  double precision,intent(in)   :: c(nBas,nOrb)
+  double precision,intent(in)   :: SigC(nOrb,nOrb)
+  double precision,intent(in)   :: Z(nOrb)
+  double precision,intent(in)   :: EqsGW
+  double precision,intent(in)   :: dipole(ncart)
 
 ! Local variables
 
   logical                            :: dump_orb = .false.
-  integer                            :: p,ixyz,HOMO,LUMO
+  integer                            :: i,a
+  integer                            :: ixyz,HOMO,LUMO
   double precision                   :: Gap
   double precision,external          :: trace_matrix
 
@@ -41,9 +45,7 @@ subroutine print_qsRGW(nBas,nOrb,nO,nSCF,Conv,thresh,eHF,eGW,c,SigC, &
 
   HOMO = nO
   LUMO = HOMO + 1
-  Gap = eGW(LUMO)-eGW(HOMO)
-
-! Compute energies
+  Gap  = eGW(LUMO) - eGW(HOMO)
 
 ! Dump results
 
@@ -60,9 +62,24 @@ subroutine print_qsRGW(nBas,nOrb,nO,nSCF,Conv,thresh,eHF,eGW,c,SigC, &
             '|','#','|','e_HF (eV)','|','Sig_GW (eV)','|','Z','|','e_GW (eV)','|'
   write(*,*)'-------------------------------------------------------------------------------'
 
-  do p=1,nOrb
+
+  ! Occupied states
+
+  do i=nC+1,nO
     write(*,'(1X,A1,1X,I3,1X,A1,1X,F15.6,1X,A1,1X,F15.6,1X,A1,1X,F15.6,1X,A1,1X,F15.6,1X,A1,1X)') &
-    '|',p,'|',eHF(p)*HaToeV,'|',SigC(p,p)*HaToeV,'|',Z(p),'|',eGW(p)*HaToeV,'|'
+    '|',i,'|',eHF(i)*HaToeV,'|',SigC(i,i)*HaToeV,'|',Z(i),'|',eGW(i)*HaToeV,'|'
+  end do
+
+  ! Fermi level
+
+  write(*,*)'-------------------------------------------------------------------------------'
+  write(*,*)'-------------------------------------------------------------------------------'
+
+  ! Vacant states
+
+  do a=nO+1,nOrb-nR
+    write(*,'(1X,A1,1X,I3,1X,A1,1X,F15.6,1X,A1,1X,F15.6,1X,A1,1X,F15.6,1X,A1,1X,F15.6,1X,A1,1X)') &
+    '|',a,'|',eHF(a)*HaToeV,'|',SigC(a,a)*HaToeV,'|',Z(a),'|',eGW(a)*HaToeV,'|'
   end do
 
   write(*,*)'-------------------------------------------------------------------------------'

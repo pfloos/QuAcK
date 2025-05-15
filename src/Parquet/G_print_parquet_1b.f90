@@ -1,28 +1,31 @@
-subroutine G_print_parquet_1b(nOrb,nO,eHF,SigC,eQP,Z,n_it_1b,err_1b,ENuc,EGHF,EcGM,Ec_eh,Ec_pp)
+subroutine G_print_parquet_1b(nOrb,nC,nO,nV,nR,eHF,SigC,eQP,Z,n_it_1b,err_1b,ENuc,EGHF,EcGM,Ec_eh,Ec_pp)
 
 ! Print one-electron energies and other stuff for G0F2
 
   implicit none
   include 'parameters.h'
 
-  integer,intent(in)                 :: nOrb
-  integer,intent(in)                 :: nO
-  double precision,intent(in)        :: eHF(nOrb)
-  double precision,intent(in)        :: SigC(nOrb)
-  double precision,intent(in)        :: eQP(nOrb)
-  double precision,intent(in)        :: Z(nOrb)
-  integer,intent(in)                 :: n_it_1b
-  double precision,intent(in)        :: err_1b
-  double precision,intent(in)        :: ENuc
-  double precision,intent(in)        :: EGHF
-  double precision,intent(in)        :: EcGM
-  double precision,intent(in)        :: Ec_eh
-  double precision,intent(in)        :: Ec_pp
+  integer,intent(in)            :: nOrb
+  integer,intent(in)            :: nC
+  integer,intent(in)            :: nO
+  integer,intent(in)            :: nV
+  integer,intent(in)            :: nR
+  double precision,intent(in)   :: eHF(nOrb)
+  double precision,intent(in)   :: SigC(nOrb)
+  double precision,intent(in)   :: eQP(nOrb)
+  double precision,intent(in)   :: Z(nOrb)
+  integer,intent(in)            :: n_it_1b
+  double precision,intent(in)   :: err_1b
+  double precision,intent(in)   :: ENuc
+  double precision,intent(in)   :: EGHF
+  double precision,intent(in)   :: EcGM
+  double precision,intent(in)   :: Ec_eh
+  double precision,intent(in)   :: Ec_pp
 
-  integer                            :: p
-  integer                            :: HOMO
-  integer                            :: LUMO
-  double precision                   :: Gap
+  integer                       :: i,a
+  integer                       :: HOMO
+  integer                       :: LUMO
+  double precision              :: Gap
 
 ! HOMO and LUMO
 
@@ -39,9 +42,23 @@ subroutine G_print_parquet_1b(nOrb,nO,eHF,SigC,eQP,Z,n_it_1b,err_1b,ENuc,EGHF,Ec
             '|','#','|','e_HF (eV)','|','Sig_c (eV)','|','Z','|','e_QP (eV)','|'
   write(*,*)'-------------------------------------------------------------------------------'
 
-  do p=1,nOrb
+  ! Occupied states
+
+  do i=nC+1,nO
     write(*,'(1X,A1,1X,I3,1X,A1,1X,F15.6,1X,A1,1X,F15.6,1X,A1,1X,F15.6,1X,A1,1X,F15.6,1X,A1,1X)') &
-    '|',p,'|',eHF(p)*HaToeV,'|',SigC(p)*HaToeV,'|',Z(p),'|',eQP(p)*HaToeV,'|'
+    '|',i,'|',eHF(i)*HaToeV,'|',SigC(i)*HaToeV,'|',Z(i),'|',eQP(i)*HaToeV,'|'
+  end do
+
+  ! Fermi level
+
+  write(*,*)'-------------------------------------------------------------------------------'
+  write(*,*)'-------------------------------------------------------------------------------'
+
+  ! Vacant states
+
+  do a=nO+1,nOrb-nR
+    write(*,'(1X,A1,1X,I3,1X,A1,1X,F15.6,1X,A1,1X,F15.6,1X,A1,1X,F15.6,1X,A1,1X,F15.6,1X,A1,1X)') &
+    '|',a,'|',eHF(a)*HaToeV,'|',SigC(a)*HaToeV,'|',Z(a),'|',eQP(a)*HaToeV,'|'
   end do
 
   write(*,*)'-------------------------------------------------------------------------------'

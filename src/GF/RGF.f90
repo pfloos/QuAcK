@@ -1,7 +1,7 @@
-subroutine RGF(dotest,doG0F2,doevGF2,doqsGF2,doufG0F02,doG0F3,doevGF3,docG0F2,          &
+subroutine RGF(dotest,doG0F2,doevGF2,doqsGF2,doufG0F02,doG0F3,doevGF3,                  &
                renorm,maxSCF,                                                           &
                thresh,max_diis,dophBSE,doppBSE,TDA,dBSE,dTDA,singlet,triplet,linearize, &
-               eta,regularize,nNuc,ZNuc,rNuc,ENuc,nBas,nOrb,nC,nO,nV,nR,nS,ERHF,        &
+               eta,doSRG,nNuc,ZNuc,rNuc,ENuc,nBas,nOrb,nC,nO,nV,nR,nS,ERHF,             &
                S,X,T,V,Hc,ERI_AO,ERI_MO,CAP,dipole_int_AO,dipole_int_MO,PHF,cHF,eHF)
 
 ! Green's function module
@@ -14,7 +14,6 @@ subroutine RGF(dotest,doG0F2,doevGF2,doqsGF2,doufG0F02,doG0F3,doevGF3,docG0F2,  
   logical,intent(in)            :: dotest
 
   logical,intent(in)            :: doG0F2
-  logical,intent(in)            :: docG0F2
   logical,intent(in)            :: doevGF2
   logical,intent(in)            :: doqsGF2
   logical,intent(in)            :: doufG0F02
@@ -34,7 +33,7 @@ subroutine RGF(dotest,doG0F2,doevGF2,doqsGF2,doufG0F02,doG0F3,doevGF3,docG0F2,  
   logical,intent(in)            :: triplet
   logical,intent(in)            :: linearize
   double precision,intent(in)   :: eta
-  logical,intent(in)            :: regularize
+  logical,intent(in)            :: doSRG
 
   integer,intent(in)            :: nNuc
   double precision,intent(in)   :: ZNuc(nNuc)
@@ -76,7 +75,7 @@ subroutine RGF(dotest,doG0F2,doevGF2,doqsGF2,doufG0F02,doG0F3,doevGF3,docG0F2,  
 
     call wall_time(start_GF)
     call RG0F2(dotest,dophBSE,doppBSE,TDA,dBSE,dTDA,singlet,triplet, &
-               linearize,eta,regularize,nBas,nOrb,nC,nO,nV,nR,nS,    &
+               linearize,eta,doSRG,nBas,nOrb,nC,nO,nV,nR,nS,         &
                ENuc,ERHF,ERI_MO,dipole_int_MO,eHF)
     call wall_time(end_GF)
 
@@ -93,8 +92,8 @@ subroutine RGF(dotest,doG0F2,doevGF2,doqsGF2,doufG0F02,doG0F3,doevGF3,docG0F2,  
   if(doevGF2) then
 
     call wall_time(start_GF)
-    call evRGF2(dotest,dophBSE,doppBSE,TDA,dBSE,dTDA,maxSCF,thresh,max_diis,       & 
-                singlet,triplet,linearize,eta,regularize,nBas,nOrb,nC,nO,nV,nR,nS, &
+    call evRGF2(dotest,dophBSE,doppBSE,TDA,dBSE,dTDA,maxSCF,thresh,max_diis,  & 
+                singlet,triplet,linearize,eta,doSRG,nBas,nOrb,nC,nO,nV,nR,nS, &
                 ENuc,ERHF,ERI_MO,dipole_int_MO,eHF)
     call wall_time(end_GF)
 
@@ -111,9 +110,9 @@ subroutine RGF(dotest,doG0F2,doevGF2,doqsGF2,doufG0F02,doG0F3,doevGF3,docG0F2,  
   if(doqsGF2) then 
 
     call wall_time(start_GF)
-    call qsRGF2(dotest,maxSCF,thresh,max_diis,dophBSE,doppBSE,TDA,    &
-                dBSE,dTDA,singlet,triplet,eta,regularize,nNuc,ZNuc,   &
-                rNuc,ENuc,nBas,nOrb,nC,nO,nV,nR,nS,ERHF,S,X,T,V,Hc,   & 
+    call qsRGF2(dotest,maxSCF,thresh,max_diis,dophBSE,doppBSE,TDA,  &
+                dBSE,dTDA,singlet,triplet,eta,doSRG,nNuc,ZNuc,      &
+                rNuc,ENuc,nBas,nOrb,nC,nO,nV,nR,nS,ERHF,S,X,T,V,Hc, & 
                 ERI_AO,ERI_MO,dipole_int_AO,dipole_int_MO,PHF,cHF,eHF)
     call wall_time(end_GF)
 
@@ -171,21 +170,4 @@ subroutine RGF(dotest,doG0F2,doevGF2,doqsGF2,doufG0F02,doG0F3,doevGF3,docG0F2,  
 
   end if
 
-!------------------------------------------------------------------------
-! Compute complex G0F2 electronic binding energies
-!------------------------------------------------------------------------
-
-  if(docG0F2) then
-
-    call wall_time(start_GF)
-    call cRG0F2(dotest,dophBSE,doppBSE,TDA,dBSE,dTDA,singlet,triplet, &
-               linearize,eta,regularize,nBas,nOrb,nC,nO,nV,nR,nS,    &
-               ENuc,ERHF,ERI_MO,CAP,dipole_int_MO,eHF)
-    call wall_time(end_GF)
-
-    t_GF = end_GF - start_GF
-    write(*,'(A65,1X,F9.3,A8)') 'Total wall time for GF2 = ',t_GF,' seconds'
-    write(*,*)
-
-  end if
 end subroutine
