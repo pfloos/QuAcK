@@ -28,6 +28,11 @@ subroutine G_Parquet_self_energy(eta,nOrb,nC,nO,nV,nR,nS,nOO,nVV,eQP,ERI,&
   double precision              :: num
   double precision              :: start_t,end_t,t
 
+  logical                       :: print_self_energy
+  double precision,allocatable  :: Sig2(:)
+  double precision,allocatable  :: Sigeh(:)
+  double precision,allocatable  :: Sigpp(:)
+
 ! Output variables
 
   double precision,intent(out)  :: SigC(nOrb)
@@ -39,7 +44,13 @@ subroutine G_Parquet_self_energy(eta,nOrb,nC,nO,nV,nR,nS,nOO,nVV,eQP,ERI,&
   SigC(:) = 0d0
   Z(:)    = 0d0
   EcGM    = 0d0
-  
+
+! Memory allocation for self-energy decomposition
+
+  allocate(Sig2(nOrb))
+  allocate(Sigeh(nOrb))
+  allocate(Sigpp(nOrb))
+ 
 !-----------------------------------!
 ! 2nd-order part of the self-energy !
 !-----------------------------------!
@@ -86,6 +97,10 @@ subroutine G_Parquet_self_energy(eta,nOrb,nC,nO,nV,nR,nS,nOO,nVV,eQP,ERI,&
 
   write(*,'(1X,A50,1X,F9.3,A8)') 'Wall time for building GF(2) self-energy =',t,' seconds'
   write(*,*)
+
+! Self-energy decomposition
+
+  Sig2(:) = SigC(:)
 
 !-----------------------------!
 !  eh part of the self-energy !
@@ -193,7 +208,11 @@ subroutine G_Parquet_self_energy(eta,nOrb,nC,nO,nV,nR,nS,nOO,nVV,eQP,ERI,&
 
   write(*,'(1X,A50,1X,F9.3,A8)') 'Wall time for building eh self-energy =',t,' seconds'
   write(*,*) 
-  
+
+! Self-energy decomposition
+
+  Sigeh(:) = SigC(:) - Sig2(:)
+
 !-----------------------------!
 !  pp part of the self-energy !
 !-----------------------------!
@@ -320,12 +339,22 @@ subroutine G_Parquet_self_energy(eta,nOrb,nC,nO,nV,nR,nS,nOO,nVV,eQP,ERI,&
 
   write(*,'(1X,A50,1X,F9.3,A8)') 'Wall time for building pp self-energy =',t,' seconds'
   write(*,*)
-  
+ 
+! Self-energy decomposition
+
+  Sigpp(:) = SigC(:) - Sig2(:) - Sigeh(:)
+ 
 !-----------------------------!
 !   Renormalization factor    !
 !-----------------------------!
 
   Z(:) = 1d0/(1d0 - Z(:))
-  
+ 
+!---------------------------------!
+! Print self-energy decomposition !
+!---------------------------------!
+
+  print_self_energy = .true.
+  call dump_GParquet_self_energy(nOrb,nC,nO,nV,nR,Sig2,Sigeh,Sigpp,SigC)
   
 end subroutine 

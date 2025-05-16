@@ -28,6 +28,8 @@ subroutine G_Parquet_Galitskii_Migdal(eta,nOrb,nC,nO,nV,nR,nS,nOO,nVV,eQP,ERI,&
   double precision              :: num
   double precision              :: start_t,end_t,t
 
+  double precision              :: Ec_2,Ec_eh,Ec_pp
+
 ! Output variables
 
   double precision,intent(out)  :: EcGM
@@ -63,89 +65,97 @@ subroutine G_Parquet_Galitskii_Migdal(eta,nOrb,nC,nO,nV,nR,nS,nOO,nVV,eQP,ERI,&
   write(*,'(1X,A50,1X,F9.3,A8)') 'Wall time for computing GF(2) correlation energy =',t,' seconds'
   write(*,*)
 
+! Correlation energy decomposition
+
+  Ec_2 = EcGM
+
 !-----------------------------!
 !  eh part of the self-energy !
 !-----------------------------!
 
-  ! call wall_time(start_t)
+   call wall_time(start_t)
 
-  ! ! !$OMP PARALLEL DEFAULT(NONE)    &
-  ! ! !$OMP PRIVATE(p,i,a,j,b,n,num,dem1,dem2,reg1,reg2) &
-  ! ! !$OMP SHARED(nC,nO,nOrb,nR,nS,eta,ERI,eQP,eh_rho,eh_Om,SigC,Z)
-  ! ! !$OMP DO COLLAPSE(2)
-  ! do i=nC+1,nO
-  !    do j=nC+1,nO
-  !       do a=nO+1,nOrb-nR
-  !          do b=nO+1,nOrb-nR
-  !             do n=1,nS
+   ! !$OMP PARALLEL DEFAULT(NONE)    &
+   ! !$OMP PRIVATE(p,i,a,j,b,n,num,dem1,dem2,reg1,reg2) &
+   ! !$OMP SHARED(nC,nO,nOrb,nR,nS,eta,ERI,eQP,eh_rho,eh_Om,SigC,Z)
+   ! !$OMP DO COLLAPSE(2)
+   do i=nC+1,nO
+      do j=nC+1,nO
+         do a=nO+1,nOrb-nR
+            do b=nO+1,nOrb-nR
+               do n=1,nS
 
-  !                num  = - 0.5d0 * (ERI(b,a,i,j) - ERI(b,a,j,i)) * eh_rho(i,a,n) * eh_rho(j,b,nS+n)
-                 
-  !                dem1 = eQP(b) - eQP(j) + eh_Om(n)
-  !                dem2 = eQP(a) + eQP(b) - eQP(i) - eQP(j)
-  !                reg1 = (1d0 - exp(- 2d0 * eta * dem1 * dem1))
-  !                reg2 = (1d0 - exp(- 2d0 * eta * dem2 * dem2))
+                  num  = - 0.5d0 * (ERI(b,a,i,j) - ERI(b,a,j,i)) * eh_rho(i,a,n) * eh_rho(j,b,nS+n)
+                
+                  dem1 = eQP(b) - eQP(j) + eh_Om(n)
+                  dem2 = eQP(a) + eQP(b) - eQP(i) - eQP(j)
+                  reg1 = (1d0 - exp(- 2d0 * eta * dem1 * dem1))
+                  reg2 = (1d0 - exp(- 2d0 * eta * dem2 * dem2))
 
-  !                EcGM = EcGM + num * (reg1/dem1) * (reg2/dem2)
-                 
-  !                num  = 0.5d0 * (ERI(j,i,a,b) - ERI(j,i,b,a)) * eh_rho(a,i,n) * eh_rho(b,j,nS+n)
+                  EcGM = EcGM + num * (reg1/dem1) * (reg2/dem2)
+                
+                  num  = 0.5d0 * (ERI(j,i,a,b) - ERI(j,i,b,a)) * eh_rho(a,i,n) * eh_rho(b,j,nS+n)
 
-  !                dem1 = eQP(a) - eQP(i) + eh_Om(n)
-  !                dem2 = eQP(i) + eQP(j) - eQP(a) - eQP(b)
-  !                reg1 = (1d0 - exp(- 2d0 * eta * dem1 * dem1))
-  !                reg2 = (1d0 - exp(- 2d0 * eta * dem2 * dem2))
+                  dem1 = eQP(a) - eQP(i) + eh_Om(n)
+                  dem2 = eQP(i) + eQP(j) - eQP(a) - eQP(b)
+                  reg1 = (1d0 - exp(- 2d0 * eta * dem1 * dem1))
+                  reg2 = (1d0 - exp(- 2d0 * eta * dem2 * dem2))
  
-  !                EcGM = EcGM + num * (reg1/dem1) * (reg2/dem2)
-                 
-  !                num  = 0.5d0 * (ERI(j,a,i,b) - ERI(j,a,b,i)) * eh_rho(i,a,nS+n) * eh_rho(b,j,n)
+                  EcGM = EcGM + num * (reg1/dem1) * (reg2/dem2)
+                
+                  num  = 0.5d0 * (ERI(j,a,i,b) - ERI(j,a,b,i)) * eh_rho(i,a,nS+n) * eh_rho(b,j,n)
 
-  !                dem1 = eQP(a) - eQP(i) + eh_Om(n) 
-  !                dem2 = eQP(j) - eQP(b) - eh_Om(n)
-  !                reg1 = (1d0 - exp(- 2d0 * eta * dem1 * dem1))
-  !                reg2 = (1d0 - exp(- 2d0 * eta * dem2 * dem2))
+                  dem1 = eQP(a) - eQP(i) + eh_Om(n) 
+                  dem2 = eQP(j) - eQP(b) - eh_Om(n)
+                  reg1 = (1d0 - exp(- 2d0 * eta * dem1 * dem1))
+                  reg2 = (1d0 - exp(- 2d0 * eta * dem2 * dem2))
 
-  !                EcGM = EcGM + num * (reg1/dem1) * (reg2/dem2)
+                  EcGM = EcGM + num * (reg1/dem1) * (reg2/dem2)
 
-  !                num  = - 0.5d0 * (ERI(j,i,a,b) - ERI(j,i,b,a)) * eh_rho(a,i,nS+n) * eh_rho(b,j,n)
+                  num  = - 0.5d0 * (ERI(j,i,a,b) - ERI(j,i,b,a)) * eh_rho(a,i,nS+n) * eh_rho(b,j,n)
 
-  !                dem1 = eQP(j) - eQP(b) - eh_Om(n) 
-  !                dem2 = eQP(i) + eQP(j) - eQP(a) - eQP(b)
-  !                reg1 = (1d0 - exp(- 2d0 * eta * dem1 * dem1))
-  !                reg2 = (1d0 - exp(- 2d0 * eta * dem2 * dem2))
+                  dem1 = eQP(j) - eQP(b) - eh_Om(n) 
+                  dem2 = eQP(i) + eQP(j) - eQP(a) - eQP(b)
+                  reg1 = (1d0 - exp(- 2d0 * eta * dem1 * dem1))
+                  reg2 = (1d0 - exp(- 2d0 * eta * dem2 * dem2))
 
-  !                EcGM = EcGM + num * (reg1/dem1) * (reg2/dem2)
+                  EcGM = EcGM + num * (reg1/dem1) * (reg2/dem2)
 
-  !                num  = 0.5d0 * (ERI(b,a,i,j) - ERI(b,a,j,i)) * eh_rho(i,a,nS+n) * eh_rho(j,b,n)
+                  num  = 0.5d0 * (ERI(b,a,i,j) - ERI(b,a,j,i)) * eh_rho(i,a,nS+n) * eh_rho(j,b,n)
 
-  !                dem1 = eQP(a) - eQP(i) + eh_Om(n) 
-  !                dem2 = eQP(i) + eQP(j) - eQP(a) - eQP(b)
-  !                reg1 = (1d0 - exp(- 2d0 * eta * dem1 * dem1))
-  !                reg2 = (1d0 - exp(- 2d0 * eta * dem2 * dem2))
+                  dem1 = eQP(a) - eQP(i) + eh_Om(n) 
+                  dem2 = eQP(i) + eQP(j) - eQP(a) - eQP(b)
+                  reg1 = (1d0 - exp(- 2d0 * eta * dem1 * dem1))
+                  reg2 = (1d0 - exp(- 2d0 * eta * dem2 * dem2))
 
-  !                EcGM = EcGM + num * (reg1/dem1) * (reg2/dem2)
-                 
-  !                num  = 0.5d0 * (ERI(b,i,a,j) - ERI(b,i,j,a)) * eh_rho(a,i,n) * eh_rho(j,b,nS+n)
+                  EcGM = EcGM + num * (reg1/dem1) * (reg2/dem2)
+                
+                  num  = 0.5d0 * (ERI(b,i,a,j) - ERI(b,i,j,a)) * eh_rho(a,i,n) * eh_rho(j,b,nS+n)
 
-  !                dem1 = eQP(a) - eQP(i) + eh_Om(n) 
-  !                dem2 = eQP(j) - eQP(b) - eh_Om(n)
-  !                reg1 = (1d0 - exp(- 2d0 * eta * dem1 * dem1))
-  !                reg2 = (1d0 - exp(- 2d0 * eta * dem2 * dem2))
+                  dem1 = eQP(a) - eQP(i) + eh_Om(n) 
+                  dem2 = eQP(j) - eQP(b) - eh_Om(n)
+                  reg1 = (1d0 - exp(- 2d0 * eta * dem1 * dem1))
+                  reg2 = (1d0 - exp(- 2d0 * eta * dem2 * dem2))
 
-  !                EcGM = EcGM + num * (reg1/dem1) * (reg2/dem2)
-                 
-  !             end do ! n
-  !          end do ! b
-  !       end do ! a
-  !    end do ! j
-  ! end do ! i
-  ! ! !$OMP END DO
-  ! ! !$OMP END PARALLEL
+                  EcGM = EcGM + num * (reg1/dem1) * (reg2/dem2)
+                
+               end do ! n
+            end do ! b
+         end do ! a
+      end do ! j
+   end do ! i
+   ! !$OMP END DO
+   ! !$OMP END PARALLEL
 
-  ! call wall_time(end_t)
-  ! t = end_t - start_t
+   call wall_time(end_t)
+   t = end_t - start_t
 
-  ! write(*,'(1X,A50,1X,F9.3,A8)') 'Wall time for computing eh correlation energy =',t,' seconds'
-  ! write(*,*) 
+   write(*,'(1X,A50,1X,F9.3,A8)') 'Wall time for computing eh correlation energy =',t,' seconds'
+   write(*,*) 
+
+! Correlation energy decomposition
+
+  Ec_eh = EcGM - Ec_2
   
 !-----------------------------!
 !  pp part of the self-energy !
@@ -278,7 +288,17 @@ subroutine G_Parquet_Galitskii_Migdal(eta,nOrb,nC,nO,nV,nR,nS,nOO,nVV,eQP,ERI,&
   write(*,'(1X,A50,1X,F9.3,A8)') 'Wall time for computing pp correlation energy =',t,' seconds'
   write(*,*)
 
-  write(*,*) 'The correlation energy is', EcGM
+! Correlation energy decomposition
+
+  Ec_pp = EcGM - Ec_2 - Ec_eh
+
+  write(*,*) '-----------------------------------------------------'
+  write(*,*) '| Parquet correlation energy decomposition (in au)  |'
+  write(*,*) '-----------------------------------------------------'
+  write(*,'(1X,A1,1X,A10,1X,A1,1X,A10,1X,A1,1X,A10,1X,A1,1X,A10,1X,A1,1X)') '|','Ec^(2)','|','Ec^eh','|','Ec^pp','|','Total','|'
+  write(*,*) '-----------------------------------------------------'
+  write(*,'(1X,A1,1X,F10.6,1X,A1,1X,F10.6,1X,A1,1X,F10.6,1X,A1,1X,F10.6,1X,A1,1X)') '|',Ec_2,'|',Ec_eh,'|',Ec_pp,'|',EcGM,'|'
+  write(*,*) '-----------------------------------------------------'
   write(*,*)
   
 end subroutine 
