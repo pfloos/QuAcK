@@ -90,7 +90,7 @@ subroutine GParquet(TDAeh,TDApp,max_diis_1b,max_diis_2b,linearize,eta,ENuc,max_i
     
 ! DIIS parameters
 
-  rcond    = 1d0
+  rcond = 1d0
 
   allocate(err_diis_2b(2*nOrb**4,max_diis_2b),Phi_diis(2*nOrb**4,max_diis_2b))
   allocate(err(2*nOrb**4),Phi(2*nOrb**4))
