@@ -84,7 +84,7 @@ subroutine G_Parquet_Galitskii_Migdal(eta,nOrb,nC,nO,nV,nR,nS,nOO,nVV,eQP,ERI,&
            do b=nO+1,nOrb-nR
               do n=1,nS
 
-                 num  = - 0.5d0 * (ERI(b,a,i,j) - ERI(b,a,j,i)) * eh_rho(i,a,n) * eh_rho(j,b,nS+n)
+                 num  = - 0.5d0 * (ERI(b,a,i,j) - ERI(b,a,j,i)) * eh_rho(i,a,n) * eh_rho(b,j,nS+n)
                
                  dem1 = eQP(b) - eQP(j) + eh_Om(n)
                  dem2 = eQP(a) + eQP(b) - eQP(i) - eQP(j)
