@@ -23,7 +23,7 @@ subroutine G_Parquet_Galitskii_Migdal(eta,nOrb,nC,nO,nV,nR,nS,nOO,nVV,eQP,ERI,&
 
 ! Local variables
   integer                       :: i,j,k,l,a,b,c,d
-  integer                       :: p,n
+  integer                       :: n
   double precision              :: eps,dem1,dem2,reg,reg1,reg2
   double precision              :: num
   double precision              :: start_t,end_t,t
@@ -74,8 +74,7 @@ subroutine G_Parquet_Galitskii_Migdal(eta,nOrb,nC,nO,nV,nR,nS,nOO,nVV,eQP,ERI,&
 
   Ec_eh(:) = 0d0
 
-  ! !$OMP PARALLEL DEFAULT(NONE)    &
-  ! !$OMP PRIVATE(p,i,a,j,b,n,num,dem1,dem2,reg1,reg2) &
+
   ! !$OMP SHARED(nC,nO,nOrb,nR,nS,eta,ERI,eQP,eh_rho,eh_Om,SigC,Z)
   ! !$OMP DO COLLAPSE(2)
   do i=nC+1,nO
@@ -84,61 +83,61 @@ subroutine G_Parquet_Galitskii_Migdal(eta,nOrb,nC,nO,nV,nR,nS,nOO,nVV,eQP,ERI,&
            do b=nO+1,nOrb-nR
               do n=1,nS
 
-                 num  = - 0.5d0 * (ERI(b,a,i,j) - ERI(b,a,j,i)) * eh_rho(i,a,n) * eh_rho(b,j,nS+n)
-               
+                 ! 2h2p(d) * 2p2h
+                 num  = 0.5d0 * (ERI(b,a,i,j) - ERI(b,a,j,i)) * eh_rho(i,a,n) * eh_rho(j,b,nS+n)
                  dem1 = eQP(b) - eQP(j) + eh_Om(n)
-                 dem2 = eQP(a) + eQP(b) - eQP(i) - eQP(j)
+                 dem2 = eQP(i) + eQP(j) - eQP(a) - eQP(b) 
                  reg1 = (1d0 - exp(- 2d0 * eta * dem1 * dem1))
                  reg2 = (1d0 - exp(- 2d0 * eta * dem2 * dem2))
 
                  Ec_eh(1) = Ec_eh(1) + num * (reg1/dem1) * (reg2/dem2)
-               
-                 num  = 0.5d0 * (ERI(j,i,a,b) - ERI(j,i,b,a)) * eh_rho(a,i,n) * eh_rho(b,j,nS+n)
 
-                 dem1 = eQP(a) - eQP(i) + eh_Om(n)
-                 dem2 = eQP(i) + eQP(j) - eQP(a) - eQP(b)
-                 reg1 = (1d0 - exp(- 2d0 * eta * dem1 * dem1))
-                 reg2 = (1d0 - exp(- 2d0 * eta * dem2 * dem2))
-
-                 Ec_eh(2) = Ec_eh(2) + num * (reg1/dem1) * (reg2/dem2)
-               
-                 num  = 0.5d0 * (ERI(j,a,i,b) - ERI(j,a,b,i)) * eh_rho(i,a,nS+n) * eh_rho(b,j,n)
-
+                 ! 2h2p(d) * 2p2h(d)
+                 num  = 0.5d0 * (ERI(b,i,a,j) - ERI(b,i,j,a)) * eh_rho(a,i,n) * eh_rho(b,j,nS+n)
                  dem1 = eQP(a) - eQP(i) + eh_Om(n) 
                  dem2 = eQP(j) - eQP(b) - eh_Om(n)
                  reg1 = (1d0 - exp(- 2d0 * eta * dem1 * dem1))
                  reg2 = (1d0 - exp(- 2d0 * eta * dem2 * dem2))
 
-                 Ec_eh(3) = Ec_eh(3) + num * (reg1/dem1) * (reg2/dem2)
+                 Ec_eh(2) = Ec_eh(2) + num * (reg1/dem1) * (reg2/dem2)
 
-                 num  = - 0.5d0 * (ERI(j,i,a,b) - ERI(j,i,b,a)) * eh_rho(a,i,nS+n) * eh_rho(b,j,n)
-
-                 dem1 = eQP(j) - eQP(b) - eh_Om(n) 
+                 ! 2h2p(d) * 2p2h
+                 num  = 0.5d0 * (ERI(b,a,i,j) - ERI(b,a,j,i)) * eh_rho(i,a,nS+n) * eh_rho(j,b,n)
+                 dem1 = eQP(a) - eQP(i) + eh_Om(n) 
                  dem2 = eQP(i) + eQP(j) - eQP(a) - eQP(b)
+                 reg1 = (1d0 - exp(- 2d0 * eta * dem1 * dem1))
+                 reg2 = (1d0 - exp(- 2d0 * eta * dem2 * dem2))
+
+                 Ec_eh(3) = Ec_eh(3) + num * (reg1/dem1) * (reg2/dem2)
+                
+                 ! 2p2h(d) * 2h2p
+                 num  = 0.5d0 * (ERI(j,i,a,b) - ERI(j,i,b,a)) * eh_rho(a,i,nS+n) * eh_rho(b,j,n)
+                 dem1 = eQP(j) - eQP(b) - eh_Om(n) 
+                 dem2 = eQP(a) + eQP(b) - eQP(i) - eQP(j)
                  reg1 = (1d0 - exp(- 2d0 * eta * dem1 * dem1))
                  reg2 = (1d0 - exp(- 2d0 * eta * dem2 * dem2))
 
                  Ec_eh(4) = Ec_eh(4) + num * (reg1/dem1) * (reg2/dem2)
 
-                 num  = 0.5d0 * (ERI(b,a,i,j) - ERI(b,a,j,i)) * eh_rho(i,a,nS+n) * eh_rho(j,b,n)
-
-                 dem1 = eQP(a) - eQP(i) + eh_Om(n) 
-                 dem2 = eQP(i) + eQP(j) - eQP(a) - eQP(b)
-                 reg1 = (1d0 - exp(- 2d0 * eta * dem1 * dem1))
-                 reg2 = (1d0 - exp(- 2d0 * eta * dem2 * dem2))
-
-                 Ec_eh(5) = Ec_eh(5) + num * (reg1/dem1) * (reg2/dem2)
-               
-                 num  = 0.5d0 * (ERI(b,i,a,j) - ERI(b,i,j,a)) * eh_rho(a,i,n) * eh_rho(j,b,nS+n)
-
+                 ! 2h2p(d) * 2p2h(d)
+                 num  = 0.5d0 * (ERI(j,a,i,b) - ERI(j,a,b,i)) * eh_rho(i,a,nS+n) * eh_rho(j,b,n)
                  dem1 = eQP(a) - eQP(i) + eh_Om(n) 
                  dem2 = eQP(j) - eQP(b) - eh_Om(n)
                  reg1 = (1d0 - exp(- 2d0 * eta * dem1 * dem1))
                  reg2 = (1d0 - exp(- 2d0 * eta * dem2 * dem2))
 
+                 Ec_eh(5) = Ec_eh(5) + num * (reg1/dem1) * (reg2/dem2)
+
+                 ! 2h2p(d) * 2p2h
+                 num  = 0.5d0 * (ERI(j,i,a,b) - ERI(j,i,b,a)) * eh_rho(a,i,n) * eh_rho(b,j,nS+n)
+                 dem1 = eQP(a) - eQP(i) + eh_Om(n)
+                 dem2 = eQP(i) + eQP(j) - eQP(a) - eQP(b)
+                 reg1 = (1d0 - exp(- 2d0 * eta * dem1 * dem1))
+                 reg2 = (1d0 - exp(- 2d0 * eta * dem2 * dem2))
+
                  Ec_eh(6) = Ec_eh(6) + num * (reg1/dem1) * (reg2/dem2)
-               
-              end do ! n
+
+             end do ! n
            end do ! b
         end do ! a
      end do ! j
@@ -170,6 +169,8 @@ subroutine G_Parquet_Galitskii_Migdal(eta,nOrb,nC,nO,nV,nR,nS,nOO,nVV,eQP,ERI,&
 
            do k=nC+1,nO
               do l=nC+1,nO
+
+                 ! 2h2p(d) * 2p2h(d)
                  num  = - 0.5d0 * ERI(k,l,i,j) * ee_rho(i,j,n) * ee_rho(k,l,n)
                  dem1 = ee_Om(n) - eQP(i) - eQP(j)
                  dem2 = eQP(k) + eQP(l) - ee_Om(n)
@@ -184,6 +185,7 @@ subroutine G_Parquet_Galitskii_Migdal(eta,nOrb,nC,nO,nV,nR,nS,nOO,nVV,eQP,ERI,&
            do a=nO+1,nOrb-nR
               do b=nO+1,nOrb-nR
 
+                 ! 2h2p(d) * 2p2h
                  num  = - 0.5d0 * ERI(a,b,i,j) * ee_rho(i,j,n) * ee_rho(a,b,n)
                  dem1 = ee_Om(n) - eQP(i) - eQP(j)
                  dem2 = eQP(i) + eQP(j) - eQP(a) - eQP(b)
@@ -201,6 +203,7 @@ subroutine G_Parquet_Galitskii_Migdal(eta,nOrb,nC,nO,nV,nR,nS,nOO,nVV,eQP,ERI,&
            do a=nO+1,nOrb-nR
               do b=nO+1,nOrb-nR
 
+                 ! 2h2p(d) * 2p2h
                  num  = - 0.5d0 * ERI(a,b,i,j) * hh_rho(i,j,n) * hh_rho(a,b,n)
                  dem1 = eQP(a) + eQP(b) - hh_Om(n)
                  dem2 = eQP(i) + eQP(j) - eQP(a) - eQP(b)
@@ -230,6 +233,7 @@ subroutine G_Parquet_Galitskii_Migdal(eta,nOrb,nC,nO,nV,nR,nS,nOO,nVV,eQP,ERI,&
            do c=nO+1,nOrb-nR
               do d=nO+1,nOrb-nR
                  
+                 ! 2p2h(d) * 2p2h(d)
                  num  = 0.5d0 * ERI(c,d,a,b) * hh_rho(a,b,n) * hh_rho(c,d,n)
                  dem1 = hh_Om(n) - eQP(a) - eQP(b)
                  dem2 = hh_Om(n) - eQP(c) - eQP(d)
@@ -244,6 +248,7 @@ subroutine G_Parquet_Galitskii_Migdal(eta,nOrb,nC,nO,nV,nR,nS,nOO,nVV,eQP,ERI,&
            do i=nC+1,nO
               do j=nC+1,nO
 
+                 ! 2p2h(d) * 2p2h
                  num  = 0.5d0 * ERI(i,j,a,b) * hh_rho(a,b,n) * hh_rho(i,j,n)
                  dem1 = hh_Om(n) - eQP(a) - eQP(b)
                  dem2 = eQP(i) + eQP(j) - eQP(a) - eQP(b)
@@ -261,6 +266,7 @@ subroutine G_Parquet_Galitskii_Migdal(eta,nOrb,nC,nO,nV,nR,nS,nOO,nVV,eQP,ERI,&
            do i=nC+1,nO
               do j=nC+1,nO
 
+                 ! 2p2h * 2p2h(d)
                  num  = 0.5d0 * ERI(i,j,a,b) * ee_rho(a,b,n) * ee_rho(i,j,n)
                  dem1 = eQP(i) + eQP(j) - eQP(a) - eQP(b)
                  dem2 = eQP(i) + eQP(j) - ee_Om(n)
@@ -297,20 +303,20 @@ subroutine G_Parquet_Galitskii_Migdal(eta,nOrb,nC,nO,nV,nR,nS,nOO,nVV,eQP,ERI,&
 
   ! eh decomposition
 
-  write(*,*) '-----------------------------'
-  write(*,*) '| Ec^eh components (in au)  |'
-  write(*,*) '-----------------------------'
-  write(*,'(1X,A1,1X,A6,1X,A1,1X,A16,1X,A1,1X)') '|','#','|','Ec^eh','|'
-  write(*,*) '-----------------------------'
-  write(*,'(1X,A1,1X,I6,1X,A1,1X,F16.10,1X,A1,1X)') '|',1,'|',Ec_eh(1),'|'
-  write(*,'(1X,A1,1X,I6,1X,A1,1X,F16.10,1X,A1,1X)') '|',2,'|',Ec_eh(2),'|'
-  write(*,'(1X,A1,1X,I6,1X,A1,1X,F16.10,1X,A1,1X)') '|',3,'|',Ec_eh(3),'|'
-  write(*,'(1X,A1,1X,I6,1X,A1,1X,F16.10,1X,A1,1X)') '|',4,'|',Ec_eh(4),'|'
-  write(*,'(1X,A1,1X,I6,1X,A1,1X,F16.10,1X,A1,1X)') '|',5,'|',Ec_eh(5),'|'
-  write(*,'(1X,A1,1X,I6,1X,A1,1X,F16.10,1X,A1,1X)') '|',6,'|',Ec_eh(6),'|'
-  write(*,*) '-----------------------------'
-  write(*,'(1X,A1,1X,A6,1X,A1,1X,F16.10,1X,A1,1X)') '|','Total','|',sum(Ec_eh),'|'
-  write(*,*) '-----------------------------'
+  write(*,*) '-------------------------------------------'
+  write(*,*) '| Ec^eh components (in au)                |'
+  write(*,*) '-------------------------------------------'
+  write(*,'(1X,A1,1X,A20,1X,A1,1X,A16,1X,A1,1X)') '|','#','|','Ec^eh','|'
+  write(*,*) '-------------------------------------------'
+  write(*,'(1X,A1,1X,A20,1X,A1,1X,F16.10,1X,A1,1X)') '|','1 [2h2p(d)*2h2p]','|',Ec_eh(1),'|'
+  write(*,'(1X,A1,1X,A20,1X,A1,1X,F16.10,1X,A1,1X)') '|','2 [2h2p(d)*2h2p(d)]','|',Ec_eh(2),'|'
+  write(*,'(1X,A1,1X,A20,1X,A1,1X,F16.10,1X,A1,1X)') '|','3 [2h2p(d)*2h2p]','|',Ec_eh(3),'|'
+  write(*,'(1X,A1,1X,A20,1X,A1,1X,F16.10,1X,A1,1X)') '|','4 [2p2h(d)*2p2h]','|',Ec_eh(4),'|'
+  write(*,'(1X,A1,1X,A20,1X,A1,1X,F16.10,1X,A1,1X)') '|','5 [2h2p(d)*2p2h(d)]','|',Ec_eh(5),'|'
+  write(*,'(1X,A1,1X,A20,1X,A1,1X,F16.10,1X,A1,1X)') '|','6 [2h2p(d)*2p2h]','|',Ec_eh(6),'|'
+  write(*,*) '-------------------------------------------'
+  write(*,'(1X,A1,1X,A20,1X,A1,1X,F16.10,1X,A1,1X)') '|','Total','|',sum(Ec_eh),'|'
+  write(*,*) '-------------------------------------------'
   write(*,*) 
   
   ! pp decomposition
