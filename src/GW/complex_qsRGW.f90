@@ -82,6 +82,7 @@ subroutine complex_qsRGW(dotest,maxSCF,thresh,max_diis,doACFDT,exchange_kernel,d
 
   double precision              :: flow
 
+  logical                       :: plot_self = .false.
   logical                       :: dRPA_W  = .true.
   logical                       :: print_W = .false.
   complex*16,allocatable        :: err_diis(:,:)
@@ -303,6 +304,10 @@ subroutine complex_qsRGW(dotest,maxSCF,thresh,max_diis,doACFDT,exchange_kernel,d
                      ENuc,ET,EV,EW,EJ,EK,EcGM,EcRPA,EqsGW,dipole)
 
   end do
+  
+! Plot self-energy, renormalization factor, and spectral function
+!
+  if(plot_self) call complex_qsRGW_plot_self_energy(nOrb,eta,nC,nO,nV,nR,nS,real(eHF),aimag(eHF),real(eGW),aimag(eGW),Om,rho)
 !------------------------------------------------------------------------
 ! End main loop
 !------------------------------------------------------------------------
