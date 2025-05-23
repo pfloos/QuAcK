@@ -28,13 +28,13 @@ subroutine complex_qsRGW_plot_self_energy(nBas,eta,nC,nO,nV,nR,nS,eGW)
 
 ! Construct grid
 
-  nGrid = 5000
+  nGrid = 20000
   allocate(w(nGrid),A(nBas,nGrid))
 
 ! Minimum and maximum frequency values
 
-  wmin = 0d0
-  wmax = +1d0
+  wmin = -2d0
+  wmax = +2d0
   dw = (wmax - wmin)/dble(ngrid)
 
   do g=1,nGrid
