@@ -164,7 +164,7 @@ subroutine GG0T0eh(dotest,doACFDT,exchange_kernel,doXBS,dophBSE,dophBSE2,TDA_T,T
 ! Dump results !
 !--------------!
 
-  call print_RG0T0eh(nOrb,nO,eHF,ENuc,EGHF,Sig,Z,eGT,EcRPA,EcGM)
+  call print_GG0T0eh(nOrb,nO,eHF,ENuc,EGHF,Sig,Z,eGT,EcRPA,EcGM)
 
 ! Testing zone
 
