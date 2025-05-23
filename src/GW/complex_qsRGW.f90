@@ -307,7 +307,7 @@ subroutine complex_qsRGW(dotest,maxSCF,thresh,max_diis,doACFDT,exchange_kernel,d
   
 ! Plot self-energy, renormalization factor, and spectral function
 !
-  if(plot_self) call complex_qsRGW_plot_self_energy(nOrb,eta,nC,nO,nV,nR,nS,real(eHF),aimag(eHF),real(eGW),aimag(eGW),Om,rho)
+  if(plot_self) call complex_RGW_plot_self_energy(nOrb,eta,nC,nO,nV,nR,nS,real(eHF),aimag(eHF),real(eGW),aimag(eGW),Om,rho)
 !------------------------------------------------------------------------
 ! End main loop
 !------------------------------------------------------------------------
