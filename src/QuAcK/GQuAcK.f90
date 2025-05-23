@@ -1,13 +1,13 @@
-subroutine GQuAcK(working_dir,dotest,doGHF,dostab,dosearch,doMP2,doMP3,doCCD,dopCCD,doDCD,doCCSD,doCCSDT, &
-                  dodrCCD,dorCCD,docrCCD,dolCCD,dophRPA,dophRPAx,docrRPA,doppRPA,                         &
-                  doG0W0,doevGW,doqsGW,doG0F2,doevGF2,doqsGF2,doG0T0pp,doevGTpp,doqsGTpp,doParquet,&
-                  nNuc,nBas,nC,nO,nV,nR,ENuc,ZNuc,rNuc,S,T,V,Hc,X,dipole_int_AO,                          &
-                  maxSCF_HF,max_diis_HF,thresh_HF,level_shift,guess_type,mix,reg_MP,                      &
-                  maxSCF_CC,max_diis_CC,thresh_CC,                                                        &
-                  TDA,maxSCF_GF,max_diis_GF,thresh_GF,lin_GF,reg_GF,eta_GF,                               &
-                  maxSCF_GW,max_diis_GW,thresh_GW,TDA_W,lin_GW,reg_GW,eta_GW,                             &
-                  maxSCF_GT,max_diis_GT,thresh_GT,TDA_T,lin_GT,reg_GT,eta_GT,                             &
-                  dophBSE,dophBSE2,doppBSE,dBSE,dTDA,doACFDT,exchange_kernel,doXBS,                       &
+subroutine GQuAcK(working_dir,dotest,doGHF,dostab,dosearch,doMP2,doMP3,doCCD,dopCCD,doDCD,doCCSD,doCCSDT,    &
+                  dodrCCD,dorCCD,docrCCD,dolCCD,dophRPA,dophRPAx,docrRPA,doppRPA,                            &
+                  doG0W0,doevGW,doqsGW,doG0F2,doevGF2,doqsGF2,doG0T0pp,doevGTpp,doqsGTpp,doG0T0eh,doParquet, &
+                  nNuc,nBas,nC,nO,nV,nR,ENuc,ZNuc,rNuc,S,T,V,Hc,X,dipole_int_AO,                             &
+                  maxSCF_HF,max_diis_HF,thresh_HF,level_shift,guess_type,mix,reg_MP,                         &
+                  maxSCF_CC,max_diis_CC,thresh_CC,                                                           &
+                  TDA,maxSCF_GF,max_diis_GF,thresh_GF,lin_GF,reg_GF,eta_GF,                                  &
+                  maxSCF_GW,max_diis_GW,thresh_GW,TDA_W,lin_GW,reg_GW,eta_GW,                                &
+                  maxSCF_GT,max_diis_GT,thresh_GT,TDA_T,lin_GT,reg_GT,eta_GT,                                &
+                  dophBSE,dophBSE2,doppBSE,dBSE,dTDA,doACFDT,exchange_kernel,doXBS,                          &
                   TDAeh,TDApp,max_diis_1b,max_diis_2b,max_it_1b,conv_1b,max_it_2b,conv_2b,lin_parquet,reg_parquet)
 
   implicit none
@@ -28,6 +28,7 @@ subroutine GQuAcK(working_dir,dotest,doGHF,dostab,dosearch,doMP2,doMP3,doCCD,dop
   logical,intent(in)            :: doG0F2,doevGF2,doqsGF2
   logical,intent(in)            :: doG0W0,doevGW,doqsGW
   logical,intent(in)            :: doG0T0pp,doevGTpp,doqsGTpp
+  logical,intent(in)            :: doG0T0eh
   logical,intent(in)            :: doParquet
 
   integer,intent(in)            :: nNuc,nBas
@@ -330,11 +331,11 @@ subroutine GQuAcK(working_dir,dotest,doGHF,dostab,dosearch,doMP2,doMP3,doCCD,dop
 ! T-matrix module !
 !-----------------!
 
-  doGT = doG0T0pp .or. doevGTpp .or. doqsGTpp
+  doGT = doG0T0pp .or. doevGTpp .or. doqsGTpp .or. doG0T0eh
 
   if(doGT) then
     call wall_time(start_GT)
-    call GGT(dotest,doG0T0pp,doevGTpp,doqsGTpp,  &
+    call GGT(dotest,doG0T0pp,doevGTpp,doqsGTpp,doG0T0eh,  &
              maxSCF_GT,thresh_GT,max_diis_GT,doACFDT,exchange_kernel,doXBS,dophBSE,dophBSE2,doppBSE, &
              TDA_T,TDA,dBSE,dTDA,lin_GT,eta_GT,reg_GT,nNuc,ZNuc,rNuc,ENuc,           &
              nBas,nBas2,nC,nO,nV,nR,nS,EGHF,S,X,T,V,Hc,ERI_AO,ERI_MO,dipole_int_AO,                   &
