@@ -41,8 +41,10 @@ subroutine dump_RParquet_self_energy(nOrb,nC,nO,nV,nR,Sig2d,Sig2x,Sig1eh,Sig3eh,
   ! Occupied states
 
   do i=nC+1,nO
-    write(*,'(1X,A1,1X,I3,1X,A1,1X,F10.6,1X,A1,1X,F10.6,1X,A1,1X,F10.6,1X,A1,1X,F10.6,1X,A1,1X,F10.6,1X,A1,1X,F10.6,1X,A1,1X,F10.6,1X,A1,1X)') &
-    '|',i,'|',Sig2d(i)*HaToeV,'|',Sig2x(i)*HaToeV,'|',Sig1eh(i)*HaToeV,'|',Sig3eh(i)*HaToeV,'|',Sig1pp(i)*HaToeV,'|',Sig3pp(i)*HaToeV,'|',Sig(i)*HaToeV,'|'
+    write(*,'(1X,A1,1X,I3,1X,A1,1X,F10.6,1X,A1,1X,F10.6,1X,A1,1X,F10.6,1X,A1,1X,&
+                 &F10.6,1X,A1,1X,F10.6,1X,A1,1X,F10.6,1X,A1,1X,F10.6,1X,A1,1X)')  &
+    '|',i,'|',Sig2d(i)*HaToeV,'|',Sig2x(i)*HaToeV,'|',Sig1eh(i)*HaToeV,'|',      &
+    Sig3eh(i)*HaToeV,'|',Sig1pp(i)*HaToeV,'|',Sig3pp(i)*HaToeV,'|',Sig(i)*HaToeV,'|'
   end do
 
   ! Fermi level
@@ -53,8 +55,10 @@ subroutine dump_RParquet_self_energy(nOrb,nC,nO,nV,nR,Sig2d,Sig2x,Sig1eh,Sig3eh,
   ! Vacant states
 
   do a=nO+1,nOrb-nR
-    write(*,'(1X,A1,1X,I3,1X,A1,1X,F10.6,1X,A1,1X,F10.6,1X,A1,1X,F10.6,1X,A1,1X,F10.6,1X,A1,1X,F10.6,1X,A1,1X,F10.6,1X,A1,1X,F10.6,1X,A1,1X)') &
-    '|',a,'|',Sig2d(a)*HaToeV,'|',Sig2x(a)*HaToeV,'|',Sig1eh(a)*HaToeV,'|',Sig3eh(a)*HaToeV,'|',Sig1pp(a)*HaToeV,'|',Sig3pp(a)*HaToeV,'|',Sig(a)*HaToeV,'|'
+    write(*,'(1X,A1,1X,I3,1X,A1,1X,F10.6,1X,A1,1X,F10.6,1X,A1,1X,F10.6,1X,A1,1X,F10.6,1X,&
+            &A1,1X,F10.6,1X,A1,1X,F10.6,1X,A1,1X,F10.6,1X,A1,1X)')                       &
+    '|',a,'|',Sig2d(a)*HaToeV,'|',Sig2x(a)*HaToeV,'|',Sig1eh(a)*HaToeV,'|',              &
+    Sig3eh(a)*HaToeV,'|',Sig1pp(a)*HaToeV,'|',Sig3pp(a)*HaToeV,'|',Sig(a)*HaToeV,'|'
   end do
   write(*,*)'--------------------------------------------------------------------------------------------------'
   write(*,*)
