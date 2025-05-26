@@ -343,5 +343,7 @@ subprocess.call([QuAcK_dir + '/bin/QuAcK', working_dir])
 if dumb_molden:
     real_mo_coeff = np.loadtxt('real_MOs.dat')
     imag_mo_coeff = np.loadtxt('imag_MOs.dat')
+    subprocess.call(['rm','real_MOs.dat'])
+    subprocess.call(['rm','imag_MOs.dat'])
     molden.from_mo(mol, "real_MOs.molden", real_mo_coeff)
     molden.from_mo(mol, "imag_MOs.molden", imag_mo_coeff)
