@@ -42,9 +42,13 @@ subroutine GGTeh_excitation_density(nBas,nC,nO,nR,nS,ERI,XpY,XmY,rhoL,rhoR)
                 X = 0.5d0*(XpY(m,jb) + XmY(m,jb))
                 Y = 0.5d0*(XpY(m,jb) - XmY(m,jb))
 
-                rhoL(p,q,m) = rhoL(p,q,m) + ERI(p,j,b,q)*X + ERI(p,b,j,q)*Y
+                rhoL(p,q,m) = rhoL(p,q,m) + ERI(p,b,j,q)*X + ERI(p,j,b,q)*Y
 
-                rhoR(p,q,m) = rhoR(p,q,m) + (ERI(p,j,b,q) - ERI(p,j,q,b))*X + (ERI(p,b,j,q) - ERI(p,b,q,j))*Y
+                rhoR(p,q,m) = rhoR(p,q,m) + ERI(p,b,j,q)*X + ERI(p,j,b,q)*Y
+
+!               rhoL(p,q,m) = rhoL(p,q,m) + ERI(p,j,b,q)*X + ERI(p,b,j,q)*Y
+
+!               rhoR(p,q,m) = rhoR(p,q,m) + (ERI(p,j,b,q) - ERI(p,j,q,b))*X + (ERI(p,b,j,q) - ERI(p,b,q,j))*Y
 
               end do
            end do

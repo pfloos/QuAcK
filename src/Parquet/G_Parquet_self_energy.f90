@@ -177,7 +177,7 @@ subroutine G_Parquet_self_energy(eta,nOrb,nC,nO,nV,nR,nS,nOO,nVV,eQP,ERI,&
                                            - num * (reg1/dem1/dem1) * (reg2/dem2)
 
                  ! 2h2p(d) * 2p1h(d)
-                 num  = (ERI(p,a,i,b) - ERI(p,a,b,i)) * eh_rho(i,a,nS+n) * eh_rho(p,b,n) 
+                 num  = (ERI(p,a,i,b) - ERI(p,a,b,i)) * eh_rho(i,a,nS+n) * eh_rho(b,p,n) 
                  dem1 = eQP(a) - eQP(i) + eh_Om(n) 
                  dem2 = eQP(p) - eQP(b) - eh_Om(n)
                  reg1 = (1d0 - exp(- 2d0 * eta * dem1 * dem1))
