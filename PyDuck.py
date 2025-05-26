@@ -5,6 +5,7 @@ import sys
 import argparse
 import pyscf
 from pyscf import gto
+from pyscf.tools import molden
 import numpy as np
 import subprocess
 import time
@@ -53,6 +54,9 @@ parser.add_argument('--working_dir', type=str, default=QuAcK_dir,
 parser.add_argument('-x', '--xyz', type=str, required=True,
                     help='Name of the file containing the nuclear coordinates in xyz format in the $QUACK_ROOT/mol/ directory without the .xyz extension')
 
+parser.add_argument('-dm', '--dumb_molden', default=False, action='store_true',
+                    help='Dumb molden file with the dyson orbitals. Make sure that in the Quack Code before compilation the keyword writeMOs in cRHF or complex_qsRGW is set to true. So far, this is only available for cRHF and complex_qsRGW.')
+
 # Parse the arguments
 args = parser.parse_args()
 working_dir = args.working_dir
@@ -67,6 +71,7 @@ print_2e = args.print_2e
 formatted_2e = args.formatted_2e
 mmap_2e = args.mmap_2e
 aosym_2e = args.aosym_2e
+dumb_molden = args.dumb_molden
 # Read molecule
 f = open(working_dir+'/mol/'+xyz, 'r')
 lines = f.read().splitlines()
@@ -205,7 +210,7 @@ if use_cap:
         f.write(" {} ".format(str(eta_opt)))
         f.close()
         print(f"CAP eta = {eta_opt}")
-    
+
         # xyz file
         with open(working_dir + "/mol/" + xyz, "r") as f:
             lines = f.readlines()
@@ -238,6 +243,7 @@ if use_cap:
     except Exception:
         print("No CAP-data provided for this molecule. Skipping CAP calculation...")
         use_cap = False
+
 
 def write_matrix_to_file(matrix, size, file, cutoff=1e-15):
     f = open(file, 'w')
@@ -324,7 +330,7 @@ if print_2e:
     sys.stdout.flush()
 
 # Free memory
-del ovlp, v1e, t1e, x, y, z, mol
+del ovlp, v1e, t1e, x, y, z
 if print_2e and not(mmap_2e):
     del eri_ao
 if use_cap:
@@ -333,3 +339,9 @@ gc.collect()
 
 # Execute the QuAcK fortran program
 subprocess.call([QuAcK_dir + '/bin/QuAcK', working_dir])
+
+if dumb_molden:
+    real_mo_coeff = np.loadtxt('real_MOs.dat')
+    imag_mo_coeff = np.loadtxt('imag_MOs.dat')
+    molden.from_mo(mol, "real_MOs.molden", real_mo_coeff)
+    molden.from_mo(mol, "imag_MOs.molden", imag_mo_coeff)

@@ -83,6 +83,7 @@ subroutine complex_qsRGW(dotest,maxSCF,thresh,max_diis,doACFDT,exchange_kernel,d
   double precision              :: flow
 
   logical                       :: plot_self = .false.
+  logical                       :: writeMOs = .false.
   logical                       :: dRPA_W  = .true.
   logical                       :: print_W = .false.
   complex*16,allocatable        :: err_diis(:,:)
@@ -307,5 +308,11 @@ subroutine complex_qsRGW(dotest,maxSCF,thresh,max_diis,doACFDT,exchange_kernel,d
   
 ! Plot spectral function
  if(plot_self) call complex_qsRGW_plot_self_energy(nOrb,eta,nC,nO,nV,nR,nS,eGW)
+  
+ ! Write MOs (dyson-orbitals) to file
+ if(writeMOs) then
+        call write_matout(nBas,nBas,real(c),'real_MOs.dat')
+        call write_matout(nBas,nBas,aimag(c),'imag_MOs.dat')
+  endif
 
 end subroutine 
