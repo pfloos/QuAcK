@@ -25,7 +25,6 @@ subroutine complex_AOtoMO_ERI_RHF(nBas,nOrb,c,ERI_AO,ERI_MO)
 ! Memory allocation
 
   allocate(a2(nBas,nBas,nBas,nOrb))
-  allocate(a1(nBas,nBas,nOrb,nOrb))
   allocate(complex_ERI_AO(nBas,nBas,nBas,nBas))
   
   complex_ERI_AO = (1d0,0d0)*ERI_AO
@@ -36,6 +35,7 @@ subroutine complex_AOtoMO_ERI_RHF(nBas,nOrb,c,ERI_AO,ERI_MO)
             , complex_ERI_AO(1,1,1,1), nBas, c(1,1), nBas&
             , 0.d0, a2(1,1,1,1), nBas*nBas*nBas)
   deallocate(complex_ERI_AO)
+  allocate(a1(nBas,nBas,nOrb,nOrb))
   call zgemm( 'T', 'N', nBas*nBas*nOrb, nOrb, nBas, 1.d0 &
             , a2(1,1,1,1), nBas, c(1,1), nBas            &
             , 0.d0, a1(1,1,1,1), nBas*nBas*nOrb)
