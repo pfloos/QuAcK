@@ -54,5 +54,5 @@ subroutine complex_AOtoMO_ERI_RHF(nBas,nOrb,c,ERI_AO,ERI_MO)
             , 0.d0, ERI_MO(1,1,1,1), nOrb*nOrb*nOrb)
 
   deallocate(a2)
-
+  call complex_matout(nBas,nBas,ERI_MO(1,1,:,:))
 end subroutine 
