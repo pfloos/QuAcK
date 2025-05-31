@@ -43,11 +43,18 @@ subroutine complex_qsRGW_plot_self_energy(nBas,eta,nC,nO,nV,nR,nS,eGW)
 
 
 ! Compute spectral function
-
+  write(*,*) nC +1
+  write(*,*) nR
   do g=1,nGrid
-    do p=nC+1,nBas-nR
-      A(p,g) = abs(0d0 - aimag(eGW(p)))&
-              /((w(g) - real(eGW(p)))**2 + (0d0 - aimag(eGW(p)))**2)
+    do p=nC+1,nO
+      A(p,g) = abs(0d0 - aimag(eGW(p))-eta)&
+              /((w(g) - real(eGW(p)))**2 + (0d0 - aimag(eGW(p))- eta)**2)
+    end do
+  end do
+  do g=1,nGrid
+    do p=nO+1,nBas-nR
+      A(p,g) = abs(0d0 - aimag(eGW(p))+eta)&
+              /((w(g) - real(eGW(p)))**2 + (0d0 - aimag(eGW(p))+eta)**2)
     end do
   end do
 
