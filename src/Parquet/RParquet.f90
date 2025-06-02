@@ -30,6 +30,7 @@ subroutine RParquet(TDAeh,TDApp,max_diis_1b,max_diis_2b,linearize,eta,ENuc,max_i
 ! Local variables
 
   integer                       :: ispin
+  double precision              :: alpha
 
   integer                       :: n_it_1b,n_it_2b
   double precision              :: err_1b,err_2b
@@ -628,6 +629,13 @@ subroutine RParquet(TDAeh,TDApp,max_diis_1b,max_diis_2b,linearize,eta,ENuc,max_i
       err_eh_trip = maxval(abs(old_eh_trip_Phi - eh_trip_Phi))
       err_pp_sing = maxval(abs(old_pp_sing_Phi - pp_sing_Phi))
       err_pp_trip = maxval(abs(old_pp_trip_Phi - pp_trip_Phi))
+
+      alpha = 0.25d0
+      eh_sing_Phi(:,:,:,:) = alpha * eh_sing_Phi(:,:,:,:) + (1d0 - alpha) * old_eh_sing_Phi(:,:,:,:)
+      eh_trip_Phi(:,:,:,:) = alpha * eh_trip_Phi(:,:,:,:) + (1d0 - alpha) * old_eh_trip_Phi(:,:,:,:)
+      pp_sing_Phi(:,:,:,:) = alpha * pp_sing_Phi(:,:,:,:) + (1d0 - alpha) * old_pp_sing_Phi(:,:,:,:)
+      pp_trip_Phi(:,:,:,:) = alpha * pp_trip_Phi(:,:,:,:) + (1d0 - alpha) * old_pp_trip_Phi(:,:,:,:)
+
 
       old_eh_sing_Phi(:,:,:,:) = eh_sing_Phi(:,:,:,:)
       old_eh_trip_Phi(:,:,:,:) = eh_trip_Phi(:,:,:,:)
