@@ -58,7 +58,8 @@ subroutine complex_RGW_plot_self_energy(nBas,eta,nC,nO,nV,nR,nS,Re_eHF,Im_eHF,Re
   end do
 
 ! Occupied part of the self-energy and renormalization factor
- 
+
+!$omp parallel do private(p) shared(nGrid,nBas,nC,nR,nS,Re_eGW,Im_eGW,Om,rho,ReSigC,ImSigC,ReDS,ImDS) 
   do g=1,nGrid
     do p=nC+1,nBas-nR
 
@@ -66,17 +67,19 @@ subroutine complex_RGW_plot_self_energy(nBas,eta,nC,nO,nV,nR,nS,Re_eHF,Im_eHF,Re
               Re_eGW,Im_eGW,Om,rho,ReSigC(p,g),ImSigC(p,g),ReDS(p,g),ImDS(p,g))
     end do
   end do
-  
+!$omp end parallel do 
   Z(:,:) = (1d0-ReDS(:,:))/((1d0 - ReDS(:,:))**2 + ImDS(:,:)**2)
 
-! Compute spectral function
 
+! Compute spectral function
+!$omp parallel do private(p) shared(nGrid,nBas,nC,nR,nS,Re_eGW,Im_eGW,Om,rho,ReSigC,ImSigC,ReDS,ImDS,A) 
   do g=1,nGrid
     do p=nC+1,nBas-nR
       A(p,g) = abs(0d0 - Im_eHF(p) - ImSigC(p,g))&
               /((w(g) - Re_eHF(p) - ReSigC(p,g))**2 + (0d0 - Im_eHF(p) - ImSigC(p,g))**2)
     end do
   end do
+!$omp end parallel do 
 
   A(:,:) = A(:,:)/pi
 
