@@ -1,17 +1,17 @@
-subroutine AOtoMO(nBas, nOrb, C, M_AOs, M_MOs)
+subroutine AOtoMO(nBas,nOrb,C,M_AOs,M_MOs)
 
   ! Perform AO to MO transformation of a matrix M_AOs for given coefficients c
   ! M_MOs = C.T M_AOs C
 
   implicit none
 
-  integer,          intent(in)  :: nBas, nOrb
-  double precision, intent(in)  :: C(nBas,nOrb)
-  double precision, intent(in)  :: M_AOs(nBas,nBas)
+  integer,intent(in)            :: nBas, nOrb
+  double precision,intent(in)   :: C(nBas,nOrb)
+  double precision,intent(in)   :: M_AOs(nBas,nBas)
 
-  double precision, intent(out) :: M_MOs(nOrb,nOrb)
+  double precision,intent(out)  :: M_MOs(nOrb,nOrb)
 
-  double precision, allocatable :: AC(:,:)
+  double precision,allocatable  :: AC(:,:)
 
   allocate(AC(nBas,nOrb))
 

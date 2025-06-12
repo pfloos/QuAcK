@@ -103,9 +103,9 @@ subroutine RG0T0eh(dotest,doACFDT,exchange_kernel,doXBS,dophBSE,dophBSE2,TDA_T,T
   allocate(Aph(nS,nS),Bph(nS,nS),Sig(nOrb),Z(nOrb),Om(nS),XpY(nS,nS),XmY(nS,nS), & 
            rhoL(nOrb,nOrb,nS),rhoR(nOrb,nOrb,nS),eGT(nOrb),eGTlin(nOrb))
 
-!---------------------------------
-! Compute (triplet) RPA screening 
-!---------------------------------
+!---------------------------------!
+! Compute (triplet) RPA screening !
+!---------------------------------!
 
   ispin = 2
 

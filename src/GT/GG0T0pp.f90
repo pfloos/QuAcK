@@ -128,7 +128,7 @@ subroutine GG0T0pp(dotest,doACFDT,exchange_kernel,doXBS,dophBSE,dophBSE2,TDA_T,T
 
   if(regularize) call GTpp_regularization(nOrb,nC,nO,nV,nR,nOO,nVV,eHF,Om1,rho1,Om2,rho2)
 
-  call GGTpp_self_energy_diag(eta,nOrb,nC,nO,nV,nR,nOO,nVV,eHF,Om1,rho1,Om2,rho2,EcGM,Sig,Z)
+  call GGTpp_self_energy_diag(eta,nOrb,nC,nO,nV,nR,nOO,nVV,eHF,Om1,rho1,Om2,rho2,EcGM,Sig,Z,ERI)
 
 !----------------------------------------------
 ! Solve the quasi-particle equation
@@ -168,7 +168,7 @@ subroutine GG0T0pp(dotest,doACFDT,exchange_kernel,doXBS,dophBSE,dophBSE2,TDA_T,T
 
   deallocate(Bpp,Cpp,Dpp)
 
-  call print_GG0T0pp(nOrb,nO,eHF,ENuc,EGHF,Sig,Z,eGT,EcGM,EcRPA)
+  call print_GG0T0pp(nOrb,nC,nO,nV,nR,eHF,ENuc,EGHF,Sig,Z,eGT,EcGM,EcRPA)
 
 !----------------------------------------------
 ! ppBSE calculation

@@ -1,5 +1,5 @@
 subroutine evRGF2(dotest,dophBSE,doppBSE,TDA,dBSE,dTDA,maxSCF,thresh,max_diis,singlet,triplet, &
-                 linearize,eta,regularize,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,dipole_int,eHF)
+                 linearize,eta,doSRG,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,dipole_int,eHF)
 
 ! Perform eigenvalue self-consistent second-order Green function calculation
 
@@ -22,7 +22,7 @@ subroutine evRGF2(dotest,dophBSE,doppBSE,TDA,dBSE,dTDA,maxSCF,thresh,max_diis,si
   logical,intent(in)            :: triplet
   logical,intent(in)            :: linearize
   double precision,intent(in)   :: eta
-  logical,intent(in)            :: regularize
+  logical,intent(in)            :: doSRG
 
   integer,intent(in)            :: nBas
   integer,intent(in)            :: nOrb
@@ -45,6 +45,7 @@ subroutine evRGF2(dotest,dophBSE,doppBSE,TDA,dBSE,dTDA,maxSCF,thresh,max_diis,si
   double precision              :: EcBSE(nspin)
   double precision              :: Conv
   double precision              :: rcond
+  double precision              :: flow
   double precision,allocatable  :: eGF(:)
   double precision,allocatable  :: eOld(:)
   double precision,allocatable  :: SigC(:)
@@ -54,12 +55,22 @@ subroutine evRGF2(dotest,dophBSE,doppBSE,TDA,dBSE,dTDA,maxSCF,thresh,max_diis,si
 
 ! Hello world
 
-
   write(*,*)
   write(*,*)'********************************'
   write(*,*)'* Restricted evGF2 Calculation *'
   write(*,*)'********************************'
   write(*,*)
+
+! SRG regularization
+
+  flow = 500d0
+
+  if(doSRG) then
+
+    write(*,*) '*** SRG regularized evGF2 scheme ***'
+    write(*,*)
+
+  end if
 
 ! Memory allocation
 
@@ -75,7 +86,6 @@ subroutine evRGF2(dotest,dophBSE,doppBSE,TDA,dBSE,dTDA,maxSCF,thresh,max_diis,si
   eGF(:)         = eHF(:)
   eOld(:)         = eHF(:)
   rcond           = 0d0
-
 !------------------------------------------------------------------------
 ! Main SCF loop
 !------------------------------------------------------------------------
@@ -84,13 +94,13 @@ subroutine evRGF2(dotest,dophBSE,doppBSE,TDA,dBSE,dTDA,maxSCF,thresh,max_diis,si
 
     ! Frequency-dependent second-order contribution
 
-    if(regularize) then 
+    if(doSRG) then 
 
-      call RGF2_reg_self_energy_diag(eta,nOrb,nC,nO,nV,nR,eGF,ERI,SigC,Z)
+      call RGF2_SRG_self_energy_diag(flow,nOrb,nC,nO,nV,nR,eGF,ERI,Ec,SigC,Z)
 
     else
 
-      call RGF2_self_energy_diag(eta,nOrb,nC,nO,nV,nR,eGF,ERI,SigC,Z)
+      call RGF2_self_energy_diag(eta,nOrb,nC,nO,nV,nR,eGF,ERI,Ec,SigC,Z)
 
     end if
 
@@ -103,7 +113,7 @@ subroutine evRGF2(dotest,dophBSE,doppBSE,TDA,dBSE,dTDA,maxSCF,thresh,max_diis,si
       write(*,*) ' *** Quasiparticle energies obtained by root search *** '
       write(*,*)
  
-      call RGF2_QP_graph(eta,nOrb,nC,nO,nV,nR,eHF,ERI,eOld,eOld,eGF,Z)
+      call RGF2_QP_graph(doSRG,eta,flow,nOrb,nC,nO,nV,nR,eHF,ERI,eOld,eOld,eGF,Z)
  
     end if
 
@@ -111,8 +121,7 @@ subroutine evRGF2(dotest,dophBSE,doppBSE,TDA,dBSE,dTDA,maxSCF,thresh,max_diis,si
 
     ! Print results
 
-    call RMP2(.false.,regularize,nOrb,nC,nO,nV,nR,ERI,ENuc,ERHF,eGF,Ec)
-    call print_evRGF2(nOrb,nO,nSCF,Conv,eHF,SigC,Z,eGF,ENuc,ERHF,Ec)
+    call print_evRGF2(nOrb,nC,nO,nV,nR,nSCF,Conv,eHF,SigC,Z,eGF,ENuc,ERHF,Ec)
 
     ! DIIS extrapolation
 

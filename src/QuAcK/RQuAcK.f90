@@ -1,13 +1,17 @@
-subroutine RQuAcK(working_dir,use_gpu,dotest,doRHF,doROHF,dostab,dosearch,doMP2,doMP3,doCCD,dopCCD,doDCD,doCCSD,doCCSDT, &
+subroutine RQuAcK(working_dir,use_gpu,dotest,doRHF,doROHF,docRHF,                                                        &
+                  dostab,dosearch,doMP2,doMP3,doCCD,dopCCD,doDCD,doCCSD,doCCSDT,                                         &
                   dodrCCD,dorCCD,docrCCD,dolCCD,doCIS,doCIS_D,doCID,doCISD,doFCI,dophRPA,dophRPAx,docrRPA,doppRPA,       & 
                   doG0F2,doevGF2,doqsGF2,doufG0F02,doG0F3,doevGF3,doG0W0,doevGW,doqsGW,doufG0W0,doufGW,                  &
-                  doG0T0pp,doevGTpp,doqsGTpp,doufG0T0pp,doG0T0eh,doevGTeh,doqsGTeh,doParquet,                     & 
+                  doG0T0pp,doevGTpp,doqsGTpp,doufG0T0pp,doG0T0eh,doevGTeh,doqsGTeh,doParquet,                            & 
+                  docG0W0,docG0F2,                                                                                       & 
+                  doCAP,                                                                                                 & 
                   nNuc,nBas,nOrb,nC,nO,nV,nR,ENuc,ZNuc,rNuc,                                                             &
-                  S,T,V,Hc,X,dipole_int_AO,maxSCF_HF,max_diis_HF,thresh_HF,level_shift,                                  &
+                  S,T,V,Hc,CAP_AO,X,dipole_int_AO,maxSCF_HF,max_diis_HF,thresh_HF,level_shift,                           &
                   guess_type,mix,reg_MP,maxSCF_CC,max_diis_CC,thresh_CC,singlet,triplet,TDA,                             &
                   maxSCF_GF,max_diis_GF,renorm_GF,thresh_GF,lin_GF,reg_GF,eta_GF,maxSCF_GW,max_diis_GW,thresh_GW,        & 
                   TDA_W,lin_GW,reg_GW,eta_GW,maxSCF_GT,max_diis_GT,thresh_GT,TDA_T,lin_GT,reg_GT,eta_GT,                 & 
-                  dophBSE,dophBSE2,doppBSE,dBSE,dTDA,doACFDT,exchange_kernel,doXBS)
+                  dophBSE,dophBSE2,doppBSE,dBSE,dTDA,doACFDT,exchange_kernel,doXBS,                                      &
+                  TDAeh,TDApp,max_diis_1b,max_diis_2b,max_it_1b,conv_1b,max_it_2b,conv_2b,lin_parquet,reg_parquet)
 
 ! Restricted branch of QuAcK
 
@@ -20,7 +24,7 @@ subroutine RQuAcK(working_dir,use_gpu,dotest,doRHF,doROHF,dostab,dosearch,doMP2,
 
   logical,intent(in)            :: dotest
 
-  logical,intent(in)            :: doRHF,doROHF
+  logical,intent(in)            :: doRHF,doROHF,docRHF
   logical,intent(in)            :: dostab
   logical,intent(in)            :: dosearch
   logical,intent(in)            :: doMP2,doMP3
@@ -32,6 +36,8 @@ subroutine RQuAcK(working_dir,use_gpu,dotest,doRHF,doROHF,dostab,dosearch,doMP2,
   logical,intent(in)            :: doG0W0,doevGW,doqsGW,doufG0W0,doufGW
   logical,intent(in)            :: doG0T0pp,doevGTpp,doqsGTpp,doufG0T0pp
   logical,intent(in)            :: doG0T0eh,doevGTeh,doqsGTeh
+  logical,intent(in)            :: docG0W0,docG0F2
+  logical,intent(in)            :: doCAP
   logical,intent(in)            :: doParquet
 
   integer,intent(in)            :: nNuc,nBas,nOrb
@@ -47,6 +53,7 @@ subroutine RQuAcK(working_dir,use_gpu,dotest,doRHF,doROHF,dostab,dosearch,doMP2,
   double precision,intent(in)   :: T(nBas,nBas)
   double precision,intent(in)   :: V(nBas,nBas)
   double precision,intent(in)   :: Hc(nBas,nBas)
+  double precision,intent(in)   :: CAP_AO(nBas,nBas)
   double precision,intent(in)   :: X(nBas,nOrb)
   double precision,intent(in)   :: dipole_int_AO(nBas,nBas,ncart)
 
@@ -81,6 +88,13 @@ subroutine RQuAcK(working_dir,use_gpu,dotest,doRHF,doROHF,dostab,dosearch,doMP2,
   logical,intent(in)            :: dophBSE,dophBSE2,doppBSE,dBSE,dTDA
   logical,intent(in)            :: doACFDT,exchange_kernel,doXBS
 
+  integer,intent(in)            :: max_it_1b,max_it_2b
+  double precision,intent(in)   :: conv_1b,conv_2b
+  integer,intent(in)            :: max_diis_1b,max_diis_2b
+  logical,intent(in)            :: TDAeh,TDApp
+  double precision,intent(in)   :: reg_parquet
+  logical,intent(in)            :: lin_parquet
+
 ! Local variables
 
   logical                       :: doMP,doCC,doCI,doRPA,doGF,doGW,doGT
@@ -100,18 +114,28 @@ subroutine RQuAcK(working_dir,use_gpu,dotest,doRHF,doROHF,dostab,dosearch,doMP2,
 
   double precision              :: start_int, end_int, t_int
   double precision,allocatable  :: eHF(:)
+  complex*16,allocatable        :: complex_eHF(:)
   double precision,allocatable  :: cHF(:,:)
+  complex*16,allocatable        :: complex_cHF(:,:)
   double precision,allocatable  :: PHF(:,:)
+  complex*16,allocatable        :: complex_PHF(:,:)
   double precision,allocatable  :: FHF(:,:)
+  complex*16,allocatable        :: complex_FHF(:,:)
   double precision              :: ERHF
   double precision              :: Val
+  complex*16                    :: complex_ERHF
+  double precision,allocatable  :: CAP_MO(:,:)
+  complex*16,allocatable        :: complex_CAP_MO(:,:)
   double precision,allocatable  :: dipole_int_MO(:,:,:)
+  complex*16,allocatable        :: complex_dipole_int_MO(:,:,:)
   double precision,allocatable  :: ERI_AO(:,:,:,:)
   double precision,allocatable  :: ERI_MO(:,:,:,:)
   integer                       :: iorb,jorb,korb,lorb
   integer                       :: ixyz
   integer                       :: nS
   integer                       :: nO_
+  complex*16,allocatable        :: complex_ERI_MO(:,:,:,:)
+  double precision,allocatable  :: eGW(:)
 
   write(*,*)
   write(*,*) '******************************'
@@ -124,14 +148,38 @@ subroutine RQuAcK(working_dir,use_gpu,dotest,doRHF,doROHF,dostab,dosearch,doMP2,
 !-------------------!
 ! Memory allocation !
 !-------------------!
+  if (docRHF) then
+    allocate(complex_PHF(nBas,nBas))
+    allocate(complex_eHF(nOrb))
+    allocate(complex_cHF(nBas,nOrb))
+    allocate(complex_FHF(nBas,nBas))
+    allocate(complex_dipole_int_MO(nOrb,nOrb,ncart))
+    allocate(dipole_int_MO(0,0,0))
+    allocate(complex_ERI_MO(nOrb,nOrb,nOrb,nOrb))
+    allocate(CAP_MO(0,0))
+    if (doCAP) then 
+      allocate(complex_CAP_MO(nOrb,nOrb))
+    else
+      allocate(complex_CAP_MO(0,0))
+    end if
+  else 
+    allocate(PHF(nBas,nBas))
+    allocate(eHF(nOrb))
+    allocate(cHF(nBas,nOrb))
+    allocate(FHF(nBas,nBas))
+    allocate(dipole_int_MO(nOrb,nOrb,ncart))
+    allocate(complex_dipole_int_MO(0,0,0))
+    allocate(ERI_MO(nOrb,nOrb,nOrb,nOrb))
+    allocate(complex_CAP_MO(0,0))
+    if (doCAP) then
+        allocate(CAP_MO(nOrb,nOrb))
+    else
+        allocate(CAP_MO(0,0))
+    end if
+  end if
 
-  allocate(eHF(nOrb))
-  allocate(cHF(nBas,nOrb))
-  allocate(PHF(nBas,nBas))
-  allocate(FHF(nBas,nBas))
-  allocate(dipole_int_MO(nOrb,nOrb,ncart))
-  allocate(ERI_MO(nOrb,nOrb,nOrb,nOrb))
-
+  allocate(eGW(nOrb))
+  
   allocate(ERI_AO(nBas,nBas,nBas,nBas))
   call wall_time(start_int)
   call read_2e_integrals(working_dir,nBas,ERI_AO)
@@ -198,6 +246,18 @@ subroutine RQuAcK(working_dir,use_gpu,dotest,doRHF,doROHF,dostab,dosearch,doMP2,
 
   end if
 
+  if(docRHF) then
+    call wall_time(start_HF)
+    call cRHF(dotest,maxSCF_HF,thresh_HF,max_diis_HF,guess_type,level_shift,ENuc, &
+             nBas,nO,S,T,V,ERI_AO,CAP_AO,X,complex_ERHF,complex_eHF,complex_cHF,complex_PHF,complex_FHF)
+    call wall_time(end_HF)
+
+    t_HF = end_HF - start_HF
+    write(*,'(A65,1X,F9.3,A8)') 'Total wall time for cRHF = ',t_HF,' seconds'
+    write(*,*)
+
+  end if
+
 !----------------------------------!
 ! AO to MO integral transformation !
 !----------------------------------!
@@ -208,16 +268,34 @@ subroutine RQuAcK(working_dir,use_gpu,dotest,doRHF,doROHF,dostab,dosearch,doMP2,
   write(*,*) 'AO to MO transformation... Please be patient'
   write(*,*)
 
-  ! Read and transform dipole-related integrals
-  
-  do ixyz=1,ncart
-    call AOtoMO(nBas,nOrb,cHF,dipole_int_AO(1,1,ixyz),dipole_int_MO(1,1,ixyz))
-  end do 
+  if (docRHF) then 
+    
+    ! Transform to complex MOs
 
-  ! 4-index transform 
-  
-  call AOtoMO_ERI_RHF(nBas,nOrb,cHF,ERI_AO,ERI_MO)
+    ! Read and transform dipole-related integrals
+    do ixyz=1,ncart
+      call complex_AOtoMO(nBas,nOrb,complex_cHF,dipole_int_AO(1,1,ixyz),complex_dipole_int_MO(1,1,ixyz))
+    end do
+    ! 4-index transform 
+    call complex_AOtoMO_ERI_RHF(nBas,nOrb,complex_cHF,ERI_AO,complex_ERI_MO)
+    ! Transform CAP integrals
+    if (doCAP) then
+            call complex_AOtoMO(nBas,nOrb,complex_cHF,CAP_AO,complex_CAP_MO)
+            complex_CAP_MO = (0d0,1d0)*complex_CAP_MO
+    end if
+  else
 
+    ! Transform to real MOs
+
+    ! Read and transform dipole-related integrals
+    do ixyz=1,ncart
+      call AOtoMO(nBas,nOrb,cHF,dipole_int_AO(1,1,ixyz),dipole_int_MO(1,1,ixyz))
+    end do
+    ! 4-index transform 
+    call AOtoMO_ERI_RHF(nBas,nOrb,cHF,ERI_AO,ERI_MO)
+    ! Transform CAP integrals
+    if (doCAP) call AOtoMO(nBas,nOrb,cHF,CAP_AO,CAP_MO)
+  end if
   call wall_time(end_AOtoMO)
 
   t_AOtoMO = end_AOtoMO - start_AOtoMO
@@ -337,15 +415,14 @@ subroutine RQuAcK(working_dir,use_gpu,dotest,doRHF,doROHF,dostab,dosearch,doMP2,
 ! Green's function module !
 !-------------------------!
 
-  doGF = doG0F2 .or. doevGF2 .or. doqsGF2 .or. doufG0F02 .or. doG0F3 .or. doevGF3
+doGF = doG0F2 .or. doevGF2 .or. doqsGF2 .or. doufG0F02 .or. doG0F3 .or. doevGF3 .or. docG0F2
 
-  if(doGF) then
-
+  if(doGF .and. .not. docRHF) then
     call wall_time(start_GF)
-    call RGF(dotest,doG0F2,doevGF2,doqsGF2,doufG0F02,doG0F3,doevGF3,renorm_GF,maxSCF_GF,  &
-             thresh_GF,max_diis_GF,dophBSE,doppBSE,TDA,dBSE,dTDA,singlet,triplet,lin_GF,  &
-             eta_GF,reg_GF,nNuc,ZNuc,rNuc,ENuc,nBas,nOrb,nC,nO_,nV,nR,nS,ERHF,            &
-             S,X,T,V,Hc,ERI_AO,ERI_MO,dipole_int_AO,dipole_int_MO,PHF,cHF,eHF)
+    call RGF(dotest,doG0F2,doevGF2,doqsGF2,doufG0F02,doG0F3,doevGF3,renorm_GF,maxSCF_GF, &
+             thresh_GF,max_diis_GF,dophBSE,doppBSE,TDA,dBSE,dTDA,singlet,triplet,lin_GF,         &
+             eta_GF,reg_GF,nNuc,ZNuc,rNuc,ENuc,nBas,nOrb,nC,nO,nV,nR,nS,complex_ERHF,                    &
+             S,X,T,V,Hc,ERI_AO,ERI_MO,CAP_MO,dipole_int_AO,dipole_int_MO,PHF,cHF,eHF)
     call wall_time(end_GF)
 
     t_GF = end_GF - start_GF
@@ -354,19 +431,36 @@ subroutine RQuAcK(working_dir,use_gpu,dotest,doRHF,doROHF,dostab,dosearch,doMP2,
 
   end if
 
+!---------------------------------!
+! complex Green's function module !
+!---------------------------------!
+
+  if(doGF .and. docRHF) then
+    call wall_time(start_GF)
+    call complex_RGF(dotest,docG0F2,doevGF2,doqsGF2,maxSCF_GF,                                   &
+             thresh_GF,max_diis_GF,dophBSE,doppBSE,TDA,dBSE,dTDA,singlet,triplet,lin_GF,         &
+             eta_GF,reg_GF,nNuc,ZNuc,rNuc,ENuc,nBas,nOrb,nC,nO,nV,nR,nS,complex_ERHF,            &
+             S,X,T,V,Hc,ERI_AO,complex_ERI_MO,dipole_int_AO,complex_dipole_int_MO,&
+             complex_PHF,complex_cHF,complex_eHF,CAP_AO, complex_CAP_MO)
+    call wall_time(end_GF)
+
+    t_GF = end_GF - start_GF
+    write(*,'(A65,1X,F9.3,A8)') 'Total wall time for GF2 = ',t_GF,' seconds'
+    write(*,*)
+  end if
+
 !-----------!
 ! GW module !
 !-----------!
 
-  doGW = doG0W0 .or. doevGW .or. doqsGW .or. doufG0W0 .or. doufGW 
-
-  if(doGW) then
+  doGW = doG0W0 .or. doevGW .or. doqsGW .or. doufG0W0 .or. doufGW .or. docG0W0
+  if(doGW .and. .not. docRHF) then
     
     call wall_time(start_GW)
-    call RGW(dotest,doG0W0,doevGW,doqsGW,doufG0W0,doufGW,maxSCF_GW,thresh_GW,max_diis_GW,                 &
-             doACFDT,exchange_kernel,doXBS,dophBSE,dophBSE2,doppBSE,TDA_W,TDA,dBSE,dTDA,singlet,triplet,  &
-             lin_GW,eta_GW,reg_GW,nNuc,ZNuc,rNuc,ENuc,nBas,nOrb,nC,nO_,nV,nR,nS,ERHF,S,X,T,               &
-             V,Hc,ERI_AO,ERI_MO,dipole_int_AO,dipole_int_MO,PHF,cHF,eHF)
+    call RGW(dotest,doG0W0,doevGW,doqsGW,doufG0W0,doufGW,maxSCF_GW,thresh_GW,max_diis_GW,                & 
+             doACFDT,exchange_kernel,doXBS,dophBSE,dophBSE2,doppBSE,TDA_W,TDA,dBSE,dTDA,singlet,triplet, &
+             lin_GW,eta_GW,reg_GW,nNuc,ZNuc,rNuc,ENuc,nBas,nOrb,nC,nO,nV,nR,nS,ERHF,S,X,T,               &
+             V,Hc,ERI_AO,ERI_MO,CAP_MO,dipole_int_AO,dipole_int_MO,PHF,cHF,eHF,eGW)
     call wall_time(end_GW)
   
     t_GW = end_GW - start_GW
@@ -375,6 +469,24 @@ subroutine RQuAcK(working_dir,use_gpu,dotest,doRHF,doROHF,dostab,dosearch,doMP2,
 
   end if
 
+
+!-------------------!
+! complex GW module !
+!-------------------!
+
+  if(doGW .and. docRHF) then
+    call wall_time(start_GW)
+    call complex_RGW(dotest,docG0W0,doevGW,doqsGW,maxSCF_GW,thresh_GW,max_diis_GW,        & 
+             doACFDT,exchange_kernel,doXBS,dophBSE,dophBSE2,doppBSE,TDA_W,TDA,dBSE,dTDA,singlet,triplet, &
+             lin_GW,eta_GW,reg_GW,nNuc,ZNuc,rNuc,ENuc,nBas,nOrb,nC,nO,nV,nR,nS,ERHF,S,X,T,               &
+             V,Hc,ERI_AO,complex_ERI_MO,CAP_AO,complex_CAP_MO,dipole_int_AO,&
+             complex_dipole_int_MO,complex_PHF,complex_cHF,complex_eHF)
+    call wall_time(end_GW)
+
+    t_GW = end_GW - start_GW
+    write(*,'(A65,1X,F9.3,A8)') 'Total wall time for GW = ',t_GW,' seconds'
+    write(*,*)
+  end if
 !-----------------!
 ! T-matrix module !
 !-----------------!
@@ -403,23 +515,29 @@ subroutine RQuAcK(working_dir,use_gpu,dotest,doRHF,doROHF,dostab,dosearch,doMP2,
 
   if(doParquet) then
     call wall_time(start_Parquet)
-    
+    call RParquet(TDAeh,TDApp,max_diis_1b,max_diis_2b,lin_parquet,reg_parquet,ENuc,max_it_1b,conv_1b,max_it_2b,conv_2b, & 
+                  nOrb,nC,nO,nV,nR,nS,ERHF,eHF,ERI_MO)
     call wall_time(end_Parquet)
   
     t_Parquet = end_Parquet - start_Parquet
-    write(*,'(A65,1X,F9.3,A8)') 'Total wall time for Parquet module = ',t_Parquet,' seconds'
+    write(*,'(A65,1X,F9.3,A8)') 'Total wall time for Parquet module = ', t_Parquet, ' seconds'
     write(*,*)
 
   end if
-  
 
 ! Memory deallocation
-  deallocate(eHF)
-  deallocate(cHF)
-  deallocate(PHF)
-  deallocate(FHF)
-  deallocate(dipole_int_MO)
-  deallocate(ERI_MO)
-  deallocate(ERI_AO)
 
+  if (allocated(eHF)) deallocate(eHF)
+  if (allocated(cHF)) deallocate(cHF)
+  if (allocated(PHF)) deallocate(PHF)
+  if (allocated(FHF)) deallocate(FHF)
+  if (allocated(dipole_int_MO)) deallocate(dipole_int_MO)
+  if (allocated(ERI_MO)) deallocate(ERI_MO)
+  if (allocated(complex_ERI_MO)) deallocate(complex_ERI_MO)
+  if (allocated(ERI_AO)) deallocate(ERI_AO)
+  if (allocated(CAP_MO)) deallocate(CAP_MO)
+  if (allocated(complex_CAP_MO)) deallocate(complex_CAP_MO)
+  if (allocated(complex_eHF)) deallocate(complex_eHF)
+  if (allocated(complex_cHF)) deallocate(complex_cHF)
+  if (allocated(complex_PHF)) deallocate(complex_PHF)
 end subroutine

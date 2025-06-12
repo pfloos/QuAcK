@@ -69,13 +69,12 @@ subroutine phRLR(TDA,nS,Aph,Bph,EcRPA,Om,XpY,XmY)
       call print_warning('You may have instabilities in linear response: negative excitations!!')
  
     Om = sqrt(Om)
-
     call dgemm('T','N',nS,nS,nS,1d0,Z,size(Z,1),AmBSq,size(AmBSq,1),0d0,XpY,size(XpY,1))
     call DA(nS,1d0/dsqrt(Om),XpY)
 
     call dgemm('T','N',nS,nS,nS,1d0,Z,size(Z,1),AmBIv,size(AmBIv,1),0d0,XmY,size(XmY,1))
     call DA(nS,1d0*dsqrt(Om),XmY)
-
+    
 !   XpY = matmul(transpose(Z),AmBSq)
 !   call DA(nS,1d0/sqrt(Om),XpY)
 

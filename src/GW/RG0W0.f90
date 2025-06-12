@@ -1,5 +1,5 @@
 subroutine RG0W0(dotest,doACFDT,exchange_kernel,doXBS,dophBSE,dophBSE2,TDA_W,TDA,dBSE,dTDA,doppBSE,singlet,triplet, & 
-                 linearize,eta,doSRG,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,dipole_int,eHF)
+                 linearize,eta,doSRG,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,dipole_int,eHF,eGW_out)
 
 ! Perform G0W0 calculation
 
@@ -43,7 +43,7 @@ subroutine RG0W0(dotest,doACFDT,exchange_kernel,doXBS,dophBSE,dophBSE2,TDA_W,TDA
 ! Local variables
 
   logical                       :: print_W   = .false.
-  logical                       :: plot_self = .false.
+  logical                       :: plot_self = .true.
   logical                       :: dRPA_W
   integer                       :: isp_W
   double precision              :: flow
@@ -62,6 +62,9 @@ subroutine RG0W0(dotest,doACFDT,exchange_kernel,doXBS,dophBSE,dophBSE2,TDA_W,TDA
   double precision,allocatable  :: eGWlin(:)
   double precision,allocatable  :: eGW(:)
 
+! Output variables
+
+  double precision,intent(out)  :: eGW_out(nOrb)
 
 ! Output variables
 
@@ -131,7 +134,6 @@ subroutine RG0W0(dotest,doACFDT,exchange_kernel,doXBS,dophBSE,dophBSE2,TDA_W,TDA
 !-----------------------------------!
 
   ! Linearized or graphical solution?
-
   eGWlin(:) = eHF(:) + Z(:)*SigC(:)
 
   if(linearize) then 
@@ -152,7 +154,7 @@ subroutine RG0W0(dotest,doACFDT,exchange_kernel,doXBS,dophBSE,dophBSE2,TDA_W,TDA
 
 ! Plot self-energy, renormalization factor, and spectral function
 
-  if(plot_self) call RGW_plot_self_energy(nOrb,eta,nC,nO,nV,nR,nS,eHF,eHF,Om,rho)
+  if(plot_self) call RGW_plot_self_energy(nOrb,eta,nC,nO,nV,nR,nS,eHF,eGW,Om,rho)
 
 ! Cumulant expansion 
 
@@ -169,8 +171,10 @@ subroutine RG0W0(dotest,doACFDT,exchange_kernel,doXBS,dophBSE,dophBSE2,TDA_W,TDA
 ! Dump results !
 !--------------!
 
-  call print_RG0W0(nOrb,nO,eHF,ENuc,ERHF,SigC,Z,eGW,EcRPA,EcGM)
+  call print_RG0W0(nOrb,nC,nO,nV,nR,eHF,ENuc,ERHF,SigC,Z,eGW,EcRPA,EcGM)
 
+  eGW_out(:) = eGW(:)
+  
 !---------------------------!
 ! Perform phBSE calculation !
 !---------------------------!

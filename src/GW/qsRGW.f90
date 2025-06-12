@@ -175,13 +175,13 @@ subroutine qsRGW(dotest,maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,dop
   c(:,:)        = cHF(:,:)
   F_diis(:,:)   = 0d0
   err_diis(:,:) = 0d0
-  rcond          = 0d0
+  rcond         = 0d0
 
 !------------------------------------------------------------------------
 ! Main loop
 !------------------------------------------------------------------------
 
-  do while(Conv > thresh .and. nSCF <= maxSCF)
+  do while(Conv > thresh .and. nSCF < maxSCF)
 
     ! Increment
 
@@ -211,9 +211,13 @@ subroutine qsRGW(dotest,maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,dop
     call RGW_excitation_density(nOrb,nC,nO,nR,nS,ERI_MO,XpY,rho)
 
     if(doSRG) then 
+
       call RGW_SRG_self_energy(flow,nBas,nOrb,nC,nO,nV,nR,nS,eGW,Om,rho,EcGM,SigC,Z)
+
     else
+
       call RGW_self_energy(eta,nBas,nOrb,nC,nO,nV,nR,nS,eGW,Om,rho,EcGM,SigC,Z)
+
     end if
 
     ! Make correlation self-energy Hermitian and transform it back to AO basis
@@ -226,8 +230,8 @@ subroutine qsRGW(dotest,maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,dop
 
     F(:,:) = Hc(:,:) + J(:,:) + 0.5d0*K(:,:) + SigCp(:,:)
     if(nBas .ne. nOrb) then
-      call AOtoMO(nBas,nOrb,c(1,1),F(1,1),Fp(1,1))
-      call MOtoAO(nBas,nOrb,S(1,1),c(1,1),Fp(1,1),F(1,1))
+      call AOtoMO(nBas,nOrb,c,F,Fp)
+      call MOtoAO(nBas,nOrb,S,c,Fp,F)
     endif
 
     ! Compute commutator and convergence criteria
@@ -267,7 +271,7 @@ subroutine qsRGW(dotest,maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,dop
 
     ! Diagonalize Hamiltonian in AO basis
 
-    if(nBas .eq. nOrb) then
+    if(nBas == nOrb) then
       Fp = matmul(transpose(X),matmul(F,X))
       cp(:,:) = Fp(:,:)
       call diagonalize_matrix(nOrb,cp,eGW)
@@ -288,7 +292,7 @@ subroutine qsRGW(dotest,maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,dop
     ! Print results
 
     call dipole_moment(nBas,P,nNuc,ZNuc,rNuc,dipole_int_AO,dipole)
-    call print_qsRGW(nBas,nOrb,nO,nSCF,Conv,thresh,eHF,eGW,c,SigC,Z, &
+    call print_qsRGW(nBas,nOrb,nC,nO,nV,nR,nSCF,Conv,thresh,eHF,eGW,c,SigC,Z, &
                      ENuc,ET,EV,EJ,EK,EcGM,EcRPA,EqsGW,dipole)
 
   end do
@@ -298,7 +302,7 @@ subroutine qsRGW(dotest,maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,dop
 
 ! Did it actually converge?
 
-  if(nSCF == maxSCF+1) then
+  if(nSCF == maxSCF) then
 
     write(*,*)
     write(*,*)'!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!'

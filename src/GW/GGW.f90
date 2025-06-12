@@ -1,6 +1,6 @@
 subroutine GGW(dotest,doG0W0,doevGW,doqsGW,maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,dophBSE,dophBSE2,doppBSE, & 
                TDA_W,TDA,dBSE,dTDA,linearize,eta,doSRG,nNuc,ZNuc,rNuc,ENuc,nBas,nBas2,nC,nO,nV,nR,nS,EGHF,S,X,T,V,Hc,     & 
-               ERI_AO,ERI,dipole_int_AO,dipole_int,PHF,cHF,eHF)
+               ERI_AO,ERI,dipole_int_AO,dipole_int,PHF,cHF,eHF,eGW)
 
 ! GW module
 
@@ -63,6 +63,10 @@ subroutine GGW(dotest,doG0W0,doevGW,doqsGW,maxSCF,thresh,max_diis,doACFDT,exchan
 
   double precision              :: start_GW     ,end_GW       ,t_GW
 
+! Output variables
+
+  double precision,intent(out)  :: eGW(nBas2)
+
 !------------------------------------------------------------------------
 ! Perform G0W0 calculatiom
 !------------------------------------------------------------------------
@@ -71,7 +75,7 @@ subroutine GGW(dotest,doG0W0,doevGW,doqsGW,maxSCF,thresh,max_diis,doACFDT,exchan
     
     call wall_time(start_GW)
     call GG0W0(dotest,doACFDT,exchange_kernel,doXBS,dophBSE,dophBSE2,TDA_W,TDA,dBSE,dTDA,doppBSE, &
-              linearize,eta,doSRG,nBas2,nC,nO,nV,nR,nS,ENuc,EGHF,ERI,dipole_int,eHF)
+              linearize,eta,doSRG,nBas2,nC,nO,nV,nR,nS,ENuc,EGHF,ERI,dipole_int,eHF,eGW)
     call wall_time(end_GW)
   
     t_GW = end_GW - start_GW

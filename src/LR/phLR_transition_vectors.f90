@@ -1,4 +1,4 @@
-subroutine phLR_transition_vectors(spin_allowed,nBas,nC,nO,nV,nR,nS,dipole_int,Om,XpY,XmY)
+subroutine phLR_transition_vectors(spin_allowed,nOrb,nC,nO,nV,nR,nS,dipole_int,Om,XpY,XmY)
 
 ! Print transition vectors for linear response calculation
 
@@ -8,13 +8,13 @@ subroutine phLR_transition_vectors(spin_allowed,nBas,nC,nO,nV,nR,nS,dipole_int,O
 ! Input variables
 
   logical,intent(in)            :: spin_allowed
-  integer,intent(in)            :: nBas
+  integer,intent(in)            :: nOrb
   integer,intent(in)            :: nC
   integer,intent(in)            :: nO
   integer,intent(in)            :: nV
   integer,intent(in)            :: nR
   integer,intent(in)            :: nS
-  double precision              :: dipole_int(nBas,nBas,ncart)
+  double precision              :: dipole_int(nOrb,nOrb,ncart)
   double precision,intent(in)   :: Om(nS)
   double precision,intent(in)   :: XpY(nS,nS)
   double precision,intent(in)   :: XmY(nS,nS)
@@ -37,7 +37,7 @@ subroutine phLR_transition_vectors(spin_allowed,nBas,nC,nO,nV,nR,nS,dipole_int,O
 ! Compute oscillator strengths
 
   os(:) = 0d0
-  if(spin_allowed) call phLR_oscillator_strength(nBas,nC,nO,nV,nR,nS,maxS,dipole_int,Om,XpY,XmY,os)
+  if(spin_allowed) call phLR_oscillator_strength(nOrb,nC,nO,nV,nR,nS,maxS,dipole_int,Om,XpY,XmY,os)
 
 ! Print details about excitations
 
@@ -61,7 +61,7 @@ subroutine phLR_transition_vectors(spin_allowed,nBas,nC,nO,nV,nR,nS,dipole_int,O
 
     jb = 0
     do j=nC+1,nO
-      do b=nO+1,nBas-nR
+      do b=nO+1,nOrb-nR
         jb = jb + 1
         if(abs(X(jb)) > thres_vec) write(*,'(I3,A4,I3,A3,F10.6)') j,' -> ',b,' = ',X(jb)/sqrt(2d0)
       end do
@@ -69,7 +69,7 @@ subroutine phLR_transition_vectors(spin_allowed,nBas,nC,nO,nV,nR,nS,dipole_int,O
  
     jb = 0
     do j=nC+1,nO
-      do b=nO+1,nBas-nR
+      do b=nO+1,nOrb-nR
         jb = jb + 1
         if(abs(Y(jb)) > thres_vec) write(*,'(I3,A4,I3,A3,F10.6)') j,' <- ',b,' = ',Y(jb)/sqrt(2d0)
       end do

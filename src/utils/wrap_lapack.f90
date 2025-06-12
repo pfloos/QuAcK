@@ -128,6 +128,90 @@ subroutine diagonalize_matrix(N,A,e)
   
 end subroutine 
 
+subroutine complex_diagonalize_matrix(N,A,e)
+
+! Diagonalize a general complex matrix
+
+  implicit none
+
+! Input variables
+
+  integer,intent(in)            :: N
+  complex*16,intent(inout)      :: A(N,N)
+  complex*16,intent(out)        :: e(N)
+
+! Local variables
+
+  integer                       :: lwork,info
+  double precision,allocatable  :: rwork(:)
+  complex*16,allocatable        :: work(:)
+  complex*16,allocatable        :: VL(:,:)
+  complex*16,allocatable        :: VR(:,:)
+
+! Memory allocation
+  allocate(work(1),rwork(2*N),VL(1,1),VR(N,N))
+  lwork = -1
+  call zgeev('N','V',N,A,N,e,VL,1,VR,N,work,lwork,rwork,info)
+  lwork = max(1,int(real(work(1))))
+  
+  deallocate(work)
+  allocate(work(lwork))
+
+  call zgeev('N','V',N,A,N,e,VL,N,VR,N,work,lwork,rwork,info)
+  call complex_sort_eigenvalues(N,e,VR)
+  
+
+  deallocate(work)
+  A = VR
+
+  if(info /= 0) then 
+    print*,'Problem in diagonalize_matrix (zgeev)!!'
+  end if
+  
+end subroutine 
+
+subroutine complex_diagonalize_matrix_without_sort(N,A,e)
+
+! Diagonalize a general complex matrix
+
+  implicit none
+
+! Input variables
+
+  integer,intent(in)            :: N
+  complex*16,intent(inout)      :: A(N,N)
+  complex*16,intent(out)        :: e(N)
+
+! Local variables
+
+  integer                       :: lwork,info
+  double precision,allocatable  :: rwork(:)
+  complex*16,allocatable        :: work(:)
+  complex*16,allocatable        :: VL(:,:)
+  complex*16,allocatable        :: VR(:,:)
+
+! Memory allocation
+  allocate(work(1),rwork(2*N),VL(1,1),VR(N,N))
+  lwork = -1
+  call zgeev('N','V',N,A,N,e,VL,1,VR,N,work,lwork,rwork,info)
+  lwork = max(1,int(real(work(1))))
+  
+  deallocate(work)
+  allocate(work(lwork))
+
+  call zgeev('N','V',N,A,N,e,VL,N,VR,N,work,lwork,rwork,info)
+  
+
+  deallocate(work)
+  A = VR
+
+  if(info /= 0) then 
+    print*,'Problem in diagonalize_matrix (zgeev)!!'
+  end if
+  
+end subroutine 
+
+
 subroutine svd(N,A,U,D,Vt)
 
   ! Compute A = U.D.Vt
@@ -213,6 +297,46 @@ subroutine inverse_matrix(N,A,B)
 
 end subroutine 
 
+subroutine complex_inverse_matrix(N,A,B)
+
+! Returns the inverse of the complex square matrix A in B
+
+  implicit none
+
+  integer,intent(in)             :: N
+  complex*16, intent(in)         :: A(N,N)
+  complex*16, intent(out)        :: B(N,N)
+
+  integer                        :: info,lwork
+  integer, allocatable           :: ipiv(:)
+  complex*16,allocatable         :: work(:)
+  
+  allocate (ipiv(N),work(N*N))
+  lwork = size(work)
+
+  B(1:N,1:N) = A(1:N,1:N)
+
+  call zgetrf(N,N,B,N,ipiv,info)
+
+  if (info /= 0) then
+
+    print*,info
+    stop 'error in inverse (zgetri)!!'
+
+  end if
+
+  call zgetri(N,B,N,ipiv,work,lwork,info)
+
+  if (info /= 0) then
+
+    print *,  info
+    stop 'error in inverse (zgetri)!!'
+
+  end if
+
+  deallocate(ipiv,work)
+
+end subroutine 
 subroutine linear_solve(N,A,b,x,rcond)
 
 ! Solve the linear system A.x = b where A is a NxN matrix
@@ -250,7 +374,49 @@ subroutine linear_solve(N,A,b,x,rcond)
 !   stop 'error in linear_solve (dsysvx)!!'
 
 ! end if
+deallocate(work,ipiv,iwork,AF)
+end subroutine 
 
+subroutine complex_linear_solve(N,A,b,x,rcond)
+
+! Solve the linear system A.x = b where A is a NxN matrix
+! and x and x are vectors of size N
+
+  implicit none
+
+  integer,intent(in)             :: N
+  complex*16,intent(out)         :: A(N,N),b(N)
+  complex*16,intent(out)         :: x(N)
+  double precision,intent(out)   :: rcond
+
+  integer                        :: info,lwork
+  double precision               :: ferr,berr
+  integer,allocatable            :: ipiv(:)
+  double precision,allocatable   :: rwork(:)
+  complex*16,allocatable         :: AF(:,:),work(:)
+
+  ! Find optimal size for temporary arrays
+
+  allocate(work(1))
+  allocate(AF(N,N),ipiv(N),rwork(N))
+
+  lwork = -1
+  call zsysvx('N','U',N,1,A,N,AF,N,ipiv,b,N,x,N,rcond,ferr,berr,work,lwork,rwork,info)
+  lwork = max(1,int(real(work(1))))
+
+  deallocate(work)
+
+  allocate(work(lwork))
+
+  call zsysvx('N','U',N,1,A,N,AF,N,ipiv,b,N,x,N,rcond,ferr,berr,work,lwork,rwork,info)
+
+! if (info /= 0) then
+!
+!   print *,  info
+!   stop 'error in linear_solve (zsysv)!!'
+!
+! end if
+deallocate(work,ipiv,rwork,AF)
 end subroutine 
 
 subroutine easy_linear_solve(N,A,b,x)

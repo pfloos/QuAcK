@@ -1,6 +1,6 @@
 subroutine phLR_oscillator_strength(nOrb,nC,nO,nV,nR,nS,maxS,dipole_int,Om,XpY,XmY,os)
 
-! Compute linear response
+! Compute oscillator strength from a ph linear response calculation
 
   implicit none
   include 'parameters.h'

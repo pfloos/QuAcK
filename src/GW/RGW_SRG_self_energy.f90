@@ -71,7 +71,7 @@ subroutine RGW_SRG_self_energy(flow,nBas,nOrb,nC,nO,nV,nR,nS,e,Om,rho,EcGM,SigC,
   !$OMP END PARALLEL
 
   ! Virtual part of the correlation self-energy
-
+  
   !$OMP PARALLEL &
   !$OMP SHARED(SigC,rho,s,nS,nC,nO,nR,nOrb,e,Om) &
   !$OMP PRIVATE(m,a,q,p,Dpam,Dqam) &
@@ -117,12 +117,14 @@ subroutine RGW_SRG_self_energy(flow,nBas,nOrb,nC,nO,nV,nR,nS,e,Om,rho,EcGM,SigC,
   ! Virtual part of the renormlization factor
 
   do p=nC+1,nOrb-nR
-     do a=nO+1,nOrb-nR
-        do m=1,nS
-           Dpam = e(p) - e(a) - Om(m)
-           Z(p) = Z(p)  - 2d0*rho(p,a,m)**2*(1d0-exp(-2d0*s*Dpam*Dpam))/Dpam**2
-        end do
-     end do
+    do a=nO+1,nOrb-nR
+      do m=1,nS
+
+        Dpam = e(p) - e(a) - Om(m)
+        Z(p) = Z(p)  - 2d0*rho(p,a,m)**2*(1d0-exp(-2d0*s*Dpam*Dpam))/Dpam**2
+
+      end do
+    end do
   end do
 
   Z(:) = 1d0/(1d0 - Z(:))

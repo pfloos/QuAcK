@@ -48,11 +48,10 @@ subroutine DIIS_extrapolation(rcond,n_err,n_e,n_diis,error,e,error_in,e_inout)
   b(n_diis+1) = -1d0
 
 ! Solve linear system
-
   call linear_solve(n_diis+1,A,b,w,rcond)
 
 ! Extrapolate
 
   e_inout(:) = matmul(w(1:n_diis),transpose(e(:,1:n_diis)))
-
+  deallocate(A,b,w)
 end subroutine 

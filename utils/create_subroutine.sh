@@ -34,7 +34,7 @@ echo "subroutine ${NAME}()
 
 ! Initalization
 
-end subroutine ${NAME}" > ${NAME}.f90
+end subroutine" > ${NAME}.f90
 
 fi
 
