@@ -1,6 +1,6 @@
 subroutine BQuAcK(working_dir,dotest,doHFB,doqsGW,nNuc,nBas,nOrb,nC,nO,nV,nR,ENuc,ZNuc,rNuc,                     &
-                  S,T,V,Hc,X,dipole_int_AO,maxSCF_HF,max_diis_HF,thresh_HF,level_shift,                                  &
-                  guess_type,mix,temperature,sigma,chem_pot_hf,restart_hfb)
+                  S,T,V,Hc,X,dipole_int_AO,maxSCF_HF,max_diis_HF,thresh_HF,level_shift,                          &
+                  guess_type,mix,temperature,sigma,chem_pot_hf,restart_hfb,nfreqs,wcoord,wweight)
 
 ! Restricted branch of QuAcK
 
@@ -21,10 +21,12 @@ subroutine BQuAcK(working_dir,dotest,doHFB,doqsGW,nNuc,nBas,nOrb,nC,nO,nV,nR,ENu
   integer,intent(in)            :: nO
   integer,intent(in)            :: nV
   integer,intent(in)            :: nR
+  integer,intent(in)            :: nfreqs
   double precision,intent(inout):: ENuc
   double precision,intent(in)   :: temperature,sigma
 
   double precision,intent(in)   :: ZNuc(nNuc),rNuc(nNuc,ncart)
+  double precision,intent(in)   :: wcoord(nfreqs),wweight(nfreqs)
 
   double precision,intent(inout)   :: S(nBas,nBas)
   double precision,intent(inout)   :: T(nBas,nBas)
@@ -73,6 +75,20 @@ subroutine BQuAcK(working_dir,dotest,doHFB,doqsGW,nNuc,nBas,nOrb,nC,nO,nV,nR,ENu
 !-------------------!
 ! Memory allocation !
 !-------------------!
+block
+ integer::iquad
+ double precision::alpha,beta
+ alpha = 0d0; beta = 1d1;
+ do iquad=1,nfreqs
+  alpha=alpha+wweight(iquad)*(beta*2d0/(beta**2d0+wcoord(iquad)**2d0)) 
+ enddo
+ write(*,*)
+ write(*,*) '    ----------------------'
+ write(*,'(A28,1X)') 'Testing the quadrature 2'
+ write(*,'(A28,1X,F16.10)') 'PI value error',abs(alpha-acos(-1d0))
+ write(*,*) '    ----------------------'
+ write(*,*)
+endblock
 
   nO_=nO
   nOrb2=nOrb+nOrb

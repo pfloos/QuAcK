@@ -33,6 +33,8 @@ subroutine RHF(dotest,maxSCF,thresh,max_diis,guess_type,level_shift,nNuc,ZNuc,rN
 
 ! Local variables
 
+  logical                       :: file_exists
+  integer                       :: iorb
   integer                       :: nSCF
   integer                       :: nBas_Sq
   integer                       :: n_diis
@@ -88,6 +90,14 @@ subroutine RHF(dotest,maxSCF,thresh,max_diis,guess_type,level_shift,nNuc,ZNuc,rN
 ! Guess coefficients and density matrix
 
   call mo_guess(nBas,nOrb,guess_type,S,Hc,X,c)
+
+  inquire(file='hubbard', exist=file_exists)
+  if(file_exists) then
+   c=0d0
+   do iorb=1,nOrb
+    c(iorb,iorb) = 1d0
+   enddo 
+  endif
 
   P(:,:) = 2d0 * matmul(c(:,1:nO), transpose(c(:,1:nO)))
 ! call dgemm('N', 'T', nBas, nBas, nO, 2.d0, &
