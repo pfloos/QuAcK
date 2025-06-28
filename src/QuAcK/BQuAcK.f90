@@ -171,7 +171,7 @@ subroutine BQuAcK(working_dir,dotest,doHFB,doqsGW,nNuc,nBas,nOrb,nC,nO,nV,ENuc,Z
 
     if(im_freqs .and. .true.) then
 
-      call build_Xoiw_RHF_test(nBas,nBas2,nOrb,nC,nO,nV,cHFB,eHF,nfreqs,ntimes,wweight,wcoord, &
+      call build_Xoiw_RHF_test(nBas,nBas2,nOrb,nO,nV,cHFB,eHF,nfreqs,ntimes,wweight,wcoord,  &
                                vMAT,Chi0_ao_iw)
     endif
 

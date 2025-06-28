@@ -1,4 +1,4 @@
-subroutine build_Xoiw_RHF_test(nBas,nBas2,nOrb,nC,nO,nV,cHF,eHF,nfreqs,ntimes,wweight,wcoord,vMAT,Chi0_ao_iw)
+subroutine build_Xoiw_RHF_test(nBas,nBas2,nOrb,nO,nV,cHF,eHF,nfreqs,ntimes,wweight,wcoord,vMAT,Chi0_ao_iw)
 
 ! Restricted Xo(i tau) [ and Xo(i w) ] computed from G(i tau)
 
@@ -12,7 +12,6 @@ subroutine build_Xoiw_RHF_test(nBas,nBas2,nOrb,nC,nO,nV,cHF,eHF,nfreqs,ntimes,ww
   integer,intent(in)            :: nBas
   integer,intent(in)            :: nBas2
   integer,intent(in)            :: nOrb
-  integer,intent(in)            :: nC
   integer,intent(in)            :: nO
   integer,intent(in)            :: nV
 
@@ -54,7 +53,7 @@ subroutine build_Xoiw_RHF_test(nBas,nBas2,nOrb,nC,nO,nV,cHF,eHF,nfreqs,ntimes,ww
   allocate(Chi0_ao_iw_v(nBas2,nBas2),Chi_ao_iw_v(nBas2,nBas2))
   allocate(Wp_ao_iw(nBas2,nBas2))
 
-  call iGtau2Chi0iw_RHF(nBas,nOrb,nC,nO,nV,cHF,eHF,nfreqs,ntimes,wcoord,Chi0_ao_iw)
+  call iGtau2Chi0iw_RHF(nBas,nOrb,nO,nV,cHF,eHF,nfreqs,ntimes,wcoord,Chi0_ao_iw)
 
   call wall_time(start_Xoiw)
 
