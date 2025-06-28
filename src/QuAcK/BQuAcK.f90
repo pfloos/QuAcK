@@ -186,9 +186,9 @@ subroutine BQuAcK(working_dir,dotest,doHFB,doqsGW,nNuc,nBas,nOrb,nC,nO,nV,ENuc,Z
 
     if(im_freqs .and. .true.) then
 
-!do iorb=1,nOrb2
-! write(*,'(*(f10.5))')  U_QP(iorb,:)
-!enddo
+do iorb=1,nOrb2
+ write(*,'(*(f10.5))')  U_QP(iorb,:)
+enddo
 !      call build_Xoiw_HFB_test(nBas,nBas2,nOrb,nO,nV,cHFB,eHF,nfreqs,ntimes,wweight,wcoord,  &
 !                               vMAT,Chi0_ao_iw)
     endif
