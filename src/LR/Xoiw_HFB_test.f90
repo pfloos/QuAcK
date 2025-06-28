@@ -1,4 +1,5 @@
-subroutine build_Xoiw_RHF_test(nBas,nBas2,nOrb,nO,cHF,eHF,nfreqs,ntimes,wweight,wcoord,vMAT,Chi0_ao_iw)
+subroutine build_Xoiw_HFB_test(nBas,nBas2,nOrb,nOrb2,cHFB,eHFB,nfreqs,ntimes,wweight,wcoord,  &
+                               U_QP,vMAT,Chi0_ao_iw)
 
 ! Restricted Xo(i tau) [ and Xo(i w) ] computed from G(i tau)
 
@@ -12,13 +13,14 @@ subroutine build_Xoiw_RHF_test(nBas,nBas2,nOrb,nO,cHF,eHF,nfreqs,ntimes,wweight,
   integer,intent(in)            :: nBas
   integer,intent(in)            :: nBas2
   integer,intent(in)            :: nOrb
-  integer,intent(in)            :: nO
+  integer,intent(in)            :: nOrb2
 
-  double precision,intent(in)   :: eHF(nOrb)
+  double precision,intent(in)   :: eHFB(nOrb2)
   double precision,intent(in)   :: wweight(nfreqs)
   double precision,intent(in)   :: wcoord(nfreqs)
-  double precision,intent(in)   :: cHF(nBas,nOrb)
+  double precision,intent(in)   :: cHFB(nBas,nOrb)
   double precision,intent(in)   :: vMAT(nBas2,nBas2)
+  double precision,intent(in)   :: U_QP(nOrb2,nOrb2)
 
 ! Local variables
 
@@ -34,7 +36,7 @@ subroutine build_Xoiw_RHF_test(nBas,nBas2,nOrb,nO,cHF,eHF,nfreqs,ntimes,wweight,
   double precision,allocatable  :: epsm1(:,:)
   double precision,allocatable  :: eigenv_eps(:,:)
 
-  complex *16,intent(out)       :: Chi0_ao_iw(nfreqs,nBas2,nBas2)
+  complex *16,intent(inout)     :: Chi0_ao_iw(nfreqs,nBas2,nBas2)
 
 !------------------------------------------------------------------------
 ! Build iG(i tau) in AO basis
@@ -52,7 +54,25 @@ subroutine build_Xoiw_RHF_test(nBas,nBas2,nOrb,nO,cHF,eHF,nfreqs,ntimes,wweight,
   allocate(Chi0_ao_iw_v(nBas2,nBas2),Chi_ao_iw_v(nBas2,nBas2))
   allocate(Wp_ao_iw(nBas2,nBas2))
 
-  call iGtau2Chi0iw_RHF(nBas,nOrb,nO,cHF,eHF,nfreqs,ntimes,wcoord,Chi0_ao_iw)
+write(*,*) 'Chi0_ao_iw(ifreq=1) RHF'
+do ibas=1,nOrb2
+write(*,'(*(f12.6))') Real(Chi0_ao_iw(1,ibas,:))
+enddo 
+write(*,*) 'Chi0_ao_iw(ifreq=20) RHF'
+do ibas=1,nOrb2
+write(*,'(*(f12.6))') Real(Chi0_ao_iw(20,ibas,:))
+enddo 
+
+  call iGtau2Chi0iw_HFB(nBas,nBas2,nOrb,nOrb2,cHFB,eHFB,nfreqs,ntimes,wcoord,U_QP,Chi0_ao_iw)
+
+write(*,*) 'Chi0_ao_iw(ifreq=1) HFB'
+do ibas=1,nOrb2
+write(*,'(*(f12.6))') Real(Chi0_ao_iw(1,ibas,:))
+enddo 
+write(*,*) 'Chi0_ao_iw(ifreq=20) HFB'
+do ibas=1,nOrb2
+write(*,'(*(f12.6))') Real(Chi0_ao_iw(20,ibas,:))
+enddo 
 
   call wall_time(start_Xoiw)
 

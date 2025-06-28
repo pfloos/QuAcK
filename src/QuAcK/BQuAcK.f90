@@ -1,5 +1,5 @@
-subroutine BQuAcK(working_dir,dotest,doHFB,doqsGW,nNuc,nBas,nOrb,nC,nO,nV,ENuc,ZNuc,rNuc,                        &
-                  S,T,V,Hc,X,dipole_int_AO,maxSCF_HF,max_diis_HF,thresh_HF,level_shift,                          &
+subroutine BQuAcK(working_dir,dotest,doHFB,doqsGW,nNuc,nBas,nOrb,nO,ENuc,ZNuc,rNuc,                   &
+                  S,T,V,Hc,X,dipole_int_AO,maxSCF_HF,max_diis_HF,thresh_HF,level_shift,               &
                   guess_type,mix,temperature,sigma,chem_pot_hf,restart_hfb,im_freqs,nfreqs,ntimes,wcoord,wweight)
 
 ! Restricted branch of QuAcK
@@ -18,9 +18,7 @@ subroutine BQuAcK(working_dir,dotest,doHFB,doqsGW,nNuc,nBas,nOrb,nC,nO,nV,ENuc,Z
   logical,intent(in)            :: im_freqs
   logical,intent(in)            :: chem_pot_hf
   integer,intent(in)            :: nNuc,nBas,nOrb
-  integer,intent(in)            :: nC
   integer,intent(in)            :: nO
-  integer,intent(in)            :: nV
   integer,intent(in)            :: nfreqs
   integer,intent(in)            :: ntimes
   double precision,intent(inout):: ENuc
@@ -171,7 +169,7 @@ subroutine BQuAcK(working_dir,dotest,doHFB,doqsGW,nNuc,nBas,nOrb,nC,nO,nV,ENuc,Z
 
     if(im_freqs .and. .true.) then
 
-      call build_Xoiw_RHF_test(nBas,nBas2,nOrb,nO,nV,cHFB,eHF,nfreqs,ntimes,wweight,wcoord,  &
+      call build_Xoiw_RHF_test(nBas,nBas2,nOrb,nO,cHFB,eHF,nfreqs,ntimes,wweight,wcoord,  &
                                vMAT,Chi0_ao_iw)
     endif
 
@@ -182,21 +180,19 @@ subroutine BQuAcK(working_dir,dotest,doHFB,doqsGW,nNuc,nBas,nOrb,nC,nO,nV,ENuc,Z
              FHF,Delta,temperature,sigma,chem_pot_hf,chem_pot,restart_hfb,U_QP,eHFB_state)
     call wall_time(end_HF)
 
+    t_HF = end_HF - start_HF
+    write(*,'(A65,1X,F9.3,A8)') 'Total wall time for HFB = ',t_HF,' seconds'
+    write(*,*)
+
 ! Test Xo^HFB (i w) computing EcGM and EcRPA
 
     if(im_freqs .and. .true.) then
 
-do iorb=1,nOrb2
- write(*,'(*(f10.5))')  U_QP(iorb,:)
-enddo
-!      call build_Xoiw_HFB_test(nBas,nBas2,nOrb,nO,nV,cHFB,eHF,nfreqs,ntimes,wweight,wcoord,  &
-!                               vMAT,Chi0_ao_iw)
+
+      call build_Xoiw_HFB_test(nBas,nBas2,nOrb,nOrb2,cHFB,eHFB_state,nfreqs,ntimes,wweight,wcoord,  &
+                               U_QP,vMAT,Chi0_ao_iw)
     endif
 
-
-    t_HF = end_HF - start_HF
-    write(*,'(A65,1X,F9.3,A8)') 'Total wall time for HFB = ',t_HF,' seconds'
-    write(*,*)
 
   end if
 
