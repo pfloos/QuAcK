@@ -181,10 +181,12 @@ subroutine BQuAcK(working_dir,dotest,doHFB,doqsGW,nNuc,nBas,nOrb,nC,nO,nV,ENuc,Z
 
     if(im_freqs .and. .true.) then
 
-     call wall_time(start_Xoiw)
-
      allocate(eps(nBas2,nBas2),epsm1(nBas2,nBas2),eigenv_eps(nBas2,nBas2),eigval_eps(nBas2))
      allocate(Chi0_ao_iw_v(nBas2,nBas2),Chi_ao_iw_v(nBas2,nBas2))
+
+     call iGtau2Chi0iw(nBas,nOrb,nC,nO,nV,cHFB,eHF,nfreqs,ntimes,wcoord,Chi0_ao_iw)
+
+     call wall_time(start_Xoiw)
 
      write(*,*)     
      write(*,*)'***********************************'
@@ -193,7 +195,6 @@ subroutine BQuAcK(working_dir,dotest,doHFB,doqsGW,nNuc,nBas,nOrb,nC,nO,nV,ENuc,Z
      write(*,*)'***********************************'
      write(*,*)
 
-     call iGtau2Chi0iw(nBas,nOrb,nC,nO,nV,cHFB,eHF,nfreqs,ntimes,wcoord,Chi0_ao_iw)
 
      EcRPA=0d0; EcGM=0d0;
      do ifreq=1,nfreqs
