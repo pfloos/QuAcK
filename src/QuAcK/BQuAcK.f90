@@ -52,8 +52,7 @@ subroutine BQuAcK(working_dir,dotest,doHFB,doqsGW,nNuc,nBas,nOrb,nC,nO,nV,ENuc,Z
   double precision              :: chem_pot,Val
   double precision              :: start_HF     ,end_HF       ,t_HF
   double precision              :: start_qsGWB  ,end_qsGWB    ,t_qsGWB
-  double precision              :: start_int, end_int, t_int
-  double precision              :: start_AOtoMO ,end_AOtoMO   ,t_AOtoMO
+  double precision              :: start_int    , end_int     , t_int
 
   double precision,allocatable  :: eHF(:)
   double precision,allocatable  :: eHFB_state(:)
@@ -67,7 +66,16 @@ subroutine BQuAcK(working_dir,dotest,doHFB,doqsGW,nNuc,nBas,nOrb,nC,nO,nV,ENuc,Z
   double precision,allocatable  :: vMAT(:,:)
   double precision,allocatable  :: dipole_int_MO(:,:,:)
   double precision,allocatable  :: ERI_AO(:,:,:,:)
-  double precision,allocatable  :: ERI_MO(:,:,:,:)
+
+! Might be unused variables (i.e., they are used for testing)
+  double precision              :: start_Xoiw   ,end_Xoiw     ,t_Xoiw
+  double precision              :: EcRPA,EcGM,trace,trace2,trace3
+  double precision,allocatable  :: Chi0_ao_iw_v(:,:)
+  double precision,allocatable  :: Chi_ao_iw_v(:,:)
+  double precision,allocatable  :: eigval_eps(:)
+  double precision,allocatable  :: eps(:,:)
+  double precision,allocatable  :: epsm1(:,:)
+  double precision,allocatable  :: eigenv_eps(:,:)
 
   complex *16,allocatable       :: Chi0_ao_iw(:,:,:) 
 
@@ -169,67 +177,84 @@ subroutine BQuAcK(working_dir,dotest,doHFB,doqsGW,nNuc,nBas,nOrb,nC,nO,nV,ENuc,Z
     write(*,'(A65,1X,F9.3,A8)') 'Total wall time for RHF = ',t_HF,' seconds'
     write(*,*)
 
-! Test Xo(i w)
-block
+! Test Xo(i w) computing EcGM and EcRPA
 
- double precision :: EcRPA,EcGM,trace,trace2,trace3
- double precision,allocatable :: Chi0_ao_iw_v(:,:)
- double precision,allocatable :: Chi_ao_iw_v(:,:)
- double precision,allocatable :: epsm1(:,:)
+    if(im_freqs .and. .true.) then
 
- allocate(Chi0_ao_iw_v(nBas2,nBas2),epsm1(nBas2,nBas2),Chi_ao_iw_v(nBas2,nBas2))
+     call wall_time(start_Xoiw)
 
- if(im_freqs) then 
+     allocate(eps(nBas2,nBas2),epsm1(nBas2,nBas2),eigenv_eps(nBas2,nBas2),eigval_eps(nBas2))
+     allocate(Chi0_ao_iw_v(nBas2,nBas2),Chi_ao_iw_v(nBas2,nBas2))
 
-  call RiGtau2Chiiw(nBas,nOrb,nC,nO,nV,cHFB,eHF,nfreqs,ntimes,wcoord,Chi0_ao_iw)
+     write(*,*)     
+     write(*,*)'***********************************'
+     write(*,*)'* Use Xo(i w) to build X(i w)     *'
+     write(*,*)'* and compute EcRPA and EcGM      *'
+     write(*,*)'***********************************'
+     write(*,*)
 
-  EcRPA=0d0; EcGM=0d0;
-  do ifreq=1,nfreqs
-   write(*,*) 'MAU Chi0'
-   do ibas=1,nBas2
-    write(*,'(*(f15.8))')  Real(Chi0_ao_iw(ifreq,ibas,:))
-   enddo
-   Chi0_ao_iw_v(:,:)=matmul(Real(Chi0_ao_iw(ifreq,:,:)),vMAT(:,:))
-   epsm1(:,:) = Chi0_ao_iw_v(:,:)
-   trace=0d0; trace2=0d0; 
-   do ibas=1,nBas2
-    epsm1(ibas,ibas) = 1d0 - epsm1(ibas,ibas)
-    trace=trace+Chi0_ao_iw_v(ibas,ibas)
-    trace2=trace2+Log(1d0-Chi0_ao_iw_v(ibas,ibas))
-   enddo
-   EcRPA=EcRPA+wweight(ifreq)*(trace+trace2)/(2d0*pi)
-   call inverse_matrix(nBas2,epsm1,epsm1)
-   write(*,*) 'MAU eps^-1'
-   do ibas=1,nBas2
-    write(*,'(*(f15.8))') epsm1(ibas,:)
-   enddo
-   Chi_ao_iw_v(:,:)=matmul(epsm1(:,:),Real(Chi0_ao_iw(ifreq,:,:)))
-   write(*,*) 'MAU Chi = eps^-1 Chi0'
-   do ibas=1,nBas2
-    write(*,'(*(f15.8))')  Chi_ao_iw_v(ibas,:)
-   enddo
-   Chi_ao_iw_v(:,:)=matmul(Chi_ao_iw_v(:,:),vMAT(:,:))
-   trace3=0d0
-   write(*,*) 'MAU Chi.v-Chi0.v with Chi = eps^-1 Chi0'
-   do ibas=1,nBas2
-    write(*,'(*(f15.8))')  Chi_ao_iw_v(ibas,:)-Chi0_ao_iw_v(ibas,:)
-   enddo
-   do ibas=1,nBas2
-    trace3=trace3+Chi_ao_iw_v(ibas,ibas)
-   enddo
+     call iGtau2Chi0iw(nBas,nOrb,nC,nO,nV,cHFB,eHF,nfreqs,ntimes,wcoord,Chi0_ao_iw)
 
-write(*,*) trace,trace3
-   EcGM=EcGM-wweight(ifreq)*(trace3-trace)/(2d0*pi)
-   
-  enddo
-  write(*,'(f10.7)') EcRPA
-  write(*,'(f10.7)') EcGM
+     EcRPA=0d0; EcGM=0d0;
+     do ifreq=1,nfreqs
 
- endif
+      ! Initialization
+      trace=0d0; trace2=0d0; trace3=0d0; 
+      eigval_eps(:)=0d0
+      eigenv_eps(:,:)=0d0
+      eps(:,:)=0d0
 
- deallocate(Chi0_ao_iw_v,epsm1,Chi_ao_iw_v)
+      ! Build Xo v
+      Chi0_ao_iw_v(:,:)=matmul(Real(Chi0_ao_iw(ifreq,:,:)),vMAT(:,:))
 
-end block
+      ! Tr [ Xo v ] and define eps
+      do ibas=1,nBas2
+       eps(ibas,ibas) = 1d0
+       trace=trace+Chi0_ao_iw_v(ibas,ibas)
+      enddo
+      eps(:,:) = eps(:,:) - Chi0_ao_iw_v(:,:)
+      
+      ! For GW 
+      ! a) build eps^-1
+      ! b) Set X v = eps^-1 Xo v 
+      call inverse_matrix(nBas2,eps,epsm1)
+      Chi_ao_iw_v(:,:)=matmul(epsm1(:,:),Real(Chi0_ao_iw(ifreq,:,:)))
+      Chi_ao_iw_v(:,:)=matmul(Chi_ao_iw_v(:,:),vMAT(:,:))
+
+      ! Tr [ X v ] for GM
+      do ibas=1,nBas2
+       trace3=trace3+Chi_ao_iw_v(ibas,ibas)
+      enddo
+
+      ! For RPA
+      call diagonalize_general_matrix(nBas2,eps,eigval_eps,eigenv_eps)
+      do ibas=1,nBas2
+       trace2=trace2+Log(abs(eigval_eps(ibas))) ! Recall that Tr [ U Log[Eig_Mat] U^T ] = Tr [ U^T U Log[Eig_Mat] ] =  Tr [ Log[Eig_Mat] ]
+                                                ! (i.e., we just need to sum the Log of the eigenvalues)
+      enddo
+      
+      ! Compute EcRPA and EcGM from traces 
+      EcRPA=EcRPA+wweight(ifreq)*(trace2+trace)/(2d0*pi)
+      EcGM =EcGM -wweight(ifreq)*(trace3-trace)/(2d0*pi)
+      
+     enddo
+
+     write(*,*)'-------------------------------------------------------------------------------'
+     write(*,'(2X,A60,F15.6,A3)') '         phRPA correlation energy = ',EcRPA,' au'
+     write(*,'(2X,A60,F15.6,A3)') '            GM correlation energy = ',EcGM,' au'
+     write(*,*)'-------------------------------------------------------------------------------'
+     write(*,*)
+
+     ! Deallocate arrays
+     deallocate(eps,epsm1,eigval_eps,eigenv_eps)
+     deallocate(Chi0_ao_iw_v,Chi_ao_iw_v)
+
+     call wall_time(end_Xoiw)
+     t_Xoiw = end_Xoiw - start_Xoiw
+     write(*,'(A65,1X,F9.3,A8)') 'Total wall time for Xo(i w) test = ',t_Xoiw,' seconds'
+     write(*,*)
+
+    endif
 
     ! Continue with a HFB calculation
     call wall_time(start_HF)
@@ -263,35 +288,6 @@ end block
 
   end if
 
-!----------------------------------!
-! AO to MO integral transformation !
-!----------------------------------!
-
-  call wall_time(start_AOtoMO)
-  
-  write(*,*)
-  write(*,*) 'AO to MO transformation... Please be patient'
-  write(*,*)
-
-  ! Transform dipole-related integrals
-
-  allocate(dipole_int_MO(nOrb,nOrb,ncart))
-  do ixyz=1,ncart
-    call AOtoMO(nBas,nOrb,cHFB,dipole_int_AO(1,1,ixyz),dipole_int_MO(1,1,ixyz))
-  end do 
-  deallocate(dipole_int_MO)
-  
-  ! 4-index transform 
-  
-  allocate(ERI_MO(nOrb,nOrb,nOrb,nOrb))
-  call AOtoMO_ERI_RHF(nBas,nOrb,cHFB,ERI_AO,ERI_MO)
-
-  call wall_time(end_AOtoMO)
-  
-  t_AOtoMO = end_AOtoMO - start_AOtoMO
-  write(*,'(A65,1X,F9.3,A8)') 'Total wall time for AO to MO transformation = ',t_AOtoMO,' seconds'
-  write(*,*)
-
 ! Memory deallocation
     
   deallocate(eHF)
@@ -302,7 +298,6 @@ end block
   deallocate(Delta)
   deallocate(eHFB_state)
   deallocate(U_QP)
-  deallocate(ERI_MO)
   deallocate(ERI_AO)
   deallocate(vMAT)
   deallocate(Chi0_ao_iw)

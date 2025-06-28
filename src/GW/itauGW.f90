@@ -1,4 +1,4 @@
-subroutine RiGtau2Chiiw(nBas,nOrb,nC,nO,nV,cHF,eHF,nfreqs,ntimes,wcoord,Chi0_ao_iw)
+subroutine iGtau2Chi0iw(nBas,nOrb,nC,nO,nV,cHF,eHF,nfreqs,ntimes,wcoord,Chi0_ao_iw)
 
 ! Restricted Xo(i tau) [ and Xo(i w) ] computed from G(i tau)
 
@@ -44,9 +44,9 @@ subroutine RiGtau2Chiiw(nBas,nOrb,nC,nO,nV,cHF,eHF,nfreqs,ntimes,wcoord,Chi0_ao_
 !------------------------------------------------------------------------
 
  write(*,*)     
- write(*,*)'*****************************'
- write(*,*)'* G(i tau) construction     *'
- write(*,*)'*****************************'
+ write(*,*)'*****************************************'
+ write(*,*)'* G(i tau) and Xo(i w) construction     *'
+ write(*,*)'*****************************************'
  write(*,*)
  
  call wall_time(start_iG)
@@ -78,6 +78,7 @@ subroutine RiGtau2Chiiw(nBas,nOrb,nC,nO,nV,cHF,eHF,nfreqs,ntimes,wcoord,Chi0_ao_
   write(*,*)
   write(*,*) '    ----------------------------'
   write(*,'(A28,1X)') 'Testing the time quadrature'
+  write(*,'(A28, I12)') 'Number of times (grid)= ', ntimes
   write(*,'(A28,1X,F16.10)') 'PI value error',abs(alpha-acos(-1d0))
   write(*,*) '    ----------------------------'
   write(*,*)
@@ -105,7 +106,7 @@ subroutine RiGtau2Chiiw(nBas,nOrb,nC,nO,nV,cHF,eHF,nfreqs,ntimes,wcoord,Chi0_ao_
     enddo
    enddo
   enddo
-  Chi0_ao_itau=-2d0*im*Chi0_ao_itau ! The 2 factor is because of the spin contributions (up,up) and (down,down)
+  Chi0_ao_itau=-2d0*im*Chi0_ao_itau ! The 2 factor is added to account for both spin contributions [ i.e., (up,up) and (down,down) ]
 
   ! Xo(i tau) -> Xo(i w)
   do ifreq=1,nfreqs
@@ -116,11 +117,6 @@ subroutine RiGtau2Chiiw(nBas,nOrb,nC,nO,nV,cHF,eHF,nfreqs,ntimes,wcoord,Chi0_ao_
 
  ! Complete the Xo(i tau) -> Xo(i w)
  Chi0_ao_iw(:,:,:) = 2d0*Real(Chi0_ao_iw(:,:,:))
-
- !write(*,*) 'MAU'
- !do ibas=1,nBas2
- ! write(*,'(*(f15.8))') Real(Chi0_ao_iw(1,ibas,:))
- !enddo
 
  call wall_time(end_iG)
  
