@@ -167,7 +167,7 @@ subroutine BQuAcK(working_dir,dotest,doHFB,doqsGW,nNuc,nBas,nOrb,nC,nO,nV,ENuc,Z
     write(*,'(A65,1X,F9.3,A8)') 'Total wall time for RHF = ',t_HF,' seconds'
     write(*,*)
 
-! Test Xo(i w) computing EcGM and EcRPA
+! Test Xo^HF (i w) computing EcGM and EcRPA
 
     if(im_freqs .and. .true.) then
 
@@ -181,6 +181,18 @@ subroutine BQuAcK(working_dir,dotest,doHFB,doqsGW,nNuc,nBas,nOrb,nC,nO,nV,ENuc,Z
              nBas,nOrb,nOrb2,nO_,S,T,V,Hc,ERI_AO,dipole_int_AO,X,EHFB,eHF,cHFB,PHF,PanomHF,  &
              FHF,Delta,temperature,sigma,chem_pot_hf,chem_pot,restart_hfb,U_QP,eHFB_state)
     call wall_time(end_HF)
+
+! Test Xo^HFB (i w) computing EcGM and EcRPA
+
+    if(im_freqs .and. .true.) then
+
+!do iorb=1,nOrb2
+! write(*,'(*(f10.5))')  U_QP(iorb,:)
+!enddo
+!      call build_Xoiw_HFB_test(nBas,nBas2,nOrb,nO,nV,cHFB,eHF,nfreqs,ntimes,wweight,wcoord,  &
+!                               vMAT,Chi0_ao_iw)
+    endif
+
 
     t_HF = end_HF - start_HF
     write(*,'(A65,1X,F9.3,A8)') 'Total wall time for HFB = ',t_HF,' seconds'

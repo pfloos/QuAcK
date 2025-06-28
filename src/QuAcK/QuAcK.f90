@@ -266,7 +266,7 @@ program QuAcK
    write(*,*) 'Reading Hubbard model one-body parameters'
    write(*,*)
    S=0d0; T=0d0; V=0d0; Hc=0d0; X=0d0;
-   dipole_int_AO=0d0;
+   dipole_int_AO=0d0; Znuc=0d0;
    do iorb=1,nBas
     S(iorb,iorb) = 1d0
     X(iorb,iorb) = 1d0

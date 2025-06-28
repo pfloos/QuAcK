@@ -348,6 +348,27 @@ subroutine HFB(dotest,maxSCF,thresh,max_diis,level_shift,nNuc,ZNuc,rNuc,ENuc,   
 
 ! Compute final energy before printing summary
 
+  F(:,:) = Hc(:,:) + J(:,:) + 0.5d0*K(:,:) - chem_pot*S(:,:)
+
+  ! Diagonalize H_HFB matrix
+  
+  H_HFB(:,:) = 0d0
+  H_HFB(1:nOrb      ,1:nOrb      ) = matmul(transpose(X),matmul(F,X))
+  H_HFB(nOrb+1:nOrb2,nOrb+1:nOrb2) = -H_HFB(1:nOrb,1:nOrb)
+  H_HFB(1:nOrb      ,nOrb+1:nOrb2) = matmul(transpose(X),matmul(Delta,X))
+  H_HFB(nOrb+1:nOrb2,1:nOrb      ) = H_HFB(1:nOrb,nOrb+1:nOrb2)
+  
+  eigVEC(:,:) = H_HFB(:,:)
+  call diagonalize_matrix(nOrb2,eigVEC,eigVAL)
+
+  ! Build R and check trace
+    
+  trace_1rdm = 0d0 
+  R(:,:)     = 0d0
+  do iorb=1,nOrb
+   R(:,:) = R(:,:) + matmul(eigVEC(:,iorb:iorb),transpose(eigVEC(:,iorb:iorb))) 
+  enddo
+
   ! Extract P and Panom from R
  
   P(:,:)     = 0d0
@@ -392,8 +413,7 @@ subroutine HFB(dotest,maxSCF,thresh,max_diis,level_shift,nNuc,ZNuc,rNuc,ENuc,   
 
   if(.true.) then ! NO basis
 
-! Compute W_no and V_no (i.e. diag[H_HFB^no] built in NO basis and get W and V) and
-! compute c_ao = c^no U_QP that correspond to QP 'states'.
+! Compute W_no and V_no (i.e. diag[H_HFB^no] built in NO basis and get W and V)
 
    deallocate(eigVEC,eigVAL)
    allocate(eigVEC(nOrb2,nOrb2),eigVAL(nOrb2))
@@ -403,8 +423,9 @@ subroutine HFB(dotest,maxSCF,thresh,max_diis,level_shift,nNuc,ZNuc,rNuc,ENuc,   
    c_ao(nBas+1:nBas2,nOrb+1:nOrb2) = c(1:nBas,1:nOrb)
    H_HFB = matmul(transpose(c_ao),matmul(H_HFB_ao,c_ao)) ! H_HFB is in the NO basis
    eigVEC(:,:) = H_HFB(:,:)
+
    call diagonalize_matrix(nOrb2,eigVEC,eigVAL)
-   
+
    ! Build R (as R^no) and save the eigenvectors
      
    trace_1rdm = 0d0 
@@ -413,7 +434,6 @@ subroutine HFB(dotest,maxSCF,thresh,max_diis,level_shift,nNuc,ZNuc,rNuc,ENuc,   
     R(:,:) = R(:,:) + matmul(eigVEC(:,iorb:iorb),transpose(eigVEC(:,iorb:iorb))) 
    enddo
    U_QP(:,:) = eigVEC(:,:)
-   c_ao = matmul(c_ao,U_QP) ! c_ao to build 'real-space' QP states
 
    ! Check trace of R
    do iorb=1,nOrb
