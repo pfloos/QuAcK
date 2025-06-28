@@ -1,4 +1,4 @@
-subroutine iGtau2Chi0iw(nBas,nOrb,nC,nO,nV,cHF,eHF,nfreqs,ntimes,wcoord,Chi0_ao_iw)
+subroutine iGtau2Chi0iw_RHF(nBas,nOrb,nC,nO,nV,cHF,eHF,nfreqs,ntimes,wcoord,Chi0_ao_iw)
 
 ! Restricted Xo(i tau) [ and Xo(i w) ] computed from G(i tau)
 
@@ -40,7 +40,7 @@ subroutine iGtau2Chi0iw(nBas,nOrb,nC,nO,nV,cHF,eHF,nfreqs,ntimes,wcoord,Chi0_ao_
   complex*16,intent(out)        :: Chi0_ao_iw(nfreqs,nBas*nBas,nBas*nBas)
   
 !------------------------------------------------------------------------
-! Build iG(i tau) in AO basis
+! Build iG(i tau) in AO basis and use it to build Xo (i tau) -> Xo (i w)
 !------------------------------------------------------------------------
 
  write(*,*)     
@@ -89,9 +89,9 @@ subroutine iGtau2Chi0iw(nBas,nOrb,nC,nO,nV,cHF,eHF,nfreqs,ntimes,wcoord,Chi0_ao_
  do itau=1,ntimes
 
   lesser=.true.  ! Build AO G<
-  call build_Glorg(nBas,nOrb,nO,tcoord(itau),Glesser,cHF,eHF,lesser)
+  call build_Glorg_RHF(nBas,nOrb,nO,tcoord(itau),Glesser,cHF,eHF,lesser)
   lesser=.false. ! Build AO G>
-  call build_Glorg(nBas,nOrb,nO,tcoord(itau),Ggreater,cHF,eHF,lesser)
+  call build_Glorg_RHF(nBas,nOrb,nO,tcoord(itau),Ggreater,cHF,eHF,lesser)
 
   ! Xo(i tau) = -2i G<(i tau) G>(-i tau)
   do ibas=1,nBas
@@ -132,7 +132,7 @@ subroutine iGtau2Chi0iw(nBas,nOrb,nC,nO,nV,cHF,eHF,nfreqs,ntimes,wcoord,Chi0_ao_
 end subroutine 
 
 
-subroutine build_Glorg(nBas,nOrb,nO,tau,Glorg,cHF,eHF,lesser)
+subroutine build_Glorg_RHF(nBas,nOrb,nO,tau,Glorg,cHF,eHF,lesser)
 
   implicit none
   include 'parameters.h'
@@ -161,6 +161,10 @@ subroutine build_Glorg(nBas,nOrb,nO,tau,Glorg,cHF,eHF,lesser)
 
 ! Output variables
   complex*16,intent(out)        :: Glorg(nBas,nBas)
+  
+!------------------------------------------------------------------------
+! Build G<(i tau) and G>(i tau)
+!------------------------------------------------------------------------
 
   if(lesser) then ! G<
    fact=1d0
