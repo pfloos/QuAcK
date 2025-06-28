@@ -20,7 +20,7 @@ program QuAcK
   logical                       :: file_exists
 
   integer                       :: iorb,jorb,korb,lorb
-  integer                       :: iquad,kind_int
+  integer                       :: ifreq,kind_int
   integer                       :: nNuc
   integer                       :: nBas
   integer                       :: nOrb
@@ -70,9 +70,9 @@ program QuAcK
   logical                       :: lin_GF,reg_GF
   double precision              :: eta_GF
 
-  integer                       :: maxSCF_GW,max_diis_GW,nfreqs
+  integer                       :: maxSCF_GW,max_diis_GW,nfreqs,ntimes
   double precision              :: thresh_GW
-  logical                       :: TDA_W,lin_GW,reg_GW,ifreqs
+  logical                       :: TDA_W,lin_GW,reg_GW,im_freqs
   double precision              :: eta_GW
 
   integer                       :: maxSCF_GT,max_diis_GT
@@ -157,36 +157,35 @@ program QuAcK
 ! Read options for methods !
 !--------------------------!
 
-  call read_options(working_dir,                                                                &
-                    maxSCF_HF,thresh_HF,max_diis_HF,guess_type,mix,level_shift,dostab,dosearch, &
-                    reg_MP,                                                                     &
-                    maxSCF_CC,thresh_CC,max_diis_CC,                                            &
-                    TDA,spin_conserved,spin_flip,                                               &
-                    maxSCF_GF,thresh_GF,max_diis_GF,lin_GF,eta_GF,renorm_GF,reg_GF,             &
-                    maxSCF_GW,thresh_GW,max_diis_GW,lin_GW,eta_GW,reg_GW,ifreqs,nfreqs,TDA_W,   &
-                    maxSCF_GT,thresh_GT,max_diis_GT,lin_GT,eta_GT,reg_GT,TDA_T,                 & 
-                    doACFDT,exchange_kernel,doXBS,                                              &
-                    dophBSE,dophBSE2,doppBSE,dBSE,dTDA,                                         &
-                    temperature,sigma,chem_pot_hf,restart_hfb,                                  &
+  call read_options(working_dir,                                                                       &
+                    maxSCF_HF,thresh_HF,max_diis_HF,guess_type,mix,level_shift,dostab,dosearch,        &
+                    reg_MP,                                                                            &
+                    maxSCF_CC,thresh_CC,max_diis_CC,                                                   &
+                    TDA,spin_conserved,spin_flip,                                                      &
+                    maxSCF_GF,thresh_GF,max_diis_GF,lin_GF,eta_GF,renorm_GF,reg_GF,                    &
+                    maxSCF_GW,thresh_GW,max_diis_GW,lin_GW,eta_GW,reg_GW,im_freqs,nfreqs,ntimes,TDA_W, &
+                    maxSCF_GT,thresh_GT,max_diis_GT,lin_GT,eta_GT,reg_GT,TDA_T,                        & 
+                    doACFDT,exchange_kernel,doXBS,                                                     &
+                    dophBSE,dophBSE2,doppBSE,dBSE,dTDA,                                                &
+                    temperature,sigma,chem_pot_hf,restart_hfb,                                         &
                     TDAeh,TDApp,max_diis_1b,max_diis_2b,max_it_1b,conv_1b,max_it_2b,conv_2b,lin_parquet,reg_parquet)
 
 
 !--------------------!
 ! Prepare Quadrature !
 !--------------------!
+
   kind_int = 1
-  lim_inf = 0d0
-  lim_sup = 1d0
-  alpha = 0d0
-  beta  = 0d0
+  lim_inf = 0d0; lim_sup = 1d0;
+  alpha = 0d0;   beta  = 0d0;
   allocate(wweight(nfreqs),wcoord(nfreqs))
   call cgqf(nfreqs,kind_int,alpha,beta,lim_inf,lim_sup,wcoord,wweight)
   wweight(:)=wweight(:)/((1d0-wcoord(:))**2d0)
   wcoord(:)=wcoord(:)/(1d0-wcoord(:))
   ! Check how good we integrate for beta = eA-eI = 10 a.u.
   alpha = 0d0; beta = 1d1;
-  do iquad=1,nfreqs
-   alpha=alpha+wweight(iquad)*(beta*2d0/(beta**2d0+wcoord(iquad)**2d0)) 
+  do ifreq=1,nfreqs
+   alpha=alpha+wweight(ifreq)*(beta*2d0/(beta**2d0+wcoord(ifreq)**2d0)) 
   enddo
   write(*,*)
   write(*,*) '    ----------------------'
@@ -388,9 +387,9 @@ program QuAcK
 ! Bogoliubov QuAcK branch !
 !--------------------------!
   if(doBQuAcK) & 
-    call BQuAcK(working_dir,dotest,doHFB,doqsGW,nNuc,nBas,nOrb,nC,nO,nV,nR,ENuc,ZNuc,rNuc,                    &
-                S,T,V,Hc,X,dipole_int_AO,maxSCF_HF,max_diis_HF,thresh_HF,level_shift,guess_type,mix,          &
-                temperature,sigma,chem_pot_hf,restart_hfb,nfreqs,wcoord,wweight)
+    call BQuAcK(working_dir,dotest,doHFB,doqsGW,nNuc,nBas,nOrb,nC,nO,nV,ENuc,ZNuc,rNuc,                    &
+                S,T,V,Hc,X,dipole_int_AO,maxSCF_HF,max_diis_HF,thresh_HF,level_shift,guess_type,mix,       &
+                temperature,sigma,chem_pot_hf,restart_hfb,im_freqs,nfreqs,ntimes,wcoord,wweight)
 
 !-----------!
 ! Stop Test !
@@ -423,4 +422,5 @@ program QuAcK
   if (allocated(dipole_int_AO)) deallocate(dipole_int_AO)
   if (allocated(S)) deallocate(S)
   deallocate(wweight,wcoord)
+
 end program 

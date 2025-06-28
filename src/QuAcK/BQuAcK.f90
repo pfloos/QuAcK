@@ -1,6 +1,6 @@
-subroutine BQuAcK(working_dir,dotest,doHFB,doqsGW,nNuc,nBas,nOrb,nC,nO,nV,nR,ENuc,ZNuc,rNuc,                     &
+subroutine BQuAcK(working_dir,dotest,doHFB,doqsGW,nNuc,nBas,nOrb,nC,nO,nV,ENuc,ZNuc,rNuc,                        &
                   S,T,V,Hc,X,dipole_int_AO,maxSCF_HF,max_diis_HF,thresh_HF,level_shift,                          &
-                  guess_type,mix,temperature,sigma,chem_pot_hf,restart_hfb,nfreqs,wcoord,wweight)
+                  guess_type,mix,temperature,sigma,chem_pot_hf,restart_hfb,im_freqs,nfreqs,ntimes,wcoord,wweight)
 
 ! Restricted branch of QuAcK
 
@@ -15,13 +15,14 @@ subroutine BQuAcK(working_dir,dotest,doHFB,doqsGW,nNuc,nBas,nOrb,nC,nO,nV,nR,ENu
   logical,intent(in)            :: doqsGW
 
   logical,intent(in)            :: restart_hfb
+  logical,intent(in)            :: im_freqs
   logical,intent(in)            :: chem_pot_hf
   integer,intent(in)            :: nNuc,nBas,nOrb
   integer,intent(in)            :: nC
   integer,intent(in)            :: nO
   integer,intent(in)            :: nV
-  integer,intent(in)            :: nR
   integer,intent(in)            :: nfreqs
+  integer,intent(in)            :: ntimes
   double precision,intent(inout):: ENuc
   double precision,intent(in)   :: temperature,sigma
 
@@ -42,7 +43,8 @@ subroutine BQuAcK(working_dir,dotest,doHFB,doqsGW,nNuc,nBas,nOrb,nC,nO,nV,nR,ENu
 ! Local variables
 
   logical                       :: file_exists
-  integer                       :: nOrb2
+  integer                       :: nOrb2,nBas2
+  integer                       :: ibas,jbas,kbas,lbas,ifreq
   integer                       :: nO_
   integer                       :: ixyz
   integer                       :: iorb,jorb,korb,lorb
@@ -62,9 +64,12 @@ subroutine BQuAcK(working_dir,dotest,doHFB,doqsGW,nNuc,nBas,nOrb,nC,nO,nV,nR,ENu
   double precision,allocatable  :: FHF(:,:)
   double precision,allocatable  :: Delta(:,:)
   double precision              :: ERHF,EHFB
-  double precision,allocatable  :: ERI_AO(:,:,:,:)
+  double precision,allocatable  :: vMAT(:,:)
   double precision,allocatable  :: dipole_int_MO(:,:,:)
+  double precision,allocatable  :: ERI_AO(:,:,:,:)
   double precision,allocatable  :: ERI_MO(:,:,:,:)
+
+  complex *16,allocatable       :: Chi0_ao_iw(:,:,:) 
 
   write(*,*)
   write(*,*) '******************************'
@@ -75,21 +80,8 @@ subroutine BQuAcK(working_dir,dotest,doHFB,doqsGW,nNuc,nBas,nOrb,nC,nO,nV,nR,ENu
 !-------------------!
 ! Memory allocation !
 !-------------------!
-block
- integer::iquad
- double precision::alpha,beta
- alpha = 0d0; beta = 1d1;
- do iquad=1,nfreqs
-  alpha=alpha+wweight(iquad)*(beta*2d0/(beta**2d0+wcoord(iquad)**2d0)) 
- enddo
- write(*,*)
- write(*,*) '    ----------------------'
- write(*,'(A28,1X)') 'Testing the quadrature 2'
- write(*,'(A28,1X,F16.10)') 'PI value error',abs(alpha-acos(-1d0))
- write(*,*) '    ----------------------'
- write(*,*)
-endblock
 
+  nBas2=nBas*nBas
   nO_=nO
   nOrb2=nOrb+nOrb
 
@@ -107,6 +99,10 @@ endblock
 
 
   allocate(ERI_AO(nBas,nBas,nBas,nBas))
+  allocate(vMAT(nBas2,nBas2))
+
+  allocate(Chi0_ao_iw(nfreqs,nBas2,nBas2))
+
   call wall_time(start_int)
   call read_2e_integrals(working_dir,nBas,ERI_AO)
 
@@ -143,6 +139,20 @@ endblock
   write(*,'(A65,1X,F9.3,A8)') 'Total wall time for reading 2e-integrals =',t_int,' seconds'
   write(*,*)
 
+!-----------------------------!
+! Store v also as a 2D matrix !
+!-----------------------------!
+ 
+  do ibas=1,nBas
+   do jbas=1,nBas
+    do kbas=1,nBas
+     do lbas=1,nBas
+      vMAT(1+(kbas-1)+(ibas-1)*nBas,1+(lbas-1)+(jbas-1)*nBas)=ERI_AO(ibas,jbas,kbas,lbas)
+     enddo
+    enddo
+   enddo
+  enddo
+
 !--------------------------------!
 ! Hartree-Fock Bogoliubov module !
 !--------------------------------!
@@ -158,6 +168,68 @@ endblock
     t_HF = end_HF - start_HF
     write(*,'(A65,1X,F9.3,A8)') 'Total wall time for RHF = ',t_HF,' seconds'
     write(*,*)
+
+! Test Xo(i w)
+block
+
+ double precision :: EcRPA,EcGM,trace,trace2,trace3
+ double precision,allocatable :: Chi0_ao_iw_v(:,:)
+ double precision,allocatable :: Chi_ao_iw_v(:,:)
+ double precision,allocatable :: epsm1(:,:)
+
+ allocate(Chi0_ao_iw_v(nBas2,nBas2),epsm1(nBas2,nBas2),Chi_ao_iw_v(nBas2,nBas2))
+
+ if(im_freqs) then 
+
+  call RiGtau2Chiiw(nBas,nOrb,nC,nO,nV,cHFB,eHF,nfreqs,ntimes,wcoord,Chi0_ao_iw)
+
+  EcRPA=0d0; EcGM=0d0;
+  do ifreq=1,nfreqs
+   write(*,*) 'MAU Chi0'
+   do ibas=1,nBas2
+    write(*,'(*(f15.8))')  Real(Chi0_ao_iw(ifreq,ibas,:))
+   enddo
+   Chi0_ao_iw_v(:,:)=matmul(Real(Chi0_ao_iw(ifreq,:,:)),vMAT(:,:))
+   epsm1(:,:) = Chi0_ao_iw_v(:,:)
+   trace=0d0; trace2=0d0; 
+   do ibas=1,nBas2
+    epsm1(ibas,ibas) = 1d0 - epsm1(ibas,ibas)
+    trace=trace+Chi0_ao_iw_v(ibas,ibas)
+    trace2=trace2+Log(1d0-Chi0_ao_iw_v(ibas,ibas))
+   enddo
+   EcRPA=EcRPA+wweight(ifreq)*(trace+trace2)/(2d0*pi)
+   call inverse_matrix(nBas2,epsm1,epsm1)
+   write(*,*) 'MAU eps^-1'
+   do ibas=1,nBas2
+    write(*,'(*(f15.8))') epsm1(ibas,:)
+   enddo
+   Chi_ao_iw_v(:,:)=matmul(epsm1(:,:),Real(Chi0_ao_iw(ifreq,:,:)))
+   write(*,*) 'MAU Chi = eps^-1 Chi0'
+   do ibas=1,nBas2
+    write(*,'(*(f15.8))')  Chi_ao_iw_v(ibas,:)
+   enddo
+   Chi_ao_iw_v(:,:)=matmul(Chi_ao_iw_v(:,:),vMAT(:,:))
+   trace3=0d0
+   write(*,*) 'MAU Chi.v-Chi0.v with Chi = eps^-1 Chi0'
+   do ibas=1,nBas2
+    write(*,'(*(f15.8))')  Chi_ao_iw_v(ibas,:)-Chi0_ao_iw_v(ibas,:)
+   enddo
+   do ibas=1,nBas2
+    trace3=trace3+Chi_ao_iw_v(ibas,ibas)
+   enddo
+
+write(*,*) trace,trace3
+   EcGM=EcGM-wweight(ifreq)*(trace3-trace)/(2d0*pi)
+   
+  enddo
+  write(*,'(f10.7)') EcRPA
+  write(*,'(f10.7)') EcGM
+
+ endif
+
+ deallocate(Chi0_ao_iw_v,epsm1,Chi_ao_iw_v)
+
+end block
 
     ! Continue with a HFB calculation
     call wall_time(start_HF)
@@ -232,5 +304,7 @@ endblock
   deallocate(U_QP)
   deallocate(ERI_MO)
   deallocate(ERI_AO)
+  deallocate(vMAT)
+  deallocate(Chi0_ao_iw)
 
 end subroutine
