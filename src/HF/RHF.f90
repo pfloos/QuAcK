@@ -93,10 +93,13 @@ subroutine RHF(dotest,maxSCF,thresh,max_diis,guess_type,level_shift,nNuc,ZNuc,rN
 
   inquire(file='hubbard', exist=file_exists)
   if(file_exists) then
-   c=0d0
-   do iorb=1,nOrb
-    c(iorb,iorb) = 1d0
-   enddo 
+   inquire(file='site_guess', exist=file_exists)
+   if(file_exists) then
+    c=0d0
+    do iorb=1,nOrb
+     c(iorb,iorb) = 1d0
+    enddo 
+   endif
   endif
 
   P(:,:) = 2d0 * matmul(c(:,1:nO), transpose(c(:,1:nO)))
