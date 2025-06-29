@@ -45,9 +45,9 @@ subroutine iGtau2Chi0iw_HFB(nBas,nBas2,nOrb,nOrb2,cHFB,eHFB,nfreqs,ntimes,wcoord
 !------------------------------------------------------------------------
 
  write(*,*)     
- write(*,*)'*****************************************'
- write(*,*)'* G(i tau) and Xo(i w) construction     *'
- write(*,*)'*****************************************'
+ write(*,*)'*********************************************'
+ write(*,*)'* HFB G(i tau) and Xo(i w) construction     *'
+ write(*,*)'*********************************************'
  write(*,*)
  
  call wall_time(start_iG)
