@@ -111,8 +111,7 @@ subroutine iGtau2Chi0iw_HFB(nBas,nBas2,nOrb,nOrb2,cHFB,eHFB,nfreqs,ntimes,wcoord
      do lbas=1,nBas                       
                           ! r1   r2'               r2   r1'
       product = Glesser_he(ibas,jbas)*Ggreater_he(kbas,lbas) &
-              + Glesser_hh(ibas,jbas)*Ggreater_ee(kbas,lbas)    ! Becomes + because it corresponds to Glesser(up,down) Ggreater(down,up)
-                                                                !  and Ggreater(down,up) is -Ggreater(up,down) [i.e., the one we build]
+              - Glesser_hh(ibas,jbas)*Ggreater_ee(kbas,lbas)    
       if(abs(product)<1e-12) product=czero
       Chi0_ao_itau(1+(lbas-1)+(ibas-1)*nBas,1+(kbas-1)+(jbas-1)*nBas) = product
      enddo
