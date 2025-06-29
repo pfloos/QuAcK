@@ -54,25 +54,7 @@ subroutine build_Xoiw_HFB_test(nBas,nBas2,nOrb,nOrb2,cHFB,eHFB,nfreqs,ntimes,wwe
   allocate(Chi0_ao_iw_v(nBas2,nBas2),Chi_ao_iw_v(nBas2,nBas2))
   allocate(Wp_ao_iw(nBas2,nBas2))
 
-write(*,*) 'Chi0_ao_iw(ifreq=1) RHF'
-do ibas=1,nOrb2
-write(*,'(*(f12.6))') Real(Chi0_ao_iw(1,ibas,:))
-enddo 
-write(*,*) 'Chi0_ao_iw(ifreq=20) RHF'
-do ibas=1,nOrb2
-write(*,'(*(f12.6))') Real(Chi0_ao_iw(20,ibas,:))
-enddo 
-
   call iGtau2Chi0iw_HFB(nBas,nBas2,nOrb,nOrb2,cHFB,eHFB,nfreqs,ntimes,wcoord,U_QP,Chi0_ao_iw)
-
-write(*,*) 'Chi0_ao_iw(ifreq=1) HFB'
-do ibas=1,nOrb2
-write(*,'(*(f12.6))') Real(Chi0_ao_iw(1,ibas,:))
-enddo 
-write(*,*) 'Chi0_ao_iw(ifreq=20) HFB'
-do ibas=1,nOrb2
-write(*,'(*(f12.6))') Real(Chi0_ao_iw(20,ibas,:))
-enddo 
 
   call wall_time(start_Xoiw)
 
