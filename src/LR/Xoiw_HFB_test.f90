@@ -24,7 +24,8 @@ subroutine build_Xoiw_HFB_test(nBas,nBas2,nOrb,nOrb2,cHFB,eHFB,nfreqs,ntimes,wwe
 
 ! Local variables
 
-  integer                       :: ibas,ifreq
+  integer                       :: ibas,jbas,lbas,kbas,ifreq
+  integer                       :: iorb,jorb,korb,lorb
 
   double precision              :: start_Xoiw   ,end_Xoiw     ,t_Xoiw
   double precision              :: EcRPA,EcGM,trace,trace2,trace3
@@ -35,6 +36,9 @@ subroutine build_Xoiw_HFB_test(nBas,nBas2,nOrb,nOrb2,cHFB,eHFB,nfreqs,ntimes,wwe
   double precision,allocatable  :: eps(:,:)
   double precision,allocatable  :: epsm1(:,:)
   double precision,allocatable  :: eigenv_eps(:,:)
+  double precision,allocatable  :: Wp_tmp(:,:)
+  double precision,allocatable  :: Wp_AO(:,:,:,:)
+  double precision,allocatable  :: Wp_MO(:,:,:,:)
 
   complex *16,intent(inout)     :: Chi0_ao_iw(nfreqs,nBas2,nBas2)
 
@@ -52,6 +56,7 @@ subroutine build_Xoiw_HFB_test(nBas,nBas2,nOrb,nOrb2,cHFB,eHFB,nfreqs,ntimes,wwe
 
   allocate(eps(nBas2,nBas2),epsm1(nBas2,nBas2),eigenv_eps(nBas2,nBas2),eigval_eps(nBas2))
   allocate(Chi0_ao_iw_v(nBas2,nBas2),Chi_ao_iw_v(nBas2,nBas2))
+  allocate(Wp_AO(nBas,nBas,nBas,nBas),Wp_MO(nOrb,nOrb,nOrb,nOrb),Wp_tmp(nOrb*nOrb,nOrb*nOrb))
   allocate(Wp_ao_iw(nBas2,nBas2))
 
   call iGtau2Chi0iw_HFB(nBas,nBas2,nOrb,nOrb2,cHFB,eHFB,nfreqs,ntimes,wcoord,U_QP,Chi0_ao_iw)
@@ -100,8 +105,36 @@ subroutine build_Xoiw_HFB_test(nBas,nBas2,nOrb,nOrb2,cHFB,eHFB,nfreqs,ntimes,wwe
     EcRPA=EcRPA+wweight(ifreq)*(trace2+trace)/(2d0*pi)
     EcGM =EcGM -wweight(ifreq)*(trace3-trace)/(2d0*pi)
    
-    ! Building Wp in AO basis (TODO: use it)
+    ! Building Wp in AO basis
     Wp_ao_iw(:,:)=matmul(vMAT(:,:),Chi_ao_iw_v(:,:))
+    if(ifreq==1 .and. .false.) then ! Set to true for testing
+      do ibas=1,nBas
+       do jbas=1,nBas
+        do kbas=1,nBas
+         do lbas=1,nBas
+          Wp_AO(ibas,jbas,kbas,lbas)=Wp_ao_iw(1+(kbas-1)+(ibas-1)*nBas,1+(lbas-1)+(jbas-1)*nBas)
+         enddo
+        enddo
+       enddo
+      enddo
+      call AOtoMO_ERI_RHF(nBas,nOrb,cHFB,Wp_AO,Wp_MO)
+      do iorb=1,nOrb
+       do jorb=1,nOrb
+        do korb=1,nOrb
+         do lorb=1,nOrb
+          Wp_tmp(1+(korb-1)+(iorb-1)*nBas,1+(lorb-1)+(jorb-1)*nBas)=Wp_MO(iorb,jorb,korb,lorb)
+         enddo
+        enddo
+       enddo
+      enddo
+      write(*,*) ' ' 
+      write(*,*) 'HFB Wp_MO(i w1) ' 
+      write(*,*) ' ' 
+      do iorb=1,nOrb*nOrb
+       write(*,'(*(f10.5))') Wp_tmp(iorb,:)
+      enddo
+      write(*,*) ' ' 
+    endif
    
   enddo
 
@@ -114,6 +147,7 @@ subroutine build_Xoiw_HFB_test(nBas,nBas2,nOrb,nOrb2,cHFB,eHFB,nfreqs,ntimes,wwe
   ! Deallocate arrays
   deallocate(eps,epsm1,eigval_eps,eigenv_eps)
   deallocate(Chi0_ao_iw_v,Chi_ao_iw_v,Wp_ao_iw)
+  deallocate(Wp_AO,Wp_MO,Wp_tmp)
 
   call wall_time(end_Xoiw)
   t_Xoiw = end_Xoiw - start_Xoiw

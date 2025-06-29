@@ -165,7 +165,7 @@ subroutine BQuAcK(working_dir,dotest,doHFB,doqsGW,nNuc,nBas,nOrb,nO,ENuc,ZNuc,rN
     write(*,'(A65,1X,F9.3,A8)') 'Total wall time for RHF = ',t_HF,' seconds'
     write(*,*)
 
-! Test Xo^HF (i w) computing EcGM and EcRPA
+    ! Test Xo^HF (i w) computing EcGM and EcRPA
 
     if(im_freqs .and. .true.) then
 
@@ -184,7 +184,7 @@ subroutine BQuAcK(working_dir,dotest,doHFB,doqsGW,nNuc,nBas,nOrb,nO,ENuc,ZNuc,rN
     write(*,'(A65,1X,F9.3,A8)') 'Total wall time for HFB = ',t_HF,' seconds'
     write(*,*)
 
-! Test Xo^HFB (i w) computing EcGM and EcRPA
+    ! Test Xo^HFB (i w) computing EcGM and EcRPA
 
     if(im_freqs .and. .true.) then
 
