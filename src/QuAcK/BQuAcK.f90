@@ -188,7 +188,6 @@ subroutine BQuAcK(working_dir,dotest,doHFB,doqsGW,nNuc,nBas,nOrb,nO,ENuc,ZNuc,rN
 
     if(im_freqs .and. .true.) then
 
-
       call build_Xoiw_HFB_test(nBas,nBas2,nOrb,nOrb2,cHFB,eHFB_state,nfreqs,ntimes,wweight,wcoord,  &
                                U_QP,vMAT,Chi0_ao_iw)
     endif
