@@ -43,11 +43,11 @@ subroutine build_Xoiw_HFB_test(nBas,nBas2,nOrb,nOrb2,cHFB,eHFB,nfreqs,ntimes,wwe
 !------------------------------------------------------------------------
 
   write(*,*)
-  write(*,*)'***********************************'
-  write(*,*)'* Use Xo(i w) to build X(i w),    *'
-  write(*,*)'*   compute EcRPA and EcGM,       *'
-  write(*,*)'*     and build Wp (i w)          *'
-  write(*,*)'***********************************'
+  write(*,*)'*******************************************'
+  write(*,*)'* Use HFB Xo(i w) to build HFB X(i w),    *'
+  write(*,*)'*       compute EcRPA and EcGM,           *'
+  write(*,*)'*          and build Wp (i w)             *'
+  write(*,*)'*******************************************'
   write(*,*)
 
   allocate(eps(nBas2,nBas2),epsm1(nBas2,nBas2),eigenv_eps(nBas2,nBas2),eigval_eps(nBas2))

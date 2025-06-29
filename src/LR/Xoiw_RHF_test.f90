@@ -41,11 +41,11 @@ subroutine build_Xoiw_RHF_test(nBas,nBas2,nOrb,nO,cHF,eHF,nfreqs,ntimes,wweight,
 !------------------------------------------------------------------------
 
   write(*,*)
-  write(*,*)'***********************************'
-  write(*,*)'* Use Xo(i w) to build X(i w),    *'
-  write(*,*)'*   compute EcRPA and EcGM,       *'
-  write(*,*)'*     and build Wp (i w)          *'
-  write(*,*)'***********************************'
+  write(*,*)'*******************************************'
+  write(*,*)'* Use RHF Xo(i w) to build RHF X(i w),    *'
+  write(*,*)'*       compute EcRPA and EcGM,           *'
+  write(*,*)'*          and build Wp (i w)             *'
+  write(*,*)'*******************************************'
   write(*,*)
 
   allocate(eps(nBas2,nBas2),epsm1(nBas2,nBas2),eigenv_eps(nBas2,nBas2),eigval_eps(nBas2))
