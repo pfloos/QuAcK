@@ -92,11 +92,11 @@ subroutine build_Xoiw_RHF_test(nBas,nOrb,nO,cHF,eHF,nfreqs,ntimes,wweight,wcoord
 
   call Gitau2Chi0iw_RHF(nBas,nOrb,nO,cHF,eHF,nfreqs,ntimes,wcoord,Chi0_ao_iw)
 
-  call wall_time(start_Xoiw)
-
 !----------------------!
 ! Use Xo(i w) as usual !
 !----------------------!
+
+  call wall_time(start_Xoiw)
 
   EcRPA=0d0; EcGM=0d0;
   do ifreq=1,nfreqs
