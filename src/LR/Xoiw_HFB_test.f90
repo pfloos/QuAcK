@@ -211,10 +211,12 @@ subroutine build_Xoiw_HFB_test(nBas,nOrb,nOrb_twice,cHFB,eHFB,nfreqs,ntimes,wwei
      do jbas=1,nBas
       do kbas=1,nBas
        do lbas=1,nBas
+        ! This is  G^he W
         Sigma_he_c_ao(ibas,jbas)=Sigma_he_c_ao(ibas,jbas)-(G_ao_1(kbas,lbas)+G_ao_2(kbas,lbas))  &
                                 *Wp_ao_iw(1+(kbas-1)+(ibas-1)*nBas,1+(jbas-1)+(lbas-1)*nBas)     &
                                 *wweight(ifreq)/(2d0*pi)
-        Sigma_hh_c_ao(ibas,jbas)=Sigma_hh_c_ao(ibas,jbas)-(G_ao_3(kbas,lbas)+G_ao_4(kbas,lbas))  &
+        ! This is -G^hh W
+        Sigma_hh_c_ao(ibas,jbas)=Sigma_hh_c_ao(ibas,jbas)+(G_ao_3(kbas,lbas)+G_ao_4(kbas,lbas))  &
                                 *Wp_ao_iw(1+(kbas-1)+(ibas-1)*nBas,1+(lbas-1)+(jbas-1)*nBas)     &
                                 *wweight(ifreq)/(2d0*pi)
        enddo
