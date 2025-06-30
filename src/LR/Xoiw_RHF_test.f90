@@ -27,6 +27,7 @@ subroutine build_Xoiw_RHF_test(nBas,nOrb,nO,cHF,eHF,nfreqs,ntimes,wweight,wcoord
 
   double precision              :: start_Xoiw   ,end_Xoiw     ,t_Xoiw
   double precision              :: EcRPA,EcGM,trace,trace2,trace3
+  double precision              :: eta
   double precision,allocatable  :: Chi0_ao_iw_v(:,:)
   double precision,allocatable  :: Chi_ao_iw_v(:,:)
   double precision,allocatable  :: Wp_ao_iw(:,:)
@@ -39,10 +40,15 @@ subroutine build_Xoiw_RHF_test(nBas,nOrb,nO,cHF,eHF,nfreqs,ntimes,wweight,wcoord
   double precision,allocatable  :: Wp_AO(:,:,:,:)
   double precision,allocatable  :: Wp_MO(:,:,:,:)
 
+  complex *16                   :: wtest
+  complex *16,allocatable       :: Sigma_c_ao(:,:)
+  complex *16,allocatable       :: G_ao_1(:,:)
+  complex *16,allocatable       :: G_ao_2(:,:)
   complex *16,allocatable       :: Chi0_ao_iw(:,:,:)
 !
 
   nBas2=nBas*nBas
+  wtest=0d0 ! TODO use test values
 
 !------------------------------------------------------------------------
 ! Build G(i tau) in AO basis
@@ -62,6 +68,8 @@ subroutine build_Xoiw_RHF_test(nBas,nOrb,nO,cHF,eHF,nfreqs,ntimes,wweight,wcoord
   allocate(Wp_AO(nBas,nBas,nBas,nBas),Wp_MO(nOrb,nOrb,nOrb,nOrb),Wp_tmp(nOrb*nOrb,nOrb*nOrb))
   allocate(Wp_ao_iw(nBas2,nBas2))
   allocate(vMAT(nBas2,nBas2))
+  allocate(Sigma_c_ao(nBas,nBas),G_ao_1(nBas,nBas),G_ao_2(nBas,nBas))
+  Sigma_c_ao=czero
 
 !-----------------------------!
 ! Store v also as a 2D matrix !
@@ -161,6 +169,26 @@ subroutine build_Xoiw_RHF_test(nBas,nOrb,nO,cHF,eHF,nfreqs,ntimes,wweight,wcoord
       enddo
       write(*,*) ' ' 
     endif
+
+    ! Build G(iw+w)
+    eta=0d0;
+    wtest=wtest+im*wcoord(ifreq)
+    call G_AO_RHF(nBas,nOrb,nO,eta,cHF,eHF,wtest,G_ao_1)
+    wtest=wtest-im*wcoord(ifreq)
+    call G_AO_RHF(nBas,nOrb,nO,eta,cHF,eHF,wtest,G_ao_2)
+
+    ! Sigma_c(wtest)
+    do ibas=1,nBas
+     do jbas=1,nBas
+      do kbas=1,nBas
+       do lbas=1,nBas
+        Sigma_c_ao(ibas,jbas)=Sigma_c_ao(ibas,jbas)+(G_ao_1(kbas,lbas)+G_ao_2(kbas,lbas))  &
+                             *Wp_ao_iw(1+(kbas-1)+(ibas-1)*nBas,1+(jbas-1)+(lbas-1)*nBas)  &
+                             *wweight(ifreq)/(2d0*pi) 
+       enddo
+      enddo
+     enddo
+    enddo
    
   enddo
 
@@ -176,6 +204,7 @@ subroutine build_Xoiw_RHF_test(nBas,nOrb,nO,cHF,eHF,nfreqs,ntimes,wweight,wcoord
   deallocate(Chi0_ao_iw_v,Chi_ao_iw_v,Wp_ao_iw)
   deallocate(Wp_AO,Wp_MO,Wp_tmp)
   deallocate(vMAT)
+  deallocate(Sigma_c_ao,G_ao_1,G_ao_2)
 
   call wall_time(end_Xoiw)
   t_Xoiw = end_Xoiw - start_Xoiw
