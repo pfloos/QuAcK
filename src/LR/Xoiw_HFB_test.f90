@@ -1,5 +1,5 @@
 subroutine build_Xoiw_HFB_test(nBas,nBas2,nOrb,nOrb2,cHFB,eHFB,nfreqs,ntimes,wweight,wcoord,  &
-                               U_QP,vMAT,Chi0_ao_iw)
+                               U_QP,ERI_AO,Chi0_ao_iw)
 
 ! Restricted Xo(i tau) [ and Xo(i w) ] computed from G(i tau)
 
@@ -19,8 +19,8 @@ subroutine build_Xoiw_HFB_test(nBas,nBas2,nOrb,nOrb2,cHFB,eHFB,nfreqs,ntimes,wwe
   double precision,intent(in)   :: wweight(nfreqs)
   double precision,intent(in)   :: wcoord(nfreqs)
   double precision,intent(in)   :: cHFB(nBas,nOrb)
-  double precision,intent(in)   :: vMAT(nBas2,nBas2)
   double precision,intent(in)   :: U_QP(nOrb2,nOrb2)
+  double precision,intent(in)   :: ERI_AO(nBas,nBas,nBas,nBas)
 
 ! Local variables
 
@@ -36,6 +36,7 @@ subroutine build_Xoiw_HFB_test(nBas,nBas2,nOrb,nOrb2,cHFB,eHFB,nfreqs,ntimes,wwe
   double precision,allocatable  :: eps(:,:)
   double precision,allocatable  :: epsm1(:,:)
   double precision,allocatable  :: eigenv_eps(:,:)
+  double precision,allocatable  :: vMAT(:,:)
   double precision,allocatable  :: Wp_tmp(:,:)
   double precision,allocatable  :: Wp_AO(:,:,:,:)
   double precision,allocatable  :: Wp_MO(:,:,:,:)
@@ -58,8 +59,31 @@ subroutine build_Xoiw_HFB_test(nBas,nBas2,nOrb,nOrb2,cHFB,eHFB,nfreqs,ntimes,wwe
   allocate(Chi0_ao_iw_v(nBas2,nBas2),Chi_ao_iw_v(nBas2,nBas2))
   allocate(Wp_AO(nBas,nBas,nBas,nBas),Wp_MO(nOrb,nOrb,nOrb,nOrb),Wp_tmp(nOrb*nOrb,nOrb*nOrb))
   allocate(Wp_ao_iw(nBas2,nBas2))
+  allocate(vMAT(nBas2,nBas2))
+
+!-----------------------------!
+! Store v also as a 2D matrix !
+!-----------------------------!
+ 
+  do ibas=1,nBas
+   do jbas=1,nBas
+    do kbas=1,nBas
+     do lbas=1,nBas
+      vMAT(1+(kbas-1)+(ibas-1)*nBas,1+(lbas-1)+(jbas-1)*nBas)=ERI_AO(ibas,jbas,kbas,lbas)
+     enddo
+    enddo
+   enddo
+  enddo
+
+!-----------------------------!
+! Build X0(i w) from G(i tau) !
+!-----------------------------!
 
   call iGtau2Chi0iw_HFB(nBas,nBas2,nOrb,nOrb2,cHFB,eHFB,nfreqs,ntimes,wcoord,U_QP,Chi0_ao_iw)
+
+!----------------------!
+! Use Xo(i w) as usual !
+!----------------------!
 
   call wall_time(start_Xoiw)
 
@@ -107,7 +131,7 @@ subroutine build_Xoiw_HFB_test(nBas,nBas2,nOrb,nOrb2,cHFB,eHFB,nfreqs,ntimes,wwe
    
     ! Building Wp in AO basis
     Wp_ao_iw(:,:)=matmul(vMAT(:,:),Chi_ao_iw_v(:,:))
-    if(ifreq==1 .and. .false.) then ! Set to true for testing
+    if(ifreq==1 .and. .false.) then ! Set to true for testing TODO
       do ibas=1,nBas
        do jbas=1,nBas
         do kbas=1,nBas
@@ -148,6 +172,7 @@ subroutine build_Xoiw_HFB_test(nBas,nBas2,nOrb,nOrb2,cHFB,eHFB,nfreqs,ntimes,wwe
   deallocate(eps,epsm1,eigval_eps,eigenv_eps)
   deallocate(Chi0_ao_iw_v,Chi_ao_iw_v,Wp_ao_iw)
   deallocate(Wp_AO,Wp_MO,Wp_tmp)
+  deallocate(vMAT)
 
   call wall_time(end_Xoiw)
   t_Xoiw = end_Xoiw - start_Xoiw

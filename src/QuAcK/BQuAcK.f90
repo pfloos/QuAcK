@@ -61,7 +61,6 @@ subroutine BQuAcK(working_dir,dotest,doHFB,doqsGW,nNuc,nBas,nOrb,nO,ENuc,ZNuc,rN
   double precision,allocatable  :: FHF(:,:)
   double precision,allocatable  :: Delta(:,:)
   double precision              :: ERHF,EHFB
-  double precision,allocatable  :: vMAT(:,:)
   double precision,allocatable  :: dipole_int_MO(:,:,:)
   double precision,allocatable  :: ERI_AO(:,:,:,:)
 
@@ -95,9 +94,7 @@ subroutine BQuAcK(working_dir,dotest,doHFB,doqsGW,nNuc,nBas,nOrb,nO,ENuc,ZNuc,rN
 
 
   allocate(ERI_AO(nBas,nBas,nBas,nBas))
-  allocate(vMAT(nBas2,nBas2))
 
-  allocate(Chi0_ao_iw(nfreqs,nBas2,nBas2))
 
   call wall_time(start_int)
   call read_2e_integrals(working_dir,nBas,ERI_AO)
@@ -135,19 +132,6 @@ subroutine BQuAcK(working_dir,dotest,doHFB,doqsGW,nNuc,nBas,nOrb,nO,ENuc,ZNuc,rN
   write(*,'(A65,1X,F9.3,A8)') 'Total wall time for reading 2e-integrals =',t_int,' seconds'
   write(*,*)
 
-!-----------------------------!
-! Store v also as a 2D matrix !
-!-----------------------------!
- 
-  do ibas=1,nBas
-   do jbas=1,nBas
-    do kbas=1,nBas
-     do lbas=1,nBas
-      vMAT(1+(kbas-1)+(ibas-1)*nBas,1+(lbas-1)+(jbas-1)*nBas)=ERI_AO(ibas,jbas,kbas,lbas)
-     enddo
-    enddo
-   enddo
-  enddo
 
 !--------------------------------!
 ! Hartree-Fock Bogoliubov module !
@@ -166,11 +150,13 @@ subroutine BQuAcK(working_dir,dotest,doHFB,doqsGW,nNuc,nBas,nOrb,nO,ENuc,ZNuc,rN
     write(*,*)
 
     ! Test Xo^HF (i w) computing EcGM and EcRPA
-
     if(im_freqs .and. .true.) then
 
+      allocate(Chi0_ao_iw(nfreqs,nBas2,nBas2))
       call build_Xoiw_RHF_test(nBas,nBas2,nOrb,nO,cHFB,eHF,nfreqs,ntimes,wweight,wcoord,  &
-                               vMAT,Chi0_ao_iw)
+                               ERI_AO,Chi0_ao_iw)
+      deallocate(Chi0_ao_iw)
+
     endif
 
     ! Continue with a HFB calculation
@@ -185,13 +171,14 @@ subroutine BQuAcK(working_dir,dotest,doHFB,doqsGW,nNuc,nBas,nOrb,nO,ENuc,ZNuc,rN
     write(*,*)
 
     ! Test Xo^HFB (i w) computing EcGM and EcRPA
-
     if(im_freqs .and. .true.) then
 
+      allocate(Chi0_ao_iw(nfreqs,nBas2,nBas2))
       call build_Xoiw_HFB_test(nBas,nBas2,nOrb,nOrb2,cHFB,eHFB_state,nfreqs,ntimes,wweight,wcoord,  &
-                               U_QP,vMAT,Chi0_ao_iw)
-    endif
+                               U_QP,ERI_AO,Chi0_ao_iw)
+      deallocate(Chi0_ao_iw)
 
+    endif
 
   end if
 
@@ -225,7 +212,5 @@ subroutine BQuAcK(working_dir,dotest,doHFB,doqsGW,nNuc,nBas,nOrb,nO,ENuc,ZNuc,rN
   deallocate(eHFB_state)
   deallocate(U_QP)
   deallocate(ERI_AO)
-  deallocate(vMAT)
-  deallocate(Chi0_ao_iw)
 
 end subroutine
