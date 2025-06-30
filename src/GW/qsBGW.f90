@@ -1,5 +1,5 @@
 subroutine qsGWB(dotest,maxSCF,thresh,max_diis,level_shift,nNuc,ZNuc,rNuc,ENuc,             & 
-               nBas,nOrb,nOrb2,nO,S,T,V,Hc,ERI,dipole_int,X,EqsGWB,eqsGW,c,P,Panom,F,Delta, &
+               nBas,nOrb,nOrb_twice,nO,S,T,V,Hc,ERI,dipole_int,X,EqsGWB,eqsGW,c,P,Panom,F,Delta, &
                sigma,chem_pot,restart_hfb,U_QP,eqsGWB_state)
 
 ! Perform qsGW Bogoliubov calculation
@@ -18,7 +18,7 @@ subroutine qsGWB(dotest,maxSCF,thresh,max_diis,level_shift,nNuc,ZNuc,rNuc,ENuc, 
 
   integer,intent(in)            :: nBas
   integer,intent(in)            :: nOrb
-  integer,intent(in)            :: nOrb2
+  integer,intent(in)            :: nOrb_twice
   integer,intent(in)            :: nO
   integer,intent(in)            :: nNuc
   double precision,intent(in)   :: ZNuc(nNuc)
@@ -84,8 +84,8 @@ subroutine qsGWB(dotest,maxSCF,thresh,max_diis,level_shift,nNuc,ZNuc,rNuc,ENuc, 
   double precision,intent(inout) :: Panom(nBas,nBas)
   double precision,intent(inout) :: F(nBas,nBas)
   double precision,intent(inout) :: Delta(nBas,nBas)
-  double precision,intent(inout) :: U_QP(nOrb2,nOrb2)
-  double precision,intent(inout) :: eqsGWB_state(nOrb2)
+  double precision,intent(inout) :: U_QP(nOrb_twice,nOrb_twice)
+  double precision,intent(inout) :: eqsGWB_state(nOrb_twice)
 
 ! Hello world
 
@@ -108,14 +108,14 @@ subroutine qsGWB(dotest,maxSCF,thresh,max_diis,level_shift,nNuc,ZNuc,rNuc,ENuc, 
   allocate(K(nBas,nBas))
   allocate(Sigc(nBas,nBas))
 
-  allocate(eigVEC(nOrb2,nOrb2))
-  allocate(H_qsGWB(nOrb2,nOrb2))
-  allocate(R(nOrb2,nOrb2))
-  allocate(eigVAL(nOrb2))
+  allocate(eigVEC(nOrb_twice,nOrb_twice))
+  allocate(H_qsGWB(nOrb_twice,nOrb_twice))
+  allocate(R(nOrb_twice,nOrb_twice))
+  allocate(eigVAL(nOrb_twice))
 
   allocate(err_ao(nBas2,nBas2))
   allocate(S_ao(nBas2,nBas2))
-  allocate(X_ao(nBas2,nOrb2))
+  allocate(X_ao(nBas2,nOrb_twice))
   allocate(R_ao_old(nBas2,nBas2))
   allocate(H_qsGWB_ao(nBas2,nBas2))
 
@@ -149,8 +149,8 @@ subroutine qsGWB(dotest,maxSCF,thresh,max_diis,level_shift,nNuc,ZNuc,rNuc,ENuc, 
   S_ao(1:nBas      ,1:nBas      ) = S(1:nBas,1:nBas)
   S_ao(nBas+1:nBas2,nBas+1:nBas2) = S(1:nBas,1:nBas)
   X_ao(:,:)    = 0d0
-  X_ao(1:nBas      ,1:nOrb      ) = X(1:nBas,1:nOrb)
-  X_ao(nBas+1:nBas2,nOrb+1:nOrb2) = X(1:nBas,1:nOrb)
+  X_ao(1:nBas      ,1:nOrb      )      = X(1:nBas,1:nOrb)
+  X_ao(nBas+1:nBas2,nOrb+1:nOrb_twice) = X(1:nBas,1:nOrb)
 
   Conv = 1d0
   nSCF = 0
@@ -181,13 +181,13 @@ subroutine qsGWB(dotest,maxSCF,thresh,max_diis,level_shift,nNuc,ZNuc,rNuc,ENuc, 
     ! Diagonalize H_qsGWB matrix
     
     H_qsGWB(:,:) = 0d0
-    H_qsGWB(1:nOrb      ,1:nOrb      ) = matmul(transpose(X),matmul(F,X))
-    H_qsGWB(nOrb+1:nOrb2,nOrb+1:nOrb2) = -H_qsGWB(1:nOrb,1:nOrb)
-    H_qsGWB(1:nOrb      ,nOrb+1:nOrb2) = matmul(transpose(X),matmul(Delta,X))
-    H_qsGWB(nOrb+1:nOrb2,1:nOrb      ) = H_qsGWB(1:nOrb,nOrb+1:nOrb2)
+    H_qsGWB(1:nOrb      ,1:nOrb      )           = matmul(transpose(X),matmul(F,X))
+    H_qsGWB(nOrb+1:nOrb_twice,nOrb+1:nOrb_twice) = -H_qsGWB(1:nOrb,1:nOrb)
+    H_qsGWB(1:nOrb      ,nOrb+1:nOrb_twice) = matmul(transpose(X),matmul(Delta,X))
+    H_qsGWB(nOrb+1:nOrb_twice,1:nOrb      ) = H_qsGWB(1:nOrb,nOrb+1:nOrb_twice)
     
     eigVEC(:,:) = H_qsGWB(:,:)
-    call diagonalize_matrix(nOrb2,eigVEC,eigVAL)
+    call diagonalize_matrix(nOrb_twice,eigVEC,eigVAL)
     
     ! Build R 
       
@@ -203,7 +203,7 @@ subroutine qsGWB(dotest,maxSCF,thresh,max_diis,level_shift,nNuc,ZNuc,rNuc,ENuc, 
     ! Adjust the chemical potential 
 
     if( abs(trace_1rdm-nO) > thrs_N ) & 
-     call fix_chem_pot(nO,nOrb,nOrb2,nSCF,thrs_N,trace_1rdm,chem_pot,H_qsGWB,eigVEC,R,eigVAL)
+     call fix_chem_pot(nO,nOrb,nOrb_twice,nSCF,thrs_N,trace_1rdm,chem_pot,H_qsGWB,eigVEC,R,eigVAL)
 
     ! DIIS extrapolation
 
@@ -224,7 +224,7 @@ subroutine qsGWB(dotest,maxSCF,thresh,max_diis,level_shift,nNuc,ZNuc,rNuc,ENuc, 
 
      H_qsGWB = matmul(transpose(X_ao),matmul(H_qsGWB_ao,X_ao))
      eigVEC(:,:) = H_qsGWB(:,:)
-     call diagonalize_matrix(nOrb2,eigVEC,eigVAL)
+     call diagonalize_matrix(nOrb_twice,eigVEC,eigVAL)
      
      ! Build R and check trace
        
@@ -240,7 +240,7 @@ subroutine qsGWB(dotest,maxSCF,thresh,max_diis,level_shift,nNuc,ZNuc,rNuc,ENuc, 
      ! Adjust the chemical potential 
      
      if( abs(trace_1rdm-nO) > thrs_N ) & 
-      call fix_chem_pot(nO,nOrb,nOrb2,nSCF,thrs_N,trace_1rdm,chem_pot,H_qsGWB,eigVEC,R,eigVAL)
+      call fix_chem_pot(nO,nOrb,nOrb_twice,nSCF,thrs_N,trace_1rdm,chem_pot,H_qsGWB,eigVEC,R,eigVAL)
    
     end if
 
@@ -251,7 +251,7 @@ subroutine qsGWB(dotest,maxSCF,thresh,max_diis,level_shift,nNuc,ZNuc,rNuc,ENuc, 
     P(:,:)     = 0d0
     Panom(:,:) = 0d0
     P(:,:)     = 2d0*matmul(X,matmul(R(1:nOrb,1:nOrb),transpose(X)))
-    Panom(:,:) = matmul(X,matmul(R(1:nOrb,nOrb+1:nOrb2),transpose(X)))
+    Panom(:,:) = matmul(X,matmul(R(1:nOrb,nOrb+1:nOrb_twice),transpose(X)))
 
     ! Kinetic energy
     ET = trace_matrix(nBas,matmul(P,T))
@@ -342,21 +342,22 @@ subroutine qsGWB(dotest,maxSCF,thresh,max_diis,level_shift,nNuc,ZNuc,rNuc,ENuc, 
   call diagonalize_matrix(nOrb,eigVEC,eigVAL)
   Occ(1:nOrb)   = eigVAL(1:nOrb)
   c = matmul(X,eigVEC)
-  norm_anom = trace_matrix(nOrb,matmul(transpose(R(1:nOrb,nOrb+1:nOrb2)),R(1:nOrb,nOrb+1:nOrb2)))
+  norm_anom = trace_matrix(nOrb,matmul(transpose(R(1:nOrb,nOrb+1:nOrb_twice)),R(1:nOrb,nOrb+1:nOrb_twice)))
   call dipole_moment(nBas,P,nNuc,ZNuc,rNuc,dipole_int,dipole)
   call write_restart_HFB(nBas,nOrb,Occ,c,chem_pot) ! orders Occ and their c in descending order w.r.t. occupation numbers.
-  call print_qsBGW(nBas,nOrb,nOrb2,nO,norm_anom,Occ,eqsGWB_state,ENuc,ET,EV,EJ,EK,EL,EqsGWB,chem_pot,dipole,Delta_HL)
+  call print_qsBGW(nBas,nOrb,nOrb_twice,nO,norm_anom,Occ,eqsGWB_state,ENuc,ET,EV,EJ,EK,EL,EqsGWB,chem_pot,&
+                   dipole,Delta_HL)
 
 ! Compute W_no and V_no (i.e. diag[H_qsGWB^no] built in NO basis and get W and V).
 
   deallocate(eigVEC,eigVAL)
-  allocate(eigVEC(nOrb2,nOrb2),eigVAL(nOrb2),c_ao(nBas2,nOrb2))
+  allocate(eigVEC(nOrb_twice,nOrb_twice),eigVAL(nOrb_twice),c_ao(nBas2,nOrb_twice))
   c_ao(:,:)    = 0d0
-  c_ao(1:nBas      ,1:nOrb      ) = c(1:nBas,1:nOrb)
-  c_ao(nBas+1:nBas2,nOrb+1:nOrb2) = c(1:nBas,1:nOrb)
+  c_ao(1:nBas      ,1:nOrb      )      = c(1:nBas,1:nOrb)
+  c_ao(nBas+1:nBas2,nOrb+1:nOrb_twice) = c(1:nBas,1:nOrb)
   H_qsGWB = matmul(transpose(c_ao),matmul(H_qsGWB_ao,c_ao)) ! H_qsGWB is in the NO basis
   eigVEC(:,:) = H_qsGWB(:,:)
-  call diagonalize_matrix(nOrb2,eigVEC,eigVAL)
+  call diagonalize_matrix(nOrb_twice,eigVEC,eigVAL)
   deallocate(c_ao)
   
   ! Build R (as R^no) and save the eigenvectors

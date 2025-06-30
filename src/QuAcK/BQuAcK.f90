@@ -41,8 +41,7 @@ subroutine BQuAcK(working_dir,dotest,doHFB,doqsGW,nNuc,nBas,nOrb,nO,ENuc,ZNuc,rN
 ! Local variables
 
   logical                       :: file_exists
-  integer                       :: nOrb2,nBas2
-  integer                       :: ibas,jbas,kbas,lbas,ifreq
+  integer                       :: nOrb_twice
   integer                       :: nO_
   integer                       :: ixyz
   integer                       :: iorb,jorb,korb,lorb
@@ -64,7 +63,7 @@ subroutine BQuAcK(working_dir,dotest,doHFB,doqsGW,nNuc,nBas,nOrb,nO,ENuc,ZNuc,rN
   double precision,allocatable  :: dipole_int_MO(:,:,:)
   double precision,allocatable  :: ERI_AO(:,:,:,:)
 
-  complex *16,allocatable       :: Chi0_ao_iw(:,:,:) 
+!
 
   write(*,*)
   write(*,*) '******************************'
@@ -76,9 +75,8 @@ subroutine BQuAcK(working_dir,dotest,doHFB,doqsGW,nNuc,nBas,nOrb,nO,ENuc,ZNuc,rN
 ! Memory allocation !
 !-------------------!
 
-  nBas2=nBas*nBas
   nO_=nO
-  nOrb2=nOrb+nOrb
+  nOrb_twice=nOrb+nOrb
 
   allocate(eHF(nOrb))
 
@@ -89,8 +87,8 @@ subroutine BQuAcK(working_dir,dotest,doHFB,doqsGW,nNuc,nBas,nOrb,nO,ENuc,ZNuc,rN
   allocate(FHF(nBas,nBas))
   allocate(Delta(nBas,nBas))
 
-  allocate(eHFB_state(nOrb2))
-  allocate(U_QP(nOrb2,nOrb2))
+  allocate(eHFB_state(nOrb_twice))
+  allocate(U_QP(nOrb_twice,nOrb_twice))
 
 
   allocate(ERI_AO(nBas,nBas,nBas,nBas))
@@ -152,17 +150,14 @@ subroutine BQuAcK(working_dir,dotest,doHFB,doqsGW,nNuc,nBas,nOrb,nO,ENuc,ZNuc,rN
     ! Test Xo^HF (i w) computing EcGM and EcRPA
     if(im_freqs .and. .true.) then
 
-      allocate(Chi0_ao_iw(nfreqs,nBas2,nBas2))
-      call build_Xoiw_RHF_test(nBas,nBas2,nOrb,nO,cHFB,eHF,nfreqs,ntimes,wweight,wcoord,  &
-                               ERI_AO,Chi0_ao_iw)
-      deallocate(Chi0_ao_iw)
+      call build_Xoiw_RHF_test(nBas,nOrb,nO,cHFB,eHF,nfreqs,ntimes,wweight,wcoord,ERI_AO)
 
     endif
 
     ! Continue with a HFB calculation
     call wall_time(start_HF)
     call HFB(dotest,maxSCF_HF,thresh_HF,max_diis_HF,level_shift,nNuc,ZNuc,rNuc,ENuc,         &
-             nBas,nOrb,nOrb2,nO_,S,T,V,Hc,ERI_AO,dipole_int_AO,X,EHFB,eHF,cHFB,PHF,PanomHF,  &
+             nBas,nOrb,nOrb_twice,nO_,S,T,V,Hc,ERI_AO,dipole_int_AO,X,EHFB,eHF,cHFB,PHF,PanomHF,  &
              FHF,Delta,temperature,sigma,chem_pot_hf,chem_pot,restart_hfb,U_QP,eHFB_state)
     call wall_time(end_HF)
 
@@ -173,10 +168,7 @@ subroutine BQuAcK(working_dir,dotest,doHFB,doqsGW,nNuc,nBas,nOrb,nO,ENuc,ZNuc,rN
     ! Test Xo^HFB (i w) computing EcGM and EcRPA
     if(im_freqs .and. .true.) then
 
-      allocate(Chi0_ao_iw(nfreqs,nBas2,nBas2))
-      call build_Xoiw_HFB_test(nBas,nBas2,nOrb,nOrb2,cHFB,eHFB_state,nfreqs,ntimes,wweight,wcoord,  &
-                               U_QP,ERI_AO,Chi0_ao_iw)
-      deallocate(Chi0_ao_iw)
+      call build_Xoiw_HFB_test(nBas,nOrb,nOrb_twice,cHFB,eHFB_state,nfreqs,ntimes,wweight,wcoord,U_QP,ERI_AO)
 
     endif
 
@@ -190,8 +182,8 @@ subroutine BQuAcK(working_dir,dotest,doHFB,doqsGW,nNuc,nBas,nOrb,nO,ENuc,ZNuc,rN
 
     ! Continue with a HFB calculation
     call wall_time(start_qsGWB)
-    call qsGWB(dotest,maxSCF_HF,thresh_HF,max_diis_HF,level_shift,nNuc,ZNuc,rNuc,ENuc,        &
-               nBas,nOrb,nOrb2,nO_,S,T,V,Hc,ERI_AO,dipole_int_AO,X,EHFB,eHF,cHFB,PHF,PanomHF,  &
+    call qsGWB(dotest,maxSCF_HF,thresh_HF,max_diis_HF,level_shift,nNuc,ZNuc,rNuc,ENuc,              &
+               nBas,nOrb,nOrb_twice,nO_,S,T,V,Hc,ERI_AO,dipole_int_AO,X,EHFB,eHF,cHFB,PHF,PanomHF,  &
                FHF,Delta,sigma,chem_pot,restart_hfb,U_QP,eHFB_state)
     call wall_time(end_qsGWB)
 

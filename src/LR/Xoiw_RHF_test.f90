@@ -1,4 +1,4 @@
-subroutine build_Xoiw_RHF_test(nBas,nBas2,nOrb,nO,cHF,eHF,nfreqs,ntimes,wweight,wcoord,ERI_AO,Chi0_ao_iw)
+subroutine build_Xoiw_RHF_test(nBas,nOrb,nO,cHF,eHF,nfreqs,ntimes,wweight,wcoord,ERI_AO)
 
 ! Restricted Xo(i tau) [ and Xo(i w) ] computed from G(i tau)
 
@@ -10,7 +10,6 @@ subroutine build_Xoiw_RHF_test(nBas,nBas2,nOrb,nO,cHF,eHF,nfreqs,ntimes,wweight,
   integer,intent(in)            :: nfreqs
   integer,intent(in)            :: ntimes
   integer,intent(in)            :: nBas
-  integer,intent(in)            :: nBas2
   integer,intent(in)            :: nOrb
   integer,intent(in)            :: nO
 
@@ -24,6 +23,7 @@ subroutine build_Xoiw_RHF_test(nBas,nBas2,nOrb,nO,cHF,eHF,nfreqs,ntimes,wweight,
 
   integer                       :: ibas,jbas,kbas,lbas,ifreq
   integer                       :: iorb,jorb,korb,lorb
+  integer                       :: nBas2
 
   double precision              :: start_Xoiw   ,end_Xoiw     ,t_Xoiw
   double precision              :: EcRPA,EcGM,trace,trace2,trace3
@@ -39,7 +39,10 @@ subroutine build_Xoiw_RHF_test(nBas,nBas2,nOrb,nO,cHF,eHF,nfreqs,ntimes,wweight,
   double precision,allocatable  :: Wp_AO(:,:,:,:)
   double precision,allocatable  :: Wp_MO(:,:,:,:)
 
-  complex *16,intent(out)       :: Chi0_ao_iw(nfreqs,nBas2,nBas2)
+  complex *16,allocatable       :: Chi0_ao_iw(:,:,:)
+!
+
+  nBas2=nBas*nBas
 
 !------------------------------------------------------------------------
 ! Build iG(i tau) in AO basis
@@ -54,6 +57,7 @@ subroutine build_Xoiw_RHF_test(nBas,nBas2,nOrb,nO,cHF,eHF,nfreqs,ntimes,wweight,
   write(*,*)
 
   allocate(eps(nBas2,nBas2),epsm1(nBas2,nBas2),eigenv_eps(nBas2,nBas2),eigval_eps(nBas2))
+  allocate(Chi0_ao_iw(nfreqs,nBas2,nBas2))
   allocate(Chi0_ao_iw_v(nBas2,nBas2),Chi_ao_iw_v(nBas2,nBas2))
   allocate(Wp_AO(nBas,nBas,nBas,nBas),Wp_MO(nOrb,nOrb,nOrb,nOrb),Wp_tmp(nOrb*nOrb,nOrb*nOrb))
   allocate(Wp_ao_iw(nBas2,nBas2))
@@ -168,6 +172,7 @@ subroutine build_Xoiw_RHF_test(nBas,nBas2,nOrb,nO,cHF,eHF,nfreqs,ntimes,wweight,
 
   ! Deallocate arrays
   deallocate(eps,epsm1,eigval_eps,eigenv_eps)
+  deallocate(Chi0_ao_iw)
   deallocate(Chi0_ao_iw_v,Chi_ao_iw_v,Wp_ao_iw)
   deallocate(Wp_AO,Wp_MO,Wp_tmp)
   deallocate(vMAT)

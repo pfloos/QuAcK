@@ -1,4 +1,4 @@
-subroutine iGtau2Chi0iw_HFB(nBas,nBas2,nOrb,nOrb2,cHFB,eHFB,nfreqs,ntimes,wcoord,U_QP,Chi0_ao_iw)
+subroutine iGtau2Chi0iw_HFB(nBas,nBas2,nOrb,nOrb_twice,cHFB,eHFB,nfreqs,ntimes,wcoord,U_QP,Chi0_ao_iw)
 
 ! Restricted Xo(i tau) [ and Xo(i w) ] computed from G(i tau)
 
@@ -12,12 +12,12 @@ subroutine iGtau2Chi0iw_HFB(nBas,nBas2,nOrb,nOrb2,cHFB,eHFB,nfreqs,ntimes,wcoord
   integer,intent(in)            :: nBas
   integer,intent(in)            :: nBas2
   integer,intent(in)            :: nOrb
-  integer,intent(in)            :: nOrb2
+  integer,intent(in)            :: nOrb_twice
 
   double precision,intent(in)   :: wcoord(nfreqs)
-  double precision,intent(in)   :: eHFB(nOrb2)
+  double precision,intent(in)   :: eHFB(nOrb_twice)
   double precision,intent(in)   :: cHFB(nBas,nOrb)
-  double precision,intent(in)   :: U_QP(nOrb2,nOrb2)
+  double precision,intent(in)   :: U_QP(nOrb_twice,nOrb_twice)
 
 ! Local variables
 
@@ -91,18 +91,18 @@ subroutine iGtau2Chi0iw_HFB(nBas,nBas2,nOrb,nOrb2,cHFB,eHFB,nfreqs,ntimes,wcoord
   Mat1(1:nOrb,1:nOrb)=U_QP(1:nOrb,1:nOrb)
   Mat2(1:nOrb,1:nOrb)=U_QP(1:nOrb,1:nOrb)
   lesser=.true.  ! Build AO G<
-  call build_Glorg_HFB(nBas,nOrb,nOrb2,tcoord(itau),Glesser_he,cHFB,eHFB,Mat1,Mat2,lesser)
-  Mat1(1:nOrb,1:nOrb)=U_QP(nOrb+1:nOrb2,1:nOrb)
-  Mat2(1:nOrb,1:nOrb)=U_QP(nOrb+1:nOrb2,1:nOrb)
+  call build_Glorg_HFB(nBas,nOrb,nOrb_twice,tcoord(itau),Glesser_he,cHFB,eHFB,Mat1,Mat2,lesser)
+  Mat1(1:nOrb,1:nOrb)=U_QP(nOrb+1:nOrb_twice,1:nOrb)
+  Mat2(1:nOrb,1:nOrb)=U_QP(nOrb+1:nOrb_twice,1:nOrb)
   lesser=.false. ! Build AO G>
-  call build_Glorg_HFB(nBas,nOrb,nOrb2,tcoord(itau),Ggreater_he,cHFB,eHFB,Mat1,Mat2,lesser)
+  call build_Glorg_HFB(nBas,nOrb,nOrb_twice,tcoord(itau),Ggreater_he,cHFB,eHFB,Mat1,Mat2,lesser)
   ! Ghh and Gee
   Mat1(1:nOrb,1:nOrb)=U_QP(1:nOrb,1:nOrb)
-  Mat2(1:nOrb,1:nOrb)=U_QP(nOrb+1:nOrb2,1:nOrb)
+  Mat2(1:nOrb,1:nOrb)=U_QP(nOrb+1:nOrb_twice,1:nOrb)
   lesser=.true.  ! Build AO G<
-  call build_Glorg_HFB(nBas,nOrb,nOrb2,tcoord(itau),Glesser_hh,cHFB,eHFB,Mat1,Mat2,lesser)
+  call build_Glorg_HFB(nBas,nOrb,nOrb_twice,tcoord(itau),Glesser_hh,cHFB,eHFB,Mat1,Mat2,lesser)
   lesser=.false. ! Build AO G>
-  call build_Glorg_HFB(nBas,nOrb,nOrb2,tcoord(itau),Ggreater_ee,cHFB,eHFB,Mat1,Mat2,lesser)
+  call build_Glorg_HFB(nBas,nOrb,nOrb_twice,tcoord(itau),Ggreater_ee,cHFB,eHFB,Mat1,Mat2,lesser)
 
   ! Xo(i tau) = -2i G<(i tau) G>(-i tau)
   do ibas=1,nBas
@@ -146,7 +146,7 @@ subroutine iGtau2Chi0iw_HFB(nBas,nBas2,nOrb,nOrb2,cHFB,eHFB,nfreqs,ntimes,wcoord
 end subroutine 
 
 
-subroutine build_Glorg_HFB(nBas,nOrb,nOrb2,tau,Glorg,cHFB,eHFB,Mat1,Mat2,lesser)
+subroutine build_Glorg_HFB(nBas,nOrb,nOrb_twice,tau,Glorg,cHFB,eHFB,Mat1,Mat2,lesser)
 
   implicit none
   include 'parameters.h'
@@ -157,11 +157,11 @@ subroutine build_Glorg_HFB(nBas,nOrb,nOrb2,tau,Glorg,cHFB,eHFB,Mat1,Mat2,lesser)
 
   integer,intent(in)            :: nBas
   integer,intent(in)            :: nOrb
-  integer,intent(in)            :: nOrb2
+  integer,intent(in)            :: nOrb_twice
 
   double precision,intent(in)   :: tau
   double precision,intent(in)   :: cHFB(nBas,nOrb)
-  double precision,intent(in)   :: eHFB(nOrb2)
+  double precision,intent(in)   :: eHFB(nOrb_twice)
   double precision,intent(in)   :: Mat1(nOrb,nOrb)
   double precision,intent(in)   :: Mat2(nOrb,nOrb)
 

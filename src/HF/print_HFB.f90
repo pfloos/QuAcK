@@ -1,7 +1,8 @@
 
 ! ---
 
-subroutine print_HFB(nBas, nOrb, nOrb2, nO, N_anom, Occ, eHFB_state, ENuc, ET, EV, EJ, EK, EL, ERHF, chem_pot, dipole, Delta_HL)
+subroutine print_HFB(nBas, nOrb, nOrb_twice, nO, N_anom, Occ, eHFB_state, ENuc, ET, EV, EJ, EK, EL, ERHF, &
+           chem_pot, dipole, Delta_HL)
 
 ! Print one-electron energies and other stuff
 
@@ -10,10 +11,10 @@ subroutine print_HFB(nBas, nOrb, nOrb2, nO, N_anom, Occ, eHFB_state, ENuc, ET, E
 
 ! Input variables
 
-  integer,intent(in)                 :: nBas, nOrb, nOrb2
+  integer,intent(in)                 :: nBas, nOrb, nOrb_twice
   integer,intent(in)                 :: nO
   double precision,intent(in)        :: Occ(nOrb)
-  double precision,intent(in)        :: eHFB_state(nOrb2)
+  double precision,intent(in)        :: eHFB_state(nOrb_twice)
   double precision,intent(in)        :: ENuc
   double precision,intent(in)        :: ET
   double precision,intent(in)        :: EV
@@ -82,7 +83,7 @@ subroutine print_HFB(nBas, nOrb, nOrb2, nO, N_anom, Occ, eHFB_state, ENuc, ET, E
   write(*,'(A50)') '---------------------------------------'
   write(*,'(A50)') ' HFB QP energies '
   write(*,'(A50)') '---------------------------------------'
-  do iorb=1,nOrb2
+  do iorb=1,nOrb_twice
    write(*,'(I7,10F15.8)') iorb,eHFB_state(iorb)
   enddo
   write(*,*)

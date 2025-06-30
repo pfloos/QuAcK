@@ -1,5 +1,5 @@
-subroutine build_Xoiw_HFB_test(nBas,nBas2,nOrb,nOrb2,cHFB,eHFB,nfreqs,ntimes,wweight,wcoord,  &
-                               U_QP,ERI_AO,Chi0_ao_iw)
+subroutine build_Xoiw_HFB_test(nBas,nOrb,nOrb_twice,cHFB,eHFB,nfreqs,ntimes,wweight,wcoord,  &
+                               U_QP,ERI_AO)
 
 ! Restricted Xo(i tau) [ and Xo(i w) ] computed from G(i tau)
 
@@ -11,21 +11,21 @@ subroutine build_Xoiw_HFB_test(nBas,nBas2,nOrb,nOrb2,cHFB,eHFB,nfreqs,ntimes,wwe
   integer,intent(in)            :: nfreqs
   integer,intent(in)            :: ntimes
   integer,intent(in)            :: nBas
-  integer,intent(in)            :: nBas2
   integer,intent(in)            :: nOrb
-  integer,intent(in)            :: nOrb2
+  integer,intent(in)            :: nOrb_twice
 
-  double precision,intent(in)   :: eHFB(nOrb2)
+  double precision,intent(in)   :: eHFB(nOrb_twice)
   double precision,intent(in)   :: wweight(nfreqs)
   double precision,intent(in)   :: wcoord(nfreqs)
   double precision,intent(in)   :: cHFB(nBas,nOrb)
-  double precision,intent(in)   :: U_QP(nOrb2,nOrb2)
+  double precision,intent(in)   :: U_QP(nOrb_twice,nOrb_twice)
   double precision,intent(in)   :: ERI_AO(nBas,nBas,nBas,nBas)
 
 ! Local variables
 
   integer                       :: ibas,jbas,lbas,kbas,ifreq
   integer                       :: iorb,jorb,korb,lorb
+  integer                       :: nBas2
 
   double precision              :: start_Xoiw   ,end_Xoiw     ,t_Xoiw
   double precision              :: EcRPA,EcGM,trace,trace2,trace3
@@ -41,7 +41,10 @@ subroutine build_Xoiw_HFB_test(nBas,nBas2,nOrb,nOrb2,cHFB,eHFB,nfreqs,ntimes,wwe
   double precision,allocatable  :: Wp_AO(:,:,:,:)
   double precision,allocatable  :: Wp_MO(:,:,:,:)
 
-  complex *16,intent(inout)     :: Chi0_ao_iw(nfreqs,nBas2,nBas2)
+  complex *16,allocatable       :: Chi0_ao_iw(:,:,:)
+!
+
+  nBas2=nBas*nBas
 
 !------------------------------------------------------------------------
 ! Build iG(i tau) in AO basis
@@ -56,6 +59,7 @@ subroutine build_Xoiw_HFB_test(nBas,nBas2,nOrb,nOrb2,cHFB,eHFB,nfreqs,ntimes,wwe
   write(*,*)
 
   allocate(eps(nBas2,nBas2),epsm1(nBas2,nBas2),eigenv_eps(nBas2,nBas2),eigval_eps(nBas2))
+  allocate(Chi0_ao_iw(nfreqs,nBas2,nBas2))
   allocate(Chi0_ao_iw_v(nBas2,nBas2),Chi_ao_iw_v(nBas2,nBas2))
   allocate(Wp_AO(nBas,nBas,nBas,nBas),Wp_MO(nOrb,nOrb,nOrb,nOrb),Wp_tmp(nOrb*nOrb,nOrb*nOrb))
   allocate(Wp_ao_iw(nBas2,nBas2))
@@ -79,7 +83,7 @@ subroutine build_Xoiw_HFB_test(nBas,nBas2,nOrb,nOrb2,cHFB,eHFB,nfreqs,ntimes,wwe
 ! Build X0(i w) from G(i tau) !
 !-----------------------------!
 
-  call iGtau2Chi0iw_HFB(nBas,nBas2,nOrb,nOrb2,cHFB,eHFB,nfreqs,ntimes,wcoord,U_QP,Chi0_ao_iw)
+  call iGtau2Chi0iw_HFB(nBas,nBas2,nOrb,nOrb_twice,cHFB,eHFB,nfreqs,ntimes,wcoord,U_QP,Chi0_ao_iw)
 
 !----------------------!
 ! Use Xo(i w) as usual !
@@ -170,6 +174,7 @@ subroutine build_Xoiw_HFB_test(nBas,nBas2,nOrb,nOrb2,cHFB,eHFB,nfreqs,ntimes,wwe
 
   ! Deallocate arrays
   deallocate(eps,epsm1,eigval_eps,eigenv_eps)
+  deallocate(Chi0_ao_iw)
   deallocate(Chi0_ao_iw_v,Chi_ao_iw_v,Wp_ao_iw)
   deallocate(Wp_AO,Wp_MO,Wp_tmp)
   deallocate(vMAT)
