@@ -1,4 +1,4 @@
-subroutine iGtau2Chi0iw_HFB(nBas,nBas2,nOrb,nOrb_twice,cHFB,eHFB,nfreqs,ntimes,wcoord,U_QP,Chi0_ao_iw)
+subroutine Gitau2Chi0iw_HFB(nBas,nBas2,nOrb,nOrb_twice,cHFB,eHFB,nfreqs,ntimes,wcoord,U_QP,Chi0_ao_iw)
 
 ! Restricted Xo(i tau) [ and Xo(i w) ] computed from G(i tau)
 
@@ -26,7 +26,7 @@ subroutine iGtau2Chi0iw_HFB(nBas,nBas2,nOrb,nOrb_twice,cHFB,eHFB,nfreqs,ntimes,w
   integer                       :: kind_int,itau,ifreq
   integer                       :: ibas,jbas,kbas,lbas
 
-  double precision              :: start_iG     ,end_iG       ,t_iG
+  double precision              :: start_Gitau2Xoiw     ,end_Gitau2Xoiw       ,t_Gitau2Xoiw
 
   double precision              :: alpha,beta,lim_inf,lim_sup
   double precision,allocatable  :: tweight(:),tcoord(:)
@@ -41,7 +41,7 @@ subroutine iGtau2Chi0iw_HFB(nBas,nBas2,nOrb,nOrb_twice,cHFB,eHFB,nfreqs,ntimes,w
   complex*16,intent(out)        :: Chi0_ao_iw(nfreqs,nBas*nBas,nBas*nBas)
   
 !------------------------------------------------------------------------
-! Build iG(i tau) in AO basis and use it to build Xo (i tau) -> Xo (i w)
+! Build G(i tau) in AO basis and use it to build Xo (i tau) -> Xo (i w)
 !------------------------------------------------------------------------
 
  write(*,*)     
@@ -50,7 +50,7 @@ subroutine iGtau2Chi0iw_HFB(nBas,nBas2,nOrb,nOrb_twice,cHFB,eHFB,nfreqs,ntimes,w
  write(*,*)'*********************************************'
  write(*,*)
  
- call wall_time(start_iG)
+ call wall_time(start_Gitau2Xoiw)
 
  Chi0_ao_iw(:,:,:)=czero
    
@@ -130,10 +130,10 @@ subroutine iGtau2Chi0iw_HFB(nBas,nBas2,nOrb,nOrb_twice,cHFB,eHFB,nfreqs,ntimes,w
  ! Complete the Xo(i tau) -> Xo(i w)
  Chi0_ao_iw(:,:,:) = 2d0*Real(Chi0_ao_iw(:,:,:))
 
- call wall_time(end_iG)
+ call wall_time(end_Gitau2Xoiw)
  
- t_iG = end_iG - start_iG
- write(*,'(A65,1X,F9.3,A8)') 'Total wall time for iGtau = ',t_iG,' seconds'
+ t_Gitau2Xoiw = end_Gitau2Xoiw - start_Gitau2Xoiw
+ write(*,'(A65,1X,F9.3,A8)') 'Total wall time for Gitau2Chi0iw = ',t_Gitau2Xoiw,' seconds'
  write(*,*)
 
  ! Deallocate dyn arrays
@@ -166,8 +166,6 @@ subroutine build_Glorg_HFB(nBas,nOrb,nOrb_twice,tau,Glorg,cHFB,eHFB,Mat1,Mat2,le
   double precision,intent(in)   :: Mat2(nOrb,nOrb)
 
 ! Local variables
-
-  double precision              :: start_iG     ,end_iG       ,t_iG
 
   integer                       :: iorb
 

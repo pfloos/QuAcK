@@ -47,7 +47,7 @@ subroutine build_Xoiw_HFB_test(nBas,nOrb,nOrb_twice,cHFB,eHFB,nfreqs,ntimes,wwei
   nBas2=nBas*nBas
 
 !------------------------------------------------------------------------
-! Build iG(i tau) in AO basis
+! Build G(i tau) in AO basis
 !------------------------------------------------------------------------
 
   write(*,*)
@@ -83,7 +83,7 @@ subroutine build_Xoiw_HFB_test(nBas,nOrb,nOrb_twice,cHFB,eHFB,nfreqs,ntimes,wwei
 ! Build X0(i w) from G(i tau) !
 !-----------------------------!
 
-  call iGtau2Chi0iw_HFB(nBas,nBas2,nOrb,nOrb_twice,cHFB,eHFB,nfreqs,ntimes,wcoord,U_QP,Chi0_ao_iw)
+  call Gitau2Chi0iw_HFB(nBas,nBas2,nOrb,nOrb_twice,cHFB,eHFB,nfreqs,ntimes,wcoord,U_QP,Chi0_ao_iw)
 
 !----------------------!
 ! Use Xo(i w) as usual !

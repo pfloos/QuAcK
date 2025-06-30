@@ -45,7 +45,7 @@ subroutine build_Xoiw_RHF_test(nBas,nOrb,nO,cHF,eHF,nfreqs,ntimes,wweight,wcoord
   nBas2=nBas*nBas
 
 !------------------------------------------------------------------------
-! Build iG(i tau) in AO basis
+! Build G(i tau) in AO basis
 !------------------------------------------------------------------------
 
   write(*,*)
@@ -81,7 +81,7 @@ subroutine build_Xoiw_RHF_test(nBas,nOrb,nO,cHF,eHF,nfreqs,ntimes,wweight,wcoord
 ! Build Xo(i w) from G(i tau) !
 !-----------------------------!
 
-  call iGtau2Chi0iw_RHF(nBas,nOrb,nO,cHF,eHF,nfreqs,ntimes,wcoord,Chi0_ao_iw)
+  call Gitau2Chi0iw_RHF(nBas,nOrb,nO,cHF,eHF,nfreqs,ntimes,wcoord,Chi0_ao_iw)
 
   call wall_time(start_Xoiw)
 

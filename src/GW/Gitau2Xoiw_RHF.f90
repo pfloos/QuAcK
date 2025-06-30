@@ -1,4 +1,4 @@
-subroutine iGtau2Chi0iw_RHF(nBas,nOrb,nO,cHF,eHF,nfreqs,ntimes,wcoord,Chi0_ao_iw)
+subroutine Gitau2Chi0iw_RHF(nBas,nOrb,nO,cHF,eHF,nfreqs,ntimes,wcoord,Chi0_ao_iw)
 
 ! Restricted Xo(i tau) [ and Xo(i w) ] computed from G(i tau)
 
@@ -23,7 +23,7 @@ subroutine iGtau2Chi0iw_RHF(nBas,nOrb,nO,cHF,eHF,nfreqs,ntimes,wcoord,Chi0_ao_iw
   integer                       :: kind_int,itau,ifreq
   integer                       :: ibas,jbas,kbas,lbas,nBas2
 
-  double precision              :: start_iG     ,end_iG       ,t_iG
+  double precision              :: start_Gitau2Xoiw     ,end_Gitau2Xoiw       ,t_Gitau2Xoiw
 
   double precision              :: chem_pot
   double precision              :: alpha,beta,lim_inf,lim_sup
@@ -38,7 +38,7 @@ subroutine iGtau2Chi0iw_RHF(nBas,nOrb,nO,cHF,eHF,nfreqs,ntimes,wcoord,Chi0_ao_iw
   complex*16,intent(out)        :: Chi0_ao_iw(nfreqs,nBas*nBas,nBas*nBas)
   
 !------------------------------------------------------------------------
-! Build iG(i tau) in AO basis and use it to build Xo (i tau) -> Xo (i w)
+! Build G(i tau) in AO basis and use it to build Xo (i tau) -> Xo (i w)
 !------------------------------------------------------------------------
 
  write(*,*)     
@@ -47,7 +47,7 @@ subroutine iGtau2Chi0iw_RHF(nBas,nOrb,nO,cHF,eHF,nfreqs,ntimes,wcoord,Chi0_ao_iw
  write(*,*)'*********************************************'
  write(*,*)
  
- call wall_time(start_iG)
+ call wall_time(start_Gitau2Xoiw)
 
  nBas2=nBas*nBas
  chem_pot = 0.5d0*(eHF(nO)+eHF(nO+1))
@@ -116,10 +116,10 @@ subroutine iGtau2Chi0iw_RHF(nBas,nOrb,nO,cHF,eHF,nfreqs,ntimes,wcoord,Chi0_ao_iw
  ! Complete the Xo(i tau) -> Xo(i w)
  Chi0_ao_iw(:,:,:) = 2d0*Real(Chi0_ao_iw(:,:,:))
 
- call wall_time(end_iG)
+ call wall_time(end_Gitau2Xoiw)
  
- t_iG = end_iG - start_iG
- write(*,'(A65,1X,F9.3,A8)') 'Total wall time for iGtau = ',t_iG,' seconds'
+ t_Gitau2Xoiw = end_Gitau2Xoiw - start_Gitau2Xoiw
+ write(*,'(A65,1X,F9.3,A8)') 'Total wall time for Gitau2Chi0iw = ',t_Gitau2Xoiw,' seconds'
  write(*,*)
 
  ! Restore values and deallocate dyn arrays
@@ -148,8 +148,6 @@ subroutine build_Glorg_RHF(nBas,nOrb,nO,tau,Glorg,cHF,eHF,lesser)
   double precision,intent(in)   :: eHF(nOrb)
 
 ! Local variables
-
-  double precision              :: start_iG     ,end_iG       ,t_iG
 
   integer                       :: iorb
 
