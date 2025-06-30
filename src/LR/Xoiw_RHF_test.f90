@@ -40,7 +40,7 @@ subroutine build_Xoiw_RHF_test(nBas,nOrb,nO,cHF,eHF,nfreqs,ntimes,wweight,wcoord
   double precision,allocatable  :: Wp_AO(:,:,:,:)
   double precision,allocatable  :: Wp_MO(:,:,:,:)
 
-  complex *16                   :: wtest
+  complex *16                   :: wtest,weval
   complex *16,allocatable       :: Sigma_c_ao(:,:)
   complex *16,allocatable       :: G_ao_1(:,:)
   complex *16,allocatable       :: G_ao_2(:,:)
@@ -48,7 +48,8 @@ subroutine build_Xoiw_RHF_test(nBas,nOrb,nO,cHF,eHF,nfreqs,ntimes,wweight,wcoord
 !
 
   nBas2=nBas*nBas
-  wtest=0d0 ! TODO use test values
+  wtest=0.000005967*im ! TODO use test values
+  !wtest=27804.3069896456976464126077554418247*im
 
 !------------------------------------------------------------------------
 ! Build G(i tau) in AO basis
@@ -56,9 +57,9 @@ subroutine build_Xoiw_RHF_test(nBas,nOrb,nO,cHF,eHF,nfreqs,ntimes,wweight,wcoord
 
   write(*,*)
   write(*,*)'*******************************************'
-  write(*,*)'* Use RHF Xo(i w) to build RHF X(i w),    *'
-  write(*,*)'*       compute EcRPA and EcGM,           *'
-  write(*,*)'*          and build Wp (i w)             *'
+  write(*,*)'* Use RHF Xo(i w) to build  X(i w) and    *'
+  write(*,*)'*       compute EcRPA and EcGM.           *'
+  write(*,*)'* Then, build Wp(i w) and Sigma_c(wtest)  *'
   write(*,*)'*******************************************'
   write(*,*)
 
@@ -170,19 +171,19 @@ subroutine build_Xoiw_RHF_test(nBas,nOrb,nO,cHF,eHF,nfreqs,ntimes,wweight,wcoord
       write(*,*) ' ' 
     endif
 
-    ! Build G(iw+w)
-    eta=0d0;
-    wtest=wtest+im*wcoord(ifreq)
-    call G_AO_RHF(nBas,nOrb,nO,eta,cHF,eHF,wtest,G_ao_1)
-    wtest=wtest-im*wcoord(ifreq)
-    call G_AO_RHF(nBas,nOrb,nO,eta,cHF,eHF,wtest,G_ao_2)
+    ! Build G(iw+wtest)
+    eta=0d0
+    weval=wtest+im*wcoord(ifreq)
+    call G_AO_RHF(nBas,nOrb,nO,eta,cHF,eHF,weval,G_ao_1)
+    weval=wtest-im*wcoord(ifreq)
+    call G_AO_RHF(nBas,nOrb,nO,eta,cHF,eHF,weval,G_ao_2)
 
     ! Sigma_c(wtest)
     do ibas=1,nBas
      do jbas=1,nBas
       do kbas=1,nBas
        do lbas=1,nBas
-        Sigma_c_ao(ibas,jbas)=Sigma_c_ao(ibas,jbas)+(G_ao_1(kbas,lbas)+G_ao_2(kbas,lbas))  &
+        Sigma_c_ao(ibas,jbas)=Sigma_c_ao(ibas,jbas)-(G_ao_1(kbas,lbas)+G_ao_2(kbas,lbas))  &
                              *Wp_ao_iw(1+(kbas-1)+(ibas-1)*nBas,1+(jbas-1)+(lbas-1)*nBas)  &
                              *wweight(ifreq)/(2d0*pi) 
        enddo
@@ -191,6 +192,15 @@ subroutine build_Xoiw_RHF_test(nBas,nOrb,nO,cHF,eHF,nfreqs,ntimes,wweight,wcoord
     enddo
    
   enddo
+
+  ! Print Sigma_c_ao
+  write(*,*) ' ' 
+  write(*,'(a,f15.8,a,f15.8,a)') ' RHF Sigma_c(wtest) in AO for wtest=(',Real(wtest),",",Aimag(wtest),")"
+  write(*,*) ' ' 
+  do iorb=1,nOrb
+   write(*,'(*(f10.5))') Real(Sigma_c_ao(iorb,:))
+  enddo
+  write(*,*) ' ' 
 
   write(*,*)'-------------------------------------------------------------------------------'
   write(*,'(2X,A60,F15.6,A3)') '         phRPA correlation energy = ',EcRPA,' au'
