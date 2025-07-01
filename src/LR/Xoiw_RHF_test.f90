@@ -21,6 +21,7 @@ subroutine build_Xoiw_RHF_test(nBas,nOrb,nO,cHF,eHF,nfreqs,ntimes,wweight,wcoord
 
 ! Local variables
 
+  logical                       :: fulltest
   integer                       :: ibas,jbas,kbas,lbas,ifreq
   integer                       :: iorb,jorb,korb,lorb
   integer                       :: nBas2
@@ -47,9 +48,9 @@ subroutine build_Xoiw_RHF_test(nBas,nOrb,nO,cHF,eHF,nfreqs,ntimes,wweight,wcoord
   complex *16,allocatable       :: Chi0_ao_iw(:,:,:)
 !
 
+  fulltest=.true.      ! TODO adjust it to print Wp and Sigma_c
   nBas2=nBas*nBas
   wtest=0.000005967*im ! TODO use test values
-  !wtest=27804.3069896456976464126077554418247*im
 
 !------------------------------------------------------------------------
 ! Build G(i tau) in AO basis
@@ -142,7 +143,7 @@ subroutine build_Xoiw_RHF_test(nBas,nOrb,nO,cHF,eHF,nfreqs,ntimes,wweight,wcoord
    
     ! Building Wp in AO basis 
     Wp_ao_iw(:,:)=matmul(vMAT(:,:),Chi_ao_iw_v(:,:))
-    if(ifreq==1 .and. .false.) then ! Set to true for testing ! TODO
+    if(ifreq==1 .and. fulltest) then
       do ibas=1,nBas
        do jbas=1,nBas
         do kbas=1,nBas
@@ -194,13 +195,17 @@ subroutine build_Xoiw_RHF_test(nBas,nOrb,nO,cHF,eHF,nfreqs,ntimes,wweight,wcoord
   enddo
 
   ! Print Sigma_c_ao
-  write(*,*) ' ' 
-  write(*,'(a,f15.8,a,f15.8,a)') ' RHF Sigma_c(wtest) in AO for wtest=(',Real(wtest),",",Aimag(wtest),")"
-  write(*,*) ' ' 
-  do iorb=1,nOrb
-   write(*,'(*(f10.5))') Real(Sigma_c_ao(iorb,:))
-  enddo
-  write(*,*) ' ' 
+  if(fulltest) then
+
+   write(*,*) ' ' 
+   write(*,'(a,f15.8,a,f15.8,a)') ' RHF Sigma_c(wtest) in AO for wtest=(',Real(wtest),",",Aimag(wtest),")"
+   write(*,*) ' ' 
+   do iorb=1,nOrb
+    write(*,'(*(f10.5))') Real(Sigma_c_ao(iorb,:))
+   enddo
+   write(*,*) ' ' 
+
+  endif
 
   write(*,*)'-------------------------------------------------------------------------------'
   write(*,'(2X,A60,F15.6,A3)') '         phRPA correlation energy = ',EcRPA,' au'

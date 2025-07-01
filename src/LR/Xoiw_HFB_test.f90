@@ -23,6 +23,8 @@ subroutine build_Xoiw_HFB_test(nBas,nOrb,nOrb_twice,cHFB,eHFB,nfreqs,ntimes,wwei
 
 ! Local variables
 
+  logical                       :: fulltest
+
   integer                       :: ibas,jbas,lbas,kbas,ifreq
   integer                       :: iorb,jorb,korb,lorb
   integer                       :: nBas2
@@ -56,6 +58,7 @@ subroutine build_Xoiw_HFB_test(nBas,nOrb,nOrb_twice,cHFB,eHFB,nfreqs,ntimes,wwei
   complex *16,allocatable       :: Chi0_ao_iw(:,:,:)
 !
 
+  fulltest=.true.      ! TODO adjust it to print Wp and Sigma_c
   nBas2=nBas*nBas
   wtest=0.000005967*im ! TODO use test values
 
@@ -63,7 +66,7 @@ subroutine build_Xoiw_HFB_test(nBas,nOrb,nOrb_twice,cHFB,eHFB,nfreqs,ntimes,wwei
 ! Build G(i tau) in AO basis
 !------------------------------------------------------------------------
 
- write(*,*)
+  write(*,*)
   write(*,*)'*******************************************'
   write(*,*)'* Use HFB Xo(i w) to build  X(i w) and    *'
   write(*,*)'*       compute EcRPA and EcGM.           *'
@@ -156,7 +159,7 @@ subroutine build_Xoiw_HFB_test(nBas,nOrb,nOrb_twice,cHFB,eHFB,nfreqs,ntimes,wwei
    
     ! Building Wp in AO basis
     Wp_ao_iw(:,:)=matmul(vMAT(:,:),Chi_ao_iw_v(:,:))
-    if(ifreq==1 .and. .false.) then ! Set to true for testing TODO
+    if(ifreq==1 .and. fulltest) then
       do ibas=1,nBas
        do jbas=1,nBas
         do kbas=1,nBas
@@ -227,19 +230,23 @@ subroutine build_Xoiw_HFB_test(nBas,nOrb,nOrb_twice,cHFB,eHFB,nfreqs,ntimes,wwei
   enddo
 
   ! Print Sigma_he/hh_c_ao
-  write(*,*) ' '
-  write(*,'(a,f15.8,a,f15.8,a)') ' HFB Sigma_he_c(wtest) in AO for wtest=(',Real(wtest),",",Aimag(wtest),")"
-  write(*,*) ' '
-  do iorb=1,nOrb
-   write(*,'(*(f10.5))') Real(Sigma_he_c_ao(iorb,:))
-  enddo
-  write(*,*) ' '
-  write(*,'(a,f15.8,a,f15.8,a)') ' HFB Sigma_hh_c(wtest) in AO for wtest=(',Real(wtest),",",Aimag(wtest),")"
-  write(*,*) ' '
-  do iorb=1,nOrb
-   write(*,'(*(f10.5))') Real(Sigma_hh_c_ao(iorb,:))
-  enddo
-  write(*,*) ' '
+  if(fulltest) then
+
+   write(*,*) ' '
+   write(*,'(a,f15.8,a,f15.8,a)') ' HFB Sigma_he_c(wtest) in AO for wtest=(',Real(wtest),",",Aimag(wtest),")"
+   write(*,*) ' '
+   do iorb=1,nOrb
+    write(*,'(*(f10.5))') Real(Sigma_he_c_ao(iorb,:))
+   enddo
+   write(*,*) ' '
+   write(*,'(a,f15.8,a,f15.8,a)') ' HFB Sigma_hh_c(wtest) in AO for wtest=(',Real(wtest),",",Aimag(wtest),")"
+   write(*,*) ' '
+   do iorb=1,nOrb
+    write(*,'(*(f10.5))') Real(Sigma_hh_c_ao(iorb,:))
+   enddo
+   write(*,*) ' '
+
+  endif
 
   write(*,*)'-------------------------------------------------------------------------------'
   write(*,'(2X,A60,F15.6,A3)') '         phRPA correlation energy = ',EcRPA,' au'
