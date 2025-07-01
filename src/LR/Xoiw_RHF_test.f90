@@ -203,22 +203,30 @@ subroutine Xoiw_RHF_tests(nBas,nOrb,nO,cHF,eHF,nfreqs,ntimes,wweight,wcoord,ERI_
     call G_AO_RHF(nBas,nOrb,nO,eta,cHF,eHF,weval,G_ao_2)
 
     ! Sigma_c(wtest)
-    do ibas=1,nBas
-     do jbas=1,nBas
-      do kbas=1,nBas
-       do lbas=1,nBas
-        Sigma_c_ao(ibas,jbas)=Sigma_c_ao(ibas,jbas)-(G_ao_1(kbas,lbas)+G_ao_2(kbas,lbas))  &
-                             *Wp_ao_iw(1+(kbas-1)+(ibas-1)*nBas,1+(jbas-1)+(lbas-1)*nBas)  &
-                             *wweight(ifreq)/(2d0*pi) 
+    if(fulltest) then
+      do ibas=1,nBas
+       do jbas=1,nBas
+        do kbas=1,nBas
+         do lbas=1,nBas
+          Sigma_c_ao(ibas,jbas)=Sigma_c_ao(ibas,jbas)-(G_ao_1(kbas,lbas)+G_ao_2(kbas,lbas))  &
+                               *Wp_ao_iw(1+(kbas-1)+(ibas-1)*nBas,1+(jbas-1)+(lbas-1)*nBas)  &
+                               *wweight(ifreq)/(2d0*pi) 
+         enddo
+        enddo
        enddo
       enddo
-     enddo
-    enddo
+    endif
    
   enddo
 
   ! Print Sigma_c_ao
   if(fulltest) then
+
+   if(abs(aimag(wtest))<1e-12) then ! wtest is real and we have to add residues
+    
+     ! TODO 
+
+   endif
 
    write(*,*) ' ' 
    write(*,'(a,f15.8,a,f15.8,a)') ' RHF Sigma_c(wtest) in AO for wtest=(',Real(wtest),",",Aimag(wtest),")"

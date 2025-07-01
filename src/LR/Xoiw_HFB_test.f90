@@ -236,22 +236,24 @@ subroutine Xoiw_HFB_tests(nBas,nOrb,nOrb_twice,cHFB,eHFB,nfreqs,ntimes,wweight,w
      call G_AO_HFB(nBas,nOrb,nOrb_twice,eta,cHFB,eHFB,weval,Mat1,Mat2,Mat3,Mat4,G_ao_4)
 
     ! Sigma_he/hh_c(wtest)
-    do ibas=1,nBas
-     do jbas=1,nBas
-      do kbas=1,nBas
-       do lbas=1,nBas
-        ! This is  G^he W
-        Sigma_he_c_ao(ibas,jbas)=Sigma_he_c_ao(ibas,jbas)-(G_ao_1(kbas,lbas)+G_ao_2(kbas,lbas))  &
-                                *Wp_ao_iw(1+(kbas-1)+(ibas-1)*nBas,1+(jbas-1)+(lbas-1)*nBas)     &
-                                *wweight(ifreq)/(2d0*pi)
-        ! This is -G^hh W
-        Sigma_hh_c_ao(ibas,jbas)=Sigma_hh_c_ao(ibas,jbas)+(G_ao_3(kbas,lbas)+G_ao_4(kbas,lbas))  &
-                                *Wp_ao_iw(1+(kbas-1)+(ibas-1)*nBas,1+(lbas-1)+(jbas-1)*nBas)     &
-                                *wweight(ifreq)/(2d0*pi)
+    if(fulltest) then
+      do ibas=1,nBas
+       do jbas=1,nBas
+        do kbas=1,nBas
+         do lbas=1,nBas
+          ! This is  G^he W
+          Sigma_he_c_ao(ibas,jbas)=Sigma_he_c_ao(ibas,jbas)-(G_ao_1(kbas,lbas)+G_ao_2(kbas,lbas))  &
+                                  *Wp_ao_iw(1+(kbas-1)+(ibas-1)*nBas,1+(jbas-1)+(lbas-1)*nBas)     &
+                                  *wweight(ifreq)/(2d0*pi)
+          ! This is -G^hh W
+          Sigma_hh_c_ao(ibas,jbas)=Sigma_hh_c_ao(ibas,jbas)+(G_ao_3(kbas,lbas)+G_ao_4(kbas,lbas))  &
+                                  *Wp_ao_iw(1+(kbas-1)+(ibas-1)*nBas,1+(lbas-1)+(jbas-1)*nBas)     &
+                                  *wweight(ifreq)/(2d0*pi)
+         enddo
+        enddo
        enddo
       enddo
-     enddo
-    enddo
+    endif
    
   enddo
 

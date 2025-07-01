@@ -40,6 +40,7 @@ subroutine BQuAcK(working_dir,dotest,doHFB,doqsGW,nNuc,nBas,nOrb,nO,ENuc,ZNuc,rN
 
 ! Local variables
 
+  logical                       :: fulltest
   logical                       :: file_exists
   integer                       :: nOrb_twice
   integer                       :: nO_
@@ -49,7 +50,7 @@ subroutine BQuAcK(working_dir,dotest,doHFB,doqsGW,nNuc,nBas,nOrb,nO,ENuc,ZNuc,rN
   double precision              :: chem_pot,Val
   double precision              :: start_HF     ,end_HF       ,t_HF
   double precision              :: start_qsGWB  ,end_qsGWB    ,t_qsGWB
-  double precision              :: start_int    , end_int     , t_int
+  double precision              :: start_int    ,end_int      ,t_int
 
   double precision,allocatable  :: eHF(:)
   double precision,allocatable  :: eONEBODY_state(:)
@@ -64,6 +65,7 @@ subroutine BQuAcK(working_dir,dotest,doHFB,doqsGW,nNuc,nBas,nOrb,nO,ENuc,ZNuc,rN
   double precision,allocatable  :: ERI_AO(:,:,:,:)
 
 !
+  fulltest=.true.
 
   write(*,*)
   write(*,*) '******************************'
@@ -90,9 +92,7 @@ subroutine BQuAcK(working_dir,dotest,doHFB,doqsGW,nNuc,nBas,nOrb,nO,ENuc,ZNuc,rN
   allocate(eONEBODY_state(nOrb_twice))
   allocate(U_QP(nOrb_twice,nOrb_twice))
 
-
   allocate(ERI_AO(nBas,nBas,nBas,nBas))
-
 
   call wall_time(start_int)
   call read_2e_integrals(working_dir,nBas,ERI_AO)
@@ -130,7 +130,6 @@ subroutine BQuAcK(working_dir,dotest,doHFB,doqsGW,nNuc,nBas,nOrb,nO,ENuc,ZNuc,rN
   write(*,'(A65,1X,F9.3,A8)') 'Total wall time for reading 2e-integrals =',t_int,' seconds'
   write(*,*)
 
-
 !--------------------------------!
 ! Hartree-Fock Bogoliubov module !
 !--------------------------------!
@@ -147,8 +146,8 @@ subroutine BQuAcK(working_dir,dotest,doHFB,doqsGW,nNuc,nBas,nOrb,nO,ENuc,ZNuc,rN
     write(*,'(A65,1X,F9.3,A8)') 'Total wall time for RHF = ',t_HF,' seconds'
     write(*,*)
 
-    ! Test Xo^HF (i w) computing EcGM and EcRPA
-    if(im_freqs .and. .true.) then
+    ! Test Xo^HF (i w) computing EcGM and EcRPA and building Wp and Sigma_c
+    if(im_freqs .and. fulltest) then
 
       call Xoiw_RHF_tests(nBas,nOrb,nO,cHFB,eHF,nfreqs,ntimes,wweight,wcoord,ERI_AO)
 
@@ -165,8 +164,8 @@ subroutine BQuAcK(working_dir,dotest,doHFB,doqsGW,nNuc,nBas,nOrb,nO,ENuc,ZNuc,rN
     write(*,'(A65,1X,F9.3,A8)') 'Total wall time for HFB = ',t_HF,' seconds'
     write(*,*)
 
-    ! Test Xo^HFB (i w) computing EcGM and EcRPA
-    if(im_freqs .and. .true.) then
+    ! Test Xo^HFB (i w) computing EcGM and EcRPA and building Wp and Sigma_c
+    if(im_freqs .and. fulltest) then
 
       call Xoiw_HFB_tests(nBas,nOrb,nOrb_twice,cHFB,eONEBODY_state,nfreqs,ntimes,wweight,wcoord,U_QP,ERI_AO)
 
