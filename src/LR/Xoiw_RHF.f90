@@ -19,31 +19,20 @@ subroutine Xoiw_RHF(nOrb,nO,eta,eHF,weval,Chi0_mo_iw)
 
   integer                       :: iorb,aorb
 
-  double precision              :: start_Xoiw   ,end_Xoiw     ,t_Xoiw
   double precision              :: chem_pot
 
 ! Ouput variables
 
   complex *16,intent(out)       :: Chi0_mo_iw(nOrb*nOrb,nOrb*nOrb)
 
-!
-
-  call wall_time(start_Xoiw)
+!------------------------------------------------------------------------
+! Build Xo(i w) in MO basis
+!------------------------------------------------------------------------
 
   chem_pot = 0.5d0*(eHF(nO)+eHF(nO+1))
   eHF(:) = eHF(:)-chem_pot
 
   Chi0_mo_iw=czero
-
-!------------------------------------------------------------------------
-! Build Xo(i w) in MO basis
-!------------------------------------------------------------------------
-
-!  write(*,*)
-!  write(*,*)'************************************'
-!  write(*,*)'* Build RHF Xo(i w) in MO basis    *'
-!  write(*,*)'************************************'
-!  write(*,*)
 
   do iorb=1,nO
    do aorb=nO+1,nOrb
@@ -54,13 +43,8 @@ subroutine Xoiw_RHF(nOrb,nO,eta,eHF,weval,Chi0_mo_iw)
   
   Chi0_mo_iw=2d0*Chi0_mo_iw
 
-  ! Deallocate arrays
+  ! Recover eHF
   eHF(:) = eHF(:)+chem_pot
-
-  call wall_time(end_Xoiw)
-  t_Xoiw = end_Xoiw - start_Xoiw
- ! write(*,'(A65,1X,F9.3,A8)') 'Total wall time for Xo(i w) AO = ',t_Xoiw,' seconds'
- ! write(*,*)
 
 end subroutine
 
