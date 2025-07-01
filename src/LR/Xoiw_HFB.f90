@@ -18,9 +18,11 @@ subroutine Xoiw_HFB(nOrb,nOrb_twice,eta,eHFB,weval,U_QP,Chi0_mo_iw)
 
 ! Local variables
 
-  integer                       :: iorb,jorb,korb,lorb
+  integer                       :: porb,qorb,rorb,sorb
+  integer                       :: Istate,Jstate
 
   double precision              :: start_Xoiw   ,end_Xoiw     ,t_Xoiw
+  double precision              :: factor1,factor2
 
 ! Ouput variables
 
@@ -42,10 +44,20 @@ subroutine Xoiw_HFB(nOrb,nOrb_twice,eta,eHFB,weval,U_QP,Chi0_mo_iw)
 !  write(*,*)'************************************'
 !  write(*,*)
 
-  do iorb=1,nOrb
-   do jorb=1,nOrb
-     Chi0_mo_iw(1+(jorb-1)+(iorb-1)*nOrb,1+(jorb-1)+(iorb-1)*nOrb)=1d0/(weval-(eHFB(jorb)-eHFB(iorb))+im*eta) &
-                                                                  -1d0/(weval+(eHFB(jorb)-eHFB(iorb))-im*eta)
+  do porb=1,nOrb
+   do qorb=1,nOrb
+    do rorb=1,nOrb
+     do sorb=1,nOrb
+      do Istate=1,nOrb
+       do Jstate=1,nOrb
+        factor1=0d0;factor2=0d0;
+     Chi0_mo_iw(1+(sorb-1)+(porb-1)*nOrb,1+(qorb-1)+(rorb-1)*nOrb)= &
+       +1d0/(weval-(-eHFB(Istate)-eHFB(Jstate))+im*eta)*factor1     &
+       -1d0/(weval+(-eHFB(Istate)-eHFB(Jstate))-im*eta)*factor2
+       enddo
+      enddo
+     enddo
+    enddo
    enddo
   enddo
   
