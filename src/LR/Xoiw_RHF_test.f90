@@ -52,7 +52,7 @@ subroutine Xoiw_RHF_tests(nBas,nOrb,nO,cHF,eHF,nfreqs,ntimes,wweight,wcoord,ERI_
   complex *16,allocatable       :: Chi0_ao_iw_4d(:,:,:,:)
 !
 
-  fulltest=.false.     ! TODO adjust it to print Wp and Sigma_c
+  fulltest=.false.     ! TODO adjust it to print Chi0(iw), Wp, and Sigma_c
   nBas2=nBas*nBas
   nOrb2=nOrb*nOrb
   wtest=0.000005967*im ! TODO use test values

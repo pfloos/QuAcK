@@ -27,7 +27,7 @@ subroutine Xoiw_HFB_tests(nBas,nOrb,nOrb_twice,cHFB,eHFB,nfreqs,ntimes,wweight,w
 
   integer                       :: ibas,jbas,lbas,kbas,ifreq
   integer                       :: iorb,jorb,korb,lorb
-  integer                       :: nBas2
+  integer                       :: nBas2,nOrb2
 
   double precision              :: start_Xoiw   ,end_Xoiw     ,t_Xoiw
   double precision              :: EcRPA,EcGM,trace,trace2,trace3
@@ -39,12 +39,12 @@ subroutine Xoiw_HFB_tests(nBas,nOrb,nOrb_twice,cHFB,eHFB,nfreqs,ntimes,wweight,w
   double precision,allocatable  :: eps(:,:)
   double precision,allocatable  :: epsm1(:,:)
   double precision,allocatable  :: eigenv_eps(:,:)
-  double precision,allocatable  :: vMAT(:,:)
+  double precision,allocatable  :: vMat(:,:)
   double precision,allocatable  :: Wp_tmp(:,:)
-  double precision,allocatable  :: MAT1(:,:)
-  double precision,allocatable  :: MAT2(:,:)
-  double precision,allocatable  :: MAT3(:,:)
-  double precision,allocatable  :: MAT4(:,:)
+  double precision,allocatable  :: Mat1(:,:)
+  double precision,allocatable  :: Mat2(:,:)
+  double precision,allocatable  :: Mat3(:,:)
+  double precision,allocatable  :: Mat4(:,:)
   double precision,allocatable  :: Wp_AO(:,:,:,:)
   double precision,allocatable  :: Wp_MO(:,:,:,:)
 
@@ -55,11 +55,16 @@ subroutine Xoiw_HFB_tests(nBas,nOrb,nOrb_twice,cHFB,eHFB,nfreqs,ntimes,wweight,w
   complex *16,allocatable       :: G_ao_2(:,:)
   complex *16,allocatable       :: G_ao_3(:,:)
   complex *16,allocatable       :: G_ao_4(:,:)
+  complex *16,allocatable       :: cHFB_complex(:,:)
+  complex *16,allocatable       :: Chi0_mo_iw(:,:)
   complex *16,allocatable       :: Chi0_ao_iw(:,:,:)
+  complex *16,allocatable       :: Chi0_mo_iw_4d(:,:,:,:)
+  complex *16,allocatable       :: Chi0_ao_iw_4d(:,:,:,:)
 !
 
-  fulltest=.false.     ! TODO adjust it to print Wp and Sigma_c
+  fulltest=.true.     ! TODO adjust it to print Chi0(iw), Wp, and Sigma_c
   nBas2=nBas*nBas
+  nOrb2=nOrb*nOrb
   wtest=0.000005967*im ! TODO use test values
 
 !------------------------------------------------------------------------
@@ -79,11 +84,11 @@ subroutine Xoiw_HFB_tests(nBas,nOrb,nOrb_twice,cHFB,eHFB,nfreqs,ntimes,wweight,w
   allocate(Chi0_ao_iw_v(nBas2,nBas2),Chi_ao_iw_v(nBas2,nBas2))
   allocate(Wp_AO(nBas,nBas,nBas,nBas),Wp_MO(nOrb,nOrb,nOrb,nOrb),Wp_tmp(nOrb*nOrb,nOrb*nOrb))
   allocate(Wp_ao_iw(nBas2,nBas2))
-  allocate(vMAT(nBas2,nBas2))
-  allocate(MAT1(nOrb,nOrb))
-  allocate(MAT2(nOrb,nOrb))
-  allocate(MAT3(nOrb,nOrb))
-  allocate(MAT4(nOrb,nOrb))
+  allocate(vMat(nBas2,nBas2))
+  allocate(Mat1(nOrb,nOrb))
+  allocate(Mat2(nOrb,nOrb))
+  allocate(Mat3(nOrb,nOrb))
+  allocate(Mat4(nOrb,nOrb))
   allocate(Sigma_he_c_ao(nBas,nBas),G_ao_1(nBas,nBas),G_ao_2(nBas,nBas))
   allocate(Sigma_hh_c_ao(nBas,nBas),G_ao_3(nBas,nBas),G_ao_4(nBas,nBas))
   Sigma_he_c_ao=czero
@@ -97,7 +102,7 @@ subroutine Xoiw_HFB_tests(nBas,nOrb,nOrb_twice,cHFB,eHFB,nfreqs,ntimes,wweight,w
    do jbas=1,nBas
     do kbas=1,nBas
      do lbas=1,nBas
-      vMAT(1+(kbas-1)+(ibas-1)*nBas,1+(lbas-1)+(jbas-1)*nBas)=ERI_AO(ibas,jbas,kbas,lbas)
+      vMat(1+(kbas-1)+(ibas-1)*nBas,1+(lbas-1)+(jbas-1)*nBas)=ERI_AO(ibas,jbas,kbas,lbas)
      enddo
     enddo
    enddo
@@ -108,6 +113,61 @@ subroutine Xoiw_HFB_tests(nBas,nOrb,nOrb_twice,cHFB,eHFB,nfreqs,ntimes,wweight,w
 !-----------------------------!
 
   call Gitau2Chi0iw_HFB(nBas,nBas2,nOrb,nOrb_twice,cHFB,eHFB,nfreqs,ntimes,wcoord,U_QP,Chi0_ao_iw)
+
+  if(fulltest) then
+
+   ifreq=1; eta=0.00001; ! TODO select a frequency of wcoord
+   allocate(cHFB_complex(nOrb,nOrb))
+   allocate(Chi0_mo_iw(nOrb*nOrb,nOrb*nOrb))
+   allocate(Chi0_mo_iw_4d(nOrb,nOrb,nOrb,nOrb))
+   allocate(Chi0_ao_iw_4d(nBas,nBas,nBas,nBas))
+
+   do ibas=1,nBas
+     do jbas=1,nBas
+      do kbas=1,nBas
+       do lbas=1,nBas
+        Chi0_ao_iw_4d(ibas,jbas,kbas,lbas)=Chi0_ao_iw(ifreq,1+(kbas-1)+(ibas-1)*nBas,1+(lbas-1)+(jbas-1)*nBas)
+      enddo
+     enddo
+    enddo
+   enddo
+
+   cHFB_complex=cHFB
+   call complex_complex_AOtoMO_TWOBODY_R(nBas,nOrb,cHFB_complex,Chi0_ao_iw_4d,Chi0_mo_iw_4d)
+
+   do iorb=1,nOrb
+     do jorb=1,nOrb
+      do korb=1,nOrb
+       do lorb=1,nOrb
+        Chi0_mo_iw(1+(korb-1)+(iorb-1)*nOrb,1+(lorb-1)+(jorb-1)*nOrb)=Chi0_mo_iw_4d(iorb,jorb,korb,lorb)
+      enddo
+     enddo
+    enddo
+   enddo
+
+   write(*,*) ' '
+   write(*,'(a,f15.8,a,f15.8,a)') ' HFB Xo in MO (AO->MO) for wcoord=(',wcoord(ifreq),")"
+   write(*,*) ' '
+   do iorb=1,nOrb2
+    write(*,'(*(f10.5))') Real(Chi0_mo_iw(iorb,:))
+   enddo
+   write(*,*) ' '
+
+   call Xoiw_HFB(nOrb,nOrb_twice,eta,eHFB,weval,U_QP,Chi0_mo_iw)
+
+   write(*,'(a,f15.8,a,f15.8,a)') ' HFB Xo built in MO'
+   write(*,*) ' '
+   do iorb=1,nOrb2
+    write(*,'(*(f10.5))') Real(Chi0_mo_iw(iorb,:))
+   enddo
+   write(*,*) ' '
+
+   deallocate(cHFB_complex)
+   deallocate(Chi0_mo_iw)
+   deallocate(Chi0_mo_iw_4d)
+   deallocate(Chi0_ao_iw_4d)
+
+  endif
 
 !----------------------!
 ! Use Xo(i w) as usual !
@@ -125,7 +185,7 @@ subroutine Xoiw_HFB_tests(nBas,nOrb,nOrb_twice,cHFB,eHFB,nfreqs,ntimes,wweight,w
     eps(:,:)=0d0
    
     ! Build Xo v
-    Chi0_ao_iw_v(:,:)=matmul(Real(Chi0_ao_iw(ifreq,:,:)),vMAT(:,:))
+    Chi0_ao_iw_v(:,:)=matmul(Real(Chi0_ao_iw(ifreq,:,:)),vMat(:,:))
    
     ! Tr [ Xo v ] and define eps
     do ibas=1,nBas2
@@ -139,7 +199,7 @@ subroutine Xoiw_HFB_tests(nBas,nOrb,nOrb_twice,cHFB,eHFB,nfreqs,ntimes,wweight,w
     ! b) Set X v = eps^-1 Xo v 
     call inverse_matrix(nBas2,eps,epsm1)
     Chi_ao_iw_v(:,:)=matmul(epsm1(:,:),Real(Chi0_ao_iw(ifreq,:,:)))
-    Chi_ao_iw_v(:,:)=matmul(Chi_ao_iw_v(:,:),vMAT(:,:))
+    Chi_ao_iw_v(:,:)=matmul(Chi_ao_iw_v(:,:),vMat(:,:))
    
     ! Tr [ X v ] for GM
     do ibas=1,nBas2
@@ -158,7 +218,7 @@ subroutine Xoiw_HFB_tests(nBas,nOrb,nOrb_twice,cHFB,eHFB,nfreqs,ntimes,wweight,w
     EcGM =EcGM -wweight(ifreq)*(trace3-trace)/(2d0*pi)
    
     ! Building Wp in AO basis
-    Wp_ao_iw(:,:)=matmul(vMAT(:,:),Chi_ao_iw_v(:,:))
+    Wp_ao_iw(:,:)=matmul(vMat(:,:),Chi_ao_iw_v(:,:))
     if(ifreq==1 .and. fulltest) then
       do ibas=1,nBas
        do jbas=1,nBas
@@ -196,18 +256,18 @@ subroutine Xoiw_HFB_tests(nBas,nOrb,nOrb_twice,cHFB,eHFB,nfreqs,ntimes,wweight,w
      Mat3(1:nOrb,1:nOrb)=U_QP(nOrb+1:nOrb_twice,1:nOrb)
      Mat4(1:nOrb,1:nOrb)=U_QP(nOrb+1:nOrb_twice,1:nOrb)
      weval=wtest+im*wcoord(ifreq)
-     call G_AO_HFB(nBas,nOrb,nOrb_twice,eta,cHFB,eHFB,weval,MAT1,MAT2,MAT3,MAT4,G_ao_1)
+     call G_AO_HFB(nBas,nOrb,nOrb_twice,eta,cHFB,eHFB,weval,Mat1,Mat2,Mat3,Mat4,G_ao_1)
      weval=wtest-im*wcoord(ifreq)
-     call G_AO_HFB(nBas,nOrb,nOrb_twice,eta,cHFB,eHFB,weval,MAT1,MAT2,MAT3,MAT4,G_ao_2)
+     call G_AO_HFB(nBas,nOrb,nOrb_twice,eta,cHFB,eHFB,weval,Mat1,Mat2,Mat3,Mat4,G_ao_2)
     ! Ghh
      Mat1(1:nOrb,1:nOrb)=U_QP(1:nOrb,1:nOrb)
      Mat2(1:nOrb,1:nOrb)=U_QP(nOrb+1:nOrb_twice,1:nOrb)
      Mat3(1:nOrb,1:nOrb)=-U_QP(nOrb+1:nOrb_twice,1:nOrb)
      Mat4(1:nOrb,1:nOrb)= U_QP(1:nOrb,1:nOrb)
      weval=wtest+im*wcoord(ifreq)
-     call G_AO_HFB(nBas,nOrb,nOrb_twice,eta,cHFB,eHFB,weval,MAT1,MAT2,MAT3,MAT4,G_ao_3)
+     call G_AO_HFB(nBas,nOrb,nOrb_twice,eta,cHFB,eHFB,weval,Mat1,Mat2,Mat3,Mat4,G_ao_3)
      weval=wtest-im*wcoord(ifreq)
-     call G_AO_HFB(nBas,nOrb,nOrb_twice,eta,cHFB,eHFB,weval,MAT1,MAT2,MAT3,MAT4,G_ao_4)
+     call G_AO_HFB(nBas,nOrb,nOrb_twice,eta,cHFB,eHFB,weval,Mat1,Mat2,Mat3,Mat4,G_ao_4)
 
     ! Sigma_he/hh_c(wtest)
     do ibas=1,nBas
@@ -259,10 +319,10 @@ subroutine Xoiw_HFB_tests(nBas,nOrb,nOrb_twice,cHFB,eHFB,nfreqs,ntimes,wweight,w
   deallocate(Chi0_ao_iw)
   deallocate(Chi0_ao_iw_v,Chi_ao_iw_v,Wp_ao_iw)
   deallocate(Wp_AO,Wp_MO,Wp_tmp)
-  deallocate(vMAT)
+  deallocate(vMat)
   deallocate(Sigma_he_c_ao,G_ao_1,G_ao_2)
   deallocate(Sigma_hh_c_ao,G_ao_3,G_ao_4)
-  deallocate(MAT1,MAT2,MAT3,MAT4)
+  deallocate(Mat1,Mat2,Mat3,Mat4)
 
   call wall_time(end_Xoiw)
   t_Xoiw = end_Xoiw - start_Xoiw
