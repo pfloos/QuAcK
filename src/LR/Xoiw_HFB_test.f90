@@ -62,7 +62,7 @@ subroutine Xoiw_HFB_tests(nBas,nOrb,nOrb_twice,cHFB,eHFB,nfreqs,ntimes,wweight,w
   complex *16,allocatable       :: Chi0_ao_iw_4d(:,:,:,:)
 !
 
-  fulltest=.true.     ! TODO adjust it to print Chi0(iw), Wp, and Sigma_c
+  fulltest=.false.     ! TODO adjust it to print Chi0(iw), Wp, and Sigma_c
   nBas2=nBas*nBas
   nOrb2=nOrb*nOrb
   wtest=0.000005967*im ! TODO use test values
@@ -153,7 +153,10 @@ subroutine Xoiw_HFB_tests(nBas,nOrb,nOrb_twice,cHFB,eHFB,nfreqs,ntimes,wweight,w
    enddo
    write(*,*) ' '
 
-   call Xoiw_HFB(nOrb,nOrb_twice,eta,eHFB,weval,U_QP,Chi0_mo_iw)
+   Mat1(1:nOrb,1:nOrb)=U_QP(1:nOrb,1:nOrb)
+   Mat2(1:nOrb,1:nOrb)=U_QP(nOrb+1:nOrb_twice,1:nOrb)
+
+   call Xoiw_HFB(nOrb,nOrb_twice,eta,eHFB,wcoord(ifreq)*im,Mat1,Mat2,Chi0_mo_iw)
 
    write(*,'(a,f15.8,a,f15.8,a)') ' HFB Xo built in MO'
    write(*,*) ' '

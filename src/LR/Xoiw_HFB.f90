@@ -1,4 +1,4 @@
-subroutine Xoiw_HFB(nOrb,nOrb_twice,eta,eHFB,weval,U_QP,Chi0_mo_iw)
+subroutine Xoiw_HFB(nOrb,nOrb_twice,eta,eHFB,weval,Mat1,Mat2,Chi0_mo_iw)
 
 ! Restricted Xo(i w) in MO basis
 
@@ -12,7 +12,8 @@ subroutine Xoiw_HFB(nOrb,nOrb_twice,eta,eHFB,weval,U_QP,Chi0_mo_iw)
 
   double precision,intent(in)   :: eta
   double precision,intent(inout):: eHFB(nOrb_twice)
-  double precision,intent(in)   :: U_QP(nOrb_twice,nOrb_twice)
+  double precision,intent(in)   :: Mat1(nOrb,nOrb)
+  double precision,intent(in)   :: Mat2(nOrb,nOrb)
 
   complex *16,intent(in)        :: weval
 
@@ -46,14 +47,18 @@ subroutine Xoiw_HFB(nOrb,nOrb_twice,eta,eHFB,weval,U_QP,Chi0_mo_iw)
 
   do porb=1,nOrb
    do qorb=1,nOrb
-    do rorb=1,nOrb
-     do sorb=1,nOrb
+    do rorb=qorb,nOrb
+     do sorb=porb,nOrb
       do Istate=1,nOrb
        do Jstate=1,nOrb
-        factor1=0d0;factor2=0d0;
-     Chi0_mo_iw(1+(sorb-1)+(porb-1)*nOrb,1+(qorb-1)+(rorb-1)*nOrb)= &
-       +1d0/(weval-(-eHFB(Istate)-eHFB(Jstate))+im*eta)*factor1     &
-       -1d0/(weval+(-eHFB(Istate)-eHFB(Jstate))-im*eta)*factor2
+        factor1=Mat2(porb,Istate)*Mat2(qorb,Istate)*Mat1(rorb,Jstate)*Mat1(sorb,Jstate) &
+               -Mat2(porb,Istate)*Mat1(qorb,Istate)*Mat2(rorb,Jstate)*Mat1(sorb,Jstate)
+        factor2=Mat2(rorb,Jstate)*Mat2(sorb,Jstate)*Mat1(porb,Istate)*Mat1(qorb,Istate) &
+               -Mat1(rorb,Jstate)*Mat2(sorb,Jstate)*Mat1(porb,Istate)*Mat2(qorb,Istate)
+     Chi0_mo_iw(1+(sorb-1)+(porb-1)*nOrb,1+(rorb-1)+(qorb-1)*nOrb)=    &
+       +Chi0_mo_iw(1+(sorb-1)+(porb-1)*nOrb,1+(rorb-1)+(qorb-1)*nOrb)  &
+       +factor1/(weval-(-eHFB(Istate)-eHFB(Jstate))+im*eta)            &
+       -factor2/(weval+(-eHFB(Istate)-eHFB(Jstate))-im*eta)
        enddo
       enddo
      enddo
@@ -61,7 +66,7 @@ subroutine Xoiw_HFB(nOrb,nOrb_twice,eta,eHFB,weval,U_QP,Chi0_mo_iw)
    enddo
   enddo
   
-  Chi0_mo_iw=2d0*Chi0_mo_iw
+  Chi0_mo_iw=4d0*Chi0_mo_iw
 
   ! Deallocate arrays
 
