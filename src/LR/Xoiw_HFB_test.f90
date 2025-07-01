@@ -60,7 +60,7 @@ subroutine Xoiw_HFB_tests(nBas,nOrb,nOrb_twice,cHFB,eHFB,nfreqs,ntimes,wweight,w
   complex *16,allocatable       :: Chi0_ao_iw(:,:,:)
 !
 
-  fulltest=.true.      ! TODO adjust it to print Chi0(iw), Wp, and Sigma_c
+  fulltest=.false.     ! TODO adjust it to print Chi0(iw), Wp, and Sigma_c
   nBas2=nBas*nBas
   nOrb2=nOrb*nOrb
   wtest=0.000005967*im ! TODO use test values
