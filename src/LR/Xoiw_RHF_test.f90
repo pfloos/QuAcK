@@ -48,11 +48,9 @@ subroutine Xoiw_RHF_tests(nBas,nOrb,nO,cHF,eHF,nfreqs,ntimes,wweight,wcoord,ERI_
   complex *16,allocatable       :: cHF_complex(:,:)
   complex *16,allocatable       :: Chi0_mo_iw(:,:)
   complex *16,allocatable       :: Chi0_ao_iw(:,:,:)
-  complex *16,allocatable       :: Chi0_mo_iw_4d(:,:,:,:)
-  complex *16,allocatable       :: Chi0_ao_iw_4d(:,:,:,:)
 !
 
-  fulltest=.false.     ! TODO adjust it to print Chi0(iw), Wp, and Sigma_c
+  fulltest=.true.      ! TODO adjust it to print Chi0(iw), Wp, and Sigma_c
   nBas2=nBas*nBas
   nOrb2=nOrb*nOrb
   wtest=0.000005967*im ! TODO use test values
@@ -103,43 +101,10 @@ subroutine Xoiw_RHF_tests(nBas,nOrb,nO,cHF,eHF,nfreqs,ntimes,wweight,wcoord,ERI_
    ifreq=1; eta=0.00001; ! TODO select a frequency of wcoord
    allocate(cHF_complex(nOrb,nOrb))
    allocate(Chi0_mo_iw(nOrb*nOrb,nOrb*nOrb))
-   allocate(Chi0_mo_iw_4d(nOrb,nOrb,nOrb,nOrb))
-   allocate(Chi0_ao_iw_4d(nBas,nBas,nBas,nBas))
  
-   do ibas=1,nBas
-     do jbas=1,nBas
-      do kbas=1,nBas
-       do lbas=1,nBas
-        Chi0_ao_iw_4d(ibas,jbas,kbas,lbas)=Chi0_ao_iw(ifreq,1+(kbas-1)+(ibas-1)*nBas,1+(lbas-1)+(jbas-1)*nBas)
-      enddo
-     enddo
-    enddo
-   enddo
-
-   cHF_complex=cHF
-   call complex_complex_AOtoMO_TWOBODY_R(nBas,nOrb,cHF_complex,Chi0_ao_iw_4d,Chi0_mo_iw_4d)
-
-   do iorb=1,nOrb
-     do jorb=1,nOrb
-      do korb=1,nOrb
-       do lorb=1,nOrb
-        Chi0_mo_iw(1+(korb-1)+(iorb-1)*nOrb,1+(lorb-1)+(jorb-1)*nOrb)=Chi0_mo_iw_4d(iorb,jorb,korb,lorb)
-      enddo
-     enddo
-    enddo
-   enddo
-
-   write(*,*) ' ' 
-   write(*,'(a,f15.8,a,f15.8,a)') ' RHF Xo in MO (AO->MO) for wcoord=(',wcoord(ifreq),")" 
-   write(*,*) ' ' 
-   do iorb=1,nOrb2
-    write(*,'(*(f10.5))') Real(Chi0_mo_iw(iorb,:))
-   enddo
-   write(*,*) ' ' 
-
    call Xoiw_RHF(nOrb,nO,eta,eHF,wcoord(ifreq)*im,Chi0_mo_iw)
 
-   write(*,'(a,f15.8,a,f15.8,a)') ' RHF Xo built in MO'
+   write(*,'(a,f15.8,a)') ' RHF Xo in MO for wcoord=(',wcoord(ifreq),")" 
    write(*,*) ' ' 
    do iorb=1,nOrb2
     write(*,'(*(f10.5))') Real(Chi0_mo_iw(iorb,:))
@@ -148,8 +113,6 @@ subroutine Xoiw_RHF_tests(nBas,nOrb,nO,cHF,eHF,nfreqs,ntimes,wweight,wcoord,ERI_
 
    deallocate(cHF_complex)
    deallocate(Chi0_mo_iw)
-   deallocate(Chi0_mo_iw_4d)
-   deallocate(Chi0_ao_iw_4d)
 
   endif
 
