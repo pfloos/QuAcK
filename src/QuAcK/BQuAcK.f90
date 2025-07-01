@@ -150,7 +150,7 @@ subroutine BQuAcK(working_dir,dotest,doHFB,doqsGW,nNuc,nBas,nOrb,nO,ENuc,ZNuc,rN
     ! Test Xo^HF (i w) computing EcGM and EcRPA
     if(im_freqs .and. .true.) then
 
-      call build_Xoiw_RHF_test(nBas,nOrb,nO,cHFB,eHF,nfreqs,ntimes,wweight,wcoord,ERI_AO)
+      call Xoiw_RHF_tests(nBas,nOrb,nO,cHFB,eHF,nfreqs,ntimes,wweight,wcoord,ERI_AO)
 
     endif
 
@@ -168,7 +168,7 @@ subroutine BQuAcK(working_dir,dotest,doHFB,doqsGW,nNuc,nBas,nOrb,nO,ENuc,ZNuc,rN
     ! Test Xo^HFB (i w) computing EcGM and EcRPA
     if(im_freqs .and. .true.) then
 
-      call build_Xoiw_HFB_test(nBas,nOrb,nOrb_twice,cHFB,eONEBODY_state,nfreqs,ntimes,wweight,wcoord,U_QP,ERI_AO)
+      call Xoiw_HFB_tests(nBas,nOrb,nOrb_twice,cHFB,eONEBODY_state,nfreqs,ntimes,wweight,wcoord,U_QP,ERI_AO)
 
     endif
 

@@ -1,4 +1,4 @@
-subroutine build_Xoiw_RHF_test(nBas,nOrb,nO,cHF,eHF,nfreqs,ntimes,wweight,wcoord,ERI_AO)
+subroutine Xoiw_RHF_tests(nBas,nOrb,nO,cHF,eHF,nfreqs,ntimes,wweight,wcoord,ERI_AO)
 
 ! Restricted Xo(i tau) [ and Xo(i w) ] computed from G(i tau)
 
