@@ -409,46 +409,38 @@ subroutine HFB(dotest,maxSCF,thresh,max_diis,level_shift,nNuc,ZNuc,rNuc,ENuc,   
                  dipole,Delta_HL)
 
 ! Choose the NO representation where the 1-RDM is diag.
-
-  allocate(c_ao(nBas2,nOrb_twice))
-
-  if(.true.) then ! NO basis
-
 ! Compute W_no and V_no (i.e. diag[H_HFB^no] built in NO basis and get W and V)
 
-   deallocate(eigVEC,eigVAL)
-   allocate(eigVEC(nOrb_twice,nOrb_twice),eigVAL(nOrb_twice))
+  deallocate(eigVEC,eigVAL)
+  allocate(c_ao(nBas2,nOrb_twice))
+  allocate(eigVEC(nOrb_twice,nOrb_twice),eigVAL(nOrb_twice))
 
-   c_ao(:,:) = 0d0
-   c_ao(1:nBas      ,1:nOrb      )      = c(1:nBas,1:nOrb)
-   c_ao(nBas+1:nBas2,nOrb+1:nOrb_twice) = c(1:nBas,1:nOrb)
-   H_HFB = matmul(transpose(c_ao),matmul(H_HFB_ao,c_ao)) ! H_HFB is in the NO basis
-   eigVEC(:,:) = H_HFB(:,:)
+  c_ao(:,:) = 0d0
+  c_ao(1:nBas      ,1:nOrb      )      = c(1:nBas,1:nOrb)
+  c_ao(nBas+1:nBas2,nOrb+1:nOrb_twice) = c(1:nBas,1:nOrb)
+  H_HFB = matmul(transpose(c_ao),matmul(H_HFB_ao,c_ao)) ! H_HFB is in the NO basis
+  eigVEC(:,:) = H_HFB(:,:)
 
-   call diagonalize_matrix(nOrb_twice,eigVEC,eigVAL)
+  call diagonalize_matrix(nOrb_twice,eigVEC,eigVAL)
 
-   ! Build R (as R^no) and save the eigenvectors
-     
-   trace_1rdm = 0d0 
-   R(:,:)     = 0d0
-   do iorb=1,nOrb
-    R(:,:) = R(:,:) + matmul(eigVEC(:,iorb:iorb),transpose(eigVEC(:,iorb:iorb))) 
-   enddo
-   U_QP(:,:) = eigVEC(:,:)
+  ! Build R (as R^no) and save the eigenvectors
+    
+  trace_1rdm = 0d0 
+  R(:,:)     = 0d0
+  do iorb=1,nOrb
+   R(:,:) = R(:,:) + matmul(eigVEC(:,iorb:iorb),transpose(eigVEC(:,iorb:iorb))) 
+  enddo
+  U_QP(:,:) = eigVEC(:,:)
 
-   ! Check trace of R
-   do iorb=1,nOrb
-    trace_1rdm = trace_1rdm + R(iorb,iorb)
-   enddo
-   trace_1rdm = 2d0*trace_1rdm
-   write(*,*)
-   write(*,'(A33,1X,F16.10,A3)') ' Trace [ 1D^NO ]     = ',trace_1rdm,'   '
-   write(*,*)
+  ! Check trace of R
+  do iorb=1,nOrb
+   trace_1rdm = trace_1rdm + R(iorb,iorb)
+  enddo
+  trace_1rdm = 2d0*trace_1rdm
+  write(*,*)
+  write(*,'(A33,1X,F16.10,A3)') ' Trace [ 1D^NO ]     = ',trace_1rdm,'   '
+  write(*,*)
  
-  endif 
-
-  deallocate(c_ao)
-
 ! Testing zone
 
   if(dotest) then
@@ -463,6 +455,7 @@ subroutine HFB(dotest,maxSCF,thresh,max_diis,level_shift,nNuc,ZNuc,rNuc,ENuc,   
 
   deallocate(J,K,eigVEC,H_HFB,R,eigVAL,err_diis,H_HFB_diis,Occ)
   deallocate(err_ao,S_ao,X_ao,R_ao_old,H_HFB_ao,cHF)
+  deallocate(c_ao)
 
 end subroutine 
 
