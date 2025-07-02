@@ -1,4 +1,26 @@
 !------------------------------------------------------------------------
+function Heaviside_step(x) result(val)
+
+! Kronecker Delta
+
+  implicit none
+
+! Input variables
+
+  double precision,intent(in)   :: x
+
+! Output variables
+
+  double precision              :: val
+
+  if(x >=0d0 ) then
+    val = 1d0
+  else
+    val = 0d0
+  end if
+
+end function 
+
 function Kronecker_delta(i,j) result(delta)
 
 ! Kronecker Delta

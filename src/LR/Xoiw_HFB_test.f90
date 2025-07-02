@@ -263,13 +263,13 @@ subroutine Xoiw_HFB_tests(nBas,nOrb,nOrb_twice,cHFB,eHFB,nfreqs,ntimes,wweight,w
    write(*,*) ' '
    write(*,'(a,f15.8,a,f15.8,a)') ' HFB Sigma_he_c(wtest) in AO for wtest=(',Real(wtest),",",Aimag(wtest),")"
    write(*,*) ' '
-   do iorb=1,nOrb
+   do iorb=1,nBas
     write(*,'(*(f10.5))') Real(Sigma_he_c_ao(iorb,:))
    enddo
    write(*,*) ' '
    write(*,'(a,f15.8,a,f15.8,a)') ' HFB Sigma_hh_c(wtest) in AO for wtest=(',Real(wtest),",",Aimag(wtest),")"
    write(*,*) ' '
-   do iorb=1,nOrb
+   do iorb=1,nBas
     write(*,'(*(f10.5))') Real(Sigma_hh_c_ao(iorb,:))
    enddo
    write(*,*) ' '

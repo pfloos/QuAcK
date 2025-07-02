@@ -13,7 +13,7 @@ subroutine Xoiw_RHF_tests(nBas,nOrb,nO,cHF,eHF,nfreqs,ntimes,wweight,wcoord,ERI_
   integer,intent(in)            :: nOrb
   integer,intent(in)            :: nO
 
-  double precision,intent(in)   :: eHF(nOrb)
+  double precision,intent(inout):: eHF(nOrb)
   double precision,intent(in)   :: wweight(nfreqs)
   double precision,intent(in)   :: wcoord(nfreqs)
   double precision,intent(in)   :: cHF(nBas,nOrb)
@@ -23,12 +23,14 @@ subroutine Xoiw_RHF_tests(nBas,nOrb,nO,cHF,eHF,nfreqs,ntimes,wweight,wcoord,ERI_
 
   logical                       :: fulltest
   integer                       :: ibas,jbas,kbas,lbas,ifreq
-  integer                       :: iorb,jorb,korb,lorb
+  integer                       :: iorb,jorb,korb,lorb,porb
   integer                       :: nBas2,nOrb2
 
   double precision              :: start_Xoiw   ,end_Xoiw     ,t_Xoiw
   double precision              :: EcRPA,EcGM,trace,trace2,trace3
   double precision              :: eta
+  double precision              :: chem_pot
+  double precision,external     :: Heaviside_step
   double precision,allocatable  :: Chi0_ao_iw_v(:,:)
   double precision,allocatable  :: Chi_ao_iw_v(:,:)
   double precision,allocatable  :: Wp_ao_iw(:,:)
@@ -40,13 +42,16 @@ subroutine Xoiw_RHF_tests(nBas,nOrb,nO,cHF,eHF,nfreqs,ntimes,wweight,wcoord,ERI_
   double precision,allocatable  :: Wp_tmp(:,:)
   double precision,allocatable  :: Wp_AO(:,:,:,:)
   double precision,allocatable  :: Wp_MO(:,:,:,:)
+  double precision,allocatable  :: ERI_MO(:,:,:,:)
+  double precision,allocatable  :: Tmp_mo_w(:,:)
 
   complex *16                   :: wtest,weval
   complex *16,allocatable       :: Sigma_c_ao(:,:)
+  complex *16,allocatable       :: Sigma_c_mo(:,:)
   complex *16,allocatable       :: G_ao_1(:,:)
   complex *16,allocatable       :: G_ao_2(:,:)
-  complex *16,allocatable       :: cHF_complex(:,:)
   complex *16,allocatable       :: Chi0_mo_iw(:,:)
+  complex *16,allocatable       :: Chi0_mo_w(:,:)
   complex *16,allocatable       :: Chi0_ao_iw(:,:,:)
 !
 
@@ -54,6 +59,8 @@ subroutine Xoiw_RHF_tests(nBas,nOrb,nO,cHF,eHF,nfreqs,ntimes,wweight,wcoord,ERI_
   nBas2=nBas*nBas
   nOrb2=nOrb*nOrb
   wtest=0.000005967*im ! TODO use test values
+  !wtest=-4.8
+  !wtest= 4.8
 
 !------------------------------------------------------------------------
 ! Build G(i tau) in AO basis
@@ -73,8 +80,10 @@ subroutine Xoiw_RHF_tests(nBas,nOrb,nO,cHF,eHF,nfreqs,ntimes,wweight,wcoord,ERI_
   allocate(Wp_AO(nBas,nBas,nBas,nBas),Wp_MO(nOrb,nOrb,nOrb,nOrb),Wp_tmp(nOrb*nOrb,nOrb*nOrb))
   allocate(Wp_ao_iw(nBas2,nBas2))
   allocate(vMAT(nBas2,nBas2))
+  allocate(Sigma_c_mo(nOrb,nOrb))
   allocate(Sigma_c_ao(nBas,nBas),G_ao_1(nBas,nBas),G_ao_2(nBas,nBas))
   Sigma_c_ao=czero
+  Sigma_c_mo=czero
 
 !-----------------------------!
 ! Store v also as a 2D matrix !
@@ -99,7 +108,6 @@ subroutine Xoiw_RHF_tests(nBas,nOrb,nO,cHF,eHF,nfreqs,ntimes,wweight,wcoord,ERI_
   if(fulltest) then
 
    ifreq=1; eta=0.00001; ! TODO select a frequency of wcoord
-   allocate(cHF_complex(nOrb,nOrb))
    allocate(Chi0_mo_iw(nOrb*nOrb,nOrb*nOrb))
  
    call Xoiw_RHF(nOrb,nO,eta,eHF,wcoord(ifreq)*im,Chi0_mo_iw)
@@ -111,7 +119,6 @@ subroutine Xoiw_RHF_tests(nBas,nOrb,nO,cHF,eHF,nfreqs,ntimes,wweight,wcoord,ERI_
    enddo
    write(*,*) ' ' 
 
-   deallocate(cHF_complex)
    deallocate(Chi0_mo_iw)
 
   endif
@@ -222,17 +229,109 @@ subroutine Xoiw_RHF_tests(nBas,nOrb,nO,cHF,eHF,nfreqs,ntimes,wweight,wcoord,ERI_
   ! Print Sigma_c_ao
   if(fulltest) then
 
-   if(abs(aimag(wtest))<1e-12) then ! wtest is real and we have to add residues
+   write(*,*) ' ' 
+   write(*,'(a,f15.8,a,f15.8,a)') ' RHF Sigma_c(wtest) in AO for wtest=(',Real(wtest),",",Aimag(wtest),")"
+   write(*,*) ' ' 
+   do iorb=1,nBas
+    write(*,'(*(f10.5))') Real(Sigma_c_ao(iorb,:))
+   enddo
+   write(*,*) ' ' 
+
+   ! Contour deformation residues
+   if(abs(aimag(wtest))<1e-12) then ! wtest is real and we may have to add residues contributions
+
+     eta=0.00001
+     ! We will need ERI is MO
+     deallocate(vMAT)
+     allocate(vMAT(nOrb2,nOrb2))
+     allocate(Chi0_mo_w(nOrb2,nOrb2))
+     allocate(Tmp_mo_w(nOrb2,nOrb2))
+     allocate(ERI_MO(nOrb,nOrb,nOrb,nOrb))
+     call AOtoMO_ERI_RHF(nBas,nOrb,cHF,ERI_AO,ERI_MO)
+     do iorb=1,nOrb
+      do jorb=1,nOrb
+       do korb=1,nOrb
+        do lorb=1,nOrb
+         vMAT(1+(korb-1)+(iorb-1)*nOrb,1+(lorb-1)+(jorb-1)*nOrb)=ERI_MO(iorb,jorb,korb,lorb)
+        enddo
+       enddo
+      enddo
+     enddo
+
+     ! Align the poles of G
+     chem_pot = 0.5d0*(eHF(nO)+eHF(nO+1))
+     eHF(:) = eHF(:)-chem_pot
+ 
+     ! Build MO Sigma_c_mo contibution from imaginary axis
+     Sigma_c_mo = matmul(transpose(cHF),matmul(Sigma_c_ao,cHF))
     
-     ! TODO 
+     ! Occupied residues
+     do porb=1,nO
+      if(Heaviside_step(eHF(porb)-Real(wtest))>0d0) then
+       ! Building Wp_mo as we did for Wp_ao (see above)
+       Tmp_mo_w=0d0
+       do iorb=1,nOrb2
+        Tmp_mo_w(iorb,iorb)=1d0  
+       enddo
+       weval=eHF(porb)-Real(wtest) 
+       call Xoiw_RHF(nOrb,nO,eta,eHF,weval,Chi0_mo_w)
+       Tmp_mo_w(:,:)=Tmp_mo_w(:,:)-matmul(Real(Chi0_mo_w(:,:)),vMAT(:,:))
+       call inverse_matrix(nOrb2,Tmp_mo_w,Tmp_mo_w)
+       Tmp_mo_w(:,:)=matmul(Tmp_mo_w(:,:),Real(Chi0_mo_w(:,:)))
+       Tmp_mo_w(:,:)=matmul(Tmp_mo_w(:,:),vMAT(:,:))
+       Tmp_mo_w(:,:)=matmul(vMAT(:,:),Tmp_mo_w(:,:)) ! Now Tmp_mo_w is Wp in MO
+       do iorb=1,nOrb
+        do jorb=1,nOrb
+         do korb=1,nO
+          Sigma_c_mo(iorb,jorb)=Sigma_c_mo(iorb,jorb) &
+                               -Tmp_mo_w(1+(korb-1)+(iorb-1)*nOrb,1+(jorb-1)+(korb-1)*nOrb)
+         enddo
+        enddo
+       enddo
+      endif
+     enddo 
+
+     ! Virtual residues
+     do porb=nO+1,nOrb
+      if(Heaviside_step(Real(wtest)-eHF(porb))>0d0) then
+       ! Building Wp_mo as we did for Wp_ao (see above)
+       Tmp_mo_w=0d0
+       do iorb=1,nOrb2
+        Tmp_mo_w(iorb,iorb)=1d0  
+       enddo
+       weval=Real(wtest)-eHF(porb)
+       call Xoiw_RHF(nOrb,nO,eta,eHF,weval,Chi0_mo_w)
+       Tmp_mo_w(:,:)=Tmp_mo_w(:,:)-matmul(Real(Chi0_mo_w(:,:)),vMAT(:,:))
+       call inverse_matrix(nOrb2,Tmp_mo_w,Tmp_mo_w)
+       Tmp_mo_w(:,:)=matmul(Tmp_mo_w(:,:),Real(Chi0_mo_w(:,:)))
+       Tmp_mo_w(:,:)=matmul(Tmp_mo_w(:,:),vMAT(:,:))
+       Tmp_mo_w(:,:)=matmul(vMAT(:,:),Tmp_mo_w(:,:)) ! Now Tmp_mo_w is Wp in MO
+       do iorb=1,nOrb
+        do jorb=1,nOrb
+         do korb=nO+1,nOrb
+          Sigma_c_mo(iorb,jorb)=Sigma_c_mo(iorb,jorb) &
+                               +Tmp_mo_w(1+(korb-1)+(iorb-1)*nOrb,1+(jorb-1)+(korb-1)*nOrb)
+         enddo
+        enddo
+       enddo
+      endif
+     enddo 
+
+     ! Recover eHF
+     eHF(:) = eHF(:)+chem_pot
+
+     ! Deallocate all arrays that were needed
+     deallocate(Chi0_mo_w)
+     deallocate(Tmp_mo_w)
+     deallocate(ERI_MO)
 
    endif
 
    write(*,*) ' ' 
-   write(*,'(a,f15.8,a,f15.8,a)') ' RHF Sigma_c(wtest) in AO for wtest=(',Real(wtest),",",Aimag(wtest),")"
+   write(*,'(a,f15.8,a,f15.8,a)') ' RHF Sigma_c(wtest) in MO for wtest=(',Real(wtest),",",Aimag(wtest),")"
    write(*,*) ' ' 
    do iorb=1,nOrb
-    write(*,'(*(f10.5))') Real(Sigma_c_ao(iorb,:))
+    write(*,'(*(f10.5))') Real(Sigma_c_mo(iorb,:))
    enddo
    write(*,*) ' ' 
 
@@ -250,6 +349,7 @@ subroutine Xoiw_RHF_tests(nBas,nOrb,nO,cHF,eHF,nfreqs,ntimes,wweight,wcoord,ERI_
   deallocate(Chi0_ao_iw_v,Chi_ao_iw_v,Wp_ao_iw)
   deallocate(Wp_AO,Wp_MO,Wp_tmp)
   deallocate(vMAT)
+  deallocate(Sigma_c_mo)
   deallocate(Sigma_c_ao,G_ao_1,G_ao_2)
 
   call wall_time(end_Xoiw)
