@@ -26,12 +26,13 @@ subroutine Xoiw_HFB_tests(nBas,nOrb,nOrb_twice,cHFB,eHFB,nfreqs,ntimes,wweight,w
   logical                       :: fulltest
 
   integer                       :: ibas,jbas,lbas,kbas,ifreq
-  integer                       :: iorb,jorb,korb,lorb
+  integer                       :: iorb,jorb,korb,lorb,Istate
   integer                       :: nBas2,nOrb2
 
   double precision              :: start_Xoiw   ,end_Xoiw     ,t_Xoiw
   double precision              :: EcRPA,EcGM,trace,trace2,trace3
   double precision              :: eta
+  double precision,external     :: Heaviside_step
   double precision,allocatable  :: Chi0_ao_iw_v(:,:)
   double precision,allocatable  :: Chi_ao_iw_v(:,:)
   double precision,allocatable  :: Wp_ao_iw(:,:)
@@ -47,15 +48,19 @@ subroutine Xoiw_HFB_tests(nBas,nOrb,nOrb_twice,cHFB,eHFB,nfreqs,ntimes,wweight,w
   double precision,allocatable  :: Mat4(:,:)
   double precision,allocatable  :: Wp_AO(:,:,:,:)
   double precision,allocatable  :: Wp_MO(:,:,:,:)
+  double precision,allocatable  :: ERI_MO(:,:,:,:)
+  double precision,allocatable  :: Tmp_mo_w(:,:)
 
   complex *16                   :: wtest,weval
   complex *16,allocatable       :: Sigma_he_c_ao(:,:)
   complex *16,allocatable       :: Sigma_hh_c_ao(:,:)
+  complex *16,allocatable       :: Sigma_he_c_mo(:,:)
+  complex *16,allocatable       :: Sigma_hh_c_mo(:,:)
   complex *16,allocatable       :: G_ao_1(:,:)
   complex *16,allocatable       :: G_ao_2(:,:)
   complex *16,allocatable       :: G_ao_3(:,:)
   complex *16,allocatable       :: G_ao_4(:,:)
-  complex *16,allocatable       :: cHFB_complex(:,:)
+  complex *16,allocatable       :: Chi0_mo_w(:,:)
   complex *16,allocatable       :: Chi0_mo_iw(:,:)
   complex *16,allocatable       :: Chi0_ao_iw(:,:,:)
 !
@@ -63,7 +68,10 @@ subroutine Xoiw_HFB_tests(nBas,nOrb,nOrb_twice,cHFB,eHFB,nfreqs,ntimes,wweight,w
   fulltest=.false.     ! TODO adjust it to print Chi0(iw), Wp, and Sigma_c
   nBas2=nBas*nBas
   nOrb2=nOrb*nOrb
-  wtest=0.000005967*im ! TODO use test values
+  ! WE ONLY HAVE IMPLEMENTED NEGATIVE REAL wtest OR PURELY IMAGINARY wtest FOR Sigma_c^he/hh
+  wtest=0.000005967*im ! TODO use test values 
+  !wtest=-4.2d0
+  !wtest=-4.8d0
 
 !------------------------------------------------------------------------
 ! Build G(i tau) in AO basis
@@ -83,6 +91,8 @@ subroutine Xoiw_HFB_tests(nBas,nOrb,nOrb_twice,cHFB,eHFB,nfreqs,ntimes,wweight,w
   allocate(Wp_AO(nBas,nBas,nBas,nBas),Wp_MO(nOrb,nOrb,nOrb,nOrb),Wp_tmp(nOrb*nOrb,nOrb*nOrb))
   allocate(Wp_ao_iw(nBas2,nBas2))
   allocate(vMat(nBas2,nBas2))
+  allocate(Sigma_he_c_mo(nOrb,nOrb))
+  allocate(Sigma_hh_c_mo(nOrb,nOrb))
   allocate(Mat1(nOrb,nOrb))
   allocate(Mat2(nOrb,nOrb))
   allocate(Mat3(nOrb,nOrb))
@@ -91,6 +101,8 @@ subroutine Xoiw_HFB_tests(nBas,nOrb,nOrb_twice,cHFB,eHFB,nfreqs,ntimes,wweight,w
   allocate(Sigma_hh_c_ao(nBas,nBas),G_ao_3(nBas,nBas),G_ao_4(nBas,nBas))
   Sigma_he_c_ao=czero
   Sigma_hh_c_ao=czero
+  Sigma_he_c_mo=czero
+  Sigma_hh_c_mo=czero
 
 !-----------------------------!
 ! Store v also as a 2D matrix !
@@ -115,7 +127,6 @@ subroutine Xoiw_HFB_tests(nBas,nOrb,nOrb_twice,cHFB,eHFB,nfreqs,ntimes,wweight,w
   if(fulltest) then
 
    ifreq=1; eta=0.00001; ! TODO select a frequency of wcoord
-   allocate(cHFB_complex(nOrb,nOrb))
    allocate(Chi0_mo_iw(nOrb*nOrb,nOrb*nOrb))
 
    Mat1(1:nOrb,1:nOrb)=U_QP(1:nOrb,1:nOrb)
@@ -130,7 +141,6 @@ subroutine Xoiw_HFB_tests(nBas,nOrb,nOrb_twice,cHFB,eHFB,nfreqs,ntimes,wweight,w
    enddo
    write(*,*) ' '
 
-   deallocate(cHFB_complex)
    deallocate(Chi0_mo_iw)
 
   endif
@@ -274,6 +284,89 @@ subroutine Xoiw_HFB_tests(nBas,nOrb,nOrb_twice,cHFB,eHFB,nfreqs,ntimes,wweight,w
    enddo
    write(*,*) ' '
 
+  ! Contour deformation residues
+   if(abs(aimag(wtest))<1e-12) then ! wtest is real and we may have to add residues contributions
+
+     eta=0.00001
+     ! We will need ERI is MO
+     deallocate(vMAT)
+     allocate(vMAT(nOrb2,nOrb2))
+     allocate(Chi0_mo_w(nOrb2,nOrb2))
+     allocate(Tmp_mo_w(nOrb2,nOrb2))
+     allocate(ERI_MO(nOrb,nOrb,nOrb,nOrb))
+     call AOtoMO_ERI_RHF(nBas,nOrb,cHFB,ERI_AO,ERI_MO)
+     do iorb=1,nOrb
+      do jorb=1,nOrb
+       do korb=1,nOrb
+        do lorb=1,nOrb
+         vMAT(1+(korb-1)+(iorb-1)*nOrb,1+(lorb-1)+(jorb-1)*nOrb)=ERI_MO(iorb,jorb,korb,lorb)
+        enddo
+       enddo
+      enddo
+     enddo
+
+     ! Build MO Sigma_c_mo contibution from imaginary axis
+     Sigma_he_c_mo = matmul(transpose(cHFB),matmul(Sigma_he_c_ao,cHFB))
+     Sigma_hh_c_mo = matmul(transpose(cHFB),matmul(Sigma_hh_c_ao,cHFB))
+  
+     ! WE ONLY HAVE IMPLEMENTED NEGATIVE REAL wtest OR PURELY IMAGINARY wtest FOR Sigma_c^he/hh
+     ! Gorkov density residues [ the complementary residues, for eHFB>0, are not needed because
+     !                           Sigma_c(eHFB>0) will be just -Sigma_c(eHFB) in the H^qsBGW ]
+     Mat1(1:nOrb,1:nOrb)=U_QP(1:nOrb,1:nOrb)
+     Mat2(1:nOrb,1:nOrb)=U_QP(nOrb+1:nOrb_twice,1:nOrb)
+     do Istate=1,nOrb
+      if(Heaviside_step(eHFB(Istate)-Real(wtest))>0d0) then
+       ! Building Wp_mo as we did for Wp_ao (see above)
+       Tmp_mo_w=0d0
+       do iorb=1,nOrb2
+        Tmp_mo_w(iorb,iorb)=1d0
+       enddo
+       weval=eHFB(Istate)-Real(wtest)
+       call Xoiw_HFB(nOrb,nOrb_twice,eta,eHFB,weval,Mat1,Mat2,Chi0_mo_w)
+       Tmp_mo_w(:,:)=Tmp_mo_w(:,:)-matmul(Real(Chi0_mo_w(:,:)),vMAT(:,:))
+       call inverse_matrix(nOrb2,Tmp_mo_w,Tmp_mo_w)
+       Tmp_mo_w(:,:)=matmul(Tmp_mo_w(:,:),Real(Chi0_mo_w(:,:)))
+       Tmp_mo_w(:,:)=matmul(Tmp_mo_w(:,:),vMAT(:,:))
+       Tmp_mo_w(:,:)=matmul(vMAT(:,:),Tmp_mo_w(:,:)) ! Now Tmp_mo_w is Wp in MO
+       do iorb=1,nOrb
+        do jorb=1,nOrb
+         do korb=1,nOrb
+          do lorb=1,nOrb
+           ! G^he W
+           Sigma_he_c_mo(iorb,jorb)=Sigma_he_c_mo(iorb,jorb)-Mat1(korb,Istate)*Mat1(lorb,Istate) &
+                                   *Tmp_mo_w(1+(korb-1)+(iorb-1)*nOrb,1+(jorb-1)+(lorb-1)*nOrb)
+           ! -G^hh W
+           Sigma_hh_c_mo(iorb,jorb)=Sigma_hh_c_mo(iorb,jorb)+Mat1(korb,Istate)*Mat2(lorb,Istate) &
+                                   *Tmp_mo_w(1+(korb-1)+(iorb-1)*nOrb,1+(lorb-1)+(jorb-1)*nOrb)
+          enddo
+         enddo
+        enddo
+       enddo
+      endif
+     enddo
+
+     ! Deallocate all arrays that were needed
+     deallocate(Chi0_mo_w)
+     deallocate(Tmp_mo_w)
+     deallocate(ERI_MO)
+
+   endif
+
+   write(*,*) ' '
+   write(*,'(a,f15.8,a,f15.8,a)') ' HFB Sigma_he_c(wtest) in MO for wtest=(',Real(wtest),",",Aimag(wtest),")"
+   write(*,*) ' '
+   do iorb=1,nOrb
+    write(*,'(*(f10.5))') Real(Sigma_he_c_mo(iorb,:))
+   enddo
+   write(*,*) ' '
+   write(*,*) ' '
+   write(*,'(a,f15.8,a,f15.8,a)') ' HFB Sigma_hh_c(wtest) in MO for wtest=(',Real(wtest),",",Aimag(wtest),")"
+   write(*,*) ' '
+   do iorb=1,nOrb
+    write(*,'(*(f10.5))') Real(Sigma_hh_c_mo(iorb,:))
+   enddo
+   write(*,*) ' '
+
   endif
 
   write(*,*)'-------------------------------------------------------------------------------'
@@ -290,6 +383,7 @@ subroutine Xoiw_HFB_tests(nBas,nOrb,nOrb_twice,cHFB,eHFB,nfreqs,ntimes,wweight,w
   deallocate(vMat)
   deallocate(Sigma_he_c_ao,G_ao_1,G_ao_2)
   deallocate(Sigma_hh_c_ao,G_ao_3,G_ao_4)
+  deallocate(Sigma_he_c_mo,Sigma_hh_c_mo)
   deallocate(Mat1,Mat2,Mat3,Mat4)
 
   call wall_time(end_Xoiw)

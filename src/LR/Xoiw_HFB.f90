@@ -49,7 +49,9 @@ subroutine Xoiw_HFB(nOrb,nOrb_twice,eta,eHFB,weval,Mat1,Mat2,Chi0_mo_iw)
         index_rq=1+(rorb-1)+(qorb-1)*nOrb
         Chi0_mo_iw(index_ps,index_rq)=Chi0_mo_iw(index_ps,index_rq)                     &
                                   +factor1/(weval-(-eHFB(Istate)-eHFB(Jstate))+im*eta)  &
-                                  -factor2/(weval+(-eHFB(Istate)-eHFB(Jstate))-im*eta)
+                                  -factor2/(weval+(-eHFB(Istate)-eHFB(Jstate))-im*eta)  &
+                                  +factor1/(-weval-(-eHFB(Istate)-eHFB(Jstate))+im*eta) &
+                                  -factor2/(-weval+(-eHFB(Istate)-eHFB(Jstate))-im*eta)
        enddo
       enddo
      enddo
@@ -57,7 +59,7 @@ subroutine Xoiw_HFB(nOrb,nOrb_twice,eta,eHFB,weval,Mat1,Mat2,Chi0_mo_iw)
    enddo
   enddo
   
-  Chi0_mo_iw=4d0*Chi0_mo_iw  ! Times 4 because of the spin and to include sorb < porb and qorb < rorb
+  Chi0_mo_iw=2d0*Chi0_mo_iw  ! Times 2 because of the spin
 
 end subroutine
 
