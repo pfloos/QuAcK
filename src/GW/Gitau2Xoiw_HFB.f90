@@ -101,7 +101,7 @@ subroutine Gitau2Chi0iw_HFB(nBas,nBas2,nOrb,nOrb_twice,cHFB,eHFB,nfreqs,ntimes,w
   Mat2(1:nOrb,1:nOrb)=U_QP(nOrb+1:nOrb_twice,1:nOrb)
   lesser=.true.  ! Build AO G<
   call build_Glorg_HFB(nBas,nOrb,nOrb_twice,tcoord(itau),Glesser_hh,cHFB,eHFB,Mat1,Mat2,lesser)
-  lesser=.false. ! Build AO G>
+  lesser=.false. ! Build AO G> [this one should be computed with -Mat2 according to Eq. 45 in V. Soma et al Phys. Rev. C, 84, 064317 (2011)] 
   call build_Glorg_HFB(nBas,nOrb,nOrb_twice,tcoord(itau),Ggreater_ee,cHFB,eHFB,Mat1,Mat2,lesser)
 
   ! Xo(i tau) = -2i G<(i tau) G>(-i tau)
@@ -111,7 +111,7 @@ subroutine Gitau2Chi0iw_HFB(nBas,nBas2,nOrb,nOrb_twice,cHFB,eHFB,nfreqs,ntimes,w
      do lbas=1,nBas                       
                           ! r1   r2'               r2   r1'
       product = Glesser_he(ibas,jbas)*Ggreater_he(kbas,lbas) &
-              - Glesser_hh(ibas,jbas)*Ggreater_ee(kbas,lbas)
+              - Glesser_hh(ibas,jbas)*Ggreater_ee(kbas,lbas)   ! [we add a minus to compensate not using -Mat2 according to Soma's paper]
       if(abs(product)<1e-12) product=czero
       Chi0_ao_itau(1+(lbas-1)+(ibas-1)*nBas,1+(kbas-1)+(jbas-1)*nBas) = product
      enddo
