@@ -1,3 +1,62 @@
+subroutine fit_y_eq_ax2_bx_c(npoints,x,y,abc,error)
+
+ use m_lbfgs
+ implicit none
+
+ ! Input variables
+ integer                      :: npoints
+
+ double precision,intent(in)  :: x(npoints),y(npoints)
+
+ logical                      :: diagco
+
+ ! Local variables
+
+ integer                      :: ipoint
+ integer                      :: Mtosave
+ integer                      :: Nwork
+ integer                      :: icall
+ integer                      :: iflag
+ integer,parameter            :: msave=7
+ integer                      :: info_print(2)
+
+ double precision             :: abc_grad(3)
+ double precision,allocatable :: x2(:)
+ double precision,allocatable :: Work(:),diag(:)
+
+ ! Ouput variables
+
+ double precision,intent(out) :: error
+ double precision,intent(out) :: abc(3)
+
+ !
+ Nwork=npoints*(2*msave+1)+2*msave
+ Mtosave=5; info_print(1)= -1; info_print(2)= 0; diagco= .false.;
+ icall=0; iflag=0; abc(3)=1d0;
+
+ allocate(Work(Nwork),diag(npoints),x2(npoints))
+ x2(:) = x(:)*x(:)
+ do
+  error=0d0
+  abc_grad=0d0
+  do ipoint=1,npoints
+   error=error+(y(ipoint)-abc(1)*x2(ipoint)-abc(2)*x(ipoint)-abc(3))**2d0
+   abc_grad(1)=abc_grad(1)+(y(ipoint)-abc(1)*x2(ipoint)-abc(2)*x(ipoint)-abc(3))*(-x2(ipoint))
+   abc_grad(2)=abc_grad(2)+(y(ipoint)-abc(1)*x2(ipoint)-abc(2)*x(ipoint)-abc(3))*(-x(ipoint))
+   abc_grad(3)=abc_grad(3)+(y(ipoint)-abc(1)*x2(ipoint)-abc(2)*x(ipoint)-abc(3))*(-1d0)
+  enddo
+  abc_grad(:)=2d0*abc_grad(:)
+  call lbfgs(npoints,Mtosave,abc,error,abc_grad,diagco,diag,info_print,1d-6,1d-16,Work,iflag)
+  if(iflag<=0) exit
+  icall=icall+1
+  !  We allow at most 2000 evaluations
+  if(icall==2000) exit
+ enddo
+ error=sqrt(error)
+ deallocate(Work,diag,x2)
+
+end subroutine
+
 !------------------------------------------------------------------------
 function Heaviside_step(x) result(val)
 
