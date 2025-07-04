@@ -207,6 +207,9 @@ subroutine Xoiw_RHF_tests(nBas,nOrb,nO,wtest,cHF,eHF,nfreqs,ntimes,wweight,wcoor
    
   enddo
 
+  ! Build MO Sigma_c_mo contibution from imaginary axis
+  Sigma_c_mo = matmul(transpose(cHF),matmul(Sigma_c_ao,cHF))
+
   ! Print Sigma_c_ao
   if(fulltest) then
 
@@ -243,9 +246,6 @@ subroutine Xoiw_RHF_tests(nBas,nOrb,nO,wtest,cHF,eHF,nfreqs,ntimes,wweight,wcoor
      chem_pot = 0.5d0*(eHF(nO)+eHF(nO+1))
      eHF(:) = eHF(:)-chem_pot
  
-     ! Build MO Sigma_c_mo contibution from imaginary axis
-     Sigma_c_mo = matmul(transpose(cHF),matmul(Sigma_c_ao,cHF))
-    
      ! Occupied residues
      do porb=1,nO
       if(Heaviside_step(eHF(porb)-Real(wtest))>0d0) then

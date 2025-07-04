@@ -242,6 +242,10 @@ subroutine Xoiw_HFB_tests(nBas,nOrb,nOrb_twice,wtest,cHFB,eHFB,nfreqs,ntimes,wwe
    
   enddo
 
+  ! Build MO Sigma_c_mo contibution from imaginary axis
+  Sigma_he_c_mo = matmul(transpose(cHFB),matmul(Sigma_he_c_ao,cHFB))
+  Sigma_hh_c_mo = matmul(transpose(cHFB),matmul(Sigma_hh_c_ao,cHFB))
+
   ! Print Sigma_he/hh_c_ao
   if(fulltest) then
 
@@ -280,10 +284,6 @@ subroutine Xoiw_HFB_tests(nBas,nOrb,nOrb_twice,wtest,cHFB,eHFB,nfreqs,ntimes,wwe
       enddo
      enddo
 
-     ! Build MO Sigma_c_mo contibution from imaginary axis
-     Sigma_he_c_mo = matmul(transpose(cHFB),matmul(Sigma_he_c_ao,cHFB))
-     Sigma_hh_c_mo = matmul(transpose(cHFB),matmul(Sigma_hh_c_ao,cHFB))
-  
      ! WE ONLY HAVE IMPLEMENTED NEGATIVE REAL wtest OR PURELY IMAGINARY wtest FOR Sigma_c^he/hh
      ! Gorkov density residues [ the complementary residues, for eHFB>0, are not needed because
      !                           Sigma_c(eHFB>0) will be just -Sigma_c(eHFB) in the H^qsBGW ]
