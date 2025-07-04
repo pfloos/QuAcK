@@ -1,5 +1,5 @@
 subroutine Xoiw_RHF_tests(nBas,nOrb,nO,wtest,cHF,eHF,nfreqs,ntimes,wweight,wcoord,ERI_AO,&
-                          fulltest)
+                          Sigma_c_mo,fulltest)
 
 ! Restricted Xo(i tau) [ and Xo(i w) ] computed from G(i tau)
 
@@ -51,11 +51,15 @@ subroutine Xoiw_RHF_tests(nBas,nOrb,nO,wtest,cHF,eHF,nfreqs,ntimes,wweight,wcoor
 
   complex *16                   :: weval
   complex *16,allocatable       :: Sigma_c_ao(:,:)
-  complex *16,allocatable       :: Sigma_c_mo(:,:)
   complex *16,allocatable       :: G_ao_1(:,:)
   complex *16,allocatable       :: G_ao_2(:,:)
   complex *16,allocatable       :: Chi0_mo_w(:,:)
   complex *16,allocatable       :: Chi0_ao_iw(:,:,:)
+
+! Ouput variables
+
+  complex *16,intent(out)       :: Sigma_c_mo(nOrb,nOrb)
+
 !
 
   nBas2=nBas*nBas
@@ -79,7 +83,6 @@ subroutine Xoiw_RHF_tests(nBas,nOrb,nO,wtest,cHF,eHF,nfreqs,ntimes,wweight,wcoor
   allocate(Wp_AO(nBas,nBas,nBas,nBas),Wp_MO(nOrb,nOrb,nOrb,nOrb),Wp_tmp(nOrb*nOrb,nOrb*nOrb))
   allocate(Wp_ao_iw(nBas2,nBas2))
   allocate(vMAT(nBas2,nBas2))
-  allocate(Sigma_c_mo(nOrb,nOrb))
   allocate(Sigma_c_ao(nBas,nBas),G_ao_1(nBas,nBas),G_ao_2(nBas,nBas))
   Sigma_c_ao=czero
   Sigma_c_mo=czero
@@ -330,7 +333,6 @@ subroutine Xoiw_RHF_tests(nBas,nOrb,nO,wtest,cHF,eHF,nfreqs,ntimes,wweight,wcoor
   deallocate(Chi0_ao_iw_v,Chi_ao_iw_v,Wp_ao_iw)
   deallocate(Wp_AO,Wp_MO,Wp_tmp)
   deallocate(vMAT)
-  deallocate(Sigma_c_mo)
   deallocate(Sigma_c_ao,G_ao_1,G_ao_2)
 
   call wall_time(end_Xoiw)

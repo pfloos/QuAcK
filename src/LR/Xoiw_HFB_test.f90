@@ -1,5 +1,5 @@
 subroutine Xoiw_HFB_tests(nBas,nOrb,nOrb_twice,wtest,cHFB,eHFB,nfreqs,ntimes,wweight,wcoord,  &
-                          U_QP,ERI_AO,fulltest)
+                          U_QP,ERI_AO,Sigma_he_c_mo,Sigma_hh_c_mo,fulltest)
 
 ! Restricted Xo(i tau) [ and Xo(i w) ] computed from G(i tau)
 
@@ -56,14 +56,18 @@ subroutine Xoiw_HFB_tests(nBas,nOrb,nOrb_twice,wtest,cHFB,eHFB,nfreqs,ntimes,wwe
   complex *16                   :: weval
   complex *16,allocatable       :: Sigma_he_c_ao(:,:)
   complex *16,allocatable       :: Sigma_hh_c_ao(:,:)
-  complex *16,allocatable       :: Sigma_he_c_mo(:,:)
-  complex *16,allocatable       :: Sigma_hh_c_mo(:,:)
   complex *16,allocatable       :: G_ao_1(:,:)
   complex *16,allocatable       :: G_ao_2(:,:)
   complex *16,allocatable       :: G_ao_3(:,:)
   complex *16,allocatable       :: G_ao_4(:,:)
   complex *16,allocatable       :: Chi0_mo_w(:,:)
   complex *16,allocatable       :: Chi0_ao_iw(:,:,:)
+
+! Ouput variables
+
+  complex *16,intent(out)       :: Sigma_he_c_mo(nOrb,nOrb)
+  complex *16,intent(out)       :: Sigma_hh_c_mo(nOrb,nOrb)
+
 !
 
   nBas2=nBas*nBas
@@ -87,8 +91,6 @@ subroutine Xoiw_HFB_tests(nBas,nOrb,nOrb_twice,wtest,cHFB,eHFB,nfreqs,ntimes,wwe
   allocate(Wp_AO(nBas,nBas,nBas,nBas),Wp_MO(nOrb,nOrb,nOrb,nOrb),Wp_tmp(nOrb*nOrb,nOrb*nOrb))
   allocate(Wp_ao_iw(nBas2,nBas2))
   allocate(vMat(nBas2,nBas2))
-  allocate(Sigma_he_c_mo(nOrb,nOrb))
-  allocate(Sigma_hh_c_mo(nOrb,nOrb))
   allocate(Mat1(nOrb,nOrb))
   allocate(Mat2(nOrb,nOrb))
   allocate(Mat3(nOrb,nOrb))
@@ -358,7 +360,6 @@ subroutine Xoiw_HFB_tests(nBas,nOrb,nOrb_twice,wtest,cHFB,eHFB,nfreqs,ntimes,wwe
   deallocate(vMat)
   deallocate(Sigma_he_c_ao,G_ao_1,G_ao_2)
   deallocate(Sigma_hh_c_ao,G_ao_3,G_ao_4)
-  deallocate(Sigma_he_c_mo,Sigma_hh_c_mo)
   deallocate(Mat1,Mat2,Mat3,Mat4)
 
   call wall_time(end_Xoiw)

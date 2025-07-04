@@ -40,8 +40,8 @@ subroutine BQuAcK(working_dir,dotest,doHFB,doqsGW,nNuc,nBas,nOrb,nO,ENuc,ZNuc,rN
 
 ! Local variables
 
-  logical                       :: simpletest
-  logical                       :: fulltest
+  logical                       :: simpletest_rhf,simpletest_hfb
+  logical                       :: fulltest_rhf,fulltest_hfb
   logical                       :: file_exists
   integer                       :: nOrb_twice
   integer                       :: nO_
@@ -65,16 +65,11 @@ subroutine BQuAcK(working_dir,dotest,doHFB,doqsGW,nNuc,nBas,nOrb,nO,ENuc,ZNuc,rN
   double precision,allocatable  :: dipole_int_MO(:,:,:)
   double precision,allocatable  :: ERI_AO(:,:,:,:)
 
-  complex *16                   :: wtest
 
 !
-  ! FOR Sigma_c^rhf, REAL OR PURELY IMAGINARY wtest VALUES ARE IMPLEMENTED
-  ! FOR Sigma_c^he/hh, ONLY NEGATIVE REAL OR PURELY IMAGINARY wtest VALUES ARE IMPLEMENTED (we dont need positive real!)
-  simpletest=.false.
-  fulltest=.false. ! TODO: set it to .true. to compute Sigma_c
-  wtest=-4.2d0     ! TODO: set by hand Sigma_c(wtest) test values
-  !wtest=-4.8d0
-  !wtest=wcoord(1)*im
+  simpletest_rhf=.false.; simpletest_hfb=.false.;
+  ! TODO: set fulltest_X to .true. to compute Sigma_c
+  fulltest_rhf  =.false.; fulltest_hfb  =.false.; 
 
   write(*,*)
   write(*,*) '******************************'
@@ -155,11 +150,22 @@ subroutine BQuAcK(working_dir,dotest,doHFB,doqsGW,nNuc,nBas,nOrb,nO,ENuc,ZNuc,rN
     write(*,'(A65,1X,F9.3,A8)') 'Total wall time for RHF = ',t_HF,' seconds'
     write(*,*)
 
-    ! Test Xo^HF (i w) computing EcGM and EcRPA and building Wp and Sigma_c
-    if(im_freqs .and. simpletest) then
+    ! Test Xo^RHF (i w) computing EcGM and EcRPA and building Wp and Sigma_c
+    if(im_freqs .and. simpletest_rhf) then
 
-      call Xoiw_RHF_tests(nBas,nOrb,nO,wtest,cHFB,eHF,nfreqs,ntimes,wweight,wcoord,ERI_AO, &
-                          fulltest)
+      ! FOR Sigma_c^rhf, REAL OR PURELY IMAGINARY wtest VALUES ARE IMPLEMENTED
+      block
+       complex *16,allocatable       :: Sigma_c_mo(:,:)
+       complex *16                   :: wtest
+       ! TODO: set by hand Sigma_c(wtest) test values
+       wtest =-4.2d0
+       !wtest=-4.8d0
+       !wtest=wcoord(1)*im
+       allocate(Sigma_c_mo(nOrb,nOrb))
+       call Xoiw_RHF_tests(nBas,nOrb,nO,wtest,cHFB,eHF,nfreqs,ntimes,wweight,wcoord,ERI_AO, &
+                           Sigma_c_mo,fulltest_rhf)
+       deallocate(Sigma_c_mo)
+      endblock
 
     endif
 
@@ -175,10 +181,24 @@ subroutine BQuAcK(working_dir,dotest,doHFB,doqsGW,nNuc,nBas,nOrb,nO,ENuc,ZNuc,rN
     write(*,*)
 
     ! Test Xo^HFB (i w) computing EcGM and EcRPA and building Wp and Sigma_c
-    if(im_freqs .and. simpletest) then
+    if(im_freqs .and. simpletest_hfb) then
 
-      call Xoiw_HFB_tests(nBas,nOrb,nOrb_twice,wtest,cHFB,eONEBODY_state,nfreqs,ntimes,wweight, &
-                          wcoord,U_QP,ERI_AO,fulltest)
+      ! FOR Sigma_c^he/hh, ONLY NEGATIVE REAL OR PURELY IMAGINARY wtest VALUES ARE IMPLEMENTED (we don't need positive real!)
+      block
+       complex *16,allocatable       :: Sigma_he_c_mo(:,:)
+       complex *16,allocatable       :: Sigma_hh_c_mo(:,:)
+       complex *16                   :: wtest
+       ! TODO: set by hand Sigma_he/hh_c(wtest) test values
+       wtest =-4.2d0
+       !wtest=-4.8d0
+       !wtest=wcoord(1)*im
+       allocate(Sigma_he_c_mo(nOrb,nOrb))
+       allocate(Sigma_hh_c_mo(nOrb,nOrb))
+       call Xoiw_HFB_tests(nBas,nOrb,nOrb_twice,wtest,cHFB,eONEBODY_state,nfreqs,ntimes,wweight, &
+                           wcoord,U_QP,ERI_AO,Sigma_he_c_mo,Sigma_hh_c_mo,fulltest_hfb)
+       deallocate(Sigma_he_c_mo)
+       deallocate(Sigma_hh_c_mo)
+      endblock
 
     endif
 
