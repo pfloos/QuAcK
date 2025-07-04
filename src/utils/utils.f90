@@ -1,8 +1,5 @@
 subroutine fit_y_eq_ax2_bx_c(npoints,x,y,abc,error)
 
- use m_lbfgs
- implicit none
-
  ! Input variables
  integer                      :: npoints
 
@@ -11,30 +8,62 @@ subroutine fit_y_eq_ax2_bx_c(npoints,x,y,abc,error)
  logical                      :: diagco
 
  ! Local variables
+ integer                       :: iflag
+ integer                       :: ipoint
+ double precision              :: abc_grad(3)
+ double precision,allocatable  :: x2(:)
 
- integer                      :: ipoint
- integer                      :: Mtosave
- integer                      :: Nwork
- integer                      :: icall
- integer                      :: iflag
- integer,parameter            :: msave=7
- integer                      :: info_print(2)
-
- double precision             :: abc_grad(3)
- double precision,allocatable :: x2(:)
- double precision,allocatable :: Work(:),diag(:)
+ integer                       :: lbfgs_status
+ integer                       :: ndim
+ integer                       :: history_record
+ integer                       :: iter
+ double precision              :: gtol
+ double precision, allocatable :: diag(:)
+ double precision, allocatable :: work(:)
+ double precision              :: line_stp
+ double precision              :: line_stpmin
+ double precision              :: line_stpmax
+ integer                       :: line_info
+ integer                       :: line_infoc
+ integer                       :: line_nfev
+ integer                       :: nwork
+ double precision              :: line_dginit
+ double precision              :: line_finit
+ double precision              :: line_stx
+ double precision              :: line_fx
+ double precision              :: line_dgx
+ double precision              :: line_sty
+ double precision              :: line_fy
+ double precision              :: line_dgy
+ double precision              :: line_stmin
+ double precision              :: line_stmax
+ logical                       :: line_bracket
+ logical                       :: line_stage1
 
  ! Ouput variables
 
- double precision,intent(out) :: error
- double precision,intent(out) :: abc(3)
+ double precision,intent(out)  :: error
+ double precision,intent(out)  :: abc(3)
 
- !
- Nwork=npoints*(2*msave+1)+2*msave
- Mtosave=5; info_print(1)= -1; info_print(2)= 0; diagco= .false.;
+ ! Initialization
+
+ lbfgs_status = 0
+ iter   = 0
+ ndim   = 3 
+ history_record = 5
+ nwork = ndim * ( 2 * history_record + 1 ) + 2 * history_record
+ gtol = 0.90d0
+ line_stpmin = 1.0d-20
+ line_stpmax = 1.0d20
+ line_stp    = 1.0d0
  icall=0; iflag=0; abc(3)=1d0;
 
- allocate(Work(Nwork),diag(npoints),x2(npoints))
+ ! Allocate arrays
+
+ allocate(work(nwork),diag(ndim),x2(npoints))
+ diag(:) = 1.0d0
+
+ ! Run least squares with LBFGS
  x2(:) = x(:)*x(:)
  do
   error=0d0
@@ -46,14 +75,24 @@ subroutine fit_y_eq_ax2_bx_c(npoints,x,y,abc,error)
    abc_grad(3)=abc_grad(3)+(y(ipoint)-abc(1)*x2(ipoint)-abc(2)*x(ipoint)-abc(3))*(-1d0)
   enddo
   abc_grad(:)=2d0*abc_grad(:)
-  call lbfgs(npoints,Mtosave,abc,error,abc_grad,diagco,diag,info_print,1d-6,1d-16,Work,iflag)
+
+  call lbfgs(ndim, history_record, abc, error, abc_grad, diag, work, lbfgs_status, &
+       gtol, line_stpmin, line_stpmax, line_stp, iter, line_info, line_nfev,       &
+       line_dginit, line_finit,line_stx,  line_fx,  line_dgx,                      &
+       line_sty,  line_fy,  line_dgy, line_stmin,  line_stmax,                     &
+       line_bracket, line_stage1, line_infoc)
+
+  iflag = lbfgs_status
+
   if(iflag<=0) exit
   icall=icall+1
   !  We allow at most 2000 evaluations
   if(icall==2000) exit
  enddo
  error=sqrt(error)
- deallocate(Work,diag,x2)
+
+ ! Deallocate and exit
+ deallocate(work,diag,x2)
 
 end subroutine
 
