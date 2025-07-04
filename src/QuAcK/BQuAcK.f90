@@ -70,9 +70,9 @@ subroutine BQuAcK(working_dir,dotest,doHFB,doqsGW,nNuc,nBas,nOrb,nO,ENuc,ZNuc,rN
 !
   ! FOR Sigma_c^rhf, REAL OR PURELY IMAGINARY wtest VALUES ARE IMPLEMENTED
   ! FOR Sigma_c^he/hh, ONLY NEGATIVE REAL OR PURELY IMAGINARY wtest VALUES ARE IMPLEMENTED (we dont need positive real!)
-  simpletest=.true.
-  fulltest=.false. ! TODO: set it to compute Sigma_c
-  wtest=-4.2d0     ! TODO: set by hand test values
+  simpletest=.false.
+  fulltest=.false. ! TODO: set it to .true. to compute Sigma_c
+  wtest=-4.2d0     ! TODO: set by hand Sigma_c(wtest) test values
   !wtest=-4.8d0
   !wtest=wcoord(1)*im
 
