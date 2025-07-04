@@ -1,5 +1,5 @@
-subroutine Xoiw_HFB_tests(nBas,nOrb,nOrb_twice,cHFB,eHFB,nfreqs,ntimes,wweight,wcoord,  &
-                          U_QP,ERI_AO)
+subroutine Xoiw_HFB_tests(nBas,nOrb,nOrb_twice,wtest,cHFB,eHFB,nfreqs,ntimes,wweight,wcoord,  &
+                          U_QP,ERI_AO,fulltest)
 
 ! Restricted Xo(i tau) [ and Xo(i w) ] computed from G(i tau)
 
@@ -8,11 +8,15 @@ subroutine Xoiw_HFB_tests(nBas,nOrb,nOrb_twice,cHFB,eHFB,nfreqs,ntimes,wweight,w
 
 ! Input variables
 
+  logical,intent(in)            :: fulltest
+
   integer,intent(in)            :: nfreqs
   integer,intent(in)            :: ntimes
   integer,intent(in)            :: nBas
   integer,intent(in)            :: nOrb
   integer,intent(in)            :: nOrb_twice
+
+  complex *16,intent(in)        :: wtest
 
   double precision,intent(in)   :: eHFB(nOrb_twice)
   double precision,intent(in)   :: wweight(nfreqs)
@@ -22,8 +26,6 @@ subroutine Xoiw_HFB_tests(nBas,nOrb,nOrb_twice,cHFB,eHFB,nfreqs,ntimes,wweight,w
   double precision,intent(in)   :: ERI_AO(nBas,nBas,nBas,nBas)
 
 ! Local variables
-
-  logical                       :: fulltest
 
   integer                       :: ibas,jbas,lbas,kbas,ifreq
   integer                       :: iorb,jorb,korb,lorb,Istate
@@ -51,7 +53,7 @@ subroutine Xoiw_HFB_tests(nBas,nOrb,nOrb_twice,cHFB,eHFB,nfreqs,ntimes,wweight,w
   double precision,allocatable  :: ERI_MO(:,:,:,:)
   double precision,allocatable  :: Tmp_mo_w(:,:)
 
-  complex *16                   :: wtest,weval
+  complex *16                   :: weval
   complex *16,allocatable       :: Sigma_he_c_ao(:,:)
   complex *16,allocatable       :: Sigma_hh_c_ao(:,:)
   complex *16,allocatable       :: Sigma_he_c_mo(:,:)
@@ -61,17 +63,11 @@ subroutine Xoiw_HFB_tests(nBas,nOrb,nOrb_twice,cHFB,eHFB,nfreqs,ntimes,wweight,w
   complex *16,allocatable       :: G_ao_3(:,:)
   complex *16,allocatable       :: G_ao_4(:,:)
   complex *16,allocatable       :: Chi0_mo_w(:,:)
-  complex *16,allocatable       :: Chi0_mo_iw(:,:)
   complex *16,allocatable       :: Chi0_ao_iw(:,:,:)
 !
 
-  fulltest=.false.     ! TODO adjust it to print Chi0(iw), Wp, and Sigma_c
   nBas2=nBas*nBas
   nOrb2=nOrb*nOrb
-  ! WE ONLY HAVE IMPLEMENTED NEGATIVE REAL wtest OR PURELY IMAGINARY wtest FOR Sigma_c^he/hh
-  wtest=0.000005967*im ! TODO use test values 
-  !wtest=-4.2d0
-  !wtest=-4.8d0
 
 !------------------------------------------------------------------------
 ! Build G(i tau) in AO basis
@@ -123,27 +119,6 @@ subroutine Xoiw_HFB_tests(nBas,nOrb,nOrb_twice,cHFB,eHFB,nfreqs,ntimes,wweight,w
 !-----------------------------!
 
   call Gitau2Chi0iw_HFB(nBas,nBas2,nOrb,nOrb_twice,cHFB,eHFB,nfreqs,ntimes,wcoord,U_QP,Chi0_ao_iw)
-
-  if(fulltest) then
-
-   ifreq=1; eta=0.00001; ! TODO select a frequency of wcoord
-   allocate(Chi0_mo_iw(nOrb*nOrb,nOrb*nOrb))
-
-   Mat1(1:nOrb,1:nOrb)=U_QP(1:nOrb,1:nOrb)
-   Mat2(1:nOrb,1:nOrb)=U_QP(nOrb+1:nOrb_twice,1:nOrb)
-
-   call Xoiw_HFB(nOrb,nOrb_twice,eta,eHFB,wcoord(ifreq)*im,Mat1,Mat2,Chi0_mo_iw)
-
-   write(*,'(a,f15.8,a)') ' HFB Xo in MO for wcoord=(',wcoord(ifreq),")" 
-   write(*,*) ' '
-   do iorb=1,nOrb2
-    write(*,'(*(f10.5))') Real(Chi0_mo_iw(iorb,:))
-   enddo
-   write(*,*) ' '
-
-   deallocate(Chi0_mo_iw)
-
-  endif
 
 !----------------------!
 ! Use Xo(i w) as usual !
@@ -216,7 +191,7 @@ subroutine Xoiw_HFB_tests(nBas,nOrb,nOrb_twice,cHFB,eHFB,nfreqs,ntimes,wweight,w
        enddo
       enddo
       write(*,*) ' ' 
-      write(*,*) 'HFB Wp_MO(i w1) ' 
+      write(*,*) 'HFB Wp_MO(i w_1) ' 
       write(*,*) ' ' 
       do iorb=1,nOrb*nOrb
        write(*,'(*(f10.5))') Wp_tmp(iorb,:)

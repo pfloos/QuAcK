@@ -40,6 +40,7 @@ subroutine BQuAcK(working_dir,dotest,doHFB,doqsGW,nNuc,nBas,nOrb,nO,ENuc,ZNuc,rN
 
 ! Local variables
 
+  logical                       :: simpletest
   logical                       :: fulltest
   logical                       :: file_exists
   integer                       :: nOrb_twice
@@ -64,8 +65,16 @@ subroutine BQuAcK(working_dir,dotest,doHFB,doqsGW,nNuc,nBas,nOrb,nO,ENuc,ZNuc,rN
   double precision,allocatable  :: dipole_int_MO(:,:,:)
   double precision,allocatable  :: ERI_AO(:,:,:,:)
 
+  complex *16                   :: wtest
+
 !
-  fulltest=.true.
+  ! FOR Sigma_c^rhf, REAL OR PURELY IMAGINARY wtest VALUES ARE IMPLEMENTED
+  ! FOR Sigma_c^he/hh, ONLY NEGATIVE REAL OR PURELY IMAGINARY wtest VALUES ARE IMPLEMENTED (we dont need positive real!)
+  simpletest=.true.
+  fulltest=.false. ! TODO: set it to compute Sigma_c
+  wtest=-4.2d0     ! TODO: set by hand test values
+  !wtest=-4.8d0
+  !wtest=wcoord(1)*im
 
   write(*,*)
   write(*,*) '******************************'
@@ -147,9 +156,10 @@ subroutine BQuAcK(working_dir,dotest,doHFB,doqsGW,nNuc,nBas,nOrb,nO,ENuc,ZNuc,rN
     write(*,*)
 
     ! Test Xo^HF (i w) computing EcGM and EcRPA and building Wp and Sigma_c
-    if(im_freqs .and. fulltest) then
+    if(im_freqs .and. simpletest) then
 
-      call Xoiw_RHF_tests(nBas,nOrb,nO,cHFB,eHF,nfreqs,ntimes,wweight,wcoord,ERI_AO)
+      call Xoiw_RHF_tests(nBas,nOrb,nO,wtest,cHFB,eHF,nfreqs,ntimes,wweight,wcoord,ERI_AO, &
+                          fulltest)
 
     endif
 
@@ -165,9 +175,10 @@ subroutine BQuAcK(working_dir,dotest,doHFB,doqsGW,nNuc,nBas,nOrb,nO,ENuc,ZNuc,rN
     write(*,*)
 
     ! Test Xo^HFB (i w) computing EcGM and EcRPA and building Wp and Sigma_c
-    if(im_freqs .and. fulltest) then
+    if(im_freqs .and. simpletest) then
 
-      call Xoiw_HFB_tests(nBas,nOrb,nOrb_twice,cHFB,eONEBODY_state,nfreqs,ntimes,wweight,wcoord,U_QP,ERI_AO)
+      call Xoiw_HFB_tests(nBas,nOrb,nOrb_twice,wtest,cHFB,eONEBODY_state,nfreqs,ntimes,wweight, &
+                          wcoord,U_QP,ERI_AO,fulltest)
 
     endif
 

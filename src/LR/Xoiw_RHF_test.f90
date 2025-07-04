@@ -1,4 +1,5 @@
-subroutine Xoiw_RHF_tests(nBas,nOrb,nO,cHF,eHF,nfreqs,ntimes,wweight,wcoord,ERI_AO)
+subroutine Xoiw_RHF_tests(nBas,nOrb,nO,wtest,cHF,eHF,nfreqs,ntimes,wweight,wcoord,ERI_AO,&
+                          fulltest)
 
 ! Restricted Xo(i tau) [ and Xo(i w) ] computed from G(i tau)
 
@@ -6,6 +7,8 @@ subroutine Xoiw_RHF_tests(nBas,nOrb,nO,cHF,eHF,nfreqs,ntimes,wweight,wcoord,ERI_
   include 'parameters.h'
 
 ! Input variables
+
+  logical,intent(in)            :: fulltest
 
   integer,intent(in)            :: nfreqs
   integer,intent(in)            :: ntimes
@@ -19,9 +22,10 @@ subroutine Xoiw_RHF_tests(nBas,nOrb,nO,cHF,eHF,nfreqs,ntimes,wweight,wcoord,ERI_
   double precision,intent(in)   :: cHF(nBas,nOrb)
   double precision,intent(in)   :: ERI_AO(nBas,nBas,nBas,nBas)
 
+  complex *16,intent(in)        :: wtest
+
 ! Local variables
 
-  logical                       :: fulltest
   integer                       :: ibas,jbas,kbas,lbas,ifreq
   integer                       :: iorb,jorb,korb,lorb,porb
   integer                       :: nBas2,nOrb2
@@ -45,22 +49,17 @@ subroutine Xoiw_RHF_tests(nBas,nOrb,nO,cHF,eHF,nfreqs,ntimes,wweight,wcoord,ERI_
   double precision,allocatable  :: ERI_MO(:,:,:,:)
   double precision,allocatable  :: Tmp_mo_w(:,:)
 
-  complex *16                   :: wtest,weval
+  complex *16                   :: weval
   complex *16,allocatable       :: Sigma_c_ao(:,:)
   complex *16,allocatable       :: Sigma_c_mo(:,:)
   complex *16,allocatable       :: G_ao_1(:,:)
   complex *16,allocatable       :: G_ao_2(:,:)
-  complex *16,allocatable       :: Chi0_mo_iw(:,:)
   complex *16,allocatable       :: Chi0_mo_w(:,:)
   complex *16,allocatable       :: Chi0_ao_iw(:,:,:)
 !
 
-  fulltest=.false.     ! TODO adjust it to print Chi0(iw), Wp, and Sigma_c
   nBas2=nBas*nBas
   nOrb2=nOrb*nOrb
-  wtest=0.000005967*im ! TODO use test values
-  !wtest=-4.8
-  !wtest= 4.8
 
 !------------------------------------------------------------------------
 ! Build G(i tau) in AO basis
@@ -104,24 +103,6 @@ subroutine Xoiw_RHF_tests(nBas,nOrb,nO,cHF,eHF,nfreqs,ntimes,wweight,wcoord,ERI_
 !-----------------------------!
 
   call Gitau2Chi0iw_RHF(nBas,nOrb,nO,cHF,eHF,nfreqs,ntimes,wcoord,Chi0_ao_iw)
-
-  if(fulltest) then
-
-   ifreq=1; eta=0.00001; ! TODO select a frequency of wcoord
-   allocate(Chi0_mo_iw(nOrb*nOrb,nOrb*nOrb))
- 
-   call Xoiw_RHF(nOrb,nO,eta,eHF,wcoord(ifreq)*im,Chi0_mo_iw)
-
-   write(*,'(a,f15.8,a)') ' RHF Xo in MO for wcoord=(',wcoord(ifreq),")" 
-   write(*,*) ' ' 
-   do iorb=1,nOrb2
-    write(*,'(*(f10.5))') Real(Chi0_mo_iw(iorb,:))
-   enddo
-   write(*,*) ' ' 
-
-   deallocate(Chi0_mo_iw)
-
-  endif
 
 !----------------------!
 ! Use Xo(i w) as usual !
@@ -194,7 +175,7 @@ subroutine Xoiw_RHF_tests(nBas,nOrb,nO,cHF,eHF,nfreqs,ntimes,wweight,wcoord,ERI_
        enddo
       enddo
       write(*,*) ' ' 
-      write(*,*) 'RHF Wp_MO(i w1) ' 
+      write(*,*) 'RHF Wp_MO(i w_1) ' 
       write(*,*) ' ' 
       do iorb=1,nOrb*nOrb
        write(*,'(*(f10.5))') Wp_tmp(iorb,:)
