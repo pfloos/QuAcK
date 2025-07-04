@@ -13,20 +13,20 @@ subroutine fit_y_eq_ax2_bx_c(npoints,x,y,abc,error)
  double precision              :: abc_grad(3)
  double precision,allocatable  :: x2(:)
 
+ logical                       :: line_bracket
+ logical                       :: line_stage1
  integer                       :: lbfgs_status
  integer                       :: ndim
  integer                       :: history_record
  integer                       :: iter
- double precision              :: gtol
- double precision, allocatable :: diag(:)
- double precision, allocatable :: work(:)
- double precision              :: line_stp
- double precision              :: line_stpmin
- double precision              :: line_stpmax
  integer                       :: line_info
  integer                       :: line_infoc
  integer                       :: line_nfev
  integer                       :: nwork
+ double precision              :: gtol
+ double precision              :: line_stp
+ double precision              :: line_stpmin
+ double precision              :: line_stpmax
  double precision              :: line_dginit
  double precision              :: line_finit
  double precision              :: line_stx
@@ -37,8 +37,8 @@ subroutine fit_y_eq_ax2_bx_c(npoints,x,y,abc,error)
  double precision              :: line_dgy
  double precision              :: line_stmin
  double precision              :: line_stmax
- logical                       :: line_bracket
- logical                       :: line_stage1
+ double precision, allocatable :: diag(:)
+ double precision, allocatable :: work(:)
 
  ! Ouput variables
 
@@ -56,16 +56,16 @@ subroutine fit_y_eq_ax2_bx_c(npoints,x,y,abc,error)
  line_stpmin = 1.0d-20
  line_stpmax = 1.0d20
  line_stp    = 1.0d0
- icall=0; iflag=0; abc(3)=1d0;
+ icall=0; iflag=0; abc(:)=1d0;
 
  ! Allocate arrays
-
  allocate(work(nwork),diag(ndim),x2(npoints))
  diag(:) = 1.0d0
 
  ! Run least squares with LBFGS
  x2(:) = x(:)*x(:)
  do
+
   error=0d0
   abc_grad=0d0
   do ipoint=1,npoints
@@ -75,6 +75,7 @@ subroutine fit_y_eq_ax2_bx_c(npoints,x,y,abc,error)
    abc_grad(3)=abc_grad(3)+(y(ipoint)-abc(1)*x2(ipoint)-abc(2)*x(ipoint)-abc(3))*(-1d0)
   enddo
   abc_grad(:)=2d0*abc_grad(:)
+  if(sum(abs(abc_grad(:))) < 1d-8) exit
 
   call lbfgs(ndim, history_record, abc, error, abc_grad, diag, work, lbfgs_status, &
        gtol, line_stpmin, line_stpmax, line_stp, iter, line_info, line_nfev,       &
@@ -88,7 +89,10 @@ subroutine fit_y_eq_ax2_bx_c(npoints,x,y,abc,error)
   icall=icall+1
   !  We allow at most 2000 evaluations
   if(icall==2000) exit
+
  enddo
+
+ ! Final Euclidean error 
  error=sqrt(error)
 
  ! Deallocate and exit
