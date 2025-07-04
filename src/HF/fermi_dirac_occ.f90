@@ -80,6 +80,8 @@ subroutine fermi_dirac_occ(nO,nOrb,thrs_N,temperature,chem_pot,Occ,eHF)
     grad_electrons = ( sum(fermi_dirac(eHF,chem_pot+delta_chem_pot,temperature)) &
                    - sum(fermi_dirac(eHF,chem_pot-delta_chem_pot,temperature)) )/(2.0d0*delta_chem_pot)
     chem_pot_change = -(trace_1rdm-nO)/(grad_electrons+1d-10)
+    ! Maximum change is bounded within +/- 0.10
+    chem_pot_change = max( min( chem_pot_change , 0.1d0 / real(isteps) ), -0.1d0 / real(isteps) )
     write(*,'(1X,A1,F16.10,1X,A1,F16.10,1X,A1)') &
     '|',trace_1rdm,'|',chem_pot,'|'
   enddo

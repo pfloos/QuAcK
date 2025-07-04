@@ -33,6 +33,8 @@ subroutine RHF(dotest,maxSCF,thresh,max_diis,guess_type,level_shift,nNuc,ZNuc,rN
 
 ! Local variables
 
+  logical                       :: file_exists
+  integer                       :: iorb
   integer                       :: nSCF
   integer                       :: nBas_Sq
   integer                       :: n_diis
@@ -88,6 +90,17 @@ subroutine RHF(dotest,maxSCF,thresh,max_diis,guess_type,level_shift,nNuc,ZNuc,rN
 ! Guess coefficients and density matrix
 
   call mo_guess(nBas,nOrb,guess_type,S,Hc,X,c)
+
+  inquire(file='hubbard', exist=file_exists)
+  if(file_exists) then
+   inquire(file='site_guess', exist=file_exists)
+   if(file_exists) then
+    c=0d0
+    do iorb=1,nOrb
+     c(iorb,iorb) = 1d0
+    enddo 
+   endif
+  endif
 
   P(:,:) = 2d0 * matmul(c(:,1:nO), transpose(c(:,1:nO)))
 ! call dgemm('N', 'T', nBas, nBas, nO, 2.d0, &
@@ -201,13 +214,21 @@ subroutine RHF(dotest,maxSCF,thresh,max_diis,guess_type,level_shift,nNuc,ZNuc,rN
     write(*,*)'!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!'
     write(*,*)
 
-    deallocate(J,K,err,cp,Fp,err_diis,F_diis)
+    !deallocate(J,K,err,cp,Fp,err_diis,F_diis)
 
-    stop
+    write(*,*) ' Warning! Convergence failed at Hartree-Fock level.'
 
   end if
 
 ! Compute dipole moments
+
+  call Hartree_matrix_AO_basis(nBas,P,ERI,J)
+  call exchange_matrix_AO_basis(nBas,P,ERI,K)
+  F(:,:) = Hc(:,:) + J(:,:) + 0.5d0*K(:,:)
+  Fp = matmul(transpose(X),matmul(F,X))
+  cp(:,:) = Fp(:,:)
+  call diagonalize_matrix(nOrb,cp,eHF)
+  c = matmul(X,cp)
 
   call dipole_moment(nBas,P,nNuc,ZNuc,rNuc,dipole_int,dipole)
   call print_RHF(nBas,nOrb,nO,eHF,c,ENuc,ET,EV,EJ,EK,ERHF,dipole)

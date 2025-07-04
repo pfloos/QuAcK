@@ -1,7 +1,7 @@
 
 ! ---
 
-subroutine print_HFB(nBas, nOrb, nOrb_twice, nO, N_anom, Occ, eHFB_state, ENuc, ET, EV, EJ, EK, EL, ERHF, &
+subroutine print_qsBGW(nBas, nOrb, nOrb_twice, nO, N_anom, Occ, eqsGW_state, ENuc, ET, EV, EJ, EK, EL, EqsGW, &
            chem_pot, dipole, Delta_HL)
 
 ! Print one-electron energies and other stuff
@@ -14,14 +14,14 @@ subroutine print_HFB(nBas, nOrb, nOrb_twice, nO, N_anom, Occ, eHFB_state, ENuc, 
   integer,intent(in)                 :: nBas, nOrb, nOrb_twice
   integer,intent(in)                 :: nO
   double precision,intent(in)        :: Occ(nOrb)
-  double precision,intent(in)        :: eHFB_state(nOrb_twice)
+  double precision,intent(in)        :: eqsGW_state(nOrb_twice)
   double precision,intent(in)        :: ENuc
   double precision,intent(in)        :: ET
   double precision,intent(in)        :: EV
   double precision,intent(in)        :: EJ
   double precision,intent(in)        :: EK
   double precision,intent(in)        :: EL
-  double precision,intent(in)        :: ERHF
+  double precision,intent(in)        :: EqsGW
   double precision,intent(in)        :: chem_pot
   double precision,intent(in)        :: N_anom
   double precision,intent(in)        :: Delta_HL
@@ -50,9 +50,9 @@ subroutine print_HFB(nBas, nOrb, nOrb_twice, nO, N_anom, Occ, eHFB_state, ENuc, 
   write(*,'(A33,1X,F16.10,A3)') ' Exchange     energy = ',EK,' au'
   write(*,'(A33,1X,F16.10,A3)') ' Anomalous    energy = ',EL,' au'
   write(*,'(A50)')           '---------------------------------------'
-  write(*,'(A33,1X,F16.10,A3)') ' Electronic   energy = ',ERHF,' au'
+  write(*,'(A33,1X,F16.10,A3)') ' Electronic   energy = ',EqsGW,' au'
   write(*,'(A33,1X,F16.10,A3)') ' Nuclear   repulsion = ',ENuc,' au'
-  write(*,'(A33,1X,F16.10,A3)') ' HFB          energy = ',ERHF + ENuc,' au'
+  write(*,'(A33,1X,F16.10,A3)') ' qsGW          energy = ',EqsGW + ENuc,' au'
   write(*,'(A50)')           '---------------------------------------'
   write(*,'(A33,1X,F16.10,A3)') ' Chemical potential  = ',chem_pot,' au'
   write(*,'(A33,1X,F16.10,A3)') ' | Anomalous dens |  = ',N_anom,'   '
@@ -67,7 +67,7 @@ subroutine print_HFB(nBas, nOrb, nOrb_twice, nO, N_anom, Occ, eHFB_state, ENuc, 
 ! Print results
 
   write(*,'(A50)') '---------------------------------------'
-  write(*,'(A50)') ' HFB occupation numbers '
+  write(*,'(A50)') ' qsGW occupation numbers '
   write(*,'(A50)') '---------------------------------------'
   trace_occ=0d0
   do iorb=1,nOrb
@@ -81,10 +81,10 @@ subroutine print_HFB(nBas, nOrb, nOrb_twice, nO, N_anom, Occ, eHFB_state, ENuc, 
   write(*,*)
 
   write(*,'(A50)') '---------------------------------------'
-  write(*,'(A50)') ' HFB QP energies '
+  write(*,'(A50)') ' qsGW QP energies '
   write(*,'(A50)') '---------------------------------------'
   do iorb=1,nOrb_twice
-   write(*,'(I7,10F15.8)') iorb,eHFB_state(iorb)
+   write(*,'(I7,10F15.8)') iorb,eqsGW_state(iorb)
   enddo
   write(*,*)
 
