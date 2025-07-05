@@ -172,34 +172,7 @@ subroutine Xoiw_HFB_tests(nBas,nOrb,nOrb_twice,wtest,cHFB,eHFB,nfreqs,ntimes,wwe
    
     ! Building Wp in AO basis
     Wp_ao_iw(:,:)=matmul(vMat(:,:),Chi_ao_iw_v(:,:))
-    if(ifreq==1 .and. fulltest) then
-      do ibas=1,nBas
-       do jbas=1,nBas
-        do kbas=1,nBas
-         do lbas=1,nBas
-          Wp_AO(ibas,jbas,kbas,lbas)=Wp_ao_iw(1+(kbas-1)+(ibas-1)*nBas,1+(lbas-1)+(jbas-1)*nBas)
-         enddo
-        enddo
-       enddo
-      enddo
-      call AOtoMO_ERI_RHF(nBas,nOrb,cHFB,Wp_AO,Wp_MO)
-      do iorb=1,nOrb
-       do jorb=1,nOrb
-        do korb=1,nOrb
-         do lorb=1,nOrb
-          Wp_tmp(1+(korb-1)+(iorb-1)*nBas,1+(lorb-1)+(jorb-1)*nBas)=Wp_MO(iorb,jorb,korb,lorb)
-         enddo
-        enddo
-       enddo
-      enddo
-      write(*,*) ' ' 
-      write(*,*) 'HFB Wp_MO(i w_1) ' 
-      write(*,*) ' ' 
-      do iorb=1,nOrb*nOrb
-       write(*,'(*(f10.5))') Wp_tmp(iorb,:)
-      enddo
-      write(*,*) ' ' 
-    endif
+     ! call AOtoMO_ERI_RHF(nBas,nOrb,cHFB,Wp_AO,Wp_MO) ! we could use this subroutine to get Wp in the MO basis 
 
     ! Build G(iw+wtest)
     eta=0d0
@@ -286,7 +259,7 @@ subroutine Xoiw_HFB_tests(nBas,nOrb,nOrb_twice,wtest,cHFB,eHFB,nfreqs,ntimes,wwe
       enddo
      enddo
 
-     ! WE ONLY HAVE IMPLEMENTED NEGATIVE REAL wtest OR PURELY IMAGINARY wtest FOR Sigma_c^he/hh
+     ! WE HAVE ONLY IMPLEMENTED NEGATIVE REAL wtest OR PURELY IMAGINARY wtest FOR Sigma_c^he/hh
      ! Gorkov density residues [ the complementary residues, for eHFB>0, are not needed because
      !                           Sigma_c(eHFB>0) will be just -Sigma_c(eHFB) in the H^qsBGW ]
      Mat1(1:nOrb,1:nOrb)=U_QP(1:nOrb,1:nOrb)
