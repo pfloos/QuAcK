@@ -58,6 +58,7 @@ subroutine Gitau2Chi0iw_mo_RHF(nOrb,nO,verbose,eHF,ntimes,wcoord,Chi0_mo_iw)
    
  allocate(Glesser(nOrb,nOrb),Ggreater(nOrb,nOrb)) 
  allocate(Chi0_mo_itau(nOrb*nOrb,nOrb*nOrb)) 
+ Chi0_mo_itau(:,:)=czero
 
 !-------------------------!
 ! Prepare time Quadrature !
@@ -94,17 +95,15 @@ subroutine Gitau2Chi0iw_mo_RHF(nOrb,nO,verbose,eHF,ntimes,wcoord,Chi0_mo_iw)
   lesser=.false. ! Build MO G>
   call build_Glorg_mo_RHF(nOrb,nO,tcoord(itau),Ggreater,eHF,lesser)
 
-  ! Xo(i tau) = -2i G<(i tau) G>(-i tau)
-  do iorb=1,nOrb
-   do jorb=1,nOrb
-    do korb=1,nOrb
-     do lorb=1,nOrb                       
-                       ! r1   r2'            r2   r1'
-      product = Glesser(iorb,jorb)*Ggreater(korb,lorb)
-      if(abs(product)<1e-12) product=czero
-      Chi0_mo_itau(1+(lorb-1)+(iorb-1)*nOrb,1+(korb-1)+(jorb-1)*nOrb) = product
-     enddo
-    enddo
+  ! Xo(i tau) = -2i G<(i tau) G>(-i tau) [ In HF using the MO basis, Ggreater and Glesser are diagonal ]
+  do iorb=1,nO
+   jorb=iorb
+   do korb=nO+1,nOrb
+    lorb=korb                       
+                     ! r1   r2'            r2   r1'
+    product = Glesser(iorb,jorb)*Ggreater(korb,lorb)
+    if(abs(product)<1e-12) product=czero
+    Chi0_mo_itau(1+(lorb-1)+(iorb-1)*nOrb,1+(korb-1)+(jorb-1)*nOrb) = product
    enddo
   enddo
   Chi0_mo_itau=-2d0*im*Chi0_mo_itau ! The 2 factor is added to account for both spin contributions [ i.e., (up,up,up,up) and (down,down,down,down) ]

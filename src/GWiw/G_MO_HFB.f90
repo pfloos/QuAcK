@@ -1,4 +1,4 @@
-subroutine G_MO_HFB(nOrb,nOrb_twice,eta,eHFB,wcoord,MAT1,MAT2,MAT3,MAT4,G_MO)
+subroutine G_MO_HFB(nOrb,nOrb_twice,eta,eHFB,wcoord,Mat1,Mat2,Mat3,Mat4,G_MO)
 
 ! G(i w)
 
@@ -11,10 +11,10 @@ subroutine G_MO_HFB(nOrb,nOrb_twice,eta,eHFB,wcoord,MAT1,MAT2,MAT3,MAT4,G_MO)
   integer,intent(in)            :: nOrb_twice
 
   double precision,intent(in)   :: eta
-  double precision,intent(in)   :: MAT1(nOrb,nOrb)
-  double precision,intent(in)   :: MAT2(nOrb,nOrb)
-  double precision,intent(in)   :: MAT3(nOrb,nOrb)
-  double precision,intent(in)   :: MAT4(nOrb,nOrb)
+  double precision,intent(in)   :: Mat1(nOrb,nOrb)
+  double precision,intent(in)   :: Mat2(nOrb,nOrb)
+  double precision,intent(in)   :: Mat3(nOrb,nOrb)
+  double precision,intent(in)   :: Mat4(nOrb,nOrb)
 
 
   complex*16,intent(in)         :: wcoord

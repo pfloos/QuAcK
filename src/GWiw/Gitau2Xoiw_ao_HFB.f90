@@ -191,17 +191,10 @@ subroutine build_Glorg_HFB(nBas,nOrb,nOrb_twice,tau,Glorg,cHFB,eHFB,Mat1,Mat2,le
   allocate(Gtmp(nOrb,nOrb)) 
   Gtmp=czero
   
-  if(lesser) then ! G<
-   do iorb=1,nOrb
-     Gtmp(:,:) = Gtmp(:,:) + fact*im*Exp(eHFB(iorb)*tau) &
-               * matmul(Mat1(:,iorb:iorb),transpose(Mat2(:,iorb:iorb)))
-   enddo
-  else            ! G>
-   do iorb=1,nOrb
-     Gtmp(:,:) = Gtmp(:,:) + fact*im*Exp(eHFB(iorb)*tau) &
-               * matmul(Mat1(:,iorb:iorb),transpose(Mat2(:,iorb:iorb)))
-   enddo
-  endif 
+  do iorb=1,nOrb
+    Gtmp(:,:) = Gtmp(:,:) + fact*im*Exp(eHFB(iorb)*tau) &
+              * matmul(Mat1(:,iorb:iorb),transpose(Mat2(:,iorb:iorb)))
+  enddo
 
   Glorg=matmul(matmul(cHFB,Gtmp),transpose(cHFB))
   
