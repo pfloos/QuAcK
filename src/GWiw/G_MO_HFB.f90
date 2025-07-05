@@ -1,4 +1,4 @@
-subroutine G_AO_HFB(nBas,nOrb,nOrb_twice,eta,cHFB,eHFB,wcoord,MAT1,MAT2,MAT3,MAT4,G_AO)
+subroutine G_MO_HFB(nOrb,nOrb_twice,eta,eHFB,wcoord,MAT1,MAT2,MAT3,MAT4,G_MO)
 
 ! G(i w)
 
@@ -7,12 +7,10 @@ subroutine G_AO_HFB(nBas,nOrb,nOrb_twice,eta,cHFB,eHFB,wcoord,MAT1,MAT2,MAT3,MAT
 
 ! Input variables
 
-  integer,intent(in)            :: nBas
   integer,intent(in)            :: nOrb
   integer,intent(in)            :: nOrb_twice
 
   double precision,intent(in)   :: eta
-  double precision,intent(in)   :: cHFB(nBas,nOrb)
   double precision,intent(in)   :: MAT1(nOrb,nOrb)
   double precision,intent(in)   :: MAT2(nOrb,nOrb)
   double precision,intent(in)   :: MAT3(nOrb,nOrb)
@@ -20,7 +18,6 @@ subroutine G_AO_HFB(nBas,nOrb,nOrb_twice,eta,cHFB,eHFB,wcoord,MAT1,MAT2,MAT3,MAT
 
 
   complex*16,intent(in)         :: wcoord
-  complex*16,allocatable        :: Gtmp(:,:)
 
 ! Local variables
 
@@ -28,10 +25,10 @@ subroutine G_AO_HFB(nBas,nOrb,nOrb_twice,eta,cHFB,eHFB,wcoord,MAT1,MAT2,MAT3,MAT
 
 ! Output variables
   double precision,intent(inout):: eHFB(nOrb_twice)
-  complex*16,intent(out)        :: G_AO(nBas,nBas)
+  complex*16,intent(out)        :: G_MO(nOrb,nOrb)
   
 !--------------------------
-! Build G(i w) in AO basis
+! Build G(i w) in MO basis
 !--------------------------
 
 ! write(*,*)     
@@ -40,20 +37,14 @@ subroutine G_AO_HFB(nBas,nOrb,nOrb_twice,eta,cHFB,eHFB,wcoord,MAT1,MAT2,MAT3,MAT
 ! write(*,*)'**************'
 ! write(*,*)
 
- allocate(Gtmp(nOrb,nOrb))
- Gtmp(:,:) = czero
+ G_MO(:,:) = czero
   
  do iorb=1,nOrb
-  Gtmp(:,:) = Gtmp(:,:) + 1d0/(wcoord-eHFB(iorb)-im*eta)           &
+  G_MO(:,:) = G_MO(:,:) + 1d0/(wcoord-eHFB(iorb)-im*eta)           &
             * matmul(Mat1(:,iorb:iorb),transpose(Mat2(:,iorb:iorb)))
-  Gtmp(:,:) = Gtmp(:,:) + 1d0/(wcoord+eHFB(iorb)+im*eta)           &
+  G_MO(:,:) = G_MO(:,:) + 1d0/(wcoord+eHFB(iorb)+im*eta)           &
             * matmul(Mat3(:,iorb:iorb),transpose(Mat4(:,iorb:iorb)))
  enddo
-
- G_AO=matmul(matmul(cHFB,Gtmp),transpose(cHFB))
-
- ! deallocate dyn arrays
- deallocate(Gtmp)
 
 end subroutine
 
