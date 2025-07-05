@@ -43,14 +43,14 @@ subroutine Gitau2Chi0iw_ao_HFB(nBas,nBas2,nOrb,nOrb_twice,cHFB,eHFB,nfreqs,ntime
 !------------------------------------------------------------------------
 ! Build G(i tau) in AO basis and use it to build Xo (i tau) -> Xo (i w)
 !------------------------------------------------------------------------
+ 
+ call wall_time(start_Gitau2Xoiw)
 
  write(*,*)     
  write(*,*)'*********************************************'
  write(*,*)'* HFB G(i tau) and Xo(i w) construction     *'
  write(*,*)'*********************************************'
  write(*,*)
- 
- call wall_time(start_Gitau2Xoiw)
 
  Chi0_ao_iw(:,:,:)=czero
    

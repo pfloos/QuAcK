@@ -40,14 +40,14 @@ subroutine Gitau2Chi0iw_ao_RHF(nBas,nOrb,nO,cHF,eHF,nfreqs,ntimes,wcoord,Chi0_ao
 !------------------------------------------------------------------------
 ! Build G(i tau) in AO basis and use it to build Xo (i tau) -> Xo (i w)
 !------------------------------------------------------------------------
+ 
+ call wall_time(start_Gitau2Xoiw)
 
  write(*,*)     
  write(*,*)'*********************************************'
  write(*,*)'* RHF G(i tau) and Xo(i w) construction     *'
  write(*,*)'*********************************************'
  write(*,*)
- 
- call wall_time(start_Gitau2Xoiw)
 
  nBas2=nBas*nBas
  chem_pot = 0.5d0*(eHF(nO)+eHF(nO+1))

@@ -41,7 +41,7 @@ subroutine Xoiw_mo_RHF(nOrb,nO,eta,eHF,weval,Chi0_mo_iw)
    enddo
   enddo
   
-  Chi0_mo_iw=2d0*Chi0_mo_iw
+  Chi0_mo_iw=2d0*Chi0_mo_iw ! The 2 factor is added to account for both spin contributions [ i.e., (up,up,up,up) and (down,down,down,down) ]
 
   ! Recover eHF
   eHF(:) = eHF(:)+chem_pot

@@ -59,7 +59,10 @@ subroutine Xoiw_mo_HFB(nOrb,nOrb_twice,eta,eHFB,weval,Mat1,Mat2,Chi0_mo_iw)
    enddo
   enddo
   
-  Chi0_mo_iw=2d0*Chi0_mo_iw  ! Times 2 because of the spin
+  Chi0_mo_iw=2d0*Chi0_mo_iw  ! Times 2 because of the spin contributions
+                             ! [ i.e., for Ghe Ghe take (up,up,up,up) and (down,down,down,down) 
+                             !                                 & 
+                             !       for Ghh Gee (up,down,down,up) and (down,up,up,down) ]
 
 end subroutine
 

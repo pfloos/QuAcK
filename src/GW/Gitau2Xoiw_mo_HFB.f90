@@ -1,4 +1,4 @@
-subroutine Gitau2Chi0iw_mo_HFB(nOrb,nOrb2,nOrb_twice,eHFB,nfreqs,ntimes,wcoord,U_QP,Chi0_mo_iw)
+subroutine Gitau2Chi0iw_mo_HFB(nOrb,nOrb_twice,verbose,eHFB,nfreqs,ntimes,wcoord,U_QP,Chi0_mo_iw)
 
 ! Restricted Xo(i tau) [ and Xo(i w) ] computed from G(i tau)
 
@@ -7,10 +7,10 @@ subroutine Gitau2Chi0iw_mo_HFB(nOrb,nOrb2,nOrb_twice,eHFB,nfreqs,ntimes,wcoord,U
 
 ! Input variables
 
+  integer,intent(in)            :: verbose
   integer,intent(in)            :: nfreqs
   integer,intent(in)            :: ntimes
   integer,intent(in)            :: nOrb
-  integer,intent(in)            :: nOrb2
   integer,intent(in)            :: nOrb_twice
 
   double precision,intent(in)   :: wcoord(nfreqs)
@@ -42,20 +42,22 @@ subroutine Gitau2Chi0iw_mo_HFB(nOrb,nOrb2,nOrb_twice,eHFB,nfreqs,ntimes,wcoord,U
 ! Build G(i tau) in MO orbis and use it to build Xo (i tau) -> Xo (i w)
 !------------------------------------------------------------------------
 
- write(*,*)     
- write(*,*)'*********************************************'
- write(*,*)'* HFB G(i tau) and Xo(i w) construction     *'
- write(*,*)'*********************************************'
- write(*,*)
- 
  call wall_time(start_Gitau2Xoiw)
 
+ if(verbose/=0) then
+  write(*,*)     
+  write(*,*)'*********************************************'
+  write(*,*)'* HFB G(i tau) and Xo(i w) construction     *'
+  write(*,*)'*********************************************'
+  write(*,*)
+ endif
+ 
  Chi0_mo_iw(:,:,:)=czero
-   
+
  allocate(Mat1(nOrb,nOrb),Mat2(nOrb,nOrb)) 
  allocate(Glesser_he(nOrb,nOrb),Ggreater_he(nOrb,nOrb)) 
  allocate(Glesser_hh(nOrb,nOrb),Ggreater_ee(nOrb,nOrb)) 
- allocate(Chi0_mo_itau(nOrb2,nOrb2)) 
+ allocate(Chi0_mo_itau(nOrb*nOrb,nOrb*nOrb)) 
 
 !-------------------------!
 ! Prepare time Quadrature !
@@ -72,6 +74,7 @@ subroutine Gitau2Chi0iw_mo_HFB(nOrb,nOrb2,nOrb_twice,eHFB,nfreqs,ntimes,wcoord,U
   do itau=1,ntimes
    alpha=alpha+tweight(itau)*(beta*2d0/(beta**2d0+tcoord(itau)**2d0))
   enddo
+ if(verbose/=0) then
   write(*,*)
   write(*,*) '    ----------------------------'
   write(*,'(A28,1X)') 'Testing the time quadrature'
@@ -79,6 +82,7 @@ subroutine Gitau2Chi0iw_mo_HFB(nOrb,nOrb2,nOrb_twice,eHFB,nfreqs,ntimes,wcoord,U
   write(*,'(A28,1X,F16.10)') 'PI value error',abs(alpha-acos(-1d0))
   write(*,*) '    ----------------------------'
   write(*,*)
+ endif
   alpha = 0d0; beta = 0d0;
 
  ! time grid Xo(i tau) = -2i G<(i tau) G>(-i tau)
@@ -134,8 +138,10 @@ subroutine Gitau2Chi0iw_mo_HFB(nOrb,nOrb2,nOrb_twice,eHFB,nfreqs,ntimes,wcoord,U
  call wall_time(end_Gitau2Xoiw)
  
  t_Gitau2Xoiw = end_Gitau2Xoiw - start_Gitau2Xoiw
- write(*,'(A65,1X,F9.3,A8)') 'Total wall time for Gitau2Chi0iw = ',t_Gitau2Xoiw,' seconds'
- write(*,*)
+ if(verbose/=0) then
+  write(*,'(A65,1X,F9.3,A8)') 'Total wall time for Gitau2Chi0iw = ',t_Gitau2Xoiw,' seconds'
+  write(*,*)
+ endif
 
  ! Deallocate dyn arrays
  deallocate(tcoord,tweight) 

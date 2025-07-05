@@ -1,4 +1,4 @@
-subroutine Gitau2Chi0iw_mo_RHF(nOrb,nO,eHF,nfreqs,ntimes,wcoord,Chi0_mo_iw)
+subroutine Gitau2Chi0iw_mo_RHF(nOrb,nO,verbose,eHF,nfreqs,ntimes,wcoord,Chi0_mo_iw)
 
 ! Restricted Xo(i tau) [ and Xo(i w) ] computed from G(i tau)
 
@@ -7,6 +7,7 @@ subroutine Gitau2Chi0iw_mo_RHF(nOrb,nO,eHF,nfreqs,ntimes,wcoord,Chi0_mo_iw)
 
 ! Input variables
 
+  integer,intent(in)            :: verbose
   integer,intent(in)            :: nfreqs
   integer,intent(in)            :: ntimes
   integer,intent(in)            :: nOrb
@@ -19,7 +20,7 @@ subroutine Gitau2Chi0iw_mo_RHF(nOrb,nO,eHF,nfreqs,ntimes,wcoord,Chi0_mo_iw)
   logical                       :: lesser
 
   integer                       :: kind_int,itau,ifreq
-  integer                       :: iorb,jorb,korb,lorb,nOrb2
+  integer                       :: iorb,jorb,korb,lorb
 
   double precision              :: start_Gitau2Xoiw     ,end_Gitau2Xoiw       ,t_Gitau2Xoiw
 
@@ -38,23 +39,24 @@ subroutine Gitau2Chi0iw_mo_RHF(nOrb,nO,eHF,nfreqs,ntimes,wcoord,Chi0_mo_iw)
 !------------------------------------------------------------------------
 ! Build G(i tau) in MO orbis and use it to build Xo (i tau) -> Xo (i w)
 !------------------------------------------------------------------------
-
- write(*,*)     
- write(*,*)'*********************************************'
- write(*,*)'* RHF G(i tau) and Xo(i w) construction     *'
- write(*,*)'*********************************************'
- write(*,*)
  
  call wall_time(start_Gitau2Xoiw)
 
- nOrb2=nOrb*nOrb
+ if(verbose/=0) then
+  write(*,*)     
+  write(*,*)'*********************************************'
+  write(*,*)'* RHF G(i tau) and Xo(i w) construction     *'
+  write(*,*)'*********************************************'
+  write(*,*)
+ endif
+
  chem_pot = 0.5d0*(eHF(nO)+eHF(nO+1))
  write(*,'(A33,1X,F16.10,A3)') ' Chemical potential  = ',chem_pot,' au'
  eHF(:) = eHF(:)-chem_pot
  Chi0_mo_iw(:,:,:)=czero
    
  allocate(Glesser(nOrb,nOrb),Ggreater(nOrb,nOrb)) 
- allocate(Chi0_mo_itau(nOrb2,nOrb2)) 
+ allocate(Chi0_mo_itau(nOrb*nOrb,nOrb*nOrb)) 
 
 !-------------------------!
 ! Prepare time Quadrature !
@@ -71,6 +73,7 @@ subroutine Gitau2Chi0iw_mo_RHF(nOrb,nO,eHF,nfreqs,ntimes,wcoord,Chi0_mo_iw)
   do itau=1,ntimes
    alpha=alpha+tweight(itau)*(beta*2d0/(beta**2d0+tcoord(itau)**2d0))
   enddo
+ if(verbose/=0) then
   write(*,*)
   write(*,*) '    ----------------------------'
   write(*,'(A28,1X)') 'Testing the time quadrature'
@@ -78,6 +81,7 @@ subroutine Gitau2Chi0iw_mo_RHF(nOrb,nO,eHF,nfreqs,ntimes,wcoord,Chi0_mo_iw)
   write(*,'(A28,1X,F16.10)') 'PI value error',abs(alpha-acos(-1d0))
   write(*,*) '    ----------------------------'
   write(*,*)
+ endif
   alpha = 0d0; beta = 0d0;
 
  ! time grid Xo(i tau) = -2i G<(i tau) G>(-i tau)
@@ -102,7 +106,7 @@ subroutine Gitau2Chi0iw_mo_RHF(nOrb,nO,eHF,nfreqs,ntimes,wcoord,Chi0_mo_iw)
     enddo
    enddo
   enddo
-  Chi0_mo_itau=-2d0*im*Chi0_mo_itau ! The 2 factor is added to account for both spin contributions [ i.e., (up,up) and (down,down) ]
+  Chi0_mo_itau=-2d0*im*Chi0_mo_itau ! The 2 factor is added to account for both spin contributions [ i.e., (up,up,up,up) and (down,down,down,down) ]
 
   ! Xo(i tau) -> Xo(i w)
   do ifreq=1,nfreqs
@@ -117,8 +121,10 @@ subroutine Gitau2Chi0iw_mo_RHF(nOrb,nO,eHF,nfreqs,ntimes,wcoord,Chi0_mo_iw)
  call wall_time(end_Gitau2Xoiw)
  
  t_Gitau2Xoiw = end_Gitau2Xoiw - start_Gitau2Xoiw
- write(*,'(A65,1X,F9.3,A8)') 'Total wall time for Gitau2Chi0iw = ',t_Gitau2Xoiw,' seconds'
- write(*,*)
+ if(verbose/=0) then
+  write(*,'(A65,1X,F9.3,A8)') 'Total wall time for Gitau2Chi0iw = ',t_Gitau2Xoiw,' seconds'
+  write(*,*)
+ endif
 
  ! Restore values and deallocate dyn arrays
  eHF(:) = eHF(:)+chem_pot
