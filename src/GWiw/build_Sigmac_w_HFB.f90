@@ -170,16 +170,12 @@ subroutine build_Sigmac_w_HFB(nOrb,nOrb_twice,nE,wtest,eHFB,nfreqs,ntimes,wweigh
   
   do iE=1,nE
    write(*,*) ' ' 
-   write(*,'(a,f15.8,a,f15.8,a)') ' RHF Sigma_he_c(wtest) in MO for wtest=(',Real(wtest(iE)), &
+   write(*,'(a,f15.8,a,f15.8,a)') ' HFB Sigma_he/hh_c(wtest) in MO for wtest=(',Real(wtest(iE)), &
    ",",Aimag(wtest(iE)),")"
    write(*,*) ' ' 
    do iorb=1,nOrb
     write(*,'(*(f10.5))') Real(Sigma_he_c_mo(iE,iorb,:))
    enddo
-   write(*,*) ' ' 
-   write(*,*) ' ' 
-   write(*,'(a,f15.8,a,f15.8,a)') ' RHF Sigma_hh_c(wtest) in MO for wtest=(',Real(wtest(iE)), &
-   ",",Aimag(wtest(iE)),")"
    write(*,*) ' ' 
    do iorb=1,nOrb
     write(*,'(*(f10.5))') Real(Sigma_hh_c_mo(iE,iorb,:))
