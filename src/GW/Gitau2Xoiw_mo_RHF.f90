@@ -1,4 +1,4 @@
-subroutine Gitau2Chi0iw_ao_RHF(nBas,nOrb,nO,cHF,eHF,nfreqs,ntimes,wcoord,Chi0_ao_iw)
+subroutine Gitau2Chi0iw_mo_RHF(nOrb,nO,eHF,nfreqs,ntimes,wcoord,Chi0_mo_iw)
 
 ! Restricted Xo(i tau) [ and Xo(i w) ] computed from G(i tau)
 
@@ -9,19 +9,17 @@ subroutine Gitau2Chi0iw_ao_RHF(nBas,nOrb,nO,cHF,eHF,nfreqs,ntimes,wcoord,Chi0_ao
 
   integer,intent(in)            :: nfreqs
   integer,intent(in)            :: ntimes
-  integer,intent(in)            :: nBas
   integer,intent(in)            :: nOrb
   integer,intent(in)            :: nO
 
   double precision,intent(in)   :: wcoord(nfreqs)
-  double precision,intent(in)   :: cHF(nBas,nOrb)
 
 ! Local variables
 
   logical                       :: lesser
 
   integer                       :: kind_int,itau,ifreq
-  integer                       :: ibas,jbas,kbas,lbas,nBas2
+  integer                       :: iorb,jorb,korb,lorb,nOrb2
 
   double precision              :: start_Gitau2Xoiw     ,end_Gitau2Xoiw       ,t_Gitau2Xoiw
 
@@ -31,14 +29,14 @@ subroutine Gitau2Chi0iw_ao_RHF(nBas,nOrb,nO,cHF,eHF,nfreqs,ntimes,wcoord,Chi0_ao
 
   complex*16                    :: product
   complex*16,allocatable        :: Glesser(:,:),Ggreater(:,:)
-  complex*16,allocatable        :: Chi0_ao_itau(:,:)
+  complex*16,allocatable        :: Chi0_mo_itau(:,:)
 
 ! Output variables
   double precision,intent(inout):: eHF(nOrb)
-  complex*16,intent(out)        :: Chi0_ao_iw(nfreqs,nBas*nBas,nBas*nBas)
+  complex*16,intent(out)        :: Chi0_mo_iw(nfreqs,nOrb*nOrb,nOrb*nOrb)
   
 !------------------------------------------------------------------------
-! Build G(i tau) in AO basis and use it to build Xo (i tau) -> Xo (i w)
+! Build G(i tau) in MO orbis and use it to build Xo (i tau) -> Xo (i w)
 !------------------------------------------------------------------------
 
  write(*,*)     
@@ -49,14 +47,14 @@ subroutine Gitau2Chi0iw_ao_RHF(nBas,nOrb,nO,cHF,eHF,nfreqs,ntimes,wcoord,Chi0_ao
  
  call wall_time(start_Gitau2Xoiw)
 
- nBas2=nBas*nBas
+ nOrb2=nOrb*nOrb
  chem_pot = 0.5d0*(eHF(nO)+eHF(nO+1))
  write(*,'(A33,1X,F16.10,A3)') ' Chemical potential  = ',chem_pot,' au'
  eHF(:) = eHF(:)-chem_pot
- Chi0_ao_iw(:,:,:)=czero
+ Chi0_mo_iw(:,:,:)=czero
    
- allocate(Glesser(nBas,nBas),Ggreater(nBas,nBas)) 
- allocate(Chi0_ao_itau(nBas2,nBas2)) 
+ allocate(Glesser(nOrb,nOrb),Ggreater(nOrb,nOrb)) 
+ allocate(Chi0_mo_itau(nOrb2,nOrb2)) 
 
 !-------------------------!
 ! Prepare time Quadrature !
@@ -86,35 +84,35 @@ subroutine Gitau2Chi0iw_ao_RHF(nBas,nOrb,nO,cHF,eHF,nfreqs,ntimes,wcoord,Chi0_ao
  !  and Fourier transform Xo(i tau) -> Xo(i w)
  do itau=1,ntimes
 
-  lesser=.true.  ! Build AO G<
-  call build_Glorg_RHF(nBas,nOrb,nO,tcoord(itau),Glesser,cHF,eHF,lesser)
-  lesser=.false. ! Build AO G>
-  call build_Glorg_RHF(nBas,nOrb,nO,tcoord(itau),Ggreater,cHF,eHF,lesser)
+  lesser=.true.  ! Build MO G<
+  call build_Glorg_mo_RHF(nOrb,nO,tcoord(itau),Glesser,eHF,lesser)
+  lesser=.false. ! Build MO G>
+  call build_Glorg_mo_RHF(nOrb,nO,tcoord(itau),Ggreater,eHF,lesser)
 
   ! Xo(i tau) = -2i G<(i tau) G>(-i tau)
-  do ibas=1,nBas
-   do jbas=1,nBas
-    do kbas=1,nBas
-     do lbas=1,nBas                       
+  do iorb=1,nOrb
+   do jorb=1,nOrb
+    do korb=1,nOrb
+     do lorb=1,nOrb                       
                        ! r1   r2'            r2   r1'
-      product = Glesser(ibas,jbas)*Ggreater(kbas,lbas)
+      product = Glesser(iorb,jorb)*Ggreater(korb,lorb)
       if(abs(product)<1e-12) product=czero
-      Chi0_ao_itau(1+(lbas-1)+(ibas-1)*nBas,1+(kbas-1)+(jbas-1)*nBas) = product
+      Chi0_mo_itau(1+(lorb-1)+(iorb-1)*nOrb,1+(korb-1)+(jorb-1)*nOrb) = product
      enddo
     enddo
    enddo
   enddo
-  Chi0_ao_itau=-2d0*im*Chi0_ao_itau ! The 2 factor is added to account for both spin contributions [ i.e., (up,up,up,up) and (down,down,down,down) ]
+  Chi0_mo_itau=-2d0*im*Chi0_mo_itau ! The 2 factor is added to account for both spin contributions [ i.e., (up,up) and (down,down) ]
 
   ! Xo(i tau) -> Xo(i w)
   do ifreq=1,nfreqs
-    Chi0_ao_iw(ifreq,:,:) = Chi0_ao_iw(ifreq,:,:) - im*tweight(itau)*Chi0_ao_itau(:,:)*Exp(im*tcoord(itau)*wcoord(ifreq))
+    Chi0_mo_iw(ifreq,:,:) = Chi0_mo_iw(ifreq,:,:) - im*tweight(itau)*Chi0_mo_itau(:,:)*Exp(im*tcoord(itau)*wcoord(ifreq))
   enddo 
 
  enddo
 
  ! Complete the Xo(i tau) -> Xo(i w)
- Chi0_ao_iw(:,:,:) = 2d0*Real(Chi0_ao_iw(:,:,:))
+ Chi0_mo_iw(:,:,:) = 2d0*Real(Chi0_mo_iw(:,:,:))
 
  call wall_time(end_Gitau2Xoiw)
  
@@ -125,12 +123,12 @@ subroutine Gitau2Chi0iw_ao_RHF(nBas,nOrb,nO,cHF,eHF,nfreqs,ntimes,wcoord,Chi0_ao
  ! Restore values and deallocate dyn arrays
  eHF(:) = eHF(:)+chem_pot
  deallocate(Glesser,Ggreater,tcoord,tweight) 
- deallocate(Chi0_ao_itau) 
+ deallocate(Chi0_mo_itau) 
 
 end subroutine 
 
 
-subroutine build_Glorg_RHF(nBas,nOrb,nO,tau,Glorg,cHF,eHF,lesser)
+subroutine build_Glorg_mo_RHF(nOrb,nO,tau,Glorg_mo,eHF,lesser)
 
   implicit none
   include 'parameters.h'
@@ -139,12 +137,10 @@ subroutine build_Glorg_RHF(nBas,nOrb,nO,tau,Glorg,cHF,eHF,lesser)
 
   logical,intent(in)            :: lesser
 
-  integer,intent(in)            :: nBas
   integer,intent(in)            :: nOrb
   integer,intent(in)            :: nO
 
   double precision,intent(in)   :: tau
-  double precision,intent(in)   :: cHF(nBas,nOrb)
   double precision,intent(in)   :: eHF(nOrb)
 
 ! Local variables
@@ -153,10 +149,8 @@ subroutine build_Glorg_RHF(nBas,nOrb,nO,tau,Glorg,cHF,eHF,lesser)
 
   double precision              :: chem_pot,fact
 
-  complex*16,allocatable        :: Gtmp(:,:)
-
 ! Output variables
-  complex*16,intent(out)        :: Glorg(nBas,nBas)
+  complex*16,intent(out)        :: Glorg_mo(nOrb,nOrb)
   
 !------------------------------------------------------------------------
 ! Build G<(i tau) and G>(i tau)
@@ -167,22 +161,17 @@ subroutine build_Glorg_RHF(nBas,nOrb,nO,tau,Glorg,cHF,eHF,lesser)
   else            ! G>
    fact=-1d0
   endif
-  allocate(Gtmp(nOrb,nOrb)) 
-  Gtmp=czero
+  Glorg_mo=czero
   
   if(lesser) then ! G<
    do iorb=1,nO
-     Gtmp(iorb,iorb) = fact*im*Exp(eHF(iorb)*tau)
+     Glorg_mo(iorb,iorb) = fact*im*Exp(eHF(iorb)*tau)
    enddo
   else            ! G>
    do iorb=nO+1,nOrb
-     Gtmp(iorb,iorb) = fact*im*Exp(-eHF(iorb)*tau)
+     Glorg_mo(iorb,iorb) = fact*im*Exp(-eHF(iorb)*tau)
    enddo
   endif 
-
-  Glorg=matmul(matmul(cHF,Gtmp),transpose(cHF))
-  
-  deallocate(Gtmp)
 
 end subroutine
 

@@ -1,4 +1,4 @@
-subroutine Gitau2Chi0iw_ao_HFB(nBas,nBas2,nOrb,nOrb_twice,cHFB,eHFB,nfreqs,ntimes,wcoord,U_QP,Chi0_ao_iw)
+subroutine Gitau2Chi0iw_mo_HFB(nOrb,nOrb2,nOrb_twice,eHFB,nfreqs,ntimes,wcoord,U_QP,Chi0_mo_iw)
 
 ! Restricted Xo(i tau) [ and Xo(i w) ] computed from G(i tau)
 
@@ -9,14 +9,12 @@ subroutine Gitau2Chi0iw_ao_HFB(nBas,nBas2,nOrb,nOrb_twice,cHFB,eHFB,nfreqs,ntime
 
   integer,intent(in)            :: nfreqs
   integer,intent(in)            :: ntimes
-  integer,intent(in)            :: nBas
-  integer,intent(in)            :: nBas2
   integer,intent(in)            :: nOrb
+  integer,intent(in)            :: nOrb2
   integer,intent(in)            :: nOrb_twice
 
   double precision,intent(in)   :: wcoord(nfreqs)
   double precision,intent(in)   :: eHFB(nOrb_twice)
-  double precision,intent(in)   :: cHFB(nBas,nOrb)
   double precision,intent(in)   :: U_QP(nOrb_twice,nOrb_twice)
 
 ! Local variables
@@ -24,7 +22,7 @@ subroutine Gitau2Chi0iw_ao_HFB(nBas,nBas2,nOrb,nOrb_twice,cHFB,eHFB,nfreqs,ntime
   logical                       :: lesser
 
   integer                       :: kind_int,itau,ifreq
-  integer                       :: ibas,jbas,kbas,lbas
+  integer                       :: iorb,jorb,korb,lorb
 
   double precision              :: start_Gitau2Xoiw     ,end_Gitau2Xoiw       ,t_Gitau2Xoiw
 
@@ -35,13 +33,13 @@ subroutine Gitau2Chi0iw_ao_HFB(nBas,nBas2,nOrb,nOrb_twice,cHFB,eHFB,nfreqs,ntime
   complex*16                    :: product
   complex*16,allocatable        :: Glesser_he(:,:),Ggreater_he(:,:)
   complex*16,allocatable        :: Glesser_hh(:,:),Ggreater_ee(:,:)
-  complex*16,allocatable        :: Chi0_ao_itau(:,:)
+  complex*16,allocatable        :: Chi0_mo_itau(:,:)
 
 ! Output variables
-  complex*16,intent(out)        :: Chi0_ao_iw(nfreqs,nBas*nBas,nBas*nBas)
+  complex*16,intent(out)        :: Chi0_mo_iw(nfreqs,nOrb*nOrb,nOrb*nOrb)
   
 !------------------------------------------------------------------------
-! Build G(i tau) in AO basis and use it to build Xo (i tau) -> Xo (i w)
+! Build G(i tau) in MO orbis and use it to build Xo (i tau) -> Xo (i w)
 !------------------------------------------------------------------------
 
  write(*,*)     
@@ -52,12 +50,12 @@ subroutine Gitau2Chi0iw_ao_HFB(nBas,nBas2,nOrb,nOrb_twice,cHFB,eHFB,nfreqs,ntime
  
  call wall_time(start_Gitau2Xoiw)
 
- Chi0_ao_iw(:,:,:)=czero
+ Chi0_mo_iw(:,:,:)=czero
    
  allocate(Mat1(nOrb,nOrb),Mat2(nOrb,nOrb)) 
- allocate(Glesser_he(nBas,nBas),Ggreater_he(nBas,nBas)) 
- allocate(Glesser_hh(nBas,nBas),Ggreater_ee(nBas,nBas)) 
- allocate(Chi0_ao_itau(nBas2,nBas2)) 
+ allocate(Glesser_he(nOrb,nOrb),Ggreater_he(nOrb,nOrb)) 
+ allocate(Glesser_hh(nOrb,nOrb),Ggreater_ee(nOrb,nOrb)) 
+ allocate(Chi0_mo_itau(nOrb2,nOrb2)) 
 
 !-------------------------!
 ! Prepare time Quadrature !
@@ -90,48 +88,48 @@ subroutine Gitau2Chi0iw_ao_HFB(nBas,nBas2,nOrb,nOrb_twice,cHFB,eHFB,nfreqs,ntime
   ! Ghe
   Mat1(1:nOrb,1:nOrb)=U_QP(1:nOrb,1:nOrb)
   Mat2(1:nOrb,1:nOrb)=U_QP(1:nOrb,1:nOrb)
-  lesser=.true.  ! Build AO G<
-  call build_Glorg_HFB(nBas,nOrb,nOrb_twice,tcoord(itau),Glesser_he,cHFB,eHFB,Mat1,Mat2,lesser)
+  lesser=.true.  ! Build MO G<
+  call build_Glorg_mo_HFB(nOrb,nOrb_twice,tcoord(itau),Glesser_he,eHFB,Mat1,Mat2,lesser)
   Mat1(1:nOrb,1:nOrb)=U_QP(nOrb+1:nOrb_twice,1:nOrb)
   Mat2(1:nOrb,1:nOrb)=U_QP(nOrb+1:nOrb_twice,1:nOrb)
-  lesser=.false. ! Build AO G>
-  call build_Glorg_HFB(nBas,nOrb,nOrb_twice,tcoord(itau),Ggreater_he,cHFB,eHFB,Mat1,Mat2,lesser)
+  lesser=.false. ! Build MO G>
+  call build_Glorg_mo_HFB(nOrb,nOrb_twice,tcoord(itau),Ggreater_he,eHFB,Mat1,Mat2,lesser)
   ! Ghh and Gee
   Mat1(1:nOrb,1:nOrb)=U_QP(1:nOrb,1:nOrb)
   Mat2(1:nOrb,1:nOrb)=U_QP(nOrb+1:nOrb_twice,1:nOrb)
-  lesser=.true.  ! Build AO G<
-  call build_Glorg_HFB(nBas,nOrb,nOrb_twice,tcoord(itau),Glesser_hh,cHFB,eHFB,Mat1,Mat2,lesser)
-  lesser=.false. ! Build AO G> [this one should be computed with -Mat2 according to Eq. 45 in V. Soma et al Phys. Rev. C, 84, 064317 (2011)] 
-  call build_Glorg_HFB(nBas,nOrb,nOrb_twice,tcoord(itau),Ggreater_ee,cHFB,eHFB,Mat1,Mat2,lesser)
+  lesser=.true.  ! Build MO G<
+  call build_Glorg_mo_HFB(nOrb,nOrb_twice,tcoord(itau),Glesser_hh,eHFB,Mat1,Mat2,lesser)
+  lesser=.false. ! Build MO G> [this one should be computed with -Mat2 according to Eq. 45 in V. Soma et al Phys. Rev. C, 84, 064317 (2011)] 
+  call build_Glorg_mo_HFB(nOrb,nOrb_twice,tcoord(itau),Ggreater_ee,eHFB,Mat1,Mat2,lesser)
 
   ! Xo(i tau) = -2i G<(i tau) G>(-i tau)
-  do ibas=1,nBas
-   do jbas=1,nBas
-    do kbas=1,nBas
-     do lbas=1,nBas                       
+  do iorb=1,nOrb
+   do jorb=1,nOrb
+    do korb=1,nOrb
+     do lorb=1,nOrb                       
                           ! r1   r2'               r2   r1'
-      product = Glesser_he(ibas,jbas)*Ggreater_he(kbas,lbas) &
-              - Glesser_hh(ibas,jbas)*Ggreater_ee(kbas,lbas)   ! [we add a minus to compensate not using -Mat2 according to Soma's paper]
+      product = Glesser_he(iorb,jorb)*Ggreater_he(korb,lorb) &
+              - Glesser_hh(iorb,jorb)*Ggreater_ee(korb,lorb)   ! [we add a minus to compensate not using -Mat2 according to Soma's paper]
       if(abs(product)<1e-12) product=czero
-      Chi0_ao_itau(1+(lbas-1)+(ibas-1)*nBas,1+(kbas-1)+(jbas-1)*nBas) = product
+      Chi0_mo_itau(1+(lorb-1)+(iorb-1)*nOrb,1+(korb-1)+(jorb-1)*nOrb) = product
      enddo
     enddo
    enddo
   enddo
-  Chi0_ao_itau=-2d0*im*Chi0_ao_itau ! The 2 factor is added to account for both spin contributions
+  Chi0_mo_itau=-2d0*im*Chi0_mo_itau ! The 2 factor is added to account for both spin contributions 
                                     ! [ i.e., for Ghe Ghe take (up,up,up,up) and (down,down,down,down) 
                                     !                                 & 
                                     !       for Ghh Gee (up,down,down,up) and (down,up,up,down) ]
 
   ! Xo(i tau) -> Xo(i w)
   do ifreq=1,nfreqs
-    Chi0_ao_iw(ifreq,:,:) = Chi0_ao_iw(ifreq,:,:) - im*tweight(itau)*Chi0_ao_itau(:,:)*Exp(im*tcoord(itau)*wcoord(ifreq))
+    Chi0_mo_iw(ifreq,:,:) = Chi0_mo_iw(ifreq,:,:) - im*tweight(itau)*Chi0_mo_itau(:,:)*Exp(im*tcoord(itau)*wcoord(ifreq))
   enddo 
 
  enddo
 
  ! Complete the Xo(i tau) -> Xo(i w)
- Chi0_ao_iw(:,:,:) = 2d0*Real(Chi0_ao_iw(:,:,:))
+ Chi0_mo_iw(:,:,:) = 2d0*Real(Chi0_mo_iw(:,:,:))
 
  call wall_time(end_Gitau2Xoiw)
  
@@ -144,12 +142,12 @@ subroutine Gitau2Chi0iw_ao_HFB(nBas,nBas2,nOrb,nOrb_twice,cHFB,eHFB,nfreqs,ntime
  deallocate(Mat1,Mat2) 
  deallocate(Glesser_he,Ggreater_he) 
  deallocate(Glesser_hh,Ggreater_ee) 
- deallocate(Chi0_ao_itau) 
+ deallocate(Chi0_mo_itau) 
 
 end subroutine 
 
 
-subroutine build_Glorg_HFB(nBas,nOrb,nOrb_twice,tau,Glorg,cHFB,eHFB,Mat1,Mat2,lesser)
+subroutine build_Glorg_mo_HFB(nOrb,nOrb_twice,tau,Glorg_mo,eHFB,Mat1,Mat2,lesser)
 
   implicit none
   include 'parameters.h'
@@ -158,12 +156,10 @@ subroutine build_Glorg_HFB(nBas,nOrb,nOrb_twice,tau,Glorg,cHFB,eHFB,Mat1,Mat2,le
 
   logical,intent(in)            :: lesser
 
-  integer,intent(in)            :: nBas
   integer,intent(in)            :: nOrb
   integer,intent(in)            :: nOrb_twice
 
   double precision,intent(in)   :: tau
-  double precision,intent(in)   :: cHFB(nBas,nOrb)
   double precision,intent(in)   :: eHFB(nOrb_twice)
   double precision,intent(in)   :: Mat1(nOrb,nOrb)
   double precision,intent(in)   :: Mat2(nOrb,nOrb)
@@ -174,10 +170,8 @@ subroutine build_Glorg_HFB(nBas,nOrb,nOrb_twice,tau,Glorg,cHFB,eHFB,Mat1,Mat2,le
 
   double precision              :: chem_pot,fact
 
-  complex*16,allocatable        :: Gtmp(:,:)
-
 ! Output variables
-  complex*16,intent(out)        :: Glorg(nBas,nBas)
+  complex*16,intent(out)        :: Glorg_mo(nOrb,nOrb)
   
 !------------------------------------------------------------------------
 ! Build G<(i tau) and G>(i tau)
@@ -188,24 +182,19 @@ subroutine build_Glorg_HFB(nBas,nOrb,nOrb_twice,tau,Glorg,cHFB,eHFB,Mat1,Mat2,le
   else            ! G>
    fact=-1d0
   endif
-  allocate(Gtmp(nOrb,nOrb)) 
-  Gtmp=czero
+  Glorg_mo=czero
   
   if(lesser) then ! G<
    do iorb=1,nOrb
-     Gtmp(:,:) = Gtmp(:,:) + fact*im*Exp(eHFB(iorb)*tau) &
+     Glorg_mo(:,:) = Glorg_mo(:,:) + fact*im*Exp(eHFB(iorb)*tau) &
                * matmul(Mat1(:,iorb:iorb),transpose(Mat2(:,iorb:iorb)))
    enddo
   else            ! G>
    do iorb=1,nOrb
-     Gtmp(:,:) = Gtmp(:,:) + fact*im*Exp(eHFB(iorb)*tau) &
+     Glorg_mo(:,:) = Glorg_mo(:,:) + fact*im*Exp(eHFB(iorb)*tau) &
                * matmul(Mat1(:,iorb:iorb),transpose(Mat2(:,iorb:iorb)))
    enddo
   endif 
-
-  Glorg=matmul(matmul(cHFB,Gtmp),transpose(cHFB))
-  
-  deallocate(Gtmp)
 
 end subroutine
 
