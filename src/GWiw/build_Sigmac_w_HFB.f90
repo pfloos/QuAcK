@@ -1,4 +1,4 @@
-subroutine build_Sigmac_w_HFB(nOrb,nOrb_twice,nE,wtest,eHFB,nfreqs,ntimes,wweight,wcoord,vMAT,&
+subroutine build_Sigmac_w_HFB(nOrb,nOrb_twice,nE,verbose,wtest,eHFB,nfreqs,ntimes,wweight,wcoord,vMAT,&
                               U_QP,Sigma_he_c_mo,Sigma_hh_c_mo)
 
 ! Restricted Sigma_c(E)
@@ -8,6 +8,7 @@ subroutine build_Sigmac_w_HFB(nOrb,nOrb_twice,nE,wtest,eHFB,nfreqs,ntimes,wweigh
 
 ! Input variables
 
+  integer,intent(in)            :: verbose
   integer,intent(in)            :: nE
   integer,intent(in)            :: nfreqs
   integer,intent(in)            :: ntimes
@@ -167,21 +168,23 @@ subroutine build_Sigmac_w_HFB(nOrb,nOrb_twice,nE,wtest,eHFB,nfreqs,ntimes,wweigh
   enddo
 
 ! Print results
-  
-  do iE=1,nE
-   write(*,*) ' ' 
-   write(*,'(a,f15.8,a,f15.8,a)') ' HFB Sigma_he/hh_c(wtest) in MO for wtest=(',Real(wtest(iE)), &
-   ",",Aimag(wtest(iE)),")"
-   write(*,*) ' ' 
-   do iorb=1,nOrb
-    write(*,'(*(f10.5))') Real(Sigma_he_c_mo(iE,iorb,:))
+
+  if(verbose/=0) then  
+   do iE=1,nE
+    write(*,*) ' ' 
+    write(*,'(a,f15.8,a,f15.8,a)') ' HFB Sigma_he/hh_c(wtest) in MO for wtest=(',Real(wtest(iE)), &
+    ",",Aimag(wtest(iE)),")"
+    write(*,*) ' ' 
+    do iorb=1,nOrb
+     write(*,'(*(f10.5))') Real(Sigma_he_c_mo(iE,iorb,:))
+    enddo
+    write(*,*) ' ' 
+    do iorb=1,nOrb
+     write(*,'(*(f10.5))') Real(Sigma_hh_c_mo(iE,iorb,:))
+    enddo
+    write(*,*) ' ' 
    enddo
-   write(*,*) ' ' 
-   do iorb=1,nOrb
-    write(*,'(*(f10.5))') Real(Sigma_hh_c_mo(iE,iorb,:))
-   enddo
-   write(*,*) ' ' 
-  enddo
+  endif
 
   ! Deallocate arrays
   deallocate(Chi0_mo_w)

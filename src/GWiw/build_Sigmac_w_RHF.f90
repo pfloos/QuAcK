@@ -1,4 +1,4 @@
-subroutine build_Sigmac_w_RHF(nOrb,nO,nE,wtest,eHF,nfreqs,ntimes,wweight,wcoord,vMAT,&
+subroutine build_Sigmac_w_RHF(nOrb,nO,nE,verbose,wtest,eHF,nfreqs,ntimes,wweight,wcoord,vMAT,&
                               Sigma_c_mo)
 
 ! Restricted Sigma_c(E)
@@ -8,6 +8,7 @@ subroutine build_Sigmac_w_RHF(nOrb,nO,nE,wtest,eHF,nfreqs,ntimes,wweight,wcoord,
 
 ! Input variables
 
+  integer,intent(in)            :: verbose
   integer,intent(in)            :: nE
   integer,intent(in)            :: nfreqs
   integer,intent(in)            :: ntimes
@@ -169,17 +170,19 @@ subroutine build_Sigmac_w_RHF(nOrb,nO,nE,wtest,eHF,nfreqs,ntimes,wweight,wcoord,
 
 
 ! Print results
-  
-  do iE=1,nE
-   write(*,*) ' ' 
-   write(*,'(a,f15.8,a,f15.8,a)') ' RHF Sigma_c(wtest) in MO for wtest=(',Real(wtest(iE)), &
-   ",",Aimag(wtest(iE)),")"
-   write(*,*) ' ' 
-   do iorb=1,nOrb
-    write(*,'(*(f10.5))') Real(Sigma_c_mo(iE,iorb,:))
+ 
+  if(verbose/=0) then 
+   do iE=1,nE
+    write(*,*) ' ' 
+    write(*,'(a,f15.8,a,f15.8,a)') ' RHF Sigma_c(wtest) in MO for wtest=(',Real(wtest(iE)), &
+    ",",Aimag(wtest(iE)),")"
+    write(*,*) ' ' 
+    do iorb=1,nOrb
+     write(*,'(*(f10.5))') Real(Sigma_c_mo(iE,iorb,:))
+    enddo
+    write(*,*) ' ' 
    enddo
-   write(*,*) ' ' 
-  enddo
+  endif
 
   ! Deallocate arrays
   deallocate(Chi0_mo_w)
