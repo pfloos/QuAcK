@@ -105,7 +105,7 @@ subroutine Xoiw_RHF_tests(nBas,nOrb,nO,wtest,cHF,eHF,nfreqs,ntimes,wweight,wcoor
 ! Build Xo(i w) from G(i tau) !
 !-----------------------------!
 
-  call Gitau2Chi0iw_RHF(nBas,nOrb,nO,cHF,eHF,nfreqs,ntimes,wcoord,Chi0_ao_iw)
+  call Gitau2Chi0iw_ao_RHF(nBas,nOrb,nO,cHF,eHF,nfreqs,ntimes,wcoord,Chi0_ao_iw)
 
 !----------------------!
 ! Use Xo(i w) as usual !
@@ -231,7 +231,7 @@ subroutine Xoiw_RHF_tests(nBas,nOrb,nO,wtest,cHF,eHF,nfreqs,ntimes,wweight,wcoor
         Tmp_mo_w(iorb,iorb)=1d0  
        enddo
        weval=eHF(porb)-Real(wtest) 
-       call Xoiw_RHF(nOrb,nO,eta,eHF,weval,Chi0_mo_w)
+       call Xoiw_mo_RHF(nOrb,nO,eta,eHF,weval,Chi0_mo_w)
        Tmp_mo_w(:,:)=Tmp_mo_w(:,:)-matmul(Real(Chi0_mo_w(:,:)),vMAT(:,:))
        call inverse_matrix(nOrb2,Tmp_mo_w,Tmp_mo_w)
        Tmp_mo_w(:,:)=matmul(Tmp_mo_w(:,:),Real(Chi0_mo_w(:,:)))

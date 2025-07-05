@@ -1,4 +1,4 @@
-subroutine Xoiw_HFB(nOrb,nOrb_twice,eta,eHFB,weval,Mat1,Mat2,Chi0_mo_iw)
+subroutine Xoiw_mo_HFB(nOrb,nOrb_twice,eta,eHFB,weval,Mat1,Mat2,Chi0_mo_iw)
 
 ! Restricted Xo(i w) in MO basis
 
