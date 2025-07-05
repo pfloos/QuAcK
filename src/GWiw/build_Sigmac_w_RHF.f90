@@ -184,6 +184,7 @@ subroutine build_Sigmac_w_RHF(nOrb,nO,nE,wtest,eHF,nfreqs,ntimes,wweight,wcoord,
   ! Deallocate arrays
   deallocate(Chi0_mo_w)
   deallocate(Tmp_mo_w)
+  deallocate(G_mo_1,G_mo_2)
 
 end subroutine
 
