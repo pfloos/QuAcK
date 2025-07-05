@@ -257,7 +257,7 @@ subroutine Xoiw_RHF_tests(nBas,nOrb,nO,wtest,cHF,eHF,nfreqs,ntimes,wweight,wcoor
         Tmp_mo_w(iorb,iorb)=1d0  
        enddo
        weval=Real(wtest)-eHF(porb)
-       call Xoiw_RHF(nOrb,nO,eta,eHF,weval,Chi0_mo_w)
+       call Xoiw_mo_RHF(nOrb,nO,eta,eHF,weval,Chi0_mo_w)
        Tmp_mo_w(:,:)=Tmp_mo_w(:,:)-matmul(Real(Chi0_mo_w(:,:)),vMAT(:,:))
        call inverse_matrix(nOrb2,Tmp_mo_w,Tmp_mo_w)
        Tmp_mo_w(:,:)=matmul(Tmp_mo_w(:,:),Real(Chi0_mo_w(:,:)))

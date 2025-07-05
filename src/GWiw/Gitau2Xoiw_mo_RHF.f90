@@ -1,4 +1,4 @@
-subroutine Gitau2Chi0iw_mo_RHF(nOrb,nO,verbose,eHF,nfreqs,ntimes,wcoord,Chi0_mo_iw)
+subroutine Gitau2Chi0iw_mo_RHF(nOrb,nO,verbose,eHF,ntimes,wcoord,Chi0_mo_iw)
 
 ! Restricted Xo(i tau) [ and Xo(i w) ] computed from G(i tau)
 
@@ -8,18 +8,17 @@ subroutine Gitau2Chi0iw_mo_RHF(nOrb,nO,verbose,eHF,nfreqs,ntimes,wcoord,Chi0_mo_
 ! Input variables
 
   integer,intent(in)            :: verbose
-  integer,intent(in)            :: nfreqs
   integer,intent(in)            :: ntimes
   integer,intent(in)            :: nOrb
   integer,intent(in)            :: nO
 
-  double precision,intent(in)   :: wcoord(nfreqs)
+  double precision,intent(in)   :: wcoord
 
 ! Local variables
 
   logical                       :: lesser
 
-  integer                       :: kind_int,itau,ifreq
+  integer                       :: kind_int,itau
   integer                       :: iorb,jorb,korb,lorb
 
   double precision              :: start_Gitau2Xoiw     ,end_Gitau2Xoiw       ,t_Gitau2Xoiw
@@ -34,7 +33,7 @@ subroutine Gitau2Chi0iw_mo_RHF(nOrb,nO,verbose,eHF,nfreqs,ntimes,wcoord,Chi0_mo_
 
 ! Output variables
   double precision,intent(inout):: eHF(nOrb)
-  complex*16,intent(out)        :: Chi0_mo_iw(nfreqs,nOrb*nOrb,nOrb*nOrb)
+  complex*16,intent(out)        :: Chi0_mo_iw(nOrb*nOrb,nOrb*nOrb)
   
 !------------------------------------------------------------------------
 ! Build G(i tau) in MO orbis and use it to build Xo (i tau) -> Xo (i w)
@@ -51,9 +50,11 @@ subroutine Gitau2Chi0iw_mo_RHF(nOrb,nO,verbose,eHF,nfreqs,ntimes,wcoord,Chi0_mo_
  endif
 
  chem_pot = 0.5d0*(eHF(nO)+eHF(nO+1))
- write(*,'(A33,1X,F16.10,A3)') ' Chemical potential  = ',chem_pot,' au'
+ if(verbose/=0) then
+  write(*,'(A33,1X,F16.10,A3)') ' Chemical potential  = ',chem_pot,' au'
+ endif
  eHF(:) = eHF(:)-chem_pot
- Chi0_mo_iw(:,:,:)=czero
+ Chi0_mo_iw(:,:)=czero
    
  allocate(Glesser(nOrb,nOrb),Ggreater(nOrb,nOrb)) 
  allocate(Chi0_mo_itau(nOrb*nOrb,nOrb*nOrb)) 
@@ -109,14 +110,12 @@ subroutine Gitau2Chi0iw_mo_RHF(nOrb,nO,verbose,eHF,nfreqs,ntimes,wcoord,Chi0_mo_
   Chi0_mo_itau=-2d0*im*Chi0_mo_itau ! The 2 factor is added to account for both spin contributions [ i.e., (up,up,up,up) and (down,down,down,down) ]
 
   ! Xo(i tau) -> Xo(i w)
-  do ifreq=1,nfreqs
-    Chi0_mo_iw(ifreq,:,:) = Chi0_mo_iw(ifreq,:,:) - im*tweight(itau)*Chi0_mo_itau(:,:)*Exp(im*tcoord(itau)*wcoord(ifreq))
-  enddo 
+  Chi0_mo_iw(:,:) = Chi0_mo_iw(:,:) - im*tweight(itau)*Chi0_mo_itau(:,:)*Exp(im*tcoord(itau)*wcoord)
 
  enddo
 
  ! Complete the Xo(i tau) -> Xo(i w)
- Chi0_mo_iw(:,:,:) = 2d0*Real(Chi0_mo_iw(:,:,:))
+ Chi0_mo_iw(:,:) = 2d0*Real(Chi0_mo_iw(:,:))
 
  call wall_time(end_Gitau2Xoiw)
  
