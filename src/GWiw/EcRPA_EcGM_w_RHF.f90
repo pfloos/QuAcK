@@ -89,6 +89,11 @@ subroutine EcRPA_EcGM_w_RHF(nOrb,nO,verbose,eHF,nfreqs,ntimes,wweight,wcoord,vMA
 ! Print results
  
   if(verbose/=0) then 
+   write(*,*)
+   write(*,*) '******************************************************'
+   write(*,*) '* EcRPA and EcGM computed with imaginary frequencies *'
+   write(*,*) '******************************************************'
+   write(*,*)
    write(*,*)'-------------------------------------------------------------------------------'
    write(*,'(2X,A60,F15.6,A3)') '         phRPA correlation energy = ',EcRPA,' au'
    write(*,'(2X,A60,F15.6,A3)') '            GM correlation energy = ',EcGM,' au'

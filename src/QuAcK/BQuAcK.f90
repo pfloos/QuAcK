@@ -1,4 +1,4 @@
-subroutine BQuAcK(working_dir,dotest,doHFB,doqsGW,nNuc,nBas,nOrb,nO,ENuc,ZNuc,rNuc,                   &
+subroutine BQuAcK(working_dir,dotest,doHFB,dophRPA,doqsGW,nNuc,nBas,nOrb,nO,ENuc,ZNuc,rNuc,           &
                   S,T,V,Hc,X,dipole_int_AO,maxSCF_HF,max_diis_HF,thresh_HF,level_shift,               &
                   guess_type,mix,temperature,sigma,chem_pot_hf,restart_hfb,im_freqs,nfreqs,ntimes,wcoord,wweight)
 
@@ -12,6 +12,7 @@ subroutine BQuAcK(working_dir,dotest,doHFB,doqsGW,nNuc,nBas,nOrb,nO,ENuc,ZNuc,rN
   logical,intent(in)            :: dotest
 
   logical,intent(in)            :: doHFB
+  logical,intent(in)            :: dophRPA
   logical,intent(in)            :: doqsGW
 
   logical,intent(in)            :: restart_hfb
@@ -40,7 +41,6 @@ subroutine BQuAcK(working_dir,dotest,doHFB,doqsGW,nNuc,nBas,nOrb,nO,ENuc,ZNuc,rN
 
 ! Local variables
 
-  logical                       :: simpletest_rhf,simpletest_hfb
   logical                       :: file_exists
   integer                       :: nOrb_twice
   integer                       :: nO_
@@ -49,6 +49,7 @@ subroutine BQuAcK(working_dir,dotest,doHFB,doqsGW,nNuc,nBas,nOrb,nO,ENuc,ZNuc,rN
 
   double precision              :: chem_pot,Val
   double precision              :: start_HF     ,end_HF       ,t_HF
+  double precision              :: start_Ecorr  ,end_Ecorr    ,t_Ecorr
   double precision              :: start_qsGWB  ,end_qsGWB    ,t_qsGWB
   double precision              :: start_int    ,end_int      ,t_int
 
@@ -60,13 +61,14 @@ subroutine BQuAcK(working_dir,dotest,doHFB,doqsGW,nNuc,nBas,nOrb,nO,ENuc,ZNuc,rN
   double precision,allocatable  :: PanomHF(:,:)
   double precision,allocatable  :: FHF(:,:)
   double precision,allocatable  :: Delta(:,:)
-  double precision              :: ERHF,EHFB
+  double precision,allocatable  :: vMAT(:,:)
+  double precision              :: ERHF,EHFB,EcRPA,EcGM
   double precision,allocatable  :: dipole_int_MO(:,:,:)
   double precision,allocatable  :: ERI_AO(:,:,:,:)
+  double precision,allocatable  :: ERI_MO(:,:,:,:)
 
 
 !
-  simpletest_rhf=.false.; simpletest_hfb=.false.;
 
   write(*,*)
   write(*,*) '******************************'
@@ -147,25 +149,30 @@ subroutine BQuAcK(working_dir,dotest,doHFB,doqsGW,nNuc,nBas,nOrb,nO,ENuc,ZNuc,rN
     write(*,'(A65,1X,F9.3,A8)') 'Total wall time for RHF = ',t_HF,' seconds'
     write(*,*)
 
-    ! Test Xo^RHF (i w) by computing EcGM, EcRPA, Wp, and Sigma_c
-    if(im_freqs .and. simpletest_rhf) then
+    ! Compute EcRPA and EcGM energies for RHF
+    if(dophRPA) then
 
-      ! FOR Sigma_c^rhf, REAL OR PURELY IMAGINARY wtest VALUES ARE IMPLEMENTED
-      block
-       logical                       :: fulltest_rhf
-       complex *16,allocatable       :: Sigma_c_mo(:,:)
-       complex *16                   :: wtest
-       ! TODO: set by hand Sigma_c(wtest) test values
-        wtest =-4.2d0
-        !wtest=-4.8d0
-        !wtest=wcoord(1)*im
-       ! TODO: set fulltest_X to .true. to compute Sigma_c
-        fulltest_rhf  =.false.
-       allocate(Sigma_c_mo(nOrb,nOrb))
-       call Xoiw_RHF_tests(nBas,nOrb,nO,wtest,cHFB,eHF,nfreqs,ntimes,wweight,wcoord,ERI_AO, &
-                           Sigma_c_mo,fulltest_rhf)
-       deallocate(Sigma_c_mo)
-      endblock
+     call wall_time(start_Ecorr)
+     allocate(vMAT(nOrb*nOrb,nOrb*nOrb))
+     allocate(ERI_MO(nOrb,nOrb,nOrb,nOrb))
+     call AOtoMO_ERI_RHF(nBas,nOrb,cHFB,ERI_AO,ERI_MO)
+     do iorb=1,nOrb
+      do jorb=1,nOrb
+       do korb=1,nOrb
+        do lorb=1,nOrb
+         vMAT(1+(korb-1)+(iorb-1)*nOrb,1+(lorb-1)+(jorb-1)*nOrb)=ERI_MO(iorb,jorb,korb,lorb)
+        enddo
+       enddo
+      enddo
+     enddo
+     deallocate(ERI_MO)
+     call EcRPA_EcGM_w_RHF(nOrb,nO,1,eHF,nfreqs,ntimes,wweight,wcoord,vMAT,EcRPA,EcGM)
+     deallocate(vMAT)
+     call wall_time(end_Ecorr)
+
+     t_Ecorr = end_Ecorr - start_Ecorr
+     write(*,'(A65,1X,F9.3,A8)') 'Total wall time for Ecorr = ',t_Ecorr,' seconds'
+     write(*,*)
 
     endif
 
@@ -180,29 +187,31 @@ subroutine BQuAcK(working_dir,dotest,doHFB,doqsGW,nNuc,nBas,nOrb,nO,ENuc,ZNuc,rN
     write(*,'(A65,1X,F9.3,A8)') 'Total wall time for HFB = ',t_HF,' seconds'
     write(*,*)
 
-    ! Test Xo^HFB (i w) by computing EcGM, EcRPA, Wp, and Sigma_he/hh_c
-    if(im_freqs .and. simpletest_hfb) then
+    ! Compute EcRPA and EcGM energies for HFB
+    if(dophRPA) then
 
-      ! FOR Sigma_c^he/hh, ONLY NEGATIVE REAL OR PURELY IMAGINARY wtest VALUES ARE IMPLEMENTED
-      ! (we don't need positive real wtest values!)
-      block
-       logical                       :: fulltest_hfb
-       complex *16,allocatable       :: Sigma_he_c_mo(:,:)
-       complex *16,allocatable       :: Sigma_hh_c_mo(:,:)
-       complex *16                   :: wtest
-       ! TODO: set by hand Sigma_he/hh_c(wtest) test values
-        wtest =-4.2d0
-        !wtest=-4.8d0
-        !wtest=wcoord(1)*im
-       ! TODO: set fulltest_X to .true. to compute Sigma_he/hh_c
-        fulltest_hfb  =.false.
-       allocate(Sigma_he_c_mo(nOrb,nOrb))
-       allocate(Sigma_hh_c_mo(nOrb,nOrb))
-       call Xoiw_HFB_tests(nBas,nOrb,nOrb_twice,wtest,cHFB,eONEBODY_state,nfreqs,ntimes,wweight, &
-                           wcoord,U_QP,ERI_AO,Sigma_he_c_mo,Sigma_hh_c_mo,fulltest_hfb)
-       deallocate(Sigma_he_c_mo)
-       deallocate(Sigma_hh_c_mo)
-      endblock
+     call wall_time(start_Ecorr)
+     allocate(vMAT(nOrb*nOrb,nOrb*nOrb))
+     allocate(ERI_MO(nOrb,nOrb,nOrb,nOrb))
+     call AOtoMO_ERI_RHF(nBas,nOrb,cHFB,ERI_AO,ERI_MO)
+     do iorb=1,nOrb
+      do jorb=1,nOrb
+       do korb=1,nOrb
+        do lorb=1,nOrb
+         vMAT(1+(korb-1)+(iorb-1)*nOrb,1+(lorb-1)+(jorb-1)*nOrb)=ERI_MO(iorb,jorb,korb,lorb)
+        enddo
+       enddo
+      enddo
+     enddo
+     deallocate(ERI_MO)
+     call EcRPA_EcGM_w_HFB(nOrb,nOrb_twice,1,eONEBODY_state,nfreqs,ntimes,wweight,wcoord,vMAT, &
+                           U_QP,EcRPA,EcGM)
+     deallocate(vMAT)
+     call wall_time(end_Ecorr)
+
+     t_Ecorr = end_Ecorr - start_Ecorr
+     write(*,'(A65,1X,F9.3,A8)') 'Total wall time for Ecorr = ',t_Ecorr,' seconds'
+     write(*,*)
 
     endif
 
@@ -224,6 +233,34 @@ subroutine BQuAcK(working_dir,dotest,doHFB,doqsGW,nNuc,nBas,nOrb,nO,ENuc,ZNuc,rN
     t_qsGWB = end_qsGWB - start_qsGWB
     write(*,'(A65,1X,F9.3,A8)') 'Total wall time for qsGWB = ',t_qsGWB,' seconds'
     write(*,*)
+
+    ! Compute EcRPA and EcGM energies for qsGWB
+    if(dophRPA) then
+
+     call wall_time(start_Ecorr)
+     allocate(vMAT(nOrb*nOrb,nOrb*nOrb))
+     allocate(ERI_MO(nOrb,nOrb,nOrb,nOrb))
+     call AOtoMO_ERI_RHF(nBas,nOrb,cHFB,ERI_AO,ERI_MO)
+     do iorb=1,nOrb
+      do jorb=1,nOrb
+       do korb=1,nOrb
+        do lorb=1,nOrb
+         vMAT(1+(korb-1)+(iorb-1)*nOrb,1+(lorb-1)+(jorb-1)*nOrb)=ERI_MO(iorb,jorb,korb,lorb)
+        enddo
+       enddo
+      enddo
+     enddo
+     deallocate(ERI_MO)
+     call EcRPA_EcGM_w_HFB(nOrb,nOrb_twice,1,eONEBODY_state,nfreqs,ntimes,wweight,wcoord,vMAT, &
+                           U_QP,EcRPA,EcGM)
+     deallocate(vMAT)
+     call wall_time(end_Ecorr)
+
+     t_Ecorr = end_Ecorr - start_Ecorr
+     write(*,'(A65,1X,F9.3,A8)') 'Total wall time for Ecorr = ',t_Ecorr,' seconds'
+     write(*,*)
+
+    endif
 
   end if
 
