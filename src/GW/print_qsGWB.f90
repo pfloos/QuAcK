@@ -1,7 +1,7 @@
 
 ! ---
 
-subroutine print_qsBGW(nBas, nOrb, nOrb_twice, nO, N_anom, Occ, eqsGW_state, ENuc, ET, EV, EJ, EK, EL, EqsGW, &
+subroutine print_qsGWB(nBas, nOrb, nOrb_twice, nO, N_anom, Occ, eqsGW_state, ENuc, ET, EV, EJ, EK, EL, EqsGW, &
            chem_pot, dipole, Delta_HL)
 
 ! Print one-electron energies and other stuff
@@ -52,7 +52,7 @@ subroutine print_qsBGW(nBas, nOrb, nOrb_twice, nO, N_anom, Occ, eqsGW_state, ENu
   write(*,'(A50)')           '---------------------------------------'
   write(*,'(A33,1X,F16.10,A3)') ' Electronic   energy = ',EqsGW,' au'
   write(*,'(A33,1X,F16.10,A3)') ' Nuclear   repulsion = ',ENuc,' au'
-  write(*,'(A33,1X,F16.10,A3)') ' qsGW          energy = ',EqsGW + ENuc,' au'
+  write(*,'(A33,1X,F16.10,A3)') ' HFB@qsGW     energy = ',EqsGW + ENuc,' au'
   write(*,'(A50)')           '---------------------------------------'
   write(*,'(A33,1X,F16.10,A3)') ' Chemical potential  = ',chem_pot,' au'
   write(*,'(A33,1X,F16.10,A3)') ' | Anomalous dens |  = ',N_anom,'   '

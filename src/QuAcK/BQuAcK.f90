@@ -1,6 +1,6 @@
-subroutine BQuAcK(working_dir,dotest,doHFB,dophRPA,doqsGW,nNuc,nBas,nOrb,nO,ENuc,ZNuc,rNuc,           &
-                  S,T,V,Hc,X,dipole_int_AO,maxSCF_HF,max_diis_HF,thresh_HF,level_shift,               &
-                  guess_type,mix,temperature,sigma,chem_pot_hf,restart_hfb,im_freqs,nfreqs,ntimes,    &
+subroutine BQuAcK(working_dir,dotest,doHFB,dophRPA,doqsGW,nNuc,nBas,nOrb,nO,ENuc,ZNuc,rNuc,     &
+                  S,T,V,Hc,X,dipole_int_AO,maxSCF_HF,max_diis_HF,thresh_HF,level_shift,         &
+                  guess_type,mix,temperature,sigma,chem_pot_hf,restart_hfb,nfreqs,ntimes,       &
                   wcoord,wweight)
 
 ! Restricted branch of QuAcK
@@ -17,7 +17,6 @@ subroutine BQuAcK(working_dir,dotest,doHFB,dophRPA,doqsGW,nNuc,nBas,nOrb,nO,ENuc
   logical,intent(in)            :: doqsGW
 
   logical,intent(in)            :: restart_hfb
-  logical,intent(in)            :: im_freqs
   logical,intent(in)            :: chem_pot_hf
   integer,intent(in)            :: nNuc,nBas,nOrb
   integer,intent(in)            :: nO
@@ -226,9 +225,10 @@ subroutine BQuAcK(working_dir,dotest,doHFB,dophRPA,doqsGW,nNuc,nBas,nOrb,nO,ENuc
 
     ! Continue with a HFB calculation
     call wall_time(start_qsGWB)
-    call qsGWB(dotest,maxSCF_HF,thresh_HF,max_diis_HF,level_shift,nNuc,ZNuc,rNuc,ENuc,              &
-               nBas,nOrb,nOrb_twice,nO_,S,T,V,Hc,ERI_AO,dipole_int_AO,X,EHFB,eHF,cHFB,PHF,PanomHF,  &
-               FHF,Delta,sigma,chem_pot,restart_hfb,U_QP,eONEBODY_state)
+    call qsGWB(dotest,maxSCF_HF,thresh_HF,max_diis_HF,level_shift,nNuc,ZNuc,rNuc,ENuc,                &
+               nBas,nOrb,nOrb_twice,nO_,S,T,V,Hc,ERI_AO,dipole_int_AO,X,EHFB,eHF,cHFB,PHF,PanomHF,    &
+               FHF,Delta,sigma,chem_pot,restart_hfb,U_QP,eONEBODY_state,nfreqs,ntimes,wcoord,wweight) 
+
     call wall_time(end_qsGWB)
 
     t_qsGWB = end_qsGWB - start_qsGWB
