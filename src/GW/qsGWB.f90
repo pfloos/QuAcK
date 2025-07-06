@@ -1,4 +1,4 @@
-subroutine qsGWB(dotest,maxSCF,thresh,max_diis,level_shift,nNuc,ZNuc,rNuc,ENuc,             & 
+subroutine qsGWB(dotest,maxSCF,thresh,max_diis,level_shift,nNuc,ZNuc,rNuc,ENuc,                  & 
                nBas,nOrb,nOrb_twice,nO,S,T,V,Hc,ERI,dipole_int,X,EqsGWB,eqsGW,c,P,Panom,F,Delta, &
                sigma,chem_pot,restart_hfb,U_QP,eqsGWB_state)
 
