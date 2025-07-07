@@ -1,4 +1,4 @@
-subroutine BQuAcK(working_dir,dotest,doHFB,dophRPA,doqsGW,nNuc,nBas,nOrb,nO,ENuc,ZNuc,rNuc,     &
+subroutine BQuAcK(working_dir,dotest,doHFB,dophRPA,doqsGW,nNuc,nBas,nOrb,nO,ENuc,eta,ZNuc,rNuc, &
                   S,T,V,Hc,X,dipole_int_AO,maxSCF_HF,max_diis_HF,thresh_HF,level_shift,         &
                   guess_type,mix,temperature,sigma,chem_pot_hf,restart_hfb,nfreqs,ntimes,       &
                   wcoord,wweight)
@@ -23,6 +23,7 @@ subroutine BQuAcK(working_dir,dotest,doHFB,dophRPA,doqsGW,nNuc,nBas,nOrb,nO,ENuc
   integer,intent(in)            :: nfreqs
   integer,intent(in)            :: ntimes
   double precision,intent(inout):: ENuc
+  double precision,intent(in)   :: eta
   double precision,intent(in)   :: temperature,sigma
 
   double precision,intent(in)   :: ZNuc(nNuc),rNuc(nNuc,ncart)
@@ -225,7 +226,7 @@ subroutine BQuAcK(working_dir,dotest,doHFB,dophRPA,doqsGW,nNuc,nBas,nOrb,nO,ENuc
 
     ! Continue with a HFB calculation
     call wall_time(start_qsGWB)
-    call qsGWB(dotest,maxSCF_HF,thresh_HF,max_diis_HF,level_shift,nNuc,ZNuc,rNuc,ENuc,                &
+    call qsGWB(dotest,maxSCF_HF,thresh_HF,max_diis_HF,level_shift,nNuc,ZNuc,rNuc,ENuc,eta,            &
                nBas,nOrb,nOrb_twice,nO_,S,T,V,Hc,ERI_AO,dipole_int_AO,X,EHFB,eHF,cHFB,PHF,PanomHF,    &
                FHF,Delta,sigma,chem_pot,restart_hfb,U_QP,eONEBODY_state,nfreqs,ntimes,wcoord,wweight) 
 

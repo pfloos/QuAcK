@@ -1,5 +1,5 @@
-subroutine sigc_AO_basis(nBas,nOrb,nOrb_twice,c,U_QP,eqsGWB_state,vMAT,nfreqs,ntimes,wcoord,wweight, &
-                        Sigc_ao_he,Sigc_ao_hh)
+subroutine sigc_AO_basis(nBas,nOrb,nOrb_twice,eta,c,U_QP,eqsGWB_state,vMAT,nfreqs,ntimes, &
+                         wcoord,wweight,Sigc_ao_he,Sigc_ao_hh)
 
 ! Compute Sigma_c matrix in the AO basis
 
@@ -14,6 +14,7 @@ subroutine sigc_AO_basis(nBas,nOrb,nOrb_twice,c,U_QP,eqsGWB_state,vMAT,nfreqs,nt
   integer,intent(in)            :: nfreqs
   integer,intent(in)            :: ntimes
 
+  double precision,intent(in)   :: eta
   double precision,intent(in)   :: wcoord(nfreqs),wweight(nfreqs)
   double precision,intent(in)   :: U_QP(nOrb_twice,nOrb_twice)
   double precision,intent(in)   :: eqsGWB_state(nOrb_twice)
@@ -183,7 +184,7 @@ subroutine sigc_AO_basis(nBas,nOrb,nOrb_twice,c,U_QP,eqsGWB_state,vMAT,nfreqs,nt
   allocate(Sigc_mo_he(nE_eval_global,nOrb,nOrb),Sigc_mo_hh(nE_eval_global,nOrb,nOrb))
 
   ! Run over unique energies
-  call build_Sigmac_w_HFB(nOrb,nOrb_twice,nE_eval_global,0,E_eval_global_cpx,eqsGWB_state, &
+  call build_Sigmac_w_HFB(nOrb,nOrb_twice,nE_eval_global,eta,0,E_eval_global_cpx,eqsGWB_state, &
                           nfreqs,ntimes,wweight,wcoord,vMAT,U_QP,Sigc_mo_he,Sigc_mo_hh)
 
 

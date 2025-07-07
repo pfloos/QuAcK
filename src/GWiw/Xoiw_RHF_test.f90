@@ -200,7 +200,7 @@ subroutine Xoiw_RHF_tests(nBas,nOrb,nO,wtest,cHF,eHF,nfreqs,ntimes,wweight,wcoor
    ! Contour deformation residues
    if(abs(aimag(wtest))<1e-12) then ! wtest is real and we may have to add residues contributions
 
-     eta=1d-5
+     eta=1d-3 ! as used in MOLGW
      ! We will need ERI is MO
      deallocate(vMAT)
      allocate(vMAT(nOrb2,nOrb2))

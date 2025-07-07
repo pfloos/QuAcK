@@ -1,5 +1,5 @@
-subroutine build_Sigmac_w_HFB(nOrb,nOrb_twice,nE,verbose,wtest,eHFB,nfreqs,ntimes,wweight,wcoord,vMAT,&
-                              U_QP,Sigma_he_c_mo,Sigma_hh_c_mo)
+subroutine build_Sigmac_w_HFB(nOrb,nOrb_twice,nE,eta_in,verbose,wtest,eHFB,nfreqs,ntimes,&
+                              wweight,wcoord,vMAT,U_QP,Sigma_he_c_mo,Sigma_hh_c_mo)
 
 ! Restricted Sigma_c(E)
 
@@ -15,6 +15,7 @@ subroutine build_Sigmac_w_HFB(nOrb,nOrb_twice,nE,verbose,wtest,eHFB,nfreqs,ntime
   integer,intent(in)            :: nOrb
   integer,intent(in)            :: nOrb_twice
 
+  double precision,intent(in)   :: eta_in
   double precision,intent(inout):: eHFB(nOrb_twice)
   double precision,intent(in)   :: wweight(nfreqs)
   double precision,intent(in)   :: wcoord(nfreqs)
@@ -30,7 +31,7 @@ subroutine build_Sigmac_w_HFB(nOrb,nOrb_twice,nE,verbose,wtest,eHFB,nfreqs,ntime
   integer                       :: nOrb2
 
   double precision              :: chem_pot
-  double precision              :: eta
+  double precision              :: eta_
   double precision,external     :: Heaviside_step
   double precision,allocatable  :: Tmp_mo_w(:,:)
   double precision,allocatable  :: Mat1(:,:)
@@ -74,8 +75,8 @@ subroutine build_Sigmac_w_HFB(nOrb,nOrb_twice,nE,verbose,wtest,eHFB,nfreqs,ntime
    if(ntimes>0) then
     call Gitau2Chi0iw_mo_HFB(nOrb,nOrb_twice,0,eHFB,ntimes,wcoord(ifreq),U_QP,Chi0_mo_w)
    else
-    eta=0d0
-    call Xoiw_mo_HFB(nOrb,nOrb_twice,eta,eHFB,im*wcoord(ifreq),Mat1,Mat2,Chi0_mo_w)
+    eta_=0d0
+    call Xoiw_mo_HFB(nOrb,nOrb_twice,eta_,eHFB,im*wcoord(ifreq),Mat1,Mat2,Chi0_mo_w)
    endif
 
    ! Xo (iw) -> Wp (iw)
@@ -87,21 +88,21 @@ subroutine build_Sigmac_w_HFB(nOrb,nOrb_twice,nE,verbose,wtest,eHFB,nfreqs,ntime
 
    ! Use Wp (iw) to build all Sigma_c(E)
     do iE=1,nE
-     eta=0d0
-     do iorb=1,nOrb ! If the E used to build Sigma_c(E) is too close to a pole of G, we add eta
-       if(abs(wtest(iE)-eHFB(iorb))<=2d-2) eta=1d-3
+     eta_=0d0
+     do iorb=1,nOrb ! If the E used to build Sigma_c(E) is too close to a pole of G, we add eta_
+       if(abs(wtest(iE)-eHFB(iorb))<=2d-2) eta_=eta_in
      enddo
      ! Build G(iw+wtest)
      ! Ghe
       weval=wtest(iE)+im*wcoord(ifreq)
-      call G_MO_HFB(nOrb,nOrb_twice,eta,eHFB,weval,Mat1,Mat1,Mat2,Mat2,G_mo_1)
+      call G_MO_HFB(nOrb,nOrb_twice,eta_,eHFB,weval,Mat1,Mat1,Mat2,Mat2,G_mo_1)
       weval=wtest(iE)-im*wcoord(ifreq)
-      call G_MO_HFB(nOrb,nOrb_twice,eta,eHFB,weval,Mat1,Mat1,Mat2,Mat2,G_mo_2)
+      call G_MO_HFB(nOrb,nOrb_twice,eta_,eHFB,weval,Mat1,Mat1,Mat2,Mat2,G_mo_2)
      ! Ghh
       weval=wtest(iE)+im*wcoord(ifreq)
-      call G_MO_HFB(nOrb,nOrb_twice,eta,eHFB,weval,Mat1,Mat2,-Mat2,Mat1,G_mo_3)
+      call G_MO_HFB(nOrb,nOrb_twice,eta_,eHFB,weval,Mat1,Mat2,-Mat2,Mat1,G_mo_3)
       weval=wtest(iE)-im*wcoord(ifreq)
-      call G_MO_HFB(nOrb,nOrb_twice,eta,eHFB,weval,Mat1,Mat2,-Mat2,Mat1,G_mo_4)
+      call G_MO_HFB(nOrb,nOrb_twice,eta_,eHFB,weval,Mat1,Mat2,-Mat2,Mat1,G_mo_4)
      ! Sigma_c(E)
      do iorb=1,nOrb
       do jorb=1,nOrb
@@ -130,7 +131,7 @@ subroutine build_Sigmac_w_HFB(nOrb,nOrb_twice,nE,verbose,wtest,eHFB,nfreqs,ntime
    ! Contour deformation residues
    if(abs(aimag(wtest(iE)))<1e-12) then ! wtest is real and we may have to add residues contributions
 
-     eta=1d-5
+     eta_=eta_in
 
      ! WE HAVE ONLY IMPLEMENTED NEGATIVE REAL wtest OR PURELY IMAGINARY wtest FOR Sigma_c^he/hh
      ! Gorkov density residues [ the complementary residues, for eHFB>0, are not needed because
@@ -143,7 +144,7 @@ subroutine build_Sigmac_w_HFB(nOrb,nOrb_twice,nE,verbose,wtest,eHFB,nfreqs,ntime
         Tmp_mo_w(iorb,iorb)=1d0
        enddo
        weval=eHFB(Istate)-Real(wtest(iE))
-       call Xoiw_mo_HFB(nOrb,nOrb_twice,eta,eHFB,weval,Mat1,Mat2,Chi0_mo_w)
+       call Xoiw_mo_HFB(nOrb,nOrb_twice,eta_,eHFB,weval,Mat1,Mat2,Chi0_mo_w)
        Tmp_mo_w(:,:)=Tmp_mo_w(:,:)-matmul(Real(Chi0_mo_w(:,:)),vMAT(:,:))
        call inverse_matrix(nOrb2,Tmp_mo_w,Tmp_mo_w)
        Tmp_mo_w(:,:)=matmul(Tmp_mo_w(:,:),Real(Chi0_mo_w(:,:)))
