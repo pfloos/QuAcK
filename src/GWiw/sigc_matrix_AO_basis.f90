@@ -1,5 +1,5 @@
 subroutine sigc_AO_basis(nBas,nOrb,nOrb_twice,c,U_QP,eqsGWB_state,vMAT,nfreqs,ntimes,wcoord,wweight, &
-                        Sigc_he,Sigc_hh)
+                        Sigc_ao_he,Sigc_ao_hh)
 
 ! Compute Sigma_c matrix in the AO basis
 
@@ -26,33 +26,32 @@ subroutine sigc_AO_basis(nBas,nOrb,nOrb_twice,c,U_QP,eqsGWB_state,vMAT,nfreqs,nt
   integer                       :: iorb
   integer                       :: iE
   integer                       :: iE_
+  integer                       :: nE_eval_global
   integer                       :: ncluster
-  integer                       :: nEnergies
   integer,allocatable           :: nE_per_cluster(:)
 
   double precision              :: shift=1d-2
   double precision              :: step_E=2.5d-2
+  double precision,allocatable  :: E_eval_global(:)
 
   complex *16,allocatable       :: Sigc_mo_he(:,:,:)
   complex *16,allocatable       :: Sigc_mo_hh(:,:,:)
+  complex *16,allocatable       :: E_eval_global_cpx(:)
 
   type                          :: t_cluster
    integer                      :: nE
    integer                      :: nE_eval
    double precision,allocatable :: E_QP(:)
-   complex *16,allocatable      :: E_eval(:)
+   double precision,allocatable :: E_eval(:)
   end type
   type(t_cluster),allocatable   :: clusters(:)
 
 ! Output variables
 
-  double precision,intent(out)  :: Sigc_he(nBas,nBas)
-  double precision,intent(out)  :: Sigc_hh(nBas,nBas)
+  double precision,intent(out)  :: Sigc_ao_he(nBas,nBas)
+  double precision,intent(out)  :: Sigc_ao_hh(nBas,nBas)
 
 !
-
-  ! TODO
-  !allocate(Sigc_mo_he(nOrb,nOrb),Sigc_mo_hh(nOrb,nOrb))
 
 ! Set the number of clusters [i.e., energies separated more than (or equal to) 0.1 a.u.]
   ncluster=1
@@ -138,38 +137,80 @@ subroutine sigc_AO_basis(nBas,nOrb,nOrb_twice,c,U_QP,eqsGWB_state,vMAT,nfreqs,nt
    enddo
   enddo
 
-  ! TODO select unique points
-
-  ! TODO run only once over unique points
+  ! Select unique points
   do icluster=1,ncluster
-  allocate(Sigc_mo_he(clusters(icluster)%nE_eval,nOrb,nOrb),Sigc_mo_hh(clusters(icluster)%nE_eval,nOrb,nOrb))
-  call build_Sigmac_w_HFB(nOrb,nOrb_twice,clusters(icluster)%nE_eval,0,clusters(icluster)%E_eval,eqsGWB_state, &
-                          nfreqs,ntimes,wweight,wcoord,vMAT,U_QP,Sigc_mo_he,Sigc_mo_hh)
-  write(*,*) 'New cluster'
-  write(*,*) 'w   Sigma_c(1,1)    Sigma_c(2,2) '
    do iE=1,clusters(icluster)%nE_eval
-    write(*,'(*(f10.5))') Real(clusters(icluster)%E_eval(iE)),Real(Sigc_mo_he(iE,1,1)),Real(Sigc_mo_he(iE,2,2))
+    if(abs(clusters(icluster)%E_eval(iE)) > 1e-8) then
+     do iE_=iE+1,clusters(icluster)%nE_eval
+      if( abs(clusters(icluster)%E_eval(iE)-clusters(icluster)%E_eval(iE_) ) < 1e-8) then
+       clusters(icluster)%E_eval(iE_)=0d0
+      endif
+     enddo
+    endif
    enddo
-  deallocate(Sigc_mo_he,Sigc_mo_hh)
+  enddo
+  nE_eval_global=0
+  do icluster=1,ncluster
+   do iE=1,clusters(icluster)%nE_eval
+    if(abs(clusters(icluster)%E_eval(iE)) > 1e-8) nE_eval_global = nE_eval_global +1
+   enddo
   enddo
 
-!
-
-
-! Delete dynamic arrays
+  ! Store unique energies
+  allocate(E_eval_global(nE_eval_global))
+  allocate(E_eval_global_cpx(nE_eval_global))
+  iE_=1
+  do icluster=1,ncluster
+   do iE=1,clusters(icluster)%nE_eval
+    if(abs(clusters(icluster)%E_eval(iE)) > 1e-8) then
+     E_eval_global(iE_)=clusters(icluster)%E_eval(iE)
+     iE_=iE_+1
+    endif
+   enddo
+  enddo
  
+  ! Sort and transform to complex unique energies 
+  call sort_ascending(nE_eval_global,E_eval_global)                        
+  E_eval_global_cpx(:)=E_eval_global(:)
+  deallocate(E_eval_global)
+
+  ! Delete some dynamic arrays and allocate the self-energy array
   do icluster=1,ncluster
    deallocate(clusters(icluster)%E_QP)
    deallocate(clusters(icluster)%E_eval)
   enddo
   deallocate(clusters)
+  allocate(Sigc_mo_he(nE_eval_global,nOrb,nOrb),Sigc_mo_hh(nE_eval_global,nOrb,nOrb))
+
+  ! Run over unique energies
+  call build_Sigmac_w_HFB(nOrb,nOrb_twice,nE_eval_global,0,E_eval_global_cpx,eqsGWB_state, &
+                          nfreqs,ntimes,wweight,wcoord,vMAT,U_QP,Sigc_mo_he,Sigc_mo_hh)
+
+
+  ! TODO remove this printing
+  write(*,*)
+  write(*,*) 'w   Sigma_c(1,1)    Sigma_c(2,2) '
+  do iE=1,nE_eval_global
+   write(*,'(*(f10.5))') Real(E_eval_global_cpx(iE)),Real(Sigc_mo_he(iE,1,1)),Real(Sigc_mo_he(iE,2,2))
+  enddo
+  write(*,*)
+
+
+! TODO interpolate Sigma
+
+! TODO transform Sigma from MO to AO basis
+
+! Delete dynamic arrays
+ 
+  deallocate(Sigc_mo_he,Sigc_mo_hh)
+  deallocate(E_eval_global_cpx)
 
 
 
 
 ! TODO remove these lines
- Sigc_he=0d0
- Sigc_hh=0d0
+ Sigc_ao_he=0d0
+ Sigc_ao_hh=0d0
 
 
 end subroutine 

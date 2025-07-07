@@ -1,3 +1,25 @@
+ subroutine sort_ascending(isize,x)                        
+
+  implicit none                                                  
+
+  integer                        :: ielement 
+  integer                        :: ielement1 
+  integer,intent(in)             :: isize                        
+  double precision               :: pivot
+  double precision,intent(inout) :: x(isize)
+
+  do ielement=1,isize
+   do ielement1=ielement+1,isize
+    if(x(ielement1)<x(ielement)) then
+     pivot=x(ielement1)
+     x(ielement1)=x(ielement)
+     x(ielement)=pivot
+    endif
+   enddo
+  enddo
+
+end subroutine
+
  subroutine quick_sort(x,iorder,isize)                        
 
   implicit none                                                  
