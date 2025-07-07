@@ -87,7 +87,7 @@ subroutine sigc_AO_basis(nBas,nOrb,nOrb_twice,eta,c,U_QP,eqsGWB_state,vMAT,nfreq
   enddo
 
 ! For each cluster find the number of energies (e_EVAL) to be used in Sigma_c [i.e., Sigma_c(e_EVAl)]
-! and allocate the energies to be evaluated array
+! and allocate the cluster arrays to store the energies to be evaluated
   do icluster=1,ncluster
    clusters(icluster)%nE_eval=2
    do iE=2,clusters(icluster)%nE
