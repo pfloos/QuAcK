@@ -75,8 +75,11 @@ subroutine build_Sigmac_w_RHF(nOrb,nO,nE,verbose,wtest,eHF,nfreqs,ntimes,wweight
    Tmp_mo_w(:,:)=matmul(vMAT(:,:),Tmp_mo_w(:,:)) ! Now Tmp_mo_w is Wp(iw) in MO
 
    ! Use Wp (iw) to build all Sigma_c(E)
-    eta=0d0
     do iE=1,nE
+     eta=0d0
+     do iorb=1,nOrb ! If the E used to build Sigma_c(E) is too close to the pole of G, we add eta
+       if(abs(wtest(iE)-eHF(iorb))<=2d-2) eta=1d-3
+     enddo
      ! Build G(iw+wtest)
      weval=wtest(iE)+im*wcoord(ifreq)
      call G_MO_RHF(nOrb,nO,eta,eHF,weval,G_mo_1)
@@ -103,7 +106,7 @@ subroutine build_Sigmac_w_RHF(nOrb,nO,nE,verbose,wtest,eHF,nfreqs,ntimes,wweight
    ! Contour deformation residues
    if(abs(aimag(wtest(iE)))<1e-12) then ! wtest is real and we may have to add residues contributions
 
-     eta=0.00001
+     eta=1d-5
 
      ! Align the poles of G
      chem_pot = 0.5d0*(eHF(nO)+eHF(nO+1))

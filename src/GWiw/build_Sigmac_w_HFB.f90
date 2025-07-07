@@ -86,8 +86,11 @@ subroutine build_Sigmac_w_HFB(nOrb,nOrb_twice,nE,verbose,wtest,eHFB,nfreqs,ntime
    Tmp_mo_w(:,:)=matmul(vMAT(:,:),Tmp_mo_w(:,:)) ! Now Tmp_mo_w is Wp(iw) in MO
 
    ! Use Wp (iw) to build all Sigma_c(E)
-    eta=0d0
     do iE=1,nE
+     eta=0d0
+     do iorb=1,nOrb ! If the E used to build Sigma_c(E) is too close to a pole of G, we add eta
+       if(abs(wtest(iE)-eHFB(iorb))<=2d-2) eta=1d-3
+     enddo
      ! Build G(iw+wtest)
      ! Ghe
       weval=wtest(iE)+im*wcoord(ifreq)
@@ -127,7 +130,7 @@ subroutine build_Sigmac_w_HFB(nOrb,nOrb_twice,nE,verbose,wtest,eHFB,nfreqs,ntime
    ! Contour deformation residues
    if(abs(aimag(wtest(iE)))<1e-12) then ! wtest is real and we may have to add residues contributions
 
-     eta=0.00001
+     eta=1d-5
 
      ! WE HAVE ONLY IMPLEMENTED NEGATIVE REAL wtest OR PURELY IMAGINARY wtest FOR Sigma_c^he/hh
      ! Gorkov density residues [ the complementary residues, for eHFB>0, are not needed because
