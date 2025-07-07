@@ -188,34 +188,6 @@ subroutine BQuAcK(working_dir,dotest,doHFB,dophRPA,doqsGW,nNuc,nBas,nOrb,nO,ENuc
     write(*,'(A65,1X,F9.3,A8)') 'Total wall time for HFB = ',t_HF,' seconds'
     write(*,*)
 
-    ! Compute EcRPA and EcGM energies for HFB
-    if(dophRPA) then
-
-     call wall_time(start_Ecorr)
-     allocate(vMAT(nOrb*nOrb,nOrb*nOrb))
-     allocate(ERI_MO(nOrb,nOrb,nOrb,nOrb))
-     call AOtoMO_ERI_RHF(nBas,nOrb,cHFB,ERI_AO,ERI_MO)
-     do iorb=1,nOrb
-      do jorb=1,nOrb
-       do korb=1,nOrb
-        do lorb=1,nOrb
-         vMAT(1+(korb-1)+(iorb-1)*nOrb,1+(lorb-1)+(jorb-1)*nOrb)=ERI_MO(iorb,jorb,korb,lorb)
-        enddo
-       enddo
-      enddo
-     enddo
-     deallocate(ERI_MO)
-     call EcRPA_EcGM_w_HFB(nOrb,nOrb_twice,1,eONEBODY_state,nfreqs,ntimes,wweight,wcoord,vMAT, &
-                           U_QP,EcRPA,EcGM)
-     deallocate(vMAT)
-     call wall_time(end_Ecorr)
-
-     t_Ecorr = end_Ecorr - start_Ecorr
-     write(*,'(A65,1X,F9.3,A8)') 'Total wall time for Ecorr = ',t_Ecorr,' seconds'
-     write(*,*)
-
-    endif
-
   end if
 
 !------------------------!
@@ -236,35 +208,35 @@ subroutine BQuAcK(working_dir,dotest,doHFB,dophRPA,doqsGW,nNuc,nBas,nOrb,nO,ENuc
     write(*,'(A65,1X,F9.3,A8)') 'Total wall time for qsGWB = ',t_qsGWB,' seconds'
     write(*,*)
 
-    ! Compute EcRPA and EcGM energies for qsGWB
-    if(dophRPA) then
+  end if
 
-     call wall_time(start_Ecorr)
-     allocate(vMAT(nOrb*nOrb,nOrb*nOrb))
-     allocate(ERI_MO(nOrb,nOrb,nOrb,nOrb))
-     call AOtoMO_ERI_RHF(nBas,nOrb,cHFB,ERI_AO,ERI_MO)
-     do iorb=1,nOrb
-      do jorb=1,nOrb
-       do korb=1,nOrb
-        do lorb=1,nOrb
-         vMAT(1+(korb-1)+(iorb-1)*nOrb,1+(lorb-1)+(jorb-1)*nOrb)=ERI_MO(iorb,jorb,korb,lorb)
-        enddo
-       enddo
+  ! Compute EcRPA and EcGM energies for qsGWB or HFB
+  if(dophRPA) then
+
+   call wall_time(start_Ecorr)
+   allocate(vMAT(nOrb*nOrb,nOrb*nOrb))
+   allocate(ERI_MO(nOrb,nOrb,nOrb,nOrb))
+   call AOtoMO_ERI_RHF(nBas,nOrb,cHFB,ERI_AO,ERI_MO)
+   do iorb=1,nOrb
+    do jorb=1,nOrb
+     do korb=1,nOrb
+      do lorb=1,nOrb
+       vMAT(1+(korb-1)+(iorb-1)*nOrb,1+(lorb-1)+(jorb-1)*nOrb)=ERI_MO(iorb,jorb,korb,lorb)
       enddo
      enddo
-     deallocate(ERI_MO)
-     call EcRPA_EcGM_w_HFB(nOrb,nOrb_twice,1,eONEBODY_state,nfreqs,ntimes,wweight,wcoord,vMAT, &
-                           U_QP,EcRPA,EcGM)
-     deallocate(vMAT)
-     call wall_time(end_Ecorr)
+    enddo
+   enddo
+   deallocate(ERI_MO)
+   call EcRPA_EcGM_w_HFB(nOrb,nOrb_twice,1,eONEBODY_state,nfreqs,ntimes,wweight,wcoord,vMAT, &
+                         U_QP,EcRPA,EcGM)
+   deallocate(vMAT)
+   call wall_time(end_Ecorr)
 
-     t_Ecorr = end_Ecorr - start_Ecorr
-     write(*,'(A65,1X,F9.3,A8)') 'Total wall time for Ecorr = ',t_Ecorr,' seconds'
-     write(*,*)
+   t_Ecorr = end_Ecorr - start_Ecorr
+   write(*,'(A65,1X,F9.3,A8)') 'Total wall time for Ecorr = ',t_Ecorr,' seconds'
+   write(*,*)
 
-    endif
-
-  end if
+  endif
 
 ! Memory deallocation
     

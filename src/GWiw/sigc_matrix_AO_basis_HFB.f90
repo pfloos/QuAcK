@@ -1,5 +1,5 @@
-subroutine sigc_AO_basis(nBas,nOrb,nOrb_twice,eta,c,U_QP,eqsGWB_state,vMAT,nfreqs,ntimes, &
-                         wcoord,wweight,Sigc_ao_he,Sigc_ao_hh)
+subroutine sigc_AO_basis_HFB(nBas,nOrb,nOrb_twice,eta,c,U_QP,eqsGWB_state,vMAT,nfreqs,ntimes, &
+                             wcoord,wweight,Sigc_ao_he,Sigc_ao_hh)
 
 ! Compute Sigma_c matrix in the AO basis
 
@@ -169,7 +169,7 @@ subroutine sigc_AO_basis(nBas,nOrb,nOrb_twice,eta,c,U_QP,eqsGWB_state,vMAT,nfreq
     endif
    enddo
   enddo
- 
+   
   ! Sort and transform to complex unique energies 
   call sort_ascending(nE_eval_global,E_eval_global)                        
   E_eval_global_cpx(:)=E_eval_global(:)

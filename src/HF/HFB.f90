@@ -369,7 +369,8 @@ subroutine HFB(dotest,doqsGW,maxSCF,thresh,max_diis,level_shift,nNuc,ZNuc,rNuc,E
   do iorb=1,nOrb
    R(:,:) = R(:,:) + matmul(eigVEC(:,iorb:iorb),transpose(eigVEC(:,iorb:iorb))) 
   enddo
-  if(doqsGW) U_QP(:,:) = eigVEC(:,:) ! Store U_QP in the X basis (Lowdin basis) if we are doing qsGW after
+  U_QP(:,:) = eigVEC(:,:) ! Store U_QP and c in the X basis (Lowdin basis) if we are doing qsGW
+  c(:,:) = X(:,:)
 
   ! Extract P and Panom from R
  
@@ -409,7 +410,7 @@ subroutine HFB(dotest,doqsGW,maxSCF,thresh,max_diis,level_shift,nNuc,ZNuc,rNuc,E
   call write_restart_HFB(nBas,nOrb,Occ,c,chem_pot) ! Warning: orders Occ and their c in descending order w.r.t. occupation numbers.
   call print_HFB(nBas,nOrb,nOrb_twice,nO,norm_anom,Occ,eHFB_state,ENuc,ET,EV,EJ,EK,EL,EHFB,chem_pot, &
                  dipole,Delta_HL)
-  if(doqsGW) c = X ! Recover c = X (Lowdin basis) if we are doing qsGW after
+  if(doqsGW) c(:,:)=X(:,:) ! Recover the Lowdin basis for qsGW
 
 ! Choose the NO representation where the 1-RDM is diag.
 ! Compute W_no and V_no (i.e. diag[H_HFB^no] built in NO basis and get W and V)
@@ -433,7 +434,9 @@ subroutine HFB(dotest,doqsGW,maxSCF,thresh,max_diis,level_shift,nNuc,ZNuc,rNuc,E
   do iorb=1,nOrb
    R(:,:) = R(:,:) + matmul(eigVEC(:,iorb:iorb),transpose(eigVEC(:,iorb:iorb))) 
   enddo
-  if(.not.doqsGW) U_QP(:,:) = eigVEC(:,:) ! Store U_QP in the NO basis if we are not doing qsGW after
+  if(.not.doqsGW) then ! Store U_QP in the NO basis if we are not doing qsGW after  
+   U_QP(:,:) = eigVEC(:,:) 
+  endif
 
   ! Check trace of R
   do iorb=1,nOrb
