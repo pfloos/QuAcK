@@ -1,4 +1,4 @@
-subroutine RParquet(TDAeh,TDApp,max_diis_1b,max_diis_2b,linearize,eta,ENuc,max_it_1b,conv_1b,max_it_2b,conv_2b, & 
+subroutine RParquet(TDAeh,TDApp,max_diis_1b,max_diis_2b,linearize,eta_1b,eta_2b,ENuc,max_it_1b,conv_1b,max_it_2b,conv_2b, & 
                     nOrb,nC,nO,nV,nR,nS,ERHF,eHF,ERI)
 
 ! Parquet approximation based on restricted orbitals
@@ -18,7 +18,7 @@ subroutine RParquet(TDAeh,TDApp,max_diis_1b,max_diis_2b,linearize,eta,ENuc,max_i
   integer,intent(in)            :: max_diis_1b
   integer,intent(in)            :: max_diis_2b
   logical,intent(in)            :: linearize 
-  double precision,intent(in)   :: eta
+  double precision,intent(in)   :: eta_1b,eta_2b
   double precision,intent(in)   :: ENuc
   double precision,intent(in)   :: ERHF
   integer,intent(in)            :: max_it_1b,max_it_2b
@@ -122,7 +122,8 @@ subroutine RParquet(TDAeh,TDApp,max_diis_1b,max_diis_2b,linearize,eta,ENuc,max_i
   write(*,'(1X,A50,1X,I5)')    'Maximum number of one-body iteration:',max_it_1b
   write(*,'(1X,A50,1X,E10.5)') 'Convergence threshold for one-body energies:',conv_1b
   write(*,'(1X,A50,1X,L5)')    'Linearization of quasiparticle equation?',conv_1b
-  write(*,'(1X,A50,1X,E10.5)') 'Strenght of SRG regularization:',eta
+  write(*,'(1X,A50,1X,E10.5)') 'Strenght of SRG one-body regularization:',eta_1b
+  write(*,'(1X,A50,1X,E10.5)') 'Strenght of SRG two-body regularization:',eta_2b
   write(*,'(1X,A50,1X,I5)')    'Maximum length of DIIS expansion:',max_diis_1b
   write(*,*)'---------------------------------------------------------------'
   write(*,'(1X,A50,1X,I5)')    'Maximum number of two-body iteration:',max_it_2b
@@ -589,7 +590,7 @@ subroutine RParquet(TDAeh,TDApp,max_diis_1b,max_diis_2b,linearize,eta,ENuc,max_i
       write(*,*) 'Computing singlet eh reducible kernel...'
 
       call wall_time(start_t)
-      call R_eh_singlet_Phi(nOrb,nC,nR,nS,old_eh_sing_Om,eh_sing_rho,eh_sing_Phi)
+      call R_eh_singlet_Phi(eta_2b,nOrb,nC,nR,nS,old_eh_sing_Om,eh_sing_rho,eh_sing_Phi)
       call wall_time(end_t)
       t = end_t - start_t
       write(*,'(1X,A50,1X,F9.3,A8)') 'Wall time for singlet eh reducible kernel =',t,' seconds'
@@ -599,7 +600,7 @@ subroutine RParquet(TDAeh,TDApp,max_diis_1b,max_diis_2b,linearize,eta,ENuc,max_i
       write(*,*) 'Computing triplet eh reducible kernel...'
 
       call wall_time(start_t)
-      call R_eh_triplet_Phi(nOrb,nC,nR,nS,old_eh_trip_Om,eh_trip_rho,eh_trip_Phi)
+      call R_eh_triplet_Phi(eta_2b,nOrb,nC,nR,nS,old_eh_trip_Om,eh_trip_rho,eh_trip_Phi)
       call wall_time(end_t)
       t = end_t - start_t
       write(*,'(1X,A50,1X,F9.3,A8)') 'Wall time for triplet eh reducible kernel =',t,' seconds'
@@ -609,7 +610,7 @@ subroutine RParquet(TDAeh,TDApp,max_diis_1b,max_diis_2b,linearize,eta,ENuc,max_i
       write(*,*) 'Computing singlet pp reducible kernel...'
 
       call wall_time(start_t)
-      call R_pp_singlet_Phi(nOrb,nC,nR,nOOs,nVVs,old_ee_sing_Om,ee_sing_rho,old_hh_sing_Om,hh_sing_rho,pp_sing_Phi)
+      call R_pp_singlet_Phi(eta_2b,nOrb,nC,nR,nOOs,nVVs,old_ee_sing_Om,ee_sing_rho,old_hh_sing_Om,hh_sing_rho,pp_sing_Phi)
       call wall_time(end_t)
       t = end_t - start_t
       write(*,'(1X,A50,1X,F9.3,A8)') 'Wall time for singlet pp reducible kernel =',t,' seconds'
@@ -619,7 +620,7 @@ subroutine RParquet(TDAeh,TDApp,max_diis_1b,max_diis_2b,linearize,eta,ENuc,max_i
       write(*,*) 'Computing triplet pp reducible kernel...'
       
       call wall_time(start_t)
-      call R_pp_triplet_Phi(nOrb,nC,nR,nOOt,nVVt,old_ee_trip_Om,ee_trip_rho,old_hh_trip_Om,hh_trip_rho,pp_trip_Phi)
+      call R_pp_triplet_Phi(eta_2b,nOrb,nC,nR,nOOt,nVVt,old_ee_trip_Om,ee_trip_rho,old_hh_trip_Om,hh_trip_rho,pp_trip_Phi)
       call wall_time(end_t)
       t = end_t - start_t
       write(*,'(1X,A50,1X,F9.3,A8)') 'Wall time for triplet pp reducible kernel =',t,' seconds'
@@ -711,7 +712,7 @@ subroutine RParquet(TDAeh,TDApp,max_diis_1b,max_diis_2b,linearize,eta,ENuc,max_i
     write(*,*)
 
     call wall_time(start_t)
-    call R_Parquet_self_energy(eta,nOrb,nC,nO,nV,nR,nS,nOOs,nVVs,nOOt,nVVt,eOld,ERI,  &
+    call R_Parquet_self_energy(eta_1b,nOrb,nC,nO,nV,nR,nS,nOOs,nVVs,nOOt,nVVt,eOld,ERI,  &
                                eh_sing_rho,old_eh_sing_Om,eh_trip_rho,old_eh_trip_Om, &
                                ee_sing_rho,old_ee_sing_Om,ee_trip_rho,old_ee_trip_Om, &
                                hh_sing_rho,old_hh_sing_Om,hh_trip_rho,old_hh_trip_Om, &

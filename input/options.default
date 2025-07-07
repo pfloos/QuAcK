@@ -18,6 +18,6 @@
        F     F      F     F    F
 # HFB: temperature  sigma chem_pot_HF restart_HFB
          0.05       1.0   F           F
-# Parquet: TDAeh TDApp max_it_1b conv_1b max_it_2b conv_2b max_diis_1b max_diis_2b lin_parquet reg_parquet
-            T     T        1      0.01     1         0.01      1            1          F         0.0
+# Parquet: TDAeh TDApp max_it_1b conv_1b max_it_2b conv_2b max_diis_1b max_diis_2b lin_parquet reg_1b reg_2b
+            T     T        1      0.01     1         0.01      1            1          T       1000.0 1000.0
 

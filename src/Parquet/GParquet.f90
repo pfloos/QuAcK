@@ -1,4 +1,4 @@
-subroutine GParquet(TDAeh,TDApp,max_diis_1b,max_diis_2b,linearize,eta,ENuc,max_it_1b,conv_1b,max_it_2b,conv_2b, & 
+subroutine GParquet(TDAeh,TDApp,max_diis_1b,max_diis_2b,linearize,eta_1b,eta_2b,ENuc,max_it_1b,conv_1b,max_it_2b,conv_2b, & 
                     nOrb,nC,nO,nV,nR,nS,EGHF,eHF,ERI)
 
 ! Parquet approximation based on spin orbitals
@@ -18,7 +18,7 @@ subroutine GParquet(TDAeh,TDApp,max_diis_1b,max_diis_2b,linearize,eta,ENuc,max_i
   integer,intent(in)            :: max_diis_1b
   integer,intent(in)            :: max_diis_2b
   logical,intent(in)            :: linearize  
-  double precision,intent(in)   :: eta        
+  double precision,intent(in)   :: eta_1b,eta_2b        
   double precision,intent(in)   :: ENuc
   double precision,intent(in)   :: EGHF
   integer,intent(in)            :: max_it_1b,max_it_2b
@@ -117,7 +117,8 @@ subroutine GParquet(TDAeh,TDApp,max_diis_1b,max_diis_2b,linearize,eta,ENuc,max_i
   write(*,'(1X,A50,1X,I5)')    'Maximum number of one-body iteration:',max_it_1b
   write(*,'(1X,A50,1X,E10.5)') 'Convergence threshold for one-body energies:',conv_1b
   write(*,'(1X,A50,1X,L5)')    'Linearization of quasiparticle equation?',conv_1b
-  write(*,'(1X,A50,1X,E10.5)') 'Strenght of SRG regularization:',eta
+  write(*,'(1X,A50,1X,E10.5)') 'Strenght of SRG one-body regularization:',eta_1b
+  write(*,'(1X,A50,1X,E10.5)') 'Strenght of SRG two-body regularization:',eta_2b
   write(*,'(1X,A50,1X,I5)')    'Maximum length of DIIS expansion:',max_diis_1b
   write(*,*)'---------------------------------------------------------------'
   write(*,'(1X,A50,1X,I5)')    'Maximum number of two-body iteration:',max_it_2b
@@ -227,6 +228,8 @@ subroutine GParquet(TDAeh,TDApp,max_diis_1b,max_diis_2b,linearize,eta,ENuc,max_i
       Bph(:,:) = Bph(:,:) + eh_Gam_B(:,:) 
       
       call phGLR(TDAeh,nS,Aph,Bph,Ec_eh,eh_Om,XpY,XmY)
+
+ !     call matout(nS,nS,XpY)
 
       call wall_time(end_t)
 
@@ -388,7 +391,7 @@ subroutine GParquet(TDAeh,TDApp,max_diis_1b,max_diis_2b,linearize,eta,ENuc,max_i
       write(*,*) 'Computing eh reducible kernel...'
 
       call wall_time(start_t)
-      call G_eh_Phi(nOrb,nC,nR,nS,old_eh_Om,eh_rho,eh_Phi)
+      call G_eh_Phi(eta_2b,nOrb,nC,nR,nS,old_eh_Om,eh_rho,eh_Phi)
       call wall_time(end_t)
       t = end_t - start_t
       write(*,'(1X,A50,1X,F9.3,A8)') 'Wall time for eh reducible kernel =',t,' seconds'
@@ -398,7 +401,7 @@ subroutine GParquet(TDAeh,TDApp,max_diis_1b,max_diis_2b,linearize,eta,ENuc,max_i
       write(*,*) 'Computing pp reducible kernel...'
 
       call wall_time(start_t)
-      call G_pp_Phi(nOrb,nC,nR,nOO,nVV,old_ee_Om,ee_rho,old_hh_Om,hh_rho,pp_Phi)
+      call G_pp_Phi(eta_2b,nOrb,nC,nR,nOO,nVV,old_ee_Om,ee_rho,old_hh_Om,hh_rho,pp_Phi)
       call wall_time(end_t)
       t = end_t - start_t
       write(*,'(1X,A50,1X,F9.3,A8)') 'Wall time for pp reducible kernel =',t,' seconds'
@@ -523,7 +526,7 @@ subroutine GParquet(TDAeh,TDApp,max_diis_1b,max_diis_2b,linearize,eta,ENuc,max_i
     write(*,*) 
     
     call wall_time(start_t)
-    call G_Parquet_self_energy(eta,nOrb,nC,nO,nV,nR,nS,nOO,nVV,eOld,ERI, &
+    call G_Parquet_self_energy(eta_1b,nOrb,nC,nO,nV,nR,nS,nOO,nVV,eOld,ERI, &
                                eh_rho,old_eh_Om,ee_rho,old_ee_Om,hh_rho,old_hh_Om,EcGM,SigC,Z)
     call wall_time(end_t)
     t = end_t - start_t
@@ -592,7 +595,7 @@ subroutine GParquet(TDAeh,TDApp,max_diis_1b,max_diis_2b,linearize,eta,ENuc,max_i
      
   end if
 
-  call G_Parquet_Galitskii_Migdal(eta,nOrb,nC,nO,nV,nR,nS,nOO,nVV,eOld,ERI, &
+  call G_Parquet_Galitskii_Migdal(eta_1b,nOrb,nC,nO,nV,nR,nS,nOO,nVV,eOld,ERI, &
                                eh_rho,old_eh_Om,ee_rho,old_ee_Om,hh_rho,old_hh_Om,EcGM)
     
 
