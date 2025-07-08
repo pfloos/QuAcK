@@ -64,10 +64,11 @@ subroutine GParquet(TDAeh,TDApp,max_diis_1b,max_diis_2b,linearize,eta_1b,eta_2b,
   double precision,allocatable  :: Z(:)
   double precision              :: EcGM
   ! DIIS
-  integer                       :: n_diis_2b
-  double precision              :: rcond
-  double precision,allocatable  :: err_diis_2b(:,:)
+  integer                       :: n_diis_1b,n_diis_2b
+  double precision              :: rcond_1b,rcond_2b
+  double precision,allocatable  :: err_diis_1b(:,:),err_diis_2b(:,:)
   double precision,allocatable  :: Phi_diis(:,:)
+  double precision,allocatable  :: eQP_diis(:,:)
   double precision,allocatable  :: err(:)
   double precision,allocatable  :: Phi(:)
   double precision              :: alpha
@@ -90,7 +91,7 @@ subroutine GParquet(TDAeh,TDApp,max_diis_1b,max_diis_2b,linearize,eta_1b,eta_2b,
     
 ! DIIS parameters
 
-  rcond = 1d0
+  rcond_2b = 1d0
 
   allocate(err_diis_2b(2*nOrb**4,max_diis_2b),Phi_diis(2*nOrb**4,max_diis_2b))
   allocate(err(2*nOrb**4),Phi(2*nOrb**4))
@@ -139,6 +140,18 @@ subroutine GParquet(TDAeh,TDApp,max_diis_1b,max_diis_2b,linearize,eta_1b,eta_2b,
   mem = mem + size(eh_rho) + size(ee_rho) + size(hh_rho)
   mem = mem + size(old_eh_Phi) + size(old_pp_Phi)
   write(*,'(1X,A50,4X,F6.3,A3)') 'Memory usage in GParquet =',mem*dp_in_GB,' GB'
+
+! DIIS for one-body part        
+
+  allocate(err_diis_1b(nOrb,max_diis_1b),eQP_diis(nOrb,max_diis_1b))
+
+  mem = mem + size(err_diis_1b) + size(eQP_diis)
+  write(*,'(1X,A50,4X,F6.3,A3)') 'Memory usage in GParquet = ',mem*dp_in_GB,' GB'
+
+  rcond_1b  = 1d0
+  n_diis_1b = 0
+  err_diis_1b(:,:) = 0d0
+  eQP_diis(:,:)    = 0d0
 
 ! Initialization
 
@@ -410,9 +423,9 @@ subroutine GParquet(TDAeh,TDApp,max_diis_1b,max_diis_2b,linearize,eta_1b,eta_2b,
       err_eh = maxval(abs(eh_Phi - old_eh_Phi))
       err_pp = maxval(abs(pp_Phi - old_pp_Phi))
 
-      alpha = 0.25d0
-      eh_Phi(:,:,:,:) = alpha * eh_Phi(:,:,:,:) + (1d0 - alpha) * old_eh_Phi(:,:,:,:)
-      pp_Phi(:,:,:,:) = alpha * pp_Phi(:,:,:,:) + (1d0 - alpha) * old_pp_Phi(:,:,:,:)
+!     alpha = 0.25d0
+!     eh_Phi(:,:,:,:) = alpha * eh_Phi(:,:,:,:) + (1d0 - alpha) * old_eh_Phi(:,:,:,:)
+!     pp_Phi(:,:,:,:) = alpha * pp_Phi(:,:,:,:) + (1d0 - alpha) * old_pp_Phi(:,:,:,:)
 
 !     call matout(nOrb**2,nOrb**2,eh_Phi - old_eh_Phi)
 !     call matout(nOrb**2,nOrb**2,pp_Phi - old_pp_Phi)
@@ -442,7 +455,7 @@ subroutine GParquet(TDAeh,TDApp,max_diis_1b,max_diis_2b,linearize,eta_1b,eta_2b,
       if(max_diis_2b > 1) then
      
         n_diis_2b = min(n_diis_2b+1,max_diis_2b)
-        call DIIS_extrapolation(rcond,2*nOrb**4,2*nOrb**4,n_diis_2b,err_diis_2b,Phi_diis,err,Phi)
+        call DIIS_extrapolation(rcond_2b,2*nOrb**4,2*nOrb**4,n_diis_2b,err_diis_2b,Phi_diis,err,Phi)
      
       end if
 
@@ -551,6 +564,15 @@ subroutine GParquet(TDAeh,TDApp,max_diis_1b,max_diis_2b,linearize,eta_1b,eta_2b,
       stop
 
     end if
+
+    ! DIIS for one-body part
+   
+    if(max_diis_1b > 1) then 
+  
+      n_diis_1b = min(n_diis_1b+1,max_diis_1b)
+      call DIIS_extrapolation(rcond_1b,nOrb,nOrb,n_diis_1b,err_diis_1b,eQP_diis,eQP-eOld,eQP)
+  
+    end if 
 
     ! Check one-body converge
 
