@@ -727,7 +727,7 @@ subroutine RParquet(TDAeh,TDApp,max_diis_1b,max_diis_2b,linearize,eta_1b,eta_2b,
       write(*,'(1X,A30,F10.6,1X,A1,1X,F10.6)')'Error for density  channel = ',err_eig_eh_sing,'/',err_eh_sing
       write(*,'(1X,A30,F10.6,1X,A1,1X,F10.6)')'Error for magnetic channel = ',err_eig_eh_trip,'/',err_eh_trip
       write(*,'(1X,A30,F10.6,1X,A1,1X,F10.6)')'Error for singlet  channel = ',max(err_eig_ee_sing,err_eig_hh_sing),'/',err_pp_sing
-      write(*,'(1X,A30,F10.6,1X,A1,1X,F10.6)')'Error for triplet  channel = ',max(err_eig_ee_trip,err_eig_hh_trip),'/',err_pp_sing
+      write(*,'(1X,A30,F10.6,1X,A1,1X,F10.6)')'Error for triplet  channel = ',max(err_eig_ee_trip,err_eig_hh_trip),'/',err_pp_trip
       write(*,*) '------------------------------------------------------'
       write(*,*)
 
