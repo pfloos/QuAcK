@@ -132,7 +132,7 @@ subroutine GParquet(TDAeh,TDApp,max_diis_1b,max_diis_2b,linearize,eta_1b,eta_2b,
   ! Memory allocation 
 
   allocate(old_eh_Om(nS),old_ee_Om(nVV),old_hh_Om(nOO))
-  allocate(eh_rho(nOrb,nOrb,nS+nS),ee_rho(nOrb,nOrb,nVV),hh_rho(nOrb,nOrb,nOO))
+  allocate(eh_rho(nOrb,nOrb,nS),ee_rho(nOrb,nOrb,nVV),hh_rho(nOrb,nOrb,nOO))
   allocate(old_eh_Phi(nOrb,nOrb,nOrb,nOrb),old_pp_Phi(nOrb,nOrb,nOrb,nOrb))
 
   mem = mem + size(old_eh_Om) + size(old_ee_Om) + size(old_hh_Om)
@@ -336,7 +336,7 @@ subroutine GParquet(TDAeh,TDApp,max_diis_1b,max_diis_2b,linearize,eta_1b,eta_2b,
 
       ! TODO Once we will compute the blocks of kernel starting from the 4-tensors we can move the freeing up
       ! Memory allocation
-      allocate(eh_rho(nOrb,nOrb,nS+nS))
+      allocate(eh_rho(nOrb,nOrb,nS))
       allocate(ee_rho(nOrb,nOrb,nVV),hh_rho(nOrb,nOrb,nOO))
 
       mem = mem + size(eh_rho) + size(ee_rho) + size(hh_rho)

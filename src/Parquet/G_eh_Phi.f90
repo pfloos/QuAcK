@@ -7,7 +7,7 @@ subroutine G_eh_Phi(eta,nOrb,nC,nR,nS,eh_Om,eh_rho,eh_Phi)
   double precision,intent(in)   :: eta
   integer,intent(in)            :: nOrb,nC,nR,nS
   double precision,intent(in)   :: eh_Om(nS)
-  double precision,intent(in)   :: eh_rho(nOrb,nOrb,nS+nS)
+  double precision,intent(in)   :: eh_rho(nOrb,nOrb,nS)
 
 ! Local variables
   integer                       :: p,q,r,s
@@ -29,9 +29,9 @@ subroutine G_eh_Phi(eta,nOrb,nC,nR,nS,eh_Om,eh_rho,eh_Phi)
            do p = nC+1, nOrb-nR
               
               do n=1,nS                 
-                 eh_Phi(p,q,r,s) = eh_Phi(p,q,r,s)           &
-                      - (eh_rho(p,r,n)*eh_rho(q,s,nS+n)/eh_Om(n)) * (1d0 - exp(- 2d0 * eta * eh_Om(n) * eh_Om(n))) &
-                      - (eh_rho(p,r,nS+n)*eh_rho(q,s,n)/eh_Om(n)) * (1d0 - exp(- 2d0 * eta * eh_Om(n) * eh_Om(n)))
+                 eh_Phi(p,q,r,s) = eh_Phi(p,q,r,s)                                           &
+                      - ((eh_rho(p,r,n)*eh_rho(s,q,n)+eh_rho(r,p,n)*eh_rho(q,s,n))/eh_Om(n)) &
+                      * (1d0 - exp(- 2d0 * eta * eh_Om(n) * eh_Om(n)))
               end do
               
            enddo
