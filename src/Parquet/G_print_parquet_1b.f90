@@ -23,15 +23,15 @@ subroutine G_print_parquet_1b(nOrb,nC,nO,nV,nR,eHF,SigC,eQP,Z,n_it_1b,err_1b,ENu
   double precision,intent(in)   :: Ec_pp
 
   integer                       :: i,a
-  integer                       :: HOMO
-  integer                       :: LUMO
+  double precision              :: eHOMO
+  double precision              :: eLUMO
   double precision              :: Gap
 
 ! HOMO and LUMO
 
-  HOMO = nO
-  LUMO = HOMO + 1
-  Gap = eQP(LUMO) - eQP(HOMO)
+  eHOMO = maxval(eQP(1:nO))
+  eLUMO = minval(eQP(nO+1:nOrb))
+  Gap   = eLUMO - eHOMO
 
 ! Dump results
 
@@ -65,8 +65,8 @@ subroutine G_print_parquet_1b(nOrb,nC,nO,nV,nR,eHF,SigC,eQP,Z,n_it_1b,err_1b,ENu
   write(*,'(2X,A60,I15)')   'One-body iteration # ',n_it_1b
   write(*,'(2X,A60,F15.6)') 'One-body convergence ',err_1b
   write(*,*)'-------------------------------------------------------------------------------'
-  write(*,'(2X,A60,F15.6,A3)') 'Parquet HOMO    energy = ',eQP(HOMO)*HaToeV,' eV'
-  write(*,'(2X,A60,F15.6,A3)') 'Parquet LUMO    energy = ',eQP(LUMO)*HaToeV,' eV'
+  write(*,'(2X,A60,F15.6,A3)') 'Parquet HOMO    energy = ',eHOMO*HaToeV,' eV'
+  write(*,'(2X,A60,F15.6,A3)') 'Parquet LUMO    energy = ',eLUMO*HaToeV,' eV'
   write(*,'(2X,A60,F15.6,A3)') 'Parquet HOMO-LUMO gap  = ',Gap*HaToeV,' eV'
   write(*,*)'-------------------------------------------------------------------------------'
   write(*,'(2X,A60,F15.6,A3)') '     Parquet total       energy = ',ENuc + EGHF + EcGM,' au'
