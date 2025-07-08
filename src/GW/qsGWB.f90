@@ -195,8 +195,10 @@ subroutine qsGWB(dotest,maxSCF,thresh,max_diis,level_shift,nNuc,ZNuc,rNuc,ENuc,e
     call Hartree_matrix_AO_basis(nBas,P,ERI,J)
     call exchange_matrix_AO_basis(nBas,P,ERI,K)
     call anomalous_matrix_AO_basis(nBas,sigma,Panom,ERI,Delta)
-    call sigc_AO_basis_HFB(nBas,nOrb,nOrb_twice,eta,shift,X,U_QP,eqsGWB_state,vMAT, & 
-                           nfreqs,ntimes,wcoord,wweight,Sigc_he,Sigc_hh)
+    if(Conv<1d-4 .or. nSCF==1) then
+     call sigc_AO_basis_HFB(nBas,nOrb,nOrb_twice,eta,shift,X,U_QP,eqsGWB_state, & 
+                            S,vMAT,nfreqs,ntimes,wcoord,wweight,Sigc_he,Sigc_hh)
+    endif
     
     F(:,:) = Hc(:,:) + J(:,:) + 0.5d0*K(:,:) + Sigc_he(:,:) - chem_pot*S(:,:)
 

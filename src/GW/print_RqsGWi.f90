@@ -57,7 +57,7 @@ subroutine print_RqsGWi(nBas, nOrb, nO, eqsGW, cqsGW, ENuc, ET, EV, EJ, EK, ERqs
   write(*,'(A50)')           '---------------------------------------'
   write(*,'(A33,1X,F16.10,A3)') ' Electronic   energy = ',ERqsGW,' au'
   write(*,'(A33,1X,F16.10,A3)') ' Nuclear   repulsion = ',ENuc,' au'
-  write(*,'(A33,1X,F16.10,A3)') ' RqsGW          energy = ',ERqsGW + ENuc,' au'
+  write(*,'(A33,1X,F16.10,A3)') ' RqsGW        energy = ',ERqsGW + ENuc,' au'
   write(*,'(A50)')           '---------------------------------------'
   write(*,'(A33,1X,F16.6,A3)')  ' qsGW HOMO      energy = ',eqsGW(HOMO)*HaToeV,' eV'
   write(*,'(A33,1X,F16.6,A3)')  ' qsGW LUMO      energy = ',eqsGW(LUMO)*HaToeV,' eV'
