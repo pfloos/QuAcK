@@ -1,5 +1,4 @@
-subroutine sigc_AO_basis_HFB(nBas,nOrb,nOrb_twice,eta,c,U_QP,eqsGWB_state,vMAT,nfreqs,ntimes, &
-                             wcoord,wweight,Sigc_ao_he,Sigc_ao_hh)
+subroutine sigc_AO_basis_RHF(nBas,nOrb,nO,eta,c,eqsGW_state,vMAT,nfreqs,ntimes,wcoord,wweight,Sigc_ao)
 
 ! Compute Sigma_c matrix in the AO basis
 
@@ -10,14 +9,13 @@ subroutine sigc_AO_basis_HFB(nBas,nOrb,nOrb_twice,eta,c,U_QP,eqsGWB_state,vMAT,n
 
   integer,intent(in)            :: nBas
   integer,intent(in)            :: nOrb
-  integer,intent(in)            :: nOrb_twice
+  integer,intent(in)            :: nO
   integer,intent(in)            :: nfreqs
   integer,intent(in)            :: ntimes
 
   double precision,intent(in)   :: eta
   double precision,intent(in)   :: wcoord(nfreqs),wweight(nfreqs)
-  double precision,intent(in)   :: U_QP(nOrb_twice,nOrb_twice)
-  double precision,intent(in)   :: eqsGWB_state(nOrb_twice)
+  double precision,intent(in)   :: eqsGW_state(nOrb)
   double precision,intent(in)   :: vMAT(nOrb*nOrb,nOrb*nOrb)
   double precision,intent(in)   :: c(nBas,nOrb)
 
@@ -33,10 +31,10 @@ subroutine sigc_AO_basis_HFB(nBas,nOrb,nOrb_twice,eta,c,U_QP,eqsGWB_state,vMAT,n
 
   double precision              :: shift=1d-2
   double precision              :: step_E=2.5d-2
+  double precision              :: chem_pot
   double precision,allocatable  :: E_eval_global(:)
 
-  complex *16,allocatable       :: Sigc_mo_he(:,:,:)
-  complex *16,allocatable       :: Sigc_mo_hh(:,:,:)
+  complex *16,allocatable       :: Sigc_mo(:,:,:)
   complex *16,allocatable       :: E_eval_global_cpx(:)
 
   type                          :: t_cluster
@@ -49,15 +47,16 @@ subroutine sigc_AO_basis_HFB(nBas,nOrb,nOrb_twice,eta,c,U_QP,eqsGWB_state,vMAT,n
 
 ! Output variables
 
-  double precision,intent(out)  :: Sigc_ao_he(nBas,nBas)
-  double precision,intent(out)  :: Sigc_ao_hh(nBas,nBas)
+  double precision,intent(out)  :: Sigc_ao(nBas,nBas)
 
-!
+! Initialize variables
+    
+  chem_pot = 0.5d0*(eqsGW_state(nO)+eqsGW_state(nO+1))
 
 ! Set the number of clusters [i.e., energies separated more than (or equal to) 0.1 a.u.]
   ncluster=1
   do iorb=2,nOrb
-   if(abs(eqsGWB_state(iorb)-eqsGWB_state(iorb-1))>=0.1d0) ncluster=ncluster+1
+   if(abs(eqsGW_state(iorb)-eqsGW_state(iorb-1))>=0.1d0) ncluster=ncluster+1
   enddo
   allocate(clusters(ncluster))
 
@@ -65,7 +64,7 @@ subroutine sigc_AO_basis_HFB(nBas,nOrb,nOrb_twice,eta,c,U_QP,eqsGWB_state,vMAT,n
   allocate(nE_per_cluster(ncluster))
   icluster=1; nE_per_cluster(:)=1;
   do iorb=2,nOrb
-   if(abs(eqsGWB_state(iorb)-eqsGWB_state(iorb-1))>=0.1d0) then
+   if(abs(eqsGW_state(iorb)-eqsGW_state(iorb-1))>=0.1d0) then
     icluster=icluster+1
    else
     nE_per_cluster(icluster)=nE_per_cluster(icluster)+1
@@ -81,7 +80,7 @@ subroutine sigc_AO_basis_HFB(nBas,nOrb,nOrb_twice,eta,c,U_QP,eqsGWB_state,vMAT,n
   do icluster=1,ncluster
    allocate(clusters(icluster)%E_QP(clusters(icluster)%nE))
    do iE=1,clusters(icluster)%nE
-    clusters(icluster)%E_QP(iE)=eqsGWB_state(iorb)
+    clusters(icluster)%E_QP(iE)=eqsGW_state(iorb)
     iorb=iorb+1
    enddo
   enddo
@@ -170,9 +169,9 @@ subroutine sigc_AO_basis_HFB(nBas,nOrb,nOrb_twice,eta,c,U_QP,eqsGWB_state,vMAT,n
    enddo
   enddo
    
-  ! Sort and transform to complex unique energies 
+  ! Sort and transform to complex unique energies [Note : we have to adjust them using the chemical potential]
   call sort_ascending(nE_eval_global,E_eval_global)                        
-  E_eval_global_cpx(:)=E_eval_global(:)
+  E_eval_global_cpx(:)=E_eval_global(:)-chem_pot
   deallocate(E_eval_global)
 
   ! Delete some dynamic arrays and allocate the self-energy array
@@ -181,18 +180,18 @@ subroutine sigc_AO_basis_HFB(nBas,nOrb,nOrb_twice,eta,c,U_QP,eqsGWB_state,vMAT,n
    deallocate(clusters(icluster)%E_eval)
   enddo
   deallocate(clusters)
-  allocate(Sigc_mo_he(nE_eval_global,nOrb,nOrb),Sigc_mo_hh(nE_eval_global,nOrb,nOrb))
+  allocate(Sigc_mo(nE_eval_global,nOrb,nOrb))
 
   ! Run over unique energies
-  call build_Sigmac_w_HFB(nOrb,nOrb_twice,nE_eval_global,eta,0,E_eval_global_cpx,eqsGWB_state, &
-                          nfreqs,ntimes,wweight,wcoord,vMAT,U_QP,Sigc_mo_he,Sigc_mo_hh)
+   call build_Sigmac_w_RHF(nOrb,nO,nE_eval_global,eta,0,E_eval_global_cpx,eqsGW_state,nfreqs,ntimes,&
+                           wweight,wcoord,vMAT,Sigc_mo)
 
 
   ! TODO remove this printing
   write(*,*)
-  write(*,*) 'w   Sigma_c(1,1)    Sigma_c(2,2) '
+  write(*,*) 'w(adjusted with chem_pot)   Sigma_c(1,1)    Sigma_c(2,2) '
   do iE=1,nE_eval_global
-   write(*,'(*(f10.5))') Real(E_eval_global_cpx(iE)),Real(Sigc_mo_he(iE,1,1)),Real(Sigc_mo_he(iE,2,2))
+   write(*,'(*(f10.5))') Real(E_eval_global_cpx(iE)),Real(Sigc_mo(iE,1,1)),Real(Sigc_mo(iE,2,2))
   enddo
   write(*,*)
 
@@ -203,15 +202,14 @@ subroutine sigc_AO_basis_HFB(nBas,nOrb,nOrb_twice,eta,c,U_QP,eqsGWB_state,vMAT,n
 
 ! Delete dynamic arrays
  
-  deallocate(Sigc_mo_he,Sigc_mo_hh)
+  deallocate(Sigc_mo)
   deallocate(E_eval_global_cpx)
 
 
 
 
 ! TODO remove these lines
- Sigc_ao_he=0d0
- Sigc_ao_hh=0d0
+ Sigc_ao=0d0
 
 
 end subroutine 

@@ -1,5 +1,6 @@
 subroutine qsRGWi(dotest,maxSCF,thresh,max_diis,level_shift,eta,nNuc,ZNuc,rNuc,ENuc, & 
-                  nBas,nOrb,nO,S,T,V,Hc,ERI,dipole_int,X,EqsGW,eqsGW_state,c,P,F)
+                  nBas,nOrb,nO,S,T,V,Hc,ERI,dipole_int,X,EqsGW,eqsGW_state,c,P,F,    &
+                  nfreqs,ntimes,wcoord,wweight)
 
 ! Perform restricted Hartree-Fock calculation
 
@@ -23,6 +24,9 @@ subroutine qsRGWi(dotest,maxSCF,thresh,max_diis,level_shift,eta,nNuc,ZNuc,rNuc,E
   double precision,intent(in)   :: rNuc(nNuc,ncart)
   double precision,intent(in)   :: ENuc
   double precision,intent(in)   :: eta
+  integer,intent(in)            :: nfreqs
+  integer,intent(in)            :: ntimes
+  double precision,intent(in)   :: wcoord(nfreqs),wweight(nfreqs)
   double precision,intent(in)   :: S(nBas,nBas)
   double precision,intent(in)   :: T(nBas,nBas)
   double precision,intent(in)   :: V(nBas,nBas)
@@ -34,7 +38,7 @@ subroutine qsRGWi(dotest,maxSCF,thresh,max_diis,level_shift,eta,nNuc,ZNuc,rNuc,E
 ! Local variables
 
   logical                       :: file_exists
-  integer                       :: iorb
+  integer                       :: iorb,jorb,korb,lorb
   integer                       :: nSCF
   integer                       :: nBas_Sq
   integer                       :: n_diis
@@ -47,6 +51,7 @@ subroutine qsRGWi(dotest,maxSCF,thresh,max_diis,level_shift,eta,nNuc,ZNuc,rNuc,E
   double precision              :: Conv
   double precision              :: rcond
   double precision,external     :: trace_matrix
+  double precision,allocatable  :: Sigc(:,:)
   double precision,allocatable  :: err(:,:)
   double precision,allocatable  :: err_diis(:,:)
   double precision,allocatable  :: F_diis(:,:)
@@ -54,6 +59,8 @@ subroutine qsRGWi(dotest,maxSCF,thresh,max_diis,level_shift,eta,nNuc,ZNuc,rNuc,E
   double precision,allocatable  :: K(:,:)
   double precision,allocatable  :: cp(:,:)
   double precision,allocatable  :: Fp(:,:)
+  double precision,allocatable  :: vMAT(:,:)
+  double precision,allocatable  :: ERI_MO(:,:,:,:)
 
 ! Output variables
 
@@ -78,27 +85,19 @@ subroutine qsRGWi(dotest,maxSCF,thresh,max_diis,level_shift,eta,nNuc,ZNuc,rNuc,E
 
   allocate(J(nBas,nBas))
   allocate(K(nBas,nBas))
+  allocate(Sigc(nBas,nBas))
 
   allocate(err(nBas,nBas))
 
   allocate(cp(nOrb,nOrb))
   allocate(Fp(nOrb,nOrb))
 
+  allocate(vMAT(nOrb*nOrb,nOrb*nOrb))
+
   allocate(err_diis(nBas_Sq,max_diis))
   allocate(F_diis(nBas_Sq,max_diis))
 
 ! Guess coefficients and density matrix
-
-  inquire(file='hubbard', exist=file_exists)
-  if(file_exists) then
-   inquire(file='site_guess', exist=file_exists)
-   if(file_exists) then
-    c=0d0
-    do iorb=1,nOrb
-     c(iorb,iorb) = 1d0
-    enddo 
-   endif
-  endif
 
   P(:,:) = 2d0 * matmul(c(:,1:nO), transpose(c(:,1:nO)))
 ! call dgemm('N', 'T', nBas, nBas, nO, 2.d0, &
@@ -135,7 +134,22 @@ subroutine qsRGWi(dotest,maxSCF,thresh,max_diis,level_shift,eta,nNuc,ZNuc,rNuc,E
     
     call Hartree_matrix_AO_basis(nBas,P,ERI,J)
     call exchange_matrix_AO_basis(nBas,P,ERI,K)
-    F(:,:) = Hc(:,:) + J(:,:) + 0.5d0*K(:,:)
+    allocate(ERI_MO(nOrb,nOrb,nOrb,nOrb))
+    call AOtoMO_ERI_RHF(nBas,nOrb,c,ERI,ERI_MO)
+    do iorb=1,nOrb
+     do jorb=1,nOrb
+      do korb=1,nOrb
+       do lorb=1,nOrb
+        vMAT(1+(korb-1)+(iorb-1)*nOrb,1+(lorb-1)+(jorb-1)*nOrb)=ERI_MO(iorb,jorb,korb,lorb)
+       enddo
+      enddo
+     enddo
+    enddo
+    deallocate(ERI_MO)
+    call sigc_AO_basis_RHF(nBas,nOrb,nO,eta,c,eqsGW_state,vMAT,nfreqs,ntimes,wcoord,wweight,Sigc)
+
+
+    F(:,:) = Hc(:,:) + J(:,:) + 0.5d0*K(:,:) + Sigc(:,:)
 
     ! Check convergence 
 
@@ -222,7 +236,7 @@ subroutine qsRGWi(dotest,maxSCF,thresh,max_diis,level_shift,eta,nNuc,ZNuc,rNuc,E
 
   call Hartree_matrix_AO_basis(nBas,P,ERI,J)
   call exchange_matrix_AO_basis(nBas,P,ERI,K)
-  F(:,:) = Hc(:,:) + J(:,:) + 0.5d0*K(:,:)
+  F(:,:) = Hc(:,:) + J(:,:) + 0.5d0*K(:,:) + Sigc(:,:)
   Fp = matmul(transpose(X),matmul(F,X))
   cp(:,:) = Fp(:,:)
   call diagonalize_matrix(nOrb,cp,eqsGW_state)
@@ -244,6 +258,7 @@ subroutine qsRGWi(dotest,maxSCF,thresh,max_diis,level_shift,eta,nNuc,ZNuc,rNuc,E
 
 ! Memory deallocation
 
-  deallocate(J,K,err,cp,Fp,err_diis,F_diis)
+  deallocate(J,K,Sigc,err,cp,Fp,err_diis,F_diis)
+  deallocate(vMAT)
 
 end subroutine 

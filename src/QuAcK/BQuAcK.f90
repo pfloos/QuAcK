@@ -156,7 +156,8 @@ subroutine BQuAcK(working_dir,dotest,doHFB,dophRPA,doqsGW,nNuc,nBas,nOrb,nO,ENuc
       ! Continue with a HFB calculation
       call wall_time(start_qsGWB)
       call qsRGWi(dotest,maxSCF_HF,thresh_HF,max_diis_HF,level_shift,eta,nNuc,ZNuc,rNuc,ENuc,  &
-                  nBas,nOrb,nO_,S,T,V,Hc,ERI_AO,dipole_int_AO,X,ERHF,eHF,cHFB,PHF,FHF)
+                  nBas,nOrb,nO_,S,T,V,Hc,ERI_AO,dipole_int_AO,X,ERHF,eHF,cHFB,PHF,FHF,         &
+                  nfreqs,ntimes,wcoord,wweight)
       call wall_time(end_qsGWB)
 
       t_qsGWB = end_qsGWB - start_qsGWB
