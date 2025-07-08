@@ -1,4 +1,4 @@
-subroutine build_Sigmac_w_RHF(nOrb,nO,nE,eta_in,verbose,wtest,eHF,nfreqs,ntimes,wweight,wcoord,vMAT,&
+subroutine build_Sigmac_w_RHF(nOrb,nO,nE,eta,verbose,wtest,eHF,nfreqs,ntimes,wweight,wcoord,vMAT,&
                               Sigma_c_mo)
 
 ! Restricted Sigma_c(E)
@@ -15,7 +15,7 @@ subroutine build_Sigmac_w_RHF(nOrb,nO,nE,eta_in,verbose,wtest,eHF,nfreqs,ntimes,
   integer,intent(in)            :: nOrb
   integer,intent(in)            :: nO
 
-  double precision,intent(in)   :: eta_in
+  double precision,intent(in)   :: eta
   double precision,intent(inout):: eHF(nOrb)
   double precision,intent(in)   :: wweight(nfreqs)
   double precision,intent(in)   :: wcoord(nfreqs)
@@ -30,7 +30,6 @@ subroutine build_Sigmac_w_RHF(nOrb,nO,nE,eta_in,verbose,wtest,eHF,nfreqs,ntimes,
   integer                       :: nOrb2
 
   double precision              :: chem_pot
-  double precision              :: eta_
   double precision,external     :: Heaviside_step
   double precision,allocatable  :: Tmp_mo_w(:,:)
 
@@ -64,8 +63,7 @@ subroutine build_Sigmac_w_RHF(nOrb,nO,nE,eta_in,verbose,wtest,eHF,nfreqs,ntimes,
    if(ntimes>0) then
     call Gitau2Chi0iw_mo_RHF(nOrb,nO,0,eHF,ntimes,wcoord(ifreq),Chi0_mo_w)
    else
-    eta_=0d0
-    call Xoiw_mo_RHF(nOrb,nO,eta_,eHF,im*wcoord(ifreq),Chi0_mo_w)
+    call Xoiw_mo_RHF(nOrb,nO,eta,eHF,im*wcoord(ifreq),Chi0_mo_w)
    endif
 
    ! Xo (iw) -> Wp (iw)
@@ -77,15 +75,11 @@ subroutine build_Sigmac_w_RHF(nOrb,nO,nE,eta_in,verbose,wtest,eHF,nfreqs,ntimes,
 
    ! Use Wp (iw) to build all Sigma_c(E)
     do iE=1,nE
-     eta_=0d0
-     do iorb=1,nOrb ! If the E used to build Sigma_c(E) is too close to the pole of G, we add eta_
-       if(abs(wtest(iE)-eHF(iorb))<=2d-2) eta_=eta_in
-     enddo
      ! Build G(iw+wtest)
      weval=wtest(iE)+im*wcoord(ifreq)
-     call G_MO_RHF(nOrb,nO,eta_,eHF,weval,G_mo_1)
+     call G_MO_RHF(nOrb,nO,eta,eHF,weval,G_mo_1)
      weval=wtest(iE)-im*wcoord(ifreq)
-     call G_MO_RHF(nOrb,nO,eta_,eHF,weval,G_mo_2)
+     call G_MO_RHF(nOrb,nO,eta,eHF,weval,G_mo_2)
      ! Sigma_c(E)
      do iorb=1,nOrb
       do jorb=1,nOrb
@@ -107,8 +101,6 @@ subroutine build_Sigmac_w_RHF(nOrb,nO,nE,eta_in,verbose,wtest,eHF,nfreqs,ntimes,
    ! Contour deformation residues
    if(abs(aimag(wtest(iE)))<1e-12) then ! wtest is real and we may have to add residues contributions
 
-     eta_=eta_in
-
      ! Align the poles of G
      chem_pot = 0.5d0*(eHF(nO)+eHF(nO+1))
      eHF(:) = eHF(:)-chem_pot
@@ -122,7 +114,7 @@ subroutine build_Sigmac_w_RHF(nOrb,nO,nE,eta_in,verbose,wtest,eHF,nfreqs,ntimes,
         Tmp_mo_w(iorb,iorb)=1d0
        enddo
        weval=eHF(porb)-Real(wtest(iE))
-       call Xoiw_mo_RHF(nOrb,nO,eta_,eHF,weval,Chi0_mo_w)
+       call Xoiw_mo_RHF(nOrb,nO,eta,eHF,weval,Chi0_mo_w)
        Tmp_mo_w(:,:)=Tmp_mo_w(:,:)-matmul(Real(Chi0_mo_w(:,:)),vMAT(:,:))
        call inverse_matrix(nOrb2,Tmp_mo_w,Tmp_mo_w)
        Tmp_mo_w(:,:)=matmul(Tmp_mo_w(:,:),Real(Chi0_mo_w(:,:)))
@@ -148,7 +140,7 @@ subroutine build_Sigmac_w_RHF(nOrb,nO,nE,eta_in,verbose,wtest,eHF,nfreqs,ntimes,
         Tmp_mo_w(iorb,iorb)=1d0
        enddo
        weval=Real(wtest(iE))-eHF(porb)
-       call Xoiw_mo_RHF(nOrb,nO,eta_,eHF,weval,Chi0_mo_w)
+       call Xoiw_mo_RHF(nOrb,nO,eta,eHF,weval,Chi0_mo_w)
        Tmp_mo_w(:,:)=Tmp_mo_w(:,:)-matmul(Real(Chi0_mo_w(:,:)),vMAT(:,:))
        call inverse_matrix(nOrb2,Tmp_mo_w,Tmp_mo_w)
        Tmp_mo_w(:,:)=matmul(Tmp_mo_w(:,:),Real(Chi0_mo_w(:,:)))
