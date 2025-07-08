@@ -36,7 +36,8 @@ subroutine DIIS_extrapolation(rcond,n_err,n_e,n_diis,error,e,error_in,e_inout)
 
 !  Build A matrix
 
-  A(1:n_diis,1:n_diis) = matmul(transpose(error),error)
+!  A(1:n_diis,1:n_diis) = matmul(transpose(error),error)
+  call dgemm('T','N',n_diis,n_diis,n_err,1d0,error(1,1),n_err,error(1,1),n_err,0d0,A(1:n_diis,1:n_diis),n_diis)
 
   A(1:n_diis,n_diis+1) = -1d0
   A(n_diis+1,1:n_diis) = -1d0
@@ -52,6 +53,9 @@ subroutine DIIS_extrapolation(rcond,n_err,n_e,n_diis,error,e,error_in,e_inout)
 
 ! Extrapolate
 
-  e_inout(:) = matmul(w(1:n_diis),transpose(e(:,1:n_diis)))
+!  e_inout(:) = matmul(w(1:n_diis),transpose(e(:,1:n_diis)))
+  call dgemm('N','T',1,n_e,n_diis,1d0,w(1),1,e(1,1),n_e,0d0,e_inout(1),1)
+
+  
   deallocate(A,b,w)
 end subroutine 
