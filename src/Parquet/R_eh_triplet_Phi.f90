@@ -8,7 +8,7 @@ subroutine R_eh_triplet_Phi(eta,nOrb,nC,nR,nS,eh_trip_Om,eh_trip_rho,eh_trip_Phi
   double precision,intent(in)   :: eta
   integer,intent(in)            :: nOrb,nC,nR,nS
   double precision,intent(in)   :: eh_trip_Om(nS)
-  double precision,intent(in)   :: eh_trip_rho(nOrb,nOrb,nS+nS)
+  double precision,intent(in)   :: eh_trip_rho(nOrb,nOrb,nS)
 
 ! Local variables
   integer                       :: p,q,r,s
@@ -31,8 +31,8 @@ subroutine R_eh_triplet_Phi(eta,nOrb,nC,nR,nS,eh_trip_Om,eh_trip_rho,eh_trip_Phi
               
               do n=1,nS
                  eh_trip_Phi(p,q,r,s) = eh_trip_Phi(p,q,r,s)                &
-                      - (eh_trip_rho(p,r,n)*eh_trip_rho(q,s,nS+n)/eh_trip_Om(n)) * (1d0 - exp(- 2d0 * eta * eh_trip_Om(n) * eh_trip_Om(n))) &
-                      - (eh_trip_rho(p,r,nS+n)*eh_trip_rho(q,s,n)/eh_trip_Om(n)) * (1d0 - exp(- 2d0 * eta * eh_trip_Om(n) * eh_trip_Om(n)))     
+                      - ((eh_trip_rho(p,r,n)*eh_trip_rho(s,q,n) + eh_trip_rho(r,p,n)*eh_trip_rho(q,s,n))/eh_trip_Om(n)) &
+                      * (1d0 - exp(- 2d0 * eta * eh_trip_Om(n) * eh_trip_Om(n)))
               end do
               
            enddo

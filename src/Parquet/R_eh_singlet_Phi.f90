@@ -8,7 +8,7 @@ subroutine R_eh_singlet_Phi(eta,nOrb,nC,nR,nS,eh_sing_Om,eh_sing_rho,eh_sing_Phi
   double precision,intent(in)   :: eta
   integer,intent(in)            :: nOrb,nC,nR,nS
   double precision,intent(in)   :: eh_sing_Om(nS)
-  double precision,intent(in)   :: eh_sing_rho(nOrb,nOrb,nS+nS)
+  double precision,intent(in)   :: eh_sing_rho(nOrb,nOrb,nS)
 
 ! Local variables
   integer                       :: p,q,r,s
@@ -30,9 +30,9 @@ subroutine R_eh_singlet_Phi(eta,nOrb,nC,nR,nS,eh_sing_Om,eh_sing_rho,eh_sing_Phi
            do p = nC+1, nOrb-nR
               
               do n=1,nS
-                 eh_sing_Phi(p,q,r,s) = eh_sing_Phi(p,q,r,s)                &
-                      - (eh_sing_rho(p,r,n)*eh_sing_rho(q,s,nS+n)/eh_sing_Om(n)) * (1d0 - exp(- 2d0 * eta * eh_sing_Om(n) * eh_sing_Om(n))) &
-                      - (eh_sing_rho(p,r,nS+n)*eh_sing_rho(q,s,n)/eh_sing_Om(n)) * (1d0 - exp(- 2d0 * eta * eh_sing_Om(n) * eh_sing_Om(n)))
+                 eh_sing_Phi(p,q,r,s) = eh_sing_Phi(p,q,r,s)                                                          &
+                      - ((eh_sing_rho(p,r,n)*eh_sing_rho(s,q,n) + eh_sing_rho(r,p,n)*eh_sing_rho(q,s,n))/eh_sing_Om(n)) &
+                      * (1d0 - exp(- 2d0 * eta * eh_sing_Om(n) * eh_sing_Om(n)))
               end do
               
            enddo

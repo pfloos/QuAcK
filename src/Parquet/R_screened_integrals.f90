@@ -17,7 +17,7 @@ subroutine R_eh_singlet_screened_integral(nOrb,nC,nO,nR,nS,ERI,eh_sing_Phi,eh_tr
   double precision              :: X,Y
 
 ! Output variables
-  double precision,intent(out)  :: rho(nOrb,nOrb,nS+nS)
+  double precision,intent(out)  :: rho(nOrb,nOrb,nS)
   
   rho(:,:,:) = 0d0   
 !  !$OMP PARALLEL &
@@ -45,16 +45,6 @@ subroutine R_eh_singlet_screened_integral(nOrb,nC,nO,nR,nS,ERI,eh_sing_Phi,eh_tr
                              + (2d0*ERI(p,j,q,b) - ERI(p,j,b,q)) * Y              & 
                              + (- 0.5d0*eh_sing_Phi(p,j,b,q) - 1.5d0*eh_trip_Phi(p,j,b,q) &
                              + 0.5d0*pp_sing_Phi(p,j,q,b) + 1.5d0*pp_trip_Phi(p,j,q,b)) * Y
-
-                 
-                 rho(p,q,nS+ia) = rho(p,q,nS+ia) &
-                                + (2d0*ERI(p,j,q,b) - ERI(p,j,b,q))*X       &  
-                                + (- 0.5d0*eh_sing_Phi(p,j,b,q) - 1.5d0*eh_trip_Phi(p,j,b,q) &
-                                + 0.5d0*pp_sing_Phi(p,j,q,b) + 1.5d0*pp_trip_Phi(p,j,q,b)) * X &
-                 
-                                + (2d0*ERI(p,b,q,j) - ERI(p,b,j,q))*Y      & 
-                                + (- 0.5d0*eh_sing_Phi(p,b,j,q) - 1.5d0*eh_trip_Phi(p,b,j,q) &
-                                + 0.5d0*pp_sing_Phi(p,b,q,j) + 1.5d0*pp_trip_Phi(p,b,q,j)) * Y
                  
               end do
 
@@ -87,7 +77,7 @@ subroutine R_eh_triplet_screened_integral(nOrb,nC,nO,nR,nS,ERI,eh_sing_Phi,eh_tr
   double precision              :: X,Y
   
 ! Output variables
-  double precision,intent(out)  :: rho(nOrb,nOrb,nS+nS)
+  double precision,intent(out)  :: rho(nOrb,nOrb,nS)
   
   rho(:,:,:) = 0d0   
 !  !$OMP PARALLEL &
@@ -115,16 +105,6 @@ subroutine R_eh_triplet_screened_integral(nOrb,nC,nO,nR,nS,ERI,eh_sing_Phi,eh_tr
                              - ERI(p,j,b,q) * Y              & 
                              + (- 0.5d0*eh_sing_Phi(p,j,b,q) + 0.5d0*eh_trip_Phi(p,j,b,q) &
                              - 0.5d0*pp_sing_Phi(p,j,q,b) + 0.5d0*pp_trip_Phi(p,j,q,b)) * Y
-
-                 
-                 rho(p,q,nS+ia) = rho(p,q,nS+ia) &
-                                - ERI(p,j,b,q) * X       &  
-                                + (- 0.5d0*eh_sing_Phi(p,j,b,q) + 0.5d0*eh_trip_Phi(p,j,b,q) &
-                                - 0.5d0*pp_sing_Phi(p,j,q,b) + 0.5d0*pp_trip_Phi(p,j,q,b)) * X &
-                 
-                                - ERI(p,b,j,q)*Y      & 
-                                + (- 0.5d0*eh_sing_Phi(p,b,j,q) + 0.5d0*eh_trip_Phi(p,b,j,q) &
-                                - 0.5d0*pp_sing_Phi(p,b,q,j) + 0.5d0*pp_trip_Phi(p,b,q,j)) * Y
                  
                  
               end do
