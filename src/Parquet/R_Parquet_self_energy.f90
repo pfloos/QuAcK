@@ -125,10 +125,10 @@ subroutine R_Parquet_self_energy(eta,nOrb,nC,nO,nV,nR,nS,nOOs,nVVs,nOOt,nVVt,eQP
 !  singlet eh part of the self-energy !
 !-------------------------------------!
   call wall_time(start_t)
-  ! !$OMP PARALLEL DEFAULT(NONE)    &
-  ! !$OMP PRIVATE(p,i,a,j,b,n,num,dem1,dem2,reg1,reg2) &
-  ! !$OMP SHARED(nC,nO,nOrb,nR,nS,eta,ERI,eQP,eh_sing_rho,eh_sing_Om,SigC,Z)
-  ! !$OMP DO COLLAPSE(2)
+  !$OMP PARALLEL DEFAULT(NONE)    &
+  !$OMP PRIVATE(p,i,a,j,b,n,num,dem1,dem2,reg1,reg2) &
+  !$OMP SHARED(nC,nO,nOrb,nR,nS,eta,ERI,eQP,eh_sing_rho,eh_sing_Om,SigC,Z)
+  !$OMP DO
   do p=nC+1,nOrb-nR
      
      do i=nC+1,nO
@@ -217,8 +217,8 @@ subroutine R_Parquet_self_energy(eta,nOrb,nC,nO,nV,nR,nS,nOOs,nVVs,nOOt,nVVt,eQP
      end do ! i
      
   end do ! p
-  ! !$OMP END DO
-  ! !$OMP END PARALLEL
+  !$OMP END DO
+  !$OMP END PARALLEL
   call wall_time(end_t)
   t = end_t - start_t
 
@@ -233,10 +233,10 @@ subroutine R_Parquet_self_energy(eta,nOrb,nC,nO,nV,nR,nS,nOOs,nVVs,nOOt,nVVt,eQP
 !  triplet eh part of the self-energy !
 !-------------------------------------!
    call wall_time(start_t)
-   ! !$OMP PARALLEL DEFAULT(NONE)    &
-   ! !$OMP PRIVATE(p,i,a,j,b,n,num,dem1,dem2,reg1,reg2) &
-   ! !$OMP SHARED(nC,nO,nOrb,nR,nS,eta,ERI,eQP,eh_trip_rho,eh_trip_Om,SigC,Z)
-   ! !$OMP DO COLLAPSE(2)
+   !$OMP PARALLEL DEFAULT(NONE)    &
+   !$OMP PRIVATE(p,i,a,j,b,n,num,dem1,dem2,reg1,reg2) &
+   !$OMP SHARED(nC,nO,nOrb,nR,nS,eta,ERI,eQP,eh_trip_rho,eh_trip_Om,SigC,Z)
+   !$OMP DO
    do p=nC+1,nOrb-nR
     
       do i=nC+1,nO
@@ -325,8 +325,8 @@ subroutine R_Parquet_self_energy(eta,nOrb,nC,nO,nV,nR,nS,nOOs,nVVs,nOOt,nVVt,eQP
       end do ! i
     
    end do ! p
-   ! !$OMP END DO
-   ! !$OMP END PARALLEL
+   !$OMP END DO
+   !$OMP END PARALLEL
    call wall_time(end_t)
    t = end_t - start_t
 
@@ -341,10 +341,10 @@ subroutine R_Parquet_self_energy(eta,nOrb,nC,nO,nV,nR,nS,nOOs,nVVs,nOOt,nVVt,eQP
 !  singlet pp part of the self-energy !
 !-------------------------------------!
   call wall_time(start_t)
-  ! !$OMP PARALLEL DEFAULT(NONE)    &
-  ! !$OMP PRIVATE(p,i,j,k,c,n,num,dem1,dem2,reg1,reg2) &
-  ! !$OMP SHARED(nC,nO,nOrb,nR,nOOs,nVVs,eta,ERI,eQP,ee_sing_rho,ee_sing_Om,hh_sing_rho,hh_sing_Om,SigC,Z)
-  ! !$OMP DO COLLAPSE(2)
+  !$OMP PARALLEL DEFAULT(NONE)    &
+  !$OMP PRIVATE(p,i,j,k,c,n,num,dem1,dem2,reg1,reg2) &
+  !$OMP SHARED(nC,nO,nOrb,nR,nOOs,nVVs,eta,ERI,eQP,ee_sing_rho,ee_sing_Om,hh_sing_rho,hh_sing_Om,SigC,Z)
+  !$OMP DO
   do p=nC+1,nOrb-nR
      
      do i=nC+1,nO
@@ -396,12 +396,12 @@ subroutine R_Parquet_self_energy(eta,nOrb,nC,nO,nV,nR,nS,nOOs,nVVs,nOOt,nVVt,eQP
      end do ! i
      
   end do ! p
-  ! !$OMP END DO
-  ! !$OMP END PARALLEL
-  ! !$OMP PARALLEL DEFAULT(NONE)    &
-  ! !$OMP PRIVATE(p,k,a,b,c,n,num,dem1,dem2,reg1,reg2) &
-  ! !$OMP SHARED(nC,nO,nOrb,nR,nOOs,nVVs,eta,ERI,eQP,ee_sing_rho,ee_sing_Om,hh_sing_rho,hh_sing_Om,SigC,Z)
-  ! !$OMP DO COLLAPSE(2)
+  !$OMP END DO
+  !$OMP END PARALLEL
+  !$OMP PARALLEL DEFAULT(NONE)    &
+  !$OMP PRIVATE(p,k,a,b,c,n,num,dem1,dem2,reg1,reg2) &
+  !$OMP SHARED(nC,nO,nOrb,nR,nOOs,nVVs,eta,ERI,eQP,ee_sing_rho,ee_sing_Om,hh_sing_rho,hh_sing_Om,SigC,Z)
+  !$OMP DO
   do p=nC+1,nOrb-nR
      do a=nO+1,nOrb-nR
         do b=nO+1,nOrb-nR
@@ -453,8 +453,8 @@ subroutine R_Parquet_self_energy(eta,nOrb,nC,nO,nV,nR,nS,nOOs,nVVs,nOOt,nVVt,eQP
      end do ! a
      
   end do ! p
-  ! !$OMP END DO
-  ! !$OMP END PARALLEL
+  !$OMP END DO
+  !$OMP END PARALLEL
   call wall_time(end_t)
   t = end_t - start_t
 
@@ -469,12 +469,12 @@ subroutine R_Parquet_self_energy(eta,nOrb,nC,nO,nV,nR,nS,nOOs,nVVs,nOOt,nVVt,eQP
 !  triplet pp part of the self-energy !
 !-------------------------------------!
   call wall_time(start_t)
-  ! !$OMP PARALLEL DEFAULT(NONE)    &
-  ! !$OMP PRIVATE(p,i,j,k,c,n,num,dem1,dem2,reg1,reg2) &
-  ! !$OMP SHARED(nC,nO,nOrb,nR,nOOt,nVVt,eta,ERI,eQP,ee_trip_rho,ee_trip_Om,hh_trip_rho,hh_trip_Om,SigC,Z)
-  ! !$OMP DO COLLAPSE(2)
+  !$OMP PARALLEL DEFAULT(NONE)    &
+  !$OMP PRIVATE(p,i,j,k,c,n,num,dem1,dem2,reg1,reg2) &
+  !$OMP SHARED(nC,nO,nOrb,nR,nOOt,nVVt,eta,ERI,eQP,ee_trip_rho,ee_trip_Om,hh_trip_rho,hh_trip_Om,SigC,Z)
+  !$OMP DO
   do p=nC+1,nOrb-nR
-     
+    
      do i=nC+1,nO
         do j=nC+1,nO
            do n=1,nVVt
@@ -524,12 +524,12 @@ subroutine R_Parquet_self_energy(eta,nOrb,nC,nO,nV,nR,nS,nOOs,nVVs,nOOt,nVVt,eQP
      end do ! i
      
   end do ! p
-  ! !$OMP END DO
-  ! !$OMP END PARALLEL
-  ! !$OMP PARALLEL DEFAULT(NONE)    &
-  ! !$OMP PRIVATE(p,k,a,b,c,n,num,dem1,dem2,reg1,reg2) &
-  ! !$OMP SHARED(nC,nO,nOrb,nR,nOOt,nVVt,eta,ERI,eQP,ee_trip_rho,ee_trip_Om,hh_trip_rho,hh_trip_Om,SigC,Z)
-  ! !$OMP DO COLLAPSE(2)
+  !$OMP END DO
+  !$OMP END PARALLEL
+  !$OMP PARALLEL DEFAULT(NONE)    &
+  !$OMP PRIVATE(p,k,a,b,c,n,num,dem1,dem2,reg1,reg2) &
+  !$OMP SHARED(nC,nO,nOrb,nR,nOOt,nVVt,eta,ERI,eQP,ee_trip_rho,ee_trip_Om,hh_trip_rho,hh_trip_Om,SigC,Z)
+  !$OMP DO
   do p=nC+1,nOrb-nR
      do a=nO+1,nOrb-nR
         do b=nO+1,nOrb-nR
@@ -581,8 +581,8 @@ subroutine R_Parquet_self_energy(eta,nOrb,nC,nO,nV,nR,nS,nOOs,nVVs,nOOt,nVVt,eQP
      end do ! a
      
   end do ! p
-  ! !$OMP END DO
-  ! !$OMP END PARALLEL 
+  !$OMP END DO
+  !$OMP END PARALLEL 
   call wall_time(end_t)
   t = end_t - start_t
 
