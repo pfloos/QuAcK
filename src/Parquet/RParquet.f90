@@ -115,16 +115,16 @@ subroutine RParquet(TDAeh,TDApp,max_diis_1b,max_diis_2b,linearize,eta_1b,eta_2b,
  
 ! DIIS parameters
 
-  rcond_2b = 1d0
-
   allocate(err_diis_2b(4*nOrb**4,max_diis_2b),Phi_diis(4*nOrb**4,max_diis_2b))
   allocate(err(4*nOrb**4),Phi(4*nOrb**4))
 
   mem = mem + size(err_diis_2b) + size(Phi_diis) + size(err) + size(Phi)
   write(*,'(1X,A50,4X,F6.3,A3)') 'Memory usage in RParquet =',mem*dp_in_GB,' GB'
 
+  rcond_2b  = 1d0
+  n_diis_2b = 0
   err_diis_2b(:,:) = 0d0
-  Phi_diis(:,:) = 0d0
+  Phi_diis(:,:)    = 0d0
  
 ! Start
 
