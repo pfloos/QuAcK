@@ -410,9 +410,9 @@ subroutine GParquet(TDAeh,TDApp,max_diis_1b,max_diis_2b,linearize,eta_1b,eta_2b,
       err_eh = maxval(abs(eh_Phi - old_eh_Phi))
       err_pp = maxval(abs(pp_Phi - old_pp_Phi))
 
-      ! alpha = 0.5d0
-      ! eh_Phi(:,:,:,:) = alpha * eh_Phi(:,:,:,:) + (1d0 - alpha) * old_eh_Phi(:,:,:,:)
-      ! pp_Phi(:,:,:,:) = alpha * pp_Phi(:,:,:,:) + (1d0 - alpha) * old_pp_Phi(:,:,:,:)
+      alpha = 0.25d0
+      eh_Phi(:,:,:,:) = alpha * eh_Phi(:,:,:,:) + (1d0 - alpha) * old_eh_Phi(:,:,:,:)
+      pp_Phi(:,:,:,:) = alpha * pp_Phi(:,:,:,:) + (1d0 - alpha) * old_pp_Phi(:,:,:,:)
 
 !     call matout(nOrb**2,nOrb**2,eh_Phi - old_eh_Phi)
 !     call matout(nOrb**2,nOrb**2,pp_Phi - old_pp_Phi)

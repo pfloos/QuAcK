@@ -120,7 +120,7 @@ subroutine G_Parquet_self_energy(eta,nOrb,nC,nO,nV,nR,nS,nOO,nVV,eQP,ERI,&
   !$OMP PARALLEL DEFAULT(NONE)    &
   !$OMP PRIVATE(p,i,a,j,b,n,num,dem1,dem2,reg1,reg2) &
   !$OMP SHARED(nC,nO,nOrb,nR,nS,eta,ERI,eQP,eh_rho,eh_Om,Sig_eh,Z_eh)
-  !$OMP DO COLLAPSE(2)
+  !$OMP DO
   do p=nC+1,nOrb-nR
      
      do i=nC+1,nO
@@ -243,7 +243,7 @@ subroutine G_Parquet_self_energy(eta,nOrb,nC,nO,nV,nR,nS,nOO,nVV,eQP,ERI,&
   !$OMP PARALLEL DEFAULT(NONE)    &
   !$OMP PRIVATE(p,i,j,k,c,n,num,dem1,dem2,reg1,reg2) &
   !$OMP SHARED(nC,nO,nOrb,nR,nOO,nVV,eta,ERI,eQP,ee_rho,ee_Om,hh_rho,hh_Om,Sig_pp,Z_pp)
-  !$OMP DO COLLAPSE(2)
+  !$OMP DO
   do p=nC+1,nOrb-nR
      
      do i=nC+1,nO
@@ -304,7 +304,7 @@ subroutine G_Parquet_self_energy(eta,nOrb,nC,nO,nV,nR,nS,nOO,nVV,eQP,ERI,&
   !$OMP PARALLEL DEFAULT(NONE)    &
   !$OMP PRIVATE(p,k,a,b,c,n,num,dem1,dem2,reg1,reg2) &
   !$OMP SHARED(nC,nO,nOrb,nR,nOO,nVV,eta,ERI,eQP,ee_rho,ee_Om,hh_rho,hh_Om,Sig_pp,Z_pp)
-  !$OMP DO COLLAPSE(2)
+  !$OMP DO
   do p=nC+1,nOrb-nR
      do a=nO+1,nOrb-nR
         do b=nO+1,nOrb-nR
