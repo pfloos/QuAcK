@@ -1,5 +1,5 @@
-subroutine qsRGWi(dotest,maxSCF,thresh,max_diis,level_shift,eta,nNuc,ZNuc,rNuc,ENuc, & 
-                  nBas,nOrb,nO,S,T,V,Hc,ERI,dipole_int,X,EqsGW,eqsGW_state,c,P,F,    &
+subroutine qsRGWi(dotest,maxSCF,thresh,max_diis,level_shift,eta,shift,nNuc,ZNuc,rNuc,ENuc, & 
+                  nBas,nOrb,nO,S,T,V,Hc,ERI,dipole_int,X,EqsGW,eqsGW_state,c,P,F,          &
                   nfreqs,ntimes,wcoord,wweight)
 
 ! Perform restricted Hartree-Fock calculation
@@ -24,6 +24,7 @@ subroutine qsRGWi(dotest,maxSCF,thresh,max_diis,level_shift,eta,nNuc,ZNuc,rNuc,E
   double precision,intent(in)   :: rNuc(nNuc,ncart)
   double precision,intent(in)   :: ENuc
   double precision,intent(in)   :: eta
+  double precision,intent(in)   :: shift
   integer,intent(in)            :: nfreqs
   integer,intent(in)            :: ntimes
   double precision,intent(in)   :: wcoord(nfreqs),wweight(nfreqs)
@@ -146,7 +147,7 @@ subroutine qsRGWi(dotest,maxSCF,thresh,max_diis,level_shift,eta,nNuc,ZNuc,rNuc,E
      enddo
     enddo
     deallocate(ERI_MO)
-    call sigc_AO_basis_RHF(nBas,nOrb,nO,eta,c,eqsGW_state,vMAT,nfreqs,ntimes,wcoord,wweight,Sigc)
+    call sigc_AO_basis_RHF(nBas,nOrb,nO,eta,shift,c,eqsGW_state,vMAT,nfreqs,ntimes,wcoord,wweight,Sigc)
 
 
     F(:,:) = Hc(:,:) + J(:,:) + 0.5d0*K(:,:) + Sigc(:,:)

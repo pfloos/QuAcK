@@ -1,6 +1,6 @@
-subroutine BQuAcK(working_dir,dotest,doHFB,dophRPA,doqsGW,nNuc,nBas,nOrb,nO,ENuc,eta,ZNuc,rNuc, &
-                  S,T,V,Hc,X,dipole_int_AO,maxSCF_HF,max_diis_HF,thresh_HF,level_shift,         &
-                  guess_type,mix,temperature,sigma,chem_pot_hf,restart_hfb,nfreqs,ntimes,       &
+subroutine BQuAcK(working_dir,dotest,doHFB,dophRPA,doqsGW,nNuc,nBas,nOrb,nO,ENuc,eta,shift,ZNuc, &
+                  rNuc,S,T,V,Hc,X,dipole_int_AO,maxSCF_HF,max_diis_HF,thresh_HF,level_shift,     &
+                  guess_type,mix,temperature,sigma,chem_pot_hf,restart_hfb,nfreqs,ntimes,        &
                   wcoord,wweight)
 
 ! Restricted branch of QuAcK
@@ -24,6 +24,7 @@ subroutine BQuAcK(working_dir,dotest,doHFB,dophRPA,doqsGW,nNuc,nBas,nOrb,nO,ENuc
   integer,intent(in)            :: ntimes
   double precision,intent(inout):: ENuc
   double precision,intent(in)   :: eta
+  double precision,intent(in)   :: shift
   double precision,intent(in)   :: temperature,sigma
 
   double precision,intent(in)   :: ZNuc(nNuc),rNuc(nNuc,ncart)
@@ -155,8 +156,8 @@ subroutine BQuAcK(working_dir,dotest,doHFB,dophRPA,doqsGW,nNuc,nBas,nOrb,nO,ENuc
 
       ! Continue with a HFB calculation
       call wall_time(start_qsGWB)
-      call qsRGWi(dotest,maxSCF_HF,thresh_HF,max_diis_HF,level_shift,eta,nNuc,ZNuc,rNuc,ENuc,  &
-                  nBas,nOrb,nO_,S,T,V,Hc,ERI_AO,dipole_int_AO,X,ERHF,eHF,cHFB,PHF,FHF,         &
+      call qsRGWi(dotest,maxSCF_HF,thresh_HF,max_diis_HF,level_shift,eta,shift,nNuc,ZNuc,rNuc,ENuc,  &
+                  nBas,nOrb,nO_,S,T,V,Hc,ERI_AO,dipole_int_AO,X,ERHF,eHF,cHFB,PHF,FHF,               &
                   nfreqs,ntimes,wcoord,wweight)
       call wall_time(end_qsGWB)
 
@@ -214,7 +215,7 @@ subroutine BQuAcK(working_dir,dotest,doHFB,dophRPA,doqsGW,nNuc,nBas,nOrb,nO,ENuc
 
     ! Continue with a HFB calculation
     call wall_time(start_qsGWB)
-    call qsGWB(dotest,maxSCF_HF,thresh_HF,max_diis_HF,level_shift,nNuc,ZNuc,rNuc,ENuc,eta,            &
+    call qsGWB(dotest,maxSCF_HF,thresh_HF,max_diis_HF,level_shift,nNuc,ZNuc,rNuc,ENuc,eta,shift,      &
                nBas,nOrb,nOrb_twice,nO_,S,T,V,Hc,ERI_AO,dipole_int_AO,X,EHFB,eHF,cHFB,PHF,PanomHF,    &
                FHF,Delta,sigma,chem_pot,restart_hfb,U_QP,eONEBODY_state,nfreqs,ntimes,wcoord,wweight) 
 

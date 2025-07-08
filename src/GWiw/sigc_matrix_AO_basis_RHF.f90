@@ -1,4 +1,5 @@
-subroutine sigc_AO_basis_RHF(nBas,nOrb,nO,eta,c,eqsGW_state,vMAT,nfreqs,ntimes,wcoord,wweight,Sigc_ao)
+subroutine sigc_AO_basis_RHF(nBas,nOrb,nO,eta,shift,c,eqsGW_state,vMAT,nfreqs,ntimes, &
+                             wcoord,wweight,Sigc_ao)
 
 ! Compute Sigma_c matrix in the AO basis
 
@@ -14,6 +15,7 @@ subroutine sigc_AO_basis_RHF(nBas,nOrb,nO,eta,c,eqsGW_state,vMAT,nfreqs,ntimes,w
   integer,intent(in)            :: ntimes
 
   double precision,intent(in)   :: eta
+  double precision,intent(in)   :: shift
   double precision,intent(in)   :: wcoord(nfreqs),wweight(nfreqs)
   double precision,intent(in)   :: eqsGW_state(nOrb)
   double precision,intent(in)   :: vMAT(nOrb*nOrb,nOrb*nOrb)
@@ -29,7 +31,6 @@ subroutine sigc_AO_basis_RHF(nBas,nOrb,nO,eta,c,eqsGW_state,vMAT,nfreqs,ntimes,w
   integer                       :: ncluster
   integer,allocatable           :: nE_per_cluster(:)
 
-  double precision              :: shift=1d-2
   double precision              :: step_E=2.5d-2
   double precision              :: chem_pot
   double precision,allocatable  :: E_eval_global(:)
@@ -53,136 +54,16 @@ subroutine sigc_AO_basis_RHF(nBas,nOrb,nO,eta,c,eqsGW_state,vMAT,nfreqs,ntimes,w
     
   chem_pot = 0.5d0*(eqsGW_state(nO)+eqsGW_state(nO+1))
 
-! Set the number of clusters [i.e., energies separated more than (or equal to) 0.1 a.u.]
-  ncluster=1
-  do iorb=2,nOrb
-   if(abs(eqsGW_state(iorb)-eqsGW_state(iorb-1))>=0.1d0) ncluster=ncluster+1
-  enddo
-  allocate(clusters(ncluster))
-
-! For each cluster find the number of QP energies associated
-  allocate(nE_per_cluster(ncluster))
-  icluster=1; nE_per_cluster(:)=1;
-  do iorb=2,nOrb
-   if(abs(eqsGW_state(iorb)-eqsGW_state(iorb-1))>=0.1d0) then
-    icluster=icluster+1
-   else
-    nE_per_cluster(icluster)=nE_per_cluster(icluster)+1
-   endif
-  enddo
-  do icluster=1,ncluster
-   clusters(icluster)%nE=nE_per_cluster(icluster)
-  enddo
-  deallocate(nE_per_cluster)
-
-! For each cluster store the QP energies associated
-  iorb=1
-  do icluster=1,ncluster
-   allocate(clusters(icluster)%E_QP(clusters(icluster)%nE))
-   do iE=1,clusters(icluster)%nE
-    clusters(icluster)%E_QP(iE)=eqsGW_state(iorb)
-    iorb=iorb+1
-   enddo
-  enddo
-
-! For each cluster find the number of energies (e_EVAL) to be used in Sigma_c [i.e., Sigma_c(e_EVAl)]
-! and allocate the cluster arrays to store the energies to be evaluated
-  do icluster=1,ncluster
-   clusters(icluster)%nE_eval=2
-   do iE=2,clusters(icluster)%nE
-     if( abs(clusters(icluster)%E_QP(iE)-clusters(icluster)%E_QP(iE-1)) >= 7.5d-2 ) then
-      clusters(icluster)%nE_eval=clusters(icluster)%nE_eval+2
-     else if( abs(clusters(icluster)%E_QP(iE)-clusters(icluster)%E_QP(iE-1)) < 7.5d-2 .and. &
-              abs(clusters(icluster)%E_QP(iE)-clusters(icluster)%E_QP(iE-1)) >= 5d-2 ) then
-      clusters(icluster)%nE_eval=clusters(icluster)%nE_eval+1
-     else ! abs(clusters(icluster)%E_QP(iE)-clusters(icluster)%E_QP(iE-1)) < 0.05
-      clusters(icluster)%nE_eval=clusters(icluster)%nE_eval
-     endif   
-   enddo
-   clusters(icluster)%nE_eval=clusters(icluster)%nE_eval+2
-   clusters(icluster)%nE_eval=clusters(icluster)%nE_eval+2*clusters(icluster)%nE
-   allocate(clusters(icluster)%E_eval(clusters(icluster)%nE_eval))
-  enddo
-
-! For each cluster set the evaluation energies (e_EVAL) to be used in Sigma_c [i.e., Sigma_c(e_EVAl)]
-  do icluster=1,ncluster
-   clusters(icluster)%E_eval(:)=czero
-   clusters(icluster)%E_eval(1)=clusters(icluster)%E_QP(1)-2d0*step_E
-   clusters(icluster)%E_eval(2)=clusters(icluster)%E_QP(1)-step_E
-   iE_=3
-   do iE=2,clusters(icluster)%nE
-     if( abs(clusters(icluster)%E_QP(iE)-clusters(icluster)%E_QP(iE-1)) >= 7.5d-2 ) then
-       clusters(icluster)%E_eval(iE_)=clusters(icluster)%E_QP(iE-1)+step_E
-       iE_=iE_+1
-       clusters(icluster)%E_eval(iE_)=clusters(icluster)%E_QP(iE-1)+2d0*step_E
-       iE_=iE_+1
-     else if( abs(clusters(icluster)%E_QP(iE)-clusters(icluster)%E_QP(iE-1)) < 7.5d-2 .and. &
-              abs(clusters(icluster)%E_QP(iE)-clusters(icluster)%E_QP(iE-1)) >= 5d-2 ) then
-       clusters(icluster)%E_eval(iE_)=0.5d0*(clusters(icluster)%E_QP(iE)+clusters(icluster)%E_QP(iE-1))
-       iE_=iE_+1
-     else ! abs(clusters(icluster)%E_QP(iE)-clusters(icluster)%E_QP(iE-1)) < 0.05
-       ! Nth
-     endif   
-   enddo
-   clusters(icluster)%E_eval(iE_)=clusters(icluster)%E_QP(clusters(icluster)%nE)+step_E
-   iE_=iE_+1
-   clusters(icluster)%E_eval(iE_)=clusters(icluster)%E_QP(clusters(icluster)%nE)+2d0*step_E
-   iE_=iE_+1
-   ! Add the points where we want the self-energy [Sigma_c(E_QP)] with small +-shifts
-   do iE=1,clusters(icluster)%nE
-    clusters(icluster)%E_eval(iE_)=clusters(icluster)%E_QP(iE)-shift
-    iE_=iE_+1
-    clusters(icluster)%E_eval(iE_)=clusters(icluster)%E_QP(iE)+shift
-    iE_=iE_+1
-   enddo
-  enddo
-
-  ! Select unique points
-  do icluster=1,ncluster
-   do iE=1,clusters(icluster)%nE_eval
-    if(abs(clusters(icluster)%E_eval(iE)) > 1e-8) then
-     do iE_=iE+1,clusters(icluster)%nE_eval
-      if( abs(clusters(icluster)%E_eval(iE)-clusters(icluster)%E_eval(iE_) ) < 1e-8) then
-       clusters(icluster)%E_eval(iE_)=0d0
-      endif
-     enddo
-    endif
-   enddo
-  enddo
-  nE_eval_global=0
-  do icluster=1,ncluster
-   do iE=1,clusters(icluster)%nE_eval
-    if(abs(clusters(icluster)%E_eval(iE)) > 1e-8) nE_eval_global = nE_eval_global +1
-   enddo
-  enddo
-
-  ! Store unique energies
-  allocate(E_eval_global(nE_eval_global))
+  allocate(E_eval_global_cpx(1))
+  call set_Eeval_cluster(nOrb,nOrb,1,shift,eqsGW_state,nE_eval_global,&
+                         E_eval_global_cpx,chem_pot)
+  deallocate(E_eval_global_cpx)
   allocate(E_eval_global_cpx(nE_eval_global))
-  iE_=1
-  do icluster=1,ncluster
-   do iE=1,clusters(icluster)%nE_eval
-    if(abs(clusters(icluster)%E_eval(iE)) > 1e-8) then
-     E_eval_global(iE_)=clusters(icluster)%E_eval(iE)
-     iE_=iE_+1
-    endif
-   enddo
-  enddo
-   
-  ! Sort and transform to complex unique energies [Note : we have to adjust them using the chemical potential]
-  call sort_ascending(nE_eval_global,E_eval_global)                        
-  E_eval_global_cpx(:)=E_eval_global(:)-chem_pot
-  deallocate(E_eval_global)
-
-  ! Delete some dynamic arrays and allocate the self-energy array
-  do icluster=1,ncluster
-   deallocate(clusters(icluster)%E_QP)
-   deallocate(clusters(icluster)%E_eval)
-  enddo
-  deallocate(clusters)
-  allocate(Sigc_mo(nE_eval_global,nOrb,nOrb))
+  call set_Eeval_cluster(nOrb,nOrb,nE_eval_global,shift,eqsGW_state,&
+                          nE_eval_global,E_eval_global_cpx,chem_pot)
 
   ! Run over unique energies
+  allocate(Sigc_mo(nE_eval_global,nOrb,nOrb))
    call build_Sigmac_w_RHF(nOrb,nO,nE_eval_global,eta,0,E_eval_global_cpx,eqsGW_state,nfreqs,ntimes,&
                            wweight,wcoord,vMAT,Sigc_mo)
 
@@ -204,8 +85,6 @@ subroutine sigc_AO_basis_RHF(nBas,nOrb,nO,eta,c,eqsGW_state,vMAT,nfreqs,ntimes,w
  
   deallocate(Sigc_mo)
   deallocate(E_eval_global_cpx)
-
-
 
 
 ! TODO remove these lines
