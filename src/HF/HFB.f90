@@ -76,6 +76,8 @@ subroutine HFB(dotest,doqsGW,maxSCF,thresh,max_diis,level_shift,nNuc,ZNuc,rNuc,E
   double precision,allocatable  :: c_ao(:,:)
   double precision,allocatable  :: R_ao_old(:,:)
   double precision,allocatable  :: H_HFB_ao(:,:)
+  !double precision,allocatable  :: P_mo_trial(:,:)
+  !double precision,allocatable  :: P_ao_trial(:,:)
 
 ! Output variables
 
@@ -446,6 +448,30 @@ subroutine HFB(dotest,doqsGW,maxSCF,thresh,max_diis,level_shift,nNuc,ZNuc,rNuc,E
   write(*,*)
   write(*,'(A33,1X,F16.10,A3)') ' Trace [ 1D^NO ]     = ',trace_1rdm,'   '
   write(*,*)
+
+! Test if it can be a RHF solution
+  ! TODO
+  !allocate(P_mo_trial(nOrb,nOrb),P_ao_trial(nBas,nBas))
+  !P_mo_trial(:,:)=R(1:nOrb,1:nOrb)-matmul(R(1:nOrb,nOrb+1:nOrb_twice),R(1:nOrb,nOrb+1:nOrb_twice))
+  !P_ao_trial=matmul(c,matmul(P_mo_trial,transpose(c)))
+  !deallocate(eigVEC,eigVAL)
+  !allocate(eigVEC(nBas,nBas),eigVAL(nBas))
+  !eigVEC(:,:) = 0d0
+  !eigVEC(1:nBas,1:nBas) = P_ao_trial(1:nBas,1:nBas)
+  !call diagonalize_matrix(nBas,eigVEC,eigVAL)
+  !eigVAL=-eigVAL
+  !call sort_ascending(nOrb,eigVAL)                        
+  !eigVAL=-eigVAL
+  !write(*,'(A50)') '---------------------------------------'
+  !write(*,'(A50)') ' HFB -> RHF test (AO occ. numbers) '
+  !write(*,'(A50)') '---------------------------------------'
+  !do iorb=1,nBas
+  ! if(abs(eigVAL(iorb))>1d-8) then
+  !  write(*,'(I7,10F15.8)') iorb,2d0*eigVAL(iorb)
+  ! endif
+  !enddo
+  !write(*,*)
+  !deallocate(P_mo_trial,P_ao_trial)
  
 ! Testing zone
 

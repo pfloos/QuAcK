@@ -149,6 +149,21 @@ subroutine BQuAcK(working_dir,dotest,doHFB,dophRPA,doqsGW,nNuc,nBas,nOrb,nO,ENuc
     t_HF = end_HF - start_HF
     write(*,'(A65,1X,F9.3,A8)') 'Total wall time for RHF = ',t_HF,' seconds'
     write(*,*)
+    
+    ! A imaginary frequencies implementation of qsGW for testing
+    if(doqsGW .and. .true.) then
+
+      ! Continue with a HFB calculation
+      call wall_time(start_qsGWB)
+      call qsRGWi(dotest,maxSCF_HF,thresh_HF,max_diis_HF,level_shift,eta,nNuc,ZNuc,rNuc,ENuc,  &
+                  nBas,nOrb,nO_,S,T,V,Hc,ERI_AO,dipole_int_AO,X,ERHF,eHF,cHFB,PHF,FHF)
+      call wall_time(end_qsGWB)
+
+      t_qsGWB = end_qsGWB - start_qsGWB
+      write(*,'(A65,1X,F9.3,A8)') 'Total wall time for qsGWB = ',t_qsGWB,' seconds'
+      write(*,*)
+
+    end if
 
     ! Compute EcRPA and EcGM energies for RHF
     if(dophRPA) then
