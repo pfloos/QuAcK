@@ -70,6 +70,7 @@ subroutine Xoiw_HFB_tests(nBas,nOrb,nOrb_twice,wtest,cHFB,eHFB,nfreqs,ntimes,wwe
 
 !
 
+  eta=1d-3 ! as used in MOLGW
   nBas2=nBas*nBas
   nOrb2=nOrb*nOrb
 
@@ -175,7 +176,6 @@ subroutine Xoiw_HFB_tests(nBas,nOrb,nOrb_twice,wtest,cHFB,eHFB,nfreqs,ntimes,wwe
      ! call AOtoMO_ERI_RHF(nBas,nOrb,cHFB,Wp_AO,Wp_MO) ! we could use this subroutine to get Wp in the MO basis 
 
     ! Build G(iw+wtest)
-    eta=0d0
     ! Ghe
      Mat1(1:nOrb,1:nOrb)=U_QP(1:nOrb,1:nOrb)
      Mat2(1:nOrb,1:nOrb)=U_QP(1:nOrb,1:nOrb)
@@ -241,7 +241,6 @@ subroutine Xoiw_HFB_tests(nBas,nOrb,nOrb_twice,wtest,cHFB,eHFB,nfreqs,ntimes,wwe
   ! Contour deformation residues
    if(abs(aimag(wtest))<1e-12) then ! wtest is real and we may have to add residues contributions
 
-     eta=1d-3 ! as used in MOLGW
      ! We will need ERI is MO
      deallocate(vMAT)
      allocate(vMAT(nOrb2,nOrb2))
