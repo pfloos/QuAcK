@@ -53,7 +53,7 @@ subroutine G_pp_Gamma_C(nOrb,nO,nR,nVV,eh_Phi,pp_Gam_C)
 
 ! Local variables
   integer                       :: a,b,c,d
-  integer                       :: a0, aa
+  integer                       :: aa
   integer                       :: ab,cd
 
 ! Output variables
@@ -61,15 +61,13 @@ subroutine G_pp_Gamma_C(nOrb,nO,nR,nVV,eh_Phi,pp_Gam_C)
 
 ! Initialization
   pp_Gam_C(:,:) = 0d0
-  a0 = nOrb - nR - nO
   !$OMP PARALLEL DEFAULT(NONE)                   &
   !$OMP          PRIVATE(a, b, aa, ab, c, d, cd) &
-  !$OMP          SHARED(nO, nOrb, nR, a0, eh_Phi, pp_Gam_C)
+  !$OMP          SHARED(nO, nOrb, nR, eh_Phi, pp_Gam_C)
   !$OMP DO
-  do a = nO+1, nOrb-nR
-     aa = a0 * (a - nO - 1) - (a - nO - 1) * (a - nO) / 2 - nO
-     do b = a, nOrb-nR
-        ab = aa + b
+  do a=nO+1,nOrb-nR
+     do b=a+1,nOrb-nR
+        ab = (a-(nO+1))*(nOrb-nR-(nO+1)) - (a-1-(nO+1))*(a-(nO+1))/2 + b - a
 
         cd = 0
         do c=nO+1,nOrb - nR
@@ -98,7 +96,7 @@ subroutine G_pp_Gamma_B(nOrb,nC,nO,nR,nOO,nVV,eh_Phi,pp_Gam_B)
 
 ! Local variables
   integer                       :: a,b,i,j
-  integer                       :: a0, aa
+  integer                       :: aa
   integer                       :: ab,ij
 
 ! Output variables
@@ -106,15 +104,13 @@ subroutine G_pp_Gamma_B(nOrb,nC,nO,nR,nOO,nVV,eh_Phi,pp_Gam_B)
 
 ! Initialization
   pp_Gam_B(:,:) = 0d0
-  a0 = nOrb - nR - nO
   !$OMP PARALLEL DEFAULT(NONE)                   &
   !$OMP          PRIVATE(a, b, aa, ab, i, j, ij) &
-  !$OMP          SHARED(nO, nC, nOrb, nR, a0, eh_Phi, pp_Gam_B)
+  !$OMP          SHARED(nO, nC, nOrb, nR, eh_Phi, pp_Gam_B)
   !$OMP DO
-  do a = nO+1, nOrb-nR
-     aa = a0 * (a - nO - 1) - (a - nO - 1) * (a - nO) / 2 - nO
-     do b = a, nOrb-nR
-        ab = aa + b
+  do a=nO+1,nOrb-nR
+     do b=a+1,nOrb-nR
+        ab = (a-(nO+1))*(nOrb-nR-(nO+1)) - (a-1-(nO+1))*(a-(nO+1))/2 + b - a
         
         ij = 0
         do i=nC+1,nO

@@ -58,7 +58,7 @@ subroutine R_pp_triplet_Gamma_C(nOrb,nO,nR,nVVt,eh_sing_Phi,eh_trip_Phi,pp_trip_
 
 ! Local variables
   integer                       :: a,b,c,d
-  integer                       :: ab,cd,a0,aa
+  integer                       :: ab,cd,aa
   integer                       :: n
 
 ! Output variables
@@ -67,15 +67,14 @@ subroutine R_pp_triplet_Gamma_C(nOrb,nO,nR,nVVt,eh_sing_Phi,eh_trip_Phi,pp_trip_
 ! Initialization
   pp_trip_Gam_C(:,:) = 0d0
 
-  a0 = nOrb - nR - nO
   !$OMP PARALLEL DEFAULT(NONE)          &
   !$OMP PRIVATE(a, b, aa, ab, c, d, cd) &
-  !$OMP SHARED(nO, nOrb, nR, a0, pp_trip_Gam_C, eh_sing_Phi, eh_trip_Phi)
+  !$OMP SHARED(nO, nOrb, nR, pp_trip_Gam_C, eh_sing_Phi, eh_trip_Phi)
   !$OMP DO
-  do a = nO+1, nOrb-nR
-     aa = a0 * (a - nO - 1) - (a - nO - 1) * (a - nO) / 2 - nO
-     do b = a, nOrb-nR
-        ab = aa + b
+  do a=nO+1,nOrb-nR
+     do b=a+1,nOrb-nR
+        ab = (a-(nO+1))*(nOrb-nR-(nO+1)) - (a-1-(nO+1))*(a-(nO+1))/2 + b - a
+
 
         cd = 0
         do c=nO+1,nOrb - nR
@@ -107,7 +106,7 @@ subroutine R_pp_triplet_Gamma_B(nOrb,nC,nO,nR,nOOt,nVVt,eh_sing_Phi,eh_trip_Phi,
 
 ! Local variables
   integer                       :: a,b,i,j
-  integer                       :: ab,ij,a0,aa
+  integer                       :: ab,ij,aa
   integer                       :: n
 
 ! Output variables
@@ -116,15 +115,13 @@ subroutine R_pp_triplet_Gamma_B(nOrb,nC,nO,nR,nOOt,nVVt,eh_sing_Phi,eh_trip_Phi,
 ! Initialization
   pp_trip_Gam_B(:,:) = 0d0
 
-  a0 = nOrb - nR - nO
   !$OMP PARALLEL DEFAULT(NONE)          &
   !$OMP PRIVATE(a, b, aa, ab, i, j, ij) &
-  !$OMP SHARED(nO, nC, nOrb, nR, a0, pp_trip_Gam_B, eh_sing_Phi, eh_trip_Phi)
+  !$OMP SHARED(nO, nC, nOrb, nR, pp_trip_Gam_B, eh_sing_Phi, eh_trip_Phi)
   !$OMP DO
-  do a = nO+1, nOrb-nR
-     aa = a0 * (a - nO - 1) - (a - nO - 1) * (a - nO) / 2 - nO
-     do b = a, nOrb-nR
-        ab = aa + b
+  do a=nO+1,nOrb-nR
+     do b=a+1,nOrb-nR
+        ab = (a-(nO+1))*(nOrb-nR-(nO+1)) - (a-1-(nO+1))*(a-(nO+1))/2 + b - a
 
         ij = 0
         do i=nC+1,nO
