@@ -14,7 +14,7 @@ subroutine G_Parquet_Galitskii_Migdal(eta,nOrb,nC,nO,nV,nR,nS,nOO,nVV,eQP,ERI,&
   integer,intent(in)            :: nS, nOO, nVV
   double precision,intent(in)   :: eQP(nOrb)
   double precision,intent(in)   :: ERI(nOrb,nOrb,nOrb,nOrb)
-  double precision,intent(in)   :: eh_rho(nOrb,nOrb,nS+nS)
+  double precision,intent(in)   :: eh_rho(nOrb,nOrb,nS)
   double precision,intent(in)   :: eh_Om(nS)
   double precision,intent(in)   :: ee_rho(nOrb,nOrb,nVV)
   double precision,intent(in)   :: ee_Om(nVV)
@@ -84,7 +84,7 @@ subroutine G_Parquet_Galitskii_Migdal(eta,nOrb,nC,nO,nV,nR,nS,nOO,nVV,eQP,ERI,&
               do n=1,nS
 
                  ! 2h2p(d) * 2p2h
-                 num  = 0.5d0 * (ERI(b,a,i,j) - ERI(b,a,j,i)) * eh_rho(i,a,n) * eh_rho(j,b,nS+n)
+                 num  = 0.5d0 * (ERI(b,a,i,j) - ERI(b,a,j,i)) * eh_rho(i,a,n) * eh_rho(b,j,n)
                  dem1 = eQP(b) - eQP(j) + eh_Om(n)
                  dem2 = eQP(i) + eQP(j) - eQP(a) - eQP(b) 
                  reg1 = (1d0 - exp(- 2d0 * eta * dem1 * dem1))
@@ -93,7 +93,7 @@ subroutine G_Parquet_Galitskii_Migdal(eta,nOrb,nC,nO,nV,nR,nS,nOO,nVV,eQP,ERI,&
                  Ec_eh(1) = Ec_eh(1) + num * (reg1/dem1) * (reg2/dem2)
 
                  ! 2h2p(d) * 2p2h(d)
-                 num  = 0.5d0 * (ERI(b,i,a,j) - ERI(b,i,j,a)) * eh_rho(a,i,n) * eh_rho(j,b,nS+n)
+                 num  = 0.5d0 * (ERI(b,i,a,j) - ERI(b,i,j,a)) * eh_rho(a,i,n) * eh_rho(b,j,n)
                  dem1 = eQP(a) - eQP(i) + eh_Om(n) 
                  dem2 = eQP(j) - eQP(b) - eh_Om(n)
                  reg1 = (1d0 - exp(- 2d0 * eta * dem1 * dem1))
@@ -102,7 +102,7 @@ subroutine G_Parquet_Galitskii_Migdal(eta,nOrb,nC,nO,nV,nR,nS,nOO,nVV,eQP,ERI,&
                  Ec_eh(2) = Ec_eh(2) + num * (reg1/dem1) * (reg2/dem2)
 
                  ! 2h2p(d) * 2p2h
-                 num  = 0.5d0 * (ERI(b,a,i,j) - ERI(b,a,j,i)) * eh_rho(i,a,nS+n) * eh_rho(j,b,n)
+                 num  = 0.5d0 * (ERI(b,a,i,j) - ERI(b,a,j,i)) * eh_rho(a,i,n) * eh_rho(j,b,n)
                  dem1 = eQP(a) - eQP(i) + eh_Om(n) 
                  dem2 = eQP(i) + eQP(j) - eQP(a) - eQP(b)
                  reg1 = (1d0 - exp(- 2d0 * eta * dem1 * dem1))
@@ -111,7 +111,7 @@ subroutine G_Parquet_Galitskii_Migdal(eta,nOrb,nC,nO,nV,nR,nS,nOO,nVV,eQP,ERI,&
                  Ec_eh(3) = Ec_eh(3) + num * (reg1/dem1) * (reg2/dem2)
                 
                  ! 2p2h(d) * 2h2p
-                 num  = 0.5d0 * (ERI(j,i,a,b) - ERI(j,i,b,a)) * eh_rho(a,i,nS+n) * eh_rho(b,j,n)
+                 num  = 0.5d0 * (ERI(j,i,a,b) - ERI(j,i,b,a)) * eh_rho(i,a,n) * eh_rho(b,j,n)
                  dem1 = eQP(j) - eQP(b) - eh_Om(n) 
                  dem2 = eQP(a) + eQP(b) - eQP(i) - eQP(j)
                  reg1 = (1d0 - exp(- 2d0 * eta * dem1 * dem1))
@@ -120,7 +120,7 @@ subroutine G_Parquet_Galitskii_Migdal(eta,nOrb,nC,nO,nV,nR,nS,nOO,nVV,eQP,ERI,&
                  Ec_eh(4) = Ec_eh(4) + num * (reg1/dem1) * (reg2/dem2)
 
                  ! 2h2p(d) * 2p2h(d)
-                 num  = 0.5d0 * (ERI(j,a,i,b) - ERI(j,a,b,i)) * eh_rho(i,a,nS+n) * eh_rho(b,j,n)
+                 num  = 0.5d0 * (ERI(j,a,i,b) - ERI(j,a,b,i)) * eh_rho(a,i,n) * eh_rho(b,j,n)
                  dem1 = eQP(a) - eQP(i) + eh_Om(n) 
                  dem2 = eQP(j) - eQP(b) - eh_Om(n)
                  reg1 = (1d0 - exp(- 2d0 * eta * dem1 * dem1))
@@ -129,7 +129,7 @@ subroutine G_Parquet_Galitskii_Migdal(eta,nOrb,nC,nO,nV,nR,nS,nOO,nVV,eQP,ERI,&
                  Ec_eh(5) = Ec_eh(5) + num * (reg1/dem1) * (reg2/dem2)
 
                  ! 2h2p(d) * 2p2h
-                 num  = 0.5d0 * (ERI(j,i,a,b) - ERI(j,i,b,a)) * eh_rho(a,i,n) * eh_rho(b,j,nS+n)
+                 num  = 0.5d0 * (ERI(j,i,a,b) - ERI(j,i,b,a)) * eh_rho(a,i,n) * eh_rho(j,b,n)
                  dem1 = eQP(a) - eQP(i) + eh_Om(n)
                  dem2 = eQP(i) + eQP(j) - eQP(a) - eQP(b)
                  reg1 = (1d0 - exp(- 2d0 * eta * dem1 * dem1))

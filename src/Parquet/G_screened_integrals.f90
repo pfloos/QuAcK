@@ -15,7 +15,7 @@ subroutine G_eh_screened_integral(nOrb,nC,nO,nR,nS,ERI,eh_Phi,pp_Phi,XpY,XmY,rho
   double precision              :: X,Y
 
 ! Output variables
-  double precision,intent(out)  :: rho(nOrb,nOrb,nS+nS)
+  double precision,intent(out)  :: rho(nOrb,nOrb,nS)
   
   rho(:,:,:) = 0d0   
   !$OMP PARALLEL DEFAULT(NONE)                                 &
@@ -39,13 +39,7 @@ subroutine G_eh_screened_integral(nOrb,nC,nO,nR,nS,ERI,eh_Phi,pp_Phi,XpY,XmY,rho
                              + (ERI(p,b,q,j) - ERI(p,b,j,q)) * X &
                              + (-eh_Phi(p,b,j,q) + pp_Phi(p,b,q,j)) * X &
                              + (ERI(p,j,q,b) - ERI(p,j,b,q)) * Y &
-                             + (-eh_Phi(p,j,b,q) + pp_Phi(p,j,q,b)) * Y  
-
-                 rho(p,q,nS+ia) = rho(p,q,nS+ia) &
-                             + (ERI(p,j,q,b) - ERI(p,j,b,q)) * X &
-                             + (-eh_Phi(p,j,b,q) + pp_Phi(p,j,q,b)) * X &
-                             + (ERI(p,b,q,j) - ERI(p,b,j,q)) * Y &
-                             + (-eh_Phi(p,b,j,q) + pp_Phi(p,b,q,j)) * Y  
+                             + (-eh_Phi(p,j,b,q) + pp_Phi(p,j,q,b)) * Y
 
               end do
            end do
