@@ -67,8 +67,8 @@ subroutine GParquet(TDAeh,TDApp,max_diis_1b,max_diis_2b,linearize,eta_1b,eta_2b,
   integer                       :: n_diis_1b,n_diis_2b
   double precision              :: rcond_1b,rcond_2b
   double precision,allocatable  :: err_diis_1b(:,:),err_diis_2b(:,:)
-  double precision,allocatable  :: Phi_diis(:,:)
   double precision,allocatable  :: eQP_diis(:,:)
+  double precision,allocatable  :: Phi_diis(:,:)
   double precision,allocatable  :: err(:)
   double precision,allocatable  :: Phi(:)
   double precision              :: alpha

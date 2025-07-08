@@ -90,8 +90,13 @@ subroutine RParquet(TDAeh,TDApp,max_diis_1b,max_diis_2b,linearize,eta_1b,eta_2b,
 ! DIIS
   integer                       :: n_diis_1b,n_diis_2b
   double precision              :: rcond_1b,rcond_2b
-  double precision,allocatable  :: err_diis_1b(:,:)
+  double precision,allocatable  :: err_diis_1b(:,:),err_diis_2b(:,:)
   double precision,allocatable  :: eQP_diis(:,:)
+  double precision,allocatable  :: Phi_diis(:,:)
+  double precision,allocatable  :: err(:)
+  double precision,allocatable  :: Phi(:)
+
+  integer                       :: p,q,r,s,pqrs
   
 ! Output variables
 ! None
@@ -107,7 +112,22 @@ subroutine RParquet(TDAeh,TDApp,max_diis_1b,max_diis_2b,linearize,eta_1b,eta_2b,
 
   mem = mem + size(eQP) + size(eOld)
   write(*,'(1X,A50,4X,F6.3,A3)') 'Memory usage in RParquet = ',mem*dp_in_GB,' GB'
-  
+ 
+! DIIS parameters
+
+  rcond_2b = 1d0
+
+  allocate(err_diis_2b(4*nOrb**4,max_diis_2b),Phi_diis(4*nOrb**4,max_diis_2b))
+  allocate(err(4*nOrb**4),Phi(4*nOrb**4))
+
+  mem = mem + size(err_diis_2b) + size(Phi_diis) + size(err) + size(Phi)
+  write(*,'(1X,A50,4X,F6.3,A3)') 'Memory usage in RParquet =',mem*dp_in_GB,' GB'
+
+  err_diis_2b(:,:) = 0d0
+  Phi_diis(:,:) = 0d0
+ 
+! Start
+
   write(*,*)
   write(*,*)'**********************************'
   write(*,*)'* Restricted Parquet Calculation *'
@@ -631,12 +651,61 @@ subroutine RParquet(TDAeh,TDApp,max_diis_1b,max_diis_2b,linearize,eta_1b,eta_2b,
       err_pp_sing = maxval(abs(old_pp_sing_Phi - pp_sing_Phi))
       err_pp_trip = maxval(abs(old_pp_trip_Phi - pp_trip_Phi))
 
-      alpha = 0.25d0
-      eh_sing_Phi(:,:,:,:) = alpha * eh_sing_Phi(:,:,:,:) + (1d0 - alpha) * old_eh_sing_Phi(:,:,:,:)
-      eh_trip_Phi(:,:,:,:) = alpha * eh_trip_Phi(:,:,:,:) + (1d0 - alpha) * old_eh_trip_Phi(:,:,:,:)
-      pp_sing_Phi(:,:,:,:) = alpha * pp_sing_Phi(:,:,:,:) + (1d0 - alpha) * old_pp_sing_Phi(:,:,:,:)
-      pp_trip_Phi(:,:,:,:) = alpha * pp_trip_Phi(:,:,:,:) + (1d0 - alpha) * old_pp_trip_Phi(:,:,:,:)
+!     alpha = 0.25d0
+!     eh_sing_Phi(:,:,:,:) = alpha * eh_sing_Phi(:,:,:,:) + (1d0 - alpha) * old_eh_sing_Phi(:,:,:,:)
+!     eh_trip_Phi(:,:,:,:) = alpha * eh_trip_Phi(:,:,:,:) + (1d0 - alpha) * old_eh_trip_Phi(:,:,:,:)
+!     pp_sing_Phi(:,:,:,:) = alpha * pp_sing_Phi(:,:,:,:) + (1d0 - alpha) * old_pp_sing_Phi(:,:,:,:)
+!     pp_trip_Phi(:,:,:,:) = alpha * pp_trip_Phi(:,:,:,:) + (1d0 - alpha) * old_pp_trip_Phi(:,:,:,:)
 
+      !--------------------!
+      ! DIIS extrapolation !
+      !--------------------!
+
+      pqrs = 0
+      do p=1,nOrb
+        do q=1,nOrb
+          do r=1,nOrb
+            do s=1,nOrb
+              pqrs = pqrs + 1
+  
+              err(          pqrs) = eh_sing_Phi(p,q,r,s) - old_eh_sing_Phi(p,q,r,s)
+              err(1*nOrb**4+pqrs) = eh_trip_Phi(p,q,r,s) - old_eh_trip_Phi(p,q,r,s)
+              err(2*nOrb**4+pqrs) = pp_sing_Phi(p,q,r,s) - old_pp_sing_Phi(p,q,r,s)
+              err(3*nOrb**4+pqrs) = pp_trip_Phi(p,q,r,s) - old_pp_trip_Phi(p,q,r,s)
+
+              Phi(          pqrs) = eh_sing_Phi(p,q,r,s)
+              Phi(1*nOrb**4+pqrs) = eh_trip_Phi(p,q,r,s)
+              Phi(2*nOrb**4+pqrs) = pp_sing_Phi(p,q,r,s)
+              Phi(3*nOrb**4+pqrs) = pp_trip_Phi(p,q,r,s)
+  
+            end do
+          end do
+        end do
+      end do
+  
+      if(max_diis_2b > 1) then 
+     
+        n_diis_2b = min(n_diis_2b+1,max_diis_2b)
+        call DIIS_extrapolation(rcond_2b,4*nOrb**4,4*nOrb**4,n_diis_2b,err_diis_2b,Phi_diis,err,Phi)
+     
+      end if
+  
+      pqrs = 0
+      do p=1,nOrb
+        do q=1,nOrb
+          do r=1,nOrb
+            do s=1,nOrb
+              pqrs = pqrs + 1
+  
+              eh_sing_Phi(p,q,r,s) = Phi(          pqrs)
+              eh_trip_Phi(p,q,r,s) = Phi(1*nOrb**4+pqrs)
+              pp_sing_Phi(p,q,r,s) = Phi(2*nOrb**4+pqrs)
+              pp_trip_Phi(p,q,r,s) = Phi(3*nOrb**4+pqrs)
+
+            end do
+          end do
+        end do
+      end do
 
       old_eh_sing_Phi(:,:,:,:) = eh_sing_Phi(:,:,:,:)
       old_eh_trip_Phi(:,:,:,:) = eh_trip_Phi(:,:,:,:)
