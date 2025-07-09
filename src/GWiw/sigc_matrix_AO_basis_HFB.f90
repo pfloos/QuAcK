@@ -65,38 +65,34 @@ subroutine sigc_AO_basis_HFB(nBas,nOrb,nOrb_twice,eta,shift,c,U_QP,eqsGWB_state,
                           nfreqs,ntimes,wweight,wcoord,vMAT,U_QP,Sigc_mo_he_cpx,Sigc_mo_hh_cpx)
   deallocate(E_eval_global_cpx)
 
-! Interpolate and transform Sigma from MO to AO basis
+! Interpolate and transform Sigma from MO to AO basis [incl. the usual qsGW recipe] 
 ! TODO interpolate Sigma with clusters method
   allocate(Sigc_mo_tmp(nOrb,nOrb,nOrb))
   allocate(Sigc_mo(nOrb,nOrb))
   ! Sigma_c_he
   do iorb=1,nOrb
    Sigc_mo_tmp(iorb,:,:)=0.5d0*(Real(Sigc_mo_he_cpx(2*iorb-1,:,:))+Real(Sigc_mo_he_cpx(2*iorb,:,:)))
-   Sigc_mo_tmp(iorb,:,:)=0.5d0*(Sigc_mo_tmp(iorb,:,:)+Transpose(Sigc_mo_tmp(iorb,:,:)))
   enddo
   deallocate(Sigc_mo_he_cpx)
   do iorb=1,nOrb
-   do jorb=iorb,nOrb
-    Sigc_mo(iorb,jorb)=0.5d0*(Sigc_mo_tmp(iorb,iorb,jorb)+Sigc_mo_tmp(jorb,iorb,jorb))
-    Sigc_mo(jorb,iorb)=Sigc_mo(iorb,jorb)
-   enddo
+   Sigc_mo(iorb,:)=Sigc_mo_tmp(iorb,iorb,:)
   enddo
+  Sigc_mo = 0.5d0 * (Sigc_mo + transpose(Sigc_mo))
   call MOtoAO(nBas,nOrb,S,c,Sigc_mo,Sigc_ao_he)
   ! Sigma_c_hh
   do iorb=1,nOrb
    Sigc_mo_tmp(iorb,:,:)=0.5d0*(Real(Sigc_mo_hh_cpx(2*iorb-1,:,:))+Real(Sigc_mo_hh_cpx(2*iorb,:,:)))
-   Sigc_mo_tmp(iorb,:,:)=0.5d0*(Sigc_mo_tmp(iorb,:,:)+Transpose(Sigc_mo_tmp(iorb,:,:)))
   enddo
   deallocate(Sigc_mo_hh_cpx)
   do iorb=1,nOrb
-   do jorb=iorb,nOrb
-    Sigc_mo(iorb,jorb)=0.5d0*(Sigc_mo_tmp(iorb,iorb,jorb)+Sigc_mo_tmp(jorb,iorb,jorb))
-    Sigc_mo(jorb,iorb)=Sigc_mo(iorb,jorb)
-   enddo
+   Sigc_mo(iorb,:)=Sigc_mo_tmp(iorb,iorb,:)
   enddo
+  Sigc_mo = 0.5d0 * (Sigc_mo + transpose(Sigc_mo))
   call MOtoAO(nBas,nOrb,S,c,Sigc_mo,Sigc_ao_hh)
   deallocate(Sigc_mo_tmp,Sigc_mo)
 
+! NOTE The usual qsGW recipe is not good for qsGWB...!! :(  For example, the contribution to by added to the Fock operator for a pure HF virtual state should be the Sigma_c evaluated
+!      with  a + energy one... Because that is what we do in usual qsGW, evaluate Sigma_aa at + energies [ordered according to the chem pot]
 
 end subroutine 
 

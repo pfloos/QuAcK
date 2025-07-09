@@ -67,7 +67,7 @@ subroutine sigc_AO_basis_RHF(nBas,nOrb,nO,eta,shift,c,eqsGW_state,S,vMAT,nfreqs,
                           wweight,wcoord,vMAT,Sigc_mo_cpx)
   deallocate(E_eval_global_cpx)
 
-! Interpolate and transform Sigma from MO to AO basis
+! Interpolate and transform Sigma from MO to AO basis [incl. the usual qsGW recipe]
 ! TODO interpolate Sigma with clusters method
   allocate(Sigc_mo_tmp(nOrb,nOrb,nOrb))
   allocate(Sigc_mo(nOrb,nOrb))
