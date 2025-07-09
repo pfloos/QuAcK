@@ -237,7 +237,11 @@ program QuAcK
   allocate(V(nBas,nBas))
   allocate(Hc(nBas,nBas))
   allocate(dipole_int_AO(nBas,nBas,ncart))
-  if (doCAP) allocate(CAP(nBas,nBas))
+  if(doCAP) then 
+    allocate(CAP(nBas,nBas))
+  else
+    allocate(CAP(0,0))
+  end if
 ! Read integrals
 
   call wall_time(start_int)

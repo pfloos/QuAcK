@@ -90,11 +90,15 @@ subroutine RParquet(TDAeh,TDApp,max_diis_1b,max_diis_2b,linearize,eta_1b,eta_2b,
 ! DIIS
   integer                       :: n_diis_1b,n_diis_2b
   double precision              :: rcond_1b,rcond_2b
-  double precision,allocatable  :: err_diis_1b(:,:),err_diis_2b(:,:)
+  double precision,allocatable  :: err_diis_1b(:,:)
+  double precision,allocatable  :: err_diis_2b(:,:)
   double precision,allocatable  :: eQP_diis(:,:)
   double precision,allocatable  :: Phi_diis(:,:)
   double precision,allocatable  :: err(:)
   double precision,allocatable  :: Phi(:)
+
+! double precision,allocatable  :: err_eh_sing_diis(:,:),err_eh_trip_diis(:,:),err_pp_sing_diis(:,:),err_pp_trip_diis(:,:)
+! double precision,allocatable  :: eh_sing_Phi_diis(:,:),eh_trip_Phi_diis(:,:),pp_sing_Phi_diis(:,:),pp_trip_Phi_diis(:,:)
 
   integer                       :: p,q,r,s,pqrs
   
@@ -118,6 +122,12 @@ subroutine RParquet(TDAeh,TDApp,max_diis_1b,max_diis_2b,linearize,eta_1b,eta_2b,
   allocate(err_diis_2b(4*nOrb**4,max_diis_2b),Phi_diis(4*nOrb**4,max_diis_2b))
   allocate(err(4*nOrb**4),Phi(4*nOrb**4))
 
+! allocate(err_eh_sing_diis(nOrb**4,max_diis_2b),err_eh_trip_diis(nOrb**4,max_diis_2b))
+! allocate(err_pp_sing_diis(nOrb**4,max_diis_2b),err_pp_trip_diis(nOrb**4,max_diis_2b))
+
+! allocate(eh_sing_Phi_diis(nOrb**4,max_diis_2b),eh_trip_Phi_diis(nOrb**4,max_diis_2b))
+! allocate(pp_sing_Phi_diis(nOrb**4,max_diis_2b),pp_trip_Phi_diis(nOrb**4,max_diis_2b))
+
   mem = mem + size(err_diis_2b) + size(Phi_diis) + size(err) + size(Phi)
   write(*,'(1X,A50,4X,F6.3,A3)') 'Memory usage in RParquet =',mem*dp_in_GB,' GB'
 
@@ -125,6 +135,10 @@ subroutine RParquet(TDAeh,TDApp,max_diis_1b,max_diis_2b,linearize,eta_1b,eta_2b,
   n_diis_2b = 0
   err_diis_2b(:,:) = 0d0
   Phi_diis(:,:)    = 0d0
+! err_eh_sing_diis(:,:) = 0d0
+! err_eh_trip_diis(:,:) = 0d0
+! err_pp_sing_diis(:,:) = 0d0
+! err_pp_trip_diis(:,:) = 0d0
  
 ! Start
 
@@ -311,9 +325,8 @@ subroutine RParquet(TDAeh,TDApp,max_diis_1b,max_diis_2b,linearize,eta_1b,eta_2b,
 
       err_eig_eh_sing = maxval(abs(old_eh_sing_Om - eh_sing_Om))
 
-      deallocate(Aph,Bph,eh_sing_Gam_A,eh_sing_Gam_B)
-
       mem = mem - size(Aph) - size(Bph) - size(eh_sing_Gam_A) - size(eh_sing_Gam_B)
+      deallocate(Aph,Bph,eh_sing_Gam_A,eh_sing_Gam_B)
 
       !------------------!
       ! Magnetic channel !
@@ -369,9 +382,8 @@ subroutine RParquet(TDAeh,TDApp,max_diis_1b,max_diis_2b,linearize,eta_1b,eta_2b,
 
       err_eig_eh_trip = maxval(abs(old_eh_trip_Om - eh_trip_Om))
 
-      deallocate(Aph,Bph,eh_trip_Gam_A,eh_trip_Gam_B)
-
       mem = mem - size(Aph) - size(Bph) - size(eh_trip_Gam_A) - size(eh_trip_Gam_B)
+      deallocate(Aph,Bph,eh_trip_Gam_A,eh_trip_Gam_B)
 
       !-----------------!
       ! Singlet channel !
@@ -433,11 +445,10 @@ subroutine RParquet(TDAeh,TDApp,max_diis_1b,max_diis_2b,linearize,eta_1b,eta_2b,
       err_eig_ee_sing = maxval(abs(old_ee_sing_Om - ee_sing_Om))
       err_eig_hh_sing = maxval(abs(old_hh_sing_Om - hh_sing_Om))
 
-      deallocate(Bpp,Cpp,Dpp,pp_sing_Gam_B,pp_sing_Gam_C,pp_sing_Gam_D)
-
       mem = mem - size(Bpp) - size(Cpp) - size(Dpp)        &
                 - size(pp_sing_Gam_B) - size(pp_sing_Gam_C) - size(pp_sing_Gam_D)
-      
+      deallocate(Bpp,Cpp,Dpp,pp_sing_Gam_B,pp_sing_Gam_C,pp_sing_Gam_D)
+
       !-----------------!
       ! Triplet channel !
       !-----------------!
@@ -497,11 +508,10 @@ subroutine RParquet(TDAeh,TDApp,max_diis_1b,max_diis_2b,linearize,eta_1b,eta_2b,
       err_eig_ee_trip = maxval(abs(old_ee_trip_Om - ee_trip_Om))
       err_eig_hh_trip = maxval(abs(old_hh_trip_Om - hh_trip_Om))
 
-      deallocate(Bpp,Cpp,Dpp,pp_trip_Gam_B,pp_trip_Gam_C,pp_trip_Gam_D)
-
       mem = mem - size(Bpp) - size(Cpp) - size(Dpp)        &
                 - size(pp_trip_Gam_B) - size(pp_trip_Gam_C) - size(pp_trip_Gam_D)
-      
+      deallocate(Bpp,Cpp,Dpp,pp_trip_Gam_B,pp_trip_Gam_C,pp_trip_Gam_D)
+
       !----------!
       ! Updating !
       !----------!
@@ -513,12 +523,11 @@ subroutine RParquet(TDAeh,TDApp,max_diis_1b,max_diis_2b,linearize,eta_1b,eta_2b,
       old_ee_trip_Om(:) = ee_trip_Om(:)
       old_hh_trip_Om(:) = hh_trip_Om(:)
 
-      deallocate(eh_sing_Om,eh_trip_Om,ee_sing_Om,hh_sing_Om,ee_trip_Om,hh_trip_Om)
-
       mem = mem - size(eh_sing_Om) - size(eh_trip_Om) & 
                 - size(ee_sing_Om) - size(hh_sing_Om) & 
                 - size(ee_trip_Om) - size(hh_trip_Om)
-      
+      deallocate(eh_sing_Om,eh_trip_Om,ee_sing_Om,hh_sing_Om,ee_trip_Om,hh_trip_Om)
+
       !----------------------------!
       ! Compute screened integrals !
       !----------------------------!
@@ -542,10 +551,10 @@ subroutine RParquet(TDAeh,TDApp,max_diis_1b,max_diis_2b,linearize,eta_1b,eta_2b,
       t = end_t - start_t
       write(*,'(1X,A50,1X,F9.3,A8)') 'Wall time for singlet eh integrals =',t,' seconds'
       write(*,*)
-      ! Done with eigenvectors and kernel
-      deallocate(sing_XpY,sing_XmY)
 
+      ! Done with eigenvectors and kernel
       mem = mem - size(sing_XpY) - size(sing_XmY)
+      deallocate(sing_XpY,sing_XmY)
   
       ! Build triplet eh screened integrals
       write(*,*) 'Computing triplet eh screened integrals...'
@@ -557,10 +566,10 @@ subroutine RParquet(TDAeh,TDApp,max_diis_1b,max_diis_2b,linearize,eta_1b,eta_2b,
       t = end_t - start_t
       write(*,'(1X,A50,1X,F9.3,A8)') 'Wall time for triplet eh integrals =',t,' seconds'
       write(*,*)
-      ! Done with eigenvectors and kernel
-      deallocate(trip_XpY,trip_XmY)
 
+      ! Done with eigenvectors and kernel
       mem = mem - size(trip_XpY) - size(trip_XmY)
+      deallocate(trip_XpY,trip_XmY)
       
       ! Build singlet pp screened integrals
       write(*,*) 'Computing singlet pp screened integrals...'
@@ -574,9 +583,8 @@ subroutine RParquet(TDAeh,TDApp,max_diis_1b,max_diis_2b,linearize,eta_1b,eta_2b,
       write(*,'(1X,A50,1X,F9.3,A8)') 'Wall time for singlet pp integrals =',t,' seconds'
       write(*,*)
 
-      deallocate(X1s,Y1s,X2s,Y2s)
-
       mem = mem - size(X1s) - size(Y1s) - size(X2s) - size(Y2s)
+      deallocate(X1s,Y1s,X2s,Y2s)
 
       ! Build triplet pp screened integrals
       write(*,*) 'Computing triplet pp screened integrals...'
@@ -588,10 +596,10 @@ subroutine RParquet(TDAeh,TDApp,max_diis_1b,max_diis_2b,linearize,eta_1b,eta_2b,
       t = end_t - start_t
       write(*,'(1X,A50,1X,F9.3,A8)') 'Wall time for triplet pp integrals =',t,' seconds'
       write(*,*)
-      ! Done with eigenvectors and kernel
-      deallocate(X1t,Y1t,X2t,Y2t)
 
+      ! Done with eigenvectors and kernel
       mem = mem - size(X1t) - size(Y1t) - size(X2t) - size(Y2t)
+      deallocate(X1t,Y1t,X2t,Y2t)
 
       !----------------------------!
       ! Compute reducible kernels  !
@@ -687,6 +695,11 @@ subroutine RParquet(TDAeh,TDApp,max_diis_1b,max_diis_2b,linearize,eta_1b,eta_2b,
      
         n_diis_2b = min(n_diis_2b+1,max_diis_2b)
         call DIIS_extrapolation(rcond_2b,4*nOrb**4,4*nOrb**4,n_diis_2b,err_diis_2b,Phi_diis,err,Phi)
+!       call DIIS_extrapolation(rcond_2b,nOrb**4,nOrb**4,n_diis_2b,err_eh_sing_diis,eh_sing_Phi_diis,old_eh_sing_Phi - eh_sing_Phi,eh_sing_Phi)
+!       call DIIS_extrapolation(rcond_2b,nOrb**4,nOrb**4,n_diis_2b,err_eh_trip_diis,eh_trip_Phi_diis,old_eh_trip_Phi - eh_trip_Phi,eh_trip_Phi)
+!       call DIIS_extrapolation(rcond_2b,nOrb**4,nOrb**4,n_diis_2b,err_pp_sing_diis,pp_sing_Phi_diis,old_pp_sing_Phi - pp_sing_Phi,pp_sing_Phi)
+!       call DIIS_extrapolation(rcond_2b,nOrb**4,nOrb**4,n_diis_2b,err_pp_trip_diis,pp_trip_Phi_diis,old_pp_trip_Phi - pp_trip_Phi,pp_trip_Phi)
+
      
       end if
   
@@ -696,7 +709,7 @@ subroutine RParquet(TDAeh,TDApp,max_diis_1b,max_diis_2b,linearize,eta_1b,eta_2b,
           do r=1,nOrb
             do s=1,nOrb
               pqrs = pqrs + 1
-  
+
               eh_sing_Phi(p,q,r,s) = Phi(          pqrs)
               eh_trip_Phi(p,q,r,s) = Phi(1*nOrb**4+pqrs)
               pp_sing_Phi(p,q,r,s) = Phi(2*nOrb**4+pqrs)
@@ -713,9 +726,9 @@ subroutine RParquet(TDAeh,TDApp,max_diis_1b,max_diis_2b,linearize,eta_1b,eta_2b,
       old_pp_trip_Phi(:,:,:,:) = pp_trip_Phi(:,:,:,:)
 
       ! Free memory
-      deallocate(eh_sing_Phi,eh_trip_Phi,pp_sing_Phi,pp_trip_Phi)
 
       mem = mem - size(eh_sing_Phi) - size(eh_trip_Phi) - size(pp_sing_Phi) - size(pp_trip_Phi)
+      deallocate(eh_sing_Phi,eh_trip_Phi,pp_sing_Phi,pp_trip_Phi)
 
       !--------------------!
       ! DIIS extrapolation !
@@ -797,17 +810,21 @@ subroutine RParquet(TDAeh,TDApp,max_diis_1b,max_diis_2b,linearize,eta_1b,eta_2b,
 
     if(linearize) then
 
+       write(*,*) ' *** Quasiparticle energies obtained by linearization *** '
+       write(*,*)
+
        eQP(:) = eQPlin(:)
 
     else
 
+      write(*,*) ' *** Quasiparticle energies obtained by root search *** '
       write(*,*)
-      write(*,*)'!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!'
-      write(*,*)'  Newton-Raphson for Dyson equation not implemented  '
-      write(*,*)'!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!'
-      write(*,*)
-      stop
 
+      call R_Parquet_QP_graph(eta_1b,nOrb,nC,nO,nV,nR,nS,nOOs,nVVs,nOOt,nVVt,ERI,    &
+                              eh_sing_rho,old_eh_sing_Om,eh_trip_rho,old_eh_trip_Om, &
+                              ee_sing_rho,old_ee_sing_Om,ee_trip_rho,old_ee_trip_Om, &
+                              hh_sing_rho,old_hh_sing_Om,hh_trip_rho,old_hh_trip_Om, &
+                              eHF,eQPlin,eOld,eQP,Z)
     end if
    
     ! DIIS for one-body part
@@ -828,9 +845,8 @@ subroutine RParquet(TDAeh,TDApp,max_diis_1b,max_diis_2b,linearize,eta_1b,eta_2b,
 
     call R_print_parquet_1b(nOrb,nC,nO,nV,nR,eHF,SigC,eQP,Z,n_it_1b,err_1b,ENuc,ERHF,EcGM,Ec_eh,Ec_pp)
 
-    deallocate(eQPlin,Z,SigC)
-
     mem = mem - size(eQPlin) - size(Z) - size(SigC)
+    deallocate(eQPlin,Z,SigC)
     
     call wall_time(end_1b)
     t_1b = end_1b - start_1b
