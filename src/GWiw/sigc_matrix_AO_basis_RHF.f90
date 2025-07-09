@@ -73,18 +73,14 @@ subroutine sigc_AO_basis_RHF(nBas,nOrb,nO,eta,shift,c,eqsGW_state,S,vMAT,nfreqs,
   allocate(Sigc_mo(nOrb,nOrb))
   do iorb=1,nOrb
    Sigc_mo_tmp(iorb,:,:)=0.5d0*(Real(Sigc_mo_cpx(2*iorb-1,:,:))+Real(Sigc_mo_cpx(2*iorb,:,:)))
-   Sigc_mo_tmp(iorb,:,:)=0.5d0*(Sigc_mo_tmp(iorb,:,:)+Transpose(Sigc_mo_tmp(iorb,:,:)))
   enddo
   deallocate(Sigc_mo_cpx)
   do iorb=1,nOrb
-   do jorb=iorb,nOrb
-    Sigc_mo(iorb,jorb)=0.5d0*(Sigc_mo_tmp(iorb,iorb,jorb)+Sigc_mo_tmp(jorb,iorb,jorb))
-    Sigc_mo(jorb,iorb)=Sigc_mo(iorb,jorb)
-   enddo
+   Sigc_mo(iorb,:)=Sigc_mo_tmp(iorb,iorb,:)
   enddo
+  Sigc_mo = 0.5d0 * (Sigc_mo + transpose(Sigc_mo))
   call MOtoAO(nBas,nOrb,S,c,Sigc_mo,Sigc_ao)
   deallocate(Sigc_mo_tmp,Sigc_mo)
-
 
 end subroutine 
 

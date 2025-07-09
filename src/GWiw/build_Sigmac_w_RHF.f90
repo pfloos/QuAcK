@@ -122,10 +122,8 @@ subroutine build_Sigmac_w_RHF(nOrb,nO,nE,eta,verbose,wtest,eHF,nfreqs,ntimes,wwe
        Tmp_mo_w(:,:)=matmul(vMAT(:,:),Tmp_mo_w(:,:)) ! Now Tmp_mo_w is Wp in MO
        do iorb=1,nOrb
         do jorb=1,nOrb
-         do korb=1,nO
-          Sigma_c_mo(iE,iorb,jorb)=Sigma_c_mo(iE,iorb,jorb) &
-                               -Tmp_mo_w(1+(korb-1)+(iorb-1)*nOrb,1+(jorb-1)+(korb-1)*nOrb)
-         enddo
+         Sigma_c_mo(iE,iorb,jorb)=Sigma_c_mo(iE,iorb,jorb) &
+                              -Tmp_mo_w(1+(porb-1)+(iorb-1)*nOrb,1+(jorb-1)+(porb-1)*nOrb)
         enddo
        enddo
       endif
@@ -148,10 +146,8 @@ subroutine build_Sigmac_w_RHF(nOrb,nO,nE,eta,verbose,wtest,eHF,nfreqs,ntimes,wwe
        Tmp_mo_w(:,:)=matmul(vMAT(:,:),Tmp_mo_w(:,:)) ! Now Tmp_mo_w is Wp in MO
        do iorb=1,nOrb
         do jorb=1,nOrb
-         do korb=nO+1,nOrb
-          Sigma_c_mo(iE,iorb,jorb)=Sigma_c_mo(iE,iorb,jorb) &
-                               +Tmp_mo_w(1+(korb-1)+(iorb-1)*nOrb,1+(jorb-1)+(korb-1)*nOrb)
-         enddo
+         Sigma_c_mo(iE,iorb,jorb)=Sigma_c_mo(iE,iorb,jorb) &
+                              +Tmp_mo_w(1+(porb-1)+(iorb-1)*nOrb,1+(jorb-1)+(porb-1)*nOrb)
         enddo
        enddo
       endif
