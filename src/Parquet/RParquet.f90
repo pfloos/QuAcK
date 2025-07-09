@@ -234,7 +234,7 @@ subroutine RParquet(TDAeh,TDApp,max_diis_1b,max_diis_2b,linearize,eta_1b,eta_2b,
 
     ! DIIS for two-body part
 
-    rcond_2b  = 0d0
+    rcond_2b  = 1d0
     n_diis_2b = 0
 
     ! Initialization
@@ -750,7 +750,7 @@ subroutine RParquet(TDAeh,TDApp,max_diis_1b,max_diis_2b,linearize,eta_1b,eta_2b,
 
       write(*,*)
       write(*,*)'!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!'
-      write(*,*)'             Two-body convergence failed            '
+      write(*,'(A37,1X,I3,1X,A10)')' Two-body convergence failed  after ',n_it_2b,'iterations'
       write(*,*)'!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!'
       write(*,*)
       !stop
@@ -759,16 +759,16 @@ subroutine RParquet(TDAeh,TDApp,max_diis_1b,max_diis_2b,linearize,eta_1b,eta_2b,
 
       write(*,*)
       write(*,*)'****************************************************'
-      write(*,*)'             Two-body convergence success           '
+      write(*,'(A37,1X,I3,1X,A10)')' Two-body convergence success after ',n_it_2b,'iterations'
       write(*,*)'****************************************************'
       write(*,*)
 
-      call print_excitation_energies('phBSE@Parquet','singlet',nS,old_eh_sing_Om)
-      call print_excitation_energies('phBSE@Parquet','triplet',nS,old_eh_trip_Om)
-      call print_excitation_energies('ppBSE@Parquet','2p (singlets)',nVVs,old_ee_sing_Om)
-      call print_excitation_energies('ppBSE@Parquet','2h (singlets)',nOOs,old_hh_sing_Om)
-      call print_excitation_energies('ppBSE@Parquet','2p (triplets)',nVVt,old_ee_trip_Om)
-      call print_excitation_energies('ppBSE@Parquet','2h (triplets)',nOOt,old_hh_trip_Om)
+!     call print_excitation_energies('phBSE@Parquet','singlet',nS,old_eh_sing_Om)
+!     call print_excitation_energies('phBSE@Parquet','triplet',nS,old_eh_trip_Om)
+!     call print_excitation_energies('ppBSE@Parquet','2p (singlets)',nVVs,old_ee_sing_Om)
+!     call print_excitation_energies('ppBSE@Parquet','2h (singlets)',nOOs,old_hh_sing_Om)
+!     call print_excitation_energies('ppBSE@Parquet','2p (triplets)',nVVt,old_ee_trip_Om)
+!     call print_excitation_energies('ppBSE@Parquet','2h (triplets)',nOOt,old_hh_trip_Om)
 
     end if
 
@@ -846,7 +846,7 @@ subroutine RParquet(TDAeh,TDApp,max_diis_1b,max_diis_2b,linearize,eta_1b,eta_2b,
 
     write(*,*)
     write(*,*)'!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!'
-    write(*,*)'             One-body convergence failed            '
+    write(*,'(A37,1X,I3,1X,A10)')' One-body convergence failed  after ',n_it_1b,'iterations'
     write(*,*)'!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!'
     write(*,*)
     stop
@@ -855,7 +855,7 @@ subroutine RParquet(TDAeh,TDApp,max_diis_1b,max_diis_2b,linearize,eta_1b,eta_2b,
 
     write(*,*)
     write(*,*)'****************************************************'
-    write(*,*)'             One-body convergence success           '
+    write(*,'(A37,1X,I3,1X,A10)')' One-body convergence success after ',n_it_1b,'iterations'
     write(*,*)'****************************************************'
     write(*,*)
 

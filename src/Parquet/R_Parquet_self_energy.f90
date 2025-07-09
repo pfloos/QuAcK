@@ -34,7 +34,7 @@ subroutine R_Parquet_self_energy(eta,nOrb,nC,nO,nV,nR,nS,nOOs,nVVs,nOOt,nVVt,eQP
   double precision              :: num
   double precision              :: start_t,end_t,t
 
-  logical                       :: print_self_energy
+  logical                       :: print_self_energy = .false.
   double precision,allocatable  :: Sig2d(:)
   double precision,allocatable  :: Sig2x(:)
   double precision,allocatable  :: Sig1eh(:)
@@ -609,7 +609,7 @@ subroutine R_Parquet_self_energy(eta,nOrb,nC,nO,nV,nR,nS,nOOs,nVVs,nOOt,nVVt,eQP
 ! Print self-energy decomposition !
 !---------------------------------!
 
-  print_self_energy = .true.
-  call dump_RParquet_self_energy(nOrb,nC,nO,nV,nR,Sig2d,Sig2x,Sig1eh,Sig3eh,Sig1pp,Sig3pp,SigC)
+  if(print_self_energy) &
+    call dump_RParquet_self_energy(nOrb,nC,nO,nV,nR,Sig2d,Sig2x,Sig1eh,Sig3eh,Sig1pp,Sig3pp,SigC)
 
 end subroutine 
