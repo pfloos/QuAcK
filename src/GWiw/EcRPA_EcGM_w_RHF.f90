@@ -1,5 +1,5 @@
 subroutine EcRPA_EcGM_w_RHF(nOrb,nO,verbose,eHF,nfreqs,ntimes,wweight,wcoord,vMAT,&
-                            EcRPA,EcGM)
+                            ERHF,EcRPA,EcGM)
 
 ! Restricted Sigma_c(E)
 
@@ -14,6 +14,7 @@ subroutine EcRPA_EcGM_w_RHF(nOrb,nO,verbose,eHF,nfreqs,ntimes,wweight,wcoord,vMA
   integer,intent(in)            :: nOrb
   integer,intent(in)            :: nO
 
+  double precision,intent(in)   :: ERHF
   double precision,intent(inout):: eHF(nOrb)
   double precision,intent(in)   :: wweight(nfreqs)
   double precision,intent(in)   :: wcoord(nfreqs)
@@ -96,7 +97,9 @@ subroutine EcRPA_EcGM_w_RHF(nOrb,nO,verbose,eHF,nfreqs,ntimes,wweight,wcoord,vMA
    write(*,*)
    write(*,*)'-------------------------------------------------------------------------------'
    write(*,'(2X,A60,F15.6,A3)') '         phRPA correlation energy = ',EcRPA,' au'
+   write(*,'(2X,A60,F15.6,A3)') '         phRPA total energy       = ',ERHF+EcRPA,' au'
    write(*,'(2X,A60,F15.6,A3)') '            GM correlation energy = ',EcGM,' au'
+   write(*,'(2X,A60,F15.6,A3)') '            GM total energy       = ',ERHF+EcGM,' au'
    write(*,*)'-------------------------------------------------------------------------------'
    write(*,*)
   endif

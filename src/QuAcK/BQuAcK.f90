@@ -184,7 +184,7 @@ subroutine BQuAcK(working_dir,dotest,doHFB,dophRPA,doqsGW,nNuc,nBas,nOrb,nO,ENuc
       enddo
      enddo
      deallocate(ERI_MO)
-     call EcRPA_EcGM_w_RHF(nOrb,nO,1,eHF,nfreqs,ntimes,wweight,wcoord,vMAT,EcRPA,EcGM)
+     call EcRPA_EcGM_w_RHF(nOrb,nO,1,eHF,nfreqs,ntimes,wweight,wcoord,vMAT,ERHF+ENuc,EcRPA,EcGM)
      deallocate(vMAT)
      call wall_time(end_Ecorr)
 
@@ -245,7 +245,7 @@ subroutine BQuAcK(working_dir,dotest,doHFB,dophRPA,doqsGW,nNuc,nBas,nOrb,nO,ENuc
    enddo
    deallocate(ERI_MO)
    call EcRPA_EcGM_w_HFB(nOrb,nOrb_twice,1,eONEBODY_state,nfreqs,ntimes,wweight,wcoord,vMAT, &
-                         U_QP,EcRPA,EcGM)
+                         U_QP,EHFB+ENuc,EcRPA,EcGM)
    deallocate(vMAT)
    call wall_time(end_Ecorr)
 
