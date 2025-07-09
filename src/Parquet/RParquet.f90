@@ -437,6 +437,8 @@ subroutine RParquet(TDAeh,TDApp,max_diis_1b,max_diis_2b,linearize,eta_1b,eta_2b,
       t = end_t - start_t
 
       write(*,'(1X,A50,1X,F9.3,A8)') 'Wall time for singlet ppBSE =',t,' seconds'
+      write(*,*)
+
       call wall_time(start_t)
 
       if(print_ppLR) call print_excitation_energies('ppBSE@Parquet','2p (singlets)',nVVs,ee_sing_Om)
