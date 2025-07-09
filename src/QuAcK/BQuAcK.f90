@@ -151,8 +151,8 @@ subroutine BQuAcK(working_dir,dotest,doHFB,dophRPA,doqsGW,nNuc,nBas,nOrb,nO,ENuc
     write(*,'(A65,1X,F9.3,A8)') 'Total wall time for RHF = ',t_HF,' seconds'
     write(*,*)
     
-    ! An imaginary frequencies implementation of qsGW for testing (expensive and not easy to converge!)
-    if(doqsGW .and. .true.) then
+    ! An imaginary frequencies implementation of qsGW for testing (expensive!)
+    if(doqsGW .and. .false.) then
 
       ! Continue with a HFB calculation
       call wall_time(start_qsGWB)
