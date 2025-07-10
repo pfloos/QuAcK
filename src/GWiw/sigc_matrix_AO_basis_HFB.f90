@@ -25,12 +25,12 @@ subroutine sigc_AO_basis_HFB(nBas,nOrb,nOrb_twice,eta,shift,c,U_QP,eqsGWB_state,
 
 ! Local variables
 
-  integer                       :: iE
   integer                       :: iorb,jorb
   integer                       :: nE_eval_global
 
   double precision,allocatable  :: Sigc_mo_tmp(:,:,:)
   double precision,allocatable  :: Sigc_mo(:,:)
+  double precision,allocatable  :: Sigc_mo_mirror(:,:)
 
   complex *16,allocatable       :: Sigc_mo_he_cpx(:,:,:)
   complex *16,allocatable       :: Sigc_mo_hh_cpx(:,:,:)
@@ -69,6 +69,7 @@ subroutine sigc_AO_basis_HFB(nBas,nOrb,nOrb_twice,eta,shift,c,U_QP,eqsGWB_state,
 ! TODO interpolate Sigma with clusters method
   allocate(Sigc_mo_tmp(nOrb,nOrb,nOrb))
   allocate(Sigc_mo(nOrb,nOrb))
+  allocate(Sigc_mo_mirror(nOrb,nOrb))
   ! Sigma_c_he
   do iorb=1,nOrb
    Sigc_mo_tmp(iorb,:,:)=0.5d0*(Real(Sigc_mo_he_cpx(2*iorb-1,:,:))+Real(Sigc_mo_he_cpx(2*iorb,:,:)))
@@ -78,6 +79,16 @@ subroutine sigc_AO_basis_HFB(nBas,nOrb,nOrb_twice,eta,shift,c,U_QP,eqsGWB_state,
    Sigc_mo(iorb,:)=Sigc_mo_tmp(iorb,iorb,:)
   enddo
   Sigc_mo = 0.5d0 * (Sigc_mo + transpose(Sigc_mo))
+! NOTE The usual qsGW recipe is not good for qsGWB...!! 
+! For example, the contribution to be added to the Fock operator for a pure virtual HF state should be Sigma_c evaluated
+! with a + energy [i.e., evaluate Sigma_aa with + energies [set + using the chem pot]].
+! Hence, we set the mirrored Sigc_he_mo because we need more symmetry in qsGWB [it is not needed for Sigc_hh in our method]
+  do iorb=1,nOrb
+   do jorb=1,nOrb
+    Sigc_mo_mirror(iorb,jorb) = Sigc_mo(nOrb-(jorb-1),nOrb-(iorb-1))
+   enddo
+  enddo
+  Sigc_mo = 0.5d0 * (Sigc_mo + Sigc_mo_mirror)
   call MOtoAO(nBas,nOrb,S,c,Sigc_mo,Sigc_ao_he)
   ! Sigma_c_hh
   do iorb=1,nOrb
@@ -90,9 +101,8 @@ subroutine sigc_AO_basis_HFB(nBas,nOrb,nOrb_twice,eta,shift,c,U_QP,eqsGWB_state,
   Sigc_mo = 0.5d0 * (Sigc_mo + transpose(Sigc_mo))
   call MOtoAO(nBas,nOrb,S,c,Sigc_mo,Sigc_ao_hh)
   deallocate(Sigc_mo_tmp,Sigc_mo)
+  deallocate(Sigc_mo_mirror)
 
-! NOTE The usual qsGW recipe is not good for qsGWB...!! :(  For example, the contribution to by added to the Fock operator for a pure HF virtual state should be the Sigma_c evaluated
-!      with  a + energy one... Because that is what we do in usual qsGW, evaluate Sigma_aa at + energies [ordered according to the chem pot]
 
 end subroutine 
 

@@ -24,8 +24,7 @@ subroutine sigc_AO_basis_RHF(nBas,nOrb,nO,eta,shift,c,eqsGW_state,S,vMAT,nfreqs,
 
 ! Local variables
 
-  integer                       :: iorb,jorb
-  integer                       :: iE
+  integer                       :: iorb
   integer                       :: nE_eval_global
 
   double precision              :: chem_pot
