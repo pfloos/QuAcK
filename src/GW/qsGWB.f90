@@ -69,6 +69,8 @@ subroutine qsGWB(dotest,maxSCF,thresh,max_diis,level_shift,nNuc,ZNuc,rNuc,ENuc,e
   double precision,allocatable  :: K(:,:)
   double precision,allocatable  :: Sigc_he(:,:)
   double precision,allocatable  :: Sigc_hh(:,:)
+  double precision,allocatable  :: Sigc_he_old(:,:)
+  double precision,allocatable  :: Sigc_hh_old(:,:)
   double precision,allocatable  :: eigVEC(:,:)
   double precision,allocatable  :: H_qsGWB(:,:)
   double precision,allocatable  :: R(:,:)
@@ -115,6 +117,8 @@ subroutine qsGWB(dotest,maxSCF,thresh,max_diis,level_shift,nNuc,ZNuc,rNuc,ENuc,e
   allocate(K(nBas,nBas))
   allocate(Sigc_he(nBas,nBas))
   allocate(Sigc_hh(nBas,nBas))
+  allocate(Sigc_he_old(nBas,nBas))
+  allocate(Sigc_hh_old(nBas,nBas))
 
   allocate(eigVEC(nOrb_twice,nOrb_twice))
   allocate(H_qsGWB(nOrb_twice,nOrb_twice))
@@ -195,8 +199,18 @@ subroutine qsGWB(dotest,maxSCF,thresh,max_diis,level_shift,nNuc,ZNuc,rNuc,ENuc,e
     call Hartree_matrix_AO_basis(nBas,P,ERI,J)
     call exchange_matrix_AO_basis(nBas,P,ERI,K)
     call anomalous_matrix_AO_basis(nBas,sigma,Panom,ERI,Delta)
-    call sigc_AO_basis_HFB(nBas,nOrb,nOrb_twice,eta,shift,c,U_QP,eqsGWB_state, & 
-                           S,vMAT,nfreqs,ntimes,wcoord,wweight,Sigc_he,Sigc_hh)
+    if(Conv < 1d-3 .or. nSCF==1) then
+     if(nSCF>1) then
+      Sigc_he_old(:,:)=Sigc_he(:,:)
+      Sigc_hh_old(:,:)=Sigc_hh(:,:)
+     endif
+     call sigc_AO_basis_HFB(nBas,nOrb,nOrb_twice,eta,shift,c,U_QP,eqsGWB_state, & 
+                            S,vMAT,nfreqs,ntimes,wcoord,wweight,Sigc_he,Sigc_hh)
+     if(nSCF>1) then
+      Sigc_he(:,:)=0.8d0*Sigc_he_old(:,:)+0.2d0*Sigc_he(:,:)
+      Sigc_hh(:,:)=0.8d0*Sigc_hh_old(:,:)+0.2d0*Sigc_hh(:,:)
+     endif
+    endif
 
     F(:,:) = Hc(:,:) + J(:,:) + 0.5d0*K(:,:) + Sigc_he(:,:) - chem_pot*S(:,:)
 
