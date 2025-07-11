@@ -69,8 +69,6 @@ subroutine qsGWB(dotest,maxSCF,thresh,max_diis,level_shift,nNuc,ZNuc,rNuc,ENuc,e
   double precision,allocatable  :: K(:,:)
   double precision,allocatable  :: Sigc_he(:,:)
   double precision,allocatable  :: Sigc_hh(:,:)
-  double precision,allocatable  :: Sigc_he_old(:,:)
-  double precision,allocatable  :: Sigc_hh_old(:,:)
   double precision,allocatable  :: eigVEC(:,:)
   double precision,allocatable  :: H_qsGWB(:,:)
   double precision,allocatable  :: R(:,:)
@@ -117,8 +115,6 @@ subroutine qsGWB(dotest,maxSCF,thresh,max_diis,level_shift,nNuc,ZNuc,rNuc,ENuc,e
   allocate(K(nBas,nBas))
   allocate(Sigc_he(nBas,nBas))
   allocate(Sigc_hh(nBas,nBas))
-  allocate(Sigc_he_old(nBas,nBas))
-  allocate(Sigc_hh_old(nBas,nBas))
 
   allocate(eigVEC(nOrb_twice,nOrb_twice))
   allocate(H_qsGWB(nOrb_twice,nOrb_twice))
@@ -136,7 +132,7 @@ subroutine qsGWB(dotest,maxSCF,thresh,max_diis,level_shift,nNuc,ZNuc,rNuc,ENuc,e
   allocate(H_qsGWB_diis(nBas2_Sq,max_diis))
 
   allocate(ERI_MO(nOrb,nOrb,nOrb,nOrb))
-  call AOtoMO_ERI_RHF(nBas,nOrb,c,ERI,ERI_MO)
+  call AOtoMO_ERI_RHF(nBas,nOrb,X,ERI,ERI_MO)
   do iorb=1,nOrb
    do jorb=1,nOrb
     do korb=1,nOrb
@@ -155,6 +151,8 @@ subroutine qsGWB(dotest,maxSCF,thresh,max_diis,level_shift,nNuc,ZNuc,rNuc,ENuc,e
   H_qsGWB_diis(:,:) = 0d0
   err_diis(:,:)   = 0d0
   rcond           = 0d0
+  Sigc_he=0d0
+  Sigc_hh=0d0
 
   ! Read restart file
 
@@ -199,7 +197,7 @@ subroutine qsGWB(dotest,maxSCF,thresh,max_diis,level_shift,nNuc,ZNuc,rNuc,ENuc,e
     call Hartree_matrix_AO_basis(nBas,P,ERI,J)
     call exchange_matrix_AO_basis(nBas,P,ERI,K)
     call anomalous_matrix_AO_basis(nBas,sigma,Panom,ERI,Delta)
-    call sigc_AO_basis_HFB(nBas,nOrb,nOrb_twice,eta,shift,c,U_QP,eqsGWB_state, & 
+    call sigc_AO_basis_HFB(nBas,nOrb,nOrb_twice,eta,shift,X,U_QP,eqsGWB_state, & 
                            S,vMAT,nfreqs,ntimes,wcoord,wweight,Sigc_he,Sigc_hh)
 
     F(:,:) = Hc(:,:) + J(:,:) + 0.5d0*K(:,:) + Sigc_he(:,:) - chem_pot*S(:,:)
