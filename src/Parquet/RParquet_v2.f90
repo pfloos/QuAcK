@@ -1,5 +1,5 @@
-subroutine RParquet(TDAeh,TDApp,max_diis_1b,max_diis_2b,linearize,eta_1b,eta_2b,ENuc,max_it_1b,conv_1b,max_it_2b,conv_2b, & 
-                    nOrb,nC,nO,nV,nR,nS,ERHF,eHF,ERI)
+subroutine RParquet_v2(TDAeh,TDApp,max_diis_1b,max_diis_2b,linearize,eta_1b,eta_2b,ENuc,max_it_1b,conv_1b,max_it_2b,conv_2b, & 
+                       nOrb,nC,nO,nV,nR,nS,ERHF,eHF,ERI)
 
 ! Parquet approximation based on restricted orbitals
 
@@ -38,7 +38,8 @@ subroutine RParquet(TDAeh,TDApp,max_diis_1b,max_diis_2b,linearize,eta_1b,eta_2b,
   double precision              :: err_eig_hh_sing,err_eig_hh_trip
   double precision              :: err_eig_ee_sing,err_eig_ee_trip
   double precision              :: err_eh_sing, err_eh_trip
-  double precision              :: err_pp_sing, err_pp_trip
+  double precision              :: err_ee_sing, err_ee_trip
+  double precision              :: err_hh_sing, err_hh_trip
   double precision              :: start_t, end_t, t
   double precision              :: start_1b, end_1b, t_1b
   double precision              :: start_2b, end_2b, t_2b
@@ -58,11 +59,11 @@ subroutine RParquet(TDAeh,TDApp,max_diis_1b,max_diis_2b,linearize,eta_1b,eta_2b,
 
   ! pp BSE
   double precision              :: Ec_pp(nspin)
-  double precision,allocatable  :: Bpp(:,:), Cpp(:,:), Dpp(:,:)
+  double precision,allocatable  :: Bpp(:,:),Cpp(:,:),Dpp(:,:)
   double precision,allocatable  :: X1s(:,:),X1t(:,:)
   double precision,allocatable  :: Y1s(:,:),Y1t(:,:)
-  double precision,allocatable  :: ee_sing_Om(:), old_ee_sing_Om(:)
-  double precision,allocatable  :: ee_trip_Om(:), old_ee_trip_Om(:)
+  double precision,allocatable  :: ee_sing_Om(:),old_ee_sing_Om(:)
+  double precision,allocatable  :: ee_trip_Om(:),old_ee_trip_Om(:)
   double precision,allocatable  :: X2s(:,:),X2t(:,:)
   double precision,allocatable  :: Y2s(:,:),Y2t(:,:)
   double precision,allocatable  :: hh_sing_Om(:), old_hh_sing_Om(:)
@@ -73,6 +74,9 @@ subroutine RParquet(TDAeh,TDApp,max_diis_1b,max_diis_2b,linearize,eta_1b,eta_2b,
   double precision,allocatable  :: eh_sing_rho(:,:,:),eh_trip_rho(:,:,:)
   double precision,allocatable  :: ee_sing_rho(:,:,:),hh_sing_rho(:,:,:)
   double precision,allocatable  :: ee_trip_rho(:,:,:),hh_trip_rho(:,:,:)
+  double precision,allocatable  :: old_eh_sing_rho(:,:,:),old_eh_trip_rho(:,:,:)
+  double precision,allocatable  :: old_ee_sing_rho(:,:,:),old_hh_sing_rho(:,:,:)
+  double precision,allocatable  :: old_ee_trip_rho(:,:,:),old_hh_trip_rho(:,:,:)
   ! Reducible kernels
   double precision,allocatable  :: eh_sing_Phi(:,:,:,:), eh_trip_Phi(:,:,:,:)
   double precision,allocatable  :: old_eh_sing_Phi(:,:,:,:), old_eh_trip_Phi(:,:,:,:)
@@ -93,11 +97,12 @@ subroutine RParquet(TDAeh,TDApp,max_diis_1b,max_diis_2b,linearize,eta_1b,eta_2b,
   double precision,allocatable  :: err_diis_1b(:,:)
   double precision,allocatable  :: err_diis_2b(:,:)
   double precision,allocatable  :: eQP_diis(:,:)
-  double precision,allocatable  :: Phi_diis(:,:)
   double precision,allocatable  :: err(:)
-  double precision,allocatable  :: Phi(:)
 
-  integer                       :: p,q,r,s,pqrs
+  double precision,allocatable  :: rho_diis(:,:)
+  double precision,allocatable  :: rho(:)
+
+  integer                       :: p,q,m,pqm
   
 ! Output variables
 ! None
@@ -116,16 +121,16 @@ subroutine RParquet(TDAeh,TDApp,max_diis_1b,max_diis_2b,linearize,eta_1b,eta_2b,
  
 ! DIIS parameters
 
-  allocate(err_diis_2b(4*nOrb**4,max_diis_2b),Phi_diis(4*nOrb**4,max_diis_2b))
-  allocate(err(4*nOrb**4),Phi(4*nOrb**4))
+  allocate(err_diis_2b(nOrb**4,max_diis_2b),rho_diis(nOrb**4,max_diis_2b))
+  allocate(err(nOrb**4),rho(nOrb**4))
 
-  mem = mem + size(err_diis_2b) + size(Phi_diis) + size(err) + size(Phi)
+  mem = mem + size(err_diis_2b) + size(rho_diis) + size(err) + size(rho)
   write(*,'(1X,A50,4X,F6.3,A3)') 'Memory usage in RParquet =',mem*dp_in_GB,' GB'
 
   rcond_2b  = 1d0
   n_diis_2b = 0
   err_diis_2b(:,:) = 0d0
-  Phi_diis(:,:)    = 0d0
+  rho_diis(:,:)    = 0d0
  
 ! Start
 
@@ -160,9 +165,11 @@ subroutine RParquet(TDAeh,TDApp,max_diis_1b,max_diis_2b,linearize,eta_1b,eta_2b,
   allocate(old_eh_sing_Om(nS),old_eh_trip_Om(nS))
   allocate(old_ee_sing_Om(nVVs),old_hh_sing_Om(nOOs))
   allocate(old_ee_trip_Om(nVVt),old_hh_trip_Om(nOOt))
-  allocate(eh_sing_rho(nOrb,nOrb,nS),eh_trip_rho(nOrb,nOrb,nS))
-  allocate(ee_sing_rho(nOrb,nOrb,nVVs),hh_sing_rho(nOrb,nOrb,nOOs))
-  allocate(ee_trip_rho(nOrb,nOrb,nVVt),hh_trip_rho(nOrb,nOrb,nOOt))
+
+  allocate(old_eh_sing_rho(nOrb,nOrb,nS),old_eh_trip_rho(nOrb,nOrb,nS))
+  allocate(old_ee_sing_rho(nOrb,nOrb,nVVs),old_ee_trip_rho(nOrb,nOrb,nVVt))
+  allocate(old_hh_sing_rho(nOrb,nOrb,nOOs),old_hh_trip_rho(nOrb,nOrb,nOOt))
+
   allocate(old_eh_sing_Phi(nOrb,nOrb,nOrb,nOrb),old_eh_trip_Phi(nOrb,nOrb,nOrb,nOrb))
   allocate(old_pp_sing_Phi(nOrb,nOrb,nOrb,nOrb),old_pp_trip_Phi(nOrb,nOrb,nOrb,nOrb))
 
@@ -171,9 +178,9 @@ subroutine RParquet(TDAeh,TDApp,max_diis_1b,max_diis_2b,linearize,eta_1b,eta_2b,
   mem = mem + size(old_eh_sing_Om)  + size(old_eh_trip_Om)  &
             + size(old_ee_sing_Om)  + size(old_hh_sing_Om)  &
             + size(old_ee_trip_Om)  + size(old_hh_trip_Om)  &
-            + size(eh_sing_rho)     + size(eh_trip_rho)     &
-            + size(ee_sing_rho)     + size(hh_sing_rho)     &
-            + size(ee_trip_rho)     + size(hh_trip_rho)     &
+            + size(old_eh_sing_rho) + size(old_eh_trip_rho) &
+            + size(old_ee_sing_rho) + size(old_hh_sing_rho) &
+            + size(old_ee_trip_rho) + size(old_hh_trip_rho) &
             + size(old_eh_sing_Phi) + size(old_eh_trip_Phi) &
             + size(old_pp_sing_Phi) + size(old_pp_trip_Phi)
 
@@ -199,12 +206,12 @@ subroutine RParquet(TDAeh,TDApp,max_diis_1b,max_diis_2b,linearize,eta_1b,eta_2b,
   eQP(:)  = eHF(:)
   eOld(:) = eHF(:)
 
-  eh_sing_rho(:,:,:) = 0d0
-  eh_trip_rho(:,:,:) = 0d0
-  ee_sing_rho(:,:,:) = 0d0
-  ee_trip_rho(:,:,:) = 0d0
-  hh_sing_rho(:,:,:) = 0d0
-  hh_trip_rho(:,:,:) = 0d0
+  old_eh_sing_rho(:,:,:) = 0d0
+  old_eh_trip_rho(:,:,:) = 0d0
+  old_ee_sing_rho(:,:,:) = 0d0
+  old_ee_trip_rho(:,:,:) = 0d0
+  old_hh_sing_rho(:,:,:) = 0d0
+  old_hh_trip_rho(:,:,:) = 0d0
 
   old_eh_sing_Om(:) = 0d0
   old_eh_trip_Om(:) = 0d0
@@ -508,8 +515,8 @@ subroutine RParquet(TDAeh,TDApp,max_diis_1b,max_diis_2b,linearize,eta_1b,eta_2b,
       old_eh_sing_Om(:) = eh_sing_Om(:)
       old_eh_trip_Om(:) = eh_trip_Om(:)
       old_ee_sing_Om(:) = ee_sing_Om(:)
-      old_hh_sing_Om(:) = hh_sing_Om(:)
       old_ee_trip_Om(:) = ee_trip_Om(:)
+      old_hh_sing_Om(:) = hh_sing_Om(:)
       old_hh_trip_Om(:) = hh_trip_Om(:)
 
       mem = mem - size(eh_sing_Om) - size(eh_trip_Om) & 
@@ -521,13 +528,10 @@ subroutine RParquet(TDAeh,TDApp,max_diis_1b,max_diis_2b,linearize,eta_1b,eta_2b,
       ! Compute screened integrals !
       !----------------------------!
 
-      ! Free memory
-      deallocate(eh_sing_rho,eh_trip_rho,ee_sing_rho,ee_trip_rho,hh_sing_rho,hh_trip_rho)
-      ! TODO Once we will compute the blocks of kernel starting from the 4-tensors we can move the freeing up
       ! Memory allocation
       allocate(eh_sing_rho(nOrb,nOrb,nS),eh_trip_rho(nOrb,nOrb,nS))
-      allocate(ee_sing_rho(nOrb,nOrb,nVVs),hh_sing_rho(nOrb,nOrb,nOOs))
-      allocate(ee_trip_rho(nOrb,nOrb,nVVt),hh_trip_rho(nOrb,nOrb,nOOt))
+      allocate(ee_sing_rho(nOrb,nOrb,nVVs),ee_trip_rho(nOrb,nOrb,nVVt))
+      allocate(hh_sing_rho(nOrb,nOrb,nOOs),hh_trip_rho(nOrb,nOrb,nOOt))
       
       
       ! Build singlet eh screened integrals
@@ -590,6 +594,160 @@ subroutine RParquet(TDAeh,TDApp,max_diis_1b,max_diis_2b,linearize,eta_1b,eta_2b,
       mem = mem - size(X1t) - size(Y1t) - size(X2t) - size(Y2t)
       deallocate(X1t,Y1t,X2t,Y2t)
 
+      !--------------------!
+      ! DIIS extrapolation !
+      !--------------------!
+      
+      pqm = 0
+      do p=1,nOrb
+        do q=1,nOrb
+          do m=1,nS
+            pqm = pqm + 1
+            err(pqm) = eh_sing_rho(p,q,m) - old_eh_sing_rho(p,q,m)
+            rho(pqm) = eh_sing_rho(p,q,m)
+          end do
+        end do
+      end do
+
+      pqm = 0
+      do p=1,nOrb
+        do q=1,nOrb
+          do m=1,nS
+            pqm = pqm + 1
+            err(nOrb**2*nS + pqm) = eh_trip_rho(p,q,m) - old_eh_trip_rho(p,q,m)
+            rho(nOrb**2*nS + pqm) = eh_trip_rho(p,q,m)
+          end do
+        end do
+      end do
+
+      pqm = 0
+      do p=1,nOrb
+        do q=1,nOrb
+          do m=1,nVVs
+            pqm = pqm + 1
+            err(nOrb**2*(nS+nS) + pqm) = ee_sing_rho(p,q,m) - old_ee_sing_rho(p,q,m)
+            rho(nOrb**2*(nS+nS) + pqm) = ee_sing_rho(p,q,m)
+          end do
+        end do
+      end do
+
+      pqm = 0
+      do p=1,nOrb
+        do q=1,nOrb
+          do m=1,nVVt
+            pqm = pqm + 1
+            err(nOrb**2*(nS+nS+nVVs) + pqm) = ee_trip_rho(p,q,m) - old_ee_trip_rho(p,q,m)
+            rho(nOrb**2*(nS+nS+nVVs) + pqm) = ee_trip_rho(p,q,m)
+          end do
+        end do
+      end do
+
+      pqm = 0
+      do p=1,nOrb
+        do q=1,nOrb
+          do m=1,nOOs
+            pqm = pqm + 1
+            err(nOrb**2*(nS+nS+nVVs+nVVt) + pqm) = hh_sing_rho(p,q,m) - old_hh_sing_rho(p,q,m)
+            rho(nOrb**2*(nS+nS+nVVs+nVVt) + pqm) = hh_sing_rho(p,q,m)
+          end do
+        end do
+      end do
+
+      pqm = 0
+      do p=1,nOrb
+        do q=1,nOrb
+          do m=1,nOOt
+            pqm = pqm + 1
+            err(nOrb**2*(nS+nS+nVVs+nVVt+nOOs) + pqm) = hh_trip_rho(p,q,m) - old_hh_trip_rho(p,q,m)
+            rho(nOrb**2*(nS+nS+nVVs+nVVt+nOOs) + pqm) = hh_trip_rho(p,q,m)
+          end do
+        end do
+      end do
+  
+      if(max_diis_2b > 1) then 
+     
+        n_diis_2b = min(n_diis_2b+1,max_diis_2b)
+        call DIIS_extrapolation(rcond_2b,nOrb**4,nOrb**4,n_diis_2b,err_diis_2b,rho_diis,err,rho)
+     
+      end if
+  
+      pqm = 0
+      do p=1,nOrb
+        do q=1,nOrb
+          do m=1,nS  
+            pqm = pqm + 1
+            eh_sing_rho(p,q,m) = rho(pqm)
+          end do
+        end do
+      end do
+
+      pqm = 0
+      do p=1,nOrb
+        do q=1,nOrb
+          do m=1,nS  
+            pqm = pqm + 1
+            eh_trip_rho(p,q,m) = rho(nOrb**2*nS + pqm)
+          end do
+        end do
+      end do
+
+      pqm = 0
+      do p=1,nOrb
+        do q=1,nOrb
+          do m=1,nVVs
+            pqm = pqm + 1
+            ee_sing_rho(p,q,m) = rho(nOrb**2*(nS+nS) + pqm)
+          end do
+        end do
+      end do
+
+      pqm = 0
+      do p=1,nOrb
+        do q=1,nOrb
+          do m=1,nVVt
+            pqm = pqm + 1
+            ee_trip_rho(p,q,m) = rho(nOrb**2*(nS+nS+nVVs) + pqm)
+          end do
+        end do
+      end do
+
+      pqm = 0
+      do p=1,nOrb
+        do q=1,nOrb
+          do m=1,nOOs
+            pqm = pqm + 1
+            hh_sing_rho(p,q,m) = rho(nOrb**2*(nS+nS+nVVs+nVVt) + pqm)
+          end do
+        end do
+      end do
+
+      pqm = 0
+      do p=1,nOrb
+        do q=1,nOrb
+          do m=1,nOOt
+            pqm = pqm + 1
+            hh_trip_rho(p,q,m) = rho(nOrb**2*(nS+nS+nVVs+nVVt+nOOs) + pqm)
+          end do
+        end do
+      end do
+
+      err_eh_sing = maxval(abs(old_eh_sing_rho - eh_sing_rho))
+      err_eh_trip = maxval(abs(old_eh_trip_rho - eh_trip_rho))
+      err_ee_sing = maxval(abs(old_ee_sing_rho - ee_sing_rho))
+      err_ee_trip = maxval(abs(old_ee_trip_rho - ee_trip_rho))
+      err_hh_sing = maxval(abs(old_hh_sing_rho - hh_sing_rho))
+      err_hh_trip = maxval(abs(old_hh_trip_rho - hh_trip_rho))
+
+      old_eh_sing_rho(:,:,:) = eh_sing_rho(:,:,:)
+      old_eh_trip_rho(:,:,:) = eh_trip_rho(:,:,:)
+      old_ee_sing_rho(:,:,:) = ee_sing_rho(:,:,:)
+      old_ee_trip_rho(:,:,:) = ee_trip_rho(:,:,:)
+      old_hh_sing_rho(:,:,:) = hh_sing_rho(:,:,:)
+      old_hh_trip_rho(:,:,:) = hh_trip_rho(:,:,:)
+
+      mem = mem - size(eh_sing_rho) - size(eh_trip_rho) - size(ee_sing_rho) - size(ee_trip_rho) - size(hh_sing_rho) - size(hh_trip_rho)
+      deallocate(eh_sing_rho,eh_trip_rho,ee_sing_rho,ee_trip_rho,hh_sing_rho,hh_trip_rho)
+
       !----------------------------!
       ! Compute reducible kernels  !
       !----------------------------!
@@ -607,7 +765,7 @@ subroutine RParquet(TDAeh,TDApp,max_diis_1b,max_diis_2b,linearize,eta_1b,eta_2b,
       write(*,*) 'Computing singlet eh reducible kernel...'
 
       call wall_time(start_t)
-      call R_eh_singlet_Phi(eta_2b,nOrb,nC,nR,nS,old_eh_sing_Om,eh_sing_rho,eh_sing_Phi)
+      call R_eh_singlet_Phi(eta_2b,nOrb,nC,nR,nS,old_eh_sing_Om,old_eh_sing_rho,eh_sing_Phi)
       call wall_time(end_t)
       t = end_t - start_t
       write(*,'(1X,A50,1X,F9.3,A8)') 'Wall time for singlet eh reducible kernel =',t,' seconds'
@@ -617,7 +775,7 @@ subroutine RParquet(TDAeh,TDApp,max_diis_1b,max_diis_2b,linearize,eta_1b,eta_2b,
       write(*,*) 'Computing triplet eh reducible kernel...'
 
       call wall_time(start_t)
-      call R_eh_triplet_Phi(eta_2b,nOrb,nC,nR,nS,old_eh_trip_Om,eh_trip_rho,eh_trip_Phi)
+      call R_eh_triplet_Phi(eta_2b,nOrb,nC,nR,nS,old_eh_trip_Om,old_eh_trip_rho,eh_trip_Phi)
       call wall_time(end_t)
       t = end_t - start_t
       write(*,'(1X,A50,1X,F9.3,A8)') 'Wall time for triplet eh reducible kernel =',t,' seconds'
@@ -627,7 +785,7 @@ subroutine RParquet(TDAeh,TDApp,max_diis_1b,max_diis_2b,linearize,eta_1b,eta_2b,
       write(*,*) 'Computing singlet pp reducible kernel...'
 
       call wall_time(start_t)
-      call R_pp_singlet_Phi(eta_2b,nOrb,nC,nR,nOOs,nVVs,old_ee_sing_Om,ee_sing_rho,old_hh_sing_Om,hh_sing_rho,pp_sing_Phi)
+      call R_pp_singlet_Phi(eta_2b,nOrb,nC,nR,nOOs,nVVs,old_ee_sing_Om,old_ee_sing_rho,old_hh_sing_Om,old_hh_sing_rho,pp_sing_Phi)
       call wall_time(end_t)
       t = end_t - start_t
       write(*,'(1X,A50,1X,F9.3,A8)') 'Wall time for singlet pp reducible kernel =',t,' seconds'
@@ -637,72 +795,17 @@ subroutine RParquet(TDAeh,TDApp,max_diis_1b,max_diis_2b,linearize,eta_1b,eta_2b,
       write(*,*) 'Computing triplet pp reducible kernel...'
       
       call wall_time(start_t)
-      call R_pp_triplet_Phi(eta_2b,nOrb,nC,nR,nOOt,nVVt,old_ee_trip_Om,ee_trip_rho,old_hh_trip_Om,hh_trip_rho,pp_trip_Phi)
+      call R_pp_triplet_Phi(eta_2b,nOrb,nC,nR,nOOt,nVVt,old_ee_trip_Om,old_ee_trip_rho,old_hh_trip_Om,old_hh_trip_rho,pp_trip_Phi)
       call wall_time(end_t)
       t = end_t - start_t
       write(*,'(1X,A50,1X,F9.3,A8)') 'Wall time for triplet pp reducible kernel =',t,' seconds'
       write(*,*)
-
-      err_eh_sing = maxval(abs(old_eh_sing_Phi - eh_sing_Phi))
-      err_eh_trip = maxval(abs(old_eh_trip_Phi - eh_trip_Phi))
-      err_pp_sing = maxval(abs(old_pp_sing_Phi - pp_sing_Phi))
-      err_pp_trip = maxval(abs(old_pp_trip_Phi - pp_trip_Phi))
 
 !     alpha = 0.25d0
 !     eh_sing_Phi(:,:,:,:) = alpha * eh_sing_Phi(:,:,:,:) + (1d0 - alpha) * old_eh_sing_Phi(:,:,:,:)
 !     eh_trip_Phi(:,:,:,:) = alpha * eh_trip_Phi(:,:,:,:) + (1d0 - alpha) * old_eh_trip_Phi(:,:,:,:)
 !     pp_sing_Phi(:,:,:,:) = alpha * pp_sing_Phi(:,:,:,:) + (1d0 - alpha) * old_pp_sing_Phi(:,:,:,:)
 !     pp_trip_Phi(:,:,:,:) = alpha * pp_trip_Phi(:,:,:,:) + (1d0 - alpha) * old_pp_trip_Phi(:,:,:,:)
-
-      !--------------------!
-      ! DIIS extrapolation !
-      !--------------------!
-
-      pqrs = 0
-      do p=1,nOrb
-        do q=1,nOrb
-          do r=1,nOrb
-            do s=1,nOrb
-              pqrs = pqrs + 1
-  
-              err(          pqrs) = eh_sing_Phi(p,q,r,s) - old_eh_sing_Phi(p,q,r,s)
-              err(1*nOrb**4+pqrs) = eh_trip_Phi(p,q,r,s) - old_eh_trip_Phi(p,q,r,s)
-              err(2*nOrb**4+pqrs) = pp_sing_Phi(p,q,r,s) - old_pp_sing_Phi(p,q,r,s)
-              err(3*nOrb**4+pqrs) = pp_trip_Phi(p,q,r,s) - old_pp_trip_Phi(p,q,r,s)
-
-              Phi(          pqrs) = eh_sing_Phi(p,q,r,s)
-              Phi(1*nOrb**4+pqrs) = eh_trip_Phi(p,q,r,s)
-              Phi(2*nOrb**4+pqrs) = pp_sing_Phi(p,q,r,s)
-              Phi(3*nOrb**4+pqrs) = pp_trip_Phi(p,q,r,s)
-  
-            end do
-          end do
-        end do
-      end do
-  
-      if(max_diis_2b > 1) then 
-     
-        n_diis_2b = min(n_diis_2b+1,max_diis_2b)
-        call DIIS_extrapolation(rcond_2b,4*nOrb**4,4*nOrb**4,n_diis_2b,err_diis_2b,Phi_diis,err,Phi)
-     
-      end if
-  
-      pqrs = 0
-      do p=1,nOrb
-        do q=1,nOrb
-          do r=1,nOrb
-            do s=1,nOrb
-              pqrs = pqrs + 1
-
-              eh_sing_Phi(p,q,r,s) = Phi(          pqrs)
-              eh_trip_Phi(p,q,r,s) = Phi(1*nOrb**4+pqrs)
-              pp_sing_Phi(p,q,r,s) = Phi(2*nOrb**4+pqrs)
-              pp_trip_Phi(p,q,r,s) = Phi(3*nOrb**4+pqrs)
-
-            end do
-          end do
-        end do
-      end do
 
       old_eh_sing_Phi(:,:,:,:) = eh_sing_Phi(:,:,:,:)
       old_eh_trip_Phi(:,:,:,:) = eh_trip_Phi(:,:,:,:)
@@ -723,13 +826,13 @@ subroutine RParquet(TDAeh,TDApp,max_diis_1b,max_diis_2b,linearize,eta_1b,eta_2b,
       write(*,*) '------------------------------------------------------'
       write(*,'(1X,A30,F10.6,1X,A1,1X,F10.6)')'Error for density  channel = ',err_eig_eh_sing,'/',err_eh_sing
       write(*,'(1X,A30,F10.6,1X,A1,1X,F10.6)')'Error for magnetic channel = ',err_eig_eh_trip,'/',err_eh_trip
-      write(*,'(1X,A30,F10.6,1X,A1,1X,F10.6)')'Error for singlet  channel = ',max(err_eig_ee_sing,err_eig_hh_sing),'/',err_pp_sing
-      write(*,'(1X,A30,F10.6,1X,A1,1X,F10.6)')'Error for triplet  channel = ',max(err_eig_ee_trip,err_eig_hh_trip),'/',err_pp_trip
+      write(*,'(1X,A30,F10.6,1X,A1,1X,F10.6)')'Error for singlet  channel = ',max(err_eig_ee_sing,err_eig_hh_sing),'/',max(err_ee_sing,err_hh_sing)
+      write(*,'(1X,A30,F10.6,1X,A1,1X,F10.6)')'Error for triplet  channel = ',max(err_eig_ee_trip,err_eig_hh_trip),'/',max(err_ee_trip,err_hh_trip)
       write(*,*) '------------------------------------------------------'
       write(*,*)
 
       ! Convergence criteria
-      err_2b = max(err_eh_sing,err_eh_trip,err_pp_sing,err_pp_trip)
+      err_2b = max(err_eh_sing,err_eh_trip,err_ee_sing,err_ee_trip,err_hh_sing,err_hh_trip)
        
       call wall_time(end_2b)
       t_2b = end_2b - start_2b
@@ -779,9 +882,9 @@ subroutine RParquet(TDAeh,TDApp,max_diis_1b,max_diis_2b,linearize,eta_1b,eta_2b,
 
     call wall_time(start_t)
     call R_Parquet_self_energy(eta_1b,nOrb,nC,nO,nV,nR,nS,nOOs,nVVs,nOOt,nVVt,eOld,ERI,  &
-                               eh_sing_rho,old_eh_sing_Om,eh_trip_rho,old_eh_trip_Om, &
-                               ee_sing_rho,old_ee_sing_Om,ee_trip_rho,old_ee_trip_Om, &
-                               hh_sing_rho,old_hh_sing_Om,hh_trip_rho,old_hh_trip_Om, &
+                               old_eh_sing_rho,old_eh_sing_Om,old_eh_trip_rho,old_eh_trip_Om, &
+                               old_ee_sing_rho,old_ee_sing_Om,old_ee_trip_rho,old_ee_trip_Om, &
+                               old_hh_sing_rho,old_hh_sing_Om,old_hh_trip_rho,old_hh_trip_Om, &
                                EcGM,SigC,Z)
     call wall_time(end_t)
     t = end_t - start_t
@@ -805,9 +908,9 @@ subroutine RParquet(TDAeh,TDApp,max_diis_1b,max_diis_2b,linearize,eta_1b,eta_2b,
       write(*,*)
 
       call R_Parquet_QP_graph(eta_1b,nOrb,nC,nO,nV,nR,nS,nOOs,nVVs,nOOt,nVVt,ERI,    &
-                              eh_sing_rho,old_eh_sing_Om,eh_trip_rho,old_eh_trip_Om, &
-                              ee_sing_rho,old_ee_sing_Om,ee_trip_rho,old_ee_trip_Om, &
-                              hh_sing_rho,old_hh_sing_Om,hh_trip_rho,old_hh_trip_Om, &
+                              old_eh_sing_rho,old_eh_sing_Om,old_eh_trip_rho,old_eh_trip_Om, &
+                              old_ee_sing_rho,old_ee_sing_Om,old_ee_trip_rho,old_ee_trip_Om, &
+                              old_hh_sing_rho,old_hh_sing_Om,old_hh_trip_rho,old_hh_trip_Om, &
                               eHF,eQPlin,eOld,eQP,Z)
     end if
    
