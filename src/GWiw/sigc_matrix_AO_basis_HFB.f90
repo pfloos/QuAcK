@@ -1,3 +1,12 @@
+! NOTE The usual qsGW recipe might not be good for qsGWB...!! 
+! In standard qsGW, the Fock operator incorporates a static contribution from Sigma_c that is otained evaluating Sigma_c
+! at the orbital energies; then, projecting it on the basis (i.e., the orbitals). Also, including an ad-hoc Hermitization step.
+! The orbital energies can be aligned with the chemical potential to make the orbital energies of the occupied states to be - and
+! + for the virtual states. Then, Sigma_c is evaluated using the POSITIVE ENERGIES FOR THE VIRTUAL STATES! 
+! However, in HFB the contributions added to the Fock operator from Sigma_c are EVALUATED USING ONLY NEGATIVE ENERGIES energies if we
+! follow the usual recipe. For this reason, even when HFB recovers HF, we do not have the proper contribution from Sigma_c to make
+! qsGWB -> qsGW
+
 subroutine sigc_AO_basis_HFB(nBas,nOrb,nOrb_twice,eta,shift,c,U_QP,eqsGWB_state,S,vMAT, &
                              nfreqs,ntimes,wcoord,wweight,Sigc_ao_he,Sigc_ao_hh)
 
@@ -25,15 +34,19 @@ subroutine sigc_AO_basis_HFB(nBas,nOrb,nOrb_twice,eta,shift,c,U_QP,eqsGWB_state,
 
 ! Local variables
 
+  logical                       :: doSigc_eh
+  logical                       :: doSigc_ee
+
   integer                       :: iorb,jorb
   integer                       :: nE_eval_global
 
   double precision,allocatable  :: Sigc_mo_tmp(:,:,:)
   double precision,allocatable  :: Sigc_mo(:,:)
-  double precision,allocatable  :: Sigc_mo_mirror(:,:)
 
   complex *16,allocatable       :: Sigc_mo_he_cpx(:,:,:)
   complex *16,allocatable       :: Sigc_mo_hh_cpx(:,:,:)
+  complex *16,allocatable       :: Sigc_mo_eh_cpx(:,:,:)
+  complex *16,allocatable       :: Sigc_mo_ee_cpx(:,:,:)
   complex *16,allocatable       :: E_eval_global_cpx(:)
 
 ! Output variables
@@ -41,7 +54,12 @@ subroutine sigc_AO_basis_HFB(nBas,nOrb,nOrb_twice,eta,shift,c,U_QP,eqsGWB_state,
   double precision,intent(out)  :: Sigc_ao_he(nBas,nBas)
   double precision,intent(out)  :: Sigc_ao_hh(nBas,nBas)
 
-! Se energies using cluster method or just using two shifts
+! Initialize
+
+  doSigc_eh=.false.
+  doSigc_ee=.false.
+
+! Set energies using cluster method or just using two shifts
   if(.false.) then
    allocate(E_eval_global_cpx(1))
    call set_Eeval_cluster(nOrb,nOrb_twice,1,shift,eqsGWB_state,nE_eval_global,&
@@ -61,17 +79,18 @@ subroutine sigc_AO_basis_HFB(nBas,nOrb,nOrb_twice,eta,shift,c,U_QP,eqsGWB_state,
 
   ! Run over unique energies
   allocate(Sigc_mo_he_cpx(nE_eval_global,nOrb,nOrb),Sigc_mo_hh_cpx(nE_eval_global,nOrb,nOrb))
-  call build_Sigmac_w_HFB(nOrb,nOrb_twice,nE_eval_global,eta,0,E_eval_global_cpx,eqsGWB_state, &
-                          nfreqs,ntimes,wweight,wcoord,vMAT,U_QP,Sigc_mo_he_cpx,Sigc_mo_hh_cpx)
+  allocate(Sigc_mo_eh_cpx(nE_eval_global,nOrb,nOrb),Sigc_mo_ee_cpx(nE_eval_global,nOrb,nOrb))
+  call build_Sigmac_w_HFB(nOrb,nOrb_twice,nE_eval_global,eta,0,E_eval_global_cpx,eqsGWB_state,  &
+                          nfreqs,ntimes,wweight,wcoord,vMAT,U_QP,Sigc_mo_he_cpx,Sigc_mo_hh_cpx, &
+                          Sigc_mo_eh_cpx,Sigc_mo_ee_cpx,doSigc_eh,doSigc_ee)
   deallocate(E_eval_global_cpx)
 
-! Interpolate and transform Sigma from MO to AO basis [incl. the usual qsGW recipe] 
 ! TODO interpolate Sigma with clusters method
+! Interpolate and transform Sigma from MO to AO basis [incl. the usual qsGW recipe] 
   allocate(Sigc_mo_tmp(nOrb,nOrb,nOrb))
   allocate(Sigc_mo(nOrb,nOrb))
-  allocate(Sigc_mo_mirror(nOrb,nOrb))
   ! Sigma_c_he
-  do iorb=1,nOrb
+  do iorb=1,nOrb ! Interpolation
    Sigc_mo_tmp(iorb,:,:)=0.5d0*(Real(Sigc_mo_he_cpx(2*iorb-1,:,:))+Real(Sigc_mo_he_cpx(2*iorb,:,:)))
   enddo
   deallocate(Sigc_mo_he_cpx)
@@ -79,19 +98,9 @@ subroutine sigc_AO_basis_HFB(nBas,nOrb,nOrb_twice,eta,shift,c,U_QP,eqsGWB_state,
    Sigc_mo(iorb,:)=Sigc_mo_tmp(iorb,iorb,:)
   enddo
   Sigc_mo = 0.5d0 * (Sigc_mo + transpose(Sigc_mo))
-! NOTE The usual qsGW recipe is not good for qsGWB...!! 
-! For example, the contribution to be added to the Fock operator for a pure virtual HF state should be Sigma_c evaluated
-! with a + energy [i.e., evaluate Sigma_aa with + energies [set + using the chem pot]].
-! Hence, we set the mirrored Sigc_he_mo because we need more symmetry in qsGWB [it is not needed for Sigc_hh in our method]
-  do iorb=1,nOrb
-   do jorb=1,nOrb
-    Sigc_mo_mirror(iorb,jorb) = Sigc_mo(nOrb-(jorb-1),nOrb-(iorb-1))
-   enddo
-  enddo
-  Sigc_mo = 0.5d0 * (Sigc_mo + Sigc_mo_mirror)
   call MOtoAO(nBas,nOrb,S,c,Sigc_mo,Sigc_ao_he)
   ! Sigma_c_hh
-  do iorb=1,nOrb
+  do iorb=1,nOrb ! Interpolation
    Sigc_mo_tmp(iorb,:,:)=0.5d0*(Real(Sigc_mo_hh_cpx(2*iorb-1,:,:))+Real(Sigc_mo_hh_cpx(2*iorb,:,:)))
   enddo
   deallocate(Sigc_mo_hh_cpx)
@@ -100,8 +109,23 @@ subroutine sigc_AO_basis_HFB(nBas,nOrb,nOrb_twice,eta,shift,c,U_QP,eqsGWB_state,
   enddo
   Sigc_mo = 0.5d0 * (Sigc_mo + transpose(Sigc_mo))
   call MOtoAO(nBas,nOrb,S,c,Sigc_mo,Sigc_ao_hh)
+  ! Sigma_c_eh
+  if(doSigc_eh) then
+   do iorb=1,nOrb ! Interpolation
+    Sigc_mo_tmp(iorb,:,:)=0.5d0*(Real(Sigc_mo_eh_cpx(2*iorb-1,:,:))+Real(Sigc_mo_eh_cpx(2*iorb,:,:)))
+   enddo
+  endif
+  deallocate(Sigc_mo_eh_cpx)
+  ! Sigma_c_ee
+  if(doSigc_ee) then
+   do iorb=1,nOrb ! Interpolation
+    Sigc_mo_tmp(iorb,:,:)=0.5d0*(Real(Sigc_mo_ee_cpx(2*iorb-1,:,:))+Real(Sigc_mo_ee_cpx(2*iorb,:,:)))
+   enddo
+  endif
+  deallocate(Sigc_mo_ee_cpx)
+
+  ! Deallocate arrays
   deallocate(Sigc_mo_tmp,Sigc_mo)
-  deallocate(Sigc_mo_mirror)
 
 
 end subroutine 
