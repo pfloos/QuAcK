@@ -731,6 +731,14 @@ subroutine RParquet_v2(TDAeh,TDApp,max_diis_1b,max_diis_2b,linearize,eta_1b,eta_
         end do
       end do
 
+!     alpha = 0.25d0
+!     eh_sing_rho(:,:,:) = alpha * eh_sing_rho(:,:,:) + (1d0 - alpha) * old_eh_sing_rho(:,:,:)
+!     eh_trip_rho(:,:,:) = alpha * eh_trip_rho(:,:,:) + (1d0 - alpha) * old_eh_trip_rho(:,:,:)
+!     ee_sing_rho(:,:,:) = alpha * ee_sing_rho(:,:,:) + (1d0 - alpha) * old_ee_sing_rho(:,:,:)
+!     ee_trip_rho(:,:,:) = alpha * ee_trip_rho(:,:,:) + (1d0 - alpha) * old_ee_trip_rho(:,:,:)
+!     hh_sing_rho(:,:,:) = alpha * hh_sing_rho(:,:,:) + (1d0 - alpha) * old_hh_sing_rho(:,:,:)
+!     hh_trip_rho(:,:,:) = alpha * hh_trip_rho(:,:,:) + (1d0 - alpha) * old_hh_trip_rho(:,:,:)
+
       err_eh_sing = maxval(abs(old_eh_sing_rho - eh_sing_rho))
       err_eh_trip = maxval(abs(old_eh_trip_rho - eh_trip_rho))
       err_ee_sing = maxval(abs(old_ee_sing_rho - ee_sing_rho))
