@@ -7,7 +7,7 @@
 ! follow the usual recipe. For this reason, even when HFB recovers HF, we do not have the proper contribution from Sigma_c to make
 ! qsGWB -> qsGW
 
-subroutine sigc_AO_basis_HFB(nBas,nOrb,nOrb_twice,eta,shift,c,U_QP,eqsGWB_state,S,vMAT, &
+subroutine sigc_AO_basis_HFB(nBas,nOrb,nOrb_twice,eta,shift,c,Occ,U_QP,eqsGWB_state,S,vMAT, &
                              nfreqs,ntimes,wcoord,wweight,Sigc_ao_he,Sigc_ao_hh)
 
 ! Compute Sigma_c matrix in the AO basis
@@ -26,6 +26,7 @@ subroutine sigc_AO_basis_HFB(nBas,nOrb,nOrb_twice,eta,shift,c,U_QP,eqsGWB_state,
   double precision,intent(in)   :: eta
   double precision,intent(in)   :: shift
   double precision,intent(in)   :: wcoord(nfreqs),wweight(nfreqs)
+  double precision,intent(in)   :: Occ(nOrb)
   double precision,intent(in)   :: U_QP(nOrb_twice,nOrb_twice)
   double precision,intent(in)   :: eqsGWB_state(nOrb_twice)
   double precision,intent(in)   :: vMAT(nOrb*nOrb,nOrb*nOrb)
@@ -41,6 +42,7 @@ subroutine sigc_AO_basis_HFB(nBas,nOrb,nOrb_twice,eta,shift,c,U_QP,eqsGWB_state,
   integer                       :: nE_eval_global
 
   double precision,allocatable  :: Sigc_mo_tmp(:,:,:)
+  double precision,allocatable  :: Sigc_mo_tmp2(:,:,:)
   double precision,allocatable  :: Sigc_mo(:,:)
 
   complex *16,allocatable       :: Sigc_mo_he_cpx(:,:,:)
@@ -56,8 +58,8 @@ subroutine sigc_AO_basis_HFB(nBas,nOrb,nOrb_twice,eta,shift,c,U_QP,eqsGWB_state,
 
 ! Initialize
 
-  doSigc_eh=.false.
-  doSigc_ee=.false.
+  doSigc_eh=.true.
+  doSigc_ee=.true.
 
 ! Set energies using cluster method or just using two shifts
   if(.false.) then
@@ -88,36 +90,40 @@ subroutine sigc_AO_basis_HFB(nBas,nOrb,nOrb_twice,eta,shift,c,U_QP,eqsGWB_state,
 ! TODO interpolate Sigma with clusters method
 ! Interpolate and transform Sigma from MO to AO basis [incl. the usual qsGW recipe] 
   allocate(Sigc_mo_tmp(nOrb,nOrb,nOrb))
+  allocate(Sigc_mo_tmp2(nOrb,nOrb,nOrb))
+  Sigc_mo_tmp=0d0;Sigc_mo_tmp2=0d0;
   allocate(Sigc_mo(nOrb,nOrb))
   ! Sigma_c_he
   do iorb=1,nOrb ! Interpolation
-   Sigc_mo_tmp(iorb,:,:)=0.5d0*(Real(Sigc_mo_he_cpx(2*iorb-1,:,:))+Real(Sigc_mo_he_cpx(2*iorb,:,:)))
+   Sigc_mo_tmp(iorb,:,:) = 0.5d0*(Real(Sigc_mo_he_cpx(2*iorb-1,:,:))+Real(Sigc_mo_he_cpx(2*iorb,:,:)))
+   Sigc_mo_tmp2(iorb,:,:)=-0.5d0*(Real(Sigc_mo_eh_cpx(2*iorb-1,:,:))+Real(Sigc_mo_eh_cpx(2*iorb,:,:)))
   enddo
   deallocate(Sigc_mo_he_cpx)
   do iorb=1,nOrb
-   Sigc_mo(iorb,:)=Sigc_mo_tmp(iorb,iorb,:)
+   Sigc_mo(iorb,:)=Occ(iorb)*Sigc_mo_tmp(iorb,iorb,:)+(1d0-Occ(iorb))*Sigc_mo_tmp2(iorb,iorb,:)
   enddo
   Sigc_mo = 0.5d0 * (Sigc_mo + transpose(Sigc_mo))
   call MOtoAO(nBas,nOrb,S,c,Sigc_mo,Sigc_ao_he)
   ! Sigma_c_hh
   do iorb=1,nOrb ! Interpolation
-   Sigc_mo_tmp(iorb,:,:)=0.5d0*(Real(Sigc_mo_hh_cpx(2*iorb-1,:,:))+Real(Sigc_mo_hh_cpx(2*iorb,:,:)))
+   Sigc_mo_tmp(iorb,:,:) = 0.5d0*(Real(Sigc_mo_hh_cpx(2*iorb-1,:,:))+Real(Sigc_mo_hh_cpx(2*iorb,:,:)))
+   Sigc_mo_tmp2(iorb,:,:)= 0.5d0*(Real(Sigc_mo_ee_cpx(2*iorb-1,:,:))+Real(Sigc_mo_ee_cpx(2*iorb,:,:)))
   enddo
   deallocate(Sigc_mo_hh_cpx)
   do iorb=1,nOrb
-   Sigc_mo(iorb,:)=Sigc_mo_tmp(iorb,iorb,:)
+   Sigc_mo(iorb,:)=Occ(iorb)*Sigc_mo_tmp(iorb,iorb,:)+(1d0-Occ(iorb))*Sigc_mo_tmp2(iorb,iorb,:)
   enddo
   Sigc_mo = 0.5d0 * (Sigc_mo + transpose(Sigc_mo))
   call MOtoAO(nBas,nOrb,S,c,Sigc_mo,Sigc_ao_hh)
   ! Sigma_c_eh
-  if(doSigc_eh) then
+  if(doSigc_eh .and. .false.) then
    do iorb=1,nOrb ! Interpolation
     Sigc_mo_tmp(iorb,:,:)=0.5d0*(Real(Sigc_mo_eh_cpx(2*iorb-1,:,:))+Real(Sigc_mo_eh_cpx(2*iorb,:,:)))
    enddo
   endif
   deallocate(Sigc_mo_eh_cpx)
   ! Sigma_c_ee
-  if(doSigc_ee) then
+  if(doSigc_ee .and. .false.) then
    do iorb=1,nOrb ! Interpolation
     Sigc_mo_tmp(iorb,:,:)=0.5d0*(Real(Sigc_mo_ee_cpx(2*iorb-1,:,:))+Real(Sigc_mo_ee_cpx(2*iorb,:,:)))
    enddo
@@ -125,7 +131,7 @@ subroutine sigc_AO_basis_HFB(nBas,nOrb,nOrb_twice,eta,shift,c,U_QP,eqsGWB_state,
   deallocate(Sigc_mo_ee_cpx)
 
   ! Deallocate arrays
-  deallocate(Sigc_mo_tmp,Sigc_mo)
+  deallocate(Sigc_mo_tmp,Sigc_mo_tmp2,Sigc_mo)
 
 
 end subroutine 
