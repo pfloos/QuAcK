@@ -154,16 +154,6 @@ subroutine qsGWB(dotest,maxSCF,thresh,max_diis,level_shift,nNuc,ZNuc,rNuc,ENuc,e
 
   ! Compute initial c, U_QP, and Occ numbers 
 
-  call read_restart_HFB(nBas, nOrb, Occ, c, S, chem_pot)
-  P(:,:)      = 0d0
-  Panom(:,:)  = 0d0
-  do iorb=1,nOrb
-   P(:,:)     = P(:,:)     + Occ(iorb)                             &
-              * matmul(c(:,iorb:iorb),transpose(c(:,iorb:iorb))) 
-   Panom(:,:) = Panom(:,:) + sqrt(abs(Occ(iorb)*(1d0-Occ(iorb))))  &
-              * matmul(c(:,iorb:iorb),transpose(c(:,iorb:iorb))) 
-  enddo
-  P(:,:)      = 2d0*P(:,:)
   call Hartree_matrix_AO_basis(nBas,P,ERI,J)
   call exchange_matrix_AO_basis(nBas,P,ERI,K)
   call anomalous_matrix_AO_basis(nBas,sigma,Panom,ERI,Delta)
@@ -233,7 +223,7 @@ subroutine qsGWB(dotest,maxSCF,thresh,max_diis,level_shift,nNuc,ZNuc,rNuc,ENuc,e
     
     U_QP(:,:) = H_qsGWB(:,:)
     call diagonalize_matrix(nOrb_twice,U_QP,eigVAL)
-    
+
     ! Build R 
       
     R(:,:)     = 0d0
@@ -270,7 +260,7 @@ subroutine qsGWB(dotest,maxSCF,thresh,max_diis,level_shift,nNuc,ZNuc,rNuc,ENuc,e
      H_qsGWB = matmul(transpose(X_ao),matmul(H_qsGWB_ao,X_ao))
      U_QP(:,:) = H_qsGWB(:,:)
      call diagonalize_matrix(nOrb_twice,U_QP,eigVAL)
-     
+
      ! Build R and check trace
        
      trace_1rdm = 0d0 

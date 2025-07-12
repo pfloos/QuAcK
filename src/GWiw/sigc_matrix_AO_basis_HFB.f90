@@ -35,6 +35,7 @@ subroutine sigc_AO_basis_HFB(nBas,nOrb,nOrb_twice,eta,shift,c,Occ,U_QP,eqsGWB_st
 
 ! Local variables
 
+  logical                       :: doqsGW2
   logical                       :: doSigc_eh
   logical                       :: doSigc_ee
 
@@ -60,6 +61,7 @@ subroutine sigc_AO_basis_HFB(nBas,nOrb,nOrb_twice,eta,shift,c,Occ,U_QP,eqsGWB_st
 
   doSigc_eh=.true.
   doSigc_ee=.true.
+  doqsGW2  =.true.
 
 ! Set energies using cluster method or just using two shifts
   if(.false.) then
@@ -114,11 +116,11 @@ subroutine sigc_AO_basis_HFB(nBas,nOrb,nOrb_twice,eta,shift,c,Occ,U_QP,eqsGWB_st
     Sigc_mo(iorb,:)=Occ(iorb)*Sigc_mo_tmp(iorb,iorb,:)+(1d0-Occ(iorb))*Sigc_mo_tmp2(iorb,iorb,:)
    enddo
    Sigc_mo = 0.5d0 * (Sigc_mo + transpose(Sigc_mo))
-   if(.false.) then  ! qsGW version where all the off-diagonal elements are built at the Fermi level 
+   if(doqsGW2) then  ! qsGW version where all the off-diagonal elements are built at the Fermi level 
     do iorb=1,nOrb
      do jorb=1,nOrb
       if(iorb/=jorb) then
-       Sigc_mo(iorb,jorb) = Real(Sigc_mo_he_cpx(nE_eval_global,iorb,jorb)) 
+       Sigc_mo(iorb,jorb) = Real(Sigc_mo_he_cpx(nE_eval_global,iorb,jorb))
        !Sigc_mo(iorb,jorb) = Occ(iorb)*Real(Sigc_mo_he_cpx(nE_eval_global,iorb,jorb)) &
        !                   - (1d0-Occ(iorb))*Real(Sigc_mo_eh_cpx(nE_eval_global,iorb,jorb)) ! minus because this is he positive
       endif
@@ -136,7 +138,7 @@ subroutine sigc_AO_basis_HFB(nBas,nOrb,nOrb_twice,eta,shift,c,Occ,U_QP,eqsGWB_st
     Sigc_mo(iorb,:)=Occ(iorb)*Sigc_mo_tmp(iorb,iorb,:)+(1d0-Occ(iorb))*Sigc_mo_tmp2(iorb,iorb,:)
    enddo
    Sigc_mo = 0.5d0 * (Sigc_mo + transpose(Sigc_mo))
-   if(.false.) then  ! qsGW version where all the off-diagonal elements are built at the Fermi level 
+   if(doqsGW2) then  ! qsGW version where all the off-diagonal elements are built at the Fermi level 
     do iorb=1,nOrb
      do jorb=1,nOrb
       if(iorb/=jorb) then
