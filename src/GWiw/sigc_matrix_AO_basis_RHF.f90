@@ -44,6 +44,7 @@ subroutine sigc_AO_basis_RHF(nBas,nOrb,nO,eta,shift,c,eqsGW_state,S,vMAT,nfreqs,
 
 ! Se energies using cluster method or just using two shifts
   if(.false.) then
+
    allocate(E_eval_global_cpx(1))
    call set_Eeval_cluster(nOrb,nOrb,1,shift,eqsGW_state,nE_eval_global,&
                           E_eval_global_cpx,chem_pot)
@@ -51,35 +52,48 @@ subroutine sigc_AO_basis_RHF(nBas,nOrb,nO,eta,shift,c,eqsGW_state,S,vMAT,nfreqs,
    allocate(E_eval_global_cpx(nE_eval_global))
    call set_Eeval_cluster(nOrb,nOrb,nE_eval_global,shift,eqsGW_state,&
                            nE_eval_global,E_eval_global_cpx,chem_pot)
+
+   !  Run over energies
+   allocate(Sigc_mo_cpx(nE_eval_global,nOrb,nOrb))
+   call build_Sigmac_w_RHF(nOrb,nO,nE_eval_global,eta,0,E_eval_global_cpx,eqsGW_state,nfreqs,ntimes,&
+                           wweight,wcoord,vMAT,Sigc_mo_cpx)
+
+   deallocate(E_eval_global_cpx)
+
+   deallocate(Sigc_mo_cpx)
+
+   Sigc_ao=0d0 ! TODO
+   
   else
+
    nE_eval_global=2*nOrb
    allocate(E_eval_global_cpx(nE_eval_global))
    do iorb=1,nOrb
     E_eval_global_cpx(2*iorb-1)=eqsGW_state(iorb)-shift-chem_pot
     E_eval_global_cpx(2*iorb)  =eqsGW_state(iorb)+shift-chem_pot
    enddo
+
+   !  Run over energies
+   allocate(Sigc_mo_cpx(nE_eval_global,nOrb,nOrb))
+   call build_Sigmac_w_RHF(nOrb,nO,nE_eval_global,eta,0,E_eval_global_cpx,eqsGW_state,nfreqs,ntimes,&
+                           wweight,wcoord,vMAT,Sigc_mo_cpx)
+   deallocate(E_eval_global_cpx)
+   
+   ! Interpolate and transform Sigma from MO to AO basis [incl. the usual qsGW recipe]
+   allocate(Sigc_mo_tmp(nOrb,nOrb,nOrb))
+   allocate(Sigc_mo(nOrb,nOrb))
+   do iorb=1,nOrb
+    Sigc_mo_tmp(iorb,:,:)=0.5d0*(Real(Sigc_mo_cpx(2*iorb-1,:,:))+Real(Sigc_mo_cpx(2*iorb,:,:)))
+   enddo
+   deallocate(Sigc_mo_cpx)
+   do iorb=1,nOrb
+    Sigc_mo(iorb,:)=Sigc_mo_tmp(iorb,iorb,:)
+   enddo
+   Sigc_mo = 0.5d0 * (Sigc_mo + transpose(Sigc_mo))
+   call MOtoAO(nBas,nOrb,S,c,Sigc_mo,Sigc_ao)
+   deallocate(Sigc_mo_tmp,Sigc_mo)
+
   endif
-
-! Run over energies
-  allocate(Sigc_mo_cpx(nE_eval_global,nOrb,nOrb))
-  call build_Sigmac_w_RHF(nOrb,nO,nE_eval_global,eta,0,E_eval_global_cpx,eqsGW_state,nfreqs,ntimes,&
-                          wweight,wcoord,vMAT,Sigc_mo_cpx)
-  deallocate(E_eval_global_cpx)
-
-! Interpolate and transform Sigma from MO to AO basis [incl. the usual qsGW recipe]
-! TODO interpolate Sigma with clusters method
-  allocate(Sigc_mo_tmp(nOrb,nOrb,nOrb))
-  allocate(Sigc_mo(nOrb,nOrb))
-  do iorb=1,nOrb
-   Sigc_mo_tmp(iorb,:,:)=0.5d0*(Real(Sigc_mo_cpx(2*iorb-1,:,:))+Real(Sigc_mo_cpx(2*iorb,:,:)))
-  enddo
-  deallocate(Sigc_mo_cpx)
-  do iorb=1,nOrb
-   Sigc_mo(iorb,:)=Sigc_mo_tmp(iorb,iorb,:)
-  enddo
-  Sigc_mo = 0.5d0 * (Sigc_mo + transpose(Sigc_mo))
-  call MOtoAO(nBas,nOrb,S,c,Sigc_mo,Sigc_ao)
-  deallocate(Sigc_mo_tmp,Sigc_mo)
 
 end subroutine 
 
