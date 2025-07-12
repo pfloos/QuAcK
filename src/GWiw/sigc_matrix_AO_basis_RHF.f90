@@ -24,7 +24,7 @@ subroutine sigc_AO_basis_RHF(nBas,nOrb,nO,eta,shift,c,eqsGW_state,S,vMAT,nfreqs,
 
 ! Local variables
 
-  integer                       :: iorb
+  integer                       :: iorb,jorb
   integer                       :: nE_eval_global
 
   double precision              :: chem_pot
@@ -66,12 +66,13 @@ subroutine sigc_AO_basis_RHF(nBas,nOrb,nO,eta,shift,c,eqsGW_state,S,vMAT,nfreqs,
    
   else
 
-   nE_eval_global=2*nOrb
+   nE_eval_global=2*nOrb+1
    allocate(E_eval_global_cpx(nE_eval_global))
    do iorb=1,nOrb
     E_eval_global_cpx(2*iorb-1)=eqsGW_state(iorb)-shift-chem_pot
     E_eval_global_cpx(2*iorb)  =eqsGW_state(iorb)+shift-chem_pot
    enddo
+   E_eval_global_cpx(nE_eval_global)=czero
 
    !  Run over energies
    allocate(Sigc_mo_cpx(nE_eval_global,nOrb,nOrb))
@@ -85,12 +86,20 @@ subroutine sigc_AO_basis_RHF(nBas,nOrb,nO,eta,shift,c,eqsGW_state,S,vMAT,nfreqs,
    do iorb=1,nOrb
     Sigc_mo_tmp(iorb,:,:)=0.5d0*(Real(Sigc_mo_cpx(2*iorb-1,:,:))+Real(Sigc_mo_cpx(2*iorb,:,:)))
    enddo
-   deallocate(Sigc_mo_cpx)
    do iorb=1,nOrb
     Sigc_mo(iorb,:)=Sigc_mo_tmp(iorb,iorb,:)
    enddo
    Sigc_mo = 0.5d0 * (Sigc_mo + transpose(Sigc_mo))
+   if(.false.) then  ! qsGW version where all the off-diagonal elements are built at the Fermi level 
+    do iorb=1,nOrb
+     do jorb=1,nOrb
+      if(iorb/=jorb) Sigc_mo(iorb,jorb) = Real(Sigc_mo_cpx(nE_eval_global,iorb,jorb))
+     enddo
+    enddo
+    Sigc_mo = 0.5d0 * (Sigc_mo + transpose(Sigc_mo))
+   endif
    call MOtoAO(nBas,nOrb,S,c,Sigc_mo,Sigc_ao)
+   deallocate(Sigc_mo_cpx)
    deallocate(Sigc_mo_tmp,Sigc_mo)
 
   endif

@@ -85,12 +85,13 @@ subroutine sigc_AO_basis_HFB(nBas,nOrb,nOrb_twice,eta,shift,c,Occ,U_QP,eqsGWB_st
 
   else
 
-   nE_eval_global=2*nOrb
+   nE_eval_global=2*nOrb+1
    allocate(E_eval_global_cpx(nE_eval_global))
    do iorb=1,nOrb
     E_eval_global_cpx(2*iorb-1)=eqsGWB_state(iorb)-shift
     E_eval_global_cpx(2*iorb)  =eqsGWB_state(iorb)+shift
    enddo
+   E_eval_global_cpx(nE_eval_global)=czero
 
    ! Build Sigma_c for all energies
    allocate(Sigc_mo_he_cpx(nE_eval_global,nOrb,nOrb),Sigc_mo_hh_cpx(nE_eval_global,nOrb,nOrb))
@@ -98,7 +99,6 @@ subroutine sigc_AO_basis_HFB(nBas,nOrb,nOrb_twice,eta,shift,c,Occ,U_QP,eqsGWB_st
    call build_Sigmac_w_HFB(nOrb,nOrb_twice,nE_eval_global,eta,0,E_eval_global_cpx,eqsGWB_state,  &
                            nfreqs,ntimes,wweight,wcoord,vMAT,U_QP,Sigc_mo_he_cpx,Sigc_mo_hh_cpx, &
                            Sigc_mo_eh_cpx,Sigc_mo_ee_cpx,doSigc_eh,doSigc_ee)
-   deallocate(E_eval_global_cpx)
    
    ! Interpolate and transform Sigma from MO to AO basis [incl. the usual qsGW recipe] 
    allocate(Sigc_mo_tmp(nOrb,nOrb,nOrb))
@@ -110,22 +110,44 @@ subroutine sigc_AO_basis_HFB(nBas,nOrb,nOrb_twice,eta,shift,c,Occ,U_QP,eqsGWB_st
     Sigc_mo_tmp(iorb,:,:) = 0.5d0*(Real(Sigc_mo_he_cpx(2*iorb-1,:,:))+Real(Sigc_mo_he_cpx(2*iorb,:,:)))
     Sigc_mo_tmp2(iorb,:,:)=-0.5d0*(Real(Sigc_mo_eh_cpx(2*iorb-1,:,:))+Real(Sigc_mo_eh_cpx(2*iorb,:,:)))
    enddo
-   deallocate(Sigc_mo_he_cpx)
    do iorb=1,nOrb
     Sigc_mo(iorb,:)=Occ(iorb)*Sigc_mo_tmp(iorb,iorb,:)+(1d0-Occ(iorb))*Sigc_mo_tmp2(iorb,iorb,:)
    enddo
    Sigc_mo = 0.5d0 * (Sigc_mo + transpose(Sigc_mo))
+   if(.false.) then  ! qsGW version where all the off-diagonal elements are built at the Fermi level 
+    do iorb=1,nOrb
+     do jorb=1,nOrb
+      if(iorb/=jorb) then
+       Sigc_mo(iorb,jorb) = Real(Sigc_mo_he_cpx(nE_eval_global,iorb,jorb)) 
+       !Sigc_mo(iorb,jorb) = Occ(iorb)*Real(Sigc_mo_he_cpx(nE_eval_global,iorb,jorb)) &
+       !                   - (1d0-Occ(iorb))*Real(Sigc_mo_eh_cpx(nE_eval_global,iorb,jorb)) ! minus because this is he positive
+      endif
+     enddo
+    enddo
+    Sigc_mo = 0.5d0 * (Sigc_mo + transpose(Sigc_mo))
+   endif
    call MOtoAO(nBas,nOrb,S,c,Sigc_mo,Sigc_ao_he)
    ! Sigma_c_hh
    do iorb=1,nOrb ! Interpolation
     Sigc_mo_tmp(iorb,:,:) = 0.5d0*(Real(Sigc_mo_hh_cpx(2*iorb-1,:,:))+Real(Sigc_mo_hh_cpx(2*iorb,:,:)))
     Sigc_mo_tmp2(iorb,:,:)= 0.5d0*(Real(Sigc_mo_ee_cpx(2*iorb-1,:,:))+Real(Sigc_mo_ee_cpx(2*iorb,:,:)))
    enddo
-   deallocate(Sigc_mo_hh_cpx)
    do iorb=1,nOrb
     Sigc_mo(iorb,:)=Occ(iorb)*Sigc_mo_tmp(iorb,iorb,:)+(1d0-Occ(iorb))*Sigc_mo_tmp2(iorb,iorb,:)
    enddo
    Sigc_mo = 0.5d0 * (Sigc_mo + transpose(Sigc_mo))
+   if(.false.) then  ! qsGW version where all the off-diagonal elements are built at the Fermi level 
+    do iorb=1,nOrb
+     do jorb=1,nOrb
+      if(iorb/=jorb) then
+       Sigc_mo(iorb,jorb) = Real(Sigc_mo_hh_cpx(nE_eval_global,iorb,jorb)) 
+       !Sigc_mo(iorb,jorb) = Occ(iorb)*Real(Sigc_mo_hh_cpx(nE_eval_global,iorb,jorb)) &
+       !                   + (1d0-Occ(iorb))*Real(Sigc_mo_ee_cpx(nE_eval_global,iorb,jorb))
+      endif
+     enddo
+    enddo
+    Sigc_mo = 0.5d0 * (Sigc_mo + transpose(Sigc_mo))
+   endif
    call MOtoAO(nBas,nOrb,S,c,Sigc_mo,Sigc_ao_hh)
    ! Sigma_c_eh
    if(doSigc_eh .and. .false.) then
@@ -133,16 +155,19 @@ subroutine sigc_AO_basis_HFB(nBas,nOrb,nOrb_twice,eta,shift,c,Occ,U_QP,eqsGWB_st
      Sigc_mo_tmp(iorb,:,:)=0.5d0*(Real(Sigc_mo_eh_cpx(2*iorb-1,:,:))+Real(Sigc_mo_eh_cpx(2*iorb,:,:)))
     enddo
    endif
-   deallocate(Sigc_mo_eh_cpx)
    ! Sigma_c_ee
    if(doSigc_ee .and. .false.) then
     do iorb=1,nOrb ! Interpolation
      Sigc_mo_tmp(iorb,:,:)=0.5d0*(Real(Sigc_mo_ee_cpx(2*iorb-1,:,:))+Real(Sigc_mo_ee_cpx(2*iorb,:,:)))
     enddo
    endif
-   deallocate(Sigc_mo_ee_cpx)
    
    ! Deallocate arrays
+   deallocate(Sigc_mo_he_cpx)
+   deallocate(Sigc_mo_hh_cpx)
+   deallocate(Sigc_mo_eh_cpx)
+   deallocate(Sigc_mo_ee_cpx)
+   deallocate(E_eval_global_cpx)
    deallocate(Sigc_mo_tmp,Sigc_mo_tmp2,Sigc_mo)
 
   endif
