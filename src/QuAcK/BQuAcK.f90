@@ -215,8 +215,8 @@ subroutine BQuAcK(working_dir,dotest,doHFB,dophRPA,doqsGW,nNuc,nBas,nOrb,nO,ENuc
 
     ! Continue with a HFB calculation
     call wall_time(start_qsGWB)
-    call qsGWB(dotest,maxSCF_HF,thresh_HF,max_diis_HF,level_shift,nNuc,ZNuc,rNuc,ENuc,eta,shift,      &
-               nBas,nOrb,nOrb_twice,nO_,S,T,V,Hc,ERI_AO,dipole_int_AO,X,EHFB,eHF,cHFB,PHF,PanomHF,    &
+    call qsGWB(dotest,maxSCF_HF,thresh_HF,max_diis_HF,level_shift,nNuc,ZNuc,rNuc,ENuc,eta,shift,  &
+               nBas,nOrb,nOrb_twice,nO_,S,T,V,Hc,ERI_AO,dipole_int_AO,X,EHFB,cHFB,PHF,PanomHF,    &
                FHF,Delta,sigma,chem_pot,restart_hfb,U_QP,eONEBODY_state,nfreqs,ntimes,wcoord,wweight) 
 
     call wall_time(end_qsGWB)
