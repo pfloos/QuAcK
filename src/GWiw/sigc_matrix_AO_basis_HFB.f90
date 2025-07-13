@@ -40,8 +40,11 @@ subroutine sigc_AO_basis_HFB(nBas,nOrb,nOrb_twice,eta,shift,c,Occ,U_QP,eqsGWB_st
   logical                       :: doSigc_ee
 
   integer                       :: iorb,jorb
+  integer                       :: index_
   integer                       :: nE_eval_global
+  integer,allocatable           :: index_major(:)
 
+  double precision              :: coef_max
   double precision,allocatable  :: Sigc_mo_tmp(:,:,:)
   double precision,allocatable  :: Sigc_mo_tmp2(:,:,:)
   double precision,allocatable  :: Sigc_mo(:,:)
@@ -59,9 +62,36 @@ subroutine sigc_AO_basis_HFB(nBas,nOrb,nOrb_twice,eta,shift,c,Occ,U_QP,eqsGWB_st
 
 ! Initialize
 
+  index_=0
   doSigc_eh=.true.
   doSigc_ee=.true.
   doqsGW2  =.true.
+  allocate(index_major(nOrb))
+  index_major(:)=-10
+  do iorb=1,nOrb
+   coef_max=0d0
+   do jorb=1,nOrb_twice
+    if(abs(U_QP(jorb,iorb))>coef_max) then
+     coef_max=abs(U_QP(jorb,iorb))
+     if(jorb<=nOrb) then
+      index_major(iorb)=jorb
+     else
+      index_major(iorb)=jorb-nOrb
+     endif
+    endif
+   enddo
+  enddo
+ 
+  do iorb=1,nOrb
+   index_=0
+   do jorb=1,nOrb
+    if(iorb==index_major(jorb)) index_=jorb
+   enddo
+   if(index_==0) then
+    write(*,*) 'The ',iorb,' orbital is not major in any U_QP vector'
+    stop
+   endif
+  enddo
 
 ! Set energies using cluster method or just using two shifts
   if(.false.) then
@@ -113,7 +143,11 @@ subroutine sigc_AO_basis_HFB(nBas,nOrb,nOrb_twice,eta,shift,c,Occ,U_QP,eqsGWB_st
     Sigc_mo_tmp2(iorb,:,:)=-0.5d0*(Real(Sigc_mo_eh_cpx(2*iorb-1,:,:))+Real(Sigc_mo_eh_cpx(2*iorb,:,:)))
    enddo
    do iorb=1,nOrb
-    Sigc_mo(iorb,:)=Occ(iorb)*Sigc_mo_tmp(iorb,iorb,:)+(1d0-Occ(iorb))*Sigc_mo_tmp2(iorb,iorb,:)
+    index_=0
+    do jorb=1,nOrb
+     if(iorb==index_major(jorb)) index_=jorb
+    enddo
+    Sigc_mo(iorb,:)=Occ(iorb)*Sigc_mo_tmp(index_,iorb,:)+(1d0-Occ(iorb))*Sigc_mo_tmp2(index_,iorb,:)
    enddo
    Sigc_mo = 0.5d0 * (Sigc_mo + transpose(Sigc_mo))
    if(doqsGW2) then  ! qsGW version where all the off-diagonal elements are built at the Fermi level 
@@ -135,7 +169,10 @@ subroutine sigc_AO_basis_HFB(nBas,nOrb,nOrb_twice,eta,shift,c,Occ,U_QP,eqsGWB_st
     Sigc_mo_tmp2(iorb,:,:)= 0.5d0*(Real(Sigc_mo_ee_cpx(2*iorb-1,:,:))+Real(Sigc_mo_ee_cpx(2*iorb,:,:)))
    enddo
    do iorb=1,nOrb
-    Sigc_mo(iorb,:)=Occ(iorb)*Sigc_mo_tmp(iorb,iorb,:)+(1d0-Occ(iorb))*Sigc_mo_tmp2(iorb,iorb,:)
+    do jorb=1,nOrb
+     if(iorb==index_major(jorb)) index_=jorb
+    enddo
+    Sigc_mo(iorb,:)=Occ(iorb)*Sigc_mo_tmp(index_,iorb,:)+(1d0-Occ(iorb))*Sigc_mo_tmp2(index_,iorb,:)
    enddo
    Sigc_mo = 0.5d0 * (Sigc_mo + transpose(Sigc_mo))
    if(doqsGW2) then  ! qsGW version where all the off-diagonal elements are built at the Fermi level 
@@ -174,6 +211,7 @@ subroutine sigc_AO_basis_HFB(nBas,nOrb,nOrb_twice,eta,shift,c,Occ,U_QP,eqsGWB_st
 
   endif
 
+  deallocate(index_major)
 
 end subroutine 
 

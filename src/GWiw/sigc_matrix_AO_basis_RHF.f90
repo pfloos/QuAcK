@@ -24,6 +24,8 @@ subroutine sigc_AO_basis_RHF(nBas,nOrb,nO,eta,shift,c,eqsGW_state,S,vMAT,nfreqs,
 
 ! Local variables
 
+  logical                       :: doqsGW2
+
   integer                       :: iorb,jorb
   integer                       :: nE_eval_global
 
@@ -39,7 +41,8 @@ subroutine sigc_AO_basis_RHF(nBas,nOrb,nO,eta,shift,c,eqsGW_state,S,vMAT,nfreqs,
   double precision,intent(out)  :: Sigc_ao(nBas,nBas)
 
 ! Initialize variables
-    
+  
+  doqsGW2  = .false.  ! For the usual qsGW set it to false. To use the Energy_FermiLevel in qsGW (version 2) set it to true
   chem_pot = 0.5d0*(eqsGW_state(nO)+eqsGW_state(nO+1))
 
 ! Se energies using cluster method or just using two shifts
@@ -90,7 +93,7 @@ subroutine sigc_AO_basis_RHF(nBas,nOrb,nO,eta,shift,c,eqsGW_state,S,vMAT,nfreqs,
     Sigc_mo(iorb,:)=Sigc_mo_tmp(iorb,iorb,:)
    enddo
    Sigc_mo = 0.5d0 * (Sigc_mo + transpose(Sigc_mo))
-   if(.false.) then  ! qsGW version where all the off-diagonal elements are built at the Fermi level 
+   if(doqsGW2) then  ! qsGW version where all the off-diagonal elements are built at the Fermi level 
     do iorb=1,nOrb
      do jorb=1,nOrb
       if(iorb/=jorb) Sigc_mo(iorb,jorb) = Real(Sigc_mo_cpx(nE_eval_global,iorb,jorb))

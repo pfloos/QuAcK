@@ -40,7 +40,7 @@ subroutine qsGWB(dotest,maxSCF,thresh,max_diis,level_shift,nNuc,ZNuc,rNuc,ENuc,e
 
 ! Local variables
 
-  logical                       :: init_diag
+  logical                       :: need_diag
   logical                       :: restart_hfb
   integer                       :: nBas2
   integer                       :: iorb,jorb,korb,lorb
@@ -146,7 +146,7 @@ subroutine qsGWB(dotest,maxSCF,thresh,max_diis,level_shift,nNuc,ZNuc,rNuc,ENuc,e
   rcond           = 0d0
   Conv            = 1d0
   nSCF            = 0
-  init_diag       = .false.
+  need_diag       = .false.
 
   Sigc_he(:,:)    = 0d0
   Sigc_hh(:,:)    = 0d0
@@ -180,13 +180,13 @@ subroutine qsGWB(dotest,maxSCF,thresh,max_diis,level_shift,nNuc,ZNuc,rNuc,ENuc,e
   do iorb=1,nOrb
    do jorb=1,nOrb
     if(jorb/=iorb) then
-     if(abs(R(iorb,jorb))>1d-8) init_diag=.true.
+     if(abs(R(iorb,jorb))>1d-8) need_diag=.true.
     else
      Occ(iorb)=R(iorb,iorb)
     endif
    enddo
   enddo
-  if(init_diag) then
+  if(need_diag) then
    U(1:nOrb,1:nOrb) = R(1:nOrb,1:nOrb)
    call diagonalize_matrix(nOrb,U,Occ_tmp)
    c_tmp = matmul(c,U)
@@ -310,7 +310,6 @@ subroutine qsGWB(dotest,maxSCF,thresh,max_diis,level_shift,nNuc,ZNuc,rNuc,ENuc,e
 
     ! Extract P and Panom from R
     
-    eqsGWB_state(:) = eigVAL(:)
     P(:,:)     = 0d0
     Panom(:,:) = 0d0
     P(:,:)     = 2d0*matmul(X,matmul(R(1:nOrb,1:nOrb),transpose(X)))
@@ -353,13 +352,50 @@ subroutine qsGWB(dotest,maxSCF,thresh,max_diis,level_shift,nNuc,ZNuc,rNuc,ENuc,e
     ! Compute NOs, Occs, and U_QP in NO basis
 
     U(1:nOrb,1:nOrb) = R(1:nOrb,1:nOrb)
-    call diagonalize_matrix(nOrb,U,Occ)
-    c = matmul(X,U)
+    call diagonalize_matrix(nOrb,U,Occ_tmp)
+    c_tmp = matmul(X,U)
+    do iorb=1,nOrb
+     c(:,iorb)=c_tmp(:,nOrb-(iorb-1))
+     Occ(iorb)=Occ_tmp(nOrb-(iorb-1))
+    enddo
     c_ao(:,:)    = 0d0
     c_ao(1:nBas      ,1:nOrb      )      = c(1:nBas,1:nOrb)
     c_ao(nBas+1:nBas2,nOrb+1:nOrb_twice) = c(1:nBas,1:nOrb)
     U_QP = matmul(transpose(c_ao),matmul(H_qsGWB_ao,c_ao)) ! H_qsGWB is in the NO basis
     call diagonalize_matrix(nOrb_twice,U_QP,eigVAL)
+    R(:,:)  = 0d0
+    do iorb=1,nOrb
+     R(:,:) = R(:,:) + matmul(U_QP(:,iorb:iorb),transpose(U_QP(:,iorb:iorb))) 
+    enddo
+    need_diag       = .false.
+    do iorb=1,nOrb
+     do jorb=1,nOrb
+      if(jorb/=iorb) then
+       if(abs(R(iorb,jorb))>1d-8) need_diag=.true.
+      else
+       Occ(iorb)=R(iorb,iorb)
+      endif
+     enddo
+    enddo
+    if(need_diag) then
+     U(1:nOrb,1:nOrb) = R(1:nOrb,1:nOrb)
+     call diagonalize_matrix(nOrb,U,Occ_tmp)
+     c_tmp = matmul(c,U)
+     do iorb=1,nOrb
+      c(:,iorb)=c_tmp(:,nOrb-(iorb-1))
+      Occ(iorb)=Occ_tmp(nOrb-(iorb-1))
+     enddo
+     c_ao(:,:)                            = 0d0
+     c_ao(1:nBas      ,1:nOrb      )      = c(1:nBas,1:nOrb)
+     c_ao(nBas+1:nBas2,nOrb+1:nOrb_twice) = c(1:nBas,1:nOrb)
+     U_QP = matmul(transpose(c_ao),matmul(H_qsGWB_ao,c_ao)) ! H_qsGWB is in the NO basis
+     call diagonalize_matrix(nOrb_twice,U_QP,eigVAL)
+     R(:,:)  = 0d0
+     do iorb=1,nOrb
+      R(:,:) = R(:,:) + matmul(U_QP(:,iorb:iorb),transpose(U_QP(:,iorb:iorb))) 
+     enddo
+    endif
+    eqsGWB_state(:)=eigVAL(:)
 
     ! Dump results
     write(*,*)'------------------------------------------------------------------------------------------&
