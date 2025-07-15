@@ -61,6 +61,7 @@ subroutine qsGWB(dotest,maxSCF,thresh,max_diis,level_shift,nNuc,ZNuc,rNuc,ENuc,e
   double precision              :: trace_1rdm
   double precision              :: thrs_N
   double precision              :: norm_anom
+  double precision              :: EcRPA,EcGM
   double precision,external     :: trace_matrix
   double precision,allocatable  :: eigVAL(:)
   double precision,allocatable  :: Occ(:)
@@ -234,6 +235,12 @@ subroutine qsGWB(dotest,maxSCF,thresh,max_diis,level_shift,nNuc,ZNuc,rNuc,ENuc,e
    enddo
   enddo
   deallocate(ERI_MO)
+  write(*,*)
+  write(*,*) 'Computing phRPA@HFB and GM@HFB energies'
+  write(*,*) 'assuming a previous HFB calcution was performed'
+  write(*,*)
+  call EcRPA_EcGM_w_HFB(nOrb,nOrb_twice,1,eqsGWB_state,nfreqs,ntimes,wweight,wcoord,vMAT, &
+                        U_QP,EqsGWB+ENuc,EcRPA,EcGM)
 
 !------------------------------------------------------------------------
 ! Main SCF loop

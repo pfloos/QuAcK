@@ -30,7 +30,6 @@ subroutine Gitau2Chi0iw_mo_HFB(nOrb,nOrb_twice,verbose,eHFB,ntimes,wcoord,U_QP,C
   double precision,allocatable  :: Mat1(:,:),Mat2(:,:)
 
   complex*16                    :: product1
-  complex*16                    :: product2
   complex*16,allocatable        :: Glesser_he(:,:),Ggreater_he(:,:)
   complex*16,allocatable        :: Glesser_hh(:,:),Ggreater_ee(:,:)
   complex*16,allocatable        :: Chi0_mo_itau(:,:)
@@ -111,16 +110,13 @@ subroutine Gitau2Chi0iw_mo_HFB(nOrb,nOrb_twice,verbose,eHFB,ntimes,wcoord,U_QP,C
   ! Xo(i tau) = -2i G<(i tau) G>(-i tau) [ We store the spinless elements in this manner ]
   do iorb=1,nOrb
    do jorb=1,nOrb
-    do korb=jorb,nOrb
-     do lorb=iorb,nOrb                       
+    do korb=1,nOrb
+     do lorb=1,nOrb                       
                           ! r1   r2'               r2   r1'
       product1 = Glesser_he(iorb,jorb)*Ggreater_he(korb,lorb) &
                - Glesser_hh(iorb,jorb)*Ggreater_ee(korb,lorb)   ! [we add a minus to compensate not using -Mat2 according to Soma's paper]
-      product2 = Glesser_he(korb,lorb)*Ggreater_he(iorb,jorb) &
-               - Glesser_hh(korb,lorb)*Ggreater_ee(iorb,jorb)   ! [we add a minus to compensate not using -Mat2 according to Soma's paper]
       if(abs(product1)<1e-12) product1=czero
-      if(abs(product2)<1e-12) product2=czero
-      Chi0_mo_itau(1+(lorb-1)+(iorb-1)*nOrb,1+(korb-1)+(jorb-1)*nOrb) = product1+product2
+      Chi0_mo_itau(1+(lorb-1)+(iorb-1)*nOrb,1+(korb-1)+(jorb-1)*nOrb) = product1
      enddo
     enddo
    enddo

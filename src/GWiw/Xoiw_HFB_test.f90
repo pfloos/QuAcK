@@ -259,8 +259,6 @@ subroutine Xoiw_HFB_tests(nBas,nOrb,nOrb_twice,wtest,cHFB,eHFB,nfreqs,ntimes,wwe
      enddo
 
      ! WE HAVE ONLY IMPLEMENTED NEGATIVE REAL wtest OR PURELY IMAGINARY wtest FOR Sigma_c^he/hh
-     ! Gorkov density residues [ the complementary residues, for eHFB>0, are not needed because
-     !                           Sigma_c(eHFB>0) will be just -Sigma_c(eHFB) in the H^qsBGW ]
      Mat1(1:nOrb,1:nOrb)=U_QP(1:nOrb,1:nOrb)
      Mat2(1:nOrb,1:nOrb)=U_QP(nOrb+1:nOrb_twice,1:nOrb)
      do Istate=1,nOrb
