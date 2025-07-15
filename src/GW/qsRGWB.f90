@@ -1,6 +1,6 @@
 subroutine qsRGWB(dotest,maxSCF,thresh,max_diis,level_shift,nNuc,ZNuc,rNuc,ENuc,eta,shift, & 
                nBas,nOrb,nOrb_twice,nO,S,T,V,Hc,ERI,dipole_int,X,EqsGWB,c,P,Panom,F,Delta, &
-               sigma,chem_pot,restart_hfb,U_QP,eqsGWB_state,nfreqs,ntimes,wcoord,wweight)
+               sigma,chem_pot,U_QP,eqsGWB_state,nfreqs,ntimes,wcoord,wweight)
 
 ! Perform qsGW Bogoliubov calculation
 
@@ -40,7 +40,6 @@ subroutine qsRGWB(dotest,maxSCF,thresh,max_diis,level_shift,nNuc,ZNuc,rNuc,ENuc,
 
 ! Local variables
 
-  logical                       :: restart_hfb
   integer                       :: nBas2
   integer                       :: iorb,jorb,korb,lorb
   integer                       :: nSCF
@@ -154,7 +153,7 @@ subroutine qsRGWB(dotest,maxSCF,thresh,max_diis,level_shift,nNuc,ZNuc,rNuc,ENuc,
   X_ao(1:nBas      ,1:nOrb      )      = X(1:nBas,1:nOrb)
   X_ao(nBas+1:nBas2,nOrb+1:nOrb_twice) = X(1:nBas,1:nOrb)
 
-! Compute initial U_QP, HFB energies, and Occ numbers 
+! Compute initial U_QP, HFB energies, and electronic major Occ numbers 
 
   call Hartree_matrix_AO_basis(nBas,P,ERI,J)
   call exchange_matrix_AO_basis(nBas,P,ERI,K)
@@ -373,7 +372,7 @@ subroutine qsRGWB(dotest,maxSCF,thresh,max_diis,level_shift,nNuc,ZNuc,rNuc,ENuc,
     R_ao_old(1:nBas      ,nBas+1:nBas2) = Panom(1:nBas,1:nBas)
     R_ao_old(nBas+1:nBas2,1:nBas      ) = Panom(1:nBas,1:nBas)
 
-    ! Compute new U_QP and HFB energies
+    ! Compute new U_QP and electronic major Occ numbers
 
     U_QP = matmul(transpose(X_ao),matmul(H_qsGWB_ao,X_ao))
     call diagonalize_matrix(nOrb_twice,U_QP,eigVAL)
@@ -495,7 +494,6 @@ subroutine qsRGWB(dotest,maxSCF,thresh,max_diis,level_shift,nNuc,ZNuc,rNuc,ENuc,
   Delta_HL=eqsGWB_state(nOrb+1)-eqsGWB_state(nOrb)
   norm_anom = trace_matrix(nOrb,matmul(transpose(R(1:nOrb,nOrb+1:nOrb_twice)),R(1:nOrb,nOrb+1:nOrb_twice)))
   call dipole_moment(nBas,P,nNuc,ZNuc,rNuc,dipole_int,dipole)
-  call write_restart_qsGWB(nBas,nOrb,Occ,c,chem_pot) ! orders Occ and their c in descending order w.r.t. occupation numbers.
   call print_qsGWB(nBas,nOrb,nOrb_twice,nO,norm_anom,Occ,eqsGWB_state,ENuc,ET,EV,EJ,EK,EL,EqsGWB,chem_pot,&
                    dipole,Delta_HL)
 
