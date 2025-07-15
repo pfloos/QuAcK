@@ -1,4 +1,4 @@
-subroutine sigc_AO_basis_RHF(nBas,nOrb,nO,eta,shift,c,eqsGW_state,S,vMAT,nfreqs,ntimes, &
+subroutine sigc_AO_basis_RHF(nBas,nOrb,nO,verbose,eta,shift,c,eqsGW_state,S,vMAT,nfreqs,ntimes, &
                              wcoord,wweight,Sigc_ao)
 
 ! Compute Sigma_c matrix in the AO basis
@@ -11,6 +11,7 @@ subroutine sigc_AO_basis_RHF(nBas,nOrb,nO,eta,shift,c,eqsGW_state,S,vMAT,nfreqs,
   integer,intent(in)            :: nBas
   integer,intent(in)            :: nOrb
   integer,intent(in)            :: nO
+  integer,intent(in)            :: verbose
   integer,intent(in)            :: nfreqs
   integer,intent(in)            :: ntimes
 
@@ -24,7 +25,7 @@ subroutine sigc_AO_basis_RHF(nBas,nOrb,nO,eta,shift,c,eqsGW_state,S,vMAT,nfreqs,
 
 ! Local variables
 
-  logical                       :: doqsGW2
+  logical                       :: doqsGWv2
 
   integer                       :: iorb,jorb
   integer                       :: nE_eval_global
@@ -42,7 +43,8 @@ subroutine sigc_AO_basis_RHF(nBas,nOrb,nO,eta,shift,c,eqsGW_state,S,vMAT,nfreqs,
 
 ! Initialize variables
   
-  doqsGW2  = .false.  ! For the usual qsGW set it to false. To use the Energy_FermiLevel in qsGW (version 2) set it to true
+  doqsGWv2  = .true.  ! For the usual qsGW set it to false. 
+                     ! We now evaluated Sigma off-diag. at the Fermi Level in qsGW (i.e., qsGW version 2)
   chem_pot = 0.5d0*(eqsGW_state(nO)+eqsGW_state(nO+1))
 
 ! Se energies using cluster method or just using two shifts
@@ -93,7 +95,7 @@ subroutine sigc_AO_basis_RHF(nBas,nOrb,nO,eta,shift,c,eqsGW_state,S,vMAT,nfreqs,
     Sigc_mo(iorb,:)=Sigc_mo_tmp(iorb,iorb,:)
    enddo
    Sigc_mo = 0.5d0 * (Sigc_mo + transpose(Sigc_mo))
-   if(doqsGW2) then  ! qsGW version where all the off-diagonal elements are built at the Fermi level 
+   if(doqsGWv2) then  ! qsGW version where all the off-diagonal elements are built at the Fermi level 
     do iorb=1,nOrb
      do jorb=1,nOrb
       if(iorb/=jorb) Sigc_mo(iorb,jorb) = Real(Sigc_mo_cpx(nE_eval_global,iorb,jorb))
@@ -101,7 +103,19 @@ subroutine sigc_AO_basis_RHF(nBas,nOrb,nO,eta,shift,c,eqsGW_state,S,vMAT,nfreqs,
     enddo
     Sigc_mo = 0.5d0 * (Sigc_mo + transpose(Sigc_mo))
    endif
+   if(verbose/=0) then
+    write(*,*) 'Sigma_c MO'
+    do iorb=1,nOrb
+     write(*,'(*(f10.5))') Sigc_mo(iorb,:)
+    enddo
+   endif
    call MOtoAO(nBas,nOrb,S,c,Sigc_mo,Sigc_ao)
+   if(verbose/=0) then
+    write(*,*) 'Sigma_c AO'
+    do iorb=1,nBas
+     write(*,'(*(f10.5))') Sigc_ao(iorb,:)
+    enddo
+   endif
    deallocate(Sigc_mo_cpx)
    deallocate(Sigc_mo_tmp,Sigc_mo)
 

@@ -147,7 +147,7 @@ subroutine qsRGWi(dotest,maxSCF,thresh,max_diis,level_shift,eta,shift,nNuc,ZNuc,
      enddo
     enddo
     deallocate(ERI_MO)
-    call sigc_AO_basis_RHF(nBas,nOrb,nO,eta,shift,c,eqsGW_state,S,vMAT,nfreqs, &
+    call sigc_AO_basis_RHF(nBas,nOrb,nO,0,eta,shift,c,eqsGW_state,S,vMAT,nfreqs, &
                            ntimes,wcoord,wweight,Sigc)
 
 
