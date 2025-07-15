@@ -1,7 +1,6 @@
-subroutine BQuAcK(working_dir,dotest,doHFB,dophRPA,doqsGW,nNuc,nBas,nOrb,nO,ENuc,eta,shift,ZNuc, &
-                  rNuc,S,T,V,Hc,X,dipole_int_AO,maxSCF_HF,max_diis_HF,thresh_HF,level_shift,     &
-                  guess_type,mix,temperature,sigma,chem_pot_hf,restart_hfb,nfreqs,ntimes,        &
-                  wcoord,wweight)
+subroutine BQuAcK(working_dir,dotest,doHFB,dophRPA,doqsGW,nNuc,nBas,nOrb,nO,ENuc,eta,shift,ZNuc,   &
+                  rNuc,S,T,V,Hc,X,dipole_int_AO,maxSCF,max_diis,thresh,level_shift,guess_type,mix, &
+                  temperature,sigma,chem_pot_hf,restart_hfb,nfreqs,ntimes,wcoord,wweight)
 
 ! Restricted branch of QuAcK
 
@@ -37,8 +36,8 @@ subroutine BQuAcK(working_dir,dotest,doHFB,dophRPA,doqsGW,nNuc,nBas,nOrb,nO,ENuc
   double precision,intent(inout)   :: X(nBas,nOrb)
   double precision,intent(inout)   :: dipole_int_AO(nBas,nBas,ncart)
 
-  integer,intent(in)            :: maxSCF_HF,max_diis_HF
-  double precision,intent(in)   :: thresh_HF,level_shift,mix
+  integer,intent(in)            :: maxSCF,max_diis
+  double precision,intent(in)   :: thresh,level_shift,mix
   integer,intent(in)            :: guess_type
 
 ! Local variables
@@ -56,15 +55,15 @@ subroutine BQuAcK(working_dir,dotest,doHFB,dophRPA,doqsGW,nNuc,nBas,nOrb,nO,ENuc
   double precision              :: start_int    ,end_int      ,t_int
 
   double precision,allocatable  :: eHF(:)
-  double precision,allocatable  :: eONEBODY_state(:)
+  double precision,allocatable  :: eQP_state(:)
   double precision,allocatable  :: U_QP(:,:)
-  double precision,allocatable  :: cHFB(:,:)
-  double precision,allocatable  :: PHF(:,:)
-  double precision,allocatable  :: PanomHF(:,:)
-  double precision,allocatable  :: FHF(:,:)
+  double precision,allocatable  :: MOCoef(:,:)
+  double precision,allocatable  :: pMAT(:,:)
+  double precision,allocatable  :: panomMAT(:,:)
+  double precision,allocatable  :: Fock(:,:)
   double precision,allocatable  :: Delta(:,:)
   double precision,allocatable  :: vMAT(:,:)
-  double precision              :: ERHF,EHFB,EcRPA,EcGM
+  double precision              :: EeleSD,Eelec,EcRPA,EcGM
   double precision,allocatable  :: dipole_int_MO(:,:,:)
   double precision,allocatable  :: ERI_AO(:,:,:,:)
   double precision,allocatable  :: ERI_MO(:,:,:,:)
@@ -87,14 +86,14 @@ subroutine BQuAcK(working_dir,dotest,doHFB,dophRPA,doqsGW,nNuc,nBas,nOrb,nO,ENuc
 
   allocate(eHF(nOrb))
 
-  allocate(cHFB(nBas,nOrb))
+  allocate(MOCoef(nBas,nOrb))
 
-  allocate(PHF(nBas,nBas))
-  allocate(PanomHF(nBas,nBas))
-  allocate(FHF(nBas,nBas))
+  allocate(pMAT(nBas,nBas))
+  allocate(panomMAT(nBas,nBas))
+  allocate(Fock(nBas,nBas))
   allocate(Delta(nBas,nBas))
 
-  allocate(eONEBODY_state(nOrb_twice))
+  allocate(eQP_state(nOrb_twice))
   allocate(U_QP(nOrb_twice,nOrb_twice))
 
   allocate(ERI_AO(nBas,nBas,nBas,nBas))
@@ -143,8 +142,8 @@ subroutine BQuAcK(working_dir,dotest,doHFB,dophRPA,doqsGW,nNuc,nBas,nOrb,nO,ENuc
 
     ! Run first a RHF calculation 
     call wall_time(start_HF)
-    call RHF(dotest,maxSCF_HF,thresh_HF,max_diis_HF,guess_type,level_shift,nNuc,ZNuc,rNuc,ENuc, &
-             nBas,nOrb,nO_,S,T,V,Hc,ERI_AO,dipole_int_AO,X,ERHF,eHF,cHFB,PHF,FHF)
+    call RHF(dotest,maxSCF,thresh,max_diis,guess_type,level_shift,nNuc,ZNuc,rNuc,ENuc, &
+             nBas,nOrb,nO_,S,T,V,Hc,ERI_AO,dipole_int_AO,X,EeleSD,eHF,MOCoef,pMAT,Fock)
     call wall_time(end_HF)
 
     t_HF = end_HF - start_HF
@@ -156,8 +155,8 @@ subroutine BQuAcK(working_dir,dotest,doHFB,dophRPA,doqsGW,nNuc,nBas,nOrb,nO,ENuc
 
       ! Continue with a HFB calculation
       call wall_time(start_qsGWB)
-      call qsRGWi(dotest,maxSCF_HF,thresh_HF,max_diis_HF,level_shift,eta,shift,nNuc,ZNuc,rNuc,ENuc,  &
-                  nBas,nOrb,nO_,S,T,V,Hc,ERI_AO,dipole_int_AO,X,ERHF,eHF,cHFB,PHF,FHF,               &
+      call qsRGWi(dotest,maxSCF,thresh,max_diis,level_shift,eta,shift,nNuc,ZNuc,rNuc,ENuc,   &
+                  nBas,nOrb,nO_,S,T,V,Hc,ERI_AO,dipole_int_AO,X,EeleSD,eHF,MOCoef,pMAT,Fock, &
                   nfreqs,ntimes,wcoord,wweight)
       call wall_time(end_qsGWB)
 
@@ -173,7 +172,7 @@ subroutine BQuAcK(working_dir,dotest,doHFB,dophRPA,doqsGW,nNuc,nBas,nOrb,nO,ENuc
      call wall_time(start_Ecorr)
      allocate(vMAT(nOrb*nOrb,nOrb*nOrb))
      allocate(ERI_MO(nOrb,nOrb,nOrb,nOrb))
-     call AOtoMO_ERI_RHF(nBas,nOrb,cHFB,ERI_AO,ERI_MO)
+     call AOtoMO_ERI_RHF(nBas,nOrb,MOCoef,ERI_AO,ERI_MO)
      do iorb=1,nOrb
       do jorb=1,nOrb
        do korb=1,nOrb
@@ -184,7 +183,8 @@ subroutine BQuAcK(working_dir,dotest,doHFB,dophRPA,doqsGW,nNuc,nBas,nOrb,nO,ENuc
       enddo
      enddo
      deallocate(ERI_MO)
-     call EcRPA_EcGM_w_RHF(nOrb,nO,1,eHF,nfreqs,ntimes,wweight,wcoord,vMAT,ERHF+ENuc,EcRPA,EcGM)
+     call EcRPA_EcGM_w_RHF(nOrb,nO,1,eHF,nfreqs,ntimes,wweight,wcoord,vMAT,EeleSD+ENuc, &
+                           EcRPA,EcGM)
      deallocate(vMAT)
      call wall_time(end_Ecorr)
 
@@ -196,9 +196,10 @@ subroutine BQuAcK(working_dir,dotest,doHFB,dophRPA,doqsGW,nNuc,nBas,nOrb,nO,ENuc
 
     ! Continue with a HFB calculation
     call wall_time(start_HF)
-    call RHFB(dotest,doqsGW,maxSCF_HF,thresh_HF,max_diis_HF,level_shift,nNuc,ZNuc,rNuc,ENuc,      &
-             nBas,nOrb,nOrb_twice,nO_,S,T,V,Hc,ERI_AO,dipole_int_AO,X,EHFB,eHF,cHFB,PHF,PanomHF,  &
-             FHF,Delta,temperature,sigma,chem_pot_hf,chem_pot,restart_hfb,U_QP,eONEBODY_state)
+    call RHFB(dotest,doqsGW,maxSCF,thresh,max_diis,level_shift,nNuc,ZNuc,rNuc,ENuc,       &
+             nBas,nOrb,nOrb_twice,nO_,S,T,V,Hc,ERI_AO,dipole_int_AO,X,Eelec,eHF,MOCoef,   & 
+             pMAT,panomMAT,Fock,Delta,temperature,sigma,chem_pot_hf,chem_pot,restart_hfb, &
+             U_QP,eQP_state)
     call wall_time(end_HF)
 
     t_HF = end_HF - start_HF
@@ -215,10 +216,10 @@ subroutine BQuAcK(working_dir,dotest,doHFB,dophRPA,doqsGW,nNuc,nBas,nOrb,nO,ENuc
 
     ! Continue with a HFB calculation
     call wall_time(start_qsGWB)
-    call qsRGWB(dotest,maxSCF_HF,thresh_HF,max_diis_HF,level_shift,nNuc,ZNuc,rNuc,ENuc,eta,shift,  &
-               nBas,nOrb,nOrb_twice,nO_,S,T,V,Hc,ERI_AO,dipole_int_AO,X,EHFB,cHFB,PHF,PanomHF,     &
-               FHF,Delta,sigma,chem_pot,restart_hfb,U_QP,eONEBODY_state,nfreqs,ntimes,wcoord,wweight) 
-
+    call qsRGWB(dotest,maxSCF,thresh,max_diis,level_shift,nNuc,ZNuc,rNuc,ENuc,eta,shift,    &
+               nBas,nOrb,nOrb_twice,nO_,S,T,V,Hc,ERI_AO,dipole_int_AO,X,Eelec,MOCoef,pMAT,  & 
+               panomMAT,Fock,Delta,sigma,chem_pot,restart_hfb,U_QP,eQP_state,nfreqs,ntimes, &
+               wcoord,wweight) 
     call wall_time(end_qsGWB)
 
     t_qsGWB = end_qsGWB - start_qsGWB
@@ -233,7 +234,7 @@ subroutine BQuAcK(working_dir,dotest,doHFB,dophRPA,doqsGW,nNuc,nBas,nOrb,nO,ENuc
    call wall_time(start_Ecorr)
    allocate(vMAT(nOrb*nOrb,nOrb*nOrb))
    allocate(ERI_MO(nOrb,nOrb,nOrb,nOrb))
-   call AOtoMO_ERI_RHF(nBas,nOrb,cHFB,ERI_AO,ERI_MO)
+   call AOtoMO_ERI_RHF(nBas,nOrb,MOCoef,ERI_AO,ERI_MO)
    do iorb=1,nOrb
     do jorb=1,nOrb
      do korb=1,nOrb
@@ -244,8 +245,8 @@ subroutine BQuAcK(working_dir,dotest,doHFB,dophRPA,doqsGW,nNuc,nBas,nOrb,nO,ENuc
     enddo
    enddo
    deallocate(ERI_MO)
-   call EcRPA_EcGM_w_HFB(nOrb,nOrb_twice,1,eONEBODY_state,nfreqs,ntimes,wweight,wcoord,vMAT, &
-                         U_QP,EHFB+ENuc,EcRPA,EcGM)
+   call EcRPA_EcGM_w_HFB(nOrb,nOrb_twice,1,eQP_state,nfreqs,ntimes,wweight,wcoord,vMAT, &
+                         U_QP,Eelec+ENuc,EcRPA,EcGM)
    deallocate(vMAT)
    call wall_time(end_Ecorr)
 
@@ -258,12 +259,12 @@ subroutine BQuAcK(working_dir,dotest,doHFB,dophRPA,doqsGW,nNuc,nBas,nOrb,nO,ENuc
 ! Memory deallocation
     
   deallocate(eHF)
-  deallocate(cHFB)
-  deallocate(PHF)
-  deallocate(PanomHF)
-  deallocate(FHF)
+  deallocate(MOCoef)
+  deallocate(pMAT)
+  deallocate(panomMAT)
+  deallocate(Fock)
   deallocate(Delta)
-  deallocate(eONEBODY_state)
+  deallocate(eQP_state)
   deallocate(U_QP)
   deallocate(ERI_AO)
 
