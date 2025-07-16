@@ -1,5 +1,5 @@
-subroutine qsRGWi(dotest,maxSCF,thresh,max_diis,level_shift,eta,shift,nNuc,ZNuc,rNuc,ENuc, & 
-                  nBas,nOrb,nO,verbose,S,T,V,Hc,ERI,dipole_int,X,EqsGW,eqsGW_state,c,P,F,  &
+subroutine qsRGWim(dotest,maxSCF,thresh,max_diis,level_shift,eta,shift,nNuc,ZNuc,rNuc,ENuc, & 
+                  nBas,nOrb,nO,verbose,S,T,V,Hc,ERI,dipole_int,X,EqsGW,eqsGW_state,c,P,F,   &
                   nfreqs,ntimes,wcoord,wweight)
 
 ! Perform restricted Hartree-Fock calculation
