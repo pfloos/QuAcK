@@ -1,5 +1,5 @@
 subroutine qsRGWi(dotest,maxSCF,thresh,max_diis,level_shift,eta,shift,nNuc,ZNuc,rNuc,ENuc, & 
-                  nBas,nOrb,nO,S,T,V,Hc,ERI,dipole_int,X,EqsGW,eqsGW_state,c,P,F,          &
+                  nBas,nOrb,nO,verbose,S,T,V,Hc,ERI,dipole_int,X,EqsGW,eqsGW_state,c,P,F,  &
                   nfreqs,ntimes,wcoord,wweight)
 
 ! Perform restricted Hartree-Fock calculation
@@ -11,6 +11,7 @@ subroutine qsRGWi(dotest,maxSCF,thresh,max_diis,level_shift,eta,shift,nNuc,ZNuc,
 
   logical,intent(in)            :: dotest
 
+  integer,intent(in)            :: verbose
   integer,intent(in)            :: maxSCF
   integer,intent(in)            :: max_diis
   double precision,intent(in)   :: thresh
@@ -38,6 +39,7 @@ subroutine qsRGWi(dotest,maxSCF,thresh,max_diis,level_shift,eta,shift,nNuc,ZNuc,
 
 ! Local variables
 
+  logical                       :: offdiag0
   logical                       :: file_exists
   integer                       :: iorb,jorb,korb,lorb
   integer                       :: nSCF
@@ -52,6 +54,7 @@ subroutine qsRGWi(dotest,maxSCF,thresh,max_diis,level_shift,eta,shift,nNuc,ZNuc,
   double precision              :: Conv
   double precision              :: rcond
   double precision,external     :: trace_matrix
+  double precision,allocatable  :: Sigc_mo(:,:)
   double precision,allocatable  :: Sigc(:,:)
   double precision,allocatable  :: err(:,:)
   double precision,allocatable  :: err_diis(:,:)
@@ -81,6 +84,7 @@ subroutine qsRGWi(dotest,maxSCF,thresh,max_diis,level_shift,eta,shift,nNuc,ZNuc,
 
 ! Useful quantities
   nBas_Sq = nBas*nBas
+  offdiag0=.false. ! Set it to true if you want to try qsGW version 2 where all the off-diag. elements of Sigc_mo are eval at Fermi level
 
 ! Memory allocation
 
@@ -90,6 +94,7 @@ subroutine qsRGWi(dotest,maxSCF,thresh,max_diis,level_shift,eta,shift,nNuc,ZNuc,
 
   allocate(err(nBas,nBas))
 
+  allocate(Sigc_mo(nOrb,nOrb))
   allocate(cp(nOrb,nOrb))
   allocate(Fp(nOrb,nOrb))
 
@@ -147,8 +152,22 @@ subroutine qsRGWi(dotest,maxSCF,thresh,max_diis,level_shift,eta,shift,nNuc,ZNuc,
      enddo
     enddo
     deallocate(ERI_MO)
-    call sigc_AO_basis_RHF(nBas,nOrb,nO,0,eta,shift,c,eqsGW_state,S,vMAT,nfreqs, &
-                           ntimes,wcoord,wweight,Sigc)
+    call sigc_MO_basis_RHF(nOrb,nO,offdiag0,eta,shift,eqsGW_state,vMAT,nfreqs, &
+                           ntimes,wcoord,wweight,Sigc_mo)
+    Sigc_mo = 0.5d0 * (Sigc_mo + transpose(Sigc_mo))
+    if(verbose/=0) then    
+     write(*,*) 'Sigma_c MO'
+     do iorb=1,nOrb
+      write(*,'(*(f10.5))') Sigc_mo(iorb,:)
+     enddo
+    endif
+    call MOtoAO(nBas,nOrb,S,c,Sigc_mo,Sigc)
+    if(verbose/=0) then
+     write(*,*) 'Sigma_c AO'
+     do iorb=1,nBas
+      write(*,'(*(f10.5))') Sigc(iorb,:)
+     enddo
+    endif
 
 
     F(:,:) = Hc(:,:) + J(:,:) + 0.5d0*K(:,:) + Sigc(:,:)
@@ -228,7 +247,8 @@ subroutine qsRGWi(dotest,maxSCF,thresh,max_diis,level_shift,eta,shift,nNuc,ZNuc,
     write(*,*)'!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!'
     write(*,*)
 
-    !deallocate(J,K,err,cp,Fp,err_diis,F_diis)
+    deallocate(J,K,Sigc,Sigc_mo,err,cp,Fp,err_diis,F_diis)
+    deallocate(vMAT)
 
     write(*,*) ' Warning! Convergence failed at Hartree-Fock level.'
 
@@ -260,7 +280,7 @@ subroutine qsRGWi(dotest,maxSCF,thresh,max_diis,level_shift,eta,shift,nNuc,ZNuc,
 
 ! Memory deallocation
 
-  deallocate(J,K,Sigc,err,cp,Fp,err_diis,F_diis)
+  deallocate(J,K,Sigc,Sigc_mo,err,cp,Fp,err_diis,F_diis)
   deallocate(vMAT)
 
 end subroutine 

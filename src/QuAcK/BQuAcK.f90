@@ -43,6 +43,7 @@ subroutine BQuAcK(working_dir,dotest,doHFB,dophRPA,doqsGW,nNuc,nBas,nOrb,nO,ENuc
 ! Local variables
 
   logical                       :: file_exists
+  integer                       :: verbose
   integer                       :: nOrb_twice
   integer                       :: nO_
   integer                       :: ixyz
@@ -81,6 +82,7 @@ subroutine BQuAcK(working_dir,dotest,doHFB,dophRPA,doqsGW,nNuc,nBas,nOrb,nO,ENuc
 ! Memory allocation !
 !-------------------!
 
+  verbose=0
   nO_=nO
   nOrb_twice=nOrb+nOrb
 
@@ -156,9 +158,9 @@ subroutine BQuAcK(working_dir,dotest,doHFB,dophRPA,doqsGW,nNuc,nBas,nOrb,nO,ENuc
 
       ! Continue with a HFB calculation
       call wall_time(start_qsGWB)
-      call qsRGWi(dotest,maxSCF,thresh,max_diis,level_shift,eta,shift,nNuc,ZNuc,rNuc,ENuc,   &
-                  nBas,nOrb,nO_,S,T,V,Hc,ERI_AO,dipole_int_AO,X,EeleSD,eHF,MOCoef,pMAT,Fock, &
-                  nfreqs,ntimes,wcoord,wweight)
+      call qsRGWi(dotest,maxSCF,thresh,max_diis,level_shift,eta,shift,nNuc,ZNuc,rNuc,ENuc, &
+                  nBas,nOrb,nO_,verbose,S,T,V,Hc,ERI_AO,dipole_int_AO,X,EeleSD,eHF,MOCoef, &
+                  pMAT,Fock,nfreqs,ntimes,wcoord,wweight)
       call wall_time(end_qsGWB)
 
       t_qsGWB = end_qsGWB - start_qsGWB
