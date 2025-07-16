@@ -1,6 +1,6 @@
-subroutine qsRGWB(dotest,maxSCF,thresh,max_diis,level_shift,nNuc,ZNuc,rNuc,ENuc,eta,shift, & 
-               nBas,nOrb,nOrb_twice,nO,S,T,V,Hc,ERI,dipole_int,X,EqsGWB,c,P,Panom,F,Delta, &
-               sigma,chem_pot,U_QP,eqsGWB_state,nfreqs,ntimes,wcoord,wweight)
+subroutine qsRGWBim(dotest,maxSCF,thresh,max_diis,level_shift,nNuc,ZNuc,rNuc,ENuc,eta,shift, & 
+               nBas,nOrb,nOrb_twice,nO,verbose,S,T,V,Hc,ERI,dipole_int,X,EqsGWB,c,P,Panom,   &
+               F,Delta,sigma,chem_pot,U_QP,eqsGWB_state,nfreqs,ntimes,wcoord,wweight)
 
 ! Perform qsGW Bogoliubov calculation
 
@@ -16,6 +16,7 @@ subroutine qsRGWB(dotest,maxSCF,thresh,max_diis,level_shift,nNuc,ZNuc,rNuc,ENuc,
   double precision,intent(in)   :: thresh
   double precision,intent(in)   :: level_shift
 
+  integer,intent(in)            :: verbose
   integer,intent(in)            :: nBas
   integer,intent(in)            :: nOrb
   integer,intent(in)            :: nOrb_twice
