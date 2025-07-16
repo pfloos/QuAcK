@@ -40,10 +40,10 @@ subroutine qsRGWB(dotest,maxSCF,thresh,max_diis,level_shift,nNuc,ZNuc,rNuc,ENuc,
 
 ! Local variables
 
-  integer                       :: nBas2
+  integer                       :: nBas_twice
   integer                       :: iorb,jorb,korb,lorb
   integer                       :: nSCF
-  integer                       :: nBas2_Sq
+  integer                       :: nBas_twice_Sq
   integer                       :: n_diis
   double precision              :: ET
   double precision              :: EV
@@ -64,6 +64,7 @@ subroutine qsRGWB(dotest,maxSCF,thresh,max_diis,level_shift,nNuc,ZNuc,rNuc,ENuc,
   double precision,external     :: trace_matrix
   double precision,allocatable  :: eigVAL(:)
   double precision,allocatable  :: Occ(:)
+  double precision,allocatable  :: eFock(:)
   double precision,allocatable  :: pivot_U_QP(:)
   double precision,allocatable  :: err_diis(:,:)
   double precision,allocatable  :: H_qsGWB_diis(:,:)
@@ -106,12 +107,13 @@ subroutine qsRGWB(dotest,maxSCF,thresh,max_diis,level_shift,nNuc,ZNuc,rNuc,ENuc,
 
 ! Useful quantities
 
-  nBas2 = nBas+nBas
-  nBas2_Sq = nBas2*nBas2
+  nBas_twice    = nBas+nBas
+  nBas_twice_Sq = nBas_twice*nBas_twice
 
 ! Memory allocation
 
   allocate(Occ(nOrb))
+  allocate(eFock(nOrb))
 
   allocate(J(nBas,nBas))
   allocate(K(nBas,nBas))
@@ -124,34 +126,34 @@ subroutine qsRGWB(dotest,maxSCF,thresh,max_diis,level_shift,nNuc,ZNuc,rNuc,ENuc,
   allocate(eigVAL(nOrb_twice))
   allocate(vMAT(nOrb*nOrb,nOrb*nOrb))
 
-  allocate(err_ao(nBas2,nBas2))
-  allocate(S_ao(nBas2,nBas2))
-  allocate(X_ao(nBas2,nOrb_twice))
-  allocate(R_ao_old(nBas2,nBas2))
-  allocate(H_qsGWB_ao(nBas2,nBas2))
+  allocate(err_ao(nBas_twice,nBas_twice))
+  allocate(S_ao(nBas_twice,nBas_twice))
+  allocate(X_ao(nBas_twice,nOrb_twice))
+  allocate(R_ao_old(nBas_twice,nBas_twice))
+  allocate(H_qsGWB_ao(nBas_twice,nBas_twice))
 
-  allocate(err_diis(nBas2_Sq,max_diis))
-  allocate(H_qsGWB_diis(nBas2_Sq,max_diis))
+  allocate(err_diis(nBas_twice_Sq,max_diis))
+  allocate(H_qsGWB_diis(nBas_twice_Sq,max_diis))
 
 
 ! Initialization
 
-  thrs_N          = 1d-8
-  n_diis          = 0
+  thrs_N            = 1d-8
+  n_diis            = 0
   H_qsGWB_diis(:,:) = 0d0
-  err_diis(:,:)   = 0d0
-  rcond           = 0d0
-  Conv            = 1d0
-  nSCF            = 0
+  err_diis(:,:)     = 0d0
+  rcond             = 0d0
+  Conv              = 1d0
+  nSCF              = 0
 
   Sigc_he(:,:)    = 0d0
   Sigc_hh(:,:)    = 0d0
   S_ao(:,:)       = 0d0
-  S_ao(1:nBas      ,1:nBas      ) = S(1:nBas,1:nBas)
-  S_ao(nBas+1:nBas2,nBas+1:nBas2) = S(1:nBas,1:nBas)
   X_ao(:,:)       = 0d0
-  X_ao(1:nBas      ,1:nOrb      )      = X(1:nBas,1:nOrb)
-  X_ao(nBas+1:nBas2,nOrb+1:nOrb_twice) = X(1:nBas,1:nOrb)
+  S_ao(1:nBas      ,1:nBas      )           = S(1:nBas,1:nBas)
+  S_ao(nBas+1:nBas_twice,nBas+1:nBas_twice) = S(1:nBas,1:nBas)
+  X_ao(1:nBas      ,1:nOrb      )           = X(1:nBas,1:nOrb)
+  X_ao(nBas+1:nBas_twice,nOrb+1:nOrb_twice) = X(1:nBas,1:nOrb)
 
 ! Compute initial U_QP, HFB energies, and electronic major Occ numbers 
 
@@ -159,12 +161,19 @@ subroutine qsRGWB(dotest,maxSCF,thresh,max_diis,level_shift,nNuc,ZNuc,rNuc,ENuc,
   call exchange_matrix_AO_basis(nBas,P,ERI,K)
   call anomalous_matrix_AO_basis(nBas,sigma,Panom,ERI,Delta)
   F(:,:) = Hc(:,:) + J(:,:) + 0.5d0*K(:,:) - chem_pot*S(:,:)
-  H_qsGWB_ao(:,:)                       = 0d0
-  H_qsGWB_ao(1:nBas      ,1:nBas      ) =  F(1:nBas,1:nBas)
-  H_qsGWB_ao(nBas+1:nBas2,nBas+1:nBas2) = -F(1:nBas,1:nBas)
-  H_qsGWB_ao(1:nBas      ,nBas+1:nBas2) = Delta(1:nBas,1:nBas)
-  H_qsGWB_ao(nBas+1:nBas2,1:nBas      ) = Delta(1:nBas,1:nBas)
-  U_QP = matmul(transpose(X_ao),matmul(H_qsGWB_ao,X_ao))
+  allocate(c_ao(nBas_twice,nOrb_twice),U(nOrb,nOrb))
+  U = matmul(transpose(c),matmul(F,c))
+  call diagonalize_matrix(nOrb,U,eFock)
+  c=matmul(c,U)
+  c_ao(:,:)       = 0d0
+  c_ao(1:nBas      ,1:nOrb      )           = c(1:nBas,1:nOrb)
+  c_ao(nBas+1:nBas_twice,nOrb+1:nOrb_twice) = c(1:nBas,1:nOrb)
+  H_qsGWB_ao(:,:)  = 0d0
+  H_qsGWB_ao(1:nBas      ,1:nBas      )           =  F(1:nBas,1:nBas)
+  H_qsGWB_ao(nBas+1:nBas_twice,nBas+1:nBas_twice) = -F(1:nBas,1:nBas)
+  H_qsGWB_ao(1:nBas      ,nBas+1:nBas_twice) = Delta(1:nBas,1:nBas)
+  H_qsGWB_ao(nBas+1:nBas_twice,1:nBas      ) = Delta(1:nBas,1:nBas)
+  U_QP = matmul(transpose(c_ao),matmul(H_qsGWB_ao,c_ao))
   call diagonalize_matrix(nOrb_twice,U_QP,eigVAL)
   Occ=0d0
   do iorb=1,nOrb
@@ -217,13 +226,14 @@ subroutine qsRGWB(dotest,maxSCF,thresh,max_diis,level_shift,nNuc,ZNuc,rNuc,ENuc,
     endif
    enddo
   enddo
+  deallocate(U,c_ao)
   eqsGWB_state(:) = eigVAL(:)
 
 
-! Compute vMAT in the X basis 
+! Compute vMAT in the c basis 
 
   allocate(ERI_MO(nOrb,nOrb,nOrb,nOrb))
-  call AOtoMO_ERI_RHF(nBas,nOrb,X,ERI,ERI_MO)
+  call AOtoMO_ERI_RHF(nBas,nOrb,c,ERI,ERI_MO)
   do iorb=1,nOrb
    do jorb=1,nOrb
     do korb=1,nOrb
@@ -260,7 +270,19 @@ subroutine qsRGWB(dotest,maxSCF,thresh,max_diis,level_shift,nNuc,ZNuc,rNuc,ENuc,
     call Hartree_matrix_AO_basis(nBas,P,ERI,J)
     call exchange_matrix_AO_basis(nBas,P,ERI,K)
     call anomalous_matrix_AO_basis(nBas,sigma,Panom,ERI,Delta)
-    call sigc_AO_basis_HFB(nBas,nOrb,nOrb_twice,0,eta,shift,X,Occ,U_QP,eqsGWB_state, & 
+    allocate(ERI_MO(nOrb,nOrb,nOrb,nOrb))
+    call AOtoMO_ERI_RHF(nBas,nOrb,c,ERI,ERI_MO)
+    do iorb=1,nOrb
+     do jorb=1,nOrb
+      do korb=1,nOrb
+       do lorb=1,nOrb
+        vMAT(1+(korb-1)+(iorb-1)*nOrb,1+(lorb-1)+(jorb-1)*nOrb)=ERI_MO(iorb,jorb,korb,lorb)
+       enddo
+      enddo
+     enddo
+    enddo
+    deallocate(ERI_MO)
+    call sigc_AO_basis_HFB(nBas,nOrb,nOrb_twice,0,eta,shift,c,Occ,U_QP,eqsGWB_state, & 
                            S,vMAT,nfreqs,ntimes,wcoord,wweight,Sigc_he,Sigc_hh)
 
     F(:,:) = Hc(:,:) + J(:,:) + 0.5d0*K(:,:) + Sigc_he(:,:) - chem_pot*S(:,:)
@@ -300,14 +322,14 @@ subroutine qsRGWB(dotest,maxSCF,thresh,max_diis,level_shift,nNuc,ZNuc,rNuc,ENuc,
 
      F(:,:) = Hc(:,:) + J(:,:) + 0.5d0*K(:,:) + Sigc_he(:,:) - chem_pot*S(:,:)
      H_qsGWB_ao(:,:)    = 0d0
-     H_qsGWB_ao(1:nBas      ,1:nBas      ) =  F(1:nBas,1:nBas)
-     H_qsGWB_ao(nBas+1:nBas2,nBas+1:nBas2) = -F(1:nBas,1:nBas)
-     H_qsGWB_ao(1:nBas      ,nBas+1:nBas2) = Delta(1:nBas,1:nBas) + Sigc_hh(1:nBas,1:nBas)
-     H_qsGWB_ao(nBas+1:nBas2,1:nBas      ) = Delta(1:nBas,1:nBas) + Sigc_hh(1:nBas,1:nBas)
+     H_qsGWB_ao(1:nBas      ,1:nBas      )           =  F(1:nBas,1:nBas)
+     H_qsGWB_ao(nBas+1:nBas_twice,nBas+1:nBas_twice) = -F(1:nBas,1:nBas)
+     H_qsGWB_ao(1:nBas      ,nBas+1:nBas_twice) = Delta(1:nBas,1:nBas) + Sigc_hh(1:nBas,1:nBas)
+     H_qsGWB_ao(nBas+1:nBas_twice,1:nBas      ) = Delta(1:nBas,1:nBas) + Sigc_hh(1:nBas,1:nBas)
      err_ao = matmul(H_qsGWB_ao,matmul(R_ao_old,S_ao)) - matmul(matmul(S_ao,R_ao_old),H_qsGWB_ao)
 
      n_diis = min(n_diis+1,max_diis)
-     call DIIS_extrapolation(rcond,nBas2_Sq,nBas2_Sq,n_diis,err_diis,H_qsGWB_diis,err_ao,H_qsGWB_ao)
+     call DIIS_extrapolation(rcond,nBas_twice_Sq,nBas_twice_Sq,n_diis,err_diis,H_qsGWB_diis,err_ao,H_qsGWB_ao)
 
      H_qsGWB = matmul(transpose(X_ao),matmul(H_qsGWB_ao,X_ao))
      U_QP(:,:) = H_qsGWB(:,:)
@@ -355,10 +377,10 @@ subroutine qsRGWB(dotest,maxSCF,thresh,max_diis,level_shift,nNuc,ZNuc,rNuc,ENuc,
 
     F(:,:) = Hc(:,:) + J(:,:) + 0.5d0*K(:,:) + Sigc_he(:,:) - chem_pot*S(:,:)
     H_qsGWB_ao(:,:)    = 0d0
-    H_qsGWB_ao(1:nBas      ,1:nBas      ) =  F(1:nBas,1:nBas)
-    H_qsGWB_ao(nBas+1:nBas2,nBas+1:nBas2) = -F(1:nBas,1:nBas)
-    H_qsGWB_ao(1:nBas      ,nBas+1:nBas2) = Delta(1:nBas,1:nBas) + Sigc_hh(1:nBas,1:nBas)
-    H_qsGWB_ao(nBas+1:nBas2,1:nBas      ) = Delta(1:nBas,1:nBas) + Sigc_hh(1:nBas,1:nBas)
+    H_qsGWB_ao(1:nBas      ,1:nBas      )           =  F(1:nBas,1:nBas)
+    H_qsGWB_ao(nBas+1:nBas_twice,nBas+1:nBas_twice) = -F(1:nBas,1:nBas)
+    H_qsGWB_ao(1:nBas      ,nBas+1:nBas_twice) = Delta(1:nBas,1:nBas) + Sigc_hh(1:nBas,1:nBas)
+    H_qsGWB_ao(nBas+1:nBas_twice,1:nBas      ) = Delta(1:nBas,1:nBas) + Sigc_hh(1:nBas,1:nBas)
     if(nSCF > 1) then
      err_ao = matmul(H_qsGWB_ao,matmul(R_ao_old,S_ao)) - matmul(matmul(S_ao,R_ao_old),H_qsGWB_ao)
      Conv  = maxval(abs(err_ao))
@@ -367,14 +389,22 @@ subroutine qsRGWB(dotest,maxSCF,thresh,max_diis,level_shift,nNuc,ZNuc,rNuc,ENuc,
     ! Update R_old
 
     R_ao_old(:,:)    = 0d0
-    R_ao_old(1:nBas      ,1:nBas      ) = 0.5d0*P(1:nBas,1:nBas)
-    R_ao_old(nBas+1:nBas2,nBas+1:nBas2) = matmul(X(1:nBas,1:nOrb), transpose(X(1:nBas,1:nOrb)))-0.5d0*P(1:nBas,1:nBas)
-    R_ao_old(1:nBas      ,nBas+1:nBas2) = Panom(1:nBas,1:nBas)
-    R_ao_old(nBas+1:nBas2,1:nBas      ) = Panom(1:nBas,1:nBas)
+    R_ao_old(1:nBas      ,1:nBas      )           = 0.5d0*P(1:nBas,1:nBas)
+    R_ao_old(nBas+1:nBas_twice,nBas+1:nBas_twice) = matmul(X(1:nBas,1:nOrb), transpose(X(1:nBas,1:nOrb))) &
+                                                  -0.5d0*P(1:nBas,1:nBas)
+    R_ao_old(1:nBas      ,nBas+1:nBas_twice) = Panom(1:nBas,1:nBas)
+    R_ao_old(nBas+1:nBas_twice,1:nBas      ) = Panom(1:nBas,1:nBas)
 
     ! Compute new U_QP and electronic major Occ numbers
 
-    U_QP = matmul(transpose(X_ao),matmul(H_qsGWB_ao,X_ao))
+    allocate(c_ao(nBas_twice,nOrb_twice),U(nOrb,nOrb))
+    U = matmul(transpose(c),matmul(F,c))
+    call diagonalize_matrix(nOrb,U,eFock)
+    c=matmul(c,U)
+    c_ao(:,:)       = 0d0
+    c_ao(1:nBas      ,1:nOrb      )           = c(1:nBas,1:nOrb)
+    c_ao(nBas+1:nBas_twice,nOrb+1:nOrb_twice) = c(1:nBas,1:nOrb)
+    U_QP = matmul(transpose(c_ao),matmul(H_qsGWB_ao,c_ao))
     call diagonalize_matrix(nOrb_twice,U_QP,eigVAL)
     Occ=0d0
     do iorb=1,nOrb
@@ -427,6 +457,7 @@ subroutine qsRGWB(dotest,maxSCF,thresh,max_diis,level_shift,nNuc,ZNuc,rNuc,ENuc,
       endif
      enddo
     enddo
+    deallocate(U,c_ao)
     eqsGWB_state(:) = eigVAL(:)
 
 
@@ -461,7 +492,7 @@ subroutine qsRGWB(dotest,maxSCF,thresh,max_diis,level_shift,nNuc,ZNuc,rNuc,ENuc,
     write(*,*)'!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!'
     write(*,*)
 
-    deallocate(J,K,Sigc_he,Sigc_hh,H_qsGWB,R,eigVAL,err_diis,H_qsGWB_diis,Occ)
+    deallocate(J,K,Sigc_he,Sigc_hh,H_qsGWB,R,eigVAL,err_diis,H_qsGWB_diis,eFock,Occ)
     deallocate(err_ao,S_ao,X_ao,R_ao_old,H_qsGWB_ao)
     deallocate(pivot_U_QP)
     deallocate(vMAT)
@@ -474,7 +505,7 @@ subroutine qsRGWB(dotest,maxSCF,thresh,max_diis,level_shift,nNuc,ZNuc,rNuc,ENuc,
 ! organize the coefs c with natural orbitals (descending occ numbers), and
 ! also print the restart file
 
-  allocate(c_ao(nBas2,nOrb_twice))
+  allocate(c_ao(nBas_twice,nOrb_twice))
   allocate(U(nOrb,nOrb))
   U_QP = matmul(transpose(X_ao),matmul(H_qsGWB_ao,X_ao))
   call diagonalize_matrix(nOrb_twice,U_QP,eigVAL)
@@ -487,9 +518,10 @@ subroutine qsRGWB(dotest,maxSCF,thresh,max_diis,level_shift,nNuc,ZNuc,rNuc,ENuc,
   c=matmul(X,U)
   eqsGWB_state(:)=eigVAL(:)
   c_ao(:,:) = 0d0
-  c_ao(1:nBas      ,1:nOrb      )      = c(1:nBas,1:nOrb)
-  c_ao(nBas+1:nBas2,nOrb+1:nOrb_twice) = c(1:nBas,1:nOrb)
+  c_ao(1:nBas      ,1:nOrb      )           = c(1:nBas,1:nOrb)
+  c_ao(nBas+1:nBas_twice,nOrb+1:nOrb_twice) = c(1:nBas,1:nOrb)
   U_QP = matmul(transpose(c_ao),matmul(H_qsGWB_ao,c_ao)) ! H_qsGWB is in the NO basis
+  deallocate(U,c_ao)
   call diagonalize_matrix(nOrb_twice,U_QP,eigVAL)
   Delta_HL=eqsGWB_state(nOrb+1)-eqsGWB_state(nOrb)
   norm_anom = trace_matrix(nOrb,matmul(transpose(R(1:nOrb,nOrb+1:nOrb_twice)),R(1:nOrb,nOrb+1:nOrb_twice)))
@@ -509,8 +541,8 @@ subroutine qsRGWB(dotest,maxSCF,thresh,max_diis,level_shift,nNuc,ZNuc,rNuc,ENuc,
 
 ! Memory deallocation
 
-  deallocate(J,K,Sigc_he,Sigc_hh,U,H_qsGWB,R,eigVAL,err_diis,H_qsGWB_diis,Occ)
-  deallocate(err_ao,S_ao,c_ao,X_ao,R_ao_old,H_qsGWB_ao)
+  deallocate(J,K,Sigc_he,Sigc_hh,H_qsGWB,R,eigVAL,err_diis,H_qsGWB_diis,eFock,Occ)
+  deallocate(err_ao,S_ao,X_ao,R_ao_old,H_qsGWB_ao)
   deallocate(pivot_U_QP)
   deallocate(vMAT)
 

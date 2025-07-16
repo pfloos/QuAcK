@@ -151,7 +151,8 @@ subroutine BQuAcK(working_dir,dotest,doHFB,dophRPA,doqsGW,nNuc,nBas,nOrb,nO,ENuc
     write(*,*)
     
     ! An imaginary frequencies implementation of qsGW for testing (expensive!)
-    if(doqsGW .and. .false.) then
+    inquire(file='qsRGWi', exist=file_exists)
+    if(doqsGW .and. file_exists) then
 
       ! Continue with a HFB calculation
       call wall_time(start_qsGWB)
