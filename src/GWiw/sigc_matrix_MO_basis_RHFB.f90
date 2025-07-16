@@ -7,8 +7,8 @@
 ! follow the usual recipe. For this reason, even when HFB recovers HF, we do not have the proper contribution from Sigma_c to make
 ! qsGWB -> qsGW
 
-subroutine sigc_AO_basis_HFB(nBas,nOrb,nOrb_twice,verbose,eta,shift,c,Occ_el,U_QP,eqsGWB_state,S,vMAT, &
-                             nfreqs,ntimes,wcoord,wweight,Sigc_ao_he,Sigc_ao_hh)
+subroutine sigc_MO_basis_RHFB(nOrb,nOrb_twice,offdiag0,eta,shift,Occ_el,U_QP,eqsGWB_state, &
+                              vMAT,nfreqs,ntimes,wcoord,wweight,Sigc_mo_he,Sigc_mo_hh)
 
 ! Compute Sigma_c matrix in the AO basis
 
@@ -17,10 +17,10 @@ subroutine sigc_AO_basis_HFB(nBas,nOrb,nOrb_twice,verbose,eta,shift,c,Occ_el,U_Q
 
 ! Input variables
 
-  integer,intent(in)            :: nBas
+  logical,intent(in)            :: offdiag0
+
   integer,intent(in)            :: nOrb
   integer,intent(in)            :: nOrb_twice
-  integer,intent(in)            :: verbose
   integer,intent(in)            :: nfreqs
   integer,intent(in)            :: ntimes
 
@@ -31,12 +31,9 @@ subroutine sigc_AO_basis_HFB(nBas,nOrb,nOrb_twice,verbose,eta,shift,c,Occ_el,U_Q
   double precision,intent(in)   :: U_QP(nOrb_twice,nOrb_twice)
   double precision,intent(in)   :: eqsGWB_state(nOrb_twice)
   double precision,intent(in)   :: vMAT(nOrb*nOrb,nOrb*nOrb)
-  double precision,intent(in)   :: S(nBas,nBas)
-  double precision,intent(in)   :: c(nBas,nOrb)
 
 ! Local variables
 
-  logical                       :: doqsGWv2
   logical                       :: doSigc_eh
   logical                       :: doSigc_ee
 
@@ -45,7 +42,6 @@ subroutine sigc_AO_basis_HFB(nBas,nOrb,nOrb_twice,verbose,eta,shift,c,Occ_el,U_Q
 
   double precision,allocatable  :: Sigc_mo_tmp(:,:,:)
   double precision,allocatable  :: Sigc_mo_tmp2(:,:,:)
-  double precision,allocatable  :: Sigc_mo(:,:)
 
   complex *16,allocatable       :: Sigc_mo_he_cpx(:,:,:)
   complex *16,allocatable       :: Sigc_mo_hh_cpx(:,:,:)
@@ -55,14 +51,13 @@ subroutine sigc_AO_basis_HFB(nBas,nOrb,nOrb_twice,verbose,eta,shift,c,Occ_el,U_Q
 
 ! Output variables
 
-  double precision,intent(out)  :: Sigc_ao_he(nBas,nBas)
-  double precision,intent(out)  :: Sigc_ao_hh(nBas,nBas)
+  double precision,intent(out)  :: Sigc_mo_he(nOrb,nOrb)
+  double precision,intent(out)  :: Sigc_mo_hh(nOrb,nOrb)
 
 ! Initialize
 
   doSigc_eh=.true.
   doSigc_ee=.true.
-  doqsGWv2  =.true.
 
 ! Set energies using cluster method or just using two shifts
   if(.false.) then
@@ -78,15 +73,14 @@ subroutine sigc_AO_basis_HFB(nBas,nOrb,nOrb_twice,verbose,eta,shift,c,Occ_el,U_Q
    ! Run over unique energies
    allocate(Sigc_mo_he_cpx(nE_eval_global,nOrb,nOrb),Sigc_mo_hh_cpx(nE_eval_global,nOrb,nOrb))
    allocate(Sigc_mo_eh_cpx(nE_eval_global,nOrb,nOrb),Sigc_mo_ee_cpx(nE_eval_global,nOrb,nOrb))
-   call build_Sigmac_w_HFB(nOrb,nOrb_twice,nE_eval_global,eta,0,E_eval_global_cpx,eqsGWB_state,  &
+   call build_Sigmac_w_RHFB(nOrb,nOrb_twice,nE_eval_global,eta,0,E_eval_global_cpx,eqsGWB_state, &
                            nfreqs,ntimes,wweight,wcoord,vMAT,U_QP,Sigc_mo_he_cpx,Sigc_mo_hh_cpx, &
                            Sigc_mo_eh_cpx,Sigc_mo_ee_cpx,doSigc_eh,doSigc_ee)
    deallocate(E_eval_global_cpx)
 
    ! TODO
-
-   Sigc_ao_he=0d0
-   Sigc_ao_hh=0d0
+   Sigc_mo_he=0d0
+   Sigc_mo_hh=0d0
 
   else
 
@@ -101,7 +95,7 @@ subroutine sigc_AO_basis_HFB(nBas,nOrb,nOrb_twice,verbose,eta,shift,c,Occ_el,U_Q
    ! Build Sigma_c for all energies
    allocate(Sigc_mo_he_cpx(nE_eval_global,nOrb,nOrb),Sigc_mo_hh_cpx(nE_eval_global,nOrb,nOrb))
    allocate(Sigc_mo_eh_cpx(nE_eval_global,nOrb,nOrb),Sigc_mo_ee_cpx(nE_eval_global,nOrb,nOrb))
-   call build_Sigmac_w_HFB(nOrb,nOrb_twice,nE_eval_global,eta,0,E_eval_global_cpx,eqsGWB_state,  &
+   call build_Sigmac_w_RHFB(nOrb,nOrb_twice,nE_eval_global,eta,0,E_eval_global_cpx,eqsGWB_state, &
                            nfreqs,ntimes,wweight,wcoord,vMAT,U_QP,Sigc_mo_he_cpx,Sigc_mo_hh_cpx, &
                            Sigc_mo_eh_cpx,Sigc_mo_ee_cpx,doSigc_eh,doSigc_ee)
    
@@ -109,87 +103,39 @@ subroutine sigc_AO_basis_HFB(nBas,nOrb,nOrb_twice,verbose,eta,shift,c,Occ_el,U_Q
    allocate(Sigc_mo_tmp(nOrb,nOrb,nOrb))
    allocate(Sigc_mo_tmp2(nOrb,nOrb,nOrb))
    Sigc_mo_tmp=0d0;Sigc_mo_tmp2=0d0;
-   allocate(Sigc_mo(nOrb,nOrb))
    ! Sigma_c_he
    do iorb=1,nOrb ! Interpolation
     Sigc_mo_tmp(iorb,:,:) = 0.5d0*(Real(Sigc_mo_he_cpx(2*iorb-1,:,:))+Real(Sigc_mo_he_cpx(2*iorb,:,:)))
     Sigc_mo_tmp2(iorb,:,:)=-0.5d0*(Real(Sigc_mo_eh_cpx(2*iorb-1,:,:))+Real(Sigc_mo_eh_cpx(2*iorb,:,:)))
    enddo
    do iorb=1,nOrb
-    Sigc_mo(iorb,:)=Occ_el(iorb)*Sigc_mo_tmp(iorb,iorb,:)+(1d0-Occ_el(iorb))*Sigc_mo_tmp2(iorb,iorb,:)
+    Sigc_mo_he(iorb,:)=Occ_el(iorb)*Sigc_mo_tmp(iorb,iorb,:)+(1d0-Occ_el(iorb))*Sigc_mo_tmp2(iorb,iorb,:)
    enddo
-   Sigc_mo = 0.5d0 * (Sigc_mo + transpose(Sigc_mo))
-   if(doqsGWv2) then  ! qsGW version where all the off-diagonal elements are built at the Fermi level 
+   if(offdiag0) then  ! qsGW version where all the off-diagonal elements are built at the Fermi level 
     do iorb=1,nOrb
      do jorb=1,nOrb
       if(iorb/=jorb) then
-       Sigc_mo(iorb,jorb) = Real(Sigc_mo_he_cpx(nE_eval_global,iorb,jorb))
-       !Sigc_mo(iorb,jorb) = Occ_el(iorb)*Real(Sigc_mo_he_cpx(nE_eval_global,iorb,jorb)) &
-       !                   - (1d0-Occ_el(iorb))*Real(Sigc_mo_eh_cpx(nE_eval_global,iorb,jorb)) ! minus because this is he positive
+       Sigc_mo_he(iorb,jorb) = Real(Sigc_mo_he_cpx(nE_eval_global,iorb,jorb))
       endif
      enddo
     enddo
-    Sigc_mo = 0.5d0 * (Sigc_mo + transpose(Sigc_mo))
-   endif
-   if(verbose/=0) then
-    write(*,*) 'Sigma_c he MO'
-    do iorb=1,nOrb
-     write(*,'(*(f10.5))') Sigc_mo(iorb,:)
-    enddo
-   endif
-   call MOtoAO(nBas,nOrb,S,c,Sigc_mo,Sigc_ao_he)
-   if(verbose/=0) then
-    write(*,*) 'Sigma_c he AO'
-    do iorb=1,nBas
-     write(*,'(*(f10.5))') Sigc_ao_he(iorb,:)
-    enddo
    endif
    ! Sigma_c_hh
+   Sigc_mo_tmp=0d0;Sigc_mo_tmp2=0d0;
    do iorb=1,nOrb ! Interpolation
     Sigc_mo_tmp(iorb,:,:) = 0.5d0*(Real(Sigc_mo_hh_cpx(2*iorb-1,:,:))+Real(Sigc_mo_hh_cpx(2*iorb,:,:)))
     Sigc_mo_tmp2(iorb,:,:)= 0.5d0*(Real(Sigc_mo_ee_cpx(2*iorb-1,:,:))+Real(Sigc_mo_ee_cpx(2*iorb,:,:)))
    enddo
    do iorb=1,nOrb
-    Sigc_mo(iorb,:)=Occ_el(iorb)*Sigc_mo_tmp(iorb,iorb,:)+(1d0-Occ_el(iorb))*Sigc_mo_tmp2(iorb,iorb,:)
+    Sigc_mo_hh(iorb,:)=Occ_el(iorb)*Sigc_mo_tmp(iorb,iorb,:)+(1d0-Occ_el(iorb))*Sigc_mo_tmp2(iorb,iorb,:)
    enddo
-   Sigc_mo = 0.5d0 * (Sigc_mo + transpose(Sigc_mo))
-   if(doqsGWv2) then  ! qsGW version where all the off-diagonal elements are built at the Fermi level 
+   if(offdiag0) then  ! qsGW version where all the off-diagonal elements are built at the Fermi level 
     do iorb=1,nOrb
      do jorb=1,nOrb
       if(iorb/=jorb) then
-       Sigc_mo(iorb,jorb) = Real(Sigc_mo_hh_cpx(nE_eval_global,iorb,jorb)) 
-       !Sigc_mo(iorb,jorb) = Occ_el(iorb)*Real(Sigc_mo_hh_cpx(nE_eval_global,iorb,jorb)) &
-       !                   + (1d0-Occ_el(iorb))*Real(Sigc_mo_ee_cpx(nE_eval_global,iorb,jorb))
+       Sigc_mo_hh(iorb,jorb) = Real(Sigc_mo_hh_cpx(nE_eval_global,iorb,jorb)) 
       endif
      enddo
-    enddo
-    Sigc_mo = 0.5d0 * (Sigc_mo + transpose(Sigc_mo))
-   endif
-   ! There is no clear definition of what Sigc_mo_hh has to be used in qsGWB. We could just evaluate it at the Fermi level!
-   !Sigc_mo(:,:)=Real(Sigc_mo_hh_cpx(nE_eval_global,:,:))
-   if(verbose/=0) then
-    write(*,*) 'Sigma_c hh MO'
-    do iorb=1,nOrb
-     write(*,'(*(f10.5))') Sigc_mo(iorb,:)
-    enddo
-   endif
-   call MOtoAO(nBas,nOrb,S,c,Sigc_mo,Sigc_ao_hh)
-   if(verbose/=0) then
-    write(*,*) 'Sigma_c hh AO'
-    do iorb=1,nBas
-     write(*,'(*(f10.5))') Sigc_ao_hh(iorb,:)
-    enddo
-   endif
-   ! Sigma_c_eh
-   if(doSigc_eh .and. .false.) then
-    do iorb=1,nOrb ! Interpolation
-     Sigc_mo_tmp(iorb,:,:)=0.5d0*(Real(Sigc_mo_eh_cpx(2*iorb-1,:,:))+Real(Sigc_mo_eh_cpx(2*iorb,:,:)))
-    enddo
-   endif
-   ! Sigma_c_ee
-   if(doSigc_ee .and. .false.) then
-    do iorb=1,nOrb ! Interpolation
-     Sigc_mo_tmp(iorb,:,:)=0.5d0*(Real(Sigc_mo_ee_cpx(2*iorb-1,:,:))+Real(Sigc_mo_ee_cpx(2*iorb,:,:)))
     enddo
    endif
    
@@ -199,7 +145,7 @@ subroutine sigc_AO_basis_HFB(nBas,nOrb,nOrb_twice,verbose,eta,shift,c,Occ_el,U_Q
    deallocate(Sigc_mo_eh_cpx)
    deallocate(Sigc_mo_ee_cpx)
    deallocate(E_eval_global_cpx)
-   deallocate(Sigc_mo_tmp,Sigc_mo_tmp2,Sigc_mo)
+   deallocate(Sigc_mo_tmp,Sigc_mo_tmp2)
 
   endif
 

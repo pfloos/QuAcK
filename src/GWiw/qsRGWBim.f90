@@ -41,6 +41,8 @@ subroutine qsRGWBim(dotest,maxSCF,thresh,max_diis,level_shift,nNuc,ZNuc,rNuc,ENu
 
 ! Local variables
 
+  logical                       :: offdiag0
+
   integer                       :: nBas_twice
   integer                       :: iorb,jorb,korb,lorb
   integer                       :: nSCF
@@ -71,8 +73,10 @@ subroutine qsRGWBim(dotest,maxSCF,thresh,max_diis,level_shift,nNuc,ZNuc,rNuc,ENu
   double precision,allocatable  :: H_qsGWB_diis(:,:)
   double precision,allocatable  :: J(:,:)
   double precision,allocatable  :: K(:,:)
-  double precision,allocatable  :: Sigc_he(:,:)
-  double precision,allocatable  :: Sigc_hh(:,:)
+  double precision,allocatable  :: Sigc_ao_he(:,:)
+  double precision,allocatable  :: Sigc_ao_hh(:,:)
+  double precision,allocatable  :: Sigc_mo_he(:,:)
+  double precision,allocatable  :: Sigc_mo_hh(:,:)
   double precision,allocatable  :: H_qsGWB(:,:)
   double precision,allocatable  :: U(:,:)
   double precision,allocatable  :: R(:,:)
@@ -110,16 +114,20 @@ subroutine qsRGWBim(dotest,maxSCF,thresh,max_diis,level_shift,nNuc,ZNuc,rNuc,ENu
 
   nBas_twice    = nBas+nBas
   nBas_twice_Sq = nBas_twice*nBas_twice
+  offdiag0=.false. ! Set it to true if you want to try qsGWB version 2 where all the off-diag. elements of Sigc_mo are eval at Fermi level
 
 ! Memory allocation
 
   allocate(Occ(nOrb))
   allocate(eFock(nOrb))
 
+  allocate(Sigc_mo_he(nOrb,nOrb))
+  allocate(Sigc_mo_hh(nOrb,nOrb))
+
   allocate(J(nBas,nBas))
   allocate(K(nBas,nBas))
-  allocate(Sigc_he(nBas,nBas))
-  allocate(Sigc_hh(nBas,nBas))
+  allocate(Sigc_ao_he(nBas,nBas))
+  allocate(Sigc_ao_hh(nBas,nBas))
 
   allocate(pivot_U_QP(nOrb_twice))
   allocate(H_qsGWB(nOrb_twice,nOrb_twice))
@@ -147,8 +155,6 @@ subroutine qsRGWBim(dotest,maxSCF,thresh,max_diis,level_shift,nNuc,ZNuc,rNuc,ENu
   Conv              = 1d0
   nSCF              = 0
 
-  Sigc_he(:,:)    = 0d0
-  Sigc_hh(:,:)    = 0d0
   S_ao(:,:)       = 0d0
   X_ao(:,:)       = 0d0
   S_ao(1:nBas      ,1:nBas      )           = S(1:nBas,1:nBas)
@@ -283,17 +289,42 @@ subroutine qsRGWBim(dotest,maxSCF,thresh,max_diis,level_shift,nNuc,ZNuc,rNuc,ENu
      enddo
     enddo
     deallocate(ERI_MO)
-    call sigc_AO_basis_HFB(nBas,nOrb,nOrb_twice,0,eta,shift,c,Occ,U_QP,eqsGWB_state, & 
-                           S,vMAT,nfreqs,ntimes,wcoord,wweight,Sigc_he,Sigc_hh)
+    call sigc_MO_basis_RHFB(nOrb,nOrb_twice,offdiag0,eta,shift,Occ,U_QP,eqsGWB_state, & 
+                            vMAT,nfreqs,ntimes,wcoord,wweight,Sigc_mo_he,Sigc_mo_hh)
+    Sigc_mo_he = 0.5d0 * (Sigc_mo_he + transpose(Sigc_mo_he))
+    Sigc_mo_hh = 0.5d0 * (Sigc_mo_hh + transpose(Sigc_mo_hh))
+    if(verbose/=0) then
+     write(*,*) 'Sigma_c he MO'
+     do iorb=1,nOrb
+      write(*,'(*(f10.5))') Sigc_mo_he(iorb,:)
+     enddo
+     write(*,*) 'Sigma_c hh MO'
+     do iorb=1,nOrb
+      write(*,'(*(f10.5))') Sigc_mo_hh(iorb,:)
+     enddo
+    endif
+    call MOtoAO(nBas,nOrb,S,c,Sigc_mo_he,Sigc_ao_he)
+    call MOtoAO(nBas,nOrb,S,c,Sigc_mo_hh,Sigc_ao_hh)
+    if(verbose/=0) then
+     write(*,*) 'Sigma_c he AO'
+     do iorb=1,nBas
+      write(*,'(*(f10.5))') Sigc_ao_he(iorb,:)
+     enddo
+     write(*,*) 'Sigma_c hh AO'
+     do iorb=1,nBas
+      write(*,'(*(f10.5))') Sigc_ao_hh(iorb,:)
+     enddo
+    endif
 
-    F(:,:) = Hc(:,:) + J(:,:) + 0.5d0*K(:,:) + Sigc_he(:,:) - chem_pot*S(:,:)
+
+    F(:,:) = Hc(:,:) + J(:,:) + 0.5d0*K(:,:) + Sigc_ao_he(:,:) - chem_pot*S(:,:)
 
     ! Diagonalize H_qsGWB matrix
     
     H_qsGWB(:,:) = 0d0
     H_qsGWB(1:nOrb      ,1:nOrb      )           = matmul(transpose(X),matmul(F,X))
     H_qsGWB(nOrb+1:nOrb_twice,nOrb+1:nOrb_twice) = -H_qsGWB(1:nOrb,1:nOrb)
-    H_qsGWB(1:nOrb      ,nOrb+1:nOrb_twice) = matmul(transpose(X),matmul(Delta+Sigc_hh,X))
+    H_qsGWB(1:nOrb      ,nOrb+1:nOrb_twice) = matmul(transpose(X),matmul(Delta+Sigc_ao_hh,X))
     H_qsGWB(nOrb+1:nOrb_twice,1:nOrb      ) = H_qsGWB(1:nOrb,nOrb+1:nOrb_twice)
     
     U_QP(:,:) = H_qsGWB(:,:)
@@ -321,12 +352,12 @@ subroutine qsRGWBim(dotest,maxSCF,thresh,max_diis,level_shift,nNuc,ZNuc,rNuc,ENu
 
      write(*,*) ' Doing DIIS'
 
-     F(:,:) = Hc(:,:) + J(:,:) + 0.5d0*K(:,:) + Sigc_he(:,:) - chem_pot*S(:,:)
+     F(:,:) = Hc(:,:) + J(:,:) + 0.5d0*K(:,:) + Sigc_ao_he(:,:) - chem_pot*S(:,:)
      H_qsGWB_ao(:,:)    = 0d0
      H_qsGWB_ao(1:nBas      ,1:nBas      )           =  F(1:nBas,1:nBas)
      H_qsGWB_ao(nBas+1:nBas_twice,nBas+1:nBas_twice) = -F(1:nBas,1:nBas)
-     H_qsGWB_ao(1:nBas      ,nBas+1:nBas_twice) = Delta(1:nBas,1:nBas) + Sigc_hh(1:nBas,1:nBas)
-     H_qsGWB_ao(nBas+1:nBas_twice,1:nBas      ) = Delta(1:nBas,1:nBas) + Sigc_hh(1:nBas,1:nBas)
+     H_qsGWB_ao(1:nBas      ,nBas+1:nBas_twice) = Delta(1:nBas,1:nBas) + Sigc_ao_hh(1:nBas,1:nBas)
+     H_qsGWB_ao(nBas+1:nBas_twice,1:nBas      ) = Delta(1:nBas,1:nBas) + Sigc_ao_hh(1:nBas,1:nBas)
      err_ao = matmul(H_qsGWB_ao,matmul(R_ao_old,S_ao)) - matmul(matmul(S_ao,R_ao_old),H_qsGWB_ao)
 
      n_diis = min(n_diis+1,max_diis)
@@ -376,12 +407,12 @@ subroutine qsRGWBim(dotest,maxSCF,thresh,max_diis,level_shift,nNuc,ZNuc,rNuc,ENu
 
     ! Check convergence
 
-    F(:,:) = Hc(:,:) + J(:,:) + 0.5d0*K(:,:) + Sigc_he(:,:) - chem_pot*S(:,:)
+    F(:,:) = Hc(:,:) + J(:,:) + 0.5d0*K(:,:) + Sigc_ao_he(:,:) - chem_pot*S(:,:)
     H_qsGWB_ao(:,:)    = 0d0
     H_qsGWB_ao(1:nBas      ,1:nBas      )           =  F(1:nBas,1:nBas)
     H_qsGWB_ao(nBas+1:nBas_twice,nBas+1:nBas_twice) = -F(1:nBas,1:nBas)
-    H_qsGWB_ao(1:nBas      ,nBas+1:nBas_twice) = Delta(1:nBas,1:nBas) + Sigc_hh(1:nBas,1:nBas)
-    H_qsGWB_ao(nBas+1:nBas_twice,1:nBas      ) = Delta(1:nBas,1:nBas) + Sigc_hh(1:nBas,1:nBas)
+    H_qsGWB_ao(1:nBas      ,nBas+1:nBas_twice) = Delta(1:nBas,1:nBas) + Sigc_ao_hh(1:nBas,1:nBas)
+    H_qsGWB_ao(nBas+1:nBas_twice,1:nBas      ) = Delta(1:nBas,1:nBas) + Sigc_ao_hh(1:nBas,1:nBas)
     if(nSCF > 1) then
      err_ao = matmul(H_qsGWB_ao,matmul(R_ao_old,S_ao)) - matmul(matmul(S_ao,R_ao_old),H_qsGWB_ao)
      Conv  = maxval(abs(err_ao))
@@ -493,9 +524,9 @@ subroutine qsRGWBim(dotest,maxSCF,thresh,max_diis,level_shift,nNuc,ZNuc,rNuc,ENu
     write(*,*)'!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!'
     write(*,*)
 
-    deallocate(J,K,Sigc_he,Sigc_hh,H_qsGWB,R,eigVAL,err_diis,H_qsGWB_diis,eFock,Occ)
+    deallocate(J,K,Sigc_ao_he,Sigc_ao_hh,H_qsGWB,R,eigVAL,err_diis,H_qsGWB_diis,eFock,Occ)
     deallocate(err_ao,S_ao,X_ao,R_ao_old,H_qsGWB_ao)
-    deallocate(pivot_U_QP)
+    deallocate(pivot_U_QP,Sigc_mo_he,Sigc_mo_hh)
     deallocate(vMAT)
 
     stop
@@ -542,9 +573,9 @@ subroutine qsRGWBim(dotest,maxSCF,thresh,max_diis,level_shift,nNuc,ZNuc,rNuc,ENu
 
 ! Memory deallocation
 
-  deallocate(J,K,Sigc_he,Sigc_hh,H_qsGWB,R,eigVAL,err_diis,H_qsGWB_diis,eFock,Occ)
+  deallocate(J,K,Sigc_ao_he,Sigc_ao_hh,H_qsGWB,R,eigVAL,err_diis,H_qsGWB_diis,eFock,Occ)
   deallocate(err_ao,S_ao,X_ao,R_ao_old,H_qsGWB_ao)
-  deallocate(pivot_U_QP)
+  deallocate(pivot_U_QP,Sigc_mo_he,Sigc_mo_hh)
   deallocate(vMAT)
 
 end subroutine 

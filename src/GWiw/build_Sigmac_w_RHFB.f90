@@ -1,5 +1,5 @@
-subroutine build_Sigmac_w_HFB(nOrb,nOrb_twice,nE,eta,verbose,wtest,eHFB,nfreqs,ntimes,&
-                              wweight,wcoord,vMAT,U_QP,Sigma_he_c_mo,Sigma_hh_c_mo,   &
+subroutine build_Sigmac_w_RHFB(nOrb,nOrb_twice,nE,eta,verbose,wtest,eHFB,nfreqs,ntimes,&
+                              wweight,wcoord,vMAT,U_QP,Sigma_he_c_mo,Sigma_hh_c_mo,    &
                               Sigma_eh_c_mo,Sigma_ee_c_mo,doSigc_eh,doSigc_ee)
 
 ! Restricted Sigma_c(E)

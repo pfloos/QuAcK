@@ -94,6 +94,7 @@ subroutine sigc_MO_basis_RHF(nOrb,nO,offdiag0,eta,shift,eqsGW_state,vMAT,nfreqs,
     enddo
    endif
 
+   deallocate(Sigc_mo_tmp)
    deallocate(Sigc_mo_cpx)
 
   endif

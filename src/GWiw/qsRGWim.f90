@@ -83,6 +83,7 @@ subroutine qsRGWim(dotest,maxSCF,thresh,max_diis,level_shift,eta,shift,nNuc,ZNuc
   write(*,*)
 
 ! Useful quantities
+
   nBas_Sq = nBas*nBas
   offdiag0=.false. ! Set it to true if you want to try qsGW version 2 where all the off-diag. elements of Sigc_mo are eval at Fermi level
 
