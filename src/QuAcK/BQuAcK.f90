@@ -7,69 +7,69 @@ subroutine BQuAcK(working_dir,dotest,doHFB,dophRPA,doqsGW,nNuc,nBas,nOrb,nO,ENuc
   implicit none
   include 'parameters.h'
 
-  character(len=256),intent(in) :: working_dir
+  character(len=256),intent(in)  :: working_dir
+                                 
+  logical,intent(in)             :: dotest
+                                 
+  logical,intent(in)             :: doHFB
+  logical,intent(in)             :: dophRPA
+  logical,intent(in)             :: doqsGW
 
-  logical,intent(in)            :: dotest
+  logical,intent(in)             :: restart_hfb
+  logical,intent(in)             :: chem_pot_hf
+  integer,intent(in)             :: nNuc,nBas,nOrb
+  integer,intent(in)             :: nO
+  integer,intent(in)             :: nfreqs
+  integer,intent(in)             :: ntimes
+  double precision,intent(inout) :: ENuc
+  double precision,intent(in)    :: eta
+  double precision,intent(in)    :: shift
+  double precision,intent(in)    :: temperature,sigma
 
-  logical,intent(in)            :: doHFB
-  logical,intent(in)            :: dophRPA
-  logical,intent(in)            :: doqsGW
+  double precision,intent(in)    :: ZNuc(nNuc),rNuc(nNuc,ncart)
+  double precision,intent(in)    :: wcoord(nfreqs),wweight(nfreqs)
 
-  logical,intent(in)            :: restart_hfb
-  logical,intent(in)            :: chem_pot_hf
-  integer,intent(in)            :: nNuc,nBas,nOrb
-  integer,intent(in)            :: nO
-  integer,intent(in)            :: nfreqs
-  integer,intent(in)            :: ntimes
-  double precision,intent(inout):: ENuc
-  double precision,intent(in)   :: eta
-  double precision,intent(in)   :: shift
-  double precision,intent(in)   :: temperature,sigma
+  double precision,intent(inout) :: S(nBas,nBas)
+  double precision,intent(inout) :: T(nBas,nBas)
+  double precision,intent(inout) :: V(nBas,nBas)
+  double precision,intent(inout) :: Hc(nBas,nBas)
+  double precision,intent(inout) :: X(nBas,nOrb)
+  double precision,intent(inout) :: dipole_int_AO(nBas,nBas,ncart)
 
-  double precision,intent(in)   :: ZNuc(nNuc),rNuc(nNuc,ncart)
-  double precision,intent(in)   :: wcoord(nfreqs),wweight(nfreqs)
-
-  double precision,intent(inout)   :: S(nBas,nBas)
-  double precision,intent(inout)   :: T(nBas,nBas)
-  double precision,intent(inout)   :: V(nBas,nBas)
-  double precision,intent(inout)   :: Hc(nBas,nBas)
-  double precision,intent(inout)   :: X(nBas,nOrb)
-  double precision,intent(inout)   :: dipole_int_AO(nBas,nBas,ncart)
-
-  integer,intent(in)            :: maxSCF,max_diis
-  double precision,intent(in)   :: thresh,level_shift,mix
-  integer,intent(in)            :: guess_type
+  integer,intent(in)             :: maxSCF,max_diis
+  double precision,intent(in)    :: thresh,level_shift,mix
+  integer,intent(in)             :: guess_type
 
 ! Local variables
 
-  logical                       :: file_exists
-  integer                       :: verbose
-  integer                       :: nOrb_twice
-  integer                       :: nO_
-  integer                       :: ixyz
-  integer                       :: iorb,jorb,korb,lorb
-
-  double precision              :: chem_pot,Val
-  double precision              :: start_HF     ,end_HF       ,t_HF
-  double precision              :: start_Ecorr  ,end_Ecorr    ,t_Ecorr
-  double precision              :: start_qsGWB  ,end_qsGWB    ,t_qsGWB
-  double precision              :: start_int    ,end_int      ,t_int
-
-  double precision,allocatable  :: eHF(:)
-  double precision,allocatable  :: eQP_state(:)
-  double precision,allocatable  :: U_QP(:,:)
-  double precision,allocatable  :: MOCoef(:,:)
-  double precision,allocatable  :: pMAT(:,:)
-  double precision,allocatable  :: panomMAT(:,:)
-  double precision,allocatable  :: Fock(:,:)
-  double precision,allocatable  :: Delta(:,:)
-  double precision,allocatable  :: vMAT(:,:)
-  double precision              :: EeleSD,Eelec,EcRPA,EcGM
-  double precision,allocatable  :: dipole_int_MO(:,:,:)
-  double precision,allocatable  :: ERI_AO(:,:,:,:)
-  double precision,allocatable  :: ERI_MO(:,:,:,:)
-
-
+  logical                        :: file_exists
+  integer                        :: verbose
+  integer                        :: nOrb_twice
+  integer                        :: nO_
+  integer                        :: ixyz
+  integer                        :: iorb,jorb,korb,lorb
+                                
+  double precision               :: chem_pot,Val
+  double precision               :: start_HF     ,end_HF       ,t_HF
+  double precision               :: start_Ecorr  ,end_Ecorr    ,t_Ecorr
+  double precision               :: start_qsGWB  ,end_qsGWB    ,t_qsGWB
+  double precision               :: start_int    ,end_int      ,t_int
+                                
+  double precision,allocatable   :: eHF(:)
+  double precision,allocatable   :: eQP_state(:)
+  double precision,allocatable   :: U_QP(:,:)
+  double precision,allocatable   :: MOCoef(:,:)
+  double precision,allocatable   :: pMAT(:,:)
+  double precision,allocatable   :: panomMAT(:,:)
+  double precision,allocatable   :: Fock(:,:)
+  double precision,allocatable   :: Delta(:,:)
+  double precision,allocatable   :: vMAT(:,:)
+  double precision               :: EeleSD,Eelec,EcRPA,EcGM
+  double precision,allocatable   :: dipole_int_MO(:,:,:)
+  double precision,allocatable   :: ERI_AO(:,:,:,:)
+  double precision,allocatable   :: ERI_MO(:,:,:,:)
+                                
+                                
 !
 
   write(*,*)
@@ -188,6 +188,8 @@ subroutine BQuAcK(working_dir,dotest,doHFB,dophRPA,doqsGW,nNuc,nBas,nOrb,nO,ENuc
      deallocate(ERI_MO)
      call EcRPA_EcGM_w_RHF(nOrb,nO,1,eHF,nfreqs,ntimes,wweight,wcoord,vMAT,EeleSD+ENuc, &
                            EcRPA,EcGM)
+     ! Test down-folded G0W0 matrix?
+     !call dfRG0W0mat(nOrb,nO,eta,shift,eHF,vMAT,nfreqs,ntimes,wcoord,wweight)
      deallocate(vMAT)
      call wall_time(end_Ecorr)
 
@@ -248,14 +250,18 @@ subroutine BQuAcK(working_dir,dotest,doHFB,dophRPA,doqsGW,nNuc,nBas,nOrb,nO,ENuc
     enddo
    enddo
    deallocate(ERI_MO)
-   call EcRPA_EcGM_w_HFB(nOrb,nOrb_twice,1,eQP_state,nfreqs,ntimes,wweight,wcoord,vMAT, &
-                         U_QP,Eelec+ENuc,EcRPA,EcGM)
+   call EcRPA_EcGM_w_RHFB(nOrb,nOrb_twice,1,eQP_state,nfreqs,ntimes,wweight,wcoord,vMAT, &
+                          U_QP,Eelec+ENuc,EcRPA,EcGM)
+   ! Test down-folded G0W0 Bogoliubov matrix?
+   !call dfRG0W0Bmat(nOrb,nOrb_twice,eta,shift,eQP_state,U_QP,vMAT,nfreqs,ntimes,wcoord,wweight)
    deallocate(vMAT)
    call wall_time(end_Ecorr)
 
    t_Ecorr = end_Ecorr - start_Ecorr
    write(*,'(A65,1X,F9.3,A8)') 'Total wall time for Ecorr = ',t_Ecorr,' seconds'
    write(*,*)
+
+
 
   endif
 
