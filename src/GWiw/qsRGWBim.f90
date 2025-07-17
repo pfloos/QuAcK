@@ -255,8 +255,8 @@ subroutine qsRGWBim(dotest,maxSCF,thresh,max_diis,level_shift,nNuc,ZNuc,rNuc,ENu
   write(*,*) 'Computing phRPA@HFB and GM@HFB energies'
   write(*,*) 'assuming a previous HFB calcution was performed'
   write(*,*)
-  call EcRPA_EcGM_w_HFB(nOrb,nOrb_twice,1,eqsGWB_state,nfreqs,ntimes,wweight,wcoord,vMAT, &
-                        U_QP,EqsGWB+ENuc,EcRPA,EcGM)
+  call EcRPA_EcGM_w_RHFB(nOrb,nOrb_twice,1,eqsGWB_state,nfreqs,ntimes,wweight,wcoord,vMAT, &
+                         U_QP,EqsGWB+ENuc,EcRPA,EcGM)
 
 !------------------------------------------------------------------------
 ! Main SCF loop
