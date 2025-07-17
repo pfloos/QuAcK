@@ -61,10 +61,10 @@ subroutine EcRPA_EcGM_w_RHFB(nOrb,nOrb_twice,verbose,eHFB,nfreqs,ntimes,wweight,
 
    ! Xo (iw)
    if(ntimes>0) then
-    call Gitau2Chi0iw_mo_HFB(nOrb,nOrb_twice,0,eHFB,ntimes,wcoord(ifreq),U_QP,Chi0_mo_w)
+    call Gitau2Chi0iw_mo_RHFB(nOrb,nOrb_twice,0,eHFB,ntimes,wcoord(ifreq),U_QP,Chi0_mo_w)
    else
     eta=0d0
-    call Xoiw_mo_HFB(nOrb,nOrb_twice,eta,eHFB,im*wcoord(ifreq),Mat1,Mat2,Chi0_mo_w)
+    call Xoiw_mo_RHFB(nOrb,nOrb_twice,eta,eHFB,im*wcoord(ifreq),Mat1,Mat2,Chi0_mo_w)
    endif
 
    ! Tr [ Xo v ] and define eps

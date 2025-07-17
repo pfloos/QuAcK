@@ -2,7 +2,7 @@ subroutine BQuAcK(working_dir,dotest,doHFB,dophRPA,doqsGW,nNuc,nBas,nOrb,nO,ENuc
                   rNuc,S,T,V,Hc,X,dipole_int_AO,maxSCF,max_diis,thresh,level_shift,guess_type,mix, &
                   temperature,sigma,chem_pot_hf,restart_hfb,nfreqs,ntimes,wcoord,wweight)
 
-! Restricted branch of QuAcK
+! Restricted branch of Bogoliubov QuAcK
 
   implicit none
   include 'parameters.h'

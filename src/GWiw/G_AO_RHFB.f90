@@ -1,4 +1,4 @@
-subroutine G_AO_HFB(nBas,nOrb,nOrb_twice,eta,cHFB,eHFB,wcoord,MAT1,MAT2,MAT3,MAT4,G_AO)
+subroutine G_AO_RHFB(nBas,nOrb,nOrb_twice,eta,cHFB,eHFB,wcoord,MAT1,MAT2,MAT3,MAT4,G_AO)
 
 ! G(i w)
 

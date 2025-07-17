@@ -1,4 +1,4 @@
-subroutine Gitau2Chi0iw_mo_HFB(nOrb,nOrb_twice,verbose,eHFB,ntimes,wcoord,U_QP,Chi0_mo_iw)
+subroutine Gitau2Chi0iw_mo_RHFB(nOrb,nOrb_twice,verbose,eHFB,ntimes,wcoord,U_QP,Chi0_mo_iw)
 
 ! Restricted Xo(i tau) [ and Xo(i w) ] computed from G(i tau)
 
