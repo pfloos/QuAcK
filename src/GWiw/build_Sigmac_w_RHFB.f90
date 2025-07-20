@@ -285,6 +285,8 @@ subroutine build_Sigmac_w_RHFB(nOrb,nOrb_twice,nE,eta,verbose,wtest,eHFB,nfreqs,
   deallocate(Tmp_mo_w)
   deallocate(G_mo_1,G_mo_2)
   deallocate(G_mo_3,G_mo_4)
+  deallocate(G_mo_5,G_mo_6)
+  deallocate(G_mo_7,G_mo_8)
   deallocate(Mat1,Mat2)
 
 end subroutine

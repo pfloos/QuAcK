@@ -190,6 +190,8 @@ subroutine BQuAcK(working_dir,dotest,doHFB,dophRPA,doqsGW,nNuc,nBas,nOrb,nO,ENuc
                            EcRPA,EcGM)
      ! Test down-folded G0W0 matrix?
      !call dfRG0W0mat(nOrb,nO,eta,shift,eHF,vMAT,nfreqs,ntimes,wcoord,wweight)
+     ! Test EcGM computed from Sigma_c(iw)
+     !call EcGM_w_RHF_Sigma(nOrb,nO,1,eHF,nfreqs,wweight,wcoord,vMAT,EeleSD+Enuc,EcGM)
      deallocate(vMAT)
      call wall_time(end_Ecorr)
 
@@ -254,6 +256,8 @@ subroutine BQuAcK(working_dir,dotest,doHFB,dophRPA,doqsGW,nNuc,nBas,nOrb,nO,ENuc
                           U_QP,Eelec+ENuc,EcRPA,EcGM)
    ! Test down-folded G0W0 Bogoliubov matrix?
    !call dfRG0W0Bmat(nOrb,nOrb_twice,eta,shift,eQP_state,U_QP,vMAT,nfreqs,ntimes,wcoord,wweight)
+   ! Test EcGM computed from Sigma_c(iw)
+   !call EcGM_w_RHFB_Sigma(nOrb,nOrb_twice,1,eQP_state,nfreqs,wweight,wcoord,vMAT,U_QP,EeleSD+Enuc,EcGM)
    deallocate(vMAT)
    call wall_time(end_Ecorr)
 
