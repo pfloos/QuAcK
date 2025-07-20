@@ -1,7 +1,7 @@
 subroutine EcGM_w_RHF_Sigma(nOrb,nO,verbose,eHF,nfreqs,wweight,wcoord,vMAT,&
                             ERHF,EcGM)
 
-! Restricted Sigma_c(E)
+! Use the restricted Sigma_c(E) to compute the R-Bogoliubov Galitskii-Migdal correlation energy
 
   implicit none
   include 'parameters.h'
@@ -42,13 +42,12 @@ subroutine EcGM_w_RHF_Sigma(nOrb,nO,verbose,eHF,nfreqs,wweight,wcoord,vMAT,&
 
   double precision,intent(out)  :: EcGM
 
-!
+! Allocate and initialize arrays and variables
+
   eta=0d0
   nfreqs2=10*nfreqs
   allocate(Sigma_c(nfreqs2,nOrb,nOrb))
   allocate(Tmp_mo(nOrb,nOrb))
-  EcGM=0d0
-  trace=czero
 
 ! Prepare second quadrature
 
@@ -63,19 +62,20 @@ subroutine EcGM_w_RHF_Sigma(nOrb,nO,verbose,eHF,nfreqs,wweight,wcoord,vMAT,&
 
 ! Build Sigma_c(iw)
 
-   call build_Sigmac_w_RHF(nOrb,nO,nfreqs2,eta,0,wcoord2_cpx,eHF,nfreqs,0,&
-                           wweight,wcoord,vMAT,Sigma_c)
+  call build_Sigmac_w_RHF(nOrb,nO,nfreqs2,eta,0,wcoord2_cpx,eHF,nfreqs,0,&
+                          wweight,wcoord,vMAT,Sigma_c)
 
-! Imaginary freqs contribution
+! Integration along imag. freqs contributions
 
+  EcGM=0d0
   do ifreq=1,nfreqs2
    
    call G_MO_RHF(nOrb,nO,0d0,eHF,wcoord2_cpx(ifreq),Tmp_mo) ! This is G(iw2)
-   Tmp_mo(:,:)=matmul(Sigma_c(ifreq,:,:),Tmp_mo(:,:))       ! This is Sigma_c x G
+   Tmp_mo(:,:)=matmul(Sigma_c(ifreq,:,:),Tmp_mo(:,:))       ! This is Sigma_c(iw2) G(iw2)
  
    trace=czero 
    do iorb=1,nOrb
-    trace=trace+Tmp_mo(iorb,iorb)                           !  Tr [ Sigma_c x G ]
+    trace=trace+Tmp_mo(iorb,iorb)                           !  Tr [ Sigma_c(iw2) G(iw2) ]
    enddo
 
    EcGM=EcGM+real(trace*wweight2(ifreq))
@@ -100,6 +100,7 @@ subroutine EcGM_w_RHF_Sigma(nOrb,nO,verbose,eHF,nfreqs,wweight,wcoord,vMAT,&
   endif
 
   ! Deallocate arrays
+
   deallocate(Sigma_c,Tmp_mo,wweight2,wcoord2,wcoord2_cpx)
 
 end subroutine
