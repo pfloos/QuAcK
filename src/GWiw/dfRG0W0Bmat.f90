@@ -1,4 +1,5 @@
-subroutine dfRG0W0Bmat(nOrb,nOrb_twice,eta,shift,eQP_state,U_QP,vMAT,nfreqs,ntimes,wcoord,wweight)
+subroutine dfRG0W0Bmat(nOrb,nOrb_twice,chem_pot,eta,shift,eQP_state,U_QP,vMAT,nfreqs,ntimes, &
+                       wcoord,wweight)
 
 ! Restricted branch of G0W0 Bogoliubov matrix form
 
@@ -10,6 +11,7 @@ subroutine dfRG0W0Bmat(nOrb,nOrb_twice,eta,shift,eQP_state,U_QP,vMAT,nfreqs,ntim
   integer,intent(in)             :: nfreqs
   integer,intent(in)             :: ntimes
                                  
+  double precision,intent(in)    :: chem_pot
   double precision,intent(in)    :: eta
   double precision,intent(in)    :: shift
   double precision,intent(in)    :: wcoord(nfreqs)
@@ -64,6 +66,7 @@ subroutine dfRG0W0Bmat(nOrb,nOrb_twice,eta,shift,eQP_state,U_QP,vMAT,nfreqs,ntim
   eQP_state_HFB(:)=eQP_state(:)
 
   do istate=1,nOrb_twice
+
    write(*,*)
    write(*,*) '******'
    write(*,*) 'State',istate
@@ -118,6 +121,9 @@ subroutine dfRG0W0Bmat(nOrb,nOrb_twice,eta,shift,eQP_state,U_QP,vMAT,nfreqs,ntim
     write(*,'(*(f10.5))') eQP_state(istate)
     write(*,*)
    enddo
+
+   write(*,'(A,f15.8)') ' QP energy (aligned incl. the chem pot) ',eQP_state(istate)+chem_pot
+
   enddo
   
   deallocate(Sigc_mo_he)

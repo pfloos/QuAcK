@@ -1,6 +1,6 @@
-subroutine BQuAcK(working_dir,dotest,doHFB,dophRPA,doqsGW,nNuc,nBas,nOrb,nO,ENuc,eta,shift,ZNuc,   &
-                  rNuc,S,T,V,Hc,X,dipole_int_AO,maxSCF,max_diis,thresh,level_shift,guess_type,mix, &
-                  temperature,sigma,chem_pot_hf,restart_hfb,nfreqs,ntimes,wcoord,wweight)
+subroutine BQuAcK(working_dir,dotest,doHFB,dophRPA,doG0W0,doqsGW,nNuc,nBas,nOrb,nO,ENuc,eta,shift,  &
+                  ZNuc,rNuc,S,T,V,Hc,X,dipole_int_AO,maxSCF,max_diis,thresh,level_shift,guess_type, &
+                  mix,temperature,sigma,chem_pot_hf,restart_hfb,nfreqs,ntimes,wcoord,wweight)
 
 ! Restricted branch of Bogoliubov QuAcK
 
@@ -13,6 +13,7 @@ subroutine BQuAcK(working_dir,dotest,doHFB,dophRPA,doqsGW,nNuc,nBas,nOrb,nO,ENuc
                                  
   logical,intent(in)             :: doHFB
   logical,intent(in)             :: dophRPA
+  logical,intent(in)             :: doG0W0
   logical,intent(in)             :: doqsGW
 
   logical,intent(in)             :: restart_hfb
@@ -149,6 +150,7 @@ subroutine BQuAcK(working_dir,dotest,doHFB,dophRPA,doqsGW,nNuc,nBas,nOrb,nO,ENuc
     call wall_time(end_HF)
 
     t_HF = end_HF - start_HF
+    write(*,*)
     write(*,'(A65,1X,F9.3,A8)') 'Total wall time for RHF = ',t_HF,' seconds'
     write(*,*)
     
@@ -164,13 +166,14 @@ subroutine BQuAcK(working_dir,dotest,doHFB,dophRPA,doqsGW,nNuc,nBas,nOrb,nO,ENuc
       call wall_time(end_qsGWB)
 
       t_qsGWB = end_qsGWB - start_qsGWB
+      write(*,*)
       write(*,'(A65,1X,F9.3,A8)') 'Total wall time for qsGWB = ',t_qsGWB,' seconds'
       write(*,*)
 
     end if
 
-    ! Compute EcRPA and EcGM energies for RHF
-    if(dophRPA) then
+    ! Compute G0W0 AND/OR EcRPA and EcGM energies for RHF and qsGW
+    if(dophRPA .or. doG0W0) then
 
      call wall_time(start_Ecorr)
      allocate(vMAT(nOrb*nOrb,nOrb*nOrb))
@@ -186,16 +189,21 @@ subroutine BQuAcK(working_dir,dotest,doHFB,dophRPA,doqsGW,nNuc,nBas,nOrb,nO,ENuc
       enddo
      enddo
      deallocate(ERI_MO)
-     call EcRPA_EcGM_w_RHF(nOrb,nO,1,eHF,nfreqs,ntimes,wweight,wcoord,vMAT,EeleSD+ENuc, &
-                           EcRPA,EcGM)
+     if(dophRPA) then
+      call EcRPA_EcGM_w_RHF(nOrb,nO,1,eHF,nfreqs,ntimes,wweight,wcoord,vMAT,EeleSD+ENuc, &
+                            EcRPA,EcGM)
+     endif
      ! Test down-folded G0W0 matrix?
-     !call dfRG0W0mat(nOrb,nO,eta,shift,eHF,vMAT,nfreqs,ntimes,wcoord,wweight)
+     if(doG0W0) then
+      call dfRG0W0mat(nOrb,nO,eta,shift,eHF,vMAT,nfreqs,ntimes,wcoord,wweight)
+     endif
      ! Test EcGM computed from Sigma_c(iw)
      !call EcGM_w_RHF_Sigma(nOrb,nO,1,eHF,nfreqs,wweight,wcoord,vMAT,EeleSD+Enuc,EcGM)
      deallocate(vMAT)
      call wall_time(end_Ecorr)
 
      t_Ecorr = end_Ecorr - start_Ecorr
+     write(*,*)
      write(*,'(A65,1X,F9.3,A8)') 'Total wall time for Ecorr = ',t_Ecorr,' seconds'
      write(*,*)
 
@@ -210,6 +218,7 @@ subroutine BQuAcK(working_dir,dotest,doHFB,dophRPA,doqsGW,nNuc,nBas,nOrb,nO,ENuc
     call wall_time(end_HF)
 
     t_HF = end_HF - start_HF
+    write(*,*)
     write(*,'(A65,1X,F9.3,A8)') 'Total wall time for HFB = ',t_HF,' seconds'
     write(*,*)
 
@@ -230,13 +239,14 @@ subroutine BQuAcK(working_dir,dotest,doHFB,dophRPA,doqsGW,nNuc,nBas,nOrb,nO,ENuc
     call wall_time(end_qsGWB)
 
     t_qsGWB = end_qsGWB - start_qsGWB
+    write(*,*)
     write(*,'(A65,1X,F9.3,A8)') 'Total wall time for qsGWB = ',t_qsGWB,' seconds'
     write(*,*)
 
   end if
 
-  ! Compute EcRPA and EcGM energies for qsGWB or HFB
-  if(dophRPA) then
+  ! Compute G0W0 AND/OR EcRPA and EcGM energies for qsGWB or HFB
+  if(dophRPA .or. doG0W0) then
 
    call wall_time(start_Ecorr)
    allocate(vMAT(nOrb*nOrb,nOrb*nOrb))
@@ -252,16 +262,22 @@ subroutine BQuAcK(working_dir,dotest,doHFB,dophRPA,doqsGW,nNuc,nBas,nOrb,nO,ENuc
     enddo
    enddo
    deallocate(ERI_MO)
-   call EcRPA_EcGM_w_RHFB(nOrb,nOrb_twice,1,eQP_state,nfreqs,ntimes,wweight,wcoord,vMAT, &
-                          U_QP,Eelec+ENuc,EcRPA,EcGM)
+   if(dophRPA) then
+    call EcRPA_EcGM_w_RHFB(nOrb,nOrb_twice,1,eQP_state,nfreqs,ntimes,wweight,wcoord,vMAT, &
+                           U_QP,Eelec+ENuc,EcRPA,EcGM)
+   endif
    ! Test down-folded G0W0 Bogoliubov matrix?
-   !call dfRG0W0Bmat(nOrb,nOrb_twice,eta,shift,eQP_state,U_QP,vMAT,nfreqs,ntimes,wcoord,wweight)
+   if(doG0W0) then
+    call dfRG0W0Bmat(nOrb,nOrb_twice,chem_pot,eta,shift,eQP_state,U_QP,vMAT,nfreqs,ntimes, &
+                     wcoord,wweight)
+   endif
    ! Test EcGM computed from Sigma_c(iw)
    !call EcGM_w_RHFB_Sigma(nOrb,nOrb_twice,1,eQP_state,nfreqs,wweight,wcoord,vMAT,U_QP,EeleSD+Enuc,EcGM)
    deallocate(vMAT)
    call wall_time(end_Ecorr)
 
    t_Ecorr = end_Ecorr - start_Ecorr
+   write(*,*)
    write(*,'(A65,1X,F9.3,A8)') 'Total wall time for Ecorr = ',t_Ecorr,' seconds'
    write(*,*)
 

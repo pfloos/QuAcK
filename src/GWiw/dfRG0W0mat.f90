@@ -51,6 +51,7 @@ subroutine dfRG0W0mat(nOrb,nO,eta,shift,eHF,vMAT,nfreqs,ntimes,wcoord,wweight)
    write(*,*)
 
    do istate=1,nOrb
+
     write(*,*)
     write(*,*) '******'
     write(*,*) 'State',istate
@@ -86,31 +87,34 @@ subroutine dfRG0W0mat(nOrb,nO,eta,shift,eHF,vMAT,nfreqs,ntimes,wcoord,wweight)
    
     ! Print results
     write(*,'(A,f15.8)') ' QP energy (aligned incl. the chem pot) ',eQP_state(istate)+chem_pot
-    ! Set eQP to evaluate Sigma_c
-    E_eval_global_cpx(1)=eQP_state(istate)-shift
-    E_eval_global_cpx(2)=eQP_state(istate)+shift
-    call build_Sigmac_w_RHF(nOrb,nO,nE_eval_global,eta,0,E_eval_global_cpx,eHF,nfreqs,ntimes,wweight,wcoord,vMAT,&
-                            Sigc_mo_he_cpx)
-    ! Sigma_c
-    Sigc_mo(:,:) = 0.5d0*(Real(Sigc_mo_he_cpx(1,:,:))+Real(Sigc_mo_he_cpx(2,:,:)))
-    write(*,*) 'Sigma_c'
-    do iorb=1,nOrb
-     write(*,'(*(f10.5))') Sigc_mo(iorb,:)
-    enddo
-    ! New eQP value
-    Hmat=0d0
-    Hmat(1:nOrb           ,1:nOrb           )=Sigc_mo(1:nOrb,1:nOrb)
-    do iorb=1,nOrb
-     Hmat(iorb,iorb)=Hmat(iorb,iorb)+eHF(iorb)-chem_pot
-    enddo
-    write(*,*) 'H = F + Sigma_c(e_QP)'
-    do iorb=1,nOrb
-     write(*,'(*(f10.5))') Hmat(iorb,:)
-    enddo
-    Hmat=matmul(Hmat,Eigvec)
-    Hmat=Hmat-eQP_state(istate)*Eigvec
-    write(*,*) 'H C = e_QP C ?'
-    write(*,'(*(f10.5))') Hmat(:,istate)
+
+    ! Extra test to show the eigenvectors
+!    ! Set eQP to evaluate Sigma_c
+!    E_eval_global_cpx(1)=eQP_state(istate)-shift
+!    E_eval_global_cpx(2)=eQP_state(istate)+shift
+!    call build_Sigmac_w_RHF(nOrb,nO,nE_eval_global,eta,0,E_eval_global_cpx,eHF,nfreqs,ntimes,wweight,wcoord,vMAT,&
+!                            Sigc_mo_he_cpx)
+!    ! Sigma_c
+!    Sigc_mo(:,:) = 0.5d0*(Real(Sigc_mo_he_cpx(1,:,:))+Real(Sigc_mo_he_cpx(2,:,:)))
+!    write(*,*) 'Sigma_c'
+!    do iorb=1,nOrb
+!     write(*,'(*(f10.5))') Sigc_mo(iorb,:)
+!    enddo
+!    ! New eQP value
+!    Hmat=0d0
+!    Hmat(1:nOrb           ,1:nOrb           )=Sigc_mo(1:nOrb,1:nOrb)
+!    do iorb=1,nOrb
+!     Hmat(iorb,iorb)=Hmat(iorb,iorb)+eHF(iorb)-chem_pot
+!    enddo
+!    write(*,*) 'H = F + Sigma_c(e_QP)'
+!    do iorb=1,nOrb
+!     write(*,'(*(f10.5))') Hmat(iorb,:)
+!    enddo
+!    Hmat=matmul(Hmat,Eigvec)
+!    Hmat=Hmat-eQP_state(istate)*Eigvec
+!    write(*,*) 'H C = e_QP C ?'
+!    write(*,'(*(f10.5))') Hmat(:,istate)
+
    enddo
 
    deallocate(Sigc_mo)
