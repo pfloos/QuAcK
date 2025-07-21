@@ -130,13 +130,14 @@ subroutine sigc_MO_basis_RHFB(nOrb,nOrb_twice,offdiag0,eta,shift,Occ_el,U_QP,eqs
     Sigc_mo_hh(iorb,:)=Occ_el(iorb)*Sigc_mo_tmp(iorb,iorb,:)+(1d0-Occ_el(iorb))*Sigc_mo_tmp2(iorb,iorb,:)
    enddo
    if(offdiag0) then  ! qsGW version where all the off-diagonal elements are built at the Fermi level 
-    do iorb=1,nOrb
-     do jorb=1,nOrb
-      if(iorb/=jorb) then
-       Sigc_mo_hh(iorb,jorb) = Real(Sigc_mo_hh_cpx(nE_eval_global,iorb,jorb)) 
-      endif
-     enddo
-    enddo
+    !do iorb=1,nOrb
+    ! do jorb=1,nOrb
+    !  if(iorb/=jorb) then
+    !   Sigc_mo_hh(iorb,jorb) = Real(Sigc_mo_hh_cpx(nE_eval_global,iorb,jorb)) 
+    !  endif
+    ! enddo
+    !enddo
+    Sigc_mo_hh(:,:) = Real(Sigc_mo_hh_cpx(nE_eval_global,:,:))
    endif
    
    ! Deallocate arrays
