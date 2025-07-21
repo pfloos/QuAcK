@@ -53,6 +53,14 @@ subroutine dfRG0W0Bmat(nOrb,nOrb_twice,eta,shift,eQP_state,U_QP,vMAT,nfreqs,ntim
   allocate(Sigc_mo_ee_cpx(nE_eval_global,nOrb,nOrb))
   allocate(E_eval_global_cpx(nE_eval_global))
 
+  write(*,*)
+  write(*,*)'**************************************'
+  write(*,*)'*  G0W0 beyond the linearized approx *'
+  write(*,*)'*     and using imag. freqs.         *'
+  write(*,*)'*   [ H^HFB + Sigma_c(w) ] C = w C   *'
+  write(*,*)'**************************************'
+  write(*,*)
+
   eQP_state_HFB(:)=eQP_state(:)
 
   do istate=1,nOrb_twice

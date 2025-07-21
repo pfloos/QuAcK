@@ -42,6 +42,14 @@ subroutine dfRG0W0mat(nOrb,nO,eta,shift,eHF,vMAT,nfreqs,ntimes,wcoord,wweight)
 
    chem_pot=0.5d0*(eHF(nO)+eHF(nO+1))
 
+   write(*,*)
+   write(*,*)'**************************************'
+   write(*,*)'*  G0W0 beyond the linearized approx *'
+   write(*,*)'*     and using imag. freqs.         *'
+   write(*,*)'*    [ Fock + Sigma_c(w) ] C = w C   *'
+   write(*,*)'**************************************'
+   write(*,*)
+
    do istate=1,nOrb
     write(*,*)
     write(*,*) '******'
