@@ -81,7 +81,7 @@ subroutine RGW(dotest,doG0W0,doevGW,doqsGW,doufG0W0,doufGW,maxSCF,thresh,max_dii
 ! Perform G0W0 calculation
 !------------------------------------------------------------------------
 
-  if(doG0W0 .and. .not. doOO) then
+  if(doG0W0 .and. (.not. doOO)) then
     
     call wall_time(start_GW)
     call RG0W0(dotest,doACFDT,exchange_kernel,doXBS,dophBSE,dophBSE2,TDA_W,TDA,dBSE,dTDA,doppBSE,singlet,triplet, &
