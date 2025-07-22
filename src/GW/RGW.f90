@@ -98,7 +98,7 @@ subroutine RGW(dotest,doG0W0,doevGW,doqsGW,doufG0W0,doufGW,maxSCF,thresh,max_dii
 
     call wall_time(start_GW)
     call OORG0W0(dotest,doACFDT,exchange_kernel,doXBS,dophBSE,dophBSE2,TDA_W,TDA,dBSE,dTDA,doppBSE,singlet,triplet, &
-         linearize,eta,doSRG,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,ERHF,ERI_MO,dipole_int_MO,eHF,eGW,mu)
+         linearize,eta,doSRG,nBas,nOrb,nC,nO,nV,nR,nS,mu,ENuc,ERHF,ERI_MO,dipole_int_MO,eHF,eGW)
     call wall_time(end_GW)
   
     t_GW = end_GW - start_GW

@@ -82,7 +82,7 @@ subroutine OORG0W0(dotest,doACFDT,exchange_kernel,doXBS,dophBSE,dophBSE2,TDA_W,T
   write(*,*)'* Restricted G0W0 Calculation with orbital optimization *'
   write(*,*)'*********************************************************'
   write(*,*)
-  write(*,*) "Targeted exited state mu: ",mu
+  write(*,*) "Targeted exited state mu: ", mu
 
 ! Spin manifold and TDA for dynamical screening
 
