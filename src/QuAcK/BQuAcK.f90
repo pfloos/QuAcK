@@ -268,8 +268,8 @@ subroutine BQuAcK(working_dir,dotest,doHFB,dophRPA,doG0W0,doqsGW,nNuc,nBas,nOrb,
    endif
    ! Test down-folded G0W0 Bogoliubov matrix?
    if(doG0W0) then
-    call dfRG0W0Bmat(nOrb,nOrb_twice,chem_pot,eta,shift,eQP_state,U_QP,vMAT,nfreqs,ntimes, &
-                     wcoord,wweight)
+    call dfRG0W0Bmat(nBas,nO_,nOrb,nOrb_twice,chem_pot,eta,shift,eQP_state,U_QP,vMAT,nfreqs,ntimes, &
+                     wcoord,wweight,sigma,S,T,V,Hc,MOCoef,pMAT,panomMAT,Delta,ERI_AO)
    endif
    ! Test EcGM computed from Sigma_c(iw) [ NOTE: This is really bad numerically and never used. ]
    !call EcGM_w_RHFB_Sigma(nOrb,nOrb_twice,1,eQP_state,nfreqs,wweight,wcoord,vMAT,U_QP,EeleSD+Enuc,EcGM)

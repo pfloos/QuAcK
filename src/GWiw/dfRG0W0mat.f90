@@ -77,6 +77,10 @@ subroutine dfRG0W0mat(nOrb,nO,eta,shift,eHF,vMAT,nfreqs,ntimes,wcoord,wweight)
      do iorb=1,nOrb
       Hmat(iorb,iorb)=Hmat(iorb,iorb)+eHF(iorb)-chem_pot
      enddo
+     write(*,*) 'F + Sigma_c(w)'
+     do iorb=1,nOrb
+      write(*,'(*(f10.5))') Hmat(iorb,:)
+     enddo
      Eigvec=Hmat
      call diagonalize_matrix(nOrb,Eigvec,eQP_state)
      eQP_state(:)=eQP_state(istate)

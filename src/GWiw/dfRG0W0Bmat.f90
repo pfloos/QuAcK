@@ -1,28 +1,47 @@
-subroutine dfRG0W0Bmat(nOrb,nOrb_twice,chem_pot,eta,shift,eQP_state,U_QP,vMAT,nfreqs,ntimes, &
-                       wcoord,wweight)
+subroutine dfRG0W0Bmat(nBas,nO,nOrb,nOrb_twice,chem_pot,eta,shift,eQP_state,U_QP,vMAT,nfreqs,ntimes, &
+                       wcoord,wweight,sigma,S,T,V,Hc,c,P,Panom,Delta,ERI)
 
 ! Restricted branch of G0W0 Bogoliubov matrix form
 
   implicit none
   include 'parameters.h'
 
+  integer,intent(in)             :: nBas
+  integer,intent(in)             :: nO
   integer,intent(in)             :: nOrb
   integer,intent(in)             :: nOrb_twice
   integer,intent(in)             :: nfreqs
   integer,intent(in)             :: ntimes
                                  
-  double precision,intent(in)    :: chem_pot
+  double precision,intent(inout) :: chem_pot
+  double precision,intent(in)    :: sigma
   double precision,intent(in)    :: eta
   double precision,intent(in)    :: shift
   double precision,intent(in)    :: wcoord(nfreqs)
   double precision,intent(in)    :: wweight(nfreqs)
-  double precision,intent(in)    :: U_QP(nOrb_twice,nOrb_twice)
+  double precision,intent(inout) :: U_QP(nOrb_twice,nOrb_twice)
   double precision,intent(in)    :: vMAT(nOrb*nOrb,nOrb*nOrb)
+  double precision,intent(in)    :: S(nBas,nBas)
+  double precision,intent(in)    :: T(nBas,nBas)
+  double precision,intent(in)    :: V(nBas,nBas)
+  double precision,intent(in)    :: Hc(nBas,nBas) 
+  double precision,intent(in)    :: c(nBas,nOrb)
+  double precision,intent(in)    :: ERI(nBas,nBas,nBas,nBas)
+  double precision,intent(inout) :: P(nBas,nBas)
+  double precision,intent(inout) :: Panom(nBas,nBas)
+  double precision,intent(inout) :: Delta(nBas,nBas)
                                  
   integer                        :: iorb,iter,istate,niter
   integer                        :: nE_eval_global
                                     
+  double precision               :: trace_1rdm
+  double precision               :: thrs_N
   double precision,allocatable   :: eQP_state_HFB(:)
+  double precision,allocatable   :: R(:,:)
+  double precision,allocatable   :: J(:,:)
+  double precision,allocatable   :: K(:,:)
+  double precision,allocatable   :: F(:,:)
+  double precision,allocatable   :: Delta_MO(:,:)
   double precision,allocatable   :: Hmat(:,:)
   double precision,allocatable   :: Eigvec(:,:)
   double precision,allocatable   :: Sigc_mo_he(:,:)
@@ -41,7 +60,13 @@ subroutine dfRG0W0Bmat(nOrb,nOrb_twice,chem_pot,eta,shift,eQP_state,U_QP,vMAT,nf
 
   nE_eval_global=2
   niter=10
+  thrs_N=1d-8
 
+  allocate(E_eval_global_cpx(nE_eval_global))
+  allocate(J(nBas,nBas))
+  allocate(K(nBas,nBas))
+  allocate(F(nOrb,nOrb))
+  allocate(Delta_MO(nOrb,nOrb))
   allocate(eQP_state_HFB(nOrb_twice))
   allocate(Hmat(nOrb_twice,nOrb_twice))
   allocate(Eigvec(nOrb_twice,nOrb_twice))
@@ -53,7 +78,7 @@ subroutine dfRG0W0Bmat(nOrb,nOrb_twice,chem_pot,eta,shift,eQP_state,U_QP,vMAT,nf
   allocate(Sigc_mo_hh_cpx(nE_eval_global,nOrb,nOrb))
   allocate(Sigc_mo_eh_cpx(nE_eval_global,nOrb,nOrb))
   allocate(Sigc_mo_ee_cpx(nE_eval_global,nOrb,nOrb))
-  allocate(E_eval_global_cpx(nE_eval_global))
+  allocate(R(nOrb_twice,nOrb_twice))
 
   write(*,*)
   write(*,*)'**************************************'
@@ -64,6 +89,25 @@ subroutine dfRG0W0Bmat(nOrb,nOrb_twice,chem_pot,eta,shift,eQP_state,U_QP,vMAT,nf
   write(*,*)
 
   eQP_state_HFB(:)=eQP_state(:)
+
+  call Hartree_matrix_AO_basis(nBas,P,ERI,J)
+  call exchange_matrix_AO_basis(nBas,P,ERI,K)
+  call anomalous_matrix_AO_basis(nBas,sigma,Panom,ERI,Delta)
+  F=matmul(transpose(c),matmul(Hc+J+0.5d0*K-chem_pot*S,c))
+  Delta_MO=matmul(transpose(c),matmul(Delta,c))
+  ! F MO
+  write(*,*)
+  write(*,*) 'F'
+  do iorb=1,nOrb
+   write(*,'(*(f10.5))') F(iorb,:)
+  enddo
+  ! Delta MO
+  write(*,*)
+  write(*,*) 'Delta'
+  do iorb=1,nOrb
+   write(*,'(*(f10.5))') Delta(iorb,:)
+  enddo
+  write(*,*)
 
   do istate=1,nOrb_twice
 
@@ -106,16 +150,41 @@ subroutine dfRG0W0Bmat(nOrb,nOrb_twice,chem_pot,eta,shift,eQP_state,U_QP,vMAT,nf
      write(*,'(*(f10.5))') Sigc_mo_ee(iorb,:)
     enddo
     ! New eQP value
+     ! Initialized H with Sigma_c^Gorkov
     Hmat=0d0
     Hmat(1:nOrb           ,1:nOrb           )=Sigc_mo_he(1:nOrb,1:nOrb)
     Hmat(nOrb+1:nOrb_twice,nOrb+1:nOrb_twice)=Sigc_mo_eh(1:nOrb,1:nOrb)
-    Hmat(nOrb+1:nOrb_twice,1:nOrb           )=Sigc_mo_ee(1:nOrb,1:nOrb)
     Hmat(1:nOrb           ,nOrb+1:nOrb_twice)=Sigc_mo_hh(1:nOrb,1:nOrb)
+    Hmat(nOrb+1:nOrb_twice,1:nOrb           )=Sigc_mo_ee(1:nOrb,1:nOrb)
+     ! Add the Fock and Delta Contributions
+    Hmat(1:nOrb           ,1:nOrb           )=Hmat(1:nOrb           ,1:nOrb           )+F(1:nOrb,1:nOrb)
+    Hmat(nOrb+1:nOrb_twice,nOrb+1:nOrb_twice)=Hmat(nOrb+1:nOrb_twice,nOrb+1:nOrb_twice)-F(1:nOrb,1:nOrb)
+    Hmat(1:nOrb           ,nOrb+1:nOrb_twice)=Hmat(1:nOrb           ,nOrb+1:nOrb_twice)+Delta(1:nOrb,1:nOrb)
+    Hmat(nOrb+1:nOrb_twice,1:nOrb           )=Hmat(nOrb+1:nOrb_twice,1:nOrb           )+Delta(1:nOrb,1:nOrb)
+    write(*,*) 'H^HFB + Sigma_c(w)'
     do iorb=1,nOrb_twice
-     Hmat(iorb,iorb)=Hmat(iorb,iorb)+eQP_state_HFB(iorb)
+     write(*,'(*(f10.5))') Hmat(iorb,:)
     enddo
+     ! Diagonalize H^HFB + Sigma_c(w) 
     Eigvec=Hmat
     call diagonalize_matrix(nOrb_twice,Eigvec,eQP_state)
+    ! Test R 
+    R(:,:)=0d0
+    do iorb=1,nOrb
+     R(:,:)=R(:,:)+matmul(Eigvec(:,iorb:iorb),transpose(Eigvec(:,iorb:iorb))) 
+    enddo
+    trace_1rdm=0d0
+    do iorb=1,nOrb
+     trace_1rdm=trace_1rdm+R(iorb,iorb) 
+    enddo
+    write(*,'(a,f10.5)') ' Tr[^1D] =',2d0*trace_1rdm
+    ! Adjusting the chemical potential is apparently not needed...
+     !if( abs(trace_1rdm-nO) > thrs_N ) & 
+     ! call fix_chem_pot(nO,nOrb,nOrb_twice,0,thrs_N,trace_1rdm,chem_pot,Hmat,Eigvec,R,&
+     !                   eQP_state)
+     ! U_QP=Eigvec 
+    write(*,*) 'Eigenvalues'
+    write(*,'(*(f10.5))') eQP_state(:)
     eQP_state(:)=eQP_state(istate)
     write(*,*) 'New QP energy'
     write(*,'(*(f10.5))') eQP_state(istate)
@@ -137,6 +206,7 @@ subroutine dfRG0W0Bmat(nOrb,nOrb_twice,chem_pot,eta,shift,eQP_state,U_QP,vMAT,nf
   deallocate(eQP_state_HFB)
   deallocate(Eigvec)
   deallocate(Hmat)
+  deallocate(Delta_MO,F,J,K,R)
   deallocate(E_eval_global_cpx)
 
 
