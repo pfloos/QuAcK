@@ -4,35 +4,40 @@ import sys
 import subprocess
 
 import argparse
-parser = argparse.ArgumentParser(description='This script generate the compilation files for QuAcK.')
-parser.add_argument('-d', '--debug', action='store_true', help='Debug mode. Default is false.')
-parser.add_argument('-u', '--use-gpu', action='store_true', help='Use GPU. Default is false.')
+parser = argparse.ArgumentParser(
+    description='This script generate the compilation files for QuAcK.')
+parser.add_argument('-d', '--debug', action='store_true',
+                    help='Debug mode. Default is false.')
+parser.add_argument('-u', '--use-gpu', action='store_true',
+                    help='Use GPU. Default is false.')
 args = parser.parse_args()
 DEBUG = args.debug
 USE_GPU = args.use_gpu
 
 
 if "QUACK_ROOT" not in os.environ:
-   os.chdir("..")
-   print("")
-   print("Please set the QUACK_ROOT environment variable, for example:")
-   print("")
-   print("$ export QUACK_ROOT={0}".format(os.getcwd()))
-   print("")
-   sys.exit(1)
+    os.chdir("..")
+    print("")
+    print("Please set the QUACK_ROOT environment variable, for example:")
+    print("")
+    print("$ export QUACK_ROOT={0}".format(os.getcwd()))
+    print("")
+    sys.exit(1)
 
-QUACK_ROOT=os.environ["QUACK_ROOT"]
+QUACK_ROOT = os.environ["QUACK_ROOT"]
 
 
 def check_compiler_exists(compiler):
     """Check if a compiler exists on the system."""
     try:
         # Try to run the compiler with the --version flag to check its existence
-        subprocess.run([compiler, '--version'], check=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        subprocess.run([compiler, '--version'], check=True,
+                       stdout=subprocess.PIPE, stderr=subprocess.PIPE)
         return True
     except (subprocess.CalledProcessError, FileNotFoundError):
         return False
- 
+
+
 compile_gfortran_mac = """
 FC = gfortran
 AR = libtool -static -o
@@ -94,7 +99,7 @@ FIX_ORDER_OF_LIBS=-Wl,--start-group
             compiler = """
 FC = gfortran -fopenmp
 AR = ar crs
-FFLAGS = -I$IDIR -J$IDIR -cpp -fbacktrace -g -Wall -Wno-unused-variable -Wno-unused -Wno-unused-dummy-argument -Wuninitialized -Wmaybe-uninitialized -O3 -march=native
+FFLAGS = -I$IDIR -J$IDIR -cpp -fbacktrace -g -Wall -Wno-unused-variable -Wno-unused -Wno-unused-dummy-argument -Wuninitialized -Wmaybe-uninitialized -O3 -march=native -ffree-line-length-none
 CC = gcc
 CXX = g++
 LAPACK=-lblas -llapack
@@ -104,7 +109,8 @@ STDCXX=-lstdc++
 FIX_ORDER_OF_LIBS=-Wl,--start-group
 """
         else:
-            raise RuntimeError("Neither ifort nor gfortran compilers were found on this system.")
+            raise RuntimeError(
+                "Neither ifort nor gfortran compilers were found on this system.")
 
 else:
 
@@ -113,7 +119,8 @@ else:
 
 if USE_GPU:
     compiler_tmp = compiler.strip().split('\n')
-    compiler_tmp[0] += " -L{}/src/cuda/build -lcuquack -lcudart -lcublas -lcusolver".format(QUACK_ROOT)
+    compiler_tmp[0] += " -L{}/src/cuda/build -lcuquack -lcudart -lcublas -lcusolver".format(
+        QUACK_ROOT)
     compiler_exe = '\n'.join(compiler_tmp)
 
     compiler_tmp = compiler.strip().split('\n')
@@ -125,7 +132,6 @@ else:
     compiler_exe = compiler
     compiler_lib = compiler
     compiler_main = compiler
-
 
 
 header = """#
@@ -156,7 +162,7 @@ rule build_lib
   description = Linking $out
 
 """
-LIBS=""
+LIBS = ""
 rule_build_exe = """
 LIBS = {0} $LAPACK $STDCXX
 
@@ -181,81 +187,85 @@ rule git_clone
 """
 
 build_in_lib_dir = "\n".join([
-	header,
-	compiler_lib,
-	rule_fortran,
-	rule_build_lib,
+    header,
+    compiler_lib,
+    rule_fortran,
+    rule_build_lib,
 ])
 
-  
+
 build_in_exe_dir = "\n".join([
-	header,
-	compiler_exe,
-	rule_fortran,
-	rule_build_exe,
+    header,
+    compiler_exe,
+    rule_fortran,
+    rule_build_exe,
 ])
 
 build_main = "\n".join([
-	header,
-        compiler_main,
-        rule_git_clone,
+    header,
+    compiler_main,
+    rule_git_clone,
 ])
 
 exe_dirs = ["QuAcK"]
-lib_dirs = list(filter(lambda x: os.path.isdir(x) and \
-                                x not in ["cuda"] and \
-                                x not in exe_dirs, os.listdir(".")))
+lib_dirs = list(filter(lambda x: os.path.isdir(x) and
+                       x not in ["cuda"] and
+                       x not in exe_dirs, os.listdir(".")))
 if(USE_GPU):
     i = lib_dirs.index("GPU")
     lib_dirs[0], lib_dirs[i] = lib_dirs[i], lib_dirs[0]
 else:
     lib_dirs.remove("GPU")
 
+
 def create_ninja_in_libdir(directory):
     def write_rule(f, source_file, replace):
         obj_file = os.path.join("obj", source_file.replace(replace, ".o"))
-        f.write("build {0}: fc {1}\n".format(obj_file,source_file))
+        f.write("build {0}: fc {1}\n".format(obj_file, source_file))
         return obj_file
 
-    with open(os.path.join(directory, "build.ninja"),"w") as f:
+    with open(os.path.join(directory, "build.ninja"), "w") as f:
         f.write(build_in_lib_dir)
         objects = []
         for filename in os.listdir(directory):
             for suffix in [".f", ".f90"]:
                 if filename.endswith(suffix):
-                   obj_file = write_rule(f, filename, suffix)
-                   objects.append(obj_file)
+                    obj_file = write_rule(f, filename, suffix)
+                    objects.append(obj_file)
         objects = " ".join(objects)
-        f.write("build $LDIR/{0}.a: build_lib {1}\n".format(directory,objects))
+        f.write(
+            "build $LDIR/{0}.a: build_lib {1}\n".format(directory, objects))
         f.write("default $LDIR/{0}.a\n".format(directory))
 
 
 def create_ninja_in_exedir(directory):
     def write_rule(f, source_file, replace):
         obj_file = os.path.join("obj", source_file.replace(replace, ".o"))
-        f.write("build {0}: fc {1}\n".format(obj_file,source_file))
+        f.write("build {0}: fc {1}\n".format(obj_file, source_file))
         return obj_file
 
-    with open(os.path.join(directory, "build.ninja"),"w") as f:
+    with open(os.path.join(directory, "build.ninja"), "w") as f:
         f.write(build_in_exe_dir)
         objects = []
         for filename in os.listdir(directory):
             for suffix in [".f", ".f90"]:
                 if filename.endswith(suffix):
-                   obj_file = write_rule(f, filename, suffix)
-                   objects.append(obj_file)
+                    obj_file = write_rule(f, filename, suffix)
+                    objects.append(obj_file)
         objects = " ".join(objects)
         for libname in lib_dirs:
-           f.write("build $LDIR/{0}.a: build_lib\n  dir = $SDIR/{0}\n".format(libname))
-        libs = " ".join([ "$LDIR/{0}.a".format(x) for x in lib_dirs]) + " "+LIBS
-        f.write("build $BDIR/{0}: build_exe {1} {2}\n".format(directory,libs,objects))
+            f.write(
+                "build $LDIR/{0}.a: build_lib\n  dir = $SDIR/{0}\n".format(libname))
+        libs = " ".join(["$LDIR/{0}.a".format(x) for x in lib_dirs]) + " "+LIBS
+        f.write(
+            "build $BDIR/{0}: build_exe {1} {2}\n".format(directory, libs, objects))
         f.write("default $BDIR/{0}\n".format(directory))
 
 
 def create_main_ninja():
 
-    libs = " ".join([ "$LDIR/{0}.a".format(x) for x in lib_dirs]) + " "+LIBS
-    with open("build.ninja","w") as f:
+    libs = " ".join(["$LDIR/{0}.a".format(x) for x in lib_dirs]) + " "+LIBS
+    with open("build.ninja", "w") as f:
         f.write(build_main)
         f.write("""
 rule build_exe
@@ -269,23 +279,30 @@ rule build_lib
 
 """)
         for exe_dir in exe_dirs:
-            sources = [ "$SDIR/{0}/{1}".format(exe_dir,x) for x in  os.listdir(exe_dir) ]
-            sources = filter(lambda x: x.endswith(".f") or x.endswith(".f90"), sources)
+            sources = ["$SDIR/{0}/{1}".format(exe_dir, x)
+                       for x in os.listdir(exe_dir)]
+            sources = filter(lambda x: x.endswith(
+                ".f") or x.endswith(".f90"), sources)
             sources = " ".join(sources)
-            f.write("build $BDIR/{0}: build_exe {1} {2}\n".format(exe_dir,libs,sources))
-            f.write("  dir = {0} \n".format(exe_dir) )
+            f.write(
+                "build $BDIR/{0}: build_exe {1} {2}\n".format(exe_dir, libs, sources))
+            f.write("  dir = {0} \n".format(exe_dir))
 
         for libname in lib_dirs:
-            sources = [ "$SDIR/{0}/{1}".format(libname,x) for x in  os.listdir(libname) ]
-            sources = filter(lambda x: x.endswith(".f") or x.endswith(".f90"), sources)
+            sources = ["$SDIR/{0}/{1}".format(libname, x)
+                       for x in os.listdir(libname)]
+            sources = filter(lambda x: x.endswith(
+                ".f") or x.endswith(".f90"), sources)
             sources = " ".join(sources)
-            f.write("build $LDIR/{0}.a: build_lib {1} \n  dir = $SDIR/{0}\n".format(libname, sources))
+            f.write(
+                "build $LDIR/{0}.a: build_lib {1} \n  dir = $SDIR/{0}\n".format(libname, sources))
         f.write("build all: phony $BDIR/QuAcK\n")
         f.write("default all\n")
 
+
 def create_makefile(directory):
-   with open(os.path.join(directory, "Makefile"),"w") as f:
-     f.write("""default:
+    with open(os.path.join(directory, "Makefile"), "w") as f:
+        f.write("""default:
 	ninja
 	make -C ..
 
@@ -297,16 +314,18 @@ debug:
 	make -C .. debug
 """)
 
+
 def main():
     for lib_dir in lib_dirs:
-       create_ninja_in_libdir(lib_dir)
-       create_makefile(lib_dir)
+        create_ninja_in_libdir(lib_dir)
+        create_makefile(lib_dir)
 
     for exe_dir in exe_dirs:
-       create_ninja_in_exedir(exe_dir)
-       create_makefile(exe_dir)
+        create_ninja_in_exedir(exe_dir)
+        create_makefile(exe_dir)
 
     create_main_ninja()
+
 
 if __name__ == '__main__':
     main()
