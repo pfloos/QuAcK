@@ -58,14 +58,31 @@ subroutine OORG0W0(dotest,doACFDT,exchange_kernel,doXBS,dophBSE,dophBSE2,TDA_W,T
   double precision,allocatable  :: Om(:)
   double precision,allocatable  :: XpY(:,:)
   double precision,allocatable  :: XmY(:,:)
+  double precision,allocatable  :: X(:,:)
+  double precision,allocatable  :: X_inv(:,:)
+  double precision,allocatable  :: Xbar(:,:)
+  double precision,allocatable  :: Xbar_inv(:,:)
+  double precision,allocatable  :: Y(:,:)
+  double precision,allocatable  :: lambda(:,:)
+  double precision,allocatable  :: T(:,:)
   double precision,allocatable  :: rho(:,:,:)
+  double precision,allocatable  :: rampl(:,:,:)
+  double precision,allocatable  :: lampl(:,:,:)
 
   double precision,allocatable  :: eGWlin(:)
   double precision,allocatable  :: eGW(:)
 
   double precision              :: OOConv
   integer                       :: OOi
-  double precision,allocatable  :: kappa(:,:)
+  double precision,allocatable  :: h(:,:)
+  double precision,allocatable  :: Kap(:,:)
+  double precision,allocatable  :: ExpKap(:,:)
+  double precision,allocatable  :: hess(:,:)
+  double precision,allocatable  :: hessInv(:,:)
+  double precision,allocatable  :: grad(:)
+  double precision,allocatable  :: rdm1(:,:)
+  double precision,allocatable  :: rdm2(:,:,:,:)
+  integer                       :: r,s,rs,p,q,pq
 
 ! Output variables
 
@@ -109,7 +126,8 @@ subroutine OORG0W0(dotest,doACFDT,exchange_kernel,doXBS,dophBSE,dophBSE2,TDA_W,T
 ! Memory allocation
 
   allocate(Aph(nS,nS),Bph(nS,nS),SigC(nOrb),Z(nOrb),Om(nS),XpY(nS,nS),XmY(nS,nS),rho(nOrb,nOrb,nS), & 
-           eGW(nOrb),eGWlin(nOrb))
+           eGW(nOrb),eGWlin(nOrb),X(nS,nS),X_inv(nS,nS),Y(nS,nS),Xbar(nS,nS),Xbar_inv(nS,nS),lambda(nS,nS),T(nS,nS),&
+           rampl(nOrb,nS,nS),lampl(nS,nS,nOrb),h(nOrb,nOrb))
 
 ! Initialize variables for OO  
   OOi        = 0
@@ -117,7 +135,7 @@ subroutine OORG0W0(dotest,doACFDT,exchange_kernel,doXBS,dophBSE,dophBSE2,TDA_W,T
 
   write(*,*) "Start orbital optimization loop..."
 
-  do while (OOConv < 1e-3)
+  do while (OOConv > 1e-3)
   
   write(*,*) "Orbital optimiation Iteration: ", OOi
 
@@ -129,7 +147,8 @@ subroutine OORG0W0(dotest,doACFDT,exchange_kernel,doXBS,dophBSE,dophBSE2,TDA_W,T
     if(.not.TDA_W) call phRLR_B(isp_W,dRPA_W,nOrb,nC,nO,nV,nR,nS,1d0,ERI,Bph)
   
     call phRLR(TDA_W,nS,Aph,Bph,EcRPA,Om,XpY,XmY)
-  
+    
+
     if(print_W) call print_excitation_energies('phRPA@RHF','singlet',nS,Om)
   
   !--------------------------!
@@ -259,5 +278,110 @@ subroutine OORG0W0(dotest,doACFDT,exchange_kernel,doXBS,dophBSE,dophBSE2,TDA_W,T
       call dump_test_value('R','G0W0 LUMO energy',eGW(nO+1))
   
     end if
+
+    ! Useful quantities to calculate rdms
+
+    X = 0.5*(XpY + XmY)
+    Y = 0.5*(XpY - XmY)
+    call inverse_matrix(nS,X,X_inv)
+    T = matmul(Y,X_inv)
+    Xbar = - matmul(T,Y) + X
+    call inverse_matrix(nS,Xbar,Xbar_inv)
+    lambda = 0.5*matmul(Y,Xbar_inv)
+
+    ! Here calculate rdm1
+
+    ! Here calculate rdm2
+
+    ! 
+
+    !--------------------------!
+    ! Compute orbital gradient !
+    !--------------------------!
+ 
+    allocate(grad(nS))
+ 
+    call pCCD_orbital_gradient(nO,nV,nOrb,nS,h,ERI,rdm1,rdm2,grad)
+
+   ! Check convergence of orbital optimization
+ 
+    OOConv = maxval(abs(grad))
+    write(*,*) '----------------------------------------------------------'
+    write(*,'(A10,I4,A30)') ' Iteration',OOi,'for pCCD orbital optimization'
+    write(*,*) '----------------------------------------------------------'
+    write(*,'(A40,F16.10,A3)') ' Convergence of orbital gradient = ',OOConv,' au'
+    write(*,*) '----------------------------------------------------------'
+    write(*,*)
+
+    !-------------------------!
+    ! Compute orbital Hessian !
+    !-------------------------!
+ 
+    allocate(hess(nS,nS))
+
+    call pCCD_orbital_hessian(nO,nV,nOrb,nS,h,ERI,rdm1,rdm2,hess)
+
+    deallocate(rdm1,rdm2)
+ 
+    allocate(hessInv(nS,nS))
+ 
+    call inverse_matrix(nS,hess,hessInv)
+
+    deallocate(hess)
+ 
+    allocate(Kap(nOrb,nOrb))
+ 
+    Kap(:,:) = 0d0
+ 
+    pq = 0
+    do p=1,nOrb
+      do q=1,nOrb
+ 
+        pq = pq + 1
+ 
+        rs = 0
+        do r=1,nOrb
+          do s=1,nOrb
+ 
+            rs = rs + 1
+ 
+              Kap(p,q) = Kap(p,q) - hessInv(pq,rs)*grad(rs)
+ 
+          end do
+        end do
+ 
+      end do
+    end do
+ 
+    deallocate(hessInv,grad)
+
+    write(*,*) 'kappa'
+    call matout(nOrb,nOrb,Kap)
+    write(*,*)
+ 
+    allocate(ExpKap(nOrb,nOrb))
+    call matrix_exponential(nOrb,Kap,ExpKap)
+    deallocate(Kap)
+ 
+    write(*,*) 'e^kappa'
+    call matout(nOrb,nOrb,ExpKap)
+    write(*,*)
+ 
+    write(*,*) 'Old orbitals'
+    call matout(nBas,nOrb,c)
+    write(*,*)
+ 
+    c = matmul(c,ExpKap)
+    deallocate(ExpKap)
+ 
+    write(*,*) 'Rotated orbitals'
+    call matout(nBas,nOrb,c)
+    write(*,*)
+
+    OOConv = 0d0 ! remove only for debugging one iteration
+ 
   end do
+
+  deallocate(Aph,Bph,SigC,Z,Om,XpY,XmY,rho,eGW,eGWlin,X,X_inv,Y,Xbar,Xbar_inv,lambda,T,rampl,lampl,h)
+
 end subroutine
