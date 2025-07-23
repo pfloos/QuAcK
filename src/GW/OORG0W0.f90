@@ -146,10 +146,12 @@ subroutine OORG0W0(dotest,doACFDT,exchange_kernel,doXBS,dophBSE,dophBSE2,TDA_W,T
            rdm1(nOrb,nOrb),rdm2(nOrb,nOrb,nOrb,nOrb))
 
 ! Initialize variables for OO  
-  OOi        = 0
+  OOi        = 1
   OOConv     = 1d0
   c(:,:)     = cHF(:,:)
   h = matmul(transpose(c),matmul(Hc,c))
+  rdm1(:,:) = 0d0 ! only for test
+  rdm2(:,:,:,:) = 0d0 ! only for test
 
   write(*,*) "Start orbital optimization loop..."
 
@@ -242,9 +244,9 @@ subroutine OORG0W0(dotest,doACFDT,exchange_kernel,doXBS,dophBSE,dophBSE2,TDA_W,T
     lambda = 0.5*matmul(Y,Xbar_inv)
     
     ! Here calculate rdm1
-    rdm1(:,:) = 0d0 ! only for test
+    call RG0W0_rdm1(nOrb,rdm1)
     ! Here calculate rdm2
-    rdm2(:,:,:,:) = 0d0 ! only for test
+    call RG0W0_rdm2(nOrb,rdm2)
 
     !--------------------------!
     ! Compute orbital gradient !
@@ -252,8 +254,9 @@ subroutine OORG0W0(dotest,doACFDT,exchange_kernel,doXBS,dophBSE,dophBSE2,TDA_W,T
  
     allocate(grad(nS))
     
-    call pCCD_orbital_gradient(nO,nV,nOrb,nS,h,ERI_MO,rdm1,rdm2,grad)
-
+    !call pCCD_orbital_gradient(nO,nV,nOrb,nS,h,ERI_MO,rdm1,rdm2,grad)
+    grad(:) = 0d0
+   
    ! Check convergence of orbital optimization
  
     OOConv = maxval(abs(grad))
@@ -271,17 +274,14 @@ subroutine OORG0W0(dotest,doACFDT,exchange_kernel,doXBS,dophBSE,dophBSE2,TDA_W,T
  
     allocate(hess(nS,nS))
 
-    write(*,*) rdm1(1,1)
-    write(*,*) rdm2(1,1,1,1)
-    write(*,*) ERI_MO(1,1,1,1)
     !call pCCD_orbital_hessian(nO,nV,nOrb,nS,h,ERI_MO,rdm1,rdm2,hess)
     hess(:,:) = 0d0
     do p=1,nS
       hess(p,p) = 1d0
     end do
-    call matout(nS,nS,hess)
 
-    deallocate(rdm1,rdm2)
+    write(*,*) "Hessian"
+    call matout(nS,nS,hess)
  
     allocate(hessInv(nS,nS))
  
@@ -357,16 +357,16 @@ subroutine OORG0W0(dotest,doACFDT,exchange_kernel,doXBS,dophBSE,dophBSE2,TDA_W,T
     Fp = matmul(transpose(XHF),matmul(FHF,XHF))
     cp(:,:) = Fp(:,:)
     call diagonalize_matrix(nOrb,cp,eHF)
-    c = matmul(X,cp)
+    c = matmul(XHF,cp)
 
 
-    if (OOi==2) then
+    if (OOi==3) then
       OOConv = 0d0 ! remove only for debugging
     end if
+    OOi = OOi + 1 
   end do
-
   cHF(:,:) = c(:,:)
-  
-  deallocate(rdm1,rdm2,c,cp,Fp,Aph,Bph,SigC,Z,Om,XpY,XmY,rho,eGW,eGWlin,X,X_inv,Y,Xbar,Xbar_inv,lambda,t,rampl,lampl,h)
+  deallocate(rdm1,rdm2,c,cp,Fp,Aph,Bph,SigC,Z,Om,XpY,XmY,rho,eGW,&
+             eGWlin,X,X_inv,Y,Xbar,Xbar_inv,lambda,t,rampl,lampl,h)
 
 end subroutine
