@@ -150,7 +150,7 @@ subroutine dfRG0W0Bmat(nBas,nO,nOrb,nOrb_twice,chem_pot,eta,shift,eQP_state,U_QP
      write(*,'(*(f10.5))') Sigc_mo_ee(iorb,:)
     enddo
     ! New eQP value
-     ! Initialized H with Sigma_c^Gorkov. Note: We use Sigc_mo,hh/ee as minus to recover the potential
+     ! Initialized H with Sigma_c^Gorkov. Note: We use Sigc_mo,hh/ee incl. a minus to recover the potential
     Hmat=0d0
     Hmat(1:nOrb           ,1:nOrb           )=Sigc_mo_he(1:nOrb,1:nOrb)
     Hmat(nOrb+1:nOrb_twice,nOrb+1:nOrb_twice)=Sigc_mo_eh(1:nOrb,1:nOrb)

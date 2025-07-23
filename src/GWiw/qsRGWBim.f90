@@ -558,6 +558,7 @@ subroutine qsRGWBim(dotest,maxSCF,thresh,max_diis,level_shift,nNuc,ZNuc,rNuc,ENu
   Delta_HL=eqsGWB_state(nOrb+1)-eqsGWB_state(nOrb)
   norm_anom = trace_matrix(nOrb,matmul(transpose(R(1:nOrb,nOrb+1:nOrb_twice)),R(1:nOrb,nOrb+1:nOrb_twice)))
   call dipole_moment(nBas,P,nNuc,ZNuc,rNuc,dipole_int,dipole)
+  call write_restart_qsGWB(nBas,nOrb,Occ,c,chem_pot) ! Warning: orders Occ and their c in descending order w.r.t. occupation numbers.
   call print_qsGWB(nBas,nOrb,nOrb_twice,nO,norm_anom,Occ,eqsGWB_state,ENuc,ET,EV,EJ,EK,EL,EqsGWB,chem_pot,&
                    dipole,Delta_HL)
 
