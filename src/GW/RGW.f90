@@ -1,7 +1,7 @@
 subroutine RGW(dotest,doG0W0,doevGW,doqsGW,doufG0W0,doufGW,maxSCF,thresh,max_diis,doACFDT, &
                exchange_kernel,doXBS,dophBSE,dophBSE2,doppBSE,TDA_W,TDA,dBSE,dTDA,singlet,triplet, &
                linearize,eta,doSRG,doOO,mu,nNuc,ZNuc,rNuc,ENuc,nBas,nOrb,nC,nO,nV,nR,nS,ERHF,      &
-               S,X,T,V,Hc,ERI_AO,ERI_MO,CAP_MO,dipole_int_AO,dipole_int_MO,PHF,cHF,eHF,eGW)
+               S,X,T,V,Hc,ERI_AO,ERI_MO,CAP_MO,dipole_int_AO,dipole_int_MO,PHF,FHF,cHF,eHF,eGW)
 
 ! Restricted GW module
 
@@ -56,6 +56,7 @@ subroutine RGW(dotest,doG0W0,doevGW,doqsGW,doufG0W0,doufGW,maxSCF,thresh,max_dii
   double precision,intent(in)   :: eHF(nOrb)
   double precision,intent(in)   :: cHF(nBas,nOrb)
   double precision,intent(in)   :: PHF(nBas,nBas)
+  double precision,intent(in)   :: FHF(nBas,nBas)
   double precision,intent(in)   :: S(nBas,nBas)
   double precision,intent(in)   :: T(nBas,nBas)
   double precision,intent(in)   :: V(nBas,nBas)
@@ -99,7 +100,7 @@ subroutine RGW(dotest,doG0W0,doevGW,doqsGW,doufG0W0,doufGW,maxSCF,thresh,max_dii
     call wall_time(start_GW)
     call OORG0W0(dotest,doACFDT,exchange_kernel,doXBS,dophBSE,dophBSE2,TDA_W,TDA,dBSE,dTDA,doppBSE,singlet,triplet, &
          linearize,eta,doSRG,nBas,nOrb,nC,nO,nV,nR,nS,mu,ENuc,ERHF,ERI_AO,ERI_MO,dipole_int_MO,eHF,cHF,             &
-         eGW,S,X,T,V,Hc,PHF) 
+         S,X,T,V,Hc,PHF,FHF,eGW) 
     call wall_time(end_GW)
   
     t_GW = end_GW - start_GW
