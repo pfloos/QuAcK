@@ -1,5 +1,5 @@
 subroutine OORG0W0(dotest,doACFDT,exchange_kernel,doXBS,dophBSE,dophBSE2,TDA_W,TDA,dBSE,dTDA,doppBSE,singlet,triplet, & 
-                 linearize,eta,doSRG,nBas,nOrb,nC,nO,nV,nR,nS,mu,ENuc,ERHF,ERI,dipole_int,eHF,eGW_out)
+                 linearize,eta,doSRG,nBas,nOrb,nC,nO,nV,nR,nS,mu,ENuc,ERHF,ERI_AO,ERI_MO,dipole_int,eHF,cHF,Sovl,XHF,Tkin,V,Hc,PHF,eGW_out)
 
 ! Perform optimized orbital G0W0 calculation (optimal for excitation mu)
 
@@ -37,9 +37,17 @@ subroutine OORG0W0(dotest,doACFDT,exchange_kernel,doXBS,dophBSE,dophBSE2,TDA_W,T
   integer,intent(in)            :: mu
   double precision,intent(in)   :: ENuc
   double precision,intent(in)   :: ERHF
-  double precision,intent(in)   :: ERI(nOrb,nOrb,nOrb,nOrb)
+  double precision,intent(in)   :: ERI_AO(nBas,nBas,nBas,nBas)
+  double precision,intent(in)   :: ERI_MO(nOrb,nOrb,nOrb,nOrb)
   double precision,intent(in)   :: dipole_int(nOrb,nOrb,ncart)
   double precision,intent(in)   :: eHF(nOrb)
+  double precision,intent(in)   :: cHF(nBas,nOrb)
+  double precision,intent(in)   :: PHF(nBas,nBas)
+  double precision,intent(in)   :: Sovl(nBas,nBas)
+  double precision,intent(in)   :: Tkin(nBas,nBas)
+  double precision,intent(in)   :: V(nBas,nBas)
+  double precision,intent(in)   :: Hc(nBas,nBas)
+  double precision,intent(in)   :: XHF(nBas,nOrb)
 
 ! Local variables
 
@@ -64,7 +72,7 @@ subroutine OORG0W0(dotest,doACFDT,exchange_kernel,doXBS,dophBSE,dophBSE2,TDA_W,T
   double precision,allocatable  :: Xbar_inv(:,:)
   double precision,allocatable  :: Y(:,:)
   double precision,allocatable  :: lambda(:,:)
-  double precision,allocatable  :: T(:,:)
+  double precision,allocatable  :: t(:,:)
   double precision,allocatable  :: rho(:,:,:)
   double precision,allocatable  :: rampl(:,:,:)
   double precision,allocatable  :: lampl(:,:,:)
@@ -83,6 +91,7 @@ subroutine OORG0W0(dotest,doACFDT,exchange_kernel,doXBS,dophBSE,dophBSE2,TDA_W,T
   double precision,allocatable  :: rdm1(:,:)
   double precision,allocatable  :: rdm2(:,:,:,:)
   integer                       :: r,s,rs,p,q,pq
+  double precision,allocatable  :: c(:,:)
 
 ! Output variables
 
@@ -112,7 +121,7 @@ subroutine OORG0W0(dotest,doACFDT,exchange_kernel,doXBS,dophBSE,dophBSE2,TDA_W,T
   end if
 
 ! SRG regularization
-
+  c(:,:) = 0d0
   flow = 500d0
 
   if(doSRG) then
@@ -126,8 +135,8 @@ subroutine OORG0W0(dotest,doACFDT,exchange_kernel,doXBS,dophBSE,dophBSE2,TDA_W,T
 ! Memory allocation
 
   allocate(Aph(nS,nS),Bph(nS,nS),SigC(nOrb),Z(nOrb),Om(nS),XpY(nS,nS),XmY(nS,nS),rho(nOrb,nOrb,nS), & 
-           eGW(nOrb),eGWlin(nOrb),X(nS,nS),X_inv(nS,nS),Y(nS,nS),Xbar(nS,nS),Xbar_inv(nS,nS),lambda(nS,nS),T(nS,nS),&
-           rampl(nOrb,nS,nS),lampl(nS,nS,nOrb),h(nOrb,nOrb))
+           eGW(nOrb),eGWlin(nOrb),X(nS,nS),X_inv(nS,nS),Y(nS,nS),Xbar(nS,nS),Xbar_inv(nS,nS),lambda(nS,nS),t(nS,nS),&
+           rampl(nOrb,nS,nS),lampl(nS,nS,nOrb),h(nOrb,nOrb),c(nBas,nOrb))
 
 ! Initialize variables for OO  
   OOi        = 0
@@ -143,8 +152,8 @@ subroutine OORG0W0(dotest,doACFDT,exchange_kernel,doXBS,dophBSE,dophBSE2,TDA_W,T
   ! Compute screening !
   !-------------------!
   
-                   call phRLR_A(isp_W,dRPA_W,nOrb,nC,nO,nV,nR,nS,1d0,eHF,ERI,Aph)
-    if(.not.TDA_W) call phRLR_B(isp_W,dRPA_W,nOrb,nC,nO,nV,nR,nS,1d0,ERI,Bph)
+                   call phRLR_A(isp_W,dRPA_W,nOrb,nC,nO,nV,nR,nS,1d0,eHF,ERI_MO,Aph)
+    if(.not.TDA_W) call phRLR_B(isp_W,dRPA_W,nOrb,nC,nO,nV,nR,nS,1d0,ERI_MO,Bph)
   
     call phRLR(TDA_W,nS,Aph,Bph,EcRPA,Om,XpY,XmY)
     
@@ -155,7 +164,7 @@ subroutine OORG0W0(dotest,doACFDT,exchange_kernel,doXBS,dophBSE,dophBSE2,TDA_W,T
   ! Compute spectral weights !
   !--------------------------!
   
-    call RGW_excitation_density(nOrb,nC,nO,nR,nS,ERI,XpY,rho)
+    call RGW_excitation_density(nOrb,nC,nO,nR,nS,ERI_MO,XpY,rho)
   
   !------------------------!
   ! Compute GW self-energy !
@@ -200,8 +209,8 @@ subroutine OORG0W0(dotest,doACFDT,exchange_kernel,doXBS,dophBSE,dophBSE2,TDA_W,T
   
   ! Compute the RPA correlation energy
   
-                   call phRLR_A(isp_W,dRPA_W,nOrb,nC,nO,nV,nR,nS,1d0,eGW,ERI,Aph)
-    if(.not.TDA_W) call phRLR_B(isp_W,dRPA_W,nOrb,nC,nO,nV,nR,nS,1d0,ERI,Bph)
+                   call phRLR_A(isp_W,dRPA_W,nOrb,nC,nO,nV,nR,nS,1d0,eGW,ERI_MO,Aph)
+    if(.not.TDA_W) call phRLR_B(isp_W,dRPA_W,nOrb,nC,nO,nV,nR,nS,1d0,ERI_MO,Bph)
   
     call phRLR(TDA_W,nS,Aph,Bph,EcRPA,Om,XpY,XmY)
   
@@ -220,7 +229,7 @@ subroutine OORG0W0(dotest,doACFDT,exchange_kernel,doXBS,dophBSE,dophBSE2,TDA_W,T
     if(dophBSE) then
   
       call RGW_phBSE(dophBSE2,exchange_kernel,TDA_W,TDA,dBSE,dTDA,singlet,triplet,eta, & 
-                     nOrb,nC,nO,nV,nR,nS,ERI,dipole_int,eHF,eGW,EcBSE)
+                     nOrb,nC,nO,nV,nR,nS,ERI_MO,dipole_int,eHF,eGW,EcBSE)
   
       write(*,*)
       write(*,*)'-------------------------------------------------------------------------------'
@@ -235,7 +244,7 @@ subroutine OORG0W0(dotest,doACFDT,exchange_kernel,doXBS,dophBSE,dophBSE2,TDA_W,T
   
       if(doACFDT) then
   
-        call RGW_phACFDT(exchange_kernel,doXBS,TDA_W,TDA,singlet,triplet,eta,nOrb,nC,nO,nV,nR,nS,ERI,eHF,eGW,EcBSE)
+        call RGW_phACFDT(exchange_kernel,doXBS,TDA_W,TDA,singlet,triplet,eta,nOrb,nC,nO,nV,nR,nS,ERI_MO,eHF,eGW,EcBSE)
   
         write(*,*)
         write(*,*)'-------------------------------------------------------------------------------'
@@ -256,7 +265,7 @@ subroutine OORG0W0(dotest,doACFDT,exchange_kernel,doXBS,dophBSE,dophBSE2,TDA_W,T
   
     if(doppBSE) then
   
-      call RGW_ppBSE(TDA_W,TDA,dBSE,dTDA,singlet,triplet,eta,nOrb,nC,nO,nV,nR,nS,ERI,dipole_int,eHF,eGW,EcBSE)
+      call RGW_ppBSE(TDA_W,TDA,dBSE,dTDA,singlet,triplet,eta,nOrb,nC,nO,nV,nR,nS,ERI_MO,dipole_int,eHF,eGW,EcBSE)
   
       write(*,*)
       write(*,*)'-------------------------------------------------------------------------------'
@@ -284,8 +293,8 @@ subroutine OORG0W0(dotest,doACFDT,exchange_kernel,doXBS,dophBSE,dophBSE2,TDA_W,T
     X = 0.5*(XpY + XmY)
     Y = 0.5*(XpY - XmY)
     call inverse_matrix(nS,X,X_inv)
-    T = matmul(Y,X_inv)
-    Xbar = - matmul(T,Y) + X
+    t = matmul(Y,X_inv)
+    Xbar = - matmul(t,Y) + X
     call inverse_matrix(nS,Xbar,Xbar_inv)
     lambda = 0.5*matmul(Y,Xbar_inv)
 
@@ -301,7 +310,7 @@ subroutine OORG0W0(dotest,doACFDT,exchange_kernel,doXBS,dophBSE,dophBSE2,TDA_W,T
  
     allocate(grad(nS))
  
-    call pCCD_orbital_gradient(nO,nV,nOrb,nS,h,ERI,rdm1,rdm2,grad)
+    call pCCD_orbital_gradient(nO,nV,nOrb,nS,h,ERI_MO,rdm1,rdm2,grad)
 
    ! Check convergence of orbital optimization
  
@@ -319,7 +328,7 @@ subroutine OORG0W0(dotest,doACFDT,exchange_kernel,doXBS,dophBSE,dophBSE2,TDA_W,T
  
     allocate(hess(nS,nS))
 
-    call pCCD_orbital_hessian(nO,nV,nOrb,nS,h,ERI,rdm1,rdm2,hess)
+    call pCCD_orbital_hessian(nO,nV,nOrb,nS,h,ERI_MO,rdm1,rdm2,hess)
 
     deallocate(rdm1,rdm2)
  
@@ -382,6 +391,6 @@ subroutine OORG0W0(dotest,doACFDT,exchange_kernel,doXBS,dophBSE,dophBSE2,TDA_W,T
  
   end do
 
-  deallocate(Aph,Bph,SigC,Z,Om,XpY,XmY,rho,eGW,eGWlin,X,X_inv,Y,Xbar,Xbar_inv,lambda,T,rampl,lampl,h)
+  deallocate(c,Aph,Bph,SigC,Z,Om,XpY,XmY,rho,eGW,eGWlin,X,X_inv,Y,Xbar,Xbar_inv,lambda,t,rampl,lampl,h)
 
 end subroutine
