@@ -78,6 +78,8 @@ subroutine OORG0W0(dotest,doACFDT,exchange_kernel,doXBS,dophBSE,dophBSE2,TDA_W,T
   double precision,allocatable  :: rho(:,:,:)
   double precision,allocatable  :: rampl(:,:)
   double precision,allocatable  :: lampl(:,:)
+  double precision,allocatable  :: rp(:)
+  double precision,allocatable  :: lp(:)
 
   double precision,allocatable  :: eGWlin(:)
   double precision,allocatable  :: eGW(:)
@@ -96,8 +98,6 @@ subroutine OORG0W0(dotest,doACFDT,exchange_kernel,doXBS,dophBSE,dophBSE2,TDA_W,T
   double precision,allocatable  :: c(:,:)
   double precision,allocatable  :: J(:,:)
   double precision,allocatable  :: K(:,:)
-  double precision,allocatable  :: cp(:,:)
-  double precision,allocatable  :: Fp(:,:)
 
 ! Output variables
 
@@ -141,17 +141,21 @@ subroutine OORG0W0(dotest,doACFDT,exchange_kernel,doXBS,dophBSE,dophBSE2,TDA_W,T
 
   allocate(Aph(nS,nS),Bph(nS,nS),SigC(nOrb),Z(nOrb),Om(nS),XpY(nS,nS),XmY(nS,nS),rho(nOrb,nOrb,nS), & 
            eGW(nOrb),eGWlin(nOrb),X(nS,nS),X_inv(nS,nS),Y(nS,nS),Xbar(nS,nS),Xbar_inv(nS,nS),lambda(nS,nS),t(nS,nS),&
-           rampl(nS,nOrb),lampl(nS,nOrb),h(nOrb,nOrb),c(nBas,nOrb),cp(nOrb,nOrb),&
-           Fp(nOrb,nOrb),J(nBas,nBas),K(nBas,nBas),&
+           rampl(nS,nOrb),lampl(nS,nOrb),rp(nOrb),lp(nOrb),h(nOrb,nOrb),c(nBas,nOrb),&
+           J(nBas,nBas),K(nBas,nBas),&
            rdm1(nOrb,nOrb),rdm2(nOrb,nOrb,nOrb,nOrb))
 
 ! Initialize variables for OO  
-  OOi        = 1
-  OOConv     = 1d0
-  c(:,:)     = cHF(:,:)
-  h = matmul(transpose(c),matmul(Hc,c))
-  rdm1(:,:) = 0d0 ! only for test
-  rdm2(:,:,:,:) = 0d0 ! only for test
+  OOi           = 1d0
+  OOConv        = 1d0
+  c(:,:)        = cHF(:,:)
+  h             = matmul(transpose(c),matmul(Hc,c))
+  rdm1(:,:)     = 0d0 
+  rdm2(:,:,:,:) = 0d0
+  rampl(:,:)    = 0d0
+  lampl(:,:)    = 0d0
+  rp(:)         = 0d0
+  lp(:)         = 0d0
 
   write(*,*) "Start orbital optimization loop..."
 
@@ -217,14 +221,7 @@ subroutine OORG0W0(dotest,doACFDT,exchange_kernel,doXBS,dophBSE,dophBSE2,TDA_W,T
   ! Cumulant expansion 
   
   ! call RGWC(dotest,eta,nOrb,nC,nO,nV,nR,nS,Om,rho,eHF,eHF,eGW,Z)
-  
-  ! Compute the RPA correlation energy
-  
-                   call phRLR_A(isp_W,dRPA_W,nOrb,nC,nO,nV,nR,nS,1d0,eGW,ERI_MO,Aph)
-    if(.not.TDA_W) call phRLR_B(isp_W,dRPA_W,nOrb,nC,nO,nV,nR,nS,1d0,ERI_MO,Bph)
-  
-    call phRLR(TDA_W,nS,Aph,Bph,EcRPA,Om,XpY,XmY)
-  
+   
   !--------------!
   ! Dump results !
   !--------------!
@@ -244,9 +241,10 @@ subroutine OORG0W0(dotest,doACFDT,exchange_kernel,doXBS,dophBSE,dophBSE2,TDA_W,T
     lambda = 0.5*matmul(Y,Xbar_inv)
     
     ! Here calculate rdm1
-    call RG0W0_rdm1(nOrb,nS,lampl,rampl,rdm1)
+    call RG0W0_rdm1(nOrb,nO,nS,lampl,rampl,lp,rp,lambda,t,rdm1)
+    
     ! Here calculate rdm2
-    call RG0W0_rdm2(nOrb,nS,lampl,rampl,rdm2)
+    call RG0W0_rdm2(nOrb,nO,nS,lampl,rampl,lp,rp,lambda,t,rdm2)
 
     !--------------------------!
     ! Compute orbital gradient !
@@ -254,7 +252,7 @@ subroutine OORG0W0(dotest,doACFDT,exchange_kernel,doXBS,dophBSE,dophBSE2,TDA_W,T
  
     allocate(grad(nS))
     
-    !call pCCD_orbital_gradient(nO,nV,nOrb,nS,h,ERI_MO,rdm1,rdm2,grad)
+    call pCCD_orbital_gradient(nO,nV,nOrb,nS,h,ERI_MO,rdm1,rdm2,grad)
     grad(:) = 0d0
    
    ! Check convergence of orbital optimization
@@ -273,12 +271,8 @@ subroutine OORG0W0(dotest,doACFDT,exchange_kernel,doXBS,dophBSE,dophBSE2,TDA_W,T
     !-------------------------!
  
     allocate(hess(nS,nS))
-
-    !call pCCD_orbital_hessian(nO,nV,nOrb,nS,h,ERI_MO,rdm1,rdm2,hess)
-    hess(:,:) = 0d0
-    do p=1,nS
-      hess(p,p) = 1d0
-    end do
+    
+    call pCCD_orbital_hessian(nO,nV,nOrb,nS,h,ERI_MO,rdm1,rdm2,hess)
 
     write(*,*) "Hessian"
     call matout(nS,nS,hess)
@@ -313,14 +307,6 @@ subroutine OORG0W0(dotest,doACFDT,exchange_kernel,doXBS,dophBSE,dophBSE2,TDA_W,T
       end do
     end do
  
-    Kap(:,:) = 0d0
-    Kap(1,2) = 1d0
-    Kap(nOrb,nOrb-1) = -1d0
-    do p=2,nOrb-1
-      Kap(p,p+1) = 1d0
-      Kap(p,p-1) = -1d0
-    end do
-
     deallocate(hessInv,grad)
 
     write(*,*) 'kappa'
@@ -349,16 +335,7 @@ subroutine OORG0W0(dotest,doACFDT,exchange_kernel,doXBS,dophBSE,dophBSE2,TDA_W,T
     ! Compute all quantities new for rotated basis
 
     h = matmul(transpose(c),matmul(Hc,c))
-    PHF(:,:) = 2d0 * matmul(c(:,1:nO), transpose(c(:,1:nO)))
     call AOtoMO_ERI_RHF(nBas,nOrb,c,ERI_AO,ERI_MO)
-    call Hartree_matrix_AO_basis(nBas,PHF,ERI_MO,J)
-    call exchange_matrix_AO_basis(nBas,PHF,ERI_MO,K)
-    FHF(:,:) = Hc(:,:) + J(:,:) + 0.5d0*K(:,:)
-    Fp = matmul(transpose(XHF),matmul(FHF,XHF))
-    cp(:,:) = Fp(:,:)
-    call diagonalize_matrix(nOrb,cp,eHF)
-    c = matmul(XHF,cp)
-
 
     if (OOi==3) then
       OOConv = 0d0 ! remove only for debugging
@@ -366,7 +343,8 @@ subroutine OORG0W0(dotest,doACFDT,exchange_kernel,doXBS,dophBSE,dophBSE2,TDA_W,T
     OOi = OOi + 1 
   end do
   cHF(:,:) = c(:,:)
-  deallocate(rdm1,rdm2,c,cp,Fp,Aph,Bph,SigC,Z,Om,XpY,XmY,rho,eGW,&
-             eGWlin,X,X_inv,Y,Xbar,Xbar_inv,lambda,t,rampl,lampl,h)
+  deallocate(rdm1,rdm2,c,Aph,Bph,SigC,Z,Om,XpY,XmY,rho,eGW,&
+             eGWlin,X,X_inv,Y,Xbar,Xbar_inv,lambda,t,rampl,lampl,rp,lp,h,&
+             J,K)
 
 end subroutine
