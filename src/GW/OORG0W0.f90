@@ -76,8 +76,8 @@ subroutine OORG0W0(dotest,doACFDT,exchange_kernel,doXBS,dophBSE,dophBSE2,TDA_W,T
   double precision,allocatable  :: lambda(:,:)
   double precision,allocatable  :: t(:,:)
   double precision,allocatable  :: rho(:,:,:)
-  double precision,allocatable  :: rampl(:,:,:)
-  double precision,allocatable  :: lampl(:,:,:)
+  double precision,allocatable  :: rampl(:,:)
+  double precision,allocatable  :: lampl(:,:)
 
   double precision,allocatable  :: eGWlin(:)
   double precision,allocatable  :: eGW(:)
@@ -141,7 +141,7 @@ subroutine OORG0W0(dotest,doACFDT,exchange_kernel,doXBS,dophBSE,dophBSE2,TDA_W,T
 
   allocate(Aph(nS,nS),Bph(nS,nS),SigC(nOrb),Z(nOrb),Om(nS),XpY(nS,nS),XmY(nS,nS),rho(nOrb,nOrb,nS), & 
            eGW(nOrb),eGWlin(nOrb),X(nS,nS),X_inv(nS,nS),Y(nS,nS),Xbar(nS,nS),Xbar_inv(nS,nS),lambda(nS,nS),t(nS,nS),&
-           rampl(nOrb,nS,nS),lampl(nS,nS,nOrb),h(nOrb,nOrb),c(nBas,nOrb),cp(nOrb,nOrb),&
+           rampl(nS,nOrb),lampl(nS,nOrb),h(nOrb,nOrb),c(nBas,nOrb),cp(nOrb,nOrb),&
            Fp(nOrb,nOrb),J(nBas,nBas),K(nBas,nBas),&
            rdm1(nOrb,nOrb),rdm2(nOrb,nOrb,nOrb,nOrb))
 
@@ -244,9 +244,9 @@ subroutine OORG0W0(dotest,doACFDT,exchange_kernel,doXBS,dophBSE,dophBSE2,TDA_W,T
     lambda = 0.5*matmul(Y,Xbar_inv)
     
     ! Here calculate rdm1
-    call RG0W0_rdm1(nOrb,rdm1)
+    call RG0W0_rdm1(nOrb,nS,lampl,rampl,rdm1)
     ! Here calculate rdm2
-    call RG0W0_rdm2(nOrb,rdm2)
+    call RG0W0_rdm2(nOrb,nS,lampl,rampl,rdm2)
 
     !--------------------------!
     ! Compute orbital gradient !
