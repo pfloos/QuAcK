@@ -38,7 +38,7 @@ subroutine G_AO_RHF(nBas,nOrb,nO,eta,cHF,eHF,wcoord,G_AO)
 ! write(*,*)
 
  allocate(Gtmp(nOrb,nOrb))
- Gtmp(:,:) = 0d0
+ Gtmp(:,:) = czero
   
  chem_pot = 0.5d0*(eHF(nO)+eHF(nO+1))
  eHF(:) = eHF(:)-chem_pot
@@ -54,6 +54,7 @@ subroutine G_AO_RHF(nBas,nOrb,nO,eta,cHF,eHF,wcoord,G_AO)
  G_AO=matmul(matmul(cHF,Gtmp),transpose(cHF))
 
  ! Restore values and deallocate dyn arrays
+ deallocate(Gtmp)
  eHF(:) = eHF(:)+chem_pot
   
 end subroutine

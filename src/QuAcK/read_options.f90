@@ -4,8 +4,8 @@ subroutine read_options(working_dir,                                            
                         maxSCF_CC,thresh_CC,max_diis_CC,                                                    &
                         TDA,spin_conserved,spin_flip,                                                       &
                         maxSCF_GF,thresh_GF,max_diis_GF,lin_GF,eta_GF,renorm_GF,reg_GF,                     &
-                        maxSCF_GW,thresh_GW,max_diis_GW,lin_GW,eta_GW,reg_GW,doOO,mu,                       &
-                        im_freqs,nfreqs,ntimes,TDA_W,                                                       &
+                        maxSCF_GW,thresh_GW,max_diis_GW,lin_GW,eta_GW,shift_GW,reg_GW,doOO,mu,              &
+                        nfreqs,ntimes,TDA_W,                                                                &
                         maxSCF_GT,thresh_GT,max_diis_GT,lin_GT,eta_GT,reg_GT,TDA_T,                         &
                         doACFDT,exchange_kernel,doXBS,                                                      &
                         dophBSE,dophBSE2,doppBSE,dBSE,dTDA,                                                 &
@@ -55,10 +55,10 @@ subroutine read_options(working_dir,                                            
   logical,intent(out)           :: TDA_W
   logical,intent(out)           :: lin_GW
   double precision,intent(out)  :: eta_GW
+  double precision,intent(out)  :: shift_GW
   logical,intent(out)           :: reg_GW
   logical,intent(out)           :: doOO
   integer,intent(out)           :: mu
-  logical,intent(out)           :: im_freqs
   integer,intent(out)           :: nfreqs
   integer,intent(out)           :: ntimes
 
@@ -180,20 +180,19 @@ subroutine read_options(working_dir,                                            
       max_diis_GW = 1
       lin_GW      = .false.
       eta_GW      = 0d0
+      shift_GW    = 1d-3
       reg_GW      = .false.
       doOO        = .false.
       mu          = 0
       TDA_W       = .false.
-      im_freqs    = .false.
     
       read(1,*) 
-      read(1,*) maxSCF_GW,thresh_GW,max_diis_GW,ans1,eta_GW,ans2,ans3,ans4,mu,ans5,nfreqs,ntimes
+      read(1,*) maxSCF_GW,thresh_GW,max_diis_GW,ans1,eta_GW,ans2,ans3,ans4,mu,nfreqs,ntimes,shift_GW
     
       if(ans1 == 'T') lin_GW   = .true.
       if(ans2 == 'T') TDA_W    = .true.
       if(ans3 == 'T') reg_GW   = .true.
       if(ans4 == 'T') doOO     = .true. 
-      if(ans5 == 'T') im_freqs = .true.
    
       ! Read GT options
     

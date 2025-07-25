@@ -1,4 +1,4 @@
-subroutine HFB(dotest,maxSCF,thresh,max_diis,level_shift,nNuc,ZNuc,rNuc,ENuc,                & 
+subroutine RHFB(dotest,doqsGW,maxSCF,thresh,max_diis,level_shift,nNuc,ZNuc,rNuc,ENuc,        & 
                nBas,nOrb,nOrb_twice,nO,S,T,V,Hc,ERI,dipole_int,X,EHFB,eHF,c,P,Panom,F,Delta, &
                temperature,sigma,chem_pot_hf,chem_pot,restart_hfb,U_QP,eHFB_state)
 
@@ -10,6 +10,7 @@ subroutine HFB(dotest,maxSCF,thresh,max_diis,level_shift,nNuc,ZNuc,rNuc,ENuc,   
 ! Input variables
 
   logical,intent(in)            :: dotest
+  logical,intent(in)            :: doqsGW
 
   integer,intent(in)            :: maxSCF
   integer,intent(in)            :: max_diis
@@ -75,6 +76,8 @@ subroutine HFB(dotest,maxSCF,thresh,max_diis,level_shift,nNuc,ZNuc,rNuc,ENuc,   
   double precision,allocatable  :: c_ao(:,:)
   double precision,allocatable  :: R_ao_old(:,:)
   double precision,allocatable  :: H_HFB_ao(:,:)
+  !double precision,allocatable  :: P_mo_trial(:,:)
+  !double precision,allocatable  :: P_ao_trial(:,:)
 
 ! Output variables
 
@@ -368,6 +371,8 @@ subroutine HFB(dotest,maxSCF,thresh,max_diis,level_shift,nNuc,ZNuc,rNuc,ENuc,   
   do iorb=1,nOrb
    R(:,:) = R(:,:) + matmul(eigVEC(:,iorb:iorb),transpose(eigVEC(:,iorb:iorb))) 
   enddo
+  U_QP(:,:) = eigVEC(:,:) ! Store U_QP and c in the X basis (Lowdin basis) if we are doing qsGW
+  c(:,:) = X(:,:)
 
   ! Extract P and Panom from R
  
@@ -407,6 +412,7 @@ subroutine HFB(dotest,maxSCF,thresh,max_diis,level_shift,nNuc,ZNuc,rNuc,ENuc,   
   call write_restart_HFB(nBas,nOrb,Occ,c,chem_pot) ! Warning: orders Occ and their c in descending order w.r.t. occupation numbers.
   call print_HFB(nBas,nOrb,nOrb_twice,nO,norm_anom,Occ,eHFB_state,ENuc,ET,EV,EJ,EK,EL,EHFB,chem_pot, &
                  dipole,Delta_HL)
+  if(doqsGW) c(:,:)=X(:,:) ! Recover the Lowdin basis for qsGW
 
 ! Choose the NO representation where the 1-RDM is diag.
 ! Compute W_no and V_no (i.e. diag[H_HFB^no] built in NO basis and get W and V)
@@ -430,7 +436,9 @@ subroutine HFB(dotest,maxSCF,thresh,max_diis,level_shift,nNuc,ZNuc,rNuc,ENuc,   
   do iorb=1,nOrb
    R(:,:) = R(:,:) + matmul(eigVEC(:,iorb:iorb),transpose(eigVEC(:,iorb:iorb))) 
   enddo
-  U_QP(:,:) = eigVEC(:,:)
+  if(.not.doqsGW) then ! Store U_QP in the NO basis if we are not doing qsGW after  
+   U_QP(:,:) = eigVEC(:,:) 
+  endif
 
   ! Check trace of R
   do iorb=1,nOrb
@@ -440,6 +448,30 @@ subroutine HFB(dotest,maxSCF,thresh,max_diis,level_shift,nNuc,ZNuc,rNuc,ENuc,   
   write(*,*)
   write(*,'(A33,1X,F16.10,A3)') ' Trace [ 1D^NO ]     = ',trace_1rdm,'   '
   write(*,*)
+
+! Test if it can be a RHF solution
+  ! TODO
+  !allocate(P_mo_trial(nOrb,nOrb),P_ao_trial(nBas,nBas))
+  !P_mo_trial(:,:)=R(1:nOrb,1:nOrb)-matmul(R(1:nOrb,nOrb+1:nOrb_twice),R(1:nOrb,nOrb+1:nOrb_twice))
+  !P_ao_trial=matmul(c,matmul(P_mo_trial,transpose(c)))
+  !deallocate(eigVEC,eigVAL)
+  !allocate(eigVEC(nBas,nBas),eigVAL(nBas))
+  !eigVEC(:,:) = 0d0
+  !eigVEC(1:nBas,1:nBas) = P_ao_trial(1:nBas,1:nBas)
+  !call diagonalize_matrix(nBas,eigVEC,eigVAL)
+  !eigVAL=-eigVAL
+  !call sort_ascending(nOrb,eigVAL)                        
+  !eigVAL=-eigVAL
+  !write(*,'(A50)') '---------------------------------------'
+  !write(*,'(A50)') ' HFB -> RHF test (AO occ. numbers) '
+  !write(*,'(A50)') '---------------------------------------'
+  !do iorb=1,nBas
+  ! if(abs(eigVAL(iorb))>1d-8) then
+  !  write(*,'(I7,10F15.8)') iorb,2d0*eigVAL(iorb)
+  ! endif
+  !enddo
+  !write(*,*)
+  !deallocate(P_mo_trial,P_ao_trial)
  
 ! Testing zone
 

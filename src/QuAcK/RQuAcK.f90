@@ -78,7 +78,7 @@ subroutine RQuAcK(working_dir,use_gpu,dotest,doRHF,doROHF,docRHF,               
   integer,intent(in)            :: maxSCF_GW,max_diis_GW
   double precision,intent(in)   :: thresh_GW
   logical,intent(in)            :: TDA_W,lin_GW,reg_GW,doOO
-  integer, intent(in)           :: mu
+  integer,intent(in)            :: mu
   double precision,intent(in)   :: eta_GW
 
   integer,intent(in)            :: maxSCF_GT,max_diis_GT

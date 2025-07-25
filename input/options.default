@@ -8,8 +8,8 @@
         F   T       F
 # GF: maxSCF thresh  DIIS lin eta renorm reg
       256    0.00001 5    F   0.0 0      F
-# GW: maxSCF thresh  DIIS lin eta TDA_W reg doOO mu ifreq nfreqs ntimes 
-      256   0.00001  5    F   0.0  F     F  F    0  T    40    1500
+# GW: maxSCF thresh  DIIS lin eta TDA_W reg OO mu nfreqs ntimes shift
+      256   0.00001  5    F   0.0 F     F   F   0 0      0      0.0
 # GT: maxSCF thresh  DIIS lin eta TDA_T reg
       256    0.00001 5    F   0.0 F     F  
 # ACFDT: AC Kx  XBS

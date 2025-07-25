@@ -1,39 +1,45 @@
 
 ! ---
 
-subroutine print_qsBGW(nBas, nOrb, nOrb_twice, nO, N_anom, Occ, eqsGW_state, ENuc, ET, EV, EJ, EK, EL, EqsGW, &
-           chem_pot, dipole, Delta_HL)
+subroutine print_RqsGWi(nBas, nOrb, nO, eqsGW, cqsGW, ENuc, ET, EV, EJ, EK, ERqsGW, dipole)
 
-! Print one-electron energies and other stuff
+! Print one-electron energies and other stuff for G0W0
 
   implicit none
   include 'parameters.h'
 
 ! Input variables
 
-  integer,intent(in)                 :: nBas, nOrb, nOrb_twice
+  integer,intent(in)                 :: nBas, nOrb
   integer,intent(in)                 :: nO
-  double precision,intent(in)        :: Occ(nOrb)
-  double precision,intent(in)        :: eqsGW_state(nOrb_twice)
+  double precision,intent(in)        :: eqsGW(nOrb)
+  double precision,intent(in)        :: cqsGW(nBas,nOrb)
   double precision,intent(in)        :: ENuc
   double precision,intent(in)        :: ET
   double precision,intent(in)        :: EV
   double precision,intent(in)        :: EJ
   double precision,intent(in)        :: EK
-  double precision,intent(in)        :: EL
-  double precision,intent(in)        :: EqsGW
-  double precision,intent(in)        :: chem_pot
-  double precision,intent(in)        :: N_anom
-  double precision,intent(in)        :: Delta_HL
+  double precision,intent(in)        :: ERqsGW
   double precision,intent(in)        :: dipole(ncart)
 
 ! Local variables
 
-  integer                            :: iorb
   integer                            :: ixyz
-  double precision                   :: trace_occ
+  integer                            :: HOMO
+  integer                            :: LUMO
+  double precision                   :: Gap
+  double precision                   :: S,S2
 
   logical                            :: dump_orb = .false.
+
+! HOMO and LUMO
+
+  HOMO = nO
+  LUMO = HOMO + 1
+  Gap = eqsGW(LUMO)-eqsGW(HOMO)
+
+  S2 = 0d0
+  S  = 0d0
 
 ! Dump results
 
@@ -48,15 +54,17 @@ subroutine print_qsBGW(nBas, nOrb, nOrb_twice, nO, N_anom, Occ, eqsGW_state, ENu
   write(*,'(A33,1X,F16.10,A3)') ' Two-electron energy = ',EJ + EK,' au'
   write(*,'(A33,1X,F16.10,A3)') ' Hartree      energy = ',EJ,' au'
   write(*,'(A33,1X,F16.10,A3)') ' Exchange     energy = ',EK,' au'
-  write(*,'(A33,1X,F16.10,A3)') ' Anomalous    energy = ',EL,' au'
   write(*,'(A50)')           '---------------------------------------'
-  write(*,'(A33,1X,F16.10,A3)') ' Electronic   energy = ',EqsGW,' au'
+  write(*,'(A33,1X,F16.10,A3)') ' Electronic   energy = ',ERqsGW,' au'
   write(*,'(A33,1X,F16.10,A3)') ' Nuclear   repulsion = ',ENuc,' au'
-  write(*,'(A33,1X,F16.10,A3)') ' qsGW          energy = ',EqsGW + ENuc,' au'
+  write(*,'(A33,1X,F16.10,A3)') ' qsRGW        energy = ',ERqsGW + ENuc,' au'
   write(*,'(A50)')           '---------------------------------------'
-  write(*,'(A33,1X,F16.10,A3)') ' Chemical potential  = ',chem_pot,' au'
-  write(*,'(A33,1X,F16.10,A3)') ' | Anomalous dens |  = ',N_anom,'   '
-  write(*,'(A33,1X,F16.10,A3)') ' Delta QP HOMO-LUMO  = ',Delta_HL,' au'
+  write(*,'(A33,1X,F16.6,A3)')  ' qsGW HOMO      energy = ',eqsGW(HOMO)*HaToeV,' eV'
+  write(*,'(A33,1X,F16.6,A3)')  ' qsGW LUMO      energy = ',eqsGW(LUMO)*HaToeV,' eV'
+  write(*,'(A33,1X,F16.6,A3)')  ' qsGW HOMO-LUMO gap    = ',Gap*HaToeV,' eV'
+  write(*,'(A50)')           '---------------------------------------'
+  write(*,'(A33,1X,F16.6)')     ' <Sz>                = ',S
+  write(*,'(A33,1X,F16.6)')     ' <S^2>               = ',S2
   write(*,'(A50)')           '---------------------------------------'
   write(*,'(A36)')           ' Dipole moment (Debye)    '
   write(*,'(10X,4A10)')      'X','Y','Z','Tot.'
@@ -66,27 +74,17 @@ subroutine print_qsBGW(nBas, nOrb, nOrb_twice, nO, N_anom, Occ, eqsGW_state, ENu
 
 ! Print results
 
+  if(dump_orb) then 
+    write(*,'(A50)') '---------------------------------------'
+    write(*,'(A50)') ' RqsGW orbital coefficients '
+    write(*,'(A50)') '---------------------------------------'
+    call matout(nBas, nOrb, cqsGW)
+    write(*,*)
+  end if
   write(*,'(A50)') '---------------------------------------'
-  write(*,'(A50)') ' qsGW occupation numbers '
+  write(*,'(A50)') ' RqsGW orbital energies (au) '
   write(*,'(A50)') '---------------------------------------'
-  trace_occ=0d0
-  do iorb=1,nOrb
-   if(abs(Occ(iorb))>1d-8) then
-    write(*,'(I7,10F15.8)') iorb,2d0*Occ(iorb)
-   endif
-   trace_occ=trace_occ+2d0*Occ(iorb)
-  enddo
+  call vecout(nOrb, eqsGW)
   write(*,*)
-  write(*,'(A33,1X,F16.10,A3)') ' Trace [ 1D ]        = ',trace_occ,'   '
-  write(*,*)
-
-  write(*,'(A50)') '---------------------------------------'
-  write(*,'(A50)') ' qsGW QP energies '
-  write(*,'(A50)') '---------------------------------------'
-  do iorb=1,nOrb_twice
-   write(*,'(I7,10F15.8)') iorb,eqsGW_state(iorb)
-  enddo
-  write(*,*)
-
 
 end subroutine 

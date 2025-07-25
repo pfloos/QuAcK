@@ -1,4 +1,4 @@
-subroutine G_AO_HFB(nBas,nOrb,nOrb_twice,eta,cHFB,eHFB,wcoord,MAT1,MAT2,MAT3,MAT4,G_AO)
+subroutine G_AO_RHFB(nBas,nOrb,nOrb_twice,eta,cHFB,eHFB,wcoord,MAT1,MAT2,MAT3,MAT4,G_AO)
 
 ! G(i w)
 
@@ -41,7 +41,7 @@ subroutine G_AO_HFB(nBas,nOrb,nOrb_twice,eta,cHFB,eHFB,wcoord,MAT1,MAT2,MAT3,MAT
 ! write(*,*)
 
  allocate(Gtmp(nOrb,nOrb))
- Gtmp(:,:) = 0d0
+ Gtmp(:,:) = czero
   
  do iorb=1,nOrb
   Gtmp(:,:) = Gtmp(:,:) + 1d0/(wcoord-eHFB(iorb)-im*eta)           &
@@ -51,6 +51,9 @@ subroutine G_AO_HFB(nBas,nOrb,nOrb_twice,eta,cHFB,eHFB,wcoord,MAT1,MAT2,MAT3,MAT
  enddo
 
  G_AO=matmul(matmul(cHFB,Gtmp),transpose(cHFB))
+
+ ! deallocate dyn arrays
+ deallocate(Gtmp)
 
 end subroutine
 

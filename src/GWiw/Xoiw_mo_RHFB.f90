@@ -1,4 +1,4 @@
-subroutine Xoiw_HFB(nOrb,nOrb_twice,eta,eHFB,weval,Mat1,Mat2,Chi0_mo_iw)
+subroutine Xoiw_mo_RHFB(nOrb,nOrb_twice,eta,eHFB,weval,Mat1,Mat2,Chi0_mo_iw)
 
 ! Restricted Xo(i w) in MO basis
 
@@ -37,8 +37,8 @@ subroutine Xoiw_HFB(nOrb,nOrb_twice,eta,eHFB,weval,Mat1,Mat2,Chi0_mo_iw)
 
   do porb=1,nOrb
    do qorb=1,nOrb
-    do rorb=qorb,nOrb
-     do sorb=porb,nOrb
+    do rorb=1,nOrb
+     do sorb=1,nOrb
       do Istate=1,nOrb
        do Jstate=1,nOrb
         factor1=Mat2(porb,Istate)*Mat2(qorb,Istate)*Mat1(rorb,Jstate)*Mat1(sorb,Jstate) & ! G_he G_he
@@ -49,9 +49,7 @@ subroutine Xoiw_HFB(nOrb,nOrb_twice,eta,eHFB,weval,Mat1,Mat2,Chi0_mo_iw)
         index_rq=1+(rorb-1)+(qorb-1)*nOrb
         Chi0_mo_iw(index_ps,index_rq)=Chi0_mo_iw(index_ps,index_rq)                     &
                                   +factor1/(weval-(-eHFB(Istate)-eHFB(Jstate))+im*eta)  &
-                                  -factor2/(weval+(-eHFB(Istate)-eHFB(Jstate))-im*eta)  &
-                                  +factor1/(-weval-(-eHFB(Istate)-eHFB(Jstate))+im*eta) &
-                                  -factor2/(-weval+(-eHFB(Istate)-eHFB(Jstate))-im*eta)
+                                  -factor2/(weval+(-eHFB(Istate)-eHFB(Jstate))-im*eta)
        enddo
       enddo
      enddo
@@ -59,7 +57,10 @@ subroutine Xoiw_HFB(nOrb,nOrb_twice,eta,eHFB,weval,Mat1,Mat2,Chi0_mo_iw)
    enddo
   enddo
   
-  Chi0_mo_iw=2d0*Chi0_mo_iw  ! Times 2 because of the spin
+  Chi0_mo_iw=2d0*Chi0_mo_iw  ! Times 2 because of the spin contributions
+                             ! [ i.e., for Ghe Ghe take (up,up,up,up) and (down,down,down,down) 
+                             !                                 & 
+                             !       for Ghh Gee (up,down,down,up) and (down,up,up,down) ]
 
 end subroutine
 
