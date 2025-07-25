@@ -8,8 +8,8 @@
         F   T       F
 # GF: maxSCF thresh  DIIS lin eta renorm reg
       256    0.00001 5    F   0.0 0      F
-# GW: maxSCF thresh  DIIS lin eta TDA_W reg ifreq nfreqs ntimes 
-      256   0.00001  5    F   0.0  F     F    T    40    1500
+# GW: maxSCF thresh  DIIS lin eta TDA_W reg nfreqs ntimes shift
+      256   0.00001  5    F   0.0  F     F  0      0      0.0
 # GT: maxSCF thresh  DIIS lin eta TDA_T reg
       256    0.00001 5    F   0.0 F     F  
 # ACFDT: AC Kx  XBS
@@ -17,7 +17,7 @@
 # BSE: phBSE phBSE2 ppBSE dBSE dTDA
        F     F      F     F    F
 # HFB: temperature  sigma chem_pot_HF restart_HFB
-         0.05       1.0   F           F
+         0.5        1.0   F           F
 # Parquet: TDAeh TDApp max_it_1b conv_1b max_it_2b conv_2b max_diis_1b max_diis_2b lin_parquet reg_parquet
             T     T        1      0.01     1         0.01      1            1          F         0.0
 
