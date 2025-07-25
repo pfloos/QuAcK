@@ -4,12 +4,13 @@ subroutine read_options(working_dir,                                            
                         maxSCF_CC,thresh_CC,max_diis_CC,                                                    &
                         TDA,spin_conserved,spin_flip,                                                       &
                         maxSCF_GF,thresh_GF,max_diis_GF,lin_GF,eta_GF,renorm_GF,reg_GF,                     &
-                        maxSCF_GW,thresh_GW,max_diis_GW,lin_GW,eta_GW,shift_GW,reg_GW,nfreqs,ntimes,TDA_W,  &
+                        maxSCF_GW,thresh_GW,max_diis_GW,lin_GW,eta_GW,shift_GW,reg_GW,doOO,mu,              &
+                        nfreqs,ntimes,TDA_W,                                                                &
                         maxSCF_GT,thresh_GT,max_diis_GT,lin_GT,eta_GT,reg_GT,TDA_T,                         &
                         doACFDT,exchange_kernel,doXBS,                                                      &
                         dophBSE,dophBSE2,doppBSE,dBSE,dTDA,                                                 &
                         temperature,sigma,chem_pot_hf,restart_hfb,                                          &
-                        TDAeh,TDApp,max_diis_1b,max_diis_2b,max_it_1b,conv_1b,max_it_2b,conv_2b,lin_parquet,reg_parquet)
+                        TDAeh,TDApp,max_diis_1b,max_diis_2b,max_it_1b,conv_1b,max_it_2b,conv_2b,lin_parquet,reg_1b,reg_2b)
 
 ! Read desired methods 
 
@@ -56,6 +57,8 @@ subroutine read_options(working_dir,                                            
   double precision,intent(out)  :: eta_GW
   double precision,intent(out)  :: shift_GW
   logical,intent(out)           :: reg_GW
+  logical,intent(out)           :: doOO
+  integer,intent(out)           :: mu
   integer,intent(out)           :: nfreqs
   integer,intent(out)           :: ntimes
 
@@ -86,7 +89,7 @@ subroutine read_options(working_dir,                                            
   double precision,intent(out)  :: conv_1b,conv_2b
   integer,intent(out)           :: max_diis_1b,max_diis_2b
   logical,intent(out)           :: TDAeh,TDApp
-  double precision,intent(out)  :: reg_parquet
+  double precision,intent(out)  :: reg_1b,reg_2b
   logical,intent(out)           :: lin_parquet
 
 ! Local variables
@@ -179,15 +182,18 @@ subroutine read_options(working_dir,                                            
       eta_GW      = 0d0
       shift_GW    = 1d-3
       reg_GW      = .false.
+      doOO        = .false.
+      mu          = 0
       TDA_W       = .false.
     
       read(1,*) 
-      read(1,*) maxSCF_GW,thresh_GW,max_diis_GW,ans1,eta_GW,ans2,ans3,nfreqs,ntimes,shift_GW
+      read(1,*) maxSCF_GW,thresh_GW,max_diis_GW,ans1,eta_GW,ans2,ans3,ans4,mu,nfreqs,ntimes,shift_GW
     
       if(ans1 == 'T') lin_GW   = .true.
       if(ans2 == 'T') TDA_W    = .true.
       if(ans3 == 'T') reg_GW   = .true.
-    
+      if(ans4 == 'T') doOO     = .true. 
+   
       ! Read GT options
     
       maxSCF_GT   = 64
@@ -259,10 +265,11 @@ subroutine read_options(working_dir,                                            
       max_it_2b   = 1
       conv_2b     = 1d-2
       lin_parquet = .false.
-      reg_parquet = 0d0
+      reg_1b      = 0d0
+      reg_2b      = 0d0
     
       read(1,*) 
-      read(1,*) ans1,ans2,max_it_1b,conv_1b,max_it_2b,conv_2b,max_diis_1b,max_diis_2b,ans3,reg_parquet
+      read(1,*) ans1,ans2,max_it_1b,conv_1b,max_it_2b,conv_2b,max_diis_1b,max_diis_2b,ans3,reg_1b,reg_2b
 
       if(ans1 == 'T') TDAeh = .true.
       if(ans2 == 'T') TDApp = .true.

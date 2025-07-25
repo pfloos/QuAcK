@@ -15,9 +15,9 @@ subroutine R_Parquet_self_energy(eta,nOrb,nC,nO,nV,nR,nS,nOOs,nVVs,nOOt,nVVt,eQP
   double precision,intent(in)   :: eQP(nOrb)
   double precision,intent(in)   :: ERI(nOrb,nOrb,nOrb,nOrb)
   double precision,intent(in)   :: eh_sing_rho(nOrb,nOrb,nS)
-  double precision,intent(in)   :: eh_sing_Om(nS+nS)
+  double precision,intent(in)   :: eh_sing_Om(nS)
   double precision,intent(in)   :: eh_trip_rho(nOrb,nOrb,nS)
-  double precision,intent(in)   :: eh_trip_Om(nS+nS)
+  double precision,intent(in)   :: eh_trip_Om(nS)
   double precision,intent(in)   :: ee_sing_rho(nOrb,nOrb,nVVs)
   double precision,intent(in)   :: ee_sing_Om(nVVs)
   double precision,intent(in)   :: ee_trip_rho(nOrb,nOrb,nVVt)
@@ -34,7 +34,7 @@ subroutine R_Parquet_self_energy(eta,nOrb,nC,nO,nV,nR,nS,nOOs,nVVs,nOOt,nVVt,eQP
   double precision              :: num
   double precision              :: start_t,end_t,t
 
-  logical                       :: print_self_energy
+  logical                       :: print_self_energy = .false.
   double precision,allocatable  :: Sig2d(:)
   double precision,allocatable  :: Sig2x(:)
   double precision,allocatable  :: Sig1eh(:)
@@ -128,7 +128,7 @@ subroutine R_Parquet_self_energy(eta,nOrb,nC,nO,nV,nR,nS,nOOs,nVVs,nOOt,nVVt,eQP
   !$OMP PARALLEL DEFAULT(NONE)    &
   !$OMP PRIVATE(p,i,a,j,b,n,num,dem1,dem2,reg1,reg2) &
   !$OMP SHARED(nC,nO,nOrb,nR,nS,eta,ERI,eQP,eh_sing_rho,eh_sing_Om,SigC,Z)
-  !$OMP DO COLLAPSE(2)
+  !$OMP DO
   do p=nC+1,nOrb-nR
      
      do i=nC+1,nO
@@ -138,7 +138,7 @@ subroutine R_Parquet_self_energy(eta,nOrb,nC,nO,nV,nR,nS,nOOs,nVVs,nOOt,nVVt,eQP
               !3h2p
               do j=nC+1,nO
                  num  = (0.5d0*ERI(p,a,i,j) - ERI(p,a,j,i))* &
-                 eh_sing_rho(i,a,n) * eh_sing_rho(j,p,nS+n)
+                 eh_sing_rho(i,a,n) * eh_sing_rho(p,j,n)
 
                  dem1 = eQP(p) - eQP(j) + eh_sing_Om(n)
                  dem2 = eQP(p) - eQP(j) + eQP(a) - eQP(i)
@@ -150,7 +150,7 @@ subroutine R_Parquet_self_energy(eta,nOrb,nC,nO,nV,nR,nS,nOOs,nVVs,nOOt,nVVt,eQP
                                    - num * (reg1/dem1/dem1) * (reg2/dem2) 
                                   
                  num  = (0.5d0*ERI(p,i,a,j) - ERI(p,i,j,a)) * &
-                 eh_sing_rho(a,i,n) * eh_sing_rho(j,p,nS+n)
+                 eh_sing_rho(a,i,n) * eh_sing_rho(p,j,n)
                  
                  dem1 = eQP(a) - eQP(i) + eh_sing_Om(n) 
                  dem2 = eQP(p) - eQP(j) + eh_sing_Om(n)
@@ -161,7 +161,7 @@ subroutine R_Parquet_self_energy(eta,nOrb,nC,nO,nV,nR,nS,nOOs,nVVs,nOOt,nVVt,eQP
                  Z(p)    = Z(p)    - num * (reg1/dem1) * (reg2/dem2/dem2)
                  
                  num  = (0.5d0*ERI(p,a,i,j) - ERI(p,a,j,i))* &
-                 eh_sing_rho(i,a,nS+n) * eh_sing_rho(j,p,n)
+                 eh_sing_rho(a,i,n) * eh_sing_rho(j,p,n)
 
                  dem1 = eQP(a) - eQP(i) + eh_sing_Om(n) 
                  dem2 = eQP(p) + eQP(a) - eQP(i) - eQP(j)
@@ -175,7 +175,7 @@ subroutine R_Parquet_self_energy(eta,nOrb,nC,nO,nV,nR,nS,nOOs,nVVs,nOOt,nVVt,eQP
               !3p2h
               do b=nO+1,nOrb-nR
                  num  = -(0.5d0*ERI(p,i,a,b) - ERI(p,i,b,a)) * &
-                 eh_sing_rho(a,i,nS+n) * eh_sing_rho(b,p,n)
+                 eh_sing_rho(i,a,n) * eh_sing_rho(b,p,n)
 
                  dem1 = eQP(p) - eQP(b) - eh_sing_Om(n) 
                  dem2 = eQP(p) - eQP(b) - eQP(a) + eQP(i)
@@ -187,7 +187,7 @@ subroutine R_Parquet_self_energy(eta,nOrb,nC,nO,nV,nR,nS,nOOs,nVVs,nOOt,nVVt,eQP
                                    - num * (reg1/dem1/dem1) * (reg2/dem2)
                  
                  num  = (0.5d0*ERI(p,a,i,b) - ERI(p,a,b,i)) * &
-                 eh_sing_rho(i,a,nS+n) * eh_sing_rho(b,p,n)
+                 eh_sing_rho(a,i,n) * eh_sing_rho(b,p,n)
 
                  dem1 = eQP(a) - eQP(i) + eh_sing_Om(n) 
                  dem2 = eQP(p) - eQP(b) - eh_sing_Om(n)
@@ -198,7 +198,7 @@ subroutine R_Parquet_self_energy(eta,nOrb,nC,nO,nV,nR,nS,nOOs,nVVs,nOOt,nVVt,eQP
                  Z(p)    = Z(p)    - num * (reg1/dem1) * (reg2/dem2/dem2)
                  
                  num  = (0.5d0*ERI(p,i,a,b) - ERI(p,i,b,a)) * &
-                 eh_sing_rho(a,i,n) * eh_sing_rho(b,p,nS+n)
+                 eh_sing_rho(a,i,n) * eh_sing_rho(p,b,n)
 
                  dem1 = eQP(a) - eQP(i) + eh_sing_Om(n) 
                  dem2 = eQP(p) + eQP(i) - eQP(a) - eQP(b)
@@ -236,7 +236,7 @@ subroutine R_Parquet_self_energy(eta,nOrb,nC,nO,nV,nR,nS,nOOs,nVVs,nOOt,nVVt,eQP
    !$OMP PARALLEL DEFAULT(NONE)    &
    !$OMP PRIVATE(p,i,a,j,b,n,num,dem1,dem2,reg1,reg2) &
    !$OMP SHARED(nC,nO,nOrb,nR,nS,eta,ERI,eQP,eh_trip_rho,eh_trip_Om,SigC,Z)
-   !$OMP DO COLLAPSE(2)
+   !$OMP DO
    do p=nC+1,nOrb-nR
     
       do i=nC+1,nO
@@ -246,7 +246,7 @@ subroutine R_Parquet_self_energy(eta,nOrb,nC,nO,nV,nR,nS,nOOs,nVVs,nOOt,nVVt,eQP
                !3h2p
                do j=nC+1,nO
                   num  = (1.5d0*ERI(p,a,i,j) - 0d0*ERI(p,a,j,i))* &
-                  eh_trip_rho(i,a,n) * eh_trip_rho(j,p,nS+n)
+                  eh_trip_rho(i,a,n) * eh_trip_rho(p,j,n)
 
                   dem1 = eQP(p) - eQP(j) + eh_trip_Om(n)
                   dem2 = eQP(p) - eQP(j) + eQP(a) - eQP(i)
@@ -258,7 +258,7 @@ subroutine R_Parquet_self_energy(eta,nOrb,nC,nO,nV,nR,nS,nOOs,nVVs,nOOt,nVVt,eQP
                                     - num * (reg1/dem1/dem1) * (reg2/dem2) 
                                  
                   num  = (1.5d0*ERI(p,i,a,j) - 0d0*ERI(p,i,j,a)) * &
-                  eh_trip_rho(a,i,n) * eh_trip_rho(j,p,nS+n)
+                  eh_trip_rho(a,i,n) * eh_trip_rho(p,j,n)
                 
                   dem1 = eQP(a) - eQP(i) + eh_trip_Om(n) 
                   dem2 = eQP(p) - eQP(j) + eh_trip_Om(n)
@@ -269,7 +269,7 @@ subroutine R_Parquet_self_energy(eta,nOrb,nC,nO,nV,nR,nS,nOOs,nVVs,nOOt,nVVt,eQP
                   Z(p)    = Z(p)    - num * (reg1/dem1) * (reg2/dem2/dem2)
                 
                   num  = (1.5d0*ERI(p,a,i,j) - 0d0*ERI(p,a,j,i))* &
-                  eh_trip_rho(i,a,nS+n) * eh_trip_rho(j,p,n)
+                  eh_trip_rho(a,i,n) * eh_trip_rho(j,p,n)
 
                   dem1 = eQP(a) - eQP(i) + eh_trip_Om(n) 
                   dem2 = eQP(p) + eQP(a) - eQP(i) - eQP(j)
@@ -283,7 +283,7 @@ subroutine R_Parquet_self_energy(eta,nOrb,nC,nO,nV,nR,nS,nOOs,nVVs,nOOt,nVVt,eQP
                !3p2h
                do b=nO+1,nOrb-nR
                   num  = -(1.5d0*ERI(p,i,a,b) - 0d0*ERI(p,i,b,a)) * &
-                  eh_trip_rho(a,i,nS+n) * eh_trip_rho(b,p,n)
+                  eh_trip_rho(i,a,n) * eh_trip_rho(b,p,n)
 
                   dem1 = eQP(p) - eQP(b) - eh_trip_Om(n) 
                   dem2 = eQP(p) - eQP(b) - eQP(a) + eQP(i)
@@ -295,7 +295,7 @@ subroutine R_Parquet_self_energy(eta,nOrb,nC,nO,nV,nR,nS,nOOs,nVVs,nOOt,nVVt,eQP
                                     - num * (reg1/dem1/dem1) * (reg2/dem2)
                 
                   num  = (1.5d0*ERI(p,a,i,b) - 0d0*ERI(p,a,b,i)) * &
-                  eh_trip_rho(i,a,nS+n) * eh_trip_rho(b,p,n)
+                  eh_trip_rho(a,i,n) * eh_trip_rho(b,p,n)
 
                   dem1 = eQP(a) - eQP(i) + eh_trip_Om(n) 
                   dem2 = eQP(p) - eQP(b) - eh_trip_Om(n)
@@ -306,7 +306,7 @@ subroutine R_Parquet_self_energy(eta,nOrb,nC,nO,nV,nR,nS,nOOs,nVVs,nOOt,nVVt,eQP
                   Z(p)    = Z(p)    - num * (reg1/dem1) * (reg2/dem2/dem2)
                 
                   num  = (1.5d0*ERI(p,i,a,b) - 0d0*ERI(p,i,b,a)) * &
-                  eh_trip_rho(a,i,n) * eh_trip_rho(b,p,nS+n)
+                  eh_trip_rho(a,i,n) * eh_trip_rho(p,b,n)
 
                   dem1 = eQP(a) - eQP(i) + eh_trip_Om(n) 
                   dem2 = eQP(p) + eQP(i) - eQP(a) - eQP(b)
@@ -344,7 +344,7 @@ subroutine R_Parquet_self_energy(eta,nOrb,nC,nO,nV,nR,nS,nOOs,nVVs,nOOt,nVVt,eQP
   !$OMP PARALLEL DEFAULT(NONE)    &
   !$OMP PRIVATE(p,i,j,k,c,n,num,dem1,dem2,reg1,reg2) &
   !$OMP SHARED(nC,nO,nOrb,nR,nOOs,nVVs,eta,ERI,eQP,ee_sing_rho,ee_sing_Om,hh_sing_rho,hh_sing_Om,SigC,Z)
-  !$OMP DO COLLAPSE(2)
+  !$OMP DO
   do p=nC+1,nOrb-nR
      
      do i=nC+1,nO
@@ -401,7 +401,7 @@ subroutine R_Parquet_self_energy(eta,nOrb,nC,nO,nV,nR,nS,nOOs,nVVs,nOOt,nVVt,eQP
   !$OMP PARALLEL DEFAULT(NONE)    &
   !$OMP PRIVATE(p,k,a,b,c,n,num,dem1,dem2,reg1,reg2) &
   !$OMP SHARED(nC,nO,nOrb,nR,nOOs,nVVs,eta,ERI,eQP,ee_sing_rho,ee_sing_Om,hh_sing_rho,hh_sing_Om,SigC,Z)
-  !$OMP DO COLLAPSE(2)
+  !$OMP DO
   do p=nC+1,nOrb-nR
      do a=nO+1,nOrb-nR
         do b=nO+1,nOrb-nR
@@ -472,9 +472,9 @@ subroutine R_Parquet_self_energy(eta,nOrb,nC,nO,nV,nR,nS,nOOs,nVVs,nOOt,nVVt,eQP
   !$OMP PARALLEL DEFAULT(NONE)    &
   !$OMP PRIVATE(p,i,j,k,c,n,num,dem1,dem2,reg1,reg2) &
   !$OMP SHARED(nC,nO,nOrb,nR,nOOt,nVVt,eta,ERI,eQP,ee_trip_rho,ee_trip_Om,hh_trip_rho,hh_trip_Om,SigC,Z)
-  !$OMP DO COLLAPSE(2)
+  !$OMP DO
   do p=nC+1,nOrb-nR
-     
+    
      do i=nC+1,nO
         do j=nC+1,nO
            do n=1,nVVt
@@ -529,7 +529,7 @@ subroutine R_Parquet_self_energy(eta,nOrb,nC,nO,nV,nR,nS,nOOs,nVVs,nOOt,nVVt,eQP
   !$OMP PARALLEL DEFAULT(NONE)    &
   !$OMP PRIVATE(p,k,a,b,c,n,num,dem1,dem2,reg1,reg2) &
   !$OMP SHARED(nC,nO,nOrb,nR,nOOt,nVVt,eta,ERI,eQP,ee_trip_rho,ee_trip_Om,hh_trip_rho,hh_trip_Om,SigC,Z)
-  !$OMP DO COLLAPSE(2)
+  !$OMP DO
   do p=nC+1,nOrb-nR
      do a=nO+1,nOrb-nR
         do b=nO+1,nOrb-nR
@@ -609,7 +609,7 @@ subroutine R_Parquet_self_energy(eta,nOrb,nC,nO,nV,nR,nS,nOOs,nVVs,nOOt,nVVt,eQP
 ! Print self-energy decomposition !
 !---------------------------------!
 
-  print_self_energy = .true.
-  call dump_RParquet_self_energy(nOrb,nC,nO,nV,nR,Sig2d,Sig2x,Sig1eh,Sig3eh,Sig1pp,Sig3pp,SigC)
+  if(print_self_energy) &
+    call dump_RParquet_self_energy(nOrb,nC,nO,nV,nR,Sig2d,Sig2x,Sig1eh,Sig3eh,Sig1pp,Sig3pp,SigC)
 
 end subroutine 

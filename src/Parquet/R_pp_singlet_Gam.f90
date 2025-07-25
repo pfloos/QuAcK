@@ -110,7 +110,7 @@ subroutine R_pp_singlet_Gamma_B(nOrb,nC,nO,nR,nOOs,nVVs,eh_sing_Phi,eh_trip_Phi,
 
 ! Local variables
   integer                       :: a,b,i,j
-  integer                       :: ab,ij
+  integer                       :: ab,ij,aa,a0
   double precision,external     :: Kronecker_delta
 
 ! Output variables
@@ -119,15 +119,15 @@ subroutine R_pp_singlet_Gamma_B(nOrb,nC,nO,nR,nOOs,nVVs,eh_sing_Phi,eh_trip_Phi,
 ! Initialization
   pp_sing_Gam_B(:,:) = 0d0
 
-!  !$OMP PARALLEL DEFAULT(NONE)         &
-!  !$OMP PRIVATE(a, b, ab, i, j, ij, n) &
-!  !$OMP SHARED(nC, nOrb, nO, nS, pp_sing_Gam_B, eh_sing_rho, eh_sing_Om, eh_trip_rho, eh_trip_Om)
-!  !$OMP DO COLLAPSE(2)
-
-  ab = 0
-  do a=nO+1,nOrb - nR
-     do b=a,nOrb - nR
-        ab = ab + 1
+  a0 = nOrb - nR - nO
+  !$OMP PARALLEL DEFAULT(NONE)          &
+  !$OMP PRIVATE(a, b, aa, ab, i, j, ij) &
+  !$OMP SHARED(nO, nC, nOrb, nR, a0, pp_sing_Gam_B, eh_sing_Phi, eh_trip_Phi)
+  !$OMP DO
+  do a = nO+1, nOrb-nR
+     aa = a0 * (a - nO - 1) - (a - nO - 1) * (a - nO) / 2 - nO
+     do b = a, nOrb-nR
+        ab = aa + b
 
         ij = 0
         do i=nC+1,nO
@@ -143,7 +143,7 @@ subroutine R_pp_singlet_Gamma_B(nOrb,nC,nO,nR,nOOs,nVVs,eh_sing_Phi,eh_trip_Phi,
         end do
      end do
   end do
-!  !$OMP END DO
-!  !$OMP END PARALLEL
+  !$OMP END DO
+  !$OMP END PARALLEL
 
 end subroutine

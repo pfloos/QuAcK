@@ -58,7 +58,7 @@ subroutine R_pp_triplet_Gamma_C(nOrb,nO,nR,nVVt,eh_sing_Phi,eh_trip_Phi,pp_trip_
 
 ! Local variables
   integer                       :: a,b,c,d
-  integer                       :: ab,cd
+  integer                       :: ab,cd,aa
   integer                       :: n
 
 ! Output variables
@@ -67,15 +67,14 @@ subroutine R_pp_triplet_Gamma_C(nOrb,nO,nR,nVVt,eh_sing_Phi,eh_trip_Phi,pp_trip_
 ! Initialization
   pp_trip_Gam_C(:,:) = 0d0
 
-!  !$OMP PARALLEL DEFAULT(NONE)         &
-!  !$OMP PRIVATE(a, b, ab, c, d, cd, n) &
-!  !$OMP SHARED(nC, nOrb, nO, nS, pp_trip_Gam_C, eh_sing_rho, eh_sing_Om, eh_trip_rho, eh_trip_Om)
-!  !$OMP DO COLLAPSE(2)
+  !$OMP PARALLEL DEFAULT(NONE)          &
+  !$OMP PRIVATE(a, b, aa, ab, c, d, cd) &
+  !$OMP SHARED(nO, nOrb, nR, pp_trip_Gam_C, eh_sing_Phi, eh_trip_Phi)
+  !$OMP DO
+  do a=nO+1,nOrb-nR
+     do b=a+1,nOrb-nR
+        ab = (a-(nO+1))*(nOrb-nR-(nO+1)) - (a-1-(nO+1))*(a-(nO+1))/2 + b - a
 
-  ab = 0
-  do a=nO+1,nOrb - nR
-     do b=a+1,nOrb - nR
-        ab = ab + 1
 
         cd = 0
         do c=nO+1,nOrb - nR
@@ -90,8 +89,8 @@ subroutine R_pp_triplet_Gamma_C(nOrb,nO,nR,nVVt,eh_sing_Phi,eh_trip_Phi,pp_trip_
         
      end do
   end do
-!  !$OMP END DO
-!  !$OMP END PARALLEL
+  !$OMP END DO
+  !$OMP END PARALLEL
 
 end subroutine
 
@@ -107,7 +106,7 @@ subroutine R_pp_triplet_Gamma_B(nOrb,nC,nO,nR,nOOt,nVVt,eh_sing_Phi,eh_trip_Phi,
 
 ! Local variables
   integer                       :: a,b,i,j
-  integer                       :: ab,ij
+  integer                       :: ab,ij,aa
   integer                       :: n
 
 ! Output variables
@@ -116,15 +115,13 @@ subroutine R_pp_triplet_Gamma_B(nOrb,nC,nO,nR,nOOt,nVVt,eh_sing_Phi,eh_trip_Phi,
 ! Initialization
   pp_trip_Gam_B(:,:) = 0d0
 
-!  !$OMP PARALLEL DEFAULT(NONE)         &
-!  !$OMP PRIVATE(a, b, ab, i, j, ij, n) &
-!  !$OMP SHARED(nC, nOrb, nO, nS, pp_trip_Gam_B, eh_sing_rho, eh_sing_Om, eh_trip_rho, eh_trip_Om)
-!  !$OMP DO COLLAPSE(2)
-
-  ab = 0
-  do a=nO+1,nOrb - nR
-     do b=a+1,nOrb - nR
-        ab = ab + 1
+  !$OMP PARALLEL DEFAULT(NONE)          &
+  !$OMP PRIVATE(a, b, aa, ab, i, j, ij) &
+  !$OMP SHARED(nO, nC, nOrb, nR, pp_trip_Gam_B, eh_sing_Phi, eh_trip_Phi)
+  !$OMP DO
+  do a=nO+1,nOrb-nR
+     do b=a+1,nOrb-nR
+        ab = (a-(nO+1))*(nOrb-nR-(nO+1)) - (a-1-(nO+1))*(a-(nO+1))/2 + b - a
 
         ij = 0
         do i=nC+1,nO
@@ -138,7 +135,7 @@ subroutine R_pp_triplet_Gamma_B(nOrb,nC,nO,nR,nOOt,nVVt,eh_sing_Phi,eh_trip_Phi,
         end do
      end do
   end do
-!  !$OMP END DO
-!  !$OMP END PARALLEL
+  !$OMP END DO
+  !$OMP END PARALLEL
 
 end subroutine

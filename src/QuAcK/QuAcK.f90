@@ -16,7 +16,7 @@ program QuAcK
   logical                       :: docG0W0,docG0F2
   logical                       :: doG0T0pp,doevGTpp,doqsGTpp,doufG0T0pp,doG0T0eh,doevGTeh,doqsGTeh
   logical                       :: doCAP
-  logical                       :: doParquet
+  logical                       :: doParquet,doOO
   logical                       :: file_exists
 
   integer                       :: iorb,jorb,korb,lorb
@@ -75,6 +75,7 @@ program QuAcK
   logical                       :: TDA_W,lin_GW,reg_GW
   double precision              :: eta_GW
   double precision              :: shift_GW
+  integer                       :: mu
 
   integer                       :: maxSCF_GT,max_diis_GT
   double precision              :: thresh_GT
@@ -96,7 +97,7 @@ program QuAcK
   double precision              :: conv_1b,conv_2b
   integer                       :: max_diis_1b,max_diis_2b
   logical                       :: TDAeh,TDApp
-  double precision              :: reg_parquet 
+  double precision              :: reg_1b,reg_2b 
   logical                       :: lin_parquet
 
   character(len=256)            :: working_dir
@@ -164,12 +165,13 @@ program QuAcK
                     maxSCF_CC,thresh_CC,max_diis_CC,                                                   &
                     TDA,spin_conserved,spin_flip,                                                      &
                     maxSCF_GF,thresh_GF,max_diis_GF,lin_GF,eta_GF,renorm_GF,reg_GF,                    &
-                    maxSCF_GW,thresh_GW,max_diis_GW,lin_GW,eta_GW,shift_GW,reg_GW,nfreqs,ntimes,TDA_W, &
+                    maxSCF_GW,thresh_GW,max_diis_GW,lin_GW,eta_GW,shift_GW,reg_GW,doOO,mu,             &
+                    nfreqs,ntimes,TDA_W,                                                               &
                     maxSCF_GT,thresh_GT,max_diis_GT,lin_GT,eta_GT,reg_GT,TDA_T,                        & 
                     doACFDT,exchange_kernel,doXBS,                                                     &
                     dophBSE,dophBSE2,doppBSE,dBSE,dTDA,                                                &
                     temperature,sigma,chem_pot_hf,restart_hfb,                                         &
-                    TDAeh,TDApp,max_diis_1b,max_diis_2b,max_it_1b,conv_1b,max_it_2b,conv_2b,lin_parquet,reg_parquet)
+                    TDAeh,TDApp,max_diis_1b,max_diis_2b,max_it_1b,conv_1b,max_it_2b,conv_2b,lin_parquet,reg_1b,reg_2b)
 
 
 !--------------------!
@@ -238,7 +240,11 @@ program QuAcK
   allocate(V(nBas,nBas))
   allocate(Hc(nBas,nBas))
   allocate(dipole_int_AO(nBas,nBas,ncart))
-  if (doCAP) allocate(CAP(nBas,nBas))
+  if(doCAP) then 
+    allocate(CAP(nBas,nBas))
+  else
+    allocate(CAP(0,0))
+  end if
 ! Read integrals
 
   call wall_time(start_int)
@@ -348,9 +354,9 @@ program QuAcK
                   S,T,V,Hc,CAP,X,dipole_int_AO,maxSCF_HF,max_diis_HF,thresh_HF,level_shift,                               &
                   guess_type,mix,reg_MP,maxSCF_CC,max_diis_CC,thresh_CC,spin_conserved,spin_flip,TDA,                     &
                   maxSCF_GF,max_diis_GF,renorm_GF,thresh_GF,lin_GF,reg_GF,eta_GF,maxSCF_GW,max_diis_GW,thresh_GW,         &
-                  TDA_W,lin_GW,reg_GW,eta_GW,maxSCF_GT,max_diis_GT,thresh_GT,TDA_T,lin_GT,reg_GT,eta_GT,                  &
+                  TDA_W,lin_GW,reg_GW,eta_GW,doOO,mu,maxSCF_GT,max_diis_GT,thresh_GT,TDA_T,lin_GT,reg_GT,eta_GT,          &
                   dophBSE,dophBSE2,doppBSE,dBSE,dTDA,doACFDT,exchange_kernel,doXBS,                                       &
-                  TDAeh,TDApp,max_diis_1b,max_diis_2b,max_it_1b,conv_1b,max_it_2b,conv_2b,lin_parquet,reg_parquet)
+                  TDAeh,TDApp,max_diis_1b,max_diis_2b,max_it_1b,conv_1b,max_it_2b,conv_2b,lin_parquet,reg_1b,reg_2b)
     endif
   endif
 
@@ -383,7 +389,7 @@ program QuAcK
                 maxSCF_GW,max_diis_GW,thresh_GW,TDA_W,lin_GW,reg_GW,eta_GW,                                &
                 maxSCF_GT,max_diis_GT,thresh_GT,TDA_T,lin_GT,reg_GT,eta_GT,                                &
                 dophBSE,dophBSE2,doppBSE,dBSE,dTDA,doACFDT,exchange_kernel,doXBS,                          &
-                TDAeh,TDApp,max_diis_1b,max_diis_2b,max_it_1b,conv_1b,max_it_2b,conv_2b,lin_parquet,reg_parquet)
+                TDAeh,TDApp,max_diis_1b,max_diis_2b,max_it_1b,conv_1b,max_it_2b,conv_2b,lin_parquet,reg_1b,reg_2b)
 
 !--------------------------!
 ! Bogoliubov QuAcK branch !

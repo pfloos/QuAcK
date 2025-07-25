@@ -43,7 +43,7 @@ subroutine RG0W0(dotest,doACFDT,exchange_kernel,doXBS,dophBSE,dophBSE2,TDA_W,TDA
 ! Local variables
 
   logical                       :: print_W   = .false.
-  logical                       :: plot_self = .true.
+  logical                       :: plot_self = .false.
   logical                       :: dRPA_W
   integer                       :: isp_W
   double precision              :: flow

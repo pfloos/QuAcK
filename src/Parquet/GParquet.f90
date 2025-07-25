@@ -1,4 +1,4 @@
-subroutine GParquet(TDAeh,TDApp,max_diis_1b,max_diis_2b,linearize,eta,ENuc,max_it_1b,conv_1b,max_it_2b,conv_2b, & 
+subroutine GParquet(TDAeh,TDApp,max_diis_1b,max_diis_2b,linearize,eta_1b,eta_2b,ENuc,max_it_1b,conv_1b,max_it_2b,conv_2b, & 
                     nOrb,nC,nO,nV,nR,nS,EGHF,eHF,ERI)
 
 ! Parquet approximation based on spin orbitals
@@ -18,7 +18,7 @@ subroutine GParquet(TDAeh,TDApp,max_diis_1b,max_diis_2b,linearize,eta,ENuc,max_i
   integer,intent(in)            :: max_diis_1b
   integer,intent(in)            :: max_diis_2b
   logical,intent(in)            :: linearize  
-  double precision,intent(in)   :: eta        
+  double precision,intent(in)   :: eta_1b,eta_2b        
   double precision,intent(in)   :: ENuc
   double precision,intent(in)   :: EGHF
   integer,intent(in)            :: max_it_1b,max_it_2b
@@ -64,9 +64,10 @@ subroutine GParquet(TDAeh,TDApp,max_diis_1b,max_diis_2b,linearize,eta,ENuc,max_i
   double precision,allocatable  :: Z(:)
   double precision              :: EcGM
   ! DIIS
-  integer                       :: n_diis_2b
-  double precision              :: rcond
-  double precision,allocatable  :: err_diis_2b(:,:)
+  integer                       :: n_diis_1b,n_diis_2b
+  double precision              :: rcond_1b,rcond_2b
+  double precision,allocatable  :: err_diis_1b(:,:),err_diis_2b(:,:)
+  double precision,allocatable  :: eQP_diis(:,:)
   double precision,allocatable  :: Phi_diis(:,:)
   double precision,allocatable  :: err(:)
   double precision,allocatable  :: Phi(:)
@@ -90,16 +91,16 @@ subroutine GParquet(TDAeh,TDApp,max_diis_1b,max_diis_2b,linearize,eta,ENuc,max_i
     
 ! DIIS parameters
 
-  rcond = 1d0
-
   allocate(err_diis_2b(2*nOrb**4,max_diis_2b),Phi_diis(2*nOrb**4,max_diis_2b))
   allocate(err(2*nOrb**4),Phi(2*nOrb**4))
 
   mem = mem + size(err_diis_2b) + size(Phi_diis) + size(err) + size(Phi)
   write(*,'(1X,A50,4X,F6.3,A3)') 'Memory usage in GParquet =',mem*dp_in_GB,' GB'
 
+  rcond_2b  = 1d0
+  n_diis_2b = 0
   err_diis_2b(:,:) = 0d0
-  Phi_diis(:,:) = 0d0
+  Phi_diis(:,:)    = 0d0
 
 ! Start
  
@@ -117,7 +118,8 @@ subroutine GParquet(TDAeh,TDApp,max_diis_1b,max_diis_2b,linearize,eta,ENuc,max_i
   write(*,'(1X,A50,1X,I5)')    'Maximum number of one-body iteration:',max_it_1b
   write(*,'(1X,A50,1X,E10.5)') 'Convergence threshold for one-body energies:',conv_1b
   write(*,'(1X,A50,1X,L5)')    'Linearization of quasiparticle equation?',conv_1b
-  write(*,'(1X,A50,1X,E10.5)') 'Strenght of SRG regularization:',eta
+  write(*,'(1X,A50,1X,E10.5)') 'Strenght of SRG one-body regularization:',eta_1b
+  write(*,'(1X,A50,1X,E10.5)') 'Strenght of SRG two-body regularization:',eta_2b
   write(*,'(1X,A50,1X,I5)')    'Maximum length of DIIS expansion:',max_diis_1b
   write(*,*)'---------------------------------------------------------------'
   write(*,'(1X,A50,1X,I5)')    'Maximum number of two-body iteration:',max_it_2b
@@ -131,13 +133,25 @@ subroutine GParquet(TDAeh,TDApp,max_diis_1b,max_diis_2b,linearize,eta,ENuc,max_i
   ! Memory allocation 
 
   allocate(old_eh_Om(nS),old_ee_Om(nVV),old_hh_Om(nOO))
-  allocate(eh_rho(nOrb,nOrb,nS+nS),ee_rho(nOrb,nOrb,nVV),hh_rho(nOrb,nOrb,nOO))
+  allocate(eh_rho(nOrb,nOrb,nS),ee_rho(nOrb,nOrb,nVV),hh_rho(nOrb,nOrb,nOO))
   allocate(old_eh_Phi(nOrb,nOrb,nOrb,nOrb),old_pp_Phi(nOrb,nOrb,nOrb,nOrb))
 
   mem = mem + size(old_eh_Om) + size(old_ee_Om) + size(old_hh_Om)
   mem = mem + size(eh_rho) + size(ee_rho) + size(hh_rho)
   mem = mem + size(old_eh_Phi) + size(old_pp_Phi)
   write(*,'(1X,A50,4X,F6.3,A3)') 'Memory usage in GParquet =',mem*dp_in_GB,' GB'
+
+! DIIS for one-body part        
+
+  allocate(err_diis_1b(nOrb,max_diis_1b),eQP_diis(nOrb,max_diis_1b))
+
+  mem = mem + size(err_diis_1b) + size(eQP_diis)
+  write(*,'(1X,A50,4X,F6.3,A3)') 'Memory usage in GParquet = ',mem*dp_in_GB,' GB'
+
+  rcond_1b  = 1d0
+  n_diis_1b = 0
+  err_diis_1b(:,:) = 0d0
+  eQP_diis(:,:)    = 0d0
 
 ! Initialization
 
@@ -227,6 +241,8 @@ subroutine GParquet(TDAeh,TDApp,max_diis_1b,max_diis_2b,linearize,eta,ENuc,max_i
       Bph(:,:) = Bph(:,:) + eh_Gam_B(:,:) 
       
       call phGLR(TDAeh,nS,Aph,Bph,Ec_eh,eh_Om,XpY,XmY)
+
+ !     call matout(nS,nS,XpY)
 
       call wall_time(end_t)
 
@@ -333,7 +349,7 @@ subroutine GParquet(TDAeh,TDApp,max_diis_1b,max_diis_2b,linearize,eta,ENuc,max_i
 
       ! TODO Once we will compute the blocks of kernel starting from the 4-tensors we can move the freeing up
       ! Memory allocation
-      allocate(eh_rho(nOrb,nOrb,nS+nS))
+      allocate(eh_rho(nOrb,nOrb,nS))
       allocate(ee_rho(nOrb,nOrb,nVV),hh_rho(nOrb,nOrb,nOO))
 
       mem = mem + size(eh_rho) + size(ee_rho) + size(hh_rho)
@@ -388,7 +404,7 @@ subroutine GParquet(TDAeh,TDApp,max_diis_1b,max_diis_2b,linearize,eta,ENuc,max_i
       write(*,*) 'Computing eh reducible kernel...'
 
       call wall_time(start_t)
-      call G_eh_Phi(nOrb,nC,nR,nS,old_eh_Om,eh_rho,eh_Phi)
+      call G_eh_Phi(eta_2b,nOrb,nC,nR,nS,old_eh_Om,eh_rho,eh_Phi)
       call wall_time(end_t)
       t = end_t - start_t
       write(*,'(1X,A50,1X,F9.3,A8)') 'Wall time for eh reducible kernel =',t,' seconds'
@@ -398,7 +414,7 @@ subroutine GParquet(TDAeh,TDApp,max_diis_1b,max_diis_2b,linearize,eta,ENuc,max_i
       write(*,*) 'Computing pp reducible kernel...'
 
       call wall_time(start_t)
-      call G_pp_Phi(nOrb,nC,nR,nOO,nVV,old_ee_Om,ee_rho,old_hh_Om,hh_rho,pp_Phi)
+      call G_pp_Phi(eta_2b,nOrb,nC,nR,nOO,nVV,old_ee_Om,ee_rho,old_hh_Om,hh_rho,pp_Phi)
       call wall_time(end_t)
       t = end_t - start_t
       write(*,'(1X,A50,1X,F9.3,A8)') 'Wall time for pp reducible kernel =',t,' seconds'
@@ -407,9 +423,9 @@ subroutine GParquet(TDAeh,TDApp,max_diis_1b,max_diis_2b,linearize,eta,ENuc,max_i
       err_eh = maxval(abs(eh_Phi - old_eh_Phi))
       err_pp = maxval(abs(pp_Phi - old_pp_Phi))
 
-      ! alpha = 0.5d0
-      ! eh_Phi(:,:,:,:) = alpha * eh_Phi(:,:,:,:) + (1d0 - alpha) * old_eh_Phi(:,:,:,:)
-      ! pp_Phi(:,:,:,:) = alpha * pp_Phi(:,:,:,:) + (1d0 - alpha) * old_pp_Phi(:,:,:,:)
+!     alpha = 0.25d0
+!     eh_Phi(:,:,:,:) = alpha * eh_Phi(:,:,:,:) + (1d0 - alpha) * old_eh_Phi(:,:,:,:)
+!     pp_Phi(:,:,:,:) = alpha * pp_Phi(:,:,:,:) + (1d0 - alpha) * old_pp_Phi(:,:,:,:)
 
 !     call matout(nOrb**2,nOrb**2,eh_Phi - old_eh_Phi)
 !     call matout(nOrb**2,nOrb**2,pp_Phi - old_pp_Phi)
@@ -439,7 +455,7 @@ subroutine GParquet(TDAeh,TDApp,max_diis_1b,max_diis_2b,linearize,eta,ENuc,max_i
       if(max_diis_2b > 1) then
      
         n_diis_2b = min(n_diis_2b+1,max_diis_2b)
-        call DIIS_extrapolation(rcond,2*nOrb**4,2*nOrb**4,n_diis_2b,err_diis_2b,Phi_diis,err,Phi)
+        call DIIS_extrapolation(rcond_2b,2*nOrb**4,2*nOrb**4,n_diis_2b,err_diis_2b,Phi_diis,err,Phi)
      
       end if
 
@@ -523,7 +539,7 @@ subroutine GParquet(TDAeh,TDApp,max_diis_1b,max_diis_2b,linearize,eta,ENuc,max_i
     write(*,*) 
     
     call wall_time(start_t)
-    call G_Parquet_self_energy(eta,nOrb,nC,nO,nV,nR,nS,nOO,nVV,eOld,ERI, &
+    call G_Parquet_self_energy(eta_1b,nOrb,nC,nO,nV,nR,nS,nOO,nVV,eOld,ERI, &
                                eh_rho,old_eh_Om,ee_rho,old_ee_Om,hh_rho,old_hh_Om,EcGM,SigC,Z)
     call wall_time(end_t)
     t = end_t - start_t
@@ -548,6 +564,15 @@ subroutine GParquet(TDAeh,TDApp,max_diis_1b,max_diis_2b,linearize,eta,ENuc,max_i
       stop
 
     end if
+
+    ! DIIS for one-body part
+   
+    if(max_diis_1b > 1) then 
+  
+      n_diis_1b = min(n_diis_1b+1,max_diis_1b)
+      call DIIS_extrapolation(rcond_1b,nOrb,nOrb,n_diis_1b,err_diis_1b,eQP_diis,eQP-eOld,eQP)
+  
+    end if 
 
     ! Check one-body converge
 
@@ -592,7 +617,7 @@ subroutine GParquet(TDAeh,TDApp,max_diis_1b,max_diis_2b,linearize,eta,ENuc,max_i
      
   end if
 
-  call G_Parquet_Galitskii_Migdal(eta,nOrb,nC,nO,nV,nR,nS,nOO,nVV,eOld,ERI, &
+  call G_Parquet_Galitskii_Migdal(eta_1b,nOrb,nC,nO,nV,nR,nS,nOO,nVV,eOld,ERI, &
                                eh_rho,old_eh_Om,ee_rho,old_ee_Om,hh_rho,old_hh_Om,EcGM)
     
 
