@@ -1,6 +1,7 @@
 subroutine BQuAcK(working_dir,dotest,doHFB,dophRPA,doG0W0,doqsGW,nNuc,nBas,nOrb,nO,ENuc,eta,shift,  &
                   ZNuc,rNuc,S,T,V,Hc,X,dipole_int_AO,maxSCF,max_diis,thresh,level_shift,guess_type, &
-                  mix,temperature,sigma,chem_pot_hf,restart_hfb,nfreqs,ntimes,wcoord,wweight)
+                  maxSCF_GW,max_diis_GW,thresh_GW,                                                  &
+                  temperature,sigma,chem_pot_hf,restart_hfb,nfreqs,ntimes,wcoord,wweight)
 
 ! Restricted branch of Bogoliubov QuAcK
 
@@ -38,8 +39,10 @@ subroutine BQuAcK(working_dir,dotest,doHFB,dophRPA,doG0W0,doqsGW,nNuc,nBas,nOrb,
   double precision,intent(inout) :: dipole_int_AO(nBas,nBas,ncart)
 
   integer,intent(in)             :: maxSCF,max_diis
-  double precision,intent(in)    :: thresh,level_shift,mix
+  integer,intent(in)             :: maxSCF_GW,max_diis_GW
   integer,intent(in)             :: guess_type
+  double precision,intent(in)    :: thresh,level_shift
+  double precision,intent(in)    :: thresh_GW
 
 ! Local variables
 
@@ -160,8 +163,8 @@ subroutine BQuAcK(working_dir,dotest,doHFB,dophRPA,doG0W0,doqsGW,nNuc,nBas,nOrb,
 
       ! Continue with a HFB calculation
       call wall_time(start_qsGWB)
-      call qsRGWim(dotest,maxSCF,thresh,max_diis,level_shift,eta,shift,nNuc,ZNuc,rNuc,ENuc, &
-                   nBas,nOrb,nO_,verbose,S,T,V,Hc,ERI_AO,dipole_int_AO,X,EeleSD,eHF,MOCoef, &
+      call qsRGWim(dotest,maxSCF_GW,thresh_GW,max_diis_GW,level_shift,eta,shift,nNuc,ZNuc,rNuc,ENuc, &
+                   nBas,nOrb,nO_,verbose,S,T,V,Hc,ERI_AO,dipole_int_AO,X,EeleSD,eHF,MOCoef,          &
                    pMAT,Fock,nfreqs,ntimes,wcoord,wweight)
       call wall_time(end_qsGWB)
 
@@ -232,9 +235,9 @@ subroutine BQuAcK(working_dir,dotest,doHFB,dophRPA,doG0W0,doqsGW,nNuc,nBas,nOrb,
 
     ! Continue with a HFB calculation
     call wall_time(start_qsGWB)
-    call qsRGWBim(dotest,maxSCF,thresh,max_diis,level_shift,nNuc,ZNuc,rNuc,ENuc,eta,shift,    &
-               nBas,nOrb,nOrb_twice,nO_,verbose,S,T,V,Hc,ERI_AO,dipole_int_AO,X,Eelec,        & 
-               MOCoef,pMAT,panomMAT,Fock,Delta,sigma,chem_pot,U_QP,eQP_state,nfreqs,ntimes,   &
+    call qsRGWBim(dotest,maxSCF_GW,thresh_GW,max_diis_GW,level_shift,nNuc,ZNuc,rNuc,ENuc,eta,shift, &
+               nBas,nOrb,nOrb_twice,nO_,verbose,S,T,V,Hc,ERI_AO,dipole_int_AO,X,Eelec,              & 
+               MOCoef,pMAT,panomMAT,Fock,Delta,sigma,chem_pot,U_QP,eQP_state,nfreqs,ntimes,         &
                wcoord,wweight) 
     call wall_time(end_qsGWB)
 
