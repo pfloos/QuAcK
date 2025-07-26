@@ -21,7 +21,7 @@ subroutine Xoiw_mo_RHFB(nOrb,nOrb_twice,eta,eHFB,weval,Mat1,Mat2,Chi0_mo_iw)
 
   integer                       :: index_ps,index_rq
   integer                       :: porb,qorb,rorb,sorb
-  integer                       :: Istate,Jstate
+  integer                       :: Istate,Jstate,nState
 
   double precision              :: factor1,factor2
 
@@ -33,14 +33,15 @@ subroutine Xoiw_mo_RHFB(nOrb,nOrb_twice,eta,eHFB,weval,Mat1,Mat2,Chi0_mo_iw)
 ! Build Xo(i w) in MO basis (M^6 scaling)
 !------------------------------------------------------------------------
 
+  nState=nOrb
   Chi0_mo_iw=czero
 
   do porb=1,nOrb
    do qorb=1,nOrb
     do rorb=1,nOrb
      do sorb=1,nOrb
-      do Istate=1,nOrb
-       do Jstate=1,nOrb
+      do Istate=1,nState
+       do Jstate=1,nState
         factor1=Mat2(porb,Istate)*Mat2(qorb,Istate)*Mat1(rorb,Jstate)*Mat1(sorb,Jstate) & ! G_he G_he
                -Mat2(porb,Istate)*Mat1(qorb,Istate)*Mat2(rorb,Jstate)*Mat1(sorb,Jstate)   ! G_hh G_ee
         factor2=Mat2(rorb,Jstate)*Mat2(sorb,Jstate)*Mat1(porb,Istate)*Mat1(qorb,Istate) & ! G_he G_he

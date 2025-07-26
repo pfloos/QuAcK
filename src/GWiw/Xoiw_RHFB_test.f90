@@ -29,7 +29,7 @@ subroutine Xoiw_RHFB_tests(nBas,nOrb,nOrb_twice,wtest,cHFB,eHFB,nfreqs,ntimes,ww
 
   integer                       :: ibas,jbas,lbas,kbas,ifreq
   integer                       :: iorb,jorb,korb,lorb,Istate
-  integer                       :: nBas2,nOrb2
+  integer                       :: nBas2,nOrb2,nState
 
   double precision              :: start_Xoiw   ,end_Xoiw     ,t_Xoiw
   double precision              :: EcRPA,EcGM,trace,trace2,trace3
@@ -71,6 +71,7 @@ subroutine Xoiw_RHFB_tests(nBas,nOrb,nOrb_twice,wtest,cHFB,eHFB,nfreqs,ntimes,ww
 !
 
   eta=1d-3 ! as used in MOLGW
+  nState=nOrb
   nBas2=nBas*nBas
   nOrb2=nOrb*nOrb
 
@@ -261,7 +262,7 @@ subroutine Xoiw_RHFB_tests(nBas,nOrb,nOrb_twice,wtest,cHFB,eHFB,nfreqs,ntimes,ww
      ! WE HAVE ONLY IMPLEMENTED NEGATIVE REAL wtest OR PURELY IMAGINARY wtest FOR Sigma_c^he/hh
      Mat1(1:nOrb,1:nOrb)=U_QP(1:nOrb,1:nOrb)
      Mat2(1:nOrb,1:nOrb)=U_QP(nOrb+1:nOrb_twice,1:nOrb)
-     do Istate=1,nOrb
+     do Istate=1,nState
       if(Heaviside_step(eHFB(Istate)-Real(wtest))>0d0) then
        ! Building Wp_mo as we did for Wp_ao (see above)
        Tmp_mo_w=0d0

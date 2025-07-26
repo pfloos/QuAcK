@@ -32,7 +32,7 @@ subroutine build_Sigmac_w_RHFB(nOrb,nOrb_twice,nE,eta,verbose,wtest,eHFB,nfreqs,
 
   integer                       :: ifreq,iE
   integer                       :: iorb,jorb,korb,lorb,Istate
-  integer                       :: nOrb2
+  integer                       :: nOrb2,nState
 
   double precision              :: chem_pot
   double precision,external     :: Heaviside_step
@@ -59,7 +59,8 @@ subroutine build_Sigmac_w_RHFB(nOrb,nOrb_twice,nE,eta,verbose,wtest,eHFB,nfreqs,
   complex *16,intent(out)       :: Sigma_ee_c_mo(nE,nOrb,nOrb)
 
 !
-
+ 
+  nState=nOrb
   nOrb2=nOrb*nOrb
   Sigma_he_c_mo=czero
   Sigma_hh_c_mo=czero
@@ -171,7 +172,7 @@ subroutine build_Sigmac_w_RHFB(nOrb,nOrb_twice,nE,eta,verbose,wtest,eHFB,nfreqs,
      !  Sigma_c^eh(wtest) = -Sigma_c^he(-wtest) 
      !  Sigma_c^hh(wtest) = Sigma_c^ee(-wtest) 
      !  Sigma_c^ee(wtest) = Sigma_c^hh(-wtest) 
-     do Istate=1,nOrb
+     do Istate=1,nState
       if(Heaviside_step(eHFB(Istate)-Real(wtest(iE)))>0d0) then
        ! Building Wp(E)
        Tmp_mo_w=0d0
