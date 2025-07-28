@@ -1,6 +1,6 @@
 subroutine BQuAcK(working_dir,dotest,doHFB,dophRPA,doG0W0,doqsGW,nNuc,nBas,nOrb,nO,ENuc,eta,shift,  &
                   ZNuc,rNuc,S,T,V,Hc,X,dipole_int_AO,maxSCF,max_diis,thresh,level_shift,guess_type, &
-                  maxSCF_GW,max_diis_GW,thresh_GW,                                                  &
+                  maxSCF_GW,max_diis_GW,thresh_GW,dolinGW,                                          &
                   temperature,sigma,chem_pot_hf,restart_hfb,nfreqs,ntimes,wcoord,wweight)
 
 ! Restricted branch of Bogoliubov QuAcK
@@ -16,6 +16,7 @@ subroutine BQuAcK(working_dir,dotest,doHFB,dophRPA,doG0W0,doqsGW,nNuc,nBas,nOrb,
   logical,intent(in)             :: dophRPA
   logical,intent(in)             :: doG0W0
   logical,intent(in)             :: doqsGW
+  logical,intent(in)             :: dolinGW
 
   logical,intent(in)             :: restart_hfb
   logical,intent(in)             :: chem_pot_hf
@@ -204,7 +205,7 @@ subroutine BQuAcK(working_dir,dotest,doHFB,dophRPA,doG0W0,doqsGW,nNuc,nBas,nOrb,
      ! Test EcGM computed from Sigma_c(iw) [ NOTE: This is really bad numerically and never used. ]
      !call EcGM_w_RHF_Sigma(nOrb,nO,1,eHF,nfreqs,wweight,wcoord,vMAT,EeleSD+Enuc,EcGM)
      ! Test linearized-Dyson equation G ~ Go + Go Sigma_c Go -> Pcorr
-     if(.true. .and. dophRPA) then
+     if(dolinGW .and. dophRPA) then
       allocate(pMATcorr(nBas,nBas))
       call linDyson_G_RHF(nBas,nOrb,nO,MOCoef,eHF,nfreqs,wweight,wcoord,ERI_AO,vMAT,&
                           Enuc,EcGM,T,V,pMAT,pMATcorr)

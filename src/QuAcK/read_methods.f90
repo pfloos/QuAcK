@@ -7,7 +7,8 @@ subroutine read_methods(working_dir,                           &
                         dophRPA,dophRPAx,docrRPA,doppRPA,      & 
                         doG0F2,doevGF2,doqsGF2,doufG0F02,      &
                         doG0F3,doevGF3,                        & 
-                        doG0W0,doevGW,doqsGW,doufG0W0,doufGW,  & 
+                        doG0W0,doevGW,doqsGW,doufG0W0,doufGW,  &
+                        dolinGW,                               & 
                         doG0T0pp,doevGTpp,doqsGTpp,doufG0T0pp, &
                         doG0T0eh,doevGTeh,doqsGTeh,            &
                         doParquet,                             &
@@ -30,7 +31,7 @@ subroutine read_methods(working_dir,                           &
   logical,intent(out)           :: doCIS,doCIS_D,doCID,doCISD,doFCI
   logical,intent(out)           :: dophRPA,dophRPAx,docrRPA,doppRPA
   logical,intent(out)           :: doG0F2,doevGF2,doqsGF2,doufG0F02,doG0F3,doevGF3  
-  logical,intent(out)           :: doG0W0,doevGW,doqsGW,doufG0W0,doufGW
+  logical,intent(out)           :: doG0W0,doevGW,doqsGW,doufG0W0,doufGW,dolinGW
   logical,intent(out)           :: doG0T0pp,doevGTpp,doqsGTpp,doufG0T0pp 
   logical,intent(out)           :: doG0T0eh,doevGTeh,doqsGTeh
   logical,intent(out)           :: doParquet
@@ -168,15 +169,16 @@ subroutine read_methods(working_dir,                           &
       doqsGW    = .false.
       doufG0W0  = .false.
       doufGW    = .false.
+      dolinGW   = .false.
       
       read(1,*) 
-      read(1,*) ans1,ans2,ans3,ans4,ans5
+      read(1,*) ans1,ans2,ans3,ans4,ans5,ans6
       if(ans1 == 'T') doG0W0    = .true.
       if(ans2 == 'T') doevGW    = .true.
       if(ans3 == 'T') doqsGW    = .true.
       if(ans4 == 'T') doufG0W0  = .true.
       if(ans5 == 'T') doufGW    = .true.
-      
+      if(ans6 == 'T') dolinGW   = .true.
 
 
       ! Read GTpp methods
