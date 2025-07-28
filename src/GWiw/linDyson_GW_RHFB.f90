@@ -36,11 +36,12 @@ subroutine linDyson_GW_RHFB(nBas,nOrb,nOrb_twice,c,eQP_state,nfreqs,wweight,wcoo
   double precision              :: eta
   double precision              :: lim_inf,lim_sup
   double precision              :: alpha,beta
-  double precision              :: ET,EV,EJ,EK,EL,ElinG,trace_occ,N_anom
+  double precision              :: ET,EV,EJ,EK,EL,ElinG,trace_occ,N_anom,trace_R_can
   double precision,external     :: trace_matrix
   double precision,allocatable  :: wweight2(:)
   double precision,allocatable  :: wcoord2(:)
   double precision,allocatable  :: Occ(:)
+  double precision,allocatable  :: Occ_R(:)
   double precision,allocatable  :: Mat1(:,:)
   double precision,allocatable  :: Mat2(:,:)
   double precision,allocatable  :: Rcorr(:,:)
@@ -134,15 +135,36 @@ subroutine linDyson_GW_RHFB(nBas,nOrb,nOrb_twice,c,eQP_state,nfreqs,wweight,wcoo
   Pcorr(:,:)     = P(:,:)     + 2d0*matmul(c,matmul(Rcorr(1:nOrb,1:nOrb),transpose(c)))
   Panomcorr(:,:) = Panom(:,:) + matmul(c,matmul(Rcorr(1:nOrb,nOrb+1:nOrb_twice),transpose(c)))
 
-! Compute new total energy and Occ numbers
+! Compute new total energy, r^can eigenvalues, and Occ numbers
 
   allocate(J(nBas,nBas))
   allocate(K(nBas,nBas))
   allocate(Delta(nBas,nBas))
   allocate(Occ(nOrb))
+  allocate(Occ_R(nOrb_twice))
 
   Pcorr_mo(1:nOrb,1:nOrb) = 2d0*Rcorr(1:nOrb,1:nOrb) + matmul(matmul(transpose(c),P),c) 
   Panomcorr_mo(1:nOrb,1:nOrb) = Rcorr(1:nOrb,nOrb+1:nOrb_twice) + matmul(matmul(transpose(c),Panom),c)
+  Rcorr(1:nOrb           ,1:nOrb           ) =  Rcorr(1:nOrb           ,1:nOrb           ) &
+                                             + 0.5d0*matmul(matmul(transpose(c),P),c)
+  Rcorr(1:nOrb           ,nOrb+1:nOrb_twice) =  Rcorr(1:nOrb           ,nOrb+1:nOrb_twice) &
+                                             + matmul(matmul(transpose(c),Panom),c)
+  Rcorr(nOrb+1:nOrb_twice,1:nOrb           ) =  Rcorr(nOrb+1:nOrb_twice,1:nOrb           ) &
+                                             + matmul(matmul(transpose(c),Panom),c)
+  Rcorr(nOrb+1:nOrb_twice,nOrb+1:nOrb_twice) = -Rcorr(nOrb+1:nOrb_twice,nOrb+1:nOrb_twice) &
+                                             - 0.5d0*matmul(matmul(transpose(c),P),c)
+  do iorb=1,nOrb
+   Rcorr(iorb+nOrb,iorb+nOrb) = Rcorr(iorb+nOrb,iorb+nOrb) + 1d0
+  enddo
+  call diagonalize_matrix(nOrb_twice,Rcorr,Occ_R)
+  trace_R_can=0d0
+  do iorb=1,nOrb
+   trace_R_can=trace_R_can+abs(Occ_R(iorb))
+  enddo
+  do iorb=nOrb+1,nOrb_twice
+   trace_R_can=trace_R_can+abs(1d0-Occ_R(iorb))
+  enddo
+
   N_anom = trace_matrix(nOrb,matmul(transpose(Panomcorr_mo),Panomcorr_mo))
   call diagonalize_matrix(nOrb,Pcorr_mo,Occ)
   call Hartree_matrix_AO_basis(nBas,Pcorr,ERI,J)
@@ -194,6 +216,7 @@ subroutine linDyson_GW_RHFB(nBas,nOrb,nOrb_twice,c,eQP_state,nfreqs,wweight,wcoo
   write(*,'(A33,1X,F16.10,A3)') ' B-lin-Dyson  energy = ',ElinG + ENuc,' au'
   write(*,'(A50)')           '---------------------------------------'
   write(*,'(A33,1X,F16.10,A3)') ' | Anomalous dens |  = ',N_anom,'   '
+  write(*,'(A33,1X,F16.10,A3)') ' Dev. Idemp. r^can   = ',trace_R_can,'   '
   write(*,'(A50)')           '---------------------------------------'
   write(*,'(A50)') '-----------------------------------------'
   write(*,'(A50)') ' Bogoliubov lin-Dyson occupation numbers '
@@ -216,7 +239,7 @@ subroutine linDyson_GW_RHFB(nBas,nOrb,nOrb_twice,c,eQP_state,nfreqs,wweight,wcoo
   deallocate(Sigma_c_eh)
   deallocate(Sigma_c_ee)
   deallocate(Mat1,Mat2)
-  deallocate(J,K,Delta,Occ)
+  deallocate(J,K,Delta,Occ,Occ_R)
   deallocate(Rcorr,Sigma_c_QP,Tmp_QP,Tmp_mo,Pcorr_mo,Panomcorr_mo,wweight2,wcoord2,wcoord2_cpx)
 
 end subroutine
