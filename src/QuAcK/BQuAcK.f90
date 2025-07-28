@@ -284,7 +284,7 @@ subroutine BQuAcK(working_dir,dotest,doHFB,dophRPA,doG0W0,doqsGW,nNuc,nBas,nOrb,
     call dfRG0W0Bmat(nBas,nO_,nOrb,nOrb_twice,chem_pot,eta,shift,eQP_state,U_QP,vMAT,nfreqs,ntimes, &
                      wcoord,wweight,sigma,S,T,V,Hc,MOCoef,pMAT,panomMAT,Delta,ERI_AO)
    endif
-   ! Test linearized-Dyson equation G ~ Go + Go Sigma_c Go -> Pcorr
+   ! Test linearized-Dyson equation G ~ Go + Go Sigma_c Go -> Pcorr and Panomcorr
    if(dolinGW .and. dophRPA) then
     allocate(pMATcorr(nBas,nBas),panomMATcorr(nBas,nBas))
     call linDyson_GW_RHFB(nBas,nOrb,nOrb_twice,MOCoef,eQP_state,nfreqs,wweight,wcoord,ERI_AO,vMAT,U_QP,&
