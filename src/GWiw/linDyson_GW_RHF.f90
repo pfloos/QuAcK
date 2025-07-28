@@ -1,4 +1,4 @@
-subroutine linDyson_G_RHF(nBas,nOrb,nO,c,eHF,nfreqs,wweight,wcoord,ERI,vMAT,&
+subroutine linDyson_GW_RHF(nBas,nOrb,nO,c,eHF,nfreqs,wweight,wcoord,ERI,vMAT,&
                          Enuc,EcGM,T,V,P,Pcorr)
 
 
