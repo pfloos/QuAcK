@@ -126,7 +126,7 @@ subroutine linDyson_GW_RHF(nBas,nOrb,nO,c,eHF,nfreqs,wweight,wcoord,ERI,vMAT,&
 
   EK = 0.25d0*trace_matrix(nBas,matmul(Pcorr,K))
 
-  ! Total energy (incl. Nu-Nu interaction and the Galitkii-Migdal corr. )
+  ! Total energy (incl. the Galitkii-Migdal contribution)
 
   ElinG = ET + EV + EJ + EK + EcGM
 
