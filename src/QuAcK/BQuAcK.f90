@@ -64,6 +64,7 @@ subroutine BQuAcK(working_dir,dotest,doHFB,dophRPA,doG0W0,doqsGW,nNuc,nBas,nOrb,
   double precision,allocatable   :: U_QP(:,:)
   double precision,allocatable   :: MOCoef(:,:)
   double precision,allocatable   :: pMAT(:,:)
+  double precision,allocatable   :: pMATcorr(:,:)
   double precision,allocatable   :: panomMAT(:,:)
   double precision,allocatable   :: Fock(:,:)
   double precision,allocatable   :: Delta(:,:)
@@ -202,6 +203,13 @@ subroutine BQuAcK(working_dir,dotest,doHFB,dophRPA,doG0W0,doqsGW,nNuc,nBas,nOrb,
      endif
      ! Test EcGM computed from Sigma_c(iw) [ NOTE: This is really bad numerically and never used. ]
      !call EcGM_w_RHF_Sigma(nOrb,nO,1,eHF,nfreqs,wweight,wcoord,vMAT,EeleSD+Enuc,EcGM)
+     ! Test linearized-Dyson equation G ~ Go + Go Sigma_c Go -> Pcorr
+     if(.true. .and. dophRPA) then
+      allocate(pMATcorr(nBas,nBas))
+      call linDyson_G_RHF(nBas,nOrb,nO,MOCoef,eHF,nfreqs,wweight,wcoord,ERI_AO,vMAT,&
+                          Enuc,EcGM,T,V,pMAT,pMATcorr)
+      deallocate(pMATcorr)
+     endif
      deallocate(vMAT)
      call wall_time(end_Ecorr)
 
