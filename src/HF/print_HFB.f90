@@ -45,7 +45,7 @@ subroutine print_HFB(nBas, nOrb, nOrb_twice, nO, N_anom, Occ, eHFB_state, ENuc, 
   write(*,'(A33,1X,F16.10,A3)') ' Kinetic      energy = ',ET,' au'
   write(*,'(A33,1X,F16.10,A3)') ' Potential    energy = ',EV,' au'
   write(*,'(A50)')           '---------------------------------------'
-  write(*,'(A33,1X,F16.10,A3)') ' Two-electron energy = ',EJ + EK,' au'
+  write(*,'(A33,1X,F16.10,A3)') ' Two-electron energy = ',EJ + EK + EL,' au'
   write(*,'(A33,1X,F16.10,A3)') ' Hartree      energy = ',EJ,' au'
   write(*,'(A33,1X,F16.10,A3)') ' Exchange     energy = ',EK,' au'
   write(*,'(A33,1X,F16.10,A3)') ' Anomalous    energy = ',EL,' au'

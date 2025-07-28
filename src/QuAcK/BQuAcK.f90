@@ -67,6 +67,7 @@ subroutine BQuAcK(working_dir,dotest,doHFB,dophRPA,doG0W0,doqsGW,nNuc,nBas,nOrb,
   double precision,allocatable   :: pMAT(:,:)
   double precision,allocatable   :: pMATcorr(:,:)
   double precision,allocatable   :: panomMAT(:,:)
+  double precision,allocatable   :: panomMATcorr(:,:)
   double precision,allocatable   :: Fock(:,:)
   double precision,allocatable   :: Delta(:,:)
   double precision,allocatable   :: vMAT(:,:)
@@ -202,8 +203,6 @@ subroutine BQuAcK(working_dir,dotest,doHFB,dophRPA,doG0W0,doqsGW,nNuc,nBas,nOrb,
      if(doG0W0) then
       call dfRG0W0mat(nOrb,nO,eta,shift,eHF,vMAT,nfreqs,ntimes,wcoord,wweight)
      endif
-     ! Test EcGM computed from Sigma_c(iw) [ NOTE: This is really bad numerically and never used. ]
-     !call EcGM_w_RHF_Sigma(nOrb,nO,1,eHF,nfreqs,wweight,wcoord,vMAT,EeleSD+Enuc,EcGM)
      ! Test linearized-Dyson equation G ~ Go + Go Sigma_c Go -> Pcorr
      if(dolinGW .and. dophRPA) then
       allocate(pMATcorr(nBas,nBas))
@@ -211,6 +210,8 @@ subroutine BQuAcK(working_dir,dotest,doHFB,dophRPA,doG0W0,doqsGW,nNuc,nBas,nOrb,
                           Enuc,EcGM,T,V,pMAT,pMATcorr)
       deallocate(pMATcorr)
      endif
+     ! Test EcGM computed from Sigma_c(iw) [ NOTE: This is really bad numerically and never used. ]
+     !call EcGM_w_RHF_Sigma(nOrb,nO,1,eHF,nfreqs,wweight,wcoord,vMAT,EeleSD+Enuc,EcGM)
      deallocate(vMAT)
      call wall_time(end_Ecorr)
 
@@ -282,6 +283,13 @@ subroutine BQuAcK(working_dir,dotest,doHFB,dophRPA,doG0W0,doqsGW,nNuc,nBas,nOrb,
    if(doG0W0) then
     call dfRG0W0Bmat(nBas,nO_,nOrb,nOrb_twice,chem_pot,eta,shift,eQP_state,U_QP,vMAT,nfreqs,ntimes, &
                      wcoord,wweight,sigma,S,T,V,Hc,MOCoef,pMAT,panomMAT,Delta,ERI_AO)
+   endif
+   ! Test linearized-Dyson equation G ~ Go + Go Sigma_c Go -> Pcorr
+   if(dolinGW .and. dophRPA) then
+    allocate(pMATcorr(nBas,nBas),panomMATcorr(nBas,nBas))
+    call linDyson_GW_RHFB(nBas,nOrb,nOrb_twice,MOCoef,eQP_state,nfreqs,wweight,wcoord,ERI_AO,vMAT,U_QP,&
+                          Enuc,EcGM,sigma,T,V,pMAT,panomMAT,pMATcorr,panomMATcorr)
+    deallocate(pMATcorr,panomMATcorr)
    endif
    ! Test EcGM computed from Sigma_c(iw) [ NOTE: This is really bad numerically and never used. ]
    !call EcGM_w_RHFB_Sigma(nOrb,nOrb_twice,1,eQP_state,nfreqs,wweight,wcoord,vMAT,U_QP,EeleSD+Enuc,EcGM)

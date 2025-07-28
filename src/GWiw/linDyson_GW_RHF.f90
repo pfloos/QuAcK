@@ -157,7 +157,7 @@ subroutine linDyson_GW_RHF(nBas,nOrb,nO,c,eHF,nfreqs,wweight,wcoord,ERI,vMAT,&
    if(abs(Occ(iorb))>1d-8) then
     write(*,'(I7,10F15.8)') iorb,Occ(nOrb-(iorb-1))
    endif
-   trace_occ=trace_occ+2d0*Occ(iorb)
+   trace_occ=trace_occ+Occ(iorb)
   enddo
   write(*,*)
   write(*,'(A33,1X,F16.10,A3)') ' Trace [ 1D ]        = ',trace_occ,'   '
