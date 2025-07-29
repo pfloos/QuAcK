@@ -63,7 +63,7 @@ FIX_ORDER_OF_LIBS=
 compile_gfortran_linux_debug = """
 FC = gfortran
 AR = ar crs
-FFLAGS = -I$IDIR -J$IDIR -cpp -fbacktrace -Wall -g -fcheck=all -Waliasing -Wampersand -Wconversion -Wsurprising -Wintrinsics-std -Wno-tabs -Wintrinsic-shadow -Wline-truncation -Wreal-q-constant
+FFLAGS = -I$IDIR -J$IDIR -cpp -fbacktrace -Wall -g -fcheck=all -Waliasing -Wampersand -Wconversion -Wsurprising -Wintrinsics-std -Wno-tabs -Wintrinsic-shadow -Wline-truncation -Wreal-q-constant -ffree-line-length-none
 CC = gcc
 CXX = g++
 LAPACK=-lblas -llapack

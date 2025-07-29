@@ -1,6 +1,6 @@
 subroutine OORG0W0(dotest,doACFDT,exchange_kernel,doXBS,dophBSE,dophBSE2,TDA_W,TDA,dBSE,dTDA,doppBSE,singlet,triplet, & 
                  linearize,eta,doSRG,nBas,nOrb,nC,nO,nV,nR,nS,mu,ENuc,ERHF,ERI_AO,ERI_MO,                             &
-                 dipole_int,eHF,cHF,Sovl,XHF,Tkin,V,Hc,PHF,FHF,eGW_out)
+                 dipole_int,eHF,cHF,Sovl,XHF,Tkin,Vpot,Hc,PHF,FHF,eGW_out)
 
 ! Perform optimized orbital G0W0 calculation (optimal for excitation mu)
 
@@ -47,7 +47,7 @@ subroutine OORG0W0(dotest,doACFDT,exchange_kernel,doXBS,dophBSE,dophBSE2,TDA_W,T
   double precision,intent(inout):: FHF(nBas,nBas)
   double precision,intent(in)   :: Sovl(nBas,nBas)
   double precision,intent(in)   :: Tkin(nBas,nBas)
-  double precision,intent(in)   :: V(nBas,nBas)
+  double precision,intent(in)   :: Vpot(nBas,nBas)
   double precision,intent(in)   :: Hc(nBas,nBas)
   double precision,intent(in)   :: XHF(nBas,nOrb)
 
@@ -95,13 +95,22 @@ subroutine OORG0W0(dotest,doACFDT,exchange_kernel,doXBS,dophBSE,dophBSE2,TDA_W,T
   double precision,allocatable  :: rdm1(:,:)
   double precision,allocatable  :: rdm2(:,:,:,:)
   integer                       :: r,s,rs,p,q,pq
+  integer                       :: N,O,V,Nsq
   double precision,allocatable  :: c(:,:)
-  double precision,allocatable  :: J(:,:)
-  double precision,allocatable  :: K(:,:)
+  double precision,allocatable  :: Fp(:,:)
+  double precision,allocatable  :: J(:,:),K(:,:)
+  double precision              :: Emu
+  integer                       :: ind
 
+  double precision,external     :: trace_matrix
 ! Output variables
 
   double precision,intent(out)  :: eGW_out(nOrb)
+  
+  V = nV - nR
+  O = nO - nC
+  N = V + O
+  Nsq = N*N
 
 ! Output variables
 
@@ -141,27 +150,45 @@ subroutine OORG0W0(dotest,doACFDT,exchange_kernel,doXBS,dophBSE,dophBSE2,TDA_W,T
 
   allocate(Aph(nS,nS),Bph(nS,nS),SigC(nOrb),Z(nOrb),Om(nS),XpY(nS,nS),XmY(nS,nS),rho(nOrb,nOrb,nS), & 
            eGW(nOrb),eGWlin(nOrb),X(nS,nS),X_inv(nS,nS),Y(nS,nS),Xbar(nS,nS),Xbar_inv(nS,nS),lambda(nS,nS),t(nS,nS),&
-           rampl(nS,nOrb),lampl(nS,nOrb),rp(nOrb),lp(nOrb),h(nOrb,nOrb),c(nBas,nOrb),&
-           J(nBas,nBas),K(nBas,nBas),&
-           rdm1(nOrb,nOrb),rdm2(nOrb,nOrb,nOrb,nOrb))
+           rampl(nS,N),lampl(nS,N),rp(N),lp(N),h(N,N),c(nBas,nOrb),&
+           rdm1(N,N),rdm2(N,N,N,N),J(nBas,nBas),K(nBas,nBas),Fp(nOrb,nOrb))
 
 ! Initialize variables for OO  
   OOi           = 1d0
   OOConv        = 1d0
   c(:,:)        = cHF(:,:)
-  h             = matmul(transpose(c),matmul(Hc,c))
+  h(:,:)        = 0d0 
   rdm1(:,:)     = 0d0 
   rdm2(:,:,:,:) = 0d0
   rampl(:,:)    = 0d0
   lampl(:,:)    = 0d0
   rp(:)         = 0d0
   lp(:)         = 0d0
+  t(:,:)        = 0d0
+  lambda(:,:)   = 0d0
+  eGW(:)        = eHF(:)
 
   write(*,*) "Start orbital optimization loop..."
 
   do while (OOConv > 1e-3)
   
-    write(*,*) "Orbital optimiation Iteration: ", OOi
+    write(*,*) "Orbital optimiation Iteration: ", OOi 
+   
+    h = matmul(transpose(c),matmul(Hc,c))
+    call AOtoMO_ERI_RHF(nBas,nOrb,c,ERI_AO,ERI_MO)
+   
+   ! What are the eHF for RPA ???
+   ! PHF(:,:) = 2d0 * matmul(c(:,1:O), transpose(c(:,1:O)))
+   ! call Hartree_matrix_AO_basis(nBas,PHF,ERI_AO,J)
+   ! call exchange_matrix_AO_basis(nBas,PHF,ERI_AO,K)
+   ! FHF(:,:) = Hc(:,:) + J(:,:) + 0.5d0*K(:,:)
+   ! Fp = matmul(transpose(c),matmul(FHF,c))
+   ! do ind = 1, nOrb
+   !   eHF(ind) = Fp(ind,ind)
+   ! end do
+   ! write(*,*) "Fp"
+   ! call matout(nOrb,nOrb,Fp)
+
 
   !-------------------!
   ! Compute screening !
@@ -172,7 +199,7 @@ subroutine OORG0W0(dotest,doACFDT,exchange_kernel,doXBS,dophBSE,dophBSE2,TDA_W,T
   
     call phRLR(TDA_W,nS,Aph,Bph,EcRPA,Om,XpY,XmY)
     
-
+    write(*,*) "EcRPA = ", EcRPA
     if(print_W) call print_excitation_energies('phRPA@RHF','singlet',nS,Om)
   
   !--------------------------!
@@ -240,25 +267,28 @@ subroutine OORG0W0(dotest,doACFDT,exchange_kernel,doXBS,dophBSE,dophBSE2,TDA_W,T
     call inverse_matrix(nS,Xbar,Xbar_inv)
     lambda = 0.5*matmul(Y,Xbar_inv)
     
-    ! Here calculate rdm1
-    call RG0W0_rdm1(nOrb,nO,nS,lampl,rampl,lp,rp,lambda,t,rdm1)
-    
-    ! Here calculate rdm2
-    call RG0W0_rdm2(nOrb,nO,nS,lampl,rampl,lp,rp,lambda,t,rdm2)
+    ! Calculate rdm1
+    call RG0W0_rdm1(O,V,N,nS,lampl,rampl,lp,rp,lambda,t,rdm1)
+    write(*,*) "Trace rdm1: ", trace_matrix(N,rdm1)
 
+    ! Calculate rdm2
+    call RG0W0_rdm2(O,V,N,nS,lampl,rampl,lp,rp,lambda,t,rdm2)
+    write(*,*) "Trace rdm2: ", trace_matrix(Nsq,rdm2)
+    
+    call RGW_energy_from_rdm(N,h,ERI_MO,rdm1,rdm2,Emu)
+    write(*,*) "Erpa = ", Emu
+    write(*,*) "total energy = ", Emu + ERHF + ENuc
+    
     !--------------------------!
     ! Compute orbital gradient !
     !--------------------------!
  
-    allocate(grad(nS))
-    
-    call pCCD_orbital_gradient(nO,nV,nOrb,nS,h,ERI_MO,rdm1,rdm2,grad)
+    allocate(grad(Nsq))
     grad(:) = 0d0
+    call pCCD_orbital_gradient(O,V,N,Nsq,h,ERI_MO,rdm1,rdm2,grad)
    
-   ! Check convergence of orbital optimization
- 
-    OOConv = maxval(abs(grad))
-    OOConv = 1d0 ! for test
+    ! Check convergence of orbital optimization
+    OOConv = maxval(grad)
     write(*,*) '-----------------------------------------------------------'
     write(*,'(A10,I4,A30)') ' Iteration',OOi,'for G0W0 orbital optimization'
     write(*,*) '-----------------------------------------------------------'
@@ -270,20 +300,23 @@ subroutine OORG0W0(dotest,doACFDT,exchange_kernel,doXBS,dophBSE,dophBSE2,TDA_W,T
     ! Compute orbital Hessian !
     !-------------------------!
  
-    allocate(hess(nS,nS))
+    allocate(hess(Nsq,Nsq))
+    hess(:,:) = 0d0 
+    call pCCD_orbital_hessian(O,V,N,Nsq,h,ERI_MO,rdm1,rdm2,hess)
     
-    call pCCD_orbital_hessian(nO,nV,nOrb,nS,h,ERI_MO,rdm1,rdm2,hess)
-
-    write(*,*) "Hessian"
-    call matout(nS,nS,hess)
+!    write(*,*) "Hessian"
+!    call matout(Nsq,Nsq,hess)
  
-    allocate(hessInv(nS,nS))
+    allocate(hessInv(Nsq,Nsq))
  
-    call inverse_matrix(nS,hess,hessInv)
-
+    call inverse_matrix(Nsq,hess,hessInv)
+    
+!    write(*,*) "Inv Hessian"
+!    call matout(Nsq,Nsq,hessInv)
+    
     deallocate(hess)
  
-    allocate(Kap(nOrb,nOrb))
+    allocate(Kap(N,N))
  
     Kap(:,:) = 0d0
  
@@ -309,42 +342,41 @@ subroutine OORG0W0(dotest,doACFDT,exchange_kernel,doXBS,dophBSE,dophBSE2,TDA_W,T
  
     deallocate(hessInv,grad)
 
-    write(*,*) 'kappa'
-    call matout(nOrb,nOrb,Kap)
-    write(*,*)
- 
-    allocate(ExpKap(nOrb,nOrb))
+!    write(*,*) 'kappa'
+!    call matout(nOrb,nOrb,Kap)
+!    write(*,*)
+! 
+    allocate(ExpKap(N,N))
     call matrix_exponential(nOrb,Kap,ExpKap)
     deallocate(Kap)
- 
-    write(*,*) 'e^kappa'
-    call matout(nOrb,nOrb,ExpKap)
-    write(*,*)
- 
-    write(*,*) 'Old orbitals'
-    call matout(nBas,nOrb,c)
-    write(*,*)
- 
+! 
+!    write(*,*) 'e^kappa'
+!    call matout(nOrb,nOrb,ExpKap)
+!    write(*,*)
+! 
+!    write(*,*) 'Old orbitals'
+!    call matout(nBas,nOrb,c)
+!    write(*,*)
+! 
     c = matmul(c,ExpKap)
     deallocate(ExpKap)
- 
-    write(*,*) 'Rotated orbitals'
-    call matout(nBas,nOrb,c)
-    write(*,*)
+! 
+!    write(*,*) 'Rotated orbitals'
+!    call matout(nBas,nOrb,c)
+!    write(*,*)
 
     ! Compute all quantities new for rotated basis
 
-    h = matmul(transpose(c),matmul(Hc,c))
-    call AOtoMO_ERI_RHF(nBas,nOrb,c,ERI_AO,ERI_MO)
 
     if (OOi==3) then
       OOConv = 0d0 ! remove only for debugging
     end if
+
     OOi = OOi + 1 
   end do
   cHF(:,:) = c(:,:)
+  
   deallocate(rdm1,rdm2,c,Aph,Bph,SigC,Z,Om,XpY,XmY,rho,eGW,&
-             eGWlin,X,X_inv,Y,Xbar,Xbar_inv,lambda,t,rampl,lampl,rp,lp,h,&
-             J,K)
+             eGWlin,X,X_inv,Y,Xbar,Xbar_inv,lambda,t,rampl,lampl,rp,lp,h)
 
 end subroutine
