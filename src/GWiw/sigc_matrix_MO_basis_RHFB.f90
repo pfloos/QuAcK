@@ -107,8 +107,8 @@ subroutine sigc_MO_basis_RHFB(nOrb,nOrb_twice,offdiag0,eta,shift,Occ_el,U_QP,eqs
 
    ! Sigma_c_he
    do iorb=1,nOrb ! Interpolation [ Recall that Sigma_c,he(w>0) = -Sigma_c,eh(w<0) ]
-    Sigc_mo_tmp(iorb,:,:) = 0.5d0*(Real(Sigc_mo_he_cpx(2*iorb-1,:,:))+Real(Sigc_mo_he_cpx(2*iorb,:,:)))
-    Sigc_mo_tmp2(iorb,:,:)=-0.5d0*(Real(Sigc_mo_eh_cpx(2*iorb-1,:,:))+Real(Sigc_mo_eh_cpx(2*iorb,:,:)))
+    Sigc_mo_tmp(iorb,:,:)  =  0.5d0*(Real(Sigc_mo_he_cpx(2*iorb-1,:,:))+Real(Sigc_mo_he_cpx(2*iorb,:,:)))
+    Sigc_mo_tmp2(iorb,:,:) = -0.5d0*(Real(Sigc_mo_eh_cpx(2*iorb-1,:,:))+Real(Sigc_mo_eh_cpx(2*iorb,:,:)))
    enddo
    do iorb=1,nOrb
     Sigc_mo_he(iorb,:)=Heaviside_step(Occ_el(iorb)-0.5d0)*Sigc_mo_tmp(iorb,iorb,:)  &
@@ -126,14 +126,21 @@ subroutine sigc_MO_basis_RHFB(nOrb,nOrb_twice,offdiag0,eta,shift,Occ_el,U_QP,eqs
 
    ! Sigma_c_hh
    Sigc_mo_tmp=0d0
-   do iorb=1,nOrb ! Interpolation [ As when computing the GM energy and G0W0B, we use -Sigma_c,hh,ee ]
-    Sigc_mo_tmp(iorb,:,:) =-0.5d0*(Real(Sigc_mo_hh_cpx(2*iorb-1,:,:))+Real(Sigc_mo_hh_cpx(2*iorb,:,:)))
+   do iorb=1,nOrb ! Interpolation
+    Sigc_mo_tmp(iorb,:,:) = 0.5d0*(Real(Sigc_mo_hh_cpx(2*iorb-1,:,:))+Real(Sigc_mo_hh_cpx(2*iorb,:,:)))
    enddo
-   do iorb=1,nOrb 
-    Sigc_mo_hh(iorb,:)=Sigc_mo_tmp(iorb,iorb,:)
+   do iorb=1,nOrb ! As when computing the GM energy and G0W0B, we use -Sigma_c,hh,ee 
+    Sigc_mo_hh(iorb,:) = -Sigc_mo_tmp(iorb,iorb,:)
    enddo
    if(offdiag0) then  ! qsGW version where all the off-diagonal elements are built at the Fermi level 
-    Sigc_mo_hh(:,:) = -Real(Sigc_mo_hh_cpx(nE_eval_global,:,:))
+    do iorb=1,nOrb
+     do jorb=1,nOrb
+      if(iorb/=jorb) then
+       Sigc_mo_hh(iorb,jorb) = -Real(Sigc_mo_hh_cpx(nE_eval_global,iorb,jorb))
+      endif
+     enddo
+    enddo
+    !Sigc_mo_hh(:,:) = -Real(Sigc_mo_hh_cpx(nE_eval_global,:,:))
    endif
    
    ! Deallocate arrays

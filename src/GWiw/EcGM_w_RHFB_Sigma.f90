@@ -25,7 +25,6 @@ subroutine EcGM_w_RHFB_Sigma(nOrb,nOrb_twice,verbose,eQP_state,nfreqs,wweight,wc
   integer                       :: kind_int
   integer                       :: ifreq
   integer                       :: iorb,jorb
-  integer                       :: nOrb2
   integer                       :: nfreqs2
 
   double precision              :: eta

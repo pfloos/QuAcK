@@ -13,7 +13,7 @@ program QuAcK
   logical                       :: dophRPA,dophRPAx,docrRPA,doppRPA
   logical                       :: doG0F2,doevGF2,doqsGF2,doufG0F02,doG0F3,doevGF3
   logical                       :: doG0W0,doevGW,doqsGW,doufG0W0,doufGW
-  logical                       :: docG0W0,docG0F2
+  logical                       :: docG0W0,docG0F2,dolinGW
   logical                       :: doG0T0pp,doevGTpp,doqsGTpp,doufG0T0pp,doG0T0eh,doevGTeh,doqsGTeh
   logical                       :: doCAP
   logical                       :: doParquet,doOO
@@ -145,6 +145,7 @@ program QuAcK
                     doG0F2,doevGF2,doqsGF2,doufG0F02,      & 
                     doG0F3,doevGF3,                        &
                     doG0W0,doevGW,doqsGW,doufG0W0,doufGW,  &
+                    dolinGW,                               &
                     doG0T0pp,doevGTpp,doqsGTpp,doufG0T0pp, &
                     doG0T0eh,doevGTeh,doqsGTeh,            &
                     doParquet,                             &
@@ -397,7 +398,8 @@ program QuAcK
   if(doBQuAcK) & 
     call BQuAcK(working_dir,dotest,doHFB,dophRPA,doG0W0,doqsGW,nNuc,nBas,nOrb,nO,ENuc,eta_GW,shift_GW,     &
                 ZNuc,rNuc,S,T,V,Hc,X,dipole_int_AO,maxSCF_HF,max_diis_HF,thresh_HF,level_shift,guess_type, &
-                mix,temperature,sigma,chem_pot_hf,restart_hfb,nfreqs,ntimes,wcoord,wweight)
+                maxSCF_GW,max_diis_GW,thresh_GW,dolinGW,                                                   &
+                temperature,sigma,chem_pot_hf,restart_hfb,nfreqs,ntimes,wcoord,wweight)
 
 !-----------!
 ! Stop Test !

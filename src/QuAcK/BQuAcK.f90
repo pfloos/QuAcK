@@ -1,6 +1,7 @@
 subroutine BQuAcK(working_dir,dotest,doHFB,dophRPA,doG0W0,doqsGW,nNuc,nBas,nOrb,nO,ENuc,eta,shift,  &
                   ZNuc,rNuc,S,T,V,Hc,X,dipole_int_AO,maxSCF,max_diis,thresh,level_shift,guess_type, &
-                  mix,temperature,sigma,chem_pot_hf,restart_hfb,nfreqs,ntimes,wcoord,wweight)
+                  maxSCF_GW,max_diis_GW,thresh_GW,dolinGW,                                          &
+                  temperature,sigma,chem_pot_hf,restart_hfb,nfreqs,ntimes,wcoord,wweight)
 
 ! Restricted branch of Bogoliubov QuAcK
 
@@ -15,6 +16,7 @@ subroutine BQuAcK(working_dir,dotest,doHFB,dophRPA,doG0W0,doqsGW,nNuc,nBas,nOrb,
   logical,intent(in)             :: dophRPA
   logical,intent(in)             :: doG0W0
   logical,intent(in)             :: doqsGW
+  logical,intent(in)             :: dolinGW
 
   logical,intent(in)             :: restart_hfb
   logical,intent(in)             :: chem_pot_hf
@@ -38,8 +40,10 @@ subroutine BQuAcK(working_dir,dotest,doHFB,dophRPA,doG0W0,doqsGW,nNuc,nBas,nOrb,
   double precision,intent(inout) :: dipole_int_AO(nBas,nBas,ncart)
 
   integer,intent(in)             :: maxSCF,max_diis
-  double precision,intent(in)    :: thresh,level_shift,mix
+  integer,intent(in)             :: maxSCF_GW,max_diis_GW
   integer,intent(in)             :: guess_type
+  double precision,intent(in)    :: thresh,level_shift
+  double precision,intent(in)    :: thresh_GW
 
 ! Local variables
 
@@ -61,7 +65,9 @@ subroutine BQuAcK(working_dir,dotest,doHFB,dophRPA,doG0W0,doqsGW,nNuc,nBas,nOrb,
   double precision,allocatable   :: U_QP(:,:)
   double precision,allocatable   :: MOCoef(:,:)
   double precision,allocatable   :: pMAT(:,:)
+  double precision,allocatable   :: pMATcorr(:,:)
   double precision,allocatable   :: panomMAT(:,:)
+  double precision,allocatable   :: panomMATcorr(:,:)
   double precision,allocatable   :: Fock(:,:)
   double precision,allocatable   :: Delta(:,:)
   double precision,allocatable   :: vMAT(:,:)
@@ -160,8 +166,8 @@ subroutine BQuAcK(working_dir,dotest,doHFB,dophRPA,doG0W0,doqsGW,nNuc,nBas,nOrb,
 
       ! Continue with a HFB calculation
       call wall_time(start_qsGWB)
-      call qsRGWim(dotest,maxSCF,thresh,max_diis,level_shift,eta,shift,nNuc,ZNuc,rNuc,ENuc, &
-                   nBas,nOrb,nO_,verbose,S,T,V,Hc,ERI_AO,dipole_int_AO,X,EeleSD,eHF,MOCoef, &
+      call qsRGWim(dotest,maxSCF_GW,thresh_GW,max_diis_GW,level_shift,eta,shift,nNuc,ZNuc,rNuc,ENuc, &
+                   nBas,nOrb,nO_,verbose,S,T,V,Hc,ERI_AO,dipole_int_AO,X,EeleSD,eHF,MOCoef,          &
                    pMAT,Fock,nfreqs,ntimes,wcoord,wweight)
       call wall_time(end_qsGWB)
 
@@ -196,6 +202,13 @@ subroutine BQuAcK(working_dir,dotest,doHFB,dophRPA,doG0W0,doqsGW,nNuc,nBas,nOrb,
      ! Test down-folded G0W0 matrix?
      if(doG0W0) then
       call dfRG0W0mat(nOrb,nO,eta,shift,eHF,vMAT,nfreqs,ntimes,wcoord,wweight)
+     endif
+     ! Test linearized-Dyson equation G ~ Go + Go Sigma_c Go -> Pcorr
+     if(dolinGW .and. dophRPA) then
+      allocate(pMATcorr(nBas,nBas))
+      call linDyson_GW_RHF(nBas,nOrb,nO,MOCoef,eHF,nfreqs,wweight,wcoord,ERI_AO,vMAT, &
+                          Enuc,EcGM,T,V,S,pMAT,pMATcorr)
+      deallocate(pMATcorr)
      endif
      ! Test EcGM computed from Sigma_c(iw) [ NOTE: This is really bad numerically and never used. ]
      !call EcGM_w_RHF_Sigma(nOrb,nO,1,eHF,nfreqs,wweight,wcoord,vMAT,EeleSD+Enuc,EcGM)
@@ -232,9 +245,9 @@ subroutine BQuAcK(working_dir,dotest,doHFB,dophRPA,doG0W0,doqsGW,nNuc,nBas,nOrb,
 
     ! Continue with a HFB calculation
     call wall_time(start_qsGWB)
-    call qsRGWBim(dotest,maxSCF,thresh,max_diis,level_shift,nNuc,ZNuc,rNuc,ENuc,eta,shift,    &
-               nBas,nOrb,nOrb_twice,nO_,verbose,S,T,V,Hc,ERI_AO,dipole_int_AO,X,Eelec,        & 
-               MOCoef,pMAT,panomMAT,Fock,Delta,sigma,chem_pot,U_QP,eQP_state,nfreqs,ntimes,   &
+    call qsRGWBim(dotest,maxSCF_GW,thresh_GW,max_diis_GW,level_shift,nNuc,ZNuc,rNuc,ENuc,eta,shift, &
+               nBas,nOrb,nOrb_twice,nO_,verbose,S,T,V,Hc,ERI_AO,dipole_int_AO,X,Eelec,              & 
+               MOCoef,pMAT,panomMAT,Fock,Delta,sigma,chem_pot,U_QP,eQP_state,nfreqs,ntimes,         &
                wcoord,wweight) 
     call wall_time(end_qsGWB)
 
@@ -270,6 +283,13 @@ subroutine BQuAcK(working_dir,dotest,doHFB,dophRPA,doG0W0,doqsGW,nNuc,nBas,nOrb,
    if(doG0W0) then
     call dfRG0W0Bmat(nBas,nO_,nOrb,nOrb_twice,chem_pot,eta,shift,eQP_state,U_QP,vMAT,nfreqs,ntimes, &
                      wcoord,wweight,sigma,S,T,V,Hc,MOCoef,pMAT,panomMAT,Delta,ERI_AO)
+   endif
+   ! Test linearized-Dyson equation G ~ Go + Go Sigma_c Go -> Pcorr and Panomcorr
+   if(dolinGW .and. dophRPA) then
+    allocate(pMATcorr(nBas,nBas),panomMATcorr(nBas,nBas))
+    call linDyson_GW_RHFB(nBas,nOrb,nOrb_twice,MOCoef,eQP_state,nfreqs,wweight,wcoord,ERI_AO,vMAT,U_QP,&
+                          Enuc,EcGM,sigma,T,V,S,pMAT,panomMAT,pMATcorr,panomMATcorr)
+    deallocate(pMATcorr,panomMATcorr)
    endif
    ! Test EcGM computed from Sigma_c(iw) [ NOTE: This is really bad numerically and never used. ]
    !call EcGM_w_RHFB_Sigma(nOrb,nOrb_twice,1,eQP_state,nfreqs,wweight,wcoord,vMAT,U_QP,EeleSD+Enuc,EcGM)
