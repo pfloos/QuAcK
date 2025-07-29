@@ -152,13 +152,13 @@ subroutine linDyson_GW_RHFB(nBas,nOrb,nOrb_twice,c,eQP_state,nfreqs,wweight,wcoo
   Panomcorr_mo(1:nOrb,1:nOrb) = Rcorr(1:nOrb,nOrb+1:nOrb_twice) &
                               + matmul(matmul(c_inv,Panom),transpose(c_inv))
   Rcorr(1:nOrb           ,1:nOrb           ) =  Rcorr(1:nOrb           ,1:nOrb           ) &
-                                             + 0.5d0*matmul(matmul(transpose(c),P),c)
+                                             + 0.5d0*matmul(matmul(c_inv,P),transpose(c_inv))
   Rcorr(1:nOrb           ,nOrb+1:nOrb_twice) =  Rcorr(1:nOrb           ,nOrb+1:nOrb_twice) &
-                                             + matmul(matmul(transpose(c),Panom),c)
+                                             + matmul(matmul(c_inv,Panom),transpose(c_inv))
   Rcorr(nOrb+1:nOrb_twice,1:nOrb           ) =  Rcorr(nOrb+1:nOrb_twice,1:nOrb           ) &
-                                             + matmul(matmul(transpose(c),Panom),c)
+                                             + matmul(matmul(c_inv,Panom),transpose(c_inv))
   Rcorr(nOrb+1:nOrb_twice,nOrb+1:nOrb_twice) = -Rcorr(nOrb+1:nOrb_twice,nOrb+1:nOrb_twice) &
-                                             - 0.5d0*matmul(matmul(transpose(c),P),c)
+                                             - 0.5d0*matmul(matmul(c_inv,P),transpose(c_inv))
   do iorb=1,nOrb
    Rcorr(iorb+nOrb,iorb+nOrb) = Rcorr(iorb+nOrb,iorb+nOrb) + 1d0
   enddo
