@@ -261,7 +261,8 @@ subroutine OORG0W0(dotest,doACFDT,exchange_kernel,doXBS,dophBSE,dophBSE2,TDA_W,T
     write(*,*) "Trace rdm2: ", trace_matrix(Nsq,rdm2)
     
     call RGW_energy_from_rdm(N,h,ERI_MO,rdm1,rdm2,Emu)
-    write(*,*) "Emu = ", Emu
+    write(*,*) "Erpa = ", Emu
+    write(*,*) "total energy = ", Emu + ERHF + ENuc
     
     !--------------------------!
     ! Compute orbital gradient !
