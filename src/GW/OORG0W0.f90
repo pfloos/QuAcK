@@ -97,8 +97,10 @@ subroutine OORG0W0(dotest,doACFDT,exchange_kernel,doXBS,dophBSE,dophBSE2,TDA_W,T
   integer                       :: r,s,rs,p,q,pq
   integer                       :: N,O,V,Nsq
   double precision,allocatable  :: c(:,:)
+  double precision,allocatable  :: Fp(:,:)
+  double precision,allocatable  :: J(:,:),K(:,:)
   double precision              :: Emu
-  double precision              :: buff
+  integer                       :: ind
 
   double precision,external     :: trace_matrix
 ! Output variables
@@ -149,7 +151,7 @@ subroutine OORG0W0(dotest,doACFDT,exchange_kernel,doXBS,dophBSE,dophBSE2,TDA_W,T
   allocate(Aph(nS,nS),Bph(nS,nS),SigC(nOrb),Z(nOrb),Om(nS),XpY(nS,nS),XmY(nS,nS),rho(nOrb,nOrb,nS), & 
            eGW(nOrb),eGWlin(nOrb),X(nS,nS),X_inv(nS,nS),Y(nS,nS),Xbar(nS,nS),Xbar_inv(nS,nS),lambda(nS,nS),t(nS,nS),&
            rampl(nS,N),lampl(nS,N),rp(N),lp(N),h(N,N),c(nBas,nOrb),&
-           rdm1(N,N),rdm2(N,N,N,N))
+           rdm1(N,N),rdm2(N,N,N,N),J(nBas,nBas),K(nBas,nBas),Fp(nOrb,nOrb))
 
 ! Initialize variables for OO  
   OOi           = 1d0
@@ -170,10 +172,23 @@ subroutine OORG0W0(dotest,doACFDT,exchange_kernel,doXBS,dophBSE,dophBSE2,TDA_W,T
 
   do while (OOConv > 1e-3)
   
-    write(*,*) "Orbital optimiation Iteration: ", OOi
-    
+    write(*,*) "Orbital optimiation Iteration: ", OOi 
+   
     h = matmul(transpose(c),matmul(Hc,c))
     call AOtoMO_ERI_RHF(nBas,nOrb,c,ERI_AO,ERI_MO)
+   
+   ! What are the eHF for RPA ???
+   ! PHF(:,:) = 2d0 * matmul(c(:,1:O), transpose(c(:,1:O)))
+   ! call Hartree_matrix_AO_basis(nBas,PHF,ERI_AO,J)
+   ! call exchange_matrix_AO_basis(nBas,PHF,ERI_AO,K)
+   ! FHF(:,:) = Hc(:,:) + J(:,:) + 0.5d0*K(:,:)
+   ! Fp = matmul(transpose(c),matmul(FHF,c))
+   ! do ind = 1, nOrb
+   !   eHF(ind) = Fp(ind,ind)
+   ! end do
+   ! write(*,*) "Fp"
+   ! call matout(nOrb,nOrb,Fp)
+
 
   !-------------------!
   ! Compute screening !
@@ -353,9 +368,9 @@ subroutine OORG0W0(dotest,doACFDT,exchange_kernel,doXBS,dophBSE,dophBSE2,TDA_W,T
     ! Compute all quantities new for rotated basis
 
 
- !   if (OOi==3) then
- !     OOConv = 0d0 ! remove only for debugging
- !   end if
+    if (OOi==3) then
+      OOConv = 0d0 ! remove only for debugging
+    end if
 
     OOi = OOi + 1 
   end do
