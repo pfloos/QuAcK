@@ -1,5 +1,5 @@
 subroutine linDyson_GW_RHFB(nBas,nOrb,nOrb_twice,c,eQP_state,nfreqs,wweight,wcoord,ERI,vMAT,U_QP,&
-                            Enuc,EcGM,sigma,T,V,P,Panom,Pcorr,Panomcorr)
+                            Enuc,EcGM,sigma,T,V,S,P,Panom,Pcorr,Panomcorr)
 
 ! Use the restricted Sigma_c(E) to compute the linearized approx. to the Dyson eq
 
@@ -19,6 +19,7 @@ subroutine linDyson_GW_RHFB(nBas,nOrb,nOrb_twice,c,eQP_state,nfreqs,wweight,wcoo
   double precision,intent(in)   :: wcoord(nfreqs)
   double precision,intent(in)   :: T(nBas,nBas)
   double precision,intent(in)   :: V(nBas,nBas)
+  double precision,intent(in)   :: S(nBas,nBas)
   double precision,intent(in)   :: c(nBas,nOrb)
   double precision,intent(in)   :: P(nBas,nBas)
   double precision,intent(in)   :: Panom(nBas,nBas)
@@ -48,6 +49,7 @@ subroutine linDyson_GW_RHFB(nBas,nOrb,nOrb_twice,c,eQP_state,nfreqs,wweight,wcoo
   double precision,allocatable  :: J(:,:)
   double precision,allocatable  :: K(:,:)
   double precision,allocatable  :: Delta(:,:)
+  double precision,allocatable  :: c_inv(:,:)
   double precision,allocatable  :: Pcorr_mo(:,:)
   double precision,allocatable  :: Panomcorr_mo(:,:)
 
@@ -142,9 +144,13 @@ subroutine linDyson_GW_RHFB(nBas,nOrb,nOrb_twice,c,eQP_state,nfreqs,wweight,wcoo
   allocate(Delta(nBas,nBas))
   allocate(Occ(nOrb))
   allocate(Occ_R(nOrb_twice))
+  allocate(c_inv(nOrb,nBas))
 
-  Pcorr_mo(1:nOrb,1:nOrb) = 2d0*Rcorr(1:nOrb,1:nOrb) + matmul(matmul(transpose(c),P),c) 
-  Panomcorr_mo(1:nOrb,1:nOrb) = Rcorr(1:nOrb,nOrb+1:nOrb_twice) + matmul(matmul(transpose(c),Panom),c)
+  c_inv(:,:) = matmul(transpose(c),S)
+  Pcorr_mo(1:nOrb,1:nOrb)     = 2d0*Rcorr(1:nOrb,1:nOrb)        &
+                              + matmul(matmul(c_inv,P),transpose(c_inv)) 
+  Panomcorr_mo(1:nOrb,1:nOrb) = Rcorr(1:nOrb,nOrb+1:nOrb_twice) &
+                              + matmul(matmul(c_inv,Panom),transpose(c_inv))
   Rcorr(1:nOrb           ,1:nOrb           ) =  Rcorr(1:nOrb           ,1:nOrb           ) &
                                              + 0.5d0*matmul(matmul(transpose(c),P),c)
   Rcorr(1:nOrb           ,nOrb+1:nOrb_twice) =  Rcorr(1:nOrb           ,nOrb+1:nOrb_twice) &
@@ -239,7 +245,7 @@ subroutine linDyson_GW_RHFB(nBas,nOrb,nOrb_twice,c,eQP_state,nfreqs,wweight,wcoo
   deallocate(Sigma_c_eh)
   deallocate(Sigma_c_ee)
   deallocate(Mat1,Mat2)
-  deallocate(J,K,Delta,Occ,Occ_R)
+  deallocate(J,K,Delta,Occ,Occ_R,c_inv)
   deallocate(Rcorr,Sigma_c_QP,Tmp_QP,Tmp_mo,Pcorr_mo,Panomcorr_mo,wweight2,wcoord2,wcoord2_cpx)
 
 end subroutine

@@ -1,5 +1,5 @@
 subroutine linDyson_GW_RHF(nBas,nOrb,nO,c,eHF,nfreqs,wweight,wcoord,ERI,vMAT,&
-                         Enuc,EcGM,T,V,P,Pcorr)
+                         Enuc,EcGM,T,V,S,P,Pcorr)
 
 
 ! Use the restricted Sigma_c(E) to compute the linnearized approximation to G
@@ -21,6 +21,7 @@ subroutine linDyson_GW_RHF(nBas,nOrb,nO,c,eHF,nfreqs,wweight,wcoord,ERI,vMAT,&
   double precision,intent(in)   :: wcoord(nfreqs)
   double precision,intent(in)   :: T(nBas,nBas)
   double precision,intent(in)   :: V(nBas,nBas)
+  double precision,intent(in)   :: S(nBas,nBas)
   double precision,intent(in)   :: P(nBas,nBas)
   double precision,intent(in)   :: c(nBas,nOrb)
   double precision,intent(in)   :: ERI(nBas,nBas,nBas,nBas)
@@ -39,6 +40,7 @@ subroutine linDyson_GW_RHF(nBas,nOrb,nO,c,eHF,nfreqs,wweight,wcoord,ERI,vMAT,&
   double precision              :: alpha,beta
   double precision              :: ET,EV,EJ,EK,ElinG,trace_occ
   double precision,external     :: trace_matrix
+  double precision,allocatable  :: c_inv(:,:)
   double precision,allocatable  :: J(:,:)
   double precision,allocatable  :: K(:,:)
   double precision,allocatable  :: Occ(:)
@@ -104,8 +106,10 @@ subroutine linDyson_GW_RHF(nBas,nOrb,nO,c,eHF,nfreqs,wweight,wcoord,ERI,vMAT,&
   allocate(J(nBas,nBas))
   allocate(K(nBas,nBas))
   allocate(Occ(nOrb))
+  allocate(c_inv(nOrb,nBas))
 
-  Pcorr_mo(:,:) = Pcorr_mo(:,:) + matmul(matmul(transpose(c),P),c) 
+  c_inv(:,:) = matmul(transpose(c),S)
+  Pcorr_mo(:,:) = Pcorr_mo(:,:) + matmul(matmul(c_inv,P),transpose(c_inv)) 
   call diagonalize_matrix(nOrb,Pcorr_mo,Occ)
   call Hartree_matrix_AO_basis(nBas,Pcorr,ERI,J)
   call exchange_matrix_AO_basis(nBas,Pcorr,ERI,K)
@@ -165,7 +169,7 @@ subroutine linDyson_GW_RHF(nBas,nOrb,nO,c,eHF,nfreqs,wweight,wcoord,ERI,vMAT,&
 
   ! Deallocate arrays
 
-  deallocate(J,K,Occ)
+  deallocate(J,K,Occ,c_inv)
   deallocate(Sigma_c,Tmp_mo,Pcorr_mo,wweight2,wcoord2,wcoord2_cpx)
 
 end subroutine
