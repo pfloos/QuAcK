@@ -2,7 +2,7 @@ subroutine RQuAcK(working_dir,use_gpu,dotest,doRHF,doROHF,docRHF,               
                   dostab,dosearch,doMP2,doMP3,doCCD,dopCCD,doDCD,doCCSD,doCCSDT,                                         &
                   dodrCCD,dorCCD,docrCCD,dolCCD,doCIS,doCIS_D,doCID,doCISD,doFCI,dophRPA,dophRPAx,docrRPA,doppRPA,       & 
                   doG0F2,doevGF2,doqsGF2,doufG0F02,doG0F3,doevGF3,doG0W0,doevGW,doqsGW,doufG0W0,doufGW,                  &
-                  doG0T0pp,doevGTpp,doqsGTpp,doufG0T0pp,doG0T0eh,doevGTeh,doqsGTeh,doParquet,                            & 
+                  doG0T0pp,doevGTpp,doqsGTpp,doufG0T0pp,doG0T0eh,doevGTeh,doqsGTeh,doevParquet,doqsParquet,              & 
                   docG0W0,docG0F2,                                                                                       & 
                   doCAP,                                                                                                 & 
                   nNuc,nBas,nOrb,nC,nO,nV,nR,ENuc,ZNuc,rNuc,                                                             &
@@ -38,7 +38,7 @@ subroutine RQuAcK(working_dir,use_gpu,dotest,doRHF,doROHF,docRHF,               
   logical,intent(in)            :: doG0T0eh,doevGTeh,doqsGTeh
   logical,intent(in)            :: docG0W0,docG0F2
   logical,intent(in)            :: doCAP
-  logical,intent(in)            :: doParquet
+  logical,intent(in)            :: doevParquet,doqsParquet
 
   integer,intent(in)            :: nNuc,nBas,nOrb
   integer,intent(in)            :: nC
@@ -514,7 +514,7 @@ doGF = doG0F2 .or. doevGF2 .or. doqsGF2 .or. doufG0F02 .or. doG0F3 .or. doevGF3 
 !     Parquet module     !
 !------------------------!
 
-  if(doParquet) then
+  if(doevParquet) then
     call wall_time(start_Parquet)
     call RParquet(TDAeh,TDApp,max_diis_1b,max_diis_2b,lin_parquet,reg_1b,reg_2b,ENuc,max_it_1b,conv_1b,max_it_2b,conv_2b, & 
                   nOrb,nC,nO,nV,nR,nS,ERHF,eHF,ERI_MO)
@@ -526,6 +526,20 @@ doGF = doG0F2 .or. doevGF2 .or. doqsGF2 .or. doufG0F02 .or. doG0F3 .or. doevGF3 
 
   end if
 
+  if(doqsParquet) then
+    call wall_time(start_Parquet)
+!   call RParquet(max_it_macro,conv_one_body,max_it_micro,conv_two_body,   &
+!        nOrb,nC,nO,nV,nR,nS, &
+!        eHF,ERI_MO)            
+    write(*,*) 'Restricted version of qs parquet not yet implemented. Sorry.'
+    call wall_time(end_Parquet)
+  
+    t_Parquet = end_Parquet - start_Parquet
+    write(*,'(A65,1X,F9.3,A8)') 'Total wall time for Parquet module = ', t_Parquet, ' seconds'
+    write(*,*)
+
+  end if
+  
 ! Memory deallocation
 
   if (allocated(eHF)) deallocate(eHF)

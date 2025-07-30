@@ -1,6 +1,6 @@
 subroutine GQuAcK(working_dir,dotest,doGHF,dostab,dosearch,doMP2,doMP3,doCCD,dopCCD,doDCD,doCCSD,doCCSDT,    &
                   dodrCCD,dorCCD,docrCCD,dolCCD,dophRPA,dophRPAx,docrRPA,doppRPA,                            &
-                  doG0W0,doevGW,doqsGW,doG0F2,doevGF2,doqsGF2,doG0T0pp,doevGTpp,doqsGTpp,doG0T0eh,doParquet, &
+                  doG0W0,doevGW,doqsGW,doG0F2,doevGF2,doqsGF2,doG0T0pp,doevGTpp,doqsGTpp,doG0T0eh,doevParquet,doqsParquet, &
                   nNuc,nBas,nC,nO,nV,nR,ENuc,ZNuc,rNuc,S,T,V,Hc,X,dipole_int_AO,                             &
                   maxSCF_HF,max_diis_HF,thresh_HF,level_shift,guess_type,mix,reg_MP,                         &
                   maxSCF_CC,max_diis_CC,thresh_CC,                                                           &
@@ -29,7 +29,7 @@ subroutine GQuAcK(working_dir,dotest,doGHF,dostab,dosearch,doMP2,doMP3,doCCD,dop
   logical,intent(in)            :: doG0W0,doevGW,doqsGW
   logical,intent(in)            :: doG0T0pp,doevGTpp,doqsGTpp
   logical,intent(in)            :: doG0T0eh
-  logical,intent(in)            :: doParquet
+  logical,intent(in)            :: doevParquet,doqsParquet
 
   integer,intent(in)            :: nNuc,nBas
   integer,intent(in)            :: nC
@@ -352,7 +352,7 @@ subroutine GQuAcK(working_dir,dotest,doGHF,dostab,dosearch,doMP2,doMP3,doCCD,dop
 !     Parquet module     !
 !------------------------!
 
-  if(doParquet) then
+  if(doevParquet) then
     call wall_time(start_Parquet)
     call GParquet(TDAeh,TDApp,max_diis_1b,max_diis_2b,lin_parquet,reg_1b,reg_2b,ENuc,max_it_1b,conv_1b,max_it_2b,conv_2b, & 
                   nBas2,nC,nO,nV,nR,nS,EGHF,eHF,ERI_MO)
@@ -360,6 +360,20 @@ subroutine GQuAcK(working_dir,dotest,doGHF,dostab,dosearch,doMP2,doMP3,doCCD,dop
   
     t_Parquet = end_Parquet - start_Parquet
     write(*,'(A65,1X,F9.3,A8)') 'Total wall time for Parquet module = ',t_Parquet,' seconds'
+    write(*,*)
+
+ end if
+
+ if(doqsParquet) then
+    call wall_time(start_Parquet)
+!   call RParquet(max_it_macro,conv_one_body,max_it_micro,conv_two_body,   &
+!        nOrb,nC,nO,nV,nR,nS, &
+!        eHF,ERI_MO)            
+    write(*,*) 'GHF version of qs parquet not yet implemented. Sorry.'
+    call wall_time(end_Parquet)
+  
+    t_Parquet = end_Parquet - start_Parquet
+    write(*,'(A65,1X,F9.3,A8)') 'Total wall time for Parquet module = ', t_Parquet, ' seconds'
     write(*,*)
 
   end if

@@ -16,7 +16,7 @@ program QuAcK
   logical                       :: docG0W0,docG0F2,dolinGW
   logical                       :: doG0T0pp,doevGTpp,doqsGTpp,doufG0T0pp,doG0T0eh,doevGTeh,doqsGTeh
   logical                       :: doCAP
-  logical                       :: doParquet,doOO
+  logical                       :: doevParquet,doqsParquet,doOO
   logical                       :: file_exists
 
   integer                       :: iorb,jorb,korb,lorb
@@ -148,7 +148,7 @@ program QuAcK
                     dolinGW,                               &
                     doG0T0pp,doevGTpp,doqsGTpp,doufG0T0pp, &
                     doG0T0eh,doevGTeh,doqsGTeh,            &
-                    doParquet,                             &
+                    doevParquet,doqsParquet,               &
                     doRtest,doUtest,doGtest)
 ! Determine complex function calls  
 
@@ -348,7 +348,7 @@ program QuAcK
       call RQuAcK(working_dir,use_gpu,doRtest,doRHF,doROHF,docRHF,dostab,dosearch,doMP2,doMP3,doCCD,dopCCD,doDCD,doCCSD,doCCSDT, &
                   dodrCCD,dorCCD,docrCCD,dolCCD,doCIS,doCIS_D,doCID,doCISD,doFCI,dophRPA,dophRPAx,docrRPA,doppRPA,        &
                   doG0F2,doevGF2,doqsGF2,doufG0F02,doG0F3,doevGF3,doG0W0,doevGW,doqsGW,doufG0W0,doufGW,                   &
-                  doG0T0pp,doevGTpp,doqsGTpp,doufG0T0pp,doG0T0eh,doevGTeh,doqsGTeh,doParquet,                             &
+                  doG0T0pp,doevGTpp,doqsGTpp,doufG0T0pp,doG0T0eh,doevGTeh,doqsGTeh,doevParquet,doqsParquet,               &
                   docG0W0,docG0F2,                                                                                        &
                   doCAP,                                                                                                  &
                   nNuc,nBas,nOrb,nC,nO,nV,nR,ENuc,ZNuc,rNuc,                                                              &
@@ -369,7 +369,7 @@ program QuAcK
     call UQuAcK(working_dir,doUtest,doUHF,dostab,dosearch,doMP2,doMP3,doCCD,dopCCD,doDCD,doCCSD,doCCSDT,         &
                 dodrCCD,dorCCD,docrCCD,dolCCD,doCIS,doCIS_D,doCID,doCISD,doFCI,dophRPA,dophRPAx,docrRPA,doppRPA, &
                 doG0F2,doevGF2,doqsGF2,doufG0F02,doG0F3,doevGF3,doG0W0,doevGW,doqsGW,doufG0W0,doufGW,            &
-                doG0T0pp,doevGTpp,doqsGTpp,doufG0T0pp,doG0T0eh,doevGTeh,doqsGTeh,doParquet,                      & 
+                doG0T0pp,doevGTpp,doqsGTpp,doufG0T0pp,doG0T0eh,doevGTeh,doqsGTeh,doevParquet,doqsParquet,        & 
                 nNuc,nBas,nC,nO,nV,nR,ENuc,ZNuc,rNuc,                                                            &
                 S,T,V,Hc,X,dipole_int_AO,maxSCF_HF,max_diis_HF,thresh_HF,level_shift,                            &
                 guess_type,mix,reg_MP,maxSCF_CC,max_diis_CC,thresh_CC,spin_conserved,spin_flip,TDA,              &
@@ -383,7 +383,7 @@ program QuAcK
   if(doGQuAcK) & 
     call GQuAcK(working_dir,doGtest,doGHF,dostab,dosearch,doMP2,doMP3,doCCD,dopCCD,doDCD,doCCSD,doCCSDT,   &
                 dodrCCD,dorCCD,docrCCD,dolCCD,dophRPA,dophRPAx,docrRPA,doppRPA,                            &
-                doG0W0,doevGW,doqsGW,doG0F2,doevGF2,doqsGF2,doG0T0pp,doevGTpp,doqsGTpp,doG0T0eh,doParquet, &
+                doG0W0,doevGW,doqsGW,doG0F2,doevGF2,doqsGF2,doG0T0pp,doevGTpp,doqsGTpp,doG0T0eh,doevParquet,doqsParquet, &
                 nNuc,nBas,sum(nC),sum(nO),sum(nV),sum(nR),ENuc,ZNuc,rNuc,S,T,V,Hc,X,dipole_int_AO,         &
                 maxSCF_HF,max_diis_HF,thresh_HF,level_shift,guess_type,mix,reg_MP,                         &
                 maxSCF_CC,max_diis_CC,thresh_CC,TDA,maxSCF_GF,max_diis_GF,thresh_GF,lin_GF,reg_GF,eta_GF,  &
