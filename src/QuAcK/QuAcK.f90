@@ -150,6 +150,7 @@ program QuAcK
                     doG0T0eh,doevGTeh,doqsGTeh,            &
                     doevParquet,doqsParquet,               &
                     doRtest,doUtest,doGtest)
+  
 ! Determine complex function calls  
 
   doCAP = docRHF
