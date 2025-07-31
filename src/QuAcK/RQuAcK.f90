@@ -516,7 +516,7 @@ doGF = doG0F2 .or. doevGF2 .or. doqsGF2 .or. doufG0F02 .or. doG0F3 .or. doevGF3 
 
   if(doevParquet) then
     call wall_time(start_Parquet)
-    call RParquet(TDAeh,TDApp,max_diis_1b,max_diis_2b,lin_parquet,reg_1b,reg_2b,ENuc,max_it_1b,conv_1b,max_it_2b,conv_2b, & 
+    call RevParquet(TDAeh,TDApp,max_diis_1b,max_diis_2b,lin_parquet,reg_1b,reg_2b,ENuc,max_it_1b,conv_1b,max_it_2b,conv_2b, & 
                   nOrb,nC,nO,nV,nR,nS,ERHF,eHF,ERI_MO)
     call wall_time(end_Parquet)
   

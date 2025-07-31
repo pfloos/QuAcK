@@ -1,4 +1,4 @@
-subroutine GParquet(TDAeh,TDApp,max_diis_1b,max_diis_2b,linearize,eta_1b,eta_2b,ENuc,max_it_1b,conv_1b,max_it_2b,conv_2b, & 
+subroutine GevParquet(TDAeh,TDApp,max_diis_1b,max_diis_2b,linearize,eta_1b,eta_2b,ENuc,max_it_1b,conv_1b,max_it_2b,conv_2b, & 
                     nOrb,nC,nO,nV,nR,nS,EGHF,eHF,ERI)
 
 ! Parquet approximation based on spin orbitals
