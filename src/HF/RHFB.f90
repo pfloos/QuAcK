@@ -56,7 +56,7 @@ subroutine RHFB(dotest,doqsGW,maxSCF,thresh,max_diis,level_shift,nNuc,ZNuc,rNuc,
   double precision              :: rcond
   double precision              :: trace_1rdm
   double precision              :: thrs_N
-  double precision              :: norm_anom
+  double precision              :: N_anom
   double precision,external     :: trace_matrix
   double precision,allocatable  :: eigVAL(:)
   double precision,allocatable  :: Occ(:)
@@ -401,7 +401,8 @@ subroutine RHFB(dotest,doqsGW,maxSCF,thresh,max_diis,level_shift,nNuc,ZNuc,rNuc,
   call dipole_moment(nBas,P,nNuc,ZNuc,rNuc,dipole_int,dipole)
   eHFB_state(:) = eigVAL(:)
   Delta_HL=eHFB_state(nOrb+1)-eHFB_state(nOrb)
-  norm_anom = trace_matrix(nOrb,matmul(transpose(R(1:nOrb,nOrb+1:nOrb_twice)),R(1:nOrb,nOrb+1:nOrb_twice)))
+  N_anom = trace_matrix(nOrb,matmul(transpose(2d0*R(1:nOrb,nOrb+1:nOrb_twice)), &
+              2d0*R(1:nOrb,nOrb+1:nOrb_twice)))
   deallocate(eigVEC,eigVAL)
   allocate(eigVEC(nOrb,nOrb),eigVAL(nOrb))
   eigVEC(:,:) = 0d0
@@ -410,7 +411,7 @@ subroutine RHFB(dotest,doqsGW,maxSCF,thresh,max_diis,level_shift,nNuc,ZNuc,rNuc,
   Occ(1:nOrb)   = eigVAL(1:nOrb)
   c = matmul(X,eigVEC)
   call write_restart_HFB(nBas,nOrb,Occ,c,chem_pot) ! Warning: orders Occ and their c in descending order w.r.t. occupation numbers.
-  call print_HFB(nBas,nOrb,nOrb_twice,nO,norm_anom,Occ,eHFB_state,ENuc,ET,EV,EJ,EK,EL,EHFB,chem_pot, &
+  call print_HFB(nBas,nOrb,nOrb_twice,nO,N_anom,Occ,eHFB_state,ENuc,ET,EV,EJ,EK,EL,EHFB,chem_pot, &
                  dipole,Delta_HL)
   if(doqsGW) c(:,:)=X(:,:) ! Recover the Lowdin basis for qsGW
 

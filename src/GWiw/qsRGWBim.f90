@@ -62,7 +62,7 @@ subroutine qsRGWBim(dotest,maxSCF,thresh,max_diis,level_shift,nNuc,ZNuc,rNuc,ENu
   double precision              :: pivot_Occ
   double precision              :: trace_1rdm
   double precision              :: thrs_N
-  double precision              :: norm_anom
+  double precision              :: N_anom
   double precision              :: EcRPA,EcGM
   double precision,external     :: trace_matrix
   double precision,allocatable  :: eigVAL(:)
@@ -547,10 +547,11 @@ subroutine qsRGWBim(dotest,maxSCF,thresh,max_diis,level_shift,nNuc,ZNuc,rNuc,ENu
   call diagonalize_matrix(nOrb,U,Occ)
   c_no=matmul(c,U)
   Delta_HL=eqsGWB_state(nOrb+1)-eqsGWB_state(nOrb)
-  norm_anom = trace_matrix(nOrb,matmul(transpose(R(1:nOrb,nOrb+1:nOrb_twice)),R(1:nOrb,nOrb+1:nOrb_twice)))
+  N_anom = trace_matrix(nOrb,matmul(transpose(2d0*R(1:nOrb,nOrb+1:nOrb_twice)), &
+              2d0*R(1:nOrb,nOrb+1:nOrb_twice)))
   call dipole_moment(nBas,P,nNuc,ZNuc,rNuc,dipole_int,dipole)
   call write_restart_qsGWB(nBas,nOrb,Occ,c_no,chem_pot) ! Warning: orders Occ and their c in descending order w.r.t. occupation numbers.
-  call print_qsGWB(nBas,nOrb,nOrb_twice,nO,norm_anom,Occ,eqsGWB_state,ENuc,ET,EV,EJ,EK,EL,EqsGWB,chem_pot,&
+  call print_qsGWB(nBas,nOrb,nOrb_twice,nO,N_anom,Occ,eqsGWB_state,ENuc,ET,EV,EJ,EK,EL,EqsGWB,chem_pot,&
                    dipole,Delta_HL)
   deallocate(U,c_no)
 
