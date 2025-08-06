@@ -4,13 +4,13 @@ program QuAcK
   include 'parameters.h'
 
   logical                       :: doRQuAcK,doUQuAcK,doGQuAcK,doBQuAcK
-  logical                       :: doRHF,doUHF,doGHF,doROHF,doHFB,docRHF
+  logical                       :: doRHF,doUHF,doGHF,doROHF,doRHFB,docRHF
   logical                       :: dostab,dosearch
   logical                       :: doMP2,doMP3
   logical                       :: doCCD,dopCCD,doDCD,doCCSD,doCCSDT
   logical                       :: dodrCCD,dorCCD,docrCCD,dolCCD
   logical                       :: doCIS,doCIS_D,doCID,doCISD,doFCI
-  logical                       :: dophRPA,dophRPAx,docrRPA,doppRPA
+  logical                       :: dophRPA,dophRPAx,docrRPA,doppRPA,doBRPA
   logical                       :: doG0F2,doevGF2,doqsGF2,doufG0F02,doG0F3,doevGF3
   logical                       :: doG0W0,doevGW,doqsGW,doufG0W0,doufGW
   logical                       :: docG0W0,docG0F2,dolinGW
@@ -135,20 +135,20 @@ program QuAcK
 ! Method selection !
 !------------------!
 
-  call read_methods(working_dir,                           &
-                    doRHF,doUHF,doGHF,doROHF,doHFB,docRHF, &
-                    doMP2,doMP3,                           &
-                    doCCD,dopCCD,doDCD,doCCSD,doCCSDT,     &
-                    dodrCCD,dorCCD,docrCCD,dolCCD,         &
-                    doCIS,doCIS_D,doCID,doCISD,doFCI,      & 
-                    dophRPA,dophRPAx,docrRPA,doppRPA,      &
-                    doG0F2,doevGF2,doqsGF2,doufG0F02,      & 
-                    doG0F3,doevGF3,                        &
-                    doG0W0,doevGW,doqsGW,doufG0W0,doufGW,  &
-                    dolinGW,                               &
-                    doG0T0pp,doevGTpp,doqsGTpp,doufG0T0pp, &
-                    doG0T0eh,doevGTeh,doqsGTeh,            &
-                    doParquet,                             &
+  call read_methods(working_dir,                             &
+                    doRHF,doUHF,doGHF,doROHF,doRHFB,docRHF,  &
+                    doMP2,doMP3,                             &
+                    doCCD,dopCCD,doDCD,doCCSD,doCCSDT,       &
+                    dodrCCD,dorCCD,docrCCD,dolCCD,           &
+                    doCIS,doCIS_D,doCID,doCISD,doFCI,        & 
+                    dophRPA,dophRPAx,docrRPA,doppRPA,doBRPA, &
+                    doG0F2,doevGF2,doqsGF2,doufG0F02,        & 
+                    doG0F3,doevGF3,                          &
+                    doG0W0,doevGW,doqsGW,doufG0W0,doufGW,    &
+                    dolinGW,                                 &
+                    doG0T0pp,doevGTpp,doqsGTpp,doufG0T0pp,   &
+                    doG0T0eh,doevGTeh,doqsGTeh,              &
+                    doParquet,                               &
                     doRtest,doUtest,doGtest)
 ! Determine complex function calls  
 
@@ -293,8 +293,8 @@ program QuAcK
      endif
     endif
    enddo
+   close(314)
   endif
-  close(314)
 
   call wall_time(end_int)
 
@@ -317,7 +317,7 @@ program QuAcK
   if(doGHF) doGQuAcK = .true.
 
   doBQuAcK = .false.
-  if(doHFB) doBQuAcK = .true.
+  if(doRHFB .or. doBRPA) doBQuAcK = .true.
 
 !-----------------!
 ! Initialize Test !
@@ -392,13 +392,13 @@ program QuAcK
                 dophBSE,dophBSE2,doppBSE,dBSE,dTDA,doACFDT,exchange_kernel,doXBS,                          &
                 TDAeh,TDApp,max_diis_1b,max_diis_2b,max_it_1b,conv_1b,max_it_2b,conv_2b,lin_parquet,reg_1b,reg_2b)
 
-!--------------------------!
+!-------------------------!
 ! Bogoliubov QuAcK branch !
-!--------------------------!
+!-------------------------!
   if(doBQuAcK) & 
-    call BQuAcK(working_dir,dotest,doHFB,dophRPA,doG0W0,doqsGW,nNuc,nBas,nOrb,nO,ENuc,eta_GW,shift_GW,     &
-                ZNuc,rNuc,S,T,V,Hc,X,dipole_int_AO,maxSCF_HF,max_diis_HF,thresh_HF,level_shift,guess_type, &
-                maxSCF_GW,max_diis_GW,thresh_GW,dolinGW,                                                   &
+    call BQuAcK(working_dir,dotest,doRHFB,doBRPA,dophRPA,doG0W0,doqsGW,nNuc,nBas,nOrb,nO,ENuc,eta_GW,shift_GW, &
+                ZNuc,rNuc,S,T,V,Hc,X,dipole_int_AO,maxSCF_HF,max_diis_HF,thresh_HF,level_shift,guess_type,     &
+                maxSCF_GW,max_diis_GW,thresh_GW,dolinGW,                                                       &
                 temperature,sigma,chem_pot_hf,restart_hfb,nfreqs,ntimes,wcoord,wweight)
 
 !-----------!

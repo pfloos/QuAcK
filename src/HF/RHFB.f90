@@ -62,7 +62,6 @@ subroutine RHFB(dotest,doqsGW,maxSCF,thresh,max_diis,level_shift,nNuc,ZNuc,rNuc,
   double precision,allocatable  :: Occ(:)
   double precision,allocatable  :: err_diis(:,:)
   double precision,allocatable  :: H_HFB_diis(:,:)
-  double precision,allocatable  :: cHF(:,:)
   double precision,allocatable  :: c_tmp(:,:)
   double precision,allocatable  :: J(:,:)
   double precision,allocatable  :: K(:,:)
@@ -110,8 +109,6 @@ subroutine RHFB(dotest,doqsGW,maxSCF,thresh,max_diis,level_shift,nNuc,ZNuc,rNuc,
   allocate(J(nBas,nBas))
   allocate(K(nBas,nBas))
 
-  allocate(cHF(nBas,nOrb))
-
   allocate(eigVEC(nOrb_twice,nOrb_twice))
   allocate(H_HFB(nOrb_twice,nOrb_twice))
   allocate(R(nOrb_twice,nOrb_twice))
@@ -140,7 +137,6 @@ subroutine RHFB(dotest,doqsGW,maxSCF,thresh,max_diis,level_shift,nNuc,ZNuc,rNuc,
 
   P(:,:)         = matmul(c(:,1:nO), transpose(c(:,1:nO)))
   Panom(:,:)     = 0d0
-  cHF(:,:)       = c(:,:)
 
   ! Use Fermi-Dirac occupancies to compute P, Panom, and chem_pot
   
@@ -343,7 +339,7 @@ subroutine RHFB(dotest,doqsGW,maxSCF,thresh,max_diis,level_shift,nNuc,ZNuc,rNuc,
     write(*,*)
 
     deallocate(J,K,eigVEC,H_HFB,R,eigVAL,err_diis,H_HFB_diis,Occ)
-    deallocate(err_ao,S_ao,X_ao,R_ao_old,H_HFB_ao,cHF)
+    deallocate(err_ao,S_ao,X_ao,R_ao_old,H_HFB_ao)
 
     stop
 
@@ -487,7 +483,7 @@ subroutine RHFB(dotest,doqsGW,maxSCF,thresh,max_diis,level_shift,nNuc,ZNuc,rNuc,
 ! Memory deallocation
 
   deallocate(J,K,eigVEC,H_HFB,R,eigVAL,err_diis,H_HFB_diis,Occ)
-  deallocate(err_ao,S_ao,X_ao,R_ao_old,H_HFB_ao,cHF)
+  deallocate(err_ao,S_ao,X_ao,R_ao_old,H_HFB_ao)
   deallocate(c_ao)
 
 end subroutine 
