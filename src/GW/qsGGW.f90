@@ -102,7 +102,7 @@ subroutine qsGGW(dotest,maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,dop
   double precision,allocatable  :: X(:,:)
   double precision,allocatable  :: Fp(:,:)
   double precision,allocatable  :: SigC(:,:)
-  double precision,allocatable  :: SigCp(:,:)
+  double precision,allocatable  :: SigC_AO(:,:)
   double precision,allocatable  :: Z(:)
   double precision,allocatable  :: err(:,:)
 
@@ -151,7 +151,7 @@ subroutine qsGGW(dotest,maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,dop
            F(nBas2,nBas2),Fp(nBas2,nBas2),C(nBas2,nBas2),Cp(nBas2,nBas2), &
            H(nBas2,nBas2),S(nBas2,nBas2),X(nBas2,nBas2),err(nBas2,nBas2), &
            err_diis(nBas2Sq,max_diis),F_diis(nBas2Sq,max_diis),           &
-           eGW(nBas2),SigC(nBas2,nBas2),SigCp(nBas,nBas),Z(nBas2),Aph(nS,nS),Bph(nS,nS),   & 
+           eGW(nBas2),SigC(nBas2,nBas2),SigC_AO(nBas2,nBas2),Z(nBas2),Aph(nS,nS),Bph(nS,nS),   & 
            Om(nS),XpY(nS,nS),XmY(nS,nS),rho(nBas2,nBas2,nS))
 
 ! Initialization
@@ -276,11 +276,13 @@ subroutine qsGGW(dotest,maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,dop
    
     SigC = 0.5d0*(SigC + transpose(SigC))
 
-    call MOtoAO_GHF(nBas2,nBas,S,Ca,Cb,SigC,SigCp)
+    SigC_AO(:,:) = 0d0
+    !call MOtoAO_GHF(nBas2,nBas,S,Ca,Cb,SigC,SigCp)
+    call MOtoAO(nBas2,nBas2,S,C,SigC,SigC_AO)
 
 !   ... and add self-energy 
 
-    F(:,:) = F(:,:) + SigCp(:,:)
+    F(:,:) = F(:,:) + SigC_AO(:,:)
 
 !   Compute commutator and convergence criteria
 
@@ -308,7 +310,8 @@ subroutine qsGGW(dotest,maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,dop
 
     C(:,:) = matmul(X,Cp)
 
-    call AOtoMO_GHF(nBas,nBas2,Ca,Cb,SigCp,SigC)
+    !call AOtoMO_GHF(nBas,nBas2,Ca,Cb,SigCp,SigC)
+    call AOtoMO(nBas2,nBas2,C,SigC_AO,SigC)
 
 !   Form super density matrix
 
