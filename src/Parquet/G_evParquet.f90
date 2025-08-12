@@ -1,4 +1,4 @@
-subroutine GevParquet(TDAeh,TDApp,max_diis_1b,max_diis_2b,linearize,eta_1b,eta_2b,ENuc,max_it_1b,conv_1b,max_it_2b,conv_2b, & 
+subroutine G_evParquet(TDAeh,TDApp,max_diis_1b,max_diis_2b,linearize,eta_1b,eta_2b,ENuc,max_it_1b,conv_1b,max_it_2b,conv_2b, & 
                     nOrb,nC,nO,nV,nR,nS,EGHF,eHF,ERI)
 
 ! Parquet approximation based on spin orbitals
@@ -85,33 +85,16 @@ subroutine GevParquet(TDAeh,TDApp,max_diis_1b,max_diis_2b,linearize,eta_1b,eta_2
   nOO = nO*(nO - 1)/2
   nVV = nV*(nV - 1)/2
 
-  allocate(eQP(nOrb),eOld(nOrb))
-
-  mem = mem + size(eQP) + size(eOld)
-    
-! DIIS parameters
-
-  allocate(err_diis_2b(2*nOrb**4,max_diis_2b),Phi_diis(2*nOrb**4,max_diis_2b))
-  allocate(err(2*nOrb**4),Phi(2*nOrb**4))
-
-  mem = mem + size(err_diis_2b) + size(Phi_diis) + size(err) + size(Phi)
-  write(*,'(1X,A50,4X,F6.3,A3)') 'Memory usage in GParquet =',mem*dp_in_GB,' GB'
-
-  rcond_2b  = 1d0
-  n_diis_2b = 0
-  err_diis_2b(:,:) = 0d0
-  Phi_diis(:,:)    = 0d0
-
 ! Start
  
   write(*,*)
   write(*,*)'***********************************'
-  write(*,*)'* Generalized Parquet Calculation *'
+  write(*,*)'* Generalized evParquet Calculation *'
   write(*,*)'***********************************'
   write(*,*)
 
-  ! Print parameters
-
+! Print parameters
+  
   write(*,*)'---------------------------------------------------------------'
   write(*,*)' Parquet parameters for one-body and two-body self-consistency '
   write(*,*)'---------------------------------------------------------------'
@@ -129,20 +112,22 @@ subroutine GevParquet(TDAeh,TDApp,max_diis_1b,max_diis_2b,linearize,eta_1b,eta_2
   write(*,'(1X,A50,1X,I5)')    'Maximum length of DIIS expansion:',max_diis_2b
   write(*,*)'---------------------------------------------------------------'
   write(*,*)
-  
-  ! Memory allocation 
+    
+! DIIS for two-body part
 
-  allocate(old_eh_Om(nS),old_ee_Om(nVV),old_hh_Om(nOO))
-  allocate(eh_rho(nOrb,nOrb,nS),ee_rho(nOrb,nOrb,nVV),hh_rho(nOrb,nOrb,nOO))
-  allocate(old_eh_Phi(nOrb,nOrb,nOrb,nOrb),old_pp_Phi(nOrb,nOrb,nOrb,nOrb))
+  allocate(err_diis_2b(2*nOrb**4,max_diis_2b),Phi_diis(2*nOrb**4,max_diis_2b))
+  allocate(err(2*nOrb**4),Phi(2*nOrb**4))
 
-  mem = mem + size(old_eh_Om) + size(old_ee_Om) + size(old_hh_Om)
-  mem = mem + size(eh_rho) + size(ee_rho) + size(hh_rho)
-  mem = mem + size(old_eh_Phi) + size(old_pp_Phi)
+  mem = mem + size(err_diis_2b) + size(Phi_diis) + size(err) + size(Phi)
   write(*,'(1X,A50,4X,F6.3,A3)') 'Memory usage in GParquet =',mem*dp_in_GB,' GB'
 
-! DIIS for one-body part        
+  rcond_2b  = 1d0
+  n_diis_2b = 0
+  err_diis_2b(:,:) = 0d0
+  Phi_diis(:,:)    = 0d0
 
+! DIIS for one-body part        
+  
   allocate(err_diis_1b(nOrb,max_diis_1b),eQP_diis(nOrb,max_diis_1b))
 
   mem = mem + size(err_diis_1b) + size(eQP_diis)
@@ -152,6 +137,21 @@ subroutine GevParquet(TDAeh,TDApp,max_diis_1b,max_diis_2b,linearize,eta_1b,eta_2
   n_diis_1b = 0
   err_diis_1b(:,:) = 0d0
   eQP_diis(:,:)    = 0d0
+  
+! Memory allocation
+  
+  allocate(eQP(nOrb),eOld(nOrb))
+
+  mem = mem + size(eQP) + size(eOld)
+
+  allocate(old_eh_Om(nS),old_ee_Om(nVV),old_hh_Om(nOO))
+  allocate(eh_rho(nOrb,nOrb,nS),ee_rho(nOrb,nOrb,nVV),hh_rho(nOrb,nOrb,nOO))
+  allocate(old_eh_Phi(nOrb,nOrb,nOrb,nOrb),old_pp_Phi(nOrb,nOrb,nOrb,nOrb))
+
+  mem = mem + size(old_eh_Om) + size(old_ee_Om) + size(old_hh_Om)
+  mem = mem + size(eh_rho) + size(ee_rho) + size(hh_rho)
+  mem = mem + size(old_eh_Phi) + size(old_pp_Phi)
+  write(*,'(1X,A50,4X,F6.3,A3)') 'Memory usage in GParquet =',mem*dp_in_GB,' GB'
 
 ! Initialization
 
@@ -539,7 +539,7 @@ subroutine GevParquet(TDAeh,TDApp,max_diis_1b,max_diis_2b,linearize,eta_1b,eta_2
     write(*,*) 
     
     call wall_time(start_t)
-    call G_Parquet_self_energy(eta_1b,nOrb,nC,nO,nV,nR,nS,nOO,nVV,eOld,ERI, &
+    call G_Parquet_self_energy_diag(eta_1b,nOrb,nC,nO,nV,nR,nS,nOO,nVV,eOld,ERI, &
                                eh_rho,old_eh_Om,ee_rho,old_ee_Om,hh_rho,old_hh_Om,EcGM,SigC,Z)
     call wall_time(end_t)
     t = end_t - start_t
@@ -617,8 +617,8 @@ subroutine GevParquet(TDAeh,TDApp,max_diis_1b,max_diis_2b,linearize,eta_1b,eta_2
      
   end if
 
-  call G_Parquet_Galitskii_Migdal(eta_1b,nOrb,nC,nO,nV,nR,nS,nOO,nVV,eOld,ERI, &
-                               eh_rho,old_eh_Om,ee_rho,old_ee_Om,hh_rho,old_hh_Om,EcGM)
+  ! call G_Parquet_Galitskii_Migdal(eta_1b,nOrb,nC,nO,nV,nR,nS,nOO,nVV,eOld,ERI, &
+  !                              eh_rho,old_eh_Om,ee_rho,old_ee_Om,hh_rho,old_hh_Om,EcGM)
     
 
  

@@ -354,7 +354,7 @@ subroutine GQuAcK(working_dir,dotest,doGHF,dostab,dosearch,doMP2,doMP3,doCCD,dop
 
   if(doevParquet) then
     call wall_time(start_Parquet)
-    call GevParquet(TDAeh,TDApp,max_diis_1b,max_diis_2b,lin_parquet,reg_1b,reg_2b,ENuc,max_it_1b,conv_1b,max_it_2b,conv_2b, & 
+    call G_evParquet(TDAeh,TDApp,max_diis_1b,max_diis_2b,lin_parquet,reg_1b,reg_2b,ENuc,max_it_1b,conv_1b,max_it_2b,conv_2b, & 
                   nBas2,nC,nO,nV,nR,nS,EGHF,eHF,ERI_MO)
     call wall_time(end_Parquet)
   
@@ -366,10 +366,8 @@ subroutine GQuAcK(working_dir,dotest,doGHF,dostab,dosearch,doMP2,doMP3,doCCD,dop
 
  if(doqsParquet) then
     call wall_time(start_Parquet)
-!   call RParquet(max_it_macro,conv_one_body,max_it_micro,conv_two_body,   &
-!        nOrb,nC,nO,nV,nR,nS, &
-!        eHF,ERI_MO)            
-    write(*,*) 'GHF version of qs parquet not yet implemented. Sorry.'
+    call G_qsParquet(TDAeh,TDApp,max_diis_1b,max_diis_2b,reg_1b,reg_2b,ENuc,max_it_1b,conv_1b,max_it_2b,conv_2b, & 
+                  nBas,nBas2,nC,nO,nV,nR,nS,EGHF,PHF,cHF,eHF,S,X,T,V,Hc,ERI_AO,ERI_MO)
     call wall_time(end_Parquet)
   
     t_Parquet = end_Parquet - start_Parquet

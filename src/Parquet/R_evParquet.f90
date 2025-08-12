@@ -1,4 +1,4 @@
-subroutine RevParquet(TDAeh,TDApp,max_diis_1b,max_diis_2b,linearize,eta_1b,eta_2b,ENuc,max_it_1b,conv_1b,max_it_2b,conv_2b, & 
+subroutine R_evParquet(TDAeh,TDApp,max_diis_1b,max_diis_2b,linearize,eta_1b,eta_2b,ENuc,max_it_1b,conv_1b,max_it_2b,conv_2b, & 
                     nOrb,nC,nO,nV,nR,nS,ERHF,eHF,ERI)
 
 ! Parquet approximation based on restricted orbitals
@@ -31,7 +31,7 @@ subroutine RevParquet(TDAeh,TDApp,max_diis_1b,max_diis_2b,linearize,eta_1b,eta_2
 
   integer                       :: ispin
   double precision              :: alpha
-  logical                       :: plot_self = .true.
+  logical                       :: plot_self = .false.
 
   integer                       :: n_it_1b,n_it_2b
   double precision              :: err_1b,err_2b
