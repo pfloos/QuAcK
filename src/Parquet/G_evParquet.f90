@@ -8,8 +8,8 @@ subroutine G_evParquet(TDAeh,TDApp,max_diis_1b,max_diis_2b,linearize,eta_1b,eta_
 
 ! Hard-coded parameters
 
-  logical                       :: print_phLR = .false.
-  logical                       :: print_ppLR = .false.
+  logical                       :: print_phLR = .false. ! Print the eh two-body excitations at each two-body iterations
+  logical                       :: print_ppLR = .false. ! Print the pp two-body excitations at each two-body iterations
   
 ! Input variables
 

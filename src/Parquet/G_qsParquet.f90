@@ -8,8 +8,8 @@ subroutine G_qsParquet(TDAeh,TDApp,max_diis_1b,max_diis_2b,eta_1b,eta_2b,ENuc,ma
 
 ! Hard-coded parameters
 
-  logical                       :: print_phLR = .false.
-  logical                       :: print_ppLR = .false.
+  logical                       :: print_phLR = .false. ! Print the eh two-body excitations at each two-body iterations
+  logical                       :: print_ppLR = .false. ! Print the pp two-body excitations at each two-body iterations
   
 ! Input variables
 
@@ -37,7 +37,7 @@ subroutine G_qsParquet(TDAeh,TDApp,max_diis_1b,max_diis_2b,eta_1b,eta_2b,ENuc,ma
 ! Local variables
 
   integer                       :: n_it_1b,n_it_2b
-  double precision,allocatable  :: err_1b
+  double precision              :: err_1b
   double precision              :: err_2b
   double precision              :: err_eh, err_pp
   double precision              :: err_eig_eh,err_eig_pp,err_eig_hh,err_eig_ee
@@ -45,7 +45,7 @@ subroutine G_qsParquet(TDAeh,TDApp,max_diis_1b,max_diis_2b,eta_1b,eta_2b,ENuc,ma
   double precision              :: start_1b,end_1b,t_1b
   double precision              :: start_2b,end_2b,t_2b
 
-  integer                       :: nOO,nVV
+  integer                       :: nOO,nVV,nOrb2_Sq
 
   ! eh BSE
   double precision              :: Ec_eh
@@ -91,7 +91,8 @@ subroutine G_qsParquet(TDAeh,TDApp,max_diis_1b,max_diis_2b,eta_1b,eta_2b,ENuc,ma
   integer                       :: n_diis_1b,n_diis_2b
   double precision              :: rcond_1b,rcond_2b
   double precision,allocatable  :: err_diis_1b(:,:),err_diis_2b(:,:)
-  double precision,allocatable  :: eQP_diis(:,:)
+  double precision,allocatable  :: F_diis(:,:)
+  double precision,allocatable  :: err_F(:,:)
   double precision,allocatable  :: Phi_diis(:,:)
   double precision,allocatable  :: err(:)
   double precision,allocatable  :: Phi(:)
@@ -108,6 +109,7 @@ subroutine G_qsParquet(TDAeh,TDApp,max_diis_1b,max_diis_2b,eta_1b,eta_2b,ENuc,ma
 ! Useful parameters
   nOO = nO*(nO - 1)/2
   nVV = nV*(nV - 1)/2
+  nOrb2_Sq = nOrb2 * nOrb2
 
 ! Start
  
@@ -149,22 +151,17 @@ subroutine G_qsParquet(TDAeh,TDApp,max_diis_1b,max_diis_2b,eta_1b,eta_2b,ENuc,ma
   mem = mem + size(err_diis_2b) + size(Phi_diis) + size(err) + size(Phi)
   write(*,'(1X,A50,4X,F6.3,A3)') 'Memory usage in GParquet =',mem*dp_in_GB,' GB'
 
-  ! rcond_2b  = 1d0
-  ! n_diis_2b = 0
-  ! err_diis_2b(:,:) = 0d0
-  ! Phi_diis(:,:)    = 0d0
-
 ! DIIS for one-body part        
-  ! TODO the DIIS for the one-body part need to be changed from epsilon to F
-  ! allocate(err_diis_1b(nOrb2,max_diis_1b),eQP_diis(nOrb2,max_diis_1b))
 
-  ! mem = mem + size(err_diis_1b) + size(eQP_diis)
-  ! write(*,'(1X,A50,4X,F6.3,A3)') 'Memory usage in GParquet = ',mem*dp_in_GB,' GB'
+  allocate(err_diis_1b(nOrb2_Sq,max_diis_1b),F_diis(nOrb2_Sq,max_diis_1b),err_F(nOrb2,nOrb2))
 
-  ! rcond_1b  = 1d0
-  ! n_diis_1b = 0
-  ! err_diis_1b(:,:) = 0d0
-  ! eQP_diis(:,:)    = 0d0
+  mem = mem + size(err_diis_1b) + size(F_diis) + size(err_F)
+  write(*,'(1X,A50,4X,F6.3,A3)') 'Memory usage in GParquet = ',mem*dp_in_GB,' GB'
+
+  rcond_1b  = 0d0
+  n_diis_1b = 0
+  err_diis_1b(:,:) = 0d0
+  F_diis(:,:)    = 0d0
   
 ! Memory allocation for Parquet quantity
   
@@ -188,7 +185,13 @@ subroutine G_qsParquet(TDAeh,TDApp,max_diis_1b,max_diis_2b,eta_1b,eta_2b,ENuc,ma
            Paa(nOrb,nOrb),Pab(nOrb,nOrb),Pba(nOrb,nOrb),Pbb(nOrb,nOrb),   &
            P(nOrb2,nOrb2),H(nOrb2,nOrb2),S(nOrb2,nOrb2),X(nOrb2,nOrb2),   &
            C(nOrb2,nOrb2),Cp(nOrb2,nOrb2),F(nOrb2,nOrb2),Fp(nOrb2,nOrb2))
-  
+
+  mem = mem + size(Ca)  + size(Cb)  + size(Jaa) + size(Jbb)
+  mem = mem + size(Kaa) + size(Kab) + size(Kba) + size(Kbb)
+  mem = mem + size(Faa) + size(Fab) + size(Fba) + size(Fbb)
+  mem = mem + size(Paa) + size(Pab) + size(Pba) + size(Pbb)
+  mem = mem + size(P)   + size(H)   + size(S)   + size(X)
+  mem = mem + size(C)   + size(Cp)  + size(F)   + size(Fp)
   write(*,'(1X,A50,4X,F6.3,A3)') 'Memory usage in GParquet =',mem*dp_in_GB,' GB'
 
 ! Initialization
@@ -197,24 +200,10 @@ subroutine G_qsParquet(TDAeh,TDApp,max_diis_1b,max_diis_2b,eta_1b,eta_2b,ENuc,ma
   err_1b  = 1d0
 
   EcGM = 0d0
-  Ec_eh = 0d0
+  Ec_eh = 0d0 ! TODO: This should be removed once the GM is coded.
   Ec_pp = 0d0
   
-  eQP(:)  = eHF(:)
-  
-  ! eh_rho(:,:,:) = 0d0
-  ! ee_rho(:,:,:) = 0d0
-  ! hh_rho(:,:,:) = 0d0
-  
-  ! old_eh_Om(:) = 0d0
-  ! old_ee_Om(:) = 0d0
-  ! old_hh_Om(:) = 0d0
-    
-  ! old_eh_Phi(:,:,:,:) = 0d0
-  ! old_pp_Phi(:,:,:,:) = 0d0
-
-! New parameter to initialize  
-  
+  eQP(:)  = eHF(:)  
   P(:,:)        = PHF(:,:)
   C(:,:)        = cHF(:,:)
 
@@ -289,6 +278,9 @@ subroutine G_qsParquet(TDAeh,TDApp,max_diis_1b,max_diis_2b,eta_1b,eta_2b,ENuc,ma
 !   AO to MO transformation of two-electron integrals
 
     allocate(ERI_tmp(nOrb2,nOrb2,nOrb2,nOrb2))
+
+    mem = mem + size(ERI_tmp)
+    write(*,'(1X,A50,4X,F6.3,A3)') 'Memory usage in GParquet =',mem*dp_in_GB,' GB'
     
     Ca(:,:) = C(1:nOrb,1:nOrb2)
     Cb(:,:) = C(nOrb+1:nOrb2,1:nOrb2)
@@ -307,6 +299,8 @@ subroutine G_qsParquet(TDAeh,TDApp,max_diis_1b,max_diis_2b,eta_1b,eta_2b,ENuc,ma
     ERI_MO(:,:,:,:) = ERI_MO(:,:,:,:) + ERI_tmp(:,:,:,:)
 
     deallocate(ERI_tmp)
+    mem = mem - size(ERI_tmp)
+    write(*,'(1X,A50,4X,F6.3,A3)') 'Memory usage in GParquet =',mem*dp_in_GB,' GB'
     
 !   Initialization
     
@@ -560,12 +554,9 @@ subroutine G_qsParquet(TDAeh,TDApp,max_diis_1b,max_diis_2b,eta_1b,eta_2b,ENuc,ma
       err_eh = maxval(abs(eh_Phi - old_eh_Phi))
       err_pp = maxval(abs(pp_Phi - old_pp_Phi))
 
-!     alpha = 0.25d0
-!     eh_Phi(:,:,:,:) = alpha * eh_Phi(:,:,:,:) + (1d0 - alpha) * old_eh_Phi(:,:,:,:)
-!     pp_Phi(:,:,:,:) = alpha * pp_Phi(:,:,:,:) + (1d0 - alpha) * old_pp_Phi(:,:,:,:)
-
-!     call matout(nOrb2**2,nOrb2**2,eh_Phi - old_eh_Phi)
-!     call matout(nOrb2**2,nOrb2**2,pp_Phi - old_pp_Phi)
+      alpha = 0.5d0
+      eh_Phi(:,:,:,:) = alpha * eh_Phi(:,:,:,:) + (1d0 - alpha) * old_eh_Phi(:,:,:,:)
+      pp_Phi(:,:,:,:) = alpha * pp_Phi(:,:,:,:) + (1d0 - alpha) * old_pp_Phi(:,:,:,:)
 
       !--------------------!
       ! DIIS extrapolation !
@@ -669,7 +660,7 @@ subroutine G_qsParquet(TDAeh,TDApp,max_diis_1b,max_diis_2b,eta_1b,eta_2b,ENuc,ma
 
     allocate(Z(nOrb2),SigC(nOrb2,nOrb2),SigC_AO(nOrb2,nOrb2)) 
     
-    mem = mem + size(Z) + size(SigC)
+    mem = mem + size(Z) + size(SigC) + size(SigC_AO)
     write(*,'(1X,A50,4X,F6.3,A3)') 'Memory usage in GParquet =',mem*dp_in_GB,' GB'
 
     write(*,*) 'Computing self-energy...'
@@ -693,23 +684,17 @@ subroutine G_qsParquet(TDAeh,TDApp,max_diis_1b,max_diis_2b,eta_1b,eta_2b,ENuc,ma
 
 !   Compute commutator and convergence criteria
 
-    err_1b = maxval(abs(matmul(F,matmul(P,S)) - matmul(matmul(S,P),F)))
+    err_F  = matmul(F,matmul(P,S)) - matmul(matmul(S,P),F)
+    err_1b = maxval(abs(err_F))
 
-    ! DIIS for one-body part
-    ! TODO the DIIS for the one-body part need to be changed from epsilon to F 
-    ! if(max_diis_1b > 1) then 
-  
-    !   n_diis_1b = min(n_diis_1b+1,max_diis_1b)
-    !   call DIIS_extrapolation(rcond_1b,nOrb2,nOrb2,n_diis_1b,err_diis_1b,eQP_diis,eQP-eOld,eQP)
-  
-    ! end if
-    !   DIIS extrapolation 
+!   DIIS for one-body part
 
-    ! if(max_diis > 1) then
-    !   n_diis = min(n_diis+1,max_diis)
-    !   call DIIS_extrapolation(rcond,nOrb2Sq,nOrb2Sq,n_diis,err_diis,F_diis,err,F)
-    ! end if
-    
+    if(max_diis_1b > 1) then 
+  
+      n_diis_1b = min(n_diis_1b+1,max_diis_1b)
+      call DIIS_extrapolation(rcond_1b,nOrb2_Sq,nOrb2_Sq,n_diis_1b,err_diis_1b,F_diis,err_F,F)
+  
+    end if
 
 !  Transform Fock matrix in orthogonal basis
 
@@ -750,6 +735,9 @@ subroutine G_qsParquet(TDAeh,TDApp,max_diis_1b,max_diis_2b,eta_1b,eta_2b,ENuc,ma
 
     deallocate(Z,SigC,SigC_AO)
     
+    mem = mem - size(Z) - size(SigC) - size(SigC_AO)
+    write(*,'(1X,A50,4X,F6.3,A3)') 'Memory usage in GParquet =',mem*dp_in_GB,' GB'
+    
   end do 
   !---------------------------------------------!
   ! End main loop for one-body self-consistency !
@@ -777,8 +765,5 @@ subroutine G_qsParquet(TDAeh,TDApp,max_diis_1b,max_diis_2b,eta_1b,eta_2b,ENuc,ma
 
   ! call G_Parquet_Galitskii_Migdal(eta_1b,nOrb2,nC,nO,nV,nR,nS,nOO,nVV,eOld,ERI_MO, &
   !                              eh_rho,old_eh_Om,ee_rho,old_ee_Om,hh_rho,old_hh_Om,EcGM)
-    
-
- 
   
 end subroutine 
