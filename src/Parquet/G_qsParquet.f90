@@ -1,7 +1,7 @@
 subroutine G_qsParquet(TDAeh,TDApp,max_diis_1b,max_diis_2b,eta_1b,eta_2b,ENuc,max_it_1b,conv_1b,max_it_2b,conv_2b, & 
                     nOrb,nOrb2,nC,nO,nV,nR,nS,EGHF,PHF,cHF,eHF,Ov,Or,T,V,Hc,ERI_AO,ERI_MO)
 
-! Parquet approximation based on spin orbitals
+! Parquet approximation with quasiparticle self-consistency based on spin orbitals
 
   implicit none
   include 'parameters.h'
@@ -19,18 +19,18 @@ subroutine G_qsParquet(TDAeh,TDApp,max_diis_1b,max_diis_2b,eta_1b,eta_2b,ENuc,ma
   integer,intent(in)            :: max_diis_2b
   double precision,intent(in)   :: eta_1b,eta_2b        
   double precision,intent(in)   :: ENuc
-  double precision,intent(in)   :: EGHF
   integer,intent(in)            :: max_it_1b,max_it_2b
   double precision,intent(in)   :: conv_1b,conv_2b
   integer,intent(in)            :: nOrb,nOrb2,nC,nO,nV,nR,nS
-  double precision,intent(in)   :: eHF(nOrb2)
-  double precision,intent(in)   :: cHF(nOrb2,nOrb2)
+  double precision,intent(in)   :: EGHF
   double precision,intent(in)   :: PHF(nOrb2,nOrb2)
+  double precision,intent(in)   :: cHF(nOrb2,nOrb2)
+  double precision,intent(in)   :: eHF(nOrb2)
   double precision,intent(in)   :: Ov(nOrb,nOrb)
+  double precision,intent(in)   :: Or(nOrb,nOrb)
   double precision,intent(in)   :: T(nOrb,nOrb)
   double precision,intent(in)   :: V(nOrb,nOrb)
   double precision,intent(in)   :: Hc(nOrb,nOrb)
-  double precision,intent(in)   :: Or(nOrb,nOrb)
   double precision,intent(in)   :: ERI_AO(nOrb,nOrb,nOrb,nOrb)
   double precision,intent(inout):: ERI_MO(nOrb2,nOrb2,nOrb2,nOrb2)
 
@@ -114,14 +114,14 @@ subroutine G_qsParquet(TDAeh,TDApp,max_diis_1b,max_diis_2b,eta_1b,eta_2b,ENuc,ma
 ! Start
  
   write(*,*)
-  write(*,*)'***********************************'
+  write(*,*)'*************************************'
   write(*,*)'* Generalized qsParquet Calculation *'
-  write(*,*)'***********************************'
+  write(*,*)'*************************************'
   write(*,*)
 
 ! Warning 
 
-  write(*,*) '!! ERIs in MO basis will be overwritten in qsGW !!'
+  write(*,*) '!! ERIs in MO basis will be overwritten in qsParquet !!'
   write(*,*)
 
 ! Print parameters
@@ -131,8 +131,8 @@ subroutine G_qsParquet(TDAeh,TDApp,max_diis_1b,max_diis_2b,eta_1b,eta_2b,ENuc,ma
   write(*,*)'---------------------------------------------------------------'
   write(*,'(1X,A50,1X,I5)')    'Maximum number of one-body iteration:',max_it_1b
   write(*,'(1X,A50,1X,E10.5)') 'Convergence threshold for one-body energies:',conv_1b
-  write(*,'(1X,A50,1X,E10.5)') 'Strenght of SRG one-body regularization:',eta_1b
-  write(*,'(1X,A50,1X,E10.5)') 'Strenght of SRG two-body regularization:',eta_2b
+  write(*,'(1X,A50,1X,E10.5)') 'Strength of SRG one-body regularization:',eta_1b
+  write(*,'(1X,A50,1X,E10.5)') 'Strength of SRG two-body regularization:',eta_2b
   write(*,'(1X,A50,1X,I5)')    'Maximum length of DIIS expansion:',max_diis_1b
   write(*,*)'---------------------------------------------------------------'
   write(*,'(1X,A50,1X,I5)')    'Maximum number of two-body iteration:',max_it_2b
@@ -554,9 +554,9 @@ subroutine G_qsParquet(TDAeh,TDApp,max_diis_1b,max_diis_2b,eta_1b,eta_2b,ENuc,ma
       err_eh = maxval(abs(eh_Phi - old_eh_Phi))
       err_pp = maxval(abs(pp_Phi - old_pp_Phi))
 
-      alpha = 0.5d0
-      eh_Phi(:,:,:,:) = alpha * eh_Phi(:,:,:,:) + (1d0 - alpha) * old_eh_Phi(:,:,:,:)
-      pp_Phi(:,:,:,:) = alpha * pp_Phi(:,:,:,:) + (1d0 - alpha) * old_pp_Phi(:,:,:,:)
+      ! alpha = 0.5d0
+      ! eh_Phi(:,:,:,:) = alpha * eh_Phi(:,:,:,:) + (1d0 - alpha) * old_eh_Phi(:,:,:,:)
+      ! pp_Phi(:,:,:,:) = alpha * pp_Phi(:,:,:,:) + (1d0 - alpha) * old_pp_Phi(:,:,:,:)
 
       !--------------------!
       ! DIIS extrapolation !
@@ -675,7 +675,6 @@ subroutine G_qsParquet(TDAeh,TDApp,max_diis_1b,max_diis_2b,eta_1b,eta_2b,ENuc,ma
     write(*,*)
 
     SigC_AO(:,:) = 0d0
-    !call MOtoAO_GHF(nOrb2,nOrb,S,Ca,Cb,SigC,SigC_AO)
     call MOtoAO(nOrb2,nOrb2,S,C,SigC,SigC_AO)
 
 !   ... and add self-energy

@@ -24,8 +24,8 @@ subroutine G_Parquet_self_energy(eta,nOrb,nC,nO,nV,nR,nS,nOO,nVV,eQP,ERI,&
 ! Local variables
   integer                       :: i,j,k,a,b,c
   integer                       :: p,q,n
-  double precision              :: eps_p,eps_q,eps_pq2
-  double precision              :: dem1,dem2,reg,reg1,reg2
+  double precision              :: eps_p,eps_q,eps_pq,reg
+  double precision              :: dem1,dem2,reg1,reg2
   double precision              :: dem1_p,dem1_q,dem1_pq
   double precision              :: dem2_p,dem2_q,dem2_pq
   double precision              :: num
@@ -41,7 +41,6 @@ subroutine G_Parquet_self_energy(eta,nOrb,nC,nO,nV,nR,nS,nOO,nVV,eQP,ERI,&
 ! Initialize 
 
   SigC(:,:) = 0d0
-  Z(:)      = 0d0
 
 ! Memory allocation for self-energy decomposition
  
@@ -61,12 +60,11 @@ subroutine G_Parquet_self_energy(eta,nOrb,nC,nO,nV,nR,nS,nOO,nVV,eQP,ERI,&
 
                  eps_p = eQP(p) + eQP(a) - eQP(i) - eQP(j)
                  eps_q = eQP(q) + eQP(a) - eQP(i) - eQP(j)
-                 eps_pq2 = eps_p * eps_p + eps_q * eps_q
-                 reg = 1d0 - exp(- eta * eps_pq2)
+                 eps_pq = eps_p * eps_p + eps_q * eps_q
+                 reg = 1d0 - exp(- eta * eps_pq)
                  num = 0.5d0*(ERI(p,a,j,i) - ERI(p,a,i,j))*(ERI(q,a,j,i) - ERI(q,a,i,j))
 
-                 SigC(p,q) = SigC(p,q) + num*reg*(eps_p + eps_q)/eps_pq2
-                 !Z_2(p)   = Z_2(p)   - num*reg/eps**2
+                 SigC(p,q) = SigC(p,q) + num*reg*(eps_p + eps_q)/eps_pq
                  
               end do
            end do
@@ -79,12 +77,11 @@ subroutine G_Parquet_self_energy(eta,nOrb,nC,nO,nV,nR,nS,nOO,nVV,eQP,ERI,&
                  
                  eps_p = eQP(p) + eQP(i) - eQP(a) - eQP(b)
                  eps_q = eQP(q) + eQP(i) - eQP(a) - eQP(b)
-                 eps_pq2 = eps_p * eps_p + eps_q * eps_q
-                 reg = 1d0 - exp(- eta * eps_pq2)
+                 eps_pq = eps_p * eps_p + eps_q * eps_q
+                 reg = 1d0 - exp(- eta * eps_pq)
                  num = 0.5d0*(ERI(p,i,b,a) - ERI(p,i,a,b))*(ERI(q,i,b,a) - ERI(q,i,a,b))
                  
-                 SigC(p,q) = SigC(p,q) + num*reg*(eps_p + eps_q)/eps_pq2
-                 !Z_2(p)   = Z_2(p)   - num*reg/eps**2
+                 SigC(p,q) = SigC(p,q) + num*reg*(eps_p + eps_q)/eps_pq
                  
               end do
            end do
@@ -98,9 +95,9 @@ subroutine G_Parquet_self_energy(eta,nOrb,nC,nO,nV,nR,nS,nOO,nVV,eQP,ERI,&
   write(*,'(1X,A50,1X,F9.3,A8)') 'Wall time for building GF(2) self-energy =',t,' seconds'
   write(*,*)
   
-  !-----------------------------!
-  !  eh part of the self-energy !
-  !-----------------------------!
+!-----------------------------!
+!  eh part of the self-energy !
+!-----------------------------!
      
   call wall_time(start_t)
   
@@ -218,7 +215,7 @@ subroutine G_Parquet_self_energy(eta,nOrb,nC,nO,nV,nR,nS,nOO,nVV,eQP,ERI,&
 !  pp part of the self-energy !
 !-----------------------------!
 
-  ! call wall_time(start_t)
+  call wall_time(start_t)
 
   !$OMP PARALLEL DEFAULT(NONE)    &
   !$OMP PRIVATE(p,q,i,j,k,c,n,num,dem1,dem1_p,dem1_q,dem1_pq,dem2,dem2_p,dem2_q,dem2_pq,reg1,reg2) &
@@ -364,13 +361,6 @@ subroutine G_Parquet_self_energy(eta,nOrb,nC,nO,nV,nR,nS,nOO,nVV,eQP,ERI,&
 ! Renormalization factor !
 !------------------------!
 
-!  Z(:) = 1d0/(1d0 - Z(:))
-
-!---------------------------------!
-! Print self-energy decomposition !
-!---------------------------------!
-
-!  print_self_energy = .true.
-!  call dump_GParquet_self_energy(nOrb,nC,nO,nV,nR,Sig_2,Sig_eh,Sig_pp,SigC,Z_2,Z_eh,Z_pp,Z)
+  Z(:) = 1d0
   
 end subroutine 

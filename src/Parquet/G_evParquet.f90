@@ -1,7 +1,7 @@
 subroutine G_evParquet(TDAeh,TDApp,max_diis_1b,max_diis_2b,linearize,eta_1b,eta_2b,ENuc,max_it_1b,conv_1b,max_it_2b,conv_2b, & 
                     nOrb,nC,nO,nV,nR,nS,EGHF,eHF,ERI)
 
-! Parquet approximation based on spin orbitals
+! Parquet approximation with eigenvalue self-consistency based on spin orbitals
 
   implicit none
   include 'parameters.h'
@@ -88,9 +88,9 @@ subroutine G_evParquet(TDAeh,TDApp,max_diis_1b,max_diis_2b,linearize,eta_1b,eta_
 ! Start
  
   write(*,*)
-  write(*,*)'***********************************'
+  write(*,*)'*************************************'
   write(*,*)'* Generalized evParquet Calculation *'
-  write(*,*)'***********************************'
+  write(*,*)'*************************************'
   write(*,*)
 
 ! Print parameters
@@ -101,8 +101,8 @@ subroutine G_evParquet(TDAeh,TDApp,max_diis_1b,max_diis_2b,linearize,eta_1b,eta_
   write(*,'(1X,A50,1X,I5)')    'Maximum number of one-body iteration:',max_it_1b
   write(*,'(1X,A50,1X,E10.5)') 'Convergence threshold for one-body energies:',conv_1b
   write(*,'(1X,A50,1X,L5)')    'Linearization of quasiparticle equation?',conv_1b
-  write(*,'(1X,A50,1X,E10.5)') 'Strenght of SRG one-body regularization:',eta_1b
-  write(*,'(1X,A50,1X,E10.5)') 'Strenght of SRG two-body regularization:',eta_2b
+  write(*,'(1X,A50,1X,E10.5)') 'Strength of SRG one-body regularization:',eta_1b
+  write(*,'(1X,A50,1X,E10.5)') 'Strength of SRG two-body regularization:',eta_2b
   write(*,'(1X,A50,1X,I5)')    'Maximum length of DIIS expansion:',max_diis_1b
   write(*,*)'---------------------------------------------------------------'
   write(*,'(1X,A50,1X,I5)')    'Maximum number of two-body iteration:',max_it_2b

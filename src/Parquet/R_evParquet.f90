@@ -1,7 +1,7 @@
 subroutine R_evParquet(TDAeh,TDApp,max_diis_1b,max_diis_2b,linearize,eta_1b,eta_2b,ENuc,max_it_1b,conv_1b,max_it_2b,conv_2b, & 
                     nOrb,nC,nO,nV,nR,nS,ERHF,eHF,ERI)
 
-! Parquet approximation based on restricted orbitals
+! Parquet approximation with eigenvalue self-consistency based on spatial orbitals
 
   implicit none
   include 'parameters.h'
@@ -131,9 +131,9 @@ subroutine R_evParquet(TDAeh,TDApp,max_diis_1b,max_diis_2b,linearize,eta_1b,eta_
 ! Start
 
   write(*,*)
-  write(*,*)'**********************************'
-  write(*,*)'* Restricted Parquet Calculation *'
-  write(*,*)'**********************************'
+  write(*,*)'************************************'
+  write(*,*)'* Restricted evParquet Calculation *'
+  write(*,*)'************************************'
   write(*,*)
 
 ! Print parameters
@@ -143,9 +143,9 @@ subroutine R_evParquet(TDAeh,TDApp,max_diis_1b,max_diis_2b,linearize,eta_1b,eta_
   write(*,*)'---------------------------------------------------------------'
   write(*,'(1X,A50,1X,I5)')    'Maximum number of one-body iteration:',max_it_1b
   write(*,'(1X,A50,1X,E10.5)') 'Convergence threshold for one-body energies:',conv_1b
-  write(*,'(1X,A50,1X,L5)')    'Linearization of quasiparticle equation?',conv_1b
-  write(*,'(1X,A50,1X,E10.5)') 'Strenght of SRG one-body regularization:',eta_1b
-  write(*,'(1X,A50,1X,E10.5)') 'Strenght of SRG two-body regularization:',eta_2b
+  write(*,'(1X,A50,1X,L5)')    'Linearization of quasiparticle equation?',linearize
+  write(*,'(1X,A50,1X,E10.5)') 'Strength of SRG one-body regularization:',eta_1b
+  write(*,'(1X,A50,1X,E10.5)') 'Strength of SRG two-body regularization:',eta_2b
   write(*,'(1X,A50,1X,I5)')    'Maximum length of DIIS expansion:',max_diis_1b
   write(*,*)'---------------------------------------------------------------'
   write(*,'(1X,A50,1X,I5)')    'Maximum number of two-body iteration:',max_it_2b
@@ -233,11 +233,6 @@ subroutine R_evParquet(TDAeh,TDApp,max_diis_1b,max_diis_2b,linearize,eta_1b,eta_
     write(*,'(1X,A30,1X,I4)') 'One-body iteration #',n_it_1b
     write(*,*)'====================================='
     write(*,*)
-
-    ! DIIS for two-body part
-
-    rcond_2b  = 1d0
-    n_diis_2b = 0
 
     ! Initialization
     
@@ -778,7 +773,7 @@ subroutine R_evParquet(TDAeh,TDApp,max_diis_1b,max_diis_2b,linearize,eta_1b,eta_
     write(*,*)
 
     call wall_time(start_t)
-    call R_Parquet_self_energy(eta_1b,nOrb,nC,nO,nV,nR,nS,nOOs,nVVs,nOOt,nVVt,eOld,ERI,  &
+    call R_Parquet_self_energy_diag(eta_1b,nOrb,nC,nO,nV,nR,nS,nOOs,nVVs,nOOt,nVVt,eOld,ERI,  &
                                eh_sing_rho,old_eh_sing_Om,eh_trip_rho,old_eh_trip_Om, &
                                ee_sing_rho,old_ee_sing_Om,ee_trip_rho,old_ee_trip_Om, &
                                hh_sing_rho,old_hh_sing_Om,hh_trip_rho,old_hh_trip_Om, &

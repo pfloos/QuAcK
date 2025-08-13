@@ -528,9 +528,8 @@ doGF = doG0F2 .or. doevGF2 .or. doqsGF2 .or. doufG0F02 .or. doG0F3 .or. doevGF3 
 
   if(doqsParquet) then
     call wall_time(start_Parquet)
-!   call RParquet(max_it_macro,conv_one_body,max_it_micro,conv_two_body,   &
-!        nOrb,nC,nO,nV,nR,nS, &
-!        eHF,ERI_MO)            
+    call R_qsParquet(TDAeh,TDApp,max_diis_1b,max_diis_2b,reg_1b,reg_2b,ENuc,max_it_1b,conv_1b,max_it_2b,conv_2b, & 
+         nBas,nOrb,nC,nO,nV,nR,nS,ERHF,PHF,cHF,eHF,S,X,T,V,Hc,ERI_AO,ERI_MO)           
     write(*,*) 'Restricted version of qs parquet not yet implemented. Sorry.'
     call wall_time(end_Parquet)
   
