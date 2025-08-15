@@ -52,7 +52,7 @@ subroutine R_qsParquet(TDAeh,TDApp,max_diis_1b,max_diis_2b,eta_1b,eta_2b,ENuc,ma
 
   integer                       :: nOOs,nOOt
   integer                       :: nVVs,nVVt
-  integer                       :: nBas_Sq
+  integer                       :: nBasSq
 
   ! eh BSE
   double precision              :: Ec_eh(nspin)
@@ -125,7 +125,7 @@ subroutine R_qsParquet(TDAeh,TDApp,max_diis_1b,max_diis_2b,eta_1b,eta_2b,ENuc,ma
   nVVs = nV*(nV + 1)/2
   nOOt = nO*(nO - 1)/2
   nVVt = nV*(nV - 1)/2
-  nBas_Sq = nBas*nBas
+  nBasSq = nBas*nBas
 
   allocate(eQP(nOrb))
 
@@ -203,13 +203,13 @@ subroutine R_qsParquet(TDAeh,TDApp,max_diis_1b,max_diis_2b,eta_1b,eta_2b,ENuc,ma
   allocate(K(nBas,nBas))
 
   mem = mem + size(c) + size(cp) + size(F) + size(Fp) &
-            + size(P) + size(J) + size(K)
+            + size(P) + size(J)  + size(K)
   
   write(*,'(1X,A50,4X,F6.3,A3)') 'Memory usage in RParquet = ',mem*dp_in_GB,' GB'
   
 ! DIIS for one-body part
 
-  allocate(err_diis_1b(nBas_Sq,max_diis_1b),F_diis(nBas_Sq,max_diis_1b),err_F(nBas,nBas))
+  allocate(err_diis_1b(nBasSq,max_diis_1b),F_diis(nBasSq,max_diis_1b),err_F(nBas,nBas))
 
   mem = mem + size(err_diis_1b) + size(F_diis) + size(err_F)
   write(*,'(1X,A50,4X,F6.3,A3)') 'Memory usage in RParquet = ',mem*dp_in_GB,' GB'
@@ -217,7 +217,7 @@ subroutine R_qsParquet(TDAeh,TDApp,max_diis_1b,max_diis_2b,eta_1b,eta_2b,ENuc,ma
   rcond_1b  = 1d0
   n_diis_1b = 0
   err_diis_1b(:,:) = 0d0
-  F_diis(:,:)    = 0d0
+  F_diis(:,:)      = 0d0
 
 ! Initialization
 
@@ -226,9 +226,9 @@ subroutine R_qsParquet(TDAeh,TDApp,max_diis_1b,max_diis_2b,eta_1b,eta_2b,ENuc,ma
 
   EcGM = 0d0 ! TODO: This should be removed once the GM is coded.
 
-  eQP(:)  = eHF(:)
-  c(:,:)        = cHF(:,:)
-  P(:,:)        = PHF(:,:)
+  eQP(:) = eHF(:)
+  c(:,:) = cHF(:,:)
+  P(:,:) = PHF(:,:)
 
   !-----------------------------------------!
   ! Main loop for one-body self-consistency !
@@ -256,7 +256,9 @@ subroutine R_qsParquet(TDAeh,TDApp,max_diis_1b,max_diis_2b,eta_1b,eta_2b,ENuc,ma
     
     n_it_2b = 0 
     err_2b  = 1d0
+
     ! We cannot use the quantity from the previous one-body iteration because the orbitals changed
+
     eh_sing_rho(:,:,:) = 0d0
     eh_trip_rho(:,:,:) = 0d0
     ee_sing_rho(:,:,:) = 0d0
@@ -275,7 +277,9 @@ subroutine R_qsParquet(TDAeh,TDApp,max_diis_1b,max_diis_2b,eta_1b,eta_2b,ENuc,ma
     old_eh_trip_Phi(:,:,:,:) = 0d0
     old_pp_sing_Phi(:,:,:,:) = 0d0
     old_pp_trip_Phi(:,:,:,:) = 0d0
+
     ! Same for DIIS
+
     rcond_2b  = 1d0
     n_diis_2b = 0
     err_diis_2b(:,:) = 0d0
@@ -427,7 +431,6 @@ subroutine R_qsParquet(TDAeh,TDApp,max_diis_1b,max_diis_2b,eta_1b,eta_2b,ENuc,ma
                 + size(pp_sing_Gam_B) + size(pp_sing_Gam_C) + size(pp_sing_Gam_D)
       write(*,'(1X,A50,4X,F6.3,A3)') 'Memory usage in RParquet =',mem*dp_in_GB,' GB'
 
-
       ispin = 1
       Bpp(:,:) = 0d0
       Cpp(:,:) = 0d0
@@ -559,14 +562,6 @@ subroutine R_qsParquet(TDAeh,TDApp,max_diis_1b,max_diis_2b,eta_1b,eta_2b,ENuc,ma
       ! Compute screened integrals !
       !----------------------------!
 
-      ! Free memory
-!     deallocate(eh_sing_rho,eh_trip_rho,ee_sing_rho,ee_trip_rho,hh_sing_rho,hh_trip_rho)
-      ! TODO Once we will compute the blocks of kernel starting from the 4-tensors we can move the freeing up
-      ! Memory allocation
-!     allocate(eh_sing_rho(nOrb,nOrb,nS),eh_trip_rho(nOrb,nOrb,nS))
-!     allocate(ee_sing_rho(nOrb,nOrb,nVVs),hh_sing_rho(nOrb,nOrb,nOOs))
-!     allocate(ee_trip_rho(nOrb,nOrb,nVVt),hh_trip_rho(nOrb,nOrb,nOOt))
-      
       ! Build singlet eh screened integrals
       write(*,*) 'Computing singlet eh screened integrals...'
 
@@ -832,14 +827,10 @@ subroutine R_qsParquet(TDAeh,TDApp,max_diis_1b,max_diis_2b,eta_1b,eta_2b,ENuc,ma
     ! Build F + Sig
 
     F(:,:) = Hc(:,:) + J(:,:) + 0.5d0*K(:,:) + SigC_AO(:,:)
-    if(nBas .ne. nOrb) then
-       call AOtoMO(nBas,nOrb,c,F,Fp)
-       call MOtoAO(nBas,nOrb,S,c,Fp,F)
-    endif
 
    ! Compute commutator and convergence criteria
 
-    err_F = matmul(F,matmul(P,S)) - matmul(matmul(S,P),F)
+    err_F  = matmul(F,matmul(P,S)) - matmul(matmul(S,P),F)
     err_1b = maxval(abs(err_F))
    
     ! DIIS for one-body part
@@ -847,23 +838,16 @@ subroutine R_qsParquet(TDAeh,TDApp,max_diis_1b,max_diis_2b,eta_1b,eta_2b,ENuc,ma
     if(max_diis_1b > 1) then
 
        n_diis_1b = min(n_diis_1b+1,max_diis_1b)
-       call DIIS_extrapolation(rcond_1b,nBas_Sq,nBas_Sq,n_diis_1b,err_diis_1b,F_diis,err_F,F)
+       call DIIS_extrapolation(rcond_1b,nBasSq,nBasSq,n_diis_1b,err_diis_1b,F_diis,err_F,F)
        
     end if
 
     ! Diagonalize effective Hamiltonian in AO basis
 
-    if(nBas == nOrb) then
-       Fp = matmul(transpose(X),matmul(F,X))
-       cp(:,:) = Fp(:,:)
-       call diagonalize_matrix(nOrb,cp,eQP)
-       c = matmul(X,cp)
-    else
-       Fp = matmul(transpose(c),matmul(F,c))
-       cp(:,:) = Fp(:,:)
-       call diagonalize_matrix(nOrb,cp,eQP)
-       c = matmul(c,cp)
-    endif
+    Fp = matmul(transpose(X),matmul(F,X))
+    cp(:,:) = Fp(:,:)
+    call diagonalize_matrix(nOrb,cp,eQP)
+    c = matmul(X,cp)
 
     call AOtoMO(nBas,nOrb,c,SigC_AO,SigC)
 
