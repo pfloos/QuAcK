@@ -488,6 +488,7 @@ subroutine R_Parquet_self_energy(eta,nOrb,nC,nO,nV,nR,nS,nOOs,nVVs,nOOt,nVVt,eQP
                  do c=nO+1,nOrb-nR
                     
                     num  = - 1.5d0 * ERI(p,c,i,j) * ee_trip_rho(i,j,n) * ee_trip_rho(q,c,n)
+                    dem1 = ee_trip_Om(n) - eQP(i) - eQP(j)
                     reg1 = 1d0 - exp(- 2d0 * eta * dem1 * dem1)
                     dem2_p = eQP(p) + eQP(c) - eQP(i) - eQP(j)
                     dem2_q = eQP(q) + eQP(c) - eQP(i) - eQP(j)

@@ -822,6 +822,7 @@ subroutine R_qsParquet(TDAeh,TDApp,max_diis_1b,max_diis_2b,eta_1b,eta_2b,ENuc,ma
 
     ! Transform correlation self-energy back to AO basis
     
+    SigC = 0.5d0*(SigC + transpose(SigC))
     call MOtoAO(nBas,nOrb,S,c,SigC,SigC_AO)
 
     ! Build F + Sig
