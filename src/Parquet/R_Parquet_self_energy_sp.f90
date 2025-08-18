@@ -1,4 +1,4 @@
-subroutine R_Parquet_self_energy_interm(eta,nOrb,nC,nO,nV,nR,nS,nOOs,nVVs,nOOt,nVVt,eQP,ERI, &
+subroutine R_Parquet_self_energy_sp(eta,nOrb,nC,nO,nV,nR,nS,nOOs,nVVs,nOOt,nVVt,eQP,ERI, &
                                  eh_sing_rho,eh_sing_Om,eh_trip_rho,eh_trip_Om, &
                                  ee_sing_rho,ee_sing_Om,ee_trip_rho,ee_trip_Om, &
                                  hh_sing_rho,hh_sing_Om,hh_trip_rho,hh_trip_Om, &
@@ -35,9 +35,6 @@ subroutine R_Parquet_self_energy_interm(eta,nOrb,nC,nO,nV,nR,nS,nOOs,nVVs,nOOt,n
   double precision              :: dem2_p,dem2_q,dem2_pq
   double precision              :: num
   double precision              :: start_t,end_t,t
-
-  double precision,allocatable  :: tmp3(:,:,:)
-  double precision,allocatable  :: tmp4(:,:,:,:)
   
 ! Output variables
   double precision,intent(out)  :: SigC(nOrb,nOrb)
@@ -46,7 +43,7 @@ subroutine R_Parquet_self_energy_interm(eta,nOrb,nC,nO,nV,nR,nS,nOOs,nVVs,nOOt,n
 ! Initialize 
 
   SigC(:,:) = 0d0
-
+  
 !-----------------------------------!
 ! 2nd-order part of the self-energy !
 !-----------------------------------!
@@ -95,148 +92,6 @@ subroutine R_Parquet_self_energy_interm(eta,nOrb,nC,nO,nV,nR,nS,nOOs,nVVs,nOOt,n
   write(*,*)
 
 !-------------------------------------!
-! Intermediates for singlet eh part 1 !
-!-------------------------------------!
-
-  allocate(tmp3(nOrb,nOrb,nS))
-  tmp3(:,:,:) = 0d0
-
-  do p=nC+1,nOrb-nR
-    do j=nC+1,nO
-      do n=1,nS
-
-        do i=nC+1,nO
-          do a=nO+1,nOrb-nR
-            num  = (0.5d0*ERI(p,a,i,j) - ERI(p,a,j,i))*eh_sing_rho(i,a,n)
-
-            dem1 = eQP(a) - eQP(i) - eh_sing_Om(n)
-            reg1 = 1d0 - exp(- 2d0 * eta * dem1 * dem1)
-
-            tmp3(p,j,n) = tmp3(p,j,n) + num*(reg1/dem1) 
-          end do
-        end do
-
-      end do
-    end do
-  end do
-
-  do q=nC+1,nOrb-nR
-    do p=nC+1,nOrb-nR
-      do j=nC+1,nO
-        do n=1,nS
-          num = eh_sing_rho(q,j,n)
-
-          dem2_p = eQP(p) - eQP(j) + eh_sing_Om(n)
-          dem2_q = eQP(q) - eQP(j) + eh_sing_Om(n)
-          dem2_pq = dem2_p * dem2_p + dem2_q * dem2_q
-          reg2 = 1d0 - exp(- eta * dem2_pq)
-             
-          SigC(p,q) = SigC(p,q) + num * tmp3(p,j,n) * reg2 * (dem2_p + dem2_q)/dem2_pq
-
-        end do
-      end do
-    end do
-  end do
-
-  deallocate(tmp3)
-
-!-------------------------------------!
-! Intermediates for singlet eh part 2 !
-!-------------------------------------!
-
-  allocate(tmp4(nOrb,nOrb,nOrb,nOrb))
-  tmp4(:,:,:,:) = 0d0
-
-  do q=nC+1,nOrb-nR
-    do i=nC+1,nO
-      do a=nO+1,nOrb-nR
-        do j=nC+1,nO
-
-          do n=1,nS
-            num  = eh_sing_rho(i,a,n) * eh_sing_rho(q,j,n)
-
-            dem1 = eQP(a) - eQP(i) - eh_sing_Om(n)
-            reg1 = 1d0 - exp(- 2d0 * eta * dem1 * dem1)
-
-            tmp4(i,a,q,j) = tmp4(i,a,q,j) + num*(reg1/dem1) 
-          end do
-
-        end do
-      end do
-    end do
-  end do
-
-  do q=nC+1,nOrb-nR
-    do p=nC+1,nOrb-nR
-      do i=nC+1,nO
-        do a=nO+1,nOrb-nR
-          do j=nC+1,nO
-            num = - (0.5d0*ERI(p,a,i,j) - ERI(p,a,j,i))
-
-            dem2_p = eQP(p) - eQP(i) - eQP(j) + eQP(a)
-            dem2_q = eQP(q) - eQP(i) - eQP(j) + eQP(a)
-            dem2_pq = dem2_p * dem2_p + dem2_q * dem2_q
-            reg2 = 1d0 - exp(- eta * dem2_pq)
-               
-            SigC(p,q) = SigC(p,q) + num * tmp4(i,a,q,j) * reg2 * (dem2_p + dem2_q)/dem2_pq
-
-          end do
-        end do
-      end do
-    end do
-  end do
-
-  deallocate(tmp4)
-
-!-------------------------------------!
-! Intermediates for singlet eh part 3 !
-!-------------------------------------!
-
-  allocate(tmp4(nOrb,nOrb,nOrb,nOrb))
-  tmp4(:,:,:,:) = 0d0
-
-  do q=nC+1,nOrb-nR
-    do i=nC+1,nO
-      do a=nO+1,nOrb-nR
-        do j=nC+1,nO
-
-          do n=1,nS
-            num  = eh_sing_rho(a,i,n) * eh_sing_rho(j,q,n)
-
-            dem1 = eQP(a) - eQP(i) + eh_sing_Om(n)
-            reg1 = 1d0 - exp(- 2d0 * eta * dem1 * dem1)
-
-            tmp4(i,a,q,j) = tmp4(i,a,q,j) + num*(reg1/dem1) 
-          end do
-
-        end do
-      end do
-    end do
-  end do
-
-  do q=nC+1,nOrb-nR
-    do p=nC+1,nOrb-nR
-      do i=nC+1,nO
-        do a=nO+1,nOrb-nR
-          do j=nC+1,nO
-            num = (0.5d0*ERI(p,a,i,j) - ERI(p,a,j,i))
-
-            dem2_p = eQP(p) - eQP(i) - eQP(j) + eQP(a)
-            dem2_q = eQP(q) - eQP(i) - eQP(j) + eQP(a)
-            dem2_pq = dem2_p * dem2_p + dem2_q * dem2_q
-            reg2 = 1d0 - exp(- eta * dem2_pq)
-               
-            SigC(p,q) = SigC(p,q) + num * tmp4(i,a,q,j) * reg2 * (dem2_p + dem2_q)/dem2_pq
-
-          end do
-        end do
-      end do
-    end do
-  end do
-
-  deallocate(tmp4)
-
-!-------------------------------------!
 !  singlet eh part of the self-energy !
 !-------------------------------------!
   call wall_time(start_t)
@@ -246,48 +101,48 @@ subroutine R_Parquet_self_energy_interm(eta,nOrb,nC,nO,nV,nR,nS,nOOs,nVVs,nOOt,n
   !$OMP DO
   do q=nC+1,nOrb-nR
      do p=nC+1,nOrb-nR
-
+     
         do i=nC+1,nO
            do a=nO+1,nOrb-nR
-
+              
               do n=1,nS
                  !3h2p
                  do j=nC+1,nO
-!                   num  = (0.5d0*ERI(p,a,i,j) - ERI(p,a,j,i))* &
-!                        eh_sing_rho(i,a,n) * eh_sing_rho(q,j,n)
-
-!                   dem1 = eQP(a) - eQP(i) - eh_sing_Om(n)
-!                   reg1 = 1d0 - exp(- 2d0 * eta * dem1 * dem1)
-!                   dem2_p = eQP(p) - eQP(j) + eh_sing_Om(n)
-!                   dem2_q = eQP(q) - eQP(j) + eh_sing_Om(n)
-!                   dem2_pq = dem2_p * dem2_p + dem2_q * dem2_q
-!                   reg2 = 1d0 - exp(- eta * dem2_pq)
-
-!                   SigC(p,q) = SigC(p,q) + num * (reg1/dem1) * reg2 * (dem2_p + dem2_q)/dem2_pq
+                    num  = (0.5d0*ERI(p,a,i,j) - ERI(p,a,j,i))* &
+                         eh_sing_rho(i,a,n) * eh_sing_rho(q,j,n)
                     
-!                   num  = - (0.5d0*ERI(p,a,i,j) - ERI(p,a,j,i))* &
-!                        eh_sing_rho(i,a,n) * eh_sing_rho(q,j,n)
-!                   
-!                   dem1 = eQP(a) - eQP(i) - eh_sing_Om(n) 
-!                   reg1 = 1d0 - exp(- 2d0 * eta * dem1 * dem1)
-!                   dem2_p = eQP(p) - eQP(i) - eQP(j) + eQP(a)
-!                   dem2_q = eQP(q) - eQP(i) - eQP(j) + eQP(a)
-!                   dem2_pq = dem2_p * dem2_p + dem2_q * dem2_q
-!                   reg2 = 1d0 - exp(- eta * dem2_pq)
-!                   
-!                   SigC(p,q) = SigC(p,q) + num * (reg1/dem1) * reg2 * (dem2_p + dem2_q)/dem2_pq
+                    dem1 = eQP(a) - eQP(i) - eh_sing_Om(n)
+                    reg1 = 1d0 - exp(- 2d0 * eta * dem1 * dem1)
+                    dem2_p = eQP(p) - eQP(j) + eh_sing_Om(n)
+                    dem2_q = eQP(q) - eQP(j) + eh_sing_Om(n)
+                    dem2_pq = dem2_p * dem2_p + dem2_q * dem2_q
+                    reg2 = 1d0 - exp(- eta * dem2_pq)
+                    
+                    SigC(p,q) = SigC(p,q) + num * (reg1/dem1) * reg2 * (dem2_p + dem2_q)/dem2_pq
+                    
+                    num  = - (0.5d0*ERI(p,a,i,j) - ERI(p,a,j,i))* &
+                         eh_sing_rho(i,a,n) * eh_sing_rho(q,j,n)
+                    
+                    dem1 = eQP(a) - eQP(i) - eh_sing_Om(n) 
+                    reg1 = 1d0 - exp(- 2d0 * eta * dem1 * dem1)
+                    dem2_p = eQP(p) - eQP(i) - eQP(j) + eQP(a)
+                    dem2_q = eQP(q) - eQP(i) - eQP(j) + eQP(a)
+                    dem2_pq = dem2_p * dem2_p + dem2_q * dem2_q
+                    reg2 = 1d0 - exp(- eta * dem2_pq)
+                    
+                    SigC(p,q) = SigC(p,q) + num * (reg1/dem1) * reg2 * (dem2_p + dem2_q)/dem2_pq
 
-!                   num  = (0.5d0*ERI(p,a,i,j) - ERI(p,a,j,i))* &
-!                        eh_sing_rho(a,i,n) * eh_sing_rho(j,q,n)
-!                   
-!                   dem1 = eQP(a) - eQP(i) + eh_sing_Om(n) 
-!                   reg1 = 1d0 - exp(- 2d0 * eta * dem1 * dem1)
-!                   dem2_p = eQP(p) - eQP(i) - eQP(j) + eQP(a)
-!                   dem2_q = eQP(q) - eQP(i) - eQP(j) + eQP(a)
-!                   dem2_pq = dem2_p * dem2_p + dem2_q * dem2_q
-!                   reg2 = 1d0 - exp(- eta * dem2_pq)
+                    num  = (0.5d0*ERI(p,a,i,j) - ERI(p,a,j,i))* &
+                         eh_sing_rho(a,i,n) * eh_sing_rho(j,q,n)
+                    
+                    dem1 = eQP(a) - eQP(i) + eh_sing_Om(n) 
+                    reg1 = 1d0 - exp(- 2d0 * eta * dem1 * dem1)
+                    dem2_p = eQP(p) - eQP(i) - eQP(j) + eQP(a)
+                    dem2_q = eQP(q) - eQP(i) - eQP(j) + eQP(a)
+                    dem2_pq = dem2_p * dem2_p + dem2_q * dem2_q
+                    reg2 = 1d0 - exp(- eta * dem2_pq)
 
-!                   SigC(p,q) = SigC(p,q) + num * (reg1/dem1) * reg2 * (dem2_p + dem2_q)/dem2_pq
+                    SigC(p,q) = SigC(p,q) + num * (reg1/dem1) * reg2 * (dem2_p + dem2_q)/dem2_pq
 
                     num  = (0.5d0*ERI(p,i,a,j) - ERI(p,i,j,a)) * &
                          eh_sing_rho(a,i,n) * eh_sing_rho(q,j,n)
