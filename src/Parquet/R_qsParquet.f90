@@ -823,7 +823,7 @@ subroutine R_qsParquet(TDAeh,TDApp,max_diis_1b,max_diis_2b,eta_1b,eta_2b,ENuc,ma
                                ee_sing_rho,old_ee_sing_Om,ee_trip_rho,old_ee_trip_Om, &
                                hh_sing_rho,old_hh_sing_Om,hh_trip_rho,old_hh_trip_Om, &
                                SigC,Z)
-    print*,'fancy self-energy'
+!   print*,'fancy self-energy'
 !   call matout(nOrb,nOrb,SigC)
 
     call wall_time(end_t)

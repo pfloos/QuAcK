@@ -105,9 +105,9 @@ subroutine R_Parquet_self_energy_interm(eta,nOrb,nC,nO,nV,nR,nS,nOOs,nVVs,nOOt,n
   allocate(int3(nOrb,nOrb,nS))
   int3(:,:,:) = 0d0
 
-  do p=nC+1,nOrb-nR
+  do n=1,nS
     do j=nC+1,nO
-      do n=1,nS
+      do p=nC+1,nOrb-nR
 
         do i=nC+1,nO
           do a=nO+1,nOrb-nR
@@ -158,10 +158,10 @@ subroutine R_Parquet_self_energy_interm(eta,nOrb,nC,nO,nV,nR,nS,nOOs,nVVs,nOOt,n
   allocate(int4(nOrb,nOrb,nOrb,nOrb))
   int4(:,:,:,:) = 0d0
 
-  do q=nC+1,nOrb-nR
-    do i=nC+1,nO
-      do a=nO+1,nOrb-nR
-        do j=nC+1,nO
+  do a=nO+1,nOrb-nR
+    do j=nC+1,nO
+      do i=nC+1,nO
+        do q=nC+1,nOrb-nR
 
           do n=1,nS
 
@@ -187,8 +187,8 @@ subroutine R_Parquet_self_energy_interm(eta,nOrb,nC,nO,nV,nR,nS,nOOs,nVVs,nOOt,n
   do q=nC+1,nOrb-nR
     do p=nC+1,nOrb-nR
       do i=nC+1,nO
-        do a=nO+1,nOrb-nR
-          do j=nC+1,nO
+        do j=nC+1,nO
+          do a=nO+1,nOrb-nR
 
             num  = 0.5d0*ERI(p,a,i,j) - ERI(p,a,j,i)
             dem2_p = eQP(p) - eQP(i) - eQP(j) + eQP(a)
@@ -213,9 +213,9 @@ subroutine R_Parquet_self_energy_interm(eta,nOrb,nC,nO,nV,nR,nS,nOOs,nVVs,nOOt,n
   allocate(int3(nOrb,nOrb,nS))
   int3(:,:,:) = 0d0
 
-  do p=nC+1,nOrb-nR
+  do n=1,nS
     do b=nO+1,nOrb-nR
-      do n=1,nS
+      do p=nC+1,nOrb-nR
 
         do i=nC+1,nO
           do a=nO+1,nOrb-nR
@@ -266,10 +266,10 @@ subroutine R_Parquet_self_energy_interm(eta,nOrb,nC,nO,nV,nR,nS,nOOs,nVVs,nOOt,n
   allocate(int4(nOrb,nOrb,nOrb,nOrb))
   int4(:,:,:,:) = 0d0
 
-  do q=nC+1,nOrb-nR
-    do i=nC+1,nO
-      do a=nO+1,nOrb-nR
-        do b=nO+1,nOrb-nR
+  do b=nO+1,nOrb-nR
+    do a=nO+1,nOrb-nR
+      do i=nC+1,nO
+        do q=nC+1,nOrb-nR
 
           do n=1,nS
 
@@ -331,9 +331,9 @@ subroutine R_Parquet_self_energy_interm(eta,nOrb,nC,nO,nV,nR,nS,nOOs,nVVs,nOOt,n
   allocate(int3(nOrb,nOrb,nS))
   int3(:,:,:) = 0d0
 
-  do p=nC+1,nOrb-nR
+  do n=1,nS
     do j=nC+1,nO
-      do n=1,nS
+      do p=nC+1,nOrb-nR
 
         do i=nC+1,nO
           do a=nO+1,nOrb-nR
@@ -384,10 +384,10 @@ subroutine R_Parquet_self_energy_interm(eta,nOrb,nC,nO,nV,nR,nS,nOOs,nVVs,nOOt,n
   allocate(int4(nOrb,nOrb,nOrb,nOrb))
   int4(:,:,:,:) = 0d0
 
-  do q=nC+1,nOrb-nR
-    do i=nC+1,nO
-      do a=nO+1,nOrb-nR
-        do j=nC+1,nO
+  do a=nO+1,nOrb-nR
+    do j=nC+1,nO
+      do i=nC+1,nO
+        do q=nC+1,nOrb-nR
 
           do n=1,nS
 
@@ -413,8 +413,8 @@ subroutine R_Parquet_self_energy_interm(eta,nOrb,nC,nO,nV,nR,nS,nOOs,nVVs,nOOt,n
   do q=nC+1,nOrb-nR
     do p=nC+1,nOrb-nR
       do i=nC+1,nO
-        do a=nO+1,nOrb-nR
-          do j=nC+1,nO
+        do j=nC+1,nO
+          do a=nO+1,nOrb-nR
 
             num  = 1.5d0*ERI(p,a,i,j)
             dem2_p = eQP(p) - eQP(i) - eQP(j) + eQP(a)
@@ -439,9 +439,9 @@ subroutine R_Parquet_self_energy_interm(eta,nOrb,nC,nO,nV,nR,nS,nOOs,nVVs,nOOt,n
   allocate(int3(nOrb,nOrb,nS))
   int3(:,:,:) = 0d0
 
-  do p=nC+1,nOrb-nR
+  do n=1,nS
     do b=nO+1,nOrb-nR
-      do n=1,nS
+      do p=nC+1,nOrb-nR
 
         do i=nC+1,nO
           do a=nO+1,nOrb-nR
@@ -492,10 +492,10 @@ subroutine R_Parquet_self_energy_interm(eta,nOrb,nC,nO,nV,nR,nS,nOOs,nVVs,nOOt,n
   allocate(int4(nOrb,nOrb,nOrb,nOrb))
   int4(:,:,:,:) = 0d0
 
-  do q=nC+1,nOrb-nR
-    do i=nC+1,nO
-      do a=nO+1,nOrb-nR
-        do b=nO+1,nOrb-nR
+  do b=nO+1,nOrb-nR
+    do a=nO+1,nOrb-nR
+      do i=nC+1,nO
+        do q=nC+1,nOrb-nR
 
           do n=1,nS
 
@@ -557,9 +557,9 @@ subroutine R_Parquet_self_energy_interm(eta,nOrb,nC,nO,nV,nR,nS,nOOs,nVVs,nOOt,n
   allocate(int3(nOrb,nOrb,nVVs))
   int3(:,:,:) = 0d0
 
-  do p=nC+1,nOrb-nR
+  do n=1,nVVs
     do k=nC+1,nO
-      do n=1,nVVs
+      do p=nC+1,nOrb-nR
 
         do i=nC+1,nO
           do j=nC+1,nO
@@ -616,10 +616,10 @@ subroutine R_Parquet_self_energy_interm(eta,nOrb,nC,nO,nV,nR,nS,nOOs,nVVs,nOOt,n
   allocate(int4(nOrb,nOrb,nOrb,nOrb))
   int4(:,:,:,:) = 0d0
 
-  do q=nC+1,nOrb-nR
-    do i=nC+1,nO
-      do j=nC+1,nO
-        do a=nO+1,nOrb-nR
+  do a=nO+1,nOrb-nR
+    do j=nC+1,nO
+      do i=nC+1,nO
+        do q=nC+1,nOrb-nR
 
           do n=1,nVVs
 
@@ -675,9 +675,9 @@ subroutine R_Parquet_self_energy_interm(eta,nOrb,nC,nO,nV,nR,nS,nOOs,nVVs,nOOt,n
   allocate(int3(nOrb,nOrb,nOOs))
   int3(:,:,:) = 0d0
 
-  do p=nC+1,nOrb-nR
+  do n=1,nOOs
     do c=nO+1,nOrb-nR
-      do n=1,nOOs
+      do p=nC+1,nOrb-nR
 
         do i=nC+1,nO
           do j=nC+1,nO
@@ -735,10 +735,10 @@ subroutine R_Parquet_self_energy_interm(eta,nOrb,nC,nO,nV,nR,nS,nOOs,nVVs,nOOt,n
   allocate(int4(nOrb,nOrb,nOrb,nOrb))
   int4(:,:,:,:) = 0d0
 
-  do q=nC+1,nOrb-nR
-    do i=nC+1,nO
-      do a=nO+1,nOrb-nR
-        do b=nO+1,nOrb-nR
+  do b=nO+1,nOrb-nR
+    do a=nO+1,nOrb-nR
+      do i=nC+1,nO
+        do q=nC+1,nOrb-nR
 
           do n=1,nOOs
 
@@ -804,9 +804,9 @@ subroutine R_Parquet_self_energy_interm(eta,nOrb,nC,nO,nV,nR,nS,nOOs,nVVs,nOOt,n
   allocate(int3(nOrb,nOrb,nVVt))
   int3(:,:,:) = 0d0
 
-  do p=nC+1,nOrb-nR
+  do n=1,nVVt
     do k=nC+1,nO
-      do n=1,nVVt
+      do p=nC+1,nOrb-nR
 
         do i=nC+1,nO
           do j=nC+1,nO
@@ -863,10 +863,10 @@ subroutine R_Parquet_self_energy_interm(eta,nOrb,nC,nO,nV,nR,nS,nOOs,nVVs,nOOt,n
   allocate(int4(nOrb,nOrb,nOrb,nOrb))
   int4(:,:,:,:) = 0d0
 
-  do q=nC+1,nOrb-nR
-    do i=nC+1,nO
-      do j=nC+1,nO
-        do a=nO+1,nOrb-nR
+  do a=nO+1,nOrb-nR
+    do j=nC+1,nO
+      do i=nC+1,nO
+        do q=nC+1,nOrb-nR
 
           do n=1,nVVt
 
@@ -922,9 +922,9 @@ subroutine R_Parquet_self_energy_interm(eta,nOrb,nC,nO,nV,nR,nS,nOOs,nVVs,nOOt,n
   allocate(int3(nOrb,nOrb,nOOt))
   int3(:,:,:) = 0d0
 
-  do p=nC+1,nOrb-nR
+  do n=1,nOOt
     do c=nO+1,nOrb-nR
-      do n=1,nOOt
+      do p=nC+1,nOrb-nR
 
         do i=nC+1,nO
           do j=nC+1,nO
@@ -982,10 +982,10 @@ subroutine R_Parquet_self_energy_interm(eta,nOrb,nC,nO,nV,nR,nS,nOOs,nVVs,nOOt,n
   allocate(int4(nOrb,nOrb,nOrb,nOrb))
   int4(:,:,:,:) = 0d0
 
-  do q=nC+1,nOrb-nR
-    do i=nC+1,nO
-      do a=nO+1,nOrb-nR
-        do b=nO+1,nOrb-nR
+  do b=nO+1,nOrb-nR
+    do a=nO+1,nOrb-nR
+      do i=nC+1,nO
+        do q=nC+1,nOrb-nR
 
           do n=1,nOOt
 
