@@ -815,6 +815,17 @@ subroutine R_qsParquet(TDAeh,TDApp,max_diis_1b,max_diis_2b,eta_1b,eta_2b,ENuc,ma
                                ee_sing_rho,old_ee_sing_Om,ee_trip_rho,old_ee_trip_Om, &
                                hh_sing_rho,old_hh_sing_Om,hh_trip_rho,old_hh_trip_Om, &
                                SigC,Z)
+    print*,'raw self-energy'
+    call matout(nOrb,nOrb,SigC)
+
+    call R_Parquet_self_energy_interm(eta_1b,nOrb,nC,nO,nV,nR,nS,nOOs,nVVs,nOOt,nVVt,eQP,ERI_MO,  &
+                               eh_sing_rho,old_eh_sing_Om,eh_trip_rho,old_eh_trip_Om, &
+                               ee_sing_rho,old_ee_sing_Om,ee_trip_rho,old_ee_trip_Om, &
+                               hh_sing_rho,old_hh_sing_Om,hh_trip_rho,old_hh_trip_Om, &
+                               SigC,Z)
+    print*,'fancy self-energy'
+    call matout(nOrb,nOrb,SigC)
+
     call wall_time(end_t)
     tt = end_t - start_t
     write(*,'(1X,A50,1X,F9.3,A8)') 'Wall time for self energy =',tt,' seconds'
