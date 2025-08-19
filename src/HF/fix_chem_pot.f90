@@ -11,7 +11,6 @@ subroutine fix_chem_pot(nO,nOrb,nOrb_twice,nSCF,thrs_N,trace_1rdm,chem_pot,H_hfb
 
 ! Local variables
 
-  logical                       :: backward
   integer                       :: iorb
   integer                       :: isteps
   double precision              :: thrs_closer
@@ -38,7 +37,6 @@ subroutine fix_chem_pot(nO,nOrb,nOrb_twice,nSCF,thrs_N,trace_1rdm,chem_pot,H_hfb
 
   !  Initialize 
 
-  backward = .false.
   isteps = 0
   delta_chem_pot  = 2d-1
   thrs_closer     = 2d-1

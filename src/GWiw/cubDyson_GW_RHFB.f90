@@ -1,7 +1,7 @@
-subroutine linDyson_GW_RHFB(nBas,nOrb,nOrb_twice,c,eQP_state,nfreqs,wweight,wcoord,ERI,vMAT,U_QP,&
+subroutine cubDyson_GW_RHFB(nBas,nOrb,nOrb_twice,c,eQP_state,nfreqs,wweight,wcoord,ERI,vMAT,U_QP,&
                             Enuc,EcGM,sigma,T,V,S,P,Panom,Pcorr,Panomcorr)
 
-! Use the restricted Sigma_c(E) to compute the linearized approx. to the Dyson eq
+! Use the restricted Sigma_c(E) to compute the cubic approx. to the Dyson eq
 
   implicit none
   include 'parameters.h'
@@ -37,7 +37,7 @@ subroutine linDyson_GW_RHFB(nBas,nOrb,nOrb_twice,c,eQP_state,nfreqs,wweight,wcoo
   double precision              :: eta
   double precision              :: lim_inf,lim_sup
   double precision              :: alpha,beta
-  double precision              :: ET,EV,EJ,EK,EL,ElinG,trace_occ,N_anom,trace_r_can,dev_Idemp_r_can
+  double precision              :: ET,EV,EJ,EK,EL,EcubG,trace_occ,N_anom,trace_r_can,dev_Idemp_r_can
   double precision,external     :: trace_matrix
   double precision,allocatable  :: wweight2(:)
   double precision,allocatable  :: wcoord2(:)
@@ -59,6 +59,8 @@ subroutine linDyson_GW_RHFB(nBas,nOrb,nOrb_twice,c,eQP_state,nfreqs,wweight,wcoo
   complex *16,allocatable       :: Sigma_c_ee(:,:,:)
   complex *16,allocatable       :: Tmp_mo(:,:)
   complex *16,allocatable       :: Tmp_QP(:,:)
+  complex *16,allocatable       :: Tmp_QP2(:,:)
+  complex *16,allocatable       :: Tmp_QP3(:,:)
   complex *16,allocatable       :: Sigma_c_QP(:,:)
   complex *16,allocatable       :: wcoord2_cpx(:)
 
@@ -70,16 +72,18 @@ subroutine linDyson_GW_RHFB(nBas,nOrb,nOrb_twice,c,eQP_state,nfreqs,wweight,wcoo
 ! Allocate and initialize arrays and variables
 
   write(*,*)
-  write(*,*) '******************************************************************'
-  write(*,*) '*    G^Gorkov = Go^Gorkov + Go^Gorkov Sigma^Gorkov Go^Gorkov     *'
-  write(*,*) '*       Bogoliubov linearized-Dyson equation approximation       *'
-  write(*,*) '******************************************************************'
+  write(*,*) '*******************************************************************************'
+  write(*,*) '* G^Gorkov = Go^Gorkov + Go^Gorkov Sigma^Gorkov Go^Gorkov + quadratic + cubic *'
+  write(*,*) '*                Bogoliubov cubic-Dyson equation approximation                *'
+  write(*,*) '*******************************************************************************'
   write(*,*)
 
   eta=0d0
   nfreqs2=10*nfreqs
   allocate(Tmp_mo(nOrb,nOrb),Pcorr_mo(nOrb,nOrb),Panomcorr_mo(nOrb,nOrb))
   allocate(Tmp_QP(nOrb_twice,nOrb_twice))
+  allocate(Tmp_QP2(nOrb_twice,nOrb_twice))
+  allocate(Tmp_QP3(nOrb_twice,nOrb_twice))
   allocate(Sigma_c_QP(nOrb_twice,nOrb_twice))
   allocate(Rcorr(nOrb_twice,nOrb_twice))
   allocate(Sigma_c_he(nfreqs2,nOrb,nOrb))
@@ -127,7 +131,10 @@ subroutine linDyson_GW_RHFB(nBas,nOrb,nOrb_twice,c,eQP_state,nfreqs,wweight,wcoo
    call G_MO_RHFB(nOrb,nOrb_twice,eta,eQP_state,wcoord2_cpx(ifreq),Mat2,Mat2,Mat1, Mat1,Tmp_mo) ! G_eh(iw2)
    Tmp_QP(nOrb+1:nOrb_twice,nOrb+1:nOrb_twice) = Tmp_mo(1:nOrb,1:nOrb)
 
-   Tmp_QP(:,:)=matmul(Tmp_QP(:,:),matmul(Sigma_c_QP(:,:),Tmp_QP(:,:)))  ! This is G^Gorkov(iw2) Sigma_c^Gorkov(iw2) G^Gorkov(iw2)
+   Tmp_QP2(:,:)=matmul(Tmp_QP(:,:),matmul(Sigma_c_QP(:,:),Tmp_QP(:,:)))  ! G^Gorkov(iw2) Sigma_c^Gorkov(iw2) G^Gorkov(iw2)
+   Tmp_QP3(:,:)=matmul(Tmp_QP2(:,:),matmul(Sigma_c_QP(:,:),Tmp_QP(:,:))) ! G^Gorkov(iw2) Sigma_c^Gorkov(iw2) G^Gorkov(iw2) Sigma_c^Gorkov(iw2) G^Gorkov(iw2)
+   Tmp_QP(:,:)=Tmp_QP2(:,:)+Tmp_QP3(:,:)                                 &
+              +matmul(Tmp_QP3(:,:),matmul(Sigma_c_QP(:,:),Tmp_QP(:,:)))  ! G^Gorkov(iw2) Sigma_c^Gorkov(iw2) G^Gorkov(iw2) + quad + cub 
 
    Rcorr(:,:) = Rcorr(:,:) + wweight2(ifreq)*real(Tmp_QP(:,:)+conjg(Tmp_QP(:,:))) ! Integrate along iw2 
 
@@ -201,7 +208,7 @@ subroutine linDyson_GW_RHFB(nBas,nOrb,nOrb_twice,c,eQP_state,nfreqs,wweight,wcoo
 
   ! Total energy (incl. the Galitkii-Migdal contribution)
 
-  ElinG = ET + EV + EJ + EK + EL + EcGM
+  EcubG = ET + EV + EJ + EK + EL + EcGM
 
 ! Print results
 
@@ -219,16 +226,16 @@ subroutine linDyson_GW_RHFB(nBas,nOrb,nOrb_twice,c,eQP_state,nfreqs,wweight,wcoo
   write(*,'(A33,1X,F16.10,A3)') ' Anomalous    energy = ',EL,' au'
   write(*,'(A33,1X,F16.10,A3)') ' GM           energy = ',EcGM,' au'
   write(*,'(A50)')           '---------------------------------------'
-  write(*,'(A33,1X,F16.10,A3)') ' Electronic   energy = ',ElinG,' au'
+  write(*,'(A33,1X,F16.10,A3)') ' Electronic   energy = ',EcubG,' au'
   write(*,'(A33,1X,F16.10,A3)') ' Nuclear   repulsion = ',ENuc,' au'
-  write(*,'(A33,1X,F16.10,A3)') ' B-lin-Dyson  energy = ',ElinG + ENuc,' au'
+  write(*,'(A33,1X,F16.10,A3)') ' B-cub-Dyson  energy = ',EcubG + ENuc,' au'
   write(*,'(A50)')           '---------------------------------------'
   write(*,'(A33,1X,F16.10,A3)') ' | Anomalous dens |  = ',N_anom,'   '
   write(*,'(A33,1X,F16.10,A3)') ' Dev. Idemp. r^can   = ',dev_Idemp_r_can,'   '
   write(*,'(A33,1X,F16.10,A3)') '        Tr[ r^can ]  = ',trace_r_can,'   '
   write(*,'(A50)')           '---------------------------------------'
   write(*,'(A50)') '-----------------------------------------'
-  write(*,'(A50)') ' Bogoliubov lin-Dyson occupation numbers '
+  write(*,'(A50)') ' Bogoliubov cub-Dyson occupation numbers '
   write(*,'(A50)') '-----------------------------------------'
   trace_occ=0d0
   do iorb=1,nOrb
@@ -250,6 +257,7 @@ subroutine linDyson_GW_RHFB(nBas,nOrb,nOrb_twice,c,eQP_state,nfreqs,wweight,wcoo
   deallocate(Mat1,Mat2)
   deallocate(J,K,Delta,Occ,Occ_R,c_inv)
   deallocate(Rcorr,Sigma_c_QP,Tmp_QP,Tmp_mo,Pcorr_mo,Panomcorr_mo,wweight2,wcoord2,wcoord2_cpx)
+  deallocate(Tmp_QP2,Tmp_QP3)
 
 end subroutine
 
