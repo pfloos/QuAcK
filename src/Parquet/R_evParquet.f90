@@ -1,15 +1,15 @@
-subroutine RParquet(TDAeh,TDApp,max_diis_1b,max_diis_2b,linearize,eta_1b,eta_2b,ENuc,max_it_1b,conv_1b,max_it_2b,conv_2b, & 
+subroutine R_evParquet(TDAeh,TDApp,max_diis_1b,max_diis_2b,linearize,eta_1b,eta_2b,ENuc,max_it_1b,conv_1b,max_it_2b,conv_2b, & 
                     nOrb,nC,nO,nV,nR,nS,ERHF,eHF,ERI)
 
-! Parquet approximation based on restricted orbitals
+! Parquet approximation with eigenvalue self-consistency based on spatial orbitals
 
   implicit none
   include 'parameters.h'
 
 ! Hard-coded parameters
 
-  logical                       :: print_phLR = .false.
-  logical                       :: print_ppLR = .false.
+  logical                       :: print_phLR = .false. ! Print the eh two-body excitations at each two-body iterations
+  logical                       :: print_ppLR = .false. ! Print the pp two-body excitations at each two-body iterations
   
 ! Input variables
 
@@ -31,6 +31,7 @@ subroutine RParquet(TDAeh,TDApp,max_diis_1b,max_diis_2b,linearize,eta_1b,eta_2b,
 
   integer                       :: ispin
   double precision              :: alpha
+  logical                       :: plot_self = .false.
 
   integer                       :: n_it_1b,n_it_2b
   double precision              :: err_1b,err_2b
@@ -130,9 +131,9 @@ subroutine RParquet(TDAeh,TDApp,max_diis_1b,max_diis_2b,linearize,eta_1b,eta_2b,
 ! Start
 
   write(*,*)
-  write(*,*)'**********************************'
-  write(*,*)'* Restricted Parquet Calculation *'
-  write(*,*)'**********************************'
+  write(*,*)'************************************'
+  write(*,*)'* Restricted evParquet Calculation *'
+  write(*,*)'************************************'
   write(*,*)
 
 ! Print parameters
@@ -142,9 +143,9 @@ subroutine RParquet(TDAeh,TDApp,max_diis_1b,max_diis_2b,linearize,eta_1b,eta_2b,
   write(*,*)'---------------------------------------------------------------'
   write(*,'(1X,A50,1X,I5)')    'Maximum number of one-body iteration:',max_it_1b
   write(*,'(1X,A50,1X,E10.5)') 'Convergence threshold for one-body energies:',conv_1b
-  write(*,'(1X,A50,1X,L5)')    'Linearization of quasiparticle equation?',conv_1b
-  write(*,'(1X,A50,1X,E10.5)') 'Strenght of SRG one-body regularization:',eta_1b
-  write(*,'(1X,A50,1X,E10.5)') 'Strenght of SRG two-body regularization:',eta_2b
+  write(*,'(1X,A50,1X,L5)')    'Linearization of quasiparticle equation?',linearize
+  write(*,'(1X,A50,1X,E10.5)') 'Strength of SRG one-body regularization:',eta_1b
+  write(*,'(1X,A50,1X,E10.5)') 'Strength of SRG two-body regularization:',eta_2b
   write(*,'(1X,A50,1X,I5)')    'Maximum length of DIIS expansion:',max_diis_1b
   write(*,*)'---------------------------------------------------------------'
   write(*,'(1X,A50,1X,I5)')    'Maximum number of two-body iteration:',max_it_2b
@@ -232,11 +233,6 @@ subroutine RParquet(TDAeh,TDApp,max_diis_1b,max_diis_2b,linearize,eta_1b,eta_2b,
     write(*,'(1X,A30,1X,I4)') 'One-body iteration #',n_it_1b
     write(*,*)'====================================='
     write(*,*)
-
-    ! DIIS for two-body part
-
-    rcond_2b  = 1d0
-    n_diis_2b = 0
 
     ! Initialization
     
@@ -647,11 +643,11 @@ subroutine RParquet(TDAeh,TDApp,max_diis_1b,max_diis_2b,linearize,eta_1b,eta_2b,
       err_pp_sing = maxval(abs(old_pp_sing_Phi - pp_sing_Phi))
       err_pp_trip = maxval(abs(old_pp_trip_Phi - pp_trip_Phi))
 
-!     alpha = 0.25d0
-!     eh_sing_Phi(:,:,:,:) = alpha * eh_sing_Phi(:,:,:,:) + (1d0 - alpha) * old_eh_sing_Phi(:,:,:,:)
-!     eh_trip_Phi(:,:,:,:) = alpha * eh_trip_Phi(:,:,:,:) + (1d0 - alpha) * old_eh_trip_Phi(:,:,:,:)
-!     pp_sing_Phi(:,:,:,:) = alpha * pp_sing_Phi(:,:,:,:) + (1d0 - alpha) * old_pp_sing_Phi(:,:,:,:)
-!     pp_trip_Phi(:,:,:,:) = alpha * pp_trip_Phi(:,:,:,:) + (1d0 - alpha) * old_pp_trip_Phi(:,:,:,:)
+      alpha = 0.25d0
+      eh_sing_Phi(:,:,:,:) = alpha * eh_sing_Phi(:,:,:,:) + (1d0 - alpha) * old_eh_sing_Phi(:,:,:,:)
+      eh_trip_Phi(:,:,:,:) = alpha * eh_trip_Phi(:,:,:,:) + (1d0 - alpha) * old_eh_trip_Phi(:,:,:,:)
+      pp_sing_Phi(:,:,:,:) = alpha * pp_sing_Phi(:,:,:,:) + (1d0 - alpha) * old_pp_sing_Phi(:,:,:,:)
+      pp_trip_Phi(:,:,:,:) = alpha * pp_trip_Phi(:,:,:,:) + (1d0 - alpha) * old_pp_trip_Phi(:,:,:,:)
 
       !--------------------!
       ! DIIS extrapolation !
@@ -777,7 +773,7 @@ subroutine RParquet(TDAeh,TDApp,max_diis_1b,max_diis_2b,linearize,eta_1b,eta_2b,
     write(*,*)
 
     call wall_time(start_t)
-    call R_Parquet_self_energy(eta_1b,nOrb,nC,nO,nV,nR,nS,nOOs,nVVs,nOOt,nVVt,eOld,ERI,  &
+    call R_Parquet_self_energy_diag(eta_1b,nOrb,nC,nO,nV,nR,nS,nOOs,nVVs,nOOt,nVVt,eOld,ERI,  &
                                eh_sing_rho,old_eh_sing_Om,eh_trip_rho,old_eh_trip_Om, &
                                ee_sing_rho,old_ee_sing_Om,ee_trip_rho,old_ee_trip_Om, &
                                hh_sing_rho,old_hh_sing_Om,hh_trip_rho,old_hh_trip_Om, &
@@ -848,8 +844,7 @@ subroutine RParquet(TDAeh,TDApp,max_diis_1b,max_diis_2b,linearize,eta_1b,eta_2b,
     write(*,'(A37,1X,I3,1X,A10)')' One-body convergence failed  after ',n_it_1b,'iterations'
     write(*,*)'!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!'
     write(*,*)
-    stop
-
+    !stop
   else
 
     write(*,*)
@@ -859,5 +854,13 @@ subroutine RParquet(TDAeh,TDApp,max_diis_1b,max_diis_2b,linearize,eta_1b,eta_2b,
     write(*,*)
 
   end if
-     
+  
+  ! Plot self-energy, renormalization factor, and spectral function
+
+  if(plot_self) call R_Parquet_plot_self_energy(nOrb,nC,nO,nV,nR,nS,nOOs,nVVs,nOOt,nVVt,ERI, &
+                              eh_sing_rho,old_eh_sing_Om,eh_trip_rho,old_eh_trip_Om,   &
+                              ee_sing_rho,old_ee_sing_Om,ee_trip_rho,old_ee_trip_Om,   &
+                              hh_sing_rho,old_hh_sing_Om,hh_trip_rho,old_hh_trip_Om,   &
+                              eHF,eQP)
+  
 end subroutine 

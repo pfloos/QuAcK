@@ -1,5 +1,5 @@
 subroutine read_methods(working_dir,                             &
-                        doRHF,doUHF,doGHF,doROHF,doHFB,docRHF,   &
+                        doRHF,doUHF,doGHF,doROHF,doRHFB,docRHF,  &
                         doMP2,doMP3,                             & 
                         doCCD,dopCCD,doDCD,doCCSD,doCCSDT,       & 
                         do_drCCD,do_rCCD,do_crCCD,do_lCCD,       &
@@ -11,7 +11,7 @@ subroutine read_methods(working_dir,                             &
                         dolinGW,                                 & 
                         doG0T0pp,doevGTpp,doqsGTpp,doufG0T0pp,   &
                         doG0T0eh,doevGTeh,doqsGTeh,              &
-                        doParquet,                               &
+                        doevParquet,doqsParquet,                 &
                         doRtest,doUtest,doGtest)
 
 ! Read desired methods 
@@ -24,7 +24,7 @@ subroutine read_methods(working_dir,                             &
 
 ! Output variables
 
-  logical,intent(out)           :: doRHF,doUHF,doGHF,doROHF,doHFB,docRHF
+  logical,intent(out)           :: doRHF,doUHF,doGHF,doROHF,doRHFB,docRHF
   logical,intent(out)           :: doMP2,doMP3
   logical,intent(out)           :: doCCD,dopCCD,doDCD,doCCSD,doCCSDT
   logical,intent(out)           :: do_drCCD,do_rCCD,do_crCCD,do_lCCD
@@ -34,7 +34,7 @@ subroutine read_methods(working_dir,                             &
   logical,intent(out)           :: doG0W0,doevGW,doqsGW,doufG0W0,doufGW,dolinGW
   logical,intent(out)           :: doG0T0pp,doevGTpp,doqsGTpp,doufG0T0pp 
   logical,intent(out)           :: doG0T0eh,doevGTeh,doqsGTeh
-  logical,intent(out)           :: doParquet
+  logical,intent(out)           :: doevParquet,doqsParquet
 
   logical,intent(out)           :: doRtest,doUtest,doGtest
 
@@ -61,7 +61,7 @@ subroutine read_methods(working_dir,                             &
       doUHF  = .false.
       doGHF  = .false.
       doROHF = .false.
-      doHFB  = .false.
+      doRHFB = .false.
       docRHF = .false.
       
       read(1,*) 
@@ -70,7 +70,7 @@ subroutine read_methods(working_dir,                             &
       if(ans2 == 'T') doUHF  = .true.
       if(ans3 == 'T') doGHF  = .true.
       if(ans4 == 'T') doROHF = .true.
-      if(ans5 == 'T') doHFB  = .true.
+      if(ans5 == 'T') doRHFB = .true.
       if(ans6 == 'T') docRHF = .true.
       
       ! Read MPn methods
@@ -211,11 +211,13 @@ subroutine read_methods(working_dir,                             &
 
       ! Read coupled channels methods
 
-      doParquet = .false.
+      doevParquet = .false.
+      doqsParquet = .false.
 
       read(1,*)
-      read(1,*) ans1
-      if(ans1 == 'T') doParquet = .true.
+      read(1,*) ans1,ans2
+      if(ans1 == 'T') doevParquet = .true.
+      if(ans2 == 'T') doqsParquet = .true.
       
       ! Read test
       

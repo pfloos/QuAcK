@@ -64,8 +64,8 @@ subroutine RGW_plot_self_energy(nBas,eta,nC,nO,nV,nR,nS,eHF,eGW,Om,rho)
 
     end do
   end do
- 
-  Z(:,:) = 1d0/(1d0 + Z(:,:))
+
+  Z(:,:) = 1d0/(1d0 - Z(:,:))
 
 ! Compute spectral function
 
