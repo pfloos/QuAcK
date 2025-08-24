@@ -53,7 +53,7 @@ subroutine R_qsParquet(TDAeh,TDApp,max_diis_1b,max_diis_2b,eta_1b,eta_2b,reg_PA,
 
   integer                       :: nOOs,nOOt
   integer                       :: nVVs,nVVt
-  integer                       :: nBasSq
+  integer                       :: nBasSq,nOrbSq,nOrbCu,nOrbFo
 
   ! eh BSE
   double precision              :: Ec_eh(nspin)
@@ -127,6 +127,9 @@ subroutine R_qsParquet(TDAeh,TDApp,max_diis_1b,max_diis_2b,eta_1b,eta_2b,reg_PA,
   nOOt = nO*(nO - 1)/2
   nVVt = nV*(nV - 1)/2
   nBasSq = nBas*nBas
+  nOrbSq = nOrb*nOrb
+  nOrbCu = nOrb*nOrb*nOrb
+  nOrbFo = nOrb*nOrb*nOrb*nOrb
 
   allocate(eQP(nOrb))
 
@@ -691,27 +694,34 @@ subroutine R_qsParquet(TDAeh,TDApp,max_diis_1b,max_diis_2b,eta_1b,eta_2b,reg_PA,
       ! DIIS extrapolation !
       !--------------------!
 
-      pqrs = 0
-      do pp=1,nOrb
-        do q=1,nOrb
-          do r=1,nOrb
-            do ss=1,nOrb
-              pqrs = pqrs + 1
-  
+      !pqrs = 0
+      !$OMP PARALLEL DEFAULT(NONE) &
+      !$OMP PRIVATE(pp, q, r, ss, pqrs) &
+      !$OMP SHARED(nOrb, nOrbSq, nOrbCu, nOrbFo, err, Phi, eh_sing_Phi, eh_trip_Phi, pp_sing_Phi, pp_trip_Phi , old_eh_sing_Phi, old_eh_trip_Phi, old_pp_sing_Phi, old_pp_trip_Phi)
+      !$OMP DO COLLAPSE(2)
+      do ss=1,nOrb
+         do r=1,nOrb
+            do q=1,nOrb
+               do pp=1,nOrb
+              !pqrs = pqrs + 1
+              pqrs = ((pp-1)*nOrbCu) + ((q-1)*nOrbSq) + ((r-1)*nOrb) + ss
+               
               err(          pqrs) = eh_sing_Phi(pp,q,r,ss) - old_eh_sing_Phi(pp,q,r,ss)
-              err(1*nOrb**4+pqrs) = eh_trip_Phi(pp,q,r,ss) - old_eh_trip_Phi(pp,q,r,ss)
-              err(2*nOrb**4+pqrs) = pp_sing_Phi(pp,q,r,ss) - old_pp_sing_Phi(pp,q,r,ss)
-              err(3*nOrb**4+pqrs) = pp_trip_Phi(pp,q,r,ss) - old_pp_trip_Phi(pp,q,r,ss)
+              err(1*nOrbFo+pqrs) = eh_trip_Phi(pp,q,r,ss) - old_eh_trip_Phi(pp,q,r,ss)
+              err(2*nOrbFo+pqrs) = pp_sing_Phi(pp,q,r,ss) - old_pp_sing_Phi(pp,q,r,ss)
+              err(3*nOrbFo+pqrs) = pp_trip_Phi(pp,q,r,ss) - old_pp_trip_Phi(pp,q,r,ss)
 
               Phi(          pqrs) = eh_sing_Phi(pp,q,r,ss)
-              Phi(1*nOrb**4+pqrs) = eh_trip_Phi(pp,q,r,ss)
-              Phi(2*nOrb**4+pqrs) = pp_sing_Phi(pp,q,r,ss)
-              Phi(3*nOrb**4+pqrs) = pp_trip_Phi(pp,q,r,ss)
+              Phi(1*nOrbFo+pqrs) = eh_trip_Phi(pp,q,r,ss)
+              Phi(2*nOrbFo+pqrs) = pp_sing_Phi(pp,q,r,ss)
+              Phi(3*nOrbFo+pqrs) = pp_trip_Phi(pp,q,r,ss)
   
             end do
           end do
         end do
       end do
+      !$OMP END DO
+      !$OMP END PARALLEL
   
       if(max_diis_2b > 1) then 
      
@@ -720,22 +730,29 @@ subroutine R_qsParquet(TDAeh,TDApp,max_diis_1b,max_diis_2b,eta_1b,eta_2b,reg_PA,
      
       end if
   
-      pqrs = 0
-      do pp=1,nOrb
-        do q=1,nOrb
-          do r=1,nOrb
-            do ss=1,nOrb
-              pqrs = pqrs + 1
+      !pqrs = 0
+      !$OMP PARALLEL DEFAULT(NONE) &
+      !$OMP PRIVATE(pp, q, r, ss, pqrs) &
+      !$OMP SHARED(nOrb, nOrbSq, nOrbCu, nOrbFo, Phi, eh_sing_Phi, eh_trip_Phi, pp_sing_Phi, pp_trip_Phi)
+      !$OMP DO COLLAPSE(2)
+      do ss=1,nOrb
+         do r=1,nOrb
+            do q=1,nOrb
+               do pp=1,nOrb
+               !pqrs = pqrs + 1
+               pqrs = ((pp-1)*nOrbCu) + ((q-1)*nOrbSq) + ((r-1)*nOrb) + ss
 
-              eh_sing_Phi(pp,q,r,ss) = Phi(          pqrs)
-              eh_trip_Phi(pp,q,r,ss) = Phi(1*nOrb**4+pqrs)
-              pp_sing_Phi(pp,q,r,ss) = Phi(2*nOrb**4+pqrs)
-              pp_trip_Phi(pp,q,r,ss) = Phi(3*nOrb**4+pqrs)
+               eh_sing_Phi(pp,q,r,ss) = Phi(          pqrs)
+               eh_trip_Phi(pp,q,r,ss) = Phi(1*nOrbFo+pqrs)
+               pp_sing_Phi(pp,q,r,ss) = Phi(2*nOrbFo+pqrs)
+               pp_trip_Phi(pp,q,r,ss) = Phi(3*nOrbFo+pqrs)
 
             end do
           end do
         end do
       end do
+      !$OMP END DO
+      !$OMP END PARALLEL
 
       old_eh_sing_Phi(:,:,:,:) = eh_sing_Phi(:,:,:,:)
       old_eh_trip_Phi(:,:,:,:) = eh_trip_Phi(:,:,:,:)
