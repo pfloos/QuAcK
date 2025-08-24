@@ -1,17 +1,17 @@
-subroutine read_methods(working_dir,                           &
-                        doRHF,doUHF,doGHF,doROHF,doHFB,docRHF, &
-                        doMP2,doMP3,                           & 
-                        doCCD,dopCCD,doDCD,doCCSD,doCCSDT,     & 
-                        do_drCCD,do_rCCD,do_crCCD,do_lCCD,     &
-                        doCIS,doCIS_D,doCID,doCISD,doFCI,      & 
-                        dophRPA,dophRPAx,docrRPA,doppRPA,      & 
-                        doG0F2,doevGF2,doqsGF2,doufG0F02,      &
-                        doG0F3,doevGF3,                        & 
-                        doG0W0,doevGW,doqsGW,doufG0W0,doufGW,  &
-                        dolinGW,                               & 
-                        doG0T0pp,doevGTpp,doqsGTpp,doufG0T0pp, &
-                        doG0T0eh,doevGTeh,doqsGTeh,            &
-                        doevParquet,doqsParquet,               &
+subroutine read_methods(working_dir,                             &
+                        doRHF,doUHF,doGHF,doROHF,doRHFB,docRHF,  &
+                        doMP2,doMP3,                             & 
+                        doCCD,dopCCD,doDCD,doCCSD,doCCSDT,       & 
+                        do_drCCD,do_rCCD,do_crCCD,do_lCCD,       &
+                        doCIS,doCIS_D,doCID,doCISD,doFCI,        & 
+                        dophRPA,dophRPAx,docrRPA,doppRPA,doBRPA, & 
+                        doG0F2,doevGF2,doqsGF2,doufG0F02,        &
+                        doG0F3,doevGF3,                          & 
+                        doG0W0,doevGW,doqsGW,doufG0W0,doufGW,    &
+                        dolinGW,                                 & 
+                        doG0T0pp,doevGTpp,doqsGTpp,doufG0T0pp,   &
+                        doG0T0eh,doevGTeh,doqsGTeh,              &
+                        doevParquet,doqsParquet,                 &
                         doRtest,doUtest,doGtest)
 
 ! Read desired methods 
@@ -24,12 +24,12 @@ subroutine read_methods(working_dir,                           &
 
 ! Output variables
 
-  logical,intent(out)           :: doRHF,doUHF,doGHF,doROHF,doHFB,docRHF
+  logical,intent(out)           :: doRHF,doUHF,doGHF,doROHF,doRHFB,docRHF
   logical,intent(out)           :: doMP2,doMP3
   logical,intent(out)           :: doCCD,dopCCD,doDCD,doCCSD,doCCSDT
   logical,intent(out)           :: do_drCCD,do_rCCD,do_crCCD,do_lCCD
   logical,intent(out)           :: doCIS,doCIS_D,doCID,doCISD,doFCI
-  logical,intent(out)           :: dophRPA,dophRPAx,docrRPA,doppRPA
+  logical,intent(out)           :: dophRPA,dophRPAx,docrRPA,doppRPA,doBRPA
   logical,intent(out)           :: doG0F2,doevGF2,doqsGF2,doufG0F02,doG0F3,doevGF3  
   logical,intent(out)           :: doG0W0,doevGW,doqsGW,doufG0W0,doufGW,dolinGW
   logical,intent(out)           :: doG0T0pp,doevGTpp,doqsGTpp,doufG0T0pp 
@@ -61,7 +61,7 @@ subroutine read_methods(working_dir,                           &
       doUHF  = .false.
       doGHF  = .false.
       doROHF = .false.
-      doHFB  = .false.
+      doRHFB = .false.
       docRHF = .false.
       
       read(1,*) 
@@ -70,7 +70,7 @@ subroutine read_methods(working_dir,                           &
       if(ans2 == 'T') doUHF  = .true.
       if(ans3 == 'T') doGHF  = .true.
       if(ans4 == 'T') doROHF = .true.
-      if(ans5 == 'T') doHFB  = .true.
+      if(ans5 == 'T') doRHFB = .true.
       if(ans6 == 'T') docRHF = .true.
       
       ! Read MPn methods
@@ -136,13 +136,15 @@ subroutine read_methods(working_dir,                           &
       dophRPAx = .false.
       docrRPA  = .false.
       doppRPA  = .false.
+      doBRPA   = .false.
       
       read(1,*) 
-      read(1,*) ans1,ans2,ans3,ans4
+      read(1,*) ans1,ans2,ans3,ans4,ans5
       if(ans1 == 'T') dophRPA  = .true.
       if(ans2 == 'T') dophRPAx = .true.
       if(ans3 == 'T') docrRPA  = .true.
       if(ans4 == 'T') doppRPA  = .true.
+      if(ans5 == 'T') doBRPA   = .true.
       
       ! Read Green's function methods
       
