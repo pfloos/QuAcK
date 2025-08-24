@@ -10,7 +10,7 @@ subroutine read_options(working_dir,                                            
                         doACFDT,exchange_kernel,doXBS,                                                      &
                         dophBSE,dophBSE2,doppBSE,dBSE,dTDA,                                                 &
                         temperature,sigma,chem_pot_hf,restart_hfb,                                          &
-                        TDAeh,TDApp,max_diis_1b,max_diis_2b,max_it_1b,conv_1b,max_it_2b,conv_2b,lin_parquet,reg_1b,reg_2b)
+                        TDAeh,TDApp,max_diis_1b,max_diis_2b,max_it_1b,conv_1b,max_it_2b,conv_2b,lin_parquet,reg_1b,reg_2b,reg_PA)
 
 ! Read desired methods 
 
@@ -90,7 +90,7 @@ subroutine read_options(working_dir,                                            
   integer,intent(out)           :: max_diis_1b,max_diis_2b
   logical,intent(out)           :: TDAeh,TDApp
   double precision,intent(out)  :: reg_1b,reg_2b
-  logical,intent(out)           :: lin_parquet
+  logical,intent(out)           :: lin_parquet,reg_PA
 
 ! Local variables
 
@@ -267,13 +267,15 @@ subroutine read_options(working_dir,                                            
       lin_parquet = .false.
       reg_1b      = 0d0
       reg_2b      = 0d0
+      reg_PA      = .false.
     
       read(1,*) 
-      read(1,*) ans1,ans2,max_it_1b,conv_1b,max_it_2b,conv_2b,max_diis_1b,max_diis_2b,ans3,reg_1b,reg_2b
+      read(1,*) ans1,ans2,max_it_1b,conv_1b,max_it_2b,conv_2b,max_diis_1b,max_diis_2b,ans3,reg_1b,reg_2b,ans4
 
       if(ans1 == 'T') TDAeh = .true.
       if(ans2 == 'T') TDApp = .true.
       if(ans3 == 'T') lin_parquet = .true.
+      if(ans4 == 'T') reg_PA = .true.
  
     endif
 

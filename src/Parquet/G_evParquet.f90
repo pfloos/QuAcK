@@ -1,4 +1,4 @@
-subroutine G_evParquet(TDAeh,TDApp,max_diis_1b,max_diis_2b,linearize,eta_1b,eta_2b,ENuc,max_it_1b,conv_1b,max_it_2b,conv_2b, & 
+subroutine G_evParquet(TDAeh,TDApp,max_diis_1b,max_diis_2b,linearize,eta_1b,eta_2b,reg_PA,ENuc,max_it_1b,conv_1b,max_it_2b,conv_2b, & 
                     nOrb,nC,nO,nV,nR,nS,EGHF,eHF,ERI)
 
 ! Parquet approximation with eigenvalue self-consistency based on spin orbitals
@@ -17,7 +17,7 @@ subroutine G_evParquet(TDAeh,TDApp,max_diis_1b,max_diis_2b,linearize,eta_1b,eta_
   logical,intent(in)            :: TDApp      
   integer,intent(in)            :: max_diis_1b
   integer,intent(in)            :: max_diis_2b
-  logical,intent(in)            :: linearize  
+  logical,intent(in)            :: linearize,reg_PA
   double precision,intent(in)   :: eta_1b,eta_2b        
   double precision,intent(in)   :: ENuc
   double precision,intent(in)   :: EGHF
@@ -423,12 +423,11 @@ subroutine G_evParquet(TDAeh,TDApp,max_diis_1b,max_diis_2b,linearize,eta_1b,eta_
       err_eh = maxval(abs(eh_Phi - old_eh_Phi))
       err_pp = maxval(abs(pp_Phi - old_pp_Phi))
 
-!     alpha = 0.25d0
-!     eh_Phi(:,:,:,:) = alpha * eh_Phi(:,:,:,:) + (1d0 - alpha) * old_eh_Phi(:,:,:,:)
-!     pp_Phi(:,:,:,:) = alpha * pp_Phi(:,:,:,:) + (1d0 - alpha) * old_pp_Phi(:,:,:,:)
-
-!     call matout(nOrb**2,nOrb**2,eh_Phi - old_eh_Phi)
-!     call matout(nOrb**2,nOrb**2,pp_Phi - old_pp_Phi)
+      call wall_time(start_t)
+      write(*,*) 'Extrapolating two-body kernels...'
+      alpha = 0.25d0
+      eh_Phi(:,:,:,:) = alpha * eh_Phi(:,:,:,:) + (1d0 - alpha) * old_eh_Phi(:,:,:,:)
+      pp_Phi(:,:,:,:) = alpha * pp_Phi(:,:,:,:) + (1d0 - alpha) * old_pp_Phi(:,:,:,:)
 
       !--------------------!
       ! DIIS extrapolation !
@@ -476,6 +475,10 @@ subroutine G_evParquet(TDAeh,TDApp,max_diis_1b,max_diis_2b,linearize,eta_1b,eta_
 
       old_eh_Phi(:,:,:,:) = eh_Phi(:,:,:,:)
       old_pp_Phi(:,:,:,:) = pp_Phi(:,:,:,:)
+      call wall_time(end_t)
+      t = end_t - start_t
+      write(*,'(1X,A50,1X,F9.3,A8)') 'Wall time for two-body DIIS extrapolation =',t,' seconds'
+      write(*,*)
       
       ! Free memory
 

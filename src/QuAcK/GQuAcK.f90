@@ -8,7 +8,7 @@ subroutine GQuAcK(working_dir,dotest,doGHF,dostab,dosearch,doMP2,doMP3,doCCD,dop
                   maxSCF_GW,max_diis_GW,thresh_GW,TDA_W,lin_GW,reg_GW,eta_GW,                                &
                   maxSCF_GT,max_diis_GT,thresh_GT,TDA_T,lin_GT,reg_GT,eta_GT,                                &
                   dophBSE,dophBSE2,doppBSE,dBSE,dTDA,doACFDT,exchange_kernel,doXBS,                          &
-                  TDAeh,TDApp,max_diis_1b,max_diis_2b,max_it_1b,conv_1b,max_it_2b,conv_2b,lin_parquet,reg_1b,reg_2b)
+                  TDAeh,TDApp,max_diis_1b,max_diis_2b,max_it_1b,conv_1b,max_it_2b,conv_2b,lin_parquet,reg_1b,reg_2b,reg_PA)
 
   implicit none
   include 'parameters.h'
@@ -81,7 +81,7 @@ subroutine GQuAcK(working_dir,dotest,doGHF,dostab,dosearch,doMP2,doMP3,doCCD,dop
   integer,intent(in)            :: max_diis_1b,max_diis_2b
   logical,intent(in)            :: TDAeh,TDApp
   double precision,intent(in)   :: reg_1b,reg_2b
-  logical,intent(in)            :: lin_parquet
+  logical,intent(in)            :: lin_parquet,reg_PA
 
 ! Local variables
 
@@ -354,7 +354,7 @@ subroutine GQuAcK(working_dir,dotest,doGHF,dostab,dosearch,doMP2,doMP3,doCCD,dop
 
   if(doevParquet) then
     call wall_time(start_Parquet)
-    call G_evParquet(TDAeh,TDApp,max_diis_1b,max_diis_2b,lin_parquet,reg_1b,reg_2b,ENuc,max_it_1b,conv_1b,max_it_2b,conv_2b, & 
+    call G_evParquet(TDAeh,TDApp,max_diis_1b,max_diis_2b,lin_parquet,reg_1b,reg_2b,reg_PA,ENuc,max_it_1b,conv_1b,max_it_2b,conv_2b, & 
                   nBas2,nC,nO,nV,nR,nS,EGHF,eHF,ERI_MO)
     call wall_time(end_Parquet)
   
@@ -366,7 +366,7 @@ subroutine GQuAcK(working_dir,dotest,doGHF,dostab,dosearch,doMP2,doMP3,doCCD,dop
 
  if(doqsParquet) then
     call wall_time(start_Parquet)
-    call G_qsParquet(TDAeh,TDApp,max_diis_1b,max_diis_2b,reg_1b,reg_2b,ENuc,max_it_1b,conv_1b,max_it_2b,conv_2b, & 
+    call G_qsParquet(TDAeh,TDApp,max_diis_1b,max_diis_2b,reg_1b,reg_2b,reg_PA,ENuc,max_it_1b,conv_1b,max_it_2b,conv_2b, & 
                   nBas,nBas2,nC,nO,nV,nR,nS,EGHF,PHF,cHF,eHF,S,X,T,V,Hc,ERI_AO,ERI_MO)
     call wall_time(end_Parquet)
   

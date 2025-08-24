@@ -63,11 +63,11 @@ subroutine R_Parquet_QP_graph(eta,nOrb,nC,nO,nV,nR,nS,nOOs,nVVs,nOOt,nVVt,ERI, &
     
       nIt = nIt + 1
 
-      call R_Parquet_self_energy_omega(p,w,eta,nOrb,nC,nO,nV,nR,nS,nOOs,nVVs,nOOt,nVVt,ERI, &
-                                       eh_sing_rho,eh_sing_Om,eh_trip_rho,eh_trip_Om,       &
-                                       ee_sing_rho,ee_sing_Om,ee_trip_rho,ee_trip_Om,       &
-                                       hh_sing_rho,hh_sing_Om,hh_trip_rho,hh_trip_Om,       &
-                                       eOld,SigC,dSigC)
+      call R_Parquet_self_energy_diag_omega(p,w,eta,nOrb,nC,nO,nV,nR,nS,nOOs,nVVs,nOOt,nVVt,ERI, &
+                                            eh_sing_rho,eh_sing_Om,eh_trip_rho,eh_trip_Om,       &
+                                            ee_sing_rho,ee_sing_Om,ee_trip_rho,ee_trip_Om,       &
+                                            hh_sing_rho,hh_sing_Om,hh_trip_rho,hh_trip_Om,       &
+                                            eOld,SigC,dSigC)
 
       f  = w - eHF(p) - SigC
       df = 1d0/(1d0 - dSigC)

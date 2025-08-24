@@ -1,4 +1,4 @@
-subroutine R_qsParquet(TDAeh,TDApp,max_diis_1b,max_diis_2b,eta_1b,eta_2b,ENuc,max_it_1b,conv_1b,max_it_2b,conv_2b, & 
+subroutine R_qsParquet(TDAeh,TDApp,max_diis_1b,max_diis_2b,eta_1b,eta_2b,reg_PA,ENuc,max_it_1b,conv_1b,max_it_2b,conv_2b, & 
      nBas,nOrb,nC,nO,nV,nR,nS,ERHF,PHF,cHF,eHF,S,X,T,V,Hc,ERI_AO,ERI_MO)
 
 ! Parquet approximation with quasiparticle self-consistency based on spatial orbitals
@@ -17,6 +17,7 @@ subroutine R_qsParquet(TDAeh,TDApp,max_diis_1b,max_diis_2b,eta_1b,eta_2b,ENuc,ma
   logical,intent(in)            :: TDApp      
   integer,intent(in)            :: max_diis_1b
   integer,intent(in)            :: max_diis_2b
+  logical,intent(in)            :: reg_PA
   double precision,intent(in)   :: eta_1b,eta_2b        
   double precision,intent(in)   :: ENuc
   integer,intent(in)            :: max_it_1b,max_it_2b
@@ -467,8 +468,6 @@ subroutine R_qsParquet(TDAeh,TDApp,max_diis_1b,max_diis_2b,eta_1b,eta_2b,ENuc,ma
       write(*,'(1X,A50,1X,F9.3,A8)') 'Wall time for singlet ppBSE =',tt,' seconds'
       write(*,*)
 
-      call wall_time(start_t)
-
       if(print_ppLR) call print_excitation_energies('ppBSE@Parquet','2p (singlets)',nVVs,ee_sing_Om)
       if(print_ppLR) call print_excitation_energies('ppBSE@Parquet','2h (singlets)',nOOs,hh_sing_Om)
 
@@ -680,7 +679,9 @@ subroutine R_qsParquet(TDAeh,TDApp,max_diis_1b,max_diis_2b,eta_1b,eta_2b,ENuc,ma
       err_pp_sing = maxval(abs(old_pp_sing_Phi - pp_sing_Phi))
       err_pp_trip = maxval(abs(old_pp_trip_Phi - pp_trip_Phi))
 
-      alpha = 0.33d0
+      call wall_time(start_t)
+      write(*,*) 'Extrapolating two-body kernels...'
+      alpha = 0.25d0
       eh_sing_Phi(:,:,:,:) = alpha * eh_sing_Phi(:,:,:,:) + (1d0 - alpha) * old_eh_sing_Phi(:,:,:,:)
       eh_trip_Phi(:,:,:,:) = alpha * eh_trip_Phi(:,:,:,:) + (1d0 - alpha) * old_eh_trip_Phi(:,:,:,:)
       pp_sing_Phi(:,:,:,:) = alpha * pp_sing_Phi(:,:,:,:) + (1d0 - alpha) * old_pp_sing_Phi(:,:,:,:)
@@ -740,6 +741,10 @@ subroutine R_qsParquet(TDAeh,TDApp,max_diis_1b,max_diis_2b,eta_1b,eta_2b,ENuc,ma
       old_eh_trip_Phi(:,:,:,:) = eh_trip_Phi(:,:,:,:)
       old_pp_sing_Phi(:,:,:,:) = pp_sing_Phi(:,:,:,:)
       old_pp_trip_Phi(:,:,:,:) = pp_trip_Phi(:,:,:,:)
+      call wall_time(end_t)
+      tt = end_t - start_t
+      write(*,'(1X,A50,1X,F9.3,A8)') 'Wall time for two-body DIIS extrapolation =',tt,' seconds'
+      write(*,*)
 
       ! Free memory
 
@@ -810,21 +815,25 @@ subroutine R_qsParquet(TDAeh,TDApp,max_diis_1b,max_diis_2b,eta_1b,eta_2b,ENuc,ma
     write(*,*)
 
     call wall_time(start_t)
-!   call R_Parquet_self_energy_sp(eta_1b,nOrb,nC,nO,nV,nR,nS,nOOs,nVVs,nOOt,nVVt,eQP,ERI_MO,  &
-!                              eh_sing_rho,old_eh_sing_Om,eh_trip_rho,old_eh_trip_Om, &
-!                              ee_sing_rho,old_ee_sing_Om,ee_trip_rho,old_ee_trip_Om, &
-!                              hh_sing_rho,old_hh_sing_Om,hh_trip_rho,old_hh_trip_Om, &
-!                              SigC,Z)
-!   print*,'raw self-energy'
-!   call matout(nOrb,nOrb,SigC)
 
-    call R_Parquet_self_energy_interm(eta_1b,nOrb,nC,nO,nV,nR,nS,nOOs,nVVs,nOOt,nVVt,eQP,ERI_MO,  &
-                               eh_sing_rho,old_eh_sing_Om,eh_trip_rho,old_eh_trip_Om, &
-                               ee_sing_rho,old_ee_sing_Om,ee_trip_rho,old_ee_trip_Om, &
-                               hh_sing_rho,old_hh_sing_Om,hh_trip_rho,old_hh_trip_Om, &
-                               SigC,Z)
-!   print*,'fancy self-energy'
-!   call matout(nOrb,nOrb,SigC)
+    if(reg_PA) then 
+
+       ! call R_Parquet_self_energy_SRG_sp(eta_1b,nOrb,nC,nO,nV,nR,nS,nOOs,nVVs,nOOt,nVVt,eQP,ERI_MO,  &
+       call R_Parquet_self_energy_SRG_dp(eta_1b,nOrb,nC,nO,nV,nR,nS,nOOs,nVVs,nOOt,nVVt,eQP,ERI_MO,  &
+                                         eh_sing_rho,old_eh_sing_Om,eh_trip_rho,old_eh_trip_Om, &
+                                         ee_sing_rho,old_ee_sing_Om,ee_trip_rho,old_ee_trip_Om, &
+                                         hh_sing_rho,old_hh_sing_Om,hh_trip_rho,old_hh_trip_Om, &
+                                         SigC,Z)
+       
+    else
+
+       call R_Parquet_self_energy_eta(eta_1b,nOrb,nC,nO,nV,nR,nS,nOOs,nVVs,nOOt,nVVt,eQP,ERI_MO,  &
+                                      eh_sing_rho,old_eh_sing_Om,eh_trip_rho,old_eh_trip_Om, &
+                                      ee_sing_rho,old_ee_sing_Om,ee_trip_rho,old_ee_trip_Om, &
+                                      hh_sing_rho,old_hh_sing_Om,hh_trip_rho,old_hh_trip_Om, &
+                                      SigC,Z)
+       
+    end if
 
     call wall_time(end_t)
     tt = end_t - start_t
