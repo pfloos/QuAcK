@@ -37,6 +37,11 @@ subroutine R_qsParquet(TDAeh,TDApp,max_diis_1b,max_diis_2b,eta_1b,eta_2b,reg_PA,
 
   ! Local variables
 
+  integer                       :: pp,q,r,ss,pqrs
+
+  double precision              :: mem = 0d0
+  double precision              :: dp_in_GB = 8d0/(1024d0**3)
+  
   integer                       :: ispin
   double precision              :: alpha
 
@@ -102,9 +107,6 @@ subroutine R_qsParquet(TDAeh,TDApp,max_diis_1b,max_diis_2b,eta_1b,eta_2b,reg_PA,
   double precision,allocatable  :: Z(:)
   double precision              :: EcGM
 
-  double precision              :: mem = 0d0
-  double precision              :: dp_in_GB = 8d0/(1024d0**3)
-
 ! DIIS
   integer                       :: n_diis_1b,n_diis_2b
   double precision              :: rcond_1b,rcond_2b
@@ -114,8 +116,6 @@ subroutine R_qsParquet(TDAeh,TDApp,max_diis_1b,max_diis_2b,eta_1b,eta_2b,reg_PA,
   double precision,allocatable  :: Phi_diis(:,:)
   double precision,allocatable  :: err(:)
   double precision,allocatable  :: Phi(:)
-
-  integer                       :: pp,q,r,ss,pqrs
   
 ! Output variables
 ! None
@@ -835,8 +835,8 @@ subroutine R_qsParquet(TDAeh,TDApp,max_diis_1b,max_diis_2b,eta_1b,eta_2b,reg_PA,
 
     if(reg_PA) then 
 
-       ! call R_Parquet_self_energy_SRG_sp(eta_1b,nOrb,nC,nO,nV,nR,nS,nOOs,nVVs,nOOt,nVVt,eQP,ERI_MO,  &
        call R_Parquet_self_energy_SRG_dp(eta_1b,nOrb,nC,nO,nV,nR,nS,nOOs,nVVs,nOOt,nVVt,eQP,ERI_MO,  &
+       ! call R_Parquet_self_energy_SRG_sp(eta_1b,nOrb,nC,nO,nV,nR,nS,nOOs,nVVs,nOOt,nVVt,eQP,ERI_MO,  &
                                          eh_sing_rho,old_eh_sing_Om,eh_trip_rho,old_eh_trip_Om, &
                                          ee_sing_rho,old_ee_sing_Om,ee_trip_rho,old_ee_trip_Om, &
                                          hh_sing_rho,old_hh_sing_Om,hh_trip_rho,old_hh_trip_Om, &

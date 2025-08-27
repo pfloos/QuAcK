@@ -35,7 +35,14 @@ subroutine G_qsParquet(TDAeh,TDApp,max_diis_1b,max_diis_2b,eta_1b,eta_2b,reg_PA,
   double precision,intent(in)   :: ERI_AO(nOrb,nOrb,nOrb,nOrb)
   double precision,intent(inout):: ERI_MO(nOrb2,nOrb2,nOrb2,nOrb2)
 
-! Local variables
+  ! Local variables
+
+  integer                       :: pp,q,r,ss,pqrs
+
+  double precision              :: mem = 0d0
+  double precision              :: dp_in_GB = 8d0/(1024d0**3)
+  
+  double precision              :: alpha
 
   integer                       :: n_it_1b,n_it_2b
   double precision              :: err_1b
@@ -46,7 +53,7 @@ subroutine G_qsParquet(TDAeh,TDApp,max_diis_1b,max_diis_2b,eta_1b,eta_2b,reg_PA,
   double precision              :: start_1b,end_1b,t_1b
   double precision              :: start_2b,end_2b,t_2b
 
-  integer                       :: nOO,nVV,nOrb2_Sq
+  integer                       :: nOO,nVV,nOrb2Sq
 
   ! eh BSE
   double precision              :: Ec_eh
@@ -97,12 +104,6 @@ subroutine G_qsParquet(TDAeh,TDApp,max_diis_1b,max_diis_2b,eta_1b,eta_2b,reg_PA,
   double precision,allocatable  :: Phi_diis(:,:)
   double precision,allocatable  :: err(:)
   double precision,allocatable  :: Phi(:)
-  double precision              :: alpha
-
-  integer                       :: pp,q,r,ss,pqrs
-
-  double precision              :: mem = 0d0
-  double precision              :: dp_in_GB = 8d0/(1024d0**3)
 
 ! Output variables
 ! None
@@ -110,7 +111,7 @@ subroutine G_qsParquet(TDAeh,TDApp,max_diis_1b,max_diis_2b,eta_1b,eta_2b,reg_PA,
 ! Useful parameters
   nOO = nO*(nO - 1)/2
   nVV = nV*(nV - 1)/2
-  nOrb2_Sq = nOrb2 * nOrb2
+  nOrb2Sq = nOrb2 * nOrb2
 
 ! Start
  
@@ -154,7 +155,7 @@ subroutine G_qsParquet(TDAeh,TDApp,max_diis_1b,max_diis_2b,eta_1b,eta_2b,reg_PA,
 
 ! DIIS for one-body part        
 
-  allocate(err_diis_1b(nOrb2_Sq,max_diis_1b),F_diis(nOrb2_Sq,max_diis_1b),err_F(nOrb2,nOrb2))
+  allocate(err_diis_1b(nOrb2Sq,max_diis_1b),F_diis(nOrb2Sq,max_diis_1b),err_F(nOrb2,nOrb2))
 
   mem = mem + size(err_diis_1b) + size(F_diis) + size(err_F)
   write(*,'(1X,A50,4X,F6.3,A3)') 'Memory usage in GParquet = ',mem*dp_in_GB,' GB'
@@ -674,14 +675,14 @@ subroutine G_qsParquet(TDAeh,TDApp,max_diis_1b,max_diis_2b,eta_1b,eta_2b,reg_PA,
     write(*,*) 
     
     call wall_time(start_t)
-    call G_Parquet_self_energy(eta_1b,nOrb2,nC,nO,nV,nR,nS,nOO,nVV,eQP,ERI_MO, &
-                               eh_rho,old_eh_Om,ee_rho,old_ee_Om,hh_rho,old_hh_Om,SigC,Z)
+    call G_Parquet_self_energy_SRG_dp(eta_1b,nOrb2,nC,nO,nV,nR,nS,nOO,nVV,eQP,ERI_MO, &
+                                      eh_rho,old_eh_Om,ee_rho,old_ee_Om,hh_rho,old_hh_Om,SigC,Z)
     call wall_time(end_t)
     tt = end_t - start_t
     write(*,'(1X,A50,1X,F9.3,A8)') 'Wall time for self energy =',tt,' seconds'
     write(*,*)
 
-    SigC_AO(:,:) = 0d0
+    SigC = 0.5d0*(SigC + transpose(SigC))
     call MOtoAO(nOrb2,nOrb2,S,C,SigC,SigC_AO)
 
 !   ... and add self-energy
@@ -698,7 +699,7 @@ subroutine G_qsParquet(TDAeh,TDApp,max_diis_1b,max_diis_2b,eta_1b,eta_2b,reg_PA,
     if(max_diis_1b > 1) then 
   
       n_diis_1b = min(n_diis_1b+1,max_diis_1b)
-      call DIIS_extrapolation(rcond_1b,nOrb2_Sq,nOrb2_Sq,n_diis_1b,err_diis_1b,F_diis,err_F,F)
+      call DIIS_extrapolation(rcond_1b,nOrb2Sq,nOrb2Sq,n_diis_1b,err_diis_1b,F_diis,err_F,F)
   
     end if
 
