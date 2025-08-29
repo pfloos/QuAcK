@@ -212,6 +212,8 @@ subroutine BQuAcK(working_dir,dotest,doRHFB,doBRPA,dophRPA,doG0W0,doqsGW,nNuc,nB
       !                    Enuc,EcGM,T,V,S,pMAT,pMATcorr)
       !call cubDyson_GW_RHF(nBas,nOrb,nO,MOCoef,eHF,nfreqs,wweight,wcoord,ERI_AO,vMAT, &
       !                    Enuc,EcGM,T,V,S,pMAT,pMATcorr)
+      !call G_Dyson_GW_RHF(nBas,nOrb,nO,MOCoef,eHF,nfreqs,wweight,wcoord,ERI_AO,vMAT, &
+      !                    Enuc,EcGM,T,V,S,pMATcorr)
       deallocate(pMATcorr)
      endif
      ! Test EcGM computed from Sigma_c(iw) [ NOTE: This is really bad numerically and never used. ]
@@ -297,6 +299,8 @@ subroutine BQuAcK(working_dir,dotest,doRHFB,doBRPA,dophRPA,doG0W0,doqsGW,nNuc,nB
     !                      Enuc,EcGM,sigma,T,V,S,pMAT,panomMAT,pMATcorr,panomMATcorr)
     !call cubDyson_GW_RHFB(nBas,nOrb,nOrb_twice,MOCoef,eQP_state,nfreqs,wweight,wcoord,ERI_AO,vMAT,U_QP,&
     !                      Enuc,EcGM,sigma,T,V,S,pMAT,panomMAT,pMATcorr,panomMATcorr)
+    !call G_Dyson_GW_RHFB(nBas,nOrb,nOrb_twice,MOCoef,eQP_state,nfreqs,wweight,wcoord,ERI_AO,vMAT,U_QP,&
+    !                     Enuc,EcGM,sigma,T,V,S,pMATcorr,panomMATcorr)
     deallocate(pMATcorr,panomMATcorr)
    endif
    ! Test EcGM computed from Sigma_c(iw) [ NOTE: This is really bad numerically and never used. ]
