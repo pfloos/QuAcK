@@ -75,21 +75,31 @@ subroutine sort_ppRPA(nOO,nVV,nPP,Om,Z,Om1,X1,Y1,Om2,X2,Y2)
     if(Om(pq) > 0d0) then 
 
       ab = ab + 1
-      Om1(ab) = Om(pq)
-      Z1(1:nPP,ab) = Z(1:nPP,pq)
+      if(ab <= nVV) then
+        Om1(ab) = Om(pq)
+        Z1(1:nPP,ab) = Z(1:nPP,pq)
+      endif
 
     else
 
       ij = ij + 1
-      Om2(ij) = Om(pq)
-      Z2(1:nPP,ij) = Z(1:nPP,pq)
+      if(ij <= nOO) then
+        Om2(ij) = Om(pq)
+        Z2(1:nPP,ij) = Z(1:nPP,pq)
+      endif
 
     end if
 
   end do
 
-  if(minval(Om1) < 0d0 .or. ab /= nVV) call print_warning('You may have instabilities in pp-RPA!!')
-  if(maxval(Om2) > 0d0 .or. ij /= nOO) call print_warning('You may have instabilities in pp-RPA!!')
+  if(ab /= nVV) call print_warning('You may have instabilities in pp-RPA [in virt-virt] !!')
+  if(ij /= nOO) call print_warning('You may have instabilities in pp-RPA [in occ-occ] !!')
+  if(ab /= nVV .or. ij /= nOO) then
+    call print_warning('pp-RPA excitation energies (incl. instabilities)')
+    do pq=1,nPP
+      write(*,'(i5,f10.5)') pq,Om(pq)
+    enddo
+  endif
 
   if(nVV > 0) then 
 
@@ -155,5 +165,7 @@ subroutine sort_ppRPA(nOO,nVV,nPP,Om,Z,Om1,X1,Y1,Om2,X2,Y2)
 ! call matout(nOO,nOO,matmul(transpose(X2),X2) - matmul(transpose(Y2),Y2))
 ! call matout(nVV,nOO,matmul(transpose(X1),X2) - matmul(transpose(Y1),Y2))
 ! call matout(nOO,nVV,matmul(transpose(X2),X1) - matmul(transpose(Y2),Y1))
+ 
+ deallocate(M,Z1,Z2,order1,order2)
 
 end subroutine 

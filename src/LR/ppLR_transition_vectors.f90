@@ -28,7 +28,7 @@ subroutine ppLR_transition_vectors(spin_allowed,nBas,nC,nO,nV,nR,nOO,nVV,dipole_
   integer                       :: a,b,c,d,ab,cd
   integer                       :: i,j,k,l,ij,kl
   integer                       :: maxOO = 25
-  integer                       :: maxVV = 0
+  integer                       :: maxVV = 25
   double precision              :: S2
   double precision,parameter    :: thres_vec = 0.1d0
   double precision,allocatable  :: os1(:)
