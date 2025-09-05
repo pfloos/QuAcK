@@ -33,7 +33,7 @@ subroutine ppRLR_C(ispin,nOrb,nC,nO,nV,nR,nVV,lambda,e,ERI,Cpp)
 
 ! Define the chemical potential
  
-  use_chem_pot=.false.
+  use_chem_pot = .false.
   eF = 0d0
   inquire(file='use_chem_pot_in_ppRPA', exist=use_chem_pot)
   if(use_chem_pot) then

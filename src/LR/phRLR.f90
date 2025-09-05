@@ -14,6 +14,7 @@ subroutine phRLR(TDA,nS,Aph,Bph,EcRPA,Om,XpY,XmY)
 
   ! Local variables
 
+  integer                       :: ph
   double precision              :: trace_matrix
   double precision              :: t1, t2
   double precision,allocatable  :: ApB(:,:)
@@ -65,10 +66,14 @@ subroutine phRLR(TDA,nS,Aph,Bph,EcRPA,Om,XpY,XmY)
 
     call diagonalize_matrix(nS,Z,Om)
 
-    if(minval(Om) < 0d0) & 
+    if(minval(Om) < 0d0) then
       call print_warning('You may have instabilities in linear response: negative excitations!!')
+      do ph=1,nS
+        write(*,'(i5,f10.5)') ph,Om(ph)
+      enddo
+    endif
  
-    Om = sqrt(Om)
+    Om = sqrt(abs(Om))
     call dgemm('T','N',nS,nS,nS,1d0,Z,size(Z,1),AmBSq,size(AmBSq,1),0d0,XpY,size(XpY,1))
     call DA(nS,1d0/dsqrt(Om),XpY)
 
