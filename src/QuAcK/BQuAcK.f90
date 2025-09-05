@@ -115,7 +115,7 @@ subroutine BQuAcK(working_dir,dotest,doRHFB,doBRPA,dophRPA,doG0W0,doqsGW,nNuc,nB
   inquire(file='hubbard', exist=file_exists)
   if(file_exists) then
    write(*,*)
-   write(*,*) 'Reading Hubbard model two-body parameters'
+   write(*,*) 'Reading Hubbard model two-body parameters from hubbard file'
    write(*,*)
    ERI_AO=0d0; ENuc=0d0;
    open(unit=314, form='formatted', file='hubbard', status='old')

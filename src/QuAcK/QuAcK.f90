@@ -272,7 +272,7 @@ program QuAcK
   inquire(file='hubbard', exist=file_exists)
   if(file_exists) then
    write(*,*)
-   write(*,*) 'Reading Hubbard model one-body parameters'
+   write(*,*) 'Reading Hubbard model one-body parameters from hubbard file'
    write(*,*)
    S=0d0; T=0d0; V=0d0; Hc=0d0; X=0d0;
    dipole_int_AO=0d0; Znuc=0d0;

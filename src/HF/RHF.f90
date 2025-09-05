@@ -94,6 +94,7 @@ subroutine RHF(dotest,maxSCF,thresh,max_diis,guess_type,level_shift,nNuc,ZNuc,rN
   inquire(file='hubbard', exist=file_exists)
   if(file_exists) then
    inquire(file='site_guess', exist=file_exists)
+   write(*,*) 'Using as guess for Hubbard the sites basis because the file site_guess is present'
    if(file_exists) then
     c=0d0
     do iorb=1,nOrb

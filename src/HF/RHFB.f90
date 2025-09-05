@@ -338,10 +338,10 @@ subroutine RHFB(dotest,doqsGW,maxSCF,thresh,max_diis,level_shift,nNuc,ZNuc,rNuc,
     write(*,*)'!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!'
     write(*,*)
 
-    deallocate(J,K,eigVEC,H_HFB,R,eigVAL,err_diis,H_HFB_diis,Occ)
-    deallocate(err_ao,S_ao,X_ao,R_ao_old,H_HFB_ao)
-
-    stop
+!    deallocate(J,K,eigVEC,H_HFB,R,eigVAL,err_diis,H_HFB_diis,Occ)
+!    deallocate(err_ao,S_ao,X_ao,R_ao_old,H_HFB_ao)
+!
+!    stop
 
   end if
 
