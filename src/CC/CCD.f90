@@ -39,6 +39,7 @@ subroutine CCD(dotest,maxSCF,thresh,max_diis,nBasin,nCin,nOin,nVin,nRin,ERI,ENuc
   double precision,allocatable  :: eO(:)
   double precision,allocatable  :: eV(:)
   double precision,allocatable  :: delta_OOVV(:,:,:,:)
+  double precision,allocatable  :: delta_OOVV_plus(:,:,:,:)
 
   double precision,allocatable  :: OOOO(:,:,:,:)
   double precision,allocatable  :: OOVV(:,:,:,:)
@@ -68,6 +69,8 @@ subroutine CCD(dotest,maxSCF,thresh,max_diis,nBasin,nCin,nOin,nVin,nRin,ERI,ENuc
   logical                       :: do_IP_EOM_CC_1h   = .false.
   logical                       :: do_DEA_EOM_CC_2p  = .false.
   logical                       :: do_DIP_EOM_CC_2h  = .false.
+
+  logical                       :: doJacobian = .false.
 
 ! Hello world
 
@@ -102,11 +105,13 @@ subroutine CCD(dotest,maxSCF,thresh,max_diis,nBasin,nCin,nOin,nVin,nRin,ERI,ENuc
 
   allocate(eO(nO-nC),eV(nV-nR))
   allocate(delta_OOVV(nO-nC,nO-nC,nV-nR,nV-nR))
+  allocate(delta_OOVV_plus(nO-nC,nO-nC,nV-nR,nV-nR))
 
   eO(:) = seHF(nC+1:nO)
   eV(:) = seHF(nO+1:nBas-nR)
 
   call form_delta_OOVV(nC,nO,nV,nR,eO,eV,delta_OOVV)
+  delta_OOVV_plus(:,:,:,:) = delta_OOVV(:,:,:,:)
 
   deallocate(seHF)
 
@@ -124,6 +129,8 @@ subroutine CCD(dotest,maxSCF,thresh,max_diis,nBasin,nCin,nOin,nVin,nRin,ERI,ENuc
   OVVO(:,:,:,:) = dbERI(nC+1:nO,nO+1:nBas-nR,nO+1:nBas-nR,nC+1:nO)
 
   deallocate(dbERI)
+
+  if(doJacobian) call form_delta_OOVV_plus(nC,nO,nV,nR,eO,eV,delta_OOVV_plus,OVOV,OOOO,VVVV)
  
 ! MP2 guess amplitudes
 
@@ -189,7 +196,7 @@ subroutine CCD(dotest,maxSCF,thresh,max_diis,nBasin,nCin,nOin,nVin,nRin,ERI,ENuc
   
 !   Update amplitudes
 
-    t(:,:,:,:) = t(:,:,:,:) - r(:,:,:,:)/delta_OOVV(:,:,:,:)
+    t(:,:,:,:) = t(:,:,:,:) - r(:,:,:,:)/delta_OOVV_plus(:,:,:,:)
 
 !   Compute correlation energy
 
@@ -204,7 +211,7 @@ subroutine CCD(dotest,maxSCF,thresh,max_diis,nBasin,nCin,nOin,nVin,nRin,ERI,ENuc
     ! DIIS extrapolation
 
     n_diis = min(n_diis+1,max_diis)
-    call DIIS_extrapolation(rcond,(nO-nC)**2*(nV-nR)**2,(nO-nC)**2*(nV-nR)**2,n_diis,error_diis,t_diis,-r/delta_OOVV,t)
+    call DIIS_extrapolation(rcond,(nO-nC)**2*(nV-nR)**2,(nO-nC)**2*(nV-nR)**2,n_diis,error_diis,t_diis,r,t)
 
     !  Reset DIIS if required
 
