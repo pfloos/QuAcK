@@ -37,10 +37,11 @@ subroutine RHFB(dotest,doqsGW,maxSCF,thresh,max_diis,level_shift,nNuc,ZNuc,rNuc,
 
 ! Local variables
 
+  logical                       :: is_fractional
   logical                       :: chem_pot_hf
   logical                       :: restart_hfb
   integer                       :: nBas2
-  integer                       :: iorb
+  integer                       :: iorb,jorb
   integer                       :: nSCF
   integer                       :: nBas2_Sq
   integer                       :: n_diis
@@ -54,6 +55,7 @@ subroutine RHFB(dotest,doqsGW,maxSCF,thresh,max_diis,level_shift,nNuc,ZNuc,rNuc,
 
   double precision              :: Conv
   double precision              :: rcond
+  double precision              :: err_no_rep
   double precision              :: trace_1rdm
   double precision              :: thrs_N
   double precision              :: N_anom
@@ -75,8 +77,6 @@ subroutine RHFB(dotest,doqsGW,maxSCF,thresh,max_diis,level_shift,nNuc,ZNuc,rNuc,
   double precision,allocatable  :: c_ao(:,:)
   double precision,allocatable  :: R_ao_old(:,:)
   double precision,allocatable  :: H_HFB_ao(:,:)
-  !double precision,allocatable  :: P_mo_trial(:,:)
-  !double precision,allocatable  :: P_ao_trial(:,:)
 
 ! Output variables
 
@@ -437,38 +437,154 @@ subroutine RHFB(dotest,doqsGW,maxSCF,thresh,max_diis,level_shift,nNuc,ZNuc,rNuc,
    U_QP(:,:) = eigVEC(:,:) 
   endif
 
-  ! Check trace of R
+  ! Check the trace of R and that this is the NO representation
+  err_no_rep = 0d0
+  is_fractional = .false.
   do iorb=1,nOrb
    trace_1rdm = trace_1rdm + R(iorb,iorb)
+   if(abs(R(iorb,iorb)-1d0)>1d-8 .and. abs(R(iorb,iorb))>1d-8 ) then
+    is_fractional = .true.
+   endif
+   do jorb=1,nOrb
+    if(iorb/=jorb) err_no_rep = err_no_rep + abs(R(iorb,jorb))
+   enddo
   enddo
   trace_1rdm = 2d0*trace_1rdm
   write(*,*)
   write(*,'(A33,1X,F16.10,A3)') ' Trace [ 1D^NO ]     = ',trace_1rdm,'   '
+  write(*,'(A33,1X,F16.10,A3)') ' Error NO represent  = ',err_no_rep,'   '
+  write(*,*)
+  write(*,'(A50)') '---------------------------------------'
+  write(*,'(A50)') ' HFB QP energies in NO basis'
+  write(*,'(A50)') '---------------------------------------'
+  do iorb=1,nOrb_twice
+   write(*,'(I7,10F15.8)') iorb,eigVAL(iorb)
+  enddo
   write(*,*)
 
 ! Test if it can be a RHF solution
-  ! TODO
-  !allocate(P_mo_trial(nOrb,nOrb),P_ao_trial(nBas,nBas))
-  !P_mo_trial(:,:)=R(1:nOrb,1:nOrb)-matmul(R(1:nOrb,nOrb+1:nOrb_twice),R(1:nOrb,nOrb+1:nOrb_twice))
-  !P_ao_trial=matmul(c,matmul(P_mo_trial,transpose(c)))
-  !deallocate(eigVEC,eigVAL)
-  !allocate(eigVEC(nBas,nBas),eigVAL(nBas))
-  !eigVEC(:,:) = 0d0
-  !eigVEC(1:nBas,1:nBas) = P_ao_trial(1:nBas,1:nBas)
-  !call diagonalize_matrix(nBas,eigVEC,eigVAL)
-  !eigVAL=-eigVAL
-  !call sort_ascending(nOrb,eigVAL)                        
-  !eigVAL=-eigVAL
-  !write(*,'(A50)') '---------------------------------------'
-  !write(*,'(A50)') ' HFB -> RHF test (AO occ. numbers) '
-  !write(*,'(A50)') '---------------------------------------'
-  !do iorb=1,nBas
-  ! if(abs(eigVAL(iorb))>1d-8) then
-  !  write(*,'(I7,10F15.8)') iorb,2d0*eigVAL(iorb)
-  ! endif
-  !enddo
-  !write(*,*)
-  !deallocate(P_mo_trial,P_ao_trial)
+  ! TODO ...
+  if(is_fractional .and. .false.) then
+
+   ! Diagonalize H_HFB matrix to compute the eigenvectors
+   F(:,:) = Hc(:,:) + J(:,:) + 0.5d0*K(:,:) - chem_pot*S(:,:)
+   H_HFB(:,:) = 0d0
+   H_HFB(1:nOrb      ,1:nOrb      )           = matmul(transpose(X),matmul(F,X))
+   H_HFB(nOrb+1:nOrb_twice,nOrb+1:nOrb_twice) = -H_HFB(1:nOrb,1:nOrb)
+   H_HFB(1:nOrb      ,nOrb+1:nOrb_twice) = matmul(transpose(X),matmul(Delta,X))
+   H_HFB(nOrb+1:nOrb_twice,1:nOrb      ) = H_HFB(1:nOrb,nOrb+1:nOrb_twice)
+   eigVEC(:,:) = H_HFB(:,:)      
+   call diagonalize_matrix(nOrb_twice,eigVEC,eigVAL)
+
+block
+
+  double precision,allocatable  :: eigval_tmp(:)
+  double precision,allocatable  :: eigval_mat(:,:)
+  double precision,allocatable  :: VUdmat(:,:)
+  double precision,allocatable  :: UUdmat(:,:)
+  double precision,allocatable  :: Norm_mat(:,:)
+  double precision,allocatable  :: Xmat(:,:)
+  double precision,allocatable  :: W_decoup(:,:)
+  double precision,allocatable  :: V_decoup(:,:)
+  double precision,allocatable  :: U_decoup(:,:)
+
+   ! Compute Foldy-Wouthuysen decoupling  
+   allocate(VUdmat(nOrb,nOrb),UUdmat(nOrb,nOrb),Xmat(nOrb,nOrb))
+   allocate(eigval_mat(nOrb,nOrb),eigval_tmp(nOrb))
+   allocate(Norm_mat(nOrb,nOrb))
+   allocate(W_decoup(nOrb_twice,nOrb_twice),V_decoup(nOrb_twice,nOrb_twice))
+   allocate(U_decoup(nOrb_twice,nOrb_twice))
+
+   W_decoup=0d0;V_decoup=0d0;
+    ! Compute X
+   VUdmat=matmul(eigVEC(nOrb+1:nOrb_twice,1:nOrb),transpose(eigVEC(1:nOrb,1:nOrb)))
+   UUdmat=matmul(eigVEC(1:nOrb,1:nOrb),transpose(eigVEC(1:nOrb,1:nOrb)))
+   call inverse_matrix(nOrb,UUdmat,UUdmat)
+   Xmat=matmul(VUdmat,UUdmat)
+   do iorb=1,nOrb_twice
+    W_decoup(iorb,iorb)=1d0
+   enddo  
+    ! Compute W
+   W_decoup(1:nOrb,nOrb+1:nOrb_twice)=transpose(Xmat)
+   W_decoup(nOrb+1:nOrb_twice,1:nOrb)=-Xmat
+    ! Compute V
+   VUdmat=0d0
+   do iorb=1,nOrb
+    VUdmat(iorb,iorb)=1d0
+   enddo
+   VUdmat=VUdmat+matmul(transpose(Xmat),Xmat)
+   Norm_mat=VUdmat
+   call diagonalize_matrix(nOrb,Norm_mat,eigval_tmp)
+   eigval_tmp(:)=1d0/sqrt(abs(eigval_tmp(:)))
+   eigval_mat=0d0
+   do iorb=1,nOrb
+    eigval_mat(iorb,iorb)=eigval_tmp(iorb)
+   enddo
+   Norm_mat=matmul(Norm_mat,matmul(eigval_mat,transpose(Norm_mat)))
+   V_decoup(1:nOrb,1:nOrb)=Norm_mat(1:nOrb,1:nOrb)
+   UUdmat=0d0
+   do iorb=1,nOrb
+    UUdmat(iorb,iorb)=1d0
+   enddo
+   UUdmat=UUdmat+matmul(Xmat,transpose(Xmat))
+   Norm_mat=UUdmat
+   call diagonalize_matrix(nOrb,Norm_mat,eigval_tmp)
+   eigval_tmp(:)=1d0/sqrt(abs(eigval_tmp(:)))
+   eigval_mat=0d0
+   do iorb=1,nOrb
+    eigval_mat(iorb,iorb)=eigval_tmp(iorb)
+   enddo
+   Norm_mat=matmul(Norm_mat,matmul(eigval_mat,transpose(Norm_mat)))
+   V_decoup(nOrb+1:nOrb_twice,nOrb+1:nOrb_twice)=Norm_mat(1:nOrb,1:nOrb)
+    ! Compute U_decoup = V W
+   U_decoup=matmul(V_decoup,W_decoup)
+    ! Use U_decoup
+   H_HFB=matmul(matmul(U_decoup,H_HFB),transpose(U_decoup))
+   eigVEC=matmul(U_decoup,eigVEC)
+   
+   write(*,*)
+   write(*,*) ' H^HFB,test = U_decoup H^HFB U_decoup^T '
+   do iorb=1,nOrb_twice
+    write(*,'(*(f10.5))') H_HFB(iorb,:)
+   enddo
+   write(*,*) ' W^test = U_decoup W '
+   do iorb=1,nOrb_twice
+    write(*,'(*(f10.5))') eigVEC(iorb,:)
+   enddo
+
+   ! Build R and check trace
+   trace_1rdm = 0d0 
+   R(:,:)     = 0d0
+   do iorb=1,nOrb
+    R(:,:) = R(:,:) + matmul(eigVEC(:,iorb:iorb),transpose(eigVEC(:,iorb:iorb)))
+   enddo
+
+   write(*,*) ' R^test '
+   do iorb=1,nOrb_twice
+    write(*,'(*(f10.5))') R(iorb,:)
+   enddo
+   write(*,*)
+
+   do iorb=1,nOrb
+    trace_1rdm = trace_1rdm + R(iorb,iorb)
+   enddo
+   trace_1rdm = 2d0*trace_1rdm
+   write(*,'(A33,1X,F16.10,A3)') ' Trace [ 1D^test ]     = ',trace_1rdm,'   '
+   write(*,*)
+   write(*,'(A50)') '---------------------------------------'
+   write(*,'(A50)') ' HFB QP energies for test'
+   write(*,'(A50)') '---------------------------------------'
+   do iorb=1,nOrb_twice
+    write(*,'(I7,10F15.8)') iorb,eigVAL(iorb)
+   enddo
+   write(*,*)
+
+  deallocate(VUdmat,UUdmat,Norm_mat,Xmat,eigval_tmp,eigval_mat)
+  deallocate(W_decoup,V_decoup,U_decoup)
+
+end block
+
+  endif
  
 ! Testing zone
 
