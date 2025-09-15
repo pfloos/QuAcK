@@ -506,6 +506,8 @@ subroutine RHFB(dotest,doqsGW,maxSCF,thresh,max_diis,level_shift,nNuc,ZNuc,rNuc,
 
 block
 
+  integer                       :: icoord
+
   double precision              :: eigval_test(3)
   double precision              :: Aij(3,3)
   double precision              :: Tij(3,3)
@@ -550,12 +552,30 @@ block
   Tmp_test=matmul(Mz,Mz) 
   Tij(3,3)=trace_matrix(nOrb,Tmp_test) 
 
+do iorb=1,nOrb
+write(*,'(*(f10.5))') P(iorb,:)
+enddo
+do iorb=1,nOrb
+write(*,'(*(f10.5))') Mx(iorb,:)
+enddo
+do iorb=1,nOrb
+write(*,'(*(f10.5))') Mz(iorb,:)
+enddo
+
+do icoord=1,3
+write(*,'(*(f10.5))') Tij(icoord,:)
+enddo
+
   Aij=-Tij
   Tmp_test=P-matmul(P,P)
   trace_1rdm=trace_matrix(nOrb,Tmp_test)
-  do iorb=1,3
-   Aij(iorb,iorb)=Aij(iorb,iorb)+trace_1rdm
+  do icoord=1,3
+   Aij(icoord,icoord)=Aij(icoord,icoord)+trace_1rdm
   enddo
+
+do icoord=1,3
+write(*,'(*(f10.5))') Aij(icoord,:)
+enddo
 
   write(*,*)
   write(*,'(A50)') '---------------------------------------'
