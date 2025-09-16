@@ -37,14 +37,19 @@ subroutine RHFB(dotest,doqsGW,maxSCF,thresh,max_diis,level_shift,nNuc,ZNuc,rNuc,
 
 ! Local variables
 
+  logical                       :: file_exists
   logical                       :: is_fractional
   logical                       :: chem_pot_hf
   logical                       :: restart_hfb
   integer                       :: nBas2
+  integer                       :: iunit,iunit2
   integer                       :: iorb,jorb
+  integer                       :: ibas,jbas,kbas,lbas
   integer                       :: nSCF
   integer                       :: nBas2_Sq
   integer                       :: n_diis
+  double precision              :: Ecore
+  double precision              :: Eee
   double precision              :: ET
   double precision              :: EV
   double precision              :: EJ
@@ -57,6 +62,7 @@ subroutine RHFB(dotest,doqsGW,maxSCF,thresh,max_diis,level_shift,nNuc,ZNuc,rNuc,
   double precision              :: rcond
   double precision              :: err_no_rep
   double precision              :: trace_1rdm
+  double precision              :: trace_2rdm
   double precision              :: thrs_N
   double precision              :: N_anom
   double precision,external     :: trace_matrix
@@ -77,6 +83,8 @@ subroutine RHFB(dotest,doqsGW,maxSCF,thresh,max_diis,level_shift,nNuc,ZNuc,rNuc,
   double precision,allocatable  :: c_ao(:,:)
   double precision,allocatable  :: R_ao_old(:,:)
   double precision,allocatable  :: H_HFB_ao(:,:)
+  double precision,allocatable  :: AO_1rdm(:,:)
+  double precision,allocatable  :: AO_2rdm(:,:,:,:)
 
 ! Output variables
 
@@ -390,6 +398,70 @@ subroutine RHFB(dotest,doqsGW,maxSCF,thresh,max_diis,level_shift,nNuc,ZNuc,rNuc,
   ! Total energy
   EHFB = ET + EV + EJ + EK + EL
 
+! Print the 1-RDM and 2-RDM in AO basis
+  inquire(file='ao_rdms', exist=file_exists)
+  if(file_exists) then
+   write(*,*)
+   write(*,'(a)') ' -------------------------------------------'
+   write(*,'(a)') ' Computing and printing RDMs in the AO basis'
+   write(*,'(a)') ' -------------------------------------------'
+   allocate(AO_1rdm(nBas,nBas),AO_2rdm(nBas,nBas,nBas,nBas))
+   AO_1rdm(:,:)=P(:,:)
+   AO_2rdm(:,:,:,:)=0d0
+   do ibas=1,nBas
+    do jbas=1,nBas
+     do kbas=1,nBas
+      do lbas=1,nBas
+       ! Hartree
+       AO_2rdm(ibas,jbas,kbas,lbas)=AO_2rdm(ibas,jbas,kbas,lbas)+0.5d0*P(ibas,kbas)*P(jbas,lbas)
+       ! Exchange
+       AO_2rdm(ibas,jbas,kbas,lbas)=AO_2rdm(ibas,jbas,kbas,lbas)-0.25d0*P(ibas,lbas)*P(jbas,kbas)
+       ! Pairing
+       AO_2rdm(ibas,jbas,kbas,lbas)=AO_2rdm(ibas,jbas,kbas,lbas)+sigma*Panom(ibas,jbas)*Panom(kbas,lbas)
+       !AO_2rdm(ibas,jbas,kbas,lbas)=AO_2rdm(ibas,jbas,kbas,lbas)-Panom(ibas,jbas)*Panom(kbas,lbas) ! This is CA NOFA with correct trace
+      enddo 
+     enddo 
+    enddo 
+   enddo
+   trace_1rdm=0d0
+   trace_2rdm=0d0
+   iunit=312
+   iunit2=313
+   open(unit=iunit,form='unformatted',file='rhfb_ao_1rdm') 
+   open(unit=iunit2,form='unformatted',file='rhfb_ao_2rdm') 
+   Ecore=0d0; Eee=0d0;
+   do ibas=1,nBas
+    do jbas=1,nBas
+     trace_1rdm=trace_1rdm+AO_1rdm(ibas,jbas)*S(ibas,jbas)
+     write(iunit) ibas,jbas,AO_1rdm(ibas,jbas)
+     Ecore=Ecore+AO_1rdm(ibas,jbas)*(T(ibas,jbas)+V(ibas,jbas))
+     do kbas=1,nBas
+      do lbas=1,nBas
+       trace_2rdm=trace_2rdm+AO_2rdm(ibas,jbas,kbas,lbas)*S(ibas,kbas)*S(jbas,lbas)
+       write(iunit2) ibas,jbas,kbas,lbas,AO_2rdm(ibas,jbas,kbas,lbas)
+       Eee=Eee+AO_2rdm(ibas,jbas,kbas,lbas)*ERI(ibas,jbas,kbas,lbas)
+      enddo 
+     enddo 
+    enddo 
+   enddo
+   write(iunit) 0,0,0d0
+   write(iunit2) 0,0,0,0,0d0
+   close(iunit) 
+   close(iunit2) 
+   deallocate(AO_1rdm,AO_2rdm)
+   write(*,'(a)') '  Energies computed using the 1-RDM and the 2-RDM in the AO basis'
+   write(*,*)
+   write(*,'(a,f17.8)') '   Hcore (T+V) ',Ecore
+   write(*,'(a,f17.8)') '     Vee (Hxc) ',Eee
+   write(*,'(a,f17.8)') '   Eelectronic ',Ecore+Eee
+   write(*,*)           ' --------------'
+   write(*,'(a,f17.8)') '        Etotal ',Ecore+Eee+ENuc
+   write(*,*)           ' --------------'
+   write(*,'(a,f17.8)') '   Tr[ 1D^AO ] ',trace_1rdm
+   write(*,'(a,f17.8)') '   Tr[ 2D^AO ] ',trace_2rdm
+   write(*,*)
+  endif
+
 ! Compute dipole moments, occupation numbers, || Anomalous density||,
 ! organize the coefs c with natural orbitals (descending occ numbers), and
 ! also print the restart file
@@ -465,44 +537,7 @@ subroutine RHFB(dotest,doqsGW,maxSCF,thresh,max_diis,level_shift,nNuc,ZNuc,rNuc,
 ! Test if it can be a RHF solution
   ! TODO ...
 !  if(is_fractional) then
-  if(.true.) then
-
-!   ! Diagonalize H_HFB matrix to compute the eigenvectors
-!   F(:,:) = Hc(:,:) + J(:,:) + 0.5d0*K(:,:) - chem_pot*S(:,:)
-!   H_HFB(:,:) = 0d0
-!   H_HFB(1:nOrb      ,1:nOrb      )           = matmul(transpose(X),matmul(F,X))
-!   H_HFB(nOrb+1:nOrb_twice,nOrb+1:nOrb_twice) = -H_HFB(1:nOrb,1:nOrb)
-!   H_HFB(1:nOrb      ,nOrb+1:nOrb_twice) = matmul(transpose(X),matmul(Delta,X))
-!   H_HFB(nOrb+1:nOrb_twice,1:nOrb      ) = H_HFB(1:nOrb,nOrb+1:nOrb_twice)
-!   eigVEC(:,:) = H_HFB(:,:)      
-!   call diagonalize_matrix(nOrb_twice,eigVEC,eigVAL)
-!
-!   ! Build R and check trace
-!   trace_1rdm = 0d0 
-!   R(:,:)     = 0d0
-!   do iorb=1,nOrb
-!    R(:,:) = R(:,:) + matmul(eigVEC(:,iorb:iorb),transpose(eigVEC(:,iorb:iorb)))
-!   enddo
-!
-!   write(*,*) ' R^test '
-!   do iorb=1,nOrb_twice
-!    write(*,'(*(f10.5))') R(iorb,:)
-!   enddo
-!   write(*,*)
-!
-!   do iorb=1,nOrb
-!    trace_1rdm = trace_1rdm + R(iorb,iorb)
-!   enddo
-!   trace_1rdm = 2d0*trace_1rdm
-!   write(*,'(A33,1X,F16.10,A3)') ' Trace [ 1D^test ]     = ',trace_1rdm,'   '
-!   write(*,*)
-!   write(*,'(A50)') '---------------------------------------'
-!   write(*,'(A50)') ' HFB QP energies for test'
-!   write(*,'(A50)') '---------------------------------------'
-!   do iorb=1,nOrb_twice
-!    write(*,'(I7,10F15.8)') iorb,eigVAL(iorb)
-!   enddo
-!   write(*,*)
+  if(.false.) then
 
 block
 
@@ -552,12 +587,15 @@ block
   Tmp_test=matmul(Mz,Mz) 
   Tij(3,3)=trace_matrix(nOrb,Tmp_test) 
 
+write(*,*) 'P'
 do iorb=1,nOrb
 write(*,'(*(f10.5))') P(iorb,:)
 enddo
+write(*,*) 'Mx'
 do iorb=1,nOrb
 write(*,'(*(f10.5))') Mx(iorb,:)
 enddo
+write(*,*) 'Mz'
 do iorb=1,nOrb
 write(*,'(*(f10.5))') Mz(iorb,:)
 enddo

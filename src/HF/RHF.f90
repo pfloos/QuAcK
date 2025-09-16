@@ -34,7 +34,9 @@ subroutine RHF(dotest,maxSCF,thresh,max_diis,guess_type,level_shift,nNuc,ZNuc,rN
 ! Local variables
 
   logical                       :: file_exists
+  integer                       :: iunit,iunit2
   integer                       :: iorb
+  integer                       :: ibas,jbas,kbas,lbas
   integer                       :: nSCF
   integer                       :: nBas_Sq
   integer                       :: n_diis
@@ -42,10 +44,14 @@ subroutine RHF(dotest,maxSCF,thresh,max_diis,guess_type,level_shift,nNuc,ZNuc,rN
   double precision              :: EV
   double precision              :: EJ
   double precision              :: EK
+  double precision              :: Ecore
+  double precision              :: Eee
   double precision              :: dipole(ncart)
 
   double precision              :: Conv
   double precision              :: rcond
+  double precision              :: trace_1rdm
+  double precision              :: trace_2rdm
   double precision,external     :: trace_matrix
   double precision,allocatable  :: err(:,:)
   double precision,allocatable  :: err_diis(:,:)
@@ -54,6 +60,8 @@ subroutine RHF(dotest,maxSCF,thresh,max_diis,guess_type,level_shift,nNuc,ZNuc,rN
   double precision,allocatable  :: K(:,:)
   double precision,allocatable  :: cp(:,:)
   double precision,allocatable  :: Fp(:,:)
+  double precision,allocatable  :: AO_1rdm(:,:)
+  double precision,allocatable  :: AO_2rdm(:,:,:,:)
 
 ! Output variables
 
@@ -233,6 +241,67 @@ subroutine RHF(dotest,maxSCF,thresh,max_diis,guess_type,level_shift,nNuc,ZNuc,rN
 
   call dipole_moment(nBas,P,nNuc,ZNuc,rNuc,dipole_int,dipole)
   call print_RHF(nBas,nOrb,nO,eHF,c,ENuc,ET,EV,EJ,EK,ERHF,dipole)
+
+! Print the 1-RDM and 2-RDM in AO basis
+  inquire(file='ao_rdms', exist=file_exists)
+  if(file_exists) then
+   write(*,*)
+   write(*,'(a)') ' -------------------------------------------'
+   write(*,'(a)') ' Computing and printing RDMs in the AO basis'
+   write(*,'(a)') ' -------------------------------------------'
+   allocate(AO_1rdm(nBas,nBas),AO_2rdm(nBas,nBas,nBas,nBas))
+   AO_1rdm(:,:)=P(:,:)
+   AO_2rdm(:,:,:,:)=0d0
+   do ibas=1,nBas
+    do jbas=1,nBas
+     do kbas=1,nBas
+      do lbas=1,nBas
+       ! Hartree
+       AO_2rdm(ibas,jbas,kbas,lbas)=AO_2rdm(ibas,jbas,kbas,lbas)+0.5d0*P(ibas,kbas)*P(jbas,lbas)
+       ! Exchange
+       AO_2rdm(ibas,jbas,kbas,lbas)=AO_2rdm(ibas,jbas,kbas,lbas)-0.25d0*P(ibas,lbas)*P(jbas,kbas)
+      enddo
+     enddo
+    enddo
+   enddo
+   trace_1rdm=0d0
+   trace_2rdm=0d0
+   iunit=312
+   iunit2=313
+   open(unit=iunit,form='unformatted',file='rhf_ao_1rdm')
+   open(unit=iunit2,form='unformatted',file='rhf_ao_2rdm')
+   Ecore=0d0; Eee=0d0;
+   do ibas=1,nBas
+    do jbas=1,nBas
+     trace_1rdm=trace_1rdm+AO_1rdm(ibas,jbas)*S(ibas,jbas)
+     write(iunit) ibas,jbas,AO_1rdm(ibas,jbas)
+     Ecore=Ecore+AO_1rdm(ibas,jbas)*(T(ibas,jbas)+V(ibas,jbas))
+     do kbas=1,nBas
+      do lbas=1,nBas
+       trace_2rdm=trace_2rdm+AO_2rdm(ibas,jbas,kbas,lbas)*S(ibas,kbas)*S(jbas,lbas)
+       write(iunit2) ibas,jbas,kbas,lbas,AO_2rdm(ibas,jbas,kbas,lbas)
+       Eee=Eee+AO_2rdm(ibas,jbas,kbas,lbas)*ERI(ibas,jbas,kbas,lbas)
+      enddo
+     enddo
+    enddo
+   enddo
+   write(iunit) 0,0,0d0
+   write(iunit2) 0,0,0,0,0d0
+   close(iunit)
+   close(iunit2)
+   deallocate(AO_1rdm,AO_2rdm)
+   write(*,'(a)') ' Energies computed using the 1-RDM and the 2-RDM in the AO basis'
+   write(*,*)
+   write(*,'(a,f17.8)') '   Hcore (T+V) ',Ecore
+   write(*,'(a,f17.8)') '     Vee (Hxc) ',Eee
+   write(*,'(a,f17.8)') '   Eelectronic ',Ecore+Eee
+   write(*,*)           ' --------------'
+   write(*,'(a,f17.8)') '        Etotal ',Ecore+Eee+ENuc
+   write(*,*)           ' --------------'
+   write(*,'(a,f17.8)') '   Tr[ 1D^AO ] ',trace_1rdm
+   write(*,'(a,f17.8)') '   Tr[ 2D^AO ] ',trace_2rdm
+   write(*,*)
+  endif
 
 ! Testing zone
 
