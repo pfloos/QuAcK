@@ -48,6 +48,7 @@ subroutine RHFB(dotest,doqsGW,maxSCF,thresh,max_diis,level_shift,nNuc,ZNuc,rNuc,
   integer                       :: nSCF
   integer                       :: nBas2_Sq
   integer                       :: n_diis
+  double precision              :: S2_val
   double precision              :: Ecore
   double precision              :: Eee
   double precision              :: ET
@@ -447,7 +448,43 @@ subroutine RHFB(dotest,doqsGW,maxSCF,thresh,max_diis,level_shift,nNuc,ZNuc,rNuc,
    write(iunit) 0,0,0d0
    write(iunit2) 0,0,0,0,0d0
    close(iunit) 
-   close(iunit2) 
+   close(iunit2)
+   ! Compute <S^2>
+   S2_val=0d0
+    ! Density contribution
+    S2_val=-trace_1rdm*(trace_1rdm-4d0)/4d0
+    ! Daa = Dbb
+    AO_2rdm=0d0
+    do ibas=1,nBas
+     do jbas=1,nBas
+      do kbas=1,nBas
+       do lbas=1,nBas
+        ! Hartree
+        AO_2rdm(ibas,jbas,kbas,lbas)=AO_2rdm(ibas,jbas,kbas,lbas)+0.125d0*P(ibas,kbas)*P(jbas,lbas)
+        ! Exchange
+        AO_2rdm(ibas,jbas,kbas,lbas)=AO_2rdm(ibas,jbas,kbas,lbas)-0.125d0*P(ibas,lbas)*P(jbas,kbas)
+        ! Contribution to <S^2>
+        S2_val=S2_val+2d0*AO_2rdm(ibas,jbas,kbas,lbas)*S(ibas,kbas)*S(jbas,lbas)
+       enddo
+      enddo
+     enddo
+    enddo
+    ! Dab = Dba
+    AO_2rdm=0d0
+    do ibas=1,nBas
+     do jbas=1,nBas
+      do kbas=1,nBas
+       do lbas=1,nBas
+        ! Hartree
+        AO_2rdm(ibas,jbas,kbas,lbas)=AO_2rdm(ibas,jbas,kbas,lbas)+0.125d0*P(ibas,kbas)*P(jbas,lbas)
+        ! Pairing
+        AO_2rdm(ibas,jbas,kbas,lbas)=AO_2rdm(ibas,jbas,kbas,lbas)+0.5d0*sigma*Panom(ibas,jbas)*Panom(kbas,lbas)
+        ! Contribution to <S^2>
+        S2_val=S2_val-2d0*AO_2rdm(ibas,jbas,kbas,lbas)*S(ibas,lbas)*S(jbas,kbas)
+       enddo
+      enddo
+     enddo
+    enddo
    deallocate(AO_1rdm,AO_2rdm)
    write(*,'(a)') '  Energies computed using the 1-RDM and the 2-RDM in the AO basis'
    write(*,*)
@@ -459,6 +496,7 @@ subroutine RHFB(dotest,doqsGW,maxSCF,thresh,max_diis,level_shift,nNuc,ZNuc,rNuc,
    write(*,*)           ' --------------'
    write(*,'(a,f17.8)') '   Tr[ 1D^AO ] ',trace_1rdm
    write(*,'(a,f17.8)') '   Tr[ 2D^AO ] ',trace_2rdm
+   write(*,'(a,f17.8)') '         <S^2> ',S2_val
    write(*,*)
   endif
 
