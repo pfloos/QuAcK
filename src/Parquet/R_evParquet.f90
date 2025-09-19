@@ -1,4 +1,4 @@
-subroutine R_evParquet(TDAeh,TDApp,max_diis_1b,max_diis_2b,linearize,eta_1b,eta_2b,ENuc,max_it_1b,conv_1b,max_it_2b,conv_2b, & 
+subroutine R_evParquet(TDAeh,TDApp,max_diis_1b,max_diis_2b,linearize,eta_1b,eta_2b,reg_PA,ENuc,max_it_1b,conv_1b,max_it_2b,conv_2b, & 
                     nOrb,nC,nO,nV,nR,nS,ERHF,eHF,ERI)
 
 ! Parquet approximation with eigenvalue self-consistency based on spatial orbitals
@@ -17,7 +17,7 @@ subroutine R_evParquet(TDAeh,TDApp,max_diis_1b,max_diis_2b,linearize,eta_1b,eta_
   logical,intent(in)            :: TDApp     
   integer,intent(in)            :: max_diis_1b
   integer,intent(in)            :: max_diis_2b
-  logical,intent(in)            :: linearize 
+  logical,intent(in)            :: linearize, reg_PA
   double precision,intent(in)   :: eta_1b,eta_2b
   double precision,intent(in)   :: ENuc
   double precision,intent(in)   :: ERHF
@@ -643,6 +643,8 @@ subroutine R_evParquet(TDAeh,TDApp,max_diis_1b,max_diis_2b,linearize,eta_1b,eta_
       err_pp_sing = maxval(abs(old_pp_sing_Phi - pp_sing_Phi))
       err_pp_trip = maxval(abs(old_pp_trip_Phi - pp_trip_Phi))
 
+      call wall_time(start_t)
+      write(*,*) 'Extrapolating two-body kernels...'
       alpha = 0.25d0
       eh_sing_Phi(:,:,:,:) = alpha * eh_sing_Phi(:,:,:,:) + (1d0 - alpha) * old_eh_sing_Phi(:,:,:,:)
       eh_trip_Phi(:,:,:,:) = alpha * eh_trip_Phi(:,:,:,:) + (1d0 - alpha) * old_eh_trip_Phi(:,:,:,:)
@@ -703,6 +705,10 @@ subroutine R_evParquet(TDAeh,TDApp,max_diis_1b,max_diis_2b,linearize,eta_1b,eta_
       old_eh_trip_Phi(:,:,:,:) = eh_trip_Phi(:,:,:,:)
       old_pp_sing_Phi(:,:,:,:) = pp_sing_Phi(:,:,:,:)
       old_pp_trip_Phi(:,:,:,:) = pp_trip_Phi(:,:,:,:)
+      call wall_time(end_t)
+      t = end_t - start_t
+      write(*,'(1X,A50,1X,F9.3,A8)') 'Wall time for two-body DIIS extrapolation =',t,' seconds'
+      write(*,*)
 
       ! Free memory
 
@@ -754,13 +760,13 @@ subroutine R_evParquet(TDAeh,TDApp,max_diis_1b,max_diis_2b,linearize,eta_1b,eta_
       write(*,'(A37,1X,I3,1X,A10)')' Two-body convergence success after ',n_it_2b,'iterations'
       write(*,*)'****************************************************'
       write(*,*)
-
-!     call print_excitation_energies('phBSE@Parquet','singlet',nS,old_eh_sing_Om)
-!     call print_excitation_energies('phBSE@Parquet','triplet',nS,old_eh_trip_Om)
-!     call print_excitation_energies('ppBSE@Parquet','2p (singlets)',nVVs,old_ee_sing_Om)
-!     call print_excitation_energies('ppBSE@Parquet','2h (singlets)',nOOs,old_hh_sing_Om)
-!     call print_excitation_energies('ppBSE@Parquet','2p (triplets)',nVVt,old_ee_trip_Om)
-!     call print_excitation_energies('ppBSE@Parquet','2h (triplets)',nOOt,old_hh_trip_Om)
+      
+      call print_excitation_energies('phBSE@Parquet','singlet',nS,old_eh_sing_Om)
+      call print_excitation_energies('phBSE@Parquet','triplet',nS,old_eh_trip_Om)
+      call print_excitation_energies('ppBSE@Parquet','2p (singlets)',nVVs,old_ee_sing_Om)
+      call print_excitation_energies('ppBSE@Parquet','2h (singlets)',nOOs,old_hh_sing_Om)
+      call print_excitation_energies('ppBSE@Parquet','2p (triplets)',nVVt,old_ee_trip_Om)
+      call print_excitation_energies('ppBSE@Parquet','2h (triplets)',nOOt,old_hh_trip_Om)
 
     end if
 

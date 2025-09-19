@@ -1,4 +1,4 @@
-subroutine G_evParquet(TDAeh,TDApp,max_diis_1b,max_diis_2b,linearize,eta_1b,eta_2b,reg_PA,ENuc,max_it_1b,conv_1b,max_it_2b,conv_2b, & 
+subroutine G_evParquet_v2(TDAeh,TDApp,max_diis_1b,max_diis_2b,linearize,eta_1b,eta_2b,reg_PA,ENuc,max_it_1b,conv_1b,max_it_2b,conv_2b, & 
                     nOrb,nC,nO,nV,nR,nS,EGHF,eHF,ERI)
 
 ! Parquet approximation with eigenvalue self-consistency based on spin orbitals
@@ -31,7 +31,7 @@ subroutine G_evParquet(TDAeh,TDApp,max_diis_1b,max_diis_2b,linearize,eta_1b,eta_
 
   integer                       :: n_it_1b,n_it_2b
   double precision              :: err_1b,err_2b
-  double precision              :: err_eh, err_pp
+  double precision              :: err_A, err_C, err_D
   double precision              :: err_eig_eh,err_eig_pp,err_eig_hh,err_eig_ee
   double precision              :: start_t,end_t,t
   double precision              :: start_1b,end_1b,t_1b
@@ -45,6 +45,7 @@ subroutine G_evParquet(TDAeh,TDApp,max_diis_1b,max_diis_2b,linearize,eta_1b,eta_
   double precision,allocatable  :: XpY(:,:), XmY(:,:)
   double precision,allocatable  :: eh_Om(:), old_eh_Om(:)
   double precision,allocatable  :: eh_Gam_A(:,:),eh_Gam_B(:,:)
+  double precision,allocatable  :: old_Aph(:,:)
   ! pp BSE
   double precision              :: Ec_pp
   double precision,allocatable  :: Bpp(:,:), Cpp(:,:), Dpp(:,:)
@@ -53,11 +54,13 @@ subroutine G_evParquet(TDAeh,TDApp,max_diis_1b,max_diis_2b,linearize,eta_1b,eta_
   double precision,allocatable  :: X2(:,:),Y2(:,:)
   double precision,allocatable  :: hh_Om(:), old_hh_Om(:)
   double precision,allocatable  :: pp_Gam_B(:,:),pp_Gam_C(:,:),pp_Gam_D(:,:)
+  double precision,allocatable  :: old_Cpp(:,:),old_Dpp(:,:)
   ! Effective integrals
   double precision,allocatable  :: eh_rho(:,:,:), ee_rho(:,:,:), hh_rho(:,:,:)
   ! Reducible kernels
   double precision,allocatable  :: eh_Phi(:,:,:,:), pp_Phi(:,:,:,:)
   double precision,allocatable  :: old_eh_Phi(:,:,:,:), old_pp_Phi(:,:,:,:)
+
   ! One-body quantities
   double precision,allocatable  :: eQPlin(:),eQP(:),eOld(:)
   double precision,allocatable  :: SigC(:)
@@ -68,12 +71,12 @@ subroutine G_evParquet(TDAeh,TDApp,max_diis_1b,max_diis_2b,linearize,eta_1b,eta_
   double precision              :: rcond_1b,rcond_2b
   double precision,allocatable  :: err_diis_1b(:,:),err_diis_2b(:,:)
   double precision,allocatable  :: eQP_diis(:,:)
-  double precision,allocatable  :: Phi_diis(:,:)
+  double precision,allocatable  :: ACD_diis(:,:)
   double precision,allocatable  :: err(:)
-  double precision,allocatable  :: Phi(:)
+  double precision,allocatable  :: ACD(:)
   double precision              :: alpha
 
-  integer                       :: p,q,r,s,pqrs
+  integer                       :: p,q,r,s,pq
 
   double precision              :: mem = 0d0
   double precision              :: dp_in_GB = 8d0/(1024d0**3)
@@ -115,16 +118,16 @@ subroutine G_evParquet(TDAeh,TDApp,max_diis_1b,max_diis_2b,linearize,eta_1b,eta_
     
 ! DIIS for two-body part
 
-  allocate(err_diis_2b(2*nOrb**4,max_diis_2b),Phi_diis(2*nOrb**4,max_diis_2b))
-  allocate(err(2*nOrb**4),Phi(2*nOrb**4))
+  allocate(err_diis_2b(nS*nS + nVV*nVV + nOO*nOO,max_diis_2b),ACD_diis(nS*nS + nVV*nVV + nOO*nOO,max_diis_2b))
+  allocate(err(nS*nS + nVV*nVV + nOO*nOO),ACD(nS*nS + nVV*nVV + nOO*nOO))
 
-  mem = mem + size(err_diis_2b) + size(Phi_diis) + size(err) + size(Phi)
+  mem = mem + size(err_diis_2b) + size(ACD_diis) + size(err) + size(ACD)
   write(*,'(1X,A50,4X,F6.3,A3)') 'Memory usage in GParquet =',mem*dp_in_GB,' GB'
 
   rcond_2b  = 1d0
   n_diis_2b = 0
   err_diis_2b(:,:) = 0d0
-  Phi_diis(:,:)    = 0d0
+  ACD_diis(:,:)    = 0d0
 
 ! DIIS for one-body part        
   
@@ -147,6 +150,7 @@ subroutine G_evParquet(TDAeh,TDApp,max_diis_1b,max_diis_2b,linearize,eta_1b,eta_
   allocate(old_eh_Om(nS),old_ee_Om(nVV),old_hh_Om(nOO))
   allocate(eh_rho(nOrb,nOrb,nS),ee_rho(nOrb,nOrb,nVV),hh_rho(nOrb,nOrb,nOO))
   allocate(old_eh_Phi(nOrb,nOrb,nOrb,nOrb),old_pp_Phi(nOrb,nOrb,nOrb,nOrb))
+  allocate(old_Aph(nS,nS),old_Cpp(nVV,nVV),old_Dpp(nOO,nOO))
 
   mem = mem + size(old_eh_Om) + size(old_ee_Om) + size(old_hh_Om)
   mem = mem + size(eh_rho) + size(ee_rho) + size(hh_rho)
@@ -168,9 +172,13 @@ subroutine G_evParquet(TDAeh,TDApp,max_diis_1b,max_diis_2b,linearize,eta_1b,eta_
   old_eh_Om(:) = 0d0
   old_ee_Om(:) = 0d0
   old_hh_Om(:) = 0d0
-    
+
   old_eh_Phi(:,:,:,:) = 0d0
   old_pp_Phi(:,:,:,:) = 0d0
+  
+  old_Aph(:,:) = 0d0
+  old_Cpp(:,:) = 0d0
+  old_Dpp(:,:) = 0d0
     
   !-----------------------------------------!
   ! Main loop for one-body self-consistency !
@@ -239,25 +247,12 @@ subroutine G_evParquet(TDAeh,TDApp,max_diis_1b,max_diis_2b,linearize,eta_1b,eta_
       
       Aph(:,:) = Aph(:,:) + eh_Gam_A(:,:)
       Bph(:,:) = Bph(:,:) + eh_Gam_B(:,:) 
-      
-      call phGLR(TDAeh,nS,Aph,Bph,Ec_eh,eh_Om,XpY,XmY)
-
- !     call matout(nS,nS,XpY)
 
       call wall_time(end_t)
 
       t = end_t - start_t
-      write(*,'(1X,A50,1X,F9.3,A8)') 'Wall time for phBSE problem =',t,' seconds'
+      write(*,'(1X,A50,1X,F9.3,A8)') 'Wall time for building phBSE problem =',t,' seconds'
       write(*,*)
-
-      if(print_phLR) call print_excitation_energies('phBSE@Parquet','eh generalized',nS,eh_Om)
-
-      err_eig_eh = maxval(abs(old_eh_Om - eh_Om))
-
-      deallocate(Aph,Bph,eh_Gam_A,eh_Gam_B)
-
-      mem = mem - size(Aph) - size(Bph) - size(eh_Gam_A) - size(eh_Gam_B)
-      write(*,'(1X,A50,4X,F6.3,A3)') 'Memory usage in GParquet =',mem*dp_in_GB,' GB'
 
       !-----------------!
       !    pp channel   !
@@ -303,13 +298,116 @@ subroutine G_evParquet(TDAeh,TDApp,max_diis_1b,max_diis_2b,linearize,eta_1b,eta_
       Bpp(:,:) = Bpp(:,:) + pp_Gam_B(:,:)
       Cpp(:,:) = Cpp(:,:) + pp_Gam_C(:,:)
       Dpp(:,:) = Dpp(:,:) + pp_Gam_D(:,:)
-      
-      call ppGLR(TDApp,nOO,nVV,Bpp,Cpp,Dpp,ee_Om,X1,Y1,hh_Om,X2,Y2,Ec_pp)
+
       call wall_time(end_t)
       t = end_t - start_t
 
-      write(*,'(1X,A50,1X,F9.3,A8)') 'Wall time for ppBSE problem =',t,' seconds'
+      write(*,'(1X,A50,1X,F9.3,A8)') 'Wall time for building ppBSE problem =',t,' seconds'
       write(*,*)
+
+      err_A = maxval(abs(Aph - old_Aph))
+      err_C = maxval(abs(Cpp - old_Cpp))
+      err_D = maxval(abs(Dpp - old_Dpp))
+      
+      alpha = 0.5d0
+      Aph(:,:) = alpha * Aph(:,:) + (1d0 - alpha) * old_Aph(:,:)
+      Cpp(:,:) = alpha * Cpp(:,:) + (1d0 - alpha) * old_Cpp(:,:)
+      Dpp(:,:) = alpha * Dpp(:,:) + (1d0 - alpha) * old_Dpp(:,:)
+
+      !--------------------!
+      ! DIIS extrapolation !
+      !--------------------!
+
+      pq = 0
+      do p=1,nS
+        do q=1,nS
+          pq = pq + 1
+
+          err(pq) = Aph(p,q) - old_Aph(p,q)
+          ACD(pq) = Aph(p,q)
+
+        end do
+      end do
+
+      pq = 0
+      do p=1,nVV
+        do q=1,nVV
+          pq = pq + 1
+
+          err(nS*nS + pq) = - Cpp(p,q) + old_Cpp(p,q)
+          ACD(nS*nS + pq) = Cpp(p,q)
+
+        end do
+      end do
+      
+      pq = 0
+      do p=1,nOO
+        do q=1,nOO
+          pq = pq + 1
+
+          err(nS*nS + nVV*nVV + pq) = - Dpp(p,q) + old_Dpp(p,q)
+          ACD(nS*nS + nVV*nVV + pq) = Dpp(p,q)
+
+        end do
+      end do
+      
+      if(max_diis_2b > 1) then
+     
+        n_diis_2b = min(n_diis_2b+1,max_diis_2b)
+        call DIIS_extrapolation(rcond_2b,nS*nS + nVV*nVV + nOO*nOO,nS*nS + nVV*nVV + nOO*nOO,n_diis_2b,err_diis_2b,ACD_diis,err,ACD)
+     
+      end if
+
+      pq = 0
+      do p=1,nS
+        do q=1,nS
+          pq = pq + 1
+
+          Aph(p,q) = ACD(pq)
+
+        end do
+      end do
+
+      pq = 0
+      do p=1,nVV
+        do q=1,nVV
+          pq = pq + 1
+
+          Cpp(p,q) = ACD(nS*nS + pq)
+
+        end do
+      end do
+      
+      pq = 0
+      do p=1,nOO
+        do q=1,nOO
+          pq = pq + 1
+
+          Dpp(p,q) = ACD(nS*nS + nVV*nVV + pq)
+
+        end do
+      end do
+     
+      old_Aph(:,:) = Aph(:,:)
+      old_Cpp(:,:) = Cpp(:,:)
+      old_Dpp(:,:) = Dpp(:,:)
+
+      !---------------------!
+      !   Diagonalization   !
+      !---------------------!      
+            
+      call phGLR(TDAeh,nS,Aph,Bph,Ec_eh,eh_Om,XpY,XmY)
+
+      if(print_phLR) call print_excitation_energies('phBSE@Parquet','eh generalized',nS,eh_Om)
+
+      err_eig_eh = maxval(abs(old_eh_Om - eh_Om))
+
+      deallocate(Aph,Bph,eh_Gam_A,eh_Gam_B)
+
+      mem = mem - size(Aph) - size(Bph) - size(eh_Gam_A) - size(eh_Gam_B)
+      write(*,'(1X,A50,4X,F6.3,A3)') 'Memory usage in GParquet =',mem*dp_in_GB,' GB'
+      
+      call ppGLR(TDApp,nOO,nVV,Bpp,Cpp,Dpp,ee_Om,X1,Y1,hh_Om,X2,Y2,Ec_pp)
 
       if(print_ppLR) call print_excitation_energies('ppBSE@Parquet','2p generalized',nVV,ee_Om)
       if(print_ppLR) call print_excitation_energies('ppBSE@Parquet','2h generalized',nOO,hh_Om)
@@ -420,58 +518,11 @@ subroutine G_evParquet(TDAeh,TDApp,max_diis_1b,max_diis_2b,linearize,eta_1b,eta_
       write(*,'(1X,A50,1X,F9.3,A8)') 'Wall time for pp reducible kernel =',t,' seconds'
       write(*,*)
 
-      err_eh = maxval(abs(eh_Phi - old_eh_Phi))
-      err_pp = maxval(abs(pp_Phi - old_pp_Phi))
-
       call wall_time(start_t)
       write(*,*) 'Extrapolating two-body kernels...'
-      alpha = 0.25d0
-      eh_Phi(:,:,:,:) = alpha * eh_Phi(:,:,:,:) + (1d0 - alpha) * old_eh_Phi(:,:,:,:)
-      pp_Phi(:,:,:,:) = alpha * pp_Phi(:,:,:,:) + (1d0 - alpha) * old_pp_Phi(:,:,:,:)
-
-      !--------------------!
-      ! DIIS extrapolation !
-      !--------------------!
-
-      pqrs = 0
-      do p=1,nOrb
-        do q=1,nOrb
-          do r=1,nOrb
-            do s=1,nOrb
-              pqrs = pqrs + 1
-
-              err(        pqrs) = eh_Phi(p,q,r,s) - old_eh_Phi(p,q,r,s)
-              err(nOrb**4+pqrs) = pp_Phi(p,q,r,s) - old_pp_Phi(p,q,r,s)
-
-              Phi(        pqrs) = eh_Phi(p,q,r,s)
-              Phi(nOrb**4+pqrs) = pp_Phi(p,q,r,s)
-
-            end do
-          end do
-        end do
-      end do
-
-      if(max_diis_2b > 1) then
-     
-        n_diis_2b = min(n_diis_2b+1,max_diis_2b)
-        call DIIS_extrapolation(rcond_2b,2*nOrb**4,2*nOrb**4,n_diis_2b,err_diis_2b,Phi_diis,err,Phi)
-     
-      end if
-
-      pqrs = 0
-      do p=1,nOrb
-        do q=1,nOrb
-          do r=1,nOrb
-            do s=1,nOrb
-              pqrs = pqrs + 1
-
-              eh_Phi(p,q,r,s) = Phi(        pqrs)
-              pp_Phi(p,q,r,s) = Phi(nOrb**4+pqrs) 
-
-            end do
-          end do
-        end do
-      end do
+      ! alpha = 0.25d0
+      ! eh_Phi(:,:,:,:) = alpha * eh_Phi(:,:,:,:) + (1d0 - alpha) * old_eh_Phi(:,:,:,:)
+      ! pp_Phi(:,:,:,:) = alpha * pp_Phi(:,:,:,:) + (1d0 - alpha) * old_pp_Phi(:,:,:,:)
 
       old_eh_Phi(:,:,:,:) = eh_Phi(:,:,:,:)
       old_pp_Phi(:,:,:,:) = pp_Phi(:,:,:,:)
@@ -490,13 +541,13 @@ subroutine G_evParquet(TDAeh,TDApp,max_diis_1b,max_diis_2b,linearize,eta_1b,eta_
       write(*,*) '------------------------------------------------'
       write(*,*) '    Two-body (frequency/kernel) convergence     '
       write(*,*) '------------------------------------------------'
-      write(*,'(1X,A24,F10.6,1X,A1,1X,F10.6)')'Error for eh channel = ',err_eig_eh,'/',err_eh
-      write(*,'(1X,A24,F10.6,1X,A1,1X,F10.6)')'Error for pp channel = ',err_eig_pp,'/',err_pp
+      write(*,'(1X,A24,F10.6,1X,A1,1X,F10.6)')'Error for eh channel = ',err_eig_eh,'/',err_A
+      write(*,'(1X,A24,F10.6,1X,A1,1X,F10.6)')'Error for pp channel = ',err_eig_pp,'/',err_C,'/',err_D
       write(*,*) '------------------------------------------------'
       write(*,*)
       
       ! Convergence criteria
-      err_2b = max(err_eh,err_pp)
+      err_2b = max(err_A,err_C,err_D)
       
       call wall_time(end_2b)
       t_2b = end_2b - start_2b

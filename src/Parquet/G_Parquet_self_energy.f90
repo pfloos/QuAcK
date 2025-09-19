@@ -1,5 +1,5 @@
-subroutine G_Parquet_self_energy(eta,nOrb,nC,nO,nV,nR,nS,nOO,nVV,eQP,ERI,&
-                                 eh_rho,eh_Om,ee_rho,ee_Om,hh_rho,hh_Om,SigC,Z)
+subroutine G_Parquet_self_energy_SRG_dp(eta,nOrb,nC,nO,nV,nR,nS,nOO,nVV,eQP,ERI,&
+                                        eh_rho,eh_Om,ee_rho,ee_Om,hh_rho,hh_Om,SigC,Z)
 
 ! Compute correlation part of the self-energy coming from irreducible vertices contribution
 
@@ -26,7 +26,6 @@ subroutine G_Parquet_self_energy(eta,nOrb,nC,nO,nV,nR,nS,nOO,nVV,eQP,ERI,&
   integer                       :: p,q,n
   double precision              :: eps_p,eps_q,eps_pq,reg
   double precision              :: dem1,dem2,reg1,reg2
-  double precision              :: dem1_p,dem1_q,dem1_pq
   double precision              :: dem2_p,dem2_q,dem2_pq
   double precision              :: num
   double precision              :: start_t,end_t,t
@@ -102,7 +101,7 @@ subroutine G_Parquet_self_energy(eta,nOrb,nC,nO,nV,nR,nS,nOO,nVV,eQP,ERI,&
   call wall_time(start_t)
   
   !$OMP PARALLEL DEFAULT(NONE)    &
-  !$OMP PRIVATE(p,q,i,a,j,b,n,num,dem1,dem1_p,dem1_q,dem1_pq,dem2_p,dem2_q,dem2_pq,reg1,reg2) &
+  !$OMP PRIVATE(p,q,i,a,j,b,n,num,dem1,dem2_p,dem2_q,dem2_pq,reg1,reg2) &
   !$OMP SHARED(nC,nO,nOrb,nR,nS,eta,ERI,eQP,eh_rho,eh_Om,SigC)
   !$OMP DO
   do q=nC+1,nOrb-nR
@@ -117,16 +116,14 @@ subroutine G_Parquet_self_energy(eta,nOrb,nC,nO,nV,nR,nS,nOO,nVV,eQP,ERI,&
 
                     ! 2h1p(d) * 2h1p 
                     num  = (ERI(p,a,i,j) - ERI(p,a,j,i)) * eh_rho(i,a,n) * eh_rho(q,j,n)
-                    dem1_p = eQP(p) - eQP(j) + eh_Om(n)
-                    dem1_q = eQP(q) - eQP(j) + eh_Om(n)
-                    dem1_pq = dem1_p * dem1_p + dem1_q * dem1_q
-                    reg1 = 1d0 - exp(- eta * dem1_pq)
-                    dem2_p = eQP(p) - eQP(i) - eQP(j) + eQP(a)
-                    dem2_q = eQP(q) - eQP(i) - eQP(j) + eQP(a)
+                    dem1 = eQP(p) - eQP(i) - eQP(j) + eQP(a)
+                    reg1 = 1d0 - exp(- eta * 2d0 * dem1 * dem1)
+                    dem2_p = eQP(p) - eQP(j) + eh_Om(n)
+                    dem2_q = eQP(q) - eQP(j) + eh_Om(n)
                     dem2_pq = dem2_p * dem2_p + dem2_q * dem2_q
                     reg2 = 1d0 - exp(- eta * dem2_pq)
                     
-                    SigC(p,q) = SigC(p,q) + num * reg1 * (dem1_p + dem1_q)/dem1_pq * reg2 * (dem2_p + dem2_q)/dem2_pq
+                    SigC(p,q) = SigC(p,q) + num * (reg1/dem1) * reg2 * (dem2_p + dem2_q)/dem2_pq
 
                     
                     ! 2h2p(d) * 2h1p(d) 
@@ -158,16 +155,14 @@ subroutine G_Parquet_self_energy(eta,nOrb,nC,nO,nV,nR,nS,nOO,nVV,eQP,ERI,&
                     
                     ! 2p1h(d) * 2p1h
                     num  = - (ERI(p,i,a,b) - ERI(p,i,b,a)) * eh_rho(i,a,n) * eh_rho(b,q,n) 
-                    dem1_p = eQP(p) - eQP(b) - eh_Om(n)
-                    dem1_q = eQP(q) - eQP(b) - eh_Om(n)
-                    dem1_pq = dem1_p * dem1_p + dem1_q * dem1_q
-                    reg1 = 1d0 - exp(- eta * dem1_pq)
-                    dem2_p = eQP(p) + eQP(i) - eQP(a) - eQP(b)
-                    dem2_q = eQP(q) + eQP(i) - eQP(a) - eQP(b)
+                    dem1 = eQP(p) + eQP(i) - eQP(a) - eQP(b)
+                    reg1 = 1d0 - exp(- eta * 2d0 * dem1 * dem1)
+                    dem2_p = eQP(p) - eQP(b) - eh_Om(n)
+                    dem2_q = eQP(q) - eQP(b) - eh_Om(n)
                     dem2_pq = dem2_p * dem2_p + dem2_q * dem2_q
                     reg2 = 1d0 - exp(- eta * dem2_pq)
                     
-                    SigC(p,q) = SigC(p,q) + num * reg1 * (dem1_p + dem1_q)/dem1_pq * reg2 * (dem2_p + dem2_q)/dem2_pq
+                    SigC(p,q) = SigC(p,q) + num * (reg1/dem1) * reg2 * (dem2_p + dem2_q)/dem2_pq
                     
                     
                     ! 2h2p(d) * 2p1h(d)
@@ -218,7 +213,7 @@ subroutine G_Parquet_self_energy(eta,nOrb,nC,nO,nV,nR,nS,nOO,nVV,eQP,ERI,&
   call wall_time(start_t)
 
   !$OMP PARALLEL DEFAULT(NONE)    &
-  !$OMP PRIVATE(p,q,i,j,k,c,n,num,dem1,dem1_p,dem1_q,dem1_pq,dem2,dem2_p,dem2_q,dem2_pq,reg1,reg2) &
+  !$OMP PRIVATE(p,q,i,j,k,c,n,num,dem1,dem2,dem2_p,dem2_q,dem2_pq,reg1,reg2) &
   !$OMP SHARED(nC,nO,nOrb,nR,nOO,nVV,eta,ERI,eQP,ee_rho,ee_Om,hh_rho,hh_Om,SigC)
   !$OMP DO
   do q=nC+1,nOrb-nR
@@ -264,16 +259,14 @@ subroutine G_Parquet_self_energy(eta,nOrb,nC,nO,nV,nR,nS,nOO,nVV,eQP,ERI,&
                     
                     ! 2h1p(d) * 2h1p
                     num  = - ERI(p,c,i,j) * hh_rho(i,j,n) * hh_rho(q,c,n)
-                    dem1_p = eQP(p) + eQP(c) - hh_Om(n)
-                    dem1_q = eQP(q) + eQP(c) - hh_Om(n)
-                    dem1_pq = dem1_p * dem1_p + dem1_q * dem1_q
-                    reg1 = 1d0 - exp(- eta * dem1_pq)
-                    dem2_p = eQP(p) + eQP(c) - eQP(i) - eQP(j)
-                    dem2_q = eQP(q) + eQP(c) - eQP(i) - eQP(j)
+                    dem1 = eQP(p) + eQP(c) - eQP(i) - eQP(j)
+                    reg1 = 1d0 - exp(- eta * 2d0 * dem1 * dem1)
+                    dem2_p = eQP(p) + eQP(c) - hh_Om(n)
+                    dem2_q = eQP(q) + eQP(c) - hh_Om(n)
                     dem2_pq = dem2_p * dem2_p + dem2_q * dem2_q
                     reg2 = 1d0 - exp(- eta * dem2_pq)
                     
-                    SigC(p,q) = SigC(p,q) + num * reg1 * (dem1_p + dem1_q)/dem1_pq * reg2 * (dem2_p + dem2_q)/dem2_pq
+                    SigC(p,q) = SigC(p,q) + num * (reg1/dem1) * reg2 * (dem2_p + dem2_q)/dem2_pq
                     
                  end do ! c
               end do ! n
@@ -285,7 +278,7 @@ subroutine G_Parquet_self_energy(eta,nOrb,nC,nO,nV,nR,nS,nOO,nVV,eQP,ERI,&
   !$OMP END DO
   !$OMP END PARALLEL
   !$OMP PARALLEL DEFAULT(NONE)    &
-  !$OMP PRIVATE(p,q,k,a,b,c,n,num,dem1,dem1_p,dem1_q,dem1_pq,dem2,dem2_p,dem2_q,dem2_pq,reg1,reg2) &
+  !$OMP PRIVATE(p,q,k,a,b,c,n,num,dem1,dem2,dem2_p,dem2_q,dem2_pq,reg1,reg2) &
   !$OMP SHARED(nC,nO,nOrb,nR,nOO,nVV,eta,ERI,eQP,ee_rho,ee_Om,hh_rho,hh_Om,SigC)
   !$OMP DO
   do q=nC+1,nOrb-nR
@@ -330,16 +323,14 @@ subroutine G_Parquet_self_energy(eta,nOrb,nC,nO,nV,nR,nS,nOO,nVV,eQP,ERI,&
                     
                     ! 2p1h * 2p1h(d)
                     num  = ERI(p,k,a,b) * ee_rho(a,b,n) * ee_rho(q,k,n)
-                    dem1_p = eQP(p) + eQP(k) - eQP(a) - eQP(b)
-                    dem1_q = eQP(q) + eQP(k) - eQP(a) - eQP(b)
-                    dem1_pq = dem1_p * dem1_p + dem1_q * dem1_q
-                    reg1 = 1d0 - exp(- eta * dem1_pq)
+                    dem1 = eQP(p) + eQP(k) - eQP(a) - eQP(b)
+                    reg1 = 1d0 - exp(- eta * 2d0 * dem1 * dem1)
                     dem2_p = eQP(p) + eQP(k) - ee_Om(n)
                     dem2_q = eQP(q) + eQP(k) - ee_Om(n)
                     dem2_pq = dem2_p * dem2_p + dem2_q * dem2_q
                     reg2 = 1d0 - exp(- eta * dem2_pq)
                     
-                    SigC(p,q) = SigC(p,q) + num * reg1 * (dem1_p + dem1_q)/dem1_pq * reg2 * (dem2_p + dem2_q)/dem2_pq
+                    SigC(p,q) = SigC(p,q) + num * (reg1/dem1) * reg2 * (dem2_p + dem2_q)/dem2_pq
                     
                  end do ! c
               end do ! n

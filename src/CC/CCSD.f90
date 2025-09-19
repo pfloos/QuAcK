@@ -43,6 +43,8 @@ subroutine CCSD(dotest,maxSCF,thresh,max_diis,doCCSDT,nBasin,nCin,nOin,nVin,nRin
   double precision,allocatable  :: dbERI(:,:,:,:)
   double precision,allocatable  :: delta_OV(:,:)
   double precision,allocatable  :: delta_OOVV(:,:,:,:)
+  double precision,allocatable  :: delta_OV_plus(:,:)
+  double precision,allocatable  :: delta_OOVV_plus(:,:,:,:)
 
   double precision,allocatable  :: OOOO(:,:,:,:)
   double precision,allocatable  :: OOOV(:,:,:,:)
@@ -54,6 +56,7 @@ subroutine CCSD(dotest,maxSCF,thresh,max_diis,doCCSDT,nBasin,nCin,nOin,nVin,nRin
   double precision,allocatable  :: VOVV(:,:,:,:)
   double precision,allocatable  :: VVVO(:,:,:,:)
   double precision,allocatable  :: VVVV(:,:,:,:)
+  double precision,allocatable  :: OVOV(:,:,:,:)
 
   double precision,allocatable  :: eO(:)
   double precision,allocatable  :: eV(:)
@@ -80,6 +83,8 @@ subroutine CCSD(dotest,maxSCF,thresh,max_diis,doCCSDT,nBasin,nCin,nOin,nVin,nRin
   double precision,allocatable  :: err2_diis(:,:)
   double precision,allocatable  :: t1_diis(:,:)
   double precision,allocatable  :: t2_diis(:,:)
+
+  logical                       :: doJacobian = .false.
 
 ! Hello world
 
@@ -114,12 +119,16 @@ subroutine CCSD(dotest,maxSCF,thresh,max_diis,doCCSDT,nBasin,nCin,nOin,nVin,nRin
 
   allocate(eO(nO),eV(nV))
   allocate(delta_OV(nO,nV),delta_OOVV(nO,nO,nV,nV))
+  allocate(delta_OV_plus(nO,nV),delta_OOVV_plus(nO,nO,nV,nV))
 
   eO(:) = seHF(1:nO)
   eV(:) = seHF(nO+1:nBas)
 
   call form_delta_OV(nC,nO,nV,nR,eO,eV,delta_OV)
   call form_delta_OOVV(nC,nO,nV,nR,eO,eV,delta_OOVV)
+
+  delta_OV_plus(:,:) = delta_OV(:,:)
+  delta_OOVV_plus(:,:,:,:) = delta_OOVV(:,:,:,:)
 
   deallocate(seHF)
 
@@ -129,7 +138,7 @@ subroutine CCSD(dotest,maxSCF,thresh,max_diis,doCCSDT,nBasin,nCin,nOin,nVin,nRin
            OOOV(nO,nO,nO,nV),OVOO(nO,nV,nO,nO),VOOO(nV,nO,nO,nO), &
            OOVV(nO,nO,nV,nV),OVVO(nO,nV,nV,nO),                   & 
            OVVV(nO,nV,nV,nV),VOVV(nV,nO,nV,nV),VVVO(nV,nV,nV,nO), & 
-           VVVV(nV,nV,nV,nV))
+           VVVV(nV,nV,nV,nV),OVOV(nO,nV,nO,nV))
 
   OOOO(:,:,:,:) = dbERI(   1:nO  ,   1:nO  ,   1:nO  ,   1:nO  )
   OOOV(:,:,:,:) = dbERI(   1:nO  ,   1:nO  ,   1:nO  ,nO+1:nBas)
@@ -141,9 +150,18 @@ subroutine CCSD(dotest,maxSCF,thresh,max_diis,doCCSDT,nBasin,nCin,nOin,nVin,nRin
   VOVV(:,:,:,:) = dbERI(nO+1:nBas,   1:nO  ,nO+1:nBas,nO+1:nBas)
   VVVO(:,:,:,:) = dbERI(nO+1:nBas,nO+1:nBas,nO+1:nBas,   1:nO  )
   VVVV(:,:,:,:) = dbERI(nO+1:nBas,nO+1:nBas,nO+1:nBas,nO+1:nBas)
+  OVOV(:,:,:,:) = dbERI(   1:nO  ,nO+1:nBas,   1:nO  ,nO+1:nBas)
 
   deallocate(dbERI)
  
+  if(doJacobian) then
+
+    call form_delta_OV_plus(nC,nO,nV,nR,eO,eV,delta_OV_plus,OVOV)
+    call form_delta_OOVV_plus(nC,nO,nV,nR,eO,eV,delta_OOVV_plus,OVOV,OOOO,VVVV)
+
+  end if
+  deallocate(OVOV)
+
 ! MP2 guess amplitudes
 
   allocate(t1(nO,nV),t2(nO,nO,nV,nV),tau(nO,nO,nV,nV))
@@ -232,8 +250,8 @@ subroutine CCSD(dotest,maxSCF,thresh,max_diis,doCCSDT,nBasin,nCin,nOin,nVin,nRin
     ! DIIS extrapolation
 
     n_diis = min(n_diis+1,max_diis)
-!   call DIIS_extrapolation(rcond1,nO*nV      ,nO*nV      ,n_diis,err1_diis,t1_diis,-r1/delta_OV  ,t1)
-!   call DIIS_extrapolation(rcond2,nO*nO*nV*nV,nO*nO*nV*nV,n_diis,err2_diis,t2_diis,-r2/delta_OOVV,t2)
+!   call DIIS_extrapolation(rcond1,nO*nV      ,nO*nV      ,n_diis,err1_diis,t1_diis,r1  ,t1)
+!   call DIIS_extrapolation(rcond2,nO*nO*nV*nV,nO*nO*nV*nV,n_diis,err2_diis,t2_diis,r2,t2)
 
     !  Reset DIIS if required
 
@@ -275,6 +293,7 @@ subroutine CCSD(dotest,maxSCF,thresh,max_diis,doCCSDT,nBasin,nCin,nOin,nVin,nRin
 
   deallocate(hvv,hoo,hvo,         &
              delta_OV,delta_OOVV, &
+             delta_OV_plus,delta_OOVV_plus, &
              gvv,goo,             &
              aoooo,bvvvv,hovvo,   &
              tau,                 &
