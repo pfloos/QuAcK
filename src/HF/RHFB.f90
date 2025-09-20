@@ -498,6 +498,7 @@ subroutine RHFB(dotest,doqsGW,maxSCF,thresh,max_diis,level_shift,nNuc,ZNuc,rNuc,
    write(*,'(a,f17.8)') '   Tr[ 2D^AO ] ',trace_2rdm
    write(*,'(a,f17.8)') '         <S^2> ',S2_val
    write(*,*)
+
   endif
 
 ! Compute dipole moments, occupation numbers, || Anomalous density||,
@@ -519,6 +520,8 @@ subroutine RHFB(dotest,doqsGW,maxSCF,thresh,max_diis,level_shift,nNuc,ZNuc,rNuc,
   call write_restart_HFB(nBas,nOrb,Occ,c,chem_pot) ! Warning: orders Occ and their c in descending order w.r.t. occupation numbers.
   call print_HFB(nBas,nOrb,nOrb_twice,nO,N_anom,Occ,eHFB_state,ENuc,ET,EV,EJ,EK,EL,EHFB,chem_pot, &
                  dipole,Delta_HL)
+  ! DEBUG: Compute <S^2> in the NO basis. This is commented because it is computed in AO basis above and it is fine!
+  ! call s2_2rdm_HFB(nBas,nOrb,nOrb_twice,nO,Occ,sigma,c,ERI)
   if(doqsGW) c(:,:)=X(:,:) ! Recover the Lowdin basis for qsGW
 
 ! Choose the NO representation where the 1-RDM is diag.
