@@ -1,5 +1,5 @@
 subroutine GGW(dotest,doG0W0,doevGW,doqsGW,maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,dophBSE,dophBSE2,doppBSE, & 
-               TDA_W,TDA,dBSE,dTDA,linearize,eta,doSRG,nNuc,ZNuc,rNuc,ENuc,nBas,nBas2,nC,nO,nV,nR,nS,EGHF,S,X,T,V,Hc,     & 
+               TDA_W,TDA,dBSE,dTDA,linearize,eta,doSRG,do_linDM_GW,nNuc,ZNuc,rNuc,ENuc,nBas,nBas2,nC,nO,nV,nR,nS,EGHF,S,X,T,V,Hc,     & 
                ERI_AO,ERI,dipole_int_AO,dipole_int,PHF,cHF,eHF,eGW)
 
 ! GW module
@@ -31,6 +31,7 @@ subroutine GGW(dotest,doG0W0,doevGW,doqsGW,maxSCF,thresh,max_diis,doACFDT,exchan
   logical,intent(in)            :: linearize
   double precision,intent(in)   :: eta
   logical,intent(in)            :: doSRG
+  logical,intent(in)            :: do_linDM_GW
 
   integer,intent(in)            :: nNuc
   double precision,intent(in)   :: ZNuc(nNuc)
