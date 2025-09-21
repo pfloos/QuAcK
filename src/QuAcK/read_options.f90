@@ -4,7 +4,7 @@ subroutine read_options(working_dir,                                            
                         maxSCF_CC,thresh_CC,max_diis_CC,                                                    &
                         TDA,spin_conserved,spin_flip,                                                       &
                         maxSCF_GF,thresh_GF,max_diis_GF,lin_GF,eta_GF,renorm_GF,reg_GF,                     &
-                        maxSCF_GW,thresh_GW,max_diis_GW,lin_GW,eta_GW,shift_GW,reg_GW,doOO,mu,              &
+                        maxSCF_GW,thresh_GW,max_diis_GW,lin_GW,eta_GW,shift_GW,reg_GW,doOO,mu,do_linDM_GW,  &
                         nfreqs,ntimes,TDA_W,                                                                &
                         maxSCF_GT,thresh_GT,max_diis_GT,lin_GT,eta_GT,reg_GT,TDA_T,                         &
                         doACFDT,exchange_kernel,doXBS,                                                      &
@@ -61,6 +61,7 @@ subroutine read_options(working_dir,                                            
   integer,intent(out)           :: mu
   integer,intent(out)           :: nfreqs
   integer,intent(out)           :: ntimes
+  logical,intent(out)           :: do_linDM_GW
 
   integer,intent(out)           :: maxSCF_GT
   double precision,intent(out)  :: thresh_GT
@@ -185,14 +186,16 @@ subroutine read_options(working_dir,                                            
       doOO        = .false.
       mu          = 0
       TDA_W       = .false.
+      do_linDM_GW = .false.
     
       read(1,*) 
-      read(1,*) maxSCF_GW,thresh_GW,max_diis_GW,ans1,eta_GW,ans2,ans3,ans4,mu,nfreqs,ntimes,shift_GW
+      read(1,*) maxSCF_GW,thresh_GW,max_diis_GW,ans1,eta_GW,ans2,ans3,ans4,mu,nfreqs,ntimes,shift_GW,ans5
     
-      if(ans1 == 'T') lin_GW   = .true.
-      if(ans2 == 'T') TDA_W    = .true.
-      if(ans3 == 'T') reg_GW   = .true.
-      if(ans4 == 'T') doOO     = .true. 
+      if(ans1 == 'T') lin_GW      = .true.
+      if(ans2 == 'T') TDA_W       = .true.
+      if(ans3 == 'T') reg_GW      = .true.
+      if(ans4 == 'T') doOO        = .true.
+      if(ans5 == 'T') do_linDM_GW = .true.
    
       ! Read GT options
     

@@ -1,5 +1,5 @@
 subroutine RG0W0(dotest,doACFDT,exchange_kernel,doXBS,dophBSE,dophBSE2,TDA_W,TDA,dBSE,dTDA,doppBSE,singlet,triplet, & 
-                 linearize,eta,doSRG,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,dipole_int,eHF,eGW_out)
+                 linearize,eta,doSRG,do_linDM_GW,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,dipole_int,eHF,eGW_out)
 
 ! Perform G0W0 calculation
 
@@ -26,6 +26,7 @@ subroutine RG0W0(dotest,doACFDT,exchange_kernel,doXBS,dophBSE,dophBSE2,TDA_W,TDA
   logical,intent(in)            :: linearize
   double precision,intent(in)   :: eta
   logical,intent(in)            :: doSRG
+  logical,intent(in)            :: do_linDM_GW
 
   integer,intent(in)            :: nBas
   integer,intent(in)            :: nOrb
@@ -59,14 +60,18 @@ subroutine RG0W0(dotest,doACFDT,exchange_kernel,doXBS,dophBSE,dophBSE2,TDA_W,TDA
   double precision,allocatable  :: XmY(:,:)
   double precision,allocatable  :: rho(:,:,:)
 
+  double precision,allocatable  :: J(:,:)
+  double precision,allocatable  :: K(:,:)
+  double precision,allocatable  :: F(:,:)
+  double precision,allocatable  :: linDM(:,:)
+  integer                       :: p
+
   double precision,allocatable  :: eGWlin(:)
   double precision,allocatable  :: eGW(:)
 
 ! Output variables
 
   double precision,intent(out)  :: eGW_out(nOrb)
-
-! Output variables
 
 ! Hello world
 
@@ -160,6 +165,30 @@ subroutine RG0W0(dotest,doACFDT,exchange_kernel,doXBS,dophBSE,dophBSE2,TDA_W,TDA
 
 ! call RGWC(dotest,eta,nOrb,nC,nO,nV,nR,nS,Om,rho,eHF,eHF,eGW,Z)
 
+!--------------------------------------!
+! Linearized density matrix correction !
+!--------------------------------------!
+
+  if(do_linDM_GW) then 
+
+     allocate(linDM(nOrb,nOrb))
+     call R_linDM_GW(nOrb,nC,nO,nV,nR,nS,eHF,Om,rho,eta,linDM)
+
+     allocate(J(nOrb,nOrb))
+     allocate(K(nOrb,nOrb))
+     allocate(F(nOrb,nOrb))
+     call Hartree_matrix_AO_basis(nOrb,linDM,ERI,J)
+     call exchange_matrix_AO_basis(nOrb,linDM,ERI,K)
+     F(:,:) = J(:,:) + 0.5d0*K(:,:)
+
+     do p=nC+1,nOrb-nR
+        eGW(p) = eGW(p) + F(p,p)
+     end do
+     
+     deallocate(linDM,J,K,F)
+  end if
+  
+  
 ! Compute the RPA correlation energy
 
                  call phRLR_A(isp_W,dRPA_W,nOrb,nC,nO,nV,nR,nS,1d0,eGW,ERI,Aph)

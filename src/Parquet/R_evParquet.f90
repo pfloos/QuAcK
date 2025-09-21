@@ -31,7 +31,7 @@ subroutine R_evParquet(TDAeh,TDApp,max_diis_1b,max_diis_2b,linearize,eta_1b,eta_
 
   integer                       :: ispin
   double precision              :: alpha
-  logical                       :: plot_self = .false.
+  logical                       :: plot_self = .true.
 
   integer                       :: n_it_1b,n_it_2b
   double precision              :: err_1b,err_2b
