@@ -18,6 +18,7 @@ subroutine s2_2rdm_HFB(nBas, nOrb, nOrb_twice, nO, Occ, sigma, cHFB, ERI)
 
   integer                            :: iorb,jorb
   double precision                   :: Ne
+  double precision                   :: Ne2
   double precision                   :: Dijkl
   double precision                   :: Vee
   double precision                   :: Vee_aa
@@ -44,6 +45,7 @@ subroutine s2_2rdm_HFB(nBas, nOrb, nOrb_twice, nO, Occ, sigma, cHFB, ERI)
   trace_2rdm_aa=0d0
   trace_2rdm_ab=0d0
   Ne=2d0*sum(Occ(:))
+  Ne2=sum(Occ(:)*Occ(:))
   s2_val=-Ne*(Ne-4d0)/4d0
   do iorb=1,nOrb
    do jorb=1,nOrb
@@ -90,6 +92,9 @@ subroutine s2_2rdm_HFB(nBas, nOrb, nOrb_twice, nO, Occ, sigma, cHFB, ERI)
   write(*,'(*(a,f17.8))') " <S^2>N     ",-Ne*(Ne-4d0)/4d0
   write(*,'(*(a,f17.8))') " <S^2>aa    ",2d0*s2_val_aa
   write(*,'(*(a,f17.8))') " <S^2>ab    ",-2d0*s2_val_ab
+  write(*,'(*(a,f17.8))') " <S^2>sig+1 ",0.5d0*(Ne-2d0*Ne2) ! sigma = +1
+  write(*,'(*(a,f17.8))') " <S^2>sig-1 ",1.5d0*(Ne-2d0*Ne2) ! sigma = -1
+  
   deallocate(ERI_MO)
 
 end subroutine 
