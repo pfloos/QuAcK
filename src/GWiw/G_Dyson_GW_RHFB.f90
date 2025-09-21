@@ -1,5 +1,5 @@
-subroutine linDyson_GW_RHFB(nBas,nOrb,nOrb_twice,c,eQP_state,nfreqs,wweight,wcoord,ERI,vMAT,U_QP,&
-                            Enuc,EcGM,sigma,T,V,S,P,Panom,Pcorr,Panomcorr)
+subroutine G_Dyson_GW_RHFB(nBas,nOrb,nOrb_twice,c,eQP_state,nfreqs,wweight,wcoord,ERI,vMAT,U_QP,&
+                           Enuc,EcGM,sigma,T,V,S,Pcorr,Panomcorr)
 
 ! Use the restricted Sigma_c(E) to compute the linearized approx. to the Dyson eq
 
@@ -21,31 +21,21 @@ subroutine linDyson_GW_RHFB(nBas,nOrb,nOrb_twice,c,eQP_state,nfreqs,wweight,wcoo
   double precision,intent(in)   :: V(nBas,nBas)
   double precision,intent(in)   :: S(nBas,nBas)
   double precision,intent(in)   :: c(nBas,nOrb)
-  double precision,intent(in)   :: P(nBas,nBas)
-  double precision,intent(in)   :: Panom(nBas,nBas)
   double precision,intent(in)   :: U_QP(nOrb_twice,nOrb_twice)
   double precision,intent(in)   :: ERI(nBas,nBas,nBas,nBas)
   double precision,intent(in)   :: vMAT(nOrb*nOrb,nOrb*nOrb)
 
 ! Local variables
 
-  logical                       :: file_exists
-
   integer                       :: kind_int
   integer                       :: ifreq
-  integer                       :: iunit,iunit2
   integer                       :: iorb,jorb
-  integer                       :: ibas,jbas,kbas,lbas
   integer                       :: nfreqs2
 
-  double precision              :: trace_1rdm
-  double precision              :: trace_2rdm
-  double precision              :: Ecore
-  double precision              :: Eee
   double precision              :: eta
   double precision              :: lim_inf,lim_sup
   double precision              :: alpha,beta
-  double precision              :: ET,EV,EJ,EK,EL,ElinG,trace_occ,N_anom,trace_r_can,dev_Idemp_r_can
+  double precision              :: ET,EV,EJ,EK,EL,EgG,trace_occ,N_anom,trace_r_can,dev_Idemp_r_can
   double precision,external     :: trace_matrix
   double precision,allocatable  :: wweight2(:)
   double precision,allocatable  :: wcoord2(:)
@@ -57,11 +47,8 @@ subroutine linDyson_GW_RHFB(nBas,nOrb,nOrb_twice,c,eQP_state,nfreqs,wweight,wcoo
   double precision,allocatable  :: J(:,:)
   double precision,allocatable  :: K(:,:)
   double precision,allocatable  :: Delta(:,:)
-  double precision,allocatable  :: c_inv(:,:)
   double precision,allocatable  :: Pcorr_mo(:,:)
   double precision,allocatable  :: Panomcorr_mo(:,:)
-  double precision,allocatable  :: AO_1rdm(:,:)
-  double precision,allocatable  :: AO_2rdm(:,:,:,:)
 
   complex *16,allocatable       :: Sigma_c_he(:,:,:)
   complex *16,allocatable       :: Sigma_c_hh(:,:,:)
@@ -80,10 +67,10 @@ subroutine linDyson_GW_RHFB(nBas,nOrb,nOrb_twice,c,eQP_state,nfreqs,wweight,wcoo
 ! Allocate and initialize arrays and variables
 
   write(*,*)
-  write(*,*) '******************************************************************'
-  write(*,*) '*    G^Gorkov = Go^Gorkov + Go^Gorkov Sigma^Gorkov Go^Gorkov     *'
-  write(*,*) '*       Bogoliubov linearized-Dyson equation approximation       *'
-  write(*,*) '******************************************************************'
+  write(*,*) '*****************************************************************'
+  write(*,*) '*    G^Gorkov = Go^Gorkov + Go^Gorkov Sigma^Gorkov Go^Gorkov    *'
+  write(*,*) '*                  Bogoliubov full-Dyson equation               *'
+  write(*,*) '*****************************************************************'
   write(*,*)
 
   eta=0d0
@@ -137,15 +124,20 @@ subroutine linDyson_GW_RHFB(nBas,nOrb,nOrb_twice,c,eQP_state,nfreqs,wweight,wcoo
    call G_MO_RHFB(nOrb,nOrb_twice,eta,eQP_state,wcoord2_cpx(ifreq),Mat2,Mat2,Mat1, Mat1,Tmp_mo) ! G_eh(iw2)
    Tmp_QP(nOrb+1:nOrb_twice,nOrb+1:nOrb_twice) = Tmp_mo(1:nOrb,1:nOrb)
 
-   Tmp_QP(:,:)=matmul(Tmp_QP(:,:),matmul(Sigma_c_QP(:,:),Tmp_QP(:,:)))  ! This is G^Gorkov(iw2) Sigma_c^Gorkov(iw2) G^Gorkov(iw2)
+   call complex_inverse_matrix(nOrb_twice,Tmp_QP,Tmp_QP)                          ! [ Go^Gorkov(iw2) ]^-1
+   Tmp_QP(:,:)=Tmp_QP(:,:) - Sigma_c_QP(:,:)                                      ! [ G^Gorkov(iw2)^-1 ]^-1
+   call complex_inverse_matrix(nOrb_twice,Tmp_QP,Tmp_QP)                          ! G^Gorkov(iw2)
 
    Rcorr(:,:) = Rcorr(:,:) + wweight2(ifreq)*real(Tmp_QP(:,:)+conjg(Tmp_QP(:,:))) ! Integrate along iw2 
 
   enddo
 
   Rcorr(:,:)     = Rcorr(:,:)/(2d0*pi)
-  Pcorr(:,:)     = P(:,:)     + 2d0*matmul(c,matmul(Rcorr(1:nOrb,1:nOrb),transpose(c)))
-  Panomcorr(:,:) = Panom(:,:) + matmul(c,matmul(Rcorr(1:nOrb,nOrb+1:nOrb_twice),transpose(c)))
+  do iorb=1,nOrb_twice
+   Rcorr(iorb,iorb) = Rcorr(iorb,iorb) + 0.5d0
+  enddo
+  Pcorr(:,:)     = 2d0*matmul(c,matmul(Rcorr(1:nOrb,1:nOrb),transpose(c)))
+  Panomcorr(:,:) = matmul(c,matmul(Rcorr(1:nOrb,nOrb+1:nOrb_twice),transpose(c)))
 
 ! Compute new total energy, r^can eigenvalues, and Occ numbers
 
@@ -154,23 +146,8 @@ subroutine linDyson_GW_RHFB(nBas,nOrb,nOrb_twice,c,eQP_state,nfreqs,wweight,wcoo
   allocate(Delta(nBas,nBas))
   allocate(Occ(nOrb))
   allocate(Occ_R(nOrb_twice))
-  allocate(c_inv(nOrb,nBas))
-  c_inv(:,:) = matmul(transpose(c),S)
-  Pcorr_mo(1:nOrb,1:nOrb)     = 2d0*Rcorr(1:nOrb,1:nOrb)        &
-                              + matmul(matmul(c_inv,P),transpose(c_inv)) 
-  Panomcorr_mo(1:nOrb,1:nOrb) = Rcorr(1:nOrb,nOrb+1:nOrb_twice) &
-                              + matmul(matmul(c_inv,Panom),transpose(c_inv))
-  Rcorr(1:nOrb           ,1:nOrb           ) =  Rcorr(1:nOrb           ,1:nOrb           ) &
-                                             + 0.5d0*matmul(matmul(c_inv,P),transpose(c_inv))
-  Rcorr(1:nOrb           ,nOrb+1:nOrb_twice) =  Rcorr(1:nOrb           ,nOrb+1:nOrb_twice) &
-                                             + matmul(matmul(c_inv,Panom),transpose(c_inv))
-  Rcorr(nOrb+1:nOrb_twice,1:nOrb           ) =  Rcorr(nOrb+1:nOrb_twice,1:nOrb           ) &
-                                             + matmul(matmul(c_inv,Panom),transpose(c_inv))
-  Rcorr(nOrb+1:nOrb_twice,nOrb+1:nOrb_twice) =  Rcorr(nOrb+1:nOrb_twice,nOrb+1:nOrb_twice) &
-                                             - 0.5d0*matmul(matmul(c_inv,P),transpose(c_inv))
-  do iorb=1,nOrb
-   Rcorr(iorb+nOrb,iorb+nOrb) = Rcorr(iorb+nOrb,iorb+nOrb) + 1d0
-  enddo
+  Pcorr_mo(1:nOrb,1:nOrb)     = 2d0*Rcorr(1:nOrb,1:nOrb)
+  Panomcorr_mo(1:nOrb,1:nOrb) = Rcorr(1:nOrb,nOrb+1:nOrb_twice)
   call diagonalize_matrix(nOrb_twice,Rcorr,Occ_R)
   trace_r_can=0d0
   dev_Idemp_r_can=0d0
@@ -211,70 +188,7 @@ subroutine linDyson_GW_RHFB(nBas,nOrb,nOrb_twice,c,eQP_state,nfreqs,wweight,wcoo
 
   ! Total energy (incl. the Galitkii-Migdal contribution)
 
-  ElinG = ET + EV + EJ + EK + EL + EcGM
-
-! Print the 1-RDM and 2-RDM in AO basis
-  inquire(file='ao_rdms', exist=file_exists)
-  if(file_exists) then
-   write(*,*)
-   write(*,'(a)') ' -------------------------------------------'
-   write(*,'(a)') ' Computing and printing RDMs in the AO basis'
-   write(*,'(a)') ' -------------------------------------------'
-   allocate(AO_1rdm(nBas,nBas),AO_2rdm(nBas,nBas,nBas,nBas))
-   AO_1rdm(:,:)=Pcorr(:,:)
-   AO_2rdm(:,:,:,:)=0d0
-   do ibas=1,nBas
-    do jbas=1,nBas
-     do kbas=1,nBas
-      do lbas=1,nBas
-       ! Hartree
-       AO_2rdm(ibas,jbas,kbas,lbas)=AO_2rdm(ibas,jbas,kbas,lbas)+0.5d0*Pcorr(ibas,kbas)*Pcorr(jbas,lbas)
-       ! Exchange
-       AO_2rdm(ibas,jbas,kbas,lbas)=AO_2rdm(ibas,jbas,kbas,lbas)-0.25d0*Pcorr(ibas,lbas)*Pcorr(jbas,kbas)
-       ! Pairing
-       AO_2rdm(ibas,jbas,kbas,lbas)=AO_2rdm(ibas,jbas,kbas,lbas)+sigma*Panomcorr(ibas,jbas)*Panomcorr(kbas,lbas)
-      enddo
-     enddo
-    enddo
-   enddo
-   trace_1rdm=0d0
-   trace_2rdm=0d0
-   iunit=312
-   iunit2=313
-   open(unit=iunit,form='unformatted',file='lingw_hfb_ao_1rdm')
-   open(unit=iunit2,form='unformatted',file='lingw_hfb_ao_2rdm')
-   Ecore=0d0; Eee=0d0;
-   do ibas=1,nBas
-    do jbas=1,nBas
-     trace_1rdm=trace_1rdm+AO_1rdm(ibas,jbas)*S(ibas,jbas)
-     write(iunit) ibas,jbas,AO_1rdm(ibas,jbas)
-     Ecore=Ecore+AO_1rdm(ibas,jbas)*(T(ibas,jbas)+V(ibas,jbas))
-     do kbas=1,nBas
-      do lbas=1,nBas
-       trace_2rdm=trace_2rdm+AO_2rdm(ibas,jbas,kbas,lbas)*S(ibas,kbas)*S(jbas,lbas)
-       write(iunit2) ibas,jbas,kbas,lbas,AO_2rdm(ibas,jbas,kbas,lbas)
-       Eee=Eee+AO_2rdm(ibas,jbas,kbas,lbas)*ERI(ibas,jbas,kbas,lbas)
-      enddo
-     enddo
-    enddo
-   enddo
-   write(iunit) 0,0,0d0
-   write(iunit2) 0,0,0,0,0d0
-   close(iunit)
-   close(iunit2)
-   deallocate(AO_1rdm,AO_2rdm)
-   write(*,'(a)') '  Energies computed using the 1-RDM and the 2-RDM in the AO basis'
-   write(*,*)
-   write(*,'(a,f17.8)') '   Hcore (T+V) ',Ecore
-   write(*,'(a,f17.8)') '     Vee (Hxc) ',Eee
-   write(*,'(a,f17.8)') '   Eelectronic ',Ecore+Eee
-   write(*,*)           ' --------------'
-   write(*,'(a,f17.8)') '        Etotal ',Ecore+Eee+ENuc
-   write(*,*)           ' --------------'
-   write(*,'(a,f17.8)') '   Tr[ 1D^AO ] ',trace_1rdm
-   write(*,'(a,f17.8)') '   Tr[ 2D^AO ] ',trace_2rdm
-   write(*,*)
-  endif
+  EgG = ET + EV + EJ + EK + EL + EcGM
 
 ! Print results
 
@@ -292,16 +206,16 @@ subroutine linDyson_GW_RHFB(nBas,nOrb,nOrb_twice,c,eQP_state,nfreqs,wweight,wcoo
   write(*,'(A33,1X,F16.10,A3)') ' Anomalous    energy = ',EL,' au'
   write(*,'(A33,1X,F16.10,A3)') ' GM           energy = ',EcGM,' au'
   write(*,'(A50)')           '---------------------------------------'
-  write(*,'(A33,1X,F16.10,A3)') ' Electronic   energy = ',ElinG,' au'
+  write(*,'(A33,1X,F16.10,A3)') ' Electronic   energy = ',EgG,' au'
   write(*,'(A33,1X,F16.10,A3)') ' Nuclear   repulsion = ',ENuc,' au'
-  write(*,'(A33,1X,F16.10,A3)') ' B-lin-Dyson  energy = ',ElinG + ENuc,' au'
+  write(*,'(A33,1X,F16.10,A3)') ' G-Dyson  energy     = ',EgG + ENuc,' au'
   write(*,'(A50)')           '---------------------------------------'
   write(*,'(A33,1X,F16.10,A3)') ' | Anomalous dens |  = ',N_anom,'   '
   write(*,'(A33,1X,F16.10,A3)') ' Dev. Idemp. r^can   = ',dev_Idemp_r_can,'   '
   write(*,'(A33,1X,F16.10,A3)') '        Tr[ r^can ]  = ',trace_r_can,'   '
   write(*,'(A50)')           '---------------------------------------'
   write(*,'(A50)') '-----------------------------------------'
-  write(*,'(A50)') ' Bogoliubov lin-Dyson occupation numbers '
+  write(*,'(A50)') ' Bogoliubov G-Dyson occupation numbers '
   write(*,'(A50)') '-----------------------------------------'
   trace_occ=0d0
   do iorb=1,nOrb
@@ -321,7 +235,7 @@ subroutine linDyson_GW_RHFB(nBas,nOrb,nOrb_twice,c,eQP_state,nfreqs,wweight,wcoo
   deallocate(Sigma_c_eh)
   deallocate(Sigma_c_ee)
   deallocate(Mat1,Mat2)
-  deallocate(J,K,Delta,Occ,Occ_R,c_inv)
+  deallocate(J,K,Delta,Occ,Occ_R)
   deallocate(Rcorr,Sigma_c_QP,Tmp_QP,Tmp_mo,Pcorr_mo,Panomcorr_mo,wweight2,wcoord2,wcoord2_cpx)
 
 end subroutine
