@@ -34,6 +34,9 @@ subroutine UHF(dotest,maxSCF,thresh,max_diis,guess_type,mix,level_shift,nNuc,ZNu
 
 ! Local variables
 
+  logical                       :: file_exists
+
+  integer                       :: iorb
   integer                       :: nSCF
   integer                       :: nBasSq
   integer                       :: n_diis
@@ -86,6 +89,21 @@ subroutine UHF(dotest,maxSCF,thresh,max_diis,guess_type,mix,level_shift,nNuc,ZNu
 
   do ispin=1,nspin
     call mo_guess(nBas,nBas,guess_type,S,Hc,X,c(:,:,ispin))
+  end do
+
+  inquire(file='hubbard', exist=file_exists)
+  if(file_exists) then
+   inquire(file='site_guess', exist=file_exists)
+   if(file_exists .and. guess_type/=0) then
+    write(*,*) 'Using as guess for Hubbard the sites basis because the file site_guess is present'
+    c=0d0
+    do iorb=1,nBas
+     c(iorb,iorb,:) = 1d0
+    enddo 
+   endif
+  endif
+
+  do ispin=1,nspin
     P(:,:,ispin) = matmul(c(:,1:nO(ispin),ispin),transpose(c(:,1:nO(ispin),ispin)))
   end do
 
