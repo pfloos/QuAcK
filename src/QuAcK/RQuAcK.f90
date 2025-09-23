@@ -1,16 +1,16 @@
-subroutine RQuAcK(working_dir,use_gpu,dotest,doRHF,doROHF,docRHF,                                                        &
-                  dostab,dosearch,doMP2,doMP3,doCCD,dopCCD,doDCD,doCCSD,doCCSDT,                                         &
-                  dodrCCD,dorCCD,docrCCD,dolCCD,doCIS,doCIS_D,doCID,doCISD,doFCI,dophRPA,dophRPAx,docrRPA,doppRPA,       & 
-                  doG0F2,doevGF2,doqsGF2,doufG0F02,doG0F3,doevGF3,doG0W0,doevGW,doqsGW,doufG0W0,doufGW,                  &
-                  doG0T0pp,doevGTpp,doqsGTpp,doufG0T0pp,doG0T0eh,doevGTeh,doqsGTeh,doevParquet,doqsParquet,              & 
-                  docG0W0,docG0F2,                                                                                       & 
-                  doCAP,                                                                                                 & 
-                  nNuc,nBas,nOrb,nC,nO,nV,nR,ENuc,ZNuc,rNuc,                                                             &
-                  S,T,V,Hc,CAP_AO,X,dipole_int_AO,maxSCF_HF,max_diis_HF,thresh_HF,level_shift,                           &
-                  guess_type,mix,reg_MP,maxSCF_CC,max_diis_CC,thresh_CC,singlet,triplet,TDA,                             &
-                  maxSCF_GF,max_diis_GF,renorm_GF,thresh_GF,lin_GF,reg_GF,eta_GF,maxSCF_GW,max_diis_GW,thresh_GW,        & 
+subroutine RQuAcK(working_dir,use_gpu,dotest,doRHF,doROHF,docRHF,                                                           &
+                  dostab,dosearch,doaordm,doMP2,doMP3,doCCD,dopCCD,doDCD,doCCSD,doCCSDT,                                    &
+                  dodrCCD,dorCCD,docrCCD,dolCCD,doCIS,doCIS_D,doCID,doCISD,doFCI,dophRPA,dophRPAx,docrRPA,doppRPA,          & 
+                  doG0F2,doevGF2,doqsGF2,doufG0F02,doG0F3,doevGF3,doG0W0,doevGW,doqsGW,doufG0W0,doufGW,                     &
+                  doG0T0pp,doevGTpp,doqsGTpp,doufG0T0pp,doG0T0eh,doevGTeh,doqsGTeh,doevParquet,doqsParquet,                 & 
+                  docG0W0,docG0F2,                                                                                          & 
+                  doCAP,readFCIDUMP,                                                                                        & 
+                  nNuc,nBas,nOrb,nC,nO,nV,nR,ENuc,ZNuc,rNuc,                                                                &
+                  S,T,V,Hc,CAP_AO,X,dipole_int_AO,maxSCF_HF,max_diis_HF,thresh_HF,level_shift,                              &
+                  guess_type,mix,reg_MP,maxSCF_CC,max_diis_CC,thresh_CC,singlet,triplet,TDA,                                &
+                  maxSCF_GF,max_diis_GF,renorm_GF,thresh_GF,lin_GF,reg_GF,eta_GF,maxSCF_GW,max_diis_GW,thresh_GW,           & 
                   TDA_W,lin_GW,reg_GW,eta_GW,doOO,mu,do_linDM_GW,maxSCF_GT,max_diis_GT,thresh_GT,TDA_T,lin_GT,reg_GT,eta_GT,& 
-                  dophBSE,dophBSE2,doppBSE,dBSE,dTDA,doACFDT,exchange_kernel,doXBS,                                      &
+                  dophBSE,dophBSE2,doppBSE,dBSE,dTDA,doACFDT,exchange_kernel,doXBS,                                         &
                   TDAeh,TDApp,max_diis_1b,max_diis_2b,max_it_1b,conv_1b,max_it_2b,conv_2b,lin_parquet,reg_1b,reg_2b,reg_PA)
 
 ! Restricted branch of QuAcK
@@ -23,10 +23,12 @@ subroutine RQuAcK(working_dir,use_gpu,dotest,doRHF,doROHF,docRHF,               
   logical,intent(in)            :: use_gpu
 
   logical,intent(in)            :: dotest
+  logical,intent(in)            :: readFCIDUMP
 
   logical,intent(in)            :: doRHF,doROHF,docRHF
   logical,intent(in)            :: dostab
   logical,intent(in)            :: dosearch
+  logical,intent(in)            :: doaordm
   logical,intent(in)            :: doMP2,doMP3
   logical,intent(in)            :: doCCD,dopCCD,doDCD,doCCSD,doCCSDT
   logical,intent(in)            :: dodrCCD,dorCCD,docrCCD,dolCCD
@@ -135,7 +137,6 @@ subroutine RQuAcK(working_dir,use_gpu,dotest,doRHF,doROHF,docRHF,               
   integer                       :: iorb,jorb,korb,lorb
   integer                       :: ixyz
   integer                       :: nS
-  integer                       :: nO_
   complex*16,allocatable        :: complex_ERI_MO(:,:,:,:)
   double precision,allocatable  :: eGW(:)
 
@@ -144,8 +145,6 @@ subroutine RQuAcK(working_dir,use_gpu,dotest,doRHF,doROHF,docRHF,               
   write(*,*) '* Restricted Branch of QuAcK *'
   write(*,*) '******************************'
   write(*,*)
-
-  nO_ = nO
 
 !-------------------!
 ! Memory allocation !
@@ -186,21 +185,17 @@ subroutine RQuAcK(working_dir,use_gpu,dotest,doRHF,doROHF,docRHF,               
   call wall_time(start_int)
   call read_2e_integrals(working_dir,nBas,ERI_AO)
 
-! For the Hubbard model read two-body parameters (U, J, etc from hubbard file)
+! For the FCIDUMP read two-body integrals
 
-  inquire(file='hubbard', exist=file_exists)
-  if(file_exists) then
+  inquire(file='FCIDUMP', exist=file_exists)
+  if(file_exists .and. readFCIDUMP) then
    write(*,*)
-   write(*,*) 'Reading Hubbard model two-body parameters from hubbard file'
+   write(*,*) 'Reading FCIDUMP two-body integrals'
    write(*,*)
-   ERI_AO=0d0; ENuc=0d0;
-   open(unit=314, form='formatted', file='hubbard', status='old')
+   ERI_AO=0d0 
+   open(unit=314, form='formatted', file='FCIDUMP', status='old')
    do
-    read(314,*) iorb,jorb,korb,lorb,Val
-    if(iorb==jorb .and. jorb==korb .and. korb==lorb .and. iorb==-1) then
-     nO_ = int(Val)
-     cycle
-    endif
+    read(314,*) Val,iorb,jorb,korb,lorb
     if(korb==lorb .and. lorb==0) then
      if(iorb==jorb .and. iorb==0) then
       exit
@@ -225,8 +220,8 @@ subroutine RQuAcK(working_dir,use_gpu,dotest,doRHF,doROHF,docRHF,               
   if(doRHF) then
 
     call wall_time(start_HF)
-    call RHF(dotest,maxSCF_HF,thresh_HF,max_diis_HF,guess_type,level_shift,nNuc,ZNuc,rNuc,ENuc, &
-             nBas,nOrb,nO_,S,T,V,Hc,ERI_AO,dipole_int_AO,X,ERHF,eHF,cHF,PHF,FHF)
+    call RHF(dotest,doaordm,maxSCF_HF,thresh_HF,max_diis_HF,guess_type,level_shift,nNuc,ZNuc,rNuc,ENuc, &
+             nBas,nOrb,nO,S,T,V,Hc,ERI_AO,dipole_int_AO,X,ERHF,eHF,cHF,PHF,FHF)
     call wall_time(end_HF)
 
     t_HF = end_HF - start_HF
@@ -239,7 +234,7 @@ subroutine RQuAcK(working_dir,use_gpu,dotest,doRHF,doROHF,docRHF,               
 
     call wall_time(start_HF)
     call ROHF(dotest,maxSCF_HF,thresh_HF,max_diis_HF,guess_type,mix,level_shift,nNuc,ZNuc,rNuc,ENuc, &
-              nBas,nOrb,nO_,S,T,V,Hc,ERI_AO,dipole_int_AO,X,ERHF,eHF,cHF,PHF,FHF)
+              nBas,nOrb,nO,S,T,V,Hc,ERI_AO,dipole_int_AO,X,ERHF,eHF,cHF,PHF,FHF)
     call wall_time(end_HF)
 
     t_HF = end_HF - start_HF
@@ -308,12 +303,12 @@ subroutine RQuAcK(working_dir,use_gpu,dotest,doRHF,doROHF,docRHF,               
 ! Stability analysis of HF solution !
 !-----------------------------------!
 
-  nS = (nO_ - nC)*(nV - nR)
+  nS = (nO - nC)*(nV - nR)
 
   if(dostab) then
 
     call wall_time(start_stab)
-    call RHF_stability(nOrb,nC,nO_,nV,nR,nS,eHF,ERI_MO)
+    call RHF_stability(nOrb,nC,nO,nV,nR,nS,eHF,ERI_MO)
     call wall_time(end_stab)
 
     t_stab = end_stab - start_stab
@@ -326,7 +321,7 @@ subroutine RQuAcK(working_dir,use_gpu,dotest,doRHF,doROHF,docRHF,               
 
     call wall_time(start_stab)
     call RHF_search(maxSCF_HF,thresh_HF,max_diis_HF,guess_type,level_shift,nNuc,ZNuc,rNuc,ENuc, &
-                    nBas,nOrb,nC,nO_,nV,nR,S,T,V,Hc,ERI_AO,ERI_MO,dipole_int_AO,dipole_int_MO,X, & 
+                    nBas,nOrb,nC,nO,nV,nR,S,T,V,Hc,ERI_AO,ERI_MO,dipole_int_AO,dipole_int_MO,X, & 
                     ERHF,eHF,cHF,PHF,FHF)
     call wall_time(end_stab)
 
@@ -345,7 +340,7 @@ subroutine RQuAcK(working_dir,use_gpu,dotest,doRHF,doROHF,docRHF,               
   if(doMP) then
 
     call wall_time(start_MP)
-    call RMP(dotest,doMP2,doMP3,reg_MP,nOrb,nC,nO_,nV,nR,ERI_MO,ENuc,ERHF,eHF)
+    call RMP(dotest,doMP2,doMP3,reg_MP,nOrb,nC,nO,nV,nR,ERI_MO,ENuc,ERHF,eHF)
     call wall_time(end_MP)
 
     t_MP = end_MP - start_MP
@@ -365,7 +360,7 @@ subroutine RQuAcK(working_dir,use_gpu,dotest,doRHF,doROHF,docRHF,               
 
     call wall_time(start_CC)
     call RCC(dotest,doCCD,dopCCD,doDCD,doCCSD,doCCSDT,dodrCCD,dorCCD,docrCCD,dolCCD,  & 
-             maxSCF_CC,thresh_CC,max_diis_CC,nBas,nOrb,nC,nO_,nV,nR,Hc,ERI_AO,ERI_MO, & 
+             maxSCF_CC,thresh_CC,max_diis_CC,nBas,nOrb,nC,nO,nV,nR,Hc,ERI_AO,ERI_MO, & 
              ENuc,ERHF,eHF,cHF,PHF,FHF)
     call wall_time(end_CC)
 
@@ -385,7 +380,7 @@ subroutine RQuAcK(working_dir,use_gpu,dotest,doRHF,doROHF,docRHF,               
 
     call wall_time(start_CI)
     call RCI(dotest,doCIS,doCIS_D,doCID,doCISD,doFCI,singlet,triplet,nOrb, &
-             nC,nO_,nV,nR,nS,ERI_MO,dipole_int_MO,eHF,ERHF)
+             nC,nO,nV,nR,nS,ERI_MO,dipole_int_MO,eHF,ERHF)
     call wall_time(end_CI)
 
     t_CI = end_CI - start_CI
@@ -404,7 +399,7 @@ subroutine RQuAcK(working_dir,use_gpu,dotest,doRHF,doROHF,docRHF,               
 
     call wall_time(start_RPA)
     call RRPA(use_gpu,dotest,dophRPA,dophRPAx,docrRPA,doppRPA,TDA,doACFDT,exchange_kernel,singlet,triplet, &
-              nOrb,nC,nO_,nV,nR,nS,ENuc,ERHF,ERI_MO,dipole_int_MO,eHF)
+              nOrb,nC,nO,nV,nR,nS,ENuc,ERHF,ERI_MO,dipole_int_MO,eHF)
     call wall_time(end_RPA)
 
     t_RPA = end_RPA - start_RPA
@@ -501,7 +496,7 @@ doGF = doG0F2 .or. doevGF2 .or. doqsGF2 .or. doufG0F02 .or. doG0F3 .or. doevGF3 
     call RGT(dotest,doG0T0pp,doevGTpp,doqsGTpp,doufG0T0pp,doG0T0eh,doevGTeh,doqsGTeh,                 &
              maxSCF_GT,thresh_GT,max_diis_GT,doACFDT,exchange_kernel,doXBS,dophBSE,dophBSE2,doppBSE,  &
              TDA_T,TDA,dBSE,dTDA,singlet,triplet,lin_GT,eta_GT,reg_GT,nNuc,ZNuc,rNuc,ENuc,            &
-             nBas,nOrb,nC,nO_,nV,nR,nS,ERHF,S,X,T,V,Hc,ERI_AO,ERI_MO,dipole_int_AO,                   &
+             nBas,nOrb,nC,nO,nV,nR,nS,ERHF,S,X,T,V,Hc,ERI_AO,ERI_MO,dipole_int_AO,                   &
              dipole_int_MO,PHF,cHF,eHF)
     call wall_time(end_GT)
   

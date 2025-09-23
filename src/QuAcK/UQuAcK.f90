@@ -2,7 +2,7 @@ subroutine UQuAcK(working_dir,dotest,doUHF,dostab,dosearch,doMP2,doMP3,doCCD,dop
                   dodrCCD,dorCCD,docrCCD,dolCCD,doCIS,doCIS_D,doCID,doCISD,doFCI,dophRPA,dophRPAx,docrRPA,doppRPA, &
                   doG0F2,doevGF2,doqsGF2,doufG0F02,doG0F3,doevGF3,doG0W0,doevGW,doqsGW,doufG0W0,doufGW,            &
                   doG0T0pp,doevGTpp,doqsGTpp,doufG0T0pp,doG0T0eh,doevGTeh,doqsGTeh,doevParquet,doqsParquet,        & 
-                  nNuc,nBas,nC,nO,nV,nR,ENuc,ZNuc,rNuc,                                                            &
+                  readFCIDUMP,nNuc,nBas,nC,nO,nV,nR,ENuc,ZNuc,rNuc,                                                &
                   S,T,V,Hc,X,dipole_int_AO,maxSCF_HF,max_diis_HF,thresh_HF,level_shift,                            &
                   guess_type,mix,reg_MP,maxSCF_CC,max_diis_CC,thresh_CC,spin_conserved,spin_flip,TDA,              &
                   maxSCF_GF,max_diis_GF,renorm_GF,thresh_GF,lin_GF,reg_GF,eta_GF,maxSCF_GW,max_diis_GW,thresh_GW,  &
@@ -15,6 +15,7 @@ subroutine UQuAcK(working_dir,dotest,doUHF,dostab,dosearch,doMP2,doMP3,doCCD,dop
   character(len=256),intent(in) :: working_dir
 
   logical,intent(in)            :: dotest
+  logical,intent(in)            :: readFCIDUMP
 
   logical,intent(in)            :: doUHF
   logical,intent(in)            :: dostab
@@ -126,18 +127,15 @@ subroutine UQuAcK(working_dir,dotest,doUHF,dostab,dosearch,doMP2,doMP3,doCCD,dop
 
 ! For the Hubbard model read two-body parameters (U, J, etc from hubbard file)
 
-  inquire(file='hubbard', exist=file_exists)
-  if(file_exists) then
+  inquire(file='FCIDUMP', exist=file_exists)
+  if(file_exists .and. readFCIDUMP) then
    write(*,*)
-   write(*,*) 'Reading Hubbard model two-body parameters from hubbard file'
+   write(*,*) 'Reading FCIDUMP two-body integrals'
    write(*,*)
    ERI_AO=0d0; ENuc=0d0;
-   open(unit=314, form='formatted', file='hubbard', status='old')
+   open(unit=314, form='formatted', file='FCIDUMP', status='old')
    do
-    read(314,*) iorb,jorb,korb,lorb,Val
-    if(iorb==jorb .and. jorb==korb .and. korb==lorb .and. iorb==-1) then
-     cycle
-    endif
+    read(314,*) Val,iorb,jorb,korb,lorb
     if(korb==lorb .and. lorb==0) then
      if(iorb==jorb .and. iorb==0) then
       exit

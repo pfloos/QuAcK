@@ -15,6 +15,10 @@ subroutine mo_guess(nBas, nOrb, guess_type, S, Hc, X, c)
   double precision,intent(in)   :: Hc(nBas,nBas)
   double precision,intent(in)   :: X(nBas,nOrb)
 
+! Local variables
+
+  integer                       :: iorb
+
 ! Output variables
 
   double precision,intent(inout)  :: c(nBas,nOrb)
@@ -40,6 +44,14 @@ subroutine mo_guess(nBas, nOrb, guess_type, S, Hc, X, c)
 
     write(*,*) 'Random guess...'
     c(:,:) = 2d0*c(:,:) - 1d0
+
+  elseif(guess_type == 4) then
+
+    write(*,*) 'Site basis guess for Hubbard...'
+    c(:,:)=0d0
+    do iorb=1,nOrb
+     c(iorb,iorb) = 1d0
+    enddo
 
   else
 

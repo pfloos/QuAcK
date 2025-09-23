@@ -1,5 +1,5 @@
-subroutine RHFB(dotest,doqsGW,maxSCF,thresh,max_diis,level_shift,nNuc,ZNuc,rNuc,ENuc,        & 
-               nBas,nOrb,nOrb_twice,nO,S,T,V,Hc,ERI,dipole_int,X,EHFB,eHF,c,P,Panom,F,Delta, &
+subroutine RHFB(dotest,doaordm,doqsGW,maxSCF,thresh,max_diis,level_shift,nNuc,ZNuc,rNuc,ENuc, & 
+               nBas,nOrb,nOrb_twice,nO,S,T,V,Hc,ERI,dipole_int,X,EHFB,eHF,c,P,Panom,F,Delta,  &
                temperature,sigma,chem_pot_hf,chem_pot,restart_hfb,U_QP,eHFB_state)
 
 ! Perform Hartree-Fock Bogoliubov calculation
@@ -10,6 +10,7 @@ subroutine RHFB(dotest,doqsGW,maxSCF,thresh,max_diis,level_shift,nNuc,ZNuc,rNuc,
 ! Input variables
 
   logical,intent(in)            :: dotest
+  logical,intent(in)            :: doaordm
   logical,intent(in)            :: doqsGW
 
   integer,intent(in)            :: maxSCF
@@ -400,8 +401,7 @@ subroutine RHFB(dotest,doqsGW,maxSCF,thresh,max_diis,level_shift,nNuc,ZNuc,rNuc,
   EHFB = ET + EV + EJ + EK + EL
 
 ! Print the 1-RDM and 2-RDM in AO basis
-  inquire(file='ao_rdms', exist=file_exists)
-  if(file_exists) then
+  if(doaordm) then
    write(*,*)
    write(*,'(a)') ' -------------------------------------------'
    write(*,'(a)') ' Computing and printing RDMs in the AO basis'
@@ -498,7 +498,6 @@ subroutine RHFB(dotest,doqsGW,maxSCF,thresh,max_diis,level_shift,nNuc,ZNuc,rNuc,
    write(*,'(a,f17.8)') '   Tr[ 2D^AO ] ',trace_2rdm
    write(*,'(a,f17.8)') '         <S^2> ',S2_val
    write(*,*)
-
   endif
 
 ! Compute dipole moments, occupation numbers, || Anomalous density||,

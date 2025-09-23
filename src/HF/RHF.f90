@@ -1,4 +1,4 @@
-subroutine RHF(dotest,maxSCF,thresh,max_diis,guess_type,level_shift,nNuc,ZNuc,rNuc,ENuc, & 
+subroutine RHF(dotest,doaordm,maxSCF,thresh,max_diis,guess_type,level_shift,nNuc,ZNuc,rNuc,ENuc, & 
                nBas,nOrb,nO,S,T,V,Hc,ERI,dipole_int,X,ERHF,eHF,c,P,F)
 
 ! Perform restricted Hartree-Fock calculation
@@ -9,6 +9,7 @@ subroutine RHF(dotest,maxSCF,thresh,max_diis,guess_type,level_shift,nNuc,ZNuc,rN
 ! Input variables
 
   logical,intent(in)            :: dotest
+  logical,intent(in)            :: doaordm
 
   integer,intent(in)            :: maxSCF
   integer,intent(in)            :: max_diis
@@ -98,20 +99,8 @@ subroutine RHF(dotest,maxSCF,thresh,max_diis,guess_type,level_shift,nNuc,ZNuc,rN
 ! Guess coefficients and density matrix
 
   call mo_guess(nBas,nOrb,guess_type,S,Hc,X,c)
-
-  inquire(file='hubbard', exist=file_exists)
-  if(file_exists) then
-   inquire(file='site_guess', exist=file_exists)
-   if(file_exists) then
-    write(*,*) 'Using as guess for Hubbard the sites basis because the file site_guess is present'
-    c=0d0
-    do iorb=1,nOrb
-     c(iorb,iorb) = 1d0
-    enddo 
-   endif
-  endif
-
   P(:,:) = 2d0 * matmul(c(:,1:nO), transpose(c(:,1:nO)))
+
 ! call dgemm('N', 'T', nBas, nBas, nO, 2.d0, &
 !            c(1,1), nBas, c(1,1), nBas,     &
 !            0.d0, P(1,1), nBas)
@@ -243,8 +232,7 @@ subroutine RHF(dotest,maxSCF,thresh,max_diis,guess_type,level_shift,nNuc,ZNuc,rN
   call print_RHF(nBas,nOrb,nO,eHF,c,ENuc,ET,EV,EJ,EK,ERHF,dipole)
 
 ! Print the 1-RDM and 2-RDM in AO basis
-  inquire(file='ao_rdms', exist=file_exists)
-  if(file_exists) then
+  if(doaordm) then
    write(*,*)
    write(*,'(a)') ' -------------------------------------------'
    write(*,'(a)') ' Computing and printing RDMs in the AO basis'

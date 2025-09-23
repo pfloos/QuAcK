@@ -213,69 +213,6 @@ subroutine linDyson_GW_RHFB(nBas,nOrb,nOrb_twice,c,eQP_state,nfreqs,wweight,wcoo
 
   ElinG = ET + EV + EJ + EK + EL + EcGM
 
-! Print the 1-RDM and 2-RDM in AO basis
-  inquire(file='ao_rdms', exist=file_exists)
-  if(file_exists) then
-   write(*,*)
-   write(*,'(a)') ' -------------------------------------------'
-   write(*,'(a)') ' Computing and printing RDMs in the AO basis'
-   write(*,'(a)') ' -------------------------------------------'
-   allocate(AO_1rdm(nBas,nBas),AO_2rdm(nBas,nBas,nBas,nBas))
-   AO_1rdm(:,:)=Pcorr(:,:)
-   AO_2rdm(:,:,:,:)=0d0
-   do ibas=1,nBas
-    do jbas=1,nBas
-     do kbas=1,nBas
-      do lbas=1,nBas
-       ! Hartree
-       AO_2rdm(ibas,jbas,kbas,lbas)=AO_2rdm(ibas,jbas,kbas,lbas)+0.5d0*Pcorr(ibas,kbas)*Pcorr(jbas,lbas)
-       ! Exchange
-       AO_2rdm(ibas,jbas,kbas,lbas)=AO_2rdm(ibas,jbas,kbas,lbas)-0.25d0*Pcorr(ibas,lbas)*Pcorr(jbas,kbas)
-       ! Pairing
-       AO_2rdm(ibas,jbas,kbas,lbas)=AO_2rdm(ibas,jbas,kbas,lbas)+sigma*Panomcorr(ibas,jbas)*Panomcorr(kbas,lbas)
-      enddo
-     enddo
-    enddo
-   enddo
-   trace_1rdm=0d0
-   trace_2rdm=0d0
-   iunit=312
-   iunit2=313
-   open(unit=iunit,form='unformatted',file='lingw_hfb_ao_1rdm')
-   open(unit=iunit2,form='unformatted',file='lingw_hfb_ao_2rdm')
-   Ecore=0d0; Eee=0d0;
-   do ibas=1,nBas
-    do jbas=1,nBas
-     trace_1rdm=trace_1rdm+AO_1rdm(ibas,jbas)*S(ibas,jbas)
-     write(iunit) ibas,jbas,AO_1rdm(ibas,jbas)
-     Ecore=Ecore+AO_1rdm(ibas,jbas)*(T(ibas,jbas)+V(ibas,jbas))
-     do kbas=1,nBas
-      do lbas=1,nBas
-       trace_2rdm=trace_2rdm+AO_2rdm(ibas,jbas,kbas,lbas)*S(ibas,kbas)*S(jbas,lbas)
-       write(iunit2) ibas,jbas,kbas,lbas,AO_2rdm(ibas,jbas,kbas,lbas)
-       Eee=Eee+AO_2rdm(ibas,jbas,kbas,lbas)*ERI(ibas,jbas,kbas,lbas)
-      enddo
-     enddo
-    enddo
-   enddo
-   write(iunit) 0,0,0d0
-   write(iunit2) 0,0,0,0,0d0
-   close(iunit)
-   close(iunit2)
-   deallocate(AO_1rdm,AO_2rdm)
-   write(*,'(a)') '  Energies computed using the 1-RDM and the 2-RDM in the AO basis'
-   write(*,*)
-   write(*,'(a,f17.8)') '   Hcore (T+V) ',Ecore
-   write(*,'(a,f17.8)') '     Vee (Hxc) ',Eee
-   write(*,'(a,f17.8)') '   Eelectronic ',Ecore+Eee
-   write(*,*)           ' --------------'
-   write(*,'(a,f17.8)') '        Etotal ',Ecore+Eee+ENuc
-   write(*,*)           ' --------------'
-   write(*,'(a,f17.8)') '   Tr[ 1D^AO ] ',trace_1rdm
-   write(*,'(a,f17.8)') '   Tr[ 2D^AO ] ',trace_2rdm
-   write(*,*)
-  endif
-
 ! Print results
 
   write(*,*)
