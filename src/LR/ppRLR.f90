@@ -41,17 +41,12 @@ subroutine ppRLR(TDA,nOO,nVV,Bpp,Cpp,Dpp,Om1,X1,Y1,Om2,X2,Y2,EcRPA)
   double precision              :: EcRPA1,EcRPA2
   double precision              :: thr_d,thr_nd,thr_deg
   double precision,allocatable  :: M(:,:),Z(:,:),Om(:)
-  
-  double precision,allocatable  :: U(:,:),VT(:,:),S(:)
-  double precision,allocatable  :: work(:)
-  integer                       :: lwork, info
 
   double precision,external     :: trace_matrix
 
   nPP = nOO + nVV
 
   allocate(M(nPP,nPP),Z(nPP,nPP),Om(nPP))
-  allocate(U(nPP,nPP),VT(nPP,nPP),S(nPP))
 
   ! Hermitian case for TDA
 
@@ -76,18 +71,6 @@ subroutine ppRLR(TDA,nOO,nVV,Bpp,Cpp,Dpp,Om1,X1,Y1,Om2,X2,Y2,EcRPA)
 
     M(    1:nVV,nVV+1:nPP) = +           Bpp(1:nVV,1:nOO)
     M(nVV+1:nPP,    1:nVV) = - transpose(Bpp(1:nVV,1:nOO))
-
-    allocate(work(1))
-    lwork = -1
-    call dgesvd('A','A',nPP,nPP,M(1,1),nPP,S(1),U(1,1),nPP,VT(1,1),nPP,work,lwork,info)
-    lwork = int(work(1))
-    deallocate(work)
-    allocate(work(lwork))
-    
-    call dgesvd('A','A',nPP,nPP,M(1,1),nPP,S(1),U(1,1),nPP,VT(1,1),nPP,work,lwork,info)
-
-    write (*,*) info
-    call vecout(nPP,S)
 
     ! Diagonal blocks 
 
@@ -148,9 +131,9 @@ subroutine ppRLR(TDA,nOO,nVV,Bpp,Cpp,Dpp,Om1,X1,Y1,Om2,X2,Y2,EcRPA)
   EcRPA1 = +sum(Om1) - trace_matrix(nVV,Cpp)
   EcRPA2 = -sum(Om2) - trace_matrix(nOO,Dpp)
 
-  ! if(abs(EcRPA - EcRPA1) > 1d-6 .or. abs(EcRPA - EcRPA2) > 1d-6) then
-  !   print*,'!!! Issue in pp-RPA linear reponse calculation RPA1 != RPA2 !!!'
-  ! endif
+  if(abs(EcRPA - EcRPA1) > 1d-6 .or. abs(EcRPA - EcRPA2) > 1d-6) then
+    print*,'!!! Issue in pp-RPA linear reponse calculation RPA1 != RPA2 !!!'
+  endif
 
   deallocate(M,Z,Om)
 
