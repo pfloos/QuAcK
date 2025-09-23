@@ -35,7 +35,7 @@ subroutine UQuAcK(working_dir,dotest,doUHF,dostab,dosearch,doMP2,doMP3,doCCD,dop
   integer,intent(in)            :: nO(nspin)
   integer,intent(in)            :: nV(nspin)
   integer,intent(in)            :: nR(nspin)
-  double precision,intent(in)   :: ENuc
+  double precision,intent(inout):: ENuc
 
   double precision,intent(in)   :: ZNuc(nNuc),rNuc(nNuc,ncart)
 
@@ -79,6 +79,7 @@ subroutine UQuAcK(working_dir,dotest,doUHF,dostab,dosearch,doMP2,doMP3,doCCD,dop
 
 ! Local variables
 
+  logical                       :: file_exists
   logical                       :: doMP,doCC,doCI,doRPA,doGF,doGW,doGT
   
   double precision              :: start_HF     ,end_HF       ,t_HF
@@ -95,10 +96,12 @@ subroutine UQuAcK(working_dir,dotest,doUHF,dostab,dosearch,doMP2,doMP3,doCCD,dop
 
   double precision              :: start_int, end_int, t_int
   double precision,allocatable  :: cHF(:,:,:),eHF(:,:),PHF(:,:,:),FHF(:,:,:)
+  double precision              :: Val
   double precision              :: EUHF
   double precision,allocatable  :: dipole_int_aa(:,:,:),dipole_int_bb(:,:,:)
   double precision,allocatable  :: ERI_aaaa(:,:,:,:),ERI_aabb(:,:,:,:),ERI_bbbb(:,:,:,:)
   double precision,allocatable  :: ERI_AO(:,:,:,:)
+  integer                       :: iorb,jorb,korb,lorb
   integer                       :: ixyz
   integer                       :: nS(nspin)
 
@@ -120,6 +123,32 @@ subroutine UQuAcK(working_dir,dotest,doUHF,dostab,dosearch,doMP2,doMP3,doCCD,dop
   allocate(ERI_AO(nBas,nBas,nBas,nBas))
   call wall_time(start_int)
   call read_2e_integrals(working_dir,nBas,ERI_AO)
+
+! For the Hubbard model read two-body parameters (U, J, etc from hubbard file)
+
+  inquire(file='hubbard', exist=file_exists)
+  if(file_exists) then
+   write(*,*)
+   write(*,*) 'Reading Hubbard model two-body parameters from hubbard file'
+   write(*,*)
+   ERI_AO=0d0; ENuc=0d0;
+   open(unit=314, form='formatted', file='hubbard', status='old')
+   do
+    read(314,*) iorb,jorb,korb,lorb,Val
+    if(iorb==jorb .and. jorb==korb .and. korb==lorb .and. iorb==-1) then
+     cycle
+    endif
+    if(korb==lorb .and. lorb==0) then
+     if(iorb==jorb .and. iorb==0) then
+      exit
+     endif
+    else
+     ERI_AO(iorb,jorb,korb,lorb)=Val
+    endif
+   enddo
+  endif
+  close(314)
+
   call wall_time(end_int)
   t_int = end_int - start_int
   write(*,*)

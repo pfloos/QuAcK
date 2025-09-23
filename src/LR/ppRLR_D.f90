@@ -22,6 +22,7 @@ subroutine ppRLR_D(ispin,nOrb,nC,nO,nV,nR,nOO,lambda,e,ERI,Dpp)
   double precision              :: eF
   double precision,external     :: Kronecker_delta
 
+  logical                       :: use_chem_pot
   integer                       :: i,j,k,l,ij,kl
 
 ! Output variables
@@ -30,8 +31,13 @@ subroutine ppRLR_D(ispin,nOrb,nC,nO,nV,nR,nOO,lambda,e,ERI,Dpp)
 
 ! Define the chemical potential
 
-! eF = e(nO) + e(nO+1)
+  use_chem_pot = .false.
   eF = 0d0
+  inquire(file='use_chem_pot_in_ppRPA', exist=use_chem_pot)
+  if(use_chem_pot) then
+    write(*,*) 'File use_chem_pot_in_ppRPA encountered, setting eF = eHOMO + eLUMO'
+    eF = e(nO) + e(nO+1)
+  endif
  
 ! Build the D matrix for the singlet manifold
 

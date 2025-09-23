@@ -191,7 +191,7 @@ subroutine RQuAcK(working_dir,use_gpu,dotest,doRHF,doROHF,docRHF,               
   inquire(file='hubbard', exist=file_exists)
   if(file_exists) then
    write(*,*)
-   write(*,*) 'Reading Hubbard model two-body parameters'
+   write(*,*) 'Reading Hubbard model two-body parameters from hubbard file'
    write(*,*)
    ERI_AO=0d0; ENuc=0d0;
    open(unit=314, form='formatted', file='hubbard', status='old')
