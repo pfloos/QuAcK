@@ -1,0 +1,203 @@
+subroutine linDyson_GT_analyticSig_RHF(nBas,nOrb,nO,c,eHF,nfreqs,wweight,wcoord,ERI,ERI_MO,&
+           Enuc,EcGM,eta,T,V,S,P,Pcorr)
+
+
+! Use the restricted Sigma_c(E) to compute the linnearized approximation to G
+
+  implicit none
+  include 'parameters.h'
+
+! Input variables
+
+  integer,intent(in)            :: nfreqs
+  integer,intent(in)            :: nBas
+  integer,intent(in)            :: nOrb
+  integer,intent(in)            :: nO
+
+  double precision,intent(in)   :: eta
+  double precision,intent(in)   :: Enuc
+  double precision,intent(inout):: eHF(nOrb)
+  double precision,intent(in)   :: wweight(nfreqs)
+  double precision,intent(in)   :: wcoord(nfreqs)
+  double precision,intent(in)   :: T(nBas,nBas)
+  double precision,intent(in)   :: V(nBas,nBas)
+  double precision,intent(in)   :: S(nBas,nBas)
+  double precision,intent(in)   :: P(nBas,nBas)
+  double precision,intent(in)   :: c(nBas,nOrb)
+  double precision,intent(in)   :: ERI(nBas,nBas,nBas,nBas)
+  double precision,intent(in)   :: ERI_MO(nOrb,nOrb,nOrb,nOrb)
+
+! Local variables
+
+  integer                       :: kind_int
+  integer                       :: nV
+  integer                       :: nS
+  integer                       :: ifreq
+  integer                       :: iorb,jorb
+  integer                       :: nOrb2
+  integer                       :: nfreqs2
+
+  double precision              :: EcRPA
+  double precision              :: lim_inf,lim_sup
+  double precision              :: alpha,beta
+  double precision              :: ET,EV,EJ,EK,ElinG,trace_occ
+  double precision,external     :: trace_matrix
+  double precision,allocatable  :: c_inv(:,:)
+  double precision,allocatable  :: J(:,:)
+  double precision,allocatable  :: K(:,:)
+  double precision,allocatable  :: Occ(:)
+  double precision,allocatable  :: wweight2(:)
+  double precision,allocatable  :: wcoord2(:)
+  double precision,allocatable  :: Pcorr_mo(:,:)
+  double precision,allocatable  :: Aph(:,:)
+  double precision,allocatable  :: Bph(:,:)
+  double precision,allocatable  :: Om(:)
+  double precision,allocatable  :: XpY(:,:)
+  double precision,allocatable  :: XmY(:,:)
+  double precision,allocatable  :: rhoL(:,:,:)
+  double precision,allocatable  :: rhoR(:,:,:)
+
+  complex *16,allocatable       :: wcoord2_cpx(:)
+  complex *16,allocatable       :: Sigma_c(:,:)
+  complex *16,allocatable       :: Tmp_mo(:,:)
+
+! Ouput variables
+
+  double precision,intent(out)  :: EcGM
+  double precision,intent(out)  :: Pcorr(nBas,nBas)
+
+! Allocate and initialize arrays and variables
+
+  write(*,*)
+  write(*,*) '********************************************'
+  write(*,*) '*          G = Go + Go Sigma Go            *'
+  write(*,*) '* linearized-Dyson equation approximation  *'
+  write(*,*) '*   [ using the analytic Sigma = GT(eh) ]  *'
+  write(*,*) '********************************************'
+  write(*,*)
+
+  nfreqs2=10*nfreqs
+  allocate(Sigma_c(nOrb,nOrb))
+  allocate(Tmp_mo(nOrb,nOrb),Pcorr_mo(nOrb,nOrb))
+
+! Prepare second quadrature
+
+  kind_int = 1
+  lim_inf = 0d0; lim_sup = 1d0;
+  alpha = 0d0;   beta  = 0d0;
+  allocate(wweight2(nfreqs2),wcoord2(nfreqs2),wcoord2_cpx(nfreqs2))
+  call cgqf(nfreqs2,kind_int,alpha,beta,lim_inf,lim_sup,wcoord2,wweight2)
+  wweight2(:)=wweight2(:)/((1d0-wcoord2(:))**2d0)
+  wcoord2(:)=wcoord2(:)/(1d0-wcoord2(:))
+  wcoord2_cpx(:)=wcoord2(:)*im
+
+! Compute linear response
+
+  nV=nOrb-nO
+  nS=nO*nV
+
+  allocate(Aph(nS,nS))
+  allocate(Bph(nS,nS))
+  allocate(Om(nS))
+  allocate(XpY(nS,nS))
+  allocate(XmY(nS,nS))
+  allocate(rhoL(nOrb,nOrb,nS))
+  allocate(rhoR(nOrb,nOrb,nS))
+
+  call phRLR_A(2,.true.,nOrb,0,nO,nV,0,nS,1d0,eHF,ERI_MO,Aph)
+  call phRLR_B(2,.true.,nOrb,0,nO,nV,0,nS,1d0,ERI_MO,Bph)
+  call phRLR(.false.,nS,Aph,Bph,EcRPA,Om,XpY,XmY)
+  call RGTeh_excitation_density(nOrb,0,nO,0,nS,ERI_MO,XpY,XmY,rhoL,rhoR)
+
+  deallocate(Aph,Bph,XpY,XmY)
+
+! Integration along imag. freqs contributions
+
+  Pcorr_mo(:,:)=0d0
+  do ifreq=1,nfreqs2
+   
+   call G_MO_RHF(nOrb,nO,0d0,eHF,wcoord2_cpx(ifreq),Tmp_mo)                                   ! This is G(iw2)
+   call RGTeh_self_energy_iomega(eta,wcoord2_cpx(ifreq),nBas,0,nO,nV,0,nS,eHF,Om,rhoL,rhoR, & ! This is Sigma_c(iw2) 
+                                EcGM,Sigma_c)
+   Tmp_mo(:,:)=matmul(Tmp_mo(:,:),matmul(Sigma_c(:,:),Tmp_mo(:,:)))                           ! This is G(iw2) Sigma_c(iw2) G(iw2)
+ 
+   Pcorr_mo(:,:) = Pcorr_mo(:,:) + wweight2(ifreq)*real(Tmp_mo(:,:)+conjg(Tmp_mo(:,:))) ! Integrate along iw2
+  
+  enddo
+  Pcorr_mo(:,:) = Pcorr_mo(:,:)/pi
+  
+  Pcorr(:,:) = P(:,:) + matmul(c,matmul(Pcorr_mo(:,:),transpose(c)))
+
+! Compute new total energy and Occ numbers
+
+  allocate(J(nBas,nBas))
+  allocate(K(nBas,nBas))
+  allocate(Occ(nOrb))
+  allocate(c_inv(nOrb,nBas))
+
+  c_inv(:,:) = matmul(transpose(c),S)
+  Pcorr_mo(:,:) = Pcorr_mo(:,:) + matmul(matmul(c_inv,P),transpose(c_inv)) 
+  call diagonalize_matrix(nOrb,Pcorr_mo,Occ)
+  call Hartree_matrix_AO_basis(nBas,Pcorr,ERI,J)
+  call exchange_matrix_AO_basis(nBas,Pcorr,ERI,K)
+
+  ! Kinetic energy
+
+  ET = trace_matrix(nBas,matmul(Pcorr,T))
+
+  ! Potential energy
+
+  EV = trace_matrix(nBas,matmul(Pcorr,V))
+
+  ! Hartree energy
+
+  EJ = 0.5d0*trace_matrix(nBas,matmul(Pcorr,J))
+
+  ! Exchange energy
+
+  EK = 0.25d0*trace_matrix(nBas,matmul(Pcorr,K))
+
+  ! Total energy (incl. the Galitkii-Migdal contribution)
+
+  ElinG = ET + EV + EJ + EK + EcGM
+
+! Print results
+
+  write(*,*)
+  write(*,'(A50)')           '---------------------------------------'
+  write(*,'(A33)')           ' Summary               '
+  write(*,'(A50)')           '---------------------------------------'
+  write(*,'(A33,1X,F16.10,A3)') ' One-electron energy = ',ET + EV,' au'
+  write(*,'(A33,1X,F16.10,A3)') ' Kinetic      energy = ',ET,' au'
+  write(*,'(A33,1X,F16.10,A3)') ' Potential    energy = ',EV,' au'
+  write(*,'(A50)')           '---------------------------------------'
+  write(*,'(A33,1X,F16.10,A3)') ' Two-electron energy = ',EJ + EK + EcGM,' au'
+  write(*,'(A33,1X,F16.10,A3)') ' Hartree      energy = ',EJ,' au'
+  write(*,'(A33,1X,F16.10,A3)') ' Exchange     energy = ',EK,' au'
+  write(*,'(A33,1X,F16.10,A3)') ' GM           energy = ',EcGM,' au'
+  write(*,'(A50)')           '---------------------------------------'
+  write(*,'(A33,1X,F16.10,A3)') ' Electronic   energy = ',ElinG,' au'
+  write(*,'(A33,1X,F16.10,A3)') ' Nuclear   repulsion = ',ENuc,' au'
+  write(*,'(A33,1X,F16.10,A3)') ' lin-Dyson    energy = ',ElinG + ENuc,' au'
+  write(*,'(A50)')           '---------------------------------------'
+  write(*,'(A50)') '---------------------------------------'
+  write(*,'(A50)') ' lin-Dyson occupation numbers '
+  write(*,'(A50)') '---------------------------------------'
+  trace_occ=0d0
+  do iorb=1,nOrb
+   if(abs(Occ(iorb))>1d-8) then
+    write(*,'(I7,10F15.8)') iorb,Occ(nOrb-(iorb-1))
+   endif
+   trace_occ=trace_occ+Occ(iorb)
+  enddo
+  write(*,*)
+  write(*,'(A33,1X,F16.10,A3)') ' Trace [ 1D ]        = ',trace_occ,'   '
+  write(*,*)
+
+  ! Deallocate arrays
+
+  deallocate(J,K,Occ,c_inv,rhoL,rhoR,Om)
+  deallocate(Sigma_c,Tmp_mo,Pcorr_mo,wweight2,wcoord2,wcoord2_cpx)
+
+end subroutine
+
