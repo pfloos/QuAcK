@@ -1,4 +1,4 @@
-subroutine RGW_self_energy_iomega(wcoord,nBas,nOrb,nC,nO,nV,nR,nS,e,Om,rho,Sig)
+subroutine RGW_self_energy_iomega(eta,wcoord,nBas,nOrb,nC,nO,nV,nR,nS,e,Om,rho,EcGM,Sig)
 
 ! Compute correlation part of the self-energy and the renormalization factor 
 
@@ -14,6 +14,7 @@ subroutine RGW_self_energy_iomega(wcoord,nBas,nOrb,nC,nO,nV,nR,nS,e,Om,rho,Sig)
   integer,intent(in)            :: nV
   integer,intent(in)            :: nR
   integer,intent(in)            :: nS
+  double precision,intent(in)   :: eta
   double precision,intent(in)   :: e(nOrb)
   double precision,intent(in)   :: Om(nS)
   double precision,intent(in)   :: rho(nOrb,nOrb,nS)
@@ -27,6 +28,7 @@ subroutine RGW_self_energy_iomega(wcoord,nBas,nOrb,nC,nO,nV,nR,nS,e,Om,rho,Sig)
 
 ! Output variables
 
+  double precision,intent(out)  :: EcGM
   complex*16,intent(out)        :: Sig(nOrb,nOrb)
 
 !----------------!
@@ -34,6 +36,7 @@ subroutine RGW_self_energy_iomega(wcoord,nBas,nOrb,nC,nO,nV,nR,nS,e,Om,rho,Sig)
 !----------------!
 
   Sig(:,:) = czero
+  EcGM     = 0d0
 
 ! Occupied part of the correlation self-energy
 
@@ -80,5 +83,22 @@ subroutine RGW_self_energy_iomega(wcoord,nBas,nOrb,nC,nO,nV,nR,nS,e,Om,rho,Sig)
   end do
   !$OMP END DO
   !$OMP END PARALLEL
+
+!-------------------------------------!
+! Galitskii-Migdal correlation energy !
+!-------------------------------------!
+
+  EcGM = 0d0
+  do m=1,nS
+    do a=nO+1,nOrb-nR
+      do i=nC+1,nO
+
+        eps = e(a) - e(i) + Om(m)
+        num = 4d0*rho(a,i,m)*rho(a,i,m)
+        EcGM = EcGM - real(num*eps/(eps**2 + eta**2))
+  
+      end do
+    end do
+  end do
 
 end subroutine 

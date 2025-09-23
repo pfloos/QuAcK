@@ -1,5 +1,5 @@
 subroutine linDyson_GW_analytic_Sig_RHF(nBas,nOrb,nO,c,eHF,nfreqs,wweight,wcoord,ERI,ERI_MO,&
-           Enuc,EcGM,T,V,S,P,Pcorr)
+           Enuc,EcGM,eta,T,V,S,P,Pcorr)
 
 
 ! Use the restricted Sigma_c(E) to compute the linnearized approximation to G
@@ -14,6 +14,7 @@ subroutine linDyson_GW_analytic_Sig_RHF(nBas,nOrb,nO,c,eHF,nfreqs,wweight,wcoord
   integer,intent(in)            :: nOrb
   integer,intent(in)            :: nO
 
+  double precision,intent(in)   :: eta
   double precision,intent(in)   :: Enuc
   double precision,intent(in)   :: EcGM
   double precision,intent(inout):: eHF(nOrb)
@@ -114,7 +115,8 @@ subroutine linDyson_GW_analytic_Sig_RHF(nBas,nOrb,nO,c,eHF,nfreqs,wweight,wcoord
   do ifreq=1,nfreqs2
    
    call G_MO_RHF(nOrb,nO,0d0,eHF,wcoord2_cpx(ifreq),Tmp_mo)                                  ! This is G(iw2)
-   call RGW_self_energy_iomega(wcoord2_cpx(ifreq),nBas,nOrb,0,nO,nV,0,nS,eHF,Om,rho,Sigma_c) ! This is Sigma_c(iw2)
+   call RGW_self_energy_iomega(eta,wcoord2_cpx(ifreq),nBas,nOrb,0,nO,nV,0,nS,eHF,Om, &       ! This is Sigma_c(iw2)
+   rho,EcGM,Sigma_c)
    Tmp_mo(:,:)=matmul(Tmp_mo(:,:),matmul(Sigma_c(:,:),Tmp_mo(:,:)))                          ! This is G(iw2) Sigma_c(iw2) G(iw2)
  
    Pcorr_mo(:,:) = Pcorr_mo(:,:) + wweight2(ifreq)*real(Tmp_mo(:,:)+conjg(Tmp_mo(:,:))) ! Integrate along iw2

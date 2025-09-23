@@ -7,7 +7,6 @@ subroutine RGTpp_self_energy_iomega(eta,wcoord,nBas,nC,nO,nV,nR,nOOs,nVVs,nOOt,n
 
 ! Input variables
 
-  double precision,intent(in)   :: eta
   integer,intent(in)            :: nBas
   integer,intent(in)            :: nC
   integer,intent(in)            :: nO
@@ -15,6 +14,7 @@ subroutine RGTpp_self_energy_iomega(eta,wcoord,nBas,nC,nO,nV,nR,nOOs,nVVs,nOOt,n
   integer,intent(in)            :: nR
   integer,intent(in)            :: nOOs,nOOt
   integer,intent(in)            :: nVVs,nVVt
+  double precision,intent(in)   :: eta
   double precision,intent(in)   :: e(nBas)
   double precision,intent(in)   :: Om1s(nVVs),Om1t(nVVt)
   double precision,intent(in)   :: rho1s(nBas,nBas,nVVs),rho1t(nBas,nBas,nVVt)
