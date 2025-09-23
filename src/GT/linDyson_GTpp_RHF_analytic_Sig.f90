@@ -200,10 +200,10 @@ subroutine linDyson_GTpp_analytic_Sig_RHF(nBas,nOrb,nO,c,eHF,nfreqs,wweight,wcoo
   write(*,'(A50)')           '---------------------------------------'
   write(*,'(A33,1X,F16.10,A3)') ' Electronic   energy = ',ElinG,' au'
   write(*,'(A33,1X,F16.10,A3)') ' Nuclear   repulsion = ',ENuc,' au'
-  write(*,'(A33,1X,F16.10,A3)') ' lin-Dyson    energy = ',ElinG + ENuc,' au'
+  write(*,'(A33,1X,F16.10,A3)') ' lin-Dys GTpp energy = ',ElinG + ENuc,' au'
   write(*,'(A50)')           '---------------------------------------'
   write(*,'(A50)') '---------------------------------------'
-  write(*,'(A50)') ' lin-Dyson occupation numbers '
+  write(*,'(A50)') ' lin-Dyson GTpp occupation numbers '
   write(*,'(A50)') '---------------------------------------'
   trace_occ=0d0
   do iorb=1,nOrb
