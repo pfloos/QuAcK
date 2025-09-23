@@ -223,7 +223,7 @@ subroutine BQuAcK(working_dir,dotest,doaordm,doRHFB,doBRPA,dophRPA,doG0W0,doqsGW
       !                    Enuc,EcGM,T,V,S,pMATcorr)
       deallocate(pMATcorr)
      endif
-     ! Test EcGM computed from Sigma_c(iw) [ NOTE: This is really bad numerically and never used. ]
+     ! Test EcGM computed from Sigma_c(iw) [ NOTE: This is really bad numerically and never used in practice. ]
      !call EcGM_w_RHF_Sigma(nOrb,nO,1,eHF,nfreqs,wweight,wcoord,vMAT,EeleSD+Enuc,EcGM)
      deallocate(vMAT)
      call wall_time(end_Ecorr)
@@ -311,7 +311,7 @@ subroutine BQuAcK(working_dir,dotest,doaordm,doRHFB,doBRPA,dophRPA,doG0W0,doqsGW
     !                     Enuc,EcGM,sigma,T,V,S,pMATcorr,panomMATcorr)
     deallocate(pMATcorr,panomMATcorr)
    endif
-   ! Test EcGM computed from Sigma_c(iw) [ NOTE: This is really bad numerically and never used. ]
+   ! Test EcGM computed from Sigma_c(iw) [ NOTE: This is really bad numerically and never used in practice. ]
    !call EcGM_w_RHFB_Sigma(nOrb,nOrb_twice,1,eQP_state,nfreqs,wweight,wcoord,vMAT,U_QP,EeleSD+Enuc,EcGM)
    deallocate(vMAT)
    call wall_time(end_Ecorr)

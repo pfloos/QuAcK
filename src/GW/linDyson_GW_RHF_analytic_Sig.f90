@@ -35,6 +35,7 @@ subroutine linDyson_GW_analytic_Sig_RHF(nBas,nOrb,nO,c,eHF,nfreqs,wweight,wcoord
   integer                       :: nS
   integer                       :: ifreq
   integer                       :: iorb,jorb
+  integer                       :: ispin
   integer                       :: nOrb2
   integer                       :: nfreqs2
 
@@ -102,8 +103,9 @@ subroutine linDyson_GW_analytic_Sig_RHF(nBas,nOrb,nO,c,eHF,nfreqs,wweight,wcoord
   allocate(XmY(nS,nS))
   allocate(rho(nOrb,nOrb,nS))
 
-  call phRLR_A(1,.true.,nOrb,0,nO,nV,0,nS,1d0,eHF,ERI_MO,Aph)
-  call phRLR_B(1,.true.,nOrb,0,nO,nV,0,nS,1d0,ERI_MO,Bph)
+  ispin  = 1
+  call phRLR_A(ispin,.true.,nOrb,0,nO,nV,0,nS,1d0,eHF,ERI_MO,Aph)
+  call phRLR_B(ispin,.true.,nOrb,0,nO,nV,0,nS,1d0,ERI_MO,Bph)
   call phRLR(.false.,nS,Aph,Bph,EcRPA,Om,XpY,XmY)
   call RGW_excitation_density(nOrb,0,nO,0,nS,ERI_MO,XpY,rho)
 
