@@ -86,8 +86,11 @@ subroutine ppRLR(TDA,nOO,nVV,Bpp,Cpp,Dpp,Om1,X1,Y1,Om2,X2,Y2,EcRPA)
     
     call dgesvd('A','A',nPP,nPP,M(1,1),nPP,S(1),U(1,1),nPP,VT(1,1),nPP,work,lwork,info)
 
-    write (*,*) info
-    call vecout(nPP,S)
+    if( info/= 0 ) then 
+     write(*,*) 'Error in dgesvd in ppRLR! Error details ',info
+     write(*,*) 'Sigular values from SVD'
+     call vecout(nPP,S)
+    endif
 
     ! Diagonal blocks 
 

@@ -1,4 +1,4 @@
-subroutine linDyson_GW_analyticSig_RHF(nBas,nOrb,nO,c,eHF,nfreqs,wweight,wcoord,ERI,ERI_MO,&
+subroutine linDyson_GW_analytic_Sig_RHF(nBas,nOrb,nO,c,eHF,nfreqs,wweight,wcoord,ERI,ERI_MO,&
            Enuc,EcGM,T,V,S,P,Pcorr)
 
 

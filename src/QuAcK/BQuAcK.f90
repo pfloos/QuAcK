@@ -189,17 +189,22 @@ subroutine BQuAcK(working_dir,dotest,doaordm,doRHFB,doBRPA,dophRPA,doG0W0,doqsGW
        enddo
       enddo
      enddo
-!     ! Test linearized-Dyson equation G ~ Go + Go Sigma_c Go -> Pcorr [using the analytic Sigma]
+!
+!     ! Test linearized-Dyson equation G ~ Go + Go Sigma_c Go -> Pcorr [using the analytic Sigma in GW and GTpp]
 !     if(dolinGW .and. dophRPA) then
 !      allocate(pMATcorr(nBas,nBas))
+!      chem_pot=0.5d0*(eHF(nO)+eHF(nO+1))
+!      eHF(:) = eHF(:) - chem_pot
 !      call EcRPA_EcGM_w_RHF(nOrb,nO,1,eHF,nfreqs,ntimes,wweight,wcoord,vMAT,EeleSD+ENuc, &
 !                            EcRPA,EcGM)
-!      call linDyson_GW_analyticSig_RHF(nBas,nOrb,nO,MOCoef,eHF,nfreqs,wweight,wcoord,ERI_AO,ERI_MO, &
+!      call linDyson_GW_analytic_Sig_RHF(nBas,nOrb,nO,MOCoef,eHF,nfreqs,wweight,wcoord,ERI_AO,ERI_MO,   &
 !           Enuc,EcGM,T,V,S,pMAT,pMATcorr)
-!      call linDyson_GT_analyticSig_RHF(nBas,nOrb,nO,MOCoef,eHF,nfreqs,wweight,wcoord,ERI_AO,ERI_MO, &
+!      call linDyson_GTpp_analytic_Sig_RHF(nBas,nOrb,nO,MOCoef,eHF,nfreqs,wweight,wcoord,ERI_AO,ERI_MO, &
 !           Enuc,EcGM,eta,T,V,S,pMAT,pMATcorr)
+!      eHF(:) = eHF(:) + chem_pot
 !      deallocate(pMATcorr)
 !     endif
+!
      deallocate(ERI_MO)
      if(dophRPA) then
       call EcRPA_EcGM_w_RHF(nOrb,nO,1,eHF,nfreqs,ntimes,wweight,wcoord,vMAT,EeleSD+ENuc, &
