@@ -6,7 +6,7 @@ subroutine read_options(working_dir,                                            
                         maxSCF_GF,thresh_GF,max_diis_GF,lin_GF,eta_GF,renorm_GF,reg_GF,                     &
                         maxSCF_GW,thresh_GW,max_diis_GW,lin_GW,eta_GW,shift_GW,reg_GW,doOO,mu,do_linDM_GW,  &
                         nfreqs,ntimes,TDA_W,                                                                &
-                        maxSCF_GT,thresh_GT,max_diis_GT,lin_GT,eta_GT,reg_GT,TDA_T,                         &
+                        maxSCF_GT,thresh_GT,max_diis_GT,lin_GT,eta_GT,reg_GT,TDA_T,do_linDM_GT,             &
                         doACFDT,exchange_kernel,doXBS,                                                      &
                         dophBSE,dophBSE2,doppBSE,dBSE,dTDA,                                                 &
                         temperature,sigma,chem_pot_hf,restart_hfb,                                          &
@@ -61,7 +61,7 @@ subroutine read_options(working_dir,                                            
   integer,intent(out)           :: mu
   integer,intent(out)           :: nfreqs
   integer,intent(out)           :: ntimes
-  logical,intent(out)           :: do_linDM_GW
+  logical,intent(out)           :: do_linDM_GW,do_linDM_GT
 
   integer,intent(out)           :: maxSCF_GT
   double precision,intent(out)  :: thresh_GT
@@ -206,13 +206,15 @@ subroutine read_options(working_dir,                                            
       eta_GT      = 0d0
       reg_GT      = .false.
       TDA_T       = .false.
+      do_linDM_GT = .false.
     
       read(1,*) 
-      read(1,*) maxSCF_GT,thresh_GT,max_diis_GT,ans1,eta_GT,ans2,ans3
+      read(1,*) maxSCF_GT,thresh_GT,max_diis_GT,ans1,eta_GT,ans2,ans3,ans4
     
-      if(ans1 == 'T') lin_GT  = .true.
-      if(ans2 == 'T') TDA_T   = .true.
-      if(ans3 == 'T') reg_GT  = .true.
+      if(ans1 == 'T') lin_GT      = .true.
+      if(ans2 == 'T') TDA_T       = .true.
+      if(ans3 == 'T') reg_GT      = .true.
+      if(ans4 == 'T') do_linDM_GT = .true.
     
       ! Options for adiabatic connection
     

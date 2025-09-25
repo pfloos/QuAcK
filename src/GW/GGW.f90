@@ -76,7 +76,7 @@ subroutine GGW(dotest,doG0W0,doevGW,doqsGW,maxSCF,thresh,max_diis,doACFDT,exchan
     
     call wall_time(start_GW)
     call GG0W0(dotest,doACFDT,exchange_kernel,doXBS,dophBSE,dophBSE2,TDA_W,TDA,dBSE,dTDA,doppBSE, &
-              linearize,eta,doSRG,nBas2,nC,nO,nV,nR,nS,ENuc,EGHF,ERI,dipole_int,eHF,eGW)
+              linearize,eta,doSRG,do_linDM_GW,nBas2,nC,nO,nV,nR,nS,ENuc,EGHF,ERI,dipole_int,eHF,eGW)
     call wall_time(end_GW)
   
     t_GW = end_GW - start_GW

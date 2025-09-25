@@ -1,5 +1,5 @@
 subroutine GG0W0(dotest,doACFDT,exchange_kernel,doXBS,dophBSE,dophBSE2,TDA_W,TDA,dBSE,dTDA,doppBSE, & 
-                 linearize,eta,doSRG,nBas,nC,nO,nV,nR,nS,ENuc,EGHF,ERI,dipole_int,eHF,eGW_out)
+                 linearize,eta,doSRG,do_linDM_GW,nBas,nC,nO,nV,nR,nS,ENuc,EGHF,ERI,dipole_int,eHF,eGW_out)
 ! Perform G0W0 calculation
 
   implicit none
@@ -23,6 +23,7 @@ subroutine GG0W0(dotest,doACFDT,exchange_kernel,doXBS,dophBSE,dophBSE2,TDA_W,TDA
   logical,intent(in)            :: linearize
   double precision,intent(in)   :: eta
   logical,intent(in)            :: doSRG
+  logical,intent(in)            :: do_linDM_GW
 
   integer,intent(in)            :: nBas
   integer,intent(in)            :: nC

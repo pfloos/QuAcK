@@ -65,6 +65,8 @@ subroutine RG0W0(dotest,doACFDT,exchange_kernel,doXBS,dophBSE,dophBSE2,TDA_W,TDA
   double precision,allocatable  :: F(:,:)
   double precision,allocatable  :: linDM(:,:)
   integer                       :: p
+  double precision,allocatable  :: eHFlinDM(:)
+  double precision,allocatable  :: occ_nb(:)
 
   double precision,allocatable  :: eGWlin(:)
   double precision,allocatable  :: eGW(:)
@@ -124,54 +126,13 @@ subroutine RG0W0(dotest,doACFDT,exchange_kernel,doXBS,dophBSE,dophBSE2,TDA_W,TDA
 
   call RGW_excitation_density(nOrb,nC,nO,nR,nS,ERI,XpY,rho)
 
-!------------------------!
-! Compute GW self-energy !
-!------------------------!
-
-  if(doSRG) then 
-    call RGW_SRG_self_energy_diag(flow,nBas,nOrb,nC,nO,nV,nR,nS,eHF,Om,rho,EcGM,SigC,Z)
-  else
-    call RGW_self_energy_diag(eta,nBas,nOrb,nC,nO,nV,nR,nS,eHF,Om,rho,EcGM,SigC,Z)
-  end if
-
-!-----------------------------------!
-! Solve the quasi-particle equation !
-!-----------------------------------!
-
-  ! Linearized or graphical solution?
-  eGWlin(:) = eHF(:) + Z(:)*SigC(:)
-
-  if(linearize) then 
- 
-    write(*,*) ' *** Quasiparticle energies obtained by linearization *** '
-    write(*,*)
-
-    eGW(:) = eGWlin(:)
-
-  else 
-
-    write(*,*) ' *** Quasiparticle energies obtained by root search *** '
-    write(*,*)
-  
-    call RGW_QP_graph(doSRG,eta,flow,nOrb,nC,nO,nV,nR,nS,eHF,Om,rho,eGWlin,eHF,eGW,Z)
-
-  end if
-
-! Plot self-energy, renormalization factor, and spectral function
-
-  if(plot_self) call RGW_plot_self_energy(nOrb,eta,nC,nO,nV,nR,nS,eHF,eGW,Om,rho)
-
-! Cumulant expansion 
-
-! call RGWC(dotest,eta,nOrb,nC,nO,nV,nR,nS,Om,rho,eHF,eHF,eGW,Z)
-
 !--------------------------------------!
 ! Linearized density matrix correction !
 !--------------------------------------!
 
-  if(do_linDM_GW) then 
-
-     allocate(linDM(nOrb,nOrb))
+  allocate(linDM(nOrb,nOrb),eHFlinDM(nOrb))
+  linDM(:,:) = 0d0
+  if(do_linDM_GW) then
      call R_linDM_GW(nOrb,nC,nO,nV,nR,nS,eHF,Om,rho,eta,linDM)
 
      allocate(J(nOrb,nOrb))
@@ -182,12 +143,72 @@ subroutine RG0W0(dotest,doACFDT,exchange_kernel,doXBS,dophBSE,dophBSE2,TDA_W,TDA
      F(:,:) = J(:,:) + 0.5d0*K(:,:)
 
      do p=nC+1,nOrb-nR
-        eGW(p) = eGW(p) + F(p,p)
+        eHFlinDM(p) = eHF(p) + F(p,p)
      end do
+
+     do p=nC+1,nO
+        linDM(p,p) = linDM(p,p) + 2d0
+     end do
+
+     allocate(occ_nb(nOrb))
+     occ_nb(:) = 0d0
+     call diagonalize_matrix(nOrb,linDM,occ_nb)
+     call vecout(nOrb,occ_nb)
+     deallocate(occ_nb)
      
-     deallocate(linDM,J,K,F)
+     deallocate(J,K,F,linDM)
   end if
   
+!------------------------!
+! Compute GW self-energy !
+!------------------------!
+
+  if(doSRG) then 
+    call RGW_SRG_self_energy_diag(flow,nBas,nOrb,nC,nO,nV,nR,nS,eHF,Om,rho,EcGM,SigC,Z)
+  else
+    call RGW_self_energy_diag(eta,nBas,nOrb,nC,nO,nV,nR,nS,eHF,Om,rho,EcGM,SigC,Z)
+  end if
+  
+!-----------------------------------!
+! Solve the quasi-particle equation !
+!-----------------------------------!
+
+  ! Linearized or graphical solution?
+
+  if(do_linDM_GW) then
+     eGWlin(:) = eHFlinDM(:) + Z(:)*SigC(:)
+  else
+     eGWlin(:) = eHF(:) + Z(:)*SigC(:)
+  end if
+  
+  if(linearize) then 
+ 
+    write(*,*) ' *** Quasiparticle energies obtained by linearization *** '
+    write(*,*)
+
+    eGW(:) = eGWlin(:)
+
+  else 
+
+     write(*,*) ' *** Quasiparticle energies obtained by root search *** '
+     write(*,*)
+     if(do_linDM_GW) then
+        call RGW_QP_graph(doSRG,eta,flow,nOrb,nC,nO,nV,nR,nS,eHFlinDM,Om,rho,eGWlin,eHF,eGW,Z)
+     else
+        call RGW_QP_graph(doSRG,eta,flow,nOrb,nC,nO,nV,nR,nS,eHF,Om,rho,eGWlin,eHF,eGW,Z)
+     end if
+
+  end if
+
+  deallocate(eHFlinDM)
+  
+! Plot self-energy, renormalization factor, and spectral function
+
+  if(plot_self) call RGW_plot_self_energy(nOrb,eta,nC,nO,nV,nR,nS,eHF,eGW,Om,rho)
+  
+! Cumulant expansion 
+
+! call RGWC(dotest,eta,nOrb,nC,nO,nV,nR,nS,Om,rho,eHF,eHF,eGW,Z)
   
 ! Compute the RPA correlation energy
 

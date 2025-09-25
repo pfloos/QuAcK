@@ -1,5 +1,5 @@
 subroutine GG0T0pp(dotest,doACFDT,exchange_kernel,doXBS,dophBSE,dophBSE2,TDA_T,TDA,dBSE,dTDA,doppBSE, & 
-                   linearize,eta,regularize,nOrb,nC,nO,nV,nR,nS,ENuc,EGHF,ERI,dipole_int,eHF)
+                   linearize,eta,regularize,do_linDM_GT,nOrb,nC,nO,nV,nR,nS,ENuc,EGHF,ERI,dipole_int,eHF)
 
 ! Perform one-shot calculation with a T-matrix self-energy (G0T0)
 
@@ -22,6 +22,7 @@ subroutine GG0T0pp(dotest,doACFDT,exchange_kernel,doXBS,dophBSE,dophBSE2,TDA_T,T
   logical,intent(in)            :: linearize
   double precision,intent(in)   :: eta
   logical,intent(in)            :: regularize
+  logical,intent(in)            :: do_linDM_GT
 
   integer,intent(in)            :: nOrb
   integer,intent(in)            :: nC

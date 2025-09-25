@@ -1,6 +1,6 @@
 subroutine RGT(dotest,doG0T0pp,doevGTpp,doqsGTpp,doufG0T0pp,doG0T0eh,doevGTeh,doqsGTeh, &
                maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,dophBSE,dophBSE2,   &
-               doppBSE,TDA_T,TDA,dBSE,dTDA,singlet,triplet,linearize,eta,regularize,    &
+               doppBSE,TDA_T,TDA,dBSE,dTDA,singlet,triplet,linearize,eta,regularize,do_linDM_GT, &
                nNuc,ZNuc,rNuc,ENuc,nBas,nOrb,nC,nO,nV,nR,nS,ERHF,S,X,T,                 &
                V,Hc,ERI_AO,ERI_MO,dipole_int_AO,dipole_int_MO,PHF,cHF,eHF)
 
@@ -39,6 +39,7 @@ subroutine RGT(dotest,doG0T0pp,doevGTpp,doqsGTpp,doufG0T0pp,doG0T0eh,doevGTeh,do
   logical,intent(in)            :: linearize
   double precision,intent(in)   :: eta
   logical,intent(in)            :: regularize
+  logical,intent(in)            :: do_linDM_GT
 
   integer,intent(in)            :: nNuc
   double precision,intent(in)   :: ZNuc(nNuc)
@@ -79,7 +80,7 @@ subroutine RGT(dotest,doG0T0pp,doevGTpp,doqsGTpp,doufG0T0pp,doG0T0eh,doevGTeh,do
     
     call wall_time(start_GT)
     call RG0T0pp(dotest,doACFDT,exchange_kernel,doXBS,dophBSE,TDA_T,TDA,dBSE,dTDA,doppBSE,singlet,triplet,&
-                linearize,eta,regularize,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,ERHF,ERI_MO,dipole_int_MO,eHF)
+                linearize,eta,regularize,do_linDM_GT,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,ERHF,ERI_MO,dipole_int_MO,eHF)
     call wall_time(end_GT)
   
     t_GT = end_GT - start_GT

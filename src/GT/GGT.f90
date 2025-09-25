@@ -1,7 +1,7 @@
 subroutine GGT(dotest,doG0T0pp,doevGTpp,doqsGTpp,doG0T0eh,maxSCF,thresh,max_diis, & 
                doACFDT,exchange_kernel,doXBS,dophBSE,dophBSE2,doppBSE,            &  
-               TDA_T,TDA,dBSE,dTDA,linearize,eta,doSRG,nNuc,ZNuc,rNuc,ENuc,       & 
-               nBas,nBas2,nC,nO,nV,nR,nS,EGHF,S,X,T,V,Hc,                         & 
+               TDA_T,TDA,dBSE,dTDA,linearize,eta,doSRG,do_linDM_GT,               &
+               nNuc,ZNuc,rNuc,ENuc,nBas,nBas2,nC,nO,nV,nR,nS,EGHF,S,X,T,V,Hc,     & 
                ERI_AO,ERI,dipole_int_AO,dipole_int,PHF,cHF,eHF)
   
 ! GT module
@@ -35,6 +35,7 @@ subroutine GGT(dotest,doG0T0pp,doevGTpp,doqsGTpp,doG0T0eh,maxSCF,thresh,max_diis
   logical,intent(in)            :: linearize
   double precision,intent(in)   :: eta
   logical,intent(in)            :: doSRG
+  logical,intent(in)            :: do_linDM_GT
 
   integer,intent(in)            :: nNuc
   double precision,intent(in)   :: ZNuc(nNuc)
@@ -74,7 +75,7 @@ subroutine GGT(dotest,doG0T0pp,doevGTpp,doqsGTpp,doG0T0eh,maxSCF,thresh,max_diis
   if(doG0T0pp) then
     call wall_time(start_GT)
     call GG0T0pp(dotest,doACFDT,exchange_kernel,doXBS,dophBSE,dophBSE2,TDA_T,TDA,dBSE,dTDA,doppBSE, &
-              linearize,eta,doSRG,nBas2,nC,nO,nV,nR,nS,ENuc,EGHF,ERI,dipole_int,eHF)
+              linearize,eta,doSRG,do_linDM_GT,nBas2,nC,nO,nV,nR,nS,ENuc,EGHF,ERI,dipole_int,eHF)
     call wall_time(end_GT)
   
     t_GT = end_GT - start_GT

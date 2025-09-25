@@ -6,7 +6,7 @@ subroutine GQuAcK(working_dir,dotest,doGHF,dostab,dosearch,doMP2,doMP3,doCCD,dop
                   maxSCF_CC,max_diis_CC,thresh_CC,                                                           &
                   TDA,maxSCF_GF,max_diis_GF,thresh_GF,lin_GF,reg_GF,eta_GF,                                  &
                   maxSCF_GW,max_diis_GW,thresh_GW,TDA_W,lin_GW,reg_GW,eta_GW,do_linDM_GW,                    &
-                  maxSCF_GT,max_diis_GT,thresh_GT,TDA_T,lin_GT,reg_GT,eta_GT,                                &
+                  maxSCF_GT,max_diis_GT,thresh_GT,TDA_T,lin_GT,reg_GT,eta_GT,do_linDM_GT,                    &
                   dophBSE,dophBSE2,doppBSE,dBSE,dTDA,doACFDT,exchange_kernel,doXBS,                          &
                   TDAeh,TDApp,max_diis_1b,max_diis_2b,max_it_1b,conv_1b,max_it_2b,conv_2b,lin_parquet,reg_1b,reg_2b,reg_PA)
 
@@ -73,6 +73,7 @@ subroutine GQuAcK(working_dir,dotest,doGHF,dostab,dosearch,doMP2,doMP3,doCCD,dop
   double precision,intent(in)   :: thresh_GT
   logical,intent(in)            :: TDA_T,lin_GT,reg_GT
   double precision,intent(in)   :: eta_GT
+  logical,intent(in)            :: do_linDM_GT
 
   logical,intent(in)            :: dophBSE,dophBSE2,doppBSE,dBSE,dTDA
   logical,intent(in)            :: doACFDT,exchange_kernel,doXBS
@@ -338,8 +339,8 @@ subroutine GQuAcK(working_dir,dotest,doGHF,dostab,dosearch,doMP2,doMP3,doCCD,dop
     call wall_time(start_GT)
     call GGT(dotest,doG0T0pp,doevGTpp,doqsGTpp,doG0T0eh,  &
              maxSCF_GT,thresh_GT,max_diis_GT,doACFDT,exchange_kernel,doXBS,dophBSE,dophBSE2,doppBSE, &
-             TDA_T,TDA,dBSE,dTDA,lin_GT,eta_GT,reg_GT,nNuc,ZNuc,rNuc,ENuc,           &
-             nBas,nBas2,nC,nO,nV,nR,nS,EGHF,S,X,T,V,Hc,ERI_AO,ERI_MO,dipole_int_AO,                   &
+             TDA_T,TDA,dBSE,dTDA,lin_GT,eta_GT,reg_GT,do_linDM_GT,nNuc,ZNuc,rNuc,ENuc,               &
+             nBas,nBas2,nC,nO,nV,nR,nS,EGHF,S,X,T,V,Hc,ERI_AO,ERI_MO,dipole_int_AO,                  &
              dipole_int_MO,PHF,cHF,eHF)
     call wall_time(end_GT)
   

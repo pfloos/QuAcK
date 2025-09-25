@@ -1,5 +1,5 @@
 subroutine RG0T0pp(dotest,doACFDT,exchange_kernel,doXBS,dophBSE,TDA_T,TDA,dBSE,dTDA,doppBSE,singlet,triplet, & 
-                   linearize,eta,regularize,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,dipole_int,eHF)
+                   linearize,eta,regularize,do_linDM_GT,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,dipole_int,eHF)
 
 ! Perform one-shot calculation with a T-matrix self-energy (G0T0)
 
@@ -24,6 +24,7 @@ subroutine RG0T0pp(dotest,doACFDT,exchange_kernel,doXBS,dophBSE,TDA_T,TDA,dBSE,d
   logical,intent(in)            :: linearize
   double precision,intent(in)   :: eta
   logical,intent(in)            :: regularize
+  logical,intent(in)            :: do_linDM_GT
 
   integer,intent(in)            :: nBas
   integer,intent(in)            :: nOrb
@@ -69,6 +70,12 @@ subroutine RG0T0pp(dotest,doACFDT,exchange_kernel,doXBS,dophBSE,TDA_T,TDA,dBSE,d
   double precision, allocatable :: supp_data_dbl(:)
   double precision, allocatable :: Om(:), R(:,:)
 
+  double precision,allocatable  :: J(:,:)
+  double precision,allocatable  :: K(:,:)
+  double precision,allocatable  :: F(:,:)
+  double precision,allocatable  :: linDM(:,:)
+  integer                       :: p
+  double precision              :: tmp
 
 ! Output variables
 
@@ -197,6 +204,35 @@ subroutine RG0T0pp(dotest,doACFDT,exchange_kernel,doXBS,dophBSE,TDA_T,TDA,dBSE,d
   if(plot_self) call RGTpp_plot_self_energy(nOrb,nC,nO,nV,nR,nOOs,nVVs,nOOt,nVVt,eHF,eGT,Om1s,rho1s,Om2s,rho2s, &
                                             Om1t,rho1t,Om2t,rho2t)
 
+!--------------------------------------!
+! Linearized density matrix correction !
+!--------------------------------------!
+
+  if(do_linDM_GT) then 
+
+     allocate(linDM(nOrb,nOrb))
+     call R_linDM_GT(nOrb,nC,nO,nV,nR,nOOs,nVVs,nOOt,nVVt,eHF,Om1s,rho1s,Om2s,rho2s,Om1t,rho1t,Om2t,rho2t,eta,linDM)
+
+     allocate(J(nOrb,nOrb))
+     allocate(K(nOrb,nOrb))
+     allocate(F(nOrb,nOrb))
+     call Hartree_matrix_AO_basis(nOrb,linDM,ERI,J)
+     call exchange_matrix_AO_basis(nOrb,linDM,ERI,K)
+     F(:,:) = J(:,:) + 0.5d0*K(:,:)
+
+     do p=nC+1,nOrb-nR
+        eGT(p) = eGT(p) + F(p,p)
+     end do
+
+     tmp = 0d0
+     do p=nC+1,nOrb-nR
+        tmp = tmp + linDM(p,p)
+     end do
+     write (*,*) tmp
+     
+     deallocate(linDM,J,K,F)
+  end if
+  
 !----------------------------------------------
 ! Dump results
 !----------------------------------------------
