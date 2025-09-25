@@ -5,7 +5,7 @@ program QuAcK
 
   logical                       :: doRQuAcK,doUQuAcK,doGQuAcK,doBQuAcK
   logical                       :: doRHF,doUHF,doGHF,doROHF,doRHFB,docRHF
-  logical                       :: dostab,dosearch
+  logical                       :: dostab,dosearch,doaordm,readFCIDUMP
   logical                       :: doMP2,doMP3
   logical                       :: doCCD,dopCCD,doDCD,doCCSD,doCCSDT
   logical                       :: dodrCCD,dorCCD,docrCCD,dolCCD
@@ -162,6 +162,7 @@ program QuAcK
 ! Read options for methods !
 !--------------------------!
 
+<<<<<<< HEAD
   call read_options(working_dir,                                                                       &
                     maxSCF_HF,thresh_HF,max_diis_HF,guess_type,mix,level_shift,dostab,dosearch,        &
                     reg_MP,                                                                            &
@@ -175,6 +176,22 @@ program QuAcK
                     dophBSE,dophBSE2,doppBSE,dBSE,dTDA,                                                &
                     temperature,sigma,chem_pot_hf,restart_hfb,                                         &
                     TDAeh,TDApp,max_diis_1b,max_diis_2b,max_it_1b,conv_1b,max_it_2b,conv_2b,lin_parquet,reg_1b,reg_2b,reg_PA)
+=======
+  call read_options(working_dir,                                                                         &
+                    maxSCF_HF,thresh_HF,max_diis_HF,guess_type,mix,level_shift,dostab,dosearch,doaordm,  &
+                    readFCIDUMP,reg_MP,                                                                  &
+                    maxSCF_CC,thresh_CC,max_diis_CC,                                                     &
+                    TDA,spin_conserved,spin_flip,                                                        &
+                    maxSCF_GF,thresh_GF,max_diis_GF,lin_GF,eta_GF,renorm_GF,reg_GF,                      &
+                    maxSCF_GW,thresh_GW,max_diis_GW,lin_GW,eta_GW,shift_GW,reg_GW,doOO,mu,do_linDM_GW,   &
+                    nfreqs,ntimes,TDA_W,                                                                 &
+                    maxSCF_GT,thresh_GT,max_diis_GT,lin_GT,eta_GT,reg_GT,TDA_T,                          & 
+                    doACFDT,exchange_kernel,doXBS,                                                       &
+                    dophBSE,dophBSE2,doppBSE,dBSE,dTDA,                                                  &
+                    temperature,sigma,chem_pot_hf,restart_hfb,                                           &
+                    TDAeh,TDApp,max_diis_1b,max_diis_2b,max_it_1b,conv_1b,max_it_2b,conv_2b,lin_parquet, &
+                    reg_1b,reg_2b,reg_PA)
+>>>>>>> ea2c44239f3f1523e94361a22f1c0697e23584d8
 
 
 !--------------------!
@@ -268,24 +285,25 @@ program QuAcK
   X(1:nBas,1:nOrb) = X_tmp(1:nBas,1:nOrb)
   deallocate(X_tmp)
 
-! For the Hubbard model read one-body parameters (t, v_loc, etc from hubbard file)
+! For the FCIDUMP read one-body integrals
 
-  inquire(file='hubbard', exist=file_exists)
-  if(file_exists) then
+  inquire(file='FCIDUMP', exist=file_exists)
+  if(file_exists .and. readFCIDUMP) then
    write(*,*)
-   write(*,*) 'Reading Hubbard model one-body parameters from hubbard file'
+   write(*,*) 'Reading FCIDUMP one-body integrals'
    write(*,*)
    S=0d0; T=0d0; V=0d0; Hc=0d0; X=0d0;
-   dipole_int_AO=0d0; Znuc=0d0;
+   dipole_int_AO=0d0; ENuc=0d0; Znuc=0d0;
    do iorb=1,nBas
     S(iorb,iorb) = 1d0
     X(iorb,iorb) = 1d0
    enddo
-   open(unit=314, form='formatted', file='hubbard', status='old')
+   open(unit=314, form='formatted', file='FCIDUMP', status='old')
    do
-    read(314,*) iorb,jorb,korb,lorb,Val
+    read(314,*) Val,iorb,jorb,korb,lorb
     if(korb==lorb .and. lorb==0) then
      if(iorb==jorb .and. iorb==0) then
+      ENuc=Val
       exit
      else
       T(iorb,jorb) =Val
@@ -352,7 +370,7 @@ program QuAcK
                   doG0F2,doevGF2,doqsGF2,doufG0F02,doG0F3,doevGF3,doG0W0,doevGW,doqsGW,doufG0W0,doufGW,                   &
                   doG0T0pp,doevGTpp,doqsGTpp,doufG0T0pp,doG0T0eh,doevGTeh,doqsGTeh,doevParquet,doqsParquet,               &
                   docG0W0,docG0F2,                                                                                        &
-                  doCAP,                                                                                                  &
+                  doCAP,readFCIDUMP,                                                                                      &
                   nNuc,nBas,nOrb,nC,nO,nV,nR,ENuc,ZNuc,rNuc,                                                              &
                   S,T,V,Hc,CAP,X,dipole_int_AO,maxSCF_HF,max_diis_HF,thresh_HF,level_shift,                               &
                   guess_type,mix,reg_MP,maxSCF_CC,max_diis_CC,thresh_CC,spin_conserved,spin_flip,TDA,                     &
@@ -373,7 +391,7 @@ program QuAcK
                 dodrCCD,dorCCD,docrCCD,dolCCD,doCIS,doCIS_D,doCID,doCISD,doFCI,dophRPA,dophRPAx,docrRPA,doppRPA, &
                 doG0F2,doevGF2,doqsGF2,doufG0F02,doG0F3,doevGF3,doG0W0,doevGW,doqsGW,doufG0W0,doufGW,            &
                 doG0T0pp,doevGTpp,doqsGTpp,doufG0T0pp,doG0T0eh,doevGTeh,doqsGTeh,doevParquet,doqsParquet,        & 
-                nNuc,nBas,nC,nO,nV,nR,ENuc,ZNuc,rNuc,                                                            &
+                readFCIDUMP,nNuc,nBas,nC,nO,nV,nR,ENuc,ZNuc,rNuc,                                                &
                 S,T,V,Hc,X,dipole_int_AO,maxSCF_HF,max_diis_HF,thresh_HF,level_shift,                            &
                 guess_type,mix,reg_MP,maxSCF_CC,max_diis_CC,thresh_CC,spin_conserved,spin_flip,TDA,              &
                 maxSCF_GF,max_diis_GF,renorm_GF,thresh_GF,lin_GF,reg_GF,eta_GF,maxSCF_GW,max_diis_GW,thresh_GW,  &
@@ -399,10 +417,10 @@ program QuAcK
 ! Bogoliubov QuAcK branch !
 !-------------------------!
   if(doBQuAcK) & 
-    call BQuAcK(working_dir,dotest,doRHFB,doBRPA,dophRPA,doG0W0,doqsGW,nNuc,nBas,nOrb,nO,ENuc,eta_GW,shift_GW, &
-                ZNuc,rNuc,S,T,V,Hc,X,dipole_int_AO,maxSCF_HF,max_diis_HF,thresh_HF,level_shift,guess_type,     &
-                maxSCF_GW,max_diis_GW,thresh_GW,dolinGW,                                                       &
-                temperature,sigma,chem_pot_hf,restart_hfb,nfreqs,ntimes,wcoord,wweight)
+    call BQuAcK(working_dir,dotest,doaordm,doRHFB,doBRPA,dophRPA,doG0W0,doqsGW,readFCIDUMP,nNuc,nBas,nOrb,nO, &
+                ENuc,eta_GW,shift_GW,ZNuc,rNuc,S,T,V,Hc,X,dipole_int_AO,maxSCF_HF,max_diis_HF,thresh_HF,      &
+                level_shift,guess_type,maxSCF_GW,max_diis_GW,thresh_GW,dolinGW,temperature,sigma,chem_pot_hf, &
+                restart_hfb,nfreqs,ntimes,wcoord,wweight)
 
 !-----------!
 ! Stop Test !

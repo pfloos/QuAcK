@@ -34,6 +34,9 @@ subroutine UHF(dotest,maxSCF,thresh,max_diis,guess_type,mix,level_shift,nNuc,ZNu
 
 ! Local variables
 
+  logical                       :: file_exists
+
+  integer                       :: iorb
   integer                       :: nSCF
   integer                       :: nBasSq
   integer                       :: n_diis

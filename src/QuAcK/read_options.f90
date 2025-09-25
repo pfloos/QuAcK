@@ -1,6 +1,6 @@
 subroutine read_options(working_dir,                                                                        &
-                        maxSCF_HF,thresh_HF,max_diis_HF,guess_type,mix,level_shift,dostab,dosearch,         &
-                        reg_MP,                                                                             &
+                        maxSCF_HF,thresh_HF,max_diis_HF,guess_type,mix,level_shift,dostab,dosearch,doaordm, &
+                        readFCIDUMP,reg_MP,                                                                 &
                         maxSCF_CC,thresh_CC,max_diis_CC,                                                    &
                         TDA,spin_conserved,spin_flip,                                                       &
                         maxSCF_GF,thresh_GF,max_diis_GF,lin_GF,eta_GF,renorm_GF,reg_GF,                     &
@@ -10,7 +10,8 @@ subroutine read_options(working_dir,                                            
                         doACFDT,exchange_kernel,doXBS,                                                      &
                         dophBSE,dophBSE2,doppBSE,dBSE,dTDA,                                                 &
                         temperature,sigma,chem_pot_hf,restart_hfb,                                          &
-                        TDAeh,TDApp,max_diis_1b,max_diis_2b,max_it_1b,conv_1b,max_it_2b,conv_2b,lin_parquet,reg_1b,reg_2b,reg_PA)
+                        TDAeh,TDApp,max_diis_1b,max_diis_2b,max_it_1b,conv_1b,max_it_2b,conv_2b,lin_parquet,&
+                        reg_1b,reg_2b,reg_PA)
 
 ! Read desired methods 
 
@@ -30,6 +31,8 @@ subroutine read_options(working_dir,                                            
   double precision,intent(out)  :: level_shift
   logical,intent(out)           :: dostab
   logical,intent(out)           :: dosearch
+  logical,intent(out)           :: doaordm
+  logical,intent(out)           :: readFCIDUMP
 
   logical,intent(out)           :: reg_MP
 
@@ -121,12 +124,16 @@ subroutine read_options(working_dir,                                            
       level_shift  = 0d0
       dostab       = .false.
       dosearch     = .false.
+      doaordm      = .false.
+      readFCIDUMP  = .false.
     
       read(1,*) 
-      read(1,*) maxSCF_HF,thresh_HF,max_diis_HF,guess_type,mix,level_shift,ans1,ans2
+      read(1,*) maxSCF_HF,thresh_HF,max_diis_HF,guess_type,mix,level_shift,ans1,ans2,ans3,ans4
     
       if(ans1 == 'T') dostab   = .true.
       if(ans2 == 'T') dosearch = .true.
+      if(ans3 == 'T') doaordm  = .true.
+      if(ans4 == 'T') readFCIDUMP  = .true.
     
       ! Read MPn options
     
