@@ -162,21 +162,7 @@ program QuAcK
 ! Read options for methods !
 !--------------------------!
 
-<<<<<<< HEAD
-  call read_options(working_dir,                                                                       &
-                    maxSCF_HF,thresh_HF,max_diis_HF,guess_type,mix,level_shift,dostab,dosearch,        &
-                    reg_MP,                                                                            &
-                    maxSCF_CC,thresh_CC,max_diis_CC,                                                   &
-                    TDA,spin_conserved,spin_flip,                                                      &
-                    maxSCF_GF,thresh_GF,max_diis_GF,lin_GF,eta_GF,renorm_GF,reg_GF,                    &
-                    maxSCF_GW,thresh_GW,max_diis_GW,lin_GW,eta_GW,shift_GW,reg_GW,doOO,mu,do_linDM_GW, &
-                    nfreqs,ntimes,TDA_W,                                                               &
-                    maxSCF_GT,thresh_GT,max_diis_GT,lin_GT,eta_GT,reg_GT,TDA_T,do_linDM_GT,            & 
-                    doACFDT,exchange_kernel,doXBS,                                                     &
-                    dophBSE,dophBSE2,doppBSE,dBSE,dTDA,                                                &
-                    temperature,sigma,chem_pot_hf,restart_hfb,                                         &
-                    TDAeh,TDApp,max_diis_1b,max_diis_2b,max_it_1b,conv_1b,max_it_2b,conv_2b,lin_parquet,reg_1b,reg_2b,reg_PA)
-=======
+
   call read_options(working_dir,                                                                         &
                     maxSCF_HF,thresh_HF,max_diis_HF,guess_type,mix,level_shift,dostab,dosearch,doaordm,  &
                     readFCIDUMP,reg_MP,                                                                  &
@@ -185,13 +171,12 @@ program QuAcK
                     maxSCF_GF,thresh_GF,max_diis_GF,lin_GF,eta_GF,renorm_GF,reg_GF,                      &
                     maxSCF_GW,thresh_GW,max_diis_GW,lin_GW,eta_GW,shift_GW,reg_GW,doOO,mu,do_linDM_GW,   &
                     nfreqs,ntimes,TDA_W,                                                                 &
-                    maxSCF_GT,thresh_GT,max_diis_GT,lin_GT,eta_GT,reg_GT,TDA_T,                          & 
+                    maxSCF_GT,thresh_GT,max_diis_GT,lin_GT,eta_GT,reg_GT,TDA_T,do_linDM_GT,              & 
                     doACFDT,exchange_kernel,doXBS,                                                       &
                     dophBSE,dophBSE2,doppBSE,dBSE,dTDA,                                                  &
                     temperature,sigma,chem_pot_hf,restart_hfb,                                           &
                     TDAeh,TDApp,max_diis_1b,max_diis_2b,max_it_1b,conv_1b,max_it_2b,conv_2b,lin_parquet, &
                     reg_1b,reg_2b,reg_PA)
->>>>>>> ea2c44239f3f1523e94361a22f1c0697e23584d8
 
 
 !--------------------!
