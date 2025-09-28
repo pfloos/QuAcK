@@ -53,6 +53,11 @@ subroutine mo_guess(nBas, nOrb, guess_type, S, Hc, X, c)
      c(iorb,iorb) = 1d0
     enddo
 
+  elseif(guess_type == 5) then
+
+    write(*,*) 'P_ao_bin matrix read for the guess...'
+    c(:,:)=0d0
+
   else
 
     print*,'Wrong guess option'

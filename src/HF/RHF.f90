@@ -49,6 +49,7 @@ subroutine RHF(dotest,doaordm,maxSCF,thresh,max_diis,guess_type,level_shift,nNuc
   double precision              :: Eee
   double precision              :: dipole(ncart)
 
+  double precision              :: Val
   double precision              :: Conv
   double precision              :: rcond
   double precision              :: trace_1rdm
@@ -100,6 +101,19 @@ subroutine RHF(dotest,doaordm,maxSCF,thresh,max_diis,guess_type,level_shift,nNuc
 
   call mo_guess(nBas,nOrb,guess_type,S,Hc,X,c)
   P(:,:) = 2d0 * matmul(c(:,1:nO), transpose(c(:,1:nO)))
+  if(guess_type == 5) then
+   inquire(file='P_ao_bin', exist=file_exists)
+   if(file_exists) then
+    write(*,*) 'Reading P_ao_bin matrix...'
+    open(unit=314, form='unformatted', file='P_ao_bin', status='old')
+    do
+     read(314) ibas,jbas,Val
+     if(ibas==0 .and. jbas==0) exit
+     P(ibas,jbas)=Val 
+    enddo
+    close(314)
+   endif
+  endif
 
 ! call dgemm('N', 'T', nBas, nBas, nO, 2.d0, &
 !            c(1,1), nBas, c(1,1), nBas,     &

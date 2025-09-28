@@ -400,6 +400,17 @@ subroutine RHFB(dotest,doaordm,doqsGW,maxSCF,thresh,max_diis,level_shift,nNuc,ZN
   ! Total energy
   EHFB = ET + EV + EJ + EK + EL
 
+! Print P_ao_bin file
+  open(unit=314, form='unformatted', file='P_ao_bin')
+  do ibas=1,nBas
+   do jbas=1,nBas
+    write(314) ibas,jbas,P(ibas,jbas)
+   enddo
+  enddo
+  write(314) 0,0,0d0
+  close(314)
+  
+
 ! Print the 1-RDM and 2-RDM in AO basis
   if(doaordm) then
    write(*,*)
