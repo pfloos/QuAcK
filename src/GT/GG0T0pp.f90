@@ -62,6 +62,13 @@ subroutine GG0T0pp(dotest,doACFDT,exchange_kernel,doXBS,dophBSE,dophBSE2,TDA_T,T
   double precision,allocatable  :: eGTlin(:)
   double precision, allocatable :: Om(:), R(:,:)
 
+  double precision,allocatable  :: J(:,:)
+  double precision,allocatable  :: K(:,:)
+  double precision,allocatable  :: F(:,:)
+  double precision,allocatable  :: linDM(:,:)
+  integer                       :: p
+  double precision,allocatable  :: eHFlinDM(:)
+  double precision,allocatable  :: occ_nb(:)
 
 ! Output variables
 
@@ -123,6 +130,40 @@ subroutine GG0T0pp(dotest,doACFDT,exchange_kernel,doXBS,dophBSE,dophBSE2,TDA_T,T
 !----------------------------------------------
   call GGTpp_excitation_density(nOrb,nC,nO,nV,nR,nOO,nVV,ERI,X1,Y1,rho1,X2,Y2,rho2)
 
+!--------------------------------------!
+! Linearized density matrix correction !
+!--------------------------------------!
+
+  allocate(linDM(nOrb,nOrb),eHFlinDM(nOrb))
+  linDM(:,:) = 0d0
+  if(do_linDM_GT) then 
+
+     call G_linDM_GT(nOrb,nC,nO,nV,nR,nOO,nVV,eHF,Om1,rho1,Om2,rho2,eta,linDM)
+
+     allocate(J(nOrb,nOrb))
+     allocate(K(nOrb,nOrb))
+     allocate(F(nOrb,nOrb))
+     call Hartree_matrix_AO_basis(nOrb,linDM,ERI,J)
+     call exchange_matrix_AO_basis(nOrb,linDM,ERI,K)
+     F(:,:) = J(:,:) + K(:,:)
+
+     do p=nC+1,nOrb-nR
+        eHFlinDM(p) = eHF(p) + F(p,p)
+     end do
+
+     do p=nC+1,nO
+        linDM(p,p) = linDM(p,p) + 1d0
+     end do
+
+     ! allocate(occ_nb(nOrb))
+     ! occ_nb(:) = 0d0
+     ! call diagonalize_matrix(nOrb,linDM,occ_nb)
+     ! call vecout(nOrb,occ_nb)
+     ! deallocate(occ_nb)
+     
+     deallocate(linDM,J,K,F)
+  end if
+  
 !----------------------------------------------
 ! Compute T-matrix version of the self-energy 
 !----------------------------------------------
@@ -135,7 +176,11 @@ subroutine GG0T0pp(dotest,doACFDT,exchange_kernel,doXBS,dophBSE,dophBSE2,TDA_T,T
 ! Solve the quasi-particle equation
 !----------------------------------------------
 
-  eGTlin(:) = eHF(:) + Z(:)*Sig(:)
+  if(do_linDM_GT) then
+     eGTlin(:) = eHFlinDM(:) + Z(:)*Sig(:)
+  else
+     eGTlin(:) = eHF(:) + Z(:)*Sig(:)
+  end if
 
   if(linearize) then
 
@@ -149,8 +194,12 @@ subroutine GG0T0pp(dotest,doACFDT,exchange_kernel,doXBS,dophBSE,dophBSE2,TDA_T,T
     write(*,*) ' *** Quasiparticle energies obtained by root search *** '
     write(*,*)
      
-   call GGTpp_QP_graph(eta,nOrb,nC,nO,nV,nR,nOO,nVV,eHF,Om1,rho1,Om2,rho2,eGTlin,eHF,eGT,Z)
-
+    if(do_linDM_GT) then
+       call GGTpp_QP_graph(eta,nOrb,nC,nO,nV,nR,nOO,nVV,eHFlinDM,Om1,rho1,Om2,rho2,eGTlin,eHF,eGT,Z)
+    else
+       call GGTpp_QP_graph(eta,nOrb,nC,nO,nV,nR,nOO,nVV,eHF,Om1,rho1,Om2,rho2,eGTlin,eHF,eGT,Z)
+    end if
+       
   end if
 
 !----------------------------------------------

@@ -42,7 +42,7 @@ include 'parameters.h'
         do k=nC+1,nO
            do n=1,nVVs
 
-              num = - 1d0/2d0 *rho1s(i,k,n)*rho1s(j,k,n)
+              num = - 1d0 *rho1s(i,k,n)*rho1s(j,k,n)
               dem = (Om1s(n) - e(i) - e(k)) * (Om1s(n) - e(j) - e(k))
               linDM(i,j) = linDM(i,j) + num/dem
               
@@ -50,7 +50,7 @@ include 'parameters.h'
 
            do n=1,nVVt
 
-              num = - 3d0/2d0 *rho1t(i,k,n)*rho1t(j,k,n)
+              num = - 3d0 *rho1t(i,k,n)*rho1t(j,k,n)
               dem = (Om1t(n) - e(i) - e(k)) * (Om1t(n) - e(j) - e(k))
               linDM(i,j) = linDM(i,j) + num/dem
               
@@ -66,7 +66,7 @@ include 'parameters.h'
         do c=nO+1,nOrb-nR
            do n=1,nOOs
 
-              num = 1d0/2d0 *rho2s(a,c,n)*rho2s(b,c,n)
+              num = 1d0 *rho2s(a,c,n)*rho2s(b,c,n)
               dem = (Om2s(n) - e(a) - e(c)) * (Om2s(n) - e(b) - e(c))
               linDM(a,b) = linDM(a,b) + num/dem
               
@@ -75,7 +75,7 @@ include 'parameters.h'
            
            do n=1,nOOt
 
-              num = 3d0/2d0 *rho2t(a,c,n)*rho2t(b,c,n)
+              num = 3d0 *rho2t(a,c,n)*rho2t(b,c,n)
               dem = (Om2t(n) - e(a) - e(c)) * (Om2t(n) - e(b) - e(c))
               linDM(a,b) = linDM(a,b) + num/dem
               
@@ -92,7 +92,7 @@ include 'parameters.h'
         do j=nC+1,nO
            do n=1,nVVs
 
-              num = 1d0/2d0 *rho1s(i,j,n)*rho1s(a,j,n)
+              num = 1d0 *rho1s(i,j,n)*rho1s(a,j,n)
               dem = (e(i) - e(a)) * (e(i) + e(j) - Om1s(n))
               linDM(i,a) = linDM(i,a) + num/dem
               
@@ -100,7 +100,7 @@ include 'parameters.h'
 
            do n=1,nVVt
 
-              num = 3d0/2d0 *rho1t(i,j,n)*rho1t(a,j,n)
+              num = 3d0 *rho1t(i,j,n)*rho1t(a,j,n)
               dem = (e(i) - e(a)) * (e(i) + e(j) - Om1t(n))
               linDM(i,a) = linDM(i,a) + num/dem
               
@@ -110,7 +110,7 @@ include 'parameters.h'
         do b=nO+1,nOrb-nR
            do n=1,nOOs
 
-              num = -1d0/2d0 *rho2s(i,b,n)*rho2s(a,b,n)
+              num = -1d0 *rho2s(i,b,n)*rho2s(a,b,n)
               dem = (e(a) - e(i)) * (e(a) + e(b) - Om2s(n))
               linDM(i,a) = linDM(i,a) + num/dem
               
@@ -119,7 +119,7 @@ include 'parameters.h'
            
            do n=1,nOOt
 
-              num = -3d0/2d0 *rho2t(i,b,n)*rho2t(a,b,n)
+              num = -3d0 *rho2t(i,b,n)*rho2t(a,b,n)
               dem = (e(a) - e(i)) * (e(a) + e(b) - Om2t(n))
               linDM(i,a) = linDM(i,a) + num/dem
               

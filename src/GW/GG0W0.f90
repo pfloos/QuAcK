@@ -1,5 +1,6 @@
 subroutine GG0W0(dotest,doACFDT,exchange_kernel,doXBS,dophBSE,dophBSE2,TDA_W,TDA,dBSE,dTDA,doppBSE, & 
                  linearize,eta,doSRG,do_linDM_GW,nBas,nC,nO,nV,nR,nS,ENuc,EGHF,ERI,dipole_int,eHF,eGW_out)
+  
 ! Perform G0W0 calculation
 
   implicit none
@@ -54,6 +55,14 @@ subroutine GG0W0(dotest,doACFDT,exchange_kernel,doXBS,dophBSE,dophBSE2,TDA_W,TDA
   double precision,allocatable  :: XmY(:,:)
   double precision,allocatable  :: rho(:,:,:)
 
+  double precision,allocatable  :: J(:,:)
+  double precision,allocatable  :: K(:,:)
+  double precision,allocatable  :: F(:,:)
+  double precision,allocatable  :: linDM(:,:)
+  integer                       :: p
+  double precision,allocatable  :: eHFlinDM(:)
+  double precision,allocatable  :: occ_nb(:)
+  
   double precision,allocatable  :: eGWlin(:)
   double precision,allocatable  :: eGW(:)
 
@@ -123,13 +132,50 @@ subroutine GG0W0(dotest,doACFDT,exchange_kernel,doXBS,dophBSE,dophBSE2,TDA_W,TDA
     call GGW_self_energy_diag(eta,nBas,nC,nO,nV,nR,nS,eHF,Om,rho,EcGM,SigC,Z,ERI)
   end if
 
+!--------------------------------------!
+! Linearized density matrix correction !
+!--------------------------------------!
+
+  allocate(linDM(nBas,nBas),eHFlinDM(nBas))
+  linDM(:,:) = 0d0
+  if(do_linDM_GW) then
+     call G_linDM_GW(nBas,nC,nO,nV,nR,nS,eHF,Om,rho,eta,linDM)
+
+     allocate(J(nBas,nBas))
+     allocate(K(nBas,nBas))
+     allocate(F(nBas,nBas))
+     call Hartree_matrix_AO_basis(nBas,linDM,ERI,J)
+     call exchange_matrix_AO_basis(nBas,linDM,ERI,K)
+     F(:,:) = J(:,:) + K(:,:)
+
+     do p=nC+1,nBas-nR
+        eHFlinDM(p) = eHF(p) + F(p,p)
+     end do
+
+     do p=nC+1,nO
+        linDM(p,p) = linDM(p,p) + 1d0
+     end do
+
+     ! allocate(occ_nb(nBas))
+     ! occ_nb(:) = 0d0
+     ! call diagonalize_matrix(nBas,linDM,occ_nb)
+     ! call vecout(nBas,occ_nb)
+     ! deallocate(occ_nb)
+     
+     deallocate(J,K,F,linDM)
+  end if
+  
 !-----------------------------------!
 ! Solve the quasi-particle equation !
 !-----------------------------------!
 
   ! Linearized or graphical solution?
 
-  eGWlin(:) = eHF(:) + Z(:)*SigC(:)
+  if(do_linDM_GW) then
+     eGWlin(:) = eHFlinDM(:) + Z(:)*SigC(:)
+  else
+     eGWlin(:) = eHF(:) + Z(:)*SigC(:)
+  end if
 
   if(linearize) then 
  
@@ -143,8 +189,12 @@ subroutine GG0W0(dotest,doACFDT,exchange_kernel,doXBS,dophBSE,dophBSE2,TDA_W,TDA
     write(*,*) ' *** Quasiparticle energies obtained by root search *** '
     write(*,*)
   
-    call GGW_QP_graph(doSRG,eta,flow,nBas,nC,nO,nV,nR,nS,eHF,Om,rho,eGWlin,eHF,eGW,Z)
-
+     if(do_linDM_GW) then
+        call GGW_QP_graph(doSRG,eta,flow,nBas,nC,nO,nV,nR,nS,eHFlinDM,Om,rho,eGWlin,eHF,eGW,Z)
+     else
+        call GGW_QP_graph(doSRG,eta,flow,nBas,nC,nO,nV,nR,nS,eHF,Om,rho,eGWlin,eHF,eGW,Z)
+     end if
+        
   end if
 
 ! Compute the RPA correlation energy
