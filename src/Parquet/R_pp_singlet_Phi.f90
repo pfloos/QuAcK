@@ -1,4 +1,4 @@
-subroutine R_pp_singlet_Phi(eta,nOrb,nC,nR,nOO,nVV,ee_sing_Om,ee_sing_rho,hh_sing_Om,hh_sing_rho,pp_sing_Phi)
+subroutine R_pp_singlet_Phi(eta,nOrb,nC,nR,nOO,nVV,ee_sing_Om,ee_sing_rho,hh_sing_Om,hh_sing_rho,omega,pp_sing_Phi)
 
 
 ! Compute irreducible vertex in the triplet pp channel
@@ -11,10 +11,12 @@ subroutine R_pp_singlet_Phi(eta,nOrb,nC,nR,nOO,nVV,ee_sing_Om,ee_sing_rho,hh_sin
   double precision,intent(in)   :: ee_sing_rho(nOrb,nOrb,nVV)
   double precision,intent(in)   :: hh_sing_Om(nOO)
   double precision,intent(in)   :: hh_sing_rho(nOrb,nOrb,nOO)
+  double precision,intent(in)   :: omega
 
 ! Local variables
   integer                       :: p,q,r,s
   integer                       :: n
+  double precision              :: dem
   double precision,allocatable  :: tmp_ee(:,:,:),tmp_hh(:,:,:)
 
 ! Output variables
@@ -29,18 +31,20 @@ subroutine R_pp_singlet_Phi(eta,nOrb,nC,nR,nOO,nVV,ee_sing_Om,ee_sing_rho,hh_sin
   tmp_hh(:,:,:) = 0d0
 
   !$OMP PARALLEL DEFAULT(NONE) &
-  !$OMP PRIVATE(p, q, n) &
-  !$OMP SHARED(eta, nC, nOrb, nR, nVV, nOO, tmp_ee, tmp_hh, ee_sing_rho, ee_sing_Om, hh_sing_rho, hh_sing_Om)
+  !$OMP PRIVATE(p, q, n, dem) &
+  !$OMP SHARED(eta, nC, nOrb, nR, nVV, nOO, tmp_ee, tmp_hh, ee_sing_rho, ee_sing_Om, hh_sing_rho, hh_sing_Om, omega)
   !$OMP DO COLLAPSE(2)
   do q = nC+1, nOrb-nR
      do p = nC+1, nOrb-nR
         
         do n=1,nVV
-           tmp_ee(p,q,n) = - (ee_sing_rho(p,q,n)/ee_sing_Om(n)) * (1d0 - exp(- 2d0 * eta * ee_sing_Om(n) * ee_sing_Om(n)))
+           dem = omega - ee_sing_Om(n)
+           tmp_ee(p,q,n) = + (ee_sing_rho(p,q,n)/dem) * (1d0 - exp(- 2d0 * eta * dem * dem))
         end do
         
         do n=1,nOO
-           tmp_hh(p,q,n) = + (hh_sing_rho(p,q,n)/hh_sing_Om(n)) * (1d0 - exp(- 2d0 * eta * hh_sing_Om(n) * hh_sing_Om(n)))
+           dem = omega - hh_sing_Om(n)
+           tmp_hh(p,q,n) = - (hh_sing_rho(p,q,n)/dem) * (1d0 - exp(- 2d0 * eta * dem * dem))
         end do
         
      enddo
