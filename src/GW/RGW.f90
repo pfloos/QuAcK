@@ -134,8 +134,8 @@ subroutine RGW(dotest,doG0W0,doevGW,doqsGW,doufG0W0,doufGW,maxSCF,thresh,max_dii
 
     call wall_time(start_GW)
     call qsRGW(dotest,maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,dophBSE,dophBSE2, &
-               TDA_W,TDA,dBSE,dTDA,doppBSE,singlet,triplet,eta,doSRG,nNuc,ZNuc,rNuc,         &
-               ENuc,nBas,nOrb,nC,nO,nV,nR,nS,ERHF,S,X,T,V,Hc,ERI_AO,ERI_MO,                  &
+               TDA_W,TDA,dBSE,dTDA,doppBSE,singlet,triplet,eta,doSRG,do_linDM_GW,            &
+               nNuc,ZNuc,rNuc,ENuc,nBas,nOrb,nC,nO,nV,nR,nS,ERHF,S,X,T,V,Hc,ERI_AO,ERI_MO,   &
                dipole_int_AO,dipole_int_MO,PHF,cHF,eHF)
     call wall_time(end_GW)
 

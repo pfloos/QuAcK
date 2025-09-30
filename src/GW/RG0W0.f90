@@ -156,8 +156,9 @@ subroutine RG0W0(dotest,doACFDT,exchange_kernel,doXBS,dophBSE,dophBSE2,TDA_W,TDA
      ! call vecout(nOrb,occ_nb)
      ! deallocate(occ_nb)
      
-     deallocate(J,K,F,linDM)
+     deallocate(J,K,F)
   end if
+  deallocate(linDM)
   
 !------------------------!
 ! Compute GW self-energy !
