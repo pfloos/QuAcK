@@ -76,6 +76,8 @@ subroutine RG0T0pp(dotest,doACFDT,exchange_kernel,doXBS,dophBSE,TDA_T,TDA,dBSE,d
   double precision,allocatable  :: linDM(:,:)
   integer                       :: p
   double precision              :: tmp
+  double precision,allocatable  :: eHFlinDM(:)
+  double precision,allocatable  :: occ_nb(:)
 
 ! Output variables
 
@@ -166,6 +168,46 @@ subroutine RG0T0pp(dotest,doACFDT,exchange_kernel,doXBS,dophBSE,TDA_T,TDA,dBSE,d
 
   call RGTpp_excitation_density(isp_T,nOrb,nC,nO,nV,nR,nOOt,nVVt,ERI,X1t,Y1t,rho1t,X2t,Y2t,rho2t)
 
+!--------------------------------------!
+! Linearized density matrix correction !
+!--------------------------------------!
+
+  allocate(linDM(nOrb,nOrb),eHFlinDM(nOrb))
+  linDM(:,:) = 0d0
+  if(do_linDM_GT) then 
+
+     call R_linDM_GT(nOrb,nC,nO,nV,nR,nOOs,nVVs,nOOt,nVVt,eHF,Om1s,rho1s,Om2s,rho2s,Om1t,rho1t,Om2t,rho2t,eta,linDM)
+
+     allocate(J(nOrb,nOrb))
+     allocate(K(nOrb,nOrb))
+     allocate(F(nOrb,nOrb))
+     call Hartree_matrix_AO_basis(nOrb,linDM,ERI,J)
+     call exchange_matrix_AO_basis(nOrb,linDM,ERI,K)
+     F(:,:) = J(:,:) + 0.5d0*K(:,:)
+
+     do p=nC+1,nOrb-nR
+        eHFlinDM(p) = eHF(p) + F(p,p)
+     end do
+
+     tmp = 0d0
+     do p=nC+1,nOrb-nR
+        tmp = tmp + linDM(p,p)
+     end do
+     write (*,*) tmp
+
+     do p=nC+1,nO
+        linDM(p,p) = linDM(p,p) + 2d0
+     end do
+
+     ! allocate(occ_nb(nOrb))
+     ! occ_nb(:) = 0d0
+     ! call diagonalize_matrix(nOrb,linDM,occ_nb)
+     ! call vecout(nOrb,occ_nb)
+     ! deallocate(occ_nb)
+     
+     deallocate(linDM,J,K,F)
+  end if
+  
 !----------------------------------------------
 ! Compute T-matrix version of the self-energy 
 !----------------------------------------------
@@ -182,7 +224,11 @@ subroutine RG0T0pp(dotest,doACFDT,exchange_kernel,doXBS,dophBSE,TDA_T,TDA,dBSE,d
 ! Solve the quasi-particle equation
 !----------------------------------------------
 
-  eGTlin(:) = eHF(:) + Z(:)*Sig(:)
+  if(do_linDM_GT) then
+     eGTlin(:) = eHFlinDM(:) + Z(:)*Sig(:)
+  else
+     eGTlin(:) = eHF(:) + Z(:)*Sig(:)
+  end if
 
   if(linearize) then
 
@@ -195,43 +241,19 @@ subroutine RG0T0pp(dotest,doACFDT,exchange_kernel,doXBS,dophBSE,TDA_T,TDA,dBSE,d
 
     write(*,*) ' *** Quasiparticle energies obtained by root search *** '
     write(*,*)
-     
-   call RGTpp_QP_graph(eta,nOrb,nC,nO,nV,nR,nOOs,nVVs,nOOt,nVVt,eHF,Om1s,rho1s,Om2s,rho2s, & 
-                       Om1t,rho1t,Om2t,rho2t,eGTlin,eHF,eGT,Z)
 
+    if(do_linDM_GT) then
+       call RGTpp_QP_graph(eta,nOrb,nC,nO,nV,nR,nOOs,nVVs,nOOt,nVVt,eHFlinDM,Om1s,rho1s,Om2s,rho2s, & 
+            Om1t,rho1t,Om2t,rho2t,eGTlin,eHF,eGT,Z)
+    else
+       call RGTpp_QP_graph(eta,nOrb,nC,nO,nV,nR,nOOs,nVVs,nOOt,nVVt,eHF,Om1s,rho1s,Om2s,rho2s, & 
+            Om1t,rho1t,Om2t,rho2t,eGTlin,eHF,eGT,Z)
+    end if
+       
   end if
 
   if(plot_self) call RGTpp_plot_self_energy(nOrb,nC,nO,nV,nR,nOOs,nVVs,nOOt,nVVt,eHF,eGT,Om1s,rho1s,Om2s,rho2s, &
                                             Om1t,rho1t,Om2t,rho2t)
-
-!--------------------------------------!
-! Linearized density matrix correction !
-!--------------------------------------!
-
-  if(do_linDM_GT) then 
-
-     allocate(linDM(nOrb,nOrb))
-     call R_linDM_GT(nOrb,nC,nO,nV,nR,nOOs,nVVs,nOOt,nVVt,eHF,Om1s,rho1s,Om2s,rho2s,Om1t,rho1t,Om2t,rho2t,eta,linDM)
-
-     allocate(J(nOrb,nOrb))
-     allocate(K(nOrb,nOrb))
-     allocate(F(nOrb,nOrb))
-     call Hartree_matrix_AO_basis(nOrb,linDM,ERI,J)
-     call exchange_matrix_AO_basis(nOrb,linDM,ERI,K)
-     F(:,:) = J(:,:) + 0.5d0*K(:,:)
-
-     do p=nC+1,nOrb-nR
-        eGT(p) = eGT(p) + F(p,p)
-     end do
-
-     tmp = 0d0
-     do p=nC+1,nOrb-nR
-        tmp = tmp + linDM(p,p)
-     end do
-     write (*,*) tmp
-     
-     deallocate(linDM,J,K,F)
-  end if
   
 !----------------------------------------------
 ! Dump results

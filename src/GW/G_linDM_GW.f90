@@ -1,4 +1,4 @@
-subroutine R_linDM_GW(nOrb,nC,nO,nV,nR,nS,e,Om,rho,eta,linDM)
+subroutine G_linDM_GW(nOrb,nC,nO,nV,nR,nS,e,Om,rho,eta,linDM)
   
 ! Perform G0W0 calculation
 
@@ -38,7 +38,7 @@ include 'parameters.h'
         do a=nO+1,nOrb-nR
            do n=1,nS
 
-              num = - 4d0 *rho(i,a,n)*rho(j,a,n)
+              num = - rho(i,a,n)*rho(j,a,n)
               dem = (e(i) - e(a) - Om(n)) * (e(j) - e(a) - Om(n))
               linDM(i,j) = linDM(i,j) + num/dem
               
@@ -54,7 +54,7 @@ include 'parameters.h'
         do i=nC+1,nO
            do n=1,nS
 
-              num = 4d0 *rho(i,a,n)*rho(i,b,n)
+              num = rho(i,a,n)*rho(i,b,n)
               dem = (e(i) - e(a) - Om(n)) * (e(i) - e(b) - Om(n))
               linDM(a,b) = linDM(a,b) + num/dem
               
@@ -71,7 +71,7 @@ include 'parameters.h'
         do j=nC+1,nO
            do n=1,nS
 
-              num = - 4d0 *rho(a,j,n)*rho(i,j,n)
+              num = - rho(a,j,n)*rho(i,j,n)
               dem = (e(i) - e(a)) * (e(j) - e(a) - Om(n))
               linDM(i,a) = linDM(i,a) + num/dem
               
@@ -81,7 +81,7 @@ include 'parameters.h'
         do b=nO+1,nOrb-nR
            do n=1,nS
 
-              num = 4d0 *rho(i,b,n)*rho(a,b,n)
+              num = rho(i,b,n)*rho(a,b,n)
               dem = (e(i) - e(a)) * (e(i) - e(b) - Om(n))
               linDM(i,a) = linDM(i,a) + num/dem
               
@@ -101,4 +101,4 @@ include 'parameters.h'
      end do
   end do
   
-end subroutine R_linDM_GW
+end subroutine G_linDM_GW

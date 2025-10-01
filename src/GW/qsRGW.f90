@@ -1,6 +1,6 @@
 subroutine qsRGW(dotest,maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,dophBSE,dophBSE2, &
-                 TDA_W,TDA,dBSE,dTDA,doppBSE,singlet,triplet,eta,doSRG,nNuc,ZNuc,rNuc,         &
-                 ENuc,nBas,nOrb,nC,nO,nV,nR,nS,ERHF,S,X,T,V,Hc,ERI_AO,                         &
+                 TDA_W,TDA,dBSE,dTDA,doppBSE,singlet,triplet,eta,doSRG,do_linDM_GW,            &
+                 nNuc,ZNuc,rNuc,ENuc,nBas,nOrb,nC,nO,nV,nR,nS,ERHF,S,X,T,V,Hc,ERI_AO,          &
                  ERI_MO,dipole_int_AO,dipole_int_MO,PHF,cHF,eHF)
 
 ! Perform a quasiparticle self-consistent GW calculation
@@ -29,6 +29,7 @@ subroutine qsRGW(dotest,maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,dop
   logical,intent(in)            :: triplet
   double precision,intent(in)   :: eta
   logical,intent(in)            :: doSRG
+  logical,intent(in)            :: do_linDM_GW
 
   integer,intent(in)            :: nNuc
   double precision,intent(in)   :: ZNuc(nNuc)
@@ -100,6 +101,14 @@ subroutine qsRGW(dotest,maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,dop
   double precision,allocatable  :: SigCp(:,:)
   double precision,allocatable  :: Z(:)
   double precision,allocatable  :: err(:,:)
+  
+  double precision,allocatable  :: JlinDM(:,:)
+  double precision,allocatable  :: KlinDM(:,:)
+  double precision,allocatable  :: FlinDM(:,:)
+  double precision,allocatable  :: linDM(:,:)
+  integer                       :: pp
+  double precision,allocatable  :: eHFlinDM(:)
+  double precision,allocatable  :: occ_nb(:)
 
 ! Hello world
 
@@ -210,20 +219,59 @@ subroutine qsRGW(dotest,maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,dop
 
     call RGW_excitation_density(nOrb,nC,nO,nR,nS,ERI_MO,XpY,rho)
 
+!--------------------------------------!
+! Linearized density matrix correction !
+!--------------------------------------!
+
+    allocate(linDM(nOrb,nOrb),eHFlinDM(nOrb))
+    linDM(:,:) = 0d0
+    if(do_linDM_GW) then
+       call R_linDM_GW(nOrb,nC,nO,nV,nR,nS,eHF,Om,rho,eta,linDM)
+
+       allocate(JlinDM(nOrb,nOrb))
+       allocate(KlinDM(nOrb,nOrb))
+       allocate(FlinDM(nOrb,nOrb))
+       call Hartree_matrix_AO_basis(nOrb,linDM,ERI_MO,JlinDM)
+       call exchange_matrix_AO_basis(nOrb,linDM,ERI_MO,KlinDM)
+       FlinDM(:,:) = JlinDM(:,:) + 0.5d0*KlinDM(:,:)
+       
+       do pp=nC+1,nOrb-nR
+          eHFlinDM(pp) = eHF(pp) + FlinDM(pp,pp)
+       end do
+       
+       do pp=nC+1,nO
+          linDM(pp,pp) = linDM(pp,pp) + 2d0
+       end do
+     
+       ! allocate(occ_nb(nOrb))
+       ! occ_nb(:) = 0d0
+       ! call diagonalize_matrix(nOrb,linDM,occ_nb)
+       ! call vecout(nOrb,occ_nb)
+       ! deallocate(occ_nb)
+       
+       deallocate(JlinDM,KlinDM)
+    end if
+    deallocate(linDM,eHFlinDM)
+    
     if(doSRG) then 
-
-      call RGW_SRG_self_energy(flow,nBas,nOrb,nC,nO,nV,nR,nS,eGW,Om,rho,EcGM,SigC,Z)
-
+     
+       call RGW_SRG_self_energy(flow,nBas,nOrb,nC,nO,nV,nR,nS,eGW,Om,rho,EcGM,SigC,Z)
+     
     else
-
-      call RGW_self_energy(eta,nBas,nOrb,nC,nO,nV,nR,nS,eGW,Om,rho,EcGM,SigC,Z)
-
+     
+       call RGW_self_energy(eta,nBas,nOrb,nC,nO,nV,nR,nS,eGW,Om,rho,EcGM,SigC,Z)
+       
     end if
 
     ! Make correlation self-energy Hermitian and transform it back to AO basis
    
     SigC = 0.5d0*(SigC + transpose(SigC))
 
+    if(do_linDM_GW) then
+       SigC(:,:) = SigC(:,:) + FlinDM(:,:)
+       deallocate(FlinDM)
+    end if
+    
     call MOtoAO(nBas,nOrb,S,c,SigC,SigCp)
  
     ! Solve the quasi-particle equation
