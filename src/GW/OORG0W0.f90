@@ -270,7 +270,7 @@ subroutine OORG0W0(dotest,doACFDT,exchange_kernel,doXBS,dophBSE,dophBSE2,TDA_W,T
     ! Calculate rdm1
     call RG0W0_rdm1(O,V,N,nS,lampl,rampl,lp,rp,lambda,t,rdm1)
     write(*,*) "Trace rdm1: ", trace_matrix(N,rdm1)
-
+    call matout(N,N,rdm1)
     ! Calculate rdm2
     call RG0W0_rdm2(O,V,N,nS,lampl,rampl,lp,rp,lambda,t,rdm2)
     write(*,*) "Trace rdm2: ", trace_matrix(Nsq,rdm2)
@@ -333,6 +333,7 @@ subroutine OORG0W0(dotest,doACFDT,exchange_kernel,doXBS,dophBSE,dophBSE2,TDA_W,T
             rs = rs + 1
  
               Kap(p,q) = Kap(p,q) - hessInv(pq,rs)*grad(rs)
+              Kap(p,q) = Kap(p,q) - 0.00000001*grad(rs)
  
           end do
         end do
@@ -368,9 +369,9 @@ subroutine OORG0W0(dotest,doACFDT,exchange_kernel,doXBS,dophBSE,dophBSE2,TDA_W,T
     ! Compute all quantities new for rotated basis
 
 
-    if (OOi==3) then
-      OOConv = 0d0 ! remove only for debugging
-    end if
+!    if (OOi==3) then
+!      OOConv = 0d0 ! remove only for debugging
+!    end if
 
     OOi = OOi + 1 
   end do
