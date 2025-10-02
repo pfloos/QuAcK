@@ -234,6 +234,8 @@ subroutine GG0W0(dotest,doACFDT,exchange_kernel,doXBS,dophBSE,dophBSE2,TDA_W,TDA
   if(doppBSE) then
 
     call GGW_ppBSE(TDA_W,TDA,dBSE,dTDA,eta,nBas,nC,nO,nV,nR,nS,ERI,dipole_int,eHF,eGW,EcBSE)
+    call GGW_ppBSE_omegazero(TDA_W,TDA,dBSE,dTDA,eta,nBas,nC,nO,nV,nR,nS,ERI,dipole_int,eHF,eGW,EcBSE)
+    call GGW_ppBSE_qs(TDA_W,TDA,dBSE,dTDA,eta,nBas,nC,nO,nV,nR,nS,ERI,dipole_int,eHF,eGW,EcBSE)
 
     write(*,*)
     write(*,*)'-------------------------------------------------------------------------------'
