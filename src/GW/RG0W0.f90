@@ -150,11 +150,11 @@ subroutine RG0W0(dotest,doACFDT,exchange_kernel,doXBS,dophBSE,dophBSE2,TDA_W,TDA
         linDM(p,p) = linDM(p,p) + 2d0
      end do
 
-     ! allocate(occ_nb(nOrb))
-     ! occ_nb(:) = 0d0
-     ! call diagonalize_matrix(nOrb,linDM,occ_nb)
-     ! call vecout(nOrb,occ_nb)
-     ! deallocate(occ_nb)
+     allocate(occ_nb(nOrb))
+     occ_nb(:) = 0d0
+     call diagonalize_matrix(nOrb,linDM,occ_nb)
+     call vecout(nOrb,occ_nb)
+     deallocate(occ_nb)
      
      deallocate(J,K,F)
   end if
@@ -270,6 +270,8 @@ subroutine RG0W0(dotest,doACFDT,exchange_kernel,doXBS,dophBSE,dophBSE2,TDA_W,TDA
   if(doppBSE) then
 
     call RGW_ppBSE(TDA_W,TDA,dBSE,dTDA,singlet,triplet,eta,nOrb,nC,nO,nV,nR,nS,ERI,dipole_int,eHF,eGW,EcBSE)
+    call RGW_ppBSE_omegazero(TDA_W,TDA,dBSE,dTDA,singlet,triplet,eta,nOrb,nC,nO,nV,nR,nS,ERI,dipole_int,eHF,eGW,EcBSE)
+    call RGW_ppBSE_qs(TDA_W,TDA,dBSE,dTDA,singlet,triplet,eta,nOrb,nC,nO,nV,nR,nS,ERI,dipole_int,eHF,eGW,EcBSE)
 
     write(*,*)
     write(*,*)'-------------------------------------------------------------------------------'

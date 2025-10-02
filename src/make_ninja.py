@@ -86,7 +86,7 @@ elif sys.platform.lower() == "linux" or os.path.exists('/proc/version'):
     else:
         if check_compiler_exists('ifort'):
             compiler = """
-FC = ifort -mkl=parallel -qopenmp
+FC = ifort -qmkl=parallel -qopenmp
 AR = ar crs
 FFLAGS = -I$IDIR -module $IDIR -fpp -traceback -g -Ofast -xHost
 CC = icc
