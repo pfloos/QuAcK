@@ -164,7 +164,7 @@ subroutine GGW_ppBSE_static_kernel_D_omegazero(eta,nBas,nC,nO,nV,nR,nS,nOO,lambd
   
           do m=1,nS
 
-               num = (rho(i,k,m)*rho(j,l,m) - rho(j,k,m)*rho(i,l,m))/2
+               num = (rho(i,k,m)*rho(j,l,m) - rho(j,k,m)*rho(i,l,m))/2d0
                dem = - Om(m) + eGW(j) + eGW(l)
                KD(ij,kl) = KD(ij,kl) + num*dem/(dem**2 + eta**2)
 

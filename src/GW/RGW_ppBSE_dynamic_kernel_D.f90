@@ -87,12 +87,12 @@ subroutine RGW_ppBSE_dynamic_kernel_D(ispin,eta,nBas,nC,nO,nV,nR,nS,nOO,lambda,e
   end if
 
  if(ispin == 2) then
-
+    
     ij = 0
     do i=nC+1,nO
       do j=i+1,nO
         ij = ij + 1
- 
+         
         kl = 0
         do k=nC+1,nO
           do l=k+1,nO
@@ -100,7 +100,7 @@ subroutine RGW_ppBSE_dynamic_kernel_D(ispin,eta,nBas,nC,nO,nV,nR,nS,nOO,lambda,e
   
             do m=1,nS
                num = rho(i,k,m)*rho(j,l,m) - rho(j,k,m)*rho(i,l,m)
-               
+
                dem = - OmBSE - Om(m) + eGW(j) + eGW(l)
                KD_dyn(ij,kl) = KD_dyn(ij,kl) + num*dem/(dem**2 + eta**2)
                ZD_dyn(ij,kl) = ZD_dyn(ij,kl) + num*(dem**2 - eta**2)/(dem**2 + eta**2)**2

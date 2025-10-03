@@ -55,7 +55,7 @@ subroutine RGW_ppBSE_dynamic_kernel_C(ispin,eta,nBas,nC,nO,nV,nR,nS,nVV,lambda,e
             cd = cd + 1
   
             do m=1,nS
-               num = (rho(a,c,m)*rho(b,d,m) + rho(b,c,m)*rho(a,d,m))/2
+               num = rho(a,c,m)*rho(b,d,m) + rho(b,c,m)*rho(a,d,m)
 
                dem = OmBSE - Om(m) - eGW(b) - eGW(d)
                KC_dyn(ab,cd) = KC_dyn(ab,cd) + num*dem/(dem**2 + eta**2)
@@ -99,7 +99,7 @@ subroutine RGW_ppBSE_dynamic_kernel_C(ispin,eta,nBas,nC,nO,nV,nR,nS,nVV,lambda,e
             cd = cd + 1
 
             do m=1,nS
-               num = (rho(a,c,m)*rho(b,d,m) - rho(b,c,m)*rho(a,d,m))/2
+               num = rho(a,c,m)*rho(b,d,m) - rho(b,c,m)*rho(a,d,m)
 
                dem = OmBSE - Om(m) - eGW(b) - eGW(d)
                KC_dyn(ab,cd) = KC_dyn(ab,cd) + num*dem/(dem**2 + eta**2)

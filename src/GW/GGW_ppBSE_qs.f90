@@ -92,7 +92,7 @@ subroutine GGW_ppBSE_qs(TDA_W,TDA,dBSE,dTDA,eta,nOrb,nC,nO,nV,nR,nS,ERI,dipole_i
   ! Compute BSE excitation energies
 
 !               call GGW_ppBSE_static_kernel_C(eta,nOrb,nC,nO,nV,nR,nS,nVV,1d0,ERI,OmRPA,rho_RPA,KC_sta)
-               call GGW_ppBSE_static_kernel_D_qs(eta,nOrb,nC,nO,nV,nR,nS,nOO,1d0,ERI,eW,OmRPA,rho_RPA,KD_sta)
+               call GGW_ppBSE_static_kernel_D_qs(eta,nOrb,nC,nO,nV,nR,nS,nOO,1d0,ERI,eGW,OmRPA,rho_RPA,KD_sta)
 !  if(.not.TDA) call GGW_ppBSE_static_kernel_B(eta,nOrb,nC,nO,nV,nR,nS,nOO,nVV,1d0,ERI,OmRPA,rho_RPA,KB_sta)
   
                call ppGLR_C(nOrb,nC,nO,nV,nR,nVV,1d0,eGW,ERI,Cpp)
