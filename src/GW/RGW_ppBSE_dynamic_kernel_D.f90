@@ -99,6 +99,7 @@ subroutine RGW_ppBSE_dynamic_kernel_D(ispin,eta,nBas,nC,nO,nV,nR,nS,nOO,lambda,e
             kl = kl + 1
   
             do m=1,nS
+
                num = rho(i,k,m)*rho(j,l,m) - rho(j,k,m)*rho(i,l,m)
 
                dem = - OmBSE - Om(m) + eGW(j) + eGW(l)
