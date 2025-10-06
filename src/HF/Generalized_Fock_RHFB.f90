@@ -79,9 +79,9 @@ subroutine Generalized_Fock_RHFB(nBas,nBas_twice,nOrb,nOrb_twice,ENuc,sigma,c,Hc
   sqrt_occ(:) = sqrt(abs(occ(:)))
   
   do iorb=1,nOrb
-   sqrt_hole1=sqrt(1d0-Occ(iorb))
+   sqrt_hole1=sqrt(abs(1d0-Occ(iorb)))
    do jorb=1,nOrb
-    sqrt_hole2=sqrt(1d0-Occ(jorb))
+    sqrt_hole2=sqrt(abs(1d0-Occ(jorb)))
     DM2_J(iorb,jorb) = 2d0*Occ(iorb)*Occ(jorb)
     DM2_K(iorb,jorb) = -Occ(iorb)*Occ(jorb)
     DM2_L(iorb,jorb) = sigma*sqrt_occ(iorb)*sqrt_occ(jorb)*sqrt_hole1*sqrt_hole2
