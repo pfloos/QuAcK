@@ -42,10 +42,10 @@ subroutine RHFB(dotest,doaordm,doqsGW,maxSCF,thresh,max_diis,level_shift,nNuc,ZN
   logical                       :: is_fractional
   logical                       :: chem_pot_hf
   logical                       :: restart_hfb
-  integer                       :: nBas2
+  integer                       :: nBas_twice
   integer                       :: iorb,jorb
   integer                       :: nSCF
-  integer                       :: nBas2_Sq
+  integer                       :: nBas_twice_Sq
   integer                       :: n_diis
   double precision              :: ET
   double precision              :: EV
@@ -66,7 +66,7 @@ subroutine RHFB(dotest,doaordm,doqsGW,maxSCF,thresh,max_diis,level_shift,nNuc,ZN
   double precision,allocatable  :: Occ(:)
   double precision,allocatable  :: err_diis(:,:)
   double precision,allocatable  :: H_HFB_diis(:,:)
-  double precision,allocatable  :: c_tmp(:,:)
+  double precision,allocatable  :: cHF(:,:)
   double precision,allocatable  :: J(:,:)
   double precision,allocatable  :: K(:,:)
   double precision,allocatable  :: eigVEC(:,:)
@@ -101,8 +101,8 @@ subroutine RHFB(dotest,doaordm,doqsGW,maxSCF,thresh,max_diis,level_shift,nNuc,ZN
 
 ! Useful quantities
 
-  nBas2 = nBas+nBas
-  nBas2_Sq = nBas2*nBas2
+  nBas_twice = nBas+nBas
+  nBas_twice_Sq = nBas_twice*nBas_twice
 
 ! Memory allocation
 
@@ -110,20 +110,21 @@ subroutine RHFB(dotest,doaordm,doqsGW,maxSCF,thresh,max_diis,level_shift,nNuc,ZN
 
   allocate(J(nBas,nBas))
   allocate(K(nBas,nBas))
+  allocate(cHF(nBas,nOrb))
 
   allocate(eigVEC(nOrb_twice,nOrb_twice))
   allocate(H_HFB(nOrb_twice,nOrb_twice))
   allocate(R(nOrb_twice,nOrb_twice))
   allocate(eigVAL(nOrb_twice))
 
-  allocate(err_ao(nBas2,nBas2))
-  allocate(S_ao(nBas2,nBas2))
-  allocate(X_ao(nBas2,nOrb_twice))
-  allocate(R_ao_old(nBas2,nBas2))
-  allocate(H_HFB_ao(nBas2,nBas2))
+  allocate(err_ao(nBas_twice,nBas_twice))
+  allocate(S_ao(nBas_twice,nBas_twice))
+  allocate(X_ao(nBas_twice,nOrb_twice))
+  allocate(R_ao_old(nBas_twice,nBas_twice))
+  allocate(H_HFB_ao(nBas_twice,nBas_twice))
 
-  allocate(err_diis(nBas2_Sq,max_diis))
-  allocate(H_HFB_diis(nBas2_Sq,max_diis))
+  allocate(err_diis(nBas_twice_Sq,max_diis))
+  allocate(H_HFB_diis(nBas_twice_Sq,max_diis))
 
 ! Guess chem. pot.
 
@@ -137,6 +138,7 @@ subroutine RHFB(dotest,doaordm,doqsGW,maxSCF,thresh,max_diis,level_shift,nNuc,ZN
   err_diis(:,:)   = 0d0
   rcond           = 0d0
 
+  cHF(:,:)       = c(:,:)
   P(:,:)         = matmul(c(:,1:nO), transpose(c(:,1:nO)))
   Panom(:,:)     = 0d0
 
@@ -173,11 +175,11 @@ subroutine RHFB(dotest,doaordm,doqsGW,maxSCF,thresh,max_diis,level_shift,nNuc,ZN
 
   P(:,:)       = 2d0*P(:,:)
   S_ao(:,:)    = 0d0
-  S_ao(1:nBas      ,1:nBas      ) = S(1:nBas,1:nBas)
-  S_ao(nBas+1:nBas2,nBas+1:nBas2) = S(1:nBas,1:nBas)
+  S_ao(1:nBas           ,1:nBas           ) = S(1:nBas,1:nBas)
+  S_ao(nBas+1:nBas_twice,nBas+1:nBas_twice) = S(1:nBas,1:nBas)
   X_ao(:,:)    = 0d0
-  X_ao(1:nBas      ,1:nOrb      )      = X(1:nBas,1:nOrb)
-  X_ao(nBas+1:nBas2,nOrb+1:nOrb_twice) = X(1:nBas,1:nOrb)
+  X_ao(1:nBas           ,1:nOrb           ) = X(1:nBas,1:nOrb)
+  X_ao(nBas+1:nBas_twice,nOrb+1:nOrb_twice) = X(1:nBas,1:nOrb)
 
   Conv = 1d0
   nSCF = 0
@@ -239,14 +241,14 @@ subroutine RHFB(dotest,doaordm,doqsGW,maxSCF,thresh,max_diis,level_shift,nNuc,ZN
 
      F(:,:) = Hc(:,:) + J(:,:) + 0.5d0*K(:,:) - chem_pot*S(:,:)
      H_HFB_ao(:,:)    = 0d0
-     H_HFB_ao(1:nBas      ,1:nBas      ) =  F(1:nBas,1:nBas)
-     H_HFB_ao(nBas+1:nBas2,nBas+1:nBas2) = -F(1:nBas,1:nBas)
-     H_HFB_ao(1:nBas      ,nBas+1:nBas2) = Delta(1:nBas,1:nBas)
-     H_HFB_ao(nBas+1:nBas2,1:nBas      ) = Delta(1:nBas,1:nBas)
+     H_HFB_ao(1:nBas           ,1:nBas           ) =  F(1:nBas,1:nBas)
+     H_HFB_ao(nBas+1:nBas_twice,nBas+1:nBas_twice) = -F(1:nBas,1:nBas)
+     H_HFB_ao(1:nBas      ,nBas+1:nBas_twice) = Delta(1:nBas,1:nBas)
+     H_HFB_ao(nBas+1:nBas_twice,1:nBas      ) = Delta(1:nBas,1:nBas)
      err_ao = matmul(H_HFB_ao,matmul(R_ao_old,S_ao)) - matmul(matmul(S_ao,R_ao_old),H_HFB_ao)
 
      n_diis = min(n_diis+1,max_diis)
-     call DIIS_extrapolation(rcond,nBas2_Sq,nBas2_Sq,n_diis,err_diis,H_HFB_diis,err_ao,H_HFB_ao)
+     call DIIS_extrapolation(rcond,nBas_twice_Sq,nBas_twice_Sq,n_diis,err_diis,H_HFB_diis,err_ao,H_HFB_ao)
 
      H_HFB = matmul(transpose(X_ao),matmul(H_HFB_ao,X_ao))
      eigVEC(:,:) = H_HFB(:,:)
@@ -302,9 +304,9 @@ subroutine RHFB(dotest,doaordm,doqsGW,maxSCF,thresh,max_diis,level_shift,nNuc,ZN
      F(:,:) = Hc(:,:) + J(:,:) + 0.5d0*K(:,:) - chem_pot*S(:,:)
      H_HFB_ao(:,:)    = 0d0
      H_HFB_ao(1:nBas      ,1:nBas      ) =  F(1:nBas,1:nBas)
-     H_HFB_ao(nBas+1:nBas2,nBas+1:nBas2) = -F(1:nBas,1:nBas)
-     H_HFB_ao(1:nBas      ,nBas+1:nBas2) = Delta(1:nBas,1:nBas)
-     H_HFB_ao(nBas+1:nBas2,1:nBas      ) = Delta(1:nBas,1:nBas)
+     H_HFB_ao(nBas+1:nBas_twice,nBas+1:nBas_twice) = -F(1:nBas,1:nBas)
+     H_HFB_ao(1:nBas      ,nBas+1:nBas_twice) = Delta(1:nBas,1:nBas)
+     H_HFB_ao(nBas+1:nBas_twice,1:nBas      ) = Delta(1:nBas,1:nBas)
      err_ao = matmul(H_HFB_ao,matmul(R_ao_old,S_ao)) - matmul(matmul(S_ao,R_ao_old),H_HFB_ao)
      Conv  = maxval(abs(err_ao))
 
@@ -314,9 +316,9 @@ subroutine RHFB(dotest,doaordm,doqsGW,maxSCF,thresh,max_diis,level_shift,nNuc,ZN
 
     R_ao_old(:,:)    = 0d0
     R_ao_old(1:nBas      ,1:nBas      ) = 0.5d0*P(1:nBas,1:nBas)
-    R_ao_old(nBas+1:nBas2,nBas+1:nBas2) = matmul(X(1:nBas,1:nOrb), transpose(X(1:nBas,1:nOrb)))-0.5d0*P(1:nBas,1:nBas)
-    R_ao_old(1:nBas      ,nBas+1:nBas2) = Panom(1:nBas,1:nBas)
-    R_ao_old(nBas+1:nBas2,1:nBas      ) = Panom(1:nBas,1:nBas)
+    R_ao_old(nBas+1:nBas_twice,nBas+1:nBas_twice) = matmul(X(1:nBas,1:nOrb), transpose(X(1:nBas,1:nOrb)))-0.5d0*P(1:nBas,1:nBas)
+    R_ao_old(1:nBas      ,nBas+1:nBas_twice) = Panom(1:nBas,1:nBas)
+    R_ao_old(nBas+1:nBas_twice,1:nBas      ) = Panom(1:nBas,1:nBas)
 
     ! Dump results
     write(*,*)'-------------------------------------------------------------------------------------------------'
@@ -430,12 +432,12 @@ subroutine RHFB(dotest,doaordm,doqsGW,maxSCF,thresh,max_diis,level_shift,nNuc,ZN
 ! Compute W_no and V_no (i.e. diag[H_HFB^no] built in NO basis to obtain W_no and V_no)
 
   deallocate(eigVEC,eigVAL)
-  allocate(c_ao(nBas2,nOrb_twice))
+  allocate(c_ao(nBas_twice,nOrb_twice))
   allocate(eigVEC(nOrb_twice,nOrb_twice),eigVAL(nOrb_twice))
 
   c_ao(:,:) = 0d0
-  c_ao(1:nBas      ,1:nOrb      )      = c(1:nBas,1:nOrb)
-  c_ao(nBas+1:nBas2,nOrb+1:nOrb_twice) = c(1:nBas,1:nOrb)
+  c_ao(1:nBas      ,1:nOrb      )           = c(1:nBas,1:nOrb)
+  c_ao(nBas+1:nBas_twice,nOrb+1:nOrb_twice) = c(1:nBas,1:nOrb)
   H_HFB = matmul(transpose(c_ao),matmul(H_HFB_ao,c_ao)) ! H_HFB is in the NO basis
   eigVEC(:,:) = H_HFB(:,:)
 
@@ -446,7 +448,7 @@ subroutine RHFB(dotest,doaordm,doqsGW,maxSCF,thresh,max_diis,level_shift,nNuc,ZN
   trace_1rdm = 0d0 
   R(:,:)     = 0d0
   do iorb=1,nOrb
-   R(:,:) = R(:,:) + matmul(eigVEC(:,iorb:iorb),transpose(eigVEC(:,iorb:iorb))) 
+   R(:,:) = R(:,:) + matmul(eigVEC(:,iorb:iorb),transpose(eigVEC(:,iorb:iorb)))
   enddo
   if(.not.doqsGW) then ! Store U_QP in the NO basis if we are not doing qsGW after  
    U_QP(:,:) = eigVEC(:,:) 
@@ -465,6 +467,7 @@ subroutine RHFB(dotest,doaordm,doqsGW,maxSCF,thresh,max_diis,level_shift,nNuc,ZN
    enddo
   enddo
   trace_1rdm = 2d0*trace_1rdm
+
   write(*,*)
   write(*,'(A33,1X,F16.10,A3)') ' Trace [ 1D^NO ]     = ',trace_1rdm,'   '
   write(*,'(A33,1X,F16.10,A3)') ' Error NO represent  = ',err_no_rep,'   '
@@ -477,133 +480,12 @@ subroutine RHFB(dotest,doaordm,doqsGW,maxSCF,thresh,max_diis,level_shift,nNuc,ZN
   enddo
   write(*,*)
 
+  ! Compute Generalized Fock operator?
+  !call Generalized_Fock_RHFB(nBas,nBas_twice,nOrb,nOrb_twice,ENuc,sigma,c,Hc,H_HFB_ao,Occ,ERI)
+
 ! Test if it can be a RHF solution
   ! TODO ...
   if(is_fractional .and. .false.) then
-
-block
-  double precision               :: Ehcore,Vee,Eelec_lambda
-  double precision               :: sqrt_hole1,sqrt_hole2
-
-  double precision,allocatable   :: eigVALmo(:)
-  double precision,allocatable   :: eigVECmo(:,:)
-  double precision,allocatable   :: Lambdas(:,:)
-  double precision,allocatable   :: sqrt_occ(:)
-  double precision,allocatable   :: DM2_iiii(:)
-  double precision,allocatable   :: DM2_J(:,:)
-  double precision,allocatable   :: DM2_K(:,:)
-  double precision,allocatable   :: DM2_L(:,:)
-  double precision,allocatable   :: Ptmp(:,:)
-  double precision,allocatable   :: hCORE(:,:)
-  double precision,allocatable   :: ERImol(:,:,:,:)
-
-  allocate(eigVALmo(nOrb))
-  allocate(eigVECmo(nOrb,nOrb))
-  allocate(Ptmp(nBas,nBas))
-  allocate(sqrt_occ(nOrb))
-  allocate(DM2_iiii(nOrb))
-  allocate(Lambdas(nOrb,nOrb))
-  allocate(DM2_J(nOrb,nOrb))
-  allocate(DM2_K(nOrb,nOrb))
-  allocate(DM2_L(nOrb,nOrb))
-  allocate(hCORE(nOrb,nOrb))
-  allocate(ERImol(nOrb,nOrb,nOrb,nOrb))
-
-  hCORE=matmul(transpose(c),matmul(Hc,c))
-  call AOtoMO_ERI_RHF(nBas,nOrb,c,ERI,ERImol)
-
-  DM2_J=0d0; DM2_K=0d0; DM2_L=0d0; DM2_iiii=0d0; Lambdas=0d0;
-  sqrt_occ(:) = sqrt(abs(occ(:)))
-  
-  do iorb=1,nOrb
-   sqrt_hole1=sqrt(1d0-Occ(iorb))
-   do jorb=1,nOrb
-    sqrt_hole2=sqrt(1d0-Occ(jorb))
-    DM2_J(iorb,jorb) = 2d0*Occ(iorb)*Occ(jorb)
-    DM2_K(iorb,jorb) = -Occ(iorb)*Occ(jorb)
-    DM2_L(iorb,jorb) = sigma*sqrt_occ(iorb)*sqrt_occ(jorb)*sqrt_hole1*sqrt_hole2
-   enddo
-  enddo
-
-  do iorb=1,nOrb
-   DM2_iiii(iorb)=Occ(iorb)*Occ(iorb)+sigma*(Occ(iorb)-Occ(iorb)*Occ(iorb))
-   DM2_J(iorb,iorb)=0d0
-   DM2_K(iorb,iorb)=0d0
-   DM2_L(iorb,iorb)=0d0
-  enddo
-
-  Ehcore=0d0; Vee=0d0; Eelec_lambda=0d0;
-  do iorb=1,nOrb
-   Eelec_lambda=Eelec_lambda+Occ(iorb)*hCORE(iorb,iorb)
-   Ehcore=Ehcore+2d0*Occ(iorb)*hCORE(iorb,iorb)
-   Vee=Vee+DM2_iiii(iorb)*ERImol(iorb,iorb,iorb,iorb)
-   Lambdas(iorb,:)=Occ(iorb)*hCORE(:,iorb)                                   ! Init: Lambda_pq = n_p hCORE_qp
-   Lambdas(iorb,:)=Lambdas(iorb,:)+DM2_iiii(iorb)*ERImol(:,iorb,iorb,iorb)   ! any->iorb,iorb->iorb
-   do jorb=1,nOrb
-    if(iorb/=jorb) then
-     Lambdas(iorb,:)=Lambdas(iorb,:)+DM2_J(iorb,jorb)*ERImol(:,jorb,iorb,jorb) ! any->iorb,jorb->jorb
-     Lambdas(iorb,:)=Lambdas(iorb,:)+DM2_K(iorb,jorb)*ERImol(:,jorb,jorb,iorb) ! any->jorb,jorb->iorb
-     Lambdas(iorb,:)=Lambdas(iorb,:)+DM2_L(iorb,jorb)*ERImol(:,iorb,jorb,jorb) ! any->jorb,iorb->jorb
-    endif
-    Vee=Vee+DM2_J(iorb,jorb)*ERImol(iorb,jorb,iorb,jorb)+DM2_K(iorb,jorb)*ERImol(iorb,jorb,jorb,iorb) &
-       +DM2_L(iorb,jorb)*ERImol(iorb,iorb,jorb,jorb)
-   enddo
-   Eelec_lambda=Eelec_lambda+Lambdas(iorb,iorb) 
-  enddo
-
-write(*,'(a,f15.8)') 'Hcore                       ', Ehcore
-write(*,'(a,f15.8)') 'Vee                         ', Vee
-write(*,'(a,f15.8)') 'Eelectronic(np,hpp,lambda)  ', Eelec_lambda
-write(*,'(a,f15.8)') 'Etot                        ', Eelec_lambda+ENuc
-write(*,*) 'Lambdas'
-do iorb=1,nOrb
-write(*,'(*(f10.5))') Lambdas(iorb,1:nOrb)
-enddo
-
-  eigVECmo=Lambdas
-  call diagonalize_matrix(nOrb,eigVECmo,eigVALmo)
-
-write(*,*) 'Lambdas eigenvectors'
-do iorb=1,nOrb
-write(*,'(*(f10.5))') eigVECmo(iorb,1:nOrb)
-enddo
-write(*,*) 'Lambdas eigenvalues'
-write(*,'(*(f10.5))') eigVALmo(:)
-
-  c = matmul(c,eigVECmo)
-
-  c_ao(:,:) = 0d0
-  c_ao(1:nBas      ,1:nOrb      )      = c(1:nBas,1:nOrb)
-  c_ao(nBas+1:nBas2,nOrb+1:nOrb_twice) = c(1:nBas,1:nOrb)
-  H_HFB = matmul(transpose(c_ao),matmul(H_HFB_ao,c_ao)) ! H_HFB is in the NO basis
-  eigVEC(:,:) = H_HFB(:,:)
-
-  call diagonalize_matrix(nOrb_twice,eigVEC,eigVAL)
-
-  ! Build R (as R^no) and save the eigenvectors
-    
-  trace_1rdm = 0d0 
-  R(:,:)     = 0d0
-  do iorb=1,nOrb
-   R(:,:) = R(:,:) + matmul(eigVEC(:,iorb:iorb),transpose(eigVEC(:,iorb:iorb))) 
-  enddo
-
-write(*,*) 'R in Lambdas diag'
-do iorb=1,nOrb
-write(*,'(*(f10.5))') R(iorb,1:nOrb)
-enddo
-  Ptmp=matmul(matmul(c,R(1:nOrb,1:nOrb)),transpose(c))
-write(*,*) 'P^ao from Lambdas diag'
-do iorb=1,nBas
-write(*,'(*(f10.5))') Ptmp(iorb,1:nOrb)
-enddo
-  
-  deallocate(DM2_J,DM2_K,DM2_L,sqrt_occ,DM2_iiii,hCORE,ERImol,Lambdas)
-  deallocate(Ptmp)
-  deallocate(eigVALmo)
-  deallocate(eigVECmo)
-
-end block
    
    call do_colinearity_test(nOrb,nOrb_twice,R)
   endif
@@ -620,7 +502,7 @@ end block
 
 ! Memory deallocation
 
-  deallocate(J,K,eigVEC,H_HFB,R,eigVAL,err_diis,H_HFB_diis,Occ)
+  deallocate(J,K,cHF,eigVEC,H_HFB,R,eigVAL,err_diis,H_HFB_diis,Occ)
   deallocate(err_ao,S_ao,X_ao,R_ao_old,H_HFB_ao)
   deallocate(c_ao)
 
