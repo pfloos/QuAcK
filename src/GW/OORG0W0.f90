@@ -174,10 +174,10 @@ subroutine OORG0W0(dotest,doACFDT,exchange_kernel,doXBS,dophBSE,dophBSE2,TDA_W,T
   
     write(*,*) "Orbital optimiation Iteration: ", OOi 
    
-    h = matmul(transpose(c),matmul(Hc,c))
-    call AOtoMO_ERI_RHF(nBas,nOrb,c,ERI_AO,ERI_MO)
-   
-   ! What are the eHF for RPA ???
+   ! h = matmul(transpose(c),matmul(Hc,c))
+   ! call AOtoMO_ERI_RHF(nBas,nOrb,c,ERI_AO,ERI_MO)
+   !
+   !! What are the eHF for RPA ???
    ! PHF(:,:) = 2d0 * matmul(c(:,1:O), transpose(c(:,1:O)))
    ! call Hartree_matrix_AO_basis(nBas,PHF,ERI_AO,J)
    ! call exchange_matrix_AO_basis(nBas,PHF,ERI_AO,K)
@@ -274,6 +274,7 @@ subroutine OORG0W0(dotest,doACFDT,exchange_kernel,doXBS,dophBSE,dophBSE2,TDA_W,T
     ! Calculate rdm2
     call RG0W0_rdm2(O,V,N,nS,lampl,rampl,lp,rp,lambda,t,rdm2)
     write(*,*) "Trace rdm2: ", trace_matrix(Nsq,rdm2)
+    call matout(Nsq,Nsq,rdm2)
     
     call RGW_energy_from_rdm(N,h,ERI_MO,rdm1,rdm2,Emu)
     write(*,*) "Erpa = ", Emu
@@ -301,18 +302,18 @@ subroutine OORG0W0(dotest,doACFDT,exchange_kernel,doXBS,dophBSE,dophBSE2,TDA_W,T
     !-------------------------!
  
     allocate(hess(Nsq,Nsq))
-    hess(:,:) = 0d0 
+    ! hess(:,:) = 0d0 
     call pCCD_orbital_hessian(O,V,N,Nsq,h,ERI_MO,rdm1,rdm2,hess)
     
-!    write(*,*) "Hessian"
-!    call matout(Nsq,Nsq,hess)
+    write(*,*) "Hessian"
+    call matout(Nsq,Nsq,hess)
  
     allocate(hessInv(Nsq,Nsq))
  
     call inverse_matrix(Nsq,hess,hessInv)
     
-!    write(*,*) "Inv Hessian"
-!    call matout(Nsq,Nsq,hessInv)
+    write(*,*) "Inv Hessian"
+    call matout(Nsq,Nsq,hessInv)
     
     deallocate(hess)
  
@@ -333,7 +334,7 @@ subroutine OORG0W0(dotest,doACFDT,exchange_kernel,doXBS,dophBSE,dophBSE2,TDA_W,T
             rs = rs + 1
  
               Kap(p,q) = Kap(p,q) - hessInv(pq,rs)*grad(rs)
-              Kap(p,q) = Kap(p,q) - 0.00000001*grad(rs)
+              !Kap(p,q) = Kap(p,q) - 0.00000001*grad(rs)
  
           end do
         end do
@@ -343,35 +344,35 @@ subroutine OORG0W0(dotest,doACFDT,exchange_kernel,doXBS,dophBSE,dophBSE2,TDA_W,T
  
     deallocate(hessInv,grad)
 
-!    write(*,*) 'kappa'
-!    call matout(nOrb,nOrb,Kap)
-!    write(*,*)
-! 
+    write(*,*) 'kappa'
+    call matout(nOrb,nOrb,Kap)
+    write(*,*)
+ 
     allocate(ExpKap(N,N))
     call matrix_exponential(nOrb,Kap,ExpKap)
     deallocate(Kap)
-! 
-!    write(*,*) 'e^kappa'
-!    call matout(nOrb,nOrb,ExpKap)
-!    write(*,*)
-! 
-!    write(*,*) 'Old orbitals'
-!    call matout(nBas,nOrb,c)
-!    write(*,*)
-! 
+ 
+    write(*,*) 'e^kappa'
+    call matout(nOrb,nOrb,ExpKap)
+    write(*,*)
+ 
+    write(*,*) 'Old orbitals'
+    call matout(nBas,nOrb,c)
+    write(*,*)
+ 
     c = matmul(c,ExpKap)
     deallocate(ExpKap)
-! 
-!    write(*,*) 'Rotated orbitals'
-!    call matout(nBas,nOrb,c)
-!    write(*,*)
+ 
+    write(*,*) 'Rotated orbitals'
+    call matout(nBas,nOrb,c)
+    write(*,*)
 
     ! Compute all quantities new for rotated basis
 
 
-!    if (OOi==3) then
-!      OOConv = 0d0 ! remove only for debugging
-!    end if
+    if (OOi==3) then
+      OOConv = 0d0 ! remove only for debugging
+    end if
 
     OOi = OOi + 1 
   end do
