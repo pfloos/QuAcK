@@ -243,8 +243,8 @@ subroutine RHFB(dotest,doaordm,doqsGW,maxSCF,thresh,max_diis,level_shift,nNuc,ZN
      H_HFB_ao(:,:)    = 0d0
      H_HFB_ao(1:nBas           ,1:nBas           ) =  F(1:nBas,1:nBas)
      H_HFB_ao(nBas+1:nBas_twice,nBas+1:nBas_twice) = -F(1:nBas,1:nBas)
-     H_HFB_ao(1:nBas      ,nBas+1:nBas_twice) = Delta(1:nBas,1:nBas)
-     H_HFB_ao(nBas+1:nBas_twice,1:nBas      ) = Delta(1:nBas,1:nBas)
+     H_HFB_ao(1:nBas           ,nBas+1:nBas_twice) = Delta(1:nBas,1:nBas)
+     H_HFB_ao(nBas+1:nBas_twice,1:nBas           ) = Delta(1:nBas,1:nBas)
      err_ao = matmul(H_HFB_ao,matmul(R_ao_old,S_ao)) - matmul(matmul(S_ao,R_ao_old),H_HFB_ao)
 
      n_diis = min(n_diis+1,max_diis)
@@ -303,10 +303,10 @@ subroutine RHFB(dotest,doaordm,doqsGW,maxSCF,thresh,max_diis,level_shift,nNuc,ZN
 
      F(:,:) = Hc(:,:) + J(:,:) + 0.5d0*K(:,:) - chem_pot*S(:,:)
      H_HFB_ao(:,:)    = 0d0
-     H_HFB_ao(1:nBas      ,1:nBas      ) =  F(1:nBas,1:nBas)
+     H_HFB_ao(1:nBas           ,1:nBas           ) =  F(1:nBas,1:nBas)
      H_HFB_ao(nBas+1:nBas_twice,nBas+1:nBas_twice) = -F(1:nBas,1:nBas)
-     H_HFB_ao(1:nBas      ,nBas+1:nBas_twice) = Delta(1:nBas,1:nBas)
-     H_HFB_ao(nBas+1:nBas_twice,1:nBas      ) = Delta(1:nBas,1:nBas)
+     H_HFB_ao(1:nBas           ,nBas+1:nBas_twice) = Delta(1:nBas,1:nBas)
+     H_HFB_ao(nBas+1:nBas_twice,1:nBas           ) = Delta(1:nBas,1:nBas)
      err_ao = matmul(H_HFB_ao,matmul(R_ao_old,S_ao)) - matmul(matmul(S_ao,R_ao_old),H_HFB_ao)
      Conv  = maxval(abs(err_ao))
 
@@ -315,10 +315,10 @@ subroutine RHFB(dotest,doaordm,doqsGW,maxSCF,thresh,max_diis,level_shift,nNuc,ZN
     ! Update R_old
 
     R_ao_old(:,:)    = 0d0
-    R_ao_old(1:nBas      ,1:nBas      ) = 0.5d0*P(1:nBas,1:nBas)
+    R_ao_old(1:nBas           ,1:nBas           ) = 0.5d0*P(1:nBas,1:nBas)
     R_ao_old(nBas+1:nBas_twice,nBas+1:nBas_twice) = matmul(X(1:nBas,1:nOrb), transpose(X(1:nBas,1:nOrb)))-0.5d0*P(1:nBas,1:nBas)
-    R_ao_old(1:nBas      ,nBas+1:nBas_twice) = Panom(1:nBas,1:nBas)
-    R_ao_old(nBas+1:nBas_twice,1:nBas      ) = Panom(1:nBas,1:nBas)
+    R_ao_old(1:nBas           ,nBas+1:nBas_twice) = Panom(1:nBas,1:nBas)
+    R_ao_old(nBas+1:nBas_twice,1:nBas           ) = Panom(1:nBas,1:nBas)
 
     ! Dump results
     write(*,*)'-------------------------------------------------------------------------------------------------'
@@ -436,7 +436,7 @@ subroutine RHFB(dotest,doaordm,doqsGW,maxSCF,thresh,max_diis,level_shift,nNuc,ZN
   allocate(eigVEC(nOrb_twice,nOrb_twice),eigVAL(nOrb_twice))
 
   c_ao(:,:) = 0d0
-  c_ao(1:nBas      ,1:nOrb      )           = c(1:nBas,1:nOrb)
+  c_ao(1:nBas           ,1:nOrb           ) = c(1:nBas,1:nOrb)
   c_ao(nBas+1:nBas_twice,nOrb+1:nOrb_twice) = c(1:nBas,1:nOrb)
   H_HFB = matmul(transpose(c_ao),matmul(H_HFB_ao,c_ao)) ! H_HFB is in the NO basis
   eigVEC(:,:) = H_HFB(:,:)
