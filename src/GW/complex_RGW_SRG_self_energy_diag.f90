@@ -43,8 +43,9 @@ subroutine complex_RGW_SRG_self_energy_diag(flow,eta,nBas,nOrb,nC,nO,nV,nR,nS,Re
   allocate(Re_DS(nBas),Im_DS(nBas))
   Re_Sig(:) = 0d0
   Im_Sig(:) = 0d0
-  Re_DS(:)   = 0d0
-  Im_DS(:)   = 0d0
+  Re_DS(:)  = 0d0
+  Im_DS(:)  = 0d0
+  EcGM      = 0d0
 
   s = flow
 

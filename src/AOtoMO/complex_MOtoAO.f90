@@ -22,17 +22,17 @@ subroutine complex_MOtoAO(nBas, nOrb, S, C, M_MOs, M_AOs)
   !BSC = matmul(M_MOs, transpose(SC))
   !M_AOs = matmul(SC, BSC)
 
-  call zgemm("N", "N", nBas, nOrb, nBas, 1.d0, &
+  call zgemm("N", "N", nBas, nOrb, nBas, (1.d0,0.d0), &
              cS(1,1), nBas, C(1,1), nBas,       &
-             0.d0, SC(1,1), nBas)
+             (0.d0,0d0), SC(1,1), nBas)
 
-  call zgemm("N", "T", nOrb, nBas, nOrb, 1.d0, &
+  call zgemm("N", "T", nOrb, nBas, nOrb, (1.d0,0.d0), &
              M_MOs(1,1), nOrb, SC(1,1), nBas,  &
-             0.d0, BSC(1,1), nOrb)
+             (0.d0,0.d0), BSC(1,1), nOrb)
 
-  call zgemm("N", "N", nBas, nBas, nOrb, 1.d0, &
+  call zgemm("N", "N", nBas, nBas, nOrb, (1.d0,0.d0), &
              SC(1,1), nBas, BSC(1,1), nOrb,    &
-             0.d0, M_AOs(1,1), nBas)
+             (0.d0,0.d0), M_AOs(1,1), nBas)
 
   deallocate(SC, BSC)
 
