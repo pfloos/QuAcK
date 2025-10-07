@@ -1,4 +1,4 @@
-subroutine GGTpp_phBSE_static_kernel_B(eta,nOrb,nC,nO,nV,nR,nOO,nVV,nS,lambda,ERI,eGF,Om1,rho1,Om2,rho2,KA_sta)
+subroutine GGTpp_phBSE_static_kernel_B(eta,nOrb,nC,nO,nV,nR,nOO,nVV,nS,lambda,ERI,eGF,Om1,rho1,Om2,rho2,KB_sta)
 
 ! 
 
@@ -34,10 +34,10 @@ subroutine GGTpp_phBSE_static_kernel_B(eta,nOrb,nC,nO,nV,nR,nOO,nVV,nS,lambda,ER
 
 ! Output variables
 
-  double precision,intent(out)  :: KA_sta(nS,nS)
+  double precision,intent(out)  :: KB_sta(nS,nS)
 
 ! Initialization
-  KA_sta(:,:) = 0d0
+  KB_sta(:,:) = 0d0
   
 ! Computing the kernel
   ia = 0
@@ -65,7 +65,7 @@ subroutine GGTpp_phBSE_static_kernel_B(eta,nOrb,nC,nO,nV,nR,nOO,nVV,nS,lambda,ER
              
           end do
 
-          KA_sta(ia,jb) = lambda*chi
+          KB_sta(ia,jb) = lambda*chi
  
         end do
       end do

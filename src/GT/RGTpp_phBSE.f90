@@ -65,8 +65,7 @@ subroutine RGTpp_phBSE(exchange_kernel,TDA_T,TDA,dBSE,dTDA,singlet,triplet,eta,n
   double precision,allocatable  :: Bph(:,:)
 
   double precision              :: EcRPA(nspin)
-  double precision,allocatable  :: TAs(:,:),TBs(:,:)
-  double precision,allocatable  :: TAt(:,:),TBt(:,:)
+  double precision,allocatable  :: KA_sta(:,:),KB_sta(:,:)
   double precision,allocatable  :: OmBSE(:)
   double precision,allocatable  :: XpY_BSE(:,:)
   double precision,allocatable  :: XmY_BSE(:,:)
@@ -77,7 +76,7 @@ subroutine RGTpp_phBSE(exchange_kernel,TDA_T,TDA,dBSE,dTDA,singlet,triplet,eta,n
 
 ! Memory allocation
 
-  allocate(Aph(nS,nS),Bph(nS,nS),TAs(nS,nS),TBs(nS,nS),TAt(nS,nS),TBt(nS,nS), & 
+  allocate(Aph(nS,nS),Bph(nS,nS),KA_sta(nS,nS),KB_sta(nS,nS), & 
            OmBSE(nS),XpY_BSE(nS,nS),XmY_BSE(nS,nS))
 
 !-----!
@@ -105,9 +104,6 @@ subroutine RGTpp_phBSE(exchange_kernel,TDA_T,TDA,dBSE,dTDA,singlet,triplet,eta,n
 
   deallocate(Bpp,Cpp,Dpp)
 
-               call RGTpp_phBSE_static_kernel_A(eta,nOrb,nC,nO,nV,nR,nS,nOOs,nVVs,1d0,Om1s,rho1s,Om2s,rho2s,TAs)
-  if(.not.TDA) call RGTpp_phBSE_static_kernel_B(eta,nOrb,nC,nO,nV,nR,nS,nOOs,nVVs,1d0,Om1s,rho1s,Om2s,rho2s,TBs)
-
 !------------------------------------!
 ! Compute T-matrix for triplet block !
 !------------------------------------!
@@ -124,9 +120,18 @@ subroutine RGTpp_phBSE(exchange_kernel,TDA_T,TDA,dBSE,dTDA,singlet,triplet,eta,n
 
   deallocate(Bpp,Cpp,Dpp)
 
-               call RGTpp_phBSE_static_kernel_A(eta,nOrb,nC,nO,nV,nR,nS,nOOt,nVVt,1d0,Om1t,rho1t,Om2t,rho2t,TAt)
-  if(.not.TDA) call RGTpp_phBSE_static_kernel_B(eta,nOrb,nC,nO,nV,nR,nS,nOOt,nVVt,1d0,Om1t,rho1t,Om2t,rho2t,TBt)
+!----------------------------------------------
+! Compute excitation densities
+!----------------------------------------------
 
+  ispin = 1
+
+  call RGTpp_excitation_density(ispin,nOrb,nC,nO,nV,nR,nOOs,nVVs,ERI,X1s,Y1s,rho1s,X2s,Y2s,rho2s)
+
+  ispin = 2
+
+  call RGTpp_excitation_density(ispin,nOrb,nC,nO,nV,nR,nOOt,nVVt,ERI,X1t,Y1t,rho1t,X2t,Y2t,rho2t)
+  
 !------------------!
 ! Singlet manifold !
 !------------------!
@@ -140,28 +145,30 @@ subroutine RGTpp_phBSE(exchange_kernel,TDA_T,TDA,dBSE,dTDA,singlet,triplet,eta,n
                  call phRLR_A(ispin,dRPA,nOrb,nC,nO,nV,nR,nS,1d0,eGT,ERI,Aph)
     if(.not.TDA) call phRLR_B(ispin,dRPA,nOrb,nC,nO,nV,nR,nS,1d0,ERI,Bph)
 
-                 Aph(:,:) = Aph(:,:) + TAt(:,:) ! TAt(:,:)
-    if(.not.TDA) Bph(:,:) = Bph(:,:) + TBt(:,:) ! TBt(:,:)
+                 call RGTpp_phBSE_static_kernel_A(ispin,eta,nOrb,nC,nO,nV,nR,nS,nOOs,nVVs,nOOt,nVVt,1d0,Om1s,rho1s,Om2s,rho2s,Om1t,rho1t,Om2t,rho2t,KA_sta)
+    if(.not.TDA) call RGTpp_phBSE_static_kernel_B(ispin,eta,nOrb,nC,nO,nV,nR,nS,nOOs,nVVs,nOOt,nVVt,1d0,Om1s,rho1s,Om2s,rho2s,Om1t,rho1t,Om2t,rho2t,KB_sta)
+
+                 Aph(:,:) = Aph(:,:) + KA_sta(:,:) 
+    if(.not.TDA) Bph(:,:) = Bph(:,:) + KB_sta(:,:)
 
     call phRLR(TDA,nS,Aph,Bph,EcBSE(ispin),OmBSE,XpY_BSE,XmY_BSE)
 
     call print_excitation_energies('phBSE@GTpp','singlet',nS,OmBSE)
     call phLR_transition_vectors(.true.,nOrb,nC,nO,nV,nR,nS,dipole_int,OmBSE,XpY_BSE,XmY_BSE)
 
+    ! TODO This is old code and should be properly spin adapted now
     ! Compute dynamic correction for BSE via renormalized perturbation theory 
-
-    if(dBSE) &
-        call RGTpp_phBSE_dynamic_perturbation(ispin,dTDA,eta,nOrb,nC,nO,nV,nR,nS,nOOs,nVVs,nOOt,nVVt, &
-                                             Om1s,Om2s,Om1t,Om2t,rho1s,rho2s,rho1t,rho2t,eT,eGT, & 
-                                             dipole_int,OmBSE,XpY_BSE,XmY_BSE,TAs,TAt)
-
+    ! if(dBSE) call RGTpp_phBSE_dynamic_perturbation(ispin,dTDA,eta,nOrb,nC,nO,nV,nR,nS,nOOs,nVVs,nOOt,nVVt, &
+    !                                                Om1s,Om2s,Om1t,Om2t,rho1s,rho2s,rho1t,rho2t,eT,eGT, & 
+    !                                                dipole_int,OmBSE,XpY_BSE,XmY_BSE,TAs,TAt)
+    
   end if
 
 !------------------!
 ! Triplet manifold !
 !------------------!
 
- if(triplet) then
+  if(triplet) then
 
     ispin = 2
 
@@ -170,20 +177,23 @@ subroutine RGTpp_phBSE(exchange_kernel,TDA_T,TDA,dBSE,dTDA,singlet,triplet,eta,n
                  call phRLR_A(ispin,dRPA,nOrb,nC,nO,nV,nR,nS,1d0,eGT,ERI,Aph)
     if(.not.TDA) call phRLR_B(ispin,dRPA,nOrb,nC,nO,nV,nR,nS,1d0,ERI,Bph)
 
-                 Aph(:,:) = Aph(:,:) + 1d0*TAt(:,:) - TAs(:,:)
-    if(.not.TDA) Bph(:,:) = Bph(:,:) + 1d0*TBt(:,:) - TBs(:,:)
+                 call RGTpp_phBSE_static_kernel_A(ispin,eta,nOrb,nC,nO,nV,nR,nS,nOOs,nVVs,nOOt,nVVt,1d0,Om1s,rho1s,Om2s,rho2s,Om1t,rho1t,Om2t,rho2t,KA_sta)
+    if(.not.TDA) call RGTpp_phBSE_static_kernel_B(ispin,eta,nOrb,nC,nO,nV,nR,nS,nOOs,nVVs,nOOt,nVVt,1d0,Om1s,rho1s,Om2s,rho2s,Om1t,rho1t,Om2t,rho2t,KB_sta)
+    
+                 Aph(:,:) = Aph(:,:) + KA_sta(:,:)
+    if(.not.TDA) Bph(:,:) = Bph(:,:) + KB_sta(:,:)
 
     call phRLR(TDA,nS,Aph,Bph,EcBSE(ispin),OmBSE,XpY_BSE,XmY_BSE)
 
     call print_excitation_energies('phBSE@GTpp','triplet',nS,OmBSE)
     call phLR_transition_vectors(.false.,nOrb,nC,nO,nV,nR,nS,dipole_int,OmBSE,XpY_BSE,XmY_BSE)
 
+    ! TODO This is old code and should be properly spin adapted now
     ! Compute dynamic correction for BSE via renormalized perturbation theory 
+    ! if(dBSE) call RGTpp_phBSE_dynamic_perturbation(ispin,dTDA,eta,nOrb,nC,nO,nV,nR,nS,nOOs,nVVs,nOOt,nVVt, &
+    !                                                Om1s,Om2s,Om1t,Om2t,rho1s,rho2s,rho1t,rho2t,eT,eGT, & 
+    !                                                dipole_int,OmBSE,XpY_BSE,XmY_BSE,TAs,TAt)
 
-    if(dBSE) &
-        call RGTpp_phBSE_dynamic_perturbation(ispin,dTDA,eta,nOrb,nC,nO,nV,nR,nS,nOOs,nVVs,nOOt,nVVt, &
-                                             Om1s,Om2s,Om1t,Om2t,rho1s,rho2s,rho1t,rho2t,eT,eGT, & 
-                                             dipole_int,OmBSE,XpY_BSE,XmY_BSE,TAs,TAt)
   end if
 
   if(exchange_kernel) then
