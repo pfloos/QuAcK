@@ -54,7 +54,7 @@ do i=1,O
   end do
 end do
 
-! Virtual virtual occupied occupied
+! occupied virtual virtual occupied
 do i=1,O
   do j=1,O
     do a=O+1,N
