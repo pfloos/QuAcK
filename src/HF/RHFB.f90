@@ -481,7 +481,91 @@ subroutine RHFB(dotest,doaordm,doqsGW,maxSCF,thresh,max_diis,level_shift,nNuc,ZN
   write(*,*)
 
   ! Compute Generalized Fock operator?
-  ! call Generalized_Fock_RHFB(nBas,nBas_twice,nOrb,nOrb_twice,ENuc,sigma,c,Hc,H_HFB_ao,Occ,ERI)
+  if(.false.) then
+   call Generalized_Fock_RHFB(nBas,nBas_twice,nOrb,nOrb_twice,ENuc,sigma,c,Hc,H_HFB_ao,Occ,ERI)
+  endif
+
+if(.false.) then
+block
+double precision,allocatable :: Ptmp(:,:)
+double precision,allocatable :: Iocc(:,:)
+
+allocate(Ptmp(nBas,nBas))
+allocate(Iocc(nOrb,nOrb))
+
+write(*,*) ' EIGVEC_opt_no'
+do iorb=1,nOrb_twice
+write(*,'(*(f10.5))') eigVEC(iorb,:)
+enddo
+write(*,*) ' R_opt_no'
+do iorb=1,nOrb_twice
+write(*,'(*(f10.5))') R(iorb,:)
+enddo
+Iocc=0d0
+do iorb=1,nO
+ Iocc(iorb,iorb)=1d0
+enddo
+Ptmp=matmul(matmul(cHF,Iocc),transpose(cHF))
+write(*,*) ' P_cHF'
+do iorb=1,nBas
+write(*,'(*(f10.5))') Ptmp(iorb,:)
+enddo
+Ptmp=matmul(Ptmp,Ptmp)
+write(*,*) ' P_cHF*P_cHF'
+do iorb=1,nBas
+write(*,'(*(f10.5))') Ptmp(iorb,:)
+enddo
+
+write(*,*) ' P_opt'
+do iorb=1,nBas
+write(*,'(*(f10.5))') 0.5d0*P(iorb,:)
+enddo
+
+c_ao(:,:) = 0d0
+c_ao(1:nBas           ,1:nOrb           ) = cHF(1:nBas,1:nOrb)
+c_ao(nBas+1:nBas_twice,nOrb+1:nOrb_twice) = cHF(1:nBas,1:nOrb)
+H_HFB = matmul(transpose(c_ao),matmul(H_HFB_ao,c_ao)) ! H_HFB is in the NO basis
+eigVEC(:,:) = H_HFB(:,:)
+
+call diagonalize_matrix(nOrb_twice,eigVEC,eigVAL)
+
+! Build R (as R^no) and save the eigenvectors
+  
+trace_1rdm = 0d0 
+R(:,:)     = 0d0
+do iorb=1,nOrb
+ R(:,:) = R(:,:) + matmul(eigVEC(:,iorb:iorb),transpose(eigVEC(:,iorb:iorb)))
+enddo
+write(*,*) ' EIGVEC_opt_cHF'
+do iorb=1,nOrb_twice
+write(*,'(*(f10.5))') eigVEC(iorb,:)
+enddo
+eigVEC=transpose(eigVEC)
+write(*,*) ' EIGVEC_opt_cHF^T'
+do iorb=1,nOrb_twice
+write(*,'(*(f10.5))') eigVEC(iorb,:)
+enddo
+write(*,*) ' R_opt_cHF'
+do iorb=1,nOrb_twice
+write(*,'(*(f10.5))') R(iorb,:)
+enddo
+
+
+Ptmp=matmul(matmul(cHF,R(1:nOrb,1:nOrb)),transpose(cHF))
+write(*,*) ' P_opt'
+do iorb=1,nBas
+write(*,'(*(f10.5))') Ptmp(iorb,:)
+enddo
+Ptmp=matmul(Ptmp,Ptmp)
+write(*,*) ' P_opt*P_opt'
+do iorb=1,nBas
+write(*,'(*(f10.5))') Ptmp(iorb,:)
+enddo
+
+deallocate(Ptmp)
+
+end block
+endif
 
 ! Test if it can be a RHF solution
   ! TODO ...

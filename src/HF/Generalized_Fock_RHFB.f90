@@ -122,19 +122,25 @@ subroutine Generalized_Fock_RHFB(nBas,nBas_twice,nOrb,nOrb_twice,ENuc,sigma,c,Hc
   write(*,'(a,f15.8)') '  Etot                        ', Eelec_lambda+ENuc
   write(*,*)
   write(*,*) '  Gen. Fock matrix'
+  write(*,*)
   do iorb=1,nOrb
    write(*,'(*(f10.5))') Lambdas(iorb,1:nOrb)
   enddo
+  write(*,*)
 
   eigVECmo=Lambdas
   call diagonalize_matrix(nOrb,eigVECmo,eigVALmo)
 
   write(*,*) '  Gen. Fock matrix eigenvectors'
+  write(*,*)
   do iorb=1,nOrb
    write(*,'(*(f10.5))') eigVECmo(iorb,1:nOrb)
   enddo
+  write(*,*)
   write(*,*) '  Gen. Fock matrix eigenvalues (a.u.)'
+  write(*,*)
   write(*,'(*(f10.5))') eigVALmo(:)
+  write(*,*)
 
   c_tmp = matmul(c_tmp,eigVECmo)
 
@@ -154,14 +160,18 @@ subroutine Generalized_Fock_RHFB(nBas,nBas_twice,nOrb,nOrb_twice,ENuc,sigma,c,Hc
   enddo
 
   write(*,*) '  R in the basis making the Gen. Fock diagonal'
+  write(*,*)
   do iorb=1,nOrb
    write(*,'(*(f10.5))') R_loc(iorb,1:nOrb)
   enddo
+  write(*,*)
   Ptmp=matmul(matmul(c_tmp,R_loc(1:nOrb,1:nOrb)),transpose(c_tmp))
   write(*,*) '  P^ao from the basis making Gen. Fock diagonal'
+  write(*,*)
   do iorb=1,nBas
    write(*,'(*(f10.5))') Ptmp(iorb,1:nOrb)
   enddo
+  write(*,*)
   
   deallocate(DM2_J,DM2_K,DM2_L,sqrt_occ,DM2_iiii,hCORE,ERImol,Lambdas)
   deallocate(Ptmp,c_tmp,c_ao,R_loc)
