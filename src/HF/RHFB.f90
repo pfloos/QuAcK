@@ -516,7 +516,7 @@ do iorb=1,nBas
 write(*,'(*(f10.5))') Ptmp(iorb,:)
 enddo
 
-write(*,*) ' P_opt'
+write(*,*) ' P_opt (obtained from the SCF)'
 do iorb=1,nBas
 write(*,'(*(f10.5))') 0.5d0*P(iorb,:)
 enddo
@@ -552,7 +552,7 @@ enddo
 
 
 Ptmp=matmul(matmul(cHF,R(1:nOrb,1:nOrb)),transpose(cHF))
-write(*,*) ' P_opt'
+write(*,*) ' P_opt (from R in cHF basis, it should be equal to the one obtained in the SCF)'
 do iorb=1,nBas
 write(*,'(*(f10.5))') Ptmp(iorb,:)
 enddo
@@ -562,7 +562,7 @@ do iorb=1,nBas
 write(*,'(*(f10.5))') Ptmp(iorb,:)
 enddo
 
-deallocate(Ptmp)
+deallocate(Ptmp,Iocc)
 
 end block
 endif
