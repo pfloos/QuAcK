@@ -1,5 +1,5 @@
 subroutine RGTpp_phBSE_qs(exchange_kernel,TDA_T,TDA,dBSE,dTDA,singlet,triplet,eta,nOrb,nC,nO,nV,nR,nS,nOOs,nVVs,nOOt,nVVt, &
-                       Om1s,X1s,Y1s,Om2s,X2s,Y2s,rho1s,rho2s,Om1t,X1t,Y1t,Om2t,X2t,Y2t,rho1t,rho2t,ERI,dipole_int,eT,eGT,EcBSE)
+                          Om1s,X1s,Y1s,Om2s,X2s,Y2s,rho1s,rho2s,Om1t,X1t,Y1t,Om2t,X2t,Y2t,rho1t,rho2t,ERI,dipole_int,eT,eGT,EcBSE)
 
 ! Compute the Bethe-Salpeter excitation energies with the T-matrix kernel
 
@@ -65,8 +65,7 @@ subroutine RGTpp_phBSE_qs(exchange_kernel,TDA_T,TDA,dBSE,dTDA,singlet,triplet,et
   double precision,allocatable  :: Bph(:,:)
 
   double precision              :: EcRPA(nspin)
-  double precision,allocatable  :: TAs(:,:),TBs(:,:)
-  double precision,allocatable  :: TAt(:,:),TBt(:,:)
+  double precision,allocatable  :: KA_sta(:,:),KB_sta(:,:)
   double precision,allocatable  :: OmBSE(:)
   double precision,allocatable  :: XpY_BSE(:,:)
   double precision,allocatable  :: XmY_BSE(:,:)
@@ -77,7 +76,7 @@ subroutine RGTpp_phBSE_qs(exchange_kernel,TDA_T,TDA,dBSE,dTDA,singlet,triplet,et
 
 ! Memory allocation
 
-  allocate(Aph(nS,nS),Bph(nS,nS),TAs(nS,nS),TBs(nS,nS),TAt(nS,nS),TBt(nS,nS), & 
+  allocate(Aph(nS,nS),Bph(nS,nS),KA_sta(nS,nS),KB_sta(nS,nS), & 
            OmBSE(nS),XpY_BSE(nS,nS),XmY_BSE(nS,nS))
 
 !-----!
@@ -105,9 +104,6 @@ subroutine RGTpp_phBSE_qs(exchange_kernel,TDA_T,TDA,dBSE,dTDA,singlet,triplet,et
 
   deallocate(Bpp,Cpp,Dpp)
 
-               call RGTpp_phBSE_static_kernel_A_qs(eta,nOrb,nC,nO,nV,nR,nS,nOOs,nVVs,1d0,eGT,Om1s,rho1s,Om2s,rho2s,TAs)
-  if(.not.TDA) call RGTpp_phBSE_static_kernel_B(eta,nOrb,nC,nO,nV,nR,nS,nOOs,nVVs,1d0,Om1s,rho1s,Om2s,rho2s,TBs)
-
 !------------------------------------!
 ! Compute T-matrix for triplet block !
 !------------------------------------!
@@ -124,9 +120,18 @@ subroutine RGTpp_phBSE_qs(exchange_kernel,TDA_T,TDA,dBSE,dTDA,singlet,triplet,et
 
   deallocate(Bpp,Cpp,Dpp)
 
-               call RGTpp_phBSE_static_kernel_A_qs(eta,nOrb,nC,nO,nV,nR,nS,nOOt,nVVt,1d0,eGT,Om1t,rho1t,Om2t,rho2t,TAt)
-  if(.not.TDA) call RGTpp_phBSE_static_kernel_B(eta,nOrb,nC,nO,nV,nR,nS,nOOt,nVVt,1d0,Om1t,rho1t,Om2t,rho2t,TBt)
+!----------------------------------------------
+! Compute excitation densities
+!----------------------------------------------
 
+  ispin = 1
+
+  call RGTpp_excitation_density(ispin,nOrb,nC,nO,nV,nR,nOOs,nVVs,ERI,X1s,Y1s,rho1s,X2s,Y2s,rho2s)
+
+  ispin = 2
+
+  call RGTpp_excitation_density(ispin,nOrb,nC,nO,nV,nR,nOOt,nVVt,ERI,X1t,Y1t,rho1t,X2t,Y2t,rho2t)
+  
 !------------------!
 ! Singlet manifold !
 !------------------!
@@ -140,21 +145,30 @@ subroutine RGTpp_phBSE_qs(exchange_kernel,TDA_T,TDA,dBSE,dTDA,singlet,triplet,et
                  call phRLR_A(ispin,dRPA,nOrb,nC,nO,nV,nR,nS,1d0,eGT,ERI,Aph)
     if(.not.TDA) call phRLR_B(ispin,dRPA,nOrb,nC,nO,nV,nR,nS,1d0,ERI,Bph)
 
-                 Aph(:,:) = Aph(:,:) + TAt(:,:) ! TAt(:,:)
-    if(.not.TDA) Bph(:,:) = Bph(:,:) + TBt(:,:) ! TBt(:,:)
+                 call RGTpp_phBSE_static_kernel_A_qs(ispin,eta,nOrb,nC,nO,nV,nR,nS,nOOs,nVVs,nOOt,nVVt,1d0,eGT,Om1s,rho1s,Om2s,rho2s,Om1t,rho1t,Om2t,rho2t,KA_sta)
+    if(.not.TDA) call RGTpp_phBSE_static_kernel_B(ispin,eta,nOrb,nC,nO,nV,nR,nS,nOOs,nVVs,nOOt,nVVt,1d0,Om1s,rho1s,Om2s,rho2s,Om1t,rho1t,Om2t,rho2t,KB_sta)
+
+                 Aph(:,:) = Aph(:,:) + KA_sta(:,:) 
+    if(.not.TDA) Bph(:,:) = Bph(:,:) + KB_sta(:,:)
 
     call phRLR(TDA,nS,Aph,Bph,EcBSE(ispin),OmBSE,XpY_BSE,XmY_BSE)
 
     call print_excitation_energies('phBSE@GTpp','singlet',nS,OmBSE)
     call phLR_transition_vectors(.true.,nOrb,nC,nO,nV,nR,nS,dipole_int,OmBSE,XpY_BSE,XmY_BSE)
 
+    ! TODO This is old code and should be properly spin adapted now
+    ! Compute dynamic correction for BSE via renormalized perturbation theory 
+    ! if(dBSE) call RGTpp_phBSE_dynamic_perturbation(ispin,dTDA,eta,nOrb,nC,nO,nV,nR,nS,nOOs,nVVs,nOOt,nVVt, &
+    !                                                Om1s,Om2s,Om1t,Om2t,rho1s,rho2s,rho1t,rho2t,eT,eGT, & 
+    !                                                dipole_int,OmBSE,XpY_BSE,XmY_BSE,TAs,TAt)
+    
   end if
 
 !------------------!
 ! Triplet manifold !
 !------------------!
 
- if(triplet) then
+  if(triplet) then
 
     ispin = 2
 
@@ -163,13 +177,22 @@ subroutine RGTpp_phBSE_qs(exchange_kernel,TDA_T,TDA,dBSE,dTDA,singlet,triplet,et
                  call phRLR_A(ispin,dRPA,nOrb,nC,nO,nV,nR,nS,1d0,eGT,ERI,Aph)
     if(.not.TDA) call phRLR_B(ispin,dRPA,nOrb,nC,nO,nV,nR,nS,1d0,ERI,Bph)
 
-                 Aph(:,:) = Aph(:,:) + 1d0*TAt(:,:) - TAs(:,:)
-    if(.not.TDA) Bph(:,:) = Bph(:,:) + 1d0*TBt(:,:) - TBs(:,:)
+                 call RGTpp_phBSE_static_kernel_A_qs(ispin,eta,nOrb,nC,nO,nV,nR,nS,nOOs,nVVs,nOOt,nVVt,1d0,eGT,Om1s,rho1s,Om2s,rho2s,Om1t,rho1t,Om2t,rho2t,KA_sta)
+    if(.not.TDA) call RGTpp_phBSE_static_kernel_B(ispin,eta,nOrb,nC,nO,nV,nR,nS,nOOs,nVVs,nOOt,nVVt,1d0,Om1s,rho1s,Om2s,rho2s,Om1t,rho1t,Om2t,rho2t,KB_sta)
+    
+                 Aph(:,:) = Aph(:,:) + KA_sta(:,:)
+    if(.not.TDA) Bph(:,:) = Bph(:,:) + KB_sta(:,:)
 
     call phRLR(TDA,nS,Aph,Bph,EcBSE(ispin),OmBSE,XpY_BSE,XmY_BSE)
 
     call print_excitation_energies('phBSE@GTpp','triplet',nS,OmBSE)
     call phLR_transition_vectors(.false.,nOrb,nC,nO,nV,nR,nS,dipole_int,OmBSE,XpY_BSE,XmY_BSE)
+
+    ! TODO This is old code and should be properly spin adapted now
+    ! Compute dynamic correction for BSE via renormalized perturbation theory 
+    ! if(dBSE) call RGTpp_phBSE_dynamic_perturbation(ispin,dTDA,eta,nOrb,nC,nO,nV,nR,nS,nOOs,nVVs,nOOt,nVVt, &
+    !                                                Om1s,Om2s,Om1t,Om2t,rho1s,rho2s,rho1t,rho2t,eT,eGT, & 
+    !                                                dipole_int,OmBSE,XpY_BSE,XmY_BSE,TAs,TAt)
 
   end if
 
@@ -182,7 +205,7 @@ subroutine RGTpp_phBSE_qs(exchange_kernel,TDA_T,TDA,dBSE,dTDA,singlet,triplet,et
 
 end subroutine RGTpp_phBSE_qs
 
-subroutine RGTpp_phBSE_static_kernel_A_qs(eta,nBas,nC,nO,nV,nR,nS,nOO,nVV,lambda,eGT,Omega1,rho1,Omega2,rho2,KA)
+subroutine RGTpp_phBSE_static_kernel_A_qs(ispin,eta,nBas,nC,nO,nV,nR,nS,nOOs,nVVs,nOOt,nVVt,lambda,eGT,Om1s,rho1s,Om2s,rho2s,Om1t,rho1t,Om2t,rho2t,KA)
 
 ! Compute the OOVV block of the static T-matrix
 
@@ -191,6 +214,7 @@ subroutine RGTpp_phBSE_static_kernel_A_qs(eta,nBas,nC,nO,nV,nR,nS,nOO,nVV,lambda
 
 ! Input variables
 
+  integer,intent(in)            :: ispin
   double precision,intent(in)   :: eta
   integer,intent(in)            :: nBas
   integer,intent(in)            :: nC
@@ -198,19 +222,23 @@ subroutine RGTpp_phBSE_static_kernel_A_qs(eta,nBas,nC,nO,nV,nR,nS,nOO,nVV,lambda
   integer,intent(in)            :: nV
   integer,intent(in)            :: nR
   integer,intent(in)            :: nS
-  integer,intent(in)            :: nOO
-  integer,intent(in)            :: nVV
+  integer,intent(in)            :: nOOs,nVVs
+  integer,intent(in)            :: nOOt,nVVt
   double precision,intent(in)   :: lambda
   double precision,intent(in)   :: eGT(nBas)
-  double precision,intent(in)   :: Omega1(nVV)
-  double precision,intent(in)   :: rho1(nBas,nBas,nVV)
-  double precision,intent(in)   :: Omega2(nOO)
-  double precision,intent(in)   :: rho2(nBas,nBas,nOO)
+  double precision,intent(in)   :: Om1s(nVVs)
+  double precision,intent(in)   :: rho1s(nBas,nBas,nVVs)
+  double precision,intent(in)   :: Om2s(nOOs)
+  double precision,intent(in)   :: rho2s(nBas,nBas,nOOs)
+  double precision,intent(in)   :: Om1t(nVVt)
+  double precision,intent(in)   :: rho1t(nBas,nBas,nVVt)
+  double precision,intent(in)   :: Om2t(nOOt)
+  double precision,intent(in)   :: rho2t(nBas,nBas,nOOt)
 
 ! Local variables
 
-  double precision              :: dem
-  double precision              :: num
+  double precision              :: chi
+  double precision              :: eps
   integer                       :: i,j,a,b,ia,jb,kl,cd,c,d
 
 ! Output variables
@@ -219,8 +247,13 @@ subroutine RGTpp_phBSE_static_kernel_A_qs(eta,nBas,nC,nO,nV,nR,nS,nOO,nVV,lambda
 
   KA(:,:) = 0d0
 
+
+! Build A matrix for single manifold
+
+  if(ispin == 1) then 
+  
   jb = 0
-!$omp parallel do default(private) shared(KA,Omega1,Omega2,rho1,rho2,eGT,nO,nBas,nVV,nOO,dem,num,eta,nC,nR,lambda)
+  !$omp parallel do default(private) shared(KA,eGT,Om1s,rho1s,Om2s,rho2s,Om1t,rho1t,Om2t,rho2t,nO,nC,nR,nBas,nVVs,nOOs,nVVt,nOOt,chi,eps,eta,lambda)
   do j=nC+1,nO
     do b=nO+1,nBas-nR
       jb = (b-nO) + (j-1)*(nBas-nO) 
@@ -230,33 +263,102 @@ subroutine RGTpp_phBSE_static_kernel_A_qs(eta,nBas,nC,nO,nV,nR,nS,nOO,nVV,lambda
         do a=nO+1,nBas-nR
           ia = (a-nO) + (i-1)*(nBas-nO) 
 
-          do cd=1,nVV
-            num = rho1(i,b,cd)*rho1(a,j,cd)
-             
-            dem = eGT(a) + eGT(j) - Omega1(cd)
-            KA(ia,jb) = KA(ia,jb) + num*dem/(dem**2 + eta**2)
-             
-            dem = eGT(b) + eGT(i) - Omega1(cd)
-            KA(ia,jb) = KA(ia,jb) + num*dem/(dem**2 + eta**2)
+          chi = 0d0
 
+          do cd=1,nVVs
+            eps = eGT(a) + eGT(j) - Om1s(cd)
+            chi = chi + 0.25d0*rho1s(i,b,cd)*rho1s(a,j,cd)*eps/(eps**2 + eta**2)
+            eps = eGT(b) + eGT(i) - Om1s(cd)
+            chi = chi + 0.25d0*rho1s(i,b,cd)*rho1s(a,j,cd)*eps/(eps**2 + eta**2)
           end do
 
-          do kl=1,nOO
-            num = rho2(i,b,kl)*rho2(a,j,kl)
-             
-            dem = - eGT(a) - eGT(j) + Omega2(kl)
-            KA(ia,jb) = KA(ia,jb) + num*dem/(dem**2 + eta**2)
-             
-            dem = - eGT(i) - eGT(b) + Omega2(kl)
-            KA(ia,jb) = KA(ia,jb) + num*dem/(dem**2 + eta**2)
-            
-         end do
-         
+          do kl=1,nOOs
+            eps = - eGT(b) - eGT(i) + Om2s(kl)
+            chi = chi + 0.25d0*rho2s(i,b,kl)*rho2s(a,j,kl)*eps/(eps**2 + eta**2)
+            eps = - eGT(j) - eGT(a) + Om2s(kl)
+            chi = chi + 0.25d0*rho2s(i,b,kl)*rho2s(a,j,kl)*eps/(eps**2 + eta**2)
+          end do
+
+          do cd=1,nVVt
+            eps = eGT(a) + eGT(j) - Om1t(cd)
+            chi = chi + 0.75d0*rho1t(i,b,cd)*rho1t(a,j,cd)*eps/(eps**2 + eta**2)
+            eps = eGT(b) + eGT(i) - Om1t(cd)
+            chi = chi + 0.75d0*rho1t(i,b,cd)*rho1t(a,j,cd)*eps/(eps**2 + eta**2)
+          end do
+
+          do kl=1,nOOt
+            eps = - eGT(b) - eGT(i)  + Om2t(kl)
+            chi = chi + 0.75d0*rho2t(i,b,kl)*rho2t(a,j,kl)*eps/(eps**2 + eta**2)
+            eps = - eGT(a) - eGT(j)  + Om2t(kl)
+            chi = chi + 0.75d0*rho2t(i,b,kl)*rho2t(a,j,kl)*eps/(eps**2 + eta**2)
+          end do
+          
+          KA(ia,jb) = lambda*chi
+
         end do
       end do
     end do
   end do
 
-!$omp end parallel do
+  !$omp end parallel do
 
+  end if
+
+! Build A matrix for triplet manifold
+  
+  if(ispin == 2) then
+
+     jb = 0
+     !$omp parallel do default(private) shared(KA,eGT,Om1s,rho1s,Om2s,rho2s,Om1t,rho1t,Om2t,rho2t,nO,nC,nR,nBas,nVVs,nOOs,nVVt,nOOt,chi,eps,eta,lambda)
+     do j=nC+1,nO
+        do b=nO+1,nBas-nR
+           jb = (b-nO) + (j-1)*(nBas-nO) 
+           
+           ia = 0
+           do i=nC+1,nO
+              do a=nO+1,nBas-nR
+                 ia = (a-nO) + (i-1)*(nBas-nO) 
+                 
+                 chi = 0d0
+                 
+                 do cd=1,nVVs
+                    eps = eGT(a) + eGT(j) - Om1s(cd)
+                    chi = chi - 0.25d0*rho1s(i,b,cd)*rho1s(a,j,cd)*eps/(eps**2 + eta**2)
+                    eps = eGT(b) + eGT(i) - Om1s(cd)
+                    chi = chi - 0.25d0*rho1s(i,b,cd)*rho1s(a,j,cd)*eps/(eps**2 + eta**2)
+                 end do
+                 
+                 do kl=1,nOOs
+                    eps = - eGT(b) - eGT(i) + Om2s(kl)
+                    chi = chi - 0.25d0*rho2s(i,b,kl)*rho2s(a,j,kl)*eps/(eps**2 + eta**2)
+                    eps = - eGT(j) - eGT(a) + Om2s(kl)
+                    chi = chi - 0.25d0*rho2s(i,b,kl)*rho2s(a,j,kl)*eps/(eps**2 + eta**2)
+                 end do
+                 
+                 do cd=1,nVVt
+                    eps = eGT(a) + eGT(j) - Om1t(cd)
+                    chi = chi + 0.25d0*rho1t(i,b,cd)*rho1t(a,j,cd)*eps/(eps**2 + eta**2)
+                    eps = eGT(b) + eGT(i) - Om1t(cd)
+                    chi = chi + 0.25d0*rho1t(i,b,cd)*rho1t(a,j,cd)*eps/(eps**2 + eta**2)
+                 end do
+                 
+                 do kl=1,nOOt
+                    eps = - eGT(b) - eGT(i)  + Om2t(kl)
+                    chi = chi + 0.25d0*rho2t(i,b,kl)*rho2t(a,j,kl)*eps/(eps**2 + eta**2)
+                    eps = - eGT(a) - eGT(j)  + Om2t(kl)
+                    chi = chi + 0.25d0*rho2t(i,b,kl)*rho2t(a,j,kl)*eps/(eps**2 + eta**2)
+                 end do
+                 
+                 KA(ia,jb) = lambda*chi
+                 
+              end do
+           end do
+        end do
+     end do
+     
+     !$omp end parallel do
+     
+  end if
+  
 end subroutine 
+
