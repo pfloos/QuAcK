@@ -1,4 +1,4 @@
-subroutine RGTpp_phBSE_qs(exchange_kernel,TDA_T,TDA,dBSE,dTDA,singlet,triplet,eta,nOrb,nC,nO,nV,nR,nS,nOOs,nVVs,nOOt,nVVt, &
+subroutine RGTpp_phBSE_omegazero(exchange_kernel,TDA_T,TDA,dBSE,dTDA,singlet,triplet,eta,nOrb,nC,nO,nV,nR,nS,nOOs,nVVs,nOOt,nVVt, &
                           Om1s,X1s,Y1s,Om2s,X2s,Y2s,rho1s,rho2s,Om1t,X1t,Y1t,Om2t,X2t,Y2t,rho1t,rho2t,ERI,dipole_int,eT,eGT,EcBSE)
 
 ! Compute the Bethe-Salpeter excitation energies with the T-matrix kernel
@@ -145,7 +145,7 @@ subroutine RGTpp_phBSE_qs(exchange_kernel,TDA_T,TDA,dBSE,dTDA,singlet,triplet,et
                  call phRLR_A(ispin,dRPA,nOrb,nC,nO,nV,nR,nS,1d0,eGT,ERI,Aph)
     if(.not.TDA) call phRLR_B(ispin,dRPA,nOrb,nC,nO,nV,nR,nS,1d0,ERI,Bph)
 
-                 call RGTpp_phBSE_static_kernel_A_qs(ispin,eta,nOrb,nC,nO,nV,nR,nS,nOOs,nVVs,nOOt,nVVt,1d0,eGT,Om1s,rho1s,Om2s,rho2s,Om1t,rho1t,Om2t,rho2t,KA_sta)
+                 call RGTpp_phBSE_static_kernel_A_omegazero(ispin,eta,nOrb,nC,nO,nV,nR,nS,nOOs,nVVs,nOOt,nVVt,1d0,eGT,Om1s,rho1s,Om2s,rho2s,Om1t,rho1t,Om2t,rho2t,KA_sta)
     if(.not.TDA) call RGTpp_phBSE_static_kernel_B(ispin,eta,nOrb,nC,nO,nV,nR,nS,nOOs,nVVs,nOOt,nVVt,1d0,Om1s,rho1s,Om2s,rho2s,Om1t,rho1t,Om2t,rho2t,KB_sta)
 
                  Aph(:,:) = Aph(:,:) + KA_sta(:,:) 
@@ -177,7 +177,7 @@ subroutine RGTpp_phBSE_qs(exchange_kernel,TDA_T,TDA,dBSE,dTDA,singlet,triplet,et
                  call phRLR_A(ispin,dRPA,nOrb,nC,nO,nV,nR,nS,1d0,eGT,ERI,Aph)
     if(.not.TDA) call phRLR_B(ispin,dRPA,nOrb,nC,nO,nV,nR,nS,1d0,ERI,Bph)
 
-                 call RGTpp_phBSE_static_kernel_A_qs(ispin,eta,nOrb,nC,nO,nV,nR,nS,nOOs,nVVs,nOOt,nVVt,1d0,eGT,Om1s,rho1s,Om2s,rho2s,Om1t,rho1t,Om2t,rho2t,KA_sta)
+                 call RGTpp_phBSE_static_kernel_A_omegazero(ispin,eta,nOrb,nC,nO,nV,nR,nS,nOOs,nVVs,nOOt,nVVt,1d0,eGT,Om1s,rho1s,Om2s,rho2s,Om1t,rho1t,Om2t,rho2t,KA_sta)
     if(.not.TDA) call RGTpp_phBSE_static_kernel_B(ispin,eta,nOrb,nC,nO,nV,nR,nS,nOOs,nVVs,nOOt,nVVt,1d0,Om1s,rho1s,Om2s,rho2s,Om1t,rho1t,Om2t,rho2t,KB_sta)
     
                  Aph(:,:) = Aph(:,:) + KA_sta(:,:)
@@ -203,9 +203,9 @@ subroutine RGTpp_phBSE_qs(exchange_kernel,TDA_T,TDA,dBSE,dTDA,singlet,triplet,et
 
   end if
 
-end subroutine RGTpp_phBSE_qs
+end subroutine RGTpp_phBSE_omegazero
 
-subroutine RGTpp_phBSE_static_kernel_A_qs(ispin,eta,nBas,nC,nO,nV,nR,nS,nOOs,nVVs,nOOt,nVVt,lambda,eGT,Om1s,rho1s,Om2s,rho2s,Om1t,rho1t,Om2t,rho2t,KA)
+subroutine RGTpp_phBSE_static_kernel_A_omegazero(ispin,eta,nBas,nC,nO,nV,nR,nS,nOOs,nVVs,nOOt,nVVt,lambda,eGT,Om1s,rho1s,Om2s,rho2s,Om1t,rho1t,Om2t,rho2t,KA)
 
 ! Compute the OOVV block of the static T-matrix
 
@@ -266,31 +266,23 @@ subroutine RGTpp_phBSE_static_kernel_A_qs(ispin,eta,nBas,nC,nO,nV,nR,nS,nOOs,nVV
           chi = 0d0
 
           do cd=1,nVVs
-            eps = eGT(a) + eGT(j) - Om1s(cd)
-            chi = chi + 0.25d0*rho1s(i,b,cd)*rho1s(a,j,cd)*eps/(eps**2 + eta**2)
-            eps = eGT(b) + eGT(i) - Om1s(cd)
-            chi = chi + 0.25d0*rho1s(i,b,cd)*rho1s(a,j,cd)*eps/(eps**2 + eta**2)
+            eps = eGT(i) + eGT(j) - Om1s(cd)
+            chi = chi + 0.5d0*rho1s(i,b,cd)*rho1s(a,j,cd)*eps/(eps**2 + eta**2)
           end do
 
           do kl=1,nOOs
-            eps = - eGT(b) - eGT(i) + Om2s(kl)
-            chi = chi + 0.25d0*rho2s(i,b,kl)*rho2s(a,j,kl)*eps/(eps**2 + eta**2)
-            eps = - eGT(j) - eGT(a) + Om2s(kl)
-            chi = chi + 0.25d0*rho2s(i,b,kl)*rho2s(a,j,kl)*eps/(eps**2 + eta**2)
+            eps = - eGT(a) - eGT(b) + Om2s(kl)
+            chi = chi + 0.5d0*rho2s(i,b,kl)*rho2s(a,j,kl)*eps/(eps**2 + eta**2)
           end do
 
           do cd=1,nVVt
-            eps = eGT(a) + eGT(j) - Om1t(cd)
-            chi = chi + 0.75d0*rho1t(i,b,cd)*rho1t(a,j,cd)*eps/(eps**2 + eta**2)
-            eps = eGT(b) + eGT(i) - Om1t(cd)
-            chi = chi + 0.75d0*rho1t(i,b,cd)*rho1t(a,j,cd)*eps/(eps**2 + eta**2)
+            eps = eGT(i) + eGT(j) - Om1t(cd)
+            chi = chi + 1.5d0*rho1t(i,b,cd)*rho1t(a,j,cd)*eps/(eps**2 + eta**2)
           end do
 
           do kl=1,nOOt
-            eps = - eGT(b) - eGT(i)  + Om2t(kl)
-            chi = chi + 0.75d0*rho2t(i,b,kl)*rho2t(a,j,kl)*eps/(eps**2 + eta**2)
-            eps = - eGT(a) - eGT(j)  + Om2t(kl)
-            chi = chi + 0.75d0*rho2t(i,b,kl)*rho2t(a,j,kl)*eps/(eps**2 + eta**2)
+            eps = - eGT(a) - eGT(b)  + Om2t(kl)
+            chi = chi + 1.5d0*rho2t(i,b,kl)*rho2t(a,j,kl)*eps/(eps**2 + eta**2)
           end do
           
           KA(ia,jb) = lambda*chi
@@ -322,31 +314,23 @@ subroutine RGTpp_phBSE_static_kernel_A_qs(ispin,eta,nBas,nC,nO,nV,nR,nS,nOOs,nVV
                  chi = 0d0
                  
                  do cd=1,nVVs
-                    eps = eGT(a) + eGT(j) - Om1s(cd)
-                    chi = chi - 0.25d0*rho1s(i,b,cd)*rho1s(a,j,cd)*eps/(eps**2 + eta**2)
-                    eps = eGT(b) + eGT(i) - Om1s(cd)
-                    chi = chi - 0.25d0*rho1s(i,b,cd)*rho1s(a,j,cd)*eps/(eps**2 + eta**2)
+                    eps = eGT(i) + eGT(j) - Om1s(cd)
+                    chi = chi - 0.5d0*rho1s(i,b,cd)*rho1s(a,j,cd)*eps/(eps**2 + eta**2)
                  end do
                  
                  do kl=1,nOOs
-                    eps = - eGT(b) - eGT(i) + Om2s(kl)
-                    chi = chi - 0.25d0*rho2s(i,b,kl)*rho2s(a,j,kl)*eps/(eps**2 + eta**2)
-                    eps = - eGT(j) - eGT(a) + Om2s(kl)
-                    chi = chi - 0.25d0*rho2s(i,b,kl)*rho2s(a,j,kl)*eps/(eps**2 + eta**2)
+                    eps = - eGT(a) - eGT(b) + Om2s(kl)
+                    chi = chi - 0.5d0*rho2s(i,b,kl)*rho2s(a,j,kl)*eps/(eps**2 + eta**2)
                  end do
                  
                  do cd=1,nVVt
-                    eps = eGT(a) + eGT(j) - Om1t(cd)
-                    chi = chi + 0.25d0*rho1t(i,b,cd)*rho1t(a,j,cd)*eps/(eps**2 + eta**2)
-                    eps = eGT(b) + eGT(i) - Om1t(cd)
-                    chi = chi + 0.25d0*rho1t(i,b,cd)*rho1t(a,j,cd)*eps/(eps**2 + eta**2)
+                    eps = eGT(i) + eGT(j) - Om1t(cd)
+                    chi = chi + 0.5d0*rho1t(i,b,cd)*rho1t(a,j,cd)*eps/(eps**2 + eta**2)
                  end do
                  
                  do kl=1,nOOt
-                    eps = - eGT(b) - eGT(i)  + Om2t(kl)
-                    chi = chi + 0.25d0*rho2t(i,b,kl)*rho2t(a,j,kl)*eps/(eps**2 + eta**2)
-                    eps = - eGT(a) - eGT(j)  + Om2t(kl)
-                    chi = chi + 0.25d0*rho2t(i,b,kl)*rho2t(a,j,kl)*eps/(eps**2 + eta**2)
+                    eps = - eGT(a) - eGT(b)  + Om2t(kl)
+                    chi = chi + 0.5d0*rho2t(i,b,kl)*rho2t(a,j,kl)*eps/(eps**2 + eta**2)
                  end do
                  
                  KA(ia,jb) = lambda*chi
