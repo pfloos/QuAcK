@@ -72,15 +72,15 @@ subroutine ppRLR(TDA,nOO,nVV,Bpp,Cpp,Dpp,Om1,X1,Y1,Om2,X2,Y2,EcRPA)
     M(    1:nVV,nVV+1:nPP) = +           Bpp(1:nVV,1:nOO)
     M(nVV+1:nPP,    1:nVV) = - transpose(Bpp(1:nVV,1:nOO))
 
-    ! Diagonal blocks 
+    ! ! Diagonal blocks 
 
-    M(    1:nVV,    1:nVV) = + Cpp(1:nVV,1:nVV)
-    M(nVV+1:nPP,nVV+1:nPP) = - Dpp(1:nOO,1:nOO)
+    ! M(    1:nVV,    1:nVV) = + Cpp(1:nVV,1:nVV)
+    ! M(nVV+1:nPP,nVV+1:nPP) = - Dpp(1:nOO,1:nOO)
 
-    ! Off-diagonal blocks
+    ! ! Off-diagonal blocks
 
-    M(    1:nVV,nVV+1:nPP) = +           Bpp(1:nVV,1:nOO)
-    M(nVV+1:nPP,    1:nVV) = - transpose(Bpp(1:nVV,1:nOO))
+    ! M(    1:nVV,nVV+1:nPP) = +           Bpp(1:nVV,1:nOO)
+    ! M(nVV+1:nPP,    1:nVV) = - transpose(Bpp(1:nVV,1:nOO))
 
 !   if((nOO .eq. 0) .or. (nVV .eq. 0)) then
 

@@ -42,8 +42,9 @@ subroutine complex_RGW_self_energy_diag(eta,nBas,nOrb,nC,nO,nV,nR,nS,Re_e,Im_e,O
   allocate(Re_DS(nBas),Im_DS(nBas))
   Re_Sig(:) = 0d0
   Im_Sig(:) = 0d0
-  Re_DS(:)   = 0d0
-  Im_DS(:)   = 0d0
+  Re_DS(:)  = 0d0
+  Im_DS(:)  = 0d0
+  EcGM      = 0d0 
 
 !----------------!
 ! GW self-energy !

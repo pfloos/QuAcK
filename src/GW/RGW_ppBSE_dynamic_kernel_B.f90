@@ -53,7 +53,7 @@ subroutine RGW_ppBSE_dynamic_kernel_B(ispin,eta,nBas,nC,nO,nV,nR,nS,nOO,nVV,lamb
             ij = ij + 1
   
             do m=1,nS
-               num = (rho(a,i,m)*rho(b,j,m) + rho(b,i,m)*rho(a,j,m))/2
+               num = rho(a,i,m)*rho(b,j,m) + rho(b,i,m)*rho(a,j,m)
 
                dem = - Om(m) - eGW(b) + eGW(j)
                KB_dyn(ab,ij) = KB_dyn(ab,ij) + num*dem/(dem**2 + eta**2)
@@ -92,7 +92,7 @@ subroutine RGW_ppBSE_dynamic_kernel_B(ispin,eta,nBas,nC,nO,nV,nR,nS,nOO,nVV,lamb
             ij = ij + 1
   
             do m=1,nS
-               num = (rho(a,i,m)*rho(b,j,m) - rho(b,i,m)*rho(a,j,m))/2
+               num = rho(a,i,m)*rho(b,j,m) - rho(b,i,m)*rho(a,j,m)
 
                dem = - Om(m) - eGW(b) + eGW(j)
                KB_dyn(ab,ij) = KB_dyn(ab,ij) + num*dem/(dem**2 + eta**2)

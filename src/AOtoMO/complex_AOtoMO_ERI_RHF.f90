@@ -36,27 +36,27 @@ subroutine complex_AOtoMO_ERI_RHF(nBas,nOrb,c,ERI_AO,ERI_MO)
         
         ! Four-index transform via semi-direct O(N^5) algorithm
         
-          call zgemm( 'T', 'N', nBas*nBas*nBas, nOrb, nBas, 1.d0 &
+          call zgemm( 'T', 'N', nBas*nBas*nBas, nOrb, nBas, (1.d0,0.d0) &
                     , complex_ERI_AO(1,1,1,1), nBas, c(1,1), nBas&
-                    , 0.d0, a2(1,1,1,1), nBas*nBas*nBas)
+                    , (0.d0,0.d0), a2(1,1,1,1), nBas*nBas*nBas)
           deallocate(complex_ERI_AO)
           allocate(a1(nBas,nBas,nOrb,nOrb))
-          call zgemm( 'T', 'N', nBas*nBas*nOrb, nOrb, nBas, 1.d0 &
+          call zgemm( 'T', 'N', nBas*nBas*nOrb, nOrb, nBas, (1.d0,0.d0) &
                     , a2(1,1,1,1), nBas, c(1,1), nBas            &
-                    , 0.d0, a1(1,1,1,1), nBas*nBas*nOrb)
+                    , (0.d0,0.d0), a1(1,1,1,1), nBas*nBas*nOrb)
         
           deallocate(a2)
           allocate(a2(nBas,nOrb,nOrb,nOrb))
         
-          call zgemm( 'T', 'N', nBas*nOrb*nOrb, nOrb, nBas, 1.d0 &
+          call zgemm( 'T', 'N', nBas*nOrb*nOrb, nOrb, nBas, (1.d0,0.d0) &
                     , a1(1,1,1,1), nBas, c(1,1), nBas            &
-                    , 0.d0, a2(1,1,1,1), nBas*nOrb*nOrb)
+                    , (0.d0,0.d0), a2(1,1,1,1), nBas*nOrb*nOrb)
         
           deallocate(a1)
         
-          call zgemm( 'T', 'N', nOrb*nOrb*nOrb, nOrb, nBas, 1.d0 &
+          call zgemm( 'T', 'N', nOrb*nOrb*nOrb, nOrb, nBas, (1.d0,0.d0) &
                     , a2(1,1,1,1), nBas, c(1,1), nBas            &
-                    , 0.d0, ERI_MO(1,1,1,1), nOrb*nOrb*nOrb)
+                    , (0.d0,0.d0), ERI_MO(1,1,1,1), nOrb*nOrb*nOrb)
         
           deallocate(a2)
     else

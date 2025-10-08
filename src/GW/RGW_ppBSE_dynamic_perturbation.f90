@@ -119,7 +119,7 @@ subroutine RGW_ppBSE_dynamic_perturbation(ispin,dTDA,eta,nOrb,nC,nO,nV,nR,nS,nOO
 
     if(dTDA) then
 
-      call RGW_ppBSE_dynamic_kernel_D(ispin,eta,nOrb,nC,nO,nV,nR,nS,nOO,1d0,eGW,OmRPA,rho_RPA,Om2(ij),KD_dyn,ZD_dyn)
+      call RGW_ppBSE_dynamic_kernel_D(ispin,eta,nOrb,nC,nO,nV,nR,nS,nOO,1d0,eGW,OmRPA,rho_RPA,-Om2(ij),KD_dyn,ZD_dyn)
  
       Z2_dyn(kl)  = - dot_product(Y2(:,ij),matmul(ZD_dyn,Y2(:,ij)))
       Om2_dyn(kl) = - dot_product(Y2(:,ij),matmul(KD_dyn - KD_sta,Y2(:,ij)))
@@ -130,13 +130,13 @@ subroutine RGW_ppBSE_dynamic_perturbation(ispin,dTDA,eta,nOrb,nC,nO,nV,nR,nS,nOO
       call RGW_ppBSE_dynamic_kernel_C(ispin,eta,nOrb,nC,nO,nV,nR,nS,nVV,1d0,eGW,OmRPA,rho_RPA,Om2(ij),KC_dyn,ZC_dyn)
       call RGW_ppBSE_dynamic_kernel_D(ispin,eta,nOrb,nC,nO,nV,nR,nS,nOO,1d0,eGW,OmRPA,rho_RPA,Om2(ij),KD_dyn,ZD_dyn)
 
-      Z2_dyn(kl)  = dot_product(X2(ij,:),matmul(ZC_dyn,X2(ij,:))) &
-                  + dot_product(Y2(ij,:),matmul(ZD_dyn,Y2(ij,:)))
+      Z2_dyn(kl)  = dot_product(X2(:,ij),matmul(ZC_dyn,X2(:,ij))) &
+                  - dot_product(Y2(:,ij),matmul(ZD_dyn,Y2(:,ij)))
 
-      Om2_dyn(kl) = dot_product(X2(:,ij),matmul(KC_dyn - KC_sta,X2(:,ij))) &
-                  - dot_product(Y2(:,ij),matmul(KD_dyn - KD_sta,Y2(:,ij))) &
-                  + dot_product(X2(:,ij),matmul(KB_dyn - KB_sta,Y2(:,ij))) &
-                  - dot_product(Y2(:,ij),matmul(transpose(KB_dyn - KB_sta),X2(:,ij)))
+      Om2_dyn(kl) = + dot_product(X2(:,ij),matmul(KC_dyn - KC_sta,X2(:,ij))) &
+                    - dot_product(Y2(:,ij),matmul(KD_dyn - KD_sta,Y2(:,ij))) &
+                    + dot_product(X2(:,ij),matmul(KB_dyn - KB_sta,Y2(:,ij))) &
+                    - dot_product(Y2(:,ij),matmul(transpose(KB_dyn - KB_sta),X2(:,ij)))
 
     end if
 

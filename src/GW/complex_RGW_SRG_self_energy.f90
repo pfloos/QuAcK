@@ -177,7 +177,7 @@ subroutine complex_RGW_SRG_self_energy(flow,eta,nBas,nOrb,nC,nO,nV,nR,nS,e,Om,rh
 !! Galitskii-Migdal correlation energy !
 !!-------------------------------------!
 !
-!  EcGM = 0d0
+  EcGM = 0d0
 !  do m=1,nS
 !    do a=nO+1,nOrb-nR
 !      do i=nC+1,nO

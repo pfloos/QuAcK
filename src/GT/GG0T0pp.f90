@@ -220,6 +220,24 @@ subroutine GG0T0pp(dotest,doACFDT,exchange_kernel,doXBS,dophBSE,dophBSE2,TDA_T,T
 
   call print_GG0T0pp(nOrb,nC,nO,nV,nR,eHF,ENuc,EGHF,Sig,Z,eGT,EcGM,EcRPA)
 
+
+!----------------------------------------------
+! ppBSE calculation
+!----------------------------------------------
+  
+  if(dophBSE) then
+
+     call GGTpp_ehBSE(TDA_T,TDA,dBSE,dTDA,eta,nOrb,nC,nO,nV,nR,nS,nOO,nVV,ERI,dipole_int,eHF,eGT,EcBSE)
+
+    write(*,*)
+    write(*,*)'-------------------------------------------------------------------------------'
+    write(*,'(2X,A50,F20.10,A3)') 'Tr@ehBSE@G0T0pp@GHF correlation energy           = ',EcBSE,' au'
+    write(*,'(2X,A50,F20.10,A3)') 'Tr@ehBSE@G0T0pp@GHF total       energy           = ',ENuc + EGHF + EcBSE,' au'
+    write(*,*)'-------------------------------------------------------------------------------'
+    write(*,*)
+
+  end if
+  
 !----------------------------------------------
 ! ppBSE calculation
 !----------------------------------------------

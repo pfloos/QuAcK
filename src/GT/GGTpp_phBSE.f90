@@ -1,4 +1,4 @@
-subroutine GGTpp_ppBSE(TDA_T,TDA,dBSE,dTDA,eta,nOrb,nC,nO,nV,nR,nOO,nVV,ERI,dipole_int,eT,eGT,EcBSE)
+subroutine GGTpp_ehBSE(TDA_T,TDA,dBSE,dTDA,eta,nOrb,nC,nO,nV,nR,nS,nOO,nVV,ERI,dipole_int,eT,eGT,EcBSE)
 
 ! Compute the Bethe-Salpeter excitation energies with the T-matrix kernel
 
@@ -18,6 +18,7 @@ subroutine GGTpp_ppBSE(TDA_T,TDA,dBSE,dTDA,eta,nOrb,nC,nO,nV,nR,nOO,nVV,ERI,dipo
   integer,intent(in)            :: nO
   integer,intent(in)            :: nV
   integer,intent(in)            :: nR
+  integer,intent(in)            :: nS
 
   integer,intent(in)            :: nOO
   integer,intent(in)            :: nVV
@@ -31,12 +32,13 @@ subroutine GGTpp_ppBSE(TDA_T,TDA,dBSE,dTDA,eta,nOrb,nC,nO,nV,nR,nOO,nVV,ERI,dipo
 
   double precision              :: EcRPA
   double precision,allocatable  :: Bpp(:,:),Cpp(:,:),Dpp(:,:)
-  double precision,allocatable  :: Om1(:), Om2(:)
+  double precision,allocatable  :: Aph(:,:),Bph(:,:)
+  double precision,allocatable  :: Om1(:), Om2(:), Om(:)
   double precision,allocatable  :: X1(:,:), X2(:,:)
   double precision,allocatable  :: Y1(:,:), Y2(:,:)
+  double precision,allocatable  :: XpY(:,:), XmY(:,:)
   double precision,allocatable  :: rho1(:,:,:), rho2(:,:,:)
-  double precision,allocatable  :: KB_sta(:,:),KC_sta(:,:),KD_sta(:,:)
-  double precision,allocatable  :: T(:,:,:,:)
+  double precision,allocatable  :: KA_sta(:,:),KB_sta(:,:)
   
 ! Output variables
 
@@ -68,51 +70,43 @@ subroutine GGTpp_ppBSE(TDA_T,TDA,dBSE,dTDA,eta,nOrb,nC,nO,nV,nR,nOO,nVV,ERI,dipo
   deallocate(X1,Y1,X2,Y2)
   
 !----------------------------------------------
-! Compute new ppRPA block
+! Compute ehRPA block
 !----------------------------------------------
 
-  allocate(Bpp(nVV,nOO),Cpp(nVV,nVV),Dpp(nOO,nOO))
-  
-  if(.not.TDA) call ppGLR_B(nOrb,nC,nO,nV,nR,nOO,nVV,1d0,ERI,Bpp)
-               call ppGLR_C(nOrb,nC,nO,nV,nR,nVV,1d0,eGT,ERI,Cpp)
-               call ppGLR_D(nOrb,nC,nO,nV,nR,nOO,1d0,eGT,ERI,Dpp)
+  allocate(Aph(nS,nS),Bph(nS,nS))
 
-!----------------------------------------------
-! Compute T matrix tensor
-!----------------------------------------------
-
-  allocate(T(nOrb,nOrb,nOrb,nOrb))
-
-  call GGT_Tmatrix(nOrb,nC,nO,nV,nR,nOO,nVV,1d0,ERI,eGT,Om1,rho1,Om2,rho2,T)  
+               call phGLR_A(.false.,nOrb,nC,nO,nV,nR,nS,1d0,eGT,ERI,Aph)
+  if(.not.TDA) call phGLR_B(.false.,nOrb,nC,nO,nV,nR,nS,1d0,ERI,Bph)
   
 !----------------------------------------------
 ! Compute kernels
 !----------------------------------------------
 
-  allocate(KB_sta(nVV,nOO),KC_sta(nVV,nVV),KD_sta(nOO,nOO))
+  allocate(KA_sta(nS,nS),KB_sta(nS,nS))
   
-  if(.not.TDA) call GGTpp_ppBSE_static_kernel_B(eta,nOrb,nC,nO,nV,nR,nOO,nVV,1d0,ERI,eGT,Om1,rho1,Om2,rho2,T,KB_sta)
-               call GGTpp_ppBSE_static_kernel_C(eta,nOrb,nC,nO,nV,nR,nOO,nVV,1d0,ERI,eGT,Om1,rho1,Om2,rho2,T,KC_sta)
-               call GGTpp_ppBSE_static_kernel_D(eta,nOrb,nC,nO,nV,nR,nOO,nVV,1d0,ERI,eGT,Om1,rho1,Om2,rho2,T,KD_sta)
+               call GGTpp_phBSE_static_kernel_A(eta,nOrb,nC,nO,nV,nR,nOO,nVV,nS,1d0,ERI,eGT,Om1,rho1,Om2,rho2,KA_sta)
+  if(.not.TDA) call GGTpp_phBSE_static_kernel_B(eta,nOrb,nC,nO,nV,nR,nOO,nVV,nS,1d0,ERI,eGT,Om1,rho1,Om2,rho2,KB_sta)
 
   deallocate(Om1,Om2,rho1,rho2)
-! Deallocate the 4-tensor T 
-  deallocate(T)
 
 !----------------------------------------------
-! Diagonalize ppBSE
+! Diagonalize ehBSE
 !----------------------------------------------
+ 
+  Aph(:,:) = Aph(:,:) + KA_sta(:,:)
+  Bph(:,:) = Bph(:,:) + KB_sta(:,:)
 
-  Bpp(:,:) = Bpp(:,:) + KB_sta(:,:) 
-  Cpp(:,:) = Cpp(:,:) + KC_sta(:,:) 
-  Dpp(:,:) = Dpp(:,:) + KD_sta(:,:) 
+  allocate(Om(nS),XpY(nS,nS),XmY(nS,nS))
 
-  allocate(Om1(nVV),X1(nVV,nVV),Y1(nOO,nVV),Om2(nOO),X2(nVV,nOO),Y2(nOO,nOO))
+  if(TDA) then
+    write(*,*) 'Tamm-Dancoff approximation activated in phBSE!'
+    write(*,*)
+  end if
   
-  call ppGLR(TDA,nOO,nVV,Bpp,Cpp,Dpp,Om1,X1,Y1,Om2,X2,Y2,EcBSE)
+  call phGLR(TDA,nS,Aph,Bph,EcBSE,Om,XpY,XmY)
 
-  call ppLR_transition_vectors(.true.,nOrb,nC,nO,nV,nR,nOO,nVV,dipole_int,Om1,X1,Y1,Om2,X2,Y2)
+  call phLR_transition_vectors(.true.,nOrb,nC,nO,nV,nR,nS,dipole_int,Om,XpY,XmY)
   
-  deallocate(Om1,X1,Y1,Om2,X2,Y2,Bpp,Cpp,Dpp,KB_sta,KC_sta,KD_sta) 
+  deallocate(Om,XpY,XmY,Aph,Bph,KA_sta,KB_sta) 
 
 end subroutine

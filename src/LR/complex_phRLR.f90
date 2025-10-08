@@ -36,7 +36,7 @@ subroutine complex_phRLR(TDA,nS,Aph,Bph,EcRPA,Om,XpY,XmY)
     XpY(:,:) = Aph(:,:)
     call complex_diagonalize_matrix(nS,XpY,Om)
     call complex_orthogonalize_matrix(nS,XpY)
-    XpY(:,:) = transpose(XpY(:,:))
+    XpY = transpose(XpY)
     XmY(:,:) = XpY(:,:)
 
   else
@@ -63,6 +63,6 @@ subroutine complex_phRLR(TDA,nS,Aph,Bph,EcRPA,Om,XpY,XmY)
 
   ! Compute the RPA correlation energy
 
-  EcRPA = 0.5d0*(sum(Om) - complex_trace_matrix(nS,Aph))
+  EcRPA = (0.5d0,0.d0)*(sum(Om) - complex_trace_matrix(nS,Aph))
 
 end subroutine 

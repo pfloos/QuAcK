@@ -1,5 +1,5 @@
-subroutine RGW_phBSE(dophBSE2,exchange_kernel,TDA_W,TDA,dBSE,dTDA,singlet,triplet,eta, & 
-                     nOrb,nC,nO,nV,nR,nS,ERI,dipole_int,eW,eGW,EcBSE)
+subroutine RGW_phBSE_qs(dophBSE2,exchange_kernel,TDA_W,TDA,dBSE,dTDA,singlet,triplet,eta, & 
+                        nOrb,nC,nO,nV,nR,nS,ERI,dipole_int,eW,eGW,EcBSE)
 
 ! Compute the Bethe-Salpeter excitation energies
 
@@ -89,7 +89,7 @@ subroutine RGW_phBSE(dophBSE2,exchange_kernel,TDA_W,TDA,dBSE,dTDA,singlet,triple
   call phRLR(TDA_W,nS,Aph,Bph,EcRPA,OmRPA,XpY_RPA,XmY_RPA)
   call RGW_excitation_density(nOrb,nC,nO,nR,nS,ERI,XpY_RPA,rho_RPA)
 
-               call RGW_phBSE_static_kernel_A(eta,nOrb,nC,nO,nV,nR,nS,1d0,ERI,OmRPA,rho_RPA,KA_sta)
+               call RGW_phBSE_static_kernel_A_qs(eta,nOrb,nC,nO,nV,nR,nS,1d0,ERI,eGW,OmRPA,rho_RPA,KA_sta)
   if(.not.TDA) call RGW_phBSE_static_kernel_B(eta,nOrb,nC,nO,nV,nR,nS,1d0,ERI,OmRPA,rho_RPA,KB_sta)
 
 !-------------------
@@ -105,25 +105,6 @@ subroutine RGW_phBSE(dophBSE2,exchange_kernel,TDA_W,TDA,dBSE,dTDA,singlet,triple
                  call phRLR_A(ispin,dRPA,nOrb,nC,nO,nV,nR,nS,1d0,eGW,ERI,Aph)
     if(.not.TDA) call phRLR_B(ispin,dRPA,nOrb,nC,nO,nV,nR,nS,1d0,ERI,Bph)
 
-    ! Second-order BSE static kernel
-  
-    if(dophBSE2) then 
-
-      allocate(W(nOrb,nOrb,nOrb,nOrb))
-
-      write(*,*) 
-      write(*,*) '*** Second-order BSE static kernel activated! ***'
-      write(*,*) 
-
-      call RGW_phBSE_static_kernel(eta,nOrb,nC,nO,nV,nR,nS,1d0,ERI,OmRPA,rho_RPA,W)
-
-                   call RGW_phBSE2_static_kernel_A(eta,nOrb,nC,nO,nV,nR,nS,1d0,eW,W,KA_sta)
-      if(.not.TDA) call RGW_phBSE2_static_kernel_B(eta,nOrb,nC,nO,nV,nR,nS,1d0,eW,W,KB_sta)
-
-      deallocate(W)
-
-    end if
-
                  Aph(:,:) = Aph(:,:) + KA_sta(:,:)
     if(.not.TDA) Bph(:,:) = Bph(:,:) + KB_sta(:,:)
 
@@ -131,22 +112,6 @@ subroutine RGW_phBSE(dophBSE2,exchange_kernel,TDA_W,TDA,dBSE,dTDA,singlet,triple
 
     call print_excitation_energies('phBSE@GW@RHF','singlet',nS,OmBSE)
     call phLR_transition_vectors(.true.,nOrb,nC,nO,nV,nR,nS,dipole_int,OmBSE,XpY_BSE,XmY_BSE)
-
-    !----------------------------------------------------!
-    ! Compute the dynamical screening at the phBSE level !
-    !----------------------------------------------------!
-
-    if(dBSE) &
-        call RGW_phBSE_dynamic_perturbation(dophBSE2,dTDA,eta,nOrb,nC,nO,nV,nR,nS,eW,eGW,ERI,dipole_int,OmRPA,rho_RPA, &
-                                           OmBSE,XpY_BSE,XmY_BSE,KA_sta,KB_sta)
-
-    !----------------!
-    ! Upfolded phBSE !
-    !----------------!
-
-!   call RGW_phBSE_upfolded_sym(ispin,nOrb,nOrb,nC,nO,nV,nR,nS,ERI,rho_RPA,OmRPA,eW)
-
-!   call RGW_phBSE_upfolded(ispin,nOrb,nOrb,nC,nO,nV,nR,nS,ERI,rho_RPA,OmRPA,eGW)
 
   end if
 
@@ -171,19 +136,6 @@ subroutine RGW_phBSE(dophBSE2,exchange_kernel,TDA_W,TDA,dBSE,dTDA,singlet,triple
     call print_excitation_energies('phBSE@GW@RHF','triplet',nS,OmBSE)
     call phLR_transition_vectors(.false.,nOrb,nC,nO,nV,nR,nS,dipole_int,OmBSE,XpY_BSE,XmY_BSE)
 
-    !-------------------------------------------------
-    ! Compute the dynamical screening at the BSE level
-    !-------------------------------------------------
-
-    if(dBSE) &
-        call RGW_phBSE_dynamic_perturbation(dophBSE2,dTDA,eta,nOrb,nC,nO,nV,nR,nS,eW,eGW,ERI,dipole_int,OmRPA,rho_RPA, &
-                                           OmBSE,XpY_BSE,XmY_BSE,KA_sta,KB_sta)
-
-    !----------------!
-    ! Upfolded phBSE !
-    !----------------!
-
-!   call RGW_phBSE_upfolded(ispin,nOrb,nOrb,nC,nO,nV,nR,nS,ERI,rho_RPA,OmRPA,eGW)
 
   end if
 
@@ -196,6 +148,74 @@ subroutine RGW_phBSE(dophBSE2,exchange_kernel,TDA_W,TDA,dBSE,dTDA,singlet,triple
 
   end if
 
-  deallocate(OmRPA,XpY_RPA,XmY_RPA,rho_RPA,Aph,Bph,KA_sta,KB_sta,OmBSE,XpY_BSE,XmY_BSE)
+end subroutine RGW_phBSE_qs
+
+subroutine RGW_phBSE_static_kernel_A_qs(eta,nBas,nC,nO,nV,nR,nS,lambda,ERI,eGW,Om,rho,KA)
+
+! Compute the BSE static kernel for the resonant block
+
+  implicit none
+  include 'parameters.h'
+
+! Input variables
+
+  integer,intent(in)            :: nBas
+  integer,intent(in)            :: nC
+  integer,intent(in)            :: nO
+  integer,intent(in)            :: nV
+  integer,intent(in)            :: nR
+  integer,intent(in)            :: nS
+  double precision,intent(in)   :: eta
+  double precision,intent(in)   :: lambda
+  double precision,intent(in)   :: ERI(nBas,nBas,nBas,nBas)
+  double precision,intent(in)   :: eGW(nBas)
+  double precision,intent(in)   :: Om(nS)
+  double precision,intent(in)   :: rho(nBas,nBas,nS)
+
+! Local variables
+
+  double precision              :: dem
+  double precision              :: num
+  integer                       :: i,j,a,b,ia,jb,kc
+
+! Output variables
+
+  double precision,intent(out)  :: KA(nS,nS)
   
+  KA(:,:) = 0d0
+
+! Compute static kernel
+
+  ia = 0
+  do i=nC+1,nO
+    do a=nO+1,nBas-nR
+      ia = ia + 1
+      jb = 0
+      do j=nC+1,nO
+        do b=nO+1,nBas-nR
+          jb = jb + 1
+
+          do kc=1,nS
+             
+            num = -rho(i,j,kc)*rho(a,b,kc)
+             
+            dem = eGW(a) - eGW(b) - Om(kc)
+            KA(ia,jb) = KA(ia,jb) + num*dem/(dem**2 + eta**2)
+
+            dem = eGW(b) - eGW(a) - Om(kc)
+            KA(ia,jb) = KA(ia,jb) + num*dem/(dem**2 + eta**2)
+             
+            dem = eGW(j) - eGW(i) - Om(kc)
+            KA(ia,jb) = KA(ia,jb) + num*dem/(dem**2 + eta**2)
+             
+            dem = eGW(i) - eGW(j) - Om(kc)
+            KA(ia,jb) = KA(ia,jb) + num*dem/(dem**2 + eta**2)
+            
+          end do
+
+        end do
+      end do
+    end do
+  end do
+
 end subroutine 
