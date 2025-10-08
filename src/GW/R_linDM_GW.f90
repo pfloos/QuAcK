@@ -22,7 +22,7 @@ include 'parameters.h'
 ! Local variables
 
   integer                       :: i,j,a,b,n
-  double precision              :: dem
+  double precision              :: dem1,dem2
   double precision              :: num
   
 ! Output variables
@@ -39,8 +39,9 @@ include 'parameters.h'
            do n=1,nS
 
               num = - 4d0 *rho(i,a,n)*rho(j,a,n)
-              dem = (e(i) - e(a) - Om(n)) * (e(j) - e(a) - Om(n))
-              linDM(i,j) = linDM(i,j) + num/dem
+              dem1 = e(i) - e(a) - Om(n)
+              dem2 = e(j) - e(a) - Om(n)
+              linDM(i,j) = linDM(i,j) + num*(dem1*dem2 - eta**2)/(dem1**2 + eta**2)/(dem2**2 + eta**2)
               
            end do
         end do
@@ -55,8 +56,9 @@ include 'parameters.h'
            do n=1,nS
 
               num = 4d0 *rho(i,a,n)*rho(i,b,n)
-              dem = (e(i) - e(a) - Om(n)) * (e(i) - e(b) - Om(n))
-              linDM(a,b) = linDM(a,b) + num/dem
+              dem1 = e(i) - e(a) - Om(n)
+              dem2 = e(i) - e(b) - Om(n)
+              linDM(a,b) = linDM(a,b) + num*(dem1*dem2 - eta**2)/(dem1**2 + eta**2)/(dem2**2 + eta**2)
               
            end do
         end do
@@ -72,8 +74,9 @@ include 'parameters.h'
            do n=1,nS
 
               num = - 4d0 *rho(a,j,n)*rho(i,j,n)
-              dem = (e(i) - e(a)) * (e(j) - e(a) - Om(n))
-              linDM(i,a) = linDM(i,a) + num/dem
+              dem1 = e(i) - e(a)
+              dem2 = e(j) - e(a) - Om(n)
+              linDM(i,a) = linDM(i,a) + num*(dem1*dem2 - eta**2)/(dem1**2 + eta**2)/(dem2**2 + eta**2)
               
            end do
         end do
@@ -82,8 +85,9 @@ include 'parameters.h'
            do n=1,nS
 
               num = 4d0 *rho(i,b,n)*rho(a,b,n)
-              dem = (e(i) - e(a)) * (e(i) - e(b) - Om(n))
-              linDM(i,a) = linDM(i,a) + num/dem
+              dem1 = e(i) - e(a)
+              dem2 = e(i) - e(b) - Om(n)
+              linDM(i,a) = linDM(i,a) + num*(dem1*dem2 - eta**2)/(dem1**2 + eta**2)/(dem2**2 + eta**2)
               
            end do
         end do
