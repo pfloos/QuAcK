@@ -23,7 +23,7 @@ subroutine Generalized_Fock_RHFB(nBas,nBas_twice,nOrb,nOrb_twice,ENuc,sigma,c,Hc
 
   integer                        :: iorb,jorb
 
-  double precision               :: Ehcore,Vee,Eelec_lambda,trace_1rdm
+  double precision               :: Ehcore,Vee,sum_lambdas,Eelec_lambda,trace_1rdm
   double precision               :: sqrt_hole1,sqrt_hole2
 
   double precision,allocatable   :: eigVAL(:)
@@ -95,7 +95,7 @@ subroutine Generalized_Fock_RHFB(nBas,nBas_twice,nOrb,nOrb_twice,ENuc,sigma,c,Hc
    DM2_L(iorb,iorb)=0d0
   enddo
 
-  Ehcore=0d0; Vee=0d0; Eelec_lambda=0d0;
+  Ehcore=0d0; Vee=0d0; Eelec_lambda=0d0; sum_lambdas=0d0;
   do iorb=1,nOrb
    Eelec_lambda=Eelec_lambda+Occ(iorb)*hCORE(iorb,iorb)
    Ehcore=Ehcore+2d0*Occ(iorb)*hCORE(iorb,iorb)
@@ -111,15 +111,18 @@ subroutine Generalized_Fock_RHFB(nBas,nBas_twice,nOrb,nOrb_twice,ENuc,sigma,c,Hc
     Vee=Vee+DM2_J(iorb,jorb)*ERImol(iorb,jorb,iorb,jorb)+DM2_K(iorb,jorb)*ERImol(iorb,jorb,jorb,iorb) &
        +DM2_L(iorb,jorb)*ERImol(iorb,iorb,jorb,jorb)
    enddo
+   sum_lambdas=sum_lambdas+Lambdas(iorb,iorb)
    Eelec_lambda=Eelec_lambda+Lambdas(iorb,iorb) 
   enddo
 
   write(*,'(a)')       '  Energy contributions (a.u.) '
   write(*,'(a)')       '  --------------------------- '
-  write(*,'(a,f15.8)') '  Hcore                       ', Ehcore
-  write(*,'(a,f15.8)') '  Vee                         ', Vee
-  write(*,'(a,f15.8)') '  Eelectronic(np,hpp,lambda)  ', Eelec_lambda
-  write(*,'(a,f15.8)') '  Etot                        ', Eelec_lambda+ENuc
+  write(*,'(a,f15.8)') '  Hcore                              ', Ehcore
+  write(*,'(a,f15.8)') '  Vee                                ', Vee
+  write(*,'(a,f15.8)') '  Sum_p lambda_pp                    ', sum_lambdas
+  write(*,'(a,f15.8)') '  Sum_p n_p h_pp                     ', 0.5d0*Ehcore
+  write(*,'(a,f15.8)') '  Eel = Sum_p (lambda_pp + n_p h_pp) ', Eelec_lambda
+  write(*,'(a,f15.8)') '  Etot = Eel + Enuc                  ', Eelec_lambda+ENuc
   write(*,*)
   write(*,*) '  Gen. Fock matrix'
   write(*,*)
