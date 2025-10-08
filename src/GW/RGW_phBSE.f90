@@ -196,4 +196,6 @@ subroutine RGW_phBSE(dophBSE2,exchange_kernel,TDA_W,TDA,dBSE,dTDA,singlet,triple
 
   end if
 
+  deallocate(OmRPA,XpY_RPA,XmY_RPA,rho_RPA,Aph,Bph,KA_sta,KB_sta,OmBSE,XpY_BSE,XmY_BSE)
+  
 end subroutine 

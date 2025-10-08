@@ -139,11 +139,11 @@ subroutine RGW_ppBSE_qs(TDA_W,TDA,dBSE,dTDA,singlet,triplet,eta,nOrb,nC,nO,nV,nR
     KB_sta(:,:) = 0d0
     KC_sta(:,:) = 0d0
   
-    ! call RGW_ppBSE_static_kernel_C(ispin,eta,nOrb,nC,nO,nV,nR,nS,nVV,1d0,ERI,OmRPA,rho_RPA,KC_sta)
+    call RGW_ppBSE_static_kernel_C_qs(ispin,eta,nOrb,nC,nO,nV,nR,nS,nVV,1d0,ERI,eGW,OmRPA,rho_RPA,KC_sta)
     call RGW_ppBSE_static_kernel_D_qs(ispin,eta,nOrb,nC,nO,nV,nR,nS,nOO,1d0,ERI,eGW,OmRPA,rho_RPA,KD_sta)
-    ! if(.not.TDA) then
-    !   call RGW_ppBSE_static_kernel_B(ispin,eta,nOrb,nC,nO,nV,nR,nS,nOO,nVV,1d0,ERI,OmRPA,rho_RPA,KB_sta)
-    ! endif
+    if(.not.TDA) then
+       call RGW_ppBSE_dynamic_kernel_B(ispin,eta,nOrb,nC,nO,nV,nR,nS,nOO,nVV,1d0,eGW,OmRPA,rho_RPA,KB_sta)
+    endif
     
                  call ppRLR_C(ispin,nOrb,nC,nO,nV,nR,nVV,1d0,eGW,ERI,Cpp)
                  call ppRLR_D(ispin,nOrb,nC,nO,nV,nR,nOO,1d0,eGW,ERI,Dpp)
@@ -249,9 +249,9 @@ subroutine RGW_ppBSE_qs(TDA_W,TDA,dBSE,dTDA,singlet,triplet,eta,nOrb,nC,nO,nV,nR
     KB_sta(:,:) = 0d0
     KC_sta(:,:) = 0d0
 
-    ! call RGW_ppBSE_static_kernel_C(ispin,eta,nOrb,nC,nO,nV,nR,nS,nVV,1d0,ERI,OmRPA,rho_RPA,KC_sta)
+    call RGW_ppBSE_static_kernel_C_qs(ispin,eta,nOrb,nC,nO,nV,nR,nS,nVV,1d0,ERI,eGW,OmRPA,rho_RPA,KC_sta)
     call RGW_ppBSE_static_kernel_D_qs(ispin,eta,nOrb,nC,nO,nV,nR,nS,nOO,1d0,ERI,eGW,OmRPA,rho_RPA,KD_sta)
-    ! if(.not.TDA) call RGW_ppBSE_static_kernel_B(ispin,eta,nOrb,nC,nO,nV,nR,nS,nOO,nVV,1d0,ERI,OmRPA,rho_RPA,KB_sta)
+    if(.not.TDA) call RGW_ppBSE_dynamic_kernel_B(ispin,eta,nOrb,nC,nO,nV,nR,nS,nOO,nVV,1d0,eGW,OmRPA,rho_RPA,KB_sta)
 
                  call ppRLR_C(ispin,nOrb,nC,nO,nV,nR,nVV,1d0,eGW,ERI,Cpp)
                  call ppRLR_D(ispin,nOrb,nC,nO,nV,nR,nOO,1d0,eGW,ERI,Dpp)
@@ -321,6 +321,251 @@ subroutine RGW_ppBSE_qs(TDA_W,TDA,dBSE,dTDA,singlet,triplet,eta,nOrb,nC,nO,nV,nR
   end if
 
 end subroutine RGW_ppBSE_qs
+
+subroutine RGW_ppBSE_static_kernel_C_qs(ispin,eta,nOrb,nC,nO,nV,nR,nS,nVV,lambda,ERI,eGW,Om,rho,KC)
+
+! Compute the VVVV block of the static screening W for the pp-BSE
+
+  implicit none
+  include 'parameters.h'
+
+! Input variables
+
+  integer,intent(in)            :: ispin
+  integer,intent(in)            :: nOrb
+  integer,intent(in)            :: nC
+  integer,intent(in)            :: nO
+  integer,intent(in)            :: nV
+  integer,intent(in)            :: nR
+  integer,intent(in)            :: nS
+  integer,intent(in)            :: nVV
+  double precision,intent(in)   :: eta
+  double precision,intent(in)   :: lambda
+  double precision,intent(in)   :: ERI(nOrb,nOrb,nOrb,nOrb)
+  double precision,intent(in)   :: eGW(nOrb)
+  double precision,intent(in)   :: Om(nS)
+  double precision,intent(in)   :: rho(nOrb,nOrb,nS)
+
+! Local variables
+
+  double precision,external     :: Kronecker_delta
+  double precision              :: eps,num
+  double precision              :: chi,dem
+  double precision              :: tmp_ab, lambda4, eta2
+  integer                       :: a,b,c,d,ab,cd,m
+  integer                       :: a0, aa
+
+  double precision, allocatable :: Om_tmp(:)
+  double precision, allocatable :: tmp_m(:,:,:)
+  double precision, allocatable :: tmp(:,:,:,:)
+
+! Output variables
+
+  double precision,intent(out)  :: KC(nVV,nVV)
+
+!---------------!
+! Singlet block !
+!---------------!
+
+  if(ispin == 1) then
+
+!    --- --- ---
+!    OpenMP implementation
+!    --- --- ---
+
+   a0 = nOrb - nR - nO
+   lambda4 = 4.d0 * lambda
+   eta2 = eta * eta
+
+   !$OMP PARALLEL DEFAULT(NONE)                              &
+   !$OMP          PRIVATE(a, b, aa, ab, c, d, cd, m, tmp_ab) &
+   !$OMP          SHARED(eta, nO, nOrb, nR, nS, a0, lambda4, Om, rho, KC, num, dem, eGW)
+   !$OMP DO
+   do a = nO+1, nOrb-nR
+     aa = a0 * (a - nO - 1) - (a - nO - 1) * (a - nO) / 2 - nO
+     do b = a, nOrb-nR
+       ab = aa + b
+
+       cd = 0
+       do c = nO+1, nOrb-nR
+         do d = c, nOrb-nR
+           cd = cd + 1
+
+           KC(ab,cd) = 0d0
+           
+           do m = 1, nS
+
+              num = (rho(a,c,m)*rho(b,d,m) + rho(b,c,m)*rho(a,d,m))/2d0
+             
+              dem = - Om(m) + eGW(d) - eGW(a)
+              KC(ab,cd) = KC(ab,cd) + num*dem/(dem**2 + eta**2)
+             
+              dem = - Om(m) + eGW(a) - eGW(d)
+              KC(ab,cd) = KC(ab,cd) + num*dem/(dem**2 + eta**2)
+              
+              dem = - Om(m) + eGW(d) - eGW(b)
+              KC(ab,cd) = KC(ab,cd) + num*dem/(dem**2 + eta**2)
+               
+              dem = - Om(m) + eGW(b) + eGW(d)
+              KC(ab,cd) = KC(ab,cd) + num*dem/(dem**2 + eta**2)
+              
+              dem = - Om(m) + eGW(c) - eGW(a)
+              KC(ab,cd) = KC(ab,cd) + num*dem/(dem**2 + eta**2)
+              
+              dem = - Om(m) + eGW(a) - eGW(c)
+              KC(ab,cd) = KC(ab,cd) + num*dem/(dem**2 + eta**2)
+              
+              dem = - Om(m) + eGW(c) - eGW(b)
+              KC(ab,cd) = KC(ab,cd) + num*dem/(dem**2 + eta**2)
+              
+              dem = - Om(m) + eGW(b) - eGW(c)
+              KC(ab,cd) = KC(ab,cd) + num*dem/(dem**2 + eta**2)
+              
+           end do
+
+           KC(ab,cd) = KC(ab,cd)/sqrt((1d0 + Kronecker_delta(a,b))*(1d0 + Kronecker_delta(c,d)))
+          
+         enddo
+       enddo
+     enddo
+   enddo
+   !$OMP END DO
+   !$OMP END PARALLEL
+!    --- --- ---
+
+
+!    --- --- ---
+!    Naive implementation
+!    --- --- ---
+!
+!    ab = 0
+!    do a=nO+1,nOrb-nR
+!      do b=a,nOrb-nR
+!        ab = ab + 1
+!        cd = 0
+!        do c=nO+1,nOrb-nR
+!          do d=c,nOrb-nR
+!            cd = cd + 1
+!
+!              chi = 0d0
+!              do m=1,nS
+!                eps = Om(m)**2 + eta**2
+!                chi = chi - rho(a,c,m)*rho(b,d,m)*Om(m)/eps &
+!                          - rho(a,d,m)*rho(b,c,m)*Om(m)/eps
+!              end do
+!
+!              KC(ab,cd) = 4d0*lambda*chi/sqrt((1d0 + Kronecker_delta(a,b))*(1d0 + Kronecker_delta(c,d)))
+!
+!          end do
+!        end do
+!      end do
+!    end do
+!    --- --- ---
+
+  end if
+
+!---------------!
+! Triplet block !
+!---------------!
+
+  if(ispin == 2) then
+
+!    --- --- ---
+!    OpenMP implementation
+!    --- --- ---
+
+   a0 = nOrb - nR - nO - 1
+   lambda4 = 4.d0 * lambda
+   eta2 = eta * eta
+
+   !$OMP PARALLEL DEFAULT(NONE)                      &
+   !$OMP          PRIVATE(a, b, aa, ab, c, d, cd, m) &
+   !$OMP          SHARED(eta, nO, nOrb, nR, nS, a0, lambda4, Om, rho, KC, num, dem, eGW)
+   !$OMP DO
+   do a = nO+1, nOrb-nR
+     aa = a0 * (a - nO - 1) - (a - nO - 1) * (a - nO) / 2 - nO - 1
+     do b = a+1, nOrb-nR
+       ab = aa + b
+
+       cd = 0
+       do c = nO+1, nOrb-nR
+         do d = c+1, nOrb-nR
+           cd = cd + 1
+
+           KC(ab,cd) = 0d0
+           
+           do m = 1, nS
+
+              num = (rho(a,c,m)*rho(b,d,m) - rho(b,c,m)*rho(a,d,m))/2d0
+             
+              dem = - Om(m) + eGW(d) - eGW(a)
+              KC(ab,cd) = KC(ab,cd) + num*dem/(dem**2 + eta**2)
+             
+              dem = - Om(m) + eGW(a) - eGW(d)
+              KC(ab,cd) = KC(ab,cd) + num*dem/(dem**2 + eta**2)
+              
+              dem = - Om(m) + eGW(d) - eGW(b)
+              KC(ab,cd) = KC(ab,cd) + num*dem/(dem**2 + eta**2)
+               
+              dem = - Om(m) + eGW(b) + eGW(d)
+              KC(ab,cd) = KC(ab,cd) + num*dem/(dem**2 + eta**2)
+              
+              dem = - Om(m) + eGW(c) - eGW(a)
+              KC(ab,cd) = KC(ab,cd) + num*dem/(dem**2 + eta**2)
+              
+              dem = - Om(m) + eGW(a) - eGW(c)
+              KC(ab,cd) = KC(ab,cd) + num*dem/(dem**2 + eta**2)
+              
+              dem = - Om(m) + eGW(c) - eGW(b)
+              KC(ab,cd) = KC(ab,cd) + num*dem/(dem**2 + eta**2)
+              
+              dem = - Om(m) + eGW(b) - eGW(c)
+              KC(ab,cd) = KC(ab,cd) + num*dem/(dem**2 + eta**2)
+              
+           end do
+           
+         enddo
+       enddo
+     enddo
+   enddo
+   !$OMP END DO
+   !$OMP END PARALLEL
+   
+!    --- --- ---
+
+
+!    --- --- ---
+!    Naive implementation
+!    --- --- ---
+!
+!    ab = 0
+!    do a=nO+1,nOrb-nR
+!      do b=a+1,nOrb-nR
+!        ab = ab + 1
+!        cd = 0
+!        do c=nO+1,nOrb-nR
+!          do d=c+1,nOrb-nR
+!            cd = cd + 1
+!
+!            chi = 0d0
+!            do m=1,nS
+!              eps = Om(m)**2 + eta**2
+!              chi = chi - rho(a,c,m)*rho(b,d,m)*Om(m)/eps &
+!                        + rho(a,d,m)*rho(b,c,m)*Om(m)/eps
+!            end do
+!           
+!            KC(ab,cd) = 4d0*lambda*chi
+!
+!          end do
+!        end do
+!      end do
+!    end do
+!    --- --- ---
+
+  end if
+
+end subroutine 
+
 
 subroutine RGW_ppBSE_static_kernel_D_qs(ispin,eta,nOrb,nC,nO,nV,nR,nS,nOO,lambda,ERI,eGW,Om,rho,KD)
 
