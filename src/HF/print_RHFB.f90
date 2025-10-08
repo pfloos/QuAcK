@@ -1,7 +1,7 @@
 
 ! ---
 
-subroutine print_HFB(nBas, nOrb, nOrb_twice, nO, N_anom, Occ, eHFB_state, ENuc, ET, EV, EJ, EK, EL, ERHF, &
+subroutine print_RHFB(nBas, nOrb, nOrb_twice, N_anom, Occ, eHFB_state, ENuc, ET, EV, EJ, EK, EL, ERHF, &
            chem_pot, dipole, Delta_HL)
 
 ! Print one-electron energies and other stuff
@@ -12,7 +12,6 @@ subroutine print_HFB(nBas, nOrb, nOrb_twice, nO, N_anom, Occ, eHFB_state, ENuc, 
 ! Input variables
 
   integer,intent(in)                 :: nBas, nOrb, nOrb_twice
-  integer,intent(in)                 :: nO
   double precision,intent(in)        :: Occ(nOrb)
   double precision,intent(in)        :: eHFB_state(nOrb_twice)
   double precision,intent(in)        :: ENuc
