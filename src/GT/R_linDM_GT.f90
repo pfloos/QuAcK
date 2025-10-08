@@ -35,6 +35,7 @@ include 'parameters.h'
   double precision,intent(inout)  :: linDM(nOrb,nOrb)
 
   linDM(:,:) = 0d0
+  s = 100d0
 
 ! OccOcc block of the density matrix
   
