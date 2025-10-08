@@ -28,6 +28,7 @@ include 'parameters.h'
   integer                       :: i,j,k,a,b,c,n
   double precision              :: dem1,dem2
   double precision              :: num
+  double precision              :: s
   
 ! Output variables
 
@@ -45,7 +46,8 @@ include 'parameters.h'
               num = - 1d0 *rho1s(i,k,n)*rho1s(j,k,n)
               dem1 = Om1s(n) - e(i) - e(k)
               dem2 = Om1s(n) - e(j) - e(k)
-              linDM(i,j) = linDM(i,j) + num*(dem1*dem2 - eta**2)/(dem1**2 + eta**2)/(dem2**2 + eta**2)
+              ! linDM(i,j) = linDM(i,j) + num*(dem1*dem2 - eta**2)/(dem1**2 + eta**2)/(dem2**2 + eta**2)
+              linDM(i,j) = linDM(i,j) + (1d0 - exp(-2d0*s*dem1*dem1)) * (1d0 - exp(-2d0*s*dem2*dem2)) * num/(dem1*dem2)
               
            end do
 
@@ -54,7 +56,8 @@ include 'parameters.h'
               num = - 3d0 *rho1t(i,k,n)*rho1t(j,k,n)
               dem1 = Om1t(n) - e(i) - e(k)
               dem2 = Om1t(n) - e(j) - e(k)
-              linDM(i,j) = linDM(i,j) + num*(dem1*dem2 - eta**2)/(dem1**2 + eta**2)/(dem2**2 + eta**2)
+              ! linDM(i,j) = linDM(i,j) + num*(dem1*dem2 - eta**2)/(dem1**2 + eta**2)/(dem2**2 + eta**2)
+              linDM(i,j) = linDM(i,j) + (1d0 - exp(-2d0*s*dem1*dem1)) * (1d0 - exp(-2d0*s*dem2*dem2)) * num/(dem1*dem2)
               
            end do
         end do
@@ -71,7 +74,8 @@ include 'parameters.h'
               num = 1d0 *rho2s(a,c,n)*rho2s(b,c,n)
               dem1 = Om2s(n) - e(a) - e(c)
               dem2 = Om2s(n) - e(b) - e(c)
-              linDM(a,b) = linDM(a,b) + num*(dem1*dem2 - eta**2)/(dem1**2 + eta**2)/(dem2**2 + eta**2)
+              ! linDM(a,b) = linDM(a,b) + num*(dem1*dem2 - eta**2)/(dem1**2 + eta**2)/(dem2**2 + eta**2)
+              linDM(a,b) = linDM(a,b) + (1d0 - exp(-2d0*s*dem1*dem1)) * (1d0 - exp(-2d0*s*dem2*dem2)) * num/(dem1*dem2)
               
            end do
 
@@ -81,7 +85,8 @@ include 'parameters.h'
               num = 3d0 *rho2t(a,c,n)*rho2t(b,c,n)
               dem1 = Om2t(n) - e(a) - e(c)
               dem2 = Om2t(n) - e(b) - e(c)
-              linDM(a,b) = linDM(a,b) + num*(dem1*dem2 - eta**2)/(dem1**2 + eta**2)/(dem2**2 + eta**2)
+              ! linDM(a,b) = linDM(a,b) + num*(dem1*dem2 - eta**2)/(dem1**2 + eta**2)/(dem2**2 + eta**2)
+              linDM(a,b) = linDM(a,b) + (1d0 - exp(-2d0*s*dem1*dem1)) * (1d0 - exp(-2d0*s*dem2*dem2)) * num/(dem1*dem2)
               
            end do
         end do
@@ -99,7 +104,8 @@ include 'parameters.h'
               num = 1d0 *rho1s(i,j,n)*rho1s(a,j,n)
               dem1 = e(i) - e(a)
               dem2 = e(i) + e(j) - Om1s(n)
-              linDM(i,a) = linDM(i,a) + num*(dem1*dem2 - eta**2)/(dem1**2 + eta**2)/(dem2**2 + eta**2)
+              ! linDM(i,a) = linDM(i,a) + num*(dem1*dem2 - eta**2)/(dem1**2 + eta**2)/(dem2**2 + eta**2)
+              linDM(i,a) = linDM(i,a) + (1d0 - exp(-2d0*s*dem1*dem1)) * (1d0 - exp(-2d0*s*dem2*dem2)) * num/(dem1*dem2)
               
            end do
 
@@ -108,7 +114,8 @@ include 'parameters.h'
               num = 3d0 *rho1t(i,j,n)*rho1t(a,j,n)
               dem1 = e(i) - e(a)
               dem2 = e(i) + e(j) - Om1t(n)
-              linDM(i,a) = linDM(i,a) + num*(dem1*dem2 - eta**2)/(dem1**2 + eta**2)/(dem2**2 + eta**2)
+              ! linDM(i,a) = linDM(i,a) + num*(dem1*dem2 - eta**2)/(dem1**2 + eta**2)/(dem2**2 + eta**2)
+              linDM(i,a) = linDM(i,a) + (1d0 - exp(-2d0*s*dem1*dem1)) * (1d0 - exp(-2d0*s*dem2*dem2)) * num/(dem1*dem2)
               
            end do
         end do
@@ -119,7 +126,8 @@ include 'parameters.h'
               num = -1d0 *rho2s(i,b,n)*rho2s(a,b,n)
               dem1 = e(a) - e(i)
               dem2 = e(a) + e(b) - Om2s(n)
-              linDM(i,a) = linDM(i,a) + num*(dem1*dem2 - eta**2)/(dem1**2 + eta**2)/(dem2**2 + eta**2)
+              ! linDM(i,a) = linDM(i,a) + num*(dem1*dem2 - eta**2)/(dem1**2 + eta**2)/(dem2**2 + eta**2)
+              linDM(i,a) = linDM(i,a) + (1d0 - exp(-2d0*s*dem1*dem1)) * (1d0 - exp(-2d0*s*dem2*dem2)) * num/(dem1*dem2)
               
            end do
 
@@ -129,7 +137,8 @@ include 'parameters.h'
               num = -3d0 *rho2t(i,b,n)*rho2t(a,b,n)
               dem1 = e(a) - e(i)
               dem2 = e(a) + e(b) - Om2t(n)
-              linDM(i,a) = linDM(i,a) + num*(dem1*dem2 - eta**2)/(dem1**2 + eta**2)/(dem2**2 + eta**2)
+              ! linDM(i,a) = linDM(i,a) + num*(dem1*dem2 - eta**2)/(dem1**2 + eta**2)/(dem2**2 + eta**2)
+              linDM(i,a) = linDM(i,a) + (1d0 - exp(-2d0*s*dem1*dem1)) * (1d0 - exp(-2d0*s*dem2*dem2)) * num/(dem1*dem2)
               
            end do
         end do

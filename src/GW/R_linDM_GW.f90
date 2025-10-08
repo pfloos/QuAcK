@@ -24,12 +24,14 @@ include 'parameters.h'
   integer                       :: i,j,a,b,n
   double precision              :: dem1,dem2
   double precision              :: num
+  double precision              :: s
   
 ! Output variables
 
   double precision,intent(inout)  :: linDM(nOrb,nOrb)
 
   linDM(:,:) = 0d0
+  s = 100d0
 
 ! OccOcc block of the density matrix
   
@@ -41,7 +43,8 @@ include 'parameters.h'
               num = - 4d0 *rho(i,a,n)*rho(j,a,n)
               dem1 = e(i) - e(a) - Om(n)
               dem2 = e(j) - e(a) - Om(n)
-              linDM(i,j) = linDM(i,j) + num*(dem1*dem2 - eta**2)/(dem1**2 + eta**2)/(dem2**2 + eta**2)
+              ! linDM(i,j) = linDM(i,j) + num*(dem1*dem2 - eta**2)/(dem1**2 + eta**2)/(dem2**2 + eta**2)
+              linDM(i,j) = linDM(i,j) + (1d0 - exp(-2d0*s*dem1*dem1)) * (1d0 - exp(-2d0*s*dem2*dem2)) * num/(dem1*dem2)
               
            end do
         end do
@@ -58,7 +61,8 @@ include 'parameters.h'
               num = 4d0 *rho(i,a,n)*rho(i,b,n)
               dem1 = e(i) - e(a) - Om(n)
               dem2 = e(i) - e(b) - Om(n)
-              linDM(a,b) = linDM(a,b) + num*(dem1*dem2 - eta**2)/(dem1**2 + eta**2)/(dem2**2 + eta**2)
+              ! linDM(a,b) = linDM(a,b) + num*(dem1*dem2 - eta**2)/(dem1**2 + eta**2)/(dem2**2 + eta**2)
+              linDM(a,b) = linDM(a,b) + (1d0 - exp(-2d0*s*dem1*dem1)) * (1d0 - exp(-2d0*s*dem2*dem2)) * num/(dem1*dem2)
               
            end do
         end do
@@ -76,7 +80,8 @@ include 'parameters.h'
               num = - 4d0 *rho(a,j,n)*rho(i,j,n)
               dem1 = e(i) - e(a)
               dem2 = e(j) - e(a) - Om(n)
-              linDM(i,a) = linDM(i,a) + num*(dem1*dem2 - eta**2)/(dem1**2 + eta**2)/(dem2**2 + eta**2)
+              ! linDM(i,a) = linDM(i,a) + num*(dem1*dem2 - eta**2)/(dem1**2 + eta**2)/(dem2**2 + eta**2)
+              linDM(i,a) = linDM(i,a) + (1d0 - exp(-2d0*s*dem1*dem1)) * (1d0 - exp(-2d0*s*dem2*dem2)) * num/(dem1*dem2)
               
            end do
         end do
@@ -87,7 +92,8 @@ include 'parameters.h'
               num = 4d0 *rho(i,b,n)*rho(a,b,n)
               dem1 = e(i) - e(a)
               dem2 = e(i) - e(b) - Om(n)
-              linDM(i,a) = linDM(i,a) + num*(dem1*dem2 - eta**2)/(dem1**2 + eta**2)/(dem2**2 + eta**2)
+              ! linDM(i,a) = linDM(i,a) + num*(dem1*dem2 - eta**2)/(dem1**2 + eta**2)/(dem2**2 + eta**2)
+              linDM(i,a) = linDM(i,a) + (1d0 - exp(-2d0*s*dem1*dem1)) * (1d0 - exp(-2d0*s*dem2*dem2)) * num/(dem1*dem2)
               
            end do
         end do
