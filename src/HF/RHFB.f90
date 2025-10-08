@@ -400,7 +400,7 @@ subroutine RHFB(dotest,doaordm,doqsGW,maxSCF,thresh,max_diis,level_shift,nNuc,ZN
   EHFB = ET + EV + EJ + EK + EL
   
 
-! Print the 1-RDM and 2-RDM in AO basis
+! Print the 1-RDM and 2-RDM in AO basis (also check <S^2>)
   if(doaordm) then
    call print_RHFB_AO_rdms(nBas,ENuc,sigma,S,T,V,P,Panom,ERI)
   endif
