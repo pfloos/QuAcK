@@ -42,16 +42,12 @@ subroutine RHFB(dotest,doaordm,doqsGW,maxSCF,thresh,max_diis,level_shift,nNuc,ZN
   logical                       :: is_fractional
   logical                       :: chem_pot_hf
   logical                       :: restart_hfb
-  integer                       :: nBas2
-  integer                       :: iunit,iunit2
+  integer                       :: nBas_twice
   integer                       :: iorb,jorb
-  integer                       :: ibas,jbas,kbas,lbas
   integer                       :: nSCF
-  integer                       :: nBas2_Sq
+  integer                       :: nBas_twice_Sq
   integer                       :: n_diis
-  double precision              :: S2_val
-  double precision              :: Ecore
-  double precision              :: Eee
+  double precision              :: nO_
   double precision              :: ET
   double precision              :: EV
   double precision              :: EJ
@@ -64,7 +60,6 @@ subroutine RHFB(dotest,doaordm,doqsGW,maxSCF,thresh,max_diis,level_shift,nNuc,ZN
   double precision              :: rcond
   double precision              :: err_no_rep
   double precision              :: trace_1rdm
-  double precision              :: trace_2rdm
   double precision              :: thrs_N
   double precision              :: N_anom
   double precision,external     :: trace_matrix
@@ -72,7 +67,7 @@ subroutine RHFB(dotest,doaordm,doqsGW,maxSCF,thresh,max_diis,level_shift,nNuc,ZN
   double precision,allocatable  :: Occ(:)
   double precision,allocatable  :: err_diis(:,:)
   double precision,allocatable  :: H_HFB_diis(:,:)
-  double precision,allocatable  :: c_tmp(:,:)
+  double precision,allocatable  :: cHF(:,:)
   double precision,allocatable  :: J(:,:)
   double precision,allocatable  :: K(:,:)
   double precision,allocatable  :: eigVEC(:,:)
@@ -85,8 +80,6 @@ subroutine RHFB(dotest,doaordm,doqsGW,maxSCF,thresh,max_diis,level_shift,nNuc,ZN
   double precision,allocatable  :: c_ao(:,:)
   double precision,allocatable  :: R_ao_old(:,:)
   double precision,allocatable  :: H_HFB_ao(:,:)
-  double precision,allocatable  :: AO_1rdm(:,:)
-  double precision,allocatable  :: AO_2rdm(:,:,:,:)
 
 ! Output variables
 
@@ -109,8 +102,8 @@ subroutine RHFB(dotest,doaordm,doqsGW,maxSCF,thresh,max_diis,level_shift,nNuc,ZN
 
 ! Useful quantities
 
-  nBas2 = nBas+nBas
-  nBas2_Sq = nBas2*nBas2
+  nBas_twice = nBas+nBas
+  nBas_twice_Sq = nBas_twice*nBas_twice
 
 ! Memory allocation
 
@@ -118,20 +111,21 @@ subroutine RHFB(dotest,doaordm,doqsGW,maxSCF,thresh,max_diis,level_shift,nNuc,ZN
 
   allocate(J(nBas,nBas))
   allocate(K(nBas,nBas))
+  allocate(cHF(nBas,nOrb))
 
   allocate(eigVEC(nOrb_twice,nOrb_twice))
   allocate(H_HFB(nOrb_twice,nOrb_twice))
   allocate(R(nOrb_twice,nOrb_twice))
   allocate(eigVAL(nOrb_twice))
 
-  allocate(err_ao(nBas2,nBas2))
-  allocate(S_ao(nBas2,nBas2))
-  allocate(X_ao(nBas2,nOrb_twice))
-  allocate(R_ao_old(nBas2,nBas2))
-  allocate(H_HFB_ao(nBas2,nBas2))
+  allocate(err_ao(nBas_twice,nBas_twice))
+  allocate(S_ao(nBas_twice,nBas_twice))
+  allocate(X_ao(nBas_twice,nOrb_twice))
+  allocate(R_ao_old(nBas_twice,nBas_twice))
+  allocate(H_HFB_ao(nBas_twice,nBas_twice))
 
-  allocate(err_diis(nBas2_Sq,max_diis))
-  allocate(H_HFB_diis(nBas2_Sq,max_diis))
+  allocate(err_diis(nBas_twice_Sq,max_diis))
+  allocate(H_HFB_diis(nBas_twice_Sq,max_diis))
 
 ! Guess chem. pot.
 
@@ -144,7 +138,17 @@ subroutine RHFB(dotest,doaordm,doqsGW,maxSCF,thresh,max_diis,level_shift,nNuc,ZN
   H_HFB_diis(:,:) = 0d0
   err_diis(:,:)   = 0d0
   rcond           = 0d0
+  nO_             = nO
+  inquire(file='Nelectrons_RHFB', exist=file_exists)
+  if(file_exists) then
+    write(*,*) 'File Nelectrons_RHFB encountered, setting nO = nElectrons_read/2'
+    open(unit=314, form='formatted', file='Nelectrons_RHFB', status='old')
+    read(314,*) nO_
+    close(314)
+    nO_=0.5d0*nO_
+  endif
 
+  cHF(:,:)       = c(:,:)
   P(:,:)         = matmul(c(:,1:nO), transpose(c(:,1:nO)))
   Panom(:,:)     = 0d0
 
@@ -181,11 +185,11 @@ subroutine RHFB(dotest,doaordm,doqsGW,maxSCF,thresh,max_diis,level_shift,nNuc,ZN
 
   P(:,:)       = 2d0*P(:,:)
   S_ao(:,:)    = 0d0
-  S_ao(1:nBas      ,1:nBas      ) = S(1:nBas,1:nBas)
-  S_ao(nBas+1:nBas2,nBas+1:nBas2) = S(1:nBas,1:nBas)
+  S_ao(1:nBas           ,1:nBas           ) = S(1:nBas,1:nBas)
+  S_ao(nBas+1:nBas_twice,nBas+1:nBas_twice) = S(1:nBas,1:nBas)
   X_ao(:,:)    = 0d0
-  X_ao(1:nBas      ,1:nOrb      )      = X(1:nBas,1:nOrb)
-  X_ao(nBas+1:nBas2,nOrb+1:nOrb_twice) = X(1:nBas,1:nOrb)
+  X_ao(1:nBas           ,1:nOrb           ) = X(1:nBas,1:nOrb)
+  X_ao(nBas+1:nBas_twice,nOrb+1:nOrb_twice) = X(1:nBas,1:nOrb)
 
   Conv = 1d0
   nSCF = 0
@@ -236,7 +240,7 @@ subroutine RHFB(dotest,doaordm,doqsGW,maxSCF,thresh,max_diis,level_shift,nNuc,ZN
 
     ! Adjust the chemical potential 
 
-    if( abs(trace_1rdm-nO) > thrs_N ) & 
+    if( abs(trace_1rdm-nO_) > thrs_N ) & 
      call fix_chem_pot(nO,nOrb,nOrb_twice,nSCF,thrs_N,trace_1rdm,chem_pot,H_HFB,eigVEC,R,eigVAL)
 
     ! DIIS extrapolation
@@ -247,14 +251,14 @@ subroutine RHFB(dotest,doaordm,doqsGW,maxSCF,thresh,max_diis,level_shift,nNuc,ZN
 
      F(:,:) = Hc(:,:) + J(:,:) + 0.5d0*K(:,:) - chem_pot*S(:,:)
      H_HFB_ao(:,:)    = 0d0
-     H_HFB_ao(1:nBas      ,1:nBas      ) =  F(1:nBas,1:nBas)
-     H_HFB_ao(nBas+1:nBas2,nBas+1:nBas2) = -F(1:nBas,1:nBas)
-     H_HFB_ao(1:nBas      ,nBas+1:nBas2) = Delta(1:nBas,1:nBas)
-     H_HFB_ao(nBas+1:nBas2,1:nBas      ) = Delta(1:nBas,1:nBas)
+     H_HFB_ao(1:nBas           ,1:nBas           ) =  F(1:nBas,1:nBas)
+     H_HFB_ao(nBas+1:nBas_twice,nBas+1:nBas_twice) = -F(1:nBas,1:nBas)
+     H_HFB_ao(1:nBas           ,nBas+1:nBas_twice) = Delta(1:nBas,1:nBas)
+     H_HFB_ao(nBas+1:nBas_twice,1:nBas           ) = Delta(1:nBas,1:nBas)
      err_ao = matmul(H_HFB_ao,matmul(R_ao_old,S_ao)) - matmul(matmul(S_ao,R_ao_old),H_HFB_ao)
 
      n_diis = min(n_diis+1,max_diis)
-     call DIIS_extrapolation(rcond,nBas2_Sq,nBas2_Sq,n_diis,err_diis,H_HFB_diis,err_ao,H_HFB_ao)
+     call DIIS_extrapolation(rcond,nBas_twice_Sq,nBas_twice_Sq,n_diis,err_diis,H_HFB_diis,err_ao,H_HFB_ao)
 
      H_HFB = matmul(transpose(X_ao),matmul(H_HFB_ao,X_ao))
      eigVEC(:,:) = H_HFB(:,:)
@@ -273,7 +277,7 @@ subroutine RHFB(dotest,doaordm,doqsGW,maxSCF,thresh,max_diis,level_shift,nNuc,ZN
 
      ! Adjust the chemical potential 
      
-     if( abs(trace_1rdm-nO) > thrs_N ) & 
+     if( abs(trace_1rdm-nO_) > thrs_N ) & 
       call fix_chem_pot(nO,nOrb,nOrb_twice,nSCF,thrs_N,trace_1rdm,chem_pot,H_HFB,eigVEC,R,eigVAL)
    
     end if
@@ -284,6 +288,11 @@ subroutine RHFB(dotest,doaordm,doqsGW,maxSCF,thresh,max_diis,level_shift,nNuc,ZN
     Panom(:,:) = 0d0
     P(:,:)     = 2d0*matmul(X,matmul(R(1:nOrb,1:nOrb),transpose(X)))
     Panom(:,:) = matmul(X,matmul(R(1:nOrb,nOrb+1:nOrb_twice),transpose(X)))
+
+!   write(*,*) 'P^ao iter ',nSCF
+!   do iorb=1,nBas
+!    write(*,'(*(f10.5))') 0.5d0*P(iorb,1:nOrb)
+!   enddo
 
     ! Kinetic energy
     ET = trace_matrix(nBas,matmul(P,T))
@@ -304,10 +313,10 @@ subroutine RHFB(dotest,doaordm,doqsGW,maxSCF,thresh,max_diis,level_shift,nNuc,ZN
 
      F(:,:) = Hc(:,:) + J(:,:) + 0.5d0*K(:,:) - chem_pot*S(:,:)
      H_HFB_ao(:,:)    = 0d0
-     H_HFB_ao(1:nBas      ,1:nBas      ) =  F(1:nBas,1:nBas)
-     H_HFB_ao(nBas+1:nBas2,nBas+1:nBas2) = -F(1:nBas,1:nBas)
-     H_HFB_ao(1:nBas      ,nBas+1:nBas2) = Delta(1:nBas,1:nBas)
-     H_HFB_ao(nBas+1:nBas2,1:nBas      ) = Delta(1:nBas,1:nBas)
+     H_HFB_ao(1:nBas           ,1:nBas           ) =  F(1:nBas,1:nBas)
+     H_HFB_ao(nBas+1:nBas_twice,nBas+1:nBas_twice) = -F(1:nBas,1:nBas)
+     H_HFB_ao(1:nBas           ,nBas+1:nBas_twice) = Delta(1:nBas,1:nBas)
+     H_HFB_ao(nBas+1:nBas_twice,1:nBas           ) = Delta(1:nBas,1:nBas)
      err_ao = matmul(H_HFB_ao,matmul(R_ao_old,S_ao)) - matmul(matmul(S_ao,R_ao_old),H_HFB_ao)
      Conv  = maxval(abs(err_ao))
 
@@ -316,10 +325,10 @@ subroutine RHFB(dotest,doaordm,doqsGW,maxSCF,thresh,max_diis,level_shift,nNuc,ZN
     ! Update R_old
 
     R_ao_old(:,:)    = 0d0
-    R_ao_old(1:nBas      ,1:nBas      ) = 0.5d0*P(1:nBas,1:nBas)
-    R_ao_old(nBas+1:nBas2,nBas+1:nBas2) = matmul(X(1:nBas,1:nOrb), transpose(X(1:nBas,1:nOrb)))-0.5d0*P(1:nBas,1:nBas)
-    R_ao_old(1:nBas      ,nBas+1:nBas2) = Panom(1:nBas,1:nBas)
-    R_ao_old(nBas+1:nBas2,1:nBas      ) = Panom(1:nBas,1:nBas)
+    R_ao_old(1:nBas           ,1:nBas           ) = 0.5d0*P(1:nBas,1:nBas)
+    R_ao_old(nBas+1:nBas_twice,nBas+1:nBas_twice) = matmul(X(1:nBas,1:nOrb), transpose(X(1:nBas,1:nOrb)))-0.5d0*P(1:nBas,1:nBas)
+    R_ao_old(1:nBas           ,nBas+1:nBas_twice) = Panom(1:nBas,1:nBas)
+    R_ao_old(nBas+1:nBas_twice,1:nBas           ) = Panom(1:nBas,1:nBas)
 
     ! Dump results
     write(*,*)'-------------------------------------------------------------------------------------------------'
@@ -399,105 +408,11 @@ subroutine RHFB(dotest,doaordm,doqsGW,maxSCF,thresh,max_diis,level_shift,nNuc,ZN
   EL = trace_matrix(nBas,matmul(Panom,Delta))
   ! Total energy
   EHFB = ET + EV + EJ + EK + EL
+  
 
-! Print the 1-RDM and 2-RDM in AO basis
+! Print the 1-RDM and 2-RDM in AO basis (also check <S^2>)
   if(doaordm) then
-   write(*,*)
-   write(*,'(a)') ' -------------------------------------------'
-   write(*,'(a)') ' Computing and printing RDMs in the AO basis'
-   write(*,'(a)') ' -------------------------------------------'
-   allocate(AO_1rdm(nBas,nBas),AO_2rdm(nBas,nBas,nBas,nBas))
-   AO_1rdm(:,:)=P(:,:)
-   AO_2rdm(:,:,:,:)=0d0
-   do ibas=1,nBas
-    do jbas=1,nBas
-     do kbas=1,nBas
-      do lbas=1,nBas
-       ! Hartree
-       AO_2rdm(ibas,jbas,kbas,lbas)=AO_2rdm(ibas,jbas,kbas,lbas)+0.5d0*P(ibas,kbas)*P(jbas,lbas)
-       ! Exchange
-       AO_2rdm(ibas,jbas,kbas,lbas)=AO_2rdm(ibas,jbas,kbas,lbas)-0.25d0*P(ibas,lbas)*P(jbas,kbas)
-       ! Pairing
-       AO_2rdm(ibas,jbas,kbas,lbas)=AO_2rdm(ibas,jbas,kbas,lbas)+sigma*Panom(ibas,jbas)*Panom(kbas,lbas)
-       !AO_2rdm(ibas,jbas,kbas,lbas)=AO_2rdm(ibas,jbas,kbas,lbas)-Panom(ibas,jbas)*Panom(kbas,lbas) ! This is CA NOFA with correct trace
-      enddo 
-     enddo 
-    enddo 
-   enddo
-   trace_1rdm=0d0
-   trace_2rdm=0d0
-   iunit=312
-   iunit2=313
-   open(unit=iunit,form='unformatted',file='rhfb_ao_1rdm') 
-   open(unit=iunit2,form='unformatted',file='rhfb_ao_2rdm') 
-   Ecore=0d0; Eee=0d0;
-   do ibas=1,nBas
-    do jbas=1,nBas
-     trace_1rdm=trace_1rdm+AO_1rdm(ibas,jbas)*S(ibas,jbas)
-     write(iunit) ibas,jbas,AO_1rdm(ibas,jbas)
-     Ecore=Ecore+AO_1rdm(ibas,jbas)*(T(ibas,jbas)+V(ibas,jbas))
-     do kbas=1,nBas
-      do lbas=1,nBas
-       trace_2rdm=trace_2rdm+AO_2rdm(ibas,jbas,kbas,lbas)*S(ibas,kbas)*S(jbas,lbas)
-       write(iunit2) ibas,jbas,kbas,lbas,AO_2rdm(ibas,jbas,kbas,lbas)
-       Eee=Eee+AO_2rdm(ibas,jbas,kbas,lbas)*ERI(ibas,jbas,kbas,lbas)
-      enddo 
-     enddo 
-    enddo 
-   enddo
-   write(iunit) 0,0,0d0
-   write(iunit2) 0,0,0,0,0d0
-   close(iunit) 
-   close(iunit2)
-   ! Compute <S^2>
-   S2_val=0d0
-    ! Density contribution
-    S2_val=-trace_1rdm*(trace_1rdm-4d0)/4d0
-    ! Daa = Dbb
-    AO_2rdm=0d0
-    do ibas=1,nBas
-     do jbas=1,nBas
-      do kbas=1,nBas
-       do lbas=1,nBas
-        ! Hartree
-        AO_2rdm(ibas,jbas,kbas,lbas)=AO_2rdm(ibas,jbas,kbas,lbas)+0.125d0*P(ibas,kbas)*P(jbas,lbas)
-        ! Exchange
-        AO_2rdm(ibas,jbas,kbas,lbas)=AO_2rdm(ibas,jbas,kbas,lbas)-0.125d0*P(ibas,lbas)*P(jbas,kbas)
-        ! Contribution to <S^2>
-        S2_val=S2_val+2d0*AO_2rdm(ibas,jbas,kbas,lbas)*S(ibas,kbas)*S(jbas,lbas)
-       enddo
-      enddo
-     enddo
-    enddo
-    ! Dab = Dba
-    AO_2rdm=0d0
-    do ibas=1,nBas
-     do jbas=1,nBas
-      do kbas=1,nBas
-       do lbas=1,nBas
-        ! Hartree
-        AO_2rdm(ibas,jbas,kbas,lbas)=AO_2rdm(ibas,jbas,kbas,lbas)+0.125d0*P(ibas,kbas)*P(jbas,lbas)
-        ! Pairing
-        AO_2rdm(ibas,jbas,kbas,lbas)=AO_2rdm(ibas,jbas,kbas,lbas)+0.5d0*sigma*Panom(ibas,jbas)*Panom(kbas,lbas)
-        ! Contribution to <S^2>
-        S2_val=S2_val-2d0*AO_2rdm(ibas,jbas,kbas,lbas)*S(ibas,lbas)*S(jbas,kbas)
-       enddo
-      enddo
-     enddo
-    enddo
-   deallocate(AO_1rdm,AO_2rdm)
-   write(*,'(a)') '  Energies computed using the 1-RDM and the 2-RDM in the AO basis'
-   write(*,*)
-   write(*,'(a,f17.8)') '   Hcore (T+V) ',Ecore
-   write(*,'(a,f17.8)') '     Vee (Hxc) ',Eee
-   write(*,'(a,f17.8)') '   Eelectronic ',Ecore+Eee
-   write(*,*)           ' --------------'
-   write(*,'(a,f17.8)') '        Etotal ',Ecore+Eee+ENuc
-   write(*,*)           ' --------------'
-   write(*,'(a,f17.8)') '   Tr[ 1D^AO ] ',trace_1rdm
-   write(*,'(a,f17.8)') '   Tr[ 2D^AO ] ',trace_2rdm
-   write(*,'(a,f17.8)') '         <S^2> ',S2_val
-   write(*,*)
+   call print_RHFB_AO_rdms(nBas,ENuc,sigma,S,T,V,P,Panom,ERI)
   endif
 
 ! Compute dipole moments, occupation numbers, || Anomalous density||,
@@ -517,22 +432,22 @@ subroutine RHFB(dotest,doaordm,doqsGW,maxSCF,thresh,max_diis,level_shift,nNuc,ZN
   Occ(1:nOrb)   = eigVAL(1:nOrb)
   c = matmul(X,eigVEC)
   call write_restart_HFB(nBas,nOrb,Occ,c,chem_pot) ! Warning: orders Occ and their c in descending order w.r.t. occupation numbers.
-  call print_HFB(nBas,nOrb,nOrb_twice,nO,N_anom,Occ,eHFB_state,ENuc,ET,EV,EJ,EK,EL,EHFB,chem_pot, &
-                 dipole,Delta_HL)
-  ! DEBUG: Compute <S^2> in the NO basis. This is commented because it is computed in AO basis above and it is fine!
+  call print_RHFB(nBas,nOrb,nOrb_twice,N_anom,Occ,eHFB_state,ENuc,ET,EV,EJ,EK,EL,EHFB,chem_pot, &
+                  dipole,Delta_HL)
+  ! DEBUG: Compute <S^2> in the NO basis. This is commented because it is computed in AO basis above. So, we alredy know <S^2>. 
   ! call s2_2rdm_HFB(nBas,nOrb,nOrb_twice,nO,Occ,sigma,c,ERI)
   if(doqsGW) c(:,:)=X(:,:) ! Recover the Lowdin basis for qsGW
 
 ! Choose the NO representation where the 1-RDM is diag.
-! Compute W_no and V_no (i.e. diag[H_HFB^no] built in NO basis and get W and V)
+! Compute W_no and V_no (i.e. diag[H_HFB^no] built in NO basis to obtain W_no and V_no)
 
   deallocate(eigVEC,eigVAL)
-  allocate(c_ao(nBas2,nOrb_twice))
+  allocate(c_ao(nBas_twice,nOrb_twice))
   allocate(eigVEC(nOrb_twice,nOrb_twice),eigVAL(nOrb_twice))
 
   c_ao(:,:) = 0d0
-  c_ao(1:nBas      ,1:nOrb      )      = c(1:nBas,1:nOrb)
-  c_ao(nBas+1:nBas2,nOrb+1:nOrb_twice) = c(1:nBas,1:nOrb)
+  c_ao(1:nBas           ,1:nOrb           ) = c(1:nBas,1:nOrb)
+  c_ao(nBas+1:nBas_twice,nOrb+1:nOrb_twice) = c(1:nBas,1:nOrb)
   H_HFB = matmul(transpose(c_ao),matmul(H_HFB_ao,c_ao)) ! H_HFB is in the NO basis
   eigVEC(:,:) = H_HFB(:,:)
 
@@ -543,7 +458,7 @@ subroutine RHFB(dotest,doaordm,doqsGW,maxSCF,thresh,max_diis,level_shift,nNuc,ZN
   trace_1rdm = 0d0 
   R(:,:)     = 0d0
   do iorb=1,nOrb
-   R(:,:) = R(:,:) + matmul(eigVEC(:,iorb:iorb),transpose(eigVEC(:,iorb:iorb))) 
+   R(:,:) = R(:,:) + matmul(eigVEC(:,iorb:iorb),transpose(eigVEC(:,iorb:iorb)))
   enddo
   if(.not.doqsGW) then ! Store U_QP in the NO basis if we are not doing qsGW after  
    U_QP(:,:) = eigVEC(:,:) 
@@ -562,6 +477,7 @@ subroutine RHFB(dotest,doaordm,doqsGW,maxSCF,thresh,max_diis,level_shift,nNuc,ZN
    enddo
   enddo
   trace_1rdm = 2d0*trace_1rdm
+
   write(*,*)
   write(*,'(A33,1X,F16.10,A3)') ' Trace [ 1D^NO ]     = ',trace_1rdm,'   '
   write(*,'(A33,1X,F16.10,A3)') ' Error NO represent  = ',err_no_rep,'   '
@@ -574,18 +490,132 @@ subroutine RHFB(dotest,doaordm,doqsGW,maxSCF,thresh,max_diis,level_shift,nNuc,ZN
   enddo
   write(*,*)
 
+  ! Compute Generalized Fock operator?
+  if(.false.) then
+   call Generalized_Fock_RHFB(nBas,nBas_twice,nOrb,nOrb_twice,ENuc,sigma,c,Hc,H_HFB_ao,Occ,ERI)
+  endif
+
+if(.false.) then
+block
+double precision,allocatable :: Ptmp(:,:)
+double precision,allocatable :: Iocc(:,:)
+
+allocate(Ptmp(nBas,nBas))
+allocate(Iocc(nOrb,nOrb))
+
+write(*,*) ' EIGVEC_opt_no'
+do iorb=1,nOrb_twice
+write(*,'(*(f10.5))') eigVEC(iorb,:)
+enddo
+write(*,*) ' R_opt_no'
+do iorb=1,nOrb_twice
+write(*,'(*(f10.5))') R(iorb,:)
+enddo
+Iocc=0d0
+do iorb=1,nO
+ Iocc(iorb,iorb)=1d0
+enddo
+Ptmp=matmul(matmul(cHF,Iocc),transpose(cHF))
+write(*,*) ' P_cHF'
+do iorb=1,nBas
+write(*,'(*(f10.5))') Ptmp(iorb,:)
+enddo
+Ptmp=matmul(Ptmp,Ptmp)
+write(*,*) ' P_cHF*P_cHF'
+do iorb=1,nBas
+write(*,'(*(f10.5))') Ptmp(iorb,:)
+enddo
+
+write(*,*) ' P_opt (obtained from the SCF)'
+do iorb=1,nBas
+write(*,'(*(f10.5))') 0.5d0*P(iorb,:)
+enddo
+
+c_ao(:,:) = 0d0
+c_ao(1:nBas           ,1:nOrb           ) = cHF(1:nBas,1:nOrb)
+c_ao(nBas+1:nBas_twice,nOrb+1:nOrb_twice) = cHF(1:nBas,1:nOrb)
+H_HFB = matmul(transpose(c_ao),matmul(H_HFB_ao,c_ao)) ! H_HFB is in the NO basis
+eigVEC(:,:) = H_HFB(:,:)
+
+call diagonalize_matrix(nOrb_twice,eigVEC,eigVAL)
+
+! Build R (as R^no) and save the eigenvectors
+  
+trace_1rdm = 0d0 
+R(:,:)     = 0d0
+do iorb=1,nOrb
+ R(:,:) = R(:,:) + matmul(eigVEC(:,iorb:iorb),transpose(eigVEC(:,iorb:iorb)))
+enddo
+write(*,*) ' EIGVEC_opt_cHF'
+do iorb=1,nOrb_twice
+write(*,'(*(f10.5))') eigVEC(iorb,:)
+enddo
+eigVEC=transpose(eigVEC)
+write(*,*) ' EIGVEC_opt_cHF^T'
+do iorb=1,nOrb_twice
+write(*,'(*(f10.5))') eigVEC(iorb,:)
+enddo
+write(*,*) ' R_opt_cHF'
+do iorb=1,nOrb_twice
+write(*,'(*(f10.5))') R(iorb,:)
+enddo
+
+
+Ptmp=matmul(matmul(cHF,R(1:nOrb,1:nOrb)),transpose(cHF))
+write(*,*) ' P_opt (from R in cHF basis, it should be equal to the one obtained in the SCF)'
+do iorb=1,nBas
+write(*,'(*(f10.5))') Ptmp(iorb,:)
+enddo
+Ptmp=matmul(Ptmp,Ptmp)
+write(*,*) ' P_opt*P_opt'
+do iorb=1,nBas
+write(*,'(*(f10.5))') Ptmp(iorb,:)
+enddo
+
+deallocate(Ptmp,Iocc)
+
+end block
+endif
+
 ! Test if it can be a RHF solution
   ! TODO ...
-!  if(is_fractional) then
-  if(.false.) then
+  if(is_fractional .and. .false.) then
+   
+   call do_colinearity_test(nOrb,nOrb_twice,R)
+  endif
+ 
+! Testing zone
 
-block
+  if(dotest) then
+ 
+    call dump_test_value('R','HFB energy',EHFB)
+    call dump_test_value('R','Trace 1D',trace_1rdm)
+    call dump_test_value('R','HFB dipole moment',norm2(dipole))
+
+  end if
+
+! Memory deallocation
+
+  deallocate(J,K,cHF,eigVEC,H_HFB,R,eigVAL,err_diis,H_HFB_diis,Occ)
+  deallocate(err_ao,S_ao,X_ao,R_ao_old,H_HFB_ao)
+  deallocate(c_ao)
+
+end subroutine 
+
+subroutine do_colinearity_test(nOrb,nOrb_twice,R)
+
+  implicit none
+
+  integer,intent(in)            :: nOrb,nOrb_twice
+  double precision,intent(in)   :: R(nOrb_twice,nOrb_twice)
 
   integer                       :: icoord
 
+  double precision              :: trace_val
   double precision              :: eigval_test(3)
   double precision              :: Aij(3,3)
   double precision              :: Tij(3,3)
+  double precision,external     :: trace_matrix
   double precision,allocatable  :: Tmp_test(:,:)
   double precision,allocatable  :: P(:,:)
   double precision,allocatable  :: Mx(:,:)
@@ -600,14 +630,14 @@ block
   Mx(1:nOrb,1:nOrb)=R(1:nOrb,nOrb+1:nOrb_twice)
   Mz(1:nOrb,1:nOrb)=0.5d0*(R(1:nOrb,1:nOrb)-R(nOrb+1:nOrb_twice,nOrb+1:nOrb_twice))
 
-  Tmp_test=matmul(Mx,Mx) 
+  Tmp_test=matmul(Mx,Mx)
   Tij(1,1)=trace_matrix(nOrb,Tmp_test)
- 
+
 !  Tmp_test=matmul(Mx,My) 
 !  Tij(1,2)=trace_matrix(nOrb,Tmp_test) 
 
-  Tmp_test=matmul(Mx,Mz) 
-  Tij(1,3)=trace_matrix(nOrb,Tmp_test) 
+  Tmp_test=matmul(Mx,Mz)
+  Tij(1,3)=trace_matrix(nOrb,Tmp_test)
 
 !  Tmp_test=matmul(My,Mx) 
 !  Tij(2,1)=trace_matrix(nOrb,Tmp_test) 
@@ -618,42 +648,21 @@ block
 !  Tmp_test=matmul(My,Mz) 
 !  Tij(2,3)=trace_matrix(nOrb,Tmp_test) 
 
-  Tmp_test=matmul(Mz,Mx) 
-  Tij(3,1)=trace_matrix(nOrb,Tmp_test) 
+  Tmp_test=matmul(Mz,Mx)
+  Tij(3,1)=trace_matrix(nOrb,Tmp_test)
 
 !  Tmp_test=matmul(Mz,My) 
 !  Tij(3,2)=trace_matrix(nOrb,Tmp_test) 
 
-  Tmp_test=matmul(Mz,Mz) 
-  Tij(3,3)=trace_matrix(nOrb,Tmp_test) 
-
-write(*,*) 'P'
-do iorb=1,nOrb
-write(*,'(*(f10.5))') P(iorb,:)
-enddo
-write(*,*) 'Mx'
-do iorb=1,nOrb
-write(*,'(*(f10.5))') Mx(iorb,:)
-enddo
-write(*,*) 'Mz'
-do iorb=1,nOrb
-write(*,'(*(f10.5))') Mz(iorb,:)
-enddo
-
-do icoord=1,3
-write(*,'(*(f10.5))') Tij(icoord,:)
-enddo
+  Tmp_test=matmul(Mz,Mz)
+  Tij(3,3)=trace_matrix(nOrb,Tmp_test)
 
   Aij=-Tij
   Tmp_test=P-matmul(P,P)
-  trace_1rdm=trace_matrix(nOrb,Tmp_test)
+  trace_val=trace_matrix(nOrb,Tmp_test)
   do icoord=1,3
-   Aij(icoord,icoord)=Aij(icoord,icoord)+trace_1rdm
+   Aij(icoord,icoord)=Aij(icoord,icoord)+trace_val
   enddo
-
-do icoord=1,3
-write(*,'(*(f10.5))') Aij(icoord,:)
-enddo
 
   write(*,*)
   write(*,'(A50)') '---------------------------------------'
@@ -670,28 +679,20 @@ enddo
 
   deallocate(P,Mx,My,Mz,Tmp_test)
 
-end block
+end subroutine
 
-  endif
- 
-! Testing zone
-
-  if(dotest) then
- 
-    call dump_test_value('R','HFB energy',EHFB)
-    call dump_test_value('R','Trace 1D',trace_1rdm)
-    call dump_test_value('R','HFB dipole moment',norm2(dipole))
-
-  end if
-
-! Memory deallocation
-
-  deallocate(J,K,eigVEC,H_HFB,R,eigVAL,err_diis,H_HFB_diis,Occ)
-  deallocate(err_ao,S_ao,X_ao,R_ao_old,H_HFB_ao)
-  deallocate(c_ao)
-
-end subroutine 
-
+!
+! Foldy-Wouthuysen decoupling of the solution to express the HFB eigenvectors
+!
+!    ( U  V )
+!    ( V  U )
+! as 
+!
+!    ( u  0 )
+!    ( 0  u )
+!
+! Unfortunately, this only transforms R -> r^can ... Not usefull to test if this is just a RHF state
+!
 !block
 !
 !  double precision,allocatable  :: eigval_tmp(:)
