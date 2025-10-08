@@ -47,6 +47,7 @@ subroutine RHFB(dotest,doaordm,doqsGW,maxSCF,thresh,max_diis,level_shift,nNuc,ZN
   integer                       :: nSCF
   integer                       :: nBas_twice_Sq
   integer                       :: n_diis
+  double precision              :: nO_
   double precision              :: ET
   double precision              :: EV
   double precision              :: EJ
@@ -137,6 +138,15 @@ subroutine RHFB(dotest,doaordm,doqsGW,maxSCF,thresh,max_diis,level_shift,nNuc,ZN
   H_HFB_diis(:,:) = 0d0
   err_diis(:,:)   = 0d0
   rcond           = 0d0
+  nO_             = nO
+  inquire(file='Nelectrons_RHFB', exist=file_exists)
+  if(file_exists) then
+    write(*,*) 'File Nelectrons_RHFB encountered, setting nO = nElectrons_read/2'
+    open(unit=314, form='formatted', file='Nelectrons_RHFB', status='old')
+    read(314,*) nO_
+    close(314)
+    nO_=0.5d0*nO_
+  endif
 
   cHF(:,:)       = c(:,:)
   P(:,:)         = matmul(c(:,1:nO), transpose(c(:,1:nO)))
@@ -230,7 +240,7 @@ subroutine RHFB(dotest,doaordm,doqsGW,maxSCF,thresh,max_diis,level_shift,nNuc,ZN
 
     ! Adjust the chemical potential 
 
-    if( abs(trace_1rdm-nO) > thrs_N ) & 
+    if( abs(trace_1rdm-nO_) > thrs_N ) & 
      call fix_chem_pot(nO,nOrb,nOrb_twice,nSCF,thrs_N,trace_1rdm,chem_pot,H_HFB,eigVEC,R,eigVAL)
 
     ! DIIS extrapolation
@@ -267,7 +277,7 @@ subroutine RHFB(dotest,doaordm,doqsGW,maxSCF,thresh,max_diis,level_shift,nNuc,ZN
 
      ! Adjust the chemical potential 
      
-     if( abs(trace_1rdm-nO) > thrs_N ) & 
+     if( abs(trace_1rdm-nO_) > thrs_N ) & 
       call fix_chem_pot(nO,nOrb,nOrb_twice,nSCF,thrs_N,trace_1rdm,chem_pot,H_HFB,eigVEC,R,eigVAL)
    
     end if
@@ -422,8 +432,8 @@ subroutine RHFB(dotest,doaordm,doqsGW,maxSCF,thresh,max_diis,level_shift,nNuc,ZN
   Occ(1:nOrb)   = eigVAL(1:nOrb)
   c = matmul(X,eigVEC)
   call write_restart_HFB(nBas,nOrb,Occ,c,chem_pot) ! Warning: orders Occ and their c in descending order w.r.t. occupation numbers.
-  call print_HFB(nBas,nOrb,nOrb_twice,nO,N_anom,Occ,eHFB_state,ENuc,ET,EV,EJ,EK,EL,EHFB,chem_pot, &
-                 dipole,Delta_HL)
+  call print_RHFB(nBas,nOrb,nOrb_twice,N_anom,Occ,eHFB_state,ENuc,ET,EV,EJ,EK,EL,EHFB,chem_pot, &
+                  dipole,Delta_HL)
   ! DEBUG: Compute <S^2> in the NO basis. This is commented because it is computed in AO basis above. So, we alredy know <S^2>. 
   ! call s2_2rdm_HFB(nBas,nOrb,nOrb_twice,nO,Occ,sigma,c,ERI)
   if(doqsGW) c(:,:)=X(:,:) ! Recover the Lowdin basis for qsGW
