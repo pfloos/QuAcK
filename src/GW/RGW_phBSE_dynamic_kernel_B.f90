@@ -32,7 +32,7 @@ subroutine RGW_phBSE_dynamic_kernel_B(eta,nBas,nC,nO,nV,nR,nS,lambda,eGW,OmRPA,r
 
   KB(:,:) = 0d0
 
-! Build dynamic A matrix
+! Build dynamic B matrix
 
   ia = 0
   do i=nC+1,nO
