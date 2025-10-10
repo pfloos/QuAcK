@@ -111,6 +111,8 @@ subroutine GG0W0(dotest,doACFDT,exchange_kernel,doXBS,dophBSE,dophBSE2,TDA_W,TDA
 
                  call phGLR_A(dRPA,nBas,nC,nO,nV,nR,nS,1d0,eHF,ERI,Aph)
   if(.not.TDA_W) call phGLR_B(dRPA,nBas,nC,nO,nV,nR,nS,1d0,ERI,Bph)
+    call matout(nS,nS, Aph)
+    call matout(nS,nS, Bph)
 
   call phGLR(TDA_W,nS,Aph,Bph,EcRPA,Om,XpY,XmY)
 

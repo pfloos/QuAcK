@@ -48,7 +48,7 @@ do i=1,O
       do b=O+1,N
         ia = a - O + (i-1)*V 
         jb = b - O + (j-1)*V
-        rdm2(a,b,i,j) = lambda(ia,jb)
+        rdm2(a,b,i,j) = rdm2(a,b,i,j) + lambda(ia,jb)
       end do
     end do
   end do

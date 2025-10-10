@@ -25,7 +25,7 @@ do i=1,O
           kc = c - O + (k-1)*V
           id = d - O + (i-1)*V
           jd = d - O + (j-1)*V
-          rdm1(i,j) = rdm1(i,j) - 0.5*(t(kc,id)*lambda(kc,jd))
+          rdm1(i,j) = rdm1(i,j) - 0.5d0*(t(kc,id)*lambda(kc,jd))
         end do
       end do
     end do
@@ -41,7 +41,7 @@ do a=O+1,N
           kc = c - O + (k-1)*V
           lb = b - O + (l-1)*V
           la = a - O + (l-1)*V
-          rdm1(a,b) = rdm1(a,b) + 0.5*(t(kc,lb)*lambda(kc,la))
+          rdm1(a,b) = rdm1(a,b) + 0.5d0*(t(kc,lb)*lambda(kc,la))
         end do
       end do
     end do
