@@ -1,0 +1,476 @@
+subroutine scGWitauiw_ao_RHF(nBas,nOrb,nO,maxSCF,ENuc,Hc,S,P_in,cHF,eHF,nfreqs,ntimes,wcoord,wweight,vMAT)
+
+! Restricted scGW
+
+  implicit none
+  include 'parameters.h'
+
+! Input variables
+
+  integer,intent(in)            :: nfreqs
+  integer,intent(in)            :: ntimes
+  integer,intent(in)            :: nBas
+  integer,intent(in)            :: nOrb
+  integer,intent(in)            :: nO
+  integer,intent(in)            :: maxSCF
+
+  double precision,intent(in)   :: ENuc
+  double precision,intent(in)   :: wcoord(nfreqs)
+  double precision,intent(in)   :: wweight(nfreqs)
+  double precision,intent(in)   :: Hc(nBas,nBas)
+  double precision,intent(in)   :: P_in(nBas,nBas)
+  double precision,intent(in)   :: S(nBas,nBas)
+  double precision,intent(in)   :: cHF(nBas,nOrb)
+  double precision,intent(in)   :: vMAT(nBas*nBas,nBas*nBas)
+
+! Local variables
+
+  integer                       :: nfreqs2
+  integer                       :: kind_int,itau,ifreq,jfreq
+  integer                       :: ibas,jbas,kbas,lbas,nBas2
+  integer                       :: iter,iter_fock
+
+  double precision              :: start_scGWitauiw     ,end_scGWitauiw       ,t_scGWitauiw
+
+  double precision              :: Ehfl,EcGM
+  double precision              :: eta,diff_Pao
+  double precision              :: nElectrons
+  double precision              :: trace_1_rdm
+  double precision              :: thrs_N,thrs_Pao
+  double precision              :: chem_pot,chem_pot_saved
+  double precision              :: alpha,beta,lim_inf,lim_sup
+  double precision,allocatable  :: tweight(:),tcoord(:)
+  double precision,allocatable  :: wweight2(:),wcoord2(:)
+  double precision,allocatable  :: Occ(:)
+  double precision,allocatable  :: Wp_ao_iw(:,:)
+  double precision,allocatable  :: cHFinv(:,:)
+  double precision,allocatable  :: F_ao(:,:)
+  double precision,allocatable  :: P_ao(:,:)
+  double precision,allocatable  :: P_ao_old(:,:)
+  double precision,allocatable  :: P_ao_iter(:,:)
+  double precision,allocatable  :: P_mo(:,:)
+
+  complex*16                    :: product,weval
+  complex*16,allocatable        :: wcoord2_cpx(:)
+  complex*16,allocatable        :: Sigma_c_ao(:,:,:)
+  complex*16,allocatable        :: G_ao_iw2(:,:,:)
+  complex*16,allocatable        :: G_ao_1(:,:),G_ao_2(:,:)
+  complex*16,allocatable        :: G_minus_itau(:,:),G_plus_itau(:,:)
+  complex*16,allocatable        :: Chi0_ao_itau(:,:)
+  complex*16,allocatable        :: Chi0_ao_iw(:,:,:)
+
+! Output variables
+  double precision,intent(inout):: eHF(nOrb)
+  
+!------------------------------------------------------------------------
+! Build G(i tau) in AO basis and use it to build Xo (i tau) -> Xo (i w)
+!------------------------------------------------------------------------
+ 
+ call wall_time(start_scGWitauiw)
+
+ write(*,*)     
+ write(*,*)'*******************************************'
+ write(*,*)'*     scGW ( using itau and iw grids )    *'
+ write(*,*)'*******************************************'
+ write(*,*)
+
+ iter=0
+ eta=0d0
+ thrs_N=1d-8
+ thrs_Pao=1d-6
+ nElectrons=2d0*nO
+ nfreqs2=10*nfreqs
+ nBas2=nBas*nBas
+ chem_pot_saved = 0.5d0*(eHF(nO)+eHF(nO+1))
+ chem_pot = chem_pot_saved
+ Ehfl=0d0
+ write(*,*)
+ write(*,'(A33,1X,F16.10,A3)') ' Initial chemical potential  = ',chem_pot,' au'
+ write(*,*)
+ eHF(:) = eHF(:)-chem_pot_saved
+   
+ allocate(Chi0_ao_iw(nfreqs,nBas2,nBas2))
+ allocate(Sigma_c_ao(nfreqs2,nBas,nBas),G_ao_iw2(nfreqs2,nBas,nBas))
+ allocate(P_ao(nBas,nBas),P_ao_old(nBas,nBas),P_ao_iter(nBas,nBas))
+ allocate(F_ao(nBas,nBas),P_mo(nOrb,nOrb),cHFinv(nOrb,nBas),Occ(nOrb))
+ allocate(G_ao_1(nBas,nBas),G_ao_2(nBas,nBas)) 
+ allocate(G_minus_itau(nBas,nBas),G_plus_itau(nBas,nBas)) 
+ allocate(Chi0_ao_itau(nBas2,nBas2),Wp_ao_iw(nBas2,nBas2)) 
+ cHFinv=matmul(transpose(cHF),S)
+ P_ao=P_in
+ P_ao_iter=P_ao
+
+!-------------------------!
+! Prepare time Quadrature !
+!-------------------------!
+ kind_int = 1
+ lim_inf = 0d0; lim_sup = 1d0;
+ alpha = 0d0;  beta  = 0d0;
+ allocate(tweight(ntimes),tcoord(ntimes))
+ call cgqf(ntimes,kind_int,alpha,beta,lim_inf,lim_sup,tcoord,tweight)
+ tweight(:)=tweight(:)/((1d0-tcoord(:))**2d0)
+ tcoord(:)=tcoord(:)/(1d0-tcoord(:))
+
+!-------------------------------------!
+! Prepare second frequency Quadrature !
+!-------------------------------------!
+ kind_int = 1
+ lim_inf = 0d0; lim_sup = 1d0;
+ alpha = 0d0;  beta  = 0d0;
+ allocate(wweight2(nfreqs2),wcoord2(nfreqs2),wcoord2_cpx(nfreqs2))
+ call cgqf(nfreqs2,kind_int,alpha,beta,lim_inf,lim_sup,wcoord2,wweight2)
+ wweight2(:)=wweight2(:)/((1d0-wcoord2(:))**2d0)
+ wcoord2(:)=wcoord2(:)/(1d0-wcoord2(:))
+ wcoord2_cpx(:)=im*wcoord2(:)
+
+ do
+  iter=iter+1
+  ! Build using the time grid Xo(i tau) = -2i G(i tau) G(-i tau)
+  !  then Fourier transform Xo(i tau) -> Xo(i w)
+  Chi0_ao_iw(:,:,:)=czero
+  do itau=1,ntimes
+   call G0itau_ao_RHF(nBas,nOrb,nO, tcoord(itau),G_plus_itau ,cHF,eHF)  ! tau > 0 (occ) is ok for iter 0
+   call G0itau_ao_RHF(nBas,nOrb,nO,-tcoord(itau),G_minus_itau,cHF,eHF)  ! tau < 0 (vir) is of for iter 0
+   ! Xo(i tau) = -2i G(i tau) G(-i tau)
+   do ibas=1,nBas
+    do jbas=1,nBas
+     do kbas=1,nBas
+      do lbas=1,nBas                       
+                            ! r1   r2'                r2   r1'
+       product = G_plus_itau(ibas,jbas)*G_minus_itau(kbas,lbas)
+       if(abs(product)<1e-12) product=czero
+       Chi0_ao_itau(1+(lbas-1)+(ibas-1)*nBas,1+(kbas-1)+(jbas-1)*nBas) = product
+      enddo
+     enddo
+    enddo
+   enddo
+   Chi0_ao_itau=-2d0*im*Chi0_ao_itau ! The 2 factor is added to account for both spin contributions [ i.e., (up,up,up,up) and (down,down,down,down) ]
+   ! Xo(i tau) -> Xo(i w)
+   do ifreq=1,nfreqs
+     Chi0_ao_iw(ifreq,:,:) = Chi0_ao_iw(ifreq,:,:) - im*tweight(itau)*Chi0_ao_itau(:,:)*Exp(im*tcoord(itau)*wcoord(ifreq))
+   enddo 
+  enddo
+   ! Complete the Xo(i tau) -> Xo(i w)
+   Chi0_ao_iw(:,:,:) = 2d0*Real(Chi0_ao_iw(:,:,:))
+
+  ! Build Wp_ao_iw(i w) and Sigma_c_ao(i w2)
+  !    and compute Ec Galitskii-Migdal
+  EcGM=0d0  ! TODO compute EcGM
+  Sigma_c_ao=0d0
+  do ifreq=1,nfreqs
+   ! Xo(i w) -> Wp_ao_iw(i w)
+   Wp_ao_iw=0d0
+   do ibas=1,nBas2
+    Wp_ao_iw(ibas,ibas)=1d0
+   enddo
+   Wp_ao_iw(:,:)=Wp_ao_iw(:,:)-matmul(Real(Chi0_ao_iw(ifreq,:,:)),vMAT(:,:))  
+   call inverse_matrix(nBas2,Wp_ao_iw,Wp_ao_iw)
+   Wp_ao_iw(:,:)=matmul(Wp_ao_iw(:,:),Real(Chi0_ao_iw(ifreq,:,:)))
+   Wp_ao_iw(:,:)=matmul(Wp_ao_iw(:,:),vMAT(:,:))
+   Wp_ao_iw(:,:)=matmul(vMAT(:,:),Wp_ao_iw(:,:)) ! Now Wp_ao_iw is on the iw grid
+   ! Wp_ao_iw(i w) -> Sigma_c_ao(i w2) 
+   do jfreq=1,nfreqs2
+    ! Build G(i (w+w2)) and G(i (w-w2))
+    weval=im*(wcoord2(jfreq)+wcoord(ifreq))
+! TODO learn here how to do G(itau) -> G(iw) using Fourier transform vs exact result for iter 0
+    call G_AO_RHF(nBas,nOrb,nO,eta,cHF,eHF,weval,G_ao_1) ! Ok for iter 0 (for other iters I will need G(itau) -> G(i(w+w2)))
+    weval=im*(wcoord2(jfreq)-wcoord(ifreq))
+    call G_AO_RHF(nBas,nOrb,nO,eta,cHF,eHF,weval,G_ao_2) ! Ok for iter 0 (for other iters I will need G(itau) -> G(i(w-w2)))
+    ! Build Sigma_c_ao(i w2)
+    do ibas=1,nBas
+     do jbas=1,nBas
+      do kbas=1,nBas
+       do lbas=1,nBas
+        Sigma_c_ao(jfreq,ibas,jbas)=Sigma_c_ao(jfreq,ibas,jbas)-(G_ao_1(kbas,lbas)+G_ao_2(kbas,lbas)) &
+                                   *Wp_ao_iw(1+(kbas-1)+(ibas-1)*nBas,1+(jbas-1)+(lbas-1)*nBas)       &
+                                   *wweight(ifreq)/(2d0*pi)
+       enddo
+      enddo
+     enddo
+    enddo
+   enddo
+  enddo
+  
+  ! Converge with respect to the Fock operator (using only good P_ao matrices)
+  iter_fock=0
+  do
+   ! Build F
+   iter_fock=iter_fock+1
+   F_ao=Hc
+   Ehfl=0d0
+   do ibas=1,nBas
+    do jbas=1,nBas
+     Ehfl=Ehfl+P_ao(ibas,jbas)*Hc(ibas,jbas)
+     do kbas=1,nBas
+      do lbas=1,nBas
+       F_ao(ibas,jbas)=F_ao(ibas,jbas)+P_ao(kbas,lbas)*vMAT(1+(lbas-1)+(kbas-1)*nBas,1+(jbas-1)+(ibas-1)*nBas) &
+                      -0.5d0*P_ao(kbas,lbas)*vMAT(1+(jbas-1)+(kbas-1)*nBas,1+(lbas-1)+(ibas-1)*nBas)
+       Ehfl=Ehfl+0.5d0*P_ao(kbas,lbas)*P_ao(ibas,jbas)*vMAT(1+(lbas-1)+(kbas-1)*nBas,1+(jbas-1)+(ibas-1)*nBas) &
+           -0.25d0*P_ao(kbas,lbas)*P_ao(ibas,jbas)*vMAT(1+(jbas-1)+(kbas-1)*nBas,1+(lbas-1)+(ibas-1)*nBas)
+      enddo
+     enddo
+    enddo
+   enddo
+   ! Build G(i w2) and n(r)
+   P_ao_old=P_ao
+   call get_1rdm_scGW(nBas,nfreqs2,nElectrons,thrs_N,chem_pot,S,F_ao,Sigma_c_ao,wcoord2,wweight2, &
+                      G_ao_1,G_ao_iw2,P_ao,trace_1_rdm) 
+   if(abs(trace_1_rdm-nElectrons)>thrs_N) &
+    call fix_chem_pot_scGW(nBas,nfreqs2,nElectrons,thrs_N,chem_pot,S,F_ao,Sigma_c_ao,wcoord2,wweight2, &
+                          G_ao_1,G_ao_iw2,P_ao,trace_1_rdm)
+   ! Check convergence of P_ao
+   diff_Pao=0d0
+   do ibas=1,nBas
+    do jbas=1,nBas
+     diff_Pao=diff_Pao+abs(P_ao(ibas,jbas)-P_ao_old(ibas,jbas))
+    enddo
+   enddo
+   if(diff_Pao<=thrs_Pao) exit
+
+   if(iter_fock==maxSCF) exit
+
+  enddo
+  P_mo=-matmul(matmul(cHFinv,P_ao),transpose(cHFinv)) ! Minus to order occ numbers
+  call diagonalize_matrix(nOrb,P_mo,Occ)
+  write(*,*)
+  write(*,'(a,f15.8,a,i5,a)') ' Trace scGW  ',trace_1_rdm,' after ',iter_fock,' Fock iterations '
+  write(*,'(a,f15.8)')        ' Change of P ',diff_Pao
+  write(*,'(a,f15.8)')        ' Chem. Pot.  ',chem_pot
+  write(*,*)
+  write(*,*) ' Occupation numbers'
+  Occ=-Occ
+  do ibas=1,nOrb
+   write(*,'(I7,F15.8)') ibas,Occ(ibas)
+  enddo
+
+  ! Check convergence
+  diff_Pao=0d0
+  do ibas=1,nBas
+   do jbas=1,nBas
+    diff_Pao=diff_Pao+abs(P_ao(ibas,jbas)-P_ao_iter(ibas,jbas))
+   enddo
+  enddo
+  P_ao_iter=P_ao
+  if(diff_Pao<=thrs_Pao) exit
+
+  if(iter==maxSCF) exit
+
+  ! Build G(i w2) -> G(i tau) [will we need i tau and -i tau?]
+  ! TODO learn how to do this Fourier transform
+
+ enddo
+ write(*,*)
+ write(*,'(A50)') '---------------------------------------'
+ write(*,'(A50)') '      scGW calculation completed       '
+ write(*,'(A50)') '---------------------------------------'
+ write(*,*)
+ write(*,'(a,f15.8,a,i5,a)') ' Trace scGW  ',trace_1_rdm,' after ',iter,' global iterations '
+ write(*,'(a,f15.8)')        ' Change of P ',diff_Pao
+ write(*,'(a,f15.8)')        ' Chem. Pot.  ',chem_pot
+ write(*,'(a,f15.8)')        ' Hcore+Hx    ',Ehfl
+ write(*,'(a,f15.8)')        ' EcGM        ',EcGM
+ write(*,'(a,f15.8)')        ' Eel         ',Ehfl+EcGM
+ write(*,'(a,f15.8)')        ' Etot        ',Ehfl+EcGM+ENuc
+ write(*,*)
+ write(*,*) ' Final occupation numbers'
+ do ibas=1,nOrb
+  write(*,'(I7,F15.8)') ibas,Occ(ibas)
+ enddo
+
+ call wall_time(end_scGWitauiw)
+ 
+ t_scGWitauiw = end_scGWitauiw - start_scGWitauiw
+ write(*,'(A65,1X,F9.3,A8)') 'Total wall time for scGW@RHF = ',t_scGWitauiw,' seconds'
+ write(*,*)
+
+ ! Restore values and deallocate dyn arrays
+ eHF(:) = eHF(:)+chem_pot_saved
+ deallocate(Chi0_ao_iw,Wp_ao_iw)
+ deallocate(tcoord,tweight) 
+ deallocate(wcoord2,wweight2,wcoord2_cpx) 
+ deallocate(Sigma_c_ao,G_ao_iw2) 
+ deallocate(P_ao,P_ao_old,P_ao_iter,F_ao,P_mo,cHFinv,Occ) 
+ deallocate(G_ao_1,G_ao_2) 
+ deallocate(G_minus_itau,G_plus_itau) 
+ deallocate(Chi0_ao_itau) 
+
+end subroutine 
+
+subroutine fix_chem_pot_scGW(nBas,nfreqs2,nElectrons,thrs_N,chem_pot,S,F_ao,Sigma_c_ao,wcoord2,wweight2, &
+                             G_ao,G_ao_iw2,P_ao,trace_1_rdm) 
+
+! Fix the chemical potential for scGW 
+
+  implicit none
+  include 'parameters.h'
+
+! Input variables
+
+  integer,intent(in)            :: nBas
+  integer,intent(in)            :: nfreqs2
+  double precision,intent(in)   :: nElectrons
+  double precision,intent(in)   :: thrs_N
+  double precision,intent(in)   :: S(nBas,nBas)
+  double precision,intent(in)   :: F_ao(nBas,nBas)
+  double precision,intent(in)   :: wcoord2(nfreqs2)
+  double precision,intent(in)   :: wweight2(nfreqs2)
+  complex*16,intent(in)         :: Sigma_c_ao(nfreqs2,nBas,nBas)
+
+! Local variables
+
+  integer                       :: isteps
+  double precision              :: thrs_closer
+  double precision              :: delta_chem_pot
+  double precision              :: chem_pot_change
+  double precision              :: chem_pot_old
+  double precision              :: grad_electrons
+  double precision              :: trace_2up
+  double precision              :: trace_up
+  double precision              :: trace_down
+  double precision              :: trace_2down
+  double precision              :: trace_old
+
+! Output variables
+
+  double precision,intent(inout):: chem_pot
+  double precision,intent(out)  :: trace_1_rdm
+  double precision,intent(out)  :: P_ao(nBas,nBas)
+  complex*16,intent(out)        :: G_ao(nBas,nBas)
+  complex*16,intent(out)        :: G_ao_iw2(nfreqs2,nBas,nBas)
+
+  !  Initialize 
+
+  isteps = 0
+  delta_chem_pot  = 2d-1
+  thrs_closer     = 2d-1
+  chem_pot_change = 0d0
+  grad_electrons  = 1d0
+  trace_1_rdm      = -1d0
+
+  write(*,*)
+  write(*,'(a)') ' Fixing the Tr[1D] at scGW '
+  write(*,*)
+  write(*,*)'------------------------------------------------------'
+  write(*,'(1X,A1,1X,A15,1X,A1,1X,A15,1X,A1A15,2X,A1)') &
+          '|','Tr[1D]','|','Chem. Pot.','|','Grad N','|'
+  write(*,*)'------------------------------------------------------'
+
+  ! First approach close the value with an error lower than 1
+
+  trace_old = 1d2
+  do while( abs(trace_old-nElectrons) > thrs_closer .and. isteps <= 100 )
+   isteps = isteps + 1
+   call get_1rdm_scGW(nBas,nfreqs2,nElectrons,thrs_N,chem_pot,S,F_ao,Sigma_c_ao, &
+                      wcoord2,wweight2,G_ao,G_ao_iw2,P_ao,trace_old) 
+   call get_1rdm_scGW(nBas,nfreqs2,nElectrons,thrs_N,chem_pot-delta_chem_pot,S,F_ao,Sigma_c_ao, &
+                      wcoord2,wweight2,G_ao,G_ao_iw2,P_ao,trace_down) 
+   call get_1rdm_scGW(nBas,nfreqs2,nElectrons,thrs_N,chem_pot+delta_chem_pot,S,F_ao,Sigma_c_ao, &
+                      wcoord2,wweight2,G_ao,G_ao_iw2,P_ao,trace_up) 
+   if( abs(trace_up-nElectrons) > abs(trace_old-nElectrons) .and. abs(trace_down-nElectrons) > abs(trace_old-nElectrons) ) then
+     write(*,'(1X,A1,F16.10,1X,A1,F16.10,1X,A1F16.10,1X,A1)') &
+     '|',trace_old,'|',chem_pot,'|',grad_electrons,'|'
+     delta_chem_pot = 0.75d0*delta_chem_pot
+     thrs_closer = 0.5d0*thrs_closer
+     write(*,*) "| contracting ...                                     |"
+     if(delta_chem_pot<1d-2) exit
+   else
+     if( abs(trace_up-nElectrons) < abs(trace_old-nElectrons) ) then
+      chem_pot=chem_pot+delta_chem_pot
+      write(*,'(1X,A1,F16.10,1X,A1,F16.10,1X,A1F16.10,1X,A1)') &
+      '|',trace_up,'|',chem_pot,'|',grad_electrons,'|'
+     else
+      if( abs(trace_down-nElectrons) < abs(trace_old-nElectrons) ) then
+       chem_pot=chem_pot-delta_chem_pot
+       write(*,'(1X,A1,F16.10,1X,A1,F16.10,1X,A1F16.10,1X,A1)') &
+       '|',trace_down,'|',chem_pot,'|',grad_electrons,'|'
+      endif
+     endif
+   endif
+  enddo
+
+  ! Do  final search
+
+  write(*,*)'------------------------------------------------------'
+  isteps = 0
+  delta_chem_pot  = 1.0d-3
+  do while( abs(trace_1_rdm-nElectrons) > thrs_N .and. isteps <= 100 )
+   isteps = isteps + 1
+   chem_pot = chem_pot + chem_pot_change
+   call get_1rdm_scGW(nBas,nfreqs2,nElectrons,thrs_N,chem_pot,S,F_ao,Sigma_c_ao, &
+                      wcoord2,wweight2,G_ao,G_ao_iw2,P_ao,trace_1_rdm)
+   call get_1rdm_scGW(nBas,nfreqs2,nElectrons,thrs_N,chem_pot+2d0*delta_chem_pot,S,F_ao,Sigma_c_ao, &
+                      wcoord2,wweight2,G_ao,G_ao_iw2,P_ao,trace_2up)
+   call get_1rdm_scGW(nBas,nfreqs2,nElectrons,thrs_N,chem_pot+delta_chem_pot,S,F_ao,Sigma_c_ao, &
+                      wcoord2,wweight2,G_ao,G_ao_iw2,P_ao,trace_up)
+   call get_1rdm_scGW(nBas,nfreqs2,nElectrons,thrs_N,chem_pot-delta_chem_pot,S,F_ao,Sigma_c_ao, &
+                      wcoord2,wweight2,G_ao,G_ao_iw2,P_ao,trace_down)
+   call get_1rdm_scGW(nBas,nfreqs2,nElectrons,thrs_N,chem_pot-2d0*delta_chem_pot,S,F_ao,Sigma_c_ao, &
+                      wcoord2,wweight2,G_ao,G_ao_iw2,P_ao,trace_2down)
+!   grad_electrons = (trace_up-trace_down)/(2d0*delta_chem_pot)
+   grad_electrons = (-trace_2up+8d0*trace_up-8d0*trace_down+trace_2down)/(12d0*delta_chem_pot)
+   chem_pot_change = -(trace_1_rdm-nElectrons)/(grad_electrons+1d-10)
+   ! Maximum change is bounded within +/- 0.10
+   chem_pot_change = max( min( chem_pot_change , 0.1d0 / real(isteps) ), -0.1d0 / real(isteps) )
+   write(*,'(1X,A1,F16.10,1X,A1,F16.10,1X,A1F16.10,1X,A1)') &
+   '|',trace_1_rdm,'|',chem_pot,'|',grad_electrons,'|'
+  enddo
+  write(*,*)'------------------------------------------------------'
+  write(*,*)
+
+end subroutine
+
+subroutine get_1rdm_scGW(nBas,nfreqs2,nElectrons,thrs_N,chem_pot,S,F_ao,Sigma_c_ao,wcoord2,wweight2, &
+                         G_ao,G_ao_iw2,P_ao,trace_1_rdm) 
+
+! Compute the scGW 1RDM
+
+  implicit none
+  include 'parameters.h'
+
+! Input variables
+
+  integer,intent(in)            :: nBas
+  integer,intent(in)            :: nfreqs2
+  double precision,intent(in)   :: chem_pot
+  double precision,intent(in)   :: nElectrons
+  double precision,intent(in)   :: thrs_N
+  double precision,intent(in)   :: S(nBas,nBas)
+  double precision,intent(in)   :: F_ao(nBas,nBas)
+  double precision,intent(in)   :: wcoord2(nfreqs2)
+  double precision,intent(in)   :: wweight2(nfreqs2)
+  complex*16,intent(in)         :: Sigma_c_ao(nfreqs2,nBas,nBas)
+
+! Local variables
+
+  integer                       :: jfreq
+  integer                       :: ibas,jbas
+  complex*16                    :: weval
+
+! Output variables
+
+  double precision,intent(out)  :: trace_1_rdm
+  double precision,intent(out)  :: P_ao(nBas,nBas)
+  complex*16,intent(out)        :: G_ao(nBas,nBas)
+  complex*16,intent(out)        :: G_ao_iw2(nfreqs2,nBas,nBas)
+
+  P_ao=0d0
+  G_ao_iw2=0d0
+  trace_1_rdm=0d0
+  do jfreq=1,nfreqs2
+   weval=im*wcoord2(jfreq)
+   ! Setting G(w) = [ (w+chem_pot)S + F +Sigma_c ]^-1
+   G_ao(:,:)= (weval + chem_pot)*S(:,:) - F_ao(:,:) - Sigma_c_ao(jfreq,:,:) ! Gnew(iw2)^-1
+   call complex_inverse_matrix(nBas,G_ao,G_ao)                              ! Gnew(iw2)
+   G_ao_iw2(jfreq,:,:)=G_ao(:,:)
+   P_ao(:,:) = P_ao(:,:) + wweight2(jfreq)*real(G_ao(:,:)+conjg(G_ao(:,:)))
+  enddo
+  P_ao(:,:) = P_ao(:,:)/pi + S(:,:)
+  do ibas=1,nBas
+   do jbas=1,nBas
+    trace_1_rdm=trace_1_rdm+P_ao(ibas,jbas)*S(ibas,jbas)
+   enddo
+  enddo
+
+end subroutine
+
+
