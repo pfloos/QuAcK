@@ -234,7 +234,7 @@ subroutine BQuAcK(working_dir,dotest,doaordm,doRHFB,doBRPA,dophRPA,doG0W0,doqsGW
       ! enddo
       !enddo
       !ntimes_=3000
-      !call scGWitauiw_ao_RHF(nBas,nOrb,nO,maxSCF,ENuc,Hc,S,pMAT,MOCoef,eHF,nfreqs,ntimes_,wcoord,wweight,vMAT)
+      !call scGWitauiw_ao(nBas,nOrb,nO,maxSCF,ENuc,Hc,S,pMAT,MOCoef,eHF,nfreqs,ntimes_,wcoord,wweight,vMAT)
       deallocate(pMATcorr)
      endif
      ! Test EcGM computed from Sigma_c(iw) [ NOTE: This is really bad numerically and never used in practice. ]

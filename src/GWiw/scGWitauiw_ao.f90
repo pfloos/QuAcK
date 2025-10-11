@@ -1,4 +1,4 @@
-subroutine scGWitauiw_ao_RHF(nBas,nOrb,nO,maxSCF,ENuc,Hc,S,P_in,cHF,eHF,nfreqs,ntimes,wcoord,wweight,vMAT)
+subroutine scGWitauiw_ao(nBas,nOrb,nO,maxSCF,ENuc,Hc,S,P_in,cHF,eHF,nfreqs,ntimes,wcoord,wweight,vMAT)
 
 ! Restricted scGW
 
@@ -32,6 +32,7 @@ subroutine scGWitauiw_ao_RHF(nBas,nOrb,nO,maxSCF,ENuc,Hc,S,P_in,cHF,eHF,nfreqs,n
 
   double precision              :: start_scGWitauiw     ,end_scGWitauiw       ,t_scGWitauiw
 
+  double precision              :: weval
   double precision              :: Ehfl,EcGM
   double precision              :: trace1,trace2
   double precision              :: eta,diff_Pao
@@ -51,7 +52,8 @@ subroutine scGWitauiw_ao_RHF(nBas,nOrb,nO,maxSCF,ENuc,Hc,S,P_in,cHF,eHF,nfreqs,n
   double precision,allocatable  :: P_ao_iter(:,:)
   double precision,allocatable  :: P_mo(:,:)
 
-  complex*16                    :: product,weval
+  complex*16                    :: product
+  complex*16                    :: weval_cpx
   complex*16,allocatable        :: wcoord2_cpx(:)
   complex*16,allocatable        :: Sigma_c_ao(:,:,:)
   complex*16,allocatable        :: G_ao_iw2(:,:,:)
@@ -171,8 +173,7 @@ subroutine scGWitauiw_ao_RHF(nBas,nOrb,nO,maxSCF,ENuc,Hc,S,P_in,cHF,eHF,nfreqs,n
   EcGM=0d0
   Sigma_c_ao=0d0
   do ifreq=1,nfreqs
-   trace1=0d0
-   trace2=0d0
+   trace1=0d0; trace2=0d0;
    ! Xo(i w) -> Wp_ao_iw(i w)
    Wp_ao_iw(:,:)=-matmul(Real(Chi0_ao_iw(ifreq,:,:)),vMAT(:,:))  
    do ibas=1,nBas2
@@ -190,11 +191,22 @@ subroutine scGWitauiw_ao_RHF(nBas,nOrb,nO,maxSCF,ENuc,Hc,S,P_in,cHF,eHF,nfreqs,n
    ! Wp_ao_iw(i w) -> Sigma_c_ao(i w2) 
    do jfreq=1,nfreqs2
     ! Build G(i (w+w2)) and G(i (w-w2))
-    weval=im*(wcoord2(jfreq)+wcoord(ifreq))
+    weval=wcoord2(jfreq)+wcoord(ifreq)
+    weval_cpx=im*weval
     ! TODO learn here how to do G(itau) -> G(iw) using Fourier transform vs exact result for iter 0
-    call G_AO_RHF(nBas,nOrb,nO,eta,cHF,eHF,weval,G_ao_1) ! Ok for iter 0 (for other iters I will need G(itau) -> G(i(w+w2)))
-    weval=im*(wcoord2(jfreq)-wcoord(ifreq))
-    call G_AO_RHF(nBas,nOrb,nO,eta,cHF,eHF,weval,G_ao_2) ! Ok for iter 0 (for other iters I will need G(itau) -> G(i(w-w2)))
+call Gitau2Giw(nBas,ntimes,tweight,tcoord,weval,G_ao_itau,G_ao_1)
+write(*,*)
+do ibas=1,nBas
+write(*,'(*(f20.7))') G_ao_1(ibas,:)
+enddo
+    call G_AO_RHF(nBas,nOrb,nO,eta,cHF,eHF,weval_cpx,G_ao_1) ! Ok for iter 0 (for other iters I will need G(itau) -> G(i(w+w2)))
+do ibas=1,nBas
+write(*,'(*(f20.7))') G_ao_1(ibas,:)
+enddo
+write(*,*)
+    weval=wcoord2(jfreq)-wcoord(ifreq)
+    weval_cpx=im*weval
+    call G_AO_RHF(nBas,nOrb,nO,eta,cHF,eHF,weval_cpx,G_ao_2) ! Ok for iter 0 (for other iters I will need G(itau) -> G(i(w-w2)))
     ! Build Sigma_c_ao(i w2)
     do ibas=1,nBas
      do jbas=1,nBas
@@ -298,7 +310,7 @@ subroutine scGWitauiw_ao_RHF(nBas,nOrb,nO,maxSCF,ENuc,Hc,S,P_in,cHF,eHF,nfreqs,n
  call wall_time(end_scGWitauiw)
  
  t_scGWitauiw = end_scGWitauiw - start_scGWitauiw
- write(*,'(A65,1X,F9.3,A8)') 'Total wall time for scGW@RHF = ',t_scGWitauiw,' seconds'
+ write(*,'(A65,1X,F9.3,A8)') 'Total wall time for scGW = ',t_scGWitauiw,' seconds'
  write(*,*)
 
  ! Restore values and deallocate dyn arrays
@@ -464,7 +476,7 @@ subroutine get_1rdm_scGW(nBas,nfreqs2,nElectrons,thrs_N,chem_pot,S,F_ao,Sigma_c_
 
   integer                       :: jfreq
   integer                       :: ibas,jbas
-  complex*16                    :: weval
+  complex*16                    :: weval_cpx
 
 ! Output variables
 
@@ -477,10 +489,10 @@ subroutine get_1rdm_scGW(nBas,nfreqs2,nElectrons,thrs_N,chem_pot,S,F_ao,Sigma_c_
   G_ao_iw2=0d0
   trace_1_rdm=0d0
   do jfreq=1,nfreqs2
-   weval=im*wcoord2(jfreq)
+   weval_cpx=im*wcoord2(jfreq)
    ! Setting G(w) = [ (w+chem_pot)S + F +Sigma_c ]^-1
-   G_ao(:,:)= (weval + chem_pot)*S(:,:) - F_ao(:,:) - Sigma_c_ao(jfreq,:,:) ! Gnew(iw2)^-1
-   call complex_inverse_matrix(nBas,G_ao,G_ao)                              ! Gnew(iw2)
+   G_ao(:,:)= (weval_cpx + chem_pot)*S(:,:) - F_ao(:,:) - Sigma_c_ao(jfreq,:,:) ! Gnew(iw2)^-1
+   call complex_inverse_matrix(nBas,G_ao,G_ao)                                  ! Gnew(iw2)
    G_ao_iw2(jfreq,:,:)=G_ao(:,:)
    P_ao(:,:) = P_ao(:,:) + wweight2(jfreq)*real(G_ao(:,:)+conjg(G_ao(:,:)))
   enddo

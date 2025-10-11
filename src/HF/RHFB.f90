@@ -498,7 +498,7 @@ subroutine RHFB(dotest,doaordm,doqsGW,maxSCF,thresh,max_diis,level_shift,nNuc,ZN
 
 ! Test if it can be a RHF solution
   ! TODO ...
-  if(is_fractional .and. .true.) then
+  if(is_fractional .and. .false.) then
    allocate(Tmp_test_RHF(nOrb_twice,nOrb_twice))
    eigVEC(1:nOrb           ,nOrb+1:nOrb_twice) =  eigVEC(nOrb+1:nOrb_twice,1:nOrb)
    eigVEC(nOrb+1:nOrb_twice,nOrb+1:nOrb_twice) = -eigVEC(1:nOrb           ,1:nOrb)
