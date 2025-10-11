@@ -33,6 +33,7 @@ subroutine scGWitauiw_ao_RHF(nBas,nOrb,nO,maxSCF,ENuc,Hc,S,P_in,cHF,eHF,nfreqs,n
   double precision              :: start_scGWitauiw     ,end_scGWitauiw       ,t_scGWitauiw
 
   double precision              :: Ehfl,EcGM
+  double precision              :: trace1,trace2
   double precision              :: eta,diff_Pao
   double precision              :: nElectrons
   double precision              :: trace_1_rdm
@@ -54,6 +55,7 @@ subroutine scGWitauiw_ao_RHF(nBas,nOrb,nO,maxSCF,ENuc,Hc,S,P_in,cHF,eHF,nfreqs,n
   complex*16,allocatable        :: wcoord2_cpx(:)
   complex*16,allocatable        :: Sigma_c_ao(:,:,:)
   complex*16,allocatable        :: G_ao_iw2(:,:,:)
+  complex*16,allocatable        :: G_ao_itau(:,:,:)
   complex*16,allocatable        :: G_ao_1(:,:),G_ao_2(:,:)
   complex*16,allocatable        :: G_minus_itau(:,:),G_plus_itau(:,:)
   complex*16,allocatable        :: Chi0_ao_itau(:,:)
@@ -74,7 +76,6 @@ subroutine scGWitauiw_ao_RHF(nBas,nOrb,nO,maxSCF,ENuc,Hc,S,P_in,cHF,eHF,nfreqs,n
  write(*,*)'*******************************************'
  write(*,*)
 
- iter=0
  eta=0d0
  thrs_N=1d-8
  thrs_Pao=1d-6
@@ -90,11 +91,11 @@ subroutine scGWitauiw_ao_RHF(nBas,nOrb,nO,maxSCF,ENuc,Hc,S,P_in,cHF,eHF,nfreqs,n
  eHF(:) = eHF(:)-chem_pot_saved
    
  allocate(Chi0_ao_iw(nfreqs,nBas2,nBas2))
+ allocate(G_ao_itau(2*ntimes,nBas,nBas))
  allocate(Sigma_c_ao(nfreqs2,nBas,nBas),G_ao_iw2(nfreqs2,nBas,nBas))
  allocate(P_ao(nBas,nBas),P_ao_old(nBas,nBas),P_ao_iter(nBas,nBas))
  allocate(F_ao(nBas,nBas),P_mo(nOrb,nOrb),cHFinv(nOrb,nBas),Occ(nOrb))
  allocate(G_ao_1(nBas,nBas),G_ao_2(nBas,nBas)) 
- allocate(G_minus_itau(nBas,nBas),G_plus_itau(nBas,nBas)) 
  allocate(Chi0_ao_itau(nBas2,nBas2),Wp_ao_iw(nBas2,nBas2)) 
  cHFinv=matmul(transpose(cHF),S)
  P_ao=P_in
@@ -123,21 +124,33 @@ subroutine scGWitauiw_ao_RHF(nBas,nOrb,nO,maxSCF,ENuc,Hc,S,P_in,cHF,eHF,nfreqs,n
  wcoord2(:)=wcoord2(:)/(1d0-wcoord2(:))
  wcoord2_cpx(:)=im*wcoord2(:)
 
+ iter=0
  do
   iter=iter+1
+  ! For iter=1 we build G_ao_itau as the RHF one
+  if(iter==1) then
+   allocate(G_minus_itau(nBas,nBas),G_plus_itau(nBas,nBas)) 
+   G_ao_itau=czero
+   do itau=1,ntimes
+    call G0itau_ao_RHF(nBas,nOrb,nO, tcoord(itau),G_plus_itau ,cHF,eHF)
+    call G0itau_ao_RHF(nBas,nOrb,nO,-tcoord(itau),G_minus_itau,cHF,eHF)
+    G_ao_itau(2*itau-1,:,:)=G_plus_itau(:,:)
+    G_ao_itau(2*itau  ,:,:)=G_minus_itau(:,:)
+   enddo
+   deallocate(G_minus_itau,G_plus_itau) 
+  endif
+
   ! Build using the time grid Xo(i tau) = -2i G(i tau) G(-i tau)
   !  then Fourier transform Xo(i tau) -> Xo(i w)
   Chi0_ao_iw(:,:,:)=czero
   do itau=1,ntimes
-   call G0itau_ao_RHF(nBas,nOrb,nO, tcoord(itau),G_plus_itau ,cHF,eHF)  ! tau > 0 (occ) is ok for iter 0
-   call G0itau_ao_RHF(nBas,nOrb,nO,-tcoord(itau),G_minus_itau,cHF,eHF)  ! tau < 0 (vir) is of for iter 0
    ! Xo(i tau) = -2i G(i tau) G(-i tau)
    do ibas=1,nBas
     do jbas=1,nBas
      do kbas=1,nBas
       do lbas=1,nBas                       
-                            ! r1   r2'                r2   r1'
-       product = G_plus_itau(ibas,jbas)*G_minus_itau(kbas,lbas)
+                                   ! r1   r2'                    r2   r1'
+       product = G_ao_itau(2*itau-1,ibas,jbas)*G_ao_itau(2*itau,kbas,lbas)
        if(abs(product)<1e-12) product=czero
        Chi0_ao_itau(1+(lbas-1)+(ibas-1)*nBas,1+(kbas-1)+(jbas-1)*nBas) = product
       enddo
@@ -155,24 +168,30 @@ subroutine scGWitauiw_ao_RHF(nBas,nOrb,nO,maxSCF,ENuc,Hc,S,P_in,cHF,eHF,nfreqs,n
 
   ! Build Wp_ao_iw(i w) and Sigma_c_ao(i w2)
   !    and compute Ec Galitskii-Migdal
-  EcGM=0d0  ! TODO compute EcGM
+  EcGM=0d0
   Sigma_c_ao=0d0
   do ifreq=1,nfreqs
+   trace1=0d0
+   trace2=0d0
    ! Xo(i w) -> Wp_ao_iw(i w)
-   Wp_ao_iw=0d0
+   Wp_ao_iw(:,:)=-matmul(Real(Chi0_ao_iw(ifreq,:,:)),vMAT(:,:))  
    do ibas=1,nBas2
-    Wp_ao_iw(ibas,ibas)=1d0
+    trace1=trace1+Wp_ao_iw(ibas,ibas)
+    Wp_ao_iw(ibas,ibas)=Wp_ao_iw(ibas,ibas)+1d0
    enddo
-   Wp_ao_iw(:,:)=Wp_ao_iw(:,:)-matmul(Real(Chi0_ao_iw(ifreq,:,:)),vMAT(:,:))  
    call inverse_matrix(nBas2,Wp_ao_iw,Wp_ao_iw)
    Wp_ao_iw(:,:)=matmul(Wp_ao_iw(:,:),Real(Chi0_ao_iw(ifreq,:,:)))
    Wp_ao_iw(:,:)=matmul(Wp_ao_iw(:,:),vMAT(:,:))
+   do ibas=1,nBas2
+    trace2=trace2+Wp_ao_iw(ibas,ibas)
+   enddo
+   EcGM=EcGM-wweight(ifreq)*(trace2+trace1)/(2d0*pi) ! iw contribution to EcGM
    Wp_ao_iw(:,:)=matmul(vMAT(:,:),Wp_ao_iw(:,:)) ! Now Wp_ao_iw is on the iw grid
    ! Wp_ao_iw(i w) -> Sigma_c_ao(i w2) 
    do jfreq=1,nfreqs2
     ! Build G(i (w+w2)) and G(i (w-w2))
     weval=im*(wcoord2(jfreq)+wcoord(ifreq))
-! TODO learn here how to do G(itau) -> G(iw) using Fourier transform vs exact result for iter 0
+    ! TODO learn here how to do G(itau) -> G(iw) using Fourier transform vs exact result for iter 0
     call G_AO_RHF(nBas,nOrb,nO,eta,cHF,eHF,weval,G_ao_1) ! Ok for iter 0 (for other iters I will need G(itau) -> G(i(w+w2)))
     weval=im*(wcoord2(jfreq)-wcoord(ifreq))
     call G_AO_RHF(nBas,nOrb,nO,eta,cHF,eHF,weval,G_ao_2) ! Ok for iter 0 (for other iters I will need G(itau) -> G(i(w-w2)))
@@ -190,7 +209,6 @@ subroutine scGWitauiw_ao_RHF(nBas,nOrb,nO,maxSCF,ENuc,Hc,S,P_in,cHF,eHF,nfreqs,n
     enddo
    enddo
   enddo
-  
   ! Converge with respect to the Fock operator (using only good P_ao matrices)
   iter_fock=0
   do
@@ -233,7 +251,7 @@ subroutine scGWitauiw_ao_RHF(nBas,nOrb,nO,maxSCF,ENuc,Hc,S,P_in,cHF,eHF,nfreqs,n
   P_mo=-matmul(matmul(cHFinv,P_ao),transpose(cHFinv)) ! Minus to order occ numbers
   call diagonalize_matrix(nOrb,P_mo,Occ)
   write(*,*)
-  write(*,'(a,f15.8,a,i5,a)') ' Trace scGW  ',trace_1_rdm,' after ',iter_fock,' Fock iterations '
+  write(*,'(a,f15.8,a,i5,a,i5)') ' Trace scGW  ',trace_1_rdm,' after ',iter_fock,' Fock iterations at global iter ',iter
   write(*,'(a,f15.8)')        ' Change of P ',diff_Pao
   write(*,'(a,f15.8)')        ' Chem. Pot.  ',chem_pot
   write(*,*)
@@ -288,10 +306,10 @@ subroutine scGWitauiw_ao_RHF(nBas,nOrb,nO,maxSCF,ENuc,Hc,S,P_in,cHF,eHF,nfreqs,n
  deallocate(Chi0_ao_iw,Wp_ao_iw)
  deallocate(tcoord,tweight) 
  deallocate(wcoord2,wweight2,wcoord2_cpx) 
+ deallocate(G_ao_itau)
  deallocate(Sigma_c_ao,G_ao_iw2) 
  deallocate(P_ao,P_ao_old,P_ao_iter,F_ao,P_mo,cHFinv,Occ) 
  deallocate(G_ao_1,G_ao_2) 
- deallocate(G_minus_itau,G_plus_itau) 
  deallocate(Chi0_ao_itau) 
 
 end subroutine 
@@ -416,6 +434,8 @@ subroutine fix_chem_pot_scGW(nBas,nfreqs2,nElectrons,thrs_N,chem_pot,S,F_ao,Sigm
   enddo
   write(*,*)'------------------------------------------------------'
   write(*,*)
+  call get_1rdm_scGW(nBas,nfreqs2,nElectrons,thrs_N,chem_pot,S,F_ao,Sigma_c_ao, &
+                     wcoord2,wweight2,G_ao,G_ao_iw2,P_ao,trace_old) 
 
 end subroutine
 
