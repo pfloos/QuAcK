@@ -64,12 +64,16 @@ subroutine RHFB(dotest,doaordm,doqsGW,maxSCF,thresh,max_diis,level_shift,nNuc,ZN
   double precision              :: N_anom
   double precision,external     :: trace_matrix
   double precision,allocatable  :: eigVAL(:)
+  double precision,allocatable  :: eigVAL_mo(:)
   double precision,allocatable  :: Occ(:)
   double precision,allocatable  :: err_diis(:,:)
   double precision,allocatable  :: H_HFB_diis(:,:)
   double precision,allocatable  :: cHF(:,:)
   double precision,allocatable  :: J(:,:)
   double precision,allocatable  :: K(:,:)
+  double precision,allocatable  :: Tmat(:,:)
+  double precision,allocatable  :: F_mo(:,:)
+  double precision,allocatable  :: eigVEC_mo(:,:)
   double precision,allocatable  :: eigVEC(:,:)
   double precision,allocatable  :: Tmp_test_RHF(:,:)
   double precision,allocatable  :: H_HFB(:,:)
@@ -499,13 +503,14 @@ subroutine RHFB(dotest,doaordm,doqsGW,maxSCF,thresh,max_diis,level_shift,nNuc,ZN
 ! Test if it can be a RHF solution
   ! TODO ...
   if(is_fractional .and. .false.) then
-   allocate(Tmp_test_RHF(nOrb_twice,nOrb_twice))
+   allocate(Tmp_test_RHF(nOrb_twice,nOrb_twice),Tmat(nOrb,nOrb),eigVEC_mo(nOrb,nOrb),F_mo(nOrb,nOrb),eigVAL_mo(nOrb))
    eigVEC(1:nOrb           ,nOrb+1:nOrb_twice) =  eigVEC(nOrb+1:nOrb_twice,1:nOrb)
    eigVEC(nOrb+1:nOrb_twice,nOrb+1:nOrb_twice) = -eigVEC(1:nOrb           ,1:nOrb)
    Tmp_test_RHF=matmul(matmul(transpose(eigVEC),H_HFB),eigVEC)
    write(*,*)
-   write(*,*) ' Check that the eigenvectors are W =  ( U   U)  building W and taking W^T H_HFB W = Diag[eigenvalues]'
+   write(*,*) ' Check that the eigenvectors are W =  ( U   U) by building W and taking W^T H_HFB W = Diag[eigenvalues]'
    write(*,*) '                                      ( U  -V) '
+   write(*,*) ' ------------------------------------------------------------------------------------------------------'
    write(*,*)
    write(*,'(A50)') '---------------------------------------'
    write(*,'(A50)') ' HFB QP energies using W'
@@ -519,9 +524,41 @@ subroutine RHFB(dotest,doaordm,doqsGW,maxSCF,thresh,max_diis,level_shift,nNuc,ZN
    enddo
    write(*,'(A33,1X,F16.10)') ' Error in W eigenstates  = ',err_no_rep
    write(*,*)
-      
+   Tmat(1:nOrb,1:nOrb)=eigVEC(1:nOrb,1:nOrb)           ! U
+   call inverse_matrix(nOrb,Tmat,Tmat)                 ! U^-1
+   Tmat=matmul(eigVEC(nOrb+1:nOrb_twice,1:nOrb),Tmat)  ! T = V U^-1 
+   F_mo(1:nOrb,1:nOrb)=H_HFB(1:nOrb,1:nOrb)+matmul(H_HFB(1:nOrb,nOrb+1:nOrb_twice),Tmat(1:nOrb,1:nOrb)) ! Fnew = F + Delta T
+   eigVEC_mo=F_mo
+   write(*,*) ' Transformed Fock operator = F + Delta T [ with T = V U^-1 ]'
+   write(*,*)
+   do iorb=1,nOrb
+    write(*,'(*(f10.5))') eigVEC_mo(iorb,:) 
+   enddo
+   write(*,*)
+   call diagonalize_matrix(nOrb,eigVEC_mo,eigVAL_mo)
+   write(*,*) ' Negative eigenvalues'
+   write(*,*)
+   do iorb=1,nOrb
+    write(*,'(f10.5)') eigVAL_mo(iorb)
+   enddo 
+   write(*,*)
+   !c=matmul(c,eigVEC_mo)
+   eigVEC_mo(1:nOrb,1:nOrb) = eigVEC(1:nOrb,1:nOrb) - matmul(Tmat(1:nOrb,1:nOrb),eigVEC(nOrb+1:nOrb_twice,1:nOrb)) ! M = U - T V
+   F_mo(1:nOrb,1:nOrb)=-H_HFB(1:nOrb,1:nOrb)-matmul(Tmat(1:nOrb,1:nOrb),H_HFB(1:nOrb,nOrb+1:nOrb_twice))           ! Fnew = -F - T Delta
+   F_mo=matmul(F_mo,eigVEC_mo)
+   call inverse_matrix(nOrb,eigVEC_mo,eigVEC_mo)
+   F_mo=matmul(eigVEC_mo,F_mo)
+   write(*,*) ' Testing the positive eigenvectors [ U -T V ] of the transformed Fock operator [ - F - T Delta ]'
+   write(*,*) ' Positive eigenvalues'
+   write(*,*)
+   do iorb=1,nOrb
+    write(*,'(f10.5)') F_mo(iorb,iorb) 
+   enddo
+   write(*,*)
+     
+ 
    call do_colinearity_test(nOrb,nOrb_twice,R)
-   deallocate(Tmp_test_RHF)
+   deallocate(Tmp_test_RHF,Tmat,eigVEC_mo,eigVAL_mo,F_mo)
   endif
  
 ! Testing zone
