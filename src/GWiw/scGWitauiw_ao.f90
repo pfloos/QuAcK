@@ -99,6 +99,7 @@ subroutine scGWitauiw_ao(nBas,nOrb,nO,maxSCF,ENuc,Hc,S,P_in,cHF,eHF,nfreqs,ntime
  allocate(Sigma_c_ao(nfreqs2,nBas,nBas),G_ao_iw2(nfreqs2,nBas,nBas))
  allocate(P_ao(nBas,nBas),P_ao_old(nBas,nBas),P_ao_iter(nBas,nBas))
  allocate(F_ao(nBas,nBas),P_mo(nOrb,nOrb),cHFinv(nOrb,nBas),Occ(nOrb))
+ allocate(G_minus_itau(nBas,nBas),G_plus_itau(nBas,nBas)) 
  allocate(G_ao_1(nBas,nBas),G_ao_2(nBas,nBas)) 
  allocate(Chi0_ao_itau(nBas2,nBas2),Wp_ao_iw(nBas2,nBas2)) 
  cHFinv=matmul(transpose(cHF),S)
@@ -133,7 +134,6 @@ subroutine scGWitauiw_ao(nBas,nOrb,nO,maxSCF,ENuc,Hc,S,P_in,cHF,eHF,nfreqs,ntime
   iter=iter+1
   ! For iter=1 we build G_ao_itau as the RHF one
   if(iter==1) then
-   allocate(G_minus_itau(nBas,nBas),G_plus_itau(nBas,nBas)) 
    G_ao_itau=czero
    do itau=1,ntimes
     call G0itau_ao_RHF(nBas,nOrb,nO, tcoord(itau),G_plus_itau ,cHF,eHF)
@@ -141,7 +141,6 @@ subroutine scGWitauiw_ao(nBas,nOrb,nO,maxSCF,ENuc,Hc,S,P_in,cHF,eHF,nfreqs,ntime
     G_ao_itau(2*itau-1,:,:)=G_plus_itau(:,:)
     G_ao_itau(2*itau  ,:,:)=G_minus_itau(:,:)
    enddo
-   deallocate(G_minus_itau,G_plus_itau) 
   endif
 
   ! Build using the time grid Xo(i tau) = -2i G(i tau) G(-i tau)
@@ -286,6 +285,42 @@ subroutine scGWitauiw_ao(nBas,nOrb,nO,maxSCF,ENuc,Hc,S,P_in,cHF,eHF,nfreqs,ntime
   ! Build G(i w2) -> G(i tau) [ i tau and -i tau ]
   !   G_ao_iw2(nfreqs2) --> G_ao_itau(ntimes_twice)
   ! TODO learn how to do this Fourier transform using G0 (where we know the analytic result)
+do ifreq=1,nfreqs2
+weval_cpx=im*wcoord2(ifreq)
+call G_AO_RHF(nBas,nOrb,nO,eta,cHF,eHF,weval_cpx,G_ao_1)
+G_ao_iw2(ifreq,:,:)=G_ao_1(:,:)
+enddo
+  G_ao_itau=czero
+  do itau=1,ntimes
+   call Giw2Gitau(nBas,nfreqs2,wweight2,wcoord2,tcoord(itau),G_ao_iw2,G_plus_itau,G_minus_itau)
+write(*,*) 
+write(*,*) 'Integrated' 
+write(*,*) 'G(i tau)' 
+do ibas=1,nBas
+write(*,'(*(f20.7))') G_plus_itau(ibas,:)
+enddo
+write(*,*) 'G(-i tau)'
+do ibas=1,nBas
+write(*,'(*(f20.7))') G_minus_itau(ibas,:)
+enddo
+write(*,*)
+   call G0itau_ao_RHF(nBas,nOrb,nO, tcoord(itau),G_plus_itau ,cHF,eHF)
+   call G0itau_ao_RHF(nBas,nOrb,nO,-tcoord(itau),G_minus_itau,cHF,eHF)
+write(*,*) 
+write(*,*) 'Analytic' 
+write(*,*) 'G(i tau)' 
+do ibas=1,nBas
+write(*,'(*(f20.7))') G_plus_itau(ibas,:)
+enddo
+write(*,*) 'G(-i tau)'
+do ibas=1,nBas
+write(*,'(*(f20.7))') G_minus_itau(ibas,:)
+enddo
+write(*,*)
+   G_ao_itau(2*itau-1,:,:)=G_plus_itau(:,:)
+   G_ao_itau(2*itau  ,:,:)=G_minus_itau(:,:)
+  enddo
+
 
  enddo
  write(*,*)
@@ -320,6 +355,7 @@ subroutine scGWitauiw_ao(nBas,nOrb,nO,maxSCF,ENuc,Hc,S,P_in,cHF,eHF,nfreqs,ntime
  deallocate(G_ao_itau)
  deallocate(Sigma_c_ao,G_ao_iw2) 
  deallocate(P_ao,P_ao_old,P_ao_iter,F_ao,P_mo,cHFinv,Occ) 
+ deallocate(G_minus_itau,G_plus_itau) 
  deallocate(G_ao_1,G_ao_2) 
  deallocate(Chi0_ao_itau) 
 
