@@ -25,14 +25,13 @@ subroutine scGWitauiw_ao(nBas,nOrb,nO,maxSCF,ENuc,Hc,S,P_in,cHF,eHF,nfreqs,ntime
 
 ! Local variables
 
-  integer                       :: nfreqs2
+  integer                       :: nfreqs2,ntimes_twice
   integer                       :: kind_int,itau,ifreq,jfreq
   integer                       :: ibas,jbas,kbas,lbas,nBas2
   integer                       :: iter,iter_fock
 
   double precision              :: start_scGWitauiw     ,end_scGWitauiw       ,t_scGWitauiw
 
-  double precision              :: weval
   double precision              :: Ehfl,EcGM
   double precision              :: trace1,trace2
   double precision              :: eta,diff_Pao
@@ -41,6 +40,7 @@ subroutine scGWitauiw_ao(nBas,nOrb,nO,maxSCF,ENuc,Hc,S,P_in,cHF,eHF,nfreqs,ntime
   double precision              :: thrs_N,thrs_Pao
   double precision              :: chem_pot,chem_pot_saved
   double precision              :: alpha,beta,lim_inf,lim_sup
+  double precision              :: weval(2)
   double precision,allocatable  :: tweight(:),tcoord(:)
   double precision,allocatable  :: wweight2(:),wcoord2(:)
   double precision,allocatable  :: Occ(:)
@@ -84,6 +84,7 @@ subroutine scGWitauiw_ao(nBas,nOrb,nO,maxSCF,ENuc,Hc,S,P_in,cHF,eHF,nfreqs,ntime
  nElectrons=2d0*nO
  nfreqs2=10*nfreqs
  nBas2=nBas*nBas
+ ntimes_twice=2*ntimes
  chem_pot_saved = 0.5d0*(eHF(nO)+eHF(nO+1))
  chem_pot = chem_pot_saved
  Ehfl=0d0
@@ -93,7 +94,7 @@ subroutine scGWitauiw_ao(nBas,nOrb,nO,maxSCF,ENuc,Hc,S,P_in,cHF,eHF,nfreqs,ntime
  eHF(:) = eHF(:)-chem_pot_saved
    
  allocate(Chi0_ao_iw(nfreqs,nBas2,nBas2))
- allocate(G_ao_itau(2*ntimes,nBas,nBas))
+ allocate(G_ao_itau(ntimes_twice,nBas,nBas))
  allocate(Sigma_c_ao(nfreqs2,nBas,nBas),G_ao_iw2(nfreqs2,nBas,nBas))
  allocate(P_ao(nBas,nBas),P_ao_old(nBas,nBas),P_ao_iter(nBas,nBas))
  allocate(F_ao(nBas,nBas),P_mo(nOrb,nOrb),cHFinv(nOrb,nBas),Occ(nOrb))
@@ -191,22 +192,24 @@ subroutine scGWitauiw_ao(nBas,nOrb,nO,maxSCF,ENuc,Hc,S,P_in,cHF,eHF,nfreqs,ntime
    ! Wp_ao_iw(i w) -> Sigma_c_ao(i w2) 
    do jfreq=1,nfreqs2
     ! Build G(i (w+w2)) and G(i (w-w2))
-    weval=wcoord2(jfreq)+wcoord(ifreq)
-    weval_cpx=im*weval
+    weval(1)=wcoord2(jfreq)+wcoord(ifreq)
+    weval(2)=wcoord2(jfreq)-wcoord(ifreq)
     ! TODO learn here how to do G(itau) -> G(iw) using Fourier transform vs exact result for iter 0
-call Gitau2Giw(nBas,ntimes,tweight,tcoord,weval,G_ao_itau,G_ao_1)
-write(*,*)
+    call Gitau2Giw(nBas,ntimes,ntimes_twice,tweight,tcoord,weval,G_ao_itau,G_ao_1,G_ao_2)
+write(*,*) 'iw ',wcoord(ifreq),wcoord2(jfreq),weval(1)
+write(*,*) 'integrated'
 do ibas=1,nBas
 write(*,'(*(f20.7))') G_ao_1(ibas,:)
 enddo
-    call G_AO_RHF(nBas,nOrb,nO,eta,cHF,eHF,weval_cpx,G_ao_1) ! Ok for iter 0 (for other iters I will need G(itau) -> G(i(w+w2)))
+weval_cpx=im*weval(1)
+call G_AO_RHF(nBas,nOrb,nO,eta,cHF,eHF,weval_cpx,G_ao_1) ! Ok for iter 0 (for other iters I will need G(itau) -> G(i(w+w2)))
+write(*,*) 'analytic'
 do ibas=1,nBas
 write(*,'(*(f20.7))') G_ao_1(ibas,:)
 enddo
 write(*,*)
-    weval=wcoord2(jfreq)-wcoord(ifreq)
-    weval_cpx=im*weval
-    call G_AO_RHF(nBas,nOrb,nO,eta,cHF,eHF,weval_cpx,G_ao_2) ! Ok for iter 0 (for other iters I will need G(itau) -> G(i(w-w2)))
+weval_cpx=im*weval(2)
+call G_AO_RHF(nBas,nOrb,nO,eta,cHF,eHF,weval_cpx,G_ao_2) ! Ok for iter 0 (for other iters I will need G(itau) -> G(i(w-w2)))
     ! Build Sigma_c_ao(i w2)
     do ibas=1,nBas
      do jbas=1,nBas
