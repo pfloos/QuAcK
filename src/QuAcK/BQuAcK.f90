@@ -233,7 +233,7 @@ subroutine BQuAcK(working_dir,dotest,doaordm,doRHFB,doBRPA,dophRPA,doG0W0,doqsGW
       !  enddo
       ! enddo
       !enddo
-      !ntimes_=3000
+      !ntimes_=1000
       !call scGWitauiw_ao(nBas,nOrb,nO,maxSCF,ENuc,Hc,S,pMAT,MOCoef,eHF,nfreqs,ntimes_,wcoord,wweight,vMAT)
       deallocate(pMATcorr)
      endif

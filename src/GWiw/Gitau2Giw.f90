@@ -20,6 +20,8 @@ subroutine Gitau2Giw(nBas,ntimes,ntimes_twice,tweight,tcoord,weval,Gitau,Giw1,Gi
 
   integer                       :: itau
 
+  double precision              :: fact ! [to cancell large oscillations due to itau or iw]
+
 ! Output variables
 
   complex*16,intent(out)        :: Giw1(nBas,nBas)
@@ -33,11 +35,15 @@ subroutine Gitau2Giw(nBas,ntimes,ntimes_twice,tweight,tcoord,weval,Gitau,Giw1,Gi
   
   do itau=1,ntimes
 
-   Giw1(:,:) = Giw1(:,:) - im*tweight(itau)*Gitau(2*itau-1,:,:)*Exp( im*tcoord(itau)*weval(1)) &  ! G(i tau)
-                         - im*tweight(itau)*Gitau(2*itau  ,:,:)*Exp(-im*tcoord(itau)*weval(1))    ! G(-i tau)
+   fact=1d0
+   if(tcoord(itau)>2d3 .or. weval(1)>2d3) fact=0d0
+   Giw1(:,:) = Giw1(:,:) - im*fact*tweight(itau)*Gitau(2*itau-1,:,:)*Exp( im*tcoord(itau)*weval(1)) &  ! G(i tau)
+                         - im*fact*tweight(itau)*Gitau(2*itau  ,:,:)*Exp(-im*tcoord(itau)*weval(1))    ! G(-i tau)
 
-   Giw2(:,:) = Giw2(:,:) - im*tweight(itau)*Gitau(2*itau-1,:,:)*Exp( im*tcoord(itau)*weval(2)) &  ! G(i tau)
-                         - im*tweight(itau)*Gitau(2*itau  ,:,:)*Exp(-im*tcoord(itau)*weval(2))    ! G(-i tau)
+   fact=1d0
+   if(tcoord(itau)>2d3 .or. weval(2)>2d3) fact=0d0
+   Giw2(:,:) = Giw2(:,:) - im*fact*tweight(itau)*Gitau(2*itau-1,:,:)*Exp( im*tcoord(itau)*weval(2)) &  ! G(i tau)
+                         - im*fact*tweight(itau)*Gitau(2*itau  ,:,:)*Exp(-im*tcoord(itau)*weval(2))    ! G(-i tau)
   enddo
 
   Giw1=conjg(Giw1)

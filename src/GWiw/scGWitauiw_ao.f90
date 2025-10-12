@@ -32,6 +32,7 @@ subroutine scGWitauiw_ao(nBas,nOrb,nO,maxSCF,ENuc,Hc,S,P_in,cHF,eHF,nfreqs,ntime
 
   double precision              :: start_scGWitauiw     ,end_scGWitauiw       ,t_scGWitauiw
 
+  double precision              :: fact
   double precision              :: Ehfl,EcGM
   double precision              :: trace1,trace2
   double precision              :: eta,diff_Pao
@@ -161,9 +162,11 @@ subroutine scGWitauiw_ao(nBas,nOrb,nO,maxSCF,ENuc,Hc,S,P_in,cHF,eHF,nfreqs,ntime
     enddo
    enddo
    Chi0_ao_itau=-2d0*im*Chi0_ao_itau ! The 2 factor is added to account for both spin contributions [ i.e., (up,up,up,up) and (down,down,down,down) ]
-   ! Xo(i tau) -> Xo(i w)
+   ! Xo(i tau) -> Xo(i w) [the factor fact cancells large itau and iw values that lead to large oscillations]
    do ifreq=1,nfreqs
-     Chi0_ao_iw(ifreq,:,:) = Chi0_ao_iw(ifreq,:,:) - im*tweight(itau)*Chi0_ao_itau(:,:)*Exp(im*tcoord(itau)*wcoord(ifreq))
+    fact=1d0
+    if(tcoord(itau)>2d3 .or. wcoord(ifreq)>2d3) fact=0d0
+    Chi0_ao_iw(ifreq,:,:) = Chi0_ao_iw(ifreq,:,:) - im*fact*tweight(itau)*Chi0_ao_itau(:,:)*Exp(im*tcoord(itau)*wcoord(ifreq))
    enddo 
   enddo
    ! Complete the Xo(i tau) -> Xo(i w)
@@ -194,22 +197,14 @@ subroutine scGWitauiw_ao(nBas,nOrb,nO,maxSCF,ENuc,Hc,S,P_in,cHF,eHF,nfreqs,ntime
     ! Build G(i (w+w2)) and G(i (w-w2))
     weval(1)=wcoord2(jfreq)+wcoord(ifreq)
     weval(2)=wcoord2(jfreq)-wcoord(ifreq)
-    ! TODO learn here how to do G(itau) -> G(iw) using Fourier transform vs exact result for iter 0
+    ! Doing G(itau) -> G(iw) using Fourier transform
     call Gitau2Giw(nBas,ntimes,ntimes_twice,tweight,tcoord,weval,G_ao_itau,G_ao_1,G_ao_2)
-write(*,*) 'iw ',wcoord(ifreq),wcoord2(jfreq),weval(1)
-write(*,*) 'integrated'
-do ibas=1,nBas
-write(*,'(*(f20.7))') G_ao_1(ibas,:)
-enddo
-weval_cpx=im*weval(1)
-call G_AO_RHF(nBas,nOrb,nO,eta,cHF,eHF,weval_cpx,G_ao_1) ! Ok for iter 0 (for other iters I will need G(itau) -> G(i(w+w2)))
-write(*,*) 'analytic'
-do ibas=1,nBas
-write(*,'(*(f20.7))') G_ao_1(ibas,:)
-enddo
-write(*,*)
-weval_cpx=im*weval(2)
-call G_AO_RHF(nBas,nOrb,nO,eta,cHF,eHF,weval_cpx,G_ao_2) ! Ok for iter 0 (for other iters I will need G(itau) -> G(i(w-w2)))
+!    if(iter==1) then ! For iter=1 we could use the analytic expresion of G_AO_RHF
+!     weval_cpx=im*weval(1)
+!     call G_AO_RHF(nBas,nOrb,nO,eta,cHF,eHF,weval_cpx,G_ao_1)
+!     weval_cpx=im*weval(2)
+!     call G_AO_RHF(nBas,nOrb,nO,eta,cHF,eHF,weval_cpx,G_ao_2)
+!    endif
     ! Build Sigma_c_ao(i w2)
     do ibas=1,nBas
      do jbas=1,nBas
@@ -288,8 +283,9 @@ call G_AO_RHF(nBas,nOrb,nO,eta,cHF,eHF,weval_cpx,G_ao_2) ! Ok for iter 0 (for ot
 
   if(iter==maxSCF) exit
 
-  ! Build G(i w2) -> G(i tau) [will we need i tau and -i tau?]
-  ! TODO learn how to do this Fourier transform
+  ! Build G(i w2) -> G(i tau) [ i tau and -i tau ]
+  !   G_ao_iw2(nfreqs2) --> G_ao_itau(ntimes_twice)
+  ! TODO learn how to do this Fourier transform using G0 (where we know the analytic result)
 
  enddo
  write(*,*)
