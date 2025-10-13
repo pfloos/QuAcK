@@ -21,7 +21,7 @@ subroutine Giw2Gitau(nBas,nfreqs,wweight,wcoord,tcoord,Giw,Gitau_plus,Gitau_minu
   integer                       :: ibas
   double precision              :: teval(2)
 
-  double precision              :: fact ! [to cancell large oscillations due to itau or iw]
+  double precision              :: fact ! [to cancell large oscillations due to iw]
 
 ! Output variables
 
@@ -39,7 +39,7 @@ subroutine Giw2Gitau(nBas,nfreqs,wweight,wcoord,tcoord,Giw,Gitau_plus,Gitau_minu
   do ifreq=1,nfreqs
     
    fact=1d0
-!   if(wcoord(ifreq)>1d2 .or. tcoord>1d2) fact=0d0
+   if(wcoord(ifreq)>1d2) fact=0d0
 
    Gitau_plus(:,:)  = Gitau_plus(:,:)                                                              &
                     + im*fact*wweight(ifreq)*      Giw(ifreq,:,:) *Exp( im*wcoord(ifreq)*teval(1)) &  ! G(i w)

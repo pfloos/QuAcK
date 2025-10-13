@@ -26,7 +26,7 @@ subroutine scGWitauiw_ao(nBas,nOrb,nO,maxSCF,ENuc,Hc,S,P_in,cHF,eHF,nfreqs,ntime
 ! Local variables
 
   integer                       :: nfreqs2,ntimes_twice
-  integer                       :: kind_int,itau,ifreq,jfreq
+  integer                       :: itau,ifreq,jfreq
   integer                       :: ibas,jbas,kbas,lbas,nBas2
   integer                       :: iter,iter_fock
 
@@ -40,7 +40,6 @@ subroutine scGWitauiw_ao(nBas,nOrb,nO,maxSCF,ENuc,Hc,S,P_in,cHF,eHF,nfreqs,ntime
   double precision              :: trace_1_rdm
   double precision              :: thrs_N,thrs_Pao
   double precision              :: chem_pot,chem_pot_saved
-  double precision              :: alpha,beta,lim_inf,lim_sup
   double precision              :: weval(2)
   double precision,allocatable  :: tweight(:),tcoord(:)
   double precision,allocatable  :: wweight2(:),wcoord2(:)
@@ -107,25 +106,15 @@ subroutine scGWitauiw_ao(nBas,nOrb,nO,maxSCF,ENuc,Hc,S,P_in,cHF,eHF,nfreqs,ntime
  P_ao=P_in
  P_ao_iter=P_ao
 
-!-------------------------!
-! Prepare time Quadrature !
-!-------------------------!
- kind_int = 1
- lim_inf = 0d0; lim_sup = 1d0;
- alpha = 0d0;  beta  = 0d0;
- call cgqf(ntimes,kind_int,alpha,beta,lim_inf,lim_sup,tcoord,tweight)
- tweight(:)=tweight(:)/((1d0-tcoord(:))**2d0)
- tcoord(:)=tcoord(:)/(1d0-tcoord(:))
+!---------------!
+! Prepare grids !
+!---------------!
 
-!-------------------------------------!
-! Prepare second frequency Quadrature !
-!-------------------------------------!
- kind_int = 1
- lim_inf = 0d0; lim_sup = 1d0;
- alpha = 0d0;  beta  = 0d0;
- call cgqf(nfreqs2,kind_int,alpha,beta,lim_inf,lim_sup,wcoord2,wweight2)
- wweight2(:)=wweight2(:)/((1d0-wcoord2(:))**2d0)
- wcoord2(:)=wcoord2(:)/(1d0-wcoord2(:))
+ call build_iw_itau_grid(nBas,nOrb,nO,ntimes,nfreqs2,0,wweight2,wcoord2,tweight,tcoord,cHF,eHF)
+
+!-----------!
+! scGW loop !
+!-----------!
 
  iter=0
  do
@@ -162,7 +151,7 @@ subroutine scGWitauiw_ao(nBas,nOrb,nO,maxSCF,ENuc,Hc,S,P_in,cHF,eHF,nfreqs,ntime
    ! Xo(i tau) -> Xo(i w) [the factor fact cancells large itau and iw values that lead to large oscillations]
    do ifreq=1,nfreqs
     fact=1d0
-    if(tcoord(itau)>2d3 .or. wcoord(ifreq)>2d3) fact=0d0
+    if(wcoord(ifreq)>2d3) fact=0d0
     Chi0_ao_iw(ifreq,:,:) = Chi0_ao_iw(ifreq,:,:) - im*fact*tweight(itau)*Chi0_ao_itau(:,:)*Exp(im*tcoord(itau)*wcoord(ifreq))
    enddo 
   enddo
