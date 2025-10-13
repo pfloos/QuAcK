@@ -39,15 +39,15 @@ subroutine Giw2Gitau(nBas,nfreqs,wweight,wcoord,tcoord,Giw,Gitau_plus,Gitau_minu
   do ifreq=1,nfreqs
     
    fact=1d0
-   if(wcoord(ifreq)>2d3 .or. tcoord>2d3) fact=0d0
+!   if(wcoord(ifreq)>1d2 .or. tcoord>1d2) fact=0d0
 
    Gitau_plus(:,:)  = Gitau_plus(:,:)                                                              &
-                    + im*fact*wweight(ifreq)*      Giw(ifreq,:,:) *Exp(-im*wcoord(ifreq)*teval(1)) &  ! G(i w)
-                    + im*fact*wweight(ifreq)*conjg(Giw(ifreq,:,:))*Exp( im*wcoord(ifreq)*teval(1))    ! G(-i w)
+                    + im*fact*wweight(ifreq)*      Giw(ifreq,:,:) *Exp( im*wcoord(ifreq)*teval(1)) &  ! G(i w)
+                    + im*fact*wweight(ifreq)*conjg(Giw(ifreq,:,:))*Exp(-im*wcoord(ifreq)*teval(1))    ! G(-i w)
 
    Gitau_minus(:,:) = Gitau_minus(:,:)                                                             &
-                    + im*fact*wweight(ifreq)*      Giw(ifreq,:,:) *Exp(-im*wcoord(ifreq)*teval(2)) &  ! G(i w)
-                    + im*fact*wweight(ifreq)*conjg(Giw(ifreq,:,:))*Exp( im*wcoord(ifreq)*teval(2))    ! G(-i tau)
+                    + im*fact*wweight(ifreq)*      Giw(ifreq,:,:) *Exp( im*wcoord(ifreq)*teval(2)) &  ! G(i w)
+                    + im*fact*wweight(ifreq)*conjg(Giw(ifreq,:,:))*Exp(-im*wcoord(ifreq)*teval(2))    ! G(-i tau)
   enddo
 
   Gitau_plus=Gitau_plus/(2d0*pi)

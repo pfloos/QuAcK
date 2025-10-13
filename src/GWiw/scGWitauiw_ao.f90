@@ -55,7 +55,6 @@ subroutine scGWitauiw_ao(nBas,nOrb,nO,maxSCF,ENuc,Hc,S,P_in,cHF,eHF,nfreqs,ntime
 
   complex*16                    :: product
   complex*16                    :: weval_cpx
-  complex*16,allocatable        :: wcoord2_cpx(:)
   complex*16,allocatable        :: Sigma_c_ao(:,:,:)
   complex*16,allocatable        :: G_ao_iw2(:,:,:)
   complex*16,allocatable        :: G_ao_itau(:,:,:)
@@ -94,6 +93,8 @@ subroutine scGWitauiw_ao(nBas,nOrb,nO,maxSCF,ENuc,Hc,S,P_in,cHF,eHF,nfreqs,ntime
  write(*,*)
  eHF(:) = eHF(:)-chem_pot_saved
    
+ allocate(tweight(ntimes),tcoord(ntimes))
+ allocate(wweight2(nfreqs2),wcoord2(nfreqs2))
  allocate(Chi0_ao_iw(nfreqs,nBas2,nBas2))
  allocate(G_ao_itau(ntimes_twice,nBas,nBas))
  allocate(Sigma_c_ao(nfreqs2,nBas,nBas),G_ao_iw2(nfreqs2,nBas,nBas))
@@ -112,7 +113,6 @@ subroutine scGWitauiw_ao(nBas,nOrb,nO,maxSCF,ENuc,Hc,S,P_in,cHF,eHF,nfreqs,ntime
  kind_int = 1
  lim_inf = 0d0; lim_sup = 1d0;
  alpha = 0d0;  beta  = 0d0;
- allocate(tweight(ntimes),tcoord(ntimes))
  call cgqf(ntimes,kind_int,alpha,beta,lim_inf,lim_sup,tcoord,tweight)
  tweight(:)=tweight(:)/((1d0-tcoord(:))**2d0)
  tcoord(:)=tcoord(:)/(1d0-tcoord(:))
@@ -123,11 +123,9 @@ subroutine scGWitauiw_ao(nBas,nOrb,nO,maxSCF,ENuc,Hc,S,P_in,cHF,eHF,nfreqs,ntime
  kind_int = 1
  lim_inf = 0d0; lim_sup = 1d0;
  alpha = 0d0;  beta  = 0d0;
- allocate(wweight2(nfreqs2),wcoord2(nfreqs2),wcoord2_cpx(nfreqs2))
  call cgqf(nfreqs2,kind_int,alpha,beta,lim_inf,lim_sup,wcoord2,wweight2)
  wweight2(:)=wweight2(:)/((1d0-wcoord2(:))**2d0)
  wcoord2(:)=wcoord2(:)/(1d0-wcoord2(:))
- wcoord2_cpx(:)=im*wcoord2(:)
 
  iter=0
  do
@@ -285,16 +283,16 @@ subroutine scGWitauiw_ao(nBas,nOrb,nO,maxSCF,ENuc,Hc,S,P_in,cHF,eHF,nfreqs,ntime
   ! Build G(i w2) -> G(i tau) [ i tau and -i tau ]
   !   G_ao_iw2(nfreqs2) --> G_ao_itau(ntimes_twice)
   ! TODO learn how to do this Fourier transform using G0 (where we know the analytic result)
-do ifreq=1,nfreqs2
-weval_cpx=im*wcoord2(ifreq)
+do jfreq=1,nfreqs2
+weval_cpx=im*wcoord2(jfreq)
 call G_AO_RHF(nBas,nOrb,nO,eta,cHF,eHF,weval_cpx,G_ao_1)
-G_ao_iw2(ifreq,:,:)=G_ao_1(:,:)
+G_ao_iw2(jfreq,:,:)=G_ao_1(:,:)
 enddo
   G_ao_itau=czero
   do itau=1,ntimes
    call Giw2Gitau(nBas,nfreqs2,wweight2,wcoord2,tcoord(itau),G_ao_iw2,G_plus_itau,G_minus_itau)
 write(*,*) 
-write(*,*) 'Integrated' 
+write(*,*) 'Integrated',tcoord(itau)
 write(*,*) 'G(i tau)' 
 do ibas=1,nBas
 write(*,'(*(f20.7))') G_plus_itau(ibas,:)
@@ -307,7 +305,7 @@ write(*,*)
    call G0itau_ao_RHF(nBas,nOrb,nO, tcoord(itau),G_plus_itau ,cHF,eHF)
    call G0itau_ao_RHF(nBas,nOrb,nO,-tcoord(itau),G_minus_itau,cHF,eHF)
 write(*,*) 
-write(*,*) 'Analytic' 
+write(*,*) 'Analytic',tcoord(itau) 
 write(*,*) 'G(i tau)' 
 do ibas=1,nBas
 write(*,'(*(f20.7))') G_plus_itau(ibas,:)
@@ -351,7 +349,7 @@ write(*,*)
  eHF(:) = eHF(:)+chem_pot_saved
  deallocate(Chi0_ao_iw,Wp_ao_iw)
  deallocate(tcoord,tweight) 
- deallocate(wcoord2,wweight2,wcoord2_cpx) 
+ deallocate(wcoord2,wweight2) 
  deallocate(G_ao_itau)
  deallocate(Sigma_c_ao,G_ao_iw2) 
  deallocate(P_ao,P_ao_old,P_ao_iter,F_ao,P_mo,cHFinv,Occ) 
