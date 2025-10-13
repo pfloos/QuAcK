@@ -266,7 +266,7 @@ subroutine OORG0W0(dotest,doACFDT,exchange_kernel,doXBS,dophBSE,dophBSE2,TDA_W,T
     write(*,*) "ERHF", ERHF
     write(*,*) "ENuc", ENuc
     write(*,*) "Emu", Emu
-    write(*,*) "total energy = ", Emu + ERHF + ENuc
+    write(*,*) "total energy = ", Emu + ENuc
     
     call optimize_orbitals(nBas,nOrb,nV,nR,nC,nO,N,Nsq,O,V,ERI_AO,ERI_MO,h,rdm1,rdm2,c,OOConv)
     

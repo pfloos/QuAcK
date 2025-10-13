@@ -1,5 +1,5 @@
-subroutine OOGG0W0(dotest,doACFDT,exchange_kernel,doXBS,dophBSE,dophBSE2,TDA_W,TDA,dBSE,dTDA,doppBSE,singlet,triplet, & 
-                 linearize,eta,doSRG,nBas,nOrb,nC,nO,nV,nR,nS,mu,ENuc,ERHF,ERI_AO,ERI_MO,                             &
+subroutine OOGG0W0(dotest,doACFDT,exchange_kernel,doXBS,dophBSE,dophBSE2,TDA_W,TDA,dBSE,dTDA,doppBSE,& 
+                linearize,eta,doSRG,do_linDM,nBas,nBas2,nC,nO,nV,nR,nS,mu,ENuc,EGHF,ERI_AO,ERI_MO,                             &
                  dipole_int,eHF,cHF,Sovl,XHF,Tkin,Vpot,Hc,PHF,FHF,eGW_out)
 
 ! Perform optimized orbital G0W0 calculation (optimal for excitation mu)
@@ -22,14 +22,12 @@ subroutine OOGG0W0(dotest,doACFDT,exchange_kernel,doXBS,dophBSE,dophBSE2,TDA_W,T
   logical,intent(in)            :: TDA
   logical,intent(in)            :: dBSE
   logical,intent(in)            :: dTDA
-  logical,intent(in)            :: singlet
-  logical,intent(in)            :: triplet
   logical,intent(in)            :: linearize
   double precision,intent(in)   :: eta
   logical,intent(in)            :: doSRG
+  logical,intent(in)            :: do_linDM
 
-  integer,intent(in)            :: nBas
-  integer,intent(in)            :: nOrb
+  integer,intent(in)            :: nBas,nBas2
   integer,intent(in)            :: nC
   integer,intent(in)            :: nO
   integer,intent(in)            :: nV
@@ -37,23 +35,23 @@ subroutine OOGG0W0(dotest,doACFDT,exchange_kernel,doXBS,dophBSE,dophBSE2,TDA_W,T
   integer,intent(in)            :: nS
   integer,intent(in)            :: mu
   double precision,intent(in)   :: ENuc
-  double precision,intent(in)   :: ERHF
+  double precision,intent(in)   :: EGHF
   double precision,intent(in)   :: ERI_AO(nBas,nBas,nBas,nBas)
-  double precision,intent(inout):: ERI_MO(nOrb,nOrb,nOrb,nOrb)
-  double precision,intent(in)   :: dipole_int(nOrb,nOrb,ncart)
-  double precision,intent(inout):: eHF(nOrb)
-  double precision,intent(inout):: cHF(nBas,nOrb)
-  double precision,intent(inout):: PHF(nBas,nBas)
-  double precision,intent(inout):: FHF(nBas,nBas)
-  double precision,intent(in)   :: Sovl(nBas,nBas)
-  double precision,intent(in)   :: Tkin(nBas,nBas)
-  double precision,intent(in)   :: Vpot(nBas,nBas)
-  double precision,intent(in)   :: Hc(nBas,nBas)
-  double precision,intent(in)   :: XHF(nBas,nOrb)
+  double precision,intent(inout):: ERI_MO(nBas2,nBas2,nBas2,nBas2)
+  double precision,intent(in)   :: dipole_int(nBas2,nBas2,ncart)
+  double precision,intent(inout):: eHF(nBas2)
+  double precision,intent(inout):: cHF(nBas2,nBas2)
+  double precision,intent(inout):: PHF(nBas2,nBas2)
+  double precision,intent(inout):: FHF(nBas2,nBas2)
+  double precision,intent(in)   :: Sovl(nBas2,nBas)
+  double precision,intent(in)   :: Tkin(nBas2,nBas2)
+  double precision,intent(in)   :: Vpot(nBas2,nBas2)
+  double precision,intent(in)   :: Hc(nBas2,nBas2)
+  double precision,intent(in)   :: XHF(nBas2,nBas2)
 
 ! Local variables
 
-  logical                       :: print_W   = .false.
+  logical                       :: print_W   = .true.
   logical                       :: plot_self = .false.
   logical                       :: dRPA_W
   integer                       :: isp_W
@@ -80,6 +78,8 @@ subroutine OOGG0W0(dotest,doACFDT,exchange_kernel,doXBS,dophBSE,dophBSE2,TDA_W,T
   double precision,allocatable  :: lampl(:,:)
   double precision,allocatable  :: rp(:)
   double precision,allocatable  :: lp(:)
+  double precision,allocatable  :: Ca(:,:),Cb(:,:)
+  double precision,allocatable  :: ERI_tmp(:,:,:,:)
 
   double precision,allocatable  :: eGWlin(:)
   double precision,allocatable  :: eGW(:)
@@ -106,7 +106,7 @@ subroutine OOGG0W0(dotest,doACFDT,exchange_kernel,doXBS,dophBSE,dophBSE2,TDA_W,T
   double precision,external     :: trace_matrix
 ! Output variables
 
-  double precision,intent(out)  :: eGW_out(nOrb)
+  double precision,intent(out)  :: eGW_out(nBas2)
   
   V = nV - nR
   O = nO - nC
@@ -149,10 +149,10 @@ subroutine OOGG0W0(dotest,doACFDT,exchange_kernel,doXBS,dophBSE,dophBSE2,TDA_W,T
   
 ! Memory allocation
 
-  allocate(Aph(nS,nS),Bph(nS,nS),SigC(nOrb),Z(nOrb),Om(nS),XpY(nS,nS),XmY(nS,nS),rho(nOrb,nOrb,nS), & 
-           eGW(nOrb),eGWlin(nOrb),X(nS,nS),X_inv(nS,nS),Y(nS,nS),Xbar(nS,nS),Xbar_inv(nS,nS),lambda(nS,nS),t(nS,nS),&
-           rampl(nS,N),lampl(nS,N),rp(N),lp(N),h(N,N),c(nBas,nOrb),&
-           rdm1(N,N),rdm2(N,N,N,N),J(nBas,nBas),K(nBas,nBas),Fp(nOrb,nOrb))
+  allocate(Aph(nS,nS),Bph(nS,nS),SigC(nBas2),Z(nBas2),Om(nS),XpY(nS,nS),XmY(nS,nS),rho(nBas2,nBas2,nS), & 
+           eGW(nBas2),eGWlin(nBas2),X(nS,nS),X_inv(nS,nS),Y(nS,nS),Xbar(nS,nS),Xbar_inv(nS,nS),lambda(nS,nS),t(nS,nS),&
+           rampl(nS,N),lampl(nS,N),rp(N),lp(N),h(N,N),c(nBas2,nBas2),&
+           rdm1(N,N),rdm2(N,N,N,N),J(nBas2,nBas2),K(nBas2,nBas2),Fp(nBas2,nBas2))
 
 ! Initialize variables for OO  
   OOi           = 1d0
@@ -180,29 +180,27 @@ subroutine OOGG0W0(dotest,doACFDT,exchange_kernel,doXBS,dophBSE,dophBSE2,TDA_W,T
   !-------------------!
   ! Compute screening !
   !-------------------!
-  
-                   call phRLR_A(isp_W,dRPA_W,nOrb,nC,nO,nV,nR,nS,1d0,eHF,ERI_MO,Aph)
-    if(.not.TDA_W) call phRLR_B(isp_W,dRPA_W,nOrb,nC,nO,nV,nR,nS,1d0,ERI_MO,Bph)
-  
-    call phRLR(TDA_W,nS,Aph,Bph,EcRPA,Om,XpY,XmY)
+                   call phGLR_A(dRPA_W,nBas2,nC,nO,nV,nR,nS,1d0,eHF,ERI_MO,Aph)
+    if(.not.TDA_W) call phGLR_B(dRPA_W,nBas2,nC,nO,nV,nR,nS,1d0,ERI_MO,Bph)
+    call phGLR(TDA_W,nS,Aph,Bph,EcRPA,Om,XpY,XmY)
     
     write(*,*) "EcRPA = ", EcRPA
-    if(print_W) call print_excitation_energies('phRPA@RHF','singlet',nS,Om)
+    if(print_W) call print_excitation_energies('phRPA@GHF','generalized',nS,Om)
   
   !--------------------------!
   ! Compute spectral weights !
   !--------------------------!
   
-    call RGW_excitation_density(nOrb,nC,nO,nR,nS,ERI_MO,XpY,rho)
+    call GGW_excitation_density(nBas2,nC,nO,nR,nS,ERI_MO,XpY,rho)
   
   !------------------------!
   ! Compute GW self-energy !
   !------------------------!
   
     if(doSRG) then 
-      call RGW_SRG_self_energy_diag(flow,nBas,nOrb,nC,nO,nV,nR,nS,eHF,Om,rho,EcGM,SigC,Z)
+      call GGW_SRG_self_energy_diag(flow,nBas2,nC,nO,nV,nR,nS,eHF,Om,rho,EcGM,SigC,Z)
     else
-      call RGW_self_energy_diag(eta,nBas,nOrb,nC,nO,nV,nR,nS,eHF,Om,rho,EcGM,SigC,Z)
+      call GGW_self_energy_diag(eta,nBas2,nC,nO,nV,nR,nS,eHF,Om,rho,EcGM,SigC,Z,ERI_MO)
     end if
   
   !-----------------------------------!
@@ -224,23 +222,22 @@ subroutine OOGG0W0(dotest,doACFDT,exchange_kernel,doXBS,dophBSE,dophBSE2,TDA_W,T
       write(*,*) ' *** Quasiparticle energies obtained by root search *** '
       write(*,*)
     
-      call RGW_QP_graph(doSRG,eta,flow,nOrb,nC,nO,nV,nR,nS,eHF,Om,rho,eGWlin,eHF,eGW,Z)
+      call GGW_QP_graph(doSRG,eta,flow,nBas2,nC,nO,nV,nR,nS,eHF,Om,rho,eGWlin,eHF,eGW,Z)
   
     end if
   
-  ! Plot self-energy, renormalization factor, and spectral function
+  ! Compute the RPA correlation energy
+
+                 call phGLR_A(dRPA_W,nBas2,nC,nO,nV,nR,nS,1d0,eHF,ERI_MO,Aph)
+  if(.not.TDA_W) call phGLR_B(dRPA_W,nBas2,nC,nO,nV,nR,nS,1d0,ERI_MO,Bph)
+  call phGLR(TDA_W,nS,Aph,Bph,EcRPA,Om,XpY,XmY)
+  write(*,*) "EcRPA", EcRPA
   
-    if(plot_self) call RGW_plot_self_energy(nOrb,eta,nC,nO,nV,nR,nS,eHF,eGW,Om,rho)
-  
-  ! Cumulant expansion 
-  
-  ! call RGWC(dotest,eta,nOrb,nC,nO,nV,nR,nS,Om,rho,eHF,eHF,eGW,Z)
-   
   !--------------!
   ! Dump results !
   !--------------!
   
-    call print_GG0W0(nOrb,nC,nO,nV,nR,eHF,ENuc,ERHF,SigC,Z,eGW,EcRPA,EcGM)
+    call print_GG0W0(nBas2,nC,nO,nV,nR,eHF,ENuc,EGHF,SigC,Z,eGW,EcRPA,EcGM)
   
     eGW_out(:) = eGW(:)
     
@@ -257,24 +254,52 @@ subroutine OOGG0W0(dotest,doACFDT,exchange_kernel,doXBS,dophBSE,dophBSE2,TDA_W,T
     ! Calculate rdm1
     call GG0W0_rdm1(O,V,N,nS,lampl,rampl,lp,rp,lambda,t,rdm1)
     write(*,*) "Trace rdm1: ", trace_matrix(N,rdm1)
-    call matout(N,N,rdm1)
+    !call matout(N,N,rdm1)
     ! Calculate rdm2
     call GG0W0_rdm2(O,V,N,nS,lampl,rampl,lp,rp,lambda,t,rdm2)
     write(*,*) "Trace rdm2: ", trace_matrix(Nsq,rdm2)
-    call matout(Nsq,Nsq,rdm2)
+    !call matout(Nsq,Nsq,rdm2)
     EOld = Emu 
     call energy_from_rdm(ENuc,N,h,ERI_MO,rdm1,rdm2,Emu)
     write(*,*) "Erpa = ", Emu
-    write(*,*) "total energy = ", Emu + ERHF + ENuc
+    write(*,*) "total energy = ", Emu + ENuc
     
-    call optimize_orbitals(nBas,nOrb,nV,nR,nC,nO,N,Nsq,O,V,ERI_AO,ERI_MO,h,rdm1,rdm2,c,OOConv)
+    call optimize_orbitals(nBas,nBas2,nV,nR,nC,nO,N,Nsq,O,V,ERI_AO,ERI_MO,h,rdm1,rdm2,c,OOConv)
 
     
     ! Transform integrals
 
+    !----------------------------------!
+    ! AO to MO integral transformation !
+    !----------------------------------!
+    
     h = matmul(transpose(c),matmul(Hc,c))
-    call AOtoMO_ERI_GHF(nBas,N,c,ERI_AO,ERI_MO)
-
+   
+    write(*,*)
+    write(*,*) 'AO to MO transformation... Please be patient'
+    write(*,*)
+   
+    allocate(Ca(nBas,nBas2),Cb(nBas,nBas2),ERI_tmp(nBas2,nBas2,nBas2,nBas2))
+   
+    Ca(:,:) = cHF(1:nBas,1:nBas2)
+    Cb(:,:) = cHF(nBas+1:nBas2,1:nBas2)
+   
+    ! 4-index transform 
+   
+    call AOtoMO_ERI_GHF(nBas,nBas2,Ca,Ca,ERI_AO,ERI_tmp)
+    ERI_MO(:,:,:,:) = ERI_tmp(:,:,:,:)
+   
+    call AOtoMO_ERI_GHF(nBas,nBas2,Ca,Cb,ERI_AO,ERI_tmp)
+    ERI_MO(:,:,:,:) = ERI_MO(:,:,:,:) + ERI_tmp(:,:,:,:)
+   
+    call AOtoMO_ERI_GHF(nBas,nBas2,Cb,Ca,ERI_AO,ERI_tmp)
+    ERI_MO(:,:,:,:) = ERI_MO(:,:,:,:) + ERI_tmp(:,:,:,:)
+   
+    call AOtoMO_ERI_GHF(nBas,nBas2,Cb,Cb,ERI_AO,ERI_tmp)
+    ERI_MO(:,:,:,:) = ERI_MO(:,:,:,:) + ERI_tmp(:,:,:,:)
+   
+    deallocate(Ca,Cb,ERI_tmp)
+   
     write(*,*) '----------------------------------------------------------'
     write(*,'(A10,I4,A30)') ' Iteration', OOi ,'for GG0W0 orbital optimization'
     write(*,*) '----------------------------------------------------------'
@@ -283,7 +308,7 @@ subroutine OOGG0W0(dotest,doACFDT,exchange_kernel,doXBS,dophBSE,dophBSE2,TDA_W,T
     write(*,*) '----------------------------------------------------------'
     write(*,*)
     
-    if (OOi==3) then
+    if (OOi==1) then
       OOConv = 0d0 ! remove only for debugging
     end if
 

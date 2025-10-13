@@ -33,10 +33,9 @@ do p = 1, N
   end do
 end do
 
-Emu = E1 + 0.5*E2
+Emu = E1 + 0.25*E2
 write(*,'(A25,F16.10)') ' One-electron energy = ',E1
 write(*,'(A25,F16.10)') ' Two-electron energy = ',E2
 write(*,'(A25,F16.10)') ' Electronic   energy = ',Emu
-write(*,'(A25,F16.10)') ' Total        energy = ',Emu + ENuc
 write(*,*)
 end subroutine
