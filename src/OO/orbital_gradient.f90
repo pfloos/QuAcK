@@ -37,8 +37,6 @@ subroutine orbital_gradient(O,V,N,Nsq,h,ERI_MO,rdm1,rdm2,grad)
       pq = pq + 1
 
       do r=1,N
-        write(*,*) p,r
-        write(*,*) rdm1(p,r)
         grad(pq) = grad(pq) + h(r,p)*rdm1(r,q) - h(q,r)*rdm1(p,r) &
                    - h(r,q)*rdm1(r,p) + h(p,r)*rdm1(q,r)
       end do

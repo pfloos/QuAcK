@@ -180,7 +180,7 @@ subroutine GHF(dotest,maxSCF,thresh,max_diis,guess_type,mix,level_shift,nNuc,ZNu
 
     err(:,:) = matmul(F,matmul(P,S)) - matmul(matmul(S,P),F)
 
-    if(nSCF > 1) Conv = maxval(abs(err))
+    if(nSCF > 2) Conv = maxval(abs(err))
     
 !   Kinetic energy
 

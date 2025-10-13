@@ -154,7 +154,7 @@ subroutine RHF(dotest,doaordm,maxSCF,thresh,max_diis,guess_type,level_shift,nNuc
     ! Check convergence 
 
     err = matmul(F,matmul(P,S)) - matmul(matmul(S,P),F)
-    if(nSCF > 1) Conv = maxval(abs(err))
+    if(nSCF > 2) Conv = maxval(abs(err))
 
     ! Kinetic energy
 
