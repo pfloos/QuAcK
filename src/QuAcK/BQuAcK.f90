@@ -55,7 +55,6 @@ subroutine BQuAcK(working_dir,dotest,doaordm,doRHFB,doBRPA,dophRPA,doG0W0,doqsGW
   integer                        :: nOrb_twice
   integer                        :: ixyz
   integer                        :: iorb,jorb,korb,lorb
-  integer                        :: ntimes_
                                 
   double precision               :: chem_pot,Val
   double precision               :: start_HF     ,end_HF       ,t_HF
@@ -233,8 +232,7 @@ subroutine BQuAcK(working_dir,dotest,doaordm,doRHFB,doBRPA,dophRPA,doG0W0,doqsGW
       !  enddo
       ! enddo
       !enddo
-      !ntimes_=1000
-      !call scGWitauiw_ao(nBas,nOrb,nO,maxSCF,ENuc,Hc,S,pMAT,MOCoef,eHF,nfreqs,ntimes_,wcoord,wweight,vMAT)
+      !call scGWitauiw_ao(nBas,nOrb,nO,maxSCF,ENuc,Hc,S,pMAT,MOCoef,eHF,nfreqs,wcoord,wweight,vMAT)
       deallocate(pMATcorr)
      endif
      ! Test EcGM computed from Sigma_c(iw) [ NOTE: This is really bad numerically and never used in practice. ]

@@ -1,4 +1,4 @@
-subroutine scGWitauiw_ao(nBas,nOrb,nO,maxSCF,ENuc,Hc,S,P_in,cHF,eHF,nfreqs,ntimes,wcoord,wweight,vMAT)
+subroutine scGWitauiw_ao(nBas,nOrb,nO,maxSCF,ENuc,Hc,S,P_in,cHF,eHF,nfreqs,wcoord,wweight,vMAT)
 
 ! Restricted scGW
 
@@ -8,7 +8,6 @@ subroutine scGWitauiw_ao(nBas,nOrb,nO,maxSCF,ENuc,Hc,S,P_in,cHF,eHF,nfreqs,ntime
 ! Input variables
 
   integer,intent(in)            :: nfreqs
-  integer,intent(in)            :: ntimes
   integer,intent(in)            :: nBas
   integer,intent(in)            :: nOrb
   integer,intent(in)            :: nO
@@ -24,7 +23,11 @@ subroutine scGWitauiw_ao(nBas,nOrb,nO,maxSCF,ENuc,Hc,S,P_in,cHF,eHF,nfreqs,ntime
   double precision,intent(in)   :: vMAT(nBas*nBas,nBas*nBas)
 
 ! Local variables
+ 
+  logical                       :: file_exists
 
+  integer                       :: iunit=312
+  integer                       :: ntimes
   integer                       :: nfreqs2,ntimes_twice
   integer                       :: itau,ifreq,jfreq
   integer                       :: ibas,jbas,kbas,lbas,nBas2
@@ -81,9 +84,7 @@ subroutine scGWitauiw_ao(nBas,nOrb,nO,maxSCF,ENuc,Hc,S,P_in,cHF,eHF,nfreqs,ntime
  thrs_N=1d-8
  thrs_Pao=1d-6
  nElectrons=2d0*nO
- nfreqs2=10*nfreqs
  nBas2=nBas*nBas
- ntimes_twice=2*ntimes
  chem_pot_saved = 0.5d0*(eHF(nO)+eHF(nO+1))
  chem_pot = chem_pot_saved
  Ehfl=0d0
@@ -92,11 +93,7 @@ subroutine scGWitauiw_ao(nBas,nOrb,nO,maxSCF,ENuc,Hc,S,P_in,cHF,eHF,nfreqs,ntime
  write(*,*)
  eHF(:) = eHF(:)-chem_pot_saved
    
- allocate(tweight(ntimes),tcoord(ntimes))
- allocate(wweight2(nfreqs2),wcoord2(nfreqs2))
  allocate(Chi0_ao_iw(nfreqs,nBas2,nBas2))
- allocate(G_ao_itau(ntimes_twice,nBas,nBas))
- allocate(Sigma_c_ao(nfreqs2,nBas,nBas),G_ao_iw2(nfreqs2,nBas,nBas))
  allocate(P_ao(nBas,nBas),P_ao_old(nBas,nBas),P_ao_iter(nBas,nBas))
  allocate(F_ao(nBas,nBas),P_mo(nOrb,nOrb),cHFinv(nOrb,nBas),Occ(nOrb))
  allocate(G_minus_itau(nBas,nBas),G_plus_itau(nBas,nBas)) 
@@ -110,7 +107,57 @@ subroutine scGWitauiw_ao(nBas,nOrb,nO,maxSCF,ENuc,Hc,S,P_in,cHF,eHF,nfreqs,ntime
 ! Prepare grids !
 !---------------!
 
- call build_iw_itau_grid(nBas,nOrb,nO,ntimes,nfreqs2,0,wweight2,wcoord2,tweight,tcoord,cHF,eHF)
+ ntimes=1;nfreqs2=1;
+ call build_iw_itau_grid(nBas,nOrb,nO,ntimes,nfreqs2,0,cHF,eHF)
+ ntimes_twice=2*ntimes
+ allocate(tweight(ntimes),tcoord(ntimes))
+ allocate(wweight2(nfreqs2),wcoord2(nfreqs2))
+ allocate(Sigma_c_ao(nfreqs2,nBas,nBas),G_ao_iw2(nfreqs2,nBas,nBas))
+ allocate(G_ao_itau(ntimes_twice,nBas,nBas))
+ write(*,*)
+ write(*,'(*(a,i5))') ' Final ntimes grid size ',ntimes
+ write(*,'(*(a,i5))') ' Final nfreqs grid size ',nfreqs2
+ inquire(file='tcoord.txt', exist=file_exists)
+ if(file_exists) then
+  write(*,*) 'Reading tcoord from tcoord.txt'
+  tcoord=0d0
+  open(unit=iunit, form='formatted', file='tcoord.txt', status='old')
+  do itau=1,ntimes
+   read(iunit,*) tcoord(itau)
+  enddo
+  close(iunit)
+ endif
+ inquire(file='tweight.txt', exist=file_exists)
+ if(file_exists) then
+  write(*,*) 'Reading tweight from tweight.txt'
+  tweight=0d0
+  open(unit=iunit, form='formatted', file='tweight.txt', status='old')
+  do itau=1,ntimes
+   read(iunit,*) tweight(itau)
+  enddo
+  close(iunit)
+ endif
+ inquire(file='wcoord.txt', exist=file_exists)
+ if(file_exists) then
+  write(*,*) 'Reading wcoord2 from wcoord.txt'
+  wcoord2=0d0
+  open(unit=iunit, form='formatted', file='wcoord.txt', status='old')
+  do jfreq=1,nfreqs2
+   read(iunit,*) wcoord2(jfreq)
+  enddo
+  close(iunit)
+ endif
+ inquire(file='wweight.txt', exist=file_exists)
+ if(file_exists) then
+  write(*,*) 'Reading wweight2 from wweight.txt'
+  wweight2=0d0
+  open(unit=iunit, form='formatted', file='wweight.txt', status='old')
+  do jfreq=1,nfreqs2
+   read(iunit,*) wweight2(jfreq)
+  enddo
+  close(iunit)
+ endif
+ write(*,*)
 
 !-----------!
 ! scGW loop !
