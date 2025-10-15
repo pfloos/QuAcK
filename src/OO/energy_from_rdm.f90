@@ -1,8 +1,7 @@
-subroutine energy_from_rdm(ENuc,N,h,ERI_MO,rdm1,rdm2,Emu)
+subroutine energy_from_rdm(N,h,ERI_MO,rdm1,rdm2,Emu)
 
 !input
 integer,intent(in)               :: N
-double precision                 :: ENuc
 double precision,intent(in)      :: h(N,N),ERI_MO(N,N,N,N),rdm1(N,N),rdm2(N,N,N,N)
 
 !local
@@ -27,15 +26,17 @@ do p = 1, N
   do q = 1, N
     do r = 1, N
       do s = 1, N
-        E2 = E2 + eri_mo(p,q,r,s) * rdm2(p,q,r,s)
+        E2 = E2 + ERI_MO(p,q,r,s) * rdm2(p,q,r,s)
+        write(*,*) p,q,r,s,"rdm2",rdm2(p,q,r,s)
+
       end do
     end do
   end do
 end do
 
-Emu = E1 + 0.25*E2
+Emu = E1 + 0.5d0*E2
 write(*,'(A25,F16.10)') ' One-electron energy = ',E1
-write(*,'(A25,F16.10)') ' Two-electron energy = ',E2
+write(*,'(A25,F16.10)') ' Two-electron energy = ',0.5d0*E2
 write(*,'(A25,F16.10)') ' Electronic   energy = ',Emu
 write(*,*)
 end subroutine

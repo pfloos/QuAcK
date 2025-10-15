@@ -14,10 +14,15 @@ integer                          :: nn
 ! Output
 double precision,intent(out)     :: rdm1(N,N)
 
+!-----------------------!
+! Correlation part      !
+!-----------------------!
+
 rdm1(:,:) = 0d0
 
 ! Occupied
 do i=1,O
+  rdm1(i,i) = rdm1(i,i) + 1d0 ! HF contribution
   do j=1,O
     do c=O+1,N
       do k=1,O

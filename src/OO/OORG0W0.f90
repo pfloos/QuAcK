@@ -104,6 +104,8 @@ subroutine OORG0W0(dotest,doACFDT,exchange_kernel,doXBS,dophBSE,dophBSE2,TDA_W,T
   integer                       :: ind
 
   double precision,external     :: trace_matrix
+  double precision              :: trace_rdm2
+
 ! Output variables
 
   double precision,intent(out)  :: eGW_out(nOrb)
@@ -166,8 +168,9 @@ subroutine OORG0W0(dotest,doACFDT,exchange_kernel,doXBS,dophBSE,dophBSE2,TDA_W,T
   lp(:)         = 0d0
   t(:,:)        = 0d0
   lambda(:,:)   = 0d0
+  Emu           = 0d0
   eGW(:)        = eHF(:)
-  h             = matmul(transpose(c),matmul(Hc,c))
+  h(:,:)        = 0d0
 
   write(*,*) "Start orbital optimization loop..."
 
@@ -175,6 +178,16 @@ subroutine OORG0W0(dotest,doACFDT,exchange_kernel,doXBS,dophBSE,dophBSE2,TDA_W,T
   
     write(*,*) "Orbital optimiation Iteration: ", OOi 
    
+    ! Transform integrals
+
+    h = matmul(transpose(c),matmul(Hc,c))
+    call AOtoMO_ERI_RHF(nBas,N,c,ERI_AO,ERI_MO)
+    write(*,*) "trace ERIMO"
+    do p=1,N
+      do q=1,N
+        write(*,*) "rdm2",rdm2(p,q,p,q),"ERI",ERI_MO(p,q,p,q)
+      end do
+    end do
 
 
   !-------------------!
@@ -257,23 +270,30 @@ subroutine OORG0W0(dotest,doACFDT,exchange_kernel,doXBS,dophBSE,dophBSE2,TDA_W,T
     call matout(N,N,rdm1)
     ! Calculate rdm2
     call RG0W0_rdm2(O,V,N,nS,lampl,rampl,lp,rp,lambda,t,rdm2)
-    write(*,*) "Trace rdm2: ", trace_matrix(Nsq,rdm2)
+    trace_rdm2 = 0d0
+    do p=1,N
+      do q=1,N
+        trace_rdm2 = trace_rdm2 + rdm2(p,q,p,q)
+      end do
+    end do
+    write(*,*) "Trace rdm2: ", trace_rdm2
     call matout(Nsq,Nsq,rdm2)
+    write(*,*) "ERI_MO trace"
+    do p=1,N
+      do q=1,N
+        write(*,*) "rdm2",rdm2(p,q,p,q),"ERI",ERI_MO(p,q,p,q)
+      end do
+    end do
     EOld = Emu
-    write(*,*) "ENuc", ENuc
-    call energy_from_rdm(ENuc,N,h,ERI_MO,rdm1,rdm2,Emu)
-    write(*,*) "Erpa = ", Emu
+    call energy_from_rdm(N,h,ERI_MO,rdm1,rdm2,Emu)
     write(*,*) "ERHF", ERHF
+    write(*,*) "EcRPA = ", Emu - ERHF
+    write(*,*) "E elec", Emu
     write(*,*) "ENuc", ENuc
-    write(*,*) "Emu", Emu
     write(*,*) "total energy = ", Emu + ENuc
     
-    call optimize_orbitals(nBas,nOrb,nV,nR,nC,nO,N,Nsq,O,V,ERI_AO,ERI_MO,h,rdm1,rdm2,c,OOConv)
+    call R_optimize_orbitals(nBas,nOrb,nV,nR,nC,nO,N,Nsq,O,V,ERI_AO,ERI_MO,h,rdm1,rdm2,c,OOConv)
     
-    ! Transform integrals
-
-    h = matmul(transpose(c),matmul(Hc,c))
-    call AOtoMO_ERI_RHF(nBas,N,c,ERI_AO,ERI_MO)
 
     write(*,*) '----------------------------------------------------------'
     write(*,'(A10,I4,A30)') ' Iteration', OOi ,'for RG0W0 orbital optimization'

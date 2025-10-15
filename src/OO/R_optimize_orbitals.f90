@@ -1,4 +1,4 @@
-subroutine optimize_orbitals(nBas,nOrb,nV,nR,nC,nO,N,Nsq,O,V,ERI_AO,ERI_MO,h,rdm1,rdm2,c,OOConv)
+subroutine R_optimize_orbitals(nBas,nOrb,nV,nR,nC,nO,N,Nsq,O,V,ERI_AO,ERI_MO,h,rdm1,rdm2,c,OOConv)
 
 ! Calculate gradient and Hessian and rotate orbitals accordingly. Returns ERI and h in new MOs.
 
@@ -46,14 +46,14 @@ subroutine optimize_orbitals(nBas,nOrb,nV,nR,nC,nO,N,Nsq,O,V,ERI_AO,ERI_MO,h,rdm
   call orbital_hessian(O,V,N,Nsq,h,ERI_MO,rdm1,rdm2,hess)
   
   write(*,*) "Hessian"
-  !call matout(Nsq,Nsq,hess)
+  call matout(Nsq,Nsq,hess)
  
   allocate(hessInv(Nsq,Nsq))
  
   call inverse_matrix(Nsq,hess,hessInv)
   
   write(*,*) "Inv Hessian"
-  !call matout(Nsq,Nsq,hessInv)
+  call matout(Nsq,Nsq,hessInv)
   
   deallocate(hess)
  
@@ -84,7 +84,7 @@ subroutine optimize_orbitals(nBas,nOrb,nV,nR,nC,nO,N,Nsq,O,V,ERI_AO,ERI_MO,h,rdm
   deallocate(hessInv,grad)
 
   write(*,*) 'kappa'
-  !call matout(nOrb,nOrb,Kap)
+  call matout(nOrb,nOrb,Kap)
   write(*,*)
  
   allocate(ExpKap(N,N))
@@ -92,18 +92,18 @@ subroutine optimize_orbitals(nBas,nOrb,nV,nR,nC,nO,N,Nsq,O,V,ERI_AO,ERI_MO,h,rdm
   deallocate(Kap)
  
   write(*,*) 'e^kappa'
-  !call matout(nOrb,nOrb,ExpKap)
+  call matout(N,N,ExpKap)
   write(*,*)
  
   write(*,*) 'Old orbitals'
-  !call matout(nBas,nOrb,c)
+  call matout(nBas,nOrb,c)
   write(*,*)
  
   c = matmul(c,ExpKap)
   deallocate(ExpKap)
  
   write(*,*) 'Rotated orbitals'
-  !call matout(nBas,N,c)
+  call matout(nBas,nOrb,c)
   write(*,*)
 
 end subroutine
