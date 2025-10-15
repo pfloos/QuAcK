@@ -109,6 +109,8 @@ subroutine scGWitauiw_ao(nBas,nOrb,nO,maxSCF,ENuc,Hc,S,P_in,cHF,eHF,nfreqs,wcoor
 
  ntimes=1;nfreqs2=1;
  call build_iw_itau_grid(nBas,nOrb,nO,ntimes,nfreqs2,0,cHF,eHF)
+write(*,*) 'MAU, here is a stop'
+stop
  ntimes_twice=2*ntimes
  allocate(tweight(ntimes),tcoord(ntimes))
  allocate(wweight2(nfreqs2),wcoord2(nfreqs2))
