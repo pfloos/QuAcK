@@ -31,7 +31,7 @@ subroutine build_iw_itau_grid(nBas,nOrb,nO,ntimes,nfreqs,verbose,cHF,eHF)
   double precision               :: chem_pot,teval,weval,tweight_eval,wweight_eval,norm,max_weval
   double precision               :: max_teval_plus,max_teval_minus,max_teval
   double precision               :: alpha,beta,lim_inf,lim_sup
-  double precision,allocatable   :: tcoord_01(:),tweight_01(:)
+  double precision,allocatable   :: coord_01(:),weight_01(:)
   double precision,allocatable   :: wweight(:),wcoord(:)
   double precision,allocatable   :: tweight(:),tcoord(:)
   double precision,allocatable   :: interval_r(:,:)
@@ -157,6 +157,7 @@ subroutine build_iw_itau_grid(nBas,nOrb,nO,ntimes,nfreqs,verbose,cHF,eHF)
  endif
  max_weval=weval
  write(*,'(a,e20.7)') ' Largest  |w|  value for a significant G ',max_weval
+ write(*,*) 
 
 !-------------------------!
 ! Prepare time Quadrature !
@@ -166,8 +167,8 @@ subroutine build_iw_itau_grid(nBas,nOrb,nO,ntimes,nfreqs,verbose,cHF,eHF)
  kind_int = 1
  lim_inf = 0d0; lim_sup = 1;
  alpha = 0d0;  beta  = 0d0;
- allocate(tweight_01(n01),tcoord_01(n01))
- call cgqf(n01,kind_int,alpha,beta,lim_inf,lim_sup,tcoord_01,tweight_01)
+ allocate(weight_01(n01),coord_01(n01))
+ call cgqf(n01,kind_int,alpha,beta,lim_inf,lim_sup,coord_01,weight_01)
  ! Build 100 trial freqs from 0 to max_weval
  allocate(wcoord(ngrid)) 
  wcoord(1)=0d0
@@ -200,8 +201,8 @@ subroutine build_iw_itau_grid(nBas,nOrb,nO,ntimes,nfreqs,verbose,cHF,eHF)
  interval_todo(:)=.true.
  interval_r(iinterval,1)=0d0
  interval_r(iinterval,2)=max_teval
- interval_tmp_weight(iinterval,:)=tweight_01(:)*(interval_r(iinterval,2)-interval_r(iinterval,1))
- interval_tmp_coord(iinterval,:) = tcoord_01(:)*(interval_r(iinterval,2)-interval_r(iinterval,1))+interval_r(iinterval,1)
+ interval_tmp_weight(iinterval,:)=weight_01(:)*(interval_r(iinterval,2)-interval_r(iinterval,1))
+ interval_tmp_coord(iinterval,:) = coord_01(:)*(interval_r(iinterval,2)-interval_r(iinterval,1))+interval_r(iinterval,1)
  do
   iter=iter+1
 
@@ -235,10 +236,10 @@ subroutine build_iw_itau_grid(nBas,nOrb,nO,ntimes,nfreqs,verbose,cHF,eHF)
      interval_r2(2*iinterval-1,2)=interval_r(iinterval,1)+0.5d0*(interval_r(iinterval,2)-interval_r(iinterval,1)) 
      interval_r2(2*iinterval  ,1)=interval_r2(2*iinterval-1,2) 
      interval_r2(2*iinterval  ,2)=interval_r(iinterval,2)
-     interval_tmp_weight2(2*iinterval-1,:)=tweight_01(:)*(interval_r2(2*iinterval-1,2)-interval_r2(2*iinterval-1,1))
-     interval_tmp_coord2(2*iinterval-1,:) = tcoord_01(:)*(interval_r2(2*iinterval-1,2)-interval_r2(2*iinterval-1,1))+interval_r2(2*iinterval-1,1)
-     interval_tmp_weight2(2*iinterval  ,:)=tweight_01(:)*(interval_r2(2*iinterval  ,2)-interval_r2(2*iinterval  ,1))
-     interval_tmp_coord2(2*iinterval  ,:) = tcoord_01(:)*(interval_r2(2*iinterval  ,2)-interval_r2(2*iinterval  ,1))+interval_r2(2*iinterval  ,1)
+     interval_tmp_weight2(2*iinterval-1,:)=weight_01(:)*(interval_r2(2*iinterval-1,2)-interval_r2(2*iinterval-1,1))
+     interval_tmp_coord2(2*iinterval-1,:) = coord_01(:)*(interval_r2(2*iinterval-1,2)-interval_r2(2*iinterval-1,1))+interval_r2(2*iinterval-1,1)
+     interval_tmp_weight2(2*iinterval  ,:)=weight_01(:)*(interval_r2(2*iinterval  ,2)-interval_r2(2*iinterval  ,1))
+     interval_tmp_coord2(2*iinterval  ,:) = coord_01(:)*(interval_r2(2*iinterval  ,2)-interval_r2(2*iinterval  ,1))+interval_r2(2*iinterval  ,1)
      ! Check the difference in G_int(iw_k) computed as [a,b] vs [a,0.5(b-a)+a] + [0.5(b-a)+a,b]
      err_G_set=0d0
      do ifreq=1,ngrid
@@ -346,8 +347,8 @@ subroutine build_iw_itau_grid(nBas,nOrb,nO,ntimes,nfreqs,verbose,cHF,eHF)
     G_test(:,:)=G_test(:,:)-im*tweight(itau)*G_tmp1(:,:)*Exp(-im*tcoord(itau)*wcoord(ifreq))  ! G(-i tau)
    enddo
    G_test=conjg(G_test)
-   if(verbose/=0) then ! Print comparison for debug
-    write(*,'(a,f25.15)') ' wcoord',wcoord(ifreq)
+   if(verbose/=0) then ! Print for comparison and debug
+    write(*,'(a,f25.15)') ' wcoord_test',wcoord(ifreq)
     write(*,*) 'Integrated'
     do ibas=1,nbas
      write(*,'(*(f15.8))') G_test(ibas,:)
@@ -393,6 +394,7 @@ subroutine build_iw_itau_grid(nBas,nOrb,nO,ntimes,nfreqs,verbose,cHF,eHF)
   if(iter==niter_max) exit
 
  enddo
+ write(*,*) 
 
  deallocate(interval_vals)
  deallocate(interval_tmp_weight)
@@ -410,7 +412,7 @@ subroutine build_iw_itau_grid(nBas,nOrb,nO,ntimes,nfreqs,verbose,cHF,eHF)
    write(iunit,'(f50.15)') tweight(itau)
  enddo 
  close(iunit)
- deallocate(tweight_01,tcoord_01)
+ deallocate(weight_01,coord_01)
  deallocate(tweight,tcoord)
 
 !------------------------------!
