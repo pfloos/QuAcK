@@ -14,6 +14,7 @@ subroutine build_iw_itau_grid(nBas,nOrb,nO,ntimes,nfreqs,verbose,cHF,eHF)
 
 ! Local variables
 
+  logical                        :: all_deactivated
   logical,allocatable            :: interval_todo(:)
   logical,allocatable            :: interval_todo2(:)
 
@@ -53,7 +54,7 @@ subroutine build_iw_itau_grid(nBas,nOrb,nO,ntimes,nfreqs,verbose,cHF,eHF)
 ! Build iw and itau grids 
 !------------------------------------------------------------------------
 
- ngrid=20
+ ngrid=40
  allocate(G_set_test(ngrid,nBas,nBas))
  allocate(G_test(nBas,nBas),G_tmp1(nbas,nBas))
  chem_pot = 0.5d0*(eHF(nO)+eHF(nO+1))
@@ -160,8 +161,8 @@ subroutine build_iw_itau_grid(nBas,nOrb,nO,ntimes,nfreqs,verbose,cHF,eHF)
 !-------------------------!
 ! Prepare time Quadrature !
 !-------------------------!
- niter_max = 20 
- n01 = 1000 ! From 0 to 1 we always take 1000 points
+ niter_max = 40
+ n01 = 50 ! From 0 to 1 we always take 50 points
  kind_int = 1
  lim_inf = 0d0; lim_sup = 1;
  alpha = 0d0;  beta  = 0d0;
@@ -187,8 +188,8 @@ subroutine build_iw_itau_grid(nBas,nOrb,nO,ntimes,nfreqs,verbose,cHF,eHF)
  ! Optimize the weights and coordinates with an adaptative quadrature
  iter=-1
  nintervals=1
- max_err_G_set=1d-6
- thrs_interval=1d-6
+ max_err_G_set=1d-4
+ thrs_interval=1d-3
  allocate(tweight(1),tcoord(1))
  allocate(interval_vals(ngrid,nBas,nBas))
  allocate(interval_tmp_weight(nintervals,n01))
@@ -345,16 +346,18 @@ subroutine build_iw_itau_grid(nBas,nOrb,nO,ntimes,nfreqs,verbose,cHF,eHF)
     G_test(:,:)=G_test(:,:)-im*tweight(itau)*G_tmp1(:,:)*Exp(-im*tcoord(itau)*wcoord(ifreq))  ! G(-i tau)
    enddo
    G_test=conjg(G_test)
-write(*,'(a,f25.15)') ' wcoord',wcoord(ifreq)
-write(*,*) 'Integrated'
-do ibas=1,nbas
-write(*,'(*(f15.8))') G_test(ibas,:)
-enddo
-write(*,*) 'Analytic'
-do ibas=1,nbas
-write(*,'(*(f15.8))') G_set_test(ifreq,ibas,:)
-enddo
-write(*,*)
+   if(verbose/=0) then ! Print comparison for debug
+    write(*,'(a,f25.15)') ' wcoord',wcoord(ifreq)
+    write(*,*) 'Integrated'
+    do ibas=1,nbas
+     write(*,'(*(f15.8))') G_test(ibas,:)
+    enddo
+    write(*,*) 'Analytic'
+    do ibas=1,nbas
+     write(*,'(*(f15.8))') G_set_test(ifreq,ibas,:)
+    enddo
+    write(*,*)
+   endif
    G_test(:,:)=G_test(:,:)-G_set_test(ifreq,:,:)
    do ibas=1,nBas
     do jbas=1,nBas
@@ -363,7 +366,7 @@ write(*,*)
    enddo
   enddo
   err_G_set=err_G_set/(nBas*nBas*ngrid) ! MAE
-  write(*,'(a,f15.8,a,i5,a,i8,a)') 'MAE in reproducing G(iw) [Integrated - Analytic]',err_G_set,' at iter ',iter,' with ',ntimes,' grid'
+  write(*,'(a,f15.8,a,i5,a,i8,a)') ' MAE in reproducing G(iw) [Integrated - Analytic]',err_G_set,' at iter ',iter,' with ',ntimes,' grid'
 
   if(iter>0) then
    if(abs(err_G_set_old-err_G_set)<1d-8 .or. nintervals_old==nintervals) then
@@ -374,6 +377,16 @@ write(*,*)
   endif
   err_G_set_old=err_G_set
   nintervals_old=nintervals
+
+  all_deactivated=.true.
+  do iinterval=1,nintervals
+   if(interval_todo(iinterval)) all_deactivated=.false. 
+  enddo
+  if(all_deactivated) then
+   write(*,'(a,e15.8,a,e15.8)') ' Reducing the MAE accepted for each interval integrations form ',thrs_interval,' to ',1d-1*thrs_interval 
+   thrs_interval=1d-1*thrs_interval
+   interval_todo(:)=.true.
+  endif
 
   if(err_G_set<max_err_G_set) exit
 
