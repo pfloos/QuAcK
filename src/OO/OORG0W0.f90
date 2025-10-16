@@ -85,7 +85,7 @@ subroutine OORG0W0(dotest,doACFDT,exchange_kernel,doXBS,dophBSE,dophBSE2,TDA_W,T
   double precision,allocatable  :: eGW(:)
  
   double precision              :: OOConv
-  double precision              :: thresh = 1.0e-8
+  double precision              :: thresh = 1.0e-3
   integer                       :: OOi
   double precision,allocatable  :: h(:,:)
   double precision,allocatable  :: Kap(:,:)
@@ -94,13 +94,18 @@ subroutine OORG0W0(dotest,doACFDT,exchange_kernel,doXBS,dophBSE,dophBSE2,TDA_W,T
   double precision,allocatable  :: hessInv(:,:)
   double precision,allocatable  :: grad(:)
   double precision,allocatable  :: rdm1(:,:)
+  double precision,allocatable  :: rdm1_hf(:,:)
+  double precision,allocatable  :: rdm1_rpa(:,:)
   double precision,allocatable  :: rdm2(:,:,:,:)
+  double precision,allocatable  :: rdm2_hf(:,:,:,:)
+  double precision,allocatable  :: rdm2_rpa(:,:,:,:)
   integer                       :: r,s,rs,p,q,pq
   integer                       :: N,O,V,Nsq
   double precision,allocatable  :: c(:,:)
   double precision,allocatable  :: Fp(:,:)
   double precision,allocatable  :: J(:,:),K(:,:)
   double precision              :: Emu, EOld
+  double precision              :: EHF_rdm,ERPA_rdm
   integer                       :: ind
 
   double precision,external     :: trace_matrix
@@ -154,14 +159,20 @@ subroutine OORG0W0(dotest,doACFDT,exchange_kernel,doXBS,dophBSE,dophBSE2,TDA_W,T
   allocate(Aph(nS,nS),Bph(nS,nS),SigC(nOrb),Z(nOrb),Om(nS),XpY(nS,nS),XmY(nS,nS),rho(nOrb,nOrb,nS), & 
            eGW(nOrb),eGWlin(nOrb),X(nS,nS),X_inv(nS,nS),Y(nS,nS),Xbar(nS,nS),Xbar_inv(nS,nS),lambda(nS,nS),t(nS,nS),&
            rampl(nS,N),lampl(nS,N),rp(N),lp(N),h(N,N),c(nBas,nOrb),&
-           rdm1(N,N),rdm2(N,N,N,N),J(nBas,nBas),K(nBas,nBas),Fp(nOrb,nOrb))
+           rdm1(N,N),rdm2(N,N,N,N),rdm1_hf(N,N),rdm2_hf(N,N,N,N),rdm1_rpa(N,N),rdm2_rpa(N,N,N,N),&
+           J(nBas,nBas),K(nBas,nBas),Fp(nOrb,nOrb))
 
 ! Initialize variables for OO  
   OOi           = 1d0
   OOConv        = 1d0
   c(:,:)        = cHF(:,:)
-  rdm1(:,:)     = 0d0 
-  rdm2(:,:,:,:) = 0d0
+  c(:,:)        = 0d0
+  rdm1(:,:)         = 0d0 
+  rdm1_hf(:,:)      = 0d0 
+  rdm1_rpa(:,:)     = 0d0 
+  rdm2(:,:,:,:)     = 0d0
+  rdm2_hf(:,:,:,:)  = 0d0
+  rdm2_rpa(:,:,:,:) = 0d0
   rampl(:,:)    = 0d0
   lampl(:,:)    = 0d0
   rp(:)         = 0d0
@@ -171,6 +182,9 @@ subroutine OORG0W0(dotest,doACFDT,exchange_kernel,doXBS,dophBSE,dophBSE2,TDA_W,T
   Emu           = 0d0
   eGW(:)        = eHF(:)
   h(:,:)        = 0d0
+  
+  write(*,*) "TEST: Start from mo guess and then do HF with oo"
+  call mo_guess(nBas,nOrb,1,Sovl,Hc,XHF,c)
 
   write(*,*) "Start orbital optimization loop..."
 
@@ -182,13 +196,6 @@ subroutine OORG0W0(dotest,doACFDT,exchange_kernel,doXBS,dophBSE,dophBSE2,TDA_W,T
 
     h = matmul(transpose(c),matmul(Hc,c))
     call AOtoMO_ERI_RHF(nBas,N,c,ERI_AO,ERI_MO)
-    write(*,*) "trace ERIMO"
-    do p=1,N
-      do q=1,N
-        write(*,*) "rdm2",rdm2(p,q,p,q),"ERI",ERI_MO(p,q,p,q)
-      end do
-    end do
-
 
   !-------------------!
   ! Compute screening !
@@ -264,33 +271,36 @@ subroutine OORG0W0(dotest,doACFDT,exchange_kernel,doXBS,dophBSE,dophBSE2,TDA_W,T
     lambda = 0.5*matmul(Y,Xbar_inv)
     
     ! Calculate rdm1
-    call RG0W0_rdm1(O,V,N,nS,lampl,rampl,lp,rp,lambda,t,rdm1)
+    call RG0W0_rdm1_hf(O,V,N,nS,lampl,rampl,lp,rp,lambda,t,rdm1_hf)
+    call RG0W0_rdm1_rpa(O,V,N,nS,lampl,rampl,lp,rp,lambda,t,rdm1_rpa)
+    rdm1 = rdm1_hf + rdm1_rpa
+    rdm1 = rdm1_hf ! emulate HF
     write(*,*) "size rdm 1", size(rdm1,1), size(rdm1,2)
     write(*,*) "Trace rdm1: ", trace_matrix(N,rdm1)
-    call matout(N,N,rdm1)
+    !call matout(N,N,rdm1)
     ! Calculate rdm2
-    call RG0W0_rdm2(O,V,N,nS,lampl,rampl,lp,rp,lambda,t,rdm2)
+    call RG0W0_rdm2_hf(O,V,N,nS,lampl,rampl,lp,rp,lambda,t,rdm2_hf)
+    call RG0W0_rdm2_rpa(O,V,N,nS,lampl,rampl,lp,rp,lambda,t,rdm2_rpa)
+    rdm2 = rdm2_hf + rdm2_rpa
+    rdm2 = rdm2_hf ! emulate HF
     trace_rdm2 = 0d0
     do p=1,N
       do q=1,N
         trace_rdm2 = trace_rdm2 + rdm2(p,q,p,q)
       end do
     end do
-    write(*,*) "Trace rdm2: ", trace_rdm2
-    call matout(Nsq,Nsq,rdm2)
-    write(*,*) "ERI_MO trace"
-    do p=1,N
-      do q=1,N
-        write(*,*) "rdm2",rdm2(p,q,p,q),"ERI",ERI_MO(p,q,p,q)
-      end do
-    end do
+    !write(*,*) "Trace rdm2: ", trace_rdm2
+    !call matout(Nsq,Nsq,rdm2)
     EOld = Emu
     call energy_from_rdm(N,h,ERI_MO,rdm1,rdm2,Emu)
+    call energy_from_rdm(N,h,ERI_MO,rdm1_rpa,rdm2_rpa,ERPA_rdm)
+    call energy_from_rdm(N,h,ERI_MO,rdm1_hf,rdm2_hf,EHF_rdm)
     write(*,*) "ERHF", ERHF
-    write(*,*) "EcRPA = ", Emu - ERHF
-    write(*,*) "E elec", Emu
-    write(*,*) "ENuc", ENuc
-    write(*,*) "total energy = ", Emu + ENuc
+    write(*,*) "ERHF from rdm", EHF_rdm
+    write(*,*) "ERpa from rdm", ERPA_rdm
+    write(*,*) "EcRPA = ", EcRPA
+    write(*,*) "E elec = ", Emu
+    write(*,*) "ENuc = ", ENuc
     
     call R_optimize_orbitals(nBas,nOrb,nV,nR,nC,nO,N,Nsq,O,V,ERI_AO,ERI_MO,h,rdm1,rdm2,c,OOConv)
     
@@ -303,9 +313,9 @@ subroutine OORG0W0(dotest,doACFDT,exchange_kernel,doXBS,dophBSE,dophBSE2,TDA_W,T
     write(*,*) '----------------------------------------------------------'
     write(*,*)
     
-    if (OOi==3) then
-      OOConv = 0d0 ! remove only for debugging
-    end if
+   ! if (OOi==3) then
+   !   OOConv = 0d0 ! remove only for debugging
+   ! end if
 
     OOi = OOi + 1 
   end do

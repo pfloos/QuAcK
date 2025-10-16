@@ -1,6 +1,6 @@
-subroutine GG0W0_rdm1(O,V,N,nS,lampl,rampl,lp,rp,lambda,t,rdm1)
+subroutine GG0W0_rdm1_rpa(O,V,N,nS,lampl,rampl,lp,rp,lambda,t,rdm1)
 
-! Compute 1-Reduced-Density-Matrix based in RG0W0
+! Compute RPA 1-Reduced-Density-Matrix based in GG0W0
 
 ! Input
 integer,intent(in)               :: N,nS,O,V

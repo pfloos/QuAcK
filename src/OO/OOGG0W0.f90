@@ -93,7 +93,11 @@ subroutine OOGG0W0(dotest,doACFDT,exchange_kernel,doXBS,dophBSE,dophBSE2,TDA_W,T
   double precision,allocatable  :: hess(:,:)
   double precision,allocatable  :: hessInv(:,:)
   double precision,allocatable  :: rdm1(:,:)
+  double precision,allocatable  :: rdm1_hf(:,:)
+  double precision,allocatable  :: rdm1_rpa(:,:)
   double precision,allocatable  :: rdm2(:,:,:,:)
+  double precision,allocatable  :: rdm2_rpa(:,:,:,:)
+  double precision,allocatable  :: rdm2_hf(:,:,:,:)
   integer                       :: r,s,rs,p,q,pq
   integer                       :: N,O,V,Nsq
   double precision,allocatable  :: c(:,:)
@@ -105,6 +109,8 @@ subroutine OOGG0W0(dotest,doACFDT,exchange_kernel,doXBS,dophBSE,dophBSE2,TDA_W,T
   double precision,external     :: trace_matrix
   double precision              :: Eblub1
   double precision              :: Eblub2
+  double precision              :: EHF_rdm
+  double precision              :: ERPA_rdm
 
 ! Output variables
 
@@ -114,6 +120,8 @@ subroutine OOGG0W0(dotest,doACFDT,exchange_kernel,doXBS,dophBSE,dophBSE2,TDA_W,T
   O = nO - nC
   N = V + O
   Nsq = N*N
+  write(*,*) "cHF in the begin of OOGG0W0"
+  call matout(nBas2,nBas2,cHF)
 
 ! Output variables
 
@@ -153,23 +161,28 @@ subroutine OOGG0W0(dotest,doACFDT,exchange_kernel,doXBS,dophBSE,dophBSE2,TDA_W,T
   allocate(Aph(nS,nS),Bph(nS,nS),SigC(nBas2),Z(nBas2),Om(nS),XpY(nS,nS),XmY(nS,nS),rho(nBas2,nBas2,nS), & 
            eGW(nBas2),eGWlin(nBas2),X(nS,nS),X_inv(nS,nS),Y(nS,nS),Xbar(nS,nS),Xbar_inv(nS,nS),lambda(nS,nS),t(nS,nS),&
            rampl(nS,N),lampl(nS,N),rp(N),lp(N),h(N,N),c(nBas2,nBas2),&
-           rdm1(N,N),rdm2(N,N,N,N),J(nBas2,nBas2),K(nBas2,nBas2))
+           rdm1(N,N),rdm2(N,N,N,N),rdm1_hf(N,N),rdm2_hf(N,N,N,N),rdm1_rpa(N,N),rdm2_rpa(N,N,N,N),&
+           J(nBas2,nBas2),K(nBas2,nBas2))
 
 ! Initialize variables for OO  
-  OOi           = 1d0
-  OOConv        = 1d0
-  c(:,:)        = cHF(:,:)
-  rdm1(:,:)     = 0d0 
-  rdm2(:,:,:,:) = 0d0
-  rampl(:,:)    = 0d0
-  lampl(:,:)    = 0d0
-  rp(:)         = 0d0
-  lp(:)         = 0d0
-  t(:,:)        = 0d0
-  lambda(:,:)   = 0d0
-  Emu           = 0d0
-  eGW(:)        = eHF(:)
-  h(:,:)        = 0d0
+  OOi               = 1d0
+  OOConv            = 1d0
+  c(:,:)            = cHF(:,:)
+  rdm1(:,:)         = 0d0 
+  rdm1_hf(:,:)      = 0d0 
+  rdm1_rpa(:,:)     = 0d0 
+  rdm2(:,:,:,:)     = 0d0
+  rdm2_hf(:,:,:,:)  = 0d0
+  rdm2_rpa(:,:,:,:) = 0d0
+  rampl(:,:)        = 0d0
+  lampl(:,:)        = 0d0
+  rp(:)             = 0d0
+  lp(:)             = 0d0
+  t(:,:)            = 0d0
+  lambda(:,:)       = 0d0
+  Emu               = 0d0
+  eGW(:)            = eHF(:)
+  h(:,:)            = 0d0
 
   write(*,*) "Start orbital optimization loop..."
 
@@ -185,10 +198,10 @@ subroutine OOGG0W0(dotest,doACFDT,exchange_kernel,doXBS,dophBSE,dophBSE2,TDA_W,T
     write(*,*) 'AO to MO transformation... Please be patient'
     write(*,*)
 
-    h(:,:)        = 0d0
+    h(:,:)                       = 0d0
     h(     1:nBas ,     1:nBas ) = Hc(1:nBas,1:nBas)
     h(nBas+1:nBas2,nBas+1:nBas2) = Hc(1:nBas,1:nBas)
-    h(:,:)        = matmul(transpose(c),matmul(h,c))
+    h(:,:)                       = matmul(transpose(c),matmul(h,c))
     
     write(*,*) "Core Hamiltonian"
     call matout(nBas2,nBas2,h) 
@@ -288,11 +301,15 @@ subroutine OOGG0W0(dotest,doACFDT,exchange_kernel,doXBS,dophBSE,dophBSE2,TDA_W,T
     lambda = 0.5*matmul(Y,Xbar_inv)
     
     ! Calculate rdm1
-    call GG0W0_rdm1(O,V,N,nS,lampl,rampl,lp,rp,lambda,t,rdm1)
+    call GG0W0_rdm1_hf(O,V,N,nS,lampl,rampl,lp,rp,lambda,t,rdm1_hf)
+    call GG0W0_rdm1_rpa(O,V,N,nS,lampl,rampl,lp,rp,lambda,t,rdm1_rpa)
+    rdm1 = rdm1_hf  + rdm1_rpa
     write(*,*) "Trace rdm1: ", trace_matrix(N,rdm1)
     call matout(N,N,rdm1)
     ! Calculate rdm2
-    call GG0W0_rdm2(O,V,N,nS,lampl,rampl,lp,rp,lambda,t,rdm2)
+    call GG0W0_rdm2_hf(O,V,N,nS,lampl,rampl,lp,rp,lambda,t,rdm2_hf)
+    call GG0W0_rdm2_rpa(O,V,N,nS,lampl,rampl,lp,rp,lambda,t,rdm2_rpa)
+    rdm2 = rdm2_hf  + rdm2_rpa
     do p=1,nBas2
       do q=1,nBas2
         rdm2_trace = rdm2_trace + rdm2(p,q,p,q)
@@ -302,13 +319,16 @@ subroutine OOGG0W0(dotest,doACFDT,exchange_kernel,doXBS,dophBSE,dophBSE2,TDA_W,T
     call matout(Nsq,Nsq,rdm2)
     EOld = Emu 
     call energy_from_rdm(N,h,ERI_MO,rdm1,rdm2,Emu)
-    write(*,*) "EGHF", EGHF
-    write(*,*) "EcRPA = ", Emu - EGHF
+    call energy_from_rdm(N,h,ERI_MO,rdm1_hf,rdm2_hf,EHF_rdm)
+    call energy_from_rdm(N,h,ERI_MO,rdm1_rpa,rdm2_rpa,ERPA_rdm)
+    write(*,*) "EGHF = ", EGHF
+    write(*,*) "EHF from rdm = " , EHF_rdm
+    write(*,*) "EcRPA from rdm = " , ERPA_rdm
+    write(*,*) "EcRPA = ", EcRPA
     write(*,*) "E elec", Emu
     write(*,*) "ENuc", ENuc
-    write(*,*) "total energy = ", Emu + ENuc
-    call G_optimize_orbitals(nBas,nBas2,nV,nR,nC,nO,N,Nsq,O,V,ERI_AO,ERI_MO,h,rdm1,rdm2,c,OOConv)
     
+    call G_optimize_orbitals(nBas,nBas2,nV,nR,nC,nO,N,Nsq,O,V,ERI_AO,ERI_MO,h,rdm1,rdm2,c,OOConv)
    
     write(*,*) '----------------------------------------------------------'
     write(*,'(A10,I4,A30)') ' Iteration', OOi ,'for GG0W0 orbital optimization'

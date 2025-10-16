@@ -1,6 +1,6 @@
-subroutine RG0W0_rdm1(O,V,N,nS,lampl,rampl,lp,rp,lambda,t,rdm1)
+subroutine RG0W0_rdm1_rpa(O,V,N,nS,lampl,rampl,lp,rp,lambda,t,rdm1)
 
-! Compute 1-Reduced-Density-Matrix based in RG0W0
+! Compute RPA 1-Reduced-Density-Matrix based on RG0W0
 
 ! Input
 integer,intent(in)               :: N,nS,O,V
@@ -18,7 +18,6 @@ rdm1(:,:) = 0d0
 
 ! Occupied
 do i=1,O
-  rdm1(i,i) = rdm1(i,i) + 2d0 ! HF contribution
   do j=1,O
     do c=O+1,N
       do k=1,O
