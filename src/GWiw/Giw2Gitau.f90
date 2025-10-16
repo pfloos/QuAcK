@@ -21,8 +21,6 @@ subroutine Giw2Gitau(nBas,nfreqs,wweight,wcoord,tcoord,Giw,Gitau_plus,Gitau_minu
   integer                       :: ibas
   double precision              :: teval(2)
 
-  double precision              :: fact ! [to cancell large oscillations due to iw]
-
 ! Output variables
 
   complex*16,intent(out)        :: Gitau_plus(nBas,nBas)
@@ -38,16 +36,14 @@ subroutine Giw2Gitau(nBas,nfreqs,wweight,wcoord,tcoord,Giw,Gitau_plus,Gitau_minu
  
   do ifreq=1,nfreqs
     
-   fact=1d0
-   if(wcoord(ifreq)>1d2) fact=0d0
+   Gitau_plus(:,:)  = Gitau_plus(:,:)                                                         &
+                    + im*wweight(ifreq)*      Giw(ifreq,:,:) *Exp( im*wcoord(ifreq)*teval(1)) &  ! G(i w)
+                    + im*wweight(ifreq)*conjg(Giw(ifreq,:,:))*Exp(-im*wcoord(ifreq)*teval(1))    ! G(-i w)
 
-   Gitau_plus(:,:)  = Gitau_plus(:,:)                                                              &
-                    + im*fact*wweight(ifreq)*      Giw(ifreq,:,:) *Exp( im*wcoord(ifreq)*teval(1)) &  ! G(i w)
-                    + im*fact*wweight(ifreq)*conjg(Giw(ifreq,:,:))*Exp(-im*wcoord(ifreq)*teval(1))    ! G(-i w)
-
-   Gitau_minus(:,:) = Gitau_minus(:,:)                                                             &
-                    + im*fact*wweight(ifreq)*      Giw(ifreq,:,:) *Exp( im*wcoord(ifreq)*teval(2)) &  ! G(i w)
-                    + im*fact*wweight(ifreq)*conjg(Giw(ifreq,:,:))*Exp(-im*wcoord(ifreq)*teval(2))    ! G(-i tau)
+   Gitau_minus(:,:) = Gitau_minus(:,:)                                                        &
+                    + im*wweight(ifreq)*      Giw(ifreq,:,:) *Exp( im*wcoord(ifreq)*teval(2)) &  ! G(i w)
+                    + im*wweight(ifreq)*conjg(Giw(ifreq,:,:))*Exp(-im*wcoord(ifreq)*teval(2))    ! G(-i tau)
+    
   enddo
 
   Gitau_plus=Gitau_plus/(2d0*pi)
