@@ -42,7 +42,7 @@ subroutine Giw2Gitau(nBas,nfreqs,wweight,wcoord,tcoord,Giw,Gitau_plus,Gitau_minu
 
    Gitau_minus(:,:) = Gitau_minus(:,:)                                                        &
                     + im*wweight(ifreq)*      Giw(ifreq,:,:) *Exp( im*wcoord(ifreq)*teval(2)) &  ! G(i w)
-                    + im*wweight(ifreq)*conjg(Giw(ifreq,:,:))*Exp(-im*wcoord(ifreq)*teval(2))    ! G(-i tau)
+                    + im*wweight(ifreq)*conjg(Giw(ifreq,:,:))*Exp(-im*wcoord(ifreq)*teval(2))    ! G(-i w)
     
   enddo
 

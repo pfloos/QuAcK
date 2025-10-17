@@ -108,7 +108,7 @@ subroutine scGWitauiw_ao(nBas,nOrb,nO,maxSCF,ENuc,Hc,S,P_in,cHF,eHF,nfreqs,wcoor
 
  ntimes=1;nfreqs2=1;
  call build_iw_itau_grid(nBas,nOrb,nO,ntimes,nfreqs2,0,cHF,eHF)
-write(*,*) 'MAU, here is a stop'
+write(*,*) 'MAU, here is a STOP'
 stop
  ntimes_twice=2*ntimes
  allocate(tweight(ntimes),tcoord(ntimes))
@@ -296,6 +296,7 @@ stop
   write(*,'(a,f15.8,a,i5,a,i5)') ' Trace scGW  ',trace_1_rdm,' after ',iter_fock,' Fock iterations at global iter ',iter
   write(*,'(a,f15.8)')        ' Change of P ',diff_Pao
   write(*,'(a,f15.8)')        ' Chem. Pot.  ',chem_pot
+  write(*,'(a,f15.8)')        ' EcGM        ',EcGM
   write(*,*)
   write(*,*) ' Occupation numbers'
   Occ=-Occ
@@ -317,43 +318,12 @@ stop
 
   ! Build G(i w2) -> G(i tau) [ i tau and -i tau ]
   !   G_ao_iw2(nfreqs2) --> G_ao_itau(ntimes_twice)
-  ! TODO learn how to do this Fourier transform using G0 (where we know the analytic result)
-do jfreq=1,nfreqs2
-weval_cpx=im*wcoord2(jfreq)
-call G_AO_RHF(nBas,nOrb,nO,eta,cHF,eHF,weval_cpx,G_ao_1)
-G_ao_iw2(jfreq,:,:)=G_ao_1(:,:)
-enddo
-  G_ao_itau=czero
-  do itau=1,ntimes
-   call Giw2Gitau(nBas,nfreqs2,wweight2,wcoord2,tcoord(itau),G_ao_iw2,G_plus_itau,G_minus_itau)
-write(*,*) 
-write(*,*) 'Integrated',tcoord(itau)
-write(*,*) 'G(i tau)' 
-do ibas=1,nBas
-write(*,'(*(f20.7))') G_plus_itau(ibas,:)
-enddo
-write(*,*) 'G(-i tau)'
-do ibas=1,nBas
-write(*,'(*(f20.7))') G_minus_itau(ibas,:)
-enddo
-write(*,*)
-   call G0itau_ao_RHF(nBas,nOrb,nO, tcoord(itau),G_plus_itau ,cHF,eHF)
-   call G0itau_ao_RHF(nBas,nOrb,nO,-tcoord(itau),G_minus_itau,cHF,eHF)
-write(*,*) 
-write(*,*) 'Analytic',tcoord(itau) 
-write(*,*) 'G(i tau)' 
-do ibas=1,nBas
-write(*,'(*(f20.7))') G_plus_itau(ibas,:)
-enddo
-write(*,*) 'G(-i tau)'
-do ibas=1,nBas
-write(*,'(*(f20.7))') G_minus_itau(ibas,:)
-enddo
-write(*,*)
-   G_ao_itau(2*itau-1,:,:)=G_plus_itau(:,:)
-   G_ao_itau(2*itau  ,:,:)=G_minus_itau(:,:)
-  enddo
-
+  !G_ao_itau=czero
+  !do itau=1,ntimes
+  ! call Giw2Gitau(nBas,nfreqs2,wweight2,wcoord2,tcoord(itau),G_ao_iw2,G_plus_itau,G_minus_itau)
+  ! G_ao_itau(2*itau-1,:,:)=G_plus_itau(:,:)
+  ! G_ao_itau(2*itau  ,:,:)=G_minus_itau(:,:)
+  !enddo
 
  enddo
  write(*,*)

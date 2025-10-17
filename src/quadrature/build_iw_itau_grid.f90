@@ -27,6 +27,7 @@ subroutine build_iw_itau_grid(nBas,nOrb,nO,ntimes,nfreqs,verbose,cHF,eHF)
   integer                        :: n01,ntimes_t,nintervals,nintervals_old,nintervals_twice,ngrid,niter_max
 
   double precision               :: ran_num
+  double precision               :: thrs_tnorm,thrs_wnorm
   double precision               :: thrs_interval,max_err_G_set,err_G_set,err_G_set_old
   double precision               :: chem_pot,teval,weval,tweight_eval,wweight_eval,norm,max_weval
   double precision               :: max_teval_plus,max_teval_minus,max_teval,min_teval
@@ -53,7 +54,9 @@ subroutine build_iw_itau_grid(nBas,nOrb,nO,ntimes,nfreqs,verbose,cHF,eHF)
 !------------------------------------------------------------------------
 ! Build iw and itau grids 
 !------------------------------------------------------------------------
-
+ 
+ thrs_tnorm=1d-6
+ thrs_wnorm=1d-6
  min_teval=2d-4
  ngrid=40
  allocate(G_set_test(ngrid,nBas,nBas))
@@ -71,7 +74,7 @@ subroutine build_iw_itau_grid(nBas,nOrb,nO,ntimes,nfreqs,verbose,cHF,eHF)
     norm=norm+abs(G_test(ibas,jbas))
    enddo
   enddo
-  if(norm<1d-8) exit
+  if(norm<thrs_tnorm) exit
   teval=teval+2d0
   if(verbose/=0) then
    write(*,*)
@@ -102,7 +105,7 @@ subroutine build_iw_itau_grid(nBas,nOrb,nO,ntimes,nfreqs,verbose,cHF,eHF)
     norm=norm+abs(G_test(ibas,jbas))
    enddo
   enddo
-  if(norm<1d-8) exit
+  if(norm<thrs_tnorm) exit
   teval=teval-2d0
   if(verbose/=0) then
    write(*,*)
@@ -137,7 +140,7 @@ subroutine build_iw_itau_grid(nBas,nOrb,nO,ntimes,nfreqs,verbose,cHF,eHF)
     norm=norm+abs(G_test(ibas,jbas))
    enddo
   enddo
-  if(norm<1d-6) exit
+  if(norm<thrs_wnorm) exit
   weval=weval+1d4
   if(verbose/=0) then
    write(*,*)
@@ -190,7 +193,7 @@ subroutine build_iw_itau_grid(nBas,nOrb,nO,ntimes,nfreqs,verbose,cHF,eHF)
  ! Optimize the weights and coordinates with an adaptative quadrature
  iter=-1
  nintervals=1
- max_err_G_set=1d-4
+ max_err_G_set=5d-4
  thrs_interval=1d-3
  allocate(tweight(1),tcoord(1))
  allocate(interval_vals(ngrid,nBas,nBas))
@@ -419,8 +422,8 @@ subroutine build_iw_itau_grid(nBas,nOrb,nO,ntimes,nfreqs,verbose,cHF,eHF)
 !------------------------------!
 ! Prepare frequency Quadrature !
 !------------------------------!
- niter_max = 40
- n01 = 1000 ! From 0 to 1 we always take 1000 points
+ niter_max = 18
+ n01 = 2000 ! From 0 to 1 we always take 2000 points
  kind_int = 1
  lim_inf = 0d0; lim_sup = 1d0;
  alpha = 0d0;  beta  = 0d0;
@@ -448,8 +451,8 @@ subroutine build_iw_itau_grid(nBas,nOrb,nO,ntimes,nfreqs,verbose,cHF,eHF)
  ! Optimize the weights and coordinates with an adaptative quadrature
  iter=-1
  nintervals=1
- max_err_G_set=1d-4
- thrs_interval=1d-5
+ max_err_G_set=5d-4
+ thrs_interval=1d-2
  allocate(wweight(1),wcoord(1))
  allocate(interval_vals(ngrid,nBas,nBas))
  allocate(interval_tmp_weight(nintervals,n01))
@@ -606,7 +609,7 @@ subroutine build_iw_itau_grid(nBas,nOrb,nO,ntimes,nfreqs,verbose,cHF,eHF)
     G_test(:,:)=G_test(:,:)+im*wweight(ifreq)*(G_tmp1(:,:)+conjg(G_tmp1(:,:))) ! G(i w) + G(-i w)
    enddo
    G_test=G_test/(2d0*pi)
-   if(verbose/=0 .or. .true.) then ! Print for comparison and debug
+   if(verbose/=0) then ! Print for comparison and debug
     write(*,'(a,f25.15)') ' tcoord_test',tcoord(itau)
     write(*,*) 'Integrated'
     do ibas=1,nbas
@@ -660,6 +663,17 @@ subroutine build_iw_itau_grid(nBas,nOrb,nO,ntimes,nfreqs,verbose,cHF,eHF)
  deallocate(interval_tmp_coord)
  deallocate(interval_r,interval_todo)
  deallocate(tcoord)
+
+!deallocate(wweight,wcoord)
+!allocate(weight_01(1),coord_01(1))
+!nfreqs=800
+!kind_int = 1
+!lim_inf = 0d0; lim_sup = 1d0;
+!alpha = 0d0;  beta  = 0d0;
+!allocate(wweight(nfreqs),wcoord(nfreqs))
+!call cgqf(nfreqs,kind_int,alpha,beta,lim_inf,lim_sup,wcoord,wweight)
+!wweight(:)=wweight(:)/((1d0-wcoord(:))**2d0)
+!wcoord(:)=wcoord(:)/(1d0-wcoord(:))
 
  open(unit=iunit, form='formatted', file='wcoord.txt')
  do ifreq=1,nfreqs
