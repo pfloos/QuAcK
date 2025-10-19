@@ -656,8 +656,8 @@ end subroutine
 !
 ! Foldy-Wouthuysen decoupling of the solution to express the HFB eigenvectors
 !
-!    ( U  V )
-!    ( V  U )
+!    ( U   V )
+!    ( V  -U )
 ! as 
 !
 !    ( u  0 )
