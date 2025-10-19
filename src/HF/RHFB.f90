@@ -1,5 +1,5 @@
-subroutine RHFB(dotest,doaordm,doqsGW,maxSCF,thresh,max_diis,level_shift,nNuc,ZNuc,rNuc,ENuc, & 
-               nBas,nOrb,nOrb_twice,nO,S,T,V,Hc,ERI,dipole_int,X,EHFB,eHF,c,P,Panom,F,Delta,  &
+subroutine RHFB(dotest,doaordm,maxSCF,thresh,max_diis,level_shift,nNuc,ZNuc,rNuc,ENuc,       & 
+               nBas,nOrb,nOrb_twice,nO,S,T,V,Hc,ERI,dipole_int,X,EHFB,eHF,c,P,Panom,F,Delta, &
                temperature,sigma,chem_pot_hf,chem_pot,restart_hfb,U_QP,eHFB_state)
 
 ! Perform Hartree-Fock Bogoliubov calculation
@@ -11,7 +11,6 @@ subroutine RHFB(dotest,doaordm,doqsGW,maxSCF,thresh,max_diis,level_shift,nNuc,ZN
 
   logical,intent(in)            :: dotest
   logical,intent(in)            :: doaordm
-  logical,intent(in)            :: doqsGW
 
   integer,intent(in)            :: maxSCF
   integer,intent(in)            :: max_diis
@@ -159,7 +158,7 @@ subroutine RHFB(dotest,doaordm,doqsGW,maxSCF,thresh,max_diis,level_shift,nNuc,ZN
 
   ! Use Fermi-Dirac occupancies to compute P, Panom, and chem_pot
   
-  if(abs(temperature)>1d-4) then
+  if(abs(temperature)>1d-4 .and. .not.restart_hfb) then
    Occ(:)     = 0d0
    Occ(1:nO)  = 1d0
    call fermi_dirac_occ(nO,nOrb,thrs_N,temperature,chem_pot,Occ,eHF)
@@ -167,10 +166,10 @@ subroutine RHFB(dotest,doaordm,doqsGW,maxSCF,thresh,max_diis,level_shift,nNuc,ZN
    P(:,:)      = 0d0
    Panom(:,:)  = 0d0
    do iorb=1,nOrb
-    P(:,:)     = P(:,:)     + Occ(iorb)                        * &
-                matmul(c(:,iorb:iorb),transpose(c(:,iorb:iorb))) 
-    Panom(:,:) = Panom(:,:) + sqrt(abs(Occ(iorb)*(1d0-Occ(iorb))))  * &
-                matmul(c(:,iorb:iorb),transpose(c(:,iorb:iorb))) 
+    P(:,:)     = P(:,:)     + Occ(iorb)                            &
+               * matmul(c(:,iorb:iorb),transpose(c(:,iorb:iorb))) 
+    Panom(:,:) = Panom(:,:) + sqrt(abs(Occ(iorb)*(1d0-Occ(iorb)))) &
+               * matmul(c(:,iorb:iorb),transpose(c(:,iorb:iorb))) 
    enddo
   endif
 
@@ -181,10 +180,10 @@ subroutine RHFB(dotest,doaordm,doqsGW,maxSCF,thresh,max_diis,level_shift,nNuc,ZN
    P(:,:)      = 0d0
    Panom(:,:)  = 0d0
    do iorb=1,nOrb
-    P(:,:)     = P(:,:)     + Occ(iorb)                        * &
-                matmul(c(:,iorb:iorb),transpose(c(:,iorb:iorb))) 
-    Panom(:,:) = Panom(:,:) + sqrt(abs(Occ(iorb)*(1d0-Occ(iorb))))  * &
-                matmul(c(:,iorb:iorb),transpose(c(:,iorb:iorb))) 
+    P(:,:)     = P(:,:)     + Occ(iorb)                            &
+               * matmul(c(:,iorb:iorb),transpose(c(:,iorb:iorb)))
+    Panom(:,:) = Panom(:,:) + sqrt(abs(Occ(iorb)*(1d0-Occ(iorb)))) &
+               * matmul(c(:,iorb:iorb),transpose(c(:,iorb:iorb)))
    enddo
   endif
 
@@ -207,7 +206,6 @@ subroutine RHFB(dotest,doaordm,doqsGW,maxSCF,thresh,max_diis,level_shift,nNuc,ZN
   write(*,*) 'Enterning HFB SCF procedure'  
   write(*,*)
   do while(Conv > thresh .and. nSCF < maxSCF)
-   
  
     ! Increment 
 
@@ -432,16 +430,15 @@ subroutine RHFB(dotest,doaordm,doqsGW,maxSCF,thresh,max_diis,level_shift,nNuc,ZN
   deallocate(eigVEC,eigVAL)
   allocate(eigVEC(nOrb,nOrb),eigVAL(nOrb))
   eigVEC(:,:) = 0d0
-  eigVEC(1:nOrb,1:nOrb) = R(1:nOrb,1:nOrb)
+  eigVEC(1:nOrb,1:nOrb) = -R(1:nOrb,1:nOrb)
   call diagonalize_matrix(nOrb,eigVEC,eigVAL)
-  Occ(1:nOrb)   = eigVAL(1:nOrb)
+  Occ(1:nOrb)   = -eigVAL(1:nOrb)
   c = matmul(X,eigVEC)
   call write_restart_HFB(nBas,nOrb,Occ,c,chem_pot) ! Warning: orders Occ and their c in descending order w.r.t. occupation numbers.
   call print_RHFB(nBas,nOrb,nOrb_twice,N_anom,Occ,eHFB_state,ENuc,ET,EV,EJ,EK,EL,EHFB,chem_pot, &
                   dipole,Delta_HL)
   ! DEBUG: Compute <S^2> in the NO basis. This is commented because it is computed in AO basis above. So, we alredy know <S^2>. 
   ! call s2_2rdm_HFB(nBas,nOrb,nOrb_twice,nO,Occ,sigma,c,ERI)
-  if(doqsGW) c(:,:)=X(:,:) ! Recover the Lowdin basis for qsGW
 
 ! Choose the NO representation where the 1-RDM is diag.
 ! Compute W_no and V_no (i.e. diag[H_HFB^no] built in NO basis to obtain W_no and V_no)
@@ -465,9 +462,7 @@ subroutine RHFB(dotest,doaordm,doqsGW,maxSCF,thresh,max_diis,level_shift,nNuc,ZN
   do iorb=1,nOrb
    R(:,:) = R(:,:) + matmul(eigVEC(:,iorb:iorb),transpose(eigVEC(:,iorb:iorb)))
   enddo
-  if(.not.doqsGW) then ! Store U_QP in the NO basis if we are not doing qsGW after  
-   U_QP(:,:) = eigVEC(:,:) 
-  endif
+  U_QP(:,:) = eigVEC(:,:)
 
   ! Check the trace of R and that this is the NO representation
   err_no_rep = 0d0
