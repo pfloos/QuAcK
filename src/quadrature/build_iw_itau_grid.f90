@@ -323,11 +323,13 @@ subroutine build_iw_itau_grid(nBas,nOrb,nO,ntimes,nfreqs,verbose,cHF,eHF)
   write(*,*)
   ! Print tweight and tcoord
   open(unit=iunit, form='formatted', file='tcoord.txt')
+  write(iunit,'(i50)') ntimes
   do itau=1,ntimes
    write(iunit,'(f50.15)') tcoord(itau)
   enddo
   close(iunit)
   open(unit=iunit, form='formatted', file='tweight.txt')
+  write(iunit,'(i50)') ntimes
   do itau=1,ntimes
    write(iunit,'(f50.15)') tweight(itau)
   enddo
@@ -340,6 +342,28 @@ subroutine build_iw_itau_grid(nBas,nOrb,nO,ntimes,nfreqs,verbose,cHF,eHF)
   deallocate(weight_01,coord_01)
   deallocate(tcoord,tweight)
   deallocate(wcoord)
+ else
+  ntimes = ntimes ! From min_teval to max_teval we take ntimes points
+  kind_int = 1
+  lim_inf = 0d0; lim_sup = 1d0;
+  alpha = 0d0;  beta  = 0d0;
+  allocate(tweight(ntimes),tcoord(ntimes))
+  call cgqf(ntimes,kind_int,alpha,beta,lim_inf,lim_sup,tcoord,tweight)
+  tweight(:)=1d1*(tweight(:)**9d0)*(max_teval-min_teval) ! Polynom of order 10 to go from [0,1] to [min_teval,max_teval] 
+  tcoord(:)=(tcoord(:)**1d1)*(max_teval-min_teval)+min_teval
+  open(unit=iunit, form='formatted', file='tcoord.txt')
+  write(iunit,'(i50)') ntimes
+  do itau=1,ntimes
+   write(iunit,'(f50.15)') tcoord(itau)
+  enddo
+  close(iunit)
+  open(unit=iunit, form='formatted', file='tweight.txt')
+  write(iunit,'(i50)') ntimes
+  do itau=1,ntimes
+   write(iunit,'(f50.15)') tweight(itau)
+  enddo
+  close(iunit)
+  deallocate(tcoord,tweight)
  endif
 
 !------------------------------!
@@ -543,11 +567,13 @@ subroutine build_iw_itau_grid(nBas,nOrb,nO,ntimes,nfreqs,verbose,cHF,eHF)
   write(*,*)
   ! Print wweight and wcoord
   open(unit=iunit, form='formatted', file='wcoord.txt')
+  write(iunit,'(i50)') nfreqs
   do ifreq=1,nfreqs
    write(iunit,'(f50.15)') wcoord(ifreq)
   enddo
   close(iunit)
   open(unit=iunit, form='formatted', file='wweight.txt')
+  write(iunit,'(i50)') nfreqs
   do ifreq=1,nfreqs
    write(iunit,'(f50.15)') wweight(ifreq)
   enddo
@@ -561,27 +587,28 @@ subroutine build_iw_itau_grid(nBas,nOrb,nO,ntimes,nfreqs,verbose,cHF,eHF)
   deallocate(wcoord,wweight)
   deallocate(tcoord)
  else
-  nfreqs = 800 ! From 0 to 1 we always take 100 points
+  nfreqs = nfreqs ! From 0 to Infty we take nfreqs points
   kind_int = 1
   lim_inf = 0d0; lim_sup = 1d0;
   alpha = 0d0;  beta  = 0d0;
   allocate(wweight(nfreqs),wcoord(nfreqs))
   call cgqf(nfreqs,kind_int,alpha,beta,lim_inf,lim_sup,wcoord,wweight)
-  wweight(:)=wweight(:)/((1d0-wcoord(:))**2d0)
-  wcoord(:)=wcoord(:)/(1d0-wcoord(:))
+  wweight(:)=wweight(:)*max_weval ! Polynom of order 1 to go from [0,1] to [0,max_weval]
+  wcoord(:)=wcoord(:)*max_weval
   open(unit=iunit, form='formatted', file='wcoord.txt')
+  write(iunit,'(i50)') nfreqs
   do ifreq=1,nfreqs
    write(iunit,'(f50.15)') wcoord(ifreq)
   enddo
   close(iunit)
   open(unit=iunit, form='formatted', file='wweight.txt')
+  write(iunit,'(i50)') nfreqs
   do ifreq=1,nfreqs
    write(iunit,'(f50.15)') wweight(ifreq)
   enddo
   close(iunit)
   deallocate(wcoord,wweight)
  endif
-
 
  ! Recover eHF initial values and deallocate arrays
  eHF(:) = eHF(:)+chem_pot

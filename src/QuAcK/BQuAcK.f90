@@ -1,7 +1,7 @@
-subroutine BQuAcK(working_dir,dotest,doaordm,doRHFB,doBRPA,dophRPA,doG0W0,doqsGW,readFCIDUMP,nNuc,nBas,nOrb, &
-                  nO,ENuc,eta,shift,ZNuc,rNuc,S,T,V,Hc,X,dipole_int_AO,maxSCF,max_diis,thresh,level_shift,   &
-                  guess_type,maxSCF_GW,max_diis_GW,thresh_GW,dolinGW,temperature,sigma,chem_pot_hf,          &
-                  restart_hfb,nfreqs,ntimes,wcoord,wweight)
+subroutine BQuAcK(working_dir,dotest,doaordm,doRHFB,doBRPA,dophRPA,doG0W0,doqsGW,doscGW,read_grids,readFCIDUMP, &
+                  nNuc,nBas,nOrb,nO,ENuc,eta,shift,ZNuc,rNuc,S,T,V,Hc,X,dipole_int_AO,maxSCF,max_diis,thresh,   &
+                  level_shift,guess_type,maxSCF_GW,max_diis_GW,thresh_GW,dolinGW,temperature,sigma,             &
+                  chem_pot_hf,restart_hfb,nfreqs,ntimes,wcoord,wweight)
 
 ! Restricted branch of Bogoliubov QuAcK
 
@@ -20,6 +20,8 @@ subroutine BQuAcK(working_dir,dotest,doaordm,doRHFB,doBRPA,dophRPA,doG0W0,doqsGW
   logical,intent(in)             :: doG0W0
   logical,intent(in)             :: doqsGW
   logical,intent(in)             :: dolinGW
+  logical,intent(in)             :: doscGW
+  logical,intent(in)             :: read_grids
 
   logical,intent(in)             :: restart_hfb
   logical,intent(in)             :: chem_pot_hf
@@ -221,18 +223,20 @@ subroutine BQuAcK(working_dir,dotest,doaordm,doRHFB,doBRPA,dophRPA,doG0W0,doqsGW
       !                    Enuc,EcGM,T,V,S,pMAT,pMATcorr)
       !call G_Dyson_GW_RHF(nBas,nOrb,nO,MOCoef,eHF,nfreqs,wweight,wcoord,ERI_AO,vMAT, &
       !                    Enuc,EcGM,T,V,S,pMATcorr)
-      !deallocate(vMAT)
-      !allocate(vMAT(nBas*nBas,nBas*nBas))
-      !do iorb=1,nBas
-      ! do jorb=1,nBas
-      !  do korb=1,nBas
-      !   do lorb=1,nBas
-      !    vMAT(1+(korb-1)+(iorb-1)*nOrb,1+(lorb-1)+(jorb-1)*nOrb)=ERI_AO(iorb,jorb,korb,lorb)
-      !   enddo
-      !  enddo
-      ! enddo
-      !enddo
-      !call scGWitauiw_ao(nBas,nOrb,nO,maxSCF,ENuc,Hc,S,pMAT,MOCoef,eHF,nfreqs,wcoord,wweight,vMAT)
+      if(doscGW) then
+       deallocate(vMAT)
+       allocate(vMAT(nBas*nBas,nBas*nBas))
+       do iorb=1,nBas
+        do jorb=1,nBas
+         do korb=1,nBas
+          do lorb=1,nBas
+           vMAT(1+(korb-1)+(iorb-1)*nOrb,1+(lorb-1)+(jorb-1)*nOrb)=ERI_AO(iorb,jorb,korb,lorb)
+          enddo
+         enddo
+        enddo
+       enddo
+       call scGWitauiw_ao(nBas,nOrb,nO,maxSCF,read_grids,ENuc,Hc,S,pMAT,MOCoef,eHF,nfreqs,wcoord,wweight,vMAT)
+      endif
       deallocate(pMATcorr)
      endif
      ! Test EcGM computed from Sigma_c(iw) [ NOTE: This is really bad numerically and never used in practice. ]

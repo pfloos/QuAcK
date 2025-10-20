@@ -1,4 +1,4 @@
-subroutine scGWitauiw_ao(nBas,nOrb,nO,maxSCF,ENuc,Hc,S,P_in,cHF,eHF,nfreqs,wcoord,wweight,vMAT)
+subroutine scGWitauiw_ao(nBas,nOrb,nO,maxSCF,read_grids,ENuc,Hc,S,P_in,cHF,eHF,nfreqs,wcoord,wweight,vMAT)
 
 ! Restricted scGW
 
@@ -6,6 +6,8 @@ subroutine scGWitauiw_ao(nBas,nOrb,nO,maxSCF,ENuc,Hc,S,P_in,cHF,eHF,nfreqs,wcoor
   include 'parameters.h'
 
 ! Input variables
+ 
+  logical,intent(in)            :: read_grids
 
   integer,intent(in)            :: nfreqs
   integer,intent(in)            :: nBas
@@ -27,8 +29,8 @@ subroutine scGWitauiw_ao(nBas,nOrb,nO,maxSCF,ENuc,Hc,S,P_in,cHF,eHF,nfreqs,wcoor
   logical                       :: file_exists
 
   integer                       :: iunit=312
-  integer                       :: ntimes
-  integer                       :: nfreqs2,ntimes_twice
+  integer                       :: ntimes,ntimes_
+  integer                       :: nfreqs2,nfreqs2_,ntimes_twice
   integer                       :: itau,ifreq,jfreq
   integer                       :: ibas,jbas,kbas,lbas,nBas2
   integer                       :: iter,iter_fock
@@ -106,8 +108,23 @@ subroutine scGWitauiw_ao(nBas,nOrb,nO,maxSCF,ENuc,Hc,S,P_in,cHF,eHF,nfreqs,wcoor
 ! Prepare grids !
 !---------------!
 
- ntimes=0;nfreqs2=0;
- call build_iw_itau_grid(nBas,nOrb,nO,ntimes,nfreqs2,0,cHF,eHF)
+ ntimes=0;nfreqs2=0; ! DEBUG we can hack this to enforce ntimes=number1 and nfreqs2=number2 for building grids from [0;Infty)
+ if(.not.read_grids) then
+  call build_iw_itau_grid(nBas,nOrb,nO,ntimes,nfreqs2,0,cHF,eHF)
+ else
+  inquire(file='tcoord.txt', exist=file_exists)
+  if(file_exists) then
+   open(unit=iunit, form='formatted', file='tcoord.txt', status='old')
+   read(iunit,*) ntimes
+   close(iunit)
+  endif 
+  inquire(file='wcoord.txt', exist=file_exists)
+  if(file_exists) then
+   open(unit=iunit, form='formatted', file='wcoord.txt', status='old')
+   read(iunit,*) nfreqs2
+   close(iunit)
+  endif 
+ endif
  ntimes_twice=2*ntimes
  allocate(tweight(ntimes),tcoord(ntimes))
  allocate(wweight2(nfreqs2),wcoord2(nfreqs2))
@@ -121,6 +138,7 @@ subroutine scGWitauiw_ao(nBas,nOrb,nO,maxSCF,ENuc,Hc,S,P_in,cHF,eHF,nfreqs,wcoor
   write(*,*) 'Reading tcoord from tcoord.txt'
   tcoord=0d0
   open(unit=iunit, form='formatted', file='tcoord.txt', status='old')
+  read(iunit,*) ntimes_
   do itau=1,ntimes
    read(iunit,*) tcoord(itau)
   enddo
@@ -129,6 +147,7 @@ subroutine scGWitauiw_ao(nBas,nOrb,nO,maxSCF,ENuc,Hc,S,P_in,cHF,eHF,nfreqs,wcoor
  inquire(file='tweight.txt', exist=file_exists)
  if(file_exists) then
   write(*,*) 'Reading tweight from tweight.txt'
+  read(iunit,*) ntimes_
   tweight=0d0
   open(unit=iunit, form='formatted', file='tweight.txt', status='old')
   do itau=1,ntimes
@@ -141,6 +160,7 @@ subroutine scGWitauiw_ao(nBas,nOrb,nO,maxSCF,ENuc,Hc,S,P_in,cHF,eHF,nfreqs,wcoor
   write(*,*) 'Reading wcoord2 from wcoord.txt'
   wcoord2=0d0
   open(unit=iunit, form='formatted', file='wcoord.txt', status='old')
+  read(iunit,*) nfreqs2_
   do jfreq=1,nfreqs2
    read(iunit,*) wcoord2(jfreq)
   enddo
@@ -151,6 +171,7 @@ subroutine scGWitauiw_ao(nBas,nOrb,nO,maxSCF,ENuc,Hc,S,P_in,cHF,eHF,nfreqs,wcoor
   write(*,*) 'Reading wweight2 from wweight.txt'
   wweight2=0d0
   open(unit=iunit, form='formatted', file='wweight.txt', status='old')
+  read(iunit,*) nfreqs2_
   do jfreq=1,nfreqs2
    read(iunit,*) wweight2(jfreq)
   enddo
@@ -288,19 +309,6 @@ subroutine scGWitauiw_ao(nBas,nOrb,nO,maxSCF,ENuc,Hc,S,P_in,cHF,eHF,nfreqs,wcoor
    if(iter_fock==maxSCF) exit
 
   enddo
-  P_mo=-matmul(matmul(cHFinv,P_ao),transpose(cHFinv)) ! Minus to order occ numbers
-  call diagonalize_matrix(nOrb,P_mo,Occ)
-  write(*,*)
-  write(*,'(a,f15.8,a,i5,a,i5)') ' Trace scGW  ',trace_1_rdm,' after ',iter_fock,' Fock iterations at global iter ',iter
-  write(*,'(a,f15.8)')        ' Change of P ',diff_Pao
-  write(*,'(a,f15.8)')        ' Chem. Pot.  ',chem_pot
-  write(*,'(a,f15.8)')        ' EcGM        ',EcGM
-  write(*,*)
-  write(*,*) ' Occupation numbers'
-  Occ=-Occ
-  do ibas=1,nOrb
-   write(*,'(I7,F15.8)') ibas,Occ(ibas)
-  enddo
 
   ! Check convergence
   diff_Pao=0d0
@@ -310,18 +318,35 @@ subroutine scGWitauiw_ao(nBas,nOrb,nO,maxSCF,ENuc,Hc,S,P_in,cHF,eHF,nfreqs,wcoor
    enddo
   enddo
   P_ao_iter=P_ao
+
+  ! Print iter info
+  P_mo=-matmul(matmul(cHFinv,P_ao),transpose(cHFinv)) ! Minus to order occ numbers
+  call diagonalize_matrix(nOrb,P_mo,Occ)
+  write(*,*)
+  write(*,'(a,f15.8,a,i5,a,i5)') ' Trace scGW  ',trace_1_rdm,' after ',iter_fock,' Fock iterations at global iter ',iter
+  write(*,'(a,f15.8)')        ' Change of P ',diff_Pao
+  write(*,'(a,f15.8)')        ' Chem. Pot.  ',chem_pot
+  write(*,'(a,f15.8)')        ' EcGM        ',EcGM
+  write(*,'(a,f15.8)')        ' Change of P ',diff_Pao
+  write(*,*)
+  write(*,*) ' Occupation numbers'
+  Occ=-Occ
+  do ibas=1,nOrb
+   write(*,'(I7,F15.8)') ibas,Occ(ibas)
+  enddo
+
   if(diff_Pao<=thrs_Pao) exit
 
   if(iter==maxSCF) exit
 
   ! Build G(i w2) -> G(i tau) [ i tau and -i tau ]
   !   G_ao_iw2(nfreqs2) --> G_ao_itau(ntimes_twice)
-  !G_ao_itau=czero
-  !do itau=1,ntimes
-  ! call Giw2Gitau(nBas,nfreqs2,wweight2,wcoord2,tcoord(itau),G_ao_iw2,G_plus_itau,G_minus_itau)
-  ! G_ao_itau(2*itau-1,:,:)=G_plus_itau(:,:)
-  ! G_ao_itau(2*itau  ,:,:)=G_minus_itau(:,:)
-  !enddo
+  G_ao_itau=czero
+  do itau=1,ntimes
+   call Giw2Gitau(nBas,nfreqs2,wweight2,wcoord2,tcoord(itau),G_ao_iw2,G_plus_itau,G_minus_itau)
+   G_ao_itau(2*itau-1,:,:)=G_plus_itau(:,:)
+   G_ao_itau(2*itau  ,:,:)=G_minus_itau(:,:)
+  enddo
 
  enddo
  write(*,*)

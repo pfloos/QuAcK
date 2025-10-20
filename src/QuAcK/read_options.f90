@@ -5,7 +5,7 @@ subroutine read_options(working_dir,                                            
                         TDA,spin_conserved,spin_flip,                                                       &
                         maxSCF_GF,thresh_GF,max_diis_GF,lin_GF,eta_GF,renorm_GF,reg_GF,                     &
                         maxSCF_GW,thresh_GW,max_diis_GW,lin_GW,eta_GW,shift_GW,reg_GW,doOO,mu,do_linDM_GW,  &
-                        nfreqs,ntimes,TDA_W,                                                                &
+                        nfreqs,read_grids,ntimes,TDA_W,                                                     &
                         maxSCF_GT,thresh_GT,max_diis_GT,lin_GT,eta_GT,reg_GT,TDA_T,do_linDM_GT,             &
                         doACFDT,exchange_kernel,doXBS,                                                      &
                         dophBSE,dophBSE2,doppBSE,dBSE,dTDA,                                                 &
@@ -59,6 +59,7 @@ subroutine read_options(working_dir,                                            
   logical,intent(out)           :: lin_GW
   double precision,intent(out)  :: eta_GW
   double precision,intent(out)  :: shift_GW
+  logical,intent(out)           :: read_grids
   logical,intent(out)           :: reg_GW
   logical,intent(out)           :: doOO
   integer,intent(out)           :: mu
@@ -98,7 +99,7 @@ subroutine read_options(working_dir,                                            
 
 ! Local variables
 
-  character(len=1)              :: ans1,ans2,ans3,ans4,ans5
+  character(len=1)              :: ans1,ans2,ans3,ans4,ans5,ans6
   integer                       :: status
   character(len=256)            :: file_path
 
@@ -194,15 +195,17 @@ subroutine read_options(working_dir,                                            
       mu          = 0
       TDA_W       = .false.
       do_linDM_GW = .false.
+      read_grids  = .false.
     
       read(1,*) 
-      read(1,*) maxSCF_GW,thresh_GW,max_diis_GW,ans1,eta_GW,ans2,ans3,ans4,mu,nfreqs,ntimes,shift_GW,ans5
+      read(1,*) maxSCF_GW,thresh_GW,max_diis_GW,ans1,eta_GW,ans2,ans3,ans4,mu,nfreqs,ntimes,shift_GW,ans5,ans6
     
       if(ans1 == 'T') lin_GW      = .true.
       if(ans2 == 'T') TDA_W       = .true.
       if(ans3 == 'T') reg_GW      = .true.
       if(ans4 == 'T') doOO        = .true.
       if(ans5 == 'T') do_linDM_GW = .true.
+      if(ans6 == 'T') read_grids  = .true.
    
       ! Read GT options
     
