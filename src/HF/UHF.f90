@@ -142,7 +142,7 @@ subroutine UHF(dotest,maxSCF,thresh,max_diis,guess_type,mix,level_shift,nNuc,ZNu
       err(:,:,ispin) = matmul(F(:,:,ispin),matmul(P(:,:,ispin),S(:,:))) - matmul(matmul(S(:,:),P(:,:,ispin)),F(:,:,ispin))
     end do
 
-    if(nSCF > 1) Conv = maxval(abs(err))
+    if(nSCF > 2) Conv = maxval(abs(err))
  
 !   Kinetic energy
 

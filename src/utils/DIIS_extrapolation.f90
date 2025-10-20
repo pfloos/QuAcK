@@ -54,7 +54,7 @@ subroutine DIIS_extrapolation(rcond,n_err,n_e,n_diis,error,e,error_in,e_inout)
 ! Extrapolate
 
 !  e_inout(:) = matmul(w(1:n_diis),transpose(e(:,1:n_diis)))
-  call dgemm('N','T',1,n_e,n_diis,1d0,w(1),1,e(1,1),n_e,0d0,e_inout(1),1)
+  if(rcond > 10d-14) call dgemm('N','T',1,n_e,n_diis,1d0,w(1),1,e(1,1),n_e,0d0,e_inout(1),1)
 
   
   deallocate(A,b,w)

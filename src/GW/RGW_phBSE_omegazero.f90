@@ -90,7 +90,7 @@ subroutine RGW_phBSE_omegazero(dophBSE2,exchange_kernel,TDA_W,TDA,dBSE,dTDA,sing
   call RGW_excitation_density(nOrb,nC,nO,nR,nS,ERI,XpY_RPA,rho_RPA)
 
                call RGW_phBSE_static_kernel_A_omegazero(eta,nOrb,nC,nO,nV,nR,nS,1d0,ERI,eGW,OmRPA,rho_RPA,KA_sta)
-  if(.not.TDA) call RGW_phBSE_static_kernel_B(eta,nOrb,nC,nO,nV,nR,nS,1d0,ERI,OmRPA,rho_RPA,KB_sta)
+  if(.not.TDA) call RGW_phBSE_dynamic_kernel_B(eta,nOrb,nC,nO,nV,nR,nS,1d0,eGW,OmRPA,rho_RPA,KB_sta)
 
 !-------------------
 ! Singlet manifold
