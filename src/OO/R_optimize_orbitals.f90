@@ -44,13 +44,18 @@ subroutine R_optimize_orbitals(nBas,nOrb,nV,nR,nC,nO,N,Nsq,O,V,ERI_AO,ERI_MO,h,r
   allocate(hess(Nsq,Nsq))
   hess(:,:) = 0d0 
   call orbital_hessian(O,V,N,Nsq,h,ERI_MO,rdm1,rdm2,hess)
-  
+  do p=1,Nsq
+    hess(p,p) = hess(p,p) + 0.001d0
+  enddo
   write(*,*) "Hessian"
   call matout(Nsq,Nsq,hess)
  
   allocate(hessInv(Nsq,Nsq))
  
   call inverse_matrix(Nsq,hess,hessInv)
+  do p=1,Nsq
+    hessInv(p,p) = hessInv(p,p) 
+  enddo
   
   write(*,*) "Inv Hessian"
   call matout(Nsq,Nsq,hessInv)

@@ -63,7 +63,7 @@ do i=1,O
           do c=O+1,N
             kc = c - O + (k-1)*V
             ja = a - O + (j-1)*V
-            ib = a - O + (j-1)*V
+            ib = b - O + (i-1)*V
             rdm2(i,a,b,j) = rdm2(i,a,b,j) + 0.5*lambda(kc,ja)*t(kc,ib) 
           end do
         end do
@@ -71,4 +71,5 @@ do i=1,O
     end do
   end do
 end do
+
 end subroutine

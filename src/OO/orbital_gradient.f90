@@ -20,7 +20,7 @@ subroutine orbital_gradient(O,V,N,Nsq,h,ERI_MO,rdm1,rdm2,grad)
   integer                       :: p,q,r,s,t
   integer                       :: pq
 
-  logical,parameter             :: debug = .false.
+  logical,parameter             :: debug = .true.
 
 ! Output variables
 
@@ -44,7 +44,7 @@ subroutine orbital_gradient(O,V,N,Nsq,h,ERI_MO,rdm1,rdm2,grad)
       do r=1,N
         do s=1,N
           do t=1,N
-            grad(pq) = grad(pq) + (ERI_MO(r,s,p,t)*rdm2(r,s,q,t) - ERI_MO(q,t,r,s)*rdm2(p,t,r,s)) &
+           grad(pq) = grad(pq) + (ERI_MO(r,s,p,t)*rdm2(r,s,q,t) - ERI_MO(q,t,r,s)*rdm2(p,t,r,s)) &
                                 - (ERI_MO(r,s,q,t)*rdm2(r,s,p,t) - ERI_MO(p,t,r,s)*rdm2(q,t,r,s))
           end do
         end do
@@ -57,7 +57,7 @@ subroutine orbital_gradient(O,V,N,Nsq,h,ERI_MO,rdm1,rdm2,grad)
 
   if(debug) then
 
-    write(*,*) 'Orbital gradient at the pCCD level:'
+    write(*,*) 'Orbital gradient at the level:'
     call matout(N,N,grad)
     write(*,*)
 

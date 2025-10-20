@@ -85,7 +85,7 @@ subroutine OORG0W0(dotest,doACFDT,exchange_kernel,doXBS,dophBSE,dophBSE2,TDA_W,T
   double precision,allocatable  :: eGW(:)
  
   double precision              :: OOConv
-  double precision              :: thresh = 1.0e-3
+  double precision              :: thresh = 1.0e-8
   integer                       :: OOi
   double precision,allocatable  :: h(:,:)
   double precision,allocatable  :: Kap(:,:)
@@ -166,7 +166,6 @@ subroutine OORG0W0(dotest,doACFDT,exchange_kernel,doXBS,dophBSE,dophBSE2,TDA_W,T
   OOi           = 1d0
   OOConv        = 1d0
   c(:,:)        = cHF(:,:)
-  c(:,:)        = 0d0
   rdm1(:,:)         = 0d0 
   rdm1_hf(:,:)      = 0d0 
   rdm1_rpa(:,:)     = 0d0 
@@ -302,8 +301,17 @@ subroutine OORG0W0(dotest,doACFDT,exchange_kernel,doXBS,dophBSE,dophBSE2,TDA_W,T
     write(*,*) "E elec = ", Emu
     write(*,*) "ENuc = ", ENuc
     
-    call R_optimize_orbitals(nBas,nOrb,nV,nR,nC,nO,N,Nsq,O,V,ERI_AO,ERI_MO,h,rdm1,rdm2,c,OOConv)
+    ! TEST FOR GRADIENT AND HESSIAN
+    PHF(:,:) = 2d0 * matmul(c(:,1:nO), transpose(c(:,1:nO))) 
+    J(:,:) = 0d0
+    call Hartree_matrix_AO_basis(nBas,PHF,ERI_AO,J)
+    call exchange_matrix_AO_basis(nBas,PHF,ERI_AO,K)
+    Fp(:,:) = Hc(:,:) + J(:,:) + 0.5d0*K(:,:)
+    call AOtoMO(nBas,nOrb,C,Fp,J) 
+    write(*,*) "Fp"
+    call matout(nBas,nBas,J)
     
+    call R_optimize_orbitals(nBas,nOrb,nV,nR,nC,nO,N,Nsq,O,V,ERI_AO,ERI_MO,h,rdm1,rdm2,c,OOConv)
 
     write(*,*) '----------------------------------------------------------'
     write(*,'(A10,I4,A30)') ' Iteration', OOi ,'for RG0W0 orbital optimization'

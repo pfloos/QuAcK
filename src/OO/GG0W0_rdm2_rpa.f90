@@ -63,10 +63,21 @@ do i=1,O
           do c=O+1,N
             kc = c - O + (k-1)*V
             ja = a - O + (j-1)*V
-            ib = a - O + (j-1)*V
+            ib = b - O + (i-1)*V
             rdm2(i,a,b,j) = rdm2(i,a,b,j) + 0.5*lambda(kc,ja)*t(kc,ib) 
           end do
         end do
+      end do
+    end do
+  end do
+end do
+! Check (anti)symetrisation of Gamma
+write(*,*) "Check (anti)symetrisation of Gamma"
+do p=1,N
+  do q=1,N
+    do r=1,N
+      do s=1,N
+        write(*,*) p,q,r,s,rdm2(p,q,r,s), rdm2(q,p,r,s),rdm2(p,q,s,r),rdm2(q,p,s,r)
       end do
     end do
   end do

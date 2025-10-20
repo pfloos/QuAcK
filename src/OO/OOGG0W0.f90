@@ -310,12 +310,6 @@ subroutine OOGG0W0(dotest,doACFDT,exchange_kernel,doXBS,dophBSE,dophBSE2,TDA_W,T
     call GG0W0_rdm2_hf(O,V,N,nS,lampl,rampl,lp,rp,lambda,t,rdm2_hf)
     call GG0W0_rdm2_rpa(O,V,N,nS,lampl,rampl,lp,rp,lambda,t,rdm2_rpa)
     rdm2 = rdm2_hf  + rdm2_rpa
-    do p=1,nBas2
-      do q=1,nBas2
-        rdm2_trace = rdm2_trace + rdm2(p,q,p,q)
-      end do
-    end do
-    write(*,*) "Trace rdm2: ", rdm2_trace
     call matout(Nsq,Nsq,rdm2)
     EOld = Emu 
     call energy_from_rdm(N,h,ERI_MO,rdm1,rdm2,Emu)
@@ -338,9 +332,9 @@ subroutine OOGG0W0(dotest,doACFDT,exchange_kernel,doXBS,dophBSE,dophBSE2,TDA_W,T
     write(*,*) '----------------------------------------------------------'
     write(*,*)
     
-    if (OOi==1) then
-      OOConv = 0d0 ! remove only for debugging
-    end if
+   ! if (OOi==1) then
+   !   OOConv = 0d0 ! remove only for debugging
+   ! end if
 
     OOi = OOi + 1 
   end do
