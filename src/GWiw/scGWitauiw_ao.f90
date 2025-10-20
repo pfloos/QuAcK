@@ -147,9 +147,9 @@ subroutine scGWitauiw_ao(nBas,nOrb,nO,maxSCF,read_grids,ENuc,Hc,S,P_in,cHF,eHF,n
  inquire(file='tweight.txt', exist=file_exists)
  if(file_exists) then
   write(*,*) 'Reading tweight from tweight.txt'
-  read(iunit,*) ntimes_
   tweight=0d0
   open(unit=iunit, form='formatted', file='tweight.txt', status='old')
+  read(iunit,*) ntimes_
   do itau=1,ntimes
    read(iunit,*) tweight(itau)
   enddo
