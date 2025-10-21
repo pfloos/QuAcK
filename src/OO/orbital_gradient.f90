@@ -20,7 +20,7 @@ subroutine orbital_gradient(O,V,N,Nsq,h,ERI_MO,rdm1,rdm2,grad)
   integer                       :: p,q,r,s,t
   integer                       :: pq
 
-  logical,parameter             :: debug = .true.
+  logical,parameter             :: debug = .false.
 
 ! Output variables
 

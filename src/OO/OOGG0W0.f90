@@ -203,8 +203,8 @@ subroutine OOGG0W0(dotest,doACFDT,exchange_kernel,doXBS,dophBSE,dophBSE2,TDA_W,T
     h(nBas+1:nBas2,nBas+1:nBas2) = Hc(1:nBas,1:nBas)
     h(:,:)                       = matmul(transpose(c),matmul(h,c))
     
-    write(*,*) "Core Hamiltonian"
-    call matout(nBas2,nBas2,h) 
+    !write(*,*) "Core Hamiltonian"
+    !call matout(nBas2,nBas2,h) 
     
     allocate(Ca(nBas,nBas2),Cb(nBas,nBas2),ERI_tmp(nBas2,nBas2,nBas2,nBas2))
    
@@ -275,13 +275,6 @@ subroutine OOGG0W0(dotest,doACFDT,exchange_kernel,doXBS,dophBSE,dophBSE2,TDA_W,T
   
     end if
   
-  ! Compute the RPA correlation energy
-
-                 call phGLR_A(dRPA_W,nBas2,nC,nO,nV,nR,nS,1d0,eGW,ERI_MO,Aph)
-  if(.not.TDA_W) call phGLR_B(dRPA_W,nBas2,nC,nO,nV,nR,nS,1d0,ERI_MO,Bph)
-  call phGLR(TDA_W,nS,Aph,Bph,EcRPA,Om,XpY,XmY)
-  write(*,*) "EcRPA = ", EcRPA
-  
   !--------------!
   ! Dump results !
   !--------------!
@@ -299,18 +292,24 @@ subroutine OOGG0W0(dotest,doACFDT,exchange_kernel,doXBS,dophBSE,dophBSE2,TDA_W,T
     Xbar = - matmul(t,Y) + X
     call inverse_matrix(nS,Xbar,Xbar_inv)
     lambda = 0.5*matmul(Y,Xbar_inv)
+    write(*,*) "Lambda"
+    call matout(nS,nS,lambda)
+    write(*,*) "t"
+    call matout(nS,nS,t)
     
     ! Calculate rdm1
     call GG0W0_rdm1_hf(O,V,N,nS,lampl,rampl,lp,rp,lambda,t,rdm1_hf)
     call GG0W0_rdm1_rpa(O,V,N,nS,lampl,rampl,lp,rp,lambda,t,rdm1_rpa)
     rdm1 = rdm1_hf  + rdm1_rpa
+    rdm1 = rdm1_hf
     write(*,*) "Trace rdm1: ", trace_matrix(N,rdm1)
-    call matout(N,N,rdm1)
+    call matout(N,N,rdm1_hf + rdm1_rpa)
     ! Calculate rdm2
     call GG0W0_rdm2_hf(O,V,N,nS,lampl,rampl,lp,rp,lambda,t,rdm2_hf)
     call GG0W0_rdm2_rpa(O,V,N,nS,lampl,rampl,lp,rp,lambda,t,rdm2_rpa)
     rdm2 = rdm2_hf  + rdm2_rpa
-    call matout(Nsq,Nsq,rdm2)
+    rdm2 = rdm2_hf
+    !call matout(Nsq,Nsq,rdm2_hf + rdm2_rpa)
     EOld = Emu 
     call energy_from_rdm(N,h,ERI_MO,rdm1,rdm2,Emu)
     call energy_from_rdm(N,h,ERI_MO,rdm1_hf,rdm2_hf,EHF_rdm)
@@ -332,9 +331,9 @@ subroutine OOGG0W0(dotest,doACFDT,exchange_kernel,doXBS,dophBSE,dophBSE2,TDA_W,T
     write(*,*) '----------------------------------------------------------'
     write(*,*)
     
-   ! if (OOi==1) then
-   !   OOConv = 0d0 ! remove only for debugging
-   ! end if
+   if (OOi==1) then
+     OOConv = 0d0 ! remove only for debugging
+   end if
 
     OOi = OOi + 1 
   end do

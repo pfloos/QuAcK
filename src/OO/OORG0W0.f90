@@ -55,6 +55,7 @@ subroutine OORG0W0(dotest,doACFDT,exchange_kernel,doXBS,dophBSE,dophBSE2,TDA_W,T
 
   logical                       :: print_W   = .false.
   logical                       :: plot_self = .false.
+  logical                       :: diagHess = .true.
   logical                       :: dRPA_W
   integer                       :: isp_W
   double precision              :: flow
@@ -88,11 +89,6 @@ subroutine OORG0W0(dotest,doACFDT,exchange_kernel,doXBS,dophBSE,dophBSE2,TDA_W,T
   double precision              :: thresh = 1.0e-8
   integer                       :: OOi
   double precision,allocatable  :: h(:,:)
-  double precision,allocatable  :: Kap(:,:)
-  double precision,allocatable  :: ExpKap(:,:)
-  double precision,allocatable  :: hess(:,:)
-  double precision,allocatable  :: hessInv(:,:)
-  double precision,allocatable  :: grad(:)
   double precision,allocatable  :: rdm1(:,:)
   double precision,allocatable  :: rdm1_hf(:,:)
   double precision,allocatable  :: rdm1_rpa(:,:)
@@ -182,8 +178,12 @@ subroutine OORG0W0(dotest,doACFDT,exchange_kernel,doXBS,dophBSE,dophBSE2,TDA_W,T
   eGW(:)        = eHF(:)
   h(:,:)        = 0d0
   
-  write(*,*) "TEST: Start from mo guess and then do HF with oo"
-  call mo_guess(nBas,nOrb,1,Sovl,Hc,XHF,c)
+ ! write(*,*) "TEST: Start from mo guess and then do HF with oo"
+ ! call mo_guess(nBas,nOrb,1,Sovl,Hc,XHF,c)
+  
+  ! Transform integrals (afterwards this is done in orbital optimization)
+  call AOtoMO(nBas,nOrb,c,Hc,h)
+  call AOtoMO_ERI_RHF(nBas,N,c,ERI_AO,ERI_MO)
 
   write(*,*) "Start orbital optimization loop..."
 
@@ -191,10 +191,6 @@ subroutine OORG0W0(dotest,doACFDT,exchange_kernel,doXBS,dophBSE,dophBSE2,TDA_W,T
   
     write(*,*) "Orbital optimiation Iteration: ", OOi 
    
-    ! Transform integrals
-
-    h = matmul(transpose(c),matmul(Hc,c))
-    call AOtoMO_ERI_RHF(nBas,N,c,ERI_AO,ERI_MO)
 
   !-------------------!
   ! Compute screening !
@@ -268,15 +264,18 @@ subroutine OORG0W0(dotest,doACFDT,exchange_kernel,doXBS,dophBSE,dophBSE2,TDA_W,T
     Xbar = - matmul(t,Y) + X
     call inverse_matrix(nS,Xbar,Xbar_inv)
     lambda = 0.5*matmul(Y,Xbar_inv)
-    
+    write(*,*) "Lambda"
+    call matout(nS,nS,lambda)
+    write(*,*) "t"
+    call matout(nS,nS,t)
+
     ! Calculate rdm1
     call RG0W0_rdm1_hf(O,V,N,nS,lampl,rampl,lp,rp,lambda,t,rdm1_hf)
     call RG0W0_rdm1_rpa(O,V,N,nS,lampl,rampl,lp,rp,lambda,t,rdm1_rpa)
     rdm1 = rdm1_hf + rdm1_rpa
     rdm1 = rdm1_hf ! emulate HF
-    write(*,*) "size rdm 1", size(rdm1,1), size(rdm1,2)
     write(*,*) "Trace rdm1: ", trace_matrix(N,rdm1)
-    !call matout(N,N,rdm1)
+    call matout(N,N,rdm1_rpa + rdm1_hf)
     ! Calculate rdm2
     call RG0W0_rdm2_hf(O,V,N,nS,lampl,rampl,lp,rp,lambda,t,rdm2_hf)
     call RG0W0_rdm2_rpa(O,V,N,nS,lampl,rampl,lp,rp,lambda,t,rdm2_rpa)
@@ -308,10 +307,10 @@ subroutine OORG0W0(dotest,doACFDT,exchange_kernel,doXBS,dophBSE,dophBSE2,TDA_W,T
     call exchange_matrix_AO_basis(nBas,PHF,ERI_AO,K)
     Fp(:,:) = Hc(:,:) + J(:,:) + 0.5d0*K(:,:)
     call AOtoMO(nBas,nOrb,C,Fp,J) 
-    write(*,*) "Fp"
-    call matout(nBas,nBas,J)
+   ! write(*,*) "4*Fp"
+   ! call matout(nBas,nBas,4d0*J)
     
-    call R_optimize_orbitals(nBas,nOrb,nV,nR,nC,nO,N,Nsq,O,V,ERI_AO,ERI_MO,h,rdm1,rdm2,c,OOConv)
+    call R_optimize_orbitals(diagHess,nBas,nOrb,nV,nR,nC,nO,N,Nsq,O,V,ERI_AO,ERI_MO,Hc,h,rdm1,rdm2,c,OOConv)
 
     write(*,*) '----------------------------------------------------------'
     write(*,'(A10,I4,A30)') ' Iteration', OOi ,'for RG0W0 orbital optimization'
@@ -321,9 +320,9 @@ subroutine OORG0W0(dotest,doACFDT,exchange_kernel,doXBS,dophBSE,dophBSE2,TDA_W,T
     write(*,*) '----------------------------------------------------------'
     write(*,*)
     
-   ! if (OOi==3) then
-   !   OOConv = 0d0 ! remove only for debugging
-   ! end if
+   if (OOi==1) then
+     OOConv = 0d0 ! remove only for debugging
+   end if
 
     OOi = OOi + 1 
   end do

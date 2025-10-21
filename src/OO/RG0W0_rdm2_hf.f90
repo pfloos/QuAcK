@@ -22,8 +22,8 @@ do p=1,O
   do q=1,O
     do r=1,O
       do s=1,O
-        rdm2(p,q,r,s) = DBLE(4*MERGE(1.0d0, 0.0d0, p==r) * MERGE(1.0d0,0.0d0,q==s) - &
-                     2*MERGE(1.0d0,0.0d0,p==s) * MERGE(1.0d0,0.0d0,q==r))
+        rdm2(p,q,r,s) = 2d0*DBLE(2*MERGE(1.0d0, 0.0d0, p==r) * MERGE(1.0d0,0.0d0,q==s) - &
+                     MERGE(1.0d0,0.0d0,p==s) * MERGE(1.0d0,0.0d0,q==r))
         end do
     end do
   end do

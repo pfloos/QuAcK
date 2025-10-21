@@ -217,9 +217,9 @@ subroutine matrix_exponential(N, A, ExpA)
   W(:,:) = - matmul(A, A)
   call diagonalize_matrix(N, W, tau)
 
-! do i=1,N
-!   tau(i) = max(abs(tau(i)),1d-14)
-! end do
+  do i=1,N
+    tau(i) = max(abs(tau(i)),1d-14)
+  end do
   tau(:) = sqrt(abs(tau(:)))
 
 ! Construct cos part
