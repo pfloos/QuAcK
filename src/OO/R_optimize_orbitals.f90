@@ -66,11 +66,11 @@ subroutine R_optimize_orbitals(diagHess,nBas,nOrb,nV,nR,nC,nO,N,Nsq,O,V,ERI_AO,E
     call inverse_matrix(Nsq,hess,hessInv)
   endif
   
-  write(*,*) "Hessian"
-  call matout(nhess,mhess,hess)
+!  write(*,*) "Hessian"
+!  call matout(nhess,mhess,hess)
   deallocate(hess)
-  write(*,*) "Inv Hessian"
-  call matout(nhess,mhess,hessInv)
+!  write(*,*) "Inv Hessian"
+!  call matout(nhess,mhess,hessInv)
  
   allocate(Kap(N,N))
  
@@ -98,28 +98,28 @@ subroutine R_optimize_orbitals(diagHess,nBas,nOrb,nV,nR,nC,nO,N,Nsq,O,V,ERI_AO,E
  
   deallocate(hessInv,grad)
   
-  write(*,*) 'kappa'
-  call matout(nOrb,nOrb,Kap)
-  write(*,*)
+!  write(*,*) 'kappa'
+!  call matout(nOrb,nOrb,Kap)
+!  write(*,*)
  
   allocate(ExpKap(N,N))
   call matrix_exponential(N,Kap,ExpKap)
   deallocate(Kap)
  
-  write(*,*) 'e^kappa'
-  call matout(N,N,ExpKap)
-  write(*,*)
+!  write(*,*) 'e^kappa'
+!  call matout(N,N,ExpKap)
+!  write(*,*)
  
-  write(*,*) 'Old orbitals'
-  call matout(nBas,nOrb,c)
-  write(*,*)
+!  write(*,*) 'Old orbitals'
+!  call matout(nBas,nOrb,c)
+!  write(*,*)
  
   c = matmul(c,ExpKap)
   deallocate(ExpKap)
  
-  write(*,*) 'Rotated orbitals'
-  call matout(nBas,nOrb,c)
-  write(*,*)
+!  write(*,*) 'Rotated orbitals'
+!  call matout(nBas,nOrb,c)
+!  write(*,*)
 
   ! Transform integrals and Hc
   call AOtoMO(nBas,nOrb,c,Hc,h)

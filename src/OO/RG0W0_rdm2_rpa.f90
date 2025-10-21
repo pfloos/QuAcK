@@ -71,5 +71,6 @@ do i=1,O
     end do
   end do
 end do
-
+write(*,*) "rdm2 set to 0"
+rdm2(:,:,:,:) = 0d0
 end subroutine
