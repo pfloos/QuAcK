@@ -55,6 +55,8 @@ subroutine build_iw_itau_grid(nBas,nOrb,nO,ntimes,nfreqs,verbose,cHF,eHF)
   complex*16,external            :: integrand_w2t
   complex*16,allocatable         :: interval_vals(:,:)
 
+  character(len=100)             :: line
+
 ! Output variables
 
   integer,intent(inout)          :: ntimes
@@ -67,17 +69,18 @@ subroutine build_iw_itau_grid(nBas,nOrb,nO,ntimes,nfreqs,verbose,cHF,eHF)
 
  ! Set global variables
  max_weval=5d4
- ntimes_max=2000
- nfreqs_max=20000
- ngrid=40
+ ntimes_max=10000
+ nfreqs_max=1000000
+ ngrid=1000
  thrs_tnorm=1d-5
- min_teval=2d-4  ! Start tau grid at least at 2d-4 because when tau->0 G(i tau) is not continuos [ Lim tau->0+ /= Lim tau->0- ]
+ min_teval=0d0  ! Start tau grid at least at 2d-4 because when tau->0 G(i tau) is not continuos [ Lim tau->0+ /= Lim tau->0- ]
  chem_pot = 0.5d0*(eHF(nO)+eHF(nO+1))
  eHF(:) = eHF(:)-chem_pot
- inquire(file='limits_ntimes_nfreqs_grids', exist=file_exists)
+ inquire(file='scGW_limits', exist=file_exists)
  if(file_exists) then
-  open(unit=iunit, form='formatted', file='limits_ntimes_nfreqs_grids', status='old')
-  read(iunit,*) ntimes_max,nfreqs_max,max_weval
+  open(unit=iunit, form='formatted', file='scGW_limits', status='old')
+  read(iunit,*) line
+  read(iunit,*) ntimes_max,nfreqs_max,max_weval,ngrid
   close(iunit)
  endif
  eEXP(1)=eHF(nO+1)
@@ -116,7 +119,7 @@ subroutine build_iw_itau_grid(nBas,nOrb,nO,ntimes,nfreqs,verbose,cHF,eHF)
  max_teval=teval
  write(*,'(a,2f20.10)') '  Maximum t value and error   : ',max_teval,error
  write(*,'(a, f20.10)') '  Minimum t value             : ',min_teval
- write(*,'(a, f20.10)') '  Maximum w value             : ',max_weval
+ write(*,'(a, e20.10)') '  Maximum w value             : ',max_weval
  write(*,'(a, f20.10)') '  Minimum |Ep| value (LUMO)   : ',eEXP(1)
  write(*,'(a, f20.10)') '  Maximum |Ep| value (1|nOrb) : ',eEXP(2)
  write(*,'(a,i20)')     '  Ntimes max                  : ',ntimes_max
@@ -135,6 +138,7 @@ subroutine build_iw_itau_grid(nBas,nOrb,nO,ntimes,nfreqs,verbose,cHF,eHF)
   lim_inf = 0d0; lim_sup = 1d0;
   alpha = 0d0;  beta  = 0d0;
   allocate(weight_01(n01),coord_01(n01))
+!  call Clenshaw_Curtis(n01,lim_inf,lim_sup,coord_01,weight_01)
   call cgqf(n01,kind_int,alpha,beta,lim_inf,lim_sup,coord_01,weight_01)
   ! Find tweight and tcoord with an adaptative quadrature
   iter=-1
@@ -378,6 +382,7 @@ subroutine build_iw_itau_grid(nBas,nOrb,nO,ntimes,nfreqs,verbose,cHF,eHF)
   lim_inf = 0d0; lim_sup = 1d0;
   alpha = 0d0;  beta  = 0d0;
   allocate(weight_01(n01),coord_01(n01))
+!  call Clenshaw_Curtis(n01,lim_inf,lim_sup,coord_01,weight_01)
   call cgqf(n01,kind_int,alpha,beta,lim_inf,lim_sup,coord_01,weight_01)
   ! Find tweight and tcoord with an adaptative quadrature
   iter=-1
@@ -593,8 +598,8 @@ subroutine build_iw_itau_grid(nBas,nOrb,nO,ntimes,nfreqs,verbose,cHF,eHF)
   alpha = 0d0;  beta  = 0d0;
   allocate(wweight(nfreqs),wcoord(nfreqs))
   call cgqf(nfreqs,kind_int,alpha,beta,lim_inf,lim_sup,wcoord,wweight)
-  wweight(:)=wweight(:)*max_weval ! Polynom of order 1 to go from [0,1] to [0,max_weval]
-  wcoord(:)=wcoord(:)*max_weval
+  wweight(:)=wweight(:)/((1d0-wcoord(:))**2d0)
+  wcoord(:)=wcoord(:)/(1d0-wcoord(:))
   open(unit=iunit, form='formatted', file='wcoord.txt')
   write(iunit,'(i50)') nfreqs
   do ifreq=1,nfreqs

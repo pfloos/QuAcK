@@ -55,9 +55,12 @@ subroutine scGWitauiw_ao(nBas,nOrb,nO,maxSCF,read_grids,ENuc,Hc,S,P_in,cHF,eHF,n
   double precision,allocatable  :: P_ao_old(:,:)
   double precision,allocatable  :: P_ao_iter(:,:)
   double precision,allocatable  :: P_mo(:,:)
+  double precision,allocatable  :: a_coef(:,:)
+  double precision,allocatable  :: b_coef(:,:)
 
   complex*16                    :: product
   complex*16                    :: weval_cpx
+  complex*16,allocatable        :: f_pq_tau(:,:)
   complex*16,allocatable        :: Sigma_c_ao(:,:,:)
   complex*16,allocatable        :: G_ao_iw2(:,:,:)
   complex*16,allocatable        :: G_ao_itau(:,:,:)
@@ -95,6 +98,7 @@ subroutine scGWitauiw_ao(nBas,nOrb,nO,maxSCF,read_grids,ENuc,Hc,S,P_in,cHF,eHF,n
  eHF(:) = eHF(:)-chem_pot_saved
    
  allocate(Chi0_ao_iw(nfreqs,nBas2,nBas2))
+ allocate(a_coef(nBas,nBas),b_coef(nBas,nBas),f_pq_tau(nBas,nBas))
  allocate(P_ao(nBas,nBas),P_ao_old(nBas,nBas),P_ao_iter(nBas,nBas))
  allocate(F_ao(nBas,nBas),P_mo(nOrb,nOrb),cHFinv(nOrb,nBas),Occ(nOrb))
  allocate(G_minus_itau(nBas,nBas),G_plus_itau(nBas,nBas)) 
@@ -108,7 +112,7 @@ subroutine scGWitauiw_ao(nBas,nOrb,nO,maxSCF,read_grids,ENuc,Hc,S,P_in,cHF,eHF,n
 ! Prepare grids !
 !---------------!
 
- ntimes=0;nfreqs2=0; ! DEBUG we can hack this to enforce ntimes=number1 and nfreqs2=number2 for building grids from [0;Infty)
+ ntimes=0;nfreqs2=nfreqs*10; ! DEBUG we can hack this to enforce ntimes=number1 and nfreqs2=number2 for building grids from [0;Infty)
  if(.not.read_grids) then
   call build_iw_itau_grid(nBas,nOrb,nO,ntimes,nfreqs2,0,cHF,eHF)
  else
@@ -131,8 +135,8 @@ subroutine scGWitauiw_ao(nBas,nOrb,nO,maxSCF,read_grids,ENuc,Hc,S,P_in,cHF,eHF,n
  allocate(Sigma_c_ao(nfreqs2,nBas,nBas),G_ao_iw2(nfreqs2,nBas,nBas))
  allocate(G_ao_itau(ntimes_twice,nBas,nBas))
  write(*,*)
- write(*,'(*(a,i5))') ' Final ntimes grid size ',ntimes
- write(*,'(*(a,i5))') ' Final nfreqs grid size ',nfreqs2
+ write(*,'(*(a,i25))') ' Final ntimes grid size ',ntimes
+ write(*,'(*(a,i25))') ' Final nfreqs grid size ',nfreqs2
  inquire(file='tcoord.txt', exist=file_exists)
  if(file_exists) then
   write(*,*) 'Reading tcoord from tcoord.txt'
@@ -178,7 +182,6 @@ subroutine scGWitauiw_ao(nBas,nOrb,nO,maxSCF,read_grids,ENuc,Hc,S,P_in,cHF,eHF,n
   close(iunit)
  endif
  write(*,*)
-
 !-----------!
 ! scGW loop !
 !-----------!
@@ -339,13 +342,27 @@ subroutine scGWitauiw_ao(nBas,nOrb,nO,maxSCF,read_grids,ENuc,Hc,S,P_in,cHF,eHF,n
 
   if(iter==maxSCF) exit
 
+  ! Prepare the a and b coefs that fit G_pq(i w2_k) ~ f_pq(i w2_k) = a_pq / (i w2_k -b_pq)
+  call fit_a_b_coefs(nBas,nfreqs2,wcoord2,G_ao_iw2,a_coef,b_coef) 
+
+  ! Compute newG_pq(i w2_k) = G_pq(i w2_k) - f_pq(i -w2_k)
+  do jfreq=1,nfreqs2
+   do ibas=1,nBas
+    do jbas=1,nBas
+     G_ao_iw2(jfreq,ibas,jbas)=G_ao_iw2(jfreq,ibas,jbas)-a_coef(ibas,jbas)/(im*wcoord2(jfreq)-b_coef(ibas,jbas))
+    enddo
+   enddo
+  enddo 
+
   ! Build G(i w2) -> G(i tau) [ i tau and -i tau ]
   !   G_ao_iw2(nfreqs2) --> G_ao_itau(ntimes_twice)
   G_ao_itau=czero
   do itau=1,ntimes
    call Giw2Gitau(nBas,nfreqs2,wweight2,wcoord2,tcoord(itau),G_ao_iw2,G_plus_itau,G_minus_itau)
-   G_ao_itau(2*itau-1,:,:)=G_plus_itau(:,:)
-   G_ao_itau(2*itau  ,:,:)=G_minus_itau(:,:)
+   call add_tail_fpq_itau(nBas, tcoord(itau),a_coef,b_coef,f_pq_tau)
+   G_ao_itau(2*itau-1,:,:)=G_plus_itau(:,:)  + f_pq_tau(:,:)
+   call add_tail_fpq_itau(nBas,-tcoord(itau),a_coef,b_coef,f_pq_tau)
+   G_ao_itau(2*itau  ,:,:)=G_minus_itau(:,:) + f_pq_tau(:,:)
   enddo
 
  enddo
@@ -379,7 +396,8 @@ subroutine scGWitauiw_ao(nBas,nOrb,nO,maxSCF,read_grids,ENuc,Hc,S,P_in,cHF,eHF,n
  deallocate(tcoord,tweight) 
  deallocate(wcoord2,wweight2) 
  deallocate(G_ao_itau)
- deallocate(Sigma_c_ao,G_ao_iw2) 
+ deallocate(Sigma_c_ao,G_ao_iw2)
+ deallocate(a_coef,b_coef,f_pq_tau) 
  deallocate(P_ao,P_ao_old,P_ao_iter,F_ao,P_mo,cHFinv,Occ) 
  deallocate(G_minus_itau,G_plus_itau) 
  deallocate(G_ao_1,G_ao_2) 
@@ -566,4 +584,170 @@ subroutine get_1rdm_scGW(nBas,nfreqs2,nElectrons,thrs_N,chem_pot,S,F_ao,Sigma_c_
 
 end subroutine
 
+subroutine fit_a_b_coefs(nBas,nfreqs2,wcoord2,G_ao_iw2,a_coef,b_coef) 
 
+  implicit none
+  include 'parameters.h'
+
+! Input variables
+
+  integer,intent(in)            :: nBas
+  integer,intent(in)            :: nfreqs2
+
+  double precision,intent(in)   :: wcoord2(nfreqs2)
+
+  complex*16,intent(in)         :: G_ao_iw2(nfreqs2,nBas,nBas)
+
+! Local variables
+
+  logical                       :: line_bracket
+  logical                       :: line_stage1
+  integer                       :: ibas,jbas
+  integer                       :: ifreq
+  integer                       :: icall
+  integer                       :: iflag
+  integer                       :: lbfgs_status
+  integer                       :: ndim
+  integer                       :: history_record
+  integer                       :: iter 
+  integer                       :: line_info
+  integer                       :: line_infoc
+  integer                       :: line_nfev
+  integer                       :: nwork
+  double precision              :: norm_Gpq
+  double precision              :: gtol
+  double precision              :: line_stp
+  double precision              :: line_stpmin
+  double precision              :: line_stpmax
+  double precision              :: line_dginit
+  double precision              :: line_finit
+  double precision              :: line_stx
+  double precision              :: line_fx
+  double precision              :: line_dgx
+  double precision              :: line_sty
+  double precision              :: line_fy
+  double precision              :: line_dgy
+  double precision              :: line_stmin
+  double precision              :: line_stmax
+  double precision              :: a,b,wk
+  double precision              :: error
+  double precision              :: ReG,ImG
+  double precision, allocatable :: diag(:)
+  double precision, allocatable :: work(:)
+  double precision              :: ab_val(2)
+  double precision              :: ab_grad(2)
+
+! Output variables
+
+  double precision,intent(out)  :: a_coef(nBas,nBas)
+  double precision,intent(out)  :: b_coef(nBas,nBas)
+
+ ! Initialization
+
+ lbfgs_status = 0
+ ndim   = 2
+ history_record = 5
+ nwork = ndim * ( 2 * history_record + 1 ) + 2 * history_record
+ gtol = 0.90d0
+ line_stpmin = 1.0d-20
+ line_stpmax = 1.0d20
+ line_stp    = 1.0d0
+
+ allocate(work(nwork),diag(ndim))
+ a_coef=0d0; b_coef=0d0;
+
+ ! Use L-BFGS to optimize
+ do ibas=1,nBas
+  do jbas=1,nBas
+
+   ! Initialize
+   iter=0
+   icall=0
+   iflag=0
+   diag(:) = 1d0
+   work(:) = 0d0
+   ab_val(:) = 0d0
+   norm_Gpq = 0d0
+   ! Optimize
+   do
+    error=0d0
+    ab_grad=0d0
+    do ifreq=nfreqs2-19,nfreqs2
+     a=ab_val(1)
+     b=ab_val(2)
+     wk=wcoord2(ifreq)
+     ReG= Real( G_ao_iw2(ifreq,ibas,jbas) )
+     if(abs(ReG)<1d-12) ReG=0d0
+     ImG=Aimag( G_ao_iw2(ifreq,ibas,jbas) )
+     if(abs(ImG)<1d-12) ImG=0d0
+     if(icall==0) norm_Gpq=norm_Gpq+ReG**2d0+ImG**2d0
+     error=error+(  -a*b/(b*b+wk*wk) - ReG )**2d0
+     error=error+( -a*wk/(b*b+wk*wk) - ImG )**2d0
+     ab_grad(1)=ab_grad(1)+( -a*b/(b*b+wk*wk)  -  ReG ) * ( -b/(b*b+wk*wk)  )
+     ab_grad(1)=ab_grad(1)+( -a*wk/(b*b+wk*wk) -  ImG ) * ( -wk/(b*b+wk*wk) )
+     ab_grad(2)=ab_grad(2)+( -a*b/(b*b+wk*wk)  -  ReG ) * ( a*(b-wk)*(b+wk)/(b*b+wk*wk)**2d0 )
+     ab_grad(2)=ab_grad(2)+( -a*wk/(b*b+wk*wk) -  ImG ) * ( 2d0*a*b*wk/(b*b+wk*wk)**2d0 )
+    enddo
+    ab_grad(:)=2d0*ab_grad(:)
+    if(norm_Gpq < 1d-12) exit
+    if(sum(abs(ab_grad(:))) < 1d-8) exit
+
+    call lbfgs(ndim, history_record, ab_val, error, ab_grad, diag, work, lbfgs_status, &
+         gtol, line_stpmin, line_stpmax, line_stp, iter, line_info, line_nfev,         &
+         line_dginit, line_finit,line_stx,  line_fx,  line_dgx,                        &
+         line_sty,  line_fy,  line_dgy, line_stmin,  line_stmax,                       &
+         line_bracket, line_stage1, line_infoc)
+
+    iflag = lbfgs_status
+
+    if(iflag<=0) exit
+    icall=icall+1
+    !  We allow at most 2000 evaluations
+    if(icall==2000) exit
+
+   enddo
+   if(norm_Gpq < 1d-12) then
+    ab_val(1) = 0d0
+    ab_val(2) = 1d0
+   endif
+   ! Save the result
+   a_coef(ibas,jbas)=ab_val(1)
+   b_coef(ibas,jbas)=ab_val(2)
+  enddo
+ enddo
+  
+ ! Deallocate and exit
+ deallocate(work,diag)
+
+end subroutine
+   
+subroutine add_tail_fpq_itau(nBas,tcoord,a,b,f_pq_tau)
+
+  implicit none
+  include 'parameters.h'
+
+! Input variables
+  integer,intent(in)            :: nBas
+  double precision,intent(in)   :: tcoord
+  double precision,intent(in)   :: a(nBas,nBas)
+  double precision,intent(in)   :: b(nBas,nBas)
+
+! Local variables 
+
+  integer                       :: ibas,jbas
+  double precision              :: factor
+  double precision,external     :: Heaviside_step
+
+! Output variables
+
+  complex*16,intent(out)        :: f_pq_tau(nBas,nBas)
+  
+  f_pq_tau=czero
+  do ibas=1,nBas 
+   do jbas=1,nBas
+    factor=(Heaviside_step(-b(ibas,jbas))*Heaviside_step(tcoord)-Heaviside_step(b(ibas,jbas))*Heaviside_step(-tcoord))
+    f_pq_tau(ibas,jbas)=im*a(ibas,jbas)*Exp(b(ibas,jbas)*tcoord)*factor
+   enddo
+  enddo
+
+end subroutine
