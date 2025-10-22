@@ -112,7 +112,7 @@ subroutine scGWitauiw_ao(nBas,nOrb,nO,maxSCF,read_grids,ENuc,Hc,S,P_in,cHF,eHF,n
 ! Prepare grids !
 !---------------!
 
- ntimes=0;nfreqs2=nfreqs*10; ! DEBUG we can hack this to enforce ntimes=number1 and nfreqs2=number2 for building grids from [0;Infty)
+ ntimes=0;nfreqs2=nfreqs*10; ! We can use this to enforce ntimes=number1 for building a grid from [0;Infty)
  if(.not.read_grids) then
   call build_iw_itau_grid(nBas,nOrb,nO,ntimes,nfreqs2,0,cHF,eHF)
  else
@@ -342,7 +342,7 @@ subroutine scGWitauiw_ao(nBas,nOrb,nO,maxSCF,read_grids,ENuc,Hc,S,P_in,cHF,eHF,n
 
   if(iter==maxSCF) exit
 
-  ! Prepare the a and b coefs that fit G_pq(i w2_k) ~ f_pq(i w2_k) = a_pq / (i w2_k -b_pq)
+  ! Prepare the a and b coefs that fit G_pq(i w2_k) ~ f_pq(i w2_k) = a_pq / (i w2_k -b_pq )
   call fit_a_b_coefs(nBas,nfreqs2,wcoord2,G_ao_iw2,a_coef,b_coef) 
 
   ! Compute newG_pq(i w2_k) = G_pq(i w2_k) - f_pq(i -w2_k)
@@ -355,13 +355,13 @@ subroutine scGWitauiw_ao(nBas,nOrb,nO,maxSCF,read_grids,ENuc,Hc,S,P_in,cHF,eHF,n
   enddo 
 
   ! Build G(i w2) -> G(i tau) [ i tau and -i tau ]
-  !   G_ao_iw2(nfreqs2) --> G_ao_itau(ntimes_twice)
+  !   newG_ao_iw2(nfreqs2) --> G_ao_itau(ntimes_twice) + f(i +-tau)
   G_ao_itau=czero
   do itau=1,ntimes
    call Giw2Gitau(nBas,nfreqs2,wweight2,wcoord2,tcoord(itau),G_ao_iw2,G_plus_itau,G_minus_itau)
-   call add_tail_fpq_itau(nBas, tcoord(itau),a_coef,b_coef,f_pq_tau)
+   call build_tail_fpq_itau(nBas, tcoord(itau),a_coef,b_coef,f_pq_tau)
    G_ao_itau(2*itau-1,:,:)=G_plus_itau(:,:)  + f_pq_tau(:,:)
-   call add_tail_fpq_itau(nBas,-tcoord(itau),a_coef,b_coef,f_pq_tau)
+   call build_tail_fpq_itau(nBas,-tcoord(itau),a_coef,b_coef,f_pq_tau)
    G_ao_itau(2*itau  ,:,:)=G_minus_itau(:,:) + f_pq_tau(:,:)
   enddo
 
@@ -672,7 +672,7 @@ subroutine fit_a_b_coefs(nBas,nfreqs2,wcoord2,G_ao_iw2,a_coef,b_coef)
    do
     error=0d0
     ab_grad=0d0
-    do ifreq=nfreqs2-19,nfreqs2
+    do ifreq=nfreqs2-19,nfreqs2 ! Use the last 20 points to fit the tail
      a=ab_val(1)
      b=ab_val(2)
      wk=wcoord2(ifreq)
@@ -721,7 +721,7 @@ subroutine fit_a_b_coefs(nBas,nfreqs2,wcoord2,G_ao_iw2,a_coef,b_coef)
 
 end subroutine
    
-subroutine add_tail_fpq_itau(nBas,tcoord,a,b,f_pq_tau)
+subroutine build_tail_fpq_itau(nBas,tcoord,a,b,f_pq_tau)
 
   implicit none
   include 'parameters.h'

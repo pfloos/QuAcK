@@ -68,12 +68,12 @@ subroutine build_iw_itau_grid(nBas,nOrb,nO,ntimes,nfreqs,verbose,cHF,eHF)
 !------------------------------------------------------------------------
 
  ! Set global variables
- max_weval=5d4
+ max_weval=5d5
  ntimes_max=10000
  nfreqs_max=1000000
  ngrid=1000
  thrs_tnorm=1d-5
- min_teval=0d0  ! Start tau grid at least at 2d-4 because when tau->0 G(i tau) is not continuos [ Lim tau->0+ /= Lim tau->0- ]
+ min_teval=0d0  ! Start tau grid at least at 2d-4 because when tau->0 G(i tau) is not continuos [ Lim tau->0+ /= Lim tau->0- ] ?
  chem_pot = 0.5d0*(eHF(nO)+eHF(nO+1))
  eHF(:) = eHF(:)-chem_pot
  inquire(file='scGW_limits', exist=file_exists)
