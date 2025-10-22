@@ -102,7 +102,7 @@ subroutine G_Dyson_GW_RHF(nBas,nOrb,nO,c,eHF,nfreqs,wweight,wcoord,ERI,vMAT,&
   chem_pot_change = 0d0
   grad_electrons  = 1d0
   trace_1rdm      = -1d0
-  chem_pot        = 0.5d0*(eHF(nO)+eHF(nO+1))
+  chem_pot        = 0.1d0
 
   write(*,*)
   write(*,'(a)') ' Fixing the Tr[1D] at full-Dyson '
@@ -112,7 +112,10 @@ subroutine G_Dyson_GW_RHF(nBas,nOrb,nO,c,eHF,nfreqs,wweight,wcoord,ERI,vMAT,&
           '|','Tr[1D]','|','Chem. Pot.','|','Grad N','|'
   write(*,*)'------------------------------------------------------'
 
-  trace_old = 1d2
+  call trace_1rdm_Gdyson(nOrb,nO,nfreqs2,chem_pot,trace_old,eHF,wcoord2_cpx,wweight2,&
+                         Tmp_mo,Sigma_c,Pcorr_mo,Identity)
+  write(*,'(1X,A1,F16.10,1X,A1,F16.10,1X,A1F16.10,1X,A1)') &
+  '|',trace_old,'|',chem_pot,'|',grad_electrons,'|'
   do while( abs(trace_old-2*nO) > thrs_closer .and. isteps <= 100 )
    isteps = isteps + 1
    call trace_1rdm_Gdyson(nOrb,nO,nfreqs2,chem_pot,trace_old,eHF,wcoord2_cpx,wweight2, &

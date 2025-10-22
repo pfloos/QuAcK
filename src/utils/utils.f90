@@ -8,6 +8,7 @@ subroutine fit_y_eq_ax2_bx_c(npoints,x,y,abc,error)
  logical                      :: diagco
 
  ! Local variables
+ integer                       :: icall
  integer                       :: iflag
  integer                       :: ipoint
  double precision              :: abc_grad(3)
