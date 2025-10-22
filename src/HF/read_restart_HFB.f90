@@ -16,14 +16,14 @@ subroutine read_restart_HFB(nBas, nOrb, Occ, c, S, chem_pot)
 
 ! Local variables
 
-  integer                           :: ibas,iorb,iorb1,iunit=667
+  integer                           :: ibas,iorb,iorb1,iunit=6687
 
   integer                           :: nBas_
   integer                           :: nOrb_
   double precision                  :: chem_pot_
   double precision                  :: max_diff
   double precision                  :: val_read
-  double precision,allocatable      :: eigVAL(:)
+  double precision,allocatable      :: occ_tmp(:)
   double precision,allocatable      :: c_tmp(:,:)
   double precision,allocatable      :: S_mol(:,:)
   double precision,allocatable      :: X_mol(:,:)
@@ -36,14 +36,15 @@ subroutine read_restart_HFB(nBas, nOrb, Occ, c, S, chem_pot)
 
 ! Dump results
 
-  allocate(eigVAL(nOrb),c_tmp(nBas,nOrb),S_mol(nOrb,nOrb),X_mol(nOrb,nOrb))
+  allocate(occ_tmp(nOrb),c_tmp(nBas,nOrb),S_mol(nOrb,nOrb),X_mol(nOrb,nOrb))
 
   c_tmp=0d0
   S_mol=0d0
   X_mol=0d0
 
   open(unit=iunit,form='unformatted',file='hfb_bin',status='old')
-  read(iunit) nBas_,nOrb_ 
+  read(iunit) nBas_
+  read(iunit) nOrb_ 
   read(iunit) chem_pot_
   do iorb=1,nOrb 
    do ibas=1,nBas
@@ -52,7 +53,7 @@ subroutine read_restart_HFB(nBas, nOrb, Occ, c, S, chem_pot)
    enddo
   enddo
   do iorb=1,nOrb 
-   read(iunit) eigVAL(iorb) 
+   read(iunit) occ_tmp(iorb) 
   enddo
   close(iunit)
 
@@ -61,8 +62,15 @@ subroutine read_restart_HFB(nBas, nOrb, Occ, c, S, chem_pot)
    write(*,*)' Reading restart file'
    write(*,*)
 
-   chem_pot = chem_pot_
-   Occ(:) = eigVAL(:)
+   chem_pot=chem_pot_
+
+   Occ(:) = occ_tmp(:)
+   write(*,*)
+   write(*,*) ' Initial occ. numbers read'
+   write(*,*)
+   do iorb=1,nOrb
+    write(*,'(3X,F16.10)') Occ(iorb)
+   enddo
    c(:,:) = c_tmp(:,:)
    
    ! Check the orthonormality
@@ -84,9 +92,9 @@ subroutine read_restart_HFB(nBas, nOrb, Occ, c, S, chem_pot)
     write(*,*) ' '
     X_mol = S_mol
     S_mol = 0d0
-    call diagonalize_matrix(nOrb,X_mol,eigVAL)
+    call diagonalize_matrix(nOrb,X_mol,occ_tmp)
     do iorb=1,nOrb
-     S_mol(iorb,iorb) = 1d0/(sqrt(eigVAL(iorb)) + 1d-10)
+     S_mol(iorb,iorb) = 1d0/(sqrt(occ_tmp(iorb)) + 1d-10)
     enddo
     X_mol = matmul(X_mol,matmul(S_mol,transpose(X_mol)))
     c = matmul(c,X_mol)
@@ -119,6 +127,6 @@ subroutine read_restart_HFB(nBas, nOrb, Occ, c, S, chem_pot)
  
   endif  
 
-  deallocate(eigVAL,c_tmp,S_mol,X_mol)
+  deallocate(occ_tmp,c_tmp,S_mol,X_mol)
 
 end subroutine 

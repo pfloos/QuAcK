@@ -83,7 +83,7 @@ subroutine print_RHFB(nBas, nOrb, nOrb_twice, N_anom, Occ, eHFB_state, ENuc, ET,
   write(*,'(A50)') ' HFB QP energies '
   write(*,'(A50)') '---------------------------------------'
   do iorb=1,nOrb_twice
-   write(*,'(I7,10F15.8)') iorb,eHFB_state(iorb)
+   write(*,'(I7,F15.8)') iorb,eHFB_state(iorb)
   enddo
   write(*,*)
 
