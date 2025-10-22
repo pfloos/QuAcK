@@ -88,7 +88,7 @@ subroutine diagonalize_general_matrix(N,A,WR,VR)
   end if
 
 end subroutine 
-
+ 
 subroutine diagonalize_matrix(N,A,e)
 
 ! Diagonalize a square matrix
@@ -296,6 +296,46 @@ subroutine inverse_matrix(N,A,B)
   deallocate(ipiv,work)
 
 end subroutine 
+
+subroutine pseudo_inverse_matrix(N,A,B)
+
+! Compute Pseudo-inverse B for real symmetric Matrix A, i.e. ABA = A.
+! If A = U D U^T --> B = U D^+ U^T where D^+_ii = 1/D_ii if D_ii!=0 and 0 otherwise
+
+  implicit none
+
+  !Input
+  integer,intent(in)            :: N
+  double precision,intent(in)   :: A(N,N)
+  
+  ! local
+  integer                       :: i
+  double precision,allocatable  :: U(:,:)
+  double precision,allocatable  :: DPUT(:,:)
+  double precision,allocatable  :: e(:)
+
+  !Output
+  double precision,intent(out)  :: B(N,N)
+
+  allocate(U(N,N),e(N),DPUT(N,N))
+  U(:,:) = A(:,:)
+  call diagonalize_matrix(N,U,e)
+  DPUT(:,:) = 0d0
+  ! build D^+ U^T
+  do i=1,N
+    if(abs(e(i))>1e-15) then
+      DPUT(i,:) = U(:,i)/e(i)     
+    endif
+  end do
+
+  ! B = U D^+ U^T 
+  call dgemm("N", "N", N, N, N, 1.d0, &
+             U(1,1), N, DPUT(1,1), N,   &
+             0.d0, B(1,1), N)
+
+  deallocate(U,e,DPUT)
+
+end subroutine
 
 subroutine complex_inverse_matrix(N,A,B)
 
