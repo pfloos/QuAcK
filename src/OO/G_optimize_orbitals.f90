@@ -54,7 +54,7 @@ subroutine G_optimize_orbitals(nBas,nBas2,nV,nR,nC,nO,N,Nsq,O,V,ERI_AO,ERI_MO,h,
   
   allocate(hessInv(Nsq,Nsq))
  
-  call inverse_matrix(Nsq,hess,hessInv)
+  call pseudo_inverse_matrix(Nsq,hess,hessInv)
   
  ! write(*,*) "Inv Hessian"
  ! call matout(Nsq,Nsq,hessInv)

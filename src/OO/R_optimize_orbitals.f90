@@ -60,10 +60,7 @@ subroutine R_optimize_orbitals(diagHess,nBas,nOrb,nV,nR,nC,nO,N,Nsq,O,V,ERI_AO,E
     allocate(hess(nhess,mhess),hessInv(nhess,mhess))
     hess(:,:) = 0d0 
     call orbital_hessian(O,V,N,Nsq,h,ERI_MO,rdm1,rdm2,hess)
-    do pq=1,Nsq
-      hess(pq,pq) = hess(pq,pq) + reg
-    enddo
-    call inverse_matrix(Nsq,hess,hessInv)
+    call pseudo_inverse_matrix(Nsq,hess,hessInv)
   endif
   
 !  write(*,*) "Hessian"

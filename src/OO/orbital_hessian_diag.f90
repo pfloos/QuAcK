@@ -18,7 +18,7 @@ subroutine orbital_hessian_diag(O,V,N,Nsq,h,ERI_MO,rdm1,rdm2,hess)
 ! Local variables
 
   integer                       :: p,q,r,s,t,u,w
-  integer                       :: pq
+  integer                       :: pq,rs
 
   logical,parameter             :: debug = .false.
 
@@ -95,7 +95,7 @@ subroutine orbital_hessian_diag(O,V,N,Nsq,h,ERI_MO,rdm1,rdm2,hess)
     do q=1,N
 
       pq = pq + 1
-      !hess(pq,1) = tmp(p,r,q,s) - tmp(r,p,q,s) - tmp(p,r,s,q) + tmp(r,p,s,q)  ! This element does not make any sense to me
+      hess(pq,1) = tmp(p,r,q,s) - tmp(r,p,q,s) - tmp(p,r,s,q) + tmp(r,p,s,q)  ! This element does not make any sense to mei
       hess(pq,1) = tmp(p,q,p,q) - tmp(q,p,p,q) - tmp(p,q,q,p) + tmp(q,p,q,p)
     end do
   end do

@@ -23,6 +23,8 @@ subroutine orbital_hessian(O,V,N,Nsq,h,ERI_MO,rdm1,rdm2,hess)
   logical,parameter             :: debug = .false.
 
   double precision,allocatable  :: tmp(:,:,:,:)
+  double precision,allocatable  :: hess2(:,:)
+  double precision,allocatable  :: e(:)
 
   double precision,external     :: Kronecker_delta
 
@@ -32,7 +34,7 @@ subroutine orbital_hessian(O,V,N,Nsq,h,ERI_MO,rdm1,rdm2,hess)
 
 ! Compute intermediate array
 
-  allocate(tmp(N,N,N,N))
+  allocate(tmp(N,N,N,N),hess2(Nsq,Nsq),e(Nsq))
 
   tmp(:,:,:,:) = 0d0
 
@@ -102,20 +104,34 @@ subroutine orbital_hessian(O,V,N,Nsq,h,ERI_MO,rdm1,rdm2,hess)
 
           rs = rs + 1
 
-         hess(pq,rs) = tmp(p,r,q,s) - tmp(r,p,q,s) - tmp(p,r,s,q) + tmp(r,p,s,q)
-!         hess(pq,rs) = tmp(p,q,r,s) - tmp(q,p,r,s) - tmp(p,q,s,r) + tmp(q,p,s,r)
+!         hess(pq,rs) = tmp(p,r,q,s) - tmp(r,p,q,s) - tmp(p,r,s,q) + tmp(r,p,s,q)
+         hess(pq,rs) = tmp(p,q,r,s) - tmp(q,p,r,s) - tmp(p,q,s,r) + tmp(q,p,s,r)
 
         end do
       end do
 
     end do
   end do
+!hess2(:,:) = hess(:,:)
+!call diagonalize_matrix(Nsq,hess2,e)
+!write(*,*) "Hessian"
+!call matout(Nsq,Nsq,hess)
+!write(*,*) "eigenvalues of hessian"
+!call vecout(Nsq,e)
+!call pseudo_inverse_matrix(Nsq,hess,hess2)
+!write(*,*) "hessian again"
+!call matout(Nsq,Nsq,matmul(matmul(hess,hess2),hess))
+!write(*,*) "Pseudo inverse"
+!call matout(Nsq,Nsq,hess2)
+!write(*,*) "Pseudo inverse times hess times pseudo"
+!call matout(Nsq,Nsq,matmul(matmul(hess,hess2),hess2))
+deallocate(hess2,e,tmp)
 
 ! Dump Hessian
 
   if(debug) then
 
-    write(*,*) 'Orbital Hessian at the pCCD level:'
+    write(*,*) 'Orbital Hessian at the level:'
     call matout(Nsq,Nsq,hess)
     write(*,*)
 

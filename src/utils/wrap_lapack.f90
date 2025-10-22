@@ -323,7 +323,7 @@ subroutine pseudo_inverse_matrix(N,A,B)
   DPUT(:,:) = 0d0
   ! build D^+ U^T
   do i=1,N
-    if(abs(e(i))>1e-15) then
+    if(abs(e(i))>1e-6) then
       DPUT(i,:) = U(:,i)/e(i)     
     endif
   end do

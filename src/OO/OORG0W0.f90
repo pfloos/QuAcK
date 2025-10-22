@@ -55,7 +55,7 @@ subroutine OORG0W0(dotest,doACFDT,exchange_kernel,doXBS,dophBSE,dophBSE2,TDA_W,T
 
   logical                       :: print_W   = .false.
   logical                       :: plot_self = .false.
-  logical                       :: diagHess = .true.
+  logical                       :: diagHess = .false.
   logical                       :: dRPA_W
   integer                       :: isp_W
   double precision              :: flow
@@ -86,7 +86,7 @@ subroutine OORG0W0(dotest,doACFDT,exchange_kernel,doXBS,dophBSE,dophBSE2,TDA_W,T
   double precision,allocatable  :: eGW(:)
  
   double precision              :: OOConv
-  double precision              :: thresh = 1.0e-8
+  double precision              :: thresh = 1.0e-6
   integer                       :: OOi
   double precision,allocatable  :: h(:,:)
   double precision,allocatable  :: rdm1(:,:)
@@ -178,8 +178,8 @@ subroutine OORG0W0(dotest,doACFDT,exchange_kernel,doXBS,dophBSE,dophBSE2,TDA_W,T
   eGW(:)        = eHF(:)
   h(:,:)        = 0d0
   
- ! write(*,*) "TEST: Start from mo guess and then do HF with oo"
- ! call mo_guess(nBas,nOrb,1,Sovl,Hc,XHF,c)
+  write(*,*) "TEST: Start from mo guess and then do HF with oo"
+  call mo_guess(nBas,nOrb,1,Sovl,Hc,XHF,c)
   
   ! Transform integrals (afterwards this is done in orbital optimization)
   call AOtoMO(nBas,nOrb,c,Hc,h)
@@ -264,18 +264,18 @@ subroutine OORG0W0(dotest,doACFDT,exchange_kernel,doXBS,dophBSE,dophBSE2,TDA_W,T
     Xbar = - matmul(t,Y) + X
     call inverse_matrix(nS,Xbar,Xbar_inv)
     lambda = 0.5*matmul(Y,Xbar_inv)
-    write(*,*) "Lambda"
-    call matout(nS,nS,lambda)
-    write(*,*) "t"
-    call matout(nS,nS,t)
+!    write(*,*) "Lambda"
+!    call matout(nS,nS,lambda)
+!    write(*,*) "t"
+!    call matout(nS,nS,t)
 
     ! Calculate rdm1
     call RG0W0_rdm1_hf(O,V,N,nS,lampl,rampl,lp,rp,lambda,t,rdm1_hf)
     call RG0W0_rdm1_rpa(O,V,N,nS,lampl,rampl,lp,rp,lambda,t,rdm1_rpa)
     rdm1 = rdm1_hf + rdm1_rpa
     rdm1 = rdm1_hf ! emulate HF
-    write(*,*) "Trace rdm1: ", trace_matrix(N,rdm1)
-    call matout(N,N,rdm1_rpa + rdm1_hf)
+    write(*,*) "Trace rdm1: ", trace_matrix(N,rdm1_hf + rdm1_rpa)
+!    call matout(N,N,rdm1_rpa + rdm1_hf)
     ! Calculate rdm2
     call RG0W0_rdm2_hf(O,V,N,nS,lampl,rampl,lp,rp,lambda,t,rdm2_hf)
     call RG0W0_rdm2_rpa(O,V,N,nS,lampl,rampl,lp,rp,lambda,t,rdm2_rpa)
@@ -320,9 +320,9 @@ subroutine OORG0W0(dotest,doACFDT,exchange_kernel,doXBS,dophBSE,dophBSE2,TDA_W,T
     write(*,*) '----------------------------------------------------------'
     write(*,*)
     
-   if (OOi==1) then
-     OOConv = 0d0 ! remove only for debugging
-   end if
+ !  if (OOi==1) then
+ !    OOConv = 0d0 ! remove only for debugging
+ !  end if
 
     OOi = OOi + 1 
   end do
