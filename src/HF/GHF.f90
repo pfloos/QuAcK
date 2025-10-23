@@ -289,9 +289,6 @@ subroutine GHF(dotest,maxSCF,thresh,max_diis,guess_type,mix,level_shift,nNuc,ZNu
 ! Compute final GHF energy
 
   call print_GHF(nBas,nBas2,nO,eHF,C,Ov,ENuc,ET,EV,EJ,EK,EGHF,dipole)
-  
-  write(*,*) "cHF in the end of GHF"
-  call matout(nBas2,nBas2,C)
 
 ! Print test values
 
