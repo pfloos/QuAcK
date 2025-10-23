@@ -61,6 +61,8 @@ subroutine scGWitauiw_ao(nBas,nOrb,nO,maxSCF,read_grids,ENuc,Hc,S,P_in,cHF,eHF,n
   complex*16,allocatable        :: Sigma_c_ao(:,:,:)
   complex*16,allocatable        :: G_ao_iw2(:,:,:)
   complex*16,allocatable        :: G_ao_itau(:,:,:)
+  complex*16,allocatable        :: G_ao_iw2_old(:,:,:)
+  complex*16,allocatable        :: G_ao_itau_old(:,:,:)
   complex*16,allocatable        :: G_ao_1(:,:),G_ao_2(:,:)
   complex*16,allocatable        :: G_minus_itau(:,:),G_plus_itau(:,:)
   complex*16,allocatable        :: Chi0_ao_itau(:,:)
@@ -108,7 +110,7 @@ subroutine scGWitauiw_ao(nBas,nOrb,nO,maxSCF,read_grids,ENuc,Hc,S,P_in,cHF,eHF,n
 ! Prepare grids !
 !---------------!
 
- ntimes=0;nfreqs2=0; ! We can use this to enforce ntimes=number1 for building a grid from [0;Infty)
+ ntimes=0;nfreqs2=800; ! We can use this to enforce ntimes=number1 for building a grid from [0;Infty)
  if(.not.read_grids) then
   call build_iw_itau_grid(nBas,nOrb,nO,ntimes,nfreqs2,0,cHF,eHF)
  else
@@ -128,8 +130,8 @@ subroutine scGWitauiw_ao(nBas,nOrb,nO,maxSCF,read_grids,ENuc,Hc,S,P_in,cHF,eHF,n
  ntimes_twice=2*ntimes
  allocate(tweight(ntimes),tcoord(ntimes))
  allocate(wweight2(nfreqs2),wcoord2(nfreqs2))
- allocate(Sigma_c_ao(nfreqs2,nBas,nBas),G_ao_iw2(nfreqs2,nBas,nBas))
- allocate(G_ao_itau(ntimes_twice,nBas,nBas))
+ allocate(Sigma_c_ao(nfreqs2,nBas,nBas),G_ao_iw2(nfreqs2,nBas,nBas),G_ao_iw2_old(nfreqs2,nBas,nBas))
+ allocate(G_ao_itau(ntimes_twice,nBas,nBas),G_ao_itau_old(ntimes_twice,nBas,nBas))
  write(*,*)
  write(*,'(*(a,i25))') ' Final ntimes grid size ',ntimes
  write(*,'(*(a,i25))') ' Final nfreqs grid size ',nfreqs2
@@ -178,6 +180,7 @@ subroutine scGWitauiw_ao(nBas,nOrb,nO,maxSCF,read_grids,ENuc,Hc,S,P_in,cHF,eHF,n
   close(iunit)
  endif
  write(*,*)
+
 !-----------!
 ! scGW loop !
 !-----------!
@@ -185,7 +188,8 @@ subroutine scGWitauiw_ao(nBas,nOrb,nO,maxSCF,read_grids,ENuc,Hc,S,P_in,cHF,eHF,n
  iter=0
  do
   iter=iter+1
-  ! For iter=1 we build G_ao_itau as the RHF one
+
+  ! For iter=1 we build G_ao_itau as the RHF one [we also initialize G_ao_itau_old and G_ao_iw2_old]
   if(iter==1) then
    G_ao_itau=czero
    do itau=1,ntimes
@@ -193,6 +197,12 @@ subroutine scGWitauiw_ao(nBas,nOrb,nO,maxSCF,read_grids,ENuc,Hc,S,P_in,cHF,eHF,n
     call G0itau_ao_RHF(nBas,nOrb,nO,-tcoord(itau),G_minus_itau,cHF,eHF)
     G_ao_itau(2*itau-1,:,:)=G_plus_itau(:,:)
     G_ao_itau(2*itau  ,:,:)=G_minus_itau(:,:)
+   enddo
+   G_ao_itau_old(:,:,:)=G_ao_itau(:,:,:)
+   do jfreq=1,nfreqs2
+    weval_cpx=im*wcoord2(jfreq)
+    call G_AO_RHF(nBas,nOrb,nO,eta,cHF,eHF,weval_cpx,G_ao_1)
+    G_ao_iw2_old(jfreq,:,:)=G_ao_1(:,:)
    enddo
   endif
 
@@ -214,7 +224,7 @@ subroutine scGWitauiw_ao(nBas,nOrb,nO,maxSCF,read_grids,ENuc,Hc,S,P_in,cHF,eHF,n
     enddo
    enddo
    Chi0_ao_itau=-2d0*im*Chi0_ao_itau ! The 2 factor is added to account for both spin contributions [ i.e., (up,up,up,up) and (down,down,down,down) ]
-   ! Xo(i tau) -> Xo(i w) [the factor fact cancells large itau and iw values that lead to large oscillations]
+   ! Xo(i tau) -> Xo(i w)
    do ifreq=1,nfreqs
     Chi0_ao_iw(ifreq,:,:) = Chi0_ao_iw(ifreq,:,:) - im*tweight(itau)*Chi0_ao_itau(:,:)*Exp(im*tcoord(itau)*wcoord(ifreq))
    enddo 
@@ -296,7 +306,7 @@ subroutine scGWitauiw_ao(nBas,nOrb,nO,maxSCF,read_grids,ENuc,Hc,S,P_in,cHF,eHF,n
    if(abs(trace_1_rdm-nElectrons)>thrs_N) &
     call fix_chem_pot_scGW(nBas,nfreqs2,nElectrons,thrs_N,chem_pot,S,F_ao,Sigma_c_ao,wcoord2,wweight2, &
                           G_ao_1,G_ao_iw2,P_ao,trace_1_rdm)
-   ! Check convergence of P_ao
+   ! Check convergence of P_ao for fixed Sigma_c(i w2)
    diff_Pao=0d0
    do ibas=1,nBas
     do jbas=1,nBas
@@ -309,7 +319,7 @@ subroutine scGWitauiw_ao(nBas,nOrb,nO,maxSCF,read_grids,ENuc,Hc,S,P_in,cHF,eHF,n
 
   enddo
 
-  ! Check convergence
+  ! Check convergence of P_ao after a scGW iteration
   diff_Pao=0d0
   do ibas=1,nBas
    do jbas=1,nBas
@@ -339,7 +349,15 @@ subroutine scGWitauiw_ao(nBas,nOrb,nO,maxSCF,read_grids,ENuc,Hc,S,P_in,cHF,eHF,n
 
   if(iter==maxSCF) exit
 
+  ! Build DeltaG(i w2) = G(i w2) - G_old(i w2)
+  do jfreq=1,nfreqs2
+   G_ao_1(:,:)=G_ao_iw2(jfreq,:,:)
+   G_ao_iw2(jfreq,:,:)=G_ao_iw2(jfreq,:,:)-G_ao_iw2_old(jfreq,:,:)
+   G_ao_iw2_old(jfreq,:,:)=G_ao_1(:,:)
+  enddo
+
   ! Build G(i w2) -> G(i tau) [ i tau and -i tau ]
+   ! Using DeltaG(i w2) to Fourier transform only the change [ i.e., DeltaG(i w2) -> DeltaG(i tau) ]
   G_ao_itau=czero
   do itau=1,ntimes
    call Giw2Gitau(nBas,nfreqs2,wweight2,wcoord2,tcoord(itau),G_ao_iw2,G_plus_itau,G_minus_itau)
@@ -347,6 +365,10 @@ subroutine scGWitauiw_ao(nBas,nOrb,nO,maxSCF,read_grids,ENuc,Hc,S,P_in,cHF,eHF,n
    G_ao_itau(2*itau  ,:,:)=G_minus_itau(:,:)
   enddo
 
+  ! Build G(i tau) = DeltaG(i tau) + G_old(i tau) and save G_ao_itau for the next iteration
+  G_ao_itau(:,:,:)=G_ao_itau(:,:,:)+G_ao_itau_old(:,:,:)
+  G_ao_itau_old(:,:,:)=G_ao_itau(:,:,:)
+ 
  enddo
  write(*,*)
  write(*,'(A50)') '---------------------------------------'
@@ -377,8 +399,8 @@ subroutine scGWitauiw_ao(nBas,nOrb,nO,maxSCF,read_grids,ENuc,Hc,S,P_in,cHF,eHF,n
  deallocate(Chi0_ao_iw,Wp_ao_iw)
  deallocate(tcoord,tweight) 
  deallocate(wcoord2,wweight2) 
- deallocate(G_ao_itau)
- deallocate(Sigma_c_ao,G_ao_iw2)
+ deallocate(G_ao_itau,G_ao_itau_old)
+ deallocate(Sigma_c_ao,G_ao_iw2,G_ao_iw2_old)
  deallocate(P_ao,P_ao_old,P_ao_iter,F_ao,P_mo,cHFinv,Occ) 
  deallocate(G_minus_itau,G_plus_itau) 
  deallocate(G_ao_1,G_ao_2) 
