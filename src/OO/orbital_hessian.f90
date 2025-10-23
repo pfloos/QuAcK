@@ -112,19 +112,12 @@ subroutine orbital_hessian(O,V,N,Nsq,h,ERI_MO,rdm1,rdm2,hess)
 
     end do
   end do
-!hess2(:,:) = hess(:,:)
-!call diagonalize_matrix(Nsq,hess2,e)
-!write(*,*) "Hessian"
-!call matout(Nsq,Nsq,hess)
-!write(*,*) "eigenvalues of hessian"
-!call vecout(Nsq,e)
-!call pseudo_inverse_matrix(Nsq,hess,hess2)
-!write(*,*) "hessian again"
-!call matout(Nsq,Nsq,matmul(matmul(hess,hess2),hess))
-!write(*,*) "Pseudo inverse"
-!call matout(Nsq,Nsq,hess2)
-!write(*,*) "Pseudo inverse times hess times pseudo"
-!call matout(Nsq,Nsq,matmul(matmul(hess,hess2),hess2))
+write(*,*) "Hessian"
+call matout(Nsq,Nsq,hess)
+write(*,*) "eigenvalues of hessian"
+hess2(:,:) = hess(:,:)
+call diagonalize_matrix(Nsq,hess2,e)
+call vecout(Nsq,e)
 deallocate(hess2,e,tmp)
 
 ! Dump Hessian
