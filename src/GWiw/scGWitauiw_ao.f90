@@ -107,6 +107,8 @@ subroutine scGWitauiw_ao(nBas,nOrb,nO,maxSCF,read_grids,ENuc,Hc,S,P_in,cHF,eHF,n
  cHFinv=matmul(transpose(cHF),S)
  P_ao=P_in
  P_ao_iter=P_ao
+ a_coef=0d0
+ b_coef=0d0
 
 !---------------!
 ! Prepare grids !
@@ -330,7 +332,8 @@ subroutine scGWitauiw_ao(nBas,nOrb,nO,maxSCF,read_grids,ENuc,Hc,S,P_in,cHF,eHF,n
   write(*,'(a,f15.8)')        ' Change of P ',diff_Pao
   write(*,'(a,f15.8)')        ' Chem. Pot.  ',chem_pot
   write(*,'(a,f15.8)')        ' EcGM        ',EcGM
-  write(*,'(a,f15.8)')        ' Change of P ',diff_Pao
+  write(*,'(a,f15.8)')        ' Eel         ',Ehfl+EcGM
+  write(*,'(a,f15.8)')        ' Etot        ',Ehfl+EcGM+ENuc
   write(*,*)
   write(*,*) ' Occupation numbers'
   Occ=-Occ
@@ -341,6 +344,16 @@ subroutine scGWitauiw_ao(nBas,nOrb,nO,maxSCF,read_grids,ENuc,Hc,S,P_in,cHF,eHF,n
   if(diff_Pao<=thrs_Pao) exit
 
   if(iter==maxSCF) exit
+
+
+block
+G_ao_iw2=czero
+do jfreq=1,nfreqs2
+! Build G(i w2)
+weval_cpx=im*wcoord2(jfreq)
+call G_AO_RHF(nBas,nOrb,nO,eta,cHF,eHF,weval_cpx,G_ao_1)
+G_ao_iw2(jfreq,:,:) = G_ao_1(:,:)
+enddo
 
   ! Prepare the a and b coefs that fit G_pq(i w2_k) ~ f_pq(i w2_k) = a_pq / (i w2_k -b_pq )
   call fit_a_b_coefs(nBas,nfreqs2,wcoord2,G_ao_iw2,a_coef,b_coef) 
@@ -364,6 +377,9 @@ subroutine scGWitauiw_ao(nBas,nOrb,nO,maxSCF,read_grids,ENuc,Hc,S,P_in,cHF,eHF,n
    call build_tail_fpq_itau(nBas,-tcoord(itau),a_coef,b_coef,f_pq_tau)
    G_ao_itau(2*itau  ,:,:)=G_minus_itau(:,:) + f_pq_tau(:,:)
   enddo
+
+if(iter==1) exit
+end block
 
  enddo
  write(*,*)
@@ -600,79 +616,51 @@ subroutine fit_a_b_coefs(nBas,nfreqs2,wcoord2,G_ao_iw2,a_coef,b_coef)
 
 ! Local variables
 
-  logical                       :: line_bracket
-  logical                       :: line_stage1
+  logical                       :: lowered
   integer                       :: ibas,jbas
   integer                       :: ifreq
   integer                       :: icall
-  integer                       :: iflag
-  integer                       :: lbfgs_status
-  integer                       :: ndim
-  integer                       :: history_record
-  integer                       :: iter 
-  integer                       :: line_info
-  integer                       :: line_infoc
-  integer                       :: line_nfev
-  integer                       :: nwork
+  integer                       :: icontraction
+  integer                       :: ncontraction
+  integer                       :: n2use
   double precision              :: norm_Gpq
-  double precision              :: gtol
+  double precision              :: old_grad
   double precision              :: line_stp
-  double precision              :: line_stpmin
-  double precision              :: line_stpmax
-  double precision              :: line_dginit
-  double precision              :: line_finit
-  double precision              :: line_stx
-  double precision              :: line_fx
-  double precision              :: line_dgx
-  double precision              :: line_sty
-  double precision              :: line_fy
-  double precision              :: line_dgy
-  double precision              :: line_stmin
-  double precision              :: line_stmax
   double precision              :: a,b,wk
+  double precision              :: nine_coords(9)
   double precision              :: error
+  double precision              :: error_old
   double precision              :: ReG,ImG
-  double precision, allocatable :: diag(:)
-  double precision, allocatable :: work(:)
   double precision              :: ab_val(2)
   double precision              :: ab_grad(2)
 
 ! Output variables
 
-  double precision,intent(out)  :: a_coef(nBas,nBas)
-  double precision,intent(out)  :: b_coef(nBas,nBas)
+  double precision,intent(inout) :: a_coef(nBas,nBas)
+  double precision,intent(inout) :: b_coef(nBas,nBas)
 
  ! Initialization
 
- lbfgs_status = 0
- ndim   = 2
- history_record = 5
- nwork = ndim * ( 2 * history_record + 1 ) + 2 * history_record
- gtol = 0.90d0
- line_stpmin = 1.0d-20
- line_stpmax = 1.0d20
- line_stp    = 1.0d0
-
- allocate(work(nwork),diag(ndim))
- a_coef=0d0; b_coef=0d0;
+ n2use=50 ! How many points we want
+ n2use=n2use-1
+ ncontraction = 6
 
  ! Use L-BFGS to optimize
  do ibas=1,nBas
   do jbas=1,nBas
 
-   ! Initialize
-   iter=0
+   ! Do some steepest descent steps
    icall=0
-   iflag=0
-   diag(:) = 1d0
-   work(:) = 0d0
-   ab_val(:) = 0d0
    norm_Gpq = 0d0
-   ! Optimize
+   old_grad = 100
+   error_old = 100
+   line_stp  = 1d0
+   ab_val(1) = a_coef(ibas,jbas)
+   ab_val(2) = b_coef(ibas,jbas)
    do
     error=0d0
     ab_grad=0d0
-    do ifreq=nfreqs2-19,nfreqs2 ! Use the last 20 points to fit the tail
+    do ifreq=nfreqs2-n2use,nfreqs2 ! Use the 100 points to fit the tail
      a=ab_val(1)
      b=ab_val(2)
      wk=wcoord2(ifreq)
@@ -683,42 +671,220 @@ subroutine fit_a_b_coefs(nBas,nfreqs2,wcoord2,G_ao_iw2,a_coef,b_coef)
      if(icall==0) norm_Gpq=norm_Gpq+ReG**2d0+ImG**2d0
      error=error+(  -a*b/(b*b+wk*wk) - ReG )**2d0
      error=error+( -a*wk/(b*b+wk*wk) - ImG )**2d0
-     ab_grad(1)=ab_grad(1)+( -a*b/(b*b+wk*wk)  -  ReG ) * ( -b/(b*b+wk*wk)  )
-     ab_grad(1)=ab_grad(1)+( -a*wk/(b*b+wk*wk) -  ImG ) * ( -wk/(b*b+wk*wk) )
-     ab_grad(2)=ab_grad(2)+( -a*b/(b*b+wk*wk)  -  ReG ) * ( a*(b-wk)*(b+wk)/(b*b+wk*wk)**2d0 )
-     ab_grad(2)=ab_grad(2)+( -a*wk/(b*b+wk*wk) -  ImG ) * ( 2d0*a*b*wk/(b*b+wk*wk)**2d0 )
+     ab_grad(1)=ab_grad(1)+2d0*(a+b*ReG+wk*ImG)/(b*b+wk*wk)
+     ab_grad(2)=ab_grad(2)-2d0*a*(a*b*+b*b*ReG+2d0*b*ImG*wk-ReG*wk*wk)/(b*b+wk*wk)**2d0
     enddo
-    ab_grad(:)=2d0*ab_grad(:)
+
     if(norm_Gpq < 1d-12) exit
-    if(sum(abs(ab_grad(:))) < 1d-8) exit
+    if(sum(abs(ab_grad)) > old_grad .and. error>error_old) then
+     line_stp=1d-1*line_stp
+     !write(*,*) 'reducing step size'
+    endif
+    old_grad=sum(abs(ab_grad))
+    error_old=error
 
-    call lbfgs(ndim, history_record, ab_val, error, ab_grad, diag, work, lbfgs_status, &
-         gtol, line_stpmin, line_stpmax, line_stp, iter, line_info, line_nfev,         &
-         line_dginit, line_finit,line_stx,  line_fx,  line_dgx,                        &
-         line_sty,  line_fy,  line_dgy, line_stmin,  line_stmax,                       &
-         line_bracket, line_stage1, line_infoc)
+    ab_val(1)=ab_val(1)-line_stp*ab_grad(1)
+    ab_val(2)=ab_val(2)-line_stp*ab_grad(2)
 
-    iflag = lbfgs_status
-
-    if(iflag<=0) exit
     icall=icall+1
-    !  We allow at most 2000 evaluations
-    if(icall==2000) exit
-
+    !  We allow at most 10000 evaluations
+    if(icall==1000) exit
+   
    enddo
-   if(norm_Gpq < 1d-12) then
-    ab_val(1) = 0d0
-    ab_val(2) = 1d0
-   endif
-   ! Save the result
-   a_coef(ibas,jbas)=ab_val(1)
-   b_coef(ibas,jbas)=ab_val(2)
+  
+   ! Scan 9 points
+   icontraction=0
+   line_stp=1d0
+   do
+    ! Do current
+    error=0d0
+    do ifreq=nfreqs2-n2use,nfreqs2 ! Use the 100 points to fit the tail
+     a=ab_val(1)
+     b=ab_val(2)
+     wk=wcoord2(ifreq)
+     ReG= Real( G_ao_iw2(ifreq,ibas,jbas) )
+     if(abs(ReG)<1d-12) ReG=0d0
+     ImG=Aimag( G_ao_iw2(ifreq,ibas,jbas) )
+     if(abs(ImG)<1d-12) ImG=0d0
+     error=error+(  -a*b/(b*b+wk*wk) - ReG )**2d0
+     error=error+( -a*wk/(b*b+wk*wk) - ImG )**2d0
+    enddo
+    error_old=error
+    ! Do up
+    lowered=.false.
+    error=0d0
+    do ifreq=nfreqs2-n2use,nfreqs2 ! Use the 100 points to fit the tail
+     a=ab_val(1)+line_stp
+     b=ab_val(2)
+     wk=wcoord2(ifreq)
+     ReG= Real( G_ao_iw2(ifreq,ibas,jbas) )
+     if(abs(ReG)<1d-12) ReG=0d0
+     ImG=Aimag( G_ao_iw2(ifreq,ibas,jbas) )
+     if(abs(ImG)<1d-12) ImG=0d0
+     error=error+(  -a*b/(b*b+wk*wk) - ReG )**2d0
+     error=error+( -a*wk/(b*b+wk*wk) - ImG )**2d0
+    enddo
+    if(error<error_old) lowered=.true.
+    if(lowered) then
+     ab_val(1)=a
+     ab_val(2)=b
+    endif
+    if(.not.lowered) then
+     ! Do up left
+     error=0d0
+     do ifreq=nfreqs2-n2use,nfreqs2 ! Use the 100 points to fit the tail
+      a=ab_val(1)+line_stp
+      b=ab_val(2)-line_stp
+      wk=wcoord2(ifreq)
+      ReG= Real( G_ao_iw2(ifreq,ibas,jbas) )
+      if(abs(ReG)<1d-12) ReG=0d0
+      ImG=Aimag( G_ao_iw2(ifreq,ibas,jbas) )
+      if(abs(ImG)<1d-12) ImG=0d0
+      error=error+(  -a*b/(b*b+wk*wk) - ReG )**2d0
+      error=error+( -a*wk/(b*b+wk*wk) - ImG )**2d0
+     enddo
+     if(error<error_old) lowered=.true.
+     if(lowered) then
+      ab_val(1)=a
+      ab_val(2)=b
+     endif
+     if(.not.lowered) then
+      ! Do up right
+      error=0d0
+      do ifreq=nfreqs2-n2use,nfreqs2 ! Use the 100 points to fit the tail
+       a=ab_val(1)+line_stp
+       b=ab_val(2)+line_stp
+       wk=wcoord2(ifreq)
+       ReG= Real( G_ao_iw2(ifreq,ibas,jbas) )
+       if(abs(ReG)<1d-12) ReG=0d0
+       ImG=Aimag( G_ao_iw2(ifreq,ibas,jbas) )
+       if(abs(ImG)<1d-12) ImG=0d0
+       error=error+(  -a*b/(b*b+wk*wk) - ReG )**2d0
+       error=error+( -a*wk/(b*b+wk*wk) - ImG )**2d0
+      enddo
+      if(error<error_old) lowered=.true.
+      if(lowered) then
+       ab_val(1)=a
+       ab_val(2)=b
+      endif
+      if(.not.lowered) then
+       ! Do right
+       error=0d0
+       do ifreq=nfreqs2-n2use,nfreqs2 ! Use the 100 points to fit the tail
+        a=ab_val(1)
+        b=ab_val(2)+line_stp
+        wk=wcoord2(ifreq)
+        ReG= Real( G_ao_iw2(ifreq,ibas,jbas) )
+        if(abs(ReG)<1d-12) ReG=0d0
+        ImG=Aimag( G_ao_iw2(ifreq,ibas,jbas) )
+        if(abs(ImG)<1d-12) ImG=0d0
+        error=error+(  -a*b/(b*b+wk*wk) - ReG )**2d0
+        error=error+( -a*wk/(b*b+wk*wk) - ImG )**2d0
+       enddo
+       if(error<error_old) lowered=.true.
+       if(lowered) then
+        ab_val(1)=a
+        ab_val(2)=b
+       endif
+       if(.not.lowered) then
+        ! Do left
+        error=0d0
+        do ifreq=nfreqs2-n2use,nfreqs2 ! Use the 100 points to fit the tail
+         a=ab_val(1)
+         b=ab_val(2)-line_stp
+         wk=wcoord2(ifreq)
+         ReG= Real( G_ao_iw2(ifreq,ibas,jbas) )
+         if(abs(ReG)<1d-12) ReG=0d0
+         ImG=Aimag( G_ao_iw2(ifreq,ibas,jbas) )
+         if(abs(ImG)<1d-12) ImG=0d0
+         error=error+(  -a*b/(b*b+wk*wk) - ReG )**2d0
+         error=error+( -a*wk/(b*b+wk*wk) - ImG )**2d0
+        enddo
+        if(error<error_old) lowered=.true.
+        if(lowered) then
+         ab_val(1)=a
+         ab_val(2)=b
+        endif
+        if(.not.lowered) then
+         ! Do down
+         error=0d0
+         do ifreq=nfreqs2-n2use,nfreqs2 ! Use the 100 points to fit the tail
+          a=ab_val(1)-line_stp
+          b=ab_val(2)
+          wk=wcoord2(ifreq)
+          ReG= Real( G_ao_iw2(ifreq,ibas,jbas) )
+          if(abs(ReG)<1d-12) ReG=0d0
+          ImG=Aimag( G_ao_iw2(ifreq,ibas,jbas) )
+          if(abs(ImG)<1d-12) ImG=0d0
+          error=error+(  -a*b/(b*b+wk*wk) - ReG )**2d0
+          error=error+( -a*wk/(b*b+wk*wk) - ImG )**2d0
+         enddo
+         if(error<error_old) lowered=.true.
+         if(lowered) then
+          ab_val(1)=a
+          ab_val(2)=b
+         endif
+         if(.not.lowered) then
+          ! Do down left
+          error=0d0
+          do ifreq=nfreqs2-n2use,nfreqs2 ! Use the 100 points to fit the tail
+           a=ab_val(1)-line_stp
+           b=ab_val(2)-line_stp
+           wk=wcoord2(ifreq)
+           ReG= Real( G_ao_iw2(ifreq,ibas,jbas) )
+           if(abs(ReG)<1d-12) ReG=0d0
+           ImG=Aimag( G_ao_iw2(ifreq,ibas,jbas) )
+           if(abs(ImG)<1d-12) ImG=0d0
+           error=error+(  -a*b/(b*b+wk*wk) - ReG )**2d0
+           error=error+( -a*wk/(b*b+wk*wk) - ImG )**2d0
+          enddo
+          if(error<error_old) lowered=.true.
+          if(lowered) then
+           ab_val(1)=a
+           ab_val(2)=b
+          endif
+          if(.not.lowered) then
+           ! Do down right
+           error=0d0
+           do ifreq=nfreqs2-n2use,nfreqs2 ! Use the 100 points to fit the tail
+            a=ab_val(1)+line_stp
+            b=ab_val(2)-line_stp
+            wk=wcoord2(ifreq)
+            ReG= Real( G_ao_iw2(ifreq,ibas,jbas) )
+            if(abs(ReG)<1d-12) ReG=0d0
+            ImG=Aimag( G_ao_iw2(ifreq,ibas,jbas) )
+            if(abs(ImG)<1d-12) ImG=0d0
+            error=error+(  -a*b/(b*b+wk*wk) - ReG )**2d0
+            error=error+( -a*wk/(b*b+wk*wk) - ImG )**2d0
+           enddo
+           if(error<error_old) lowered=.true.
+           if(lowered) then
+            ab_val(1)=a
+            ab_val(2)=b
+           endif
+          endif 
+         endif 
+        endif 
+       endif 
+      endif 
+     endif 
+    endif 
+
+    ! Contract
+    if(.not.lowered) then
+     icontraction=icontraction+1
+     line_stp=1d-1*line_stp
+    endif
+    if(icontraction>6) exit
+   enddo 
+
+   !write(*,'(a,i5,i5,3f12.7)') ' i j error a b ',ibas,jbas,error,ab_val(:)
+   a_coef(ibas,jbas) = ab_val(1)  
+   b_coef(ibas,jbas) = ab_val(2) 
+
   enddo
  enddo
   
- ! Deallocate and exit
- deallocate(work,diag)
-
 end subroutine
    
 subroutine build_tail_fpq_itau(nBas,tcoord,a,b,f_pq_tau)
