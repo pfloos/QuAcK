@@ -55,12 +55,9 @@ subroutine scGWitauiw_ao(nBas,nOrb,nO,maxSCF,read_grids,ENuc,Hc,S,P_in,cHF,eHF,n
   double precision,allocatable  :: P_ao_old(:,:)
   double precision,allocatable  :: P_ao_iter(:,:)
   double precision,allocatable  :: P_mo(:,:)
-  double precision,allocatable  :: a_coef(:,:)
-  double precision,allocatable  :: b_coef(:,:)
 
   complex*16                    :: product
   complex*16                    :: weval_cpx
-  complex*16,allocatable        :: f_pq_tau(:,:)
   complex*16,allocatable        :: Sigma_c_ao(:,:,:)
   complex*16,allocatable        :: G_ao_iw2(:,:,:)
   complex*16,allocatable        :: G_ao_itau(:,:,:)
@@ -98,7 +95,6 @@ subroutine scGWitauiw_ao(nBas,nOrb,nO,maxSCF,read_grids,ENuc,Hc,S,P_in,cHF,eHF,n
  eHF(:) = eHF(:)-chem_pot_saved
    
  allocate(Chi0_ao_iw(nfreqs,nBas2,nBas2))
- allocate(a_coef(nBas,nBas),b_coef(nBas,nBas),f_pq_tau(nBas,nBas))
  allocate(P_ao(nBas,nBas),P_ao_old(nBas,nBas),P_ao_iter(nBas,nBas))
  allocate(F_ao(nBas,nBas),P_mo(nOrb,nOrb),cHFinv(nOrb,nBas),Occ(nOrb))
  allocate(G_minus_itau(nBas,nBas),G_plus_itau(nBas,nBas)) 
@@ -107,14 +103,12 @@ subroutine scGWitauiw_ao(nBas,nOrb,nO,maxSCF,read_grids,ENuc,Hc,S,P_in,cHF,eHF,n
  cHFinv=matmul(transpose(cHF),S)
  P_ao=P_in
  P_ao_iter=P_ao
- a_coef=0d0
- b_coef=0d0
 
 !---------------!
 ! Prepare grids !
 !---------------!
 
- ntimes=0;nfreqs2=nfreqs*10; ! We can use this to enforce ntimes=number1 for building a grid from [0;Infty)
+ ntimes=0;nfreqs2=0; ! We can use this to enforce ntimes=number1 for building a grid from [0;Infty)
  if(.not.read_grids) then
   call build_iw_itau_grid(nBas,nOrb,nO,ntimes,nfreqs2,0,cHF,eHF)
  else
@@ -345,41 +339,13 @@ subroutine scGWitauiw_ao(nBas,nOrb,nO,maxSCF,read_grids,ENuc,Hc,S,P_in,cHF,eHF,n
 
   if(iter==maxSCF) exit
 
-
-block
-G_ao_iw2=czero
-do jfreq=1,nfreqs2
-! Build G(i w2)
-weval_cpx=im*wcoord2(jfreq)
-call G_AO_RHF(nBas,nOrb,nO,eta,cHF,eHF,weval_cpx,G_ao_1)
-G_ao_iw2(jfreq,:,:) = G_ao_1(:,:)
-enddo
-
-  ! Prepare the a and b coefs that fit G_pq(i w2_k) ~ f_pq(i w2_k) = a_pq / (i w2_k -b_pq )
-  call fit_a_b_coefs(nBas,nfreqs2,wcoord2,G_ao_iw2,a_coef,b_coef) 
-
-  ! Compute newG_pq(i w2_k) = G_pq(i w2_k) - f_pq(i -w2_k)
-  do jfreq=1,nfreqs2
-   do ibas=1,nBas
-    do jbas=1,nBas
-     G_ao_iw2(jfreq,ibas,jbas)=G_ao_iw2(jfreq,ibas,jbas)-a_coef(ibas,jbas)/(im*wcoord2(jfreq)-b_coef(ibas,jbas))
-    enddo
-   enddo
-  enddo 
-
   ! Build G(i w2) -> G(i tau) [ i tau and -i tau ]
-  !   newG_ao_iw2(nfreqs2) --> G_ao_itau(ntimes_twice) + f(i +-tau)
   G_ao_itau=czero
   do itau=1,ntimes
    call Giw2Gitau(nBas,nfreqs2,wweight2,wcoord2,tcoord(itau),G_ao_iw2,G_plus_itau,G_minus_itau)
-   call build_tail_fpq_itau(nBas, tcoord(itau),a_coef,b_coef,f_pq_tau)
-   G_ao_itau(2*itau-1,:,:)=G_plus_itau(:,:)  + f_pq_tau(:,:)
-   call build_tail_fpq_itau(nBas,-tcoord(itau),a_coef,b_coef,f_pq_tau)
-   G_ao_itau(2*itau  ,:,:)=G_minus_itau(:,:) + f_pq_tau(:,:)
+   G_ao_itau(2*itau-1,:,:)=G_plus_itau(:,:)
+   G_ao_itau(2*itau  ,:,:)=G_minus_itau(:,:)
   enddo
-
-if(iter==1) exit
-end block
 
  enddo
  write(*,*)
@@ -413,7 +379,6 @@ end block
  deallocate(wcoord2,wweight2) 
  deallocate(G_ao_itau)
  deallocate(Sigma_c_ao,G_ao_iw2)
- deallocate(a_coef,b_coef,f_pq_tau) 
  deallocate(P_ao,P_ao_old,P_ao_iter,F_ao,P_mo,cHFinv,Occ) 
  deallocate(G_minus_itau,G_plus_itau) 
  deallocate(G_ao_1,G_ao_2) 
@@ -600,320 +565,3 @@ subroutine get_1rdm_scGW(nBas,nfreqs2,nElectrons,thrs_N,chem_pot,S,F_ao,Sigma_c_
 
 end subroutine
 
-subroutine fit_a_b_coefs(nBas,nfreqs2,wcoord2,G_ao_iw2,a_coef,b_coef) 
-
-  implicit none
-  include 'parameters.h'
-
-! Input variables
-
-  integer,intent(in)            :: nBas
-  integer,intent(in)            :: nfreqs2
-
-  double precision,intent(in)   :: wcoord2(nfreqs2)
-
-  complex*16,intent(in)         :: G_ao_iw2(nfreqs2,nBas,nBas)
-
-! Local variables
-
-  logical                       :: lowered
-  integer                       :: ibas,jbas
-  integer                       :: ifreq
-  integer                       :: icall
-  integer                       :: icontraction
-  integer                       :: ncontraction
-  integer                       :: n2use
-  double precision              :: norm_Gpq
-  double precision              :: old_grad
-  double precision              :: line_stp
-  double precision              :: a,b,wk
-  double precision              :: nine_coords(9)
-  double precision              :: error
-  double precision              :: error_old
-  double precision              :: ReG,ImG
-  double precision              :: ab_val(2)
-  double precision              :: ab_grad(2)
-
-! Output variables
-
-  double precision,intent(inout) :: a_coef(nBas,nBas)
-  double precision,intent(inout) :: b_coef(nBas,nBas)
-
- ! Initialization
-
- n2use=50 ! How many points we want
- n2use=n2use-1
- ncontraction = 6
-
- ! Use L-BFGS to optimize
- do ibas=1,nBas
-  do jbas=1,nBas
-
-   ! Do some steepest descent steps
-   icall=0
-   norm_Gpq = 0d0
-   old_grad = 100
-   error_old = 100
-   line_stp  = 1d0
-   ab_val(1) = a_coef(ibas,jbas)
-   ab_val(2) = b_coef(ibas,jbas)
-   do
-    error=0d0
-    ab_grad=0d0
-    do ifreq=nfreqs2-n2use,nfreqs2 ! Use the 100 points to fit the tail
-     a=ab_val(1)
-     b=ab_val(2)
-     wk=wcoord2(ifreq)
-     ReG= Real( G_ao_iw2(ifreq,ibas,jbas) )
-     if(abs(ReG)<1d-12) ReG=0d0
-     ImG=Aimag( G_ao_iw2(ifreq,ibas,jbas) )
-     if(abs(ImG)<1d-12) ImG=0d0
-     if(icall==0) norm_Gpq=norm_Gpq+ReG**2d0+ImG**2d0
-     error=error+(  -a*b/(b*b+wk*wk) - ReG )**2d0
-     error=error+( -a*wk/(b*b+wk*wk) - ImG )**2d0
-     ab_grad(1)=ab_grad(1)+2d0*(a+b*ReG+wk*ImG)/(b*b+wk*wk)
-     ab_grad(2)=ab_grad(2)-2d0*a*(a*b*+b*b*ReG+2d0*b*ImG*wk-ReG*wk*wk)/(b*b+wk*wk)**2d0
-    enddo
-
-    if(norm_Gpq < 1d-12) exit
-    if(sum(abs(ab_grad)) > old_grad .and. error>error_old) then
-     line_stp=1d-1*line_stp
-     !write(*,*) 'reducing step size'
-    endif
-    old_grad=sum(abs(ab_grad))
-    error_old=error
-
-    ab_val(1)=ab_val(1)-line_stp*ab_grad(1)
-    ab_val(2)=ab_val(2)-line_stp*ab_grad(2)
-
-    icall=icall+1
-    !  We allow at most 10000 evaluations
-    if(icall==1000) exit
-   
-   enddo
-  
-   ! Scan 9 points
-   icontraction=0
-   line_stp=1d0
-   do
-    ! Do current
-    error=0d0
-    do ifreq=nfreqs2-n2use,nfreqs2 ! Use the 100 points to fit the tail
-     a=ab_val(1)
-     b=ab_val(2)
-     wk=wcoord2(ifreq)
-     ReG= Real( G_ao_iw2(ifreq,ibas,jbas) )
-     if(abs(ReG)<1d-12) ReG=0d0
-     ImG=Aimag( G_ao_iw2(ifreq,ibas,jbas) )
-     if(abs(ImG)<1d-12) ImG=0d0
-     error=error+(  -a*b/(b*b+wk*wk) - ReG )**2d0
-     error=error+( -a*wk/(b*b+wk*wk) - ImG )**2d0
-    enddo
-    error_old=error
-    ! Do up
-    lowered=.false.
-    error=0d0
-    do ifreq=nfreqs2-n2use,nfreqs2 ! Use the 100 points to fit the tail
-     a=ab_val(1)+line_stp
-     b=ab_val(2)
-     wk=wcoord2(ifreq)
-     ReG= Real( G_ao_iw2(ifreq,ibas,jbas) )
-     if(abs(ReG)<1d-12) ReG=0d0
-     ImG=Aimag( G_ao_iw2(ifreq,ibas,jbas) )
-     if(abs(ImG)<1d-12) ImG=0d0
-     error=error+(  -a*b/(b*b+wk*wk) - ReG )**2d0
-     error=error+( -a*wk/(b*b+wk*wk) - ImG )**2d0
-    enddo
-    if(error<error_old) lowered=.true.
-    if(lowered) then
-     ab_val(1)=a
-     ab_val(2)=b
-    endif
-    if(.not.lowered) then
-     ! Do up left
-     error=0d0
-     do ifreq=nfreqs2-n2use,nfreqs2 ! Use the 100 points to fit the tail
-      a=ab_val(1)+line_stp
-      b=ab_val(2)-line_stp
-      wk=wcoord2(ifreq)
-      ReG= Real( G_ao_iw2(ifreq,ibas,jbas) )
-      if(abs(ReG)<1d-12) ReG=0d0
-      ImG=Aimag( G_ao_iw2(ifreq,ibas,jbas) )
-      if(abs(ImG)<1d-12) ImG=0d0
-      error=error+(  -a*b/(b*b+wk*wk) - ReG )**2d0
-      error=error+( -a*wk/(b*b+wk*wk) - ImG )**2d0
-     enddo
-     if(error<error_old) lowered=.true.
-     if(lowered) then
-      ab_val(1)=a
-      ab_val(2)=b
-     endif
-     if(.not.lowered) then
-      ! Do up right
-      error=0d0
-      do ifreq=nfreqs2-n2use,nfreqs2 ! Use the 100 points to fit the tail
-       a=ab_val(1)+line_stp
-       b=ab_val(2)+line_stp
-       wk=wcoord2(ifreq)
-       ReG= Real( G_ao_iw2(ifreq,ibas,jbas) )
-       if(abs(ReG)<1d-12) ReG=0d0
-       ImG=Aimag( G_ao_iw2(ifreq,ibas,jbas) )
-       if(abs(ImG)<1d-12) ImG=0d0
-       error=error+(  -a*b/(b*b+wk*wk) - ReG )**2d0
-       error=error+( -a*wk/(b*b+wk*wk) - ImG )**2d0
-      enddo
-      if(error<error_old) lowered=.true.
-      if(lowered) then
-       ab_val(1)=a
-       ab_val(2)=b
-      endif
-      if(.not.lowered) then
-       ! Do right
-       error=0d0
-       do ifreq=nfreqs2-n2use,nfreqs2 ! Use the 100 points to fit the tail
-        a=ab_val(1)
-        b=ab_val(2)+line_stp
-        wk=wcoord2(ifreq)
-        ReG= Real( G_ao_iw2(ifreq,ibas,jbas) )
-        if(abs(ReG)<1d-12) ReG=0d0
-        ImG=Aimag( G_ao_iw2(ifreq,ibas,jbas) )
-        if(abs(ImG)<1d-12) ImG=0d0
-        error=error+(  -a*b/(b*b+wk*wk) - ReG )**2d0
-        error=error+( -a*wk/(b*b+wk*wk) - ImG )**2d0
-       enddo
-       if(error<error_old) lowered=.true.
-       if(lowered) then
-        ab_val(1)=a
-        ab_val(2)=b
-       endif
-       if(.not.lowered) then
-        ! Do left
-        error=0d0
-        do ifreq=nfreqs2-n2use,nfreqs2 ! Use the 100 points to fit the tail
-         a=ab_val(1)
-         b=ab_val(2)-line_stp
-         wk=wcoord2(ifreq)
-         ReG= Real( G_ao_iw2(ifreq,ibas,jbas) )
-         if(abs(ReG)<1d-12) ReG=0d0
-         ImG=Aimag( G_ao_iw2(ifreq,ibas,jbas) )
-         if(abs(ImG)<1d-12) ImG=0d0
-         error=error+(  -a*b/(b*b+wk*wk) - ReG )**2d0
-         error=error+( -a*wk/(b*b+wk*wk) - ImG )**2d0
-        enddo
-        if(error<error_old) lowered=.true.
-        if(lowered) then
-         ab_val(1)=a
-         ab_val(2)=b
-        endif
-        if(.not.lowered) then
-         ! Do down
-         error=0d0
-         do ifreq=nfreqs2-n2use,nfreqs2 ! Use the 100 points to fit the tail
-          a=ab_val(1)-line_stp
-          b=ab_val(2)
-          wk=wcoord2(ifreq)
-          ReG= Real( G_ao_iw2(ifreq,ibas,jbas) )
-          if(abs(ReG)<1d-12) ReG=0d0
-          ImG=Aimag( G_ao_iw2(ifreq,ibas,jbas) )
-          if(abs(ImG)<1d-12) ImG=0d0
-          error=error+(  -a*b/(b*b+wk*wk) - ReG )**2d0
-          error=error+( -a*wk/(b*b+wk*wk) - ImG )**2d0
-         enddo
-         if(error<error_old) lowered=.true.
-         if(lowered) then
-          ab_val(1)=a
-          ab_val(2)=b
-         endif
-         if(.not.lowered) then
-          ! Do down left
-          error=0d0
-          do ifreq=nfreqs2-n2use,nfreqs2 ! Use the 100 points to fit the tail
-           a=ab_val(1)-line_stp
-           b=ab_val(2)-line_stp
-           wk=wcoord2(ifreq)
-           ReG= Real( G_ao_iw2(ifreq,ibas,jbas) )
-           if(abs(ReG)<1d-12) ReG=0d0
-           ImG=Aimag( G_ao_iw2(ifreq,ibas,jbas) )
-           if(abs(ImG)<1d-12) ImG=0d0
-           error=error+(  -a*b/(b*b+wk*wk) - ReG )**2d0
-           error=error+( -a*wk/(b*b+wk*wk) - ImG )**2d0
-          enddo
-          if(error<error_old) lowered=.true.
-          if(lowered) then
-           ab_val(1)=a
-           ab_val(2)=b
-          endif
-          if(.not.lowered) then
-           ! Do down right
-           error=0d0
-           do ifreq=nfreqs2-n2use,nfreqs2 ! Use the 100 points to fit the tail
-            a=ab_val(1)+line_stp
-            b=ab_val(2)-line_stp
-            wk=wcoord2(ifreq)
-            ReG= Real( G_ao_iw2(ifreq,ibas,jbas) )
-            if(abs(ReG)<1d-12) ReG=0d0
-            ImG=Aimag( G_ao_iw2(ifreq,ibas,jbas) )
-            if(abs(ImG)<1d-12) ImG=0d0
-            error=error+(  -a*b/(b*b+wk*wk) - ReG )**2d0
-            error=error+( -a*wk/(b*b+wk*wk) - ImG )**2d0
-           enddo
-           if(error<error_old) lowered=.true.
-           if(lowered) then
-            ab_val(1)=a
-            ab_val(2)=b
-           endif
-          endif 
-         endif 
-        endif 
-       endif 
-      endif 
-     endif 
-    endif 
-
-    ! Contract
-    if(.not.lowered) then
-     icontraction=icontraction+1
-     line_stp=1d-1*line_stp
-    endif
-    if(icontraction>6) exit
-   enddo 
-
-   !write(*,'(a,i5,i5,3f12.7)') ' i j error a b ',ibas,jbas,error,ab_val(:)
-   a_coef(ibas,jbas) = ab_val(1)  
-   b_coef(ibas,jbas) = ab_val(2) 
-
-  enddo
- enddo
-  
-end subroutine
-   
-subroutine build_tail_fpq_itau(nBas,tcoord,a,b,f_pq_tau)
-
-  implicit none
-  include 'parameters.h'
-
-! Input variables
-  integer,intent(in)            :: nBas
-  double precision,intent(in)   :: tcoord
-  double precision,intent(in)   :: a(nBas,nBas)
-  double precision,intent(in)   :: b(nBas,nBas)
-
-! Local variables 
-
-  integer                       :: ibas,jbas
-  double precision              :: factor
-  double precision,external     :: Heaviside_step
-
-! Output variables
-
-  complex*16,intent(out)        :: f_pq_tau(nBas,nBas)
-  
-  f_pq_tau=czero
-  do ibas=1,nBas 
-   do jbas=1,nBas
-    factor=(Heaviside_step(-b(ibas,jbas))*Heaviside_step(tcoord)-Heaviside_step(b(ibas,jbas))*Heaviside_step(-tcoord))
-    f_pq_tau(ibas,jbas)=im*a(ibas,jbas)*Exp(b(ibas,jbas)*tcoord)*factor
-   enddo
-  enddo
-
-end subroutine
