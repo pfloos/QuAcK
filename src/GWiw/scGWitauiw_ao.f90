@@ -37,6 +37,7 @@ subroutine scGWitauiw_ao(nBas,nOrb,nO,maxSCF,read_grids,ENuc,Hc,S,P_in,cHF,eHF,n
 
   double precision              :: start_scGWitauiw     ,end_scGWitauiw       ,t_scGWitauiw
 
+  double precision              :: alpha_mixing
   double precision              :: Ehfl,EcGM
   double precision              :: trace1,trace2
   double precision              :: eta,diff_Pao
@@ -366,7 +367,12 @@ subroutine scGWitauiw_ao(nBas,nOrb,nO,maxSCF,read_grids,ENuc,Hc,S,P_in,cHF,eHF,n
   enddo
 
   ! Build G(i tau) = DeltaG(i tau) + G_old(i tau) and save G_ao_itau for the next iteration
-  G_ao_itau(:,:,:)=G_ao_itau(:,:,:)+G_ao_itau_old(:,:,:)
+  if(diff_Pao<1d-3) then
+   alpha_mixing=1d0
+  else
+   alpha_mixing=0.6d0
+  endif 
+  G_ao_itau(:,:,:)=alpha_mixing*G_ao_itau(:,:,:)+G_ao_itau_old(:,:,:)
   G_ao_itau_old(:,:,:)=G_ao_itau(:,:,:)
  
  enddo
@@ -387,6 +393,37 @@ subroutine scGWitauiw_ao(nBas,nOrb,nO,maxSCF,read_grids,ENuc,Hc,S,P_in,cHF,eHF,n
  do ibas=1,nOrb
   write(*,'(I7,F15.8)') ibas,Occ(ibas)
  enddo
+
+ ! Using the correlated G and Sigma_c to test the linearized density matrix approximation
+ if(.false.) then
+  write(*,*)
+  write(*,*) ' Testing the linearized approximation with G'
+  write(*,*) '         G^lin = G + G Sigma_c G'
+  write(*,*) ' -------------------------------------------'
+  P_ao_old=0d0
+  do jfreq=1,nfreqs2
+   G_ao_1(:,:)=G_ao_iw2(jfreq,:,:)
+   G_ao_1(:,:)=matmul(matmul(G_ao_1(:,:),Sigma_c_ao(jfreq,:,:)),G_ao_1(:,:))
+   P_ao_old(:,:) = P_ao_old(:,:) + wweight2(jfreq)*real(G_ao_1(:,:)+conjg(G_ao_1(:,:))) ! Integrate along iw2
+  enddo
+  P_ao_old=P_ao_old/pi
+  do ibas=1,nBas
+   do jbas=1,nBas
+    trace_1_rdm=trace_1_rdm+P_ao_old(ibas,jbas)*S(ibas,jbas)
+   enddo
+  enddo
+  P_ao_old=P_ao+P_ao_old
+  P_mo=-matmul(matmul(cHFinv,P_ao_old),transpose(cHFinv)) ! Minus to order occ numbers
+  call diagonalize_matrix(nOrb,P_mo,Occ)
+  write(*,*)
+  write(*,'(a,f15.8,a,i5,a)') ' Trace lin-scGW  ',trace_1_rdm
+  write(*,*)
+  write(*,*) ' Lin-G occupation numbers'
+  Occ=-Occ
+  do ibas=1,nOrb
+   write(*,'(I7,F15.8)') ibas,Occ(ibas)
+  enddo
+ endif
 
  call wall_time(end_scGWitauiw)
  
