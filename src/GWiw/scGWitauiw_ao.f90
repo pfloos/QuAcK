@@ -1,4 +1,5 @@
-subroutine scGWitauiw_ao(nBas,nOrb,nO,maxSCF,read_grids,ENuc,Hc,S,P_in,cHF,eHF,nfreqs,wcoord,wweight,vMAT)
+subroutine scGWitauiw_ao(nBas,nOrb,nO,maxSCF,dolinGW,restart_scGW,ENuc,Hc,S,P_in,cHF,eHF, &
+                        nfreqs,wcoord,wweight,vMAT)
 
 ! Restricted scGW
 
@@ -7,7 +8,8 @@ subroutine scGWitauiw_ao(nBas,nOrb,nO,maxSCF,read_grids,ENuc,Hc,S,P_in,cHF,eHF,n
 
 ! Input variables
  
-  logical,intent(in)            :: read_grids
+  logical,intent(in)            :: dolinGW
+  logical,intent(in)            :: restart_scGW
 
   integer,intent(in)            :: nBas
   integer,intent(in)            :: nOrb
@@ -35,6 +37,7 @@ subroutine scGWitauiw_ao(nBas,nOrb,nO,maxSCF,read_grids,ENuc,Hc,S,P_in,cHF,eHF,n
   double precision              :: start_scGWitauiw     ,end_scGWitauiw       ,t_scGWitauiw
 
   double precision              :: alpha_mixing
+  double precision              :: val_print_r
   double precision              :: Ehfl,EcGM
   double precision              :: trace1,trace2
   double precision              :: eta,diff_Pao
@@ -58,14 +61,15 @@ subroutine scGWitauiw_ao(nBas,nOrb,nO,maxSCF,read_grids,ENuc,Hc,S,P_in,cHF,eHF,n
   double precision,allocatable  :: Wp_ao_itau(:,:,:)
 
   complex*16                    :: product
+  complex*16                    :: val_print_c
   complex*16                    :: weval_cpx
   complex*16,allocatable        :: Sigma_c_w_ao(:,:,:)
   complex*16,allocatable        :: G_ao_iw(:,:,:)
   complex*16,allocatable        :: G_ao_itau(:,:,:)
   complex*16,allocatable        :: G_ao_itau_old(:,:,:)
-  complex*16,allocatable        :: G_ao_itau_hf(:,:,:)
+  complex*16,allocatable        :: G_ao_itau_ref(:,:,:)
   complex*16,allocatable        :: G_ao_hf(:,:,:)
-  complex*16,allocatable        :: G_ao_iw_hf(:,:,:)
+  complex*16,allocatable        :: G_ao_iw_ref(:,:,:)
   complex*16,allocatable        :: Sigma_c_c(:,:),Sigma_c_s(:,:)
   complex*16,allocatable        :: Sigma_c_plus(:,:),Sigma_c_minus(:,:)
   complex*16,allocatable        :: G_ao_1(:,:),G_ao_2(:,:)
@@ -128,8 +132,8 @@ subroutine scGWitauiw_ao(nBas,nOrb,nO,maxSCF,read_grids,ENuc,Hc,S,P_in,cHF,eHF,n
  allocate(cost2w_weight(nfreqs,ntimes))
  allocate(cosw2t_weight(ntimes,nfreqs))
  allocate(sinw2t_weight(ntimes,nfreqs))
- allocate(Sigma_c_w_ao(nfreqs,nBas,nBas),G_ao_iw(nfreqs,nBas,nBas),G_ao_iw_hf(nfreqs,nBas,nBas))
- allocate(G_ao_itau(ntimes_twice,nBas,nBas),G_ao_itau_hf(ntimes_twice,nBas,nBas))
+ allocate(Sigma_c_w_ao(nfreqs,nBas,nBas),G_ao_iw(nfreqs,nBas,nBas),G_ao_iw_ref(nfreqs,nBas,nBas))
+ allocate(G_ao_itau(ntimes_twice,nBas,nBas),G_ao_itau_ref(ntimes_twice,nBas,nBas))
  allocate(G_ao_itau_old(ntimes_twice,nBas,nBas))
  allocate(Wp_ao_itau(ntimes,nBas2,nBas2))
  write(*,*)
@@ -263,7 +267,8 @@ subroutine scGWitauiw_ao(nBas,nOrb,nO,maxSCF,read_grids,ENuc,Hc,S,P_in,cHF,eHF,n
  do
   iter=iter+1
 
-  ! For iter=1 we build G_ao_itau as the RHF one [we also initialize G_ao_iw_hf, G_ao_itau_hf, and G_ao_itau_old]
+  ! For iter=1 we build G_ao_itau as the RHF one or read it from restart files
+  ! [ we also initialize G_ao_iw_ref, G_ao_itau_ref, G_ao_itau_old, and (P_ao,P_ao_iter) ]
   if(iter==1) then
    G_ao_itau=czero
    do itau=1,ntimes
@@ -273,12 +278,57 @@ subroutine scGWitauiw_ao(nBas,nOrb,nO,maxSCF,read_grids,ENuc,Hc,S,P_in,cHF,eHF,n
     G_ao_itau(2*itau  ,:,:)=G_minus_itau(:,:)
    enddo
    G_ao_itau_old(:,:,:)=G_ao_itau(:,:,:)
-   G_ao_itau_hf(:,:,:)=G_ao_itau(:,:,:)
+   G_ao_itau_ref(:,:,:)=G_ao_itau(:,:,:)
    do ifreq=1,nfreqs
     weval_cpx=im*wcoord(ifreq)
     call G_AO_RHF(nBas,nOrb,nO,eta,cHF,eHF,weval_cpx,G_ao_1)
-    G_ao_iw_hf(ifreq,:,:)=G_ao_1(:,:)
+    G_ao_iw_ref(ifreq,:,:)=G_ao_1(:,:)
    enddo
+   ! If required, read the restart files
+   if(restart_scGW) then
+    write(*,*)
+    write(*,'(a)') ' Reading restart files'
+    write(*,*)
+    open(unit=iunit,form='unformatted',file='scGW_Gitau_bin',status='old')
+    write(*,'(a)') ' Reading scGW_Gitau_bin'
+    read(iunit) ibas
+    read(iunit) ibas
+    do itau=1,ntimes_twice
+     do ibas=1,nBas
+      do jbas=1,nBas
+       read(iunit) val_print_c
+       G_ao_itau(itau,ibas,jbas)=val_print_c
+      enddo
+     enddo
+    enddo
+    close(iunit)
+    open(unit=iunit,form='unformatted',file='scGW_Giw_bin',status='old')
+    write(*,'(a)') ' Reading scGW_Giw_bin'
+    read(iunit) ibas
+    read(iunit) ibas
+    do ifreq=1,nfreqs
+     do ibas=1,nBas
+      do jbas=1,nBas
+       read(iunit) val_print_c
+       G_ao_iw_ref(ifreq,ibas,jbas)=val_print_c
+      enddo
+     enddo
+    enddo
+    close(iunit)
+    open(unit=iunit,form='unformatted',file='scGW_Pao_bin',status='old')
+    write(*,'(a)') ' Reading scGW_Pao_bin'
+    read(iunit) ibas
+    do ibas=1,nBas
+     do jbas=1,nBas
+      read(iunit) val_print_r
+      P_ao(ibas,jbas)=val_print_r
+     enddo
+    enddo
+    close(iunit)
+    P_ao_iter=P_ao
+    G_ao_itau_old(:,:,:)=G_ao_itau(:,:,:)
+    G_ao_itau_ref(:,:,:)=G_ao_itau(:,:,:)
+   endif
   endif
 
   ! Build using the time grid Xo(i tau) = -2i G(i tau) G(-i tau)
@@ -435,7 +485,7 @@ subroutine scGWitauiw_ao(nBas,nOrb,nO,maxSCF,read_grids,ENuc,Hc,S,P_in,cHF,eHF,n
   if(iter==maxSCF) exit
 
   ! Build DeltaG(i w) = G(i w) - G_HF(i w)
-  G_ao_iw(:,:,:)= G_ao_iw(:,:,:)-G_ao_iw_hf(:,:,:)
+  G_ao_iw(:,:,:)= G_ao_iw(:,:,:)-G_ao_iw_ref(:,:,:)
 
   ! Build G(i w) -> G(i tau) [ i tau and -i tau ]
   !      [ the weights contain the 2 /(2 pi) = 1 / pi factor and the cos(tau w) or sin(tau w). ]
@@ -450,8 +500,8 @@ subroutine scGWitauiw_ao(nBas,nOrb,nO,maxSCF,read_grids,ENuc,Hc,S,P_in,cHF,eHF,n
                                           + im*sinw2t_weight(itau,ifreq)*Aimag(G_ao_iw(ifreq,:,:)) 
    enddo
    ! G(i tau) = DeltaG(i tau) + G_HF(i tau)
-   G_ao_itau(2*itau-1,:,:)=G_plus_itau(:,:) +G_ao_itau_hf(2*itau-1,:,:)
-   G_ao_itau(2*itau  ,:,:)=G_minus_itau(:,:)+G_ao_itau_hf(2*itau  ,:,:)
+   G_ao_itau(2*itau-1,:,:)=G_plus_itau(:,:) +G_ao_itau_ref(2*itau-1,:,:)
+   G_ao_itau(2*itau  ,:,:)=G_minus_itau(:,:)+G_ao_itau_ref(2*itau  ,:,:)
   enddo
  
   ! Do mixing with previous G(i tau) to facilitate convergence
@@ -477,9 +527,51 @@ subroutine scGWitauiw_ao(nBas,nOrb,nO,maxSCF,read_grids,ENuc,Hc,S,P_in,cHF,eHF,n
   write(*,'(I7,F15.8)') ibas,Occ(ibas)
  enddo
 
+  ! Write restart files
+  open(unit=iunit,form='unformatted',file='scGW_Gitau_bin')
+  write(iunit) nBas 
+  write(iunit) ntimes
+  do itau=1,ntimes_twice
+   do ibas=1,nBas
+    do jbas=1,nBas
+     val_print_c = G_ao_itau(itau,ibas,jbas) 
+     if(abs(val_print_c)<1d-8) val_print_c=czero
+     write(iunit) val_print_c
+    enddo
+   enddo
+  enddo
+  write(iunit) iunit
+  close(iunit)
+  open(unit=iunit,form='unformatted',file='scGW_Giw_bin')
+  write(iunit) nBas 
+  write(iunit) ntimes
+  do ifreq=1,nfreqs
+   do ibas=1,nBas
+    do jbas=1,nBas
+     val_print_c = G_ao_iw(ifreq,ibas,jbas) 
+     if(abs(val_print_c)<1d-8) val_print_c=czero
+     write(iunit) val_print_c
+    enddo
+   enddo
+  enddo
+  write(iunit) iunit
+  close(iunit)
+  open(unit=iunit,form='unformatted',file='scGW_Pao_bin')
+  write(iunit) nBas 
+  do ibas=1,nBas
+   do jbas=1,nBas
+    val_print_r = P_ao(ibas,jbas) 
+    if(abs(val_print_r)<1d-8) val_print_r=czero
+    write(iunit) val_print_r
+   enddo
+  enddo
+  write(iunit) iunit
+  close(iunit)
+
  ! Using the correlated G and Sigma_c to test the linearized density matrix approximation
- if(.false.) then
+ if(dolinGW) then
   write(*,*)
+  write(*,*) ' -------------------------------------------'
   write(*,*) ' Testing the linearized approximation with G'
   write(*,*) '         G^lin = G + G Sigma_c G'
   write(*,*) ' -------------------------------------------'
@@ -524,8 +616,8 @@ subroutine scGWitauiw_ao(nBas,nOrb,nO,maxSCF,read_grids,ENuc,Hc,S,P_in,cHF,eHF,n
  deallocate(cosw2t_weight)
  deallocate(sinw2t_weight)
  deallocate(G_ao_itau_old)
- deallocate(G_ao_itau,G_ao_itau_hf)
- deallocate(Sigma_c_w_ao,G_ao_iw,G_ao_iw_hf)
+ deallocate(G_ao_itau,G_ao_itau_ref)
+ deallocate(Sigma_c_w_ao,G_ao_iw,G_ao_iw_ref)
  deallocate(P_ao,P_ao_old,P_ao_iter,F_ao,P_mo,cHFinv,Occ) 
  deallocate(Sigma_c_plus,Sigma_c_minus) 
  deallocate(Sigma_c_c,Sigma_c_s) 

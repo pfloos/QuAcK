@@ -72,7 +72,8 @@ program QuAcK
 
   integer                       :: maxSCF_GW,max_diis_GW,nfreqs,ntimes
   double precision              :: thresh_GW
-  logical                       :: TDA_W,lin_GW,reg_GW,read_grids
+  logical                       :: TDA_W,lin_GW,reg_GW
+  logical                       :: restart_scGW
   double precision              :: eta_GW
   double precision              :: shift_GW
   integer                       :: mu
@@ -170,7 +171,7 @@ program QuAcK
                     TDA,spin_conserved,spin_flip,                                                        &
                     maxSCF_GF,thresh_GF,max_diis_GF,lin_GF,eta_GF,renorm_GF,reg_GF,                      &
                     maxSCF_GW,thresh_GW,max_diis_GW,lin_GW,eta_GW,shift_GW,reg_GW,doOO,mu,do_linDM_GW,   &
-                    nfreqs,read_grids,ntimes,TDA_W,                                                      &
+                    nfreqs,ntimes,TDA_W,restart_scGW,                                                    &
                     maxSCF_GT,thresh_GT,max_diis_GT,lin_GT,eta_GT,reg_GT,TDA_T,do_linDM_GT,              & 
                     doACFDT,exchange_kernel,doXBS,                                                       &
                     dophBSE,dophBSE2,doppBSE,dBSE,dTDA,                                                  &
@@ -402,9 +403,9 @@ program QuAcK
 ! Bogoliubov QuAcK branch !
 !-------------------------!
   if(doBQuAcK) & 
-    call BQuAcK(working_dir,dotest,doaordm,doRHFB,doBRPA,dophRPA,doG0W0,doqsGW,doscGW,read_grids,readFCIDUMP,    &
-                nNuc,nBas,nOrb,nO,ENuc,eta_GW,shift_GW,ZNuc,rNuc,S,T,V,Hc,X,dipole_int_AO,maxSCF_HF,max_diis_HF, &
-                thresh_HF,level_shift,guess_type,maxSCF_GW,max_diis_GW,thresh_GW,dolinGW,temperature,sigma,      &
+    call BQuAcK(working_dir,dotest,doaordm,doRHFB,doBRPA,dophRPA,doG0W0,doqsGW,doscGW,readFCIDUMP,nNuc,nBas,nOrb, &
+                nO,ENuc,eta_GW,shift_GW,restart_scGW,ZNuc,rNuc,S,T,V,Hc,X,dipole_int_AO,maxSCF_HF,max_diis_HF,    &
+                thresh_HF,level_shift,guess_type,maxSCF_GW,max_diis_GW,thresh_GW,dolinGW,temperature,sigma,       &
                 chem_pot_hf,restart_hfb,nfreqs,ntimes,wcoord,wweight)
 
 !-----------!
