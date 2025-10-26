@@ -67,9 +67,9 @@ subroutine scGWitauiw_ao(nBas,nOrb,nO,maxSCF,dolinGW,restart_scGW,ENuc,Hc,S,P_in
   complex*16,allocatable        :: G_ao_iw(:,:,:)
   complex*16,allocatable        :: G_ao_itau(:,:,:)
   complex*16,allocatable        :: G_ao_itau_old(:,:,:)
-  complex*16,allocatable        :: G_ao_itau_ref(:,:,:)
+  complex*16,allocatable        :: G_ao_itau_hf(:,:,:)
   complex*16,allocatable        :: G_ao_hf(:,:,:)
-  complex*16,allocatable        :: G_ao_iw_ref(:,:,:)
+  complex*16,allocatable        :: G_ao_iw_hf(:,:,:)
   complex*16,allocatable        :: Sigma_c_c(:,:),Sigma_c_s(:,:)
   complex*16,allocatable        :: Sigma_c_plus(:,:),Sigma_c_minus(:,:)
   complex*16,allocatable        :: G_ao_1(:,:),G_ao_2(:,:)
@@ -132,8 +132,8 @@ subroutine scGWitauiw_ao(nBas,nOrb,nO,maxSCF,dolinGW,restart_scGW,ENuc,Hc,S,P_in
  allocate(cost2w_weight(nfreqs,ntimes))
  allocate(cosw2t_weight(ntimes,nfreqs))
  allocate(sinw2t_weight(ntimes,nfreqs))
- allocate(Sigma_c_w_ao(nfreqs,nBas,nBas),G_ao_iw(nfreqs,nBas,nBas),G_ao_iw_ref(nfreqs,nBas,nBas))
- allocate(G_ao_itau(ntimes_twice,nBas,nBas),G_ao_itau_ref(ntimes_twice,nBas,nBas))
+ allocate(Sigma_c_w_ao(nfreqs,nBas,nBas),G_ao_iw(nfreqs,nBas,nBas),G_ao_iw_hf(nfreqs,nBas,nBas))
+ allocate(G_ao_itau(ntimes_twice,nBas,nBas),G_ao_itau_hf(ntimes_twice,nBas,nBas))
  allocate(G_ao_itau_old(ntimes_twice,nBas,nBas))
  allocate(Wp_ao_itau(ntimes,nBas2,nBas2))
  write(*,*)
@@ -268,7 +268,7 @@ subroutine scGWitauiw_ao(nBas,nOrb,nO,maxSCF,dolinGW,restart_scGW,ENuc,Hc,S,P_in
   iter=iter+1
 
   ! For iter=1 we build G_ao_itau as the RHF one or read it from restart files
-  ! [ we also initialize G_ao_iw_ref, G_ao_itau_ref, G_ao_itau_old, and (P_ao,P_ao_iter) ]
+  ! [ we also initialize G_ao_iw_hf, G_ao_itau_hf, G_ao_itau_old, and (P_ao,P_ao_iter) ]
   if(iter==1) then
    G_ao_itau=czero
    do itau=1,ntimes
@@ -278,11 +278,11 @@ subroutine scGWitauiw_ao(nBas,nOrb,nO,maxSCF,dolinGW,restart_scGW,ENuc,Hc,S,P_in
     G_ao_itau(2*itau  ,:,:)=G_minus_itau(:,:)
    enddo
    G_ao_itau_old(:,:,:)=G_ao_itau(:,:,:)
-   G_ao_itau_ref(:,:,:)=G_ao_itau(:,:,:)
+   G_ao_itau_hf(:,:,:)=G_ao_itau(:,:,:)
    do ifreq=1,nfreqs
     weval_cpx=im*wcoord(ifreq)
     call G_AO_RHF(nBas,nOrb,nO,eta,cHF,eHF,weval_cpx,G_ao_1)
-    G_ao_iw_ref(ifreq,:,:)=G_ao_1(:,:)
+    G_ao_iw_hf(ifreq,:,:)=G_ao_1(:,:)
    enddo
    ! If required, read the restart files
    if(restart_scGW) then
@@ -302,19 +302,6 @@ subroutine scGWitauiw_ao(nBas,nOrb,nO,maxSCF,dolinGW,restart_scGW,ENuc,Hc,S,P_in
      enddo
     enddo
     close(iunit)
-    open(unit=iunit,form='unformatted',file='scGW_Giw_bin',status='old')
-    write(*,'(a)') ' Reading scGW_Giw_bin'
-    read(iunit) ibas
-    read(iunit) ibas
-    do ifreq=1,nfreqs
-     do ibas=1,nBas
-      do jbas=1,nBas
-       read(iunit) val_print_c
-       G_ao_iw_ref(ifreq,ibas,jbas)=val_print_c
-      enddo
-     enddo
-    enddo
-    close(iunit)
     open(unit=iunit,form='unformatted',file='scGW_Pao_bin',status='old')
     write(*,'(a)') ' Reading scGW_Pao_bin'
     read(iunit) ibas
@@ -327,7 +314,6 @@ subroutine scGWitauiw_ao(nBas,nOrb,nO,maxSCF,dolinGW,restart_scGW,ENuc,Hc,S,P_in
     close(iunit)
     P_ao_iter=P_ao
     G_ao_itau_old(:,:,:)=G_ao_itau(:,:,:)
-    G_ao_itau_ref(:,:,:)=G_ao_itau(:,:,:)
    endif
   endif
 
@@ -485,7 +471,7 @@ subroutine scGWitauiw_ao(nBas,nOrb,nO,maxSCF,dolinGW,restart_scGW,ENuc,Hc,S,P_in
   if(iter==maxSCF) exit
 
   ! Build DeltaG(i w) = G(i w) - G_HF(i w)
-  G_ao_iw(:,:,:)= G_ao_iw(:,:,:)-G_ao_iw_ref(:,:,:)
+  G_ao_iw(:,:,:)= G_ao_iw(:,:,:)-G_ao_iw_hf(:,:,:)
 
   ! Build G(i w) -> G(i tau) [ i tau and -i tau ]
   !      [ the weights contain the 2 /(2 pi) = 1 / pi factor and the cos(tau w) or sin(tau w). ]
@@ -500,8 +486,8 @@ subroutine scGWitauiw_ao(nBas,nOrb,nO,maxSCF,dolinGW,restart_scGW,ENuc,Hc,S,P_in
                                           + im*sinw2t_weight(itau,ifreq)*Aimag(G_ao_iw(ifreq,:,:)) 
    enddo
    ! G(i tau) = DeltaG(i tau) + G_HF(i tau)
-   G_ao_itau(2*itau-1,:,:)=G_plus_itau(:,:) +G_ao_itau_ref(2*itau-1,:,:)
-   G_ao_itau(2*itau  ,:,:)=G_minus_itau(:,:)+G_ao_itau_ref(2*itau  ,:,:)
+   G_ao_itau(2*itau-1,:,:)=G_plus_itau(:,:) +G_ao_itau_hf(2*itau-1,:,:)
+   G_ao_itau(2*itau  ,:,:)=G_minus_itau(:,:)+G_ao_itau_hf(2*itau  ,:,:)
   enddo
  
   ! Do mixing with previous G(i tau) to facilitate convergence
@@ -616,8 +602,8 @@ subroutine scGWitauiw_ao(nBas,nOrb,nO,maxSCF,dolinGW,restart_scGW,ENuc,Hc,S,P_in
  deallocate(cosw2t_weight)
  deallocate(sinw2t_weight)
  deallocate(G_ao_itau_old)
- deallocate(G_ao_itau,G_ao_itau_ref)
- deallocate(Sigma_c_w_ao,G_ao_iw,G_ao_iw_ref)
+ deallocate(G_ao_itau,G_ao_itau_hf)
+ deallocate(Sigma_c_w_ao,G_ao_iw,G_ao_iw_hf)
  deallocate(P_ao,P_ao_old,P_ao_iter,F_ao,P_mo,cHFinv,Occ) 
  deallocate(Sigma_c_plus,Sigma_c_minus) 
  deallocate(Sigma_c_c,Sigma_c_s) 
