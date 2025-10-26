@@ -9,15 +9,12 @@ subroutine scGWitauiw_ao(nBas,nOrb,nO,maxSCF,read_grids,ENuc,Hc,S,P_in,cHF,eHF,n
  
   logical,intent(in)            :: read_grids
 
-  integer,intent(in)            :: nfreqs
   integer,intent(in)            :: nBas
   integer,intent(in)            :: nOrb
   integer,intent(in)            :: nO
   integer,intent(in)            :: maxSCF
 
   double precision,intent(in)   :: ENuc
-  double precision,intent(in)   :: wcoord(nfreqs)
-  double precision,intent(in)   :: wweight(nfreqs)
   double precision,intent(in)   :: Hc(nBas,nBas)
   double precision,intent(in)   :: P_in(nBas,nBas)
   double precision,intent(in)   :: S(nBas,nBas)
@@ -29,9 +26,9 @@ subroutine scGWitauiw_ao(nBas,nOrb,nO,maxSCF,read_grids,ENuc,Hc,S,P_in,cHF,eHF,n
   logical                       :: file_exists
 
   integer                       :: iunit=312
-  integer                       :: ntimes,ntimes_
-  integer                       :: nfreqs2,nfreqs2_,ntimes_twice
-  integer                       :: itau,ifreq,jfreq
+  integer                       :: ntimes
+  integer                       :: ntimes_twice
+  integer                       :: itau,ifreq
   integer                       :: ibas,jbas,kbas,lbas,nBas2
   integer                       :: iter,iter_fock
 
@@ -45,9 +42,11 @@ subroutine scGWitauiw_ao(nBas,nOrb,nO,maxSCF,read_grids,ENuc,Hc,S,P_in,cHF,eHF,n
   double precision              :: trace_1_rdm
   double precision              :: thrs_N,thrs_Pao
   double precision              :: chem_pot,chem_pot_saved
-  double precision              :: weval(2)
   double precision,allocatable  :: tweight(:),tcoord(:)
-  double precision,allocatable  :: wweight2(:),wcoord2(:)
+  double precision,allocatable  :: sint2w_weight(:,:)
+  double precision,allocatable  :: cost2w_weight(:,:)
+  double precision,allocatable  :: cosw2t_weight(:,:)
+  double precision,allocatable  :: sinw2t_weight(:,:)
   double precision,allocatable  :: Occ(:)
   double precision,allocatable  :: Wp_ao_iw(:,:)
   double precision,allocatable  :: cHFinv(:,:)
@@ -56,21 +55,29 @@ subroutine scGWitauiw_ao(nBas,nOrb,nO,maxSCF,read_grids,ENuc,Hc,S,P_in,cHF,eHF,n
   double precision,allocatable  :: P_ao_old(:,:)
   double precision,allocatable  :: P_ao_iter(:,:)
   double precision,allocatable  :: P_mo(:,:)
+  double precision,allocatable  :: Wp_ao_itau(:,:,:)
 
   complex*16                    :: product
   complex*16                    :: weval_cpx
-  complex*16,allocatable        :: Sigma_c_ao(:,:,:)
-  complex*16,allocatable        :: G_ao_iw2(:,:,:)
+  complex*16,allocatable        :: Sigma_c_w_ao(:,:,:)
+  complex*16,allocatable        :: G_ao_iw(:,:,:)
   complex*16,allocatable        :: G_ao_itau(:,:,:)
-  complex*16,allocatable        :: G_ao_iw2_old(:,:,:)
   complex*16,allocatable        :: G_ao_itau_old(:,:,:)
+  complex*16,allocatable        :: G_ao_itau_hf(:,:,:)
+  complex*16,allocatable        :: G_ao_hf(:,:,:)
+  complex*16,allocatable        :: G_ao_iw_hf(:,:,:)
+  complex*16,allocatable        :: Sigma_c_c(:,:),Sigma_c_s(:,:)
+  complex*16,allocatable        :: Sigma_c_plus(:,:),Sigma_c_minus(:,:)
   complex*16,allocatable        :: G_ao_1(:,:),G_ao_2(:,:)
   complex*16,allocatable        :: G_minus_itau(:,:),G_plus_itau(:,:)
   complex*16,allocatable        :: Chi0_ao_itau(:,:)
   complex*16,allocatable        :: Chi0_ao_iw(:,:,:)
 
 ! Output variables
+  integer,intent(inout)         :: nfreqs
   double precision,intent(inout):: eHF(nOrb)
+  double precision,intent(inout):: wcoord(nfreqs)
+  double precision,intent(inout):: wweight(nfreqs)
   
 !------------------------------------------------------------------------
 ! Build G(i tau) in AO basis and use it to build Xo (i tau) -> Xo (i w)
@@ -91,6 +98,7 @@ subroutine scGWitauiw_ao(nBas,nOrb,nO,maxSCF,read_grids,ENuc,Hc,S,P_in,cHF,eHF,n
  nBas2=nBas*nBas
  chem_pot_saved = 0.5d0*(eHF(nO)+eHF(nO+1))
  chem_pot = chem_pot_saved
+ alpha_mixing=0.6d0
  Ehfl=0d0
  write(*,*)
  write(*,'(A33,1X,F16.10,A3)') ' Initial chemical potential  = ',chem_pot,' au'
@@ -102,83 +110,148 @@ subroutine scGWitauiw_ao(nBas,nOrb,nO,maxSCF,read_grids,ENuc,Hc,S,P_in,cHF,eHF,n
  allocate(F_ao(nBas,nBas),P_mo(nOrb,nOrb),cHFinv(nOrb,nBas),Occ(nOrb))
  allocate(G_minus_itau(nBas,nBas),G_plus_itau(nBas,nBas)) 
  allocate(G_ao_1(nBas,nBas),G_ao_2(nBas,nBas)) 
+ allocate(Sigma_c_c(nBas,nBas),Sigma_c_s(nBas,nBas)) 
+ allocate(Sigma_c_plus(nBas,nBas),Sigma_c_minus(nBas,nBas)) 
  allocate(Chi0_ao_itau(nBas2,nBas2),Wp_ao_iw(nBas2,nBas2)) 
  cHFinv=matmul(transpose(cHF),S)
  P_ao=P_in
  P_ao_iter=P_ao
 
 !---------------!
-! Prepare grids !
+! Reading grids !
 !---------------!
 
- ntimes=0;nfreqs2=800; ! We can use this to enforce ntimes=number1 for building a grid from [0;Infty)
- if(.not.read_grids) then
-  call build_iw_itau_grid(nBas,nOrb,nO,ntimes,nfreqs2,0,cHF,eHF)
- else
-  inquire(file='tcoord.txt', exist=file_exists)
-  if(file_exists) then
-   open(unit=iunit, form='formatted', file='tcoord.txt', status='old')
-   read(iunit,*) ntimes
-   close(iunit)
-  endif 
-  inquire(file='wcoord.txt', exist=file_exists)
-  if(file_exists) then
-   open(unit=iunit, form='formatted', file='wcoord.txt', status='old')
-   read(iunit,*) nfreqs2
-   close(iunit)
-  endif 
- endif
+ ntimes=nfreqs
  ntimes_twice=2*ntimes
  allocate(tweight(ntimes),tcoord(ntimes))
- allocate(wweight2(nfreqs2),wcoord2(nfreqs2))
- allocate(Sigma_c_ao(nfreqs2,nBas,nBas),G_ao_iw2(nfreqs2,nBas,nBas),G_ao_iw2_old(nfreqs2,nBas,nBas))
- allocate(G_ao_itau(ntimes_twice,nBas,nBas),G_ao_itau_old(ntimes_twice,nBas,nBas))
+ allocate(sint2w_weight(nfreqs,ntimes))
+ allocate(cost2w_weight(nfreqs,ntimes))
+ allocate(cosw2t_weight(ntimes,nfreqs))
+ allocate(sinw2t_weight(ntimes,nfreqs))
+ allocate(Sigma_c_w_ao(nfreqs,nBas,nBas),G_ao_iw(nfreqs,nBas,nBas),G_ao_iw_hf(nfreqs,nBas,nBas))
+ allocate(G_ao_itau(ntimes_twice,nBas,nBas),G_ao_itau_hf(ntimes_twice,nBas,nBas))
+ allocate(G_ao_itau_old(ntimes_twice,nBas,nBas))
+ allocate(Wp_ao_itau(ntimes,nBas2,nBas2))
  write(*,*)
- write(*,'(*(a,i25))') ' Final ntimes grid size ',ntimes
- write(*,'(*(a,i25))') ' Final nfreqs grid size ',nfreqs2
- inquire(file='tcoord.txt', exist=file_exists)
+ inquire(file='./grids/tcoord.txt', exist=file_exists)
  if(file_exists) then
   write(*,*) 'Reading tcoord from tcoord.txt'
   tcoord=0d0
-  open(unit=iunit, form='formatted', file='tcoord.txt', status='old')
-  read(iunit,*) ntimes_
+  open(unit=iunit, form='formatted', file='./grids/tcoord.txt', status='old')
+  read(iunit,*) ntimes
   do itau=1,ntimes
    read(iunit,*) tcoord(itau)
   enddo
   close(iunit)
+ else
+  write(*,*) ' Error! Could not find the tcoord.txt file'
+  return
  endif
- inquire(file='tweight.txt', exist=file_exists)
+ inquire(file='./grids/tweight.txt', exist=file_exists)
  if(file_exists) then
   write(*,*) 'Reading tweight from tweight.txt'
   tweight=0d0
-  open(unit=iunit, form='formatted', file='tweight.txt', status='old')
-  read(iunit,*) ntimes_
+  open(unit=iunit, form='formatted', file='./grids/tweight.txt', status='old')
+  read(iunit,*) ntimes
   do itau=1,ntimes
    read(iunit,*) tweight(itau)
   enddo
   close(iunit)
+ else
+  write(*,*) ' Error! Could not find the tweight.txt file'
+  return
  endif
- inquire(file='wcoord.txt', exist=file_exists)
+ inquire(file='./grids/wcoord.txt', exist=file_exists)
  if(file_exists) then
-  write(*,*) 'Reading wcoord2 from wcoord.txt'
-  wcoord2=0d0
-  open(unit=iunit, form='formatted', file='wcoord.txt', status='old')
-  read(iunit,*) nfreqs2_
-  do jfreq=1,nfreqs2
-   read(iunit,*) wcoord2(jfreq)
+  write(*,*) 'Reading wcoord from wcoord.txt'
+  wcoord=0d0
+  open(unit=iunit, form='formatted', file='./grids/wcoord.txt', status='old')
+  read(iunit,*) nfreqs
+  do ifreq=1,nfreqs
+   read(iunit,*) wcoord(ifreq)
   enddo
   close(iunit)
+ else
+  write(*,*) ' Error! Could not find the wcoord.txt file'
+  return
  endif
- inquire(file='wweight.txt', exist=file_exists)
+ inquire(file='./grids/wweight.txt', exist=file_exists)
  if(file_exists) then
-  write(*,*) 'Reading wweight2 from wweight.txt'
-  wweight2=0d0
-  open(unit=iunit, form='formatted', file='wweight.txt', status='old')
-  read(iunit,*) nfreqs2_
-  do jfreq=1,nfreqs2
-   read(iunit,*) wweight2(jfreq)
+  write(*,*) 'Reading wweight from wweight.txt'
+  wweight=0d0
+  open(unit=iunit, form='formatted', file='./grids/wweight.txt', status='old')
+  read(iunit,*) nfreqs
+  do ifreq=1,nfreqs
+   read(iunit,*) wweight(ifreq)
   enddo
   close(iunit)
+ else
+  write(*,*) ' Error! Could not find the wweight.txt file'
+  return
+ endif
+ inquire(file='./grids/cost2w_weight.txt', exist=file_exists)
+ if(file_exists) then
+  write(*,*) 'Reading cost2w_weight from cost2w_weight.txt'
+  cost2w_weight=0d0
+  open(unit=iunit, form='formatted', file='./grids/cost2w_weight.txt', status='old')
+  read(iunit,*) ifreq
+  do ifreq=1,nfreqs
+   do itau=1,ntimes
+    read(iunit,*) cost2w_weight(ifreq,itau)
+   enddo
+  enddo
+  close(iunit)
+ else
+  write(*,*) ' Error! Could not find the cost2w_weight.txt file'
+  return
+ endif
+ inquire(file='./grids/cosw2t_weight.txt', exist=file_exists)
+ if(file_exists) then
+  write(*,*) 'Reading cosw2t_weight from cosw2t_weight.txt'
+  cosw2t_weight=0d0
+  open(unit=iunit, form='formatted', file='./grids/cosw2t_weight.txt', status='old')
+  read(iunit,*) ifreq
+  do itau=1,ntimes
+   do ifreq=1,nfreqs
+    read(iunit,*) cosw2t_weight(itau,ifreq)
+   enddo
+  enddo
+  close(iunit)
+ else
+  write(*,*) ' Error! Could not find the cosw2t_weight.txt file'
+  return
+ endif
+ inquire(file='./grids/sint2w_weight.txt', exist=file_exists)
+ if(file_exists) then
+  write(*,*) 'Reading sint2w_weight from sint2w_weight.txt'
+  sint2w_weight=0d0
+  open(unit=iunit, form='formatted', file='./grids/sint2w_weight.txt', status='old')
+  read(iunit,*) ifreq
+  do ifreq=1,nfreqs
+   do itau=1,ntimes
+    read(iunit,*) sint2w_weight(ifreq,itau)
+   enddo
+  enddo
+  close(iunit)
+ else
+  write(*,*) ' Error! Could not find the sint2w_weight.txt file'
+  return
+ endif
+ inquire(file='./grids/sinw2t_weight.txt', exist=file_exists)
+ if(file_exists) then
+  write(*,*) 'Reading sinw2t_weight from sinw2t_weight.txt'
+  sinw2t_weight=0d0
+  open(unit=iunit, form='formatted', file='./grids/sinw2t_weight.txt', status='old')
+  read(iunit,*) ifreq
+  do ifreq=1,nfreqs
+   do itau=1,ntimes
+    read(iunit,*) sinw2t_weight(ifreq,itau)
+   enddo
+  enddo
+  close(iunit)
+ else
+  write(*,*) ' Error! Could not find the sinw2t_weight.txt file'
+  return
  endif
  write(*,*)
 
@@ -190,7 +263,7 @@ subroutine scGWitauiw_ao(nBas,nOrb,nO,maxSCF,read_grids,ENuc,Hc,S,P_in,cHF,eHF,n
  do
   iter=iter+1
 
-  ! For iter=1 we build G_ao_itau as the RHF one [we also initialize G_ao_itau_old and G_ao_iw2_old]
+  ! For iter=1 we build G_ao_itau as the RHF one [we also initialize G_ao_iw_hf, G_ao_itau_hf, and G_ao_itau_old]
   if(iter==1) then
    G_ao_itau=czero
    do itau=1,ntimes
@@ -200,10 +273,11 @@ subroutine scGWitauiw_ao(nBas,nOrb,nO,maxSCF,read_grids,ENuc,Hc,S,P_in,cHF,eHF,n
     G_ao_itau(2*itau  ,:,:)=G_minus_itau(:,:)
    enddo
    G_ao_itau_old(:,:,:)=G_ao_itau(:,:,:)
-   do jfreq=1,nfreqs2
-    weval_cpx=im*wcoord2(jfreq)
+   G_ao_itau_hf(:,:,:)=G_ao_itau(:,:,:)
+   do ifreq=1,nfreqs
+    weval_cpx=im*wcoord(ifreq)
     call G_AO_RHF(nBas,nOrb,nO,eta,cHF,eHF,weval_cpx,G_ao_1)
-    G_ao_iw2_old(jfreq,:,:)=G_ao_1(:,:)
+    G_ao_iw_hf(ifreq,:,:)=G_ao_1(:,:)
    enddo
   endif
 
@@ -225,18 +299,18 @@ subroutine scGWitauiw_ao(nBas,nOrb,nO,maxSCF,read_grids,ENuc,Hc,S,P_in,cHF,eHF,n
     enddo
    enddo
    Chi0_ao_itau=-2d0*im*Chi0_ao_itau ! The 2 factor is added to account for both spin contributions [ i.e., (up,up,up,up) and (down,down,down,down) ]
-   ! Xo(i tau) -> Xo(i w)
+   ! Xo(i tau) -> Xo(i w) [ the weight already contains the cos(tau w) and a factor 2 because int_-Infty ^Infty -> 2 int_0 ^Infty ]
    do ifreq=1,nfreqs
-    Chi0_ao_iw(ifreq,:,:) = Chi0_ao_iw(ifreq,:,:) - im*tweight(itau)*Chi0_ao_itau(:,:)*Exp(im*tcoord(itau)*wcoord(ifreq))
+    Chi0_ao_iw(ifreq,:,:) = Chi0_ao_iw(ifreq,:,:) - im*cost2w_weight(ifreq,itau)*Chi0_ao_itau(:,:)
    enddo 
   enddo
-   ! Complete the Xo(i tau) -> Xo(i w)
-   Chi0_ao_iw(:,:,:) = 2d0*Real(Chi0_ao_iw(:,:,:))
+  ! Complete the Xo(i tau) -> Xo(i w)
+  Chi0_ao_iw(:,:,:) = Real(Chi0_ao_iw(:,:,:)) ! The factor 2 is stored in the weight [ and we just retain the real part ]
 
-  ! Build Wp_ao_iw(i w) and Sigma_c_ao(i w2)
-  !    and compute Ec Galitskii-Migdal
+  ! Build Wp(i w) and compute Ec Galitskii-Migdal 
+  !  and Wp(i w) -> Wp(i tau)
   EcGM=0d0
-  Sigma_c_ao=0d0
+  Wp_ao_itau=0d0
   do ifreq=1,nfreqs
    trace1=0d0; trace2=0d0;
    ! Xo(i w) -> Wp_ao_iw(i w)
@@ -252,34 +326,44 @@ subroutine scGWitauiw_ao(nBas,nOrb,nO,maxSCF,read_grids,ENuc,Hc,S,P_in,cHF,eHF,n
     trace2=trace2+Wp_ao_iw(ibas,ibas)
    enddo
    EcGM=EcGM-wweight(ifreq)*(trace2+trace1)/(2d0*pi) ! iw contribution to EcGM
-   Wp_ao_iw(:,:)=matmul(vMAT(:,:),Wp_ao_iw(:,:)) ! Now Wp_ao_iw is on the iw grid
-   ! Wp_ao_iw(i w) -> Sigma_c_ao(i w2) 
-   do jfreq=1,nfreqs2
-    ! Build G(i (w+w2)) and G(i (w-w2))
-    weval(1)=wcoord2(jfreq)+wcoord(ifreq)
-    weval(2)=wcoord2(jfreq)-wcoord(ifreq)
-    ! Doing G(itau) -> G(iw) using Fourier transform
-    call Gitau2Giw(nBas,ntimes,ntimes_twice,tweight,tcoord,weval,G_ao_itau,G_ao_1,G_ao_2)
-!    if(iter==1) then ! For iter=1 we could use the analytic expresion of G_AO_RHF
-!     weval_cpx=im*weval(1)
-!     call G_AO_RHF(nBas,nOrb,nO,eta,cHF,eHF,weval_cpx,G_ao_1)
-!     weval_cpx=im*weval(2)
-!     call G_AO_RHF(nBas,nOrb,nO,eta,cHF,eHF,weval_cpx,G_ao_2)
-!    endif
-    ! Build Sigma_c_ao(i w2)
-    do ibas=1,nBas
-     do jbas=1,nBas
-      do kbas=1,nBas
-       do lbas=1,nBas
-        Sigma_c_ao(jfreq,ibas,jbas)=Sigma_c_ao(jfreq,ibas,jbas)-(G_ao_1(kbas,lbas)+G_ao_2(kbas,lbas)) &
-                                   *Wp_ao_iw(1+(kbas-1)+(ibas-1)*nBas,1+(jbas-1)+(lbas-1)*nBas)       &
-                                   *wweight(ifreq)/(2d0*pi)
-       enddo
+   Wp_ao_iw(:,:)=matmul(vMAT(:,:),Wp_ao_iw(:,:))     ! Now Wp_ao_iw is on the iw grid
+   ! Wp(i w) -> Wp(i tau) [ this transformation misses that Fourier[ Wp(i tau) ] is imaginary because of the factor i / 2pi ]
+   !                      [ However, the weight contains a 2 /(2 pi) = 1 / pi factor and the cos(tau w).                    ]
+   do itau=1,ntimes
+    Wp_ao_itau(itau,:,:) = Wp_ao_itau(itau,:,:) + cosw2t_weight(itau,ifreq)*Wp_ao_iw(:,:)
+   enddo
+  enddo
+
+  ! Build Sigma_c(i w)
+  Sigma_c_w_ao=czero
+  do itau=1,ntimes
+   G_plus_itau(:,:) =G_ao_itau(2*itau-1,:,:)
+   G_minus_itau(:,:)=G_ao_itau(2*itau  ,:,:)
+   Sigma_c_plus=czero
+   Sigma_c_minus=czero
+   ! Sigma_c(i tau) = i G(i tau) Wp(i tau)
+   do ibas=1,nBas
+    do jbas=1,nBas
+     do kbas=1,nBas
+      do lbas=1,nBas 
+       Sigma_c_plus(ibas,jbas) =Sigma_c_plus(ibas,jbas)+im*G_plus_itau(kbas,lbas)    &
+                               *im*Wp_ao_itau(itau,1+(kbas-1)+(ibas-1)*nBas,1+(jbas-1)+(lbas-1)*nBas) ! Adding i to Wp that was missing
+       Sigma_c_minus(ibas,jbas)=Sigma_c_minus(ibas,jbas)+im*G_minus_itau(kbas,lbas)  &
+                               *im*Wp_ao_itau(itau,1+(kbas-1)+(ibas-1)*nBas,1+(jbas-1)+(lbas-1)*nBas) ! Adding i to Wp that was missing
       enddo
      enddo
     enddo
    enddo
+   Sigma_c_c= -im*(Sigma_c_plus+Sigma_c_minus)
+   Sigma_c_s= -   (Sigma_c_plus-Sigma_c_minus)
+   ! Sigma_c(i tau) -> Sigma_c(i w2)
+   do ifreq=1,nfreqs
+    Sigma_c_w_ao(ifreq,:,:) = Sigma_c_w_ao(ifreq,:,:)                        &
+                            + 0.5d0*cost2w_weight(ifreq,itau)*Sigma_c_c(:,:) &
+                            + 0.5d0*sint2w_weight(ifreq,itau)*Sigma_c_s(:,:)
+   enddo 
   enddo
+
   ! Converge with respect to the Fock operator (using only good P_ao matrices)
   iter_fock=0
   do
@@ -302,12 +386,12 @@ subroutine scGWitauiw_ao(nBas,nOrb,nO,maxSCF,read_grids,ENuc,Hc,S,P_in,cHF,eHF,n
    enddo
    ! Build G(i w2) and n(r)
    P_ao_old=P_ao
-   call get_1rdm_scGW(nBas,nfreqs2,nElectrons,thrs_N,chem_pot,S,F_ao,Sigma_c_ao,wcoord2,wweight2, &
-                      G_ao_1,G_ao_iw2,P_ao,trace_1_rdm) 
+   call get_1rdm_scGW(nBas,nfreqs,nElectrons,thrs_N,chem_pot,S,F_ao,Sigma_c_w_ao,wcoord,wweight, &
+                      G_ao_1,G_ao_iw,P_ao,trace_1_rdm) 
    if(abs(trace_1_rdm-nElectrons)>thrs_N) &
-    call fix_chem_pot_scGW(nBas,nfreqs2,nElectrons,thrs_N,chem_pot,S,F_ao,Sigma_c_ao,wcoord2,wweight2, &
-                          G_ao_1,G_ao_iw2,P_ao,trace_1_rdm)
-   ! Check convergence of P_ao for fixed Sigma_c(i w2)
+    call fix_chem_pot_scGW(nBas,nfreqs,nElectrons,thrs_N,chem_pot,S,F_ao,Sigma_c_w_ao,wcoord,wweight, &
+                          G_ao_1,G_ao_iw,P_ao,trace_1_rdm)
+   ! Check convergence of P_ao for fixed Sigma_c(i w)
    diff_Pao=0d0
    do ibas=1,nBas
     do jbas=1,nBas
@@ -350,31 +434,30 @@ subroutine scGWitauiw_ao(nBas,nOrb,nO,maxSCF,read_grids,ENuc,Hc,S,P_in,cHF,eHF,n
 
   if(iter==maxSCF) exit
 
-  ! Build DeltaG(i w2) = G(i w2) - G_old(i w2)
-  do jfreq=1,nfreqs2
-   G_ao_1(:,:)=G_ao_iw2(jfreq,:,:)
-   G_ao_iw2(jfreq,:,:)=G_ao_iw2(jfreq,:,:)-G_ao_iw2_old(jfreq,:,:)
-   G_ao_iw2_old(jfreq,:,:)=G_ao_1(:,:)
-  enddo
+  ! Build DeltaG(i w) = G(i w) - G_HF(i w)
+  G_ao_iw(:,:,:)= G_ao_iw(:,:,:)-G_ao_iw_hf(:,:,:)
 
-  ! Build G(i w2) -> G(i tau) [ i tau and -i tau ]
-   ! Using DeltaG(i w2) to Fourier transform only the change [ i.e., DeltaG(i w2) -> DeltaG(i tau) ]
+  ! Build G(i w) -> G(i tau) [ i tau and -i tau ]
+  !      [ the weights contain the 2 /(2 pi) = 1 / pi factor and the cos(tau w) or sin(tau w). ]
   G_ao_itau=czero
   do itau=1,ntimes
-   call Giw2Gitau(nBas,nfreqs2,wweight2,wcoord2,tcoord(itau),G_ao_iw2,G_plus_itau,G_minus_itau)
-   G_ao_itau(2*itau-1,:,:)=G_plus_itau(:,:)
-   G_ao_itau(2*itau  ,:,:)=G_minus_itau(:,:)
+   G_plus_itau(:,:)=czero
+   G_minus_itau(:,:)=czero
+   do ifreq=1,nfreqs
+    G_plus_itau(:,:) = G_plus_itau(:,:) + im*cosw2t_weight(itau,ifreq)*Real(G_ao_iw(ifreq,:,:)) &
+                                        - im*sinw2t_weight(itau,ifreq)*Aimag(G_ao_iw(ifreq,:,:)) 
+    G_minus_itau(:,:) = G_minus_itau(:,:) + im*cosw2t_weight(itau,ifreq)*Real(G_ao_iw(ifreq,:,:)) &
+                                          + im*sinw2t_weight(itau,ifreq)*Aimag(G_ao_iw(ifreq,:,:)) 
+   enddo
+   ! G(i tau) = DeltaG(i tau) + G_HF(i tau)
+   G_ao_itau(2*itau-1,:,:)=G_plus_itau(:,:) +G_ao_itau_hf(2*itau-1,:,:)
+   G_ao_itau(2*itau  ,:,:)=G_minus_itau(:,:)+G_ao_itau_hf(2*itau  ,:,:)
   enddo
-
-  ! Build G(i tau) = DeltaG(i tau) + G_old(i tau) and save G_ao_itau for the next iteration
-  if(diff_Pao<1d-3) then
-   alpha_mixing=1d0
-  else
-   alpha_mixing=0.6d0
-  endif 
-  G_ao_itau(:,:,:)=alpha_mixing*G_ao_itau(:,:,:)+G_ao_itau_old(:,:,:)
-  G_ao_itau_old(:,:,:)=G_ao_itau(:,:,:)
  
+  ! Do mixing with previous G(i tau) to facilitate convergence
+  G_ao_itau(:,:,:)=alpha_mixing*G_ao_itau(:,:,:)+(1d0-alpha_mixing)*G_ao_itau_old(:,:,:)
+  G_ao_itau_old(:,:,:)=G_ao_itau(:,:,:)
+
  enddo
  write(*,*)
  write(*,'(A50)') '---------------------------------------'
@@ -401,10 +484,10 @@ subroutine scGWitauiw_ao(nBas,nOrb,nO,maxSCF,read_grids,ENuc,Hc,S,P_in,cHF,eHF,n
   write(*,*) '         G^lin = G + G Sigma_c G'
   write(*,*) ' -------------------------------------------'
   P_ao_old=0d0
-  do jfreq=1,nfreqs2
-   G_ao_1(:,:)=G_ao_iw2(jfreq,:,:)
-   G_ao_1(:,:)=matmul(matmul(G_ao_1(:,:),Sigma_c_ao(jfreq,:,:)),G_ao_1(:,:))
-   P_ao_old(:,:) = P_ao_old(:,:) + wweight2(jfreq)*real(G_ao_1(:,:)+conjg(G_ao_1(:,:))) ! Integrate along iw2
+  do ifreq=1,nfreqs
+   G_ao_1(:,:)=G_ao_iw(ifreq,:,:)
+   G_ao_1(:,:)=matmul(matmul(G_ao_1(:,:),Sigma_c_w_ao(ifreq,:,:)),G_ao_1(:,:))
+   P_ao_old(:,:) = P_ao_old(:,:) + wweight(ifreq)*real(G_ao_1(:,:)+conjg(G_ao_1(:,:))) ! Integrate along iw
   enddo
   P_ao_old=P_ao_old/pi
   do ibas=1,nBas
@@ -433,20 +516,27 @@ subroutine scGWitauiw_ao(nBas,nOrb,nO,maxSCF,read_grids,ENuc,Hc,S,P_in,cHF,eHF,n
 
  ! Restore values and deallocate dyn arrays
  eHF(:) = eHF(:)+chem_pot_saved
+ deallocate(Wp_ao_itau)
  deallocate(Chi0_ao_iw,Wp_ao_iw)
  deallocate(tcoord,tweight) 
- deallocate(wcoord2,wweight2) 
- deallocate(G_ao_itau,G_ao_itau_old)
- deallocate(Sigma_c_ao,G_ao_iw2,G_ao_iw2_old)
+ deallocate(sint2w_weight)
+ deallocate(cost2w_weight)
+ deallocate(cosw2t_weight)
+ deallocate(sinw2t_weight)
+ deallocate(G_ao_itau_old)
+ deallocate(G_ao_itau,G_ao_itau_hf)
+ deallocate(Sigma_c_w_ao,G_ao_iw,G_ao_iw_hf)
  deallocate(P_ao,P_ao_old,P_ao_iter,F_ao,P_mo,cHFinv,Occ) 
+ deallocate(Sigma_c_plus,Sigma_c_minus) 
+ deallocate(Sigma_c_c,Sigma_c_s) 
  deallocate(G_minus_itau,G_plus_itau) 
  deallocate(G_ao_1,G_ao_2) 
  deallocate(Chi0_ao_itau) 
 
 end subroutine 
 
-subroutine fix_chem_pot_scGW(nBas,nfreqs2,nElectrons,thrs_N,chem_pot,S,F_ao,Sigma_c_ao,wcoord2,wweight2, &
-                             G_ao,G_ao_iw2,P_ao,trace_1_rdm) 
+subroutine fix_chem_pot_scGW(nBas,nfreqs,nElectrons,thrs_N,chem_pot,S,F_ao,Sigma_c_w_ao,wcoord,wweight, &
+                             G_ao,G_ao_iw,P_ao,trace_1_rdm) 
 
 ! Fix the chemical potential for scGW 
 
@@ -456,14 +546,14 @@ subroutine fix_chem_pot_scGW(nBas,nfreqs2,nElectrons,thrs_N,chem_pot,S,F_ao,Sigm
 ! Input variables
 
   integer,intent(in)            :: nBas
-  integer,intent(in)            :: nfreqs2
+  integer,intent(in)            :: nfreqs
   double precision,intent(in)   :: nElectrons
   double precision,intent(in)   :: thrs_N
   double precision,intent(in)   :: S(nBas,nBas)
   double precision,intent(in)   :: F_ao(nBas,nBas)
-  double precision,intent(in)   :: wcoord2(nfreqs2)
-  double precision,intent(in)   :: wweight2(nfreqs2)
-  complex*16,intent(in)         :: Sigma_c_ao(nfreqs2,nBas,nBas)
+  double precision,intent(in)   :: wcoord(nfreqs)
+  double precision,intent(in)   :: wweight(nfreqs)
+  complex*16,intent(in)         :: Sigma_c_w_ao(nfreqs,nBas,nBas)
 
 ! Local variables
 
@@ -485,7 +575,7 @@ subroutine fix_chem_pot_scGW(nBas,nfreqs2,nElectrons,thrs_N,chem_pot,S,F_ao,Sigm
   double precision,intent(out)  :: trace_1_rdm
   double precision,intent(out)  :: P_ao(nBas,nBas)
   complex*16,intent(out)        :: G_ao(nBas,nBas)
-  complex*16,intent(out)        :: G_ao_iw2(nfreqs2,nBas,nBas)
+  complex*16,intent(out)        :: G_ao_iw(nfreqs,nBas,nBas)
 
   !  Initialize 
 
@@ -509,12 +599,12 @@ subroutine fix_chem_pot_scGW(nBas,nfreqs2,nElectrons,thrs_N,chem_pot,S,F_ao,Sigm
   trace_old = 1d2
   do while( abs(trace_old-nElectrons) > thrs_closer .and. isteps <= 100 )
    isteps = isteps + 1
-   call get_1rdm_scGW(nBas,nfreqs2,nElectrons,thrs_N,chem_pot,S,F_ao,Sigma_c_ao, &
-                      wcoord2,wweight2,G_ao,G_ao_iw2,P_ao,trace_old) 
-   call get_1rdm_scGW(nBas,nfreqs2,nElectrons,thrs_N,chem_pot-delta_chem_pot,S,F_ao,Sigma_c_ao, &
-                      wcoord2,wweight2,G_ao,G_ao_iw2,P_ao,trace_down) 
-   call get_1rdm_scGW(nBas,nfreqs2,nElectrons,thrs_N,chem_pot+delta_chem_pot,S,F_ao,Sigma_c_ao, &
-                      wcoord2,wweight2,G_ao,G_ao_iw2,P_ao,trace_up) 
+   call get_1rdm_scGW(nBas,nfreqs,nElectrons,thrs_N,chem_pot,S,F_ao,Sigma_c_w_ao, &
+                      wcoord,wweight,G_ao,G_ao_iw,P_ao,trace_old) 
+   call get_1rdm_scGW(nBas,nfreqs,nElectrons,thrs_N,chem_pot-delta_chem_pot,S,F_ao,Sigma_c_w_ao, &
+                      wcoord,wweight,G_ao,G_ao_iw,P_ao,trace_down) 
+   call get_1rdm_scGW(nBas,nfreqs,nElectrons,thrs_N,chem_pot+delta_chem_pot,S,F_ao,Sigma_c_w_ao, &
+                      wcoord,wweight,G_ao,G_ao_iw,P_ao,trace_up) 
    if( abs(trace_up-nElectrons) > abs(trace_old-nElectrons) .and. abs(trace_down-nElectrons) > abs(trace_old-nElectrons) ) then
      write(*,'(1X,A1,F16.10,1X,A1,F16.10,1X,A1F16.10,1X,A1)') &
      '|',trace_old,'|',chem_pot,'|',grad_electrons,'|'
@@ -545,16 +635,16 @@ subroutine fix_chem_pot_scGW(nBas,nfreqs2,nElectrons,thrs_N,chem_pot,S,F_ao,Sigm
   do while( abs(trace_1_rdm-nElectrons) > thrs_N .and. isteps <= 100 )
    isteps = isteps + 1
    chem_pot = chem_pot + chem_pot_change
-   call get_1rdm_scGW(nBas,nfreqs2,nElectrons,thrs_N,chem_pot,S,F_ao,Sigma_c_ao, &
-                      wcoord2,wweight2,G_ao,G_ao_iw2,P_ao,trace_1_rdm)
-   call get_1rdm_scGW(nBas,nfreqs2,nElectrons,thrs_N,chem_pot+2d0*delta_chem_pot,S,F_ao,Sigma_c_ao, &
-                      wcoord2,wweight2,G_ao,G_ao_iw2,P_ao,trace_2up)
-   call get_1rdm_scGW(nBas,nfreqs2,nElectrons,thrs_N,chem_pot+delta_chem_pot,S,F_ao,Sigma_c_ao, &
-                      wcoord2,wweight2,G_ao,G_ao_iw2,P_ao,trace_up)
-   call get_1rdm_scGW(nBas,nfreqs2,nElectrons,thrs_N,chem_pot-delta_chem_pot,S,F_ao,Sigma_c_ao, &
-                      wcoord2,wweight2,G_ao,G_ao_iw2,P_ao,trace_down)
-   call get_1rdm_scGW(nBas,nfreqs2,nElectrons,thrs_N,chem_pot-2d0*delta_chem_pot,S,F_ao,Sigma_c_ao, &
-                      wcoord2,wweight2,G_ao,G_ao_iw2,P_ao,trace_2down)
+   call get_1rdm_scGW(nBas,nfreqs,nElectrons,thrs_N,chem_pot,S,F_ao,Sigma_c_w_ao, &
+                      wcoord,wweight,G_ao,G_ao_iw,P_ao,trace_1_rdm)
+   call get_1rdm_scGW(nBas,nfreqs,nElectrons,thrs_N,chem_pot+2d0*delta_chem_pot,S,F_ao,Sigma_c_w_ao, &
+                      wcoord,wweight,G_ao,G_ao_iw,P_ao,trace_2up)
+   call get_1rdm_scGW(nBas,nfreqs,nElectrons,thrs_N,chem_pot+delta_chem_pot,S,F_ao,Sigma_c_w_ao, &
+                      wcoord,wweight,G_ao,G_ao_iw,P_ao,trace_up)
+   call get_1rdm_scGW(nBas,nfreqs,nElectrons,thrs_N,chem_pot-delta_chem_pot,S,F_ao,Sigma_c_w_ao, &
+                      wcoord,wweight,G_ao,G_ao_iw,P_ao,trace_down)
+   call get_1rdm_scGW(nBas,nfreqs,nElectrons,thrs_N,chem_pot-2d0*delta_chem_pot,S,F_ao,Sigma_c_w_ao, &
+                      wcoord,wweight,G_ao,G_ao_iw,P_ao,trace_2down)
 !   grad_electrons = (trace_up-trace_down)/(2d0*delta_chem_pot)
    grad_electrons = (-trace_2up+8d0*trace_up-8d0*trace_down+trace_2down)/(12d0*delta_chem_pot)
    chem_pot_change = -(trace_1_rdm-nElectrons)/(grad_electrons+1d-10)
@@ -565,13 +655,13 @@ subroutine fix_chem_pot_scGW(nBas,nfreqs2,nElectrons,thrs_N,chem_pot,S,F_ao,Sigm
   enddo
   write(*,*)'------------------------------------------------------'
   write(*,*)
-  call get_1rdm_scGW(nBas,nfreqs2,nElectrons,thrs_N,chem_pot,S,F_ao,Sigma_c_ao, &
-                     wcoord2,wweight2,G_ao,G_ao_iw2,P_ao,trace_old) 
+  call get_1rdm_scGW(nBas,nfreqs,nElectrons,thrs_N,chem_pot,S,F_ao,Sigma_c_w_ao, &
+                     wcoord,wweight,G_ao,G_ao_iw,P_ao,trace_old) 
 
 end subroutine
 
-subroutine get_1rdm_scGW(nBas,nfreqs2,nElectrons,thrs_N,chem_pot,S,F_ao,Sigma_c_ao,wcoord2,wweight2, &
-                         G_ao,G_ao_iw2,P_ao,trace_1_rdm) 
+subroutine get_1rdm_scGW(nBas,nfreqs,nElectrons,thrs_N,chem_pot,S,F_ao,Sigma_c_w_ao,wcoord,wweight, &
+                         G_ao,G_ao_iw,P_ao,trace_1_rdm) 
 
 ! Compute the scGW 1RDM
 
@@ -581,19 +671,19 @@ subroutine get_1rdm_scGW(nBas,nfreqs2,nElectrons,thrs_N,chem_pot,S,F_ao,Sigma_c_
 ! Input variables
 
   integer,intent(in)            :: nBas
-  integer,intent(in)            :: nfreqs2
+  integer,intent(in)            :: nfreqs
   double precision,intent(in)   :: chem_pot
   double precision,intent(in)   :: nElectrons
   double precision,intent(in)   :: thrs_N
   double precision,intent(in)   :: S(nBas,nBas)
   double precision,intent(in)   :: F_ao(nBas,nBas)
-  double precision,intent(in)   :: wcoord2(nfreqs2)
-  double precision,intent(in)   :: wweight2(nfreqs2)
-  complex*16,intent(in)         :: Sigma_c_ao(nfreqs2,nBas,nBas)
+  double precision,intent(in)   :: wcoord(nfreqs)
+  double precision,intent(in)   :: wweight(nfreqs)
+  complex*16,intent(in)         :: Sigma_c_w_ao(nfreqs,nBas,nBas)
 
 ! Local variables
 
-  integer                       :: jfreq
+  integer                       :: ifreq
   integer                       :: ibas,jbas
   complex*16                    :: weval_cpx
 
@@ -602,18 +692,18 @@ subroutine get_1rdm_scGW(nBas,nfreqs2,nElectrons,thrs_N,chem_pot,S,F_ao,Sigma_c_
   double precision,intent(out)  :: trace_1_rdm
   double precision,intent(out)  :: P_ao(nBas,nBas)
   complex*16,intent(out)        :: G_ao(nBas,nBas)
-  complex*16,intent(out)        :: G_ao_iw2(nfreqs2,nBas,nBas)
+  complex*16,intent(out)        :: G_ao_iw(nfreqs,nBas,nBas)
 
   P_ao=0d0
-  G_ao_iw2=0d0
+  G_ao_iw=0d0
   trace_1_rdm=0d0
-  do jfreq=1,nfreqs2
-   weval_cpx=im*wcoord2(jfreq)
+  do ifreq=1,nfreqs
+   weval_cpx=im*wcoord(ifreq)
    ! Setting G(w) = [ (w+chem_pot)S + F +Sigma_c ]^-1
-   G_ao(:,:)= (weval_cpx + chem_pot)*S(:,:) - F_ao(:,:) - Sigma_c_ao(jfreq,:,:) ! Gnew(iw2)^-1
-   call complex_inverse_matrix(nBas,G_ao,G_ao)                                  ! Gnew(iw2)
-   G_ao_iw2(jfreq,:,:)=G_ao(:,:)
-   P_ao(:,:) = P_ao(:,:) + wweight2(jfreq)*real(G_ao(:,:)+conjg(G_ao(:,:)))
+   G_ao(:,:)= (weval_cpx + chem_pot)*S(:,:) - F_ao(:,:) - Sigma_c_w_ao(ifreq,:,:) ! Gnew(iw)^-1
+   call complex_inverse_matrix(nBas,G_ao,G_ao)                                    ! Gnew(iw)
+   G_ao_iw(ifreq,:,:)=G_ao(:,:)
+   P_ao(:,:) = P_ao(:,:) + wweight(ifreq)*real(G_ao(:,:)+conjg(G_ao(:,:)))
   enddo
   P_ao(:,:) = P_ao(:,:)/pi + S(:,:)
   do ibas=1,nBas
