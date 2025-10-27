@@ -52,7 +52,9 @@ subroutine BQuAcK(working_dir,dotest,doaordm,doRHFB,doBRPA,dophRPA,doG0W0,doqsGW
 
 ! Local variables
 
+  logical                        :: no_fock
   logical                        :: file_exists
+
   integer                        :: verbose
   integer                        :: nOrb_twice
   integer                        :: ixyz
@@ -250,8 +252,9 @@ subroutine BQuAcK(working_dir,dotest,doaordm,doRHFB,doBRPA,dophRPA,doG0W0,doqsGW
        enddo
       enddo
      enddo
-     call scGWitauiw_ao(nBas,nOrb,nO,maxSCF_GW,dolinGW,restart_scGW,ENuc,Hc,S,pMAT,MOCoef,eHF, &
-                       nfreqs,wcoord,wweight,vMAT)
+     no_fock=.false.
+     call scGWitauiw_ao(nBas,nOrb,nO,maxSCF_GW,dolinGW,restart_scGW,no_fock,ENuc,Hc,S,pMAT,MOCoef,eHF, &
+                       nfreqs,wcoord,wweight,vMAT,ERI_AO)
      deallocate(vMAT)
 
     endif
