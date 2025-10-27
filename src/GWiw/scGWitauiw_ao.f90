@@ -457,7 +457,7 @@ subroutine scGWitauiw_ao(nBas,nOrb,nO,maxSCF,dolinGW,restart_scGW,ENuc,Hc,S,P_in
   write(*,'(a,f15.8)')        ' Change of P ',diff_Pao
   write(*,'(a,f15.8)')        ' Chem. Pot.  ',chem_pot
   write(*,'(a,f15.8)')        ' EcGM        ',EcGM
-  write(*,'(a,f15.8)')        ' Eel         ',Ehfl+EcGM
+  write(*,'(a,f15.8)')        ' Eelec       ',Ehfl+EcGM
   write(*,'(a,f15.8)')        ' Etot        ',Ehfl+EcGM+ENuc
   write(*,*)
   write(*,*) ' Occupation numbers'
@@ -505,8 +505,8 @@ subroutine scGWitauiw_ao(nBas,nOrb,nO,maxSCF,dolinGW,restart_scGW,ENuc,Hc,S,P_in
  write(*,'(a,f15.8)')        ' Chem. Pot.  ',chem_pot
  write(*,'(a,f15.8)')        ' Hcore+Hx    ',Ehfl
  write(*,'(a,f15.8)')        ' EcGM        ',EcGM
- write(*,'(a,f15.8)')        ' Eel         ',Ehfl+EcGM
- write(*,'(a,f15.8)')        ' Etot        ',Ehfl+EcGM+ENuc
+ write(*,'(a,f15.8)')        ' Eelec       ',Ehfl+EcGM
+ write(*,'(a,f15.8)')        ' scGW Energy ',Ehfl+EcGM+ENuc
  write(*,*)
  write(*,*) ' Final occupation numbers'
  do ibas=1,nOrb
