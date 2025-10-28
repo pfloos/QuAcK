@@ -200,7 +200,7 @@ subroutine OORG0W0(dotest,doACFDT,exchange_kernel,doXBS,dophBSE,dophBSE2,TDA_W,T
     call exchange_matrix_AO_basis(nBas,PHF,ERI_AO,K)
     FHF(:,:) = Hc(:,:) + J(:,:) + 0.5d0*K(:,:)
     call AOtoMO(nBas,nOrb,C,FHF,F)
-  
+    call matout(nOrb,nOrb,F) 
     write(*,*) "Orbital optimiation Iteration: ", OOi 
    
 
@@ -210,7 +210,11 @@ subroutine OORG0W0(dotest,doACFDT,exchange_kernel,doXBS,dophBSE,dophBSE2,TDA_W,T
   
                    call OO_phRLR_A(isp_W,dRPA_W,nOrb,nC,nO,nV,nR,nS,1d0,F,ERI_MO,Aph)
     if(.not.TDA_W) call phRLR_B(isp_W,dRPA_W,nOrb,nC,nO,nV,nR,nS,1d0,ERI_MO,Bph)
-  
+    Emu = 0
+    do i=1,nS
+      Emu = Emu + Aph(i,i)
+    enddo
+    write(*,*) Emu
     call phRLR(TDA_W,nS,Aph,Bph,EcRPA,Om,XpY,XmY)
     
     if(print_W) call print_excitation_energies('phRPA@RHF','singlet',nS,Om)
@@ -242,6 +246,7 @@ subroutine OORG0W0(dotest,doACFDT,exchange_kernel,doXBS,dophBSE,dophBSE2,TDA_W,T
         enddo
       enddo
     enddo
+
     write(*,*) "EcRPA = ", EcRPA
     write(*,*) "ERHF (usual stationary one)", ERHF
     write(*,*) "E^MF from rdm"
@@ -252,7 +257,6 @@ subroutine OORG0W0(dotest,doACFDT,exchange_kernel,doXBS,dophBSE,dophBSE2,TDA_W,T
     rdm2 = rdm2_hf + rdm2_rpa
     write(*,*) "ERPA from rdm (MF + corr)"
     call energy_from_rdm(N,h,ERI_MO,rdm1,rdm2,Emu)
-    
     call R_optimize_orbitals(diagHess,nBas,nOrb,nV,nR,nC,nO,N,Nsq,O,V,ERI_AO,ERI_MO,Hc,h,rdm1,rdm2,c,OOConv)
     
     write(*,*) '----------------------------------------------------------'
@@ -263,9 +267,9 @@ subroutine OORG0W0(dotest,doACFDT,exchange_kernel,doXBS,dophBSE,dophBSE2,TDA_W,T
     write(*,*) '----------------------------------------------------------'
     write(*,*)
     
-  !  if (OOi==1) then
-  !    OOConv = 0d0 ! remove only for debugging
-  !  end if
+    if (OOi==1) then
+      OOConv = 0d0 ! remove only for debugging
+    end if
 
     OOi = OOi + 1 
     
