@@ -49,9 +49,11 @@ subroutine scGWitauiw_ao(nBas,nOrb,nO,maxSCF,dolinGW,restart_scGW,no_fock,ENuc,H
   double precision              :: trace_1_rdm
   double precision              :: thrs_N,thrs_Pao
   double precision              :: chem_pot,chem_pot_saved
+  double precision              :: error_I
   double precision              :: error_sigma
   double precision              :: max_error_sigma
   double precision,allocatable  :: tweight(:),tcoord(:)
+  double precision,allocatable  :: I_weight(:,:)
   double precision,allocatable  :: sint2w_weight(:,:)
   double precision,allocatable  :: cost2w_weight(:,:)
   double precision,allocatable  :: cosw2t_weight(:,:)
@@ -156,6 +158,7 @@ subroutine scGWitauiw_ao(nBas,nOrb,nO,maxSCF,dolinGW,restart_scGW,no_fock,ENuc,H
  ntimes=nfreqs
  ntimes_twice=2*ntimes
  allocate(tweight(ntimes),tcoord(ntimes))
+ allocate(I_weight(nfreqs,ntimes))
  allocate(sint2w_weight(nfreqs,ntimes))
  allocate(cost2w_weight(nfreqs,ntimes))
  allocate(cosw2t_weight(ntimes,nfreqs))
@@ -285,9 +288,31 @@ subroutine scGWitauiw_ao(nBas,nOrb,nO,maxSCF,dolinGW,restart_scGW,no_fock,ENuc,H
   write(*,*) ' Error! Could not find the sinw2t_weight.txt file'
   return
  endif
- write(*,'(a,i5,a)') ' Using ',nfreqs,' frequencies'
- write(*,'(a,i5,a)') ' Using ',ntimes,'       times'
+ write(*,'(a,i5,a)') ' Using ',nfreqs,' frequencies and times'
+ I_weight=matmul(cost2w_weight,cosw2t_weight)
+ do ifreq=1,nfreqs
+  I_weight(ifreq,ifreq)=I_weight(ifreq,ifreq)-1d0
+ enddo
+ error_I=0d0
+ do ifreq=1,nfreqs
+  do itau=1,ntimes
+   error_I=error_I+abs(I_weight(ifreq,itau))
+  enddo
+ enddo
+ write(*,'(a,f20.5)') ' Deviation from Identity in Cos-Cos ',error_I
+ I_weight=matmul(sint2w_weight,sinw2t_weight)
+ do ifreq=1,nfreqs
+  I_weight(ifreq,ifreq)=I_weight(ifreq,ifreq)-1d0
+ enddo
+ error_I=0d0
+ do ifreq=1,nfreqs
+  do itau=1,ntimes
+   error_I=error_I+abs(I_weight(ifreq,itau))
+  enddo
+ enddo
+ write(*,'(a,f20.5)') ' Deviation from Identity in Sin-Sin ',error_I
  write(*,*)
+ deallocate(I_weight)
 
 !-----------!
 ! scGW loop !
@@ -544,9 +569,9 @@ subroutine scGWitauiw_ao(nBas,nOrb,nO,maxSCF,dolinGW,restart_scGW,no_fock,ENuc,H
    G_plus_itau(:,:)=czero
    G_minus_itau(:,:)=czero
    do ifreq=1,nfreqs
-    G_plus_itau(:,:) = G_plus_itau(:,:) + im*cosw2t_weight(itau,ifreq)*Real(DeltaG_ao_iw(ifreq,:,:)) &
-                                        - im*sinw2t_weight(itau,ifreq)*Aimag(DeltaG_ao_iw(ifreq,:,:)) 
-    G_minus_itau(:,:) = G_minus_itau(:,:) + im*cosw2t_weight(itau,ifreq)*Real(DeltaG_ao_iw(ifreq,:,:)) &
+    G_plus_itau(:,:) = G_plus_itau(:,:)   + im*cosw2t_weight(itau,ifreq)*Real(DeltaG_ao_iw(ifreq,:,:))  &
+                                          - im*sinw2t_weight(itau,ifreq)*Aimag(DeltaG_ao_iw(ifreq,:,:)) 
+    G_minus_itau(:,:) = G_minus_itau(:,:) + im*cosw2t_weight(itau,ifreq)*Real(DeltaG_ao_iw(ifreq,:,:))  &
                                           + im*sinw2t_weight(itau,ifreq)*Aimag(DeltaG_ao_iw(ifreq,:,:)) 
    enddo
    ! Build G(i tau) = DeltaG(i tau) + G_HF(i tau)
@@ -554,9 +579,6 @@ subroutine scGWitauiw_ao(nBas,nOrb,nO,maxSCF,dolinGW,restart_scGW,no_fock,ENuc,H
    G_ao_itau(2*itau  ,:,:)=G_minus_itau(:,:)+G_ao_itau_hf(2*itau  ,:,:)
   enddo
  
-write(*,*) 'MAU WTF! Are you still testing G(iw)-->G(i tau)? Use G_ao_iw_hf'
-if(iter==1) exit
-
   ! Do mixing with previous G(i tau) to facilitate convergence
   G_ao_itau(:,:,:)=alpha_mixing*G_ao_itau(:,:,:)+(1d0-alpha_mixing)*G_ao_itau_old(:,:,:)
   G_ao_itau_old(:,:,:)=G_ao_itau(:,:,:)
@@ -823,7 +845,7 @@ subroutine fix_chem_pot_scGW(nBas,nfreqs,nElectrons,thrs_N,chem_pot,S,F_ao,Sigma
                      wcoord,wweight,G_ao,G_ao_iw_hf,DeltaG_ao_iw,P_ao,P_ao_hf,trace_old) 
 
 end subroutine
-
+    
 subroutine get_1rdm_scGW(nBas,nfreqs,nElectrons,thrs_N,chem_pot,S,F_ao,Sigma_c_w_ao,wcoord,wweight, &
                          G_ao,G_ao_iw_hf,DeltaG_ao_iw,P_ao,P_ao_hf,trace_1_rdm) 
 
@@ -867,11 +889,11 @@ subroutine get_1rdm_scGW(nBas,nfreqs,nElectrons,thrs_N,chem_pot,S,F_ao,Sigma_c_w
    ! Setting G(w) = [ (w+chem_pot)S - F - Sigma_c(w) ]^-1
    G_ao(:,:)= (weval_cpx + chem_pot)*S(:,:) - F_ao(:,:) - Sigma_c_w_ao(ifreq,:,:) ! G(iw)^-1
    call complex_inverse_matrix(nBas,G_ao,G_ao)                                    ! G(iw)
-   G_ao(:,:)=G_ao(:,:)-G_ao_iw_hf(ifreq,:,:)                                      ! Gcorr(iw) = G(iw) - Go(iw) 
+   G_ao(:,:)=G_ao(:,:)-G_ao_iw_hf(ifreq,:,:)                                      ! G_corr(iw) = G(iw) - Go(iw) 
    DeltaG_ao_iw(ifreq,:,:)=G_ao(:,:)
-   P_ao(:,:) = P_ao(:,:) + wweight(ifreq)*real(G_ao(:,:))                         ! P_corr = 1/(2 pi) int G_ao(iw) dw = 1/pi int Re[ G_ao(iw) ] dw
+   P_ao(:,:) = P_ao(:,:) + wweight(ifreq)*real(G_ao(:,:))      ! P_corr = 1/(2 pi) int_-Infty ^Infty G_corr(iw) dw = 1/pi int_0 ^Infty Re[ G_corr(iw) ] dw
   enddo
-  P_ao(:,:) = P_ao(:,:)/(2d0*pi) + P_ao_hf(:,:)
+  P_ao(:,:) = 2d0*P_ao(:,:)/pi + P_ao_hf(:,:)                  ! Times 2 to sum both spin channels
   trace_1_rdm=0d0
   do ibas=1,nBas
    do jbas=1,nBas

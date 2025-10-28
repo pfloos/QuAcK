@@ -275,6 +275,7 @@ subroutine trace_1rdm_Gdyson(nOrb,nO,nfreqs2,chem_pot,trace_1rdm,eHF,wcoord2_cpx
   integer                       :: ifreq
   integer                       :: iorb
 
+  complex *16,allocatable       :: Go_mo(:,:)
 
 ! Output variables
 
@@ -285,27 +286,36 @@ subroutine trace_1rdm_Gdyson(nOrb,nO,nfreqs2,chem_pot,trace_1rdm,eHF,wcoord2_cpx
 
 ! Integration along imag. freqs
   
+  allocate(Go_mo(nOrb,nOrb))
+
   Pcorr_mo(:,:)=0d0
   do ifreq=1,nfreqs2
   
-   call G_MO_RHF(nOrb,nO,0d0,eHF,wcoord2_cpx(ifreq),Tmp_mo)                ! Go(iw2)
+   call G_MO_RHF(nOrb,nO,0d0,eHF,wcoord2_cpx(ifreq),Go_mo)                 ! Go(iw2)
+   Tmp_mo(:,:)=Go_mo(:,:)
    call complex_inverse_matrix(nOrb,Tmp_mo,Tmp_mo)                         ! Go(iw2)^-1
    Tmp_mo(:,:)=Tmp_mo(:,:) - Sigma_c(ifreq,:,:) - chem_pot*Identity(:,:)   ! G(iw2)^-1
    call complex_inverse_matrix(nOrb,Tmp_mo,Tmp_mo)                         ! G(iw2)
-  
-   Pcorr_mo(:,:) = Pcorr_mo(:,:) + wweight2(ifreq)*real(Tmp_mo(:,:)+conjg(Tmp_mo(:,:))) ! Integrate along iw2
+   Tmp_mo(:,:)=Tmp_mo(:,:) - Go_mo(:,:)                                    ! Gcorr(iw2) = G(iw2) - Go(iw2)
+ 
+   Pcorr_mo(:,:) = Pcorr_mo(:,:) + 2d0*wweight2(ifreq)*real(Tmp_mo(:,:))   ! Integrate along iw2
   
   enddo
-  Pcorr_mo(:,:) = Pcorr_mo(:,:)/pi
+  Pcorr_mo(:,:) = Pcorr_mo(:,:)/(2d0*pi)
   
-  do iorb=1,nOrb
+  ! P = Pcorr + P_HF with P_HF = delta_ij for the occ orbitals
+  do iorb=1,nO
    Pcorr_mo(iorb,iorb) = Pcorr_mo(iorb,iorb) + 1d0
   enddo
+
+  Pcorr_mo(:,:) = 2d0*Pcorr_mo(:,:)                                        ! Times 2 because we are adding both spin channels to build the spinless P
   
   trace_1rdm=0d0
   do iorb=1,nOrb
    trace_1rdm=trace_1rdm+Pcorr_mo(iorb,iorb)
   enddo
+
+  deallocate(Go_mo)
 
 end subroutine
 
