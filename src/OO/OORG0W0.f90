@@ -268,9 +268,9 @@ subroutine OORG0W0(dotest,doACFDT,exchange_kernel,doXBS,dophBSE,dophBSE2,TDA_W,T
     write(*,*) '----------------------------------------------------------'
     write(*,*)
     
-    if (OOi==1) then
-      OOConv = 0d0 ! remove only for debugging
-    end if
+  !  if (OOi==1) then
+  !    OOConv = 0d0 ! remove only for debugging
+  !  end if
 
     OOi = OOi + 1 
   end do
