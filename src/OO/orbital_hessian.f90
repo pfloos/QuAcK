@@ -34,7 +34,7 @@ subroutine orbital_hessian(O,V,N,Nsq,h,ERI_MO,rdm1,rdm2,hess)
 
 ! Compute intermediate array
 
-  allocate(tmp(N,N,N,N),hess2(Nsq,Nsq),e(Nsq))
+  allocate(tmp(N,N,N,N))
 
   tmp(:,:,:,:) = 0d0
 
@@ -112,13 +112,7 @@ subroutine orbital_hessian(O,V,N,Nsq,h,ERI_MO,rdm1,rdm2,hess)
 
     end do
   end do
-write(*,*) "Hessian"
-call matout(Nsq,Nsq,hess)
-write(*,*) "eigenvalues of hessian"
-hess2(:,:) = hess(:,:)
-call diagonalize_matrix(Nsq,hess2,e)
-call vecout(Nsq,e)
-deallocate(hess2,e,tmp)
+deallocate(tmp)
 
 ! Dump Hessian
 

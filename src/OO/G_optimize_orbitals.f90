@@ -33,6 +33,7 @@ subroutine G_optimize_orbitals(nBas,nBas2,nV,nR,nC,nO,N,Nsq,O,V,ERI_AO,ERI_MO,h,
   allocate(grad(Nsq))
   grad(:) = 0d0
   call orbital_gradient(O,V,N,Nsq,h,ERI_MO,rdm1,rdm2,grad)
+  call matout(N,N,grad)
  
   ! Check convergence of orbital optimization
   OOConv = maxval(grad)

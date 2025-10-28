@@ -120,8 +120,6 @@ subroutine OOGG0W0(dotest,doACFDT,exchange_kernel,doXBS,dophBSE,dophBSE2,TDA_W,T
   O = nO - nC
   N = V + O
   Nsq = N*N
-  write(*,*) "cHF in the begin of OOGG0W0"
-  call matout(nBas2,nBas2,cHF)
 
 ! Output variables
 
@@ -183,6 +181,8 @@ subroutine OOGG0W0(dotest,doACFDT,exchange_kernel,doXBS,dophBSE,dophBSE2,TDA_W,T
   Emu               = 0d0
   eGW(:)            = eHF(:)
   h(:,:)            = 0d0
+  
+  call mo_guess(nBas2,nBas2,1d0,S,H,X,C)
 
   write(*,*) "Start orbital optimization loop..."
 
@@ -236,52 +236,6 @@ subroutine OOGG0W0(dotest,doACFDT,exchange_kernel,doXBS,dophBSE,dophBSE2,TDA_W,T
     write(*,*) "EcRPA = ", EcRPA
     if(print_W) call print_excitation_energies('phRPA@GHF','generalized',nS,Om)
   
-  !--------------------------!
-  ! Compute spectral weights !
-  !--------------------------!
-  
-    call GGW_excitation_density(nBas2,nC,nO,nR,nS,ERI_MO,XpY,rho)
-  
-  !------------------------!
-  ! Compute GW self-energy !
-  !------------------------!
-  
-    if(doSRG) then 
-      call GGW_SRG_self_energy_diag(flow,nBas2,nC,nO,nV,nR,nS,eHF,Om,rho,EcGM,SigC,Z)
-    else
-      call GGW_self_energy_diag(eta,nBas2,nC,nO,nV,nR,nS,eHF,Om,rho,EcGM,SigC,Z,ERI_MO)
-    end if
-  
-  !-----------------------------------!
-  ! Solve the quasi-particle equation !
-  !-----------------------------------!
-  
-    ! Linearized or graphical solution?
-    eGWlin(:) = eHF(:) + Z(:)*SigC(:)
-  
-    if(linearize) then 
-   
-      write(*,*) ' *** Quasiparticle energies obtained by linearization *** '
-      write(*,*)
-  
-      eGW(:) = eGWlin(:)
-  
-    else 
-  
-      write(*,*) ' *** Quasiparticle energies obtained by root search *** '
-      write(*,*)
-    
-      call GGW_QP_graph(doSRG,eta,flow,nBas2,nC,nO,nV,nR,nS,eHF,Om,rho,eGWlin,eHF,eGW,Z)
-  
-    end if
-  
-  !--------------!
-  ! Dump results !
-  !--------------!
-  
-    call print_GG0W0(nBas2,nC,nO,nV,nR,eHF,ENuc,EGHF,SigC,Z,eGW,EcRPA,EcGM)
-  
-    eGW_out(:) = eGW(:)
     
     ! Useful quantities to calculate rdms
 
@@ -303,12 +257,11 @@ subroutine OOGG0W0(dotest,doACFDT,exchange_kernel,doXBS,dophBSE,dophBSE2,TDA_W,T
     rdm1 = rdm1_hf  + rdm1_rpa
     rdm1 = rdm1_hf
     write(*,*) "Trace rdm1: ", trace_matrix(N,rdm1)
-    call matout(N,N,rdm1_hf + rdm1_rpa)
+!    call matout(N,N,rdm1_hf + rdm1_rpa)
     ! Calculate rdm2
     call GG0W0_rdm2_hf(O,V,N,nS,lampl,rampl,lp,rp,lambda,t,rdm2_hf)
     call GG0W0_rdm2_rpa(O,V,N,nS,lampl,rampl,lp,rp,lambda,t,rdm2_rpa)
     rdm2 = rdm2_hf  + rdm2_rpa
-    rdm2 = rdm2_hf
     !call matout(Nsq,Nsq,rdm2_hf + rdm2_rpa)
     EOld = Emu 
     call energy_from_rdm(N,h,ERI_MO,rdm1,rdm2,Emu)
@@ -338,7 +291,54 @@ subroutine OOGG0W0(dotest,doACFDT,exchange_kernel,doXBS,dophBSE,dophBSE2,TDA_W,T
     OOi = OOi + 1 
   end do
   cHF(:,:) = c(:,:)
+
+!--------------------------!
+! Compute spectral weights !
+!--------------------------!
+
+  call GGW_excitation_density(nBas2,nC,nO,nR,nS,ERI_MO,XpY,rho)
+
+!------------------------!
+! Compute GW self-energy !
+!------------------------!
+
+  if(doSRG) then 
+    call GGW_SRG_self_energy_diag(flow,nBas2,nC,nO,nV,nR,nS,eHF,Om,rho,EcGM,SigC,Z)
+  else
+    call GGW_self_energy_diag(eta,nBas2,nC,nO,nV,nR,nS,eHF,Om,rho,EcGM,SigC,Z,ERI_MO)
+  end if
+
+!-----------------------------------!
+! Solve the quasi-particle equation !
+!-----------------------------------!
+
+  ! Linearized or graphical solution?
+  eGWlin(:) = eHF(:) + Z(:)*SigC(:)
+
+  if(linearize) then 
+ 
+    write(*,*) ' *** Quasiparticle energies obtained by linearization *** '
+    write(*,*)
+
+    eGW(:) = eGWlin(:)
+
+  else 
+
+    write(*,*) ' *** Quasiparticle energies obtained by root search *** '
+    write(*,*)
   
+    call GGW_QP_graph(doSRG,eta,flow,nBas2,nC,nO,nV,nR,nS,eHF,Om,rho,eGWlin,eHF,eGW,Z)
+
+  end if
+
+!--------------!
+! Dump results !
+!--------------!
+
+  call print_GG0W0(nBas2,nC,nO,nV,nR,eHF,ENuc,EGHF,SigC,Z,eGW,EcRPA,EcGM)
+
+  eGW_out(:) = eGW(:)
+ 
   deallocate(rdm1,rdm2,c,Aph,Bph,SigC,Z,Om,XpY,XmY,rho,eGW,&
              eGWlin,X,X_inv,Y,Xbar,Xbar_inv,lambda,t,rampl,lampl,rp,lp,h)
 

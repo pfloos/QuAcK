@@ -102,5 +102,4 @@ subroutine orbital_hessian_diag(O,V,N,Nsq,h,ERI_MO,rdm1,rdm2,hess)
       hess(pq,1) = tmp(p,q,p,q) - tmp(q,p,p,q) - tmp(p,q,q,p) + tmp(q,p,q,p)
     end do
   end do
-hess(:,1) = hess(:,1)
 end
