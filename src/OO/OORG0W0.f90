@@ -246,8 +246,8 @@ subroutine OORG0W0(dotest,doACFDT,exchange_kernel,doXBS,dophBSE,dophBSE2,TDA_W,T
     write(*,*) "ERHF (usual stationary one)", ERHF
     write(*,*) "E^MF from rdm"
     call energy_from_rdm(N,h,ERI_MO,rdm1_hf,rdm2_hf,EHF_rdm)
-    write(*,*) "EcRPA from rdm", EcRPA
-    call energy_from_rdm(N,h,ERI_MO,rdm1_rpa,rdm2_hf,ERPA_rdm)
+    write(*,*) "EcRPA from rdm"
+    call energy_from_rdm(N,h,ERI_MO,rdm1_rpa,rdm2_rpa,ERPA_rdm)
     rdm1 = rdm1_hf + rdm1_rpa
     rdm2 = rdm2_hf + rdm2_rpa
     write(*,*) "ERPA from rdm (MF + corr)"
