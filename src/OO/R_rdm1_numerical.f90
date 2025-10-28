@@ -1,49 +1,54 @@
 subroutine R_rdm1_numerical(dotest,doaordm,maxSCF,thresh,max_diis,guess_type,level_shift,nNuc,ZNuc,rNuc,ENuc, & 
-               nBas,nOrb,nO,S,T,V,Hc,ERI,dipole_int,X,ERHF,eHF,c,P,F)
+               nBas,nOrb,nO,S,T,V,Hc,ERI,dipole_int,X,eHF,c,P,F)
 
-! Input
-logical,intent(in)            :: dotest
-logical,intent(in)            :: doaordm
+       ! Calculate 1RDM numerically from RHF (or what ever you want)
 
-integer,intent(in)            :: maxSCF
-integer,intent(in)            :: max_diis
-integer,intent(in)            :: guess_type
-double precision,intent(in)   :: thresh
-double precision,intent(in)   :: level_shift
+  implicit none
+  include 'parameters.h'
 
-integer,intent(in)            :: nBas
-integer,intent(in)            :: nOrb
-integer,intent(in)            :: nO
-integer,intent(in)            :: nNuc
-double precision,intent(in)   :: ZNuc(nNuc)
-double precision,intent(in)   :: rNuc(nNuc,ncart)
-double precision,intent(in)   :: ENuc
-double precision,intent(in)   :: S(nBas,nBas)
-double precision,intent(in)   :: T(nBas,nBas)
-double precision,intent(in)   :: V(nBas,nBas)
-double precision,intent(in)   :: Hc(nBas,nBas) 
-double precision,intent(in)   :: X(nBas,nOrb)
-double precision,intent(in)   :: ERI(nBas,nBas,nBas,nBas)
-double precision,intent(in)   :: dipole_int(nBas,nBas,ncart)
-
-! Local
-integer                       :: pind,qind
-double precision              :: factor
-double precision              :: Eplus
-double precision              :: Eminus
-double precision              :: delta = 1e-2
-
-double precision,allocatable  :: Hc_loc(:,:)
-double precision,allocatable  :: rdm1_MO(:,:)
-double precision,allocatable  :: rdm1(:,:)
-
-! Output
+  ! Input
+  logical,intent(in)            :: dotest
+  logical,intent(in)            :: doaordm
   
-double precision,intent(out)  :: eHF(nOrb)
-double precision,intent(inout):: c(nBas,nOrb)
-double precision,intent(out)  :: P(nBas,nBas)
-double precision,intent(out)  :: F(nBas,nBas)
-                                                   
+  integer,intent(in)            :: maxSCF
+  integer,intent(in)            :: max_diis
+  integer,intent(in)            :: guess_type
+  double precision,intent(in)   :: thresh
+  double precision,intent(in)   :: level_shift
+  
+  integer,intent(in)            :: nBas
+  integer,intent(in)            :: nOrb
+  integer,intent(in)            :: nO
+  integer,intent(in)            :: nNuc
+  double precision,intent(in)   :: ZNuc(nNuc)
+  double precision,intent(in)   :: rNuc(nNuc,ncart)
+  double precision,intent(in)   :: ENuc
+  double precision,intent(in)   :: S(nBas,nBas)
+  double precision,intent(in)   :: T(nBas,nBas)
+  double precision,intent(in)   :: V(nBas,nBas)
+  double precision,intent(in)   :: Hc(nBas,nBas) 
+  double precision,intent(in)   :: X(nBas,nOrb)
+  double precision,intent(in)   :: ERI(nBas,nBas,nBas,nBas)
+  double precision,intent(in)   :: dipole_int(nBas,nBas,ncart)
+  
+  ! Local
+  integer                       :: pind,qind
+  double precision              :: factor
+  double precision              :: Eplus
+  double precision              :: Eminus
+  double precision              :: delta = 1e-4
+  
+  double precision,allocatable  :: Hc_loc(:,:)
+  double precision,allocatable  :: rdm1_MO(:,:)
+  double precision,allocatable  :: rdm1(:,:)
+  
+  ! Output
+    
+  double precision,intent(out)  :: eHF(nOrb)
+  double precision,intent(inout):: c(nBas,nOrb)
+  double precision,intent(out)  :: P(nBas,nBas)
+  double precision,intent(out)  :: F(nBas,nBas)
+                                                     
 allocate(rdm1(nBas,nBas),rdm1_MO(nOrb,nOrb),Hc_loc(nBas,nBas))
 
 do pind=1,nBas

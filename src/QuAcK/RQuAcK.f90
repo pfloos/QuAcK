@@ -540,7 +540,7 @@ doGF = doG0F2 .or. doevGF2 .or. doqsGF2 .or. doufG0F02 .or. doG0F3 .or. doevGF3 
 
   if(doRDMs_numerically) then
     call R_rdm1_numerical(dotest,doaordm,maxSCF_HF,thresh_HF,max_diis_HF,guess_type,level_shift,nNuc,ZNuc,rNuc,ENuc, &
-             nBas,nOrb,nO,S,T,V,Hc,ERI_AO,dipole_int_AO,X,ERHF,eHF,cHF,PHF,FHF)    
+             nBas,nOrb,nO,S,T,V,Hc,ERI_AO,dipole_int_AO,X,eHF,cHF,PHF,FHF)    
   endif
 
 ! Memory deallocation
