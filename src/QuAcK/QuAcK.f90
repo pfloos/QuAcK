@@ -171,7 +171,7 @@ program QuAcK
                     TDA,spin_conserved,spin_flip,                                                        &
                     maxSCF_GF,thresh_GF,max_diis_GF,lin_GF,eta_GF,renorm_GF,reg_GF,                      &
                     maxSCF_GW,thresh_GW,max_diis_GW,lin_GW,eta_GW,shift_GW,reg_GW,doOO,mu,do_linDM_GW,   &
-                    nfreqs,ntimes,TDA_W,restart_scGW,                                                    &
+                    nfreqs,TDA_W,restart_scGW,                                                           &
                     maxSCF_GT,thresh_GT,max_diis_GT,lin_GT,eta_GT,reg_GT,TDA_T,do_linDM_GT,              & 
                     doACFDT,exchange_kernel,doXBS,                                                       &
                     dophBSE,dophBSE2,doppBSE,dBSE,dTDA,                                                  &
@@ -184,6 +184,7 @@ program QuAcK
 ! Prepare Quadrature !
 !--------------------!
 
+  ntimes = 0
   kind_int = 1
   lim_inf = 0d0; lim_sup = 1d0;
   alpha = 0d0;   beta  = 0d0;
