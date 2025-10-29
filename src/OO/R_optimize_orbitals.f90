@@ -21,7 +21,6 @@ subroutine R_optimize_orbitals(diagHess,nBas,nOrb,nV,nR,nC,nO,N,Nsq,O,V,ERI_AO,E
   integer                          :: nhess,mhess
   double precision,allocatable     :: hess(:,:), grad(:), hessInv(:,:)
   double precision,allocatable     :: Kap(:,:), ExpKap(:,:)
-  double precision                 :: reg = 1e-14 ! regularisation of Hessian H <- H + reg*I
 
 ! Output variables
 
@@ -53,17 +52,15 @@ subroutine R_optimize_orbitals(diagHess,nBas,nOrb,nV,nR,nC,nO,N,Nsq,O,V,ERI_AO,E
     hess(:,:) = 0d0
     call orbital_hessian_diag(O,V,N,Nsq,h,ERI_MO,rdm1,rdm2,hess)
     do pq=1,Nsq
-      hess(pq,1) = hess(pq,1) + reg
-      hessInv(pq,1) = 1/hess(pq,1)
+      if(abs(hess(pq,1))>1e-8) then
+        hessInv(pq,1) = 1/hess(pq,1)
+      endif
     enddo
   else
     allocate(hess(nhess,mhess),hessInv(nhess,mhess))
-    hess(:,:) = 0d0 
+    hess(:,:) = 0d0
     call orbital_hessian(O,V,N,Nsq,h,ERI_MO,rdm1,rdm2,hess)
-    do pq=1,Nsq
-      hess(pq,pq) = hess(pq,pq) + reg
-    enddo
-    call inverse_matrix(Nsq,hess,hessInv)
+    call pseudo_inverse_matrix(Nsq,hess,hessInv)
   endif
   
 !  write(*,*) "Hessian"

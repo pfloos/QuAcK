@@ -1,11 +1,12 @@
-subroutine RG0W0_rdm2_hf(O,V,N,nS,lampl,rampl,lp,rp,lambda,t,rdm2)
+subroutine RG0W0_rdm2_hf(O,V,N,nS,rdm2)
 
 ! Compute HF 2-Reduced-Density-Matrix based in RG0W0
 
+implicit none
+include 'parameters.h'
+
 ! Input
 integer,intent(in)               :: N,nS,O,V
-double precision, intent(in)     :: lampl(nS,N),rampl(nS,N),rp(N),lp(N)
-double precision, intent(in)     :: lambda(nS,nS),t(nS,nS)
 
 ! Local
 integer                          :: a,b,c,d,i,j,k,l,p,q,r,s

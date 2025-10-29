@@ -55,7 +55,7 @@ subroutine OORG0W0(dotest,doACFDT,exchange_kernel,doXBS,dophBSE,dophBSE2,TDA_W,T
 
   logical                       :: print_W   = .false.
   logical                       :: plot_self = .false.
-  logical                       :: diagHess = .true.
+  logical                       :: diagHess  = .false.  ! Use only diagonal of the Hessian
   logical                       :: dRPA_W
   integer                       :: isp_W
   double precision              :: flow
@@ -86,7 +86,7 @@ subroutine OORG0W0(dotest,doACFDT,exchange_kernel,doXBS,dophBSE,dophBSE2,TDA_W,T
   double precision,allocatable  :: eGW(:)
  
   double precision              :: OOConv
-  double precision              :: thresh = 1.0e-8
+  double precision              :: thresh = 1.0e-6
   integer                       :: OOi
   double precision,allocatable  :: h(:,:)
   double precision,allocatable  :: rdm1(:,:)
@@ -95,14 +95,16 @@ subroutine OORG0W0(dotest,doACFDT,exchange_kernel,doXBS,dophBSE,dophBSE2,TDA_W,T
   double precision,allocatable  :: rdm2(:,:,:,:)
   double precision,allocatable  :: rdm2_hf(:,:,:,:)
   double precision,allocatable  :: rdm2_rpa(:,:,:,:)
+  double precision,allocatable  :: rdm2_tmp(:,:)
   integer                       :: r,s,rs,p,q,pq
+  integer                       :: i,jind,a,b,ia,jb
+  integer                       :: ind
   integer                       :: N,O,V,Nsq
   double precision,allocatable  :: c(:,:)
-  double precision,allocatable  :: Fp(:,:)
+  double precision,allocatable  :: F(:,:)
   double precision,allocatable  :: J(:,:),K(:,:)
   double precision              :: Emu, EOld
   double precision              :: EHF_rdm,ERPA_rdm
-  integer                       :: ind
 
   double precision,external     :: trace_matrix
   double precision              :: trace_rdm2
@@ -156,10 +158,10 @@ subroutine OORG0W0(dotest,doACFDT,exchange_kernel,doXBS,dophBSE,dophBSE2,TDA_W,T
            eGW(nOrb),eGWlin(nOrb),X(nS,nS),X_inv(nS,nS),Y(nS,nS),Xbar(nS,nS),Xbar_inv(nS,nS),lambda(nS,nS),t(nS,nS),&
            rampl(nS,N),lampl(nS,N),rp(N),lp(N),h(N,N),c(nBas,nOrb),&
            rdm1(N,N),rdm2(N,N,N,N),rdm1_hf(N,N),rdm2_hf(N,N,N,N),rdm1_rpa(N,N),rdm2_rpa(N,N,N,N),&
-           J(nBas,nBas),K(nBas,nBas),Fp(nOrb,nOrb))
+           J(nBas,nBas),K(nBas,nBas),F(nOrb,nOrb),rdm2_tmp(2*nS,2*nS))
 
 ! Initialize variables for OO  
-  OOi           = 1d0
+  OOi           = 1
   OOConv        = 1d0
   c(:,:)        = cHF(:,:)
   rdm1(:,:)         = 0d0 
@@ -174,21 +176,31 @@ subroutine OORG0W0(dotest,doACFDT,exchange_kernel,doXBS,dophBSE,dophBSE2,TDA_W,T
   lp(:)         = 0d0
   t(:,:)        = 0d0
   lambda(:,:)   = 0d0
-  Emu           = 0d0
+  Emu           = ERHF
   eGW(:)        = eHF(:)
   h(:,:)        = 0d0
   
- ! write(*,*) "TEST: Start from mo guess and then do HF with oo"
- ! call mo_guess(nBas,nOrb,1,Sovl,Hc,XHF,c)
+  write(*,*) Nsq,nS
+!  write(*,*) "TEST: Start from mo guess and then do HF with oo"
+!  call mo_guess(nBas,nOrb,1,Sovl,Hc,XHF,c)
   
   ! Transform integrals (afterwards this is done in orbital optimization)
   call AOtoMO(nBas,nOrb,c,Hc,h)
-  call AOtoMO_ERI_RHF(nBas,N,c,ERI_AO,ERI_MO)
+  call AOtoMO_ERI_RHF(nBas,nOrb,c,ERI_AO,ERI_MO)
 
   write(*,*) "Start orbital optimization loop..."
 
   do while (OOConv > thresh)
-  
+    
+    EOld = Emu
+    ! Build Fock
+    PHF(:,:) = 2d0 * matmul(c(:,1:nO), transpose(c(:,1:nO))) 
+    J(:,:) = 0d0
+    call Hartree_matrix_AO_basis(nBas,PHF,ERI_AO,J)
+    call exchange_matrix_AO_basis(nBas,PHF,ERI_AO,K)
+    FHF(:,:) = Hc(:,:) + J(:,:) + 0.5d0*K(:,:)
+    call AOtoMO(nBas,nOrb,C,FHF,F)
+    call matout(nOrb,nOrb,F) 
     write(*,*) "Orbital optimiation Iteration: ", OOi 
    
 
@@ -196,122 +208,57 @@ subroutine OORG0W0(dotest,doACFDT,exchange_kernel,doXBS,dophBSE,dophBSE2,TDA_W,T
   ! Compute screening !
   !-------------------!
   
-                   call phRLR_A(isp_W,dRPA_W,nOrb,nC,nO,nV,nR,nS,1d0,eHF,ERI_MO,Aph)
+                   call OO_phRLR_A(isp_W,dRPA_W,nOrb,nC,nO,nV,nR,nS,1d0,F,ERI_MO,Aph)
     if(.not.TDA_W) call phRLR_B(isp_W,dRPA_W,nOrb,nC,nO,nV,nR,nS,1d0,ERI_MO,Bph)
-  
+    Emu = 0
+    do i=1,nS
+      Emu = Emu + Aph(i,i)
+    enddo
+    write(*,*) Emu
     call phRLR(TDA_W,nS,Aph,Bph,EcRPA,Om,XpY,XmY)
     
-    write(*,*) "EcRPA = ", EcRPA
     if(print_W) call print_excitation_energies('phRPA@RHF','singlet',nS,Om)
   
-  !--------------------------!
-  ! Compute spectral weights !
-  !--------------------------!
-  
-    call RGW_excitation_density(nOrb,nC,nO,nR,nS,ERI_MO,XpY,rho)
-  
-  !------------------------!
-  ! Compute GW self-energy !
-  !------------------------!
-  
-    if(doSRG) then 
-      call RGW_SRG_self_energy_diag(flow,nBas,nOrb,nC,nO,nV,nR,nS,eHF,Om,rho,EcGM,SigC,Z)
-    else
-      call RGW_self_energy_diag(eta,nBas,nOrb,nC,nO,nV,nR,nS,eHF,Om,rho,EcGM,SigC,Z)
-    end if
-  
-  !-----------------------------------!
-  ! Solve the quasi-particle equation !
-  !-----------------------------------!
-  
-    ! Linearized or graphical solution?
-    eGWlin(:) = eHF(:) + Z(:)*SigC(:)
-  
-    if(linearize) then 
-   
-      write(*,*) ' *** Quasiparticle energies obtained by linearization *** '
-      write(*,*)
-  
-      eGW(:) = eGWlin(:)
-  
-    else 
-  
-      write(*,*) ' *** Quasiparticle energies obtained by root search *** '
-      write(*,*)
-    
-      call RGW_QP_graph(doSRG,eta,flow,nOrb,nC,nO,nV,nR,nS,eHF,Om,rho,eGWlin,eHF,eGW,Z)
-  
-    end if
-  
-  ! Plot self-energy, renormalization factor, and spectral function
-  
-    if(plot_self) call RGW_plot_self_energy(nOrb,eta,nC,nO,nV,nR,nS,eHF,eGW,Om,rho)
-   
-  !--------------!
-  ! Dump results !
-  !--------------!
-  
-    call print_RG0W0(nOrb,nC,nO,nV,nR,eHF,ENuc,ERHF,SigC,Z,eGW,EcRPA,EcGM)
-  
-    eGW_out(:) = eGW(:)
-    
-    ! Useful quantities to calculate rdms
-
+    call RG0W0_rdm2_hf(O,V,N,nS,rdm2_hf)
+    call RG0W0_rdm1_hf(O,V,N,nS,rdm1_hf)
     X = transpose(0.5*(XpY + XmY))
     Y = transpose(0.5*(XpY - XmY))
-    call inverse_matrix(nS,X,X_inv)
-    t = matmul(Y,X_inv)
-    Xbar = - matmul(t,Y) + X
-    call inverse_matrix(nS,Xbar,Xbar_inv)
-    lambda = 0.5*matmul(Y,Xbar_inv)
-    write(*,*) "Lambda"
-    call matout(nS,nS,lambda)
-    write(*,*) "t"
-    call matout(nS,nS,t)
+    ! Build RPA correlation rdm
+    rdm2_tmp(1:nS,1:nS)           = matmul(Y,transpose(Y)) 
+    rdm2_tmp(1:nS,nS+1:2*nS)      = matmul(Y,transpose(X)) 
+    rdm2_tmp(nS+1:2*nS,1:nS)      = matmul(X,transpose(Y)) 
+    rdm2_tmp(nS+1:2*nS,nS+1:2*nS) = matmul(X,transpose(X))
+    do ia=1,nS
+      rdm2_tmp(nS+ia,nS+ia) = rdm2_tmp(nS+ia,nS+ia) - 1d0
+    enddo
+    ! Reshape the rdm
+    do i = 1, O
+      do a = O+1, N
+        do jind = 1, O
+          do b = O+1, N
+            jb = b - O + (jind - 1) * V 
+            ia = a - O + (i - 1) * V
+            rdm2_rpa(a,i,jind,b) = rdm2_tmp(ia,jb)
+            rdm2_rpa(a,i,b,jind) = rdm2_tmp(ia,nS + jb)
+            rdm2_rpa(i,a,jind,b) = rdm2_tmp(nS + ia,jb)
+            rdm2_rpa(i,a,b,jind) = rdm2_tmp(nS + ia,nS + jb)
+          enddo
+        enddo
+      enddo
+    enddo
 
-    ! Calculate rdm1
-    call RG0W0_rdm1_hf(O,V,N,nS,lampl,rampl,lp,rp,lambda,t,rdm1_hf)
-    call RG0W0_rdm1_rpa(O,V,N,nS,lampl,rampl,lp,rp,lambda,t,rdm1_rpa)
-    rdm1 = rdm1_hf + rdm1_rpa
-    rdm1 = rdm1_hf ! emulate HF
-    write(*,*) "Trace rdm1: ", trace_matrix(N,rdm1)
-    call matout(N,N,rdm1_rpa + rdm1_hf)
-    ! Calculate rdm2
-    call RG0W0_rdm2_hf(O,V,N,nS,lampl,rampl,lp,rp,lambda,t,rdm2_hf)
-    call RG0W0_rdm2_rpa(O,V,N,nS,lampl,rampl,lp,rp,lambda,t,rdm2_rpa)
-    rdm2 = rdm2_hf + rdm2_rpa
-    rdm2 = rdm2_hf ! emulate HF
-    trace_rdm2 = 0d0
-    do p=1,N
-      do q=1,N
-        trace_rdm2 = trace_rdm2 + rdm2(p,q,p,q)
-      end do
-    end do
-    !write(*,*) "Trace rdm2: ", trace_rdm2
-    !call matout(Nsq,Nsq,rdm2)
-    EOld = Emu
-    call energy_from_rdm(N,h,ERI_MO,rdm1,rdm2,Emu)
-    call energy_from_rdm(N,h,ERI_MO,rdm1_rpa,rdm2_rpa,ERPA_rdm)
-    call energy_from_rdm(N,h,ERI_MO,rdm1_hf,rdm2_hf,EHF_rdm)
-    write(*,*) "ERHF", ERHF
-    write(*,*) "ERHF from rdm", EHF_rdm
-    write(*,*) "ERpa from rdm", ERPA_rdm
     write(*,*) "EcRPA = ", EcRPA
-    write(*,*) "E elec = ", Emu
-    write(*,*) "ENuc = ", ENuc
-    
-    ! TEST FOR GRADIENT AND HESSIAN
-    PHF(:,:) = 2d0 * matmul(c(:,1:nO), transpose(c(:,1:nO))) 
-    J(:,:) = 0d0
-    call Hartree_matrix_AO_basis(nBas,PHF,ERI_AO,J)
-    call exchange_matrix_AO_basis(nBas,PHF,ERI_AO,K)
-    Fp(:,:) = Hc(:,:) + J(:,:) + 0.5d0*K(:,:)
-    call AOtoMO(nBas,nOrb,C,Fp,J) 
-   ! write(*,*) "4*Fp"
-   ! call matout(nBas,nBas,4d0*J)
-    
+    write(*,*) "ERHF (usual stationary one)", ERHF
+    write(*,*) "E^MF from rdm"
+    call energy_from_rdm(N,h,ERI_MO,rdm1_hf,rdm2_hf,EHF_rdm)
+    write(*,*) "EcRPA from rdm"
+    call energy_from_rdm(N,h,ERI_MO,rdm1_rpa,rdm2_rpa,ERPA_rdm)
+    rdm1 = rdm1_hf + rdm1_rpa
+    rdm2 = rdm2_hf + rdm2_rpa
+    write(*,*) "ERPA from rdm (MF + corr)"
+    call energy_from_rdm(N,h,ERI_MO,rdm1,rdm2,Emu)
     call R_optimize_orbitals(diagHess,nBas,nOrb,nV,nR,nC,nO,N,Nsq,O,V,ERI_AO,ERI_MO,Hc,h,rdm1,rdm2,c,OOConv)
-
+    
     write(*,*) '----------------------------------------------------------'
     write(*,'(A10,I4,A30)') ' Iteration', OOi ,'for RG0W0 orbital optimization'
     write(*,*) '----------------------------------------------------------'
@@ -320,15 +267,106 @@ subroutine OORG0W0(dotest,doACFDT,exchange_kernel,doXBS,dophBSE,dophBSE2,TDA_W,T
     write(*,*) '----------------------------------------------------------'
     write(*,*)
     
-   if (OOi==1) then
-     OOConv = 0d0 ! remove only for debugging
-   end if
+    if (OOi==1) then
+      OOConv = 0d0 ! remove only for debugging
+    end if
 
     OOi = OOi + 1 
+    
+    ! Useful quantities to calculate rdms (Petros style)
+!
+!    X = transpose(0.5*(XpY + XmY))
+!    Y = transpose(0.5*(XpY - XmY))
+!    call inverse_matrix(nS,X,X_inv)
+!    t = matmul(Y,X_inv)
+!    Xbar = - matmul(t,Y) + X
+!    call inverse_matrix(nS,Xbar,Xbar_inv)
+!    lambda = 0.5*matmul(Y,Xbar_inv)
+!    write(*,*) "Lambda"
+!    call matout(nS,nS,lambda)
+!    write(*,*) "t"
+!    call matout(nS,nS,t)
+
+!    ! Calculate rdm1
+!    call RG0W0_rdm1_rpa(O,V,N,nS,lampl,rampl,lp,rp,lambda,t,rdm1_rpa)
+!    rdm1 = rdm1_hf + rdm1_rpa
+!    write(*,*) "Trace rdm1: ", trace_matrix(N,rdm1_hf + rdm1_rpa)
+!    write(*,*) "rdm1 rpa" 
+!    call matout(N,N,rdm1_rpa)
+!    ! Calculate rdm2
+!    call RG0W0_rdm2_rpa(O,V,N,nS,lampl,rampl,lp,rp,lambda,t,rdm2_rpa)
+!    rdm2 = rdm2_hf + rdm2_rpa
+!    trace_rdm2 = 0d0
+!    do p=1,N
+!      do q=1,N
+!        trace_rdm2 = trace_rdm2 + rdm2(p,q,p,q)
+!      end do
+!    end do
+!    !write(*,*) "Trace rdm2: ", trace_rdm2
+!    !call matout(Nsq,Nsq,rdm2)
+!    call energy_from_rdm(N,h,ERI_MO,rdm1,rdm2,Emu)
+!    call energy_from_rdm(N,h,ERI_MO,rdm1_rpa,rdm2_rpa,ERPA_rdm)
+!    write(*,*) "ERHF", ERHF
+!    write(*,*) "EcRPA from rdm", ERPA_rdm
+!    write(*,*) "EcRPA = ", EcRPA
+!    write(*,*) "E elec = ", Emu
+!    write(*,*) "ENuc = ", ENuc
+  
   end do
   cHF(:,:) = c(:,:)
   
+!--------------------------!
+! Compute spectral weights !
+!--------------------------!
+
+  call RGW_excitation_density(nOrb,nC,nO,nR,nS,ERI_MO,XpY,rho)
+
+!------------------------!
+! Compute GW self-energy !
+!------------------------!
+
+  if(doSRG) then 
+    call RGW_SRG_self_energy_diag(flow,nBas,nOrb,nC,nO,nV,nR,nS,eHF,Om,rho,EcGM,SigC,Z)
+  else
+    call RGW_self_energy_diag(eta,nBas,nOrb,nC,nO,nV,nR,nS,eHF,Om,rho,EcGM,SigC,Z)
+  end if
+
+!-----------------------------------!
+! Solve the quasi-particle equation !
+!-----------------------------------!
+
+  ! Linearized or graphical solution?
+  eGWlin(:) = eHF(:) + Z(:)*SigC(:)
+
+  if(linearize) then 
+ 
+    write(*,*) ' *** Quasiparticle energies obtained by linearization *** '
+    write(*,*)
+
+    eGW(:) = eGWlin(:)
+
+  else 
+
+    write(*,*) ' *** Quasiparticle energies obtained by root search *** '
+    write(*,*)
+  
+    call RGW_QP_graph(doSRG,eta,flow,nOrb,nC,nO,nV,nR,nS,eHF,Om,rho,eGWlin,eHF,eGW,Z)
+
+  end if
+
+! Plot self-energy, renormalization factor, and spectral function
+
+  if(plot_self) call RGW_plot_self_energy(nOrb,eta,nC,nO,nV,nR,nS,eHF,eGW,Om,rho)
+ 
+!--------------!
+! Dump results !
+!--------------!
+
+  call print_RG0W0(nOrb,nC,nO,nV,nR,eHF,ENuc,ERHF,SigC,Z,eGW,EcRPA,EcGM)
+
+    eGW_out(:) = eGW(:)
   deallocate(rdm1,rdm2,c,Aph,Bph,SigC,Z,Om,XpY,XmY,rho,eGW,&
-             eGWlin,X,X_inv,Y,Xbar,Xbar_inv,lambda,t,rampl,lampl,rp,lp,h)
+             eGWlin,X,X_inv,Y,Xbar,Xbar_inv,lambda,t,rampl,lampl,rp,lp,h,&
+             F,rdm2_tmp)
 
 end subroutine
