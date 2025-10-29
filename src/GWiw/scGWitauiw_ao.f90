@@ -369,6 +369,10 @@ subroutine scGWitauiw_ao(nBas,nOrb,nO,maxSCF,dolinGW,restart_scGW,no_fock,ENuc,H
      enddo
     enddo
     close(iunit)
+    open(unit=iunit,form='unformatted',file='scGW_chem_pot_bin',status='old')
+    write(*,'(a)') ' Reading scGW_chem_pot_bin'
+    read(iunit) chem_pot
+    close(iunit)
     P_ao_iter=P_ao
     G_ao_itau_old(:,:,:)=G_ao_itau(:,:,:)
    endif
@@ -639,6 +643,10 @@ subroutine scGWitauiw_ao(nBas,nOrb,nO,maxSCF,dolinGW,restart_scGW,no_fock,ENuc,H
     write(iunit) val_print_r
    enddo
   enddo
+  write(iunit) iunit
+  close(iunit)
+  open(unit=iunit,form='unformatted',file='scGW_chem_pot_bin')
+  write(iunit) chem_pot 
   write(iunit) iunit
   close(iunit)
 
