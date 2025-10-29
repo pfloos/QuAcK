@@ -1,7 +1,8 @@
 subroutine GG0W0_rdm2_hf(O,V,N,nS,rdm2)
 
 ! Compute HF 2-Reduced-Density-Matrix based in RG0W0
-implicit none;
+  implicit none
+  include 'parameters.h'
 
 ! Input
 integer,intent(in)               :: N,nS,O,V
@@ -23,7 +24,8 @@ do p=1,O
       do s=1,O
         rdm2(p,q,r,s) = DBLE(MERGE(1.0d0, 0.0d0, p==r) * MERGE(1.0d0,0.0d0,q==s) - &
                      MERGE(1.0d0,0.0d0,p==s) * MERGE(1.0d0,0.0d0,q==r))
-        end do
+        write(*,*) rdm2(p,q,r,s)   
+      end do
     end do
   end do
 end do

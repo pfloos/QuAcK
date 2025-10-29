@@ -253,7 +253,6 @@ subroutine OOGG0W0(dotest,doACFDT,exchange_kernel,doXBS,dophBSE,dophBSE2,TDA_W,T
     FHF(nBas+1:nBas2,nBas+1:nBas2) = Fbb(1:nBas,1:nBas)
      
     call AOtoMO(nBas2,nBas2,c,FHF,F)
-    call matout(nBas2,nBas2,F) 
     ! 4-index transform 
    
     call AOtoMO_ERI_GHF(nBas,nBas2,Ca,Ca,ERI_AO,ERI_tmp)
@@ -281,6 +280,7 @@ subroutine OOGG0W0(dotest,doACFDT,exchange_kernel,doXBS,dophBSE,dophBSE2,TDA_W,T
      
     call GG0W0_rdm1_hf(O,V,N,nS,rdm1_hf)
     call GG0W0_rdm2_hf(O,V,N,nS,rdm2_hf)
+    call matout(N*N,N*N,rdm2_hf)
     X = transpose(0.5*(XpY + XmY))
     Y = transpose(0.5*(XpY - XmY))
     ! Build RPA correlation rdm

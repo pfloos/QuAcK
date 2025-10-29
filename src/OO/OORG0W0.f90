@@ -238,10 +238,10 @@ subroutine OORG0W0(dotest,doACFDT,exchange_kernel,doXBS,dophBSE,dophBSE2,TDA_W,T
           do b = O+1, N
             jb = b - O + (jind - 1) * V 
             ia = a - O + (i - 1) * V
-            rdm2_rpa(a,i,jind,b) = rdm2_tmp(ia,jb)
-            rdm2_rpa(a,i,b,jind) = rdm2_tmp(ia,nS + jb)
-            rdm2_rpa(i,a,jind,b) = rdm2_tmp(nS + ia,jb)
-            rdm2_rpa(i,a,b,jind) = rdm2_tmp(nS + ia,nS + jb)
+            rdm2_rpa(a,i,jind,b) = 2*rdm2_tmp(ia,jb)
+            rdm2_rpa(a,i,b,jind) = 2*rdm2_tmp(ia,nS + jb)
+            rdm2_rpa(i,a,jind,b) = 2*rdm2_tmp(nS + ia,jb)
+            rdm2_rpa(i,a,b,jind) = 2*rdm2_tmp(nS + ia,nS + jb)
           enddo
         enddo
       enddo

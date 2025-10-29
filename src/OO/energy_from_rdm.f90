@@ -1,5 +1,8 @@
 subroutine energy_from_rdm(N,h,ERI_MO,rdm1,rdm2,Emu)
 
+  implicit none
+  include 'parameters.h'
+
 !input
 integer,intent(in)               :: N
 double precision,intent(in)      :: h(N,N),ERI_MO(N,N,N,N),rdm1(N,N),rdm2(N,N,N,N)

@@ -3,6 +3,7 @@ subroutine orbital_hessian(O,V,N,Nsq,h,ERI_MO,rdm1,rdm2,hess)
 ! Compute the orbital hessian given 1- and 2- rdms
 
   implicit none
+  include 'parameters.h'
       
 ! Input variables
 

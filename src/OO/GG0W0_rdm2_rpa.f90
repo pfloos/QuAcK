@@ -1,6 +1,8 @@
 subroutine GG0W0_rdm2_rpa(O,V,N,nS,lampl,rampl,lp,rp,lambda,t,rdm2)
 
 ! Compute RPA 2-Reduced-Density-Matrix based in RG0W0
+  implicit none
+  include 'parameters.h'
 
 ! Input
 integer,intent(in)               :: N,nS,O,V
