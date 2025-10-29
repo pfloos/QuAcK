@@ -105,6 +105,7 @@ program QuAcK
   logical                       :: lin_parquet, reg_PA
 
   character(len=256)            :: working_dir
+  character(len=100)            :: sha
 
   ! Check if the right number of arguments is provided
 
@@ -127,6 +128,10 @@ program QuAcK
   write(*,*) '* ( ._> /   ( ._> /   ( ._> /  ( ._> /   ( ._> /   ( ._> /  ( ._> /   ( ._> /   ( ._> /  *'
   write(*,*) '*|--------------------------------------------------------------------------------------|*'
   write(*,*) '******************************************************************************************'
+  write(*,*)
+  call gitversion(sha)
+  write(*,*)
+  write(*,*) ' Code sha version ',sha
   write(*,*)
 
 !-----------------------!
