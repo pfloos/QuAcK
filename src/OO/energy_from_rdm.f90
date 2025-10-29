@@ -26,12 +26,11 @@ do p = 1, N
   do q = 1, N
     do r = 1, N
       do s = 1, N
-        E2 = E2 + ERI_MO(p,r,q,s) * rdm2(p,q,r,s)
+        E2 = E2 + ERI_MO(p,q,r,s) * rdm2(p,q,r,s)
       end do
     end do
   end do
 end do
-
 Emu = E1 + 0.5d0*E2
 write(*,'(A25,F16.10)') ' One-electron energy = ',E1
 write(*,'(A25,F16.10)') ' Two-electron energy = ',0.5d0*E2
