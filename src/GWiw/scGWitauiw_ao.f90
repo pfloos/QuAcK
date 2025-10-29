@@ -483,7 +483,7 @@ subroutine scGWitauiw_ao(nBas,nOrb,nO,maxSCF,dolinGW,restart_scGW,no_fock,ENuc,H
     endif
    enddo
    write(*,'(a,*(f20.8))') ' Sum error ',sum(error_transf_mo)
-   write(*,'(a,f20.8,a,2f20.8,a)') ' Max error ',max_error_sigma,' in the frequency ',0d0,wcoord(imax_error_sigma),'i'
+   write(*,'(a,f20.8,a,2f20.8,a)') ' Max CAE   ',max_error_sigma,' is in the frequency ',0d0,wcoord(imax_error_sigma),'i'
    write(*,'(a,*(f20.8))') ' MAE       ',sum(error_transf_mo)/(nfreqs*nBas*nBas)
    deallocate(error_transf_mo,Sigma_c_w_mo)
   endif
@@ -658,6 +658,7 @@ subroutine scGWitauiw_ao(nBas,nOrb,nO,maxSCF,dolinGW,restart_scGW,no_fock,ENuc,H
   enddo
   P_ao_old=P_ao_old/pi
   P_ao_old=P_ao+P_ao_old
+  trace_1_rdm=0d0
   do ibas=1,nBas
    do jbas=1,nBas
     trace_1_rdm=trace_1_rdm+P_ao_old(ibas,jbas)*S(ibas,jbas)
