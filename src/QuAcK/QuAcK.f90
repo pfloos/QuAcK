@@ -3,8 +3,8 @@ program QuAcK
   implicit none
   include 'parameters.h'
 
-  logical                       :: doRQuAcK,doUQuAcK,doGQuAcK,doBQuAcK
-  logical                       :: doRHF,doUHF,doGHF,doROHF,doRHFB,docRHF
+  logical                       :: doRQuAcK,doUQuAcK,doGQuAcK,doBQuAcK,doEQuAcK
+  logical                       :: doRHF,doUHF,doGHF,doROHF,doRHFB,docRHF,doeRHF
   logical                       :: dostab,dosearch,doaordm,readFCIDUMP
   logical                       :: doMP2,doMP3
   logical                       :: doCCD,dopCCD,doDCD,doCCSD,doCCSDT
@@ -47,8 +47,10 @@ program QuAcK
   double precision              :: start_QuAcK,end_QuAcK,t_QuAcK
   double precision              :: start_int  ,end_int  ,t_int
 
+  logical                       :: eforward
   integer                       :: maxSCF_HF,max_diis_HF
   double precision              :: thresh_HF,level_shift,mix
+  double precision              :: eweight
   integer                       :: guess_type
 
   double precision              :: eta_cap
@@ -137,20 +139,20 @@ program QuAcK
 ! Method selection !
 !------------------!
 
-  call read_methods(working_dir,                             &
-                    doRHF,doUHF,doGHF,doROHF,doRHFB,docRHF,  &
-                    doMP2,doMP3,                             &
-                    doCCD,dopCCD,doDCD,doCCSD,doCCSDT,       &
-                    dodrCCD,dorCCD,docrCCD,dolCCD,           &
-                    doCIS,doCIS_D,doCID,doCISD,doFCI,        & 
-                    dophRPA,dophRPAx,docrRPA,doppRPA,doBRPA, &
-                    doG0F2,doevGF2,doqsGF2,doufG0F02,        & 
-                    doG0F3,doevGF3,                          &
-                    doG0W0,doevGW,doqsGW,doufG0W0,doufGW,    &
-                    dolinGW,doscGW,                          &
-                    doG0T0pp,doevGTpp,doqsGTpp,doufG0T0pp,   &
-                    doG0T0eh,doevGTeh,doqsGTeh,              &
-                    doevParquet,doqsParquet,                 &
+  call read_methods(working_dir,                                    &
+                    doRHF,doUHF,doGHF,doROHF,doRHFB,docRHF,doeRHF,  &
+                    doMP2,doMP3,                                    &
+                    doCCD,dopCCD,doDCD,doCCSD,doCCSDT,              &
+                    dodrCCD,dorCCD,docrCCD,dolCCD,                  &
+                    doCIS,doCIS_D,doCID,doCISD,doFCI,               & 
+                    dophRPA,dophRPAx,docrRPA,doppRPA,doBRPA,        &
+                    doG0F2,doevGF2,doqsGF2,doufG0F02,               & 
+                    doG0F3,doevGF3,                                 &
+                    doG0W0,doevGW,doqsGW,doufG0W0,doufGW,           &
+                    dolinGW,doscGW,                                 &
+                    doG0T0pp,doevGTpp,doqsGTpp,doufG0T0pp,          &
+                    doG0T0eh,doevGTeh,doqsGTeh,                     &
+                    doevParquet,doqsParquet,                        &
                     doRtest,doUtest,doGtest)
   
 ! Determine complex function calls  
@@ -177,7 +179,7 @@ program QuAcK
                     dophBSE,dophBSE2,doppBSE,dBSE,dTDA,                                                  &
                     temperature,sigma,chem_pot_hf,restart_hfb,                                           &
                     TDAeh,TDApp,max_diis_1b,max_diis_2b,max_it_1b,conv_1b,max_it_2b,conv_2b,lin_parquet, &
-                    reg_1b,reg_2b,reg_PA)
+                    reg_1b,reg_2b,reg_PA,eweight,eforward)
 
 
 !--------------------!
@@ -326,6 +328,9 @@ program QuAcK
   doBQuAcK = .false.
   if(doRHFB .or. doBRPA) doBQuAcK = .true.
 
+  doEQuAcK = .false.
+  if(doeRHF) doEQuAcK = .true.
+
 !-----------------!
 ! Initialize Test !
 !-----------------!
@@ -399,6 +404,13 @@ program QuAcK
                 maxSCF_GT,max_diis_GT,thresh_GT,TDA_T,lin_GT,reg_GT,eta_GT,do_linDM_GT,                    &
                 dophBSE,dophBSE2,doppBSE,dBSE,dTDA,doACFDT,exchange_kernel,doXBS,                          &
                 TDAeh,TDApp,max_diis_1b,max_diis_2b,max_it_1b,conv_1b,max_it_2b,conv_2b,lin_parquet,reg_1b,reg_2b,reg_PA)
+
+!-----------------------!
+! Ensemble QuAcK branch !
+!-----------------------!
+  if(doEQuAcK) & 
+    call EQuAcK(working_dir,dotest,doeRHF,readFCIDUMP,nNuc,nBas,nOrb,nO,ENuc,ZNuc,rNuc,S,T,V,Hc,X,dipole_int_AO, &
+                maxSCF_HF,max_diis_HF,thresh_HF,level_shift,guess_type,eweight,eforward)
 
 !-------------------------!
 ! Bogoliubov QuAcK branch !
