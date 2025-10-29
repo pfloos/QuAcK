@@ -25,11 +25,13 @@ do p = 1, N
 end do
 
 E2 = 0d0
+!write(*,*) "p,q,r,s,ERI,rdm2"
 do p = 1, N
   do q = 1, N
     do r = 1, N
       do s = 1, N
         E2 = E2 + ERI_MO(p,q,r,s) * rdm2(p,q,r,s)
+!      write(*,*) p,q,r,s,ERI_MO(p,q,r,s),rdm2(p,q,r,s)
       end do
     end do
   end do

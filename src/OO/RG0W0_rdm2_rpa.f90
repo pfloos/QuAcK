@@ -72,5 +72,5 @@ do i=1,O
   end do
 end do
 ! double check
-rdm2(:,:,:,:) = rdm2(:,:,:,:)*2
+!rdm2(:,:,:,:) = rdm2(:,:,:,:)*2
 end subroutine

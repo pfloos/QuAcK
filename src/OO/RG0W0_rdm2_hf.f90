@@ -29,5 +29,4 @@ do p=1,O
     end do
   end do
 end do
-call matout(N*N,N*N,rdm2)
 end subroutine

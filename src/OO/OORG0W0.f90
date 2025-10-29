@@ -95,7 +95,6 @@ subroutine OORG0W0(dotest,doACFDT,exchange_kernel,doXBS,dophBSE,dophBSE2,TDA_W,T
   double precision,allocatable  :: rdm2(:,:,:,:)
   double precision,allocatable  :: rdm2_hf(:,:,:,:)
   double precision,allocatable  :: rdm2_rpa(:,:,:,:)
-  double precision,allocatable  :: rdm2_tmp(:,:)
   integer                       :: r,s,rs,p,q,pq
   integer                       :: i,jind,a,b,ia,jb
   integer                       :: ind
@@ -103,10 +102,12 @@ subroutine OORG0W0(dotest,doACFDT,exchange_kernel,doXBS,dophBSE,dophBSE2,TDA_W,T
   double precision,allocatable  :: c(:,:)
   double precision,allocatable  :: F(:,:)
   double precision,allocatable  :: J(:,:),K(:,:)
+  double precision,allocatable  :: XXT(:,:),YYT(:,:),XYT(:,:)
   double precision              :: Emu, EOld
   double precision              :: EHF_rdm,ERPA_rdm
 
   double precision,external     :: trace_matrix
+  double precision,external     :: Kronecker_delta
   double precision              :: trace_rdm2
 
 ! Output variables
@@ -158,7 +159,8 @@ subroutine OORG0W0(dotest,doACFDT,exchange_kernel,doXBS,dophBSE,dophBSE2,TDA_W,T
            eGW(nOrb),eGWlin(nOrb),X(nS,nS),X_inv(nS,nS),Y(nS,nS),Xbar(nS,nS),Xbar_inv(nS,nS),lambda(nS,nS),t(nS,nS),&
            rampl(nS,N),lampl(nS,N),rp(N),lp(N),h(N,N),c(nBas,nOrb),&
            rdm1(N,N),rdm2(N,N,N,N),rdm1_hf(N,N),rdm2_hf(N,N,N,N),rdm1_rpa(N,N),rdm2_rpa(N,N,N,N),&
-           J(nBas,nBas),K(nBas,nBas),F(nOrb,nOrb),rdm2_tmp(2*nS,2*nS))
+           J(nBas,nBas),K(nBas,nBas),F(nOrb,nOrb))
+  allocate(XXT(nS,nS),YYT(nS,nS),XYT(nS,nS))
 
 ! Initialize variables for OO  
   OOi           = 1
@@ -180,7 +182,6 @@ subroutine OORG0W0(dotest,doACFDT,exchange_kernel,doXBS,dophBSE,dophBSE2,TDA_W,T
   eGW(:)        = eHF(:)
   h(:,:)        = 0d0
   
-  write(*,*) Nsq,nS
 !  write(*,*) "TEST: Start from mo guess and then do HF with oo"
 !  call mo_guess(nBas,nOrb,1,Sovl,Hc,XHF,c)
   
@@ -200,7 +201,6 @@ subroutine OORG0W0(dotest,doACFDT,exchange_kernel,doXBS,dophBSE,dophBSE2,TDA_W,T
     call exchange_matrix_AO_basis(nBas,PHF,ERI_AO,K)
     FHF(:,:) = Hc(:,:) + J(:,:) + 0.5d0*K(:,:)
     call AOtoMO(nBas,nOrb,C,FHF,F)
-    call matout(nOrb,nOrb,F) 
     write(*,*) "Orbital optimiation Iteration: ", OOi 
    
 
@@ -210,38 +210,31 @@ subroutine OORG0W0(dotest,doACFDT,exchange_kernel,doXBS,dophBSE,dophBSE2,TDA_W,T
   
                    call OO_phRLR_A(isp_W,dRPA_W,nOrb,nC,nO,nV,nR,nS,1d0,F,ERI_MO,Aph)
     if(.not.TDA_W) call phRLR_B(isp_W,dRPA_W,nOrb,nC,nO,nV,nR,nS,1d0,ERI_MO,Bph)
-    Emu = 0
-    do i=1,nS
-      Emu = Emu + Aph(i,i)
-    enddo
-    write(*,*) Emu
+    
     call phRLR(TDA_W,nS,Aph,Bph,EcRPA,Om,XpY,XmY)
     
     if(print_W) call print_excitation_energies('phRPA@RHF','singlet',nS,Om)
   
     call RG0W0_rdm2_hf(O,V,N,nS,rdm2_hf)
     call RG0W0_rdm1_hf(O,V,N,nS,rdm1_hf)
+    
     X = transpose(0.5*(XpY + XmY))
     Y = transpose(0.5*(XpY - XmY))
-    ! Build RPA correlation rdm
-    rdm2_tmp(1:nS,1:nS)           = matmul(Y,transpose(Y)) 
-    rdm2_tmp(1:nS,nS+1:2*nS)      = matmul(Y,transpose(X)) 
-    rdm2_tmp(nS+1:2*nS,1:nS)      = matmul(X,transpose(Y)) 
-    rdm2_tmp(nS+1:2*nS,nS+1:2*nS) = matmul(X,transpose(X))
-    do ia=1,nS
-      rdm2_tmp(nS+ia,nS+ia) = rdm2_tmp(nS+ia,nS+ia) - 1d0
-    enddo
-    ! Reshape the rdm
+
+    rdm2_rpa(:,:,:,:) = 0d0
+    YYT               = matmul(Y,transpose(Y)) 
+    XYT               = matmul(X,transpose(Y)) 
+    XXT               = matmul(X,transpose(X))
     do i = 1, O
       do a = O+1, N
         do jind = 1, O
           do b = O+1, N
             jb = b - O + (jind - 1) * V 
-            ia = a - O + (i - 1) * V
-            rdm2_rpa(a,i,jind,b) = 2*rdm2_tmp(ia,jb)
-            rdm2_rpa(a,i,b,jind) = 2*rdm2_tmp(ia,nS + jb)
-            rdm2_rpa(i,a,jind,b) = 2*rdm2_tmp(nS + ia,jb)
-            rdm2_rpa(i,a,b,jind) = 2*rdm2_tmp(nS + ia,nS + jb)
+            ia = a - O +    (i - 1) * V
+            rdm2_rpa(b,i,jind,a) = rdm2_rpa(b,i,jind,a) +(XXT(jb,ia) + YYT(jb,ia) - Kronecker_delta(jb,ia))*2d0
+            rdm2_rpa(b,jind,a,i) = rdm2_rpa(b,jind,a,i) -(XXT(jb,ia) + YYT(jb,ia) - Kronecker_delta(jb,ia))
+            rdm2_rpa(i,jind,a,b) = rdm2_rpa(i,jind,a,b) +(XYT(jb,ia) + XYT(ia,jb))*2d0
+            rdm2_rpa(i,jind,b,a) = rdm2_rpa(i,jind,b,a) - XYT(jb,ia) - XYT(ia,jb) 
           enddo
         enddo
       enddo
@@ -249,6 +242,7 @@ subroutine OORG0W0(dotest,doACFDT,exchange_kernel,doXBS,dophBSE,dophBSE2,TDA_W,T
 
     write(*,*) "EcRPA = ", EcRPA
     write(*,*) "ERHF (usual stationary one)", ERHF
+    write(*,*) "ERHF + EcRPA", ERHF + EcRPA
     write(*,*) "E^MF from rdm"
     call energy_from_rdm(N,h,ERI_MO,rdm1_hf,rdm2_hf,EHF_rdm)
     write(*,*) "EcRPA from rdm"
@@ -267,9 +261,9 @@ subroutine OORG0W0(dotest,doACFDT,exchange_kernel,doXBS,dophBSE,dophBSE2,TDA_W,T
     write(*,*) '----------------------------------------------------------'
     write(*,*)
     
-    if (OOi==1) then
-      OOConv = 0d0 ! remove only for debugging
-    end if
+!    if (OOi==1) then
+!      OOConv = 0d0 ! remove only for debugging
+!    end if
 
     OOi = OOi + 1 
     
@@ -367,6 +361,7 @@ subroutine OORG0W0(dotest,doACFDT,exchange_kernel,doXBS,dophBSE,dophBSE2,TDA_W,T
     eGW_out(:) = eGW(:)
   deallocate(rdm1,rdm2,c,Aph,Bph,SigC,Z,Om,XpY,XmY,rho,eGW,&
              eGWlin,X,X_inv,Y,Xbar,Xbar_inv,lambda,t,rampl,lampl,rp,lp,h,&
-             F,rdm2_tmp)
+             F)
+  deallocate(XXT,YYT,XYT)
 
 end subroutine
