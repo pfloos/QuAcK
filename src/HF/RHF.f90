@@ -52,8 +52,6 @@ subroutine RHF(dotest,doaordm,maxSCF,thresh,max_diis,guess_type,level_shift,nNuc
   double precision              :: Val
   double precision              :: Conv
   double precision              :: rcond
-  double precision              :: trace_1rdm
-  double precision              :: trace_2rdm
   double precision,external     :: trace_matrix
   double precision,allocatable  :: err(:,:)
   double precision,allocatable  :: err_diis(:,:)
@@ -62,8 +60,6 @@ subroutine RHF(dotest,doaordm,maxSCF,thresh,max_diis,guess_type,level_shift,nNuc
   double precision,allocatable  :: K(:,:)
   double precision,allocatable  :: cp(:,:)
   double precision,allocatable  :: Fp(:,:)
-  double precision,allocatable  :: AO_1rdm(:,:)
-  double precision,allocatable  :: AO_2rdm(:,:,:,:)
 
 ! Output variables
 

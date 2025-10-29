@@ -68,12 +68,12 @@ subroutine build_iw_itau_grid(nBas,nOrb,nO,ntimes,nfreqs,verbose,cHF,eHF)
 !------------------------------------------------------------------------
 
  ! Set global variables
- max_weval=5d5
- ntimes_max=10000
- nfreqs_max=1000000
+ max_weval=5d4
+ ntimes_max=4000
+ nfreqs_max=10000
  ngrid=1000
  thrs_tnorm=1d-5
- min_teval=0d0  ! Start tau grid at least at 2d-4 because when tau->0 G(i tau) is not continuos [ Lim tau->0+ /= Lim tau->0- ] ?
+ min_teval=2d-4  ! Start tau grid at least at 2d-4 because when tau->0 G(i tau) is not continuos [ Lim tau->0+ /= Lim tau->0- ] ?
  chem_pot = 0.5d0*(eHF(nO)+eHF(nO+1))
  eHF(:) = eHF(:)-chem_pot
  inquire(file='scGW_limits', exist=file_exists)
@@ -353,8 +353,8 @@ subroutine build_iw_itau_grid(nBas,nOrb,nO,ntimes,nfreqs,verbose,cHF,eHF)
   alpha = 0d0;  beta  = 0d0;
   allocate(tweight(ntimes),tcoord(ntimes))
   call cgqf(ntimes,kind_int,alpha,beta,lim_inf,lim_sup,tcoord,tweight)
-  tweight(:)=1d1*(tweight(:)**9d0)*(max_teval-min_teval) ! Polynom of order 10 to go from [0,1] to [min_teval,max_teval] 
-  tcoord(:)=(tcoord(:)**1d1)*(max_teval-min_teval)+min_teval
+  tweight(:)=tweight(:)/((1d0-tcoord(:))**2d0)
+  tcoord(:)=tcoord(:)/(1d0-tcoord(:))
   open(unit=iunit, form='formatted', file='tcoord.txt')
   write(iunit,'(i50)') ntimes
   do itau=1,ntimes
