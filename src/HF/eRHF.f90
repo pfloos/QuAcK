@@ -65,6 +65,7 @@ subroutine ensembleRHF(dotest,maxSCF,thresh,max_diis,guess_type,level_shift,nNuc
   double precision,allocatable  :: Fp(:,:)
   double precision,allocatable  :: P_delta(:,:)
   double precision,allocatable  :: P_mo(:,:)
+  double precision,allocatable  :: cinv(:,:)
 
 ! Output variables
 
@@ -95,8 +96,9 @@ subroutine ensembleRHF(dotest,maxSCF,thresh,max_diis,guess_type,level_shift,nNuc
 
   allocate(Occ(nOrb))
   allocate(P_mo(nOrb,nOrb))
-  allocate(cp(nOrb,nOrb))
+  allocate(cp(nBas,nOrb))
   allocate(Fp(nOrb,nOrb))
+  allocate(cinv(nOrb,nBas))
 
   allocate(err_diis(nBas_Sq,max_diis))
   allocate(F_diis(nBas_Sq,max_diis))
@@ -264,9 +266,7 @@ subroutine ensembleRHF(dotest,maxSCF,thresh,max_diis,guess_type,level_shift,nNuc
     write(*,*)'!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!'
     write(*,*)
 
-    !deallocate(J,K,err,cp,Fp,err_diis,F_diis)
-
-    write(*,*) ' Warning! Convergence failed at Hartree-Fock level.'
+    write(*,*) ' Warning! Convergence failed at ensemble Hartree-Fock level.'
 
   end if
 
@@ -284,25 +284,18 @@ subroutine ensembleRHF(dotest,maxSCF,thresh,max_diis,guess_type,level_shift,nNuc
   call print_eRHF(nBas, nOrb, nO, eHF, c, ENuc, ET, EV, EJ, EK, eERHF, dipole)
   
 ! Build NOs and occ numbers
-  P_mo = -matmul(transpose(X),matmul(P_tot,X))
+  cinv=matmul(transpose(c),S)
+  P_mo = -matmul(cinv,matmul(P_tot,transpose(cinv)))
   call diagonalize_matrix(nOrb,P_mo,Occ)
   write(*,*)
   write(*,*) ' Occupation numbers'
-  Occ=-Occ
+  Occ(:)=abs(Occ(:))
   trace_1rdm=0d0
   do ibas=1,nOrb
    write(*,'(I7,F15.8)') ibas,Occ(ibas)
    trace_1rdm=trace_1rdm+Occ(ibas)
   enddo
   write(*,'(A33,1X,F16.10,A3)') ' Trace [ 1D^NO ]     = ',trace_1rdm,'   '
-
-! Testing zone
-
-  if(dotest) then
-
-! TODO
- 
-  end if
 
 ! Memory deallocation
 
