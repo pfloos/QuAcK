@@ -42,6 +42,7 @@ subroutine ensembleRHF(dotest,maxSCF,thresh,max_diis,guess_type,level_shift,nNuc
   integer                       :: nSCF
   integer                       :: nBas_Sq
   integer                       :: n_diis
+  double precision              :: trace_1rdm
   double precision              :: ET
   double precision              :: EV
   double precision              :: EJ
@@ -154,7 +155,7 @@ subroutine ensembleRHF(dotest,maxSCF,thresh,max_diis,guess_type,level_shift,nNuc
   write(*,*)
   write(*,*)'-----------------------------------------------------------------------------'
   write(*,'(1X,A1,1X,A3,1X,A1,1X,A16,1X,A1,1X,A16,1X,A1,1X,A16,1X,A1,1X,A10,1X,A1,1X)') &
-            '|','#','|','E(RHF)','|','EJ(RHF)','|','EK(RHF)','|','Conv','|'
+            '|','#','|','E(eRHF)','|','EJ(eRHF)','|','EK(eRHF)','|','Conv','|'
   write(*,*)'-----------------------------------------------------------------------------'
 
   do while(Conv > thresh .and. nSCF < maxSCF)
@@ -276,6 +277,7 @@ subroutine ensembleRHF(dotest,maxSCF,thresh,max_diis,guess_type,level_shift,nNuc
   c = matmul(X,cp)
 
   call dipole_moment(nBas,P_tot,nNuc,ZNuc,rNuc,dipole_int,dipole)
+  call print_eRHF(nBas, nOrb, nO, eHF, c, ENuc, ET, EV, EJ, EK, eERHF, dipole)
   
 ! Build NOs and occ numbers
   P_mo = -matmul(transpose(X),matmul(P_tot,X))
@@ -283,19 +285,19 @@ subroutine ensembleRHF(dotest,maxSCF,thresh,max_diis,guess_type,level_shift,nNuc
   write(*,*)
   write(*,*) ' Occupation numbers'
   Occ=-Occ
+  trace_1rdm=0d0
   do ibas=1,nOrb
    write(*,'(I7,F15.8)') ibas,Occ(ibas)
+   trace_1rdm=trace_1rdm+Occ(ibas)
   enddo
+  write(*,'(A33,1X,F16.10,A3)') ' Trace [ 1D^NO ]     = ',trace_1rdm,'   '
 
 ! Testing zone
 
   if(dotest) then
- 
-    call dump_test_value('R','RHF energy',eERHF)
-    call dump_test_value('R','RHF HOMO energy',eHF(nO))
-    call dump_test_value('R','RHF LUMO energy',eHF(nO+1))
-    call dump_test_value('R','RHF dipole moment',norm2(dipole))
 
+! TODO
+ 
   end if
 
 ! Memory deallocation
