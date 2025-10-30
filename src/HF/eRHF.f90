@@ -108,13 +108,17 @@ subroutine ensembleRHF(dotest,maxSCF,thresh,max_diis,guess_type,level_shift,nNuc
   if(eweight>1d-8) then
    if(eforward) then
     P_delta(:,:) = 0d0
+    if(nO==nOrb) then
+     write(*,*) ' There are no virtual orbitals to fill in forward mode. Hint: Increase the size of the basis.'
+     stop
+    endif
     if(nO+1<=nOrb) then
      P_delta(:,:) = 2d0*matmul(c(:,1:nO+1),transpose(c(:,1:nO+1)))
     endif
     P_tot(:,:) = (1d0-eweight)*P_tot(:,:) + eweight*P_delta(:,:)
    else
     P_delta(:,:) = 0d0
-    if(nO-1>=1) then
+    if(nO>=2) then
      P_delta(:,:) = 2d0*matmul(c(:,1:nO-1),transpose(c(:,1:nO-1)))
     endif
     P_tot(:,:) = (1d0-eweight)*P_tot(:,:) + eweight*P_delta(:,:)
@@ -229,7 +233,7 @@ subroutine ensembleRHF(dotest,maxSCF,thresh,max_diis,guess_type,level_shift,nNuc
       P_tot(:,:) = (1d0-eweight)*P_tot(:,:) + eweight*P_delta(:,:)
      else
       P_delta(:,:) = 0d0
-      if(nO-1>=1) then
+      if(nO>=2) then
        P_delta(:,:) = 2d0*matmul(c(:,1:nO-1),transpose(c(:,1:nO-1)))
       endif
       P_tot(:,:) = (1d0-eweight)*P_tot(:,:) + eweight*P_delta(:,:)
