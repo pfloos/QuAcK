@@ -207,7 +207,7 @@ program QuAcK
   write(*,*)
   write(*,*) '    ----------------------'
   write(*,'(A28,1X)') 'Testing the quadrature'
-  write(*,'(A30, I12)') 'Number of frequencies (grid)= ', nfreqs
+  write(*,'(A30, I15)') 'Number of frequencies (grid)= ', nfreqs
   write(*,'(A28,1X,F16.10)') 'PI value error',abs(alpha-acos(-1d0))
   write(*,*) '    ----------------------'
   write(*,*)

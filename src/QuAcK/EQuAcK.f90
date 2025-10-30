@@ -112,8 +112,9 @@ subroutine EQuAcK(working_dir,dotest,doeRHF,readFCIDUMP,nNuc,nBas,nOrb,nO,ENuc,Z
 
     ! Run first a RHF calculation 
     call wall_time(start_HF)
-    call RHF(dotest,.false.,maxSCF,thresh,max_diis,guess_type,level_shift,nNuc,ZNuc,rNuc,ENuc, &
-             nBas,nOrb,nO,S,T,V,Hc,ERI_AO,dipole_int_AO,X,EeleSD,eHF,MOCoef,pMAT,Fock)
+    call ensembleRHF(dotest,maxSCF,thresh,max_diis,guess_type,level_shift,nNuc,ZNuc,rNuc,ENuc, &
+                     nBas,nOrb,nO,S,T,V,Hc,ERI_AO,dipole_int_AO,X,EeleSD,eweight,eforward,eHF, &
+                     MOCoef,pMAT,Fock)
     call wall_time(end_HF)
 
     t_HF = end_HF - start_HF
