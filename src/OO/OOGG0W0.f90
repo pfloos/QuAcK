@@ -96,7 +96,6 @@ subroutine OOGG0W0(dotest,doACFDT,exchange_kernel,doXBS,dophBSE,dophBSE2,TDA_W,T
   double precision,allocatable  :: rdm1_hf(:,:)
   double precision,allocatable  :: rdm1_rpa(:,:)
   double precision,allocatable  :: rdm2(:,:,:,:)
-  double precision,allocatable  :: rdm2_tmp(:,:)
   double precision,allocatable  :: rdm2_rpa(:,:,:,:)
   double precision,allocatable  :: rdm2_hf(:,:,:,:)
   integer                       :: r,s,rs,p,q,pq
@@ -109,7 +108,9 @@ subroutine OOGG0W0(dotest,doACFDT,exchange_kernel,doXBS,dophBSE,dophBSE2,TDA_W,T
   double precision,allocatable  :: Kaa(:,:),Kab(:,:),Kba(:,:),Kbb(:,:)
   double precision,allocatable  :: Faa(:,:),Fab(:,:),Fba(:,:),Fbb(:,:)
   double precision,allocatable  :: Paa(:,:),Pab(:,:),Pba(:,:),Pbb(:,:)
+  double precision,allocatable  :: XXT(:,:),YYT(:,:),XYT(:,:)
   double precision              :: Emu, EOld
+  double precision,external     :: Kronecker_delta
   
   double precision              :: rdm2_trace
   double precision,external     :: trace_matrix
@@ -172,10 +173,10 @@ subroutine OOGG0W0(dotest,doACFDT,exchange_kernel,doXBS,dophBSE,dophBSE2,TDA_W,T
            Kaa(nBas,nBas),Kab(nBas,nBas),Kba(nBas,nBas),Kbb(nBas,nBas),   &
            Faa(nBas,nBas),Fab(nBas,nBas),Fba(nBas,nBas),Fbb(nBas,nBas),   &
            Paa(nBas,nBas),Pab(nBas,nBas),Pba(nBas,nBas),Pbb(nBas,nBas))
-  allocate(rdm2_tmp(2*nS,2*nS))
+  allocate(XXT(nS,nS),YYT(nS,nS),XYT(nS,nS))
 
 ! Initialize variables for OO  
-  OOi               = 1d0
+  OOi               = 1
   OOConv            = 1d0
   c(:,:)            = cHF(:,:)
   rdm1(:,:)         = 0d0 
@@ -275,33 +276,28 @@ subroutine OOGG0W0(dotest,doACFDT,exchange_kernel,doXBS,dophBSE,dophBSE2,TDA_W,T
     if(.not.TDA_W) call phGLR_B(dRPA_W,nBas2,nC,nO,nV,nR,nS,1d0,ERI_MO,Bph)
     call phGLR(TDA_W,nS,Aph,Bph,EcRPA,Om,XpY,XmY)
     
-    write(*,*) "EcRPA = ", EcRPA
     if(print_W) call print_excitation_energies('phRPA@GHF','generalized',nS,Om)
      
     call GG0W0_rdm1_hf(O,V,N,nS,rdm1_hf)
     call GG0W0_rdm2_hf(O,V,N,nS,rdm2_hf)
-    call matout(N*N,N*N,rdm2_hf)
+   
     X = transpose(0.5*(XpY + XmY))
     Y = transpose(0.5*(XpY - XmY))
-    ! Build RPA correlation rdm
-    rdm2_tmp(1:nS,1:nS)           = matmul(Y,transpose(Y)) 
-    rdm2_tmp(1:nS,nS+1:2*nS)      = matmul(Y,transpose(X)) 
-    rdm2_tmp(nS+1:2*nS,1:nS)      = matmul(X,transpose(Y)) 
-    rdm2_tmp(nS+1:2*nS,nS+1:2*nS) = matmul(X,transpose(X))
-    do ia=1,nS
-      rdm2_tmp(nS+ia,nS+ia) = rdm2_tmp(nS+ia,nS+ia) - 1d0
-    enddo
-    ! Reshape the rdm
+    
+    rdm2_rpa(:,:,:,:) = 0d0
+    YYT               = matmul(Y,transpose(Y)) 
+    XYT               = matmul(X,transpose(Y)) 
+    XXT               = matmul(X,transpose(X))
     do i = 1, O
       do a = O+1, N
         do jind = 1, O
           do b = O+1, N
             jb = b - O + (jind - 1) * V 
-            ia = a - O + (i - 1) * V
-            rdm2_rpa(a,i,jind,b) = rdm2_tmp(ia,jb)
-            rdm2_rpa(a,i,b,jind) = rdm2_tmp(ia,nS + jb)
-            rdm2_rpa(i,a,jind,b) = rdm2_tmp(nS + ia,jb)
-            rdm2_rpa(i,a,b,jind) = rdm2_tmp(nS + ia,nS + jb)
+            ia = a - O +    (i - 1) * V
+            rdm2_rpa(b,i,jind,a) = rdm2_rpa(b,i,jind,a) + XXT(jb,ia) + YYT(jb,ia) - Kronecker_delta(jb,ia) 
+            rdm2_rpa(b,jind,a,i) = rdm2_rpa(b,jind,a,i) -(XXT(jb,ia) + YYT(jb,ia) - Kronecker_delta(jb,ia))
+            rdm2_rpa(i,jind,a,b) = rdm2_rpa(i,jind,a,b) + XYT(jb,ia) + XYT(ia,jb) 
+            rdm2_rpa(i,jind,b,a) = rdm2_rpa(i,jind,b,a) - XYT(jb,ia) - XYT(ia,jb) 
           enddo
         enddo
       enddo
@@ -309,6 +305,7 @@ subroutine OOGG0W0(dotest,doACFDT,exchange_kernel,doXBS,dophBSE,dophBSE2,TDA_W,T
 
     write(*,*) "EcRPA = ", EcRPA
     write(*,*) "EGHF (usual stationary one)", EGHF
+    write(*,*) "EGHF + EcRPA", EGHF + EcRPA
     write(*,*) "E^MF from rdm"
     call energy_from_rdm(N,h,ERI_MO,rdm1_hf,rdm2_hf,EHF_rdm)
     write(*,*) "EcRPA from rdm"
@@ -420,7 +417,7 @@ subroutine OOGG0W0(dotest,doACFDT,exchange_kernel,doXBS,dophBSE,dophBSE2,TDA_W,T
 
   eGW_out(:) = eGW(:)
  
-  deallocate(rdm1,rdm2,rdm2_tmp,c,Aph,Bph,SigC,Z,Om,XpY,XmY,rho,eGW,&
+  deallocate(rdm1,rdm2,c,Aph,Bph,SigC,Z,Om,XpY,XmY,rho,eGW,&
              eGWlin,X,X_inv,Y,Xbar,Xbar_inv,lambda,t,rampl,lampl,rp,lp,h)
-
+  deallocate(XXT,YYT,XYT)
 end subroutine

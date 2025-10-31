@@ -32,13 +32,14 @@ subroutine R_rdm1_numerical(dotest,doaordm,maxSCF,thresh,max_diis,guess_type,lev
   double precision,intent(in)   :: dipole_int(nBas,nBas,ncart)
   
   ! Local
-  integer                       :: pind,qind
+  integer                       :: pind,qind,i
   double precision              :: factor
   double precision              :: Eplus
   double precision              :: Eminus
-  double precision              :: delta = 1e-4
+  double precision              :: delta = 1d-6
   
   double precision,allocatable  :: Hc_loc(:,:)
+  double precision,allocatable  :: V_loc(:,:)
   double precision,allocatable  :: rdm1_MO(:,:)
   double precision,allocatable  :: rdm1(:,:)
   
@@ -49,40 +50,47 @@ subroutine R_rdm1_numerical(dotest,doaordm,maxSCF,thresh,max_diis,guess_type,lev
   double precision,intent(out)  :: P(nBas,nBas)
   double precision,intent(out)  :: F(nBas,nBas)
                                                      
-allocate(rdm1(nBas,nBas),rdm1_MO(nOrb,nOrb),Hc_loc(nBas,nBas))
+allocate(rdm1(nBas,nBas),rdm1_MO(nOrb,nOrb),Hc_loc(nBas,nBas),V_loc(nBas,nBas))
 
 do pind=1,nBas
   do qind=pind,nBas
     Hc_loc(:,:) = Hc(:,:)
-    Hc_loc(:,:) = Hc(:,:)
+    V_loc(:,:)  = V(:,:)
     if(pind==qind) then                                    
       factor = 1d0                                   
       Hc_loc(pind,pind) = Hc(pind,pind) - delta                        
+      V_loc(pind,pind)  =  V(pind,pind) - delta                        
     else                                             
       factor = 0.5d0                                 
       Hc_loc(pind,qind) = Hc(pind,qind) - delta                        
       Hc_loc(qind,pind) = Hc(qind,pind) - delta                        
+      V_loc(pind,qind)  =  V(pind,qind) - delta                        
+      V_loc(qind,pind)  =  V(qind,pind) - delta                        
     endif                                          
     call RHF(dotest,doaordm,maxSCF,thresh,max_diis,guess_type,level_shift,nNuc,ZNuc,rNuc,ENuc, & 
-                 nBas,nOrb,nO,S,T,V,Hc_loc,ERI,dipole_int,X,Eminus,eHF,c,P,F)
+                 nBas,nOrb,nO,S,T,V_loc,Hc_loc,ERI,dipole_int,X,Eminus,eHF,c,P,F)
+    
     ! Do eventually RPA                              
-    Hc_loc(:,:) = Hc(:,:)
     Hc_loc(:,:) = Hc(:,:)
     if(pind==qind) then                                    
       factor = 1d0                                   
-      Hc_loc(pind,pind) = Hc(pind,pind) + delta                        
+      Hc_loc(pind,pind) = Hc(pind,pind) + delta
+      V_loc(pind,pind)  =  V(pind,pind) + delta                        
     else                                            
       factor = 0.5d0                                
       Hc_loc(pind,qind) = Hc(pind,qind) + delta                        
       Hc_loc(qind,pind) = Hc(qind,pind) + delta                        
+      V_loc(pind,qind)  =  V(pind,qind) + delta                        
+      V_loc(qind,pind)  =  V(qind,pind) + delta                        
     endif                                          
     call RHF(dotest,doaordm,maxSCF,thresh,max_diis,guess_type,level_shift,nNuc,ZNuc,rNuc,ENuc, & 
-                 nBas,nOrb,nO,S,T,V,Hc_loc,ERI,dipole_int,X,Eplus,eHF,c,P,F)
+                 nBas,nOrb,nO,S,T,V_loc,Hc_loc,ERI,dipole_int,X,Eplus,eHF,c,P,F)
     ! Do eventually RPA                              
     
     ! Accounting for double occurence of offdiagonal terms
-    rdm1(pind,qind) = factor*(Eplus - Eminus)/(2d0*delta)
+    rdm1(pind,qind) = factor*(Eplus - Eminus)/(2*delta)
     rdm1(qind,pind) = rdm1(pind,qind)
+    write(*,*) Eplus, Eminus, Eplus - Eminus, delta
   enddo
 enddo
 call RHF(dotest,doaordm,maxSCF,thresh,max_diis,guess_type,level_shift,nNuc,ZNuc,rNuc,ENuc, & 
@@ -92,8 +100,6 @@ call matout(nBas,nBas,rdm1)
 write(*,*) "1RDM in MO"
 call AOtoMO(nBas,nOrb,c,rdm1,rdm1_MO)
 call matout(nBas,nBas,rdm1_MO)                                        
-write(*,*) "Hc in AO"
-call matout(nBas,nBas,Hc)                                        
-deallocate(rdm1,rdm1_MO,Hc_loc)
+deallocate(rdm1,rdm1_MO,Hc_loc,V_loc)
 
 end subroutine
