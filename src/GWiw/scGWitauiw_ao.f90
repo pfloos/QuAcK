@@ -37,6 +37,7 @@ subroutine scGWitauiw_ao(nBas,nOrb,nO,maxSCF,dolinGW,restart_scGW,no_fock,ENuc,H
   integer                       :: ibas,jbas,kbas,lbas,nBas2
   integer                       :: iter,iter_fock
   integer                       :: imax_error_sigma
+  integer                       :: imax_error_gw2gt
 
   double precision              :: start_scGWitauiw     ,end_scGWitauiw       ,t_scGWitauiw
 
@@ -52,6 +53,9 @@ subroutine scGWitauiw_ao(nBas,nOrb,nO,maxSCF,dolinGW,restart_scGW,no_fock,ENuc,H
   double precision              :: error_I
   double precision              :: error_sigma
   double precision              :: max_error_sigma
+  double precision              :: error_gw2gt
+  double precision              :: max_error_gw2gt
+  double precision              :: sum_error_gw2gt
   double precision,allocatable  :: tweight(:),tcoord(:)
   double precision,allocatable  :: I_weight(:,:)
   double precision,allocatable  :: sint2w_weight(:,:)
@@ -313,6 +317,75 @@ subroutine scGWitauiw_ao(nBas,nOrb,nO,maxSCF,dolinGW,restart_scGW,no_fock,ENuc,H
  write(*,*)
  deallocate(I_weight)
 
+!------------------------------------------------------------------------!
+! Test the quality of the grid for the Go(iw) -> G(i tau) transformation !
+!------------------------------------------------------------------------!
+
+ ! Build Go(i w)
+ write(*,*)
+ write(*,'(a)') ' Error test for the Go(iw) -> G(it) transformation'
+ write(*,*)
+ do ifreq=1,nfreqs
+  weval_cpx=im*wcoord(ifreq)
+  call G_AO_RHF(nBas,nOrb,nO,eta,cHF,eHF,weval_cpx,G_ao_1)
+  DeltaG_ao_iw(ifreq,:,:)=G_ao_1(:,:)
+ enddo
+ ! Fourier transform Go(i w) -> Go(i tau)
+ G_ao_itau=czero
+ do itau=1,ntimes
+  G_plus_itau(:,:)=czero
+  G_minus_itau(:,:)=czero
+  do ifreq=1,nfreqs
+   G_plus_itau(:,:) = G_plus_itau(:,:)   + im*cosw2t_weight(itau,ifreq)*Real(DeltaG_ao_iw(ifreq,:,:))  &
+                                         - im*sinw2t_weight(itau,ifreq)*Aimag(DeltaG_ao_iw(ifreq,:,:)) 
+   G_minus_itau(:,:) = G_minus_itau(:,:) + im*cosw2t_weight(itau,ifreq)*Real(DeltaG_ao_iw(ifreq,:,:))  &
+                                         + im*sinw2t_weight(itau,ifreq)*Aimag(DeltaG_ao_iw(ifreq,:,:)) 
+  enddo
+  G_ao_itau(2*itau-1,:,:)=G_plus_itau(:,:) 
+  G_ao_itau(2*itau  ,:,:)=G_minus_itau(:,:)
+ enddo
+ ! Check the error
+ max_error_gw2gt=-1d0
+ sum_error_gw2gt=0d0
+ imax_error_gw2gt=1
+ do itau=1,ntimes
+  call G0itau_ao_RHF(nBas,nOrb,nO, tcoord(itau),G_plus_itau ,cHF,eHF)
+  call G0itau_ao_RHF(nBas,nOrb,nO,-tcoord(itau),G_minus_itau,cHF,eHF)
+  if(verbose/=0) then
+   write(*,'(a,*(f20.8))') ' Fourier  ',im*tcoord(itau)
+   do ibas=1,nBas
+    write(*,'(*(f20.8))') G_ao_itau(2*itau-1,ibas,:)
+   enddo
+   write(*,'(a,*(f20.8))') ' Fourier  ',-im*tcoord(itau)
+   do ibas=1,nBas
+    write(*,'(*(f20.8))') G_ao_itau(2*itau  ,ibas,:)
+   enddo
+   write(*,'(a,*(f20.8))') ' Analytic  ',im*tcoord(itau)
+   do ibas=1,nBas
+    write(*,'(*(f20.8))') G_plus_itau(ibas,:)
+   enddo
+   write(*,'(a,*(f20.8))') ' Analytic  ',-im*tcoord(itau)
+   do ibas=1,nBas
+    write(*,'(*(f20.8))') G_minus_itau(ibas,:)
+   enddo
+  endif
+  G_plus_itau(:,:) =abs(G_plus_itau(:,:) -G_ao_itau(2*itau-1,:,:))
+  G_minus_itau(:,:)=abs(G_minus_itau(:,:)-G_ao_itau(2*itau  ,:,:))
+  error_gw2gt=real(sum(G_plus_itau(:,:)))+real(sum(G_minus_itau(:,:)))
+  sum_error_gw2gt=sum_error_gw2gt+error_gw2gt
+  if(error_gw2gt>max_error_gw2gt) then
+   imax_error_gw2gt=itau
+   max_error_gw2gt=error_gw2gt
+  endif
+ enddo
+ write(*,'(a,*(f20.8))') ' Sum error ',sum_error_gw2gt
+ write(*,'(a,f20.8,a,2f20.8,a)') ' Max CAE   ',max_error_gw2gt,' is in the time +/-',0d0,tcoord(imax_error_gw2gt),'i'
+ write(*,'(a,*(f20.8))') ' MAE       ',sum_error_gw2gt/(nfreqs*nBas*nBas)
+
+ ! Reset to 0.0
+ DeltaG_ao_iw=czero
+ G_ao_itau=czero
+
 !-----------!
 ! scGW loop !
 !-----------!
@@ -368,6 +441,10 @@ subroutine scGWitauiw_ao(nBas,nOrb,nO,maxSCF,dolinGW,restart_scGW,no_fock,ENuc,H
       P_ao(ibas,jbas)=val_print_r
      enddo
     enddo
+    close(iunit)
+    open(unit=iunit,form='unformatted',file='scGW_chem_pot_bin',status='old')
+    write(*,'(a)') ' Reading scGW_chem_pot_bin'
+    read(iunit) chem_pot
     close(iunit)
     P_ao_iter=P_ao
     G_ao_itau_old(:,:,:)=G_ao_itau(:,:,:)
@@ -467,7 +544,7 @@ subroutine scGWitauiw_ao(nBas,nOrb,nO,maxSCF,dolinGW,restart_scGW,no_fock,ENuc,H
    ! Build the analytic Sigma_c(iw)
    call build_analityc_rhf_Sigma_c_iw(nBas,nOrb,nO,verbose,cHF,eHF,nfreqs,wcoord,ERI_AO,error_transf_mo) ! error_transf_mo set to Sigma_c_mo(iw)
    do ifreq=1,nfreqs
-    Sigma_c_w_mo=matmul(matmul(transpose(cHF(:,:)),Sigma_c_w_ao(ifreq,:,:)),cHF(:,:)) ! Fourier: Sigma_c_ao(iw) -> Sigma_c_wo(iw)
+    Sigma_c_w_mo=matmul(matmul(transpose(cHF(:,:)),Sigma_c_w_ao(ifreq,:,:)),cHF(:,:)) ! Fourier: Sigma_c_ao(iw) -> Sigma_c_mo(iw)
     !Sigma_c_w_ao(ifreq,:,:)=matmul(transpose(cHFinv),matmul(error_transf_mo(ifreq,:,:),cHFinv)) ! Analytic: Sigma_c_mo(iw) -> Sigma_c_ao(iw)
     if(verbose/=0) then
      write(*,'(a,*(f20.8))') ' Fourier  ',im*wcoord(ifreq)
@@ -639,6 +716,10 @@ subroutine scGWitauiw_ao(nBas,nOrb,nO,maxSCF,dolinGW,restart_scGW,no_fock,ENuc,H
     write(iunit) val_print_r
    enddo
   enddo
+  write(iunit) iunit
+  close(iunit)
+  open(unit=iunit,form='unformatted',file='scGW_chem_pot_bin')
+  write(iunit) chem_pot 
   write(iunit) iunit
   close(iunit)
 
