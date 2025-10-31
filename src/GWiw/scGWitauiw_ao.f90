@@ -381,7 +381,6 @@ subroutine scGWitauiw_ao(nBas,nOrb,nO,maxSCF,dolinGW,restart_scGW,no_fock,ENuc,H
  write(*,'(a,*(f20.8))') ' Sum error ',sum_error_gw2gt
  write(*,'(a,f20.8,a,2f20.8,a)') ' Max CAE   ',max_error_gw2gt,' is in the time +/-',0d0,tcoord(imax_error_gw2gt),'i'
  write(*,'(a,*(f20.8))') ' MAE       ',sum_error_gw2gt/(nfreqs*nBas*nBas)
-
  ! Reset to 0.0
  DeltaG_ao_iw=czero
  G_ao_itau=czero
