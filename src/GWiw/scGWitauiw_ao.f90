@@ -275,7 +275,7 @@ subroutine scGWitauiw_ao(nBas,nOrb,nO,maxSCF,dolinGW,restart_scGW,no_fock,ENuc,H
    DeltaG_ao_iw(:,:,:)=czero
    ! If required, read the restart files
    if(restart_scGW) then
-    call read_scGW_restart(nBas,ntimes_twice,chem_pot,P_ao,G_ao_itau)
+    call read_scGW_restart(nBas,nfreqs,ntimes_twice,chem_pot,P_ao,P_ao_hf,G_ao_iw_hf,G_ao_itau,G_ao_itau_hf)
     P_ao_iter=P_ao
     G_ao_itau_old(:,:,:)=G_ao_itau(:,:,:)
    endif
@@ -476,7 +476,7 @@ subroutine scGWitauiw_ao(nBas,nOrb,nO,maxSCF,dolinGW,restart_scGW,no_fock,ENuc,H
   do ibas=1,nOrb
    if(eSD(ibas)<0d0) nneg=nneg+1
   enddo
-  write(*,*) ' SD energies [ from Go(iw) ] (a.u.)'
+  write(*,*) ' SD energies from Go(iw) (a.u.)'
   do ibas=1,nOrb
    write(*,'(I7,F15.8)') ibas,eSD(ibas)
   enddo
@@ -548,7 +548,8 @@ subroutine scGWitauiw_ao(nBas,nOrb,nO,maxSCF,dolinGW,restart_scGW,no_fock,ENuc,H
  enddo
 
  ! Write restart files
- call write_scGW_restart(nBas,ntimes,ntimes_twice,nfreqs,chem_pot,P_ao,G_ao_itau,G_ao_iw_hf,DeltaG_ao_iw)
+ call write_scGW_restart(nBas,ntimes,ntimes_twice,nfreqs,chem_pot,P_ao,P_ao_hf,G_ao_itau,G_ao_itau_hf, &
+                         G_ao_iw_hf,DeltaG_ao_iw)
  
  ! Using the correlated G and Sigma_c to test the linearized density matrix approximation
  if(dolinGW) then
