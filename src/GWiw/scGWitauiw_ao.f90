@@ -48,7 +48,7 @@ subroutine scGWitauiw_ao(nBas,nOrb,nO,maxSCF,dolinGW,restart_scGW,no_fock,ENuc,H
   double precision              :: nElectrons
   double precision              :: trace_1_rdm
   double precision              :: thrs_N,thrs_Pao
-  double precision              :: chem_pot,chem_pot_saved
+  double precision              :: chem_pot,chem_pot_saved,chem_pot_align
   double precision              :: error_sigma
   double precision              :: max_error_sigma
   double precision              :: error_gw2gt
@@ -122,7 +122,13 @@ subroutine scGWitauiw_ao(nBas,nOrb,nO,maxSCF,dolinGW,restart_scGW,no_fock,ENuc,H
  write(*,'(A33,1X,F16.10,A3)') ' Initial chemical potential  = ',chem_pot,' au'
  write(*,*)
  eHF(:) = eHF(:)-chem_pot_saved
-   
+ write(*,*)
+ write(*,*) ' Aligned HF energies from Go(iw) (a.u.) [ using HOMO-LUMO ]'
+ do ibas=1,nOrb
+  write(*,'(I7,F15.8)') ibas,eHF(ibas)
+ enddo 
+ write(*,*)
+  
  allocate(U_mo(nOrb,nOrb))
  allocate(Chi0_ao_iw(nfreqs,nBas2,nBas2))
  allocate(P_ao(nBas,nBas),P_ao_old(nBas,nBas),P_ao_iter(nBas,nBas),P_ao_hf(nBas,nBas))
@@ -421,7 +427,7 @@ subroutine scGWitauiw_ao(nBas,nOrb,nO,maxSCF,dolinGW,restart_scGW,no_fock,ENuc,H
     call get_1rdm_scGW(nBas,nfreqs,nElectrons,thrs_N,chem_pot,S,F_ao,Sigma_c_w_ao,wcoord,wweight, &
                        G_ao_1,G_ao_iw_hf,DeltaG_ao_iw,P_ao,P_ao_hf,trace_1_rdm) 
     if(abs(trace_1_rdm-nElectrons)>thrs_N) &
-     call fix_chem_pot_scGW(nBas,nfreqs,nElectrons,thrs_N,chem_pot,S,F_ao,Sigma_c_w_ao,wcoord,wweight, &
+     call fix_chem_pot_scGW(iter_fock,nBas,nfreqs,nElectrons,thrs_N,chem_pot,S,F_ao,Sigma_c_w_ao,wcoord,wweight, &
                            G_ao_1,G_ao_iw_hf,DeltaG_ao_iw,P_ao,P_ao_hf,trace_1_rdm)
     ! Check convergence of P_ao for fixed Sigma_c(i w)
     diff_Pao=0d0
@@ -470,13 +476,21 @@ subroutine scGWitauiw_ao(nBas,nOrb,nO,maxSCF,dolinGW,restart_scGW,no_fock,ENuc,H
   
   ! Build the new G_ao_iw_hf, G_ao_itau_hf, and P_ao_hf
   U_mo=matmul(transpose(cHF),matmul(F_ao,cHF))
+  do ibas=1,nBas
+   U_mo(ibas,ibas)=U_mo(ibas,ibas)-chem_pot
+  enddo
   call diagonalize_matrix(nOrb,U_mo,eSD)
-  eSD(:)=eSD(:)-chem_pot
   nneg=0
   do ibas=1,nOrb
    if(eSD(ibas)<0d0) nneg=nneg+1
   enddo
   write(*,*) ' SD energies from Go(iw) (a.u.)'
+  do ibas=1,nOrb
+   write(*,'(I7,F15.8)') ibas,eSD(ibas)
+  enddo
+  chem_pot_align=0.5d0*(eSD(nO)+eSD(nO+1))
+  eSD(:)=eSD(:)-chem_pot_align
+  write(*,*) ' Aligned SD energies from Go(iw) (a.u.)'
   do ibas=1,nOrb
    write(*,'(I7,F15.8)') ibas,eSD(ibas)
   enddo
