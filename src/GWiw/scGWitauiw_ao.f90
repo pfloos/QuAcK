@@ -54,12 +54,14 @@ subroutine scGWitauiw_ao(nBas,nOrb,nO,maxSCF,dolinGW,restart_scGW,no_fock,ENuc,H
   double precision              :: error_gw2gt
   double precision              :: max_error_gw2gt
   double precision              :: sum_error_gw2gt
+  double precision              :: sd_dif
   double precision,allocatable  :: tweight(:),tcoord(:)
   double precision,allocatable  :: sint2w_weight(:,:)
   double precision,allocatable  :: cost2w_weight(:,:)
   double precision,allocatable  :: cosw2t_weight(:,:)
   double precision,allocatable  :: sinw2t_weight(:,:)
   double precision,allocatable  :: eSD(:)
+  double precision,allocatable  :: eSD_old(:)
   double precision,allocatable  :: Occ(:)
   double precision,allocatable  :: Wp_ao_iw(:,:)
   double precision,allocatable  :: cHFinv(:,:)
@@ -132,7 +134,7 @@ subroutine scGWitauiw_ao(nBas,nOrb,nO,maxSCF,dolinGW,restart_scGW,no_fock,ENuc,H
  allocate(U_mo(nOrb,nOrb))
  allocate(Chi0_ao_iw(nfreqs,nBas2,nBas2))
  allocate(P_ao(nBas,nBas),P_ao_old(nBas,nBas),P_ao_iter(nBas,nBas),P_ao_hf(nBas,nBas))
- allocate(F_ao(nBas,nBas),P_mo(nOrb,nOrb),cHFinv(nOrb,nBas),Occ(nOrb),eSD(nOrb))
+ allocate(F_ao(nBas,nBas),P_mo(nOrb,nOrb),cHFinv(nOrb,nBas),Occ(nOrb),eSD(nOrb),eSD_old(nOrb))
  allocate(G_minus_itau(nBas,nBas),G_plus_itau(nBas,nBas)) 
  allocate(G_ao_1(nBas,nBas),G_ao_2(nBas,nBas)) 
  allocate(Sigma_c_c(nBas,nBas),Sigma_c_s(nBas,nBas)) 
@@ -145,6 +147,7 @@ subroutine scGWitauiw_ao(nBas,nOrb,nO,maxSCF,dolinGW,restart_scGW,no_fock,ENuc,H
  F_ao=Hc
  Ehfl=0d0
  trace_1_rdm=0d0
+ eSD_old(:)=eHF(:)
  do ibas=1,nBas
   do jbas=1,nBas
    Ehfl=Ehfl+P_ao(ibas,jbas)*Hc(ibas,jbas)
@@ -494,10 +497,13 @@ subroutine scGWitauiw_ao(nBas,nOrb,nO,maxSCF,dolinGW,restart_scGW,no_fock,ENuc,H
   do ibas=1,nOrb
    write(*,'(I7,F15.8)') ibas,eSD(ibas)
   enddo
-  if(nneg==nO .and. .false.) then
+  sd_dif=sum(abs(eSD(:)-eSD_old(:)))
+  write(*,'(a,f15.8)') ' | eSD - eHF | ',sd_dif
+  if(nneg==nO .and. sd_dif>1d-2 .and. .false.) then
    write(*,*)
    write(*,'(a,i5)') ' Computing new Go(iw), Go(it), and P_HF matrices at global iter ',iter
    write(*,*)
+   eSD_old(:)=eSD(:)
    ! Compute new MO coefs
    cHF=matmul(cHF,U_mo)
    cHFinv=matmul(transpose(cHF),S)
@@ -633,7 +639,7 @@ subroutine scGWitauiw_ao(nBas,nOrb,nO,maxSCF,dolinGW,restart_scGW,no_fock,ENuc,H
  deallocate(G_ao_itau_old)
  deallocate(G_ao_itau,G_ao_itau_hf)
  deallocate(Sigma_c_w_ao,DeltaG_ao_iw,G_ao_iw_hf)
- deallocate(P_ao,P_ao_old,P_ao_iter,P_ao_hf,F_ao,P_mo,cHFinv,U_mo,Occ,eSD) 
+ deallocate(P_ao,P_ao_old,P_ao_iter,P_ao_hf,F_ao,P_mo,cHFinv,U_mo,Occ,eSD,eSD_old) 
  deallocate(Sigma_c_plus,Sigma_c_minus) 
  deallocate(Sigma_c_c,Sigma_c_s) 
  deallocate(G_minus_itau,G_plus_itau) 

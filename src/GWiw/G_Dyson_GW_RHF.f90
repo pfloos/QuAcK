@@ -151,7 +151,7 @@ subroutine G_Dyson_GW_RHF(nBas,nOrb,nO,c,eHF,nfreqs,wweight,wcoord,ERI,vMAT,&
   write(*,*)'------------------------------------------------------'
   isteps = 0
   delta_chem_pot  = 1.0d-3
-  do while( abs(trace_1rdm-2*nO) > thrs_N .and. isteps <= 100 )
+  do while( abs(trace_1rdm) > 1d-10 .and. isteps <= 100 )
    isteps = isteps + 1
    chem_pot = chem_pot + chem_pot_change
    call trace_1rdm_Gdyson(nOrb,nO,nfreqs2,chem_pot,trace_1rdm,eHF,wcoord2_cpx,wweight2,&
@@ -164,19 +164,30 @@ subroutine G_Dyson_GW_RHF(nBas,nOrb,nO,c,eHF,nfreqs,wweight,wcoord,ERI,vMAT,&
                           wcoord2_cpx,wweight2,Tmp_mo,Sigma_c,Pcorr_mo,Identity)
    call trace_1rdm_Gdyson(nOrb,nO,nfreqs2,chem_pot-2d0*delta_chem_pot,trace_2down,eHF, &
                           wcoord2_cpx,wweight2,Tmp_mo,Sigma_c,Pcorr_mo,Identity)
+   trace_1rdm =(trace_1rdm -2d0*nO)**2d0
+   trace_2up  =(trace_2up  -2d0*nO)**2d0
+   trace_up   =(trace_up   -2d0*nO)**2d0
+   trace_down =(trace_down -2d0*nO)**2d0
+   trace_2down=(trace_2down-2d0*nO)**2d0
 !   grad_electrons = (trace_up-trace_down)/(2d0*delta_chem_pot)
    grad_electrons = (-trace_2up+8d0*trace_up-8d0*trace_down+trace_2down)/(12d0*delta_chem_pot)
-   chem_pot_change = -(trace_1rdm-2*nO)/(grad_electrons+1d-10)
+   chem_pot_change = -trace_1rdm/(grad_electrons+1d-10)
    ! Maximum change is bounded within +/- 0.10
    chem_pot_change = max( min( chem_pot_change , 0.1d0 / real(isteps) ), -0.1d0 / real(isteps) )
    write(*,'(1X,A1,F16.10,1X,A1,F16.10,1X,A1F16.10,1X,A1)') &
    '|',trace_1rdm,'|',chem_pot,'|',grad_electrons,'|'
   enddo
   write(*,*)'------------------------------------------------------'
-  write(*,*)
+  write(*,'(1X,A1,1X,A15,1X,A1,1X,A15,1X,A1A15,2X,A1)') &
+          '|','Tr[1D]','|','Chem. Pot.','|','Grad N','|'
+  write(*,*)'------------------------------------------------------'
   call trace_1rdm_Gdyson(nOrb,nO,nfreqs2,chem_pot,trace_1rdm,eHF,wcoord2_cpx,wweight2,&
                          Tmp_mo,Sigma_c,Pcorr_mo,Identity)
 
+  write(*,'(1X,A1,F16.10,1X,A1,F16.10,1X,A1F16.10,1X,A1)') &
+  '|',trace_1rdm,'|',chem_pot,'|',grad_electrons,'|'
+  write(*,*)'------------------------------------------------------'
+  write(*,*)
 ! Compute  AO densities, new total energy, and Occ numbers
 
   Pcorr(:,:) = matmul(c,matmul(Pcorr_mo(:,:),transpose(c)))
