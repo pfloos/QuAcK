@@ -105,9 +105,9 @@ subroutine scGWitauiw_ao(nBas,nOrb,nO,maxSCF,dolinGW,restart_scGW,no_fock,ENuc,H
  call wall_time(start_scGWitauiw)
 
  write(*,*)     
- write(*,*)'*******************************************'
- write(*,*)'*     scGW ( using itau and iw grids )    *'
- write(*,*)'*******************************************'
+ write(*,*)'*****************************************'
+ write(*,*)'*     scGW ( using it and iw grids )    *'
+ write(*,*)'*****************************************'
  write(*,*)
 
  verbose=0
