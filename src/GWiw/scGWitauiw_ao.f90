@@ -47,7 +47,7 @@ subroutine scGWitauiw_ao(nBas,nOrb,nO,maxSCF,dolinGW,restart_scGW,no_fock,ENuc,H
   double precision              :: eta,diff_Pao
   double precision              :: nElectrons
   double precision              :: trace_1_rdm
-  double precision              :: thrs_N,thrs_Pao
+  double precision              :: thrs_N,thrs_Ngrad,thrs_Pao
   double precision              :: chem_pot,chem_pot_saved,chem_pot_align
   double precision              :: error_sigma
   double precision              :: max_error_sigma
@@ -112,7 +112,8 @@ subroutine scGWitauiw_ao(nBas,nOrb,nO,maxSCF,dolinGW,restart_scGW,no_fock,ENuc,H
 
  verbose=0
  eta=0d0
- thrs_N=1d-8
+ thrs_N=1d-10
+ thrs_Ngrad=1d-6
  thrs_Pao=1d-6
  nElectrons=2d0*nO
  nBas2=nBas*nBas
@@ -428,10 +429,10 @@ subroutine scGWitauiw_ao(nBas,nOrb,nO,maxSCF,dolinGW,restart_scGW,no_fock,ENuc,H
     enddo
     ! Build G(i w) and n(r)
     P_ao_old=P_ao
-    call get_1rdm_scGW(nBas,nfreqs,nElectrons,thrs_N,chem_pot,S,F_ao,Sigma_c_w_ao,wcoord,wweight, &
+    call get_1rdm_scGW(nBas,nfreqs,nElectrons,chem_pot,S,F_ao,Sigma_c_w_ao,wcoord,wweight, &
                        G_ao_1,G_ao_iw_hf,DeltaG_ao_iw,P_ao,P_ao_hf,trace_1_rdm) 
-    if(abs(trace_1_rdm-nElectrons)>thrs_N) &
-     call fix_chem_pot_scGW(iter_fock,nBas,nfreqs,nElectrons,thrs_N,chem_pot,S,F_ao,Sigma_c_w_ao,wcoord,wweight, &
+    if(abs(trace_1_rdm-nElectrons)**2d0>thrs_N) &
+     call fix_chem_pot_scGW(iter_fock,nBas,nfreqs,nElectrons,thrs_N,thrs_Ngrad,chem_pot,S,F_ao,Sigma_c_w_ao,wcoord,wweight, &
                            G_ao_1,G_ao_iw_hf,DeltaG_ao_iw,P_ao,P_ao_hf,trace_1_rdm)
     ! Check convergence of P_ao for fixed Sigma_c(i w)
     diff_Pao=0d0

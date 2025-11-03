@@ -1,4 +1,4 @@
-subroutine get_1rdm_scGW(nBas,nfreqs,nElectrons,thrs_N,chem_pot,S,F_ao,Sigma_c_w_ao,wcoord,wweight, &
+subroutine get_1rdm_scGW(nBas,nfreqs,nElectrons,chem_pot,S,F_ao,Sigma_c_w_ao,wcoord,wweight, &
                          G_ao,G_ao_iw_hf,DeltaG_ao_iw,P_ao,P_ao_hf,trace_1_rdm) 
 
 ! Compute the scGW 1RDM
@@ -12,7 +12,6 @@ subroutine get_1rdm_scGW(nBas,nfreqs,nElectrons,thrs_N,chem_pot,S,F_ao,Sigma_c_w
   integer,intent(in)            :: nfreqs
   double precision,intent(in)   :: chem_pot
   double precision,intent(in)   :: nElectrons
-  double precision,intent(in)   :: thrs_N
   double precision,intent(in)   :: S(nBas,nBas)
   double precision,intent(in)   :: F_ao(nBas,nBas)
   double precision,intent(in)   :: wcoord(nfreqs)
