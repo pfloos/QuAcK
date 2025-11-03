@@ -96,11 +96,12 @@ subroutine fermi_dirac_occ(nO,nOrb,thrs_N,temperature,chem_pot,Occ,eHF)
 
   write(*,*)'-------------------------------------'
   write(*,'(1X,A1,1X,A15,1X,A1,1X,A15,1X,A1)') &
-          '|','Error Tr[1D]^2','|','Chem. Pot.','|'
+          '|','Error Tr[1D]','|','Chem. Pot.','|'
   write(*,*)'-------------------------------------'
   isteps=0
   delta_chem_pot = 1d-3
-  do while( abs(trace_1rdm) > 1d-10 .and. isteps <= 100 )
+  trace_1rdm=(trace_1rdm-nO_)**2d0
+  do while( sqrt(trace_1rdm) > thrs_N .and. isteps <= 100 )
     isteps = isteps + 1
     chem_pot = chem_pot + chem_pot_change
     trace_1rdm = (sum(fermi_dirac(eHF,chem_pot,temperature)) - nO_)**2d0 

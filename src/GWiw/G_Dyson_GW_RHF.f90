@@ -149,9 +149,13 @@ subroutine G_Dyson_GW_RHF(nBas,nOrb,nO,c,eHF,nfreqs,wweight,wcoord,ERI,vMAT,&
   ! Do  final search
 
   write(*,*)'------------------------------------------------------'
+  write(*,'(1X,A1,1X,A15,1X,A1,1X,A15,1X,A1A15,2X,A1)') &
+          '|','Error Tr[1D]','|','Chem. Pot.','|','Grad N','|'
+  write(*,*)'------------------------------------------------------'
   isteps = 0
   delta_chem_pot  = 1.0d-3
-  do while( abs(trace_1rdm) > 1d-10 .and. isteps <= 100 )
+  trace_1rdm=(trace_1rdm-2d0*nO)**2d0
+  do while( sqrt(trace_1rdm) > 1d-10 .and. isteps <= 100 )
    isteps = isteps + 1
    chem_pot = chem_pot + chem_pot_change
    call trace_1rdm_Gdyson(nOrb,nO,nfreqs2,chem_pot,trace_1rdm,eHF,wcoord2_cpx,wweight2,&
@@ -169,7 +173,6 @@ subroutine G_Dyson_GW_RHF(nBas,nOrb,nO,c,eHF,nfreqs,wweight,wcoord,ERI,vMAT,&
    trace_up   =(trace_up   -2d0*nO)**2d0
    trace_down =(trace_down -2d0*nO)**2d0
    trace_2down=(trace_2down-2d0*nO)**2d0
-!   grad_electrons = (trace_up-trace_down)/(2d0*delta_chem_pot)
    grad_electrons = (-trace_2up+8d0*trace_up-8d0*trace_down+trace_2down)/(12d0*delta_chem_pot)
    chem_pot_change = -trace_1rdm/(grad_electrons+1d-10)
    ! Maximum change is bounded within +/- 0.10
