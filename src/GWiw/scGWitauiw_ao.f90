@@ -343,7 +343,7 @@ subroutine scGWitauiw_ao(nBas,nOrb,nO,maxSCF,dolinGW,restart_scGW,no_fock,ENuc,H
    enddo
   enddo
 
-  ! Build Sigma_c(i w)
+  ! Build Sigma_c(i w) [Eqs. 12-18 in PRB, 109, 255101 (2024) ]
   Sigma_c_w_ao=czero
   do itau=1,ntimes
    G_plus_itau(:,:) =G_ao_itau(2*itau-1,:,:)
@@ -363,6 +363,7 @@ subroutine scGWitauiw_ao(nBas,nOrb,nO,maxSCF,dolinGW,restart_scGW,no_fock,ENuc,H
      enddo
     enddo
    enddo
+   ! Corrected Eqs. 17 and 18 in PRB, 109, 245101 (2024)
    Sigma_c_c= -im*(Sigma_c_plus+Sigma_c_minus)
    Sigma_c_s= -   (Sigma_c_plus-Sigma_c_minus)
    ! Sigma_c(i tau) -> Sigma_c(i w)
@@ -373,7 +374,7 @@ subroutine scGWitauiw_ao(nBas,nOrb,nO,maxSCF,dolinGW,restart_scGW,no_fock,ENuc,H
    enddo 
   enddo
 
-  ! Check the error in Sigma_c(i w) at iter=1 and this is calc. is not with restart
+  ! Check the error in Sigma_c(i w) at iter=1 [ if this is calc. is not with restart ]
   if(iter==1 .and. .not.restart_scGW) then
    write(*,*)
    write(*,'(a)') ' Error test for the Sigma_c(iw) construction at iter 1 [ compared with the analytic Sigma_c(iw) obtained from HF ] '
@@ -404,8 +405,8 @@ subroutine scGWitauiw_ao(nBas,nOrb,nO,maxSCF,dolinGW,restart_scGW,no_fock,ENuc,H
    deallocate(error_transf_mo,Sigma_c_w_mo)
   endif
 
-  ! Converge with respect to the Fock operator (using only good P_ao matrices)
-  if(.not.no_fock) then ! Skiiping the opt w.r.t. the Fock operator we will just do linearized approximation on Go -> [ lin-G = Go + Go Sigma Go ]
+  ! Converge with respect to the Fock operator (using only good P_ao matrices -> Tr[P_ao S_ao]=Nelectrons )
+  if(.not.no_fock) then ! Skiiping the opt w.r.t. the Fock operator to do later the linearized approximation on Go -> [ lin-G = Go + Go Sigma Go ]
    iter_fock=0
    do
     ! Build F
@@ -498,8 +499,8 @@ subroutine scGWitauiw_ao(nBas,nOrb,nO,maxSCF,dolinGW,restart_scGW,no_fock,ENuc,H
    write(*,'(I7,F15.8)') ibas,eSD(ibas)
   enddo
   sd_dif=sum(abs(eSD(:)-eSD_old(:)))
-  write(*,'(a,f15.8)') ' | eSD - eHF | ',sd_dif
-  if(nneg==nO .and. sd_dif>1d-2 .and. .false.) then
+  write(*,'(a,f15.8)') ' | eSD,i - eSD,i-1 | ',sd_dif
+  if(nneg==nO .and. sd_dif>1d-2) then
    write(*,*)
    write(*,'(a,i5)') ' Computing new Go(iw), Go(it), and P_HF matrices at global iter ',iter
    write(*,*)
@@ -524,7 +525,7 @@ subroutine scGWitauiw_ao(nBas,nOrb,nO,maxSCF,dolinGW,restart_scGW,no_fock,ENuc,H
     call G_AO_RHF(nBas,nOrb,nO,eta,cHF,eSD,weval_cpx,G_ao_1)
     G_ao_iw_hf(ifreq,:,:)=G_ao_1(:,:)
    enddo
-   DeltaG_ao_iw(:,:,:)=DeltaG_ao_iw(:,:,:)-G_ao_iw_hf(:,:,:) ! Setting DeltaG(iw) = G(iw) - Go_new(iw)
+   DeltaG_ao_iw(:,:,:)=DeltaG_ao_iw(:,:,:)-G_ao_iw_hf(:,:,:) ! Setting back DeltaG(iw) = G(iw) - Go_new(iw)
   endif
 
   ! Transform DeltaG(i w) -> DeltaG(i tau) [ i tau and -i tau ]
