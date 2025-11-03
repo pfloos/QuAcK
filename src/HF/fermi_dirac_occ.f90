@@ -42,7 +42,7 @@ subroutine fermi_dirac_occ(nO,nOrb,thrs_N,temperature,chem_pot,Occ,eHF)
   nO_             = nO
   inquire(file='Nelectrons_RHFB', exist=use_nelectrons)
   if(use_nelectrons) then
-    write(*,*) 'File Nelectrons_RHFB encountered, setting nO = nO__read/2'
+    write(*,*) 'File Nelectrons_RHFB encountered, setting nO = nO_read/2'
     open(unit=314, form='formatted', file='Nelectrons_RHFB', status='old')
     read(314,*) nO_
     close(314)

@@ -15,6 +15,7 @@ subroutine fix_chem_pot(nO,nOrb,nOrb_twice,nSCF,thrs_N,trace_1rdm,chem_pot,H_hfb
   integer                       :: iorb
   integer                       :: isteps
   double precision              :: nO_
+  double precision              :: thrs_Ngrad
   double precision              :: thrs_closer
   double precision              :: delta_chem_pot
   double precision              :: chem_pot_change
@@ -42,17 +43,19 @@ subroutine fix_chem_pot(nO,nOrb,nOrb_twice,nSCF,thrs_N,trace_1rdm,chem_pot,H_hfb
   isteps = 0
   delta_chem_pot  = 2d-1
   thrs_closer     = 2d-1
+  thrs_Ngrad      = 1d-8
   chem_pot_change = 0d0
   grad_electrons  = 1d0
   trace_1rdm      = -1d0
   nO_             = nO
   inquire(file='Nelectrons_RHFB', exist=use_nelectrons)
   if(use_nelectrons) then
-    write(*,*) 'File Nelectrons_RHFB encountered, setting nO = nO__read/2'
+    write(*,*) 'File Nelectrons_RHFB encountered, setting nO = nO_read/2'
     open(unit=314, form='formatted', file='Nelectrons_RHFB', status='old')
     read(314,*) nO_
     close(314)
     nO_=0.5d0*nO_
+    write(*,'(a,f10.5,a)') ' Using ',nO_,' electrons in RHFB per spin channel'
   endif
   allocate(R_tmp(nOrb_twice,nOrb_twice))
   allocate(cp_tmp(nOrb_twice,nOrb_twice))
@@ -110,7 +113,7 @@ subroutine fix_chem_pot(nO,nOrb,nOrb_twice,nSCF,thrs_N,trace_1rdm,chem_pot,H_hfb
   write(*,*)'------------------------------------------------------'
   isteps = 0
   delta_chem_pot  = 1.0d-3
-  do while( abs(trace_1rdm) > 1d-10 .and. isteps <= 100 )
+  do while( abs(trace_1rdm) > 1d-10 .and. abs(grad_electrons) > 1d-6 .and. isteps <= 100 )
    isteps = isteps + 1
    chem_pot = chem_pot + chem_pot_change
    call diag_H_hfb(nOrb,nOrb_twice,chem_pot,trace_1rdm,H_hfb,cp,R,eHFB_)
