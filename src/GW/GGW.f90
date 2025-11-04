@@ -1,6 +1,6 @@
 subroutine GGW(dotest,doG0W0,doevGW,doqsGW,maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,dophBSE,dophBSE2,doppBSE, & 
-               TDA_W,TDA,dBSE,dTDA,linearize,eta,doSRG,do_linDM_GW,nNuc,ZNuc,rNuc,ENuc,nBas,nBas2,nC,nO,nV,nR,nS,EGHF,S,X,T,V,Hc,     & 
-               ERI_AO,ERI,dipole_int_AO,dipole_int,PHF,cHF,eHF,eGW)
+                TDA_W,TDA,dBSE,dTDA,linearize,eta,doSRG,doOO,mu,do_linDM_GW,nNuc,ZNuc,rNuc,ENuc,nBas,nBas2,nC,nO,nV,nR,nS,EGHF,S,X,T,V,Hc,     & 
+               ERI_AO,ERI,dipole_int_AO,dipole_int,PHF,FHF,cHF,eHF,eGW)
 
 ! GW module
 
@@ -31,6 +31,8 @@ subroutine GGW(dotest,doG0W0,doevGW,doqsGW,maxSCF,thresh,max_diis,doACFDT,exchan
   logical,intent(in)            :: linearize
   double precision,intent(in)   :: eta
   logical,intent(in)            :: doSRG
+  logical,intent(in)            :: doOO
+  integer,intent(in)            :: mu
   logical,intent(in)            :: do_linDM_GW
 
   integer,intent(in)            :: nNuc
@@ -50,12 +52,13 @@ subroutine GGW(dotest,doG0W0,doevGW,doqsGW,maxSCF,thresh,max_diis,doACFDT,exchan
   double precision,intent(in)   :: eHF(nBas2)
   double precision,intent(in)   :: cHF(nBas2,nBas2)
   double precision,intent(in)   :: PHF(nBas2,nBas2)
+  double precision,intent(in)   :: FHF(nBas2,nBas2)
   double precision,intent(in)   :: S(nBas2,nBas2)
   double precision,intent(in)   :: T(nBas2,nBas2)
   double precision,intent(in)   :: V(nBas2,nBas2)
   double precision,intent(in)   :: Hc(nBas2,nBas2)
   double precision,intent(in)   :: X(nBas2,nBas2)
-  double precision,intent(in)   :: ERI_AO(nBas2,nBas2,nBas2,nBas2)
+  double precision,intent(in)   :: ERI_AO(nBas,nBas,nBas,nBas)
   double precision,intent(in)   :: ERI(nBas2,nBas2,nBas2,nBas2)
   double precision,intent(in)   :: dipole_int_AO(nBas2,nBas2,ncart)
   double precision,intent(in)   :: dipole_int(nBas2,nBas2,ncart)
@@ -72,8 +75,10 @@ subroutine GGW(dotest,doG0W0,doevGW,doqsGW,maxSCF,thresh,max_diis,doACFDT,exchan
 ! Perform G0W0 calculatiom
 !------------------------------------------------------------------------
 
-  if(doG0W0) then
-    
+if(doG0W0 .and. (.not. doOO)) then
+
+    ! Without orbital optimization
+
     call wall_time(start_GW)
     call GG0W0(dotest,doACFDT,exchange_kernel,doXBS,dophBSE,dophBSE2,TDA_W,TDA,dBSE,dTDA,doppBSE, &
               linearize,eta,doSRG,do_linDM_GW,nBas2,nC,nO,nV,nR,nS,ENuc,EGHF,ERI,dipole_int,eHF,eGW)
@@ -81,6 +86,22 @@ subroutine GGW(dotest,doG0W0,doevGW,doqsGW,maxSCF,thresh,max_diis,doACFDT,exchan
   
     t_GW = end_GW - start_GW
     write(*,'(A65,1X,F9.3,A8)') 'Total CPU time for G0W0 = ',t_GW,' seconds'
+    write(*,*)
+
+  end if
+
+  ! With Orbital Optimization
+  
+  if(doG0W0 .and. doOO) then
+
+    call wall_time(start_GW)
+    call OOGG0W0(dotest,doACFDT,exchange_kernel,doXBS,dophBSE,dophBSE2,TDA_W,TDA,dBSE,dTDA,doppBSE,& 
+                linearize,eta,doSRG,do_linDM_GW,nBas,nBas2,nC,nO,nV,nR,nS,mu,ENuc,EGHF,ERI_AO,ERI,                             &
+                 dipole_int,eHF,cHF,S,X,T,V,Hc,PHF,FHF,eGW) 
+    call wall_time(end_GW)
+  
+    t_GW = end_GW - start_GW
+    write(*,'(A65,1X,F9.3,A8)') 'Total wall time for G0W0 = ',t_GW,' seconds'
     write(*,*)
 
   end if

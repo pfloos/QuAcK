@@ -4,10 +4,14 @@
 #export QUACK_ROOT
 
 default:
+	./utils/gitversion.sh
+	mv gitver.f90 ./utils/
 	python3 make_ninja.py
 	ninja
 
 debug:
+	./utils/gitversion.sh
+	mv gitver.f90 ./utils/
 	python3 make_ninja.py -d
 	ninja
 

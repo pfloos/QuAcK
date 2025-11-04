@@ -1,5 +1,5 @@
-subroutine RHFB(dotest,doaordm,doqsGW,maxSCF,thresh,max_diis,level_shift,nNuc,ZNuc,rNuc,ENuc, & 
-               nBas,nOrb,nOrb_twice,nO,S,T,V,Hc,ERI,dipole_int,X,EHFB,eHF,c,P,Panom,F,Delta,  &
+subroutine RHFB(dotest,doaordm,maxSCF,thresh,max_diis,level_shift,nNuc,ZNuc,rNuc,ENuc,       & 
+               nBas,nOrb,nOrb_twice,nO,S,T,V,Hc,ERI,dipole_int,X,EHFB,eHF,c,P,Panom,F,Delta, &
                temperature,sigma,chem_pot_hf,chem_pot,restart_hfb,U_QP,eHFB_state)
 
 ! Perform Hartree-Fock Bogoliubov calculation
@@ -11,7 +11,6 @@ subroutine RHFB(dotest,doaordm,doqsGW,maxSCF,thresh,max_diis,level_shift,nNuc,ZN
 
   logical,intent(in)            :: dotest
   logical,intent(in)            :: doaordm
-  logical,intent(in)            :: doqsGW
 
   integer,intent(in)            :: maxSCF
   integer,intent(in)            :: max_diis
@@ -64,13 +63,18 @@ subroutine RHFB(dotest,doaordm,doqsGW,maxSCF,thresh,max_diis,level_shift,nNuc,ZN
   double precision              :: N_anom
   double precision,external     :: trace_matrix
   double precision,allocatable  :: eigVAL(:)
+  double precision,allocatable  :: eigVAL_mo(:)
   double precision,allocatable  :: Occ(:)
   double precision,allocatable  :: err_diis(:,:)
   double precision,allocatable  :: H_HFB_diis(:,:)
   double precision,allocatable  :: cHF(:,:)
   double precision,allocatable  :: J(:,:)
   double precision,allocatable  :: K(:,:)
+  double precision,allocatable  :: Tmat(:,:)
+  double precision,allocatable  :: F_mo(:,:)
+  double precision,allocatable  :: eigVEC_mo(:,:)
   double precision,allocatable  :: eigVEC(:,:)
+  double precision,allocatable  :: Tmp_test_RHF(:,:)
   double precision,allocatable  :: H_HFB(:,:)
   double precision,allocatable  :: R(:,:)
 
@@ -154,7 +158,7 @@ subroutine RHFB(dotest,doaordm,doqsGW,maxSCF,thresh,max_diis,level_shift,nNuc,ZN
 
   ! Use Fermi-Dirac occupancies to compute P, Panom, and chem_pot
   
-  if(abs(temperature)>1d-4) then
+  if(abs(temperature)>1d-4 .and. .not.restart_hfb) then
    Occ(:)     = 0d0
    Occ(1:nO)  = 1d0
    call fermi_dirac_occ(nO,nOrb,thrs_N,temperature,chem_pot,Occ,eHF)
@@ -162,10 +166,10 @@ subroutine RHFB(dotest,doaordm,doqsGW,maxSCF,thresh,max_diis,level_shift,nNuc,ZN
    P(:,:)      = 0d0
    Panom(:,:)  = 0d0
    do iorb=1,nOrb
-    P(:,:)     = P(:,:)     + Occ(iorb)                        * &
-                matmul(c(:,iorb:iorb),transpose(c(:,iorb:iorb))) 
-    Panom(:,:) = Panom(:,:) + sqrt(abs(Occ(iorb)*(1d0-Occ(iorb))))  * &
-                matmul(c(:,iorb:iorb),transpose(c(:,iorb:iorb))) 
+    P(:,:)     = P(:,:)     + Occ(iorb)                            &
+               * matmul(c(:,iorb:iorb),transpose(c(:,iorb:iorb))) 
+    Panom(:,:) = Panom(:,:) + sqrt(abs(Occ(iorb)*(1d0-Occ(iorb)))) &
+               * matmul(c(:,iorb:iorb),transpose(c(:,iorb:iorb))) 
    enddo
   endif
 
@@ -176,10 +180,10 @@ subroutine RHFB(dotest,doaordm,doqsGW,maxSCF,thresh,max_diis,level_shift,nNuc,ZN
    P(:,:)      = 0d0
    Panom(:,:)  = 0d0
    do iorb=1,nOrb
-    P(:,:)     = P(:,:)     + Occ(iorb)                        * &
-                matmul(c(:,iorb:iorb),transpose(c(:,iorb:iorb))) 
-    Panom(:,:) = Panom(:,:) + sqrt(abs(Occ(iorb)*(1d0-Occ(iorb))))  * &
-                matmul(c(:,iorb:iorb),transpose(c(:,iorb:iorb))) 
+    P(:,:)     = P(:,:)     + Occ(iorb)                            &
+               * matmul(c(:,iorb:iorb),transpose(c(:,iorb:iorb)))
+    Panom(:,:) = Panom(:,:) + sqrt(abs(Occ(iorb)*(1d0-Occ(iorb)))) &
+               * matmul(c(:,iorb:iorb),transpose(c(:,iorb:iorb)))
    enddo
   endif
 
@@ -202,7 +206,6 @@ subroutine RHFB(dotest,doaordm,doqsGW,maxSCF,thresh,max_diis,level_shift,nNuc,ZN
   write(*,*) 'Enterning HFB SCF procedure'  
   write(*,*)
   do while(Conv > thresh .and. nSCF < maxSCF)
-   
  
     ! Increment 
 
@@ -427,16 +430,15 @@ subroutine RHFB(dotest,doaordm,doqsGW,maxSCF,thresh,max_diis,level_shift,nNuc,ZN
   deallocate(eigVEC,eigVAL)
   allocate(eigVEC(nOrb,nOrb),eigVAL(nOrb))
   eigVEC(:,:) = 0d0
-  eigVEC(1:nOrb,1:nOrb) = R(1:nOrb,1:nOrb)
+  eigVEC(1:nOrb,1:nOrb) = -R(1:nOrb,1:nOrb)
   call diagonalize_matrix(nOrb,eigVEC,eigVAL)
-  Occ(1:nOrb)   = eigVAL(1:nOrb)
+  Occ(1:nOrb)   = -eigVAL(1:nOrb)
   c = matmul(X,eigVEC)
   call write_restart_HFB(nBas,nOrb,Occ,c,chem_pot) ! Warning: orders Occ and their c in descending order w.r.t. occupation numbers.
   call print_RHFB(nBas,nOrb,nOrb_twice,N_anom,Occ,eHFB_state,ENuc,ET,EV,EJ,EK,EL,EHFB,chem_pot, &
                   dipole,Delta_HL)
   ! DEBUG: Compute <S^2> in the NO basis. This is commented because it is computed in AO basis above. So, we alredy know <S^2>. 
   ! call s2_2rdm_HFB(nBas,nOrb,nOrb_twice,nO,Occ,sigma,c,ERI)
-  if(doqsGW) c(:,:)=X(:,:) ! Recover the Lowdin basis for qsGW
 
 ! Choose the NO representation where the 1-RDM is diag.
 ! Compute W_no and V_no (i.e. diag[H_HFB^no] built in NO basis to obtain W_no and V_no)
@@ -460,9 +462,7 @@ subroutine RHFB(dotest,doaordm,doqsGW,maxSCF,thresh,max_diis,level_shift,nNuc,ZN
   do iorb=1,nOrb
    R(:,:) = R(:,:) + matmul(eigVEC(:,iorb:iorb),transpose(eigVEC(:,iorb:iorb)))
   enddo
-  if(.not.doqsGW) then ! Store U_QP in the NO basis if we are not doing qsGW after  
-   U_QP(:,:) = eigVEC(:,:) 
-  endif
+  U_QP(:,:) = eigVEC(:,:)
 
   ! Check the trace of R and that this is the NO representation
   err_no_rep = 0d0
@@ -486,7 +486,7 @@ subroutine RHFB(dotest,doaordm,doqsGW,maxSCF,thresh,max_diis,level_shift,nNuc,ZN
   write(*,'(A50)') ' HFB QP energies in NO basis'
   write(*,'(A50)') '---------------------------------------'
   do iorb=1,nOrb_twice
-   write(*,'(I7,10F15.8)') iorb,eigVAL(iorb)
+   write(*,'(I7,F15.8)') iorb,eigVAL(iorb)
   enddo
   write(*,*)
 
@@ -495,93 +495,65 @@ subroutine RHFB(dotest,doaordm,doqsGW,maxSCF,thresh,max_diis,level_shift,nNuc,ZN
    call Generalized_Fock_RHFB(nBas,nBas_twice,nOrb,nOrb_twice,ENuc,sigma,c,Hc,H_HFB_ao,Occ,ERI)
   endif
 
-if(.false.) then
-block
-double precision,allocatable :: Ptmp(:,:)
-double precision,allocatable :: Iocc(:,:)
-
-allocate(Ptmp(nBas,nBas))
-allocate(Iocc(nOrb,nOrb))
-
-write(*,*) ' EIGVEC_opt_no'
-do iorb=1,nOrb_twice
-write(*,'(*(f10.5))') eigVEC(iorb,:)
-enddo
-write(*,*) ' R_opt_no'
-do iorb=1,nOrb_twice
-write(*,'(*(f10.5))') R(iorb,:)
-enddo
-Iocc=0d0
-do iorb=1,nO
- Iocc(iorb,iorb)=1d0
-enddo
-Ptmp=matmul(matmul(cHF,Iocc),transpose(cHF))
-write(*,*) ' P_cHF'
-do iorb=1,nBas
-write(*,'(*(f10.5))') Ptmp(iorb,:)
-enddo
-Ptmp=matmul(Ptmp,Ptmp)
-write(*,*) ' P_cHF*P_cHF'
-do iorb=1,nBas
-write(*,'(*(f10.5))') Ptmp(iorb,:)
-enddo
-
-write(*,*) ' P_opt (obtained from the SCF)'
-do iorb=1,nBas
-write(*,'(*(f10.5))') 0.5d0*P(iorb,:)
-enddo
-
-c_ao(:,:) = 0d0
-c_ao(1:nBas           ,1:nOrb           ) = cHF(1:nBas,1:nOrb)
-c_ao(nBas+1:nBas_twice,nOrb+1:nOrb_twice) = cHF(1:nBas,1:nOrb)
-H_HFB = matmul(transpose(c_ao),matmul(H_HFB_ao,c_ao)) ! H_HFB is in the NO basis
-eigVEC(:,:) = H_HFB(:,:)
-
-call diagonalize_matrix(nOrb_twice,eigVEC,eigVAL)
-
-! Build R (as R^no) and save the eigenvectors
-  
-trace_1rdm = 0d0 
-R(:,:)     = 0d0
-do iorb=1,nOrb
- R(:,:) = R(:,:) + matmul(eigVEC(:,iorb:iorb),transpose(eigVEC(:,iorb:iorb)))
-enddo
-write(*,*) ' EIGVEC_opt_cHF'
-do iorb=1,nOrb_twice
-write(*,'(*(f10.5))') eigVEC(iorb,:)
-enddo
-eigVEC=transpose(eigVEC)
-write(*,*) ' EIGVEC_opt_cHF^T'
-do iorb=1,nOrb_twice
-write(*,'(*(f10.5))') eigVEC(iorb,:)
-enddo
-write(*,*) ' R_opt_cHF'
-do iorb=1,nOrb_twice
-write(*,'(*(f10.5))') R(iorb,:)
-enddo
-
-
-Ptmp=matmul(matmul(cHF,R(1:nOrb,1:nOrb)),transpose(cHF))
-write(*,*) ' P_opt (from R in cHF basis, it should be equal to the one obtained in the SCF)'
-do iorb=1,nBas
-write(*,'(*(f10.5))') Ptmp(iorb,:)
-enddo
-Ptmp=matmul(Ptmp,Ptmp)
-write(*,*) ' P_opt*P_opt'
-do iorb=1,nBas
-write(*,'(*(f10.5))') Ptmp(iorb,:)
-enddo
-
-deallocate(Ptmp,Iocc)
-
-end block
-endif
-
 ! Test if it can be a RHF solution
   ! TODO ...
   if(is_fractional .and. .false.) then
-   
+   allocate(Tmp_test_RHF(nOrb_twice,nOrb_twice),Tmat(nOrb,nOrb),eigVEC_mo(nOrb,nOrb),F_mo(nOrb,nOrb),eigVAL_mo(nOrb))
+   eigVEC(1:nOrb           ,nOrb+1:nOrb_twice) =  eigVEC(nOrb+1:nOrb_twice,1:nOrb)
+   eigVEC(nOrb+1:nOrb_twice,nOrb+1:nOrb_twice) = -eigVEC(1:nOrb           ,1:nOrb)
+   Tmp_test_RHF=matmul(matmul(transpose(eigVEC),H_HFB),eigVEC)
+   write(*,*)
+   write(*,*) ' Check that the eigenvectors are W =  ( U   U) by building W and taking W^T H_HFB W = Diag[eigenvalues]'
+   write(*,*) '                                      ( U  -V) '
+   write(*,*) ' ------------------------------------------------------------------------------------------------------'
+   write(*,*)
+   write(*,'(A50)') '---------------------------------------'
+   write(*,'(A50)') ' HFB QP energies using W'
+   write(*,'(A50)') '---------------------------------------'
+   err_no_rep = 0d0
+   do iorb=1,nOrb_twice
+    write(*,'(I7,F15.8)') iorb,Tmp_test_RHF(iorb,iorb)
+    do jorb=iorb+1,nOrb_twice
+     err_no_rep=err_no_rep+abs(Tmp_test_RHF(iorb,jorb)) 
+    enddo
+   enddo
+   write(*,'(A33,1X,F16.10)') ' Error in W eigenstates  = ',err_no_rep
+   write(*,*)
+   Tmat(1:nOrb,1:nOrb)=eigVEC(1:nOrb,1:nOrb)           ! U
+   call inverse_matrix(nOrb,Tmat,Tmat)                 ! U^-1
+   Tmat=matmul(eigVEC(nOrb+1:nOrb_twice,1:nOrb),Tmat)  ! T = V U^-1 
+   F_mo(1:nOrb,1:nOrb)=H_HFB(1:nOrb,1:nOrb)+matmul(H_HFB(1:nOrb,nOrb+1:nOrb_twice),Tmat(1:nOrb,1:nOrb)) ! Fnew = F + Delta T
+   eigVEC_mo=F_mo
+   write(*,*) ' Transformed Fock operator = F + Delta T [ with T = V U^-1 ]'
+   write(*,*)
+   do iorb=1,nOrb
+    write(*,'(*(f10.5))') eigVEC_mo(iorb,:) 
+   enddo
+   write(*,*)
+   call diagonalize_matrix(nOrb,eigVEC_mo,eigVAL_mo)
+   write(*,*) ' Negative eigenvalues'
+   write(*,*)
+   do iorb=1,nOrb
+    write(*,'(f10.5)') eigVAL_mo(iorb)
+   enddo 
+   write(*,*)
+   !c=matmul(c,eigVEC_mo)
+   eigVEC_mo(1:nOrb,1:nOrb) = eigVEC(1:nOrb,1:nOrb) - matmul(Tmat(1:nOrb,1:nOrb),eigVEC(nOrb+1:nOrb_twice,1:nOrb)) ! M = U - T V
+   F_mo(1:nOrb,1:nOrb)=-H_HFB(1:nOrb,1:nOrb)-matmul(Tmat(1:nOrb,1:nOrb),H_HFB(1:nOrb,nOrb+1:nOrb_twice))           ! Fnew = -F - T Delta
+   F_mo=matmul(F_mo,eigVEC_mo)
+   call inverse_matrix(nOrb,eigVEC_mo,eigVEC_mo)
+   F_mo=matmul(eigVEC_mo,F_mo)
+   write(*,*) ' Testing the positive eigenvectors [ U -T V ] of the transformed Fock operator [ - F - T Delta ]'
+   write(*,*) ' Positive eigenvalues'
+   write(*,*)
+   do iorb=1,nOrb
+    write(*,'(f10.5)') F_mo(iorb,iorb) 
+   enddo
+   write(*,*)
+     
+ 
    call do_colinearity_test(nOrb,nOrb_twice,R)
+   deallocate(Tmp_test_RHF,Tmat,eigVEC_mo,eigVAL_mo,F_mo)
   endif
  
 ! Testing zone
@@ -684,8 +656,8 @@ end subroutine
 !
 ! Foldy-Wouthuysen decoupling of the solution to express the HFB eigenvectors
 !
-!    ( U  V )
-!    ( V  U )
+!    ( U   V )
+!    ( V  -U )
 ! as 
 !
 !    ( u  0 )

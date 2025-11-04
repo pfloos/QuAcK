@@ -20,6 +20,7 @@ subroutine print_RHFB_AO_rdms(nBas,ENuc,sigma,S,T,V,P,Panom,ERI)
   double precision              :: trace_1rdm
   double precision              :: trace_2rdm
   double precision              :: S2_val
+  double precision              :: N2_var
   double precision              :: Ecore
   double precision              :: Eee
 
@@ -70,7 +71,8 @@ subroutine print_RHFB_AO_rdms(nBas,ENuc,sigma,S,T,V,P,Panom,ERI)
   write(iunit2) 0,0,0,0,0d0
   close(iunit)
   close(iunit2)
-  ! Compute <S^2>
+  N2_var=2d0*trace_2rdm+trace_1rdm-trace_1rdm**2d0
+  ! Compute <S^2> and <N^2> - <N>^2
   S2_val=0d0
    ! Density contribution
    S2_val=-trace_1rdm*(trace_1rdm-4d0)/4d0
@@ -118,6 +120,7 @@ subroutine print_RHFB_AO_rdms(nBas,ENuc,sigma,S,T,V,P,Panom,ERI)
   write(*,'(a,f17.8)') '   Tr[ 1D^AO ] ',trace_1rdm
   write(*,'(a,f17.8)') '   Tr[ 2D^AO ] ',trace_2rdm
   write(*,'(a,f17.8)') '         <S^2> ',S2_val
+  write(*,'(a,f17.8)') ' <N^2> - <N>^2 ',N2_var
   write(*,*)
 
 

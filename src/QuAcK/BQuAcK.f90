@@ -1,7 +1,7 @@
-subroutine BQuAcK(working_dir,dotest,doaordm,doRHFB,doBRPA,dophRPA,doG0W0,doqsGW,readFCIDUMP,nNuc,nBas,nOrb, &
-                  nO,ENuc,eta,shift,ZNuc,rNuc,S,T,V,Hc,X,dipole_int_AO,maxSCF,max_diis,thresh,level_shift,   &
-                  guess_type,maxSCF_GW,max_diis_GW,thresh_GW,dolinGW,temperature,sigma,chem_pot_hf,          &
-                  restart_hfb,nfreqs,ntimes,wcoord,wweight)
+subroutine BQuAcK(working_dir,dotest,doaordm,doRHFB,doBRPA,dophRPA,doG0W0,doqsGW,doscGW,readFCIDUMP,nNuc,nBas,nOrb, &
+                  nO,ENuc,eta,shift,restart_scGW,ZNuc,rNuc,S,T,V,Hc,X,dipole_int_AO,maxSCF,max_diis,thresh,         &
+                  level_shift,guess_type,maxSCF_GW,max_diis_GW,thresh_GW,dolinGW,temperature,sigma,                 &
+                  chem_pot_hf,restart_hfb,nfreqs,ntimes,wcoord,wweight)
 
 ! Restricted branch of Bogoliubov QuAcK
 
@@ -20,6 +20,8 @@ subroutine BQuAcK(working_dir,dotest,doaordm,doRHFB,doBRPA,dophRPA,doG0W0,doqsGW
   logical,intent(in)             :: doG0W0
   logical,intent(in)             :: doqsGW
   logical,intent(in)             :: dolinGW
+  logical,intent(in)             :: doscGW
+  logical,intent(in)             :: restart_scGW
 
   logical,intent(in)             :: restart_hfb
   logical,intent(in)             :: chem_pot_hf
@@ -50,7 +52,9 @@ subroutine BQuAcK(working_dir,dotest,doaordm,doRHFB,doBRPA,dophRPA,doG0W0,doqsGW
 
 ! Local variables
 
+  logical                        :: no_fock
   logical                        :: file_exists
+
   integer                        :: verbose
   integer                        :: nOrb_twice
   integer                        :: ixyz
@@ -235,11 +239,31 @@ subroutine BQuAcK(working_dir,dotest,doaordm,doRHFB,doBRPA,dophRPA,doG0W0,doqsGW
 
     endif
 
+    ! Do a scGW calculation
+    if(doscGW) then
+
+     allocate(vMAT(nBas*nBas,nBas*nBas))
+     do iorb=1,nBas
+      do jorb=1,nBas
+       do korb=1,nBas
+        do lorb=1,nBas
+         vMAT(1+(korb-1)+(iorb-1)*nOrb,1+(lorb-1)+(jorb-1)*nOrb)=ERI_AO(iorb,jorb,korb,lorb)
+        enddo
+       enddo
+      enddo
+     enddo
+     no_fock=.false.
+     call scGWitauiw_ao(nBas,nOrb,nO,maxSCF_GW,dolinGW,restart_scGW,no_fock,ENuc,Hc,S,pMAT,MOCoef,eHF, &
+                       nfreqs,wcoord,wweight,vMAT,ERI_AO)
+     deallocate(vMAT)
+
+    endif
+
     ! Continue with a HFB calculation
     call wall_time(start_HF)
-    call RHFB(dotest,doaordm,doqsGW,maxSCF,thresh,max_diis,level_shift,nNuc,ZNuc,rNuc,ENuc, &
-             nBas,nOrb,nOrb_twice,nO,S,T,V,Hc,ERI_AO,dipole_int_AO,X,Eelec,eHF,MOCoef,      & 
-             pMAT,panomMAT,Fock,Delta,temperature,sigma,chem_pot_hf,chem_pot,restart_hfb,   &
+    call RHFB(dotest,doaordm,maxSCF,thresh,max_diis,level_shift,nNuc,ZNuc,rNuc,ENuc,      &
+             nBas,nOrb,nOrb_twice,nO,S,T,V,Hc,ERI_AO,dipole_int_AO,X,Eelec,eHF,MOCoef,    & 
+             pMAT,panomMAT,Fock,Delta,temperature,sigma,chem_pot_hf,chem_pot,restart_hfb, &
              U_QP,eQP_state)
     call wall_time(end_HF)
 

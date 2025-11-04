@@ -3,6 +3,7 @@ subroutine orbital_gradient(O,V,N,Nsq,h,ERI_MO,rdm1,rdm2,grad)
 ! Compute the orbital gradient given 1- and 2- rdms
 
   implicit none
+  include 'parameters.h'
       
 ! Input variables
 
@@ -37,8 +38,6 @@ subroutine orbital_gradient(O,V,N,Nsq,h,ERI_MO,rdm1,rdm2,grad)
       pq = pq + 1
 
       do r=1,N
-        write(*,*) p,r
-        write(*,*) rdm1(p,r)
         grad(pq) = grad(pq) + h(r,p)*rdm1(r,q) - h(q,r)*rdm1(p,r) &
                    - h(r,q)*rdm1(r,p) + h(p,r)*rdm1(q,r)
       end do
@@ -46,7 +45,7 @@ subroutine orbital_gradient(O,V,N,Nsq,h,ERI_MO,rdm1,rdm2,grad)
       do r=1,N
         do s=1,N
           do t=1,N
-            grad(pq) = grad(pq) + (ERI_MO(r,s,p,t)*rdm2(r,s,q,t) - ERI_MO(q,t,r,s)*rdm2(p,t,r,s)) &
+           grad(pq) = grad(pq) + (ERI_MO(r,s,p,t)*rdm2(r,s,q,t) - ERI_MO(q,t,r,s)*rdm2(p,t,r,s)) &
                                 - (ERI_MO(r,s,q,t)*rdm2(r,s,p,t) - ERI_MO(p,t,r,s)*rdm2(q,t,r,s))
           end do
         end do
@@ -59,7 +58,7 @@ subroutine orbital_gradient(O,V,N,Nsq,h,ERI_MO,rdm1,rdm2,grad)
 
   if(debug) then
 
-    write(*,*) 'Orbital gradient at the pCCD level:'
+    write(*,*) 'Orbital gradient at the level:'
     call matout(N,N,grad)
     write(*,*)
 

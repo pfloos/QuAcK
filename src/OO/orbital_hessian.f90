@@ -3,6 +3,7 @@ subroutine orbital_hessian(O,V,N,Nsq,h,ERI_MO,rdm1,rdm2,hess)
 ! Compute the orbital hessian given 1- and 2- rdms
 
   implicit none
+  include 'parameters.h'
       
 ! Input variables
 
@@ -23,6 +24,8 @@ subroutine orbital_hessian(O,V,N,Nsq,h,ERI_MO,rdm1,rdm2,hess)
   logical,parameter             :: debug = .false.
 
   double precision,allocatable  :: tmp(:,:,:,:)
+  double precision,allocatable  :: hess2(:,:)
+  double precision,allocatable  :: e(:)
 
   double precision,external     :: Kronecker_delta
 
@@ -76,7 +79,7 @@ subroutine orbital_hessian(O,V,N,Nsq,h,ERI_MO,rdm1,rdm2,hess)
 
                 tmp(p,q,r,s) = tmp(p,q,r,s) + 0.5d0*(                                                    & 
                     Kronecker_delta(q,r)*(ERI_MO(u,w,p,t)*rdm2(u,w,s,t) + ERI_MO(s,t,u,w)*rdm2(p,t,u,w)) &
-                  + Kronecker_delta(p,s)*(ERI_MO(q,t,u,w)*rdm2(r,t,u,w) + ERI_MO(u,w,r,t)*rdm2(u,w,q,t)) )
+                  + Kronecker_delta(p,s)*(ERI_MO(q,t,u,w)*rdm2(r,t,u,w) + ERI_MO(u,w,r,t)*rdm2(u,w,q,t)))
 
               end do
             end do
@@ -102,20 +105,21 @@ subroutine orbital_hessian(O,V,N,Nsq,h,ERI_MO,rdm1,rdm2,hess)
 
           rs = rs + 1
 
-          hess(pq,rs) = tmp(p,r,q,s) - tmp(r,p,q,s) - tmp(p,r,s,q) + tmp(r,p,s,q)
-!         hess(pq,rs) = tmp(p,q,r,s) - tmp(q,p,r,s) - tmp(p,q,s,r) + tmp(q,p,s,r)
+!         hess(pq,rs) = tmp(p,r,q,s) - tmp(r,p,q,s) - tmp(p,r,s,q) + tmp(r,p,s,q)
+         hess(pq,rs) = tmp(p,q,r,s) - tmp(q,p,r,s) - tmp(p,q,s,r) + tmp(q,p,s,r)
 
         end do
       end do
 
     end do
   end do
+deallocate(tmp)
 
 ! Dump Hessian
 
   if(debug) then
 
-    write(*,*) 'Orbital Hessian at the pCCD level:'
+    write(*,*) 'Orbital Hessian at the level:'
     call matout(Nsq,Nsq,hess)
     write(*,*)
 

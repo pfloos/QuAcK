@@ -1,38 +1,45 @@
 
 ! ---
 
-subroutine print_RHFB(nBas, nOrb, nOrb_twice, N_anom, Occ, eHFB_state, ENuc, ET, EV, EJ, EK, EL, ERHF, &
-           chem_pot, dipole, Delta_HL)
+subroutine print_eRHF(nBas, nOrb, nO, eHF, cHF, ENuc, ET, EV, EJ, EK, ERHF, dipole)
 
-! Print one-electron energies and other stuff
+! Print one-electron energies and other stuff for G0W0
 
   implicit none
   include 'parameters.h'
 
 ! Input variables
 
-  integer,intent(in)                 :: nBas, nOrb, nOrb_twice
-  double precision,intent(in)        :: Occ(nOrb)
-  double precision,intent(in)        :: eHFB_state(nOrb_twice)
+  integer,intent(in)                 :: nBas, nOrb
+  integer,intent(in)                 :: nO
+  double precision,intent(in)        :: eHF(nOrb)
+  double precision,intent(in)        :: cHF(nBas,nOrb)
   double precision,intent(in)        :: ENuc
   double precision,intent(in)        :: ET
   double precision,intent(in)        :: EV
   double precision,intent(in)        :: EJ
   double precision,intent(in)        :: EK
-  double precision,intent(in)        :: EL
   double precision,intent(in)        :: ERHF
-  double precision,intent(in)        :: chem_pot
-  double precision,intent(in)        :: N_anom
-  double precision,intent(in)        :: Delta_HL
   double precision,intent(in)        :: dipole(ncart)
 
 ! Local variables
 
-  integer                            :: iorb
   integer                            :: ixyz
-  double precision                   :: trace_occ
+  integer                            :: HOMO
+  integer                            :: LUMO
+  double precision                   :: Gap
+  double precision                   :: S,S2
 
   logical                            :: dump_orb = .false.
+
+! HOMO and LUMO
+
+  HOMO = nO
+  LUMO = HOMO + 1
+  Gap = eHF(LUMO)-eHF(HOMO)
+
+  S2 = 0d0
+  S  = 0d0
 
 ! Dump results
 
@@ -44,18 +51,13 @@ subroutine print_RHFB(nBas, nOrb, nOrb_twice, N_anom, Occ, eHFB_state, ENuc, ET,
   write(*,'(A33,1X,F16.10,A3)') ' Kinetic      energy = ',ET,' au'
   write(*,'(A33,1X,F16.10,A3)') ' Potential    energy = ',EV,' au'
   write(*,'(A50)')           '---------------------------------------'
-  write(*,'(A33,1X,F16.10,A3)') ' Two-electron energy = ',EJ + EK + EL,' au'
+  write(*,'(A33,1X,F16.10,A3)') ' Two-electron energy = ',EJ + EK,' au'
   write(*,'(A33,1X,F16.10,A3)') ' Hartree      energy = ',EJ,' au'
   write(*,'(A33,1X,F16.10,A3)') ' Exchange     energy = ',EK,' au'
-  write(*,'(A33,1X,F16.10,A3)') ' Anomalous    energy = ',EL,' au'
   write(*,'(A50)')           '---------------------------------------'
   write(*,'(A33,1X,F16.10,A3)') ' Electronic   energy = ',ERHF,' au'
   write(*,'(A33,1X,F16.10,A3)') ' Nuclear   repulsion = ',ENuc,' au'
-  write(*,'(A33,1X,F16.10,A3)') ' HFB          energy = ',ERHF + ENuc,' au'
-  write(*,'(A50)')           '---------------------------------------'
-  write(*,'(A33,1X,F16.10,A3)') ' Chemical potential  = ',chem_pot,' au'
-  write(*,'(A33,1X,F16.10,A3)') ' | Anomalous dens |  = ',N_anom,'   '
-  write(*,'(A33,1X,F16.10,A3)') ' Delta QP HOMO-LUMO  = ',Delta_HL,' au'
+  write(*,'(A33,1X,F16.10,A3)') ' ensemble RHF energy = ',ERHF + ENuc,' au'
   write(*,'(A50)')           '---------------------------------------'
   write(*,'(A36)')           ' Dipole moment (Debye)    '
   write(*,'(10X,4A10)')      'X','Y','Z','Tot.'
@@ -65,27 +67,17 @@ subroutine print_RHFB(nBas, nOrb, nOrb_twice, N_anom, Occ, eHFB_state, ENuc, ET,
 
 ! Print results
 
+  if(dump_orb) then 
+    write(*,'(A50)') '---------------------------------------'
+    write(*,'(A50)') ' RHF orbital coefficients '
+    write(*,'(A50)') '---------------------------------------'
+    call matout(nBas, nOrb, cHF)
+    write(*,*)
+  end if
   write(*,'(A50)') '---------------------------------------'
-  write(*,'(A50)') ' HFB occupation numbers '
+  write(*,'(A50)') ' RHF orbital energies (au) '
   write(*,'(A50)') '---------------------------------------'
-  trace_occ=0d0
-  do iorb=1,nOrb
-   if(abs(Occ(iorb))>1d-8) then
-    write(*,'(I7,10F15.8)') iorb,2d0*Occ(iorb)
-   endif
-   trace_occ=trace_occ+2d0*Occ(iorb)
-  enddo
+  call vecout(nOrb, eHF)
   write(*,*)
-  write(*,'(A33,1X,F16.10,A3)') ' Trace [ 1D ]        = ',trace_occ,'   '
-  write(*,*)
-
-  write(*,'(A50)') '---------------------------------------'
-  write(*,'(A50)') ' HFB QP energies '
-  write(*,'(A50)') '---------------------------------------'
-  do iorb=1,nOrb_twice
-   write(*,'(I7,F15.8)') iorb,eHFB_state(iorb)
-  enddo
-  write(*,*)
-
 
 end subroutine 

@@ -8,6 +8,7 @@ subroutine fit_y_eq_ax2_bx_c(npoints,x,y,abc,error)
  logical                      :: diagco
 
  ! Local variables
+ integer                       :: icall
  integer                       :: iflag
  integer                       :: ipoint
  double precision              :: abc_grad(3)
@@ -216,9 +217,9 @@ subroutine matrix_exponential(N, A, ExpA)
   W(:,:) = - matmul(A, A)
   call diagonalize_matrix(N, W, tau)
 
-! do i=1,N
-!   tau(i) = max(abs(tau(i)),1d-14)
-! end do
+  do i=1,N
+    tau(i) = max(abs(tau(i)),1d-14)
+  end do
   tau(:) = sqrt(abs(tau(:)))
 
 ! Construct cos part

@@ -1,4 +1,4 @@
-subroutine optimize_orbitals(nBas,nOrb,nV,nR,nC,nO,N,Nsq,O,V,ERI_AO,ERI_MO,h,rdm1,rdm2,c,OOConv)
+subroutine G_optimize_orbitals(nBas,nBas2,nV,nR,nC,nO,N,Nsq,O,V,ERI_AO,ERI_MO,h,rdm1,rdm2,c,OOConv)
 
 ! Calculate gradient and Hessian and rotate orbitals accordingly. Returns ERI and h in new MOs.
 
@@ -8,9 +8,9 @@ subroutine optimize_orbitals(nBas,nOrb,nV,nR,nC,nO,N,Nsq,O,V,ERI_AO,ERI_MO,h,rdm
 
 ! Input variables
 
-  integer,intent(in)            :: nBas,nOrb,nV,nR,nC,nO,N,V,O,Nsq
+  integer,intent(in)            :: nBas,nBas2,nV,nR,nC,nO,N,V,O,Nsq
   double precision,intent(in)   :: ERI_AO(nBas,nBas,nBas,nBas)
-  double precision,intent(in)   :: h(nOrb,nOrb)
+  double precision,intent(in)   :: h(nBas2,nBas2)
   double precision,intent(in)   :: rdm1(N,N)
   double precision,intent(in)   :: rdm2(N,N,N,N)
 
@@ -22,8 +22,8 @@ subroutine optimize_orbitals(nBas,nOrb,nV,nR,nC,nO,N,Nsq,O,V,ERI_AO,ERI_MO,h,rdm
 
 ! Output variables
 
-  double precision,intent(inout)   :: ERI_MO(nOrb,nOrb,nOrb,nOrb)
-  double precision,intent(inout)   :: c(nBas,nOrb)
+  double precision,intent(inout)   :: ERI_MO(nBas2,nBas2,nBas2,nBas2)
+  double precision,intent(inout)   :: c(nBas2,nBas2)
   double precision,intent(out)     :: OOConv
 
   !--------------------------!
@@ -33,6 +33,7 @@ subroutine optimize_orbitals(nBas,nOrb,nV,nR,nC,nO,N,Nsq,O,V,ERI_AO,ERI_MO,h,rdm
   allocate(grad(Nsq))
   grad(:) = 0d0
   call orbital_gradient(O,V,N,Nsq,h,ERI_MO,rdm1,rdm2,grad)
+!  call matout(N,N,grad)
  
   ! Check convergence of orbital optimization
   OOConv = maxval(grad)
@@ -45,15 +46,19 @@ subroutine optimize_orbitals(nBas,nOrb,nV,nR,nC,nO,N,Nsq,O,V,ERI_AO,ERI_MO,h,rdm
   hess(:,:) = 0d0 
   call orbital_hessian(O,V,N,Nsq,h,ERI_MO,rdm1,rdm2,hess)
   
-  write(*,*) "Hessian"
-  call matout(Nsq,Nsq,hess)
+!  write(*,*) "Hessian"
+!  call matout(Nsq,Nsq,hess)
  
+  do p=1,Nsq
+    hess(p,p) = hess(p,p) + 0.001d0
+  enddo
+  
   allocate(hessInv(Nsq,Nsq))
  
-  call inverse_matrix(Nsq,hess,hessInv)
+  call pseudo_inverse_matrix(Nsq,hess,hessInv)
   
-  write(*,*) "Inv Hessian"
-  call matout(Nsq,Nsq,hessInv)
+ ! write(*,*) "Inv Hessian"
+ ! call matout(Nsq,Nsq,hessInv)
   
   deallocate(hess)
  
@@ -62,14 +67,14 @@ subroutine optimize_orbitals(nBas,nOrb,nV,nR,nC,nO,N,Nsq,O,V,ERI_AO,ERI_MO,h,rdm
   Kap(:,:) = 0d0
  
   pq = 0
-  do p=1,nOrb
-    do q=1,nOrb
+  do p=1,nBas2
+    do q=1,nBas2
  
       pq = pq + 1
  
       rs = 0
-      do r=1,nOrb
-        do s=1,nOrb
+      do r=1,nBas2
+        do s=1,nBas2
  
           rs = rs + 1
  
@@ -83,27 +88,27 @@ subroutine optimize_orbitals(nBas,nOrb,nV,nR,nC,nO,N,Nsq,O,V,ERI_AO,ERI_MO,h,rdm
  
   deallocate(hessInv,grad)
 
-  write(*,*) 'kappa'
-  call matout(nOrb,nOrb,Kap)
-  write(*,*)
+!  write(*,*) 'kappa'
+!  call matout(nBas2,nBas2,Kap)
+!  write(*,*)
  
   allocate(ExpKap(N,N))
   call matrix_exponential(N,Kap,ExpKap)
   deallocate(Kap)
  
-  write(*,*) 'e^kappa'
-  call matout(nOrb,nOrb,ExpKap)
-  write(*,*)
- 
-  write(*,*) 'Old orbitals'
-  call matout(nBas,nOrb,c)
-  write(*,*)
+!  write(*,*) 'e^kappa'
+!  call matout(nBas2,nBas2,ExpKap)
+!  write(*,*)
+! 
+!  write(*,*) 'Old orbitals'
+!  call matout(nBas2,nBas2,c)
+!  write(*,*)
  
   c = matmul(c,ExpKap)
   deallocate(ExpKap)
  
-  write(*,*) 'Rotated orbitals'
-  call matout(nBas,N,c)
-  write(*,*)
+!  write(*,*) 'Rotated orbitals'
+!  call matout(nBas2,N,c)
+!  write(*,*)
 
 end subroutine
