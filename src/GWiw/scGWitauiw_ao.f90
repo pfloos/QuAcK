@@ -1,4 +1,4 @@
-subroutine scGWitauiw_ao(nBas,nOrb,nO,maxSCF,dolinGW,restart_scGW,no_fock,ENuc,Hc,S,P_in,cHF,eHF, &
+subroutine scGWitauiw_ao(nBas,nOrb,nO,maxSCF,maxDIIS,dolinGW,restart_scGW,no_fock,ENuc,Hc,S,P_in,cHF,eHF, &
                         nfreqs,wcoord,wweight,vMAT,ERI_AO)
 
 ! Restricted scGW
@@ -16,6 +16,7 @@ subroutine scGWitauiw_ao(nBas,nOrb,nO,maxSCF,dolinGW,restart_scGW,no_fock,ENuc,H
   integer,intent(in)            :: nOrb
   integer,intent(in)            :: nO
   integer,intent(in)            :: maxSCF
+  integer,intent(in)            :: maxDIIS
 
   double precision,intent(in)   :: ENuc
   double precision,intent(in)   :: Hc(nBas,nBas)
@@ -29,10 +30,13 @@ subroutine scGWitauiw_ao(nBas,nOrb,nO,maxSCF,dolinGW,restart_scGW,no_fock,ENuc,H
   logical                       :: file_exists
 
   integer                       :: iunit=312
+  integer                       :: n_diis
   integer                       :: verbose
   integer                       :: nneg
   integer                       :: ntimes
+  integer                       :: nBasSqntimes2
   integer                       :: ntimes_twice
+  integer                       :: idiis_index
   integer                       :: itau,ifreq
   integer                       :: ibas,jbas,kbas,lbas,nBas2
   integer                       :: iter,iter_fock
@@ -41,6 +45,7 @@ subroutine scGWitauiw_ao(nBas,nOrb,nO,maxSCF,dolinGW,restart_scGW,no_fock,ENuc,H
 
   double precision              :: start_scGWitauiw     ,end_scGWitauiw       ,t_scGWitauiw
 
+  double precision              :: rcond
   double precision              :: alpha_mixing
   double precision              :: Ehfl,EcGM
   double precision              :: trace1,trace2
@@ -90,6 +95,10 @@ subroutine scGWitauiw_ao(nBas,nOrb,nO,maxSCF,dolinGW,restart_scGW,no_fock,ENuc,H
   complex*16,allocatable        :: Chi0_ao_iw(:,:,:)
   complex*16,allocatable        :: error_transf_mo(:,:,:)
   complex*16,allocatable        :: Sigma_c_w_mo(:,:)
+  complex*16,allocatable        :: err_current(:)
+  complex*16,allocatable        :: G_itau_extrap(:)
+  complex*16,allocatable        :: err_diis(:,:)
+  complex*16,allocatable        :: G_itau_old_diis(:,:)
 
 ! Output variables
   integer,intent(inout)         :: nfreqs
@@ -110,6 +119,7 @@ subroutine scGWitauiw_ao(nBas,nOrb,nO,maxSCF,dolinGW,restart_scGW,no_fock,ENuc,H
  write(*,*)'*****************************************'
  write(*,*)
 
+ n_diis=0
  verbose=0
  eta=0d0
  thrs_N=1d-10
@@ -120,6 +130,7 @@ subroutine scGWitauiw_ao(nBas,nOrb,nO,maxSCF,dolinGW,restart_scGW,no_fock,ENuc,H
  chem_pot_saved = 0.5d0*(eHF(nO)+eHF(nO+1))
  chem_pot = chem_pot_saved
  alpha_mixing=0.6d0
+ rcond=0d0
  Ehfl=0d0
  write(*,*)
  write(*,'(A33,1X,F16.10,A3)') ' Initial chemical potential  = ',chem_pot,' au'
@@ -170,6 +181,7 @@ subroutine scGWitauiw_ao(nBas,nOrb,nO,maxSCF,dolinGW,restart_scGW,no_fock,ENuc,H
 
  ntimes=nfreqs
  ntimes_twice=2*ntimes
+ nBasSqntimes2=nBas2*ntimes_twice
  allocate(tweight(ntimes),tcoord(ntimes))
  allocate(sint2w_weight(nfreqs,ntimes))
  allocate(cost2w_weight(nfreqs,ntimes))
@@ -179,6 +191,20 @@ subroutine scGWitauiw_ao(nBas,nOrb,nO,maxSCF,dolinGW,restart_scGW,no_fock,ENuc,H
  allocate(G_ao_itau(ntimes_twice,nBas,nBas),G_ao_itau_hf(ntimes_twice,nBas,nBas))
  allocate(G_ao_itau_old(ntimes_twice,nBas,nBas))
  allocate(Wp_ao_itau(ntimes,nBas2,nBas2))
+ allocate(err_current(1))
+ allocate(G_itau_extrap(1))
+ allocate(err_diis(1,1))
+ allocate(G_itau_old_diis(1,1))
+ if(maxDIIS>0) then
+  deallocate(err_current)
+  deallocate(G_itau_extrap)
+  deallocate(err_diis)
+  deallocate(G_itau_old_diis)
+  allocate(err_current(nBasSqntimes2))
+  allocate(G_itau_extrap(nBasSqntimes2))
+  allocate(err_diis(nBasSqntimes2,maxDIIS))
+  allocate(G_itau_old_diis(nBasSqntimes2,maxDIIS))
+ endif
 
 !---------------!
 ! Reading grids !
@@ -547,7 +573,32 @@ subroutine scGWitauiw_ao(nBas,nOrb,nO,maxSCF,dolinGW,restart_scGW,no_fock,ENuc,H
   enddo
  
   ! Do mixing with previous G(i tau) to facilitate convergence
-  G_ao_itau(:,:,:)=alpha_mixing*G_ao_itau(:,:,:)+(1d0-alpha_mixing)*G_ao_itau_old(:,:,:)
+  if(maxDIIS>0) then
+   n_diis=min(n_diis+1,maxDIIS)
+   err_current=czero
+   idiis_index=1
+   do itau=1,ntimes_twice
+    do ibas=1,nBas
+     do jbas=1,nBas
+      err_current(idiis_index)=G_ao_itau(itau,ibas,jbas)-G_ao_itau_old(itau,ibas,jbas)
+      G_itau_extrap(idiis_index)=G_ao_itau(itau,ibas,jbas)
+      idiis_index=idiis_index+1
+     enddo
+    enddo
+   enddo
+   call complex_DIIS_extrapolation(rcond,nBasSqntimes2,nBasSqntimes2,n_diis,err_diis,G_itau_old_diis,err_current,G_itau_extrap)
+   idiis_index=1
+   do itau=1,ntimes_twice
+    do ibas=1,nBas
+     do jbas=1,nBas
+      G_ao_itau(itau,ibas,jbas)=G_itau_extrap(idiis_index) 
+      idiis_index=idiis_index+1
+     enddo
+    enddo
+   enddo
+  else
+   G_ao_itau(:,:,:)=alpha_mixing*G_ao_itau(:,:,:)+(1d0-alpha_mixing)*G_ao_itau_old(:,:,:)
+  endif
   G_ao_itau_old(:,:,:)=G_ao_itau(:,:,:)
 
  enddo
@@ -647,5 +698,9 @@ subroutine scGWitauiw_ao(nBas,nOrb,nO,maxSCF,dolinGW,restart_scGW,no_fock,ENuc,H
  deallocate(G_minus_itau,G_plus_itau) 
  deallocate(G_ao_1,G_ao_2) 
  deallocate(Chi0_ao_itau) 
+ deallocate(err_current)
+ deallocate(G_itau_extrap)
+ deallocate(err_diis)
+ deallocate(G_itau_old_diis)
 
 end subroutine 
