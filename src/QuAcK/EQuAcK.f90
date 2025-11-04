@@ -1,5 +1,5 @@
-subroutine EQuAcK(working_dir,dotest,doeRHF,readFCIDUMP,nNuc,nBas,nOrb,nO,ENuc,ZNuc,rNuc,S,T,V,Hc,X,dipole_int_AO, &
-                  maxSCF,max_diis,thresh,level_shift,guess_type,eweight,eforward)
+subroutine EQuAcK(working_dir,dotest,doaordm,doeRHF,readFCIDUMP,nNuc,nBas,nOrb,nO,ENuc,ZNuc,rNuc,S,T,V,Hc,X, &
+                  dipole_int_AO,maxSCF,max_diis,thresh,level_shift,guess_type,eweight,eforward)
 
 ! Restricted branch of Bogoliubov QuAcK
 
@@ -9,6 +9,7 @@ subroutine EQuAcK(working_dir,dotest,doeRHF,readFCIDUMP,nNuc,nBas,nOrb,nO,ENuc,Z
   character(len=256),intent(in)  :: working_dir
                                  
   logical,intent(in)             :: eforward
+  logical,intent(in)             :: doaordm
   logical,intent(in)             :: dotest
   logical,intent(in)             :: doeRHF
   logical,intent(in)             :: readFCIDUMP
@@ -112,9 +113,8 @@ subroutine EQuAcK(working_dir,dotest,doeRHF,readFCIDUMP,nNuc,nBas,nOrb,nO,ENuc,Z
 
     ! Run first a RHF calculation 
     call wall_time(start_HF)
-    call ensembleRHF(dotest,maxSCF,thresh,max_diis,guess_type,level_shift,nNuc,ZNuc,rNuc,ENuc, &
-                     nBas,nOrb,nO,S,T,V,Hc,ERI_AO,dipole_int_AO,X,EeleSD,eweight,eforward,eHF, &
-                     MOCoef,pMAT,Fock)
+    call ensembleRHF(dotest,doaordm,maxSCF,thresh,max_diis,guess_type,level_shift,nNuc,ZNuc,rNuc,ENuc, &
+                     nBas,nOrb,nO,S,T,V,Hc,ERI_AO,dipole_int_AO,X,EeleSD,eweight,eforward,eHF,MOCoef,pMAT,Fock)
     call wall_time(end_HF)
 
     t_HF = end_HF - start_HF

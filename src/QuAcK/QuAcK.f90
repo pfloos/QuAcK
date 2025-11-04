@@ -414,8 +414,8 @@ program QuAcK
 ! Ensemble QuAcK branch !
 !-----------------------!
   if(doEQuAcK) & 
-    call EQuAcK(working_dir,dotest,doeRHF,readFCIDUMP,nNuc,nBas,nOrb,nO,ENuc,ZNuc,rNuc,S,T,V,Hc,X,dipole_int_AO, &
-                maxSCF_HF,max_diis_HF,thresh_HF,level_shift,guess_type,eweight,eforward)
+    call EQuAcK(working_dir,dotest,doaordm,doeRHF,readFCIDUMP,nNuc,nBas,nOrb,nO,ENuc,ZNuc,rNuc,S,T,V,Hc,X, &
+                dipole_int_AO,maxSCF_HF,max_diis_HF,thresh_HF,level_shift,guess_type,eweight,eforward)
 
 !-------------------------!
 ! Bogoliubov QuAcK branch !
