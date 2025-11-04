@@ -289,12 +289,7 @@ subroutine OOGG0W0(dotest,doACFDT,exchange_kernel,doXBS,dophBSE,dophBSE2,TDA_W,T
     YYT               = matmul(Y,transpose(Y)) 
     XYT               = matmul(X,transpose(Y)) 
     XXT               = matmul(X,transpose(X))
-    call phUACFDT_correlation_energy(1,.true.,nBas,nC,nO,nV,nR,nS,nS/2,nS/2,nS,&
-            ERI_MO(1:nBas,1:nBas,1:nBas,1:nBas),&
-            ERI_MO(1:nBas,1:nBas,nBas+1:2*nBas,nBas+1:2*nBas),&
-            ERI_MO(nBas+1:2*nBas,nBas+1:2*nBas,nBas+1:2*nBas,nBas+1:2*nBas),&
-            XpY,XmY,EcRPA_AC)
-    write(*,*) "Ecrpa ACFDT /2" , EcRPA_AC/2
+    
     do i = 1, O
       do a = O+1, N
         do jind = 1, O
@@ -303,40 +298,34 @@ subroutine OOGG0W0(dotest,doACFDT,exchange_kernel,doXBS,dophBSE,dophBSE2,TDA_W,T
             ia = a - O +    (i - 1) * V
            rdm2_rpa(b,i,jind,a)  = rdm2_rpa(b,i,jind,a) & 
                              + XXT(jb,ia) + YYT(jb,ia) - Kronecker_delta(jb,ia) 
-           rdm2_rpa(b,jind,a,i)  = rdm2_rpa(b,jind,a,i) & 
-                             - (XXT(jb,ia) + YYT(jb,ia) - Kronecker_delta(jb,ia))
            rdm2_rpa(i,jind,a,b)  = rdm2_rpa(i,jind,a,b) & 
                              + XYT(jb,ia) + XYT(ia,jb) 
-           rdm2_rpa(i,jind,b,a)  = rdm2_rpa(i,jind,b,a) & 
-                             - XYT(jb,ia) - XYT(ia,jb)
-           ! ! Contributions from fab*dij - fij*dab
-           ! if(i==jind) then
-           !   rdm1_rpa(a,b) = rdm1_rpa(a,b) & 
-           !             + 0.5d0*(XXT(jb,ia) + YYT(jb,ia) - Kronecker_delta(jb,ia))
-           !   do l=1,O
-           !     rdm2_rpa(a,l,b,l) = rdm2_rpa(a,l,b,l) & 
-           !                  + (XXT(jb,ia) + YYT(jb,ia) - Kronecker_delta(jb,ia))
-           !     rdm2_rpa(a,l,l,b) = rdm2_rpa(a,l,l,b) &
-           !                  - (XXT(jb,ia) + YYT(jb,ia) - Kronecker_delta(jb,ia))
-           !   enddo
-           ! endif
-           ! if(a==b) then
-           !   rdm1_rpa(jind,i) = rdm1_rpa(jind,i) &
-           !               - 0.5d0*(XXT(jb,ia) + YYT(jb,ia) - Kronecker_delta(jb,ia))
-           !   do l=1,O
-           !     rdm2_rpa(jind,l,i,l) = rdm2_rpa(jind,l,i,l) &
-           !                     -  (XXT(jb,ia) + YYT(jb,ia) - Kronecker_delta(jb,ia))
-           !     rdm2_rpa(jind,l,l,i) = rdm2_rpa(jind,l,l,i) & 
-           !                     +  (XXT(jb,ia) + YYT(jb,ia) - Kronecker_delta(jb,ia))
-           !   enddo
-           ! endif
+            ! Contributions from fab*dij - fij*dab
+            if(i==jind) then
+              rdm1_rpa(a,b) = rdm1_rpa(a,b) & 
+                        + 0.5d0*(XXT(jb,ia) + YYT(jb,ia) - Kronecker_delta(jb,ia))
+              do l=1,O
+                rdm2_rpa(a,l,b,l) = rdm2_rpa(a,l,b,l) & 
+                             + (XXT(jb,ia) + YYT(jb,ia) - Kronecker_delta(jb,ia))
+                rdm2_rpa(a,l,l,b) = rdm2_rpa(a,l,l,b) &
+                             - (XXT(jb,ia) + YYT(jb,ia) - Kronecker_delta(jb,ia))
+              enddo
+            endif
+            if(a==b) then
+              rdm1_rpa(jind,i) = rdm1_rpa(jind,i) &
+                          - 0.5d0*(XXT(jb,ia) + YYT(jb,ia) - Kronecker_delta(jb,ia))
+              do l=1,O
+                rdm2_rpa(jind,l,i,l) = rdm2_rpa(jind,l,i,l) &
+                                -  (XXT(jb,ia) + YYT(jb,ia) - Kronecker_delta(jb,ia))
+                rdm2_rpa(jind,l,l,i) = rdm2_rpa(jind,l,l,i) & 
+                                +  (XXT(jb,ia) + YYT(jb,ia) - Kronecker_delta(jb,ia))
+              enddo
+            endif
           enddo
         enddo
       enddo
     enddo
 
-!    write(*,*) "rdm2 rpa"
-!    call matout(Nsq,Nsq,rdm2_rpa)
     write(*,*) "EcRPA = ", EcRPA
     write(*,*) "EGHF (usual stationary one)", EGHF
     write(*,*) "EGHF + EcRPA", EGHF + EcRPA
