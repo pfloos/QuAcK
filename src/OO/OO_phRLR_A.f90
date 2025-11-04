@@ -26,7 +26,6 @@ subroutine OO_phRLR_A(ispin,dRPA,nBas,nC,nO,nV,nR,nS,lambda,F,ERI,Aph)
 
   integer                      :: i,j,a,b,ia,jb
   integer                      :: nn,jb0
-  logical                      :: i_eq_j
   double precision             :: ct1,ct2
 
 ! Output variables
@@ -46,7 +45,7 @@ subroutine OO_phRLR_A(ispin,dRPA,nBas,nC,nO,nV,nR,nS,lambda,F,ERI,Aph)
     ct1 = 2d0 * lambda
     ct2 = - (1d0 - delta_dRPA) * lambda
     !$OMP PARALLEL DEFAULT(NONE)                    &
-    !$OMP PRIVATE (i, a, j, b, i_eq_j, ia, jb0, jb) &
+    !$OMP PRIVATE (i, a, j, b, ia, jb0, jb) &
     !$OMP SHARED (nC, nO, nR, nBas, nn, ct1, ct2, F, ERI, Aph)
     !$OMP DO COLLAPSE(2)
     do i = nC+1, nO
@@ -54,15 +53,14 @@ subroutine OO_phRLR_A(ispin,dRPA,nBas,nC,nO,nV,nR,nS,lambda,F,ERI,Aph)
         ia = a - nO + (i - nC - 1) * nn
 
         do j = nC+1, nO
-          i_eq_j = i == j
           jb0 = (j - nC - 1) * nn - nO
 
           do b = nO+1, nBas-nR
             jb = b + jb0
 
             Aph(ia,jb) = ct1 * ERI(b,i,j,a) + ct2 * ERI(b,j,a,i)
-           if(i_eq_j) then
-             if(a == b) Aph(ia,jb) = Aph(ia,jb) + F(a,b)*Kronecker_delta(i,j) &
+           if((i==j) .or. (a == b)) then
+             Aph(ia,jb) = Aph(ia,jb) + F(a,b)*Kronecker_delta(i,j) &
                                                 - F(j,i) *Kronecker_delta(a,b)
            endif
           enddo
@@ -80,7 +78,7 @@ subroutine OO_phRLR_A(ispin,dRPA,nBas,nC,nO,nV,nR,nS,lambda,F,ERI,Aph)
     nn = nBas - nR - nO
     ct2 = - (1d0 - delta_dRPA) * lambda
     !$OMP PARALLEL DEFAULT(NONE)                    &
-    !$OMP PRIVATE (i, a, j, b, i_eq_j, ia, jb0, jb) &
+    !$OMP PRIVATE (i, a, j, b, ia, jb0, jb) &
     !$OMP SHARED (nC, nO, nR, nBas, nn, ct2, F, ERI, Aph)
     !$OMP DO COLLAPSE(2)
     do i = nC+1, nO
@@ -88,15 +86,14 @@ subroutine OO_phRLR_A(ispin,dRPA,nBas,nC,nO,nV,nR,nS,lambda,F,ERI,Aph)
         ia = a - nO + (i - nC - 1) * nn
 
         do j = nC+1, nO
-          i_eq_j = i == j
           jb0 = (j - nC - 1) * nn - nO
 
           do b = nO+1, nBas-nR
             jb = b + jb0
 
             Aph(ia,jb) = ct2 * ERI(b,j,a,i)
-            if(i_eq_j) then
-              if(a == b) Aph(ia,jb) = Aph(ia,jb) + F(a,b)*Kronecker_delta(i,j) &
+            if((i==j) .or. (a==b)) then
+              Aph(ia,jb) = Aph(ia,jb) + F(a,b)*Kronecker_delta(i,j) &
                                                  - F(j,i) *Kronecker_delta(a,b)
 
             endif
