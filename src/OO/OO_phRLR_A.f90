@@ -61,10 +61,10 @@ subroutine OO_phRLR_A(ispin,dRPA,nBas,nC,nO,nV,nR,nS,lambda,F,ERI,Aph)
             jb = b + jb0
 
             Aph(ia,jb) = ct1 * ERI(b,i,j,a) + ct2 * ERI(b,j,a,i)
-            if(i_eq_j) then
-              if(a == b) Aph(ia,jb) = Aph(ia,jb) + F(a,b)*Kronecker_delta(i,j) &
-                                                 - F(j,i) *Kronecker_delta(a,b)
-            endif
+           if(i_eq_j) then
+             if(a == b) Aph(ia,jb) = Aph(ia,jb) + F(a,b)*Kronecker_delta(i,j) &
+                                                - F(j,i) *Kronecker_delta(a,b)
+           endif
           enddo
         enddo
       enddo

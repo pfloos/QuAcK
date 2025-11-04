@@ -56,7 +56,7 @@ subroutine OOGG0W0(dotest,doACFDT,exchange_kernel,doXBS,dophBSE,dophBSE2,TDA_W,T
   logical                       :: dRPA_W
   integer                       :: isp_W
   double precision              :: flow
-  double precision              :: EcRPA
+  double precision              :: EcRPA,EcRPA_AC
   double precision              :: EcBSE(nspin)
   double precision              :: EcGM
   double precision,allocatable  :: Aph(:,:)
@@ -99,7 +99,7 @@ subroutine OOGG0W0(dotest,doACFDT,exchange_kernel,doXBS,dophBSE,dophBSE2,TDA_W,T
   double precision,allocatable  :: rdm2_rpa(:,:,:,:)
   double precision,allocatable  :: rdm2_hf(:,:,:,:)
   integer                       :: r,s,rs,p,q,pq
-  integer                       :: jind,i,a,b,ia,jb
+  integer                       :: jind,i,a,b,ia,jb,l
   integer                       :: N,O,V,Nsq
   double precision,allocatable  :: c(:,:)
   double precision,allocatable  :: f(:,:)
@@ -135,9 +135,9 @@ subroutine OOGG0W0(dotest,doACFDT,exchange_kernel,doXBS,dophBSE,dophBSE2,TDA_W,T
 ! Hello world
 
   write(*,*)
-  write(*,*)'*********************************************************'
-  write(*,*)'* Restricted G0W0 Calculation with orbital optimization *'
-  write(*,*)'*********************************************************'
+  write(*,*)'***********************************************************'
+  write(*,*)'* Generalized G0W0 Calculation with orbital optimization *'
+  write(*,*)'***********************************************************'
   write(*,*)
   write(*,*) "Targeted exited state mu: ", mu
 
@@ -285,24 +285,58 @@ subroutine OOGG0W0(dotest,doACFDT,exchange_kernel,doXBS,dophBSE,dophBSE2,TDA_W,T
     Y = transpose(0.5*(XpY - XmY))
     
     rdm2_rpa(:,:,:,:) = 0d0
+    rdm1_rpa(:,:)     = 0d0
     YYT               = matmul(Y,transpose(Y)) 
     XYT               = matmul(X,transpose(Y)) 
     XXT               = matmul(X,transpose(X))
+    call phUACFDT_correlation_energy(1,.true.,nBas,nC,nO,nV,nR,nS,nS/2,nS/2,nS,&
+            ERI_MO(1:nBas,1:nBas,1:nBas,1:nBas),&
+            ERI_MO(1:nBas,1:nBas,nBas+1:2*nBas,nBas+1:2*nBas),&
+            ERI_MO(nBas+1:2*nBas,nBas+1:2*nBas,nBas+1:2*nBas,nBas+1:2*nBas),&
+            XpY,XmY,EcRPA_AC)
+    write(*,*) "Ecrpa ACFDT /2" , EcRPA_AC/2
     do i = 1, O
       do a = O+1, N
         do jind = 1, O
           do b = O+1, N
             jb = b - O + (jind - 1) * V 
             ia = a - O +    (i - 1) * V
-            rdm2_rpa(b,i,jind,a) = rdm2_rpa(b,i,jind,a) + XXT(jb,ia) + YYT(jb,ia) - Kronecker_delta(jb,ia) 
-            rdm2_rpa(b,jind,a,i) = rdm2_rpa(b,jind,a,i) -(XXT(jb,ia) + YYT(jb,ia) - Kronecker_delta(jb,ia))
-            rdm2_rpa(i,jind,a,b) = rdm2_rpa(i,jind,a,b) + XYT(jb,ia) + XYT(ia,jb) 
-            rdm2_rpa(i,jind,b,a) = rdm2_rpa(i,jind,b,a) - XYT(jb,ia) - XYT(ia,jb) 
+           rdm2_rpa(b,i,jind,a)  = rdm2_rpa(b,i,jind,a) & 
+                             + XXT(jb,ia) + YYT(jb,ia) - Kronecker_delta(jb,ia) 
+           rdm2_rpa(b,jind,a,i)  = rdm2_rpa(b,jind,a,i) & 
+                             - (XXT(jb,ia) + YYT(jb,ia) - Kronecker_delta(jb,ia))
+           rdm2_rpa(i,jind,a,b)  = rdm2_rpa(i,jind,a,b) & 
+                             + XYT(jb,ia) + XYT(ia,jb) 
+           rdm2_rpa(i,jind,b,a)  = rdm2_rpa(i,jind,b,a) & 
+                             - XYT(jb,ia) - XYT(ia,jb)
+           ! ! Contributions from fab*dij - fij*dab
+           ! if(i==jind) then
+           !   rdm1_rpa(a,b) = rdm1_rpa(a,b) & 
+           !             + 0.5d0*(XXT(jb,ia) + YYT(jb,ia) - Kronecker_delta(jb,ia))
+           !   do l=1,O
+           !     rdm2_rpa(a,l,b,l) = rdm2_rpa(a,l,b,l) & 
+           !                  + (XXT(jb,ia) + YYT(jb,ia) - Kronecker_delta(jb,ia))
+           !     rdm2_rpa(a,l,l,b) = rdm2_rpa(a,l,l,b) &
+           !                  - (XXT(jb,ia) + YYT(jb,ia) - Kronecker_delta(jb,ia))
+           !   enddo
+           ! endif
+           ! if(a==b) then
+           !   rdm1_rpa(jind,i) = rdm1_rpa(jind,i) &
+           !               - 0.5d0*(XXT(jb,ia) + YYT(jb,ia) - Kronecker_delta(jb,ia))
+           !   do l=1,O
+           !     rdm2_rpa(jind,l,i,l) = rdm2_rpa(jind,l,i,l) &
+           !                     -  (XXT(jb,ia) + YYT(jb,ia) - Kronecker_delta(jb,ia))
+           !     rdm2_rpa(jind,l,l,i) = rdm2_rpa(jind,l,l,i) & 
+           !                     +  (XXT(jb,ia) + YYT(jb,ia) - Kronecker_delta(jb,ia))
+           !   enddo
+           ! endif
           enddo
         enddo
       enddo
     enddo
 
+!    write(*,*) "rdm2 rpa"
+!    call matout(Nsq,Nsq,rdm2_rpa)
     write(*,*) "EcRPA = ", EcRPA
     write(*,*) "EGHF (usual stationary one)", EGHF
     write(*,*) "EGHF + EcRPA", EGHF + EcRPA
