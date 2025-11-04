@@ -188,7 +188,7 @@ subroutine complex_evRGW(dotest,maxSCF,thresh,max_diis,doACFDT,exchange_kernel,d
     if(max_diis > 1) then
 
       n_diis = min(n_diis+1,max_diis)
-      call complex_DIIS_extrapolation(rcond,nOrb,nOrb,n_diis,error_diis,e_diis,eGW-eOld,eGW)
+      call C_complex_DIIS_extrapolation(rcond,nOrb,nOrb,n_diis,error_diis,e_diis,eGW-eOld,eGW)
 
     end if
 

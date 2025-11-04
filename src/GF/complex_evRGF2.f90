@@ -140,7 +140,7 @@ subroutine complex_evRGF2(dotest,dophBSE,doppBSE,TDA,dBSE,dTDA,maxSCF,thresh,max
     ! DIIS extrapolation
 
     n_diis = min(n_diis+1,max_diis)
-    call complex_DIIS_extrapolation(rcond,nOrb,nOrb,n_diis,error_diis,e_diis,eGF-eOld,eGF)
+    call C_complex_DIIS_extrapolation(rcond,nOrb,nOrb,n_diis,error_diis,e_diis,eGF-eOld,eGF)
 
     if(abs(rcond) < 1d-15) n_diis = 0
 

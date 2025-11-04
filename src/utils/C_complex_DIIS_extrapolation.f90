@@ -1,4 +1,4 @@
-subroutine complex_DIIS_extrapolation(rcond,n_err,n_e,n_diis,error,e,error_in,e_inout)
+subroutine C_complex_DIIS_extrapolation(rcond,n_err,n_e,n_diis,error,e,error_in,e_inout)
 
 ! Perform DIIS extrapolation
 
