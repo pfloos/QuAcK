@@ -104,7 +104,7 @@ subroutine OORG0W0(dotest,doACFDT,exchange_kernel,doXBS,dophBSE,dophBSE2,TDA_W,T
   double precision,allocatable  :: J(:,:),K(:,:)
   double precision,allocatable  :: XXT(:,:),YYT(:,:),XYT(:,:)
   double precision              :: Emu, EOld
-  double precision              :: EHF_rdm,ERPA_rdm,EcRPA_AC,F_cont
+  double precision              :: EHF_rdm,ERPA_rdm,EcRPA_AC,F_cont,blub
 
   double precision,external     :: trace_matrix
   double precision,external     :: Kronecker_delta
@@ -276,6 +276,24 @@ subroutine OORG0W0(dotest,doACFDT,exchange_kernel,doXBS,dophBSE,dophBSE2,TDA_W,T
             jb = b - O + (jind - 1) * V 
             ia = a - O +    (i - 1) * V
             F_cont = F_cont + (Aph(ia,jb) - 2*ERI_MO(b,i,jind,a))*(XXT(jb,ia) + YYT(jb,ia) - Kronecker_delta(jb,ia))
+            if(i==jind) then
+              write(*,*) a,b
+              write(*,*) F(a,b)
+              blub = Hc(a,b)
+              do l=1,O
+                blub = blub + 2*ERI_MO(a,b,l,l) - ERI_MO(a,l,l,b)
+              enddo
+              write(*,*) blub
+            endif
+            if(a==b) then
+              write(*,*) i,jind
+              write(*,*) F(jind,i)
+              blub = Hc(jind,i)
+              do l=1,O
+                blub = blub + 2*ERI_MO(jind,i,l,l) - ERI_MO(jind,l,l,i)
+              enddo
+              write(*,*) blub
+            endif
           enddo
         enddo
       enddo
