@@ -160,7 +160,7 @@ subroutine BQuAcK(working_dir,dotest,doaordm,doRHFB,doBRPA,dophRPA,doG0W0,doqsGW
     write(*,'(A65,1X,F9.3,A8)') 'Total wall time for RHF = ',t_HF,' seconds'
     write(*,*)
     
-    ! An imaginary frequencies implementation of qsGW for testing (expensive!)
+    ! An imaginary frequencies implementation of qsGW [ just coded for testing. It is expensive! ]
     if(doqsGW .and. .false.) then
 
       ! Continue with a HFB calculation
@@ -274,7 +274,7 @@ subroutine BQuAcK(working_dir,dotest,doaordm,doRHFB,doBRPA,dophRPA,doG0W0,doqsGW
 
   end if
 
-! TODO
+! TODO: find a way to define it!
 !------------------------!
 ! qsGW Bogoliubov module !
 !------------------------!
