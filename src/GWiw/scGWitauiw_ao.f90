@@ -31,12 +31,14 @@ subroutine scGWitauiw_ao(nBas,nOrb,nO,maxSCF,maxDIIS,dolinGW,restart_scGW,no_foc
 
   integer                       :: iunit=312
   integer                       :: n_diis
+  integer                       :: n_diisP
   integer                       :: verbose
   integer                       :: nneg
   integer                       :: ntimes
   integer                       :: nBasSqntimes2
   integer                       :: ntimes_twice
   integer                       :: idiis_index
+  integer                       :: idiis_indexP
   integer                       :: itau,ifreq
   integer                       :: ibas,jbas,kbas,lbas,nBas2
   integer                       :: iter,iter_fock
@@ -46,6 +48,7 @@ subroutine scGWitauiw_ao(nBas,nOrb,nO,maxSCF,maxDIIS,dolinGW,restart_scGW,no_foc
   double precision              :: start_scGWitauiw     ,end_scGWitauiw       ,t_scGWitauiw
 
   double precision              :: rcond
+  double precision              :: rcondP
   double precision              :: alpha_mixing
   double precision              :: Ehfl,EcGM
   double precision              :: trace1,trace2
@@ -78,6 +81,10 @@ subroutine scGWitauiw_ao(nBas,nOrb,nO,maxSCF,maxDIIS,dolinGW,restart_scGW,no_foc
   double precision,allocatable  :: P_ao_iter(:,:)
   double precision,allocatable  :: P_mo(:,:)
   double precision,allocatable  :: Wp_ao_itau(:,:,:)
+  double precision,allocatable  :: err_currentP(:)
+  double precision,allocatable  :: err_diisP(:,:)
+  double precision,allocatable  :: P_ao_extrap(:)
+  double precision,allocatable  :: P_ao_old_diis(:,:)
 
   complex*16                    :: product
   complex*16                    :: weval_cpx
@@ -140,7 +147,10 @@ subroutine scGWitauiw_ao(nBas,nOrb,nO,maxSCF,maxDIIS,dolinGW,restart_scGW,no_foc
  write(*,*) ' Aligned HF energies from Go(iw) (a.u.) [ using HOMO-LUMO ]'
  do ibas=1,nOrb
   write(*,'(I7,F15.8)') ibas,eHF(ibas)
- enddo 
+ enddo
+ write(*,*)
+ write(*,'(a,F15.8)') '  emin ',abs(eHF(nO))
+ write(*,'(a,F15.8)') '  emax ',abs(eHF(nOrb)-eHF(1))
  write(*,*)
   
  allocate(U_mo(nOrb,nOrb))
@@ -192,18 +202,30 @@ subroutine scGWitauiw_ao(nBas,nOrb,nO,maxSCF,maxDIIS,dolinGW,restart_scGW,no_foc
  allocate(G_ao_itau_old(ntimes_twice,nBas,nBas))
  allocate(Wp_ao_itau(ntimes,nBas2,nBas2))
  allocate(err_current(1))
+ allocate(err_currentP(1))
  allocate(G_itau_extrap(1))
+ allocate(P_ao_extrap(1))
  allocate(err_diis(1,1))
+ allocate(err_diisP(1,1))
  allocate(G_itau_old_diis(1,1))
+ allocate(P_ao_old_diis(1,1))
  if(maxDIIS>0) then
   deallocate(err_current)
+  deallocate(err_currentP)
   deallocate(G_itau_extrap)
+  deallocate(P_ao_extrap)
   deallocate(err_diis)
+  deallocate(err_diisP)
   deallocate(G_itau_old_diis)
+  deallocate(P_ao_old_diis)
   allocate(err_current(nBasSqntimes2))
+  allocate(err_currentP(nBas2))
   allocate(G_itau_extrap(nBasSqntimes2))
+  allocate(P_ao_extrap(nBas2))
   allocate(err_diis(nBasSqntimes2,maxDIIS))
+  allocate(err_diisP(nBas2,maxDIIS))
   allocate(G_itau_old_diis(nBasSqntimes2,maxDIIS))
+  allocate(P_ao_old_diis(nBas2,maxDIIS))
  endif
 
 !---------------!
@@ -435,6 +457,10 @@ subroutine scGWitauiw_ao(nBas,nOrb,nO,maxSCF,maxDIIS,dolinGW,restart_scGW,no_foc
   ! Converge with respect to the Fock operator (using only good P_ao matrices -> Tr[P_ao S_ao]=Nelectrons )
   if(.not.no_fock) then ! Skiiping the opt w.r.t. the Fock operator to do later the linearized approximation on Go -> [ lin-G = Go + Go Sigma Go ]
    iter_fock=0
+   n_diisP=0
+   rcondP=0d0
+   err_diisP=0d0
+   P_ao_old_diis=0d0
    do
     ! Build F
     iter_fock=iter_fock+1
@@ -471,6 +497,28 @@ subroutine scGWitauiw_ao(nBas,nOrb,nO,maxSCF,maxDIIS,dolinGW,restart_scGW,no_foc
     if(diff_Pao<=thrs_Pao) exit
    
     if(iter_fock==maxSCF) exit
+ 
+    ! Do mixing with previous P_ao to facilitate convergence
+    if(maxDIIS>0) then
+     n_diisP=min(n_diisP+1,maxDIIS)
+     err_currentP=0d0
+     idiis_indexP=1
+     do ibas=1,nBas
+      do jbas=1,nBas
+       err_currentP(idiis_indexP)=P_ao(ibas,jbas)-P_ao_old(ibas,jbas)
+       P_ao_extrap(idiis_indexP)=P_ao(ibas,jbas)
+       idiis_indexP=idiis_indexP+1
+      enddo
+     enddo
+     call DIIS_extrapolation(rcondP,nBas2,nBas2,n_diisP,err_diisP,P_ao_old_diis,err_currentP,P_ao_extrap)
+     idiis_indexP=1
+     do ibas=1,nBas
+      do jbas=1,nBas
+       P_ao(ibas,jbas)=P_ao_extrap(idiis_indexP) 
+       idiis_indexP=idiis_indexP+1
+      enddo
+     enddo
+    endif
    
    enddo
   endif
@@ -699,8 +747,12 @@ subroutine scGWitauiw_ao(nBas,nOrb,nO,maxSCF,maxDIIS,dolinGW,restart_scGW,no_foc
  deallocate(G_ao_1,G_ao_2) 
  deallocate(Chi0_ao_itau) 
  deallocate(err_current)
+ deallocate(err_currentP)
  deallocate(G_itau_extrap)
+ deallocate(P_ao_extrap)
  deallocate(err_diis)
+ deallocate(err_diisP)
  deallocate(G_itau_old_diis)
+ deallocate(P_ao_old_diis)
 
 end subroutine 
