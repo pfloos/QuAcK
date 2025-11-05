@@ -148,19 +148,18 @@ subroutine ADC_RG0W0(dotest,TDA_W,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,eHF)
         ija = ija + 1
  
         ! zeroth order
-        H(1+ija,1+ija) = eHF(i) - Om(mu)
+        H(1+ija,1+ija) = eHF(i) - Om(mu) 
 
- 
-!       klc = 0
-!       do k=nC+1,nO
-!         do nu=1,nS
-!           klc = klc + 1
+        klc = 0
+        do k=nC+1,nO
+          do nu=1,nS
+            klc = klc + 1
        
-!           ! first order
-!           H(1+ija,1+klc) = rho(j,k
+            ! first order
+!           H(1+ija,1+klc) = 
  
-!         end do
-!       end do
+          end do
+        end do
  
       end do
     end do
@@ -199,6 +198,17 @@ subroutine ADC_RG0W0(dotest,TDA_W,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,eHF)
         iab = iab + 1
  
         H(1+n2h1p+iab,1+n2h1p+iab) = eHF(b) + Om(ia)
+
+        kcd = 0
+        do d=nO+1,nOrb-nR
+          do nu=1,nS
+            kcd = kcd + 1
+       
+            ! first order
+!           H(1+n2h1p+iab,1+n2h1p+kcd)
+ 
+          end do
+        end do
  
       end do
     end do
