@@ -11,9 +11,9 @@ program QuAcK
   logical                       :: dodrCCD,dorCCD,docrCCD,dolCCD
   logical                       :: doCIS,doCIS_D,doCID,doCISD,doFCI
   logical                       :: dophRPA,dophRPAx,docrRPA,doppRPA,doBRPA
-  logical                       :: doG0F2,doevGF2,doqsGF2,doufG0F02,doG0F3,doevGF3
+  logical                       :: doG0F2,doevGF2,doqsGF2,doufG0F02,doG0F3,doevGF3,doscGF2
   logical                       :: doG0W0,doevGW,doqsGW,doufG0W0,doufGW
-  logical                       :: docG0W0,docG0F2,dolinGW,doscGW
+  logical                       :: docG0W0,docG0F2,doscGW
   logical                       :: doG0T0pp,doevGTpp,doqsGTpp,doufG0T0pp,doG0T0eh,doevGTeh,doqsGTeh
   logical                       :: doCAP
   logical                       :: doevParquet,doqsParquet,doOO
@@ -71,6 +71,8 @@ program QuAcK
   double precision              :: thresh_GF
   logical                       :: lin_GF,reg_GF
   double precision              :: eta_GF
+  logical                       :: restart_scGF2
+  logical                       :: do_linDM_GF2
 
   integer                       :: maxSCF_GW,max_diis_GW,nfreqs,ntimes
   double precision              :: thresh_GW
@@ -79,12 +81,13 @@ program QuAcK
   double precision              :: eta_GW
   double precision              :: shift_GW
   integer                       :: mu
-  logical                       :: do_linDM_GW,do_linDM_GT
+  logical                       :: do_linDM_GW
 
   integer                       :: maxSCF_GT,max_diis_GT
   double precision              :: thresh_GT
   logical                       :: TDA_T,lin_GT,reg_GT
   double precision              :: eta_GT
+  logical                       :: do_linDM_GT
 
   logical                       :: dophBSE,dophBSE2,doppBSE,dBSE,dTDA
   logical                       :: doACFDT,exchange_kernel,doXBS
@@ -154,7 +157,7 @@ program QuAcK
                     doG0F2,doevGF2,doqsGF2,doufG0F02,               & 
                     doG0F3,doevGF3,                                 &
                     doG0W0,doevGW,doqsGW,doufG0W0,doufGW,           &
-                    dolinGW,doscGW,                                 &
+                    doscGW,doscGF2,                                 &
                     doG0T0pp,doevGTpp,doqsGTpp,doufG0T0pp,          &
                     doG0T0eh,doevGTeh,doqsGTeh,                     &
                     doevParquet,doqsParquet,                        &
@@ -176,9 +179,9 @@ program QuAcK
                     readFCIDUMP,reg_MP,                                                                  &
                     maxSCF_CC,thresh_CC,max_diis_CC,                                                     &
                     TDA,spin_conserved,spin_flip,                                                        &
-                    maxSCF_GF,thresh_GF,max_diis_GF,lin_GF,eta_GF,renorm_GF,reg_GF,                      &
+                    maxSCF_GF,thresh_GF,max_diis_GF,lin_GF,eta_GF,renorm_GF,reg_GF,do_linDM_GF2,         &
                     maxSCF_GW,thresh_GW,max_diis_GW,lin_GW,eta_GW,shift_GW,reg_GW,doOO,mu,do_linDM_GW,   &
-                    nfreqs,TDA_W,restart_scGW,                                                           &
+                    nfreqs,TDA_W,restart_scGW,restart_scGF2,                                             &
                     maxSCF_GT,thresh_GT,max_diis_GT,lin_GT,eta_GT,reg_GT,TDA_T,do_linDM_GT,              & 
                     doACFDT,exchange_kernel,doXBS,                                                       &
                     dophBSE,dophBSE2,doppBSE,dBSE,dTDA,                                                  &
@@ -366,13 +369,13 @@ program QuAcK
                   dodrCCD,dorCCD,docrCCD,dolCCD,doCIS,doCIS_D,doCID,doCISD,doFCI,dophRPA,dophRPAx,docrRPA,doppRPA,         &
                   doG0F2,doevGF2,doqsGF2,doufG0F02,doG0F3,doevGF3,doG0W0,doevGW,doqsGW,doufG0W0,doufGW,                    &
                   doG0T0pp,doevGTpp,doqsGTpp,doufG0T0pp,doG0T0eh,doevGTeh,doqsGTeh,doevParquet,doqsParquet,                &
-                  docG0W0,docG0F2,doscGW,                                                                                  &
-                  doCAP,readFCIDUMP,restart_scGW,                                                                          &
+                  docG0W0,docG0F2,doscGW,doscGF2,                                                                          &
+                  doCAP,readFCIDUMP,restart_scGW,restart_scGF2,                                                            & 
                   nNuc,nBas,nOrb,nC,nO,nV,nR,ENuc,ZNuc,rNuc,                                                               &
                   S,T,V,Hc,CAP,X,dipole_int_AO,maxSCF_HF,max_diis_HF,thresh_HF,level_shift,                                &
                   guess_type,mix,reg_MP,maxSCF_CC,max_diis_CC,thresh_CC,spin_conserved,spin_flip,TDA,                      &
                   maxSCF_GF,max_diis_GF,renorm_GF,thresh_GF,lin_GF,reg_GF,eta_GF,maxSCF_GW,max_diis_GW,thresh_GW,          &
-                  TDA_W,lin_GW,reg_GW,eta_GW,doOO,mu,do_linDM_GW,                                                          &
+                  TDA_W,lin_GW,reg_GW,eta_GW,doOO,mu,do_linDM_GW,do_linDM_GF2,                                             &
                   maxSCF_GT,max_diis_GT,thresh_GT,TDA_T,lin_GT,reg_GT,eta_GT,do_linDM_GT,                                  &
                   dophBSE,dophBSE2,doppBSE,dBSE,dTDA,doACFDT,exchange_kernel,doXBS,                                        &
                   TDAeh,TDApp,max_diis_1b,max_diis_2b,max_it_1b,conv_1b,max_it_2b,conv_2b,lin_parquet,reg_1b,reg_2b,reg_PA,&
@@ -424,7 +427,7 @@ program QuAcK
   if(doBQuAcK) & 
     call BQuAcK(working_dir,dotest,doaordm,doRHFB,doBRPA,dophRPA,doG0W0,doqsGW,doscGW,readFCIDUMP,nNuc,nBas,nOrb, &
                 nO,ENuc,eta_GW,shift_GW,restart_scGW,ZNuc,rNuc,S,T,V,Hc,X,dipole_int_AO,maxSCF_HF,max_diis_HF,    &
-                thresh_HF,level_shift,guess_type,maxSCF_GW,max_diis_GW,thresh_GW,dolinGW,temperature,sigma,       &
+                thresh_HF,level_shift,guess_type,maxSCF_GW,max_diis_GW,thresh_GW,do_linDM_GW,temperature,sigma,   &
                 chem_pot_hf,restart_hfb,nfreqs,ntimes,wcoord,wweight)
 
 !-----------!
