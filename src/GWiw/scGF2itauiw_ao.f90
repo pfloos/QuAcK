@@ -50,7 +50,7 @@ subroutine scGF2itauiw_ao(nBas,nOrb,nO,maxSCF,maxDIIS,dolinGF2,restart_scGF2,no_
   double precision              :: rcond
   double precision              :: rcondP
   double precision              :: alpha_mixing
-  double precision              :: ERI_contrib
+!  double precision              :: ERI_contrib
   double precision              :: Ehfl,EcGM
   double precision              :: trace1,trace2
   double precision              :: eta,diff_Pao
@@ -106,6 +106,9 @@ subroutine scGF2itauiw_ao(nBas,nOrb,nO,maxSCF,maxDIIS,dolinGF2,restart_scGF2,no_
   complex*16,allocatable        :: G_itau_extrap(:)
   complex*16,allocatable        :: err_diis(:,:)
   complex*16,allocatable        :: G_itau_old_diis(:,:)
+  complex*16,allocatable        :: Aimql(:,:,:,:)
+  complex*16,allocatable        :: Bisql(:,:,:,:)
+  complex*16,allocatable        :: Cispl(:,:,:,:)
 
 ! Output variables
   integer,intent(inout)         :: nfreqs
@@ -159,7 +162,10 @@ subroutine scGF2itauiw_ao(nBas,nOrb,nO,maxSCF,maxDIIS,dolinGF2,restart_scGF2,no_
  allocate(G_minus_itau(nBas,nBas),G_plus_itau(nBas,nBas)) 
  allocate(G_ao_1(nBas,nBas),G_ao_2(nBas,nBas)) 
  allocate(Sigma_c_c(nBas,nBas),Sigma_c_s(nBas,nBas)) 
- allocate(Sigma_c_plus(nBas,nBas),Sigma_c_minus(nBas,nBas)) 
+ allocate(Sigma_c_plus(nBas,nBas),Sigma_c_minus(nBas,nBas))
+ allocate(Aimql(nBas,nBas,nBas,nBAS))
+ allocate(Bisql(nBas,nBas,nBas,nBAS))
+ allocate(Cispl(nBas,nBas,nBas,nBAS))
  cHFinv=matmul(transpose(cHF),S)
  P_ao_hf=P_in
  P_ao=P_in
@@ -336,30 +342,104 @@ subroutine scGF2itauiw_ao(nBas,nOrb,nO,maxSCF,maxDIIS,dolinGF2,restart_scGF2,no_
    endif
   endif
 
-  ! Build Sigma_c(i w) [Eqs. 12-18 in PRB, 109, 255101 (2024) ]
+  ! Build Sigma_c(i w) [Eqs. 12-18 in PRB, 109, 255101 (2024)] (for the M^8 algorithm see at the end of this file)
   Sigma_c_w_ao=czero
   do itau=1,ntimes
    G_plus_itau(:,:) =G_ao_itau(2*itau-1,:,:)
    G_minus_itau(:,:)=G_ao_itau(2*itau  ,:,:)
    Sigma_c_plus=czero
    Sigma_c_minus=czero
-   ! Sigma_c_ij(i tau) = - \sum_klmspq Gkl(i tau) Gms(i tau) Gpq(-i tau) v_iqmk (2 v_lspj - v_slpj)
+   ! Sigma_c_ij(i tau) = \sum_klmspq Gkl(i tau) Gms(i tau) Gpq(-i tau) v_iqmk (2 v_lspj - v_slpj)
+   Aimql=czero
+   Bisql=czero
+   Cispl=czero
+   do ibas=1,nBas
+    do mbas=1,nBas
+     do qbas=1,nBas
+      do lbas=1,nBas
+       do kbas=1,nBas
+        Aimql(ibas,mbas,qbas,lbas)=Aimql(ibas,mbas,qbas,lbas)+G_plus_itau(kbas,lbas)*ERI_AO(ibas,qbas,mbas,kbas)
+       enddo
+      enddo
+     enddo
+    enddo
+   enddo
+   do ibas=1,nBas
+    do sbas=1,nBas
+     do qbas=1,nBas
+      do lbas=1,nBas
+       do mbas=1,nBas
+        Bisql(ibas,sbas,qbas,lbas)=Bisql(ibas,sbas,qbas,lbas)+G_plus_itau(mbas,sbas)*Aimql(ibas,mbas,qbas,lbas)
+       enddo
+      enddo
+     enddo
+    enddo
+   enddo
+   do ibas=1,nBas
+    do sbas=1,nBas
+     do pbas=1,nBas
+      do lbas=1,nBas
+       do qbas=1,nBas
+        Cispl(ibas,sbas,pbas,lbas)=Cispl(ibas,sbas,pbas,lbas)+G_minus_itau(pbas,qbas)*Bisql(ibas,sbas,qbas,lbas)
+       enddo
+      enddo
+     enddo
+    enddo
+   enddo
    do ibas=1,nBas
     do jbas=1,nBas
-     do kbas=1,nBas
-      do lbas=1,nBas 
-       do mbas=1,nBas 
-        do sbas=1,nBas 
-         do pbas=1,nBas 
-          do qbas=1,nBas
-           ERI_contrib=ERI_AO(ibas,qbas,mbas,kbas)*(2d0*ERI_AO(lbas,sbas,pbas,jbas)-ERI_AO(sbas,lbas,pbas,jbas)) 
-           Sigma_c_plus(ibas,jbas) =Sigma_c_plus(ibas,jbas) + G_plus_itau(kbas,lbas)* G_plus_itau(mbas,sbas) &
-                                                            *G_minus_itau(pbas,qbas)*ERI_contrib
-           Sigma_c_minus(ibas,jbas)=Sigma_c_minus(ibas,jbas)+G_minus_itau(kbas,lbas)*G_minus_itau(mbas,sbas) &
-                                                            * G_plus_itau(pbas,qbas)*ERI_contrib
-          enddo
-         enddo
-        enddo
+     do sbas=1,nBas
+      do pbas=1,nBas
+       do lbas=1,nBas
+        Sigma_c_plus(ibas,jbas) =Sigma_c_plus(ibas,jbas) +Cispl(ibas,sbas,pbas,lbas)*(2d0*ERI_AO(lbas,sbas,pbas,jbas)-ERI_AO(sbas,lbas,pbas,jbas))
+       enddo
+      enddo
+     enddo
+    enddo
+   enddo
+   ! Sigma_c_ij(-i tau) =  \sum_klmspq Gkl(-i tau) Gms(-i tau) Gpq(i tau) v_iqmk (2 v_lspj - v_slpj)
+   Aimql=czero
+   Bisql=czero
+   Cispl=czero
+   do ibas=1,nBas
+    do mbas=1,nBas
+     do qbas=1,nBas
+      do lbas=1,nBas
+       do kbas=1,nBas
+        Aimql(ibas,mbas,qbas,lbas)=Aimql(ibas,mbas,qbas,lbas)+G_minus_itau(kbas,lbas)*ERI_AO(ibas,qbas,mbas,kbas)
+       enddo
+      enddo
+     enddo
+    enddo
+   enddo
+   do ibas=1,nBas
+    do sbas=1,nBas
+     do qbas=1,nBas
+      do lbas=1,nBas
+       do mbas=1,nBas
+        Bisql(ibas,sbas,qbas,lbas)=Bisql(ibas,sbas,qbas,lbas)+G_minus_itau(mbas,sbas)*Aimql(ibas,mbas,qbas,lbas)
+       enddo
+      enddo
+     enddo
+    enddo
+   enddo
+   do ibas=1,nBas
+    do sbas=1,nBas
+     do pbas=1,nBas
+      do lbas=1,nBas
+       do qbas=1,nBas
+        Cispl(ibas,sbas,pbas,lbas)=Cispl(ibas,sbas,pbas,lbas)+G_plus_itau(pbas,qbas)*Bisql(ibas,sbas,qbas,lbas)
+       enddo
+      enddo
+     enddo
+    enddo
+   enddo
+   do ibas=1,nBas
+    do jbas=1,nBas
+     do sbas=1,nBas
+      do pbas=1,nBas
+       do lbas=1,nBas
+        Sigma_c_minus(ibas,jbas)=Sigma_c_minus(ibas,jbas) +Cispl(ibas,sbas,pbas,lbas)*(2d0*ERI_AO(lbas,sbas,pbas,jbas)-ERI_AO(sbas,lbas,pbas,jbas))
        enddo
       enddo
      enddo
@@ -708,5 +788,32 @@ subroutine scGF2itauiw_ao(nBas,nOrb,nO,maxSCF,maxDIIS,dolinGF2,restart_scGF2,no_
  deallocate(err_diisP)
  deallocate(G_itau_old_diis)
  deallocate(P_ao_old_diis)
+ deallocate(Aimql)
+ deallocate(Bisql)
+ deallocate(Cispl)
 
 end subroutine 
+
+   ! M^8 brut force
+!   do ibas=1,nBas
+!    do jbas=1,nBas
+!     do kbas=1,nBas
+!      do lbas=1,nBas 
+!       do mbas=1,nBas 
+!        do sbas=1,nBas 
+!         do pbas=1,nBas 
+!          do qbas=1,nBas
+!           ERI_contrib=ERI_AO(ibas,qbas,mbas,kbas)*(2d0*ERI_AO(lbas,sbas,pbas,jbas)-ERI_AO(sbas,lbas,pbas,jbas)) 
+!           Sigma_c_plus(ibas,jbas) =Sigma_c_plus(ibas,jbas) + G_plus_itau(kbas,lbas)* G_plus_itau(mbas,sbas) &
+!                                                            *G_minus_itau(pbas,qbas)*ERI_contrib
+!           Sigma_c_minus(ibas,jbas)=Sigma_c_minus(ibas,jbas)+G_minus_itau(kbas,lbas)*G_minus_itau(mbas,sbas) &
+!                                                            * G_plus_itau(pbas,qbas)*ERI_contrib
+!          enddo
+!         enddo
+!        enddo
+!       enddo
+!      enddo
+!     enddo
+!    enddo
+!   enddo
+

@@ -271,6 +271,22 @@ subroutine RQuAcK(working_dir,use_gpu,dotest,doRHF,doROHF,docRHF,               
 
   end if
 
+!--------------!
+! scGF2 module !
+!--------------!
+
+  if(doscGF2 .and. .not.docRHF) then
+
+   allocate(cHF_tmp(nBas,nOrb))
+   cHF_tmp=cHF
+
+   no_fock=.false.
+   call scGF2itauiw_ao(nBas,nOrb,nO,maxSCF_GF,max_diis_GF,do_linDM_GF,restart_scGF2,no_fock,ENuc,Hc,S,PHF,cHF_tmp,eHF, &
+                       nfreqs,wcoord,wweight,ERI_AO)
+   deallocate(cHF_tmp)
+
+  endif
+
 !-------------!
 ! scGW module !
 !-------------!
@@ -296,21 +312,6 @@ subroutine RQuAcK(working_dir,use_gpu,dotest,doRHF,doROHF,docRHF,               
 
   endif
 
-!--------------!
-! scGF2 module !
-!--------------!
-
-  if(doscGF2 .and. .not.docRHF) then
-
-   allocate(cHF_tmp(nBas,nOrb))
-   cHF_tmp=cHF
-
-   no_fock=.false.
-   call scGF2itauiw_ao(nBas,nOrb,nO,maxSCF_GF,max_diis_GF,do_linDM_GF,restart_scGF2,no_fock,ENuc,Hc,S,PHF,cHF_tmp,eHF, &
-                       nfreqs,wcoord,wweight,ERI_AO)
-   deallocate(cHF_tmp)
-
-  endif
 
 !----------------------------------!
 ! AO to MO integral transformation !
