@@ -1,4 +1,4 @@
-subroutine energy_from_rdm(N,h,ERI_MO,rdm1,rdm2,Emu)
+subroutine energy_from_rdm(N,h,ERI_MO,rdm1,rdm2,Emu,printout)
 
   implicit none
   include 'parameters.h'
@@ -6,6 +6,7 @@ subroutine energy_from_rdm(N,h,ERI_MO,rdm1,rdm2,Emu)
 !input
 integer,intent(in)               :: N
 double precision,intent(in)      :: h(N,N),ERI_MO(N,N,N,N),rdm1(N,N),rdm2(N,N,N,N)
+logical                          :: printout
 
 !local
 integer                          ::p,q,r,s
@@ -25,20 +26,20 @@ do p = 1, N
 end do
 
 E2 = 0d0
-!write(*,*) "p,q,r,s,ERI,rdm2"
 do p = 1, N
   do q = 1, N
     do r = 1, N
       do s = 1, N
         E2 = E2 + ERI_MO(p,q,r,s) * rdm2(p,q,r,s)
-!      write(*,*) p,q,r,s,ERI_MO(p,q,r,s),rdm2(p,q,r,s)
       end do
     end do
   end do
 end do
 Emu = E1 + 0.5d0*E2
-write(*,'(A25,F16.10)') ' One-electron energy = ',E1
-write(*,'(A25,F16.10)') ' Two-electron energy = ',0.5d0*E2
-write(*,'(A25,F16.10)') ' Electronic   energy = ',Emu
-write(*,*)
+if(printout) then
+    write(*,'(A25,F16.10)') ' One-electron energy = ',E1
+    write(*,'(A25,F16.10)') ' Two-electron energy = ',0.5d0*E2
+    write(*,'(A25,F16.10)') ' Electronic   energy = ',Emu
+    write(*,*)
+endif
 end subroutine

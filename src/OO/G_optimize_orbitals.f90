@@ -1,4 +1,4 @@
-subroutine G_optimize_orbitals(nBas,nBas2,nV,nR,nC,nO,N,Nsq,O,V,ERI_AO,ERI_MO,h,rdm1,rdm2,c,OOConv)
+subroutine G_optimize_orbitals(nBas,nBas2,nV,nR,nC,nO,N,Nsq,O,V,ERI_AO,ERI_MO,h,F,rdm1_hf,rdm1_c,rdm2_hf,rdm2_c,c,OOConv)
 
 ! Calculate gradient and Hessian and rotate orbitals accordingly. Returns ERI and h in new MOs.
 
@@ -11,13 +11,16 @@ subroutine G_optimize_orbitals(nBas,nBas2,nV,nR,nC,nO,N,Nsq,O,V,ERI_AO,ERI_MO,h,
   integer,intent(in)            :: nBas,nBas2,nV,nR,nC,nO,N,V,O,Nsq
   double precision,intent(in)   :: ERI_AO(nBas,nBas,nBas,nBas)
   double precision,intent(in)   :: h(nBas2,nBas2)
-  double precision,intent(in)   :: rdm1(N,N)
-  double precision,intent(in)   :: rdm2(N,N,N,N)
+  double precision,intent(in)   :: F(nBas2,nBas2)
+  double precision,intent(in)   :: rdm1_hf(N,N)
+  double precision,intent(in)   :: rdm1_c(N,N)
+  double precision,intent(in)   :: rdm2_hf(N,N,N,N)
+  double precision,intent(in)   :: rdm2_c(N,N,N,N)
 
 ! Local variables
   
   integer                       :: p,q,pq,r,s,rs
-  double precision,allocatable  :: hess(:,:), grad(:), hessInv(:,:)
+  double precision,allocatable  :: hess(:,:), grad(:), grad_tmp(:), hessInv(:,:), hess_tmp(:,:)
   double precision,allocatable  :: Kap(:,:), ExpKap(:,:)
 
 ! Output variables
@@ -30,11 +33,13 @@ subroutine G_optimize_orbitals(nBas,nBas2,nV,nR,nC,nO,N,Nsq,O,V,ERI_AO,ERI_MO,h,
   ! Compute orbital gradient !
   !--------------------------!
  
-  allocate(grad(Nsq))
-  grad(:) = 0d0
-  call orbital_gradient(O,V,N,Nsq,h,ERI_MO,rdm1,rdm2,grad)
-!  call matout(N,N,grad)
- 
+  allocate(grad(Nsq),grad_tmp(Nsq))
+  call orbital_gradient(O,V,N,Nsq,h,ERI_MO,rdm1_hf,rdm2_hf,grad_tmp)
+  grad = grad_tmp
+  call orbital_gradient(O,V,N,Nsq,F,ERI_MO,rdm1_c,rdm2_c,grad_tmp)
+  grad  = grad + grad_tmp
+  deallocate(grad_tmp)
+
   ! Check convergence of orbital optimization
   OOConv = maxval(grad)
   
@@ -42,23 +47,17 @@ subroutine G_optimize_orbitals(nBas,nBas2,nV,nR,nC,nO,N,Nsq,O,V,ERI_AO,ERI_MO,h,
   ! Compute orbital Hessian !
   !-------------------------!
  
-  allocate(hess(Nsq,Nsq))
-  hess(:,:) = 0d0 
-  call orbital_hessian(O,V,N,Nsq,h,ERI_MO,rdm1,rdm2,hess)
+  allocate(hess(Nsq,Nsq),hess_tmp(Nsq,Nsq))
+  hess_tmp(:,:) = 0d0 
+  call orbital_hessian(O,V,N,Nsq,h,ERI_MO,rdm1_hf,rdm2_hf,hess_tmp)
+  hess = hess_tmp
+  call orbital_hessian(O,V,N,Nsq,F,ERI_MO,rdm1_c,rdm2_c,hess_tmp)
+  hess = hess_tmp + hess
   
-!  write(*,*) "Hessian"
-!  call matout(Nsq,Nsq,hess)
- 
-  do p=1,Nsq
-    hess(p,p) = hess(p,p) + 0.001d0
-  enddo
-  
+  deallocate(hess_tmp)
   allocate(hessInv(Nsq,Nsq))
  
   call pseudo_inverse_matrix(Nsq,hess,hessInv)
-  
- ! write(*,*) "Inv Hessian"
- ! call matout(Nsq,Nsq,hessInv)
   
   deallocate(hess)
  
@@ -87,28 +86,12 @@ subroutine G_optimize_orbitals(nBas,nBas2,nV,nR,nC,nO,N,Nsq,O,V,ERI_AO,ERI_MO,h,
   end do
  
   deallocate(hessInv,grad)
-
-!  write(*,*) 'kappa'
-!  call matout(nBas2,nBas2,Kap)
-!  write(*,*)
  
   allocate(ExpKap(N,N))
   call matrix_exponential(N,Kap,ExpKap)
   deallocate(Kap)
  
-!  write(*,*) 'e^kappa'
-!  call matout(nBas2,nBas2,ExpKap)
-!  write(*,*)
-! 
-!  write(*,*) 'Old orbitals'
-!  call matout(nBas2,nBas2,c)
-!  write(*,*)
- 
   c = matmul(c,ExpKap)
   deallocate(ExpKap)
- 
-!  write(*,*) 'Rotated orbitals'
-!  call matout(nBas2,N,c)
-!  write(*,*)
 
 end subroutine
