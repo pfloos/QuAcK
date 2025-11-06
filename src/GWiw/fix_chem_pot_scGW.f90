@@ -54,7 +54,7 @@ subroutine fix_chem_pot_scGW(iter_fock,nBas,nfreqs,nElectrons,thrs_N,thrs_Ngrad,
   trace_1_rdm      = -1d0
 
   write(*,*)
-  write(*,'(a,i5)') ' Fixing the Tr[1D] at scGW at Fock iter ',iter_fock
+  write(*,'(a,i5)') ' Fixing the Tr[1D] at scGW/scGF2 at Fock iter ',iter_fock
   write(*,*)
   write(*,*)'------------------------------------------------------'
   write(*,'(1X,A1,1X,A15,1X,A1,1X,A15,1X,A1A15,2X,A1)') &
