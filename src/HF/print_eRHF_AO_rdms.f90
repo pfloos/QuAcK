@@ -1,5 +1,5 @@
 
-subroutine print_RHF_AO_rdms(nBas,ENuc,S,T,V,P,ERI)
+subroutine print_eRHF_AO_rdms(nBas,ENuc,S,T,V,P,ERI)
 
   implicit none
 
@@ -44,8 +44,8 @@ subroutine print_RHF_AO_rdms(nBas,ENuc,S,T,V,P,ERI)
   trace_2rdm=0d0
   iunit=312
   iunit2=313
-  open(unit=iunit,form='unformatted',file='rhf_ao_1rdm')
-  open(unit=iunit2,form='unformatted',file='rhf_ao_2rdm')
+  open(unit=iunit,form='unformatted',file='erhf_ao_1rdm')
+  open(unit=iunit2,form='unformatted',file='erhf_ao_2rdm')
   Ecore=0d0; Eee=0d0;
   do ibas=1,nBas
    do jbas=1,nBas

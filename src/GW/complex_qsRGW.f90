@@ -272,7 +272,7 @@ subroutine complex_qsRGW(dotest,maxSCF,thresh,max_diis,doACFDT,exchange_kernel,d
     if(max_diis > 1) then
 
       n_diis = min(n_diis+1,max_diis)
-      call complex_DIIS_extrapolation(rcond,nBas_Sq,nBas_Sq,n_diis,err_diis,F_diis,err,F)
+      call C_complex_DIIS_extrapolation(rcond,nBas_Sq,nBas_Sq,n_diis,err_diis,F_diis,err,F)
 
     end if
 

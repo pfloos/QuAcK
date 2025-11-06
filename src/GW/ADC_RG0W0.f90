@@ -114,7 +114,7 @@ subroutine ADC_RG0W0(dotest,TDA_W,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,eHF)
 ! Main loop over orbitals !
 !-------------------------!
 
-  do p=nO,nO+1
+  do p=nO,nO
 
     H(:,:) = 0d0
  
@@ -179,9 +179,11 @@ subroutine ADC_RG0W0(dotest,TDA_W,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,eHF)
         do k=nC+1,nO
           do c=nO+1,nOrb-nR
             H(1    ,1+ija) = H(1    ,1+ija) &
-                           + ERI(p,c,k,i)*rho(c,k,mu)/(eHF(c) - eHF(k) + Om(mu))
+                           + 1d0/sqrt(2d0)*ERI(p,c,k,i)*rho(k,c,mu)/(eHF(c) - eHF(k) - Om(mu)) &
+                           + 1d0/sqrt(2d0)*ERI(p,k,c,i)*rho(c,k,mu)/(eHF(c) - eHF(k) + Om(mu))
             H(1+ija,1    ) = H(1+ija,1    ) & 
-                           + ERI(p,c,k,i)*rho(c,k,mu)/(eHF(c) - eHF(k) + Om(mu))
+                           + 1d0/sqrt(2d0)*ERI(p,c,k,i)*rho(k,c,mu)/(eHF(c) - eHF(k) - Om(mu)) &
+                           + 1d0/sqrt(2d0)*ERI(p,c,i,k)*rho(c,k,mu)/(eHF(c) - eHF(k) + Om(mu))
           end do
         end do
  
@@ -228,9 +230,11 @@ subroutine ADC_RG0W0(dotest,TDA_W,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,eHF)
         do k=nC+1,nO
           do c=nO+1,nOrb-nR
             H(1    ,1+ija) = H(1    ,1+ija) & 
-                           + ERI(p,c,k,a)*rho(c,k,mu)/(eHF(c) - eHF(k) + Om(mu))
+                           + 1d0/sqrt(2d0)*ERI(p,k,c,a)*rho(c,k,mu)/(eHF(c) - eHF(k) - Om(mu)) &
+                           + 1d0/sqrt(2d0)*ERI(p,k,a,c)*rho(k,c,mu)/(eHF(c) - eHF(k) + Om(mu))
             H(1+ija,1    ) = H(1+ija,1    ) & 
-                           + ERI(p,c,k,a)*rho(c,k,mu)/(eHF(c) - eHF(k) + Om(mu))
+                           + 1d0/sqrt(2d0)*ERI(p,k,c,a)*rho(c,k,mu)/(eHF(c) - eHF(k) - Om(mu)) &
+                           + 1d0/sqrt(2d0)*ERI(p,k,a,c)*rho(k,c,mu)/(eHF(c) - eHF(k) + Om(mu))
           end do
         end do
 
