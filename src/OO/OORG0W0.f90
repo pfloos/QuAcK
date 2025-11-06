@@ -104,7 +104,7 @@ subroutine OORG0W0(dotest,doACFDT,exchange_kernel,doXBS,dophBSE,dophBSE2,TDA_W,T
   double precision,allocatable  :: J(:,:),K(:,:)
   double precision,allocatable  :: XXT(:,:),YYT(:,:),XYT(:,:)
   double precision              :: Emu, EOld
-  double precision              :: EHF_rdm,ERPA_rdm
+  double precision              :: EHF_rdm,EcRPA_rdm,EcRPA_HF
 
   double precision,external     :: trace_matrix
   double precision,external     :: Kronecker_delta
@@ -179,11 +179,9 @@ subroutine OORG0W0(dotest,doACFDT,exchange_kernel,doXBS,dophBSE,dophBSE2,TDA_W,T
   t(:,:)        = 0d0
   lambda(:,:)   = 0d0
   Emu           = ERHF
+  EcRPA_HF      = 0d0
   eGW(:)        = eHF(:)
   h(:,:)        = 0d0
-  
-!  write(*,*) "TEST: Start from mo guess and then do HF with oo"
-!  call mo_guess(nBas,nOrb,1,Sovl,Hc,XHF,c)
   
   ! Transform integrals (afterwards this is done in orbital optimization)
   call AOtoMO(nBas,nOrb,c,Hc,h)
@@ -213,86 +211,14 @@ subroutine OORG0W0(dotest,doACFDT,exchange_kernel,doXBS,dophBSE,dophBSE2,TDA_W,T
     
     call phRLR(TDA_W,nS,Aph,Bph,EcRPA,Om,XpY,XmY)
     
+    if(OOi == 1) EcRPA_HF = EcRPA
+
     if(print_W) call print_excitation_energies('phRPA@RHF','singlet',nS,Om)
   
     call RG0W0_rdm2_hf(O,V,N,nS,rdm2_hf)
     call RG0W0_rdm1_hf(O,V,N,nS,rdm1_hf)
     
-    X = transpose(0.5d0*(XpY + XmY))
-    Y = transpose(0.5d0*(XpY - XmY))
-
-    rdm2_rpa(:,:,:,:) = 0d0
-    rdm1_rpa(:,:)     = 0d0
-    YYT               = matmul(Y,transpose(Y)) 
-    XYT               = matmul(X,transpose(Y)) 
-    XXT               = matmul(X,transpose(X))
-    
-    do i = 1, O
-      do a = O+1, N
-        do jind = 1, O
-          do b = O+1, N
-            jb = b - O + (jind - 1) * V 
-            ia = a - O +    (i - 1) * V
-            rdm2_rpa(b,i,jind,a) = rdm2_rpa(b,i,jind,a) &
-                             + 2d0*(XXT(jb,ia) + YYT(jb,ia) - Kronecker_delta(jb,ia))
-            rdm2_rpa(i,jind,a,b) = rdm2_rpa(i,jind,a,b) &
-                             + 2d0*(XYT(jb,ia) + XYT(ia,jb))
-            ! Contributions from fab*dij - fij*dab
-            if(i==jind) then
-              rdm1_rpa(a,b) = rdm1_rpa(a,b) &
-                            + 0.5d0*(XXT(jb,ia) + YYT(jb,ia) - Kronecker_delta(jb,ia))
-              do l=1,O
-                rdm2_rpa(a,l,b,l) = rdm2_rpa(a,l,b,l) &
-                              + 2d0*(XXT(jb,ia) + YYT(jb,ia) - Kronecker_delta(jb,ia))
-                rdm2_rpa(a,l,l,b) = rdm2_rpa(a,l,l,b) &
-                              - (XXT(jb,ia) + YYT(jb,ia) - Kronecker_delta(jb,ia))
-              enddo
-            endif
-            if(a==b) then
-              rdm1_rpa(jind,i) = rdm1_rpa(jind,i) &
-                           - 0.5d0*(XXT(jb,ia) + YYT(jb,ia) - Kronecker_delta(jb,ia))
-              do l=1,O
-                rdm2_rpa(jind,l,i,l) = rdm2_rpa(jind,l,i,l) &
-                               - 2d0*(XXT(jb,ia) + YYT(jb,ia) - Kronecker_delta(jb,ia))
-                rdm2_rpa(jind,l,l,i) = rdm2_rpa(jind,l,l,i) &
-                               + (XXT(jb,ia) + YYT(jb,ia) - Kronecker_delta(jb,ia))
-              enddo
-            endif
-          enddo
-        enddo
-      enddo
-    enddo
-    write(*,*) "Loris' style" 
-    write(*,*) "EcRPA = ", EcRPA
-    write(*,*) "ERHF (usual stationary one)", ERHF
-    write(*,*) "ERHF + EcRPA", ERHF + EcRPA
-    write(*,*) "E^MF from rdm"
-    call energy_from_rdm(N,h,ERI_MO,rdm1_hf,rdm2_hf,EHF_rdm)
-    write(*,*) "EcRPA from rdm"
-    call energy_from_rdm(N,h,ERI_MO,rdm1_rpa,rdm2_rpa,ERPA_rdm)
-    rdm1 = rdm1_hf + rdm1_rpa
-    rdm2 = rdm2_hf + rdm2_rpa
-    write(*,*) "ERPA from rdm (MF + corr)"
-    call energy_from_rdm(N,h,ERI_MO,rdm1,rdm2,Emu)
-    write(*,*) "Trace rdm1: ", trace_matrix(N,rdm1_hf + rdm1_rpa)
-    write(*,*) "rdm1 rpa"
-    call matout(N,N,rdm1_rpa)
-    write(*,*) "rdm2 rpa"
-    call matout(Nsq,Nsq,rdm2_rpa)
-    write(*,*) "EcRPA = ", EcRPA
-    write(*,*) "ERHF (usual stationary one)", ERHF
-    write(*,*) "ERHF + EcRPA", ERHF + EcRPA
-    write(*,*) "E^MF from rdm"
-    call energy_from_rdm(N,h,ERI_MO,rdm1_hf,rdm2_hf,EHF_rdm)
-    write(*,*) "EcRPA from rdm"
-    call energy_from_rdm(N,h,ERI_MO,rdm1_rpa,rdm2_rpa,ERPA_rdm)
-    rdm1 = rdm1_hf + rdm1_rpa
-    rdm2 = rdm2_hf + rdm2_rpa
-    write(*,*) "ERPA from rdm (MF + corr)"
-    call energy_from_rdm(N,h,ERI_MO,rdm1,rdm2,Emu)
-    
-    ! Useful quantities to calculate rdms (Petros style)
-    write(*,*) "Ala Petros"
+    ! Useful quantities
     X = transpose(0.5*(XpY + XmY))
     Y = transpose(0.5*(XpY - XmY))
     call inverse_matrix(nS,X,X_inv)
@@ -300,10 +226,6 @@ subroutine OORG0W0(dotest,doACFDT,exchange_kernel,doXBS,dophBSE,dophBSE2,TDA_W,T
     Xbar = - matmul(t,Y) + X
     call inverse_matrix(nS,Xbar,Xbar_inv)
     lambda = matmul(Y,Xbar_inv)
-    write(*,*) "Lambda"
-    call matout(nS,nS,lambda)
-    write(*,*) "t"
-    call matout(nS,nS,t)
 
     ! Calculate rdm1
     call RG0W0_rdm1_rpa(O,V,N,nS,lampl,rampl,lp,rp,lambda,t,rdm1_rpa)
@@ -311,26 +233,16 @@ subroutine OORG0W0(dotest,doACFDT,exchange_kernel,doXBS,dophBSE,dophBSE2,TDA_W,T
     ! Calculate rdm2
     call RG0W0_rdm2_rpa(O,V,N,nS,lampl,rampl,lp,rp,lambda,t,rdm1_hf,rdm1_rpa,rdm2_rpa)
     rdm2 = rdm2_hf + rdm2_rpa
-    write(*,*) "Trace rdm1: ", trace_matrix(N,rdm1_hf + rdm1_rpa)
-    write(*,*) "rdm1 rpa"
-    call matout(N,N,rdm1_rpa)
-    write(*,*) "rdm2 rpa"
-    call matout(Nsq,Nsq,rdm2_rpa)
-    write(*,*) "E^MF from rdm"
-    call energy_from_rdm(N,h,ERI_MO,rdm1_hf,rdm2_hf,EHF_rdm)
-    write(*,*) "cRPA"
-    call energy_from_rdm(N,h,ERI_MO,rdm1_rpa,rdm2_rpa,ERPA_rdm)
-    write(*,*) "MF + cRPA"
-    call energy_from_rdm(N,h,ERI_MO,rdm1,rdm2,Emu)
-    write(*,*) "ERHF", ERHF
-    write(*,*) "EcRPA from rdm", ERPA_rdm
-    write(*,*) "EcRPA = ", EcRPA
-    write(*,*) "E elec = ", Emu
-    write(*,*) "ENuc = ", ENuc
-    write(*,*) "trace", trace_matrix(nS,matmul(Bph,t))/2d0
-    
+    call energy_from_rdm(N,h,ERI_MO,rdm1_hf,rdm2_hf,EHF_rdm,.false.)
+    call energy_from_rdm(N,F,ERI_MO,rdm1_rpa,rdm2_rpa,EcRPA_rdm,.false.)
+    Emu = EcRPA + EHF_rdm
+    write(*,*) "ERHF = ", ERHF
+    write(*,*) "ERHF + EcRPA@HF = ", ERHF + EcRPA_HF
+    write(*,*) "EcRPA = ", EcRPA_rdm
+    write(*,*) "ERPA = ", EcRPA_rdm + EHF_rdm
 
-    call R_optimize_orbitals(diagHess,nBas,nOrb,nV,nR,nC,nO,N,Nsq,O,V,ERI_AO,ERI_MO,Hc,h,rdm1,rdm2,c,OOConv)
+    call R_optimize_orbitals(diagHess,nBas,nOrb,nV,nR,nC,nO,N,Nsq,O,V,ERI_AO,ERI_MO,Hc,h,F,&
+                             rdm1_hf,rdm1_rpa,rdm2_hf,rdm2_rpa,c,OOConv)
     
     write(*,*) '----------------------------------------------------------'
     write(*,'(A10,I4,A30)') ' Iteration', OOi ,'for RG0W0 orbital optimization'
@@ -340,9 +252,9 @@ subroutine OORG0W0(dotest,doACFDT,exchange_kernel,doXBS,dophBSE,dophBSE2,TDA_W,T
     write(*,*) '----------------------------------------------------------'
     write(*,*)
     
-    if (OOi==1) then
-      OOConv = 0d0 ! remove only for debugging
-    end if
+ !   if (OOi==1) then
+ !     OOConv = 0d0 ! remove only for debugging
+ !   end if
 
     OOi = OOi + 1 
   end do

@@ -65,25 +65,13 @@ do i=1,O
             kc = c - O + (k-1)*V
             ja = a - O + (j-1)*V
             ib = b - O + (i-1)*V
-            rdm2(i,a,b,j) = rdm2(i,a,b,j) + 0.5*lambda(kc,ja)*t(kc,ib) 
+            rdm2(i,a,b,j) = rdm2(i,a,b,j) + lambda(kc,ja)*t(kc,ib) 
+            rdm2(a,i,j,b) = rdm2(a,i,j,b) + lambda(kc,ja)*t(kc,ib) 
           end do
         end do
       end do
     end do
   end do
 end do
-rdm2= 2d0*rdm2
-!!! Contribution from 1rdm
-!do p=1,N
-!  do q=1,N
-!    do r=1,N
-!      do s=1,N
-!        rdm2(p,q,r,s) = rdm2(p,q,r,s)                                           &
-!                      + rdm1_rpa(p,r)*rdm1_hf(q,s) + rdm1_hf(p,r)*rdm1_rpa(q,s) & 
-!                      - rdm1_rpa(p,s)*rdm1_hf(q,r) - rdm1_hf(p,s)*rdm1_rpa(q,r) 
-!      
-!      enddo
-!    enddo
-!  enddo
-!enddo
+rdm2 = 2*rdm2 ! spin summation
 end subroutine
