@@ -28,8 +28,8 @@ subroutine scGF2itauiw_ao(nBas,nOrb,nO,maxSCF,maxDIIS,dolinGF2,restart_scGF2,no_
 ! Local variables
  
   logical                       :: file_exists
+  logical                       :: read_SD_chkp
 
-  integer                       :: iunit=312
   integer                       :: n_diis
   integer                       :: n_diisP
   integer                       :: verbose
@@ -130,6 +130,7 @@ subroutine scGF2itauiw_ao(nBas,nOrb,nO,maxSCF,maxDIIS,dolinGF2,restart_scGF2,no_
  write(*,*)'*****************************************'
  write(*,*)
 
+ read_SD_chkp=.false.
  n_diis=0
  verbose=0
  eta=0d0
@@ -156,6 +157,8 @@ subroutine scGF2itauiw_ao(nBas,nOrb,nO,maxSCF,maxDIIS,dolinGF2,restart_scGF2,no_
  write(*,'(a,F15.8)') '  emin ',abs(eHF(nO))
  write(*,'(a,F15.8)') '  emax ',abs(eHF(nOrb)-eHF(1))
  write(*,*)
+ inquire(file='read_SD_scGF2', exist=file_exists)
+ if(file_exists) read_SD_chkp=.true.
   
  allocate(U_mo(nOrb,nOrb))
  allocate(P_ao(nBas,nBas),P_ao_old(nBas,nBas),P_ao_iter(nBas,nBas),P_ao_hf(nBas,nBas))
@@ -338,7 +341,7 @@ subroutine scGF2itauiw_ao(nBas,nOrb,nO,maxSCF,maxDIIS,dolinGF2,restart_scGF2,no_
    DeltaG_ao_iw(:,:,:)=czero
    ! If required, read the restart files
    if(restart_scGF2) then
-    call read_scGW_restart(nBas,nfreqs,ntimes_twice,chem_pot,P_ao,P_ao_hf,G_ao_iw_hf,G_ao_itau,G_ao_itau_hf)
+    call read_scGW_restart(nBas,nfreqs,ntimes_twice,chem_pot,P_ao,P_ao_hf,G_ao_iw_hf,G_ao_itau,G_ao_itau_hf,read_SD_chkp)
     P_ao_iter=P_ao
     G_ao_itau_old(:,:,:)=G_ao_itau(:,:,:)
    endif
