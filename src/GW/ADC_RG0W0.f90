@@ -150,16 +150,16 @@ subroutine ADC_RG0W0(dotest,TDA_W,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,eHF)
         ! zeroth order
         H(1+ija,1+ija) = eHF(i) - Om(mu) 
 
-        klc = 0
-        do k=nC+1,nO
-          do nu=1,nS
-            klc = klc + 1
+!       klc = 0
+!       do k=nC+1,nO
+!         do nu=1,nS
+!           klc = klc + 1
        
             ! first order
 !           H(1+ija,1+klc) = 
  
-          end do
-        end do
+!         end do
+!       end do
  
       end do
     end do
@@ -179,11 +179,11 @@ subroutine ADC_RG0W0(dotest,TDA_W,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,eHF)
         do k=nC+1,nO
           do c=nO+1,nOrb-nR
             H(1    ,1+ija) = H(1    ,1+ija) &
-                           + 1d0/sqrt(2d0)*ERI(p,c,k,i)*rho(k,c,mu)/(eHF(c) - eHF(k) - Om(mu)) &
-                           + 1d0/sqrt(2d0)*ERI(p,k,c,i)*rho(c,k,mu)/(eHF(c) - eHF(k) + Om(mu))
+                           + sqrt(2d0)*ERI(p,c,k,i)*rho(k,c,mu)/(eHF(c) - eHF(k) - Om(mu)) &
+                           + sqrt(2d0)*ERI(p,k,c,i)*rho(c,k,mu)/(eHF(c) - eHF(k) + Om(mu))
             H(1+ija,1    ) = H(1+ija,1    ) & 
-                           + 1d0/sqrt(2d0)*ERI(p,c,k,i)*rho(k,c,mu)/(eHF(c) - eHF(k) - Om(mu)) &
-                           + 1d0/sqrt(2d0)*ERI(p,c,i,k)*rho(c,k,mu)/(eHF(c) - eHF(k) + Om(mu))
+                           + sqrt(2d0)*ERI(p,c,k,i)*rho(k,c,mu)/(eHF(c) - eHF(k) - Om(mu)) &
+                           + sqrt(2d0)*ERI(p,k,c,i)*rho(c,k,mu)/(eHF(c) - eHF(k) + Om(mu))
           end do
         end do
  
@@ -201,16 +201,16 @@ subroutine ADC_RG0W0(dotest,TDA_W,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,eHF)
  
         H(1+n2h1p+iab,1+n2h1p+iab) = eHF(b) + Om(ia)
 
-        kcd = 0
-        do d=nO+1,nOrb-nR
-          do nu=1,nS
-            kcd = kcd + 1
+!       kcd = 0
+!       do d=nO+1,nOrb-nR
+!         do nu=1,nS
+!           kcd = kcd + 1
        
             ! first order
 !           H(1+n2h1p+iab,1+n2h1p+kcd)
  
-          end do
-        end do
+!         end do
+!       end do
  
       end do
     end do
@@ -229,12 +229,12 @@ subroutine ADC_RG0W0(dotest,TDA_W,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,eHF)
  
         do k=nC+1,nO
           do c=nO+1,nOrb-nR
-            H(1    ,1+ija) = H(1    ,1+ija) & 
-                           + 1d0/sqrt(2d0)*ERI(p,k,c,a)*rho(c,k,mu)/(eHF(c) - eHF(k) - Om(mu)) &
-                           + 1d0/sqrt(2d0)*ERI(p,k,a,c)*rho(k,c,mu)/(eHF(c) - eHF(k) + Om(mu))
-            H(1+ija,1    ) = H(1+ija,1    ) & 
-                           + 1d0/sqrt(2d0)*ERI(p,k,c,a)*rho(c,k,mu)/(eHF(c) - eHF(k) - Om(mu)) &
-                           + 1d0/sqrt(2d0)*ERI(p,k,a,c)*rho(k,c,mu)/(eHF(c) - eHF(k) + Om(mu))
+            H(1    ,1+n2h1p+iab) = H(1    ,1+n2h1p+iab) &
+                                 + sqrt(2d0)*ERI(p,k,c,a)*rho(c,k,mu)/(eHF(c) - eHF(k) - Om(mu)) &
+                                 + sqrt(2d0)*ERI(p,c,k,a)*rho(k,c,mu)/(eHF(c) - eHF(k) + Om(mu))
+            H(1+n2h1p+iab,1    ) = H(1+n2h1p+iab,1    ) &
+                                 + sqrt(2d0)*ERI(p,k,c,a)*rho(c,k,mu)/(eHF(c) - eHF(k) - Om(mu)) &
+                                 + sqrt(2d0)*ERI(p,c,k,a)*rho(k,c,mu)/(eHF(c) - eHF(k) + Om(mu))
           end do
         end do
 
@@ -276,7 +276,7 @@ subroutine ADC_RG0W0(dotest,TDA_W,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,eHF)
   !--------------!
 
     write(*,*)'-------------------------------------------'
-    write(*,'(1X,A32,I3,A8)')'| G0W0 energies (eV) for orbital',p,'      |'
+    write(*,'(1X,A36,I3,A4)')'| ADC-G0W0 energies (eV) for orbital',p,'  |'
     write(*,*)'-------------------------------------------'
     write(*,'(1X,A1,1X,A3,1X,A1,1X,A15,1X,A1,1X,A15,1X,A1,1X,A15,1X)') &
               '|','#','|','e_QP','|','Z','|'
