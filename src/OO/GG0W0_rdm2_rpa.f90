@@ -73,15 +73,5 @@ do i=1,O
     end do
   end do
 end do
-!! Check (anti)symetrisation of Gamma
-!write(*,*) "Check (anti)symetrisation of Gamma"
-!do p=1,N
-!  do q=1,N
-!    do r=1,N
-!      do s=1,N
-!        write(*,*) p,q,r,s,rdm2(p,q,r,s), rdm2(q,p,r,s),rdm2(p,q,s,r),rdm2(q,p,s,r)
-!      end do
-!    end do
-!  end do
-!end do
+rdm2(:,:,:,:) = rdm2(:,:,:,:)/2d0 ! Because of different def, I think (Loris)
 end subroutine

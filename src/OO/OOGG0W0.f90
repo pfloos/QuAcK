@@ -56,7 +56,7 @@ subroutine OOGG0W0(dotest,doACFDT,exchange_kernel,doXBS,dophBSE,dophBSE2,TDA_W,T
   logical                       :: dRPA_W
   integer                       :: isp_W
   double precision              :: flow
-  double precision              :: EcRPA
+  double precision              :: EcRPA,EcRPA_AC
   double precision              :: EcBSE(nspin)
   double precision              :: EcGM
   double precision,allocatable  :: Aph(:,:)
@@ -99,7 +99,7 @@ subroutine OOGG0W0(dotest,doACFDT,exchange_kernel,doXBS,dophBSE,dophBSE2,TDA_W,T
   double precision,allocatable  :: rdm2_rpa(:,:,:,:)
   double precision,allocatable  :: rdm2_hf(:,:,:,:)
   integer                       :: r,s,rs,p,q,pq
-  integer                       :: jind,i,a,b,ia,jb
+  integer                       :: jind,i,a,b,ia,jb,l
   integer                       :: N,O,V,Nsq
   double precision,allocatable  :: c(:,:)
   double precision,allocatable  :: f(:,:)
@@ -135,9 +135,9 @@ subroutine OOGG0W0(dotest,doACFDT,exchange_kernel,doXBS,dophBSE,dophBSE2,TDA_W,T
 ! Hello world
 
   write(*,*)
-  write(*,*)'*********************************************************'
-  write(*,*)'* Restricted G0W0 Calculation with orbital optimization *'
-  write(*,*)'*********************************************************'
+  write(*,*)'***********************************************************'
+  write(*,*)'* Generalized G0W0 Calculation with orbital optimization *'
+  write(*,*)'***********************************************************'
   write(*,*)
   write(*,*) "Targeted exited state mu: ", mu
 
@@ -285,19 +285,42 @@ subroutine OOGG0W0(dotest,doACFDT,exchange_kernel,doXBS,dophBSE,dophBSE2,TDA_W,T
     Y = transpose(0.5*(XpY - XmY))
     
     rdm2_rpa(:,:,:,:) = 0d0
+    rdm1_rpa(:,:)     = 0d0
     YYT               = matmul(Y,transpose(Y)) 
     XYT               = matmul(X,transpose(Y)) 
     XXT               = matmul(X,transpose(X))
+    
     do i = 1, O
       do a = O+1, N
         do jind = 1, O
           do b = O+1, N
             jb = b - O + (jind - 1) * V 
             ia = a - O +    (i - 1) * V
-            rdm2_rpa(b,i,jind,a) = rdm2_rpa(b,i,jind,a) + XXT(jb,ia) + YYT(jb,ia) - Kronecker_delta(jb,ia) 
-            rdm2_rpa(b,jind,a,i) = rdm2_rpa(b,jind,a,i) -(XXT(jb,ia) + YYT(jb,ia) - Kronecker_delta(jb,ia))
-            rdm2_rpa(i,jind,a,b) = rdm2_rpa(i,jind,a,b) + XYT(jb,ia) + XYT(ia,jb) 
-            rdm2_rpa(i,jind,b,a) = rdm2_rpa(i,jind,b,a) - XYT(jb,ia) - XYT(ia,jb) 
+           rdm2_rpa(b,i,jind,a)  = rdm2_rpa(b,i,jind,a) & 
+                             + XXT(jb,ia) + YYT(jb,ia) - Kronecker_delta(jb,ia) 
+           rdm2_rpa(i,jind,a,b)  = rdm2_rpa(i,jind,a,b) & 
+                             + XYT(jb,ia) + XYT(ia,jb) 
+            ! Contributions from fab*dij - fij*dab
+            if(i==jind) then
+              rdm1_rpa(a,b) = rdm1_rpa(a,b) & 
+                        + 0.5d0*(XXT(jb,ia) + YYT(jb,ia) - Kronecker_delta(jb,ia))
+              do l=1,O
+                rdm2_rpa(a,l,b,l) = rdm2_rpa(a,l,b,l) & 
+                             + (XXT(jb,ia) + YYT(jb,ia) - Kronecker_delta(jb,ia))
+                rdm2_rpa(a,l,l,b) = rdm2_rpa(a,l,l,b) &
+                             - (XXT(jb,ia) + YYT(jb,ia) - Kronecker_delta(jb,ia))
+              enddo
+            endif
+            if(a==b) then
+              rdm1_rpa(jind,i) = rdm1_rpa(jind,i) &
+                          - 0.5d0*(XXT(jb,ia) + YYT(jb,ia) - Kronecker_delta(jb,ia))
+              do l=1,O
+                rdm2_rpa(jind,l,i,l) = rdm2_rpa(jind,l,i,l) &
+                                -  (XXT(jb,ia) + YYT(jb,ia) - Kronecker_delta(jb,ia))
+                rdm2_rpa(jind,l,l,i) = rdm2_rpa(jind,l,l,i) & 
+                                +  (XXT(jb,ia) + YYT(jb,ia) - Kronecker_delta(jb,ia))
+              enddo
+            endif
           enddo
         enddo
       enddo
@@ -314,45 +337,47 @@ subroutine OOGG0W0(dotest,doACFDT,exchange_kernel,doXBS,dophBSE,dophBSE2,TDA_W,T
     rdm2 = rdm2_hf + rdm2_rpa
     write(*,*) "ERPA from rdm (MF + corr)"
     call energy_from_rdm(N,h,ERI_MO,rdm1,rdm2,Emu)
-    call G_optimize_orbitals(nBas,nBas2,nV,nR,nC,nO,N,Nsq,O,V,ERI_AO,ERI_MO,h,rdm1,rdm2,c,OOConv)
     
-!    ! Useful quantities to calculate rdms
-!
-!    X = transpose(0.5*(XpY + XmY))
-!    Y = transpose(0.5*(XpY - XmY))
-!    call inverse_matrix(nS,X,X_inv)
-!    t = matmul(Y,X_inv)
-!    Xbar = - matmul(t,Y) + X
-!    call inverse_matrix(nS,Xbar,Xbar_inv)
-!    lambda = 0.5*matmul(Y,Xbar_inv)
-!    write(*,*) "Lambda"
-!    call matout(nS,nS,lambda)
-!    write(*,*) "t"
-!    call matout(nS,nS,t)
-!    
-!    ! Calculate rdm1
-!    call GG0W0_rdm1_hf(O,V,N,nS,lampl,rampl,lp,rp,lambda,t,rdm1_hf)
-!    call GG0W0_rdm1_rpa(O,V,N,nS,lampl,rampl,lp,rp,lambda,t,rdm1_rpa)
-!    rdm1 = rdm1_hf  + rdm1_rpa
-!    rdm1 = rdm1_hf
+    ! Useful quantities to calculate rdms
+
+    X = transpose(0.5*(XpY + XmY))
+    Y = transpose(0.5*(XpY - XmY))
+    call inverse_matrix(nS,X,X_inv)
+    t = matmul(Y,X_inv)
+    Xbar = - matmul(t,Y) + X
+    call inverse_matrix(nS,Xbar,Xbar_inv)
+    lambda = 0.5*matmul(Y,Xbar_inv)
+    write(*,*) "Lambda"
+    call matout(nS,nS,lambda)
+    write(*,*) "t"
+    call matout(nS,nS,t)
+    
+    ! Calculate rdm1
+    call GG0W0_rdm1_hf(O,V,N,nS,rdm1_hf)
+    call GG0W0_rdm1_rpa(O,V,N,nS,lampl,rampl,lp,rp,lambda,t,rdm1_rpa)
+    ! Calculate rdm2
+    call GG0W0_rdm2_hf(O,V,N,nS,rdm2_hf)
+    call GG0W0_rdm2_rpa(O,V,N,nS,lampl,rampl,lp,rp,lambda,t,rdm2_rpa)
+    rdm1 = rdm1_hf  + rdm1_rpa
+    rdm2 = rdm2_hf  + rdm2_rpa
 !    write(*,*) "Trace rdm1: ", trace_matrix(N,rdm1)
 !    call matout(N,N,rdm1_hf + rdm1_rpa)
-!    ! Calculate rdm2
-!    call GG0W0_rdm2_hf(O,V,N,nS,lampl,rampl,lp,rp,lambda,t,rdm2_hf)
-!    call GG0W0_rdm2_rpa(O,V,N,nS,lampl,rampl,lp,rp,lambda,t,rdm2_rpa)
-!    rdm2 = rdm2_hf  + rdm2_rpa
-!    !call matout(Nsq,Nsq,rdm2_hf + rdm2_rpa)
-!    EOld = Emu 
-!    call energy_from_rdm(N,h,ERI_MO,rdm1,rdm2,Emu)
-!    call energy_from_rdm(N,h,ERI_MO,rdm1_hf,rdm2_hf,EHF_rdm)
-!    call energy_from_rdm(N,h,ERI_MO,rdm1_rpa,rdm2_rpa,ERPA_rdm)
-!    write(*,*) "EGHF = ", EGHF
-!    write(*,*) "EHF from rdm = " , EHF_rdm
-!    write(*,*) "EcRPA from rdm = " , ERPA_rdm
-!    write(*,*) "EcRPA = ", EcRPA
-!    write(*,*) "E elec", Emu
-!    write(*,*) "ENuc", ENuc
-!    
+    !call matout(Nsq,Nsq,rdm2_hf + rdm2_rpa)
+    EOld = Emu 
+    write(*,*) "E^MF"
+    call energy_from_rdm(N,h,ERI_MO,rdm1_hf,rdm2_hf,EHF_rdm)
+    write(*,*) "EcRPA from rdm"
+    call energy_from_rdm(N,h,ERI_MO,rdm1_rpa,rdm2_rpa,ERPA_rdm)
+    write(*,*) "EcRPA + E^MF from rdm"
+    call energy_from_rdm(N,h,ERI_MO,rdm1,rdm2,Emu)
+    write(*,*) "EGHF = ", EGHF
+    write(*,*) "EHF from rdm = " , EHF_rdm
+    write(*,*) "EcRPA from rdm = " , ERPA_rdm
+    write(*,*) "EcRPA = ", EcRPA
+    write(*,*) "E elec", Emu
+    write(*,*) "ENuc", ENuc
+    
+    call G_optimize_orbitals(nBas,nBas2,nV,nR,nC,nO,N,Nsq,O,V,ERI_AO,ERI_MO,h,rdm1,rdm2,c,OOConv)
    
     write(*,*) '----------------------------------------------------------'
     write(*,'(A10,I4,A30)') ' Iteration', OOi ,'for GG0W0 orbital optimization'

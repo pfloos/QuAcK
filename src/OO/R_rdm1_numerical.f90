@@ -36,7 +36,7 @@ subroutine R_rdm1_numerical(dotest,doaordm,maxSCF,thresh,max_diis,guess_type,lev
   double precision              :: factor
   double precision              :: Eplus
   double precision              :: Eminus
-  double precision              :: delta = 1d-6
+  double precision              :: delta = 1d-8
   
   double precision,allocatable  :: Hc_loc(:,:)
   double precision,allocatable  :: V_loc(:,:)
@@ -52,6 +52,8 @@ subroutine R_rdm1_numerical(dotest,doaordm,maxSCF,thresh,max_diis,guess_type,lev
                                                      
 allocate(rdm1(nBas,nBas),rdm1_MO(nOrb,nOrb),Hc_loc(nBas,nBas),V_loc(nBas,nBas))
 
+call RHF(dotest,doaordm,maxSCF,thresh,max_diis,guess_type,level_shift,nNuc,ZNuc,rNuc,ENuc, & 
+              nBas,nOrb,nO,S,T,V,Hc,ERI,dipole_int,X,Eminus,eHF,c,P,F)
 do pind=1,nBas
   do qind=pind,nBas
     Hc_loc(:,:) = Hc(:,:)
@@ -67,7 +69,8 @@ do pind=1,nBas
       V_loc(pind,qind)  =  V(pind,qind) - delta                        
       V_loc(qind,pind)  =  V(qind,pind) - delta                        
     endif                                          
-    call RHF(dotest,doaordm,maxSCF,thresh,max_diis,guess_type,level_shift,nNuc,ZNuc,rNuc,ENuc, & 
+      factor = 1d0                                   
+    call RHF(dotest,doaordm,1,thresh,max_diis,0,level_shift,nNuc,ZNuc,rNuc,ENuc, & 
                  nBas,nOrb,nO,S,T,V_loc,Hc_loc,ERI,dipole_int,X,Eminus,eHF,c,P,F)
     
     ! Do eventually RPA                              
@@ -83,7 +86,8 @@ do pind=1,nBas
       V_loc(pind,qind)  =  V(pind,qind) + delta                        
       V_loc(qind,pind)  =  V(qind,pind) + delta                        
     endif                                          
-    call RHF(dotest,doaordm,maxSCF,thresh,max_diis,guess_type,level_shift,nNuc,ZNuc,rNuc,ENuc, & 
+      factor = 1d0                                   
+    call RHF(dotest,doaordm,1,thresh,max_diis,0,level_shift,nNuc,ZNuc,rNuc,ENuc, & 
                  nBas,nOrb,nO,S,T,V_loc,Hc_loc,ERI,dipole_int,X,Eplus,eHF,c,P,F)
     ! Do eventually RPA                              
     
