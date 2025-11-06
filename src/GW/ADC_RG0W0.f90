@@ -118,17 +118,17 @@ subroutine ADC_RG0W0(dotest,TDA_W,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,eHF)
 
     H(:,:) = 0d0
  
-    !---------------------------!
-    !   Compute ADC-GW matrix   !
-    !---------------------------!
-    !                           !
-    !     |   F   W2h1p W2p1h | ! 
-    !     |                   | ! 
-    ! H = | W2h1p D2h1p     0 | ! 
-    !     |                   | ! 
-    !     | W2p1h   0   D2p1h | ! 
-    !                           !
-    !---------------------------!
+    !-------------------------------------!
+    !        Compute ADC-GW matrix        !
+    !-------------------------------------!
+    !                                     !
+    !     |   F   U2h1p      U2p1h      | ! 
+    !     |                             | ! 
+    ! H = | U2h1p C2h1p-2h1p C2p1h-2h1p | ! 
+    !     |                             | ! 
+    !     | U2p1h C2h1p-2p1h C2p1h-2p1h | ! 
+    !                                     !
+    !-------------------------------------!
 
     call wall_time(start_timing)
 
@@ -138,34 +138,36 @@ subroutine ADC_RG0W0(dotest,TDA_W,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,eHF)
 
     H(1,1) = eHF(p)
 
-    !-------------!
-    ! Block D2h1p !
-    !-------------!
+    !------------------!
+    ! Block C2h1p-2h1p !
+    !------------------!
  
     ija = 0
     do i=nC+1,nO
       do mu=1,nS
         ija = ija + 1
  
-        ! zeroth order
         H(1+ija,1+ija) = eHF(i) - Om(mu) 
 
-!       klc = 0
-!       do k=nC+1,nO
-!         do nu=1,nS
-!           klc = klc + 1
+        klc = 0
+        do k=nC+1,nO
+          do nu=1,nS
+            klc = klc + 1
        
-            ! first order
-!           H(1+ija,1+klc) = 
- 
-!         end do
-!       end do
+            do c=nO+1,nOrb-nR
+              H(1+ija,1+klc) = H(1+ija,1+klc) & 
+                             + rho(c,k,mu)*rho(i,c,nu)/(eHF(c) - eHF(k) - Om(nu)) &
+                             + rho(c,k,mu)*rho(i,c,nu)/(eHF(c) - eHF(i) - Om(mu))
+            end do
+  
+          end do
+        end do
  
       end do
     end do
  
     !-------------!
-    ! Block W2h1p !
+    ! Block U2h1p !
     !-------------!
  
     ija = 0
@@ -190,33 +192,36 @@ subroutine ADC_RG0W0(dotest,TDA_W,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,eHF)
       end do
     end do
  
-    !-------------!
-    ! Block D2p1h !
-    !-------------!
+    !------------------!
+    ! Block C2p1h-2p1h !
+    !------------------!
  
     iab = 0
-    do ia=1,nS
-      do b=nO+1,nOrb-nR
+    do mu=1,nS
+      do a=nO+1,nOrb-nR
         iab = iab + 1
  
-        H(1+n2h1p+iab,1+n2h1p+iab) = eHF(b) + Om(ia)
+        H(1+n2h1p+iab,1+n2h1p+iab) = eHF(a) + Om(mu)
 
-!       kcd = 0
-!       do d=nO+1,nOrb-nR
-!         do nu=1,nS
-!           kcd = kcd + 1
+        kcd = 0
+        do c=nO+1,nOrb-nR
+          do nu=1,nS
+            kcd = kcd + 1
        
-            ! first order
-!           H(1+n2h1p+iab,1+n2h1p+kcd)
+            do k=nC+1,nO
+              H(1+n2h1p+iab,1+n2h1p+kcd) = H(1+n2h1p+iab,1+n2h1p+kcd) &
+                                         + rho(k,c,mu)*rho(a,k,nu)/(eHF(c) - eHF(k) - Om(mu)) &
+                                         + rho(k,c,mu)*rho(a,k,nu)/(eHF(a) - eHF(k) - Om(nu))
+            end do
  
-!         end do
-!       end do
+          end do
+        end do
  
       end do
     end do
  
     !-------------!
-    ! Block W2p1h !
+    ! Block U2p1h !
     !-------------!
  
     iab = 0
@@ -241,6 +246,70 @@ subroutine ADC_RG0W0(dotest,TDA_W,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,eHF)
       end do
     end do
 
+    !------------------!
+    ! Block C2h1p-2p1h !
+    !------------------!
+ 
+    ija = 0
+    do i=nC+1,nO
+      do mu=1,nS
+        ija = ija + 1
+
+        kcd = 0
+        do a=nO+1,nOrb-nR
+          do nu=1,nS
+            kcd = kcd + 1
+       
+            do k=nC+1,nO
+ 
+              H(1+ija,1+n2h1p+kcd) = H(1+ija,1+n2h1p+kcd) &
+                                   + 2d0*rho(k,i,mu)*rho(a,k,nu)/(eHF(a) - eHF(k) + Om(mu)) 
+            end do
+ 
+            do c=nC+1,nO
+ 
+              H(1+ija,1+n2h1p+kcd) = H(1+ija,1+n2h1p+kcd) &
+                                   - 2d0*rho(c,a,mu)*rho(i,c,nu)/(eHF(c) - eHF(i) + Om(mu)) 
+            end do
+ 
+          end do
+        end do
+ 
+      end do
+    end do
+ 
+    !------------------!
+    ! Block C2p1h-2h1p !
+    !------------------!
+ 
+    iab = 0
+    do a=nO+1,nOrb-nR
+      do mu=1,nS
+        iab = iab + 1
+
+        klc = 0
+        do i=nC+1,nO
+          do nu=1,nS
+            klc = klc + 1
+       
+            do k=nC+1,nO
+ 
+              H(1+n2h1p+iab,1+klc) = H(1+n2h1p+iab,1+klc) &
+                                   + 2d0*rho(k,i,nu)*rho(a,k,mu)/(eHF(a) - eHF(k) + Om(mu)) 
+            end do
+ 
+            do c=nC+1,nO
+ 
+              H(1+n2h1p+iab,1+klc) = H(1+n2h1p+iab,1+klc) &
+                                   - 2d0*rho(c,a,nu)*rho(i,c,mu)/(eHF(c) - eHF(i) + Om(nu)) 
+            end do
+ 
+          end do
+        end do
+ 
+      end do
+    end do
+ 
     call wall_time(end_timing)
 
     timing = end_timing - start_timing
