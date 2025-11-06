@@ -299,17 +299,17 @@ subroutine OORG0W0(dotest,doACFDT,exchange_kernel,doXBS,dophBSE,dophBSE2,TDA_W,T
     t = matmul(Y,X_inv)
     Xbar = - matmul(t,Y) + X
     call inverse_matrix(nS,Xbar,Xbar_inv)
-    lambda = 0.5d0*matmul(Y,Xbar_inv)
-   ! write(*,*) "Lambda"
-   ! call matout(nS,nS,lambda)
-   ! write(*,*) "t"
-   ! call matout(nS,nS,t)
+    lambda = matmul(Y,Xbar_inv)
+    write(*,*) "Lambda"
+    call matout(nS,nS,lambda)
+    write(*,*) "t"
+    call matout(nS,nS,t)
 
     ! Calculate rdm1
     call RG0W0_rdm1_rpa(O,V,N,nS,lampl,rampl,lp,rp,lambda,t,rdm1_rpa)
     rdm1 = rdm1_hf + rdm1_rpa
     ! Calculate rdm2
-    call RG0W0_rdm2_rpa(O,V,N,nS,lampl,rampl,lp,rp,lambda,t,rdm2_rpa)
+    call RG0W0_rdm2_rpa(O,V,N,nS,lampl,rampl,lp,rp,lambda,t,rdm1_hf,rdm1_rpa,rdm2_rpa)
     rdm2 = rdm2_hf + rdm2_rpa
     write(*,*) "Trace rdm1: ", trace_matrix(N,rdm1_hf + rdm1_rpa)
     write(*,*) "rdm1 rpa"

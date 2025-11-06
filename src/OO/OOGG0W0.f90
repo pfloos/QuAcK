@@ -118,6 +118,7 @@ subroutine OOGG0W0(dotest,doACFDT,exchange_kernel,doXBS,dophBSE,dophBSE2,TDA_W,T
   double precision              :: Eblub2
   double precision              :: EHF_rdm
   double precision              :: ERPA_rdm
+  double precision              :: blub
 
 ! Output variables
 
@@ -325,7 +326,8 @@ subroutine OOGG0W0(dotest,doACFDT,exchange_kernel,doXBS,dophBSE,dophBSE2,TDA_W,T
         enddo
       enddo
     enddo
-
+    
+    
     write(*,*) "EcRPA = ", EcRPA
     write(*,*) "EGHF (usual stationary one)", EGHF
     write(*,*) "EGHF + EcRPA", EGHF + EcRPA
@@ -339,14 +341,14 @@ subroutine OOGG0W0(dotest,doACFDT,exchange_kernel,doXBS,dophBSE,dophBSE2,TDA_W,T
     call energy_from_rdm(N,h,ERI_MO,rdm1,rdm2,Emu)
     
     ! Useful quantities to calculate rdms
-
+    write(*,*) "Petros way"
     X = transpose(0.5*(XpY + XmY))
     Y = transpose(0.5*(XpY - XmY))
     call inverse_matrix(nS,X,X_inv)
     t = matmul(Y,X_inv)
-    Xbar = - matmul(t,Y) + X
+    Xbar = X - matmul(t,Y)
     call inverse_matrix(nS,Xbar,Xbar_inv)
-    lambda = 0.5*matmul(Y,Xbar_inv)
+    lambda = matmul(Y,Xbar_inv)
     write(*,*) "Lambda"
     call matout(nS,nS,lambda)
     write(*,*) "t"
@@ -355,11 +357,21 @@ subroutine OOGG0W0(dotest,doACFDT,exchange_kernel,doXBS,dophBSE,dophBSE2,TDA_W,T
     ! Calculate rdm1
     call GG0W0_rdm1_hf(O,V,N,nS,rdm1_hf)
     call GG0W0_rdm1_rpa(O,V,N,nS,lampl,rampl,lp,rp,lambda,t,rdm1_rpa)
+    rdm1 = rdm1_hf  + rdm1_rpa
     ! Calculate rdm2
     call GG0W0_rdm2_hf(O,V,N,nS,rdm2_hf)
-    call GG0W0_rdm2_rpa(O,V,N,nS,lampl,rampl,lp,rp,lambda,t,rdm2_rpa)
-    rdm1 = rdm1_hf  + rdm1_rpa
-    rdm2 = rdm2_hf  + rdm2_rpa
+    call GG0W0_rdm2_rpa(O,V,N,nS,lampl,rampl,lp,rp,lambda,t,rdm1_hf,rdm1_rpa,rdm2_rpa)
+    rdm2 = rdm2_hf + rdm2_rpa
+    rdm2 = rdm2_hf + rdm2_rpa
+    blub = 0d0
+    do p=1,N
+      do q=1,N
+      blub = blub + rdm1_rpa(p,q)*F(p,q)
+      enddo
+    enddo
+    write(*,*) "HERE !!!!!!!!!"
+    write(*,*) blub
+
 !    write(*,*) "Trace rdm1: ", trace_matrix(N,rdm1)
 !    call matout(N,N,rdm1_hf + rdm1_rpa)
     !call matout(Nsq,Nsq,rdm2_hf + rdm2_rpa)
