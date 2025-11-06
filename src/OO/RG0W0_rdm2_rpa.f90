@@ -1,4 +1,4 @@
-subroutine RG0W0_rdm2_rpa(O,V,N,nS,lampl,rampl,lp,rp,lambda,t,rdm2)
+subroutine RG0W0_rdm2_rpa(O,V,N,nS,lampl,rampl,lp,rp,lambda,t,rdm1_hf,rdm1_rpa,rdm2)
 
 ! Compute RPA 2-Reduced-Density-Matrix based in RG0W0
 
@@ -6,6 +6,7 @@ subroutine RG0W0_rdm2_rpa(O,V,N,nS,lampl,rampl,lp,rp,lambda,t,rdm2)
 integer,intent(in)               :: N,nS,O,V
 double precision, intent(in)     :: lampl(nS,N),rampl(nS,N),rp(N),lp(N)
 double precision, intent(in)     :: lambda(nS,nS),t(nS,nS)
+double precision, intent(in)     :: rdm1_hf(N,N),rdm1_rpa(N,N)
 
 ! Local
 integer                          :: a,b,c,d,i,j,k,l,p,q,r,s
@@ -24,7 +25,7 @@ do i=1,O
       do b=O+1,N
         ia = a - O + (i-1)*V 
         jb = b - O + (j-1)*V
-        rdm2(i,j,a,b) = rdm2(i,j,a,b) + 2*t(ia,jb)
+        rdm2(i,j,a,b) = rdm2(i,j,a,b) + t(ia,jb)
         do k=1,O
           do l=1,O
             do c=O+1,N
@@ -71,4 +72,18 @@ do i=1,O
     end do
   end do
 end do
+rdm2= 2d0*rdm2
+!!! Contribution from 1rdm
+!do p=1,N
+!  do q=1,N
+!    do r=1,N
+!      do s=1,N
+!        rdm2(p,q,r,s) = rdm2(p,q,r,s)                                           &
+!                      + rdm1_rpa(p,r)*rdm1_hf(q,s) + rdm1_hf(p,r)*rdm1_rpa(q,s) & 
+!                      - rdm1_rpa(p,s)*rdm1_hf(q,r) - rdm1_hf(p,s)*rdm1_rpa(q,r) 
+!      
+!      enddo
+!    enddo
+!  enddo
+!enddo
 end subroutine
