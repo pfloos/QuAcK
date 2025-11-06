@@ -118,6 +118,7 @@ subroutine OOGG0W0(dotest,doACFDT,exchange_kernel,doXBS,dophBSE,dophBSE2,TDA_W,T
   double precision              :: Eblub2
   double precision              :: EHF_rdm
   double precision              :: ERPA_rdm
+  double precision              :: blub
 
 ! Output variables
 
@@ -362,6 +363,15 @@ subroutine OOGG0W0(dotest,doACFDT,exchange_kernel,doXBS,dophBSE,dophBSE2,TDA_W,T
     call GG0W0_rdm2_rpa(O,V,N,nS,lampl,rampl,lp,rp,lambda,t,rdm1_hf,rdm1_rpa,rdm2_rpa)
     rdm2 = rdm2_hf + rdm2_rpa
     rdm2 = rdm2_hf + rdm2_rpa
+    blub = 0d0
+    do p=1,N
+      do q=1,N
+      blub = blub + rdm1_rpa(p,q)*F(p,q)
+      enddo
+    enddo
+    write(*,*) "HERE !!!!!!!!!"
+    write(*,*) blub
+
 !    write(*,*) "Trace rdm1: ", trace_matrix(N,rdm1)
 !    call matout(N,N,rdm1_hf + rdm1_rpa)
     !call matout(Nsq,Nsq,rdm2_hf + rdm2_rpa)
