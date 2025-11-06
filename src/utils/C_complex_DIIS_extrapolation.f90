@@ -1,4 +1,4 @@
-subroutine complex_DIIS_extrapolation(rcond,n_err,n_e,n_diis,error,e,error_in,e_inout)
+subroutine C_complex_DIIS_extrapolation(rcond,n_err,n_e,n_diis,error,e,error_in,e_inout)
 
 ! Perform DIIS extrapolation
 
@@ -36,7 +36,7 @@ subroutine complex_DIIS_extrapolation(rcond,n_err,n_e,n_diis,error,e,error_in,e_
   
 !  Build A matrix
 
-  A(1:n_diis,1:n_diis) = matmul(transpose(conjg(error)),error)
+  A(1:n_diis,1:n_diis) = matmul(transpose(error),error)
 
   A(1:n_diis,n_diis+1) = cmplx(-1d0,0d0,kind=8)
   A(n_diis+1,1:n_diis) = cmplx(-1d0,0d0,kind=8)

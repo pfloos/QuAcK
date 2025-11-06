@@ -1,4 +1,4 @@
-subroutine ensembleRHF(dotest,maxSCF,thresh,max_diis,guess_type,level_shift,nNuc,ZNuc,rNuc,ENuc, & 
+subroutine ensembleRHF(dotest,doaordm,maxSCF,thresh,max_diis,guess_type,level_shift,nNuc,ZNuc,rNuc,ENuc, & 
                        nBas,nOrb,nO,S,T,V,Hc,ERI,dipole_int,X,eERHF,eweight,eforward,eHF,c,P_tot,F)
 
 ! P_toterform restricted Hartree-Fock calculation
@@ -8,6 +8,7 @@ subroutine ensembleRHF(dotest,maxSCF,thresh,max_diis,guess_type,level_shift,nNuc
 
 ! Input variables
 
+  logical,intent(in)            :: doaordm
   logical,intent(in)            :: dotest
   logical,intent(in)            :: eforward
 
@@ -269,6 +270,11 @@ subroutine ensembleRHF(dotest,maxSCF,thresh,max_diis,guess_type,level_shift,nNuc
     write(*,*) ' Warning! Convergence failed at ensemble Hartree-Fock level.'
 
   end if
+
+! Print the 1-RDM and 2-RDM in AO basis (also check <S^2>)
+  if(doaordm) then
+   call print_eRHF_AO_rdms(nBas,ENuc,S,T,V,P_tot,ERI)
+  endif
 
 ! Compute dipole moments
 

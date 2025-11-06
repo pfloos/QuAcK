@@ -3,9 +3,9 @@ subroutine read_options(working_dir,                                            
                         readFCIDUMP,reg_MP,                                                                 &
                         maxSCF_CC,thresh_CC,max_diis_CC,                                                    &
                         TDA,spin_conserved,spin_flip,                                                       &
-                        maxSCF_GF,thresh_GF,max_diis_GF,lin_GF,eta_GF,renorm_GF,reg_GF,                     &
+                        maxSCF_GF,thresh_GF,max_diis_GF,lin_GF,eta_GF,renorm_GF,reg_GF,do_linDM_GF2,        &
                         maxSCF_GW,thresh_GW,max_diis_GW,lin_GW,eta_GW,shift_GW,reg_GW,doOO,mu,do_linDM_GW,  &
-                        nfreqs,TDA_W,restart_scGW,                                                          &
+                        nfreqs,TDA_W,restart_scGW,restart_scGF2,                                            &
                         maxSCF_GT,thresh_GT,max_diis_GT,lin_GT,eta_GT,reg_GT,TDA_T,do_linDM_GT,             &
                         doACFDT,exchange_kernel,doXBS,                                                      &
                         dophBSE,dophBSE2,doppBSE,dBSE,dTDA,                                                 &
@@ -51,6 +51,8 @@ subroutine read_options(working_dir,                                            
   integer,intent(out)           :: renorm_GF
   double precision,intent(out)  :: eta_GF
   logical,intent(out)           :: reg_GF
+  logical,intent(out)           :: restart_scGF2
+  logical,intent(out)           :: do_linDM_GF2
 
   integer,intent(out)           :: maxSCF_GW
   double precision,intent(out)  :: thresh_GW
@@ -64,7 +66,7 @@ subroutine read_options(working_dir,                                            
   logical,intent(out)           :: doOO
   integer,intent(out)           :: mu
   integer,intent(out)           :: nfreqs
-  logical,intent(out)           :: do_linDM_GW,do_linDM_GT
+  logical,intent(out)           :: do_linDM_GW
 
   integer,intent(out)           :: maxSCF_GT
   double precision,intent(out)  :: thresh_GT
@@ -73,6 +75,7 @@ subroutine read_options(working_dir,                                            
   logical,intent(out)           :: lin_GT
   double precision,intent(out)  :: eta_GT
   logical,intent(out)           :: reg_GT
+  logical,intent(out)           :: do_linDM_GT
 
   logical,intent(out)           :: doACFDT
   logical,intent(out)           :: exchange_kernel
@@ -177,12 +180,16 @@ subroutine read_options(working_dir,                                            
       eta_GF      = 0d0
       renorm_GF   = 0
       reg_GF      = .false.
+      do_linDM_GF2 = .false.
+      restart_scGF2 = .false.
     
       read(1,*) 
-      read(1,*) maxSCF_GF,thresh_GF,max_diis_GF,ans1,eta_GF,renorm_GF,ans2
+      read(1,*) maxSCF_GF,thresh_GF,max_diis_GF,ans1,eta_GF,renorm_GF,ans2,ans3,ans4
     
       if(ans1 == 'T') lin_GF  = .true.
       if(ans2 == 'T') reg_GF  = .true.
+      if(ans3 == 'T') do_linDM_GF2  = .true.
+      if(ans4 == 'T') restart_scGF2  = .true.
     
       ! Read GW options
     
