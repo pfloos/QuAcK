@@ -277,13 +277,22 @@ subroutine RQuAcK(working_dir,use_gpu,dotest,doRHF,doROHF,docRHF,               
 
   if(doscGF2 .and. .not.docRHF) then
 
+   allocate(vMAT(nBas*nBas,nBas*nBas))
    allocate(cHF_tmp(nBas,nOrb))
    cHF_tmp=cHF
-
+   do iorb=1,nBas
+    do jorb=1,nBas
+     do korb=1,nBas
+      do lorb=1,nBas
+       vMAT(1+(korb-1)+(iorb-1)*nOrb,1+(lorb-1)+(jorb-1)*nOrb)=ERI_AO(iorb,jorb,korb,lorb)
+      enddo
+     enddo
+    enddo
+   enddo
    no_fock=.false.
    call scGF2itauiw_ao(nBas,nOrb,nO,maxSCF_GF,max_diis_GF,do_linDM_GF,restart_scGF2,no_fock,ENuc,Hc,S,PHF,cHF_tmp,eHF, &
-                       nfreqs,wcoord,wweight,ERI_AO)
-   deallocate(cHF_tmp)
+                       nfreqs,wcoord,wweight,vMAT,ERI_AO)
+   deallocate(vMAT,cHF_tmp)
 
   endif
 

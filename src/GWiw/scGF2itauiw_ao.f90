@@ -1,5 +1,5 @@
 subroutine scGF2itauiw_ao(nBas,nOrb,nO,maxSCF,maxDIIS,dolinGF2,restart_scGF2,no_fock,ENuc,Hc,S,P_in,cHF,eHF, &
-                          nfreqs,wcoord,wweight,ERI_AO)
+                          nfreqs,wcoord,wweight,vMAT,ERI_AO)
 
 ! Restricted scGF2
 
@@ -22,6 +22,7 @@ subroutine scGF2itauiw_ao(nBas,nOrb,nO,maxSCF,maxDIIS,dolinGF2,restart_scGF2,no_
   double precision,intent(in)   :: Hc(nBas,nBas)
   double precision,intent(in)   :: P_in(nBas,nBas)
   double precision,intent(in)   :: S(nBas,nBas)
+  double precision,intent(in)   :: vMAT(nBas*nBas,nBas*nBas)
   double precision,intent(in)   :: ERI_AO(nBas,nBas,nBas,nBas)
 
 ! Local variables
@@ -50,7 +51,6 @@ subroutine scGF2itauiw_ao(nBas,nOrb,nO,maxSCF,maxDIIS,dolinGF2,restart_scGF2,no_
   double precision              :: rcond
   double precision              :: rcondP
   double precision              :: alpha_mixing
-!  double precision              :: ERI_contrib
   double precision              :: Ehfl,EcGM
   double precision              :: trace1,trace2
   double precision              :: eta,diff_Pao
@@ -89,7 +89,7 @@ subroutine scGF2itauiw_ao(nBas,nOrb,nO,maxSCF,maxDIIS,dolinGF2,restart_scGF2,no_
 
   complex*16                    :: product
   complex*16                    :: weval_cpx
-  complex*16                    :: EcGM_freq
+  complex*16                    :: EcGM_itau
   complex*16,allocatable        :: Sigma_c_w_ao(:,:,:)
   complex*16,allocatable        :: DeltaG_ao_iw(:,:,:)
   complex*16,allocatable        :: G_ao_itau(:,:,:)
@@ -106,6 +106,7 @@ subroutine scGF2itauiw_ao(nBas,nOrb,nO,maxSCF,maxDIIS,dolinGF2,restart_scGF2,no_
   complex*16,allocatable        :: G_itau_extrap(:)
   complex*16,allocatable        :: err_diis(:,:)
   complex*16,allocatable        :: G_itau_old_diis(:,:)
+  complex*16,allocatable        :: Chi0_ao_itau_vSq(:,:)
   complex*16,allocatable        :: Aimql(:,:,:,:)
   complex*16,allocatable        :: Bisql(:,:,:,:)
   complex*16,allocatable        :: Cispl(:,:,:,:)
@@ -166,6 +167,7 @@ subroutine scGF2itauiw_ao(nBas,nOrb,nO,maxSCF,maxDIIS,dolinGF2,restart_scGF2,no_
  allocate(Aimql(nBas,nBas,nBas,nBAS))
  allocate(Bisql(nBas,nBas,nBas,nBAS))
  allocate(Cispl(nBas,nBas,nBas,nBAS))
+ allocate(Chi0_ao_itau_vSq(nBas2,nBas2)) 
  cHFinv=matmul(transpose(cHF),S)
  P_ao_hf=P_in
  P_ao=P_in
@@ -456,8 +458,33 @@ subroutine scGF2itauiw_ao(nBas,nOrb,nO,maxSCF,maxDIIS,dolinGF2,restart_scGF2,no_
    enddo 
   enddo
 
-  ! Compute EcGM [ from Sigma_c(iw) is BAD. What TODO? ]
+  ! Compute EcGM [ from Sigma_c(iw) is BAD. We use Eq. 10 from J. Chem. Theory Comput., 10, 2498 to compute it from Xo ]
   EcGM=0d0
+  ! Build using the time grid Xo(i tau) = -2i G(i tau) G(-i tau)
+  do itau=1,ntimes
+   ! Xo(i tau) = -2i G(i tau) G(-i tau)
+   do ibas=1,nBas
+    do jbas=1,nBas
+     do kbas=1,nBas
+      do lbas=1,nBas                       
+                                   ! r1   r2'                    r2   r1'
+       product = G_ao_itau(2*itau-1,ibas,jbas)*G_ao_itau(2*itau,kbas,lbas)
+       if(abs(product)<1e-12) product=czero
+       Chi0_ao_itau_vSq(1+(lbas-1)+(ibas-1)*nBas,1+(kbas-1)+(jbas-1)*nBas) = product
+      enddo
+     enddo
+    enddo
+   enddo
+   Chi0_ao_itau_vSq=-2d0*im*Chi0_ao_itau_vSq ! The 2 factor is added to account for both spin contributions [ i.e., (up,up,up,up) and (down,down,down,down) ]
+   Chi0_ao_itau_vSq=matmul(Chi0_ao_itau_vSq,vMAT)              ! Xo(i tau) v
+   Chi0_ao_itau_vSq=matmul(Chi0_ao_itau_vSq,Chi0_ao_itau_vSq)  ! [ Xo(i tau) v ]^2
+   ! EcGM = -1/4 int Tr{ [ Xo(i tau) v ]^2 }
+   EcGM_itau=czero
+   do ibas=1,nBas2
+    EcGM_itau=EcGM_itau+Chi0_ao_itau_vSq(ibas,ibas)
+   enddo
+   EcGM=EcGM+0.25d0*tweight(itau)*real(EcGM_itau) 
+  enddo
 
   ! Check the error in Sigma_c(i w) at iter=1 [ if this is calc. is not with restart ]
   if(iter==1 .and. .not.restart_scGF2) then
@@ -487,7 +514,7 @@ subroutine scGF2itauiw_ao(nBas,nOrb,nO,maxSCF,maxDIIS,dolinGF2,restart_scGF2,no_
    write(*,'(a,*(f20.8))') ' Sum error ',sum(error_transf_mo)
    write(*,'(a,f20.8,a,2f20.8,a)') ' Max CAE   ',max_error_sigma,' is in the frequency ',0d0,wcoord(imax_error_sigma),'i'
    write(*,'(a,*(f20.8))') ' MAE       ',sum(error_transf_mo)/(nfreqs*nBas*nBas)
-   !write(*,'(a,f20.8,a)') ' EcGM error',abs(err_EcGM-EcGM),' a.u.'
+   write(*,'(a,f20.8,a)') ' EcGM error',abs(err_EcGM-EcGM),' a.u.'
    deallocate(error_transf_mo,Sigma_c_w_mo)
   endif
 
@@ -576,7 +603,7 @@ subroutine scGF2itauiw_ao(nBas,nOrb,nO,maxSCF,maxDIIS,dolinGF2,restart_scGF2,no_
   write(*,'(a,f15.8,a,i5,a,i5)') ' Trace scGF2 ',trace_1_rdm,' after ',iter_fock,' Fock iterations at global iter ',iter
   write(*,'(a,f15.8)')        ' Change of P ',diff_Pao
   write(*,'(a,f15.8)')        ' Chem. Pot.  ',chem_pot
-!  write(*,'(a,f15.8)')        ' EcGM        ',EcGM
+  write(*,'(a,f15.8)')        ' EcGM        ',EcGM
   write(*,'(a,f15.8)')        ' Eelec       ',Ehfl+EcGM
   write(*,'(a,f15.8)')        ' Etot        ',Ehfl+EcGM+ENuc
   write(*,*)
@@ -696,7 +723,7 @@ subroutine scGF2itauiw_ao(nBas,nOrb,nO,maxSCF,maxDIIS,dolinGF2,restart_scGF2,no_
  write(*,'(a,f15.8)')        ' Change of P ',diff_Pao
  write(*,'(a,f15.8)')        ' Chem. Pot.  ',chem_pot
  write(*,'(a,f15.8)')        ' Hcore+Hx    ',Ehfl
-! write(*,'(a,f15.8)')        ' EcGM        ',EcGM
+ write(*,'(a,f15.8)')        ' EcGM        ',EcGM
  write(*,'(a,f15.8)')        ' Eelec       ',Ehfl+EcGM
  write(*,'(a,f15.8)')        ' scGF2 Energy',Ehfl+EcGM+ENuc
  write(*,*)
@@ -746,7 +773,7 @@ subroutine scGF2itauiw_ao(nBas,nOrb,nO,maxSCF,maxDIIS,dolinGF2,restart_scGF2,no_
   P_mo=-matmul(matmul(cHFinv,P_ao_old),transpose(cHFinv)) ! Minus to order occ numbers
   call diagonalize_matrix(nOrb,P_mo,Occ)
   write(*,'(a,f15.8)')        ' Hcore+Hx    ',Ehfl
-!  write(*,'(a,f15.8)')        ' EcGM        ',EcGM
+  write(*,'(a,f15.8)')        ' EcGM        ',EcGM
   write(*,'(a,f15.8)')        ' Eelec       ',Ehfl+EcGM
   write(*,'(a,f15.8)')        ' lin-G Energy',Ehfl+EcGM+ENuc
   write(*,*)
@@ -791,9 +818,11 @@ subroutine scGF2itauiw_ao(nBas,nOrb,nO,maxSCF,maxDIIS,dolinGF2,restart_scGF2,no_
  deallocate(Aimql)
  deallocate(Bisql)
  deallocate(Cispl)
+ deallocate(Chi0_ao_itau_vSq) 
 
 end subroutine 
 
+!  double precision              :: ERI_contrib
    ! M^8 brut force
 !   do ibas=1,nBas
 !    do jbas=1,nBas
