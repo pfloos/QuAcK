@@ -478,7 +478,7 @@ subroutine scGF2itauiw_ao(nBas,nOrb,nO,maxSCF,maxDIIS,dolinGF2,restart_scGF2,no_
    Chi0_ao_itau_vSq=-2d0*im*Chi0_ao_itau_vSq ! The 2 factor is added to account for both spin contributions [ i.e., (up,up,up,up) and (down,down,down,down) ]
    Chi0_ao_itau_vSq=matmul(Chi0_ao_itau_vSq,vMAT)              ! Xo(i tau) v
    Chi0_ao_itau_vSq=matmul(Chi0_ao_itau_vSq,Chi0_ao_itau_vSq)  ! [ Xo(i tau) v ]^2
-   ! EcGM = -1/4 int Tr{ [ Xo(i tau) v ]^2 }
+   ! EcGM = 1/4 int Tr{ [ Xo(i tau) v ]^2 }
    EcGM_itau=czero
    do ibas=1,nBas2
     EcGM_itau=EcGM_itau+Chi0_ao_itau_vSq(ibas,ibas)
