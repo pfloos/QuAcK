@@ -91,18 +91,50 @@ subroutine R_ADC(dotest,                                               &
  
     end if
   
-  !--------------------------!
-  ! Perform ADC2 calculation !
-  !--------------------------!
+  !----------------------------!
+  ! Perform ADC-GW calculation !
+  !----------------------------!
 
     if(do_ADC_GW) then 
       
       call wall_time(start_ADC)
-      call R_ADC_RGW(dotest,TDA_W,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,ERHF,ERI_MO,eHF)
+      call R_ADC_GW(dotest,TDA_W,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,ERHF,ERI_MO,eHF)
       call wall_time(end_ADC)
     
       t_ADC = end_ADC - start_ADC
-      write(*,'(A65,1X,F9.3,A8)') 'Total wall time for ADC-G0W0 = ',t_ADC,' seconds'
+      write(*,'(A65,1X,F9.3,A8)') 'Total wall time for ADC-GW = ',t_ADC,' seconds'
+      write(*,*)
+ 
+    end if
+  
+  !--------------------------------!
+  ! Perform ADC-2SOSEX calculation !
+  !--------------------------------!
+
+    if(do_ADC_2SOSEX) then 
+      
+      call wall_time(start_ADC)
+      call R_ADC_2SOSEX(dotest,TDA_W,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,ERHF,ERI_MO,eHF)
+      call wall_time(end_ADC)
+    
+      t_ADC = end_ADC - start_ADC
+      write(*,'(A65,1X,F9.3,A8)') 'Total wall time for ADC-2SOSEX = ',t_ADC,' seconds'
+      write(*,*)
+ 
+    end if
+  
+  !------------------------------!
+  ! Perform ADC-G3W2 calculation !
+  !------------------------------!
+
+    if(do_ADC_G3W2) then 
+      
+      call wall_time(start_ADC)
+      call R_ADC_G3W2(dotest,TDA_W,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,ERHF,ERI_MO,eHF)
+      call wall_time(end_ADC)
+    
+      t_ADC = end_ADC - start_ADC
+      write(*,'(A65,1X,F9.3,A8)') 'Total wall time for ADC-G3W2 = ',t_ADC,' seconds'
       write(*,*)
  
     end if

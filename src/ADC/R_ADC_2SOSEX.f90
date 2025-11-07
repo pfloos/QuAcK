@@ -1,6 +1,6 @@
-subroutine R_ADC_GW(dotest,TDA_W,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,eHF)
+subroutine R_ADC_2SOSEX(dotest,TDA_W,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,eHF)
 
-! ADC version of GW 
+! ADC version of 2SOSEX
 
   implicit none
   include 'parameters.h'
@@ -61,9 +61,9 @@ subroutine R_ADC_GW(dotest,TDA_W,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,eHF)
 ! Hello world
 
   write(*,*)
-  write(*,*)'*********************************'
-  write(*,*)'* Restricted ADC-GW Calculation *'
-  write(*,*)'*********************************'
+  write(*,*)'*************************************'
+  write(*,*)'* Restricted ADC-2SOSEX Calculation *'
+  write(*,*)'*************************************'
   write(*,*)
 
 ! Dimension of the supermatrix
@@ -119,7 +119,7 @@ subroutine R_ADC_GW(dotest,TDA_W,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,eHF)
     H(:,:) = 0d0
  
     !-------------------------------------!
-    !        Compute ADC-GW matrix        !
+    !      Compute ADC-2SOSEX matrix      !
     !-------------------------------------!
     !                                     !
     !     |   F   U2h1p      U2p1h      | ! 
@@ -150,6 +150,17 @@ subroutine R_ADC_GW(dotest,TDA_W,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,eHF)
         H(1    ,1+ija) = sqrt(2d0)*rho(p,i,mu)
         H(1+ija,1    ) = sqrt(2d0)*rho(p,i,mu)
 
+        do k=nC+1,nO
+          do c=nO+1,nOrb-nR
+            H(1    ,1+ija) = H(1    ,1+ija) &
+                           + sqrt(2d0)*ERI(p,c,k,i)*rho(k,c,mu)/(eHF(c) - eHF(k) - Om(mu)) &
+                           + sqrt(2d0)*ERI(p,k,c,i)*rho(c,k,mu)/(eHF(c) - eHF(k) + Om(mu))
+            H(1+ija,1    ) = H(1+ija,1    ) & 
+                           + sqrt(2d0)*ERI(p,c,k,i)*rho(k,c,mu)/(eHF(c) - eHF(k) - Om(mu)) &
+                           + sqrt(2d0)*ERI(p,k,c,i)*rho(c,k,mu)/(eHF(c) - eHF(k) + Om(mu))
+          end do
+        end do
+ 
       end do
     end do
  
@@ -165,6 +176,17 @@ subroutine R_ADC_GW(dotest,TDA_W,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,eHF)
         H(1          ,1+n2h1p+iab) = sqrt(2d0)*rho(p,a,mu)
         H(1+n2h1p+iab,1          ) = sqrt(2d0)*rho(p,a,mu)
  
+        do k=nC+1,nO
+          do c=nO+1,nOrb-nR
+            H(1    ,1+n2h1p+iab) = H(1    ,1+n2h1p+iab) &
+                                 + sqrt(2d0)*ERI(p,k,c,a)*rho(c,k,mu)/(eHF(c) - eHF(k) - Om(mu)) &
+                                 + sqrt(2d0)*ERI(p,c,k,a)*rho(k,c,mu)/(eHF(c) - eHF(k) + Om(mu))
+            H(1+n2h1p+iab,1    ) = H(1+n2h1p+iab,1    ) &
+                                 + sqrt(2d0)*ERI(p,k,c,a)*rho(c,k,mu)/(eHF(c) - eHF(k) - Om(mu)) &
+                                 + sqrt(2d0)*ERI(p,c,k,a)*rho(k,c,mu)/(eHF(c) - eHF(k) + Om(mu))
+          end do
+        end do
+
       end do
     end do
 
@@ -178,7 +200,7 @@ subroutine R_ADC_GW(dotest,TDA_W,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,eHF)
         ija = ija + 1
  
         H(1+ija,1+ija) = eHF(i) - Om(mu) 
-       
+
       end do
     end do
 
@@ -231,7 +253,7 @@ subroutine R_ADC_GW(dotest,TDA_W,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,eHF)
   !--------------!
 
     write(*,*)'-------------------------------------------'
-    write(*,'(1X,A36,I3,A4)')'| ADC-GW energies (eV) for orbital',p,'  |'
+    write(*,'(1X,A36,I3,A4)')'| ADC-2SOSEX energies (eV) for orbital',p,'  |'
     write(*,*)'-------------------------------------------'
     write(*,'(1X,A1,1X,A3,1X,A1,1X,A15,1X,A1,1X,A15,1X,A1,1X,A15,1X)') &
               '|','#','|','e_QP','|','Z','|'
