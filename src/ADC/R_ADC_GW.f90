@@ -1,4 +1,4 @@
-subroutine ADC_RG0W0(dotest,TDA_W,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,eHF)
+subroutine R_ADC_RGW(dotest,TDA_W,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,eHF)
 
 ! ADC version of RG0W0 
 
