@@ -18,6 +18,7 @@ program QuAcK
   logical                       :: doCAP
   logical                       :: doevParquet,doqsParquet,doOO
   logical                       :: file_exists
+  logical                       :: error_P
 
   integer                       :: iorb,jorb,korb,lorb
   integer                       :: ifreq,kind_int
@@ -185,7 +186,7 @@ program QuAcK
                     maxSCF_GT,thresh_GT,max_diis_GT,lin_GT,eta_GT,reg_GT,TDA_T,do_linDM_GT,              & 
                     doACFDT,exchange_kernel,doXBS,                                                       &
                     dophBSE,dophBSE2,doppBSE,dBSE,dTDA,                                                  &
-                    temperature,sigma,chem_pot_hf,restart_hfb,                                           &
+                    temperature,sigma,chem_pot_hf,restart_hfb,error_P,                                   &
                     TDAeh,TDApp,max_diis_1b,max_diis_2b,max_it_1b,conv_1b,max_it_2b,conv_2b,lin_parquet, &
                     reg_1b,reg_2b,reg_PA,eweight,eforward)
 
@@ -428,7 +429,7 @@ program QuAcK
     call BQuAcK(working_dir,dotest,doaordm,doRHFB,doBRPA,dophRPA,doG0W0,doqsGW,doscGW,readFCIDUMP,nNuc,nBas,nOrb, &
                 nO,ENuc,eta_GW,shift_GW,restart_scGW,ZNuc,rNuc,S,T,V,Hc,X,dipole_int_AO,maxSCF_HF,max_diis_HF,    &
                 thresh_HF,level_shift,guess_type,maxSCF_GW,max_diis_GW,thresh_GW,do_linDM_GW,temperature,sigma,   &
-                chem_pot_hf,restart_hfb,nfreqs,ntimes,wcoord,wweight)
+                chem_pot_hf,restart_hfb,nfreqs,ntimes,wcoord,wweight,error_P)
 
 !-----------!
 ! Stop Test !

@@ -9,7 +9,7 @@ subroutine read_options(working_dir,                                            
                         maxSCF_GT,thresh_GT,max_diis_GT,lin_GT,eta_GT,reg_GT,TDA_T,do_linDM_GT,             &
                         doACFDT,exchange_kernel,doXBS,                                                      &
                         dophBSE,dophBSE2,doppBSE,dBSE,dTDA,                                                 &
-                        temperature,sigma,chem_pot_hf,restart_hfb,                                          &
+                        temperature,sigma,chem_pot_hf,restart_hfb,error_P,                                  &
                         TDAeh,TDApp,max_diis_1b,max_diis_2b,max_it_1b,conv_1b,max_it_2b,conv_2b,lin_parquet,&
                         reg_1b,reg_2b,reg_PA,eweight,eforward)
 
@@ -33,6 +33,7 @@ subroutine read_options(working_dir,                                            
   logical,intent(out)           :: dosearch
   logical,intent(out)           :: doaordm
   logical,intent(out)           :: readFCIDUMP
+  logical,intent(out)           :: error_P
 
   logical,intent(out)           :: reg_MP
 
@@ -271,12 +272,14 @@ subroutine read_options(working_dir,                                            
       sigma        = 1d0
       chem_pot_hf  = .false.
       restart_hfb  = .false.
+      error_P      = .false.
     
       read(1,*) 
-      read(1,*) temperature,sigma,ans1,ans2
+      read(1,*) temperature,sigma,ans1,ans2,ans3
 
       if(ans1 == 'T') chem_pot_hf  = .true.
       if(ans2 == 'T') restart_hfb  = .true.
+      if(ans3 == 'T') error_P      = .true.
 
       ! Options for Parquet module
 
