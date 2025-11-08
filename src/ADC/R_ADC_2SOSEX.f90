@@ -33,7 +33,7 @@ subroutine R_ADC_2SOSEX(dotest,TDA_W,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,eHF)
   integer                       :: klc,kcd,ija,ijb,iab,jab
 
   logical                       :: print_W = .false.
-  logical                       :: dRPA
+  logical                       :: dRPA = .true.
   integer                       :: isp_W
   double precision              :: EcRPA
   integer                       :: n2h1p,n2p1h,nH
@@ -78,7 +78,6 @@ subroutine R_ADC_2SOSEX(dotest,TDA_W,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,eHF)
   
 ! Initialization
 
-  dRPA = .true.
   EcRPA = 0d0
 
   eF = 0.5d0*(eHF(nO+1) + eHF(nO))
@@ -118,17 +117,17 @@ subroutine R_ADC_2SOSEX(dotest,TDA_W,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,eHF)
 
     H(:,:) = 0d0
  
-    !-------------------------------------!
-    !      Compute ADC-2SOSEX matrix      !
-    !-------------------------------------!
-    !                                     !
-    !     |   F   U2h1p      U2p1h      | ! 
-    !     |                             | ! 
-    ! H = | U2h1p C2h1p-2h1p C2p1h-2h1p | ! 
-    !     |                             | ! 
-    !     | U2p1h C2h1p-2p1h C2p1h-2p1h | ! 
-    !                                     !
-    !-------------------------------------!
+    !-------------------------------!
+    !   Compute ADC-2SOSEX matrix   !
+    !-------------------------------!
+    !                               !
+    !     |   F   U2h1p U2p1h |     ! 
+    !     |                   |     ! 
+    ! H = | U2h1p C2h1p   0   |     ! 
+    !     |                   |     ! 
+    !     | U2p1h   0   C2p1h |     ! 
+    !                               !
+    !-------------------------------!
 
     call wall_time(start_timing)
 
@@ -190,9 +189,9 @@ subroutine R_ADC_2SOSEX(dotest,TDA_W,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,eHF)
       end do
     end do
 
-    !------------------!
-    ! Block C2h1p-2h1p !
-    !------------------!
+    !-------------!
+    ! Block C2h1p !
+    !-------------!
  
     ija = 0
     do i=nC+1,nO
@@ -204,9 +203,9 @@ subroutine R_ADC_2SOSEX(dotest,TDA_W,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,eHF)
       end do
     end do
 
-    !------------------!
-    ! Block C2p1h-2p1h !
-    !------------------!
+    !-------------!
+    ! Block C2p1h !
+    !-------------!
  
     iab = 0
     do mu=1,nS
@@ -253,7 +252,7 @@ subroutine R_ADC_2SOSEX(dotest,TDA_W,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,eHF)
   !--------------!
 
     write(*,*)'-------------------------------------------'
-    write(*,'(1X,A36,I3,A4)')'| ADC-2SOSEX energies (eV) for orbital',p,'  |'
+    write(*,'(1X,A38,I3,A2)')'| ADC-2SOSEX energies (eV) for orbital',p,' |'
     write(*,*)'-------------------------------------------'
     write(*,'(1X,A1,1X,A3,1X,A1,1X,A15,1X,A1,1X,A15,1X,A1,1X,A15,1X)') &
               '|','#','|','e_QP','|','Z','|'

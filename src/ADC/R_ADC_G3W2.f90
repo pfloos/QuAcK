@@ -33,7 +33,7 @@ subroutine R_ADC_G3W2(dotest,TDA_W,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,eHF)
   integer                       :: klc,kcd,ija,ijb,iab,jab
 
   logical                       :: print_W = .false.
-  logical                       :: dRPA
+  logical                       :: dRPA = .true.
   integer                       :: isp_W
   double precision              :: EcRPA
   integer                       :: n2h1p,n2p1h,nH
@@ -78,7 +78,6 @@ subroutine R_ADC_G3W2(dotest,TDA_W,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,eHF)
   
 ! Initialization
 
-  dRPA = .true.
   EcRPA = 0d0
 
   eF = 0.5d0*(eHF(nO+1) + eHF(nO))
@@ -153,10 +152,10 @@ subroutine R_ADC_G3W2(dotest,TDA_W,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,eHF)
         do k=nC+1,nO
           do c=nO+1,nOrb-nR
             H(1    ,1+ija) = H(1    ,1+ija) &
-                           + sqrt(2d0)*ERI(p,c,k,i)*rho(k,c,mu)/(eHF(c) - eHF(k) - Om(mu)) &
+!                          + sqrt(2d0)*ERI(p,c,k,i)*rho(k,c,mu)/(eHF(c) - eHF(k) - Om(mu)) &
                            + sqrt(2d0)*ERI(p,k,c,i)*rho(c,k,mu)/(eHF(c) - eHF(k) + Om(mu))
             H(1+ija,1    ) = H(1+ija,1    ) & 
-                           + sqrt(2d0)*ERI(p,c,k,i)*rho(k,c,mu)/(eHF(c) - eHF(k) - Om(mu)) &
+!                          + sqrt(2d0)*ERI(p,c,k,i)*rho(k,c,mu)/(eHF(c) - eHF(k) - Om(mu)) &
                            + sqrt(2d0)*ERI(p,k,c,i)*rho(c,k,mu)/(eHF(c) - eHF(k) + Om(mu))
           end do
         end do
@@ -179,10 +178,10 @@ subroutine R_ADC_G3W2(dotest,TDA_W,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,eHF)
         do k=nC+1,nO
           do c=nO+1,nOrb-nR
             H(1    ,1+n2h1p+iab) = H(1    ,1+n2h1p+iab) &
-                                 + sqrt(2d0)*ERI(p,k,c,a)*rho(c,k,mu)/(eHF(c) - eHF(k) - Om(mu)) &
+!                                + sqrt(2d0)*ERI(p,k,c,a)*rho(c,k,mu)/(eHF(c) - eHF(k) - Om(mu)) &
                                  + sqrt(2d0)*ERI(p,c,k,a)*rho(k,c,mu)/(eHF(c) - eHF(k) + Om(mu))
             H(1+n2h1p+iab,1    ) = H(1+n2h1p+iab,1    ) &
-                                 + sqrt(2d0)*ERI(p,k,c,a)*rho(c,k,mu)/(eHF(c) - eHF(k) - Om(mu)) &
+!                                + sqrt(2d0)*ERI(p,k,c,a)*rho(c,k,mu)/(eHF(c) - eHF(k) - Om(mu)) &
                                  + sqrt(2d0)*ERI(p,c,k,a)*rho(k,c,mu)/(eHF(c) - eHF(k) + Om(mu))
           end do
         end do
@@ -208,8 +207,8 @@ subroutine R_ADC_G3W2(dotest,TDA_W,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,eHF)
        
             do c=nO+1,nOrb-nR
               H(1+ija,1+klc) = H(1+ija,1+klc) & 
-                             + rho(c,k,mu)*rho(i,c,nu)/(eHF(c) - eHF(k) - Om(mu)) &
-                             + rho(k,c,mu)*rho(c,i,nu)/(eHF(c) - eHF(i) - Om(nu))
+                             + 2d0*rho(c,k,mu)*rho(i,c,nu)/(eHF(c) - eHF(k) - Om(mu)) &
+                             + 2d0*rho(k,c,mu)*rho(c,i,nu)/(eHF(c) - eHF(i) - Om(nu))
             end do
   
           end do
@@ -236,8 +235,8 @@ subroutine R_ADC_G3W2(dotest,TDA_W,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,eHF)
        
             do k=nC+1,nO
               H(1+n2h1p+iab,1+n2h1p+kcd) = H(1+n2h1p+iab,1+n2h1p+kcd) &
-                                         + rho(k,c,mu)*rho(a,k,nu)/(eHF(c) - eHF(k) - Om(mu)) &
-                                         + rho(c,k,mu)*rho(k,a,nu)/(eHF(a) - eHF(k) - Om(nu))
+                                         + 2d0*rho(k,c,mu)*rho(a,k,nu)/(eHF(c) - eHF(k) - Om(mu)) &
+                                         + 2d0*rho(c,k,mu)*rho(k,a,nu)/(eHF(a) - eHF(k) - Om(nu))
             end do
  
           end do
@@ -263,13 +262,13 @@ subroutine R_ADC_G3W2(dotest,TDA_W,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,eHF)
             do k=nC+1,nO
  
               H(1+ija,1+n2h1p+kcd) = H(1+ija,1+n2h1p+kcd) &
-                                   + 2d0*rho(k,i,mu)*rho(a,k,nu)/(eHF(a) - eHF(k) + Om(mu)) 
+                                   + 4d0*rho(k,i,mu)*rho(a,k,nu)/(eHF(a) - eHF(k) + Om(mu)) 
             end do
  
-            do c=nC+1,nO
+            do c=nO+1,nOrb-nR
  
               H(1+ija,1+n2h1p+kcd) = H(1+ija,1+n2h1p+kcd) &
-                                   - 2d0*rho(c,a,mu)*rho(i,c,nu)/(eHF(c) - eHF(i) + Om(mu)) 
+                                   - 4d0*rho(c,a,mu)*rho(i,c,nu)/(eHF(c) - eHF(i) + Om(mu)) 
             end do
  
           end do
@@ -295,13 +294,13 @@ subroutine R_ADC_G3W2(dotest,TDA_W,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,eHF)
             do k=nC+1,nO
  
               H(1+n2h1p+iab,1+klc) = H(1+n2h1p+iab,1+klc) &
-                                   + 2d0*rho(k,i,nu)*rho(a,k,mu)/(eHF(a) - eHF(k) + Om(mu)) 
+                                   + 4d0*rho(k,i,nu)*rho(a,k,mu)/(eHF(a) - eHF(k) + Om(mu)) 
             end do
  
-            do c=nC+1,nO
+            do c=nO+1,nOrb-nR
  
               H(1+n2h1p+iab,1+klc) = H(1+n2h1p+iab,1+klc) &
-                                   - 2d0*rho(c,a,nu)*rho(i,c,mu)/(eHF(c) - eHF(i) + Om(nu)) 
+                                   - 4d0*rho(c,a,nu)*rho(i,c,mu)/(eHF(c) - eHF(i) + Om(nu)) 
             end do
  
           end do
