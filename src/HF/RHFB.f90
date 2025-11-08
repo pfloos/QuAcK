@@ -333,6 +333,10 @@ subroutine RHFB(dotest,doaordm,maxSCF,thresh,max_diis,error_R,nNuc,ZNuc,rNuc,ENu
 !    do iorb=1,nBas
 !     write(*,'(*(f10.5))') 0.5d0*P(iorb,1:nOrb)
 !    enddo
+!    write(*,*) 'Panom^ao iter ',nSCF
+!    do iorb=1,nBas
+!     write(*,'(*(f10.5))') Panom(iorb,1:nOrb)
+!    enddo
 
     ! Kinetic energy
     ET = trace_matrix(nBas,matmul(P,T))
