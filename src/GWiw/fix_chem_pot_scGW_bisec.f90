@@ -24,10 +24,10 @@ subroutine fix_chem_pot_scGW_bisec(iter_fock,nBas,nfreqs,nElectrons,thrs_N,thrs_
 
 ! Local variables
 
+  logical                       :: normal
   integer                       :: isteps
   double precision              :: thrs_closer
   double precision              :: delta_chem_pot
-  double precision              :: chem_pot_change
   double precision              :: chem_pot_old
   double precision              :: grad_electrons
   double precision              :: chem_pot_up
@@ -46,12 +46,12 @@ subroutine fix_chem_pot_scGW_bisec(iter_fock,nBas,nfreqs,nElectrons,thrs_N,thrs_
 
   !  Initialize 
 
+  normal = .true.
   isteps = 0
   delta_chem_pot  = 2d-1
   thrs_closer     = 2d-1
-  chem_pot_change = 0d0
   grad_electrons  = 0d0
-  trace_1_rdm      = -1d0
+  trace_1_rdm     = -1d0
 
   write(*,*)
   write(*,'(a,i5)') ' Fixing the Tr[1D] at scGW/scGF2 at Fock iter ',iter_fock
@@ -101,40 +101,69 @@ subroutine fix_chem_pot_scGW_bisec(iter_fock,nBas,nfreqs,nElectrons,thrs_N,thrs_
 
   ! Find bounds for the bisection method
 !  write(*,*) "| fiding bisection method bounds ...                  |"
+  delta_chem_pot  = 2d-2
   call get_1rdm_scGW(nBas,nfreqs,nElectrons,chem_pot,S,F_ao,Sigma_c_w_ao, &
-                     wcoord,wweight,G_ao,G_ao_iw_hf,DeltaG_ao_iw,P_ao,P_ao_hf,trace_1_rdm) 
+                     wcoord,wweight,G_ao,G_ao_iw_hf,DeltaG_ao_iw,P_ao,P_ao_hf,trace_1_rdm)
   isteps = 1
-  delta_chem_pot  = 1d-2
-  trace_up   = 0d0
-  trace_down = 0d0
-  chem_pot_up   = 0d0
-  chem_pot_down = 0d0
-  do while( abs(trace_1_rdm-nElectrons) > thrs_N .and. isteps <= 100 )
-   if(trace_1_rdm>nElectrons) then
-    chem_pot_up=chem_pot+isteps*delta_chem_pot
-    call get_1rdm_scGW(nBas,nfreqs,nElectrons,chem_pot_up,S,F_ao,Sigma_c_w_ao, &
-                       wcoord,wweight,G_ao,G_ao_iw_hf,DeltaG_ao_iw,P_ao,P_ao_hf,trace_up) 
-    if(trace_up<nElectrons) exit
-   else    
-    chem_pot_down=chem_pot-isteps*delta_chem_pot
-    call get_1rdm_scGW(nBas,nfreqs,nElectrons,chem_pot_down,S,F_ao,Sigma_c_w_ao, &
-                       wcoord,wweight,G_ao,G_ao_iw_hf,DeltaG_ao_iw,P_ao,P_ao_hf,trace_down) 
-    if(trace_down>nElectrons) exit
+  chem_pot_up   = chem_pot + delta_chem_pot
+  chem_pot_down = chem_pot - delta_chem_pot
+  do
+   call get_1rdm_scGW(nBas,nfreqs,nElectrons,chem_pot_up,S,F_ao,Sigma_c_w_ao, &
+                      wcoord,wweight,G_ao,G_ao_iw_hf,DeltaG_ao_iw,P_ao,P_ao_hf,trace_up)
+   call get_1rdm_scGW(nBas,nfreqs,nElectrons,chem_pot_down,S,F_ao,Sigma_c_w_ao, &
+                      wcoord,wweight,G_ao,G_ao_iw_hf,DeltaG_ao_iw,P_ao,P_ao_hf,trace_down)
+
+   if((trace_up>trace_1_rdm .and. trace_down>trace_1_rdm) .or. (trace_up<trace_1_rdm .and. trace_down<trace_1_rdm)) then
+    write(*,'(a,f16.10)') ' Chemical potential          ',chem_pot
+    write(*,'(a,f16.10)') ' Delta chemical potential    ',delta_chem_pot
+    write(*,'(a,f16.10)') ' Trace with chem pot         ',trace_1_rdm
+    write(*,'(a,f16.10)') ' Trace with chem pot + delta ',trace_up
+    write(*,'(a,f16.10)') ' Trace with chem pot - delta ',trace_down
+    stop
    endif
 
+   if(trace_1_rdm<nElectrons) then
+    if(trace_up>nElectrons .or. trace_down>nElectrons) then
+     if(trace_up>nElectrons) then
+      chem_pot_down=chem_pot
+      normal=.true.     
+      exit
+     endif
+     if(trace_down>nElectrons) then
+      chem_pot_up=chem_pot
+      normal=.false.     
+      exit
+     endif
+    endif
+   else
+    if(trace_up<nElectrons .or. trace_down<nElectrons) then
+     if(trace_down<nElectrons) then
+      chem_pot_up=chem_pot
+      normal=.true.     
+      exit
+     endif
+     if(trace_up<nElectrons) then
+      chem_pot_down=chem_pot
+      normal=.false.     
+      exit
+     endif
+    endif
+   endif
    isteps = isteps + 1
-  enddo
-  if(abs(chem_pot_up)>1d-8) then
-   chem_pot_down=chem_pot
-   trace_down=trace_1_rdm
-!   write(*,'(1X,A1,F16.10,1X,A1,F16.10,1X,A1F16.10,1X,A1)') &
-!    '|',trace_up,'|',chem_pot_up,'|',grad_electrons,'|'
-  else
-   chem_pot_up=chem_pot
-   trace_up=trace_1_rdm
-!   write(*,'(1X,A1,F16.10,1X,A1,F16.10,1X,A1F16.10,1X,A1)') &
-!    '|',trace_down,'|',chem_pot_down,'|',grad_electrons,'|'
-  endif
+
+   if(isteps==100) exit
+
+   delta_chem_pot=delta_chem_pot + 2d-2
+   chem_pot_up   = chem_pot + delta_chem_pot
+   chem_pot_down = chem_pot - delta_chem_pot
+   
+ enddo
+
+!   call get_1rdm_scGW(nBas,nfreqs,nElectrons,chem_pot_up,S,F_ao,Sigma_c_w_ao, &
+!                      wcoord,wweight,G_ao,G_ao_iw_hf,DeltaG_ao_iw,P_ao,P_ao_hf,trace_up)
+!   call get_1rdm_scGW(nBas,nfreqs,nElectrons,chem_pot_down,S,F_ao,Sigma_c_w_ao, &
+!                      wcoord,wweight,G_ao,G_ao_iw_hf,DeltaG_ao_iw,P_ao,P_ao_hf,trace_down)
+!   write(*,*) delta_chem_pot,chem_pot_down,chem_pot_up,trace_down,trace_up,normal
 
 !  write(*,*) "| doing bisection method ...                          |"
   ! Do bisection method
@@ -146,12 +175,18 @@ subroutine fix_chem_pot_scGW_bisec(iter_fock,nBas,nfreqs,nElectrons,thrs_N,thrs_
                       wcoord,wweight,G_ao,G_ao_iw_hf,DeltaG_ao_iw,P_ao,P_ao_hf,trace_1_rdm) 
 !   write(*,'(1X,A1,F16.10,1X,A1,F16.10,1X,A1F16.10,1X,A1)') &
 !    '|',trace_1_rdm,'|',chem_pot,'|',grad_electrons,'|'
-   if(trace_1_rdm>nElectrons) then
-    chem_pot_down=chem_pot
-    trace_down=trace_1_rdm
+   if(normal) then
+    if(trace_1_rdm>nElectrons) then
+     chem_pot_up=chem_pot
+    else
+     chem_pot_down=chem_pot
+    endif
    else
-    chem_pot_up=chem_pot
-    trace_up=trace_1_rdm
+    if(trace_1_rdm<nElectrons) then
+     chem_pot_up=chem_pot
+    else
+     chem_pot_down=chem_pot
+    endif
    endif
   enddo
 
