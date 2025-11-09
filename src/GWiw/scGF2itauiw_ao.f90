@@ -75,6 +75,7 @@ subroutine scGF2itauiw_ao(nBas,nOrb,nO,maxSCF,maxDIIS,dolinGF2,restart_scGF2,no_
   double precision,allocatable  :: eSD_old(:)
   double precision,allocatable  :: Occ(:)
   double precision,allocatable  :: Wp_ao_iw(:,:)
+  double precision,allocatable  :: cNO(:,:)
   double precision,allocatable  :: cHFinv(:,:)
   double precision,allocatable  :: F_ao(:,:)
   double precision,allocatable  :: U_mo(:,:)
@@ -165,7 +166,7 @@ subroutine scGF2itauiw_ao(nBas,nOrb,nO,maxSCF,maxDIIS,dolinGF2,restart_scGF2,no_
   
  allocate(U_mo(nOrb,nOrb))
  allocate(P_ao(nBas,nBas),P_ao_old(nBas,nBas),P_ao_iter(nBas,nBas),P_ao_hf(nBas,nBas))
- allocate(F_ao(nBas,nBas),P_mo(nOrb,nOrb),cHFinv(nOrb,nBas),Occ(nOrb),eSD(nOrb),eSD_old(nOrb))
+ allocate(F_ao(nBas,nBas),P_mo(nOrb,nOrb),cHFinv(nOrb,nBas),Occ(nOrb),eSD(nOrb),eSD_old(nOrb),cNO(nBas,nOrb))
  allocate(G_minus_itau(nBas,nBas),G_plus_itau(nBas,nBas)) 
  allocate(G_ao_1(nBas,nBas),G_ao_2(nBas,nBas)) 
  allocate(Sigma_c_c(nBas,nBas),Sigma_c_s(nBas,nBas)) 
@@ -632,6 +633,7 @@ subroutine scGF2itauiw_ao(nBas,nOrb,nO,maxSCF,maxDIIS,dolinGF2,restart_scGF2,no_
   P_mo=-matmul(matmul(cHFinv,P_ao),transpose(cHFinv)) ! Minus to order occ numbers
   call diagonalize_matrix(nOrb,P_mo,Occ)
   Occ=-Occ
+  cNO=matmul(cHF,P_mo)
   write(*,*)
   write(*,'(a,f15.8,a,i5,a,i5)') ' Trace scGF2 ',trace_1_rdm,' after ',iter_fock,' Fock iterations at global iter ',iter
   write(*,'(a,f15.8)')        ' Change of P ',diff_Pao
@@ -763,6 +765,11 @@ subroutine scGF2itauiw_ao(nBas,nOrb,nO,maxSCF,maxDIIS,dolinGF2,restart_scGF2,no_
  do ibas=1,nOrb
   write(*,'(I7,F15.8)') ibas,Occ(ibas)
  enddo
+ write(*,*) ' Natural orbitals (columns)'
+ do ibas=1,nBas
+  write(*,'(*(f10.5))') cNO(ibas,:)
+ enddo
+ write(*,*)
 
  ! Write restart files
  call write_scGW_restart(nBas,ntimes,ntimes_twice,nfreqs,chem_pot,P_ao,P_ao_hf,G_ao_itau,G_ao_itau_hf, &
@@ -834,7 +841,7 @@ subroutine scGF2itauiw_ao(nBas,nOrb,nO,maxSCF,maxDIIS,dolinGF2,restart_scGF2,no_
  deallocate(G_ao_itau_old)
  deallocate(G_ao_itau,G_ao_itau_hf)
  deallocate(Sigma_c_w_ao,DeltaG_ao_iw,G_ao_iw_hf)
- deallocate(P_ao,P_ao_old,P_ao_iter,P_ao_hf,F_ao,P_mo,cHFinv,U_mo,Occ,eSD,eSD_old) 
+ deallocate(P_ao,P_ao_old,P_ao_iter,P_ao_hf,F_ao,P_mo,cHFinv,cNO,U_mo,Occ,eSD,eSD_old) 
  deallocate(Sigma_c_plus,Sigma_c_minus) 
  deallocate(Sigma_c_c,Sigma_c_s) 
  deallocate(G_minus_itau,G_plus_itau) 
