@@ -17,6 +17,8 @@ program QuAcK
   logical                       :: doG0T0pp,doevGTpp,doqsGTpp,doufG0T0pp,doG0T0eh,doevGTeh,doqsGTeh
   logical                       :: doCAP
   logical                       :: doevParquet,doqsParquet,doOO
+  logical                       :: do_IPEA_ADC2,do_IPEA_ADC3,do_ADC_GW,do_ADC_2SOSEX,do_ADC_G3W2
+
   logical                       :: file_exists
   logical                       :: error_P
 
@@ -162,6 +164,8 @@ program QuAcK
                     doG0T0pp,doevGTpp,doqsGTpp,doufG0T0pp,          &
                     doG0T0eh,doevGTeh,doqsGTeh,                     &
                     doevParquet,doqsParquet,                        &
+                    do_IPEA_ADC2,do_IPEA_ADC3,                      & 
+                    do_ADC_GW,do_ADC_2SOSEX,do_ADC_G3W2,            &
                     doRtest,doUtest,doGtest)
   
 ! Determine complex function calls  
@@ -372,6 +376,7 @@ program QuAcK
                   doG0T0pp,doevGTpp,doqsGTpp,doufG0T0pp,doG0T0eh,doevGTeh,doqsGTeh,doevParquet,doqsParquet,                &
                   docG0W0,docG0F2,doscGW,doscGF2,                                                                          &
                   doCAP,readFCIDUMP,restart_scGW,restart_scGF2,                                                            & 
+                  do_IPEA_ADC2,do_IPEA_ADC3,do_ADC_GW,do_ADC_2SOSEX,do_ADC_G3W2,                                           &
                   nNuc,nBas,nOrb,nC,nO,nV,nR,ENuc,ZNuc,rNuc,                                                               &
                   S,T,V,Hc,CAP,X,dipole_int_AO,maxSCF_HF,max_diis_HF,thresh_HF,level_shift,                                &
                   guess_type,mix,reg_MP,maxSCF_CC,max_diis_CC,thresh_CC,spin_conserved,spin_flip,TDA,                      &

@@ -5,6 +5,7 @@ subroutine RQuAcK(working_dir,use_gpu,dotest,doRHF,doROHF,docRHF,               
                   doG0T0pp,doevGTpp,doqsGTpp,doufG0T0pp,doG0T0eh,doevGTeh,doqsGTeh,doevParquet,doqsParquet,                 & 
                   docG0W0,docG0F2,doscGW,doscGF2,                                                                           & 
                   doCAP,readFCIDUMP,restart_scGW,restart_scGF2,                                                             & 
+                  do_IPEA_ADC2,do_IPEA_ADC3,do_ADC_GW,do_ADC_2SOSEX,do_ADC_G3W2,                                            &
                   nNuc,nBas,nOrb,nC,nO,nV,nR,ENuc,ZNuc,rNuc,                                                                &
                   S,T,V,Hc,CAP_AO,X,dipole_int_AO,maxSCF_HF,max_diis_HF,thresh_HF,level_shift,                              &
                   guess_type,mix,reg_MP,maxSCF_CC,max_diis_CC,thresh_CC,singlet,triplet,TDA,                                &
@@ -45,6 +46,8 @@ subroutine RQuAcK(working_dir,use_gpu,dotest,doRHF,doROHF,docRHF,               
   logical,intent(in)            :: docG0W0,docG0F2
   logical,intent(in)            :: doCAP
   logical,intent(in)            :: doevParquet,doqsParquet
+  logical,intent(in)            :: do_IPEA_ADC2,do_IPEA_ADC3
+  logical,intent(in)            :: do_ADC_GW,do_ADC_2SOSEX,do_ADC_G3W2
 
   integer,intent(in)            :: nNuc,nBas,nOrb
   integer,intent(in)            :: nC
@@ -110,7 +113,7 @@ subroutine RQuAcK(working_dir,use_gpu,dotest,doRHF,doROHF,docRHF,               
 
 ! Local variables
 
-  logical                       :: doMP,doCC,doCI,doRPA,doGF,doGW,doGT
+  logical                       :: doMP,doCC,doCI,doRPA,doGF,doGW,doGT,doADC
   logical                       :: file_exists
   logical                       :: no_fock
 
@@ -124,6 +127,7 @@ subroutine RQuAcK(working_dir,use_gpu,dotest,doRHF,doROHF,docRHF,               
   double precision              :: start_GF     ,end_GF       ,t_GF
   double precision              :: start_GW     ,end_GW       ,t_GW
   double precision              :: start_GT     ,end_GT       ,t_GT
+  double precision              :: start_ADC    ,end_ADC      ,t_ADC
   double precision              :: start_Parquet,end_Parquet  ,t_Parquet
 
   double precision              :: start_int, end_int, t_int
@@ -533,7 +537,6 @@ doGF = doG0F2 .or. doevGF2 .or. doqsGF2 .or. doufG0F02 .or. doG0F3 .or. doevGF3 
 
   end if
 
-
 !-------------------!
 ! complex GW module !
 !-------------------!
@@ -573,9 +576,33 @@ doGF = doG0F2 .or. doevGF2 .or. doqsGF2 .or. doufG0F02 .or. doG0F3 .or. doevGF3 
 
   end if
 
-!------------------------!
-!     Parquet module     !
-!------------------------!
+!------------!
+! ADC module !
+!------------!
+
+  doADC = do_IPEA_ADC2 .or. do_IPEA_ADC3 .or. do_ADC_GW .or. do_ADC_2SOSEX .or. do_ADC_G3W2
+
+  if(doADC) then
+
+    call wall_time(start_ADC)
+    call R_ADC(dotest,                                               &
+               do_IPEA_ADC2,do_IPEA_ADC3,                            & 
+               do_ADC_GW,do_ADC_2SOSEX,do_ADC_G3W2,                  &
+               TDA_W,TDA,singlet,triplet,eta_GW,reg_GW,              &
+               nNuc,ZNuc,rNuc,ENuc,nBas,nOrb,nC,nO,nV,nR,nS,         &
+               S,X,T,V,Hc,ERI_AO,ERI_MO,dipole_int_AO,dipole_int_MO, &
+               ERHF,PHF,FHF,cHF,eHF)
+    call wall_time(end_ADC)
+
+    t_ADC = end_ADC - start_ADC
+    write(*,'(A65,1X,F9.3,A8)') 'Total wall time for ADC = ',t_ADC,' seconds'
+    write(*,*)
+
+  end if
+
+!----------------!
+! Parquet module !
+!----------------!
 
   if(doevParquet) then
     call wall_time(start_Parquet)
@@ -621,4 +648,5 @@ doGF = doG0F2 .or. doevGF2 .or. doqsGF2 .or. doufG0F02 .or. doG0F3 .or. doevGF3 
   if (allocated(complex_eHF)) deallocate(complex_eHF)
   if (allocated(complex_cHF)) deallocate(complex_cHF)
   if (allocated(complex_PHF)) deallocate(complex_PHF)
+
 end subroutine
