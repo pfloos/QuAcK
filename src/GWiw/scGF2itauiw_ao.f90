@@ -517,6 +517,8 @@ subroutine scGF2itauiw_ao(nBas,nOrb,nO,maxSCF,maxDIIS,dolinGF2,restart_scGF2,no_
    write(*,'(a,*(f20.8))') ' Sum error ',sum(error_transf_mo)
    write(*,'(a,f20.8,a,2f20.8,a)') ' Max CAE   ',max_error_sigma,' is in the frequency ',0d0,wcoord(imax_error_sigma),'i'
    write(*,'(a,*(f20.8))') ' MAE       ',sum(error_transf_mo)/(nfreqs*nBas*nBas)
+   write(*,'(a,f17.8,a)') ' EcGM analytic',err_EcGM,' a.u.'
+   write(*,'(a,f18.8,a)') ' EcGM numeric',EcGM,' a.u.'
    write(*,'(a,f20.8,a)') ' EcGM error',abs(err_EcGM-EcGM),' a.u.'
    deallocate(error_transf_mo,Sigma_c_w_mo)
   endif
