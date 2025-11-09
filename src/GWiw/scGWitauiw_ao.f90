@@ -487,8 +487,8 @@ subroutine scGWitauiw_ao(nBas,nOrb,nO,maxSCF,maxDIIS,dolinGW,restart_scGW,no_foc
     call get_1rdm_scGW(nBas,nfreqs,nElectrons,chem_pot,S,F_ao,Sigma_c_w_ao,wcoord,wweight, &
                        G_ao_1,G_ao_iw_hf,DeltaG_ao_iw,P_ao,P_ao_hf,trace_1_rdm) 
     if(abs(trace_1_rdm-nElectrons)**2d0>thrs_N) &
-     call fix_chem_pot_scGW(iter_fock,nBas,nfreqs,nElectrons,thrs_N,thrs_Ngrad,chem_pot,S,F_ao,Sigma_c_w_ao,wcoord,wweight, &
-                           G_ao_1,G_ao_iw_hf,DeltaG_ao_iw,P_ao,P_ao_hf,trace_1_rdm)
+     call fix_chem_pot_scGW_bisec(iter_fock,nBas,nfreqs,nElectrons,thrs_N,thrs_Ngrad,chem_pot,S,F_ao,Sigma_c_w_ao,wcoord,wweight, &
+                                  G_ao_1,G_ao_iw_hf,DeltaG_ao_iw,P_ao,P_ao_hf,trace_1_rdm)
     ! Check convergence of P_ao for fixed Sigma_c(i w)
     diff_Pao=0d0
     do ibas=1,nBas
@@ -538,19 +538,16 @@ subroutine scGWitauiw_ao(nBas,nOrb,nO,maxSCF,maxDIIS,dolinGW,restart_scGW,no_foc
   ! Print iter info
   P_mo=-matmul(matmul(cHFinv,P_ao),transpose(cHFinv)) ! Minus to order occ numbers
   call diagonalize_matrix(nOrb,P_mo,Occ)
+  Occ=-Occ
   write(*,*)
   write(*,'(a,f15.8,a,i5,a,i5)') ' Trace scGW  ',trace_1_rdm,' after ',iter_fock,' Fock iterations at global iter ',iter
   write(*,'(a,f15.8)')        ' Change of P ',diff_Pao
   write(*,'(a,f15.8)')        ' Chem. Pot.  ',chem_pot
+  write(*,'(a,f15.8)')        ' Esd         ',Ehfl
   write(*,'(a,f15.8)')        ' EcGM        ',EcGM
   write(*,'(a,f15.8)')        ' Eelec       ',Ehfl+EcGM
   write(*,'(a,f15.8)')        ' Etot        ',Ehfl+EcGM+ENuc
   write(*,*)
-  write(*,*) ' Occupation numbers'
-  Occ=-Occ
-  do ibas=1,nOrb
-   write(*,'(I7,F15.8)') ibas,Occ(ibas)
-  enddo
 
   if(diff_Pao<=thrs_Pao) exit
 
@@ -562,22 +559,18 @@ subroutine scGWitauiw_ao(nBas,nOrb,nO,maxSCF,maxDIIS,dolinGW,restart_scGW,no_foc
    U_mo(ibas,ibas)=U_mo(ibas,ibas)-chem_pot
   enddo
   call diagonalize_matrix(nOrb,U_mo,eSD)
+  chem_pot_align=0.5d0*(eSD(nO)+eSD(nO+1))
+  write(*,*) '    orb       Occ          SD energies  Aligned SD energies [ from Go(iw) (a.u.) ]'
+  do ibas=1,nOrb
+   write(*,'(I7,3F15.8)') ibas,Occ(ibas),eSD(ibas),eSD(ibas)-chem_pot_align
+  enddo
+  eSD(:)=eSD(:)-chem_pot_align
   nneg=0
   do ibas=1,nOrb
    if(eSD(ibas)<0d0) nneg=nneg+1
   enddo
-  write(*,*) ' SD energies from Go(iw) (a.u.)'
-  do ibas=1,nOrb
-   write(*,'(I7,F15.8)') ibas,eSD(ibas)
-  enddo
-  chem_pot_align=0.5d0*(eSD(nO)+eSD(nO+1))
-  eSD(:)=eSD(:)-chem_pot_align
-  write(*,*) ' Aligned SD energies from Go(iw) (a.u.)'
-  do ibas=1,nOrb
-   write(*,'(I7,F15.8)') ibas,eSD(ibas)
-  enddo
   sd_dif=sum(abs(eSD(:)-eSD_old(:)))
-  write(*,'(a,f15.8)') ' | eSD,i - eSD,i-1 | ',sd_dif
+  write(*,'(a,f15.8)') '     | eSD,i - eSD,i-1 | ',sd_dif
   if(nneg==nO .and. sd_dif>1d-2) then
    write(*,*)
    write(*,'(a,i5)') ' Computing new Go(iw), Go(it), and P_HF matrices at global iter ',iter
@@ -661,7 +654,7 @@ subroutine scGWitauiw_ao(nBas,nOrb,nO,maxSCF,maxDIIS,dolinGW,restart_scGW,no_foc
  write(*,'(a,f15.8,a,i5,a)') ' Trace scGW  ',trace_1_rdm,' after ',iter,' global iterations '
  write(*,'(a,f15.8)')        ' Change of P ',diff_Pao
  write(*,'(a,f15.8)')        ' Chem. Pot.  ',chem_pot
- write(*,'(a,f15.8)')        ' Hcore+Hx    ',Ehfl
+ write(*,'(a,f15.8)')        ' Esd         ',Ehfl
  write(*,'(a,f15.8)')        ' EcGM        ',EcGM
  write(*,'(a,f15.8)')        ' Eelec       ',Ehfl+EcGM
  write(*,'(a,f15.8)')        ' scGW Energy ',Ehfl+EcGM+ENuc
