@@ -564,7 +564,7 @@ subroutine scGWitauiw_ao(nBas,nOrb,nO,maxSCF,maxDIIS,dolinGW,restart_scGW,no_foc
   enddo
   call diagonalize_matrix(nOrb,U_mo,eSD)
   chem_pot_align=0.5d0*(eSD(nO)+eSD(nO+1))
-  write(*,*) '    orb       Occ          SD energies  Aligned SD energies [ from Go(iw) (a.u.) ]'
+  write(*,*) '    orb       Occ        SD energies  Aligned SD energies [ from Go(iw) (a.u.) ]'
   do ibas=1,nOrb
    write(*,'(I7,3F15.8)') ibas,Occ(ibas),eSD(ibas),eSD(ibas)-chem_pot_align
   enddo

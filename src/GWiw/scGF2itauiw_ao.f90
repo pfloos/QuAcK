@@ -52,6 +52,7 @@ subroutine scGF2itauiw_ao(nBas,nOrb,nO,maxSCF,maxDIIS,dolinGF2,restart_scGF2,no_
   double precision              :: rcondP
   double precision              :: alpha_mixing
   double precision              :: Ehfl,EcGM
+!  double precision              :: EcGMw
   double precision              :: trace1,trace2
   double precision              :: eta,diff_Pao
   double precision              :: nElectrons
@@ -90,6 +91,7 @@ subroutine scGF2itauiw_ao(nBas,nOrb,nO,maxSCF,maxDIIS,dolinGF2,restart_scGF2,no_
   complex*16                    :: product
   complex*16                    :: weval_cpx
   complex*16                    :: EcGM_itau
+!  complex*16                    :: EcGM_iw
   complex*16,allocatable        :: Sigma_c_w_ao(:,:,:)
   complex*16,allocatable        :: DeltaG_ao_iw(:,:,:)
   complex*16,allocatable        :: G_ao_itau(:,:,:)
@@ -110,6 +112,7 @@ subroutine scGF2itauiw_ao(nBas,nOrb,nO,maxSCF,maxDIIS,dolinGF2,restart_scGF2,no_
   complex*16,allocatable        :: Aimql(:,:,:,:)
   complex*16,allocatable        :: Bisql(:,:,:,:)
   complex*16,allocatable        :: Cispl(:,:,:,:)
+!  complex*16,allocatable        :: Chi0_ao_iw_vSq(:,:,:)
 
 ! Output variables
   integer,intent(inout)         :: nfreqs
@@ -209,6 +212,7 @@ subroutine scGF2itauiw_ao(nBas,nOrb,nO,maxSCF,maxDIIS,dolinGF2,restart_scGF2,no_
  allocate(Sigma_c_w_ao(nfreqs,nBas,nBas),DeltaG_ao_iw(nfreqs,nBas,nBas),G_ao_iw_hf(nfreqs,nBas,nBas))
  allocate(G_ao_itau(ntimes_twice,nBas,nBas),G_ao_itau_hf(ntimes_twice,nBas,nBas))
  allocate(G_ao_itau_old(ntimes_twice,nBas,nBas))
+! allocate(Chi0_ao_iw_vSq(nfreqs,nBas2,nBas2))
  allocate(err_current(1))
  allocate(err_currentP(1))
  allocate(G_itau_extrap(1))
@@ -463,6 +467,8 @@ subroutine scGF2itauiw_ao(nBas,nOrb,nO,maxSCF,maxDIIS,dolinGF2,restart_scGF2,no_
 
   ! Compute EcGM [ from Sigma_c(iw) is BAD. We use Eq. 10 from J. Chem. Theory Comput., 10, 2498 to compute it from Xo ]
   EcGM=0d0
+!  EcGMw=0d0
+!  Chi0_ao_iw_vSq(:,:,:)=czero
   ! Build using the time grid Xo(i tau) = -2i G(i tau) G(-i tau)
   do itau=1,ntimes
    ! Xo(i tau) = -2i G(i tau) G(-i tau)
@@ -479,6 +485,10 @@ subroutine scGF2itauiw_ao(nBas,nOrb,nO,maxSCF,maxDIIS,dolinGF2,restart_scGF2,no_
     enddo
    enddo
    Chi0_ao_itau_vSq=-2d0*im*Chi0_ao_itau_vSq ! The 2 factor is added to account for both spin contributions [ i.e., (up,up,up,up) and (down,down,down,down) ]
+!   ! Xo(i tau) -> Xo(i w) [ the weight already contains the cos(tau w) and a factor 2 because int_-Infty ^Infty -> 2 int_0 ^Infty ]
+!   do ifreq=1,nfreqs
+!    Chi0_ao_iw_vSq(ifreq,:,:) = Chi0_ao_iw_vSq(ifreq,:,:) - im*cost2w_weight(ifreq,itau)*Chi0_ao_itau_vSq(:,:)
+!   enddo 
    Chi0_ao_itau_vSq=matmul(Chi0_ao_itau_vSq,vMAT)              ! Xo(i tau) v
    Chi0_ao_itau_vSq=matmul(Chi0_ao_itau_vSq,Chi0_ao_itau_vSq)  ! [ Xo(i tau) v ]^2
    ! EcGM = 1/4 int Tr{ [ Xo(i tau) v ]^2 }
@@ -488,6 +498,19 @@ subroutine scGF2itauiw_ao(nBas,nOrb,nO,maxSCF,maxDIIS,dolinGF2,restart_scGF2,no_
    enddo
    EcGM=EcGM+0.25d0*tweight(itau)*real(EcGM_itau) 
   enddo
+!  ! Complete the Xo(i tau) -> Xo(i w)
+!  Chi0_ao_iw_vSq(:,:,:) = Real(Chi0_ao_iw_vSq(:,:,:)) ! The factor 2 is stored in the weight [ and we just retain the real part ]
+!  do ifreq=1,nfreqs
+!   Chi0_ao_iw_vSq(ifreq,:,:)=matmul(Chi0_ao_iw_vSq(ifreq,:,:),vMAT)                       ! Xo(i w) v
+!   Chi0_ao_iw_vSq(ifreq,:,:)=matmul(Chi0_ao_iw_vSq(ifreq,:,:),Chi0_ao_iw_vSq(ifreq,:,:))  ! [ Xo(i w) v ]^2
+!   ! EcGM = - 1/8pi int Tr{ [ Xo(i tau) v ]^2 }
+!   EcGM_iw=czero
+!   do ibas=1,nBas2
+!    EcGM_iw=EcGM_iw+Chi0_ao_iw_vSq(ifreq,ibas,ibas)
+!   enddo
+!   EcGMw=EcGMw-wweight(ifreq)*real(EcGM_iw)
+!  enddo
+!  EcGMw=EcGMw/(8d0*pi)
 
   ! Check the error in Sigma_c(i w) at iter=1 [ if this is calc. is not with restart ]
   if(iter==1 .and. .not.restart_scGF2) then
@@ -517,9 +540,13 @@ subroutine scGF2itauiw_ao(nBas,nOrb,nO,maxSCF,maxDIIS,dolinGF2,restart_scGF2,no_
    write(*,'(a,*(f20.8))') ' Sum error ',sum(error_transf_mo)
    write(*,'(a,f20.8,a,2f20.8,a)') ' Max CAE   ',max_error_sigma,' is in the frequency ',0d0,wcoord(imax_error_sigma),'i'
    write(*,'(a,*(f20.8))') ' MAE       ',sum(error_transf_mo)/(nfreqs*nBas*nBas)
+   write(*,'(a)')         ' Using Xo(it) ' 
    write(*,'(a,f17.8,a)') ' EcGM analytic',err_EcGM,' a.u.'
    write(*,'(a,f18.8,a)') ' EcGM numeric',EcGM,' a.u.'
    write(*,'(a,f20.8,a)') ' EcGM error',abs(err_EcGM-EcGM),' a.u.'
+!   write(*,'(a)')         ' Using Xo(iw) ' 
+!   write(*,'(a,f18.8,a)') ' EcGM numeric',EcGMw,' a.u.'
+!   write(*,'(a,f20.8,a)') ' EcGM error',abs(err_EcGM-EcGMw),' a.u.'
    deallocate(error_transf_mo,Sigma_c_w_mo)
   endif
 
@@ -610,9 +637,12 @@ subroutine scGF2itauiw_ao(nBas,nOrb,nO,maxSCF,maxDIIS,dolinGF2,restart_scGF2,no_
   write(*,'(a,f15.8)')        ' Change of P ',diff_Pao
   write(*,'(a,f15.8)')        ' Chem. Pot.  ',chem_pot
   write(*,'(a,f15.8)')        ' Esd         ',Ehfl
-  write(*,'(a,f15.8)')        ' EcGM        ',EcGM
-  write(*,'(a,f15.8)')        ' Eelec       ',Ehfl+EcGM
-  write(*,'(a,f15.8)')        ' Etot        ',Ehfl+EcGM+ENuc
+  write(*,'(a,f15.8)')        ' EcGM(it)    ',EcGM
+  write(*,'(a,f15.8)')        ' Eelec(it)   ',Ehfl+EcGM
+  write(*,'(a,f15.8)')        ' Etot(it)    ',Ehfl+EcGM+ENuc
+!  write(*,'(a,f15.8)')        ' EcGM(iw)    ',EcGMw
+!  write(*,'(a,f15.8)')        ' Eelec(iw)   ',Ehfl+EcGMw
+!  write(*,'(a,f15.8)')        ' Etot(iw)    ',Ehfl+EcGMw+ENuc
   write(*,*)
 
   if(diff_Pao<=thrs_Pao) exit
@@ -626,7 +656,7 @@ subroutine scGF2itauiw_ao(nBas,nOrb,nO,maxSCF,maxDIIS,dolinGF2,restart_scGF2,no_
   enddo
   call diagonalize_matrix(nOrb,U_mo,eSD)
   chem_pot_align=0.5d0*(eSD(nO)+eSD(nO+1))
-  write(*,*) '    orb       Occ          SD energies  Aligned SD energies [ from Go(iw) (a.u.) ]'
+  write(*,*) '    orb       Occ        SD energies  Aligned SD energies [ from Go(iw) (a.u.) ]'
   do ibas=1,nOrb
    write(*,'(I7,3F15.8)') ibas,Occ(ibas),eSD(ibas),eSD(ibas)-chem_pot_align
   enddo
@@ -717,13 +747,17 @@ subroutine scGF2itauiw_ao(nBas,nOrb,nO,maxSCF,maxDIIS,dolinGF2,restart_scGF2,no_
  write(*,'(A50)') '     scGF2 calculation completed       '
  write(*,'(A50)') '---------------------------------------'
  write(*,*)
- write(*,'(a,f15.8,a,i5,a)') ' Trace scGF2 ',trace_1_rdm,' after ',iter,' global iterations '
- write(*,'(a,f15.8)')        ' Change of P ',diff_Pao
- write(*,'(a,f15.8)')        ' Chem. Pot.  ',chem_pot
- write(*,'(a,f15.8)')        ' Esd         ',Ehfl
- write(*,'(a,f15.8)')        ' EcGM        ',EcGM
- write(*,'(a,f15.8)')        ' Eelec       ',Ehfl+EcGM
- write(*,'(a,f15.8)')        ' scGF2 Energy',Ehfl+EcGM+ENuc
+ write(*,'(a,f15.8,a,i5,a)') ' Trace scGF2      ',trace_1_rdm,' after ',iter,' global iterations '
+ write(*,'(a,f15.8)')        ' Change of P      ',diff_Pao
+ write(*,'(a,f15.8)')        ' Chem. Pot.       ',chem_pot
+ write(*,'(a,f15.8)')        ' Esd              ',Ehfl
+ write(*,'(a,f15.8)')        ' EcGM(it)         ',EcGM
+ write(*,'(a,f15.8)')        ' Eelec(it)        ',Ehfl+EcGM
+ write(*,'(a,f15.8)')        ' scGF2 Energy (it)',Ehfl+EcGM+ENuc
+! write(*,'(a,f15.8)')        ' EcGM(iw)         ',EcGMw
+! write(*,'(a,f15.8)')        ' Eelec(iw)        ',Ehfl+EcGMw
+! write(*,'(a,f15.8)')        ' Etot(iw)         ',Ehfl+EcGMw+ENuc
+! write(*,'(a,f15.8)')        ' scGF2 Energy (iw)',Ehfl+EcGMw+ENuc
  write(*,*)
  write(*,*) ' Final occupation numbers'
  do ibas=1,nOrb
@@ -817,6 +851,7 @@ subroutine scGF2itauiw_ao(nBas,nOrb,nO,maxSCF,maxDIIS,dolinGF2,restart_scGF2,no_
  deallocate(Bisql)
  deallocate(Cispl)
  deallocate(Chi0_ao_itau_vSq) 
+! deallocate(Chi0_ao_iw_vSq)
 
 end subroutine 
 
