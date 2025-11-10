@@ -61,12 +61,14 @@ subroutine R_ADC(dotest,                                               &
 
   double precision              :: start_ADC,end_ADC,t_ADC
   logical                       :: do_IPEA,do_EE
+  logical                       :: do_IP_ADC2 = .true.
 
 ! Output variables
   
   ! None
 
-  do_IPEA = do_IPEA_ADC2 .or. do_IPEA_ADC3 .or. do_ADC_GW .or. do_ADC_2SOSEX .or. do_ADC_G3W2
+  do_IPEA = do_IPEA_ADC2 .or. do_IP_ADC2 .or. do_IPEA_ADC3 .or. & 
+            do_ADC_GW .or. do_ADC_2SOSEX .or. do_ADC_G3W2
   do_EE   = .false.
 
 !=========================================!
@@ -75,18 +77,34 @@ subroutine R_ADC(dotest,                                               &
 
   if(do_IPEA) then 
 
-  !--------------------------!
-  ! Perform ADC2 calculation !
-  !--------------------------!
+  !--------------------------------!
+  ! Perform IP/EA-ADC2 calculation !
+  !--------------------------------!
 
     if(do_IPEA_ADC2) then 
       
       call wall_time(start_ADC)
-!     call R_IPEA_ADC2()
+      call R_IPEA_ADC2(dotest,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,ERHF,ERI_MO,eHF)
       call wall_time(end_ADC)
     
       t_ADC = end_ADC - start_ADC
-      write(*,'(A65,1X,F9.3,A8)') 'Total wall time for IP/EA-ADC2 = ',t_ADC,' seconds'
+      write(*,'(A65,1X,F9.3,A8)') 'Total wall time for IP/EA-ADC(2) = ',t_ADC,' seconds'
+      write(*,*)
+ 
+    end if
+
+  !-----------------------------------------!
+  ! Perform (non-Dyson) IP-ADC2 calculation !
+  !-----------------------------------------!
+  
+    if(do_IP_ADC2) then 
+      
+      call wall_time(start_ADC)
+      call R_IP_ADC2(dotest,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,ERHF,ERI_MO,eHF)
+      call wall_time(end_ADC)
+    
+      t_ADC = end_ADC - start_ADC
+      write(*,'(A65,1X,F9.3,A8)') 'Total wall time for IP-ADC(2) = ',t_ADC,' seconds'
       write(*,*)
  
     end if

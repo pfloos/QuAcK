@@ -192,7 +192,7 @@ end subroutine
 !------------------------------------------------------------------------
 subroutine matrix_exponential(N, A, ExpA)
 
-! Compute Exp(A)
+! Compute Exp(A), where A is skew-symmetric
 
   implicit none
 
@@ -236,6 +236,49 @@ subroutine matrix_exponential(N, A, ExpA)
   ExpA(:,:) = ExpA(:,:) + matmul(W, t)
 
   deallocate(W, tau, t)
+
+end subroutine
+
+!------------------------------------------------------------------------
+subroutine matrix_exp(N, A, ExpA)
+
+! Compute Exp(A), where A is skew symmetric, by using iA = U lambda U^H  and hermicity of iA
+
+  implicit none
+
+  integer,intent(in)            :: N
+  double precision,intent(in)   :: A(N,N)
+  integer                       :: j
+  double precision,allocatable  :: lambda(:)
+  complex*16                    :: alpha
+  complex*16,allocatable        :: U(:,:)
+  complex*16,allocatable        :: B(:,:)
+  complex*16,allocatable        :: cExpA(:,:)
+  double precision,intent(out)  :: ExpA(N,N)
+
+! Memory allocation
+
+  allocate(U(N,N),cExpA(N,N),lambda(N),B(N,N))
+
+! Initialize
+
+  ExpA(:,:) = 0d0
+
+! Diagonalize
+
+  U = cmplx(0d0,1d0,kind=8)*A
+  call diagonalize_hmatrix(N,U,lambda)
+  B = U
+  do j = 1, N
+    alpha = cmplx(cos(-lambda(j)), sin(-lambda(j)), kind=8)  ! exp(-i*Lambda_j)
+    B(:,j) = B(:,j)*alpha
+  end do
+  ! ExpA = B * U^H
+  call zgemm('N','C', N, N, N, cmplx(1.0d0,0.0d0,kind=8), B, N, U, N, cmplx(0.0d0,0.0d0,kind=8), cExpA, N)
+  if(maxval(aimag(cExpA))>1e-14) write(*,*) "Problem in exp(A), exp(A) is not real !!!"
+  ExpA = real(cExpA)
+
+  deallocate(U,cExpA,B,lambda)
 
 end subroutine
 

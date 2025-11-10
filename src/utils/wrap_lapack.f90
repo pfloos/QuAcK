@@ -128,6 +128,47 @@ subroutine diagonalize_matrix(N,A,e)
   
 end subroutine 
 
+subroutine diagonalize_hmatrix(N,A,e)
+
+! Diagonalize a complex square hermitian matrix
+
+  implicit none
+
+! Input variables
+
+  integer,intent(in)            :: N
+  complex*16,intent(inout)      :: A(N,N)
+  double precision,intent(out)  :: e(N)
+
+! Local variables
+
+  integer                       :: lwork,info
+  complex*16,allocatable        :: work(:)
+  double precision,allocatable  :: rwork(:)
+
+! Memory allocation
+
+  allocate(work(1),rwork(3*N))
+  
+  lwork = -1
+  call zheev('V','U',N,A,N,e,work,lwork,rwork,info)
+  lwork = max(1,int(real(work(1))))
+
+
+  deallocate(work)
+
+  allocate(work(lwork))
+
+  call zheev('V','U',N,A,N,e,work,lwork,rwork,info)
+
+  deallocate(work,rwork)
+ 
+  if(info /= 0) then 
+    print*,'Problem in diagonalize_matrix (zheev)!!'
+  end if
+  
+end subroutine 
+
 subroutine complex_diagonalize_matrix(N,A,e)
 
 ! Diagonalize a general complex matrix

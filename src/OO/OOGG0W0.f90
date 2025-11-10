@@ -85,7 +85,7 @@ subroutine OOGG0W0(dotest,doACFDT,exchange_kernel,doXBS,dophBSE,dophBSE2,TDA_W,T
   double precision,allocatable  :: eGW(:)
  
   double precision              :: OOConv
-  double precision              :: thresh = 1.0e-8
+  double precision              :: thresh = 1.0e-5
   integer                       :: OOi
   double precision,allocatable  :: h(:,:)
   double precision,allocatable  :: Kap(:,:)

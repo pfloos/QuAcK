@@ -63,7 +63,7 @@ subroutine R_optimize_orbitals(diagHess,nBas,nOrb,nV,nR,nC,nO,N,Nsq,O,V,ERI_AO,E
     hess = hess + hess_tmp
     deallocate(hess_tmp)
     do pq=1,Nsq
-      if(abs(hess(pq,1))>1e-10) then
+      if(abs(hess(pq,1))>1e-15) then
         hessInv(pq,1) = 1/hess(pq,1)
       endif
     enddo
@@ -75,7 +75,8 @@ subroutine R_optimize_orbitals(diagHess,nBas,nOrb,nV,nR,nC,nO,N,Nsq,O,V,ERI_AO,E
     call orbital_hessian(O,V,N,Nsq,F,ERI_MO,rdm1_c,rdm2_c,hess_tmp)
     hess = hess + hess_tmp 
     deallocate(hess_tmp)
-    call pseudo_inverse_matrix(Nsq,hess,hessInv)
+    !call pseudo_inverse_matrix(Nsq,hess,hessInv)
+    call inverse_matrix(Nsq,hess,hessInv)
   endif
   
   deallocate(hess)
@@ -111,7 +112,7 @@ subroutine R_optimize_orbitals(diagHess,nBas,nOrb,nV,nR,nC,nO,N,Nsq,O,V,ERI_AO,E
 !  write(*,*)
  
   allocate(ExpKap(N,N))
-  call matrix_exponential(N,Kap,ExpKap)
+  call matrix_exp(N,Kap,ExpKap)
   deallocate(Kap)
  
 !  write(*,*) 'e^kappa'
