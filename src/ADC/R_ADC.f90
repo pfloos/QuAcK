@@ -82,7 +82,7 @@ subroutine R_ADC(dotest,                                               &
     if(do_IPEA_ADC2) then 
       
       call wall_time(start_ADC)
-!     call R_IPEA_ADC2()
+      call R_IPEA_ADC2(dotest,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,ERHF,ERI_MO,eHF)
       call wall_time(end_ADC)
     
       t_ADC = end_ADC - start_ADC
