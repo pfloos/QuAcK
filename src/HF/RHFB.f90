@@ -66,7 +66,7 @@ subroutine RHFB(dotest,doaordm,maxSCF,thresh,max_diis,error_R,nNuc,ZNuc,rNuc,ENu
   double precision,allocatable  :: eigVAL_mo(:)
   double precision,allocatable  :: Occ(:)
   double precision,allocatable  :: err_diis(:,:)
-  double precision,allocatable  :: H_HFB_diis(:,:)
+  double precision,allocatable  :: MAT_diis(:,:)
   double precision,allocatable  :: Xinv(:,:)
   double precision,allocatable  :: J(:,:)
   double precision,allocatable  :: K(:,:)
@@ -135,7 +135,7 @@ subroutine RHFB(dotest,doaordm,maxSCF,thresh,max_diis,error_R,nNuc,ZNuc,rNuc,ENu
   allocate(H_HFB_ao(nBas_twice,nBas_twice))
 
   allocate(err_diis(nBas_twice_Sq,max_diis))
-  allocate(H_HFB_diis(nBas_twice_Sq,max_diis))
+  allocate(MAT_diis(nBas_twice_Sq,max_diis))
 
 ! Guess chem. pot.
 
@@ -145,7 +145,7 @@ subroutine RHFB(dotest,doaordm,maxSCF,thresh,max_diis,error_R,nNuc,ZNuc,rNuc,ENu
 
   thrs_N          = 1d-8
   n_diis          = 0
-  H_HFB_diis(:,:) = 0d0
+  MAT_diis(:,:)   = 0d0
   err_diis(:,:)   = 0d0
   rcond           = 0d0
   nO_             = nO
@@ -254,51 +254,20 @@ subroutine RHFB(dotest,doaordm,maxSCF,thresh,max_diis,error_R,nNuc,ZNuc,rNuc,ENu
 
     ! DIIS extrapolation
 
-    if(max_diis > 1 .and. nSCF>1) then
+    if(max_diis > 1 .and. nSCF>1 .and.(.not.error_R)) then
 
      write(*,*) ' Doing DIIS'
      n_diis = min(n_diis+1,max_diis)
 
-     if(error_R) then
-      P(:,:)    = 2d0*matmul(X,matmul(R(1:nOrb,1:nOrb),transpose(X)))
-      R_ao(:,:) = 0d0
-      R_ao(1:nBas           ,1:nBas           ) = 0.5d0*P(1:nBas,1:nBas)
-      R_ao(nBas+1:nBas_twice,nBas+1:nBas_twice) = matmul(X(1:nBas,1:nOrb), transpose(X(1:nBas,1:nOrb)))-0.5d0*P(1:nBas,1:nBas)
-      R_ao(1:nBas           ,nBas+1:nBas_twice) = R_ao_old(1:nBas           ,nBas+1:nBas_twice)
-      R_ao(nBas+1:nBas_twice,1:nBas           ) = R_ao_old(nBas+1:nBas_twice,1:nBas           )
-      err_ao = 1d2*(R_ao - R_ao_old)
-      call DIIS_extrapolation(rcond,nBas_twice_Sq,nBas_twice_Sq,n_diis,err_diis,H_HFB_diis,err_ao,R_ao)
-      P(1:nBas,1:nBas) = 2d0*R_ao(1:nBas,1:nBas)     
-      call Hartree_matrix_AO_basis(nBas,P,ERI,J)
-      call exchange_matrix_AO_basis(nBas,P,ERI,K)
-      P(1:nBas,1:nBas) = 0.5d0*P(1:nBas,1:nBas)     
-      U_mo=-matmul(Xinv,matmul(P,transpose(Xinv)))
-      call diagonalize_matrix(nOrb,U_mo,Occ)
-      Occ=abs(Occ)
-      cNO=matmul(X,U_mo)
-      Panom(:,:)  = 0d0
-      do iorb=1,nOrb
-       Panom(:,:) = Panom(:,:) + sqrt(abs(Occ(iorb)*(1d0-Occ(iorb)))) &
-                  * matmul(cNO(:,iorb:iorb),transpose(cNO(:,iorb:iorb)))
-      enddo
-      call anomalous_matrix_AO_basis(nBas,sigma,Panom,ERI,Delta)
-      F(:,:) = Hc(:,:) + J(:,:) + 0.5d0*K(:,:) - chem_pot*S(:,:)
-      H_HFB_ao(:,:)    = 0d0
-      H_HFB_ao(1:nBas           ,1:nBas           ) =  F(1:nBas,1:nBas)
-      H_HFB_ao(nBas+1:nBas_twice,nBas+1:nBas_twice) = -F(1:nBas,1:nBas)
-      H_HFB_ao(1:nBas           ,nBas+1:nBas_twice) = Delta(1:nBas,1:nBas)
-      H_HFB_ao(nBas+1:nBas_twice,1:nBas           ) = Delta(1:nBas,1:nBas)
-     else
-      F(:,:) = Hc(:,:) + J(:,:) + 0.5d0*K(:,:) - chem_pot*S(:,:)
-      H_HFB_ao(:,:)    = 0d0
-      H_HFB_ao(1:nBas           ,1:nBas           ) =  F(1:nBas,1:nBas)
-      H_HFB_ao(nBas+1:nBas_twice,nBas+1:nBas_twice) = -F(1:nBas,1:nBas)
-      H_HFB_ao(1:nBas           ,nBas+1:nBas_twice) = Delta(1:nBas,1:nBas)
-      H_HFB_ao(nBas+1:nBas_twice,1:nBas           ) = Delta(1:nBas,1:nBas)
-      err_ao = matmul(H_HFB_ao,matmul(R_ao_old,S_ao)) - matmul(matmul(S_ao,R_ao_old),H_HFB_ao)
-      
-      call DIIS_extrapolation(rcond,nBas_twice_Sq,nBas_twice_Sq,n_diis,err_diis,H_HFB_diis,err_ao,H_HFB_ao)
-     endif
+     F(:,:) = Hc(:,:) + J(:,:) + 0.5d0*K(:,:) - chem_pot*S(:,:)
+     H_HFB_ao(:,:)    = 0d0
+     H_HFB_ao(1:nBas           ,1:nBas           ) =  F(1:nBas,1:nBas)
+     H_HFB_ao(nBas+1:nBas_twice,nBas+1:nBas_twice) = -F(1:nBas,1:nBas)
+     H_HFB_ao(1:nBas           ,nBas+1:nBas_twice) = Delta(1:nBas,1:nBas)
+     H_HFB_ao(nBas+1:nBas_twice,1:nBas           ) = Delta(1:nBas,1:nBas)
+     err_ao = matmul(H_HFB_ao,matmul(R_ao_old,S_ao)) - matmul(matmul(S_ao,R_ao_old),H_HFB_ao)
+     
+     call DIIS_extrapolation(rcond,nBas_twice_Sq,nBas_twice_Sq,n_diis,err_diis,MAT_diis,err_ao,H_HFB_ao)
 
      H_HFB = matmul(transpose(X_ao),matmul(H_HFB_ao,X_ao))
      eigVEC(:,:) = H_HFB(:,:)
@@ -353,7 +322,7 @@ subroutine RHFB(dotest,doaordm,maxSCF,thresh,max_diis,error_R,nNuc,ZNuc,rNuc,ENu
 
     ! Check convergence
 
-    if(nSCF > 1) then
+    if((.not.error_R) .and. nSCF > 1) then
 
      F(:,:) = Hc(:,:) + J(:,:) + 0.5d0*K(:,:) - chem_pot*S(:,:)
      H_HFB_ao(:,:)    = 0d0
@@ -361,27 +330,42 @@ subroutine RHFB(dotest,doaordm,maxSCF,thresh,max_diis,error_R,nNuc,ZNuc,rNuc,ENu
      H_HFB_ao(nBas+1:nBas_twice,nBas+1:nBas_twice) = -F(1:nBas,1:nBas)
      H_HFB_ao(1:nBas           ,nBas+1:nBas_twice) = Delta(1:nBas,1:nBas)
      H_HFB_ao(nBas+1:nBas_twice,1:nBas           ) = Delta(1:nBas,1:nBas)
-     if(error_R) then
-      R_ao(:,:) = 0d0
-      R_ao(1:nBas           ,1:nBas           ) = 0.5d0*P(1:nBas,1:nBas)
-      R_ao(nBas+1:nBas_twice,nBas+1:nBas_twice) = matmul(X(1:nBas,1:nOrb), transpose(X(1:nBas,1:nOrb)))-0.5d0*P(1:nBas,1:nBas)
-      R_ao(1:nBas           ,nBas+1:nBas_twice) = R_ao_old(1:nBas           ,nBas+1:nBas_twice)
-      R_ao(nBas+1:nBas_twice,1:nBas           ) = R_ao_old(nBas+1:nBas_twice,1:nBas           )
-      err_ao = 1d2*(R_ao - R_ao_old)
-     else
-      err_ao = matmul(H_HFB_ao,matmul(R_ao_old,S_ao)) - matmul(matmul(S_ao,R_ao_old),H_HFB_ao)
-     endif
+     err_ao = matmul(H_HFB_ao,matmul(R_ao_old,S_ao)) - matmul(matmul(S_ao,R_ao_old),H_HFB_ao)
      Conv  = maxval(abs(err_ao))
 
     endif
 
     ! Update R_old
 
-    R_ao_old(:,:)    = 0d0
-    R_ao_old(1:nBas           ,1:nBas           ) = 0.5d0*P(1:nBas,1:nBas)
-    R_ao_old(nBas+1:nBas_twice,nBas+1:nBas_twice) = matmul(X(1:nBas,1:nOrb), transpose(X(1:nBas,1:nOrb)))-0.5d0*P(1:nBas,1:nBas)
-    R_ao_old(1:nBas           ,nBas+1:nBas_twice) = Panom(1:nBas,1:nBas)
-    R_ao_old(nBas+1:nBas_twice,1:nBas           ) = Panom(1:nBas,1:nBas)
+    R_ao(:,:)    = 0d0
+    R_ao(1:nBas           ,1:nBas           ) = 0.5d0*P(1:nBas,1:nBas)
+    R_ao(nBas+1:nBas_twice,nBas+1:nBas_twice) = matmul(X(1:nBas,1:nOrb), transpose(X(1:nBas,1:nOrb)))-0.5d0*P(1:nBas,1:nBas)
+    R_ao(1:nBas           ,nBas+1:nBas_twice) = Panom(1:nBas,1:nBas)
+    R_ao(nBas+1:nBas_twice,1:nBas           ) = Panom(1:nBas,1:nBas)
+    if(error_R .and. nSCF>1) then
+     R_ao=0.8d0*R_ao+0.2d0*R_ao_old
+     err_ao = 1d2*(R_ao - R_ao_old)  ! Error = Change R mat for DIIS or convergence check
+     if(max_diis>1) then
+      call DIIS_extrapolation(rcond,nBas_twice_Sq,nBas_twice_Sq,n_diis,err_diis,MAT_diis,err_ao,R_ao)
+      err_ao = 1d2*(R_ao - R_ao_old) ! Error = Change R (after DIIS) for convergence check
+     endif
+     Conv  = maxval(abs(err_ao))
+     P(1:nBas,1:nBas)     = 2d0*R_ao(1:nBas,1:nBas)
+     Panom(1:nBas,1:nBas) = R_ao(nBas+1:nBas_twice,1:nBas) 
+     ! Kinetic energy
+     ET = trace_matrix(nBas,matmul(P,T))
+     ! Potential energy
+     EV = trace_matrix(nBas,matmul(P,V))
+     ! Hartree energy
+     EJ = 0.5d0*trace_matrix(nBas,matmul(P,J))
+     ! Exchange energy
+     EK = 0.25d0*trace_matrix(nBas,matmul(P,K))
+     ! Anomalous energy
+     EL = trace_matrix(nBas,matmul(Panom,Delta))
+     ! Total energy
+     EHFB = ET + EV + EJ + EK + EL
+    endif
+    R_ao_old=R_ao
 
     ! Dump results
     write(*,*)'-------------------------------------------------------------------------------------------------'
@@ -410,7 +394,7 @@ subroutine RHFB(dotest,doaordm,maxSCF,thresh,max_diis,error_R,nNuc,ZNuc,rNuc,ENu
     write(*,*)'!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!'
     write(*,*)
 
-!    deallocate(J,K,eigVEC,H_HFB,R,eigVAL,err_diis,H_HFB_diis,Occ)
+!    deallocate(J,K,eigVEC,H_HFB,R,eigVAL,err_diis,MAT_diis,Occ)
 !    deallocate(err_ao,S_ao,X_ao,R_ao_old,H_HFB_ao)
 !
 !    stop
@@ -618,7 +602,7 @@ subroutine RHFB(dotest,doaordm,maxSCF,thresh,max_diis,error_R,nNuc,ZNuc,rNuc,ENu
 
 ! Memory deallocation
 
-  deallocate(J,K,Xinv,eigVEC,H_HFB,R,eigVAL,err_diis,H_HFB_diis,Occ)
+  deallocate(J,K,Xinv,eigVEC,H_HFB,R,eigVAL,err_diis,MAT_diis,Occ)
   deallocate(err_ao,S_ao,X_ao,R_ao,R_ao_old,H_HFB_ao,U_mo,cNO)
   deallocate(c_ao)
 
