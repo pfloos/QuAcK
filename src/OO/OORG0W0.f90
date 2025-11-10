@@ -55,7 +55,7 @@ subroutine OORG0W0(dotest,doACFDT,exchange_kernel,doXBS,dophBSE,dophBSE2,TDA_W,T
 
   logical                       :: print_W   = .false.
   logical                       :: plot_self = .false.
-  logical                       :: diagHess  = .false.  ! Use only diagonal of the Hessian
+  logical                       :: diagHess  = .true.  ! Use only diagonal of the Hessian
   logical                       :: dRPA_W
   integer                       :: isp_W
   double precision              :: flow
@@ -86,7 +86,7 @@ subroutine OORG0W0(dotest,doACFDT,exchange_kernel,doXBS,dophBSE,dophBSE2,TDA_W,T
   double precision,allocatable  :: eGW(:)
  
   double precision              :: OOConv
-  double precision              :: thresh = 1.0e-6
+  double precision              :: thresh = 1.0e-5
   integer                       :: OOi
   double precision,allocatable  :: h(:,:)
   double precision,allocatable  :: rdm1(:,:)
@@ -102,7 +102,6 @@ subroutine OORG0W0(dotest,doACFDT,exchange_kernel,doXBS,dophBSE,dophBSE2,TDA_W,T
   double precision,allocatable  :: c(:,:)
   double precision,allocatable  :: F(:,:)
   double precision,allocatable  :: J(:,:),K(:,:)
-  double precision,allocatable  :: XXT(:,:),YYT(:,:),XYT(:,:)
   double precision              :: Emu, EOld
   double precision              :: EHF_rdm,EcRPA_rdm,EcRPA_HF
 
@@ -160,7 +159,6 @@ subroutine OORG0W0(dotest,doACFDT,exchange_kernel,doXBS,dophBSE,dophBSE2,TDA_W,T
            rampl(nS,N),lampl(nS,N),rp(N),lp(N),h(N,N),c(nBas,nOrb),&
            rdm1(N,N),rdm2(N,N,N,N),rdm1_hf(N,N),rdm2_hf(N,N,N,N),rdm1_rpa(N,N),rdm2_rpa(N,N,N,N),&
            J(nBas,nBas),K(nBas,nBas),F(nOrb,nOrb))
-  allocate(XXT(nS,nS),YYT(nS,nS),XYT(nS,nS))
 
 ! Initialize variables for OO  
   OOi           = 1
@@ -313,6 +311,5 @@ subroutine OORG0W0(dotest,doACFDT,exchange_kernel,doXBS,dophBSE,dophBSE2,TDA_W,T
   deallocate(rdm1,rdm2,c,Aph,Bph,SigC,Z,Om,XpY,XmY,rho,eGW,&
              eGWlin,X,X_inv,Y,Xbar,Xbar_inv,lambda,t,rampl,lampl,rp,lp,h,&
              F)
-  deallocate(XXT,YYT,XYT)
 
 end subroutine
