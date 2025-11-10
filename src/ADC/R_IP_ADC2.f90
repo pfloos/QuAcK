@@ -98,7 +98,7 @@ subroutine R_IP_ADC2(dotest,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,eHF)
       do a=nO+1,nOrb-nR
         do b=nO+1,nOrb-nR
 
-        H(1,1) = H(1,1) + (2d0*ERI(p,i,a,b) - ERI(p,i,b,a))*ERI(p,i,a,b)/(eHF(a) + eHF(b) - eHF(i) - eHF(p))
+        H(1,1) = H(1,1) - (2d0*ERI(p,i,a,b) - ERI(p,i,b,a))*ERI(p,i,a,b)/(eHF(a) + eHF(b) - eHF(i) - eHF(p))
 
         end do
       end do
@@ -131,7 +131,7 @@ subroutine R_IP_ADC2(dotest,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,eHF)
           ija = ija + 1
                    
           H(1+ija,1    ) = 2d0*ERI(p,a,i,j) - ERI(p,a,j,i)
-          H(1    ,1+ija) = - ERI(p,a,i,j)
+          H(1    ,1+ija) = ERI(p,a,i,j)
         
         end do
       end do
