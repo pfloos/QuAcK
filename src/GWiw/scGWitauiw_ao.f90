@@ -1,4 +1,4 @@
-subroutine scGWitauiw_ao(nBas,nOrb,nO,maxSCF,maxDIIS,dolinGW,restart_scGW,no_fock,ENuc,Hc,S,P_in,cHF,eHF, &
+subroutine scGWitauiw_ao(nBas,nOrb,nO,maxSCF,maxDIIS,dolinGW,restart_scGW,verbose_scGW,no_fock,ENuc,Hc,S,P_in,cHF,eHF, &
                         nfreqs,wcoord,wweight,vMAT,ERI_AO)
 
 ! Restricted scGW
@@ -11,6 +11,7 @@ subroutine scGWitauiw_ao(nBas,nOrb,nO,maxSCF,maxDIIS,dolinGW,restart_scGW,no_foc
   logical,intent(in)            :: dolinGW
   logical,intent(in)            :: no_fock
   logical,intent(in)            :: restart_scGW
+  logical,intent(in)            :: verbose_scGW
 
   integer,intent(in)            :: nBas
   integer,intent(in)            :: nOrb
@@ -131,6 +132,7 @@ subroutine scGWitauiw_ao(nBas,nOrb,nO,maxSCF,maxDIIS,dolinGW,restart_scGW,no_foc
  read_SD_chkp=.false.
  n_diis=0
  verbose=0
+ if(verbose_scGW) verbose=1
  eta=0d0
  thrs_N=1d-10
  thrs_Ngrad=1d-6
@@ -146,12 +148,14 @@ subroutine scGWitauiw_ao(nBas,nOrb,nO,maxSCF,maxDIIS,dolinGW,restart_scGW,no_foc
  write(*,'(A33,1X,F16.10,A3)') ' Initial chemical potential  = ',chem_pot,' au'
  write(*,*)
  eHF(:) = eHF(:)-chem_pot_saved
- write(*,*)
- write(*,*) ' Aligned HF energies from Go(iw) (a.u.) [ using HOMO-LUMO ]'
- do ibas=1,nOrb
-  write(*,'(I7,F15.8)') ibas,eHF(ibas)
- enddo
- write(*,*)
+ if(verbose/=0) then
+  write(*,*)
+  write(*,*) ' Aligned HF energies from Go(iw) (a.u.) [ using HOMO-LUMO ]'
+  do ibas=1,nOrb
+   write(*,'(I7,F15.8)') ibas,eHF(ibas)
+  enddo
+  write(*,*)
+ endif
  write(*,'(a,F15.8)') '  emin ',abs(eHF(nO))
  write(*,'(a,F15.8)') '  emax ',abs(eHF(nOrb)-eHF(1))
  write(*,*)
@@ -238,7 +242,7 @@ subroutine scGWitauiw_ao(nBas,nOrb,nO,maxSCF,maxDIIS,dolinGW,restart_scGW,no_foc
 !---------------!
 
  call read_scGW_grids(ntimes,nfreqs,tcoord,tweight,wcoord,wweight,sint2w_weight,cost2w_weight, &
-                      cosw2t_weight,sinw2t_weight)
+                      cosw2t_weight,sinw2t_weight,verbose)
 
 !-------------------------------------------------------------------------!
 ! Test the quality of the grid for the Go(i w) -> G(i tau) transformation !
@@ -493,7 +497,7 @@ subroutine scGWitauiw_ao(nBas,nOrb,nO,maxSCF,maxDIIS,dolinGW,restart_scGW,no_foc
                        G_ao_1,G_ao_iw_hf,DeltaG_ao_iw,P_ao,P_ao_hf,trace_1_rdm) 
     if(abs(trace_1_rdm-nElectrons)**2d0>thrs_N) &
      call fix_chem_pot_scGW_bisec(iter_fock,nBas,nfreqs,nElectrons,thrs_N,thrs_Ngrad,chem_pot,S,F_ao,Sigma_c_w_ao,wcoord,wweight, &
-                                  G_ao_1,G_ao_iw_hf,DeltaG_ao_iw,P_ao,P_ao_hf,trace_1_rdm)
+                                  G_ao_1,G_ao_iw_hf,DeltaG_ao_iw,P_ao,P_ao_hf,trace_1_rdm,verbose_scGW)
     ! Check convergence of P_ao for fixed Sigma_c(i w)
     diff_Pao=0d0
     do ibas=1,nBas
@@ -549,7 +553,8 @@ subroutine scGWitauiw_ao(nBas,nOrb,nO,maxSCF,maxDIIS,dolinGW,restart_scGW,no_foc
   write(*,'(a,f15.8,a,i5,a,i5)') ' Trace scGW  ',trace_1_rdm,' after ',iter_fock,' Fock iterations at global iter ',iter
   write(*,'(a,f15.8)')        ' Change of P ',diff_Pao
   write(*,'(a,f15.8)')        ' Chem. Pot.  ',chem_pot
-  write(*,'(a,f15.8)')        ' Esd         ',Ehfl
+  write(*,'(a,f15.8)')        ' Enuc        ',ENuc
+  write(*,'(a,f15.8)')        ' Ehfl        ',Ehfl
   write(*,'(a,f15.8)')        ' EcGM        ',EcGM
   write(*,'(a,f15.8)')        ' Eelec       ',Ehfl+EcGM
   write(*,'(a,f15.8)')        ' Etot        ',Ehfl+EcGM+ENuc
@@ -566,10 +571,12 @@ subroutine scGWitauiw_ao(nBas,nOrb,nO,maxSCF,maxDIIS,dolinGW,restart_scGW,no_foc
   enddo
   call diagonalize_matrix(nOrb,U_mo,eSD)
   chem_pot_align=0.5d0*(eSD(nO)+eSD(nO+1))
-  write(*,*) '    orb       Occ        SD energies  Aligned SD energies [ from Go(iw) (a.u.) ]'
-  do ibas=1,nOrb
-   write(*,'(I7,3F15.8)') ibas,Occ(ibas),eSD(ibas),eSD(ibas)-chem_pot_align
-  enddo
+  if(verbose/=0) then
+   write(*,*) '    orb       Occ        SD energies  Aligned SD energies [ from Go(iw) (a.u.) ]'
+   do ibas=1,nOrb
+    write(*,'(I7,3F15.8)') ibas,Occ(ibas),eSD(ibas),eSD(ibas)-chem_pot_align
+   enddo
+  endif
   eSD(:)=eSD(:)-chem_pot_align
   nneg=0
   do ibas=1,nOrb
@@ -660,7 +667,8 @@ subroutine scGWitauiw_ao(nBas,nOrb,nO,maxSCF,maxDIIS,dolinGW,restart_scGW,no_foc
  write(*,'(a,f15.8,a,i5,a)') ' Trace scGW  ',trace_1_rdm,' after ',iter,' global iterations '
  write(*,'(a,f15.8)')        ' Change of P ',diff_Pao
  write(*,'(a,f15.8)')        ' Chem. Pot.  ',chem_pot
- write(*,'(a,f15.8)')        ' Esd         ',Ehfl
+ write(*,'(a,f15.8)')        ' Enuc        ',ENuc
+ write(*,'(a,f15.8)')        ' Ehfl        ',Ehfl
  write(*,'(a,f15.8)')        ' EcGM        ',EcGM
  write(*,'(a,f15.8)')        ' Eelec       ',Ehfl+EcGM
  write(*,'(a,f15.8)')        ' scGW Energy ',Ehfl+EcGM+ENuc
@@ -669,10 +677,12 @@ subroutine scGWitauiw_ao(nBas,nOrb,nO,maxSCF,maxDIIS,dolinGW,restart_scGW,no_foc
  do ibas=1,nOrb
   write(*,'(I7,F15.8)') ibas,Occ(ibas)
  enddo
- write(*,*) ' Natural orbitals (columns)'
- do ibas=1,nBas
-  write(*,'(*(f10.5))') cNO(ibas,:)
- enddo
+ if(verbose/=0) then
+  write(*,*) ' Natural orbitals (columns)'
+  do ibas=1,nBas
+   write(*,'(*(f15.8))') cNO(ibas,:)
+  enddo
+ endif
  write(*,*)
 
  ! Write restart files
@@ -715,7 +725,10 @@ subroutine scGWitauiw_ao(nBas,nOrb,nO,maxSCF,maxDIIS,dolinGW,restart_scGW,no_foc
   enddo
   P_mo=-matmul(matmul(cHFinv,P_ao_old),transpose(cHFinv)) ! Minus to order occ numbers
   call diagonalize_matrix(nOrb,P_mo,Occ)
-  write(*,'(a,f15.8)')        ' Hcore+Hx    ',Ehfl
+  Occ=-Occ
+  cNO=matmul(cHF,P_mo)
+  write(*,'(a,f15.8)')        ' Enuc        ',ENuc
+  write(*,'(a,f15.8)')        ' Ehfl        ',Ehfl
   write(*,'(a,f15.8)')        ' EcGM        ',EcGM
   write(*,'(a,f15.8)')        ' Eelec       ',Ehfl+EcGM
   write(*,'(a,f15.8)')        ' lin-G Energy',Ehfl+EcGM+ENuc
@@ -723,10 +736,15 @@ subroutine scGWitauiw_ao(nBas,nOrb,nO,maxSCF,maxDIIS,dolinGW,restart_scGW,no_foc
   write(*,'(a,f15.8,a,i5,a)') ' Trace lin-scGW  ',trace_1_rdm
   write(*,*)
   write(*,*) ' Lin-G occupation numbers'
-  Occ=-Occ
   do ibas=1,nOrb
    write(*,'(I7,F15.8)') ibas,Occ(ibas)
   enddo
+  if(verbose/=0) then
+   write(*,*) ' Natural orbitals (columns)'
+   do ibas=1,nBas
+    write(*,'(*(f15.8))') cNO(ibas,:)
+   enddo
+  endif
  endif
 
  call wall_time(end_scGWitauiw)

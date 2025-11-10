@@ -21,6 +21,7 @@ program QuAcK
 
   logical                       :: file_exists
   logical                       :: error_P
+  logical                       :: verbose_scGW,verbose_scGF2
 
   integer                       :: iorb,jorb,korb,lorb
   integer                       :: ifreq,kind_int
@@ -186,7 +187,7 @@ program QuAcK
                     TDA,spin_conserved,spin_flip,                                                        &
                     maxSCF_GF,thresh_GF,max_diis_GF,lin_GF,eta_GF,renorm_GF,reg_GF,do_linDM_GF2,         &
                     maxSCF_GW,thresh_GW,max_diis_GW,lin_GW,eta_GW,shift_GW,reg_GW,doOO,mu,do_linDM_GW,   &
-                    nfreqs,TDA_W,restart_scGW,restart_scGF2,                                             &
+                    nfreqs,TDA_W,restart_scGW,restart_scGF2,verbose_scGW,verbose_scGF2,                  &
                     maxSCF_GT,thresh_GT,max_diis_GT,lin_GT,eta_GT,reg_GT,TDA_T,do_linDM_GT,              & 
                     doACFDT,exchange_kernel,doXBS,                                                       &
                     dophBSE,dophBSE2,doppBSE,dBSE,dTDA,                                                  &
@@ -375,7 +376,7 @@ program QuAcK
                   doG0F2,doevGF2,doqsGF2,doufG0F02,doG0F3,doevGF3,doG0W0,doevGW,doqsGW,doufG0W0,doufGW,                    &
                   doG0T0pp,doevGTpp,doqsGTpp,doufG0T0pp,doG0T0eh,doevGTeh,doqsGTeh,doevParquet,doqsParquet,                &
                   docG0W0,docG0F2,doscGW,doscGF2,                                                                          &
-                  doCAP,readFCIDUMP,restart_scGW,restart_scGF2,                                                            & 
+                  doCAP,readFCIDUMP,restart_scGW,restart_scGF2,verbose_scGW,verbose_scGF2,                                 & 
                   do_IPEA_ADC2,do_IPEA_ADC3,do_ADC_GW,do_ADC_2SOSEX,do_ADC_G3W2,                                           &
                   nNuc,nBas,nOrb,nC,nO,nV,nR,ENuc,ZNuc,rNuc,                                                               &
                   S,T,V,Hc,CAP,X,dipole_int_AO,maxSCF_HF,max_diis_HF,thresh_HF,level_shift,                                &

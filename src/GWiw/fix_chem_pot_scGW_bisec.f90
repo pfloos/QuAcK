@@ -1,5 +1,5 @@
 subroutine fix_chem_pot_scGW_bisec(iter_fock,nBas,nfreqs,nElectrons,thrs_N,thrs_Ngrad,chem_pot,S,F_ao,Sigma_c_w_ao,wcoord,wweight, &
-                                   G_ao,G_ao_iw_hf,DeltaG_ao_iw,P_ao,P_ao_hf,trace_1_rdm) 
+                                   G_ao,G_ao_iw_hf,DeltaG_ao_iw,P_ao,P_ao_hf,trace_1_rdm,verbose) 
 
 ! Fix the chemical potential for scGW 
 
@@ -8,6 +8,7 @@ subroutine fix_chem_pot_scGW_bisec(iter_fock,nBas,nfreqs,nElectrons,thrs_N,thrs_
 
 ! Input variables
 
+  logical,intent(in)            :: verbose
   integer,intent(in)            :: iter_fock
   integer,intent(in)            :: nBas
   integer,intent(in)            :: nfreqs
@@ -53,18 +54,22 @@ subroutine fix_chem_pot_scGW_bisec(iter_fock,nBas,nfreqs,nElectrons,thrs_N,thrs_
   grad_electrons  = 0d0
   trace_1_rdm     = -1d0
 
-  write(*,*)
-  write(*,'(a,i5)') ' Fixing the Tr[1D] at scGW/scGF2 at Fock iter ',iter_fock
-  write(*,*)
+  if(verbose) then
+   write(*,*)
+   write(*,'(a,i5)') ' Fixing the Tr[1D] at scGW/scGF2 at Fock iter ',iter_fock
+   write(*,*)
+  endif
   call get_1rdm_scGW(nBas,nfreqs,nElectrons,chem_pot,S,F_ao,Sigma_c_w_ao, &
                      wcoord,wweight,G_ao,G_ao_iw_hf,DeltaG_ao_iw,P_ao,P_ao_hf,trace_old) 
-  write(*,*)'------------------------------------------------------'
-  write(*,'(1X,A1,1X,A15,1X,A1,1X,A15,1X,A1A15,2X,A1)') &
-          '|','Tr[1D]','|','Chem. Pot.','|','Grad N','|'
-  write(*,*)'------------------------------------------------------'
-  write(*,'(1X,A1,F16.10,1X,A1,F16.10,1X,A1F16.10,1X,A1)') &
-  '|',trace_old,'|',chem_pot,'|',grad_electrons,'|'
-  write(*,*)'------------------------------------------------------'
+  if(verbose) then
+   write(*,*)'------------------------------------------------------'
+   write(*,'(1X,A1,1X,A15,1X,A1,1X,A15,1X,A1A15,2X,A1)') &
+           '|','Tr[1D]','|','Chem. Pot.','|','Grad N','|'
+   write(*,*)'------------------------------------------------------'
+   write(*,'(1X,A1,F16.10,1X,A1,F16.10,1X,A1F16.10,1X,A1)') &
+   '|',trace_old,'|',chem_pot,'|',grad_electrons,'|'
+   write(*,*)'------------------------------------------------------'
+  endif
 
   ! First approach close the value with an error lower than 1
 
@@ -197,9 +202,11 @@ subroutine fix_chem_pot_scGW_bisec(iter_fock,nBas,nfreqs,nElectrons,thrs_N,thrs_
 !  write(*,'(1X,A1,1X,A15,1X,A1,1X,A15,1X,A1A15,2X,A1)') &
 !          '|','Tr[1D]','|','Chem. Pot.','|','Grad N','|'
 !  write(*,*)'------------------------------------------------------'
-  write(*,'(1X,A1,F16.10,1X,A1,F16.10,1X,A1F16.10,1X,A1)') &
-  '|',trace_1_rdm,'|',chem_pot,'|',grad_electrons,'|'
-  write(*,*)'------------------------------------------------------'
-  write(*,*)
+  if(verbose) then
+   write(*,'(1X,A1,F16.10,1X,A1,F16.10,1X,A1F16.10,1X,A1)') &
+   '|',trace_1_rdm,'|',chem_pot,'|',grad_electrons,'|'
+   write(*,*)'------------------------------------------------------'
+   write(*,*)
+  endif
 
 end subroutine
