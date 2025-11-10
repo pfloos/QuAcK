@@ -61,8 +61,8 @@ subroutine fermi_dirac_occ(nO,nOrb,thrs_N,temperature,chem_pot,Occ,eHF)
 
   Occ(:) = fermi_dirac(eHF,chem_pot,temperature)
   trace_old=sum(Occ(:))
-  write(*,'(1X,A1,F16.10,1X,A1,F16.10,1X,A1)') &
-  '|',trace_old,'|',chem_pot,'|'
+!  write(*,'(1X,A1,F16.10,1X,A1,F16.10,1X,A1)') &
+!  '|',trace_old,'|',chem_pot,'|'
   do while( abs(trace_old-nO_) > 1.0d0 .and. isteps <= 100 )
    isteps = isteps + 1
    trace_old =sum(fermi_dirac(eHF,chem_pot,temperature))
@@ -75,7 +75,7 @@ subroutine fermi_dirac_occ(nO,nOrb,thrs_N,temperature,chem_pot,Occ,eHF)
 !     '|',trace_old,'|',chem_pot,'|'
      delta_chem_pot = 0.5d0*delta_chem_pot
      thrs_closer = 0.5d0*thrs_closer
-     write(*,*) "| contracting ...                   |"
+!     write(*,*) "| contracting ...                   |"
      if(delta_chem_pot<1d-2) exit
    else
      if( abs(trace_up-nO_) < abs(trace_old-nO_) ) then

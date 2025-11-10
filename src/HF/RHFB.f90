@@ -1,4 +1,4 @@
-subroutine RHFB(dotest,doaordm,maxSCF,thresh,max_diis,error_R,nNuc,ZNuc,rNuc,ENuc,           & 
+subroutine RHFB(dotest,doaordm,maxSCF,thresh,max_diis,error_P,nNuc,ZNuc,rNuc,ENuc,           & 
                nBas,nOrb,nOrb_twice,nO,S,T,V,Hc,ERI,dipole_int,X,EHFB,eHF,c,P,Panom,F,Delta, &
                temperature,sigma,chem_pot_hf,chem_pot,restart_hfb,U_QP,eHFB_state)
 
@@ -11,7 +11,7 @@ subroutine RHFB(dotest,doaordm,maxSCF,thresh,max_diis,error_R,nNuc,ZNuc,rNuc,ENu
 
   logical,intent(in)            :: dotest
   logical,intent(in)            :: doaordm
-  logical,intent(in)            :: error_R
+  logical,intent(in)            :: error_P
 
   integer,intent(in)            :: maxSCF
   integer,intent(in)            :: max_diis
@@ -55,6 +55,7 @@ subroutine RHFB(dotest,doaordm,maxSCF,thresh,max_diis,error_R,nNuc,ZNuc,rNuc,ENu
   double precision              :: Delta_HL
   double precision              :: dipole(ncart)
 
+  double precision              :: alpha_mixing
   double precision              :: Conv
   double precision              :: rcond
   double precision              :: err_no_rep
@@ -111,6 +112,7 @@ subroutine RHFB(dotest,doaordm,maxSCF,thresh,max_diis,error_R,nNuc,ZNuc,rNuc,ENu
 
   nBas_twice = nBas+nBas
   nBas_twice_Sq = nBas_twice*nBas_twice
+  alpha_mixing = 0.5d0
 
 ! Memory allocation
 
@@ -254,7 +256,7 @@ subroutine RHFB(dotest,doaordm,maxSCF,thresh,max_diis,error_R,nNuc,ZNuc,rNuc,ENu
 
     ! DIIS extrapolation
 
-    if(max_diis > 1 .and. nSCF>1 .and.(.not.error_R)) then
+    if(max_diis > 1 .and. nSCF>1 .and.(.not.error_P)) then
 
      write(*,*) ' Doing DIIS'
      n_diis = min(n_diis+1,max_diis)
@@ -322,7 +324,7 @@ subroutine RHFB(dotest,doaordm,maxSCF,thresh,max_diis,error_R,nNuc,ZNuc,rNuc,ENu
 
     ! Check convergence
 
-    if((.not.error_R) .and. nSCF > 1) then
+    if((.not.error_P) .and. nSCF > 1) then
 
      F(:,:) = Hc(:,:) + J(:,:) + 0.5d0*K(:,:) - chem_pot*S(:,:)
      H_HFB_ao(:,:)    = 0d0
@@ -342,27 +344,38 @@ subroutine RHFB(dotest,doaordm,maxSCF,thresh,max_diis,error_R,nNuc,ZNuc,rNuc,ENu
     R_ao(nBas+1:nBas_twice,nBas+1:nBas_twice) = matmul(X(1:nBas,1:nOrb), transpose(X(1:nBas,1:nOrb)))-0.5d0*P(1:nBas,1:nBas)
     R_ao(1:nBas           ,nBas+1:nBas_twice) = Panom(1:nBas,1:nBas)
     R_ao(nBas+1:nBas_twice,1:nBas           ) = Panom(1:nBas,1:nBas)
-    if(error_R .and. nSCF>1) then
-     R_ao=0.8d0*R_ao+0.2d0*R_ao_old
-     err_ao = 1d2*(R_ao - R_ao_old)  ! Error = Change R mat for DIIS or convergence check
+    if(error_P .and. nSCF>1) then
+     ! Update H_HFB_ao (to be used after the SCF procedure)
+     H_HFB_ao(:,:)    = 0d0
+     H_HFB_ao(1:nBas           ,1:nBas           ) =  F(1:nBas,1:nBas)
+     H_HFB_ao(nBas+1:nBas_twice,nBas+1:nBas_twice) = -F(1:nBas,1:nBas)
+     H_HFB_ao(1:nBas           ,nBas+1:nBas_twice) = Delta(1:nBas,1:nBas)
+     H_HFB_ao(nBas+1:nBas_twice,1:nBas           ) = Delta(1:nBas,1:nBas)
+     ! Compute mixed R_ao and its error
+     R_ao=alpha_mixing*R_ao+(1d0-alpha_mixing)*R_ao_old
+     err_ao = 1d2*(R_ao - R_ao_old)  ! Error = Change P mat for DIIS or convergence check
+     err_ao(nBas+1:nBas_twice,1:nBas           ) = 0d0
+     err_ao(1:nBas           ,nBas+1:nBas_twice) = 0d0
+     ! Do DIIS?
      if(max_diis>1) then
       call DIIS_extrapolation(rcond,nBas_twice_Sq,nBas_twice_Sq,n_diis,err_diis,MAT_diis,err_ao,R_ao)
-      err_ao = 1d2*(R_ao - R_ao_old) ! Error = Change R (after DIIS) for convergence check
+      err_ao(nBas+1:nBas_twice,1:nBas           ) = 0d0
+      err_ao(1:nBas           ,nBas+1:nBas_twice) = 0d0
+      err_ao = 1d2*(R_ao - R_ao_old) ! Error = Change P (after DIIS) for convergence check
+      err_ao(nBas+1:nBas_twice,1:nBas           ) = 0d0
+      err_ao(1:nBas           ,nBas+1:nBas_twice) = 0d0
      endif
+     ! Check convergence
      Conv  = maxval(abs(err_ao))
+     ! Set P and Panom for the next iteration
      P(1:nBas,1:nBas)     = 2d0*R_ao(1:nBas,1:nBas)
      Panom(1:nBas,1:nBas) = R_ao(nBas+1:nBas_twice,1:nBas) 
-     ! Kinetic energy
+     ! Recompute the energy
      ET = trace_matrix(nBas,matmul(P,T))
-     ! Potential energy
      EV = trace_matrix(nBas,matmul(P,V))
-     ! Hartree energy
      EJ = 0.5d0*trace_matrix(nBas,matmul(P,J))
-     ! Exchange energy
      EK = 0.25d0*trace_matrix(nBas,matmul(P,K))
-     ! Anomalous energy
      EL = trace_matrix(nBas,matmul(Panom,Delta))
-     ! Total energy
      EHFB = ET + EV + EJ + EK + EL
     endif
     R_ao_old=R_ao
