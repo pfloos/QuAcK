@@ -111,7 +111,7 @@ subroutine R_optimize_orbitals(diagHess,nBas,nOrb,nV,nR,nC,nO,N,Nsq,O,V,ERI_AO,E
 !  write(*,*)
  
   allocate(ExpKap(N,N))
-  call matrix_exponential(N,Kap,ExpKap)
+  call matrix_exp(N,Kap,ExpKap)
   deallocate(Kap)
  
 !  write(*,*) 'e^kappa'

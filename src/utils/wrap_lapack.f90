@@ -144,25 +144,27 @@ subroutine diagonalize_hmatrix(N,A,e)
 
   integer                       :: lwork,info
   complex*16,allocatable        :: work(:)
+  double precision,allocatable  :: rwork(:)
 
 ! Memory allocation
 
-  allocate(work(1))
+  allocate(work(1),rwork(3*N))
   
   lwork = -1
-  call zheev('V','U',N,A,N,e,work,lwork,info)
-  lwork = int(work(1))
+  call zheev('V','U',N,A,N,e,work,lwork,rwork,info)
+  lwork = max(1,int(real(work(1))))
+
 
   deallocate(work)
 
   allocate(work(lwork))
 
-  call zheev('V','U',N,A,N,e,work,lwork,info)
+  call zheev('V','U',N,A,N,e,work,lwork,rwork,info)
 
-  deallocate(work)
+  deallocate(work,rwork)
  
   if(info /= 0) then 
-    print*,'Problem in diagonalize_matrix (dsyev)!!'
+    print*,'Problem in diagonalize_matrix (zheev)!!'
   end if
   
 end subroutine 

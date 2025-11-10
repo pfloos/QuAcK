@@ -88,7 +88,7 @@ subroutine G_optimize_orbitals(nBas,nBas2,nV,nR,nC,nO,N,Nsq,O,V,ERI_AO,ERI_MO,h,
   deallocate(hessInv,grad)
  
   allocate(ExpKap(N,N))
-  call matrix_exponential(N,Kap,ExpKap)
+  call matrix_exp(N,Kap,ExpKap)
   deallocate(Kap)
  
   c = matmul(c,ExpKap)
