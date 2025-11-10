@@ -1,6 +1,6 @@
-subroutine R_IPEA_ADC2(dotest,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,eHF)
+subroutine R_IP_ADC2(dotest,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,eHF)
 
-! Unfold G0F02
+! Non-Dyson IP-ADC(2)
 
   implicit none
   include 'parameters.h'
@@ -30,7 +30,7 @@ subroutine R_IPEA_ADC2(dotest,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,eHF)
   integer                       :: jb,kc,ia,ja
   integer                       :: klc,kcd,ija,ijb,iab,jab
 
-  integer                       :: n2h1p,n2p1h,nH
+  integer                       :: n2h1p,nH
   double precision,external     :: Kronecker_delta
   double precision,allocatable  :: H(:,:)
   double precision,allocatable  :: eGF(:)
@@ -51,16 +51,15 @@ subroutine R_IPEA_ADC2(dotest,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,eHF)
 ! Hello world
 
   write(*,*)
-  write(*,*)'**************************************'
-  write(*,*)'* Restricted IPEA-ADC(2) Calculation *'
-  write(*,*)'**************************************'
+  write(*,*)'************************************'
+  write(*,*)'* Restricted IP-ADC(2) Calculation *'
+  write(*,*)'************************************'
   write(*,*)
 
 ! Dimension of the supermatrix
 
   n2h1p = nO*nO*nV
-  n2p1h = nV*nV*nO
-  nH = 1 + n2h1p + n2p1h
+  nH = 1 + n2h1p 
 
 ! Memory allocation
 
@@ -77,63 +76,37 @@ subroutine R_IPEA_ADC2(dotest,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,eHF)
      H(:,:) = 0d0
      Reigv(:,:) = 0d0
 
-    !---------------------------!
-    ! Compute ADC2 supermatrix  !
-    !---------------------------!
-    !                           !
-    !     |   F   V2h1p V2p1h | ! 
-    !     |                   | ! 
-    ! H = | V2h1p C2h1p     0 | ! 
-    !     |                   | ! 
-    !     | V2p1h   0   C2p1h | ! 
-    !                           !
-    !---------------------------!
+    !---------------------------------!
+    ! Compute IP-ADC2 supermatrix     !
+    !---------------------------------!
+    !                                 !
+    !     | (K+C)_1h    (C)_1h-2h1p | ! 
+    ! H = |                         | ! 
+    !     | (C)_2h1p-1h (K+C)_2h1p  | ! 
+    !                                 !
+    !---------------------------------!
 
     call wall_time(start_timing)
 
-    !-----------!
-    ! "Block" e !
-    !-----------!
-      
-    H(1,1) = eHF(p)
+    !----------------!
+    ! Block (K+C)_1h !
+    !----------------!
 
-    !-------------!
-    ! Block V2h1p !
-    !-------------!
+    H(1,1) = eHF(p) 
 
-    ija = 0
     do i=nC+1,nO
-      do j=nC+1,nO
-        do a=nO+1,nOrb-nR
-          ija = ija + 1
-             
-          H(1    ,1+ija) = 2d0*ERI(p,a,i,j) - ERI(p,a,j,i)
-          H(1+ija,1    ) = ERI(p,a,i,j)
-             
+      do a=nO+1,nOrb-nR
+        do b=nO+1,nOrb-nR
+
+        H(1,1) = H(1,1) + (2d0*ERI(p,i,a,b) - ERI(p,i,b,a))*ERI(p,i,a,b)/(eHF(a) + eHF(b) - eHF(i) - eHF(p))
+
         end do
       end do
     end do
 
-    !-------------!
-    ! Block V2p1h !
-    !-------------!     
- 
-    iab = 0
-    do i=nC+1,nO
-      do a=nO+1,nOrb-nR
-        do b=nO+1,nOrb-nR
-          iab = iab + 1   
- 
-          H(1          ,1+n2h1p+iab) = 2d0*ERI(p,i,a,b) - ERI(p,i,b,a)
-          H(1+n2h1p+iab,1          ) = ERI(p,i,a,b)
-               
-          end do
-        end do
-      end do
- 
-    !-------------!
-    ! Block C2h1p !
-    !-------------!
+    !------------------!
+    ! Block (K+C)_2h1p !
+    !------------------!
  
     ija = 0
     do i=nC+1,nO
@@ -142,23 +115,23 @@ subroutine R_IPEA_ADC2(dotest,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,eHF)
           ija = ija + 1
                
           H(1+ija,1+ija) = eHF(i) + eHF(j) - eHF(a)
-
  
         end do
       end do
     end do
  
-    !-------------!
-    ! Block C2p1h !
-    !-------------!
+    !-------------------!
+    ! Block (C)_2h1p-1h !
+    !-------------------!
       
-    iab = 0
+    ija = 0
     do i=nC+1,nO
-      do a=nO+1,nOrb-nR
-        do b=nO+1,nOrb-nR
-          iab = iab + 1
-               
-          H(1+n2h1p+iab,1+n2h1p+iab) = eHF(a) + eHF(b) - eHF(i)
+      do j=nC+1,nO
+        do a=nO+1,nOrb-nR
+          ija = ija + 1
+                   
+          H(1+ija,1    ) = 2d0*ERI(p,a,i,j) - ERI(p,a,j,i)
+          H(1    ,1+ija) = - ERI(p,a,i,j)
         
         end do
       end do
@@ -199,7 +172,7 @@ subroutine R_IPEA_ADC2(dotest,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,eHF)
     !--------------!
  
     write(*,*)'-------------------------------------------'
-    write(*,'(1X,A38,I3,A2)')'| IPEA-ADC(2) energies (eV) for orbital',p,' |'
+    write(*,'(1X,A37,I3,A3)')'| IP-ADC(2) energies (eV) for orbital',p,'  |'
     write(*,*)'-------------------------------------------'
     write(*,'(1X,A1,1X,A3,1X,A1,1X,A15,1X,A1,1X,A15,1X,A1,1X,A15,1X)') &
               '|','#','|','e_QP','|','Z','|'
@@ -233,9 +206,6 @@ subroutine R_IPEA_ADC2(dotest,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,eHF)
           if(p <= nO) & 
                write(*,'(1X,A7,I3,A16,1X,F15.6,1X,F15.6,1X,F12.6)') &
                '      (',p,')               ',Reigv(1,s),Reigv(1,s)**2,-eHF(p)*HaToeV
-          if(p > nO) & 
-               write(*,'(1X,A16,I3,A7,1X,F15.6,1X,F15.6)') &
-               '               (',p,')      ',Reigv(1,s),Reigv(1,s)**2,-eHF(p)*HaToeV
     
           ija = 0
           do i=nC+1,nO
@@ -252,21 +222,6 @@ subroutine R_IPEA_ADC2(dotest,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,eHF)
             end do
           end do
            
-          iab = 0
-          do i=nC+1,nO
-            do a=nO+1,nOrb-nR
-              do b=nO+1,nOrb-nR
-                iab = iab + 1
- 
-                if(abs(Reigv(1+n2h1p+iab,s)) > cutoff2)           &
-                     write(*,'(1X,A7,I3,A6,I3,A1,I3,A3,1X,F15.6,1X,F15.6,1X,F12.6)') &
-                     '      (',i,') -> (',a,',',b,')  ',Reigv(1+n2h1p+iab,s),Reigv(1+n2h1p+iab,s)**2, & 
-                                                        (eHF(a) + eHF(b) - eHF(i))*HaToeV
-                  
-              end do
-            end do
-          end do
-
           write(*,*)'------------------------------------------------------------------------------'
           write(*,*)
 
