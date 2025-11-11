@@ -1,4 +1,4 @@
-subroutine build_analityc_rhf_Sigma_c_iw(nBas,nOrb,nO,verbose,c,eHF,nfreqs,wcoord,ERI_AO,Sigma_c)
+subroutine build_analityc_rhf_Sigma_c_iw(nBas,nOrb,nO,verbose,c,eHF,nfreqs,wcoord,ERI_AO,Sigma_c,Ec)
 
 
 ! Use the restricted Sigma_c(E) to compute the linnearized approximation to G
@@ -26,6 +26,7 @@ subroutine build_analityc_rhf_Sigma_c_iw(nBas,nOrb,nO,verbose,c,eHF,nfreqs,wcoor
   integer                       :: ifreq
   integer                       :: iorb
   integer                       :: ispin
+  integer                       :: i,a,m
 
   double precision              :: EcRPA,EcGM
   double precision,allocatable  :: Aph(:,:)
@@ -40,6 +41,7 @@ subroutine build_analityc_rhf_Sigma_c_iw(nBas,nOrb,nO,verbose,c,eHF,nfreqs,wcoor
 
 ! Ouput variables
 
+  double precision,intent(out)  :: Ec
   complex *16,intent(out)       :: Sigma_c(nfreqs,nOrb,nOrb)
 
 ! Allocate and initialize arrays and variables
@@ -85,6 +87,15 @@ subroutine build_analityc_rhf_Sigma_c_iw(nBas,nOrb,nO,verbose,c,eHF,nfreqs,wcoor
     enddo
    endif
   
+  enddo
+
+  Ec = 0d0
+  do m=1,nS
+   do a=nO+1,nOrb
+    do i=1,nO
+     Ec=Ec-4d0*rho(a,i,m)*rho(a,i,m)/(eHF(a) - eHF(i) + Om(m))
+    enddo
+   enddo
   enddo
 
 ! Compute new total energy and Occ numbers

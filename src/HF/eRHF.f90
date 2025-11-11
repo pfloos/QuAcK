@@ -55,6 +55,8 @@ subroutine ensembleRHF(dotest,doaordm,maxSCF,thresh,max_diis,guess_type,level_sh
   double precision              :: Val
   double precision              :: Conv
   double precision              :: rcond
+  double precision              :: errE
+  double precision              :: eERHF_old
   double precision,external     :: trace_matrix
   double precision,allocatable  :: Occ(:)
   double precision,allocatable  :: err(:,:)
@@ -147,6 +149,8 @@ subroutine ensembleRHF(dotest,doaordm,maxSCF,thresh,max_diis,guess_type,level_sh
 
 ! Initialization
 
+  eERHF         = 1d2
+  eERHF_old     = 1d3
   n_diis        = 0
   F_diis(:,:)   = 0d0
   err_diis(:,:) = 0d0
@@ -180,7 +184,16 @@ subroutine ensembleRHF(dotest,doaordm,maxSCF,thresh,max_diis,guess_type,level_sh
     ! Check convergence 
 
     err = matmul(F,matmul(P_tot,S)) - matmul(matmul(S,P_tot),F)
-    if(nSCF > 2) Conv = maxval(abs(err))
+    if(nSCF > 2) then
+     Conv = maxval(abs(err))
+     errE = abs(eERHF - eERHF_old)
+     errE = 1d3*errE
+     Conv = min(Conv,errE) ! The density may still oscilate among degenerate solutions. So, we also use the Energy to chek the convergence
+    endif
+
+    ! Err old
+
+    eERHF_old = eERHF
 
     ! Kinetic energy
 

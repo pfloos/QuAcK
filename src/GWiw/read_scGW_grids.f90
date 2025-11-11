@@ -1,5 +1,5 @@
 subroutine read_scGW_grids(ntimes,nfreqs,tcoord,tweight,wcoord,wweight,sint2w_weight,cost2w_weight, &
-                           cosw2t_weight,sinw2t_weight)
+                           cosw2t_weight,sinw2t_weight,verbose)
 
 ! Read grids for scGW
 
@@ -7,6 +7,7 @@ subroutine read_scGW_grids(ntimes,nfreqs,tcoord,tweight,wcoord,wweight,sint2w_we
   include 'parameters.h'
 
 ! Input variables
+ integer,intent(in)              :: verbose
  integer,intent(in)              :: ntimes
  integer,intent(in)              :: nfreqs
 
@@ -28,10 +29,10 @@ subroutine read_scGW_grids(ntimes,nfreqs,tcoord,tweight,wcoord,wweight,sint2w_we
  double precision,intent(out)    :: sinw2t_weight(ntimes,nfreqs)
 
  allocate(I_weight(nfreqs,ntimes))
- write(*,*)
+ if(verbose/=0)  write(*,*)
  inquire(file='./grids/tcoord.txt', exist=file_exists)
  if(file_exists) then
-  write(*,*) 'Reading tcoord from tcoord.txt'
+  if(verbose/=0) write(*,*) 'Reading tcoord from tcoord.txt'
   tcoord=0d0
   open(unit=iunit, form='formatted', file='./grids/tcoord.txt', status='old')
   read(iunit,*) ivar
@@ -45,7 +46,7 @@ subroutine read_scGW_grids(ntimes,nfreqs,tcoord,tweight,wcoord,wweight,sint2w_we
  endif
  inquire(file='./grids/tweight.txt', exist=file_exists)
  if(file_exists) then
-  write(*,*) 'Reading tweight from tweight.txt'
+  if(verbose/=0) write(*,*) 'Reading tweight from tweight.txt'
   tweight=0d0
   open(unit=iunit, form='formatted', file='./grids/tweight.txt', status='old')
   read(iunit,*) ivar
@@ -59,7 +60,7 @@ subroutine read_scGW_grids(ntimes,nfreqs,tcoord,tweight,wcoord,wweight,sint2w_we
  endif
  inquire(file='./grids/wcoord.txt', exist=file_exists)
  if(file_exists) then
-  write(*,*) 'Reading wcoord from wcoord.txt'
+  if(verbose/=0) write(*,*) 'Reading wcoord from wcoord.txt'
   wcoord=0d0
   open(unit=iunit, form='formatted', file='./grids/wcoord.txt', status='old')
   read(iunit,*) ivar
@@ -73,7 +74,7 @@ subroutine read_scGW_grids(ntimes,nfreqs,tcoord,tweight,wcoord,wweight,sint2w_we
  endif
  inquire(file='./grids/wweight.txt', exist=file_exists)
  if(file_exists) then
-  write(*,*) 'Reading wweight from wweight.txt'
+  if(verbose/=0) write(*,*) 'Reading wweight from wweight.txt'
   wweight=0d0
   open(unit=iunit, form='formatted', file='./grids/wweight.txt', status='old')
   read(iunit,*) ivar
@@ -87,7 +88,7 @@ subroutine read_scGW_grids(ntimes,nfreqs,tcoord,tweight,wcoord,wweight,sint2w_we
  endif
  inquire(file='./grids/cost2w_weight.txt', exist=file_exists)
  if(file_exists) then
-  write(*,*) 'Reading cost2w_weight from cost2w_weight.txt'
+  if(verbose/=0) write(*,*) 'Reading cost2w_weight from cost2w_weight.txt'
   cost2w_weight=0d0
   open(unit=iunit, form='formatted', file='./grids/cost2w_weight.txt', status='old')
   read(iunit,*) ivar
@@ -103,7 +104,7 @@ subroutine read_scGW_grids(ntimes,nfreqs,tcoord,tweight,wcoord,wweight,sint2w_we
  endif
  inquire(file='./grids/cosw2t_weight.txt', exist=file_exists)
  if(file_exists) then
-  write(*,*) 'Reading cosw2t_weight from cosw2t_weight.txt'
+  if(verbose/=0) write(*,*) 'Reading cosw2t_weight from cosw2t_weight.txt'
   cosw2t_weight=0d0
   open(unit=iunit, form='formatted', file='./grids/cosw2t_weight.txt', status='old')
   read(iunit,*) ivar
@@ -119,7 +120,7 @@ subroutine read_scGW_grids(ntimes,nfreqs,tcoord,tweight,wcoord,wweight,sint2w_we
  endif
  inquire(file='./grids/sint2w_weight.txt', exist=file_exists)
  if(file_exists) then
-  write(*,*) 'Reading sint2w_weight from sint2w_weight.txt'
+  if(verbose/=0) write(*,*) 'Reading sint2w_weight from sint2w_weight.txt'
   sint2w_weight=0d0
   open(unit=iunit, form='formatted', file='./grids/sint2w_weight.txt', status='old')
   read(iunit,*) ivar
@@ -135,7 +136,7 @@ subroutine read_scGW_grids(ntimes,nfreqs,tcoord,tweight,wcoord,wweight,sint2w_we
  endif
  inquire(file='./grids/sinw2t_weight.txt', exist=file_exists)
  if(file_exists) then
-  write(*,*) 'Reading sinw2t_weight from sinw2t_weight.txt'
+  if(verbose/=0) write(*,*) 'Reading sinw2t_weight from sinw2t_weight.txt'
   sinw2t_weight=0d0
   open(unit=iunit, form='formatted', file='./grids/sinw2t_weight.txt', status='old')
   read(iunit,*) ivar
@@ -149,7 +150,7 @@ subroutine read_scGW_grids(ntimes,nfreqs,tcoord,tweight,wcoord,wweight,sint2w_we
   write(*,*) ' Error! Could not find the sinw2t_weight.txt file'
   return
  endif
- write(*,'(a,i5,a)') ' Using ',nfreqs,' frequencies and times'
+ if(verbose/=0)  write(*,'(a,i5,a)') ' Using ',nfreqs,' frequencies and times'
  I_weight=matmul(cost2w_weight,cosw2t_weight)
  do ifreq=1,nfreqs
   I_weight(ifreq,ifreq)=I_weight(ifreq,ifreq)-1d0
@@ -160,7 +161,7 @@ subroutine read_scGW_grids(ntimes,nfreqs,tcoord,tweight,wcoord,wweight,sint2w_we
    error_I=error_I+abs(I_weight(ifreq,itau))
   enddo
  enddo
- write(*,'(a,f20.5)') ' Deviation from Identity in Cos-Cos ',error_I
+ if(verbose/=0)  write(*,'(a,f20.5)') ' Deviation from Identity in Cos-Cos ',error_I
  I_weight=matmul(sint2w_weight,sinw2t_weight)
  do ifreq=1,nfreqs
   I_weight(ifreq,ifreq)=I_weight(ifreq,ifreq)-1d0
@@ -171,8 +172,8 @@ subroutine read_scGW_grids(ntimes,nfreqs,tcoord,tweight,wcoord,wweight,sint2w_we
    error_I=error_I+abs(I_weight(ifreq,itau))
   enddo
  enddo
- write(*,'(a,f20.5)') ' Deviation from Identity in Sin-Sin ',error_I
- write(*,*)
+ if(verbose/=0)  write(*,'(a,f20.5)') ' Deviation from Identity in Sin-Sin ',error_I
+ if(verbose/=0)  write(*,*)
  deallocate(I_weight)
 
 end subroutine

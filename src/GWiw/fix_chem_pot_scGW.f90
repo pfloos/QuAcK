@@ -1,5 +1,5 @@
 subroutine fix_chem_pot_scGW(iter_fock,nBas,nfreqs,nElectrons,thrs_N,thrs_Ngrad,chem_pot,S,F_ao,Sigma_c_w_ao,wcoord,wweight, &
-                             G_ao,G_ao_iw_hf,DeltaG_ao_iw,P_ao,P_ao_hf,trace_1_rdm) 
+                             G_ao,G_ao_iw_hf,DeltaG_ao_iw,P_ao,P_ao_hf,trace_1_rdm,grad_electrons,verbose) 
 
 ! Fix the chemical potential for scGW 
 
@@ -8,6 +8,7 @@ subroutine fix_chem_pot_scGW(iter_fock,nBas,nfreqs,nElectrons,thrs_N,thrs_Ngrad,
 
 ! Input variables
 
+  logical,intent(in)            :: verbose
   integer,intent(in)            :: iter_fock
   integer,intent(in)            :: nBas
   integer,intent(in)            :: nfreqs
@@ -29,7 +30,6 @@ subroutine fix_chem_pot_scGW(iter_fock,nBas,nfreqs,nElectrons,thrs_N,thrs_Ngrad,
   double precision              :: delta_chem_pot
   double precision              :: chem_pot_change
   double precision              :: chem_pot_old
-  double precision              :: grad_electrons
   double precision              :: trace_2up
   double precision              :: trace_up
   double precision              :: trace_down
@@ -40,6 +40,7 @@ subroutine fix_chem_pot_scGW(iter_fock,nBas,nfreqs,nElectrons,thrs_N,thrs_Ngrad,
 
   double precision,intent(inout):: chem_pot
   double precision,intent(out)  :: trace_1_rdm
+  double precision,intent(out)  :: grad_electrons
   double precision,intent(out)  :: P_ao(nBas,nBas)
   complex*16,intent(out)        :: G_ao(nBas,nBas)
   complex*16,intent(out)        :: DeltaG_ao_iw(nfreqs,nBas,nBas)
@@ -53,13 +54,11 @@ subroutine fix_chem_pot_scGW(iter_fock,nBas,nfreqs,nElectrons,thrs_N,thrs_Ngrad,
   grad_electrons  = 1d0
   trace_1_rdm      = -1d0
 
-  write(*,*)
-  write(*,'(a,i5)') ' Fixing the Tr[1D] at scGW at Fock iter ',iter_fock
-  write(*,*)
-  write(*,*)'------------------------------------------------------'
-  write(*,'(1X,A1,1X,A15,1X,A1,1X,A15,1X,A1A15,2X,A1)') &
-          '|','Tr[1D]','|','Chem. Pot.','|','Grad N','|'
-  write(*,*)'------------------------------------------------------'
+  if(verbose) then
+   write(*,*)
+   write(*,'(a,i5)') ' Fixing the Tr[1D] at scGW/scGF2 the using gradient at Fock iter ',iter_fock
+   write(*,*)
+  endif
 
   ! First approach close the value with an error lower than 1
 
@@ -73,22 +72,15 @@ subroutine fix_chem_pot_scGW(iter_fock,nBas,nfreqs,nElectrons,thrs_N,thrs_Ngrad,
    call get_1rdm_scGW(nBas,nfreqs,nElectrons,chem_pot+delta_chem_pot,S,F_ao,Sigma_c_w_ao, &
                       wcoord,wweight,G_ao,G_ao_iw_hf,DeltaG_ao_iw,P_ao,P_ao_hf,trace_up) 
    if( abs(trace_up-nElectrons) > abs(trace_old-nElectrons) .and. abs(trace_down-nElectrons) > abs(trace_old-nElectrons) ) then
-     write(*,'(1X,A1,F16.10,1X,A1,F16.10,1X,A1F16.10,1X,A1)') &
-     '|',trace_old,'|',chem_pot,'|',grad_electrons,'|'
      delta_chem_pot = 0.5d0*delta_chem_pot
      thrs_closer = 0.5d0*thrs_closer
-     write(*,*) "| contracting ...                                     |"
      if(delta_chem_pot<1d-2) exit
    else
      if( abs(trace_up-nElectrons) < abs(trace_old-nElectrons) ) then
       chem_pot=chem_pot+delta_chem_pot
-      write(*,'(1X,A1,F16.10,1X,A1,F16.10,1X,A1F16.10,1X,A1)') &
-      '|',trace_up,'|',chem_pot,'|',grad_electrons,'|'
      else
       if( abs(trace_down-nElectrons) < abs(trace_old-nElectrons) ) then
        chem_pot=chem_pot-delta_chem_pot
-       write(*,'(1X,A1,F16.10,1X,A1,F16.10,1X,A1F16.10,1X,A1)') &
-       '|',trace_down,'|',chem_pot,'|',grad_electrons,'|'
       endif
      endif
    endif
@@ -96,10 +88,6 @@ subroutine fix_chem_pot_scGW(iter_fock,nBas,nfreqs,nElectrons,thrs_N,thrs_Ngrad,
 
   ! Do  final search
 
-  write(*,*)'------------------------------------------------------'
-  write(*,'(1X,A1,1X,A15,1X,A1,1X,A15,1X,A1A15,2X,A1)') &
-          '|','Error Tr[1D]^2','|','Chem. Pot.','|','Grad N','|'
-  write(*,*)'------------------------------------------------------'
   isteps = 0
   delta_chem_pot  = 1.0d-3
   do while( abs(trace_1_rdm) > thrs_N .and. abs(grad_electrons) > thrs_Ngrad .and. isteps <= 100 )
@@ -125,18 +113,8 @@ subroutine fix_chem_pot_scGW(iter_fock,nBas,nfreqs,nElectrons,thrs_N,thrs_Ngrad,
    chem_pot_change = -trace_1_rdm/(grad_electrons+1d-10)
    ! Maximum change is bounded within +/- 0.10
    chem_pot_change = max( min( chem_pot_change , 0.1d0 / real(isteps) ), -0.1d0 / real(isteps) )
-   write(*,'(1X,A1,F16.10,1X,A1,F16.10,1X,A1F16.10,1X,A1)') &
-   '|',trace_1_rdm,'|',chem_pot,'|',grad_electrons,'|'
   enddo
-  write(*,*)'------------------------------------------------------'
   call get_1rdm_scGW(nBas,nfreqs,nElectrons,chem_pot,S,F_ao,Sigma_c_w_ao, &
                      wcoord,wweight,G_ao,G_ao_iw_hf,DeltaG_ao_iw,P_ao,P_ao_hf,trace_1_rdm) 
-  write(*,'(1X,A1,1X,A15,1X,A1,1X,A15,1X,A1A15,2X,A1)') &
-          '|','Tr[1D]','|','Chem. Pot.','|','Grad N','|'
-  write(*,*)'------------------------------------------------------'
-  write(*,'(1X,A1,F16.10,1X,A1,F16.10,1X,A1F16.10,1X,A1)') &
-  '|',trace_1_rdm,'|',chem_pot,'|',grad_electrons,'|'
-  write(*,*)'------------------------------------------------------'
-  write(*,*)
 
 end subroutine
