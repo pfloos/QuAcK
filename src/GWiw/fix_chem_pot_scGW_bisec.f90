@@ -1,5 +1,5 @@
 subroutine fix_chem_pot_scGW_bisec(iter_fock,nBas,nfreqs,nElectrons,thrs_N,thrs_Ngrad,chem_pot,S,F_ao,Sigma_c_w_ao,wcoord,wweight, &
-                                   G_ao,G_ao_iw_hf,DeltaG_ao_iw,P_ao,P_ao_hf,trace_1_rdm,verbose) 
+                                   G_ao,G_ao_iw_hf,DeltaG_ao_iw,P_ao,P_ao_hf,trace_1_rdm,chem_pot_hf,verbose) 
 
 ! Fix the chemical potential for scGW 
 
@@ -12,6 +12,7 @@ subroutine fix_chem_pot_scGW_bisec(iter_fock,nBas,nfreqs,nElectrons,thrs_N,thrs_
   integer,intent(in)            :: iter_fock
   integer,intent(in)            :: nBas
   integer,intent(in)            :: nfreqs
+  double precision,intent(in)   :: chem_pot_hf
   double precision,intent(in)   :: nElectrons
   double precision,intent(in)   :: thrs_N
   double precision,intent(in)   :: thrs_Ngrad
@@ -124,7 +125,25 @@ subroutine fix_chem_pot_scGW_bisec(iter_fock,nBas,nfreqs,nElectrons,thrs_N,thrs_
     write(*,'(a,f16.10)') ' Trace with chem pot         ',trace_1_rdm
     write(*,'(a,f16.10)') ' Trace with chem pot + delta ',trace_up
     write(*,'(a,f16.10)') ' Trace with chem pot - delta ',trace_down
-    stop
+    chem_pot=chem_pot_hf
+    write(*,'(a,f10.5,a)') ' Entering the gradient method to optimize the chem. potential [ chem_pot guess ',chem_pot,' ]'
+    call fix_chem_pot_scGW(iter_fock,nBas,nfreqs,nElectrons,thrs_N,thrs_Ngrad,chem_pot,S,F_ao,    & 
+                           Sigma_c_w_ao,wcoord,wweight,G_ao,G_ao_iw_hf,DeltaG_ao_iw,P_ao,P_ao_hf, &
+                           trace_1_rdm,grad_electrons,verbose)
+    if((abs(trace_1_rdm-nElectrons))**2d0 > thrs_N) then
+     write(*,'(a,f16.10)') ' Chemical potential          ',chem_pot
+     write(*,'(a,f16.10)') ' Trace with chem pot         ',trace_1_rdm
+     write(*,'(a,f16.10)') ' Grad. Nelectrons            ',grad_electrons
+     stop
+    else
+     if(verbose) then
+      write(*,'(1X,A1,F16.10,1X,A1,F16.10,1X,A1F16.10,1X,A1)') &
+      '|',trace_1_rdm,'|',chem_pot,'|',grad_electrons,'|'
+      write(*,*)'------------------------------------------------------'
+      write(*,*)
+     endif
+     return
+    endif
    endif
 
    if(trace_1_rdm<nElectrons) then

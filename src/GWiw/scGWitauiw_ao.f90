@@ -497,7 +497,7 @@ subroutine scGWitauiw_ao(nBas,nOrb,nO,maxSCF,maxDIIS,dolinGW,restart_scGW,verbos
                        G_ao_1,G_ao_iw_hf,DeltaG_ao_iw,P_ao,P_ao_hf,trace_1_rdm) 
     if(abs(trace_1_rdm-nElectrons)**2d0>thrs_N) &
      call fix_chem_pot_scGW_bisec(iter_fock,nBas,nfreqs,nElectrons,thrs_N,thrs_Ngrad,chem_pot,S,F_ao,Sigma_c_w_ao,wcoord,wweight, &
-                                  G_ao_1,G_ao_iw_hf,DeltaG_ao_iw,P_ao,P_ao_hf,trace_1_rdm,verbose_scGW)
+                                  G_ao_1,G_ao_iw_hf,DeltaG_ao_iw,P_ao,P_ao_hf,trace_1_rdm,chem_pot_saved,verbose_scGW)
     ! Check convergence of P_ao for fixed Sigma_c(i w)
     diff_Pao=0d0
     do ibas=1,nBas
