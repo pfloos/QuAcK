@@ -31,8 +31,8 @@ subroutine R_SOSEX_QP_graph(doSRG,eta,flow,nBas,nC,nO,nV,nR,nS,eHF,Om,rhoL,rhoR,
   integer                       :: nIt
   integer,parameter             :: maxIt = 64
   double precision,parameter    :: thresh = 1d-6
-  double precision,external     :: RGW_Re_SigC,RGW_Re_dSigC
-  double precision,external     :: RGW_SRG_Re_SigC,RGW_SRG_Re_dSigC
+  double precision,external     :: R_SOSEX_Re_SigC,R_SOSEX_Re_dSigC
+  double precision,external     :: R_SOSEX_SRG_Re_SigC,R_SOSEX_SRG_Re_dSigC
   double precision              :: SigC,dSigC
   double precision              :: f,df
   double precision              :: w
@@ -60,13 +60,13 @@ subroutine R_SOSEX_QP_graph(doSRG,eta,flow,nBas,nC,nO,nV,nR,nS,eHF,Om,rhoL,rhoR,
 
       if(doSRG) then
 
-        SigC  = RGW_SRG_Re_SigC(p,w,flow,nBas,nC,nO,nV,nR,nS,eOld,Om,rhoL,rhoR)
-        dSigC = RGW_SRG_Re_dSigC(p,w,flow,nBas,nC,nO,nV,nR,nS,eOld,Om,rhoL,rhoR)
+        SigC  = R_SOSEX_SRG_Re_SigC(p,w,flow,nBas,nC,nO,nV,nR,nS,eOld,Om,rhoL,rhoR)
+        dSigC = R_SOSEX_SRG_Re_dSigC(p,w,flow,nBas,nC,nO,nV,nR,nS,eOld,Om,rhoL,rhoR)
 
         else
 
-        SigC  = RGW_Re_SigC(p,w,eta,nBas,nC,nO,nV,nR,nS,eOld,Om,rhoL,rhoR)
-        dSigC = RGW_Re_dSigC(p,w,eta,nBas,nC,nO,nV,nR,nS,eOld,Om,rhoL,rhoR)
+        SigC  = R_SOSEX_Re_SigC(p,w,eta,nBas,nC,nO,nV,nR,nS,eOld,Om,rhoL,rhoR)
+        dSigC = R_SOSEX_Re_dSigC(p,w,eta,nBas,nC,nO,nV,nR,nS,eOld,Om,rhoL,rhoR)
 
       end if
 

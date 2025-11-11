@@ -1,6 +1,6 @@
 subroutine R_SOSEX(dotest,TDA_W,singlet,triplet,linearize,eta,doSRG,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,dipole_int,eHF)
 
-! Perform single-short SOSEX calculation
+! Perform single-shot SOSEX calculation
 
   implicit none
   include 'parameters.h'

@@ -52,12 +52,11 @@ subroutine R_SOSEX_excitation_density(nOrb,nC,nO,nR,nS,e,Om,ERI,XpY,rhoL,rhoR)
   !$OMP END DO
   !$OMP END PARALLEL
 
-
 !---------------------------!
 ! Right effective integrals !
 !---------------------------!
 
-  rhoL(:,:,:) = 0d0
+  rhoL(:,:,:) = rhoR(:,:,:)
 
   do p=nC+1,nOrb-nR
     do k=nC+1,nO
@@ -66,7 +65,7 @@ subroutine R_SOSEX_excitation_density(nOrb,nC,nO,nR,nS,e,Om,ERI,XpY,rhoL,rhoR)
         do j=nC+1,nO
           do a=nO+1,nOrb-nR
 
-            rhoL(p,k,m) = rhoL(p,k,m) + rhoR(a,j,m)*ERI(p,a,j,k)/(e(a) - e(j) - Om(m))
+            rhoL(p,k,m) = rhoL(p,k,m) + rhoR(a,j,m)*(ERI(p,j,a,k)/(e(a) - e(j) + Om(m)) + ERI(p,a,j,k)/(e(a) - e(j) - Om(m)))
 
           end do
         end do
@@ -82,7 +81,7 @@ subroutine R_SOSEX_excitation_density(nOrb,nC,nO,nR,nS,e,Om,ERI,XpY,rhoL,rhoR)
         do j=nC+1,nO
           do a=nO+1,nOrb-nR
 
-            rhoL(p,c,m) = rhoL(p,c,m) + rhoR(a,j,m)*ERI(p,j,a,c)/(e(a) - e(j) - Om(m))
+            rhoL(p,c,m) = rhoL(p,c,m) + rhoR(a,j,m)*(ERI(p,j,a,c)/(e(a) - e(j) - Om(m)) + ERI(p,a,j,c)/(e(a) - e(j) + Om(m)))
 
           end do
         end do
