@@ -1,5 +1,5 @@
 subroutine R_ADC(dotest,                                               & 
-                 do_IPEA_ADC2,do_IPEA_ADC3,                            &
+                 do_IPEA_ADC2,do_IP_ADC2,do_IPEA_ADC3,                 &
                  do_SOSEX,do_2SOSEX,do_G3W2,                           &
                  do_ADC_GW,do_ADC_2SOSEX,do_ADC_G3W2,                  &
                  TDA_W,TDA,singlet,triplet,linearize,eta,doSRG,        & 
@@ -17,6 +17,7 @@ subroutine R_ADC(dotest,                                               &
   logical,intent(in)            :: dotest
 
   logical,intent(in)            :: do_IPEA_ADC2
+  logical,intent(in)            :: do_IP_ADC2
   logical,intent(in)            :: do_IPEA_ADC3
 
   logical,intent(in)            :: do_SOSEX
@@ -68,14 +69,15 @@ subroutine R_ADC(dotest,                                               &
 
   double precision              :: start_ADC,end_ADC,t_ADC
   logical                       :: do_IPEA,do_EE
-  logical                       :: do_IP_ADC2 = .true.
 
 ! Output variables
   
   ! None
 
   do_IPEA = do_IPEA_ADC2 .or. do_IP_ADC2 .or. do_IPEA_ADC3 .or. & 
+            do_SOSEX .or. do_2SOSEX .or. do_G3W2 .or.           &
             do_ADC_GW .or. do_ADC_2SOSEX .or. do_ADC_G3W2
+
   do_EE   = .false.
 
 !=========================================!
