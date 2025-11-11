@@ -67,13 +67,13 @@ subroutine fix_chem_pot(nO,nOrb,nOrb_twice,nSCF,thrs_N,trace_1rdm,chem_pot,H_hfb
    H_hfb(iorb+nOrb,iorb+nOrb)=H_hfb(iorb+nOrb,iorb+nOrb)-chem_pot
   enddo
 
-  write(*,*)
-  write(*,'(a,I5)') ' Fixing the Tr[1D] at iteration ',nSCF
-  write(*,*)
-  write(*,*)'------------------------------------------------------'
-  write(*,'(1X,A1,1X,A15,1X,A1,1X,A15,1X,A1A15,2X,A1)') &
-          '|','Tr[1D]','|','Chem. Pot.','|','Grad N','|'
-  write(*,*)'------------------------------------------------------'
+!  write(*,*)
+!  write(*,'(a,I5)') ' Fixing the Tr[1D] at iteration ',nSCF
+!  write(*,*)
+!  write(*,*)'------------------------------------------------------'
+!  write(*,'(1X,A1,1X,A15,1X,A1,1X,A15,1X,A1A15,2X,A1)') &
+!          '|','Tr[1D]','|','Chem. Pot.','|','Grad N','|'
+!  write(*,*)'------------------------------------------------------'
 
   ! First approach close the value with an error lower than 1
 
@@ -84,22 +84,22 @@ subroutine fix_chem_pot(nO,nOrb,nOrb_twice,nSCF,thrs_N,trace_1rdm,chem_pot,H_hfb
    call diag_H_hfb(nOrb,nOrb_twice,chem_pot-delta_chem_pot,trace_down,H_hfb,cp,R,eHFB_)
    call diag_H_hfb(nOrb,nOrb_twice,chem_pot+delta_chem_pot,trace_up,H_hfb,cp,R,eHFB_)
    if( abs(trace_up-nO_) > abs(trace_old-nO_) .and. abs(trace_down-nO_) > abs(trace_old-nO_) ) then
-     write(*,'(1X,A1,F16.10,1X,A1,F16.10,1X,A1F16.10,1X,A1)') &
-     '|',trace_old,'|',chem_pot,'|',grad_electrons,'|'
+!     write(*,'(1X,A1,F16.10,1X,A1,F16.10,1X,A1F16.10,1X,A1)') &
+!     '|',trace_old,'|',chem_pot,'|',grad_electrons,'|'
      delta_chem_pot = 0.75d0*delta_chem_pot
      thrs_closer = 0.5d0*thrs_closer
-     write(*,*) "| contracting ...                                     |"  
+!     write(*,*) "| contracting ...                                     |"  
      if(delta_chem_pot<1d-2) exit
    else
      if( abs(trace_up-nO_) < abs(trace_old-nO_) ) then
       chem_pot=chem_pot+delta_chem_pot 
-      write(*,'(1X,A1,F16.10,1X,A1,F16.10,1X,A1F16.10,1X,A1)') &
-      '|',trace_up,'|',chem_pot,'|',grad_electrons,'|'
+!      write(*,'(1X,A1,F16.10,1X,A1,F16.10,1X,A1F16.10,1X,A1)') &
+!      '|',trace_up,'|',chem_pot,'|',grad_electrons,'|'
      else
       if( abs(trace_down-nO_) < abs(trace_old-nO_) ) then
        chem_pot=chem_pot-delta_chem_pot
-       write(*,'(1X,A1,F16.10,1X,A1,F16.10,1X,A1F16.10,1X,A1)') &
-       '|',trace_down,'|',chem_pot,'|',grad_electrons,'|'
+!       write(*,'(1X,A1,F16.10,1X,A1,F16.10,1X,A1F16.10,1X,A1)') &
+!       '|',trace_down,'|',chem_pot,'|',grad_electrons,'|'
       endif
      endif
    endif
@@ -107,10 +107,10 @@ subroutine fix_chem_pot(nO,nOrb,nOrb_twice,nSCF,thrs_N,trace_1rdm,chem_pot,H_hfb
 
   ! Do  final search
 
-  write(*,*)'------------------------------------------------------'
-  write(*,'(1X,A1,1X,A15,1X,A1,1X,A15,1X,A1A15,2X,A1)') &
-          '|','Error Tr[1D]','|','Chem. Pot.','|','Grad N','|'
-  write(*,*)'------------------------------------------------------'
+!  write(*,*)'------------------------------------------------------'
+!  write(*,'(1X,A1,1X,A15,1X,A1,1X,A15,1X,A1A15,2X,A1)') &
+!          '|','Error Tr[1D]','|','Chem. Pot.','|','Grad N','|'
+!  write(*,*)'------------------------------------------------------'
   isteps = 0
   delta_chem_pot  = 1.0d-3
   trace_1rdm=(trace_1rdm-nO_)**2d0
@@ -131,8 +131,8 @@ subroutine fix_chem_pot(nO,nOrb,nOrb_twice,nSCF,thrs_N,trace_1rdm,chem_pot,H_hfb
    chem_pot_change = -trace_1rdm/(grad_electrons+1d-10)
    ! Maximum change is bounded within +/- 0.10
    chem_pot_change = max( min( chem_pot_change , 0.1d0 / real(isteps) ), -0.1d0 / real(isteps) )
-   write(*,'(1X,A1,F16.10,1X,A1,F16.10,1X,A1F16.10,1X,A1)') &
-   '|',trace_1rdm,'|',chem_pot,'|',grad_electrons,'|'
+!   write(*,'(1X,A1,F16.10,1X,A1,F16.10,1X,A1F16.10,1X,A1)') &
+!   '|',trace_1rdm,'|',chem_pot,'|',grad_electrons,'|'
   enddo
   write(*,*)'------------------------------------------------------'
   call diag_H_hfb(nOrb,nOrb_twice,chem_pot,trace_1rdm,H_hfb,cp,R,eHFB_)

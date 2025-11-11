@@ -5,11 +5,11 @@ subroutine read_options(working_dir,                                            
                         TDA,spin_conserved,spin_flip,                                                       &
                         maxSCF_GF,thresh_GF,max_diis_GF,lin_GF,eta_GF,renorm_GF,reg_GF,do_linDM_GF2,        &
                         maxSCF_GW,thresh_GW,max_diis_GW,lin_GW,eta_GW,shift_GW,reg_GW,doOO,mu,do_linDM_GW,  &
-                        nfreqs,TDA_W,restart_scGW,restart_scGF2,                                            &
+                        nfreqs,TDA_W,restart_scGW,restart_scGF2,verbose_scGW,verbose_scGF2,                 &
                         maxSCF_GT,thresh_GT,max_diis_GT,lin_GT,eta_GT,reg_GT,TDA_T,do_linDM_GT,             &
                         doACFDT,exchange_kernel,doXBS,                                                      &
                         dophBSE,dophBSE2,doppBSE,dBSE,dTDA,                                                 &
-                        temperature,sigma,chem_pot_hf,restart_hfb,                                          &
+                        temperature,sigma,chem_pot_hf,restart_hfb,error_P,                                  &
                         TDAeh,TDApp,max_diis_1b,max_diis_2b,max_it_1b,conv_1b,max_it_2b,conv_2b,lin_parquet,&
                         reg_1b,reg_2b,reg_PA,eweight,eforward)
 
@@ -33,6 +33,7 @@ subroutine read_options(working_dir,                                            
   logical,intent(out)           :: dosearch
   logical,intent(out)           :: doaordm
   logical,intent(out)           :: readFCIDUMP
+  logical,intent(out)           :: error_P
 
   logical,intent(out)           :: reg_MP
 
@@ -52,6 +53,7 @@ subroutine read_options(working_dir,                                            
   double precision,intent(out)  :: eta_GF
   logical,intent(out)           :: reg_GF
   logical,intent(out)           :: restart_scGF2
+  logical,intent(out)           :: verbose_scGF2
   logical,intent(out)           :: do_linDM_GF2
 
   integer,intent(out)           :: maxSCF_GW
@@ -62,6 +64,7 @@ subroutine read_options(working_dir,                                            
   double precision,intent(out)  :: eta_GW
   double precision,intent(out)  :: shift_GW
   logical,intent(out)           :: restart_scGW
+  logical,intent(out)           :: verbose_scGW
   logical,intent(out)           :: reg_GW
   logical,intent(out)           :: doOO
   integer,intent(out)           :: mu
@@ -104,7 +107,7 @@ subroutine read_options(working_dir,                                            
 
 ! Local variables
 
-  character(len=1)              :: ans1,ans2,ans3,ans4,ans5,ans6
+  character(len=1)              :: ans1,ans2,ans3,ans4,ans5,ans6,ans7
   integer                       :: status
   character(len=256)            :: file_path
 
@@ -182,14 +185,16 @@ subroutine read_options(working_dir,                                            
       reg_GF      = .false.
       do_linDM_GF2 = .false.
       restart_scGF2 = .false.
+      verbose_scGF2 = .false.
     
       read(1,*) 
-      read(1,*) maxSCF_GF,thresh_GF,max_diis_GF,ans1,eta_GF,renorm_GF,ans2,ans3,ans4
+      read(1,*) maxSCF_GF,thresh_GF,max_diis_GF,ans1,eta_GF,renorm_GF,ans2,ans3,ans4,ans5
     
       if(ans1 == 'T') lin_GF  = .true.
       if(ans2 == 'T') reg_GF  = .true.
       if(ans3 == 'T') do_linDM_GF2  = .true.
       if(ans4 == 'T') restart_scGF2  = .true.
+      if(ans5 == 'T') verbose_scGF2  = .true.
     
       ! Read GW options
     
@@ -205,9 +210,10 @@ subroutine read_options(working_dir,                                            
       TDA_W       = .false.
       do_linDM_GW = .false.
       restart_scGW = .false.
+      verbose_scGW = .false.
     
       read(1,*) 
-      read(1,*) maxSCF_GW,thresh_GW,max_diis_GW,ans1,eta_GW,ans2,ans3,ans4,mu,nfreqs,shift_GW,ans5,ans6
+      read(1,*) maxSCF_GW,thresh_GW,max_diis_GW,ans1,eta_GW,ans2,ans3,ans4,mu,nfreqs,shift_GW,ans5,ans6,ans7
     
       if(ans1 == 'T') lin_GW      = .true.
       if(ans2 == 'T') TDA_W       = .true.
@@ -215,6 +221,7 @@ subroutine read_options(working_dir,                                            
       if(ans4 == 'T') doOO        = .true.
       if(ans5 == 'T') do_linDM_GW = .true.
       if(ans6 == 'T') restart_scGW = .true.
+      if(ans7 == 'T') verbose_scGW = .true.
    
       ! Read GT options
     
@@ -271,12 +278,14 @@ subroutine read_options(working_dir,                                            
       sigma        = 1d0
       chem_pot_hf  = .false.
       restart_hfb  = .false.
+      error_P      = .false.
     
       read(1,*) 
-      read(1,*) temperature,sigma,ans1,ans2
+      read(1,*) temperature,sigma,ans1,ans2,ans3
 
       if(ans1 == 'T') chem_pot_hf  = .true.
       if(ans2 == 'T') restart_hfb  = .true.
+      if(ans3 == 'T') error_P      = .true.
 
       ! Options for Parquet module
 

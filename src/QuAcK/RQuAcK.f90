@@ -4,7 +4,7 @@ subroutine RQuAcK(working_dir,use_gpu,dotest,doRHF,doROHF,docRHF,               
                   doG0F2,doevGF2,doqsGF2,doufG0F02,doG0F3,doevGF3,doG0W0,doevGW,doqsGW,doufG0W0,doufGW,                     &
                   doG0T0pp,doevGTpp,doqsGTpp,doufG0T0pp,doG0T0eh,doevGTeh,doqsGTeh,doevParquet,doqsParquet,                 & 
                   docG0W0,docG0F2,doscGW,doscGF2,                                                                           & 
-                  doCAP,readFCIDUMP,restart_scGW,restart_scGF2,                                                             & 
+                  doCAP,readFCIDUMP,restart_scGW,restart_scGF2,verbose_scGW,verbose_scGF2,                                  & 
                   do_IPEA_ADC2,do_IP_ADC2,do_IPEA_ADC3,do_SOSEX,do_2SOSEX,do_G3W2,do_ADC_GW,do_ADC_2SOSEX,do_ADC_G3W2,      &
                   nNuc,nBas,nOrb,nC,nO,nV,nR,ENuc,ZNuc,rNuc,                                                                &
                   S,T,V,Hc,CAP_AO,X,dipole_int_AO,maxSCF_HF,max_diis_HF,thresh_HF,level_shift,                              &
@@ -27,7 +27,6 @@ subroutine RQuAcK(working_dir,use_gpu,dotest,doRHF,doROHF,docRHF,               
 
   logical,intent(in)            :: dotest
   logical,intent(in)            :: readFCIDUMP
-  logical,intent(in)            :: restart_scGW
 
   logical,intent(in)            :: doRHF,doROHF,docRHF
   logical,intent(in)            :: dostab
@@ -88,6 +87,7 @@ subroutine RQuAcK(working_dir,use_gpu,dotest,doRHF,doROHF,docRHF,               
   double precision,intent(in)   :: eta_GF
   logical,intent(in)            :: do_linDM_GF
   logical,intent(in)            :: restart_scGF2
+  logical,intent(in)            :: verbose_scGF2
 
   integer,intent(in)            :: maxSCF_GW,max_diis_GW
   double precision,intent(in)   :: thresh_GW
@@ -95,6 +95,8 @@ subroutine RQuAcK(working_dir,use_gpu,dotest,doRHF,doROHF,docRHF,               
   integer,intent(in)            :: mu
   double precision,intent(in)   :: eta_GW
   logical,intent(in)            :: do_linDM_GW
+  logical,intent(in)            :: restart_scGW
+  logical,intent(in)            :: verbose_scGW
 
   integer,intent(in)            :: maxSCF_GT,max_diis_GT
   double precision,intent(in)   :: thresh_GT
@@ -282,13 +284,22 @@ subroutine RQuAcK(working_dir,use_gpu,dotest,doRHF,doROHF,docRHF,               
 
   if(doscGF2 .and. .not.docRHF) then
 
+   allocate(vMAT(nBas*nBas,nBas*nBas))
    allocate(cHF_tmp(nBas,nOrb))
    cHF_tmp=cHF
-
+   do iorb=1,nBas
+    do jorb=1,nBas
+     do korb=1,nBas
+      do lorb=1,nBas
+       vMAT(1+(korb-1)+(iorb-1)*nOrb,1+(lorb-1)+(jorb-1)*nOrb)=ERI_AO(iorb,jorb,korb,lorb)
+      enddo
+     enddo
+    enddo
+   enddo
    no_fock=.false.
-   call scGF2itauiw_ao(nBas,nOrb,nO,maxSCF_GF,max_diis_GF,do_linDM_GF,restart_scGF2,no_fock,ENuc,Hc,S,PHF,cHF_tmp,eHF, &
-                       nfreqs,wcoord,wweight,ERI_AO)
-   deallocate(cHF_tmp)
+   call scGF2itauiw_ao(nBas,nOrb,nO,maxSCF_GF,max_diis_GF,do_linDM_GF,restart_scGF2,verbose_scGF2,no_fock,ENuc,Hc,S,PHF,cHF_tmp,eHF, &
+                       nfreqs,wcoord,wweight,vMAT,ERI_AO)
+   deallocate(vMAT,cHF_tmp)
 
   endif
 
@@ -311,7 +322,7 @@ subroutine RQuAcK(working_dir,use_gpu,dotest,doRHF,doROHF,docRHF,               
     enddo
    enddo
    no_fock=.false.
-   call scGWitauiw_ao(nBas,nOrb,nO,maxSCF_GW,max_diis_GW,do_linDM_GW,restart_scGW,no_fock,ENuc,Hc,S,PHF,cHF_tmp,eHF, &
+   call scGWitauiw_ao(nBas,nOrb,nO,maxSCF_GW,max_diis_GW,do_linDM_GW,restart_scGW,verbose_scGW,no_fock,ENuc,Hc,S,PHF,cHF_tmp,eHF, &
                      nfreqs,wcoord,wweight,vMAT,ERI_AO)
    deallocate(vMAT,cHF_tmp)
 

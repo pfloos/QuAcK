@@ -1,4 +1,4 @@
-subroutine RHFB(dotest,doaordm,maxSCF,thresh,max_diis,level_shift,nNuc,ZNuc,rNuc,ENuc,       & 
+subroutine RHFB(dotest,doaordm,maxSCF,thresh,max_diis,error_P,nNuc,ZNuc,rNuc,ENuc,           & 
                nBas,nOrb,nOrb_twice,nO,S,T,V,Hc,ERI,dipole_int,X,EHFB,eHF,c,P,Panom,F,Delta, &
                temperature,sigma,chem_pot_hf,chem_pot,restart_hfb,U_QP,eHFB_state)
 
@@ -11,11 +11,11 @@ subroutine RHFB(dotest,doaordm,maxSCF,thresh,max_diis,level_shift,nNuc,ZNuc,rNuc
 
   logical,intent(in)            :: dotest
   logical,intent(in)            :: doaordm
+  logical,intent(in)            :: error_P
 
   integer,intent(in)            :: maxSCF
   integer,intent(in)            :: max_diis
   double precision,intent(in)   :: thresh
-  double precision,intent(in)   :: level_shift
 
   integer,intent(in)            :: nBas
   integer,intent(in)            :: nOrb
@@ -55,6 +55,7 @@ subroutine RHFB(dotest,doaordm,maxSCF,thresh,max_diis,level_shift,nNuc,ZNuc,rNuc
   double precision              :: Delta_HL
   double precision              :: dipole(ncart)
 
+  double precision              :: alpha_mixing
   double precision              :: Conv
   double precision              :: rcond
   double precision              :: err_no_rep
@@ -66,12 +67,14 @@ subroutine RHFB(dotest,doaordm,maxSCF,thresh,max_diis,level_shift,nNuc,ZNuc,rNuc
   double precision,allocatable  :: eigVAL_mo(:)
   double precision,allocatable  :: Occ(:)
   double precision,allocatable  :: err_diis(:,:)
-  double precision,allocatable  :: H_HFB_diis(:,:)
-  double precision,allocatable  :: cHF(:,:)
+  double precision,allocatable  :: MAT_diis(:,:)
+  double precision,allocatable  :: Xinv(:,:)
   double precision,allocatable  :: J(:,:)
   double precision,allocatable  :: K(:,:)
   double precision,allocatable  :: Tmat(:,:)
   double precision,allocatable  :: F_mo(:,:)
+  double precision,allocatable  :: U_mo(:,:)
+  double precision,allocatable  :: cNO(:,:)
   double precision,allocatable  :: eigVEC_mo(:,:)
   double precision,allocatable  :: eigVEC(:,:)
   double precision,allocatable  :: Tmp_test_RHF(:,:)
@@ -82,6 +85,7 @@ subroutine RHFB(dotest,doaordm,maxSCF,thresh,max_diis,level_shift,nNuc,ZNuc,rNuc
   double precision,allocatable  :: S_ao(:,:)
   double precision,allocatable  :: X_ao(:,:)
   double precision,allocatable  :: c_ao(:,:)
+  double precision,allocatable  :: R_ao(:,:)
   double precision,allocatable  :: R_ao_old(:,:)
   double precision,allocatable  :: H_HFB_ao(:,:)
 
@@ -108,6 +112,7 @@ subroutine RHFB(dotest,doaordm,maxSCF,thresh,max_diis,level_shift,nNuc,ZNuc,rNuc
 
   nBas_twice = nBas+nBas
   nBas_twice_Sq = nBas_twice*nBas_twice
+  alpha_mixing = 0.5d0
 
 ! Memory allocation
 
@@ -115,7 +120,9 @@ subroutine RHFB(dotest,doaordm,maxSCF,thresh,max_diis,level_shift,nNuc,ZNuc,rNuc
 
   allocate(J(nBas,nBas))
   allocate(K(nBas,nBas))
-  allocate(cHF(nBas,nOrb))
+  allocate(Xinv(nOrb,nBas))
+  allocate(U_mo(nOrb,nOrb))
+  allocate(cNO(nBas,nOrb))
 
   allocate(eigVEC(nOrb_twice,nOrb_twice))
   allocate(H_HFB(nOrb_twice,nOrb_twice))
@@ -125,11 +132,12 @@ subroutine RHFB(dotest,doaordm,maxSCF,thresh,max_diis,level_shift,nNuc,ZNuc,rNuc
   allocate(err_ao(nBas_twice,nBas_twice))
   allocate(S_ao(nBas_twice,nBas_twice))
   allocate(X_ao(nBas_twice,nOrb_twice))
+  allocate(R_ao(nBas_twice,nBas_twice))
   allocate(R_ao_old(nBas_twice,nBas_twice))
   allocate(H_HFB_ao(nBas_twice,nBas_twice))
 
   allocate(err_diis(nBas_twice_Sq,max_diis))
-  allocate(H_HFB_diis(nBas_twice_Sq,max_diis))
+  allocate(MAT_diis(nBas_twice_Sq,max_diis))
 
 ! Guess chem. pot.
 
@@ -139,7 +147,7 @@ subroutine RHFB(dotest,doaordm,maxSCF,thresh,max_diis,level_shift,nNuc,ZNuc,rNuc
 
   thrs_N          = 1d-8
   n_diis          = 0
-  H_HFB_diis(:,:) = 0d0
+  MAT_diis(:,:)   = 0d0
   err_diis(:,:)   = 0d0
   rcond           = 0d0
   nO_             = nO
@@ -152,7 +160,7 @@ subroutine RHFB(dotest,doaordm,maxSCF,thresh,max_diis,level_shift,nNuc,ZNuc,rNuc
     nO_=0.5d0*nO_
   endif
 
-  cHF(:,:)       = c(:,:)
+  Xinv           = matmul(transpose(X),S)
   P(:,:)         = matmul(c(:,1:nO), transpose(c(:,1:nO)))
   Panom(:,:)     = 0d0
 
@@ -248,9 +256,10 @@ subroutine RHFB(dotest,doaordm,maxSCF,thresh,max_diis,level_shift,nNuc,ZNuc,rNuc
 
     ! DIIS extrapolation
 
-    if(max_diis > 1 .and. nSCF>1) then
+    if(max_diis > 1 .and. nSCF>1 .and.(.not.error_P)) then
 
      write(*,*) ' Doing DIIS'
+     n_diis = min(n_diis+1,max_diis)
 
      F(:,:) = Hc(:,:) + J(:,:) + 0.5d0*K(:,:) - chem_pot*S(:,:)
      H_HFB_ao(:,:)    = 0d0
@@ -259,9 +268,8 @@ subroutine RHFB(dotest,doaordm,maxSCF,thresh,max_diis,level_shift,nNuc,ZNuc,rNuc
      H_HFB_ao(1:nBas           ,nBas+1:nBas_twice) = Delta(1:nBas,1:nBas)
      H_HFB_ao(nBas+1:nBas_twice,1:nBas           ) = Delta(1:nBas,1:nBas)
      err_ao = matmul(H_HFB_ao,matmul(R_ao_old,S_ao)) - matmul(matmul(S_ao,R_ao_old),H_HFB_ao)
-
-     n_diis = min(n_diis+1,max_diis)
-     call DIIS_extrapolation(rcond,nBas_twice_Sq,nBas_twice_Sq,n_diis,err_diis,H_HFB_diis,err_ao,H_HFB_ao)
+     
+     call DIIS_extrapolation(rcond,nBas_twice_Sq,nBas_twice_Sq,n_diis,err_diis,MAT_diis,err_ao,H_HFB_ao)
 
      H_HFB = matmul(transpose(X_ao),matmul(H_HFB_ao,X_ao))
      eigVEC(:,:) = H_HFB(:,:)
@@ -292,10 +300,14 @@ subroutine RHFB(dotest,doaordm,maxSCF,thresh,max_diis,level_shift,nNuc,ZNuc,rNuc
     P(:,:)     = 2d0*matmul(X,matmul(R(1:nOrb,1:nOrb),transpose(X)))
     Panom(:,:) = matmul(X,matmul(R(1:nOrb,nOrb+1:nOrb_twice),transpose(X)))
 
-!   write(*,*) 'P^ao iter ',nSCF
-!   do iorb=1,nBas
-!    write(*,'(*(f10.5))') 0.5d0*P(iorb,1:nOrb)
-!   enddo
+!    write(*,*) 'P^ao iter ',nSCF
+!    do iorb=1,nBas
+!     write(*,'(*(f10.5))') 0.5d0*P(iorb,1:nOrb)
+!    enddo
+!    write(*,*) 'Panom^ao iter ',nSCF
+!    do iorb=1,nBas
+!     write(*,'(*(f10.5))') Panom(iorb,1:nOrb)
+!    enddo
 
     ! Kinetic energy
     ET = trace_matrix(nBas,matmul(P,T))
@@ -312,7 +324,7 @@ subroutine RHFB(dotest,doaordm,maxSCF,thresh,max_diis,level_shift,nNuc,ZNuc,rNuc
 
     ! Check convergence
 
-    if(nSCF > 1) then
+    if((.not.error_P) .and. nSCF > 1) then
 
      F(:,:) = Hc(:,:) + J(:,:) + 0.5d0*K(:,:) - chem_pot*S(:,:)
      H_HFB_ao(:,:)    = 0d0
@@ -327,11 +339,46 @@ subroutine RHFB(dotest,doaordm,maxSCF,thresh,max_diis,level_shift,nNuc,ZNuc,rNuc
 
     ! Update R_old
 
-    R_ao_old(:,:)    = 0d0
-    R_ao_old(1:nBas           ,1:nBas           ) = 0.5d0*P(1:nBas,1:nBas)
-    R_ao_old(nBas+1:nBas_twice,nBas+1:nBas_twice) = matmul(X(1:nBas,1:nOrb), transpose(X(1:nBas,1:nOrb)))-0.5d0*P(1:nBas,1:nBas)
-    R_ao_old(1:nBas           ,nBas+1:nBas_twice) = Panom(1:nBas,1:nBas)
-    R_ao_old(nBas+1:nBas_twice,1:nBas           ) = Panom(1:nBas,1:nBas)
+    R_ao(:,:)    = 0d0
+    R_ao(1:nBas           ,1:nBas           ) = 0.5d0*P(1:nBas,1:nBas)
+    R_ao(nBas+1:nBas_twice,nBas+1:nBas_twice) = matmul(X(1:nBas,1:nOrb), transpose(X(1:nBas,1:nOrb)))-0.5d0*P(1:nBas,1:nBas)
+    R_ao(1:nBas           ,nBas+1:nBas_twice) = Panom(1:nBas,1:nBas)
+    R_ao(nBas+1:nBas_twice,1:nBas           ) = Panom(1:nBas,1:nBas)
+    if(error_P .and. nSCF>1) then
+     ! Update H_HFB_ao (to be used after the SCF procedure)
+     H_HFB_ao(:,:)    = 0d0
+     H_HFB_ao(1:nBas           ,1:nBas           ) =  F(1:nBas,1:nBas)
+     H_HFB_ao(nBas+1:nBas_twice,nBas+1:nBas_twice) = -F(1:nBas,1:nBas)
+     H_HFB_ao(1:nBas           ,nBas+1:nBas_twice) = Delta(1:nBas,1:nBas)
+     H_HFB_ao(nBas+1:nBas_twice,1:nBas           ) = Delta(1:nBas,1:nBas)
+     ! Compute mixed R_ao and its error
+     R_ao=alpha_mixing*R_ao+(1d0-alpha_mixing)*R_ao_old
+     err_ao = 1d2*(R_ao - R_ao_old)  ! Error = Change P mat for DIIS or convergence check
+     err_ao(nBas+1:nBas_twice,1:nBas           ) = 0d0
+     err_ao(1:nBas           ,nBas+1:nBas_twice) = 0d0
+     ! Do DIIS?
+     if(max_diis>1) then
+      call DIIS_extrapolation(rcond,nBas_twice_Sq,nBas_twice_Sq,n_diis,err_diis,MAT_diis,err_ao,R_ao)
+      err_ao(nBas+1:nBas_twice,1:nBas           ) = 0d0
+      err_ao(1:nBas           ,nBas+1:nBas_twice) = 0d0
+      err_ao = 1d2*(R_ao - R_ao_old) ! Error = Change P (after DIIS) for convergence check
+      err_ao(nBas+1:nBas_twice,1:nBas           ) = 0d0
+      err_ao(1:nBas           ,nBas+1:nBas_twice) = 0d0
+     endif
+     ! Check convergence
+     Conv  = maxval(abs(err_ao))
+     ! Set P and Panom for the next iteration
+     P(1:nBas,1:nBas)     = 2d0*R_ao(1:nBas,1:nBas)
+     Panom(1:nBas,1:nBas) = R_ao(nBas+1:nBas_twice,1:nBas) 
+     ! Recompute the energy
+     ET = trace_matrix(nBas,matmul(P,T))
+     EV = trace_matrix(nBas,matmul(P,V))
+     EJ = 0.5d0*trace_matrix(nBas,matmul(P,J))
+     EK = 0.25d0*trace_matrix(nBas,matmul(P,K))
+     EL = trace_matrix(nBas,matmul(Panom,Delta))
+     EHFB = ET + EV + EJ + EK + EL
+    endif
+    R_ao_old=R_ao
 
     ! Dump results
     write(*,*)'-------------------------------------------------------------------------------------------------'
@@ -360,7 +407,7 @@ subroutine RHFB(dotest,doaordm,maxSCF,thresh,max_diis,level_shift,nNuc,ZNuc,rNuc
     write(*,*)'!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!'
     write(*,*)
 
-!    deallocate(J,K,eigVEC,H_HFB,R,eigVAL,err_diis,H_HFB_diis,Occ)
+!    deallocate(J,K,eigVEC,H_HFB,R,eigVAL,err_diis,MAT_diis,Occ)
 !    deallocate(err_ao,S_ao,X_ao,R_ao_old,H_HFB_ao)
 !
 !    stop
@@ -498,7 +545,7 @@ subroutine RHFB(dotest,doaordm,maxSCF,thresh,max_diis,level_shift,nNuc,ZNuc,rNuc
 ! Test if it can be a RHF solution
   ! TODO ...
   if(is_fractional .and. .false.) then
-   allocate(Tmp_test_RHF(nOrb_twice,nOrb_twice),Tmat(nOrb,nOrb),eigVEC_mo(nOrb,nOrb),F_mo(nOrb,nOrb),eigVAL_mo(nOrb))
+   allocate(Tmp_test_RHF(nOrb_twice,nOrb_twice),Tmat(nOrb,nOrb),eigVEC_mo(nOrb,nOrb),F_mo(nOrb,nOrb))
    eigVEC(1:nOrb           ,nOrb+1:nOrb_twice) =  eigVEC(nOrb+1:nOrb_twice,1:nOrb)
    eigVEC(nOrb+1:nOrb_twice,nOrb+1:nOrb_twice) = -eigVEC(1:nOrb           ,1:nOrb)
    Tmp_test_RHF=matmul(matmul(transpose(eigVEC),H_HFB),eigVEC)
@@ -553,7 +600,7 @@ subroutine RHFB(dotest,doaordm,maxSCF,thresh,max_diis,level_shift,nNuc,ZNuc,rNuc
      
  
    call do_colinearity_test(nOrb,nOrb_twice,R)
-   deallocate(Tmp_test_RHF,Tmat,eigVEC_mo,eigVAL_mo,F_mo)
+   deallocate(Tmp_test_RHF,Tmat,eigVEC_mo,F_mo)
   endif
  
 ! Testing zone
@@ -568,8 +615,8 @@ subroutine RHFB(dotest,doaordm,maxSCF,thresh,max_diis,level_shift,nNuc,ZNuc,rNuc
 
 ! Memory deallocation
 
-  deallocate(J,K,cHF,eigVEC,H_HFB,R,eigVAL,err_diis,H_HFB_diis,Occ)
-  deallocate(err_ao,S_ao,X_ao,R_ao_old,H_HFB_ao)
+  deallocate(J,K,Xinv,eigVEC,H_HFB,R,eigVAL,err_diis,MAT_diis,Occ)
+  deallocate(err_ao,S_ao,X_ao,R_ao,R_ao_old,H_HFB_ao,U_mo,cNO)
   deallocate(c_ao)
 
 end subroutine 

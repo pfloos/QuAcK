@@ -1,4 +1,4 @@
-subroutine read_scGW_restart(nBas,nfreqs,ntimes_twice,chem_pot,P_ao,P_ao_hf,G_ao_iw_hf,G_ao_itau,G_ao_itau_hf)
+subroutine read_scGW_restart(nBas,nfreqs,ntimes_twice,chem_pot,P_ao,P_ao_hf,G_ao_iw_hf,G_ao_itau,G_ao_itau_hf,read_SD_chkp)
 
 ! Read grids for scGW
 
@@ -6,6 +6,7 @@ subroutine read_scGW_restart(nBas,nfreqs,ntimes_twice,chem_pot,P_ao,P_ao_hf,G_ao
   include 'parameters.h'
 
 ! Input variables
+  logical,intent(in)               :: read_SD_chkp
   integer,intent(in)               :: nBas
   integer,intent(in)               :: nfreqs
   integer,intent(in)               :: ntimes_twice
@@ -52,41 +53,43 @@ subroutine read_scGW_restart(nBas,nfreqs,ntimes_twice,chem_pot,P_ao,P_ao_hf,G_ao
   write(*,'(a)') ' Reading scGW_chem_pot_bin'
   read(iunit) chem_pot
   close(iunit)
-!  open(unit=iunit,form='unformatted',file='scGW_Gitau_sd_bin',status='old')
-!  write(*,'(a)') ' Reading scGW_Gitau_sd_bin'
-!  read(iunit) ibas
-!  read(iunit) ibas
-!  do itau=1,ntimes_twice
-!   do ibas=1,nBas
-!    do jbas=1,nBas
-!     read(iunit) val_print_c
-!     G_ao_itau_hf(itau,ibas,jbas)=val_print_c
-!    enddo
-!   enddo
-!  enddo
-!  close(iunit)
-!  open(unit=iunit,form='unformatted',file='scGW_Giw_sd_bin',status='old')
-!  write(*,'(a)') ' Reading scGW_Giw_sd_bin'
-!  read(iunit) ibas
-!  read(iunit) ibas
-!  do ifreq=1,nfreqs
-!   do ibas=1,nBas
-!    do jbas=1,nBas
-!     read(iunit) val_print_c
-!     G_ao_iw_hf(ifreq,ibas,jbas)=val_print_c
-!    enddo
-!   enddo
-!  enddo
-!  close(iunit)
-!  open(unit=iunit,form='unformatted',file='scGW_Pao_sd_bin',status='old')
-!  write(*,'(a)') ' Reading scGW_Pao_sd_bin'
-!  read(iunit) ibas
-!  do ibas=1,nBas
-!   do jbas=1,nBas
-!    read(iunit) val_print_r
-!    P_ao_hf(ibas,jbas)=val_print_r
-!   enddo
-!  enddo
-!  close(iunit)
+  if(read_SD_chkp) then
+   open(unit=iunit,form='unformatted',file='scGW_Gitau_sd_bin',status='old')
+   write(*,'(a)') ' Reading scGW_Gitau_sd_bin'
+   read(iunit) ibas
+   read(iunit) ibas
+   do itau=1,ntimes_twice
+    do ibas=1,nBas
+     do jbas=1,nBas
+      read(iunit) val_print_c
+      G_ao_itau_hf(itau,ibas,jbas)=val_print_c
+     enddo
+    enddo
+   enddo
+   close(iunit)
+   open(unit=iunit,form='unformatted',file='scGW_Giw_sd_bin',status='old')
+   write(*,'(a)') ' Reading scGW_Giw_sd_bin'
+   read(iunit) ibas
+   read(iunit) ibas
+   do ifreq=1,nfreqs
+    do ibas=1,nBas
+     do jbas=1,nBas
+      read(iunit) val_print_c
+      G_ao_iw_hf(ifreq,ibas,jbas)=val_print_c
+     enddo
+    enddo
+   enddo
+   close(iunit)
+   open(unit=iunit,form='unformatted',file='scGW_Pao_sd_bin',status='old')
+   write(*,'(a)') ' Reading scGW_Pao_sd_bin'
+   read(iunit) ibas
+   do ibas=1,nBas
+    do jbas=1,nBas
+     read(iunit) val_print_r
+     P_ao_hf(ibas,jbas)=val_print_r
+    enddo
+   enddo
+   close(iunit)
+  endif
 
 end subroutine
