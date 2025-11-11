@@ -1,4 +1,4 @@
-subroutine RGW_QP_graph(doSRG,eta,flow,nBas,nC,nO,nV,nR,nS,eHF,Om,rho,eGWlin,eOld,eGW,Z)
+subroutine R_SOSEX_QP_graph(doSRG,eta,flow,nBas,nC,nO,nV,nR,nS,eHF,Om,rhoL,rhoR,eQPlin,eOld,eQP,Z)
 
 ! Compute the graphical solution of the QP equation
 
@@ -19,9 +19,10 @@ subroutine RGW_QP_graph(doSRG,eta,flow,nBas,nC,nO,nV,nR,nS,eHF,Om,rho,eGWlin,eOl
   double precision,intent(in)   :: flow
   double precision,intent(in)   :: eHF(nBas)
   double precision,intent(in)   :: Om(nS)
-  double precision,intent(in)   :: rho(nBas,nBas,nS)
+  double precision,intent(in)   :: rhoL(nBas,nBas,nS)
+  double precision,intent(in)   :: rhoR(nBas,nBas,nS)
 
-  double precision,intent(in)   :: eGWlin(nBas)
+  double precision,intent(in)   :: eQPlin(nBas)
   double precision,intent(in)   :: eOld(nBas)
 
 ! Local variables
@@ -30,15 +31,15 @@ subroutine RGW_QP_graph(doSRG,eta,flow,nBas,nC,nO,nV,nR,nS,eHF,Om,rho,eGWlin,eOl
   integer                       :: nIt
   integer,parameter             :: maxIt = 64
   double precision,parameter    :: thresh = 1d-6
-  double precision,external     :: RGW_Re_SigC,RGW_Re_dSigC
-  double precision,external     :: RGW_SRG_Re_SigC,RGW_SRG_Re_dSigC
+  double precision,external     :: R_SOSEX_Re_SigC,R_SOSEX_Re_dSigC
+  double precision,external     :: R_SOSEX_SRG_Re_SigC,R_SOSEX_SRG_Re_dSigC
   double precision              :: SigC,dSigC
   double precision              :: f,df
   double precision              :: w
 
 ! Output variables
 
-  double precision,intent(out)  :: eGW(nBas)
+  double precision,intent(out)  :: eQP(nBas)
   double precision,intent(out)  :: Z(nBas)
 
 ! Run Newton's algorithm to find the root
@@ -49,7 +50,7 @@ subroutine RGW_QP_graph(doSRG,eta,flow,nBas,nC,nO,nV,nR,nS,eHF,Om,rho,eGWlin,eOl
 
   do p=nC+1,nBas-nR
 
-    w = eGWlin(p)
+    w = eQPlin(p)
     nIt = 0
     f = 1d0
     
@@ -59,13 +60,13 @@ subroutine RGW_QP_graph(doSRG,eta,flow,nBas,nC,nO,nV,nR,nS,eHF,Om,rho,eGWlin,eOl
 
       if(doSRG) then
 
-        SigC  = RGW_SRG_Re_SigC(p,w,flow,nBas,nC,nO,nV,nR,nS,eOld,Om,rho)
-        dSigC = RGW_SRG_Re_dSigC(p,w,flow,nBas,nC,nO,nV,nR,nS,eOld,Om,rho)
+        SigC  = R_SOSEX_SRG_Re_SigC(p,w,flow,nBas,nC,nO,nV,nR,nS,eOld,Om,rhoL,rhoR)
+        dSigC = R_SOSEX_SRG_Re_dSigC(p,w,flow,nBas,nC,nO,nV,nR,nS,eOld,Om,rhoL,rhoR)
 
         else
 
-        SigC  = RGW_Re_SigC(p,w,eta,nBas,nC,nO,nV,nR,nS,eOld,Om,rho)
-        dSigC = RGW_Re_dSigC(p,w,eta,nBas,nC,nO,nV,nR,nS,eOld,Om,rho)
+        SigC  = R_SOSEX_Re_SigC(p,w,eta,nBas,nC,nO,nV,nR,nS,eOld,Om,rhoL,rhoR)
+        dSigC = R_SOSEX_Re_dSigC(p,w,eta,nBas,nC,nO,nV,nR,nS,eOld,Om,rhoL,rhoR)
 
       end if
 
@@ -77,15 +78,15 @@ subroutine RGW_QP_graph(doSRG,eta,flow,nBas,nC,nO,nV,nR,nS,eHF,Om,rho,eGWlin,eOl
  
     if(nIt == maxIt) then 
 
-      eGW(p) = eGWlin(p)
-      write(*,'(I5,1X,I3,1X,F15.9,1X,F15.9,1X,F10.6,1X,A12)') p,nIt,eGWlin(p)*HaToeV,eGW(p)*HaToeV,Z(p),'Cvg Failed!'
+      eQP(p) = eQPlin(p)
+      write(*,'(I5,1X,I3,1X,F15.9,1X,F15.9,1X,F10.6,1X,A12)') p,nIt,eQPlin(p)*HaToeV,eQP(p)*HaToeV,Z(p),'Cvg Failed!'
 
     else
 
-      eGW(p) = w
+      eQP(p) = w
       Z(p)   = df
 
-      write(*,'(I5,1X,I3,1X,F15.9,1X,F15.9,1X,F10.6)') p,nIt,eGWlin(p)*HaToeV,eGW(p)*HaToeV,Z(p)
+      write(*,'(I5,1X,I3,1X,F15.9,1X,F15.9,1X,F10.6)') p,nIt,eQPlin(p)*HaToeV,eQP(p)*HaToeV,Z(p)
 
     end if
           
