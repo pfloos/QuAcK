@@ -1,7 +1,7 @@
 subroutine R_ADC(dotest,                                               & 
                  do_IPEA_ADC2,do_IPEA_ADC3,                            &
                  do_ADC_GW,do_ADC_2SOSEX,do_ADC_G3W2,                  &
-                 TDA_W,TDA,singlet,triplet,eta,doSRG,                  & 
+                 TDA_W,TDA,singlet,triplet,linearize,eta,doSRG,        & 
                  nNuc,ZNuc,rNuc,ENuc,nBas,nOrb,nC,nO,nV,nR,nS,         &
                  S,X,T,V,Hc,ERI_AO,ERI_MO,dipole_int_AO,dipole_int_MO, &
                  ERHF,PHF,FHF,cHF,eHF)
@@ -25,6 +25,7 @@ subroutine R_ADC(dotest,                                               &
   logical,intent(in)            :: TDA
   logical,intent(in)            :: singlet
   logical,intent(in)            :: triplet
+  logical,intent(in)            :: linearize
   double precision,intent(in)   :: eta
   logical,intent(in)            :: doSRG
 
@@ -132,6 +133,7 @@ subroutine R_ADC(dotest,                                               &
     if(do_ADC_2SOSEX) then 
       
       call wall_time(start_ADC)
+      call R_2SOSEX(dotest,TDA_W,singlet,triplet,linearize,eta,doSRG,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,ERHF,ERI_MO,dipole_int_MO,eHF)
       call R_ADC_2SOSEX(dotest,TDA_W,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,ERHF,ERI_MO,eHF)
       call wall_time(end_ADC)
     

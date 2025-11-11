@@ -44,7 +44,7 @@ subroutine RGW_QP_graph(doSRG,eta,flow,nBas,nC,nO,nV,nR,nS,eHF,Om,rho,eGWlin,eOl
 ! Run Newton's algorithm to find the root
 
   write(*,*)'-----------------------------------------------------'
-  write(*,'(A5,1X,A3,1X,A15,1X,A15,1X,A10)') 'Orb.','It.','e_GWlin (eV)','e_GW (eV)','Z'
+  write(*,'(A5,1X,A3,1X,A15,1X,A15,1X,A10)') 'Orb.','It.','e_QPlin (eV)','e_QP (eV)','Z'
   write(*,*)'-----------------------------------------------------'
 
   do p=nC+1,nBas-nR

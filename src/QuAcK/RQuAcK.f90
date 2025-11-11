@@ -579,7 +579,7 @@ doGF = doG0F2 .or. doevGF2 .or. doqsGF2 .or. doufG0F02 .or. doG0F3 .or. doevGF3 
     call R_ADC(dotest,                                               &
                do_IPEA_ADC2,do_IPEA_ADC3,                            & 
                do_ADC_GW,do_ADC_2SOSEX,do_ADC_G3W2,                  &
-               TDA_W,TDA,singlet,triplet,eta_GW,reg_GW,              &
+               TDA_W,TDA,singlet,triplet,lin_GW,eta_GW,reg_GW,       &
                nNuc,ZNuc,rNuc,ENuc,nBas,nOrb,nC,nO,nV,nR,nS,         &
                S,X,T,V,Hc,ERI_AO,ERI_MO,dipole_int_AO,dipole_int_MO, &
                ERHF,PHF,FHF,cHF,eHF)
