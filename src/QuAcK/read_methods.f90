@@ -12,7 +12,7 @@ subroutine read_methods(working_dir,                                    &
                         doG0T0pp,doevGTpp,doqsGTpp,doufG0T0pp,          &
                         doG0T0eh,doevGTeh,doqsGTeh,                     &
                         doevParquet,doqsParquet,                        &
-                        do_IPEA_ADC2,do_IPEA_ADC3,                      &
+                        do_IPEA_ADC2,do_IP_ADC2,do_IPEA_ADC3,           &
                         do_SOSEX,do_2SOSEX,do_G3W2,                     &
                         do_ADC_GW,do_ADC_2SOSEX,do_ADC_G3W2,            &
                         doRtest,doUtest,doGtest)
@@ -38,7 +38,7 @@ subroutine read_methods(working_dir,                                    &
   logical,intent(out)           :: doG0T0pp,doevGTpp,doqsGTpp,doufG0T0pp 
   logical,intent(out)           :: doG0T0eh,doevGTeh,doqsGTeh
   logical,intent(out)           :: doevParquet,doqsParquet
-  logical,intent(out)           :: do_IPEA_ADC2,do_IPEA_ADC3
+  logical,intent(out)           :: do_IPEA_ADC2,do_IP_ADC2,do_IPEA_ADC3
   logical,intent(out)           :: do_SOSEX,do_2SOSEX,do_G3W2
   logical,intent(out)           :: do_ADC_GW,do_ADC_2SOSEX,do_ADC_G3W2
 
@@ -46,7 +46,7 @@ subroutine read_methods(working_dir,                                    &
 
 ! Local variables
 
-  character(len=1)              :: ans1,ans2,ans3,ans4,ans5,ans6,ans7,ans8
+  character(len=1)              :: ans1,ans2,ans3,ans4,ans5,ans6,ans7,ans8,ans9
   integer                       :: status
   character(len=256)            :: file_path
 
@@ -232,6 +232,7 @@ subroutine read_methods(working_dir,                                    &
       ! Read ADC methods
      
       do_IPEA_ADC2  = .false. 
+      do_IP_ADC2    = .false. 
       do_IPEA_ADC3  = .false.
       do_SOSEX      = .false. 
       do_2SOSEX     = .false.
@@ -241,15 +242,16 @@ subroutine read_methods(working_dir,                                    &
       do_ADC_G3W2   = .false.
 
       read(1,*)
-      read(1,*) ans1,ans2,ans3,ans4,ans5,ans6,ans7,ans8
+      read(1,*) ans1,ans2,ans3,ans4,ans5,ans6,ans7,ans8,ans9
       if(ans1 == 'T') do_IPEA_ADC2  = .true.
-      if(ans2 == 'T') do_IPEA_ADC3  = .true.
-      if(ans3 == 'T') do_SOSEX      = .true.
-      if(ans4 == 'T') do_2SOSEX     = .true.
-      if(ans5 == 'T') do_G3W2       = .true.
-      if(ans6 == 'T') do_ADC_GW     = .true.
-      if(ans7 == 'T') do_ADC_2SOSEX = .true.
-      if(ans8 == 'T') do_ADC_G3W2   = .true.
+      if(ans2 == 'T') do_IP_ADC2    = .true.
+      if(ans3 == 'T') do_IPEA_ADC3  = .true.
+      if(ans4 == 'T') do_SOSEX      = .true.
+      if(ans5 == 'T') do_2SOSEX     = .true.
+      if(ans6 == 'T') do_G3W2       = .true.
+      if(ans7 == 'T') do_ADC_GW     = .true.
+      if(ans8 == 'T') do_ADC_2SOSEX = .true.
+      if(ans9 == 'T') do_ADC_G3W2   = .true.
 
       ! Read test
       
