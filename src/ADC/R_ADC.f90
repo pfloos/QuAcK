@@ -1,5 +1,6 @@
 subroutine R_ADC(dotest,                                               & 
                  do_IPEA_ADC2,do_IPEA_ADC3,                            &
+                 do_SOSEX,do_2SOSEX,do_G3W2,                           &
                  do_ADC_GW,do_ADC_2SOSEX,do_ADC_G3W2,                  &
                  TDA_W,TDA,singlet,triplet,linearize,eta,doSRG,        & 
                  nNuc,ZNuc,rNuc,ENuc,nBas,nOrb,nC,nO,nV,nR,nS,         &
@@ -17,6 +18,11 @@ subroutine R_ADC(dotest,                                               &
 
   logical,intent(in)            :: do_IPEA_ADC2
   logical,intent(in)            :: do_IPEA_ADC3
+
+  logical,intent(in)            :: do_SOSEX
+  logical,intent(in)            :: do_2SOSEX
+  logical,intent(in)            :: do_G3W2
+
   logical,intent(in)            :: do_ADC_GW
   logical,intent(in)            :: do_ADC_2SOSEX
   logical,intent(in)            :: do_ADC_G3W2
@@ -106,6 +112,54 @@ subroutine R_ADC(dotest,                                               &
     
       t_ADC = end_ADC - start_ADC
       write(*,'(A65,1X,F9.3,A8)') 'Total wall time for IP-ADC(2) = ',t_ADC,' seconds'
+      write(*,*)
+ 
+    end if
+  
+  !----------------------------!
+  ! Perform SOSEX calculation !
+  !----------------------------!
+
+    if(do_SOSEX) then 
+      
+      call wall_time(start_ADC)
+      call R_SOSEX(dotest,TDA_W,singlet,triplet,linearize,eta,doSRG,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,ERHF,ERI_MO,dipole_int_MO,eHF)
+      call wall_time(end_ADC)
+    
+      t_ADC = end_ADC - start_ADC
+      write(*,'(A65,1X,F9.3,A8)') 'Total wall time for SOSEX = ',t_ADC,' seconds'
+      write(*,*)
+ 
+    end if
+  
+  !----------------------------!
+  ! Perform 2SOSEX calculation !
+  !----------------------------!
+
+    if(do_2SOSEX) then 
+      
+      call wall_time(start_ADC)
+      call R_2SOSEX(dotest,TDA_W,singlet,triplet,linearize,eta,doSRG,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,ERHF,ERI_MO,dipole_int_MO,eHF)
+      call wall_time(end_ADC)
+    
+      t_ADC = end_ADC - start_ADC
+      write(*,'(A65,1X,F9.3,A8)') 'Total wall time for 2SOSEX = ',t_ADC,' seconds'
+      write(*,*)
+ 
+    end if
+  
+  !--------------------------!
+  ! Perform G3W2 calculation !
+  !--------------------------!
+
+    if(do_G3W2) then 
+      
+      call wall_time(start_ADC)
+!     call R_G3W2(dotest,TDA_W,singlet,triplet,linearize,eta,doSRG,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,ERHF,ERI_MO,dipole_int_MO,eHF)
+      call wall_time(end_ADC)
+    
+      t_ADC = end_ADC - start_ADC
+      write(*,'(A65,1X,F9.3,A8)') 'Total wall time for G3W2 = ',t_ADC,' seconds'
       write(*,*)
  
     end if

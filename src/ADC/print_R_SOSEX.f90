@@ -1,6 +1,6 @@
-subroutine print_R_2SOSEX(nOrb,nC,nO,nV,nR,eHF,ENuc,ERHF,SigC,Z,eQP,EcRPA,EcGM)
+subroutine print_R_SOSEX(nOrb,nC,nO,nV,nR,eHF,ENuc,ERHF,SigC,Z,eQP,EcRPA,EcGM)
 
-! Print one-electron energies and other stuff for 2SOSEX-psd
+! Print one-electron energies and other stuff for SOSEX
 
   implicit none
   include 'parameters.h'
@@ -31,7 +31,7 @@ subroutine print_R_2SOSEX(nOrb,nC,nO,nV,nR,eHF,ENuc,ERHF,SigC,Z,eQP,EcRPA,EcGM)
 ! Dump results
 
   write(*,*)'-------------------------------------------------------------------------------'
-  write(*,*)' 2SOSEX@RHF calculation '
+  write(*,*)' SOSEX@RHF calculation '
   write(*,*)'-------------------------------------------------------------------------------'
   write(*,'(1X,A1,1X,A3,1X,A1,1X,A15,1X,A1,1X,A15,1X,A1,1X,A15,1X,A1,1X,A15,1X,A1,1X)') &
             '|','#','|','e_HF (eV)','|','Sig_QP (eV)','|','Z','|','e_QP (eV)','|'
@@ -57,14 +57,14 @@ subroutine print_R_2SOSEX(nOrb,nC,nO,nV,nR,eHF,ENuc,ERHF,SigC,Z,eQP,EcRPA,EcGM)
   end do
 
   write(*,*)'-------------------------------------------------------------------------------'
-  write(*,'(2X,A60,F15.6,A3)') '2SOSEX@RHF HOMO      energy = ',eHOMO*HaToeV,' eV'
-  write(*,'(2X,A60,F15.6,A3)') '2SOSEX@RHF LUMO      energy = ',eLUMO*HaToeV,' eV'
-  write(*,'(2X,A60,F15.6,A3)') '2SOSEX@RHF HOMO-LUMO gap    = ',Gap*HaToeV,' eV'
+  write(*,'(2X,A60,F15.6,A3)') 'SOSEX@RHF HOMO      energy = ',eHOMO*HaToeV,' eV'
+  write(*,'(2X,A60,F15.6,A3)') 'SOSEX@RHF LUMO      energy = ',eLUMO*HaToeV,' eV'
+  write(*,'(2X,A60,F15.6,A3)') 'SOSEX@RHF HOMO-LUMO gap    = ',Gap*HaToeV,' eV'
   write(*,*)'-------------------------------------------------------------------------------'
-  write(*,'(2X,A60,F15.6,A3)') 'phRPA@2SOSEX@RHF total       energy = ',ENuc + ERHF + EcRPA,' au'
-  write(*,'(2X,A60,F15.6,A3)') 'phRPA@2SOSEX@RHF correlation energy = ',EcRPA,' au'
-  write(*,'(2X,A60,F15.6,A3)') '   GM@2SOSEX@RHF total       energy = ',ENuc + ERHF + EcGM,' au'
-  write(*,'(2X,A60,F15.6,A3)') '   GM@2SOSEX@RHF correlation energy = ',EcGM,' au'
+  write(*,'(2X,A60,F15.6,A3)') 'phRPA@SOSEX@RHF total       energy = ',ENuc + ERHF + EcRPA,' au'
+  write(*,'(2X,A60,F15.6,A3)') 'phRPA@SOSEX@RHF correlation energy = ',EcRPA,' au'
+  write(*,'(2X,A60,F15.6,A3)') '   GM@SOSEX@RHF total       energy = ',ENuc + ERHF + EcGM,' au'
+  write(*,'(2X,A60,F15.6,A3)') '   GM@SOSEX@RHF correlation energy = ',EcGM,' au'
   write(*,*)'-------------------------------------------------------------------------------'
   write(*,*)
 

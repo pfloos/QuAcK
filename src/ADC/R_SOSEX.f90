@@ -1,6 +1,6 @@
-subroutine R_2SOSEX(dotest,TDA_W,singlet,triplet,linearize,eta,doSRG,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,dipole_int,eHF)
+subroutine R_SOSEX(dotest,TDA_W,singlet,triplet,linearize,eta,doSRG,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,dipole_int,eHF)
 
-! Perform single-short 2SOSEX-psd calculation
+! Perform single-short SOSEX calculation
 
   implicit none
   include 'parameters.h'
@@ -46,7 +46,8 @@ subroutine R_2SOSEX(dotest,TDA_W,singlet,triplet,linearize,eta,doSRG,nBas,nOrb,n
   double precision,allocatable  :: Om(:)
   double precision,allocatable  :: XpY(:,:)
   double precision,allocatable  :: XmY(:,:)
-  double precision,allocatable  :: rho(:,:,:)
+  double precision,allocatable  :: rhoL(:,:,:)
+  double precision,allocatable  :: rhoR(:,:,:)
 
   double precision,allocatable  :: eQPlin(:)
   double precision,allocatable  :: eQP(:)
@@ -58,9 +59,9 @@ subroutine R_2SOSEX(dotest,TDA_W,singlet,triplet,linearize,eta,doSRG,nBas,nOrb,n
 ! Hello world
 
   write(*,*)
-  write(*,*)'*********************************'
-  write(*,*)'* Restricted 2SOSEX Calculation *'
-  write(*,*)'*********************************'
+  write(*,*)'********************************'
+  write(*,*)'* Restricted SOSEX Calculation *'
+  write(*,*)'********************************'
   write(*,*)
 
 ! Spin manifold and TDA for dynamical screening
@@ -74,14 +75,14 @@ subroutine R_2SOSEX(dotest,TDA_W,singlet,triplet,linearize,eta,doSRG,nBas,nOrb,n
 
   if(doSRG) then
 
-    write(*,*) '*** SRG regularized 2SOSEX scheme ***'
+    write(*,*) '*** SRG regularized SOSEX scheme ***'
     write(*,*)
 
   end if
 
 ! Memory allocation
 
-  allocate(Aph(nS,nS),Bph(nS,nS),SigC(nOrb),Z(nOrb),Om(nS),XpY(nS,nS),XmY(nS,nS),rho(nOrb,nOrb,nS), & 
+  allocate(Aph(nS,nS),Bph(nS,nS),SigC(nOrb),Z(nOrb),Om(nS),XpY(nS,nS),XmY(nS,nS),rhoL(nOrb,nOrb,nS),rhoR(nOrb,nOrb,nS), & 
            eQP(nOrb),eQPlin(nOrb))
 
 !-------------------!
@@ -99,19 +100,19 @@ subroutine R_2SOSEX(dotest,TDA_W,singlet,triplet,linearize,eta,doSRG,nBas,nOrb,n
 ! Compute spectral weights !
 !--------------------------!
 
-  call R_2SOSEX_excitation_density(nOrb,nC,nO,nR,nS,eHF,Om,ERI,XpY,rho)
+  call R_SOSEX_excitation_density(nOrb,nC,nO,nR,nS,eHF,Om,ERI,XpY,rhoL,rhoR)
 
-!----------------------------!
-! Compute 2SOSEX self-energy !
-!----------------------------!
+!---------------------------!
+! Compute SOSEX self-energy !
+!---------------------------!
 
   if(doSRG) then 
 
-    call RGW_SRG_self_energy_diag(flow,nBas,nOrb,nC,nO,nV,nR,nS,eHF,Om,rho,EcGM,SigC,Z)
+    call R_SOSEX_SRG_self_energy_diag(flow,nBas,nOrb,nC,nO,nV,nR,nS,eHF,Om,rhoL,rhoR,EcGM,SigC,Z)
 
   else
 
-    call RGW_self_energy_diag(eta,nBas,nOrb,nC,nO,nV,nR,nS,eHF,Om,rho,EcGM,SigC,Z)
+    call R_SOSEX_self_energy_diag(eta,nBas,nOrb,nC,nO,nV,nR,nS,eHF,Om,rhoL,rhoR,EcGM,SigC,Z)
 
   end if
   
@@ -135,7 +136,7 @@ subroutine R_2SOSEX(dotest,TDA_W,singlet,triplet,linearize,eta,doSRG,nBas,nOrb,n
      write(*,*) ' *** Quasiparticle energies obtained by root search *** '
      write(*,*)
 
-     call RGW_QP_graph(doSRG,eta,flow,nOrb,nC,nO,nV,nR,nS,eHF,Om,rho,eQPlin,eHF,eQP,Z)
+     call R_SOSEX_QP_graph(doSRG,eta,flow,nOrb,nC,nO,nV,nR,nS,eHF,Om,rhoL,rhoR,eQPlin,eHF,eQP,Z)
 
 
   end if
@@ -155,16 +156,16 @@ subroutine R_2SOSEX(dotest,TDA_W,singlet,triplet,linearize,eta,doSRG,nBas,nOrb,n
 ! Dump results !
 !--------------!
 
-  call print_R_2SOSEX(nOrb,nC,nO,nV,nR,eHF,ENuc,ERHF,SigC,Z,eQP,EcRPA,EcGM)
+  call print_R_SOSEX(nOrb,nC,nO,nV,nR,eHF,ENuc,ERHF,SigC,Z,eQP,EcRPA,EcGM)
   
   
 ! Testing zone
 
   if(dotest) then
 
-    call dump_test_value('R','2SOSEX correlation energy',EcRPA)
-    call dump_test_value('R','2SOSEX HOMO energy',eQP(nO))
-    call dump_test_value('R','2SOSEX LUMO energy',eQP(nO+1))
+    call dump_test_value('R','SOSEX correlation energy',EcRPA)
+    call dump_test_value('R','SOSEX HOMO energy',eQP(nO))
+    call dump_test_value('R','SOSEX LUMO energy',eQP(nO+1))
 
   end if
 
