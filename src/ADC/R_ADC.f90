@@ -157,7 +157,7 @@ subroutine R_ADC(dotest,                                               &
     if(do_G3W2) then 
       
       call wall_time(start_ADC)
-!     call R_G3W2(dotest,TDA_W,singlet,triplet,linearize,eta,doSRG,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,ERHF,ERI_MO,dipole_int_MO,eHF)
+      call R_G3W2(dotest,TDA_W,singlet,triplet,linearize,eta,doSRG,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,ERHF,ERI_MO,dipole_int_MO,eHF)
       call wall_time(end_ADC)
     
       t_ADC = end_ADC - start_ADC
