@@ -81,12 +81,16 @@ subroutine OORG0W0(dotest,doACFDT,exchange_kernel,doXBS,dophBSE,dophBSE2,TDA_W,T
   double precision,allocatable  :: lampl(:,:)
   double precision,allocatable  :: rp(:)
   double precision,allocatable  :: lp(:)
+  
+  double precision,allocatable  :: ERI_AO_AS(:,:,:,:)
+  double precision,allocatable  :: ERI_MO_AS(:,:,:,:)
 
   double precision,allocatable  :: eGWlin(:)
   double precision,allocatable  :: eGW(:)
  
   double precision              :: OOConv
   double precision              :: thresh = 1.0e-5
+  integer                       :: maxOOi = 256
   integer                       :: OOi
   double precision,allocatable  :: h(:,:)
   double precision,allocatable  :: rdm1(:,:)
@@ -135,7 +139,27 @@ subroutine OORG0W0(dotest,doACFDT,exchange_kernel,doXBS,dophBSE,dophBSE2,TDA_W,T
 
   isp_W = 1
   dRPA_W = .true.
- 
+  
+   if(.not. dRPA_W) then
+      write(*,*) 'xRPA instead of RPA'
+      write(*,*)
+      ! Antisymmetrize 2-electron integrals.
+      allocate(ERI_AO_AS(nBas,nBas,nBas,nBas),ERI_MO_AS(nOrb,nOrb,nOrb,nOrb))
+      ERI_AO_AS(:,:,:,:) = 0d0
+      ERI_MO_AS(:,:,:,:) = 0d0
+      do p=1,N
+        do q=1,N
+          do r=1,N
+            do s=1,N
+              ERI_AO_AS(p,q,r,s) = ERI_AO(p,q,r,s) - 0.5d0*ERI_AO(p,q,s,r)
+            enddo
+          enddo
+        enddo
+      enddo
+   else
+      allocate(ERI_AO_AS(1,1,1,1),ERI_MO_AS(1,1,1,1)) 
+   endif
+
    if(TDA_W) then 
      write(*,*) 'Tamm-Dancoff approximation for dynamical screening!'
      write(*,*)
@@ -183,7 +207,8 @@ subroutine OORG0W0(dotest,doACFDT,exchange_kernel,doXBS,dophBSE,dophBSE2,TDA_W,T
   
   ! Transform integrals (afterwards this is done in orbital optimization)
   call AOtoMO(nBas,nOrb,c,Hc,h)
-  call AOtoMO_ERI_RHF(nBas,nOrb,c,ERI_AO,ERI_MO)
+  call AOtoMO_ERI_RHF(nBas,nOrb,c,ERI_AO,ERI_MO) 
+  if(.not. dRPA_W) call AOtoMO_ERI_RHF(nBas,nOrb,c,ERI_AO_AS,ERI_MO_AS)
 
   write(*,*) "Start orbital optimization loop..."
 
@@ -232,14 +257,19 @@ subroutine OORG0W0(dotest,doACFDT,exchange_kernel,doXBS,dophBSE,dophBSE2,TDA_W,T
     call RG0W0_rdm2_rpa(O,V,N,nS,lampl,rampl,lp,rp,lambda,t,rdm1_hf,rdm1_rpa,rdm2_rpa)
     rdm2 = rdm2_hf + rdm2_rpa
     call energy_from_rdm(N,h,ERI_MO,rdm1_hf,rdm2_hf,EHF_rdm,.false.)
-    call energy_from_rdm(N,F,ERI_MO,rdm1_rpa,rdm2_rpa,EcRPA_rdm,.false.)
+    if(dRPA_W) then
+      call energy_from_rdm(N,F,ERI_MO,rdm1_rpa,rdm2_rpa,EcRPA_rdm,.false.)
+    else
+      call energy_from_rdm(N,F,ERI_MO_AS,rdm1_rpa,rdm2_rpa,EcRPA_rdm,.false.)
+    endif
     Emu = EcRPA + EHF_rdm
     write(*,*) "ERHF = ", ERHF
     write(*,*) "ERHF + EcRPA@HF = ", ERHF + EcRPA_HF
     write(*,*) "EcRPA = ", EcRPA_rdm
+    write(*,*) "EcRPA (no rdm) = ", EcRPA
     write(*,*) "ERPA = ", EcRPA_rdm + EHF_rdm
-
-    call R_optimize_orbitals(diagHess,nBas,nOrb,nV,nR,nC,nO,N,Nsq,O,V,ERI_AO,ERI_MO,Hc,h,F,&
+    
+    call R_optimize_orbitals(diagHess,dRPA_W,nBas,nOrb,nV,nR,nC,nO,N,Nsq,O,V,ERI_AO,ERI_AO_AS,ERI_MO,ERI_MO_AS,Hc,h,F,&
                              rdm1_hf,rdm1_rpa,rdm2_hf,rdm2_rpa,c,OOConv)
     
     write(*,*) '----------------------------------------------------------'
@@ -253,8 +283,11 @@ subroutine OORG0W0(dotest,doACFDT,exchange_kernel,doXBS,dophBSE,dophBSE2,TDA_W,T
  !   if (OOi==1) then
  !     OOConv = 0d0 ! remove only for debugging
  !   end if
-
     OOi = OOi + 1 
+    if(OOi > maxOOi) then
+            write(*,*) "Orbital optimiaztion failed !!!"
+            OOConv = 0d0
+    endif
   end do
   cHF(:,:) = c(:,:)
   
