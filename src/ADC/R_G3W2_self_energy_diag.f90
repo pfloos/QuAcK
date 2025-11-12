@@ -1,4 +1,4 @@
-subroutine R_G3W2_self_energy_diag(eta,nBas,nOrb,nC,nO,nV,nR,nS,e,Om,rho,EcGM,Sig,Z)
+subroutine R_G3W2_self_energy_diag(eta,nBas,nOrb,nC,nO,nV,nR,nS,e,Om,rho,ERI,EcGM,Sig,Z)
 
 ! Compute diagonal of the correlation part of the self-energy and the renormalization factor
 ! for the G3W2 approximation
@@ -19,11 +19,15 @@ subroutine R_G3W2_self_energy_diag(eta,nBas,nOrb,nC,nO,nV,nR,nS,e,Om,rho,EcGM,Si
   double precision,intent(in)   :: e(nOrb)
   double precision,intent(in)   :: Om(nS)
   double precision,intent(in)   :: rho(nOrb,nOrb,nS)
+  double precision,intent(in)   :: ERI(nOrb,nOrb,nOrb,nOrb)
 
 ! Local variables
 
-  integer                       :: p,i,j,k,a,b,c,t,s
-  double precision              :: num,dem1,dem2,dem3,dem4
+  integer                       :: p
+  integer                       :: i,j,k
+  integer                       :: a,b,c
+  integer                       :: m,t,s
+  double precision              :: num,dem,dem1,dem2,dem3,dem4
 
 ! Output variables
 
@@ -36,6 +40,190 @@ subroutine R_G3W2_self_energy_diag(eta,nBas,nOrb,nC,nO,nV,nR,nS,e,Om,rho,EcGM,Si
   Sig(:) = 0d0
   Z(:)   = 0d0
   EcGM   = 0d0
+
+!----------------!
+! GW self-energy !
+!----------------!
+
+! o
+
+  do p=nC+1,nOrb-nR
+    do i=nC+1,nO
+      do m=1,nS
+
+        num = 2d0*rho(p,i,m)*rho(p,i,m)
+        dem = e(p) - e(i) + Om(m)
+        Sig(p) = Sig(p) + num/dem
+        Z(p)   = Z(p)   - num/(dem*dem)
+
+      end do
+    end do
+  end do
+
+! v
+
+  do p=nC+1,nOrb-nR
+    do a=nO+1,nOrb-nR
+      do m=1,nS
+
+        num = 2d0*rho(p,a,m)*rho(p,a,m)
+        dem = e(p) - e(a) - Om(m)
+        Sig(p) = Sig(p) + num/dem
+        Z(p)   = Z(p)   - num/(dem*dem)
+
+      end do
+    end do
+  end do
+
+!-----------------!
+! SOX self-energy !
+!-----------------!
+
+! ovo
+
+  do p=nC+1,nOrb-nR
+    do i=nC+1,nO
+    do b=nO+1,nOrb-nR
+    do k=nC+1,nO
+
+      num = - ERI(p,b,i,k)*ERI(p,b,k,i)
+      dem = e(p) - e(i) + e(b) - e(k) 
+      Sig(p) = Sig(p) + num/dem
+      Z(p)   = Z(p)   - num/(dem*dem)
+
+    end do
+    end do
+    end do
+  end do
+
+! vov
+
+  do p=nC+1,nOrb-nR
+    do a=nO+1,nOrb-nR
+    do j=nC+1,nO
+    do c=nO+1,nOrb-nR
+
+      num = - ERI(p,j,a,c)*ERI(p,j,c,a)
+      dem = e(p) - e(a) + e(j) - e(c) 
+      Sig(p) = Sig(p) + num/dem
+      Z(p)   = Z(p)   - num/(dem*dem)
+
+    end do
+    end do
+    end do
+  end do
+
+!-------------------!
+! SOSEX self-energy !
+!-------------------!
+
+! ovo
+
+  do p=nC+1,nOrb-nR
+    do i=nC+1,nO
+    do b=nO+1,nOrb-nR
+    do k=nC+1,nO
+      do s=1,nS
+
+        num = 4d0*ERI(p,b,i,k)*rho(p,k,s)*rho(i,b,s)
+       
+        dem1 = e(p) - e(i) + e(b) - e(k)
+        dem2 = e(b) - e(i) + Om(s)
+       
+        Sig(p) = Sig(p) + num/(dem1*dem2)
+       
+        Z(p) = Z(p) - num/(dem1*dem1*dem2)
+       
+        dem1 = e(p) - e(i) + e(b) - e(k)
+        dem2 = e(p) - e(k) + Om(s)
+       
+        Sig(p) = Sig(p) + num/(dem1*dem2)
+       
+        Z(p) = Z(p) - num/(dem1*dem1*dem2) &
+                    - num/(dem1*dem2*dem2)
+
+      end do
+    end do
+    end do
+    end do
+  end do
+
+! vov
+
+  do p=nC+1,nOrb-nR
+    do a=nO+1,nOrb-nR
+    do j=nC+1,nO
+    do c=nO+1,nOrb-nR
+      do s=1,nS
+
+        num = 4d0*ERI(p,j,a,c)*rho(p,c,s)*rho(a,j,s)
+       
+        dem1 = e(p) - e(a) + e(j) - e(c)
+        dem2 = e(a) - e(j) + Om(s)
+       
+        Sig(p) = Sig(p) + num/(dem1*dem2)
+       
+        Z(p) = Z(p) - num/(dem1*dem1*dem2)
+       
+        dem1 = e(p) - e(a) + e(j) - e(c)
+        dem2 = e(p) - e(c) - Om(s)
+       
+        Sig(p) = Sig(p) - num/(dem1*dem2)
+       
+        Z(p) = Z(p) - num/(dem1*dem1*dem2) &
+                    - num/(dem1*dem2*dem2)
+
+      end do
+    end do
+    end do
+    end do
+  end do
+
+! voo
+
+  do p=nC+1,nOrb-nR
+    do a=nO+1,nOrb-nR
+    do j=nC+1,nO
+    do k=nC+1,nO
+      do s=1,nS
+
+        num = 4d0*ERI(p,j,a,k)*rho(p,k,s)*rho(a,j,s)
+       
+        dem1 = e(a) - e(j) + Om(s)
+        dem2 = e(p) - e(k) + Om(s)
+       
+        Sig(p) = Sig(p) + num/(dem1*dem2)
+       
+        Z(p) = Z(p) - num/(dem1*dem2*dem2)
+       
+      end do
+    end do
+    end do
+    end do
+  end do
+
+! ovv
+
+  do p=nC+1,nOrb-nR
+    do i=nC+1,nO
+    do b=nO+1,nOrb-nR
+    do c=nO+1,nOrb-nR
+      do s=1,nS
+
+        num = 4d0*ERI(p,b,i,c)*rho(p,c,s)*rho(i,b,s)
+       
+        dem1 = e(b) - e(i) + Om(s)
+        dem2 = e(p) - e(c) - Om(s)
+       
+        Sig(p) = Sig(p) + num/(dem1*dem2)
+       
+        Z(p) = Z(p) - num/(dem1*dem2*dem2)
+       
+      end do
+    end do
+    end do
+    end do
+  end do
 
 !------------------!
 ! G3W2 self-energy !
@@ -57,6 +245,10 @@ subroutine R_G3W2_self_energy_diag(eta,nBas,nOrb,nC,nO,nV,nR,nS,e,Om,rho,EcGM,Si
         dem3 = e(p) - e(k) + Om(s)
 
         Sig(p) = Sig(p) + num/(dem1*dem2*dem3)
+
+        Z(p) = Z(p) - num/(dem1*dem1*dem2*dem3) &
+                    - num/(dem1*dem2*dem2*dem3) &
+                    - num/(dem1*dem2*dem3*dem3)  
 
       end do
       end do
@@ -82,6 +274,11 @@ subroutine R_G3W2_self_energy_diag(eta,nBas,nOrb,nC,nO,nV,nR,nS,e,Om,rho,EcGM,Si
 
         Sig(p) = Sig(p) + num/(dem1*dem2*dem3)
 
+        Z(p) = Z(p) - num/(dem1*dem1*dem2*dem3) &
+                    - num/(dem1*dem2*dem2*dem3) &
+                    - num/(dem1*dem2*dem3*dem3)  
+
+
       end do
       end do
     end do
@@ -106,12 +303,19 @@ subroutine R_G3W2_self_energy_diag(eta,nBas,nOrb,nC,nO,nV,nR,nS,e,Om,rho,EcGM,Si
 
         Sig(p) = Sig(p) + 2d0*num/(dem1*dem2*dem3)
 
+        Z(p) = Z(p) - 2d0*num/(dem1*dem1*dem2*dem3) &
+                    - 2d0*num/(dem1*dem2*dem3*dem3)  
+                    
+
         dem1 = e(p) - e(k) + Om(s)
         dem2 = Om(s) + e(a) - e(j)
         dem3 = e(p) - e(j) + Om(s) + Om(t)
 
         Sig(p) = Sig(p) - 2d0*num/(dem1*dem2*dem3)
 
+        Z(p) = Z(p) + 2d0*num/(dem1*dem1*dem2*dem3) &
+                    + 2d0*num/(dem1*dem2*dem3*dem3)
+                    
       end do
       end do
     end do
@@ -136,12 +340,18 @@ subroutine R_G3W2_self_energy_diag(eta,nBas,nOrb,nC,nO,nV,nR,nS,e,Om,rho,EcGM,Si
 
         Sig(p) = Sig(p) - 2d0*num/(dem1*dem2*dem3)
 
+        Z(p) = Z(p) + 2d0*num/(dem1*dem1*dem2*dem3) &
+                    + 2d0*num/(dem1*dem2*dem3*dem3)
+                    
         dem1 = e(p) - e(c) - Om(s)
         dem2 = Om(s) - e(i) + e(b)
         dem3 = e(p) - e(b) - Om(s) - Om(t)
 
         Sig(p) = Sig(p) + 2d0*num/(dem1*dem2*dem3)
 
+        Z(p) = Z(p) - 2d0*num/(dem1*dem1*dem2*dem3) &
+                    - 2d0*num/(dem1*dem2*dem3*dem3)
+                    
       end do
       end do
     end do
@@ -167,17 +377,27 @@ subroutine R_G3W2_self_energy_diag(eta,nBas,nOrb,nC,nO,nV,nR,nS,e,Om,rho,EcGM,Si
 
         Sig(p) = Sig(p) + (2d0*e(b) - e(i) - e(k) + Om(t) + Om(s))*num/(dem1*dem2*dem3*dem4)
 
+        Z(p) = Z(p) - (2d0*e(b) - e(i) - e(k) + Om(t) + Om(s))*num/(dem1*dem1*dem2*dem3*dem4) &
+                    - (2d0*e(b) - e(i) - e(k) + Om(t) + Om(s))*num/(dem1*dem2*dem2*dem3*dem4)  
+                    
         dem1 = e(p) - e(i) - e(k) + e(b)
         dem2 = Om(t) + e(b) - e(k) 
         dem3 = e(p) - e(k) + Om(s) 
 
         Sig(p) = Sig(p) - 2d0*num/(dem1*dem2*dem3)
 
+        Z(p) = Z(p) + 2d0*num/(dem1*dem1*dem2*dem3) &
+                    + 2d0*num/(dem1*dem2*dem3*dem3) 
+                    
         dem1 = e(p) - e(i) - e(k) + e(b)
         dem2 = e(p) - e(i) + Om(t)
         dem3 = e(p) - e(k) + Om(s) 
 
         Sig(p) = Sig(p) - 1d0*num/(dem1*dem2*dem3)
+
+        Z(p) = Z(p) + num/(dem1*dem1*dem2*dem3) &
+                    + num/(dem1*dem2*dem2*dem3) &
+                    + num/(dem1*dem2*dem3*dem3) 
 
       end do
       end do
@@ -204,17 +424,27 @@ subroutine R_G3W2_self_energy_diag(eta,nBas,nOrb,nC,nO,nV,nR,nS,e,Om,rho,EcGM,Si
 
         Sig(p) = Sig(p) + (2d0*e(j) - e(a) - e(c) - Om(t) - Om(s))*num/(dem1*dem2*dem3*dem4)
 
+        Z(p) = Z(p) - (2d0*e(j) - e(a) - e(c) - Om(t) - Om(s))*num/(dem1*dem1*dem2*dem3*dem4) &
+                    - (2d0*e(j) - e(a) - e(c) - Om(t) - Om(s))*num/(dem1*dem2*dem2*dem3*dem4)
+                    
         dem1 = e(p) - e(a) - e(c) + e(j)
         dem2 = Om(t) - e(j) + e(c) 
         dem3 = e(p) - e(c) - Om(s) 
 
         Sig(p) = Sig(p) + 2d0*num/(dem1*dem2*dem3)
 
+        Z(p) = Z(p) - 2d0*num/(dem1*dem1*dem2*dem3) &
+                    - 2d0*num/(dem1*dem2*dem3*dem3) 
+                    
         dem1 = e(p) - e(a) - e(c) + e(j)
         dem2 = e(p) - e(a) - Om(t)
         dem3 = e(p) - e(c) - Om(s) 
 
         Sig(p) = Sig(p) - 1d0*num/(dem1*dem2*dem3)
+
+        Z(p) = Z(p) + num/(dem1*dem1*dem2*dem3) &
+                    + num/(dem1*dem2*dem2*dem3) &
+                    + num/(dem1*dem2*dem3*dem3) 
 
       end do
       end do

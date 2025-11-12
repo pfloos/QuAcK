@@ -99,7 +99,7 @@ subroutine R_G3W2(dotest,TDA_W,singlet,triplet,linearize,eta,doSRG,nBas,nOrb,nC,
 ! Compute spectral weights !
 !--------------------------!
 
-  call RGW_excitation_density(nOrb,nC,nO,nR,nS,eHF,Om,ERI,XpY,rho)
+  call RGW_excitation_density(nOrb,nC,nO,nR,nS,ERI,XpY,rho)
 
 !------------------------!
 ! Compute GW self-energy !
@@ -111,7 +111,7 @@ subroutine R_G3W2(dotest,TDA_W,singlet,triplet,linearize,eta,doSRG,nBas,nOrb,nC,
 
   else
 
-    call R_G3W2_self_energy_diag(eta,nBas,nOrb,nC,nO,nV,nR,nS,eHF,Om,rho,EcGM,SigC,Z)
+    call R_G3W2_self_energy_diag(eta,nBas,nOrb,nC,nO,nV,nR,nS,eHF,Om,rho,ERI,EcGM,SigC,Z)
 
   end if
   
@@ -135,7 +135,7 @@ subroutine R_G3W2(dotest,TDA_W,singlet,triplet,linearize,eta,doSRG,nBas,nOrb,nC,
      write(*,*) ' *** Quasiparticle energies obtained by root search *** '
      write(*,*)
 
-!    call R_G3W2_QP_graph(doSRG,eta,flow,nOrb,nC,nO,nV,nR,nS,eHF,Om,rho,eQPlin,eHF,eQP,Z)
+     call R_G3W2_QP_graph(doSRG,eta,flow,nBas,nOrb,nC,nO,nV,nR,nS,eHF,Om,rho,ERI,eQPlin,eHF,eQP,Z)
 
 
   end if
