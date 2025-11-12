@@ -131,7 +131,7 @@ subroutine R_G3W2_self_energy_diag_omega(p,w,eta,nBas,nOrb,nC,nO,nV,nR,nS,e,Om,r
       Sig = Sig + num/(dem1*dem2)
      
       Z = Z - num/(dem1*dem1*dem2) &
-                  - num/(dem1*dem2*dem2)
+            - num/(dem1*dem2*dem2)
 
     end do
   end do
@@ -160,7 +160,7 @@ subroutine R_G3W2_self_energy_diag_omega(p,w,eta,nBas,nOrb,nC,nO,nV,nR,nS,e,Om,r
       Sig = Sig - num/(dem1*dem2)
      
       Z = Z - num/(dem1*dem1*dem2) &
-                  - num/(dem1*dem2*dem2)
+            - num/(dem1*dem2*dem2)
 
     end do
   end do
@@ -230,8 +230,8 @@ subroutine R_G3W2_self_energy_diag_omega(p,w,eta,nBas,nOrb,nC,nO,nV,nR,nS,e,Om,r
       Sig = Sig + num/(dem1*dem2*dem3)
 
       Z = Z - num/(dem1*dem1*dem2*dem3) &
-                  - num/(dem1*dem2*dem2*dem3) &
-                  - num/(dem1*dem2*dem3*dem3)  
+            - num/(dem1*dem2*dem2*dem3) &
+            - num/(dem1*dem2*dem3*dem3)  
 
     end do
     end do
@@ -256,8 +256,8 @@ subroutine R_G3W2_self_energy_diag_omega(p,w,eta,nBas,nOrb,nC,nO,nV,nR,nS,e,Om,r
       Sig = Sig + num/(dem1*dem2*dem3)
 
       Z = Z - num/(dem1*dem1*dem2*dem3) &
-                  - num/(dem1*dem2*dem2*dem3) &
-                  - num/(dem1*dem2*dem3*dem3)  
+            - num/(dem1*dem2*dem2*dem3) &
+            - num/(dem1*dem2*dem3*dem3)  
 
 
     end do
@@ -283,7 +283,7 @@ subroutine R_G3W2_self_energy_diag_omega(p,w,eta,nBas,nOrb,nC,nO,nV,nR,nS,e,Om,r
       Sig = Sig + 2d0*num/(dem1*dem2*dem3)
 
       Z = Z - 2d0*num/(dem1*dem1*dem2*dem3) &
-                  - 2d0*num/(dem1*dem2*dem3*dem3)  
+            - 2d0*num/(dem1*dem2*dem3*dem3)  
                   
 
       dem1 = w - e(k) + Om(s)
@@ -293,7 +293,7 @@ subroutine R_G3W2_self_energy_diag_omega(p,w,eta,nBas,nOrb,nC,nO,nV,nR,nS,e,Om,r
       Sig = Sig - 2d0*num/(dem1*dem2*dem3)
 
       Z = Z + 2d0*num/(dem1*dem1*dem2*dem3) &
-                  + 2d0*num/(dem1*dem2*dem3*dem3)
+            + 2d0*num/(dem1*dem2*dem3*dem3)
                   
     end do
     end do
@@ -318,7 +318,7 @@ subroutine R_G3W2_self_energy_diag_omega(p,w,eta,nBas,nOrb,nC,nO,nV,nR,nS,e,Om,r
       Sig = Sig - 2d0*num/(dem1*dem2*dem3)
 
       Z = Z + 2d0*num/(dem1*dem1*dem2*dem3) &
-                  + 2d0*num/(dem1*dem2*dem3*dem3)
+            + 2d0*num/(dem1*dem2*dem3*dem3)
                   
       dem1 = w - e(c) - Om(s)
       dem2 = Om(s) - e(i) + e(b)
@@ -327,7 +327,7 @@ subroutine R_G3W2_self_energy_diag_omega(p,w,eta,nBas,nOrb,nC,nO,nV,nR,nS,e,Om,r
       Sig = Sig + 2d0*num/(dem1*dem2*dem3)
 
       Z = Z - 2d0*num/(dem1*dem1*dem2*dem3) &
-                  - 2d0*num/(dem1*dem2*dem3*dem3)
+            - 2d0*num/(dem1*dem2*dem3*dem3)
                   
     end do
     end do
@@ -353,7 +353,7 @@ subroutine R_G3W2_self_energy_diag_omega(p,w,eta,nBas,nOrb,nC,nO,nV,nR,nS,e,Om,r
       Sig = Sig + (2d0*e(b) - e(i) - e(k) + Om(t) + Om(s))*num/(dem1*dem2*dem3*dem4)
 
       Z = Z - (2d0*e(b) - e(i) - e(k) + Om(t) + Om(s))*num/(dem1*dem1*dem2*dem3*dem4) &
-                  - (2d0*e(b) - e(i) - e(k) + Om(t) + Om(s))*num/(dem1*dem2*dem2*dem3*dem4)  
+            - (2d0*e(b) - e(i) - e(k) + Om(t) + Om(s))*num/(dem1*dem2*dem2*dem3*dem4)  
                   
       dem1 = w - e(i) - e(k) + e(b)
       dem2 = Om(t) + e(b) - e(k) 
@@ -362,7 +362,7 @@ subroutine R_G3W2_self_energy_diag_omega(p,w,eta,nBas,nOrb,nC,nO,nV,nR,nS,e,Om,r
       Sig = Sig - 2d0*num/(dem1*dem2*dem3)
 
       Z = Z + 2d0*num/(dem1*dem1*dem2*dem3) &
-                  + 2d0*num/(dem1*dem2*dem3*dem3) 
+            + 2d0*num/(dem1*dem2*dem3*dem3) 
                   
       dem1 = w - e(i) - e(k) + e(b)
       dem2 = w - e(i) + Om(t)
@@ -371,8 +371,8 @@ subroutine R_G3W2_self_energy_diag_omega(p,w,eta,nBas,nOrb,nC,nO,nV,nR,nS,e,Om,r
       Sig = Sig - 1d0*num/(dem1*dem2*dem3)
 
       Z = Z + num/(dem1*dem1*dem2*dem3) &
-                  + num/(dem1*dem2*dem2*dem3) &
-                  + num/(dem1*dem2*dem3*dem3) 
+            + num/(dem1*dem2*dem2*dem3) &
+            + num/(dem1*dem2*dem3*dem3) 
 
     end do
     end do
@@ -398,7 +398,7 @@ subroutine R_G3W2_self_energy_diag_omega(p,w,eta,nBas,nOrb,nC,nO,nV,nR,nS,e,Om,r
       Sig = Sig + (2d0*e(j) - e(a) - e(c) - Om(t) - Om(s))*num/(dem1*dem2*dem3*dem4)
 
       Z = Z - (2d0*e(j) - e(a) - e(c) - Om(t) - Om(s))*num/(dem1*dem1*dem2*dem3*dem4) &
-                  - (2d0*e(j) - e(a) - e(c) - Om(t) - Om(s))*num/(dem1*dem2*dem2*dem3*dem4)
+            - (2d0*e(j) - e(a) - e(c) - Om(t) - Om(s))*num/(dem1*dem2*dem2*dem3*dem4)
                   
       dem1 = w - e(a) - e(c) + e(j)
       dem2 = Om(t) - e(j) + e(c) 
@@ -407,7 +407,7 @@ subroutine R_G3W2_self_energy_diag_omega(p,w,eta,nBas,nOrb,nC,nO,nV,nR,nS,e,Om,r
       Sig = Sig + 2d0*num/(dem1*dem2*dem3)
 
       Z = Z - 2d0*num/(dem1*dem1*dem2*dem3) &
-                  - 2d0*num/(dem1*dem2*dem3*dem3) 
+            - 2d0*num/(dem1*dem2*dem3*dem3) 
                   
       dem1 = w - e(a) - e(c) + e(j)
       dem2 = w - e(a) - Om(t)
@@ -416,8 +416,8 @@ subroutine R_G3W2_self_energy_diag_omega(p,w,eta,nBas,nOrb,nC,nO,nV,nR,nS,e,Om,r
       Sig = Sig - 1d0*num/(dem1*dem2*dem3)
 
       Z = Z + num/(dem1*dem1*dem2*dem3) &
-                  + num/(dem1*dem2*dem2*dem3) &
-                  + num/(dem1*dem2*dem3*dem3) 
+            + num/(dem1*dem2*dem2*dem3) &
+            + num/(dem1*dem2*dem3*dem3) 
 
     end do
     end do
