@@ -3,8 +3,9 @@ subroutine read_options(working_dir,                                            
                         readFCIDUMP,reg_MP,                                                                 &
                         maxSCF_CC,thresh_CC,max_diis_CC,                                                    &
                         TDA,spin_conserved,spin_flip,                                                       &
+                        max_iter_OO,thresh_OO,dRPA_OO,mu_OO,diagHess_OO,                                    &
                         maxSCF_GF,thresh_GF,max_diis_GF,lin_GF,eta_GF,renorm_GF,reg_GF,do_linDM_GF2,        &
-                        maxSCF_GW,thresh_GW,max_diis_GW,lin_GW,eta_GW,shift_GW,reg_GW,doOO,mu,do_linDM_GW,  &
+                        maxSCF_GW,thresh_GW,max_diis_GW,lin_GW,eta_GW,shift_GW,reg_GW,do_linDM_GW,          &
                         nfreqs,TDA_W,restart_scGW,restart_scGF2,verbose_scGW,verbose_scGF2,                 &
                         maxSCF_GT,thresh_GT,max_diis_GT,lin_GT,eta_GT,reg_GT,TDA_T,do_linDM_GT,             &
                         doACFDT,exchange_kernel,doXBS,                                                      &
@@ -45,6 +46,12 @@ subroutine read_options(working_dir,                                            
   logical,intent(out)           :: spin_conserved
   logical,intent(out)           :: spin_flip
 
+  integer,intent(out)           :: max_iter_OO
+  double precision,intent(out)  :: thresh_OO
+  logical,intent(out)           :: dRPA_OO
+  integer,intent(out)           :: mu_OO
+  logical,intent(out)           :: diagHess_OO
+  
   integer,intent(out)           :: maxSCF_GF
   double precision,intent(out)  :: thresh_GF
   integer,intent(out)           :: max_diis_GF
@@ -66,8 +73,6 @@ subroutine read_options(working_dir,                                            
   logical,intent(out)           :: restart_scGW
   logical,intent(out)           :: verbose_scGW
   logical,intent(out)           :: reg_GW
-  logical,intent(out)           :: doOO
-  integer,intent(out)           :: mu
   integer,intent(out)           :: nfreqs
   logical,intent(out)           :: do_linDM_GW
 
@@ -174,6 +179,20 @@ subroutine read_options(working_dir,                                            
       if(ans2 == 'T') spin_conserved = .true.
       if(ans3 == 'T') spin_flip      = .true.
     
+      ! Read Orbital optimization options
+
+      max_iter_OO = 256
+      thresh_OO   = 1e-5
+      dRPA_OO  = .false.
+      mu_OO    = 0
+      diagHess_OO = .false.
+
+      read(1,*) 
+      read(1,*) max_iter_OO,thresh_OO,ans1,mu_OO,ans2
+      if(ans1 == 'T') dRPA_OO     = .true.
+      if(ans2 == 'T') diagHess_OO = .true.
+      
+
       ! Read GF options
     
       maxSCF_GF   = 64
@@ -205,23 +224,20 @@ subroutine read_options(working_dir,                                            
       eta_GW      = 0d0
       shift_GW    = 1d-3
       reg_GW      = .false.
-      doOO        = .false.
-      mu          = 0
       TDA_W       = .false.
       do_linDM_GW = .false.
       restart_scGW = .false.
       verbose_scGW = .false.
     
       read(1,*) 
-      read(1,*) maxSCF_GW,thresh_GW,max_diis_GW,ans1,eta_GW,ans2,ans3,ans4,mu,nfreqs,shift_GW,ans5,ans6,ans7
+      read(1,*) maxSCF_GW,thresh_GW,max_diis_GW,ans1,eta_GW,ans2,ans3,nfreqs,shift_GW,ans4,ans5,ans6
     
-      if(ans1 == 'T') lin_GW      = .true.
-      if(ans2 == 'T') TDA_W       = .true.
-      if(ans3 == 'T') reg_GW      = .true.
-      if(ans4 == 'T') doOO        = .true.
-      if(ans5 == 'T') do_linDM_GW = .true.
-      if(ans6 == 'T') restart_scGW = .true.
-      if(ans7 == 'T') verbose_scGW = .true.
+      if(ans1 == 'T') lin_GW       = .true.
+      if(ans2 == 'T') TDA_W        = .true.
+      if(ans3 == 'T') reg_GW       = .true.
+      if(ans4 == 'T') do_linDM_GW  = .true.
+      if(ans5 == 'T') restart_scGW = .true.
+      if(ans6 == 'T') verbose_scGW = .true.
    
       ! Read GT options
     

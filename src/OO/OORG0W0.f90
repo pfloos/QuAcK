@@ -1,5 +1,7 @@
 subroutine OORG0W0(dotest,doACFDT,exchange_kernel,doXBS,dophBSE,dophBSE2,TDA_W,TDA,dBSE,dTDA,doppBSE,singlet,triplet, & 
-                 linearize,eta,doSRG,nBas,nOrb,nC,nO,nV,nR,nS,mu,ENuc,ERHF,ERI_AO,ERI_MO,                             &
+                 linearize,eta,doSRG,nBas,nOrb,nC,nO,nV,nR,nS,                                                        &
+                 maxIter,thresh,dRPA,mu,diagHess,                                                                     &
+                 ENuc,ERHF,ERI_AO,ERI_MO,                                                                             &
                  dipole_int,eHF,cHF,Sovl,XHF,Tkin,Vpot,Hc,PHF,FHF,eGW_out)
 
 ! Perform optimized orbital G0W0 calculation (optimal for excitation mu)
@@ -35,7 +37,9 @@ subroutine OORG0W0(dotest,doACFDT,exchange_kernel,doXBS,dophBSE,dophBSE2,TDA_W,T
   integer,intent(in)            :: nV
   integer,intent(in)            :: nR
   integer,intent(in)            :: nS
-  integer,intent(in)            :: mu
+  integer,intent(in)            :: mu,maxIter
+  double precision,intent(in)   :: thresh
+  logical,intent(in)            :: dRPA,diagHess
   double precision,intent(in)   :: ENuc
   double precision,intent(in)   :: ERHF
   double precision,intent(in)   :: ERI_AO(nBas,nBas,nBas,nBas)
@@ -55,8 +59,6 @@ subroutine OORG0W0(dotest,doACFDT,exchange_kernel,doXBS,dophBSE,dophBSE2,TDA_W,T
 
   logical                       :: print_W   = .false.
   logical                       :: plot_self = .false.
-  logical                       :: diagHess  = .true.  ! Use only diagonal of the Hessian
-  logical                       :: dRPA_W
   integer                       :: isp_W
   double precision              :: flow
   double precision              :: EcRPA
@@ -89,8 +91,6 @@ subroutine OORG0W0(dotest,doACFDT,exchange_kernel,doXBS,dophBSE,dophBSE2,TDA_W,T
   double precision,allocatable  :: eGW(:)
  
   double precision              :: OOConv
-  double precision              :: thresh = 1.0e-5
-  integer                       :: maxOOi = 256
   integer                       :: OOi
   double precision,allocatable  :: h(:,:)
   double precision,allocatable  :: rdm1(:,:)
@@ -138,9 +138,8 @@ subroutine OORG0W0(dotest,doACFDT,exchange_kernel,doXBS,dophBSE,dophBSE2,TDA_W,T
 ! Spin manifold and TDA for dynamical screening
 
   isp_W = 1
-  dRPA_W = .true.
   
-   if(.not. dRPA_W) then
+   if(.not. dRPA) then
       write(*,*) 'xRPA instead of RPA'
       write(*,*)
       ! Antisymmetrize 2-electron integrals.
@@ -208,7 +207,7 @@ subroutine OORG0W0(dotest,doACFDT,exchange_kernel,doXBS,dophBSE,dophBSE2,TDA_W,T
   ! Transform integrals (afterwards this is done in orbital optimization)
   call AOtoMO(nBas,nOrb,c,Hc,h)
   call AOtoMO_ERI_RHF(nBas,nOrb,c,ERI_AO,ERI_MO) 
-  if(.not. dRPA_W) call AOtoMO_ERI_RHF(nBas,nOrb,c,ERI_AO_AS,ERI_MO_AS)
+  if(.not. dRPA) call AOtoMO_ERI_RHF(nBas,nOrb,c,ERI_AO_AS,ERI_MO_AS)
 
   write(*,*) "Start orbital optimization loop..."
 
@@ -229,8 +228,8 @@ subroutine OORG0W0(dotest,doACFDT,exchange_kernel,doXBS,dophBSE,dophBSE2,TDA_W,T
   ! Compute screening !
   !-------------------!
   
-                   call OO_phRLR_A(isp_W,dRPA_W,nOrb,nC,nO,nV,nR,nS,1d0,F,ERI_MO,Aph)
-    if(.not.TDA_W) call phRLR_B(isp_W,dRPA_W,nOrb,nC,nO,nV,nR,nS,1d0,ERI_MO,Bph)
+                   call OO_phRLR_A(isp_W,dRPA,nOrb,nC,nO,nV,nR,nS,1d0,F,ERI_MO,Aph)
+    if(.not.TDA_W) call phRLR_B(isp_W,dRPA,nOrb,nC,nO,nV,nR,nS,1d0,ERI_MO,Bph)
     
     call phRLR(TDA_W,nS,Aph,Bph,EcRPA,Om,XpY,XmY)
     
@@ -257,7 +256,7 @@ subroutine OORG0W0(dotest,doACFDT,exchange_kernel,doXBS,dophBSE,dophBSE2,TDA_W,T
     call RG0W0_rdm2_rpa(O,V,N,nS,lampl,rampl,lp,rp,lambda,t,rdm1_hf,rdm1_rpa,rdm2_rpa)
     rdm2 = rdm2_hf + rdm2_rpa
     call energy_from_rdm(N,h,ERI_MO,rdm1_hf,rdm2_hf,EHF_rdm,.false.)
-    if(dRPA_W) then
+    if(dRPA) then
       call energy_from_rdm(N,F,ERI_MO,rdm1_rpa,rdm2_rpa,EcRPA_rdm,.false.)
     else
       call energy_from_rdm(N,F,ERI_MO_AS,rdm1_rpa,rdm2_rpa,EcRPA_rdm,.false.)
@@ -268,8 +267,8 @@ subroutine OORG0W0(dotest,doACFDT,exchange_kernel,doXBS,dophBSE,dophBSE2,TDA_W,T
     write(*,*) "EcRPA = ", EcRPA_rdm
     write(*,*) "EcRPA (no rdm) = ", EcRPA
     write(*,*) "ERPA = ", EcRPA_rdm + EHF_rdm
-    
-    call R_optimize_orbitals(diagHess,dRPA_W,nBas,nOrb,nV,nR,nC,nO,N,Nsq,O,V,ERI_AO,ERI_AO_AS,ERI_MO,ERI_MO_AS,Hc,h,F,&
+   
+    call R_optimize_orbitals(diagHess,dRPA,nBas,nOrb,nV,nR,nC,nO,N,Nsq,O,V,ERI_AO,ERI_AO_AS,ERI_MO,ERI_MO_AS,Hc,h,F,&
                              rdm1_hf,rdm1_rpa,rdm2_hf,rdm2_rpa,c,OOConv)
     
     write(*,*) '----------------------------------------------------------'
@@ -284,9 +283,9 @@ subroutine OORG0W0(dotest,doACFDT,exchange_kernel,doXBS,dophBSE,dophBSE2,TDA_W,T
  !     OOConv = 0d0 ! remove only for debugging
  !   end if
     OOi = OOi + 1 
-    if(OOi > maxOOi) then
-            write(*,*) "Orbital optimiaztion failed !!!"
-            OOConv = 0d0
+    if(OOi > maxIter) then
+      write(*,*) "Orbital optimiaztion failed !!!"
+      OOConv = 0d0
     endif
   end do
   cHF(:,:) = c(:,:)
