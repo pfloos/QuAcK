@@ -55,6 +55,7 @@ subroutine BQuAcK(working_dir,dotest,doaordm,doRHFB,doBRPA,dophRPA,doG0W0,doqsGW
 
   logical                        :: no_fock
   logical                        :: file_exists
+  logical                        :: verbose_scGW
 
   integer                        :: verbose
   integer                        :: nOrb_twice
@@ -298,6 +299,25 @@ subroutine BQuAcK(working_dir,dotest,doaordm,doRHFB,doBRPA,dophRPA,doG0W0,doqsGW
    write(*,'(A65,1X,F9.3,A8)') 'Total wall time for Ecorr = ',t_Ecorr,' seconds'
    write(*,*)
 
+  endif
+
+  ! scGW Bogoliubov
+  if(doscGW) then
+   allocate(vMAT(nBas*nBas,nBas*nBas))
+   do iorb=1,nBas
+    do jorb=1,nBas
+     do korb=1,nBas
+      do lorb=1,nBas
+       vMAT(1+(korb-1)+(iorb-1)*nOrb,1+(lorb-1)+(jorb-1)*nOrb)=ERI_AO(iorb,jorb,korb,lorb)
+      enddo
+     enddo
+    enddo
+   enddo
+   no_fock=.false.
+   verbose_scGW=.false.
+   call scGWBitauiw_ao(nBas,nOrb,nOrb_twice,maxSCF,max_diis,dolinGW,restart_scGW,verbose_scGW,no_fock,ENuc,Hc,S,X, &
+                       pMAT,panomMAT,MOCoef,eQP_state,chem_pot,sigma,nfreqs,wcoord,wweight,U_QP,vMAT,ERI_AO)
+   deallocate(vMAT)
   endif
 
 !-----------------------------------------------------------------!
