@@ -1,6 +1,6 @@
 subroutine RQuAcK(working_dir,use_gpu,dotest,doRHF,doROHF,docRHF,                                                           &
                   dostab,dosearch,doaordm,doMP2,doMP3,doCCD,dopCCD,doDCD,doCCSD,doCCSDT,                                    &
-                  dodrCCD,dorCCD,docrCCD,dolCCD,doCIS,doCIS_D,doCID,doCISD,doFCI,dophRPA,dophRPAx,docrRPA,doppRPA,          & 
+                  dodrCCD,dorCCD,docrCCD,dolCCD,doCIS,doCIS_D,doCID,doCISD,doFCI,dophRPA,dophRPAx,docrRPA,doppRPA,doOO,     & 
                   doG0F2,doevGF2,doqsGF2,doufG0F02,doG0F3,doevGF3,doG0W0,doevGW,doqsGW,doufG0W0,doufGW,                     &
                   doG0T0pp,doevGTpp,doqsGTpp,doufG0T0pp,doG0T0eh,doevGTeh,doqsGTeh,doevParquet,doqsParquet,                 & 
                   docG0W0,docG0F2,doscGW,doscGF2,                                                                           & 
@@ -9,8 +9,9 @@ subroutine RQuAcK(working_dir,use_gpu,dotest,doRHF,doROHF,docRHF,               
                   nNuc,nBas,nOrb,nC,nO,nV,nR,ENuc,ZNuc,rNuc,                                                                &
                   S,T,V,Hc,CAP_AO,X,dipole_int_AO,maxSCF_HF,max_diis_HF,thresh_HF,level_shift,                              &
                   guess_type,mix,reg_MP,maxSCF_CC,max_diis_CC,thresh_CC,singlet,triplet,TDA,                                &
+                  maxIter_OO,thresh_OO,dRPA_OO,mu_OO,diagHess_OO,                                                           &
                   maxSCF_GF,max_diis_GF,renorm_GF,thresh_GF,lin_GF,reg_GF,eta_GF,maxSCF_GW,max_diis_GW,thresh_GW,           & 
-                  TDA_W,lin_GW,reg_GW,eta_GW,doOO,mu,do_linDM_GW,do_linDM_GF,                                               &
+                  TDA_W,lin_GW,reg_GW,eta_GW,do_linDM_GW,do_linDM_GF,                                                       &
                   maxSCF_GT,max_diis_GT,thresh_GT,TDA_T,lin_GT,reg_GT,eta_GT,do_linDM_GT,                                   & 
                   dophBSE,dophBSE2,doppBSE,dBSE,dTDA,doACFDT,exchange_kernel,doXBS,                                         &
                   TDAeh,TDApp,max_diis_1b,max_diis_2b,max_it_1b,conv_1b,max_it_2b,conv_2b,lin_parquet,reg_1b,reg_2b,reg_PA, &
@@ -38,8 +39,10 @@ subroutine RQuAcK(working_dir,use_gpu,dotest,doRHF,doROHF,docRHF,               
   logical,intent(in)            :: dodrCCD,dorCCD,docrCCD,dolCCD
   logical,intent(in)            :: doCIS,doCIS_D,doCID,doCISD,doFCI
   logical,intent(in)            :: dophRPA,dophRPAx,docrRPA,doppRPA
+  logical,intent(in)            :: doOO
   logical,intent(in)            :: doG0F2,doevGF2,doqsGF2,doufG0F02,doG0F3,doevGF3,doscGF2
-  logical,intent(in)            :: doG0W0,doevGW,doqsGW,doufG0W0,doufGW
+  logical,intent(inout)         :: doG0W0
+  logical,intent(in)            :: doevGW,doqsGW,doufG0W0,doufGW
   logical,intent(in)            :: doG0T0pp,doevGTpp,doqsGTpp,doufG0T0pp
   logical,intent(in)            :: doG0T0eh,doevGTeh,doqsGTeh
   logical,intent(in)            :: docG0W0,docG0F2
@@ -80,6 +83,8 @@ subroutine RQuAcK(working_dir,use_gpu,dotest,doRHF,doROHF,docRHF,               
   logical,intent(in)            :: singlet
   logical,intent(in)            :: triplet
   logical,intent(in)            :: TDA
+ 
+  integer,intent(in)            :: maxIter_OO,thresh_OO,dRPA_OO,mu_OO,diagHess_OO
 
   integer,intent(in)            :: maxSCF_GF,max_diis_GF,renorm_GF
   double precision,intent(in)   :: thresh_GF
@@ -91,8 +96,7 @@ subroutine RQuAcK(working_dir,use_gpu,dotest,doRHF,doROHF,docRHF,               
 
   integer,intent(in)            :: maxSCF_GW,max_diis_GW
   double precision,intent(in)   :: thresh_GW
-  logical,intent(in)            :: TDA_W,lin_GW,reg_GW,doOO
-  integer,intent(in)            :: mu
+  logical,intent(in)            :: TDA_W,lin_GW,reg_GW
   double precision,intent(in)   :: eta_GW
   logical,intent(in)            :: do_linDM_GW
   logical,intent(in)            :: restart_scGW
@@ -481,7 +485,26 @@ subroutine RQuAcK(working_dir,use_gpu,dotest,doRHF,doROHF,docRHF,               
     write(*,*)
 
   end if
+!-------------------------------------------!
+! Orbital optimisation module RPA/GW module !
+!-------------------------------------------!
+  if(doG0W0 .and. doOO) then
 
+    call wall_time(start_GW)
+    call OORG0W0(dotest,doACFDT,exchange_kernel,doXBS,dophBSE,dophBSE2,TDA_W,TDA,dBSE,dTDA,doppBSE,singlet,triplet, &
+         lin_GW,eta_GW,reg_GW,nBas,nOrb,nC,nO,nV,nR,nS,                                                                &
+         maxIter_OO,thresh_OO,dRPA_OO,mu_OO,diagHess_OO,                                                            &
+         ENuc,ERHF,ERI_AO,ERI_MO,dipole_int_MO,eHF,cHF,                                                             &
+         S,X,T,V,Hc,PHF,FHF,eGW) 
+    call wall_time(end_GW)
+  
+    t_GW = end_GW - start_GW
+    
+    write(*,'(A65,1X,F9.3,A8)') 'Total wall time for Orbital optimisation and G0W0 = ',t_GW,' seconds'
+    write(*,*)
+    doG0W0 = .false.  
+  
+  end if
 !-------------------------!
 ! Green's function module !
 !-------------------------!
@@ -524,13 +547,13 @@ doGF = doG0F2 .or. doevGF2 .or. doqsGF2 .or. doufG0F02 .or. doG0F3 .or. doevGF3 
 ! GW module !
 !-----------!
 
-  doGW = doG0W0 .or. doevGW .or. doqsGW .or. doufG0W0 .or. doufGW .or. docG0W0
+  doGW = doG0W0 .or. doevGW .or. doqsGW .or. doufG0W0 .or. doufGW .or. docG0W0 
   if(doGW .and. .not. docRHF) then
     
     call wall_time(start_GW)
     call RGW(dotest,doG0W0,doevGW,doqsGW,doufG0W0,doufGW,maxSCF_GW,thresh_GW,max_diis_GW,                     & 
              doACFDT,exchange_kernel,doXBS,dophBSE,dophBSE2,doppBSE,TDA_W,TDA,dBSE,dTDA,singlet,triplet,      &
-             lin_GW,eta_GW,reg_GW,doOO,mu,do_linDM_GW,nNuc,ZNuc,rNuc,ENuc,nBas,nOrb,nC,nO,nV,nR,nS,ERHF,S,X,T, &
+             lin_GW,eta_GW,reg_GW,do_linDM_GW,nNuc,ZNuc,rNuc,ENuc,nBas,nOrb,nC,nO,nV,nR,nS,ERHF,S,X,T,        &
              V,Hc,ERI_AO,ERI_MO,CAP_MO,dipole_int_AO,dipole_int_MO,PHF,FHF,cHF,eHF,eGW)
     call wall_time(end_GW)
   

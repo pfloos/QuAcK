@@ -1,6 +1,6 @@
 subroutine R_IP_ADC2(dotest,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,eHF)
 
-! Non-Dyson IP-ADC(2)
+! Non-Dyson version of IP-ADC(2)
 
   implicit none
   include 'parameters.h'

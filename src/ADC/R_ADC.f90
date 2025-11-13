@@ -86,9 +86,9 @@ subroutine R_ADC(dotest,                                               &
 
   if(do_IPEA) then 
 
-  !--------------------------------!
-  ! Perform IP/EA-ADC2 calculation !
-  !--------------------------------!
+  !----------------------------------!
+  ! Perform IP/EA-ADC(2) calculation !
+  !----------------------------------!
 
     if(do_IPEA_ADC2) then 
       
@@ -100,6 +100,22 @@ subroutine R_ADC(dotest,                                               &
       write(*,'(A65,1X,F9.3,A8)') 'Total wall time for IP/EA-ADC(2) = ',t_ADC,' seconds'
       write(*,*)
  
+    end if
+
+  !----------------------------------!
+  ! Perform IP/EA-ADC(3) calculation !
+  !----------------------------------!
+
+    if(do_IPEA_ADC3) then
+
+      call wall_time(start_ADC)
+      call R_IPEA_ADC3(dotest,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,ERHF,ERI_MO,eHF)
+      call wall_time(end_ADC)
+
+      t_ADC = end_ADC - start_ADC
+      write(*,'(A65,1X,F9.3,A8)') 'Total wall time for IP/EA-ADC(3) = ',t_ADC,' seconds'
+      write(*,*)
+
     end if
 
   !-----------------------------------------!

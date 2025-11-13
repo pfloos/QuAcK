@@ -4,7 +4,8 @@ subroutine read_methods(working_dir,                                    &
                         doCCD,dopCCD,doDCD,doCCSD,doCCSDT,              & 
                         do_drCCD,do_rCCD,do_crCCD,do_lCCD,              &
                         doCIS,doCIS_D,doCID,doCISD,doFCI,               & 
-                        dophRPA,dophRPAx,docrRPA,doppRPA,doBRPA,        & 
+                        dophRPA,dophRPAx,docrRPA,doppRPA,doBRPA,        &
+                        doOORPA,                                        &
                         doG0F2,doevGF2,doqsGF2,doufG0F02,               &
                         doG0F3,doevGF3,                                 & 
                         doG0W0,doevGW,doqsGW,doufG0W0,doufGW,           &
@@ -33,6 +34,7 @@ subroutine read_methods(working_dir,                                    &
   logical,intent(out)           :: do_drCCD,do_rCCD,do_crCCD,do_lCCD
   logical,intent(out)           :: doCIS,doCIS_D,doCID,doCISD,doFCI
   logical,intent(out)           :: dophRPA,dophRPAx,docrRPA,doppRPA,doBRPA
+  logical,intent(out)           :: doOORPA
   logical,intent(out)           :: doG0F2,doevGF2,doqsGF2,doufG0F02,doG0F3,doevGF3,doscGF2
   logical,intent(out)           :: doG0W0,doevGW,doqsGW,doufG0W0,doufGW,doscGW
   logical,intent(out)           :: doG0T0pp,doevGTpp,doqsGTpp,doufG0T0pp 
@@ -153,6 +155,11 @@ subroutine read_methods(working_dir,                                    &
       if(ans3 == 'T') docrRPA  = .true.
       if(ans4 == 'T') doppRPA  = .true.
       if(ans5 == 'T') doBRPA   = .true.
+      
+      doOORPA = .false.
+      read(1,*) 
+      read(1,*) ans1
+      if(ans1 == 'T') doOORPA = .true.
       
       ! Read Green's function methods
       

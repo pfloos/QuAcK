@@ -207,8 +207,8 @@ subroutine R_ADC_G3W2(dotest,TDA_W,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,eHF)
        
             do c=nO+1,nOrb-nR
               H(1+ija,1+klc) = H(1+ija,1+klc) & 
-                             + 2d0*rho(c,k,mu)*rho(i,c,nu)/(eHF(c) - eHF(k) - Om(mu)) &
-                             + 2d0*rho(k,c,mu)*rho(c,i,nu)/(eHF(c) - eHF(i) - Om(nu))
+                             + 4d0*rho(c,k,mu)*rho(i,c,nu)/(eHF(c) - eHF(k) - Om(mu)) &
+                             + 4d0*rho(k,c,mu)*rho(c,i,nu)/(eHF(c) - eHF(i) - Om(nu))
             end do
   
           end do
@@ -235,8 +235,8 @@ subroutine R_ADC_G3W2(dotest,TDA_W,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,eHF)
        
             do k=nC+1,nO
               H(1+n2h1p+iab,1+n2h1p+kcd) = H(1+n2h1p+iab,1+n2h1p+kcd) &
-                                         + 2d0*rho(k,c,mu)*rho(a,k,nu)/(eHF(c) - eHF(k) - Om(mu)) &
-                                         + 2d0*rho(c,k,mu)*rho(k,a,nu)/(eHF(a) - eHF(k) - Om(nu))
+                                         + 4d0*rho(k,c,mu)*rho(a,k,nu)/(eHF(c) - eHF(k) - Om(mu)) &
+                                         + 4d0*rho(c,k,mu)*rho(k,a,nu)/(eHF(a) - eHF(k) - Om(nu))
             end do
  
           end do
