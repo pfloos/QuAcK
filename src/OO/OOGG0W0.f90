@@ -26,7 +26,8 @@ subroutine OOGG0W0(dotest,doACFDT,exchange_kernel,doXBS,dophBSE,dophBSE2,TDA_W,T
   logical,intent(in)            :: dTDA
   logical,intent(in)            :: linearize
   double precision,intent(in)   :: eta
-  logical,intent(in)            :: doSRG,dRPA,diagHess
+  logical,intent(in)            :: doSRG,diagHess
+  logical,intent(inout)         :: dRPA
   logical,intent(in)            :: do_linDM
 
   integer,intent(in)            :: nBas,nBas2
@@ -142,6 +143,8 @@ subroutine OOGG0W0(dotest,doACFDT,exchange_kernel,doXBS,dophBSE,dophBSE2,TDA_W,T
 ! Spin manifold and TDA for dynamical screening
 
   isp_W = 1
+  if(.not. dRPA) write(*,*) "Only dRPA orbital optimisation is implemented for generalized branch. Proceed with dRPA."
+  dRPA = .true.
  
    if(TDA_W) then 
      write(*,*) 'Tamm-Dancoff approximation for dynamical screening!'
@@ -303,9 +306,10 @@ subroutine OOGG0W0(dotest,doACFDT,exchange_kernel,doXBS,dophBSE,dophBSE2,TDA_W,T
     write(*,*) "EHF+ EcRPA@HF = ", EGHF + EcRPA_HF
     write(*,*) "EMF from rdm = " , EHF_rdm
     write(*,*) "EcRPA = " , ERPA_rdm
+    write(*,*) "EcRPA (nordm) = " , EcRPA
     write(*,*) "ERPA = ", Emu
     
-    call G_optimize_orbitals(nBas,nBas2,nV,nR,nC,nO,N,Nsq,O,V,ERI_AO,ERI_MO,&
+    call G_optimize_orbitals(diagHess,nBas,nBas2,nV,nR,nC,nO,N,Nsq,O,V,ERI_AO,ERI_MO,&
             h,F,rdm1_hf,rdm1_rpa,rdm2_hf,rdm2_rpa,c,OOConv)
    
     write(*,*) '----------------------------------------------------------'

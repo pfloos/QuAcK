@@ -1,4 +1,4 @@
-subroutine G_optimize_orbitals(nBas,nBas2,nV,nR,nC,nO,N,Nsq,O,V,ERI_AO,ERI_MO,h,F,rdm1_hf,rdm1_c,rdm2_hf,rdm2_c,c,OOConv)
+subroutine G_optimize_orbitals(diagHess,nBas,nBas2,nV,nR,nC,nO,N,Nsq,O,V,ERI_AO,ERI_MO,h,F,rdm1_hf,rdm1_c,rdm2_hf,rdm2_c,c,OOConv)
 
 ! Calculate gradient and Hessian and rotate orbitals accordingly. Returns ERI and h in new MOs.
 
@@ -8,6 +8,7 @@ subroutine G_optimize_orbitals(nBas,nBas2,nV,nR,nC,nO,N,Nsq,O,V,ERI_AO,ERI_MO,h,
 
 ! Input variables
 
+  logical,intent(in)            :: diagHess
   integer,intent(in)            :: nBas,nBas2,nV,nR,nC,nO,N,V,O,Nsq
   double precision,intent(in)   :: ERI_AO(nBas,nBas,nBas,nBas)
   double precision,intent(in)   :: h(nBas2,nBas2)
@@ -19,7 +20,7 @@ subroutine G_optimize_orbitals(nBas,nBas2,nV,nR,nC,nO,N,Nsq,O,V,ERI_AO,ERI_MO,h,
 
 ! Local variables
   
-  integer                       :: p,q,pq,r,s,rs
+  integer                       :: p,q,pq,r,s,rs,nhess,mhess
   double precision,allocatable  :: hess(:,:), grad(:), grad_tmp(:), hessInv(:,:), hess_tmp(:,:)
   double precision,allocatable  :: Kap(:,:), ExpKap(:,:)
 
@@ -34,6 +35,8 @@ subroutine G_optimize_orbitals(nBas,nBas2,nV,nR,nC,nO,N,Nsq,O,V,ERI_AO,ERI_MO,h,
   !--------------------------!
  
   allocate(grad(Nsq),grad_tmp(Nsq))
+  nhess = Nsq
+  mhess = Nsq 
   call orbital_gradient(O,V,N,Nsq,h,ERI_MO,rdm1_hf,rdm2_hf,grad_tmp)
   grad = grad_tmp
   call orbital_gradient(O,V,N,Nsq,F,ERI_MO,rdm1_c,rdm2_c,grad_tmp)
@@ -46,18 +49,35 @@ subroutine G_optimize_orbitals(nBas,nBas2,nV,nR,nC,nO,N,Nsq,O,V,ERI_AO,ERI_MO,h,
   !-------------------------!
   ! Compute orbital Hessian !
   !-------------------------!
- 
-  allocate(hess(Nsq,Nsq),hess_tmp(Nsq,Nsq))
-  hess_tmp(:,:) = 0d0 
-  call orbital_hessian(O,V,N,Nsq,h,ERI_MO,rdm1_hf,rdm2_hf,hess_tmp)
-  hess = hess_tmp
-  call orbital_hessian(O,V,N,Nsq,F,ERI_MO,rdm1_c,rdm2_c,hess_tmp)
-  hess = hess_tmp + hess
+  if(diagHess) then
+    mhess = 1 
+    allocate(hess(nhess,mhess),hess_tmp(nhess,mhess)) 
+    hess(:,:) = 0d0
+    call orbital_hessian_diag(O,V,N,Nsq,h,ERI_MO,rdm1_hf,rdm2_hf,hess_tmp)
+    hess = hess + hess_tmp
+    call orbital_hessian_diag(O,V,N,Nsq,F,ERI_MO,rdm1_c,rdm2_c,hess_tmp)
+  else          
+    allocate(hess(Nsq,Nsq),hess_tmp(Nsq,Nsq))
+    hess(:,:) = 0d0
+    call orbital_hessian(O,V,N,Nsq,h,ERI_MO,rdm1_hf,rdm2_hf,hess_tmp)
+    hess = hess_tmp
+    call orbital_hessian(O,V,N,Nsq,F,ERI_MO,rdm1_c,rdm2_c,hess_tmp)
+    hess = hess_tmp + hess
+  end if 
   
   deallocate(hess_tmp)
-  allocate(hessInv(Nsq,Nsq))
- 
-  call pseudo_inverse_matrix(Nsq,hess,hessInv)
+  allocate(hessInv(nhess,mhess))
+  
+  if(diagHess) then
+    do pq=1,Nsq
+      if(abs(hess(pq,1))>1e-15) then
+        hessInv(pq,1) = 1/hess(pq,1)
+      endif
+    enddo
+  else
+    call pseudo_inverse_matrix(Nsq,hess,hessInv)
+    !call inverse_matrix(Nsq,hess,hessInv)
+  endif
   
   deallocate(hess)
  

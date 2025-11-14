@@ -64,7 +64,7 @@ subroutine R_optimize_orbitals(diagHess,dRPA,nBas,nOrb,nV,nR,nC,nO,N,Nsq,O,V,&
 
   if(diagHess) then
     mhess = 1
-    allocate(hess(nhess,mhess),hessInv(nhess,mhess),hess_tmp(nhess,mhess))
+    allocate(hess(nhess,mhess),hess_tmp(nhess,mhess))
     hess(:,:) = 0d0
     call orbital_hessian_diag(O,V,N,Nsq,h,ERI_MO,rdm1_hf,rdm2_hf,hess_tmp)
     hess = hess + hess_tmp
@@ -75,13 +75,14 @@ subroutine R_optimize_orbitals(diagHess,dRPA,nBas,nOrb,nV,nR,nC,nO,N,Nsq,O,V,&
     endif
     hess = hess + hess_tmp
     deallocate(hess_tmp)
+    allocate(hessInv(nhess,mhess))
     do pq=1,Nsq
       if(abs(hess(pq,1))>1e-15) then
         hessInv(pq,1) = 1/hess(pq,1)
       endif
     enddo
   else
-    allocate(hess(nhess,mhess),hessInv(nhess,mhess),hess_tmp(nhess,mhess))
+    allocate(hess(nhess,mhess),hess_tmp(nhess,mhess))
     hess(:,:) = 0d0
     call orbital_hessian(O,V,N,Nsq,h,ERI_MO,rdm1_hf,rdm2_hf,hess_tmp)
     hess = hess + hess_tmp 
@@ -92,6 +93,7 @@ subroutine R_optimize_orbitals(diagHess,dRPA,nBas,nOrb,nV,nR,nC,nO,N,Nsq,O,V,&
     endif
     hess = hess + hess_tmp 
     deallocate(hess_tmp)
+    allocate(hessInv(nhess,mhess))
     call pseudo_inverse_matrix(Nsq,hess,hessInv)
     !call inverse_matrix(Nsq,hess,hessInv)
   endif
