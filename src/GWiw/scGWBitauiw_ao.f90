@@ -65,6 +65,7 @@ subroutine scGWBitauiw_ao(nBas,nOrb,nOrb_twice,maxSCF,maxDIIS,dolinGW,restart_sc
   double precision,allocatable  :: Wp_ao_iw(:,:)
   double precision,allocatable  :: Wp_ao_itau(:,:,:)
   double precision,allocatable  :: R_ao(:,:)
+  double precision,allocatable  :: R_ao_hfb(:,:)
   double precision,allocatable  :: R_ao_old(:,:)
   double precision,allocatable  :: wcoord_int(:),wweight_int(:)
   double precision,allocatable  :: tweight(:),tcoord(:)
@@ -133,6 +134,7 @@ subroutine scGWBitauiw_ao(nBas,nOrb,nOrb_twice,maxSCF,maxDIIS,dolinGW,restart_sc
  allocate(cHFBinv(nOrb,nBas))
  allocate(U_mo(nOrb,nOrb))
  allocate(R_ao(nBas_twice,nBas_twice))
+ allocate(R_ao_hfb(nBas_twice,nBas_twice))
  allocate(R_ao_old(nBas_twice,nBas_twice))
  allocate(G_ao_tmp(nBas,nBas))
  allocate(Mat_gorkov_tmp(nBas_twice,nBas_twice))
@@ -159,10 +161,11 @@ subroutine scGWBitauiw_ao(nBas,nOrb,nOrb_twice,maxSCF,maxDIIS,dolinGW,restart_sc
  DeltaG_ao_iw(:,:,:)=czero
  Mat1(1:nOrb,1:nOrb)=U_QP(1:nOrb,1:nOrb)
  Mat2(1:nOrb,1:nOrb)=U_QP(nOrb+1:nOrb_twice,1:nOrb)
- R_ao(1:nBas           ,1:nBas           ) = 0.5d0*P_in(1:nBas,1:nBas)
- R_ao(nBas+1:nBas_twice,nBas+1:nBas_twice) = matmul(X_in(1:nBas,1:nOrb), transpose(X_in(1:nBas,1:nOrb)))-0.5d0*P_in(1:nBas,1:nBas)
- R_ao(1:nBas           ,nBas+1:nBas_twice) = Pan_in(1:nBas,1:nBas)
- R_ao(nBas+1:nBas_twice,1:nBas           ) = Pan_in(1:nBas,1:nBas)
+ R_ao_hfb(1:nBas           ,1:nBas           ) = 0.5d0*P_in(1:nBas,1:nBas)
+ R_ao_hfb(nBas+1:nBas_twice,nBas+1:nBas_twice) = matmul(X_in(1:nBas,1:nOrb), transpose(X_in(1:nBas,1:nOrb)))-0.5d0*P_in(1:nBas,1:nBas)
+ R_ao_hfb(1:nBas           ,nBas+1:nBas_twice) = Pan_in(1:nBas,1:nBas)
+ R_ao_hfb(nBas+1:nBas_twice,1:nBas           ) = Pan_in(1:nBas,1:nBas)
+ R_ao=R_ao_hfb
  cHFBinv=matmul(transpose(cHFB),S)
 
  ! Read grids 
@@ -453,8 +456,8 @@ subroutine scGWBitauiw_ao(nBas,nOrb,nOrb_twice,maxSCF,maxDIIS,dolinGW,restart_sc
    R_ao_old(:,:) = R_ao_old(:,:) + wweight(ifreq)*real(Mat_gorkov_tmp(:,:)+conjg(Mat_gorkov_tmp(:,:))) ! Integrate along iw
   enddo
   R_ao_old=R_ao_old/pi
-  R_ao_old(1:nBas,1:nBas)=2d0*R_ao(1:nBas,1:nBas)+R_ao_old(1:nBas,1:nBas)       ! Sum both spin channels
-  R_ao_old(1:nBas,nBas+1:)=R_ao(1:nBas,nBas+1:)+0.5d0*R_ao_old(1:nBas,nBas+1:)  ! We only need one spin-channel
+  R_ao_old(1:nBas,1:nBas)=2d0*R_ao_hfb(1:nBas,1:nBas)+R_ao_old(1:nBas,1:nBas)       ! Sum both spin channels
+  R_ao_old(1:nBas,nBas+1:)=R_ao_hfb(1:nBas,nBas+1:)+0.5d0*R_ao_old(1:nBas,nBas+1:)  ! We only need one spin-channel
   trace_1_rdm=0d0
   do ibas=1,nBas
    do jbas=1,nBas
@@ -513,6 +516,7 @@ subroutine scGWBitauiw_ao(nBas,nOrb,nOrb_twice,maxSCF,maxDIIS,dolinGW,restart_sc
  deallocate(cNO)
  deallocate(U_mo)
  deallocate(R_ao)
+ deallocate(R_ao_hfb)
  deallocate(R_ao_old)
  deallocate(G_ao_tmp)
  deallocate(Mat_gorkov_tmp)
