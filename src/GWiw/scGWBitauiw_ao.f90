@@ -407,7 +407,7 @@ subroutine scGWBitauiw_ao(nBas,nOrb,nOrb_twice,maxSCF,maxDIIS,dolinGW,restart_sc
     do ibas=1,nBas_twice
      write(*,'(*(f10.5))') Sigma_c_w_ao(ifreq,ibas,:)
     enddo
-    write(*,'(a)') ' Old grids'
+    write(*,'(a)') ' Gauss-Legendre grids'
     do ibas=1,nBas_twice
      write(*,'(*(f10.5))') Mat_gorkov_tmp(ibas,:)
     enddo
