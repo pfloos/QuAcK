@@ -34,17 +34,24 @@ subroutine scGWBitauiw_ao(nBas,nOrb,nOrb_twice,maxSCF,maxDIIS,dolinGW,restart_sc
 
   integer                       :: ifreq,itau
   integer                       :: ibas,jbas,kbas,lbas,mbas,obas,pbas,qbas
+  integer                       :: iorb,jorb,korb,lorb
+  integer                       :: iter
   integer                       :: verbose
   integer                       :: ntimes
   integer                       :: nBasSq
   integer                       :: nBas_twice
   integer                       :: ntimes_twice
+  integer                       :: nfreqs_int
   integer                       :: imax_error_gw2gt
+  integer                       :: imax_error_st2sw
 
   double precision              :: eta
   double precision              :: error_gw2gt
+  double precision              :: error_st2sw
   double precision              :: max_error_gw2gt
   double precision              :: sum_error_gw2gt
+  double precision              :: max_error_st2sw
+  double precision              :: sum_error_st2sw
   double precision              :: EcGM,Ehfbl,Ecore,Eh,Ex,Epair
   double precision              :: trace1,trace2
   double precision              :: trace_1_rdm
@@ -59,25 +66,33 @@ subroutine scGWBitauiw_ao(nBas,nOrb,nOrb_twice,maxSCF,maxDIIS,dolinGW,restart_sc
   double precision,allocatable  :: Wp_ao_itau(:,:,:)
   double precision,allocatable  :: R_ao(:,:)
   double precision,allocatable  :: R_ao_old(:,:)
+  double precision,allocatable  :: wcoord_int(:),wweight_int(:)
   double precision,allocatable  :: tweight(:),tcoord(:)
   double precision,allocatable  :: sint2w_weight(:,:)
   double precision,allocatable  :: cost2w_weight(:,:)
   double precision,allocatable  :: cosw2t_weight(:,:)
   double precision,allocatable  :: sinw2t_weight(:,:)
+  double precision,allocatable  :: vMAT_mo(:,:)
+  double precision,allocatable  :: ERI_MO(:,:,:,:)
 
   complex*16                    :: product
   complex*16                    :: weval_cpx
+  complex*16,allocatable        :: wtest(:)
   complex*16,allocatable        :: Sigma_c_w_ao(:,:,:)
   complex*16,allocatable        :: Sigma_c_c(:,:),Sigma_c_s(:,:)
   complex*16,allocatable        :: Sigma_c_plus(:,:),Sigma_c_minus(:,:)
   complex*16,allocatable        :: G_ao_tmp(:,:)
-  complex*16,allocatable        :: G_gorkov_tmp(:,:)
+  complex*16,allocatable        :: Mat_gorkov_tmp(:,:)
   complex*16,allocatable        :: G_ao_itau(:,:,:)
   complex*16,allocatable        :: G_ao_itau_hfb(:,:,:)
   complex*16,allocatable        :: G_ao_iw_hfb(:,:,:)
   complex*16,allocatable        :: DeltaG_ao_iw(:,:,:)
   complex*16,allocatable        :: Chi0_ao_iw(:,:,:)
   complex*16,allocatable        :: Chi0_ao_itau(:,:)
+  complex*16,allocatable        :: Sigma_c_he(:,:,:)
+  complex*16,allocatable        :: Sigma_c_hh(:,:,:)
+  complex*16,allocatable        :: Sigma_c_ee(:,:,:)
+  complex*16,allocatable        :: Sigma_c_eh(:,:,:)
 
 ! Output variables
   integer,intent(inout)         :: nfreqs
@@ -110,7 +125,7 @@ subroutine scGWBitauiw_ao(nBas,nOrb,nOrb_twice,maxSCF,maxDIIS,dolinGW,restart_sc
  verbose=0
  if(verbose_scGWB) verbose=1     
  eta=0d0
-
+ nfreqs_int=1000
 
  ! Allocate arrays
  allocate(Occ(nOrb))
@@ -120,7 +135,7 @@ subroutine scGWBitauiw_ao(nBas,nOrb,nOrb_twice,maxSCF,maxDIIS,dolinGW,restart_sc
  allocate(R_ao(nBas_twice,nBas_twice))
  allocate(R_ao_old(nBas_twice,nBas_twice))
  allocate(G_ao_tmp(nBas,nBas))
- allocate(G_gorkov_tmp(nBas_twice,nBas_twice))
+ allocate(Mat_gorkov_tmp(nBas_twice,nBas_twice))
  allocate(G_ao_iw_hfb(nfreqs,nBas_twice,nBas_twice))
  allocate(DeltaG_ao_iw(nfreqs,nBas_twice,nBas_twice))
  allocate(G_ao_itau_hfb(ntimes_twice,nBas_twice,nBas_twice))
@@ -210,21 +225,21 @@ subroutine scGWBitauiw_ao(nBas,nOrb,nOrb_twice,maxSCF,maxDIIS,dolinGW,restart_sc
  imax_error_gw2gt=1
  do itau=1,ntimes
   ! tau > 0
-  G_gorkov_tmp=czero
+  Mat_gorkov_tmp=czero
   do ifreq=1,nfreqs
-   G_gorkov_tmp(:,:) = G_gorkov_tmp(:,:) + im*cosw2t_weight(itau,ifreq)*Real(G_ao_iw_hfb(ifreq,:,:))  &
-                                         - im*sinw2t_weight(itau,ifreq)*Aimag(G_ao_iw_hfb(ifreq,:,:))
+   Mat_gorkov_tmp(:,:) = Mat_gorkov_tmp(:,:) + im*cosw2t_weight(itau,ifreq)*Real(G_ao_iw_hfb(ifreq,:,:))  &
+                                             - im*sinw2t_weight(itau,ifreq)*Aimag(G_ao_iw_hfb(ifreq,:,:))
   enddo
-  G_gorkov_tmp(:,:)=abs(G_gorkov_tmp(:,:)-G_ao_itau_hfb(2*itau-1,:,:))
-  error_gw2gt=real(sum(G_gorkov_tmp(:,:)))
+  Mat_gorkov_tmp(:,:)=abs(Mat_gorkov_tmp(:,:)-G_ao_itau_hfb(2*itau-1,:,:))
+  error_gw2gt=real(sum(Mat_gorkov_tmp(:,:)))
   ! tau < 0
-  G_gorkov_tmp=czero
+  Mat_gorkov_tmp=czero
   do ifreq=1,nfreqs
-   G_gorkov_tmp(:,:) = G_gorkov_tmp(:,:) + im*cosw2t_weight(itau,ifreq)*Real(G_ao_iw_hfb(ifreq,:,:))  &
-                                         + im*sinw2t_weight(itau,ifreq)*Aimag(G_ao_iw_hfb(ifreq,:,:))
+   Mat_gorkov_tmp(:,:) = Mat_gorkov_tmp(:,:) + im*cosw2t_weight(itau,ifreq)*Real(G_ao_iw_hfb(ifreq,:,:))  &
+                                             + im*sinw2t_weight(itau,ifreq)*Aimag(G_ao_iw_hfb(ifreq,:,:))
   enddo
-  G_gorkov_tmp(:,:)=abs(G_gorkov_tmp(:,:)-G_ao_itau_hfb(2*itau  ,:,:))
-  error_gw2gt=error_gw2gt+real(sum(G_gorkov_tmp(:,:)))
+  Mat_gorkov_tmp(:,:)=abs(Mat_gorkov_tmp(:,:)-G_ao_itau_hfb(2*itau  ,:,:))
+  error_gw2gt=error_gw2gt+real(sum(Mat_gorkov_tmp(:,:)))
   sum_error_gw2gt=sum_error_gw2gt+error_gw2gt
   if(error_gw2gt>max_error_gw2gt) then
    imax_error_gw2gt=itau
@@ -233,9 +248,12 @@ subroutine scGWBitauiw_ao(nBas,nOrb,nOrb_twice,maxSCF,maxDIIS,dolinGW,restart_sc
  enddo
  write(*,'(a,*(f20.8))') ' Sum error ',sum_error_gw2gt
  write(*,'(a,f20.8,a,2f20.8,a)') ' Max CAE   ',max_error_gw2gt,' is in the time +/-',0d0,tcoord(imax_error_gw2gt),'i'
- write(*,'(a,*(f20.8))') ' MAE       ',sum_error_gw2gt/(nfreqs*nBasSq*nBasSq)
+ write(*,'(a,*(f20.8))') ' MAE       ',sum_error_gw2gt/(2*ntimes*nBas_twice*nBas_twice)
 
- 
+ iter=0
+
+  iter=iter+1 
+
   ! Build using the time grid Xo(i tau) = -2i [ G_he(i tau) G_he(-i tau) + G_hh(i tau) G_ee(-i tau) ]
   !  then Fourier transform Xo(i tau) -> Xo(i w)
   Chi0_ao_iw(:,:,:)=czero
@@ -341,6 +359,83 @@ subroutine scGWBitauiw_ao(nBas,nOrb,nOrb_twice,maxSCF,maxDIIS,dolinGW,restart_sc
    enddo
   enddo
 
+  ! Check the quality of Sigma_c(i w) against our previous implementation
+  if(iter==1 .and. (.not.restart_scGWB) .and. verbose/=0) then
+   write(*,*)
+   write(*,'(a)') ' Error test for the Sigma_c(iw) construction'
+   write(*,*)
+   allocate(wtest(nfreqs),wcoord_int(nfreqs_int),wweight_int(nfreqs_int))
+   allocate(Sigma_c_he(nfreqs,nOrb,nOrb))
+   allocate(Sigma_c_hh(nfreqs,nOrb,nOrb))
+   allocate(Sigma_c_ee(nfreqs,nOrb,nOrb))
+   allocate(Sigma_c_eh(nfreqs,nOrb,nOrb))
+   allocate(vMAT_mo(nOrb*nOrb,nOrb*nOrb))
+   allocate(ERI_MO(nOrb,nOrb,nOrb,nOrb))
+   call AOtoMO_ERI_RHF(nBas,nOrb,cHFB,ERI_AO,ERI_MO)
+   do iorb=1,nOrb
+    do jorb=1,nOrb
+     do korb=1,nOrb
+      do lorb=1,nOrb
+       vMAT_mo(1+(korb-1)+(iorb-1)*nOrb,1+(lorb-1)+(jorb-1)*nOrb)=ERI_MO(iorb,jorb,korb,lorb)
+      enddo
+     enddo
+    enddo
+   enddo
+   do ifreq=1,nfreqs
+    wtest(ifreq)=im*wcoord(ifreq)   
+   enddo
+   call cgqf(nfreqs_int,1,0d0,0d0,0d0,1d0,wcoord_int,wweight_int)
+   wweight_int(:)=wweight_int(:)/((1d0-wcoord_int(:))**2d0)
+   wcoord_int(:)=wcoord_int(:)/(1d0-wcoord_int(:))
+   call build_Sigmac_w_RHFB(nOrb,nOrb+nOrb,nfreqs,0d0,0,wtest,eQP_state,nfreqs_int,0,wweight_int,wcoord_int, &
+                            vMAT_mo,U_QP,Sigma_c_he,Sigma_c_hh,Sigma_c_eh,Sigma_c_ee,.true.,.true.)
+   max_error_st2sw=-1d0
+   sum_error_st2sw=0d0
+   error_st2sw=0d0
+   imax_error_st2sw=1
+   do ifreq=1,nfreqs
+    ! Sigma_c_he
+    Mat_gorkov_tmp(1:nBas            ,1:nBas          ) =  matmul(transpose(cHFBinv),matmul(Sigma_c_he(ifreq,:,:),cHFBinv))
+    ! Sigma_c_hh
+    Mat_gorkov_tmp(1:nBas           ,nBas+1:nBas_twice) = -matmul(transpose(cHFBinv),matmul(Sigma_c_hh(ifreq,:,:),cHFBinv))
+    ! Sigma_c_ee
+    Mat_gorkov_tmp(nBas+1:nBas_twice,1:nBas           ) = -matmul(transpose(cHFBinv),matmul(Sigma_c_ee(ifreq,:,:),cHFBinv))
+    ! Sigma_c_eh
+    Mat_gorkov_tmp(nBas+1:nBas_twice,nBas+1:nBas_twice) =  matmul(transpose(cHFBinv),matmul(Sigma_c_eh(ifreq,:,:),cHFBinv))
+    write(*,'(a,2f10.5)') ' Freq ',im*wcoord(ifreq)
+    write(*,'(a)') ' GreenX grids'
+    do ibas=1,nBas_twice
+     write(*,'(*(f10.5))') Sigma_c_w_ao(ifreq,ibas,:)
+    enddo
+    write(*,'(a)') ' Old grids'
+    do ibas=1,nBas_twice
+     write(*,'(*(f10.5))') Mat_gorkov_tmp(ibas,:)
+    enddo
+    Mat_gorkov_tmp(:,:)=abs(Mat_gorkov_tmp(:,:)-Sigma_c_w_ao(ifreq,:,:))
+    write(*,'(a)') ' Abs error'
+    do ibas=1,nBas_twice
+     write(*,'(*(f10.5))') Mat_gorkov_tmp(ibas,:)
+    enddo
+    error_st2sw=real(sum(Mat_gorkov_tmp(:,:)))
+    write(*,'(a,f10.5)') ' Sum error ',error_st2sw
+    sum_error_st2sw=sum_error_st2sw+error_st2sw
+    if(error_st2sw>max_error_st2sw) then
+     imax_error_st2sw=ifreq
+     max_error_st2sw=error_st2sw
+    endif
+   enddo
+   write(*,'(a,*(f20.8))') ' Sum error ',sum_error_st2sw
+   write(*,'(a,f20.8,a,2f20.8,a)') ' Max MAE   ',max_error_st2sw/(nBas_twice*nBas_twice),' is in the frequency ',0d0,wcoord(imax_error_st2sw),'i'
+   write(*,'(a,*(f20.8))') ' MAE       ',sum_error_st2sw/(nfreqs*nBas_twice*nBas_twice)
+   deallocate(ERI_MO)
+   deallocate(vMAT_mo)
+   deallocate(Sigma_c_he)
+   deallocate(Sigma_c_hh)
+   deallocate(Sigma_c_ee)
+   deallocate(Sigma_c_eh)
+   deallocate(wtest,wcoord_int,wweight_int)
+  endif
+
 
 
 ! Using the correlated G and Sigma_c to test the linearized density matrix approximation
@@ -351,11 +446,11 @@ subroutine scGWBitauiw_ao(nBas,nOrb,nOrb_twice,maxSCF,maxDIIS,dolinGW,restart_sc
   write(*,*) '  G^lin,Gorkov = G^Gorkov + G^Gorkov Sigma_c G^Gorkov'
   write(*,*) ' -----------------------------------------------------'
   R_ao_old=0d0
-  G_gorkov_tmp(:,:)=czero
+  Mat_gorkov_tmp(:,:)=czero
   do ifreq=1,nfreqs
-   G_gorkov_tmp(:,:)=G_ao_iw_hfb(ifreq,:,:)+DeltaG_ao_iw(ifreq,:,:)
-   G_gorkov_tmp(:,:)=matmul(matmul(G_gorkov_tmp(:,:),Sigma_c_w_ao(ifreq,:,:)),G_gorkov_tmp(:,:))
-   R_ao_old(:,:) = R_ao_old(:,:) + wweight(ifreq)*real(G_gorkov_tmp(:,:)+conjg(G_gorkov_tmp(:,:))) ! Integrate along iw
+   Mat_gorkov_tmp(:,:)=G_ao_iw_hfb(ifreq,:,:)+DeltaG_ao_iw(ifreq,:,:)
+   Mat_gorkov_tmp(:,:)=matmul(matmul(Mat_gorkov_tmp(:,:),Sigma_c_w_ao(ifreq,:,:)),Mat_gorkov_tmp(:,:))
+   R_ao_old(:,:) = R_ao_old(:,:) + wweight(ifreq)*real(Mat_gorkov_tmp(:,:)+conjg(Mat_gorkov_tmp(:,:))) ! Integrate along iw
   enddo
   R_ao_old=R_ao_old/pi
   R_ao_old(1:nBas,1:nBas)=2d0*R_ao(1:nBas,1:nBas)+R_ao_old(1:nBas,1:nBas)       ! Sum both spin channels
@@ -420,7 +515,7 @@ subroutine scGWBitauiw_ao(nBas,nOrb,nOrb_twice,maxSCF,maxDIIS,dolinGW,restart_sc
  deallocate(R_ao)
  deallocate(R_ao_old)
  deallocate(G_ao_tmp)
- deallocate(G_gorkov_tmp)
+ deallocate(Mat_gorkov_tmp)
  deallocate(DeltaG_ao_iw)
  deallocate(G_ao_iw_hfb)
  deallocate(G_ao_itau_hfb)
