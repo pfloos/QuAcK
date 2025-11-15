@@ -32,10 +32,12 @@ subroutine scGWBitauiw_ao(nBas,nOrb,nOrb_twice,maxSCF,maxDIIS,dolinGW,restart_sc
 
 ! Local variables
 
+  logical                       :: file_exists
+
   integer                       :: ifreq,itau
   integer                       :: ibas,jbas,kbas,lbas,mbas,obas,pbas,qbas
   integer                       :: iorb,jorb,korb,lorb
-  integer                       :: iter
+  integer                       :: iter,iter_fock
   integer                       :: verbose
   integer                       :: ntimes
   integer                       :: nBasSq
@@ -45,7 +47,9 @@ subroutine scGWBitauiw_ao(nBas,nOrb,nOrb_twice,maxSCF,maxDIIS,dolinGW,restart_sc
   integer                       :: imax_error_gw2gt
   integer                       :: imax_error_st2sw
 
-  double precision              :: eta
+  double precision              :: eta,diff_Rao
+  double precision              :: thrs_N,thrs_Ngrad,thrs_Rao
+  double precision              :: nElectrons
   double precision              :: error_gw2gt
   double precision              :: error_st2sw
   double precision              :: max_error_gw2gt
@@ -65,6 +69,7 @@ subroutine scGWBitauiw_ao(nBas,nOrb,nOrb_twice,maxSCF,maxDIIS,dolinGW,restart_sc
   double precision,allocatable  :: Wp_ao_iw(:,:)
   double precision,allocatable  :: Wp_ao_itau(:,:,:)
   double precision,allocatable  :: R_ao(:,:)
+  double precision,allocatable  :: R_ao_iter(:,:)
   double precision,allocatable  :: R_ao_hfb(:,:)
   double precision,allocatable  :: R_ao_old(:,:)
   double precision,allocatable  :: wcoord_int(:),wweight_int(:)
@@ -126,7 +131,16 @@ subroutine scGWBitauiw_ao(nBas,nOrb,nOrb_twice,maxSCF,maxDIIS,dolinGW,restart_sc
  verbose=0
  if(verbose_scGWB) verbose=1     
  eta=0d0
- nfreqs_int=1000
+ thrs_N=1d-10
+ thrs_Ngrad=1d-6
+ thrs_Rao=1d-6
+ nElectrons=0d0
+ do ibas=1,nBas
+  do jbas=1,nBas
+   nElectrons=nElectrons+P_in(ibas,jbas)*S(ibas,jbas)
+  enddo
+ enddo
+
 
  ! Allocate arrays
  allocate(Occ(nOrb))
@@ -134,6 +148,7 @@ subroutine scGWBitauiw_ao(nBas,nOrb,nOrb_twice,maxSCF,maxDIIS,dolinGW,restart_sc
  allocate(cHFBinv(nOrb,nBas))
  allocate(U_mo(nOrb,nOrb))
  allocate(R_ao(nBas_twice,nBas_twice))
+ allocate(R_ao_iter(nBas_twice,nBas_twice))
  allocate(R_ao_hfb(nBas_twice,nBas_twice))
  allocate(R_ao_old(nBas_twice,nBas_twice))
  allocate(G_ao_tmp(nBas,nBas))
@@ -166,6 +181,7 @@ subroutine scGWBitauiw_ao(nBas,nOrb,nOrb_twice,maxSCF,maxDIIS,dolinGW,restart_sc
  R_ao_hfb(1:nBas           ,nBas+1:nBas_twice) = Pan_in(1:nBas,1:nBas)
  R_ao_hfb(nBas+1:nBas_twice,1:nBas           ) = Pan_in(1:nBas,1:nBas)
  R_ao=R_ao_hfb
+ R_ao_iter=R_ao_hfb
  cHFBinv=matmul(transpose(cHFB),S)
 
  ! Read grids 
@@ -253,8 +269,13 @@ subroutine scGWBitauiw_ao(nBas,nOrb,nOrb_twice,maxSCF,maxDIIS,dolinGW,restart_sc
  write(*,'(a,f20.8,a,2f20.8,a)') ' Max CAE   ',max_error_gw2gt,' is in the time +/-',0d0,tcoord(imax_error_gw2gt),'i'
  write(*,'(a,*(f20.8))') ' MAE       ',sum_error_gw2gt/(2*ntimes*nBas_twice*nBas_twice)
 
- iter=0
+!------------!
+! scGWB loop !
+!------------!
 
+ iter=0
+ iter_fock=0
+ do
   iter=iter+1 
 
   ! Build using the time grid Xo(i tau) = -2i [ G_he(i tau) G_he(-i tau) + G_hh(i tau) G_ee(-i tau) ]
@@ -364,6 +385,14 @@ subroutine scGWBitauiw_ao(nBas,nOrb,nOrb_twice,maxSCF,maxDIIS,dolinGW,restart_sc
 
   ! Check the quality of Sigma_c(i w) against our previous implementation
   if(iter==1 .and. (.not.restart_scGWB) .and. verbose/=0) then
+   nfreqs_int=1000
+   inquire(file='nfreqs_gauss_legendre', exist=file_exists)
+   if(file_exists) then
+    write(*,*) 'Reading nfreqs_gauss_legendre grid (default: nfreqs_int=1000)'
+    open(unit=937, form='formatted', file='nfreqs_gauss_legendre', status='old')
+    read(937) nfreqs_int
+    close(937)
+   endif
    write(*,*)
    write(*,'(a)') ' Error test for the Sigma_c(iw) construction'
    write(*,*)
@@ -440,6 +469,21 @@ subroutine scGWBitauiw_ao(nBas,nOrb,nOrb_twice,maxSCF,maxDIIS,dolinGW,restart_sc
   endif
 
 
+  ! Check convergence of R_ao after a scGWB iteration
+  diff_Rao=0d0
+  do ibas=1,nBas_twice
+   do jbas=1,nBas_twice
+    diff_Rao=diff_Rao+abs(R_ao(ibas,jbas)-R_ao_iter(ibas,jbas))
+   enddo 
+  enddo
+  R_ao_iter=R_ao
+
+
+  if(diff_Rao<=thrs_Rao) exit
+
+  if(iter==maxSCF) exit
+
+ enddo
 
 ! Using the correlated G and Sigma_c to test the linearized density matrix approximation
  if(dolinGW) then
@@ -516,6 +560,7 @@ subroutine scGWBitauiw_ao(nBas,nOrb,nOrb_twice,maxSCF,maxDIIS,dolinGW,restart_sc
  deallocate(cNO)
  deallocate(U_mo)
  deallocate(R_ao)
+ deallocate(R_ao_iter)
  deallocate(R_ao_hfb)
  deallocate(R_ao_old)
  deallocate(G_ao_tmp)
