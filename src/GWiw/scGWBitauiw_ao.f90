@@ -37,7 +37,7 @@ subroutine scGWBitauiw_ao(nBas,nOrb,nOrb_twice,maxSCF,maxDIIS,dolinGW,restart_sc
   integer                       :: ifreq,itau
   integer                       :: ibas,jbas,kbas,lbas,mbas,obas,pbas,qbas
   integer                       :: iorb,jorb,korb,lorb
-  integer                       :: iter,iter_fock
+  integer                       :: iter,iter_hfb
   integer                       :: verbose
   integer                       :: ntimes
   integer                       :: nBasSq
@@ -72,6 +72,7 @@ subroutine scGWBitauiw_ao(nBas,nOrb,nOrb_twice,maxSCF,maxDIIS,dolinGW,restart_sc
   double precision,allocatable  :: R_ao_iter(:,:)
   double precision,allocatable  :: R_ao_hfb(:,:)
   double precision,allocatable  :: R_ao_old(:,:)
+  double precision,allocatable  :: H_ao_hfb(:,:)
   double precision,allocatable  :: wcoord_int(:),wweight_int(:)
   double precision,allocatable  :: tweight(:),tcoord(:)
   double precision,allocatable  :: sint2w_weight(:,:)
@@ -151,6 +152,7 @@ subroutine scGWBitauiw_ao(nBas,nOrb,nOrb_twice,maxSCF,maxDIIS,dolinGW,restart_sc
  allocate(R_ao_iter(nBas_twice,nBas_twice))
  allocate(R_ao_hfb(nBas_twice,nBas_twice))
  allocate(R_ao_old(nBas_twice,nBas_twice))
+ allocate(H_ao_hfb(nBas_twice,nBas_twice))
  allocate(G_ao_tmp(nBas,nBas))
  allocate(Mat_gorkov_tmp(nBas_twice,nBas_twice))
  allocate(G_ao_iw_hfb(nfreqs,nBas_twice,nBas_twice))
@@ -274,7 +276,7 @@ subroutine scGWBitauiw_ao(nBas,nOrb,nOrb_twice,maxSCF,maxDIIS,dolinGW,restart_sc
 !------------!
 
  iter=0
- iter_fock=0
+ iter_hfb=0
  do
   iter=iter+1 
 
@@ -468,6 +470,55 @@ subroutine scGWBitauiw_ao(nBas,nOrb,nOrb_twice,maxSCF,maxDIIS,dolinGW,restart_sc
    deallocate(wtest,wcoord_int,wweight_int)
   endif
 
+  ! Converge with respect to the H_HFB operator (using only good R_ao matrices -> Tr[R_ao_block S_ao]=Nelectrons )
+  if(.not.no_fock) then ! Skiiping the opt w.r.t. the Fock operator to do later the linearized approximation on Go -> [ lin-G = Go + Go Sigma Go ]
+   iter_hfb=0
+!   n_diisR=0
+!   rcondR=0d0
+!   err_diisR=0d0
+!   R_ao_old_diis=0d0
+   do
+    ! Build H_HFB
+    iter_hfb=iter_hfb+1
+    H_ao_hfb(1:nBas,1:nBas)=Hc(1:nBas,1:nBas)
+    Ehfbl=0d0
+    do ibas=1,nBas
+     do jbas=1,nBas
+      obas=nBas+1+(jbas-1)
+      Ehfbl=Ehfbl+2d0*R_ao(ibas,jbas)*Hc(ibas,jbas)
+      do kbas=1,nBas
+       do lbas=1,nBas
+        qbas=nBas+1+(lbas-1)
+        H_ao_hfb(ibas,jbas)=H_ao_hfb(ibas,jbas)+2d0*R_ao(kbas,lbas)*vMAT(1+(lbas-1)+(kbas-1)*nBas,1+(jbas-1)+(ibas-1)*nBas) &
+                           -R_ao(kbas,lbas)*vMAT(1+(jbas-1)+(kbas-1)*nBas,1+(lbas-1)+(ibas-1)*nBas)
+        H_ao_hfb(ibas,obas)=H_ao_hfb(ibas,obas)+sigma*R_ao(kbas,qbas)*vMAT(1+(ibas-1)+(kbas-1)*nBas,1+(jbas-1)+(lbas-1)*nBas)
+        Ehfbl=Ehfbl+2d0*R_ao(kbas,lbas)*R_ao(ibas,jbas)*vMAT(1+(lbas-1)+(kbas-1)*nBas,1+(jbas-1)+(ibas-1)*nBas) &
+             -R_ao(kbas,lbas)*R_ao(ibas,jbas)*vMAT(1+(jbas-1)+(kbas-1)*nBas,1+(lbas-1)+(ibas-1)*nBas)           &
+             +sigma*R_ao(kbas,qbas)*R_ao(ibas,obas)*vMAT(1+(ibas-1)+(kbas-1)*nBas,1+(jbas-1)+(lbas-1)*nBas)
+       enddo
+      enddo
+     enddo
+    enddo
+    H_ao_hfb(nBas+1:nBas_twice,nBas+1:nBas_twice) = -H_ao_hfb(1:nBas,1:nBas           )
+    H_ao_hfb(nBas+1:nBas_twice,1:nBas           ) =  H_ao_hfb(1:nBas,nBas+1:nBas_twice)
+    ! Build G(i w) and R
+    R_ao_old=R_ao
+    ! Check convergence of R_ao for fixed Sigma_c(i w)
+    diff_Rao=0d0
+    do ibas=1,nBas_twice
+     do jbas=1,nBas_twice
+      diff_Rao=diff_Rao+abs(R_ao(ibas,jbas)-R_ao_old(ibas,jbas))
+     enddo
+    enddo
+
+    if(diff_Rao<=thrs_Rao) exit
+
+    if(iter_hfb==maxSCF) exit
+
+   enddo
+
+  endif
+
 
   ! Check convergence of R_ao after a scGWB iteration
   diff_Rao=0d0
@@ -478,12 +529,53 @@ subroutine scGWBitauiw_ao(nBas,nOrb,nOrb_twice,maxSCF,maxDIIS,dolinGW,restart_sc
   enddo
   R_ao_iter=R_ao
 
+  ! Print iter info
+  U_mo=-2d0*matmul(matmul(cHFBinv,R_ao(1:nBas,1:nBas)),transpose(cHFBinv)) ! Minus to order occ numbers
+  call diagonalize_matrix(nOrb,U_mo,Occ)
+  Occ=-Occ
+  trace_1_rdm=sum(Occ)
+  cNO=matmul(cHFB,U_mo)
+  write(*,*)
+  write(*,'(a,f15.8,a,i5,a,i5)') ' Trace scGWB ',trace_1_rdm,' after ',iter_hfb,' HFB iterations at global iter ',iter
+  write(*,'(a,f15.8)')        ' Change of R ',diff_Rao
+  write(*,'(a,f15.8)')        ' Chem. Pot.  ',chem_pot
+  write(*,'(a,f15.8)')        ' Enuc        ',ENuc
+  write(*,'(a,f15.8)')        ' Ehfbl       ',Ehfbl
+  write(*,'(a,f15.8)')        ' EcGM        ',EcGM
+  write(*,'(a,f15.8)')        ' Eelec       ',Ehfbl+EcGM
+  write(*,'(a,f15.8)')        ' Etot        ',Ehfbl+EcGM+ENuc
+  write(*,*)
 
   if(diff_Rao<=thrs_Rao) exit
 
   if(iter==maxSCF) exit
 
  enddo
+ write(*,*)
+ write(*,'(A50)') '---------------------------------------'
+ write(*,'(A50)') '     scGWB calculation completed       '
+ write(*,'(A50)') '---------------------------------------'
+ write(*,*)
+ write(*,'(a,f15.8,a,i5,a)') ' Trace scGWB ',trace_1_rdm,' after ',iter,' global iterations '
+ write(*,'(a,f15.8)')        ' Change of P ',diff_Rao
+ write(*,'(a,f15.8)')        ' Chem. Pot.  ',chem_pot
+ write(*,'(a,f15.8)')        ' Enuc        ',ENuc
+ write(*,'(a,f15.8)')        ' Ehfbl       ',Ehfbl
+ write(*,'(a,f15.8)')        ' EcGM        ',EcGM
+ write(*,'(a,f15.8)')        ' Eelec       ',Ehfbl+EcGM
+ write(*,'(a,f15.8)')        ' scGW Energy ',Ehfbl+EcGM+ENuc
+ write(*,*)
+ write(*,*) ' Final occupation numbers'
+ do ibas=1,nOrb
+  write(*,'(I7,F15.8)') ibas,Occ(ibas)
+ enddo
+ if(verbose/=0) then
+  write(*,*) ' Natural orbitals (columns)'
+  do ibas=1,nBas
+   write(*,'(*(f15.8))') cNO(ibas,:)
+  enddo
+ endif
+ write(*,*)
 
 ! Using the correlated G and Sigma_c to test the linearized density matrix approximation
  if(dolinGW) then
@@ -563,6 +655,7 @@ subroutine scGWBitauiw_ao(nBas,nOrb,nOrb_twice,maxSCF,maxDIIS,dolinGW,restart_sc
  deallocate(R_ao_iter)
  deallocate(R_ao_hfb)
  deallocate(R_ao_old)
+ deallocate(H_ao_hfb)
  deallocate(G_ao_tmp)
  deallocate(Mat_gorkov_tmp)
  deallocate(DeltaG_ao_iw)
