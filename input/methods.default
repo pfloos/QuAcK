@@ -1,5 +1,5 @@
 # RHF UHF GHF ROHF HFB cRHF eRHF
-  F   F   F   F    F   F    F
+  F   F   F   F    F   F    
 # MP2 MP3
   F   F
 # CCD pCCD DCD CCSD CCSD(T)
@@ -9,7 +9,9 @@
 # CIS CIS(D) CID CISD FCI
   F   F      F   F    F
 # phRPA phRPAx crRPA ppRPA BRPA
-  F     F      F     F     F
+  F     F      F     F     F   
+# OORPA
+    F
 # G0F2 evGF2 qsGF2 ufGF2 G0F3 evGF3 scGF2
   F    F     F     F     F    F     F
 # G0W0 evGW qsGW ufG0W0 ufGW scGW
@@ -20,7 +22,7 @@
   F      F      F
 # evParquet qsParquet
   F         F
-# IPEA-ADC2 IP-ADC2 IPEA-ADC3 SOSEX 2SOSEX G3W2 ADC-GW ADC-2SOSEX ADC-G3W2
-  F         F       F         F     F      F    F      F          F
+# IPEA-ADC2 IP-ADC2 IPEA-ADC3 SOSEX 2SOSEX G3W2 ADC-GW ADC-2SOSEX ADC3-G3W2 ADC4-G3W2
+  F         F       F         F     F      F    F      F          F         F
 # Rtest Utest Gtest
   F     F     F

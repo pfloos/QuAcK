@@ -1,6 +1,8 @@
 subroutine OOGG0W0(dotest,doACFDT,exchange_kernel,doXBS,dophBSE,dophBSE2,TDA_W,TDA,dBSE,dTDA,doppBSE,& 
-                linearize,eta,doSRG,do_linDM,nBas,nBas2,nC,nO,nV,nR,nS,mu,ENuc,EGHF,ERI_AO,ERI_MO,                             &
-                 dipole_int,eHF,cHF,Sovl,XHF,Tkin,Vpot,Hc,PHF,FHF,eGW_out)
+                linearize,eta,doSRG,do_linDM,nBas,nBas2,nC,nO,nV,nR,nS,                              &
+                maxIter,thresh,dRPA,mu,diagHess,                                                     &
+                ENuc,EGHF,ERI_AO,ERI_MO,                                                             &
+                dipole_int,eHF,cHF,Sovl,XHF,Tkin,Vpot,Hc,PHF,FHF,eGW_out)
 
 ! Perform optimized orbital G0W0 calculation (optimal for excitation mu)
 
@@ -24,7 +26,8 @@ subroutine OOGG0W0(dotest,doACFDT,exchange_kernel,doXBS,dophBSE,dophBSE2,TDA_W,T
   logical,intent(in)            :: dTDA
   logical,intent(in)            :: linearize
   double precision,intent(in)   :: eta
-  logical,intent(in)            :: doSRG
+  logical,intent(in)            :: doSRG,diagHess
+  logical,intent(inout)         :: dRPA
   logical,intent(in)            :: do_linDM
 
   integer,intent(in)            :: nBas,nBas2
@@ -33,7 +36,8 @@ subroutine OOGG0W0(dotest,doACFDT,exchange_kernel,doXBS,dophBSE,dophBSE2,TDA_W,T
   integer,intent(in)            :: nV
   integer,intent(in)            :: nR
   integer,intent(in)            :: nS
-  integer,intent(in)            :: mu
+  integer,intent(in)            :: mu,maxIter
+  double precision,intent(in)   :: thresh
   double precision,intent(in)   :: ENuc
   double precision,intent(in)   :: EGHF
   double precision,intent(in)   :: ERI_AO(nBas,nBas,nBas,nBas)
@@ -53,7 +57,6 @@ subroutine OOGG0W0(dotest,doACFDT,exchange_kernel,doXBS,dophBSE,dophBSE2,TDA_W,T
 
   logical                       :: print_W   = .false.
   logical                       :: plot_self = .false.
-  logical                       :: dRPA_W
   integer                       :: isp_W
   double precision              :: flow
   double precision              :: EcRPA,EcRPA_HF
@@ -85,7 +88,6 @@ subroutine OOGG0W0(dotest,doACFDT,exchange_kernel,doXBS,dophBSE,dophBSE2,TDA_W,T
   double precision,allocatable  :: eGW(:)
  
   double precision              :: OOConv
-  double precision              :: thresh = 1.0e-5
   integer                       :: OOi
   double precision,allocatable  :: h(:,:)
   double precision,allocatable  :: Kap(:,:)
@@ -141,7 +143,8 @@ subroutine OOGG0W0(dotest,doACFDT,exchange_kernel,doXBS,dophBSE,dophBSE2,TDA_W,T
 ! Spin manifold and TDA for dynamical screening
 
   isp_W = 1
-  dRPA_W = .true.
+  if(.not. dRPA) write(*,*) "Only dRPA orbital optimisation is implemented for generalized branch. Proceed with dRPA."
+  dRPA = .true.
  
    if(TDA_W) then 
      write(*,*) 'Tamm-Dancoff approximation for dynamical screening!'
@@ -194,7 +197,7 @@ subroutine OOGG0W0(dotest,doACFDT,exchange_kernel,doXBS,dophBSE,dophBSE2,TDA_W,T
   
   write(*,*) "Start orbital optimization loop..."
 
-  do while (OOConv > thresh)
+  do while (OOConv > thresh .and. OOi < maxIter)
     EOld = Emu
     write(*,*) "Orbital optimiation Iteration: ", OOi 
   
@@ -269,8 +272,8 @@ subroutine OOGG0W0(dotest,doACFDT,exchange_kernel,doXBS,dophBSE,dophBSE2,TDA_W,T
   !-------------------!
   ! Compute screening !
   !-------------------!
-                   call OO_phGLR_A(dRPA_W,nBas2,nC,nO,nV,nR,nS,1d0,F,ERI_MO,Aph)
-    if(.not.TDA_W) call phGLR_B(dRPA_W,nBas2,nC,nO,nV,nR,nS,1d0,ERI_MO,Bph)
+                   call OO_phGLR_A(dRPA,nBas2,nC,nO,nV,nR,nS,1d0,F,ERI_MO,Aph)
+    if(.not.TDA_W) call phGLR_B(dRPA,nBas2,nC,nO,nV,nR,nS,1d0,ERI_MO,Bph)
     call phGLR(TDA_W,nS,Aph,Bph,EcRPA,Om,XpY,XmY)
     
     if(OOi == 1) EcRPA_HF = EcRPA
@@ -303,9 +306,10 @@ subroutine OOGG0W0(dotest,doACFDT,exchange_kernel,doXBS,dophBSE,dophBSE2,TDA_W,T
     write(*,*) "EHF+ EcRPA@HF = ", EGHF + EcRPA_HF
     write(*,*) "EMF from rdm = " , EHF_rdm
     write(*,*) "EcRPA = " , ERPA_rdm
+    write(*,*) "EcRPA (nordm) = " , EcRPA
     write(*,*) "ERPA = ", Emu
     
-    call G_optimize_orbitals(nBas,nBas2,nV,nR,nC,nO,N,Nsq,O,V,ERI_AO,ERI_MO,&
+    call G_optimize_orbitals(diagHess,nBas,nBas2,nV,nR,nC,nO,N,Nsq,O,V,ERI_AO,ERI_MO,&
             h,F,rdm1_hf,rdm1_rpa,rdm2_hf,rdm2_rpa,c,OOConv)
    
     write(*,*) '----------------------------------------------------------'

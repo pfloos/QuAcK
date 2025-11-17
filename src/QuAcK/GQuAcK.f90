@@ -1,11 +1,13 @@
 subroutine GQuAcK(working_dir,dotest,doGHF,dostab,dosearch,doMP2,doMP3,doCCD,dopCCD,doDCD,doCCSD,doCCSDT,    &
-                  dodrCCD,dorCCD,docrCCD,dolCCD,dophRPA,dophRPAx,docrRPA,doppRPA,                            &
+                  dodrCCD,dorCCD,docrCCD,dolCCD,dophRPA,dophRPAx,docrRPA,doppRPA,doOO,                       &
                   doG0W0,doevGW,doqsGW,doG0F2,doevGF2,doqsGF2,doG0T0pp,doevGTpp,doqsGTpp,doG0T0eh,doevParquet,doqsParquet, &
                   nNuc,nBas,nC,nO,nV,nR,ENuc,ZNuc,rNuc,S,T,V,Hc,X,dipole_int_AO,                             &
                   maxSCF_HF,max_diis_HF,thresh_HF,level_shift,guess_type,mix,reg_MP,                         &
                   maxSCF_CC,max_diis_CC,thresh_CC,                                                           &
-                  TDA,maxSCF_GF,max_diis_GF,thresh_GF,lin_GF,reg_GF,eta_GF,                                  &
-                  maxSCF_GW,max_diis_GW,thresh_GW,TDA_W,lin_GW,reg_GW,eta_GW,doOO,mu,do_linDM_GW,                    &
+                  TDA,                                                                                       &
+                  max_iter_OO,thresh_OO,dRPA_OO,mu_OO,diagHess_OO,                                           & 
+                  maxSCF_GF,max_diis_GF,thresh_GF,lin_GF,reg_GF,eta_GF,                                      &
+                  maxSCF_GW,max_diis_GW,thresh_GW,TDA_W,lin_GW,reg_GW,eta_GW,do_linDM_GW,                    &
                   maxSCF_GT,max_diis_GT,thresh_GT,TDA_T,lin_GT,reg_GT,eta_GT,do_linDM_GT,                    &
                   dophBSE,dophBSE2,doppBSE,dBSE,dTDA,doACFDT,exchange_kernel,doXBS,                          &
                   TDAeh,TDApp,max_diis_1b,max_diis_2b,max_it_1b,conv_1b,max_it_2b,conv_2b,lin_parquet,reg_1b,reg_2b,reg_PA)
@@ -25,8 +27,10 @@ subroutine GQuAcK(working_dir,dotest,doGHF,dostab,dosearch,doMP2,doMP3,doCCD,dop
   logical,intent(in)            :: doCCD,dopCCD,doDCD,doCCSD,doCCSDT
   logical,intent(in)            :: dodrCCD,dorCCD,docrCCD,dolCCD
   logical,intent(in)            :: dophRPA,dophRPAx,docrRPA,doppRPA
+  logical,intent(in)            :: doOO
   logical,intent(in)            :: doG0F2,doevGF2,doqsGF2
-  logical,intent(in)            :: doG0W0,doevGW,doqsGW
+  logical,intent(inout)         :: doG0W0
+  logical,intent(in)            :: doevGW,doqsGW
   logical,intent(in)            :: doG0T0pp,doevGTpp,doqsGTpp
   logical,intent(in)            :: doG0T0eh
   logical,intent(in)            :: doevParquet,doqsParquet
@@ -57,6 +61,10 @@ subroutine GQuAcK(working_dir,dotest,doGHF,dostab,dosearch,doMP2,doMP3,doCCD,dop
   double precision,intent(in)   :: thresh_CC
 
   logical,intent(in)            :: TDA
+                  
+  integer,intent(in)            :: max_iter_OO,mu_OO
+  double precision,intent(in)   :: thresh_OO
+  logical,intent(in)            :: dRPA_OO,diagHess_OO
 
   integer,intent(in)            :: maxSCF_GF,max_diis_GF
   double precision,intent(in)   :: thresh_GF
@@ -65,8 +73,7 @@ subroutine GQuAcK(working_dir,dotest,doGHF,dostab,dosearch,doMP2,doMP3,doCCD,dop
 
   integer,intent(in)            :: maxSCF_GW,max_diis_GW
   double precision,intent(in)   :: thresh_GW
-  logical,intent(in)            :: TDA_W,lin_GW,reg_GW,doOO
-  integer,intent(in)            :: mu
+  logical,intent(in)            :: TDA_W,lin_GW,reg_GW
   double precision,intent(in)   :: eta_GW
   logical,intent(in)            :: do_linDM_GW
 
@@ -290,6 +297,27 @@ subroutine GQuAcK(working_dir,dotest,doGHF,dostab,dosearch,doMP2,doMP3,doCCD,dop
 
   end if
 
+!------------------------------------!
+! Orbital optimization RPA/GW module !
+!------------------------------------!
+
+if(doOO) then
+
+  call wall_time(start_GW)
+  call OOGG0W0(dotest,doACFDT,exchange_kernel,doXBS,dophBSE,dophBSE2,TDA_W,TDA,dBSE,dTDA,doppBSE,& 
+              lin_GW,eta_GW,reg_GW,do_linDM_GW,nBas,nBas2,nC,nO,nV,nR,nS,                        &
+              max_iter_OO,thresh_OO,dRPA_OO,mu_OO,diagHess_OO,                                   & 
+              ENuc,EGHF,ERI_AO,ERI_MO,                                                           &
+              dipole_int_MO,eHF,cHF,S,X,T,V,Hc,PHF,FHF,eGW) 
+  call wall_time(end_GW)
+
+  t_GW = end_GW - start_GW
+  write(*,'(A65,1X,F9.3,A8)') 'Total wall time for OO and G0W0 = ',t_GW,' seconds'
+  write(*,*)
+  doG0W0 = .false.
+
+end if
+
 !-------------------------!
 ! Green's function module !
 !-------------------------!
@@ -319,7 +347,7 @@ subroutine GQuAcK(working_dir,dotest,doGHF,dostab,dosearch,doMP2,doMP3,doCCD,dop
     
     call wall_time(start_GW)
     call GGW(dotest,doG0W0,doevGW,doqsGW,maxSCF_GW,thresh_GW,max_diis_GW,doACFDT,exchange_kernel,doXBS,        & 
-            dophBSE,dophBSE2,doppBSE,TDA_W,TDA,dBSE,dTDA,lin_GW,eta_GW,reg_GW,doOO,mu,do_linDM_GW,nNuc,ZNuc,rNuc,ENuc,& 
+            dophBSE,dophBSE2,doppBSE,TDA_W,TDA,dBSE,dTDA,lin_GW,eta_GW,reg_GW,do_linDM_GW,nNuc,ZNuc,rNuc,ENuc, & 
              nBas,nBas2,nC,nO,nV,nR,nS,EGHF,S,X,T,V,Hc,ERI_AO,ERI_MO,dipole_int_AO,dipole_int_MO,PHF,FHF,cHF,eHF,  &
              eGW)
     call wall_time(end_GW)

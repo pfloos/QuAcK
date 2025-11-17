@@ -1,20 +1,21 @@
-subroutine read_methods(working_dir,                                    &
-                        doRHF,doUHF,doGHF,doROHF,doRHFB,docRHF,doeRHF,  &
-                        doMP2,doMP3,                                    & 
-                        doCCD,dopCCD,doDCD,doCCSD,doCCSDT,              & 
-                        do_drCCD,do_rCCD,do_crCCD,do_lCCD,              &
-                        doCIS,doCIS_D,doCID,doCISD,doFCI,               & 
-                        dophRPA,dophRPAx,docrRPA,doppRPA,doBRPA,        & 
-                        doG0F2,doevGF2,doqsGF2,doufG0F02,               &
-                        doG0F3,doevGF3,                                 & 
-                        doG0W0,doevGW,doqsGW,doufG0W0,doufGW,           &
-                        doscGW,doscGF2,                                 & 
-                        doG0T0pp,doevGTpp,doqsGTpp,doufG0T0pp,          &
-                        doG0T0eh,doevGTeh,doqsGTeh,                     &
-                        doevParquet,doqsParquet,                        &
-                        do_IPEA_ADC2,do_IP_ADC2,do_IPEA_ADC3,           &
-                        do_SOSEX,do_2SOSEX,do_G3W2,                     &
-                        do_ADC_GW,do_ADC_2SOSEX,do_ADC_G3W2,            &
+subroutine read_methods(working_dir,                                       &
+                        doRHF,doUHF,doGHF,doROHF,doRHFB,docRHF,doeRHF,     &
+                        doMP2,doMP3,                                       & 
+                        doCCD,dopCCD,doDCD,doCCSD,doCCSDT,                 & 
+                        do_drCCD,do_rCCD,do_crCCD,do_lCCD,                 &
+                        doCIS,doCIS_D,doCID,doCISD,doFCI,                  & 
+                        dophRPA,dophRPAx,docrRPA,doppRPA,doBRPA,           &
+                        doOORPA,                                           &
+                        doG0F2,doevGF2,doqsGF2,doufG0F02,                  &
+                        doG0F3,doevGF3,                                    & 
+                        doG0W0,doevGW,doqsGW,doufG0W0,doufGW,              &
+                        doscGW,doscGF2,                                    & 
+                        doG0T0pp,doevGTpp,doqsGTpp,doufG0T0pp,             &
+                        doG0T0eh,doevGTeh,doqsGTeh,                        &
+                        doevParquet,doqsParquet,                           &
+                        do_IPEA_ADC2,do_IP_ADC2,do_IPEA_ADC3,              &
+                        do_SOSEX,do_2SOSEX,do_G3W2,                        &
+                        do_ADC_GW,do_ADC_2SOSEX,do_ADC3_G3W2,do_ADC4_G3W2, &
                         doRtest,doUtest,doGtest)
 
 ! Read desired methods 
@@ -33,6 +34,7 @@ subroutine read_methods(working_dir,                                    &
   logical,intent(out)           :: do_drCCD,do_rCCD,do_crCCD,do_lCCD
   logical,intent(out)           :: doCIS,doCIS_D,doCID,doCISD,doFCI
   logical,intent(out)           :: dophRPA,dophRPAx,docrRPA,doppRPA,doBRPA
+  logical,intent(out)           :: doOORPA
   logical,intent(out)           :: doG0F2,doevGF2,doqsGF2,doufG0F02,doG0F3,doevGF3,doscGF2
   logical,intent(out)           :: doG0W0,doevGW,doqsGW,doufG0W0,doufGW,doscGW
   logical,intent(out)           :: doG0T0pp,doevGTpp,doqsGTpp,doufG0T0pp 
@@ -40,13 +42,13 @@ subroutine read_methods(working_dir,                                    &
   logical,intent(out)           :: doevParquet,doqsParquet
   logical,intent(out)           :: do_IPEA_ADC2,do_IP_ADC2,do_IPEA_ADC3
   logical,intent(out)           :: do_SOSEX,do_2SOSEX,do_G3W2
-  logical,intent(out)           :: do_ADC_GW,do_ADC_2SOSEX,do_ADC_G3W2
+  logical,intent(out)           :: do_ADC_GW,do_ADC_2SOSEX,do_ADC3_G3W2,do_ADC4_G3W2
 
   logical,intent(out)           :: doRtest,doUtest,doGtest
 
 ! Local variables
 
-  character(len=1)              :: ans1,ans2,ans3,ans4,ans5,ans6,ans7,ans8,ans9
+  character(len=1)              :: ans1,ans2,ans3,ans4,ans5,ans6,ans7,ans8,ans9,ans10
   integer                       :: status
   character(len=256)            :: file_path
 
@@ -154,6 +156,11 @@ subroutine read_methods(working_dir,                                    &
       if(ans4 == 'T') doppRPA  = .true.
       if(ans5 == 'T') doBRPA   = .true.
       
+      doOORPA = .false.
+      read(1,*) 
+      read(1,*) ans1
+      if(ans1 == 'T') doOORPA = .true.
+      
       ! Read Green's function methods
       
       doG0F2    = .false.
@@ -239,19 +246,21 @@ subroutine read_methods(working_dir,                                    &
       do_G3W2       = .false.
       do_ADC_GW     = .false. 
       do_ADC_2SOSEX = .false.
-      do_ADC_G3W2   = .false.
+      do_ADC3_G3W2  = .false.
+      do_ADC4_G3W2  = .false.
 
       read(1,*)
-      read(1,*) ans1,ans2,ans3,ans4,ans5,ans6,ans7,ans8,ans9
-      if(ans1 == 'T') do_IPEA_ADC2  = .true.
-      if(ans2 == 'T') do_IP_ADC2    = .true.
-      if(ans3 == 'T') do_IPEA_ADC3  = .true.
-      if(ans4 == 'T') do_SOSEX      = .true.
-      if(ans5 == 'T') do_2SOSEX     = .true.
-      if(ans6 == 'T') do_G3W2       = .true.
-      if(ans7 == 'T') do_ADC_GW     = .true.
-      if(ans8 == 'T') do_ADC_2SOSEX = .true.
-      if(ans9 == 'T') do_ADC_G3W2   = .true.
+      read(1,*) ans1,ans2,ans3,ans4,ans5,ans6,ans7,ans8,ans9,ans10
+      if(ans1  == 'T') do_IPEA_ADC2  = .true.
+      if(ans2  == 'T') do_IP_ADC2    = .true.
+      if(ans3  == 'T') do_IPEA_ADC3  = .true.
+      if(ans4  == 'T') do_SOSEX      = .true.
+      if(ans5  == 'T') do_2SOSEX     = .true.
+      if(ans6  == 'T') do_G3W2       = .true.
+      if(ans7  == 'T') do_ADC_GW     = .true.
+      if(ans8  == 'T') do_ADC_2SOSEX = .true.
+      if(ans9  == 'T') do_ADC3_G3W2  = .true.
+      if(ans10 == 'T') do_ADC4_G3W2  = .true.
 
       ! Read test
       

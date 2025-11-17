@@ -11,15 +11,16 @@ program QuAcK
   logical                       :: dodrCCD,dorCCD,docrCCD,dolCCD
   logical                       :: doCIS,doCIS_D,doCID,doCISD,doFCI
   logical                       :: dophRPA,dophRPAx,docrRPA,doppRPA,doBRPA
+  logical                       :: doOO
   logical                       :: doG0F2,doevGF2,doqsGF2,doufG0F02,doG0F3,doevGF3,doscGF2
   logical                       :: doG0W0,doevGW,doqsGW,doufG0W0,doufGW
   logical                       :: docG0W0,docG0F2,doscGW
   logical                       :: doG0T0pp,doevGTpp,doqsGTpp,doufG0T0pp,doG0T0eh,doevGTeh,doqsGTeh
   logical                       :: doCAP
-  logical                       :: doevParquet,doqsParquet,doOO
+  logical                       :: doevParquet,doqsParquet
   logical                       :: do_IPEA_ADC2,do_IP_ADC2,do_IPEA_ADC3
   logical                       :: do_SOSEX,do_2SOSEX,do_G3W2
-  logical                       :: do_ADC_GW,do_ADC_2SOSEX,do_ADC_G3W2
+  logical                       :: do_ADC_GW,do_ADC_2SOSEX,do_ADC3_G3W2,do_ADC4_G3W2
 
   logical                       :: file_exists
   logical                       :: error_P
@@ -72,6 +73,12 @@ program QuAcK
   logical                       :: spin_conserved
   logical                       :: spin_flip
   logical                       :: TDA
+
+  integer                       :: max_iter_OO
+  double precision              :: thresh_OO
+  logical                       :: dRPA_OO
+  integer                       :: mu_OO
+  logical                       :: diagHess_OO
   
   integer                       :: maxSCF_GF,max_diis_GF,renorm_GF
   double precision              :: thresh_GF
@@ -86,7 +93,6 @@ program QuAcK
   logical                       :: restart_scGW
   double precision              :: eta_GW
   double precision              :: shift_GW
-  integer                       :: mu
   logical                       :: do_linDM_GW
 
   integer                       :: maxSCF_GT,max_diis_GT
@@ -160,6 +166,7 @@ program QuAcK
                     dodrCCD,dorCCD,docrCCD,dolCCD,                  &
                     doCIS,doCIS_D,doCID,doCISD,doFCI,               & 
                     dophRPA,dophRPAx,docrRPA,doppRPA,doBRPA,        &
+                    doOO,                                           &
                     doG0F2,doevGF2,doqsGF2,doufG0F02,               & 
                     doG0F3,doevGF3,                                 &
                     doG0W0,doevGW,doqsGW,doufG0W0,doufGW,           &
@@ -169,7 +176,7 @@ program QuAcK
                     doevParquet,doqsParquet,                        &
                     do_IPEA_ADC2,do_IP_ADC2,do_IPEA_ADC3,           & 
                     do_SOSEX,do_2SOSEX,do_G3W2,                     & 
-                    do_ADC_GW,do_ADC_2SOSEX,do_ADC_G3W2,            &
+                    do_ADC_GW,do_ADC_2SOSEX,do_ADC3_G3W2,do_ADC4_G3W2, &
                     doRtest,doUtest,doGtest)
   
 ! Determine complex function calls  
@@ -188,8 +195,9 @@ program QuAcK
                     readFCIDUMP,reg_MP,                                                                  &
                     maxSCF_CC,thresh_CC,max_diis_CC,                                                     &
                     TDA,spin_conserved,spin_flip,                                                        &
+                    max_iter_OO,thresh_OO,dRPA_OO,mu_OO,diagHess_OO,                                     &
                     maxSCF_GF,thresh_GF,max_diis_GF,lin_GF,eta_GF,renorm_GF,reg_GF,do_linDM_GF2,         &
-                    maxSCF_GW,thresh_GW,max_diis_GW,lin_GW,eta_GW,shift_GW,reg_GW,doOO,mu,do_linDM_GW,   &
+                    maxSCF_GW,thresh_GW,max_diis_GW,lin_GW,eta_GW,shift_GW,reg_GW,do_linDM_GW,           &
                     nfreqs,TDA_W,restart_scGW,restart_scGF2,verbose_scGW,verbose_scGF2,                  &
                     maxSCF_GT,thresh_GT,max_diis_GT,lin_GT,eta_GT,reg_GT,TDA_T,do_linDM_GT,              & 
                     doACFDT,exchange_kernel,doXBS,                                                       &
@@ -374,18 +382,21 @@ program QuAcK
                       TDA_W,lin_GW,reg_GW,eta_GW,maxSCF_GT,max_diis_GT,thresh_GT,TDA_T,lin_GT,reg_GT,eta_GT,                  &
                       dophBSE,dophBSE2,doppBSE,dBSE,dTDA,doACFDT,exchange_kernel,doXBS)
     else
-      call RQuAcK(working_dir,use_gpu,doRtest,doRHF,doROHF,docRHF,dostab,dosearch,doaordm,doMP2,doMP3,doCCD,dopCCD,doDCD,doCCSD,doCCSDT, &
-                  dodrCCD,dorCCD,docrCCD,dolCCD,doCIS,doCIS_D,doCID,doCISD,doFCI,dophRPA,dophRPAx,docrRPA,doppRPA,         &
+      call RQuAcK(working_dir,use_gpu,doRtest,doRHF,doROHF,docRHF,dostab,dosearch,doaordm,                                 &
+                  doMP2,doMP3,doCCD,dopCCD,doDCD,doCCSD,doCCSDT,                                                           &
+                  dodrCCD,dorCCD,docrCCD,dolCCD,doCIS,doCIS_D,doCID,doCISD,doFCI,dophRPA,dophRPAx,docrRPA,doppRPA,doOO,    &
                   doG0F2,doevGF2,doqsGF2,doufG0F02,doG0F3,doevGF3,doG0W0,doevGW,doqsGW,doufG0W0,doufGW,                    &
                   doG0T0pp,doevGTpp,doqsGTpp,doufG0T0pp,doG0T0eh,doevGTeh,doqsGTeh,doevParquet,doqsParquet,                &
                   docG0W0,docG0F2,doscGW,doscGF2,                                                                          &
                   doCAP,readFCIDUMP,restart_scGW,restart_scGF2,verbose_scGW,verbose_scGF2,                                 & 
-                  do_IPEA_ADC2,do_IP_ADC2,do_IPEA_ADC3,do_SOSEX,do_2SOSEX,do_G3W2,do_ADC_GW,do_ADC_2SOSEX,do_ADC_G3W2,     &
+                  do_IPEA_ADC2,do_IP_ADC2,do_IPEA_ADC3,do_SOSEX,do_2SOSEX,do_G3W2,                                         &
+                  do_ADC_GW,do_ADC_2SOSEX,do_ADC3_G3W2,do_ADC4_G3W2,                                                       &
                   nNuc,nBas,nOrb,nC,nO,nV,nR,ENuc,ZNuc,rNuc,                                                               &
                   S,T,V,Hc,CAP,X,dipole_int_AO,maxSCF_HF,max_diis_HF,thresh_HF,level_shift,                                &
                   guess_type,mix,reg_MP,maxSCF_CC,max_diis_CC,thresh_CC,spin_conserved,spin_flip,TDA,                      &
+                  max_iter_OO,thresh_OO,dRPA_OO,mu_OO,diagHess_OO,                                                         &
                   maxSCF_GF,max_diis_GF,renorm_GF,thresh_GF,lin_GF,reg_GF,eta_GF,maxSCF_GW,max_diis_GW,thresh_GW,          &
-                  TDA_W,lin_GW,reg_GW,eta_GW,doOO,mu,do_linDM_GW,do_linDM_GF2,                                             &
+                  TDA_W,lin_GW,reg_GW,eta_GW,do_linDM_GW,do_linDM_GF2,                                                     &
                   maxSCF_GT,max_diis_GT,thresh_GT,TDA_T,lin_GT,reg_GT,eta_GT,do_linDM_GT,                                  &
                   dophBSE,dophBSE2,doppBSE,dBSE,dTDA,doACFDT,exchange_kernel,doXBS,                                        &
                   TDAeh,TDApp,max_diis_1b,max_diis_2b,max_it_1b,conv_1b,max_it_2b,conv_2b,lin_parquet,reg_1b,reg_2b,reg_PA,&
@@ -414,12 +425,14 @@ program QuAcK
 !--------------------------!
   if(doGQuAcK) & 
     call GQuAcK(working_dir,doGtest,doGHF,dostab,dosearch,doMP2,doMP3,doCCD,dopCCD,doDCD,doCCSD,doCCSDT,   &
-                dodrCCD,dorCCD,docrCCD,dolCCD,dophRPA,dophRPAx,docrRPA,doppRPA,                            &
+                dodrCCD,dorCCD,docrCCD,dolCCD,dophRPA,dophRPAx,docrRPA,doppRPA,doOO,                       &
                 doG0W0,doevGW,doqsGW,doG0F2,doevGF2,doqsGF2,doG0T0pp,doevGTpp,doqsGTpp,doG0T0eh,doevParquet,doqsParquet, &
                 nNuc,nBas,sum(nC),sum(nO),sum(nV),sum(nR),ENuc,ZNuc,rNuc,S,T,V,Hc,X,dipole_int_AO,         &
                 maxSCF_HF,max_diis_HF,thresh_HF,level_shift,guess_type,mix,reg_MP,                         &
-                maxSCF_CC,max_diis_CC,thresh_CC,TDA,maxSCF_GF,max_diis_GF,thresh_GF,lin_GF,reg_GF,eta_GF,  &
-                maxSCF_GW,max_diis_GW,thresh_GW,TDA_W,lin_GW,reg_GW,eta_GW,doOO,mu,do_linDM_GW,            &
+                maxSCF_CC,max_diis_CC,thresh_CC,TDA,                                                       &
+                max_iter_OO,thresh_OO,dRPA_OO,mu_OO,diagHess_OO,                                           & 
+                maxSCF_GF,max_diis_GF,thresh_GF,lin_GF,reg_GF,eta_GF,                                      &
+                maxSCF_GW,max_diis_GW,thresh_GW,TDA_W,lin_GW,reg_GW,eta_GW,do_linDM_GW,                    &
                 maxSCF_GT,max_diis_GT,thresh_GT,TDA_T,lin_GT,reg_GT,eta_GT,do_linDM_GT,                    &
                 dophBSE,dophBSE2,doppBSE,dBSE,dTDA,doACFDT,exchange_kernel,doXBS,                          &
                 TDAeh,TDApp,max_diis_1b,max_diis_2b,max_it_1b,conv_1b,max_it_2b,conv_2b,lin_parquet,reg_1b,reg_2b,reg_PA)

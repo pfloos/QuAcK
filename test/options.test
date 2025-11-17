@@ -1,18 +1,26 @@
-# HF: maxSCF thresh  DIIS guess mix   shift stab search
-      10000  0.0000001  5 1     0.0   0.0   F    F
+# HF: maxSCF thresh  DIIS guess mix   shift stab search aordm readFCIDUMP
+      1000   0.0000001   5   1   0.0   0.0   F   F   F   F
 # MP: reg
       F
 # CC: maxSCF thresh     DIIS
-      64     0.0000001  5
+      64   0.0000001   5
 # spin: TDA singlet triplet
-        F   T       T
-# GF: maxSCF thresh  DIIS lin eta renorm reg
-      256    0.00001 5    F   0.0 0      F
-# GW: maxSCF thresh  DIIS lin eta TDA_W reg
-      256   0.00001  5    F   0.0 F     F 
-# GT: maxSCF thresh  DIIS lin eta TDA_T reg
-      256    0.00001 5    F   0.0 F     F  
+      F   T   T
+# OORPA:  maxIter thresh dRPA  state diagHess
+      256   0.00001   T   0   T
+# GF: maxSCF thresh  DIIS lin eta renorm reg linDM restart_scGF2 verbose_scGF2
+      256   0.00001   5   F   0.0   0   F   F   F   F
+# GW: maxSCF thresh  DIIS lin eta TDA_W reg nfreqs shift linDM restart_scGW verbose_scGW
+      256   0.00001   5   F   0.0   F   F   1   0.0   F   F   F
+# GT: maxSCF thresh  DIIS lin eta TDA_T reg linDM
+      256   0.00001   5   F   0.0   F   F   F
 # ACFDT: AC Kx  XBS
-         F  F   T
+      F   F   T
 # BSE: phBSE phBSE2 ppBSE dBSE dTDA
-       F     F      F     F    T     
+      F   F   F   F   T
+# HFB: temperature  sigma chem_pot_HF restart_HFB error_P
+      0.05   1.0   F   F   F
+# Parquet: TDAeh TDApp max_it_1b conv_1b max_it_2b conv_2b max_diis_1b max_diis_2b lin_parquet reg_1b reg_2b reg_PA
+      T   T   1   0.01   1   0.01   1   1   F   1000.0   1000.0   T
+# Ensemble: weight_N  N+1
+      0.00000   T
