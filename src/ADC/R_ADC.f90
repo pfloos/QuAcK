@@ -2,7 +2,8 @@ subroutine R_ADC(dotest,                                               &
                  do_IPEA_ADC2,do_IP_ADC2,do_IPEA_ADC3,                 &
                  do_SOSEX,do_2SOSEX,do_G3W2,                           &
                  do_ADC_GW,do_ADC_2SOSEX,do_ADC3_G3W2,do_ADC4_G3W2,    &
-                 TDA_W,TDA,singlet,triplet,linearize,eta,doSRG,        & 
+                 TDA_W,TDA,singlet,triplet,linearize,eta,doSRG,        &
+                 single_state_ADC,                                     & 
                  nNuc,ZNuc,rNuc,ENuc,nBas,nOrb,nC,nO,nV,nR,nS,         &
                  S,X,T,V,Hc,ERI_AO,ERI_MO,dipole_int_AO,dipole_int_MO, &
                  ERHF,PHF,FHF,cHF,eHF)
@@ -36,6 +37,8 @@ subroutine R_ADC(dotest,                                               &
   logical,intent(in)            :: linearize
   double precision,intent(in)   :: eta
   logical,intent(in)            :: doSRG
+  
+  logical,intent(in)            :: single_state_ADC
 
   integer,intent(in)            :: nNuc
   double precision,intent(in)   :: ZNuc(nNuc)

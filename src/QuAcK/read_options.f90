@@ -12,7 +12,7 @@ subroutine read_options(working_dir,                                            
                         dophBSE,dophBSE2,doppBSE,dBSE,dTDA,                                                 &
                         temperature,sigma,chem_pot_hf,restart_hfb,error_P,                                  &
                         TDAeh,TDApp,max_diis_1b,max_diis_2b,max_it_1b,conv_1b,max_it_2b,conv_2b,lin_parquet,&
-                        reg_1b,reg_2b,reg_PA,eweight,eforward)
+                        reg_1b,reg_2b,reg_PA,single_state_ADC,eweight,eforward)
 
 ! Read desired methods 
 
@@ -106,6 +106,8 @@ subroutine read_options(working_dir,                                            
   logical,intent(out)           :: TDAeh,TDApp
   double precision,intent(out)  :: reg_1b,reg_2b
   logical,intent(out)           :: lin_parquet,reg_PA
+
+  logical,intent(out)           :: single_state_ADC
 
   logical,intent(out)           :: eforward
   double precision,intent(out)  :: eweight
@@ -326,6 +328,15 @@ subroutine read_options(working_dir,                                            
       if(ans3 == 'T') lin_parquet = .true.
       if(ans4 == 'T') reg_PA = .true.
 
+      ! Options for ADC module
+
+      single_state_ADC = .false.
+
+      read(1,*)
+      read(1,*) ans1
+
+      if(ans1 == 'T') single_state_ADC = .true.
+      
       ! Read ensemble HF options
     
       eforward    = .false.
