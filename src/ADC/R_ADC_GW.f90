@@ -157,8 +157,8 @@ subroutine R_ADC_GW(dotest,TDA_W,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,eHF)
     !-------------!
  
     iab = 0
-    do mu=1,nS
-      do a=nO+1,nOrb-nR
+    do a=nO+1,nOrb-nR
+      do mu=1,nS
         iab = iab + 1
  
         H(1          ,1+n2h1p+iab) = sqrt(2d0)*rho(p,a,mu)
@@ -186,8 +186,8 @@ subroutine R_ADC_GW(dotest,TDA_W,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,eHF)
     !------------------!
  
     iab = 0
-    do mu=1,nS
-      do a=nO+1,nOrb-nR
+    do a=nO+1,nOrb-nR
+      do mu=1,nS
         iab = iab + 1
  
         H(1+n2h1p+iab,1+n2h1p+iab) = eHF(a) + Om(mu)

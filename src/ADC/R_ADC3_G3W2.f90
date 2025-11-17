@@ -24,8 +24,7 @@ subroutine R_ADC3_G3W2(dotest,TDA_W,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,eHF)
 
 ! Local variables
 
-  integer                       :: p
-  integer                       :: s
+  integer                       :: p,q,r,s
   integer                       :: i,j,k,l
   integer                       :: a,b,c,d
   integer                       :: jb,kc,ia,ja
@@ -61,9 +60,9 @@ subroutine R_ADC3_G3W2(dotest,TDA_W,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,eHF)
 ! Hello world
 
   write(*,*)
-  write(*,*)'*************************************'
+  write(*,*)'**************************************'
   write(*,*)'* Restricted ADC(3)-G3W2 Calculation *'
-  write(*,*)'*************************************'
+  write(*,*)'**************************************'
   write(*,*)
 
 ! Dimension of the supermatrix
@@ -158,12 +157,12 @@ subroutine R_ADC3_G3W2(dotest,TDA_W,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,eHF)
           do c=nO+1,nOrb-nR
 
             H(1    ,1+ija) = H(1    ,1+ija) &
-                           + sqrt(2d0)*ERI(p,c,i,k)*rho(k,c,mu)/(eHF(c) - eHF(k) - Om(mu)) &
-                           + sqrt(2d0)*ERI(p,k,i,c)*rho(c,k,mu)/(eHF(c) - eHF(k) + Om(mu))
+                           + sqrt(2d0)*ERI(i,k,p,c)*rho(k,c,mu)/(eHF(c) - eHF(k) - Om(mu)) &
+                           + sqrt(2d0)*ERI(i,c,p,k)*rho(c,k,mu)/(eHF(c) - eHF(k) + Om(mu))
 
             H(1+ija,1    ) = H(1+ija,1    ) & 
-                           + sqrt(2d0)*ERI(p,c,k,i)*rho(k,c,mu)/(eHF(c) - eHF(k) - Om(mu)) &
-                           + sqrt(2d0)*ERI(p,k,c,i)*rho(c,k,mu)/(eHF(c) - eHF(k) + Om(mu))
+                           + sqrt(2d0)*ERI(i,k,p,c)*rho(k,c,mu)/(eHF(c) - eHF(k) - Om(mu)) &
+                           + sqrt(2d0)*ERI(i,c,p,k)*rho(c,k,mu)/(eHF(c) - eHF(k) + Om(mu))
 
           end do
         end do
@@ -176,15 +175,15 @@ subroutine R_ADC3_G3W2(dotest,TDA_W,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,eHF)
     !--------------!
  
     iab = 0
-    do mu=1,nS
-      do a=nO+1,nOrb-nR
+    do a=nO+1,nOrb-nR
+      do mu=1,nS
         iab = iab + 1
  
         ! First-order terms
 
-        H(1          ,1+n2h1p+iab) = sqrt(2d0)*rho(p,a,mu)
+        H(1          ,1+n2h1p+iab) = sqrt(2d0)*rho(a,p,mu)
 
-        H(1+n2h1p+iab,1          ) = sqrt(2d0)*rho(p,a,mu)
+        H(1+n2h1p+iab,1          ) = sqrt(2d0)*rho(a,p,mu)
  
         ! Second-order terms
 
@@ -192,8 +191,8 @@ subroutine R_ADC3_G3W2(dotest,TDA_W,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,eHF)
           do c=nO+1,nOrb-nR
 
             H(1    ,1+n2h1p+iab) = H(1    ,1+n2h1p+iab) &
-                                 + sqrt(2d0)*ERI(p,k,a,c)*rho(k,c,mu)/(eHF(c) - eHF(k) - Om(mu)) &
-                                 + sqrt(2d0)*ERI(p,c,a,k)*rho(c,k,mu)/(eHF(c) - eHF(k) + Om(mu))
+                                 + sqrt(2d0)*ERI(a,c,p,k)*rho(k,c,mu)/(eHF(c) - eHF(k) - Om(mu)) &
+                                 + sqrt(2d0)*ERI(a,k,p,c)*rho(c,k,mu)/(eHF(c) - eHF(k) + Om(mu))
 
             H(1+n2h1p+iab,1    ) = H(1+n2h1p+iab,1    ) &
                                  + sqrt(2d0)*ERI(p,k,a,c)*rho(k,c,mu)/(eHF(c) - eHF(k) - Om(mu)) &
@@ -225,10 +224,10 @@ subroutine R_ADC3_G3W2(dotest,TDA_W,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,eHF)
           do nu=1,nS
             klc = klc + 1
        
-            do c=nO+1,nOrb-nR
+            do r=nC+1,nOrb-nR
               H(1+ija,1+klc) = H(1+ija,1+klc) & 
-                             + 1d0*rho(c,k,mu)*rho(i,c,nu)/(eHF(c) - eHF(k) - Om(mu)) &
-                             + 1d0*rho(k,c,mu)*rho(c,i,nu)/(eHF(c) - eHF(i) - Om(nu))
+                             + 1d0*rho(k,r,mu)*rho(i,r,nu)/(eHF(i) - eHF(r) + Om(nu)) &
+                             + 1d0*rho(k,r,mu)*rho(i,r,nu)/(eHF(k) - eHF(r) + Om(mu))
             end do
   
           end do
@@ -242,8 +241,8 @@ subroutine R_ADC3_G3W2(dotest,TDA_W,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,eHF)
     !-----------------------!
  
     iab = 0
-    do mu=1,nS
-      do a=nO+1,nOrb-nR
+    do a=nO+1,nOrb-nR
+      do mu=1,nS
         iab = iab + 1
  
         ! Zeroth-order terms
@@ -257,10 +256,10 @@ subroutine R_ADC3_G3W2(dotest,TDA_W,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,eHF)
           do nu=1,nS
             kcd = kcd + 1
        
-            do k=nC+1,nO
+            do r=nC+1,nOrb-nR
               H(1+n2h1p+iab,1+n2h1p+kcd) = H(1+n2h1p+iab,1+n2h1p+kcd) &
-                                         + 1d0*rho(k,c,mu)*rho(a,k,nu)/(eHF(c) - eHF(k) - Om(mu)) &
-                                         + 1d0*rho(c,k,mu)*rho(k,a,nu)/(eHF(a) - eHF(k) - Om(nu))
+                                         + 1d0*rho(r,c,mu)*rho(r,a,nu)/(eHF(c) - eHF(r) - Om(mu)) &
+                                         + 1d0*rho(r,c,mu)*rho(r,a,nu)/(eHF(a) - eHF(r) - Om(nu))
             end do
  
           end do
@@ -288,47 +287,21 @@ subroutine R_ADC3_G3W2(dotest,TDA_W,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,eHF)
             do k=nC+1,nO
  
               H(1+ija,1+n2h1p+kcd) = H(1+ija,1+n2h1p+kcd) &
-                                   + 2d0*rho(k,i,mu)*rho(a,k,nu)/(eHF(a) - eHF(k) + Om(mu)) 
+                                   + 2d0*rho(k,i,nu)*rho(a,k,mu)/(eHF(a) - eHF(k) + Om(nu)) 
+
+              H(1+n2h1p+kcd,1+ija) = H(1+ija,1+n2h1p+kcd) &
+                                   + 2d0*rho(k,i,nu)*rho(a,k,mu)/(eHF(a) - eHF(k) + Om(nu)) 
+
             end do
- 
+
             do c=nO+1,nOrb-nR
  
               H(1+ija,1+n2h1p+kcd) = H(1+ija,1+n2h1p+kcd) &
-                                   - 2d0*rho(c,a,mu)*rho(i,c,nu)/(eHF(c) - eHF(i) + Om(mu)) 
-            end do
- 
-          end do
-        end do
- 
-      end do
-    end do
- 
-    !-------------------!
-    ! Block C_2p1h-2h1p !
-    !-------------------!
- 
-    iab = 0
-    do a=nO+1,nOrb-nR
-      do mu=1,nS
-        iab = iab + 1
+                                   + 2d0*rho(a,c,nu)*rho(c,i,mu)/(eHF(i) - eHF(c) - Om(mu)) 
 
-        ! First-order terms
+              H(1+n2h1p+kcd,1+ija) = H(1+ija,1+n2h1p+kcd) &
+                                   + 2d0*rho(a,c,nu)*rho(c,i,mu)/(eHF(i) - eHF(c) - Om(mu)) 
 
-        klc = 0
-        do i=nC+1,nO
-          do nu=1,nS
-            klc = klc + 1
-       
-            do k=nC+1,nO
- 
-              H(1+n2h1p+iab,1+klc) = H(1+n2h1p+iab,1+klc) &
-                                   + 2d0*rho(k,i,nu)*rho(a,k,mu)/(eHF(a) - eHF(k) + Om(mu)) 
-            end do
- 
-            do c=nO+1,nOrb-nR
- 
-              H(1+n2h1p+iab,1+klc) = H(1+n2h1p+iab,1+klc) &
-                                   - 2d0*rho(c,a,nu)*rho(i,c,mu)/(eHF(c) - eHF(i) + Om(nu)) 
             end do
  
           end do
@@ -372,10 +345,10 @@ subroutine R_ADC3_G3W2(dotest,TDA_W,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,eHF)
   !--------------!
 
     write(*,*)'-------------------------------------------'
-    write(*,'(1X,A36,I3,A4)')'| ADC(3)-G3W2 energies (eV) for orbital',p,'  |'
+    write(*,'(1X,A34,I3,A6)')'| ADC(3)-G3W2 energies for orbital',p,'  |'
     write(*,*)'-------------------------------------------'
     write(*,'(1X,A1,1X,A3,1X,A1,1X,A15,1X,A1,1X,A15,1X,A1,1X,A15,1X)') &
-              '|','#','|','e_QP','|','Z','|'
+              '|','#','|','e_QP (eV)','|','Z','|'
     write(*,*)'-------------------------------------------'
  
     do s=1,nH
