@@ -399,15 +399,15 @@ end if
   if(doADC) then
 
     call wall_time(start_ADC)
-    call G_ADC(dotest,                                               &
-               do_IPEA_ADC2,do_IP_ADC2,do_IPEA_ADC3,                 & 
-               do_SOSEX,do_2SOSEX,do_G3W2,                           & 
-               do_ADC_GW,do_ADC_2SOSEX,do_ADC3_G3W2,do_ADC4_G3W2,    &
-               TDA_W,TDA,lin_GW,eta_GW,reg_GW,                       &
-               single_state_ADC,                                     &
-               nNuc,ZNuc,rNuc,ENuc,nBas2,nC,nO,nV,nR,nS,             &
-               S,X,T,V,Hc,ERI_AO,ERI_MO,dipole_int_AO,dipole_int_MO, &
-               EGHF,PHF,FHF,cHF,eHF)
+!   call G_ADC(dotest,                                               &
+!              do_IPEA_ADC2,do_IP_ADC2,do_IPEA_ADC3,                 & 
+!              do_SOSEX,do_2SOSEX,do_G3W2,                           & 
+!              do_ADC_GW,do_ADC_2SOSEX,do_ADC3_G3W2,do_ADC4_G3W2,    &
+!              TDA_W,TDA,lin_GW,eta_GW,reg_GW,                       &
+!              single_state_ADC,                                     &
+!              nNuc,ZNuc,rNuc,ENuc,nBas2,nC,nO,nV,nR,nS,             &
+!              S,X,T,V,Hc,ERI_AO,ERI_MO,dipole_int_AO,dipole_int_MO, &
+!              EGHF,PHF,FHF,cHF,eHF)
     call wall_time(end_ADC)
 
     t_ADC = end_ADC - start_ADC

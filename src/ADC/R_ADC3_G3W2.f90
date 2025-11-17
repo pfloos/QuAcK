@@ -175,15 +175,15 @@ subroutine R_ADC3_G3W2(dotest,TDA_W,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,eHF)
     !--------------!
  
     iab = 0
-    do mu=1,nS
-      do a=nO+1,nOrb-nR
+    do a=nO+1,nOrb-nR
+      do mu=1,nS
         iab = iab + 1
  
         ! First-order terms
 
-        H(1          ,1+n2h1p+iab) = sqrt(2d0)*rho(p,a,mu)
+        H(1          ,1+n2h1p+iab) = sqrt(2d0)*rho(a,p,mu)
 
-        H(1+n2h1p+iab,1          ) = sqrt(2d0)*rho(p,a,mu)
+        H(1+n2h1p+iab,1          ) = sqrt(2d0)*rho(a,p,mu)
  
         ! Second-order terms
 
@@ -191,8 +191,8 @@ subroutine R_ADC3_G3W2(dotest,TDA_W,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,eHF)
           do c=nO+1,nOrb-nR
 
             H(1    ,1+n2h1p+iab) = H(1    ,1+n2h1p+iab) &
-                                 + sqrt(2d0)*ERI(p,k,a,c)*rho(k,c,mu)/(eHF(c) - eHF(k) - Om(mu)) &
-                                 + sqrt(2d0)*ERI(p,c,a,k)*rho(c,k,mu)/(eHF(c) - eHF(k) + Om(mu))
+                                 + sqrt(2d0)*ERI(a,c,p,k)*rho(k,c,mu)/(eHF(c) - eHF(k) - Om(mu)) &
+                                 + sqrt(2d0)*ERI(a,k,p,c)*rho(c,k,mu)/(eHF(c) - eHF(k) + Om(mu))
 
             H(1+n2h1p+iab,1    ) = H(1+n2h1p+iab,1    ) &
                                  + sqrt(2d0)*ERI(p,k,a,c)*rho(k,c,mu)/(eHF(c) - eHF(k) - Om(mu)) &
@@ -226,8 +226,8 @@ subroutine R_ADC3_G3W2(dotest,TDA_W,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,eHF)
        
             do r=nC+1,nOrb-nR
               H(1+ija,1+klc) = H(1+ija,1+klc) & 
-                             + 1d0*rho(r,k,mu)*rho(i,r,nu)/(eHF(k) - eHF(r) + Om(mu)) &
-                             + 1d0*rho(k,r,mu)*rho(r,i,nu)/(eHF(i) - eHF(r) + Om(nu))
+                             + 1d0*rho(k,r,mu)*rho(i,r,nu)/(eHF(i) - eHF(r) + Om(nu)) &
+                             + 1d0*rho(k,r,mu)*rho(i,r,nu)/(eHF(k) - eHF(r) + Om(mu))
             end do
   
           end do
@@ -241,8 +241,8 @@ subroutine R_ADC3_G3W2(dotest,TDA_W,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,eHF)
     !-----------------------!
  
     iab = 0
-    do mu=1,nS
-      do a=nO+1,nOrb-nR
+    do a=nO+1,nOrb-nR
+      do mu=1,nS
         iab = iab + 1
  
         ! Zeroth-order terms
@@ -258,8 +258,8 @@ subroutine R_ADC3_G3W2(dotest,TDA_W,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,eHF)
        
             do r=nC+1,nOrb-nR
               H(1+n2h1p+iab,1+n2h1p+kcd) = H(1+n2h1p+iab,1+n2h1p+kcd) &
-                                         + 1d0*rho(r,c,mu)*rho(a,r,nu)/(eHF(r) - eHF(c) - Om(mu)) &
-                                         + 1d0*rho(c,r,mu)*rho(r,a,nu)/(eHF(r) - eHF(a) - Om(nu))
+                                         + 1d0*rho(r,c,mu)*rho(r,a,nu)/(eHF(c) - eHF(r) - Om(mu)) &
+                                         + 1d0*rho(r,c,mu)*rho(r,a,nu)/(eHF(a) - eHF(r) - Om(nu))
             end do
  
           end do
@@ -287,7 +287,11 @@ subroutine R_ADC3_G3W2(dotest,TDA_W,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,eHF)
             do k=nC+1,nO
  
               H(1+ija,1+n2h1p+kcd) = H(1+ija,1+n2h1p+kcd) &
-                                   + 2d0*rho(k,i,nu)*rho(a,k,mu)/(eHF(a) - eHF(k) + Om(mu)) 
+                                   + 2d0*rho(k,i,nu)*rho(a,k,mu)/(eHF(a) - eHF(k) + Om(nu)) 
+
+              H(1+n2h1p+kcd,1+ija) = H(1+ija,1+n2h1p+kcd) &
+                                   + 2d0*rho(k,i,nu)*rho(a,k,mu)/(eHF(a) - eHF(k) + Om(nu)) 
+
             end do
 
             do c=nO+1,nOrb-nR
@@ -295,40 +299,7 @@ subroutine R_ADC3_G3W2(dotest,TDA_W,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,eHF)
               H(1+ija,1+n2h1p+kcd) = H(1+ija,1+n2h1p+kcd) &
                                    + 2d0*rho(a,c,nu)*rho(c,i,mu)/(eHF(i) - eHF(c) - Om(mu)) 
 
-            end do
- 
-          end do
-        end do
- 
-      end do
-    end do
- 
-    !-------------------!
-    ! Block C_2p1h-2h1p !
-    !-------------------!
- 
-    iab = 0
-    do a=nO+1,nOrb-nR
-      do mu=1,nS
-        iab = iab + 1
-
-        ! First-order terms
-
-        klc = 0
-        do i=nC+1,nO
-          do nu=1,nS
-            klc = klc + 1
-       
-            do k=nC+1,nO
- 
-              H(1+n2h1p+iab,1+klc) = H(1+n2h1p+iab,1+klc) & 
-                                   + 2d0*rho(k,i,nu)*rho(a,k,mu)/(eHF(a) - eHF(k) + Om(mu))
-
-            end do
-
-            do c=nO+1,nOrb-nR
- 
-              H(1+n2h1p+iab,1+klc) = H(1+n2h1p+iab,1+klc) & 
+              H(1+n2h1p+kcd,1+ija) = H(1+ija,1+n2h1p+kcd) &
                                    + 2d0*rho(a,c,nu)*rho(c,i,mu)/(eHF(i) - eHF(c) - Om(mu)) 
 
             end do
