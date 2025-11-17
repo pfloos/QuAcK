@@ -60,8 +60,8 @@ subroutine fix_chem_pot_scGW_bisec(iter_fock,nBas,nfreqs,nElectrons,thrs_N,thrs_
    write(*,'(a,i5)') ' Fixing the Tr[1D] at scGW/scGF2 at Fock iter ',iter_fock
    write(*,*)
   endif
-  call get_1rdm_scGW(nBas,nfreqs,nElectrons,chem_pot,S,F_ao,Sigma_c_w_ao, &
-                     wcoord,wweight,G_ao,G_ao_iw_hf,DeltaG_ao_iw,P_ao,P_ao_hf,trace_old) 
+  call get_1rdm_scGW(nBas,nfreqs,chem_pot,S,F_ao,Sigma_c_w_ao,wcoord,wweight,&
+                     G_ao,G_ao_iw_hf,DeltaG_ao_iw,P_ao,P_ao_hf,trace_old) 
   if(verbose) then
    write(*,*)'------------------------------------------------------'
    write(*,'(1X,A1,1X,A15,1X,A1,1X,A15,1X,A1A15,2X,A1)') &
@@ -77,11 +77,11 @@ subroutine fix_chem_pot_scGW_bisec(iter_fock,nBas,nfreqs,nElectrons,thrs_N,thrs_
   trace_old = 1d2
   do while( abs(trace_old-nElectrons) > thrs_closer .and. isteps <= 100 )
    isteps = isteps + 1
-   call get_1rdm_scGW(nBas,nfreqs,nElectrons,chem_pot,S,F_ao,Sigma_c_w_ao, &
+   call get_1rdm_scGW(nBas,nfreqs,chem_pot,S,F_ao,Sigma_c_w_ao, &
                       wcoord,wweight,G_ao,G_ao_iw_hf,DeltaG_ao_iw,P_ao,P_ao_hf,trace_old) 
-   call get_1rdm_scGW(nBas,nfreqs,nElectrons,chem_pot-delta_chem_pot,S,F_ao,Sigma_c_w_ao, &
+   call get_1rdm_scGW(nBas,nfreqs,chem_pot-delta_chem_pot,S,F_ao,Sigma_c_w_ao, &
                       wcoord,wweight,G_ao,G_ao_iw_hf,DeltaG_ao_iw,P_ao,P_ao_hf,trace_down) 
-   call get_1rdm_scGW(nBas,nfreqs,nElectrons,chem_pot+delta_chem_pot,S,F_ao,Sigma_c_w_ao, &
+   call get_1rdm_scGW(nBas,nfreqs,chem_pot+delta_chem_pot,S,F_ao,Sigma_c_w_ao, &
                       wcoord,wweight,G_ao,G_ao_iw_hf,DeltaG_ao_iw,P_ao,P_ao_hf,trace_up) 
    if( abs(trace_up-nElectrons) > abs(trace_old-nElectrons) .and. abs(trace_down-nElectrons) > abs(trace_old-nElectrons) ) then
 !     write(*,'(1X,A1,F16.10,1X,A1,F16.10,1X,A1F16.10,1X,A1)') &
@@ -108,15 +108,15 @@ subroutine fix_chem_pot_scGW_bisec(iter_fock,nBas,nfreqs,nElectrons,thrs_N,thrs_
   ! Find bounds for the bisection method
 !  write(*,*) "| fiding bisection method bounds ...                  |"
   delta_chem_pot  = 2d-2
-  call get_1rdm_scGW(nBas,nfreqs,nElectrons,chem_pot,S,F_ao,Sigma_c_w_ao, &
+  call get_1rdm_scGW(nBas,nfreqs,chem_pot,S,F_ao,Sigma_c_w_ao, &
                      wcoord,wweight,G_ao,G_ao_iw_hf,DeltaG_ao_iw,P_ao,P_ao_hf,trace_1_rdm)
   isteps = 1
   chem_pot_up   = chem_pot + delta_chem_pot
   chem_pot_down = chem_pot - delta_chem_pot
   do
-   call get_1rdm_scGW(nBas,nfreqs,nElectrons,chem_pot_up,S,F_ao,Sigma_c_w_ao, &
+   call get_1rdm_scGW(nBas,nfreqs,chem_pot_up,S,F_ao,Sigma_c_w_ao, &
                       wcoord,wweight,G_ao,G_ao_iw_hf,DeltaG_ao_iw,P_ao,P_ao_hf,trace_up)
-   call get_1rdm_scGW(nBas,nfreqs,nElectrons,chem_pot_down,S,F_ao,Sigma_c_w_ao, &
+   call get_1rdm_scGW(nBas,nfreqs,chem_pot_down,S,F_ao,Sigma_c_w_ao, &
                       wcoord,wweight,G_ao,G_ao_iw_hf,DeltaG_ao_iw,P_ao,P_ao_hf,trace_down)
 
    if((trace_up>trace_1_rdm .and. trace_down>trace_1_rdm) .or. (trace_up<trace_1_rdm .and. trace_down<trace_1_rdm)) then
@@ -126,7 +126,7 @@ subroutine fix_chem_pot_scGW_bisec(iter_fock,nBas,nfreqs,nElectrons,thrs_N,thrs_
     write(*,'(a,f16.10)') ' Trace with chem pot + delta ',trace_up
     write(*,'(a,f16.10)') ' Trace with chem pot - delta ',trace_down
     chem_pot=chem_pot_hf
-    write(*,'(a,f10.5,a)') ' Entering the gradient method to optimize the chem. potential [ chem_pot guess ',chem_pot,' ]'
+    write(*,'(a,f10.5,a)') ' Entering the gradient method to try to optimize the chem. potential [ chem_pot guess ',chem_pot,' ]'
     call fix_chem_pot_scGW(iter_fock,nBas,nfreqs,nElectrons,thrs_N,thrs_Ngrad,chem_pot,S,F_ao,    & 
                            Sigma_c_w_ao,wcoord,wweight,G_ao,G_ao_iw_hf,DeltaG_ao_iw,P_ao,P_ao_hf, &
                            trace_1_rdm,grad_electrons,verbose)
@@ -183,9 +183,9 @@ subroutine fix_chem_pot_scGW_bisec(iter_fock,nBas,nfreqs,nElectrons,thrs_N,thrs_
    
  enddo
 
-!   call get_1rdm_scGW(nBas,nfreqs,nElectrons,chem_pot_up,S,F_ao,Sigma_c_w_ao, &
+!   call get_1rdm_scGW(nBas,nfreqs,chem_pot_up,S,F_ao,Sigma_c_w_ao, &
 !                      wcoord,wweight,G_ao,G_ao_iw_hf,DeltaG_ao_iw,P_ao,P_ao_hf,trace_up)
-!   call get_1rdm_scGW(nBas,nfreqs,nElectrons,chem_pot_down,S,F_ao,Sigma_c_w_ao, &
+!   call get_1rdm_scGW(nBas,nfreqs,chem_pot_down,S,F_ao,Sigma_c_w_ao, &
 !                      wcoord,wweight,G_ao,G_ao_iw_hf,DeltaG_ao_iw,P_ao,P_ao_hf,trace_down)
 !   write(*,*) delta_chem_pot,chem_pot_down,chem_pot_up,trace_down,trace_up,normal
 
@@ -195,7 +195,7 @@ subroutine fix_chem_pot_scGW_bisec(iter_fock,nBas,nfreqs,nElectrons,thrs_N,thrs_
   do while( abs(trace_1_rdm-nElectrons) > thrs_N .and. isteps <= 100 )
    isteps = isteps + 1
    chem_pot=0.5d0*(chem_pot_up+chem_pot_down)
-   call get_1rdm_scGW(nBas,nfreqs,nElectrons,chem_pot,S,F_ao,Sigma_c_w_ao, &
+   call get_1rdm_scGW(nBas,nfreqs,chem_pot,S,F_ao,Sigma_c_w_ao, &
                       wcoord,wweight,G_ao,G_ao_iw_hf,DeltaG_ao_iw,P_ao,P_ao_hf,trace_1_rdm) 
 !   write(*,'(1X,A1,F16.10,1X,A1,F16.10,1X,A1F16.10,1X,A1)') &
 !    '|',trace_1_rdm,'|',chem_pot,'|',grad_electrons,'|'
@@ -216,7 +216,7 @@ subroutine fix_chem_pot_scGW_bisec(iter_fock,nBas,nfreqs,nElectrons,thrs_N,thrs_
 
   ! Print info
 !  write(*,*)'------------------------------------------------------'
-  call get_1rdm_scGW(nBas,nfreqs,nElectrons,chem_pot,S,F_ao,Sigma_c_w_ao, &
+  call get_1rdm_scGW(nBas,nfreqs,chem_pot,S,F_ao,Sigma_c_w_ao, &
                      wcoord,wweight,G_ao,G_ao_iw_hf,DeltaG_ao_iw,P_ao,P_ao_hf,trace_1_rdm) 
 !  write(*,'(1X,A1,1X,A15,1X,A1,1X,A15,1X,A1A15,2X,A1)') &
 !          '|','Tr[1D]','|','Chem. Pot.','|','Grad N','|'

@@ -141,6 +141,7 @@ subroutine scGWBitauiw_ao(nBas,nOrb,nOrb_twice,maxSCF,maxDIIS,dolinGW,restart_sc
    nElectrons=nElectrons+P_in(ibas,jbas)*S(ibas,jbas)
   enddo
  enddo
+ nElectrons=0.5d0*nElectrons ! Here we prefer to use 1 spin-channel
 
 
  ! Allocate arrays
@@ -504,6 +505,8 @@ subroutine scGWBitauiw_ao(nBas,nOrb,nOrb_twice,maxSCF,maxDIIS,dolinGW,restart_sc
     H_ao_hfb(nBas+1:nBas_twice,1:nBas           ) =  H_ao_hfb(1:nBas,nBas+1:nBas_twice)
     ! Build G(i w) and R
     R_ao_old=R_ao
+    call get_1rdm_scGWB(nBas,nBas_twice,nfreqs,chem_pot,S,H_ao_hfb,Sigma_c_w_ao,wcoord,wweight, &
+                        Mat_gorkov_tmp,G_ao_iw_hfb,DeltaG_ao_iw,R_ao,R_ao_hfb,trace_1_rdm) 
     ! Check convergence of R_ao for fixed Sigma_c(i w)
     diff_Rao=0d0
     do ibas=1,nBas_twice
