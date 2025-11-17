@@ -236,6 +236,8 @@ subroutine scGWitauiw_ao(nBas,nOrb,nO,maxSCF,maxDIIS,dolinGW,restart_scGW,verbos
   allocate(G_itau_old_diis(nBasSqntimes2,maxDIIS))
   allocate(P_ao_old_diis(nBas2,maxDIIS))
  endif
+ err_diis=czero
+ G_itau_old_diis=czero
 
 !---------------!
 ! Reading grids !

@@ -47,8 +47,12 @@ subroutine scGWBitauiw_ao(nBas,nOrb,nOrb_twice,maxSCF,maxDIIS,dolinGW,restart_sc
   integer                       :: imax_error_gw2gt
   integer                       :: imax_error_st2sw
   integer                       :: idiis_indexR,n_diisR
+  integer                       :: idiis_index,n_diis
+  integer                       :: nBas2Sqntimes2
 
+  double precision              :: rcond
   double precision              :: rcondR
+  double precision              :: alpha_mixing
   double precision              :: eta,diff_Rao
   double precision              :: thrs_N,thrs_Ngrad,thrs_Rao
   double precision              :: nElectrons
@@ -97,8 +101,14 @@ subroutine scGWBitauiw_ao(nBas,nOrb,nOrb_twice,maxSCF,maxDIIS,dolinGW,restart_sc
   complex*16,allocatable        :: Sigma_c_plus(:,:),Sigma_c_minus(:,:)
   complex*16,allocatable        :: G_ao_tmp(:,:)
   complex*16,allocatable        :: Mat_gorkov_tmp(:,:)
+  complex*16,allocatable        :: Mat_gorkov_tmp2(:,:)
+  complex*16,allocatable        :: G_itau_extrap(:)
+  complex*16,allocatable        :: err_current(:)
   complex*16,allocatable        :: G_ao_itau(:,:,:)
+  complex*16,allocatable        :: G_ao_itau_old(:,:,:)
   complex*16,allocatable        :: G_ao_itau_hfb(:,:,:)
+  complex*16,allocatable        :: err_diis(:,:)
+  complex*16,allocatable        :: G_itau_old_diis(:,:)
   complex*16,allocatable        :: G_ao_iw_hfb(:,:,:)
   complex*16,allocatable        :: DeltaG_ao_iw(:,:,:)
   complex*16,allocatable        :: Chi0_ao_iw(:,:,:)
@@ -151,7 +161,10 @@ subroutine scGWBitauiw_ao(nBas,nOrb,nOrb_twice,maxSCF,maxDIIS,dolinGW,restart_sc
  enddo
  nElectrons=0.5d0*nElectrons ! Here we prefer to use 1 spin-channel
  chem_pot_saved=chem_pot
-
+ alpha_mixing=0.6d0
+ rcond=0d0
+ n_diis=0
+ nBas2Sqntimes2=nBas_twiceSq*ntimes_twice
 
  ! Allocate arrays
  allocate(Occ(nOrb))
@@ -165,10 +178,12 @@ subroutine scGWBitauiw_ao(nBas,nOrb,nOrb_twice,maxSCF,maxDIIS,dolinGW,restart_sc
  allocate(H_ao_hfb(nBas_twice,nBas_twice))
  allocate(G_ao_tmp(nBas,nBas))
  allocate(Mat_gorkov_tmp(nBas_twice,nBas_twice))
+ allocate(Mat_gorkov_tmp2(nBas_twice,nBas_twice))
  allocate(G_ao_iw_hfb(nfreqs,nBas_twice,nBas_twice))
  allocate(DeltaG_ao_iw(nfreqs,nBas_twice,nBas_twice))
  allocate(G_ao_itau_hfb(ntimes_twice,nBas_twice,nBas_twice))
  allocate(G_ao_itau(ntimes_twice,nBas_twice,nBas_twice))
+ allocate(G_ao_itau_old(ntimes_twice,nBas_twice,nBas_twice))
  allocate(Chi0_ao_itau(nBasSq,nBasSq))
  allocate(Chi0_ao_iw(nfreqs,nBasSq,nBasSq),Wp_ao_iw(nBasSq,nBasSq))
  allocate(Wp_ao_itau(ntimes,nBasSq,nBasSq))
@@ -187,16 +202,30 @@ subroutine scGWBitauiw_ao(nBas,nOrb,nOrb_twice,maxSCF,maxDIIS,dolinGW,restart_sc
  allocate(err_diisR(1,1))
  allocate(R_ao_extrap(1))
  allocate(R_ao_old_diis(1,1))
+ allocate(G_itau_extrap(1))
+ allocate(err_current(1))
+ allocate(err_diis(1,1))
+ allocate(G_itau_old_diis(1,1))
  if(maxDIIS>0) then
   deallocate(err_currentR)
   deallocate(R_ao_extrap)
   deallocate(err_diisR)
   deallocate(R_ao_old_diis)
+  deallocate(G_itau_extrap)
+  deallocate(err_current)
+  deallocate(err_diis)
+  deallocate(G_itau_old_diis)
   allocate(err_currentR(nBas_twiceSq))
   allocate(R_ao_extrap(nBas_twiceSq))
   allocate(err_diisR(nBas_twiceSq,maxDIIS))
   allocate(R_ao_old_diis(nBas_twiceSq,maxDIIS))
+  allocate(G_itau_extrap(nBas2Sqntimes2))
+  allocate(err_current(nBas2Sqntimes2))
+  allocate(err_diis(nBas2Sqntimes2,maxDIIS))
+  allocate(G_itau_old_diis(nBas2Sqntimes2,maxDIIS))
  endif
+ err_diis=czero
+ G_itau_old_diis=czero
 
  ! Initialize arrays
  DeltaG_ao_iw(:,:,:)=czero
@@ -261,6 +290,7 @@ subroutine scGWBitauiw_ao(nBas,nOrb,nOrb_twice,maxSCF,maxDIIS,dolinGW,restart_sc
  enddo
  ! Initialize G(i tau)
  G_ao_itau(:,:,:)=G_ao_itau_hfb(:,:,:)
+ G_ao_itau_old(:,:,:)=G_ao_itau_hfb(:,:,:)
  ! Check error in the Fourier transformation
  write(*,*)
  write(*,'(a)') ' Error test for the Go(iw) -> G(it) transformation'
@@ -602,6 +632,52 @@ subroutine scGWBitauiw_ao(nBas,nOrb,nOrb_twice,maxSCF,maxDIIS,dolinGW,restart_sc
 
   if(iter==maxSCF) exit
 
+  ! Transform DeltaG(i w) -> DeltaG(i tau) [ i tau and -i tau ]
+  !      [ the weights contain the 2 /(2 pi) = 1 / pi factor and the cos(tau w) or sin(tau w) ]
+  G_ao_itau=czero
+  do itau=1,ntimes
+   Mat_gorkov_tmp(:,:)=czero
+   Mat_gorkov_tmp2(:,:)=czero
+   do ifreq=1,nfreqs
+    Mat_gorkov_tmp(:,:) = Mat_gorkov_tmp(:,:)   + im*cosw2t_weight(itau,ifreq)*Real(DeltaG_ao_iw(ifreq,:,:))  &
+                                                - im*sinw2t_weight(itau,ifreq)*Aimag(DeltaG_ao_iw(ifreq,:,:))
+    Mat_gorkov_tmp2(:,:) = Mat_gorkov_tmp2(:,:) + im*cosw2t_weight(itau,ifreq)*Real(DeltaG_ao_iw(ifreq,:,:))  &
+                                                + im*sinw2t_weight(itau,ifreq)*Aimag(DeltaG_ao_iw(ifreq,:,:))
+   enddo
+   ! Build G(i tau) = DeltaG(i tau) + Go(i tau)
+   G_ao_itau(2*itau-1,:,:)=Mat_gorkov_tmp(:,:) +G_ao_itau_hfb(2*itau-1,:,:)
+   G_ao_itau(2*itau  ,:,:)=Mat_gorkov_tmp2(:,:)+G_ao_itau_hfb(2*itau  ,:,:)
+  enddo
+
+  ! Do mixing with previous G(i tau) to facilitate convergence
+  if(maxDIIS>0) then
+   n_diis=min(n_diis+1,maxDIIS)
+   err_current=czero
+   idiis_index=1
+   do itau=1,ntimes_twice
+    do ibas=1,nBas_twice
+     do jbas=1,nBas_twice
+      err_current(idiis_index)=G_ao_itau(itau,ibas,jbas)-G_ao_itau_old(itau,ibas,jbas)
+      G_itau_extrap(idiis_index)=G_ao_itau(itau,ibas,jbas)
+      idiis_index=idiis_index+1
+     enddo
+    enddo
+   enddo
+   call complex_DIIS_extrapolation(rcond,nBas2Sqntimes2,nBas2Sqntimes2,n_diis,err_diis,G_itau_old_diis,err_current,G_itau_extrap)
+   idiis_index=1
+   do itau=1,ntimes_twice
+    do ibas=1,nBas_twice
+     do jbas=1,nBas_twice
+      G_ao_itau(itau,ibas,jbas)=G_itau_extrap(idiis_index)
+      idiis_index=idiis_index+1
+     enddo
+    enddo
+   enddo
+  else
+   G_ao_itau(:,:,:)=alpha_mixing*G_ao_itau(:,:,:)+(1d0-alpha_mixing)*G_ao_itau_old(:,:,:)
+  endif
+  G_ao_itau_old(:,:,:)=G_ao_itau(:,:,:)
+
  enddo
  write(*,*)
  write(*,'(A50)') '---------------------------------------'
@@ -710,10 +786,12 @@ subroutine scGWBitauiw_ao(nBas,nOrb,nOrb_twice,maxSCF,maxDIIS,dolinGW,restart_sc
  deallocate(H_ao_hfb)
  deallocate(G_ao_tmp)
  deallocate(Mat_gorkov_tmp)
+ deallocate(Mat_gorkov_tmp2)
  deallocate(DeltaG_ao_iw)
  deallocate(G_ao_iw_hfb)
  deallocate(G_ao_itau_hfb)
  deallocate(G_ao_itau)
+ deallocate(G_ao_itau_old)
  deallocate(Chi0_ao_itau)
  deallocate(Chi0_ao_iw,Wp_ao_iw,Wp_ao_itau)
  deallocate(Sigma_c_w_ao)
@@ -731,7 +809,10 @@ subroutine scGWBitauiw_ao(nBas,nOrb,nOrb_twice,maxSCF,maxDIIS,dolinGW,restart_sc
  deallocate(R_ao_extrap)
  deallocate(err_diisR)
  deallocate(R_ao_old_diis)
-
+ deallocate(G_itau_extrap)
+ deallocate(err_current)
+ deallocate(err_diis)
+ deallocate(G_itau_old_diis)
 
  call wall_time(end_scGWBitauiw)
  

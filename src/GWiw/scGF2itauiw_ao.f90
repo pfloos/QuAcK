@@ -244,6 +244,8 @@ subroutine scGF2itauiw_ao(nBas,nOrb,nO,maxSCF,maxDIIS,dolinGF2,restart_scGF2,ver
   allocate(G_itau_old_diis(nBasSqntimes2,maxDIIS))
   allocate(P_ao_old_diis(nBas2,maxDIIS))
  endif
+ err_diis=czero
+ G_itau_old_diis=czero
 
 !---------------!
 ! Reading grids !
