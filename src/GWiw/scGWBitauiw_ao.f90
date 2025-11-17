@@ -684,14 +684,14 @@ subroutine scGWBitauiw_ao(nBas,nOrb,nOrb_twice,maxSCF,maxDIIS,dolinGW,restart_sc
  write(*,'(A50)') '     scGWB calculation completed       '
  write(*,'(A50)') '---------------------------------------'
  write(*,*)
- write(*,'(a,f15.8,a,i5,a)') ' Trace scGWB ',trace_1_rdm,' after ',iter,' global iterations '
- write(*,'(a,f15.8)')        ' Change of P ',diff_Rao
- write(*,'(a,f15.8)')        ' Chem. Pot.  ',chem_pot
- write(*,'(a,f15.8)')        ' Enuc        ',ENuc
- write(*,'(a,f15.8)')        ' Ehfbl       ',Ehfbl
- write(*,'(a,f15.8)')        ' EcGM        ',EcGM
- write(*,'(a,f15.8)')        ' Eelec       ',Ehfbl+EcGM
- write(*,'(a,f15.8)')        ' scGW Energy ',Ehfbl+EcGM+ENuc
+ write(*,'(a,f15.8,a,i5,a)') ' Trace scGWB  ',trace_1_rdm,' after ',iter,' global iterations '
+ write(*,'(a,f15.8)')        ' Change of P  ',diff_Rao
+ write(*,'(a,f15.8)')        ' Chem. Pot.   ',chem_pot
+ write(*,'(a,f15.8)')        ' Enuc         ',ENuc
+ write(*,'(a,f15.8)')        ' Ehfbl        ',Ehfbl
+ write(*,'(a,f15.8)')        ' EcGM         ',EcGM
+ write(*,'(a,f15.8)')        ' Eelec        ',Ehfbl+EcGM
+ write(*,'(a,f15.8)')        ' scGWB Energy ',Ehfbl+EcGM+ENuc
  write(*,*)
  write(*,*) ' Final occupation numbers'
  do ibas=1,nOrb
