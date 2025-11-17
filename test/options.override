@@ -1,0 +1,9 @@
+# spin
+triplet = T
+
+# ACFDT
+XBS = T
+
+# BSE
+dTDA = T
+
