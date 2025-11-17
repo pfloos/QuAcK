@@ -40,8 +40,8 @@ python_version_full = platform.python_version_tuple()
 PYTHON_VERSION = "{}.{}".format(python_version_full[0], python_version_full[1])
 
 
-
-print(f"The current date and time is {current_date.strftime('%Y-%m-%d %H:%M:%S')}")
+print(f"The current date and time is {
+      current_date.strftime('%Y-%m-%d %H:%M:%S')}")
 print(f"User Name: {user_name}")
 print(f"Operating System: {os_name} {os_release} ({os_version})")
 print(f"CPU: {processor} ({machine})")
@@ -64,11 +64,9 @@ parser.add_argument(
     '-t', '--thresh',
     type=float,
     default=thresh_default,
-    help='Threshold for acceptable difference, default = {}'.format(thresh_default)
+    help='Threshold for acceptable difference, default = {}'.format(
+        thresh_default)
 )
-    
-
-
 
 
 args = parser.parse_args()
@@ -92,6 +90,7 @@ print("\n\n")
 
 # ---
 
+
 class Quack_Job:
 
     def __init__(self, mol, multip, basis, geom, methd, workdir):
@@ -107,40 +106,45 @@ class Quack_Job:
         # geometry
         if not os.path.exists("{}/mol".format(self.workdir)):
             os.makedirs("{}/mol".format(self.workdir))
-        generate_xyz(self.geom, filename="{}/mol/{}.xyz".format(self.workdir, self.mol))
+        generate_xyz(
+            self.geom, filename="{}/mol/{}.xyz".format(self.workdir, self.mol))
 
         # input files
         for inp in ["methods", "options"]:
             inp_file = "{}.{}".format(inp, self.methd.upper())
             if os.path.exists("inp/{}".format(inp_file)):
-                shutil.copy("{}/tests/inp/{}".format(quack_root, inp_file), 
+                shutil.copy("{}/tests/inp/{}".format(quack_root, inp_file),
                             "{}/input/{}".format(self.workdir, inp))
             else:
-                print_col("File 'inp/{}' does not exist.".format(inp_file), "red")
+                print_col(
+                    "File 'inp/{}' does not exist.".format(inp_file), "red")
                 sys.exit(1)
 
     def run_ci(self):
 
         try:
-    
+
             os.chdir('..')
-    
+
             command = [
                 'python{}'.format(PYTHON_VERSION), 'PyDuck.py',
                 '--working_dir', '{}'.format(self.workdir),
-                '-x', '{}'.format(self.mol), 
+                '-x', '{}'.format(self.mol),
                 '-b', '{}'.format(self.basis),
-                '-m', '{}'.format(self.multip)
+                '-m', '{}'.format(self.multip),
+                '--no_cap'
             ]
-    
-            file_out = "{}/{}/{}_{}_{}.out".format(self.workdir, self.methd, self.mol, self.multip, self.basis)
+
+            file_out = "{}/{}/{}_{}_{}.out".format(
+                self.workdir, self.methd, self.mol, self.multip, self.basis)
             with open(file_out, 'w') as fobj:
-                result = subprocess.run(command, stdout=fobj, stderr=subprocess.PIPE, text=True)
+                result = subprocess.run(
+                    command, stdout=fobj, stderr=subprocess.PIPE, text=True)
             if result.stderr:
                 print("Error output:", result.stderr)
-    
+
             os.chdir('tests')
-    
+
         except Exception as e:
 
             print_col(f"An error occurred: {str(e)}", "red")
@@ -151,40 +155,45 @@ class Quack_Job:
             spinner = ['|', '/', '-', '\\']
             idx = 0
             while not done_event.is_set():
-                stdout_col(f'\r    Testing {self.methd} ({self.basis}) {spinner[idx]}', "cyan")
+                stdout_col(f'\r    Testing {self.methd} ({self.basis}) {
+                           spinner[idx]}', "cyan")
                 sys.stdout.flush()
                 idx = (idx + 1) % len(spinner)
                 time.sleep(0.05)
-            stdout_col(f'\r    Testing {self.methd} ({self.basis})    \n\n', "cyan")
+            stdout_col(f'\r    Testing {self.methd} ({
+                       self.basis})    \n\n', "cyan")
 
         done_event = threading.Event()
         spinner_thread = threading.Thread(target=display_spinner)
         spinner_thread.start()
 
         try:
-    
+
             os.chdir('..')
-            #print_col(f"      Starting QuAck..", "magenta")
-            #print_col(f"      $ cd ..", "magenta")
-    
+            # print_col(f"      Starting QuAck..", "magenta")
+            # print_col(f"      $ cd ..", "magenta")
+
             command = [
                 'python{}'.format(PYTHON_VERSION), 'PyDuck.py',
                 '--working_dir', '{}'.format(self.workdir),
-                '-x', '{}'.format(self.mol), 
+                '-x', '{}'.format(self.mol),
                 '-b', '{}'.format(self.basis),
-                '-m', '{}'.format(self.multip)
+                '-m', '{}'.format(self.multip),
+                '--no_cap'
             ]
-            #print_col(f"      $ {' '.join(command)}", "magenta")
-    
-            file_out = "{}/{}/{}_{}_{}.out".format(self.workdir, self.methd, self.mol, self.multip, self.basis)
+            # print_col(f"      $ {' '.join(command)}", "magenta")
+
+            file_out = "{}/{}/{}_{}_{}.out".format(
+                self.workdir, self.methd, self.mol, self.multip, self.basis)
             with open(file_out, 'w') as fobj:
-                result = subprocess.run(command, stdout=fobj, stderr=subprocess.PIPE, text=True)
+                result = subprocess.run(
+                    command, stdout=fobj, stderr=subprocess.PIPE, text=True)
             if result.stderr:
                 print("Error output:", result.stderr)
-    
+
             os.chdir('tests')
-            #print_col(f"      $ cd tests", "magenta")
-    
+            # print_col(f"      $ cd tests", "magenta")
+
         except Exception as e:
 
             print_col(f"An error occurred: {str(e)}", "red")
@@ -205,18 +214,20 @@ class Quack_Job:
                     key = lines[i].strip()
                     value = lines[i + 1].strip()
                     data_new[key] = float(value)  # Convert value to float
-            
+
             # Compare with data_ref
             for key in data_ref:
                 if key not in data_new:
                     print_col(f"        😐 {key} missing ⚠️ ", "yellow")
                     test_failed_ = True
                 else:
-                    diff = abs(data_new[key] - data_ref[key]) / (1e-15 + abs(data_ref[key]))
-                    if(diff <= THRESH):
+                    diff = abs(data_new[key] - data_ref[key]
+                               ) / (1e-15 + abs(data_ref[key]))
+                    if (diff <= THRESH):
                         print_col(f"        🙂 {key}", "green")
                     else:
-                        print_col(f"        ☹️  {key}: ❌ {data_ref[key]} ≠ {data_new[key]}", "red")
+                        print_col(f"        ☹️  {key}: ❌ {
+                                  data_ref[key]} ≠ {data_new[key]}", "red")
                         test_failed_ = True
         except FileNotFoundError:
             print_col(f"Error: The file '{filepath}' does not exist.", "red")
@@ -224,7 +235,7 @@ class Quack_Job:
         except Exception as e:
             print_col(f"An error occurred: {str(e)}", "red")
             sys.exit(1)
-    
+
 
 # ---
 
@@ -257,19 +268,20 @@ def main():
 
             methd = mol_prop_name[len('properties_'):]
 
-            if(len(mol_prop_data) == 0):
+            if (len(mol_prop_data) == 0):
                 continue
 
             for basis_name, basis_data in mol_prop_data.items():
 
-                if(len(basis_data) == 0):
+                if (len(basis_data) == 0):
                     continue
 
                 work_methd = Path('{}/{}'.format(work_path, methd))
                 if not work_methd.exists():
                     work_methd.mkdir(parents=True, exist_ok=True)
 
-                New_Quack_Job = Quack_Job(mol_name, mol_mult, basis_name, mol_geom, methd, work_path)
+                New_Quack_Job = Quack_Job(
+                    mol_name, mol_mult, basis_name, mol_geom, methd, work_path)
                 New_Quack_Job.prep_inp()
                 if is_ci:
                     New_Quack_Job.run_ci()
@@ -296,4 +308,3 @@ db_name = '{}.db'.format(bench)
 molecules = get_molecules_from_db(db_name)
 
 main()
-
