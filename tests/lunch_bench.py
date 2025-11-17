@@ -142,6 +142,7 @@ class Quack_Job:
                     command, stdout=fobj, stderr=subprocess.PIPE, text=True)
             if result.stderr:
                 print("Error output:", result.stderr)
+                sys.exit(1)
 
             os.chdir('tests')
 
@@ -190,6 +191,7 @@ class Quack_Job:
                     command, stdout=fobj, stderr=subprocess.PIPE, text=True)
             if result.stderr:
                 print("Error output:", result.stderr)
+                sys.exit(1)
 
             os.chdir('tests')
             # print_col(f"      $ cd tests", "magenta")
