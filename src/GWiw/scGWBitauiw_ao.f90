@@ -1,4 +1,4 @@
-subroutine scGWBitauiw_ao(nBas,nOrb,nOrb_twice,maxSCF,maxDIIS,dolinGW,restart_scGWB,verbose_scGWB,no_fock,ENuc,Hc,S,X_in, &
+subroutine scGWBitauiw_ao(nBas,nOrb,nOrb_twice,maxSCF,maxDIIS,dolinGW,restart_scGWB,verbose_scGWB,no_h_hfb,ENuc,Hc,S,X_in, &
                           P_in,Pan_in,cHFB,eQP_state,chem_pot,sigma,nfreqs,wcoord,wweight,U_QP,vMAT,ERI_AO)
 
 ! Restricted scGWB
@@ -9,7 +9,7 @@ subroutine scGWBitauiw_ao(nBas,nOrb,nOrb_twice,maxSCF,maxDIIS,dolinGW,restart_sc
 ! Input variables
  
   logical,intent(in)            :: dolinGW
-  logical,intent(in)            :: no_fock
+  logical,intent(in)            :: no_h_hfb
   logical,intent(in)            :: restart_scGWB
   logical,intent(in)            :: verbose_scGWB
 
@@ -41,12 +41,14 @@ subroutine scGWBitauiw_ao(nBas,nOrb,nOrb_twice,maxSCF,maxDIIS,dolinGW,restart_sc
   integer                       :: verbose
   integer                       :: ntimes
   integer                       :: nBasSq
-  integer                       :: nBas_twice
+  integer                       :: nBas_twice,nBas_twiceSq
   integer                       :: ntimes_twice
   integer                       :: nfreqs_int
   integer                       :: imax_error_gw2gt
   integer                       :: imax_error_st2sw
+  integer                       :: idiis_indexR,n_diisR
 
+  double precision              :: rcondR
   double precision              :: eta,diff_Rao
   double precision              :: thrs_N,thrs_Ngrad,thrs_Rao
   double precision              :: nElectrons
@@ -74,6 +76,10 @@ subroutine scGWBitauiw_ao(nBas,nOrb,nOrb_twice,maxSCF,maxDIIS,dolinGW,restart_sc
   double precision,allocatable  :: R_ao_hfb(:,:)
   double precision,allocatable  :: R_ao_old(:,:)
   double precision,allocatable  :: H_ao_hfb(:,:)
+  double precision,allocatable  :: err_currentR(:)
+  double precision,allocatable  :: err_diisR(:,:)
+  double precision,allocatable  :: R_ao_extrap(:)
+  double precision,allocatable  :: R_ao_old_diis(:,:)
   double precision,allocatable  :: wcoord_int(:),wweight_int(:)
   double precision,allocatable  :: tweight(:),tcoord(:)
   double precision,allocatable  :: sint2w_weight(:,:)
@@ -130,6 +136,7 @@ subroutine scGWBitauiw_ao(nBas,nOrb,nOrb_twice,maxSCF,maxDIIS,dolinGW,restart_sc
  nBasSq=nBas*nBas
  ntimes_twice=2*ntimes
  nBas_twice=2*nBas
+ nBas_twiceSq=nBas_twice*nBas_twice
  verbose=0
  if(verbose_scGWB) verbose=1     
  eta=0d0
@@ -176,6 +183,20 @@ subroutine scGWBitauiw_ao(nBas,nOrb,nOrb_twice,maxSCF,maxDIIS,dolinGW,restart_sc
  allocate(cosw2t_weight(ntimes,nfreqs))
  allocate(sinw2t_weight(ntimes,nfreqs))
  allocate(Mat1(nOrb,nOrb),Mat2(nOrb,nOrb))
+ allocate(err_currentR(1))
+ allocate(err_diisR(1,1))
+ allocate(R_ao_extrap(1))
+ allocate(R_ao_old_diis(1,1))
+ if(maxDIIS>0) then
+  deallocate(err_currentR)
+  deallocate(R_ao_extrap)
+  deallocate(err_diisR)
+  deallocate(R_ao_old_diis)
+  allocate(err_currentR(nBas_twiceSq))
+  allocate(R_ao_extrap(nBas_twiceSq))
+  allocate(err_diisR(nBas_twiceSq,maxDIIS))
+  allocate(R_ao_old_diis(nBas_twiceSq,maxDIIS))
+ endif
 
  ! Initialize arrays
  DeltaG_ao_iw(:,:,:)=czero
@@ -474,12 +495,12 @@ subroutine scGWBitauiw_ao(nBas,nOrb,nOrb_twice,maxSCF,maxDIIS,dolinGW,restart_sc
   endif
 
   ! Converge with respect to the H_HFB operator (using only good R_ao matrices -> Tr[R_ao_block S_ao]=Nelectrons )
-  if(.not.no_fock) then ! Skiiping the opt w.r.t. the Fock operator to do later the linearized approximation on Go -> [ lin-G = Go + Go Sigma Go ]
+  if(.not.no_h_hfb) then ! Skiiping the opt w.r.t. the H_HFB operator to do later the linearized approximation on Go -> [ lin-G = Go + Go Sigma Go ]
    iter_hfb=0
-!   n_diisR=0
-!   rcondR=0d0
-!   err_diisR=0d0
-!   R_ao_old_diis=0d0
+   n_diisR=0
+   rcondR=0d0
+   err_diisR=0d0
+   R_ao_old_diis=0d0
    do
     ! Build H_HFB
     iter_hfb=iter_hfb+1
@@ -526,10 +547,30 @@ subroutine scGWBitauiw_ao(nBas,nOrb,nOrb_twice,maxSCF,maxDIIS,dolinGW,restart_sc
 
     if(iter_hfb==maxSCF) exit
 
+    ! Do mixing with previous R_ao to facilitate convergence
+    if(maxDIIS>0) then
+     n_diisR=min(n_diisR+1,maxDIIS)
+     err_currentR=0d0
+     idiis_indexR=1
+     do ibas=1,nBas_twice
+      do jbas=1,nBas_twice
+       err_currentR(idiis_indexR)=R_ao(ibas,jbas)-R_ao_old(ibas,jbas)
+       R_ao_extrap(idiis_indexR)=R_ao(ibas,jbas)
+       idiis_indexR=idiis_indexR+1
+      enddo
+     enddo
+     call DIIS_extrapolation(rcondR,nBas_twiceSq,nBas_twiceSq,n_diisR,err_diisR,R_ao_old_diis,err_currentR,R_ao_extrap)
+     idiis_indexR=1
+     do ibas=1,nBas_twice
+      do jbas=1,nBas_twice
+       R_ao(ibas,jbas)=R_ao_extrap(idiis_indexR)
+       idiis_indexR=idiis_indexR+1
+      enddo
+     enddo
+    endif
+
    enddo
-
   endif
-
 
   ! Check convergence of R_ao after a scGWB iteration
   diff_Rao=0d0
@@ -686,6 +727,10 @@ subroutine scGWBitauiw_ao(nBas,nOrb,nOrb_twice,maxSCF,maxDIIS,dolinGW,restart_sc
  deallocate(cosw2t_weight)
  deallocate(sinw2t_weight)
  deallocate(Mat1,Mat2)
+ deallocate(err_currentR)
+ deallocate(R_ao_extrap)
+ deallocate(err_diisR)
+ deallocate(R_ao_old_diis)
 
 
  call wall_time(end_scGWBitauiw)
