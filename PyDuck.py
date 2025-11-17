@@ -57,6 +57,9 @@ parser.add_argument('-x', '--xyz', type=str, required=True,
 parser.add_argument('-dm', '--dump_molden', default=False, action='store_true',
                     help='Dump molden file with the dyson orbitals. Make sure that in the Quack Code before compilation the keyword writeMOs in cRHF or complex_qsRGW is set to true. So far, this is only available for cRHF and complex_qsRGW.')
 
+parser.add_argument('-nc', '--no_cap', default=False, action='store_true',
+                    help='If true, no CAP integrals are calculated and stored.')
+
 # Parse the arguments
 args = parser.parse_args()
 working_dir = args.working_dir
@@ -72,6 +75,8 @@ formatted_2e = args.formatted_2e
 mmap_2e = args.mmap_2e
 aosym_2e = args.aosym_2e
 dump_molden = args.dump_molden
+if args.no_cap:
+    use_cap = False
 # Read molecule
 f = open(working_dir+'/mol/'+xyz, 'r')
 lines = f.read().splitlines()
@@ -228,7 +233,7 @@ if use_cap:
             "bohr_coordinates": bohr_coordinates
         }
         cap_system = pyopencap.System(sys_dict)
-        if not(cap_system.check_overlap_mat(ovlp, "pyscf")):
+        if not (cap_system.check_overlap_mat(ovlp, "pyscf")):
             raise Exception(
                 "Provided cap basis does not match to the pyscf basis.")
         cap_dict = {"cap_type": "box",
@@ -308,7 +313,7 @@ if print_2e:
     else:
         output_file_path = working_dir + '/int/ERI.bin'
         subprocess.call(['rm', '-f', output_file_path])
-        if(mmap_2e):
+        if (mmap_2e):
             # avoid using DRAM
             eri_shape = (norb, norb, norb, norb)
             eri_mmap = np.memmap(
@@ -331,7 +336,7 @@ if print_2e:
 
 # Free memory
 del ovlp, v1e, t1e, x, y, z
-if print_2e and not(mmap_2e):
+if print_2e and not (mmap_2e):
     del eri_ao
 if use_cap:
     del cap_ao, pc
@@ -343,7 +348,7 @@ subprocess.call([QuAcK_dir + '/bin/QuAcK', working_dir])
 if dump_molden:
     real_mo_coeff = np.loadtxt('real_MOs.dat')
     imag_mo_coeff = np.loadtxt('imag_MOs.dat')
-    subprocess.call(['rm','real_MOs.dat'])
-    subprocess.call(['rm','imag_MOs.dat'])
+    subprocess.call(['rm', 'real_MOs.dat'])
+    subprocess.call(['rm', 'imag_MOs.dat'])
     molden.from_mo(mol, "real_MOs.molden", real_mo_coeff)
     molden.from_mo(mol, "imag_MOs.molden", imag_mo_coeff)
