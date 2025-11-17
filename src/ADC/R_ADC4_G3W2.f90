@@ -30,7 +30,7 @@ subroutine R_ADC4_G3W2(dotest,TDA_W,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,eHF)
   integer                       :: jb,kc,ia,ja
   integer                       :: mu,nu
   integer                       :: klc,kcd,ija,ijb,iab,jab
-  double precision              :: num1,num2,dem1,dem2,dem3
+  double precision              :: num,num1,num2,dem1,dem2,dem3
 
   logical                       :: print_W = .false.
   logical                       :: dRPA = .true.
@@ -234,6 +234,44 @@ subroutine R_ADC4_G3W2(dotest,TDA_W,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,eHF)
  
             end do
           end do
+
+          ! Third-order terms
+
+          do k=nC+1,nO
+            do c=nO+1,nOrb-nR
+              do nu=1,nS
+ 
+                num = 2d0*sqrt(2d0)*rho(a,j,nu)*rho(i,j,mu)*rho(p,a,mu)
+                dem1 = eHF(a) - eHF(j) + Om(nu)
+                dem2 = eHF(j) - eHF(j) - Om(mu)
+
+                H(1    ,1+ija) = H(1    ,1+ija) + num/(dem1*dem2)
+                H(1+ija,1    ) = H(1+ija,1    ) + num/(dem1*dem2)
+ 
+                num = 2d0*sqrt(2d0)*rho(j,a,nu)*rho(a,i,mu)*rho(j,p,mu)
+                dem1 = eHF(j) - eHF(a) + Om(nu)
+                dem2 = eHF(i) - eHF(a) - Om(mu)  
+
+                H(1    ,1+ija) = H(1    ,1+ija) - num/(dem1*dem2)
+                H(1+ija,1    ) = H(1+ija,1    ) - num/(dem1*dem2)
+
+                num = 2d0*sqrt(2d0)*rho(j,a,nu)*rho(i,a,mu)*rho(p,j,mu)
+                dem1 = eHF(j) - eHF(a) + Om(nu)
+                dem2 = eHF(a) - eHF(i) - Om(mu)  
+
+                H(1    ,1+ija) = H(1    ,1+ija) - 0.5d0*num/(dem1*dem2)
+                H(1+ija,1    ) = H(1+ija,1    ) - 0.5d0*num/(dem1*dem2)
+
+                num = 2d0*sqrt(2d0)*rho(k,j,nu)*rho(i,j,mu)*rho(p,k,mu)
+                dem1 = eHF(k) - eHF(j) + Om(nu)
+                dem2 = eHF(j) - eHF(i) - Om(mu)  
+
+                H(1    ,1+ija) = H(1    ,1+ija) + 0.5d0*num/(dem1*dem2)
+                H(1+ija,1    ) = H(1+ija,1    ) + 0.5d0*num/(dem1*dem2)
+
+              end do
+            end do
+          end do
   
         end do
       end do
@@ -266,6 +304,44 @@ subroutine R_ADC4_G3W2(dotest,TDA_W,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,eHF)
                                    + sqrt(2d0)*ERI(a,c,p,k)*rho(k,c,mu)/(eHF(c) - eHF(k) - Om(mu)) &
                                    + sqrt(2d0)*ERI(a,k,p,c)*rho(c,k,mu)/(eHF(c) - eHF(k) + Om(mu))
  
+            end do
+          end do
+
+          ! Third-order terms
+
+          do k=nC+1,nO
+            do c=nO+1,nOrb-nR
+              do nu=1,nS
+ 
+                num = 2d0*sqrt(2d0)*rho(b,i,nu)*rho(b,a,mu)*rho(i,p,mu)
+                dem1 = eHF(b) - eHF(i) + Om(nu)
+                dem2 = eHF(a) - eHF(b) - Om(mu)
+
+                H(1    ,1+n2h1p+iab) = H(1    ,1+n2h1p+iab) + num/(dem1*dem2)
+                H(1+n2h1p+iab,1    ) = H(1+n2h1p+iab,1    ) + num/(dem1*dem2)
+ 
+                num = 2d0*sqrt(2d0)*rho(i,b,nu)*rho(a,i,mu)*rho(p,b,mu)
+                dem1 = eHF(i) - eHF(b) + Om(nu)
+                dem2 = eHF(i) - eHF(a) - Om(mu)  
+
+                H(1    ,1+n2h1p+iab) = H(1    ,1+n2h1p+iab) - num/(dem1*dem2)
+                H(1+n2h1p+iab,1    ) = H(1+n2h1p+iab,1    ) - num/(dem1*dem2)
+
+                num = 2d0*sqrt(2d0)*rho(i,b,nu)*rho(i,a,mu)*rho(b,p,mu)
+                dem1 = eHF(i) - eHF(b) + Om(nu)
+                dem2 = eHF(a) - eHF(i) - Om(mu)  
+
+                H(1    ,1+n2h1p+iab) = H(1    ,1+n2h1p+iab) - 0.5d0*num/(dem1*dem2)
+                H(1+n2h1p+iab,1    ) = H(1+n2h1p+iab,1    ) - 0.5d0*num/(dem1*dem2)
+
+                num = 2d0*sqrt(2d0)*rho(b,c,nu)*rho(b,a,mu)*rho(c,p,mu)
+                dem1 = eHF(b) - eHF(c) + Om(nu)
+                dem2 = eHF(a) - eHF(b) - Om(mu)  
+
+                H(1    ,1+n2h1p+iab) = H(1    ,1+n2h1p+iab) + 0.5d0*num/(dem1*dem2)
+                H(1+n2h1p+iab,1    ) = H(1+n2h1p+iab,1    ) + 0.5d0*num/(dem1*dem2)
+
+              end do
             end do
           end do
  
