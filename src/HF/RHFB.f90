@@ -380,6 +380,11 @@ subroutine RHFB(dotest,doaordm,maxSCF,thresh,max_diis,error_P,nNuc,ZNuc,rNuc,ENu
     endif
     R_ao_old=R_ao
 
+!    write(*,*) 'H_hfb_ao iter ',nSCF
+!    do iorb=1,nBas_twice
+!     write(*,'(*(f10.5))') H_HFB_ao(iorb,:)
+!    enddo
+
     ! Dump results
     write(*,*)'-------------------------------------------------------------------------------------------------'
     write(*,'(1X,A1,1X,A4,1X,A1,1X,A16,1X,A1,1X,A16,1X,A1,1X,A16,1X,A1A16,1X,A1,1X,A10,2X,A1,1X)') &

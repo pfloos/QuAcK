@@ -480,6 +480,7 @@ subroutine scGWBitauiw_ao(nBas,nOrb,nOrb_twice,maxSCF,maxDIIS,dolinGW,restart_sc
    do
     ! Build H_HFB
     iter_hfb=iter_hfb+1
+    H_ao_hfb=0d0
     H_ao_hfb(1:nBas,1:nBas)=Hc(1:nBas,1:nBas)
     Ehfbl=0d0
     do ibas=1,nBas
