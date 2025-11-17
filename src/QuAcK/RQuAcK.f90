@@ -5,7 +5,8 @@ subroutine RQuAcK(working_dir,use_gpu,dotest,doRHF,doROHF,docRHF,               
                   doG0T0pp,doevGTpp,doqsGTpp,doufG0T0pp,doG0T0eh,doevGTeh,doqsGTeh,doevParquet,doqsParquet,                 & 
                   docG0W0,docG0F2,doscGW,doscGF2,                                                                           & 
                   doCAP,readFCIDUMP,restart_scGW,restart_scGF2,verbose_scGW,verbose_scGF2,                                  & 
-                  do_IPEA_ADC2,do_IP_ADC2,do_IPEA_ADC3,do_SOSEX,do_2SOSEX,do_G3W2,do_ADC_GW,do_ADC_2SOSEX,do_ADC_G3W2,      &
+                  do_IPEA_ADC2,do_IP_ADC2,do_IPEA_ADC3,do_SOSEX,do_2SOSEX,do_G3W2,                                          & 
+                  do_ADC_GW,do_ADC_2SOSEX,do_ADC3_G3W2,do_ADC4_G3W2,                                                        &
                   nNuc,nBas,nOrb,nC,nO,nV,nR,ENuc,ZNuc,rNuc,                                                                &
                   S,T,V,Hc,CAP_AO,X,dipole_int_AO,maxSCF_HF,max_diis_HF,thresh_HF,level_shift,                              &
                   guess_type,mix,reg_MP,maxSCF_CC,max_diis_CC,thresh_CC,singlet,triplet,TDA,                                &
@@ -50,7 +51,7 @@ subroutine RQuAcK(working_dir,use_gpu,dotest,doRHF,doROHF,docRHF,               
   logical,intent(in)            :: doevParquet,doqsParquet
   logical,intent(in)            :: do_IPEA_ADC2,do_IP_ADC2,do_IPEA_ADC3
   logical,intent(in)            :: do_SOSEX,do_2SOSEX,do_G3W2
-  logical,intent(in)            :: do_ADC_GW,do_ADC_2SOSEX,do_ADC_G3W2
+  logical,intent(in)            :: do_ADC_GW,do_ADC_2SOSEX,do_ADC3_G3W2,do_ADC4_G3W2
 
   integer,intent(in)            :: nNuc,nBas,nOrb
   integer,intent(in)            :: nC
@@ -608,7 +609,7 @@ doGF = doG0F2 .or. doevGF2 .or. doqsGF2 .or. doufG0F02 .or. doG0F3 .or. doevGF3 
 
   doADC = do_IPEA_ADC2 .or. do_IP_ADC2 .or. do_IPEA_ADC3 .or. &
           do_SOSEX .or. do_2SOSEX .or. do_G3W2 .or.           &
-          do_ADC_GW .or. do_ADC_2SOSEX .or. do_ADC_G3W2
+          do_ADC_GW .or. do_ADC_2SOSEX .or. do_ADC3_G3W2 .or. do_ADC4_G3W2
 
   if(doADC) then
 
@@ -616,7 +617,7 @@ doGF = doG0F2 .or. doevGF2 .or. doqsGF2 .or. doufG0F02 .or. doG0F3 .or. doevGF3 
     call R_ADC(dotest,                                               &
                do_IPEA_ADC2,do_IP_ADC2,do_IPEA_ADC3,                 & 
                do_SOSEX,do_2SOSEX,do_G3W2,                           & 
-               do_ADC_GW,do_ADC_2SOSEX,do_ADC_G3W2,                  &
+               do_ADC_GW,do_ADC_2SOSEX,do_ADC3_G3W2,do_ADC4_G3W2,    &
                TDA_W,TDA,singlet,triplet,lin_GW,eta_GW,reg_GW,       &
                nNuc,ZNuc,rNuc,ENuc,nBas,nOrb,nC,nO,nV,nR,nS,         &
                S,X,T,V,Hc,ERI_AO,ERI_MO,dipole_int_AO,dipole_int_MO, &

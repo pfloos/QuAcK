@@ -121,11 +121,11 @@ subroutine R_ADC_GW(dotest,TDA_W,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,eHF)
     !    Compute ADC-GW matrix    !
     !-----------------------------!
     !                             !
-    !     |   F   U2h1p U2p1h |   ! 
+    !     | F     U2h1p U2p1h |   ! 
     !     |                   |   ! 
-    ! H = | U2h1p C2h1p   0   |   ! 
+    ! H = | U2h1p C2h1p 0     |   ! 
     !     |                   |   ! 
-    !     | U2p1h   0   C2p1h |   ! 
+    !     | U2p1h 0     C2p1h |   ! 
     !                             !
     !-----------------------------!
 
