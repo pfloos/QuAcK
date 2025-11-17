@@ -1,6 +1,6 @@
-subroutine R_ADC_2SOSEX(dotest,TDA_W,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,eHF)
+subroutine R_ADC4_G3W2(dotest,TDA_W,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,eHF)
 
-! ADC version of 2SOSEX
+! ADC version of G3W2 up to 3h2p/3p2h
 
   implicit none
   include 'parameters.h'
@@ -24,13 +24,13 @@ subroutine R_ADC_2SOSEX(dotest,TDA_W,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,eHF)
 
 ! Local variables
 
-  integer                       :: p
-  integer                       :: s
+  integer                       :: p,r,s
   integer                       :: i,j,k,l
   integer                       :: a,b,c,d
   integer                       :: jb,kc,ia,ja
   integer                       :: mu,nu
   integer                       :: klc,kcd,ija,ijb,iab,jab
+  double precision              :: num1,num2,dem1,dem2,dem3
 
   logical                       :: print_W = .false.
   logical                       :: dRPA = .true.
@@ -61,9 +61,9 @@ subroutine R_ADC_2SOSEX(dotest,TDA_W,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,eHF)
 ! Hello world
 
   write(*,*)
-  write(*,*)'*************************************'
-  write(*,*)'* Restricted ADC-2SOSEX Calculation *'
-  write(*,*)'*************************************'
+  write(*,*)'**************************************'
+  write(*,*)'* Restricted ADC(4)-G3W2 Calculation *'
+  write(*,*)'**************************************'
   write(*,*)
 
 ! Dimension of the supermatrix
@@ -117,17 +117,21 @@ subroutine R_ADC_2SOSEX(dotest,TDA_W,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,eHF)
 
     H(:,:) = 0d0
  
-    !-------------------------------!
-    !   Compute ADC-2SOSEX matrix   !
-    !-------------------------------!
-    !                               !
-    !     | F     U2h1p U2p1h |     ! 
-    !     |                   |     ! 
-    ! H = | U2h1p C2h1p 0     |     ! 
-    !     |                   |     ! 
-    !     | U2p1h 0     C2p1h |     ! 
-    !                               !
-    !-------------------------------!
+    !--------------------------------------------------------------!
+    !     Compute ADC-G3W2 matrix up to 3h2p/3p2h                  !
+    !--------------------------------------------------------------!
+    !                                                              !
+    !     | F      U_2h1p          U_2p1h          U_3h2p U_3p2h | ! 
+    !     |                                                      | ! 
+    ! H = | U_2h1p (K+C)_2h1p-2h1p C_2p1h-2h1p     0      0      | ! 
+    !     |                                                      | ! 
+    !     | U_2p1h C_2h1p-2p1h     (K+C)_2p1h-2p1h 0      0      | ! 
+    !     |                                                      | ! 
+    !     | U_3h2p 0               0               C_3h2p 0      | !    
+    !     |                                                      | ! 
+    !     | U_3p2h 0               0               0      C_3p2h | !
+    !                                                              !
+    !--------------------------------------------------------------!
 
     call wall_time(start_timing)
 
@@ -137,83 +141,243 @@ subroutine R_ADC_2SOSEX(dotest,TDA_W,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,eHF)
 
     H(1,1) = eHF(p)
 
-    !-------------!
-    ! Block U2h1p !
-    !-------------!
+    do i=nC+1,nO
+      do mu=1,nS
+      do nu=1,nS
+          do r=nC+1,nOrb-nR
+          do s=nC+1,nOrb-nR
+
+            num1 = 2d0*rho(p,r,mu)*rho(s,i,mu)
+            num2 = 2d0*rho(r,i,nu)*rho(p,s,nu)
+            dem1 = eHF(i) - eHF(r) - Om(nu)
+            dem2 = eHF(p) - eHF(i) + Om(nu) + Om(mu) 
+            dem3 = eHF(i) - eHF(s) - Om(mu)
+
+            H(1,1) = H(1,1) + num1*num2/(dem1*dem2*dem3)
+
+         end do
+         end do
+       end do
+       end do
+     end do
+
+    do a=nO+1,nOrb-nR
+      do mu=1,nS
+      do nu=1,nS
+          do r=nC+1,nOrb-nR
+          do s=nC+1,nOrb-nR
+
+            num1 = 2d0*rho(r,p,mu)*rho(a,s,mu)
+            num2 = 2d0*rho(a,r,nu)*rho(s,p,nu)
+            dem1 = eHF(r) - eHF(a) - Om(nu)
+            dem2 = eHF(p) - eHF(a) - Om(nu) - Om(mu) 
+            dem3 = eHF(s) - eHF(a) - Om(mu)
+
+            H(1,1) = H(1,1) + num1*num2/(dem1*dem2*dem3)
+
+         end do
+         end do
+       end do
+       end do
+     end do
+
+    !--------------!
+    ! Block U_2h1p !
+    !--------------!
  
     ija = 0
     do i=nC+1,nO
       do mu=1,nS
         ija = ija + 1
  
+        ! First-order terms
+
         H(1    ,1+ija) = sqrt(2d0)*rho(p,i,mu)
+
         H(1+ija,1    ) = sqrt(2d0)*rho(p,i,mu)
+
+        ! Second-order terms
 
         do k=nC+1,nO
           do c=nO+1,nOrb-nR
+
             H(1    ,1+ija) = H(1    ,1+ija) &
-                           + sqrt(2d0)*ERI(p,c,k,i)*rho(k,c,mu)/(eHF(c) - eHF(k) - Om(mu)) &
-                           + sqrt(2d0)*ERI(p,k,c,i)*rho(c,k,mu)/(eHF(c) - eHF(k) + Om(mu))
+                           + sqrt(2d0)*ERI(p,c,i,k)*rho(k,c,mu)/(eHF(c) - eHF(k) - Om(mu)) &
+                           + sqrt(2d0)*ERI(p,k,i,c)*rho(c,k,mu)/(eHF(c) - eHF(k) + Om(mu))
+
             H(1+ija,1    ) = H(1+ija,1    ) & 
                            + sqrt(2d0)*ERI(p,c,k,i)*rho(k,c,mu)/(eHF(c) - eHF(k) - Om(mu)) &
                            + sqrt(2d0)*ERI(p,k,c,i)*rho(c,k,mu)/(eHF(c) - eHF(k) + Om(mu))
+
           end do
         end do
  
       end do
     end do
  
-    !-------------!
-    ! Block U2p1h !
-    !-------------!
+    !--------------!
+    ! Block U_2p1h !
+    !--------------!
  
     iab = 0
     do mu=1,nS
       do a=nO+1,nOrb-nR
         iab = iab + 1
  
+        ! First-order terms
+
         H(1          ,1+n2h1p+iab) = sqrt(2d0)*rho(p,a,mu)
+
         H(1+n2h1p+iab,1          ) = sqrt(2d0)*rho(p,a,mu)
  
+        ! Second-order terms
+
         do k=nC+1,nO
           do c=nO+1,nOrb-nR
+
             H(1    ,1+n2h1p+iab) = H(1    ,1+n2h1p+iab) &
-                                 + sqrt(2d0)*ERI(p,k,c,a)*rho(c,k,mu)/(eHF(c) - eHF(k) - Om(mu)) &
-                                 + sqrt(2d0)*ERI(p,c,k,a)*rho(k,c,mu)/(eHF(c) - eHF(k) + Om(mu))
+                                 + sqrt(2d0)*ERI(p,k,a,c)*rho(k,c,mu)/(eHF(c) - eHF(k) - Om(mu)) &
+                                 + sqrt(2d0)*ERI(p,c,a,k)*rho(c,k,mu)/(eHF(c) - eHF(k) + Om(mu))
+
             H(1+n2h1p+iab,1    ) = H(1+n2h1p+iab,1    ) &
-                                 + sqrt(2d0)*ERI(p,k,c,a)*rho(c,k,mu)/(eHF(c) - eHF(k) - Om(mu)) &
-                                 + sqrt(2d0)*ERI(p,c,k,a)*rho(k,c,mu)/(eHF(c) - eHF(k) + Om(mu))
+                                 + sqrt(2d0)*ERI(p,k,a,c)*rho(k,c,mu)/(eHF(c) - eHF(k) - Om(mu)) &
+                                 + sqrt(2d0)*ERI(p,c,a,k)*rho(c,k,mu)/(eHF(c) - eHF(k) + Om(mu))
+
           end do
         end do
 
       end do
     end do
 
-    !-------------!
-    ! Block C2h1p !
-    !-------------!
+    !-----------------------!
+    ! Block (K+C)_2h1p-2h1p !
+    !-----------------------!
  
     ija = 0
     do i=nC+1,nO
       do mu=1,nS
         ija = ija + 1
  
+        ! Zeroth-order terms
+   
         H(1+ija,1+ija) = eHF(i) - Om(mu) 
 
+        ! First-order terms
+
+        klc = 0
+        do k=nC+1,nO
+          do nu=1,nS
+            klc = klc + 1
+       
+            do c=nO+1,nOrb-nR
+              H(1+ija,1+klc) = H(1+ija,1+klc) & 
+                             + 1d0*rho(c,k,mu)*rho(i,c,nu)/(eHF(c) - eHF(k) - Om(mu)) &
+                             + 1d0*rho(k,c,mu)*rho(c,i,nu)/(eHF(c) - eHF(i) - Om(nu))
+            end do
+  
+          end do
+        end do
+ 
       end do
     end do
 
-    !-------------!
-    ! Block C2p1h !
-    !-------------!
+    !-----------------------!
+    ! Block (K+C)_2p1h-2p1h !
+    !-----------------------!
  
     iab = 0
     do mu=1,nS
       do a=nO+1,nOrb-nR
         iab = iab + 1
  
+        ! Zeroth-order terms
+
         H(1+n2h1p+iab,1+n2h1p+iab) = eHF(a) + Om(mu)
 
+        ! First-order terms
+
+        kcd = 0
+        do c=nO+1,nOrb-nR
+          do nu=1,nS
+            kcd = kcd + 1
+       
+            do k=nC+1,nO
+              H(1+n2h1p+iab,1+n2h1p+kcd) = H(1+n2h1p+iab,1+n2h1p+kcd) &
+                                         + 1d0*rho(k,c,mu)*rho(a,k,nu)/(eHF(c) - eHF(k) - Om(mu)) &
+                                         + 1d0*rho(c,k,mu)*rho(k,a,nu)/(eHF(a) - eHF(k) - Om(nu))
+            end do
+ 
+          end do
+        end do
+ 
+      end do
+    end do
+ 
+    !-------------------!
+    ! Block C_2h1p-2p1h !
+    !-------------------!
+ 
+    ija = 0
+    do i=nC+1,nO
+      do mu=1,nS
+        ija = ija + 1
+
+        kcd = 0
+        do a=nO+1,nOrb-nR
+          do nu=1,nS
+            kcd = kcd + 1
+ 
+            ! First-order terms
+      
+            do k=nC+1,nO
+ 
+              H(1+ija,1+n2h1p+kcd) = H(1+ija,1+n2h1p+kcd) &
+                                   + 2d0*rho(k,i,mu)*rho(a,k,nu)/(eHF(a) - eHF(k) + Om(mu)) 
+            end do
+ 
+            do c=nO+1,nOrb-nR
+ 
+              H(1+ija,1+n2h1p+kcd) = H(1+ija,1+n2h1p+kcd) &
+                                   - 2d0*rho(c,a,mu)*rho(i,c,nu)/(eHF(c) - eHF(i) + Om(mu)) 
+            end do
+ 
+          end do
+        end do
+ 
+      end do
+    end do
+ 
+    !-------------------!
+    ! Block C_2p1h-2h1p !
+    !-------------------!
+ 
+    iab = 0
+    do a=nO+1,nOrb-nR
+      do mu=1,nS
+        iab = iab + 1
+
+        ! First-order terms
+
+        klc = 0
+        do i=nC+1,nO
+          do nu=1,nS
+            klc = klc + 1
+       
+            do k=nC+1,nO
+ 
+              H(1+n2h1p+iab,1+klc) = H(1+n2h1p+iab,1+klc) &
+                                   + 2d0*rho(k,i,nu)*rho(a,k,mu)/(eHF(a) - eHF(k) + Om(mu)) 
+            end do
+ 
+            do c=nO+1,nOrb-nR
+ 
+              H(1+n2h1p+iab,1+klc) = H(1+n2h1p+iab,1+klc) &
+                                   - 2d0*rho(c,a,nu)*rho(i,c,mu)/(eHF(c) - eHF(i) + Om(nu)) 
+            end do
+ 
+          end do
+        end do
+ 
       end do
     end do
  
@@ -252,7 +416,7 @@ subroutine R_ADC_2SOSEX(dotest,TDA_W,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,eHF)
   !--------------!
 
     write(*,*)'-------------------------------------------'
-    write(*,'(1X,A38,I3,A2)')'| ADC-2SOSEX energies (eV) for orbital',p,' |'
+    write(*,'(1X,A36,I3,A4)')'| ADC(4)-G3W2 energies (eV) for orbital',p,'  |'
     write(*,*)'-------------------------------------------'
     write(*,'(1X,A1,1X,A3,1X,A1,1X,A15,1X,A1,1X,A15,1X,A1,1X,A15,1X)') &
               '|','#','|','e_QP','|','Z','|'

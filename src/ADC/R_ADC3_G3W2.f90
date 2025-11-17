@@ -1,6 +1,6 @@
-subroutine R_ADC_G3W2(dotest,TDA_W,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,eHF)
+subroutine R_ADC3_G3W2(dotest,TDA_W,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,eHF)
 
-! ADC version of G3W2 
+! ADC version of G3W2 up to 2h1p/2p1h
 
   implicit none
   include 'parameters.h'
@@ -61,9 +61,9 @@ subroutine R_ADC_G3W2(dotest,TDA_W,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,eHF)
 ! Hello world
 
   write(*,*)
-  write(*,*)'***********************************'
-  write(*,*)'* Restricted ADC-G3W2 Calculation *'
-  write(*,*)'***********************************'
+  write(*,*)'*************************************'
+  write(*,*)'* Restricted ADC(3)-G3W2 Calculation *'
+  write(*,*)'*************************************'
   write(*,*)
 
 ! Dimension of the supermatrix
@@ -117,17 +117,17 @@ subroutine R_ADC_G3W2(dotest,TDA_W,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,eHF)
 
     H(:,:) = 0d0
  
-    !------------------------------------------------!
-    !       Compute ADC-G3W2 matrix                  !
-    !------------------------------------------------!
-    !                                                !
-    !     |   F    U_2h1p          U2p1h           | ! 
-    !     |                                        | ! 
-    ! H = | U_2h1p (K+C)_2h1p-2h1p C_2p1h-2h1p     | ! 
-    !     |                                        | ! 
-    !     | U2p1h  C_2h1p-2p1h     (K+C)_2p1h-2p1h | ! 
-    !                                                !
-    !------------------------------------------------!
+    !-------------------------------------------------!
+    !     Compute ADC-G3W2 matrix up to 2h1p/2p1h     !
+    !-------------------------------------------------!
+    !                                                 !
+    !     | F      U_2h1p          U_2p1h           | ! 
+    !     |                                         | ! 
+    ! H = | U_2h1p (K+C)_2h1p-2h1p C_2p1h-2h1p      | ! 
+    !     |                                         | ! 
+    !     | U_2p1  C_2h1p-2p1h     (K+C)_2p1h-2p1h  | ! 
+    !                                                 !
+    !-------------------------------------------------!
 
     call wall_time(start_timing)
 
@@ -372,7 +372,7 @@ subroutine R_ADC_G3W2(dotest,TDA_W,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,eHF)
   !--------------!
 
     write(*,*)'-------------------------------------------'
-    write(*,'(1X,A36,I3,A4)')'| ADC-G3W2 energies (eV) for orbital',p,'  |'
+    write(*,'(1X,A36,I3,A4)')'| ADC(3)-G3W2 energies (eV) for orbital',p,'  |'
     write(*,*)'-------------------------------------------'
     write(*,'(1X,A1,1X,A3,1X,A1,1X,A15,1X,A1,1X,A15,1X,A1,1X,A15,1X)') &
               '|','#','|','e_QP','|','Z','|'
