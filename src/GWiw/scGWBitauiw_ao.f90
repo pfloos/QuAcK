@@ -748,15 +748,15 @@ subroutine scGWBitauiw_ao(nBas,nOrb,nOrb_twice,maxSCF,maxDIIS,dolinGW,restart_sc
   call diagonalize_matrix(nOrb,U_mo,Occ)
   Occ=-Occ
   cNO=matmul(cHFB,U_mo)
-  write(*,'(a,f15.8)')        ' Enuc        ',ENuc
-  write(*,'(a,f15.8)')        ' Hcore       ',Ecore
-  write(*,'(a,f15.8)')        ' Hartree     ',Eh
-  write(*,'(a,f15.8)')        ' Exchange    ',Ex
-  write(*,'(a,f15.8)')        ' Epairing    ',Epair
-  write(*,'(a,f15.8)')        ' Ehfbl       ',Ehfbl
-  write(*,'(a,f15.8)')        ' EcGM        ',EcGM
-  write(*,'(a,f15.8)')        ' Eelec       ',Ehfbl+EcGM
-  write(*,'(a,f15.8)')        ' lin-G Energy',Ehfbl+EcGM+ENuc
+  write(*,'(a,f15.8)')        ' Enuc          ',ENuc
+  write(*,'(a,f15.8)')        ' Hcore         ',Ecore
+  write(*,'(a,f15.8)')        ' Hartree       ',Eh
+  write(*,'(a,f15.8)')        ' Exchange      ',Ex
+  write(*,'(a,f15.8)')        ' Epairing      ',Epair
+  write(*,'(a,f15.8)')        ' Ehfbl         ',Ehfbl
+  write(*,'(a,f15.8)')        ' EcGM          ',EcGM
+  write(*,'(a,f15.8)')        ' Eelec         ',Ehfbl+EcGM
+  write(*,'(a,f15.8)')        ' lin-GB Energy ',Ehfbl+EcGM+ENuc
   write(*,*)
   write(*,'(a,f15.8,a,i5,a)') ' Trace lin-scGWB  ',trace_1_rdm
   write(*,*)
