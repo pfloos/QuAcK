@@ -50,6 +50,7 @@ subroutine scGWBitauiw_ao(nBas,nOrb,nOrb_twice,maxSCF,maxDIIS,dolinGW,restart_sc
   double precision              :: eta,diff_Rao
   double precision              :: thrs_N,thrs_Ngrad,thrs_Rao
   double precision              :: nElectrons
+  double precision              :: chem_pot_saved
   double precision              :: error_gw2gt
   double precision              :: error_st2sw
   double precision              :: max_error_gw2gt
@@ -142,6 +143,7 @@ subroutine scGWBitauiw_ao(nBas,nOrb,nOrb_twice,maxSCF,maxDIIS,dolinGW,restart_sc
   enddo
  enddo
  nElectrons=0.5d0*nElectrons ! Here we prefer to use 1 spin-channel
+ chem_pot_saved=chem_pot
 
 
  ! Allocate arrays
@@ -507,6 +509,11 @@ subroutine scGWBitauiw_ao(nBas,nOrb,nOrb_twice,maxSCF,maxDIIS,dolinGW,restart_sc
     R_ao_old=R_ao
     call get_1rdm_scGWB(nBas,nBas_twice,nfreqs,chem_pot,S,H_ao_hfb,Sigma_c_w_ao,wcoord,wweight, &
                         Mat_gorkov_tmp,G_ao_iw_hfb,DeltaG_ao_iw,R_ao,R_ao_hfb,trace_1_rdm) 
+    if(abs(trace_1_rdm-nElectrons)**2d0>thrs_N) &
+     call fix_chem_pot_scGWB_bisec(iter_hfb,nBas,nBas_twice,nfreqs,nElectrons,thrs_N,thrs_Ngrad,chem_pot,S,H_ao_hfb,Sigma_c_w_ao,   &
+                                   wcoord,wweight,Mat_gorkov_tmp,G_ao_iw_hfb,DeltaG_ao_iw,R_ao,R_ao_hfb,trace_1_rdm,chem_pot_saved, &
+                                   verbose_scGWB)
+
     ! Check convergence of R_ao for fixed Sigma_c(i w)
     diff_Rao=0d0
     do ibas=1,nBas_twice
