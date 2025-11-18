@@ -222,7 +222,7 @@ subroutine OORG0W0(dotest,doACFDT,exchange_kernel,doXBS,dophBSE,dophBSE2,TDA_W,T
     call exchange_matrix_AO_basis(nBas,PHF,ERI_AO,K)
     FHF(:,:) = Hc(:,:) + J(:,:) + 0.5d0*K(:,:)
     call AOtoMO(nBas,nOrb,C,FHF,F)
-    write(*,*) "Orbital optimiation Iteration: ", OOi 
+    write(*,*) "Orbital optimization Iteration: ", OOi 
    
 
   !-------------------!

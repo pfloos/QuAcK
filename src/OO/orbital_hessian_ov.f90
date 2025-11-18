@@ -24,14 +24,12 @@ subroutine orbital_hessian_ov(O,V,N,Nsq,h,ERI_MO,rdm1,rdm2,hess)
   logical,parameter             :: debug = .false.
 
   double precision,allocatable  :: tmp(:,:,:,:)
-  double precision,allocatable  :: hess2(:,:)
-  double precision,allocatable  :: e(:)
 
   double precision,external     :: Kronecker_delta
 
 ! Output variables
 
-  double precision,intent(out)  :: hess(Nsq,Nsq)
+  double precision,intent(out)  :: hess(O*V,O*V)
 
 ! Compute intermediate array
 
@@ -236,19 +234,18 @@ subroutine orbital_hessian_ov(O,V,N,Nsq,h,ERI_MO,rdm1,rdm2,hess)
 
   ! Flatten Hessian matrix and add permutations
 
-  do p=1,O
-    do q=O+1,N
+  do i=1,O
+    do a=O+1,N
 
-      pq = q + (p-1)*N
+      pq = a - O + (i-1)*V
    
-      rs = 0
-      do r=1,O
-        do s=O+1,N
+      do j=1,O
+        do b=O+1,N
 
-          rs = s + (r-1)*N
+          rs = b - O + (j-1)*V
 
 !         hess(pq,rs) = tmp(p,r,q,s) - tmp(r,p,q,s) - tmp(p,r,s,q) + tmp(r,p,s,q)
-         hess(pq,rs) = tmp(p,q,r,s) - tmp(q,p,r,s) - tmp(p,q,s,r) + tmp(q,p,s,r)
+         hess(pq,rs) = tmp(i,a,j,b) - tmp(a,i,j,b) - tmp(i,a,b,j) + tmp(a,i,b,j)
 
         end do
       end do
