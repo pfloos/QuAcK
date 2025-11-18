@@ -30,6 +30,7 @@ subroutine R_optimize_orbitals(diagHess,OVRotOnly,dRPA,nBas,nOrb,nV,nR,nC,nO,N,N
   double precision,allocatable     :: hess(:,:), grad(:),grad_tmp(:),hess_tmp(:,:), hessInv(:,:)
   double precision,allocatable     :: Hovov(:,:),invHovov(:,:)
   double precision,allocatable     :: Kap(:,:), ExpKap(:,:)
+  double precision                 :: tol
 
 ! Output variables
 
@@ -78,12 +79,14 @@ subroutine R_optimize_orbitals(diagHess,OVRotOnly,dRPA,nBas,nOrb,nV,nR,nC,nO,N,N
     hess = hess + hess_tmp
     deallocate(hess_tmp)
     allocate(hessInv(nhess,mhess))
+    tol = 1d-12 * maxval(abs(hess(:,1)))
+    write(*,*) "tol", tol
     do pq=1,Nsq
       if(abs(hess(pq,1))>1e-15) then
         hessInv(pq,1) = 1/hess(pq,1)
       endif
     enddo
-  else
+  elseif(.not. OVRotOnly .or. diagHess) then
     allocate(hess(nhess,mhess),hess_tmp(nhess,mhess))
     hess(:,:) = 0d0
     call orbital_hessian(O,V,N,Nsq,h,ERI_MO,rdm1_hf,rdm2_hf,hess_tmp)
@@ -96,7 +99,19 @@ subroutine R_optimize_orbitals(diagHess,OVRotOnly,dRPA,nBas,nOrb,nV,nR,nC,nO,N,N
     hess = hess + hess_tmp 
     deallocate(hess_tmp)
     allocate(hessInv(nhess,mhess))
-    if(.not. OVRotOnly) call pseudo_inverse_matrix(Nsq,hess,hessInv)
+    call pseudo_inverse_matrix(Nsq,hess,hessInv)
+  else
+    allocate(hess(nhess,mhess),hess_tmp(nhess,mhess))
+    hess(:,:) = 0d0
+    call orbital_hessian_ov(O,V,N,Nsq,h,ERI_MO,rdm1_hf,rdm2_hf,hess_tmp)
+    hess = hess + hess_tmp 
+    if(dRPA) then
+      call orbital_hessian_ov(O,V,N,Nsq,F,ERI_MO,rdm1_c,rdm2_c,hess_tmp)
+    else
+      call orbital_hessian_ov(O,V,N,Nsq,F,ERI_MO_AS,rdm1_c,rdm2_c,hess_tmp)
+    endif
+    hess = hess + hess_tmp 
+    deallocate(hess_tmp)
   endif
   
   if(.not. OVRotOnly .or. diagHess) then
@@ -129,7 +144,6 @@ subroutine R_optimize_orbitals(diagHess,OVRotOnly,dRPA,nBas,nOrb,nV,nR,nC,nO,N,N
     deallocate(hessInv,grad)
   
   else
-  
     allocate(Hovov(O*V,O*V),invHovov(O*V,O*V),Kap(N,N))
     
     do i=1,O
@@ -144,9 +158,11 @@ subroutine R_optimize_orbitals(diagHess,OVRotOnly,dRPA,nBas,nOrb,nV,nR,nC,nO,N,N
         end do
       end do
     end do
+    
     call pseudo_inverse_general_matrix(O*V,Hovov,invHovov)
     
     Kap(:,:) = 0d0 
+    
     do i=1,O
       do a=O+1,N
    
