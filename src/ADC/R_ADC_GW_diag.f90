@@ -1,6 +1,6 @@
 subroutine R_ADC_GW_diag(dotest,TDA_W,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,eHF)
 
-! ADC version of GW in the diagonal approximation
+! ADC version of GW within the diagonal approximation
 
   implicit none
   include 'parameters.h'

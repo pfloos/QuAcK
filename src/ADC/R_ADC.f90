@@ -234,7 +234,11 @@ subroutine R_ADC(dotest,                                               &
     if(do_ADC3_G3W2) then 
       
       call wall_time(start_ADC)
-      call R_ADC3_G3W2(dotest,TDA_W,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,ERHF,ERI_MO,eHF)
+      if(diag_approx) then
+        call R_ADC3_G3W2_diag(dotest,TDA_W,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,ERHF,ERI_MO,eHF)
+      else
+        call R_ADC3_G3W2(dotest,TDA_W,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,ERHF,ERI_MO,eHF)
+      end if
       call wall_time(end_ADC)
     
       t_ADC = end_ADC - start_ADC
@@ -250,7 +254,11 @@ subroutine R_ADC(dotest,                                               &
     if(do_ADC4_G3W2) then 
       
       call wall_time(start_ADC)
-      call R_ADC4_G3W2(dotest,TDA_W,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,ERHF,ERI_MO,eHF)
+      if(diag_approx) then
+        call R_ADC4_G3W2_diag(dotest,TDA_W,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,ERHF,ERI_MO,eHF)
+      else
+        call R_ADC4_G3W2(dotest,TDA_W,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,ERHF,ERI_MO,eHF)
+      end if
       call wall_time(end_ADC)
     
       t_ADC = end_ADC - start_ADC
