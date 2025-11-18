@@ -3,7 +3,7 @@ subroutine R_ADC(dotest,                                               &
                  do_SOSEX,do_2SOSEX,do_G3W2,                           &
                  do_ADC_GW,do_ADC_2SOSEX,do_ADC3_G3W2,do_ADC4_G3W2,    &
                  TDA_W,TDA,singlet,triplet,linearize,eta,doSRG,        &
-                 single_state_ADC,                                     & 
+                 diag_approx,                                          & 
                  nNuc,ZNuc,rNuc,ENuc,nBas,nOrb,nC,nO,nV,nR,nS,         &
                  S,X,T,V,Hc,ERI_AO,ERI_MO,dipole_int_AO,dipole_int_MO, &
                  ERHF,PHF,FHF,cHF,eHF)
@@ -38,7 +38,7 @@ subroutine R_ADC(dotest,                                               &
   double precision,intent(in)   :: eta
   logical,intent(in)            :: doSRG
   
-  logical,intent(in)            :: single_state_ADC
+  logical,intent(in)            :: diag_approx     
 
   integer,intent(in)            :: nNuc
   double precision,intent(in)   :: ZNuc(nNuc)
@@ -193,7 +193,11 @@ subroutine R_ADC(dotest,                                               &
     if(do_ADC_GW) then 
       
       call wall_time(start_ADC)
-      call R_ADC_GW(dotest,TDA_W,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,ERHF,ERI_MO,eHF)
+      if(diag_approx) then
+        call R_ADC_GW_diag(dotest,TDA_W,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,ERHF,ERI_MO,eHF)
+      else
+        call R_ADC_GW(dotest,TDA_W,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,ERHF,ERI_MO,eHF)
+      end if
       call wall_time(end_ADC)
     
       t_ADC = end_ADC - start_ADC
@@ -209,8 +213,11 @@ subroutine R_ADC(dotest,                                               &
     if(do_ADC_2SOSEX) then 
       
       call wall_time(start_ADC)
-      call R_2SOSEX(dotest,TDA_W,singlet,triplet,linearize,eta,doSRG,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,ERHF,ERI_MO,dipole_int_MO,eHF)
-      call R_ADC_2SOSEX(dotest,TDA_W,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,ERHF,ERI_MO,eHF)
+      if(diag_approx) then
+        call R_ADC_2SOSEX_diag(dotest,TDA_W,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,ERHF,ERI_MO,eHF)
+      else
+        call R_ADC_2SOSEX(dotest,TDA_W,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,ERHF,ERI_MO,eHF)
+      end if
       call wall_time(end_ADC)
     
       t_ADC = end_ADC - start_ADC
@@ -226,7 +233,11 @@ subroutine R_ADC(dotest,                                               &
     if(do_ADC3_G3W2) then 
       
       call wall_time(start_ADC)
-      call R_ADC3_G3W2(dotest,TDA_W,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,ERHF,ERI_MO,eHF)
+      if(diag_approx) then
+        call R_ADC3_G3W2_diag(dotest,TDA_W,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,ERHF,ERI_MO,eHF)
+      else
+        call R_ADC3_G3W2(dotest,TDA_W,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,ERHF,ERI_MO,eHF)
+      end if
       call wall_time(end_ADC)
     
       t_ADC = end_ADC - start_ADC
@@ -242,7 +253,11 @@ subroutine R_ADC(dotest,                                               &
     if(do_ADC4_G3W2) then 
       
       call wall_time(start_ADC)
-      call R_ADC4_G3W2(dotest,TDA_W,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,ERHF,ERI_MO,eHF)
+      if(diag_approx) then
+        call R_ADC4_G3W2_diag(dotest,TDA_W,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,ERHF,ERI_MO,eHF)
+      else
+        call R_ADC4_G3W2(dotest,TDA_W,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,ERHF,ERI_MO,eHF)
+      end if
       call wall_time(end_ADC)
     
       t_ADC = end_ADC - start_ADC

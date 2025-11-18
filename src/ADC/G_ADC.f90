@@ -2,9 +2,9 @@ subroutine G_ADC(dotest,                                               &
                  do_IPEA_ADC2,do_IP_ADC2,do_IPEA_ADC3,                 &
                  do_SOSEX,do_2SOSEX,do_G3W2,                           &
                  do_ADC_GW,do_ADC_2SOSEX,do_ADC3_G3W2,do_ADC4_G3W2,    &
-                 TDA_W,TDA,singlet,triplet,linearize,eta,doSRG,        &
-                 single_state_ADC,                                     & 
-                 nNuc,ZNuc,rNuc,ENuc,nBas,nC,nO,nV,nR,nS,              &
+                 TDA_W,TDA,linearize,eta,doSRG,                        &
+                 diag_approx,                                          & 
+                 nNuc,ZNuc,rNuc,ENuc,nBas,nBas2,nC,nO,nV,nR,nS,        &
                  S,X,T,V,Hc,ERI_AO,ERI_MO,dipole_int_AO,dipole_int_MO, &
                  EGHF,PHF,FHF,cHF,eHF)
 
@@ -32,13 +32,11 @@ subroutine G_ADC(dotest,                                               &
 
   logical,intent(in)            :: TDA_W
   logical,intent(in)            :: TDA
-  logical,intent(in)            :: singlet
-  logical,intent(in)            :: triplet
   logical,intent(in)            :: linearize
   double precision,intent(in)   :: eta
   logical,intent(in)            :: doSRG
   
-  logical,intent(in)            :: single_state_ADC
+  logical,intent(in)            :: diag_approx
 
   integer,intent(in)            :: nNuc
   double precision,intent(in)   :: ZNuc(nNuc)
@@ -46,6 +44,7 @@ subroutine G_ADC(dotest,                                               &
   double precision,intent(in)   :: ENuc
 
   integer,intent(in)            :: nBas
+  integer,intent(in)            :: nBas2
   integer,intent(in)            :: nC
   integer,intent(in)            :: nO
   integer,intent(in)            :: nV
@@ -58,15 +57,15 @@ subroutine G_ADC(dotest,                                               &
   double precision,intent(in)   :: Hc(nBas,nBas)
   double precision,intent(in)   :: X(nBas,nBas)
   double precision,intent(in)   :: ERI_AO(nBas,nBas,nBas,nBas)
-  double precision,intent(in)   :: ERI_MO(nBas,nBas,nBas,nBas)
+  double precision,intent(in)   :: ERI_MO(nBas2,nBas2,nBas2,nBas2)
   double precision,intent(in)   :: dipole_int_AO(nBas,nBas,ncart)
-  double precision,intent(in)   :: dipole_int_MO(nBas,nBas,ncart)
+  double precision,intent(in)   :: dipole_int_MO(nBas2,nBas2,ncart)
 
   double precision,intent(in)   :: EGHF
-  double precision,intent(in)   :: eHF(nBas)
-  double precision,intent(in)   :: cHF(nBas,nbas)
-  double precision,intent(in)   :: PHF(nBas,nBas)
-  double precision,intent(in)   :: FHF(nBas,nBas)
+  double precision,intent(in)   :: eHF(nBas2)
+  double precision,intent(in)   :: cHF(nBas2,nBas2)
+  double precision,intent(in)   :: PHF(nBas2,nBas2)
+  double precision,intent(in)   :: FHF(nBas2,nBas2)
 
 ! Local variables
 
@@ -95,13 +94,19 @@ subroutine G_ADC(dotest,                                               &
 
     if(do_IPEA_ADC2) then 
       
-      ! call wall_time(start_ADC)
-      ! call R_IPEA_ADC2(dotest,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,ERHF,ERI_MO,eHF)
-      ! call wall_time(end_ADC)
+      call wall_time(start_ADC)
+
+      if(diag_approx) then
+         call G_IPEA_ADC2_single_state(dotest,nBas,nBas2,nC,nO,nV,nR,nS,ENuc,EGHF,ERI_MO,eHF)
+      else
+         call G_IPEA_ADC2(dotest,nBas,nBas2,nC,nO,nV,nR,nS,ENuc,EGHF,ERI_MO,eHF)
+      end if
+      
+      call wall_time(end_ADC)
     
-      ! t_ADC = end_ADC - start_ADC
-      ! write(*,'(A65,1X,F9.3,A8)') 'Total wall time for IP/EA-ADC(2) = ',t_ADC,' seconds'
-      ! write(*,*)
+      t_ADC = end_ADC - start_ADC
+      write(*,'(A65,1X,F9.3,A8)') 'Total wall time for IP/EA-ADC(2) = ',t_ADC,' seconds'
+      write(*,*)
  
     end if
 
