@@ -24,5 +24,5 @@
             T     T        1      0.01     1         0.01      1            1          F       1000.0 1000.0    T
 # ADC: single_state_ADC
               F
-# Ensemble: weight_N  N+1
+# Ensemble: weight_N  N+1[for N-1 use F]
 	    0.00000   T

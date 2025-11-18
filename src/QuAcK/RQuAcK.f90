@@ -1,4 +1,4 @@
-subroutine RQuAcK(working_dir,use_gpu,dotest,doRHF,doROHF,docRHF,                                                           &
+subroutine RQuAcK(working_dir,use_gpu,dotest,doRHF,doROHF,docRHF,doeRHF,                                                    &
                   dostab,dosearch,doaordm,doMP2,doMP3,doCCD,dopCCD,doDCD,doCCSD,doCCSDT,                                    &
                   dodrCCD,dorCCD,docrCCD,dolCCD,doCIS,doCIS_D,doCID,doCISD,doFCI,dophRPA,dophRPAx,docrRPA,doppRPA,doOO,     & 
                   doG0F2,doevGF2,doqsGF2,doufG0F02,doG0F3,doevGF3,doG0W0,doevGW,doqsGW,doufG0W0,doufGW,                     &
@@ -8,7 +8,7 @@ subroutine RQuAcK(working_dir,use_gpu,dotest,doRHF,doROHF,docRHF,               
                   do_IPEA_ADC2,do_IP_ADC2,do_IPEA_ADC3,do_SOSEX,do_2SOSEX,do_G3W2,                                          & 
                   do_ADC_GW,do_ADC_2SOSEX,do_ADC3_G3W2,do_ADC4_G3W2,                                                        &
                   nNuc,nBas,nOrb,nC,nO,nV,nR,ENuc,ZNuc,rNuc,                                                                &
-                  S,T,V,Hc,CAP_AO,X,dipole_int_AO,maxSCF_HF,max_diis_HF,thresh_HF,level_shift,                              &
+                  S,T,V,Hc,CAP_AO,X,dipole_int_AO,maxSCF_HF,max_diis_HF,thresh_HF,level_shift,eweight,eforward,             &
                   guess_type,mix,reg_MP,maxSCF_CC,max_diis_CC,thresh_CC,singlet,triplet,TDA,                                &
                   maxIter_OO,thresh_OO,dRPA_OO,mu_OO,diagHess_OO,                                                           &
                   maxSCF_GF,max_diis_GF,renorm_GF,thresh_GF,lin_GF,reg_GF,eta_GF,maxSCF_GW,max_diis_GW,thresh_GW,           & 
@@ -30,7 +30,7 @@ subroutine RQuAcK(working_dir,use_gpu,dotest,doRHF,doROHF,docRHF,               
   logical,intent(in)            :: dotest
   logical,intent(in)            :: readFCIDUMP
 
-  logical,intent(in)            :: doRHF,doROHF,docRHF
+  logical,intent(in)            :: doRHF,doROHF,docRHF,doeRHF
   logical,intent(in)            :: dostab
   logical,intent(in)            :: dosearch
   logical,intent(in)            :: doaordm
@@ -75,6 +75,8 @@ subroutine RQuAcK(working_dir,use_gpu,dotest,doRHF,doROHF,docRHF,               
   integer,intent(in)            :: maxSCF_HF,max_diis_HF
   double precision,intent(in)   :: thresh_HF,level_shift,mix
   integer,intent(in)            :: guess_type
+  double precision,intent(in)   :: eweight
+  logical,intent(in)            :: eforward
 
   logical,intent(in)            :: reg_MP
 
@@ -283,6 +285,28 @@ subroutine RQuAcK(working_dir,use_gpu,dotest,doRHF,doROHF,docRHF,               
     write(*,'(A65,1X,F9.3,A8)') 'Total wall time for cRHF = ',t_HF,' seconds'
     write(*,*)
 
+  end if
+
+!------------------------------!
+! Ensemble Hartree-Fock module !
+!------------------------------!
+
+  if(doeRHF) then
+
+    write(*,*)
+    write(*,'(A)') ' Warning! The HF density and orbitals will be replaced by the ensemble ones.'
+    write(*,*)
+    ! Do an ensemble eRHF calculation 
+    call wall_time(start_HF)
+    call ensembleRHF(dotest,doaordm,maxSCF_HF,thresh_HF,max_diis_HF,guess_type,level_shift,nNuc,ZNuc,rNuc,ENuc, &
+                     nBas,nOrb,nO,S,T,V,Hc,ERI_AO,dipole_int_AO,X,ERHF,eweight,eforward,eHF,cHF,PHF,FHF)
+    call wall_time(end_HF)
+
+    t_HF = end_HF - start_HF
+    write(*,*)
+    write(*,'(A65,1X,F9.3,A8)') 'Total wall time for eRHF = ',t_HF,' seconds'
+    write(*,*)
+ 
   end if
 
 !--------------!
