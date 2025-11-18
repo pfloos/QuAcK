@@ -1,4 +1,4 @@
-subroutine G_AO_RHFB(nBas,nOrb,nOrb_twice,eta,cHFB,eHFB,wcoord,MAT1,MAT2,MAT3,MAT4,G_AO)
+subroutine G_AO_RHFB(nBas,nOrb,nOrb_twice,eta,cHFB,eHFB,wcoord,Mat1,Mat2,Mat3,Mat4,G_AO)
 
 ! G(i w)
 
@@ -13,10 +13,10 @@ subroutine G_AO_RHFB(nBas,nOrb,nOrb_twice,eta,cHFB,eHFB,wcoord,MAT1,MAT2,MAT3,MA
 
   double precision,intent(in)   :: eta
   double precision,intent(in)   :: cHFB(nBas,nOrb)
-  double precision,intent(in)   :: MAT1(nOrb,nOrb)
-  double precision,intent(in)   :: MAT2(nOrb,nOrb)
-  double precision,intent(in)   :: MAT3(nOrb,nOrb)
-  double precision,intent(in)   :: MAT4(nOrb,nOrb)
+  double precision,intent(in)   :: Mat1(nOrb,nOrb)
+  double precision,intent(in)   :: Mat2(nOrb,nOrb)
+  double precision,intent(in)   :: Mat3(nOrb,nOrb)
+  double precision,intent(in)   :: Mat4(nOrb,nOrb)
 
 
   complex*16,intent(in)         :: wcoord
