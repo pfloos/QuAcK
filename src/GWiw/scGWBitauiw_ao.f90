@@ -54,6 +54,7 @@ subroutine scGWBitauiw_ao(nBas,nOrb,nOrb_twice,maxSCF,maxDIIS,dolinGW,restart_sc
   double precision              :: rcondR
   double precision              :: hfb_dif
   double precision              :: alpha_mixing
+  double precision              :: N_anom
   double precision              :: eta,diff_Rao
   double precision              :: thrs_N,thrs_Ngrad,thrs_Rao
   double precision              :: nElectrons
@@ -68,6 +69,7 @@ subroutine scGWBitauiw_ao(nBas,nOrb,nOrb_twice,maxSCF,maxDIIS,dolinGW,restart_sc
   double precision              :: trace1,trace2
   double precision              :: trace_1_rdm
   double precision              :: start_scGWBitauiw     ,end_scGWBitauiw       ,t_scGWBitauiw
+  double precision,external     :: trace_matrix
   double precision,allocatable  :: Occ(:)
   double precision,allocatable  :: eQP(:)
   double precision,allocatable  :: eQP_old(:)
@@ -770,6 +772,8 @@ subroutine scGWBitauiw_ao(nBas,nOrb,nOrb_twice,maxSCF,maxDIIS,dolinGW,restart_sc
   G_ao_itau_old(:,:,:)=G_ao_itau(:,:,:)
 
  enddo
+ N_anom = trace_matrix(nBas,matmul(transpose(R_ao(1:nBas,nBas+1:nBas_twice)), &
+          R_ao(1:nBas,nBas+1:nBas_twice)))
  write(*,*)
  write(*,'(A50)') '---------------------------------------'
  write(*,'(A50)') '     scGWB calculation completed       '
@@ -778,6 +782,7 @@ subroutine scGWBitauiw_ao(nBas,nOrb,nOrb_twice,maxSCF,maxDIIS,dolinGW,restart_sc
  write(*,'(a,f15.8,a,i5,a)') ' Trace scGWB  ',trace_1_rdm,' after ',iter,' global iterations '
  write(*,'(a,f15.8)')        ' Change of P  ',diff_Rao
  write(*,'(a,f15.8)')        ' Chem. Pot.   ',chem_pot
+ write(*,'(a,f15.8)')        ' N anomalus   ',N_anom
  write(*,'(a,f15.8)')        ' Enuc         ',ENuc
  write(*,'(a,f15.8)')        ' Ehfbl        ',Ehfbl
  write(*,'(a,f15.8)')        ' EcGM         ',EcGM
@@ -839,6 +844,9 @@ subroutine scGWBitauiw_ao(nBas,nOrb,nOrb_twice,maxSCF,maxDIIS,dolinGW,restart_sc
   call diagonalize_matrix(nOrb,U_mo,Occ)
   Occ=-Occ
   cNO=matmul(cHFB,U_mo)
+  N_anom = trace_matrix(nBas,matmul(transpose(R_ao_old(1:nBas,nBas+1:nBas_twice)), &
+           R_ao_old(1:nBas,nBas+1:nBas_twice)))
+  write(*,'(a,f15.8)')        ' N anomalus    ',N_anom
   write(*,'(a,f15.8)')        ' Enuc          ',ENuc
   write(*,'(a,f15.8)')        ' Hcore         ',Ecore
   write(*,'(a,f15.8)')        ' Hartree       ',Eh
@@ -862,8 +870,6 @@ subroutine scGWBitauiw_ao(nBas,nOrb,nOrb_twice,maxSCF,maxDIIS,dolinGW,restart_sc
    enddo
   endif
  endif
-
-
 
  ! Deallocate arrays
  deallocate(Occ)

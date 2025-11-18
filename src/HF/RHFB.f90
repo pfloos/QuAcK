@@ -477,8 +477,8 @@ subroutine RHFB(dotest,doaordm,maxSCF,thresh,max_diis,error_P,nNuc,ZNuc,rNuc,ENu
   call dipole_moment(nBas,P,nNuc,ZNuc,rNuc,dipole_int,dipole)
   eHFB_state(:) = eigVAL(:)
   Delta_HL=eHFB_state(nOrb+1)-eHFB_state(nOrb)
-  N_anom = trace_matrix(nOrb,matmul(transpose(2d0*R(1:nOrb,nOrb+1:nOrb_twice)), &
-              2d0*R(1:nOrb,nOrb+1:nOrb_twice)))
+  N_anom = trace_matrix(nBas,matmul(transpose(R_ao(1:nBas,nBas+1:nBas_twice)), &
+              R_ao(1:nBas,nBas+1:nBas_twice)))
   deallocate(eigVEC,eigVAL)
   allocate(eigVEC(nOrb,nOrb),eigVAL(nOrb))
   eigVEC(:,:) = 0d0
