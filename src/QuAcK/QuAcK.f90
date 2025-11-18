@@ -3,7 +3,7 @@ program QuAcK
   implicit none
   include 'parameters.h'
 
-  logical                       :: doRQuAcK,doUQuAcK,doGQuAcK,doBQuAcK,doEQuAcK
+  logical                       :: doRQuAcK,doUQuAcK,doGQuAcK,doBQuAcK
   logical                       :: doRHF,doUHF,doGHF,doROHF,doRHFB,docRHF,doeRHF
   logical                       :: dostab,dosearch,doaordm,readFCIDUMP
   logical                       :: doMP2,doMP3
@@ -355,9 +355,6 @@ program QuAcK
   doBQuAcK = .false.
   if(doRHFB .or. doBRPA) doBQuAcK = .true.
 
-  doEQuAcK = .false.
-  if(doeRHF) doEQuAcK = .true.
-
 !-----------------!
 ! Initialize Test !
 !-----------------!
@@ -384,7 +381,7 @@ program QuAcK
                       TDA_W,lin_GW,reg_GW,eta_GW,maxSCF_GT,max_diis_GT,thresh_GT,TDA_T,lin_GT,reg_GT,eta_GT,                  &
                       dophBSE,dophBSE2,doppBSE,dBSE,dTDA,doACFDT,exchange_kernel,doXBS)
     else
-      call RQuAcK(working_dir,use_gpu,doRtest,doRHF,doROHF,docRHF,dostab,dosearch,doaordm,                                 &
+      call RQuAcK(working_dir,use_gpu,doRtest,doRHF,doROHF,docRHF,doeRHF,dostab,dosearch,doaordm,                          &
                   doMP2,doMP3,doCCD,dopCCD,doDCD,doCCSD,doCCSDT,                                                           &
                   dodrCCD,dorCCD,docrCCD,dolCCD,doCIS,doCIS_D,doCID,doCISD,doFCI,dophRPA,dophRPAx,docrRPA,doppRPA,doOO,    &
                   doG0F2,doevGF2,doqsGF2,doufG0F02,doG0F3,doevGF3,doG0W0,doevGW,doqsGW,doufG0W0,doufGW,                    &
@@ -394,7 +391,7 @@ program QuAcK
                   do_IPEA_ADC2,do_IP_ADC2,do_IPEA_ADC3,do_SOSEX,do_2SOSEX,do_G3W2,                                         &
                   do_ADC_GW,do_ADC_2SOSEX,do_ADC3_G3W2,do_ADC4_G3W2,                                                       &
                   nNuc,nBas,nOrb,nC,nO,nV,nR,ENuc,ZNuc,rNuc,                                                               &
-                  S,T,V,Hc,CAP,X,dipole_int_AO,maxSCF_HF,max_diis_HF,thresh_HF,level_shift,                                &
+                  S,T,V,Hc,CAP,X,dipole_int_AO,maxSCF_HF,max_diis_HF,thresh_HF,level_shift,eweight,eforward,               &
                   guess_type,mix,reg_MP,maxSCF_CC,max_diis_CC,thresh_CC,spin_conserved,spin_flip,TDA,                      &
                   max_iter_OO,thresh_OO,dRPA_OO,mu_OO,diagHess_OO,                                                         &
                   maxSCF_GF,max_diis_GF,renorm_GF,thresh_GF,lin_GF,reg_GF,eta_GF,maxSCF_GW,max_diis_GW,thresh_GW,          &
@@ -441,13 +438,6 @@ program QuAcK
                 dophBSE,dophBSE2,doppBSE,dBSE,dTDA,doACFDT,exchange_kernel,doXBS,                          &
                 TDAeh,TDApp,max_diis_1b,max_diis_2b,max_it_1b,conv_1b,max_it_2b,conv_2b,lin_parquet,reg_1b,reg_2b,reg_PA, &
                 diag_approx)
-
-!-----------------------!
-! Ensemble QuAcK branch !
-!-----------------------!
-  if(doEQuAcK) & 
-    call EQuAcK(working_dir,dotest,doaordm,doeRHF,readFCIDUMP,nNuc,nBas,nOrb,nO,ENuc,ZNuc,rNuc,S,T,V,Hc,X, &
-                dipole_int_AO,maxSCF_HF,max_diis_HF,thresh_HF,level_shift,guess_type,eweight,eforward)
 
 !-------------------------!
 ! Bogoliubov QuAcK branch !
