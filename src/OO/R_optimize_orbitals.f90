@@ -1,4 +1,4 @@
-subroutine R_optimize_orbitals(diagHess,dRPA,nBas,nOrb,nV,nR,nC,nO,N,Nsq,O,V,&
+subroutine R_optimize_orbitals(diagHess,OVRotOnly,dRPA,nBas,nOrb,nV,nR,nC,nO,N,Nsq,O,V,&
                 ERI_AO,ERI_AO_AS,ERI_MO,ERI_MO_AS,                           &
                 Hc,h,F,rdm1_hf,rdm1_c,rdm2_hf,rdm2_c,c,OOConv)
 
@@ -21,12 +21,14 @@ subroutine R_optimize_orbitals(diagHess,dRPA,nBas,nOrb,nV,nR,nC,nO,N,Nsq,O,V,&
   double precision,intent(in)      :: rdm2_c(N,N,N,N)
   logical,intent(in)               :: diagHess
   logical,intent(in)               :: dRPA
+  logical,intent(in)               :: OVRotOnly
 
 ! Local variables
   
-  integer                          :: p,q,pq,r,s,rs
+  integer                          :: p,q,pq,r,s,rs,ia,jb,i,j,a,b
   integer                          :: nhess,mhess
   double precision,allocatable     :: hess(:,:), grad(:),grad_tmp(:),hess_tmp(:,:), hessInv(:,:)
+  double precision,allocatable     :: Hovov(:,:),invHovov(:,:)
   double precision,allocatable     :: Kap(:,:), ExpKap(:,:)
 
 ! Output variables
@@ -94,60 +96,81 @@ subroutine R_optimize_orbitals(diagHess,dRPA,nBas,nOrb,nV,nR,nC,nO,N,Nsq,O,V,&
     hess = hess + hess_tmp 
     deallocate(hess_tmp)
     allocate(hessInv(nhess,mhess))
-    call pseudo_inverse_matrix(Nsq,hess,hessInv)
-    !call inverse_matrix(Nsq,hess,hessInv)
+    if(.not. OVRotOnly) call pseudo_inverse_matrix(Nsq,hess,hessInv)
   endif
   
-  deallocate(hess)
- 
-  allocate(Kap(N,N))
- 
-  Kap(:,:) = 0d0
- 
-  pq = 0
-  do p=1,nOrb
-    do q=1,nOrb
- 
-      pq = pq + 1
- 
-      rs = 0
-      if(diagHess) then
-        Kap(p,q) = Kap(p,q) - hessInv(pq,1)*grad(pq)
-      else
-        do r=1,nOrb
-          do s=1,nOrb 
-            rs = rs + 1
-            Kap(p,q) = Kap(p,q) - hessInv(pq,rs)*grad(rs) 
+  if(.not. OVRotOnly .or. diagHess) then
+    deallocate(hess)
+   
+    allocate(Kap(N,N))
+   
+    Kap(:,:) = 0d0
+   
+    pq = 0
+    do p=1,nOrb
+      do q=1,nOrb
+   
+        pq = pq + 1
+   
+        rs = 0
+        if(diagHess) then
+          Kap(p,q) = Kap(p,q) - hessInv(pq,1)*grad(pq)
+        else
+          do r=1,nOrb
+            do s=1,nOrb 
+              rs = rs + 1
+              Kap(p,q) = Kap(p,q) - hessInv(pq,rs)*grad(rs) 
+            end do
+          end do
+        endif
+      end do
+    end do
+    
+    deallocate(hessInv,grad)
+  
+  else
+  
+    allocate(Hovov(O*V,O*V),invHovov(O*V,O*V),Kap(N,N))
+    
+    do i=1,O
+      do a=O+1,N
+  
+        ia = a - O + (i-1)*V
+        do j=1,O
+          do b=O+1,N 
+            jb = b - O + (j-1)*V
+            Hovov(ia,jb) = hess(a + (i-1)*N, b + (j-1)*N)
           end do
         end do
-      endif
+      end do
     end do
-  end do
- 
-  deallocate(hessInv,grad)
-  
-!  write(*,*) 'kappa'
-!  call matout(nOrb,nOrb,Kap)
-!  write(*,*)
+    call pseudo_inverse_general_matrix(O*V,Hovov,invHovov)
+    
+    Kap(:,:) = 0d0 
+    do i=1,O
+      do a=O+1,N
+   
+        ia = a - O + (i-1)*V
+        do j=1,O
+          do b=O+1,N 
+            jb = b - O + (j-1)*V
+            Kap(i,a) = Kap(i,a) - invHovov(ia,jb)*grad(b + (j-1)*N) 
+          end do
+        end do
+        Kap(a,i) = - Kap(i,a)
+      end do
+    end do
+   
+    deallocate(Hovov,invHovov)
+
+  end if
  
   allocate(ExpKap(N,N))
   call matrix_exp(N,Kap,ExpKap)
   deallocate(Kap)
  
-!  write(*,*) 'e^kappa'
-!  call matout(N,N,ExpKap)
-!  write(*,*)
- 
-!  write(*,*) 'Old orbitals'
-!  call matout(nBas,nOrb,c)
-!  write(*,*)
- 
   c = matmul(c,ExpKap)
   deallocate(ExpKap)
- 
-!  write(*,*) 'Rotated orbitals'
-!  call matout(nBas,nOrb,c)
-!  write(*,*)
 
   ! Transform integrals and Hc
   call AOtoMO(nBas,nOrb,c,Hc,h)

@@ -59,6 +59,7 @@ subroutine OORG0W0(dotest,doACFDT,exchange_kernel,doXBS,dophBSE,dophBSE2,TDA_W,T
 
   logical                       :: print_W   = .false.
   logical                       :: plot_self = .false.
+  logical                       :: OVRotOnly = .true.
   integer                       :: isp_W
   double precision              :: flow
   double precision              :: EcRPA
@@ -268,7 +269,7 @@ subroutine OORG0W0(dotest,doACFDT,exchange_kernel,doXBS,dophBSE,dophBSE2,TDA_W,T
     write(*,*) "EcRPA (no rdm) = ", EcRPA
     write(*,*) "ERPA = ", EcRPA_rdm + EHF_rdm
    
-    call R_optimize_orbitals(diagHess,dRPA,nBas,nOrb,nV,nR,nC,nO,N,Nsq,O,V,ERI_AO,ERI_AO_AS,ERI_MO,ERI_MO_AS,Hc,h,F,&
+    call R_optimize_orbitals(diagHess,OVRotOnly,dRPA,nBas,nOrb,nV,nR,nC,nO,N,Nsq,O,V,ERI_AO,ERI_AO_AS,ERI_MO,ERI_MO_AS,Hc,h,F,&
                              rdm1_hf,rdm1_rpa,rdm2_hf,rdm2_rpa,c,OOConv)
     
     write(*,*) '----------------------------------------------------------'
