@@ -24,8 +24,6 @@ subroutine orbital_hessian(O,V,N,Nsq,h,ERI_MO,rdm1,rdm2,hess)
   logical,parameter             :: debug = .false.
 
   double precision,allocatable  :: tmp(:,:,:,:)
-  double precision,allocatable  :: hess2(:,:)
-  double precision,allocatable  :: e(:)
 
   double precision,external     :: Kronecker_delta
 

@@ -28,8 +28,8 @@ subroutine R_optimize_orbitals(diagHess,OVRotOnly,dRPA,nBas,nOrb,nV,nR,nC,nO,N,N
   integer                          :: p,q,pq,r,s,rs,ia,jb,i,j,a,b
   integer                          :: nhess,mhess
   double precision,allocatable     :: hess(:,:), grad(:),grad_tmp(:),hess_tmp(:,:), hessInv(:,:)
-  double precision,allocatable     :: Hovov(:,:),invHovov(:,:)
   double precision,allocatable     :: Kap(:,:), ExpKap(:,:)
+  double precision                 :: tol
 
 ! Output variables
 
@@ -78,12 +78,13 @@ subroutine R_optimize_orbitals(diagHess,OVRotOnly,dRPA,nBas,nOrb,nV,nR,nC,nO,N,N
     hess = hess + hess_tmp
     deallocate(hess_tmp)
     allocate(hessInv(nhess,mhess))
+    tol = 1d-12 * maxval(abs(hess(:,1)))
     do pq=1,Nsq
-      if(abs(hess(pq,1))>1e-15) then
+      if(abs(hess(pq,1))>tol) then
         hessInv(pq,1) = 1/hess(pq,1)
       endif
     enddo
-  else
+  elseif(.not. OVRotOnly) then
     allocate(hess(nhess,mhess),hess_tmp(nhess,mhess))
     hess(:,:) = 0d0
     call orbital_hessian(O,V,N,Nsq,h,ERI_MO,rdm1_hf,rdm2_hf,hess_tmp)
@@ -96,12 +97,29 @@ subroutine R_optimize_orbitals(diagHess,OVRotOnly,dRPA,nBas,nOrb,nV,nR,nC,nO,N,N
     hess = hess + hess_tmp 
     deallocate(hess_tmp)
     allocate(hessInv(nhess,mhess))
-    if(.not. OVRotOnly) call pseudo_inverse_matrix(Nsq,hess,hessInv)
+    call pseudo_inverse_matrix(Nsq,hess,hessInv)
+    deallocate(hess)
+  else
+    nhess = O*V
+    mhess = nhess
+    allocate(hess(nhess,mhess),hess_tmp(nhess,mhess))
+    hess(:,:) = 0d0
+    call orbital_hessian_ov(O,V,N,Nsq,h,ERI_MO,rdm1_hf,rdm2_hf,hess_tmp)
+    hess = hess + hess_tmp 
+    if(dRPA) then
+      call orbital_hessian_ov(O,V,N,Nsq,F,ERI_MO,rdm1_c,rdm2_c,hess_tmp)
+    else
+      call orbital_hessian_ov(O,V,N,Nsq,F,ERI_MO_AS,rdm1_c,rdm2_c,hess_tmp)
+    endif
+    hess = hess + hess_tmp 
+    deallocate(hess_tmp)
+    allocate(hessInv(nhess,mhess))
+    call pseudo_inverse_general_matrix(O*V,hess,hessInv)
+    deallocate(hess)
   endif
   
-  if(.not. OVRotOnly .or. diagHess) then
-    deallocate(hess)
-   
+  if((.not. OVRotOnly) .or. diagHess) then
+    
     allocate(Kap(N,N))
    
     Kap(:,:) = 0d0
@@ -129,24 +147,10 @@ subroutine R_optimize_orbitals(diagHess,OVRotOnly,dRPA,nBas,nOrb,nV,nR,nC,nO,N,N
     deallocate(hessInv,grad)
   
   else
-  
-    allocate(Hovov(O*V,O*V),invHovov(O*V,O*V),Kap(N,N))
-    
-    do i=1,O
-      do a=O+1,N
-  
-        ia = a - O + (i-1)*V
-        do j=1,O
-          do b=O+1,N 
-            jb = b - O + (j-1)*V
-            Hovov(ia,jb) = hess(a + (i-1)*N, b + (j-1)*N)
-          end do
-        end do
-      end do
-    end do
-    call pseudo_inverse_general_matrix(O*V,Hovov,invHovov)
+    allocate(Kap(N,N))
     
     Kap(:,:) = 0d0 
+    
     do i=1,O
       do a=O+1,N
    
@@ -154,15 +158,13 @@ subroutine R_optimize_orbitals(diagHess,OVRotOnly,dRPA,nBas,nOrb,nV,nR,nC,nO,N,N
         do j=1,O
           do b=O+1,N 
             jb = b - O + (j-1)*V
-            Kap(i,a) = Kap(i,a) - invHovov(ia,jb)*grad(b + (j-1)*N) 
+            Kap(i,a) = Kap(i,a) - hessInv(ia,jb)*grad(b + (j-1)*N) 
           end do
         end do
         Kap(a,i) = - Kap(i,a)
       end do
     end do
    
-    deallocate(Hovov,invHovov)
-
   end if
  
   allocate(ExpKap(N,N))
