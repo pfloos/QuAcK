@@ -7,11 +7,11 @@
 # spin: TDA singlet triplet
         F   T       F
 # OORPA:  maxIter thresh dRPA  state diagHess
-          256     0.00001  T     0      T    
+          256     0.00001 T    0     T    
 # GF: maxSCF thresh  DIIS lin eta renorm reg linDM restart_scGF2 verbose_scGF2
       256    0.00001 5    F   0.0 0      F   F     F		 F
 # GW: maxSCF thresh  DIIS lin eta TDA_W reg nfreqs shift linDM restart_scGW verbose_scGW
-      256    0.00001 5    F   0.0 F     F   1      0.0   F     F		  F
+      256    0.00001 5    F   0.0 F     F   1      0.0   F     F            F
 # GT: maxSCF thresh  DIIS lin eta TDA_T reg linDM
       256    0.00001 5    F   0.0 F     F   F
 # ACFDT: AC Kx  XBS
@@ -21,8 +21,8 @@
 # HFB: temperature  sigma chem_pot_HF restart_HFB error_P
          0.05       1.0   F           F		  F
 # Parquet: TDAeh TDApp max_it_1b conv_1b max_it_2b conv_2b max_diis_1b max_diis_2b lin_parquet reg_1b reg_2b reg_PA
-            T     T        1      0.01     1         0.01      1            1          F       1000.0 1000.0    T
-# ADC: diag_approx
+            T     T        1      0.01     1         0.01      1            1          F       1000.0 1000.0 T
+# ADC: single_state_ADC
               F
 # Ensemble: weight_N  N+1[for N-1 use F]
 	    0.00000   T
