@@ -34,7 +34,6 @@ subroutine scGF2itauiw_ao(nBas,nOrb,nO,maxSCF,maxDIIS,dolinGF2,restart_scGF2,ver
   integer                       :: n_diis
   integer                       :: n_diisP
   integer                       :: verbose
-  integer                       :: nneg
   integer                       :: ntimes
   integer                       :: nBasSqntimes2
   integer                       :: ntimes_twice
@@ -660,25 +659,12 @@ subroutine scGF2itauiw_ao(nBas,nOrb,nO,maxSCF,maxDIIS,dolinGF2,restart_scGF2,ver
 
   ! Build the new G_ao_iw_hf, G_ao_itau_hf, and P_ao_hf
   U_mo=matmul(transpose(cHF),matmul(F_ao,cHF))
-  do ibas=1,nBas
-   U_mo(ibas,ibas)=U_mo(ibas,ibas)-chem_pot
-  enddo
   call diagonalize_matrix(nOrb,U_mo,eSD)
   chem_pot_align=0.5d0*(eSD(nO)+eSD(nO+1))
-  if(verbose/=0) then
-   write(*,*) '    orb       Occ        SD energies  Aligned SD energies [ from Go(iw) (a.u.) ]'
-   do ibas=1,nOrb
-    write(*,'(I7,3F15.8)') ibas,Occ(ibas),eSD(ibas),eSD(ibas)-chem_pot_align
-   enddo
-  endif
   eSD(:)=eSD(:)-chem_pot_align
-  nneg=0
-  do ibas=1,nOrb
-   if(eSD(ibas)<0d0) nneg=nneg+1
-  enddo
   sd_dif=sum(abs(eSD(:)-eSD_old(:)))
   write(*,'(a,f15.8)') '     | eSD,i - eSD,i-1 | ',sd_dif
-  if(nneg==nO .and. sd_dif>1d-2) then
+  if(sd_dif>1d-2) then
    write(*,*)
    write(*,'(a,i5)') ' Computing new Go(iw), Go(it), and P_HF matrices at global iter ',iter
    write(*,*)
@@ -704,6 +690,12 @@ subroutine scGF2itauiw_ao(nBas,nOrb,nO,maxSCF,maxDIIS,dolinGF2,restart_scGF2,ver
     G_ao_iw_hf(ifreq,:,:)=G_ao_1(:,:)
    enddo
    DeltaG_ao_iw(:,:,:)=DeltaG_ao_iw(:,:,:)-G_ao_iw_hf(:,:,:) ! Setting back DeltaG(iw) = G(iw) - Go_new(iw)
+   if(verbose/=0) then
+    write(*,*) '    orb       Occ        SD energies  Aligned SD energies [ from Go(iw) (a.u.) ]'
+    do ibas=1,nOrb
+     write(*,'(I7,3F15.8)') ibas,Occ(ibas),eSD(ibas),eSD(ibas)-chem_pot_align
+    enddo
+   endif
   endif
 
   ! Transform DeltaG(i w) -> DeltaG(i tau) [ i tau and -i tau ]

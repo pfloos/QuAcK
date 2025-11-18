@@ -52,6 +52,7 @@ subroutine scGWBitauiw_ao(nBas,nOrb,nOrb_twice,maxSCF,maxDIIS,dolinGW,restart_sc
 
   double precision              :: rcond
   double precision              :: rcondR
+  double precision              :: hfb_dif
   double precision              :: alpha_mixing
   double precision              :: eta,diff_Rao
   double precision              :: thrs_N,thrs_Ngrad,thrs_Rao
@@ -68,6 +69,8 @@ subroutine scGWBitauiw_ao(nBas,nOrb,nOrb_twice,maxSCF,maxDIIS,dolinGW,restart_sc
   double precision              :: trace_1_rdm
   double precision              :: start_scGWBitauiw     ,end_scGWBitauiw       ,t_scGWBitauiw
   double precision,allocatable  :: Occ(:)
+  double precision,allocatable  :: eQP(:)
+  double precision,allocatable  :: eQP_old(:)
   double precision,allocatable  :: cHFBinv(:,:)
   double precision,allocatable  :: cNO(:,:)
   double precision,allocatable  :: U_mo(:,:)
@@ -80,6 +83,9 @@ subroutine scGWBitauiw_ao(nBas,nOrb,nOrb_twice,maxSCF,maxDIIS,dolinGW,restart_sc
   double precision,allocatable  :: R_ao_hfb(:,:)
   double precision,allocatable  :: R_ao_old(:,:)
   double precision,allocatable  :: H_ao_hfb(:,:)
+  double precision,allocatable  :: R_mo(:,:)
+  double precision,allocatable  :: cHFB_gorkov(:,:)
+  double precision,allocatable  :: U_QP_tmp(:,:)
   double precision,allocatable  :: err_currentR(:)
   double precision,allocatable  :: err_diisR(:,:)
   double precision,allocatable  :: R_ao_extrap(:)
@@ -168,13 +174,18 @@ subroutine scGWBitauiw_ao(nBas,nOrb,nOrb_twice,maxSCF,maxDIIS,dolinGW,restart_sc
 
  ! Allocate arrays
  allocate(Occ(nOrb))
+ allocate(eQP(nOrb_twice))
+ allocate(eQP_old(nOrb_twice))
  allocate(cNO(nBas,nOrb))
  allocate(cHFBinv(nOrb,nBas))
+ allocate(cHFB_gorkov(nBas_twice,nOrb_twice))
+ allocate(U_QP_tmp(nOrb_twice,nOrb_twice))
  allocate(U_mo(nOrb,nOrb))
  allocate(R_ao(nBas_twice,nBas_twice))
  allocate(R_ao_iter(nBas_twice,nBas_twice))
  allocate(R_ao_hfb(nBas_twice,nBas_twice))
  allocate(R_ao_old(nBas_twice,nBas_twice))
+ allocate(R_mo(nOrb_twice,nOrb_twice))
  allocate(H_ao_hfb(nBas_twice,nBas_twice))
  allocate(G_ao_tmp(nBas,nBas))
  allocate(Mat_gorkov_tmp(nBas_twice,nBas_twice))
@@ -238,6 +249,10 @@ subroutine scGWBitauiw_ao(nBas,nOrb,nOrb_twice,maxSCF,maxDIIS,dolinGW,restart_sc
  R_ao=R_ao_hfb
  R_ao_iter=R_ao_hfb
  cHFBinv=matmul(transpose(cHFB),S)
+ cHFB_gorkov=0d0
+ cHFB_gorkov(1:nBas           ,1:nOrb           ) = cHFB(1:nBas,1:nOrb)
+ cHFB_gorkov(nBas+1:nBas_twice,nOrb+1:nOrb_twice) = cHFB(1:nBas,1:nOrb)
+ eQP_old(:)=eQP_state(:)
 
  ! Read grids 
  call read_scGW_grids(ntimes,nfreqs,tcoord,tweight,wcoord,wweight,sint2w_weight,cost2w_weight, &
@@ -632,6 +647,82 @@ subroutine scGWBitauiw_ao(nBas,nOrb,nOrb_twice,maxSCF,maxDIIS,dolinGW,restart_sc
 
   if(iter==maxSCF) exit
 
+  ! Build the new G_ao_iw_hfb, G_ao_itau_hfb, and R_ao_hfb
+  H_ao_hfb(1:nBas           ,1:nBas           )=H_ao_hfb(1:nBas           ,1:nBas           )-chem_pot*S(1:nBas,1:nBas)
+  H_ao_hfb(nBas+1:nBas_twice,nBas+1:nBas_twice)=H_ao_hfb(nBas+1:nBas_twice,nBas+1:nBas_twice)+chem_pot*S(1:nBas,1:nBas)
+  U_QP_tmp=matmul(transpose(cHFB_gorkov),matmul(H_ao_hfb,cHFB_gorkov))
+  call diagonalize_matrix(nOrb_twice,U_QP_tmp,eQP)
+  hfb_dif=0.5d0*sum(abs(eQP(:)-eQP_old(:))) ! Half to be consistent with scGW
+  write(*,'(a,f15.8)') '     | eQP,i - eQP,i-1 | ',hfb_dif
+  if(hfb_dif>1d-2) then
+   write(*,*)
+   write(*,'(a,i5)') ' Computing new Go(iw), Go(it), and R_HFB matrices at global iter ',iter
+   write(*,*)
+   eQP_old(:)=eQP(:)
+   Mat1(1:nOrb,1:nOrb)=U_QP_tmp(1:nOrb,1:nOrb)
+   Mat2(1:nOrb,1:nOrb)=U_QP_tmp(nOrb+1:nOrb_twice,1:nOrb)
+   R_mo=0d0
+   do iorb=1,nOrb
+    R_mo(:,:) = R_mo(:,:) + matmul(U_QP_tmp(:,iorb:iorb),transpose(U_QP_tmp(:,iorb:iorb))) 
+   enddo
+   R_ao_hfb=matmul(cHFB_gorkov,matmul(R_mo,transpose(cHFB_gorkov)))
+   ! Build Go(i w)
+   DeltaG_ao_iw(:,:,:)=G_ao_iw_hfb(:,:,:)+DeltaG_ao_iw(:,:,:) ! Saving G(iw) in DeltaG_ao_iw
+   G_ao_iw_hfb=czero
+   do ifreq=1,nfreqs
+    weval_cpx=im*wcoord(ifreq)
+    ! G_he(iw)
+    call G_AO_RHFB(nBas,nOrb,nOrb_twice,eta,cHFB,eQP,weval_cpx, Mat1, Mat1, Mat2, Mat2,G_ao_tmp)
+    G_ao_iw_hfb(ifreq,1:nBas           ,1:nBas           ) = G_ao_tmp(1:nBas,1:nBas)
+    ! G_hh(iw)
+    call G_AO_RHFB(nBas,nOrb,nOrb_twice,eta,cHFB,eQP,weval_cpx, Mat1, Mat2,-Mat2, Mat1,G_ao_tmp)
+    G_ao_iw_hfb(ifreq,1:nBas           ,nBas+1:nBas_twice) = G_ao_tmp(1:nBas,1:nBas)
+    ! G_ee(iw)
+    call G_AO_RHFB(nBas,nOrb,nOrb_twice,eta,cHFB,eQP,weval_cpx, Mat2, Mat1, Mat1,-Mat2,G_ao_tmp)
+    G_ao_iw_hfb(ifreq,nBas+1:nBas_twice,1:nBas           ) = G_ao_tmp(1:nBas,1:nBas)
+    ! G_eh(iw)
+    call G_AO_RHFB(nBas,nOrb,nOrb_twice,eta,cHFB,eQP,weval_cpx, Mat2, Mat2, Mat1, Mat1,G_ao_tmp)
+    G_ao_iw_hfb(ifreq,nBas+1:nBas_twice,nBas+1:nBas_twice) = G_ao_tmp(1:nBas,1:nBas)
+   enddo
+   DeltaG_ao_iw(:,:,:)=DeltaG_ao_iw(:,:,:)-G_ao_iw_hfb(:,:,:) ! Setting back DeltaG(iw) = G(iw) - Go_new(iw)
+   ! Build Go(i tau)
+   G_ao_itau_hfb=czero
+   do itau=1,ntimes
+    ! tau > 0
+    ! G_he(i tau)
+    call G0itau_ao_RHFB(nBas,nOrb,nOrb_twice, tcoord(itau),G_ao_tmp,cHFB,eQP, Mat1, Mat1, Mat2, Mat2)
+    G_ao_itau_hfb(2*itau-1,1:nBas           ,1:nBas           ) = G_ao_tmp(1:nBas,1:nBas)
+    ! G_hh(i tau)
+    call G0itau_ao_RHFB(nBas,nOrb,nOrb_twice, tcoord(itau),G_ao_tmp,cHFB,eQP, Mat1, Mat2,-Mat2, Mat1)
+    G_ao_itau_hfb(2*itau-1,1:nBas           ,nBas+1:nBas_twice) = G_ao_tmp(1:nBas,1:nBas)
+    ! G_ee(i tau)
+    call G0itau_ao_RHFB(nBas,nOrb,nOrb_twice, tcoord(itau),G_ao_tmp,cHFB,eQP, Mat2, Mat1, Mat1,-Mat2)
+    G_ao_itau_hfb(2*itau-1,nBas+1:nBas_twice,1:nBas           ) = G_ao_tmp(1:nBas,1:nBas)
+    ! G_eh(i tau)
+    call G0itau_ao_RHFB(nBas,nOrb,nOrb_twice, tcoord(itau),G_ao_tmp,cHFB,eQP, Mat2, Mat2, Mat1, Mat1)
+    G_ao_itau_hfb(2*itau-1,nBas+1:nBas_twice,nBas+1:nBas_twice) = G_ao_tmp(1:nBas,1:nBas)
+    ! tau < 0
+    ! G_he(i tau)
+    call G0itau_ao_RHFB(nBas,nOrb,nOrb_twice,-tcoord(itau),G_ao_tmp,cHFB,eQP, Mat1, Mat1, Mat2, Mat2)
+    G_ao_itau_hfb(2*itau  ,1:nBas           ,1:nBas           ) = G_ao_tmp(1:nBas,1:nBas)
+    ! G_hh(i tau)
+    call G0itau_ao_RHFB(nBas,nOrb,nOrb_twice,-tcoord(itau),G_ao_tmp,cHFB,eQP, Mat1, Mat2,-Mat2, Mat1)
+    G_ao_itau_hfb(2*itau  ,1:nBas           ,nBas+1:nBas_twice) = G_ao_tmp(1:nBas,1:nBas)
+    ! G_ee(i tau)
+    call G0itau_ao_RHFB(nBas,nOrb,nOrb_twice,-tcoord(itau),G_ao_tmp,cHFB,eQP, Mat2, Mat1, Mat1,-Mat2)
+    G_ao_itau_hfb(2*itau  ,nBas+1:nBas_twice,1:nBas           ) = G_ao_tmp(1:nBas,1:nBas)
+    ! G_eh(i tau)
+    call G0itau_ao_RHFB(nBas,nOrb,nOrb_twice,-tcoord(itau),G_ao_tmp,cHFB,eQP, Mat2, Mat2, Mat1, Mat1)
+    G_ao_itau_hfb(2*itau  ,nBas+1:nBas_twice,nBas+1:nBas_twice) = G_ao_tmp(1:nBas,1:nBas)
+   enddo
+   if(verbose/=0) then
+    write(*,*) '    orb       Occ       +QP energies  -QP energies [ from Go(iw) (a.u.) ]'
+    do iorb=1,nOrb
+     write(*,'(I7,3F15.8)') iorb,Occ(iorb),eQP(iorb),eQP(iorb+nOrb)
+    enddo
+   endif
+  endif
+
   ! Transform DeltaG(i w) -> DeltaG(i tau) [ i tau and -i tau ]
   !      [ the weights contain the 2 /(2 pi) = 1 / pi factor and the cos(tau w) or sin(tau w) ]
   G_ao_itau=czero
@@ -776,13 +867,18 @@ subroutine scGWBitauiw_ao(nBas,nOrb,nOrb_twice,maxSCF,maxDIIS,dolinGW,restart_sc
 
  ! Deallocate arrays
  deallocate(Occ)
+ deallocate(eQP)
+ deallocate(eQP_old)
  deallocate(cHFBinv)
+ deallocate(U_QP_tmp)
+ deallocate(cHFB_gorkov)
  deallocate(cNO)
  deallocate(U_mo)
  deallocate(R_ao)
  deallocate(R_ao_iter)
  deallocate(R_ao_hfb)
  deallocate(R_ao_old)
+ deallocate(R_mo)
  deallocate(H_ao_hfb)
  deallocate(G_ao_tmp)
  deallocate(Mat_gorkov_tmp)
