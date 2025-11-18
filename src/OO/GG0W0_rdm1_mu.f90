@@ -107,7 +107,7 @@ do a=O+1,N
 
     do k=1,O
       do l=1,O
-        rdm1(a,b) = rdm1(a,b) + lampl(a,j,k)*rampl(b,l,k)
+        rdm1(a,b) = rdm1(a,b) + lampl(a,l,k)*rampl(b,l,k)
       end do
     end do
 

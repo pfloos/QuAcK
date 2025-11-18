@@ -354,6 +354,7 @@ subroutine pseudo_inverse_matrix(N,A,B)
   double precision,allocatable  :: U(:,:)
   double precision,allocatable  :: DPUT(:,:)
   double precision,allocatable  :: e(:)
+  double precision              :: tol
 
   !Output
   double precision,intent(out)  :: B(N,N)
@@ -363,8 +364,9 @@ subroutine pseudo_inverse_matrix(N,A,B)
   call diagonalize_matrix(N,U,e)
   DPUT(:,:) = 0d0
   ! build D^+ U^T
+  tol = 1d-12 * maxval(abs(e))
   do i=1,N
-    if(abs(e(i))>1e-14) then
+    if(abs(e(i))>tol) then
       DPUT(i,:) = U(:,i)/e(i)     
     endif
   end do
@@ -395,6 +397,7 @@ subroutine pseudo_inverse_general_matrix(N,A,B)
   double precision,allocatable  :: Vt(:,:)
   double precision,allocatable  :: DPUT(:,:)
   double precision,allocatable  :: e(:)
+  double precision              :: tol
 
   !Output
   double precision,intent(out)  :: B(N,N)
@@ -405,8 +408,9 @@ subroutine pseudo_inverse_general_matrix(N,A,B)
 
   DPUT(:,:) = 0d0
   ! build D^+ Vt
+  tol = 1d-12 * maxval(abs(e))
   do i=1,N
-    if(abs(e(i))>1e-14) then
+    if(abs(e(i))>tol) then
       DPUT(i,:) = Vt(i,:)/e(i)     
     endif
   end do
