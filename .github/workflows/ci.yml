@@ -33,7 +33,10 @@ jobs:
 
     - name: Compilation
       run: |
-        bash -c "source quack.rc ; cd src ; make ; cd .. "
+        set -e
+        source quack.rc
+        cd src
+        make
 
     - name: Set up Python
       uses: actions/setup-python@v4
