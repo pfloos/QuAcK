@@ -364,7 +364,7 @@ subroutine pseudo_inverse_matrix(N,A,B)
   DPUT(:,:) = 0d0
   ! build D^+ U^T
   do i=1,N
-    if(abs(e(i))>1e-6) then
+    if(abs(e(i))>1e-14) then
       DPUT(i,:) = U(:,i)/e(i)     
     endif
   end do
@@ -375,6 +375,48 @@ subroutine pseudo_inverse_matrix(N,A,B)
              0.d0, B(1,1), N)
 
   deallocate(U,e,DPUT)
+
+end subroutine
+
+subroutine pseudo_inverse_general_matrix(N,A,B)
+
+! Compute Pseudo-inverse B for square real Matrix A, i.e. ABA = A.
+! If A = U D V^T --> B = U D^+ V^T where D^+_ii = 1/D_ii if D_ii!=0 and 0 otherwise
+
+  implicit none
+
+  !Input
+  integer,intent(in)            :: N
+  double precision,intent(in)   :: A(N,N)
+  
+  ! local
+  integer                       :: i
+  double precision,allocatable  :: U(:,:)
+  double precision,allocatable  :: Vt(:,:)
+  double precision,allocatable  :: DPUT(:,:)
+  double precision,allocatable  :: e(:)
+
+  !Output
+  double precision,intent(out)  :: B(N,N)
+
+  allocate(U(N,N),Vt(N,N),e(N),DPUT(N,N))
+  
+  call svd(N,A,U,e,Vt)
+
+  DPUT(:,:) = 0d0
+  ! build D^+ Vt
+  do i=1,N
+    if(abs(e(i))>1e-14) then
+      DPUT(i,:) = Vt(i,:)/e(i)     
+    endif
+  end do
+
+  ! B = U D^+ V^T 
+  call dgemm("N", "N", N, N, N, 1.d0, &
+             U(1,1), N, DPUT(1,1), N,   &
+             0.d0, B(1,1), N)
+
+  deallocate(U,Vt,e,DPUT)
 
 end subroutine
 
