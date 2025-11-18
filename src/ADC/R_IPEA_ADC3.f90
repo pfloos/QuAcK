@@ -56,6 +56,11 @@ subroutine R_IPEA_ADC3(dotest,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,e)
   write(*,*)'***************************************'
   write(*,*)
 
+! Diagonal approximation
+
+  write(*,*)' Diagonal approximation enforced!'
+  write(*,*)
+
 ! Dimension of the supermatrix
 
   n2h1p = nO*nO*nV

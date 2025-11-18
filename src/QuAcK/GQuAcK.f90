@@ -13,7 +13,7 @@ subroutine GQuAcK(working_dir,dotest,doGHF,dostab,dosearch,doMP2,doMP3,doCCD,dop
                   maxSCF_GT,max_diis_GT,thresh_GT,TDA_T,lin_GT,reg_GT,eta_GT,do_linDM_GT,                    &
                   dophBSE,dophBSE2,doppBSE,dBSE,dTDA,doACFDT,exchange_kernel,doXBS,                          &
                   TDAeh,TDApp,max_diis_1b,max_diis_2b,max_it_1b,conv_1b,max_it_2b,conv_2b,lin_parquet,reg_1b,reg_2b,reg_PA, &
-                  single_state_ADC)
+                  diag_approx)
 
   implicit none
   include 'parameters.h'
@@ -99,7 +99,7 @@ subroutine GQuAcK(working_dir,dotest,doGHF,dostab,dosearch,doMP2,doMP3,doCCD,dop
   double precision,intent(in)   :: reg_1b,reg_2b
   logical,intent(in)            :: lin_parquet,reg_PA
   
-  logical,intent(in)            :: single_state_ADC
+  logical,intent(in)            :: diag_approx
 
 ! Local variables
 
@@ -399,15 +399,15 @@ end if
   if(doADC) then
 
     call wall_time(start_ADC)
-!   call G_ADC(dotest,                                               &
-!              do_IPEA_ADC2,do_IP_ADC2,do_IPEA_ADC3,                 & 
-!              do_SOSEX,do_2SOSEX,do_G3W2,                           & 
-!              do_ADC_GW,do_ADC_2SOSEX,do_ADC3_G3W2,do_ADC4_G3W2,    &
-!              TDA_W,TDA,lin_GW,eta_GW,reg_GW,                       &
-!              single_state_ADC,                                     &
-!              nNuc,ZNuc,rNuc,ENuc,nBas2,nC,nO,nV,nR,nS,             &
-!              S,X,T,V,Hc,ERI_AO,ERI_MO,dipole_int_AO,dipole_int_MO, &
-!              EGHF,PHF,FHF,cHF,eHF)
+    call G_ADC(dotest,                                               &
+               do_IPEA_ADC2,do_IP_ADC2,do_IPEA_ADC3,                 & 
+               do_SOSEX,do_2SOSEX,do_G3W2,                           & 
+               do_ADC_GW,do_ADC_2SOSEX,do_ADC3_G3W2,do_ADC4_G3W2,    &
+               TDA_W,TDA,lin_GW,eta_GW,reg_GW,                       &
+               diag_approx,                                          &
+               nNuc,ZNuc,rNuc,ENuc,nBas,nBas2,nC,nO,nV,nR,nS,        &
+               S,X,T,V,Hc,ERI_AO,ERI_MO,dipole_int_AO,dipole_int_MO, &
+               EGHF,PHF,FHF,cHF,eHF)
     call wall_time(end_ADC)
 
     t_ADC = end_ADC - start_ADC

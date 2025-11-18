@@ -119,7 +119,7 @@ program QuAcK
   double precision              :: reg_1b,reg_2b 
   logical                       :: lin_parquet, reg_PA
    
-  logical                       :: single_state_ADC
+  logical                       :: diag_approx
 
   character(len=256)            :: working_dir
   character(len=100)            :: sha
@@ -206,7 +206,7 @@ program QuAcK
                     dophBSE,dophBSE2,doppBSE,dBSE,dTDA,                                                  &
                     temperature,sigma,chem_pot_hf,restart_hfb,error_P,                                   &
                     TDAeh,TDApp,max_diis_1b,max_diis_2b,max_it_1b,conv_1b,max_it_2b,conv_2b,lin_parquet, &
-                    reg_1b,reg_2b,reg_PA,single_state_ADC,eweight,eforward)
+                    reg_1b,reg_2b,reg_PA,diag_approx,eweight,eforward)
 
 
 !--------------------!
@@ -399,7 +399,7 @@ program QuAcK
                   maxSCF_GT,max_diis_GT,thresh_GT,TDA_T,lin_GT,reg_GT,eta_GT,do_linDM_GT,                                  &
                   dophBSE,dophBSE2,doppBSE,dBSE,dTDA,doACFDT,exchange_kernel,doXBS,                                        &
                   TDAeh,TDApp,max_diis_1b,max_diis_2b,max_it_1b,conv_1b,max_it_2b,conv_2b,lin_parquet,reg_1b,reg_2b,reg_PA,&
-                  nfreqs,ntimes,wcoord,wweight,single_state_ADC)
+                  nfreqs,ntimes,wcoord,wweight,diag_approx)
     endif
   endif
 
@@ -437,7 +437,7 @@ program QuAcK
                 maxSCF_GT,max_diis_GT,thresh_GT,TDA_T,lin_GT,reg_GT,eta_GT,do_linDM_GT,                    &
                 dophBSE,dophBSE2,doppBSE,dBSE,dTDA,doACFDT,exchange_kernel,doXBS,                          &
                 TDAeh,TDApp,max_diis_1b,max_diis_2b,max_it_1b,conv_1b,max_it_2b,conv_2b,lin_parquet,reg_1b,reg_2b,reg_PA, &
-                single_state_ADC)
+                diag_approx)
 
 !-------------------------!
 ! Bogoliubov QuAcK branch !
