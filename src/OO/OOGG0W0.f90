@@ -77,8 +77,8 @@ subroutine OOGG0W0(dotest,doACFDT,exchange_kernel,doXBS,dophBSE,dophBSE2,TDA_W,T
   double precision,allocatable  :: lambda(:,:)
   double precision,allocatable  :: t(:,:)
   double precision,allocatable  :: rho(:,:,:)
-  double precision,allocatable  :: rampl(:,:)
-  double precision,allocatable  :: lampl(:,:)
+  double precision,allocatable  :: rampl(:,:,:)
+  double precision,allocatable  :: lampl(:,:,:)
   double precision,allocatable  :: rp(:)
   double precision,allocatable  :: lp(:)
   double precision,allocatable  :: Ca(:,:),Cb(:,:)
@@ -165,7 +165,7 @@ subroutine OOGG0W0(dotest,doACFDT,exchange_kernel,doXBS,dophBSE,dophBSE2,TDA_W,T
 
   allocate(Aph(nS,nS),Bph(nS,nS),SigC(nBas2),Z(nBas2),Om(nS),XpY(nS,nS),XmY(nS,nS),rho(nBas2,nBas2,nS), & 
            eGW(nBas2),eGWlin(nBas2),X(nS,nS),X_inv(nS,nS),Y(nS,nS),Xbar(nS,nS),Xbar_inv(nS,nS),lambda(nS,nS),t(nS,nS),&
-           rampl(nS,N),lampl(nS,N),rp(N),lp(N),h(N,N),c(nBas2,nBas2),&
+           rampl(N,N,N),lampl(N,N,N),rp(N),lp(N),h(N,N),c(nBas2,nBas2),&
            rdm1(N,N),rdm2(N,N,N,N),rdm1_hf(N,N),rdm2_hf(N,N,N,N),rdm1_rpa(N,N),rdm2_rpa(N,N,N,N),&
            J(nBas2,nBas2),K(nBas2,nBas2),f(nBas2,nBas2))
 
@@ -184,8 +184,8 @@ subroutine OOGG0W0(dotest,doACFDT,exchange_kernel,doXBS,dophBSE,dophBSE2,TDA_W,T
   rdm2(:,:,:,:)     = 0d0
   rdm2_hf(:,:,:,:)  = 0d0
   rdm2_rpa(:,:,:,:) = 0d0
-  rampl(:,:)        = 0d0
-  lampl(:,:)        = 0d0
+  rampl(:,:,:)        = 0d0
+  lampl(:,:,:)        = 0d0
   rp(:)             = 0d0
   lp(:)             = 0d0
   t(:,:)            = 0d0
