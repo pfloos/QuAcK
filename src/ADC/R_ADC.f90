@@ -73,6 +73,7 @@ subroutine R_ADC(dotest,                                               &
 
   double precision              :: start_ADC,end_ADC,t_ADC
   logical                       :: do_IPEA,do_EE
+  logical                       :: diag_approx = .false.
 
 ! Output variables
   
@@ -193,7 +194,11 @@ subroutine R_ADC(dotest,                                               &
     if(do_ADC_GW) then 
       
       call wall_time(start_ADC)
-      call R_ADC_GW(dotest,TDA_W,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,ERHF,ERI_MO,eHF)
+      if(diag_approx) then
+        call R_ADC_GW_diag(dotest,TDA_W,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,ERHF,ERI_MO,eHF)
+      else
+        call R_ADC_GW(dotest,TDA_W,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,ERHF,ERI_MO,eHF)
+      end if
       call wall_time(end_ADC)
     
       t_ADC = end_ADC - start_ADC
@@ -209,8 +214,11 @@ subroutine R_ADC(dotest,                                               &
     if(do_ADC_2SOSEX) then 
       
       call wall_time(start_ADC)
-      call R_2SOSEX(dotest,TDA_W,singlet,triplet,linearize,eta,doSRG,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,ERHF,ERI_MO,dipole_int_MO,eHF)
-      call R_ADC_2SOSEX(dotest,TDA_W,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,ERHF,ERI_MO,eHF)
+      if(diag_approx) then
+        call R_ADC_2SOSEX_diag(dotest,TDA_W,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,ERHF,ERI_MO,eHF)
+      else
+        call R_ADC_2SOSEX(dotest,TDA_W,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,ERHF,ERI_MO,eHF)
+      end if
       call wall_time(end_ADC)
     
       t_ADC = end_ADC - start_ADC

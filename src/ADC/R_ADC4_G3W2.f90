@@ -71,6 +71,11 @@ subroutine R_ADC4_G3W2(dotest,TDA_W,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,eHF)
   write(*,*)'**************************************'
   write(*,*)
 
+! Diagonal approximation
+
+  write(*,*)' Diagonal approximation enforced!'
+  write(*,*)
+
 ! Dimension of the supermatrix
 
   n2h1p = nO*nO*nV
