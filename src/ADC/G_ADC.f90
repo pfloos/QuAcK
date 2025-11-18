@@ -3,7 +3,7 @@ subroutine G_ADC(dotest,                                               &
                  do_SOSEX,do_2SOSEX,do_G3W2,                           &
                  do_ADC_GW,do_ADC_2SOSEX,do_ADC3_G3W2,do_ADC4_G3W2,    &
                  TDA_W,TDA,linearize,eta,doSRG,                        &
-                 single_state_ADC,                                     & 
+                 diag_approx,                                          & 
                  nNuc,ZNuc,rNuc,ENuc,nBas,nBas2,nC,nO,nV,nR,nS,        &
                  S,X,T,V,Hc,ERI_AO,ERI_MO,dipole_int_AO,dipole_int_MO, &
                  EGHF,PHF,FHF,cHF,eHF)
@@ -36,7 +36,7 @@ subroutine G_ADC(dotest,                                               &
   double precision,intent(in)   :: eta
   logical,intent(in)            :: doSRG
   
-  logical,intent(in)            :: single_state_ADC
+  logical,intent(in)            :: diag_approx
 
   integer,intent(in)            :: nNuc
   double precision,intent(in)   :: ZNuc(nNuc)
@@ -96,7 +96,7 @@ subroutine G_ADC(dotest,                                               &
       
       call wall_time(start_ADC)
 
-      if(single_state_ADC) then
+      if(diag_approx) then
          call G_IPEA_ADC2_single_state(dotest,nBas,nBas2,nC,nO,nV,nR,nS,ENuc,EGHF,ERI_MO,eHF)
       else
          call G_IPEA_ADC2(dotest,nBas,nBas2,nC,nO,nV,nR,nS,ENuc,EGHF,ERI_MO,eHF)
