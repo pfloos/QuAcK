@@ -136,10 +136,10 @@ subroutine fix_chem_pot(nO,nOrb,nOrb_twice,nSCF,thrs_N,trace_1rdm,chem_pot,H_hfb
   enddo
   write(*,*)'------------------------------------------------------'
   call diag_H_hfb(nOrb,nOrb_twice,chem_pot,trace_1rdm,H_hfb,cp,R,eHFB_)
-  write(*,'(1X,A1,1X,A15,1X,A1,1X,A15,1X,A1A15,2X,A1)') &
+  write(*,'(1X,A1,1X,A15,1X,A1,1X,A15,1X,A1,A15,2X,A1)') &
           '|','Tr[1D]','|','Chem. Pot.','|','Grad N','|'
   write(*,*)'------------------------------------------------------'
-  write(*,'(1X,A1,F16.10,1X,A1,F16.10,1X,A1F16.10,1X,A1)') &
+  write(*,'(1X,A1,F16.10,1X,A1,F16.10,1X,A1,F16.10,1X,A1)') &
   '|',trace_1rdm,'|',chem_pot,'|',grad_electrons,'|'
   write(*,*)'------------------------------------------------------'
   write(*,*)

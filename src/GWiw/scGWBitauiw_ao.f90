@@ -33,6 +33,7 @@ subroutine scGWBitauiw_ao(nBas,nOrb,nOrb_twice,maxSCF,maxDIIS,dolinGW,restart_sc
 ! Local variables
 
   logical                       :: file_exists
+  logical                       :: read_HFB_chkp
 
   integer                       :: ifreq,itau
   integer                       :: ibas,jbas,kbas,lbas,mbas,obas,pbas,qbas
@@ -54,6 +55,7 @@ subroutine scGWBitauiw_ao(nBas,nOrb,nOrb_twice,maxSCF,maxDIIS,dolinGW,restart_sc
   double precision              :: rcondR
   double precision              :: hfb_dif
   double precision              :: alpha_mixing
+  double precision              :: N_anom
   double precision              :: eta,diff_Rao
   double precision              :: thrs_N,thrs_Ngrad,thrs_Rao
   double precision              :: nElectrons
@@ -68,6 +70,7 @@ subroutine scGWBitauiw_ao(nBas,nOrb,nOrb_twice,maxSCF,maxDIIS,dolinGW,restart_sc
   double precision              :: trace1,trace2
   double precision              :: trace_1_rdm
   double precision              :: start_scGWBitauiw     ,end_scGWBitauiw       ,t_scGWBitauiw
+  double precision,external     :: trace_matrix
   double precision,allocatable  :: Occ(:)
   double precision,allocatable  :: eQP(:)
   double precision,allocatable  :: eQP_old(:)
@@ -339,6 +342,16 @@ subroutine scGWBitauiw_ao(nBas,nOrb,nOrb_twice,maxSCF,maxDIIS,dolinGW,restart_sc
  write(*,'(a,*(f20.8))') ' Sum error ',sum_error_gw2gt
  write(*,'(a,f20.8,a,2f20.8,a)') ' Max CAE   ',max_error_gw2gt,' is in the time +/-',0d0,tcoord(imax_error_gw2gt),'i'
  write(*,'(a,*(f20.8))') ' MAE       ',sum_error_gw2gt/(2*ntimes*nBas_twice*nBas_twice)
+
+ ! If required, read restart files
+ if(restart_scGWB) then
+  inquire(file='read_HFB_scGWB', exist=file_exists)
+  read_HFB_chkp=.false.
+  if(file_exists) read_HFB_chkp=.true.
+  call read_scGWB_restart(nBas_twice,nfreqs,ntimes_twice,chem_pot,R_ao,R_ao_hfb,G_ao_iw_hfb,G_ao_itau,G_ao_itau_hfb,read_HFB_chkp)
+  R_ao_iter=R_ao
+  G_ao_itau_old(:,:,:)=G_ao_itau(:,:,:)
+ endif
 
 !------------!
 ! scGWB loop !
@@ -770,6 +783,8 @@ subroutine scGWBitauiw_ao(nBas,nOrb,nOrb_twice,maxSCF,maxDIIS,dolinGW,restart_sc
   G_ao_itau_old(:,:,:)=G_ao_itau(:,:,:)
 
  enddo
+ N_anom = trace_matrix(nBas,matmul(transpose(R_ao(1:nBas,nBas+1:nBas_twice)), &
+          R_ao(1:nBas,nBas+1:nBas_twice)))
  write(*,*)
  write(*,'(A50)') '---------------------------------------'
  write(*,'(A50)') '     scGWB calculation completed       '
@@ -778,6 +793,7 @@ subroutine scGWBitauiw_ao(nBas,nOrb,nOrb_twice,maxSCF,maxDIIS,dolinGW,restart_sc
  write(*,'(a,f15.8,a,i5,a)') ' Trace scGWB  ',trace_1_rdm,' after ',iter,' global iterations '
  write(*,'(a,f15.8)')        ' Change of P  ',diff_Rao
  write(*,'(a,f15.8)')        ' Chem. Pot.   ',chem_pot
+ write(*,'(a,f15.8)')        ' N anomalus   ',N_anom
  write(*,'(a,f15.8)')        ' Enuc         ',ENuc
  write(*,'(a,f15.8)')        ' Ehfbl        ',Ehfbl
  write(*,'(a,f15.8)')        ' EcGM         ',EcGM
@@ -796,7 +812,11 @@ subroutine scGWBitauiw_ao(nBas,nOrb,nOrb_twice,maxSCF,maxDIIS,dolinGW,restart_sc
  endif
  write(*,*)
 
-! Using the correlated G and Sigma_c to test the linearized density matrix approximation
+ ! Write restart files
+ call write_scGWB_restart(nBas_twice,ntimes,ntimes_twice,nfreqs,chem_pot,R_ao,R_ao_hfb,G_ao_itau,G_ao_itau_hfb, &
+                         G_ao_iw_hfb,DeltaG_ao_iw)
+
+ ! Using the correlated G and Sigma_c to test the linearized density matrix approximation
  if(dolinGW) then
   write(*,*)
   write(*,*) ' -----------------------------------------------------'
@@ -839,6 +859,9 @@ subroutine scGWBitauiw_ao(nBas,nOrb,nOrb_twice,maxSCF,maxDIIS,dolinGW,restart_sc
   call diagonalize_matrix(nOrb,U_mo,Occ)
   Occ=-Occ
   cNO=matmul(cHFB,U_mo)
+  N_anom = trace_matrix(nBas,matmul(transpose(R_ao_old(1:nBas,nBas+1:nBas_twice)), &
+           R_ao_old(1:nBas,nBas+1:nBas_twice)))
+  write(*,'(a,f15.8)')        ' N anomalus    ',N_anom
   write(*,'(a,f15.8)')        ' Enuc          ',ENuc
   write(*,'(a,f15.8)')        ' Hcore         ',Ecore
   write(*,'(a,f15.8)')        ' Hartree       ',Eh
@@ -862,8 +885,6 @@ subroutine scGWBitauiw_ao(nBas,nOrb,nOrb_twice,maxSCF,maxDIIS,dolinGW,restart_sc
    enddo
   endif
  endif
-
-
 
  ! Deallocate arrays
  deallocate(Occ)

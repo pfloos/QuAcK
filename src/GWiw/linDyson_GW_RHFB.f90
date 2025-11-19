@@ -183,7 +183,7 @@ subroutine linDyson_GW_RHFB(nBas,nOrb,nOrb_twice,c,eQP_state,nfreqs,wweight,wcoo
    dev_Idemp_r_can=dev_Idemp_r_can+abs(1d0-Occ_R(iorb))
   enddo
 
-  N_anom = trace_matrix(nOrb,matmul(transpose(2d0*Panomcorr_mo),2d0*Panomcorr_mo))
+  N_anom = trace_matrix(nBas,matmul(transpose(Panomcorr),Panomcorr))
   call diagonalize_matrix(nOrb,Pcorr_mo,Occ)
   call Hartree_matrix_AO_basis(nBas,Pcorr,ERI,J)
   call exchange_matrix_AO_basis(nBas,Pcorr,ERI,K)
