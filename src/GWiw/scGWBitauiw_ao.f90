@@ -801,7 +801,11 @@ subroutine scGWBitauiw_ao(nBas,nOrb,nOrb_twice,maxSCF,maxDIIS,dolinGW,restart_sc
  endif
  write(*,*)
 
-! Using the correlated G and Sigma_c to test the linearized density matrix approximation
+ ! Write restart files
+ call write_scGWB_restart(nBas_twice,ntimes,ntimes_twice,nfreqs,chem_pot,R_ao,R_ao_hfb,G_ao_itau,G_ao_itau_hfb, &
+                         G_ao_iw_hfb,DeltaG_ao_iw)
+
+ ! Using the correlated G and Sigma_c to test the linearized density matrix approximation
  if(dolinGW) then
   write(*,*)
   write(*,*) ' -----------------------------------------------------'
