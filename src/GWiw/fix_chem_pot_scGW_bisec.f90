@@ -64,10 +64,10 @@ subroutine fix_chem_pot_scGW_bisec(iter_fock,nBas,nfreqs,nElectrons,thrs_N,thrs_
                      G_ao,G_ao_iw_hf,DeltaG_ao_iw,P_ao,P_ao_hf,trace_old) 
   if(verbose) then
    write(*,*)'------------------------------------------------------'
-   write(*,'(1X,A1,1X,A15,1X,A1,1X,A15,1X,A1A15,2X,A1)') &
+   write(*,'(1X,A1,1X,A15,1X,A1,1X,A15,1X,A1,A15,2X,A1)') &
            '|','Tr[1D]','|','Chem. Pot.','|','Grad N','|'
    write(*,*)'------------------------------------------------------'
-   write(*,'(1X,A1,F16.10,1X,A1,F16.10,1X,A1F16.10,1X,A1)') &
+   write(*,'(1X,A1,F16.10,1X,A1,F16.10,1X,A1,F16.10,1X,A1)') &
    '|',trace_old,'|',chem_pot,'|',grad_electrons,'|'
    write(*,*)'------------------------------------------------------'
   endif
@@ -137,7 +137,7 @@ subroutine fix_chem_pot_scGW_bisec(iter_fock,nBas,nfreqs,nElectrons,thrs_N,thrs_
      stop
     else
      if(verbose) then
-      write(*,'(1X,A1,F16.10,1X,A1,F16.10,1X,A1F16.10,1X,A1)') &
+      write(*,'(1X,A1,F16.10,1X,A1,F16.10,1X,A1,F16.10,1X,A1)') &
       '|',trace_1_rdm,'|',chem_pot,'|',grad_electrons,'|'
       write(*,*)'------------------------------------------------------'
       write(*,*)
@@ -222,7 +222,7 @@ subroutine fix_chem_pot_scGW_bisec(iter_fock,nBas,nfreqs,nElectrons,thrs_N,thrs_
 !          '|','Tr[1D]','|','Chem. Pot.','|','Grad N','|'
 !  write(*,*)'------------------------------------------------------'
   if(verbose) then
-   write(*,'(1X,A1,F16.10,1X,A1,F16.10,1X,A1F16.10,1X,A1)') &
+   write(*,'(1X,A1,F16.10,1X,A1,F16.10,1X,A1,F16.10,1X,A1)') &
    '|',trace_1_rdm,'|',chem_pot,'|',grad_electrons,'|'
    write(*,*)'------------------------------------------------------'
    write(*,*)
