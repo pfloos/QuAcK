@@ -1,12 +1,10 @@
-subroutine RG0W0_rdm2_rpa(O,V,N,nS,lampl,rampl,lp,rp,lambda,t,rdm1_hf,rdm1_rpa,rdm2)
+subroutine RG0W0_rdm2_rpa(O,V,N,nS,lambda,t,rdm2)
 
 ! Compute RPA 2-Reduced-Density-Matrix based in RG0W0
 
 ! Input
 integer,intent(in)               :: N,nS,O,V
-double precision, intent(in)     :: lampl(nS,N),rampl(nS,N),rp(N),lp(N)
 double precision, intent(in)     :: lambda(nS,nS),t(nS,nS)
-double precision, intent(in)     :: rdm1_hf(N,N),rdm1_rpa(N,N)
 
 ! Local
 integer                          :: a,b,c,d,i,j,k,l,p,q,r,s

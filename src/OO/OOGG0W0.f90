@@ -76,6 +76,7 @@ subroutine OOGG0W0(dotest,doACFDT,exchange_kernel,doXBS,dophBSE,dophBSE2,TDA_W,T
   double precision,allocatable  :: Y(:,:)
   double precision,allocatable  :: lambda(:,:)
   double precision,allocatable  :: t(:,:)
+  double precision,allocatable  :: xi(:,:)
   double precision,allocatable  :: rho(:,:,:)
   double precision,allocatable  :: rampl(:,:,:)
   double precision,allocatable  :: lampl(:,:,:)
@@ -165,7 +166,7 @@ subroutine OOGG0W0(dotest,doACFDT,exchange_kernel,doXBS,dophBSE,dophBSE2,TDA_W,T
 
   allocate(Aph(nS,nS),Bph(nS,nS),SigC(nBas2),Z(nBas2),Om(nS),XpY(nS,nS),XmY(nS,nS),rho(nBas2,nBas2,nS), & 
            eGW(nBas2),eGWlin(nBas2),X(nS,nS),X_inv(nS,nS),Y(nS,nS),Xbar(nS,nS),Xbar_inv(nS,nS),lambda(nS,nS),t(nS,nS),&
-           rampl(N,N,N),lampl(N,N,N),rp(N),lp(N),h(N,N),c(nBas2,nBas2),&
+           xi(nS,nS),rampl(N,N,N),lampl(N,N,N),rp(N),lp(N),h(N,N),c(nBas2,nBas2),&
            rdm1(N,N),rdm2(N,N,N,N),rdm1_hf(N,N),rdm2_hf(N,N,N,N),rdm1_rpa(N,N),rdm2_rpa(N,N,N,N),&
            J(nBas2,nBas2),K(nBas2,nBas2),f(nBas2,nBas2))
 
@@ -184,11 +185,12 @@ subroutine OOGG0W0(dotest,doACFDT,exchange_kernel,doXBS,dophBSE,dophBSE2,TDA_W,T
   rdm2(:,:,:,:)     = 0d0
   rdm2_hf(:,:,:,:)  = 0d0
   rdm2_rpa(:,:,:,:) = 0d0
-  rampl(:,:,:)        = 0d0
-  lampl(:,:,:)        = 0d0
+  rampl(:,:,:)      = 0d0
+  lampl(:,:,:)      = 0d0
   rp(:)             = 0d0
   lp(:)             = 0d0
   t(:,:)            = 0d0
+  xi(:,:)           = 0d0
   lambda(:,:)       = 0d0
   Emu               = EGHF
   EcRPA_HF          = 0d0
@@ -292,12 +294,16 @@ subroutine OOGG0W0(dotest,doACFDT,exchange_kernel,doXBS,dophBSE,dophBSE2,TDA_W,T
     call inverse_matrix(nS,Xbar,Xbar_inv)
     lambda = matmul(Y,Xbar_inv)
     ! Calculate rdm1
+   ! rdm1_rpa = 0d0
+   ! rdm2_rpa = 0d0
+   ! call GG0W0_rdm1_mu(O,V,N,nS,lampl,rampl,lp,rp,xi,lambda,t,rdm1_rpa)
+   ! call energy_from_rdm(N,h,ERI_MO,rdm1_rpa,rdm2_rpa,EHF_rdm,.true.)
     call GG0W0_rdm1_hf(O,V,N,nS,rdm1_hf)
-    call GG0W0_rdm1_rpa(O,V,N,nS,lampl,rampl,lp,rp,lambda,t,rdm1_rpa)
+    call GG0W0_rdm1_rpa(O,V,N,nS,lambda,t,rdm1_rpa)
     rdm1 = rdm1_hf  + rdm1_rpa
     ! Calculate rdm2
     call GG0W0_rdm2_hf(O,V,N,nS,rdm2_hf)
-    call GG0W0_rdm2_rpa(O,V,N,nS,lampl,rampl,lp,rp,lambda,t,rdm2_rpa)
+    call GG0W0_rdm2_rpa(O,V,N,nS,lambda,t,rdm2_rpa)
     rdm2 = rdm2_hf + rdm2_rpa
     call energy_from_rdm(N,h,ERI_MO,rdm1_hf,rdm2_hf,EHF_rdm,.false.)
     call energy_from_rdm(N,F,ERI_MO,rdm1_rpa,rdm2_rpa,ERPA_rdm,.false.)
@@ -376,5 +382,5 @@ subroutine OOGG0W0(dotest,doACFDT,exchange_kernel,doXBS,dophBSE,dophBSE2,TDA_W,T
   eGW_out(:) = eGW(:)
  
   deallocate(rdm1,rdm2,c,Aph,Bph,SigC,Z,Om,XpY,XmY,rho,eGW,&
-             eGWlin,X,X_inv,Y,Xbar,Xbar_inv,lambda,t,rampl,lampl,rp,lp,h)
+             eGWlin,X,X_inv,Y,Xbar,Xbar_inv,lambda,t,rampl,lampl,rp,lp,h,xi)
 end subroutine

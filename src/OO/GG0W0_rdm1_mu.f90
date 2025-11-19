@@ -1,13 +1,13 @@
-subroutine GG0W0_rdm1_mu(mu,O,V,N,nS,lampl,rampl,lp,rp,lambda,t,rdm1)
+subroutine GG0W0_rdm1_mu(O,V,N,nS,lampl,rampl,lp,rp,xi,lambda,t,rdm1)
 
 ! Compute RPA 1-Reduced-Density-Matrix based in GG0W0
   implicit none
   include 'parameters.h'
 
 ! Input
-integer,intent(in)               :: mu,N,nS,O,V
+integer,intent(in)               :: N,nS,O,V
 double precision, intent(in)     :: lampl(N,N,N),rampl(N,N,N),rp(N),lp(N)
-double precision, intent(in)     :: lambda(nS,nS),t(nS,nS)
+double precision, intent(in)     :: lambda(nS,nS),t(nS,nS),xi(nS,nS)
 
 ! Local
 integer                          :: a,b,i,j,c,k,d,l,kc,id,jd,lb,la,ic,jc
@@ -17,10 +17,6 @@ double precision                 :: temp
 
 ! Output
 double precision,intent(out)     :: rdm1(N,N)
-
-!-----------------------!
-! Correlation part      !
-!-----------------------!
 
 rdm1(:,:) = 0d0
 
@@ -167,5 +163,35 @@ do a=O+1,N
   end do
 end do
 
-!!! TODO: Contribution from xi
+! Contributions from xi
+! occ - occ
+do i=1,O
+  do j=1,O
+    do c=O+1,N
+      do d=O+1,N
+        do k=1,O
+          kc = c - O + (k-1)*V 
+          id = d - O + (i-1)*V 
+          jd = d - O + (j-1)*V 
+          rdm1(i,j) = rdm1(i,j) - lambda(kc,jd)*xi(kc,id)
+        end do
+      end do
+    end do
+  end do
+end do
+! virt - virt
+do a=O+1,N
+  do b=O+1,N
+    do c=O+1,N
+      do k=1,O
+        do l=1,O
+          kc = c - O + (k-1)*V 
+          la = a - O + (l-1)*V 
+          lb = b - O + (l-1)*V 
+          rdm1(a,b) = rdm1(a,b) + lambda(kc,la)*xi(kc,lb)
+        end do
+      end do
+    end do
+  end do
+end do
 end subroutine

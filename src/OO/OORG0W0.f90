@@ -78,10 +78,11 @@ subroutine OORG0W0(dotest,doACFDT,exchange_kernel,doXBS,dophBSE,dophBSE2,TDA_W,T
   double precision,allocatable  :: Xbar_inv(:,:)
   double precision,allocatable  :: Y(:,:)
   double precision,allocatable  :: lambda(:,:)
+  double precision,allocatable  :: xi(:,:)
   double precision,allocatable  :: t(:,:)
   double precision,allocatable  :: rho(:,:,:)
-  double precision,allocatable  :: rampl(:,:)
-  double precision,allocatable  :: lampl(:,:)
+  double precision,allocatable  :: rampl(:,:,:)
+  double precision,allocatable  :: lampl(:,:,:)
   double precision,allocatable  :: rp(:)
   double precision,allocatable  :: lp(:)
   
@@ -180,30 +181,31 @@ subroutine OORG0W0(dotest,doACFDT,exchange_kernel,doXBS,dophBSE,dophBSE2,TDA_W,T
 
   allocate(Aph(nS,nS),Bph(nS,nS),SigC(nOrb),Z(nOrb),Om(nS),XpY(nS,nS),XmY(nS,nS),rho(nOrb,nOrb,nS), & 
            eGW(nOrb),eGWlin(nOrb),X(nS,nS),X_inv(nS,nS),Y(nS,nS),Xbar(nS,nS),Xbar_inv(nS,nS),lambda(nS,nS),t(nS,nS),&
-           rampl(nS,N),lampl(nS,N),rp(N),lp(N),h(N,N),c(nBas,nOrb),&
+           xi(nS,nS),rampl(N,N,N),lampl(N,N,N),rp(N),lp(N),h(N,N),c(nBas,nOrb),&
            rdm1(N,N),rdm2(N,N,N,N),rdm1_hf(N,N),rdm2_hf(N,N,N,N),rdm1_rpa(N,N),rdm2_rpa(N,N,N,N),&
            J(nBas,nBas),K(nBas,nBas),F(nOrb,nOrb))
 
 ! Initialize variables for OO  
-  OOi           = 1
-  OOConv        = 1d0
-  c(:,:)        = cHF(:,:)
+  OOi               = 1
+  OOConv            = 1d0
+  c(:,:)            = cHF(:,:)
   rdm1(:,:)         = 0d0 
   rdm1_hf(:,:)      = 0d0 
   rdm1_rpa(:,:)     = 0d0 
   rdm2(:,:,:,:)     = 0d0
   rdm2_hf(:,:,:,:)  = 0d0
   rdm2_rpa(:,:,:,:) = 0d0
-  rampl(:,:)    = 0d0
-  lampl(:,:)    = 0d0
-  rp(:)         = 0d0
-  lp(:)         = 0d0
-  t(:,:)        = 0d0
-  lambda(:,:)   = 0d0
-  Emu           = ERHF
-  EcRPA_HF      = 0d0
-  eGW(:)        = eHF(:)
-  h(:,:)        = 0d0
+  rampl(:,:,:)      = 0d0
+  lampl(:,:,:)      = 0d0
+  rp(:)             = 0d0
+  lp(:)             = 0d0
+  t(:,:)            = 0d0
+  lambda(:,:)       = 0d0
+  xi(:,:)           = 0d0
+  Emu               = ERHF
+  EcRPA_HF          = 0d0
+  eGW(:)            = eHF(:)
+  h(:,:)            = 0d0
   
   ! Transform integrals (afterwards this is done in orbital optimization)
   call AOtoMO(nBas,nOrb,c,Hc,h)
@@ -251,10 +253,14 @@ subroutine OORG0W0(dotest,doACFDT,exchange_kernel,doXBS,dophBSE,dophBSE2,TDA_W,T
     lambda = matmul(Y,Xbar_inv)
 
     ! Calculate rdm1
-    call RG0W0_rdm1_rpa(O,V,N,nS,lampl,rampl,lp,rp,lambda,t,rdm1_rpa)
+   ! rdm1_rpa = 0d0
+   ! rdm2_rpa = 0d0
+   ! call RG0W0_rdm1_mu(O,V,N,nS,lampl,rampl,lp,rp,xi,lambda,t,rdm1_rpa)
+   ! call energy_from_rdm(N,h,ERI_MO,rdm1_rpa,rdm2_rpa,EHF_rdm,.true.)
+    call RG0W0_rdm1_rpa(O,V,N,nS,lambda,t,rdm1_rpa)
     rdm1 = rdm1_hf + rdm1_rpa
     ! Calculate rdm2
-    call RG0W0_rdm2_rpa(O,V,N,nS,lampl,rampl,lp,rp,lambda,t,rdm1_hf,rdm1_rpa,rdm2_rpa)
+    call RG0W0_rdm2_rpa(O,V,N,nS,lambda,t,rdm2_rpa)
     rdm2 = rdm2_hf + rdm2_rpa
     call energy_from_rdm(N,h,ERI_MO,rdm1_hf,rdm2_hf,EHF_rdm,.false.)
     if(dRPA) then
