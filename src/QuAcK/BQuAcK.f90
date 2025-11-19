@@ -162,23 +162,6 @@ subroutine BQuAcK(working_dir,dotest,doaordm,doRHFB,doBRPA,dophRPA,doG0W0,doqsGW
     write(*,'(A65,1X,F9.3,A8)') 'Total wall time for RHF = ',t_HF,' seconds'
     write(*,*)
     
-    ! An imaginary frequencies implementation of qsGW [ just coded for testing. It is expensive! ]
-    if(doqsGW .and. .false.) then
-
-      ! Continue with a HFB calculation
-      call wall_time(start_qsGWB)
-      call qsRGWim(dotest,maxSCF_GW,thresh_GW,max_diis_GW,level_shift,eta,shift,nNuc,ZNuc,rNuc,ENuc, &
-                   nBas,nOrb,nO,verbose,S,T,V,Hc,ERI_AO,dipole_int_AO,X,EeleSD,eHF,MOCoef,           &
-                   pMAT,Fock,nfreqs,ntimes,wcoord,wweight)
-      call wall_time(end_qsGWB)
-
-      t_qsGWB = end_qsGWB - start_qsGWB
-      write(*,*)
-      write(*,'(A65,1X,F9.3,A8)') 'Total wall time for qsGWB = ',t_qsGWB,' seconds'
-      write(*,*)
-
-    end if
-
     ! Compute G0W0 AND/OR EcRPA and EcGM energies for RHF and qsGW
     if(dophRPA .or. doG0W0) then
 
@@ -199,10 +182,6 @@ subroutine BQuAcK(working_dir,dotest,doaordm,doRHFB,doBRPA,dophRPA,doG0W0,doqsGW
      if(dophRPA) then
       call EcRPA_EcGM_w_RHF(nOrb,nO,1,eHF,nfreqs,ntimes,wweight,wcoord,vMAT,EeleSD+ENuc, &
                             EcRPA,EcGM)
-     endif
-     ! Test down-folded G0W0 matrix?
-     if(doG0W0) then
-      call dfRG0W0mat(nOrb,nO,eta,shift,eHF,vMAT,nfreqs,ntimes,wcoord,wweight)
      endif
      ! Test linearized-Dyson equation G ~ Go + Go Sigma_c Go -> Pcorr
      if(dolinGW .and. dophRPA) then
@@ -236,28 +215,6 @@ subroutine BQuAcK(working_dir,dotest,doaordm,doRHFB,doBRPA,dophRPA,doG0W0,doqsGW
 
   end if
 
-! TODO: find a way to define it!
-!------------------------!
-! qsGW Bogoliubov module !
-!------------------------!
-
-  if(doqsGW .and. .false.) then
-
-    ! Continue with a HFB calculation
-    call wall_time(start_qsGWB)
-    call qsRGWBim(dotest,maxSCF_GW,thresh_GW,max_diis_GW,level_shift,nNuc,ZNuc,rNuc,ENuc,eta,shift, &
-               nBas,nOrb,nOrb_twice,nO,verbose,S,T,V,Hc,ERI_AO,dipole_int_AO,X,Eelec,               & 
-               MOCoef,pMAT,panomMAT,Fock,Delta,sigma,chem_pot,U_QP,eQP_state,nfreqs,ntimes,         &
-               wcoord,wweight) 
-    call wall_time(end_qsGWB)
-
-    t_qsGWB = end_qsGWB - start_qsGWB
-    write(*,*)
-    write(*,'(A65,1X,F9.3,A8)') 'Total wall time for qsGWB = ',t_qsGWB,' seconds'
-    write(*,*)
-
-  end if
-
   ! Compute G0W0 AND/OR EcRPA and EcGM energies for qsGWB or HFB
   if(dophRPA .or. doG0W0) then
 
@@ -278,11 +235,6 @@ subroutine BQuAcK(working_dir,dotest,doaordm,doRHFB,doBRPA,dophRPA,doG0W0,doqsGW
    if(dophRPA) then
     call EcRPA_EcGM_w_RHFB(nOrb,nOrb_twice,1,eQP_state,nfreqs,ntimes,wweight,wcoord,vMAT, &
                            U_QP,Eelec+ENuc,EcRPA,EcGM)
-   endif
-   ! Test down-folded G0W0 Bogoliubov matrix?
-   if(doG0W0) then
-    call dfRG0W0Bmat(nBas,nO,nOrb,nOrb_twice,chem_pot,eta,shift,eQP_state,U_QP,vMAT,nfreqs,ntimes, &
-                     wcoord,wweight,sigma,S,T,V,Hc,MOCoef,pMAT,panomMAT,Delta,ERI_AO)
    endif
    ! Test linearized-Dyson equation G ~ Go + Go Sigma_c Go -> Pcorr and Panomcorr
    if(dolinGW .and. dophRPA) then
@@ -356,36 +308,3 @@ subroutine BQuAcK(working_dir,dotest,doaordm,doRHFB,doBRPA,dophRPA,doG0W0,doqsGW
   deallocate(ERI_AO)
 
 end subroutine
-
-!! Test linearized-Dyson equation G ~ Go + Go Sigma_c Go -> Pcorr [using the analytic Sigma = GW or GTpp]
-!if(dolinGW .and. dophRPA) then
-! allocate(pMATcorr(nBas,nBas))
-! chem_pot=0.5d0*(eHF(nO)+eHF(nO+1))
-! eHF(:) = eHF(:) - chem_pot
-! call linDyson_GW_analytic_Sig_RHF(nBas,nOrb,nO,MOCoef,eHF,nfreqs,wweight,wcoord,ERI_AO,ERI_MO,   &
-!      Enuc,EcGM,eta,T,V,S,pMAT,pMATcorr)
-! call linDyson_GTpp_analytic_Sig_RHF(nBas,nOrb,nO,MOCoef,eHF,nfreqs,wweight,wcoord,ERI_AO,ERI_MO, &
-!      Enuc,EcGM,eta,T,V,S,pMAT,pMATcorr)
-! eHF(:) = eHF(:) + chem_pot
-! deallocate(pMATcorr)
-!endif
-
-!call quadDyson_GW_RHF(nBas,nOrb,nO,MOCoef,eHF,nfreqs,wweight,wcoord,ERI_AO,vMAT, &
-!                    Enuc,EcGM,T,V,S,pMAT,pMATcorr)
-!call cubDyson_GW_RHF(nBas,nOrb,nO,MOCoef,eHF,nfreqs,wweight,wcoord,ERI_AO,vMAT, &
-!                    Enuc,EcGM,T,V,S,pMAT,pMATcorr)
-!call G_Dyson_GW_RHF(nBas,nOrb,nO,MOCoef,eHF,nfreqs,wweight,wcoord,ERI_AO,vMAT, &
-!                    Enuc,EcGM,T,V,S,pMATcorr)
-
-! Test EcGM computed from Sigma_c(iw) [ NOTE: This is really bad numerically and never used in practice. ]
-!call EcGM_w_RHF_Sigma(nOrb,nO,1,eHF,nfreqs,wweight,wcoord,vMAT,EeleSD+Enuc,EcGM)
-
-!call quadDyson_GW_RHFB(nBas,nOrb,nOrb_twice,MOCoef,eQP_state,nfreqs,wweight,wcoord,ERI_AO,vMAT,U_QP,&
-!                      Enuc,EcGM,sigma,T,V,S,pMAT,panomMAT,pMATcorr,panomMATcorr)
-!call cubDyson_GW_RHFB(nBas,nOrb,nOrb_twice,MOCoef,eQP_state,nfreqs,wweight,wcoord,ERI_AO,vMAT,U_QP,&
-!                      Enuc,EcGM,sigma,T,V,S,pMAT,panomMAT,pMATcorr,panomMATcorr)
-!call G_Dyson_GW_RHFB(nBas,nOrb,nOrb_twice,MOCoef,eQP_state,nfreqs,wweight,wcoord,ERI_AO,vMAT,U_QP,&
-!                     Enuc,EcGM,sigma,T,V,S,pMATcorr,panomMATcorr)
-
-! Test EcGM computed from Sigma_c(iw) [ NOTE: This is really bad numerically and never used in practice. ]
-!call EcGM_w_RHFB_Sigma(nOrb,nOrb_twice,1,eQP_state,nfreqs,wweight,wcoord,vMAT,U_QP,EeleSD+Enuc,EcGM)

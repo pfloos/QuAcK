@@ -87,7 +87,7 @@ subroutine build_Sigmac_w_RHFB(nOrb,nOrb_twice,nE,eta,verbose,wtest,eHFB,nfreqs,
 
    ! Xo (iw)
    if(ntimes>0) then
-    call Gitau2Chi0iw_mo_RHFB(nOrb,nOrb_twice,0,eHFB,ntimes,wcoord(ifreq),U_QP,Chi0_mo_w)
+    stop
    else
     call Xoiw_mo_RHFB(nOrb,nOrb_twice,eta,eHFB,im*wcoord(ifreq),Mat1,Mat2,Chi0_mo_w)
    endif
