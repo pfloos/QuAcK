@@ -108,13 +108,13 @@ subroutine G_Dyson_GW_RHF(nBas,nOrb,nO,c,eHF,nfreqs,wweight,wcoord,ERI,vMAT,&
   write(*,'(a)') ' Fixing the Tr[1D] at full-Dyson '
   write(*,*)
   write(*,*)'------------------------------------------------------'
-  write(*,'(1X,A1,1X,A15,1X,A1,1X,A15,1X,A1A15,2X,A1)') &
+  write(*,'(1X,A1,1X,A15,1X,A1,1X,A15,1X,A1,A15,2X,A1)') &
           '|','Tr[1D]','|','Chem. Pot.','|','Grad N','|'
   write(*,*)'------------------------------------------------------'
 
   call trace_1rdm_Gdyson(nOrb,nO,nfreqs2,chem_pot,trace_old,eHF,wcoord2_cpx,wweight2,&
                          Tmp_mo,Sigma_c,Pcorr_mo,Identity)
-  write(*,'(1X,A1,F16.10,1X,A1,F16.10,1X,A1F16.10,1X,A1)') &
+  write(*,'(1X,A1,F16.10,1X,A1,F16.10,1X,A1,F16.10,1X,A1)') &
   '|',trace_old,'|',chem_pot,'|',grad_electrons,'|'
   do while( abs(trace_old-2*nO) > thrs_closer .and. isteps <= 100 )
    isteps = isteps + 1
@@ -125,7 +125,7 @@ subroutine G_Dyson_GW_RHF(nBas,nOrb,nO,c,eHF,nfreqs,wweight,wcoord,ERI,vMAT,&
    call trace_1rdm_Gdyson(nOrb,nO,nfreqs2,chem_pot+delta_chem_pot,trace_up,eHF, &
                           wcoord2_cpx,wweight2,Tmp_mo,Sigma_c,Pcorr_mo,Identity)
    if( abs(trace_up-2*nO) > abs(trace_old-2*nO) .and. abs(trace_down-2*nO) > abs(trace_old-2*nO) ) then
-     write(*,'(1X,A1,F16.10,1X,A1,F16.10,1X,A1F16.10,1X,A1)') &
+     write(*,'(1X,A1,F16.10,1X,A1,F16.10,1X,A1,F16.10,1X,A1)') &
      '|',trace_old,'|',chem_pot,'|',grad_electrons,'|'
      delta_chem_pot = 0.75d0*delta_chem_pot
      thrs_closer = 0.5d0*thrs_closer
@@ -134,12 +134,12 @@ subroutine G_Dyson_GW_RHF(nBas,nOrb,nO,c,eHF,nfreqs,wweight,wcoord,ERI,vMAT,&
    else
      if( abs(trace_up-2*nO) < abs(trace_old-2*nO) ) then
       chem_pot=chem_pot+delta_chem_pot
-      write(*,'(1X,A1,F16.10,1X,A1,F16.10,1X,A1F16.10,1X,A1)') &
+      write(*,'(1X,A1,F16.10,1X,A1,F16.10,1X,A1,F16.10,1X,A1)') &
       '|',trace_up,'|',chem_pot,'|',grad_electrons,'|'
      else
       if( abs(trace_down-2*nO) < abs(trace_old-2*nO) ) then
        chem_pot=chem_pot-delta_chem_pot
-       write(*,'(1X,A1,F16.10,1X,A1,F16.10,1X,A1F16.10,1X,A1)') &
+       write(*,'(1X,A1,F16.10,1X,A1,F16.10,1X,A1,F16.10,1X,A1)') &
        '|',trace_down,'|',chem_pot,'|',grad_electrons,'|'
       endif
      endif
@@ -149,7 +149,7 @@ subroutine G_Dyson_GW_RHF(nBas,nOrb,nO,c,eHF,nfreqs,wweight,wcoord,ERI,vMAT,&
   ! Do  final search
 
   write(*,*)'------------------------------------------------------'
-  write(*,'(1X,A1,1X,A15,1X,A1,1X,A15,1X,A1A15,2X,A1)') &
+  write(*,'(1X,A1,1X,A15,1X,A1,1X,A15,1X,A1,A15,2X,A1)') &
           '|','Error Tr[1D]','|','Chem. Pot.','|','Grad N','|'
   write(*,*)'------------------------------------------------------'
   isteps = 0
@@ -177,17 +177,17 @@ subroutine G_Dyson_GW_RHF(nBas,nOrb,nO,c,eHF,nfreqs,wweight,wcoord,ERI,vMAT,&
    chem_pot_change = -trace_1rdm/(grad_electrons+1d-10)
    ! Maximum change is bounded within +/- 0.10
    chem_pot_change = max( min( chem_pot_change , 0.1d0 / real(isteps) ), -0.1d0 / real(isteps) )
-   write(*,'(1X,A1,F16.10,1X,A1,F16.10,1X,A1F16.10,1X,A1)') &
+   write(*,'(1X,A1,F16.10,1X,A1,F16.10,1X,A1,F16.10,1X,A1)') &
    '|',trace_1rdm,'|',chem_pot,'|',grad_electrons,'|'
   enddo
   write(*,*)'------------------------------------------------------'
-  write(*,'(1X,A1,1X,A15,1X,A1,1X,A15,1X,A1A15,2X,A1)') &
+  write(*,'(1X,A1,1X,A15,1X,A1,1X,A15,1X,A1,A15,2X,A1)') &
           '|','Tr[1D]','|','Chem. Pot.','|','Grad N','|'
   write(*,*)'------------------------------------------------------'
   call trace_1rdm_Gdyson(nOrb,nO,nfreqs2,chem_pot,trace_1rdm,eHF,wcoord2_cpx,wweight2,&
                          Tmp_mo,Sigma_c,Pcorr_mo,Identity)
 
-  write(*,'(1X,A1,F16.10,1X,A1,F16.10,1X,A1F16.10,1X,A1)') &
+  write(*,'(1X,A1,F16.10,1X,A1,F16.10,1X,A1,F16.10,1X,A1)') &
   '|',trace_1rdm,'|',chem_pot,'|',grad_electrons,'|'
   write(*,*)'------------------------------------------------------'
   write(*,*)

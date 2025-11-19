@@ -387,11 +387,11 @@ subroutine RHFB(dotest,doaordm,maxSCF,thresh,max_diis,error_P,nNuc,ZNuc,rNuc,ENu
 
     ! Dump results
     write(*,*)'-------------------------------------------------------------------------------------------------'
-    write(*,'(1X,A1,1X,A4,1X,A1,1X,A16,1X,A1,1X,A16,1X,A1,1X,A16,1X,A1A16,1X,A1,1X,A10,2X,A1,1X)') &
+    write(*,'(1X,A1,1X,A4,1X,A1,1X,A16,1X,A1,1X,A16,1X,A1,1X,A16,1X,A1,A16,1X,A1,1X,A10,2X,A1,1X)') &
             '|','#','|','E(HFB)','|','EJ(HFB)','|','EK(HFB)','|','EL(HFB)','|','Conv','|'
     write(*,*)'-------------------------------------------------------------------------------------------------'
 
-    write(*,'(1X,A1,1X,I4,1X,A1,1X,F16.10,1X,A1,1X,F16.10,1X,A1,1X,F16.10,1X,A1,1XF16.10,1X,A1,1X,E10.2,1X,A1,1X)') &
+    write(*,'(1X,A1,1X,I4,1X,A1,1X,F16.10,1X,A1,1X,F16.10,1X,A1,1X,F16.10,1X,A1,1X,F16.10,1X,A1,1X,E10.2,1X,A1,1X)') &
       '|',nSCF,'|',EHFB + ENuc,'|',EJ,'|',EK,'|',EL,'|',Conv,'|'
 
     write(*,*)'-------------------------------------------------------------------------------------------------'
@@ -477,8 +477,8 @@ subroutine RHFB(dotest,doaordm,maxSCF,thresh,max_diis,error_P,nNuc,ZNuc,rNuc,ENu
   call dipole_moment(nBas,P,nNuc,ZNuc,rNuc,dipole_int,dipole)
   eHFB_state(:) = eigVAL(:)
   Delta_HL=eHFB_state(nOrb+1)-eHFB_state(nOrb)
-  N_anom = trace_matrix(nOrb,matmul(transpose(2d0*R(1:nOrb,nOrb+1:nOrb_twice)), &
-              2d0*R(1:nOrb,nOrb+1:nOrb_twice)))
+  N_anom = trace_matrix(nBas,matmul(transpose(R_ao(1:nBas,nBas+1:nBas_twice)), &
+              R_ao(1:nBas,nBas+1:nBas_twice)))
   deallocate(eigVEC,eigVAL)
   allocate(eigVEC(nOrb,nOrb),eigVAL(nOrb))
   eigVEC(:,:) = 0d0

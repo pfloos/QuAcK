@@ -315,7 +315,7 @@ subroutine BQuAcK(working_dir,dotest,doaordm,doRHFB,doBRPA,dophRPA,doG0W0,doqsGW
    enddo
    no_fock=.false.
    verbose_scGW=.false.
-   call scGWBitauiw_ao(nBas,nOrb,nOrb_twice,maxSCF,max_diis,dolinGW,restart_scGW,verbose_scGW,no_fock,ENuc,Hc,S,X, &
+   call scGWBitauiw_ao(nBas,nOrb,nOrb_twice,maxSCF_GW,max_diis_GW,dolinGW,restart_scGW,verbose_scGW,no_fock,ENuc,Hc,S,X, &
                        pMAT,panomMAT,MOCoef,eQP_state,chem_pot,sigma,nfreqs,wcoord,wweight,U_QP,vMAT,ERI_AO)
    deallocate(vMAT)
   endif
