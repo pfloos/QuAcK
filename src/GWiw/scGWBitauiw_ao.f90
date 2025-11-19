@@ -33,6 +33,7 @@ subroutine scGWBitauiw_ao(nBas,nOrb,nOrb_twice,maxSCF,maxDIIS,dolinGW,restart_sc
 ! Local variables
 
   logical                       :: file_exists
+  logical                       :: read_HFB_chkp
 
   integer                       :: ifreq,itau
   integer                       :: ibas,jbas,kbas,lbas,mbas,obas,pbas,qbas
@@ -341,6 +342,16 @@ subroutine scGWBitauiw_ao(nBas,nOrb,nOrb_twice,maxSCF,maxDIIS,dolinGW,restart_sc
  write(*,'(a,*(f20.8))') ' Sum error ',sum_error_gw2gt
  write(*,'(a,f20.8,a,2f20.8,a)') ' Max CAE   ',max_error_gw2gt,' is in the time +/-',0d0,tcoord(imax_error_gw2gt),'i'
  write(*,'(a,*(f20.8))') ' MAE       ',sum_error_gw2gt/(2*ntimes*nBas_twice*nBas_twice)
+
+ ! If required, read restart files
+ if(restart_scGWB) then
+  inquire(file='read_HFB_scGWB', exist=file_exists)
+  read_HFB_chkp=.false.
+  if(file_exists) read_HFB_chkp=.true.
+  call read_scGWB_restart(nBas_twice,nfreqs,ntimes_twice,chem_pot,R_ao,R_ao_hfb,G_ao_iw_hfb,G_ao_itau,G_ao_itau_hfb,read_HFB_chkp)
+  R_ao_iter=R_ao
+  G_ao_itau_old(:,:,:)=G_ao_itau(:,:,:)
+ endif
 
 !------------!
 ! scGWB loop !
