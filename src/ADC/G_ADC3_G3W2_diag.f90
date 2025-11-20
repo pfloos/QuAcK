@@ -61,9 +61,9 @@ subroutine G_ADC3_G3W2_diag(dotest,TDA_W,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,EGHF,ERI,
 ! Hello world
 
   write(*,*)
-  write(*,*)'**************************************'
-  write(*,*)'* Restricted ADC(3)-G3W2 Calculation *'
-  write(*,*)'**************************************'
+  write(*,*)'***************************************'
+  write(*,*)'* Generalized ADC(3)-G3W2 Calculation *'
+  write(*,*)'***************************************'
   write(*,*)
 
 ! Diagonal approximation
@@ -158,13 +158,13 @@ subroutine G_ADC3_G3W2_diag(dotest,TDA_W,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,EGHF,ERI,
         do k=nC+1,nO
           do c=nO+1,nOrb-nR
 
-            num = ERI(p,c,k,i)*rho(k,c,mu)
+            num = rho(k,c,mu)*ERI(i,k,p,c)
             dem = eHF(c) - eHF(k) - Om(mu)
 
             H(1    ,1+ija) = H(1    ,1+ija) + num*dem/(dem**2 + eta**2)
             H(1+ija,1    ) = H(1+ija,1    ) + num*dem/(dem**2 + eta**2)
 
-            num = ERI(p,k,c,i)*rho(c,k,mu)
+            num = rho(c,k,mu)*ERI(i,c,p,k)
             dem = eHF(c) - eHF(k) + Om(mu)
 
             H(1    ,1+ija) = H(1    ,1+ija) + num*dem/(dem**2 + eta**2)
@@ -196,13 +196,13 @@ subroutine G_ADC3_G3W2_diag(dotest,TDA_W,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,EGHF,ERI,
         do k=nC+1,nO
           do c=nO+1,nOrb-nR
 
-            num = ERI(p,k,c,a)*rho(c,k,mu)
+            num = rho(k,c,mu)*ERI(a,c,p,k)
             dem = eHF(c) - eHF(k) - Om(mu)
 
             H(1    ,1+n2h1p+iab) = H(1    ,1+n2h1p+iab) + num*dem/(dem**2 + eta**2)
             H(1+n2h1p+iab,1    ) = H(1+n2h1p+iab,1    ) + num*dem/(dem**2 + eta**2)
 
-            num = ERI(p,c,k,a)*rho(k,c,mu)
+            num = rho(c,k,mu)*ERI(a,k,p,c)
             dem = eHF(c) - eHF(k) + Om(mu)
 
             H(1    ,1+n2h1p+iab) = H(1    ,1+n2h1p+iab) + num*dem/(dem**2 + eta**2)
