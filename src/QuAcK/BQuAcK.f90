@@ -240,7 +240,7 @@ subroutine BQuAcK(working_dir,dotest,doaordm,doRHFB,doBRPA,dophRPA,doG0W0,doqsGW
    if(dolinGW .and. dophRPA) then
     allocate(pMATcorr(nBas,nBas),panomMATcorr(nBas,nBas))
     call linDyson_GW_RHFB(nBas,nOrb,nOrb_twice,MOCoef,eQP_state,nfreqs,wweight,wcoord,ERI_AO,vMAT,U_QP,&
-                          Enuc,EcGM,sigma,T,V,S,pMAT,panomMAT,pMATcorr,panomMATcorr)
+                          Enuc,EcGM,sigma,T,V,S,X,pMAT,panomMAT,pMATcorr,panomMATcorr)
     deallocate(pMATcorr,panomMATcorr)
    endif
    deallocate(vMAT)

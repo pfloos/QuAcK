@@ -816,6 +816,11 @@ subroutine scGWBitauiw_ao(nBas,nOrb,nOrb_twice,maxSCF,maxDIIS,dolinGW,restart_sc
  call write_scGWB_restart(nBas_twice,ntimes,ntimes_twice,nfreqs,chem_pot,R_ao,R_ao_hfb,G_ao_itau,G_ao_itau_hfb, &
                          G_ao_iw_hfb,DeltaG_ao_iw)
 
+!    write(*,*) 'R_scGWB_ao iter '
+!    do ibas=1,nBas_twice
+!     write(*,'(*(f10.5))') R_ao(ibas,:)
+!    enddo
+
  ! Using the correlated G and Sigma_c to test the linearized density matrix approximation
  if(dolinGW) then
   write(*,*)
