@@ -157,7 +157,7 @@ subroutine linDyson_GW_RHFB(nBas,nOrb,nOrb_twice,c,eQP_state,nfreqs,wweight,wcoo
   R_ao(nBas+1:nBas_twice,nBas+1:nBas_twice)=matmul(X(1:nBas,1:nOrb), transpose(X(1:nBas,1:nOrb)))-0.5d0*Pcorr(1:nBas,1:nBas)
   inquire(file='Print_Rao', exist=file_exists)
   if(file_exists) then
-   write(*,*) 'R_linGWB_ao iter '
+   write(*,*) 'R_linGWB_ao'
    do ibas=1,nBas_twice
     write(*,'(*(f10.5))') R_ao(ibas,:)
    enddo

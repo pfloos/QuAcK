@@ -818,7 +818,7 @@ subroutine scGWBitauiw_ao(nBas,nOrb,nOrb_twice,maxSCF,maxDIIS,dolinGW,restart_sc
 
  inquire(file='Print_Rao', exist=file_exists)
  if(file_exists) then
-  write(*,*) 'R_scGWB_ao iter '
+  write(*,*) 'R_scGWB_ao'
   do ibas=1,nBas_twice
    write(*,'(*(f10.5))') R_ao(ibas,:)
   enddo
