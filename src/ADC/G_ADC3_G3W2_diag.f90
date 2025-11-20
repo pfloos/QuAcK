@@ -239,12 +239,12 @@ subroutine G_ADC3_G3W2_diag(dotest,TDA_W,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,EGHF,ERI,
               num = 0.5d0*rho(k,r,mu)*rho(i,r,nu)
               dem = eHF(i) - eHF(r) + Om(nu)
 
-              H(1+ija,1+klc) = H(1+ija,1+klc) + num*dem/(dem**2 + eta**2)
+!             H(1+ija,1+klc) = H(1+ija,1+klc) + num*dem/(dem**2 + eta**2)
 
               num = 0.5d0*rho(k,r,mu)*rho(i,r,nu)
               dem = eHF(k) - eHF(r) + Om(mu)
 
-              H(1+ija,1+klc) = H(1+ija,1+klc) + num*dem/(dem**2 + eta**2)
+!             H(1+ija,1+klc) = H(1+ija,1+klc) + num*dem/(dem**2 + eta**2)
 
             end do
   
@@ -279,12 +279,12 @@ subroutine G_ADC3_G3W2_diag(dotest,TDA_W,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,EGHF,ERI,
               num = 0.5d0*rho(r,c,mu)*rho(r,a,nu)
               dem = eHF(c) - eHF(r) - Om(mu)
 
-              H(1+n2h1p+iab,1+n2h1p+kcd) = H(1+n2h1p+iab,1+n2h1p+kcd) + num*dem/(dem**2 + eta**2)
+!             H(1+n2h1p+iab,1+n2h1p+kcd) = H(1+n2h1p+iab,1+n2h1p+kcd) + num*dem/(dem**2 + eta**2)
               
               num = 0.5d0*rho(r,c,mu)*rho(r,a,nu)
               dem = eHF(a) - eHF(r) - Om(nu)
 
-              H(1+n2h1p+iab,1+n2h1p+kcd) = H(1+n2h1p+iab,1+n2h1p+kcd) + num*dem/(dem**2 + eta**2)
+!             H(1+n2h1p+iab,1+n2h1p+kcd) = H(1+n2h1p+iab,1+n2h1p+kcd) + num*dem/(dem**2 + eta**2)
 
             end do
  
@@ -315,9 +315,9 @@ subroutine G_ADC3_G3W2_diag(dotest,TDA_W,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,EGHF,ERI,
               num = 1d0*rho(k,i,nu)*rho(a,k,mu)
               dem = eHF(a) - eHF(k) + Om(nu)
 
-              H(1+ija      ,1+n2h1p+kcd) = H(1+ija      ,1+n2h1p+kcd) + num*dem/(dem**2 + eta**2)
+!             H(1+ija      ,1+n2h1p+kcd) = H(1+ija      ,1+n2h1p+kcd) + num*dem/(dem**2 + eta**2)
 
-              H(1+n2h1p+kcd,1+ija      ) = H(1+n2h1p+kcd,1+ija      ) + num*dem/(dem**2 + eta**2)
+!             H(1+n2h1p+kcd,1+ija      ) = H(1+n2h1p+kcd,1+ija      ) + num*dem/(dem**2 + eta**2)
 
             end do
 
@@ -326,9 +326,9 @@ subroutine G_ADC3_G3W2_diag(dotest,TDA_W,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,EGHF,ERI,
               num = 1d0*rho(a,c,nu)*rho(c,i,mu)
               dem = eHF(i) - eHF(c) - Om(mu)
 
-              H(1+ija      ,1+n2h1p+kcd) = H(1+ija      ,1+n2h1p+kcd) + num*dem/(dem**2 + eta**2)
+!             H(1+ija      ,1+n2h1p+kcd) = H(1+ija      ,1+n2h1p+kcd) + num*dem/(dem**2 + eta**2)
 
-              H(1+n2h1p+kcd,1+ija      ) = H(1+n2h1p+kcd,1+ija      ) + num*dem/(dem**2 + eta**2)
+!             H(1+n2h1p+kcd,1+ija      ) = H(1+n2h1p+kcd,1+ija      ) + num*dem/(dem**2 + eta**2)
 
             end do
 
