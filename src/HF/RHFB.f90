@@ -384,10 +384,13 @@ subroutine RHFB(dotest,doaordm,maxSCF,thresh,max_diis,error_P,nNuc,ZNuc,rNuc,ENu
 !    do iorb=1,nBas_twice
 !     write(*,'(*(f10.5))') H_HFB_ao(iorb,:)
 !    enddo
-!    write(*,*) 'R_hfb_ao iter ',nSCF
-!    do iorb=1,nBas_twice
-!     write(*,'(*(f10.5))') R_ao(iorb,:)
-!    enddo
+    inquire(file='Print_Rao', exist=file_exists)
+    if(file_exists) then
+     write(*,*) 'R_hfb_ao iter ',nSCF
+     do iorb=1,nBas_twice
+      write(*,'(*(f10.5))') R_ao(iorb,:)
+     enddo
+    endif
 
     ! Dump results
     write(*,*)'-------------------------------------------------------------------------------------------------'
