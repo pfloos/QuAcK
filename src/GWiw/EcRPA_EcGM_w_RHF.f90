@@ -55,7 +55,7 @@ subroutine EcRPA_EcGM_w_RHF(nOrb,nO,verbose,eHF,nfreqs,ntimes,wweight,wcoord,vMA
 
    ! Xo (iw)
    if(ntimes>0) then
-    call Gitau2Chi0iw_mo_RHF(nOrb,nO,0,eHF,ntimes,wcoord(ifreq),Chi0_mo_w)
+    stop
    else
     eta=0d0
     call Xoiw_mo_RHF(nOrb,nO,eta,eHF,im*wcoord(ifreq),Chi0_mo_w)
