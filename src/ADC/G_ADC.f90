@@ -117,7 +117,7 @@ subroutine G_ADC(dotest,                                               &
     if(do_IPEA_ADC3) then
 
       ! call wall_time(start_ADC)
-      ! call G_IPEA_ADC3(dotest,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,ERHF,ERI_MO,eHF)
+      ! call G_IPEA_ADC3(dotest,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,EGHF,ERI_MO,eHF)
       ! call wall_time(end_ADC)
 
       ! t_ADC = end_ADC - start_ADC
@@ -133,7 +133,7 @@ subroutine G_ADC(dotest,                                               &
     if(do_IP_ADC2) then 
       
       ! call wall_time(start_ADC)
-      ! call G_IP_ADC2(dotest,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,ERHF,ERI_MO,eHF)
+      ! call G_IP_ADC2(dotest,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,EGHF,ERI_MO,eHF)
       ! call wall_time(end_ADC)
     
       ! t_ADC = end_ADC - start_ADC
@@ -149,7 +149,7 @@ subroutine G_ADC(dotest,                                               &
     if(do_SOSEX) then 
       
       ! call wall_time(start_ADC)
-      ! call G_SOSEX(dotest,TDA_W,singlet,triplet,linearize,eta,doSRG,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,ERHF,ERI_MO,dipole_int_MO,eHF)
+      ! call G_SOSEX(dotest,TDA_W,singlet,triplet,linearize,eta,doSRG,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,EGHF,ERI_MO,dipole_int_MO,eHF)
       ! call wall_time(end_ADC)
     
       ! t_ADC = end_ADC - start_ADC
@@ -165,7 +165,7 @@ subroutine G_ADC(dotest,                                               &
     if(do_2SOSEX) then 
       
       ! call wall_time(start_ADC)
-      ! call G_2SOSEX(dotest,TDA_W,singlet,triplet,linearize,eta,doSRG,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,ERHF,ERI_MO,dipole_int_MO,eHF)
+      ! call G_2SOSEX(dotest,TDA_W,singlet,triplet,linearize,eta,doSRG,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,EGHF,ERI_MO,dipole_int_MO,eHF)
       ! call wall_time(end_ADC)
     
       ! t_ADC = end_ADC - start_ADC
@@ -181,7 +181,7 @@ subroutine G_ADC(dotest,                                               &
     if(do_G3W2) then 
       
       ! call wall_time(start_ADC)
-      ! call G_G3W2(dotest,TDA_W,singlet,triplet,linearize,eta,doSRG,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,ERHF,ERI_MO,dipole_int_MO,eHF)
+      ! call G_G3W2(dotest,TDA_W,singlet,triplet,linearize,eta,doSRG,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,EGHF,ERI_MO,dipole_int_MO,eHF)
       ! call wall_time(end_ADC)
     
       ! t_ADC = end_ADC - start_ADC
@@ -197,7 +197,7 @@ subroutine G_ADC(dotest,                                               &
     if(do_ADC_GW) then 
       
       ! call wall_time(start_ADC)
-      ! call G_ADC_GW(dotest,TDA_W,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,ERHF,ERI_MO,eHF)
+      ! call G_ADC_GW(dotest,TDA_W,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,EGHF,ERI_MO,eHF)
       ! call wall_time(end_ADC)
     
       ! t_ADC = end_ADC - start_ADC
@@ -231,13 +231,16 @@ subroutine G_ADC(dotest,                                               &
 
     if(do_ADC3_G3W2) then 
       
-      ! call wall_time(start_ADC)
-      ! call G_ADC3_G3W2(dotest,TDA_W,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,ERHF,ERI_MO,eHF)
-      ! call wall_time(end_ADC)
+        call wall_time(start_ADC)
+        if(diag_approx) then
+          call G_ADC3_G3W2_diag(dotest,TDA_W,nBas,nBas2,nC,nO,nV,nR,nS,ENuc,EGHF,ERI_MO,eHF)
+        else
+        end if
+        call wall_time(end_ADC)
     
-      ! t_ADC = end_ADC - start_ADC
-      ! write(*,'(A65,1X,F9.3,A8)') 'Total wall time for ADC(3)-G3W2 = ',t_ADC,' seconds'
-      ! write(*,*)
+        t_ADC = end_ADC - start_ADC
+        write(*,'(A65,1X,F9.3,A8)') 'Total wall time for ADC(3)-G3W2 = ',t_ADC,' seconds'
+        write(*,*)
  
     end if
 
@@ -248,7 +251,7 @@ subroutine G_ADC(dotest,                                               &
     if(do_ADC4_G3W2) then 
       
       ! call wall_time(start_ADC)
-      ! call G_ADC4_G3W2(dotest,TDA_W,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,ERHF,ERI_MO,eHF)
+      ! call G_ADC4_G3W2(dotest,TDA_W,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,EGHF,ERI_MO,eHF)
       ! call wall_time(end_ADC)
     
       ! t_ADC = end_ADC - start_ADC
