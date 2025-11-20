@@ -1,6 +1,3 @@
-
-! ---
-
 subroutine RCI(dotest, doCIS, doCIS_D, doCID, doCISD, doFCI, singlet, triplet, nOrb, &
                nC, nO, nV, nR, nS, ERI, dipole_int, epsHF, EHF)
 

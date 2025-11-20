@@ -117,6 +117,6 @@ subroutine RCIS(dotest,singlet,triplet,doCIS_D,nBas,nC,nO,nV,nR,nS,ERI,dipole_in
 
   end if
 
-  deallocate(A, Om)
+  deallocate(A,Om)
 
 end subroutine 
