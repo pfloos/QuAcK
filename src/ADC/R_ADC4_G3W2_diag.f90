@@ -233,12 +233,12 @@ subroutine R_ADC4_G3W2_diag(dotest,TDA_W,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,
             do c=nO+1,nOrb-nR
  
               H(1    ,1+ija) = H(1    ,1+ija) &
-                             + sqrt(2d0)*rho(k,c,mu)*ERI(i,k,p,c)/(eHF(c) - eHF(k) - Om(mu)) &
-                             + sqrt(2d0)*rho(c,k,mu)*ERI(i,c,p,k)/(eHF(c) - eHF(k) + Om(mu))
+                             + sqrt(2d0)*rho(k,c,mu)*ERI(i,k,c,p)/(eHF(c) - eHF(k) - Om(mu)) &
+                             + sqrt(2d0)*rho(c,k,mu)*ERI(i,c,k,p)/(eHF(c) - eHF(k) + Om(mu))
  
               H(1+ija,1    ) = H(1+ija,1    ) & 
-                             + sqrt(2d0)*rho(k,c,mu)*ERI(i,k,p,c)/(eHF(c) - eHF(k) - Om(mu)) &
-                             + sqrt(2d0)*rho(c,k,mu)*ERI(i,c,p,k)/(eHF(c) - eHF(k) + Om(mu))
+                             + sqrt(2d0)*rho(k,c,mu)*ERI(i,k,c,p)/(eHF(c) - eHF(k) - Om(mu)) &
+                             + sqrt(2d0)*rho(c,k,mu)*ERI(i,c,k,p)/(eHF(c) - eHF(k) + Om(mu))
  
             end do
           end do
@@ -313,12 +313,12 @@ subroutine R_ADC4_G3W2_diag(dotest,TDA_W,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,
             do c=nO+1,nOrb-nR
  
               H(1          ,1+n2h1p+iab) = H(1          ,1+n2h1p+iab) &
-                                         + sqrt(2d0)*rho(k,c,mu)*ERI(a,c,p,k)/(eHF(c) - eHF(k) - Om(mu)) &
-                                         + sqrt(2d0)*rho(c,k,mu)*ERI(a,k,p,c)/(eHF(c) - eHF(k) + Om(mu))
+                                         + sqrt(2d0)*rho(k,c,mu)*ERI(a,c,k,p)/(eHF(c) - eHF(k) - Om(mu)) &
+                                         + sqrt(2d0)*rho(c,k,mu)*ERI(a,k,c,p)/(eHF(c) - eHF(k) + Om(mu))
  
               H(1+n2h1p+iab,1          ) = H(1+n2h1p+iab,1          ) &
-                                         + sqrt(2d0)*rho(k,c,mu)*ERI(a,c,p,k)/(eHF(c) - eHF(k) - Om(mu)) &
-                                         + sqrt(2d0)*rho(c,k,mu)*ERI(a,k,p,c)/(eHF(c) - eHF(k) + Om(mu))
+                                         + sqrt(2d0)*rho(k,c,mu)*ERI(a,c,k,p)/(eHF(c) - eHF(k) - Om(mu)) &
+                                         + sqrt(2d0)*rho(c,k,mu)*ERI(a,k,c,p)/(eHF(c) - eHF(k) + Om(mu))
  
             end do
           end do

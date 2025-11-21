@@ -1,6 +1,6 @@
-subroutine R_ADC3_G3W2_diag(dotest,TDA_W,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,eHF)
+subroutine G_ADC_2SOSEX_diag(dotest,TDA_W,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,EGHF,ERI,eHF)
 
-! ADC version of G3W2 up to 2h1p/2p1h within the diagonal approximation
+! Generalized ADC version of 2SOSEX within the diagonal approximation
 
   implicit none
   include 'parameters.h'
@@ -18,13 +18,14 @@ subroutine R_ADC3_G3W2_diag(dotest,TDA_W,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,
   integer,intent(in)            :: nR
   integer,intent(in)            :: nS
   double precision,intent(in)   :: ENuc
-  double precision,intent(in)   :: ERHF
+  double precision,intent(in)   :: EGHF
   double precision,intent(in)   :: ERI(nOrb,nOrb,nOrb,nOrb)
   double precision,intent(in)   :: eHF(nOrb)
 
 ! Local variables
 
-  integer                       :: p,q,r,s
+  integer                       :: p
+  integer                       :: s
   integer                       :: i,j,k,l
   integer                       :: a,b,c,d
   integer                       :: jb,kc,ia,ja
@@ -63,7 +64,7 @@ subroutine R_ADC3_G3W2_diag(dotest,TDA_W,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,
 
   write(*,*)
   write(*,*)'**************************************'
-  write(*,*)'* Restricted ADC(3)-G3W2 Calculation *'
+  write(*,*)'* Generalized ADC-2SOSEX Calculation *'
   write(*,*)'**************************************'
   write(*,*)
 
@@ -92,26 +93,22 @@ subroutine R_ADC3_G3W2_diag(dotest,TDA_W,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,
 ! Compute screening !
 !-------------------!
 
-  ! Spin manifold 
- 
-  isp_W = 1
-
   ! Memory allocation
 
   allocate(Om(nS),Aph(nS,nS),Bph(nS,nS),XpY(nS,nS),XmY(nS,nS),rho(nOrb,nOrb,nS))
  
-  call phRLR_A(isp_W,dRPA,nOrb,nC,nO,nV,nR,nS,1d0,eHF,ERI,Aph)
-  call phRLR_B(isp_W,dRPA,nOrb,nC,nO,nV,nR,nS,1d0,ERI,Bph)
+  call phGLR_A(dRPA,nOrb,nC,nO,nV,nR,nS,1d0,eHF,ERI,Aph)
+  call phGLR_B(dRPA,nOrb,nC,nO,nV,nR,nS,1d0,ERI,Bph)
  
-  call phRLR(TDA_W,nS,Aph,Bph,EcRPA,Om,XpY,XmY)
+  call phGLR(TDA_W,nS,Aph,Bph,EcRPA,Om,XpY,XmY)
 
-  if(print_W) call print_excitation_energies('phRPA@RHF','singlet',nS,Om)
+  if(print_W) call print_excitation_energies('phRPA@GHF','generalized',nS,Om)
  
   !--------------------------!
   ! Compute spectral weights !
   !--------------------------!
  
-  call RGW_excitation_density(nOrb,nC,nO,nR,nS,ERI,XpY,rho)
+  call GGW_excitation_density(nOrb,nC,nO,nR,nS,ERI,XpY,rho)
 
   deallocate(Aph,Bph,XpY,XmY)
 
@@ -122,18 +119,18 @@ subroutine R_ADC3_G3W2_diag(dotest,TDA_W,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,
   do p=nO,nO
 
     H(:,:) = 0d0
- 
-    !-------------------------------------------------!
-    !     Compute ADC-G3W2 matrix up to 2h1p/2p1h     !
-    !-------------------------------------------------!
-    !                                                 !
-    !     | F      U_2h1p          U_2p1h           | ! 
-    !     |                                         | ! 
-    ! H = | U_2h1p (K+C)_2h1p-2h1p C_2p1h-2h1p      | ! 
-    !     |                                         | ! 
-    !     | U_2p1  C_2h1p-2p1h     (K+C)_2p1h-2p1h  | ! 
-    !                                                 !
-    !-------------------------------------------------!
+
+    !--------------------------------------!
+    !     Compute ADC-2SOSEX matrix        !
+    !--------------------------------------!
+    !                                      !
+    !     | F      U_2h1p     U_2p1h     | ! 
+    !     |                              | ! 
+    ! H = | U_2h1p (K+C)_2h1p 0          | ! 
+    !     |                              | ! 
+    !     | U_2p1h 0          (K+C)_2p1h | ! 
+    !                                      !
+    !--------------------------------------!
 
     call wall_time(start_timing)
 
@@ -152,24 +149,19 @@ subroutine R_ADC3_G3W2_diag(dotest,TDA_W,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,
       do mu=1,nS
         ija = ija + 1
  
-        ! First-order terms
-
-        H(1    ,1+ija) = sqrt(2d0)*rho(p,i,mu)
-
-        H(1+ija,1    ) = sqrt(2d0)*rho(p,i,mu)
-
-        ! Second-order terms
+        H(1    ,1+ija) = rho(p,i,mu)
+        H(1+ija,1    ) = rho(p,i,mu)
 
         do k=nC+1,nO
           do c=nO+1,nOrb-nR
 
-            num = rho(k,c,mu)*ERI(i,k,c,p)
+            num = ERI(p,c,k,i)*rho(k,c,mu)
             dem = eHF(c) - eHF(k) - Om(mu)
 
             H(1    ,1+ija) = H(1    ,1+ija) + num*dem/(dem**2 + eta**2)
             H(1+ija,1    ) = H(1+ija,1    ) + num*dem/(dem**2 + eta**2)
 
-            num = rho(c,k,mu)*ERI(i,c,k,p)
+            num = ERI(p,k,c,i)*rho(c,k,mu)
             dem = eHF(c) - eHF(k) + Om(mu)
 
             H(1    ,1+ija) = H(1    ,1+ija) + num*dem/(dem**2 + eta**2)
@@ -190,24 +182,19 @@ subroutine R_ADC3_G3W2_diag(dotest,TDA_W,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,
       do mu=1,nS
         iab = iab + 1
  
-        ! First-order terms
-
-        H(1          ,1+n2h1p+iab) = sqrt(2d0)*rho(a,p,mu)
-
-        H(1+n2h1p+iab,1          ) = sqrt(2d0)*rho(a,p,mu)
+        H(1          ,1+n2h1p+iab) = rho(p,a,mu)
+        H(1+n2h1p+iab,1          ) = rho(p,a,mu)
  
-        ! Second-order terms
-
         do k=nC+1,nO
           do c=nO+1,nOrb-nR
 
-            num = rho(k,c,mu)*ERI(a,c,k,p)
+            num = ERI(p,k,c,a)*rho(c,k,mu)
             dem = eHF(c) - eHF(k) - Om(mu)
 
             H(1    ,1+n2h1p+iab) = H(1    ,1+n2h1p+iab) + num*dem/(dem**2 + eta**2)
             H(1+n2h1p+iab,1    ) = H(1+n2h1p+iab,1    ) + num*dem/(dem**2 + eta**2)
 
-            num = rho(c,k,mu)*ERI(a,k,c,p)
+            num = ERI(p,c,k,a)*rho(k,c,mu)
             dem = eHF(c) - eHF(k) + Om(mu)
 
             H(1    ,1+n2h1p+iab) = H(1    ,1+n2h1p+iab) + num*dem/(dem**2 + eta**2)
@@ -219,125 +206,31 @@ subroutine R_ADC3_G3W2_diag(dotest,TDA_W,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,
       end do
     end do
 
-    !-----------------------!
-    ! Block (K+C)_2h1p-2h1p !
-    !-----------------------!
+    !------------------!
+    ! Block (K+C)_2h1p !
+    !------------------!
  
     ija = 0
     do i=nC+1,nO
       do mu=1,nS
         ija = ija + 1
  
-        ! Zeroth-order terms
-   
         H(1+ija,1+ija) = eHF(i) - Om(mu) 
 
-        ! First-order terms
-
-        klc = 0
-        do k=nC+1,nO
-          do nu=1,nS
-            klc = klc + 1
-       
-            do r=nC+1,nOrb-nR
-
-              num = 0.5d0*rho(k,r,mu)*rho(i,r,nu)
-              dem = eHF(i) - eHF(r) + Om(nu)
-
-              H(1+ija,1+klc) = H(1+ija,1+klc) + num*dem/(dem**2 + eta**2)
-
-              num = 0.5d0*rho(k,r,mu)*rho(i,r,nu)
-              dem = eHF(k) - eHF(r) + Om(mu)
-
-              H(1+ija,1+klc) = H(1+ija,1+klc) + num*dem/(dem**2 + eta**2)
-
-            end do
-  
-          end do
-        end do
- 
       end do
     end do
 
-    !-----------------------!
-    ! Block (K+C)_2p1h-2p1h !
-    !-----------------------!
+    !------------------!
+    ! Block (K+C)_2p1h !
+    !------------------!
  
     iab = 0
     do a=nO+1,nOrb-nR
       do mu=1,nS
         iab = iab + 1
  
-        ! Zeroth-order terms
-
         H(1+n2h1p+iab,1+n2h1p+iab) = eHF(a) + Om(mu)
 
-        ! First-order terms
-
-        kcd = 0
-        do c=nO+1,nOrb-nR
-          do nu=1,nS
-            kcd = kcd + 1
-       
-            do r=nC+1,nOrb-nR
-
-              num = 0.5d0*rho(r,c,mu)*rho(r,a,nu)
-              dem = eHF(c) - eHF(r) - Om(mu)
-
-              H(1+n2h1p+iab,1+n2h1p+kcd) = H(1+n2h1p+iab,1+n2h1p+kcd) + num*dem/(dem**2 + eta**2)
-
-              num = 0.5d0*rho(r,c,mu)*rho(r,a,nu)
-              dem = eHF(a) - eHF(r) - Om(nu)
-
-              H(1+n2h1p+iab,1+n2h1p+kcd) = H(1+n2h1p+iab,1+n2h1p+kcd) + num*dem/(dem**2 + eta**2)
-
-            end do
- 
-          end do
-        end do
- 
-      end do
-    end do
- 
-    !-------------------!
-    ! Block C_2h1p-2p1h !
-    !-------------------!
- 
-    ija = 0
-    do i=nC+1,nO
-      do mu=1,nS
-        ija = ija + 1
-
-        kcd = 0
-        do a=nO+1,nOrb-nR
-          do nu=1,nS
-            kcd = kcd + 1
- 
-            do k=nC+1,nO
-
-              num = 1d0*rho(k,i,nu)*rho(a,k,mu)
-              dem = eHF(a) - eHF(k) + Om(nu)
-
-              H(1+ija      ,1+n2h1p+kcd) = H(1+ija      ,1+n2h1p+kcd) + num*dem/(dem**2 + eta**2)
-
-              H(1+n2h1p+kcd,1+ija      ) = H(1+n2h1p+kcd,1+ija      ) + num*dem/(dem**2 + eta**2)
-
-            end do
-
-            do c=nO+1,nOrb-nR
-
-              num = 1d0*rho(a,c,nu)*rho(c,i,mu)
-              dem = eHF(i) - eHF(c) - Om(mu)
-
-              H(1+ija      ,1+n2h1p+kcd) = H(1+ija      ,1+n2h1p+kcd) + num*dem/(dem**2 + eta**2)
-
-              H(1+n2h1p+kcd,1+ija      ) = H(1+n2h1p+kcd,1+ija      ) + num*dem/(dem**2 + eta**2)
-
-            end do
-
-          end do
-        end do
- 
       end do
     end do
  
@@ -376,10 +269,10 @@ subroutine R_ADC3_G3W2_diag(dotest,TDA_W,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,
   !--------------!
 
     write(*,*)'-------------------------------------------'
-    write(*,'(1X,A34,I3,A6)')'| ADC(3)-G3W2 energies for orbital',p,'  |'
+    write(*,'(1X,A38,I3,A2)')'| ADC-2SOSEX energies (eV) for orbital',p,' |'
     write(*,*)'-------------------------------------------'
     write(*,'(1X,A1,1X,A3,1X,A1,1X,A15,1X,A1,1X,A15,1X,A1,1X,A15,1X)') &
-              '|','#','|','e_QP (eV)','|','Z','|'
+              '|','#','|','e_QP','|','Z','|'
     write(*,*)'-------------------------------------------'
  
     do s=1,nH

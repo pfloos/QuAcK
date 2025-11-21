@@ -1,6 +1,6 @@
-subroutine R_ADC3_G3W2_diag(dotest,TDA_W,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,eHF)
+subroutine G_ADC3_G3W2_diag(dotest,TDA_W,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,EGHF,ERI,eHF)
 
-! ADC version of G3W2 up to 2h1p/2p1h within the diagonal approximation
+! Generalized ADC version of G3W2 up to 2h1p/2p1h within the diagonal approximation
 
   implicit none
   include 'parameters.h'
@@ -18,7 +18,7 @@ subroutine R_ADC3_G3W2_diag(dotest,TDA_W,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,
   integer,intent(in)            :: nR
   integer,intent(in)            :: nS
   double precision,intent(in)   :: ENuc
-  double precision,intent(in)   :: ERHF
+  double precision,intent(in)   :: EGHF
   double precision,intent(in)   :: ERI(nOrb,nOrb,nOrb,nOrb)
   double precision,intent(in)   :: eHF(nOrb)
 
@@ -34,7 +34,6 @@ subroutine R_ADC3_G3W2_diag(dotest,TDA_W,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,
 
   logical                       :: print_W = .false.
   logical                       :: dRPA = .true.
-  integer                       :: isp_W
   double precision              :: EcRPA
   integer                       :: n2h1p,n2p1h,nH
   double precision,external     :: Kronecker_delta
@@ -62,9 +61,9 @@ subroutine R_ADC3_G3W2_diag(dotest,TDA_W,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,
 ! Hello world
 
   write(*,*)
-  write(*,*)'**************************************'
-  write(*,*)'* Restricted ADC(3)-G3W2 Calculation *'
-  write(*,*)'**************************************'
+  write(*,*)'***************************************'
+  write(*,*)'* Generalized ADC(3)-G3W2 Calculation *'
+  write(*,*)'***************************************'
   write(*,*)
 
 ! Diagonal approximation
@@ -92,26 +91,22 @@ subroutine R_ADC3_G3W2_diag(dotest,TDA_W,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,
 ! Compute screening !
 !-------------------!
 
-  ! Spin manifold 
- 
-  isp_W = 1
-
   ! Memory allocation
 
   allocate(Om(nS),Aph(nS,nS),Bph(nS,nS),XpY(nS,nS),XmY(nS,nS),rho(nOrb,nOrb,nS))
  
-  call phRLR_A(isp_W,dRPA,nOrb,nC,nO,nV,nR,nS,1d0,eHF,ERI,Aph)
-  call phRLR_B(isp_W,dRPA,nOrb,nC,nO,nV,nR,nS,1d0,ERI,Bph)
+  call phGLR_A(dRPA,nOrb,nC,nO,nV,nR,nS,1d0,eHF,ERI,Aph)
+  call phGLR_B(dRPA,nOrb,nC,nO,nV,nR,nS,1d0,ERI,Bph)
  
-  call phRLR(TDA_W,nS,Aph,Bph,EcRPA,Om,XpY,XmY)
+  call phGLR(TDA_W,nS,Aph,Bph,EcRPA,Om,XpY,XmY)
 
-  if(print_W) call print_excitation_energies('phRPA@RHF','singlet',nS,Om)
+  if(print_W) call print_excitation_energies('phRPA@GHF','generalized',nS,Om)
  
   !--------------------------!
   ! Compute spectral weights !
   !--------------------------!
  
-  call RGW_excitation_density(nOrb,nC,nO,nR,nS,ERI,XpY,rho)
+  call GGW_excitation_density(nOrb,nC,nO,nR,nS,ERI,XpY,rho)
 
   deallocate(Aph,Bph,XpY,XmY)
 
@@ -154,9 +149,9 @@ subroutine R_ADC3_G3W2_diag(dotest,TDA_W,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,
  
         ! First-order terms
 
-        H(1    ,1+ija) = sqrt(2d0)*rho(p,i,mu)
+        H(1    ,1+ija) = rho(p,i,mu)
 
-        H(1+ija,1    ) = sqrt(2d0)*rho(p,i,mu)
+        H(1+ija,1    ) = rho(p,i,mu)
 
         ! Second-order terms
 
@@ -192,9 +187,9 @@ subroutine R_ADC3_G3W2_diag(dotest,TDA_W,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,
  
         ! First-order terms
 
-        H(1          ,1+n2h1p+iab) = sqrt(2d0)*rho(a,p,mu)
+        H(1          ,1+n2h1p+iab) = rho(a,p,mu)
 
-        H(1+n2h1p+iab,1          ) = sqrt(2d0)*rho(a,p,mu)
+        H(1+n2h1p+iab,1          ) = rho(a,p,mu)
  
         ! Second-order terms
 
@@ -285,7 +280,7 @@ subroutine R_ADC3_G3W2_diag(dotest,TDA_W,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,
               dem = eHF(c) - eHF(r) - Om(mu)
 
               H(1+n2h1p+iab,1+n2h1p+kcd) = H(1+n2h1p+iab,1+n2h1p+kcd) + num*dem/(dem**2 + eta**2)
-
+              
               num = 0.5d0*rho(r,c,mu)*rho(r,a,nu)
               dem = eHF(a) - eHF(r) - Om(nu)
 
@@ -313,6 +308,8 @@ subroutine R_ADC3_G3W2_diag(dotest,TDA_W,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,
           do nu=1,nS
             kcd = kcd + 1
  
+            ! First-order terms
+  
             do k=nC+1,nO
 
               num = 1d0*rho(k,i,nu)*rho(a,k,mu)

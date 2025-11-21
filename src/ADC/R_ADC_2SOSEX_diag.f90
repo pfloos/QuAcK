@@ -31,6 +31,7 @@ subroutine R_ADC_2SOSEX_diag(dotest,TDA_W,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,ERHF,ERI
   integer                       :: jb,kc,ia,ja
   integer                       :: mu,nu
   integer                       :: klc,kcd,ija,ijb,iab,jab
+  double precision              :: num,dem
 
   logical                       :: print_W = .false.
   logical                       :: dRPA = .true.
@@ -53,6 +54,7 @@ subroutine R_ADC_2SOSEX_diag(dotest,TDA_W,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,ERHF,ERI
   double precision,parameter    :: cutoff2 = 0.01d0
   double precision              :: eF
   double precision,parameter    :: window = 2.5d0
+  double precision,parameter    :: eta = 1d-6
 
   double precision              :: start_timing,end_timing,timing
 
@@ -156,12 +158,26 @@ subroutine R_ADC_2SOSEX_diag(dotest,TDA_W,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,ERHF,ERI
 
         do k=nC+1,nO
           do c=nO+1,nOrb-nR
-            H(1    ,1+ija) = H(1    ,1+ija) &
-                           + sqrt(2d0)*ERI(p,c,k,i)*rho(k,c,mu)/(eHF(c) - eHF(k) - Om(mu)) &
-                           + sqrt(2d0)*ERI(p,k,c,i)*rho(c,k,mu)/(eHF(c) - eHF(k) + Om(mu))
-            H(1+ija,1    ) = H(1+ija,1    ) & 
-                           + sqrt(2d0)*ERI(p,c,k,i)*rho(k,c,mu)/(eHF(c) - eHF(k) - Om(mu)) &
-                           + sqrt(2d0)*ERI(p,k,c,i)*rho(c,k,mu)/(eHF(c) - eHF(k) + Om(mu))
+
+
+            num = sqrt(2d0)*ERI(p,c,k,i)*rho(k,c,mu)
+            dem = eHF(c) - eHF(k) - Om(mu)
+
+            H(1    ,1+ija) = H(1    ,1+ija) + num*dem/(dem**2 + eta**2)
+            H(1+ija,1    ) = H(1+ija,1    ) + num*dem/(dem**2 + eta**2)
+
+            num = sqrt(2d0)*ERI(p,k,c,i)*rho(c,k,mu)
+            dem = eHF(c) - eHF(k) + Om(mu)
+
+            H(1    ,1+ija) = H(1    ,1+ija) + num*dem/(dem**2 + eta**2)
+            H(1+ija,1    ) = H(1+ija,1    ) + num*dem/(dem**2 + eta**2)
+
+!           H(1    ,1+ija) = H(1    ,1+ija) &
+!                          + sqrt(2d0)*ERI(p,c,k,i)*rho(k,c,mu)/(eHF(c) - eHF(k) - Om(mu)) &
+!                          + sqrt(2d0)*ERI(p,k,c,i)*rho(c,k,mu)/(eHF(c) - eHF(k) + Om(mu))
+!           H(1+ija,1    ) = H(1+ija,1    ) & 
+!                          + sqrt(2d0)*ERI(p,c,k,i)*rho(k,c,mu)/(eHF(c) - eHF(k) - Om(mu)) &
+!                          + sqrt(2d0)*ERI(p,k,c,i)*rho(c,k,mu)/(eHF(c) - eHF(k) + Om(mu))
           end do
         end do
  
@@ -182,12 +198,25 @@ subroutine R_ADC_2SOSEX_diag(dotest,TDA_W,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,ERHF,ERI
  
         do k=nC+1,nO
           do c=nO+1,nOrb-nR
-            H(1    ,1+n2h1p+iab) = H(1    ,1+n2h1p+iab) &
-                                 + sqrt(2d0)*ERI(p,k,c,a)*rho(c,k,mu)/(eHF(c) - eHF(k) - Om(mu)) &
-                                 + sqrt(2d0)*ERI(p,c,k,a)*rho(k,c,mu)/(eHF(c) - eHF(k) + Om(mu))
-            H(1+n2h1p+iab,1    ) = H(1+n2h1p+iab,1    ) &
-                                 + sqrt(2d0)*ERI(p,k,c,a)*rho(c,k,mu)/(eHF(c) - eHF(k) - Om(mu)) &
-                                 + sqrt(2d0)*ERI(p,c,k,a)*rho(k,c,mu)/(eHF(c) - eHF(k) + Om(mu))
+
+            num = sqrt(2d0)*ERI(p,k,c,a)*rho(c,k,mu)
+            dem = eHF(c) - eHF(k) - Om(mu)
+
+            H(1    ,1+n2h1p+iab) = H(1    ,1+n2h1p+iab) + num*dem/(dem**2 + eta**2)
+            H(1+n2h1p+iab,1    ) = H(1+n2h1p+iab,1    ) + num*dem/(dem**2 + eta**2)
+
+            num = sqrt(2d0)*ERI(p,c,k,a)*rho(k,c,mu)
+            dem = eHF(c) - eHF(k) + Om(mu)
+
+            H(1    ,1+n2h1p+iab) = H(1    ,1+n2h1p+iab) + num*dem/(dem**2 + eta**2)
+            H(1+n2h1p+iab,1    ) = H(1+n2h1p+iab,1    ) + num*dem/(dem**2 + eta**2)
+
+!           H(1    ,1+n2h1p+iab) = H(1    ,1+n2h1p+iab) &
+!                                + sqrt(2d0)*ERI(p,k,c,a)*rho(c,k,mu)/(eHF(c) - eHF(k) - Om(mu)) &
+!                                + sqrt(2d0)*ERI(p,c,k,a)*rho(k,c,mu)/(eHF(c) - eHF(k) + Om(mu))
+!           H(1+n2h1p+iab,1    ) = H(1+n2h1p+iab,1    ) &
+!                                + sqrt(2d0)*ERI(p,k,c,a)*rho(c,k,mu)/(eHF(c) - eHF(k) - Om(mu)) &
+!                                + sqrt(2d0)*ERI(p,c,k,a)*rho(k,c,mu)/(eHF(c) - eHF(k) + Om(mu))
           end do
         end do
 
