@@ -309,9 +309,9 @@ subroutine scGWBitauiw_ao(nBas,nOrb,nOrb_twice,maxSCF,maxDIIS,dolinGW,restart_sc
  ! Initialize G(i tau)
  G_ao_itau(:,:,:)=G_ao_itau_hfb(:,:,:)
  G_ao_itau_old(:,:,:)=G_ao_itau_hfb(:,:,:)
- ! Check error in the Fourier transformation
+ ! Check error in the Fourier transformation Go(iw) -> Go(it)
  write(*,*)
- write(*,'(a)') ' Error test for the Go(iw) -> G(it) transformation'
+ write(*,'(a)') ' Error test for the Go(iw) -> Go(it) transformation'
  write(*,*)
  max_error_gw2gt=-1d0
  sum_error_gw2gt=0d0

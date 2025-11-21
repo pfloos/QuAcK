@@ -253,13 +253,13 @@ subroutine scGF2itauiw_ao(nBas,nOrb,nO,maxSCF,maxDIIS,dolinGF2,restart_scGF2,ver
  call read_scGW_grids(ntimes,nfreqs,tcoord,tweight,wcoord,wweight,sint2w_weight,cost2w_weight, &
                       cosw2t_weight,sinw2t_weight,verbose)
 
-!-------------------------------------------------------------------------!
-! Test the quality of the grid for the Go(i w) -> G(i tau) transformation !
-!-------------------------------------------------------------------------!
+!--------------------------------------------------------------------------!
+! Test the quality of the grid for the Go(i w) -> Go(i tau) transformation !
+!--------------------------------------------------------------------------!
 
  ! Build Go(i w)
  write(*,*)
- write(*,'(a)') ' Error test for the Go(iw) -> G(it) transformation'
+ write(*,'(a)') ' Error test for the Go(iw) -> Go(it) transformation'
  write(*,*)
  do ifreq=1,nfreqs
   weval_cpx=im*wcoord(ifreq)
