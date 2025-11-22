@@ -168,7 +168,7 @@ subroutine scGWBitauiw_ao(nBas,nOrb,nOrb_twice,maxSCF,maxDIIS,dolinGW,restart_sc
    nElectrons=nElectrons+P_in(ibas,jbas)*S(ibas,jbas)
   enddo
  enddo
- nElectrons=0.5d0*nElectrons ! Here we prefer to use 1 spin-channel
+ nElectrons=nint(0.5d0*nElectrons) ! Here we prefer to use 1 spin-channel
  chem_pot_saved=chem_pot
  alpha_mixing=0.6d0
  rcond=0d0
