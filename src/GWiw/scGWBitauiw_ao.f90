@@ -168,7 +168,7 @@ subroutine scGWBitauiw_ao(nBas,nOrb,nOrb_twice,maxSCF,maxDIIS,dolinGW,restart_sc
    nElectrons=nElectrons+P_in(ibas,jbas)*S(ibas,jbas)
   enddo
  enddo
- nElectrons=0.5d0*nElectrons ! Here we prefer to use 1 spin-channel
+ nElectrons=nint(0.5d0*nElectrons) ! Here we prefer to use 1 spin-channel
  chem_pot_saved=chem_pot
  alpha_mixing=0.6d0
  rcond=0d0
@@ -256,6 +256,28 @@ subroutine scGWBitauiw_ao(nBas,nOrb,nOrb_twice,maxSCF,maxDIIS,dolinGW,restart_sc
  cHFB_gorkov(1:nBas           ,1:nOrb           ) = cHFB(1:nBas,1:nOrb)
  cHFB_gorkov(nBas+1:nBas_twice,nOrb+1:nOrb_twice) = cHFB(1:nBas,1:nOrb)
  eQP_old(:)=eQP_state(:)
+ H_ao_hfb=0d0
+ H_ao_hfb(1:nBas,1:nBas)=Hc(1:nBas,1:nBas)
+ Ehfbl=0d0
+ do ibas=1,nBas
+  do jbas=1,nBas
+   obas=nBas+1+(jbas-1)
+   Ehfbl=Ehfbl+2d0*R_ao(ibas,jbas)*Hc(ibas,jbas)
+   do kbas=1,nBas
+    do lbas=1,nBas
+     qbas=nBas+1+(lbas-1)
+     H_ao_hfb(ibas,jbas)=H_ao_hfb(ibas,jbas)+2d0*R_ao(kbas,lbas)*vMAT(1+(lbas-1)+(kbas-1)*nBas,1+(jbas-1)+(ibas-1)*nBas) &
+                        -R_ao(kbas,lbas)*vMAT(1+(jbas-1)+(kbas-1)*nBas,1+(lbas-1)+(ibas-1)*nBas)
+     H_ao_hfb(ibas,obas)=H_ao_hfb(ibas,obas)+sigma*R_ao(kbas,qbas)*vMAT(1+(ibas-1)+(kbas-1)*nBas,1+(jbas-1)+(lbas-1)*nBas)
+     Ehfbl=Ehfbl+2d0*R_ao(kbas,lbas)*R_ao(ibas,jbas)*vMAT(1+(lbas-1)+(kbas-1)*nBas,1+(jbas-1)+(ibas-1)*nBas) &
+          -R_ao(kbas,lbas)*R_ao(ibas,jbas)*vMAT(1+(jbas-1)+(kbas-1)*nBas,1+(lbas-1)+(ibas-1)*nBas)           &
+          +sigma*R_ao(kbas,qbas)*R_ao(ibas,obas)*vMAT(1+(ibas-1)+(kbas-1)*nBas,1+(jbas-1)+(lbas-1)*nBas)
+    enddo
+   enddo
+  enddo
+ enddo
+ H_ao_hfb(nBas+1:nBas_twice,nBas+1:nBas_twice) = -H_ao_hfb(1:nBas,1:nBas           )
+ H_ao_hfb(nBas+1:nBas_twice,1:nBas           ) =  H_ao_hfb(1:nBas,nBas+1:nBas_twice)
 
  ! Read grids 
  call read_scGW_grids(ntimes,nfreqs,tcoord,tweight,wcoord,wweight,sint2w_weight,cost2w_weight, &
@@ -309,9 +331,9 @@ subroutine scGWBitauiw_ao(nBas,nOrb,nOrb_twice,maxSCF,maxDIIS,dolinGW,restart_sc
  ! Initialize G(i tau)
  G_ao_itau(:,:,:)=G_ao_itau_hfb(:,:,:)
  G_ao_itau_old(:,:,:)=G_ao_itau_hfb(:,:,:)
- ! Check error in the Fourier transformation
+ ! Check error in the Fourier transformation Go(iw) -> Go(it)
  write(*,*)
- write(*,'(a)') ' Error test for the Go(iw) -> G(it) transformation'
+ write(*,'(a)') ' Error test for the Go(iw) -> Go(it) transformation'
  write(*,*)
  max_error_gw2gt=-1d0
  sum_error_gw2gt=0d0
@@ -816,10 +838,13 @@ subroutine scGWBitauiw_ao(nBas,nOrb,nOrb_twice,maxSCF,maxDIIS,dolinGW,restart_sc
  call write_scGWB_restart(nBas_twice,ntimes,ntimes_twice,nfreqs,chem_pot,R_ao,R_ao_hfb,G_ao_itau,G_ao_itau_hfb, &
                          G_ao_iw_hfb,DeltaG_ao_iw)
 
-!    write(*,*) 'R_scGWB_ao iter '
-!    do ibas=1,nBas_twice
-!     write(*,'(*(f10.5))') R_ao(ibas,:)
-!    enddo
+ inquire(file='Print_Rao', exist=file_exists)
+ if(file_exists) then
+  write(*,*) 'R_scGWB_ao'
+  do ibas=1,nBas_twice
+   write(*,'(*(f10.5))') R_ao(ibas,:)
+  enddo
+ endif
 
  ! Using the correlated G and Sigma_c to test the linearized density matrix approximation
  if(dolinGW) then
