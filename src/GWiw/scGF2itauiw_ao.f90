@@ -100,7 +100,7 @@ subroutine scGF2itauiw_ao(nBas,nOrb,nO,maxSCF,maxDIIS,dolinGF2,restart_scGF2,ver
   complex*16,allocatable        :: G_ao_iw_hf(:,:,:)
   complex*16,allocatable        :: Sigma_c_c(:,:),Sigma_c_s(:,:)
   complex*16,allocatable        :: Sigma_c_plus(:,:),Sigma_c_minus(:,:)
-  complex*16,allocatable        :: G_ao_1(:,:),G_ao_2(:,:)
+  complex*16,allocatable        :: G_ao_tmp(:,:)
   complex*16,allocatable        :: G_minus_itau(:,:),G_plus_itau(:,:)
   complex*16,allocatable        :: error_transf_mo(:,:,:)
   complex*16,allocatable        :: Sigma_c_w_mo(:,:)
@@ -172,7 +172,7 @@ subroutine scGF2itauiw_ao(nBas,nOrb,nO,maxSCF,maxDIIS,dolinGF2,restart_scGF2,ver
  allocate(P_ao(nBas,nBas),P_ao_old(nBas,nBas),P_ao_iter(nBas,nBas),P_ao_hf(nBas,nBas))
  allocate(F_ao(nBas,nBas),P_mo(nOrb,nOrb),cHFinv(nOrb,nBas),Occ(nOrb),eSD(nOrb),eSD_old(nOrb),cNO(nBas,nOrb))
  allocate(G_minus_itau(nBas,nBas),G_plus_itau(nBas,nBas))
- allocate(G_ao_1(nBas,nBas),G_ao_2(nBas,nBas))
+ allocate(G_ao_tmp(nBas,nBas))
  allocate(Sigma_c_c(nBas,nBas),Sigma_c_s(nBas,nBas))
  allocate(Sigma_c_plus(nBas,nBas),Sigma_c_minus(nBas,nBas))
  allocate(Aimql(nBas,nBas,nBas,nBAS))
@@ -250,8 +250,8 @@ subroutine scGF2itauiw_ao(nBas,nOrb,nO,maxSCF,maxDIIS,dolinGF2,restart_scGF2,ver
  ! Build Go(i w)
  do ifreq=1,nfreqs
   weval_cpx=im*wcoord(ifreq)
-  call G_AO_RHF(nBas,nOrb,nO,eta,cHF,eHF,weval_cpx,G_ao_1)
-  G_ao_iw_hf(ifreq,:,:)=G_ao_1(:,:)
+  call G_AO_RHF(nBas,nOrb,nO,eta,cHF,eHF,weval_cpx,G_ao_tmp)
+  G_ao_iw_hf(ifreq,:,:)=G_ao_tmp(:,:)
  enddo
  ! Build Go(i tau)
  do itau=1,ntimes
@@ -556,10 +556,10 @@ subroutine scGF2itauiw_ao(nBas,nOrb,nO,maxSCF,maxDIIS,dolinGF2,restart_scGF2,ver
     ! Build G(i w) and n(r)
     P_ao_old=P_ao
     call get_1rdm_scGW(nBas,nfreqs,chem_pot,S,F_ao,Sigma_c_w_ao,wcoord,wweight, &
-                       G_ao_1,G_ao_iw_hf,DeltaG_ao_iw,P_ao,P_ao_hf,trace_1_rdm) 
+                       G_ao_tmp,G_ao_iw_hf,DeltaG_ao_iw,P_ao,P_ao_hf,trace_1_rdm) 
     if(abs(trace_1_rdm-nElectrons)**2d0>thrs_N) &
      call fix_chem_pot_scGW_bisec(iter_fock,nBas,nfreqs,nElectrons,thrs_N,thrs_Ngrad,chem_pot,S,F_ao,Sigma_c_w_ao,wcoord,wweight, &
-                                  G_ao_1,G_ao_iw_hf,DeltaG_ao_iw,P_ao,P_ao_hf,trace_1_rdm,chem_pot_saved,verbose_scGF2)
+                                  G_ao_tmp,G_ao_iw_hf,DeltaG_ao_iw,P_ao,P_ao_hf,trace_1_rdm,chem_pot_saved,verbose_scGF2)
     ! Check convergence of P_ao for fixed Sigma_c(i w)
     diff_Pao=0d0
     do ibas=1,nBas
@@ -658,8 +658,8 @@ subroutine scGF2itauiw_ao(nBas,nOrb,nO,maxSCF,maxDIIS,dolinGF2,restart_scGF2,ver
    DeltaG_ao_iw(:,:,:)=G_ao_iw_hf(:,:,:)+DeltaG_ao_iw(:,:,:) ! Saving G(iw) in DeltaG_ao_iw
    do ifreq=1,nfreqs
     weval_cpx=im*wcoord(ifreq)
-    call G_AO_RHF(nBas,nOrb,nO,eta,cHF,eSD,weval_cpx,G_ao_1)
-    G_ao_iw_hf(ifreq,:,:)=G_ao_1(:,:)
+    call G_AO_RHF(nBas,nOrb,nO,eta,cHF,eSD,weval_cpx,G_ao_tmp)
+    G_ao_iw_hf(ifreq,:,:)=G_ao_tmp(:,:)
    enddo
    DeltaG_ao_iw(:,:,:)=DeltaG_ao_iw(:,:,:)-G_ao_iw_hf(:,:,:) ! Setting back DeltaG(iw) = G(iw) - Go_new(iw)
    if(verbose/=0) then
@@ -759,11 +759,11 @@ subroutine scGF2itauiw_ao(nBas,nOrb,nO,maxSCF,maxDIIS,dolinGF2,restart_scGF2,ver
   write(*,*) '         G^lin = G + G Sigma_c G'
   write(*,*) ' -------------------------------------------'
   P_ao_old=0d0
-  G_ao_1(:,:)=czero
+  G_ao_tmp(:,:)=czero
   do ifreq=1,nfreqs
-   G_ao_1(:,:)=G_ao_iw_hf(ifreq,:,:)+DeltaG_ao_iw(ifreq,:,:)
-   G_ao_1(:,:)=matmul(matmul(G_ao_1(:,:),Sigma_c_w_ao(ifreq,:,:)),G_ao_1(:,:))
-   P_ao_old(:,:) = P_ao_old(:,:) + wweight(ifreq)*real(G_ao_1(:,:)+conjg(G_ao_1(:,:))) ! Integrate along iw
+   G_ao_tmp(:,:)=G_ao_iw_hf(ifreq,:,:)+DeltaG_ao_iw(ifreq,:,:)
+   G_ao_tmp(:,:)=matmul(matmul(G_ao_tmp(:,:),Sigma_c_w_ao(ifreq,:,:)),G_ao_tmp(:,:))
+   P_ao_old(:,:) = P_ao_old(:,:) + wweight(ifreq)*real(G_ao_tmp(:,:)+conjg(G_ao_tmp(:,:))) ! Integrate along iw
   enddo
   P_ao_old=P_ao_old/pi
   P_ao_old=P_ao+P_ao_old
@@ -829,7 +829,7 @@ subroutine scGF2itauiw_ao(nBas,nOrb,nO,maxSCF,maxDIIS,dolinGF2,restart_scGF2,ver
  deallocate(Sigma_c_plus,Sigma_c_minus) 
  deallocate(Sigma_c_c,Sigma_c_s) 
  deallocate(G_minus_itau,G_plus_itau) 
- deallocate(G_ao_1,G_ao_2) 
+ deallocate(G_ao_tmp) 
  deallocate(err_current)
  deallocate(err_currentP)
  deallocate(G_itau_extrap)
