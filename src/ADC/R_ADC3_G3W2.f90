@@ -1,4 +1,4 @@
-subroutine R_ADC3_G3W2(dotest,TDA_W,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,eHF)
+subroutine R_ADC3_G3W2(dotest,TDA_W,eta,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,eHF)
 
 ! ADC(3) version of G3W2
 
@@ -10,6 +10,7 @@ subroutine R_ADC3_G3W2(dotest,TDA_W,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,eHF)
   logical,intent(in)            :: dotest
 
   logical,intent(in)            :: TDA_W
+  double precision,intent(in)   :: eta
   integer,intent(in)            :: nBas
   integer,intent(in)            :: nOrb
   integer,intent(in)            :: nC
@@ -30,6 +31,7 @@ subroutine R_ADC3_G3W2(dotest,TDA_W,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,eHF)
   integer                       :: a,b,c,d
   integer                       :: mu,nu
   integer                       :: klc,kcd,ija,iab
+  double precision              :: num,dem
 
   logical                       :: print_W = .false.
   logical                       :: dRPA
@@ -151,12 +153,26 @@ subroutine R_ADC3_G3W2(dotest,TDA_W,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,eHF)
 
         do k=nC+1,nO
           do c=nO+1,nOrb-nR
-            H(p    ,nOrb+ija) = H(p    ,nOrb+ija) &
-                              + sqrt(2d0)*rho(k,c,mu)*ERI(i,k,c,p)/(eHF(c) - eHF(k) - Om(mu)) &
-                              + sqrt(2d0)*rho(c,k,mu)*ERI(i,c,k,p)/(eHF(c) - eHF(k) + Om(mu))
-            H(nOrb+ija,p    ) = H(nOrb+ija,p    ) &
-                              + sqrt(2d0)*rho(k,c,mu)*ERI(i,k,c,p)/(eHF(c) - eHF(k) - Om(mu)) &
-                              + sqrt(2d0)*rho(c,k,mu)*ERI(i,c,k,p)/(eHF(c) - eHF(k) + Om(mu))
+
+            num = sqrt(2d0)*ERI(p,c,k,i)*rho(k,c,mu)
+            dem = eHF(c) - eHF(k) - Om(mu)
+
+            H(p       ,nOrb+ija) = H(p       ,nOrb+ija) + num*dem/(dem**2 + eta**2)
+            H(nOrb+ija,p       ) = H(nOrb+ija,p       ) + num*dem/(dem**2 + eta**2)
+
+            num = sqrt(2d0)*ERI(p,k,c,i)*rho(c,k,mu)
+            dem = eHF(c) - eHF(k) + Om(mu)
+
+            H(p       ,nOrb+ija) = H(p       ,nOrb+ija) + num*dem/(dem**2 + eta**2)
+            H(nOrb+ija,p       ) = H(nOrb+ija,p       ) + num*dem/(dem**2 + eta**2)
+
+!           H(p    ,nOrb+ija) = H(p    ,nOrb+ija) &
+!                             + sqrt(2d0)*rho(k,c,mu)*ERI(i,k,c,p)/(eHF(c) - eHF(k) - Om(mu)) &
+!                             + sqrt(2d0)*rho(c,k,mu)*ERI(i,c,k,p)/(eHF(c) - eHF(k) + Om(mu))
+!           H(nOrb+ija,p    ) = H(nOrb+ija,p    ) &
+!                             + sqrt(2d0)*rho(k,c,mu)*ERI(i,k,c,p)/(eHF(c) - eHF(k) - Om(mu)) &
+!                             + sqrt(2d0)*rho(c,k,mu)*ERI(i,c,k,p)/(eHF(c) - eHF(k) + Om(mu))
+
           end do
         end do
 
@@ -181,12 +197,25 @@ subroutine R_ADC3_G3W2(dotest,TDA_W,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,eHF)
 
         do k=nC+1,nO
           do c=nO+1,nOrb-nR
-            H(p    ,nOrb+n2h1p+iab) = H(p    ,nOrb+n2h1p+iab) &
-                                    + sqrt(2d0)*rho(k,c,mu)*ERI(a,c,k,p)/(eHF(c) - eHF(k) - Om(mu)) &
-                                    + sqrt(2d0)*rho(c,k,mu)*ERI(a,k,c,p)/(eHF(c) - eHF(k) + Om(mu))
-            H(nOrb+n2h1p+iab,p    ) = H(nOrb+n2h1p+iab,p    ) &
-                                    + sqrt(2d0)*rho(k,c,mu)*ERI(a,c,k,p)/(eHF(c) - eHF(k) - Om(mu)) &
-                                    + sqrt(2d0)*rho(c,k,mu)*ERI(a,k,c,p)/(eHF(c) - eHF(k) + Om(mu))
+
+            num = sqrt(2d0)*ERI(p,k,c,a)*rho(c,k,mu)
+            dem = eHF(c) - eHF(k) - Om(mu)
+
+            H(p             ,nOrb+n2h1p+iab) = H(p             ,nOrb+n2h1p+iab) + num*dem/(dem**2 + eta**2)
+            H(nOrb+n2h1p+iab,p             ) = H(nOrb+n2h1p+iab,p             ) + num*dem/(dem**2 + eta**2)
+
+            num = sqrt(2d0)*ERI(p,c,k,a)*rho(k,c,mu)
+            dem = eHF(c) - eHF(k) + Om(mu)
+
+            H(p             ,nOrb+n2h1p+iab) = H(p             ,nOrb+n2h1p+iab) + num*dem/(dem**2 + eta**2)
+            H(nOrb+n2h1p+iab,p             ) = H(nOrb+n2h1p+iab,p             ) + num*dem/(dem**2 + eta**2)
+
+!           H(p    ,nOrb+n2h1p+iab) = H(p    ,nOrb+n2h1p+iab) &
+!                                   + sqrt(2d0)*rho(k,c,mu)*ERI(a,c,k,p)/(eHF(c) - eHF(k) - Om(mu)) &
+!                                   + sqrt(2d0)*rho(c,k,mu)*ERI(a,k,c,p)/(eHF(c) - eHF(k) + Om(mu))
+!           H(nOrb+n2h1p+iab,p    ) = H(nOrb+n2h1p+iab,p    ) &
+!                                   + sqrt(2d0)*rho(k,c,mu)*ERI(a,c,k,p)/(eHF(c) - eHF(k) - Om(mu)) &
+!                                   + sqrt(2d0)*rho(c,k,mu)*ERI(a,k,c,p)/(eHF(c) - eHF(k) + Om(mu))
           end do
         end do
 
@@ -214,9 +243,20 @@ subroutine R_ADC3_G3W2(dotest,TDA_W,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,eHF)
           klc = klc + 1
 
           do r=nC+1,nOrb-nR
-            H(nOrb+ija,nOrb+klc) = H(nOrb+ija,nOrb+klc) &
-                                 + 1d0*rho(k,r,mu)*rho(i,r,nu)/(eHF(i) - eHF(r) + Om(nu)) &
-                                 + 1d0*rho(k,r,mu)*rho(i,r,nu)/(eHF(k) - eHF(r) + Om(mu))
+
+            num = 0.5d0*rho(k,r,mu)*rho(i,r,nu)
+            dem = eHF(i) - eHF(r) + Om(nu)
+
+            H(nOrb+ija,nOrb+klc) = H(nOrb+ija,nOrb+klc) + num*dem/(dem**2 + eta**2)
+
+            num = 0.5d0*rho(k,r,mu)*rho(i,r,nu)
+            dem = eHF(k) - eHF(r) + Om(mu)
+
+            H(nOrb+ija,nOrb+klc) = H(nOrb+ija,nOrb+klc) + num*dem/(dem**2 + eta**2)
+
+!           H(nOrb+ija,nOrb+klc) = H(nOrb+ija,nOrb+klc) &
+!                                + 1d0*rho(k,r,mu)*rho(i,r,nu)/(eHF(i) - eHF(r) + Om(nu)) &
+!                                + 1d0*rho(k,r,mu)*rho(i,r,nu)/(eHF(k) - eHF(r) + Om(mu))
           end do
 
         end do
@@ -242,9 +282,20 @@ subroutine R_ADC3_G3W2(dotest,TDA_W,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,eHF)
           kcd = kcd + 1
 
           do r=nC+1,nOrb-nR
-            H(nOrb+n2h1p+iab,nOrb+n2h1p+kcd) = H(nOrb+n2h1p+iab,nOrb+n2h1p+kcd) &
-                                             + 1d0*rho(r,c,mu)*rho(r,a,nu)/(eHF(c) - eHF(r) - Om(mu)) &
-                                             + 1d0*rho(r,c,mu)*rho(r,a,nu)/(eHF(a) - eHF(r) - Om(nu))
+
+            num = 0.5d0*rho(r,c,mu)*rho(r,a,nu)
+            dem = eHF(c) - eHF(r) - Om(mu)
+
+            H(nOrb+n2h1p+iab,nOrb+n2h1p+kcd) = H(nOrb+n2h1p+iab,nOrb+n2h1p+kcd) + num*dem/(dem**2 + eta**2)
+
+            num = 0.5d0*rho(r,c,mu)*rho(r,a,nu)
+            dem = eHF(a) - eHF(r) - Om(nu)
+
+            H(nOrb+n2h1p+iab,nOrb+n2h1p+kcd) = H(nOrb+n2h1p+iab,nOrb+n2h1p+kcd) + num*dem/(dem**2 + eta**2)
+
+!           H(nOrb+n2h1p+iab,nOrb+n2h1p+kcd) = H(nOrb+n2h1p+iab,nOrb+n2h1p+kcd) &
+!                                            + 1d0*rho(r,c,mu)*rho(r,a,nu)/(eHF(c) - eHF(r) - Om(mu)) &
+!                                            + 1d0*rho(r,c,mu)*rho(r,a,nu)/(eHF(a) - eHF(r) - Om(nu))
           end do
 
         end do
@@ -269,25 +320,47 @@ subroutine R_ADC3_G3W2(dotest,TDA_W,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,eHF)
 
           ! First-order terms
 
-          do k=nC+1,nO
+            do k=nC+1,nO
 
-            H(nOrb+ija      ,nOrb+n2h1p+kcd) = H(nOrb+ija      ,nOrb+n2h1p+kcd) &
-                                             + 2d0*rho(k,i,nu)*rho(a,k,mu)/(eHF(a) - eHF(k) + Om(nu))
+              num = 1d0*rho(k,i,nu)*rho(a,k,mu)
+              dem = eHF(a) - eHF(k) + Om(nu)
 
-            H(nOrb+n2h1p+kcd,nOrb+ija      ) = H(nOrb+n2h1p+kcd,nOrb+ija      ) &
-                                             + 2d0*rho(k,i,nu)*rho(a,k,mu)/(eHF(a) - eHF(k) + Om(nu))
+              H(nOrb+ija      ,nOrb+n2h1p+kcd) = H(nOrb+ija      ,nOrb+n2h1p+kcd) + num*dem/(dem**2 + eta**2)
 
-          end do
+              H(nOrb+n2h1p+kcd,nOrb+ija      ) = H(nOrb+n2h1p+kcd,nOrb+ija      ) + num*dem/(dem**2 + eta**2)
 
-          do c=nO+1,nOrb-nR
+            end do
 
-            H(nOrb+ija      ,nOrb+n2h1p+kcd) = H(nOrb+ija      ,nOrb+n2h1p+kcd) &
-                                             + 2d0*rho(a,c,nu)*rho(c,i,mu)/(eHF(i) - eHF(c) - Om(mu))
+            do c=nO+1,nOrb-nR
 
-            H(nOrb+n2h1p+kcd,nOrb+ija      ) = H(nOrb+n2h1p+kcd,nOrb+ija      ) &
-                                             + 2d0*rho(a,c,nu)*rho(c,i,mu)/(eHF(i) - eHF(c) - Om(mu))
+              num = 1d0*rho(a,c,nu)*rho(c,i,mu)
+              dem = eHF(i) - eHF(c) - Om(mu)
 
-          end do
+              H(nOrb+ija      ,nOrb+n2h1p+kcd) = H(nOrb+ija      ,nOrb+n2h1p+kcd) + num*dem/(dem**2 + eta**2)
+
+              H(nOrb+n2h1p+kcd,nOrb+ija      ) = H(nOrb+n2h1p+kcd,nOrb+ija      ) + num*dem/(dem**2 + eta**2)
+
+            end do
+
+!         do k=nC+1,nO
+
+!           H(nOrb+ija      ,nOrb+n2h1p+kcd) = H(nOrb+ija      ,nOrb+n2h1p+kcd) &
+!                                            + 2d0*rho(k,i,nu)*rho(a,k,mu)/(eHF(a) - eHF(k) + Om(nu))
+
+!           H(nOrb+n2h1p+kcd,nOrb+ija      ) = H(nOrb+n2h1p+kcd,nOrb+ija      ) &
+!                                            + 2d0*rho(k,i,nu)*rho(a,k,mu)/(eHF(a) - eHF(k) + Om(nu))
+
+!         end do
+
+!         do c=nO+1,nOrb-nR
+
+!           H(nOrb+ija      ,nOrb+n2h1p+kcd) = H(nOrb+ija      ,nOrb+n2h1p+kcd) &
+!                                            + 2d0*rho(a,c,nu)*rho(c,i,mu)/(eHF(i) - eHF(c) - Om(mu))
+
+!           H(nOrb+n2h1p+kcd,nOrb+ija      ) = H(nOrb+n2h1p+kcd,nOrb+ija      ) &
+!                                            + 2d0*rho(a,c,nu)*rho(c,i,mu)/(eHF(i) - eHF(c) - Om(mu))
+
+!         end do
 
         end do
       end do
