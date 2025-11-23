@@ -1,4 +1,4 @@
-subroutine R_2SOSEX_excitation_density(nOrb,nC,nO,nR,nS,e,Om,ERI,XpY,rho)
+subroutine R_2SOSEX_excitation_density(eta,nOrb,nC,nO,nR,nS,e,Om,ERI,XpY,rho)
 
 ! Compute excitation densities for 2SOSEX-spd
 
@@ -6,6 +6,7 @@ subroutine R_2SOSEX_excitation_density(nOrb,nC,nO,nR,nS,e,Om,ERI,XpY,rho)
 
 ! Input variables
 
+  double precision,intent(in)   :: eta
   integer,intent(in)            :: nOrb
   integer,intent(in)            :: nC
   integer,intent(in)            :: nO
@@ -19,6 +20,7 @@ subroutine R_2SOSEX_excitation_density(nOrb,nC,nO,nR,nS,e,Om,ERI,XpY,rho)
 ! Local variables
 
   integer                       :: ia,jb,p,q,j,a,b,k,c,m
+  double precision              :: num,dem
   double precision, allocatable :: tmp(:,:,:)
   double precision,allocatable  :: w(:,:,:)
 
@@ -97,7 +99,15 @@ subroutine R_2SOSEX_excitation_density(nOrb,nC,nO,nR,nS,e,Om,ERI,XpY,rho)
         do j=nC+1,nO
           do a=nO+1,nOrb-nR
 
-            w(p,k,m) = w(p,k,m) + rho(a,j,m)*(ERI(p,j,a,k)/(e(a) - e(j) + Om(m)) + ERI(p,a,j,k)/(e(a) - e(j) - Om(m)))
+            num = rho(a,j,m)*ERI(p,j,a,k)
+            dem = e(a) - e(j) + Om(m)
+            w(p,k,m) = w(p,k,m) + num*dem/(dem**2 + eta**2)
+
+            num = rho(a,j,m)*ERI(p,a,j,k)
+            dem = e(a) - e(j) - Om(m)
+            w(p,k,m) = w(p,k,m) + num*dem/(dem**2 + eta**2)
+
+!           w(p,k,m) = w(p,k,m) + rho(a,j,m)*(ERI(p,j,a,k)/(e(a) - e(j) + Om(m)) + ERI(p,a,j,k)/(e(a) - e(j) - Om(m)))
 
           end do
         end do
@@ -113,7 +123,15 @@ subroutine R_2SOSEX_excitation_density(nOrb,nC,nO,nR,nS,e,Om,ERI,XpY,rho)
         do j=nC+1,nO
           do a=nO+1,nOrb-nR
 
-            w(p,c,m) = w(p,c,m) + rho(a,j,m)*(ERI(p,j,a,c)/(e(a) - e(j) - Om(m)) + ERI(p,a,j,c)/(e(a) - e(j) + Om(m)))
+            num = rho(a,j,m)*ERI(p,j,a,c)
+            dem = e(a) - e(j) - Om(m)
+            w(p,c,m) = w(p,c,m) + num*dem/(dem**2 + eta**2)
+
+            num = rho(a,j,m)*ERI(p,a,j,c)
+            dem = e(a) - e(j) + Om(m)
+            w(p,c,m) = w(p,c,m) + num*dem/(dem**2 + eta**2)
+
+!           w(p,c,m) = w(p,c,m) + rho(a,j,m)*(ERI(p,j,a,c)/(e(a) - e(j) - Om(m)) + ERI(p,a,j,c)/(e(a) - e(j) + Om(m)))
 
           end do
         end do

@@ -1,18 +1,20 @@
-subroutine read_options(working_dir,                                                                        &
-                        maxSCF_HF,thresh_HF,max_diis_HF,guess_type,mix,level_shift,dostab,dosearch,doaordm, &
-                        readFCIDUMP,reg_MP,                                                                 &
-                        maxSCF_CC,thresh_CC,max_diis_CC,                                                    &
-                        TDA,spin_conserved,spin_flip,                                                       &
-                        max_iter_OO,thresh_OO,dRPA_OO,mu_OO,diagHess_OO,                                    &
-                        maxSCF_GF,thresh_GF,max_diis_GF,lin_GF,eta_GF,renorm_GF,reg_GF,do_linDM_GF2,        &
-                        maxSCF_GW,thresh_GW,max_diis_GW,lin_GW,eta_GW,shift_GW,reg_GW,do_linDM_GW,          &
-                        nfreqs,TDA_W,restart_scGW,restart_scGF2,verbose_scGW,verbose_scGF2,                 &
-                        maxSCF_GT,thresh_GT,max_diis_GT,lin_GT,eta_GT,reg_GT,TDA_T,do_linDM_GT,             &
-                        doACFDT,exchange_kernel,doXBS,                                                      &
-                        dophBSE,dophBSE2,doppBSE,dBSE,dTDA,                                                 &
-                        temperature,sigma,chem_pot_hf,restart_hfb,error_P,                                  &
-                        TDAeh,TDApp,max_diis_1b,max_diis_2b,max_it_1b,conv_1b,max_it_2b,conv_2b,lin_parquet,&
-                        reg_1b,reg_2b,reg_PA,diag_approx,eweight,eforward)
+subroutine read_options(working_dir,                                                                         &
+                        maxSCF_HF,thresh_HF,max_diis_HF,guess_type,mix,level_shift,dostab,dosearch,doaordm,  &
+                        readFCIDUMP,reg_MP,                                                                  &
+                        maxSCF_CC,thresh_CC,max_diis_CC,                                                     &
+                        TDA,spin_conserved,spin_flip,                                                        &
+                        max_iter_OO,thresh_OO,dRPA_OO,mu_OO,diagHess_OO,                                     &
+                        maxSCF_GF,thresh_GF,max_diis_GF,lin_GF,eta_GF,renorm_GF,reg_GF,do_linDM_GF2,         &
+                        maxSCF_GW,thresh_GW,max_diis_GW,lin_GW,eta_GW,shift_GW,reg_GW,do_linDM_GW,           &
+                        nfreqs,TDA_W,restart_scGW,restart_scGF2,verbose_scGW,verbose_scGF2,                  &
+                        maxSCF_GT,thresh_GT,max_diis_GT,lin_GT,eta_GT,reg_GT,TDA_T,do_linDM_GT,              &
+                        doACFDT,exchange_kernel,doXBS,                                                       &
+                        dophBSE,dophBSE2,doppBSE,dBSE,dTDA,                                                  &
+                        temperature,sigma,chem_pot_hf,restart_hfb,error_P,                                   &
+                        TDAeh,TDApp,max_diis_1b,max_diis_2b,max_it_1b,conv_1b,max_it_2b,conv_2b,lin_parquet, &
+                        reg_1b,reg_2b,reg_PA,                                                                &
+                        diag_approx,lin_ADC,reg_ADC,eta_ADC,                                                 &
+                        eweight,eforward)
 
 ! Read desired methods 
 
@@ -107,7 +109,8 @@ subroutine read_options(working_dir,                                            
   double precision,intent(out)  :: reg_1b,reg_2b
   logical,intent(out)           :: lin_parquet,reg_PA
 
-  logical,intent(out)           :: diag_approx
+  logical,intent(out)           :: diag_approx,lin_ADC,reg_ADC
+  double precision,intent(out)  :: eta_ADC
 
   logical,intent(out)           :: eforward
   double precision,intent(out)  :: eweight
@@ -331,11 +334,16 @@ subroutine read_options(working_dir,                                            
       ! Options for ADC module
 
       diag_approx = .false.
+      lin_ADC     = .false.
+      reg_ADC     = .false.
+      eta_ADC     = 0d0
 
       read(1,*)
-      read(1,*) ans1
+      read(1,*) ans1,ans2,ans3,eta_ADC
 
       if(ans1 == 'T') diag_approx = .true.
+      if(ans2 == 'T') lin_ADC     = .true.
+      if(ans3 == 'T') reg_ADC     = .true.
       
       ! Read ensemble HF options
     

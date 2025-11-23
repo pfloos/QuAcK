@@ -1,4 +1,4 @@
-subroutine R_ADC_GW(dotest,TDA_W,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,eHF)
+subroutine R_ADC_GW(dotest,TDA_W,eta,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,eHF)
 
 ! ADC version of GW 
 
@@ -10,6 +10,7 @@ subroutine R_ADC_GW(dotest,TDA_W,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,eHF)
   logical,intent(in)            :: dotest
 
   logical,intent(in)            :: TDA_W
+  double precision,intent(in)   :: eta
   integer,intent(in)            :: nBas
   integer,intent(in)            :: nOrb
   integer,intent(in)            :: nC

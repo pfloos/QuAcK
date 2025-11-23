@@ -1,4 +1,4 @@
-subroutine R_ADC_2SOSEX_diag(dotest,TDA_W,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,eHF)
+subroutine R_ADC_2SOSEX_diag(dotest,TDA_W,eta,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,eHF)
 
 ! ADC version of 2SOSEX within the diagonal approximation
 
@@ -10,6 +10,7 @@ subroutine R_ADC_2SOSEX_diag(dotest,TDA_W,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,ERHF,ERI
   logical,intent(in)            :: dotest
 
   logical,intent(in)            :: TDA_W
+  double precision,intent(in)   :: eta
   integer,intent(in)            :: nBas
   integer,intent(in)            :: nOrb
   integer,intent(in)            :: nC
@@ -54,7 +55,6 @@ subroutine R_ADC_2SOSEX_diag(dotest,TDA_W,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,ERHF,ERI
   double precision,parameter    :: cutoff2 = 0.01d0
   double precision              :: eF
   double precision,parameter    :: window = 2.5d0
-  double precision,parameter    :: eta = 1d-3
 
   double precision              :: start_timing,end_timing,timing
 
@@ -158,7 +158,6 @@ subroutine R_ADC_2SOSEX_diag(dotest,TDA_W,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,ERHF,ERI
 
         do k=nC+1,nO
           do c=nO+1,nOrb-nR
-
 
             num = sqrt(2d0)*ERI(p,c,k,i)*rho(k,c,mu)
             dem = eHF(c) - eHF(k) - Om(mu)

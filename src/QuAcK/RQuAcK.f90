@@ -16,7 +16,8 @@ subroutine RQuAcK(working_dir,use_gpu,dotest,doRHF,doROHF,docRHF,doeRHF,        
                   maxSCF_GT,max_diis_GT,thresh_GT,TDA_T,lin_GT,reg_GT,eta_GT,do_linDM_GT,                                   & 
                   dophBSE,dophBSE2,doppBSE,dBSE,dTDA,doACFDT,exchange_kernel,doXBS,                                         &
                   TDAeh,TDApp,max_diis_1b,max_diis_2b,max_it_1b,conv_1b,max_it_2b,conv_2b,lin_parquet,reg_1b,reg_2b,reg_PA, &
-                  nfreqs,ntimes,wcoord,wweight,diag_approx)      
+                  nfreqs,ntimes,wcoord,wweight,                                                                             &
+                  diag_approx,lin_ADC,reg_ADC,eta_ADC)      
 
 ! Restricted branch of QuAcK
 
@@ -121,7 +122,8 @@ subroutine RQuAcK(working_dir,use_gpu,dotest,doRHF,doROHF,docRHF,doeRHF,        
   double precision,intent(in)   :: reg_1b,reg_2b
   logical,intent(in)            :: lin_parquet,reg_PA
   
-  logical,intent(in)            :: diag_approx
+  logical,intent(in)            :: diag_approx,lin_ADC,reg_ADC
+  double precision,intent(in)   :: eta_ADC
 
 ! Local variables
 
@@ -644,7 +646,7 @@ doGF = doG0F2 .or. doevGF2 .or. doqsGF2 .or. doufG0F02 .or. doG0F3 .or. doevGF3 
                do_IPEA_ADC2,do_IP_ADC2,do_IPEA_ADC3,                 & 
                do_SOSEX,do_2SOSEX,do_G3W2,                           & 
                do_ADC_GW,do_ADC_2SOSEX,do_ADC3_G3W2,do_ADC4_G3W2,    &
-               TDA_W,TDA,singlet,triplet,lin_GW,eta_GW,reg_GW,       &
+               TDA_W,TDA,singlet,triplet,lin_ADC,eta_ADC,reg_ADC,    &
                diag_approx,                                          &
                nNuc,ZNuc,rNuc,ENuc,nBas,nOrb,nC,nO,nV,nR,nS,         &
                S,X,T,V,Hc,ERI_AO,ERI_MO,dipole_int_AO,dipole_int_MO, &

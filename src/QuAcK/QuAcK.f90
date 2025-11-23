@@ -119,7 +119,8 @@ program QuAcK
   double precision              :: reg_1b,reg_2b 
   logical                       :: lin_parquet, reg_PA
    
-  logical                       :: diag_approx
+  logical                       :: diag_approx,lin_ADC,reg_ADC
+  double precision              :: eta_ADC
 
   character(len=256)            :: working_dir
   character(len=100)            :: sha
@@ -206,7 +207,8 @@ program QuAcK
                     dophBSE,dophBSE2,doppBSE,dBSE,dTDA,                                                  &
                     temperature,sigma,chem_pot_hf,restart_hfb,error_P,                                   &
                     TDAeh,TDApp,max_diis_1b,max_diis_2b,max_it_1b,conv_1b,max_it_2b,conv_2b,lin_parquet, &
-                    reg_1b,reg_2b,reg_PA,diag_approx,eweight,eforward)
+                    reg_1b,reg_2b,reg_PA,diag_approx,lin_ADC,reg_ADC,eta_ADC,                            &
+                    eweight,eforward)
 
 
 !--------------------!
@@ -381,25 +383,26 @@ program QuAcK
                       TDA_W,lin_GW,reg_GW,eta_GW,maxSCF_GT,max_diis_GT,thresh_GT,TDA_T,lin_GT,reg_GT,eta_GT,                  &
                       dophBSE,dophBSE2,doppBSE,dBSE,dTDA,doACFDT,exchange_kernel,doXBS)
     else
-      call RQuAcK(working_dir,use_gpu,doRtest,doRHF,doROHF,docRHF,doeRHF,dostab,dosearch,doaordm,                          &
-                  doMP2,doMP3,doCCD,dopCCD,doDCD,doCCSD,doCCSDT,                                                           &
-                  dodrCCD,dorCCD,docrCCD,dolCCD,doCIS,doCIS_D,doCID,doCISD,doFCI,dophRPA,dophRPAx,docrRPA,doppRPA,doOO,    &
-                  doG0F2,doevGF2,doqsGF2,doufG0F02,doG0F3,doevGF3,doG0W0,doevGW,doqsGW,doufG0W0,doufGW,                    &
-                  doG0T0pp,doevGTpp,doqsGTpp,doufG0T0pp,doG0T0eh,doevGTeh,doqsGTeh,doevParquet,doqsParquet,                &
-                  docG0W0,docG0F2,doscGW,doscGF2,                                                                          &
-                  doCAP,readFCIDUMP,restart_scGW,restart_scGF2,verbose_scGW,verbose_scGF2,                                 & 
-                  do_IPEA_ADC2,do_IP_ADC2,do_IPEA_ADC3,do_SOSEX,do_2SOSEX,do_G3W2,                                         &
-                  do_ADC_GW,do_ADC_2SOSEX,do_ADC3_G3W2,do_ADC4_G3W2,                                                       &
-                  nNuc,nBas,nOrb,nC,nO,nV,nR,ENuc,ZNuc,rNuc,                                                               &
-                  S,T,V,Hc,CAP,X,dipole_int_AO,maxSCF_HF,max_diis_HF,thresh_HF,level_shift,eweight,eforward,               &
-                  guess_type,mix,reg_MP,maxSCF_CC,max_diis_CC,thresh_CC,spin_conserved,spin_flip,TDA,                      &
-                  max_iter_OO,thresh_OO,dRPA_OO,mu_OO,diagHess_OO,                                                         &
-                  maxSCF_GF,max_diis_GF,renorm_GF,thresh_GF,lin_GF,reg_GF,eta_GF,maxSCF_GW,max_diis_GW,thresh_GW,          &
-                  TDA_W,lin_GW,reg_GW,eta_GW,do_linDM_GW,do_linDM_GF2,                                                     &
-                  maxSCF_GT,max_diis_GT,thresh_GT,TDA_T,lin_GT,reg_GT,eta_GT,do_linDM_GT,                                  &
-                  dophBSE,dophBSE2,doppBSE,dBSE,dTDA,doACFDT,exchange_kernel,doXBS,                                        &
-                  TDAeh,TDApp,max_diis_1b,max_diis_2b,max_it_1b,conv_1b,max_it_2b,conv_2b,lin_parquet,reg_1b,reg_2b,reg_PA,&
-                  nfreqs,ntimes,wcoord,wweight,diag_approx)
+      call RQuAcK(working_dir,use_gpu,doRtest,doRHF,doROHF,docRHF,doeRHF,dostab,dosearch,doaordm,                           &
+                  doMP2,doMP3,doCCD,dopCCD,doDCD,doCCSD,doCCSDT,                                                            &
+                  dodrCCD,dorCCD,docrCCD,dolCCD,doCIS,doCIS_D,doCID,doCISD,doFCI,dophRPA,dophRPAx,docrRPA,doppRPA,doOO,     &
+                  doG0F2,doevGF2,doqsGF2,doufG0F02,doG0F3,doevGF3,doG0W0,doevGW,doqsGW,doufG0W0,doufGW,                     &
+                  doG0T0pp,doevGTpp,doqsGTpp,doufG0T0pp,doG0T0eh,doevGTeh,doqsGTeh,doevParquet,doqsParquet,                 &
+                  docG0W0,docG0F2,doscGW,doscGF2,                                                                           &
+                  doCAP,readFCIDUMP,restart_scGW,restart_scGF2,verbose_scGW,verbose_scGF2,                                  & 
+                  do_IPEA_ADC2,do_IP_ADC2,do_IPEA_ADC3,do_SOSEX,do_2SOSEX,do_G3W2,                                          &
+                  do_ADC_GW,do_ADC_2SOSEX,do_ADC3_G3W2,do_ADC4_G3W2,                                                        &
+                  nNuc,nBas,nOrb,nC,nO,nV,nR,ENuc,ZNuc,rNuc,                                                                &
+                  S,T,V,Hc,CAP,X,dipole_int_AO,maxSCF_HF,max_diis_HF,thresh_HF,level_shift,eweight,eforward,                &
+                  guess_type,mix,reg_MP,maxSCF_CC,max_diis_CC,thresh_CC,spin_conserved,spin_flip,TDA,                       &
+                  max_iter_OO,thresh_OO,dRPA_OO,mu_OO,diagHess_OO,                                                          &
+                  maxSCF_GF,max_diis_GF,renorm_GF,thresh_GF,lin_GF,reg_GF,eta_GF,maxSCF_GW,max_diis_GW,thresh_GW,           &
+                  TDA_W,lin_GW,reg_GW,eta_GW,do_linDM_GW,do_linDM_GF2,                                                      &
+                  maxSCF_GT,max_diis_GT,thresh_GT,TDA_T,lin_GT,reg_GT,eta_GT,do_linDM_GT,                                   &
+                  dophBSE,dophBSE2,doppBSE,dBSE,dTDA,doACFDT,exchange_kernel,doXBS,                                         &
+                  TDAeh,TDApp,max_diis_1b,max_diis_2b,max_it_1b,conv_1b,max_it_2b,conv_2b,lin_parquet,reg_1b,reg_2b,reg_PA, &
+                  nfreqs,ntimes,wcoord,wweight,                                                                             &
+                  diag_approx,lin_ADC,reg_ADC,eta_ADC)
     endif
   endif
 
@@ -437,7 +440,7 @@ program QuAcK
                 maxSCF_GT,max_diis_GT,thresh_GT,TDA_T,lin_GT,reg_GT,eta_GT,do_linDM_GT,                    &
                 dophBSE,dophBSE2,doppBSE,dBSE,dTDA,doACFDT,exchange_kernel,doXBS,                          &
                 TDAeh,TDApp,max_diis_1b,max_diis_2b,max_it_1b,conv_1b,max_it_2b,conv_2b,lin_parquet,reg_1b,reg_2b,reg_PA, &
-                diag_approx)
+                diag_approx,lin_ADC,reg_ADC,eta_ADC)
 
 !-------------------------!
 ! Bogoliubov QuAcK branch !

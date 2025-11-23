@@ -1,19 +1,19 @@
-subroutine GQuAcK(working_dir,dotest,doGHF,dostab,dosearch,doMP2,doMP3,doCCD,dopCCD,doDCD,doCCSD,doCCSDT,    &
-                  dodrCCD,dorCCD,docrCCD,dolCCD,dophRPA,dophRPAx,docrRPA,doppRPA,doOO,                       &
-                  doG0W0,doevGW,doqsGW,doG0F2,doevGF2,doqsGF2,doG0T0pp,doevGTpp,doqsGTpp,doG0T0eh,doevParquet,doqsParquet, & 
-                  do_IPEA_ADC2,do_IP_ADC2,do_IPEA_ADC3,do_SOSEX,do_2SOSEX,do_G3W2,                                         & 
-                  do_ADC_GW,do_ADC_2SOSEX,do_ADC3_G3W2,do_ADC4_G3W2,                                                       &
-                  nNuc,nBas,nC,nO,nV,nR,ENuc,ZNuc,rNuc,S,T,V,Hc,X,dipole_int_AO,                             &
-                  maxSCF_HF,max_diis_HF,thresh_HF,level_shift,guess_type,mix,reg_MP,                         &
-                  maxSCF_CC,max_diis_CC,thresh_CC,                                                           &
-                  TDA,                                                                                       &
-                  max_iter_OO,thresh_OO,dRPA_OO,mu_OO,diagHess_OO,                                           & 
-                  maxSCF_GF,max_diis_GF,thresh_GF,lin_GF,reg_GF,eta_GF,                                      &
-                  maxSCF_GW,max_diis_GW,thresh_GW,TDA_W,lin_GW,reg_GW,eta_GW,do_linDM_GW,                    &
-                  maxSCF_GT,max_diis_GT,thresh_GT,TDA_T,lin_GT,reg_GT,eta_GT,do_linDM_GT,                    &
-                  dophBSE,dophBSE2,doppBSE,dBSE,dTDA,doACFDT,exchange_kernel,doXBS,                          &
+subroutine GQuAcK(working_dir,dotest,doGHF,dostab,dosearch,doMP2,doMP3,doCCD,dopCCD,doDCD,doCCSD,doCCSDT,                   &
+                  dodrCCD,dorCCD,docrCCD,dolCCD,dophRPA,dophRPAx,docrRPA,doppRPA,doOO,                                      &
+                  doG0W0,doevGW,doqsGW,doG0F2,doevGF2,doqsGF2,doG0T0pp,doevGTpp,doqsGTpp,doG0T0eh,doevParquet,doqsParquet,  & 
+                  do_IPEA_ADC2,do_IP_ADC2,do_IPEA_ADC3,do_SOSEX,do_2SOSEX,do_G3W2,                                          & 
+                  do_ADC_GW,do_ADC_2SOSEX,do_ADC3_G3W2,do_ADC4_G3W2,                                                        &
+                  nNuc,nBas,nC,nO,nV,nR,ENuc,ZNuc,rNuc,S,T,V,Hc,X,dipole_int_AO,                                            &
+                  maxSCF_HF,max_diis_HF,thresh_HF,level_shift,guess_type,mix,reg_MP,                                        &
+                  maxSCF_CC,max_diis_CC,thresh_CC,                                                                          &
+                  TDA,                                                                                                      &
+                  max_iter_OO,thresh_OO,dRPA_OO,mu_OO,diagHess_OO,                                                          & 
+                  maxSCF_GF,max_diis_GF,thresh_GF,lin_GF,reg_GF,eta_GF,                                                     &
+                  maxSCF_GW,max_diis_GW,thresh_GW,TDA_W,lin_GW,reg_GW,eta_GW,do_linDM_GW,                                   &
+                  maxSCF_GT,max_diis_GT,thresh_GT,TDA_T,lin_GT,reg_GT,eta_GT,do_linDM_GT,                                   &
+                  dophBSE,dophBSE2,doppBSE,dBSE,dTDA,doACFDT,exchange_kernel,doXBS,                                         &
                   TDAeh,TDApp,max_diis_1b,max_diis_2b,max_it_1b,conv_1b,max_it_2b,conv_2b,lin_parquet,reg_1b,reg_2b,reg_PA, &
-                  diag_approx)
+                  diag_approx,lin_ADC,reg_ADC,eta_ADC)
 
   implicit none
   include 'parameters.h'
@@ -99,7 +99,8 @@ subroutine GQuAcK(working_dir,dotest,doGHF,dostab,dosearch,doMP2,doMP3,doCCD,dop
   double precision,intent(in)   :: reg_1b,reg_2b
   logical,intent(in)            :: lin_parquet,reg_PA
   
-  logical,intent(in)            :: diag_approx
+  logical,intent(in)            :: diag_approx,lin_ADC,reg_ADC
+  double precision,intent(in)   :: eta_ADC
 
 ! Local variables
 
@@ -403,7 +404,7 @@ end if
                do_IPEA_ADC2,do_IP_ADC2,do_IPEA_ADC3,                 & 
                do_SOSEX,do_2SOSEX,do_G3W2,                           & 
                do_ADC_GW,do_ADC_2SOSEX,do_ADC3_G3W2,do_ADC4_G3W2,    &
-               TDA_W,TDA,lin_GW,eta_GW,reg_GW,                       &
+               TDA_W,TDA,lin_ADC,eta_ADC,reg_ADC,                    &
                diag_approx,                                          &
                nNuc,ZNuc,rNuc,ENuc,nBas,nBas2,nC,nO,nV,nR,nS,        &
                S,X,T,V,Hc,ERI_AO,ERI_MO,dipole_int_AO,dipole_int_MO, &
