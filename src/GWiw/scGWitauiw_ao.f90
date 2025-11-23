@@ -149,6 +149,11 @@ subroutine scGWitauiw_ao(nBas,nOrb,nO,maxSCF,maxDIIS,dolinGW,restart_scGW,verbos
  nBasSqntimes2=nBas2*ntimes_twice
  write(*,*)
  write(*,'(A33,1X,F16.10,A3)') ' Initial chemical potential  = ',chem_pot,' au'
+ if(chem_pot_scG) then
+  write(*,'(A)') '   Adjusting the chemical potential is activated'
+ else
+  write(*,'(A)') '   Adjusting the chemical potential is deactivated'
+ endif
  write(*,*)
  eHF(:) = eHF(:)-chem_pot_saved
  if(verbose/=0) then

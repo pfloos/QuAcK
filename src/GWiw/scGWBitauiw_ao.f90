@@ -146,6 +146,11 @@ subroutine scGWBitauiw_ao(nBas,nOrb,nOrb_twice,maxSCF,maxDIIS,dolinGW,restart_sc
 
  write(*,*)
  write(*,'(A33,1X,F16.10,A3)') ' Initial chemical potential  = ',chem_pot,' au'
+ if(chem_pot_scG) then
+  write(*,'(A)') '   Adjusting the chemical potential is activated'
+ else
+  write(*,'(A)') '   Adjusting the chemical potential is deactivated'
+ endif
  write(*,*)
 
  write(*,'(a,F15.8)') '  emin ',abs(eQP_state(nOrb))
