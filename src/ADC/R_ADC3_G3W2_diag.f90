@@ -53,7 +53,7 @@ subroutine R_ADC3_G3W2_diag(dotest,TDA_W,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,
   double precision,parameter    :: cutoff2 = 0.01d0
   double precision              :: eF
   double precision,parameter    :: window = 2.5d0
-  double precision,parameter    :: eta = 1d-5
+  double precision,parameter    :: eta = 1d-3
 
   double precision              :: start_timing,end_timing,timing
 
