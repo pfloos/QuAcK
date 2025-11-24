@@ -83,7 +83,6 @@ subroutine scGF2_AO_itau_iw(nBas,nOrb,nO,maxSCF,maxDIIS,dolinGF2,restart_scGF2,v
   double precision,allocatable  :: P_ao_hf(:,:)
   double precision,allocatable  :: P_ao_old(:,:)
   double precision,allocatable  :: P_ao_iter(:,:)
-  double precision,allocatable  :: P_mo(:,:)
   double precision,allocatable  :: err_currentP(:)
   double precision,allocatable  :: err_diisP(:,:)
   double precision,allocatable  :: P_ao_extrap(:)
@@ -176,7 +175,7 @@ subroutine scGF2_AO_itau_iw(nBas,nOrb,nO,maxSCF,maxDIIS,dolinGF2,restart_scGF2,v
  ! Allocate arrays  
  allocate(U_mo(nOrb,nOrb))
  allocate(P_ao(nBas,nBas),P_ao_old(nBas,nBas),P_ao_iter(nBas,nBas),P_ao_hf(nBas,nBas))
- allocate(F_ao(nBas,nBas),P_mo(nOrb,nOrb),cHFinv(nOrb,nBas),Occ(nOrb),eSD(nOrb),eSD_old(nOrb),cNO(nBas,nOrb))
+ allocate(F_ao(nBas,nBas),cHFinv(nOrb,nBas),Occ(nOrb),eSD(nOrb),eSD_old(nOrb),cNO(nBas,nOrb))
  allocate(G_minus_itau(nBas,nBas),G_plus_itau(nBas,nBas))
  allocate(G_ao_tmp(nBas,nBas))
  allocate(Sigma_c_c(nBas,nBas),Sigma_c_s(nBas,nBas))
@@ -613,10 +612,10 @@ subroutine scGF2_AO_itau_iw(nBas,nOrb,nO,maxSCF,maxDIIS,dolinGF2,restart_scGF2,v
   P_ao_iter=P_ao
 
   ! Print iter info
-  P_mo=-matmul(matmul(cHFinv,P_ao),transpose(cHFinv)) ! Minus to order occ numbers
-  call diagonalize_matrix(nOrb,P_mo,Occ)
+  U_mo=-matmul(matmul(cHFinv,P_ao),transpose(cHFinv)) ! Minus to order occ numbers
+  call diagonalize_matrix(nOrb,U_mo,Occ)
   Occ=-Occ
-  cNO=matmul(cHF,P_mo)
+  cNO=matmul(cHF,U_mo)
   write(*,*)
   write(*,'(a,f15.8,a,i5,a,i5)') ' Trace scGF2 ',trace_1_rdm,' after ',iter_fock,' Fock iterations at global iter ',iter
   write(*,'(a,f15.8)')        ' Change of P ',diff_Pao
@@ -791,10 +790,10 @@ subroutine scGF2_AO_itau_iw(nBas,nOrb,nO,maxSCF,maxDIIS,dolinGF2,restart_scGF2,v
     enddo
    enddo
   enddo
-  P_mo=-matmul(matmul(cHFinv,P_ao_old),transpose(cHFinv)) ! Minus to order occ numbers
-  call diagonalize_matrix(nOrb,P_mo,Occ)
+  U_mo=-matmul(matmul(cHFinv,P_ao_old),transpose(cHFinv)) ! Minus to order occ numbers
+  call diagonalize_matrix(nOrb,U_mo,Occ)
   Occ=-Occ
-  cNO=matmul(cHF,P_mo)
+  cNO=matmul(cHF,U_mo)
   write(*,'(a,f15.8)')        ' Enuc        ',ENuc
   write(*,'(a,f15.8)')        ' Ehfl        ',Ehfl
   write(*,'(a,f15.8)')        ' EcGM        ',EcGM
@@ -831,7 +830,7 @@ subroutine scGF2_AO_itau_iw(nBas,nOrb,nO,maxSCF,maxDIIS,dolinGF2,restart_scGF2,v
  deallocate(G_ao_itau_old)
  deallocate(G_ao_itau,G_ao_itau_hf)
  deallocate(Sigma_c_w_ao,DeltaG_ao_iw,G_ao_iw_hf)
- deallocate(P_ao,P_ao_old,P_ao_iter,P_ao_hf,F_ao,P_mo,cHFinv,cNO,U_mo,Occ,eSD,eSD_old) 
+ deallocate(P_ao,P_ao_old,P_ao_iter,P_ao_hf,F_ao,U_mo,cHFinv,cNO,Occ,eSD,eSD_old) 
  deallocate(Sigma_c_plus,Sigma_c_minus) 
  deallocate(Sigma_c_c,Sigma_c_s) 
  deallocate(G_minus_itau,G_plus_itau) 
