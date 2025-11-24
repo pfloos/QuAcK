@@ -1,7 +1,7 @@
 subroutine BQuAcK(working_dir,dotest,doaordm,doRHFB,doBRPA,dophRPA,doG0W0,doqsGW,doscGW,readFCIDUMP,nNuc,nBas,nOrb, &
                   nO,ENuc,eta,shift,restart_scGW,ZNuc,rNuc,S,T,V,Hc,X,dipole_int_AO,maxSCF,max_diis,thresh,         &
                   level_shift,guess_type,maxSCF_GW,max_diis_GW,thresh_GW,dolinGW,temperature,sigma,                 &
-                  chem_pot_hf,restart_hfb,nfreqs,ntimes,wcoord,wweight,error_P)
+                  chem_pot_hf,restart_hfb,nfreqs,ntimes,wcoord,wweight,error_P,verbose_scGW,chem_pot_scG)
 
 ! Restricted branch of Bogoliubov QuAcK
 
@@ -14,6 +14,8 @@ subroutine BQuAcK(working_dir,dotest,doaordm,doRHFB,doBRPA,dophRPA,doG0W0,doqsGW
   logical,intent(in)             :: doaordm
   logical,intent(in)             :: readFCIDUMP
   logical,intent(in)             :: error_P
+  logical,intent(in)             :: verbose_scGW
+  logical,intent(in)             :: chem_pot_scG
                                  
   logical,intent(in)             :: doRHFB
   logical,intent(in)             :: doBRPA
@@ -55,7 +57,6 @@ subroutine BQuAcK(working_dir,dotest,doaordm,doRHFB,doBRPA,dophRPA,doG0W0,doqsGW
 
   logical                        :: no_fock
   logical                        :: file_exists
-  logical                        :: verbose_scGW
 
   integer                        :: verbose
   integer                        :: nOrb_twice
@@ -266,9 +267,8 @@ subroutine BQuAcK(working_dir,dotest,doaordm,doRHFB,doBRPA,dophRPA,doG0W0,doqsGW
     enddo
    enddo
    no_fock=.false.
-   verbose_scGW=.false.
-   call scGWBitauiw_ao(nBas,nOrb,nOrb_twice,maxSCF_GW,max_diis_GW,dolinGW,restart_scGW,verbose_scGW,no_fock,ENuc,Hc,S,X, &
-                       pMAT,panomMAT,MOCoef,eQP_state,chem_pot,sigma,nfreqs,wcoord,wweight,U_QP,vMAT,ERI_AO)
+   call scGWBitauiw_ao(nBas,nOrb,nOrb_twice,maxSCF_GW,max_diis_GW,dolinGW,restart_scGW,verbose_scGW,chem_pot_scG,no_fock, &
+                       ENuc,Hc,S,X,pMAT,panomMAT,MOCoef,eQP_state,chem_pot,sigma,nfreqs,wcoord,wweight,U_QP,vMAT,ERI_AO)
    deallocate(vMAT)
   endif
 

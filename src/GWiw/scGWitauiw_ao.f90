@@ -1,5 +1,5 @@
-subroutine scGWitauiw_ao(nBas,nOrb,nO,maxSCF,maxDIIS,dolinGW,restart_scGW,verbose_scGW,no_fock,ENuc,Hc,S,P_in,cHF,eHF, &
-                        nfreqs,wcoord,wweight,vMAT,ERI_AO)
+subroutine scGWitauiw_ao(nBas,nOrb,nO,maxSCF,maxDIIS,dolinGW,restart_scGW,verbose_scGW,chem_pot_scG,no_fock, &
+                         ENuc,Hc,S,P_in,cHF,eHF,nfreqs,wcoord,wweight,vMAT,ERI_AO)
 
 ! Restricted scGW
 
@@ -12,6 +12,7 @@ subroutine scGWitauiw_ao(nBas,nOrb,nO,maxSCF,maxDIIS,dolinGW,restart_scGW,verbos
   logical,intent(in)            :: no_fock
   logical,intent(in)            :: restart_scGW
   logical,intent(in)            :: verbose_scGW
+  logical,intent(in)            :: chem_pot_scG
 
   integer,intent(in)            :: nBas
   integer,intent(in)            :: nOrb
@@ -148,6 +149,11 @@ subroutine scGWitauiw_ao(nBas,nOrb,nO,maxSCF,maxDIIS,dolinGW,restart_scGW,verbos
  nBasSqntimes2=nBas2*ntimes_twice
  write(*,*)
  write(*,'(A33,1X,F16.10,A3)') ' Initial chemical potential  = ',chem_pot,' au'
+ if(chem_pot_scG) then
+  write(*,'(A)') '   Adjusting the chemical potential is activated'
+ else
+  write(*,'(A)') '   Adjusting the chemical potential is deactivated'
+ endif
  write(*,*)
  eHF(:) = eHF(:)-chem_pot_saved
  if(verbose/=0) then
@@ -469,7 +475,7 @@ subroutine scGWitauiw_ao(nBas,nOrb,nO,maxSCF,maxDIIS,dolinGW,restart_scGW,verbos
     P_ao_old=P_ao
     call get_1rdm_scGW(nBas,nfreqs,chem_pot,S,F_ao,Sigma_c_w_ao,wcoord,wweight, &
                        G_ao_tmp,G_ao_iw_hf,DeltaG_ao_iw,P_ao,P_ao_hf,trace_1_rdm) 
-    if(abs(trace_1_rdm-nElectrons)**2d0>thrs_N) &
+    if(abs(trace_1_rdm-nElectrons)**2d0>thrs_N .and. chem_pot_scG) &
      call fix_chem_pot_scGW_bisec(iter_fock,nBas,nfreqs,nElectrons,thrs_N,thrs_Ngrad,chem_pot,S,F_ao,Sigma_c_w_ao,wcoord,wweight, &
                                   G_ao_tmp,G_ao_iw_hf,DeltaG_ao_iw,P_ao,P_ao_hf,trace_1_rdm,chem_pot_saved,verbose_scGW)
     ! Check convergence of P_ao for fixed Sigma_c(i w)

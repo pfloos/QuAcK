@@ -6,7 +6,7 @@ subroutine read_options(working_dir,                                            
                         max_iter_OO,thresh_OO,dRPA_OO,mu_OO,diagHess_OO,                                     &
                         maxSCF_GF,thresh_GF,max_diis_GF,lin_GF,eta_GF,renorm_GF,reg_GF,do_linDM_GF2,         &
                         maxSCF_GW,thresh_GW,max_diis_GW,lin_GW,eta_GW,shift_GW,reg_GW,do_linDM_GW,           &
-                        nfreqs,TDA_W,restart_scGW,restart_scGF2,verbose_scGW,verbose_scGF2,                  &
+                        nfreqs,TDA_W,restart_scGW,restart_scGF2,verbose_scGW,verbose_scGF2,chem_pot_scG,     &
                         maxSCF_GT,thresh_GT,max_diis_GT,lin_GT,eta_GT,reg_GT,TDA_T,do_linDM_GT,              &
                         doACFDT,exchange_kernel,doXBS,                                                       &
                         dophBSE,dophBSE2,doppBSE,dBSE,dTDA,                                                  &
@@ -74,6 +74,7 @@ subroutine read_options(working_dir,                                            
   double precision,intent(out)  :: shift_GW
   logical,intent(out)           :: restart_scGW
   logical,intent(out)           :: verbose_scGW
+  logical,intent(out)           :: chem_pot_scG
   logical,intent(out)           :: reg_GW
   integer,intent(out)           :: nfreqs
   logical,intent(out)           :: do_linDM_GW
@@ -233,9 +234,10 @@ subroutine read_options(working_dir,                                            
       do_linDM_GW = .false.
       restart_scGW = .false.
       verbose_scGW = .false.
+      chem_pot_scG = .false.
     
       read(1,*) 
-      read(1,*) maxSCF_GW,thresh_GW,max_diis_GW,ans1,eta_GW,ans2,ans3,nfreqs,shift_GW,ans4,ans5,ans6
+      read(1,*) maxSCF_GW,thresh_GW,max_diis_GW,ans1,eta_GW,ans2,ans3,nfreqs,shift_GW,ans4,ans5,ans6,ans7
     
       if(ans1 == 'T') lin_GW       = .true.
       if(ans2 == 'T') TDA_W        = .true.
@@ -243,6 +245,7 @@ subroutine read_options(working_dir,                                            
       if(ans4 == 'T') do_linDM_GW  = .true.
       if(ans5 == 'T') restart_scGW = .true.
       if(ans6 == 'T') verbose_scGW = .true.
+      if(ans7 == 'T') chem_pot_scG = .true.
    
       ! Read GT options
     
