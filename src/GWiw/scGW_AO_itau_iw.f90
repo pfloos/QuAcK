@@ -1,5 +1,5 @@
-subroutine scGWitauiw_ao(nBas,nOrb,nO,maxSCF,maxDIIS,dolinGW,restart_scGW,verbose_scGW,chem_pot_scG,no_fock, &
-                         ENuc,Hc,S,P_in,cHF,eHF,nfreqs,wcoord,wweight,vMAT,ERI_AO)
+subroutine scGW_AO_itau_iw(nBas,nOrb,nO,maxSCF,maxDIIS,dolinGW,restart_scGW,verbose_scGW,chem_pot_scG,no_fock, &
+                           ENuc,Hc,S,P_in,cHF,eHF,nfreqs,wcoord,wweight,vMAT,ERI_AO)
 
 ! Restricted scGW
 
@@ -243,19 +243,19 @@ subroutine scGWitauiw_ao(nBas,nOrb,nO,maxSCF,maxDIIS,dolinGW,restart_scGW,verbos
  enddo
 
  ! Read grids 
- call read_scGW_grids(ntimes,nfreqs,tcoord,tweight,wcoord,wweight,sint2w_weight,cost2w_weight, &
+ call read_scGX_grids(ntimes,nfreqs,tcoord,tweight,wcoord,wweight,sint2w_weight,cost2w_weight, &
                       cosw2t_weight,sinw2t_weight,verbose)
 
  ! Build Go(i w)
  do ifreq=1,nfreqs
   weval_cpx=im*wcoord(ifreq)
-  call G_AO_RHF(nBas,nOrb,nO,eta,cHF,eHF,weval_cpx,G_ao_tmp)
+  call G_AO_RHF_w(nBas,nOrb,nO,eta,cHF,eHF,weval_cpx,G_ao_tmp)
   G_ao_iw_hf(ifreq,:,:)=G_ao_tmp(:,:)
  enddo
  ! Build Go(i tau)
  do itau=1,ntimes
-  call G0itau_ao_RHF(nBas,nOrb,nO, tcoord(itau),G_plus_itau ,cHF,eHF)
-  call G0itau_ao_RHF(nBas,nOrb,nO,-tcoord(itau),G_minus_itau,cHF,eHF)
+  call G_AO_RHF_itau(nBas,nOrb,nO, tcoord(itau),G_plus_itau ,cHF,eHF)
+  call G_AO_RHF_itau(nBas,nOrb,nO,-tcoord(itau),G_minus_itau,cHF,eHF)
   G_ao_itau_hf(2*itau-1,:,:)=G_plus_itau(:,:)
   G_ao_itau_hf(2*itau  ,:,:)=G_minus_itau(:,:)
  enddo
@@ -420,7 +420,7 @@ subroutine scGWitauiw_ao(nBas,nOrb,nO,maxSCF,maxDIIS,dolinGW,restart_scGW,verbos
    max_error_sigma=-1d0;imax_error_sigma=1;
    allocate(error_transf_mo(nfreqs,nOrb,nOrb),Sigma_c_w_mo(nOrb,nOrb))
    ! Build the analytic Sigma_c(iw)
-   call build_analityc_rhf_Sigma_c_iw(nBas,nOrb,nO,verbose,cHF,eHF,nfreqs,wcoord,ERI_AO,error_transf_mo,err_EcGM) ! error_transf_mo set to Sigma_c_mo(iw)
+   call Sigmac_MO_RHF_GW_analytical(nBas,nOrb,nO,verbose,cHF,eHF,nfreqs,wcoord,ERI_AO,error_transf_mo,err_EcGM) ! error_transf_mo set to Sigma_c_mo(iw)
    do ifreq=1,nfreqs
     Sigma_c_w_mo=matmul(matmul(transpose(cHF(:,:)),Sigma_c_w_ao(ifreq,:,:)),cHF(:,:)) ! Fourier: Sigma_c_ao(iw) -> Sigma_c_mo(iw)
     !Sigma_c_w_ao(ifreq,:,:)=matmul(transpose(cHFinv),matmul(error_transf_mo(ifreq,:,:),cHFinv)) ! Analytic: Sigma_c_mo(iw) -> Sigma_c_ao(iw)
@@ -564,8 +564,8 @@ subroutine scGWitauiw_ao(nBas,nOrb,nO,maxSCF,maxDIIS,dolinGW,restart_scGW,verbos
    ! New G_ao_itau_hf
    G_ao_itau_hf=czero
    do itau=1,ntimes
-    call G0itau_ao_RHF(nBas,nOrb,nO, tcoord(itau),G_plus_itau ,cHF,eSD)
-    call G0itau_ao_RHF(nBas,nOrb,nO,-tcoord(itau),G_minus_itau,cHF,eSD)
+    call G_AO_RHF_itau(nBas,nOrb,nO, tcoord(itau),G_plus_itau ,cHF,eSD)
+    call G_AO_RHF_itau(nBas,nOrb,nO,-tcoord(itau),G_minus_itau,cHF,eSD)
     G_ao_itau_hf(2*itau-1,:,:)=G_plus_itau(:,:)
     G_ao_itau_hf(2*itau  ,:,:)=G_minus_itau(:,:)
    enddo
@@ -573,7 +573,7 @@ subroutine scGWitauiw_ao(nBas,nOrb,nO,maxSCF,maxDIIS,dolinGW,restart_scGW,verbos
    DeltaG_ao_iw(:,:,:)=G_ao_iw_hf(:,:,:)+DeltaG_ao_iw(:,:,:) ! Saving G(iw) in DeltaG_ao_iw
    do ifreq=1,nfreqs
     weval_cpx=im*wcoord(ifreq)
-    call G_AO_RHF(nBas,nOrb,nO,eta,cHF,eSD,weval_cpx,G_ao_tmp)
+    call G_AO_RHF_w(nBas,nOrb,nO,eta,cHF,eSD,weval_cpx,G_ao_tmp)
     G_ao_iw_hf(ifreq,:,:)=G_ao_tmp(:,:)
    enddo
    DeltaG_ao_iw(:,:,:)=DeltaG_ao_iw(:,:,:)-G_ao_iw_hf(:,:,:) ! Setting back DeltaG(iw) = G(iw) - Go_new(iw)

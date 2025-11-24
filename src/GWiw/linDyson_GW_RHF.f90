@@ -83,7 +83,7 @@ subroutine linDyson_GW_RHF(nBas,nOrb,nO,c,eHF,nfreqs,wweight,wcoord,ERI,vMAT,&
 
 ! Build Sigma_c(iw)
 
-  call build_Sigmac_w_RHF(nOrb,nO,nfreqs2,eta,0,wcoord2_cpx,eHF,nfreqs,0,&
+  call Sigmac_MO_RHF_GW_w(nOrb,nO,nfreqs2,eta,0,wcoord2_cpx,eHF,nfreqs,0,&
                           wweight,wcoord,vMAT,Sigma_c)
 
 ! Integration along imag. freqs contributions
@@ -91,7 +91,7 @@ subroutine linDyson_GW_RHF(nBas,nOrb,nO,c,eHF,nfreqs,wweight,wcoord,ERI,vMAT,&
   Pcorr_mo(:,:)=0d0
   do ifreq=1,nfreqs2
    
-   call G_MO_RHF(nOrb,nO,0d0,eHF,wcoord2_cpx(ifreq),Tmp_mo)                ! This is G(iw2)
+   call G_MO_RHF_w(nOrb,nO,0d0,eHF,wcoord2_cpx(ifreq),Tmp_mo)              ! This is G(iw2)
    Tmp_mo(:,:)=matmul(Tmp_mo(:,:),matmul(Sigma_c(ifreq,:,:),Tmp_mo(:,:)))  ! This is G(iw2) Sigma_c(iw2) G(iw2)
  
    Pcorr_mo(:,:) = Pcorr_mo(:,:) + wweight2(ifreq)*real(Tmp_mo(:,:)+conjg(Tmp_mo(:,:))) ! Integrate along iw2

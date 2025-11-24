@@ -117,7 +117,7 @@ subroutine linDyson_GW_RHFB(nBas,nOrb,nOrb_twice,c,eQP_state,nfreqs,wweight,wcoo
 
 ! Build Sigma_c(iw)
 
-  call build_Sigmac_w_RHFB(nOrb,nOrb_twice,nfreqs2,eta,0,wcoord2_cpx,eQP_state,nfreqs,0,wweight,wcoord, & 
+  call Sigmac_MO_RHFB_GW_w(nOrb,nOrb_twice,nfreqs2,eta,0,wcoord2_cpx,eQP_state,nfreqs,0,wweight,wcoord, & 
                            vMAT,U_QP,Sigma_c_he,Sigma_c_hh,Sigma_c_eh,Sigma_c_ee,.true.,.true.)
 
 ! Integration along imag. freqs contributions
@@ -132,13 +132,13 @@ subroutine linDyson_GW_RHFB(nBas,nOrb,nOrb_twice,c,eQP_state,nfreqs,wweight,wcoo
    Sigma_c_QP(nOrb+1:nOrb_twice,nOrb+1:nOrb_twice) =  Sigma_c_eh(ifreq,1:nOrb,1:nOrb)
 
    ! G^Gorkov
-   call G_MO_RHFB(nOrb,nOrb_twice,eta,eQP_state,wcoord2_cpx(ifreq),Mat1,Mat1,Mat2, Mat2,Tmp_mo) ! G_he(iw2)
+   call G_MO_RHFB_w(nOrb,nOrb_twice,eta,eQP_state,wcoord2_cpx(ifreq),Mat1,Mat1,Mat2, Mat2,Tmp_mo) ! G_he(iw2)
    Tmp_QP(1:nOrb           ,1:nOrb           ) = Tmp_mo(1:nOrb,1:nOrb)
-   call G_MO_RHFB(nOrb,nOrb_twice,eta,eQP_state,wcoord2_cpx(ifreq),Mat1,Mat2,-Mat2,Mat1,Tmp_mo) ! G_hh(iw2)
+   call G_MO_RHFB_w(nOrb,nOrb_twice,eta,eQP_state,wcoord2_cpx(ifreq),Mat1,Mat2,-Mat2,Mat1,Tmp_mo) ! G_hh(iw2)
    Tmp_QP(1:nOrb           ,nOrb+1:nOrb_twice) = Tmp_mo(1:nOrb,1:nOrb)
-   call G_MO_RHFB(nOrb,nOrb_twice,eta,eQP_state,wcoord2_cpx(ifreq),Mat2,Mat1,Mat1,-Mat2,Tmp_mo) ! G_ee(iw2)
+   call G_MO_RHFB_w(nOrb,nOrb_twice,eta,eQP_state,wcoord2_cpx(ifreq),Mat2,Mat1,Mat1,-Mat2,Tmp_mo) ! G_ee(iw2)
    Tmp_QP(nOrb+1:nOrb_twice,1:nOrb           ) = Tmp_mo(1:nOrb,1:nOrb)
-   call G_MO_RHFB(nOrb,nOrb_twice,eta,eQP_state,wcoord2_cpx(ifreq),Mat2,Mat2,Mat1, Mat1,Tmp_mo) ! G_eh(iw2)
+   call G_MO_RHFB_w(nOrb,nOrb_twice,eta,eQP_state,wcoord2_cpx(ifreq),Mat2,Mat2,Mat1, Mat1,Tmp_mo) ! G_eh(iw2)
    Tmp_QP(nOrb+1:nOrb_twice,nOrb+1:nOrb_twice) = Tmp_mo(1:nOrb,1:nOrb)
 
    Tmp_QP(:,:)=matmul(Tmp_QP(:,:),matmul(Sigma_c_QP(:,:),Tmp_QP(:,:)))  ! This is G^Gorkov(iw2) Sigma_c^Gorkov(iw2) G^Gorkov(iw2)

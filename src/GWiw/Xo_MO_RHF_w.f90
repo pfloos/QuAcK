@@ -1,4 +1,4 @@
-subroutine Xoiw_mo_RHF(nOrb,nO,eta,eHF,weval,Chi0_mo_iw)
+subroutine Xo_MO_RHF_w(nOrb,nO,eta,eHF,weval,Chi0_mo_iw)
 
 ! Restricted Xo(i w) in MO basis
 

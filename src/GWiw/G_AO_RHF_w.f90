@@ -1,4 +1,4 @@
-subroutine G_AO_RHF(nBas,nOrb,nO,eta,cHF,eHF,wcoord,G_AO)
+subroutine G_AO_RHF_w(nBas,nOrb,nO,eta,cHF,eHF,wcoord,G_AO)
 
 ! G(i w)
 

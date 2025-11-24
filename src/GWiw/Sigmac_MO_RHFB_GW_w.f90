@@ -1,6 +1,6 @@
-subroutine build_Sigmac_w_RHFB(nOrb,nOrb_twice,nE,eta,verbose,wtest,eHFB,nfreqs,ntimes,&
-                              wweight,wcoord,vMAT,U_QP,Sigma_he_c_mo,Sigma_hh_c_mo,    &
-                              Sigma_eh_c_mo,Sigma_ee_c_mo,doSigc_eh,doSigc_ee)
+subroutine Sigmac_MO_RHFB_GW_w(nOrb,nOrb_twice,nE,eta,verbose,wtest,eHFB,nfreqs,ntimes,&
+                               wweight,wcoord,vMAT,U_QP,Sigma_he_c_mo,Sigma_hh_c_mo,   &
+                               Sigma_eh_c_mo,Sigma_ee_c_mo,doSigc_eh,doSigc_ee)
 
 ! Restricted Sigma_c(E)
 
@@ -89,7 +89,7 @@ subroutine build_Sigmac_w_RHFB(nOrb,nOrb_twice,nE,eta,verbose,wtest,eHFB,nfreqs,
    if(ntimes>0) then
     stop
    else
-    call Xoiw_mo_RHFB(nOrb,nOrb_twice,eta,eHFB,im*wcoord(ifreq),Mat1,Mat2,Chi0_mo_w)
+    call Xo_MO_RHFB_w(nOrb,nOrb_twice,eta,eHFB,im*wcoord(ifreq),Mat1,Mat2,Chi0_mo_w)
    endif
 
    ! Xo (iw) -> Wp (iw)
@@ -104,27 +104,27 @@ subroutine build_Sigmac_w_RHFB(nOrb,nOrb_twice,nE,eta,verbose,wtest,eHFB,nfreqs,
      ! Build G(iw+wtest)
      ! Ghe
       weval=wtest(iE)+im*wcoord(ifreq)
-      call G_MO_RHFB(nOrb,nOrb_twice,eta,eHFB,weval,Mat1,Mat1,Mat2,Mat2,G_mo_1)
+      call G_MO_RHFB_w(nOrb,nOrb_twice,eta,eHFB,weval,Mat1,Mat1,Mat2,Mat2,G_mo_1)
       weval=wtest(iE)-im*wcoord(ifreq)
-      call G_MO_RHFB(nOrb,nOrb_twice,eta,eHFB,weval,Mat1,Mat1,Mat2,Mat2,G_mo_2)
+      call G_MO_RHFB_w(nOrb,nOrb_twice,eta,eHFB,weval,Mat1,Mat1,Mat2,Mat2,G_mo_2)
      ! Ghh
       weval=wtest(iE)+im*wcoord(ifreq)
-      call G_MO_RHFB(nOrb,nOrb_twice,eta,eHFB,weval,Mat1,Mat2,-Mat2,Mat1,G_mo_3)
+      call G_MO_RHFB_w(nOrb,nOrb_twice,eta,eHFB,weval,Mat1,Mat2,-Mat2,Mat1,G_mo_3)
       weval=wtest(iE)-im*wcoord(ifreq)
-      call G_MO_RHFB(nOrb,nOrb_twice,eta,eHFB,weval,Mat1,Mat2,-Mat2,Mat1,G_mo_4)
+      call G_MO_RHFB_w(nOrb,nOrb_twice,eta,eHFB,weval,Mat1,Mat2,-Mat2,Mat1,G_mo_4)
      ! Geh
      if(doSigc_eh) then
       weval=wtest(iE)+im*wcoord(ifreq)
-      call G_MO_RHFB(nOrb,nOrb_twice,eta,eHFB,weval,Mat2,Mat2,Mat1,Mat1,G_mo_5)
+      call G_MO_RHFB_w(nOrb,nOrb_twice,eta,eHFB,weval,Mat2,Mat2,Mat1,Mat1,G_mo_5)
       weval=wtest(iE)-im*wcoord(ifreq)
-      call G_MO_RHFB(nOrb,nOrb_twice,eta,eHFB,weval,Mat2,Mat2,Mat1,Mat1,G_mo_6)
+      call G_MO_RHFB_w(nOrb,nOrb_twice,eta,eHFB,weval,Mat2,Mat2,Mat1,Mat1,G_mo_6)
      endif
      ! Gee
      if(doSigc_ee) then
       weval=wtest(iE)+im*wcoord(ifreq)
-      call G_MO_RHFB(nOrb,nOrb_twice,eta,eHFB,weval,Mat2,Mat1,Mat1,-Mat2,G_mo_7)
+      call G_MO_RHFB_w(nOrb,nOrb_twice,eta,eHFB,weval,Mat2,Mat1,Mat1,-Mat2,G_mo_7)
       weval=wtest(iE)-im*wcoord(ifreq)
-      call G_MO_RHFB(nOrb,nOrb_twice,eta,eHFB,weval,Mat2,Mat1,Mat1,-Mat2,G_mo_8)
+      call G_MO_RHFB_w(nOrb,nOrb_twice,eta,eHFB,weval,Mat2,Mat1,Mat1,-Mat2,G_mo_8)
      endif
      ! Sigma_c(E)
      do iorb=1,nOrb
@@ -180,7 +180,7 @@ subroutine build_Sigmac_w_RHFB(nOrb,nOrb_twice,nE,eta,verbose,wtest,eHFB,nfreqs,
         Tmp_mo_w(iorb,iorb)=1d0
        enddo
        weval=eHFB(Istate)-Real(wtest(iE))
-       call Xoiw_mo_RHFB(nOrb,nOrb_twice,eta,eHFB,weval,Mat1,Mat2,Chi0_mo_w)
+       call Xo_MO_RHFB_w(nOrb,nOrb_twice,eta,eHFB,weval,Mat1,Mat2,Chi0_mo_w)
        Tmp_mo_w(:,:)=Tmp_mo_w(:,:)-matmul(Real(Chi0_mo_w(:,:)),vMAT(:,:))
        call inverse_matrix(nOrb2,Tmp_mo_w,Tmp_mo_w)
        Tmp_mo_w(:,:)=matmul(Tmp_mo_w(:,:),Real(Chi0_mo_w(:,:)))
@@ -218,7 +218,7 @@ subroutine build_Sigmac_w_RHFB(nOrb,nOrb_twice,nE,eta,verbose,wtest,eHFB,nfreqs,
         Tmp_mo_w(iorb,iorb)=1d0
        enddo
        weval=-(Real(wtest(iE))-abs(eHFB(Istate)))
-       call Xoiw_mo_RHFB(nOrb,nOrb_twice,eta,eHFB,weval,Mat1,Mat2,Chi0_mo_w)
+       call Xo_MO_RHFB_w(nOrb,nOrb_twice,eta,eHFB,weval,Mat1,Mat2,Chi0_mo_w)
        Tmp_mo_w(:,:)=Tmp_mo_w(:,:)-matmul(Real(Chi0_mo_w(:,:)),vMAT(:,:))
        call inverse_matrix(nOrb2,Tmp_mo_w,Tmp_mo_w)
        Tmp_mo_w(:,:)=matmul(Tmp_mo_w(:,:),Real(Chi0_mo_w(:,:)))

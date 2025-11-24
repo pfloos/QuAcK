@@ -1,5 +1,5 @@
-subroutine scGWBitauiw_ao(nBas,nOrb,nOrb_twice,maxSCF,maxDIIS,dolinGW,restart_scGWB,verbose_scGWB,chem_pot_scG,no_h_hfb, &
-                          ENuc,Hc,S,X_in,P_in,Pan_in,cHFB,eQP_state,chem_pot,sigma,nfreqs,wcoord,wweight,U_QP,vMAT,ERI_AO)
+subroutine scGWB_AO_itau_iw(nBas,nOrb,nOrb_twice,maxSCF,maxDIIS,dolinGW,restart_scGWB,verbose_scGWB,chem_pot_scG,no_h_hfb, &
+                            ENuc,Hc,S,X_in,P_in,Pan_in,cHFB,eQP_state,chem_pot,sigma,nfreqs,wcoord,wweight,U_QP,vMAT,ERI_AO)
 
 ! Restricted scGWB
 
@@ -286,52 +286,52 @@ subroutine scGWBitauiw_ao(nBas,nOrb,nOrb_twice,maxSCF,maxDIIS,dolinGW,restart_sc
  H_ao_hfb(nBas+1:nBas_twice,1:nBas           ) =  H_ao_hfb(1:nBas,nBas+1:nBas_twice)
 
  ! Read grids 
- call read_scGW_grids(ntimes,nfreqs,tcoord,tweight,wcoord,wweight,sint2w_weight,cost2w_weight, &
+ call read_scGX_grids(ntimes,nfreqs,tcoord,tweight,wcoord,wweight,sint2w_weight,cost2w_weight, &
                       cosw2t_weight,sinw2t_weight,verbose)
 
  ! Build Go(i w)
  do ifreq=1,nfreqs
   weval_cpx=im*wcoord(ifreq)
   ! G_he(iw)
-  call G_AO_RHFB(nBas,nOrb,nOrb_twice,eta,cHFB,eQP_state,weval_cpx, Mat1, Mat1, Mat2, Mat2,G_ao_tmp)
+  call G_AO_RHFB_w(nBas,nOrb,nOrb_twice,eta,cHFB,eQP_state,weval_cpx, Mat1, Mat1, Mat2, Mat2,G_ao_tmp)
   G_ao_iw_hfb(ifreq,1:nBas           ,1:nBas           ) = G_ao_tmp(1:nBas,1:nBas)
   ! G_hh(iw)
-  call G_AO_RHFB(nBas,nOrb,nOrb_twice,eta,cHFB,eQP_state,weval_cpx, Mat1, Mat2,-Mat2, Mat1,G_ao_tmp)
+  call G_AO_RHFB_w(nBas,nOrb,nOrb_twice,eta,cHFB,eQP_state,weval_cpx, Mat1, Mat2,-Mat2, Mat1,G_ao_tmp)
   G_ao_iw_hfb(ifreq,1:nBas           ,nBas+1:nBas_twice) = G_ao_tmp(1:nBas,1:nBas)
   ! G_ee(iw)
-  call G_AO_RHFB(nBas,nOrb,nOrb_twice,eta,cHFB,eQP_state,weval_cpx, Mat2, Mat1, Mat1,-Mat2,G_ao_tmp)
+  call G_AO_RHFB_w(nBas,nOrb,nOrb_twice,eta,cHFB,eQP_state,weval_cpx, Mat2, Mat1, Mat1,-Mat2,G_ao_tmp)
   G_ao_iw_hfb(ifreq,nBas+1:nBas_twice,1:nBas           ) = G_ao_tmp(1:nBas,1:nBas)
   ! G_eh(iw)
-  call G_AO_RHFB(nBas,nOrb,nOrb_twice,eta,cHFB,eQP_state,weval_cpx, Mat2, Mat2, Mat1, Mat1,G_ao_tmp)
+  call G_AO_RHFB_w(nBas,nOrb,nOrb_twice,eta,cHFB,eQP_state,weval_cpx, Mat2, Mat2, Mat1, Mat1,G_ao_tmp)
   G_ao_iw_hfb(ifreq,nBas+1:nBas_twice,nBas+1:nBas_twice) = G_ao_tmp(1:nBas,1:nBas)
  enddo
  ! Build Go(i tau)
  do itau=1,ntimes
   ! tau > 0
   ! G_he(i tau)
-  call G0itau_ao_RHFB(nBas,nOrb,nOrb_twice, tcoord(itau),G_ao_tmp,cHFB,eQP_state, Mat1, Mat1, Mat2, Mat2)
+  call G_AO_RHFB_itau(nBas,nOrb,nOrb_twice, tcoord(itau),G_ao_tmp,cHFB,eQP_state, Mat1, Mat1, Mat2, Mat2)
   G_ao_itau_hfb(2*itau-1,1:nBas           ,1:nBas           ) = G_ao_tmp(1:nBas,1:nBas)
   ! G_hh(i tau)
-  call G0itau_ao_RHFB(nBas,nOrb,nOrb_twice, tcoord(itau),G_ao_tmp,cHFB,eQP_state, Mat1, Mat2,-Mat2, Mat1)
+  call G_AO_RHFB_itau(nBas,nOrb,nOrb_twice, tcoord(itau),G_ao_tmp,cHFB,eQP_state, Mat1, Mat2,-Mat2, Mat1)
   G_ao_itau_hfb(2*itau-1,1:nBas           ,nBas+1:nBas_twice) = G_ao_tmp(1:nBas,1:nBas)
   ! G_ee(i tau)
-  call G0itau_ao_RHFB(nBas,nOrb,nOrb_twice, tcoord(itau),G_ao_tmp,cHFB,eQP_state, Mat2, Mat1, Mat1,-Mat2)
+  call G_AO_RHFB_itau(nBas,nOrb,nOrb_twice, tcoord(itau),G_ao_tmp,cHFB,eQP_state, Mat2, Mat1, Mat1,-Mat2)
   G_ao_itau_hfb(2*itau-1,nBas+1:nBas_twice,1:nBas           ) = G_ao_tmp(1:nBas,1:nBas)
   ! G_eh(i tau)
-  call G0itau_ao_RHFB(nBas,nOrb,nOrb_twice, tcoord(itau),G_ao_tmp,cHFB,eQP_state, Mat2, Mat2, Mat1, Mat1)
+  call G_AO_RHFB_itau(nBas,nOrb,nOrb_twice, tcoord(itau),G_ao_tmp,cHFB,eQP_state, Mat2, Mat2, Mat1, Mat1)
   G_ao_itau_hfb(2*itau-1,nBas+1:nBas_twice,nBas+1:nBas_twice) = G_ao_tmp(1:nBas,1:nBas)
   ! tau < 0
   ! G_he(i tau)
-  call G0itau_ao_RHFB(nBas,nOrb,nOrb_twice,-tcoord(itau),G_ao_tmp,cHFB,eQP_state, Mat1, Mat1, Mat2, Mat2)
+  call G_AO_RHFB_itau(nBas,nOrb,nOrb_twice,-tcoord(itau),G_ao_tmp,cHFB,eQP_state, Mat1, Mat1, Mat2, Mat2)
   G_ao_itau_hfb(2*itau  ,1:nBas           ,1:nBas           ) = G_ao_tmp(1:nBas,1:nBas)
   ! G_hh(i tau)
-  call G0itau_ao_RHFB(nBas,nOrb,nOrb_twice,-tcoord(itau),G_ao_tmp,cHFB,eQP_state, Mat1, Mat2,-Mat2, Mat1)
+  call G_AO_RHFB_itau(nBas,nOrb,nOrb_twice,-tcoord(itau),G_ao_tmp,cHFB,eQP_state, Mat1, Mat2,-Mat2, Mat1)
   G_ao_itau_hfb(2*itau  ,1:nBas           ,nBas+1:nBas_twice) = G_ao_tmp(1:nBas,1:nBas)
   ! G_ee(i tau)
-  call G0itau_ao_RHFB(nBas,nOrb,nOrb_twice,-tcoord(itau),G_ao_tmp,cHFB,eQP_state, Mat2, Mat1, Mat1,-Mat2)
+  call G_AO_RHFB_itau(nBas,nOrb,nOrb_twice,-tcoord(itau),G_ao_tmp,cHFB,eQP_state, Mat2, Mat1, Mat1,-Mat2)
   G_ao_itau_hfb(2*itau  ,nBas+1:nBas_twice,1:nBas           ) = G_ao_tmp(1:nBas,1:nBas)
   ! G_eh(i tau)
-  call G0itau_ao_RHFB(nBas,nOrb,nOrb_twice,-tcoord(itau),G_ao_tmp,cHFB,eQP_state, Mat2, Mat2, Mat1, Mat1)
+  call G_AO_RHFB_itau(nBas,nOrb,nOrb_twice,-tcoord(itau),G_ao_tmp,cHFB,eQP_state, Mat2, Mat2, Mat1, Mat1)
   G_ao_itau_hfb(2*itau  ,nBas+1:nBas_twice,nBas+1:nBas_twice) = G_ao_tmp(1:nBas,1:nBas)
  enddo
  ! Initialize G(i tau)
@@ -531,7 +531,7 @@ subroutine scGWBitauiw_ao(nBas,nOrb,nOrb_twice,maxSCF,maxDIIS,dolinGW,restart_sc
    call cgqf(nfreqs_int,1,0d0,0d0,0d0,1d0,wcoord_int,wweight_int)
    wweight_int(:)=wweight_int(:)/((1d0-wcoord_int(:))**2d0)
    wcoord_int(:)=wcoord_int(:)/(1d0-wcoord_int(:))
-   call build_Sigmac_w_RHFB(nOrb,nOrb+nOrb,nfreqs,0d0,0,wtest,eQP_state,nfreqs_int,0,wweight_int,wcoord_int, &
+   call Sigmac_MO_RHFB_GW_w(nOrb,nOrb+nOrb,nfreqs,0d0,0,wtest,eQP_state,nfreqs_int,0,wweight_int,wcoord_int, &
                             vMAT_mo,U_QP,Sigma_c_he,Sigma_c_hh,Sigma_c_eh,Sigma_c_ee,.true.,.true.)
    max_error_st2sw=-1d0
    sum_error_st2sw=0d0
@@ -713,16 +713,16 @@ subroutine scGWBitauiw_ao(nBas,nOrb,nOrb_twice,maxSCF,maxDIIS,dolinGW,restart_sc
    do ifreq=1,nfreqs
     weval_cpx=im*wcoord(ifreq)
     ! G_he(iw)
-    call G_AO_RHFB(nBas,nOrb,nOrb_twice,eta,cHFB,eQP,weval_cpx, Mat1, Mat1, Mat2, Mat2,G_ao_tmp)
+    call G_AO_RHFB_w(nBas,nOrb,nOrb_twice,eta,cHFB,eQP,weval_cpx, Mat1, Mat1, Mat2, Mat2,G_ao_tmp)
     G_ao_iw_hfb(ifreq,1:nBas           ,1:nBas           ) = G_ao_tmp(1:nBas,1:nBas)
     ! G_hh(iw)
-    call G_AO_RHFB(nBas,nOrb,nOrb_twice,eta,cHFB,eQP,weval_cpx, Mat1, Mat2,-Mat2, Mat1,G_ao_tmp)
+    call G_AO_RHFB_w(nBas,nOrb,nOrb_twice,eta,cHFB,eQP,weval_cpx, Mat1, Mat2,-Mat2, Mat1,G_ao_tmp)
     G_ao_iw_hfb(ifreq,1:nBas           ,nBas+1:nBas_twice) = G_ao_tmp(1:nBas,1:nBas)
     ! G_ee(iw)
-    call G_AO_RHFB(nBas,nOrb,nOrb_twice,eta,cHFB,eQP,weval_cpx, Mat2, Mat1, Mat1,-Mat2,G_ao_tmp)
+    call G_AO_RHFB_w(nBas,nOrb,nOrb_twice,eta,cHFB,eQP,weval_cpx, Mat2, Mat1, Mat1,-Mat2,G_ao_tmp)
     G_ao_iw_hfb(ifreq,nBas+1:nBas_twice,1:nBas           ) = G_ao_tmp(1:nBas,1:nBas)
     ! G_eh(iw)
-    call G_AO_RHFB(nBas,nOrb,nOrb_twice,eta,cHFB,eQP,weval_cpx, Mat2, Mat2, Mat1, Mat1,G_ao_tmp)
+    call G_AO_RHFB_w(nBas,nOrb,nOrb_twice,eta,cHFB,eQP,weval_cpx, Mat2, Mat2, Mat1, Mat1,G_ao_tmp)
     G_ao_iw_hfb(ifreq,nBas+1:nBas_twice,nBas+1:nBas_twice) = G_ao_tmp(1:nBas,1:nBas)
    enddo
    DeltaG_ao_iw(:,:,:)=DeltaG_ao_iw(:,:,:)-G_ao_iw_hfb(:,:,:) ! Setting back DeltaG(iw) = G(iw) - Go_new(iw)
@@ -731,29 +731,29 @@ subroutine scGWBitauiw_ao(nBas,nOrb,nOrb_twice,maxSCF,maxDIIS,dolinGW,restart_sc
    do itau=1,ntimes
     ! tau > 0
     ! G_he(i tau)
-    call G0itau_ao_RHFB(nBas,nOrb,nOrb_twice, tcoord(itau),G_ao_tmp,cHFB,eQP, Mat1, Mat1, Mat2, Mat2)
+    call G_AO_RHFB_itau(nBas,nOrb,nOrb_twice, tcoord(itau),G_ao_tmp,cHFB,eQP, Mat1, Mat1, Mat2, Mat2)
     G_ao_itau_hfb(2*itau-1,1:nBas           ,1:nBas           ) = G_ao_tmp(1:nBas,1:nBas)
     ! G_hh(i tau)
-    call G0itau_ao_RHFB(nBas,nOrb,nOrb_twice, tcoord(itau),G_ao_tmp,cHFB,eQP, Mat1, Mat2,-Mat2, Mat1)
+    call G_AO_RHFB_itau(nBas,nOrb,nOrb_twice, tcoord(itau),G_ao_tmp,cHFB,eQP, Mat1, Mat2,-Mat2, Mat1)
     G_ao_itau_hfb(2*itau-1,1:nBas           ,nBas+1:nBas_twice) = G_ao_tmp(1:nBas,1:nBas)
     ! G_ee(i tau)
-    call G0itau_ao_RHFB(nBas,nOrb,nOrb_twice, tcoord(itau),G_ao_tmp,cHFB,eQP, Mat2, Mat1, Mat1,-Mat2)
+    call G_AO_RHFB_itau(nBas,nOrb,nOrb_twice, tcoord(itau),G_ao_tmp,cHFB,eQP, Mat2, Mat1, Mat1,-Mat2)
     G_ao_itau_hfb(2*itau-1,nBas+1:nBas_twice,1:nBas           ) = G_ao_tmp(1:nBas,1:nBas)
     ! G_eh(i tau)
-    call G0itau_ao_RHFB(nBas,nOrb,nOrb_twice, tcoord(itau),G_ao_tmp,cHFB,eQP, Mat2, Mat2, Mat1, Mat1)
+    call G_AO_RHFB_itau(nBas,nOrb,nOrb_twice, tcoord(itau),G_ao_tmp,cHFB,eQP, Mat2, Mat2, Mat1, Mat1)
     G_ao_itau_hfb(2*itau-1,nBas+1:nBas_twice,nBas+1:nBas_twice) = G_ao_tmp(1:nBas,1:nBas)
     ! tau < 0
     ! G_he(i tau)
-    call G0itau_ao_RHFB(nBas,nOrb,nOrb_twice,-tcoord(itau),G_ao_tmp,cHFB,eQP, Mat1, Mat1, Mat2, Mat2)
+    call G_AO_RHFB_itau(nBas,nOrb,nOrb_twice,-tcoord(itau),G_ao_tmp,cHFB,eQP, Mat1, Mat1, Mat2, Mat2)
     G_ao_itau_hfb(2*itau  ,1:nBas           ,1:nBas           ) = G_ao_tmp(1:nBas,1:nBas)
     ! G_hh(i tau)
-    call G0itau_ao_RHFB(nBas,nOrb,nOrb_twice,-tcoord(itau),G_ao_tmp,cHFB,eQP, Mat1, Mat2,-Mat2, Mat1)
+    call G_AO_RHFB_itau(nBas,nOrb,nOrb_twice,-tcoord(itau),G_ao_tmp,cHFB,eQP, Mat1, Mat2,-Mat2, Mat1)
     G_ao_itau_hfb(2*itau  ,1:nBas           ,nBas+1:nBas_twice) = G_ao_tmp(1:nBas,1:nBas)
     ! G_ee(i tau)
-    call G0itau_ao_RHFB(nBas,nOrb,nOrb_twice,-tcoord(itau),G_ao_tmp,cHFB,eQP, Mat2, Mat1, Mat1,-Mat2)
+    call G_AO_RHFB_itau(nBas,nOrb,nOrb_twice,-tcoord(itau),G_ao_tmp,cHFB,eQP, Mat2, Mat1, Mat1,-Mat2)
     G_ao_itau_hfb(2*itau  ,nBas+1:nBas_twice,1:nBas           ) = G_ao_tmp(1:nBas,1:nBas)
     ! G_eh(i tau)
-    call G0itau_ao_RHFB(nBas,nOrb,nOrb_twice,-tcoord(itau),G_ao_tmp,cHFB,eQP, Mat2, Mat2, Mat1, Mat1)
+    call G_AO_RHFB_itau(nBas,nOrb,nOrb_twice,-tcoord(itau),G_ao_tmp,cHFB,eQP, Mat2, Mat2, Mat1, Mat1)
     G_ao_itau_hfb(2*itau  ,nBas+1:nBas_twice,nBas+1:nBas_twice) = G_ao_tmp(1:nBas,1:nBas)
    enddo
    if(verbose/=0) then

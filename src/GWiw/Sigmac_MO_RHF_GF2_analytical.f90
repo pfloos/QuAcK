@@ -1,4 +1,4 @@
-subroutine build_analityc_rhf_Sigma_c_iw_GF2(nBas,nOrb,nO,verbose,c,eHF,nfreqs,wcoord,ERI_AO,Sigma_c,Ec)
+subroutine Sigmac_MO_RHF_GF2_analytical(nBas,nOrb,nO,verbose,c,eHF,nfreqs,wcoord,ERI_AO,Sigma_c,Ec)
 
 
 ! Use the restricted Sigma_c(E) to compute the linnearized approximation to G
