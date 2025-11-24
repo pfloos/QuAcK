@@ -641,6 +641,7 @@ subroutine scGWB_AO_itau_iw(nBas,nOrb,nOrb_twice,maxSCF,maxDIIS,dolinGW,restart_
      do ibas=1,nBas_twice
       do jbas=1,nBas_twice
        err_currentR(idiis_indexR)=R_ao(ibas,jbas)-R_ao_old(ibas,jbas)
+       if(abs(err_currentR(idiis_indexR))<1e-12) err_currentR(idiis_indexR)=0d0
        R_ao_extrap(idiis_indexR)=R_ao(ibas,jbas)
        idiis_indexR=idiis_indexR+1
       enddo
@@ -790,6 +791,7 @@ subroutine scGWB_AO_itau_iw(nBas,nOrb,nOrb_twice,maxSCF,maxDIIS,dolinGW,restart_
     do ibas=1,nBas_twice
      do jbas=1,nBas_twice
       err_current(idiis_index)=G_ao_itau(itau,ibas,jbas)-G_ao_itau_old(itau,ibas,jbas)
+      if(abs(err_current(idiis_index))<1e-12) err_current(idiis_index)=czero
       G_itau_extrap(idiis_index)=G_ao_itau(itau,ibas,jbas)
       idiis_index=idiis_index+1
      enddo
