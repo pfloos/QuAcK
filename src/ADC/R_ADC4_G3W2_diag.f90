@@ -184,7 +184,7 @@ subroutine R_ADC4_G3W2_diag(dotest,TDA_W,eta,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,ERHF,
               dem3 = eHF(i) - eHF(s) - Om(mu)
   
 !             H(1,1) = H(1,1) + num1*num2/(dem1*dem2*dem3)
-              H(1,1) = H(1,1) + num1*num2*dem1*dem2*dem3/(dem1**2 + eta**2)/(dem2**2 + eta**2)/(dem3**2 + eta**2)
+              H(1,1) = H(1,1) + num1*num2*(dem1*dem2*dem3 - eta**2*(dem1 + dem2 + dem3))/(dem1**2 + eta**2)/(dem2**2 + eta**2)/(dem3**2 + eta**2)
   
            end do
            end do
@@ -207,7 +207,7 @@ subroutine R_ADC4_G3W2_diag(dotest,TDA_W,eta,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,ERHF,
               dem3 = eHF(s) - eHF(a) - Om(mu)
   
 !             H(1,1) = H(1,1) + num1*num2/(dem1*dem2*dem3)
-              H(1,1) = H(1,1) + num1*num2*dem1*dem2*dem3/(dem1**2 + eta**2)/(dem2**2 + eta**2)/(dem3**2 + eta**2)
+              H(1,1) = H(1,1) + num1*num2*(dem1*dem2*dem3 - eta**2*(dem1 + dem2 + dem3))/(dem1**2 + eta**2)/(dem2**2 + eta**2)/(dem3**2 + eta**2)
   
            end do
            end do
@@ -262,8 +262,8 @@ subroutine R_ADC4_G3W2_diag(dotest,TDA_W,eta,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,ERHF,
 
 !               H(1    ,1+ija) = H(1    ,1+ija) + num/(dem1*dem2)
 !               H(1+ija,1    ) = H(1+ija,1    ) + num/(dem1*dem2)
-                H(1    ,1+ija) = H(1    ,1+ija) + num*dem1*dem2/(dem1**2 + eta**2)/(dem2**2 + eta**2)
-                H(1+ija,1    ) = H(1+ija,1    ) + num*dem1*dem2/(dem1**2 + eta**2)/(dem2**2 + eta**2)
+                H(1    ,1+ija) = H(1    ,1+ija) + num*(dem1*dem2 - eta**2)/(dem1**2 + eta**2)/(dem2**2 + eta**2)
+                H(1+ija,1    ) = H(1+ija,1    ) + num*(dem1*dem2 - eta**2)/(dem1**2 + eta**2)/(dem2**2 + eta**2)
  
                 num = 2d0*sqrt(2d0)*rho(k,c,mu)*rho(c,i,nu)*rho(k,p,nu)
                 dem1 = eHF(k) - eHF(c) + Om(mu)
@@ -271,8 +271,8 @@ subroutine R_ADC4_G3W2_diag(dotest,TDA_W,eta,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,ERHF,
 
 !               H(1    ,1+ija) = H(1    ,1+ija) - num/(dem1*dem2)
 !               H(1+ija,1    ) = H(1+ija,1    ) - num/(dem1*dem2)
-                H(1    ,1+ija) = H(1    ,1+ija) - num*dem1*dem2/(dem1**2 + eta**2)/(dem2**2 + eta**2)
-                H(1+ija,1    ) = H(1+ija,1    ) - num*dem1*dem2/(dem1**2 + eta**2)/(dem2**2 + eta**2)
+                H(1    ,1+ija) = H(1    ,1+ija) - num*(dem1*dem2 - eta**2)/(dem1**2 + eta**2)/(dem2**2 + eta**2)
+                H(1+ija,1    ) = H(1+ija,1    ) - num*(dem1*dem2 - eta**2)/(dem1**2 + eta**2)/(dem2**2 + eta**2)
 
                 num = 2d0*sqrt(2d0)*rho(k,c,mu)*rho(i,c,nu)*rho(p,k,nu)
                 dem1 = eHF(k) - eHF(c) + Om(mu)
@@ -280,8 +280,8 @@ subroutine R_ADC4_G3W2_diag(dotest,TDA_W,eta,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,ERHF,
 
 !               H(1    ,1+ija) = H(1    ,1+ija) - 0.5d0*num/(dem1*dem2)
 !               H(1+ija,1    ) = H(1+ija,1    ) - 0.5d0*num/(dem1*dem2)
-                H(1    ,1+ija) = H(1    ,1+ija) - 0.5d0*num*dem1*dem2/(dem1**2 + eta**2)/(dem2**2 + eta**2)
-                H(1+ija,1    ) = H(1+ija,1    ) - 0.5d0*num*dem1*dem2/(dem1**2 + eta**2)/(dem2**2 + eta**2)
+                H(1    ,1+ija) = H(1    ,1+ija) - 0.5d0*num*(dem1*dem2 - eta**2)/(dem1**2 + eta**2)/(dem2**2 + eta**2)
+                H(1+ija,1    ) = H(1+ija,1    ) - 0.5d0*num*(dem1*dem2 - eta**2)/(dem1**2 + eta**2)/(dem2**2 + eta**2)
 
               end do
             end do
@@ -297,8 +297,8 @@ subroutine R_ADC4_G3W2_diag(dotest,TDA_W,eta,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,ERHF,
 
 !               H(1    ,1+ija) = H(1    ,1+ija) + 0.5d0*num/(dem1*dem2)
 !               H(1+ija,1    ) = H(1+ija,1    ) + 0.5d0*num/(dem1*dem2)
-                H(1    ,1+ija) = H(1    ,1+ija) + 0.5d0*num*dem1*dem2/(dem1**2 + eta**2)/(dem2**2 + eta**2)
-                H(1+ija,1    ) = H(1+ija,1    ) + 0.5d0*num*dem1*dem2/(dem1**2 + eta**2)/(dem2**2 + eta**2)
+                H(1    ,1+ija) = H(1    ,1+ija) + 0.5d0*num*(dem1*dem2 - eta**2)/(dem1**2 + eta**2)/(dem2**2 + eta**2)
+                H(1+ija,1    ) = H(1+ija,1    ) + 0.5d0*num*(dem1*dem2 - eta**2)/(dem1**2 + eta**2)/(dem2**2 + eta**2)
 
               end do
             end do
@@ -354,8 +354,8 @@ subroutine R_ADC4_G3W2_diag(dotest,TDA_W,eta,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,ERHF,
 
 !               H(1          ,1+n2h1p+iab) = H(1          ,1+n2h1p+iab) + num/(dem1*dem2)
 !               H(1+n2h1p+iab,1          ) = H(1+n2h1p+iab,1          ) + num/(dem1*dem2)
-                H(1          ,1+n2h1p+iab) = H(1          ,1+n2h1p+iab) + num*dem1*dem2/(dem1**2 + eta**2)/(dem2**2 + eta**2)
-                H(1+n2h1p+iab,1          ) = H(1+n2h1p+iab,1          ) + num*dem1*dem2/(dem1**2 + eta**2)/(dem2**2 + eta**2)
+                H(1          ,1+n2h1p+iab) = H(1          ,1+n2h1p+iab) + num*(dem1*dem2 - eta**2)/(dem1**2 + eta**2)/(dem2**2 + eta**2)
+                H(1+n2h1p+iab,1          ) = H(1+n2h1p+iab,1          ) + num*(dem1*dem2 - eta**2)/(dem1**2 + eta**2)/(dem2**2 + eta**2)
  
                 num = 2d0*sqrt(2d0)*rho(k,c,mu)*rho(a,k,nu)*rho(p,c,nu)
                 dem1 = eHF(k) - eHF(c) + Om(mu)
@@ -363,8 +363,8 @@ subroutine R_ADC4_G3W2_diag(dotest,TDA_W,eta,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,ERHF,
 
 !               H(1          ,1+n2h1p+iab) = H(1          ,1+n2h1p+iab) - num/(dem1*dem2)
 !               H(1+n2h1p+iab,1          ) = H(1+n2h1p+iab,1          ) - num/(dem1*dem2)
-                H(1          ,1+n2h1p+iab) = H(1          ,1+n2h1p+iab) - num*dem1*dem2/(dem1**2 + eta**2)/(dem2**2 + eta**2)
-                H(1+n2h1p+iab,1          ) = H(1+n2h1p+iab,1          ) - num*dem1*dem2/(dem1**2 + eta**2)/(dem2**2 + eta**2)
+                H(1          ,1+n2h1p+iab) = H(1          ,1+n2h1p+iab) - num*(dem1*dem2 - eta**2)/(dem1**2 + eta**2)/(dem2**2 + eta**2)
+                H(1+n2h1p+iab,1          ) = H(1+n2h1p+iab,1          ) - num*(dem1*dem2 - eta**2)/(dem1**2 + eta**2)/(dem2**2 + eta**2)
 
                 num = 2d0*sqrt(2d0)*rho(k,c,mu)*rho(k,a,nu)*rho(c,p,nu)
                 dem1 = eHF(k) - eHF(c) + Om(mu)
@@ -372,8 +372,8 @@ subroutine R_ADC4_G3W2_diag(dotest,TDA_W,eta,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,ERHF,
 
 !               H(1          ,1+n2h1p+iab) = H(1          ,1+n2h1p+iab) - 0.5d0*num/(dem1*dem2)
 !               H(1+n2h1p+iab,1          ) = H(1+n2h1p+iab,1          ) - 0.5d0*num/(dem1*dem2)
-                H(1          ,1+n2h1p+iab) = H(1          ,1+n2h1p+iab) - 0.5d0*num*dem1*dem2/(dem1**2 + eta**2)/(dem2**2 + eta**2)
-                H(1+n2h1p+iab,1          ) = H(1+n2h1p+iab,1          ) - 0.5d0*num*dem1*dem2/(dem1**2 + eta**2)/(dem2**2 + eta**2)
+                H(1          ,1+n2h1p+iab) = H(1          ,1+n2h1p+iab) - 0.5d0*num*(dem1*dem2 - eta**2)/(dem1**2 + eta**2)/(dem2**2 + eta**2)
+                H(1+n2h1p+iab,1          ) = H(1+n2h1p+iab,1          ) - 0.5d0*num*(dem1*dem2 - eta**2)/(dem1**2 + eta**2)/(dem2**2 + eta**2)
 
               end do
             end do
@@ -389,8 +389,8 @@ subroutine R_ADC4_G3W2_diag(dotest,TDA_W,eta,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,ERHF,
 
 !               H(1    ,1+n2h1p+iab) = H(1    ,1+n2h1p+iab) + 0.5d0*num/(dem1*dem2)
 !               H(1+n2h1p+iab,1    ) = H(1+n2h1p+iab,1    ) + 0.5d0*num/(dem1*dem2)
-                H(1          ,1+n2h1p+iab) = H(1          ,1+n2h1p+iab) + 0.5d0*num*dem1*dem2/(dem1**2 + eta**2)/(dem2**2 + eta**2)
-                H(1+n2h1p+iab,1    )       = H(1+n2h1p+iab,1          ) + 0.5d0*num*dem1*dem2/(dem1**2 + eta**2)/(dem2**2 + eta**2)
+                H(1          ,1+n2h1p+iab) = H(1          ,1+n2h1p+iab) + 0.5d0*num*(dem1*dem2 - eta**2)/(dem1**2 + eta**2)/(dem2**2 + eta**2)
+                H(1+n2h1p+iab,1    )       = H(1+n2h1p+iab,1          ) + 0.5d0*num*num*(dem1*dem2 - eta**2)/(dem1**2 + eta**2)/(dem2**2 + eta**2)
 
               end do
             end do

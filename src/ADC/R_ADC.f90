@@ -256,7 +256,8 @@ subroutine R_ADC(dotest,                                               &
       if(diag_approx) then
         call R_ADC4_G3W2_diag(dotest,TDA_W,eta,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,ERHF,ERI_MO,eHF)
       else
-        call R_ADC4_G3W2(dotest,TDA_W,eta,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,ERHF,ERI_MO,eHF)
+!       call R_ADC4_G3W2(dotest,TDA_W,eta,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,ERHF,ERI_MO,eHF)
+        print*,'!! ADC(4)-G3W2 NYI without diagonal approximation !!'
       end if
       call wall_time(end_ADC)
     
