@@ -64,14 +64,11 @@ subroutine scGW_AO_itau_iw(nBas,nOrb,nO,maxSCF,maxDIIS,dolinGW,restart_scGW,verb
   double precision              :: error_gw2gt
   double precision              :: max_error_gw2gt
   double precision              :: sum_error_gw2gt
-!  double precision              :: sd_dif
   double precision,allocatable  :: tweight(:),tcoord(:)
   double precision,allocatable  :: sint2w_weight(:,:)
   double precision,allocatable  :: cost2w_weight(:,:)
   double precision,allocatable  :: cosw2t_weight(:,:)
   double precision,allocatable  :: sinw2t_weight(:,:)
-!  double precision,allocatable  :: eSD(:)
-!  double precision,allocatable  :: eSD_old(:)
   double precision,allocatable  :: Occ(:)
   double precision,allocatable  :: Wp_ao_iw(:,:)
   double precision,allocatable  :: cHFinv(:,:)
@@ -172,7 +169,6 @@ subroutine scGW_AO_itau_iw(nBas,nOrb,nO,maxSCF,maxDIIS,dolinGW,restart_scGW,verb
  allocate(Chi0_ao_iw(nfreqs,nBasSq,nBasSq))
  allocate(P_ao(nBas,nBas),P_ao_old(nBas,nBas),P_ao_iter(nBas,nBas),P_ao_hf(nBas,nBas))
  allocate(F_ao(nBas,nBas),cHFinv(nOrb,nBas),Occ(nOrb),cNO(nBas,nOrb))
-! allocate(eSD(nOrb),eSD_old(nOrb))
  allocate(G_minus_itau(nBas,nBas),G_plus_itau(nBas,nBas)) 
  allocate(G_ao_tmp(nBas,nBas)) 
  allocate(Sigma_c_c(nBas,nBas),Sigma_c_s(nBas,nBas)) 
@@ -226,7 +222,6 @@ subroutine scGW_AO_itau_iw(nBas,nOrb,nO,maxSCF,maxDIIS,dolinGW,restart_scGW,verb
  F_ao=Hc
  Ehfl=0d0
  trace_1_rdm=0d0
-! eSD_old(:)=eHF(:)
  do ibas=1,nBas
   do jbas=1,nBas
    Ehfl=Ehfl+P_ao(ibas,jbas)*Hc(ibas,jbas)
@@ -545,47 +540,6 @@ subroutine scGW_AO_itau_iw(nBas,nOrb,nO,maxSCF,maxDIIS,dolinGW,restart_scGW,verb
 
   if(iter==maxSCF) exit
   
-!  ! Build the new G_ao_iw_hf, G_ao_itau_hf, and P_ao_hf -> NOTE This seems to be unnecessary
-!  U_mo=matmul(transpose(cHF),matmul(F_ao,cHF))
-!  call diagonalize_matrix(nOrb,U_mo,eSD)
-!  chem_pot_align=0.5d0*(eSD(nO)+eSD(nO+1))
-!  eSD(:)=eSD(:)-chem_pot_align
-!  sd_dif=sum(abs(eSD(:)-eSD_old(:)))
-!  write(*,'(a,f15.8)') '     | eSD,i - eSD,i-1 | ',sd_dif
-!  if(sd_dif>1d-2) then
-!   write(*,*)
-!   write(*,'(a,i5)') ' Computing new Go(iw), Go(it), and P_HF matrices at global iter ',iter
-!   write(*,*)
-!   eSD_old(:)=eSD(:)
-!   ! Compute new MO coefs
-!   cHF=matmul(cHF,U_mo)
-!   cHFinv=matmul(transpose(cHF),S)
-!   ! New P_ao_hf
-!   P_ao_hf(:,:) = 2d0*matmul(cHF(:,1:nO),transpose(cHF(:,1:nO)))
-!   ! New G_ao_itau_hf
-!   G_ao_itau_hf=czero
-!   do itau=1,ntimes
-!    call G_AO_RHF_itau(nBas,nOrb,nO, tcoord(itau),G_plus_itau ,cHF,eSD)
-!    call G_AO_RHF_itau(nBas,nOrb,nO,-tcoord(itau),G_minus_itau,cHF,eSD)
-!    G_ao_itau_hf(2*itau-1,:,:)=G_plus_itau(:,:)
-!    G_ao_itau_hf(2*itau  ,:,:)=G_minus_itau(:,:)
-!   enddo
-!   ! New G_ao_iw_hf [ Go_new(iw) ]
-!   DeltaG_ao_iw(:,:,:)=G_ao_iw_hf(:,:,:)+DeltaG_ao_iw(:,:,:) ! Saving G(iw) in DeltaG_ao_iw
-!   do ifreq=1,nfreqs
-!    weval_cpx=im*wcoord(ifreq)
-!    call G_AO_RHF_w(nBas,nOrb,nO,eta,cHF,eSD,weval_cpx,G_ao_tmp)
-!    G_ao_iw_hf(ifreq,:,:)=G_ao_tmp(:,:)
-!   enddo
-!   DeltaG_ao_iw(:,:,:)=DeltaG_ao_iw(:,:,:)-G_ao_iw_hf(:,:,:) ! Setting back DeltaG(iw) = G(iw) - Go_new(iw)
-!   if(verbose/=0) then
-!    write(*,*) '    orb       Occ        SD energies  Aligned SD energies [ from Go(iw) (a.u.) ]'
-!    do ibas=1,nOrb
-!     write(*,'(I7,3F15.8)') ibas,Occ(ibas),eSD(ibas),eSD(ibas)-chem_pot_align
-!    enddo
-!   endif
-!  endif
-
   ! Transform DeltaG(i w) -> DeltaG(i tau) [ i tau and -i tau ]
   !      [ the weights contain the 2 /(2 pi) = 1 / pi factor and the cos(tau w) or sin(tau w) ]
   G_ao_itau=czero
@@ -741,7 +695,6 @@ subroutine scGW_AO_itau_iw(nBas,nOrb,nO,maxSCF,maxDIIS,dolinGW,restart_scGW,verb
  deallocate(G_ao_itau,G_ao_itau_hf)
  deallocate(Sigma_c_w_ao,DeltaG_ao_iw,G_ao_iw_hf)
  deallocate(P_ao,P_ao_old,P_ao_iter,P_ao_hf,F_ao,U_mo,cHFinv,cNO,Occ) 
-! deallocate(eSD,eSD_old) 
  deallocate(Sigma_c_plus,Sigma_c_minus) 
  deallocate(Sigma_c_c,Sigma_c_s) 
  deallocate(G_minus_itau,G_plus_itau) 
