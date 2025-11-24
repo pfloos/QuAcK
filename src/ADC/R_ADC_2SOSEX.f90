@@ -31,7 +31,7 @@ subroutine R_ADC_2SOSEX(dotest,TDA_W,eta,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,
   integer                       :: a,b,c,d
   integer                       :: mu,nu
   integer                       :: klc,kcd,ija,iab
-  double precision              :: num,dem
+  double precision              :: num,dem,reg
 
   logical                       :: print_W = .false.
   logical                       :: dRPA
@@ -156,22 +156,18 @@ subroutine R_ADC_2SOSEX(dotest,TDA_W,eta,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,
 
             num = sqrt(2d0)*ERI(p,c,k,i)*rho(k,c,mu)
             dem = eHF(c) - eHF(k) - Om(mu)
+            reg = (1d0 - exp(-2d0*eta*dem**2))
 
-            H(p       ,nOrb+ija) = H(p       ,nOrb+ija) + num*dem/(dem**2 + eta**2)
-            H(nOrb+ija,p       ) = H(nOrb+ija,p       ) + num*dem/(dem**2 + eta**2)
+            H(p       ,nOrb+ija) = H(p       ,nOrb+ija) + num*reg/dem
+            H(nOrb+ija,p       ) = H(nOrb+ija,p       ) + num*reg/dem
 
             num = sqrt(2d0)*ERI(p,k,c,i)*rho(c,k,mu)
             dem = eHF(c) - eHF(k) + Om(mu)
+            reg = (1d0 - exp(-2d0*eta*dem**2))
 
-            H(p       ,nOrb+ija) = H(p       ,nOrb+ija) + num*dem/(dem**2 + eta**2)
-            H(nOrb+ija,p       ) = H(nOrb+ija,p       ) + num*dem/(dem**2 + eta**2)
+            H(p       ,nOrb+ija) = H(p       ,nOrb+ija) + num*reg/dem
+            H(nOrb+ija,p       ) = H(nOrb+ija,p       ) + num*reg/dem
 
-!           H(p    ,nOrb+ija) = H(p    ,nOrb+ija) &
-!                             + sqrt(2d0)*ERI(p,c,k,i)*rho(k,c,mu)/(eHF(c) - eHF(k) - Om(mu)) &
-!                             + sqrt(2d0)*ERI(p,k,c,i)*rho(c,k,mu)/(eHF(c) - eHF(k) + Om(mu))
-!           H(nOrb+ija,p    ) = H(nOrb+ija,p    ) &
-!                             + sqrt(2d0)*ERI(p,c,k,i)*rho(k,c,mu)/(eHF(c) - eHF(k) - Om(mu)) &
-!                             + sqrt(2d0)*ERI(p,k,c,i)*rho(c,k,mu)/(eHF(c) - eHF(k) + Om(mu))
           end do
         end do
 
@@ -199,22 +195,18 @@ subroutine R_ADC_2SOSEX(dotest,TDA_W,eta,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,
 
             num = sqrt(2d0)*ERI(p,k,c,a)*rho(c,k,mu)
             dem = eHF(c) - eHF(k) - Om(mu)
+            reg = (1d0 - exp(-2d0*eta*dem**2))
 
-            H(p             ,nOrb+n2h1p+iab) = H(p             ,nOrb+n2h1p+iab) + num*dem/(dem**2 + eta**2)
-            H(nOrb+n2h1p+iab,p             ) = H(nOrb+n2h1p+iab,p             ) + num*dem/(dem**2 + eta**2)
+            H(p             ,nOrb+n2h1p+iab) = H(p             ,nOrb+n2h1p+iab) + num*reg/dem
+            H(nOrb+n2h1p+iab,p             ) = H(nOrb+n2h1p+iab,p             ) + num*reg/dem
 
             num = sqrt(2d0)*ERI(p,c,k,a)*rho(k,c,mu)
             dem = eHF(c) - eHF(k) + Om(mu)
+            reg = (1d0 - exp(-2d0*eta*dem**2))
 
-            H(p             ,nOrb+n2h1p+iab) = H(p             ,nOrb+n2h1p+iab) + num*dem/(dem**2 + eta**2)
-            H(nOrb+n2h1p+iab,p             ) = H(nOrb+n2h1p+iab,p             ) + num*dem/(dem**2 + eta**2)
+            H(p             ,nOrb+n2h1p+iab) = H(p             ,nOrb+n2h1p+iab) + num*reg/dem
+            H(nOrb+n2h1p+iab,p             ) = H(nOrb+n2h1p+iab,p             ) + num*reg/dem
 
-!           H(p    ,nOrb+n2h1p+iab) = H(p    ,nOrb+n2h1p+iab) &
-!                                   + sqrt(2d0)*ERI(p,k,c,a)*rho(c,k,mu)/(eHF(c) - eHF(k) - Om(mu)) &
-!                                   + sqrt(2d0)*ERI(p,c,k,a)*rho(k,c,mu)/(eHF(c) - eHF(k) + Om(mu))
-!           H(nOrb+n2h1p+iab,p    ) = H(nOrb+n2h1p+iab,p    ) &
-!                                   + sqrt(2d0)*ERI(p,k,c,a)*rho(c,k,mu)/(eHF(c) - eHF(k) - Om(mu)) &
-!                                   + sqrt(2d0)*ERI(p,c,k,a)*rho(k,c,mu)/(eHF(c) - eHF(k) + Om(mu))
           end do
         end do
 

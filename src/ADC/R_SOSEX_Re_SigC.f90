@@ -24,7 +24,7 @@ double precision function R_SOSEX_Re_SigC(p,w,eta,nBas,nC,nO,nV,nR,nS,e,Om,rhoL,
 ! Local variables
 
   integer                       :: i,a,m
-  double precision              :: num,eps
+  double precision              :: num,dem,reg
 
 ! Initialize 
 
@@ -34,9 +34,12 @@ double precision function R_SOSEX_Re_SigC(p,w,eta,nBas,nC,nO,nV,nR,nS,e,Om,rhoL,
 
   do i=nC+1,nO
     do m=1,nS
-      eps = w - e(i) + Om(m)
+      dem = w - e(i) + Om(m)
       num = 2d0*rhoL(p,i,m)*rhoR(p,i,m)
-      R_SOSEX_Re_SigC = R_SOSEX_Re_SigC + num*eps/(eps**2 + eta**2)
+      reg = (1d0 - exp(-2d0*eta*dem**2))
+
+      R_SOSEX_Re_SigC = R_SOSEX_Re_SigC + num*reg/dem
+
     end do
   end do
 
@@ -44,9 +47,12 @@ double precision function R_SOSEX_Re_SigC(p,w,eta,nBas,nC,nO,nV,nR,nS,e,Om,rhoL,
 
   do a=nO+1,nBas-nR
     do m=1,nS
-      eps = w - e(a) - Om(m)
+      dem = w - e(a) - Om(m)
       num = 2d0*rhoL(p,a,m)*rhoR(p,a,m)
-      R_SOSEX_Re_SigC = R_SOSEX_Re_SigC + num*eps/(eps**2 + eta**2)
+      reg = (1d0 - exp(-2d0*eta*dem**2))
+
+      R_SOSEX_Re_SigC = R_SOSEX_Re_SigC + num*reg/dem
+
     end do
   end do
 

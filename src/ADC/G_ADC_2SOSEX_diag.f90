@@ -31,7 +31,7 @@ subroutine G_ADC_2SOSEX_diag(dotest,TDA_W,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,EGHF,ERI
   integer                       :: jb,kc,ia,ja
   integer                       :: mu,nu
   integer                       :: klc,kcd,ija,ijb,iab,jab
-  double precision              :: num,dem
+  double precision              :: num,dem,reg
 
   logical                       :: print_W = .false.
   logical                       :: dRPA = .true.
@@ -157,15 +157,17 @@ subroutine G_ADC_2SOSEX_diag(dotest,TDA_W,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,EGHF,ERI
 
             num = ERI(p,c,k,i)*rho(k,c,mu)
             dem = eHF(c) - eHF(k) - Om(mu)
+            reg = (1d0 - exp(-2d0*eta*dem**2))
 
-            H(1    ,1+ija) = H(1    ,1+ija) + num*dem/(dem**2 + eta**2)
-            H(1+ija,1    ) = H(1+ija,1    ) + num*dem/(dem**2 + eta**2)
+            H(1    ,1+ija) = H(1    ,1+ija) + num*reg/dem
+            H(1+ija,1    ) = H(1+ija,1    ) + num*reg/dem
 
             num = ERI(p,k,c,i)*rho(c,k,mu)
             dem = eHF(c) - eHF(k) + Om(mu)
+            reg = (1d0 - exp(-2d0*eta*dem**2))
 
-            H(1    ,1+ija) = H(1    ,1+ija) + num*dem/(dem**2 + eta**2)
-            H(1+ija,1    ) = H(1+ija,1    ) + num*dem/(dem**2 + eta**2)
+            H(1    ,1+ija) = H(1    ,1+ija) + num*reg/dem
+            H(1+ija,1    ) = H(1+ija,1    ) + num*reg/dem
 
           end do
         end do
@@ -190,15 +192,17 @@ subroutine G_ADC_2SOSEX_diag(dotest,TDA_W,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,EGHF,ERI
 
             num = ERI(p,k,c,a)*rho(c,k,mu)
             dem = eHF(c) - eHF(k) - Om(mu)
+            reg = (1d0 - exp(-2d0*eta*dem**2))
 
-            H(1    ,1+n2h1p+iab) = H(1    ,1+n2h1p+iab) + num*dem/(dem**2 + eta**2)
-            H(1+n2h1p+iab,1    ) = H(1+n2h1p+iab,1    ) + num*dem/(dem**2 + eta**2)
+            H(1    ,1+n2h1p+iab) = H(1    ,1+n2h1p+iab) + num*reg/dem
+            H(1+n2h1p+iab,1    ) = H(1+n2h1p+iab,1    ) + num*reg/dem
 
             num = ERI(p,c,k,a)*rho(k,c,mu)
             dem = eHF(c) - eHF(k) + Om(mu)
+            reg = (1d0 - exp(-2d0*eta*dem**2))
 
-            H(1    ,1+n2h1p+iab) = H(1    ,1+n2h1p+iab) + num*dem/(dem**2 + eta**2)
-            H(1+n2h1p+iab,1    ) = H(1+n2h1p+iab,1    ) + num*dem/(dem**2 + eta**2)
+            H(1    ,1+n2h1p+iab) = H(1    ,1+n2h1p+iab) + num*reg/dem
+            H(1+n2h1p+iab,1    ) = H(1+n2h1p+iab,1    ) + num*reg/dem
 
           end do
         end do

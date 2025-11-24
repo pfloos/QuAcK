@@ -23,7 +23,7 @@ subroutine R_SOSEX_self_energy_diag(eta,nBas,nOrb,nC,nO,nV,nR,nS,e,Om,rhoL,rhoR,
 ! Local variables
 
   integer                       :: i,a,p,m
-  double precision              :: num,eps
+  double precision              :: num,dem,reg
 
 ! Output variables
 
@@ -46,10 +46,12 @@ subroutine R_SOSEX_self_energy_diag(eta,nBas,nOrb,nC,nO,nV,nR,nS,e,Om,rhoL,rhoR,
     do i=nC+1,nO
       do m=1,nS
 
-        eps = e(p) - e(i) + Om(m)
+        dem = e(p) - e(i) + Om(m)
         num = 2d0*rhoL(p,i,m)*rhoR(p,i,m)
-        Sig(p) = Sig(p) + num*eps/(eps**2 + eta**2)
-        Z(p)   = Z(p)   - num*(eps**2 - eta**2)/(eps**2 + eta**2)**2
+        reg = (1d0 - exp(-2d0*eta*num**2))
+
+        Sig(p) = Sig(p) + num*reg/dem
+        Z(p)   = Z(p)   - num*reg/dem**2
 
       end do
     end do
@@ -61,10 +63,12 @@ subroutine R_SOSEX_self_energy_diag(eta,nBas,nOrb,nC,nO,nV,nR,nS,e,Om,rhoL,rhoR,
     do a=nO+1,nBas-nR
       do m=1,nS
 
-        eps = e(p) - e(a) - Om(m)
+        dem = e(p) - e(a) - Om(m)
         num = 2d0*rhoL(p,a,m)*rhoR(p,a,m)
-        Sig(p) = Sig(p) + num*eps/(eps**2 + eta**2)
-        Z(p)   = Z(p)   - num*(eps**2 - eta**2)/(eps**2 + eta**2)**2
+        reg = (1d0 - exp(-2d0*eta*num**2))
+
+        Sig(p) = Sig(p) + num*reg/dem
+        Z(p)   = Z(p)   - num*reg/dem**2
 
       end do
     end do
@@ -77,9 +81,11 @@ subroutine R_SOSEX_self_energy_diag(eta,nBas,nOrb,nC,nO,nV,nR,nS,e,Om,rhoL,rhoR,
     do a=nO+1,nBas-nR
       do m=1,nS
 
-        eps = e(a) - e(i) + Om(m)
+        dem = e(a) - e(i) + Om(m)
         num = 4d0*rhoL(a,i,m)*rhoR(a,i,m)
-        EcGM = EcGM - num*eps/(eps**2 + eta**2)
+        reg = (1d0 - exp(-2d0*eta*num**2))
+
+        EcGM = EcGM - num*reg/dem
 
       end do
     end do
