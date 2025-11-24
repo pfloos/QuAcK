@@ -41,7 +41,7 @@ subroutine scGF2_AO_itau_iw(nBas,nOrb,nO,maxSCF,maxDIIS,dolinGF2,restart_scGF2,v
   integer                       :: idiis_index
   integer                       :: idiis_indexP
   integer                       :: itau,ifreq
-  integer                       :: ibas,jbas,kbas,lbas,nBas2
+  integer                       :: ibas,jbas,kbas,lbas,nBasSq
   integer                       :: mbas,sbas,pbas,qbas
   integer                       :: iter,iter_fock
   integer                       :: imax_error_sigma
@@ -143,7 +143,7 @@ subroutine scGF2_AO_itau_iw(nBas,nOrb,nO,maxSCF,maxDIIS,dolinGF2,restart_scGF2,v
  thrs_Ngrad=1d-6
  thrs_Pao=1d-6
  nElectrons=2d0*nO
- nBas2=nBas*nBas
+ nBasSq=nBas*nBas
  chem_pot_saved = 0.5d0*(eHF(nO)+eHF(nO+1))
  chem_pot = chem_pot_saved
  alpha_mixing=0.6d0
@@ -151,7 +151,7 @@ subroutine scGF2_AO_itau_iw(nBas,nOrb,nO,maxSCF,maxDIIS,dolinGF2,restart_scGF2,v
  Ehfl=0d0
  ntimes=nfreqs
  ntimes_twice=2*ntimes
- nBasSqntimes2=nBas2*ntimes_twice
+ nBasSqntimes2=nBasSq*ntimes_twice
  write(*,*)
  write(*,'(A33,1X,F16.10,A3)') ' Initial chemical potential  = ',chem_pot,' au'
  if(chem_pot_scG) then
@@ -184,7 +184,7 @@ subroutine scGF2_AO_itau_iw(nBas,nOrb,nO,maxSCF,maxDIIS,dolinGF2,restart_scGF2,v
  allocate(Aimql(nBas,nBas,nBas,nBAS))
  allocate(Bisql(nBas,nBas,nBas,nBAS))
  allocate(Cispl(nBas,nBas,nBas,nBAS))
- allocate(Chi0_ao_itau_vSq(nBas2,nBas2)) 
+ allocate(Chi0_ao_itau_vSq(nBasSq,nBasSq)) 
  allocate(tweight(ntimes),tcoord(ntimes))
  allocate(sint2w_weight(nfreqs,ntimes))
  allocate(cost2w_weight(nfreqs,ntimes))
@@ -193,7 +193,7 @@ subroutine scGF2_AO_itau_iw(nBas,nOrb,nO,maxSCF,maxDIIS,dolinGF2,restart_scGF2,v
  allocate(Sigma_c_w_ao(nfreqs,nBas,nBas),DeltaG_ao_iw(nfreqs,nBas,nBas),G_ao_iw_hf(nfreqs,nBas,nBas))
  allocate(G_ao_itau(ntimes_twice,nBas,nBas),G_ao_itau_hf(ntimes_twice,nBas,nBas))
  allocate(G_ao_itau_old(ntimes_twice,nBas,nBas))
-! allocate(Chi0_ao_iw_vSq(nfreqs,nBas2,nBas2))
+! allocate(Chi0_ao_iw_vSq(nfreqs,nBasSq,nBasSq))
  allocate(err_current(1))
  allocate(err_currentP(1))
  allocate(G_itau_extrap(1))
@@ -212,13 +212,13 @@ subroutine scGF2_AO_itau_iw(nBas,nOrb,nO,maxSCF,maxDIIS,dolinGF2,restart_scGF2,v
   deallocate(G_itau_old_diis)
   deallocate(P_ao_old_diis)
   allocate(err_current(nBasSqntimes2))
-  allocate(err_currentP(nBas2))
+  allocate(err_currentP(nBasSq))
   allocate(G_itau_extrap(nBasSqntimes2))
-  allocate(P_ao_extrap(nBas2))
+  allocate(P_ao_extrap(nBasSq))
   allocate(err_diis(nBasSqntimes2,maxDIIS))
-  allocate(err_diisP(nBas2,maxDIIS))
+  allocate(err_diisP(nBasSq,maxDIIS))
   allocate(G_itau_old_diis(nBasSqntimes2,maxDIIS))
-  allocate(P_ao_old_diis(nBas2,maxDIIS))
+  allocate(P_ao_old_diis(nBasSq,maxDIIS))
  endif
 
  ! Initialize arrays
@@ -477,7 +477,7 @@ subroutine scGF2_AO_itau_iw(nBas,nOrb,nO,maxSCF,maxDIIS,dolinGF2,restart_scGF2,v
    Chi0_ao_itau_vSq=matmul(Chi0_ao_itau_vSq,Chi0_ao_itau_vSq)  ! [ Xo(i tau) v ]^2
    ! EcGM = 1/4 int Tr{ [ Xo(i tau) v ]^2 }
    EcGM_itau=czero
-   do ibas=1,nBas2
+   do ibas=1,nBasSq
     EcGM_itau=EcGM_itau+Chi0_ao_itau_vSq(ibas,ibas)
    enddo
    EcGM=EcGM+0.25d0*tweight(itau)*real(EcGM_itau) 
@@ -489,7 +489,7 @@ subroutine scGF2_AO_itau_iw(nBas,nOrb,nO,maxSCF,maxDIIS,dolinGF2,restart_scGF2,v
 !   Chi0_ao_iw_vSq(ifreq,:,:)=matmul(Chi0_ao_iw_vSq(ifreq,:,:),Chi0_ao_iw_vSq(ifreq,:,:))  ! [ Xo(i w) v ]^2
 !   ! EcGM = - 1/8pi int Tr{ [ Xo(i tau) v ]^2 }
 !   EcGM_iw=czero
-!   do ibas=1,nBas2
+!   do ibas=1,nBasSq
 !    EcGM_iw=EcGM_iw+Chi0_ao_iw_vSq(ifreq,ibas,ibas)
 !   enddo
 !   EcGMw=EcGMw-wweight(ifreq)*real(EcGM_iw)
@@ -590,7 +590,7 @@ subroutine scGF2_AO_itau_iw(nBas,nOrb,nO,maxSCF,maxDIIS,dolinGF2,restart_scGF2,v
        idiis_indexP=idiis_indexP+1
       enddo
      enddo
-     call DIIS_extrapolation(rcondP,nBas2,nBas2,n_diisP,err_diisP,P_ao_old_diis,err_currentP,P_ao_extrap)
+     call DIIS_extrapolation(rcondP,nBasSq,nBasSq,n_diisP,err_diisP,P_ao_old_diis,err_currentP,P_ao_extrap)
      idiis_indexP=1
      do ibas=1,nBas
       do jbas=1,nBas

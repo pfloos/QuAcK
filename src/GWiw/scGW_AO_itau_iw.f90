@@ -41,7 +41,7 @@ subroutine scGW_AO_itau_iw(nBas,nOrb,nO,maxSCF,maxDIIS,dolinGW,restart_scGW,verb
   integer                       :: idiis_index
   integer                       :: idiis_indexP
   integer                       :: itau,ifreq
-  integer                       :: ibas,jbas,kbas,lbas,nBas2
+  integer                       :: ibas,jbas,kbas,lbas,nBasSq
   integer                       :: iter,iter_fock
   integer                       :: imax_error_sigma
   integer                       :: imax_error_gw2gt
@@ -138,7 +138,7 @@ subroutine scGW_AO_itau_iw(nBas,nOrb,nO,maxSCF,maxDIIS,dolinGW,restart_scGW,verb
  thrs_Ngrad=1d-6
  thrs_Pao=1d-6
  nElectrons=2d0*nO
- nBas2=nBas*nBas
+ nBasSq=nBas*nBas
  chem_pot_saved = 0.5d0*(eHF(nO)+eHF(nO+1))
  chem_pot = chem_pot_saved
  alpha_mixing=0.6d0
@@ -146,7 +146,7 @@ subroutine scGW_AO_itau_iw(nBas,nOrb,nO,maxSCF,maxDIIS,dolinGW,restart_scGW,verb
  Ehfl=0d0
  ntimes=nfreqs
  ntimes_twice=2*ntimes
- nBasSqntimes2=nBas2*ntimes_twice
+ nBasSqntimes2=nBasSq*ntimes_twice
  write(*,*)
  write(*,'(A33,1X,F16.10,A3)') ' Initial chemical potential  = ',chem_pot,' au'
  if(chem_pot_scG) then
@@ -170,14 +170,14 @@ subroutine scGW_AO_itau_iw(nBas,nOrb,nO,maxSCF,maxDIIS,dolinGW,restart_scGW,verb
 
  ! Allocate arrays  
  allocate(U_mo(nOrb,nOrb))
- allocate(Chi0_ao_iw(nfreqs,nBas2,nBas2))
+ allocate(Chi0_ao_iw(nfreqs,nBasSq,nBasSq))
  allocate(P_ao(nBas,nBas),P_ao_old(nBas,nBas),P_ao_iter(nBas,nBas),P_ao_hf(nBas,nBas))
  allocate(F_ao(nBas,nBas),P_mo(nOrb,nOrb),cHFinv(nOrb,nBas),Occ(nOrb),eSD(nOrb),eSD_old(nOrb),cNO(nBas,nOrb))
  allocate(G_minus_itau(nBas,nBas),G_plus_itau(nBas,nBas)) 
  allocate(G_ao_tmp(nBas,nBas)) 
  allocate(Sigma_c_c(nBas,nBas),Sigma_c_s(nBas,nBas)) 
  allocate(Sigma_c_plus(nBas,nBas),Sigma_c_minus(nBas,nBas)) 
- allocate(Chi0_ao_itau(nBas2,nBas2),Wp_ao_iw(nBas2,nBas2))
+ allocate(Chi0_ao_itau(nBasSq,nBasSq),Wp_ao_iw(nBasSq,nBasSq))
  allocate(tweight(ntimes),tcoord(ntimes))
  allocate(sint2w_weight(nfreqs,ntimes))
  allocate(cost2w_weight(nfreqs,ntimes))
@@ -186,7 +186,7 @@ subroutine scGW_AO_itau_iw(nBas,nOrb,nO,maxSCF,maxDIIS,dolinGW,restart_scGW,verb
  allocate(Sigma_c_w_ao(nfreqs,nBas,nBas),DeltaG_ao_iw(nfreqs,nBas,nBas),G_ao_iw_hf(nfreqs,nBas,nBas))
  allocate(G_ao_itau(ntimes_twice,nBas,nBas),G_ao_itau_hf(ntimes_twice,nBas,nBas))
  allocate(G_ao_itau_old(ntimes_twice,nBas,nBas))
- allocate(Wp_ao_itau(ntimes,nBas2,nBas2))
+ allocate(Wp_ao_itau(ntimes,nBasSq,nBasSq))
  allocate(err_current(1))
  allocate(err_currentP(1))
  allocate(G_itau_extrap(1))
@@ -205,13 +205,13 @@ subroutine scGW_AO_itau_iw(nBas,nOrb,nO,maxSCF,maxDIIS,dolinGW,restart_scGW,verb
   deallocate(G_itau_old_diis)
   deallocate(P_ao_old_diis)
   allocate(err_current(nBasSqntimes2))
-  allocate(err_currentP(nBas2))
+  allocate(err_currentP(nBasSq))
   allocate(G_itau_extrap(nBasSqntimes2))
-  allocate(P_ao_extrap(nBas2))
+  allocate(P_ao_extrap(nBasSq))
   allocate(err_diis(nBasSqntimes2,maxDIIS))
-  allocate(err_diisP(nBas2,maxDIIS))
+  allocate(err_diisP(nBasSq,maxDIIS))
   allocate(G_itau_old_diis(nBasSqntimes2,maxDIIS))
-  allocate(P_ao_old_diis(nBas2,maxDIIS))
+  allocate(P_ao_old_diis(nBasSq,maxDIIS))
  endif
 
  ! Initialize arrays
@@ -362,14 +362,14 @@ subroutine scGW_AO_itau_iw(nBas,nOrb,nO,maxSCF,maxDIIS,dolinGW,restart_scGW,verb
    trace1=0d0; trace2=0d0;
    ! Xo(i w) -> Wp_ao_iw(i w)
    Wp_ao_iw(:,:)=-matmul(Real(Chi0_ao_iw(ifreq,:,:)),vMAT(:,:))  
-   do ibas=1,nBas2
+   do ibas=1,nBasSq
     trace1=trace1+Wp_ao_iw(ibas,ibas)
     Wp_ao_iw(ibas,ibas)=Wp_ao_iw(ibas,ibas)+1d0
    enddo
-   call inverse_matrix(nBas2,Wp_ao_iw,Wp_ao_iw)
+   call inverse_matrix(nBasSq,Wp_ao_iw,Wp_ao_iw)
    Wp_ao_iw(:,:)=matmul(Wp_ao_iw(:,:),Real(Chi0_ao_iw(ifreq,:,:)))
    Wp_ao_iw(:,:)=matmul(Wp_ao_iw(:,:),vMAT(:,:))
-   do ibas=1,nBas2
+   do ibas=1,nBasSq
     trace2=trace2+Wp_ao_iw(ibas,ibas)
    enddo
    EcGM=EcGM-wweight(ifreq)*(trace2+trace1)/(2d0*pi) ! iw contribution to EcGM
@@ -502,7 +502,7 @@ subroutine scGW_AO_itau_iw(nBas,nOrb,nO,maxSCF,maxDIIS,dolinGW,restart_scGW,verb
        idiis_indexP=idiis_indexP+1
       enddo
      enddo
-     call DIIS_extrapolation(rcondP,nBas2,nBas2,n_diisP,err_diisP,P_ao_old_diis,err_currentP,P_ao_extrap)
+     call DIIS_extrapolation(rcondP,nBasSq,nBasSq,n_diisP,err_diisP,P_ao_old_diis,err_currentP,P_ao_extrap)
      idiis_indexP=1
      do ibas=1,nBas
       do jbas=1,nBas
