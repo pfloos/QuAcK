@@ -66,7 +66,6 @@ subroutine scGF2_AO_itau_iw(nBas,nOrb,nO,maxSCF,maxDIIS,dolinGF2,restart_scGF2,v
   double precision              :: error_gw2gt
   double precision              :: max_error_gw2gt
   double precision              :: sum_error_gw2gt
-!  double precision              :: sd_dif
   double precision,allocatable  :: tweight(:),tcoord(:)
   double precision,allocatable  :: sint2w_weight(:,:)
   double precision,allocatable  :: cost2w_weight(:,:)
@@ -229,7 +228,6 @@ subroutine scGF2_AO_itau_iw(nBas,nOrb,nO,maxSCF,maxDIIS,dolinGF2,restart_scGF2,v
  F_ao=Hc
  Ehfl=0d0
  trace_1_rdm=0d0
-! eSD_old(:)=eHF(:)
  do ibas=1,nBas
   do jbas=1,nBas
    Ehfl=Ehfl+P_ao(ibas,jbas)*Hc(ibas,jbas)
