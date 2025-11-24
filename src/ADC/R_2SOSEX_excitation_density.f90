@@ -20,7 +20,7 @@ subroutine R_2SOSEX_excitation_density(eta,nOrb,nC,nO,nR,nS,e,Om,ERI,XpY,rho)
 ! Local variables
 
   integer                       :: ia,jb,p,q,j,a,b,k,c,m
-  double precision              :: num,dem
+  double precision              :: num,dem,reg
   double precision, allocatable :: tmp(:,:,:)
   double precision,allocatable  :: w(:,:,:)
 
@@ -101,11 +101,15 @@ subroutine R_2SOSEX_excitation_density(eta,nOrb,nC,nO,nR,nS,e,Om,ERI,XpY,rho)
 
             num = rho(a,j,m)*ERI(p,j,a,k)
             dem = e(a) - e(j) + Om(m)
-            w(p,k,m) = w(p,k,m) + num*dem/(dem**2 + eta**2)
+            reg = (1d0 - exp(-2d0*eta*dem**2))
+
+            w(p,k,m) = w(p,k,m) + num*reg/dem
 
             num = rho(a,j,m)*ERI(p,a,j,k)
             dem = e(a) - e(j) - Om(m)
-            w(p,k,m) = w(p,k,m) + num*dem/(dem**2 + eta**2)
+            reg = (1d0 - exp(-2d0*eta*dem**2))
+
+            w(p,k,m) = w(p,k,m) + num*reg/dem
 
 !           w(p,k,m) = w(p,k,m) + rho(a,j,m)*(ERI(p,j,a,k)/(e(a) - e(j) + Om(m)) + ERI(p,a,j,k)/(e(a) - e(j) - Om(m)))
 
@@ -125,11 +129,15 @@ subroutine R_2SOSEX_excitation_density(eta,nOrb,nC,nO,nR,nS,e,Om,ERI,XpY,rho)
 
             num = rho(a,j,m)*ERI(p,j,a,c)
             dem = e(a) - e(j) - Om(m)
-            w(p,c,m) = w(p,c,m) + num*dem/(dem**2 + eta**2)
+            reg = (1d0 - exp(-2d0*eta*dem**2))
+
+            w(p,c,m) = w(p,c,m) + num*reg/dem
 
             num = rho(a,j,m)*ERI(p,a,j,c)
             dem = e(a) - e(j) + Om(m)
-            w(p,c,m) = w(p,c,m) + num*dem/(dem**2 + eta**2)
+            reg = (1d0 - exp(-2d0*eta*dem**2))
+
+            w(p,c,m) = w(p,c,m) + num*reg/dem
 
 !           w(p,c,m) = w(p,c,m) + rho(a,j,m)*(ERI(p,j,a,c)/(e(a) - e(j) - Om(m)) + ERI(p,a,j,c)/(e(a) - e(j) + Om(m)))
 

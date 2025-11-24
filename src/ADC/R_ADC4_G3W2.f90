@@ -1,4 +1,4 @@
-subroutine R_ADC4_G3W2(dotest,TDA_W,eta,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,eHF)
+subroutine R_ADC4_G3W2(dotest,TDA_W,flow,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,eHF)
 
 ! ADC(4) version of G3W2
 
@@ -10,6 +10,7 @@ subroutine R_ADC4_G3W2(dotest,TDA_W,eta,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,e
   logical,intent(in)            :: dotest
 
   logical,intent(in)            :: TDA_W
+  double precision,intent(in)   :: flow
   integer,intent(in)            :: nBas
   integer,intent(in)            :: nOrb
   integer,intent(in)            :: nC
@@ -29,7 +30,9 @@ subroutine R_ADC4_G3W2(dotest,TDA_W,eta,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,e
   integer                       :: a,b,c,d
   integer                       :: mu,nu
   integer                       :: klc,kcd,ija,iab
-  double precision              :: num,num1,num2,dem1,dem2,dem3
+  double precision              :: num,num1,num2
+  double precision              :: dem1,dem2,dem3
+  double precision              :: reg1,reg2,reg3
 
   logical                       :: print_W = .false.
   logical                       :: dRPA
@@ -52,7 +55,7 @@ subroutine R_ADC4_G3W2(dotest,TDA_W,eta,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,e
   double precision,parameter    :: cutoff2 = 0.01d0
   double precision              :: eF
   double precision,parameter    :: window = 1.5d0
-  double precision,intent(in)   :: eta
+  double precision,external     :: SRG_reg
 
   double precision              :: start_timing,end_timing,timing
 
@@ -178,8 +181,12 @@ subroutine R_ADC4_G3W2(dotest,TDA_W,eta,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,e
                 dem1 = eHF(i) - eHF(r) - Om(nu)
                 dem2 = w - eHF(i) + Om(nu) + Om(mu)
                 dem3 = eHF(i) - eHF(s) - Om(mu)
+
+                reg1 = SRG_reg(flow,dem1)
+                reg2 = SRG_reg(flow,dem2)
+                reg3 = SRG_reg(flow,dem3)
  
-                H(1,1) = H(1,1) + num1*num2/(dem1*dem2*dem3)
+                H(1,1) = H(1,1) + num1*num2*reg1*reg2*reg3
  
              end do
              end do
@@ -201,7 +208,11 @@ subroutine R_ADC4_G3W2(dotest,TDA_W,eta,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,e
                 dem2 = w - eHF(a) - Om(nu) - Om(mu)
                 dem3 = eHF(s) - eHF(a) - Om(mu)
  
-                H(1,1) = H(1,1) + num1*num2/(dem1*dem2*dem3)
+                reg1 = SRG_reg(flow,dem1)
+                reg2 = SRG_reg(flow,dem2)
+                reg3 = SRG_reg(flow,dem3)
+ 
+                H(1,1) = H(1,1) + num1*num2*reg1*reg2*reg3
  
              end do
              end do
