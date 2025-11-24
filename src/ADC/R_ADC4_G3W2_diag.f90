@@ -56,6 +56,7 @@ subroutine R_ADC4_G3W2_diag(dotest,TDA_W,flow,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,ERHF
   double precision,parameter    :: cutoff2 = 0.01d0
   double precision              :: eF
   double precision,parameter    :: window = 2.5d0
+  double precision,external     :: SRG_reg
 
   double precision,allocatable  :: Reigv(:,:) 
 
@@ -182,14 +183,14 @@ subroutine R_ADC4_G3W2_diag(dotest,TDA_W,flow,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,ERHF
               num1 = 2d0*rho(p,r,mu)*rho(r,i,nu)
               num2 = 2d0*rho(r,i,mu)*rho(p,r,nu)
               dem1 = eHF(i) - eHF(r) - Om(nu)
-              dem2 = w - eHF(i) + Om(nu) + Om(mu) 
+              dem2 = w - eHF(i) + Om(nu) + Om(mu)
               dem3 = eHF(i) - eHF(s) - Om(mu)
 
-              reg1 = (1d0 - exp(-2d0*flow*dem1**2))
-              reg2 = (1d0 - exp(-2d0*flow*dem2**2))
-              reg3 = (1d0 - exp(-2d0*flow*dem3**2))
+              reg1 = SRG_reg(flow,dem1)
+              reg2 = SRG_reg(flow,dem2)
+              reg3 = SRG_reg(flow,dem3)
 
-              H(1,1) = H(1,1) + num1*num2*reg1*reg2*reg3/(dem1*dem2*dem3)
+              H(1,1) = H(1,1) + num1*num2*reg1*reg2*reg3
   
            end do
            end do
@@ -208,14 +209,14 @@ subroutine R_ADC4_G3W2_diag(dotest,TDA_W,flow,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,ERHF
               num1 = 2d0*rho(r,p,mu)*rho(a,r,nu)
               num2 = 2d0*rho(a,r,mu)*rho(r,p,nu)
               dem1 = eHF(r) - eHF(a) - Om(nu)
-              dem2 = w - eHF(a) - Om(nu) - Om(mu) 
+              dem2 = w - eHF(a) - Om(nu) - Om(mu)
               dem3 = eHF(s) - eHF(a) - Om(mu)
 
-              reg1 = (1d0 - exp(-2d0*flow*dem1**2))
-              reg2 = (1d0 - exp(-2d0*flow*dem2**2))
-              reg3 = (1d0 - exp(-2d0*flow*dem3**2))
+              reg1 = SRG_reg(flow,dem1)
+              reg2 = SRG_reg(flow,dem2)
+              reg3 = SRG_reg(flow,dem3)
   
-              H(1,1) = H(1,1) + num1*num2*reg1*reg2*reg3/(dem1*dem2*dem3)
+              H(1,1) = H(1,1) + num1*num2*reg1*reg2*reg3
   
            end do
            end do
@@ -245,17 +246,17 @@ subroutine R_ADC4_G3W2_diag(dotest,TDA_W,flow,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,ERHF
  
             num = rho(k,c,mu)*ERI(i,k,c,p)
             dem = eHF(c) - eHF(k) - Om(mu)
-            reg = (1d0 - exp(-2d0*flow*dem**2))
+            reg = SRG_reg(flow,dem)
 
-            H(1    ,1+ija) = H(1    ,1+ija) + num*reg/dem
-            H(1+ija,1    ) = H(1+ija,1    ) + num*reg/dem
+            H(1    ,1+ija) = H(1    ,1+ija) + num*reg
+            H(1+ija,1    ) = H(1+ija,1    ) + num*reg
 
             num = rho(c,k,mu)*ERI(i,c,k,p)
             dem = eHF(c) - eHF(k) + Om(mu)
-            reg = (1d0 - exp(-2d0*flow*dem**2))
+            reg = SRG_reg(flow,dem)
 
-            H(1    ,1+ija) = H(1    ,1+ija) + num*reg/dem
-            H(1+ija,1    ) = H(1+ija,1    ) + num*reg/dem
+            H(1    ,1+ija) = H(1    ,1+ija) + num*reg
+            H(1+ija,1    ) = H(1+ija,1    ) + num*reg
  
             end do
           end do
@@ -270,31 +271,31 @@ subroutine R_ADC4_G3W2_diag(dotest,TDA_W,flow,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,ERHF
                 dem1 = eHF(c) - eHF(k) + Om(mu)
                 dem2 = eHF(k) - eHF(i) - Om(nu)
 
-                reg1 = (1d0 - exp(-2d0*flow*dem1**2))
-                reg2 = (1d0 - exp(-2d0*flow*dem2**2))
+                reg1 = SRG_reg(flow,dem1)
+                reg2 = SRG_reg(flow,dem2)
 
-                H(1    ,1+ija) = H(1    ,1+ija) + num*reg1*reg2/(dem1*dem2)
-                H(1+ija,1    ) = H(1+ija,1    ) + num*reg1*reg2/(dem1*dem2)
+                H(1    ,1+ija) = H(1    ,1+ija) + num*reg1*reg2
+                H(1+ija,1    ) = H(1+ija,1    ) + num*reg1*reg2
  
                 num = 2d0*sqrt(2d0)*rho(k,c,mu)*rho(c,i,nu)*rho(k,p,nu)
                 dem1 = eHF(k) - eHF(c) + Om(mu)
-                dem2 = eHF(i) - eHF(c) - Om(nu)  
+                dem2 = eHF(i) - eHF(c) - Om(nu)
 
-                reg1 = (1d0 - exp(-2d0*flow*dem1**2))
-                reg2 = (1d0 - exp(-2d0*flow*dem2**2))
+                reg1 = SRG_reg(flow,dem1)
+                reg2 = SRG_reg(flow,dem2)
 
-                H(1    ,1+ija) = H(1    ,1+ija) - num*reg1*reg2/(dem1*dem2)
-                H(1+ija,1    ) = H(1+ija,1    ) - num*reg1*reg2/(dem1*dem2)
+                H(1    ,1+ija) = H(1    ,1+ija) - num*reg1*reg2
+                H(1+ija,1    ) = H(1+ija,1    ) - num*reg1*reg2
 
                 num = 2d0*sqrt(2d0)*rho(k,c,mu)*rho(i,c,nu)*rho(p,k,nu)
                 dem1 = eHF(k) - eHF(c) + Om(mu)
-                dem2 = eHF(c) - eHF(i) - Om(nu)  
+                dem2 = eHF(c) - eHF(i) - Om(nu)
 
-                reg1 = (1d0 - exp(-2d0*flow*dem1**2))
-                reg2 = (1d0 - exp(-2d0*flow*dem2**2))
+                reg1 = SRG_reg(flow,dem1)
+                reg2 = SRG_reg(flow,dem2)
 
-                H(1    ,1+ija) = H(1    ,1+ija) - 0.5d0*num*reg1*reg2/(dem1*dem2)
-                H(1+ija,1    ) = H(1+ija,1    ) - 0.5d0*num*reg1*reg2/(dem1*dem2)
+                H(1    ,1+ija) = H(1    ,1+ija) - 0.5d0*num*reg1*reg2
+                H(1+ija,1    ) = H(1+ija,1    ) - 0.5d0*num*reg1*reg2
 
               end do
             end do
@@ -306,13 +307,13 @@ subroutine R_ADC4_G3W2_diag(dotest,TDA_W,flow,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,ERHF
  
                 num = 2d0*sqrt(2d0)*rho(k,j,mu)*rho(i,j,nu)*rho(p,k,nu)
                 dem1 = eHF(k) - eHF(j) + Om(mu)
-                dem2 = eHF(j) - eHF(i) - Om(nu)  
+                dem2 = eHF(j) - eHF(i) - Om(nu)
 
-                reg1 = (1d0 - exp(-2d0*flow*dem1**2))
-                reg2 = (1d0 - exp(-2d0*flow*dem2**2))
+                reg1 = SRG_reg(flow,dem1)
+                reg2 = SRG_reg(flow,dem2)
 
-                H(1    ,1+ija) = H(1    ,1+ija) + 0.5d0*num*reg1*reg2/(dem1*dem2)
-                H(1+ija,1    ) = H(1+ija,1    ) + 0.5d0*num*reg1*reg2/(dem1*dem2)
+                H(1    ,1+ija) = H(1    ,1+ija) + 0.5d0*num*reg1*reg2
+                H(1+ija,1    ) = H(1+ija,1    ) + 0.5d0*num*reg1*reg2
 
               end do
             end do
@@ -343,17 +344,17 @@ subroutine R_ADC4_G3W2_diag(dotest,TDA_W,flow,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,ERHF
  
             num = rho(k,c,mu)*ERI(a,c,k,p)
             dem = eHF(c) - eHF(k) - Om(mu)
-            reg = (1d0 - exp(-2d0*flow*dem**2))
+            reg = SRG_reg(flow,dem)
 
-            H(1    ,1+n2h1p+iab) = H(1    ,1+n2h1p+iab) + num*reg/dem
-            H(1+n2h1p+iab,1    ) = H(1+n2h1p+iab,1    ) + num*reg/dem
+            H(1    ,1+n2h1p+iab) = H(1    ,1+n2h1p+iab) + num*reg
+            H(1+n2h1p+iab,1    ) = H(1+n2h1p+iab,1    ) + num*reg
 
             num = rho(c,k,mu)*ERI(a,k,c,p)
             dem = eHF(c) - eHF(k) + Om(mu)
-            reg = (1d0 - exp(-2d0*flow*dem**2))
+            reg = SRG_reg(flow,dem)
 
-            H(1    ,1+n2h1p+iab) = H(1    ,1+n2h1p+iab) + num*reg/dem
-            H(1+n2h1p+iab,1    ) = H(1+n2h1p+iab,1    ) + num*reg/dem
+            H(1    ,1+n2h1p+iab) = H(1    ,1+n2h1p+iab) + num*reg
+            H(1+n2h1p+iab,1    ) = H(1+n2h1p+iab,1    ) + num*reg
 
             end do
           end do
@@ -368,31 +369,31 @@ subroutine R_ADC4_G3W2_diag(dotest,TDA_W,flow,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,ERHF
                 dem1 = eHF(c) - eHF(k) + Om(mu)
                 dem2 = eHF(a) - eHF(c) - Om(nu)
 
-                reg1 = (1d0 - exp(-2d0*flow*dem1**2))
-                reg2 = (1d0 - exp(-2d0*flow*dem2**2))
+                reg1 = SRG_reg(flow,dem1)
+                reg2 = SRG_reg(flow,dem2)
 
-                H(1          ,1+n2h1p+iab) = H(1          ,1+n2h1p+iab) + num*reg1*reg2/(dem1*dem2)
-                H(1+n2h1p+iab,1          ) = H(1+n2h1p+iab,1          ) + num*reg1*reg2/(dem1*dem2)
+                H(1          ,1+n2h1p+iab) = H(1          ,1+n2h1p+iab) + num*reg1*reg2
+                H(1+n2h1p+iab,1          ) = H(1+n2h1p+iab,1          ) + num*reg1*reg2
  
                 num = 2d0*sqrt(2d0)*rho(k,c,mu)*rho(a,k,nu)*rho(p,c,nu)
                 dem1 = eHF(k) - eHF(c) + Om(mu)
-                dem2 = eHF(k) - eHF(a) - Om(nu)  
+                dem2 = eHF(k) - eHF(a) - Om(nu)
 
-                reg1 = (1d0 - exp(-2d0*flow*dem1**2))
-                reg2 = (1d0 - exp(-2d0*flow*dem2**2))
+                reg1 = SRG_reg(flow,dem1)
+                reg2 = SRG_reg(flow,dem2)
 
-                H(1          ,1+n2h1p+iab) = H(1          ,1+n2h1p+iab) - num*reg1*reg2/(dem1*dem2)
-                H(1+n2h1p+iab,1          ) = H(1+n2h1p+iab,1          ) - num*reg1*reg2/(dem1*dem2)
+                H(1          ,1+n2h1p+iab) = H(1          ,1+n2h1p+iab) - num*reg1*reg2
+                H(1+n2h1p+iab,1          ) = H(1+n2h1p+iab,1          ) - num*reg1*reg2
 
                 num = 2d0*sqrt(2d0)*rho(k,c,mu)*rho(k,a,nu)*rho(c,p,nu)
                 dem1 = eHF(k) - eHF(c) + Om(mu)
-                dem2 = eHF(a) - eHF(k) - Om(nu)  
+                dem2 = eHF(a) - eHF(k) - Om(nu)
 
-                reg1 = (1d0 - exp(-2d0*flow*dem1**2))
-                reg2 = (1d0 - exp(-2d0*flow*dem2**2))
+                reg1 = SRG_reg(flow,dem1)
+                reg2 = SRG_reg(flow,dem2)
 
-                H(1          ,1+n2h1p+iab) = H(1          ,1+n2h1p+iab) - 0.5d0*num*reg1*reg2/(dem1*dem2)
-                H(1+n2h1p+iab,1          ) = H(1+n2h1p+iab,1          ) - 0.5d0*num*reg1*reg2/(dem1*dem2)
+                H(1          ,1+n2h1p+iab) = H(1          ,1+n2h1p+iab) - 0.5d0*num*reg1*reg2
+                H(1+n2h1p+iab,1          ) = H(1+n2h1p+iab,1          ) - 0.5d0*num*reg1*reg2
 
               end do
             end do
@@ -404,13 +405,13 @@ subroutine R_ADC4_G3W2_diag(dotest,TDA_W,flow,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,ERHF
 
                 num = 2d0*sqrt(2d0)*rho(b,c,mu)*rho(b,a,nu)*rho(c,p,nu)
                 dem1 = eHF(b) - eHF(c) + Om(mu)
-                dem2 = eHF(a) - eHF(b) - Om(nu)  
+                dem2 = eHF(a) - eHF(b) - Om(nu)
 
-                reg1 = (1d0 - exp(-2d0*flow*dem1**2))
-                reg2 = (1d0 - exp(-2d0*flow*dem2**2))
+                reg1 = SRG_reg(flow,dem1)
+                reg2 = SRG_reg(flow,dem2)
 
-                H(1          ,1+n2h1p+iab) = H(1          ,1+n2h1p+iab) + 0.5d0*num*reg1*reg2/(dem1*dem2)
-                H(1+n2h1p+iab,1    )       = H(1+n2h1p+iab,1          ) + 0.5d0*num*reg1*reg2/(dem1*dem2)
+                H(1          ,1+n2h1p+iab) = H(1          ,1+n2h1p+iab) + 0.5d0*num*reg1*reg2
+                H(1+n2h1p+iab,1    )       = H(1+n2h1p+iab,1          ) + 0.5d0*num*reg1*reg2
 
               end do
             end do
@@ -443,15 +444,15 @@ subroutine R_ADC4_G3W2_diag(dotest,TDA_W,flow,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,ERHF
 
                 num = 0.5d0*rho(k,r,mu)*rho(i,r,nu)
                 dem = eHF(i) - eHF(r) + Om(nu)
-                reg = (1d0 - exp(-2d0*flow*dem**2))
+                reg = SRG_reg(flow,dem)
                
-                H(1+ija,1+klc) = H(1+ija,1+klc) + num*reg/dem
+                H(1+ija,1+klc) = H(1+ija,1+klc) + num*reg
                
                 num = 0.5d0*rho(k,r,mu)*rho(i,r,nu)
                 dem = eHF(k) - eHF(r) + Om(mu)
-                reg = (1d0 - exp(-2d0*flow*dem**2))
+                reg = SRG_reg(flow,dem)
                
-                H(1+ija,1+klc) = H(1+ija,1+klc) + num*reg/dem
+                H(1+ija,1+klc) = H(1+ija,1+klc) + num*reg
 
               end do
     
@@ -485,15 +486,15 @@ subroutine R_ADC4_G3W2_diag(dotest,TDA_W,flow,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,ERHF
 
                 num = 0.5d0*rho(r,c,mu)*rho(r,a,nu)
                 dem = eHF(c) - eHF(r) - Om(mu)
-                reg = (1d0 - exp(-2d0*flow*dem**2))
+                reg = SRG_reg(flow,dem)
                
-                H(1+n2h1p+iab,1+n2h1p+kcd) = H(1+n2h1p+iab,1+n2h1p+kcd) + num*reg/dem
+                H(1+n2h1p+iab,1+n2h1p+kcd) = H(1+n2h1p+iab,1+n2h1p+kcd) + num*reg
                
                 num = 0.5d0*rho(r,c,mu)*rho(r,a,nu)
                 dem = eHF(a) - eHF(r) - Om(nu)
-                reg = (1d0 - exp(-2d0*flow*dem**2))
+                reg = SRG_reg(flow,dem)
                
-                H(1+n2h1p+iab,1+n2h1p+kcd) = H(1+n2h1p+iab,1+n2h1p+kcd) + num*reg/dem
+                H(1+n2h1p+iab,1+n2h1p+kcd) = H(1+n2h1p+iab,1+n2h1p+kcd) + num*reg
 
               end do
   
@@ -523,11 +524,11 @@ subroutine R_ADC4_G3W2_diag(dotest,TDA_W,flow,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,ERHF
 
                 num = 1d0*rho(k,i,nu)*rho(a,k,mu)
                 dem = eHF(a) - eHF(k) + Om(nu)
-                reg = (1d0 - exp(-2d0*flow*dem**2))
+                reg = SRG_reg(flow,dem)
                
-                H(1+ija      ,1+n2h1p+kcd) = H(1+ija      ,1+n2h1p+kcd) + num*reg/dem
+                H(1+ija      ,1+n2h1p+kcd) = H(1+ija      ,1+n2h1p+kcd) + num*reg
                
-                H(1+n2h1p+kcd,1+ija      ) = H(1+n2h1p+kcd,1+ija      ) + num*reg/dem
+                H(1+n2h1p+kcd,1+ija      ) = H(1+n2h1p+kcd,1+ija      ) + num*reg
              
 
               end do
@@ -536,11 +537,11 @@ subroutine R_ADC4_G3W2_diag(dotest,TDA_W,flow,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,ERHF
 
                 num = 1d0*rho(a,c,nu)*rho(c,i,mu)
                 dem = eHF(i) - eHF(c) - Om(mu)
-                reg = (1d0 - exp(-2d0*flow*dem**2))
+                reg = SRG_reg(flow,dem)
               
-                H(1+ija      ,1+n2h1p+kcd) = H(1+ija      ,1+n2h1p+kcd) + num*reg/dem
+                H(1+ija      ,1+n2h1p+kcd) = H(1+ija      ,1+n2h1p+kcd) + num*reg
               
-                H(1+n2h1p+kcd,1+ija      ) = H(1+n2h1p+kcd,1+ija      ) + num*reg/dem
+                H(1+n2h1p+kcd,1+ija      ) = H(1+n2h1p+kcd,1+ija      ) + num*reg
              
               end do
   

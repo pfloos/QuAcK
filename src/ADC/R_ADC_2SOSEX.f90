@@ -54,6 +54,7 @@ subroutine R_ADC_2SOSEX(dotest,TDA_W,flow,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,ERHF,ERI
   double precision,parameter    :: cutoff2 = 0.01d0
   double precision              :: eF
   double precision,parameter    :: window = 1.5d0
+  double precision,external     :: SRG_reg
 
   double precision              :: start_timing,end_timing,timing
 
@@ -156,17 +157,17 @@ subroutine R_ADC_2SOSEX(dotest,TDA_W,flow,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,ERHF,ERI
 
             num = sqrt(2d0)*ERI(p,c,k,i)*rho(k,c,mu)
             dem = eHF(c) - eHF(k) - Om(mu)
-            reg = (1d0 - exp(-2d0*flow*dem**2))
+            reg = SRG_reg(flow,dem)
 
-            H(p       ,nOrb+ija) = H(p       ,nOrb+ija) + num*reg/dem
-            H(nOrb+ija,p       ) = H(nOrb+ija,p       ) + num*reg/dem
+            H(p       ,nOrb+ija) = H(p       ,nOrb+ija) + num*reg
+            H(nOrb+ija,p       ) = H(nOrb+ija,p       ) + num*reg
 
             num = sqrt(2d0)*ERI(p,k,c,i)*rho(c,k,mu)
             dem = eHF(c) - eHF(k) + Om(mu)
-            reg = (1d0 - exp(-2d0*flow*dem**2))
+            reg = SRG_reg(flow,dem)
 
-            H(p       ,nOrb+ija) = H(p       ,nOrb+ija) + num*reg/dem
-            H(nOrb+ija,p       ) = H(nOrb+ija,p       ) + num*reg/dem
+            H(p       ,nOrb+ija) = H(p       ,nOrb+ija) + num*reg
+            H(nOrb+ija,p       ) = H(nOrb+ija,p       ) + num*reg
 
           end do
         end do
@@ -195,17 +196,17 @@ subroutine R_ADC_2SOSEX(dotest,TDA_W,flow,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,ERHF,ERI
 
             num = sqrt(2d0)*ERI(p,k,c,a)*rho(c,k,mu)
             dem = eHF(c) - eHF(k) - Om(mu)
-            reg = (1d0 - exp(-2d0*flow*dem**2))
+            reg = SRG_reg(flow,dem)
 
-            H(p             ,nOrb+n2h1p+iab) = H(p             ,nOrb+n2h1p+iab) + num*reg/dem
-            H(nOrb+n2h1p+iab,p             ) = H(nOrb+n2h1p+iab,p             ) + num*reg/dem
+            H(p             ,nOrb+n2h1p+iab) = H(p             ,nOrb+n2h1p+iab) + num*reg
+            H(nOrb+n2h1p+iab,p             ) = H(nOrb+n2h1p+iab,p             ) + num*reg
 
             num = sqrt(2d0)*ERI(p,c,k,a)*rho(k,c,mu)
             dem = eHF(c) - eHF(k) + Om(mu)
-            reg = (1d0 - exp(-2d0*flow*dem**2))
+            reg = SRG_reg(flow,dem)
 
-            H(p             ,nOrb+n2h1p+iab) = H(p             ,nOrb+n2h1p+iab) + num*reg/dem
-            H(nOrb+n2h1p+iab,p             ) = H(nOrb+n2h1p+iab,p             ) + num*reg/dem
+            H(p             ,nOrb+n2h1p+iab) = H(p             ,nOrb+n2h1p+iab) + num*reg
+            H(nOrb+n2h1p+iab,p             ) = H(nOrb+n2h1p+iab,p             ) + num*reg
 
           end do
         end do
