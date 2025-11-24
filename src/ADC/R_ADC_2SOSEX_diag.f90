@@ -1,4 +1,4 @@
-subroutine R_ADC_2SOSEX_diag(dotest,TDA_W,eta,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,eHF)
+subroutine R_ADC_2SOSEX_diag(dotest,TDA_W,flow,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,eHF)
 
 ! ADC version of 2SOSEX within the diagonal approximation
 
@@ -10,7 +10,7 @@ subroutine R_ADC_2SOSEX_diag(dotest,TDA_W,eta,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,ERHF
   logical,intent(in)            :: dotest
 
   logical,intent(in)            :: TDA_W
-  double precision,intent(in)   :: eta
+  double precision,intent(in)   :: flow
   integer,intent(in)            :: nBas
   integer,intent(in)            :: nOrb
   integer,intent(in)            :: nC
@@ -161,14 +161,14 @@ subroutine R_ADC_2SOSEX_diag(dotest,TDA_W,eta,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,ERHF
 
             num = sqrt(2d0)*ERI(p,c,k,i)*rho(k,c,mu)
             dem = eHF(c) - eHF(k) - Om(mu)
-            reg = (1d0 - exp(-2d0*eta*dem**2))
+            reg = (1d0 - exp(-2d0*flow*dem**2))
 
             H(1    ,1+ija) = H(1    ,1+ija) + num*reg/dem
             H(1+ija,1    ) = H(1+ija,1    ) + num*reg/dem
 
             num = sqrt(2d0)*ERI(p,k,c,i)*rho(c,k,mu)
             dem = eHF(c) - eHF(k) + Om(mu)
-            reg = (1d0 - exp(-2d0*eta*dem**2))
+            reg = (1d0 - exp(-2d0*flow*dem**2))
 
             H(1    ,1+ija) = H(1    ,1+ija) + num*reg/dem
             H(1+ija,1    ) = H(1+ija,1    ) + num*reg/dem
@@ -196,14 +196,14 @@ subroutine R_ADC_2SOSEX_diag(dotest,TDA_W,eta,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,ERHF
 
             num = sqrt(2d0)*ERI(p,k,c,a)*rho(c,k,mu)
             dem = eHF(c) - eHF(k) - Om(mu)
-            reg = (1d0 - exp(-2d0*eta*dem**2))
+            reg = (1d0 - exp(-2d0*flow*dem**2))
 
             H(1    ,1+n2h1p+iab) = H(1    ,1+n2h1p+iab) + num*reg/dem
             H(1+n2h1p+iab,1    ) = H(1+n2h1p+iab,1    ) + num*reg/dem
 
             num = sqrt(2d0)*ERI(p,c,k,a)*rho(k,c,mu)
             dem = eHF(c) - eHF(k) + Om(mu)
-            reg = (1d0 - exp(-2d0*eta*dem**2))
+            reg = (1d0 - exp(-2d0*flow*dem**2))
 
             H(1    ,1+n2h1p+iab) = H(1    ,1+n2h1p+iab) + num*reg/dem
             H(1+n2h1p+iab,1    ) = H(1+n2h1p+iab,1    ) + num*reg/dem
@@ -254,6 +254,8 @@ subroutine R_ADC_2SOSEX_diag(dotest,TDA_W,eta,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,ERHF
   !-------------------------!
 
   call wall_time(start_timing)
+
+  call matout(nH,nH,H)
 
   call diagonalize_matrix(nH,H,eGW)
 

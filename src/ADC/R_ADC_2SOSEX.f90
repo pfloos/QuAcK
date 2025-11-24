@@ -1,4 +1,4 @@
-subroutine R_ADC_2SOSEX(dotest,TDA_W,eta,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,eHF)
+subroutine R_ADC_2SOSEX(dotest,TDA_W,flow,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,eHF)
 
 ! ADC version of 2SOSEX
 
@@ -10,7 +10,7 @@ subroutine R_ADC_2SOSEX(dotest,TDA_W,eta,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,
   logical,intent(in)            :: dotest
 
   logical,intent(in)            :: TDA_W
-  double precision,intent(in)   :: eta
+  double precision,intent(in)   :: flow
   integer,intent(in)            :: nBas
   integer,intent(in)            :: nOrb
   integer,intent(in)            :: nC
@@ -156,14 +156,14 @@ subroutine R_ADC_2SOSEX(dotest,TDA_W,eta,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,
 
             num = sqrt(2d0)*ERI(p,c,k,i)*rho(k,c,mu)
             dem = eHF(c) - eHF(k) - Om(mu)
-            reg = (1d0 - exp(-2d0*eta*dem**2))
+            reg = (1d0 - exp(-2d0*flow*dem**2))
 
             H(p       ,nOrb+ija) = H(p       ,nOrb+ija) + num*reg/dem
             H(nOrb+ija,p       ) = H(nOrb+ija,p       ) + num*reg/dem
 
             num = sqrt(2d0)*ERI(p,k,c,i)*rho(c,k,mu)
             dem = eHF(c) - eHF(k) + Om(mu)
-            reg = (1d0 - exp(-2d0*eta*dem**2))
+            reg = (1d0 - exp(-2d0*flow*dem**2))
 
             H(p       ,nOrb+ija) = H(p       ,nOrb+ija) + num*reg/dem
             H(nOrb+ija,p       ) = H(nOrb+ija,p       ) + num*reg/dem
@@ -195,14 +195,14 @@ subroutine R_ADC_2SOSEX(dotest,TDA_W,eta,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,
 
             num = sqrt(2d0)*ERI(p,k,c,a)*rho(c,k,mu)
             dem = eHF(c) - eHF(k) - Om(mu)
-            reg = (1d0 - exp(-2d0*eta*dem**2))
+            reg = (1d0 - exp(-2d0*flow*dem**2))
 
             H(p             ,nOrb+n2h1p+iab) = H(p             ,nOrb+n2h1p+iab) + num*reg/dem
             H(nOrb+n2h1p+iab,p             ) = H(nOrb+n2h1p+iab,p             ) + num*reg/dem
 
             num = sqrt(2d0)*ERI(p,c,k,a)*rho(k,c,mu)
             dem = eHF(c) - eHF(k) + Om(mu)
-            reg = (1d0 - exp(-2d0*eta*dem**2))
+            reg = (1d0 - exp(-2d0*flow*dem**2))
 
             H(p             ,nOrb+n2h1p+iab) = H(p             ,nOrb+n2h1p+iab) + num*reg/dem
             H(nOrb+n2h1p+iab,p             ) = H(nOrb+n2h1p+iab,p             ) + num*reg/dem

@@ -1,4 +1,4 @@
-subroutine R_ADC4_G3W2(dotest,TDA_W,eta,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,eHF)
+subroutine R_ADC4_G3W2(dotest,TDA_W,flow,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,eHF)
 
 ! ADC(4) version of G3W2
 
@@ -52,7 +52,7 @@ subroutine R_ADC4_G3W2(dotest,TDA_W,eta,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,e
   double precision,parameter    :: cutoff2 = 0.01d0
   double precision              :: eF
   double precision,parameter    :: window = 1.5d0
-  double precision,intent(in)   :: eta
+  double precision,intent(in)   :: flow
 
   double precision              :: start_timing,end_timing,timing
 

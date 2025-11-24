@@ -1,4 +1,4 @@
-subroutine R_ADC_GW_diag(dotest,TDA_W,eta,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,eHF)
+subroutine R_ADC_GW_diag(dotest,TDA_W,flow,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,eHF)
 
 ! ADC version of GW within the diagonal approximation
 
@@ -10,7 +10,7 @@ subroutine R_ADC_GW_diag(dotest,TDA_W,eta,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,ERHF,ERI
   logical,intent(in)            :: dotest
 
   logical,intent(in)            :: TDA_W
-  double precision,intent(in)   :: eta
+  double precision,intent(in)   :: flow
   integer,intent(in)            :: nBas
   integer,intent(in)            :: nOrb
   integer,intent(in)            :: nC
