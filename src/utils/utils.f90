@@ -102,6 +102,34 @@ subroutine fit_y_eq_ax2_bx_c(npoints,x,y,abc,error)
 end subroutine
 
 !------------------------------------------------------------------------
+function SRG_reg(s,x) result(val)
+
+! SRG regulization scheme
+
+  implicit none
+
+! Input variables
+
+  double precision,intent(in)   :: s
+  double precision,intent(in)   :: x
+
+! Local variables
+
+  double precision,parameter    :: thres = 1d-15
+
+! Output variables
+
+  double precision              :: val
+
+  if(abs(x) < thres) then
+    val = 0d0
+  else
+    val = (1d0 - exp(-2d0*s*x*x))/x
+  end if
+
+end function 
+
+!------------------------------------------------------------------------
 function Heaviside_step(x) result(val)
 
 ! Kronecker Delta
