@@ -29,7 +29,9 @@ subroutine R_optimize_orbitals(diagHess,OVRotOnly,dRPA,nBas,nOrb,nV,nR,nC,nO,N,N
   integer                          :: nhess,mhess
   double precision,allocatable     :: hess(:,:), grad(:),grad_tmp(:),hess_tmp(:,:), hessInv(:,:)
   double precision,allocatable     :: Kap(:,:), ExpKap(:,:)
+  double precision,allocatable     :: rdm1(:,:), rdm2(:,:,:,:)
   double precision                 :: tol
+  double precision                 :: tstart,tend,tdiff
 
 ! Output variables
 
@@ -43,10 +45,14 @@ subroutine R_optimize_orbitals(diagHess,OVRotOnly,dRPA,nBas,nOrb,nV,nR,nC,nO,N,N
   ! Compute orbital gradient !
   !--------------------------!
  
-  allocate(grad(Nsq),grad_tmp(Nsq))
+  allocate(grad(Nsq),grad_tmp(Nsq),rdm1(N,N),rdm2(N,N,N,N))
+  rdm1(:,:) = 0d0
+  rdm2(:,:,:,:) = 0d0
   grad(:) = 0d0
   nhess = Nsq
   mhess = Nsq
+  rdm1 = rdm1_hf + rdm1_c
+  rdm2 = -rdm2_hf + rdm2_c
   call orbital_gradient(O,V,N,Nsq,h,ERI_MO,rdm1_hf,rdm2_hf,grad_tmp)
   grad = grad + grad_tmp
   if(dRPA) then
@@ -68,6 +74,7 @@ subroutine R_optimize_orbitals(diagHess,OVRotOnly,dRPA,nBas,nOrb,nV,nR,nC,nO,N,N
     mhess = 1
     allocate(hess(nhess,mhess),hess_tmp(nhess,mhess))
     hess(:,:) = 0d0
+    !call orbital_hessian_diag(O,V,N,Nsq,F,ERI_MO,rdm1,rdm2,hess_tmp)
     call orbital_hessian_diag(O,V,N,Nsq,h,ERI_MO,rdm1_hf,rdm2_hf,hess_tmp)
     hess = hess + hess_tmp
     if(dRPA) then
@@ -104,6 +111,8 @@ subroutine R_optimize_orbitals(diagHess,OVRotOnly,dRPA,nBas,nOrb,nV,nR,nC,nO,N,N
     mhess = nhess
     allocate(hess(nhess,mhess),hess_tmp(nhess,mhess))
     hess(:,:) = 0d0
+    call wall_time(tstart)
+   ! call orbital_hessian_ov(O,V,N,Nsq,F,ERI_MO,rdm1,rdm2,hess_tmp)
     call orbital_hessian_ov(O,V,N,Nsq,h,ERI_MO,rdm1_hf,rdm2_hf,hess_tmp)
     hess = hess + hess_tmp 
     if(dRPA) then
@@ -111,10 +120,17 @@ subroutine R_optimize_orbitals(diagHess,OVRotOnly,dRPA,nBas,nOrb,nV,nR,nC,nO,N,N
     else
       call orbital_hessian_ov(O,V,N,Nsq,F,ERI_MO_AS,rdm1_c,rdm2_c,hess_tmp)
     endif
+    call wall_time(tend)
+    tdiff = tend - tstart
+    write(*,*) "Building Hessian took ", tdiff, "seconds."
     hess = hess + hess_tmp 
     deallocate(hess_tmp)
     allocate(hessInv(nhess,mhess))
+    call wall_time(tstart)
     call pseudo_inverse_general_matrix(O*V,hess,hessInv)
+    call wall_time(tend)
+    tdiff = tend - tstart
+    write(*,*) "Inverting Hessian took ", tdiff, "seconds."
     deallocate(hess)
   endif
   
@@ -178,5 +194,5 @@ subroutine R_optimize_orbitals(diagHess,OVRotOnly,dRPA,nBas,nOrb,nV,nR,nC,nO,N,N
   call AOtoMO(nBas,nOrb,c,Hc,h)
   call AOtoMO_ERI_RHF(nBas,nOrb,c,ERI_AO,ERI_MO)
   if(.not. dRPA) call AOtoMO_ERI_RHF(nBas,nOrb,c,ERI_AO_AS,ERI_MO_AS)
-
+deallocate(rdm1,rdm2)
 end subroutine

@@ -98,9 +98,13 @@ subroutine OORG0W0(dotest,doACFDT,exchange_kernel,doXBS,dophBSE,dophBSE2,TDA_W,T
   double precision,allocatable  :: rdm1(:,:)
   double precision,allocatable  :: rdm1_hf(:,:)
   double precision,allocatable  :: rdm1_rpa(:,:)
+  double precision,allocatable  :: rdm1_rpa_singlet(:,:)
+  double precision,allocatable  :: rdm1_rpa_triplet(:,:)
   double precision,allocatable  :: rdm2(:,:,:,:)
   double precision,allocatable  :: rdm2_hf(:,:,:,:)
   double precision,allocatable  :: rdm2_rpa(:,:,:,:)
+  double precision,allocatable  :: rdm2_rpa_singlet(:,:,:,:)
+  double precision,allocatable  :: rdm2_rpa_triplet(:,:,:,:)
   integer                       :: r,s,rs,p,q,pq
   integer                       :: i,jind,a,b,ia,jb,l
   integer                       :: ind
@@ -109,7 +113,7 @@ subroutine OORG0W0(dotest,doACFDT,exchange_kernel,doXBS,dophBSE,dophBSE2,TDA_W,T
   double precision,allocatable  :: F(:,:)
   double precision,allocatable  :: J(:,:),K(:,:)
   double precision              :: Emu, EOld
-  double precision              :: EHF_rdm,EcRPA_rdm,EcRPA_HF
+  double precision              :: EHF_rdm,EcRPA_rdm,EcRPA_HF,EcRPA_triplet,EcRPA_singlet
 
   double precision,external     :: trace_matrix
   double precision,external     :: Kronecker_delta
@@ -142,10 +146,16 @@ subroutine OORG0W0(dotest,doACFDT,exchange_kernel,doXBS,dophBSE,dophBSE2,TDA_W,T
   isp_W = 1
   
    if(.not. dRPA) then
-      write(*,*) 'xRPA instead of RPA'
+      write(*,*) 'xRPA instead of dRPA'
       write(*,*)
       ! Antisymmetrize 2-electron integrals.
       allocate(ERI_AO_AS(nBas,nBas,nBas,nBas),ERI_MO_AS(nOrb,nOrb,nOrb,nOrb))
+      allocate(rdm1_rpa_singlet(N,N),rdm2_rpa_singlet(N,N,N,N))
+      allocate(rdm1_rpa_triplet(N,N),rdm2_rpa_triplet(N,N,N,N))
+      rdm1_rpa_singlet(:,:)     = 0d0 
+      rdm1_rpa_triplet(:,:)     = 0d0 
+      rdm2_rpa_singlet(:,:,:,:) = 0d0
+      rdm2_rpa_triplet(:,:,:,:) = 0d0
       ERI_AO_AS(:,:,:,:) = 0d0
       ERI_MO_AS(:,:,:,:) = 0d0
       do p=1,N
@@ -159,6 +169,8 @@ subroutine OORG0W0(dotest,doACFDT,exchange_kernel,doXBS,dophBSE,dophBSE2,TDA_W,T
       enddo
    else
       allocate(ERI_AO_AS(1,1,1,1),ERI_MO_AS(1,1,1,1)) 
+      allocate(rdm1_rpa_singlet(1,1),rdm2_rpa_singlet(1,1,1,1))
+      allocate(rdm1_rpa_triplet(1,1),rdm2_rpa_triplet(1,1,1,1))
    endif
 
    if(TDA_W) then 
@@ -184,7 +196,7 @@ subroutine OORG0W0(dotest,doACFDT,exchange_kernel,doXBS,dophBSE,dophBSE2,TDA_W,T
            xi(nS,nS),rampl(N,N,N),lampl(N,N,N),rp(N),lp(N),h(N,N),c(nBas,nOrb),&
            rdm1(N,N),rdm2(N,N,N,N),rdm1_hf(N,N),rdm2_hf(N,N,N,N),rdm1_rpa(N,N),rdm2_rpa(N,N,N,N),&
            J(nBas,nBas),K(nBas,nBas),F(nOrb,nOrb))
-
+  
 ! Initialize variables for OO  
   OOi               = 1
   OOConv            = 1d0
@@ -230,51 +242,120 @@ subroutine OORG0W0(dotest,doACFDT,exchange_kernel,doXBS,dophBSE,dophBSE2,TDA_W,T
   !-------------------!
   ! Compute screening !
   !-------------------!
-  
-                   call OO_phRLR_A(isp_W,dRPA,nOrb,nC,nO,nV,nR,nS,1d0,F,ERI_MO,Aph)
-    if(.not.TDA_W) call phRLR_B(isp_W,dRPA,nOrb,nC,nO,nV,nR,nS,1d0,ERI_MO,Bph)
-    
-    call phRLR(TDA_W,nS,Aph,Bph,EcRPA,Om,XpY,XmY)
-    
-    if(OOi == 1) EcRPA_HF = EcRPA
-
-    if(print_W) call print_excitation_energies('phRPA@RHF','singlet',nS,Om)
-  
-    call RG0W0_rdm2_hf(O,V,N,nS,rdm2_hf)
-    call RG0W0_rdm1_hf(O,V,N,nS,rdm1_hf)
-    
-    ! Useful quantities
-    X = transpose(0.5*(XpY + XmY))
-    Y = transpose(0.5*(XpY - XmY))
-    call inverse_matrix(nS,X,X_inv)
-    t = matmul(Y,X_inv)
-    Xbar = - matmul(t,Y) + X
-    call inverse_matrix(nS,Xbar,Xbar_inv)
-    lambda = matmul(Y,Xbar_inv)
-
-    ! Calculate rdm1
-   ! rdm1_rpa = 0d0
-   ! rdm2_rpa = 0d0
-   ! call RG0W0_rdm1_mu(O,V,N,nS,lampl,rampl,lp,rp,xi,lambda,t,rdm1_rpa)
-   ! call energy_from_rdm(N,h,ERI_MO,rdm1_rpa,rdm2_rpa,EHF_rdm,.true.)
-    call RG0W0_rdm1_rpa(O,V,N,nS,lambda,t,rdm1_rpa)
-    rdm1 = rdm1_hf + rdm1_rpa
-    ! Calculate rdm2
-    call RG0W0_rdm2_rpa(O,V,N,nS,lambda,t,rdm2_rpa)
-    rdm2 = rdm2_hf + rdm2_rpa
-    call energy_from_rdm(N,h,ERI_MO,rdm1_hf,rdm2_hf,EHF_rdm,.false.)
     if(dRPA) then
+                     call OO_phRLR_A(isp_W,dRPA,nOrb,nC,nO,nV,nR,nS,1d0,F,ERI_MO,Aph)
+      if(.not.TDA_W) call phRLR_B(isp_W,dRPA,nOrb,nC,nO,nV,nR,nS,1d0,ERI_MO,Bph)
+      
+      call phRLR(TDA_W,nS,Aph,Bph,EcRPA,Om,XpY,XmY)
+      
+      if(OOi == 1) EcRPA_HF = EcRPA
+
+      if(print_W) call print_excitation_energies('phRPA@RHF','singlet',nS,Om)
+        
+      ! Useful quantities
+      X = transpose(0.5*(XpY + XmY))
+      Y = transpose(0.5*(XpY - XmY))
+     ! call inverse_matrix(nS,X,X_inv)
+     ! t = matmul(Y,X_inv)
+     ! Xbar = - matmul(t,Y) + X
+     ! call inverse_matrix(nS,Xbar,Xbar_inv)
+     ! lambda = matmul(Y,Xbar_inv)
+  
+      call RG0W0_rdm2_hf(O,V,N,nS,rdm2_hf)
+      call RG0W0_rdm1_hf(O,V,N,nS,rdm1_hf)
+      
+
+     ! rdm1_rpa = 0d0
+     ! rdm2_rpa = 0d0
+     ! call RG0W0_rdm1_mu(O,V,N,nS,lampl,rampl,lp,rp,xi,lambda,t,rdm1_rpa)
+     ! call energy_from_rdm(N,h,ERI_MO,rdm1_rpa,rdm2_rpa,EHF_rdm,.true.)
+     ! call RG0W0_rdm1_rpa(O,V,N,nS,lambda,t,rdm1_rpa)
+     ! call RG0W0_rdm2_rpa(O,V,N,nS,lambda,t,rdm2_rpa)
+      call RG0W0_rdms_crpa(1,O,V,N,nS,X,Y,rdm1_rpa,rdm2_rpa)
+      rdm1 = rdm1_hf + rdm1_rpa
+      rdm2 = - rdm2_hf + rdm2_rpa
+      call energy_from_rdm(N,h,ERI_MO,rdm1_hf,rdm2_hf,EHF_rdm,.false.)
       call energy_from_rdm(N,F,ERI_MO,rdm1_rpa,rdm2_rpa,EcRPA_rdm,.false.)
+      call energy_from_rdm(N,F,ERI_MO,rdm1,rdm2,Emu,.false.)
+      write(*,*) "ERHF = ", ERHF
+      write(*,*) "ERHF + EcRPA@HF = ", ERHF + EcRPA_HF
+      write(*,*) "EcRPA = ", EcRPA_rdm
+      write(*,*) "EcRPA (no rdm) = ", EcRPA
+      write(*,*) "ERPA = ", EcRPA + EHF_rdm
+      write(*,*) ""
+     ! write(*,*) "Test my method"
+     ! call RG0W0_rdms_crpa(1,O,V,N,nS,X,Y,rdm1_rpa,rdm2_rpa)
+     ! call energy_from_rdm(N,F,ERI_MO,rdm1_rpa,rdm2_rpa,EcRPA_rdm,.true.)
+     ! call energy_from_rdm(N,F,ERI_MO,rdm1_hf,-rdm2_hf,EHF_rdm,.true.)
     else
-      call energy_from_rdm(N,F,ERI_MO_AS,rdm1_rpa,rdm2_rpa,EcRPA_rdm,.false.)
-    endif
-    Emu = EcRPA + EHF_rdm
-    write(*,*) "ERHF = ", ERHF
-    write(*,*) "ERHF + EcRPA@HF = ", ERHF + EcRPA_HF
-    write(*,*) "EcRPA = ", EcRPA_rdm
-    write(*,*) "EcRPA (no rdm) = ", EcRPA
-    write(*,*) "ERPA = ", EcRPA_rdm + EHF_rdm
-   
+      if(singlet) then
+        isp_W = 1 
+                       call OO_phRLR_A(isp_W,dRPA,nOrb,nC,nO,nV,nR,nS,1d0,F,ERI_MO,Aph)
+        if(.not.TDA_W) call phRLR_B(isp_W,dRPA,nOrb,nC,nO,nV,nR,nS,1d0,ERI_MO,Bph)
+        
+        call phRLR(TDA_W,nS,Aph,Bph,EcRPA,Om,XpY,XmY)
+        
+        if(OOi == 1) EcRPA_HF = EcRPA
+  
+
+        if(print_W) call print_excitation_energies('phRPA@RHF','singlet',nS,Om)
+        write(*,*) "EcRPA singlet", EcRPA
+        ! Useful quantities
+        X = transpose(0.5*(XpY + XmY))
+        Y = transpose(0.5*(XpY - XmY))
+        call inverse_matrix(nS,X,X_inv)
+        t = matmul(Y,X_inv)
+        Xbar = - matmul(t,Y) + X
+        call inverse_matrix(nS,Xbar,Xbar_inv)
+        lambda = matmul(Y,Xbar_inv)
+        call RG0W0_rdm1_rpa(O,V,N,nS,lambda,t,rdm1_rpa_singlet)
+        call RG0W0_rdm2_rpa(O,V,N,nS,lambda,t,rdm2_rpa_singlet)
+      end if
+
+      if(triplet) then
+        isp_W = 2 
+                       call OO_phRLR_A(isp_W,dRPA,nOrb,nC,nO,nV,nR,nS,1d0,F,ERI_MO,Aph)
+        if(.not.TDA_W) call phRLR_B(isp_W,dRPA,nOrb,nC,nO,nV,nR,nS,1d0,ERI_MO,Bph)
+        
+        call phRLR(TDA_W,nS,Aph,Bph,EcRPA,Om,XpY,XmY)
+        
+        if(print_W) call print_excitation_energies('phRPA@RHF','triplet',nS,Om)
+        
+        if(OOi == 1) EcRPA_HF = EcRPA
+        write(*,*) "EcRPA triplet", EcRPA
+        ! Useful quantities
+        X = transpose(0.5*(XpY + XmY))
+        Y = transpose(0.5*(XpY - XmY))
+        call inverse_matrix(nS,X,X_inv)
+        t = matmul(Y,X_inv)
+        Xbar = - matmul(t,Y) + X
+        call inverse_matrix(nS,Xbar,Xbar_inv)
+        lambda = matmul(Y,Xbar_inv)
+
+        call RG0W0_rdm1_rpa(O,V,N,nS,lambda,t,rdm1_rpa_triplet)
+        call RG0W0_rdm2_rpa(O,V,N,nS,lambda,t,rdm2_rpa_triplet)
+      
+      end if
+
+        call RG0W0_rdm2_hf(O,V,N,nS,rdm2_hf)
+        call RG0W0_rdm1_hf(O,V,N,nS,rdm1_hf)
+        write(*,*) "Energy singlet"
+        call energy_from_rdm(N,F,ERI_MO_AS,rdm1_rpa_singlet,rdm2_rpa_singlet,EcRPA_singlet,.true.)
+        write(*,*) "Energy triplet"
+        call energy_from_rdm(N,F,ERI_MO_AS,rdm1_rpa_triplet,rdm2_rpa_triplet,EcRPA_triplet,.true.)
+        rdm1_rpa = 0.5d0*(3*rdm1_rpa + rdm1_rpa_singlet)
+        rdm2_rpa = 0.5d0*(3*rdm2_rpa + rdm2_rpa_singlet)
+        write(*,*) "!!!!!!!! triplet rdms are wrong !!!!!!!!"
+        call energy_from_rdm(N,h,ERI_MO,rdm1_hf,rdm2_hf,EHF_rdm,.false.)
+        call energy_from_rdm(N,F,ERI_MO_AS,rdm1_rpa,rdm2_rpa,EcRPA_rdm,.false.)
+        Emu = EcRPA_rdm + EHF_rdm
+        write(*,*) "ERHF", ERHF
+        write(*,*) "ERHF + EcRPA@HF = ", ERHF + EcRPA_HF
+        write(*,*) "ERPA - EcRPA = ", EHF_rdm
+        write(*,*) "EcRPA = ", EcRPA_rdm
+        write(*,*) "ERPA = ", EcRPA_rdm + EHF_rdm
+    end if
+
     call R_optimize_orbitals(diagHess,OVRotOnly,dRPA,nBas,nOrb,nV,nR,nC,nO,N,Nsq,O,V,ERI_AO,ERI_AO_AS,ERI_MO,ERI_MO_AS,Hc,h,F,&
                              rdm1_hf,rdm1_rpa,rdm2_hf,rdm2_rpa,c,OOConv)
     
@@ -296,7 +377,8 @@ subroutine OORG0W0(dotest,doACFDT,exchange_kernel,doXBS,dophBSE,dophBSE2,TDA_W,T
     endif
   end do
   cHF(:,:) = c(:,:)
-  
+      
+
 !--------------------------!
 ! Compute spectral weights !
 !--------------------------!
@@ -350,5 +432,9 @@ subroutine OORG0W0(dotest,doACFDT,exchange_kernel,doXBS,dophBSE,dophBSE2,TDA_W,T
   deallocate(rdm1,rdm2,c,Aph,Bph,SigC,Z,Om,XpY,XmY,rho,eGW,&
              eGWlin,X,X_inv,Y,Xbar,Xbar_inv,lambda,t,rampl,lampl,rp,lp,h,&
              F)
+  if(.not. dRPA) then
+    deallocate(rdm1_rpa_singlet,rdm2_rpa_singlet)
+    deallocate(rdm1_rpa_triplet,rdm2_rpa_triplet)
+  end if
 
 end subroutine
