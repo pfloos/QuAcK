@@ -177,7 +177,7 @@ subroutine R_ADC4_G3W2(dotest,TDA_W,flow,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,
               do s=nC+1,nOrb-nR
  
                 num1 = 2d0*rho(p,r,mu)*rho(r,i,nu)
-                num2 = 2d0*rho(r,i,mu)*rho(q,r,nu)
+                num2 = 2d0*rho(s,i,mu)*rho(q,s,nu)
                 dem1 = eHF(i) - eHF(r) - Om(nu)
                 dem2 = w - eHF(i) + Om(nu) + Om(mu)
                 dem3 = eHF(i) - eHF(s) - Om(mu)
@@ -203,7 +203,7 @@ subroutine R_ADC4_G3W2(dotest,TDA_W,flow,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,
               do s=nC+1,nOrb-nR
  
                 num1 = 2d0*rho(r,p,mu)*rho(a,r,nu)
-                num2 = 2d0*rho(a,r,mu)*rho(r,q,nu)
+                num2 = 2d0*rho(a,s,mu)*rho(s,q,nu)
                 dem1 = eHF(r) - eHF(a) - Om(nu)
                 dem2 = w - eHF(a) - Om(nu) - Om(mu)
                 dem3 = eHF(s) - eHF(a) - Om(mu)

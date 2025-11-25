@@ -222,7 +222,7 @@ subroutine R_ADC_GW_diag(dotest,TDA_W,flow,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,ERHF,ER
   write(*,*)
   write(*,'(A65,1X,F9.3,A8)') 'Total CPU time for diagonalization of supermatrix = ',timing,' seconds'
   write(*,*)
-
+ 
   !-----------------!
   ! Compute weights !
   !-----------------!

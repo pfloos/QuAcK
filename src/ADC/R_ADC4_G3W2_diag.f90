@@ -59,7 +59,7 @@ subroutine R_ADC4_G3W2_diag(dotest,TDA_W,flow,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,ERHF
 
   double precision,allocatable  :: Reigv(:,:) 
 
-  double precision              :: start_timing,end_timing,timing
+  double precision              :: start_timing,end_timing,t_build,t_diag
 
   integer                       :: nIt,maxIt,idx(1)
   double precision              :: w,thresh,Conv
@@ -161,9 +161,10 @@ subroutine R_ADC4_G3W2_diag(dotest,TDA_W,flow,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,ERHF
 
     w = eHF(p)
 
-    write(*,*)'--------------------------------------------------------'
-    write(*,'(1X,A1,1X,A3,1X,A1,1X,A15,1X,A1,1X,A15,1X,A1,1X,A10,1X,A1,1X)')'|','It.','|','e_QP (eV)','|','Z','|','Conv.','|'
-    write(*,*)'--------------------------------------------------------'
+    write(*,*)'----------------------------------------------------------------------------------'
+    write(*,'(1X,A1,1X,A3,1X,A1,1X,A15,1X,A1,1X,A15,1X,A1,1X,A10,1X,A1,1X,A10,1X,A1,1X,A10,1X,A1,1X)') & 
+      '|','It.','|','e_QP (eV)','|','Z','|','Conv.','|','build (s)','|','diag. (s)','|'
+    write(*,*)'----------------------------------------------------------------------------------'
 
     do while(Conv > thresh .and. nIt < maxIt)
 
@@ -184,7 +185,7 @@ subroutine R_ADC4_G3W2_diag(dotest,TDA_W,flow,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,ERHF
             do s=nC+1,nOrb-nR
   
               num1 = 2d0*rho(p,r,mu)*rho(r,i,nu)
-              num2 = 2d0*rho(r,i,mu)*rho(p,r,nu)
+              num2 = 2d0*rho(s,i,mu)*rho(p,s,nu)
               dem1 = eHF(i) - eHF(r) - Om(nu)
               dem2 = w - eHF(i) + Om(nu) + Om(mu)
               dem3 = eHF(i) - eHF(s) - Om(mu)
@@ -210,7 +211,7 @@ subroutine R_ADC4_G3W2_diag(dotest,TDA_W,flow,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,ERHF
             do s=nC+1,nOrb-nR
   
               num1 = 2d0*rho(r,p,mu)*rho(a,r,nu)
-              num2 = 2d0*rho(a,r,mu)*rho(r,p,nu)
+              num2 = 2d0*rho(a,s,mu)*rho(s,p,nu)
               dem1 = eHF(r) - eHF(a) - Om(nu)
               dem2 = w - eHF(a) - Om(nu) - Om(mu)
               dem3 = eHF(s) - eHF(a) - Om(mu)
@@ -556,7 +557,7 @@ subroutine R_ADC4_G3W2_diag(dotest,TDA_W,flow,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,ERHF
   
       call wall_time(end_timing)
  
-      timing = end_timing - start_timing
+      t_build = end_timing - start_timing
 !     write(*,*)
 !     write(*,'(A65,1X,F9.3,A8)') 'Total CPU time for construction of supermatrix = ',timing,' seconds'
 !     write(*,*)
@@ -569,12 +570,11 @@ subroutine R_ADC4_G3W2_diag(dotest,TDA_W,flow,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,ERHF
  
     call wall_time(start_timing)
  
-!   call diagonalize_matrix(nH,H,eGW)
     call diagonalize_general_matrix(nH,H,eGW,Reigv)
  
     call wall_time(end_timing)
  
-    timing = end_timing - start_timing
+    t_diag = end_timing - start_timing
 !   write(*,*)
 !   write(*,'(A65,1X,F9.3,A8)') 'Total CPU time for diagonalization of supermatrix = ',timing,' seconds'
 !   write(*,*)
@@ -596,13 +596,14 @@ subroutine R_ADC4_G3W2_diag(dotest,TDA_W,flow,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,ERHF
       Conv = abs(w - eGW(idx(1)))
  
 
-      write(*,'(1X,A1,1X,I3,1X,A1,1X,F15.6,1X,A1,1X,F15.6,1X,A1,1X,F10.6,1X,A1,1X)') '|',nIt,'|',eGW(idx(1))*HaToeV,'|',Z(idx(1)),'|',Conv,'|'
+      write(*,'(1X,A1,1X,I3,1X,A1,1X,F15.6,1X,A1,1X,F15.6,1X,A1,1X,F10.6,1X,A1,1X,F10.6,1X,A1,1X,F10.6,1X,A1,1X)') & 
+        '|',nIt,'|',eGW(idx(1))*HaToeV,'|',Z(idx(1)),'|',Conv,'|',t_build,'|',t_diag,'|'
 
       w = eGW(idx(1))
 
     end do
 
-    write(*,*)'--------------------------------------------------------'
+    write(*,*)'----------------------------------------------------------------------------------'
     write(*,*)
 
     if(nIt == maxIt) then
