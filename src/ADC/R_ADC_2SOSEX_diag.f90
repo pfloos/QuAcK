@@ -55,7 +55,6 @@ subroutine R_ADC_2SOSEX_diag(dotest,TDA_W,flow,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,ERH
   double precision,parameter    :: cutoff2 = 0.01d0
   double precision              :: eF
   double precision,parameter    :: window = 2.5d0
-  double precision,external     :: SRG_reg
 
   double precision              :: start_timing,end_timing,timing
 
@@ -106,6 +105,10 @@ subroutine R_ADC_2SOSEX_diag(dotest,TDA_W,flow,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,ERH
   call phRLR_B(isp_W,dRPA,nOrb,nC,nO,nV,nR,nS,1d0,ERI,Bph)
  
   call phRLR(TDA_W,nS,Aph,Bph,EcRPA,Om,XpY,XmY)
+  
+  ! Small shift to avoid hard zeros in amplitudes
+
+  Om(:) = Om(:) + 1d-12
 
   if(print_W) call print_excitation_energies('phRPA@RHF','singlet',nS,Om)
  
@@ -162,14 +165,14 @@ subroutine R_ADC_2SOSEX_diag(dotest,TDA_W,flow,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,ERH
 
             num = sqrt(2d0)*ERI(p,c,k,i)*rho(k,c,mu)
             dem = eHF(c) - eHF(k) - Om(mu)
-            reg = SRG_reg(flow,dem)
+            reg = (1d0 - exp(-2d0*flow*dem*dem))/dem
 
             H(1    ,1+ija) = H(1    ,1+ija) + num*reg
             H(1+ija,1    ) = H(1+ija,1    ) + num*reg
 
             num = sqrt(2d0)*ERI(p,k,c,i)*rho(c,k,mu)
             dem = eHF(c) - eHF(k) + Om(mu)
-            reg = SRG_reg(flow,dem)
+            reg = (1d0 - exp(-2d0*flow*dem*dem))/dem
 
             H(1    ,1+ija) = H(1    ,1+ija) + num*reg
             H(1+ija,1    ) = H(1+ija,1    ) + num*reg
@@ -197,14 +200,14 @@ subroutine R_ADC_2SOSEX_diag(dotest,TDA_W,flow,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,ERH
 
             num = sqrt(2d0)*ERI(p,k,c,a)*rho(c,k,mu)
             dem = eHF(c) - eHF(k) - Om(mu)
-            reg = SRG_reg(flow,dem)
+            reg = (1d0 - exp(-2d0*flow*dem*dem))/dem
 
             H(1    ,1+n2h1p+iab) = H(1    ,1+n2h1p+iab) + num*reg
             H(1+n2h1p+iab,1    ) = H(1+n2h1p+iab,1    ) + num*reg
 
             num = sqrt(2d0)*ERI(p,c,k,a)*rho(k,c,mu)
             dem = eHF(c) - eHF(k) + Om(mu)
-            reg = SRG_reg(flow,dem)
+            reg = (1d0 - exp(-2d0*flow*dem*dem))/dem
 
             H(1    ,1+n2h1p+iab) = H(1    ,1+n2h1p+iab) + num*reg
             H(1+n2h1p+iab,1    ) = H(1+n2h1p+iab,1    ) + num*reg
