@@ -61,7 +61,9 @@ subroutine R_ADC4_G3W2(dotest,TDA_W,flow,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,
 
   double precision,allocatable  :: Reigv(:,:)
 
-  integer                       :: nIt,maxIt,idx(1)
+  integer                       :: nIt,maxIt
+  integer,allocatable           :: idx(:)
+  double precision,allocatable  :: err(:),eOld(:)
   double precision              :: w,thresh,Conv
 
 ! Output variables
@@ -83,6 +85,7 @@ subroutine R_ADC4_G3W2(dotest,TDA_W,flow,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,
 ! Memory allocation
 
   allocate(H(nH,nH),eGW(nH),Z(nH),Reigv(nH,nH))
+  allocate(idx(nOrb),err(nOrb),eOld(nOrb))
 
 ! Initialization
 
@@ -177,16 +180,16 @@ subroutine R_ADC4_G3W2(dotest,TDA_W,flow,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,
               do s=nC+1,nOrb-nR
  
                 num1 = 2d0*rho(p,r,mu)*rho(r,i,nu)
-                num2 = 2d0*rho(r,i,mu)*rho(q,r,nu)
+                num2 = 2d0*rho(s,i,mu)*rho(q,s,nu)
                 dem1 = eHF(i) - eHF(r) - Om(nu)
                 dem2 = w - eHF(i) + Om(nu) + Om(mu)
                 dem3 = eHF(i) - eHF(s) - Om(mu)
 
-                reg1 = SRG_reg(flow,dem1)
-                reg2 = SRG_reg(flow,dem2)
-                reg3 = SRG_reg(flow,dem3)
- 
-                H(1,1) = H(1,1) + num1*num2*reg1*reg2*reg3
+                reg1 = (1d0 - exp(-2d0*flow*dem1*dem1))/dem1
+                reg2 = (1d0 - exp(-2d0*flow*dem2*dem2))/dem2
+                reg3 = (1d0 - exp(-2d0*flow*dem3*dem3))/dem3
+
+                H(p,q) = H(p,q) + num1*num2*reg1*reg2*reg3
  
              end do
              end do
@@ -203,16 +206,16 @@ subroutine R_ADC4_G3W2(dotest,TDA_W,flow,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,
               do s=nC+1,nOrb-nR
  
                 num1 = 2d0*rho(r,p,mu)*rho(a,r,nu)
-                num2 = 2d0*rho(a,r,mu)*rho(r,q,nu)
+                num2 = 2d0*rho(a,s,mu)*rho(s,q,nu)
                 dem1 = eHF(r) - eHF(a) - Om(nu)
                 dem2 = w - eHF(a) - Om(nu) - Om(mu)
                 dem3 = eHF(s) - eHF(a) - Om(mu)
  
-                reg1 = SRG_reg(flow,dem1)
-                reg2 = SRG_reg(flow,dem2)
-                reg3 = SRG_reg(flow,dem3)
+                reg1 = (1d0 - exp(-2d0*flow*dem1*dem1))/dem1
+                reg2 = (1d0 - exp(-2d0*flow*dem2*dem2))/dem2
+                reg3 = (1d0 - exp(-2d0*flow*dem3*dem3))/dem3
  
-                H(1,1) = H(1,1) + num1*num2*reg1*reg2*reg3
+                H(p,q) = H(p,q) + num1*num2*reg1*reg2*reg3
  
              end do
              end do
@@ -396,7 +399,6 @@ subroutine R_ADC4_G3W2(dotest,TDA_W,flow,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,
 
     call wall_time(start_timing)
  
-!   call diagonalize_matrix(nH,H,eGW)
     call diagonalize_general_matrix(nH,H,eGW,Reigv)
  
     call wall_time(end_timing)
@@ -422,8 +424,17 @@ subroutine R_ADC4_G3W2(dotest,TDA_W,flow,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,
   ! Update quasiparticle energy !
   !-----------------------------!
 
-    idx = maxloc(Z)
-    Conv = abs(w - eGW(idx(1)))
+    idx(:) = maxloc(Z,nOrb)
+    do p=1,nOrb
+      err(p) = eOld(p) - eGW(idx(p))
+      eOld(p) = eGW(idx(p))
+    end do
+
+    print*,idx
+
+    call vecout(nOrb,eOld*HaToeV)
+
+    Conv = maxval(abs(err))
 
 
     write(*,'(1X,A1,1X,I3,1X,A1,1X,F15.6,1X,A1,1X,F15.6,1X,A1,1X,F10.6,1X,A1,1X)') '|',nIt,'|',eGW(idx(1))*HaToeV,'|',Z(idx(1)),'|',Conv,'|'

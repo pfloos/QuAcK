@@ -1,4 +1,4 @@
-subroutine UGF(dotest,doG0F2,doevGF2,doqsGF2,doufG0F02,doG0F3,doevGF3,renorm,maxSCF,thresh,max_diis,     &
+subroutine UGF(dotest,doG0F2,doevGF2,doqsGF2,doG0F3,doevGF3,renorm,maxSCF,thresh,max_diis,               &
                dophBSE,doppBSE,TDA,dBSE,dTDA,spin_conserved,spin_flip,linearize,eta,regularize,          & 
                nNuc,ZNuc,rNuc,ENuc,nBas,nC,nO,nV,nR,nS,EHF,S,X,T,V,Hc,ERI_AO,ERI_aaaa,ERI_aabb,ERI_bbbb, & 
                dipole_int_AO,dipole_int_aa,dipole_int_bb,PHF,cHF,epsHF)
@@ -15,7 +15,6 @@ subroutine UGF(dotest,doG0F2,doevGF2,doqsGF2,doufG0F02,doG0F3,doevGF3,renorm,max
   logical,intent(in)            :: doG0F2
   logical,intent(in)            :: doevGF2
   logical,intent(in)            :: doqsGF2
-  logical,intent(in)            :: doufG0F02
   logical,intent(in)            :: doG0F3
   logical,intent(in)            :: doevGF3
 
@@ -120,22 +119,6 @@ subroutine UGF(dotest,doG0F2,doevGF2,doqsGF2,doufG0F02,doG0F3,doevGF3,renorm,max
     write(*,*)
 
  end if
-
-!------------------------------------------------------------------------
-! Perform ufG0F02 calculation
-!------------------------------------------------------------------------
-
-  if(doufG0F02) then 
-
-    !call wall_time(start_GF)
-    !call ufUG0F02()
-    !call wall_time(end_GF)
-    print*,'Unrestricted version of ufG0F02 not yet implemented! Sorry.'
-    !t_GF = end_GF - start_GF
-    !write(*,'(A65,1X,F9.3,A8)') 'Total CPU time for ufG0F02 = ',t_GF,' seconds'
-    !write(*,*)
-
-  end if 
 
 !------------------------------------------------------------------------
 ! Compute G0F3 electronic binding energies

@@ -1,7 +1,7 @@
 subroutine RQuAcK(working_dir,use_gpu,dotest,doRHF,doROHF,docRHF,doeRHF,                                                    &
                   dostab,dosearch,doaordm,doMP2,doMP3,doCCD,dopCCD,doDCD,doCCSD,doCCSDT,                                    &
                   dodrCCD,dorCCD,docrCCD,dolCCD,doCIS,doCIS_D,doCID,doCISD,doFCI,dophRPA,dophRPAx,docrRPA,doppRPA,doOO,     & 
-                  doG0F2,doevGF2,doqsGF2,doufG0F02,doG0F3,doevGF3,doG0W0,doevGW,doqsGW,doufG0W0,doufGW,                     &
+                  doG0F2,doevGF2,doqsGF2,doG0F3,doevGF3,doG0W0,doevGW,doqsGW,                                               &
                   doG0T0pp,doevGTpp,doqsGTpp,doufG0T0pp,doG0T0eh,doevGTeh,doqsGTeh,doevParquet,doqsParquet,                 & 
                   docG0W0,docG0F2,doscGW,doscGF2,                                                                           & 
                   doCAP,readFCIDUMP,restart_scGW,restart_scGF2,verbose_scGW,verbose_scGF2,chem_pot_scG,                     & 
@@ -42,9 +42,9 @@ subroutine RQuAcK(working_dir,use_gpu,dotest,doRHF,doROHF,docRHF,doeRHF,        
   logical,intent(in)            :: doCIS,doCIS_D,doCID,doCISD,doFCI
   logical,intent(in)            :: dophRPA,dophRPAx,docrRPA,doppRPA
   logical,intent(in)            :: doOO
-  logical,intent(in)            :: doG0F2,doevGF2,doqsGF2,doufG0F02,doG0F3,doevGF3,doscGF2
+  logical,intent(in)            :: doG0F2,doevGF2,doqsGF2,doG0F3,doevGF3,doscGF2
   logical,intent(inout)         :: doG0W0
-  logical,intent(in)            :: doevGW,doqsGW,doufG0W0,doufGW
+  logical,intent(in)            :: doevGW,doqsGW
   logical,intent(in)            :: doG0T0pp,doevGTpp,doqsGTpp,doufG0T0pp
   logical,intent(in)            :: doG0T0eh,doevGTeh,doqsGTeh
   logical,intent(in)            :: docG0W0,docG0F2
@@ -539,13 +539,13 @@ subroutine RQuAcK(working_dir,use_gpu,dotest,doRHF,doROHF,docRHF,doeRHF,        
 ! Green's function module !
 !-------------------------!
 
-doGF = doG0F2 .or. doevGF2 .or. doqsGF2 .or. doufG0F02 .or. doG0F3 .or. doevGF3 .or. docG0F2
+doGF = doG0F2 .or. doevGF2 .or. doqsGF2 .or. doG0F3 .or. doevGF3 .or. docG0F2
 
   if(doGF .and. .not. docRHF) then
     call wall_time(start_GF)
-    call RGF(dotest,doG0F2,doevGF2,doqsGF2,doufG0F02,doG0F3,doevGF3,renorm_GF,maxSCF_GF, &
-             thresh_GF,max_diis_GF,dophBSE,doppBSE,TDA,dBSE,dTDA,singlet,triplet,lin_GF,         &
-             eta_GF,reg_GF,nNuc,ZNuc,rNuc,ENuc,nBas,nOrb,nC,nO,nV,nR,nS,complex_ERHF,                    &
+    call RGF(dotest,doG0F2,doevGF2,doqsGF2,doG0F3,doevGF3,renorm_GF,maxSCF_GF,           &
+             thresh_GF,max_diis_GF,dophBSE,doppBSE,TDA,dBSE,dTDA,singlet,triplet,lin_GF, &
+             eta_GF,reg_GF,nNuc,ZNuc,rNuc,ENuc,nBas,nOrb,nC,nO,nV,nR,nS,complex_ERHF,    &
              S,X,T,V,Hc,ERI_AO,ERI_MO,CAP_MO,dipole_int_AO,dipole_int_MO,PHF,cHF,eHF)
     call wall_time(end_GF)
 
@@ -577,13 +577,14 @@ doGF = doG0F2 .or. doevGF2 .or. doqsGF2 .or. doufG0F02 .or. doG0F3 .or. doevGF3 
 ! GW module !
 !-----------!
 
-  doGW = doG0W0 .or. doevGW .or. doqsGW .or. doufG0W0 .or. doufGW .or. docG0W0 
+  doGW = doG0W0 .or. doevGW .or. doqsGW .or. docG0W0 
+
   if(doGW .and. .not. docRHF) then
     
     call wall_time(start_GW)
-    call RGW(dotest,doG0W0,doevGW,doqsGW,doufG0W0,doufGW,maxSCF_GW,thresh_GW,max_diis_GW,                     & 
-             doACFDT,exchange_kernel,doXBS,dophBSE,dophBSE2,doppBSE,TDA_W,TDA,dBSE,dTDA,singlet,triplet,      &
-             lin_GW,eta_GW,reg_GW,do_linDM_GW,nNuc,ZNuc,rNuc,ENuc,nBas,nOrb,nC,nO,nV,nR,nS,ERHF,S,X,T,        &
+    call RGW(dotest,doG0W0,doevGW,doqsGW,maxSCF_GW,thresh_GW,max_diis_GW,                                & 
+             doACFDT,exchange_kernel,doXBS,dophBSE,dophBSE2,doppBSE,TDA_W,TDA,dBSE,dTDA,singlet,triplet, &
+             lin_GW,eta_GW,reg_GW,do_linDM_GW,nNuc,ZNuc,rNuc,ENuc,nBas,nOrb,nC,nO,nV,nR,nS,ERHF,S,X,T,   &
              V,Hc,ERI_AO,ERI_MO,CAP_MO,dipole_int_AO,dipole_int_MO,PHF,FHF,cHF,eHF,eGW)
     call wall_time(end_GW)
   

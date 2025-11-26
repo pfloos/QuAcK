@@ -1,5 +1,4 @@
-subroutine RGF(dotest,doG0F2,doevGF2,doqsGF2,doufG0F02,doG0F3,doevGF3,                  &
-               renorm,maxSCF,                                                           &
+subroutine RGF(dotest,doG0F2,doevGF2,doqsGF2,doG0F3,doevGF3,renorm,maxSCF,              &
                thresh,max_diis,dophBSE,doppBSE,TDA,dBSE,dTDA,singlet,triplet,linearize, &
                eta,doSRG,nNuc,ZNuc,rNuc,ENuc,nBas,nOrb,nC,nO,nV,nR,nS,ERHF,             &
                S,X,T,V,Hc,ERI_AO,ERI_MO,CAP,dipole_int_AO,dipole_int_MO,PHF,cHF,eHF)
@@ -16,7 +15,6 @@ subroutine RGF(dotest,doG0F2,doevGF2,doqsGF2,doufG0F02,doG0F3,doevGF3,          
   logical,intent(in)            :: doG0F2
   logical,intent(in)            :: doevGF2
   logical,intent(in)            :: doqsGF2
-  logical,intent(in)            :: doufG0F02
   logical,intent(in)            :: doG0F3
   logical,intent(in)            :: doevGF3
 
@@ -121,22 +119,6 @@ subroutine RGF(dotest,doG0F2,doevGF2,doqsGF2,doufG0F02,doG0F3,doevGF3,          
     write(*,*)
 
  end if
-
-!------------------------------------------------------------------------
-! Perform ufG0F02 calculation
-!------------------------------------------------------------------------
-
-  if(doufG0F02) then 
-
-    call wall_time(start_GF)
-    call ufRG0F02(dotest,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,ERHF,ERI_MO,eHF)
-    call wall_time(end_GF)
-
-    t_GF = end_GF - start_GF
-    write(*,'(A65,1X,F9.3,A8)') 'Total wall time for ufG0F02 = ',t_GF,' seconds'
-    write(*,*)
-
-  end if
 
 !------------------------------------------------------------------------
 ! Compute G0F3 electronic binding energies
