@@ -1,6 +1,6 @@
-subroutine RGW(dotest,doG0W0,doevGW,doqsGW,doufG0W0,doufGW,maxSCF,thresh,max_diis,doACFDT,                &
-               exchange_kernel,doXBS,dophBSE,dophBSE2,doppBSE,TDA_W,TDA,dBSE,dTDA,singlet,triplet,        &
-               linearize,eta,doSRG,do_linDM_GW,nNuc,ZNuc,rNuc,ENuc,nBas,nOrb,nC,nO,nV,nR,nS,ERHF,         &
+subroutine RGW(dotest,doG0W0,doevGW,doqsGW,maxSCF,thresh,max_diis,doACFDT,                         &
+               exchange_kernel,doXBS,dophBSE,dophBSE2,doppBSE,TDA_W,TDA,dBSE,dTDA,singlet,triplet, &
+               linearize,eta,doSRG,do_linDM_GW,nNuc,ZNuc,rNuc,ENuc,nBas,nOrb,nC,nO,nV,nR,nS,ERHF,  &
                S,X,T,V,Hc,ERI_AO,ERI_MO,CAP_MO,dipole_int_AO,dipole_int_MO,PHF,FHF,cHF,eHF,eGW)
 
 ! Restricted GW module
@@ -15,8 +15,6 @@ subroutine RGW(dotest,doG0W0,doevGW,doqsGW,doufG0W0,doufGW,maxSCF,thresh,max_dii
   logical,intent(in)            :: doG0W0
   logical,intent(in)            :: doevGW
   logical,intent(in)            :: doqsGW
-  logical,intent(in)            :: doufG0W0
-  logical,intent(in)            :: doufGW
 
   integer,intent(in)            :: maxSCF
   integer,intent(in)            :: max_diis
@@ -126,39 +124,6 @@ subroutine RGW(dotest,doG0W0,doevGW,doqsGW,doufG0W0,doufGW,maxSCF,thresh,max_dii
 
     t_GW = end_GW - start_GW
     write(*,'(A65,1X,F9.3,A8)') 'Total wall time for qsGW = ',t_GW,' seconds'
-    write(*,*)
-
-  end if
-
-!------------------------------------------------------------------------
-! Perform ufG0W0 calculation
-!------------------------------------------------------------------------
-
-  if(doufG0W0) then
-    
-    call wall_time(start_GW)
-    call ufRG0W0(dotest,TDA_W,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,ERHF,ERI_MO,eHF)
-!   call ADC_RG0W0(dotest,TDA_W,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,ERHF,ERI_MO,eHF)
-    call wall_time(end_GW)
-  
-    t_GW = end_GW - start_GW
-    write(*,'(A65,1X,F9.3,A8)') 'Total wall time for ufG0W0 = ',t_GW,' seconds'
-    write(*,*)
-
-  end if
-
-!------------------------------------------------------------------------
-! Perform ufGW calculation
-!------------------------------------------------------------------------
-
-  if(doufGW) then
-    
-    call wall_time(start_GW)
-    call ufRGW(dotest,TDA_W,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,ERHF,ERI_MO,eHF)
-    call wall_time(end_GW)
-  
-    t_GW = end_GW - start_GW
-    write(*,'(A65,1X,F9.3,A8)') 'Total wall time for ufGW = ',t_GW,' seconds'
     write(*,*)
 
   end if

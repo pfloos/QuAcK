@@ -1,6 +1,6 @@
 subroutine RQuAcK_hpc(working_dir,use_gpu,dotest,doRHF,doROHF,dostab,dosearch,doMP2,doMP3,doCCD,dopCCD,doDCD,doCCSD,doCCSDT, &
                       dodrCCD,dorCCD,docrCCD,dolCCD,doCIS,doCIS_D,doCID,doCISD,doFCI,dophRPA,dophRPAx,docrRPA,doppRPA,       & 
-                      doG0F2,doevGF2,doqsGF2,doufG0F02,doG0F3,doevGF3,doG0W0,doevGW,doqsGW,doufG0W0,doufGW,                  &
+                      doG0F2,doevGF2,doqsGF2,doG0F3,doevGF3,doG0W0,doevGW,doqsGW,                                            &
                       doG0T0pp,doevGTpp,doqsGTpp,doufG0T0pp,doG0T0eh,doevGTeh,doqsGTeh,                                      & 
                       nNuc,nBas,nOrb,nC,nO,nV,nR,ENuc,ZNuc,rNuc,                                                             &
                       S,T,V,Hc,X,dipole_int_AO,maxSCF_HF,max_diis_HF,thresh_HF,level_shift,                                  &
@@ -28,8 +28,8 @@ subroutine RQuAcK_hpc(working_dir,use_gpu,dotest,doRHF,doROHF,dostab,dosearch,do
   logical,intent(in)            :: dodrCCD,dorCCD,docrCCD,dolCCD
   logical,intent(in)            :: doCIS,doCIS_D,doCID,doCISD,doFCI
   logical,intent(in)            :: dophRPA,dophRPAx,docrRPA,doppRPA
-  logical,intent(in)            :: doG0F2,doevGF2,doqsGF2,doufG0F02,doG0F3,doevGF3
-  logical,intent(in)            :: doG0W0,doevGW,doqsGW,doufG0W0,doufGW
+  logical,intent(in)            :: doG0F2,doevGF2,doqsGF2,doG0F3,doevGF3
+  logical,intent(in)            :: doG0W0,doevGW,doqsGW
   logical,intent(in)            :: doG0T0pp,doevGTpp,doqsGTpp,doufG0T0pp
   logical,intent(in)            :: doG0T0eh,doevGTeh,doqsGTeh
 
@@ -288,12 +288,12 @@ subroutine RQuAcK_hpc(working_dir,use_gpu,dotest,doRHF,doROHF,dostab,dosearch,do
 !! Green's function module !
 !!-------------------------!
 !
-!  doGF = doG0F2 .or. doevGF2 .or. doqsGF2 .or. doufG0F02 .or. doG0F3 .or. doevGF3
+!  doGF = doG0F2 .or. doevGF2 .or. doqsGF2 .or. doG0F3 .or. doevGF3
 !
 !  if(doGF) then
 !
 !    call wall_time(start_GF)
-!    call RGF(dotest,doG0F2,doevGF2,doqsGF2,doufG0F02,doG0F3,doevGF3,renorm_GF,maxSCF_GF, &
+!    call RGF(dotest,doG0F2,doevGF2,doqsGF2,doG0F3,doevGF3,renorm_GF,maxSCF_GF,           &
 !             thresh_GF,max_diis_GF,dophBSE,doppBSE,TDA,dBSE,dTDA,singlet,triplet,lin_GF, &
 !             eta_GF,reg_GF,nNuc,ZNuc,rNuc,ENuc,nBas,nOrb,nC,nO,nV,nR,nS,ERHF,            &
 !             S,X,T,V,Hc,ERI_AO,ERI_MO,dipole_int_AO,dipole_int_MO,PHF,cHF,eHF)
@@ -309,12 +309,12 @@ subroutine RQuAcK_hpc(working_dir,use_gpu,dotest,doRHF,doROHF,dostab,dosearch,do
 !! GW module !
 !!-----------!
 !
-!  doGW = doG0W0 .or. doevGW .or. doqsGW .or. doufG0W0 .or. doufGW 
+!  doGW = doG0W0 .or. doevGW .or. doqsGW 
 !
 !  if(doGW) then
 !    
 !    call wall_time(start_GW)
-!    call RGW(dotest,doG0W0,doevGW,doqsGW,doufG0W0,doufGW,maxSCF_GW,thresh_GW,max_diis_GW,                &
+!    call RGW(dotest,doG0W0,doevGW,doqsGW,maxSCF_GW,thresh_GW,max_diis_GW,                &
 !             doACFDT,exchange_kernel,doXBS,dophBSE,dophBSE2,doppBSE,TDA_W,TDA,dBSE,dTDA,singlet,triplet, &
 !             lin_GW,eta_GW,reg_GW,nNuc,ZNuc,rNuc,ENuc,nBas,nOrb,nC,nO,nV,nR,nS,ERHF,S,X,T,               &
 !             V,Hc,ERI_AO,ERI_MO,dipole_int_AO,dipole_int_MO,PHF,cHF,eHF)
