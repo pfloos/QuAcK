@@ -582,9 +582,9 @@ subroutine scGF2_AO_itau_iw(nBas,nOrb,nO,maxSCF,maxDIIS,dolinGF2,restart_scGF2,v
   write(*,'(a,f15.8)')        ' Chem. Pot.  ',chem_pot
   write(*,'(a,f15.8)')        ' Enuc        ',ENuc
   write(*,'(a,f15.8)')        ' Ehfl        ',Ehfl
-  write(*,'(a,f15.8)')        ' EcGM(it)    ',EcGM
-  write(*,'(a,f15.8)')        ' Eelec(it)   ',Ehfl+EcGM
-  write(*,'(a,f15.8)')        ' Etot(it)    ',Ehfl+EcGM+ENuc
+  write(*,'(a,f15.8)')        ' EcGM        ',EcGM
+  write(*,'(a,f15.8)')        ' Eelec       ',Ehfl+EcGM
+  write(*,'(a,f15.8)')        ' Etot        ',Ehfl+EcGM+ENuc
   write(*,*)
 
   if(diff_Pao<=thrs_Pao) exit
@@ -644,14 +644,14 @@ subroutine scGF2_AO_itau_iw(nBas,nOrb,nO,maxSCF,maxDIIS,dolinGF2,restart_scGF2,v
  write(*,'(A50)') '     scGF2 calculation completed       '
  write(*,'(A50)') '---------------------------------------'
  write(*,*)
- write(*,'(a,f15.8,a,i5,a)') ' Trace scGF2      ',trace_1_rdm,' after ',iter,' global iterations '
- write(*,'(a,f15.8)')        ' Change of P      ',diff_Pao
- write(*,'(a,f15.8)')        ' Chem. Pot.       ',chem_pot
- write(*,'(a,f15.8)')        ' Enuc             ',ENuc
- write(*,'(a,f15.8)')        ' Ehfl             ',Ehfl
- write(*,'(a,f15.8)')        ' EcGM(it)         ',EcGM
- write(*,'(a,f15.8)')        ' Eelec(it)        ',Ehfl+EcGM
- write(*,'(a,f15.8)')        ' scGF2 Energy (it)',Ehfl+EcGM+ENuc
+ write(*,'(a,f15.8,a,i5,a)') ' Trace scGF2  ',trace_1_rdm,' after ',iter,' global iterations '
+ write(*,'(a,f15.8)')        ' Change of P  ',diff_Pao
+ write(*,'(a,f15.8)')        ' Chem. Pot.   ',chem_pot
+ write(*,'(a,f15.8)')        ' Enuc         ',ENuc
+ write(*,'(a,f15.8)')        ' Ehfl         ',Ehfl
+ write(*,'(a,f15.8)')        ' EcGM         ',EcGM
+ write(*,'(a,f15.8)')        ' Eelec        ',Ehfl+EcGM
+ write(*,'(a,f15.8)')        ' scGF2 Energy ',Ehfl+EcGM+ENuc
  write(*,*)
  write(*,*) ' Final occupation numbers'
  do ibas=1,nOrb
