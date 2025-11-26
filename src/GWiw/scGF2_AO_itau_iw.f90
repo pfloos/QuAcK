@@ -53,7 +53,6 @@ subroutine scGF2_AO_itau_iw(nBas,nOrb,nO,maxSCF,maxDIIS,dolinGF2,restart_scGF2,v
   double precision              :: rcondP
   double precision              :: alpha_mixing
   double precision              :: Ehfl,EcGM
-!  double precision              :: EcGMw
   double precision              :: trace1,trace2
   double precision              :: eta,diff_Pao
   double precision              :: nElectrons
@@ -107,8 +106,6 @@ subroutine scGF2_AO_itau_iw(nBas,nOrb,nO,maxSCF,maxDIIS,dolinGF2,restart_scGF2,v
   complex*16,allocatable        :: Aimql(:,:,:,:)
   complex*16,allocatable        :: Bisql(:,:,:,:)
   complex*16,allocatable        :: Cispl(:,:,:,:)
-!  complex*16,allocatable        :: Chi0_ao_itau_vSq(:,:)
-!  complex*16,allocatable        :: Chi0_ao_iw_vSq(:,:,:)
 
 ! Output variables
   integer,intent(inout)         :: nfreqs
@@ -187,8 +184,6 @@ subroutine scGF2_AO_itau_iw(nBas,nOrb,nO,maxSCF,maxDIIS,dolinGF2,restart_scGF2,v
  allocate(Sigma_c_w_ao(nfreqs,nBas,nBas),DeltaG_ao_iw(nfreqs,nBas,nBas),G_ao_iw_hf(nfreqs,nBas,nBas))
  allocate(G_ao_itau(ntimes_twice,nBas,nBas),G_ao_itau_hf(ntimes_twice,nBas,nBas))
  allocate(G_ao_itau_old(ntimes_twice,nBas,nBas))
-! allocate(Chi0_ao_itau_vSq(nBasSq,nBasSq)) 
-! allocate(Chi0_ao_iw_vSq(nfreqs,nBasSq,nBasSq))
  allocate(err_current(1))
  allocate(err_currentP(1))
  allocate(G_itau_extrap(1))
@@ -380,7 +375,7 @@ subroutine scGF2_AO_itau_iw(nBas,nOrb,nO,maxSCF,maxDIIS,dolinGF2,restart_scGF2,v
      do sbas=1,nBas
       do pbas=1,nBas
        do lbas=1,nBas
-        Sigma_c_plus(ibas,jbas) =Sigma_c_plus(ibas,jbas) +Cispl(ibas,sbas,pbas,lbas)*(2d0*ERI_AO(lbas,sbas,pbas,jbas)-ERI_AO(sbas,lbas,pbas,jbas))
+        Sigma_c_plus(ibas,jbas) =Sigma_c_plus(ibas,jbas)+Cispl(ibas,sbas,pbas,lbas)*(2d0*ERI_AO(lbas,sbas,pbas,jbas)-ERI_AO(sbas,lbas,pbas,jbas))
        enddo
       enddo
      enddo
@@ -428,12 +423,14 @@ subroutine scGF2_AO_itau_iw(nBas,nOrb,nO,maxSCF,maxDIIS,dolinGF2,restart_scGF2,v
      do sbas=1,nBas
       do pbas=1,nBas
        do lbas=1,nBas
-        Sigma_c_minus(ibas,jbas)=Sigma_c_minus(ibas,jbas) +Cispl(ibas,sbas,pbas,lbas)*(2d0*ERI_AO(lbas,sbas,pbas,jbas)-ERI_AO(sbas,lbas,pbas,jbas))
+        Sigma_c_minus(ibas,jbas)=Sigma_c_minus(ibas,jbas)+Cispl(ibas,sbas,pbas,lbas)*(2d0*ERI_AO(lbas,sbas,pbas,jbas)-ERI_AO(sbas,lbas,pbas,jbas))
        enddo
       enddo
      enddo
     enddo
    enddo
+   Sigma_c_minus=0.5d0*Sigma_c_minus
+   Sigma_c_plus =0.5d0*Sigma_c_plus
    ! Corrected Eqs. 17 and 18 in PRB, 109, 245101 (2024)
    Sigma_c_c= -im*(Sigma_c_plus+Sigma_c_minus)
    Sigma_c_s= -   (Sigma_c_plus-Sigma_c_minus)
@@ -455,7 +452,8 @@ subroutine scGF2_AO_itau_iw(nBas,nOrb,nO,maxSCF,maxDIIS,dolinGF2,restart_scGF2,v
      EcGM_itau=EcGM_itau+tweight(itau)*Mat_ao_tmp(ibas,ibas)
     enddo
   enddo
-  EcGM=-0.5d0*real(EcGM_itau)
+  EcGM=-real(EcGM_itau) ! Including a factor 2 to sum over spin-channels  EcGM = - 1/2 \sum_spin \int Tr[ Sigma_c_spin(-it) G_spin(it) ] dt
+                        !                                                      = - \int Tr[ Sigma_c_up(-it) G_up(it) ] dt for restricted calcs.
 
   ! Check the error in Sigma_c(i w) at iter=1 [ if this is calc. is not with restart ]
   if(iter==1 .and. .not.restart_scGF2) then
@@ -466,9 +464,9 @@ subroutine scGF2_AO_itau_iw(nBas,nOrb,nO,maxSCF,maxDIIS,dolinGF2,restart_scGF2,v
    allocate(error_transf_mo(nfreqs,nOrb,nOrb),Sigma_c_w_mo(nOrb,nOrb))
    ! Build the analytic Sigma_c(iw)
    call Sigmac_MO_RHF_GF2_analytical(nBas,nOrb,nO,verbose,cHF,eHF,nfreqs,wcoord,ERI_AO,error_transf_mo,err_EcGM) ! error_transf_mo set to Sigma_c_mo(iw)
+   error_transf_mo=0.5d0*error_transf_mo
    do ifreq=1,nfreqs
     Sigma_c_w_mo=matmul(matmul(transpose(cHF(:,:)),Sigma_c_w_ao(ifreq,:,:)),cHF(:,:)) ! Fourier: Sigma_c_ao(iw) -> Sigma_c_mo(iw)
-    !Sigma_c_w_ao(ifreq,:,:)=matmul(transpose(cHFinv),matmul(error_transf_mo(ifreq,:,:),cHFinv)) ! Analytic: Sigma_c_mo(iw) -> Sigma_c_ao(iw)
     if(verbose/=0) then
      write(*,'(a,*(f20.8))') ' Fourier  ',im*wcoord(ifreq)
      do ibas=1,nOrb
@@ -485,7 +483,7 @@ subroutine scGF2_AO_itau_iw(nBas,nOrb,nO,maxSCF,maxDIIS,dolinGF2,restart_scGF2,v
    write(*,'(a,*(f20.8))') ' Sum error ',sum(error_transf_mo)
    write(*,'(a,f20.8,a,2f20.8,a)') ' Max CAE   ',max_error_sigma,' is in the frequency ',0d0,wcoord(imax_error_sigma),'i'
    write(*,'(a,*(f20.8))') ' MAE       ',sum(error_transf_mo)/(nfreqs*nBas*nBas)
-   write(*,'(a)')         ' Using EcGM = - 1/2 \int Tr[ Sigma_c(-it) G(it) ] dt ' 
+   write(*,'(a)')         ' Using EcGM = - \int Tr[ Sigma_c_up(-it) G_up(it) ] dt ' 
    write(*,'(a,f17.8,a)') ' EcGM analytic',err_EcGM,' a.u.'
    write(*,'(a,f18.8,a)') ' EcGM numeric',EcGM,' a.u.'
    write(*,'(a,f20.8,a)') ' EcGM error',abs(err_EcGM-EcGM),' a.u.'
@@ -759,79 +757,5 @@ subroutine scGF2_AO_itau_iw(nBas,nOrb,nO,maxSCF,maxDIIS,dolinGF2,restart_scGF2,v
  deallocate(Aimql)
  deallocate(Bisql)
  deallocate(Cispl)
-! deallocate(Chi0_ao_itau_vSq) 
-! deallocate(Chi0_ao_iw_vSq)
 
 end subroutine 
-
-!  double precision              :: ERI_contrib
-   ! M^8 brut force
-!   do ibas=1,nBas
-!    do jbas=1,nBas
-!     do kbas=1,nBas
-!      do lbas=1,nBas 
-!       do mbas=1,nBas 
-!        do sbas=1,nBas 
-!         do pbas=1,nBas 
-!          do qbas=1,nBas
-!           ERI_contrib=ERI_AO(ibas,qbas,mbas,kbas)*(2d0*ERI_AO(lbas,sbas,pbas,jbas)-ERI_AO(sbas,lbas,pbas,jbas)) 
-!           Sigma_c_plus(ibas,jbas) =Sigma_c_plus(ibas,jbas) + G_plus_itau(kbas,lbas)* G_plus_itau(mbas,sbas) &
-!                                                            *G_minus_itau(pbas,qbas)*ERI_contrib
-!           Sigma_c_minus(ibas,jbas)=Sigma_c_minus(ibas,jbas)+G_minus_itau(kbas,lbas)*G_minus_itau(mbas,sbas) &
-!                                                            * G_plus_itau(pbas,qbas)*ERI_contrib
-!          enddo
-!         enddo
-!        enddo
-!       enddo
-!      enddo
-!     enddo
-!    enddo
-!   enddo
-
-!  ! Compute EcGM [ from Sigma_c(iw) is BAD. We use Eq. 10 from J. Chem. Theory Comput., 10, 2498 to compute it from Xo ]
-!  EcGM=0d0
-!  EcGMw=0d0
-!  Chi0_ao_iw_vSq(:,:,:)=czero
-!  ! Build using the time grid Xo(i tau) = -2i G(i tau) G(-i tau)
-!  do itau=1,ntimes
-!   ! Xo(i tau) = -2i G(i tau) G(-i tau)
-!   do ibas=1,nBas
-!    do jbas=1,nBas
-!     do kbas=1,nBas
-!      do lbas=1,nBas                       
-!                                   ! r1   r2'                    r2   r1'
-!       product = G_ao_itau(2*itau-1,ibas,jbas)*G_ao_itau(2*itau,kbas,lbas)
-!       if(abs(product)<1e-12) product=czero
-!       Chi0_ao_itau_vSq(1+(lbas-1)+(ibas-1)*nBas,1+(kbas-1)+(jbas-1)*nBas) = product
-!      enddo
-!     enddo
-!    enddo
-!   enddo
-!   Chi0_ao_itau_vSq=-2d0*im*Chi0_ao_itau_vSq ! The 2 factor is added to account for both spin contributions [ i.e., (up,up,up,up) and (down,down,down,down) ]
-!   ! Xo(i tau) -> Xo(i w) [ the weight already contains the cos(tau w) and a factor 2 because int_-Infty ^Infty -> 2 int_0 ^Infty ]
-!   do ifreq=1,nfreqs
-!    Chi0_ao_iw_vSq(ifreq,:,:) = Chi0_ao_iw_vSq(ifreq,:,:) - im*cost2w_weight(ifreq,itau)*Chi0_ao_itau_vSq(:,:)
-!   enddo 
-!   Chi0_ao_itau_vSq=matmul(Chi0_ao_itau_vSq,vMAT)              ! Xo(i tau) v
-!   Chi0_ao_itau_vSq=matmul(Chi0_ao_itau_vSq,Chi0_ao_itau_vSq)  ! [ Xo(i tau) v ]^2
-!   ! EcGM = 1/4 int Tr{ [ Xo(i tau) v ]^2 }
-!   EcGM_itau=czero
-!   do ibas=1,nBasSq
-!    EcGM_itau=EcGM_itau+Chi0_ao_itau_vSq(ibas,ibas)
-!   enddo
-!   EcGM=EcGM+0.25d0*tweight(itau)*real(EcGM_itau) 
-!  enddo
-!!  ! Complete the Xo(i tau) -> Xo(i w)
-!  Chi0_ao_iw_vSq(:,:,:) = Real(Chi0_ao_iw_vSq(:,:,:)) ! The factor 2 is stored in the weight [ and we just retain the real part ]
-!  do ifreq=1,nfreqs
-!   Chi0_ao_iw_vSq(ifreq,:,:)=matmul(Chi0_ao_iw_vSq(ifreq,:,:),vMAT)                       ! Xo(i w) v
-!   Chi0_ao_iw_vSq(ifreq,:,:)=matmul(Chi0_ao_iw_vSq(ifreq,:,:),Chi0_ao_iw_vSq(ifreq,:,:))  ! [ Xo(i w) v ]^2
-!   ! EcGM = - 1/8pi int Tr{ [ Xo(i tau) v ]^2 }
-!   EcGM_iw=czero
-!   do ibas=1,nBasSq
-!    EcGM_iw=EcGM_iw+Chi0_ao_iw_vSq(ifreq,ibas,ibas)
-!   enddo
-!   EcGMw=EcGMw-wweight(ifreq)*real(EcGM_iw)
-!  enddo
-!  EcGMw=EcGMw/(8d0*pi)
-
