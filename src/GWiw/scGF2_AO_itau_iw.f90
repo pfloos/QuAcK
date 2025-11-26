@@ -229,10 +229,10 @@ subroutine scGF2_AO_itau_iw(nBas,nOrb,nO,maxSCF,maxDIIS,dolinGF2,restart_scGF2,v
    trace_1_rdm=trace_1_rdm+P_ao(ibas,jbas)*S(ibas,jbas)
    do kbas=1,nBas
     do lbas=1,nBas
-     F_ao(ibas,jbas)=F_ao(ibas,jbas)+P_ao(kbas,lbas)*vMAT(1+(lbas-1)+(kbas-1)*nBas,1+(jbas-1)+(ibas-1)*nBas) &
-                    -0.5d0*P_ao(kbas,lbas)*vMAT(1+(jbas-1)+(kbas-1)*nBas,1+(lbas-1)+(ibas-1)*nBas)
-     Ehfl=Ehfl+0.5d0*P_ao(kbas,lbas)*P_ao(ibas,jbas)*vMAT(1+(lbas-1)+(kbas-1)*nBas,1+(jbas-1)+(ibas-1)*nBas) &
-         -0.25d0*P_ao(kbas,lbas)*P_ao(ibas,jbas)*vMAT(1+(jbas-1)+(kbas-1)*nBas,1+(lbas-1)+(ibas-1)*nBas)
+     F_ao(ibas,jbas)=F_ao(ibas,jbas)+P_ao(kbas,lbas)*ERI_AO(kbas,ibas,lbas,jbas) &
+                    -0.5d0*P_ao(kbas,lbas)*ERI_AO(kbas,ibas,jbas,lbas)
+     Ehfl=Ehfl+0.5d0*P_ao(kbas,lbas)*P_ao(ibas,jbas)*ERI_AO(kbas,ibas,lbas,jbas) &
+         -0.25d0*P_ao(kbas,lbas)*P_ao(ibas,jbas)*ERI_AO(kbas,ibas,jbas,lbas)
     enddo
    enddo
   enddo
