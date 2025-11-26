@@ -324,7 +324,7 @@ subroutine scGF2_AO_itau_iw(nBas,nOrb,nO,maxSCF,maxDIIS,dolinGF2,restart_scGF2,v
  do
   iter=iter+1
 
-  ! Build Sigma_c(i w) [Eqs. 12-18 in PRB, 109, 255101 (2024)] (for the M^8 algorithm see at the end of this file)
+  ! Build Sigma_c(i w) [Eqs. 12-18 in PRB, 109, 255101 (2024)]
   ! and compute Galitskii-Migdal Ec energy using the time grid
   EcGM_itau=czero
   Sigma_c_w_ao=czero
