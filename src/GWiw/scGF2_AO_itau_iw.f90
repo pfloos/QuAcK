@@ -537,7 +537,7 @@ subroutine scGF2_AO_itau_iw(nBas,nOrb,nO,maxSCF,maxDIIS,dolinGF2,restart_scGF2,v
     if(iter_fock==maxSCF) exit
  
     ! Do mixing with previous P_ao to facilitate convergence
-    if(maxDIIS>0 .and. .false.) then
+    if(maxDIIS>0) then
      n_diisP=min(n_diisP+1,maxDIIS)
      err_currentP=0d0
      idiis_indexP=1
