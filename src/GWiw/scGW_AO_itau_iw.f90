@@ -400,16 +400,16 @@ subroutine scGW_AO_itau_iw(nBas,nOrb,nO,maxSCF,maxDIIS,dolinGW,restart_scGW,verb
                             + 0.5d0*sint2w_weight(ifreq,itau)*Sigma_c_s(:,:)
    enddo
    ! Galitskii-Migdal energy [ PRB, 80, 041103R (2009) ]
-   ! tau > 0
-   Mat_ao_tmp=matmul(Sigma_c_minus,G_plus_itau)
-   do ibas=1,nBas
-    EcGM_itau=EcGM_itau+tweight(itau)*Mat_ao_tmp(ibas,ibas)
-   enddo
-   ! tau < 0
-   Mat_ao_tmp=matmul(Sigma_c_plus,G_minus_itau)
-   do ibas=1,nBas
-    EcGM_itau=EcGM_itau+tweight(itau)*Mat_ao_tmp(ibas,ibas)
-   enddo
+    ! tau > 0
+    Mat_ao_tmp=matmul(Sigma_c_minus,G_plus_itau)
+    do ibas=1,nBas
+     EcGM_itau=EcGM_itau+tweight(itau)*Mat_ao_tmp(ibas,ibas)
+    enddo
+    ! tau < 0
+    Mat_ao_tmp=matmul(Sigma_c_plus,G_minus_itau)
+    do ibas=1,nBas
+     EcGM_itau=EcGM_itau+tweight(itau)*Mat_ao_tmp(ibas,ibas)
+    enddo
   enddo
   EcGM=-real(EcGM_itau) ! Including a factor 2 to sum over spin-channels  EcGM = - 1/2 \sum_spin \int Tr[ Sigma_c_spin(-it) G_spin(it) ] dt
                         !                                                      = - \int Tr[ Sigma_c_up(-it) G_up(it) ] dt for restricted calcs.
