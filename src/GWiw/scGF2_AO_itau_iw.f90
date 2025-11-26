@@ -96,7 +96,7 @@ subroutine scGF2_AO_itau_iw(nBas,nOrb,nO,maxSCF,maxDIIS,dolinGF2,restart_scGF2,v
   complex*16,allocatable        :: G_ao_iw_hf(:,:,:)
   complex*16,allocatable        :: Sigma_c_c(:,:),Sigma_c_s(:,:)
   complex*16,allocatable        :: Sigma_c_plus(:,:),Sigma_c_minus(:,:)
-  complex*16,allocatable        :: G_ao_tmp(:,:)
+  complex*16,allocatable        :: Mat_ao_tmp(:,:)
   complex*16,allocatable        :: G_minus_itau(:,:),G_plus_itau(:,:)
   complex*16,allocatable        :: error_transf_mo(:,:,:)
   complex*16,allocatable        :: Sigma_c_w_mo(:,:)
@@ -104,10 +104,10 @@ subroutine scGF2_AO_itau_iw(nBas,nOrb,nO,maxSCF,maxDIIS,dolinGF2,restart_scGF2,v
   complex*16,allocatable        :: G_itau_extrap(:)
   complex*16,allocatable        :: err_diis(:,:)
   complex*16,allocatable        :: G_itau_old_diis(:,:)
-  complex*16,allocatable        :: Chi0_ao_itau_vSq(:,:)
   complex*16,allocatable        :: Aimql(:,:,:,:)
   complex*16,allocatable        :: Bisql(:,:,:,:)
   complex*16,allocatable        :: Cispl(:,:,:,:)
+!  complex*16,allocatable        :: Chi0_ao_itau_vSq(:,:)
 !  complex*16,allocatable        :: Chi0_ao_iw_vSq(:,:,:)
 
 ! Output variables
@@ -173,13 +173,12 @@ subroutine scGF2_AO_itau_iw(nBas,nOrb,nO,maxSCF,maxDIIS,dolinGF2,restart_scGF2,v
  allocate(P_ao(nBas,nBas),P_ao_old(nBas,nBas),P_ao_iter(nBas,nBas),P_ao_hf(nBas,nBas))
  allocate(F_ao(nBas,nBas),cHFinv(nOrb,nBas),Occ(nOrb),cNO(nBas,nOrb))
  allocate(G_minus_itau(nBas,nBas),G_plus_itau(nBas,nBas))
- allocate(G_ao_tmp(nBas,nBas))
+ allocate(Mat_ao_tmp(nBas,nBas))
  allocate(Sigma_c_c(nBas,nBas),Sigma_c_s(nBas,nBas))
  allocate(Sigma_c_plus(nBas,nBas),Sigma_c_minus(nBas,nBas))
  allocate(Aimql(nBas,nBas,nBas,nBAS))
  allocate(Bisql(nBas,nBas,nBas,nBAS))
  allocate(Cispl(nBas,nBas,nBas,nBAS))
- allocate(Chi0_ao_itau_vSq(nBasSq,nBasSq)) 
  allocate(tweight(ntimes),tcoord(ntimes))
  allocate(sint2w_weight(nfreqs,ntimes))
  allocate(cost2w_weight(nfreqs,ntimes))
@@ -188,6 +187,7 @@ subroutine scGF2_AO_itau_iw(nBas,nOrb,nO,maxSCF,maxDIIS,dolinGF2,restart_scGF2,v
  allocate(Sigma_c_w_ao(nfreqs,nBas,nBas),DeltaG_ao_iw(nfreqs,nBas,nBas),G_ao_iw_hf(nfreqs,nBas,nBas))
  allocate(G_ao_itau(ntimes_twice,nBas,nBas),G_ao_itau_hf(ntimes_twice,nBas,nBas))
  allocate(G_ao_itau_old(ntimes_twice,nBas,nBas))
+! allocate(Chi0_ao_itau_vSq(nBasSq,nBasSq)) 
 ! allocate(Chi0_ao_iw_vSq(nfreqs,nBasSq,nBasSq))
  allocate(err_current(1))
  allocate(err_currentP(1))
@@ -250,8 +250,8 @@ subroutine scGF2_AO_itau_iw(nBas,nOrb,nO,maxSCF,maxDIIS,dolinGF2,restart_scGF2,v
  ! Build Go(i w)
  do ifreq=1,nfreqs
   weval_cpx=im*wcoord(ifreq)
-  call G_AO_RHF_w(nBas,nOrb,nO,eta,cHF,eHF,weval_cpx,G_ao_tmp)
-  G_ao_iw_hf(ifreq,:,:)=G_ao_tmp(:,:)
+  call G_AO_RHF_w(nBas,nOrb,nO,eta,cHF,eHF,weval_cpx,Mat_ao_tmp)
+  G_ao_iw_hf(ifreq,:,:)=Mat_ao_tmp(:,:)
  enddo
  ! Build Go(i tau)
  do itau=1,ntimes
@@ -330,6 +330,8 @@ subroutine scGF2_AO_itau_iw(nBas,nOrb,nO,maxSCF,maxDIIS,dolinGF2,restart_scGF2,v
   iter=iter+1
 
   ! Build Sigma_c(i w) [Eqs. 12-18 in PRB, 109, 255101 (2024)] (for the M^8 algorithm see at the end of this file)
+  ! and compute Galitskii-Migdal Ec energy using the time grid
+  EcGM_itau=czero
   Sigma_c_w_ao=czero
   do itau=1,ntimes
    G_plus_itau(:,:) =G_ao_itau(2*itau-1,:,:)
@@ -440,55 +442,20 @@ subroutine scGF2_AO_itau_iw(nBas,nOrb,nO,maxSCF,maxDIIS,dolinGF2,restart_scGF2,v
     Sigma_c_w_ao(ifreq,:,:) = Sigma_c_w_ao(ifreq,:,:)                        &
                             + 0.5d0*cost2w_weight(ifreq,itau)*Sigma_c_c(:,:) &
                             + 0.5d0*sint2w_weight(ifreq,itau)*Sigma_c_s(:,:)
-   enddo 
-  enddo
-
-  ! Compute EcGM [ from Sigma_c(iw) is BAD. We use Eq. 10 from J. Chem. Theory Comput., 10, 2498 to compute it from Xo ]
-  EcGM=0d0
-!  EcGMw=0d0
-!  Chi0_ao_iw_vSq(:,:,:)=czero
-  ! Build using the time grid Xo(i tau) = -2i G(i tau) G(-i tau)
-  do itau=1,ntimes
-   ! Xo(i tau) = -2i G(i tau) G(-i tau)
-   do ibas=1,nBas
-    do jbas=1,nBas
-     do kbas=1,nBas
-      do lbas=1,nBas                       
-                                   ! r1   r2'                    r2   r1'
-       product = G_ao_itau(2*itau-1,ibas,jbas)*G_ao_itau(2*itau,kbas,lbas)
-       if(abs(product)<1e-12) product=czero
-       Chi0_ao_itau_vSq(1+(lbas-1)+(ibas-1)*nBas,1+(kbas-1)+(jbas-1)*nBas) = product
-      enddo
-     enddo
+   enddo
+   ! Galitskii-Migdal energy [ PRB, 80, 041103R (2009) ]
+    ! tau > 0
+    Mat_ao_tmp=matmul(Sigma_c_minus,G_plus_itau)
+    do ibas=1,nBas
+     EcGM_itau=EcGM_itau+tweight(itau)*Mat_ao_tmp(ibas,ibas)
     enddo
-   enddo
-   Chi0_ao_itau_vSq=-2d0*im*Chi0_ao_itau_vSq ! The 2 factor is added to account for both spin contributions [ i.e., (up,up,up,up) and (down,down,down,down) ]
-!   ! Xo(i tau) -> Xo(i w) [ the weight already contains the cos(tau w) and a factor 2 because int_-Infty ^Infty -> 2 int_0 ^Infty ]
-!   do ifreq=1,nfreqs
-!    Chi0_ao_iw_vSq(ifreq,:,:) = Chi0_ao_iw_vSq(ifreq,:,:) - im*cost2w_weight(ifreq,itau)*Chi0_ao_itau_vSq(:,:)
-!   enddo 
-   Chi0_ao_itau_vSq=matmul(Chi0_ao_itau_vSq,vMAT)              ! Xo(i tau) v
-   Chi0_ao_itau_vSq=matmul(Chi0_ao_itau_vSq,Chi0_ao_itau_vSq)  ! [ Xo(i tau) v ]^2
-   ! EcGM = 1/4 int Tr{ [ Xo(i tau) v ]^2 }
-   EcGM_itau=czero
-   do ibas=1,nBasSq
-    EcGM_itau=EcGM_itau+Chi0_ao_itau_vSq(ibas,ibas)
-   enddo
-   EcGM=EcGM+0.25d0*tweight(itau)*real(EcGM_itau) 
+    ! tau < 0
+    Mat_ao_tmp=matmul(Sigma_c_plus,G_minus_itau)
+    do ibas=1,nBas
+     EcGM_itau=EcGM_itau+tweight(itau)*Mat_ao_tmp(ibas,ibas)
+    enddo
   enddo
-!  ! Complete the Xo(i tau) -> Xo(i w)
-!  Chi0_ao_iw_vSq(:,:,:) = Real(Chi0_ao_iw_vSq(:,:,:)) ! The factor 2 is stored in the weight [ and we just retain the real part ]
-!  do ifreq=1,nfreqs
-!   Chi0_ao_iw_vSq(ifreq,:,:)=matmul(Chi0_ao_iw_vSq(ifreq,:,:),vMAT)                       ! Xo(i w) v
-!   Chi0_ao_iw_vSq(ifreq,:,:)=matmul(Chi0_ao_iw_vSq(ifreq,:,:),Chi0_ao_iw_vSq(ifreq,:,:))  ! [ Xo(i w) v ]^2
-!   ! EcGM = - 1/8pi int Tr{ [ Xo(i tau) v ]^2 }
-!   EcGM_iw=czero
-!   do ibas=1,nBasSq
-!    EcGM_iw=EcGM_iw+Chi0_ao_iw_vSq(ifreq,ibas,ibas)
-!   enddo
-!   EcGMw=EcGMw-wweight(ifreq)*real(EcGM_iw)
-!  enddo
-!  EcGMw=EcGMw/(8d0*pi)
+  EcGM=-0.5d0*real(EcGM_itau)
 
   ! Check the error in Sigma_c(i w) at iter=1 [ if this is calc. is not with restart ]
   if(iter==1 .and. .not.restart_scGF2) then
@@ -518,13 +485,10 @@ subroutine scGF2_AO_itau_iw(nBas,nOrb,nO,maxSCF,maxDIIS,dolinGF2,restart_scGF2,v
    write(*,'(a,*(f20.8))') ' Sum error ',sum(error_transf_mo)
    write(*,'(a,f20.8,a,2f20.8,a)') ' Max CAE   ',max_error_sigma,' is in the frequency ',0d0,wcoord(imax_error_sigma),'i'
    write(*,'(a,*(f20.8))') ' MAE       ',sum(error_transf_mo)/(nfreqs*nBas*nBas)
-   write(*,'(a)')         ' Using Xo(it) ' 
+   write(*,'(a)')         ' Using EcGM = - 1/2 \int Tr[ Sigma_c(-it) G(it) ] dt ' 
    write(*,'(a,f17.8,a)') ' EcGM analytic',err_EcGM,' a.u.'
    write(*,'(a,f18.8,a)') ' EcGM numeric',EcGM,' a.u.'
    write(*,'(a,f20.8,a)') ' EcGM error',abs(err_EcGM-EcGM),' a.u.'
-!   write(*,'(a)')         ' Using Xo(iw) ' 
-!   write(*,'(a,f18.8,a)') ' EcGM numeric',EcGMw,' a.u.'
-!   write(*,'(a,f20.8,a)') ' EcGM error',abs(err_EcGM-EcGMw),' a.u.'
    deallocate(error_transf_mo,Sigma_c_w_mo)
   endif
 
@@ -556,10 +520,10 @@ subroutine scGF2_AO_itau_iw(nBas,nOrb,nO,maxSCF,maxDIIS,dolinGF2,restart_scGF2,v
     ! Build G(i w) and n(r)
     P_ao_old=P_ao
     call get_1rdm_scGW(nBas,nfreqs,chem_pot,S,F_ao,Sigma_c_w_ao,wcoord,wweight, &
-                       G_ao_tmp,G_ao_iw_hf,DeltaG_ao_iw,P_ao,P_ao_hf,trace_1_rdm) 
+                       Mat_ao_tmp,G_ao_iw_hf,DeltaG_ao_iw,P_ao,P_ao_hf,trace_1_rdm) 
     if(abs(trace_1_rdm-nElectrons)**2d0>thrs_N .and. chem_pot_scG) &
      call fix_chem_pot_scGW_bisec(iter_fock,nBas,nfreqs,nElectrons,thrs_N,thrs_Ngrad,chem_pot,S,F_ao,Sigma_c_w_ao,wcoord,wweight, &
-                                  G_ao_tmp,G_ao_iw_hf,DeltaG_ao_iw,P_ao,P_ao_hf,trace_1_rdm,chem_pot_saved,verbose_scGF2)
+                                  Mat_ao_tmp,G_ao_iw_hf,DeltaG_ao_iw,P_ao,P_ao_hf,trace_1_rdm,chem_pot_saved,verbose_scGF2)
     ! Check convergence of P_ao for fixed Sigma_c(i w)
     diff_Pao=0d0
     do ibas=1,nBas
@@ -573,7 +537,7 @@ subroutine scGF2_AO_itau_iw(nBas,nOrb,nO,maxSCF,maxDIIS,dolinGF2,restart_scGF2,v
     if(iter_fock==maxSCF) exit
  
     ! Do mixing with previous P_ao to facilitate convergence
-    if(maxDIIS>0) then
+    if(maxDIIS>0 .and. .false.) then
      n_diisP=min(n_diisP+1,maxDIIS)
      err_currentP=0d0
      idiis_indexP=1
@@ -621,9 +585,6 @@ subroutine scGF2_AO_itau_iw(nBas,nOrb,nO,maxSCF,maxDIIS,dolinGF2,restart_scGF2,v
   write(*,'(a,f15.8)')        ' EcGM(it)    ',EcGM
   write(*,'(a,f15.8)')        ' Eelec(it)   ',Ehfl+EcGM
   write(*,'(a,f15.8)')        ' Etot(it)    ',Ehfl+EcGM+ENuc
-!  write(*,'(a,f15.8)')        ' EcGM(iw)    ',EcGMw
-!  write(*,'(a,f15.8)')        ' Eelec(iw)   ',Ehfl+EcGMw
-!  write(*,'(a,f15.8)')        ' Etot(iw)    ',Ehfl+EcGMw+ENuc
   write(*,*)
 
   if(diff_Pao<=thrs_Pao) exit
@@ -691,10 +652,6 @@ subroutine scGF2_AO_itau_iw(nBas,nOrb,nO,maxSCF,maxDIIS,dolinGF2,restart_scGF2,v
  write(*,'(a,f15.8)')        ' EcGM(it)         ',EcGM
  write(*,'(a,f15.8)')        ' Eelec(it)        ',Ehfl+EcGM
  write(*,'(a,f15.8)')        ' scGF2 Energy (it)',Ehfl+EcGM+ENuc
-! write(*,'(a,f15.8)')        ' EcGM(iw)         ',EcGMw
-! write(*,'(a,f15.8)')        ' Eelec(iw)        ',Ehfl+EcGMw
-! write(*,'(a,f15.8)')        ' Etot(iw)         ',Ehfl+EcGMw+ENuc
-! write(*,'(a,f15.8)')        ' scGF2 Energy (iw)',Ehfl+EcGMw+ENuc
  write(*,*)
  write(*,*) ' Final occupation numbers'
  do ibas=1,nOrb
@@ -720,11 +677,11 @@ subroutine scGF2_AO_itau_iw(nBas,nOrb,nO,maxSCF,maxDIIS,dolinGF2,restart_scGF2,v
   write(*,*) '         G^lin = G + G Sigma_c G'
   write(*,*) ' -------------------------------------------'
   P_ao_old=0d0
-  G_ao_tmp(:,:)=czero
+  Mat_ao_tmp(:,:)=czero
   do ifreq=1,nfreqs
-   G_ao_tmp(:,:)=G_ao_iw_hf(ifreq,:,:)+DeltaG_ao_iw(ifreq,:,:)
-   G_ao_tmp(:,:)=matmul(matmul(G_ao_tmp(:,:),Sigma_c_w_ao(ifreq,:,:)),G_ao_tmp(:,:))
-   P_ao_old(:,:) = P_ao_old(:,:) + wweight(ifreq)*real(G_ao_tmp(:,:)+conjg(G_ao_tmp(:,:))) ! Integrate along iw
+   Mat_ao_tmp(:,:)=G_ao_iw_hf(ifreq,:,:)+DeltaG_ao_iw(ifreq,:,:)
+   Mat_ao_tmp(:,:)=matmul(matmul(Mat_ao_tmp(:,:),Sigma_c_w_ao(ifreq,:,:)),Mat_ao_tmp(:,:))
+   P_ao_old(:,:) = P_ao_old(:,:) + wweight(ifreq)*real(Mat_ao_tmp(:,:)+conjg(Mat_ao_tmp(:,:))) ! Integrate along iw
   enddo
   P_ao_old=P_ao_old/pi
   P_ao_old=P_ao+P_ao_old
@@ -790,7 +747,7 @@ subroutine scGF2_AO_itau_iw(nBas,nOrb,nO,maxSCF,maxDIIS,dolinGF2,restart_scGF2,v
  deallocate(Sigma_c_plus,Sigma_c_minus) 
  deallocate(Sigma_c_c,Sigma_c_s) 
  deallocate(G_minus_itau,G_plus_itau) 
- deallocate(G_ao_tmp) 
+ deallocate(Mat_ao_tmp) 
  deallocate(err_current)
  deallocate(err_currentP)
  deallocate(G_itau_extrap)
@@ -802,7 +759,7 @@ subroutine scGF2_AO_itau_iw(nBas,nOrb,nO,maxSCF,maxDIIS,dolinGF2,restart_scGF2,v
  deallocate(Aimql)
  deallocate(Bisql)
  deallocate(Cispl)
- deallocate(Chi0_ao_itau_vSq) 
+! deallocate(Chi0_ao_itau_vSq) 
 ! deallocate(Chi0_ao_iw_vSq)
 
 end subroutine 
@@ -830,4 +787,51 @@ end subroutine
 !     enddo
 !    enddo
 !   enddo
+
+!  ! Compute EcGM [ from Sigma_c(iw) is BAD. We use Eq. 10 from J. Chem. Theory Comput., 10, 2498 to compute it from Xo ]
+!  EcGM=0d0
+!  EcGMw=0d0
+!  Chi0_ao_iw_vSq(:,:,:)=czero
+!  ! Build using the time grid Xo(i tau) = -2i G(i tau) G(-i tau)
+!  do itau=1,ntimes
+!   ! Xo(i tau) = -2i G(i tau) G(-i tau)
+!   do ibas=1,nBas
+!    do jbas=1,nBas
+!     do kbas=1,nBas
+!      do lbas=1,nBas                       
+!                                   ! r1   r2'                    r2   r1'
+!       product = G_ao_itau(2*itau-1,ibas,jbas)*G_ao_itau(2*itau,kbas,lbas)
+!       if(abs(product)<1e-12) product=czero
+!       Chi0_ao_itau_vSq(1+(lbas-1)+(ibas-1)*nBas,1+(kbas-1)+(jbas-1)*nBas) = product
+!      enddo
+!     enddo
+!    enddo
+!   enddo
+!   Chi0_ao_itau_vSq=-2d0*im*Chi0_ao_itau_vSq ! The 2 factor is added to account for both spin contributions [ i.e., (up,up,up,up) and (down,down,down,down) ]
+!   ! Xo(i tau) -> Xo(i w) [ the weight already contains the cos(tau w) and a factor 2 because int_-Infty ^Infty -> 2 int_0 ^Infty ]
+!   do ifreq=1,nfreqs
+!    Chi0_ao_iw_vSq(ifreq,:,:) = Chi0_ao_iw_vSq(ifreq,:,:) - im*cost2w_weight(ifreq,itau)*Chi0_ao_itau_vSq(:,:)
+!   enddo 
+!   Chi0_ao_itau_vSq=matmul(Chi0_ao_itau_vSq,vMAT)              ! Xo(i tau) v
+!   Chi0_ao_itau_vSq=matmul(Chi0_ao_itau_vSq,Chi0_ao_itau_vSq)  ! [ Xo(i tau) v ]^2
+!   ! EcGM = 1/4 int Tr{ [ Xo(i tau) v ]^2 }
+!   EcGM_itau=czero
+!   do ibas=1,nBasSq
+!    EcGM_itau=EcGM_itau+Chi0_ao_itau_vSq(ibas,ibas)
+!   enddo
+!   EcGM=EcGM+0.25d0*tweight(itau)*real(EcGM_itau) 
+!  enddo
+!!  ! Complete the Xo(i tau) -> Xo(i w)
+!  Chi0_ao_iw_vSq(:,:,:) = Real(Chi0_ao_iw_vSq(:,:,:)) ! The factor 2 is stored in the weight [ and we just retain the real part ]
+!  do ifreq=1,nfreqs
+!   Chi0_ao_iw_vSq(ifreq,:,:)=matmul(Chi0_ao_iw_vSq(ifreq,:,:),vMAT)                       ! Xo(i w) v
+!   Chi0_ao_iw_vSq(ifreq,:,:)=matmul(Chi0_ao_iw_vSq(ifreq,:,:),Chi0_ao_iw_vSq(ifreq,:,:))  ! [ Xo(i w) v ]^2
+!   ! EcGM = - 1/8pi int Tr{ [ Xo(i tau) v ]^2 }
+!   EcGM_iw=czero
+!   do ibas=1,nBasSq
+!    EcGM_iw=EcGM_iw+Chi0_ao_iw_vSq(ifreq,ibas,ibas)
+!   enddo
+!   EcGMw=EcGMw-wweight(ifreq)*real(EcGM_iw)
+!  enddo
+!  EcGMw=EcGMw/(8d0*pi)
 
