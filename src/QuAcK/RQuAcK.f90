@@ -331,8 +331,8 @@ subroutine RQuAcK(working_dir,use_gpu,dotest,doRHF,doROHF,docRHF,doeRHF,        
     enddo
    enddo
    no_fock=.false.
-   call scGF2itauiw_ao(nBas,nOrb,nO,maxSCF_GF,max_diis_GF,do_linDM_GF,restart_scGF2,verbose_scGF2,chem_pot_scG,no_fock, &
-                       ENuc,Hc,S,PHF,cHF_tmp,eHF,nfreqs,wcoord,wweight,vMAT,ERI_AO)
+   call scGF2_AO_itau_iw(nBas,nOrb,nO,maxSCF_GF,max_diis_GF,do_linDM_GF,restart_scGF2,verbose_scGF2,chem_pot_scG,no_fock, &
+                         ENuc,Hc,S,PHF,cHF_tmp,eHF,nfreqs,wcoord,wweight,vMAT,ERI_AO)
    deallocate(vMAT,cHF_tmp)
 
   endif
@@ -356,8 +356,8 @@ subroutine RQuAcK(working_dir,use_gpu,dotest,doRHF,doROHF,docRHF,doeRHF,        
     enddo
    enddo
    no_fock=.false.
-   call scGWitauiw_ao(nBas,nOrb,nO,maxSCF_GW,max_diis_GW,do_linDM_GW,restart_scGW,verbose_scGW,chem_pot_scG,no_fock, &
-                      ENuc,Hc,S,PHF,cHF_tmp,eHF,nfreqs,wcoord,wweight,vMAT,ERI_AO)
+   call scGW_AO_itau_iw(nBas,nOrb,nO,maxSCF_GW,max_diis_GW,do_linDM_GW,restart_scGW,verbose_scGW,chem_pot_scG,no_fock, &
+                        ENuc,Hc,S,PHF,cHF_tmp,eHF,nfreqs,wcoord,wweight,vMAT,ERI_AO)
    deallocate(vMAT,cHF_tmp)
 
   endif

@@ -1,4 +1,4 @@
-subroutine read_scGW_grids(ntimes,nfreqs,tcoord,tweight,wcoord,wweight,sint2w_weight,cost2w_weight, &
+subroutine read_scGX_grids(ntimes,nfreqs,tcoord,tweight,wcoord,wweight,sint2w_weight,cost2w_weight, &
                            cosw2t_weight,sinw2t_weight,verbose)
 
 ! Read grids for scGW

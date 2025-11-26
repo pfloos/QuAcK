@@ -74,7 +74,7 @@ subroutine EcGM_w_RHFB_Sigma(nOrb,nOrb_twice,verbose,eQP_state,nfreqs,wweight,wc
 
 ! Build Sigma_c(iw)
 
-  call build_Sigmac_w_RHFB(nOrb,nOrb_twice,nfreqs2,eta,0,wcoord2_cpx,eQP_state,nfreqs,0,wweight,wcoord, & 
+  call Sigmac_MO_RHFB_GW_w(nOrb,nOrb_twice,nfreqs2,eta,0,wcoord2_cpx,eQP_state,nfreqs,0,wweight,wcoord, & 
                            vMAT,U_QP,Sigma_c_he,Sigma_c_hh,Sigma_c_eh,Sigma_c_ee,.false.,.false.)
 
 ! Integration along imag. freqs contributions
@@ -82,13 +82,13 @@ subroutine EcGM_w_RHFB_Sigma(nOrb,nOrb_twice,verbose,eQP_state,nfreqs,wweight,wc
   EcGM=0d0
   do ifreq=1,nfreqs2
    
-   call G_MO_RHFB(nOrb,nOrb_twice,eta,eQP_state,wcoord2_cpx(ifreq),Mat1,Mat1,Mat2, Mat2,Tmp_mo) ! G_he(iw2)
+   call G_MO_RHFB_(nOrb,nOrb_twice,eta,eQP_state,wcoord2_cpx(ifreq),Mat1,Mat1,Mat2, Mat2,Tmp_mo) ! G_he(iw2)
    trace=czero 
    Tmp_mo(:,:)=matmul(Sigma_c_he(ifreq,:,:),Tmp_mo(:,:))  ! This is Sigma_c_he(iw2) G_he(iw2)
    do iorb=1,nOrb
     trace=trace+Tmp_mo(iorb,iorb)                  !  Compute Tr [ Sigma_c_he(iw2) G_he(iw2) ]
    enddo
-   call G_MO_RHFB(nOrb,nOrb_twice,eta,eQP_state,wcoord2_cpx(ifreq),Mat2,Mat1,Mat1,-Mat2,Tmp_mo) ! G_ee(iw2)
+   call G_MO_RHFB_w(nOrb,nOrb_twice,eta,eQP_state,wcoord2_cpx(ifreq),Mat2,Mat1,Mat1,-Mat2,Tmp_mo) ! G_ee(iw2)
    Tmp_mo(:,:)=matmul(Sigma_c_hh(ifreq,:,:),Tmp_mo(:,:))  ! This is Sigma_c_hh(iw2) G_ee(iw2)
    do iorb=1,nOrb
     trace=trace-Tmp_mo(iorb,iorb)                  !  Substract Tr [ Sigma_c_hh(iw2) G_ee(iw2) ]

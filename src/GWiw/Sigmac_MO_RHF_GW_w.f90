@@ -1,4 +1,4 @@
-subroutine build_Sigmac_w_RHF(nOrb,nO,nE,eta,verbose,wtest,eHF,nfreqs,ntimes,wweight,wcoord,vMAT,&
+subroutine Sigmac_MO_RHF_GW_w(nOrb,nO,nE,eta,verbose,wtest,eHF,nfreqs,ntimes,wweight,wcoord,vMAT,&
                               Sigma_c_mo)
 
 ! Restricted Sigma_c(E)
@@ -63,7 +63,7 @@ subroutine build_Sigmac_w_RHF(nOrb,nO,nE,eta,verbose,wtest,eHF,nfreqs,ntimes,wwe
    if(ntimes>0) then
     stop
    else
-    call Xoiw_mo_RHF(nOrb,nO,eta,eHF,im*wcoord(ifreq),Chi0_mo_w)
+    call Xo_MO_RHF_w(nOrb,nO,eta,eHF,im*wcoord(ifreq),Chi0_mo_w)
    endif
 
    ! Xo (iw) -> Wp (iw)
@@ -77,9 +77,9 @@ subroutine build_Sigmac_w_RHF(nOrb,nO,nE,eta,verbose,wtest,eHF,nfreqs,ntimes,wwe
     do iE=1,nE
      ! Build G(iw+wtest)
      weval=wtest(iE)+im*wcoord(ifreq)
-     call G_MO_RHF(nOrb,nO,eta,eHF,weval,G_mo_1)
+     call G_MO_RHF_w(nOrb,nO,eta,eHF,weval,G_mo_1)
      weval=wtest(iE)-im*wcoord(ifreq)
-     call G_MO_RHF(nOrb,nO,eta,eHF,weval,G_mo_2)
+     call G_MO_RHF_w(nOrb,nO,eta,eHF,weval,G_mo_2)
      ! Sigma_c(E)
      do iorb=1,nOrb
       do jorb=1,nOrb
@@ -114,7 +114,7 @@ subroutine build_Sigmac_w_RHF(nOrb,nO,nE,eta,verbose,wtest,eHF,nfreqs,ntimes,wwe
         Tmp_mo_w(iorb,iorb)=1d0
        enddo
        weval=eHF(porb)-Real(wtest(iE))
-       call Xoiw_mo_RHF(nOrb,nO,eta,eHF,weval,Chi0_mo_w)
+       call Xo_MO_RHF_w(nOrb,nO,eta,eHF,weval,Chi0_mo_w)
        Tmp_mo_w(:,:)=Tmp_mo_w(:,:)-matmul(Real(Chi0_mo_w(:,:)),vMAT(:,:))
        call inverse_matrix(nOrb2,Tmp_mo_w,Tmp_mo_w)
        Tmp_mo_w(:,:)=matmul(Tmp_mo_w(:,:),Real(Chi0_mo_w(:,:)))
@@ -138,7 +138,7 @@ subroutine build_Sigmac_w_RHF(nOrb,nO,nE,eta,verbose,wtest,eHF,nfreqs,ntimes,wwe
         Tmp_mo_w(iorb,iorb)=1d0
        enddo
        weval=Real(wtest(iE))-eHF(porb)
-       call Xoiw_mo_RHF(nOrb,nO,eta,eHF,weval,Chi0_mo_w)
+       call Xo_MO_RHF_w(nOrb,nO,eta,eHF,weval,Chi0_mo_w)
        Tmp_mo_w(:,:)=Tmp_mo_w(:,:)-matmul(Real(Chi0_mo_w(:,:)),vMAT(:,:))
        call inverse_matrix(nOrb2,Tmp_mo_w,Tmp_mo_w)
        Tmp_mo_w(:,:)=matmul(Tmp_mo_w(:,:),Real(Chi0_mo_w(:,:)))

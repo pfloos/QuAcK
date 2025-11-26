@@ -1,4 +1,4 @@
-subroutine G_MO_RHF(nOrb,nO,eta,eHF,wcoord,G_MO)
+subroutine G_MO_RHF_w(nOrb,nO,eta,eHF,wcoord,G_MO)
 
 ! G(i w)
 

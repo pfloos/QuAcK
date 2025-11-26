@@ -107,8 +107,6 @@ program QuAcK
 
   logical                       :: dotest,doRtest,doUtest,doGtest
 
-  double precision              :: lim_inf,alpha,lim_sup,beta
-
   logical                       :: chem_pot_hf
   logical                       :: restart_hfb
   double precision              :: temperature,sigma
@@ -220,25 +218,11 @@ program QuAcK
 
   ntimes = 0
   kind_int = 1
-  lim_inf = 0d0; lim_sup = 1d0;
-  alpha = 0d0;   beta  = 0d0;
+  if(nfreqs<2) nfreqs=2
   allocate(wweight(nfreqs),wcoord(nfreqs))
-  call cgqf(nfreqs,kind_int,alpha,beta,lim_inf,lim_sup,wcoord,wweight)
+  call cgqf(nfreqs,kind_int,0d0,0d0,0d0,1d0,wcoord,wweight)
   wweight(:)=wweight(:)/((1d0-wcoord(:))**2d0)
   wcoord(:)=wcoord(:)/(1d0-wcoord(:))
-  ! Check how good we integrate for beta = eA-eI = 10 a.u.
-  alpha = 0d0; beta = 1d1;
-  do ifreq=1,nfreqs
-   alpha=alpha+wweight(ifreq)*(beta*2d0/(beta**2d0+wcoord(ifreq)**2d0)) 
-  enddo
-  write(*,*)
-  write(*,*) '    ----------------------'
-  write(*,'(A28,1X)') 'Testing the quadrature'
-  write(*,'(A30, I15)') 'Number of frequencies (grid)= ', nfreqs
-  write(*,'(A28,1X,F16.10)') 'PI value error',abs(alpha-acos(-1d0))
-  write(*,*) '    ----------------------'
-  write(*,*)
-  alpha = 0d0; beta = 0d0;
 
 !------------------!
 ! Hardware         !

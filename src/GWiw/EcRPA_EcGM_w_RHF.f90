@@ -58,7 +58,7 @@ subroutine EcRPA_EcGM_w_RHF(nOrb,nO,verbose,eHF,nfreqs,ntimes,wweight,wcoord,vMA
     stop
    else
     eta=0d0
-    call Xoiw_mo_RHF(nOrb,nO,eta,eHF,im*wcoord(ifreq),Chi0_mo_w)
+    call Xo_MO_RHF_w(nOrb,nO,eta,eHF,im*wcoord(ifreq),Chi0_mo_w)
    endif
 
    ! Tr [ Xo v ] and define eps

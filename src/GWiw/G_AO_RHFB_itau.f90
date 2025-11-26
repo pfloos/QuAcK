@@ -1,5 +1,5 @@
 
-subroutine G0itau_ao_RHFB(nBas,nOrb,nOrb_twice,tau,G0itau,cHFB,eHFB,Mat1,Mat2,Mat3,Mat4)
+subroutine G_AO_RHFB_itau(nBas,nOrb,nOrb_twice,tau,G0itau,cHFB,eHFB,Mat1,Mat2,Mat3,Mat4)
 
   implicit none
   include 'parameters.h'
