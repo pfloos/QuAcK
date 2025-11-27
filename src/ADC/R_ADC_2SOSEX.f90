@@ -25,8 +25,7 @@ subroutine R_ADC_2SOSEX(dotest,TDA_W,flow,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,ERHF,ERI
 
 ! Local variables
 
-  integer                       :: p
-  integer                       :: s
+  integer                       :: p,q,r,s
   integer                       :: i,j,k,l
   integer                       :: a,b,c,d
   integer                       :: mu,nu
@@ -48,6 +47,12 @@ subroutine R_ADC_2SOSEX(dotest,TDA_W,flow,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,ERHF,ERI
   double precision,allocatable  :: XpY(:,:)
   double precision,allocatable  :: XmY(:,:)
   double precision,allocatable  :: rho(:,:,:)
+
+  double precision,allocatable  :: F(:,:)
+  double precision,allocatable  :: Vh(:,:)
+  double precision,allocatable  :: Vx(:,:)
+  double precision,allocatable  :: DM(:,:)
+  double precision,allocatable  :: w(:,:,:)
 
   logical                       :: verbose = .false.
   double precision,parameter    :: cutoff1 = 0.1d0
@@ -113,7 +118,22 @@ subroutine R_ADC_2SOSEX(dotest,TDA_W,flow,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,ERHF,ERI
 
   call RGW_excitation_density(nOrb,nC,nO,nR,nS,ERI,XpY,rho)
 
-  deallocate(Aph,Bph,XpY,XmY)
+  deallocate(Aph,Bph)
+
+  !-------------------!
+  ! Compute Sigma(oo) !
+  !-------------------!
+
+  allocate(DM(nOrb,nOrb),Vh(nOrb,nOrb),Vx(nOrb,nOrb),F(nOrb,nOrb),w(nOrb,nOrb,nS))
+
+  call R_2SOSEX_excitation_density(flow,nOrb,nC,nO,nR,nS,eHF,Om,ERI,XpY,w)
+  call R_linDM_GW(nOrb,nC,nO,nV,nR,nS,eHF,Om,w,0d0,DM)
+  call Hartree_matrix_AO_basis(nOrb,DM,ERI,Vh)
+  call exchange_matrix_AO_basis(nOrb,DM,ERI,Vx)
+
+  F(:,:) = Vh(:,:) + 0.5d0*Vx(:,:)
+
+  deallocate(Vh,Vx,DM,w,XpY,XmY)
 
 ! Initialization
 
@@ -138,7 +158,13 @@ subroutine R_ADC_2SOSEX(dotest,TDA_W,flow,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,ERHF,ERI
   !---------!
 
   do p=nC+1,nOrb-nR
+
     H(p,p) = eHF(p)
+
+    do q=nC+1,nOrb-nR
+      H(p,q) = H(p,q) + F(p,q)
+    end do
+
   end do
 
   !--------------!

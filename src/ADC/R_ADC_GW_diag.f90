@@ -49,6 +49,11 @@ subroutine R_ADC_GW_diag(dotest,TDA_W,flow,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,ERHF,ER
   double precision,allocatable  :: XmY(:,:)
   double precision,allocatable  :: rho(:,:,:)
 
+  double precision,allocatable  :: F(:,:)
+  double precision,allocatable  :: Vh(:,:)
+  double precision,allocatable  :: Vx(:,:)
+  double precision,allocatable  :: DM(:,:)
+
   logical                       :: verbose = .false.
   double precision,parameter    :: cutoff1 = 0.01d0
   double precision,parameter    :: cutoff2 = 0.01d0
@@ -115,6 +120,20 @@ subroutine R_ADC_GW_diag(dotest,TDA_W,flow,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,ERHF,ER
 
   deallocate(Aph,Bph,XpY,XmY)
 
+  !-------------------!
+  ! Compute Sigma(oo) !
+  !-------------------!
+
+  allocate(DM(nOrb,nOrb),Vh(nOrb,nOrb),Vx(nOrb,nOrb),F(nOrb,nOrb))
+
+  call R_linDM_GW(nOrb,nC,nO,nV,nR,nS,eHF,Om,rho,0d0,DM)
+  call Hartree_matrix_AO_basis(nOrb,DM,ERI,Vh)
+  call exchange_matrix_AO_basis(nOrb,DM,ERI,Vx)
+
+  F(:,:) = Vh(:,:) + 0.5d0*Vx(:,:)
+
+  deallocate(Vh,Vx,DM)
+
 !-------------------------!
 ! Main loop over orbitals !
 !-------------------------!
@@ -141,7 +160,7 @@ subroutine R_ADC_GW_diag(dotest,TDA_W,flow,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,ERHF,ER
     ! Block F !
     !---------!
 
-    H(1,1) = eHF(p)
+    H(1,1) = eHF(p) + F(p,p)
 
     !-------------!
     ! Block U2h1p !

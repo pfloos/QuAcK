@@ -25,8 +25,7 @@ subroutine R_ADC_GW(dotest,TDA_W,flow,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,eHF
 
 ! Local variables
 
-  integer                       :: p
-  integer                       :: s
+  integer                       :: p,q,r,s
   integer                       :: i,j,k,l
   integer                       :: a,b,c,d
   integer                       :: mu
@@ -47,6 +46,11 @@ subroutine R_ADC_GW(dotest,TDA_W,flow,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,eHF
   double precision,allocatable  :: XpY(:,:)
   double precision,allocatable  :: XmY(:,:)
   double precision,allocatable  :: rho(:,:,:)
+
+  double precision,allocatable  :: F(:,:)
+  double precision,allocatable  :: Vh(:,:)
+  double precision,allocatable  :: Vx(:,:)
+  double precision,allocatable  :: DM(:,:)
 
   logical                       :: verbose = .false.
   double precision,parameter    :: cutoff1 = 0.1d0
@@ -110,6 +114,20 @@ subroutine R_ADC_GW(dotest,TDA_W,flow,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,eHF
 
   deallocate(Aph,Bph,XpY,XmY)
 
+  !-------------------!
+  ! Compute Sigma(oo) !
+  !-------------------!
+
+  allocate(DM(nOrb,nOrb),Vh(nOrb,nOrb),Vx(nOrb,nOrb),F(nOrb,nOrb))
+
+  call R_linDM_GW(nOrb,nC,nO,nV,nR,nS,eHF,Om,rho,0d0,DM)
+  call Hartree_matrix_AO_basis(nOrb,DM,ERI,Vh)
+  call exchange_matrix_AO_basis(nOrb,DM,ERI,Vx)
+
+  F(:,:) = Vh(:,:) + 0.5d0*Vx(:,:)
+
+  deallocate(Vh,Vx,DM)
+
 ! Initialization
 
   H(:,:) = 0d0
@@ -133,7 +151,13 @@ subroutine R_ADC_GW(dotest,TDA_W,flow,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,eHF
   !---------!
 
   do p=nC+1,nOrb-nR
+
     H(p,p) = eHF(p)
+
+    do q=nC+1,nOrb-nR
+      H(p,q) = H(p,q) + F(p,q)
+    end do
+
   end do
 
   !--------------!
