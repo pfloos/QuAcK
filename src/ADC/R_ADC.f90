@@ -98,7 +98,11 @@ subroutine R_ADC(dotest,                                               &
     if(do_IPEA_ADC2) then 
       
       call wall_time(start_ADC)
-      call R_IPEA_ADC2(dotest,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,ERHF,ERI_MO,eHF)
+      if(diag_approx) then
+        call R_IPEA_ADC2_diag(dotest,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,ERHF,ERI_MO,eHF)
+      else
+        call R_IPEA_ADC2(dotest,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,ERHF,ERI_MO,eHF)
+      end if
       call wall_time(end_ADC)
     
       t_ADC = end_ADC - start_ADC
@@ -257,8 +261,8 @@ subroutine R_ADC(dotest,                                               &
       if(diag_approx) then
         call R_ADC4_G3W2_diag(dotest,TDA_W,flow,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,ERHF,ERI_MO,eHF)
       else
-        call R_ADC4_G3W2(dotest,TDA_W,flow,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,ERHF,ERI_MO,eHF)
-!       write(*,*) '!! ADC(4)-G3W2 NYI without diagonal approximation !!'
+!       call R_ADC4_G3W2(dotest,TDA_W,flow,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,ERHF,ERI_MO,eHF)
+        write(*,*) '!! ADC(4)-G3W2 NYI without diagonal approximation !!'
         write(*,*)
       end if
       call wall_time(end_ADC)
