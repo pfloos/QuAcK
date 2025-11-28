@@ -99,7 +99,7 @@ subroutine R_2SOSEX(dotest,TDA_W,singlet,triplet,linearize,eta,doSRG,nBas,nOrb,n
 ! Compute spectral weights !
 !--------------------------!
 
-  call R_2SOSEX_excitation_density(eta,nOrb,nC,nO,nR,nS,eHF,Om,ERI,XpY,rho)
+  call R_2SOSEX_excitation_density(flow,nOrb,nC,nO,nR,nS,eHF,Om,ERI,XpY,rho)
 
 !----------------------------!
 ! Compute 2SOSEX self-energy !
@@ -107,7 +107,7 @@ subroutine R_2SOSEX(dotest,TDA_W,singlet,triplet,linearize,eta,doSRG,nBas,nOrb,n
 
   if(doSRG) then 
 
-    call RGW_SRG_self_energy_diag(flow,nBas,nOrb,nC,nO,nV,nR,nS,eHF,Om,rho,EcGM,SigC,Z)
+    call RGW_SRG_self_energy_diag(eta,nBas,nOrb,nC,nO,nV,nR,nS,eHF,Om,rho,EcGM,SigC,Z)
 
   else
 

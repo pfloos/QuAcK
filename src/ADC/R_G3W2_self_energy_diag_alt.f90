@@ -43,10 +43,6 @@ subroutine R_G3W2_self_energy_diag_alt(eta,nBas,nOrb,nC,nO,nV,nR,nS,eHF,Om,rho,E
   double precision,allocatable  :: U1_2p1h(:)
   double precision,allocatable  :: U2_2h1p(:)
   double precision,allocatable  :: U2_2p1h(:)
-  double precision,allocatable  :: KxU1_2p1h(:)
-  double precision,allocatable  :: KxU1_2h1p(:)
-  double precision,allocatable  :: U1xK_2p1h(:)
-  double precision,allocatable  :: U1xK_2h1p(:)
 
 
   double precision              :: flow = 500d0
@@ -484,47 +480,25 @@ subroutine R_G3W2_self_energy_diag_alt(eta,nBas,nOrb,nC,nO,nV,nR,nS,eHF,Om,rho,E
       end do
     end do
 
-  allocate(KxU1_2p1h(n2p1h))
-  allocate(KxU1_2h1p(n2h1p))
-  allocate(U1xK_2p1h(n2p1h))
-  allocate(U1xK_2h1p(n2h1p))
-
-  KxU1_2p1h(:) = matmul(K_2p1h_2p1h,U1_2p1h)
-  KxU1_2h1p(:) = matmul(K_2h1p_2h1p,U1_2h1p)
-
-  U1xK_2p1h(:) = matmul(U1_2p1h,K_2p1h_2p1h)
-  U1xK_2h1p(:) = matmul(U1_2h1p,K_2h1p_2h1p)
-
   Sig(p) = Sig(p) &
-         ! 
-!        + dot_product(U1_2p1h,KxU1_2p1h) &
-!        + dot_product(U1_2h1p,KxU1_2h1p) &
-!        ! 
-!        + dot_product(U2_2p1h,KxU1_2p1h) &
-!        + dot_product(U1xK_2p1h,U2_2p1h) &
-!        !
-!        + dot_product(U2_2h1p,KxU1_2h1p) &
-!        + dot_product(U1xK_2h1p,U2_2h1p) &
 
          + dot_product(matmul(U1_2h1p,K_2h1p_2h1p),U1_2h1p) &
-         + dot_product(matmul(U1_2p1h,K_2p1h_2p1h),U1_2p1h) !&
+         + dot_product(matmul(U1_2p1h,K_2p1h_2p1h),U1_2p1h) &
 
-!        + dot_product(matmul(U1_2h1p,K_2h1p_2h1p),U2_2h1p) &
-!        + dot_product(matmul(U1_2p1h,K_2p1h_2p1h),U2_2p1h) &
+         + dot_product(matmul(U1_2h1p,K_2h1p_2h1p),U2_2h1p) &
+         + dot_product(matmul(U1_2p1h,K_2p1h_2p1h),U2_2p1h) &
 
-!        + dot_product(matmul(U2_2h1p,K_2h1p_2h1p),U1_2h1p) &
-!        + dot_product(matmul(U2_2p1h,K_2p1h_2p1h),U1_2p1h) &
+         + dot_product(matmul(U2_2h1p,K_2h1p_2h1p),U1_2h1p) &
+         + dot_product(matmul(U2_2p1h,K_2p1h_2p1h),U1_2p1h) &
 
-!        + dot_product(matmul(U2_2h1p,K_2h1p_2h1p),U2_2h1p) &
-!        + dot_product(matmul(U2_2p1h,K_2p1h_2p1h),U2_2p1h)
+         + dot_product(matmul(U2_2h1p,K_2h1p_2h1p),U2_2h1p) &
+         + dot_product(matmul(U2_2p1h,K_2p1h_2p1h),U2_2p1h)
          !
 !        + dot_product(U1xK_2p1h,matmul(C1_2p1h_2p1h,KxU1_2p1h)) &
 !        + dot_product(U1xK_2h1p,matmul(C1_2h1p_2h1p,KxU1_2h1p)) &
          !
 !        + dot_product(U1xK_2h1p,matmul(C1_2h1p_2p1h,KxU1_2p1h)) &
 !        + dot_product(U1xK_2p1h,matmul(transpose(C1_2h1p_2p1h),KxU1_2h1p))  
-
-  deallocate(KxU1_2p1h,KxU1_2h1p,U1xK_2p1h,U1xK_2h1p)
  
   end do
 

@@ -61,7 +61,7 @@ subroutine R_ADC_2SOSEX_diag(dotest,TDA_W,flow,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,ERH
   double precision,parameter    :: cutoff2 = 0.01d0
   double precision              :: eF
   double precision,parameter    :: window = 2.5d0
-  logical,parameter             :: sigma_inf = .true.
+  logical,parameter             :: sigma_inf = .false.
 
   double precision              :: start_timing,end_timing,timing
 
