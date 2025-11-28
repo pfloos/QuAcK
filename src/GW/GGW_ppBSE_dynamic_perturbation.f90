@@ -118,7 +118,7 @@ subroutine GGW_ppBSE_dynamic_perturbation(dTDA,eta,nOrb,nC,nO,nV,nR,nS,nOO,nVV,e
 
     if(dTDA) then
 
-      call GGW_ppBSE_dynamic_kernel_D(eta,nOrb,nC,nO,nV,nR,nS,nOO,1d0,eGW,OmRPA,rho_RPA,-Om2(ij),KD_dyn,ZD_dyn)
+      call GGW_ppBSE_dynamic_kernel_D(eta,nOrb,nC,nO,nV,nR,nS,nOO,1d0,eGW,OmRPA,rho_RPA,Om2(ij),KD_dyn,ZD_dyn)
  
       Z2_dyn(kl)  = - dot_product(Y2(:,ij),matmul(ZD_dyn,Y2(:,ij)))
       Om2_dyn(kl) = - dot_product(Y2(:,ij),matmul(KD_dyn - KD_sta,Y2(:,ij)))
