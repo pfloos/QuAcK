@@ -46,8 +46,6 @@ subroutine scGW_AO_itau_iw(nBas,nOrb,nO,maxSCF,maxDIIS,dolinGW,restart_scGW,verb
   integer                       :: imax_error_sigma
   integer                       :: imax_error_gw2gt
 
-  double precision              :: start_scGWitauiw     ,end_scGWitauiw       ,t_scGWitauiw
-
   double precision              :: rcond
   double precision              :: rcondP
   double precision              :: alpha_mixing
@@ -63,6 +61,7 @@ subroutine scGW_AO_itau_iw(nBas,nOrb,nO,maxSCF,maxDIIS,dolinGW,restart_scGW,verb
   double precision              :: error_gw2gt
   double precision              :: max_error_gw2gt
   double precision              :: sum_error_gw2gt
+  double precision              :: start_scGWitauiw,end_scGWitauiw,t_scGWitauiw
   double precision,allocatable  :: tweight(:),tcoord(:)
   double precision,allocatable  :: sint2w_weight(:,:)
   double precision,allocatable  :: cost2w_weight(:,:)
@@ -353,7 +352,7 @@ subroutine scGW_AO_itau_iw(nBas,nOrb,nO,maxSCF,maxDIIS,dolinGW,restart_scGW,verb
   Wp_ao_itau=0d0
   do ifreq=1,nfreqs
    ! Xo(i w) -> Wp_ao_iw(i w)
-   Wp_ao_iw(:,:)=-matmul(Real(Chi0_ao_iw(ifreq,:,:)),vMAT(:,:))  
+   Wp_ao_iw(:,:)=-matmul(Real(Chi0_ao_iw(ifreq,:,:)),vMAT(:,:))
    do ibas=1,nBasSq
     Wp_ao_iw(ibas,ibas)=Wp_ao_iw(ibas,ibas)+1d0
    enddo

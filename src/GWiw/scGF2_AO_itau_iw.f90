@@ -47,8 +47,6 @@ subroutine scGF2_AO_itau_iw(nBas,nOrb,nO,maxSCF,maxDIIS,dolinGF2,restart_scGF2,v
   integer                       :: imax_error_sigma
   integer                       :: imax_error_gw2gt
 
-  double precision              :: start_scGF2itauiw     ,end_scGF2itauiw       ,t_scGF2itauiw
-
   double precision              :: rcond
   double precision              :: rcondP
   double precision              :: alpha_mixing
@@ -65,6 +63,7 @@ subroutine scGF2_AO_itau_iw(nBas,nOrb,nO,maxSCF,maxDIIS,dolinGF2,restart_scGF2,v
   double precision              :: error_gw2gt
   double precision              :: max_error_gw2gt
   double precision              :: sum_error_gw2gt
+  double precision              :: start_scGF2itauiw,end_scGF2itauiw,t_scGF2itauiw
   double precision,allocatable  :: tweight(:),tcoord(:)
   double precision,allocatable  :: sint2w_weight(:,:)
   double precision,allocatable  :: cost2w_weight(:,:)
