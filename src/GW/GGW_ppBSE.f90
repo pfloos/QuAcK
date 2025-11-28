@@ -104,14 +104,6 @@ subroutine GGW_ppBSE(TDA_W,TDA,dBSE,dTDA,eta,nOrb,nC,nO,nV,nR,nS,ERI,dipole_int,
   call ppGLR(TDA,nOO,nVV,Bpp,Cpp,Dpp,Om1,X1,Y1,Om2,X2,Y2,EcBSE)
 
   call ppLR_transition_vectors(.true.,nOrb,nC,nO,nV,nR,nOO,nVV,dipole_int,Om1,X1,Y1,Om2,X2,Y2)
-  
-  ! call ppGLR_D(nOrb,nC,nO,nV,nR,nOO,1d0,eGW,ERI,Dpp)
-  ! allocate(ZD_dyn(nOO,nOO))
-  ! call GGW_ppBSE_dynamic_kernel_D(eta,nOrb,nC,nO,nV,nR,nS,nOO,1d0,eGW,OmRPA,rho_RPA,-Om2(45),KD_sta,ZD_dyn)
-  ! Dpp(:,:) = Dpp(:,:) + KD_sta(:,:)
-  ! call ppGLR(TDA,nOO,nVV,Bpp,Cpp,Dpp,Om1,X1,Y1,Om2,X2,Y2,EcBSE)
-
-  ! call ppLR_transition_vectors(.true.,nOrb,nC,nO,nV,nR,nOO,nVV,dipole_int,Om1,X1,Y1,Om2,X2,Y2)
 
   !----------------------------------------------------!
   ! Compute the dynamical screening at the ppBSE level !
@@ -120,6 +112,20 @@ subroutine GGW_ppBSE(TDA_W,TDA,dBSE,dTDA,eta,nOrb,nC,nO,nV,nR,nS,ERI,dipole_int,
   if(dBSE) &
       call GGW_ppBSE_dynamic_perturbation(dTDA,eta,nOrb,nC,nO,nV,nR,nS,nOO,nVV,eW,eGW,ERI,dipole_int,OmRPA,rho_RPA, &
                                           Om1,X1,Y1,Om2,X2,Y2,KB_sta,KC_sta,KD_sta)
+
+  !----------------------------------------------------!
+  !                       Test                         !
+  !----------------------------------------------------!
+  
+  write (*,*) Om2(45)
+  
+  call ppGLR_D(nOrb,nC,nO,nV,nR,nOO,1d0,eGW,ERI,Dpp)
+  allocate(ZD_dyn(nOO,nOO))
+  call GGW_ppBSE_dynamic_kernel_D(eta,nOrb,nC,nO,nV,nR,nS,nOO,1d0,eGW,OmRPA,rho_RPA,Om2(45),KD_sta,ZD_dyn)
+  Dpp(:,:) = Dpp(:,:) + KD_sta(:,:)
+  call ppGLR(TDA,nOO,nVV,Bpp,Cpp,Dpp,Om1,X1,Y1,Om2,X2,Y2,EcBSE)
+
+  call ppLR_transition_vectors(.true.,nOrb,nC,nO,nV,nR,nOO,nVV,dipole_int,Om1,X1,Y1,Om2,X2,Y2)
 
   !----------------!
   ! Upfolded ppBSE !

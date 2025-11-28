@@ -238,10 +238,10 @@ subroutine RG0W0(dotest,doACFDT,exchange_kernel,doXBS,dophBSE,dophBSE2,TDA_W,TDA
 
     call RGW_phBSE(dophBSE2,exchange_kernel,TDA_W,TDA,dBSE,dTDA,singlet,triplet,eta, & 
                    nOrb,nC,nO,nV,nR,nS,ERI,dipole_int,eHF,eGW,EcBSE)
-    call RGW_phBSE_omegazero(dophBSE2,exchange_kernel,TDA_W,TDA,dBSE,dTDA,singlet,triplet,eta, & 
-                   nOrb,nC,nO,nV,nR,nS,ERI,dipole_int,eHF,eGW,EcBSE)
-    call RGW_phBSE_qs(dophBSE2,exchange_kernel,TDA_W,TDA,dBSE,dTDA,singlet,triplet,eta, & 
-                   nOrb,nC,nO,nV,nR,nS,ERI,dipole_int,eHF,eGW,EcBSE)
+    ! call RGW_phBSE_omegazero(dophBSE2,exchange_kernel,TDA_W,TDA,dBSE,dTDA,singlet,triplet,eta, & 
+    !                nOrb,nC,nO,nV,nR,nS,ERI,dipole_int,eHF,eGW,EcBSE)
+    ! call RGW_phBSE_qs(dophBSE2,exchange_kernel,TDA_W,TDA,dBSE,dTDA,singlet,triplet,eta, & 
+    !                nOrb,nC,nO,nV,nR,nS,ERI,dipole_int,eHF,eGW,EcBSE)
 
     write(*,*)
     write(*,*)'-------------------------------------------------------------------------------'
@@ -278,8 +278,8 @@ subroutine RG0W0(dotest,doACFDT,exchange_kernel,doXBS,dophBSE,dophBSE2,TDA_W,TDA
   if(doppBSE) then
 
     call RGW_ppBSE(TDA_W,TDA,dBSE,dTDA,singlet,triplet,eta,nOrb,nC,nO,nV,nR,nS,ERI,dipole_int,eHF,eGW,EcBSE)
-    call RGW_ppBSE_omegazero(TDA_W,TDA,dBSE,dTDA,singlet,triplet,eta,nOrb,nC,nO,nV,nR,nS,ERI,dipole_int,eHF,eGW,EcBSE)
-    call RGW_ppBSE_qs(TDA_W,TDA,dBSE,dTDA,singlet,triplet,eta,nOrb,nC,nO,nV,nR,nS,ERI,dipole_int,eHF,eGW,EcBSE)
+    !call RGW_ppBSE_omegazero(TDA_W,TDA,dBSE,dTDA,singlet,triplet,eta,nOrb,nC,nO,nV,nR,nS,ERI,dipole_int,eHF,eGW,EcBSE)
+    !call RGW_ppBSE_qs(TDA_W,TDA,dBSE,dTDA,singlet,triplet,eta,nOrb,nC,nO,nV,nR,nS,ERI,dipole_int,eHF,eGW,EcBSE)
 
     write(*,*)
     write(*,*)'-------------------------------------------------------------------------------'
