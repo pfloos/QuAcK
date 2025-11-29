@@ -63,17 +63,15 @@ subroutine R_2SOSEX_excitation_density(flow,nOrb,nC,nO,nR,nS,e,Om,ERI,XpY,rho)
 
             num = rho(a,j,m)*ERI(p,j,a,k)
             dem = e(a) - e(j) + Om(m)
-            reg = (1d0 - exp(-2d0*flow*dem**2))
+            reg = (1d0 - exp(-2d0*flow*dem**2))/dem
 
-            w(p,k,m) = w(p,k,m) + num*reg/dem
+            w(p,k,m) = w(p,k,m) + num*reg
 
             num = rho(a,j,m)*ERI(p,a,j,k)
             dem = e(a) - e(j) - Om(m)
-            reg = (1d0 - exp(-2d0*flow*dem**2))
+            reg = (1d0 - exp(-2d0*flow*dem**2))/dem
 
-            w(p,k,m) = w(p,k,m) + num*reg/dem
-
-!           w(p,k,m) = w(p,k,m) + rho(a,j,m)*(ERI(p,j,a,k)/(e(a) - e(j) + Om(m)) + ERI(p,a,j,k)/(e(a) - e(j) - Om(m)))
+            w(p,k,m) = w(p,k,m) + num*reg
 
           end do
         end do
@@ -91,17 +89,15 @@ subroutine R_2SOSEX_excitation_density(flow,nOrb,nC,nO,nR,nS,e,Om,ERI,XpY,rho)
 
             num = rho(a,j,m)*ERI(p,j,a,c)
             dem = e(a) - e(j) - Om(m)
-            reg = (1d0 - exp(-2d0*flow*dem**2))
+            reg = (1d0 - exp(-2d0*flow*dem**2))/dem
 
-            w(p,c,m) = w(p,c,m) + num*reg/dem
+            w(p,c,m) = w(p,c,m) + num*reg
 
             num = rho(a,j,m)*ERI(p,a,j,c)
             dem = e(a) - e(j) + Om(m)
-            reg = (1d0 - exp(-2d0*flow*dem**2))
+            reg = (1d0 - exp(-2d0*flow*dem**2))/dem
 
-            w(p,c,m) = w(p,c,m) + num*reg/dem
-
-!           w(p,c,m) = w(p,c,m) + rho(a,j,m)*(ERI(p,j,a,c)/(e(a) - e(j) - Om(m)) + ERI(p,a,j,c)/(e(a) - e(j) + Om(m)))
+            w(p,c,m) = w(p,c,m) + num*reg
 
           end do
         end do

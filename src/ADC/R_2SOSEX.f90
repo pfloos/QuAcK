@@ -113,9 +113,6 @@ subroutine R_2SOSEX(dotest,TDA_W,singlet,triplet,linearize,eta,doSRG,nBas,nOrb,n
 
     call RGW_self_energy_diag(eta,nBas,nOrb,nC,nO,nV,nR,nS,eHF,Om,rho,EcGM,SigC,Z)
 
-    print*,'2SOSEX self-energy'
-    call vecout(nOrb,SigC)
-
   end if
   
 !-----------------------------------!

@@ -487,4 +487,6 @@ subroutine R_G3W2_self_energy_diag(eta,nBas,nOrb,nC,nO,nV,nR,nS,e,Om,rho,ERI,EcG
   print*,'Standard form of the self-energy'
   call vecout(nOrb,Sig)
 
+  call vecout(nOrb,Z)
+
 end subroutine 
