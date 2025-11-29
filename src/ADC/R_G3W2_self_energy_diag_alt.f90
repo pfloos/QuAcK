@@ -39,17 +39,23 @@ subroutine R_G3W2_self_energy_diag_alt(eta,nBas,nOrb,nC,nO,nV,nR,nS,eHF,Om,rho,E
   double precision,allocatable  :: C1_2h1p_2p1h(:,:)
   double precision,allocatable  :: K_2h1p_2h1p(:,:)
   double precision,allocatable  :: K_2p1h_2p1h(:,:)
+  double precision,allocatable  :: dK_2h1p_2h1p(:,:)
+  double precision,allocatable  :: dK_2p1h_2p1h(:,:)
   double precision,allocatable  :: U1_2h1p(:)
   double precision,allocatable  :: U1_2p1h(:)
   double precision,allocatable  :: U2_2h1p(:)
   double precision,allocatable  :: U2_2p1h(:)
   double precision,allocatable  :: KxU1_2h1p(:)
   double precision,allocatable  :: KxU1_2p1h(:)
+  double precision,allocatable  :: dKxU1_2h1p(:)
+  double precision,allocatable  :: dKxU1_2p1h(:)
   double precision,allocatable  :: U1xK_2h1p(:)
   double precision,allocatable  :: U1xK_2p1h(:)
+  double precision,allocatable  :: U1xdK_2h1p(:)
+  double precision,allocatable  :: U1xdK_2p1h(:)
 
 
-  double precision              :: flow = 100000d0
+  double precision              :: flow = huge(1d0)
 
 ! Output variables
 
@@ -75,6 +81,9 @@ subroutine R_G3W2_self_energy_diag_alt(eta,nBas,nOrb,nC,nO,nV,nR,nS,eHF,Om,rho,E
   
   allocate(K_2h1p_2h1p(n2h1p,n2h1p))
   allocate(K_2p1h_2p1h(n2p1h,n2p1h))
+  
+  allocate(dK_2h1p_2h1p(n2h1p,n2h1p))
+  allocate(dK_2p1h_2p1h(n2p1h,n2p1h))
   
   allocate(U1_2h1p(n2h1p))
   allocate(U1_2p1h(n2p1h))
@@ -232,7 +241,7 @@ subroutine R_G3W2_self_energy_diag_alt(eta,nBas,nOrb,nC,nO,nV,nR,nS,eHF,Om,rho,E
             reg3 = (1d0 - exp(-2d0*flow*dem3*dem3))/dem3
 
             Sig(p) = Sig(p) + num1*num2*reg1*reg2*reg3
-            Z(p)   = Z(p)   - num1*num2*reg1*reg2*reg3/(dem1*dem2*dem3)
+            Z(p)   = Z(p)   - num1*num2*reg1*reg2*reg3/dem2
 
          end do
          end do
@@ -259,7 +268,7 @@ subroutine R_G3W2_self_energy_diag_alt(eta,nBas,nOrb,nC,nO,nV,nR,nS,eHF,Om,rho,E
             reg3 = (1d0 - exp(-2d0*flow*dem3*dem3))/dem3
 
             Sig(p) = Sig(p) + num1*num2*reg1*reg2*reg3
-            Z(p)   = Z(p)   - num1*num2*reg1*reg2*reg3/(dem1*dem2*dem3)
+            Z(p)   = Z(p)   - num1*num2*reg1*reg2*reg3/dem2
 
          end do
          end do
@@ -511,13 +520,11 @@ subroutine R_G3W2_self_energy_diag_alt(eta,nBas,nOrb,nC,nO,nV,nR,nS,eHF,Om,rho,E
            + 2d0*dot_product(U1xK_2h1p,matmul(C1_2h1p_2p1h,KxU1_2p1h)) &
            + 2d0*dot_product(U1xK_2p1h,matmul(transpose(C1_2h1p_2p1h),KxU1_2h1p))
 
-    deallocate(U1xK_2h1p,U1xK_2p1h,KxU1_2h1p,KxU1_2p1h)
-
     !-------------------!
     ! Block K_2h1p-2h1p !
     !-------------------!
 
-    K_2h1p_2h1p(:,:) = 0d0
+    dK_2h1p_2h1p(:,:) = 0d0
 
     ija = 0
     do i=nC+1,nO
@@ -526,7 +533,7 @@ subroutine R_G3W2_self_energy_diag_alt(eta,nBas,nOrb,nC,nO,nV,nR,nS,eHF,Om,rho,E
 
         ! Zeroth-order terms
    
-        K_2h1p_2h1p(ija,ija) = - 1d0/(w - eHF(i) + Om(mu))**2
+        dK_2h1p_2h1p(ija,ija) = - 1d0/(w - eHF(i) + Om(mu))**2
 
       end do
     end do
@@ -535,7 +542,7 @@ subroutine R_G3W2_self_energy_diag_alt(eta,nBas,nOrb,nC,nO,nV,nR,nS,eHF,Om,rho,E
     ! Block K_2p1h-2p1h !
     !-------------------!
 
-    K_2p1h_2p1h(:,:) = 0d0
+    dK_2p1h_2p1h(:,:) = 0d0
 
     iab = 0
     do a=nO+1,nOrb-nR
@@ -544,36 +551,43 @@ subroutine R_G3W2_self_energy_diag_alt(eta,nBas,nOrb,nC,nO,nV,nR,nS,eHF,Om,rho,E
 
         ! Zeroth-order terms
 
-        K_2p1h_2p1h(iab,iab) = - 1d0/(w - eHF(a) - Om(mu))**2
+        dK_2p1h_2p1h(iab,iab) = - 1d0/(w - eHF(a) - Om(mu))**2
 
       end do
     end do
 
-    allocate(U1xK_2h1p(n2h1p),U1xK_2p1h(n2p1h),KxU1_2h1p(n2h1p),KxU1_2p1h(n2p1h))
+    allocate(U1xdK_2h1p(n2h1p),U1xdK_2p1h(n2p1h),dKxU1_2h1p(n2h1p),dKxU1_2p1h(n2p1h))
 
-    U1xK_2h1p = matmul(U1_2h1p,K_2h1p_2h1p)
-    U1xK_2p1h = matmul(U1_2p1h,K_2p1h_2p1h)
-    KxU1_2h1p = matmul(K_2h1p_2h1p,U1_2h1p)
-    KxU1_2p1h = matmul(K_2p1h_2p1h,U1_2p1h)
+    U1xdK_2h1p = matmul(U1_2h1p,dK_2h1p_2h1p)
+    U1xdK_2p1h = matmul(U1_2p1h,dK_2p1h_2p1h)
+    dKxU1_2h1p = matmul(dK_2h1p_2h1p,U1_2h1p)
+    dKxU1_2p1h = matmul(dK_2p1h_2p1h,U1_2p1h)
 
     Z(p) = Z(p) &
  
-         + dot_product(U1xK_2h1p,U1_2h1p) &
-         + dot_product(U1xK_2p1h,U1_2p1h) &
+         + dot_product(U1xdK_2h1p,U1_2h1p) &
+         + dot_product(U1xdK_2p1h,U1_2p1h) &
  
-         + dot_product(U1xK_2h1p,U2_2h1p) &
-         + dot_product(U1xK_2p1h,U2_2p1h) &
+         + dot_product(U1xdK_2h1p,U2_2h1p) &
+         + dot_product(U1xdK_2p1h,U2_2p1h) &
  
-         + dot_product(U2_2h1p,KxU1_2h1p) &
-         + dot_product(U2_2p1h,KxU1_2p1h) &
+         + dot_product(U2_2h1p,dKxU1_2h1p) &
+         + dot_product(U2_2p1h,dKxU1_2p1h) &
          
-         + 2d0*dot_product(U1xK_2p1h,matmul(C1_2p1h_2p1h,KxU1_2p1h)) &
-         + 2d0*dot_product(U1xK_2h1p,matmul(C1_2h1p_2h1p,KxU1_2h1p)) &
+         + 2d0*dot_product(U1xdK_2p1h,matmul(C1_2p1h_2p1h,KxU1_2p1h)) &
+         + 2d0*dot_product(U1xdK_2h1p,matmul(C1_2h1p_2h1p,KxU1_2h1p)) &
           
-         + 2d0*dot_product(U1xK_2h1p,matmul(C1_2h1p_2p1h,KxU1_2p1h)) &
-         + 2d0*dot_product(U1xK_2p1h,matmul(transpose(C1_2h1p_2p1h),KxU1_2h1p))
+         + 2d0*dot_product(U1xdK_2h1p,matmul(C1_2h1p_2p1h,KxU1_2p1h)) &
+         + 2d0*dot_product(U1xdK_2p1h,matmul(transpose(C1_2h1p_2p1h),KxU1_2h1p)) &
+
+         + 2d0*dot_product(U1xK_2p1h,matmul(C1_2p1h_2p1h,dKxU1_2p1h)) &
+         + 2d0*dot_product(U1xK_2h1p,matmul(C1_2h1p_2h1p,dKxU1_2h1p)) &
+          
+         + 2d0*dot_product(U1xK_2h1p,matmul(C1_2h1p_2p1h,dKxU1_2p1h)) &
+         + 2d0*dot_product(U1xK_2p1h,matmul(transpose(C1_2h1p_2p1h),dKxU1_2h1p))
 
     deallocate(U1xK_2h1p,U1xK_2p1h,KxU1_2h1p,KxU1_2p1h)
+    deallocate(U1xdK_2h1p,U1xdK_2p1h,dKxU1_2h1p,dKxU1_2p1h)
  
   end do
 
