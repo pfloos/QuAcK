@@ -49,7 +49,7 @@ subroutine R_G3W2_self_energy_diag_alt(eta,nBas,nOrb,nC,nO,nV,nR,nS,eHF,Om,rho,E
   double precision,allocatable  :: U1xK_2p1h(:)
 
 
-  double precision              :: flow = 500d0
+  double precision              :: flow = 100000d0
 
 ! Output variables
 
@@ -505,11 +505,11 @@ subroutine R_G3W2_self_energy_diag_alt(eta,nBas,nOrb,nC,nO,nV,nR,nS,eHF,Om,rho,E
            + dot_product(U2_2h1p,KxU1_2h1p) &
            + dot_product(U2_2p1h,KxU1_2p1h) &
            
-           + dot_product(U1xK_2p1h,matmul(C1_2p1h_2p1h,KxU1_2p1h)) &
-           + dot_product(U1xK_2h1p,matmul(C1_2h1p_2h1p,KxU1_2h1p)) &
+           + 2d0*dot_product(U1xK_2p1h,matmul(C1_2p1h_2p1h,KxU1_2p1h)) &
+           + 2d0*dot_product(U1xK_2h1p,matmul(C1_2h1p_2h1p,KxU1_2h1p)) &
             
-           + dot_product(U1xK_2h1p,matmul(C1_2h1p_2p1h,KxU1_2p1h)) &
-           + dot_product(U1xK_2p1h,matmul(transpose(C1_2h1p_2p1h),KxU1_2h1p))
+           + 2d0*dot_product(U1xK_2h1p,matmul(C1_2h1p_2p1h,KxU1_2p1h)) &
+           + 2d0*dot_product(U1xK_2p1h,matmul(transpose(C1_2h1p_2p1h),KxU1_2h1p))
 
     deallocate(U1xK_2h1p,U1xK_2p1h,KxU1_2h1p,KxU1_2p1h)
 
@@ -565,13 +565,13 @@ subroutine R_G3W2_self_energy_diag_alt(eta,nBas,nOrb,nC,nO,nV,nR,nS,eHF,Om,rho,E
          + dot_product(U1xK_2p1h,U2_2p1h) &
  
          + dot_product(U2_2h1p,KxU1_2h1p) &
-         + dot_product(U2_2p1h,KxU1_2p1h) !&
+         + dot_product(U2_2p1h,KxU1_2p1h) &
          
-!        + dot_product(U1xK_2p1h,matmul(C1_2p1h_2p1h,KxU1_2p1h)) &
-!        + dot_product(U1xK_2h1p,matmul(C1_2h1p_2h1p,KxU1_2h1p)) &
+         + 2d0*dot_product(U1xK_2p1h,matmul(C1_2p1h_2p1h,KxU1_2p1h)) &
+         + 2d0*dot_product(U1xK_2h1p,matmul(C1_2h1p_2h1p,KxU1_2h1p)) &
           
-!        + dot_product(U1xK_2h1p,matmul(C1_2h1p_2p1h,KxU1_2p1h)) &
-!        + dot_product(U1xK_2p1h,matmul(transpose(C1_2h1p_2p1h),KxU1_2h1p))
+         + 2d0*dot_product(U1xK_2h1p,matmul(C1_2h1p_2p1h,KxU1_2p1h)) &
+         + 2d0*dot_product(U1xK_2p1h,matmul(transpose(C1_2h1p_2p1h),KxU1_2h1p))
 
     deallocate(U1xK_2h1p,U1xK_2p1h,KxU1_2h1p,KxU1_2p1h)
  
