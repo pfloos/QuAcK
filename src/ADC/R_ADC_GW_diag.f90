@@ -1,4 +1,4 @@
-subroutine R_ADC_GW_diag(dotest,TDA_W,flow,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,eHF)
+subroutine R_ADC_GW_diag(dotest,sig_inf,TDA_W,flow,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,eHF)
 
 ! ADC version of GW within the diagonal approximation
 
@@ -9,6 +9,7 @@ subroutine R_ADC_GW_diag(dotest,TDA_W,flow,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,ERHF,ER
 
   logical,intent(in)            :: dotest
 
+  logical,intent(in)            :: sig_inf
   logical,intent(in)            :: TDA_W
   double precision,intent(in)   :: flow
   integer,intent(in)            :: nBas
@@ -59,7 +60,6 @@ subroutine R_ADC_GW_diag(dotest,TDA_W,flow,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,ERHF,ER
   double precision,parameter    :: cutoff2 = 0.01d0
   double precision              :: eF
   double precision,parameter    :: window = 2.5d0
-  logical,parameter             :: sigma_inf = .true.
 
   double precision              :: start_timing,end_timing,timing
 
@@ -128,7 +128,7 @@ subroutine R_ADC_GW_diag(dotest,TDA_W,flow,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,ERHF,ER
   allocate(F(nOrb,nOrb))
   F(:,:) = 0d0
 
-  if(sigma_inf) then
+  if(sig_inf) then
 
     allocate(DM(nOrb,nOrb),Vh(nOrb,nOrb),Vx(nOrb,nOrb))
 
