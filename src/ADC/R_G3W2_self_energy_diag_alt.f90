@@ -110,13 +110,13 @@ subroutine R_G3W2_self_energy_diag_alt(eta,nBas,nOrb,nC,nO,nV,nR,nS,eHF,Om,rho,E
      
           do r=nC+1,nOrb-nR
 
-            num = 0.5d0*rho(k,r,mu)*rho(i,r,nu)
+            num = rho(k,r,mu)*rho(i,r,nu)
             dem = eHF(i) - eHF(r) + Om(nu)
             reg = (1d0 - exp(-2d0*flow*dem*dem))/dem
            
             C1_2h1p_2h1p(ija,klc) = C1_2h1p_2h1p(ija,klc) + num*reg
            
-            num = 0.5d0*rho(k,r,mu)*rho(i,r,nu)
+            num = rho(k,r,mu)*rho(i,r,nu)
             dem = eHF(k) - eHF(r) + Om(mu)
             reg = (1d0 - exp(-2d0*flow*dem*dem))/dem
            
@@ -150,13 +150,13 @@ subroutine R_G3W2_self_energy_diag_alt(eta,nBas,nOrb,nC,nO,nV,nR,nS,eHF,Om,rho,E
      
           do r=nC+1,nOrb-nR
 
-            num = 0.5d0*rho(r,c,mu)*rho(r,a,nu)
+            num = rho(r,c,mu)*rho(r,a,nu)
             dem = eHF(c) - eHF(r) - Om(mu)
             reg = (1d0 - exp(-2d0*flow*dem*dem))/dem
            
             C1_2p1h_2p1h(iab,kcd) = C1_2p1h_2p1h(iab,kcd) + num*reg
            
-            num = 0.5d0*rho(r,c,mu)*rho(r,a,nu)
+            num = rho(r,c,mu)*rho(r,a,nu)
             dem = eHF(a) - eHF(r) - Om(nu)
             reg = (1d0 - exp(-2d0*flow*dem*dem))/dem
            
@@ -190,7 +190,7 @@ subroutine R_G3W2_self_energy_diag_alt(eta,nBas,nOrb,nC,nO,nV,nR,nS,eHF,Om,rho,E
     
           do k=nC+1,nO
 
-            num = 1d0*rho(k,i,nu)*rho(a,k,mu)
+            num = 2d0*rho(k,i,mu)*rho(a,k,nu)
             dem = eHF(a) - eHF(k) + Om(nu)
             reg = (1d0 - exp(-2d0*flow*dem*dem))/dem
            
@@ -200,7 +200,7 @@ subroutine R_G3W2_self_energy_diag_alt(eta,nBas,nOrb,nC,nO,nV,nR,nS,eHF,Om,rho,E
          
           do c=nO+1,nOrb-nR
 
-            num = 1d0*rho(a,c,nu)*rho(c,i,mu)
+            num = 2d0*rho(a,c,mu)*rho(c,i,nu)
             dem = eHF(i) - eHF(c) - Om(mu)
             reg = (1d0 - exp(-2d0*flow*dem*dem))/dem
           
@@ -230,11 +230,11 @@ subroutine R_G3W2_self_energy_diag_alt(eta,nBas,nOrb,nC,nO,nV,nR,nS,eHF,Om,rho,E
           do r=nC+1,nOrb-nR
           do s=nC+1,nOrb-nR
 
-            num1 = 2d0*rho(p,r,mu)*rho(r,i,nu)
+            num1 = 2d0*rho(r,i,mu)*rho(p,r,nu)
             num2 = 2d0*rho(s,i,mu)*rho(p,s,nu)
-            dem1 = eHF(i) - eHF(r) - Om(nu)
+            dem1 = eHF(r) - eHF(i) + Om(nu)
             dem2 = w - eHF(i) + Om(nu) + Om(mu)
-            dem3 = eHF(i) - eHF(s) - Om(mu)
+            dem3 = eHF(s) - eHF(i) + Om(mu)
 
             reg1 = (1d0 - exp(-2d0*flow*dem1*dem1))/dem1
             reg2 = (1d0 - exp(-2d0*flow*dem2*dem2))/dem2
@@ -513,12 +513,12 @@ subroutine R_G3W2_self_energy_diag_alt(eta,nBas,nOrb,nC,nO,nV,nR,nS,eHF,Om,rho,E
  
            + dot_product(U2_2h1p,KxU1_2h1p) &
            + dot_product(U2_2p1h,KxU1_2p1h) &
-           
-           + 2d0*dot_product(U1xK_2p1h,matmul(C1_2p1h_2p1h,KxU1_2p1h)) &
-           + 2d0*dot_product(U1xK_2h1p,matmul(C1_2h1p_2h1p,KxU1_2h1p)) &
+ 
+           + dot_product(U1xK_2p1h,matmul(C1_2p1h_2p1h,KxU1_2p1h)) &
+           + dot_product(U1xK_2h1p,matmul(C1_2h1p_2h1p,KxU1_2h1p)) &
             
-           + 2d0*dot_product(U1xK_2h1p,matmul(C1_2h1p_2p1h,KxU1_2p1h)) &
-           + 2d0*dot_product(U1xK_2p1h,matmul(transpose(C1_2h1p_2p1h),KxU1_2h1p))
+           + dot_product(U1xK_2h1p,matmul(C1_2h1p_2p1h,KxU1_2p1h)) &
+           + dot_product(U1xK_2p1h,matmul(transpose(C1_2h1p_2p1h),KxU1_2h1p))
 
     !-------------------!
     ! Block K_2h1p-2h1p !
@@ -574,17 +574,17 @@ subroutine R_G3W2_self_energy_diag_alt(eta,nBas,nOrb,nC,nO,nV,nR,nS,eHF,Om,rho,E
          + dot_product(U2_2h1p,dKxU1_2h1p) &
          + dot_product(U2_2p1h,dKxU1_2p1h) &
          
-         + 2d0*dot_product(U1xdK_2p1h,matmul(C1_2p1h_2p1h,KxU1_2p1h)) &
-         + 2d0*dot_product(U1xdK_2h1p,matmul(C1_2h1p_2h1p,KxU1_2h1p)) &
+         + dot_product(U1xdK_2p1h,matmul(C1_2p1h_2p1h,KxU1_2p1h)) &
+         + dot_product(U1xdK_2h1p,matmul(C1_2h1p_2h1p,KxU1_2h1p)) &
           
-         + 2d0*dot_product(U1xdK_2h1p,matmul(C1_2h1p_2p1h,KxU1_2p1h)) &
-         + 2d0*dot_product(U1xdK_2p1h,matmul(transpose(C1_2h1p_2p1h),KxU1_2h1p)) &
+         + dot_product(U1xdK_2h1p,matmul(C1_2h1p_2p1h,KxU1_2p1h)) &
+         + dot_product(U1xdK_2p1h,matmul(transpose(C1_2h1p_2p1h),KxU1_2h1p)) &
 
-         + 2d0*dot_product(U1xK_2p1h,matmul(C1_2p1h_2p1h,dKxU1_2p1h)) &
-         + 2d0*dot_product(U1xK_2h1p,matmul(C1_2h1p_2h1p,dKxU1_2h1p)) &
+         + dot_product(U1xK_2p1h,matmul(C1_2p1h_2p1h,dKxU1_2p1h)) &
+         + dot_product(U1xK_2h1p,matmul(C1_2h1p_2h1p,dKxU1_2h1p)) &
           
-         + 2d0*dot_product(U1xK_2h1p,matmul(C1_2h1p_2p1h,dKxU1_2p1h)) &
-         + 2d0*dot_product(U1xK_2p1h,matmul(transpose(C1_2h1p_2p1h),dKxU1_2h1p))
+         + dot_product(U1xK_2h1p,matmul(C1_2h1p_2p1h,dKxU1_2p1h)) &
+         + dot_product(U1xK_2p1h,matmul(transpose(C1_2h1p_2p1h),dKxU1_2h1p))
 
     deallocate(U1xK_2h1p,U1xK_2p1h,KxU1_2h1p,KxU1_2p1h)
     deallocate(U1xdK_2h1p,U1xdK_2p1h,dKxU1_2h1p,dKxU1_2p1h)
