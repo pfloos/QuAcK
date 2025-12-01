@@ -447,13 +447,13 @@ subroutine R_ADC4_G3W2_diag(dotest,sig_inf,TDA_W,flow,nBas,nOrb,nC,nO,nV,nR,nS,E
          
               do r=nC+1,nOrb-nR
 
-                num = 0.5d0*rho(k,r,mu)*rho(i,r,nu)
+                num = rho(k,r,mu)*rho(i,r,nu)
                 dem = eHF(i) - eHF(r) + Om(nu)
                 reg = (1d0 - exp(-2d0*flow*dem*dem))/dem
                
                 H(1+ija,1+klc) = H(1+ija,1+klc) + num*reg
                
-                num = 0.5d0*rho(k,r,mu)*rho(i,r,nu)
+                num = rho(k,r,mu)*rho(i,r,nu)
                 dem = eHF(k) - eHF(r) + Om(mu)
                 reg = (1d0 - exp(-2d0*flow*dem*dem))/dem
                
@@ -489,13 +489,13 @@ subroutine R_ADC4_G3W2_diag(dotest,sig_inf,TDA_W,flow,nBas,nOrb,nC,nO,nV,nR,nS,E
          
               do r=nC+1,nOrb-nR
 
-                num = 0.5d0*rho(r,c,mu)*rho(r,a,nu)
+                num = rho(r,c,mu)*rho(r,a,nu)
                 dem = eHF(c) - eHF(r) - Om(mu)
                 reg = (1d0 - exp(-2d0*flow*dem*dem))/dem
                
                 H(1+n2h1p+iab,1+n2h1p+kcd) = H(1+n2h1p+iab,1+n2h1p+kcd) + num*reg
                
-                num = 0.5d0*rho(r,c,mu)*rho(r,a,nu)
+                num = rho(r,c,mu)*rho(r,a,nu)
                 dem = eHF(a) - eHF(r) - Om(nu)
                 reg = (1d0 - exp(-2d0*flow*dem*dem))/dem
                
@@ -527,7 +527,7 @@ subroutine R_ADC4_G3W2_diag(dotest,sig_inf,TDA_W,flow,nBas,nOrb,nC,nO,nV,nR,nS,E
         
               do k=nC+1,nO
 
-                num = 1d0*rho(k,i,nu)*rho(a,k,mu)
+                num = 2d0*rho(k,i,nu)*rho(a,k,mu)
                 dem = eHF(a) - eHF(k) + Om(nu)
                 reg = (1d0 - exp(-2d0*flow*dem*dem))/dem
                
@@ -540,7 +540,7 @@ subroutine R_ADC4_G3W2_diag(dotest,sig_inf,TDA_W,flow,nBas,nOrb,nC,nO,nV,nR,nS,E
              
               do c=nO+1,nOrb-nR
 
-                num = 1d0*rho(a,c,nu)*rho(c,i,mu)
+                num = 2d0*rho(a,c,nu)*rho(c,i,mu)
                 dem = eHF(i) - eHF(c) - Om(mu)
                 reg = (1d0 - exp(-2d0*flow*dem*dem))/dem
               
