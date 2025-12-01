@@ -38,7 +38,7 @@ subroutine diagonalize_general_matrix_LR(N,A,WR,VL,VR)
     vl(:,i) = vl(:,i)/tmp
   end do
 
-  call matout(N,N,matmul(transpose(VL),VR))
+  !call matout(N,N,matmul(transpose(VL),VR))
 
   deallocate(work,WI)
 

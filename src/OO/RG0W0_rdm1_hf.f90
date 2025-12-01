@@ -19,6 +19,6 @@ rdm1(:,:) = 0d0
 
 ! Occupied
 do i=1,O
-  rdm1(i,i) = rdm1(i,i) + 2d0 ! HF contribution
+  rdm1(i,i) = 2d0 ! HF contribution
 end do
 end subroutine
