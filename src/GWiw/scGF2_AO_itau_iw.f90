@@ -47,8 +47,6 @@ subroutine scGF2_AO_itau_iw(nBas,nOrb,nO,maxSCF,maxDIIS,dolinGF2,restart_scGF2,v
   integer                       :: imax_error_sigma
   integer                       :: imax_error_gw2gt
 
-  double precision              :: start_scGF2itauiw     ,end_scGF2itauiw       ,t_scGF2itauiw
-
   double precision              :: rcond
   double precision              :: rcondP
   double precision              :: alpha_mixing
@@ -65,6 +63,7 @@ subroutine scGF2_AO_itau_iw(nBas,nOrb,nO,maxSCF,maxDIIS,dolinGF2,restart_scGF2,v
   double precision              :: error_gw2gt
   double precision              :: max_error_gw2gt
   double precision              :: sum_error_gw2gt
+  double precision              :: start_scGF2itauiw,end_scGF2itauiw,t_scGF2itauiw
   double precision,allocatable  :: tweight(:),tcoord(:)
   double precision,allocatable  :: sint2w_weight(:,:)
   double precision,allocatable  :: cost2w_weight(:,:)
@@ -229,10 +228,10 @@ subroutine scGF2_AO_itau_iw(nBas,nOrb,nO,maxSCF,maxDIIS,dolinGF2,restart_scGF2,v
    trace_1_rdm=trace_1_rdm+P_ao(ibas,jbas)*S(ibas,jbas)
    do kbas=1,nBas
     do lbas=1,nBas
-     F_ao(ibas,jbas)=F_ao(ibas,jbas)+P_ao(kbas,lbas)*vMAT(1+(lbas-1)+(kbas-1)*nBas,1+(jbas-1)+(ibas-1)*nBas) &
-                    -0.5d0*P_ao(kbas,lbas)*vMAT(1+(jbas-1)+(kbas-1)*nBas,1+(lbas-1)+(ibas-1)*nBas)
-     Ehfl=Ehfl+0.5d0*P_ao(kbas,lbas)*P_ao(ibas,jbas)*vMAT(1+(lbas-1)+(kbas-1)*nBas,1+(jbas-1)+(ibas-1)*nBas) &
-         -0.25d0*P_ao(kbas,lbas)*P_ao(ibas,jbas)*vMAT(1+(jbas-1)+(kbas-1)*nBas,1+(lbas-1)+(ibas-1)*nBas)
+     F_ao(ibas,jbas)=F_ao(ibas,jbas)+P_ao(kbas,lbas)*ERI_AO(kbas,ibas,lbas,jbas) &
+                    -0.5d0*P_ao(kbas,lbas)*ERI_AO(kbas,ibas,jbas,lbas)
+     Ehfl=Ehfl+0.5d0*P_ao(kbas,lbas)*P_ao(ibas,jbas)*ERI_AO(kbas,ibas,lbas,jbas) &
+         -0.25d0*P_ao(kbas,lbas)*P_ao(ibas,jbas)*ERI_AO(kbas,ibas,jbas,lbas)
     enddo
    enddo
   enddo
@@ -324,7 +323,7 @@ subroutine scGF2_AO_itau_iw(nBas,nOrb,nO,maxSCF,maxDIIS,dolinGF2,restart_scGF2,v
  do
   iter=iter+1
 
-  ! Build Sigma_c(i w) [Eqs. 12-18 in PRB, 109, 255101 (2024)] (for the M^8 algorithm see at the end of this file)
+  ! Build Sigma_c(i w) [Eqs. 12-18 in PRB, 109, 255101 (2024)]
   ! and compute Galitskii-Migdal Ec energy using the time grid
   EcGM_itau=czero
   Sigma_c_w_ao=czero

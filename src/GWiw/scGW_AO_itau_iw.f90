@@ -46,8 +46,6 @@ subroutine scGW_AO_itau_iw(nBas,nOrb,nO,maxSCF,maxDIIS,dolinGW,restart_scGW,verb
   integer                       :: imax_error_sigma
   integer                       :: imax_error_gw2gt
 
-  double precision              :: start_scGWitauiw     ,end_scGWitauiw       ,t_scGWitauiw
-
   double precision              :: rcond
   double precision              :: rcondP
   double precision              :: alpha_mixing
@@ -63,6 +61,7 @@ subroutine scGW_AO_itau_iw(nBas,nOrb,nO,maxSCF,maxDIIS,dolinGW,restart_scGW,verb
   double precision              :: error_gw2gt
   double precision              :: max_error_gw2gt
   double precision              :: sum_error_gw2gt
+  double precision              :: start_scGWitauiw,end_scGWitauiw,t_scGWitauiw
   double precision,allocatable  :: tweight(:),tcoord(:)
   double precision,allocatable  :: sint2w_weight(:,:)
   double precision,allocatable  :: cost2w_weight(:,:)
@@ -353,7 +352,7 @@ subroutine scGW_AO_itau_iw(nBas,nOrb,nO,maxSCF,maxDIIS,dolinGW,restart_scGW,verb
   Wp_ao_itau=0d0
   do ifreq=1,nfreqs
    ! Xo(i w) -> Wp_ao_iw(i w)
-   Wp_ao_iw(:,:)=-matmul(Real(Chi0_ao_iw(ifreq,:,:)),vMAT(:,:))  
+   Wp_ao_iw(:,:)=-matmul(Real(Chi0_ao_iw(ifreq,:,:)),vMAT(:,:))
    do ibas=1,nBasSq
     Wp_ao_iw(ibas,ibas)=Wp_ao_iw(ibas,ibas)+1d0
    enddo
@@ -400,16 +399,16 @@ subroutine scGW_AO_itau_iw(nBas,nOrb,nO,maxSCF,maxDIIS,dolinGW,restart_scGW,verb
                             + 0.5d0*sint2w_weight(ifreq,itau)*Sigma_c_s(:,:)
    enddo
    ! Galitskii-Migdal energy [ PRB, 80, 041103R (2009) ]
-   ! tau > 0
-   Mat_ao_tmp=matmul(Sigma_c_minus,G_plus_itau)
-   do ibas=1,nBas
-    EcGM_itau=EcGM_itau+tweight(itau)*Mat_ao_tmp(ibas,ibas)
-   enddo
-   ! tau < 0
-   Mat_ao_tmp=matmul(Sigma_c_plus,G_minus_itau)
-   do ibas=1,nBas
-    EcGM_itau=EcGM_itau+tweight(itau)*Mat_ao_tmp(ibas,ibas)
-   enddo
+    ! tau > 0
+    Mat_ao_tmp=matmul(Sigma_c_minus,G_plus_itau)
+    do ibas=1,nBas
+     EcGM_itau=EcGM_itau+tweight(itau)*Mat_ao_tmp(ibas,ibas)
+    enddo
+    ! tau < 0
+    Mat_ao_tmp=matmul(Sigma_c_plus,G_minus_itau)
+    do ibas=1,nBas
+     EcGM_itau=EcGM_itau+tweight(itau)*Mat_ao_tmp(ibas,ibas)
+    enddo
   enddo
   EcGM=-real(EcGM_itau) ! Including a factor 2 to sum over spin-channels  EcGM = - 1/2 \sum_spin \int Tr[ Sigma_c_spin(-it) G_spin(it) ] dt
                         !                                                      = - \int Tr[ Sigma_c_up(-it) G_up(it) ] dt for restricted calcs.
