@@ -1,4 +1,4 @@
-subroutine R_ADC4_G3W2(dotest,TDA_W,flow,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,eHF)
+subroutine R_ADC4_G3W2(dotest,sig_inf,TDA_W,flow,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,eHF)
 
 ! ADC(4) version of G3W2
 
@@ -9,6 +9,7 @@ subroutine R_ADC4_G3W2(dotest,TDA_W,flow,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,
 
   logical,intent(in)            :: dotest
 
+  logical,intent(in)            :: sig_inf
   logical,intent(in)            :: TDA_W
   double precision,intent(in)   :: flow
   integer,intent(in)            :: nBas
@@ -63,6 +64,7 @@ subroutine R_ADC4_G3W2(dotest,TDA_W,flow,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,
 
   integer                       :: nIt,maxIt
   integer,allocatable           :: idx(:)
+  integer,allocatable           :: order(:)
   double precision,allocatable  :: err(:),eOld(:)
   double precision              :: w,thresh,Conv
 
@@ -85,7 +87,7 @@ subroutine R_ADC4_G3W2(dotest,TDA_W,flow,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,
 ! Memory allocation
 
   allocate(H(nH,nH),eGW(nH),Z(nH),Reigv(nH,nH))
-  allocate(idx(nOrb),err(nOrb),eOld(nOrb))
+  allocate(idx(nOrb),err(nOrb),eOld(nOrb),order(nH))
 
 ! Initialization
 
@@ -419,27 +421,28 @@ subroutine R_ADC4_G3W2(dotest,TDA_W,flow,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,
       end do
     end do
 
+    do s=1,nH
+      order(s) = s
+    end do                      
+
+    call quick_sort(Z,order,nH)
+
+    p = 0
+    do s=nH-nOrb+1,nH
+      p = p + 1
+      err(p) = eGW(order(s)) - eOld(p)
+      eOld(p) = eGW(order(s))
+    end do
+
+    call vecout(nOrb,err)
 
   !-----------------------------!
   ! Update quasiparticle energy !
   !-----------------------------!
 
-    idx(:) = maxloc(Z,nOrb)
-    do p=1,nOrb
-      err(p) = eOld(p) - eGW(idx(p))
-      eOld(p) = eGW(idx(p))
-    end do
-
-    print*,idx
-
-    call vecout(nOrb,eOld*HaToeV)
-
     Conv = maxval(abs(err))
 
-
-    write(*,'(1X,A1,1X,I3,1X,A1,1X,F15.6,1X,A1,1X,F15.6,1X,A1,1X,F10.6,1X,A1,1X)') '|',nIt,'|',eGW(idx(1))*HaToeV,'|',Z(idx(1)),'|',Conv,'|'
-
-    w = eGW(idx(1))
+    write(*,'(1X,A1,1X,I3,1X,A1,1X,F15.6,1X,A1,1X,F15.6,1X,A1,1X,F10.6,1X,A1,1X)') '|',nIt,'|',eGW(nO)*HaToeV,'|',Z(nO),'|',Conv,'|'
 
   end do
 
