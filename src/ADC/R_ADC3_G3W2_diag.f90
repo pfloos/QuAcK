@@ -1,4 +1,4 @@
-subroutine R_ADC3_G3W2_diag(dotest,TDA_W,flow,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,eHF)
+subroutine R_ADC3_G3W2_diag(dotest,sig_inf,TDA_W,flow,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,eHF)
 
 ! ADC version of G3W2 up to 2h1p/2p1h within the diagonal approximation
 
@@ -9,6 +9,7 @@ subroutine R_ADC3_G3W2_diag(dotest,TDA_W,flow,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,ERHF
 
   logical,intent(in)            :: dotest
 
+  logical,intent(in)            :: sig_inf
   logical,intent(in)            :: TDA_W
   double precision,intent(in)   :: flow
   integer,intent(in)            :: nBas

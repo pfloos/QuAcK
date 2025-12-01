@@ -1,4 +1,4 @@
-subroutine R_ADC4_G3W2_diag(dotest,TDA_W,flow,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,eHF)
+subroutine R_ADC4_G3W2_diag(dotest,sig_inf,TDA_W,flow,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,eHF)
 
 ! ADC version of G3W2 up to 3h2p/3p2h within the diagonal approximation
 
@@ -9,6 +9,7 @@ subroutine R_ADC4_G3W2_diag(dotest,TDA_W,flow,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,ERHF
 
   logical,intent(in)            :: dotest
 
+  logical,intent(in)            :: sig_inf
   logical,intent(in)            :: TDA_W
   double precision,intent(in)   :: flow
   integer,intent(in)            :: nBas
@@ -248,14 +249,14 @@ subroutine R_ADC4_G3W2_diag(dotest,TDA_W,flow,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,ERHF
           do k=nC+1,nO
             do c=nO+1,nOrb-nR
  
-            num = rho(k,c,mu)*ERI(i,k,c,p)
+            num = sqrt(2d0)*rho(k,c,mu)*ERI(i,k,c,p)
             dem = eHF(c) - eHF(k) - Om(mu)
             reg = (1d0 - exp(-2d0*flow*dem*dem))/dem
 
             H(1    ,1+ija) = H(1    ,1+ija) + num*reg
             H(1+ija,1    ) = H(1+ija,1    ) + num*reg
 
-            num = rho(c,k,mu)*ERI(i,c,k,p)
+            num = sqrt(2d0)*rho(c,k,mu)*ERI(i,c,k,p)
             dem = eHF(c) - eHF(k) + Om(mu)
             reg = (1d0 - exp(-2d0*flow*dem*dem))/dem
 
@@ -346,14 +347,14 @@ subroutine R_ADC4_G3W2_diag(dotest,TDA_W,flow,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,ERHF
           do k=nC+1,nO
             do c=nO+1,nOrb-nR
  
-            num = rho(k,c,mu)*ERI(a,c,k,p)
+            num = sqrt(2d0)*rho(k,c,mu)*ERI(a,c,k,p)
             dem = eHF(c) - eHF(k) - Om(mu)
             reg = (1d0 - exp(-2d0*flow*dem*dem))/dem
 
             H(1    ,1+n2h1p+iab) = H(1    ,1+n2h1p+iab) + num*reg
             H(1+n2h1p+iab,1    ) = H(1+n2h1p+iab,1    ) + num*reg
 
-            num = rho(c,k,mu)*ERI(a,k,c,p)
+            num = sqrt(2d0)*rho(c,k,mu)*ERI(a,k,c,p)
             dem = eHF(c) - eHF(k) + Om(mu)
             reg = (1d0 - exp(-2d0*flow*dem*dem))/dem
 

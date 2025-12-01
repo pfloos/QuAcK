@@ -69,8 +69,8 @@ subroutine scGWB_AO_itau_iw(nBas,nOrb,nOrb_twice,maxSCF,maxDIIS,dolinGW,restart_
   double precision              :: EcGM,Ehfbl,Ecore,Eh,Ex,Epair
   double precision              :: trace1,trace2
   double precision              :: trace_1_rdm
-  double precision              :: start_scGWBitauiw     ,end_scGWBitauiw       ,t_scGWBitauiw
   double precision,external     :: trace_matrix
+  double precision              :: start_scGWBitauiw,end_scGWBitauiw,t_scGWBitauiw
   double precision,allocatable  :: Occ(:)
   double precision,allocatable  :: cHFBinv(:,:)
   double precision,allocatable  :: cNO(:,:)

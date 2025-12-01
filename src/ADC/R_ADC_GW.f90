@@ -1,4 +1,4 @@
-subroutine R_ADC_GW(dotest,TDA_W,flow,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,eHF)
+subroutine R_ADC_GW(dotest,sig_inf,TDA_W,flow,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,eHF)
 
 ! ADC version of GW 
 
@@ -9,6 +9,7 @@ subroutine R_ADC_GW(dotest,TDA_W,flow,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,eHF
 
   logical,intent(in)            :: dotest
 
+  logical,intent(in)            :: sig_inf
   logical,intent(in)            :: TDA_W
   double precision,intent(in)   :: flow
   integer,intent(in)            :: nBas
@@ -25,8 +26,7 @@ subroutine R_ADC_GW(dotest,TDA_W,flow,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,eHF
 
 ! Local variables
 
-  integer                       :: p
-  integer                       :: s
+  integer                       :: p,q,r,s
   integer                       :: i,j,k,l
   integer                       :: a,b,c,d
   integer                       :: mu
@@ -48,7 +48,12 @@ subroutine R_ADC_GW(dotest,TDA_W,flow,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,eHF
   double precision,allocatable  :: XmY(:,:)
   double precision,allocatable  :: rho(:,:,:)
 
-  logical                       :: verbose = .false.
+  double precision,allocatable  :: F(:,:)
+  double precision,allocatable  :: Vh(:,:)
+  double precision,allocatable  :: Vx(:,:)
+  double precision,allocatable  :: DM(:,:)
+
+  logical,parameter             :: verbose = .false.
   double precision,parameter    :: cutoff1 = 0.1d0
   double precision,parameter    :: cutoff2 = 0.01d0
   double precision              :: eF
@@ -110,6 +115,27 @@ subroutine R_ADC_GW(dotest,TDA_W,flow,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,eHF
 
   deallocate(Aph,Bph,XpY,XmY)
 
+  !-------------------!
+  ! Compute Sigma(oo) !
+  !-------------------!
+
+  allocate(F(nOrb,nOrb))
+  F(:,:) = 0d0
+
+  if(sig_inf) then
+
+    allocate(DM(nOrb,nOrb),Vh(nOrb,nOrb),Vx(nOrb,nOrb))
+ 
+    call R_linDM_GW(nOrb,nC,nO,nV,nR,nS,eHF,Om,rho,0d0,DM)
+    call Hartree_matrix_AO_basis(nOrb,DM,ERI,Vh)
+    call exchange_matrix_AO_basis(nOrb,DM,ERI,Vx)
+ 
+    F(:,:) = Vh(:,:) + 0.5d0*Vx(:,:)
+ 
+    deallocate(Vh,Vx,DM)
+
+  end if
+
 ! Initialization
 
   H(:,:) = 0d0
@@ -133,7 +159,13 @@ subroutine R_ADC_GW(dotest,TDA_W,flow,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,eHF
   !---------!
 
   do p=nC+1,nOrb-nR
+
     H(p,p) = eHF(p)
+
+    do q=nC+1,nOrb-nR
+      H(p,q) = H(p,q) + F(p,q)
+    end do
+
   end do
 
   !--------------!

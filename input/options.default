@@ -22,7 +22,7 @@
          0.05       1.0   F           F		  F
 # Parquet: TDAeh TDApp max_it_1b conv_1b max_it_2b conv_2b max_diis_1b max_diis_2b lin_parquet reg_1b reg_2b reg_PA
             T     T        1      0.01     1         0.01      1            1          F       1000.0 1000.0 T
-# ADC: diag_approx lin reg eta
-       F           F   F   0.0
+# ADC: diag_approx sig_inf lin reg eta
+       F           F       F   F   0.0
 # Ensemble: weight_N  N+1[for N-1 use F]
 	    0.00000   T

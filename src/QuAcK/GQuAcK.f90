@@ -13,7 +13,7 @@ subroutine GQuAcK(working_dir,dotest,doGHF,dostab,dosearch,doMP2,doMP3,doCCD,dop
                   maxSCF_GT,max_diis_GT,thresh_GT,TDA_T,lin_GT,reg_GT,eta_GT,do_linDM_GT,                                   &
                   dophBSE,dophBSE2,doppBSE,dBSE,dTDA,doACFDT,exchange_kernel,doXBS,                                         &
                   TDAeh,TDApp,max_diis_1b,max_diis_2b,max_it_1b,conv_1b,max_it_2b,conv_2b,lin_parquet,reg_1b,reg_2b,reg_PA, &
-                  diag_approx,lin_ADC,reg_ADC,eta_ADC)
+                  diag_approx,sig_inf,lin_ADC,reg_ADC,eta_ADC)
 
   implicit none
   include 'parameters.h'
@@ -99,7 +99,7 @@ subroutine GQuAcK(working_dir,dotest,doGHF,dostab,dosearch,doMP2,doMP3,doCCD,dop
   double precision,intent(in)   :: reg_1b,reg_2b
   logical,intent(in)            :: lin_parquet,reg_PA
   
-  logical,intent(in)            :: diag_approx,lin_ADC,reg_ADC
+  logical,intent(in)            :: diag_approx,sig_inf,lin_ADC,reg_ADC
   double precision,intent(in)   :: eta_ADC
 
 ! Local variables
@@ -405,7 +405,7 @@ end if
                do_SOSEX,do_2SOSEX,do_G3W2,                           & 
                do_ADC_GW,do_ADC_2SOSEX,do_ADC3_G3W2,do_ADC4_G3W2,    &
                TDA_W,TDA,lin_ADC,eta_ADC,reg_ADC,                    &
-               diag_approx,                                          &
+               diag_approx,sig_inf,                                  &
                nNuc,ZNuc,rNuc,ENuc,nBas,nBas2,nC,nO,nV,nR,nS,        &
                S,X,T,V,Hc,ERI_AO,ERI_MO,dipole_int_AO,dipole_int_MO, &
                EGHF,PHF,FHF,cHF,eHF)
