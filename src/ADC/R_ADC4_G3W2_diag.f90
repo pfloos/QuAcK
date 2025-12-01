@@ -184,12 +184,12 @@ subroutine R_ADC4_G3W2_diag(dotest,sig_inf,TDA_W,flow,nBas,nOrb,nC,nO,nV,nR,nS,E
         do nu=1,nS
             do r=nC+1,nOrb-nR
             do s=nC+1,nOrb-nR
-  
-              num1 = 2d0*rho(p,r,mu)*rho(r,i,nu)
+ 
+              num1 = 2d0*rho(r,i,mu)*rho(p,r,nu)
               num2 = 2d0*rho(s,i,mu)*rho(p,s,nu)
-              dem1 = eHF(i) - eHF(r) - Om(nu)
+              dem1 = eHF(r) - eHF(i) + Om(nu)
               dem2 = w - eHF(i) + Om(nu) + Om(mu)
-              dem3 = eHF(i) - eHF(s) - Om(mu)
+              dem3 = eHF(s) - eHF(i) + Om(mu)
 
               reg1 = (1d0 - exp(-2d0*flow*dem1*dem1))/dem1
               reg2 = (1d0 - exp(-2d0*flow*dem2*dem2))/dem2
