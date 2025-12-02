@@ -302,7 +302,7 @@ subroutine R_G3W2_self_energy_diag_alt(eta,nBas,nOrb,nC,nO,nV,nR,nS,eHF,Om,rho,E
 
           U2_2h1p(ija) = U2_2h1p(ija) + num*reg
 
-          num = sqrt(2d0)*ERI(p,k,c,i)*rho(c,k,mu)
+          num = sqrt(2d0)*rho(c,k,mu)*ERI(i,c,k,p)
           dem = eHF(c) - eHF(k) + Om(mu)
           reg = (1d0 - exp(-2d0*flow*dem*dem))/dem
 

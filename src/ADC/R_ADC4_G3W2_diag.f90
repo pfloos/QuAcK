@@ -65,11 +65,6 @@ subroutine R_ADC4_G3W2_diag(dotest,sig_inf,TDA_W,flow,nBas,nOrb,nC,nO,nV,nR,nS,E
   integer                       :: nIt,maxIt,idx(1)
   double precision              :: w,thresh,Conv
 
-  logical                       :: add_3h2p_3p2h
-  logical                       :: add_U1_2h1p_2p1h
-  logical                       :: add_U2_2h1p_2p1h
-  logical                       :: add_U3_2h1p_2p1h
-
   logical                       :: add_3h2p
   logical                       :: add_3p2h
 
@@ -111,23 +106,32 @@ subroutine R_ADC4_G3W2_diag(dotest,sig_inf,TDA_W,flow,nBas,nOrb,nC,nO,nV,nR,nS,E
 
 ! Select matrix components
 
+! ADC(4)-G3W2
+
   add_3h2p = .true.
   add_3p2h = .true.
 
-  add_U1_2h1p = .true.
-  add_U2_2h1p = .true.
   add_U3_2h1p = .true.
-
-  add_U1_2p1h = .true.
-  add_U2_2p1h = .true.
   add_U3_2p1h = .true.
 
-  add_K_2h1p  = .true.
-  add_K_2p1h  = .true.
+! ADC(3)-G3W2
 
   add_C1_2h1p_2h1p = .true.
   add_C1_2p1h_2p1h = .true.
   add_C1_2h1p_2p1h = .true.
+
+! ADC-SOSEX
+
+  add_U2_2h1p = .true.
+  add_U2_2p1h = .true.
+
+  add_K_2h1p  = .true.
+  add_K_2p1h  = .true.
+
+! ADC-GW
+
+  add_U1_2h1p = .true.
+  add_U1_2p1h = .true.
 
 ! Memory allocation
 
