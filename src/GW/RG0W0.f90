@@ -153,7 +153,9 @@ subroutine RG0W0(dotest,doACFDT,exchange_kernel,doXBS,dophBSE,dophBSE2,TDA_W,TDA
      allocate(occ_nb(nOrb))
      occ_nb(:) = 0d0
      call diagonalize_matrix(nOrb,linDM,occ_nb)
+     write(*,*) 'Natural occupation numbers for linearized density matrix'
      call vecout(nOrb,occ_nb)
+     write(*,*)
      deallocate(occ_nb)
      
      deallocate(J,K,F)

@@ -70,7 +70,7 @@ subroutine R_2SOSEX(dotest,TDA_W,singlet,triplet,linearize,eta,doSRG,nBas,nOrb,n
 
 ! SRG regularization
 
-  flow = 500d0
+  flow = 1d+6
 
   if(doSRG) then
 

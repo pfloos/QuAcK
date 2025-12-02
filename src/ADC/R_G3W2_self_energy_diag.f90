@@ -189,8 +189,8 @@ subroutine R_G3W2_self_energy_diag(eta,nBas,nOrb,nC,nO,nV,nR,nS,e,Om,rho,ERI,EcG
          
           Sig(p) = Sig(p) - num/(dem1*dem2)
          
-          Z(p) = Z(p) - num/(dem1*dem1*dem2) &
-                      - num/(dem1*dem2*dem2)
+          Z(p) = Z(p) + num/(dem1*dem1*dem2) &
+                      + num/(dem1*dem2*dem2)
  
         end do
       end do
@@ -484,9 +484,8 @@ subroutine R_G3W2_self_energy_diag(eta,nBas,nOrb,nC,nO,nV,nR,nS,e,Om,rho,ERI,EcG
 
   Z(:) = 1d0/(1d0 - Z(:))
 
-  print*,'Standard form of the self-energy'
-  call vecout(nOrb,Sig)
-
-  call vecout(nOrb,Z)
+! print*,'Standard form of the self-energy'
+! call vecout(nOrb,Sig)
+! call vecout(nOrb,Z)
 
 end subroutine 

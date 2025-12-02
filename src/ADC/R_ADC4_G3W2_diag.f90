@@ -184,12 +184,12 @@ subroutine R_ADC4_G3W2_diag(dotest,sig_inf,TDA_W,flow,nBas,nOrb,nC,nO,nV,nR,nS,E
         do nu=1,nS
             do r=nC+1,nOrb-nR
             do s=nC+1,nOrb-nR
-  
-              num1 = 2d0*rho(p,r,mu)*rho(r,i,nu)
+ 
+              num1 = 2d0*rho(r,i,mu)*rho(p,r,nu)
               num2 = 2d0*rho(s,i,mu)*rho(p,s,nu)
-              dem1 = eHF(i) - eHF(r) - Om(nu)
+              dem1 = eHF(r) - eHF(i) + Om(nu)
               dem2 = w - eHF(i) + Om(nu) + Om(mu)
-              dem3 = eHF(i) - eHF(s) - Om(mu)
+              dem3 = eHF(s) - eHF(i) + Om(mu)
 
               reg1 = (1d0 - exp(-2d0*flow*dem1*dem1))/dem1
               reg2 = (1d0 - exp(-2d0*flow*dem2*dem2))/dem2
@@ -447,13 +447,13 @@ subroutine R_ADC4_G3W2_diag(dotest,sig_inf,TDA_W,flow,nBas,nOrb,nC,nO,nV,nR,nS,E
          
               do r=nC+1,nOrb-nR
 
-                num = 0.5d0*rho(k,r,mu)*rho(i,r,nu)
+                num = rho(k,r,mu)*rho(i,r,nu)
                 dem = eHF(i) - eHF(r) + Om(nu)
                 reg = (1d0 - exp(-2d0*flow*dem*dem))/dem
                
                 H(1+ija,1+klc) = H(1+ija,1+klc) + num*reg
                
-                num = 0.5d0*rho(k,r,mu)*rho(i,r,nu)
+                num = rho(k,r,mu)*rho(i,r,nu)
                 dem = eHF(k) - eHF(r) + Om(mu)
                 reg = (1d0 - exp(-2d0*flow*dem*dem))/dem
                
@@ -489,13 +489,13 @@ subroutine R_ADC4_G3W2_diag(dotest,sig_inf,TDA_W,flow,nBas,nOrb,nC,nO,nV,nR,nS,E
          
               do r=nC+1,nOrb-nR
 
-                num = 0.5d0*rho(r,c,mu)*rho(r,a,nu)
+                num = rho(r,c,mu)*rho(r,a,nu)
                 dem = eHF(c) - eHF(r) - Om(mu)
                 reg = (1d0 - exp(-2d0*flow*dem*dem))/dem
                
                 H(1+n2h1p+iab,1+n2h1p+kcd) = H(1+n2h1p+iab,1+n2h1p+kcd) + num*reg
                
-                num = 0.5d0*rho(r,c,mu)*rho(r,a,nu)
+                num = rho(r,c,mu)*rho(r,a,nu)
                 dem = eHF(a) - eHF(r) - Om(nu)
                 reg = (1d0 - exp(-2d0*flow*dem*dem))/dem
                
@@ -527,7 +527,7 @@ subroutine R_ADC4_G3W2_diag(dotest,sig_inf,TDA_W,flow,nBas,nOrb,nC,nO,nV,nR,nS,E
         
               do k=nC+1,nO
 
-                num = 1d0*rho(k,i,nu)*rho(a,k,mu)
+                num = 2d0*rho(k,i,nu)*rho(a,k,mu)
                 dem = eHF(a) - eHF(k) + Om(nu)
                 reg = (1d0 - exp(-2d0*flow*dem*dem))/dem
                
@@ -540,7 +540,7 @@ subroutine R_ADC4_G3W2_diag(dotest,sig_inf,TDA_W,flow,nBas,nOrb,nC,nO,nV,nR,nS,E
              
               do c=nO+1,nOrb-nR
 
-                num = 1d0*rho(a,c,nu)*rho(c,i,mu)
+                num = 2d0*rho(a,c,nu)*rho(c,i,mu)
                 dem = eHF(i) - eHF(c) - Om(mu)
                 reg = (1d0 - exp(-2d0*flow*dem*dem))/dem
               

@@ -59,7 +59,7 @@ subroutine OORG0W0(dotest,doACFDT,exchange_kernel,doXBS,dophBSE,dophBSE2,TDA_W,T
 
   logical                       :: print_W   = .false.
   logical                       :: plot_self = .false.
-  logical                       :: OVRotOnly = .true.
+  logical                       :: OVRotOnly = .false.
   integer                       :: isp_W
   double precision              :: flow
   double precision              :: EcRPA
@@ -114,6 +114,7 @@ subroutine OORG0W0(dotest,doACFDT,exchange_kernel,doXBS,dophBSE,dophBSE2,TDA_W,T
   double precision,allocatable  :: J(:,:),K(:,:)
   double precision              :: Emu, EOld
   double precision              :: EHF_rdm,EcRPA_rdm,EcRPA_HF,EcRPA_triplet,EcRPA_singlet
+  double precision,allocatable  :: hess(:,:),grad(:)
 
   double precision,external     :: trace_matrix
   double precision,external     :: Kronecker_delta
@@ -195,7 +196,7 @@ subroutine OORG0W0(dotest,doACFDT,exchange_kernel,doXBS,dophBSE,dophBSE2,TDA_W,T
            eGW(nOrb),eGWlin(nOrb),X(nS,nS),X_inv(nS,nS),Y(nS,nS),Xbar(nS,nS),Xbar_inv(nS,nS),lambda(nS,nS),t(nS,nS),&
            xi(nS,nS),rampl(N,N,N),lampl(N,N,N),rp(N),lp(N),h(N,N),c(nBas,nOrb),&
            rdm1(N,N),rdm2(N,N,N,N),rdm1_hf(N,N),rdm2_hf(N,N,N,N),rdm1_rpa(N,N),rdm2_rpa(N,N,N,N),&
-           J(nBas,nBas),K(nBas,nBas),F(nOrb,nOrb))
+           J(nBas,nBas),K(nBas,nBas),F(nOrb,nOrb),grad(Nsq),hess(Nsq,Nsq))
   
 ! Initialize variables for OO  
   OOi               = 1
@@ -235,7 +236,7 @@ subroutine OORG0W0(dotest,doACFDT,exchange_kernel,doXBS,dophBSE,dophBSE2,TDA_W,T
     call Hartree_matrix_AO_basis(nBas,PHF,ERI_AO,J)
     call exchange_matrix_AO_basis(nBas,PHF,ERI_AO,K)
     FHF(:,:) = Hc(:,:) + J(:,:) + 0.5d0*K(:,:)
-    call AOtoMO(nBas,nOrb,C,FHF,F)
+    call AOtoMO(nBas,nOrb,c,FHF,F)
     write(*,*) "Orbital optimization Iteration: ", OOi 
    
 
@@ -272,21 +273,24 @@ subroutine OORG0W0(dotest,doACFDT,exchange_kernel,doXBS,dophBSE,dophBSE2,TDA_W,T
      ! call RG0W0_rdm1_rpa(O,V,N,nS,lambda,t,rdm1_rpa)
      ! call RG0W0_rdm2_rpa(O,V,N,nS,lambda,t,rdm2_rpa)
       call RG0W0_rdms_crpa(1,O,V,N,nS,X,Y,rdm1_rpa,rdm2_rpa)
-      rdm1 = rdm1_hf + rdm1_rpa
-      rdm2 = - rdm2_hf + rdm2_rpa
-      call energy_from_rdm(N,h,ERI_MO,rdm1_hf,rdm2_hf,EHF_rdm,.false.)
-      call energy_from_rdm(N,F,ERI_MO,rdm1_rpa,rdm2_rpa,EcRPA_rdm,.false.)
-      call energy_from_rdm(N,F,ERI_MO,rdm1,rdm2,Emu,.false.)
-      write(*,*) "ERHF = ", ERHF
-      write(*,*) "ERHF + EcRPA@HF = ", ERHF + EcRPA_HF
+      call RG0W0_transform_rdms_f_h(O,V,N,nS,rdm1_rpa,rdm2_rpa)
+      call energy_from_rdm(N,h,ERI_MO,rdm1_hf,rdm2_hf,EHF_rdm,.true.)
+      call energy_from_rdm(N,h,ERI_MO,rdm1_rpa,rdm2_rpa,EcRPA_rdm,.true.)
+      rdm1 = rdm1_hf + rdm1_rpa 
+      rdm2 = rdm2_hf + rdm2_rpa 
+      call energy_from_rdm(N,h,ERI_MO,rdm1,rdm2,Emu,.false.)
+      write(*,*) "ERHF0 = ", ERHF
+      write(*,*) "ERHF + EcRPA@RHF0 = ", ERHF + EcRPA_HF
       write(*,*) "EcRPA = ", EcRPA_rdm
       write(*,*) "EcRPA (no rdm) = ", EcRPA
       write(*,*) "ERPA = ", EcRPA + EHF_rdm
+      write(*,*) "ERHF = ", EHF_rdm
       write(*,*) ""
-     ! write(*,*) "Test my method"
-     ! call RG0W0_rdms_crpa(1,O,V,N,nS,X,Y,rdm1_rpa,rdm2_rpa)
-     ! call energy_from_rdm(N,F,ERI_MO,rdm1_rpa,rdm2_rpa,EcRPA_rdm,.true.)
-     ! call energy_from_rdm(N,F,ERI_MO,rdm1_hf,-rdm2_hf,EHF_rdm,.true.)
+      call orbital_gradient_hessian_numerically(O,V,N,nS,Nsq,Hc,c,ERI_AO,1d-5,grad,hess)
+      write(*,*) "Numerical grad" 
+      call matout(N,N,grad)
+      write(*,*) "4F" 
+      call matout(N,N,4*F)
     else
       if(singlet) then
         isp_W = 1 
