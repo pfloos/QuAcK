@@ -1,4 +1,4 @@
-subroutine orbital_gradient_hessian_numerically(O,V,N,nS,Nsq,Hc,c,ERI_AO,delta,grad,hess)
+subroutine orbital_gradient_numerically(O,V,N,nS,Nsq,Hc,c,ERI_AO,delta,grad)
       
 ! Compute the orbital gradient given numerically for RPA energy
 
@@ -16,22 +16,21 @@ subroutine orbital_gradient_hessian_numerically(O,V,N,nS,Nsq,Hc,c,ERI_AO,delta,g
   double precision              :: Eplus,Eminus
   double precision,allocatable  :: Kap(:,:)
   double precision,allocatable  :: c_local(:,:)
-  integer                       :: p,q,r,s,pq,rs
+  integer                       :: p,q,r,s,pq,qp
 
 ! Output variables
 
-  double precision,intent(out)  :: grad(Nsq),hess(Nsq,Nsq)
+  double precision,intent(out)  :: grad(Nsq)
 
   allocate(Kap(N,N),c_local(N,N))
   
   Kap(:,:)  = 0d0
   grad(:)   = 0d0
-  hess(:,:) = 0d0
-
+  
   pq = 0
-  do p=1,N
-    do q=1,N
-      pq = pq + 1
+  do p=1,N-1
+    do q=p+1,N
+      
       ! ERPA(+delta)
       c_local(:,:)  = c(:,:)
       Kap      = 0d0
@@ -39,8 +38,7 @@ subroutine orbital_gradient_hessian_numerically(O,V,N,nS,Nsq,Hc,c,ERI_AO,delta,g
       Kap(q,p) = - delta
       call rotate_orbitals(N,Kap,c_local)
       call get_rpa_energy(O,V,N,nS,Hc,c_local,ERI_AO,Eplus)
-      write(*,*) norm2(c_local-c)
-
+  
       ! ERPA(-delta)
       c_local(:,:)  = c(:,:)
       Kap      = 0d0
@@ -48,8 +46,10 @@ subroutine orbital_gradient_hessian_numerically(O,V,N,nS,Nsq,Hc,c,ERI_AO,delta,g
       Kap(q,p) = delta
       call rotate_orbitals(N,Kap,c_local)
       call get_rpa_energy(O,V,N,nS,Hc,c_local,ERI_AO,Eminus)
+      pq = q + (p-1)*N
+      qp = p + (q-1)*N
       grad(pq) = (Eplus - Eminus)/(2*delta)
-      write(*,*) 'p=',p,' q=',q,' E+:',Eplus,' E-:',Eminus
+      grad(qp) = - grad(pq)
     enddo
   enddo
 

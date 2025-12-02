@@ -56,15 +56,16 @@ subroutine R_optimize_orbitals(diagHess,OVRotOnly,dRPA,nBas,nOrb,nV,nR,nC,nO,N,N
   rdm1 = rdm1_hf + rdm1_c
   rdm2 = rdm2_hf + rdm2_c
   call orbital_gradient(O,V,N,Nsq,h,ERI_MO,rdm1_hf,rdm2_hf,grad_tmp)
-  !call orbital_gradient(O,V,N,Nsq,h,ERI_MO,rdm1,rdm2,grad_tmp)
+  !call orbital_gradient(O,V,N,Nsq,F,ERI_MO,rdm1,rdm2,grad_tmp)
   grad = grad + grad_tmp
+  if(dRPA) then
+    call orbital_gradient(O,V,N,Nsq,h,ERI_MO,rdm1_c,rdm2_c,grad_tmp)
+  else
+    call orbital_gradient(O,V,N,Nsq,F,ERI_MO_AS,rdm1_c,rdm2_c,grad_tmp)
+  endif
+  grad = grad + grad_tmp
+  write(*,*) "grad from rdms"
   call matout(N,N,grad)
- ! if(dRPA) then
- !   call orbital_gradient(O,V,N,Nsq,h,ERI_MO,rdm1_c,rdm2_c,grad_tmp)
- ! else
- !   call orbital_gradient(O,V,N,Nsq,F,ERI_MO_AS,rdm1_c,rdm2_c,grad_tmp)
- ! endif
- ! grad = grad + grad_tmp
 
   deallocate(grad_tmp)
 
@@ -81,12 +82,12 @@ subroutine R_optimize_orbitals(diagHess,OVRotOnly,dRPA,nBas,nOrb,nV,nR,nC,nO,N,N
     hess(:,:) = 0d0
     call orbital_hessian_diag(O,V,N,Nsq,h,ERI_MO,rdm1_hf,rdm2_hf,hess_tmp)
     hess = hess + hess_tmp
-    if(dRPA) then
-      call orbital_hessian_diag(O,V,N,Nsq,h,ERI_MO,rdm1_c,rdm2_c,hess_tmp)
-    else
-      call orbital_hessian_diag(O,V,N,Nsq,F,ERI_MO_AS,rdm1_c,rdm2_c,hess_tmp)
-    endif
-    hess = hess + hess_tmp
+   ! if(dRPA) then
+   !   call orbital_hessian_diag(O,V,N,Nsq,h,ERI_MO,rdm1_c,rdm2_c,hess_tmp)
+   ! else
+   !   call orbital_hessian_diag(O,V,N,Nsq,F,ERI_MO_AS,rdm1_c,rdm2_c,hess_tmp)
+   ! endif
+   ! hess = hess + hess_tmp
     deallocate(hess_tmp)
     allocate(hessInv(nhess,mhess))
     tol = 1d-12 * maxval(abs(hess(:,1)))
@@ -99,21 +100,23 @@ subroutine R_optimize_orbitals(diagHess,OVRotOnly,dRPA,nBas,nOrb,nV,nR,nC,nO,N,N
     allocate(hess(nhess,mhess),hess_tmp(nhess,mhess))
     hess(:,:) = 0d0
     !call orbital_hessian(O,V,N,Nsq,h,ERI_MO,rdm1_hf,rdm2_hf,hess_tmp)
-    call orbital_hessian(O,V,N,Nsq,h,ERI_MO,rdm1_hf,rdm2_hf,hess_tmp)
+    call orbital_hessian(O,V,N,Nsq,h,ERI_MO,rdm1,rdm2,hess_tmp)
     hess = hess + hess_tmp 
    ! if(dRPA) then
    !   call orbital_hessian(O,V,N,Nsq,h,ERI_MO,rdm1_c,rdm2_c,hess_tmp)
    ! else
    !   call orbital_hessian(O,V,N,Nsq,F,ERI_MO_AS,rdm1_c,rdm2_c,hess_tmp)
    ! endif
-    hess = hess + hess_tmp 
+   ! hess = hess + hess_tmp
+   ! write(*,*) "Hessian from rdms"
+   ! call matout(Nsq,Nsq,hess)
     deallocate(hess_tmp)
     allocate(hessInv(nhess,mhess))
     call pseudo_inverse_matrix(Nsq,hess,hessInv)
-  !  allocate(VL(Nsq,Nsq),VR(Nsq,Nsq),WR(Nsq))
-  !  call diagonalize_general_matrix_LR(Nsq,hess,WR,VL,VR)
-  !  call vecout(Nsq,WR)
-  !  deallocate(VL,VR,WR)
+   ! allocate(VL(Nsq,Nsq),VR(Nsq,Nsq),WR(Nsq))
+   ! call diagonalize_general_matrix_LR(Nsq,hess,WR,VL,VR)
+   ! call vecout(Nsq,WR)
+   ! deallocate(VL,VR,WR)
     deallocate(hess)
   else
     nhess = O*V
@@ -121,14 +124,14 @@ subroutine R_optimize_orbitals(diagHess,OVRotOnly,dRPA,nBas,nOrb,nV,nR,nC,nO,N,N
     allocate(hess(nhess,mhess),hess_tmp(nhess,mhess))
     hess(:,:) = 0d0
     call wall_time(tstart)
-    !call orbital_hessian_ov(O,V,N,Nsq,h,ERI_MO,rdm1_hf,rdm2_hf,hess_tmp)
-    call orbital_hessian_ov(O,V,N,Nsq,h,ERI_MO,rdm1,rdm2,hess_tmp)
+    call orbital_hessian_ov(O,V,N,Nsq,h,ERI_MO,rdm1_hf,rdm2_hf,hess_tmp)
+    !call orbital_hessian_ov(O,V,N,Nsq,h,ERI_MO,rdm1,rdm2,hess_tmp)
     hess = hess + hess_tmp 
-   ! if(dRPA) then
-   !   call orbital_hessian_ov(O,V,N,Nsq,h,ERI_MO,rdm1_c,rdm2_c,hess_tmp)
-   ! else
-   !   call orbital_hessian_ov(O,V,N,Nsq,F,ERI_MO_AS,rdm1_c,rdm2_c,hess_tmp)
-   ! endif
+    if(dRPA) then
+      call orbital_hessian_ov(O,V,N,Nsq,h,ERI_MO,rdm1_c,rdm2_c,hess_tmp)
+    else
+      call orbital_hessian_ov(O,V,N,Nsq,F,ERI_MO_AS,rdm1_c,rdm2_c,hess_tmp)
+    endif
     call wall_time(tend)
     tdiff = tend - tstart
     write(*,*) "Building Hessian took ", tdiff, "seconds."
@@ -140,10 +143,10 @@ subroutine R_optimize_orbitals(diagHess,OVRotOnly,dRPA,nBas,nOrb,nV,nR,nC,nO,N,N
     call wall_time(tend)
     tdiff = tend - tstart
     write(*,*) "Inverting Hessian took ", tdiff, "seconds."
-  !  allocate(VL(O*V,O*V),VR(O*V,O*V),WR(O*V))
-  !  call diagonalize_general_matrix_LR(O*V,hess,WR,VL,VR)
-  !  call vecout(O*V,WR)
-  !  deallocate(VL,VR,WR)
+   ! allocate(VL(O*V,O*V),VR(O*V,O*V),WR(O*V))
+   ! call diagonalize_general_matrix_LR(O*V,hess,WR,VL,VR)
+   ! call vecout(O*V,WR)
+   ! deallocate(VL,VR,WR)
     deallocate(hess)
   endif
   if((.not. OVRotOnly) .or. diagHess) then
