@@ -74,7 +74,7 @@ subroutine R_ADC(dotest,                                               &
 
   double precision              :: start_ADC,end_ADC,t_ADC
   logical                       :: do_IPEA,do_EE
-  double precision,parameter    :: flow = 500d0
+  double precision,parameter    :: flow = huge(1d0)
 
 ! Output variables
   

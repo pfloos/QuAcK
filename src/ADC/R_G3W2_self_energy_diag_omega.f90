@@ -159,8 +159,8 @@ subroutine R_G3W2_self_energy_diag_omega(p,w,eta,nBas,nOrb,nC,nO,nV,nR,nS,e,Om,r
      
       Sig = Sig - num/(dem1*dem2)
      
-      Z = Z - num/(dem1*dem1*dem2) &
-            - num/(dem1*dem2*dem2)
+      Z = Z + num/(dem1*dem1*dem2) &
+            + num/(dem1*dem2*dem2)
 
     end do
   end do

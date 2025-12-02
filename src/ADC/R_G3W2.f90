@@ -93,6 +93,10 @@ subroutine R_G3W2(dotest,TDA_W,singlet,triplet,linearize,eta,doSRG,nBas,nOrb,nC,
 
   call phRLR(TDA_W,nS,Aph,Bph,EcRPA,Om,XpY,XmY)
 
+  ! Small shift to avoid hard zeros in amplitudes
+
+  Om(:) = Om(:) + 1d-12
+
   if(print_W) call print_excitation_energies('phRPA@RHF','singlet',nS,Om)
 
 !--------------------------!
@@ -113,7 +117,7 @@ subroutine R_G3W2(dotest,TDA_W,singlet,triplet,linearize,eta,doSRG,nBas,nOrb,nC,
 
     call R_G3W2_self_energy_diag(eta,nBas,nOrb,nC,nO,nV,nR,nS,eHF,Om,rho,ERI,EcGM,SigC,Z)
 
-    call R_G3W2_self_energy_diag_alt(eta,nBas,nOrb,nC,nO,nV,nR,nS,eHF,Om,rho,ERI,EcGM,SigC,Z)
+!   call R_G3W2_self_energy_diag_alt(eta,nBas,nOrb,nC,nO,nV,nR,nS,eHF,Om,rho,ERI,EcGM,SigC,Z)
 
   end if
   
