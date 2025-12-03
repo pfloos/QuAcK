@@ -58,6 +58,19 @@ subroutine R_ADC3_G3W2(dotest,sig_inf,TDA_W,flow,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,E
 
   double precision              :: start_timing,end_timing,timing
 
+  logical                       :: add_U1_2h1p
+  logical                       :: add_U2_2h1p
+
+  logical                       :: add_U1_2p1h
+  logical                       :: add_U2_2p1h
+
+  logical                       :: add_K_2h1p
+  logical                       :: add_K_2p1h
+
+  logical                       :: add_C1_2h1p_2h1p
+  logical                       :: add_C1_2p1h_2p1h
+  logical                       :: add_C1_2h1p_2p1h
+
 ! Output variables
 
 ! Hello world
@@ -73,6 +86,27 @@ subroutine R_ADC3_G3W2(dotest,sig_inf,TDA_W,flow,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,E
   n2h1p = nO*nO*nV
   n2p1h = nV*nV*nO
   nH = nOrb + n2h1p + n2p1h
+
+! Select matrix components
+
+! ADC(3)-G3W2
+
+  add_C1_2h1p_2h1p = .true.
+  add_C1_2p1h_2p1h = .true.
+  add_C1_2h1p_2p1h = .true.
+
+! ADC-SOSEX
+
+  add_U2_2h1p = .true.
+  add_U2_2p1h = .true.
+
+  add_K_2h1p  = .true.
+  add_K_2p1h  = .true.
+
+! ADC-GW
+
+  add_U1_2h1p = .true.
+  add_U1_2p1h = .true.
 
 ! Memory allocation
 
@@ -146,203 +180,283 @@ subroutine R_ADC3_G3W2(dotest,sig_inf,TDA_W,flow,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,E
   ! Block U_2h1p !
   !--------------!
 
-  do p=nC+1,nOrb-nR
+  if(add_U1_2h1p) then
+
+    do p=nC+1,nOrb-nR
+
+      ija = 0
+      do i=nC+1,nO
+        do mu=1,nS
+          ija = ija + 1
+ 
+          H(p       ,nOrb+ija) = sqrt(2d0)*rho(p,i,mu)
+          H(nOrb+ija,p       ) = sqrt(2d0)*rho(p,i,mu)
+ 
+        end do
+      end do
+    end do
+  end if
+
+  if(add_U2_2h1p) then
+
+    do p=nC+1,nOrb-nR
+
+      ija = 0
+      do i=nC+1,nO
+        do mu=1,nS
+          ija = ija + 1
+ 
+          do k=nC+1,nO
+            do c=nO+1,nOrb-nR
+ 
+              num = sqrt(2d0)*rho(k,c,mu)*ERI(i,k,c,p)
+              dem = eHF(c) - eHF(k) - Om(mu)
+              reg = (1d0 - exp(-2d0*flow*dem*dem))/dem
+ 
+              H(p       ,nOrb+ija) = H(p       ,nOrb+ija) + num*reg
+              H(nOrb+ija,p       ) = H(nOrb+ija,p       ) + num*reg
+ 
+              num = sqrt(2d0)*rho(c,k,mu)*ERI(i,c,k,p)
+              dem = eHF(c) - eHF(k) + Om(mu)
+              reg = (1d0 - exp(-2d0*flow*dem*dem))/dem
+ 
+              H(p       ,nOrb+ija) = H(p       ,nOrb+ija) + num*reg
+              H(nOrb+ija,p       ) = H(nOrb+ija,p       ) + num*reg
+ 
+            end do
+          end do
+ 
+        end do
+      end do
+
+    end do
+
+  end if
+
+  !--------------!
+  ! Block U_2p1h !
+  !--------------!
+
+  if(add_U1_2p1h) then
+
+    do p=nC+1,nOrb-nR
+
+      iab = 0
+      do a=nO+1,nOrb-nR
+        do mu=1,nS
+          iab = iab + 1
+ 
+          H(p             ,nOrb+n2h1p+iab) = sqrt(2d0)*rho(p,a,mu)
+          H(nOrb+n2h1p+iab,p             ) = sqrt(2d0)*rho(p,a,mu)
+ 
+        end do
+      end do
+
+    end do
+
+  end if
+
+  if(add_U2_2p1h) then
+
+    do p=nC+1,nOrb-nR
+
+      iab = 0
+      do a=nO+1,nOrb-nR
+        do mu=1,nS
+          iab = iab + 1
+ 
+          do k=nC+1,nO
+            do c=nO+1,nOrb-nR
+ 
+              num = sqrt(2d0)*rho(k,c,mu)*ERI(a,c,k,p)
+              dem = eHF(c) - eHF(k) - Om(mu)
+              reg = (1d0 - exp(-2d0*flow*dem*dem))/dem
+ 
+              H(p             ,nOrb+n2h1p+iab) = H(p             ,nOrb+n2h1p+iab) + num*reg
+              H(nOrb+n2h1p+iab,p             ) = H(nOrb+n2h1p+iab,p             ) + num*reg
+ 
+              num = sqrt(2d0)*rho(c,k,mu)*ERI(a,k,c,p)
+              dem = eHF(c) - eHF(k) + Om(mu)
+              reg = (1d0 - exp(-2d0*flow*dem*dem))/dem
+ 
+              H(p             ,nOrb+n2h1p+iab) = H(p             ,nOrb+n2h1p+iab) + num*reg
+              H(nOrb+n2h1p+iab,p             ) = H(nOrb+n2h1p+iab,p             ) + num*reg
+ 
+            end do
+          end do
+ 
+        end do
+      end do
+
+    end do
+
+  end if
+
+  !------------------!
+  ! Block (K+C)_2h1p !
+  !------------------!
+
+  ! Zeroth-order terms
+
+  if(add_K_2h1p) then
+
+    ija = 0
+    do i=nC+1,nO
+      do mu=1,nS
+        ija = ija + 1
+ 
+        H(nOrb+ija,nOrb+ija) = eHF(i) - Om(mu) 
+ 
+      end do
+    end do
+
+  end if
+
+ ! First-order terms
+
+  if(add_C1_2h1p_2h1p) then
 
     ija = 0
     do i=nC+1,nO
       do mu=1,nS
         ija = ija + 1
 
-        H(p       ,nOrb+ija) = sqrt(2d0)*rho(p,i,mu)
-        H(nOrb+ija,p       ) = sqrt(2d0)*rho(p,i,mu)
-
+        klc = 0
         do k=nC+1,nO
-          do c=nO+1,nOrb-nR
-
-            num = sqrt(2d0)*rho(k,c,mu)*ERI(i,k,c,p)
-            dem = eHF(c) - eHF(k) - Om(mu)
-            reg = (1d0 - exp(-2d0*flow*dem*dem))/dem
-
-            H(p       ,nOrb+ija) = H(p       ,nOrb+ija) + num*reg
-            H(nOrb+ija,p       ) = H(nOrb+ija,p       ) + num*reg
-
-            num = sqrt(2d0)*rho(c,k,mu)*ERI(i,c,k,p)
-            dem = eHF(c) - eHF(k) + Om(mu)
-            reg = (1d0 - exp(-2d0*flow*dem*dem))/dem
-
-            H(p       ,nOrb+ija) = H(p       ,nOrb+ija) + num*reg
-            H(nOrb+ija,p       ) = H(nOrb+ija,p       ) + num*reg
-
+          do nu=1,nS
+            klc = klc + 1
+     
+            do r=nC+1,nOrb-nR
+     
+              num = rho(k,r,mu)*rho(i,r,nu)
+              dem = eHF(i) - eHF(r) + Om(nu)
+              reg = (1d0 - exp(-2d0*flow*dem*dem))/dem
+     
+              H(nOrb+ija,nOrb+klc) = H(nOrb+ija,nOrb+klc) + num*reg
+     
+              num = rho(k,r,mu)*rho(i,r,nu)
+              dem = eHF(k) - eHF(r) + Om(mu)
+              reg = (1d0 - exp(-2d0*flow*dem*dem))/dem
+     
+              H(nOrb+ija,nOrb+klc) = H(nOrb+ija,nOrb+klc) + num*reg
+     
+            end do
+     
           end do
         end do
 
       end do
     end do
 
-  end do
-
-  !--------------!
-  ! Block U_2p1h !
-  !--------------!
-
-  do p=nC+1,nOrb-nR
-
-    iab = 0
-    do a=nO+1,nOrb-nR
-      do mu=1,nS
-        iab = iab + 1
-
-        H(p             ,nOrb+n2h1p+iab) = sqrt(2d0)*rho(p,a,mu)
-        H(nOrb+n2h1p+iab,p             ) = sqrt(2d0)*rho(p,a,mu)
-
-        do k=nC+1,nO
-          do c=nO+1,nOrb-nR
-
-            num = sqrt(2d0)*rho(k,c,mu)*ERI(a,c,k,p)
-            dem = eHF(c) - eHF(k) - Om(mu)
-            reg = (1d0 - exp(-2d0*flow*dem*dem))/dem
-
-            H(p             ,nOrb+n2h1p+iab) = H(p             ,nOrb+n2h1p+iab) + num*reg
-            H(nOrb+n2h1p+iab,p             ) = H(nOrb+n2h1p+iab,p             ) + num*reg
-
-            num = sqrt(2d0)*rho(c,k,mu)*ERI(a,k,c,p)
-            dem = eHF(c) - eHF(k) + Om(mu)
-            reg = (1d0 - exp(-2d0*flow*dem*dem))/dem
-
-            H(p             ,nOrb+n2h1p+iab) = H(p             ,nOrb+n2h1p+iab) + num*reg
-            H(nOrb+n2h1p+iab,p             ) = H(nOrb+n2h1p+iab,p             ) + num*reg
-
-          end do
-        end do
-
-      end do
-    end do
-
-  end do
-
-  !------------------!
-  ! Block (K+C)_2h1p !
-  !------------------!
-
-  ija = 0
-  do i=nC+1,nO
-    do mu=1,nS
-      ija = ija + 1
-
-      H(nOrb+ija,nOrb+ija) = eHF(i) - Om(mu) 
-
-     ! First-order terms
-
-      klc = 0
-      do k=nC+1,nO
-        do nu=1,nS
-          klc = klc + 1
-
-          do r=nC+1,nOrb-nR
-
-            num = rho(k,r,mu)*rho(i,r,nu)
-            dem = eHF(i) - eHF(r) + Om(nu)
-            reg = (1d0 - exp(-2d0*flow*dem*dem))/dem
-
-            H(nOrb+ija,nOrb+klc) = H(nOrb+ija,nOrb+klc) + num*reg
-
-            num = rho(k,r,mu)*rho(i,r,nu)
-            dem = eHF(k) - eHF(r) + Om(mu)
-            reg = (1d0 - exp(-2d0*flow*dem*dem))/dem
-
-            H(nOrb+ija,nOrb+klc) = H(nOrb+ija,nOrb+klc) + num*reg
-
-          end do
-
-        end do
-      end do
-
-    end do
-  end do
+  end if
 
   !------------------!
   ! Block (K+C)_2p1h !
   !------------------!
 
-  iab = 0
-  do a=nO+1,nOrb-nR
-    do mu=1,nS
-      iab = iab + 1
+  ! Zeroth-order terms
 
-      H(nOrb+n2h1p+iab,nOrb+n2h1p+iab) = eHF(a) + Om(mu)
+  if(add_K_2p1h) then
 
-      kcd = 0
-      do c=nO+1,nOrb-nR
-        do nu=1,nS
-          kcd = kcd + 1
+    iab = 0
+    do a=nO+1,nOrb-nR
+      do mu=1,nS
+        iab = iab + 1
+ 
+        H(nOrb+n2h1p+iab,nOrb+n2h1p+iab) = eHF(a) + Om(mu)
 
-          do r=nC+1,nOrb-nR
-
-            num = rho(r,c,mu)*rho(r,a,nu)
-            dem = eHF(c) - eHF(r) - Om(mu)
-            reg = (1d0 - exp(-2d0*flow*dem*dem))/dem
-
-            H(nOrb+n2h1p+iab,nOrb+n2h1p+kcd) = H(nOrb+n2h1p+iab,nOrb+n2h1p+kcd) + num*reg
-
-            num = rho(r,c,mu)*rho(r,a,nu)
-            dem = eHF(a) - eHF(r) - Om(nu)
-            reg = (1d0 - exp(-2d0*flow*dem*dem))/dem
-
-            H(nOrb+n2h1p+iab,nOrb+n2h1p+kcd) = H(nOrb+n2h1p+iab,nOrb+n2h1p+kcd) + num*reg
-
-          end do
-
-        end do
       end do
-
     end do
-  end do
+
+  end if
+
+  ! First-order terms
+
+  if(add_C1_2p1h_2p1h) then
+
+    iab = 0
+    do a=nO+1,nOrb-nR
+      do mu=1,nS
+        iab = iab + 1
+ 
+        kcd = 0
+        do c=nO+1,nOrb-nR
+          do nu=1,nS
+            kcd = kcd + 1
+ 
+            do r=nC+1,nOrb-nR
+ 
+              num = rho(r,c,mu)*rho(r,a,nu)
+              dem = eHF(c) - eHF(r) - Om(mu)
+              reg = (1d0 - exp(-2d0*flow*dem*dem))/dem
+ 
+              H(nOrb+n2h1p+iab,nOrb+n2h1p+kcd) = H(nOrb+n2h1p+iab,nOrb+n2h1p+kcd) + num*reg
+ 
+              num = rho(r,c,mu)*rho(r,a,nu)
+              dem = eHF(a) - eHF(r) - Om(nu)
+              reg = (1d0 - exp(-2d0*flow*dem*dem))/dem
+ 
+              H(nOrb+n2h1p+iab,nOrb+n2h1p+kcd) = H(nOrb+n2h1p+iab,nOrb+n2h1p+kcd) + num*reg
+ 
+            end do
+ 
+          end do
+        end do
+ 
+      end do
+    end do
+
+  end if
 
   !-------------------!
   ! Block C_2h1p-2p1h !
   !-------------------!
 
-  ija = 0
-  do i=nC+1,nO
-    do mu=1,nS
-      ija = ija + 1
+  ! First-order terms
 
-      kcd = 0
-      do a=nO+1,nOrb-nR
-        do nu=1,nS
-          kcd = kcd + 1
+  if(add_C1_2h1p_2p1h) then
 
-          ! First-order terms
-
-            do k=nC+1,nO
-
-              num = 2d0*rho(k,i,nu)*rho(a,k,mu)
-              dem = eHF(a) - eHF(k) + Om(nu)
-              reg = (1d0 - exp(-2d0*flow*dem*dem))/dem
-
-              H(nOrb+ija      ,nOrb+n2h1p+kcd) = H(nOrb+ija      ,nOrb+n2h1p+kcd) + num*reg
-
-              H(nOrb+n2h1p+kcd,nOrb+ija      ) = H(nOrb+n2h1p+kcd,nOrb+ija      ) + num*reg
-
-            end do
-
-            do c=nO+1,nOrb-nR
-
-              num = 2d0*rho(a,c,nu)*rho(c,i,mu)
-              dem = eHF(i) - eHF(c) - Om(mu)
-              reg = (1d0 - exp(-2d0*flow*dem*dem))/dem
-
-              H(nOrb+ija      ,nOrb+n2h1p+kcd) = H(nOrb+ija      ,nOrb+n2h1p+kcd) + num*reg
-
-              H(nOrb+n2h1p+kcd,nOrb+ija      ) = H(nOrb+n2h1p+kcd,nOrb+ija      ) + num*reg
-
-            end do
-
+    ija = 0
+    do i=nC+1,nO
+      do mu=1,nS
+        ija = ija + 1
+ 
+        kcd = 0
+        do a=nO+1,nOrb-nR
+          do nu=1,nS
+            kcd = kcd + 1
+ 
+              do k=nC+1,nO
+ 
+                num = 2d0*rho(k,i,nu)*rho(a,k,mu)
+                dem = eHF(a) - eHF(k) + Om(nu)
+                reg = (1d0 - exp(-2d0*flow*dem*dem))/dem
+ 
+                H(nOrb+ija      ,nOrb+n2h1p+kcd) = H(nOrb+ija      ,nOrb+n2h1p+kcd) + num*reg
+ 
+                H(nOrb+n2h1p+kcd,nOrb+ija      ) = H(nOrb+n2h1p+kcd,nOrb+ija      ) + num*reg
+ 
+              end do
+ 
+              do c=nO+1,nOrb-nR
+ 
+                num = 2d0*rho(a,c,nu)*rho(c,i,mu)
+                dem = eHF(i) - eHF(c) - Om(mu)
+                reg = (1d0 - exp(-2d0*flow*dem*dem))/dem
+ 
+                H(nOrb+ija      ,nOrb+n2h1p+kcd) = H(nOrb+ija      ,nOrb+n2h1p+kcd) + num*reg
+ 
+                H(nOrb+n2h1p+kcd,nOrb+ija      ) = H(nOrb+n2h1p+kcd,nOrb+ija      ) + num*reg
+ 
+              end do
+ 
+          end do
         end do
+ 
       end do
-
     end do
-  end do
+
+  end if
 
   call wall_time(end_timing)
 

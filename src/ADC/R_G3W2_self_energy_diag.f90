@@ -29,7 +29,10 @@ subroutine R_G3W2_self_energy_diag(eta,nBas,nOrb,nC,nO,nV,nR,nS,e,Om,rho,ERI,EcG
   integer                       :: m,t,s
   double precision              :: num,dem,dem1,dem2,dem3,dem4
 
-  logical                       :: add_GW,add_SOX,add_2SOSEX,add_G3W2
+  logical                       :: add_GW
+  logical                       :: add_SOX
+  logical                       :: add_2SOSEX
+  logical                       :: add_G3W2
 
 ! Output variables
 

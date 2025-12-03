@@ -115,6 +115,7 @@ subroutine OORG0W0(dotest,doACFDT,exchange_kernel,doXBS,dophBSE,dophBSE2,TDA_W,T
   double precision              :: Emu, EOld
   double precision              :: EHF_rdm,EcRPA_rdm,EcRPA_HF,EcRPA_triplet,EcRPA_singlet
   double precision,allocatable  :: hess(:,:),grad(:)
+  double precision              :: delta_num_grad = 1d-5
 
   double precision,external     :: trace_matrix
   double precision,external     :: Kronecker_delta
@@ -256,11 +257,11 @@ subroutine OORG0W0(dotest,doACFDT,exchange_kernel,doXBS,dophBSE,dophBSE2,TDA_W,T
       ! Useful quantities
       X = transpose(0.5*(XpY + XmY))
       Y = transpose(0.5*(XpY - XmY))
-     ! call inverse_matrix(nS,X,X_inv)
-     ! t = matmul(Y,X_inv)
-     ! Xbar = - matmul(t,Y) + X
-     ! call inverse_matrix(nS,Xbar,Xbar_inv)
-     ! lambda = matmul(Y,Xbar_inv)
+   !   call inverse_matrix(nS,X,X_inv)
+   !   t = matmul(Y,X_inv)
+   !   Xbar = - matmul(t,Y) + X
+   !   call inverse_matrix(nS,Xbar,Xbar_inv)
+   !   lambda = matmul(Y,Xbar_inv)
   
       call RG0W0_rdm2_hf(O,V,N,nS,rdm2_hf)
       call RG0W0_rdm1_hf(O,V,N,nS,rdm1_hf)
@@ -286,11 +287,15 @@ subroutine OORG0W0(dotest,doACFDT,exchange_kernel,doXBS,dophBSE,dophBSE2,TDA_W,T
       write(*,*) "ERPA = ", EcRPA + EHF_rdm
       write(*,*) "ERHF = ", EHF_rdm
       write(*,*) ""
-      call orbital_gradient_hessian_numerically(O,V,N,nS,Nsq,Hc,c,ERI_AO,1d-5,grad,hess)
-      write(*,*) "Numerical grad" 
-      call matout(N,N,grad)
-      write(*,*) "4F" 
-      call matout(N,N,4*F)
+      call orbital_gradient_numerically(O,V,N,nS,Nsq,Hc,c,ERI_AO,delta_num_grad,grad)
+      write(*,*) "Numerical grad"
+      call matout(N,N,grad) 
+     ! call orbital_hessian_numerically(O,V,N,nS,Nsq,Hc,c,ERI_AO,delta_num_grad,hess)
+     ! write(*,*) "Numerical hessian"
+     ! call matout(Nsq,Nsq,hess)
+     ! grad(:) = 0d0
+     ! call diagonalize_matrix(Nsq,hess,grad)
+     ! call vecout(Nsq,grad)
     else
       if(singlet) then
         isp_W = 1 
