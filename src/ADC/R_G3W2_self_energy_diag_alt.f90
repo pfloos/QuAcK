@@ -55,7 +55,7 @@ subroutine R_G3W2_self_energy_diag_alt(eta,nBas,nOrb,nC,nO,nV,nR,nS,eHF,Om,rho,E
   double precision,allocatable  :: U1xdK_2p1h(:)
 
 
-  double precision              :: flow = huge(1d0)
+  double precision              :: flow = 1d6
 
 ! Output variables
 
