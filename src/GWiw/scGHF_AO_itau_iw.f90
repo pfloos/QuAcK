@@ -1,5 +1,5 @@
 subroutine scGHF_AO_itau_iw(nBas,nOrb,nO,maxSCF,maxDIIS,verbose_scGHF,restart_scGHF,chem_pot_scG, &
-                            ENuc,Hc,S,P_in,cHF,eHF,nfreqs,wcoord,wweight,vMAT)
+                            ENuc,Hc,S,X,P_in,cHF,eHF,nfreqs,wcoord,wweight,vMAT)
 
 ! Restricted scGHF
 
@@ -22,6 +22,7 @@ subroutine scGHF_AO_itau_iw(nBas,nOrb,nO,maxSCF,maxDIIS,verbose_scGHF,restart_sc
   double precision,intent(in)   :: Hc(nBas,nBas)
   double precision,intent(in)   :: P_in(nBas,nBas)
   double precision,intent(in)   :: S(nBas,nBas)
+  double precision,intent(in)   :: X(nBas,nOrb)
   double precision,intent(in)   :: vMAT(nBas*nBas,nBas*nBas)
 
 ! Local variables
@@ -274,6 +275,8 @@ subroutine scGHF_AO_itau_iw(nBas,nOrb,nO,maxSCF,maxDIIS,verbose_scGHF,restart_sc
    P_ao_old=P_ao
    call get_1rdm_scGW(nBas,nfreqs,chem_pot,S,F_ao,Sigma_c_w_ao,wcoord,wweight, &
                       Mat_ao_tmp,G_ao_iw_hf,DeltaG_ao_iw,P_ao,P_ao_hf,trace_1_rdm) 
+!   call get_1rdm_scGW_v2(nBas,nOrb,nfreqs,chem_pot,S,X,F_ao,Sigma_c_w_ao,wcoord,wweight, &
+!                         Mat_ao_tmp,G_ao_iw_hf,DeltaG_ao_iw,P_ao,trace_1_rdm) 
    if(abs(trace_1_rdm-nElectrons)**2d0>thrs_N .and. chem_pot_scG) &
     call fix_chem_pot_scGW_bisec(iter_fock,nBas,nfreqs,nElectrons,thrs_N,thrs_Ngrad,chem_pot,S,F_ao,Sigma_c_w_ao,wcoord,wweight, &
                                  Mat_ao_tmp,G_ao_iw_hf,DeltaG_ao_iw,P_ao,P_ao_hf,trace_1_rdm,chem_pot_saved,verbose_scGHF)
