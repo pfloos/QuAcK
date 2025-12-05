@@ -1,4 +1,4 @@
-subroutine scGHF_AO_itau_iw(nBas,nOrb,nO,maxSCF,maxDIIS,verbose_scGHF,chem_pot_scG, &
+subroutine scGHF_AO_itau_iw(nBas,nOrb,nO,maxSCF,maxDIIS,verbose_scGHF,restart_scGHF,chem_pot_scG, &
                             ENuc,Hc,S,P_in,cHF,eHF,nfreqs,wcoord,wweight,vMAT)
 
 ! Restricted scGHF
@@ -9,6 +9,7 @@ subroutine scGHF_AO_itau_iw(nBas,nOrb,nO,maxSCF,maxDIIS,verbose_scGHF,chem_pot_s
 ! Input variables
  
   logical,intent(in)            :: verbose_scGHF
+  logical,intent(in)            :: restart_scGHF
   logical,intent(in)            :: chem_pot_scG
 
   integer,intent(in)            :: nBas
@@ -81,6 +82,7 @@ subroutine scGHF_AO_itau_iw(nBas,nOrb,nO,maxSCF,maxDIIS,verbose_scGHF,chem_pot_s
   complex*16                    :: weval_cpx
   complex*16,allocatable        :: Sigma_c_w_ao(:,:,:)
   complex*16,allocatable        :: DeltaG_ao_iw(:,:,:)
+  complex*16,allocatable        :: G_ao_itau(:,:,:)
   complex*16,allocatable        :: G_ao_iw_hf(:,:,:)
   complex*16,allocatable        :: G_ao_iw(:,:,:)
   complex*16,allocatable        :: G_ao_iw_old(:,:,:)
@@ -127,6 +129,7 @@ subroutine scGHF_AO_itau_iw(nBas,nOrb,nO,maxSCF,maxDIIS,verbose_scGHF,chem_pot_s
  ntimes=nfreqs
  ntimes_twice=2*ntimes
  nBasSqnfreqs=nBasSq*nfreqs
+ read_SD_chkp=.false.
  write(*,*)
  write(*,'(A33,1X,F16.10,A3)') ' Initial chemical potential  = ',chem_pot,' au'
  if(chem_pot_scG) then
@@ -158,6 +161,7 @@ subroutine scGHF_AO_itau_iw(nBas,nOrb,nO,maxSCF,maxDIIS,verbose_scGHF,chem_pot_s
  allocate(cost2w_weight(nfreqs,ntimes))
  allocate(cosw2t_weight(ntimes,nfreqs))
  allocate(sinw2t_weight(ntimes,nfreqs))
+ allocate(G_ao_itau(ntimes_twice,nBas,nBas))
  allocate(G_ao_iw(nfreqs,nBas,nBas),G_ao_iw_old(nfreqs,nBas,nBas))
  allocate(Sigma_c_w_ao(nfreqs,nBas,nBas),DeltaG_ao_iw(nfreqs,nBas,nBas),G_ao_iw_hf(nfreqs,nBas,nBas))
  allocate(err_current(1))
@@ -188,6 +192,7 @@ subroutine scGHF_AO_itau_iw(nBas,nOrb,nO,maxSCF,maxDIIS,verbose_scGHF,chem_pot_s
  endif
 
  ! Initialize arrays
+ G_ao_itau=czero
  Sigma_c_w_ao=czero
  DeltaG_ao_iw=czero  ! Initialize DeltaG(i w) [ it will be G(i w) - Go(i w) ]  
  G_ao_iw=czero
@@ -225,6 +230,12 @@ subroutine scGHF_AO_itau_iw(nBas,nOrb,nO,maxSCF,maxDIIS,verbose_scGHF,chem_pot_s
   call G_AO_RHF_w(nBas,nOrb,nO,eta,cHF,eHF,weval_cpx,Mat_ao_tmp)
   G_ao_iw_hf(ifreq,:,:)=Mat_ao_tmp(:,:)
  enddo
+
+ ! If required, read the restart files
+ if(restart_scGHF) then
+  call read_scGW_restart(nBas,nfreqs,ntimes_twice,chem_pot,P_ao,P_ao_hf,G_ao_iw_hf,G_ao_itau,G_ao_itau,read_SD_chkp)
+  P_ao_iter=P_ao
+ endif
 
 !------------!
 ! scGHF loop !
@@ -390,6 +401,10 @@ subroutine scGHF_AO_itau_iw(nBas,nOrb,nO,maxSCF,maxDIIS,verbose_scGHF,chem_pot_s
  endif
  write(*,*)
 
+ ! Write restart files
+ call write_scGW_restart(nBas,ntimes,ntimes_twice,nfreqs,chem_pot,P_ao,P_ao_hf,G_ao_itau,G_ao_itau, &
+                         G_ao_iw_hf,DeltaG_ao_iw)
+
  call wall_time(end_scGHFitauiw)
  
  t_scGHFitauiw = end_scGHFitauiw - start_scGHFitauiw
@@ -403,6 +418,7 @@ subroutine scGHF_AO_itau_iw(nBas,nOrb,nO,maxSCF,maxDIIS,verbose_scGHF,chem_pot_s
  deallocate(cost2w_weight)
  deallocate(cosw2t_weight)
  deallocate(sinw2t_weight)
+ deallocate(G_ao_itau)
  deallocate(G_ao_iw,G_ao_iw_old)
  deallocate(Sigma_c_w_ao,DeltaG_ao_iw,G_ao_iw_hf)
  deallocate(P_ao,P_ao_old,P_ao_iter,P_ao_hf,F_ao,U_mo,cHFinv,cNO,Occ) 
