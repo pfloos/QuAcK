@@ -65,12 +65,12 @@ subroutine RQuAcK(working_dir,use_gpu,dotest,doRHF,doROHF,docRHF,doeRHF,        
 
   double precision,intent(in)   :: ZNuc(nNuc),rNuc(nNuc,ncart)
 
-  double precision,intent(inout):: S(nBas,nBas)
+  double precision,intent(in)   :: S(nBas,nBas)
   double precision,intent(in)   :: T(nBas,nBas)
   double precision,intent(in)   :: V(nBas,nBas)
-  double precision,intent(inout):: Hc(nBas,nBas)
+  double precision,intent(in)   :: Hc(nBas,nBas)
   double precision,intent(in)   :: CAP_AO(nBas,nBas)
-  double precision,intent(inout):: X(nBas,nOrb)
+  double precision,intent(in)   :: X(nBas,nOrb)
   double precision,intent(in)   :: dipole_int_AO(nBas,nBas,ncart)
 
   integer,intent(in)            :: maxSCF_HF,max_diis_HF
@@ -131,7 +131,6 @@ subroutine RQuAcK(working_dir,use_gpu,dotest,doRHF,doROHF,docRHF,doeRHF,        
   logical                       :: doMP,doCC,doCI,doRPA,doGF,doGW,doGT,doADC
   logical                       :: file_exists
   logical                       :: no_fock
-  logical                       :: scGW_mo_basis
 
   double precision              :: start_HF     ,end_HF       ,t_HF
   double precision              :: start_stab   ,end_stab     ,t_stab
@@ -357,37 +356,11 @@ subroutine RQuAcK(working_dir,use_gpu,dotest,doRHF,doROHF,docRHF,doeRHF,        
     enddo
    enddo
    no_fock=.false.
-   scGW_mo_basis=.false.
-   if(nBas==nOrb .and. scGW_mo_basis) then
-    write(*,'(a)') ' Warning! Hc integrals were transformed to the MO basis when scGW is performed in the MO basis'
-    call AOtoMO_ERI_RHF(nBas,nOrb,cHF,ERI_AO,ERI_MO)
-    cHF_tmp=0d0;S=0d0;X=0d0;PHF=0d0;
-    Hc=matmul(transpose(cHF),matmul(Hc,cHF))
-    do iorb=1,nBas
-     cHF_tmp(iorb,iorb)=1d0
-     S(iorb,iorb)=1d0
-     X(iorb,iorb)=1d0
-     if(iorb<=nO) PHF(iorb,iorb)=2d0
-     do jorb=1,nBas
-      do korb=1,nBas
-       do lorb=1,nBas
-        vMAT(1+(korb-1)+(iorb-1)*nOrb,1+(lorb-1)+(jorb-1)*nOrb)=ERI_MO(iorb,jorb,korb,lorb)
-       enddo
-      enddo
-     enddo
-    enddo
-!    Use scGHF to check the procedure and the convergence when Sigma_Hxc = Sigma_Hx
-!    call scGHF_AO_itau_iw(nBas,nOrb,nO,maxSCF_GW,max_diis_GW,verbose_scGW,restart_scGW,chem_pot_scG, &
-!                          ENuc,Hc,S,X,PHF,cHF_tmp,eHF,nfreqs,wcoord,wweight,vMAT)
-    call scGW_AO_itau_iw(nBas,nOrb,nO,maxSCF_GW,max_diis_GW,do_linDM_GW,restart_scGW,verbose_scGW,chem_pot_scG,no_fock, &
-                         ENuc,Hc,S,PHF,cHF_tmp,eHF,nfreqs,wcoord,wweight,vMAT,ERI_MO)
-   else
-!    Use scGHF to check the procedure and the convergence when Sigma_Hxc = Sigma_Hx
-!    call scGHF_AO_itau_iw(nBas,nOrb,nO,maxSCF_GW,max_diis_GW,verbose_scGW,restart_scGW,chem_pot_scG, &
-!                          ENuc,Hc,S,X,PHF,cHF_tmp,eHF,nfreqs,wcoord,wweight,vMAT)
-    call scGW_AO_itau_iw(nBas,nOrb,nO,maxSCF_GW,max_diis_GW,do_linDM_GW,restart_scGW,verbose_scGW,chem_pot_scG,no_fock, &
-                         ENuc,Hc,S,PHF,cHF_tmp,eHF,nfreqs,wcoord,wweight,vMAT,ERI_AO)
-   endif
+!  Use scGHF to check the procedure and the convergence when Sigma_Hxc = Sigma_Hx (NOTE: Modify RHF to enforce Hcore or RH)
+!   call scGHF_AO_itau_iw(nBas,nOrb,nO,maxSCF_GW,max_diis_GW,verbose_scGW,restart_scGW,chem_pot_scG, &
+!                         ENuc,Hc,S,X,PHF,cHF_tmp,eHF,nfreqs,wcoord,wweight,vMAT)
+   call scGW_AO_itau_iw(nBas,nOrb,nO,maxSCF_GW,max_diis_GW,do_linDM_GW,restart_scGW,verbose_scGW,chem_pot_scG,no_fock, &
+                        ENuc,Hc,S,PHF,cHF_tmp,eHF,nfreqs,wcoord,wweight,vMAT,ERI_AO)
    deallocate(vMAT,cHF_tmp)
 
   endif
