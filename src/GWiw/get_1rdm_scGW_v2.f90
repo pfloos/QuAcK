@@ -44,7 +44,7 @@ subroutine get_1rdm_scGW_v2(nBas,nOrb,nfreqs,chem_pot,S,X,F_ao,Sigma_c_w_ao,wcoo
    G_ao(:,:)=G_ao(:,:)-G_ao_iw_hf(ifreq,:,:)                   ! G_corr(iw) = G(iw) - Go(iw) 
    DeltaG_ao_iw(ifreq,:,:)=G_ao(:,:)
   enddo
-  P_ao(:,:) = P_ao(:,:)/pi + matmul(X(:,:),transpose(X(:,:)))  ! Add S^-1 (also sums both spin channels)
+  P_ao(:,:) = 2d0*P_ao(:,:)/pi + matmul(X(:,:),transpose(X(:,:)))  ! Add S^-1 (also sums both spin channels)
   trace_1_rdm=0d0
   do ibas=1,nBas
    do jbas=1,nBas
