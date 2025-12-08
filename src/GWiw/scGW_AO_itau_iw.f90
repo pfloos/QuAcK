@@ -629,6 +629,17 @@ subroutine scGW_AO_itau_iw(nBas,nOrb,nO,maxSCF,maxDIIS,dolinGW,restart_scGW,verb
  ! Write restart files
  call write_scGX_restart(nBas,ntimes,ntimes_twice,nfreqs,chem_pot,P_ao,P_ao_hf,G_ao_itau,G_ao_itau_hf, &
                          G_ao_iw_hf,DeltaG_ao_iw)
+ inquire(file='Print_Pao', exist=file_exists)
+ if(file_exists) then
+  write(*,*) 'P_scGW_ao (full)'
+  do ibas=1,nBas
+   write(*,'(*(f10.5))') P_ao(ibas,:)
+  enddo
+  write(*,*) 'P_scGW_ao (spin up)'
+  do ibas=1,nBas
+   write(*,'(*(f10.5))') 0.5d0*P_ao(ibas,:)
+  enddo
+ endif
  
  ! Using the correlated G and Sigma_c to test the linearized density matrix approximation
  if(dolinGW) then
