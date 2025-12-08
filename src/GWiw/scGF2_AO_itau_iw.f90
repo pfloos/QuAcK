@@ -553,6 +553,8 @@ subroutine scGF2_AO_itau_iw(nBas,nOrb,nO,maxSCF,maxDIIS,dolinGF2,restart_scGF2,v
        idiis_indexP=idiis_indexP+1
       enddo
      enddo
+    else
+     P_ao(:,:)=alpha_mixing*P_ao(:,:)+(1d0-alpha_mixing)*P_ao_old(:,:)
     endif
    
    enddo

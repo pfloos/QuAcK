@@ -512,6 +512,8 @@ subroutine scGW_AO_itau_iw(nBas,nOrb,nO,maxSCF,maxDIIS,dolinGW,restart_scGW,verb
        idiis_indexP=idiis_indexP+1
       enddo
      enddo
+    else
+     P_ao(:,:)=alpha_mixing*P_ao(:,:)+(1d0-alpha_mixing)*P_ao_old(:,:)
     endif
    
    enddo

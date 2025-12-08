@@ -649,6 +649,8 @@ subroutine scGWB_AO_itau_iw(nBas,nOrb,nOrb_twice,maxSCF,maxDIIS,dolinGW,restart_
        idiis_indexR=idiis_indexR+1
       enddo
      enddo
+    else
+     R_ao(:,:)=alpha_mixing*R_ao(:,:)+(1d0-alpha_mixing)*R_ao_old(:,:)
     endif
 
    enddo
