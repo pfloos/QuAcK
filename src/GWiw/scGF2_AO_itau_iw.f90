@@ -451,8 +451,7 @@ subroutine scGF2_AO_itau_iw(nBas,nOrb,nO,maxSCF,maxDIIS,dolinGF2,restart_scGF2,v
      EcGM_itau=EcGM_itau+tweight(itau)*Mat_ao_tmp(ibas,ibas)
     enddo
   enddo
-  EcGM=-real(EcGM_itau) ! Including a factor 2 to sum over spin-channels  EcGM = - 1/2 \sum_spin \int Tr[ Sigma_c_spin(-it) G_spin(it) ] dt
-                        !                                                      = - \int Tr[ Sigma_c_up(-it) G_up(it) ] dt for restricted calcs.
+  EcGM=-real(EcGM_itau) ! EcGM = - \int Tr[ Sigma_c_up(-it) G_up(it) ] dt for restricted calcs.
 
   ! Check the error in Sigma_c(i w) at iter=1 [ if this is calc. is not with restart ]
   if(iter==1 .and. .not.restart_scGF2) then
