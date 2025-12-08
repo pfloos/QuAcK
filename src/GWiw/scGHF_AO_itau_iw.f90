@@ -273,13 +273,13 @@ subroutine scGHF_AO_itau_iw(nBas,nOrb,nO,maxSCF,maxDIIS,verbose_scGHF,restart_sc
    enddo
    ! Build G(i w) and n(r)
    P_ao_old=P_ao
-   call get_1rdm_scGW(nBas,nfreqs,chem_pot,S,F_ao,Sigma_c_w_ao,wcoord,wweight, &
+   call get_1rdm_scGX(nBas,nfreqs,chem_pot,S,F_ao,Sigma_c_w_ao,wcoord,wweight, &
                       Mat_ao_tmp,G_ao_iw_hf,DeltaG_ao_iw,P_ao,P_ao_hf,trace_1_rdm)
 !  I. Duchemin's method to compute P_ao from G(i w) 
-!   call get_1rdm_scGW_v2(nBas,nOrb,nfreqs,chem_pot,S,X,F_ao,Sigma_c_w_ao,wcoord,wweight, &
+!   call get_1rdm_scGX_v2(nBas,nOrb,nfreqs,iter_fock,chem_pot,S,X,F_ao,Sigma_c_w_ao,wcoord,wweight, &
 !                         Mat_ao_tmp,G_ao_iw_hf,DeltaG_ao_iw,P_ao,trace_1_rdm) 
    if(abs(trace_1_rdm-nElectrons)**2d0>thrs_N .and. chem_pot_scG) &
-    call fix_chem_pot_scGW_bisec(iter_fock,nBas,nfreqs,nElectrons,thrs_N,thrs_Ngrad,chem_pot,S,F_ao,Sigma_c_w_ao,wcoord,wweight, &
+    call fix_chem_pot_scGX_bisec(iter_fock,nBas,nfreqs,nElectrons,thrs_N,thrs_Ngrad,chem_pot,S,F_ao,Sigma_c_w_ao,wcoord,wweight, &
                                  Mat_ao_tmp,G_ao_iw_hf,DeltaG_ao_iw,P_ao,P_ao_hf,trace_1_rdm,chem_pot_saved,verbose_scGHF)
    ! Check convergence of P_ao
    diff_Pao=0d0

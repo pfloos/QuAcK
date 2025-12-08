@@ -1,7 +1,7 @@
-subroutine get_1rdm_scGW(nBas,nfreqs,chem_pot,S,F_ao,Sigma_c_w_ao,wcoord,wweight, &
+subroutine get_1rdm_scGX(nBas,nfreqs,chem_pot,S,F_ao,Sigma_c_w_ao,wcoord,wweight, &
                          G_ao,G_ao_iw_hf,DeltaG_ao_iw,P_ao,P_ao_hf,trace_1_rdm) 
 
-! Compute the scGW 1RDM
+! Compute the scGX 1RDM
 
   implicit none
   include 'parameters.h'

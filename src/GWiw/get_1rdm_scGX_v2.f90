@@ -1,7 +1,7 @@
-subroutine get_1rdm_scGW_v2(nBas,nOrb,nfreqs,chem_pot,S,X,F_ao,Sigma_c_w_ao,wcoord,wweight, &
+subroutine get_1rdm_scGX_v2(nBas,nOrb,nfreqs,iter_fock,chem_pot,S,X,F_ao,Sigma_c_w_ao,wcoord,wweight, &
                             G_ao,G_ao_iw_hf,DeltaG_ao_iw,P_ao,trace_1_rdm) 
 
-! Compute the scGW 1RDM
+! Compute the scGX 1RDM
 
   implicit none
   include 'parameters.h'
@@ -11,6 +11,7 @@ subroutine get_1rdm_scGW_v2(nBas,nOrb,nfreqs,chem_pot,S,X,F_ao,Sigma_c_w_ao,wcoo
   integer,intent(in)            :: nBas
   integer,intent(in)            :: nOrb
   integer,intent(in)            :: nfreqs
+  integer,intent(in)            :: iter_fock
   double precision,intent(in)   :: chem_pot
   double precision,intent(in)   :: S(nBas,nBas)
   double precision,intent(in)   :: X(nBas,nOrb)
@@ -33,6 +34,9 @@ subroutine get_1rdm_scGW_v2(nBas,nOrb,nfreqs,chem_pot,S,X,F_ao,Sigma_c_w_ao,wcoo
   complex*16,intent(out)        :: G_ao(nBas,nBas)
   complex*16,intent(out)        :: DeltaG_ao_iw(nfreqs,nBas,nBas)
 
+  write(*,*)
+  write(*,'(a,i5)') " Using I. Duchemin's method at Fock iter ",iter_fock
+  write(*,*)
   P_ao=0d0
   DeltaG_ao_iw=czero
   do ifreq=1,nfreqs
