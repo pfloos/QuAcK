@@ -309,7 +309,7 @@ subroutine scGF2_AO_itau_iw(nBas,nOrb,nO,maxSCF,maxDIIS,dolinGF2,restart_scGF2,v
   read_SD_chkp=.false.
   inquire(file='read_SD_scGF2', exist=file_exists)
   if(file_exists) read_SD_chkp=.true.
-  call read_scGW_restart(nBas,nfreqs,ntimes_twice,chem_pot,P_ao,P_ao_hf,G_ao_iw_hf,G_ao_itau,G_ao_itau_hf,read_SD_chkp)
+  call read_scGX_restart(nBas,nfreqs,ntimes_twice,chem_pot,P_ao,P_ao_hf,G_ao_iw_hf,G_ao_itau,G_ao_itau_hf,read_SD_chkp)
   P_ao_iter=P_ao
   G_ao_itau_old(:,:,:)=G_ao_itau(:,:,:)
  endif
@@ -662,7 +662,7 @@ subroutine scGF2_AO_itau_iw(nBas,nOrb,nO,maxSCF,maxDIIS,dolinGF2,restart_scGF2,v
  write(*,*)
 
  ! Write restart files
- call write_scGW_restart(nBas,ntimes,ntimes_twice,nfreqs,chem_pot,P_ao,P_ao_hf,G_ao_itau,G_ao_itau_hf, &
+ call write_scGX_restart(nBas,ntimes,ntimes_twice,nfreqs,chem_pot,P_ao,P_ao_hf,G_ao_itau,G_ao_itau_hf, &
                          G_ao_iw_hf,DeltaG_ao_iw)
  
  ! Using the correlated G and Sigma_c to test the linearized density matrix approximation
