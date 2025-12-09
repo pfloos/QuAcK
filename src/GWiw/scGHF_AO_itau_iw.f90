@@ -234,7 +234,7 @@ subroutine scGHF_AO_itau_iw(nBas,nOrb,nO,maxSCF,maxDIIS,verbose_scGHF,restart_sc
 
  ! If required, read the restart files
  if(restart_scGHF) then
-  call read_scGW_restart(nBas,nfreqs,ntimes_twice,chem_pot,P_ao,P_ao_hf,G_ao_iw_hf,G_ao_itau,G_ao_itau,read_SD_chkp)
+  call read_scGX_restart(nBas,nfreqs,ntimes_twice,chem_pot,P_ao,P_ao_hf,G_ao_iw_hf,G_ao_itau,G_ao_itau,read_SD_chkp)
   P_ao_iter=P_ao
  endif
 
@@ -273,13 +273,13 @@ subroutine scGHF_AO_itau_iw(nBas,nOrb,nO,maxSCF,maxDIIS,verbose_scGHF,restart_sc
    enddo
    ! Build G(i w) and n(r)
    P_ao_old=P_ao
-   call get_1rdm_scGW(nBas,nfreqs,chem_pot,S,F_ao,Sigma_c_w_ao,wcoord,wweight, &
+   call get_1rdm_scGX(nBas,nfreqs,chem_pot,S,F_ao,Sigma_c_w_ao,wcoord,wweight, &
                       Mat_ao_tmp,G_ao_iw_hf,DeltaG_ao_iw,P_ao,P_ao_hf,trace_1_rdm)
 !  I. Duchemin's method to compute P_ao from G(i w) 
-!   call get_1rdm_scGW_v2(nBas,nOrb,nfreqs,chem_pot,S,X,F_ao,Sigma_c_w_ao,wcoord,wweight, &
+!   call get_1rdm_scGX_v2(nBas,nOrb,nfreqs,iter_fock,chem_pot,S,X,F_ao,Sigma_c_w_ao,wcoord,wweight, &
 !                         Mat_ao_tmp,G_ao_iw_hf,DeltaG_ao_iw,P_ao,trace_1_rdm) 
    if(abs(trace_1_rdm-nElectrons)**2d0>thrs_N .and. chem_pot_scG) &
-    call fix_chem_pot_scGW_bisec(iter_fock,nBas,nfreqs,nElectrons,thrs_N,thrs_Ngrad,chem_pot,S,F_ao,Sigma_c_w_ao,wcoord,wweight, &
+    call fix_chem_pot_scGX_bisec(iter_fock,nBas,nfreqs,nElectrons,thrs_N,thrs_Ngrad,chem_pot,S,F_ao,Sigma_c_w_ao,wcoord,wweight, &
                                  Mat_ao_tmp,G_ao_iw_hf,DeltaG_ao_iw,P_ao,P_ao_hf,trace_1_rdm,chem_pot_saved,verbose_scGHF)
    ! Check convergence of P_ao
    diff_Pao=0d0
@@ -406,7 +406,7 @@ subroutine scGHF_AO_itau_iw(nBas,nOrb,nO,maxSCF,maxDIIS,verbose_scGHF,restart_sc
  write(*,*)
 
  ! Write restart files
- call write_scGW_restart(nBas,ntimes,ntimes_twice,nfreqs,chem_pot,P_ao,P_ao_hf,G_ao_itau,G_ao_itau, &
+ call write_scGX_restart(nBas,ntimes,ntimes_twice,nfreqs,chem_pot,P_ao,P_ao_hf,G_ao_itau,G_ao_itau, &
                          G_ao_iw_hf,DeltaG_ao_iw)
 
  call wall_time(end_scGHFitauiw)

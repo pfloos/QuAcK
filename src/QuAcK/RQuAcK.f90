@@ -360,7 +360,7 @@ subroutine RQuAcK(working_dir,use_gpu,dotest,doRHF,doROHF,docRHF,doeRHF,        
 !   call scGHF_AO_itau_iw(nBas,nOrb,nO,maxSCF_GW,max_diis_GW,verbose_scGW,restart_scGW,chem_pot_scG, &
 !                         ENuc,Hc,S,X,PHF,cHF_tmp,eHF,nfreqs,wcoord,wweight,vMAT)
    call scGW_AO_itau_iw(nBas,nOrb,nO,maxSCF_GW,max_diis_GW,do_linDM_GW,restart_scGW,verbose_scGW,chem_pot_scG,no_fock, &
-                        ENuc,Hc,S,PHF,cHF_tmp,eHF,nfreqs,wcoord,wweight,vMAT,ERI_AO)
+                        ENuc,Hc,S,X,PHF,cHF_tmp,eHF,nfreqs,wcoord,wweight,vMAT,ERI_AO)
    deallocate(vMAT,cHF_tmp)
 
   endif

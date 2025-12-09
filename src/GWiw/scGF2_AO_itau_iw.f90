@@ -309,7 +309,7 @@ subroutine scGF2_AO_itau_iw(nBas,nOrb,nO,maxSCF,maxDIIS,dolinGF2,restart_scGF2,v
   read_SD_chkp=.false.
   inquire(file='read_SD_scGF2', exist=file_exists)
   if(file_exists) read_SD_chkp=.true.
-  call read_scGW_restart(nBas,nfreqs,ntimes_twice,chem_pot,P_ao,P_ao_hf,G_ao_iw_hf,G_ao_itau,G_ao_itau_hf,read_SD_chkp)
+  call read_scGX_restart(nBas,nfreqs,ntimes_twice,chem_pot,P_ao,P_ao_hf,G_ao_iw_hf,G_ao_itau,G_ao_itau_hf,read_SD_chkp)
   P_ao_iter=P_ao
   G_ao_itau_old(:,:,:)=G_ao_itau(:,:,:)
  endif
@@ -515,10 +515,10 @@ subroutine scGF2_AO_itau_iw(nBas,nOrb,nO,maxSCF,maxDIIS,dolinGF2,restart_scGF2,v
     enddo
     ! Build G(i w) and n(r)
     P_ao_old=P_ao
-    call get_1rdm_scGW(nBas,nfreqs,chem_pot,S,F_ao,Sigma_c_w_ao,wcoord,wweight, &
+    call get_1rdm_scGX(nBas,nfreqs,chem_pot,S,F_ao,Sigma_c_w_ao,wcoord,wweight, &
                        Mat_ao_tmp,G_ao_iw_hf,DeltaG_ao_iw,P_ao,P_ao_hf,trace_1_rdm) 
     if(abs(trace_1_rdm-nElectrons)**2d0>thrs_N .and. chem_pot_scG) &
-     call fix_chem_pot_scGW_bisec(iter_fock,nBas,nfreqs,nElectrons,thrs_N,thrs_Ngrad,chem_pot,S,F_ao,Sigma_c_w_ao,wcoord,wweight, &
+     call fix_chem_pot_scGX_bisec(iter_fock,nBas,nfreqs,nElectrons,thrs_N,thrs_Ngrad,chem_pot,S,F_ao,Sigma_c_w_ao,wcoord,wweight, &
                                   Mat_ao_tmp,G_ao_iw_hf,DeltaG_ao_iw,P_ao,P_ao_hf,trace_1_rdm,chem_pot_saved,verbose_scGF2)
     ! Check convergence of P_ao for fixed Sigma_c(i w)
     diff_Pao=0d0
@@ -553,6 +553,8 @@ subroutine scGF2_AO_itau_iw(nBas,nOrb,nO,maxSCF,maxDIIS,dolinGF2,restart_scGF2,v
        idiis_indexP=idiis_indexP+1
       enddo
      enddo
+    else
+     P_ao(:,:)=alpha_mixing*P_ao(:,:)+(1d0-alpha_mixing)*P_ao_old(:,:)
     endif
    
    enddo
@@ -662,7 +664,7 @@ subroutine scGF2_AO_itau_iw(nBas,nOrb,nO,maxSCF,maxDIIS,dolinGF2,restart_scGF2,v
  write(*,*)
 
  ! Write restart files
- call write_scGW_restart(nBas,ntimes,ntimes_twice,nfreqs,chem_pot,P_ao,P_ao_hf,G_ao_itau,G_ao_itau_hf, &
+ call write_scGX_restart(nBas,ntimes,ntimes_twice,nfreqs,chem_pot,P_ao,P_ao_hf,G_ao_itau,G_ao_itau_hf, &
                          G_ao_iw_hf,DeltaG_ao_iw)
  
  ! Using the correlated G and Sigma_c to test the linearized density matrix approximation

@@ -1,7 +1,7 @@
-subroutine fix_chem_pot_scGW(iter_fock,nBas,nfreqs,nElectrons,thrs_N,thrs_Ngrad,chem_pot,S,F_ao,Sigma_c_w_ao,wcoord,wweight, &
+subroutine fix_chem_pot_scGX(iter_fock,nBas,nfreqs,nElectrons,thrs_N,thrs_Ngrad,chem_pot,S,F_ao,Sigma_c_w_ao,wcoord,wweight, &
                              G_ao,G_ao_iw_hf,DeltaG_ao_iw,P_ao,P_ao_hf,trace_1_rdm,grad_electrons,verbose) 
 
-! Fix the chemical potential for scGW 
+! Fix the chemical potential for scGX 
 
   implicit none
   include 'parameters.h'
@@ -56,7 +56,7 @@ subroutine fix_chem_pot_scGW(iter_fock,nBas,nfreqs,nElectrons,thrs_N,thrs_Ngrad,
 
   if(verbose) then
    write(*,*)
-   write(*,'(a,i5)') ' Fixing the Tr[1D] at scGW/scGF2 the using gradient at Fock iter ',iter_fock
+   write(*,'(a,i5)') ' Fixing the Tr[1D] at scGX the using gradient at Fock iter ',iter_fock
    write(*,*)
   endif
 
@@ -65,11 +65,11 @@ subroutine fix_chem_pot_scGW(iter_fock,nBas,nfreqs,nElectrons,thrs_N,thrs_Ngrad,
   trace_old = 1d2
   do while( abs(trace_old-nElectrons) > thrs_closer .and. isteps <= 100 )
    isteps = isteps + 1
-   call get_1rdm_scGW(nBas,nfreqs,chem_pot,S,F_ao,Sigma_c_w_ao, &
+   call get_1rdm_scGX(nBas,nfreqs,chem_pot,S,F_ao,Sigma_c_w_ao, &
                       wcoord,wweight,G_ao,G_ao_iw_hf,DeltaG_ao_iw,P_ao,P_ao_hf,trace_old) 
-   call get_1rdm_scGW(nBas,nfreqs,chem_pot-delta_chem_pot,S,F_ao,Sigma_c_w_ao, &
+   call get_1rdm_scGX(nBas,nfreqs,chem_pot-delta_chem_pot,S,F_ao,Sigma_c_w_ao, &
                       wcoord,wweight,G_ao,G_ao_iw_hf,DeltaG_ao_iw,P_ao,P_ao_hf,trace_down) 
-   call get_1rdm_scGW(nBas,nfreqs,chem_pot+delta_chem_pot,S,F_ao,Sigma_c_w_ao, &
+   call get_1rdm_scGX(nBas,nfreqs,chem_pot+delta_chem_pot,S,F_ao,Sigma_c_w_ao, &
                       wcoord,wweight,G_ao,G_ao_iw_hf,DeltaG_ao_iw,P_ao,P_ao_hf,trace_up) 
    if( abs(trace_up-nElectrons) > abs(trace_old-nElectrons) .and. abs(trace_down-nElectrons) > abs(trace_old-nElectrons) ) then
      delta_chem_pot = 0.5d0*delta_chem_pot
@@ -93,15 +93,15 @@ subroutine fix_chem_pot_scGW(iter_fock,nBas,nfreqs,nElectrons,thrs_N,thrs_Ngrad,
   do while( abs(trace_1_rdm) > thrs_N .and. abs(grad_electrons) > thrs_Ngrad .and. isteps <= 100 )
    isteps = isteps + 1
    chem_pot = chem_pot + chem_pot_change
-   call get_1rdm_scGW(nBas,nfreqs,chem_pot,S,F_ao,Sigma_c_w_ao, &
+   call get_1rdm_scGX(nBas,nfreqs,chem_pot,S,F_ao,Sigma_c_w_ao, &
                       wcoord,wweight,G_ao,G_ao_iw_hf,DeltaG_ao_iw,P_ao,P_ao_hf,trace_1_rdm)
-   call get_1rdm_scGW(nBas,nfreqs,chem_pot+2d0*delta_chem_pot,S,F_ao,Sigma_c_w_ao, &
+   call get_1rdm_scGX(nBas,nfreqs,chem_pot+2d0*delta_chem_pot,S,F_ao,Sigma_c_w_ao, &
                       wcoord,wweight,G_ao,G_ao_iw_hf,DeltaG_ao_iw,P_ao,P_ao_hf,trace_2up)
-   call get_1rdm_scGW(nBas,nfreqs,chem_pot+delta_chem_pot,S,F_ao,Sigma_c_w_ao, &
+   call get_1rdm_scGX(nBas,nfreqs,chem_pot+delta_chem_pot,S,F_ao,Sigma_c_w_ao, &
                       wcoord,wweight,G_ao,G_ao_iw_hf,DeltaG_ao_iw,P_ao,P_ao_hf,trace_up)
-   call get_1rdm_scGW(nBas,nfreqs,chem_pot-delta_chem_pot,S,F_ao,Sigma_c_w_ao, &
+   call get_1rdm_scGX(nBas,nfreqs,chem_pot-delta_chem_pot,S,F_ao,Sigma_c_w_ao, &
                       wcoord,wweight,G_ao,G_ao_iw_hf,DeltaG_ao_iw,P_ao,P_ao_hf,trace_down)
-   call get_1rdm_scGW(nBas,nfreqs,chem_pot-2d0*delta_chem_pot,S,F_ao,Sigma_c_w_ao, &
+   call get_1rdm_scGX(nBas,nfreqs,chem_pot-2d0*delta_chem_pot,S,F_ao,Sigma_c_w_ao, &
                       wcoord,wweight,G_ao,G_ao_iw_hf,DeltaG_ao_iw,P_ao,P_ao_hf,trace_2down)
    trace_1_rdm=(trace_1_rdm-nElectrons)**2d0
    trace_2up  =(trace_2up  -nElectrons)**2d0
@@ -114,7 +114,7 @@ subroutine fix_chem_pot_scGW(iter_fock,nBas,nfreqs,nElectrons,thrs_N,thrs_Ngrad,
    ! Maximum change is bounded within +/- 0.10
    chem_pot_change = max( min( chem_pot_change , 0.1d0 / real(isteps) ), -0.1d0 / real(isteps) )
   enddo
-  call get_1rdm_scGW(nBas,nfreqs,chem_pot,S,F_ao,Sigma_c_w_ao, &
+  call get_1rdm_scGX(nBas,nfreqs,chem_pot,S,F_ao,Sigma_c_w_ao, &
                      wcoord,wweight,G_ao,G_ao_iw_hf,DeltaG_ao_iw,P_ao,P_ao_hf,trace_1_rdm) 
 
 end subroutine

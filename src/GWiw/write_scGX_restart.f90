@@ -1,7 +1,7 @@
-subroutine write_scGW_restart(nBas,ntimes,ntimes_twice,nfreqs,chem_pot,P_ao,P_ao_hf,G_ao_itau,G_ao_itau_hf, &
+subroutine write_scGX_restart(nBas,ntimes,ntimes_twice,nfreqs,chem_pot,P_ao,P_ao_hf,G_ao_itau,G_ao_itau_hf, &
                               G_ao_iw_hf,DeltaG_ao_iw)
 
-! Read grids for scGW
+! Read grids for scGX
 
   implicit none
   include 'parameters.h'
@@ -24,7 +24,7 @@ subroutine write_scGW_restart(nBas,ntimes,ntimes_twice,nfreqs,chem_pot,P_ao,P_ao
  double precision                :: val_print_r
  complex*16                      :: val_print_c
 
-  open(unit=iunit,form='unformatted',file='scGW_Gitau_bin')
+  open(unit=iunit,form='unformatted',file='scGX_Gitau_bin')
   write(iunit) nBas
   write(iunit) ntimes
   do itau=1,ntimes_twice
@@ -38,7 +38,7 @@ subroutine write_scGW_restart(nBas,ntimes,ntimes_twice,nfreqs,chem_pot,P_ao,P_ao
   enddo
   write(iunit) iunit
   close(iunit)
-  open(unit=iunit,form='unformatted',file='scGW_Giw_bin')
+  open(unit=iunit,form='unformatted',file='scGX_Giw_bin')
   write(iunit) nBas
   write(iunit) ntimes
   do ifreq=1,nfreqs
@@ -52,7 +52,7 @@ subroutine write_scGW_restart(nBas,ntimes,ntimes_twice,nfreqs,chem_pot,P_ao,P_ao
   enddo
   write(iunit) iunit
   close(iunit)
-  open(unit=iunit,form='unformatted',file='scGW_Pao_bin')
+  open(unit=iunit,form='unformatted',file='scGX_Pao_bin')
   write(iunit) nBas
   do ibas=1,nBas
    do jbas=1,nBas
@@ -63,11 +63,11 @@ subroutine write_scGW_restart(nBas,ntimes,ntimes_twice,nfreqs,chem_pot,P_ao,P_ao
   enddo
   write(iunit) iunit
   close(iunit)
-  open(unit=iunit,form='unformatted',file='scGW_chem_pot_bin')
+  open(unit=iunit,form='unformatted',file='scGX_chem_pot_bin')
   write(iunit) chem_pot
   write(iunit) iunit
   close(iunit)
-  open(unit=iunit,form='unformatted',file='scGW_Gitau_sd_bin')
+  open(unit=iunit,form='unformatted',file='scGX_Gitau_sd_bin')
   write(iunit) nBas
   write(iunit) ntimes
   do itau=1,ntimes_twice
@@ -81,7 +81,7 @@ subroutine write_scGW_restart(nBas,ntimes,ntimes_twice,nfreqs,chem_pot,P_ao,P_ao
   enddo
   write(iunit) iunit
   close(iunit)
-  open(unit=iunit,form='unformatted',file='scGW_Giw_sd_bin')
+  open(unit=iunit,form='unformatted',file='scGX_Giw_sd_bin')
   write(iunit) nBas
   write(iunit) ntimes
   do ifreq=1,nfreqs
@@ -95,7 +95,7 @@ subroutine write_scGW_restart(nBas,ntimes,ntimes_twice,nfreqs,chem_pot,P_ao,P_ao
   enddo
   write(iunit) iunit
   close(iunit)
-  open(unit=iunit,form='unformatted',file='scGW_Pao_sd_bin')
+  open(unit=iunit,form='unformatted',file='scGX_Pao_sd_bin')
   write(iunit) nBas
   do ibas=1,nBas
    do jbas=1,nBas

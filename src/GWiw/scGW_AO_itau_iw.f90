@@ -1,5 +1,5 @@
 subroutine scGW_AO_itau_iw(nBas,nOrb,nO,maxSCF,maxDIIS,dolinGW,restart_scGW,verbose_scGW,chem_pot_scG,no_fock, &
-                           ENuc,Hc,S,P_in,cHF,eHF,nfreqs,wcoord,wweight,vMAT,ERI_AO)
+                           ENuc,Hc,S,X,P_in,cHF,eHF,nfreqs,wcoord,wweight,vMAT,ERI_AO)
 
 ! Restricted scGW
 
@@ -24,6 +24,7 @@ subroutine scGW_AO_itau_iw(nBas,nOrb,nO,maxSCF,maxDIIS,dolinGW,restart_scGW,verb
   double precision,intent(in)   :: Hc(nBas,nBas)
   double precision,intent(in)   :: P_in(nBas,nBas)
   double precision,intent(in)   :: S(nBas,nBas)
+  double precision,intent(in)   :: X(nBas,nOrb)
   double precision,intent(in)   :: vMAT(nBas*nBas,nBas*nBas)
   double precision,intent(in)   :: ERI_AO(nBas,nBas,nBas,nBas)
 
@@ -308,7 +309,7 @@ subroutine scGW_AO_itau_iw(nBas,nOrb,nO,maxSCF,maxDIIS,dolinGW,restart_scGW,verb
   read_SD_chkp=.false.
   inquire(file='read_SD_scGW', exist=file_exists)
   if(file_exists) read_SD_chkp=.true.
-  call read_scGW_restart(nBas,nfreqs,ntimes_twice,chem_pot,P_ao,P_ao_hf,G_ao_iw_hf,G_ao_itau,G_ao_itau_hf,read_SD_chkp)
+  call read_scGX_restart(nBas,nfreqs,ntimes_twice,chem_pot,P_ao,P_ao_hf,G_ao_iw_hf,G_ao_itau,G_ao_itau_hf,read_SD_chkp)
   P_ao_iter=P_ao
   G_ao_itau_old(:,:,:)=G_ao_itau(:,:,:)
  endif
@@ -474,10 +475,13 @@ subroutine scGW_AO_itau_iw(nBas,nOrb,nO,maxSCF,maxDIIS,dolinGW,restart_scGW,verb
     enddo
     ! Build G(i w) and n(r)
     P_ao_old=P_ao
-    call get_1rdm_scGW(nBas,nfreqs,chem_pot,S,F_ao,Sigma_c_w_ao,wcoord,wweight, &
+    call get_1rdm_scGX(nBas,nfreqs,chem_pot,S,F_ao,Sigma_c_w_ao,wcoord,wweight, &
                        Mat_ao_tmp,G_ao_iw_hf,DeltaG_ao_iw,P_ao,P_ao_hf,trace_1_rdm) 
+!  I. Duchemin's method to compute P_ao from G(i w) 
+!   call get_1rdm_scGX_v2(nBas,nOrb,nfreqs,iter_fock,chem_pot,S,X,F_ao,Sigma_c_w_ao,wcoord,wweight, &
+!                         Mat_ao_tmp,G_ao_iw_hf,DeltaG_ao_iw,P_ao,trace_1_rdm) 
     if(abs(trace_1_rdm-nElectrons)**2d0>thrs_N .and. chem_pot_scG) &
-     call fix_chem_pot_scGW_bisec(iter_fock,nBas,nfreqs,nElectrons,thrs_N,thrs_Ngrad,chem_pot,S,F_ao,Sigma_c_w_ao,wcoord,wweight, &
+     call fix_chem_pot_scGX_bisec(iter_fock,nBas,nfreqs,nElectrons,thrs_N,thrs_Ngrad,chem_pot,S,F_ao,Sigma_c_w_ao,wcoord,wweight, &
                                   Mat_ao_tmp,G_ao_iw_hf,DeltaG_ao_iw,P_ao,P_ao_hf,trace_1_rdm,chem_pot_saved,verbose_scGW)
     ! Check convergence of P_ao for fixed Sigma_c(i w)
     diff_Pao=0d0
@@ -512,6 +516,8 @@ subroutine scGW_AO_itau_iw(nBas,nOrb,nO,maxSCF,maxDIIS,dolinGW,restart_scGW,verb
        idiis_indexP=idiis_indexP+1
       enddo
      enddo
+    else
+     P_ao(:,:)=alpha_mixing*P_ao(:,:)+(1d0-alpha_mixing)*P_ao_old(:,:)
     endif
    
    enddo
@@ -621,8 +627,19 @@ subroutine scGW_AO_itau_iw(nBas,nOrb,nO,maxSCF,maxDIIS,dolinGW,restart_scGW,verb
  write(*,*)
 
  ! Write restart files
- call write_scGW_restart(nBas,ntimes,ntimes_twice,nfreqs,chem_pot,P_ao,P_ao_hf,G_ao_itau,G_ao_itau_hf, &
+ call write_scGX_restart(nBas,ntimes,ntimes_twice,nfreqs,chem_pot,P_ao,P_ao_hf,G_ao_itau,G_ao_itau_hf, &
                          G_ao_iw_hf,DeltaG_ao_iw)
+ inquire(file='Print_Pao', exist=file_exists)
+ if(file_exists) then
+  write(*,*) 'P_scGW_ao (full)'
+  do ibas=1,nBas
+   write(*,'(*(f10.5))') P_ao(ibas,:)
+  enddo
+  write(*,*) 'P_scGW_ao (spin up)'
+  do ibas=1,nBas
+   write(*,'(*(f10.5))') 0.5d0*P_ao(ibas,:)
+  enddo
+ endif
  
  ! Using the correlated G and Sigma_c to test the linearized density matrix approximation
  if(dolinGW) then
