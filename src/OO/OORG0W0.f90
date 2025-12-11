@@ -59,7 +59,7 @@ subroutine OORG0W0(dotest,doACFDT,exchange_kernel,doXBS,dophBSE,dophBSE2,TDA_W,T
 
   logical                       :: print_W   = .false.
   logical                       :: plot_self = .false.
-  logical                       :: OVRotOnly = .false.
+  logical                       :: OVRotOnly = .true.
   integer                       :: isp_W
   double precision              :: flow
   double precision              :: EcRPA
@@ -114,7 +114,7 @@ subroutine OORG0W0(dotest,doACFDT,exchange_kernel,doXBS,dophBSE,dophBSE2,TDA_W,T
   double precision,allocatable  :: J(:,:),K(:,:)
   double precision              :: Emu, EOld
   double precision              :: EHF_rdm,EcRPA_rdm,EcRPA_HF,EcRPA_triplet,EcRPA_singlet
-  double precision,allocatable  :: hess(:,:),grad(:)
+  double precision,allocatable  :: hess(:,:),grad(:),F_gen(:,:)
   double precision              :: delta_num_grad = 1d-5
 
   double precision,external     :: trace_matrix
@@ -197,7 +197,7 @@ subroutine OORG0W0(dotest,doACFDT,exchange_kernel,doXBS,dophBSE,dophBSE2,TDA_W,T
            eGW(nOrb),eGWlin(nOrb),X(nS,nS),X_inv(nS,nS),Y(nS,nS),Xbar(nS,nS),Xbar_inv(nS,nS),lambda(nS,nS),t(nS,nS),&
            xi(nS,nS),rampl(N,N,N),lampl(N,N,N),rp(N),lp(N),h(N,N),c(nBas,nOrb),&
            rdm1(N,N),rdm2(N,N,N,N),rdm1_hf(N,N),rdm2_hf(N,N,N,N),rdm1_rpa(N,N),rdm2_rpa(N,N,N,N),&
-           J(nBas,nBas),K(nBas,nBas),F(nOrb,nOrb),grad(Nsq),hess(Nsq,Nsq))
+           J(nBas,nBas),K(nBas,nBas),F(nOrb,nOrb),grad(Nsq),hess(Nsq,Nsq),F_gen(N,N))
   
 ! Initialize variables for OO  
   OOi               = 1
@@ -257,11 +257,11 @@ subroutine OORG0W0(dotest,doACFDT,exchange_kernel,doXBS,dophBSE,dophBSE2,TDA_W,T
       ! Useful quantities
       X = transpose(0.5*(XpY + XmY))
       Y = transpose(0.5*(XpY - XmY))
-   !   call inverse_matrix(nS,X,X_inv)
-   !   t = matmul(Y,X_inv)
-   !   Xbar = - matmul(t,Y) + X
-   !   call inverse_matrix(nS,Xbar,Xbar_inv)
-   !   lambda = matmul(Y,Xbar_inv)
+      call inverse_matrix(nS,X,X_inv)
+      t = matmul(Y,X_inv)
+      Xbar = - matmul(t,Y) + X
+      call inverse_matrix(nS,Xbar,Xbar_inv)
+      lambda = matmul(Y,Xbar_inv)
   
       call RG0W0_rdm2_hf(O,V,N,nS,rdm2_hf)
       call RG0W0_rdm1_hf(O,V,N,nS,rdm1_hf)
@@ -271,14 +271,19 @@ subroutine OORG0W0(dotest,doACFDT,exchange_kernel,doXBS,dophBSE,dophBSE2,TDA_W,T
      ! rdm2_rpa = 0d0
      ! call RG0W0_rdm1_mu(O,V,N,nS,lampl,rampl,lp,rp,xi,lambda,t,rdm1_rpa)
      ! call energy_from_rdm(N,h,ERI_MO,rdm1_rpa,rdm2_rpa,EHF_rdm,.true.)
-     ! call RG0W0_rdm1_rpa(O,V,N,nS,lambda,t,rdm1_rpa)
-     ! call RG0W0_rdm2_rpa(O,V,N,nS,lambda,t,rdm2_rpa)
-      call RG0W0_rdms_crpa(1,O,V,N,nS,X,Y,rdm1_rpa,rdm2_rpa)
-      call RG0W0_transform_rdms_f_h(O,V,N,nS,rdm1_rpa,rdm2_rpa)
+      call RG0W0_rdm1_rpa(O,V,N,nS,lambda,t,rdm1_rpa)
+      call RG0W0_rdm2_rpa(O,V,N,nS,lambda,t,rdm2_rpa)
+     
+      !call RG0W0_rdms_crpa(1,O,V,N,nS,X,Y,rdm1_rpa,rdm2_rpa)
+      
+      !call RG0W0_transform_rdms_f_h(O,V,N,nS,rdm1_rpa,rdm2_rpa)
+      write(*,*) "ERHF from rdms"
       call energy_from_rdm(N,h,ERI_MO,rdm1_hf,rdm2_hf,EHF_rdm,.true.)
-      call energy_from_rdm(N,h,ERI_MO,rdm1_rpa,rdm2_rpa,EcRPA_rdm,.true.)
+      write(*,*) "EcRPA from rdms"
+      call energy_from_rdm(N,f,ERI_MO,rdm1_rpa,rdm2_rpa,EcRPA_rdm,.true.)
       rdm1 = rdm1_hf + rdm1_rpa 
       rdm2 = rdm2_hf + rdm2_rpa 
+      write(*,*) "ERPA from rdms"
       call energy_from_rdm(N,h,ERI_MO,rdm1,rdm2,Emu,.false.)
       write(*,*) "ERHF0 = ", ERHF
       write(*,*) "ERHF + EcRPA@RHF0 = ", ERHF + EcRPA_HF
@@ -290,12 +295,21 @@ subroutine OORG0W0(dotest,doACFDT,exchange_kernel,doXBS,dophBSE,dophBSE2,TDA_W,T
       call orbital_gradient_numerically(O,V,N,nS,Nsq,Hc,c,ERI_AO,delta_num_grad,grad)
       write(*,*) "Numerical grad"
       call matout(N,N,grad) 
-     ! call orbital_hessian_numerically(O,V,N,nS,Nsq,Hc,c,ERI_AO,delta_num_grad,hess)
-     ! write(*,*) "Numerical hessian"
-     ! call matout(Nsq,Nsq,hess)
-     ! grad(:) = 0d0
-     ! call diagonalize_matrix(Nsq,hess,grad)
-     ! call vecout(Nsq,grad)
+      write(*,*) "F"
+      call matout(N,N,F)
+      F_gen(:,:) = 0d0
+      write(*,*) "Fgen for HF"
+      call compute_f_gen(O,V,N,Nsq,h,ERI_MO,rdm1_hf,rdm2_hf,F_gen)
+      call matout(N,N,F_gen)
+      write(*,*) "Grad from Fgen HF"
+      call matout(N,N,2*(F_gen - transpose(F_gen)))
+      write(*,*) "Fgen for cRPA + HF"
+      F_gen(:,:) = 0d0
+      call compute_f_gen(O,V,N,Nsq,h,ERI_MO,rdm1,rdm2,F_gen)
+      call matout(N,N,F_gen)
+      write(*,*) "Grad from Fgen"
+      call matout(N,N,2*(F_gen - transpose(F_gen)))
+     
     else
       if(singlet) then
         isp_W = 1 

@@ -56,15 +56,22 @@ subroutine R_optimize_orbitals(diagHess,OVRotOnly,dRPA,nBas,nOrb,nV,nR,nC,nO,N,N
   rdm1 = rdm1_hf + rdm1_c
   rdm2 = rdm2_hf + rdm2_c
   call orbital_gradient(O,V,N,Nsq,h,ERI_MO,rdm1_hf,rdm2_hf,grad_tmp)
-  !call orbital_gradient(O,V,N,Nsq,F,ERI_MO,rdm1,rdm2,grad_tmp)
   grad = grad + grad_tmp
+  write(*,*) "grad_hf from rdm"
+  call matout(N,N,grad)
   if(dRPA) then
     call orbital_gradient(O,V,N,Nsq,h,ERI_MO,rdm1_c,rdm2_c,grad_tmp)
   else
     call orbital_gradient(O,V,N,Nsq,F,ERI_MO_AS,rdm1_c,rdm2_c,grad_tmp)
   endif
   grad = grad + grad_tmp
-  write(*,*) "grad from rdms"
+  write(*,*) "rdm1_crpa"
+  call matout(N,N,rdm1_c)
+  write(*,*) "rdm2_crpa"
+  call matout(Nsq,Nsq,rdm2_c)
+  write(*,*) "rdm2_hf"
+  call matout(Nsq,Nsq,rdm2_hf)
+  write(*,*) "grad from rdm"
   call matout(N,N,grad)
 
   deallocate(grad_tmp)

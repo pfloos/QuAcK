@@ -59,7 +59,6 @@ allocate(rdm1_hf(N,N), rdm2_hf(N,N,N,N), PHF(N,N), J(N,N), K(N,N), FHF(N,N), &
   call RG0W0_rdm1_hf(O,V,N,nS,rdm1_hf)
   call energy_from_rdm(N,h,ERI_MO,rdm1_hf,rdm2_hf,ERPA,.false.)
   ERPA = ERPA + EcRPA
-  ERPA = EcRPA
 
 deallocate(rdm1_hf,rdm2_hf,PHF,J,K,X,Y,XpY,XmY,Om,ERI_MO,h,F,Aph,Bph,FHF)
 end subroutine

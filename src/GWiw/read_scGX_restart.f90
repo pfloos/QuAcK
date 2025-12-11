@@ -1,6 +1,6 @@
-subroutine read_scGW_restart(nBas,nfreqs,ntimes_twice,chem_pot,P_ao,P_ao_hf,G_ao_iw_hf,G_ao_itau,G_ao_itau_hf,read_SD_chkp)
+subroutine read_scGX_restart(nBas,nfreqs,ntimes_twice,chem_pot,P_ao,P_ao_hf,G_ao_iw_hf,G_ao_itau,G_ao_itau_hf,read_SD_chkp)
 
-! Read grids for scGW
+! Read grids for scGX
 
   implicit none
   include 'parameters.h'
@@ -26,8 +26,8 @@ subroutine read_scGW_restart(nBas,nfreqs,ntimes_twice,chem_pot,P_ao,P_ao_hf,G_ao
   write(*,*)
   write(*,'(a)') ' Reading restart files'
   write(*,*)
-  open(unit=iunit,form='unformatted',file='scGW_Gitau_bin',status='old')
-  write(*,'(a)') ' Reading scGW_Gitau_bin'
+  open(unit=iunit,form='unformatted',file='scGX_Gitau_bin',status='old')
+  write(*,'(a)') ' Reading scGX_Gitau_bin'
   read(iunit) ibas
   read(iunit) ibas
   do itau=1,ntimes_twice
@@ -39,8 +39,8 @@ subroutine read_scGW_restart(nBas,nfreqs,ntimes_twice,chem_pot,P_ao,P_ao_hf,G_ao
    enddo
   enddo
   close(iunit)
-  open(unit=iunit,form='unformatted',file='scGW_Pao_bin',status='old')
-  write(*,'(a)') ' Reading scGW_Pao_bin'
+  open(unit=iunit,form='unformatted',file='scGX_Pao_bin',status='old')
+  write(*,'(a)') ' Reading scGX_Pao_bin'
   read(iunit) ibas
   do ibas=1,nBas
    do jbas=1,nBas
@@ -49,13 +49,13 @@ subroutine read_scGW_restart(nBas,nfreqs,ntimes_twice,chem_pot,P_ao,P_ao_hf,G_ao
    enddo
   enddo
   close(iunit)
-  open(unit=iunit,form='unformatted',file='scGW_chem_pot_bin',status='old')
-  write(*,'(a)') ' Reading scGW_chem_pot_bin'
+  open(unit=iunit,form='unformatted',file='scGX_chem_pot_bin',status='old')
+  write(*,'(a)') ' Reading scGX_chem_pot_bin'
   read(iunit) chem_pot
   close(iunit)
   if(read_SD_chkp) then
-   open(unit=iunit,form='unformatted',file='scGW_Gitau_sd_bin',status='old')
-   write(*,'(a)') ' Reading scGW_Gitau_sd_bin'
+   open(unit=iunit,form='unformatted',file='scGX_Gitau_sd_bin',status='old')
+   write(*,'(a)') ' Reading scGX_Gitau_sd_bin'
    read(iunit) ibas
    read(iunit) ibas
    do itau=1,ntimes_twice
@@ -67,8 +67,8 @@ subroutine read_scGW_restart(nBas,nfreqs,ntimes_twice,chem_pot,P_ao,P_ao_hf,G_ao
     enddo
    enddo
    close(iunit)
-   open(unit=iunit,form='unformatted',file='scGW_Giw_sd_bin',status='old')
-   write(*,'(a)') ' Reading scGW_Giw_sd_bin'
+   open(unit=iunit,form='unformatted',file='scGX_Giw_sd_bin',status='old')
+   write(*,'(a)') ' Reading scGX_Giw_sd_bin'
    read(iunit) ibas
    read(iunit) ibas
    do ifreq=1,nfreqs
@@ -80,8 +80,8 @@ subroutine read_scGW_restart(nBas,nfreqs,ntimes_twice,chem_pot,P_ao,P_ao_hf,G_ao
     enddo
    enddo
    close(iunit)
-   open(unit=iunit,form='unformatted',file='scGW_Pao_sd_bin',status='old')
-   write(*,'(a)') ' Reading scGW_Pao_sd_bin'
+   open(unit=iunit,form='unformatted',file='scGX_Pao_sd_bin',status='old')
+   write(*,'(a)') ' Reading scGX_Pao_sd_bin'
    read(iunit) ibas
    do ibas=1,nBas
     do jbas=1,nBas
