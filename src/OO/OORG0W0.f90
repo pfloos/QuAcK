@@ -267,21 +267,20 @@ subroutine OORG0W0(dotest,doACFDT,exchange_kernel,doXBS,dophBSE,dophBSE2,TDA_W,T
       call RG0W0_rdm1_hf(O,V,N,nS,rdm1_hf)
       
 
-     ! rdm1_rpa = 0d0
-     ! rdm2_rpa = 0d0
+      rdm1_rpa = 0d0
+      rdm2_rpa = 0d0
      ! call RG0W0_rdm1_mu(O,V,N,nS,lampl,rampl,lp,rp,xi,lambda,t,rdm1_rpa)
      ! call energy_from_rdm(N,h,ERI_MO,rdm1_rpa,rdm2_rpa,EHF_rdm,.true.)
       call RG0W0_rdm1_rpa(O,V,N,nS,lambda,t,rdm1_rpa)
       call RG0W0_rdm2_rpa(O,V,N,nS,lambda,t,rdm2_rpa)
      
       !call RG0W0_rdms_crpa(1,O,V,N,nS,X,Y,rdm1_rpa,rdm2_rpa)
-      
-      !call RG0W0_transform_rdms_f_h(O,V,N,nS,rdm1_rpa,rdm2_rpa)
+      rdm1 = rdm1_hf + rdm1_rpa 
+      call RG0W0_transform_rdms_f_h(O,V,N,nS,rdm1_rpa,rdm2_rpa)
       write(*,*) "ERHF from rdms"
       call energy_from_rdm(N,h,ERI_MO,rdm1_hf,rdm2_hf,EHF_rdm,.true.)
       write(*,*) "EcRPA from rdms"
-      call energy_from_rdm(N,f,ERI_MO,rdm1_rpa,rdm2_rpa,EcRPA_rdm,.true.)
-      rdm1 = rdm1_hf + rdm1_rpa 
+      call energy_from_rdm(N,h,ERI_MO,rdm1_rpa,rdm2_rpa,EcRPA_rdm,.true.)
       rdm2 = rdm2_hf + rdm2_rpa 
       write(*,*) "ERPA from rdms"
       call energy_from_rdm(N,h,ERI_MO,rdm1,rdm2,Emu,.false.)
@@ -295,8 +294,8 @@ subroutine OORG0W0(dotest,doACFDT,exchange_kernel,doXBS,dophBSE,dophBSE2,TDA_W,T
       call orbital_gradient_numerically(O,V,N,nS,Nsq,Hc,c,ERI_AO,delta_num_grad,grad)
       write(*,*) "Numerical grad"
       call matout(N,N,grad) 
-      write(*,*) "F"
-      call matout(N,N,F)
+      write(*,*) "4*F"
+      call matout(N,N,4*F)
       F_gen(:,:) = 0d0
       write(*,*) "Fgen for HF"
       call compute_f_gen(O,V,N,Nsq,h,ERI_MO,rdm1_hf,rdm2_hf,F_gen)
@@ -309,6 +308,30 @@ subroutine OORG0W0(dotest,doACFDT,exchange_kernel,doXBS,dophBSE,dophBSE2,TDA_W,T
       call matout(N,N,F_gen)
       write(*,*) "Grad from Fgen"
       call matout(N,N,2*(F_gen - transpose(F_gen)))
+
+      do p =1,N
+        do q =1,N
+         do r=1,N
+           do s=1,N
+             write(*,*) "p,q,r,s :",p,q,r,s , "rdm2(p,q,r,s)", rdm2(p,q,r,s) , "rdm2(q,p,r,s)", rdm2(q,p,r,s),"rdm2(p,q,s,r)" &
+             ,rdm2(p,q,s,r) &
+             ,"rdm2(q,p,s,r)", rdm2(q,p,s,r) 
+           enddo
+         enddo
+       enddo
+      enddo
+      write(*,*) "HF"
+      do p =1,N
+        do q =1,N
+         do r=1,N
+           do s=1,N
+             write(*,*) "p,q,r,s :",p,q,r,s , "rdm2(p,q,r,s)", rdm2_hf(p,q,r,s) , "rdm2(q,p,r,s)", rdm2_hf(q,p,r,s),"rdm2(p,q,s,r)" &
+             ,rdm2_hf(p,q,s,r) &
+             ,"rdm2(q,p,s,r)", rdm2_hf(q,p,s,r) 
+           enddo
+         enddo
+       enddo
+      enddo
      
     else
       if(singlet) then

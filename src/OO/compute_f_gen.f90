@@ -40,7 +40,7 @@ subroutine compute_F_gen(O,V,N,Nsq,h,ERI_MO,rdm1,rdm2,F_gen)
       do q=1,N
         do r=1,N
           do s=1,N
-            F_gen(m,nind) = F_gen(m,nind) + rdm2(m,q,r,s)*ERI_MO(nind,q,r,s)
+            F_gen(m,nind) = F_gen(m,nind) + rdm2(m,q,r,s)*ERI_MO(nind,r,q,s)
           end do
         end do
       end do
