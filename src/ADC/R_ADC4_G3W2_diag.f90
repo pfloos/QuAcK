@@ -202,7 +202,7 @@ subroutine R_ADC4_G3W2_diag(dotest,sig_inf,TDA_W,flow,nBas,nOrb,nC,nO,nV,nR,nS,E
 
     ! Starting loop for non-linear 3h2p/3p2h part
 
-    thresh = 1d-5
+    thresh = 1d-9
     Conv   = 1d0
     nIt    = 0
     maxIt  = 40
