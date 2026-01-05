@@ -1486,7 +1486,7 @@ subroutine R_ADC4_G3W2_diag_fullmat(dotest,sig_inf,TDA_W,flow,nBas,nOrb,nC,nO,nV
  
       end do
     end do
-
+    
   end if
    
   call wall_time(end_time)
@@ -1517,8 +1517,8 @@ subroutine R_ADC4_G3W2_diag_fullmat(dotest,sig_inf,TDA_W,flow,nBas,nOrb,nC,nO,nV
                 dem1 = eHF(r) - eHF(i) + Om(nu)
                 reg1 = (1d0 - exp(-2d0*flow*dem1*dem1))/dem1
                 
-                H(1, 1 + n2h1p + n2p1h + ijkab) = H(1, 1 + n2h1p + n2p1h + ijkab) + num*reg1/dem1
-                H(1 + n2h1p + n2p1h + ijkab, 1) = H(1 + n2h1p + n2p1h + ijkab, 1) + num*reg1/dem1
+                H(1, 1 + n2h1p + n2p1h + ijkab) = H(1, 1 + n2h1p + n2p1h + ijkab) + num*reg1
+                H(1 + n2h1p + n2p1h + ijkab, 1) = H(1 + n2h1p + n2p1h + ijkab, 1) + num*reg1
 
              end do
           
@@ -1546,8 +1546,8 @@ subroutine R_ADC4_G3W2_diag_fullmat(dotest,sig_inf,TDA_W,flow,nBas,nOrb,nC,nO,nV
                  dem1 = eHF(r) - eHF(a) - Om(nu)
                  reg1 = (1d0 - exp(-2d0*flow*dem1*dem1))/dem1
               
-                 H(1, 1 + n2h1p + n2p1h + n3h2p + ijabc) = H(1, 1 + n2h1p + n2p1h + n3h2p + ijabc) + num*reg1/dem1
-                 H(1 + n2h1p + n2p1h + n3h2p + ijabc, 1) = H(1 + n2h1p + n2p1h + n3h2p + ijabc, 1) + num*reg1/dem1
+                 H(1, 1 + n2h1p + n2p1h + n3h2p + ijabc) = H(1, 1 + n2h1p + n2p1h + n3h2p + ijabc) + num*reg1
+                 H(1 + n2h1p + n2p1h + n3h2p + ijabc, 1) = H(1 + n2h1p + n2p1h + n3h2p + ijabc, 1) + num*reg1
 
               end do
               
@@ -1590,7 +1590,7 @@ subroutine R_ADC4_G3W2_diag_fullmat(dotest,sig_inf,TDA_W,flow,nBas,nOrb,nC,nO,nV
 !   Block K_3p2h   !
 !------------------!
 
-  if(add_K_3h2p) then
+  if(add_K_3p2h) then
      ijabc = 0
      do a=nO+1,nOrb-nR
         do mu=1,nS

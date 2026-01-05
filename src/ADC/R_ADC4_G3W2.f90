@@ -1233,8 +1233,8 @@ subroutine R_ADC4_G3W2(dotest,sig_inf,TDA_W,flow,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,E
                     dem1 = eHF(r) - eHF(i) + Om(nu)
                     reg1 = (1d0 - exp(-2d0*flow*dem1*dem1))/dem1
                     
-                    H(p, nOrb + n2h1p + n2p1h + ijkab) = H(p, nOrb + n2h1p + n2p1h + ijkab) + num*reg1/dem1
-                    H(nOrb + n2h1p + n2p1h + ijkab, p) = H(nOrb + n2h1p + n2p1h + ijkab, p) + num*reg1/dem1
+                    H(p, nOrb + n2h1p + n2p1h + ijkab) = H(p, nOrb + n2h1p + n2p1h + ijkab) + num*reg1
+                    H(nOrb + n2h1p + n2p1h + ijkab, p) = H(nOrb + n2h1p + n2p1h + ijkab, p) + num*reg1
 
                  end do
               
@@ -1266,8 +1266,8 @@ subroutine R_ADC4_G3W2(dotest,sig_inf,TDA_W,flow,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,E
                     dem1 = eHF(r) - eHF(a) - Om(nu)
                     reg1 = (1d0 - exp(-2d0*flow*dem1*dem1))/dem1
                  
-                    H(p, nOrb + n2h1p + n2p1h + n3h2p + ijabc) = H(p, nOrb + n2h1p + n2p1h + n3h2p + ijabc) + num*reg1/dem1
-                    H(nOrb + n2h1p + n2p1h + n3h2p + ijabc, p) = H(nOrb + n2h1p + n2p1h + n3h2p + ijabc, p) + num*reg1/dem1
+                    H(p, nOrb + n2h1p + n2p1h + n3h2p + ijabc) = H(p, nOrb + n2h1p + n2p1h + n3h2p + ijabc) + num*reg1
+                    H(nOrb + n2h1p + n2p1h + n3h2p + ijabc, p) = H(nOrb + n2h1p + n2p1h + n3h2p + ijabc, p) + num*reg1
 
                  end do
                  
@@ -1333,63 +1333,6 @@ subroutine R_ADC4_G3W2(dotest,sig_inf,TDA_W,flow,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,E
   write(*,*)
   write(*,'(A65,1X,F9.3,A8)') 'Total CPU time for construction of K 3h2p/3p2h = ',time,' seconds'
   write(*,*)
-  
-! Downfolding the 3h2p configurations
- 
-  ! do p=nC+1,nOrb-nR
-  !   do q=nC+1,nOrb-nR
-  !     do i=nC+1,nO
-  !       do mu=1,nS
-  !       do nu=1,nS
-  !           do r=nC+1,nOrb-nR
-  !           do s=nC+1,nOrb-nR
- 
-  !             num1 = 2d0*rho(p,r,mu)*rho(r,i,nu)
-  !             num2 = 2d0*rho(s,i,mu)*rho(q,s,nu)
-  !             dem1 = eHF(i) - eHF(r) - Om(nu)
-  !             dem2 = w - eHF(i) + Om(nu) + Om(mu)
-  !             dem3 = eHF(i) - eHF(s) - Om(mu)
-
-  !             reg1 = (1d0 - exp(-2d0*flow*dem1*dem1))/dem1
-  !             reg2 = (1d0 - exp(-2d0*flow*dem2*dem2))/dem2
-  !             reg3 = (1d0 - exp(-2d0*flow*dem3*dem3))/dem3
-
-  !             H(p,q) = H(p,q) + num1*num2*reg1*reg2*reg3
- 
-  !          end do
-  !          end do
-  !        end do
-  !        end do
-  !      end do
- 
-  !     ! Downfolding the 3p2h configurations
- 
-  !     do a=nO+1,nOrb-nR
-  !       do mu=1,nS
-  !       do nu=1,nS
-  !           do r=nC+1,nOrb-nR
-  !           do s=nC+1,nOrb-nR
- 
-  !             num1 = 2d0*rho(r,p,mu)*rho(a,r,nu)
-  !             num2 = 2d0*rho(a,s,mu)*rho(s,q,nu)
-  !             dem1 = eHF(r) - eHF(a) - Om(nu)
-  !             dem2 = w - eHF(a) - Om(nu) - Om(mu)
-  !             dem3 = eHF(s) - eHF(a) - Om(mu)
- 
-  !             reg1 = (1d0 - exp(-2d0*flow*dem1*dem1))/dem1
-  !             reg2 = (1d0 - exp(-2d0*flow*dem2*dem2))/dem2
-  !             reg3 = (1d0 - exp(-2d0*flow*dem3*dem3))/dem3
- 
-  !             H(p,q) = H(p,q) + num1*num2*reg1*reg2*reg3
- 
-  !          end do
-  !          end do
-  !        end do
-  !        end do
-  !      end do
- 
-  !   end do
-  ! end do
  
   call wall_time(end_timing)
 
