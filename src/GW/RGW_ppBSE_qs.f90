@@ -134,13 +134,19 @@ subroutine RGW_ppBSE_qs(TDA_W,TDA,dBSE,dTDA,singlet,triplet,eta,nOrb,nC,nO,nV,nR
     ! ---
 
     allocate(Bpp(nVV,nOO),Cpp(nVV,nVV),Dpp(nOO,nOO))
+    
+                 call ppRLR_C(ispin,nOrb,nC,nO,nV,nR,nVV,1d0,eGW,ERI,Cpp)
+                 call ppRLR_D(ispin,nOrb,nC,nO,nV,nR,nOO,1d0,eGW,ERI,Dpp)
+    if(.not.TDA) call ppRLR_B(ispin,nOrb,nC,nO,nV,nR,nOO,nVV,1d0,ERI,Bpp)
+                 
     allocate(KB_sta(nVV,nOO),KC_sta(nVV,nVV),KD_sta(nOO,nOO))
 
+    KD_sta(:,:) = 0d0
     KB_sta(:,:) = 0d0
     KC_sta(:,:) = 0d0
   
     call RGW_ppBSE_static_kernel_C_qs(ispin,eta,nOrb,nC,nO,nV,nR,nS,nVV,1d0,ERI,eGW,OmRPA,rho_RPA,KC_sta)
-    call RGW_ppBSE_static_kernel_D_qs(ispin,eta,nOrb,nC,nO,nV,nR,nS,nOO,1d0,ERI,eGW,OmRPA,rho_RPA,KD_sta)
+    call RGW_ppBSE_static_kernel_D_qs_v2(ispin,eta,nOrb,nC,nO,nV,nR,nS,nOO,1d0,ERI,eGW,OmRPA,rho_RPA,Om2,KD_sta)
     if(.not.TDA) then
        call RGW_ppBSE_dynamic_kernel_B(ispin,eta,nOrb,nC,nO,nV,nR,nS,nOO,nVV,1d0,eGW,OmRPA,rho_RPA,KB_sta)
     endif
@@ -242,15 +248,24 @@ subroutine RGW_ppBSE_qs(TDA_W,TDA,dBSE,dTDA,singlet,triplet,eta,nOrb,nC,nO,nV,nR
     ! ---
     ! LAPACK
     ! ---
-
-    allocate(Bpp(nVV,nOO),Cpp(nVV,nVV),Dpp(nOO,nOO))
-    allocate(KB_sta(nVV,nOO),KC_sta(nVV,nVV),KD_sta(nOO,nOO))
     
+    allocate(Bpp(nVV,nOO),Cpp(nVV,nVV),Dpp(nOO,nOO))
+    
+                 call ppRLR_C(ispin,nOrb,nC,nO,nV,nR,nVV,1d0,eGW,ERI,Cpp)
+                 call ppRLR_D(ispin,nOrb,nC,nO,nV,nR,nOO,1d0,eGW,ERI,Dpp)
+    if(.not.TDA) call ppRLR_B(ispin,nOrb,nC,nO,nV,nR,nOO,nVV,1d0,ERI,Bpp)
+
+    call ppRLR(TDA,nOO,nVV,Bpp,Cpp,Dpp,Om1,X1,Y1,Om2,X2,Y2,EcBSE(ispin))
+
+
+    allocate(KB_sta(nVV,nOO),KC_sta(nVV,nVV),KD_sta(nOO,nOO))
+
+    KD_sta(:,:) = 0d0
     KB_sta(:,:) = 0d0
     KC_sta(:,:) = 0d0
 
     call RGW_ppBSE_static_kernel_C_qs(ispin,eta,nOrb,nC,nO,nV,nR,nS,nVV,1d0,ERI,eGW,OmRPA,rho_RPA,KC_sta)
-    call RGW_ppBSE_static_kernel_D_qs(ispin,eta,nOrb,nC,nO,nV,nR,nS,nOO,1d0,ERI,eGW,OmRPA,rho_RPA,KD_sta)
+    call RGW_ppBSE_static_kernel_D_qs_v2(ispin,eta,nOrb,nC,nO,nV,nR,nS,nOO,1d0,ERI,eGW,OmRPA,rho_RPA,Om2,KD_sta)
     if(.not.TDA) call RGW_ppBSE_dynamic_kernel_B(ispin,eta,nOrb,nC,nO,nV,nR,nS,nOO,nVV,1d0,eGW,OmRPA,rho_RPA,KB_sta)
 
                  call ppRLR_C(ispin,nOrb,nC,nO,nV,nR,nVV,1d0,eGW,ERI,Cpp)
@@ -713,3 +728,151 @@ subroutine RGW_ppBSE_static_kernel_D_qs(ispin,eta,nOrb,nC,nO,nV,nR,nS,nOO,lambda
   end if
 
 end subroutine RGW_ppBSE_static_kernel_D_qs
+
+subroutine RGW_ppBSE_static_kernel_D_qs_v2(ispin,eta,nOrb,nC,nO,nV,nR,nS,nOO,lambda,ERI,eGW,Om,rho,Om2,KD)
+
+! Compute the OOOO block of the static screening W for the pp-BSE
+
+  implicit none
+  include 'parameters.h'
+
+! Input variables
+
+  integer,intent(in)            :: ispin
+  integer,intent(in)            :: nOrb
+  integer,intent(in)            :: nC
+  integer,intent(in)            :: nO
+  integer,intent(in)            :: nV
+  integer,intent(in)            :: nR
+  integer,intent(in)            :: nS
+  integer,intent(in)            :: nOO
+  double precision,intent(in)   :: eta
+  double precision,intent(in)   :: lambda
+  double precision,intent(in)   :: ERI(nOrb,nOrb,nOrb,nOrb)
+  double precision,intent(in)   :: eGW(nOrb)
+  double precision,intent(in)   :: Om(nS)
+  double precision,intent(in)   :: rho(nOrb,nOrb,nS)
+  double precision,intent(in)   :: Om2(nOO)
+
+! Local variables
+
+  double precision,external     :: Kronecker_delta
+  double precision              :: dem
+  double precision              :: num
+  integer                       :: i,j,k,l,ij,kl,m
+
+! Output variables
+
+  double precision,intent(out)  :: KD(nOO,nOO)
+
+! Initialization
+
+  KD(:,:) = 0d0
+
+!---------------!
+! Singlet block !
+!---------------!
+
+  if(ispin == 1) then
+
+    ij = 0
+    do i=nC+1,nO
+      do j=i,nO
+        ij = ij + 1
+        kl = 0
+        do k=nC+1,nO
+          do l=k,nO
+            kl = kl + 1
+
+            do m=1,nS
+
+               num = (rho(i,k,m)*rho(j,l,m) + rho(j,k,m)*rho(i,l,m))/2d0
+                          
+               dem = -Om2(ij) - Om(m) + eGW(i) + eGW(l)
+               KD(ij,kl) = KD(ij,kl) + num*dem/(dem**2 + eta**2)
+             
+               dem = -Om2(kl) - Om(m) + eGW(i) + eGW(l)
+               KD(ij,kl) = KD(ij,kl) + num*dem/(dem**2 + eta**2)
+               
+               dem = -Om2(ij) - Om(m) + eGW(j) + eGW(l)
+               KD(ij,kl) = KD(ij,kl) + num*dem/(dem**2 + eta**2)
+               
+               dem = -Om2(kl) - Om(m) + eGW(j) + eGW(l)
+               KD(ij,kl) = KD(ij,kl) + num*dem/(dem**2 + eta**2)
+               
+               dem = -Om2(ij) - Om(m) + eGW(i) + eGW(k)
+               KD(ij,kl) = KD(ij,kl) + num*dem/(dem**2 + eta**2)
+               
+               dem = -Om2(kl) - Om(m) + eGW(i) + eGW(k)
+               KD(ij,kl) = KD(ij,kl) + num*dem/(dem**2 + eta**2)
+               
+               dem = -Om2(ij) - Om(m) + eGW(j) + eGW(k)
+               KD(ij,kl) = KD(ij,kl) + num*dem/(dem**2 + eta**2)
+               
+               dem = -Om2(kl) - Om(m) + eGW(j) + eGW(k)
+               KD(ij,kl) = KD(ij,kl) + num*dem/(dem**2 + eta**2)
+
+            end do
+ 
+            KD(ij,kl) = KD(ij,kl)/sqrt((1d0 + Kronecker_delta(i,j))*(1d0 + Kronecker_delta(k,l)))
+
+          end do
+        end do
+      end do
+    end do
+
+  end if
+
+!---------------!
+! Triplet block !
+!---------------!
+
+  if(ispin == 2) then
+
+    ij = 0
+    do i=nC+1,nO
+      do j=i+1,nO
+        ij = ij + 1
+        kl = 0
+        do k=nC+1,nO
+          do l=k+1,nO
+            kl = kl + 1
+
+            do m=1,nS
+
+               num = (rho(i,k,m)*rho(j,l,m) - rho(j,k,m)*rho(i,l,m))/2d0
+             
+               dem = -Om2(ij) - Om(m) + eGW(i) + eGW(l)
+               KD(ij,kl) = KD(ij,kl) + num*dem/(dem**2 + eta**2)
+             
+               dem = -Om2(kl) - Om(m) + eGW(i) + eGW(l)
+               KD(ij,kl) = KD(ij,kl) + num*dem/(dem**2 + eta**2)
+               
+               dem = -Om2(ij) - Om(m) + eGW(j) + eGW(l)
+               KD(ij,kl) = KD(ij,kl) + num*dem/(dem**2 + eta**2)
+               
+               dem = -Om2(kl) - Om(m) + eGW(j) + eGW(l)
+               KD(ij,kl) = KD(ij,kl) + num*dem/(dem**2 + eta**2)
+               
+               dem = -Om2(ij) - Om(m) + eGW(i) + eGW(k)
+               KD(ij,kl) = KD(ij,kl) + num*dem/(dem**2 + eta**2)
+               
+               dem = -Om2(kl) - Om(m) + eGW(i) + eGW(k)
+               KD(ij,kl) = KD(ij,kl) + num*dem/(dem**2 + eta**2)
+               
+               dem = -Om2(ij) - Om(m) + eGW(j) + eGW(k)
+               KD(ij,kl) = KD(ij,kl) + num*dem/(dem**2 + eta**2)
+               
+               dem = -Om2(kl) - Om(m) + eGW(j) + eGW(k)
+               KD(ij,kl) = KD(ij,kl) + num*dem/(dem**2 + eta**2)
+
+            end do
+
+          end do
+        end do
+      end do
+    end do
+
+  end if
+
+end subroutine RGW_ppBSE_static_kernel_D_qs_v2

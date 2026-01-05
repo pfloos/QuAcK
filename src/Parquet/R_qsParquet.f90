@@ -641,7 +641,7 @@ subroutine R_qsParquet(TDAeh,TDApp,max_diis_1b,max_diis_2b,eta_1b,eta_2b,reg_PA,
       write(*,*) 'Computing singlet eh reducible kernel...'
 
       call wall_time(start_t)
-      call R_eh_singlet_Phi(eta_2b,nOrb,nC,nR,nS,old_eh_sing_Om,eh_sing_rho,eh_sing_Phi)
+      call R_eh_singlet_Phi(eta_2b,nOrb,nC,nR,nS,old_eh_sing_Om,eh_sing_rho,0d0,eh_sing_Phi)
       call wall_time(end_t)
       tt = end_t - start_t
       write(*,'(1X,A50,1X,F9.3,A8)') 'Wall time for singlet eh reducible kernel =',tt,' seconds'
@@ -651,7 +651,7 @@ subroutine R_qsParquet(TDAeh,TDApp,max_diis_1b,max_diis_2b,eta_1b,eta_2b,reg_PA,
       write(*,*) 'Computing triplet eh reducible kernel...'
 
       call wall_time(start_t)
-      call R_eh_triplet_Phi(eta_2b,nOrb,nC,nR,nS,old_eh_trip_Om,eh_trip_rho,eh_trip_Phi)
+      call R_eh_triplet_Phi(eta_2b,nOrb,nC,nR,nS,old_eh_trip_Om,eh_trip_rho,0d0,eh_trip_Phi)
       call wall_time(end_t)
       tt = end_t - start_t
       write(*,'(1X,A50,1X,F9.3,A8)') 'Wall time for triplet eh reducible kernel =',tt,' seconds'
@@ -661,7 +661,7 @@ subroutine R_qsParquet(TDAeh,TDApp,max_diis_1b,max_diis_2b,eta_1b,eta_2b,reg_PA,
       write(*,*) 'Computing singlet pp reducible kernel...'
 
       call wall_time(start_t)
-      call R_pp_singlet_Phi(eta_2b,nOrb,nC,nR,nOOs,nVVs,old_ee_sing_Om,ee_sing_rho,old_hh_sing_Om,hh_sing_rho,pp_sing_Phi)
+      call R_pp_singlet_Phi(eta_2b,nOrb,nC,nR,nOOs,nVVs,old_ee_sing_Om,ee_sing_rho,old_hh_sing_Om,hh_sing_rho,0d0,pp_sing_Phi)
       call wall_time(end_t)
       tt = end_t - start_t
       write(*,'(1X,A50,1X,F9.3,A8)') 'Wall time for singlet pp reducible kernel =',tt,' seconds'
@@ -671,7 +671,7 @@ subroutine R_qsParquet(TDAeh,TDApp,max_diis_1b,max_diis_2b,eta_1b,eta_2b,reg_PA,
       write(*,*) 'Computing triplet pp reducible kernel...'
       
       call wall_time(start_t)
-      call R_pp_triplet_Phi(eta_2b,nOrb,nC,nR,nOOt,nVVt,old_ee_trip_Om,ee_trip_rho,old_hh_trip_Om,hh_trip_rho,pp_trip_Phi)
+      call R_pp_triplet_Phi(eta_2b,nOrb,nC,nR,nOOt,nVVt,old_ee_trip_Om,ee_trip_rho,old_hh_trip_Om,hh_trip_rho,0d0,pp_trip_Phi)
       call wall_time(end_t)
       tt = end_t - start_t
       write(*,'(1X,A50,1X,F9.3,A8)') 'Wall time for triplet pp reducible kernel =',tt,' seconds'

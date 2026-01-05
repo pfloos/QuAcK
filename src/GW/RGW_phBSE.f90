@@ -52,6 +52,7 @@ subroutine RGW_phBSE(dophBSE2,exchange_kernel,TDA_W,TDA,dBSE,dTDA,singlet,triple
 
   double precision,allocatable  :: KA_sta(:,:)
   double precision,allocatable  :: KB_sta(:,:)
+  double precision,allocatable  :: ZA_dyn(:,:)
 
   double precision,allocatable  :: W(:,:,:,:)
 
@@ -179,6 +180,22 @@ subroutine RGW_phBSE(dophBSE2,exchange_kernel,TDA_W,TDA,dBSE,dTDA,singlet,triple
         call RGW_phBSE_dynamic_perturbation(dophBSE2,dTDA,eta,nOrb,nC,nO,nV,nR,nS,eW,eGW,ERI,dipole_int,OmRPA,rho_RPA, &
                                            OmBSE,XpY_BSE,XmY_BSE,KA_sta,KB_sta)
 
+    !----------------------------------------------------!
+    !                       Test                         !
+    !----------------------------------------------------!
+  
+    write (*,*) OmBSE(1)
+  
+    call phRLR_A(ispin,dRPA,nOrb,nC,nO,nV,nR,nS,1d0,eGW,ERI,Aph)
+    allocate(ZA_dyn(nS,nS))
+    call RGW_phBSE_dynamic_kernel_A(eta,nOrb,nC,nO,nV,nR,nS,1d0,eGW,OmRPA,rho_RPA,OmBSE(1),KA_sta,ZA_dyn)
+    Aph(:,:) = Aph(:,:) + KA_sta(:,:)
+    call phRLR(TDA,nS,Aph,Bph,EcBSE(ispin),OmBSE,XpY_BSE,XmY_BSE)
+
+    call print_excitation_energies('phBSE@GW@RHF','triplet',nS,OmBSE)
+    call phLR_transition_vectors(.false.,nOrb,nC,nO,nV,nR,nS,dipole_int,OmBSE,XpY_BSE,XmY_BSE)
+
+    
     !----------------!
     ! Upfolded phBSE !
     !----------------!

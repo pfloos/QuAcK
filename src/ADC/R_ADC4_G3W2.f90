@@ -647,8 +647,8 @@ subroutine R_ADC4_G3W2(dotest,sig_inf,TDA_W,flow,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,E
 
 ! ADC(4)-G3W2
 
-  add_K_3h2p  = .false.
-  add_K_3p2h  = .false.
+  add_K_3h2p  = .true.
+  add_K_3p2h  = .true.
 
   add_U1_3h2p = .true.
   add_U1_3p2h = .true.
