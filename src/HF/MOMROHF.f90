@@ -1,4 +1,4 @@
-subroutine ROHF(dotest,maxSCF,thresh,max_diis,guess_type,mix,level_shift,nNuc,ZNuc,rNuc,ENuc, & 
+subroutine MOMROHF(dotest,maxSCF,thresh,max_diis,guess_type,mix,level_shift,nNuc,ZNuc,rNuc,ENuc, & 
                 nBas,nOrb,nO,S,T,V,Hc,ERI,dipole_int,X,EROHF,eHF,c,Ptot,Ftot)
 
 ! Perform restricted open-shell Hartree-Fock calculation
@@ -59,6 +59,12 @@ subroutine ROHF(dotest,maxSCF,thresh,max_diis,guess_type,mix,level_shift,nNuc,ZN
 
   integer                       :: ispin
 
+  integer,allocatable           :: swap_mo_occ(:)
+  double precision,allocatable  :: cGuess(:,:)
+  double precision,allocatable  :: O(:,:)
+  double precision,allocatable  :: projO(:)
+  integer                       :: i
+
 ! Output variables
 
   double precision,intent(out)  :: EROHF
@@ -74,6 +80,12 @@ subroutine ROHF(dotest,maxSCF,thresh,max_diis,guess_type,mix,level_shift,nNuc,ZN
   write(*,*)'* Restricted Open-Shell HF Calculation *'
   write(*,*)'****************************************'
   write(*,*)
+
+! Stuff I ll make as input somehow
+  allocate(swap_mo_occ(2), cGuess(nBas,nOrb),O(nOrb,nOrb),projO(nOrb)) 
+  swap_mo_occ(1) = 1
+  swap_mo_occ(2) = max(nO(1),nO(2)) ! This means the occupation of core orbital and valence orbital will be swapped
+  swap_mo_occ(2) = swap_mo_occ(2) - 1  ! This means the occupation of core orbital and valence orbital will be swapped
 
 ! Useful stuff
 
@@ -93,9 +105,14 @@ subroutine ROHF(dotest,maxSCF,thresh,max_diis,guess_type,mix,level_shift,nNuc,ZN
   allocate(err_diis(nBas_Sq,max_diis))
   allocate(F_diis(nBas_Sq,max_diis))
 
-! Guess coefficients and density matrices
+! Read input coefficients (ground state) and prepare guess
 
-  call mo_guess(nBas,nOrb,guess_type,S,Hc,X,c)
+  cGuess = c
+  cGuess(:,swap_mo_occ(1)) = cGuess(:,swap_mo_occ(2))
+  cGuess(:,swap_mo_occ(2)) = c(:,swap_mo_occ(1))
+  c = cGuess
+  O(:,:) = 0d0
+  
 
   do ispin = 1,nspin
     !P(:,:,ispin) = matmul(c(:,1:nO(ispin)), transpose(c(:,1:nO(ispin))))
@@ -214,13 +231,27 @@ subroutine ROHF(dotest,maxSCF,thresh,max_diis,guess_type,mix,level_shift,nNuc,ZN
 
     c(:,:) = matmul(X(:,:),cp(:,:))
 
-!   Compute density matrix 
+!   Projected overlap
+    
+    O = matmul(matmul(transpose(cGuess),S),c)
+    projO(:) = 0d0
+    do i=1,max(nO(1),nO(2))
+      projO(:) = projO(:) + O(i,:)**2 
+    end do
+
+! Select orbitals with maximum overlap
+   
+    call sort_MOM(nBas,nOrb,projO,c)
+    write(*,*) "projO"
+    call vecout(nOrb,projO)
+
 
     do ispin=1,nspin
       !P(:,:,ispin) = matmul(c(:,1:nO(ispin)), transpose(c(:,1:nO(ispin))))
       call dgemm('N', 'T', nBas, nBas, nO(ispin), 1.d0, c, nBas, c, nBas, 0.d0, P(1,1,ispin), nBas)
     end do
     Ptot(:,:) = P(:,:,1) + P(:,:,2) 
+    
 
 !   Dump results
 
