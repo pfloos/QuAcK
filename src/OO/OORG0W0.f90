@@ -276,7 +276,7 @@ subroutine OORG0W0(dotest,doACFDT,exchange_kernel,doXBS,dophBSE,dophBSE2,TDA_W,T
      
       !call RG0W0_rdms_crpa(1,O,V,N,nS,X,Y,rdm1_rpa,rdm2_rpa)
       rdm1 = rdm1_hf + rdm1_rpa 
-      call RG0W0_transform_rdms_f_h(O,V,N,nS,rdm1_rpa,rdm2_rpa)
+      !call RG0W0_transform_rdms_f_h(O,V,N,nS,rdm1_rpa,rdm2_rpa)
       write(*,*) "ERHF from rdms"
       call energy_from_rdm(N,h,ERI_MO,rdm1_hf,rdm2_hf,EHF_rdm,.true.)
       write(*,*) "EcRPA from rdms"
