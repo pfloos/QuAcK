@@ -65,17 +65,7 @@ subroutine R_optimize_orbitals(diagHess,OVRotOnly,dRPA,nBas,nOrb,nV,nR,nC,nO,N,N
     call orbital_gradient(O,V,N,Nsq,F,ERI_MO_AS,rdm1_c,rdm2_c,grad_tmp)
   endif
   grad = grad + grad_tmp
-  write(*,*) "rdm1_crpa"
-  call matout(N,N,rdm1_c)
-  write(*,*) "rdm2_crpa"
-  call matout(Nsq,Nsq,rdm2_c)
-  write(*,*) "rdm2_hf"
-  call matout(Nsq,Nsq,rdm2_hf)
   write(*,*) "grad_hf + grad_crpa from rdm"
-  call matout(N,N,grad)
-  write(*,*) "grad from rdm"
-  grad = 0d0
-  call orbital_gradient(O,V,N,Nsq,h,ERI_MO,rdm1,rdm2,grad)
   call matout(N,N,grad)
 
   deallocate(grad_tmp)
@@ -93,12 +83,12 @@ subroutine R_optimize_orbitals(diagHess,OVRotOnly,dRPA,nBas,nOrb,nV,nR,nC,nO,N,N
     hess(:,:) = 0d0
     call orbital_hessian_diag(O,V,N,Nsq,h,ERI_MO,rdm1_hf,rdm2_hf,hess_tmp)
     hess = hess + hess_tmp
-   ! if(dRPA) then
-   !   call orbital_hessian_diag(O,V,N,Nsq,h,ERI_MO,rdm1_c,rdm2_c,hess_tmp)
-   ! else
-   !   call orbital_hessian_diag(O,V,N,Nsq,F,ERI_MO_AS,rdm1_c,rdm2_c,hess_tmp)
-   ! endif
-   ! hess = hess + hess_tmp
+    if(dRPA) then
+      call orbital_hessian_diag(O,V,N,Nsq,h,ERI_MO,rdm1_c,rdm2_c,hess_tmp)
+    else
+      call orbital_hessian_diag(O,V,N,Nsq,F,ERI_MO_AS,rdm1_c,rdm2_c,hess_tmp)
+    endif
+    hess = hess + hess_tmp
     deallocate(hess_tmp)
     allocate(hessInv(nhess,mhess))
     tol = 1d-12 * maxval(abs(hess(:,1)))
@@ -110,17 +100,17 @@ subroutine R_optimize_orbitals(diagHess,OVRotOnly,dRPA,nBas,nOrb,nV,nR,nC,nO,N,N
   elseif(.not. OVRotOnly) then
     allocate(hess(nhess,mhess),hess_tmp(nhess,mhess))
     hess(:,:) = 0d0
-    !call orbital_hessian(O,V,N,Nsq,h,ERI_MO,rdm1_hf,rdm2_hf,hess_tmp)
-    call orbital_hessian(O,V,N,Nsq,h,ERI_MO,rdm1,rdm2,hess_tmp)
+    call orbital_hessian(O,V,N,Nsq,h,ERI_MO,rdm1_hf,rdm2_hf,hess_tmp)
+    !call orbital_hessian(O,V,N,Nsq,h,ERI_MO,rdm1,rdm2,hess_tmp)
     hess = hess + hess_tmp 
-   ! if(dRPA) then
-   !   call orbital_hessian(O,V,N,Nsq,h,ERI_MO,rdm1_c,rdm2_c,hess_tmp)
-   ! else
-   !   call orbital_hessian(O,V,N,Nsq,F,ERI_MO_AS,rdm1_c,rdm2_c,hess_tmp)
-   ! endif
-   ! hess = hess + hess_tmp
-   ! write(*,*) "Hessian from rdms"
-   ! call matout(Nsq,Nsq,hess)
+    if(dRPA) then
+      call orbital_hessian(O,V,N,Nsq,h,ERI_MO,rdm1_c,rdm2_c,hess_tmp)
+    else
+      call orbital_hessian(O,V,N,Nsq,F,ERI_MO_AS,rdm1_c,rdm2_c,hess_tmp)
+    endif
+    hess = hess + hess_tmp
+    write(*,*) "Hessian from rdms"
+    call matout(Nsq,Nsq,hess)
     deallocate(hess_tmp)
     allocate(hessInv(nhess,mhess))
     call pseudo_inverse_matrix(Nsq,hess,hessInv)
