@@ -85,7 +85,7 @@ subroutine MOMROHF(dotest,maxSCF,thresh,max_diis,guess_type,mix,level_shift,nNuc
   allocate(swap_mo_occ(2), cGuess(nBas,nOrb),O(nOrb,nOrb),projO(nOrb)) 
   swap_mo_occ(1) = 1
   swap_mo_occ(2) = max(nO(1),nO(2)) ! This means the occupation of core orbital and valence orbital will be swapped
-  swap_mo_occ(2) = swap_mo_occ(2) - 1  ! This means the occupation of core orbital and valence orbital will be swapped
+  swap_mo_occ(2) = 2  ! Just swap the first and second orbital for test
 
 ! Useful stuff
 
