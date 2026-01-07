@@ -115,9 +115,9 @@ subroutine R_G3W2(dotest,TDA_W,singlet,triplet,linearize,eta,doSRG,nBas,nOrb,nC,
 
   else
 
-    call R_G3W2_self_energy_diag(eta,nBas,nOrb,nC,nO,nV,nR,nS,eHF,Om,rho,ERI,EcGM,SigC,Z)
+     ! call R_G3W2_self_energy_diag(eta,nBas,nOrb,nC,nO,nV,nR,nS,eHF,Om,rho,ERI,EcGM,SigC,Z)
 
-!   call R_G3W2_self_energy_diag_alt(eta,nBas,nOrb,nC,nO,nV,nR,nS,eHF,Om,rho,ERI,EcGM,SigC,Z)
+     call R_G3W2_self_energy_diag_alt(eta,nBas,nOrb,nC,nO,nV,nR,nS,eHF,Om,rho,ERI,EcGM,SigC,Z)
 
   end if
   
@@ -127,7 +127,7 @@ subroutine R_G3W2(dotest,TDA_W,singlet,triplet,linearize,eta,doSRG,nBas,nOrb,nC,
 
   ! Linearized or graphical solution?
 
-  eQPlin(:) = eHF(:) + Z(:)*SigC(:)
+  eQPlin(:) = eHF(:) + SigC(:)
   
   if(linearize) then 
  

@@ -200,7 +200,7 @@ subroutine R_G3W2_self_energy_diag_alt(eta,nBas,nOrb,nC,nO,nV,nR,nS,eHF,Om,rho,E
          
           do c=nO+1,nOrb-nR
 
-            num = 2d0*rho(a,c,mu)*rho(c,i,nu)
+            num = 2d0*rho(c,i,mu)*rho(a,c,nu)
             dem = eHF(i) - eHF(c) - Om(mu)
             reg = (1d0 - exp(-2d0*flow*dem*dem))/dem
           
@@ -232,7 +232,7 @@ subroutine R_G3W2_self_energy_diag_alt(eta,nBas,nOrb,nC,nO,nV,nR,nS,eHF,Om,rho,E
 
             num1 = 2d0*rho(r,i,mu)*rho(p,r,nu)
             num2 = 2d0*rho(s,i,mu)*rho(p,s,nu)
-            dem1 = eHF(r) - eHF(i) + Om(nu)
+            dem1 = eHF(r) - eHF(i) + Om(mu)
             dem2 = w - eHF(i) + Om(nu) + Om(mu)
             dem3 = eHF(s) - eHF(i) + Om(mu)
 
@@ -257,9 +257,9 @@ subroutine R_G3W2_self_energy_diag_alt(eta,nBas,nOrb,nC,nO,nV,nR,nS,eHF,Om,rho,E
           do r=nC+1,nOrb-nR
           do s=nC+1,nOrb-nR
 
-            num1 = 2d0*rho(r,p,mu)*rho(a,r,nu)
+            num1 = 2d0*rho(a,r,mu)*rho(r,p,nu)
             num2 = 2d0*rho(a,s,mu)*rho(s,p,nu)
-            dem1 = eHF(r) - eHF(a) - Om(nu)
+            dem1 = eHF(r) - eHF(a) - Om(mu)
             dem2 = w - eHF(a) - Om(nu) - Om(mu)
             dem3 = eHF(s) - eHF(a) - Om(mu)
 
@@ -280,7 +280,8 @@ subroutine R_G3W2_self_energy_diag_alt(eta,nBas,nOrb,nC,nO,nV,nR,nS,eHF,Om,rho,E
     ! Blocks U_2h1p !
     !---------------!
 
-    U2_2h1p(:) = 0d0
+     U2_2h1p(:) = 0d0
+     U1_2h1p(:) = 0d0
 
     ija = 0
     do i=nC+1,nO
@@ -373,6 +374,7 @@ subroutine R_G3W2_self_energy_diag_alt(eta,nBas,nOrb,nC,nO,nV,nR,nS,eHF,Om,rho,E
     !---------------!
 
     U2_2p1h(:) = 0d0
+    U1_2p1h(:) = 0d0
 
     iab = 0
     do a=nO+1,nOrb-nR
