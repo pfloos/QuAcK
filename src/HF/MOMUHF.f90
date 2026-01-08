@@ -1,5 +1,5 @@
 subroutine MOMUHF(dotest,maxSCF,thresh,max_diis,guess_type,mix,level_shift,nNuc,ZNuc,rNuc,ENuc, & 
-               nBas,nO,S,T,V,Hc,ERI,dipole_int,X,EUHF,eHF,c,P,F)
+               nBas,nO,S,T,V,Hc,ERI,dipole_int,X,EUHF,eHF,c,P,F,occupations)
 
 ! Perform unrestricted Hartree-Fock calculation
 
@@ -31,6 +31,7 @@ subroutine MOMUHF(dotest,maxSCF,thresh,max_diis,guess_type,mix,level_shift,nNuc,
   double precision,intent(in)   :: X(nBas,nBas) 
   double precision,intent(in)   :: ERI(nBas,nBas,nBas,nBas)
   double precision,intent(in)   :: dipole_int(nBas,nBas,ncart)
+  double precision,intent(in)   :: occupations(maxval(nO),nspin)
 
 ! Local variables
 

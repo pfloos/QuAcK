@@ -1,37 +1,45 @@
-subroutine read_mom_occupations(working_dir,eta_cap)
+subroutine read_mom_occupations(working_dir,nO,occupations)
 
-! Read mom occupations for guess
+! Reads the occupations of spin up and down for the MOM guess from the input dir.
 
   implicit none
-
-! Input variables
+  include 'parameters.h'
 
   character(len=256),intent(in) :: working_dir
-
-! Output variables
-  
-  double precision,intent(out)  :: eta_cap  
-
-! Local variables
+  integer,intent(in)            :: nO(nspin)
+  integer,intent(out)           :: occupations(maxval(nO),nspin)
 
   integer                       :: status
   character(len=256)            :: file_path
+  character(len=1024)           :: line
+  integer                       :: ispin, nread
+  integer                       :: tmp(maxval(nO))
 
+  file_path = trim(working_dir) // '/input/mom_occupations'
+  occupations(:,:) = 0
 
-  file_path = trim(working_dir) // '/input/eta_opt.dat'
   open(unit=1, file=file_path, status='old', action='read', iostat=status)
+  if (status /= 0) then
+          write(*,*) "Error in opening mom_occupations file !!!"
+          write(*,*) "If this file is not needed, please just provide an empty file with the name mom_occupations in the input dir."
+          stop
+  end if
 
-    if(status /= 0) then
+  do ispin = 1, nspin
 
-      print *, "Error opening file: ", file_path
-      stop
+    read(1,*,iostat=status)    ! comment line
+    if (status /= 0) exit
 
-    else
+    read(1,'(A)',iostat=status) line
+    if (status /= 0) exit
 
-      read(1,*) eta_cap
-    endif
+    tmp = 0
+    read(line,*,iostat=status) tmp
 
-  ! Close file
-  close(unit=1)
+    occupations(:,ispin) = tmp(:)
+    print *, occupations(:,ispin)
 
-end subroutine 
+  end do
+  close(1)
+
+end subroutine

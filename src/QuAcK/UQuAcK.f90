@@ -4,6 +4,7 @@ subroutine UQuAcK(working_dir,dotest,doUHF,doMOMUHF,dostab,dosearch,doMP2,doMP3,
                   doG0T0pp,doevGTpp,doqsGTpp,doufG0T0pp,doG0T0eh,doevGTeh,doqsGTeh,doevParquet,doqsParquet,        & 
                   readFCIDUMP,nNuc,nBas,nC,nO,nV,nR,ENuc,ZNuc,rNuc,                                                &
                   S,T,V,Hc,X,dipole_int_AO,maxSCF_HF,max_diis_HF,thresh_HF,level_shift,                            &
+                  mom_occupations,                                                                                 &
                   guess_type,mix,reg_MP,maxSCF_CC,max_diis_CC,thresh_CC,spin_conserved,spin_flip,TDA,              &
                   maxSCF_GF,max_diis_GF,renorm_GF,thresh_GF,lin_GF,reg_GF,eta_GF,maxSCF_GW,max_diis_GW,thresh_GW,  &
                   TDA_W,lin_GW,reg_GW,eta_GW,maxSCF_GT,max_diis_GT,thresh_GT,TDA_T,lin_GT,reg_GT,eta_GT,           &
@@ -37,6 +38,7 @@ subroutine UQuAcK(working_dir,dotest,doUHF,doMOMUHF,dostab,dosearch,doMP2,doMP3,
   integer,intent(in)            :: nV(nspin)
   integer,intent(in)            :: nR(nspin)
   double precision,intent(inout):: ENuc
+  integer,intent(in)            :: mom_occupations(maxval(nO),nspin)
 
   double precision,intent(in)   :: ZNuc(nNuc),rNuc(nNuc,ncart)
 
@@ -175,7 +177,7 @@ subroutine UQuAcK(working_dir,dotest,doUHF,doMOMUHF,dostab,dosearch,doMP2,doMP3,
     call UHF(dotest,maxSCF_HF,thresh_HF,max_diis_HF,guess_type,mix,level_shift,nNuc,ZNuc,rNuc,ENuc, &
              nBas,nO,S,T,V,Hc,ERI_AO,dipole_int_AO,X,EUHF,eHF,cHF,PHF,FHF)
     call MOMUHF(dotest,maxSCF_HF,thresh_HF,max_diis_HF,guess_type,mix,level_shift,nNuc,ZNuc,rNuc,ENuc, &
-             nBas,nO,S,T,V,Hc,ERI_AO,dipole_int_AO,X,EUHF,eHF,cHF,PHF,FHF)
+             nBas,nO,S,T,V,Hc,ERI_AO,dipole_int_AO,X,EUHF,eHF,cHF,PHF,FHF,mom_occupations)
     call wall_time(end_HF)
 
     t_HF = end_HF - start_HF

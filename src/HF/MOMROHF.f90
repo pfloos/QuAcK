@@ -1,5 +1,5 @@
 subroutine MOMROHF(dotest,maxSCF,thresh,max_diis,guess_type,mix,level_shift,nNuc,ZNuc,rNuc,ENuc, & 
-                nBas,nOrb,nO,S,T,V,Hc,ERI,dipole_int,X,EROHF,eHF,c,Ptot,Ftot)
+                nBas,nOrb,nO,S,T,V,Hc,ERI,dipole_int,X,EROHF,eHF,c,Ptot,Ftot,occupations)
 
 ! Perform restricted open-shell Hartree-Fock calculation
 
@@ -25,6 +25,7 @@ subroutine MOMROHF(dotest,maxSCF,thresh,max_diis,guess_type,mix,level_shift,nNuc
   double precision,intent(in)   :: ENuc
 
   integer,intent(in)            :: nO(nspin)
+  integer,intent(in)            :: occupations(maxval(nO),nspin)
   double precision,intent(in)   :: S(nBas,nBas)
   double precision,intent(in)   :: T(nBas,nBas)
   double precision,intent(in)   :: V(nBas,nBas)

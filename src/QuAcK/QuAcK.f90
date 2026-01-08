@@ -50,6 +50,7 @@ program QuAcK
   double precision, allocatable :: CAP(:,:)
   double precision,allocatable  :: dipole_int_AO(:,:,:)
   double precision,allocatable  :: Uvec(:,:), Uval(:)
+  integer,allocatable           :: mom_occupations(:,:)
 
   double precision,allocatable  :: wweight(:),wcoord(:)
 
@@ -166,6 +167,7 @@ program QuAcK
 
   call read_methods(working_dir,                                    &
                     doRHF,doUHF,doGHF,doROHF,doRHFB,docRHF,doeRHF,  &
+                    doMOMRHF,doMOMUHF,doMOMROHF,                    &
                     doMP2,doMP3,                                    &
                     doCCD,dopCCD,doDCD,doCCSD,doCCSDT,              &
                     dodrCCD,dorCCD,docrCCD,dolCCD,                  &
@@ -271,6 +273,11 @@ program QuAcK
   else
     allocate(CAP(0,0))
   end if
+
+! Read occupations for MOM
+  allocate(mom_occupations(maxval(nO),nspin)) 
+  call read_mom_occupations(working_dir,nO,mom_occupations)
+
 ! Read integrals
 
   call wall_time(start_int)
@@ -384,6 +391,7 @@ program QuAcK
                   do_ADC_GW,do_ADC_2SOSEX,do_ADC3_G3W2,do_ADC4_G3W2,                                                        &
                   nNuc,nBas,nOrb,nC,nO,nV,nR,ENuc,ZNuc,rNuc,                                                                &
                   S,T,V,Hc,CAP,X,dipole_int_AO,maxSCF_HF,max_diis_HF,thresh_HF,level_shift,eweight,eforward,                &
+                  mom_occupations,                                                                                          &
                   guess_type,mix,reg_MP,maxSCF_CC,max_diis_CC,thresh_CC,spin_conserved,spin_flip,TDA,                       &
                   max_iter_OO,thresh_OO,dRPA_OO,mu_OO,diagHess_OO,                                                          &
                   maxSCF_GF,max_diis_GF,renorm_GF,thresh_GF,lin_GF,reg_GF,eta_GF,maxSCF_GW,max_diis_GW,thresh_GW,           &
@@ -406,7 +414,7 @@ program QuAcK
                 doG0F2,doevGF2,doqsGF2,doG0F3,doevGF3,doG0W0,doevGW,doqsGW,                                      &
                 doG0T0pp,doevGTpp,doqsGTpp,doufG0T0pp,doG0T0eh,doevGTeh,doqsGTeh,doevParquet,doqsParquet,        & 
                 readFCIDUMP,nNuc,nBas,nC,nO,nV,nR,ENuc,ZNuc,rNuc,                                                &
-                S,T,V,Hc,X,dipole_int_AO,maxSCF_HF,max_diis_HF,thresh_HF,level_shift,                            &
+                S,T,V,Hc,X,dipole_int_AO,maxSCF_HF,max_diis_HF,thresh_HF,level_shift,mom_occupations,            &
                 guess_type,mix,reg_MP,maxSCF_CC,max_diis_CC,thresh_CC,spin_conserved,spin_flip,TDA,              &
                 maxSCF_GF,max_diis_GF,renorm_GF,thresh_GF,lin_GF,reg_GF,eta_GF,maxSCF_GW,max_diis_GW,thresh_GW,  &
                 TDA_W,lin_GW,reg_GW,eta_GW,maxSCF_GT,max_diis_GT,thresh_GT,TDA_T,lin_GT,reg_GT,eta_GT,           &
