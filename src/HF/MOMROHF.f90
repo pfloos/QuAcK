@@ -241,7 +241,7 @@ subroutine MOMROHF(dotest,maxSCF,thresh,max_diis,guess_type,mix,level_shift,nNuc
 
 ! Select orbitals with maximum overlap
    
-    call sort_MOM(nBas,nOrb,projO,c)
+    call sort_MOM(nBas,nOrb,projO,c,eHF)
     write(*,*) "projO"
     call vecout(nOrb,projO)
 

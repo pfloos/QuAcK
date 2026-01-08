@@ -335,7 +335,7 @@ program QuAcK
   doRQuAcK = .false.
   if(doRHF .or. doROHF .or. docRHF) doRQuAcK = .true.
  ! doRQuAcK = .true. 
- ! write(*,*) "doRQUACK hardcoded to true, think to modify this when MOMROHF is implemented"
+ ! write(*,*) "doRQUACK hardcoded to true, think to modify this when MOM is implemented"
 
   doUQuAcK = .false.
   if(doUHF) doUQuAcK = .true.

@@ -1,5 +1,5 @@
 
-subroutine sort_MOM(nBas, nOrb, projO, c)
+subroutine sort_MOM(nBas, nOrb, projO, c,eHF)
 
 ! Sort indices according to projO (descending)
 ! Simple selection sort (nOrb is small in practice)
@@ -8,17 +8,16 @@ subroutine sort_MOM(nBas, nOrb, projO, c)
   include 'parameters.h'
 
 ! Input variables
-  integer, intent(in)            :: nBas, nOrb
-  double precision, intent(in)   :: projO(nOrb)
+  integer, intent(in)             :: nBas, nOrb
+  double precision, intent(in)    :: projO(nOrb)
 
 ! Input / output variables
   double precision, intent(inout) :: c(nBas, nOrb)
+  double precision, intent(inout) :: eHF(nOrb) 
 
 ! Local variables
-  integer                        :: i, j, imax
-  integer                        :: idx(nOrb)
-  double precision               :: tmpO
-  double precision               :: tmpC(nBas)
+  integer                         :: i, j, imax
+  integer                         :: idx(nOrb)
 
 ! Initialize index array
   do i = 1, nOrb
@@ -42,10 +41,7 @@ subroutine sort_MOM(nBas, nOrb, projO, c)
      end if
   end do
 
-! Reorder columns of c according to sorted indices
-  do i = 1, nOrb
-     tmpC(:) = c(:, idx(i))
-     c(:, i) = tmpC(:)
-  end do
-
+! Reorder columns of c and eHF according to sorted indices
+  c(:,1:nOrb) = c(:,idx(:))
+  eHF(:)      = eHF(idx(:))
 end subroutine
