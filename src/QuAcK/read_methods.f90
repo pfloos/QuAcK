@@ -1,5 +1,6 @@
 subroutine read_methods(working_dir,                                       &
                         doRHF,doUHF,doGHF,doROHF,doRHFB,docRHF,doeRHF,     &
+                        doMOMRHF,doMOMUHF,doMOMROHF,                       &
                         doMP2,doMP3,                                       & 
                         doCCD,dopCCD,doDCD,doCCSD,doCCSDT,                 & 
                         do_drCCD,do_rCCD,do_crCCD,do_lCCD,                 &
@@ -29,6 +30,7 @@ subroutine read_methods(working_dir,                                       &
 ! Output variables
 
   logical,intent(out)           :: doRHF,doUHF,doGHF,doROHF,doRHFB,docRHF,doeRHF
+  logical,intent(out)           :: doMOMRHF,doMOMUHF,doMOMROHF
   logical,intent(out)           :: doMP2,doMP3
   logical,intent(out)           :: doCCD,dopCCD,doDCD,doCCSD,doCCSDT
   logical,intent(out)           :: do_drCCD,do_rCCD,do_crCCD,do_lCCD
@@ -83,6 +85,18 @@ subroutine read_methods(working_dir,                                       &
       if(ans6 == 'T') docRHF = .true.
       if(ans7 == 'T') doeRHF = .true.
       
+      ! Read mean-field methods maximum-overlap methods (MOM)
+      
+      doMOMRHF  = .false.
+      doMOMUHF  = .false.
+      doMOMROHF = .false.
+      
+      read(1,*) 
+      read(1,*) ans1,ans2,ans3
+      if(ans1 == 'T') doMOMRHF  = .true.
+      if(ans2 == 'T') doMOMUHF  = .true.
+      if(ans3 == 'T') doMOMROHF = .true.
+
       ! Read MPn methods
       
       doMP2    = .false.

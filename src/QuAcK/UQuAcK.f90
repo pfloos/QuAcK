@@ -1,4 +1,4 @@
-subroutine UQuAcK(working_dir,dotest,doUHF,dostab,dosearch,doMP2,doMP3,doCCD,dopCCD,doDCD,doCCSD,doCCSDT,          &
+subroutine UQuAcK(working_dir,dotest,doUHF,doMOMUHF,dostab,dosearch,doMP2,doMP3,doCCD,dopCCD,doDCD,doCCSD,doCCSDT, &
                   dodrCCD,dorCCD,docrCCD,dolCCD,doCIS,doCIS_D,doCID,doCISD,doFCI,dophRPA,dophRPAx,docrRPA,doppRPA, &
                   doG0F2,doevGF2,doqsGF2,doG0F3,doevGF3,doG0W0,doevGW,doqsGW,                                      &
                   doG0T0pp,doevGTpp,doqsGTpp,doufG0T0pp,doG0T0eh,doevGTeh,doqsGTeh,doevParquet,doqsParquet,        & 
@@ -17,7 +17,7 @@ subroutine UQuAcK(working_dir,dotest,doUHF,dostab,dosearch,doMP2,doMP3,doCCD,dop
   logical,intent(in)            :: dotest
   logical,intent(in)            :: readFCIDUMP
 
-  logical,intent(in)            :: doUHF
+  logical,intent(in)            :: doUHF,doMOMUHF
   logical,intent(in)            :: dostab
   logical,intent(in)            :: dosearch
   logical,intent(in)            :: doMP2,doMP3
@@ -161,6 +161,20 @@ subroutine UQuAcK(working_dir,dotest,doUHF,dostab,dosearch,doMP2,doMP3,doCCD,dop
 
     call wall_time(start_HF)
     call UHF(dotest,maxSCF_HF,thresh_HF,max_diis_HF,guess_type,mix,level_shift,nNuc,ZNuc,rNuc,ENuc, &
+             nBas,nO,S,T,V,Hc,ERI_AO,dipole_int_AO,X,EUHF,eHF,cHF,PHF,FHF)
+    call wall_time(end_HF)
+
+    t_HF = end_HF - start_HF
+    write(*,'(A65,1X,F9.3,A8)') 'Total CPU time for UHF = ',t_HF,' seconds'
+    write(*,*)
+
+  end if
+  if(doMOMUHF) then
+
+    call wall_time(start_HF)
+    call UHF(dotest,maxSCF_HF,thresh_HF,max_diis_HF,guess_type,mix,level_shift,nNuc,ZNuc,rNuc,ENuc, &
+             nBas,nO,S,T,V,Hc,ERI_AO,dipole_int_AO,X,EUHF,eHF,cHF,PHF,FHF)
+    call MOMUHF(dotest,maxSCF_HF,thresh_HF,max_diis_HF,guess_type,mix,level_shift,nNuc,ZNuc,rNuc,ENuc, &
              nBas,nO,S,T,V,Hc,ERI_AO,dipole_int_AO,X,EUHF,eHF,cHF,PHF,FHF)
     call wall_time(end_HF)
 
