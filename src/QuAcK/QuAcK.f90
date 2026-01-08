@@ -275,8 +275,11 @@ program QuAcK
   end if
 
 ! Read occupations for MOM
+
+if(doMOMRHF .or. doMOMROHF .or. doMOMUHF) then
   allocate(mom_occupations(maxval(nO),nspin)) 
   call read_mom_occupations(working_dir,nO,mom_occupations)
+end if
 
 ! Read integrals
 

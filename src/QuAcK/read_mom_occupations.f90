@@ -22,7 +22,7 @@ subroutine read_mom_occupations(working_dir,nO,occupations)
   if (status /= 0) then
           write(*,*) "Error in opening mom_occupations file !!!"
           write(*,*) "If this file is not needed, please just provide an empty file with the name mom_occupations in the input dir."
-          stop
+          return
   end if
 
   do ispin = 1, nspin
