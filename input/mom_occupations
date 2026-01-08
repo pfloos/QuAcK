@@ -1,0 +1,10 @@
+# Alpha occupations
+1 2 3 4 5
+# Beta occupations
+1 2 3 4 5
+
+# The numbers indicates occupied orbitlas for the initial guess. The orbitals
+# are derived by a ground state calculation with the same maximum-overlap 
+# method (MOM) and same number of electrons. 
+# Make sure that the occupations are consistent with 
+# the method used (e.g. same occupations for alpha and beta in case of MOMRHF)

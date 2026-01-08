@@ -5,6 +5,7 @@ program QuAcK
 
   logical                       :: doRQuAcK,doUQuAcK,doGQuAcK,doBQuAcK
   logical                       :: doRHF,doUHF,doGHF,doROHF,doRHFB,docRHF,doeRHF
+  logical                       :: doMOMRHF,doMOMUHF,doMOMROHF
   logical                       :: dostab,dosearch,doaordm,readFCIDUMP
   logical                       :: doMP2,doMP3
   logical                       :: doCCD,dopCCD,doDCD,doCCSD,doCCSDT
@@ -333,12 +334,10 @@ program QuAcK
 !---------------------!
 
   doRQuAcK = .false.
-  if(doRHF .or. doROHF .or. docRHF) doRQuAcK = .true.
- ! doRQuAcK = .true. 
- ! write(*,*) "doRQUACK hardcoded to true, think to modify this when MOM is implemented"
+  if(doRHF .or. doROHF .or. docRHF .or. doMOMRHF .or. doMOMROHF) doRQuAcK = .true.
 
   doUQuAcK = .false.
-  if(doUHF) doUQuAcK = .true.
+  if(doUHF .or. doMOMUHF) doUQuAcK = .true.
 
   doGQuAcK = .false.
   if(doGHF) doGQuAcK = .true.
@@ -372,7 +371,9 @@ program QuAcK
                       TDA_W,lin_GW,reg_GW,eta_GW,maxSCF_GT,max_diis_GT,thresh_GT,TDA_T,lin_GT,reg_GT,eta_GT,                  &
                       dophBSE,dophBSE2,doppBSE,dBSE,dTDA,doACFDT,exchange_kernel,doXBS)
     else
-      call RQuAcK(working_dir,use_gpu,doRtest,doRHF,doROHF,docRHF,doeRHF,dostab,dosearch,doaordm,                           &
+      call RQuAcK(working_dir,use_gpu,doRtest,doRHF,doROHF,docRHF,doeRHF,                                                   &
+                  doMOMRHF,doMOMROHF,                                                                                       &
+                  dostab,dosearch,doaordm,                                                                                  &
                   doMP2,doMP3,doCCD,dopCCD,doDCD,doCCSD,doCCSDT,                                                            &
                   dodrCCD,dorCCD,docrCCD,dolCCD,doCIS,doCIS_D,doCID,doCISD,doFCI,dophRPA,dophRPAx,docrRPA,doppRPA,doOO,     &
                   doG0F2,doevGF2,doqsGF2,doG0F3,doevGF3,doG0W0,doevGW,doqsGW,                                               &
@@ -400,7 +401,7 @@ program QuAcK
 !---------------------------!
 
   if(doUQuAcK) &
-    call UQuAcK(working_dir,doUtest,doUHF,dostab,dosearch,doMP2,doMP3,doCCD,dopCCD,doDCD,doCCSD,doCCSDT,         &
+    call UQuAcK(working_dir,doUtest,doUHF,doMOMUHF,dostab,dosearch,doMP2,doMP3,doCCD,dopCCD,doDCD,doCCSD,doCCSDT,&
                 dodrCCD,dorCCD,docrCCD,dolCCD,doCIS,doCIS_D,doCID,doCISD,doFCI,dophRPA,dophRPAx,docrRPA,doppRPA, &
                 doG0F2,doevGF2,doqsGF2,doG0F3,doevGF3,doG0W0,doevGW,doqsGW,                                      &
                 doG0T0pp,doevGTpp,doqsGTpp,doufG0T0pp,doG0T0eh,doevGTeh,doqsGTeh,doevParquet,doqsParquet,        & 

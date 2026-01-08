@@ -1,4 +1,5 @@
 subroutine RQuAcK(working_dir,use_gpu,dotest,doRHF,doROHF,docRHF,doeRHF,                                                    &
+                  doMOMRHF,doMOMROHF,                                                                                       &
                   dostab,dosearch,doaordm,doMP2,doMP3,doCCD,dopCCD,doDCD,doCCSD,doCCSDT,                                    &
                   dodrCCD,dorCCD,docrCCD,dolCCD,doCIS,doCIS_D,doCID,doCISD,doFCI,dophRPA,dophRPAx,docrRPA,doppRPA,doOO,     & 
                   doG0F2,doevGF2,doqsGF2,doG0F3,doevGF3,doG0W0,doevGW,doqsGW,                                               &
@@ -32,6 +33,7 @@ subroutine RQuAcK(working_dir,use_gpu,dotest,doRHF,doROHF,docRHF,doeRHF,        
   logical,intent(in)            :: readFCIDUMP
 
   logical,intent(in)            :: doRHF,doROHF,docRHF,doeRHF
+  logical,intent(in)            :: doMOMRHF,doMOMROHF
   logical,intent(in)            :: dostab
   logical,intent(in)            :: dosearch
   logical,intent(in)            :: doaordm
@@ -131,8 +133,6 @@ subroutine RQuAcK(working_dir,use_gpu,dotest,doRHF,doROHF,docRHF,doeRHF,        
   logical                       :: doMP,doCC,doCI,doRPA,doGF,doGW,doGT,doADC
   logical                       :: file_exists
   logical                       :: no_fock
-  logical                       :: doMOMROHF = .false.
-  logical                       :: doMOMRHF  = .false.
 
   double precision              :: start_HF     ,end_HF       ,t_HF
   double precision              :: start_stab   ,end_stab     ,t_stab
