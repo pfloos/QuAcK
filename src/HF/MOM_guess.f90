@@ -9,7 +9,7 @@ subroutine MOM_guess(nO, nBas, nOrb, occ,c,cGuess,eHF)
 ! Input variables
   integer, intent(in)             :: nO,nBas, nOrb
   integer, intent(in)             :: occ(nO)
-  integer, intent(in)             :: c(nBas,nOrb)
+  double precision, intent(in)    :: c(nBas,nOrb)
 
 ! Input/Output variables
   double precision, intent(out)   :: cGuess(nBas, nOrb)
@@ -33,10 +33,8 @@ subroutine MOM_guess(nO, nBas, nOrb, occ,c,cGuess,eHF)
 
 ! Virtual orbitals
   k = 0
-  print *, occ(:)
   do p = 1, nOrb
     if(.not. any(occ == p)) then 
-      print *, p
       k = k + 1
       cGuess(:,nO + k) = c(:,p)
       etmp(nO+k) = eHF(p)
@@ -46,8 +44,7 @@ subroutine MOM_guess(nO, nBas, nOrb, occ,c,cGuess,eHF)
   eHF(:) = etmp(:)
   
   deallocate(etmp)
-
-  print *, nO + k  
+  
   if(nO + k  /= nOrb) then
     print *, "Number of occupied orbitals is not correct !"
     stop

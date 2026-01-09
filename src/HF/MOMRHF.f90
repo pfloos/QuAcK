@@ -70,7 +70,7 @@ subroutine MOMRHF(dotest,doaordm,maxSCF,thresh,max_diis,guess_type,level_shift,n
 ! Output variables
 
   double precision,intent(out)  :: ERHF
-  double precision,intent(out)  :: eHF(nOrb)
+  double precision,intent(inout):: eHF(nOrb)
   double precision,intent(inout):: c(nBas,nOrb)
   double precision,intent(out)  :: P(nBas,nBas)
   double precision,intent(out)  :: F(nBas,nBas)
@@ -110,9 +110,8 @@ subroutine MOMRHF(dotest,doaordm,maxSCF,thresh,max_diis,guess_type,level_shift,n
   end do
   print *, "Ground state orbital occupations for MOM-guess:"
   print *, occupations(:,1)
-
+  
   call MOM_guess(nO, nBas, nOrb, occupations(:,1),c,cGuess,eHF)
-  call vecout(nOrb,eHF)
 
 ! Initialization
 
@@ -199,6 +198,7 @@ subroutine MOMRHF(dotest,doaordm,maxSCF,thresh,max_diis,guess_type,level_shift,n
     O = matmul(matmul(transpose(cGuess),S),c)
     projO(:) = 0d0
     do i=1,nO
+      print *, O(i,:)**2
       projO(:) = projO(:) + O(i,:)**2 
     end do
 
@@ -211,9 +211,6 @@ subroutine MOMRHF(dotest,doaordm,maxSCF,thresh,max_diis,guess_type,level_shift,n
     ! Density matrix
 
     P(:,:) = 2d0*matmul(c(:,1:nO),transpose(c(:,1:nO)))
-!   call dgemm('N', 'T', nBas, nBas, nO, 2.d0, &
-!              c(1,1), nBas, c(1,1), nBas,     &
-!              0.d0, P(1,1), nBas)
 
     ! Dump results
 
@@ -236,23 +233,10 @@ subroutine MOMRHF(dotest,doaordm,maxSCF,thresh,max_diis,guess_type,level_shift,n
     write(*,*)'!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!'
     write(*,*)
 
-    !deallocate(J,K,err,cp,Fp,err_diis,F_diis)
-
     write(*,*) ' Warning! Convergence failed at Hartree-Fock level.'
 
   end if
 
-! Compute dipole moments
-!
-!  call Hartree_matrix_AO_basis(nBas,P,ERI,J)
-!  call exchange_matrix_AO_basis(nBas,P,ERI,K)
-!  F(:,:) = Hc(:,:) + J(:,:) + 0.5d0*K(:,:)
-!  Fp = matmul(transpose(X),matmul(F,X))
-!  cp(:,:) = Fp(:,:)
-!  call diagonalize_matrix(nOrb,cp,eHF)
-!  c = matmul(X,cp)
-!
-!  call dipole_moment(nBas,P,nNuc,ZNuc,rNuc,dipole_int,dipole)
   call print_RHF(nBas,nOrb,nO,eHF,c,ENuc,ET,EV,EJ,EK,ERHF,dipole)
 
 ! Print the 1-RDM and 2-RDM in AO basis
