@@ -62,7 +62,6 @@ subroutine MOMRHF(dotest,doaordm,maxSCF,thresh,max_diis,guess_type,level_shift,n
   double precision,allocatable  :: cp(:,:)
   double precision,allocatable  :: Fp(:,:)
 
-  integer,allocatable           :: swap_mo_occ(:)
   double precision,allocatable  :: cGuess(:,:)
   double precision,allocatable  :: O(:,:)
   double precision,allocatable  :: projO(:)
@@ -99,25 +98,21 @@ subroutine MOMRHF(dotest,doaordm,maxSCF,thresh,max_diis,guess_type,level_shift,n
 
   allocate(err_diis(nBas_Sq,max_diis))
   allocate(F_diis(nBas_Sq,max_diis))
+  
+  allocate(cGuess(nBas,nOrb),O(nOrb,nOrb),projO(nOrb)) 
 
-! Guess coefficients and density matrix
+! Read input occupations (ground state) and prepare guess
+  do i=1,nO
+    if(occupations(i,1)/= occupations(i,2)) then
+      write(*,*) "Alpha occupation does not match Beta Occupation."
+      write(*,*) "Proceeding with alpha occupation."
+    end if
+  end do
+  print *, "Ground state orbital occupations for MOM-guess:"
+  print *, occupations(:,1)
 
-! Stuff I ll make as input somehow
-  allocate(swap_mo_occ(2), cGuess(nBas,nOrb),O(nOrb,nOrb),projO(nOrb)) 
-  swap_mo_occ(1) = nO
-  swap_mo_occ(2) = nO + 1 ! Double valence excitation
-
-! Read input coefficients (ground state) and prepare guess
-
-  cGuess = c
-  cGuess(:,swap_mo_occ(1)) = cGuess(:,swap_mo_occ(2))
-  cGuess(:,swap_mo_occ(2)) = c(:,swap_mo_occ(1))
-  c = cGuess
-  O(:,:) = 0d0
-
-! call dgemm('N', 'T', nBas, nBas, nO, 2.d0, &
-!            c(1,1), nBas, c(1,1), nBas,     &
-!            0.d0, P(1,1), nBas)
+  call MOM_guess(nO, nBas, nOrb, occupations(:,1),c,cGuess,eHF)
+  call vecout(nOrb,eHF)
 
 ! Initialization
 
@@ -125,6 +120,7 @@ subroutine MOMRHF(dotest,doaordm,maxSCF,thresh,max_diis,guess_type,level_shift,n
   F_diis(:,:)   = 0d0
   err_diis(:,:) = 0d0
   rcond         = 0d0
+  O(:,:)        = 0d0
 
   Conv = 1d0
   nSCF = 0
