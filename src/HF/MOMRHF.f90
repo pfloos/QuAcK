@@ -198,15 +198,12 @@ subroutine MOMRHF(dotest,doaordm,maxSCF,thresh,max_diis,guess_type,level_shift,n
     O = matmul(matmul(transpose(cGuess),S),c)
     projO(:) = 0d0
     do i=1,nO
-      print *, O(i,:)**2
       projO(:) = projO(:) + O(i,:)**2 
     end do
 
 ! Select orbitals with maximum overlap
    
     call sort_MOM(nBas,nOrb,projO,c,eHF)
-    write(*,*) "projO"
-    call vecout(nOrb,projO)
 
     ! Density matrix
 

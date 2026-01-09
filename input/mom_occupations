@@ -1,7 +1,7 @@
 # Alpha occupations
-1 2 3 5 
+1 2 3 4 6 
 # Beta occupations
-1 2 3 4 
+1 2 3 4 6
 
 # The numbers indicates occupied orbitlas for the initial guess. The orbitals
 # are derived by a ground state calculation with the same maximum-overlap 

@@ -1,6 +1,6 @@
 subroutine MOM_guess(nO, nBas, nOrb, occ,c,cGuess,eHF)
 
-! Prepares the MOM guess based on the gorund state orbitals c and occupations, i.e.
+! Prepares the MOM guess based on the ground state orbitals c and occupations, i.e.
 ! It resorts the columns of c such that the occupied orbitals are the first nO
 
   implicit none
@@ -25,6 +25,8 @@ subroutine MOM_guess(nO, nBas, nOrb, occ,c,cGuess,eHF)
   do i = 1, nO
      if(occ(i) == 0) then
        print *, "Number of occupied orbitals is too small !"
+       print *, "Occupations:"
+       print *, occ(:)
        stop
      end if
      cGuess(:,i) = c(:,occ(i))

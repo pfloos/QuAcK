@@ -50,6 +50,9 @@ subroutine MOMUHF(dotest,maxSCF,thresh,max_diis,guess_type,mix,level_shift,nNuc,
   double precision              :: dipole(ncart)
 
   double precision,allocatable  :: cp(:,:,:)
+  double precision,allocatable  :: cGuess(:,:,:)
+  double precision,allocatable  :: O(:,:,:)
+  double precision,allocatable  :: projO(:,:)
   double precision,allocatable  :: J(:,:,:)
   double precision,allocatable  :: Fp(:,:,:)
   double precision,allocatable  :: K(:,:,:)
@@ -58,7 +61,7 @@ subroutine MOMUHF(dotest,maxSCF,thresh,max_diis,guess_type,mix,level_shift,nNuc,
   double precision,allocatable  :: F_diis(:,:,:)
   double precision,external     :: trace_matrix
 
-  integer                       :: ispin
+  integer                       :: ispin,i
 
 ! Output variables
 
@@ -85,12 +88,18 @@ subroutine MOMUHF(dotest,maxSCF,thresh,max_diis,guess_type,mix,level_shift,nNuc,
   allocate(J(nBas,nBas,nspin),K(nBas,nBas,nspin),Fp(nBas,nBas,nspin), &
            err(nBas,nBas,nspin),cp(nBas,nBas,nspin),                  &
            err_diis(nBasSq,max_diis,nspin),F_diis(nBasSq,max_diis,nspin))
+  
+   allocate(cGuess(nBas,nBas,nspin),O(nBas,nBas,nspin),projO(nBas,nspin)) 
 
-! Guess coefficients and demsity matrices
-
-  do ispin=1,nspin
-    call mo_guess(nBas,nBas,guess_type,S,Hc,X,c(:,:,ispin))
-    P(:,:,ispin) = matmul(c(:,1:nO(ispin),ispin),transpose(c(:,1:nO(ispin),ispin)))
+! Guess coefficients and density matrices
+  print *, "Ground state orbital occupations for MOM-guess:"
+  print *, "Alpha:"
+  print *, occupations(:,1)
+  print *, "Beta:"
+  print *, occupations(:,2)
+  
+  do ispin=1,nspin  
+    call MOM_guess(nO(ispin), nBas, nBas, occupations(:,ispin),c(:,:,ispin),cGuess(:,:,ispin),eHF(:,ispin))
   end do
 
 ! Initialization
@@ -212,6 +221,18 @@ subroutine MOMUHF(dotest,maxSCF,thresh,max_diis,guess_type,mix,level_shift,nNuc,
 
     do ispin=1,nspin
       c(:,:,ispin) = matmul(X,cp(:,:,ispin))
+    end do
+
+! Projected Overlap
+    
+    do ispin=1,nspin
+      O(:,:,ispin) = matmul(matmul(transpose(cGuess(:,:,ispin)),S),c(:,:,ispin)) 
+      projO(:,ispin) = 0d0
+      do i = 1,nO(ispin)
+        projO(:,ispin) = projO(:,ispin) + O(i,:,ispin)**2
+      end do
+      ! Select orbitals with maximum overlap
+      call sort_MOM(nBas,nBas,projO(:,ispin),c(:,:,ispin),eHF(:,ispin))
     end do
 
 !   Mix guess for UHF solution in singlet states

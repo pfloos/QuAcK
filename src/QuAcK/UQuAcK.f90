@@ -117,7 +117,7 @@ subroutine UQuAcK(working_dir,dotest,doUHF,doMOMUHF,dostab,dosearch,doMP2,doMP3,
 !-------------------!
 ! Memory allocation !
 !-------------------!
-
+  
   allocate(cHF(nBas,nBas,nspin),eHF(nBas,nspin),PHF(nBas,nBas,nspin),FHF(nBas,nBas,nspin), &
            dipole_int_aa(nBas,nBas,ncart),dipole_int_bb(nBas,nBas,ncart),                  &
            ERI_aaaa(nBas,nBas,nBas,nBas),ERI_aabb(nBas,nBas,nBas,nBas),                    & 

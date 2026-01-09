@@ -37,7 +37,6 @@ subroutine read_mom_occupations(working_dir,nO,occupations)
     read(line,*,iostat=status) tmp
 
     occupations(:,ispin) = tmp(:)
-    print *, occupations(:,ispin)
 
   end do
   close(1)
