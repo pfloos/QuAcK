@@ -114,8 +114,6 @@ subroutine MOMROHF(dotest,maxSCF,thresh,max_diis,guess_type,mix,level_shift,nNuc
   print *, "Beta:"
   print *, occupationsGuess(1:nO(2),2)
   
-  print *, "nbas,norb"
-  write(*,*) nBas,nOrb
   do ispin = 1,nspin
     P(:,:,ispin) = matmul(cGuess(:,occupationsGuess(1:nO(ispin),ispin)),&
                 transpose(c(:,occupationsGuess(1:nO(ispin),ispin))))
