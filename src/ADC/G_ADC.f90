@@ -1,7 +1,8 @@
 subroutine G_ADC(dotest,                                               & 
                  do_IPEA_ADC2,do_IP_ADC2,do_IPEA_ADC3,                 &
                  do_SOSEX,do_2SOSEX,do_G3W2,                           &
-                 do_ADC_GW,do_ADC_2SOSEX,do_ADC3_G3W2,do_ADC4_G3W2,    &
+                 do_ADC_GW,do_ADC_2SOSEX,                              &
+                 do_ADC3_G3W2,do_ADC3x_G3W2,do_ADC4_G3W2,              &
                  TDA_W,TDA,linearize,eta,doSRG,                        &
                  diag_approx,sig_inf,                                  & 
                  nNuc,ZNuc,rNuc,ENuc,nBas,nBas2,nC,nO,nV,nR,nS,        &
@@ -28,6 +29,7 @@ subroutine G_ADC(dotest,                                               &
   logical,intent(in)            :: do_ADC_GW
   logical,intent(in)            :: do_ADC_2SOSEX
   logical,intent(in)            :: do_ADC3_G3W2
+  logical,intent(in)            :: do_ADC3x_G3W2
   logical,intent(in)            :: do_ADC4_G3W2
 
   logical,intent(in)            :: TDA_W
@@ -79,7 +81,7 @@ subroutine G_ADC(dotest,                                               &
 
   do_IPEA = do_IPEA_ADC2 .or. do_IP_ADC2 .or. do_IPEA_ADC3 .or. & 
             do_SOSEX .or. do_2SOSEX .or. do_G3W2 .or.           &
-            do_ADC_GW .or. do_ADC_2SOSEX .or. do_ADC3_G3W2 .or. do_ADC4_G3W2
+            do_ADC_GW .or. do_ADC_2SOSEX .or. do_ADC3_G3W2 .or. do_ADC3x_G3W2 .or. do_ADC4_G3W2
 
   do_EE   = .false.
 
