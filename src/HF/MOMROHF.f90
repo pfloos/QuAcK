@@ -1,5 +1,5 @@
 subroutine MOMROHF(dotest,maxSCF,thresh,max_diis,guess_type,mix,level_shift,nNuc,ZNuc,rNuc,ENuc, & 
-                nBas,nOrb,nO,S,T,V,Hc,ERI,dipole_int,X,EROHF,eHF,c,Ptot,Ftot,occupations)
+                nBas,nOrb,nO,S,T,V,Hc,ERI,dipole_int,X,EROHF,eHF,c,Ptot,Ftot,occupationsGuess)
 
 ! Perform restricted open-shell Hartree-Fock calculation
 
@@ -25,7 +25,7 @@ subroutine MOMROHF(dotest,maxSCF,thresh,max_diis,guess_type,mix,level_shift,nNuc
   double precision,intent(in)   :: ENuc
 
   integer,intent(in)            :: nO(nspin)
-  integer,intent(in)            :: occupations(maxval(nO),nspin)
+  integer,intent(in)            :: occupationsGuess(maxval(nO),nspin)
   double precision,intent(in)   :: S(nBas,nBas)
   double precision,intent(in)   :: T(nBas,nBas)
   double precision,intent(in)   :: V(nBas,nBas)
@@ -60,7 +60,7 @@ subroutine MOMROHF(dotest,maxSCF,thresh,max_diis,guess_type,mix,level_shift,nNuc
 
   integer                       :: ispin
 
-  integer,allocatable           :: swap_mo_occ(:)
+  integer,allocatable           :: occupations(:,:)
   double precision,allocatable  :: cGuess(:,:)
   double precision,allocatable  :: O(:,:)
   double precision,allocatable  :: projO(:)
@@ -82,11 +82,6 @@ subroutine MOMROHF(dotest,maxSCF,thresh,max_diis,guess_type,mix,level_shift,nNuc
   write(*,*)'****************************************'
   write(*,*)
 
-! Stuff I ll make as input somehow
-  allocate(swap_mo_occ(2), cGuess(nBas,nOrb),O(nOrb,nOrb),projO(nOrb)) 
-  swap_mo_occ(1) = 1
-  swap_mo_occ(2) = max(nO(1),nO(2)) ! This means the occupation of core orbital and valence orbital will be swapped
-  swap_mo_occ(2) = 2  ! Just swap the first and second orbital for test
 
 ! Useful stuff
 
@@ -106,20 +101,28 @@ subroutine MOMROHF(dotest,maxSCF,thresh,max_diis,guess_type,mix,level_shift,nNuc
   allocate(err_diis(nBas_Sq,max_diis))
   allocate(F_diis(nBas_Sq,max_diis))
 
-! Read input coefficients (ground state) and prepare guess
+  allocate(cGuess(nBas,nOrb),O(nOrb,nOrb),projO(nOrb),occupations(maxval(nO),nspin)) 
+
+! Guess coefficients and density matrices
 
   cGuess = c
-  cGuess(:,swap_mo_occ(1)) = cGuess(:,swap_mo_occ(2))
-  cGuess(:,swap_mo_occ(2)) = c(:,swap_mo_occ(1))
-  c = cGuess
-  O(:,:) = 0d0
-  
+  occupations = occupationsGuess
 
+  print *, "Ground state orbital occupations for MOM-guess:"
+  print *, "Alpha:"
+  print *, occupationsGuess(1:nO(1),1)
+  print *, "Beta:"
+  print *, occupationsGuess(1:nO(2),2)
+  
+  print *, "nbas,norb"
+  write(*,*) nBas,nOrb
   do ispin = 1,nspin
-    !P(:,:,ispin) = matmul(c(:,1:nO(ispin)), transpose(c(:,1:nO(ispin))))
-    call dgemm('N', 'T', nBas, nBas, nO(ispin), 1.d0, c, nBas, c, nBas, 0.d0, P(1,1,ispin), nBas)
+    P(:,:,ispin) = matmul(cGuess(:,occupationsGuess(1:nO(ispin),ispin)),&
+                transpose(c(:,occupationsGuess(1:nO(ispin),ispin))))
   end do
+
   Ptot(:,:) = P(:,:,1) + P(:,:,2)
+
 
 ! Initialization
 
@@ -127,6 +130,7 @@ subroutine MOMROHF(dotest,maxSCF,thresh,max_diis,guess_type,mix,level_shift,nNuc
   F_diis(:,:)   = 0d0
   err_diis(:,:) = 0d0
   rcond         = 0d0
+  occupations(:,:) = 0
 
   nSCF = 0
   Conv = 1d0
@@ -209,15 +213,15 @@ subroutine MOMROHF(dotest,maxSCF,thresh,max_diis,guess_type,mix,level_shift,nNuc
 
     end if
 
-!   Level-shifting
-
-    if(level_shift > 0d0 .and. Conv > thresh) then
-
-      do ispin=1,nspin
-        call level_shifting(level_shift,nBas,nOrb,maxval(nO),S,c,Ftot)
-      end do
-
-    end if
+!!   Level-shifting
+!
+!    if(level_shift > 0d0 .and. Conv > thresh) then
+!
+!      do ispin=1,nspin
+!        call level_shifting(level_shift,nBas,nOrb,maxval(nO),S,c,Ftot)
+!      end do
+!
+!    end if
 
 !  Transform Fock matrix in orthogonal basis
 
@@ -233,26 +237,22 @@ subroutine MOMROHF(dotest,maxSCF,thresh,max_diis,guess_type,mix,level_shift,nNuc
     c(:,:) = matmul(X(:,:),cp(:,:))
 
 !   Projected overlap
-    
-    O = matmul(matmul(transpose(cGuess),S),c)
-    projO(:) = 0d0
-    do i=1,max(nO(1),nO(2))
-      projO(:) = projO(:) + O(i,:)**2 
+    do ispin = 1,nspin 
+      O = matmul(matmul(transpose(cGuess),S),c)
+      projO(:) = 0d0
+      do i=1,nO(ispin)
+        projO(:) = projO(:) + O(occupationsGuess(i,ispin),:)**2 
+      end do
+
+      ! Select orbitals with maximum overlap
+      call MOM_idx(nO(ispin),nOrb,projO,occupations(1:nO(ispin),ispin))
     end do
-
-! Select orbitals with maximum overlap
-   
-    call sort_MOM(nBas,nOrb,projO,c,eHF)
-    write(*,*) "projO"
-    call vecout(nOrb,projO)
-
-
-    do ispin=1,nspin
-      !P(:,:,ispin) = matmul(c(:,1:nO(ispin)), transpose(c(:,1:nO(ispin))))
-      call dgemm('N', 'T', nBas, nBas, nO(ispin), 1.d0, c, nBas, c, nBas, 0.d0, P(1,1,ispin), nBas)
+    
+    do ispin = 1,nspin
+      P(:,:,ispin) = matmul(c(:,occupations(1:nO(ispin),ispin)),&
+                  transpose(c(:,occupations(1:nO(ispin),ispin))))
     end do
     Ptot(:,:) = P(:,:,1) + P(:,:,2) 
-    
 
 !   Dump results
 
@@ -285,6 +285,11 @@ subroutine MOMROHF(dotest,maxSCF,thresh,max_diis,guess_type,mix,level_shift,nNuc
 
   call dipole_moment(nBas,Ptot,nNuc,ZNuc,rNuc,dipole_int,dipole)
   call print_ROHF(nBas,nOrb,nO,eHF,c,ENuc,ET,EV,EJ,EK,EROHF,dipole)
+  print *, "Orbital occupations for MOMROHF"
+  print *, "Alpha:"
+  print *, occupations(1:nO(1),1)
+  print *, "Beta:"
+  print *, occupations(1:nO(2),2)
 
 ! Print test values
 

@@ -24,14 +24,14 @@ subroutine MOMUHF(dotest,maxSCF,thresh,max_diis,guess_type,mix,level_shift,nNuc,
   double precision,intent(in)   :: ENuc
 
   integer,intent(in)            :: nO(nspin)
+  integer,intent(in)            :: occupations(maxval(nO),nspin)
   double precision,intent(in)   :: S(nBas,nBas)
   double precision,intent(in)   :: T(nBas,nBas)
   double precision,intent(in)   :: V(nBas,nBas)
   double precision,intent(in)   :: Hc(nBas,nBas) 
-  double precision,intent(in)   :: X(nBas,nBas) 
+  double precision,intent(in)   :: X(nBas,nBas)
   double precision,intent(in)   :: ERI(nBas,nBas,nBas,nBas)
   double precision,intent(in)   :: dipole_int(nBas,nBas,ncart)
-  double precision,intent(in)   :: occupations(maxval(nO),nspin)
 
 ! Local variables
 
@@ -48,11 +48,12 @@ subroutine MOMUHF(dotest,maxSCF,thresh,max_diis,guess_type,mix,level_shift,nNuc,
   double precision              :: EJ(nsp)
   double precision              :: EK(nspin)
   double precision              :: dipole(ncart)
-
-  double precision,allocatable  :: cp(:,:,:)
+  
   double precision,allocatable  :: cGuess(:,:,:)
   double precision,allocatable  :: O(:,:,:)
   double precision,allocatable  :: projO(:,:)
+
+  double precision,allocatable  :: cp(:,:,:)
   double precision,allocatable  :: J(:,:,:)
   double precision,allocatable  :: Fp(:,:,:)
   double precision,allocatable  :: K(:,:,:)
@@ -88,15 +89,15 @@ subroutine MOMUHF(dotest,maxSCF,thresh,max_diis,guess_type,mix,level_shift,nNuc,
   allocate(J(nBas,nBas,nspin),K(nBas,nBas,nspin),Fp(nBas,nBas,nspin), &
            err(nBas,nBas,nspin),cp(nBas,nBas,nspin),                  &
            err_diis(nBasSq,max_diis,nspin),F_diis(nBasSq,max_diis,nspin))
-  
-   allocate(cGuess(nBas,nBas,nspin),O(nBas,nBas,nspin),projO(nBas,nspin)) 
+  allocate(cGuess(nBas,nBas,nspin),O(nBas,nBas,nspin),projO(nBas,nspin))
 
 ! Guess coefficients and density matrices
+
   print *, "Ground state orbital occupations for MOM-guess:"
   print *, "Alpha:"
-  print *, occupations(:,1)
+  print *, occupations(1:nO(1),1)
   print *, "Beta:"
-  print *, occupations(:,2)
+  print *, occupations(1:nO(2),2)
   
   do ispin=1,nspin  
     call MOM_guess(nO(ispin), nBas, nBas, occupations(:,ispin),c(:,:,ispin),cGuess(:,:,ispin),eHF(:,ispin))
@@ -234,10 +235,6 @@ subroutine MOMUHF(dotest,maxSCF,thresh,max_diis,guess_type,mix,level_shift,nNuc,
       ! Select orbitals with maximum overlap
       call sort_MOM(nBas,nBas,projO(:,ispin),c(:,:,ispin),eHF(:,ispin))
     end do
-
-!   Mix guess for UHF solution in singlet states
-
-    if(nSCF == 1 .and. mix > 0d0) call mix_guess(nBas,nO,mix,c)
 
 !   Compute density matrix 
 
