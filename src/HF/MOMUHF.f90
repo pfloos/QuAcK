@@ -91,12 +91,8 @@ subroutine MOMUHF(dotest,maxSCF,thresh,max_diis,guess_type,mix,level_shift,nNuc,
            err_diis(nBasSq,max_diis,nspin),F_diis(nBasSq,max_diis,nspin))
   allocate(cGuess(nBas,nBas,nspin),O(nBas,nBas,nspin),projO(nBas,nspin))
 
-  print *, "Occupations in MOMUHF debug"
-  print *, occupations(:,1)
-  print *, occupations(:,2)
-! Guess coefficients and demsity matrices
-
 ! Guess coefficients and density matrices
+
   print *, "Ground state orbital occupations for MOM-guess:"
   print *, "Alpha:"
   print *, occupations(1:nO(1),1)
