@@ -236,10 +236,6 @@ subroutine MOMUHF(dotest,maxSCF,thresh,max_diis,guess_type,mix,level_shift,nNuc,
       call sort_MOM(nBas,nBas,projO(:,ispin),c(:,:,ispin),eHF(:,ispin))
     end do
 
-!   Mix guess for UHF solution in singlet states
-
-    if(nSCF == 1 .and. mix > 0d0) call mix_guess(nBas,nO,mix,c)
-
 !   Compute density matrix 
 
     do ispin=1,nspin
