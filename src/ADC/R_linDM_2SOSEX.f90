@@ -58,6 +58,8 @@ include 'parameters.h'
   allocate(U1_2p1h(n2p1h,nOrb))
   allocate(U2_2h1p(n2h1p,nOrb))
   allocate(U2_2p1h(n2p1h,nOrb))
+
+! Computing and storing intermediates (i.e. ADC block) for computation of linDM
   
   !---------------!
   ! Blocks U_2h1p !
@@ -151,7 +153,8 @@ include 'parameters.h'
   
   do i=nC+1,nO
      do j=nC+1,nO
-        
+
+        ! Single pole terms
         anu = 0
         do a=nO+1,nOrb-nR
            do nu=1,nS
@@ -178,7 +181,8 @@ include 'parameters.h'
   
   do a=nO+1,nOrb-nR
      do b=nO+1,nOrb-nR
-
+        
+        ! Single pole terms
         inu=0
         do i=nC+1,nO
            do nu=1,nS
@@ -206,6 +210,7 @@ include 'parameters.h'
   do i=nC+1,nO
      do a=nO+1,nOrb-nR
 
+        ! Single pole terms
         jnu = 0
         do j=nC+1,nO
            do nu=1,nS
@@ -226,6 +231,7 @@ include 'parameters.h'
            end do
         end do
 
+        ! Single pole terms
         bnu=0
         do b=nO+1,nOrb-nR
            do nu=1,nS
@@ -248,5 +254,7 @@ include 'parameters.h'
         
      end do ! a
   end do ! i
+
+  deallocate(U1_2h1p,U2_2h1p,U1_2p1h,U2_2p1h)
   
 end subroutine R_linDM_2SOSEX
