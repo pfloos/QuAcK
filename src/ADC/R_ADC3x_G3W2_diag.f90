@@ -169,7 +169,7 @@ subroutine R_ADC3x_G3W2_diag(dotest,sig_inf,TDA_W,flow,nBas,nOrb,nC,nO,nV,nR,nS,
 ! Main loop over orbitals !
 !-------------------------!
 
-  do p=nO,nO
+  do p=nC+1,nO
 
     H(:,:) = 0d0
  
@@ -655,7 +655,7 @@ subroutine R_ADC3x_G3W2_diag(dotest,sig_inf,TDA_W,flow,nBas,nOrb,nC,nO,nV,nR,nS,
   !--------------!
 
     write(*,*)'-------------------------------------------'
-    write(*,'(1X,A34,I3,A6)')'| ADC(4)-G3W2 energies for orbital',p,'  |'
+    write(*,'(1X,A34,I3,A6)')'| ADC(3x)-G3W2 energies for orbital',p,'  |'
     write(*,*)'-------------------------------------------'
     write(*,'(1X,A1,1X,A3,1X,A1,1X,A15,1X,A1,1X,A15,1X,A1,1X,A15,1X)') &
               '|','#','|','e_QP (eV)','|','Z','|'
