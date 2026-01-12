@@ -178,7 +178,7 @@ subroutine R_ADC4_G3W2_diag(dotest,sig_inf,TDA_W,flow,nBas,nOrb,nC,nO,nV,nR,nS,E
 ! Main loop over orbitals !
 !-------------------------!
 
-  do p=nO,nO
+  do p=nC+1,nO
 
     H(:,:) = 0d0
  

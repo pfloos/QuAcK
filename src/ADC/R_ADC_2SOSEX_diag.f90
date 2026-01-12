@@ -153,7 +153,7 @@ subroutine R_ADC_2SOSEX_diag(dotest,sig_inf,TDA_W,flow,nBas,nOrb,nC,nO,nV,nR,nS,
 ! Main loop over orbitals !
 !-------------------------!
 
-  do p=nO,nO
+  do p=nC+1,nO
 
     H(:,:) = 0d0
 
