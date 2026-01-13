@@ -21,7 +21,7 @@ program QuAcK
   logical                       :: doevParquet,doqsParquet
   logical                       :: do_IPEA_ADC2,do_IP_ADC2,do_IPEA_ADC3
   logical                       :: do_SOSEX,do_2SOSEX,do_G3W2
-  logical                       :: do_ADC_GW,do_ADC_2SOSEX,do_ADC3_G3W2,do_ADC4_G3W2
+  logical                       :: do_ADC_GW,do_ADC_2SOSEX,do_ADC3_G3W2,do_ADC3x_G3W2,do_ADC4_G3W2
 
   logical                       :: file_exists
   logical                       :: error_P
@@ -183,7 +183,8 @@ program QuAcK
                     doevParquet,doqsParquet,                        &
                     do_IPEA_ADC2,do_IP_ADC2,do_IPEA_ADC3,           & 
                     do_SOSEX,do_2SOSEX,do_G3W2,                     & 
-                    do_ADC_GW,do_ADC_2SOSEX,do_ADC3_G3W2,do_ADC4_G3W2, &
+                    do_ADC_GW,do_ADC_2SOSEX,                        &
+                    do_ADC3_G3W2,do_ADC3x_G3W2,do_ADC4_G3W2,        &
                     doRtest,doUtest,doGtest)
   
 ! Determine complex function calls  
@@ -391,7 +392,7 @@ end if
                   docG0W0,docG0F2,doscGW,doscGF2,                                                                           &
                   doCAP,readFCIDUMP,restart_scGW,restart_scGF2,verbose_scGW,verbose_scGF2,chem_pot_scG,                     & 
                   do_IPEA_ADC2,do_IP_ADC2,do_IPEA_ADC3,do_SOSEX,do_2SOSEX,do_G3W2,                                          &
-                  do_ADC_GW,do_ADC_2SOSEX,do_ADC3_G3W2,do_ADC4_G3W2,                                                        &
+                  do_ADC_GW,do_ADC_2SOSEX,do_ADC3_G3W2,do_ADC3x_G3W2,do_ADC4_G3W2,                                          &
                   nNuc,nBas,nOrb,nC,nO,nV,nR,ENuc,ZNuc,rNuc,                                                                &
                   S,T,V,Hc,CAP,X,dipole_int_AO,maxSCF_HF,max_diis_HF,thresh_HF,level_shift,eweight,eforward,                &
                   mom_occupations,                                                                                          &
@@ -429,9 +430,10 @@ end if
   if(doGQuAcK) & 
     call GQuAcK(working_dir,doGtest,doGHF,dostab,dosearch,doMP2,doMP3,doCCD,dopCCD,doDCD,doCCSD,doCCSDT,   &
                 dodrCCD,dorCCD,docrCCD,dolCCD,dophRPA,dophRPAx,docrRPA,doppRPA,doOO,                       &
-                doG0W0,doevGW,doqsGW,doG0F2,doevGF2,doqsGF2,doG0T0pp,doevGTpp,doqsGTpp,doG0T0eh,doevParquet,doqsParquet, & 
-                do_IPEA_ADC2,do_IP_ADC2,do_IPEA_ADC3,do_SOSEX,do_2SOSEX,do_G3W2,                                         &
-                do_ADC_GW,do_ADC_2SOSEX,do_ADC3_G3W2,do_ADC4_G3W2,                                                       &
+                doG0W0,doevGW,doqsGW,doG0F2,doevGF2,doqsGF2,                                               &
+                doG0T0pp,doevGTpp,doqsGTpp,doG0T0eh,doevParquet,doqsParquet,                               & 
+                do_IPEA_ADC2,do_IP_ADC2,do_IPEA_ADC3,do_SOSEX,do_2SOSEX,do_G3W2,                           &
+                do_ADC_GW,do_ADC_2SOSEX,do_ADC3_G3W2,do_ADC3x_G3W2,do_ADC4_G3W2,                           &
                 nNuc,nBas,sum(nC),sum(nO),sum(nV),sum(nR),ENuc,ZNuc,rNuc,S,T,V,Hc,X,dipole_int_AO,         &
                 maxSCF_HF,max_diis_HF,thresh_HF,level_shift,guess_type,mix,reg_MP,                         &
                 maxSCF_CC,max_diis_CC,thresh_CC,TDA,                                                       &
