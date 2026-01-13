@@ -12,7 +12,7 @@ subroutine MOM_idx(nO, nOrb, projO, idx)
   integer, intent(out)         :: idx(nO)
 
   ! Local variables
-  integer                      :: i, j, imax
+  integer                      :: i, j, imax,temp
   double precision             :: pmax
   logical                      :: used(nOrb)
 
@@ -37,4 +37,14 @@ subroutine MOM_idx(nO, nOrb, projO, idx)
      used(imax) = .true.
   end do
 
+  ! Sort idx in ascending order
+  do i = 1, nO - 1
+     do j = i + 1, nO
+        if (idx(i) > idx(j)) then
+           temp = idx(i)
+           idx(i) = idx(j)
+           idx(j) = temp
+        end if
+     end do
+  end do
 end subroutine

@@ -40,5 +40,4 @@ subroutine read_mom_occupations(working_dir,nO,occupations)
 
   end do
   close(1)
-
 end subroutine
