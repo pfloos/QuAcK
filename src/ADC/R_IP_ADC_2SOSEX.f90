@@ -1,6 +1,6 @@
-subroutine R_IP_ADC_GW(dotest,sig_inf,TDA_W,flow,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,eHF)
+subroutine R_IP_ADC_2SOSEX(dotest,sig_inf,TDA_W,flow,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,eHF)
 
-! Non-Dyson version of ADC-GW for IPs
+! Non-Dyson version of ADC-2SOSEX for IPs
 
   implicit none
   include 'parameters.h'
@@ -29,9 +29,9 @@ subroutine R_IP_ADC_GW(dotest,sig_inf,TDA_W,flow,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,E
   integer                       :: p,q,r,s
   integer                       :: i,j,k,l
   integer                       :: a,b,c,d
-  integer                       :: mu
+  integer                       :: mu,nu
   integer                       :: klc,kcd,ija,iab
-  double precision              :: num,dem
+  double precision              :: num,dem,reg
 
   logical                       :: print_W = .false.
   logical                       :: dRPA
@@ -53,6 +53,7 @@ subroutine R_IP_ADC_GW(dotest,sig_inf,TDA_W,flow,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,E
   double precision,allocatable  :: Vh(:,:)
   double precision,allocatable  :: Vx(:,:)
   double precision,allocatable  :: DM(:,:)
+  double precision,allocatable  :: w(:,:,:)
 
   logical,parameter             :: verbose = .false.
   double precision,parameter    :: cutoff1 = 0.1d0
@@ -67,9 +68,9 @@ subroutine R_IP_ADC_GW(dotest,sig_inf,TDA_W,flow,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,E
 ! Hello world
 
   write(*,*)
-  write(*,*)'************************************'
-  write(*,*)'* Restricted IP-ADC-GW Calculation *'
-  write(*,*)'************************************'
+  write(*,*)'*************************************'
+  write(*,*)'* Restricted ADC-2SOSEX Calculation *'
+  write(*,*)'*************************************'
   write(*,*)
 
 ! Dimension of the supermatrix
@@ -105,6 +106,10 @@ subroutine R_IP_ADC_GW(dotest,sig_inf,TDA_W,flow,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,E
 
   call phRLR(TDA_W,nS,Aph,Bph,EcRPA,Om,XpY,XmY)
 
+  ! Small shift to avoid hard zeros in amplitudes
+
+  Om(:) = Om(:) + 1d-12
+
   if(print_W) call print_excitation_energies('phRPA@RHF','singlet',nS,Om)
 
   !--------------------------!
@@ -113,7 +118,7 @@ subroutine R_IP_ADC_GW(dotest,sig_inf,TDA_W,flow,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,E
 
   call RGW_excitation_density(nOrb,nC,nO,nR,nS,ERI,XpY,rho)
 
-  deallocate(Aph,Bph,XpY,XmY)
+  deallocate(Aph,Bph)
 
   !-------------------!
   ! Compute Sigma(oo) !
@@ -124,15 +129,16 @@ subroutine R_IP_ADC_GW(dotest,sig_inf,TDA_W,flow,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,E
 
   if(sig_inf) then
 
-    allocate(DM(nOrb,nOrb),Vh(nOrb,nOrb),Vx(nOrb,nOrb))
- 
-    call R_linDM_GW(nOrb,nC,nO,nV,nR,nS,eHF,Om,rho,0d0,DM)
+    allocate(DM(nOrb,nOrb),Vh(nOrb,nOrb),Vx(nOrb,nOrb),w(nOrb,nOrb,nS))
+
+    ! call R_linDM_GW(nOrb,nC,nO,nV,nR,nS,eHF,Om,rho,0d0,DM)
+    call R_linDM_2SOSEX(nOrb,nC,nO,nV,nR,nS,eHF,Om,rho,ERI,0d0,DM)
     call Hartree_matrix_AO_basis(nOrb,DM,ERI,Vh)
     call exchange_matrix_AO_basis(nOrb,DM,ERI,Vx)
  
     F(:,:) = Vh(:,:) + 0.5d0*Vx(:,:)
  
-    deallocate(Vh,Vx,DM)
+    deallocate(Vh,Vx,DM,w,XpY,XmY)
 
   end if
 
@@ -141,12 +147,12 @@ subroutine R_IP_ADC_GW(dotest,sig_inf,TDA_W,flow,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,E
   H(:,:) = 0d0
 
   !------------------------------!
-  ! Compute IP-ADC-GW matrix     !
+  ! Compute IP-ADC-2SOSEX matrix !
   !------------------------------!
   !                              !
-  !     | F      U_2h1p        | !
-  ! H = |                      | ! 
-  !     | U_2h1p (K+C)_2h1p    | !
+  !     | F      U_2h1p     |    ! 
+  ! H = |                   |    ! 
+  !     | U_2h1p (K+C)_2h1p |    ! 
   !                              !
   !------------------------------!
 
@@ -166,26 +172,6 @@ subroutine R_IP_ADC_GW(dotest,sig_inf,TDA_W,flow,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,E
 
   end do
 
-  !-------------------!
-  ! Block static 2p1h !
-  !-------------------!
-
-  do p=nC+1,nOrb-nR
-    do q=nC+1,nOrb-nR
-
-      do mu=1,nS
-        do a=nO+1,nOrb-nR
-
-          num = 2d0*rho(p,a,mu)*rho(q,a,mu)
-          dem = 0.5d0*(eHF(p) + eHF(q)) - eHF(a) - Om(mu)
-          H(p,q) = H(p,q) + num/dem
-
-        end do
-      end do
-
-    end do
-  end do
-
   !--------------!
   ! Block U_2h1p !
   !--------------!
@@ -199,6 +185,26 @@ subroutine R_IP_ADC_GW(dotest,sig_inf,TDA_W,flow,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,E
 
         H(p       ,nOrb+ija) = sqrt(2d0)*rho(p,i,mu)
         H(nOrb+ija,p       ) = sqrt(2d0)*rho(p,i,mu)
+
+        do k=nC+1,nO
+          do c=nO+1,nOrb-nR
+
+            num = sqrt(2d0)*ERI(p,c,k,i)*rho(k,c,mu)
+            dem = eHF(c) - eHF(k) - Om(mu)
+            reg = (1d0 - exp(-2d0*flow*dem*dem))/dem
+
+            H(p       ,nOrb+ija) = H(p       ,nOrb+ija) + num*reg
+            H(nOrb+ija,p       ) = H(nOrb+ija,p       ) + num*reg
+
+            num = sqrt(2d0)*ERI(p,k,c,i)*rho(c,k,mu)
+            dem = eHF(c) - eHF(k) + Om(mu)
+            reg = (1d0 - exp(-2d0*flow*dem*dem))/dem
+
+            H(p       ,nOrb+ija) = H(p       ,nOrb+ija) + num*reg
+            H(nOrb+ija,p       ) = H(nOrb+ija,p       ) + num*reg
+
+          end do
+        end do
 
       end do
     end do
@@ -257,7 +263,7 @@ subroutine R_IP_ADC_GW(dotest,sig_inf,TDA_W,flow,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,E
 !--------------!
 
   write(*,*)'---------------------------------------------'
-  write(*,'(1X,A45)')'| ADC-GW energies for all orbitals          |'
+  write(*,'(1X,A45)')'| ADC-2SOSEX energies for all orbitals      |'
   write(*,*)'---------------------------------------------'
   write(*,'(1X,A1,1X,A5,1X,A1,1X,A15,1X,A1,1X,A15,1X,A1,1X,A15,1X)') &
             '|','#','|','e_QP (eV)','|','Z','|'
