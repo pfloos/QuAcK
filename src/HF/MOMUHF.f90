@@ -93,6 +93,10 @@ subroutine MOMUHF(dotest,maxSCF,thresh,max_diis,guess_type,mix,level_shift,nNuc,
 
 ! Guess coefficients and density matrices
 
+  if(occupations(nO(1),1)==0) then
+    print *, "Number of alpha electrons has to be >= Number of beta electrons !"
+    stop
+  end if
   print *, "Ground state orbital occupations for MOM-guess:"
   print *, "Alpha:"
   print *, occupations(1:nO(1),1)

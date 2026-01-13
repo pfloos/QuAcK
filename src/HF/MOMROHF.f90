@@ -107,7 +107,11 @@ subroutine MOMROHF(dotest,maxSCF,thresh,max_diis,guess_type,mix,level_shift,nNuc
 
   cGuess = c
   occupations = occupationsGuess
-
+  
+  if(occupations(nO(1),1)==0) then
+    print *, "Number of alpha electrons has to be >= Number of beta electrons !"
+    stop
+  end if
   print *, "Ground state orbital occupations for MOM-guess:"
   print *, "Alpha:"
   print *, occupationsGuess(1:nO(1),1)
@@ -128,7 +132,7 @@ subroutine MOMROHF(dotest,maxSCF,thresh,max_diis,guess_type,mix,level_shift,nNuc
   F_diis(:,:)   = 0d0
   err_diis(:,:) = 0d0
   rcond         = 0d0
-  occupations(:,:) = 0
+  occupations(:,:) = occupationsGuess(:,:)
 
   nSCF = 0
   Conv = 1d0
@@ -167,7 +171,7 @@ subroutine MOMROHF(dotest,maxSCF,thresh,max_diis,guess_type,mix,level_shift,nNuc
       F(:,:,ispin) = Hc(:,:) + J(:,:,ispin) + J(:,:,mod(ispin,2)+1) + K(:,:,ispin)
     end do
 
-    call ROHF_fock_matrix(nBas,nOrb,nO(1),nO(2),S,c,F(:,:,1),F(:,:,2),Ftot)
+    call MOMROHF_fock_matrix(nBas,nOrb,nO(1),nO(2),S,c,F(:,:,1),F(:,:,2),Ftot,occupations)
 
 !   Check convergence 
 
