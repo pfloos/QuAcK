@@ -32,12 +32,13 @@ subroutine R_IP_ADC_2SOSEX(dotest,sig_inf,TDA_W,flow,nBas,nOrb,nC,nO,nV,nR,nS,EN
   integer                       :: mu,nu
   integer                       :: klc,kcd,ija,iab
   double precision              :: num,dem,reg
+  double precision              :: omega
 
   logical                       :: print_W = .false.
   logical                       :: dRPA
   integer                       :: ispin
   double precision              :: EcRPA
-  integer                       :: n2h1p,nH
+  integer                       :: n2h1p,n2p1h,nH
   double precision,external     :: Kronecker_delta
   double precision,allocatable  :: H(:,:)
   double precision,allocatable  :: eGW(:)
@@ -55,6 +56,9 @@ subroutine R_IP_ADC_2SOSEX(dotest,sig_inf,TDA_W,flow,nBas,nOrb,nC,nO,nV,nR,nS,EN
   double precision,allocatable  :: DM(:,:)
   double precision,allocatable  :: w(:,:,:)
 
+  double precision,allocatable  :: U_2p1h(:,:)
+  double precision,allocatable  :: K_2p1h(:,:)
+
   logical,parameter             :: verbose = .false.
   double precision,parameter    :: cutoff1 = 0.1d0
   double precision,parameter    :: cutoff2 = 0.01d0
@@ -68,19 +72,21 @@ subroutine R_IP_ADC_2SOSEX(dotest,sig_inf,TDA_W,flow,nBas,nOrb,nC,nO,nV,nR,nS,EN
 ! Hello world
 
   write(*,*)
-  write(*,*)'*************************************'
-  write(*,*)'* Restricted ADC-2SOSEX Calculation *'
-  write(*,*)'*************************************'
+  write(*,*)'****************************************'
+  write(*,*)'* Restricted IP-ADC-2SOSEX Calculation *'
+  write(*,*)'****************************************'
   write(*,*)
 
 ! Dimension of the supermatrix
 
   n2h1p = nO*nO*nV
+  n2p1h = nV*nV*nO
   nH = nOrb + n2h1p
 
 ! Memory allocation
 
   allocate(H(nH,nH),eGW(nH),Z(nH))
+  allocate(U_2p1h(n2p1h,nOrb),K_2p1h(n2p1h,n2p1h))
 
 ! Initialization
 
@@ -170,6 +176,68 @@ subroutine R_IP_ADC_2SOSEX(dotest,sig_inf,TDA_W,flow,nBas,nOrb,nC,nO,nV,nR,nS,EN
       H(p,q) = H(p,q) + F(p,q)
     end do
 
+  end do
+
+  !--------------!
+  ! Block U_2p1h !
+  !--------------!
+  
+  do q=nC+1,nOrb-nR
+  
+    iab = 0
+    do a=nO+1,nOrb-nR
+      do mu=1,nS
+        iab = iab + 1
+  
+        U_2p1h(iab,q) = sqrt(2d0)*rho(q,a,mu)
+  
+        do k=nC+1,nO
+          do c=nO+1,nOrb-nR
+  
+            num = sqrt(2d0)*ERI(q,k,c,a)*rho(c,k,mu)
+            dem = eHF(c) - eHF(k) - Om(mu)
+            reg = (1d0 - exp(-2d0*flow*dem*dem))/dem
+  
+            U_2p1h(iab,q) = U_2p1h(iab,q) + num*reg
+  
+            num = sqrt(2d0)*ERI(q,c,k,a)*rho(k,c,mu)
+            dem = eHF(c) - eHF(k) + Om(mu)
+            reg = (1d0 - exp(-2d0*flow*dem*dem))/dem
+  
+            U_2p1h(iab,q) = U_2p1h(iab,q) + num*reg
+  
+          end do
+        end do
+  
+      end do
+    end do
+  
+  end do
+  
+  do p=nC+1,nOrb-nR
+    do q=nC+1,nOrb-nR
+
+      omega = 0.5d0*(eHF(p) + eHF(q))
+
+      !------------------!
+      ! Block (K+C)_2p1h !
+      !------------------!
+  
+      K_2p1h(:,:) = 0d0
+  
+      iab = 0
+      do a=nO+1,nOrb-nR
+        do mu=1,nS
+          iab = iab + 1
+  
+          K_2p1h(iab,iab) = 1d0/(omega - eHF(a) - Om(mu))
+  
+        end do
+      end do
+
+      F(p,q) = F(p,q) + dot_product(U_2p1h(:,p),matmul(K_2p1h,U_2p1h(:,q)))
+
+    end do
   end do
 
   !--------------!
