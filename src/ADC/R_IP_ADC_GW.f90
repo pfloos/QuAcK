@@ -177,7 +177,7 @@ subroutine R_IP_ADC_GW(dotest,sig_inf,TDA_W,flow,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,E
         do a=nO+1,nOrb-nR
 
           num = 2d0*rho(p,a,mu)*rho(q,a,mu)
-          dem = eHF(p) - eHF(a) - Om(mu)
+          dem = 0.5d0*(eHF(p) + eHF(q)) - eHF(a) - Om(mu)
           H(p,q) = H(p,q) + num/dem
 
         end do
@@ -231,8 +231,6 @@ subroutine R_IP_ADC_GW(dotest,sig_inf,TDA_W,flow,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,E
 !-------------------------!
 
   call wall_time(start_timing)
-
-  call matout(nH,nH,H)
 
   call diagonalize_matrix(nH,H,eGW)
 
