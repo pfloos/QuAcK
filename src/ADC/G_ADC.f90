@@ -1,10 +1,10 @@
 subroutine G_ADC(dotest,                                               & 
-                 do_IPEA_ADC2,do_IP_ADC2,do_IPEA_ADC3,                 &
+                 do_IPEA_ADC2,do_IPEA_ADC3,                            &
                  do_SOSEX,do_2SOSEX,do_G3W2,                           &
                  do_ADC_GW,do_ADC_2SOSEX,                              &
                  do_ADC3_G3W2,do_ADC3x_G3W2,do_ADC4_G3W2,              &
                  TDA_W,TDA,linearize,eta,doSRG,                        &
-                 diag_approx,sig_inf,                                  & 
+                 do_dyson,diag_approx,sig_inf,                         & 
                  nNuc,ZNuc,rNuc,ENuc,nBas,nBas2,nC,nO,nV,nR,nS,        &
                  S,X,T,V,Hc,ERI_AO,ERI_MO,dipole_int_AO,dipole_int_MO, &
                  EGHF,PHF,FHF,cHF,eHF)
@@ -19,7 +19,6 @@ subroutine G_ADC(dotest,                                               &
   logical,intent(in)            :: dotest
 
   logical,intent(in)            :: do_IPEA_ADC2
-  logical,intent(in)            :: do_IP_ADC2
   logical,intent(in)            :: do_IPEA_ADC3
 
   logical,intent(in)            :: do_SOSEX
@@ -38,6 +37,7 @@ subroutine G_ADC(dotest,                                               &
   double precision,intent(in)   :: eta
   logical,intent(in)            :: doSRG
   
+  logical,intent(in)            :: do_dyson
   logical,intent(in)            :: diag_approx
   logical,intent(in)            :: sig_inf
 
@@ -79,8 +79,8 @@ subroutine G_ADC(dotest,                                               &
   
   ! None
 
-  do_IPEA = do_IPEA_ADC2 .or. do_IP_ADC2 .or. do_IPEA_ADC3 .or. & 
-            do_SOSEX .or. do_2SOSEX .or. do_G3W2 .or.           &
+  do_IPEA = do_IPEA_ADC2 .or. do_IPEA_ADC3 .or.       & 
+            do_SOSEX .or. do_2SOSEX .or. do_G3W2 .or. &
             do_ADC_GW .or. do_ADC_2SOSEX .or. do_ADC3_G3W2 .or. do_ADC3x_G3W2 .or. do_ADC4_G3W2
 
   do_EE   = .false.
@@ -129,22 +129,6 @@ subroutine G_ADC(dotest,                                               &
 
     end if
 
-  !-----------------------------------------!
-  ! Perform (non-Dyson) IP-ADC2 calculation !
-  !-----------------------------------------!
-  
-    if(do_IP_ADC2) then 
-      
-      ! call wall_time(start_ADC)
-      ! call G_IP_ADC2(dotest,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,EGHF,ERI_MO,eHF)
-      ! call wall_time(end_ADC)
-    
-      ! t_ADC = end_ADC - start_ADC
-      ! write(*,'(A65,1X,F9.3,A8)') 'Total wall time for IP-ADC(2) = ',t_ADC,' seconds'
-      ! write(*,*)
- 
-    end if
-  
   !----------------------------!
   ! Perform SOSEX calculation !
   !----------------------------!

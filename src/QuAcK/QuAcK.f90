@@ -19,7 +19,7 @@ program QuAcK
   logical                       :: doG0T0pp,doevGTpp,doqsGTpp,doufG0T0pp,doG0T0eh,doevGTeh,doqsGTeh
   logical                       :: doCAP
   logical                       :: doevParquet,doqsParquet
-  logical                       :: do_IPEA_ADC2,do_IP_ADC2,do_IPEA_ADC3
+  logical                       :: do_IPEA_ADC2,do_IPEA_ADC3
   logical                       :: do_SOSEX,do_2SOSEX,do_G3W2
   logical                       :: do_ADC_GW,do_ADC_2SOSEX,do_ADC3_G3W2,do_ADC3x_G3W2,do_ADC4_G3W2
 
@@ -116,7 +116,7 @@ program QuAcK
   double precision              :: reg_1b,reg_2b 
   logical                       :: lin_parquet, reg_PA
    
-  logical                       :: diag_approx,sig_inf,lin_ADC,reg_ADC
+  logical                       :: do_dyson,diag_approx,sig_inf,lin_ADC,reg_ADC
   double precision              :: eta_ADC
 
   character(len=256)            :: working_dir
@@ -177,7 +177,7 @@ program QuAcK
                     doG0T0pp,doevGTpp,doqsGTpp,doufG0T0pp,          &
                     doG0T0eh,doevGTeh,doqsGTeh,                     &
                     doevParquet,doqsParquet,                        &
-                    do_IPEA_ADC2,do_IP_ADC2,do_IPEA_ADC3,           & 
+                    do_IPEA_ADC2,do_IPEA_ADC3,                      & 
                     do_SOSEX,do_2SOSEX,do_G3W2,                     & 
                     do_ADC_GW,do_ADC_2SOSEX,                        &
                     do_ADC3_G3W2,do_ADC3x_G3W2,do_ADC4_G3W2,        &
@@ -208,7 +208,8 @@ program QuAcK
                     dophBSE,dophBSE2,doppBSE,dBSE,dTDA,                                                  &
                     temperature,sigma,chem_pot_hf,restart_hfb,error_P,                                   &
                     TDAeh,TDApp,max_diis_1b,max_diis_2b,max_it_1b,conv_1b,max_it_2b,conv_2b,lin_parquet, &
-                    reg_1b,reg_2b,reg_PA,diag_approx,sig_inf,lin_ADC,reg_ADC,eta_ADC,                    &
+                    reg_1b,reg_2b,reg_PA,                                                                &
+                    do_dyson,diag_approx,sig_inf,lin_ADC,reg_ADC,eta_ADC,                                &
                     eweight,eforward)
 
 
@@ -357,7 +358,7 @@ end if
                   doG0T0pp,doevGTpp,doqsGTpp,doufG0T0pp,doG0T0eh,doevGTeh,doqsGTeh,doevParquet,doqsParquet,                 &
                   docG0W0,docG0F2,doscGW,doscGF2,                                                                           &
                   doCAP,readFCIDUMP,restart_scGW,restart_scGF2,verbose_scGW,verbose_scGF2,chem_pot_scG,                     & 
-                  do_IPEA_ADC2,do_IP_ADC2,do_IPEA_ADC3,do_SOSEX,do_2SOSEX,do_G3W2,                                          &
+                  do_IPEA_ADC2,do_IPEA_ADC3,do_SOSEX,do_2SOSEX,do_G3W2,                                                     &
                   do_ADC_GW,do_ADC_2SOSEX,do_ADC3_G3W2,do_ADC3x_G3W2,do_ADC4_G3W2,                                          &
                   nNuc,nBas,nOrb,nC,nO,nV,nR,ENuc,ZNuc,rNuc,                                                                &
                   S,T,V,Hc,CAP,X,dipole_int_AO,maxSCF_HF,max_diis_HF,thresh_HF,level_shift,eweight,eforward,                &
@@ -370,7 +371,7 @@ end if
                   dophBSE,dophBSE2,doppBSE,dBSE,dTDA,doACFDT,exchange_kernel,doXBS,                                         &
                   TDAeh,TDApp,max_diis_1b,max_diis_2b,max_it_1b,conv_1b,max_it_2b,conv_2b,lin_parquet,reg_1b,reg_2b,reg_PA, &
                   nfreqs,ntimes,wcoord,wweight,                                                                             &
-                  diag_approx,sig_inf,lin_ADC,reg_ADC,eta_ADC)
+                  do_dyson,diag_approx,sig_inf,lin_ADC,reg_ADC,eta_ADC)
     endif
   endif
 
@@ -394,22 +395,23 @@ end if
 ! Generalized QuAcK branch !
 !--------------------------!
   if(doGQuAcK) & 
-    call GQuAcK(working_dir,doGtest,doGHF,dostab,dosearch,doMP2,doMP3,doCCD,dopCCD,doDCD,doCCSD,doCCSDT,   &
-                dodrCCD,dorCCD,docrCCD,dolCCD,dophRPA,dophRPAx,docrRPA,doppRPA,doOO,                       &
-                doG0W0,doevGW,doqsGW,doG0F2,doevGF2,doqsGF2,                                               &
-                doG0T0pp,doevGTpp,doqsGTpp,doG0T0eh,doevParquet,doqsParquet,                               & 
-                do_IPEA_ADC2,do_IP_ADC2,do_IPEA_ADC3,do_SOSEX,do_2SOSEX,do_G3W2,                           &
-                do_ADC_GW,do_ADC_2SOSEX,do_ADC3_G3W2,do_ADC3x_G3W2,do_ADC4_G3W2,                           &
-                nNuc,nBas,sum(nC),sum(nO),sum(nV),sum(nR),ENuc,ZNuc,rNuc,S,T,V,Hc,X,dipole_int_AO,         &
-                maxSCF_HF,max_diis_HF,thresh_HF,level_shift,guess_type,mix,reg_MP,                         &
-                maxSCF_CC,max_diis_CC,thresh_CC,TDA,                                                       &
-                max_iter_OO,thresh_OO,dRPA_OO,mu_OO,diagHess_OO,                                           & 
-                maxSCF_GF,max_diis_GF,thresh_GF,lin_GF,reg_GF,eta_GF,                                      &
-                maxSCF_GW,max_diis_GW,thresh_GW,TDA_W,lin_GW,reg_GW,eta_GW,do_linDM_GW,                    &
-                maxSCF_GT,max_diis_GT,thresh_GT,TDA_T,lin_GT,reg_GT,eta_GT,do_linDM_GT,                    &
-                dophBSE,dophBSE2,doppBSE,dBSE,dTDA,doACFDT,exchange_kernel,doXBS,                          &
-                TDAeh,TDApp,max_diis_1b,max_diis_2b,max_it_1b,conv_1b,max_it_2b,conv_2b,lin_parquet,reg_1b,reg_2b,reg_PA, &
-                diag_approx,sig_inf,lin_ADC,reg_ADC,eta_ADC)
+    call GQuAcK(working_dir,doGtest,doGHF,dostab,dosearch,doMP2,doMP3,doCCD,dopCCD,doDCD,doCCSD,doCCSDT, &
+                dodrCCD,dorCCD,docrCCD,dolCCD,dophRPA,dophRPAx,docrRPA,doppRPA,doOO,                     &
+                doG0W0,doevGW,doqsGW,doG0F2,doevGF2,doqsGF2,                                             &
+                doG0T0pp,doevGTpp,doqsGTpp,doG0T0eh,doevParquet,doqsParquet,                             & 
+                do_IPEA_ADC2,do_IPEA_ADC3,do_SOSEX,do_2SOSEX,do_G3W2,                                    &
+                do_ADC_GW,do_ADC_2SOSEX,do_ADC3_G3W2,do_ADC3x_G3W2,do_ADC4_G3W2,                         &
+                nNuc,nBas,sum(nC),sum(nO),sum(nV),sum(nR),ENuc,ZNuc,rNuc,S,T,V,Hc,X,dipole_int_AO,       &
+                maxSCF_HF,max_diis_HF,thresh_HF,level_shift,guess_type,mix,reg_MP,                       &
+                maxSCF_CC,max_diis_CC,thresh_CC,TDA,                                                     &
+                max_iter_OO,thresh_OO,dRPA_OO,mu_OO,diagHess_OO,                                         & 
+                maxSCF_GF,max_diis_GF,thresh_GF,lin_GF,reg_GF,eta_GF,                                    &
+                maxSCF_GW,max_diis_GW,thresh_GW,TDA_W,lin_GW,reg_GW,eta_GW,do_linDM_GW,                  &
+                maxSCF_GT,max_diis_GT,thresh_GT,TDA_T,lin_GT,reg_GT,eta_GT,do_linDM_GT,                  &
+                dophBSE,dophBSE2,doppBSE,dBSE,dTDA,doACFDT,exchange_kernel,doXBS,                        &
+                TDAeh,TDApp,max_diis_1b,max_diis_2b,max_it_1b,conv_1b,max_it_2b,conv_2b,lin_parquet,     &
+                reg_1b,reg_2b,reg_PA,                                                                    &
+                do_dyson,diag_approx,sig_inf,lin_ADC,reg_ADC,eta_ADC)
 
 !-------------------------!
 ! Bogoliubov QuAcK branch !
@@ -443,13 +445,14 @@ end if
   write(*,*)
 
 ! Memory deallocation
+
   if (allocated(rNuc)) deallocate(rNuc)
   if (allocated(Znuc)) deallocate(Znuc)
-  if (allocated(T)) deallocate(T)
-  if (allocated(V)) deallocate(V)
-  if (allocated(Hc)) deallocate(Hc)
+  if (allocated(T))    deallocate(T)
+  if (allocated(V))    deallocate(V)
+  if (allocated(Hc))   deallocate(Hc)
+  if (allocated(S))    deallocate(S)
   if (allocated(dipole_int_AO)) deallocate(dipole_int_AO)
-  if (allocated(S)) deallocate(S)
   deallocate(wweight,wcoord)
 
 end program 
